@@ -1,3 +1,10 @@
+1998-09-14  Mark Mitchell  <mark@markmitchell.com>
+
+	* pt.c (check_specialization_scope): Fix spelling error.
+	(check_explicit_specialization): Remove code to handle explicit
+	specializations in class scope; they are now correctly diagnosed
+	as errors.
+
 1998-09-10  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl.c (pushdecl): Don't copy types if the

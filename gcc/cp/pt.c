@@ -605,7 +605,7 @@ check_specialization_scope ()
      explicitly specialize a class member template if its enclosing
      class templates are not explicitly specialized as well.  */
   if (current_template_parms) 
-    cp_error ("enclosing class templates are not explicit specialized");
+    cp_error ("enclosing class templates are not explicitly specialized");
 }
 
 /* We've just seen template <>. */
@@ -1031,15 +1031,8 @@ determine_specialization (template_id, decl, targs_out,
    
    FLAGS is a bitmask consisting of the following flags: 
 
-   1: We are being called by finish_struct.  (We are unable to
-      determine what template is specialized by an in-class
-      declaration until the class definition is complete, so
-      finish_struct_methods calls this function again later to finish
-      the job.)
    2: The function has a definition.
    4: The function is a friend.
-   8: The function is known to be a specialization of a member
-      template. 
 
    The TEMPLATE_COUNT is the number of references to qualifying
    template classes that appeared in the name of the function.  For
@@ -1070,126 +1063,122 @@ check_explicit_specialization (declarator, decl, template_count, flags)
      int template_count;
      int flags;
 {
-  int finish_member = flags & 1;
   int have_def = flags & 2;
   int is_friend = flags & 4;
   int specialization = 0;
   int explicit_instantiation = 0;
-  int member_specialization = flags & 8;
+  int member_specialization = 0;
 
   tree ctype = DECL_CLASS_CONTEXT (decl);
   tree dname = DECL_NAME (decl);
 
-  if (!finish_member)
+  if (processing_specialization) 
     {
-      if (processing_specialization) 
-	{
-	  /* The last template header was of the form template <>.  */
+      /* The last template header was of the form template <>.  */
 	  
-	  if (template_header_count > template_count) 
-	    {
-	      /* There were more template headers than qualifying template
-		 classes.  */
-	      if (template_header_count - template_count > 1)
-		/* There shouldn't be that many template parameter
+      if (template_header_count > template_count) 
+	{
+	  /* There were more template headers than qualifying template
+	     classes.  */
+	  if (template_header_count - template_count > 1)
+	    /* There shouldn't be that many template parameter
 		   lists.  There can be at most one parameter list for
 		   every qualifying class, plus one for the function
 		   itself.  */
-		cp_error ("too many template parameter lists in declaration of `%D'", decl);
+	    cp_error ("too many template parameter lists in declaration of `%D'", decl);
 
-	      SET_DECL_TEMPLATE_SPECIALIZATION (decl);
-	      if (ctype)
-		member_specialization = 1;
-	      else
-		specialization = 1;
-	    }
-	  else if (template_header_count == template_count)
-	    {
-	      /* The counts are equal.  So, this might be a
-		 specialization, but it is not a specialization of a
-		 member template.  It might be something like
+	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
+	  if (ctype)
+	    member_specialization = 1;
+	  else
+	    specialization = 1;
+	}
+      else if (template_header_count == template_count)
+	{
+	  /* The counts are equal.  So, this might be a
+	     specialization, but it is not a specialization of a
+	     member template.  It might be something like
 		 
-		 template <class T> struct S { 
-	         void f(int i); 
-		 };
-		 template <>
-		 void S<int>::f(int i) {}  */
-	      specialization = 1;
-	      SET_DECL_TEMPLATE_SPECIALIZATION (decl);
-	    }
-	  else 
-	    {
-	      /* This cannot be an explicit specialization.  There are not
-		 enough headers for all of the qualifying classes.  For
-		 example, we might have:
+	     template <class T> struct S { 
+	     void f(int i); 
+	     };
+	     template <>
+	     void S<int>::f(int i) {}  */
+	  specialization = 1;
+	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
+	}
+      else 
+	{
+	  /* This cannot be an explicit specialization.  There are not
+	     enough headers for all of the qualifying classes.  For
+	     example, we might have:
 	     
-		 template <>
-		 void S<int>::T<char>::f();
+	     template <>
+	     void S<int>::T<char>::f();
 
-		 But, we're missing another template <>.  */
-	      cp_error("too few template parameter lists in declaration of `%D'", decl);
-	      return decl;
-	    } 
-	}
-      else if (processing_explicit_instantiation)
-	{
-	  if (template_header_count)
-	    cp_error ("template parameter list used in explicit instantiation");
+	     But, we're missing another template <>.  */
+	  cp_error("too few template parameter lists in declaration of `%D'", decl);
+	  return decl;
+	} 
+    }
+  else if (processing_explicit_instantiation)
+    {
+      if (template_header_count)
+	cp_error ("template parameter list used in explicit instantiation");
 	  
-	  if (have_def)
-	    cp_error ("definition provided for explicit instantiation");
+      if (have_def)
+	cp_error ("definition provided for explicit instantiation");
 
-	  explicit_instantiation = 1;
-	}
-      else if (ctype != NULL_TREE
-	       && !TYPE_BEING_DEFINED (ctype)
-	       && CLASSTYPE_TEMPLATE_INSTANTIATION (ctype)
-	       && !is_friend)
-	{
-	  /* This case catches outdated code that looks like this:
+      explicit_instantiation = 1;
+    }
+  else if (ctype != NULL_TREE
+	   && !TYPE_BEING_DEFINED (ctype)
+	   && CLASSTYPE_TEMPLATE_INSTANTIATION (ctype)
+	   && !is_friend)
+    {
+      /* This case catches outdated code that looks like this:
 
-	     template <class T> struct S { void f(); };
-	     void S<int>::f() {} // Missing template <>
+	 template <class T> struct S { void f(); };
+	 void S<int>::f() {} // Missing template <>
 
-	     We disable this check when the type is being defined to
-	     avoid complaining about default compiler-generated
-	     constructors, destructors, and assignment operators.
-	     Since the type is an instantiation, not a specialization,
-	     these are the only functions that can be defined before
-	     the class is complete.  */
+	 We disable this check when the type is being defined to
+	 avoid complaining about default compiler-generated
+	 constructors, destructors, and assignment operators.
+	 Since the type is an instantiation, not a specialization,
+	 these are the only functions that can be defined before
+	 the class is complete.  */
 
 	  /* If they said
 	       template <class T> void S<int>::f() {}
 	     that's bogus.  */
-	  if (template_header_count)
-	    {
-	      cp_error ("template parameters specified in specialization");
-	      return decl;
-	    }
-
-	  if (pedantic)
-	    cp_pedwarn
-	      ("explicit specialization not preceded by `template <>'");
-	  specialization = 1;
-	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
-	}
-      else if (TREE_CODE (declarator) == TEMPLATE_ID_EXPR)
+      if (template_header_count)
 	{
-	  if (is_friend)
-	    /* This could be something like:
+	  cp_error ("template parameters specified in specialization");
+	  return decl;
+	}
 
-	         template <class T> void f(T);
-		 class S { friend void f<>(int); }  */
-	    specialization = 1;
-	  else
-	    {
-	      /* This case handles bogus declarations like template <>
-		 template <class T> void f<int>(); */
+      if (pedantic)
+	cp_pedwarn
+	  ("explicit specialization not preceded by `template <>'");
+      specialization = 1;
+      SET_DECL_TEMPLATE_SPECIALIZATION (decl);
+    }
+  else if (TREE_CODE (declarator) == TEMPLATE_ID_EXPR)
+    {
+      if (is_friend)
+	/* This could be something like:
 
-	      cp_error ("template-id `%D' in declaration of primary template",
-			declarator);
-	      return decl;
-	    }
+	   template <class T> void f(T);
+	   class S { friend void f<>(int); }  */
+	specialization = 1;
+      else
+	{
+	  /* This case handles bogus declarations like template <>
+	     template <class T> void f<int>(); */
+
+	  cp_error ("template-id `%D' in declaration of primary template",
+		    declarator);
+	  return decl;
 	}
     }
 
