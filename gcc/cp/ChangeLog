@@ -1,3 +1,15 @@
+2001-01-02  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (strip_all_pointer_quals): Also strip quals from 
+	pointer-to-member types.
+
+	* Make-lang.in (cp/TAGS): Use --no-globals.  Ignore parse.c, and treat
+	parse.y as C.
+
+	* call.c (build_new_method_call): Do evaluate the object parameter
+	when accessing a static member.
+	* typeck.c (build_component_ref): Likewise.
+
 2001-01-02  Andreas Jaeger  <aj@suse.de>
 
 	* decl.c (cp_missing_noreturn_ok_p): New.
@@ -31,6 +43,9 @@
 	most.  Handle secondary vtables.
 
 2000-12-22  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (more_specialized): Don't optimize len==0.
+	(fn_type_unification): If we're adding the return type, increase len.
 
 	* typeck.c (build_binary_op): Fix pmf comparison logic.
 

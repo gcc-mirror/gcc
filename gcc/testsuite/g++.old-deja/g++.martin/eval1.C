@@ -1,5 +1,4 @@
 // Postfix expression must be evaluated even if accessing a static member.
-// execution test - XFAIL *-*-*
 
 struct S
 {

@@ -4278,6 +4278,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
   tree pretty_name;
   tree user_args;
   tree templates = NULL_TREE;
+  tree call;
   int template_only = 0;
 
   if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
@@ -4492,10 +4493,18 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 	  || resolves_to_fixed_type_p (instance, 0)))
     flags |= LOOKUP_NONVIRTUAL;
 
-  return build_over_call
-    (cand,
-     TREE_CODE (TREE_TYPE (cand->fn)) == METHOD_TYPE ? mem_args : args,
-     flags);
+  if (TREE_CODE (TREE_TYPE (cand->fn)) == METHOD_TYPE)
+    call = build_over_call (cand, mem_args, flags);
+  else
+    {
+      call = build_over_call (cand, args, flags);
+      /* Do evaluate the object parameter in a call to a static member
+	 function.  */
+      if (TREE_SIDE_EFFECTS (instance))
+	call = build (COMPOUND_EXPR, TREE_TYPE (call), instance, call);
+    }
+
+  return call;
 }
 
 /* Returns non-zero iff standard conversion sequence ICS1 is a proper
