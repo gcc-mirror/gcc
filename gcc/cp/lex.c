@@ -506,28 +506,6 @@ interface_strcmp (const char* s)
   return 1;
 }
 
-void
-note_got_semicolon (tree type)
-{
-  if (!TYPE_P (type))
-    abort ();
-  if (CLASS_TYPE_P (type))
-    CLASSTYPE_GOT_SEMICOLON (type) = 1;
-}
-
-void
-note_list_got_semicolon (tree declspecs)
-{
-  tree link;
-
-  for (link = declspecs; link; link = TREE_CHAIN (link))
-    {
-      tree type = TREE_VALUE (link);
-      if (type && TYPE_P (type))
-	note_got_semicolon (type);
-    }
-  clear_anon_tags ();
-}
 
 
 /* Parse a #pragma whose sole argument is a string constant.

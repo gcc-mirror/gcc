@@ -11,7 +11,7 @@ struct A {
   int A::fn();        // { dg-warning "" } extra qualification
   int A::m;           // { dg-warning "" } extra qualification
   struct e;
-  struct A::e {int i;};
+  struct A::e {int i;}; // { dg-warning "" } extra qualification
   struct A::expand {  // { dg-warning "" } extra qualification
   int m;
   };

@@ -1,3 +1,18 @@
+2003-08-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/parse/ret-type2.C: New test.
+
+	PR c++/11703
+	* g++.dg/init/new8.C: New test.
+
+	PR c++/10923
+	* g++.dg/parse/typedef5.C: New test.
+
+	PR c++/9512
+	* g++.dg/parse/qualified2.C: New test.
+	* g++.old-deja/g++.other/decl5.C: Mark one more instance of
+	invalid code.
+
 2003-08-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/conversion/ptrmem1.C: New test.

@@ -2133,41 +2133,6 @@ finish_member_declaration (tree decl)
     }
 }
 
-/* Finish a class definition T with the indicate ATTRIBUTES.  If SEMI,
-   the definition is immediately followed by a semicolon.  Returns the
-   type.  */
-
-tree
-finish_class_definition (tree t, tree attributes, int semi, int pop_scope_p)
-{
-  if (t == error_mark_node)
-    return error_mark_node;
-
-  /* finish_struct nukes this anyway; if finish_exception does too,
-     then it can go.  */
-  if (semi)
-    note_got_semicolon (t);
-
-  /* If we got any attributes in class_head, xref_tag will stick them in
-     TREE_TYPE of the type.  Grab them now.  */
-  attributes = chainon (TYPE_ATTRIBUTES (t), attributes);
-  TYPE_ATTRIBUTES (t) = NULL_TREE;
-
-  if (TREE_CODE (t) == ENUMERAL_TYPE)
-    ;
-  else
-    {
-      t = finish_struct (t, attributes);
-      if (semi) 
-	note_got_semicolon (t);
-    }
-
-  if (pop_scope_p)
-    pop_scope (CP_DECL_CONTEXT (TYPE_MAIN_DECL (t)));
-
-  return t;
-}
-
 /* Finish processing the declaration of a member class template
    TYPES whose template parameters are given by PARMS.  */
 
@@ -2183,7 +2148,6 @@ finish_member_class_template (tree types)
     if (IS_AGGR_TYPE_CODE (TREE_CODE (TREE_VALUE (t))))
       maybe_process_partial_specialization (TREE_VALUE (t));
 
-  note_list_got_semicolon (types);
   grok_x_components (types);
   if (TYPE_CONTEXT (TREE_VALUE (types)) != current_class_type)
     /* The component was in fact a friend declaration.  We avoid

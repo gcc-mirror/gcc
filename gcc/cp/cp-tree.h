@@ -1071,12 +1071,12 @@ struct lang_type_class GTY(())
   unsigned has_array_new : 1;
 
   unsigned gets_delete : 2;
-  unsigned has_call_overloaded : 1;
-  unsigned has_array_ref_overloaded : 1;
-  unsigned has_arrow_overloaded : 1;
   unsigned interface_only : 1;
   unsigned interface_unknown : 1;
   unsigned contains_empty_class_p : 1;
+  unsigned anon_aggr : 1;
+  unsigned non_zero_init : 1;
+  unsigned empty_p : 1;
 
   unsigned marks: 6;
   unsigned vec_new_uses_cookie : 1;
@@ -1086,7 +1086,7 @@ struct lang_type_class GTY(())
   unsigned redefined : 1;
   unsigned debug_requested : 1;
   unsigned use_template : 2;
-  unsigned got_semicolon : 1;
+  unsigned fields_readonly : 1;
   unsigned ptrmemfunc_flag : 1;
   unsigned was_anonymous : 1;
 
@@ -1097,11 +1097,6 @@ struct lang_type_class GTY(())
   unsigned has_abstract_assign_ref : 1;
   unsigned non_aggregate : 1;
   unsigned java_interface : 1;
-  unsigned anon_aggr : 1;
-
-  unsigned non_zero_init : 1;
-  unsigned empty_p : 1;
-  unsigned fields_readonly : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -1110,7 +1105,7 @@ struct lang_type_class GTY(())
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 5;
+  unsigned dummy : 9;
 
   tree primary_base;
   tree vfields;
@@ -1220,18 +1215,6 @@ struct lang_type GTY(())
 /* Nonzero means that this type has been redefined.  In this case, if
    convenient, don't reprocess any methods that appear in its redefinition.  */
 #define TYPE_REDEFINED(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->redefined)
-
-/* Nonzero means that this _CLASSTYPE node overloads operator().  */
-#define TYPE_OVERLOADS_CALL_EXPR(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->has_call_overloaded)
-
-/* Nonzero means that this _CLASSTYPE node overloads operator[].  */
-#define TYPE_OVERLOADS_ARRAY_REF(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->has_array_ref_overloaded)
-
-/* Nonzero means that this _CLASSTYPE node overloads operator->.  */
-#define TYPE_OVERLOADS_ARROW(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->has_arrow_overloaded)
 
 /* Nonzero means that this _CLASSTYPE (or one of its ancestors) uses
    multiple inheritance.  If this is 0 for the root of a type
@@ -1381,9 +1364,6 @@ struct lang_type GTY(())
    derived classes.  When deriving from this type, the derived
    class must provide its own definition for each of these functions.  */
 #define CLASSTYPE_PURE_VIRTUALS(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->pure_virtuals)
-
-/* Nonzero means that this aggr type has been `closed' by a semicolon.  */
-#define CLASSTYPE_GOT_SEMICOLON(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->got_semicolon)
 
 /* Nonzero means that this type has an X() constructor.  */
 #define TYPE_HAS_DEFAULT_CONSTRUCTOR(NODE) \
@@ -3763,6 +3743,7 @@ extern tree declare_global_var                  (tree, tree);
 extern void register_dtor_fn                    (tree);
 extern tmpl_spec_kind current_tmpl_spec_kind    (int);
 extern tree cp_fname_init			(const char *);
+extern tree check_elaborated_type_specifier     (enum tag_types, tree, bool);
 extern bool have_extern_spec;
 
 /* in decl2.c */
@@ -3808,7 +3789,6 @@ extern tree do_class_using_decl (tree);
 extern void do_using_directive (tree);
 extern void check_default_args (tree);
 extern void mark_used (tree);
-extern tree handle_class_head (enum tag_types, tree, tree, tree);
 extern tree lookup_arg_dependent (tree, tree, tree);
 extern void finish_static_data_member_decl (tree, tree, tree, int);
 extern tree cp_build_parm_decl (tree, tree);
@@ -3896,8 +3876,6 @@ extern void do_pending_inlines			(void);
 extern void yyungetc				(int, int);
 extern void snarf_method			(tree);
 
-extern void note_got_semicolon			(tree);
-extern void note_list_got_semicolon		(tree);
 extern void see_typename			(void);
 extern tree unqualified_name_lookup_error       (tree);
 extern tree unqualified_fn_lookup_error         (tree);
@@ -4139,7 +4117,6 @@ extern tree finish_template_type_parm           (tree, tree);
 extern tree finish_template_template_parm       (tree, tree);
 extern tree finish_parmlist                     (tree, int);
 extern tree begin_class_definition              (tree);
-extern tree finish_class_definition             (tree, tree, int, int);
 extern void finish_default_args                 (void);
 extern tree finish_member_class_template        (tree);
 extern void finish_template_decl                (tree);

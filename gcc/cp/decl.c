@@ -8066,7 +8066,6 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 	  if (TREE_TYPE (DECL_NAME (decl)) && TREE_TYPE (decl) != type)
 	    warning ("shadowing previous type declaration of `%#D'", decl);
 	  set_identifier_type_value (DECL_NAME (decl), type);
-	  CLASSTYPE_GOT_SEMICOLON (type) = 1;
 	}
 
       /* If we have installed this as the canonical typedef for this
@@ -9244,9 +9243,6 @@ build_ptrmemfunc_type (tree type)
   /* Cache this pointer-to-member type so that we can find it again
      later.  */
   TYPE_SET_PTRMEMFUNC_TYPE (type, t);
-
-  /* Seems to be wanted.  */
-  CLASSTYPE_GOT_SEMICOLON (t) = 1;
 
   return t;
 }
@@ -12241,19 +12237,6 @@ grok_op_properties (tree decl, int friendp)
     {
       switch (operator_code)
 	{
-	case CALL_EXPR:
-	  TYPE_OVERLOADS_CALL_EXPR (current_class_type) = 1;
-	  break;
-
-	case ARRAY_REF:
-	  TYPE_OVERLOADS_ARRAY_REF (current_class_type) = 1;
-	  break;
-
-	case COMPONENT_REF:
-	case MEMBER_REF:
-	  TYPE_OVERLOADS_ARROW (current_class_type) = 1;
-	  break;
-
 	case NEW_EXPR:
 	  TYPE_HAS_NEW_OPERATOR (current_class_type) = 1;
 	  break;
@@ -12541,7 +12524,7 @@ tag_name (enum tag_types code)
    error_mark_node; otherwise, return TYPE itself.  
    If ALLOW_TEMPLATE_P is true, TYPE may be a class template.  */
 
-static tree
+tree
 check_elaborated_type_specifier (enum tag_types tag_code,
 				 tree type,
 				 bool allow_template_p)
@@ -12553,8 +12536,8 @@ check_elaborated_type_specifier (enum tag_types tag_code,
      ill-formed.  */
   if (!t)
     {
-      error ("using typedef-name `%D' after `%s'",
-	     TYPE_NAME (type), tag_name (tag_code));
+      error ("using typedef-name `%T' after `%s'",
+	     type, tag_name (tag_code));
       t = error_mark_node;
     }
   else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
@@ -13412,20 +13395,6 @@ start_function (tree declspecs, tree declarator, tree attrs, int flags)
       fntype = TREE_TYPE (decl1);
 
       restype = TREE_TYPE (fntype);
-      if (CLASS_TYPE_P (restype) && !CLASSTYPE_GOT_SEMICOLON (restype))
-	{
-	  error ("semicolon missing after declaration of `%#T'", restype);
-	  shadow_tag (build_tree_list (NULL_TREE, restype));
-	  CLASSTYPE_GOT_SEMICOLON (restype) = 1;
-	  if (TREE_CODE (fntype) == FUNCTION_TYPE)
-	    fntype = build_function_type (integer_type_node,
-					  TYPE_ARG_TYPES (fntype));
-	  else
-	    fntype = build_cplus_method_type (build_type_variant (TYPE_METHOD_BASETYPE (fntype), TREE_READONLY (decl1), TREE_SIDE_EFFECTS (decl1)),
-					      integer_type_node,
-					      TYPE_ARG_TYPES (fntype));
-	  TREE_TYPE (decl1) = fntype;
-	}
 
       if (TREE_CODE (fntype) == METHOD_TYPE)
 	ctype = TYPE_METHOD_BASETYPE (fntype);

@@ -4330,7 +4330,8 @@ type_passed_as (tree type)
     type = build_reference_type (type);
   else if (PROMOTE_PROTOTYPES
 	   && INTEGRAL_TYPE_P (type)
-	   && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
+	   && INT_CST_LT_UNSIGNED (TYPE_SIZE (type),
+				   TYPE_SIZE (integer_type_node)))
     type = integer_type_node;
 
   return type;
@@ -4348,7 +4349,8 @@ convert_for_arg_passing (tree type, tree val)
     val = build1 (ADDR_EXPR, build_reference_type (type), val);
   else if (PROMOTE_PROTOTYPES
 	   && INTEGRAL_TYPE_P (type)
-	   && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
+	   && INT_CST_LT_UNSIGNED (TYPE_SIZE (type),
+				   TYPE_SIZE (integer_type_node)))
     val = perform_integral_promotions (val);
   return val;
 }
