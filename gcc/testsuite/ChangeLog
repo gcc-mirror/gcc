@@ -1,3 +1,7 @@
+2003-03-08  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/old-style-asm-1.c: Tweak to match mmix-knuth-mmixware.
+
 2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcc.dg/cpp/Wunused.c: Update test.
