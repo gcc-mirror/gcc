@@ -43,24 +43,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    simply remove all but the simplest and most useful code (which is
    still in proj.c).
 
-   So, if you find your system can't link because bsearch() or strtoul()
-   aren't found, please just fix your system, or hand-edit the code
-   below as appropriate.  I DO NOT WANT ANY "BUG REPORTS" ABOUT THIS.
-   g77 requires a working ANSI C environment, and if bsearch() and strtoul()
-   do not exist, or if <assert.h> isn't found, etc., then you don't have
-   one, and it is not g77's fault.  If it turns out g77 is simply
-   referring to the wrong system header file -- something I can verify
-   myself using my copy of the ANSI C standard -- I would like to know
-   about that.  Otherwise, g77 is not the place to fix problems with your
-   ANSI C implementation, though perhaps gcc might be.
-   --  burley@gnu.ai.mit.edu 1995-03-24  */
-
-#ifndef FFEPROJ_BSEARCH
-#define FFEPROJ_BSEARCH 1	/* 0=>use slow code in proj.c. */
-#endif
-#ifndef FFEPROJ_STRTOUL
-#define FFEPROJ_STRTOUL 1	/* 0=>use untested code in proj.c. */
-#endif
+   XXX Not entirely true anymore.  We do want to cater to broken systems
+   again by using autoconf to handle the braindamage for us.  */
 
 /* Include files everyone gets. */
 
