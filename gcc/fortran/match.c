@@ -2894,13 +2894,15 @@ top_val_list (gfc_data * data)
 	}
       else
 	{
-	  msg = gfc_extract_int (expr, &tail->repeat);
+	  signed int tmp;
+	  msg = gfc_extract_int (expr, &tmp);
 	  gfc_free_expr (expr);
 	  if (msg != NULL)
 	    {
 	      gfc_error (msg);
 	      return MATCH_ERROR;
 	    }
+	  tail->repeat = tmp;
 
 	  m = match_data_constant (&tail->expr);
 	  if (m == MATCH_NO)

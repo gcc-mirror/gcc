@@ -1,3 +1,16 @@
+2004-08-22  Richard Henderson  <rth@redhat.com>
+
+	PR 13465
+        * data.c (find_con_by_offset): Search ordered list; handle
+        elements with repeat counts.
+        (gfc_assign_data_value_range): New.
+        * gfortran.h (struct gfc_data_value): Make repeat unsigned.
+        (gfc_assign_data_value_range): Declare.
+        * match.c (top_val_list): Extract repeat count into a temporary.
+        * resolve.c (values): Make left unsigned.
+        (next_data_value): Don't decrement left.
+        (check_data_variable): Use gfc_assign_data_value_range.
+
 2004-08-22  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-const.c, trans-decl.c, trans-expr.c: Spelling fixes.
