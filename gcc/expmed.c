@@ -2137,18 +2137,21 @@ synth_mult (alg_out, t, cost_limit)
   if ((t & 1) == 0)
     {
       m = floor_log2 (t & -t);	/* m = number of low zero bits */
-      q = t >> m;
-      cost = shift_cost[m];
-      synth_mult (alg_in, q, cost_limit - cost);
-
-      cost += alg_in->cost;
-      if (cost < cost_limit)
+      if (m < BITS_PER_WORD)
 	{
-	  struct algorithm *x;
-	  x = alg_in, alg_in = best_alg, best_alg = x;
-	  best_alg->log[best_alg->ops] = m;
-	  best_alg->op[best_alg->ops] = alg_shift;
-	  cost_limit = cost;
+	  q = t >> m;
+	  cost = shift_cost[m];
+	  synth_mult (alg_in, q, cost_limit - cost);
+
+	  cost += alg_in->cost;
+	  if (cost < cost_limit)
+	    {
+	      struct algorithm *x;
+	      x = alg_in, alg_in = best_alg, best_alg = x;
+	      best_alg->log[best_alg->ops] = m;
+	      best_alg->op[best_alg->ops] = alg_shift;
+	      cost_limit = cost;
+	    }
 	}
     }
 
@@ -2219,7 +2222,7 @@ synth_mult (alg_out, t, cost_limit)
       unsigned HOST_WIDE_INT d;
 
       d = ((unsigned HOST_WIDE_INT) 1 << m) + 1;
-      if (t % d == 0 && t > d)
+      if (t % d == 0 && t > d && m < BITS_PER_WORD)
 	{
 	  cost = MIN (shiftadd_cost[m], add_cost + shift_cost[m]);
 	  synth_mult (alg_in, t / d, cost_limit - cost);
@@ -2238,7 +2241,7 @@ synth_mult (alg_out, t, cost_limit)
 	}
 
       d = ((unsigned HOST_WIDE_INT) 1 << m) - 1;
-      if (t % d == 0 && t > d)
+      if (t % d == 0 && t > d && m < BITS_PER_WORD)
 	{
 	  cost = MIN (shiftsub_cost[m], add_cost + shift_cost[m]);
 	  synth_mult (alg_in, t / d, cost_limit - cost);
@@ -2263,7 +2266,7 @@ synth_mult (alg_out, t, cost_limit)
       q = t - 1;
       q = q & -q;
       m = exact_log2 (q);
-      if (m >= 0)
+      if (m >= 0 && m < BITS_PER_WORD)
 	{
 	  cost = shiftadd_cost[m];
 	  synth_mult (alg_in, (t - 1) >> m, cost_limit - cost);
@@ -2282,7 +2285,7 @@ synth_mult (alg_out, t, cost_limit)
       q = t + 1;
       q = q & -q;
       m = exact_log2 (q);
-      if (m >= 0)
+      if (m >= 0 && m < BITS_PER_WORD)
 	{
 	  cost = shiftsub_cost[m];
 	  synth_mult (alg_in, (t + 1) >> m, cost_limit - cost);
@@ -2815,7 +2818,9 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp, max_cost)
 
   /* Secondly, same as above, but use sign flavor opposite of unsignedp.
      Need to adjust the result after the multiplication.  */
-  if (mul_highpart_cost[(int) mode] + 2 * shift_cost[size-1] + 4 * add_cost < max_cost)
+  if (size - 1 < BITS_PER_WORD
+      && (mul_highpart_cost[(int) mode] + 2 * shift_cost[size-1] + 4 * add_cost
+	  < max_cost))
     {
       mul_highpart_optab = unsignedp ? smul_highpart_optab : umul_highpart_optab;
       target = expand_binop (mode, mul_highpart_optab,
@@ -2838,6 +2843,7 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp, max_cost)
   /* Try widening the mode and perform a non-widening multiplication.  */
   moptab = smul_optab;
   if (smul_optab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing
+      && size - 1 < BITS_PER_WORD
       && mul_cost[(int) wider_mode] + shift_cost[size-1] < max_cost)
     {
       op1 = wide_op1;
@@ -2847,6 +2853,7 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp, max_cost)
   /* Try widening multiplication of opposite signedness, and adjust.  */
   moptab = unsignedp ? smul_widen_optab : umul_widen_optab;
   if (moptab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing
+      && size - 1 < BITS_PER_WORD
       && (mul_widen_cost[(int) wider_mode]
 	  + 2 * shift_cost[size-1] + 4 * add_cost < max_cost))
     {
@@ -3183,6 +3190,9 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 			  {
 			    rtx t1, t2, t3, t4;
 
+			    if (post_shift - 1 >= BITS_PER_WORD)
+			      goto fail1;
+
 			    extra_cost = (shift_cost[post_shift - 1]
 					  + shift_cost[1] + 2 * add_cost);
 			    t1 = expand_mult_highpart (compute_mode, op0, ml,
@@ -3206,6 +3216,10 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 			else
 			  {
 			    rtx t1, t2;
+
+			    if (pre_shift >= BITS_PER_WORD
+				|| post_shift >= BITS_PER_WORD)
+			      goto fail1;
 
 			    t1 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
 					       build_int_2 (pre_shift, 0),
@@ -3327,6 +3341,10 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		      {
 			rtx t1, t2, t3;
 
+			if (post_shift >= BITS_PER_WORD
+			    || size - 1 >= BITS_PER_WORD)
+			  goto fail1;
+
 			extra_cost = (shift_cost[post_shift]
 				      + shift_cost[size - 1] + add_cost);
 			t1 = expand_mult_highpart (compute_mode, op0, ml,
@@ -3352,6 +3370,10 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		    else
 		      {
 			rtx t1, t2, t3, t4;
+
+			if (post_shift >= BITS_PER_WORD
+			    || size - 1 >= BITS_PER_WORD)
+			  goto fail1;
 
 			ml |= (~(unsigned HOST_WIDE_INT) 0) << (size - 1);
 			extra_cost = (shift_cost[post_shift]
@@ -3436,23 +3458,28 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		    if (mh)
 		      abort ();
 
-		    t1 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
-				       build_int_2 (size - 1, 0), NULL_RTX, 0);
-		    t2 = expand_binop (compute_mode, xor_optab, op0, t1,
-				       NULL_RTX, 0, OPTAB_WIDEN);
-		    extra_cost = (shift_cost[post_shift]
-				  + shift_cost[size - 1] + 2 * add_cost);
-		    t3 = expand_mult_highpart (compute_mode, t2, ml,
-					       NULL_RTX, 1,
-					       max_cost - extra_cost);
-		    if (t3 != 0)
+		    if (post_shift < BITS_PER_WORD
+			&& size - 1 < BITS_PER_WORD)
 		      {
-			t4 = expand_shift (RSHIFT_EXPR, compute_mode, t3,
-					   build_int_2 (post_shift, 0),
-					   NULL_RTX, 1);
-			quotient = expand_binop (compute_mode, xor_optab,
-						 t4, t1, tquotient, 0,
-						 OPTAB_WIDEN);
+			t1 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
+					   build_int_2 (size - 1, 0),
+					   NULL_RTX, 0);
+			t2 = expand_binop (compute_mode, xor_optab, op0, t1,
+					   NULL_RTX, 0, OPTAB_WIDEN);
+			extra_cost = (shift_cost[post_shift]
+				      + shift_cost[size - 1] + 2 * add_cost);
+			t3 = expand_mult_highpart (compute_mode, t2, ml,
+						   NULL_RTX, 1,
+						   max_cost - extra_cost);
+			if (t3 != 0)
+			  {
+			    t4 = expand_shift (RSHIFT_EXPR, compute_mode, t3,
+					       build_int_2 (post_shift, 0),
+					       NULL_RTX, 1);
+			    quotient = expand_binop (compute_mode, xor_optab,
+						     t4, t1, tquotient, 0,
+						     OPTAB_WIDEN);
+			  }
 		      }
 		  }
 	      }
