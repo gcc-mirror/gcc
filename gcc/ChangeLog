@@ -1,3 +1,7 @@
+2000-06-28  Richard Henderson  <rth@cygnus.com>
+
+	* config/alpha/alpha.c (summarize_insn): Ignore SCRATCH.
+
 2000-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* cpplex.c (output_line_command): Output correct #line if a header
