@@ -2298,6 +2298,10 @@ extern enum mdep_reorg_phase_e mdep_reorg_phase;
 
 extern int pragma_interrupt;
 
+/* Set when processing a function with interrupt attribute.  */
+
+extern int current_function_interrupt;
+
 /* Set to an RTX containing the address of the stack to switch to
    for interrupt functions.  */
 extern struct rtx_def *sp_switch;

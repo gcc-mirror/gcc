@@ -547,7 +547,7 @@
 	      (const_string "yes")))
 
 (define_attr "interrupt_function" "no,yes"
-  (const (symbol_ref "pragma_interrupt")))
+  (const (symbol_ref "current_function_interrupt")))
 
 (define_attr "in_delay_slot" "yes,no"
   (cond [(eq_attr "type" "cbranch") (const_string "no")
@@ -577,7 +577,9 @@
 	(ior (and (eq_attr "interrupt_function" "no")
 		  (eq_attr "type" "!pload,prset"))
 	     (and (eq_attr "interrupt_function" "yes")
-		  (eq_attr "hit_stack" "no")))) (nil) (nil)])
+		  (ior
+		   (ne (symbol_ref "TARGET_SH3") (const_int 0))
+		   (eq_attr "hit_stack" "no"))))) (nil) (nil)])
 
 ;; Since a call implicitly uses the PR register, we can't allow
 ;; a PR register store in a jsr delay slot.
