@@ -1,5 +1,10 @@
 2002-05-01	Joel Sherrill <joel@OARcorp.com>
 
+	* config/sparc/t-elf (sparc-rtems, sparc-elf): Build assembly
+	support routines.
+
+2002-05-01	Joel Sherrill <joel@OARcorp.com>
+
 	* config/arm/rtems-elf.h: Add #undef TARGET_VERSION to prevent warning.
 
 2002-05-01  David Edelsohn  <edelsohn@gnu.org>
