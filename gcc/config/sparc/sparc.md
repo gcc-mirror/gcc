@@ -1545,7 +1545,9 @@
 
 (define_insn "move_pic_label_si"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(label_ref:SI (match_operand 1 "" "")))
+	; This was previously (label_ref:SI (match_operand 1 "" "")) but that
+	; loses the volatil and other flags of the original label_ref.
+	(match_operand:SI 1 "label_ref_operand" ""))
    (set (reg:SI 15) (pc))]
   "flag_pic"
   "*
