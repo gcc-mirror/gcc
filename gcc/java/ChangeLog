@@ -1,3 +1,8 @@
+2002-11-25  Diego Novillo  <dnovillo@redhat.com>
+
+	* jcf-reader.c: Don't expand JCF_readu4 inside the
+	expansion of JCF_SKIP.
+
 2002-11-22  Tom Tromey  <tromey@redhat.com>
 
 	* parse.y (patch_binop): Cast right hand side of shift expression

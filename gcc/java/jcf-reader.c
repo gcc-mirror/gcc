@@ -96,9 +96,11 @@ skip_attribute (jcf, number_of_attribute)
 {
   while (number_of_attribute--)
     {
+      JCF_u4 N;
       JCF_FILL (jcf, 6);
       (void) JCF_readu2 (jcf);
-      JCF_SKIP (jcf, JCF_readu4 (jcf));
+      N = JCF_readu4 (jcf);
+      JCF_SKIP (jcf, N);
     }
 }
 #endif
