@@ -28,6 +28,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT 5
+
+/* Don't try using XFmode.  */
+#undef LONG_DOUBLE_TYPE_SIZE
+#define LONG_DOUBLE_TYPE_SIZE 64
 #endif
 
 /* Define __HAVE_68881__ in preprocessor,
@@ -94,10 +98,23 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
      } while (0)
 
 #undef ASM_OUTPUT_FLOAT_OPERAND
-#define ASM_OUTPUT_FLOAT_OPERAND(CODE,FILE,VALUE)	\
-  do { char dstr[30];					\
-       REAL_VALUE_TO_DECIMAL (VALUE, "%.9g", dstr);	\
-       fprintf (FILE, "#0r%s", dstr);			\
+#define ASM_OUTPUT_FLOAT_OPERAND(CODE,FILE,VALUE)		\
+ do {								\
+      if (CODE == 'f')						\
+        {							\
+          char dstr[30];					\
+          REAL_VALUE_TO_DECIMAL (VALUE, "%.9g", dstr);		\
+	  fprintf (FILE, "#0r%s", dstr);			\
+        }							\
+      else							\
+        {							\
+          long l;						\
+          REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
+          if (sizeof (int) == sizeof (long))			\
+            asm_fprintf ((FILE), "%I0x%x", l);			\
+          else							\
+            asm_fprintf ((FILE), "%I0x%lx", l);			\
+        }							\
      } while (0)
 
 #undef ASM_OUTPUT_DOUBLE_OPERAND
