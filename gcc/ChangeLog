@@ -1,3 +1,9 @@
+2005-01-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-tree.h, coverage.h, langhooks-def.h, optabs.h, output.h,
+	rtl.h, targhooks.h, tree-flow.h, tree-mudflap.h, tree.h:
+	Remove unused prototypes.
+
 2005-01-14  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_stack_info): Fix caching of SPE

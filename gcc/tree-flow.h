@@ -572,7 +572,6 @@ DEF_VEC_MALLOC_P (tree_on_heap);
 
 /* In tree-ssa.c  */
 extern void init_tree_ssa (void);
-extern void debug_reaching_defs (void);
 extern void dump_tree_ssa (FILE *);
 extern void debug_tree_ssa (void);
 extern void debug_def_blocks (void);

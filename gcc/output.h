@@ -144,10 +144,6 @@ extern void leaf_renumber_regs_insn (rtx);
 /* Locate the proper template for the given insn-code.  */
 extern const char *get_insn_template (int, rtx);
 
-/* Add function NAME to the weak symbols list.  VALUE is a weak alias
-   associated with NAME.  */
-extern int add_weak (tree, const char *, const char *);
-
 /* Functions in flow.c */
 extern int regno_clobbered_at_setjmp (int);
 

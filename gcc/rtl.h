@@ -2060,7 +2060,6 @@ extern void init_reg_modes_once (void);
 extern void init_regs (void);
 extern void init_fake_stack_mems (void);
 extern void init_reg_sets (void);
-extern void regset_release_memory (void);
 extern void regclass_init (void);
 extern void regclass (rtx, int, FILE *);
 extern void reg_scan (rtx, unsigned int, int);
@@ -2108,15 +2107,11 @@ extern void emit_library_call (rtx, enum libcall_type, enum machine_mode, int,
 extern rtx emit_library_call_value (rtx, rtx, enum libcall_type,
 				    enum machine_mode, int, ...);
 
-/* In unroll.c */
-extern int set_dominates_use (int, int, int, rtx, rtx);
-
 /* In varasm.c */
 extern int in_data_section (void);
 extern void init_varasm_once (void);
 
 /* In rtl.c */
-extern void init_rtl (void);
 extern void traverse_md_constants (int (*) (void **, void *), void *);
 struct md_constant { char *name, *value; };
 

@@ -67,8 +67,6 @@ extern void lhd_register_builtin_type (tree, const char *);
 extern bool lhd_decl_ok_for_sibcall (tree);
 extern const char *lhd_comdat_group (tree);
 extern tree lhd_expr_size (tree);
-extern bool lhd_decl_uninit (tree);
-extern tree lhd_get_callee_fndecl (tree);
 extern size_t lhd_tree_size (enum tree_code);
 
 /* Declarations of default tree inlining hooks.  */

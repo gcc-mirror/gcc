@@ -2991,7 +2991,6 @@ enum attribute_flags
 
 extern tree merge_decl_attributes (tree, tree);
 extern tree merge_type_attributes (tree, tree);
-extern void default_register_cpp_builtins (struct cpp_reader *);
 
 /* Given a tree node and a string, return nonzero if the tree node is
    a valid attribute name for the string.  */
@@ -3439,7 +3438,6 @@ extern void change_decl_assembler_name (tree, tree);
 extern int type_num_arguments (tree);
 extern bool associative_tree_code (enum tree_code);
 extern bool commutative_tree_code (enum tree_code);
-extern tree get_case_label (tree);
 extern tree upper_bound_in_type (tree, tree);
 extern tree lower_bound_in_type (tree, tree);
 extern int operand_equal_for_phi_arg_p (tree, tree);
@@ -3631,9 +3629,6 @@ extern bool debug_find_tree (tree, tree);
 /* This is in tree-inline.c since the routine uses
    data structures from the inliner.  */
 extern tree unsave_expr_now (tree);
-
-/* In expr.c */
-extern void check_max_integer_computation_mode (tree);
 
 /* In emit-rtl.c */
 extern rtx emit_line_note (location_t);
