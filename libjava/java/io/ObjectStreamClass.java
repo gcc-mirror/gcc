@@ -36,13 +36,14 @@ import java.lang.reflect.Modifier;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.Security;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Vector;
 import gnu.java.io.NullOutputStream;
 import gnu.java.lang.reflect.TypeSignature;
-import gnu.gcj.io.SimpleSHSStream;
+import gnu.java.security.provider.Gnu;
 
 
 public class ObjectStreamClass implements Serializable
@@ -420,20 +421,21 @@ public class ObjectStreamClass implements Serializable
       MessageDigest md = null;
       DigestOutputStream digest_out = null;
       DataOutputStream data_out = null;
-      SimpleSHSStream simple = null;
 
       try 
 	{
 	  md = MessageDigest.getInstance ("SHA");
-	  digest_out = new DigestOutputStream (nullOutputStream, md);
-	  data_out = new DataOutputStream (digest_out);	  
 	}
       catch (NoSuchAlgorithmException e)
 	{
-	  simple = new SimpleSHSStream (nullOutputStream);
-	  data_out = new DataOutputStream (simple);
+	  // If a provider already provides SHA, use it; otherwise, use this.
+	  Gnu gnuProvider = new Gnu();
+	  Security.addProvider(gnuProvider);
+	  md = MessageDigest.getInstance ("SHA");
 	}
 
+      digest_out = new DigestOutputStream (nullOutputStream, md);
+      data_out = new DataOutputStream (digest_out);
       data_out.writeUTF (cl.getName ());
 
       int modifiers = cl.getModifiers ();
@@ -522,7 +524,7 @@ public class ObjectStreamClass implements Serializable
       }
 
       data_out.close ();
-      byte[] sha = md != null ? md.digest () : simple.digest ();
+      byte[] sha = md.digest ();
       long result = 0;
       int len = sha.length < 8 ? sha.length : 8;
       for (int i=0; i < len; i++)
