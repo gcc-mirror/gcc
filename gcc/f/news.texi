@@ -239,7 +239,7 @@ of @code{libU77} intrinsics.
 @item
 @code{g77} now warns about a reference to an intrinsic
 that has an interface that is not Year 2000 (Y2K) compliant.
-Also, the @code{libg2c} has been changed to increase the likelihood
+Also, @code{libg2c} has been changed to increase the likelihood
 of catching references to the implementations of these intrinsics
 using the @code{EXTERNAL} mechanism
 (which would avoid the new warnings).
@@ -274,6 +274,14 @@ Even without the @samp{-malign-double} option,
 @code{g77} reliably aligns local double-precision variables
 that are not in @code{EQUIVALENCE} areas
 and not @code{SAVE}'d.
+@end ifclear
+
+@ifclear USERVISONLY
+@item
+@code{g77} now open-codes (``inlines'') division of @code{COMPLEX} operands
+instead of generating a run-time call to
+the @code{libf2c} routines @code{c_div} or @code{z_div},
+unless the @samp{-Os} option is specified.
 @end ifclear
 
 @item
