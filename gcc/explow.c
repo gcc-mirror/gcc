@@ -1473,9 +1473,9 @@ probe_stack_range (first, size)
   if (stack_check_libfunc != 0)
     {
       rtx addr = memory_address (QImode,
-				 gen_rtx (STACK_GROW_OP, Pmode,
-					  stack_pointer_rtx,
-					  plus_constant (size, first)));
+				 gen_rtx_fmt_ee (STACK_GROW_OP, Pmode,
+					         stack_pointer_rtx,
+					         plus_constant (size, first)));
 
 #ifdef POINTERS_EXTEND_UNSIGNED
       if (GET_MODE (addr) != ptr_mode)
@@ -1492,9 +1492,9 @@ probe_stack_range (first, size)
     {
       insn_operand_predicate_fn pred;
       rtx last_addr
-	= force_operand (gen_rtx_STACK_GROW_OP (Pmode,
-						stack_pointer_rtx,
-						plus_constant (size, first)),
+	= force_operand (gen_rtx_fmt_ee (STACK_GROW_OP, Pmode,
+					 stack_pointer_rtx,
+					 plus_constant (size, first)),
 			 NULL_RTX);
 
       pred = insn_data[(int) CODE_FOR_check_stack].operand[0].predicate;
