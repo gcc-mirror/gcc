@@ -1069,6 +1069,9 @@ extern rtx simplify_unary_operation	PROTO((enum rtx_code, enum machine_mode, rtx
 extern rtx simplify_binary_operation	PROTO((enum rtx_code, enum machine_mode, rtx, rtx));
 extern rtx simplify_ternary_operation	PROTO((enum rtx_code, enum machine_mode, enum machine_mode, rtx, rtx, rtx));
 extern rtx simplify_relational_operation PROTO((enum rtx_code, enum machine_mode, rtx, rtx));
+extern rtx simplify_gen_binary		PROTO((enum rtx_code, enum machine_mode,
+					       rtx, rtx));
+extern rtx simplify_rtx			PROTO((rtx));
 extern rtx gen_move_insn		PROTO((rtx, rtx));
 extern rtx gen_jump			PROTO((rtx));
 extern rtx gen_beq			PROTO((rtx));

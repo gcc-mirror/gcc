@@ -7,6 +7,19 @@ Sun Oct 31 13:32:15 CET 1999  Marc Lehmann <pcg@goof.com>
 
 Sun Oct 31 01:53:30 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* simplify-rtx.c: New file.
+	* Makefile.in (OBJS): Add simplify-rtx.o
+	(simplify-rtx.o): Add dependencies.
+	* rtl.h (simplify_gen_binary, simplify_rtx): Add prototypes.
+	* cse.c: Use simplify_gen_binary intead of cse_gen_binary.
+	(cse_gen_binary, simplify_unary_operation): Delete.
+	(simplify_binary_operation, simplify_plus_minus): Likewise.
+	(check_fold_consts, simplify_relation_operation): Likewise.
+	(simplify_ternary_operation): Likewise.
+	(delete_trivially_dead_insns): Simplify the contents of the
+	REG_EQUAL note before trying to substitute it into the source
+	of the reg-reg copy at the end of a libcall sequence.
+
 	* combine.c (combine_simplify_rtx): Renamed from simplify_rtx.  All
 	references/callers changed.
 
