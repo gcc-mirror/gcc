@@ -409,7 +409,6 @@ for machine in $build $host $target; do
 		tmake_file="t-netbsd arm/t-netbsd"
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
-		use_collect2=yes
 		;;
 	arm-*-linux-gnuaout*)		# ARM Linux
 		cpu_type=arm
