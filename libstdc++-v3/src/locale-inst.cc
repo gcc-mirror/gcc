@@ -51,6 +51,18 @@ namespace std
   template class money_get<C, istreambuf_iterator<C> >;
   template class money_put<C, ostreambuf_iterator<C> >;
   template
+    istreambuf_iterator<C>
+    money_get<C, istreambuf_iterator<C> >::
+    _M_extract<true>(istreambuf_iterator<C>, istreambuf_iterator<C>,
+		     ios_base&, ios_base::iostate&, string_type&) const;
+
+  template
+    istreambuf_iterator<C>
+    money_get<C, istreambuf_iterator<C> >::
+    _M_extract<false>(istreambuf_iterator<C>, istreambuf_iterator<C>,
+		      ios_base&, ios_base::iostate&, string_type&) const;
+
+  template
     ostreambuf_iterator<C>
     money_put<C, ostreambuf_iterator<C> >::
     _M_insert<true>(ostreambuf_iterator<C>, ios_base&, C, 
