@@ -1,3 +1,8 @@
+2004-02-22  Matthias Klose  <doko@debian.org>
+
+	* config.guess: Update from version 2003-10-07 to 2004-02-16.
+	* config.sub: Update from version 2003-10-07 to 2004-02-16.
+
 2003-08-07  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in: Don't initialize GCINCS to boehm-gc/include.

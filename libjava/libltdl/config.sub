@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
-timestamp='2003-10-07'
+timestamp='2004-02-16'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -118,7 +118,8 @@ esac
 # Here we must recognize all the valid KERNEL-OS combinations.
 maybe_os=`echo $1 | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\2/'`
 case $maybe_os in
-  nto-qnx* | linux-gnu* | linux-dietlibc | kfreebsd*-gnu* | knetbsd*-gnu* | netbsd*-gnu* | storm-chaos* | os2-emx* | rtmk-nova*)
+  nto-qnx* | linux-gnu* | linux-dietlibc | linux-uclibc* | uclinux-uclibc* | uclinux-gnu* | \
+  kfreebsd*-gnu* | knetbsd*-gnu* | netbsd*-gnu* | storm-chaos* | os2-emx* | rtmk-nova*)
     os=-$maybe_os
     basic_machine=`echo $1 | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\1/'`
     ;;
@@ -362,6 +363,9 @@ case $basic_machine in
 		basic_machine=a29k-amd
 		os=-udi
 		;;
+    	abacus)
+		basic_machine=abacus-unknown
+		;;
 	adobe68k)
 		basic_machine=m68010-adobe
 		os=-scout
@@ -378,6 +382,9 @@ case $basic_machine in
 		;;
 	amd64)
 		basic_machine=x86_64-pc
+		;;
+	amd64-*)
+		basic_machine=x86_64-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
 	amdahl)
 		basic_machine=580-amdahl
@@ -437,6 +444,10 @@ case $basic_machine in
 	cray | j90)
 		basic_machine=j90-cray
 		os=-unicos
+		;;
+	cr16c)
+		basic_machine=cr16c-unknown
+		os=-elf
 		;;
 	crds | unos)
 		basic_machine=m68k-crds
@@ -743,6 +754,10 @@ case $basic_machine in
 		basic_machine=or32-unknown
 		os=-coff
 		;;
+	os400)
+		basic_machine=powerpc-ibm
+		os=-os400
+		;;
 	OSE68000 | ose68000)
 		basic_machine=m68000-ericsson
 		os=-ose
@@ -963,6 +978,10 @@ case $basic_machine in
 	tower | tower-32)
 		basic_machine=m68k-ncr
 		;;
+	tpf)
+		basic_machine=s390x-ibm
+		os=-tpf
+		;;
 	udi29k)
 		basic_machine=a29k-amd
 		os=-udi
@@ -1131,19 +1150,20 @@ case $os in
 	      | -aos* \
 	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
 	      | -clix* | -riscos* | -uniplus* | -iris* | -rtu* | -xenix* \
-	      | -hiux* | -386bsd* | -knetbsd* | -netbsd* | -openbsd* | -kfreebsd* | -freebsd* | -riscix* \
-	      | -lynxos* | -bosx* | -nextstep* | -cxux* | -aout* | -elf* | -oabi* \
+	      | -hiux* | -386bsd* | -knetbsd* | -mirbsd* | -netbsd* | -openbsd* \
+	      | -ekkobsd* | -kfreebsd* | -freebsd* | -riscix* | -lynxos* \
+	      | -bosx* | -nextstep* | -cxux* | -aout* | -elf* | -oabi* \
 	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta* \
 	      | -udi* | -eabi* | -lites* | -ieee* | -go32* | -aux* \
 	      | -chorusos* | -chorusrdb* \
 	      | -cygwin* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
-	      | -mingw32* | -linux-gnu* | -uxpv* | -beos* | -mpeix* | -udk* \
+	      | -mingw32* | -linux-gnu* | -linux-uclibc* | -uxpv* | -beos* | -mpeix* | -udk* \
 	      | -interix* | -uwin* | -mks* | -rhapsody* | -darwin* | -opened* \
 	      | -openstep* | -oskit* | -conix* | -pw32* | -nonstopux* \
 	      | -storm-chaos* | -tops10* | -tenex* | -tops20* | -its* \
 	      | -os2* | -vos* | -palmos* | -uclinux* | -nucleus* \
 	      | -morphos* | -superux* | -rtmk* | -rtmk-nova* | -windiss* \
-	      | -powermax* | -dnix* | -nx6 | -nx7 | -sei*)
+	      | -powermax* | -dnix* | -nx6 | -nx7 | -sei* | -dragonfly*)
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	-qnx*)
@@ -1182,6 +1202,9 @@ case $os in
 	-opened*)
 		os=-openedition
 		;;
+        -os400*)
+		os=-os400
+		;;
 	-wince*)
 		os=-wince
 		;;
@@ -1202,6 +1225,9 @@ case $os in
 		;;
 	-atheos*)
 		os=-atheos
+		;;
+	-syllable*)
+		os=-syllable
 		;;
 	-386bsd)
 		os=-bsd
@@ -1224,6 +1250,9 @@ case $os in
 		;;
 	-sinix*)
 		os=-sysv4
+		;;
+        -tpf*)
+		os=-tpf
 		;;
 	-triton*)
 		os=-sysv3
@@ -1473,8 +1502,14 @@ case $basic_machine in
 			-mvs* | -opened*)
 				vendor=ibm
 				;;
+			-os400*)
+				vendor=ibm
+				;;
 			-ptx*)
 				vendor=sequent
+				;;
+			-tpf*)
+				vendor=ibm
 				;;
 			-vxsim* | -vxworks* | -windiss*)
 				vendor=wrs
