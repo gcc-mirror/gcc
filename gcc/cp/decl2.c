@@ -3440,8 +3440,6 @@ finish_file ()
   if (! global_bindings_p () || current_class_type || decl_namespace_list)
     return;
 
-  start_time = get_run_time ();
-
   /* Otherwise, GDB can get confused, because in only knows
      about source for LINENO-1 lines.  */
   lineno -= 1;
@@ -3465,9 +3463,6 @@ finish_file ()
      generating the intiailzer for an object may cause templates to be
      instantiated, etc., etc.  */
 
-  this_time = get_run_time ();
-  parse_time -= this_time - start_time;
-  varconst_time += this_time - start_time;
   start_time = get_run_time ();
 
   if (new_abi_rtti_p ())
