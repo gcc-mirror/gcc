@@ -1,5 +1,12 @@
 2003-11-28  Gunther Nikl  <gni@gecko.de>
 
+	* config/m68k/m68k.c (MOTOROLA): Move from here...
+	* config/m68k/m68k.h (MOTOROLA): ... to here.
+	(OUTPUT_JUMP): Use do {...} while (0).
+	* config/m68k/m68k.md: Replace #ifdef MOTOROLA with C statements.
+
+2003-11-28  Gunther Nikl  <gni@gecko.de>
+
 	* config.gcc (m68020-*-elf*, m68k-*-elf*, m68010-*-netbsdelf*,
 	m68k*-*-netbsdelf*, m68k-*-rtems*): Add tm_defines containing
 	MOTOROLA and USE_GAS.
