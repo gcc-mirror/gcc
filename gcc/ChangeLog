@@ -1,3 +1,8 @@
+Sun Aug  6 11:54:03 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* gthr-posix.h: Integrated Chris Ball's <cball@fmco.com> changes
+	to improve the Posix thread support for Objective-C.
+
 2000-08-06  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.h (enum c_tree_index): Add CTI_SIGNED_SIZE_TYPE and
