@@ -1,3 +1,11 @@
+2004-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/17902
+	* tree-ssa-phiopt.c (conditional_replacement): Use bsi_after_labels
+	instead of bsi_start.
+	(value_replacement): Likewise.
+	(abs_replacement): Likewise
+
 2004-10-09  Steven Bosscher  <stevenb@suse.de>
 
 	* cfgexpand.c (maybe_dump_rtl_for_tree_stmt): New function.

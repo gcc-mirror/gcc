@@ -332,7 +332,7 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
   extract_true_false_edges_from_block (cond_block, &true_edge, &false_edge);
       
   /* Insert our new statement at the head of our block.  */
-  bsi = bsi_start (bb);
+  bsi = bsi_after_labels (bb);
   
   if (old_result)
     {
@@ -485,7 +485,7 @@ value_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
       /* Build the new assignment.  */
       new = build (MODIFY_EXPR, TREE_TYPE (result), result, arg);
 
-      replace_phi_with_stmt (bsi_start (bb), bb, cond_block, phi, new);
+      replace_phi_with_stmt (bsi_after_labels (bb), bb, cond_block, phi, new);
 
       /* Note that we optimized this PHI.  */
       return true;
@@ -621,7 +621,7 @@ abs_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
   new = build (MODIFY_EXPR, TREE_TYPE (lhs),
                lhs, build1 (ABS_EXPR, TREE_TYPE (lhs), rhs));
 
-  replace_phi_with_stmt (bsi_start (bb), bb, cond_block, phi, new);
+  replace_phi_with_stmt (bsi_after_labels (bb), bb, cond_block, phi, new);
 
   if (negate)
     {
