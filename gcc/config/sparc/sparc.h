@@ -2565,6 +2565,7 @@ do {                                                                    \
   /* Decompose SImode constants into hi+lo_sum.  We do have to 		\
      rerecognize what we produce, so be careful.  */			\
   if (CONSTANT_P (X)							\
+      && (MODE != TFmode || TARGET_V9)					\
       && GET_MODE (X) == SImode						\
       && GET_CODE (X) != LO_SUM && GET_CODE (X) != HIGH)		\
     {									\

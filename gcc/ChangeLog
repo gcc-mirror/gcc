@@ -1,3 +1,8 @@
+Fri Jan 15 17:43:59 1999  Jeffrey A. Law  <law@rtl.cygnus.com>
+
+	* sparc.h (LEGITIMIZE_RELOAD_ADDRESS): Do not create
+	(mem (lo_sum (...)) for TFmode unless TARGET_V9.
+
 Sat Jan 16 12:47:15 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (not_repeat_reg): Allow ldp instruction
