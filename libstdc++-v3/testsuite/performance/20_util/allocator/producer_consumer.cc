@@ -63,6 +63,13 @@ typedef __mt_alloc<test_type> so_alloc_type;
 typedef bitmap_allocator<test_type> bit_alloc_type;
 typedef __pool_alloc<test_type> po_alloc_type;
 
+typedef pair<const test_type, test_type> pair_type;
+typedef malloc_allocator<pair_type> malloc_pair_alloc_type;
+typedef new_allocator<pair_type> new_pair_alloc_type;
+typedef __mt_alloc<pair_type> so_pair_alloc_type;
+typedef bitmap_allocator<pair_type> bit_pair_alloc_type;
+typedef __pool_alloc<pair_type> po_pair_alloc_type;
+
 // The number of iterations to be performed.
 int iterations = 10000;
 
@@ -323,19 +330,24 @@ int main(void)
 #endif
 
 #ifdef TEST_T10
-  test_container(map<test_type, test_type, compare_type, malloc_alloc_type>());
+  test_container(map<test_type, test_type, compare_type,
+		 malloc_pair_alloc_type>());
 #endif
 #ifdef TEST_T11
-  test_container(map<test_type, test_type, compare_type, new_alloc_type>());
+  test_container(map<test_type, test_type, compare_type,
+		 new_pair_alloc_type>());
 #endif
 #ifdef TEST_T12
-  test_container(map<test_type, test_type, compare_type, so_alloc_type>());
+  test_container(map<test_type, test_type, compare_type,
+		 so_pair_alloc_type>());
 #endif
 #ifdef TEST_T13
-  test_container(map<test_type, test_type, compare_type, bit_alloc_type>());
+  test_container(map<test_type, test_type, compare_type,
+		 bit_pair_alloc_type>());
 #endif
 #ifdef TEST_T14
-  test_container(map<test_type, test_type, compare_type, po_alloc_type>());
+  test_container(map<test_type, test_type, compare_type,
+		 po_pair_alloc_type>());
 #endif
 
   return 0;
