@@ -18,6 +18,23 @@
 	* arm.md (arm_movdi, movdf_soft_insn): Add alternatives for D[abc]
 	constraints.  Set insn lenghts accordingly.
 
+2004-11-19  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c: Replace REDIRECTION_DATA varray with
+	a hash table.  Extensive modifications throughout to support
+	that change.
+	(struct el): New.
+	(struct local_info): New.
+	(struct redirection_data): Add new INCOMING_EDGES and DO_NOT_DUPLICATE
+	fields.
+	(redirection_data): Now a hashtable.
+	(redirection_data_hash, redirection_data_eq): New.
+	(lookup_redirection_data, create_duplicates): New.
+	(create_edge_and_update_destionation_phis): New.
+	(fixup_template_block, redirect_edges): New.
+	(thread_block): Use hash table traversals instead of loops over
+	varray entries or incoming edge vectors.
+
 2004-11-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* basic-block.h (edge_def): Add dest_idx.
@@ -171,21 +188,6 @@
 	MACHOPIC_DEFINED_FUNCTION.
 
 2004-11-19  Jeff Law  <law@redhat.com>
-
-	* tree-ssa-threadupdate.c: Replace REDIRECTION_DATA varray with
-	a hash table.  Extensive modifications throughout to support
-	that change.
-	(struct el): New.
-	(struct local_info): New.
-	(struct redirection_data): Add new INCOMING_EDGES and DO_NOT_DUPLICATE
-	fields.
-	(redirection_data): Now a hashtable.
-	(redirection_data_hash, redirection_data_eq): New.
-	(lookup_redirection_data, create_duplicates): New.
-	(create_edge_and_update_destionation_phis): New.
-	(fixup_template_block, redirect_edges): New.
-	(thread_block): Use hash table traversals instead of loops over
-	varray entries or incoming edge vectors.
 
 	* tree-ssa.c (verify_ssa): Remove redundant checking of PHI
 	arguments.
