@@ -1,3 +1,7 @@
+2000-02-09  Richard Henderson  <rth@cygnus.com>
+
+	* jump.c (delete_insn): Don't delete user labels at -O0.
+
 2000-02-09  Robert Lipe  <robertl@sco.com>
 
 	* Makefile.in (gen-protos): Don't depend on HOST_LIBDEPS.
