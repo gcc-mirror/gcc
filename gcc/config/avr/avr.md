@@ -271,7 +271,7 @@
     || register_operand (operands[1],SImode) || const0_rtx == operands[1])"
   "* return output_movsisf (insn, operands, NULL);"
   [(set_attr "length" "4,4,8,8,4,10")
-   (set_attr "cc" "none,set_zn,clobber,clobber,clobber,clobber")])
+   (set_attr "cc" "none,set_zn,clobber,clobber,none,clobber")])
 
 ;; fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 ;; move floating point numbers (32 bit)
@@ -297,7 +297,7 @@
    || register_operand (operands[1], SFmode)"
   "* return output_movsisf (insn, operands, NULL);"
   [(set_attr "length" "4,4,8,8,4,10")
-   (set_attr "cc" "none,set_zn,clobber,clobber,clobber,clobber")])
+   (set_attr "cc" "none,set_zn,clobber,clobber,none,clobber")])
 
 ;;=========================================================================
 ;; move string (like memcpy)
@@ -555,6 +555,7 @@
   [(set_attr "length" "2,1,1,2,3,3")
    (set_attr "cc" "set_n,set_czn,set_czn,set_czn,set_n,set_n")])
 
+;; TODO: use "movw" if available
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,!w,!w,d,r,r,&*!w,&*!w")
 	  (plus:SI
@@ -734,7 +735,8 @@
               AS2 (andi, %B0,hi8(%2)) CR_TAB
 	      AS2 (andi, %C0,hlo8(%2)) CR_TAB
 	      AS2 (andi, %D0,hhi8(%2)));
-      }
+    }
+  return \"bug\";
 }"
   [(set_attr "length" "4,4")
    (set_attr "cc" "set_n,set_n")])
@@ -1076,6 +1078,7 @@
   [(set_attr "length" "5,6")
    (set_attr "cc" "clobber,clobber")])
 
+;; TODO: use "movw" if available
 (define_insn "extendhisi2"
   [(set (match_operand:SI 0 "register_operand"               "=r,&r")
         (sign_extend:SI (match_operand:HI 1 "register_operand" "0,*r")))]
@@ -1109,6 +1112,7 @@
   [(set_attr "length" "3,4")
    (set_attr "cc" "set_n,set_n")])
 
+;; TODO: use "movw" if available
 (define_insn "zero_extendhisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,&r")
         (zero_extend:SI (match_operand:HI 1 "register_operand" "0,*r")))]
@@ -1211,7 +1215,7 @@
     case 1:
       if (reg_unused_after (insn, operands[0])
           && INTVAL (operands[1]) >= 0 && INTVAL (operands[1]) <= 63
-          && TEST_HARD_REG_CLASS (ADDW_REGS, true_regnum (operands[0])))
+          && test_hard_reg_class (ADDW_REGS, operands[0]))
         return AS2 (sbiw,%0,%1);
        else
         return (AS2 (cpi,%0,%1) CR_TAB
@@ -1235,6 +1239,7 @@
               AS2 (ldi, %2,hi8(%1)) CR_TAB
 	      AS2 (cpc, %B0,%2));
     }
+  return \"bug\";
 }" 
   [(set_attr "cc" "compare,compare,compare,compare,compare")
    (set_attr "length" "2,2,3,3,4")])
@@ -1257,7 +1262,7 @@
     case 1:
       if (reg_unused_after (insn, operands[0])
           && INTVAL (operands[1]) >= 0 && INTVAL (operands[1]) <= 63
-          && TEST_HARD_REG_CLASS (ADDW_REGS, true_regnum (operands[0])))
+          && test_hard_reg_class (ADDW_REGS, operands[0]))
         return (AS2 (sbiw,%0,%1) CR_TAB
                 AS2 (cpc,%C0,__zero_reg__) CR_TAB
                 AS2 (cpc,%D0,__zero_reg__));
@@ -1295,7 +1300,8 @@
 	       AS2 (cpc, %C0,%2)       CR_TAB
 	       AS2 (ldi, %2,hhi8(%1)) CR_TAB
 	       AS2 (cpc, %D0,%2));
-   }
+    }
+  return \"bug\";
 }"
   [(set_attr "cc" "compare,compare,compare,compare,compare")
    (set_attr "length" "4,4,7,5,8")])
@@ -1610,6 +1616,7 @@
   ""
   "")
 
+;; TODO: insn length for AVR_ENHANCED
 (define_insn "call_insn"
   [(call (mem:HI (match_operand:HI 0 "nonmemory_operand" "!z,*r,i"))
          (match_operand:HI 1 "general_operand" "X,X,X"))]
@@ -1645,6 +1652,7 @@
 	       (const_int 2)]
 	(const_int 1)))])
 
+;; TODO: insn length for AVR_ENHANCED
 (define_insn "call_value_insn"
   [(set (match_operand 0 "register_operand" "=r,r,r")
         (call (mem:HI (match_operand:HI 1 "nonmemory_operand" "!z,*r,i"))
@@ -1704,6 +1712,8 @@
 	      (use (label_ref (match_operand 1 "" "")))])]
   "optimize"
   "")
+
+;; TODO: jump to __tabjejump__ in libgcc
 
 (define_insn "*tablejump_enh"
    [(set (pc) (mem:HI
@@ -1798,7 +1808,7 @@
     && test_hard_reg_class (LD_REGS, operands[1]))"
   "*
 {
-  if (TEST_HARD_REG_CLASS (ADDW_REGS, true_regnum (operands[0])))
+  if (test_hard_reg_class (ADDW_REGS, operands[0]))
     output_asm_insn (AS2 (sbiw,%0,1) CR_TAB
 		     AS2 (sbc,%C0,__zero_reg__) CR_TAB
 		     AS2 (sbc,%D0,__zero_reg__) \"\\n\", operands);
@@ -1836,7 +1846,7 @@
     && test_hard_reg_class (LD_REGS, operands[1]))"
   "*
 {
-  if (TEST_HARD_REG_CLASS (ADDW_REGS, true_regnum (operands[0])))
+  if (test_hard_reg_class (ADDW_REGS, operands[0]))
     output_asm_insn (AS2 (sbiw,%0,1), operands);
   else
     output_asm_insn (AS2 (subi,%A0,1) CR_TAB

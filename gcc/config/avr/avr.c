@@ -47,8 +47,8 @@ static int    avr_naked_function_p PARAMS ((tree));
 static int    interrupt_function_p PARAMS ((tree));
 static int    signal_function_p    PARAMS ((tree));
 static int    sequent_regs_live    PARAMS ((void));
-static char * ptrreg_to_str        PARAMS ((int));
-static char * cond_string          PARAMS ((enum rtx_code));
+static const char * ptrreg_to_str  PARAMS ((int));
+static const char * cond_string    PARAMS ((enum rtx_code));
 static int    avr_num_arg_regs     PARAMS ((enum machine_mode, tree));
 static int    out_adj_frame_ptr    PARAMS ((FILE *, int));
 static int    out_set_stack_ptr    PARAMS ((FILE *, int, int));
@@ -161,7 +161,7 @@ static const struct mcu_type_s avr_mcu_types[] = {
 };
 
 void
-avr_override_options (void)
+avr_override_options ()
 {
   const struct mcu_type_s *t;
 
@@ -182,7 +182,7 @@ avr_override_options (void)
     {
       case AVR1:
       default:
-      fatal ("MCU `%s' not supported", avr_mcu_name);
+	fatal ("MCU `%s' not supported", avr_mcu_name);
       case AVR2: avr_enhanced_p = 0; avr_mega_p = 0; break;
       case AVR3: avr_enhanced_p = 0; avr_mega_p = 1; break;
       case AVR4: avr_enhanced_p = 1; avr_mega_p = 0; break;
@@ -193,7 +193,7 @@ avr_override_options (void)
 
 /* Initialize TMP_REG_RTX and ZERO_REG_RTX */
 void
-avr_init_once (void)
+avr_init_once ()
 {
   tmp_reg_rtx = xmalloc (sizeof (struct rtx_def) + 1 * sizeof (rtunion));
   memset (tmp_reg_rtx, 0, sizeof (struct rtx_def) + 1 * sizeof (rtunion));
@@ -321,9 +321,9 @@ signal_function_p (func)
 /* Compute offset between arg_pointer and frame_pointer */
 
 int
-initial_elimination_offset (from,to)
-     int from ATTRIBUTE_UNUSED;
-     int to ATTRIBUTE_UNUSED;
+initial_elimination_offset (from, to)
+     int from;
+     int to;
 {
   int reg;
   if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
@@ -517,7 +517,9 @@ out_set_stack_ptr (file, before, after)
 /* Output function prologue */
 
 void
-function_prologue (FILE *file, int size)
+function_prologue (file, size)
+     FILE *file;
+     int size;
 {
   int reg;
   int interrupt_func_p;
@@ -651,7 +653,9 @@ function_prologue (FILE *file, int size)
 /* Output function epilogue */
 
 void
-function_epilogue (FILE *file, int size)
+function_epilogue (file, size)
+     FILE *file;
+     int size;
 {
   int reg;
   int interrupt_func_p;
@@ -884,7 +888,7 @@ legitimize_address (x, oldx, mode)
 
 /* Return a pointer register name as a string */
 
-static char *
+static const char *
 ptrreg_to_str (regno)
      int regno;
 {
@@ -902,7 +906,7 @@ ptrreg_to_str (regno)
 /* Return the condition name as a string.
    Used in conditional jump constructing  */
 
-static char *
+static const char *
 cond_string (code)
      enum rtx_code code;
 {
@@ -1147,7 +1151,7 @@ class_max_nregs (class, mode)
    3 - absolute jump (only for ATmega[16]03).  */
 
 int
-avr_jump_mode (x,insn)
+avr_jump_mode (x, insn)
      rtx x;                     /* jump operand */
      rtx insn;                  /* jump insn */
 {
@@ -1169,8 +1173,8 @@ avr_jump_mode (x,insn)
 /* return a AVR condition jump commands.
  LEN is a number returned by avr_jump_mode function.  */
 
-char *
-ret_cond_branch (cond,len)
+const char *
+ret_cond_branch (cond, len)
      RTX_CODE cond;
      int len;
 {
@@ -1289,8 +1293,7 @@ final_prescan_insn (insn, operand, num_operands)
     }
 }
 
-/* return 1 if undefined,
-   1 if always true or always false  */
+/* Return 0 if undefined, 1 if always true or always false.  */
 
 int
 avr_simplify_comparision_p (mode, operator, x)
@@ -1416,7 +1419,7 @@ function_arg_advance (cum, mode, type, named)
 /***********************************************************************
   Functions for outputting various mov's for a various modes
 ************************************************************************/
-char *
+const char *
 output_movqi (insn, operands, l)
      rtx insn;
      rtx operands[];
@@ -1454,7 +1457,7 @@ output_movqi (insn, operands, l)
 		return AS1 (clr,%0);
 	      else if (src == const1_rtx)
 		{
-		  if (reg_was_0 (insn, operands[0]))
+		  if (reg_was_0 (insn, dest))
 		    return AS1 (inc,%0 ; reg_was_0);
 
 		  *l = 2;
@@ -1463,7 +1466,7 @@ output_movqi (insn, operands, l)
 		}
 	      else if (src == const2_rtx)
 		{
-		  if (reg_was_0 (insn, operands[0]))
+		  if (reg_was_0 (insn, dest))
 		    {
 		      *l = 2;
 		      return (AS1 (inc,%0 ; reg_was_0) CR_TAB
@@ -1478,7 +1481,7 @@ output_movqi (insn, operands, l)
 	      else if (src == constm1_rtx)
 		{
 		  /* Immediate constants -1 to any register */
-		  if (reg_was_0 (insn, operands[0]))
+		  if (reg_was_0 (insn, dest))
 		    return AS1 (dec,%0 ; reg_was_0);
 
 		  *l = 2;
@@ -1500,28 +1503,23 @@ output_movqi (insn, operands, l)
     }
   else if (GET_CODE (dest) == MEM)
     {
-      int save = 0;
-      char *template;
-      
-      if (operands[1] == const0_rtx)
-	{
-	  operands[1] = zero_reg_rtx;
-	  save = 1;
-	}
-      
+      const char *template;
+
+      if (src == const0_rtx)
+	operands[1] = zero_reg_rtx;
+
       template = out_movqi_mr_r (insn, operands, real_l);
 
       if (!real_l)
 	output_asm_insn (template, operands);
-      
-      if (save)
-	operands[1] = const0_rtx;
+
+      operands[1] = src;
     }
   return "";
 }
 
 
-char *
+const char *
 output_movhi (insn, operands, l)
      rtx insn;
      rtx operands[];
@@ -1573,7 +1571,7 @@ output_movhi (insn, operands, l)
 	      return (AS2 (movw,%0,%1));
 	    }
 
-	  if (true_regnum (operands[0]) > true_regnum (operands[1]))
+	  if (true_regnum (dest) > true_regnum (src))
 	    {
 	      *l = 2;
 	      return (AS2 (mov,%B0,%B1) CR_TAB
@@ -1590,6 +1588,13 @@ output_movhi (insn, operands, l)
 	{
 	  if (test_hard_reg_class (LD_REGS, dest)) /* ldi d,i */
 	    {
+	      if (byte_immediate_operand (src, HImode)
+		  && reg_was_0 (insn, dest))
+		{
+		  *l = 1;
+		  return (AS2 (ldi,%A0,lo8(%1) ; reg_was_0));
+		}
+
 	      *l = 2;
 	      return (AS2 (ldi,%A0,lo8(%1)) CR_TAB
 		      AS2 (ldi,%B0,hi8(%1)));
@@ -1605,7 +1610,7 @@ output_movhi (insn, operands, l)
 		}
 	      else if (src == const1_rtx)
 		{
-		  if (reg_was_0 (insn, operands[0]))
+		  if (reg_was_0 (insn, dest))
 		    {
 		      *l = 1;
 		      return AS1 (inc,%0 ; reg_was_0);
@@ -1617,7 +1622,7 @@ output_movhi (insn, operands, l)
 		}
 	      else if (src == const2_rtx)
 		{
-		  if (reg_was_0 (insn, operands[0]))
+		  if (reg_was_0 (insn, dest))
 		    {
 		      *l = 2;
 		      return (AS1 (inc,%0 ; reg_was_0) CR_TAB
@@ -1632,7 +1637,7 @@ output_movhi (insn, operands, l)
 	      else if (src == constm1_rtx)
 		{
 		  /* Immediate constants -1 to any register */
-		  if (reg_was_0 (insn, operands[0]))
+		  if (reg_was_0 (insn, dest))
 		    {
 		      *l = 2;
 		      return (AS1 (dec,%A0 ; reg_was_0) CR_TAB
@@ -1678,40 +1683,36 @@ output_movhi (insn, operands, l)
     }
   else if (GET_CODE (dest) == MEM)
     {
-      int save = 0;
-      char *template;
-      
-      if (operands[1] == const0_rtx)
-	{
-	  operands[1] = zero_reg_rtx;
-	  save = 1;
-	}
-      
+      const char *template;
+
+      if (src == const0_rtx)
+	operands[1] = zero_reg_rtx;
+
       template = out_movhi_mr_r (insn, operands, real_l);
 
       if (!real_l)
 	output_asm_insn (template, operands);
-      
-      if (save)
-	operands[1] = const0_rtx;
+
+      operands[1] = src;
       return "";
     }
   fatal_insn ("Invalid insn:", insn);
   return "";
 }
 
-char *
+const char *
 out_movqi_r_mr (insn, op, l)
      rtx insn;
      rtx op[];
      int *l; /* instruction length */
 {
-  rtx x;
+  rtx dest = op[0];
+  rtx src = op[1];
+  rtx x = XEXP (src, 0);
   int dummy;
   
   if (!l)
     l = &dummy;
-  x = XEXP (op[1],0);
   
   if (CONSTANT_ADDRESS_P (x))
     {
@@ -1728,12 +1729,12 @@ out_movqi_r_mr (insn, op, l)
       && REG_P (XEXP (x,0))
       && GET_CODE (XEXP (x,1)) == CONST_INT)
     {
-      if((INTVAL (XEXP (x,1)) - GET_MODE_SIZE (GET_MODE (op[1]))) >= 63)
+      if ((INTVAL (XEXP (x,1)) - GET_MODE_SIZE (GET_MODE (src))) >= 63)
 	{
 	  int disp = INTVAL (XEXP (x,1));
 	  if (REGNO (XEXP (x,0)) != REG_Y)
 	    fatal_insn ("Incorrect insn:",insn);
-	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (op[1])))
+	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (src)))
 	    {
 	      *l = 3;
 	      op[4] = XEXP (x, 1);
@@ -1757,7 +1758,7 @@ out_movqi_r_mr (insn, op, l)
 	  op[4] = XEXP (x, 1);
 	  /* This is a paranoid case LEGITIMIZE_RELOAD_ADDRESS must exclude
 	     it but I have this situation with extremal optimizing options.  */
-	  if (reg_overlap_mentioned_p (op[0],XEXP (x,0))
+	  if (reg_overlap_mentioned_p (dest, XEXP (x,0))
 	      || reg_unused_after (insn, XEXP (x,0)))
 	    {
 	      *l = 2;
@@ -1776,14 +1777,17 @@ out_movqi_r_mr (insn, op, l)
   return AS2 (ld,%0,%1);
 }
 
-char *
+const char *
 out_movhi_r_mr (insn, op, l)
      rtx insn;
      rtx op[];
      int *l; /* instruction length */
 {
-  int reg_dest = true_regnum (op[0]);
-  int reg_base = true_regnum (XEXP (op[1], 0));
+  rtx dest = op[0];
+  rtx src = op[1];
+  rtx base = XEXP (src, 0);
+  int reg_dest = true_regnum (dest);
+  int reg_base = true_regnum (base);
   int tmp;
 
   if (!l)
@@ -1800,7 +1804,7 @@ out_movhi_r_mr (insn, op, l)
 	}
       else if (reg_base == REG_X)        /* (R26) */
         {
-          if (reg_unused_after (insn, XEXP (op[1],0)))
+          if (reg_unused_after (insn, base))
 	    {
 	      *l = 2;
 	      return (AS2 (ld,%A0,X+) CR_TAB
@@ -1818,20 +1822,19 @@ out_movhi_r_mr (insn, op, l)
 		  AS2 (ldd,%B0,%1+1));
 	}
     }
-  else if (GET_CODE (XEXP (op[1],0)) == PLUS) /* (R + i) */
+  else if (GET_CODE (base) == PLUS) /* (R + i) */
     {
-      int disp = INTVAL(XEXP (XEXP (op[1], 0), 1));
-      int reg_base = true_regnum (XEXP (XEXP (op[1], 0), 0));
+      int disp = INTVAL (XEXP (base, 1));
+      int reg_base = true_regnum (XEXP (base, 0));
       
-      if (disp > MAX_LD_OFFSET (GET_MODE (op[1])))
+      if (disp > MAX_LD_OFFSET (GET_MODE (src)))
 	{
-	  rtx x = XEXP (op[1], 0);
-	  op[4] = XEXP (x, 1);
+	  op[4] = XEXP (base, 1);
 
-	  if (REGNO (XEXP (x,0)) != REG_Y)
+	  if (REGNO (XEXP (base, 0)) != REG_Y)
 	    fatal_insn ("Incorrect insn:",insn);
 	  
-	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (op[1])))
+	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (src)))
 	    {
 	      *l = 4;
 	      return (AS2 (adiw,r28,%4-62) CR_TAB
@@ -1856,7 +1859,7 @@ out_movhi_r_mr (insn, op, l)
 	     it but I have this situation with extremal
 	     optimization options.  */
 	  
-	  op[4] = XEXP (XEXP (op[1],0), 1);
+	  op[4] = XEXP (base, 1);
 	  
 	  if (reg_base == reg_dest)
 	    {
@@ -1895,26 +1898,32 @@ out_movhi_r_mr (insn, op, l)
       return (AS2 (ldd,%A0,%A1) CR_TAB
 	      AS2 (ldd,%B0,%B1));
     }
-  else if (GET_CODE (XEXP (op[1],0)) == PRE_DEC) /* (--R) */
+  else if (GET_CODE (base) == PRE_DEC) /* (--R) */
     {
-      if (reg_overlap_mentioned_p (op[0], XEXP (XEXP (op[1],0),0)))
+      if (reg_overlap_mentioned_p (dest, XEXP (base, 0)))
 	fatal_insn ("Incorrect insn:", insn);
 
       *l = 2;
       return (AS2 (ld,%B0,%1) CR_TAB
 	      AS2 (ld,%A0,%1));
     }
-  else if (GET_CODE (XEXP (op[1],0)) == POST_INC) /* (R++) */
+  else if (GET_CODE (base) == POST_INC) /* (R++) */
     {
-      if (reg_overlap_mentioned_p (op[0], XEXP (XEXP (op[1],0),0)))
+      if (reg_overlap_mentioned_p (dest, XEXP (base, 0)))
 	fatal_insn ("Incorrect insn:", insn);
 
       *l = 2;
       return (AS2 (ld,%A0,%1)  CR_TAB
 	      AS2 (ld,%B0,%1));
     }
-  else if (CONSTANT_ADDRESS_P (XEXP (op[1],0)))
+  else if (CONSTANT_ADDRESS_P (base))
     {
+      if (io_address_p (base, 2))
+	{
+	  *l = 2;
+	  return (AS2 (in,%A0,%A1-0x20) CR_TAB
+		  AS2 (in,%B0,%B1-0x20));
+	}
       *l = 4;
       return (AS2 (lds,%A0,%A1) CR_TAB
 	      AS2 (lds,%B0,%B1));
@@ -1924,14 +1933,17 @@ out_movhi_r_mr (insn, op, l)
   return "";
 }
 
-char *
-out_movsi_r_mr (insn,op,l)
+const char *
+out_movsi_r_mr (insn, op, l)
      rtx insn;
      rtx op[];
      int *l; /* instruction length */
 {
-  int reg_dest=true_regnum (op[0]);
-  int reg_base=true_regnum (XEXP (op[1],0));
+  rtx dest = op[0];
+  rtx src = op[1];
+  rtx base = XEXP (src, 0);
+  int reg_dest = true_regnum (dest);
+  int reg_base = true_regnum (base);
   int tmp;
 
   if (!l)
@@ -1954,7 +1966,7 @@ out_movsi_r_mr (insn,op,l)
                           AS2 (ld,__tmp_reg__,X+)  CR_TAB
                           AS2 (ld,%D0,X)  CR_TAB
                           AS2 (mov,%C0,__tmp_reg__));
-          else if (reg_unused_after (insn,XEXP (op[1],0)))
+          else if (reg_unused_after (insn, base))
             return  *l=4, (AS2 (ld,%A0,X+)  CR_TAB
                            AS2 (ld,%B0,X+) CR_TAB
                            AS2 (ld,%C0,X+) CR_TAB
@@ -1987,16 +1999,15 @@ out_movsi_r_mr (insn,op,l)
                           AS2 (ldd,%D0,%1+3));
         }
     }
-  else if (GET_CODE (XEXP (op[1],0)) == PLUS) /* (R + i) */
+  else if (GET_CODE (base) == PLUS) /* (R + i) */
     {
-      int disp = INTVAL(XEXP (XEXP (op[1],0), 1));
+      int disp = INTVAL (XEXP (base, 1));
       
-      if (disp > MAX_LD_OFFSET (GET_MODE (op[1])))
+      if (disp > MAX_LD_OFFSET (GET_MODE (src)))
 	{
-	  rtx x = XEXP (op[1],0);
-	  if (REGNO (XEXP (x,0)) != REG_Y)
+	  if (REGNO (XEXP (base, 0)) != REG_Y)
 	    fatal_insn ("Incorrect insn:",insn);
-	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (op[1])))
+	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (src)))
 	    {
 	      op[4] = GEN_INT (disp - 60);
 	      return *l=6,(AS2 (adiw, r28, %4) CR_TAB
@@ -2008,7 +2019,7 @@ out_movsi_r_mr (insn,op,l)
 	    }
 	  else
 	    {
-	      op[4] = XEXP (x,1);
+	      op[4] = XEXP (base, 1);
 	      return *l=8,(AS2 (subi, r28, lo8(-%4))  CR_TAB
 			   AS2 (sbci, r29, hi8(-%4)) CR_TAB
 			   AS2 (ld, %A0,Y)             CR_TAB
@@ -2020,7 +2031,7 @@ out_movsi_r_mr (insn,op,l)
 	    }
 	}
 
-      reg_base = true_regnum (XEXP (XEXP (op[1],0), 0));
+      reg_base = true_regnum (XEXP (base, 0));
       if (reg_dest == reg_base)
         return *l=5, (AS2 (ldd,%D0,%D1) CR_TAB
                       AS2 (ldd,%C0,%C1) CR_TAB
@@ -2038,17 +2049,17 @@ out_movsi_r_mr (insn,op,l)
                     AS2 (ldd,%C0,%C1) CR_TAB
                     AS2 (ldd,%D0,%D1));
     }
-  else if (GET_CODE (XEXP (op[1],0)) == PRE_DEC) /* (--R) */
+  else if (GET_CODE (base) == PRE_DEC) /* (--R) */
     return *l=4, (AS2 (ld,%D0,%1) CR_TAB
 		  AS2 (ld,%C0,%1) CR_TAB
 		  AS2 (ld,%B0,%1) CR_TAB
 		  AS2 (ld,%A0,%1));
-  else if (GET_CODE (XEXP (op[1],0)) == POST_INC) /* (R++) */
+  else if (GET_CODE (base) == POST_INC) /* (R++) */
     return *l=4, (AS2 (ld,%A0,%1) CR_TAB
 		  AS2 (ld,%B0,%1) CR_TAB
 		  AS2 (ld,%C0,%1) CR_TAB
 		  AS2 (ld,%D0,%1));
-  else if (CONSTANT_ADDRESS_P (XEXP (op[1],0)))
+  else if (CONSTANT_ADDRESS_P (base))
       return *l=8, (AS2 (lds,%A0,%A1) CR_TAB
 		    AS2 (lds,%B0,%B1) CR_TAB
 		    AS2 (lds,%C0,%C1) CR_TAB
@@ -2058,20 +2069,23 @@ out_movsi_r_mr (insn,op,l)
   return "";
 }
 
-char *
-out_movsi_mr_r (insn,op,l)
+const char *
+out_movsi_mr_r (insn, op, l)
      rtx insn;
      rtx op[];
      int *l;
 {
-  int reg_base = true_regnum (XEXP (op[0],0));
-  int reg_dest = true_regnum (op[1]);
+  rtx dest = op[0];
+  rtx src = op[1];
+  rtx base = XEXP (dest, 0);
+  int reg_base = true_regnum (base);
+  int reg_src = true_regnum (src);
   int tmp;
   
   if (!l)
     l = &tmp;
   
-  if (CONSTANT_ADDRESS_P (XEXP (op[0],0)))
+  if (CONSTANT_ADDRESS_P (base))
     return *l=8,(AS2 (sts,%A0,%A1) CR_TAB
 		 AS2 (sts,%B0,%B1) CR_TAB
 		 AS2 (sts,%C0,%C1) CR_TAB
@@ -2080,9 +2094,9 @@ out_movsi_mr_r (insn,op,l)
     {
       if (reg_base == REG_X)                /* (R26) */
         {
-          if (reg_dest == REG_X)
+          if (reg_src == REG_X)
             {
-              if (reg_unused_after (insn,XEXP (op[0],0)))
+              if (reg_unused_after (insn, base))
                 return *l=5, (AS2 (mov,__tmp_reg__,%B1) CR_TAB
                               AS2 (st,%0+,%A1) CR_TAB
                               AS2 (st,%0+,__tmp_reg__)  CR_TAB
@@ -2096,9 +2110,9 @@ out_movsi_mr_r (insn,op,l)
                               AS2 (st,%0,%D1)  CR_TAB
                               AS2 (sbiw,r26,3));
             }
-          else if (reg_base == reg_dest+2)
+          else if (reg_base == reg_src + 2)
             {
-              if (reg_unused_after (insn,XEXP (op[0],0)))
+              if (reg_unused_after (insn, base))
                 return *l=7, (AS2 (mov,__zero_reg__,%C1) CR_TAB
                               AS2 (mov,__tmp_reg__,%D1) CR_TAB
                               AS2 (st,%0+,%A1) CR_TAB
@@ -2128,15 +2142,14 @@ out_movsi_mr_r (insn,op,l)
 		      AS2 (std,%0+2,%C1) CR_TAB
 		      AS2 (std,%0+3,%D1));
     }
-  else if (GET_CODE (XEXP (op[0],0)) == PLUS) /* (R + i) */
+  else if (GET_CODE (base) == PLUS) /* (R + i) */
     {
-      int disp = INTVAL(XEXP (XEXP (op[0],0), 1));
-      if (disp > MAX_LD_OFFSET (GET_MODE (op[0])))
+      int disp = INTVAL (XEXP (base, 1));
+      if (disp > MAX_LD_OFFSET (GET_MODE (dest)))
 	{
-	  rtx x = XEXP (op[0],0);
-	  if (REGNO (XEXP (x,0)) != REG_Y)
+	  if (REGNO (XEXP (base, 0)) != REG_Y)
 	    fatal_insn ("Incorrect insn:",insn);
-	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (op[0])))
+	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (dest)))
 	    {
 	      op[4] = GEN_INT (disp - 60);
 	      return *l=6,(AS2 (adiw, r28, %4) CR_TAB
@@ -2148,7 +2161,7 @@ out_movsi_mr_r (insn,op,l)
 	    }
 	  else
 	    {
-	      op[4] = XEXP (x,1);
+	      op[4] = XEXP (base, 1);
 	      return *l=8,(AS2 (subi, r28, lo8(-%4))  CR_TAB
 			   AS2 (sbci, r29, hi8(-%4)) CR_TAB
 			   AS2 (st, Y,%A1)             CR_TAB
@@ -2164,12 +2177,12 @@ out_movsi_mr_r (insn,op,l)
 		    AS2 (std,%C0,%C1) CR_TAB
 		    AS2 (std,%D0,%D1));
     }
-  else if (GET_CODE (XEXP (op[0],0)) == PRE_DEC) /* (--R) */
+  else if (GET_CODE (base) == PRE_DEC) /* (--R) */
     return *l=4, (AS2 (st,%0,%D1) CR_TAB
 		  AS2 (st,%0,%C1) CR_TAB
 		  AS2 (st,%0,%B1) CR_TAB
 		  AS2 (st,%0,%A1));
-  else if (GET_CODE (XEXP (op[0],0)) == POST_INC) /* (R++) */
+  else if (GET_CODE (base) == POST_INC) /* (R++) */
     return *l=4, (AS2 (st,%0,%A1)  CR_TAB
 		  AS2 (st,%0,%B1) CR_TAB
 		  AS2 (st,%0,%C1) CR_TAB
@@ -2178,7 +2191,7 @@ out_movsi_mr_r (insn,op,l)
   return "";
 }
 
-char *
+const char *
 output_movsisf(insn, operands, l)
      rtx insn;
      rtx operands[];
@@ -2229,6 +2242,13 @@ output_movsisf(insn, operands, l)
 	{
 	  if (test_hard_reg_class (LD_REGS, dest)) /* ldi d,i */
 	    {
+	      if (byte_immediate_operand (src, SImode)
+		  && reg_was_0 (insn, dest))
+		{
+		  *l = 1;
+		  return (AS2 (ldi,%A0,lo8(%1) ; reg_was_0));
+		}
+
 	      *l = 4;
 	      return (AS2 (ldi,%A0,lo8(%1))  CR_TAB
 		      AS2 (ldi,%B0,hi8(%1))  CR_TAB
@@ -2255,7 +2275,7 @@ output_movsisf(insn, operands, l)
 		}
 	      else if (src == const1_rtx)
 		{
-		  if (reg_was_0 (insn, operands[0]))
+		  if (reg_was_0 (insn, dest))
 		    {
 		      *l = 1;
 		      return AS1 (inc,%A0 ; reg_was_0);
@@ -2269,7 +2289,7 @@ output_movsisf(insn, operands, l)
 		}
 	      else if (src == const2_rtx)
 		{
-		  if (reg_was_0 (insn, operands[0]))
+		  if (reg_was_0 (insn, dest))
 		    {
 		      *l = 2;
 		      return (AS1 (inc,%A0 ; reg_was_0) CR_TAB
@@ -2296,7 +2316,7 @@ output_movsisf(insn, operands, l)
 	      else if (src == constm1_rtx)
 		{
 		  /* Immediate constants -1 to any register */
-		  if (reg_was_0 (insn, operands[0]))
+		  if (reg_was_0 (insn, dest))
 		    {
 		      if (AVR_ENHANCED)
 			{
@@ -2346,41 +2366,36 @@ output_movsisf(insn, operands, l)
     }
   else if (GET_CODE (dest) == MEM)
     {
-      int save = 0;
-      char *template;
-      
-      if (operands[1] == const0_rtx)
-	{
+      const char *template;
+
+      if (src == const0_rtx)
 	  operands[1] = zero_reg_rtx;
-	  save = 1;
-	}
-      
+
       template = out_movsi_mr_r (insn, operands, real_l);
 
       if (!real_l)
 	output_asm_insn (template, operands);
-      
-      if (save)
-	operands[1] = const0_rtx;
+
+      operands[1] = src;
       return "";
     }
   fatal_insn ("Invalid insn:", insn);
   return "";
 }
 
-char *
+const char *
 out_movqi_mr_r (insn, op, l)
      rtx insn;
      rtx op[];
      int *l; /* instruction length */
 {
-  rtx x;
+  rtx dest = op[0];
+  rtx src = op[1];
+  rtx x = XEXP (dest, 0);
   int dummy;
 
   if (!l)
     l = &dummy;
-    
-  x = XEXP (op[0],0);
   
   if (CONSTANT_ADDRESS_P (x))
     {
@@ -2397,12 +2412,12 @@ out_movqi_mr_r (insn, op, l)
       && REG_P (XEXP (x,0))
       && GET_CODE (XEXP (x,1)) == CONST_INT)
     {
-      if ((INTVAL (XEXP (x,1)) - GET_MODE_SIZE (GET_MODE (op[0]))) >= 63)
+      if ((INTVAL (XEXP (x,1)) - GET_MODE_SIZE (GET_MODE (dest))) >= 63)
 	{
 	  int disp = INTVAL (XEXP (x,1));
 	  if (REGNO (XEXP (x,0)) != REG_Y)
 	    fatal_insn ("Incorrect insn:",insn);
-	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (op[0])))
+	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (dest)))
 	    {
 	      *l = 3;
 	      op[4] = XEXP (x, 1);
@@ -2424,7 +2439,7 @@ out_movqi_mr_r (insn, op, l)
       else if (REGNO (XEXP (x,0)) == REG_X)
 	{
 	  op[4] = XEXP (x,1);
-	  if (reg_overlap_mentioned_p (op[1],XEXP (x,0)))
+	  if (reg_overlap_mentioned_p (src, XEXP (x, 0)))
 	    {
 	      if (reg_unused_after (insn, XEXP (x,0)))
 		{
@@ -2460,27 +2475,38 @@ out_movqi_mr_r (insn, op, l)
   return AS2 (st,%0,%1);
 }
 
-char *
-out_movhi_mr_r (insn,op,l)
+const char *
+out_movhi_mr_r (insn, op, l)
      rtx insn;
      rtx op[];
      int *l;
 {
-  int reg_base = true_regnum (XEXP (op[0],0));
-  int reg_dest = true_regnum (op[1]);
+  rtx dest = op[0];
+  rtx src = op[1];
+  rtx base = XEXP (dest, 0);
+  int reg_base = true_regnum (base);
+  int reg_src = true_regnum (src);
   int tmp;
   if (!l)
     l = &tmp;
-  if (CONSTANT_ADDRESS_P (XEXP (op[0],0)))
-    return *l=4,(AS2 (sts,%A0,%A1) CR_TAB
-		 AS2 (sts,%B0,%B1));
+  if (CONSTANT_ADDRESS_P (base))
+    {
+      if (io_address_p (base, 2))
+	{
+	  *l = 2;
+	  return (AS2 (out,%B0-0x20,%B1) CR_TAB
+		  AS2 (out,%A0-0x20,%A1));
+	}
+      return *l = 4, (AS2 (sts,%B0,%B1) CR_TAB
+		      AS2 (sts,%A0,%A1));
+    }
   if (reg_base > 0)
     {
       if (reg_base == REG_X)
         {
-          if (reg_dest == REG_X)
+          if (reg_src == REG_X)
             {
-              if (reg_unused_after (insn, op[1]))
+              if (reg_unused_after (insn, src))
                 return *l=3, (AS2 (mov,__tmp_reg__,r27) CR_TAB
                               AS2 (st ,X+,r26) CR_TAB
                               AS2 (st ,X,__tmp_reg__));
@@ -2492,7 +2518,7 @@ out_movhi_mr_r (insn,op,l)
             }
           else
             {
-              if (reg_unused_after (insn, XEXP (op[0],0)))
+              if (reg_unused_after (insn, base))
                 return *l=2, (AS2 (st,X+,%A1) CR_TAB
                               AS2 (st,X,%B1));
               else
@@ -2505,15 +2531,14 @@ out_movhi_mr_r (insn,op,l)
         return  *l=2, (AS2 (st ,%0,%A1)    CR_TAB
                        AS2 (std,%0+1,%B1));
     }
-  else if (GET_CODE (XEXP (op[0],0)) == PLUS)
+  else if (GET_CODE (base) == PLUS)
     {
-      int disp = INTVAL(XEXP (XEXP (op[0],0), 1));
-      if (disp > MAX_LD_OFFSET (GET_MODE (op[0])))
+      int disp = INTVAL (XEXP (base, 1));
+      if (disp > MAX_LD_OFFSET (GET_MODE (dest)))
 	{
-	  rtx x = XEXP (op[0],0);
-	  if (REGNO (XEXP (x,0)) != REG_Y)
+	  if (REGNO (XEXP (base, 0)) != REG_Y)
 	    fatal_insn ("Incorrect insn:",insn);
-	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (op[0])))
+	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (dest)))
 	    {
 	      op[4] = GEN_INT (disp - 62);
 	      return *l=4,(AS2 (adiw, r28, %4) CR_TAB
@@ -2523,7 +2548,7 @@ out_movhi_mr_r (insn,op,l)
 	    }
 	  else
 	    {
-	      op[4] = XEXP (x,1);
+	      op[4] = XEXP (base, 1);
 	      return *l=6,(AS2 (subi, r28, lo8(-%4))  CR_TAB
 			   AS2 (sbci, r29, hi8(-%4)) CR_TAB
 			   AS2 (st, Y,%A1)           CR_TAB
@@ -2535,10 +2560,10 @@ out_movhi_mr_r (insn,op,l)
       return *l=2, (AS2 (std,%A0,%A1)    CR_TAB
 		    AS2 (std,%B0,%B1));
     }
-  else if (GET_CODE (XEXP (op[0],0)) == PRE_DEC) /* (--R) */
+  else if (GET_CODE (base) == PRE_DEC) /* (--R) */
     return *l=2, (AS2 (st,%0,%B1) CR_TAB
 		  AS2 (st,%0,%A1));
-  else if (GET_CODE (XEXP (op[0],0)) == POST_INC) /* (R++) */
+  else if (GET_CODE (base) == POST_INC) /* (R++) */
     return *l=2, (AS2 (st,%0,%A1)  CR_TAB
 		  AS2 (st,%0,%B1));
   fatal_insn ("Unknown move insn:",insn);
@@ -2548,7 +2573,7 @@ out_movhi_mr_r (insn,op,l)
 /* Return 1 if frame pointer for current function required */
 
 int
-frame_pointer_required_p(void)
+frame_pointer_required_p ()
 {
   return (current_function_calls_alloca
 	  || current_function_args_info.nregs == 0
@@ -2595,8 +2620,8 @@ compare_eq_p (insn)
 
 /* Output test instruction for HImode */
 
-char *
-out_tsthi (insn,l)
+const char *
+out_tsthi (insn, l)
      rtx insn;
      int *l;
 {
@@ -2605,15 +2630,16 @@ out_tsthi (insn,l)
       if (l) *l = 1;
       return AS1 (tst,%B0);
     }
+  if (reg_unused_after (insn, SET_SRC (PATTERN (insn))))
+    {
+      /* faster than sbiw if we can clobber the operand */
+      if (l) *l = 1;
+      return AS2 (or,%A0,%B0);
+    }
   if (test_hard_reg_class (ADDW_REGS, SET_SRC (PATTERN (insn))))
     {
       if (l) *l = 1;
       return AS2 (sbiw,%0,0);
-    }
-  if (compare_eq_p (insn) && reg_unused_after (insn, SET_SRC (PATTERN (insn))))
-    {
-      if (l) *l = 1;
-      return AS2 (or,%A0,%B0);
     }
   if (l) *l = 2;
   return (AS2 (cp,%A0,__zero_reg__) CR_TAB
@@ -2623,8 +2649,8 @@ out_tsthi (insn,l)
 
 /* Output test instruction for SImode */
 
-char *
-out_tstsi (insn,l)
+const char *
+out_tstsi (insn, l)
      rtx insn;
      int *l;
 {
@@ -2652,8 +2678,8 @@ out_tstsi (insn,l)
    Shift count are CONST_INT or REG.  */
 
 void
-out_shift_with_cnt (template,insn,operands,len)
-     char * template;
+out_shift_with_cnt (template, insn, operands, len)
+     const char *template;
      rtx insn;
      rtx operands[];
      int *len;
@@ -2729,8 +2755,8 @@ out_shift_with_cnt (template,insn,operands,len)
 
 /* 8bit shift left ((char)x << i)   */
 
-char *
-ashlqi3_out (insn,operands,len)
+const char *
+ashlqi3_out (insn, operands, len)
      rtx insn;
      rtx operands[];
      int *len;			/* insn length (may be NULL) */
@@ -2828,8 +2854,8 @@ ashlqi3_out (insn,operands,len)
 
 /* 16bit shift left ((short)x << i)   */
 
-char *
-ashlhi3_out (insn,operands,len)
+const char *
+ashlhi3_out (insn, operands, len)
      rtx insn;
      rtx operands[];
      int *len;
@@ -2877,8 +2903,8 @@ ashlhi3_out (insn,operands,len)
 
 /* 32bit shift left ((long)x << i)   */
 
-char *
-ashlsi3_out (insn,operands,len)
+const char *
+ashlsi3_out (insn, operands, len)
      rtx insn;
      rtx operands[];
      int *len;
@@ -2982,8 +3008,8 @@ ashlsi3_out (insn,operands,len)
 
 /* 8bit arithmetic shift right  ((signed char)x >> i) */
 
-char *
-ashrqi3_out (insn,operands,len)
+const char *
+ashrqi3_out (insn, operands, len)
      rtx insn;
      rtx operands[];
      int *len; /* insn length */
@@ -3054,8 +3080,8 @@ ashrqi3_out (insn,operands,len)
 
 /* 16bit arithmetic shift right  ((signed short)x >> i) */
 
-char *
-ashrhi3_out (insn,operands,len)
+const char *
+ashrhi3_out (insn, operands, len)
      rtx insn;
      rtx operands[];
      int *len;
@@ -3112,8 +3138,8 @@ ashrhi3_out (insn,operands,len)
 
 /* 32bit arithmetic shift right  ((signed long)x >> i) */
 
-char *
-ashrsi3_out (insn,operands,len)
+const char *
+ashrsi3_out (insn, operands, len)
      rtx insn;
      rtx operands[];
      int *len;
@@ -3228,8 +3254,8 @@ ashrsi3_out (insn,operands,len)
 
 /* 8bit logic shift right ((unsigned char)x >> i) */
 
-char *
-lshrqi3_out (insn,operands,len)
+const char *
+lshrqi3_out (insn, operands, len)
      rtx insn;
      rtx operands[];
      int *len;
@@ -3325,8 +3351,8 @@ lshrqi3_out (insn,operands,len)
 
 /* 16bit logic shift right ((unsigned short)x >> i) */
 
-char *
-lshrhi3_out (insn,operands,len)
+const char *
+lshrhi3_out (insn, operands, len)
      rtx insn;
      rtx operands[];
      int *len;
@@ -3380,8 +3406,8 @@ lshrhi3_out (insn,operands,len)
 
 /* 32bit logic shift right ((unsigned int)x >> i) */
 
-char *
-lshrsi3_out (insn,operands,len)
+const char *
+lshrsi3_out (insn, operands, len)
      rtx insn;
      rtx operands[];
      int *len;
@@ -3477,7 +3503,7 @@ lshrsi3_out (insn,operands,len)
  LEN is the initially computed length of the insn.  */
 
 int
-adjust_insn_length (insn,len)
+adjust_insn_length (insn, len)
      rtx insn;
      int len;
 {
@@ -3537,13 +3563,13 @@ adjust_insn_length (insn,len)
 	    {
 	      HOST_WIDE_INT mask = INTVAL (XEXP (op[1],1));
 	      if (GET_MODE (op[1]) == SImode)
-		len = (((mask & 0xff) == 0)
-		       + ((mask & 0xff00) == 0)
-		       + ((mask & 0xff0000UL) == 0)
-		       + ((mask & 0xff000000UL) ==0));
+		len = (((mask & 0xff) != 0)
+		       + ((mask & 0xff00) != 0)
+		       + ((mask & 0xff0000UL) != 0)
+		       + ((mask & 0xff000000UL) != 0));
 	      else if (GET_MODE (op[1]) == HImode)
-		len = (((mask & 0xff) == 0)
-		       + ((mask & 0xff00) == 0));
+		len = (((mask & 0xff) != 0)
+		       + ((mask & 0xff00) != 0));
 	    }
 	}
     }
@@ -3718,7 +3744,7 @@ _reg_unused_after (insn, reg)
 /* Output rtx VALUE as .byte to file FILE */
 
 void
-asm_output_char(file,value)
+asm_output_char (file, value)
      FILE *file;
      rtx value;
 {
@@ -3731,11 +3757,11 @@ asm_output_char(file,value)
 /* Output VALUE as .byte to file FILE */
 
 void
-asm_output_byte (file,value)
+asm_output_byte (file, value)
      FILE *file;
      int value;
 {
-  fprintf (file, "\t.byte 0x%x\n",value & 0xff);
+  fprintf (file, "\t.byte 0x%x\n", value & 0xff);
 }
 
 
@@ -3773,7 +3799,7 @@ asm_output_float (file, n)
   
   REAL_VALUE_TO_TARGET_SINGLE (n, val);
   REAL_VALUE_TO_DECIMAL (n, "%g", dstr);
-  fprintf (file, "\t.long 0x%08lx\t/* %s */\n",val, dstr);
+  fprintf (file, "\t.long 0x%08lx\t/* %s */\n", val, dstr);
 }
 
 /* Sets section name for declaration DECL */
@@ -3784,8 +3810,8 @@ unique_section (decl, reloc)
      int reloc ATTRIBUTE_UNUSED;
 {
   int len;
-  char *name,*string;
-  char *prefix;
+  const char *name, *prefix;
+  char *string;
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   /* Strip off any encoding in name.  */
   STRIP_NAME_ENCODING (name, name);
@@ -3836,10 +3862,10 @@ asm_output_section_name(file, decl, name, reloc)
 
 void
 gas_output_limited_string(file, str)
-     FILE * file ATTRIBUTE_UNUSED;
-     char * str;
+     FILE *file;
+     const char * str;
 {
-  unsigned char *_limited_str = (unsigned char *) str;
+  const unsigned char *_limited_str = (unsigned char *) str;
   unsigned ch;
   fprintf (file, "\t%s\t\"", STRING_ASM_OP);
   for (; (ch = *_limited_str); _limited_str++)
@@ -3872,15 +3898,15 @@ gas_output_limited_string(file, str)
 void
 gas_output_ascii(file, str, length)
      FILE * file;
-     char * str;
+     const char * str;
      size_t length;
 {
-  unsigned char *_ascii_bytes = (unsigned char *) str;
-  unsigned char *limit = _ascii_bytes + length;
+  const unsigned char *_ascii_bytes = (const unsigned char *) str;
+  const unsigned char *limit = _ascii_bytes + length;
   unsigned bytes_in_chunk = 0;
   for (; _ascii_bytes < limit; _ascii_bytes++)
     {
-      register unsigned char *p;
+      const unsigned char *p;
       if (bytes_in_chunk >= 60)
 	{
 	  fprintf (file, "\"\n");
@@ -3931,7 +3957,8 @@ gas_output_ascii(file, str, length)
    because registers of CLASS are needed for spill registers.  */
 
 enum reg_class
-class_likely_spilled_p(int c)
+class_likely_spilled_p (c)
+     int c;
 {
   return (c != ALL_REGS && c != ADDW_REGS);
 }
@@ -4025,7 +4052,7 @@ encode_section_info (decl)
       && TREE_CODE (decl) == VAR_DECL
       && avr_progmem_p (decl))
     {
-      char * dsec = ".progmem.data";
+      const char *dsec = ".progmem.data";
       DECL_SECTION_NAME (decl) = build_string (strlen (dsec), dsec);
       TREE_READONLY (decl) = 1;
     }
@@ -4077,7 +4104,7 @@ asm_file_end (file)
    next register; and so on.  */
 
 void
-order_regs_for_local_alloc (void)
+order_regs_for_local_alloc ()
 {
   unsigned int i;
   int order_0[] = {
@@ -4190,7 +4217,8 @@ default_rtx_costs (X, code, outer_code)
 /* Calculate the cost of a memory address */
 
 int
-avr_address_cost (rtx x)
+avr_address_cost (x)
+     rtx x;
 {
   if (GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x,1)) == CONST_INT
@@ -4198,14 +4226,18 @@ avr_address_cost (rtx x)
       && INTVAL (XEXP (x,1)) >= 61)
     return 18;
   if (CONSTANT_ADDRESS_P (x))
-    return 4;
+    {
+      if (io_address_p (x, 1))
+	return 2;
+      return 4;
+    }
   return 4;
 }
 
 /*  EXTRA_CONSTRAINT helper */
 
 int
-extra_constraint (x,c)
+extra_constraint (x, c)
      rtx x;
      int c;
 {
@@ -4361,7 +4393,7 @@ machine_dependent_reorg (first_insn)
 /* Returns register number for function return value.*/
 
 int
-avr_ret_register (void)
+avr_ret_register ()
 {
   return 24;
 }
@@ -4383,7 +4415,7 @@ avr_libcall_value (mode)
    function returns a value of data type VALTYPE.  */
 
 rtx
-avr_function_value (type,func)
+avr_function_value (type, func)
      tree type;
      tree func ATTRIBUTE_UNUSED;
 {
@@ -4539,7 +4571,7 @@ const_int_pow2_p (x)
   return 0;
 }
 
-char *
+const char *
 output_reload_inhi (insn, operands, len)
      rtx insn ATTRIBUTE_UNUSED;
      rtx *operands;
@@ -4582,36 +4614,50 @@ output_reload_inhi (insn, operands, len)
 }
 
 
-char *
-output_reload_insisf (insn, operands, which_alternative)
+const char *
+output_reload_insisf (insn, operands, len)
      rtx insn ATTRIBUTE_UNUSED;
      rtx *operands;
-     int which_alternative ATTRIBUTE_UNUSED;
+     int *len;
 {
-  int cnst = (GET_CODE (operands[1]) == CONST_INT);
+  rtx src = operands[1];
+  int cnst = (GET_CODE (src) == CONST_INT);
 
-  if (cnst && ((INTVAL (operands[1]) & 0xff) == 0))
+  if (len)
+    {
+      if (cnst)
+	*len = 4 + ((INTVAL (src) & 0xff) != 0)
+		+ ((INTVAL (src) & 0xff00) != 0)
+		+ ((INTVAL (src) & 0xff0000) != 0)
+		+ ((INTVAL (src) & 0xff000000U) != 0);
+      else
+	*len = 8;
+
+      return "";
+    }
+
+  if (cnst && ((INTVAL (src) & 0xff) == 0))
     output_asm_insn (AS2 (mov, %A0, __zero_reg__), operands);
   else
     {
       output_asm_insn (AS2 (ldi, %2, lo8(%1)), operands);
       output_asm_insn (AS2 (mov, %A0, %2), operands);
     }
-  if (cnst && ((INTVAL (operands[1]) & 0xff00) == 0))
+  if (cnst && ((INTVAL (src) & 0xff00) == 0))
     output_asm_insn (AS2 (mov, %B0, __zero_reg__), operands);
   else
     {
       output_asm_insn (AS2 (ldi, %2, hi8(%1)), operands);
       output_asm_insn (AS2 (mov, %B0, %2), operands);
     }
-  if (cnst && ((INTVAL (operands[1]) & 0xff0000) == 0))
+  if (cnst && ((INTVAL (src) & 0xff0000) == 0))
     output_asm_insn (AS2 (mov, %C0, __zero_reg__), operands);
   else
     {
       output_asm_insn (AS2 (ldi, %2, hlo8(%1)), operands);
       output_asm_insn (AS2 (mov, %C0, %2), operands);
     }
-  if (cnst && ((INTVAL (operands[1]) & 0xff000000U) == 0))
+  if (cnst && ((INTVAL (src) & 0xff000000U) == 0))
     output_asm_insn (AS2 (mov, %D0, __zero_reg__), operands);
   else
     {
