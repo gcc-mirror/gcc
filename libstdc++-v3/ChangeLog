@@ -1,3 +1,14 @@
+2004-03-08  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	PR c++/13658
+	* testsuite/23_containers/deque/modifiers/swap.cc: New.
+	* testsuite/23_containers/list/modifiers/swap.cc: New.
+	* testsuite/23_containers/map/modifiers/swap.cc: New.
+	* testsuite/23_containers/multimap/modifiers/swap.cc: New.
+	* testsuite/23_containers/multiset/modifiers/swap.cc: New.
+	* testsuite/23_containers/set/modifiers/swap.cc: New.
+	* testsuite/23_containers/vector/modifiers/swap.cc: New.
+	
 2004-03-08  Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/12658
