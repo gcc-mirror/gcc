@@ -1,5 +1,5 @@
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,34 +26,21 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _CPP_BACKWARD_IOSTREAM_H
-#define _CPP_BACKWARD_IOSTREAM_H 1
+#ifndef _CPP_BACKWARD_COMPLEX_H
+#define _CPP_BACKWARD_COMPLEX_H 1
 
-#include <bits/std_iostream.h>
+#include <bits/stl_config.h>
+#include <bits/std_complex.h>
 
 #ifdef __STL_USE_NAMESPACES
-using __STD::iostream;
-using __STD::ostream;
-using __STD::istream;
-using __STD::ios;
-using __STD::streambuf;
-
-using __STD::cout;
-using __STD::cin;
-using __STD::cerr;
-using __STD::clog;
-#ifdef _GLIBCPP_USE_WCHAR_T
-using __STD::wcout;
-using __STD::wcin;
-using __STD::wcerr;
-using __STD::wclog;
-#endif
-
-using __STD::endl;
-using __STD::ends;
+using __STD::complex;
 #endif /* __STL_USE_NAMESPACES */
 
-#endif /* _CPP_BACKWARD_IOSTREAM_H */
+typedef complex<float> float_complex;
+typedef complex<double> double_complex;
+typedef complex<long double> long_double_complex;
+
+#endif /* _CPP_BACKWARD_COMPLEX_H */
 
 // Local Variables:
 // mode:C++
