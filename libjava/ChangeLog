@@ -1,3 +1,14 @@
+2005-03-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.ac: Revert 2005-03-25's patch.  Propagate MULTIlib
+	settings to sub Makefiles.
+	(GCJH, ZIP): Prefix with top_builddir.
+	* configure: Rebuild.
+	* external/w3c_dom/Makefile.am (MULTIBUILDTOP): Don't override.
+	* external/w3c_dom/Makefile.in: Rebuild.
+	* external/sax/Makefile.am (MULTIBUILDTOP): Don't override.
+	* external/sax/Makefile.in: Rebuild.
+
 2005-03-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* testsuite/libjava.jni/jni.exp (gcj_jni_invocation_test_one): Add

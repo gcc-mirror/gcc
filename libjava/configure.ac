@@ -1029,7 +1029,6 @@ NATIVE=yes
 # Which gcj do we use?
 which_gcj=default
 built_gcc_dir="`cd ${builddotdot}/../../${host_subdir}/gcc && ${PWDCMD-pwd}`"
-built_hostdir="`cd ${builddotdot}/../../${host_subdir} && ${PWDCMD-pwd}`"
 if test -n "${with_cross_host}"; then
   # We are being configured with a cross compiler. We can't
   # use ac_exeext, because that is for the target platform.
@@ -1068,10 +1067,8 @@ fi
 case "${which_gcj}" in
    built)
       GCJ="$built_gcc_dir/gcj -B`${PWDCMD-pwd}`/ -B$built_gcc_dir/"
-      # GCJH='$(MULTIBUILDTOP)../../$(host_subdir)/gcc/gcjh'
-      GCJH="$built_gcc_dir/gcjh"
-      # ZIP='$(MULTIBUILDTOP)../../$(host_subdir)/fastjar/fastjar'
-      ZIP="$built_hostdir/fastjar/fastjar"
+      GCJH='$(top_builddir)/$(MULTIBUILDTOP)../../$(host_subdir)/gcc/gcjh'
+      ZIP='$(top_builddir)/$(MULTIBUILDTOP)../../$(host_subdir)/fastjar/fastjar'
    ;;
    cross)
       if test "x${with_newlib}" = "xyes"; then
@@ -1088,7 +1085,7 @@ case "${which_gcj}" in
       GCJ="gcj -B`${PWDCMD-pwd}`/"
       ## In this case, gcj is found outside the build tree.  However, zip is
       ## found in the build tree.
-      ZIP='$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar'
+      ZIP='$(top_builddir)/$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar'
       GCJH=gcjh
    ;;
 esac
@@ -1402,6 +1399,12 @@ case " $CONFIG_FILES " in
    ac_file=Makefile . ${libgcj_basedir}/../config-ml.in
    ;;
 esac
+for ac_multi_file in $CONFIG_FILES; do
+  case $ac_multi_file in
+  */Makefile)
+    grep "^MULTI[[^ ]]* =" Makefile >> "$ac_multi_file" ;;
+  esac
+done
 ],
 srcdir=${srcdir}
 host=${host}
