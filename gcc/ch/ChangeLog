@@ -1,3 +1,10 @@
+Wed Oct 14 22:19:48 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* typeck.c (build_chill_cast): Fix typo in assignment statement.
+
+	* tasking.c (build_signal_descriptor): Use IDENTIFIER_POINTER()
+	when printing a `tree'.
+
 Fri Oct  9 13:01:23 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ch-tree.h (build_delay_case_end): Remove unused parameter.
