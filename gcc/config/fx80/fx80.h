@@ -900,7 +900,7 @@ extern enum reg_class regno_reg_class[];
       else if (((D) > 0) && ((D) < 1.1754943508222873e-38))		\
 	(OVERFLOW) = 1, (D) = 0.0;					\
       else if (((d) < 0) && ((d) > -1.1754943508222873e-38))		\
-	(OVEFLOW) = 1, (D) = 0.0;					\
+	(OVERFLOW) = 1, (D) = 0.0;					\
     }
 
 /* Tell final.c how to eliminate redundant test instructions.  */
