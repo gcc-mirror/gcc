@@ -1,5 +1,9 @@
 2000-01-25  Gavin Romig-Koch  <gavin@cygnus.com>
 
+	* config/mips/mips.h (LEGITIMATE_CONSTANT_P): Fix for mips16.
+
+2000-01-25  Gavin Romig-Koch  <gavin@cygnus.com>
+
 	* Makefile.in (c-gperf.h) : Change the "See" pointer to
 	point to the new "generated_files" doc.
 
