@@ -1156,7 +1156,6 @@
   ""
   "
 {
-  extern rtx expand_unop ();
   if (GET_CODE (operands[2]) == CONST_INT)
     operands[2] = GEN_INT (~INTVAL (operands[2]));
   else
@@ -1170,7 +1169,6 @@
   ""
   "
 {
-  extern rtx expand_unop ();
   if (GET_CODE (operands[2]) == CONST_INT)
     operands[2] = GEN_INT (~INTVAL (operands[2]));
   else
@@ -1184,7 +1182,6 @@
   ""
   "
 {
-  extern rtx expand_unop ();
   rtx op = operands[2];
   if (GET_CODE (op) == CONST_INT)
     operands[2] = GEN_INT (((1 << 8) - 1) & ~INTVAL (op));

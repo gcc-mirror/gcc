@@ -2488,7 +2488,7 @@ output_64bit_ior (operands)
 void
 output_ascii (file, p, size)
      FILE *file;
-     const unsigned char *p;
+     const char *p;
      int size;
 {
   int i;

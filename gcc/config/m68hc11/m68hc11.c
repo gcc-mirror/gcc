@@ -52,6 +52,7 @@ Note:
 #include "basic-block.h"
 #include "function.h"
 #include "ggc.h"
+#include "reload.h"
 #include "target.h"
 #include "target-def.h"
 
@@ -1095,7 +1096,7 @@ m68hc11_initialize_trampoline (tramp, fnaddr, cxt)
      rtx fnaddr;
      rtx cxt;
 {
-  char *static_chain_reg = reg_names[STATIC_CHAIN_REGNUM];
+  const char *static_chain_reg = reg_names[STATIC_CHAIN_REGNUM];
 
   /* Skip the '*'.  */
   if (*static_chain_reg == '*')
@@ -5216,7 +5217,7 @@ static void
 print_options (out)
      FILE *out;
 {
-  char *a_time;
+  const char *a_time;
   long c_time;
   int i;
   extern int save_argc;
@@ -5246,7 +5247,7 @@ print_options (out)
 void
 m68hc11_asm_file_start (out, main_file)
      FILE *out;
-     char *main_file;
+     const char *main_file;
 {
   fprintf (out, ";;;-----------------------------------------\n");
   fprintf (out, ";;; Start MC68HC11 gcc assembly output\n");

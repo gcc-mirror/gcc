@@ -285,6 +285,7 @@ do {  \
    works correctly).  */
 
 #define EXTRA_SECTION_FUNCTIONS						\
+extern void readonly_data PARAMS ((void));				\
 void									\
 readonly_data ()							\
 {									\

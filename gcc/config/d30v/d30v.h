@@ -1534,7 +1534,7 @@ extern enum reg_class regno_reg_class[];
 	'g', 'i', 'm', 'n', 'o', 'p', 'r', 's' */
 
 extern enum reg_class reg_class_from_letter[];
-#define REG_CLASS_FROM_LETTER(CHAR) reg_class_from_letter[ CHAR ]
+#define REG_CLASS_FROM_LETTER(CHAR) reg_class_from_letter[(unsigned char)(CHAR)]
 
 /* A C expression which is nonzero if register number NUM is suitable for use
    as a base register in operand addresses.  It may be either a suitable hard

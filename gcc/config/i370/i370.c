@@ -411,7 +411,7 @@ i370_short_branch (insn)
 	if (addr > lp -> label_last_ref) lp->label_last_ref = addr;	\
 }
 
-void 
+static void 
 i370_label_scan () 
 {
    rtx insn;
@@ -590,7 +590,7 @@ check_label_emit ()
    allocated from memory.
    ID is the label number of the label being added to the list.  */
 
-label_node_t *
+static label_node_t *
 mvs_get_label (id)
      int id;
 {
@@ -702,6 +702,7 @@ mvs_check_label (id)
 /* Get the page on which the label sits.  This will be used to 
    determine is a register reload is really needed.  */
 
+#if 0
 int
 mvs_get_label_page(int id)
 {
@@ -714,6 +715,7 @@ mvs_get_label_page(int id)
     }
   return -1;
 }
+#endif
 
 /* The label list for the current page freed by linking the list onto the free
    label element chain.  */

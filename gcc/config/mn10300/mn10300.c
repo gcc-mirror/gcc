@@ -1029,7 +1029,7 @@ function_arg_partial_nregs (cum, mode, type, named)
 }
 
 /* Output a tst insn.  */
-char *
+const char *
 output_tst (operand, insn)
      rtx operand, insn;
 {

@@ -21,6 +21,7 @@ Boston, MA 02111-1307, USA.  */
 /* This file just exists to give specs for the 960 running on VxWorks.
    VxWorks does all the library stuff itself.  */
 
+#undef MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS { "msoft-float" }
 
 #undef LIB_SPEC

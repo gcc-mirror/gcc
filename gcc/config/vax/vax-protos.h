@@ -36,3 +36,4 @@ extern void vms_check_external PARAMS ((tree, const char *, int));
 #endif /* TREE_CODE */
 
 extern void vms_flush_pending_externals PARAMS ((FILE *));
+extern void const_section PARAMS ((void));

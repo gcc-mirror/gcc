@@ -917,6 +917,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 #define EXTRA_SECTIONS  in_readonly_data
 
 #define EXTRA_SECTION_FUNCTIONS		\
+    extern void const_section PARAMS ((void));			\
     void const_section()					\
     {								\
 	fprintf(asm_out_file,"\tkonst\n");			\
@@ -1105,7 +1106,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 	if (label_pending)						\
 	   label_pending = 0;						\
 	datalbl[datalbl_ndx].size += LEN;				\
-	for (i = 0; i < LEN; i++) {					\
+	for (i = 0; i < (int) LEN; i++) {				\
 	  if ((i % 15) == 0) {						\
 	    if (i != 0)							\
 	      fprintf(FILE,"\n");					\

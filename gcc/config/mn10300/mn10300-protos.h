@@ -34,7 +34,7 @@ extern void mn10300_gen_multiple_store PARAMS ((int));
 extern void notice_update_cc PARAMS ((rtx, rtx));
 extern enum reg_class secondary_reload_class PARAMS ((enum reg_class,
 						      enum machine_mode, rtx));
-extern char *output_tst PARAMS ((rtx, rtx));
+extern const char *output_tst PARAMS ((rtx, rtx));
 extern int store_multiple_operation PARAMS ((rtx, enum machine_mode));
 extern int symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int call_address_operand PARAMS ((rtx, enum machine_mode));

@@ -1,3 +1,63 @@
+2001-11-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* 1750a.h (EXTRA_SECTION_FUNCTIONS): Add prototype.
+	(ASM_OUTPUT_ASCII): Avoid signed/unsigned warning.
+	* c4x.h (INIT_SECTION_FUNCTION): Add prototype.
+	(ASM_FILE_START): Const-ify.
+	(ASM_OUTPUT_BYTE_FLOAT, ASM_OUTPUT_SHORT_FLOAT): Fix format
+	specifier warning.
+	* c4x.md: Don't use the 'U' integer suffix.
+	* clipper.md (clipper_movstr): Delete declaration.
+	* d30v-protos.h (d30v_move_2words): Const-ify.
+	(debug_stack_info): Add prototype.
+	* d30v.c: Include "integrate.h".
+	(d30v_function_arg_boundary, d30v_function_arg,
+	d30v_function_arg_partial_nregs, d30v_function_arg_advance): Avoid
+	signed/unsigned warnings.
+	(d30v_print_operand_memory_reference, d30v_move_2words):
+	Const-ify.
+	* d30v.h (REG_CLASS_FROM_LETTER): Use unsigned array subscript.
+	* fr30.c (fr30_pass_by_reference, fr30_pass_by_value): Prototype.
+	* fr30.md: Const-ify.
+	* h8300.h (EXTRA_SECTION_FUNCTIONS): Add prototype.
+	* i370.c (i370_label_scan, mvs_get_label): Make definition static.
+	(mvs_get_label_page): Hide unused static function.
+	* i860.c (current_function_original_name): Const-ify.
+	* i860/sysv3.h (current_function_original_name): Likewise.
+	* i860/sysv4.h (current_function_original_name): Likewise.
+	* i960.md: Add default case in switches.  Remove unused variable.
+	* i960/vx960-coff.h (MULTILIB_DEFAULTS): Undef before defining.
+	* m32r.md: Const-ify.
+	* m68hc11-protos.h (m68hc11_asm_file_start): Const-ify.
+	* m68hc11.c: Include "reload.h".
+	(static_chain_reg, print_options, m68hc11_asm_file_start):
+	Const-ify.
+	* m68hc11.md: Delete unused variable.  Const-ify.  Add parens
+	around & in comparison.
+	* mcore.h (TARGET_ASM_NAMED_SECTION): Undef before defining.
+	* mn10200.c (shift_mode): Remove trailing comma.
+	* mn10300-protos.h (output_tst): Const-ify.
+	* mn10300.c (output_tst): Likewise.
+	* pa/long_double.h (ASM_OUTPUT_LONG_DOUBLE): Fix format specifier
+	warnings.
+	* pa-protos.h (output_ascii): Use regular char *, not unsigned.
+	* pa.c (output_ascii): Likewise.
+	* pa/som.h (EXTRA_SECTION_FUNCTIONS): Add prototype.
+	* pdp11.md (expand_unop): Delete declarations.
+	* pj-protos.h (pj_output_addsi3): Const-ify.
+	* pj.c (pj_output_push_int, pj_output_load, pj_output_inc,
+	pj_output_cnv_op, mode_to_char, pj_output_varidx, pj_print_cond,
+	unique_src_operand): Add prototypes.
+	(pj_output_store_into_lval): Make definition static.
+	(pj_function_incoming_arg): Don't use unary plus.
+	(pj_output_addsi3): Const-ify.
+	* romp.md (get_symref): Delete declarations.
+	* v850-c.c (mark_current_function_as_interrupt): Don't return
+	value from void function.
+	* v850.c: Include "integrate.h".
+	* v850.h (ASM_OUTPUT_LABELREF): Const-ify.
+	* vax-protos.h (const_section): Add prototype.
+
 2001-11-03  Aldy Hernandez  <aldyh@redhat.com>
 
         * machmode.def: Add documentation for the seventh argument in

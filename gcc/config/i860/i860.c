@@ -1663,7 +1663,7 @@ sfmode_constant_to_ulong (x)
 
 extern char call_used_regs[];
 
-char *current_function_original_name;
+const char *current_function_original_name;
 
 static int must_preserve_r1;
 static unsigned must_preserve_bytes;

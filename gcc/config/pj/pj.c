@@ -110,6 +110,14 @@ enum machine_mode pj_cmp_mode;
 
 static void pj_output_rval PARAMS ((rtx, enum machine_mode, rtx));
 static void pj_output_store_into_lval PARAMS ((enum machine_mode mode, rtx op));
+static void pj_output_push_int PARAMS ((int));
+static void pj_output_load PARAMS ((enum machine_mode, int));
+static void pj_output_inc PARAMS ((rtx, int));
+static void pj_output_cnv_op PARAMS ((enum insn_code, rtx));
+static char mode_to_char PARAMS ((enum machine_mode));
+static void pj_output_varidx PARAMS ((enum machine_mode, int, int));
+static void pj_print_cond PARAMS ((enum rtx_code));
+static rtx *unique_src_operand PARAMS ((rtx *, rtx));
 
 /* These vectors turn a register number into an offset from the vars
    pointer register.  */
@@ -568,7 +576,7 @@ pj_output_rval (op, mode, outer_op)
 
 /* Store the top of stack into the lval operand OP.  */
 
-void
+static void
 pj_output_store_into_lval (mode, op)
      enum machine_mode mode;
      rtx op;
@@ -829,7 +837,7 @@ pj_function_incoming_arg (cum, mode, passed_type, named_arg)
       int i;
       if (mode == DImode || mode == DFmode)
 	{
-	  cum->arg_adjust[cum->total_words + 0] = +1;
+	  cum->arg_adjust[cum->total_words + 0] = 1;
 	  cum->arg_adjust[cum->total_words + 1] = -1;
 	}
       else
@@ -844,7 +852,7 @@ pj_function_incoming_arg (cum, mode, passed_type, named_arg)
 /* Output code to add two SImode values.  Deals carefully with the the common
    case of moving the optop.  */
 
-char *
+const char *
 pj_output_addsi3 (operands)
      rtx *operands;
 {

@@ -555,7 +555,6 @@
   ""
   "*
 {
-  extern void clipper_movstr ();
   clipper_movstr (operands);
   return \"\";
 }"

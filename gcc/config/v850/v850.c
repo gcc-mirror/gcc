@@ -39,6 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "c-lex.h"
 #include "ggc.h"
+#include "integrate.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
