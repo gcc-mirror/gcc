@@ -1,5 +1,13 @@
 Tue Sep  7 01:27:21 1999  Jeffrey A Law  (law@cygnus.com)
 
+	Sun Aug 29 03:27:23 1999  Scott Weikart <scott@igc.apc.org>
+	* fix-header.c (main): Do not pass a null pointer to strcmp.
+
+	Thu Aug 19 14:42:38 1999  Mike Stump <mrs@wrs.com>
+				  Mark Mitchell <mark@codesourcery.com>
+	* c-common.c (c_get_alias_set): Fix support for poitners and
+	references.
+
 	Fri Aug 27 01:03:48 1999  Jim Kingdon  <http://developer.redhat.com>
 	with much help from Jeffrey A Law and Richard Henderson
 	* i386.md: In the 6 insns which call output_fix_trunc,

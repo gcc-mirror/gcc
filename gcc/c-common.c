@@ -3206,11 +3206,54 @@ c_get_alias_set (t)
        whose type is the same as one of the fields, recursively, but
        we don't yet make any use of that information.)  */
     TYPE_ALIAS_SET (type) = 0;
+  else if (TREE_CODE (type) == POINTER_TYPE
+	   || TREE_CODE (type) == REFERENCE_TYPE)
+    {
+      tree t;
+
+      /* Unfortunately, there is no canonical form of a pointer type.
+	 In particular, if we have `typedef int I', then `int *', and
+	 `I *' are different types.  So, we have to pick a canonical
+	 representative.  We do this below.
+	 
+	 Technically, this approach is actually more conservative that
+	 it needs to be.  In particular, `const int *' and `int *'
+	 chould be in different alias sets, according to the C and C++
+	 standard, since their types are not the same, and so,
+	 technically, an `int **' and `const int **' cannot point at
+	 the same thing.
+
+         But, the standard is wrong.  In particular, this code is
+	 legal C++:
+
+            int *ip;
+            int **ipp = &ip;
+            const int* const* cipp = &ip;
+
+         And, it doesn't make sense for that to be legal unless you
+	 can dereference IPP and CIPP.  So, we ignore cv-qualifiers on
+	 the pointed-to types.  This issue has been reported to the
+	 C++ committee.  */
+      t = TYPE_MAIN_VARIANT (TREE_TYPE (type));
+      t = ((TREE_CODE (type) == POINTER_TYPE)
+	   ? build_pointer_type (t) : build_reference_type (t));
+      if (t != type)
+	TYPE_ALIAS_SET (type) = c_get_alias_set (t);
+    }
 
   if (!TYPE_ALIAS_SET_KNOWN_P (type)) 
-    /* TYPE is something we haven't seen before.  Put it in a new
-       alias set.  */
-    TYPE_ALIAS_SET (type) = new_alias_set ();
+    {
+      /* Types that are not allocated on the permanent obstack are not
+	 placed in the type hash table.  Thus, there can be multiple
+	 copies of identical types in local scopes.  In the long run,
+	 all types should be permanent.  */
+      if (! TREE_PERMANENT (type))
+	TYPE_ALIAS_SET (type) = 0;
+      else
+	/* TYPE is something we haven't seen before.  Put it in a new
+	   alias set.  */
+	TYPE_ALIAS_SET (type) = new_alias_set ();
+    }
 
   return TYPE_ALIAS_SET (type);
 }
