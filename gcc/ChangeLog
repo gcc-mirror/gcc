@@ -1,3 +1,8 @@
+2005-01-24  Richard Henderson  <rth@redhat.com>
+            Aldy Hernandez  <aldyh@redhat.com>
+
+        * regrename.c (note_sets): Handle subregs.
+
 2005-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* flow.c (propagate_one_insn): Formatting.
