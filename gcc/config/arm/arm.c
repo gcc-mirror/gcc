@@ -1920,7 +1920,10 @@ legitimize_pic_address (orig, mode, reg)
       else
 	address = reg;
 
-      emit_insn (gen_pic_load_addr (address, orig));
+      if (TARGET_ARM)
+	emit_insn (gen_pic_load_addr_arm (address, orig));
+      else
+	emit_insn (gen_pic_load_addr_thumb (address, orig));
 
       pic_ref = gen_rtx_MEM (Pmode,
 			     gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
@@ -1993,8 +1996,12 @@ legitimize_pic_address (orig, mode, reg)
       if (NEED_GOT_RELOC)
 	{
 	  rtx pic_ref, address = gen_reg_rtx (Pmode);
+
+	  if (TARGET_ARM)
+	    emit_insn (gen_pic_load_addr_arm (address, orig));
+	  else
+	    emit_insn (gen_pic_load_addr_thumb (address, orig));
 	  
-	  emit_insn (gen_pic_load_addr (address, orig));
 	  pic_ref = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, address);
 	  
 	  emit_move_insn (address, pic_ref);
@@ -2044,11 +2051,16 @@ arm_finalize_pic ()
 
   pic_rtx = gen_rtx_CONST (Pmode, gen_rtx_MINUS (Pmode, pic_tmp2, pic_tmp));
   
-  emit_insn (gen_pic_load_addr (pic_offset_table_rtx, pic_rtx));
   if (TARGET_ARM)
-    emit_insn (gen_pic_add_dot_plus_eight (pic_offset_table_rtx, l1));
+    {
+      emit_insn (gen_pic_load_addr_arm (pic_offset_table_rtx, pic_rtx));
+      emit_insn (gen_pic_add_dot_plus_eight (pic_offset_table_rtx, l1));
+    }
   else
-    emit_insn (gen_pic_add_dot_plus_four (pic_offset_table_rtx, l1));
+    {
+      emit_insn (gen_pic_load_addr_thumb (pic_offset_table_rtx, pic_rtx));
+      emit_insn (gen_pic_add_dot_plus_four (pic_offset_table_rtx, l1));
+    }
 
   seq = gen_sequence ();
   end_sequence ();

@@ -4055,20 +4055,23 @@
 ;; the insn alone, and to force the minipool generation pass to then move
 ;; the GOT symbol to memory.
 
-(define_insn "pic_load_addr"
+(define_insn "pic_load_addr_arm"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(unspec:SI [(match_operand:SI 1 "" "mX")] 3))]
-  "TARGET_EITHER && flag_pic"
+  "TARGET_ARM && flag_pic"
   "ldr%?\\t%0, %1"
   [(set_attr "type" "load")
-   (set (attr "pool_range")
-	(if_then_else (eq_attr "is_thumb" "yes")
-		      (const_int 1024)
-		      (const_int 4096)))
-   (set (attr "neg_pool_range")
-	(if_then_else (eq_attr "is_thumb" "yes")
-		      (const_int 0)
-		      (const_int 4084)))]
+   (set (attr "pool_range")     (const_int 4096))
+   (set (attr "neg_pool_range") (const_int 4084))]
+)
+
+(define_insn "pic_load_addr_thumb"
+  [(set (match_operand:SI 0 "s_register_operand" "=l")
+	(unspec:SI [(match_operand:SI 1 "" "mX")] 3))]
+  "TARGET_THUMB && flag_pic"
+  "ldr\\t%0, %1"
+  [(set_attr "type" "load")
+   (set (attr "pool_range") (const_int 1024))]
 )
 
 ;; This variant is used for AOF assembly, since it needs to mention the
