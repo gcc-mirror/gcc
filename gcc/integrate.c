@@ -636,7 +636,7 @@ try_constants (rtx insn, struct inline_remap *map)
 
   /* Enforce consistency between the addresses in the regular insn flow
      and the ones in CALL_INSN_FUNCTION_USAGE lists, if any.  */
-  if (GET_CODE (insn) == CALL_INSN && CALL_INSN_FUNCTION_USAGE (insn))
+  if (CALL_P (insn) && CALL_INSN_FUNCTION_USAGE (insn))
     {
       subst_constants (&CALL_INSN_FUNCTION_USAGE (insn), insn, map, 1);
       apply_change_group ();

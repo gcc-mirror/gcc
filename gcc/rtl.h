@@ -276,12 +276,10 @@ struct rtx_def GTY((chain_next ("RTX_NEXT (&%h)"),
 
 /* FIXME: the "NEXT_INSN (PREV_INSN (X)) == X" condition shouldn't be needed.
  */
-#define RTX_PREV(X) ((GET_CODE (X) == INSN              \
-                      || GET_CODE (X) == CALL_INSN      \
-                      || GET_CODE (X) == JUMP_INSN      \
-                      || GET_CODE (X) == NOTE           \
-                      || GET_CODE (X) == BARRIER        \
-                      || GET_CODE (X) == CODE_LABEL)    \
+#define RTX_PREV(X) ((INSN_P (X)       			\
+                      || NOTE_P (X)       		\
+                      || BARRIER_P (X)        		\
+                      || LABEL_P (X))    		\
                      && PREV_INSN (X) != NULL           \
                      && NEXT_INSN (PREV_INSN (X)) == X  \
                      ? PREV_INSN (X) : NULL)

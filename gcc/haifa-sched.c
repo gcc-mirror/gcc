@@ -1363,7 +1363,7 @@ unlink_other_notes (rtx insn, rtx tail)
 {
   rtx prev = PREV_INSN (insn);
 
-  while (insn != tail && GET_CODE (insn) == NOTE)
+  while (insn != tail && NOTE_P (insn))
     {
       rtx next = NEXT_INSN (insn);
       /* Delete the note from its current position.  */
@@ -1399,7 +1399,7 @@ unlink_line_notes (rtx insn, rtx tail)
 {
   rtx prev = PREV_INSN (insn);
 
-  while (insn != tail && GET_CODE (insn) == NOTE)
+  while (insn != tail && NOTE_P (insn))
     {
       rtx next = NEXT_INSN (insn);
 
@@ -1435,11 +1435,11 @@ get_block_head_tail (int b, rtx *headp, rtx *tailp)
      basic block, or notes at the ends of basic blocks.  */
   while (head != tail)
     {
-      if (GET_CODE (head) == NOTE)
+      if (NOTE_P (head))
 	head = NEXT_INSN (head);
-      else if (GET_CODE (tail) == NOTE)
+      else if (NOTE_P (tail))
 	tail = PREV_INSN (tail);
-      else if (GET_CODE (head) == CODE_LABEL)
+      else if (LABEL_P (head))
 	head = NEXT_INSN (head);
       else
 	break;
@@ -1456,7 +1456,7 @@ no_real_insns_p (rtx head, rtx tail)
 {
   while (head != NEXT_INSN (tail))
     {
-      if (GET_CODE (head) != NOTE && GET_CODE (head) != CODE_LABEL)
+      if (!NOTE_P (head) && !LABEL_P (head))
 	return 0;
       head = NEXT_INSN (head);
     }
@@ -1481,7 +1481,7 @@ rm_line_notes (rtx head, rtx tail)
       /* Farm out notes, and maybe save them in NOTE_LIST.
          This is needed to keep the debugger from
          getting completely deranged.  */
-      if (GET_CODE (insn) == NOTE)
+      if (NOTE_P (insn))
 	{
 	  prev = insn;
 	  insn = unlink_line_notes (insn, next_tail);
@@ -1515,7 +1515,7 @@ save_line_notes (int b, rtx head, rtx tail)
   next_tail = NEXT_INSN (tail);
 
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
+    if (NOTE_P (insn) && NOTE_LINE_NUMBER (insn) > 0)
       line = insn;
     else
       LINE_NOTE (insn) = line;
@@ -1542,19 +1542,19 @@ restore_line_notes (rtx head, rtx tail)
      of this block.  If it happens to be the same, then we don't want to
      emit another line number note here.  */
   for (line = head; line; line = PREV_INSN (line))
-    if (GET_CODE (line) == NOTE && NOTE_LINE_NUMBER (line) > 0)
+    if (NOTE_P (line) && NOTE_LINE_NUMBER (line) > 0)
       break;
 
   /* Walk the insns keeping track of the current line-number and inserting
      the line-number notes as needed.  */
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
+    if (NOTE_P (insn) && NOTE_LINE_NUMBER (insn) > 0)
       line = insn;
   /* This used to emit line number notes before every non-deleted note.
      However, this confuses a debugger, because line notes not separated
      by real instructions all end up at the same address.  I can find no
      use for line number notes before other notes, so none are emitted.  */
-    else if (GET_CODE (insn) != NOTE
+    else if (!NOTE_P (insn)
 	     && INSN_UID (insn) < old_max_uid
 	     && (note = LINE_NOTE (insn)) != 0
 	     && note != line
@@ -1606,7 +1606,7 @@ rm_redundant_line_notes (void)
      are already present.  The remainder tend to occur at basic
      block boundaries.  */
   for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
-    if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
+    if (NOTE_P (insn) && NOTE_LINE_NUMBER (insn) > 0)
       {
 	/* If there are no active insns following, INSN is redundant.  */
 	if (active_insn == 0)
@@ -1632,9 +1632,9 @@ rm_redundant_line_notes (void)
 	  line = insn;
 	active_insn = 0;
       }
-    else if (!((GET_CODE (insn) == NOTE
+    else if (!((NOTE_P (insn)
 		&& NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED)
-	       || (GET_CODE (insn) == INSN
+	       || (NONJUMP_INSN_P (insn)
 		   && (GET_CODE (PATTERN (insn)) == USE
 		       || GET_CODE (PATTERN (insn)) == CLOBBER))))
       active_insn++;
@@ -1664,7 +1664,7 @@ rm_other_notes (rtx head, rtx tail)
       /* Farm out notes, and maybe save them in NOTE_LIST.
          This is needed to keep the debugger from
          getting completely deranged.  */
-      if (GET_CODE (insn) == NOTE)
+      if (NOTE_P (insn))
 	{
 	  prev = insn;
 
@@ -1849,7 +1849,7 @@ ok_for_early_queue_removal (rtx insn)
 	      rtx dep_link = 0;
 	      int dep_cost;
 
-	      if (GET_CODE (prev_insn) != NOTE)
+	      if (!NOTE_P (prev_insn))
 		{
 		  dep_link = find_insn_list (insn, INSN_DEPEND (prev_insn));
 		  if (dep_link)
@@ -2705,7 +2705,7 @@ set_priorities (rtx head, rtx tail)
   sched_max_insns_priority = 0;
   for (insn = tail; insn != prev_head; insn = PREV_INSN (insn))
     {
-      if (GET_CODE (insn) == NOTE)
+      if (NOTE_P (insn))
 	continue;
 
       n_insn++;
@@ -2799,7 +2799,7 @@ sched_init (FILE *dump_file)
 	   schedule differently depending on whether or not there are
 	   line-number notes, i.e., depending on whether or not we're
 	   generating debugging information.  */
-	if (GET_CODE (insn) != NOTE)
+	if (!NOTE_P (insn))
 	  ++luid;
 
 	if (insn == BB_END (b))
@@ -2825,7 +2825,7 @@ sched_init (FILE *dump_file)
       FOR_EACH_BB (b)
 	{
 	  for (line = BB_HEAD (b); line; line = PREV_INSN (line))
-	    if (GET_CODE (line) == NOTE && NOTE_LINE_NUMBER (line) > 0)
+	    if (NOTE_P (line) && NOTE_LINE_NUMBER (line) > 0)
 	      {
 		line_note_head[b->index] = line;
 		break;
@@ -2836,7 +2836,7 @@ sched_init (FILE *dump_file)
 	    {
 	      if (INSN_P (line))
 		break;
-	      if (GET_CODE (line) == NOTE && NOTE_LINE_NUMBER (line) > 0)
+	      if (NOTE_P (line) && NOTE_LINE_NUMBER (line) > 0)
 		line_note_head[b->index] = line;
 	    }
 	}
@@ -2853,10 +2853,10 @@ sched_init (FILE *dump_file)
 
   insn = BB_END (EXIT_BLOCK_PTR->prev_bb);
   if (NEXT_INSN (insn) == 0
-      || (GET_CODE (insn) != NOTE
-	  && GET_CODE (insn) != CODE_LABEL
+      || (!NOTE_P (insn)
+	  && !LABEL_P (insn)
 	  /* Don't emit a NOTE if it would end up before a BARRIER.  */
-	  && GET_CODE (NEXT_INSN (insn)) != BARRIER))
+	  && !BARRIER_P (NEXT_INSN (insn))))
     {
       emit_note_after (NOTE_INSN_DELETED, BB_END (EXIT_BLOCK_PTR->prev_bb));
       /* Make insn to appear outside BB.  */

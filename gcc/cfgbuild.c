@@ -66,7 +66,7 @@ inside_basic_block_p (rtx insn)
     case CODE_LABEL:
       /* Avoid creating of basic block for jumptables.  */
       return (NEXT_INSN (insn) == 0
-	      || GET_CODE (NEXT_INSN (insn)) != JUMP_INSN
+	      || !JUMP_P (NEXT_INSN (insn))
 	      || (GET_CODE (PATTERN (NEXT_INSN (insn))) != ADDR_VEC
 		  && GET_CODE (PATTERN (NEXT_INSN (insn))) != ADDR_DIFF_VEC));
 
@@ -148,7 +148,7 @@ count_basic_blocks (rtx f)
     {
       /* Code labels and barriers causes current basic block to be
          terminated at previous real insn.  */
-      if ((GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == BARRIER)
+      if ((LABEL_P (insn) || BARRIER_P (insn))
 	  && saw_insn)
 	count++, saw_insn = false;
 
@@ -183,7 +183,7 @@ count_basic_blocks (rtx f)
 static void
 make_label_edge (sbitmap *edge_cache, basic_block src, rtx label, int flags)
 {
-  if (GET_CODE (label) != CODE_LABEL)
+  if (!LABEL_P (label))
     abort ();
 
   /* If the label was never emitted, this insn is junk, but avoid a
@@ -202,7 +202,7 @@ make_label_edge (sbitmap *edge_cache, basic_block src, rtx label, int flags)
 void
 rtl_make_eh_edge (sbitmap *edge_cache, basic_block src, rtx insn)
 {
-  int is_call = GET_CODE (insn) == CALL_INSN ? EDGE_ABNORMAL_CALL : 0;
+  int is_call = CALL_P (insn) ? EDGE_ABNORMAL_CALL : 0;
   rtx handlers, i;
 
   handlers = reachable_handlers (insn);
@@ -269,7 +269,7 @@ make_edges (basic_block min, basic_block max, int update_p)
       int force_fallthru = 0;
       edge e;
 
-      if (GET_CODE (BB_HEAD (bb)) == CODE_LABEL
+      if (LABEL_P (BB_HEAD (bb))
 	  && LABEL_ALT_ENTRY_P (BB_HEAD (bb)))
 	cached_make_edge (NULL, ENTRY_BLOCK_PTR, bb, 0);
 
@@ -394,7 +394,7 @@ make_edges (basic_block min, basic_block max, int update_p)
 	    break;
 	  }
       while (insn
-	     && GET_CODE (insn) == NOTE
+	     && NOTE_P (insn)
 	     && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK)
 	insn = NEXT_INSN (insn);
 
@@ -437,7 +437,7 @@ find_basic_blocks_1 (rtx f)
 
       next = NEXT_INSN (insn);
 
-      if ((GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == BARRIER)
+      if ((LABEL_P (insn) || BARRIER_P (insn))
 	  && head)
 	{
 	  prev = create_basic_block_structure (head, end, bb_note, prev);
@@ -579,7 +579,7 @@ find_bb_boundaries (basic_block bb)
   if (insn == BB_END (bb))
     return;
 
-  if (GET_CODE (insn) == CODE_LABEL)
+  if (LABEL_P (insn))
     insn = NEXT_INSN (insn);
 
   /* Scan insn chain and try to find new basic block boundaries.  */

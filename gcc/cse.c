@@ -3486,7 +3486,7 @@ fold_rtx (rtx x, rtx insn)
 	    rtx label = XEXP (base, 0);
 	    rtx table_insn = NEXT_INSN (label);
 
-	    if (table_insn && GET_CODE (table_insn) == JUMP_INSN
+	    if (table_insn && JUMP_P (table_insn)
 		&& GET_CODE (PATTERN (table_insn)) == ADDR_VEC)
 	      {
 		rtx table = PATTERN (table_insn);
@@ -3497,7 +3497,7 @@ fold_rtx (rtx x, rtx insn)
 		  return XVECEXP (table, 0,
 				  offset / GET_MODE_SIZE (GET_MODE (table)));
 	      }
-	    if (table_insn && GET_CODE (table_insn) == JUMP_INSN
+	    if (table_insn && JUMP_P (table_insn)
 		&& GET_CODE (PATTERN (table_insn)) == ADDR_DIFF_VEC)
 	      {
 		rtx table = PATTERN (table_insn);
@@ -4589,7 +4589,7 @@ cse_insn (rtx insn, rtx libcall_insn)
      Also determine whether there is a CLOBBER that invalidates
      all memory references, or all references at varying addresses.  */
 
-  if (GET_CODE (insn) == CALL_INSN)
+  if (CALL_P (insn))
     {
       for (tem = CALL_INSN_FUNCTION_USAGE (insn); tem; tem = XEXP (tem, 1))
 	{
@@ -5597,7 +5597,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	{
 	  /* Now emit a BARRIER after the unconditional jump.  */
 	  if (NEXT_INSN (insn) == 0
-	      || GET_CODE (NEXT_INSN (insn)) != BARRIER)
+	      || !BARRIER_P (NEXT_INSN (insn)))
 	    emit_barrier_after (insn);
 
 	  /* We reemit the jump in as many cases as possible just in
@@ -5628,7 +5628,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 
 	      /* Now emit a BARRIER after the unconditional jump.  */
 	      if (NEXT_INSN (insn) == 0
-		  || GET_CODE (NEXT_INSN (insn)) != BARRIER)
+		  || !BARRIER_P (NEXT_INSN (insn)))
 		emit_barrier_after (insn);
 	    }
 	  else
@@ -5796,7 +5796,7 @@ cse_insn (rtx insn, rtx libcall_insn)
   /* Some registers are invalidated by subroutine calls.  Memory is
      invalidated by non-constant calls.  */
 
-  if (GET_CODE (insn) == CALL_INSN)
+  if (CALL_P (insn))
     {
       if (! CONST_OR_PURE_CALL_P (insn))
 	invalidate_memory ();
@@ -5834,7 +5834,7 @@ cse_insn (rtx insn, rtx libcall_insn)
       }
 
   /* A volatile ASM invalidates everything.  */
-  if (GET_CODE (insn) == INSN
+  if (NONJUMP_INSN_P (insn)
       && GET_CODE (PATTERN (insn)) == ASM_OPERANDS
       && MEM_VOLATILE_P (PATTERN (insn)))
     flush_hash_table ();
@@ -6101,7 +6101,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	    {
 	      prev = PREV_INSN (prev);
 	    }
-	  while (prev && GET_CODE (prev) == NOTE
+	  while (prev && NOTE_P (prev)
 		 && NOTE_LINE_NUMBER (prev) != NOTE_INSN_BASIC_BLOCK);
 
 	  /* Do not swap the registers around if the previous instruction
@@ -6116,7 +6116,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	     note.  We cannot do that because REG_EQUIV may provide an
 	     uninitialized stack slot when REG_PARM_STACK_SPACE is used.  */
 
-	  if (prev != 0 && GET_CODE (prev) == INSN
+	  if (prev != 0 && NONJUMP_INSN_P (prev)
 	      && GET_CODE (PATTERN (prev)) == SET
 	      && SET_DEST (PATTERN (prev)) == SET_SRC (sets[0].rtl)
 	      && ! find_reg_note (prev, REG_EQUIV, NULL_RTX))
@@ -6147,7 +6147,7 @@ cse_insn (rtx insn, rtx libcall_insn)
      the condition being tested.  */
 
   last_jump_equiv_class = 0;
-  if (GET_CODE (insn) == JUMP_INSN
+  if (JUMP_P (insn)
       && n_sets == 1 && GET_CODE (x) == SET
       && GET_CODE (SET_SRC (x)) == IF_THEN_ELSE)
     record_jump_equiv (insn, 0);
@@ -6156,7 +6156,7 @@ cse_insn (rtx insn, rtx libcall_insn)
   /* If the previous insn set CC0 and this insn no longer references CC0,
      delete the previous insn.  Here we use the fact that nothing expects CC0
      to be valid over an insn, which is true until the final pass.  */
-  if (prev_insn && GET_CODE (prev_insn) == INSN
+  if (prev_insn && NONJUMP_INSN_P (prev_insn)
       && (tem = single_set (prev_insn)) != 0
       && SET_DEST (tem) == cc0_rtx
       && ! reg_mentioned_p (cc0_rtx, x))
@@ -6366,12 +6366,12 @@ cse_around_loop (rtx loop_start)
   /* If the jump at the end of the loop doesn't go to the start, we don't
      do anything.  */
   for (insn = PREV_INSN (loop_start);
-       insn && (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) >= 0);
+       insn && (NOTE_P (insn) && NOTE_LINE_NUMBER (insn) >= 0);
        insn = PREV_INSN (insn))
     ;
 
   if (insn == 0
-      || GET_CODE (insn) != NOTE
+      || !NOTE_P (insn)
       || NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_BEG)
     return;
 
@@ -6405,9 +6405,9 @@ cse_around_loop (rtx loop_start)
      accesses by not processing any instructions created after cse started.  */
 
   for (insn = NEXT_INSN (loop_start);
-       GET_CODE (insn) != CALL_INSN && GET_CODE (insn) != CODE_LABEL
+       !CALL_P (insn) && !LABEL_P (insn)
        && INSN_UID (insn) < max_insn_uid
-       && ! (GET_CODE (insn) == NOTE
+       && ! (NOTE_P (insn)
 	     && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END);
        insn = NEXT_INSN (insn))
     {
@@ -6466,13 +6466,13 @@ invalidate_skipped_block (rtx start)
 {
   rtx insn;
 
-  for (insn = start; insn && GET_CODE (insn) != CODE_LABEL;
+  for (insn = start; insn && !LABEL_P (insn);
        insn = NEXT_INSN (insn))
     {
       if (! INSN_P (insn))
 	continue;
 
-      if (GET_CODE (insn) == CALL_INSN)
+      if (CALL_P (insn))
 	{
 	  if (! CONST_OR_PURE_CALL_P (insn))
 	    invalidate_memory ();
@@ -6547,8 +6547,8 @@ cse_set_around_loop (rtx x, rtx insn, rtx loop_start)
 		 a label or CALL_INSN.  */
 
 	      for (p = prev_nonnote_insn (loop_start);
-		   p && GET_CODE (p) != CALL_INSN
-		   && GET_CODE (p) != CODE_LABEL;
+		   p && !CALL_P (p)
+		   && !LABEL_P (p);
 		   p = prev_nonnote_insn  (p))
 		if ((set = single_set (p)) != 0
 		    && REG_P (SET_DEST (set))
@@ -6676,7 +6676,7 @@ cse_end_of_basic_block (rtx insn, struct cse_basic_block_data *data,
     follow_jumps = skip_blocks = 0;
 
   /* Scan to end of this basic block.  */
-  while (p && GET_CODE (p) != CODE_LABEL)
+  while (p && !LABEL_P (p))
     {
       /* Don't cse out the end of a loop.  This makes a difference
 	 only for the unusual loops that always execute at least once;
@@ -6691,14 +6691,14 @@ cse_end_of_basic_block (rtx insn, struct cse_basic_block_data *data,
 	 If we are running after loop.c has finished, we can ignore
 	 the NOTE_INSN_LOOP_END.  */
 
-      if (! after_loop && GET_CODE (p) == NOTE
+      if (! after_loop && NOTE_P (p)
 	  && NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)
 	break;
 
       /* Don't cse over a call to setjmp; on some machines (eg VAX)
 	 the regs restored by the longjmp come from
 	 a later time than the setjmp.  */
-      if (PREV_INSN (p) && GET_CODE (PREV_INSN (p)) == CALL_INSN
+      if (PREV_INSN (p) && CALL_P (PREV_INSN (p))
 	  && find_reg_note (PREV_INSN (p), REG_SETJMP, NULL))
 	break;
 
@@ -6706,7 +6706,7 @@ cse_end_of_basic_block (rtx insn, struct cse_basic_block_data *data,
 	 especially if it is really an ASM_OPERANDS.  */
       if (INSN_P (p) && GET_CODE (PATTERN (p)) == PARALLEL)
 	nsets += XVECLEN (PATTERN (p), 0);
-      else if (GET_CODE (p) != NOTE)
+      else if (!NOTE_P (p))
 	nsets += 1;
 
       /* Ignore insns made by CSE; they cannot affect the boundaries of
@@ -6739,7 +6739,7 @@ cse_end_of_basic_block (rtx insn, struct cse_basic_block_data *data,
 	 registers set in the block when following the jump.  */
 
       else if ((follow_jumps || skip_blocks) && path_size < PARAM_VALUE (PARAM_MAX_CSE_PATH_LENGTH) - 1
-	       && GET_CODE (p) == JUMP_INSN
+	       && JUMP_P (p)
 	       && GET_CODE (PATTERN (p)) == SET
 	       && GET_CODE (SET_SRC (PATTERN (p))) == IF_THEN_ELSE
 	       && JUMP_LABEL (p) != 0
@@ -6747,16 +6747,16 @@ cse_end_of_basic_block (rtx insn, struct cse_basic_block_data *data,
 	       && NEXT_INSN (JUMP_LABEL (p)) != 0)
 	{
 	  for (q = PREV_INSN (JUMP_LABEL (p)); q; q = PREV_INSN (q))
-	    if ((GET_CODE (q) != NOTE
+	    if ((!NOTE_P (q)
 		 || NOTE_LINE_NUMBER (q) == NOTE_INSN_LOOP_END
-		 || (PREV_INSN (q) && GET_CODE (PREV_INSN (q)) == CALL_INSN
+		 || (PREV_INSN (q) && CALL_P (PREV_INSN (q))
 		     && find_reg_note (PREV_INSN (q), REG_SETJMP, NULL)))
-		&& (GET_CODE (q) != CODE_LABEL || LABEL_NUSES (q) != 0))
+		&& (!LABEL_P (q) || LABEL_NUSES (q) != 0))
 	      break;
 
 	  /* If we ran into a BARRIER, this code is an extension of the
 	     basic block when the branch is taken.  */
-	  if (follow_jumps && q != 0 && GET_CODE (q) == BARRIER)
+	  if (follow_jumps && q != 0 && BARRIER_P (q))
 	    {
 	      /* Don't allow ourself to keep walking around an
 		 always-executed loop.  */
@@ -6788,7 +6788,7 @@ cse_end_of_basic_block (rtx insn, struct cse_basic_block_data *data,
 	      PUT_MODE (NEXT_INSN (p), QImode);
 	    }
 	  /* Detect a branch around a block of code.  */
-	  else if (skip_blocks && q != 0 && GET_CODE (q) != CODE_LABEL)
+	  else if (skip_blocks && q != 0 && !LABEL_P (q))
 	    {
 	      rtx tmp;
 
@@ -6808,7 +6808,7 @@ cse_end_of_basic_block (rtx insn, struct cse_basic_block_data *data,
 	      /* This is no_labels_between_p (p, q) with an added check for
 		 reaching the end of a function (in case Q precedes P).  */
 	      for (tmp = NEXT_INSN (p); tmp && tmp != q; tmp = NEXT_INSN (tmp))
-		if (GET_CODE (tmp) == CODE_LABEL)
+		if (LABEL_P (tmp))
 		  break;
 
 	      if (tmp == q)
@@ -6907,7 +6907,7 @@ cse_main (rtx f, int nregs, int after_loop, FILE *file)
 
   for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
     {
-      if (GET_CODE (insn) != NOTE
+      if (!NOTE_P (insn)
 	  || NOTE_LINE_NUMBER (insn) < 0)
 	INSN_CUID (insn) = ++i;
       else
@@ -7024,7 +7024,7 @@ cse_basic_block (rtx from, rtx to, struct branch_path *next_branch,
   new_basic_block ();
 
   /* TO might be a label.  If so, protect it from being deleted.  */
-  if (to != 0 && GET_CODE (to) == CODE_LABEL)
+  if (to != 0 && LABEL_P (to))
     ++LABEL_NUSES (to);
 
   for (insn = from; insn != to; insn = NEXT_INSN (insn))
@@ -7115,7 +7115,7 @@ cse_basic_block (rtx from, rtx to, struct branch_path *next_branch,
 	    
 	  /* If we haven't already found an insn where we added a LABEL_REF,
 	     check this one.  */
-	  if (GET_CODE (insn) == INSN && ! recorded_label_ref
+	  if (NONJUMP_INSN_P (insn) && ! recorded_label_ref
 	      && for_each_rtx (&PATTERN (insn), check_for_label_ref,
 			       (void *) insn))
 	    recorded_label_ref = 1;
@@ -7155,7 +7155,7 @@ cse_basic_block (rtx from, rtx to, struct branch_path *next_branch,
 	 want to count the use in that jump.  */
 
       if (to != 0 && NEXT_INSN (insn) == to
-	  && GET_CODE (to) == CODE_LABEL && --LABEL_NUSES (to) == to_usage)
+	  && LABEL_P (to) && --LABEL_NUSES (to) == to_usage)
 	{
 	  struct cse_basic_block_data val;
 	  rtx prev;
@@ -7172,7 +7172,7 @@ cse_basic_block (rtx from, rtx to, struct branch_path *next_branch,
 	  /* If TO was preceded by a BARRIER we are done with this block
 	     because it has no continuation.  */
 	  prev = prev_nonnote_insn (to);
-	  if (prev && GET_CODE (prev) == BARRIER)
+	  if (prev && BARRIER_P (prev))
 	    {
 	      free (qty_table + max_reg);
 	      return insn;
@@ -7199,7 +7199,7 @@ cse_basic_block (rtx from, rtx to, struct branch_path *next_branch,
 	  to = val.last;
 
 	  /* Prevent TO from being deleted if it is a label.  */
-	  if (to != 0 && GET_CODE (to) == CODE_LABEL)
+	  if (to != 0 && LABEL_P (to))
 	    ++LABEL_NUSES (to);
 
 	  /* Back up so we process the first insn in the extension.  */
@@ -7219,8 +7219,8 @@ cse_basic_block (rtx from, rtx to, struct branch_path *next_branch,
   if ((cse_jumps_altered == 0
        || (flag_cse_follow_jumps == 0 && flag_cse_skip_blocks == 0))
       && around_loop && to != 0
-      && GET_CODE (to) == NOTE && NOTE_LINE_NUMBER (to) == NOTE_INSN_LOOP_END
-      && GET_CODE (insn) == JUMP_INSN
+      && NOTE_P (to) && NOTE_LINE_NUMBER (to) == NOTE_INSN_LOOP_END
+      && JUMP_P (insn)
       && JUMP_LABEL (insn) != 0
       && LABEL_NUSES (JUMP_LABEL (insn)) == 1)
     cse_around_loop (JUMP_LABEL (insn));
@@ -7830,7 +7830,7 @@ cse_condition_code_reg (void)
 	 to optimize.  */
 
       last_insn = BB_END (bb);
-      if (GET_CODE (last_insn) != JUMP_INSN)
+      if (!JUMP_P (last_insn))
 	continue;
 
       if (reg_referenced_p (cc_reg_1, PATTERN (last_insn)))

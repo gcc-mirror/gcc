@@ -631,7 +631,7 @@ global_reg_mentioned_p (rtx x)
 {
   if (INSN_P (x))
     {
-      if (GET_CODE (x) == CALL_INSN)
+      if (CALL_P (x))
 	{
 	  if (! CONST_OR_PURE_CALL_P (x))
 	    return 1;
@@ -784,7 +784,7 @@ no_labels_between_p (rtx beg, rtx end)
   if (beg == end)
     return 0;
   for (p = NEXT_INSN (beg); p != end; p = NEXT_INSN (p))
-    if (GET_CODE (p) == CODE_LABEL)
+    if (LABEL_P (p))
       return 0;
   return 1;
 }
@@ -797,7 +797,7 @@ no_jumps_between_p (rtx beg, rtx end)
 {
   rtx p;
   for (p = NEXT_INSN (beg); p != end; p = NEXT_INSN (p))
-    if (GET_CODE (p) == JUMP_INSN)
+    if (JUMP_P (p))
       return 0;
   return 1;
 }
@@ -816,7 +816,7 @@ reg_used_between_p (rtx reg, rtx from_insn, rtx to_insn)
   for (insn = NEXT_INSN (from_insn); insn != to_insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn)
 	&& (reg_overlap_mentioned_p (reg, PATTERN (insn))
-	   || (GET_CODE (insn) == CALL_INSN
+	   || (CALL_P (insn)
 	      && (find_reg_fusage (insn, USE, reg)
 		  || find_reg_fusage (insn, CLOBBER, reg)))))
       return 1;
@@ -915,7 +915,7 @@ reg_referenced_between_p (rtx reg, rtx from_insn, rtx to_insn)
   for (insn = NEXT_INSN (from_insn); insn != to_insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn)
 	&& (reg_referenced_p (reg, PATTERN (insn))
-	   || (GET_CODE (insn) == CALL_INSN
+	   || (CALL_P (insn)
 	      && find_reg_fusage (insn, USE, reg))))
       return 1;
   return 0;
@@ -946,7 +946,7 @@ reg_set_p (rtx reg, rtx insn)
      check if a side-effect of the insn clobbers REG.  */
   if (INSN_P (insn)
       && (FIND_REG_INC_NOTE (insn, reg)
-	  || (GET_CODE (insn) == CALL_INSN
+	  || (CALL_P (insn)
 	      /* We'd like to test call_used_regs here, but rtlanal.c can't
 		 reference that variable due to its use in genattrtab.  So
 		 we'll just be more conservative.
@@ -1368,7 +1368,7 @@ find_last_value (rtx x, rtx *pinsn, rtx valid_to, int allow_hwreg)
 {
   rtx p;
 
-  for (p = PREV_INSN (*pinsn); p && GET_CODE (p) != CODE_LABEL;
+  for (p = PREV_INSN (*pinsn); p && !LABEL_P (p);
        p = PREV_INSN (p))
     if (INSN_P (p))
       {
@@ -1782,7 +1782,7 @@ dead_or_set_regno_p (rtx insn, unsigned int test_regno)
   if (find_regno_note (insn, REG_DEAD, test_regno))
     return 1;
 
-  if (GET_CODE (insn) == CALL_INSN
+  if (CALL_P (insn)
       && find_regno_fusage (insn, CLOBBER, test_regno))
     return 1;
 
@@ -1935,7 +1935,7 @@ find_reg_fusage (rtx insn, enum rtx_code code, rtx datum)
 {
   /* If it's not a CALL_INSN, it can't possibly have a
      CALL_INSN_FUNCTION_USAGE field, so don't bother checking.  */
-  if (GET_CODE (insn) != CALL_INSN)
+  if (!CALL_P (insn))
     return 0;
 
   if (! datum)
@@ -1986,7 +1986,7 @@ find_regno_fusage (rtx insn, enum rtx_code code, unsigned int regno)
      to pseudo registers, so don't bother checking.  */
 
   if (regno >= FIRST_PSEUDO_REGISTER
-      || GET_CODE (insn) != CALL_INSN )
+      || !CALL_P (insn) )
     return 0;
 
   for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
@@ -2011,7 +2011,7 @@ pure_call_p (rtx insn)
 {
   rtx link;
 
-  if (GET_CODE (insn) != CALL_INSN || ! CONST_OR_PURE_CALL_P (insn))
+  if (!CALL_P (insn) || ! CONST_OR_PURE_CALL_P (insn))
     return 0;
 
   /* Look for the note that differentiates const and pure functions.  */
@@ -2711,7 +2711,7 @@ replace_label (rtx *x, void *data)
   /* If this is a JUMP_INSN, then we also need to fix the JUMP_LABEL
      field.  This is not handled by for_each_rtx because it doesn't
      handle unprinted ('0') fields.  */
-  if (GET_CODE (l) == JUMP_INSN && JUMP_LABEL (l) == old_label)
+  if (JUMP_P (l) && JUMP_LABEL (l) == old_label)
     JUMP_LABEL (l) = new_label;
 
   if ((GET_CODE (l) == LABEL_REF
@@ -2743,7 +2743,7 @@ rtx_referenced_p_1 (rtx *body, void *x)
     return y == NULL_RTX;
 
   /* Return true if a label_ref *BODY refers to label Y.  */
-  if (GET_CODE (*body) == LABEL_REF && GET_CODE (y) == CODE_LABEL)
+  if (GET_CODE (*body) == LABEL_REF && LABEL_P (y))
     return XEXP (*body, 0) == y;
 
   /* If *BODY is a reference to pool constant traverse the constant.  */
@@ -2771,10 +2771,10 @@ tablejump_p (rtx insn, rtx *labelp, rtx *tablep)
 {
   rtx label, table;
 
-  if (GET_CODE (insn) == JUMP_INSN
+  if (JUMP_P (insn)
       && (label = JUMP_LABEL (insn)) != NULL_RTX
       && (table = next_active_insn (label)) != NULL_RTX
-      && GET_CODE (table) == JUMP_INSN
+      && JUMP_P (table)
       && (GET_CODE (PATTERN (table)) == ADDR_VEC
 	  || GET_CODE (PATTERN (table)) == ADDR_DIFF_VEC))
     {
@@ -2849,7 +2849,7 @@ int
 computed_jump_p (rtx insn)
 {
   int i;
-  if (GET_CODE (insn) == JUMP_INSN)
+  if (JUMP_P (insn))
     {
       rtx pat = PATTERN (insn);
 
@@ -3103,7 +3103,7 @@ insns_safe_to_move_p (rtx from, rtx to, rtx *new_to)
 
   while (r)
     {
-      if (GET_CODE (r) == NOTE)
+      if (NOTE_P (r))
 	{
 	  switch (NOTE_LINE_NUMBER (r))
 	    {
@@ -3411,14 +3411,14 @@ find_first_parameter_load (rtx call_insn, rtx boundary)
 
       /* It is possible that some loads got CSEed from one call to
          another.  Stop in that case.  */
-      if (GET_CODE (before) == CALL_INSN)
+      if (CALL_P (before))
 	break;
 
       /* Our caller needs either ensure that we will find all sets
          (in case code has not been optimized yet), or take care
          for possible labels in a way by setting boundary to preceding
          CODE_LABEL.  */
-      if (GET_CODE (before) == CODE_LABEL)
+      if (LABEL_P (before))
 	{
 	  if (before != boundary)
 	    abort ();
@@ -3536,7 +3536,7 @@ can_hoist_insn_p (rtx insn, rtx val, regset live)
     return false;
   /* We can move CALL_INSN, but we need to check that all caller clobbered
      regs are dead.  */
-  if (GET_CODE (insn) == CALL_INSN)
+  if (CALL_P (insn))
     return false;
   /* In future we will handle hoisting of libcall sequences, but
      give up for now.  */

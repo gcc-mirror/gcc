@@ -230,7 +230,7 @@ find_exits (struct loop *loop, basic_block *body,
 	{
 	  FOR_BB_INSNS (body[i], insn)
 	    {
-	      if (GET_CODE (insn) == CALL_INSN
+	      if (CALL_P (insn)
 		  && !CONST_OR_PURE_CALL_P (insn))
 		{
 		  has_call = true;
@@ -525,7 +525,7 @@ find_invariants_bb (basic_block bb, bool always_reached, bool always_executed,
       find_invariants_insn (insn, always_reached, always_executed, df);
 
       if (always_reached
-	  && GET_CODE (insn) == CALL_INSN
+	  && CALL_P (insn)
 	  && !CONST_OR_PURE_CALL_P (insn))
 	always_reached = false;
     }

@@ -194,7 +194,7 @@ try_simplify_condjump (basic_block cbranch_block)
        insn = next)
     {
       next = NEXT_INSN (insn);
-      if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
+      if (NOTE_P (insn) && NOTE_LINE_NUMBER (insn) > 0)
 	{
 	  if (insn == BB_END (jump_block))
 	    {
@@ -535,16 +535,16 @@ try_forward_edges (int mode, basic_block b)
 	      rtx insn = (target->succ->flags & EDGE_FALLTHRU
 			  ? BB_HEAD (target) : prev_nonnote_insn (BB_END (target)));
 
-	      if (GET_CODE (insn) != NOTE)
+	      if (!NOTE_P (insn))
 		insn = NEXT_INSN (insn);
 
-	      for (; insn && GET_CODE (insn) != CODE_LABEL && !INSN_P (insn);
+	      for (; insn && !LABEL_P (insn) && !INSN_P (insn);
 		   insn = NEXT_INSN (insn))
-		if (GET_CODE (insn) == NOTE
+		if (NOTE_P (insn)
 		    && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
 		  break;
 
-	      if (GET_CODE (insn) == NOTE)
+	      if (NOTE_P (insn))
 		break;
 
 	      /* Do not clean up branches to just past the end of a loop
@@ -552,7 +552,7 @@ try_forward_edges (int mode, basic_block b)
 		 recognition of some patterns.  */
 
 	      insn = PREV_INSN (BB_HEAD (target));
-	      if (insn && GET_CODE (insn) == NOTE
+	      if (insn && NOTE_P (insn)
 		    && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
 		break;
 	    }
@@ -690,7 +690,7 @@ merge_blocks_move_predecessor_nojumps (basic_block a, basic_block b)
     return;
 
   barrier = next_nonnote_insn (BB_END (a));
-  if (GET_CODE (barrier) != BARRIER)
+  if (!BARRIER_P (barrier))
     abort ();
   delete_insn (barrier);
 
@@ -753,7 +753,7 @@ merge_blocks_move_successor_nojumps (basic_block a, basic_block b)
 
   /* There had better have been a barrier there.  Delete it.  */
   barrier = NEXT_INSN (BB_END (b));
-  if (barrier && GET_CODE (barrier) == BARRIER)
+  if (barrier && BARRIER_P (barrier))
     delete_insn (barrier);
 
   /* Move block and loop notes out of the chain so that we do not
@@ -1000,7 +1000,7 @@ insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
      ??? We take the simple route for now and assume that if they're
      equal, they were constructed identically.  */
 
-  if (GET_CODE (i1) == CALL_INSN
+  if (CALL_P (i1)
       && (!rtx_equal_p (CALL_INSN_FUNCTION_USAGE (i1),
 		        CALL_INSN_FUNCTION_USAGE (i2))
 	  || SIBLING_CALL_P (i1) != SIBLING_CALL_P (i2)))
@@ -1178,13 +1178,13 @@ flow_find_cross_jump (int mode ATTRIBUTE_UNUSED, basic_block bb1,
       while (last1 != BB_HEAD (bb1) && !INSN_P (PREV_INSN (last1)))
 	last1 = PREV_INSN (last1);
 
-      if (last1 != BB_HEAD (bb1) && GET_CODE (PREV_INSN (last1)) == CODE_LABEL)
+      if (last1 != BB_HEAD (bb1) && LABEL_P (PREV_INSN (last1)))
 	last1 = PREV_INSN (last1);
 
       while (last2 != BB_HEAD (bb2) && !INSN_P (PREV_INSN (last2)))
 	last2 = PREV_INSN (last2);
 
-      if (last2 != BB_HEAD (bb2) && GET_CODE (PREV_INSN (last2)) == CODE_LABEL)
+      if (last2 != BB_HEAD (bb2) && LABEL_P (PREV_INSN (last2)))
 	last2 = PREV_INSN (last2);
 
       *f1 = last1;
@@ -1211,10 +1211,10 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
      unconditional jump, or a fake edge to exit.  */
   if (bb1->succ && !bb1->succ->succ_next
       && (bb1->succ->flags & (EDGE_COMPLEX | EDGE_FAKE)) == 0
-      && (GET_CODE (BB_END (bb1)) != JUMP_INSN || simplejump_p (BB_END (bb1))))
+      && (!JUMP_P (BB_END (bb1)) || simplejump_p (BB_END (bb1))))
     return (bb2->succ &&  !bb2->succ->succ_next
 	    && (bb2->succ->flags & (EDGE_COMPLEX | EDGE_FAKE)) == 0
-	    && (GET_CODE (BB_END (bb2)) != JUMP_INSN || simplejump_p (BB_END (bb2))));
+	    && (!JUMP_P (BB_END (bb2)) || simplejump_p (BB_END (bb2))));
 
   /* Match conditional jumps - this may get tricky when fallthru and branch
      edges are crossed.  */
@@ -1642,10 +1642,10 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
   /* Edit SRC1 to go to REDIRECT_TO at NEWPOS1.  */
 
   /* Skip possible basic block header.  */
-  if (GET_CODE (newpos1) == CODE_LABEL)
+  if (LABEL_P (newpos1))
     newpos1 = NEXT_INSN (newpos1);
 
-  if (GET_CODE (newpos1) == NOTE)
+  if (NOTE_P (newpos1))
     newpos1 = NEXT_INSN (newpos1);
 
   redirect_from = split_block (src1, PREV_INSN (newpos1))->src;
@@ -1835,7 +1835,7 @@ try_optimize_cfg (int mode)
 	      if (b->pred->pred_next == NULL
 		  && (b->pred->flags & EDGE_FALLTHRU)
 		  && !(b->pred->flags & EDGE_COMPLEX)
-		  && GET_CODE (BB_HEAD (b)) == CODE_LABEL
+		  && LABEL_P (BB_HEAD (b))
 		  /* If the previous block ends with a branch to this
 		     block, we can't delete the label.  Normally this
 		     is a condjump that is yet to be simplified, but
@@ -1843,7 +1843,7 @@ try_optimize_cfg (int mode)
 		     some element going to the same place as the
 		     default (fallthru).  */
 		  && (b->pred->src == ENTRY_BLOCK_PTR
-		      || GET_CODE (BB_END (b->pred->src)) != JUMP_INSN
+		      || !JUMP_P (BB_END (b->pred->src))
 		      || ! label_is_jump_target_p (BB_HEAD (b),
 						   BB_END (b->pred->src))))
 		{
@@ -1868,7 +1868,7 @@ try_optimize_cfg (int mode)
 	      if (!(mode & CLEANUP_CFGLAYOUT)
 		  && b->pred->pred_next == NULL
 		  && (b->pred->flags & EDGE_FALLTHRU)
-		  && GET_CODE (BB_HEAD (b)) != CODE_LABEL
+		  && !LABEL_P (BB_HEAD (b))
 		  && FORWARDER_BLOCK_P (b)
 		  /* Note that forwarder_block_p true ensures that
 		     there is a successor for this block.  */
@@ -1910,7 +1910,7 @@ try_optimize_cfg (int mode)
 		  else if (!(mode & CLEANUP_CFGLAYOUT)
 			   /* If the jump insn has side effects,
 			      we can't kill the edge.  */
-			   && (GET_CODE (BB_END (b)) != JUMP_INSN
+			   && (!JUMP_P (BB_END (b))
 			       || (reload_completed
 				   ? simplejump_p (BB_END (b))
 				   : (onlyjump_p (BB_END (b))

@@ -362,8 +362,8 @@ emit_nop (void)
 
   last_insn = get_last_insn ();
   if (!optimize
-      && (GET_CODE (last_insn) == CODE_LABEL
-	  || (GET_CODE (last_insn) == NOTE
+      && (LABEL_P (last_insn)
+	  || (NOTE_P (last_insn)
 	      && prev_real_insn (last_insn) == 0)))
     emit_insn (gen_nop ());
 }
@@ -2817,7 +2817,7 @@ expand_start_case (int exit_flag, tree expr, tree type,
 
   /* Make sure case_stmt.start points to something that won't
      need any transformation before expand_end_case.  */
-  if (GET_CODE (get_last_insn ()) != NOTE)
+  if (!NOTE_P (get_last_insn ()))
     emit_note (NOTE_INSN_DELETED);
 
   thiscase->data.case_stmt.start = get_last_insn ();
@@ -4104,7 +4104,7 @@ node_is_bounded (case_node_ptr node, tree index_type)
 static void
 emit_jump_if_reachable (rtx label)
 {
-  if (GET_CODE (get_last_insn ()) != BARRIER)
+  if (!BARRIER_P (get_last_insn ()))
     emit_jump (label);
 }
 

@@ -1341,10 +1341,10 @@ cselib_process_insn (rtx insn)
   cselib_current_insn = insn;
 
   /* Forget everything at a CODE_LABEL, a volatile asm, or a setjmp.  */
-  if (GET_CODE (insn) == CODE_LABEL
-      || (GET_CODE (insn) == CALL_INSN
+  if (LABEL_P (insn)
+      || (CALL_P (insn)
 	  && find_reg_note (insn, REG_SETJMP, NULL))
-      || (GET_CODE (insn) == INSN
+      || (NONJUMP_INSN_P (insn)
 	  && GET_CODE (PATTERN (insn)) == ASM_OPERANDS
 	  && MEM_VOLATILE_P (PATTERN (insn))))
     {
@@ -1361,7 +1361,7 @@ cselib_process_insn (rtx insn)
   /* If this is a call instruction, forget anything stored in a
      call clobbered register, or, if this is not a const call, in
      memory.  */
-  if (GET_CODE (insn) == CALL_INSN)
+  if (CALL_P (insn))
     {
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (call_used_regs[i])
@@ -1384,7 +1384,7 @@ cselib_process_insn (rtx insn)
 
   /* Look for any CLOBBERs in CALL_INSN_FUNCTION_USAGE, but only
      after we have processed the insn.  */
-  if (GET_CODE (insn) == CALL_INSN)
+  if (CALL_P (insn))
     for (x = CALL_INSN_FUNCTION_USAGE (insn); x; x = XEXP (x, 1))
       if (GET_CODE (XEXP (x, 0)) == CLOBBER)
 	cselib_invalidate_rtx (XEXP (XEXP (x, 0), 0), NULL_RTX, NULL);

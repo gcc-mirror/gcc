@@ -3292,7 +3292,7 @@ emit_no_conflict_block (rtx insns, rtx target, rtx op0, rtx op1, rtx equiv)
     return emit_insn (insns);
   else
     for (insn = insns; insn; insn = NEXT_INSN (insn))
-      if (GET_CODE (insn) != INSN
+      if (!NONJUMP_INSN_P (insn)
 	  || find_reg_note (insn, REG_LIBCALL, NULL_RTX))
 	return emit_insn (insns);
 
@@ -3436,7 +3436,7 @@ emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
   if (flag_non_call_exceptions && may_trap_p (equiv))
     {
       for (insn = insns; insn; insn = NEXT_INSN (insn))
-	if (GET_CODE (insn) == CALL_INSN)
+	if (CALL_P (insn))
 	  {
 	    rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
 
@@ -3450,7 +3450,7 @@ emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
      goto (unless there is already a REG_EH_REGION note, in which case
      we update it).  */
     for (insn = insns; insn; insn = NEXT_INSN (insn))
-      if (GET_CODE (insn) == CALL_INSN)
+      if (CALL_P (insn))
 	{
 	  rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
 
@@ -3503,7 +3503,7 @@ emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
 
       /* Some ports use a loop to copy large arguments onto the stack.
 	 Don't move anything outside such a loop.  */
-      if (GET_CODE (insn) == CODE_LABEL)
+      if (LABEL_P (insn))
 	break;
     }
 

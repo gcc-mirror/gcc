@@ -1201,7 +1201,7 @@ optimize_mode_switching (FILE *file)
 	      if (eg->flags & EDGE_ABNORMAL)
 		{
 		  emited = true;
-		  if (GET_CODE (BB_END (src_bb)) == JUMP_INSN)
+		  if (JUMP_P (BB_END (src_bb)))
 		    emit_insn_before (mode_set, BB_END (src_bb));
 		  /* It doesn't make sense to switch to normal mode
 		     after a CALL_INSN, so we're going to abort if we
@@ -1214,7 +1214,7 @@ optimize_mode_switching (FILE *file)
 		     the call (it wouldn't make sense, anyway).  In
 		     the case of EH edges, EH entry points also start
 		     in normal mode, so a similar reasoning applies.  */
-		  else if (GET_CODE (BB_END (src_bb)) == INSN)
+		  else if (NONJUMP_INSN_P (BB_END (src_bb)))
 		    emit_insn_after (mode_set, BB_END (src_bb));
 		  else
 		    abort ();
@@ -1266,7 +1266,7 @@ optimize_mode_switching (FILE *file)
 		    continue;
 
 		  emited = true;
-		  if (GET_CODE (ptr->insn_ptr) == NOTE
+		  if (NOTE_P (ptr->insn_ptr)
 		      && (NOTE_LINE_NUMBER (ptr->insn_ptr)
 			  == NOTE_INSN_BASIC_BLOCK))
 		    emit_insn_after (mode_set, ptr->insn_ptr);

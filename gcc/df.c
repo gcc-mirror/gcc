@@ -1168,7 +1168,7 @@ df_insn_refs_record (struct df *df, basic_block bb, rtx insn)
 	      }
 	  }
 
-      if (GET_CODE (insn) == CALL_INSN)
+      if (CALL_P (insn))
 	{
 	  rtx note;
 	  rtx x;
@@ -1204,7 +1204,7 @@ df_insn_refs_record (struct df *df, basic_block bb, rtx insn)
       df_uses_record (df, &PATTERN (insn),
 		      DF_REF_REG_USE, bb, insn, 0);
 
-      if (GET_CODE (insn) == CALL_INSN)
+      if (CALL_P (insn))
 	{
 	  rtx note;
 
@@ -1654,7 +1654,7 @@ df_bb_rd_local_compute (struct df *df, basic_block bb, bitmap call_killed_defs)
 	  bitmap_set_bit (seen, regno);
 	}
 
-      if (GET_CODE (insn) == CALL_INSN && (df->flags & DF_HARD_REGS))
+      if (CALL_P (insn) && (df->flags & DF_HARD_REGS))
 	{
 	  bitmap_operation (bb_info->rd_kill, bb_info->rd_kill,
 			    call_killed_defs, BITMAP_IOR);
@@ -2911,9 +2911,9 @@ df_insns_modify (struct df *df, basic_block bb, rtx first_insn, rtx last_insn)
       /* A non-const call should not have slipped through the net.  If
 	 it does, we need to create a new basic block.  Ouch.  The
 	 same applies for a label.  */
-      if ((GET_CODE (insn) == CALL_INSN
+      if ((CALL_P (insn)
 	   && ! CONST_OR_PURE_CALL_P (insn))
-	  || GET_CODE (insn) == CODE_LABEL)
+	  || LABEL_P (insn))
 	abort ();
 
       uid = INSN_UID (insn);

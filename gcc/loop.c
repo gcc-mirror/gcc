@@ -419,7 +419,7 @@ compute_luids (rtx start, rtx end, int prev_luid)
 	continue;
       /* Don't assign luids to line-number NOTEs, so that the distance in
 	 luids between two insns is not affected by -g.  */
-      if (GET_CODE (insn) != NOTE
+      if (!NOTE_P (insn)
 	  || NOTE_LINE_NUMBER (insn) <= 0)
 	uid_luid[INSN_UID (insn)] = ++i;
       else
@@ -457,7 +457,7 @@ loop_optimize (rtx f, FILE *dumpfile, int flags)
   max_loop_num = 0;
   for (insn = f; insn; insn = NEXT_INSN (insn))
     {
-      if (GET_CODE (insn) == NOTE
+      if (NOTE_P (insn)
 	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
 	max_loop_num++;
     }
@@ -671,8 +671,8 @@ scan_loop (struct loop *loop, int flags)
 
   for (p = NEXT_INSN (loop_start);
        p != loop_end
-	 && GET_CODE (p) != CODE_LABEL && ! INSN_P (p)
-	 && (GET_CODE (p) != NOTE
+	 && !LABEL_P (p) && ! INSN_P (p)
+	 && (!NOTE_P (p)
 	     || (NOTE_LINE_NUMBER (p) != NOTE_INSN_LOOP_BEG
 		 && NOTE_LINE_NUMBER (p) != NOTE_INSN_LOOP_END));
        p = NEXT_INSN (p))
@@ -698,7 +698,7 @@ scan_loop (struct loop *loop, int flags)
      Start scan from there.
      But record in LOOP->TOP the place where the end-test jumps
      back to so we can scan that after the end of the loop.  */
-  if (GET_CODE (p) == JUMP_INSN
+  if (JUMP_P (p)
       /* Loop entry must be unconditional jump (and not a RETURN)  */
       && any_uncondjump_p (p)
       && JUMP_LABEL (p) != 0
@@ -723,7 +723,7 @@ scan_loop (struct loop *loop, int flags)
      test above.  */
 
   if (INSN_UID (loop->scan_start) >= max_uid_for_loop
-      || GET_CODE (loop->scan_start) != CODE_LABEL)
+      || !LABEL_P (loop->scan_start))
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream, "\nLoop from %d to %d is phony.\n\n",
@@ -765,7 +765,7 @@ scan_loop (struct loop *loop, int flags)
     {
       if (in_libcall && INSN_P (p) && find_reg_note (p, REG_RETVAL, NULL_RTX))
 	in_libcall--;
-      if (GET_CODE (p) == INSN)
+      if (NONJUMP_INSN_P (p))
 	{
 	  temp = find_reg_note (p, REG_LIBCALL, NULL_RTX);
 	  if (temp)
@@ -1032,7 +1032,7 @@ scan_loop (struct loop *loop, int flags)
 		 Also, if the value loaded into the register
 		 depends on the same register, this cannot be done.  */
 	      else if (SET_SRC (set) == const0_rtx
-		       && GET_CODE (NEXT_INSN (p)) == INSN
+		       && NONJUMP_INSN_P (NEXT_INSN (p))
 		       && (set1 = single_set (NEXT_INSN (p)))
 		       && GET_CODE (set1) == SET
 		       && (GET_CODE (SET_DEST (set1)) == STRICT_LOW_PART)
@@ -1102,7 +1102,7 @@ scan_loop (struct loop *loop, int flags)
       /* Past a call insn, we get to insns which might not be executed
 	 because the call might exit.  This matters for insns that trap.
 	 Constant and pure call insns always return, so they don't count.  */
-      else if (GET_CODE (p) == CALL_INSN && ! CONST_OR_PURE_CALL_P (p))
+      else if (CALL_P (p) && ! CONST_OR_PURE_CALL_P (p))
 	call_passed = 1;
       /* Past a label or a jump, we get to insns for which we
 	 can't count on whether or how many times they will be
@@ -1110,17 +1110,17 @@ scan_loop (struct loop *loop, int flags)
 	 only move out sets of trivial variables
 	 (those not used after the loop).  */
       /* Similar code appears twice in strength_reduce.  */
-      else if ((GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN)
+      else if ((LABEL_P (p) || JUMP_P (p))
 	       /* If we enter the loop in the middle, and scan around to the
 		  beginning, don't set maybe_never for that.  This must be an
 		  unconditional jump, otherwise the code at the top of the
 		  loop might never be executed.  Unconditional jumps are
 		  followed by a barrier then the loop_end.  */
-	       && ! (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p) == loop->top
+	       && ! (JUMP_P (p) && JUMP_LABEL (p) == loop->top
 		     && NEXT_INSN (NEXT_INSN (p)) == loop_end
 		     && any_uncondjump_p (p)))
 	maybe_never = 1;
-      else if (GET_CODE (p) == NOTE)
+      else if (NOTE_P (p))
 	{
 	  /* At the virtual top of a converted loop, insns are again known to
 	     be executed: logically, the loop begins here even though the exit
@@ -1171,7 +1171,7 @@ scan_loop (struct loop *loop, int flags)
 	  loop_regs_scan (loop, 0);
 	  for (update_start = loop_start;
 	       PREV_INSN (update_start)
-	       && GET_CODE (PREV_INSN (update_start)) != CODE_LABEL;
+	       && !LABEL_P (PREV_INSN (update_start));
 	       update_start = PREV_INSN (update_start))
 	    ;
 	  update_end = NEXT_INSN (loop_end);
@@ -1198,7 +1198,7 @@ scan_loop (struct loop *loop, int flags)
 
   for (update_start = loop_start;
        PREV_INSN (update_start)
-	 && GET_CODE (PREV_INSN (update_start)) != CODE_LABEL;
+	 && !LABEL_P (PREV_INSN (update_start));
        update_start = PREV_INSN (update_start))
     ;
   update_end = NEXT_INSN (loop_end);
@@ -1208,7 +1208,7 @@ scan_loop (struct loop *loop, int flags)
 
   if (flag_strength_reduce)
     {
-      if (update_end && GET_CODE (update_end) == CODE_LABEL)
+      if (update_end && LABEL_P (update_end))
 	/* Ensure our label doesn't go away.  */
 	LABEL_NUSES (update_end)++;
 
@@ -1217,7 +1217,7 @@ scan_loop (struct loop *loop, int flags)
       reg_scan_update (update_start, update_end, loop_max_reg);
       loop_max_reg = max_reg_num ();
 
-      if (update_end && GET_CODE (update_end) == CODE_LABEL
+      if (update_end && LABEL_P (update_end)
 	  && --LABEL_NUSES (update_end) == 0)
 	delete_related_insns (update_end);
     }
@@ -1300,8 +1300,7 @@ libcall_other_reg (rtx insn, rtx equiv)
 
   while (p != insn)
     {
-      if (GET_CODE (p) == INSN || GET_CODE (p) == JUMP_INSN
-	  || GET_CODE (p) == CALL_INSN)
+      if (INSN_P (p))
 	record_excess_regs (PATTERN (p), equiv, &output);
       p = NEXT_INSN (p);
     }
@@ -1374,10 +1373,10 @@ libcall_benefit (rtx last)
   for (insn = XEXP (find_reg_note (last, REG_RETVAL, NULL_RTX), 0);
        insn != last; insn = NEXT_INSN (insn))
     {
-      if (GET_CODE (insn) == CALL_INSN)
+      if (CALL_P (insn))
 	benefit += 10;		/* Assume at least this many insns in a library
 				   routine.  */
-      else if (GET_CODE (insn) == INSN
+      else if (NONJUMP_INSN_P (insn)
 	       && GET_CODE (PATTERN (insn)) != USE
 	       && GET_CODE (PATTERN (insn)) != CLOBBER)
 	benefit++;
@@ -1398,13 +1397,13 @@ skip_consec_insns (rtx insn, int count)
       /* If first insn of libcall sequence, skip to end.  */
       /* Do this at start of loop, since INSN is guaranteed to
 	 be an insn here.  */
-      if (GET_CODE (insn) != NOTE
+      if (!NOTE_P (insn)
 	  && (temp = find_reg_note (insn, REG_LIBCALL, NULL_RTX)))
 	insn = XEXP (temp, 0);
 
       do
 	insn = NEXT_INSN (insn);
-      while (GET_CODE (insn) == NOTE);
+      while (NOTE_P (insn));
     }
 
   return insn;
@@ -1962,14 +1961,14 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 		    {
 		      /* If this is the first insn of a library call sequence,
 			 something is very wrong.  */
-		      if (GET_CODE (p) != NOTE
+		      if (!NOTE_P (p)
 			  && (temp = find_reg_note (p, REG_LIBCALL, NULL_RTX)))
 			abort ();
 
 		      /* If this is the last insn of a libcall sequence, then
 			 delete every insn in the sequence except the last.
 			 The last insn is handled in the normal manner.  */
-		      if (GET_CODE (p) != NOTE
+		      if (!NOTE_P (p)
 			  && (temp = find_reg_note (p, REG_RETVAL, NULL_RTX)))
 			{
 			  temp = XEXP (temp, 0);
@@ -1986,7 +1985,7 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 			 pointers, but when we skip over a NOTE we must fix
 			 it up.  Otherwise that code walks into the non-deleted
 			 insn stream.  */
-		      while (p && GET_CODE (p) == NOTE)
+		      while (p && NOTE_P (p))
 			p = NEXT_INSN (temp) = NEXT_INSN (p);
 
 		      if (m->insert_temp)
@@ -2030,14 +2029,14 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 		      /* If first insn of libcall sequence, skip to end.  */
 		      /* Do this at start of loop, since p is guaranteed to
 			 be an insn here.  */
-		      if (GET_CODE (p) != NOTE
+		      if (!NOTE_P (p)
 			  && (temp = find_reg_note (p, REG_LIBCALL, NULL_RTX)))
 			p = XEXP (temp, 0);
 
 		      /* If last insn of libcall sequence, move all
 			 insns except the last before the loop.  The last
 			 insn is handled in the normal manner.  */
-		      if (GET_CODE (p) != NOTE
+		      if (!NOTE_P (p)
 			  && (temp = find_reg_note (p, REG_RETVAL, NULL_RTX)))
 			{
 			  rtx fn_address = 0;
@@ -2052,7 +2051,7 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 			      rtx n;
 			      rtx next;
 
-			      if (GET_CODE (temp) == NOTE)
+			      if (NOTE_P (temp))
 				continue;
 
 			      body = PATTERN (temp);
@@ -2061,9 +2060,9 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 				 not counting USE or NOTE insns.  */
 			      for (next = NEXT_INSN (temp); next != p;
 				   next = NEXT_INSN (next))
-				if (! (GET_CODE (next) == INSN
+				if (! (NONJUMP_INSN_P (next)
 				       && GET_CODE (PATTERN (next)) == USE)
-				    && GET_CODE (next) != NOTE)
+				    && !NOTE_P (next))
 				  break;
 
 			      /* If that is the call, this may be the insn
@@ -2077,7 +2076,7 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 				 function address into the register that the
 				 call insn will use.  flow.c will delete any
 				 redundant stores that we have created.  */
-			      if (GET_CODE (next) == CALL_INSN
+			      if (CALL_P (next)
 				  && GET_CODE (body) == SET
 				  && REG_P (SET_DEST (body))
 				  && (n = find_reg_note (temp, REG_EQUAL,
@@ -2092,14 +2091,14 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 			      /* We have the call insn.
 				 If it uses the register we suspect it might,
 				 load it with the correct address directly.  */
-			      if (GET_CODE (temp) == CALL_INSN
+			      if (CALL_P (temp)
 				  && fn_address != 0
 				  && reg_referenced_p (fn_reg, body))
 				loop_insn_emit_after (loop, 0, fn_address_insn,
 						      gen_move_insn
 						      (fn_reg, fn_address));
 
-			      if (GET_CODE (temp) == CALL_INSN)
+			      if (CALL_P (temp))
 				{
 				  i1 = loop_call_insn_hoist (loop, body);
 				  /* Because the USAGE information potentially
@@ -2146,7 +2145,7 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 			  end_sequence ();
 			  i1 = loop_insn_hoist (loop, sequence);
 			}
-		      else if (GET_CODE (p) == CALL_INSN)
+		      else if (CALL_P (p))
 			{
 			  i1 = loop_call_insn_hoist (loop, PATTERN (p));
 			  /* Because the USAGE information potentially
@@ -2230,7 +2229,7 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 			 pointers, but when we skip over a NOTE we must fix
 			 it up.  Otherwise that code walks into the non-deleted
 			 insn stream.  */
-		      while (p && GET_CODE (p) == NOTE)
+		      while (p && NOTE_P (p))
 			p = NEXT_INSN (temp) = NEXT_INSN (p);
 
 		      if (m->insert_temp)
@@ -2351,8 +2350,7 @@ move_movables (struct loop *loop, struct loop_movables *movables,
   /* Go through all the instructions in the loop, making
      all the register substitutions scheduled in REG_MAP.  */
   for (p = new_start; p != loop_end; p = NEXT_INSN (p))
-    if (GET_CODE (p) == INSN || GET_CODE (p) == JUMP_INSN
-	|| GET_CODE (p) == CALL_INSN)
+    if (INSN_P (p))
       {
 	replace_regs (PATTERN (p), reg_map, nregs, 0);
 	replace_regs (REG_NOTES (p), reg_map, nregs, 0);
@@ -2542,10 +2540,10 @@ prescan_loop (struct loop *loop)
   /* If loop opts run twice, this was set on 1st pass for 2nd.  */
   loop_info->preconditioned = NOTE_PRECONDITIONED (end);
 
-  for (insn = start; insn && GET_CODE (insn) != CODE_LABEL;
+  for (insn = start; insn && !LABEL_P (insn);
        insn = PREV_INSN (insn))
     {
-      if (GET_CODE (insn) == CALL_INSN)
+      if (CALL_P (insn))
 	{
 	  loop_info->pre_header_has_call = 1;
 	  break;
@@ -2662,7 +2660,7 @@ prescan_loop (struct loop *loop)
 	  if (volatile_refs_p (PATTERN (insn)))
 	    loop_info->has_volatile = 1;
 
-	  if (GET_CODE (insn) == JUMP_INSN
+	  if (JUMP_P (insn)
 	      && (GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
 		  || GET_CODE (PATTERN (insn)) == ADDR_VEC))
 	    loop_info->has_tablejump = 1;
@@ -2756,7 +2754,7 @@ find_and_verify_loops (rtx f, struct loops *loops)
   current_loop = NULL;
   for (insn = f; insn; insn = NEXT_INSN (insn))
     {
-      if (GET_CODE (insn) == NOTE)
+      if (NOTE_P (insn))
 	switch (NOTE_LINE_NUMBER (insn))
 	  {
 	  case NOTE_INSN_LOOP_BEG:
@@ -2788,7 +2786,7 @@ find_and_verify_loops (rtx f, struct loops *loops)
 	    break;
 	  }
 
-      if (GET_CODE (insn) == CALL_INSN
+      if (CALL_P (insn)
 	  && find_reg_note (insn, REG_SETJMP, NULL))
 	{
 	  /* In this case, we must invalidate our current loop and any
@@ -2835,14 +2833,14 @@ find_and_verify_loops (rtx f, struct loops *loops)
       {
 	struct loop *this_loop = uid_loop[INSN_UID (insn)];
 
-	if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN)
+	if (NONJUMP_INSN_P (insn) || CALL_P (insn))
 	  {
 	    rtx note = find_reg_note (insn, REG_LABEL, NULL_RTX);
 	    if (note)
 	      invalidate_loops_containing_label (XEXP (note, 0));
 	  }
 
-	if (GET_CODE (insn) != JUMP_INSN)
+	if (!JUMP_P (insn))
 	  continue;
 
 	mark_loop_jump (PATTERN (insn), this_loop);
@@ -2865,10 +2863,10 @@ find_and_verify_loops (rtx f, struct loops *loops)
 	    /* Go backwards until we reach the start of the loop, a label,
 	       or a JUMP_INSN.  */
 	    for (p = PREV_INSN (insn);
-		 GET_CODE (p) != CODE_LABEL
-		 && ! (GET_CODE (p) == NOTE
+		 !LABEL_P (p)
+		 && ! (NOTE_P (p)
 		       && NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG)
-		 && GET_CODE (p) != JUMP_INSN;
+		 && !JUMP_P (p);
 		 p = PREV_INSN (p))
 	      ;
 
@@ -2889,7 +2887,7 @@ find_and_verify_loops (rtx f, struct loops *loops)
 
 	    /* Make sure that the target of P is within the current loop.  */
 
-	    if (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p)
+	    if (JUMP_P (p) && JUMP_LABEL (p)
 		&& uid_loop[INSN_UID (JUMP_LABEL (p))] != this_loop)
 	      outer_loop = this_loop;
 
@@ -2903,7 +2901,7 @@ find_and_verify_loops (rtx f, struct loops *loops)
 	       and move the block of code to the spot we found.  */
 
 	    if (! outer_loop
-		&& GET_CODE (p) == JUMP_INSN
+		&& JUMP_P (p)
 		&& JUMP_LABEL (p) != 0
 		/* Just ignore jumps to labels that were never emitted.
 		   These always indicate compilation errors.  */
@@ -2924,17 +2922,17 @@ find_and_verify_loops (rtx f, struct loops *loops)
 		/* Search for possible garbage past the conditional jumps
 		   and look for the last barrier.  */
 		for (tmp = last_insn_to_move;
-		     tmp && GET_CODE (tmp) != CODE_LABEL; tmp = NEXT_INSN (tmp))
-		  if (GET_CODE (tmp) == BARRIER)
+		     tmp && !LABEL_P (tmp); tmp = NEXT_INSN (tmp))
+		  if (BARRIER_P (tmp))
 		    last_insn_to_move = tmp;
 
 		for (loc = target; loc; loc = PREV_INSN (loc))
-		  if (GET_CODE (loc) == BARRIER
+		  if (BARRIER_P (loc)
 		      /* Don't move things inside a tablejump.  */
 		      && ((loc2 = next_nonnote_insn (loc)) == 0
-			  || GET_CODE (loc2) != CODE_LABEL
+			  || !LABEL_P (loc2)
 			  || (loc2 = next_nonnote_insn (loc2)) == 0
-			  || GET_CODE (loc2) != JUMP_INSN
+			  || !JUMP_P (loc2)
 			  || (GET_CODE (PATTERN (loc2)) != ADDR_VEC
 			      && GET_CODE (PATTERN (loc2)) != ADDR_DIFF_VEC))
 		      && uid_loop[INSN_UID (loc)] == target_loop)
@@ -2942,12 +2940,12 @@ find_and_verify_loops (rtx f, struct loops *loops)
 
 		if (loc == 0)
 		  for (loc = target; loc; loc = NEXT_INSN (loc))
-		    if (GET_CODE (loc) == BARRIER
+		    if (BARRIER_P (loc)
 			/* Don't move things inside a tablejump.  */
 			&& ((loc2 = next_nonnote_insn (loc)) == 0
-			    || GET_CODE (loc2) != CODE_LABEL
+			    || !LABEL_P (loc2)
 			    || (loc2 = next_nonnote_insn (loc2)) == 0
-			    || GET_CODE (loc2) != JUMP_INSN
+			    || !JUMP_P (loc2)
 			    || (GET_CODE (PATTERN (loc2)) != ADDR_VEC
 				&& GET_CODE (PATTERN (loc2)) != ADDR_DIFF_VEC))
 			&& uid_loop[INSN_UID (loc)] == target_loop)
@@ -3217,7 +3215,7 @@ labels_in_range_p (rtx insn, int end)
 {
   while (insn && INSN_LUID (insn) <= end)
     {
-      if (GET_CODE (insn) == CODE_LABEL)
+      if (LABEL_P (insn))
 	return 1;
       insn = NEXT_INSN (insn);
     }
@@ -4327,7 +4325,7 @@ for_each_insn_in_loop (struct loop *loop, loop_insn_callback fncall)
          returns, exits the loop, is a jump to a location that is still
          behind the label, or is a jump to the loop start.  */
 
-      if (GET_CODE (p) == CODE_LABEL)
+      if (LABEL_P (p))
 	{
 	  rtx insn = p;
 
@@ -4348,7 +4346,7 @@ for_each_insn_in_loop (struct loop *loop, loop_insn_callback fncall)
 		    break;
 		}
 
-	      if (GET_CODE (insn) == JUMP_INSN
+	      if (JUMP_P (insn)
 		  && GET_CODE (PATTERN (insn)) != RETURN
 		  && (!any_condjump_p (insn)
 		      || (JUMP_LABEL (insn) != 0
@@ -4365,7 +4363,7 @@ for_each_insn_in_loop (struct loop *loop, loop_insn_callback fncall)
          on whether they will be executed during each iteration.  */
       /* This code appears twice in strength_reduce.  There is also similar
          code in scan_loop.  */
-      if (GET_CODE (p) == JUMP_INSN
+      if (JUMP_P (p)
       /* If we enter the loop in the middle, and scan around to the
          beginning, don't set not_every_iteration for that.
          This can be any kind of jump, since we want to know if insns
@@ -4389,7 +4387,7 @@ for_each_insn_in_loop (struct loop *loop, loop_insn_callback fncall)
 	    not_every_iteration = 1;
 	}
 
-      else if (GET_CODE (p) == NOTE)
+      else if (NOTE_P (p))
 	{
 	  /* At the virtual top of a converted loop, insns are again known to
 	     be executed each iteration: logically, the loop begins here
@@ -4415,7 +4413,7 @@ for_each_insn_in_loop (struct loop *loop, loop_insn_callback fncall)
          Note that LOOP_TOP is only set for rotated loops and we need
          this check for all loops, so compare against the CODE_LABEL
          which immediately follows LOOP_START.  */
-      if (GET_CODE (p) == JUMP_INSN
+      if (JUMP_P (p)
 	  && JUMP_LABEL (p) == NEXT_INSN (loop->start))
 	past_loop_latch = 1;
 
@@ -4431,7 +4429,7 @@ for_each_insn_in_loop (struct loop *loop, loop_insn_callback fncall)
 
       if (not_every_iteration
 	  && !past_loop_latch
-	  && GET_CODE (p) == CODE_LABEL
+	  && LABEL_P (p)
 	  && no_labels_between_p (p, loop->end)
 	  && loop_insn_first_p (p, loop->cont))
 	not_every_iteration = 0;
@@ -4499,13 +4497,13 @@ loop_bivs_init_find (struct loop *loop)
      halting at first label.  Also record any test condition.  */
 
   call_seen = 0;
-  for (p = loop->start; p && GET_CODE (p) != CODE_LABEL; p = PREV_INSN (p))
+  for (p = loop->start; p && !LABEL_P (p); p = PREV_INSN (p))
     {
       rtx test;
 
       note_insn = p;
 
-      if (GET_CODE (p) == CALL_INSN)
+      if (CALL_P (p))
 	call_seen = 1;
 
       if (INSN_P (p))
@@ -4514,7 +4512,7 @@ loop_bivs_init_find (struct loop *loop)
       /* Record any test of a biv that branches around the loop if no store
 	 between it and the start of loop.  We only care about tests with
 	 constants and registers and only certain of those.  */
-      if (GET_CODE (p) == JUMP_INSN
+      if (JUMP_P (p)
 	  && JUMP_LABEL (p) != 0
 	  && next_real_insn (JUMP_LABEL (p)) == next_real_insn (loop->end)
 	  && (test = get_condition_for_loop (loop, p)) != 0
@@ -5319,8 +5317,7 @@ strength_reduce (struct loop *loop, int flags)
      register substitutions scheduled in REG_MAP.  */
 
   for (p = loop->start; p != loop->end; p = NEXT_INSN (p))
-    if (GET_CODE (p) == INSN || GET_CODE (p) == JUMP_INSN
-	|| GET_CODE (p) == CALL_INSN)
+    if (INSN_P (p))
       {
 	replace_regs (PATTERN (p), reg_map, reg_map_size, 0);
 	replace_regs (REG_NOTES (p), reg_map, reg_map_size, 0);
@@ -5384,7 +5381,7 @@ check_insn_for_bivs (struct loop *loop, rtx p, int not_every_iteration,
   rtx mult_val;
   rtx *location;
 
-  if (GET_CODE (p) == INSN
+  if (NONJUMP_INSN_P (p)
       && (set = single_set (p))
       && REG_P (SET_DEST (set)))
     {
@@ -5425,7 +5422,7 @@ check_insn_for_givs (struct loop *loop, rtx p, int not_every_iteration,
 
   rtx set;
   /* Look for a general induction variable in a register.  */
-  if (GET_CODE (p) == INSN
+  if (NONJUMP_INSN_P (p)
       && (set = single_set (p))
       && REG_P (SET_DEST (set))
       && ! regs->array[REGNO (SET_DEST (set))].may_not_optimize)
@@ -5482,14 +5479,13 @@ check_insn_for_givs (struct loop *loop, rtx p, int not_every_iteration,
     }
 
   /* Look for givs which are memory addresses.  */
-  if (GET_CODE (p) == INSN)
+  if (NONJUMP_INSN_P (p))
     find_mem_givs (loop, PATTERN (p), p, not_every_iteration,
 		   maybe_multiple);
 
   /* Update the status of whether giv can derive other givs.  This can
      change when we pass a label or an insn that updates a biv.  */
-  if (GET_CODE (p) == INSN || GET_CODE (p) == JUMP_INSN
-      || GET_CODE (p) == CODE_LABEL)
+  if (INSN_P (p))
     update_giv_derive (loop, p);
   return p;
 }
@@ -5992,8 +5988,7 @@ check_final_value (const struct loop *loop, struct induction *v)
 	  if (p == v->insn)
 	    break;
 
-	  if (GET_CODE (p) == INSN || GET_CODE (p) == JUMP_INSN
-	      || GET_CODE (p) == CALL_INSN)
+	  if (INSN_P (p))
 	    {
 	      /* It is possible for the BIV increment to use the GIV if we
 		 have a cycle.  Thus we must be sure to check each insn for
@@ -6032,7 +6027,7 @@ check_final_value (const struct loop *loop, struct induction *v)
 	      if (p == last_giv_use)
 		break;
 
-	      if (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p)
+	      if (JUMP_P (p) && JUMP_LABEL (p)
 		  && LABEL_NAME (JUMP_LABEL (p))
 		  && ((loop_insn_first_p (JUMP_LABEL (p), v->insn)
 		       && loop_insn_first_p (loop->start, JUMP_LABEL (p)))
@@ -6110,7 +6105,7 @@ update_giv_derive (const struct loop *loop, rtx p)
 
   for (bl = ivs->list; bl; bl = bl->next)
     for (biv = bl->biv; biv; biv = biv->next_iv)
-      if (GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN
+      if (LABEL_P (p) || JUMP_P (p)
 	  || biv->insn == p)
 	{
 	  /* Skip if location is the same as a previous one.  */
@@ -6126,7 +6121,7 @@ update_giv_derive (const struct loop *loop, rtx p)
 
 	      /* If this giv is conditionally set and we have passed a label,
 		 it cannot derive anything.  */
-	      if (GET_CODE (p) == CODE_LABEL && ! giv->always_computable)
+	      if (LABEL_P (p) && ! giv->always_computable)
 		giv->cant_derive = 1;
 
 	      /* Skip givs that have mult_val == 0, since
@@ -6163,8 +6158,8 @@ update_giv_derive (const struct loop *loop, rtx p)
 		  else
 		    giv->cant_derive = 1;
 		}
-	      else if ((GET_CODE (p) == CODE_LABEL && ! biv->always_computable)
-		       || (GET_CODE (p) == JUMP_INSN && biv->maybe_multiple))
+	      else if ((LABEL_P (p) && ! biv->always_computable)
+		       || (JUMP_P (p) && biv->maybe_multiple))
 		giv->cant_derive = 1;
 	    }
 	}
@@ -6292,7 +6287,7 @@ basic_induction_var (const struct loop *loop, rtx x, enum machine_mode mode,
 	    {
 	      insn = PREV_INSN (insn);
 	    }
-	  while (insn && GET_CODE (insn) == NOTE
+	  while (insn && NOTE_P (insn)
 		 && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_BEG);
 
 	  if (!insn)
@@ -6367,7 +6362,7 @@ basic_induction_var (const struct loop *loop, rtx x, enum machine_mode mode,
     case ASHIFTRT:
       /* Similar, since this can be a sign extension.  */
       for (insn = PREV_INSN (p);
-	   (insn && GET_CODE (insn) == NOTE
+	   (insn && NOTE_P (insn)
 	    && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_BEG);
 	   insn = PREV_INSN (insn))
 	;
@@ -7932,7 +7927,7 @@ product_cheap_p (rtx a, rtx b)
 	  rtx next = NEXT_INSN (tmp);
 
 	  if (++n_insns > 3
-	      || GET_CODE (tmp) != INSN
+	      || !NONJUMP_INSN_P (tmp)
 	      || (GET_CODE (PATTERN (tmp)) == SET
 		  && GET_CODE (SET_SRC (PATTERN (tmp))) == MULT)
 	      || (GET_CODE (PATTERN (tmp)) == PARALLEL
@@ -8024,7 +8019,7 @@ check_dbra_loop (struct loop *loop, int insn_count)
 
     rtx jump1;
     if ((jump1 = prev_nonnote_insn (first_compare)) != loop->cont)
-      if (GET_CODE (jump1) == JUMP_INSN)
+      if (JUMP_P (jump1))
 	return 0;
   }
 
@@ -8095,9 +8090,9 @@ check_dbra_loop (struct loop *loop, int insn_count)
 	 the loop, then we can safely optimize.  */
       for (p = loop_start; p; p = PREV_INSN (p))
 	{
-	  if (GET_CODE (p) == CODE_LABEL)
+	  if (LABEL_P (p))
 	    break;
-	  if (GET_CODE (p) != JUMP_INSN)
+	  if (!JUMP_P (p))
 	    continue;
 
 	  before_comparison = get_condition_for_loop (loop, p);
@@ -8512,7 +8507,7 @@ check_dbra_loop (struct loop *loop, int insn_count)
 	      emit_jump_insn_before (tem, loop_end);
 
 	      for (tem = PREV_INSN (loop_end);
-		   tem && GET_CODE (tem) != JUMP_INSN;
+		   tem && !JUMP_P (tem);
 		   tem = PREV_INSN (tem))
 		;
 
@@ -8691,11 +8686,11 @@ loop_insn_first_p (rtx insn, rtx reference)
 	 P is a note.  */
       if (INSN_UID (p) < max_uid_for_loop
 	  && INSN_UID (q) < max_uid_for_loop
-	  && GET_CODE (p) != NOTE)
+	  && !NOTE_P (p))
 	return INSN_LUID (p) <= INSN_LUID (q);
 
       if (INSN_UID (p) >= max_uid_for_loop
-	  || GET_CODE (p) == NOTE)
+	  || NOTE_P (p))
 	p = NEXT_INSN (p);
       if (INSN_UID (q) >= max_uid_for_loop)
 	q = NEXT_INSN (q);
@@ -9110,7 +9105,7 @@ last_use_this_basic_block (rtx reg, rtx insn)
 {
   rtx n;
   for (n = insn;
-       n && GET_CODE (n) != CODE_LABEL && GET_CODE (n) != JUMP_INSN;
+       n && !LABEL_P (n) && !JUMP_P (n);
        n = NEXT_INSN (n))
     {
       if (REGNO_LAST_UID (REGNO (reg)) == INSN_UID (n))
@@ -9246,7 +9241,7 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
       if (op0 == cc0_rtx)
 	{
 	  if ((prev = prev_nonnote_insn (prev)) == 0
-	      || GET_CODE (prev) != INSN
+	      || !NONJUMP_INSN_P (prev)
 	      || (set = single_set (prev)) == 0
 	      || SET_DEST (set) != cc0_rtx)
 	    return 0;
@@ -9273,7 +9268,7 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
 	 we don't want to bother dealing with it.  */
 
       if ((prev = prev_nonnote_insn (prev)) == 0
-	  || GET_CODE (prev) != INSN
+	  || !NONJUMP_INSN_P (prev)
 	  || FIND_REG_INC_NOTE (prev, NULL_RTX))
 	break;
 
@@ -9461,7 +9456,7 @@ get_condition (rtx jump, rtx *earliest, int allow_cc_mode)
   rtx set;
 
   /* If this is not a standard conditional jump, we can't parse it.  */
-  if (GET_CODE (jump) != JUMP_INSN
+  if (!JUMP_P (jump)
       || ! any_condjump_p (jump))
     return 0;
   set = pc_set (jump);
@@ -9665,13 +9660,13 @@ loop_regs_scan (const struct loop *loop, int extra_size)
 	    }
 	}
 
-      if (GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == JUMP_INSN)
+      if (LABEL_P (insn) || JUMP_P (insn))
 	memset (last_set, 0, regs->num * sizeof (rtx));
 
       /* Invalidate all registers used for function argument passing.
 	 We check rtx_varies_p for the same reason as below, to allow
 	 optimizing PIC calculations.  */
-      if (GET_CODE (insn) == CALL_INSN)
+      if (CALL_P (insn))
 	{
 	  rtx link;
 	  for (link = CALL_INSN_FUNCTION_USAGE (insn);
@@ -9753,7 +9748,7 @@ load_mems (const struct loop *loop)
 
   /* We cannot use next_label here because it skips over normal insns.  */
   end_label = next_nonnote_insn (loop->end);
-  if (end_label && GET_CODE (end_label) != CODE_LABEL)
+  if (end_label && !LABEL_P (end_label))
     end_label = NULL_RTX;
 
   /* Check to see if it's possible that some instructions in the loop are
@@ -9763,16 +9758,16 @@ load_mems (const struct loop *loop)
        p != NULL_RTX;
        p = next_insn_in_loop (loop, p))
     {
-      if (GET_CODE (p) == CODE_LABEL)
+      if (LABEL_P (p))
 	maybe_never = 1;
-      else if (GET_CODE (p) == JUMP_INSN
+      else if (JUMP_P (p)
 	       /* If we enter the loop in the middle, and scan
 		  around to the beginning, don't set maybe_never
 		  for that.  This must be an unconditional jump,
 		  otherwise the code at the top of the loop might
 		  never be executed.  Unconditional jumps are
 		  followed a by barrier then loop end.  */
-	       && ! (GET_CODE (p) == JUMP_INSN
+	       && ! (JUMP_P (p)
 		     && JUMP_LABEL (p) == loop->top
 		     && NEXT_INSN (NEXT_INSN (p)) == loop->end
 		     && any_uncondjump_p (p)))
@@ -9803,7 +9798,7 @@ load_mems (const struct loop *loop)
 
   /* Find start of the extended basic block that enters the loop.  */
   for (p = loop->start;
-       PREV_INSN (p) && GET_CODE (p) != CODE_LABEL;
+       PREV_INSN (p) && !LABEL_P (p);
        p = PREV_INSN (p))
     ;
   prev_ebb_head = p;
@@ -9938,7 +9933,7 @@ load_mems (const struct loop *loop)
 
 	      /* If this is a call which uses / clobbers this memory
 		 location, we must not change the interface here.  */
-	      if (GET_CODE (p) == CALL_INSN
+	      if (CALL_P (p)
 		  && reg_mentioned_p (loop_info->mems[i].mem,
 				      CALL_INSN_FUNCTION_USAGE (p)))
 		{
@@ -9952,8 +9947,8 @@ load_mems (const struct loop *loop)
 				   loop_info->mems[i].reg, written);
 	    }
 
-	  if (GET_CODE (p) == CODE_LABEL
-	      || GET_CODE (p) == JUMP_INSN)
+	  if (LABEL_P (p)
+	      || JUMP_P (p))
 	    maybe_never = 1;
 	}
 
@@ -10068,7 +10063,7 @@ load_mems (const struct loop *loop)
      label with the new one.  */
   if (label != NULL_RTX && end_label != NULL_RTX)
     for (p = loop->start; p != loop->end; p = NEXT_INSN (p))
-      if (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p) == end_label)
+      if (JUMP_P (p) && JUMP_LABEL (p) == end_label)
 	redirect_jump (p, label, false);
 
   cselib_finish ();
@@ -10115,7 +10110,7 @@ try_copy_prop (const struct loop *loop, rtx replacement, unsigned int regno)
 
       /* Only substitute within one extended basic block from the initializing
          insn.  */
-      if (GET_CODE (insn) == CODE_LABEL && init_insn)
+      if (LABEL_P (insn) && init_insn)
 	break;
 
       if (! INSN_P (insn))
@@ -10719,7 +10714,7 @@ debug_giv (const struct induction *v)
 
 /* The notes do not have an assigned block, so look at the next insn.  */
 #define LOOP_BLOCK_NUM(INSN) \
-((INSN) ? (GET_CODE (INSN) == NOTE \
+((INSN) ? (NOTE_P (INSN) \
             ? LOOP_BLOCK_NUM_1 (next_nonnote_insn (INSN)) \
             : LOOP_BLOCK_NUM_1 (INSN)) \
         : -1)
@@ -10738,13 +10733,13 @@ loop_dump_aux (const struct loop *loop, FILE *file,
   /* Print diagnostics to compare our concept of a loop with
      what the loop notes say.  */
   if (! PREV_INSN (BB_HEAD (loop->first))
-      || GET_CODE (PREV_INSN (BB_HEAD (loop->first))) != NOTE
+      || !NOTE_P (PREV_INSN (BB_HEAD (loop->first)))
       || NOTE_LINE_NUMBER (PREV_INSN (BB_HEAD (loop->first)))
       != NOTE_INSN_LOOP_BEG)
     fprintf (file, ";;  No NOTE_INSN_LOOP_BEG at %d\n",
 	     INSN_UID (PREV_INSN (BB_HEAD (loop->first))));
   if (! NEXT_INSN (BB_END (loop->last))
-      || GET_CODE (NEXT_INSN (BB_END (loop->last))) != NOTE
+      || !NOTE_P (NEXT_INSN (BB_END (loop->last)))
       || NOTE_LINE_NUMBER (NEXT_INSN (BB_END (loop->last)))
       != NOTE_INSN_LOOP_END)
     fprintf (file, ";;  No NOTE_INSN_LOOP_END at %d\n",

@@ -150,7 +150,7 @@ count_bb_insns (basic_block bb)
 
   while (1)
     {
-      if (GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == INSN)
+      if (CALL_P (insn) || NONJUMP_INSN_P (insn))
 	count++;
 
       if (insn == BB_END (bb))
@@ -189,21 +189,21 @@ first_active_insn (basic_block bb)
 {
   rtx insn = BB_HEAD (bb);
 
-  if (GET_CODE (insn) == CODE_LABEL)
+  if (LABEL_P (insn))
     {
       if (insn == BB_END (bb))
 	return NULL_RTX;
       insn = NEXT_INSN (insn);
     }
 
-  while (GET_CODE (insn) == NOTE)
+  while (NOTE_P (insn))
     {
       if (insn == BB_END (bb))
 	return NULL_RTX;
       insn = NEXT_INSN (insn);
     }
 
-  if (GET_CODE (insn) == JUMP_INSN)
+  if (JUMP_P (insn))
     return NULL_RTX;
 
   return insn;
@@ -217,10 +217,10 @@ last_active_insn (basic_block bb, int skip_use_p)
   rtx insn = BB_END (bb);
   rtx head = BB_HEAD (bb);
 
-  while (GET_CODE (insn) == NOTE
-	 || GET_CODE (insn) == JUMP_INSN
+  while (NOTE_P (insn)
+	 || JUMP_P (insn)
 	 || (skip_use_p
-	     && GET_CODE (insn) == INSN
+	     && NONJUMP_INSN_P (insn)
 	     && GET_CODE (PATTERN (insn)) == USE))
     {
       if (insn == head)
@@ -228,7 +228,7 @@ last_active_insn (basic_block bb, int skip_use_p)
       insn = PREV_INSN (insn);
     }
 
-  if (GET_CODE (insn) == CODE_LABEL)
+  if (LABEL_P (insn))
     return NULL_RTX;
 
   return insn;
@@ -271,10 +271,10 @@ cond_exec_process_insns (ce_if_block_t *ce_info ATTRIBUTE_UNUSED,
 
   for (insn = start; ; insn = NEXT_INSN (insn))
     {
-      if (GET_CODE (insn) == NOTE)
+      if (NOTE_P (insn))
 	goto insn_done;
 
-      if (GET_CODE (insn) != INSN && GET_CODE (insn) != CALL_INSN)
+      if (!NONJUMP_INSN_P (insn) && !CALL_P (insn))
 	abort ();
 
       /* Remove USE insns that get in the way.  */
@@ -326,7 +326,7 @@ cond_exec_process_insns (ce_if_block_t *ce_info ATTRIBUTE_UNUSED,
 
       validate_change (insn, &PATTERN (insn), pattern, 1);
 
-      if (GET_CODE (insn) == CALL_INSN && prob_val)
+      if (CALL_P (insn) && prob_val)
 	validate_change (insn, &REG_NOTES (insn),
 			 alloc_EXPR_LIST (REG_BR_PROB, prob_val,
 					  REG_NOTES (insn)), 1);
@@ -726,7 +726,7 @@ end_ifcvt_sequence (struct noce_if_info *if_info)
      As an exercise for the reader, build a general mechanism that
      allows proper placement of required clobbers.  */
   for (insn = seq; insn; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == JUMP_INSN
+    if (JUMP_P (insn)
 	|| recog_memoized (insn) == -1)
       return NULL_RTX;
 
@@ -1959,7 +1959,7 @@ noce_process_if_block (struct ce_if_block * ce_info)
 	 COND_EARLIEST to JUMP.  Make sure the relevant data is still
 	 intact.  */
       if (! insn_b
-	  || GET_CODE (insn_b) != INSN
+	  || !NONJUMP_INSN_P (insn_b)
 	  || (set_b = single_set (insn_b)) == NULL_RTX
 	  || ! rtx_equal_p (x, SET_DEST (set_b))
 	  || reg_overlap_mentioned_p (x, SET_SRC (set_b))
@@ -2231,7 +2231,7 @@ merge_if_block (struct ce_if_block * ce_info)
 	{
 	  if (find_reg_note (last, REG_NORETURN, NULL))
 	    ;
-	  else if (GET_CODE (last) == INSN
+	  else if (NONJUMP_INSN_P (last)
 		   && GET_CODE (PATTERN (last)) == TRAP_IF
 		   && TRAP_CONDITION (PATTERN (last)) == const_true_rtx)
 	    ;
@@ -2241,10 +2241,10 @@ merge_if_block (struct ce_if_block * ce_info)
 
       /* There should still be something at the end of the THEN or ELSE
          blocks taking us to our final destination.  */
-      else if (GET_CODE (last) == JUMP_INSN)
+      else if (JUMP_P (last))
 	;
       else if (combo_bb->succ->dest == EXIT_BLOCK_PTR
-	       && GET_CODE (last) == CALL_INSN
+	       && CALL_P (last)
 	       && SIBLING_CALL_P (last))
 	;
       else if ((combo_bb->succ->flags & EDGE_EH)
@@ -2417,11 +2417,11 @@ block_jumps_and_fallthru_p (basic_block cur_bb, basic_block target_bb)
 
   while (insn != NULL_RTX)
     {
-      if (GET_CODE (insn) == CALL_INSN)
+      if (CALL_P (insn))
 	return -1;
 
       if (INSN_P (insn)
-	  && GET_CODE (insn) != JUMP_INSN
+	  && !JUMP_P (insn)
 	  && GET_CODE (PATTERN (insn)) != USE
 	  && GET_CODE (PATTERN (insn)) != CLOBBER)
 	n_insns++;
@@ -2560,12 +2560,12 @@ find_if_block (struct ce_if_block * ce_info)
 	  rtx last_insn = BB_END (then_bb);
 
 	  while (last_insn
-		 && GET_CODE (last_insn) == NOTE
+		 && NOTE_P (last_insn)
 		 && last_insn != BB_HEAD (then_bb))
 	    last_insn = PREV_INSN (last_insn);
 
 	  if (last_insn
-	      && GET_CODE (last_insn) == JUMP_INSN
+	      && JUMP_P (last_insn)
 	      && ! simplejump_p (last_insn))
 	    return FALSE;
 
@@ -3050,9 +3050,9 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
   head = BB_HEAD (merge_bb);
   end = BB_END (merge_bb);
 
-  if (GET_CODE (head) == CODE_LABEL)
+  if (LABEL_P (head))
     head = NEXT_INSN (head);
-  if (GET_CODE (head) == NOTE)
+  if (NOTE_P (head))
     {
       if (head == end)
 	{
@@ -3062,7 +3062,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
       head = NEXT_INSN (head);
     }
 
-  if (GET_CODE (end) == JUMP_INSN)
+  if (JUMP_P (end))
     {
       if (head == end)
 	{
@@ -3126,7 +3126,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
       /* Check for no calls or trapping operations.  */
       for (insn = head; ; insn = NEXT_INSN (insn))
 	{
-	  if (GET_CODE (insn) == CALL_INSN)
+	  if (CALL_P (insn))
 	    return FALSE;
 	  if (INSN_P (insn))
 	    {

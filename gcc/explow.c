@@ -1118,7 +1118,7 @@ optimize_save_area_alloca (void)
     {
       rtx note;
 
-      if (GET_CODE (insn) != INSN)
+      if (!NONJUMP_INSN_P (insn))
 	continue;
 
       for (note = REG_NOTES (insn); note; note = XEXP (note, 1))

@@ -1371,7 +1371,7 @@ simplify_using_assignment (rtx insn, rtx *expr, regset altered)
     ret = true;
 
   note_stores (PATTERN (insn), mark_altered, altered);
-  if (GET_CODE (insn) == CALL_INSN)
+  if (CALL_P (insn))
     {
       int i;
 

@@ -1823,7 +1823,7 @@ build_insn_chain (rtx first)
 	     });
 	}
 
-      if (GET_CODE (first) != NOTE && GET_CODE (first) != BARRIER)
+      if (!NOTE_P (first) && !BARRIER_P (first))
 	{
 	  c = new_insn_chain ();
 	  c->prev = prev;
@@ -1886,7 +1886,7 @@ build_insn_chain (rtx first)
 		&& ! ((GET_CODE (PATTERN (first)) == ADDR_VEC
 		       || GET_CODE (PATTERN (first)) == ADDR_DIFF_VEC)
 		      && prev_real_insn (first) != 0
-		      && GET_CODE (prev_real_insn (first)) == JUMP_INSN))
+		      && JUMP_P (prev_real_insn (first))))
 	      abort ();
 	  break;
 	}

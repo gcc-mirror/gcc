@@ -265,7 +265,7 @@ doloop_register_get (rtx insn, rtx *comp)
 {
   rtx pattern, cmp, inc, reg, condition;
 
-  if (GET_CODE (insn) != JUMP_INSN)
+  if (!JUMP_P (insn))
     return NULL_RTX;
   pattern = PATTERN (insn);
 
@@ -789,7 +789,7 @@ static rtx
 find_line_note (rtx insn)
 {
   for (; insn; insn = PREV_INSN (insn))
-    if (GET_CODE (insn) == NOTE
+    if (NOTE_P (insn)
 	&& NOTE_LINE_NUMBER (insn) >= 0)
       break;
 
@@ -938,9 +938,9 @@ sms_schedule (FILE *dump_file)
 
       /* Don't handle BBs with calls or barriers, or !single_set insns.  */
       for (insn = head; insn != NEXT_INSN (tail); insn = NEXT_INSN (insn))
-	if (GET_CODE (insn) == CALL_INSN
-	    || GET_CODE (insn) == BARRIER
-	    || (INSN_P (insn) && GET_CODE (insn) != JUMP_INSN
+	if (CALL_P (insn)
+	    || BARRIER_P (insn)
+	    || (INSN_P (insn) && !JUMP_P (insn)
 		&& !single_set (insn) && GET_CODE (PATTERN (insn)) != USE))
 	  break;
 
@@ -948,9 +948,9 @@ sms_schedule (FILE *dump_file)
 	{
 	  if (stats_file)
 	    {
-	      if (GET_CODE (insn) == CALL_INSN)
+	      if (CALL_P (insn))
 		fprintf (stats_file, "SMS loop-with-call\n");
-	      else if (GET_CODE (insn) == BARRIER)
+	      else if (BARRIER_P (insn))
 		fprintf (stats_file, "SMS loop-with-barrier\n");
 	      else
 		fprintf (stats_file, "SMS loop-with-not-single-set\n");
@@ -1245,7 +1245,7 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order, FILE *du
 	  if (!INSN_P (insn))
 	    continue;
 
-	  if (GET_CODE (insn) == JUMP_INSN) /* Closing branch handled later.  */
+	  if (JUMP_P (insn)) /* Closing branch handled later.  */
 	    continue;
 
 	  /* 1. compute sched window for u (start, end, step).  */

@@ -824,7 +824,7 @@ build_def_use (basic_block bb)
 	    *recog_data.operand_loc[i] = old_operands[i];
 
 	  /* Step 2B: Can't rename function call argument registers.  */
-	  if (GET_CODE (insn) == CALL_INSN && CALL_INSN_FUNCTION_USAGE (insn))
+	  if (CALL_P (insn) && CALL_INSN_FUNCTION_USAGE (insn))
 	    scan_rtx (insn, &CALL_INSN_FUNCTION_USAGE (insn),
 		      NO_REGS, terminate_all_read, OP_IN, 0);
 
@@ -879,7 +879,7 @@ build_def_use (basic_block bb)
 
 	  /* Step 4B: If this is a call, any chain live at this point
 	     requires a caller-saved reg.  */
-	  if (GET_CODE (insn) == CALL_INSN)
+	  if (CALL_P (insn))
 	    {
 	      struct du_chain *p;
 	      for (p = open_chains; p; p = p->next_chain)
@@ -934,7 +934,7 @@ build_def_use (basic_block bb)
 			      recog_op_alt[i][alt].earlyclobber);
 		  }
 	    }
-	  else if (GET_CODE (insn) != CALL_INSN)
+	  else if (!CALL_P (insn))
 	    for (i = 0; i < n_ops + recog_data.n_dups; i++)
 	      {
 		int opn = i < n_ops ? i : recog_data.dup_num[i - n_ops];
@@ -1702,7 +1702,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
     did_replacement:
       /* Clobber call-clobbered registers.  */
-      if (GET_CODE (insn) == CALL_INSN)
+      if (CALL_P (insn))
 	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	  if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
 	    kill_value_regno (i, vd);

@@ -2863,7 +2863,7 @@ get_first_nonnote_insn (void)
   while (insn)
     {
       insn = next_insn (insn);
-      if (insn == 0 || GET_CODE (insn) != NOTE)
+      if (insn == 0 || !NOTE_P (insn))
 	break;
     }
 
@@ -2881,7 +2881,7 @@ get_last_nonnote_insn (void)
   while (insn)
     {
       insn = previous_insn (insn);
-      if (insn == 0 || GET_CODE (insn) != NOTE)
+      if (insn == 0 || !NOTE_P (insn))
 	break;
     }
 
@@ -2932,7 +2932,7 @@ next_insn (rtx insn)
   if (insn)
     {
       insn = NEXT_INSN (insn);
-      if (insn && GET_CODE (insn) == INSN
+      if (insn && NONJUMP_INSN_P (insn)
 	  && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	insn = XVECEXP (PATTERN (insn), 0, 0);
     }
@@ -2949,7 +2949,7 @@ previous_insn (rtx insn)
   if (insn)
     {
       insn = PREV_INSN (insn);
-      if (insn && GET_CODE (insn) == INSN
+      if (insn && NONJUMP_INSN_P (insn)
 	  && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	insn = XVECEXP (PATTERN (insn), 0, XVECLEN (PATTERN (insn), 0) - 1);
     }
@@ -2966,7 +2966,7 @@ next_nonnote_insn (rtx insn)
   while (insn)
     {
       insn = NEXT_INSN (insn);
-      if (insn == 0 || GET_CODE (insn) != NOTE)
+      if (insn == 0 || !NOTE_P (insn))
 	break;
     }
 
@@ -2982,7 +2982,7 @@ prev_nonnote_insn (rtx insn)
   while (insn)
     {
       insn = PREV_INSN (insn);
-      if (insn == 0 || GET_CODE (insn) != NOTE)
+      if (insn == 0 || !NOTE_P (insn))
 	break;
     }
 
@@ -3032,7 +3032,7 @@ last_call_insn (void)
   rtx insn;
 
   for (insn = get_last_insn ();
-       insn && GET_CODE (insn) != CALL_INSN;
+       insn && !CALL_P (insn);
        insn = PREV_INSN (insn))
     ;
 
@@ -3046,8 +3046,8 @@ last_call_insn (void)
 int
 active_insn_p (rtx insn)
 {
-  return (GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN
-	  || (GET_CODE (insn) == INSN
+  return (CALL_P (insn) || JUMP_P (insn)
+	  || (NONJUMP_INSN_P (insn)
 	      && (! reload_completed
 		  || (GET_CODE (PATTERN (insn)) != USE
 		      && GET_CODE (PATTERN (insn)) != CLOBBER))));
@@ -3091,7 +3091,7 @@ next_label (rtx insn)
   while (insn)
     {
       insn = NEXT_INSN (insn);
-      if (insn == 0 || GET_CODE (insn) == CODE_LABEL)
+      if (insn == 0 || LABEL_P (insn))
 	break;
     }
 
@@ -3106,7 +3106,7 @@ prev_label (rtx insn)
   while (insn)
     {
       insn = PREV_INSN (insn);
-      if (insn == 0 || GET_CODE (insn) == CODE_LABEL)
+      if (insn == 0 || LABEL_P (insn))
 	break;
     }
 
@@ -3137,7 +3137,7 @@ link_cc0_insns (rtx insn)
 {
   rtx user = next_nonnote_insn (insn);
 
-  if (GET_CODE (user) == INSN && GET_CODE (PATTERN (user)) == SEQUENCE)
+  if (NONJUMP_INSN_P (user) && GET_CODE (PATTERN (user)) == SEQUENCE)
     user = XVECEXP (PATTERN (user), 0, 0);
 
   REG_NOTES (user) = gen_rtx_INSN_LIST (REG_CC_SETTER, insn,
@@ -3163,7 +3163,7 @@ next_cc0_user (rtx insn)
     return XEXP (note, 0);
 
   insn = next_nonnote_insn (insn);
-  if (insn && GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
+  if (insn && NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
     insn = XVECEXP (PATTERN (insn), 0, 0);
 
   if (insn && INSN_P (insn) && reg_mentioned_p (cc0_rtx, PATTERN (insn)))
@@ -3248,7 +3248,7 @@ try_split (rtx pat, rtx trial, int last)
 
   /* If we are splitting a JUMP_INSN, it might be followed by a BARRIER.
      We may need to handle this specially.  */
-  if (after && GET_CODE (after) == BARRIER)
+  if (after && BARRIER_P (after))
     {
       has_barrier = 1;
       after = NEXT_INSN (after);
@@ -3273,7 +3273,7 @@ try_split (rtx pat, rtx trial, int last)
   /* Mark labels.  */
   for (insn = insn_last; insn ; insn = PREV_INSN (insn))
     {
-      if (GET_CODE (insn) == JUMP_INSN)
+      if (JUMP_P (insn))
 	{
 	  mark_jump_label (PATTERN (insn), insn, 0);
 	  njumps++;
@@ -3297,10 +3297,10 @@ try_split (rtx pat, rtx trial, int last)
 
   /* If we are splitting a CALL_INSN, look for the CALL_INSN
      in SEQ and copy our CALL_INSN_FUNCTION_USAGE to it.  */
-  if (GET_CODE (trial) == CALL_INSN)
+  if (CALL_P (trial))
     {
       for (insn = insn_last; insn ; insn = PREV_INSN (insn))
-	if (GET_CODE (insn) == CALL_INSN)
+	if (CALL_P (insn))
 	  {
 	    rtx *p = &CALL_INSN_FUNCTION_USAGE (insn);
 	    while (*p)
@@ -3319,7 +3319,7 @@ try_split (rtx pat, rtx trial, int last)
 	  insn = insn_last;
 	  while (insn != NULL_RTX)
 	    {
-	      if (GET_CODE (insn) == CALL_INSN
+	      if (CALL_P (insn)
 		  || (flag_non_call_exceptions
 		      && may_trap_p (PATTERN (insn))))
 		REG_NOTES (insn)
@@ -3336,7 +3336,7 @@ try_split (rtx pat, rtx trial, int last)
 	  insn = insn_last;
 	  while (insn != NULL_RTX)
 	    {
-	      if (GET_CODE (insn) == CALL_INSN)
+	      if (CALL_P (insn))
 		REG_NOTES (insn)
 		  = gen_rtx_EXPR_LIST (REG_NOTE_KIND (note),
 				       XEXP (note, 0),
@@ -3349,7 +3349,7 @@ try_split (rtx pat, rtx trial, int last)
 	  insn = insn_last;
 	  while (insn != NULL_RTX)
 	    {
-	      if (GET_CODE (insn) == JUMP_INSN)
+	      if (JUMP_P (insn))
 		REG_NOTES (insn)
 		  = gen_rtx_EXPR_LIST (REG_NOTE_KIND (note),
 				       XEXP (note, 0),
@@ -3365,12 +3365,12 @@ try_split (rtx pat, rtx trial, int last)
 
   /* If there are LABELS inside the split insns increment the
      usage count so we don't delete the label.  */
-  if (GET_CODE (trial) == INSN)
+  if (NONJUMP_INSN_P (trial))
     {
       insn = insn_last;
       while (insn != NULL_RTX)
 	{
-	  if (GET_CODE (insn) == INSN)
+	  if (NONJUMP_INSN_P (insn))
 	    mark_label_nuses (PATTERN (insn));
 
 	  insn = PREV_INSN (insn);
@@ -3512,7 +3512,7 @@ add_insn_after (rtx insn, rtx after)
   if (next)
     {
       PREV_INSN (next) = insn;
-      if (GET_CODE (next) == INSN && GET_CODE (PATTERN (next)) == SEQUENCE)
+      if (NONJUMP_INSN_P (next) && GET_CODE (PATTERN (next)) == SEQUENCE)
 	PREV_INSN (XVECEXP (PATTERN (next), 0, 0)) = insn;
     }
   else if (last_insn == after)
@@ -3532,8 +3532,8 @@ add_insn_after (rtx insn, rtx after)
 	abort ();
     }
 
-  if (GET_CODE (after) != BARRIER
-      && GET_CODE (insn) != BARRIER
+  if (!BARRIER_P (after)
+      && !BARRIER_P (insn)
       && (bb = BLOCK_FOR_INSN (after)))
     {
       set_block_for_insn (insn, bb);
@@ -3543,14 +3543,14 @@ add_insn_after (rtx insn, rtx after)
 	 either NOTE or LABEL.  */
       if (BB_END (bb) == after
 	  /* Avoid clobbering of structure when creating new BB.  */
-	  && GET_CODE (insn) != BARRIER
-	  && (GET_CODE (insn) != NOTE
+	  && !BARRIER_P (insn)
+	  && (!NOTE_P (insn)
 	      || NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK))
 	BB_END (bb) = insn;
     }
 
   NEXT_INSN (after) = insn;
-  if (GET_CODE (after) == INSN && GET_CODE (PATTERN (after)) == SEQUENCE)
+  if (NONJUMP_INSN_P (after) && GET_CODE (PATTERN (after)) == SEQUENCE)
     {
       rtx sequence = PATTERN (after);
       NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = insn;
@@ -3577,7 +3577,7 @@ add_insn_before (rtx insn, rtx before)
   if (prev)
     {
       NEXT_INSN (prev) = insn;
-      if (GET_CODE (prev) == INSN && GET_CODE (PATTERN (prev)) == SEQUENCE)
+      if (NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
 	{
 	  rtx sequence = PATTERN (prev);
 	  NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = insn;
@@ -3600,8 +3600,8 @@ add_insn_before (rtx insn, rtx before)
 	abort ();
     }
 
-  if (GET_CODE (before) != BARRIER
-      && GET_CODE (insn) != BARRIER
+  if (!BARRIER_P (before)
+      && !BARRIER_P (insn)
       && (bb = BLOCK_FOR_INSN (before)))
     {
       set_block_for_insn (insn, bb);
@@ -3611,14 +3611,14 @@ add_insn_before (rtx insn, rtx before)
 	 either NOTE or LABEl.  */
       if (BB_HEAD (bb) == insn
 	  /* Avoid clobbering of structure when creating new BB.  */
-	  && GET_CODE (insn) != BARRIER
-	  && (GET_CODE (insn) != NOTE
+	  && !BARRIER_P (insn)
+	  && (!NOTE_P (insn)
 	      || NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK))
 	abort ();
     }
 
   PREV_INSN (before) = insn;
-  if (GET_CODE (before) == INSN && GET_CODE (PATTERN (before)) == SEQUENCE)
+  if (NONJUMP_INSN_P (before) && GET_CODE (PATTERN (before)) == SEQUENCE)
     PREV_INSN (XVECEXP (PATTERN (before), 0, 0)) = insn;
 }
 
@@ -3634,7 +3634,7 @@ remove_insn (rtx insn)
   if (prev)
     {
       NEXT_INSN (prev) = next;
-      if (GET_CODE (prev) == INSN && GET_CODE (PATTERN (prev)) == SEQUENCE)
+      if (NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
 	{
 	  rtx sequence = PATTERN (prev);
 	  NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = next;
@@ -3660,7 +3660,7 @@ remove_insn (rtx insn)
   if (next)
     {
       PREV_INSN (next) = prev;
-      if (GET_CODE (next) == INSN && GET_CODE (PATTERN (next)) == SEQUENCE)
+      if (NONJUMP_INSN_P (next) && GET_CODE (PATTERN (next)) == SEQUENCE)
 	PREV_INSN (XVECEXP (PATTERN (next), 0, 0)) = prev;
     }
   else if (last_insn == insn)
@@ -3679,7 +3679,7 @@ remove_insn (rtx insn)
       if (stack == 0)
 	abort ();
     }
-  if (GET_CODE (insn) != BARRIER
+  if (!BARRIER_P (insn)
       && (bb = BLOCK_FOR_INSN (insn)))
     {
       if (INSN_P (insn))
@@ -3688,7 +3688,7 @@ remove_insn (rtx insn)
 	{
 	  /* Never ever delete the basic block note without deleting whole
 	     basic block.  */
-	  if (GET_CODE (insn) == NOTE)
+	  if (NOTE_P (insn))
 	    abort ();
 	  BB_HEAD (bb) = next;
 	}
@@ -3702,7 +3702,7 @@ remove_insn (rtx insn)
 void
 add_function_usage_to (rtx call_insn, rtx call_fusage)
 {
-  if (! call_insn || GET_CODE (call_insn) != CALL_INSN)
+  if (! call_insn || !CALL_P (call_insn))
     abort ();
 
   /* Put the register usage information on the CALL.  If there is already
@@ -3777,13 +3777,13 @@ reorder_insns (rtx from, rtx to, rtx after)
 
   reorder_insns_nobb (from, to, after);
 
-  if (GET_CODE (after) != BARRIER
+  if (!BARRIER_P (after)
       && (bb = BLOCK_FOR_INSN (after)))
     {
       rtx x;
       bb->flags |= BB_DIRTY;
 
-      if (GET_CODE (from) != BARRIER
+      if (!BARRIER_P (from)
 	  && (bb2 = BLOCK_FOR_INSN (from)))
 	{
 	  if (BB_END (bb2) == to)
@@ -3808,7 +3808,7 @@ find_line_note (rtx insn)
     return 0;
 
   for (; insn; insn = PREV_INSN (insn))
-    if (GET_CODE (insn) == NOTE
+    if (NOTE_P (insn)
 	&& NOTE_LINE_NUMBER (insn) >= 0)
       break;
 
@@ -3834,7 +3834,7 @@ remove_unnecessary_notes (void)
       next = NEXT_INSN (insn);
 
       /* We're only interested in notes.  */
-      if (GET_CODE (insn) != NOTE)
+      if (!NOTE_P (insn))
 	continue;
 
       switch (NOTE_LINE_NUMBER (insn))
@@ -3894,7 +3894,7 @@ remove_unnecessary_notes (void)
 		break;
 
 	      /* We're only interested in NOTEs.  */
-	      if (GET_CODE (tmp) != NOTE)
+	      if (!NOTE_P (tmp))
 		continue;
 
 	      if (NOTE_LINE_NUMBER (tmp) == NOTE_INSN_BLOCK_BEG)
@@ -4153,14 +4153,14 @@ emit_insn_after_1 (rtx first, rtx after)
   rtx after_after;
   basic_block bb;
 
-  if (GET_CODE (after) != BARRIER
+  if (!BARRIER_P (after)
       && (bb = BLOCK_FOR_INSN (after)))
     {
       bb->flags |= BB_DIRTY;
       for (last = first; NEXT_INSN (last); last = NEXT_INSN (last))
-	if (GET_CODE (last) != BARRIER)
+	if (!BARRIER_P (last))
 	  set_block_for_insn (last, bb);
-      if (GET_CODE (last) != BARRIER)
+      if (!BARRIER_P (last))
 	set_block_for_insn (last, bb);
       if (BB_END (bb) == after)
 	BB_END (bb) = last;
@@ -4763,7 +4763,7 @@ set_unique_reg_note (rtx insn, enum reg_note kind, rtx datum)
 enum rtx_code
 classify_insn (rtx x)
 {
-  if (GET_CODE (x) == CODE_LABEL)
+  if (LABEL_P (x))
     return CODE_LABEL;
   if (GET_CODE (x) == CALL)
     return CALL_INSN;

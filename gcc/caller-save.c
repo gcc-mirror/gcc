@@ -484,7 +484,7 @@ save_call_clobbered_regs (void)
 	  if (n_regs_saved)
 	    for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	      if (TEST_HARD_REG_BIT (hard_regs_saved, regno))
-		regno += insert_restore (chain, GET_CODE (insn) == JUMP_INSN,
+		regno += insert_restore (chain, JUMP_P (insn),
 					 regno, MOVE_MAX_WORDS, save_mode);
 	}
     }
@@ -793,7 +793,7 @@ insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
      isn't a problem.  We do, however, assume here that CALL_INSNs don't
      reference CC0.  Guard against non-INSN's like CODE_LABEL.  */
 
-  if ((GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN)
+  if ((NONJUMP_INSN_P (insn) || JUMP_P (insn))
       && before_p
       && reg_referenced_p (cc0_rtx, PATTERN (insn)))
     chain = chain->prev, insn = chain->insn;

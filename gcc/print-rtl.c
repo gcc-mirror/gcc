@@ -124,8 +124,8 @@ print_rtx (rtx in_rtx)
   /* When printing in VCG format we write INSNs, NOTE, LABEL, and BARRIER
      in separate nodes and therefore have to handle them special here.  */
   if (dump_for_graph
-      && (is_insn || GET_CODE (in_rtx) == NOTE
-	  || GET_CODE (in_rtx) == CODE_LABEL || GET_CODE (in_rtx) == BARRIER))
+      && (is_insn || NOTE_P (in_rtx)
+	  || LABEL_P (in_rtx) || BARRIER_P (in_rtx)))
     {
       i = 3;
       indent = 0;
@@ -231,7 +231,7 @@ print_rtx (rtx in_rtx)
 	      print_node_brief (outfile, "", decl, 0);
 	  }
 #endif
-	else if (i == 4 && GET_CODE (in_rtx) == NOTE)
+	else if (i == 4 && NOTE_P (in_rtx))
 	  {
 	    switch (NOTE_LINE_NUMBER (in_rtx))
 	      {
@@ -385,7 +385,7 @@ print_rtx (rtx in_rtx)
 	      fprintf(outfile, " %s:%i", insn_file (in_rtx), insn_line (in_rtx));
 #endif
 	  }
-	else if (i == 6 && GET_CODE (in_rtx) == NOTE)
+	else if (i == 6 && NOTE_P (in_rtx))
 	  {
 	    /* This field is only used for NOTE_INSN_DELETED_LABEL, and
 	       other times often contains garbage from INSN->NOTE death.  */
@@ -421,7 +421,7 @@ print_rtx (rtx in_rtx)
 	    else
 #endif
 	      if (flag_dump_unnumbered
-		     && (is_insn || GET_CODE (in_rtx) == NOTE))
+		     && (is_insn || NOTE_P (in_rtx)))
 	      fputc ('#', outfile);
 	    else
 	      fprintf (outfile, " %d", value);
@@ -577,8 +577,8 @@ print_rtx (rtx in_rtx)
     }
 
   if (dump_for_graph
-      && (is_insn || GET_CODE (in_rtx) == NOTE
-	  || GET_CODE (in_rtx) == CODE_LABEL || GET_CODE (in_rtx) == BARRIER))
+      && (is_insn || NOTE_P (in_rtx)
+	  || LABEL_P (in_rtx) || BARRIER_P (in_rtx)))
     sawclose = 0;
   else
     {
@@ -717,7 +717,7 @@ print_rtl (FILE *outf, rtx rtx_first)
       case BARRIER:
 	for (tmp_rtx = rtx_first; tmp_rtx != 0; tmp_rtx = NEXT_INSN (tmp_rtx))
 	  if (! flag_dump_unnumbered
-	      || GET_CODE (tmp_rtx) != NOTE || NOTE_LINE_NUMBER (tmp_rtx) < 0)
+	      || !NOTE_P (tmp_rtx) || NOTE_LINE_NUMBER (tmp_rtx) < 0)
 	    {
 	      fputs (print_rtx_head, outfile);
 	      print_rtx (tmp_rtx);
@@ -740,7 +740,7 @@ print_rtl_single (FILE *outf, rtx x)
   outfile = outf;
   sawclose = 0;
   if (! flag_dump_unnumbered
-      || GET_CODE (x) != NOTE || NOTE_LINE_NUMBER (x) < 0)
+      || !NOTE_P (x) || NOTE_LINE_NUMBER (x) < 0)
     {
       fputs (print_rtx_head, outfile);
       print_rtx (x);

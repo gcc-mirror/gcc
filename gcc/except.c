@@ -887,7 +887,7 @@ convert_from_eh_region_ranges_1 (rtx *pinsns, int *orig_sp, int cur)
   for (insn = *pinsns; insn ; insn = next)
     {
       next = NEXT_INSN (insn);
-      if (GET_CODE (insn) == NOTE)
+      if (NOTE_P (insn))
 	{
 	  int kind = NOTE_LINE_NUMBER (insn);
 	  if (kind == NOTE_INSN_EH_REGION_BEG
@@ -928,7 +928,7 @@ convert_from_eh_region_ranges_1 (rtx *pinsns, int *orig_sp, int cur)
 	      /* Calls can always potentially throw exceptions, unless
 		 they have a REG_EH_REGION note with a value of 0 or less.
 		 Which should be the only possible kind so far.  */
-	      && (GET_CODE (insn) == CALL_INSN
+	      && (CALL_P (insn)
 		  /* If we wanted exceptions for non-call insns, then
 		     any may_trap_p instruction could throw.  */
 		  || (flag_non_call_exceptions
@@ -1464,7 +1464,7 @@ emit_to_new_bb_before (rtx seq, rtx insn)
     if (e->flags & EDGE_FALLTHRU)
       force_nonfallthru (e);
   last = emit_insn_before (seq, insn);
-  if (GET_CODE (last) == BARRIER)
+  if (BARRIER_P (last))
     last = PREV_INSN (last);
   bb = create_basic_block (seq, last, BLOCK_FOR_INSN (insn)->prev_bb);
   update_bb_for_insn (bb);
@@ -1655,7 +1655,7 @@ connect_post_landing_pads (void)
       end_sequence ();
       barrier = emit_insn_before (seq, region->resume);
       /* Avoid duplicate barrier.  */
-      if (GET_CODE (barrier) != BARRIER)
+      if (!BARRIER_P (barrier))
 	abort ();
       delete_insn (barrier);
       delete_insn (region->resume);
@@ -1880,7 +1880,7 @@ sjlj_mark_call_sites (struct sjlj_lp_info *lp_info)
       rtx note, before, p;
 
       /* Reset value tracking at extended basic block boundaries.  */
-      if (GET_CODE (insn) == CODE_LABEL)
+      if (LABEL_P (insn))
 	last_call_site = -2;
 
       if (! INSN_P (insn))
@@ -1892,7 +1892,7 @@ sjlj_mark_call_sites (struct sjlj_lp_info *lp_info)
 	  /* Calls (and trapping insns) without notes are outside any
 	     exception handling region in this function.  Mark them as
 	     no action.  */
-	  if (GET_CODE (insn) == CALL_INSN
+	  if (CALL_P (insn)
 	      || (flag_non_call_exceptions
 		  && may_trap_p (PATTERN (insn))))
 	    this_call_site = -1;
@@ -1914,7 +1914,7 @@ sjlj_mark_call_sites (struct sjlj_lp_info *lp_info)
 
       /* Don't separate a call from it's argument loads.  */
       before = insn;
-      if (GET_CODE (insn) == CALL_INSN)
+      if (CALL_P (insn))
 	before = find_first_parameter_load (insn, NULL_RTX);
 
       start_sequence ();
@@ -1991,7 +1991,7 @@ sjlj_emit_function_enter (rtx dispatch_label)
      can_throw_internal instructions.  */
 
   for (fn_begin = get_insns (); ; fn_begin = NEXT_INSN (fn_begin))
-    if (GET_CODE (fn_begin) == NOTE
+    if (NOTE_P (fn_begin)
 	&& (NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_FUNCTION_BEG
 	    || NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_BASIC_BLOCK))
       break;
@@ -2001,7 +2001,7 @@ sjlj_emit_function_enter (rtx dispatch_label)
     {
       rtx last = BB_END (ENTRY_BLOCK_PTR->succ->dest);
       for (; ; fn_begin = NEXT_INSN (fn_begin))
-	if ((GET_CODE (fn_begin) == NOTE
+	if ((NOTE_P (fn_begin)
 	     && NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_FUNCTION_BEG)
 	    || fn_begin == last)
 	  break;
@@ -2056,7 +2056,7 @@ sjlj_emit_function_exit (void)
       else
 	{
 	  insn = cfun->eh->sjlj_exit_after;
-	  if (GET_CODE (insn) == CODE_LABEL)
+	  if (LABEL_P (insn))
 	    insn = NEXT_INSN (insn);
 	  emit_insn_after (seq, insn);
 	}
@@ -2720,7 +2720,7 @@ reachable_handlers (rtx insn)
   rtx handlers = NULL;
   int region_number;
 
-  if (GET_CODE (insn) == JUMP_INSN
+  if (JUMP_P (insn)
       && GET_CODE (PATTERN (insn)) == RESX)
     {
       region_number = XINT (PATTERN (insn), 0);
@@ -2784,12 +2784,12 @@ can_throw_internal (rtx insn)
   if (! INSN_P (insn))
     return false;
 
-  if (GET_CODE (insn) == JUMP_INSN
+  if (JUMP_P (insn)
       && GET_CODE (PATTERN (insn)) == RESX
       && XINT (PATTERN (insn), 0) > 0)
     return can_throw_internal_1 (XINT (PATTERN (insn), 0));
 
-  if (GET_CODE (insn) == INSN
+  if (NONJUMP_INSN_P (insn)
       && GET_CODE (PATTERN (insn)) == SEQUENCE)
     insn = XVECEXP (PATTERN (insn), 0, 0);
 
@@ -2836,7 +2836,7 @@ can_throw_external (rtx insn)
   if (! INSN_P (insn))
     return false;
 
-  if (GET_CODE (insn) == INSN
+  if (NONJUMP_INSN_P (insn)
       && GET_CODE (PATTERN (insn)) == SEQUENCE)
     insn = XVECEXP (PATTERN (insn), 0, 0);
 
@@ -2848,7 +2848,7 @@ can_throw_external (rtx insn)
 	 assume it might throw.  Given that the front end and middle
 	 ends mark known NOTHROW functions, this isn't so wildly
 	 inaccurate.  */
-      return (GET_CODE (insn) == CALL_INSN
+      return (CALL_P (insn)
 	      || (flag_non_call_exceptions
 		  && may_trap_p (PATTERN (insn))));
     }
@@ -2883,7 +2883,7 @@ set_nothrow_function_flags (void)
       {
         TREE_NOTHROW (current_function_decl) = 0;
 
-	if (GET_CODE (insn) != CALL_INSN || !SIBLING_CALL_P (insn))
+	if (!CALL_P (insn) || !SIBLING_CALL_P (insn))
 	  {
 	    cfun->all_throwers_are_sibcalls = 0;
 	    return;
@@ -2896,7 +2896,7 @@ set_nothrow_function_flags (void)
       {
         TREE_NOTHROW (current_function_decl) = 0;
 
-	if (GET_CODE (insn) != CALL_INSN || !SIBLING_CALL_P (insn))
+	if (!CALL_P (insn) || !SIBLING_CALL_P (insn))
 	  {
 	    cfun->all_throwers_are_sibcalls = 0;
 	    return;
@@ -3316,14 +3316,14 @@ convert_to_eh_region_ranges (void)
 	rtx this_landing_pad;
 
 	insn = iter;
-	if (GET_CODE (insn) == INSN
+	if (NONJUMP_INSN_P (insn)
 	    && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	  insn = XVECEXP (PATTERN (insn), 0, 0);
 
 	note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
 	if (!note)
 	  {
-	    if (! (GET_CODE (insn) == CALL_INSN
+	    if (! (CALL_P (insn)
 		   || (flag_non_call_exceptions
 		       && may_trap_p (PATTERN (insn)))))
 	      continue;

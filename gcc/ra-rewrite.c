@@ -637,7 +637,7 @@ insert_stores (bitmap new_deaths)
 
       /* If we reach a basic block border, which has more than one
 	 outgoing edge, we simply forget all already emitted stores.  */
-      if (GET_CODE (insn) == BARRIER
+      if (BARRIER_P (insn)
 	  || JUMP_P (insn) || can_throw_internal (insn))
 	{
 	  last_slot = NULL_RTX;
@@ -1252,7 +1252,7 @@ rewrite_program2 (bitmap new_deaths)
 	     XXX Note, that sometimes reload barfs when we emit insns between
 	     a call and the insn which copies the return register into a
 	     pseudo.  */
-	  if (GET_CODE (insn) == CALL_INSN)
+	  if (CALL_P (insn))
 	    ri.need_load = 1;
 	  else if (INSN_P (insn))
 	    for (n = 0; n < info.num_uses; n++)
@@ -1339,7 +1339,7 @@ rewrite_program2 (bitmap new_deaths)
 		  web->one_load = 0;
 	      }
 
-	  if (GET_CODE (insn) == CODE_LABEL)
+	  if (LABEL_P (insn))
 	    break;
 	}
 

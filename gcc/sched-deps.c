@@ -147,7 +147,7 @@ get_condition (rtx insn)
     return 0;
   if (GET_CODE (pat) == COND_EXEC)
     return COND_EXEC_TEST (pat);
-  if (GET_CODE (insn) != JUMP_INSN)
+  if (!JUMP_P (insn))
     return 0;
   if (GET_CODE (pat) != SET || SET_SRC (pat) != pc_rtx)
     return 0;
@@ -199,7 +199,7 @@ add_dependence (rtx insn, rtx elem, enum reg_note dep_type)
   /* We can get a dependency on deleted insns due to optimizations in
      the register allocation and reloading or due to splitting.  Any
      such dependency is useless and can be ignored.  */
-  if (GET_CODE (elem) == NOTE)
+  if (NOTE_P (elem))
     return 0;
 
   /* flow.c doesn't handle conditional lifetimes entirely correctly;
@@ -207,7 +207,7 @@ add_dependence (rtx insn, rtx elem, enum reg_note dep_type)
   /* ??? add_dependence is the wrong place to be eliding dependencies,
      as that forgets that the condition expressions themselves may
      be dependent.  */
-  if (GET_CODE (insn) != CALL_INSN && GET_CODE (elem) != CALL_INSN)
+  if (!CALL_P (insn) && !CALL_P (elem))
     {
       cond1 = get_condition (insn);
       cond2 = get_condition (elem);
@@ -231,7 +231,7 @@ add_dependence (rtx insn, rtx elem, enum reg_note dep_type)
      No need for interblock dependences with calls, since
      calls are not moved between blocks.   Note: the edge where
      elem is a CALL is still required.  */
-  if (GET_CODE (insn) == CALL_INSN
+  if (CALL_P (insn)
       && (INSN_BB (elem) != INSN_BB (insn)))
     return 0;
 #endif
@@ -716,7 +716,7 @@ sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
 	  }
 
 	for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
-	  if (GET_CODE (XEXP (u, 0)) != JUMP_INSN
+	  if (!JUMP_P (XEXP (u, 0))
 	      || deps_may_trap_p (x))
 	    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
@@ -853,7 +853,7 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
     sched_analyze_2 (deps, x, insn);
 
   /* Mark registers CLOBBERED or used by called function.  */
-  if (GET_CODE (insn) == CALL_INSN)
+  if (CALL_P (insn))
     {
       for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
 	{
@@ -866,11 +866,11 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
 	reg_pending_barrier = MOVE_BARRIER;
     }
 
-  if (GET_CODE (insn) == JUMP_INSN)
+  if (JUMP_P (insn))
     {
       rtx next;
       next = next_nonnote_insn (insn);
-      if (next && GET_CODE (next) == BARRIER)
+      if (next && BARRIER_P (next))
 	reg_pending_barrier = TRUE_BARRIER;
       else
 	{
@@ -1179,24 +1179,24 @@ sched_analyze (struct deps *deps, rtx head, rtx tail)
   /* Before reload, if the previous block ended in a call, show that
      we are inside a post-call group, so as to keep the lifetimes of
      hard registers correct.  */
-  if (! reload_completed && GET_CODE (head) != CODE_LABEL)
+  if (! reload_completed && !LABEL_P (head))
     {
       insn = prev_nonnote_insn (head);
-      if (insn && GET_CODE (insn) == CALL_INSN)
+      if (insn && CALL_P (insn))
 	deps->in_post_call_group_p = post_call_initial;
     }
   for (insn = head;; insn = NEXT_INSN (insn))
     {
       rtx link, end_seq, r0, set;
 
-      if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN)
+      if (NONJUMP_INSN_P (insn) || JUMP_P (insn))
 	{
 	  /* Clear out the stale LOG_LINKS from flow.  */
 	  free_INSN_LIST_list (&LOG_LINKS (insn));
 
 	  /* Make each JUMP_INSN a scheduling barrier for memory
              references.  */
-	  if (GET_CODE (insn) == JUMP_INSN)
+	  if (JUMP_P (insn))
 	    {
 	      /* Keep the list a reasonable size.  */
 	      if (deps->pending_flush_length++ > MAX_PENDING_LIST_LENGTH)
@@ -1208,7 +1208,7 @@ sched_analyze (struct deps *deps, rtx head, rtx tail)
 	  sched_analyze_insn (deps, PATTERN (insn), insn, loop_notes);
 	  loop_notes = 0;
 	}
-      else if (GET_CODE (insn) == CALL_INSN)
+      else if (CALL_P (insn))
 	{
 	  int i;
 
@@ -1282,7 +1282,7 @@ sched_analyze (struct deps *deps, rtx head, rtx tail)
       /* See comments on reemit_notes as to why we do this.
 	 ??? Actually, the reemit_notes just say what is done, not why.  */
 
-      if (GET_CODE (insn) == NOTE
+      if (NOTE_P (insn)
 	       && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
 		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END
 		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG
@@ -1324,7 +1324,7 @@ sched_analyze (struct deps *deps, rtx head, rtx tail)
 	     the outermost libcall sequence.  */
 	  && deps->libcall_block_tail_insn == 0
 	  /* The sequence must start with a clobber of a register.  */
-	  && GET_CODE (insn) == INSN
+	  && NONJUMP_INSN_P (insn)
 	  && GET_CODE (PATTERN (insn)) == CLOBBER
           && (r0 = XEXP (PATTERN (insn), 0), REG_P (r0))
 	  && REG_P (XEXP (PATTERN (insn), 0))
@@ -1373,7 +1373,7 @@ add_forward_dependence (rtx from, rtx to, enum reg_note dep_type)
 
      However, if we have enabled checking we might as well go
      ahead and verify that add_dependence worked properly.  */
-  if (GET_CODE (from) == NOTE
+  if (NOTE_P (from)
       || INSN_DELETED_P (from)
       || (forward_dependency_cache != NULL
 	  && bitmap_bit_p (&forward_dependency_cache[INSN_LUID (from)],

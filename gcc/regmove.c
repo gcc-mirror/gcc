@@ -491,7 +491,7 @@ optimize_reg_copy_1 (rtx insn, rtx dest, rtx src)
 
 	      /* If the insn in which SRC dies is a CALL_INSN, don't count it
 		 as a call that has been crossed.  Otherwise, count it.  */
-	      if (q != p && GET_CODE (q) == CALL_INSN)
+	      if (q != p && CALL_P (q))
 		{
 		  /* Similarly, total calls for SREGNO, total calls beyond
 		     the death note for DREGNO.  */
@@ -620,7 +620,7 @@ optimize_reg_copy_2 (rtx insn, rtx dest, rtx src)
 		  PATTERN (q) = replace_rtx (PATTERN (q), dest, src);
 
 
-	      if (GET_CODE (q) == CALL_INSN)
+	      if (CALL_P (q))
 		{
 		  REG_N_CALLS_CROSSED (dregno)--;
 		  REG_N_CALLS_CROSSED (sregno)++;
@@ -636,7 +636,7 @@ optimize_reg_copy_2 (rtx insn, rtx dest, rtx src)
 
       if (reg_set_p (src, p)
 	  || find_reg_note (p, REG_DEAD, dest)
-	  || (GET_CODE (p) == CALL_INSN && REG_N_CALLS_CROSSED (sregno) == 0))
+	  || (CALL_P (p) && REG_N_CALLS_CROSSED (sregno) == 0))
 	break;
     }
 }
@@ -971,8 +971,8 @@ fixup_match_2 (rtx insn, rtx dst, rtx src, rtx offset, FILE *regmove_dump_file)
 #ifdef AUTO_INC_DEC
 	      for (p = PREV_INSN (insn); p; p = PREV_INSN (p))
 		{
-		  if (GET_CODE (p) == CODE_LABEL
-		      || GET_CODE (p) == JUMP_INSN)
+		  if (LABEL_P (p)
+		      || JUMP_P (p))
 		    break;
 		  if (! INSN_P (p))
 		    continue;
@@ -985,8 +985,8 @@ fixup_match_2 (rtx insn, rtx dst, rtx src, rtx offset, FILE *regmove_dump_file)
 		}
 	      for (p = NEXT_INSN (insn); p; p = NEXT_INSN (p))
 		{
-		  if (GET_CODE (p) == CODE_LABEL
-		      || GET_CODE (p) == JUMP_INSN)
+		  if (LABEL_P (p)
+		      || JUMP_P (p))
 		    break;
 		  if (! INSN_P (p))
 		    continue;
@@ -1010,7 +1010,7 @@ fixup_match_2 (rtx insn, rtx dst, rtx src, rtx offset, FILE *regmove_dump_file)
       /* reg_set_p is overly conservative for CALL_INSNS, thinks that all
 	 hard regs are clobbered.  Thus, we only use it for src for
 	 non-call insns.  */
-      if (GET_CODE (p) == CALL_INSN)
+      if (CALL_P (p))
 	{
 	  if (! dst_death)
 	    num_calls++;
@@ -1423,7 +1423,7 @@ regmove_optimize (rtx f, int nregs, FILE *regmove_dump_file)
 		  /* If we have passed a call instruction, and the
 		     pseudo-reg DST is not already live across a call,
 		     then don't perform the optimization.  */
-		  if (GET_CODE (p) == CALL_INSN)
+		  if (CALL_P (p))
 		    {
 		      num_calls++;
 
@@ -1702,7 +1702,7 @@ fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
 
   for (length = s_length = 0, p = NEXT_INSN (insn); p; p = NEXT_INSN (p))
     {
-      if (GET_CODE (p) == CALL_INSN)
+      if (CALL_P (p))
 	replace_in_call_usage (& CALL_INSN_FUNCTION_USAGE (p),
 			       REGNO (dst), src, p);
 
@@ -1839,7 +1839,7 @@ fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
 
       /* If we have passed a call instruction, and the pseudo-reg SRC is not
 	 already live across a call, then don't perform the optimization.  */
-      if (GET_CODE (p) == CALL_INSN)
+      if (CALL_P (p))
 	{
 	  if (REG_N_CALLS_CROSSED (REGNO (src)) == 0)
 	    break;
@@ -1930,7 +1930,7 @@ fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
 		  q = 0;
 		  break;
 		}
-	      if (GET_CODE (p) == CALL_INSN)
+	      if (CALL_P (p))
 		num_calls2++;
 	    }
 	  if (q && set2 && SET_DEST (set2) == src && CONSTANT_P (SET_SRC (set2))
@@ -2159,7 +2159,7 @@ single_set_for_csa (rtx insn)
   if (tmp)
     return tmp;
 
-  if (GET_CODE (insn) != INSN
+  if (!NONJUMP_INSN_P (insn)
       || GET_CODE (PATTERN (insn)) != PARALLEL)
     return NULL_RTX;
 
@@ -2441,7 +2441,7 @@ combine_stack_adjustments_for_block (basic_block bb)
 
       data.insn = insn;
       data.memlist = memlist;
-      if (GET_CODE (insn) != CALL_INSN && last_sp_set
+      if (!CALL_P (insn) && last_sp_set
 	  && !for_each_rtx (&PATTERN (insn), record_stack_memrefs, &data))
 	{
 	   memlist = data.memlist;
@@ -2452,7 +2452,7 @@ combine_stack_adjustments_for_block (basic_block bb)
       /* Otherwise, we were not able to process the instruction.
 	 Do not continue collecting data across such a one.  */
       if (last_sp_set
-	  && (GET_CODE (insn) == CALL_INSN
+	  && (CALL_P (insn)
 	      || reg_mentioned_p (stack_pointer_rtx, PATTERN (insn))))
 	{
 	  if (last_sp_set && last_sp_adjust == 0)

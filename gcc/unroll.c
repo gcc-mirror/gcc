@@ -310,13 +310,13 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
       /* If the last instruction is not a BARRIER or a JUMP_INSN, then
 	 don't do anything.  */
 
-      if (GET_CODE (last_loop_insn) == BARRIER)
+      if (BARRIER_P (last_loop_insn))
 	{
 	  /* Delete the jump insn.  This will delete the barrier also.  */
 	  last_loop_insn = PREV_INSN (last_loop_insn);
 	}
 
-      if (ujump && GET_CODE (last_loop_insn) == JUMP_INSN)
+      if (ujump && JUMP_P (last_loop_insn))
 	{
 #ifdef HAVE_cc0
 	  rtx prev = PREV_INSN (last_loop_insn);
@@ -441,9 +441,9 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
 	 Just return without unrolling the loop in such cases.  */
 
       insn = loop_start;
-      while (GET_CODE (insn) != CODE_LABEL && GET_CODE (insn) != JUMP_INSN)
+      while (!LABEL_P (insn) && !JUMP_P (insn))
 	insn = NEXT_INSN (insn);
-      if (GET_CODE (insn) == JUMP_INSN)
+      if (JUMP_P (insn))
 	return;
     }
 
@@ -464,9 +464,9 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
       insert_before = NEXT_INSN (last_loop_insn);
 
       /* Set copy_end to the insn before the jump at the end of the loop.  */
-      if (GET_CODE (last_loop_insn) == BARRIER)
+      if (BARRIER_P (last_loop_insn))
 	copy_end = PREV_INSN (PREV_INSN (last_loop_insn));
-      else if (GET_CODE (last_loop_insn) == JUMP_INSN)
+      else if (JUMP_P (last_loop_insn))
 	{
 	  copy_end = PREV_INSN (last_loop_insn);
 #ifdef HAVE_cc0
@@ -500,12 +500,12 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
 
       /* Set insert_before to the jump insn at the end of the loop.
 	 Set copy_end to before the jump insn at the end of the loop.  */
-      if (GET_CODE (last_loop_insn) == BARRIER)
+      if (BARRIER_P (last_loop_insn))
 	{
 	  insert_before = PREV_INSN (last_loop_insn);
 	  copy_end = PREV_INSN (insert_before);
 	}
-      else if (GET_CODE (last_loop_insn) == JUMP_INSN)
+      else if (JUMP_P (last_loop_insn))
 	{
 	  insert_before = last_loop_insn;
 #ifdef HAVE_cc0
@@ -533,7 +533,7 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
       /* Normal case: Must copy the compare and branch instructions at the
 	 end of the loop.  */
 
-      if (GET_CODE (last_loop_insn) == BARRIER)
+      if (BARRIER_P (last_loop_insn))
 	{
 	  /* Loop ends with an unconditional jump and a barrier.
 	     Handle this like above, don't copy jump and barrier.
@@ -546,7 +546,7 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
 	  insert_before = PREV_INSN (last_loop_insn);
 	  copy_end = PREV_INSN (insert_before);
 	}
-      else if (GET_CODE (last_loop_insn) == JUMP_INSN)
+      else if (JUMP_P (last_loop_insn))
 	{
 	  /* Set insert_before to immediately after the JUMP_INSN, so that
 	     NOTEs at the end of the loop will be correctly handled by
@@ -576,10 +576,10 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
       exit_label = gen_label_rtx ();
 
       insn = loop_start;
-      while (GET_CODE (insn) != CODE_LABEL && GET_CODE (insn) != JUMP_INSN)
+      while (!LABEL_P (insn) && !JUMP_P (insn))
 	insn = NEXT_INSN (insn);
 
-      if (GET_CODE (insn) == JUMP_INSN)
+      if (JUMP_P (insn))
 	{
 	  /* The loop starts with a jump down to the exit condition test.
 	     Start copying the loop after the barrier following this
@@ -603,9 +603,9 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
   /* This should always be the first label in the loop.  */
   start_label = NEXT_INSN (copy_start);
   /* There may be a line number note and/or a loop continue note here.  */
-  while (GET_CODE (start_label) == NOTE)
+  while (NOTE_P (start_label))
     start_label = NEXT_INSN (start_label);
-  if (GET_CODE (start_label) != CODE_LABEL)
+  if (!LABEL_P (start_label))
     {
       /* This can happen as a result of jump threading.  If the first insns in
 	 the loop test the same condition as the loop's backward jump, or the
@@ -633,8 +633,8 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
     }
 
   if (unroll_type == UNROLL_NAIVE
-      && GET_CODE (last_loop_insn) == BARRIER
-      && GET_CODE (PREV_INSN (last_loop_insn)) == JUMP_INSN
+      && BARRIER_P (last_loop_insn)
+      && JUMP_P (PREV_INSN (last_loop_insn))
       && start_label != JUMP_LABEL (PREV_INSN (last_loop_insn)))
     {
       /* In this case, we must copy the jump and barrier, because they will
@@ -645,7 +645,7 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
     }
 
   if (unroll_type == UNROLL_NAIVE
-      && GET_CODE (last_loop_insn) == JUMP_INSN
+      && JUMP_P (last_loop_insn)
       && start_label != JUMP_LABEL (last_loop_insn))
     {
       /* ??? The loop ends with a conditional branch that does not branch back
@@ -692,9 +692,9 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
     {
       rtx note;
 
-      if (GET_CODE (insn) == CODE_LABEL)
+      if (LABEL_P (insn))
 	local_label[CODE_LABEL_NUMBER (insn)] = 1;
-      else if (GET_CODE (insn) == JUMP_INSN)
+      else if (JUMP_P (insn))
 	{
 	  if (JUMP_LABEL (insn))
 	    set_label_in_map (map,
@@ -758,13 +758,13 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
 
       /* If a register is used in the jump insn, we must not duplicate it
 	 since it will also be used outside the loop.  */
-      if (GET_CODE (copy_end) == JUMP_INSN)
+      if (JUMP_P (copy_end))
 	copy_end_luid--;
 
       /* If we have a target that uses cc0, then we also must not duplicate
 	 the insn that sets cc0 before the jump insn, if one is present.  */
 #ifdef HAVE_cc0
-      if (GET_CODE (copy_end) == JUMP_INSN
+      if (JUMP_P (copy_end)
 	  && sets_cc0_p (PREV_INSN (copy_end)))
 	copy_end_luid--;
 #endif
@@ -1029,9 +1029,9 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
 	     and then reset it inside the loop when get to the last
 	     copy.  */
 
-	  if (GET_CODE (last_loop_insn) == BARRIER)
+	  if (BARRIER_P (last_loop_insn))
 	    copy_end = PREV_INSN (PREV_INSN (last_loop_insn));
-	  else if (GET_CODE (last_loop_insn) == JUMP_INSN)
+	  else if (JUMP_P (last_loop_insn))
 	    {
 	      copy_end = PREV_INSN (last_loop_insn);
 #ifdef HAVE_cc0
@@ -1073,7 +1073,7 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
 
 	      if (i == unroll_number - 1)
 		{
-		  if (GET_CODE (last_loop_insn) == BARRIER)
+		  if (BARRIER_P (last_loop_insn))
 		    copy_end = PREV_INSN (PREV_INSN (last_loop_insn));
 		  else
 		    copy_end = last_loop_insn;
@@ -1087,7 +1087,7 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
 	    }
 	  emit_label_after (labels[0], PREV_INSN (loop_start));
 
-	  if (GET_CODE (last_loop_insn) == BARRIER)
+	  if (BARRIER_P (last_loop_insn))
 	    {
 	      insert_before = PREV_INSN (last_loop_insn);
 	      copy_end = PREV_INSN (insert_before);
@@ -1191,7 +1191,7 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
   if (unroll_type == UNROLL_MODULO)
     {
       insn = NEXT_INSN (copy_end);
-      if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN)
+      if (NONJUMP_INSN_P (insn) || JUMP_P (insn))
 	PATTERN (insn) = remap_split_bivs (loop, PATTERN (insn));
     }
 
@@ -1270,8 +1270,8 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
 	 associated LABEL_DECL to point to one of the new label instances.  */
       /* ??? Likewise, we can't delete a NOTE_INSN_DELETED_LABEL note.  */
       if (insn != start_label
-	  && ! (GET_CODE (insn) == CODE_LABEL && LABEL_NAME (insn))
-	  && ! (GET_CODE (insn) == NOTE
+	  && ! (LABEL_P (insn) && LABEL_NAME (insn))
+	  && ! (NOTE_P (insn)
 		&& NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED_LABEL))
 	insn = delete_related_insns (insn);
       else
@@ -2125,7 +2125,7 @@ copy_loop_body (struct loop *loop, rtx copy_start, rtx copy_end,
 		    }
 		}
 
-	      if (label && GET_CODE (label) == CODE_LABEL)
+	      if (label && LABEL_P (label))
 		JUMP_LABEL (copy) = label;
 	      else
 		{
@@ -2252,8 +2252,7 @@ copy_loop_body (struct loop *loop, rtx copy_start, rtx copy_end,
   do
     {
       insn = NEXT_INSN (insn);
-      if ((GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN
-	   || GET_CODE (insn) == CALL_INSN)
+      if (INSN_P (insn)
 	  && map->insn_map[INSN_UID (insn)])
 	final_reg_note_copy (&REG_NOTES (map->insn_map[INSN_UID (insn)]), map);
     }
@@ -2279,7 +2278,7 @@ copy_loop_body (struct loop *loop, rtx copy_start, rtx copy_end,
 	     instructions before the last insn in the loop, COPY_NOTES_FROM
 	     can be a NOTE_INSN_LOOP_CONT note if there is no VTOP note,
 	     as in a do .. while loop.  */
-	  if (GET_CODE (insn) == NOTE
+	  if (NOTE_P (insn)
 	      && ((NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED
 		   && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK
 		   && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_VTOP
@@ -2330,7 +2329,7 @@ back_branch_in_range_p (const struct loop *loop, rtx insn)
 
   /* Stop before we get to the backward branch at the end of the loop.  */
   loop_end = prev_nonnote_insn (loop_end);
-  if (GET_CODE (loop_end) == BARRIER)
+  if (BARRIER_P (loop_end))
     loop_end = PREV_INSN (loop_end);
 
   /* Check in case insn has been deleted, search forward for first non
@@ -2346,7 +2345,7 @@ back_branch_in_range_p (const struct loop *loop, rtx insn)
 
   for (p = NEXT_INSN (insn); p != loop_end; p = NEXT_INSN (p))
     {
-      if (GET_CODE (p) == JUMP_INSN)
+      if (JUMP_P (p))
 	{
 	  target_insn = JUMP_LABEL (p);
 
@@ -2912,7 +2911,7 @@ reg_dead_after_loop (const struct loop *loop, rtx reg)
 	      if (set && rtx_equal_p (SET_DEST (set), reg))
 		break;
 
-	      if (GET_CODE (insn) == JUMP_INSN)
+	      if (JUMP_P (insn))
 		{
 		  if (GET_CODE (PATTERN (insn)) == RETURN)
 		    break;
@@ -3145,7 +3144,7 @@ loop_find_equiv_value (const struct loop *loop, rtx reg)
   ret = reg;
   for (insn = PREV_INSN (loop_start); insn; insn = PREV_INSN (insn))
     {
-      if (GET_CODE (insn) == CODE_LABEL)
+      if (LABEL_P (insn))
 	break;
 
       else if (INSN_P (insn) && reg_set_p (reg, insn))
@@ -3282,7 +3281,7 @@ loop_iterations (struct loop *loop)
   /* ??? We should probably try harder to find the jump insn
      at the end of the loop.  The following code assumes that
      the last loop insn is a jump to the top of the loop.  */
-  if (GET_CODE (last_loop_insn) != JUMP_INSN)
+  if (!JUMP_P (last_loop_insn))
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
@@ -3308,7 +3307,7 @@ loop_iterations (struct loop *loop)
 
       do
 	{
-	  if (GET_CODE (temp) == JUMP_INSN)
+	  if (JUMP_P (temp))
 	    {
 	      /* There are some kinds of jumps we can't deal with easily.  */
 	      if (JUMP_LABEL (temp) == 0)
@@ -3967,7 +3966,7 @@ set_dominates_use (int regno, int first_uid, int last_uid, rtx copy_start,
 
   while (INSN_UID (p) != first_uid)
     {
-      if (GET_CODE (p) == JUMP_INSN)
+      if (JUMP_P (p))
 	passed_jump = 1;
       /* Could not find FIRST_UID.  */
       if (p == copy_end)
@@ -3987,7 +3986,7 @@ set_dominates_use (int regno, int first_uid, int last_uid, rtx copy_start,
     {
       /* If we see a CODE_LABEL between FIRST_UID and LAST_UID, then we
 	 can not be sure that FIRST_UID dominates LAST_UID.  */
-      if (GET_CODE (p) == CODE_LABEL)
+      if (LABEL_P (p))
 	return 0;
       /* Could not find LAST_UID, but we reached the end of the loop, so
 	 it must be safe.  */
@@ -4024,7 +4023,7 @@ ujump_to_loop_cont (rtx loop_start, rtx loop_cont)
 
   /* Examine insn after loop continuation note.  Return if not a label.  */
   label = next_nonnote_insn (loop_cont);
-  if (label == 0 || GET_CODE (label) != CODE_LABEL)
+  if (label == 0 || !LABEL_P (label))
     return NULL_RTX;
 
   /* Return the loop start if the branch label matches the code label.  */

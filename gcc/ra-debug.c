@@ -317,10 +317,10 @@ ra_print_rtx_object (FILE *file, rtx x)
       case LABEL_REF:
 		  {
 		    rtx sub = XEXP (x, 0);
-		    if (GET_CODE (sub) == NOTE
+		    if (NOTE_P (sub)
 			&& NOTE_LINE_NUMBER (sub) == NOTE_INSN_DELETED_LABEL)
 		      fprintf (file, "(deleted uid=%d)", INSN_UID (sub));
-		    else if (GET_CODE (sub) == CODE_LABEL)
+		    else if (LABEL_P (sub))
 		      fprintf (file, "L%d", CODE_LABEL_NUMBER (sub));
 		    else
 		      fprintf (file, "(nonlabel uid=%d)", INSN_UID (sub));
@@ -566,7 +566,7 @@ ra_debug_insns (rtx insn, int num)
       insn = PREV_INSN (insn);
   for (i = count; i > 0 && insn; insn = NEXT_INSN (insn), i--)
     {
-      if (GET_CODE (insn) == CODE_LABEL)
+      if (LABEL_P (insn))
 	fprintf (stderr, "\n");
       ra_print_rtx_top (stderr, insn, (i == count || i == 1));
     }
@@ -586,7 +586,7 @@ ra_print_rtl_with_bb (FILE *file, rtx insn)
   last_bb = NULL;
   for (; insn; insn = NEXT_INSN (insn))
     {
-      if (GET_CODE (insn) == BARRIER)
+      if (BARRIER_P (insn))
 	bb = NULL;
       else
 	bb = BLOCK_FOR_INSN (insn);
@@ -598,9 +598,9 @@ ra_print_rtl_with_bb (FILE *file, rtx insn)
 	    fprintf (file, ";; Begin of basic block %d\n", bb->index);
 	  last_bb = bb;
 	}
-      if (GET_CODE (insn) == CODE_LABEL)
+      if (LABEL_P (insn))
 	fputc ('\n', file);
-      if (GET_CODE (insn) == NOTE)
+      if (NOTE_P (insn))
 	{
 	  /* Ignore basic block and maybe other notes not referencing
 	     deleted things.  */

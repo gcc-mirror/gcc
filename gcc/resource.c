@@ -136,7 +136,7 @@ find_basic_block (rtx insn, int search_limit)
   /* Scan backwards to the previous BARRIER.  Then see if we can find a
      label that starts a basic block.  Return the basic block number.  */
   for (insn = prev_nonnote_insn (insn);
-       insn && GET_CODE (insn) != BARRIER && search_limit != 0;
+       insn && !BARRIER_P (insn) && search_limit != 0;
        insn = prev_nonnote_insn (insn), --search_limit)
     ;
 
@@ -151,7 +151,7 @@ find_basic_block (rtx insn, int search_limit)
   /* See if any of the upcoming CODE_LABELs start a basic block.  If we reach
      anything other than a CODE_LABEL or note, we can't find this code.  */
   for (insn = next_nonnote_insn (insn);
-       insn && GET_CODE (insn) == CODE_LABEL;
+       insn && LABEL_P (insn);
        insn = next_nonnote_insn (insn))
     {
       FOR_EACH_BB (bb)
@@ -172,9 +172,7 @@ next_insn_no_annul (rtx insn)
     {
       /* If INSN is an annulled branch, skip any insns from the target
 	 of the branch.  */
-      if ((GET_CODE (insn) == JUMP_INSN
-	   || GET_CODE (insn) == CALL_INSN
-	   || GET_CODE (insn) == INSN)
+      if (INSN_P (insn)
 	  && INSN_ANNULLED_BRANCH_P (insn)
 	  && NEXT_INSN (PREV_INSN (insn)) != insn)
 	{
@@ -191,7 +189,7 @@ next_insn_no_annul (rtx insn)
 	}
 
       insn = NEXT_INSN (insn);
-      if (insn && GET_CODE (insn) == INSN
+      if (insn && NONJUMP_INSN_P (insn)
 	  && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	insn = XVECEXP (PATTERN (insn), 0, 0);
     }
@@ -495,7 +493,7 @@ find_dead_or_set_registers (rtx target, struct resources *res,
 	      for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
 		{
 		  this_jump_insn = XVECEXP (PATTERN (insn), 0, i);
-		  if (GET_CODE (this_jump_insn) == JUMP_INSN)
+		  if (JUMP_P (this_jump_insn))
 		    break;
 		}
 	    }
@@ -504,7 +502,7 @@ find_dead_or_set_registers (rtx target, struct resources *res,
 	  break;
 	}
 
-      if (GET_CODE (this_jump_insn) == JUMP_INSN)
+      if (JUMP_P (this_jump_insn))
 	{
 	  if (jump_count++ < 10)
 	    {
@@ -982,11 +980,11 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
       start_insn = (b == 0 ? insns : BB_HEAD (BASIC_BLOCK (b)));
       stop_insn = target;
 
-      if (GET_CODE (start_insn) == INSN
+      if (NONJUMP_INSN_P (start_insn)
 	  && GET_CODE (PATTERN (start_insn)) == SEQUENCE)
 	start_insn = XVECEXP (PATTERN (start_insn), 0, 0);
 
-      if (GET_CODE (stop_insn) == INSN
+      if (NONJUMP_INSN_P (stop_insn)
 	  && GET_CODE (PATTERN (stop_insn)) == SEQUENCE)
 	stop_insn = next_insn (PREV_INSN (stop_insn));
 
@@ -1010,7 +1008,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 	      && INSN_P (XEXP (PATTERN (insn), 0)))
 	      real_insn = XEXP (PATTERN (insn), 0);
 
-	  if (GET_CODE (real_insn) == CALL_INSN)
+	  if (CALL_P (real_insn))
 	    {
 	      /* CALL clobbers all call-used regs that aren't fixed except
 		 sp, ap, and fp.  Do this before setting the result of the
@@ -1030,11 +1028,11 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 	     parameters.  But they might be early.  A CALL_INSN will usually
 	     clobber registers used for parameters.  It isn't worth bothering
 	     with the unlikely case when it won't.  */
-	  if ((GET_CODE (real_insn) == INSN
+	  if ((NONJUMP_INSN_P (real_insn)
 	       && GET_CODE (PATTERN (real_insn)) != USE
 	       && GET_CODE (PATTERN (real_insn)) != CLOBBER)
-	      || GET_CODE (real_insn) == JUMP_INSN
-	      || GET_CODE (real_insn) == CALL_INSN)
+	      || JUMP_P (real_insn)
+	      || CALL_P (real_insn))
 	    {
 	      for (link = REG_NOTES (real_insn); link; link = XEXP (link, 1))
 		if (REG_NOTE_KIND (link) == REG_DEAD
@@ -1071,7 +1069,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 		  }
 	    }
 
-	  else if (GET_CODE (real_insn) == CODE_LABEL)
+	  else if (LABEL_P (real_insn))
 	    {
 	      /* A label clobbers the pending dead registers since neither
 		 reload nor jump will propagate a value across a label.  */
@@ -1082,7 +1080,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 	  /* The beginning of the epilogue corresponds to the end of the
 	     RTL chain when there are no epilogue insns.  Certain resources
 	     are implicitly required at that point.  */
-	  else if (GET_CODE (real_insn) == NOTE
+	  else if (NOTE_P (real_insn)
 		   && NOTE_LINE_NUMBER (real_insn) == NOTE_INSN_EPILOGUE_BEG)
 	    IOR_HARD_REG_SET (current_live_regs, start_of_epilogue_needs.regs);
 	}

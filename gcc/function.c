@@ -3641,7 +3641,7 @@ reorder_blocks_1 (rtx insns, tree current_block, varray_type *p_block_stack)
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     {
-      if (GET_CODE (insn) == NOTE)
+      if (NOTE_P (insn))
 	{
 	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
 	    {
@@ -4201,7 +4201,7 @@ expand_function_start (tree subr)
      as opposed to parm setup.  */
   emit_note (NOTE_INSN_FUNCTION_BEG);
 
-  if (GET_CODE (get_last_insn ()) != NOTE)
+  if (!NOTE_P (get_last_insn ()))
     emit_note (NOTE_INSN_DELETED);
   parm_birth_insn = get_last_insn ();
 
@@ -4339,7 +4339,7 @@ expand_function_end (void)
       rtx insn, seq;
 
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-	if (GET_CODE (insn) == CALL_INSN)
+	if (CALL_P (insn))
 	  {
 	    start_sequence ();
 	    probe_stack_range (STACK_CHECK_PROTECT,
@@ -4624,7 +4624,7 @@ contains (rtx insn, varray_type vec)
 {
   int i, j;
 
-  if (GET_CODE (insn) == INSN
+  if (NONJUMP_INSN_P (insn)
       && GET_CODE (PATTERN (insn)) == SEQUENCE)
     {
       int count = 0;
@@ -5119,14 +5119,14 @@ thread_prologue_and_epilogue_insns (rtx f ATTRIBUTE_UNUSED)
 
       /* Verify that there are no active instructions in the last block.  */
       label = BB_END (last);
-      while (label && GET_CODE (label) != CODE_LABEL)
+      while (label && !LABEL_P (label))
 	{
 	  if (active_insn_p (label))
 	    break;
 	  label = PREV_INSN (label);
 	}
 
-      if (BB_HEAD (last) == label && GET_CODE (label) == CODE_LABEL)
+      if (BB_HEAD (last) == label && LABEL_P (label))
 	{
 	  rtx epilogue_line_note = NULL_RTX;
 
@@ -5135,7 +5135,7 @@ thread_prologue_and_epilogue_insns (rtx f ATTRIBUTE_UNUSED)
 	  for (seq = get_last_insn ();
 	       seq && ! active_insn_p (seq);
 	       seq = PREV_INSN (seq))
-	    if (GET_CODE (seq) == NOTE && NOTE_LINE_NUMBER (seq) > 0)
+	    if (NOTE_P (seq) && NOTE_LINE_NUMBER (seq) > 0)
 	      {
 		epilogue_line_note = seq;
 		break;
@@ -5151,7 +5151,7 @@ thread_prologue_and_epilogue_insns (rtx f ATTRIBUTE_UNUSED)
 		continue;
 
 	      jump = BB_END (bb);
-	      if ((GET_CODE (jump) != JUMP_INSN) || JUMP_LABEL (jump) != label)
+	      if (!JUMP_P (jump) || JUMP_LABEL (jump) != label)
 		continue;
 
 	      /* If we have an unconditional jump, we can replace that
@@ -5266,7 +5266,7 @@ epilogue_done:
       rtx i;
       rtx newinsn;
 
-      if (GET_CODE (insn) != CALL_INSN
+      if (!CALL_P (insn)
 	  || ! SIBLING_CALL_P (insn))
 	continue;
 
@@ -5308,7 +5308,7 @@ epilogue_done:
       for (insn = prologue_end; insn; insn = prev)
 	{
 	  prev = PREV_INSN (insn);
-	  if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
+	  if (NOTE_P (insn) && NOTE_LINE_NUMBER (insn) > 0)
 	    {
 	      /* Note that we cannot reorder the first insn in the
 		 chain, since rest_of_compilation relies on that
@@ -5323,7 +5323,7 @@ epilogue_done:
       for (insn = BB_END (ENTRY_BLOCK_PTR->next_bb);
 	   insn != prologue_end && insn;
 	   insn = PREV_INSN (insn))
-	if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
+	if (NOTE_P (insn) && NOTE_LINE_NUMBER (insn) > 0)
 	  break;
 
       /* If we didn't find one, make a copy of the first line number
@@ -5333,7 +5333,7 @@ epilogue_done:
 	  for (insn = next_active_insn (prologue_end);
 	       insn;
 	       insn = PREV_INSN (insn))
-	    if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
+	    if (NOTE_P (insn) && NOTE_LINE_NUMBER (insn) > 0)
 	      {
 		emit_note_copy_after (insn, prologue_end);
 		break;
@@ -5354,7 +5354,7 @@ epilogue_done:
       for (insn = epilogue_end; insn; insn = next)
 	{
 	  next = NEXT_INSN (insn);
-	  if (GET_CODE (insn) == NOTE 
+	  if (NOTE_P (insn) 
 	      && (NOTE_LINE_NUMBER (insn) > 0
 		  || NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG
 		  || NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_END))
@@ -5383,7 +5383,7 @@ reposition_prologue_and_epilogue_notes (rtx f ATTRIBUTE_UNUSED)
 	 reorg has run.  */
       for (insn = f; insn; insn = NEXT_INSN (insn))
 	{
-	  if (GET_CODE (insn) == NOTE)
+	  if (NOTE_P (insn))
 	    {
 	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_PROLOGUE_END)
 		note = insn;
@@ -5403,13 +5403,13 @@ reposition_prologue_and_epilogue_notes (rtx f ATTRIBUTE_UNUSED)
 	  if (note == 0)
 	    {
 	      for (note = last; (note = NEXT_INSN (note));)
-		if (GET_CODE (note) == NOTE
+		if (NOTE_P (note)
 		    && NOTE_LINE_NUMBER (note) == NOTE_INSN_PROLOGUE_END)
 		  break;
 	    }
 
 	  /* Avoid placing note between CODE_LABEL and BASIC_BLOCK note.  */
-	  if (GET_CODE (last) == CODE_LABEL)
+	  if (LABEL_P (last))
 	    last = NEXT_INSN (last);
 	  reorder_insns (note, note, last);
 	}
@@ -5424,7 +5424,7 @@ reposition_prologue_and_epilogue_notes (rtx f ATTRIBUTE_UNUSED)
 	 reorg has run.  */
       for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
 	{
-	  if (GET_CODE (insn) == NOTE)
+	  if (NOTE_P (insn))
 	    {
 	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EPILOGUE_BEG)
 		note = insn;
@@ -5444,7 +5444,7 @@ reposition_prologue_and_epilogue_notes (rtx f ATTRIBUTE_UNUSED)
 	  if (note == 0)
 	    {
 	      for (note = insn; (note = PREV_INSN (note));)
-		if (GET_CODE (note) == NOTE
+		if (NOTE_P (note)
 		    && NOTE_LINE_NUMBER (note) == NOTE_INSN_EPILOGUE_BEG)
 		  break;
 	    }
