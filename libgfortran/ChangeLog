@@ -1,4 +1,4 @@
-2005-02-27 Francois-Xavier Coudert <coudert@clipper.ens.fr>
+2005-02-23  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/18025
 	* write.c (output_float): Handling the "F0.d" format similarly as
