@@ -479,7 +479,7 @@ cxx_decode_option (argc, argv)
   int strings_processed;
   const char *p = argv[0];
 
-  strings_processed = cpp_handle_option (parse_in, argc, argv, 0);
+  strings_processed = cpp_handle_option (parse_in, argc, argv);
 
   if (p[0] == '-' && p[1] == 'f')
     {
