@@ -1,3 +1,9 @@
+2004-08-25  Phil Edwards  <phil@codesourcery.com>
+
+	* configure.in:  Print a list of available language front-ends if
+	a requested one is missing.  Tidy stray tab characters.
+	* configure:  Regenerated.
+
 2004-08-19  Michael Koch  <konqueror@gmx.de>
 
 	* gcc/doc/install.texi: Update entry about automake for libjava.

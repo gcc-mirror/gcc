@@ -1161,6 +1161,7 @@ if test -d ${srcdir}/gcc; then
 
   new_enable_languages=c
   missing_languages=`echo ",$enable_languages," | sed -e s/,all,/,/ -e s/,c,/,/ `
+  potential_languages=c
 
   for lang_frag in ${srcdir}/gcc/*/config-lang.in .. ; do
     case ${lang_frag} in
@@ -1176,14 +1177,15 @@ if test -d ${srcdir}/gcc; then
         lang_dirs=
         boot_language=
         build_by_default=
-	need_gmp=
+        need_gmp=
         . ${lang_frag}
+        potential_languages="${potential_languages},${language}"
         # This is quite sensitive to the ordering of the case statement arms.
         case ,${enable_languages},:${language}:${have_gnat}:${build_by_default} in
           *::*:*)
             echo "${lang_frag} doesn't set \$language." 1>&2
             exit 1
-	    ;;
+            ;;
           *:ada:no:*)
             # Ada was requested with no preexisting GNAT.  Disable unconditionally.
             add_this_lang=no
@@ -1194,9 +1196,9 @@ if test -d ${srcdir}/gcc; then
             ;;
           *,all,*:*:*:no)
             # 'all' was selected, but this is not a default language
-	    # so do not include it.
+            # so do not include it.
             add_this_lang=no
-	    ;;
+            ;;
           *,all,*:*:*:*)
             # 'all' was selected and this is a default language; include it.
             add_this_lang=yes
@@ -1234,7 +1236,8 @@ if test -d ${srcdir}/gcc; then
   missing_languages=`echo "$missing_languages" | sed -e "s/^,//" -e "s/,$//"`
   if test "x$missing_languages" != x; then
     AC_MSG_ERROR([
-The following requested languages were not found: ${missing_languages}])
+The following requested languages were not found: ${missing_languages}
+The available languages are: ${potential_languages}])
   fi
 
   if test "x$new_enable_languages" != "x$enable_languages"; then
