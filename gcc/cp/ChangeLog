@@ -1,3 +1,24 @@
+2004-08-04  Paul Brook  <paul@codesourcery.com>
+
+	* Make-lang.in (cp/semantics.o, cp/optimize.o): Depend on TARGET_H.
+	* cp-tree.h (struct language_function): Rename x_dtor_label to
+	x_cdtor_label.
+	(dtor_label): Rename ...
+	(cdtor_label): ... to this.
+	* decl.c (begin_constructor_body): Remove.
+	(check_special_function_return_type): Maybe change the return type.
+	(grokdeclarator): Pass the class type.
+	(start_preparsed_function): Constructors may need a return label.
+	(finish_constructor_body, finish_destructor_body): Set the return
+	value.
+	(begin_function_body): Don't call begin_constructor_body.
+	(finish_function): Don't warn for constructors or destructors.
+	(implicitly_declare_fn): Maybe change the return type.
+	* optimize.c: Include target.h.
+	(maybe_clone_body): Remap the function result.
+	* semantics.c: Include target.h.
+	(finish_return_stmt): Maybe jump to return label for constructors.
+
 2004-08-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (build_vtable): Do not set DECL_VISIBILITY here.

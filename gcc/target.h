@@ -492,6 +492,8 @@ struct gcc_target
     /* Allows backends to perform additional processing when
        deciding if a class should be exported or imported.  */
     int (*import_export_class) (tree, int);
+    /* Returns true if constructors and destructors return "this".  */
+    bool (*cdtor_returns_this) (void);
   } cxx;
 
   /* Leave the boolean fields at the end.  */
