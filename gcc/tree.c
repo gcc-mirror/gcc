@@ -1856,6 +1856,10 @@ has_cleanups (tree exp)
 	}
       return 0;
 
+    case DECL_EXPR:
+      return (DECL_INITIAL (DECL_EXPR_DECL (exp))
+	      && has_cleanups (DECL_INITIAL (DECL_EXPR_DECL (exp))));
+
     default:
       break;
     }

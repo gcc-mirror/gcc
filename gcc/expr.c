@@ -6002,6 +6002,14 @@ safe_from_p (rtx x, tree exp, int top_p)
       else
 	return 0;
 
+    case 's':
+      /* The only case we look at here is the DECL_INITIAL inside a
+	 DECL_EXPR.  */
+      return (TREE_CODE (exp) != DECL_EXPR
+	      || TREE_CODE (DECL_EXPR_DECL (exp)) != VAR_DECL
+	      || !DECL_INITIAL (DECL_EXPR_DECL (exp))
+	      || safe_from_p (x, DECL_INITIAL (DECL_EXPR_DECL (exp)), 0));
+
     case '2':
     case '<':
       if (!safe_from_p (x, TREE_OPERAND (exp, 1), 0))

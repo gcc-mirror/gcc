@@ -316,9 +316,9 @@ maybe_cleanup_point_expr (tree expr)
 /* Create a declaration statement for the declaration given by the DECL.  */
 
 void
-add_decl_stmt (tree decl)
+add_decl_expr (tree decl)
 {
-  tree r = build_stmt (DECL_STMT, decl);
+  tree r = build_stmt (DECL_EXPR, decl);
   if (DECL_INITIAL (decl))
     r = maybe_cleanup_point_expr (r);
   add_stmt (r);
@@ -382,7 +382,7 @@ push_cleanup (tree decl, tree cleanup, bool eh_only)
 /* Begin a conditional that might contain a declaration.  When generating
    normal code, we want the declaration to appear before the statement
    containing the conditional.  When generating template code, we want the
-   conditional to be rendered as the raw DECL_STMT.  */
+   conditional to be rendered as the raw DECL_EXPR.  */
 
 static void
 begin_cond (tree *cond_p)
@@ -399,7 +399,7 @@ finish_cond (tree *cond_p, tree expr)
   if (processing_template_decl)
     {
       tree cond = pop_stmt_list (*cond_p);
-      if (TREE_CODE (cond) == DECL_STMT)
+      if (TREE_CODE (cond) == DECL_EXPR)
 	expr = cond;
     }
   *cond_p = expr;
@@ -1141,7 +1141,7 @@ void
 finish_label_decl (tree name)
 {
   tree decl = declare_local_label (name);
-  add_decl_stmt (decl);
+  add_decl_expr (decl);
 }
 
 /* When DECL goes out of scope, make sure that CLEANUP is executed.  */
@@ -2950,10 +2950,10 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
   else if (TREE_CODE (*tp) == CLEANUP_STMT
 	   && CLEANUP_DECL (*tp) == dp->var)
     CLEANUP_EH_ONLY (*tp) = 1;
-  /* Replace the DECL_STMT for the NRV with an initialization of the
+  /* Replace the DECL_EXPR for the NRV with an initialization of the
      RESULT_DECL, if needed.  */
-  else if (TREE_CODE (*tp) == DECL_STMT
-	   && DECL_STMT_DECL (*tp) == dp->var)
+  else if (TREE_CODE (*tp) == DECL_EXPR
+	   && DECL_EXPR_DECL (*tp) == dp->var)
     {
       tree init;
       if (DECL_INITIAL (dp->var)

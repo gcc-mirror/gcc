@@ -3873,8 +3873,8 @@ grok_reference_init (tree decl, tree type, tree init, tree *cleanup)
 
   /* Convert INIT to the reference type TYPE.  This may involve the
      creation of a temporary, whose lifetime must be the same as that
-     of the reference.  If so, a DECL_STMT for the temporary will be
-     added just after the DECL_STMT for DECL.  That's why we don't set
+     of the reference.  If so, a DECL_EXPR for the temporary will be
+     added just after the DECL_EXPR for DECL.  That's why we don't set
      DECL_INITIAL for local references (instead assigning to them
      explicitly); we need to allow the temporary to be initialized
      first.  */
@@ -4527,7 +4527,7 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
     return;
 
   /* We defer emission of local statics until the corresponding
-     DECL_STMT is expanded.  */
+     DECL_EXPR is expanded.  */
   defer_p = DECL_FUNCTION_SCOPE_P (decl) || DECL_VIRTUAL_P (decl);
 
   /* We try to defer namespace-scope static constants so that they are
@@ -4702,7 +4702,7 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
     {
       /* Add this declaration to the statement-tree.  */
       if (at_function_scope_p ())
-	add_decl_stmt (decl);
+	add_decl_expr (decl);
 
       if (init && DECL_INITIAL (decl))
 	DECL_INITIAL (decl) = init;
@@ -4808,10 +4808,10 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
     }
 
   /* Add this declaration to the statement-tree.  This needs to happen
-     after the call to check_initializer so that the DECL_STMT for a
-     reference temp is added before the DECL_STMT for the reference itself.  */
+     after the call to check_initializer so that the DECL_EXPR for a
+     reference temp is added before the DECL_EXPR for the reference itself.  */
   if (at_function_scope_p ())
-    add_decl_stmt (decl);
+    add_decl_expr (decl);
 
   if (TREE_CODE (decl) == VAR_DECL)
     layout_var_decl (decl);

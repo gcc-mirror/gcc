@@ -10695,7 +10695,7 @@ cp_parser_init_declarator (cp_parser* parser,
 
   /* Leave the SCOPE, now that we have processed the initializer.  It
      is important to do this before calling cp_finish_decl because it
-     makes decisions about whether to create DECL_STMTs or not based
+     makes decisions about whether to create DECL_EXPRs or not based
      on the current scope.  */
   if (pop_p)
     pop_scope (scope);

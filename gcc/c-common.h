@@ -733,10 +733,6 @@ extern void finish_file	(void);
 
 #define SWITCH_TYPE(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 2)
 
-/* DECL_STMT accessor. This gives access to the DECL associated with
-   the given declaration statement.  */
-#define DECL_STMT_DECL(NODE)    TREE_OPERAND (DECL_STMT_CHECK (NODE), 0)
-
 /* STMT_EXPR accessor.  */
 #define STMT_EXPR_STMT(NODE)    TREE_OPERAND (STMT_EXPR_CHECK (NODE), 0)
 
@@ -748,7 +744,7 @@ extern void finish_file	(void);
 #define COMPOUND_LITERAL_EXPR_DECL_STMT(NODE)		\
   TREE_OPERAND (COMPOUND_LITERAL_EXPR_CHECK (NODE), 0)
 #define COMPOUND_LITERAL_EXPR_DECL(NODE)			\
-  DECL_STMT_DECL (COMPOUND_LITERAL_EXPR_DECL_STMT (NODE))
+  DECL_EXPR_DECL (COMPOUND_LITERAL_EXPR_DECL_STMT (NODE))
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
 
@@ -761,7 +757,7 @@ enum c_tree_code {
 #undef DEFTREECODE
 
 #define c_common_stmt_codes				\
-   EXPR_STMT,		DECL_STMT,	FOR_STMT,	\
+   EXPR_STMT,		FOR_STMT,			\
    WHILE_STMT,		DO_STMT,			\
    BREAK_STMT,		CONTINUE_STMT,	SWITCH_STMT
 
@@ -844,8 +840,6 @@ extern int vector_types_convertible_p (tree t1, tree t2);
 
 extern rtx c_expand_expr (tree, rtx, enum machine_mode, int, rtx *);
 
-extern int c_safe_from_p (rtx, tree);
-
 extern int c_staticp (tree);
 
 extern int c_common_unsafe_for_reeval (tree);
@@ -871,8 +865,6 @@ struct c_fileinfo *get_fileinfo (const char *);
 extern void dump_time_statistics (void);
 
 extern bool c_dump_tree (void *, tree);
-
-extern tree c_walk_subtrees (tree*, int*, walk_tree_fn, void*, void*);
 
 extern void c_warn_unused_result (tree *);
 

@@ -2360,7 +2360,7 @@ get_temp_regvar (tree type, tree init)
   tree decl;
 
   decl = create_temporary_var (type);
-  add_decl_stmt (decl);
+  add_decl_expr (decl);
   
   finish_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
 

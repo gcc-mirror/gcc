@@ -465,90 +465,17 @@ gimplify_switch_stmt (tree *stmt_p)
   return GS_ALL_DONE;
 }
 
-/* Gimplifies a DECL_STMT node *STMT_P by making any necessary allocation
-   and initialization explicit.  */
-
-static enum gimplify_status
-gimplify_decl_stmt (tree *stmt_p)
-{
-  tree stmt = *stmt_p;
-  tree decl = DECL_STMT_DECL (stmt);
-
-  *stmt_p = NULL_TREE;
-
-  if (TREE_TYPE (decl) == error_mark_node)
-    return GS_ERROR;
-
-  if (TREE_CODE (decl) == TYPE_DECL)
-    gimplify_type_sizes (TREE_TYPE (decl), stmt_p);
-
-  else if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
-    {
-      tree init = DECL_INITIAL (decl);
-
-      if (!TREE_CONSTANT (DECL_SIZE (decl)))
-	{
-	  /* This is a variable-sized decl.  Simplify its size and mark it
-	     for deferred expansion.  Note that mudflap depends on the format
-	     of the emitted code: see mx_register_decls().  */
-
-	  tree t, args;
-
-	  gimplify_type_sizes (TREE_TYPE (decl), stmt_p);
-	  gimplify_one_sizepos (&DECL_SIZE (decl), stmt_p);
-	  gimplify_one_sizepos (&DECL_SIZE_UNIT (decl), stmt_p);
-
-	  args = tree_cons (NULL, DECL_SIZE_UNIT (decl), NULL);
-	  t = build_fold_addr_expr (decl);
-	  args = tree_cons (NULL, t, args);
-	  t = implicit_built_in_decls[BUILT_IN_STACK_ALLOC];
-	  t = build_function_call_expr (t, args);
-
-	  gimplify_and_add (t, stmt_p);
-	  DECL_DEFER_OUTPUT (decl) = 1;
-	}
-
-      if (init && init != error_mark_node)
-	{
-	  if (!TREE_STATIC (decl))
-	    {
-              /* Do not warn about int x = x; as it is a GCC extension
-                 to turn off this warning but only if warn_init_self
-		 is zero.  */
-              if (init == decl && !warn_init_self)
-                TREE_NO_WARNING (decl) = 1;
-              
-	      DECL_INITIAL (decl) = NULL_TREE;
-	      init = build (MODIFY_EXPR, void_type_node, decl, init);
-	      gimplify_and_add (init, stmt_p);
-	    }
-	  else
-	    /* We must still examine initializers for static variables
-	       as they may contain a label address.  */
-	    walk_tree (&init, force_labels_r, NULL, NULL);
-	}
-
-      /* This decl isn't mentioned in the enclosing block, so add it to the
-	 list of temps.  FIXME it seems a bit of a kludge to say that
-	 anonymous artificial vars aren't pushed, but everything else is.  */
-      if (DECL_ARTIFICIAL (decl) && DECL_NAME (decl) == NULL_TREE)
-	gimple_add_tmp_var (decl);
-    }
-
-  return GS_ALL_DONE;
-}
-
 /* Gimplification of expression trees.  */
 
 /* Gimplify a C99 compound literal expression.  This just means adding the
-   DECL_STMT before the current EXPR_STMT and using its anonymous decl
+   DECL_EXPR before the current EXPR_STMT and using its anonymous decl
    instead.  */
 
 static enum gimplify_status
 gimplify_compound_literal_expr (tree *expr_p, tree *pre_p)
 {
   tree decl_s = COMPOUND_LITERAL_EXPR_DECL_STMT (*expr_p);
-  tree decl = DECL_STMT_DECL (decl_s);
+  tree decl = DECL_EXPR_DECL (decl_s);
 
   /* This decl isn't mentioned in the enclosing block, so add it to the
      list of temps.  FIXME it seems a bit of a kludge to say that
@@ -556,8 +483,7 @@ gimplify_compound_literal_expr (tree *expr_p, tree *pre_p)
   if (DECL_NAME (decl) == NULL_TREE)
     gimple_add_tmp_var (decl);
 
-  gimplify_decl_stmt (&decl_s);
-  append_to_statement_list (decl_s, pre_p);
+  gimplify_and_add (decl_s, pre_p);
   *expr_p = decl;
   return GS_OK;
 }
@@ -571,6 +497,19 @@ c_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
 
   switch (code)
     {
+    case DECL_EXPR:
+      /* This is handled mostly by gimplify.c, but we have to deal with
+	 not warning about int x = x; as it is a GCC extension to turn off
+	 this warning but only if warn_init_self is zero.  */
+      if (TREE_CODE (DECL_EXPR_DECL (*expr_p)) == VAR_DECL
+	  && !DECL_EXTERNAL (DECL_EXPR_DECL (*expr_p))
+	  && !TREE_STATIC (DECL_EXPR_DECL (*expr_p))
+	  && (DECL_INITIAL (DECL_EXPR_DECL (*expr_p))
+	      == DECL_EXPR_DECL (*expr_p))
+	  && !warn_init_self)
+	TREE_NO_WARNING (DECL_EXPR_DECL (*expr_p)) = 1;
+      return GS_UNHANDLED;
+      
     case COMPOUND_LITERAL_EXPR:
       return gimplify_compound_literal_expr (expr_p, pre_p);
 
@@ -588,9 +527,6 @@ c_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
 
     case EXPR_STMT:
       return gimplify_expr_stmt (expr_p);
-
-    case DECL_STMT:
-      return gimplify_decl_stmt (expr_p);
 
     case CONTINUE_STMT:
       *expr_p = build_bc_goto (bc_continue);

@@ -2943,7 +2943,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	    }
 
 	  if (TREE_CODE (decl) != FUNCTION_DECL)
-	    add_stmt (build_stmt (DECL_STMT, decl));
+	    add_stmt (build_stmt (DECL_EXPR, decl));
 	}
 
       if (!DECL_FILE_SCOPE_P (decl))
@@ -2970,7 +2970,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
     {
       if (!DECL_FILE_SCOPE_P (decl)
 	  && variably_modified_type_p (TREE_TYPE (decl)))
-	add_stmt (build_stmt (DECL_STMT, decl));
+	add_stmt (build_stmt (DECL_EXPR, decl));
 
       rest_of_decl_compilation (decl, NULL, DECL_FILE_SCOPE_P (decl), 0);
     }
@@ -3072,7 +3072,7 @@ build_compound_literal (tree type, tree init)
 {
   /* We do not use start_decl here because we have a type, not a declarator;
      and do not use finish_decl because the decl should be stored inside
-     the COMPOUND_LITERAL_EXPR rather than added elsewhere as a DECL_STMT.  */
+     the COMPOUND_LITERAL_EXPR rather than added elsewhere as a DECL_EXPR.  */
   tree decl = build_decl (VAR_DECL, NULL_TREE, type);
   tree complit;
   tree stmt;
@@ -3096,7 +3096,7 @@ build_compound_literal (tree type, tree init)
   if (type == error_mark_node || !COMPLETE_TYPE_P (type))
     return error_mark_node;
 
-  stmt = build_stmt (DECL_STMT, decl);
+  stmt = build_stmt (DECL_EXPR, decl);
   complit = build1 (COMPOUND_LITERAL_EXPR, TREE_TYPE (decl), stmt);
   TREE_SIDE_EFFECTS (complit) = 1;
 

@@ -4587,7 +4587,7 @@ struct pair_fn_data
 /* Called from for_each_template_parm via walk_tree.  */
 
 static tree
-for_each_template_parm_r (tree* tp, int* walk_subtrees, void* d)
+for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 {
   tree t = *tp;
   struct pair_fn_data *pfd = (struct pair_fn_data *) d;
@@ -7764,12 +7764,12 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 				       args, complain, in_decl));
       break;
       
-    case DECL_STMT:
+    case DECL_EXPR:
       {
 	tree decl;
 	tree init;
 
-	decl = DECL_STMT_DECL (t);
+	decl = DECL_EXPR_DECL (t);
 	if (TREE_CODE (decl) == LABEL_DECL)
 	  finish_label_decl (DECL_NAME (decl));
 	else if (TREE_CODE (decl) == USING_DECL)
@@ -7825,7 +7825,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      }
 	  }
 
-	/* A DECL_STMT can also be used as an expression, in the condition
+	/* A DECL_EXPR can also be used as an expression, in the condition
 	   clause of an if/for/while construct.  */
 	return decl;
       }

@@ -660,7 +660,7 @@ copy_if_shared_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
   /* Special-case BIND_EXPR.  We should never be copying these, therefore
      we can omit examining BIND_EXPR_VARS.  Which also avoids problems with
      double processing of the DECL_INITIAL, which could be seen via both
-     the BIND_EXPR_VARS and a DECL_STMT.  */
+     the BIND_EXPR_VARS and a DECL_EXPR.  */
   else if (code == BIND_EXPR)
     {
       if (TREE_VISITED (t))
@@ -1000,6 +1000,72 @@ gimplify_return_expr (tree stmt, tree *pre_p)
   else
     ret_expr = build (MODIFY_EXPR, TREE_TYPE (result), result_decl, result);
   TREE_OPERAND (stmt, 0) = ret_expr;
+
+  return GS_ALL_DONE;
+}
+
+/* Gimplifies a DECL_EXPR node *STMT_P by making any necessary allocation
+   and initialization explicit.  */
+
+static enum gimplify_status
+gimplify_decl_expr (tree *stmt_p)
+{
+  tree stmt = *stmt_p;
+  tree decl = DECL_EXPR_DECL (stmt);
+
+  *stmt_p = NULL_TREE;
+
+  if (TREE_TYPE (decl) == error_mark_node)
+    return GS_ERROR;
+
+  else if (TREE_CODE (decl) == TYPE_DECL)
+    gimplify_type_sizes (TREE_TYPE (decl), stmt_p);
+
+  else if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
+    {
+      tree init = DECL_INITIAL (decl);
+
+      if (!TREE_CONSTANT (DECL_SIZE (decl)))
+	{
+	  /* This is a variable-sized decl.  Simplify its size and mark it
+	     for deferred expansion.  Note that mudflap depends on the format
+	     of the emitted code: see mx_register_decls().  */
+	  tree t, args;
+
+	  gimplify_type_sizes (TREE_TYPE (decl), stmt_p);
+	  gimplify_one_sizepos (&DECL_SIZE (decl), stmt_p);
+	  gimplify_one_sizepos (&DECL_SIZE_UNIT (decl), stmt_p);
+
+	  args = tree_cons (NULL, DECL_SIZE_UNIT (decl), NULL);
+	  t = build_fold_addr_expr (decl);
+	  args = tree_cons (NULL, t, args);
+	  t = implicit_built_in_decls[BUILT_IN_STACK_ALLOC];
+	  t = build_function_call_expr (t, args);
+
+	  gimplify_and_add (t, stmt_p);
+	  DECL_DEFER_OUTPUT (decl) = 1;
+	}
+
+      if (init && init != error_mark_node)
+	{
+	  if (!TREE_STATIC (decl))
+	    {
+	      DECL_INITIAL (decl) = NULL_TREE;
+	      init = build (MODIFY_EXPR, void_type_node, decl, init);
+	      gimplify_and_add (init, stmt_p);
+	    }
+	  else
+	    /* We must still examine initializers for static variables
+	       as they may contain a label address.  */
+	    walk_tree (&init, force_labels_r, NULL, NULL);
+	}
+
+      /* This decl isn't mentioned in the enclosing block, so add it to the
+	 list of temps.  FIXME it seems a bit of a kludge to say that
+	 anonymous artificial vars aren't pushed, but everything else is.  */
+      if (DECL_ARTIFICIAL (decl) && DECL_NAME (decl) == NULL_TREE)
+	gimple_add_tmp_var (decl);
+    }
 
   return GS_ALL_DONE;
 }
@@ -3519,6 +3585,10 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 
 	case CONST_DECL:
 	  *expr_p = DECL_INITIAL (*expr_p);
+	  break;
+
+	case DECL_EXPR:
+	  ret = gimplify_decl_expr (expr_p);
 	  break;
 
 	case EXC_PTR_EXPR:

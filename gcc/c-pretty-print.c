@@ -261,6 +261,13 @@ pp_c_pointer (c_pretty_printer *pp, tree t)
       pp_c_type_qualifier_list (pp, t);
       break;
 
+      /* ??? This node is now in GENERIC and so shouldn't be here.  But
+	 we'll fix that later.  */
+    case DECL_EXPR:
+      pp_declaration (pp, DECL_EXPR_DECL (t));
+      pp_needs_newline (pp) = true;
+      break;
+
     default:
       pp_unsupported_tree (pp, t);
     }
@@ -1979,11 +1986,6 @@ pp_c_statement (c_pretty_printer *pp, tree stmt)
     case CONTINUE_STMT:
       pp_identifier (pp, code == BREAK_STMT ? "break" : "continue");
       pp_c_semicolon (pp);
-      pp_needs_newline (pp) = true;
-      break;
-
-    case DECL_STMT:
-      pp_declaration (pp, DECL_STMT_DECL (stmt));
       pp_needs_newline (pp) = true;
       break;
 
