@@ -143,8 +143,6 @@ call_void_fn (name)
     d = IDENTIFIER_GLOBAL_VALUE (d);
   else
     {
-      push_obstacks (&permanent_obstack, &permanent_obstack);
-
       type = build_function_type (void_type_node, void_list_node);
       d = build_lang_decl (FUNCTION_DECL, d, type);
       DECL_EXTERNAL (d) = 1;
@@ -152,7 +150,6 @@ call_void_fn (name)
       DECL_ARTIFICIAL (d) = 1;
       pushdecl_top_level (d);
       make_function_rtl (d);
-      pop_obstacks ();
     }
 
   mark_used (d);
@@ -340,8 +337,6 @@ get_tinfo_var (type)
   else
     size = 2 * POINTER_SIZE;
 
-  push_obstacks (&permanent_obstack, &permanent_obstack);
-
   /* The type for a character array of the appropriate size.  */
   arrtype = build_cplus_array_type
     (unsigned_char_type_node,
@@ -353,10 +348,8 @@ get_tinfo_var (type)
   DECL_ARTIFICIAL (tdecl) = 1;
   push_to_top_level ();
   pushdecl (tdecl);
-  cp_finish_decl (tdecl, NULL_TREE, NULL_TREE, 0, 0);
+  cp_finish_decl (tdecl, NULL_TREE, NULL_TREE, 0);
   pop_from_top_level ();
-
-  pop_obstacks ();
 
   return tdecl;
 }
@@ -390,8 +383,6 @@ get_tinfo_fn_unused (type)
   if (IDENTIFIER_GLOBAL_VALUE (name))
     return IDENTIFIER_GLOBAL_VALUE (name);
 
-  push_obstacks (&permanent_obstack, &permanent_obstack);
-
   d = build_lang_decl (FUNCTION_DECL, name, tinfo_fn_type);
   DECL_EXTERNAL (d) = 1;
   TREE_PUBLIC (d) = 1;
@@ -403,7 +394,6 @@ get_tinfo_fn_unused (type)
   pushdecl_top_level (d);
   make_function_rtl (d);
   mark_inline_for_output (d);
-  pop_obstacks ();
 
   return d;
 }
@@ -674,7 +664,6 @@ build_dynamic_cast_1 (type, expr)
 	    {
 	      tree tmp;
 
-	      push_obstacks (&permanent_obstack, &permanent_obstack);
 	      tmp = tree_cons
 		(NULL_TREE, TREE_TYPE (td1), tree_cons
 		 (NULL_TREE, TREE_TYPE (td1), tree_cons
@@ -689,7 +678,6 @@ build_dynamic_cast_1 (type, expr)
 	      DECL_ARTIFICIAL (dcast_fn) = 1;
 	      pushdecl_top_level (dcast_fn);
 	      make_function_rtl (dcast_fn);
-	      pop_obstacks ();
 	    }
 	  
 	  mark_used (dcast_fn);
@@ -774,7 +762,6 @@ expand_si_desc (tdecl, type)
   else
     {
       tree tmp;
-      push_obstacks (&permanent_obstack, &permanent_obstack);
       tmp = tree_cons
 	(NULL_TREE, ptr_type_node, tree_cons
 	 (NULL_TREE, const_string_type_node, tree_cons
@@ -788,7 +775,6 @@ expand_si_desc (tdecl, type)
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
-      pop_obstacks ();
     }
 
   mark_used (fn);
@@ -825,7 +811,6 @@ expand_class_desc (tdecl, type)
 
       /* A reasonably close approximation of __class_type_info::base_info */
 
-      push_obstacks (&permanent_obstack, &permanent_obstack);
       base_info_type_node = make_lang_type (RECORD_TYPE);
 
       /* Actually const __user_type_info * */
@@ -852,7 +837,6 @@ expand_class_desc (tdecl, type)
 
       finish_builtin_type (base_info_type_node, "__base_info", fields,
 			   3, ptr_type_node);
-      pop_obstacks ();
     }
 
   while (--i >= 0)
@@ -955,7 +939,6 @@ expand_class_desc (tdecl, type)
     fn = IDENTIFIER_GLOBAL_VALUE (fn);
   else
     {
-      push_obstacks (&permanent_obstack, &permanent_obstack);
       tmp = tree_cons
 	(NULL_TREE, ptr_type_node, tree_cons
 	 (NULL_TREE, const_string_type_node, tree_cons
@@ -969,7 +952,6 @@ expand_class_desc (tdecl, type)
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
-      pop_obstacks ();
     }
 
   mark_used (fn);
@@ -1002,7 +984,6 @@ expand_ptr_desc (tdecl, type)
   else
     {
       tree tmp;
-      push_obstacks (&permanent_obstack, &permanent_obstack);
       tmp = tree_cons
 	(NULL_TREE, ptr_type_node, tree_cons
 	 (NULL_TREE, const_string_type_node, tree_cons
@@ -1016,7 +997,6 @@ expand_ptr_desc (tdecl, type)
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
-      pop_obstacks ();
     }
 
   mark_used (fn);
@@ -1049,7 +1029,6 @@ expand_attr_desc (tdecl, type)
   else
     {
       tree tmp;
-      push_obstacks (&permanent_obstack, &permanent_obstack);
       tmp = tree_cons
 	(NULL_TREE, ptr_type_node, tree_cons
 	 (NULL_TREE, const_string_type_node, tree_cons
@@ -1064,7 +1043,6 @@ expand_attr_desc (tdecl, type)
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
-      pop_obstacks ();
     }
 
   mark_used (fn);
@@ -1092,7 +1070,6 @@ expand_generic_desc (tdecl, type, fnname)
   else
     {
       tree tmp;
-      push_obstacks (&permanent_obstack, &permanent_obstack);
       tmp = tree_cons
 	(NULL_TREE, ptr_type_node, tree_cons
 	 (NULL_TREE, const_string_type_node, void_list_node));
@@ -1104,7 +1081,6 @@ expand_generic_desc (tdecl, type, fnname)
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
-      pop_obstacks ();
     }
 
   mark_used (fn);
@@ -1149,7 +1125,7 @@ synthesize_tinfo_fn (fndecl)
   DECL_COMMON (tdecl) = 1;
   TREE_USED (tdecl) = 1;
   DECL_ALIGN (tdecl) = TYPE_ALIGN (ptr_type_node);
-  cp_finish_decl (tdecl, NULL_TREE, NULL_TREE, 0, 0);
+  cp_finish_decl (tdecl, NULL_TREE, NULL_TREE, 0);
 
   /* Begin processing the function.  */
   start_function (NULL_TREE, fndecl, NULL_TREE, 

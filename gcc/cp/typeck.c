@@ -4979,18 +4979,12 @@ mark_addressable (exp)
 	    && DECL_RTL (x) != 0
 	    && ! DECL_IN_MEMORY_P (x))
 	  {
-	    /* We thought this would make a good constant variable,
-	       but we were wrong.  */
-	    push_permanent_obstack ();
-
 	    TREE_ASM_WRITTEN (x) = 0;
 	    DECL_RTL (x) = 0;
 	    rest_of_decl_compilation (x, 0, 
 				      !DECL_FUNCTION_SCOPE_P (x),
 				      0);
 	    TREE_ADDRESSABLE (x) = 1;
-
-	    pop_obstacks ();
 
 	    return 1;
 	  }

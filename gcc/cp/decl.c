@@ -2043,15 +2043,13 @@ binding_for_name (name, scope)
     }
   if (b && (result = find_binding (name, scope)))
     return result;
-  /* Not found, make a new permanent one. */
-  push_obstacks (&permanent_obstack, &permanent_obstack);
+  /* Not found, make a new one. */
   result = make_node (CPLUS_BINDING);
   TREE_CHAIN (result) = b;
   IDENTIFIER_NAMESPACE_BINDINGS (name) = result;
   BINDING_SCOPE (result) = scope;
   BINDING_TYPE (result) = NULL_TREE;
   BINDING_VALUE (result) = NULL_TREE;
-  pop_obstacks ();
   return result;
 }
 
@@ -2382,8 +2380,6 @@ maybe_push_to_top_level (pseudo)
   current_lang_name = lang_name_cplusplus;
   strict_prototype = strict_prototypes_lang_cplusplus;
   current_namespace = global_namespace;
-
-  push_obstacks (&permanent_obstack, &permanent_obstack);
 }
 
 void
@@ -2401,8 +2397,6 @@ pop_from_top_level ()
   /* Clear out class-level bindings cache.  */
   if (previous_class_type)
     invalidate_class_lookup_cache ();
-
-  pop_obstacks ();
 
   VARRAY_FREE (current_lang_base);
 
@@ -3310,12 +3304,6 @@ duplicate_decls (newdecl, olddecl)
       tree oldtype = TREE_TYPE (olddecl);
       tree newtype;
 
-      /* Make sure we put the new type in the same obstack as the old one.  */
-      if (oldtype)
-	push_obstacks (TYPE_OBSTACK (oldtype), TYPE_OBSTACK (oldtype));
-      else
-	push_permanent_obstack ();
-
       /* Merge the data types specified in the two decls.  */
       newtype = common_type (TREE_TYPE (newdecl), TREE_TYPE (olddecl));
 
@@ -3387,8 +3375,6 @@ duplicate_decls (newdecl, olddecl)
 
       /* Keep the old rtl since we can safely use it.  */
       DECL_RTL (newdecl) = DECL_RTL (olddecl);
-
-      pop_obstacks ();
     }
   /* If cannot merge, then use the new type and qualifiers,
      and don't preserve the old rtl.  */
@@ -3632,6 +3618,15 @@ pushdecl (x)
 	DECL_CONTEXT (x) = current_function_decl;
       if (!DECL_CONTEXT (x))
 	DECL_CONTEXT (x) = FROB_CONTEXT (current_namespace);
+
+      /* If this is the declaration for a namespace-scope function,
+	 but the declaration itself is in a local scope, mark the
+	 declaration.  */
+      if (TREE_CODE (x) == FUNCTION_DECL 
+	  && DECL_NAMESPACE_SCOPE_P (x)
+	  && current_function_decl
+	  && x != current_function_decl)
+	DECL_LOCAL_FUNCTION_P (x) = 1;
     }
 
   /* Type are looked up using the DECL_NAME, as that is what the rest of the
@@ -3799,15 +3794,11 @@ pushdecl (x)
 		   && (!TYPE_NAME (type) 
 		       || TYPE_NAME (type) != DECL_ABSTRACT_ORIGIN (x)))
             {
-	      push_obstacks (TYPE_OBSTACK (type), TYPE_OBSTACK (type));
-
 	      DECL_ORIGINAL_TYPE (x) = type;
               type = build_type_copy (type);
 	      TYPE_STUB_DECL (type) = TYPE_STUB_DECL (DECL_ORIGINAL_TYPE (x));
               TYPE_NAME (type) = x;
               TREE_TYPE (x) = type;
-
-	      pop_obstacks ();
             }
 
 	  if (type != error_mark_node
@@ -4469,15 +4460,6 @@ implicitly_declare (functionid)
      tree functionid;
 {
   register tree decl;
-  int temp = allocation_temporary_p ();
-
-  push_obstacks_nochange ();
-
-  /* Save the decl permanently so we can warn if definition follows.
-     In ANSI C, warn_implicit is usually false, so the saves little space.
-     But in C++, it's usually true, hence the extra code.  */
-  if (temp && (! warn_implicit || toplevel_bindings_p ()))
-    end_temporary_allocation ();
 
   /* We used to reuse an old implicit decl here,
      but this loses with inline functions because it can clobber
@@ -4500,8 +4482,6 @@ implicitly_declare (functionid)
     }
 
   SET_IDENTIFIER_IMPLICIT_DECL (functionid, decl);
-
-  pop_obstacks ();
 
   return decl;
 }
@@ -5227,8 +5207,6 @@ build_typename_type (context, name, fullname, base_type)
 
   static struct hash_table ht;
 
-  push_obstacks (&permanent_obstack, &permanent_obstack);
-
   if (!ht.table)
     {
       static struct hash_table *h = &ht;
@@ -5258,8 +5236,6 @@ build_typename_type (context, name, fullname, base_type)
   else
     /* Insert the type into the table.  */
     hash_lookup (&ht, t, /*create=*/true, /*copy=*/0);
-
-  pop_obstacks ();
 
   return t;
 }
@@ -6807,14 +6783,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
   tem = maybe_push_decl (decl);
 
   if (processing_template_decl)
-    {
-      if (at_function_scope_p ())
-	push_permanent_obstack ();
-      tem = push_template_decl (tem);
-      if (at_function_scope_p ())
-	pop_obstacks ();
-    }
-
+    tem = push_template_decl (tem);
 
 #if ! defined (ASM_OUTPUT_BSS) && ! defined (ASM_OUTPUT_ALIGNED_BSS)
   /* Tell the back-end to use or not use .common as appropriate.  If we say
@@ -6827,9 +6796,6 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
   
   if (! processing_template_decl)
     start_decl_1 (tem);
-
-  /* Corresponding pop_obstacks is done in `cp_finish_decl'.  */
-  push_obstacks_nochange ();
 
   return tem;
 }
@@ -7610,8 +7576,6 @@ emit_local_var (decl)
    If the length of an array type is not known before,
    it must be determined now, from the initial value, or it is an error.
 
-   Call `pop_obstacks' iff NEED_POP is nonzero.
-
    For C++, `cp_finish_decl' must be fairly evasive:  it must keep initializers
    for aggregates that have constructors alive on the permanent obstack,
    so that the global initializing functions can be written at the end.
@@ -7628,15 +7592,13 @@ emit_local_var (decl)
    ambiguity as it goes.  This can be sped up later.  */
 
 void
-cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
+cp_finish_decl (decl, init, asmspec_tree, flags)
      tree decl, init;
      tree asmspec_tree;
-     int need_pop;
      int flags;
 {
   register tree type;
   tree ttype = NULL_TREE;
-  int temporary = allocation_temporary_p ();
   const char *asmspec = NULL;
   int was_readonly = 0;
 
@@ -7678,12 +7640,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
   type = TREE_TYPE (decl);
 
   if (type == error_mark_node)
-    {
-      if (toplevel_bindings_p () && temporary)
-	end_temporary_allocation ();
-
-      return;
-    }
+    return;
 
   /* Add this declaration to the statement-tree.  */
   if (building_stmt_tree () 
@@ -7762,14 +7719,6 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
   init = check_initializer (decl, init);
 
   GNU_xref_decl (current_function_decl, decl);
-
-  /* For top-level declaration, the initial value was read in
-     the temporary obstack.  MAXINDEX, rtl, etc. to be made below
-     must go in the permanent obstack; but don't discard the
-     temporary data yet.  */
-
-  if (toplevel_bindings_p () && temporary)
-    end_temporary_allocation ();
 
   if (TREE_CODE (decl) == VAR_DECL)
     layout_var_decl (decl);
@@ -7875,12 +7824,6 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	}
     }
 
-  if (need_pop)
-    /* Resume permanent allocation, if not within a function.  The
-       corresponding push_obstacks_nochange is in start_decl,
-       start_method, groktypename, and in grokfield.  */
-    pop_obstacks ();
-
   if (was_readonly)
     TREE_READONLY (decl) = 1;
 }
@@ -7892,7 +7835,7 @@ finish_decl (decl, init, asmspec_tree)
      tree decl, init;
      tree asmspec_tree;
 {
-  cp_finish_decl (decl, init, asmspec_tree, 1, 0);
+  cp_finish_decl (decl, init, asmspec_tree, 0);
 }
 
 /* Generate code to handle the destruction of the function-scoped
@@ -7909,8 +7852,7 @@ destroy_local_static (decl)
   if (atexit_node == 0)
     {
       tree atexit_fndecl, PFV, pfvlist;
-      /* Remember this information until end of file.  */
-      push_obstacks (&permanent_obstack, &permanent_obstack);
+
       PFV = build_pointer_type (build_function_type
 				(void_type_node, void_list_node));
 
@@ -7928,7 +7870,6 @@ destroy_local_static (decl)
       mark_used (atexit_fndecl);
       atexit_node = default_conversion (atexit_fndecl);
       pop_lang_context ();
-      pop_obstacks ();
     }
 	      
   /* Call build_cleanup before we enter the anonymous function so that
@@ -7984,9 +7925,6 @@ expand_static_init (decl, init)
       tree then_clause;
       tree assignment;
       tree temp_init;
-
-      /* Remember this information until end of file.  */
-      push_obstacks (&permanent_obstack, &permanent_obstack);
 
       /* Emit code to perform this initialization but once.  This code
 	 looks like:
@@ -8061,9 +7999,6 @@ expand_static_init (decl, init)
       finish_compound_stmt (/*has_no_scope=*/0, then_clause);
       finish_then_clause (if_stmt);
       finish_if_stmt ();
-
-      /* Resume old (possibly temporary) allocation.  */
-      pop_obstacks ();
     }
   else
     {
@@ -8110,9 +8045,6 @@ complete_array_type (type, initial_value, do_default)
 {
   register tree maxindex = NULL_TREE;
   int value = 0;
-  
-  /* Allocate on the same obstack as TYPE.  */
-  push_obstacks (TYPE_OBSTACK (type), TYPE_OBSTACK (type));
   
   if (initial_value)
     {
@@ -8181,8 +8113,6 @@ complete_array_type (type, initial_value, do_default)
 	TYPE_DOMAIN (TYPE_MAIN_VARIANT (type)) = domain;
     }
 
-  pop_obstacks();
-  
   /* Lay out the type now that we can get the real answer.  */
 
   layout_type (type);
@@ -8575,13 +8505,9 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
 	context = NULL_TREE;
 
       if (processing_template_decl) 
-	{
-	  /* If we're in a template, we need DECL_LANG_SPECIFIC so that
-	     we can call push_template_decl.  */
-	  push_permanent_obstack ();
-	  decl = build_lang_decl (VAR_DECL, declarator, type);
-	  pop_obstacks ();
-	}
+	/* If we're in a template, we need DECL_LANG_SPECIFIC so that
+	   we can call push_template_decl.  */
+	decl = build_lang_decl (VAR_DECL, declarator, type);
       else
 	decl = build_decl (VAR_DECL, declarator, type);
 
@@ -8671,8 +8597,6 @@ build_ptrmemfunc_type (type)
     unqualified_variant 
       = build_ptrmemfunc_type (TYPE_MAIN_VARIANT (type));
 
-  push_obstacks (TYPE_OBSTACK (type), TYPE_OBSTACK (type));
-
   u = make_lang_type (UNION_TYPE);
   SET_IS_AGGR_TYPE (u, 0);
   fields[0] = build_lang_decl (FIELD_DECL, pfn_identifier, type);
@@ -8694,8 +8618,6 @@ build_ptrmemfunc_type (type)
 			       delta_type_node);
   fields[2] = build_lang_decl (FIELD_DECL, pfn_or_delta2_identifier, u);
   finish_builtin_type (t, "__ptrmemfunc_type", fields, 2, ptr_type_node);
-
-  pop_obstacks ();
 
   /* Zap out the name so that the back-end will give us the debugging
      information for this anonymous RECORD_TYPE.  */
@@ -10517,14 +10439,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	{
 	  /* Make sure this typedef lives as long as its type,
 	     since it might be used as a template parameter. */
-	  if (type != error_mark_node)
-	    push_obstacks (TYPE_OBSTACK (type), TYPE_OBSTACK (type));
 	  if (processing_template_decl)
 	    decl = build_lang_decl (TYPE_DECL, declarator, type);
 	  else
 	    decl = build_decl (TYPE_DECL, declarator, type);
-	  if (type != error_mark_node)
-	    pop_obstacks ();
 	}
 
       /* If the user declares "typedef struct {...} foo" then the
@@ -11976,7 +11894,6 @@ xref_tag (code_type_node, name, globalize)
 {
   enum tag_types tag_code;
   enum tree_code code;
-  int temp = 0;
   register tree ref, t;
   struct binding_level *b = current_binding_level;
   int got_type = 0;
@@ -12117,22 +12034,12 @@ xref_tag (code_type_node, name, globalize)
 	}
     }
 
-  push_obstacks_nochange ();
-
   if (! ref)
     {
       /* If no such tag is yet defined, create a forward-reference node
 	 and record it as the "definition".
 	 When a real declaration of this type is found,
 	 the forward-reference will be altered into a real type.  */
-
-      /* In C++, since these migrate into the global scope, we must
-	 build them on the permanent obstack.  */
-
-      temp = allocation_temporary_p ();
-      if (temp)
-	end_temporary_allocation ();
-
       if (code == ENUMERAL_TYPE)
 	{
 	  cp_error ("use of enum `%#D' without previous declaration", name);
@@ -12197,8 +12104,6 @@ xref_tag (code_type_node, name, globalize)
 	CLASSTYPE_DECLARED_CLASS (ref) = 0;
     }
 
-  pop_obstacks ();
-
   TREE_TYPE (ref) = attributes;
 
   return ref;
@@ -12250,7 +12155,6 @@ xref_basetypes (code_type_node, name, ref, binfo)
     }
 
   len = list_length (binfo);
-  push_obstacks (TYPE_OBSTACK (ref), TYPE_OBSTACK (ref));
 
   /* First, make sure that any templates in base-classes are
      instantiated.  This ensures that if we call ourselves recursively
@@ -12392,8 +12296,6 @@ xref_basetypes (code_type_node, name, ref, binfo)
   /* Now that we know all the base-classes, set up the list of virtual
      bases.  */
   CLASSTYPE_VBASECLASSES (ref) = get_vbase_types (ref);
-
-  pop_obstacks ();
 }
   
 
@@ -12409,10 +12311,6 @@ start_enum (name)
 {
   register tree enumtype = NULL_TREE;
   struct binding_level *b = current_binding_level;
-
-  /* We are wasting space here and putting these on the permanent_obstack so
-     that typeid(local enum) will work correctly. */
-  push_obstacks (&permanent_obstack, &permanent_obstack);
 
   /* If this is the real definition for a previous forward reference,
      fill in the contents in the same object that used to be the
@@ -12566,9 +12464,6 @@ finish_enum (enumtype)
       /* Finish debugging output for this type.  */
       rest_of_type_compilation (enumtype, namespace_bindings_p ());
     }
-
-  /* In start_enum we pushed obstacks.  Here, we must pop them.  */
-  pop_obstacks ();
 
   return enumtype;
 }
@@ -13113,13 +13008,6 @@ start_function (declspecs, declarator, attrs, flags)
       TREE_THIS_VOLATILE (DECL_RESULT (decl1)) = CP_TYPE_VOLATILE_P (restype);
     }
 
-  /* Allocate further tree nodes temporarily during compilation
-     of this function only.  Tiemann moved up here from bottom of fn.  */
-  /* If this is a nested function, then we must continue to allocate RTL
-     on the permanent obstack in case we need to inline it later.  */
-  if (! hack_decl_function_context (decl1))
-    temporary_allocation ();
-  
   ++function_depth;
 
   if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (decl1))
@@ -13806,12 +13694,6 @@ finish_function (lineno, flags)
 
   --function_depth;
 
-  /* Free all the tree nodes making up this function.  */
-  /* Switch back to allocating nodes permanently
-     until we start another function.  */
-  if (! nested)
-    permanent_allocation (1);
-
   if (!DECL_SAVED_INSNS (fndecl) && !DECL_SAVED_FUNCTION_DATA (fndecl))
     {
       tree t;
@@ -13927,7 +13809,7 @@ start_method (declspecs, declarator, attrlist)
 	grok_op_properties (fndecl, DECL_VIRTUAL_P (fndecl), 0);
     }
 
-  cp_finish_decl (fndecl, NULL_TREE, NULL_TREE, 0, 0);
+  cp_finish_decl (fndecl, NULL_TREE, NULL_TREE, 0);
 
   /* Make a place for the parms */
   pushlevel (0);

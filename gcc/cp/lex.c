@@ -379,13 +379,11 @@ get_time_identifier (name)
   time_identifier = get_identifier (buf);
   if (TIME_IDENTIFIER_TIME (time_identifier) == NULL_TREE)
     {
-      push_permanent_obstack ();
       TIME_IDENTIFIER_TIME (time_identifier) = build_int_2 (0, 0);
       TIME_IDENTIFIER_FILEINFO (time_identifier) 
 	= build_int_2 (0, 1);
       SET_IDENTIFIER_GLOBAL_VALUE (time_identifier, filename_times);
       filename_times = time_identifier;
-      pop_obstacks ();
     }
   return time_identifier;
 }
@@ -1851,11 +1849,9 @@ snarf_defarg ()
   len = obstack_object_size (&inline_text_obstack);
   buf = obstack_finish (&inline_text_obstack);
 
-  push_obstacks (&inline_text_obstack, &inline_text_obstack);
   arg = make_node (DEFAULT_ARG);
   DEFARG_LENGTH (arg) = len - 1;
   DEFARG_POINTER (arg) = buf;
-  pop_obstacks ();
 
   return arg;
 }
@@ -1872,11 +1868,7 @@ add_defarg_fn (decl)
   if (TREE_CODE (decl) == FUNCTION_DECL)
     TREE_VALUE (defarg_fns) = decl;
   else
-    {
-      push_obstacks (&inline_text_obstack, &inline_text_obstack);
-      defarg_fns = tree_cons (current_class_type, decl, defarg_fns);  
-      pop_obstacks ();
-    }
+    defarg_fns = tree_cons (current_class_type, decl, defarg_fns);  
 }
 
 /* Helper for do_pending_defargs.  Starts the parsing of a default arg.  */
@@ -3058,13 +3050,7 @@ is_global (d)
       default:
         my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (d)) == 'd', 980629);
 
-	/* A template parameter is not really global, even though it
-	   has no enclosing scope.  */
-	if (DECL_TEMPLATE_PARM_P (d))
-	  return 0;
-
-        d = CP_DECL_CONTEXT (d);
-        return TREE_CODE (d) == NAMESPACE_DECL;
+	return DECL_NAMESPACE_SCOPE_P (d);
       }
 }
 
@@ -3216,10 +3202,6 @@ do_identifier (token, parsing, args)
      local variables and then finding matching instantiations.  */
   if (current_template_parms
       && (is_overloaded_fn (id) 
-	  /* If it's not going to be around at instantiation time, we
-	     look it up then.  This is a hack, and should go when we
-	     really get dependent/independent name lookup right.  */
-	  || !TREE_PERMANENT (id)
 	  /* Some local VAR_DECLs (such as those for local variables
 	     in member functions of local classes) are built on the
 	     permanent obstack.  */
@@ -4491,11 +4473,7 @@ real_yylex ()
 	/* We have read the entire constant.
 	   Construct a STRING_CST for the result.  */
 
-	if (processing_template_decl)
-	  push_obstacks (&permanent_obstack, &permanent_obstack);
 	yylval.ttype = build_string (p - (token_buffer + 1), token_buffer + 1);
-	if (processing_template_decl)
-	  pop_obstacks ();
 
 	if (wide_flag)
 	  TREE_TYPE (yylval.ttype) = wchar_array_type_node;

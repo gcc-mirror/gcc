@@ -2076,7 +2076,6 @@ build_java_class_ref (type)
   class_decl = IDENTIFIER_GLOBAL_VALUE (name);
   if (class_decl == NULL_TREE)
     {
-      push_permanent_obstack ();
       class_decl = build_decl (VAR_DECL, name, TREE_TYPE (jclass_node));
       TREE_STATIC (class_decl) = 1;
       DECL_EXTERNAL (class_decl) = 1;
@@ -2085,7 +2084,6 @@ build_java_class_ref (type)
       DECL_IGNORED_P (class_decl) = 1;
       pushdecl_top_level (class_decl);
       make_decl_rtl (class_decl, NULL_PTR, 1);
-      pop_obstacks ();
     }
   return class_decl;
 }

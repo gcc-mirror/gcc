@@ -1,3 +1,106 @@
+1999-11-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (DECL_LOCAL_FUCNTION_P): New macro.
+	* call.c (equal_functions): Use DECL_LOCAL_FUCNTION_P, not
+	TREE_PERMANENT.
+	* decl.c (pushdecl): Set DECL_LOCAL_FUNCTION_P.
+	* decl2.c (lookup_arg_dependent): Use it.
+	
+	* cp-tree.h (cp_finish_decl): Change prototype.
+	(finish_static_data_member_decl): Likewise.
+	(push_permanent_obstack): Remove declaration.
+	(push_expression_obstack): Likewise.
+	(push_scratch_obstack): Likewise.
+	(DECL_TEMPLATE_PARM_P): Robustify.
+	(SET_DECL_TEMPLATE_PARM_P): New macro.
+	* class.c (add_method): Don't manipulate obstacks.
+	(finish_vtbls): Likewise.
+	* cvt.c (build_up_reference): Adjust calls to cp_finish_decl.
+	* decl.c (binding_for_name): Don't manipulate obstacks.
+	(maybe_push_to_top_level): Likewise.
+	(pop_from_top_level): Likewise.
+	(duplicate_decls): Likewise.
+	(pushdecl): Likewise.
+	(implicitly_declare): Likewise.
+	(build_typename_type): Likewise.
+	(start_decl): Likewise.
+	(cp_finish_decl): Likewise.
+	(finish_decl): Likewise.
+	(destroy_local_static): Likewise.
+	(expand_static_init): Likewise.
+	(complete_array_type): Likewise.
+	(grokvardecl): Likewise.
+	(build_ptrmemfnc_type): Likewise.
+	(grokdeclarator): Likewise.
+	(xref_tag): Likewise.
+	(xref_basetypes): Likewise.
+	(start_enum): Likewise.
+	(finish_enum): Likewise.
+	(start_function): Likewise.
+	(finish_function): Likewise.
+	(start_method): Adjust call to cp_finish_decl.
+	* decl2.c (finish_static_data_member_decl): Don't manipulate
+	obstacks.
+	(grokfield): Likewise.
+	(grokbitfield): Likewise.
+	(get_temp_name): Likewise.
+	(get_sentry): Likewise.
+	(fnish_file): Likewise.
+	(lookup_arg_dependent): Likewise.
+	* except.c (call_eh_info): Likewise.
+	(push_eh_info): Likewise.
+	(do_pop_exception): Likewise.
+	(initialize_handler_parm): Likewise.
+	(expand_end_eh_spec): Likewise.
+	(alloc_eh_object): Likewise.
+	(expand_throw): Likewise.
+	* expr.c (extract_scalar_init): Likewise.
+	* init.c (build_java_class_ref): Likewise.
+	* lex.c (get_time_identifier): Likewise.
+	(snarf_defarg): Likewise.
+	(add_defarg_fn): Likewise.
+	(is_global): Simplify.
+	(do_identifier): Don't check TREE_PERMANENT.
+	* method.c (emit_thunk): Don't manipulate obstacks.
+	* parse.y (condition): Adjust call to cp_finish_decl.
+	(primary): Likewise.
+	(initdcl): Likewise.
+	(initdcl0_innards): Likewise.
+	(nomods_initdcl0): Likewise.
+	* pt.c (push_inline_template_parms_recursive): Use
+	SET_DECL_TEMPLATE_PARM_P.
+	(process_template_parm): Likewise.
+	(lookup_template_class): Don't manipulate obstacks.
+	(instantiate_class_template): Adjust call to
+	finish_static_data_member_decl.
+	(tsubst_decl): Don't manipulate obstacks.
+	(tsubst_expr): Likewise.
+	(instantiate_template): Likewise.
+	(instantiate_decl): Adjust calls to cp_finish_decl.
+	* rtti.c (call_void_fn): Don't manipulate obstacks.
+	(get_tinfo_var): Likewise.
+	(get_tinfo_fn_unused): Likewise.
+	(build_dynamic_cast_1): Likewise.
+	(expand_si_desc): Likewise.
+	(expand_class_desc): Likewise.
+	(expand_ptr_desc): Likewise.
+	(expand_attr_desc): Likewise.
+	(expand_generic_desc): Likewise.
+	(synthesize_tinfo_fn): Likewise.
+	* search.c (expand_upcast_fixups): Likewise.
+	* semantics.c (finish_asm_stmt): Likewise.
+	(finish_named_return_value): Likewise.
+	(begin_class_definition): Likewise.
+	(finish_class_definition): Likewise.
+	(finish_typeof): Likewise.
+	* tree.c (build_cplus_method_type): Likewise.
+	(reverse_path): Likewise.
+	(copy_template_template_parm): Likewise.
+	(build_expr_ptr_wrapper): Likewise.
+	(push_expression_obstack): Remove.
+	(push_permanent_obstack): Likewise.
+	* typeck.c (mark_addressable): Likewise.
+	
 1999-11-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_conditional_expr): Use build_target_expr_with_type.

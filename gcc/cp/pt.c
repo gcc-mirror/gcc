@@ -336,7 +336,7 @@ push_inline_template_parms_recursive (parmlist, levels)
 				    TREE_TYPE (parm));
 	    SET_DECL_ARTIFICIAL (decl);
 	    DECL_INITIAL (decl) = DECL_INITIAL (parm);
-	    DECL_TEMPLATE_PARM_P (decl) = 1;
+	    SET_DECL_TEMPLATE_PARM_P (decl);
 	    pushdecl (decl);
 	  }
 	  break;
@@ -1815,7 +1815,7 @@ process_template_parm (list, next)
 				     decl, TREE_TYPE (parm));
     }
   SET_DECL_ARTIFICIAL (decl);
-  DECL_TEMPLATE_PARM_P (decl) = 1;
+  SET_DECL_TEMPLATE_PARM_P (decl);
   pushdecl (decl);
   parm = build_tree_list (defval, parm);
   return chainon (list, parm);
@@ -3888,11 +3888,6 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 				      /*globalize=*/1);
 	  return found;
 	}
-				    
-      /* Since we didn't find the type, we'll have to create it.
-	 Since we'll be saving this type on the
-	 DECL_TEMPLATE_INSTANTIATIONS list, it must be permanent.  */
-      push_obstacks (&permanent_obstack, &permanent_obstack);
       
       /* Create the type.  */
       if (TREE_CODE (template_type) == ENUMERAL_TYPE)
@@ -3999,9 +3994,6 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	   constants won't result in recursive calls here; we'll find
 	   the instantiation and exit above.  */
 	tsubst_enum (template_type, t, arglist);
-
-      /* We're done with the permanent obstack, now.  */
-      pop_obstacks ();
 
       /* Reset the name of the type, now that CLASSTYPE_TEMPLATE_INFO
 	 is set up.  */
@@ -4970,7 +4962,6 @@ instantiate_class_template (type)
 
 	    finish_static_data_member_decl (r, init,
 					    /*asmspec_tree=*/NULL_TREE, 
-					    /*need_pop=*/0,
 					    /*flags=*/0);
 
 	    if (DECL_DEFINED_IN_CLASS_P (r))
@@ -5894,10 +5885,7 @@ tsubst_decl (t, args, type, in_decl)
 
 	/* This declaration is going to have to be around for a while,
 	   so me make sure it is on a saveable obstack.  */
-	push_obstacks_nochange ();
-	saveable_allocation ();
 	r = copy_node (t);
-	pop_obstacks ();
 
 	TREE_TYPE (r) = type;
 	c_apply_type_quals_to_decl (CP_TYPE_QUALS (type), r);
@@ -7119,7 +7107,7 @@ tsubst_expr (t, args, complain, in_decl)
 	    if (TREE_CODE (decl) == VAR_DECL)
 	      DECL_TEMPLATE_INSTANTIATED (decl) = 1;
 	    maybe_push_decl (decl);
-	    cp_finish_decl (decl, init, NULL_TREE, 0, 0);
+	    cp_finish_decl (decl, init, NULL_TREE, 0);
 	  }
 	return decl;
       }
@@ -7350,8 +7338,6 @@ instantiate_template (tmpl, targ_ptr)
   tree gen_tmpl;
   tree spec;
   int i, len;
-  struct obstack *old_fmp_obstack;
-  extern struct obstack *function_maybepermanent_obstack;
   tree inner_args;
 
   if (tmpl == error_mark_node)
@@ -7380,10 +7366,6 @@ instantiate_template (tmpl, targ_ptr)
     }
   else
     gen_tmpl = tmpl;
-
-  push_obstacks (&permanent_obstack, &permanent_obstack);
-  old_fmp_obstack = function_maybepermanent_obstack;
-  function_maybepermanent_obstack = &permanent_obstack;
 
   len = DECL_NTPARMS (gen_tmpl);
   inner_args = innermost_args (targ_ptr);
@@ -7414,9 +7396,6 @@ instantiate_template (tmpl, targ_ptr)
     add_pending_template (fndecl);
 
  out:
-  function_maybepermanent_obstack = old_fmp_obstack;
-  pop_obstacks ();
-
   return fndecl;
 }
 
@@ -9540,7 +9519,7 @@ instantiate_decl (d)
 	  DECL_EXTERNAL (d) = 1;
 	  DECL_NOT_REALLY_EXTERN (d) = 1;
 	}
-      cp_finish_decl (d, DECL_INITIAL (d), NULL_TREE, 0, 0);
+      cp_finish_decl (d, DECL_INITIAL (d), NULL_TREE, 0);
     }
   else if (TREE_CODE (d) == FUNCTION_DECL)
     {

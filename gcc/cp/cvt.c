@@ -357,7 +357,7 @@ build_up_reference (type, arg, flags)
 
       /* Process the initializer for the declaration.  */
       DECL_INITIAL (arg) = targ;
-      cp_finish_decl (arg, targ, NULL_TREE, 0,
+      cp_finish_decl (arg, targ, NULL_TREE, 
 		      LOOKUP_ONLYCONVERTING|DIRECT_BIND);
     }
   else if (!(flags & DIRECT_BIND) && ! lvalue_p (arg))
