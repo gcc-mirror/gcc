@@ -7305,28 +7305,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 	break;
 
       default:
-	if (! processing_template_decl)
-	  {
-	    if (type != error_mark_node)
-	      {
-		if (TYPE_SIZE (type) != NULL_TREE
-		    && ! TREE_CONSTANT (TYPE_SIZE (type)))
-		  {
-		    cp_error
-		      ("variable-sized object `%D' may not be initialized",
-		       decl);
-		    initialized = 0;
-		  }
-
-		if (TREE_CODE (type) == ARRAY_TYPE
-		    && TYPE_SIZE (complete_type (TREE_TYPE (type))) == NULL_TREE)
-		  {
-		    cp_error
-		      ("elements of array `%#D' have incomplete type", decl);
-		    initialized = 0;
-		  }
-	      }
-	  }
+	break;
       }
 
   if (initialized)
@@ -7820,6 +7799,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 
       goto finish_end0;
     }
+
   /* Take care of TYPE_DECLs up front.  */
   if (TREE_CODE (decl) == TYPE_DECL)
     {
@@ -7850,15 +7830,13 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 				DECL_CONTEXT (decl) == NULL_TREE, at_eof);
       goto finish_end;
     }
+
   if (TREE_CODE (decl) != FUNCTION_DECL)
-    {
-      ttype = target_type (type);
-    }
+    ttype = target_type (type);
 
   if (! DECL_EXTERNAL (decl) && TREE_READONLY (decl)
       && TYPE_NEEDS_CONSTRUCTING (type))
     {
-
       /* Currently, GNU C++ puts constants in text space, making them
 	 impossible to initialize.  In the future, one would hope for
 	 an operating system which understood the difference between
@@ -7895,6 +7873,22 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 		       || pseudo_global_level_p ());
       grok_reference_init (decl, type, init);
       init = NULL_TREE;
+    }
+
+  /* Check for certain invalid initializations.  */
+  if (init)
+    {
+      if (TYPE_SIZE (type) && !TREE_CONSTANT (TYPE_SIZE (type)))
+	{
+	  cp_error ("variable-sized object `%D' may not be initialized", decl);
+	  init = NULL_TREE;
+	}
+      if (TREE_CODE (type) == ARRAY_TYPE
+	  && !TYPE_SIZE (complete_type (TREE_TYPE (type))))
+	{
+	  cp_error ("elements of array `%#D' have incomplete type", decl);
+	  init = NULL_TREE;
+	}
     }
 
   GNU_xref_decl (current_function_decl, decl);
