@@ -593,7 +593,7 @@ static void compute_hash_table_work PARAMS ((struct hash_table *));
 static void dump_hash_table	PARAMS ((FILE *, const char *,
 					struct hash_table *));
 static struct expr *lookup_expr	PARAMS ((rtx, struct hash_table *));
-static struct expr *lookup_set	PARAMS ((unsigned int, rtx, struct hash_table *));
+static struct expr *lookup_set	PARAMS ((unsigned int, struct hash_table *));
 static struct expr *next_set	PARAMS ((unsigned int, struct expr *));
 static void reset_opr_set_tables PARAMS ((void));
 static int oprs_not_set_p	PARAMS ((rtx, rtx));
@@ -2641,14 +2641,12 @@ lookup_expr (pat, table)
   return expr;
 }
 
-/* Lookup REGNO in the set TABLE.  If PAT is non-NULL look for the entry that
-   matches it, otherwise return the first entry for REGNO.  The result is a
-   pointer to the table entry, or NULL if not found.  */
+/* Lookup REGNO in the set TABLE.  The result is a pointer to the
+   table entry, or NULL if not found.  */
 
 static struct expr *
-lookup_set (regno, pat, table)
+lookup_set (regno, table)
      unsigned int regno;
-     rtx pat;
      struct hash_table *table;
 {
   unsigned int hash = hash_set (regno, table->size);
@@ -2656,16 +2654,8 @@ lookup_set (regno, pat, table)
 
   expr = table->table[hash];
 
-  if (pat)
-    {
-      while (expr && ! expr_equiv_p (expr->expr, pat))
-	expr = expr->next_same_hash;
-    }
-  else
-    {
-      while (expr && REGNO (SET_DEST (expr->expr)) != regno)
-	expr = expr->next_same_hash;
-    }
+  while (expr && REGNO (SET_DEST (expr->expr)) != regno)
+    expr = expr->next_same_hash;
 
   return expr;
 }
@@ -3997,7 +3987,7 @@ find_avail_set (regno, insn)
   while (1)
     {
       rtx src;
-      struct expr *set = lookup_set (regno, NULL_RTX, &set_hash_table);
+      struct expr *set = lookup_set (regno, &set_hash_table);
 
       /* Find a set that is available at the start of the block
 	 which contains INSN.  */
@@ -4727,7 +4717,7 @@ find_bypass_set (regno, bb)
   for (;;)
     {
       rtx src;
-      struct expr *set = lookup_set (regno, NULL_RTX, &set_hash_table);
+      struct expr *set = lookup_set (regno, &set_hash_table);
 
       while (set)
 	{

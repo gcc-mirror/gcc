@@ -1,3 +1,8 @@
+2003-02-11  Richard Henderson  <rth@redhat.com>
+
+	* gcse.c (lookup_set): Remove unused argument PAT.  Update
+	both callers.
+
 2003-02-11  Geoffrey Keating  <geoffk@apple.com>
 
 	* diagnostic.c (real_abort): New.
