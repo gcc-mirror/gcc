@@ -2463,10 +2463,18 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
     {
       /* Redirect any branch edges unified with the fallthru one.  */
       if (GET_CODE (BB_END (src)) == JUMP_INSN
-	  && JUMP_LABEL (BB_END (src)) == BB_HEAD (e->dest))
+	  && label_is_jump_target_p (BB_HEAD (e->dest),
+				     BB_END (src)))
 	{
-          if (!redirect_jump (BB_END (src), block_label (dest), 0))
+	  if (rtl_dump_file)
+	    fprintf (rtl_dump_file, "Fallthru edge unified with branch "
+		     "%i->%i redirected to %i\n",
+		     e->src->index, e->dest->index, dest->index);
+	  e->flags &= ~EDGE_FALLTHRU;
+	  if (!redirect_branch_edge (e, dest))
 	    abort ();
+	  e->flags |= EDGE_FALLTHRU;
+	  return true;
 	}
       /* In case we are redirecting fallthru edge to the branch edge
          of conditional jump, remove it.  */

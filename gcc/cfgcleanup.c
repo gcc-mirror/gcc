@@ -73,7 +73,6 @@ static bool outgoing_edges_match (int, basic_block, basic_block);
 static int flow_find_cross_jump (int, basic_block, basic_block, rtx *, rtx *);
 static bool insns_match_p (int, rtx, rtx);
 
-static bool label_is_jump_target_p (rtx, rtx);
 static bool tail_recursion_label_p (rtx);
 static void merge_blocks_move_predecessor_nojumps (basic_block, basic_block);
 static void merge_blocks_move_successor_nojumps (basic_block, basic_block);
@@ -646,33 +645,6 @@ try_forward_edges (int mode, basic_block b)
   return changed;
 }
 
-/* Return true if LABEL is a target of JUMP_INSN.  This applies only
-   to non-complex jumps.  That is, direct unconditional, conditional,
-   and tablejumps, but not computed jumps or returns.  It also does
-   not apply to the fallthru case of a conditional jump.  */
-
-static bool
-label_is_jump_target_p (rtx label, rtx jump_insn)
-{
-  rtx tmp = JUMP_LABEL (jump_insn);
-
-  if (label == tmp)
-    return true;
-
-  if (tablejump_p (jump_insn, NULL, &tmp))
-    {
-      rtvec vec = XVEC (PATTERN (tmp),
-			GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC);
-      int i, veclen = GET_NUM_ELEM (vec);
-
-      for (i = 0; i < veclen; ++i)
-	if (XEXP (RTVEC_ELT (vec, i), 0) == label)
-	  return true;
-    }
-
-  return false;
-}
-
 /* Return true if LABEL is used for tail recursion.  */
 
 static bool

@@ -3709,3 +3709,31 @@ hoist_insn_to_edge (rtx insn, edge e, rtx val, rtx new)
   end_sequence ();
   return new_insn;
 }
+
+/* Return true if LABEL is a target of JUMP_INSN.  This applies only
+   to non-complex jumps.  That is, direct unconditional, conditional,
+   and tablejumps, but not computed jumps or returns.  It also does
+   not apply to the fallthru case of a conditional jump.  */
+
+bool
+label_is_jump_target_p (rtx label, rtx jump_insn)
+{
+  rtx tmp = JUMP_LABEL (jump_insn);
+
+  if (label == tmp)
+    return true;
+
+  if (tablejump_p (jump_insn, NULL, &tmp))
+    {
+      rtvec vec = XVEC (PATTERN (tmp),
+			GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC);
+      int i, veclen = GET_NUM_ELEM (vec);
+
+      for (i = 0; i < veclen; ++i)
+	if (XEXP (RTVEC_ELT (vec, i), 0) == label)
+	  return true;
+    }
+
+  return false;
+}
+
