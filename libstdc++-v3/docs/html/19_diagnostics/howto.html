@@ -38,7 +38,6 @@
    <li><a href="#1">Adding data to exceptions</a></li>
    <li><a href="#2">Exception class hierarchy diagram</a></li>
    <li><a href="#3">Concept checkers -- <strong>new and improved!</strong></a></li>
-   <li><a href="#4">Verbose <code>terminate</code></a></li>
 </ul>
 
 <hr />
@@ -120,75 +119,6 @@
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
-
-<hr />
-<h2><a name="4">Verbose <code>terminate</code></a></h2>
-   <p>If you are having difficulty with uncaught exceptions and want a
-      little bit of help debugging the causes of the core dumps, you can
-      make use of a GNU extension in GCC 3.1 and later:
-   </p>
-   <pre>
-   #include &lt;exception&gt;
-
-   int main()
-   {
-       std::set_terminate (__gnu_cxx::__verbose_terminate_handler);
-       ...
-       throw <em>anything</em>;
-   }</pre>
-   <p>The <code> __verbose_terminate_handler </code> function obtains the name
-      of the current exception, attempts to demangle it, and prints it to
-      stderr.  If the exception is derived from <code> std::exception </code>
-      then the output from <code>what()</code> will be included.
-   </p>
-   <p>Any replacement termination function is required to kill the program
-      without returning; this one calls abort.
-   </p>
-   <p>For example:
-   </p>
-   <pre>
-   #include &lt;exception&gt;
-   #include &lt;stdexcept&gt;
-
-   struct BLARGH : std::runtime_error
-   {
-       BLARGH (const string&amp; whatarg)
-           : std::runtime_error(whatarg) { }
-   };
-
-   int main (int argc)
-   {
-       std::set_terminate (__gnu_cxx::__verbose_terminate_handler);
-       if (argc &gt; 5)
-           throw BLARGH(&quot;argc is greater than 5!&quot;);
-       else
-           throw argc;
-   }</pre>
-   <p>In GCC 3.1 and later, this gives
-   </p>
-   <pre>
-   % ./a.out
-   terminate called after throwing a `int'
-   Aborted
-   % ./a.out f f f f f f f f f f f
-   terminate called after throwing a `BLARGH'
-   what(): argc is greater than 5!
-   Aborted
-   %</pre>
-   <p>The 'Aborted' line comes from the call to abort(), of course.
-   </p>
-   <p><strong>UPDATE:</strong> Starting with GCC 3.4, this is the default
-      termination handler; nothing need be done to use it.  To go back to
-      the previous &quot;silent death&quot; method, simply include
-      <code>&lt;exception&gt;</code> and <code>&lt;cstdlib&gt;</code>,
-      and call
-   </p>
-   <pre>
-       std::set_terminate (std::abort);</pre>
-   <p>Return <a href="#top">to top of page</a> or
-      <a href="../faq/index.html">to the FAQ</a>.
-   </p>
-
 
 <!-- ####################################################### -->
 
