@@ -1,3 +1,8 @@
+2004-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20040709-1.c: New test.
+	* gcc.c-torture/execute/20040709-2.c: New test.
+
 2004-07-14  Mike Stump  <mrs@apple.com>
 
 	* gcc.dg/wint_t-1.c: Expect to pass on darwin 10.3.x and later.
