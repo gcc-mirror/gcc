@@ -1,3 +1,7 @@
+2003-10-21  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (build1): Fix off-by-one error.
+
 2003-09-28  Robert Millan  <robertmh@gnu.org>
 
 	* config/i386/kfreebsdgnu.h: New. i386-*-kfreebsd-gnu definitions.
