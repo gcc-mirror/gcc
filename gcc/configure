@@ -617,7 +617,7 @@ fi
 
 
 # Default local prefix if it is empty
-if [ x$local_prefix = x ]; then
+if test x$local_prefix = x; then
 	local_prefix=/usr/local
 fi
 
@@ -662,7 +662,7 @@ cpp_main=cccp
 # Check whether --enable-c-cpplib or --disable-c-cpplib was given.
 if test "${enable_c_cpplib+set}" = set; then
   enableval="$enable_c_cpplib"
-  if [ x$enable_c_cpplib != xno ]; then
+  if test x$enable_c_cpplib != xno; then
   extra_c_objs="${extra_c_objs} cpplib.o cppexp.o cpphash.o cpperror.o"
   extra_c_objs="${extra_c_objs} prefix.o"
   extra_cxx_objs="${extra_cxx_objs} ../cpplib.o ../cppexp.o ../cpphash.o ../cpperror.o ../prefix.o"
@@ -676,7 +676,7 @@ fi
 # Check whether --enable-c-mbchar or --disable-c-mbchar was given.
 if test "${enable_c_mbchar+set}" = set; then
   enableval="$enable_c_mbchar"
-  if [ x$enable_c_mbchar != xno ]; then
+  if test x$enable_c_mbchar != xno; then
   extra_c_flags=-DMULTIBYTE_CHARS=1
 fi
 fi
@@ -705,7 +705,7 @@ fi
 # Check whether --enable-init-priority or --disable-init-priority was given.
 if test "${enable_init_priority+set}" = set; then
   enableval="$enable_init_priority"
-  if [ x$enable_init_priority != xno ]; then
+  if test x$enable_init_priority != xno; then
   extra_c_flags=-DUSE_INIT_PRIORITY
 fi
 fi
@@ -717,7 +717,7 @@ fi
 # Check whether --enable-threads or --disable-threads was given.
 if test "${enable_threads+set}" = set; then
   enableval="$enable_threads"
-  if [ x$enable_threads = xno ]; then
+  if test x$enable_threads = xno; then
 	enable_threads=''
 fi
 else
@@ -2258,7 +2258,7 @@ for machine in $build $host $target; do
 	# Set this to override the default target model.
 	target_cpu_default=
 	# Set this to control which fixincludes program to use.
-	if [ x$fast_fixinc != xyes ] ; then
+	if test x$fast_fixinc != xyes; then
 		fixincludes=fixincludes
 	else fixincludes=fixinc.sh ; fi
 	# Set this to control how the header file directory is installed.
@@ -2334,11 +2334,11 @@ for machine in $build $host $target; do
 		rest=`echo $machine | sed -e "s/$cpu_type-//"`
 		xm_file=${cpu_type}/xm-$rest.h
 		tm_file=${cpu_type}/$rest.h
-		if [ -f $srcdir/config/${cpu_type}/x-$rest ] ; \
+		if test -f $srcdir/config/${cpu_type}/x-$rest; \
 		then xmake_file=${cpu_type}/x-$rest; \
 		else true; \
 		fi
-		if [ -f $srcdir/config/${cpu_type}/t-$rest ] ; \
+		if test -f $srcdir/config/${cpu_type}/t-$rest; \
 		then tmake_file=${cpu_type}/t-$rest; \
 		else true; \
 		fi
@@ -2379,7 +2379,7 @@ for machine in $build $host $target; do
 		fixincludes=fixinc.wrap
 		xmake_file=none
 		gas=yes gnu_ld=yes
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
  			thread_file='posix'
  		fi
 		;;
@@ -2391,7 +2391,7 @@ for machine in $build $host $target; do
 		xmake_file=none
 		fixincludes=Makefile.in
 		gas=yes gnu_ld=yes
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
  			thread_file='posix'
  		fi
 		;;
@@ -2407,11 +2407,11 @@ for machine in $build $host $target; do
 		;;
 		
 	alpha*-dec-osf*)
-		if [ x$stabs = xyes ]
+		if test x$stabs = xyes
 		then
 			tm_file="${tm_file} dbx.h"
 		fi
-		if [ x$gas != xyes ]
+		if test x$gas != xyes
 		then
 			extra_passes="mips-tfile mips-tdump"
 		fi
@@ -2452,11 +2452,11 @@ for machine in $build $host $target; do
 		extra_host_objs=oldnames.o
 		extra_gcc_objs="spawnv.o oldnames.o"
 		fixincludes=fixinc.winnt
-		if [ x$gnu_ld != xyes ]
+		if test x$gnu_ld != xyes
 		then
 			extra_programs=ld.exe
 		fi
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
 			thread_file='win32'
 		fi
 		;;
@@ -2478,7 +2478,7 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	arm-*-riscix*)			# Acorn RISC machine
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 		    tm_file=arm/rix-gas.h
 		else
@@ -2595,7 +2595,7 @@ for machine in $build $host $target; do
 		tm_file="pa/pa-oldas.h ${tm_file} pa/pa-hpux7.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file="${tm_file} pa/gas.h"
 		fi
@@ -2606,7 +2606,7 @@ for machine in $build $host $target; do
 		tm_file="${tm_file} pa/pa-hpux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		else
@@ -2620,7 +2620,7 @@ for machine in $build $host $target; do
 		tm_file="${tm_file} pa/pa-hpux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		else
@@ -2634,7 +2634,7 @@ for machine in $build $host $target; do
 		tm_file="${tm_file} pa/pa-hpux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		fi
@@ -2645,7 +2645,7 @@ for machine in $build $host $target; do
 		tm_file="${tm_file} pa/pa-hpux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		fi
@@ -2658,14 +2658,14 @@ for machine in $build $host $target; do
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
 		tmake_file=pa/t-pa
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		fi
-		if [ x$enable_threads = x ]; then
+		if test x$enable_threads = x; then
 		    enable_threads=$have_pthread_h
 		fi
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
 			thread_file='dce'
 			tmake_file="${tmake_file} pa/t-dce-thr"
 		fi
@@ -2676,14 +2676,14 @@ for machine in $build $host $target; do
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux10.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		fi
-		if [ x$enable_threads = x ]; then
+		if test x$enable_threads = x; then
 		    enable_threads=$have_pthread_h
 		fi
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
 			thread_file='dce'
 			tmake_file="${tmake_file} pa/t-dce-thr"
 		fi
@@ -2695,7 +2695,7 @@ for machine in $build $host $target; do
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux9.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		fi
@@ -2706,7 +2706,7 @@ for machine in $build $host $target; do
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux9.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		fi
@@ -2718,7 +2718,7 @@ for machine in $build $host $target; do
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hiux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		fi
@@ -2729,7 +2729,7 @@ for machine in $build $host $target; do
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hiux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		fi
@@ -2744,7 +2744,7 @@ for machine in $build $host $target; do
 	i370-*-mvs*)
 		;;
 	i[34567]86-ibm-aix*)		# IBM PS/2 running AIX
-                if [ x$gas = xyes ]
+                if test x$gas = xyes
 		then
 			tm_file=i386/aix386.h
 			extra_parts="crtbegin.o crtend.o"
@@ -2757,11 +2757,11 @@ for machine in $build $host $target; do
 		xm_defines=USG
 		xmake_file=i386/x-aix
 		;;
-	i[34567]86-ncr-sysv4*)	# NCR 3000 - ix86 running system V.4
+	i[34567]86-ncr-sysv4*)		# NCR 3000 - ix86 running system V.4
 		xm_file="xm-siglist.h xm-alloca.h ${xm_file}"
 		xm_defines="USG POSIX SMALL_ARG_MAX"
 		xmake_file=i386/x-ncr3000
-		if [ x$stabs = xyes -a x$gas = xyes ]
+		if test x$stabs = xyes -a x$gas = xyes
 		then
 			tm_file=i386/sysv4gdb.h
 		else
@@ -2776,13 +2776,13 @@ for machine in $build $host $target; do
 		tmake_file=i386/t-next
 		xmake_file=i386/x-next
 		extra_objs=nextstep.o
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
 			thread_file='mach'
 		fi
 		;;
 	i[34567]86-sequent-bsd*) 		# 80386 from Sequent
 		use_collect2=yes
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file=i386/seq-gas.h
 		else
@@ -2877,7 +2877,7 @@ for machine in $build $host $target; do
 		    xmake_file=i386/x-isc
 		    ;;
 		esac
-                if [ x$gas = xyes -a x$stabs = xyes ]
+                if test x$gas = xyes -a x$stabs = xyes
 		then
 			tm_file=i386/iscdbx.h
 			tmake_file=i386/t-svr3dbx
@@ -2890,7 +2890,6 @@ for machine in $build $host $target; do
 		install_headers_dir=install-headers-cpio
 		;;
 	i[34567]86-*-linux-gnuoldld*)	# Intel 80386's running GNU/Linux
-					# with a.out format using
 					# pre BFD linkers
 		xmake_file=x-linux-aout
 		tmake_file="t-linux-aout i386/t-crtstuff"
@@ -2900,7 +2899,6 @@ for machine in $build $host $target; do
 		float_format=i386
 		;;
 	i[34567]86-*-linux-gnuaout*)	# Intel 80386's running GNU/Linux
-					# with a.out format
 		xmake_file=x-linux-aout
 		tmake_file="t-linux-aout i386/t-crtstuff"
 		tm_file=i386/linux-aout.h
@@ -2909,7 +2907,6 @@ for machine in $build $host $target; do
 		float_format=i386
 		;;
 	i[34567]86-*-linux-gnulibc1)	# Intel 80386's running GNU/Linux
-					# with ELF format using the
 					# GNU/Linux C library 5
 		xmake_file=x-linux	
 		tm_file=i386/linux.h	
@@ -2918,12 +2915,11 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		gnu_ld=yes
 		float_format=i386
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
  			thread_file='single'
  		fi
 		;;
 	i[34567]86-*-linux-gnu*)	# Intel 80386's running GNU/Linux
-					# with ELF format using glibc 2
 					# aka GNU/Linux C library 6
 		xmake_file=x-linux
 		tm_file=i386/linux.h
@@ -2932,7 +2928,7 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		gnu_ld=yes
 		float_format=i386
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
  			thread_file='posix'
  		fi
 		;;
@@ -2958,7 +2954,7 @@ for machine in $build $host $target; do
 		gas=yes
 		;;
 	i[34567]86-*-lynxos*)
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file=i386/lynx.h
 		else
@@ -2974,7 +2970,7 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	i[34567]86-*-osfrose*)		# 386 using OSF/rose
-                if [ x$elf = xyes ]
+                if test x$elf = xyes
 		then
 			tm_file=i386/osfelf.h
 			use_collect2=
@@ -3010,7 +3006,7 @@ for machine in $build $host $target; do
 		fixincludes=fixinc.sco
 		install_headers_dir=install-headers-cpio
 		tm_file=i386/sco5.h
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file="i386/sco5gas.h ${tm_file}"
 			tmake_file=i386/t-sco5gas
@@ -3025,7 +3021,7 @@ for machine in $build $host $target; do
 		xmake_file=i386/x-sco4
 		fixincludes=fixinc.sco
 		install_headers_dir=install-headers-cpio
-                if [ x$stabs = xyes ]
+                if test x$stabs = xyes
 		then
 			tm_file=i386/sco4dbx.h
 			tmake_file=i386/t-svr3dbx
@@ -3041,7 +3037,7 @@ for machine in $build $host $target; do
 		xm_file=i386/xm-sco.h
 		xmake_file=i386/x-sco
 		install_headers_dir=install-headers-cpio
-                if [ x$stabs = xyes ]
+                if test x$stabs = xyes
 		then
 			tm_file=i386/scodbx.h
 			tmake_file=i386/t-svr3dbx
@@ -3056,7 +3052,7 @@ for machine in $build $host $target; do
 	i[34567]86-*-solaris2*)
 		xm_file="xm-siglist.h xm-alloca.h ${xm_file}"
 		xm_defines="USG POSIX SMALL_ARG_MAX"
-		if [ x$stabs = xyes ]
+		if test x$stabs = xyes
 		then
 			tm_file=i386/sol2dbg.h
 		else
@@ -3071,7 +3067,7 @@ for machine in $build $host $target; do
 		*)
 			fixincludes=fixinc.wrap;;
 		esac
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
 			thread_file='solaris'
 		fi
 		;;
@@ -3079,7 +3075,7 @@ for machine in $build $host $target; do
                xm_file="xm-alloca.h xm-siglist.h ${xm_file}"
                xm_defines="USG POSIX"
                tm_file=i386/sysv4.h
-               if [ x$stabs = xyes ]
+               if test x$stabs = xyes
                then
                        tm_file="${tm_file} dbx.h"
                fi
@@ -3092,7 +3088,7 @@ for machine in $build $host $target; do
 		xm_file="xm-siglist.h xm-alloca.h ${xm_file}"
 		xm_defines="USG POSIX SMALL_ARG_MAX"
 		tm_file=i386/sysv4.h
-		if [ x$stabs = xyes ]
+		if test x$stabs = xyes
 		then
 			tm_file="${tm_file} dbx.h"
 		fi
@@ -3105,7 +3101,7 @@ for machine in $build $host $target; do
 		xm_file="${xm_file} xm-svr4.h i386/xm-sysv4.h i386/xm-osf1elf.h"
 		xm_defines="USE_C_ALLOCA SMALL_ARG_MAX"
 		fixincludes=Makefile.in #Don't do it on OSF/1
-		if [ x$stabs = xyes ]
+		if test x$stabs = xyes
 		then
 			tm_file=i386/osf1elfgdb.h
 		else
@@ -3118,9 +3114,9 @@ for machine in $build $host $target; do
 	i[34567]86-*-sysv*)		# Intel 80386's running system V
 		xm_defines="USG SVR3"
 		xmake_file=i386/x-sysv3
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
-			if [ x$stabs = xyes ]
+			if test x$stabs = xyes
 			then
 				tm_file=i386/svr3dbx.h
 				tmake_file=i386/t-svr3dbx
@@ -3149,7 +3145,7 @@ for machine in $build $host $target; do
 		xmake_file=i386/x-cygwin32
 		extra_objs=winnt.o
 		fixincludes=Makefile.in
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
 			thread_file='win32'
 		fi
 		exeext=.exe
@@ -3161,7 +3157,7 @@ for machine in $build $host $target; do
 		xmake_file=i386/x-cygwin32
 		extra_objs=winnt.o
 		fixincludes=Makefile.in
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
 			thread_file='win32'
 		fi
 		exeext=.exe
@@ -3173,7 +3169,7 @@ for machine in $build $host $target; do
 		extra_objs=winnt.o
 		xmake_file=i386/x-cygwin32
 		fixincludes=Makefile.in
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
 			thread_file='win32'
 		fi
 		exeext=.exe
@@ -3194,11 +3190,11 @@ for machine in $build $host $target; do
 		extra_host_objs="winnt.o oldnames.o"
 		extra_gcc_objs="spawnv.o oldnames.o"
 		fixincludes=fixinc.winnt
-		if [ x$gnu_ld != xyes ]
+		if test x$gnu_ld != xyes
 		then
 			extra_programs=ld.exe
 		fi
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
 			thread_file='win32'
 		fi
 		;;
@@ -3221,7 +3217,7 @@ for machine in $build $host $target; do
 		;;
 	i860-*-bsd*)
 		tm_file="${tm_file} i860/bsd.h"
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file="${tm_file} i860/bsd-gas.h"
 		fi
@@ -3299,7 +3295,7 @@ for machine in $build $host $target; do
 	m68000-hp-hpux*)		# HP 9000 series 300
 		xm_file="xm_alloca.h ${xm_file}"
 		xm_defines="USG NO_SYS_SIGLIST"
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			xmake_file=m68k/x-hp320g
 			tm_file=m68k/hp310g.h
@@ -3324,7 +3320,7 @@ for machine in $build $host $target; do
 	m68000-att-sysv*)
 		xm_file="m68k/xm-3b1.h ${xm_file}"
 		xm_defines=USG
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file=m68k/3b1g.h
 		else
@@ -3340,13 +3336,13 @@ for machine in $build $host $target; do
 		extra_headers=math-68881.h
 		extra_parts="crt1.o mcrt1.o maccrt1.o crt2.o crtn.o"
 		tm_file=
-		if [ "$gnu_ld" = yes ]
+		if test "$gnu_ld" = yes
 		then
 			tm_file="${tm_file} m68k/auxgld.h"
 		else
 			tm_file="${tm_file} m68k/auxld.h"
 		fi
-		if [ "$gas" = yes ]
+		if test "$gas" = yes
 		then
 			tm_file="${tm_file} m68k/auxgas.h"
 		else
@@ -3363,7 +3359,7 @@ for machine in $build $host $target; do
 		float_format=m68k
 		;;
 	m68k-altos-sysv*)		   # Altos 3068
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 		        tm_file=m68k/altos3068.h
 			xm_defines=USG
@@ -3374,9 +3370,9 @@ for machine in $build $host $target; do
 		extra_headers=math-68881.h
 	        ;;
 	m68k-bull-sysv*)		# Bull DPX/2
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
-			if [ x$stabs = xyes ]
+			if test x$stabs = xyes
 			then
 				tm_file=m68k/dpx2cdbx.h
 			else
@@ -3404,10 +3400,10 @@ for machine in $build $host $target; do
 		tm_file=m68k/mot3300.h
 		xm_file="xm-alloca.h m68k/xm-mot3300.h ${xm_file}"
 		xm_defines=NO_SYS_SIGLIST
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			xmake_file=m68k/x-mot3300-gas
-			if [ x$gnu_ld = xyes ]
+			if test x$gnu_ld = xyes
 			then
 				tmake_file=m68k/t-mot3300-gald
 			else
@@ -3416,7 +3412,7 @@ for machine in $build $host $target; do
 			fi
 		else
 			xmake_file=m68k/x-mot3300
-			if [ x$gnu_ld = xyes ]
+			if test x$gnu_ld = xyes
 			then
 				tmake_file=m68k/t-mot3300-gld
 			else
@@ -3488,7 +3484,7 @@ for machine in $build $host $target; do
 		float_format=m68k
 		;;
 	m68k-isi-bsd*)
-		if [ x$with_fp = xno ]
+		if test x$with_fp = xno
 		then
 			tm_file=m68k/isi-nfp.h
 		else
@@ -3501,7 +3497,7 @@ for machine in $build $host $target; do
 	m68k-hp-hpux7*)	# HP 9000 series 300 running HPUX version 7.
 		xm_file="xm_alloca.h ${xm_file}"
 		xm_defines="USG NO_SYS_SIGLIST"
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			xmake_file=m68k/x-hp320g
 			tm_file=m68k/hp320g.h
@@ -3517,7 +3513,7 @@ for machine in $build $host $target; do
 	m68k-hp-hpux*)	# HP 9000 series 300
 		xm_file="xm_alloca.h ${xm_file}"
 		xm_defines="USG NO_SYS_SIGLIST"
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			xmake_file=m68k/x-hp320g
 			tm_file=m68k/hp320g.h
@@ -3537,7 +3533,7 @@ for machine in $build $host $target; do
 		float_format=m68k
 		;;
 	m68k-sony-newsos3*)
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file=m68k/news3gas.h
 		else
@@ -3548,7 +3544,7 @@ for machine in $build $host $target; do
 		float_format=m68k
 		;;
 	m68k-sony-bsd* | m68k-sony-newsos*)
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file=m68k/newsgas.h
 		else
@@ -3576,12 +3572,12 @@ for machine in $build $host $target; do
 		extra_objs=nextstep.o
 		extra_headers=math-68881.h
 		float_format=m68k
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
 			thread_file='mach'
 		fi
 		;;
 	m68k-sun-sunos3*)
-		if [ x$with_fp = xno ]
+		if test x$with_fp = xno
 		then
 			tm_file=m68k/sun3n3.h
 		else
@@ -3592,7 +3588,7 @@ for machine in $build $host $target; do
 		extra_headers=math-68881.h
 		;;
 	m68k-sun-sunos*)			# For SunOS 4 (the default).
-		if [ x$with_fp = xno ]
+		if test x$with_fp = xno
 		then
 			tm_file=m68k/sun3n.h
 		else
@@ -3622,7 +3618,7 @@ for machine in $build $host $target; do
 		float_format=m68k
 		;;
 	m68k-*-lynxos*)
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file=m68k/lynx.h
 		else
@@ -3692,7 +3688,7 @@ for machine in $build $host $target; do
 		extra_headers=math-68881.h
 		float_format=m68k
 		gnu_ld=yes
-		if [ x$enable_threads = xyes ]; then
+		if test x$enable_threads = xyes; then
 			thread_file='posix'
 		fi
 		;;
@@ -3722,7 +3718,7 @@ for machine in $build $host $target; do
 		esac
 		extra_parts="crtbegin.o bcscrtbegin.o crtend.o m88kdgux.ld"
 		xmake_file=m88k/x-dgux
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=m88k/t-dgux-gas
 		fi
@@ -3733,7 +3729,7 @@ for machine in $build $host $target; do
 		extra_parts="crtbegin.o crtend.o"
 		xm_file="m88k/xm-sysv3.h ${xm_file}"
 		xmake_file=m88k/x-dolph
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=m88k/t-m88k-gas
 		fi
@@ -3743,7 +3739,7 @@ for machine in $build $host $target; do
 		extra_parts="crtbegin.o crtend.o"
 		xm_file="m88k/xm-sysv3.h ${xm_file}"
 		xmake_file=m88k/x-tekXD88
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=m88k/t-m88k-gas
 		fi
@@ -3758,7 +3754,7 @@ for machine in $build $host $target; do
 	m88k-*-luna*)
 		tm_file=m88k/luna.h
 		extra_parts="crtbegin.o crtend.o"
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=m88k/t-luna-gas
 		else
@@ -3770,7 +3766,7 @@ for machine in $build $host $target; do
 		extra_parts="crtbegin.o crtend.o"
 		xm_file="m88k/xm-sysv3.h ${xm_file}"
 		xmake_file=m88k/x-sysv3
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=m88k/t-m88k-gas
 		fi
@@ -3787,7 +3783,7 @@ for machine in $build $host $target; do
 		fixincludes=fixinc.irix
 		xmake_file=mips/x-iris6
 		tmake_file=mips/t-iris6
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
 			thread_file='irix'
 		fi
 		;;
@@ -3808,14 +3804,14 @@ for machine in $build $host $target; do
 		tmake_file=mips/t-cross64
 		# See comment in mips/iris[56].h files.
 		use_collect2=yes
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
 			thread_file='irix'
 		fi
 		;;
         mips-sni-sysv4)
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
-			if [ x$stabs = xyes ]
+			if test x$stabs = xyes
 			then
 				tm_file=mips/iris5gdb.h
 			else
@@ -3827,16 +3823,16 @@ for machine in $build $host $target; do
 		xm_defines=USG
                 xmake_file=mips/x-sni-svr4
                 tmake_file=mips/t-mips-gas
-                if [ x$gnu_ld != xyes ]
+                if test x$gnu_ld != xyes
                 then
                         use_collect2=yes
                 fi
                 ;;
 	mips-sgi-irix5*)		# SGI System V.4., IRIX 5
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file="mips/iris5.h mips/iris5gas.h"
-			if [ x$stabs = xyes ]
+			if test x$stabs = xyes
 			then
 				tm_file="${tm_file} dbx.h"
 			fi
@@ -3851,66 +3847,66 @@ for machine in $build $host $target; do
 		tmake_file=mips/t-mips-gas
 		# See comment in mips/iris5.h file.
 		use_collect2=yes
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
 			thread_file='irix'
 		fi
 		;;
 	mips-sgi-irix4loser*)		# Mostly like a MIPS.
 		tm_file="mips/iris4loser.h mips/iris3.h ${tm_file} mips/iris4.h"
-		if [ x$stabs = xyes ]; then
+		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
 		xm_defines=USG
 		xmake_file=mips/x-iris
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=mips/t-mips-gas
 		else
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		if [ x$gnu_ld != xyes ]
+		if test x$gnu_ld != xyes
 		then
 			use_collect2=yes
 		fi
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
 			thread_file='irix'
 		fi
 		;;
 	mips-sgi-irix4*)		# Mostly like a MIPS.
 		tm_file="mips/iris3.h ${tm_file} mips/iris4.h"
-		if [ x$stabs = xyes ]; then
+		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
 		xm_defines=USG
 		xmake_file=mips/x-iris
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=mips/t-mips-gas
 		else
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		if [ x$gnu_ld != xyes ]
+		if test x$gnu_ld != xyes
 		then
 			use_collect2=yes
 		fi
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
 			thread_file='irix'
 		fi
 		;;
 	mips-sgi-*)			# Mostly like a MIPS.
 		tm_file="mips/iris3.h ${tm_file}"
-		if [ x$stabs = xyes ]; then
+		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
 		xm_defines=USG
 		xmake_file=mips/x-iris3
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=mips/t-mips-gas
 		else
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		if [ x$gnu_ld != xyes ]
+		if test x$gnu_ld != xyes
 		then
 			use_collect2=yes
 		fi
@@ -3924,18 +3920,18 @@ for machine in $build $host $target; do
 		;;
 	mips-dec-osf*)			# Decstation running OSF/1 as shipped by DIGITAL
 		tm_file=mips/dec-osf1.h
-		if [ x$stabs = xyes ]; then
+		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
 		xmake_file=mips/x-dec-osf1
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=mips/t-mips-gas
 		else
 			tmake_file=mips/t-ultrix
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		if [ x$gnu_ld != xyes ]
+		if test x$gnu_ld != xyes
 		then
 			use_collect2=yes
 		fi
@@ -3943,14 +3939,14 @@ for machine in $build $host $target; do
 	mips-dec-bsd*)                  # Decstation running 4.4 BSD
               tm_file=mips/dec-bsd.h
               fixincludes=
-	      if [ x$gas = xyes ]
+	      if test x$gas = xyes
 	      then
 		   	tmake_file=mips/t-mips-gas
 	      else
 			tmake_file=mips/t-ultrix
 			extra_passes="mips-tfile mips-tdump"
 	      fi
-	      if [ x$gnu_ld != xyes ]
+	      if test x$gnu_ld != xyes
 	      then
 			use_collect2=yes
 	      fi
@@ -3964,16 +3960,16 @@ for machine in $build $host $target; do
 		;;
 	mips-sony-bsd* | mips-sony-newsos*)	# Sony NEWS 3600 or risc/news.
 		tm_file="mips/news4.h ${tm_file}"
-		if [ x$stabs = xyes ]; then
+		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=mips/t-mips-gas
 		else
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		if [ x$gnu_ld != xyes ]
+		if test x$gnu_ld != xyes
 		then
 			use_collect2=yes
 		fi
@@ -3983,31 +3979,31 @@ for machine in $build $host $target; do
 					# That is based on svr4.
 		# t-svr4 is not right because this system doesn't use ELF.
 		tm_file="mips/news5.h ${tm_file}"
-		if [ x$stabs = xyes ]; then
+		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
 		xm_file="xm-siglist.h ${xm_file}"
 		xm_defines=USG
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=mips/t-mips-gas
 		else
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		if [ x$gnu_ld != xyes ]
+		if test x$gnu_ld != xyes
 		then
 			use_collect2=yes
 		fi
 		;;
 	mips-tandem-sysv4*)		# Tandem S2 running NonStop UX
 		tm_file="mips/svr4-5.h mips/svr4-t.h"
-		if [ x$stabs = xyes ]; then
+		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
 		xm_file="xm-siglist.h ${xm_file}"
 		xm_defines=USG
 		xmake_file=mips/x-sysv
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=mips/t-mips-gas
 			extra_parts="crtbegin.o crtend.o"
@@ -4015,151 +4011,151 @@ for machine in $build $host $target; do
 			tmake_file=mips/t-mips
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		if [ x$gnu_ld != xyes ]
+		if test x$gnu_ld != xyes
 		then
 			use_collect2=yes
 		fi
 		;;
 	mips-*-ultrix* | mips-dec-mach3)	# Decstation.
 		tm_file="mips/ultrix.h ${tm_file}"
-		if [ x$stabs = xyes ]; then
+		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
 		xmake_file=mips/x-ultrix
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=mips/t-mips-gas
 		else
 			tmake_file=mips/t-ultrix
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		if [ x$gnu_ld != xyes ]
+		if test x$gnu_ld != xyes
 		then
 			use_collect2=yes
 		fi
 	        ;;
 	mips-*-riscos[56789]bsd*)
 		tm_file=mips/bsd-5.h	# MIPS BSD 4.3, RISC-OS 5.0
-		if [ x$stabs = xyes ]; then
+		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=mips/t-bsd-gas
 		else
 			tmake_file=mips/t-bsd
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		if [ x$gnu_ld != xyes ]
+		if test x$gnu_ld != xyes
 		then
 			use_collect2=yes
 		fi
 	        ;;
 	mips-*-bsd* | mips-*-riscosbsd* | mips-*-riscos[1234]bsd*)
 		tm_file="mips/bsd-4.h ${tm_file}" # MIPS BSD 4.3, RISC-OS 4.0
-		if [ x$stabs = xyes ]; then
+		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=mips/t-bsd-gas
 		else
 			tmake_file=mips/t-bsd
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		if [ x$gnu_ld != xyes ]
+		if test x$gnu_ld != xyes
 		then
 			use_collect2=yes
 		fi
 	        ;;
 	mips-*-riscos[56789]sysv4*)
 		tm_file=mips/svr4-5.h	# MIPS System V.4., RISC-OS 5.0
-		if [ x$stabs = xyes ]; then
+		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
 		xm_file="xm-siglist.h ${xm_file}"
 		xmake_file=mips/x-sysv
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=mips/t-svr4-gas
 		else
 			tmake_file=mips/t-svr4
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		if [ x$gnu_ld != xyes ]
+		if test x$gnu_ld != xyes
 		then
 			use_collect2=yes
 		fi
 		;;
 	mips-*-sysv4* | mips-*-riscos[1234]sysv4* | mips-*-riscossysv4*)
 		tm_file="mips/svr4-4.h ${tm_file}"
-		if [ x$stabs = xyes ]; then
+		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
 		xm_defines=USG
 		xmake_file=mips/x-sysv
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=mips/t-svr4-gas
 		else
 			tmake_file=mips/t-svr4
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		if [ x$gnu_ld != xyes ]
+		if test x$gnu_ld != xyes
 		then
 			use_collect2=yes
 		fi
 		;;
 	mips-*-riscos[56789]sysv*)
 		tm_file=mips/svr3-5.h	# MIPS System V.3, RISC-OS 5.0
-		if [ x$stabs = xyes ]; then
+		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
 		xm_defines=USG
 		xmake_file=mips/x-sysv
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=mips/t-svr3-gas
 		else
 			tmake_file=mips/t-svr3
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		if [ x$gnu_ld != xyes ]
+		if test x$gnu_ld != xyes
 		then
 			use_collect2=yes
 		fi
 		;;
 	mips-*-sysv* | mips-*-riscos*sysv*)
 		tm_file="mips/svr3-4.h ${tm_file}"
-		if [ x$stabs = xyes ]; then
+		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
 		xm_defines=USG
 		xmake_file=mips/x-sysv
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=mips/t-svr3-gas
 		else
 			tmake_file=mips/t-svr3
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		if [ x$gnu_ld != xyes ]
+		if test x$gnu_ld != xyes
 		then
 			use_collect2=yes
 		fi
 		;;
 	mips-*-riscos[56789]*)		# Default MIPS RISC-OS 5.0.
 		tm_file=mips/mips-5.h
-		if [ x$stabs = xyes ]; then
+		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=mips/t-mips-gas
 		else
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		if [ x$gnu_ld != xyes ]
+		if test x$gnu_ld != xyes
 		then
 			use_collect2=yes
 		fi
@@ -4168,14 +4164,14 @@ for machine in $build $host $target; do
 		;;
 	mipsel-*-ecoff*)
 		tm_file=mips/ecoffl.h
-		if [ x$stabs = xyes ]; then
+		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
 		tmake_file=mips/t-ecoff
 		;;
 	mips-*-ecoff*)
 		tm_file="gofast.h mips/ecoff.h"
-		if [ x$stabs = xyes ]; then
+		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
 		tmake_file=mips/t-ecoff
@@ -4219,16 +4215,16 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	mips-*-*)				# Default MIPS RISC-OS 4.0.
-		if [ x$stabs = xyes ]; then
+		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file=mips/t-mips-gas
 		else
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		if [ x$gnu_ld != xyes ]
+		if test x$gnu_ld != xyes
 		then
 			use_collect2=yes
 		fi
@@ -4236,7 +4232,7 @@ for machine in $build $host $target; do
 	mn10200-*-*)
 		cpu_type=mn10200
 		tm_file="mn10200/mn10200.h"
-		if [ x$stabs = xyes ]
+		if test x$stabs = xyes
 		then
 			tm_file="${tm_file} dbx.h"
 		fi
@@ -4245,7 +4241,7 @@ for machine in $build $host $target; do
 	mn10300-*-*)
 		cpu_type=mn10300
 		tm_file="mn10300/mn10300.h"
-		if [ x$stabs = xyes ]
+		if test x$stabs = xyes
 		then
 			tm_file="${tm_file} dbx.h"
 		fi
@@ -4324,7 +4320,7 @@ for machine in $build $host $target; do
 		xm_file="xm-siglist.h rs6000/xm-sysv4.h"
 		xm_defines="USG POSIX"
 		extra_headers=ppc-asm.h
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
 		else
@@ -4346,7 +4342,7 @@ for machine in $build $host $target; do
 		;;
 	powerpc-*-eabi*)
 		tm_file=rs6000/eabi.h
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 		else
@@ -4357,7 +4353,7 @@ for machine in $build $host $target; do
 		;;
 	powerpc-*-rtems*)
 		tm_file=rs6000/rtems.h
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 		     tmake_file="rs6000/t-ppcgas t-rtems rs6000/t-ppccomm"
 		else
@@ -4370,7 +4366,7 @@ for machine in $build $host $target; do
 		tm_file=rs6000/linux.h
 		xm_file=rs6000/xm-sysv4.h
 		out_file=rs6000/rs6000.c
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file="rs6000/t-ppcos t-linux t-linux-gnulibc1 rs6000/t-ppccomm"
 		else
@@ -4380,7 +4376,7 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		extra_headers=ppc-asm.h
-		if [ x$enable_threads = xyes ]; then
+		if test x$enable_threads = xyes; then
 			thread_file='posix'
 		fi
 		;;
@@ -4389,7 +4385,7 @@ for machine in $build $host $target; do
 		xm_file="xm-siglist.h rs6000/xm-sysv4.h"
 		xm_defines="USG ${xm_defines}"
 		out_file=rs6000/rs6000.c
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file="rs6000/t-ppcos t-linux rs6000/t-ppccomm"
 		else
@@ -4399,7 +4395,7 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		extra_headers=ppc-asm.h
-		if [ x$enable_threads = xyes ]; then
+		if test x$enable_threads = xyes; then
 			thread_file='posix'
 		fi
 		;;
@@ -4416,7 +4412,7 @@ for machine in $build $host $target; do
 		tm_file=rs6000/sysv4le.h
 		xm_file="xm-siglist.h rs6000/xm-sysv4.h"
 		xm_defines="USG POSIX"
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
 		else
@@ -4433,7 +4429,7 @@ for machine in $build $host $target; do
 		;;
 	powerpcle-*-eabi*)
 		tm_file=rs6000/eabile.h
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 		else
@@ -4447,7 +4443,7 @@ for machine in $build $host $target; do
                 tmake_file=rs6000/t-winnt
 #               extra_objs=pe.o
 		fixincludes=Makefile.in
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
 			thread_file='win32'
 		fi
 		extra_headers=ppc-asm.h
@@ -4459,7 +4455,7 @@ for machine in $build $host $target; do
 		xmake_file=rs6000/x-cygwin32
 #		extra_objs=pe.o
 		fixincludes=Makefile.in
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
 			thread_file='win32'
 		fi
 		exeext=.exe
@@ -4469,7 +4465,7 @@ for machine in $build $host $target; do
 		tm_file=rs6000/sol2.h
 		xm_file="xm-siglist.h rs6000/xm-sysv4.h"
 		xm_defines="USG POSIX"
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
 		else
@@ -4491,7 +4487,7 @@ for machine in $build $host $target; do
 		;;
 	rs6000-ibm-aix3.2.[456789]* | powerpc-ibm-aix3.2.[456789]*)
 		tm_file=rs6000/aix3newas.h
-		if [ x$host != x$target ]
+		if test x$host != x$target
 		then
 			tmake_file=rs6000/t-xnewas
 		else
@@ -4501,7 +4497,7 @@ for machine in $build $host $target; do
 		;;
 	rs6000-ibm-aix4.[12].* | powerpc-ibm-aix4.[12].*)
 		tm_file=rs6000/aix41.h
-		if [ x$host != x$target ]
+		if test x$host != x$target
 		then
 			tmake_file=rs6000/t-xnewas
 		else
@@ -4512,7 +4508,7 @@ for machine in $build $host $target; do
 		;;
 	rs6000-ibm-aix4.[3456789].* | powerpc-ibm-aix4.[3456789].*)
 		tm_file=rs6000/aix43.h
-		if [ x$host != x$target ]
+		if test x$host != x$target
 		then
 			tmake_file=rs6000/t-xaix43
 		else
@@ -4523,7 +4519,7 @@ for machine in $build $host $target; do
 		;;
 	rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 		tm_file=rs6000/aix43.h
-		if [ x$host != x$target ]
+		if test x$host != x$target
 		then
 			tmake_file=rs6000/t-xaix43
 		else
@@ -4624,12 +4620,12 @@ for machine in $build $host $target; do
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		gnu_ld=yes
- 		if [ x$enable_threads = xyes ]; then
+ 		if test x$enable_threads = xyes; then
  			thread_file='posix'
  		fi
 		;;
 	sparc-*-lynxos*)
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			tm_file=sparc/lynx.h
 		else
@@ -4644,7 +4640,7 @@ for machine in $build $host $target; do
 		tm_file=sparc/rtems.h
 		;;
 	sparc-*-solaris2*)
-		if [ x$gnu_ld = xyes ]
+		if test x$gnu_ld = xyes
 		then
 			tm_file=sparc/sol2.h
 		else
@@ -4662,14 +4658,14 @@ for machine in $build $host $target; do
 			fixincludes=fixinc.wrap;;
 		esac
 		float_format=i128
-		if [ x${enable_threads} = x ]; then
+		if test x${enable_threads} = x; then
 		    enable_threads=$have_pthread_h
-		    if [ x${enable_threads} = x ]; then
+		    if test x${enable_threads} = x; then
 			enable_threads=$have_thread_h
 		    fi
 		fi
-		if [ x${enable_threads} = xyes ]; then
-		    if [ x${have_pthread_h} = xyes ]; then
+		if test x${enable_threads} = xyes; then
+		    if test x${have_pthread_h} = xyes; then
 			thread_file='posix'
 		    else
 			thread_file='solaris'
@@ -4685,7 +4681,7 @@ for machine in $build $host $target; do
 		tm_file=sparc/sunos4.h
 		tmake_file=sparc/t-sunos41
 		use_collect2=yes
-		if [ x$gas = xyes ]; then
+		if test x$gas = xyes; then
 			tm_file="${tm_file} sparc/sun4gas.h"
 		fi
 		;;
@@ -4761,7 +4757,7 @@ for machine in $build $host $target; do
 		tm_file="v850/v850.h"
 		xm_file="v850/xm-v850.h"
 		tmake_file=v850/t-v850
-		if [ x$stabs = xyes ]
+		if test x$stabs = xyes
 		then
 			tm_file="${tm_file} dbx.h"
 		fi
@@ -4867,9 +4863,9 @@ for machine in $build $host $target; do
 				;;
 		esac
 				
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
-			if [ "$target_cpu_default2" = "" ]
+			if test "$target_cpu_default2" = ""
 			then
 				target_cpu_default2="MASK_GAS"
 			else
@@ -4899,7 +4895,7 @@ for machine in $build $host $target; do
 				;;
 
 			*)
-				if [ x$pass2done = xyes ]
+				if test x$pass2done = xyes
 				then
 					echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
 					exit 1
@@ -4909,9 +4905,9 @@ for machine in $build $host $target; do
 		;;
 
 	mips*-*-ecoff* | mips*-*-elf*)
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
-			if [ x$gnu_ld = xyes ]
+			if test x$gnu_ld = xyes
 			then
 				target_cpu_default2=20
 			else
@@ -4920,7 +4916,7 @@ for machine in $build $host $target; do
 		fi
 		;;
 	mips*-*-*)
-		if [ x$gas = xyes ]
+		if test x$gas = xyes
 		then
 			target_cpu_default2=16
 		fi
@@ -4943,7 +4939,7 @@ for machine in $build $host $target; do
 				;;
 
 			*)
-				if [ x$pass2done = xyes ]
+				if test x$pass2done = xyes
 				then
 					echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
 					exit 1
@@ -4960,7 +4956,7 @@ for machine in $build $host $target; do
 				target_cpu_default2="TARGET_CPU_$with_cpu"
 				;;
 			*)
-				if [ x$pass2done = xyes ]
+				if test x$pass2done = xyes
 				then
 					echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
 					exit 1
@@ -4970,9 +4966,9 @@ for machine in $build $host $target; do
 		;;
 	esac
 
-	if [ "$target_cpu_default2" != "" ]
+	if test "$target_cpu_default2" != ""
 	then
-		if [ "$target_cpu_default" != "" ]
+		if test "$target_cpu_default" != ""
 		then
 			target_cpu_default="(${target_cpu_default}|${target_cpu_default2})"
 		else
@@ -4991,9 +4987,9 @@ for machine in $build $host $target; do
 
 # Save data on machine being used to compile GCC in build_xm_file.
 # Save data on host machine in vars host_xm_file and host_xmake_file.
-	if [ x$pass1done = x ]
+	if test x$pass1done = x
 	then
-		if [ x"$xm_file" = x ]
+		if test x"$xm_file" = x
 		then build_xm_file=$cpu_type/xm-$cpu_type.h
 		else build_xm_file=$xm_file
 		fi
@@ -5002,14 +4998,14 @@ for machine in $build $host $target; do
 		build_exeext=$exeext
 		pass1done=yes
 	else
-		if [ x$pass2done = x ]
+		if test x$pass2done = x
 		then
-			if [ x"$xm_file" = x ]
+			if test x"$xm_file" = x
 			then host_xm_file=$cpu_type/xm-$cpu_type.h
 			else host_xm_file=$xm_file
 			fi
 			host_xm_defines=$xm_defines
-			if [ x"$xmake_file" = x ]
+			if test x"$xmake_file" = x
 			then xmake_file=$cpu_type/x-$cpu_type
 			fi
 			host_xmake_file="$xmake_file"
@@ -5025,30 +5021,30 @@ done
 extra_objs="${host_extra_objs} ${extra_objs}"
 
 # Default the target-machine variables that were not explicitly set.
-if [ x"$tm_file" = x ]
+if test x"$tm_file" = x
 then tm_file=$cpu_type/$cpu_type.h; fi
 
-if [ x$extra_headers = x ]
+if test x$extra_headers = x
 then extra_headers=; fi
 
-if [ x"$xm_file" = x ]
+if test x"$xm_file" = x
 then xm_file=$cpu_type/xm-$cpu_type.h; fi
 
-if [ x$md_file = x ]
+if test x$md_file = x
 then md_file=$cpu_type/$cpu_type.md; fi
 
-if [ x$out_file = x ]
+if test x$out_file = x
 then out_file=$cpu_type/$cpu_type.c; fi
 
-if [ x"$tmake_file" = x ]
+if test x"$tmake_file" = x
 then tmake_file=$cpu_type/t-$cpu_type
 fi
 
-if [ x$float_format = x ]
+if test x$float_format = x
 then float_format=i64
 fi
 
-if [ x$enable_haifa = x ]
+if test x$enable_haifa = x
 then
   case $target in
     alpha*-* | hppa1.?-* | powerpc*-* | rs6000-* | *sparc*-* | m32r*-*)
@@ -5064,7 +5060,7 @@ count=a
 for f in $tm_file; do
 	count=${count}x
 done
-if [ $count = ax ]; then
+if test $count = ax; then
 	echo "Using \`$srcdir/config/$tm_file' as target machine macro file."
 else
 	echo "Using the following target machine macro files:"
@@ -5077,7 +5073,7 @@ count=a
 for f in $host_xm_file; do
 	count=${count}x
 done
-if [ $count = ax ]; then
+if test $count = ax; then
 	echo "Using \`$srcdir/config/$host_xm_file' as host machine macro file."
 else
 	echo "Using the following host machine macro files:"
@@ -5086,12 +5082,12 @@ else
 	done
 fi
 
-if [ "$host_xm_file" != "$build_xm_file" ]; then
+if test "$host_xm_file" != "$build_xm_file"; then
 	count=a
 	for f in $build_xm_file; do
 		count=${count}x
 	done
-	if [ $count = ax ]; then
+	if test $count = ax; then
 		echo "Using \`$srcdir/config/$build_xm_file' as build machine macro file."
 	else
 		echo "Using the following build machine macro files:"
@@ -5101,8 +5097,8 @@ if [ "$host_xm_file" != "$build_xm_file" ]; then
 	fi
 fi
 
-if [ x$thread_file = x ]; then
-	if [ x$target_thread_file != x ]; then
+if test x$thread_file = x; then
+	if test x$target_thread_file != x; then
 		thread_file=$target_thread_file
 	else
 		thread_file='single'
@@ -5120,7 +5116,7 @@ host_xm_file="auto-host.h ${host_xm_file}"
 # If host=build, it is correct to have hconfig include auto-host.h
 # as well.  If host!=build, we are in error and need to do more 
 # work to find out the build config parameters.
-if [ x$host = x$build ]
+if test x$host = x$build
 then
 	build_xm_file="auto-host.h ${build_xm_file}"
 else
@@ -5152,10 +5148,10 @@ links="config.h tm.h tconfig.h hconfig.h"
 defines="host_xm_defines null_defines xm_defines build_xm_defines"
 
 rm -f config.bak
-if [ -f config.status ]; then mv -f config.status config.bak; fi
+if test -f config.status; then mv -f config.status config.bak; fi
 
 # Make the links.
-while [ -n "$vars" ]
+while test -n "$vars"
 do
 	set $vars; var=$1; shift; vars=$*
 	set $links; link=$1; shift; links=$*
@@ -5165,7 +5161,7 @@ do
 
 	# Define TARGET_CPU_DEFAULT if the system wants one.
 	# This substitutes for lots of *.h files.
-	if [ "$target_cpu_default" != "" -a $link = tm.h ]
+	if test "$target_cpu_default" != "" -a $link = tm.h
 	then
 		echo "#define TARGET_CPU_DEFAULT ($target_cpu_default)" >>$link
 	fi
@@ -5182,12 +5178,12 @@ do
 done
 
 # Truncate the target if necessary
-if [ x$host_truncate_target != x ]; then
+if test x$host_truncate_target != x; then
 	target=`echo $target | sed -e 's/\(..............\).*/\1/'`
 fi
 
 # Get the version trigger filename from the toplevel
-if [ "${with_gcc_version_trigger+set}" = set ]; then
+if test "${with_gcc_version_trigger+set}" = set; then
 	gcc_version_trigger=$with_gcc_version_trigger
 else
 	gcc_version_trigger=${srcdir}/version.c
@@ -5207,7 +5203,7 @@ host_overrides=Make-host
 dep_host_xmake_file=
 for f in .. ${host_xmake_file}
 do
-	if [ -f ${srcdir}/config/$f ]
+	if test -f ${srcdir}/config/$f
 	then
 		dep_host_xmake_file="${dep_host_xmake_file} ${srcdir}/config/$f"
 	fi
@@ -5220,7 +5216,7 @@ target_overrides=Make-target
 dep_tmake_file=
 for f in .. ${tmake_file}
 do
-	if [ -f ${srcdir}/config/$f ]
+	if test -f ${srcdir}/config/$f
 	then
 		dep_tmake_file="${dep_tmake_file} ${srcdir}/config/$f"
 	fi
@@ -5281,7 +5277,7 @@ done
 # Also use all.cross instead of all.internal
 # and add cross-make to Makefile.
 cross_overrides="/dev/null"
-if [ x$host != x$target ]
+if test x$host != x$target
 then
 	cross_defines="CROSS=-DCROSS_COMPILE"
 	cross_overrides="${topdir}/cross-make"
@@ -5291,7 +5287,7 @@ fi
 # This must come after cross-make as we want all.build to override
 # all.cross.
 build_overrides="/dev/null"
-if [ x$build != x$host ]
+if test x$build != x$host
 then
 	build_overrides="${topdir}/build-make"
 fi
@@ -5299,7 +5295,7 @@ fi
 # Expand extra_headers to include complete path.
 # This substitutes for lots of t-* files.
 extra_headers_list=
-if [ "x$extra_headers" = x ]
+if test "x$extra_headers" = x
 then true
 else
 	# Prepend ${srcdir}/ginclude/ to every entry in extra_headers.
@@ -5309,14 +5305,14 @@ else
 	done
 fi
 
-if [ x$use_collect2 = xno ]; then
+if test x$use_collect2 = xno; then
 	use_collect2=
 fi
 
 # Add a definition of USE_COLLECT2 if system wants one.
 # Also tell toplev.c what to do.
 # This substitutes for lots of t-* files.
-if [ x$use_collect2 = x ]
+if test x$use_collect2 = x
 then
 	will_use_collect2=
 	maybe_use_collect2=
@@ -5332,7 +5328,7 @@ fi
 # building gcc with a cross compiler, use the cross compiler just
 # built.  Otherwise, we can use the cpp just built.
 md_file_sub=
-if [ "x$md_cppflags" = x ]
+if test "x$md_cppflags" = x
 then
 	md_file_sub=$srcdir/config/$md_file
 else
@@ -5340,18 +5336,18 @@ else
 fi
 
 # If we have gas in the build tree, make a link to it.
-if [ -f ../gas/Makefile ]; then
+if test -f ../gas/Makefile; then
 	rm -f as; $symbolic_link ../gas/as-new$host_exeext as$host_exeext 2>/dev/null
 fi
 
 # If we have nm in the build tree, make a link to it.
-if [ -f ../binutils/Makefile ]; then
+if test -f ../binutils/Makefile; then
 	rm -f nm; $symbolic_link ../binutils/nm-new$host_exeext nm$host_exeext 2>/dev/null
 fi
 
 # If we have ld in the build tree, make a link to it.
-if [ -f ../ld/Makefile ]; then
-#	if [[ x$use_collect2 = x ]]; then
+if test -f ../ld/Makefile; then
+#	if test x$use_collect2 = x; then
 #		rm -f ld; $symbolic_link ../ld/ld-new$host_exeext ld$host_exeext 2>/dev/null
 #	else
 		rm -f collect-ld; $symbolic_link ../ld/ld-new$host_exeext collect-ld$host_exeext 2>/dev/null
@@ -5360,28 +5356,28 @@ fi
 
 # Figure out what assembler alignment features are present.
 echo $ac_n "checking assembler alignment features""... $ac_c" 1>&6
-echo "configure:5364: checking assembler alignment features" >&5
+echo "configure:5360: checking assembler alignment features" >&5
 gcc_cv_as=
 gcc_cv_as_alignment_features=
 gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,gcc$,gas,'`
-if [ -x as$host_exeext ]; then
+if test -x as$host_exeext; then
 	# Build using assembler in the current directory.
 	gcc_cv_as=./as$host_exeext
-elif [ -f $gcc_cv_as_gas_srcdir/configure.in ]; then
+elif test -f $gcc_cv_as_gas_srcdir/configure.in; then
 	# Single tree build which includes gas.
 	for f in $gcc_cv_as_gas_srcdir/configure $gcc_cv_as_gas_srcdir/configure.in $gcc_cv_as_gas_srcdir/Makefile.in
 	do
 		gcc_cv_gas_version=`grep '^VERSION=[0-9]*\.[0-9]*' $f`
-		if [ x$gcc_cv_gas_version != x ]; then
+		if test x$gcc_cv_gas_version != x; then
 			break
 		fi
 	done
 	gcc_cv_gas_major_version=`expr "$gcc_cv_gas_version" : "VERSION=\([0-9]*\)"`
 	gcc_cv_gas_minor_version=`expr "$gcc_cv_gas_version" : "VERSION=[0-9]*\.\([0-9]*\)"`
-	if [ x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x ]; then
+	if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
 		# Gas version 2.6 and later support for .balign and .p2align.
 		# bytes to skip when using .p2align.
-		if [ "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 6 -o "$gcc_cv_gas_major_version" -gt 2 ]; then
+		if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 6 -o "$gcc_cv_gas_major_version" -gt 2; then
 			gcc_cv_as_alignment_features=".balign and .p2align"
 			cat >> confdefs.h <<\EOF
 #define HAVE_GAS_BALIGN_AND_P2ALIGN 1
@@ -5390,7 +5386,7 @@ EOF
 		fi
 		# Gas version 2.8 and later support specifying the maximum
 		# bytes to skip when using .p2align.
-		if [ "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 8 -o "$gcc_cv_gas_major_version" -gt 2 ]; then
+		if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 8 -o "$gcc_cv_gas_major_version" -gt 2; then
 			gcc_cv_as_alignment_features=".p2align including maximum skip"
 			cat >> confdefs.h <<\EOF
 #define HAVE_GAS_MAX_SKIP_P2ALIGN 1
@@ -5398,11 +5394,11 @@ EOF
 
 		fi
 	fi
-elif [ x$host = x$target ]; then
+elif test x$host = x$target; then
 	# Native build.
 	gcc_cv_as=as$host_exeext
 fi
-if [ x$gcc_cv_as != x ]; then
+if test x$gcc_cv_as != x; then
 	# Check if we have .balign and .p2align
 	echo ".balign  4" > conftest.s
 	echo ".p2align  2" >> conftest.s
@@ -5443,7 +5439,7 @@ done
 
 # Make gthr-default.h if we have a thread file.
 gthread_flags=
-if [ $thread_file != single ]; then
+if test $thread_file != single; then
     rm -f gthr-default.h
     echo "#include \"gthr-${thread_file}.h\"" > gthr-default.h
     gthread_flags=-DHAVE_GTHR_DEFAULT
@@ -5459,11 +5455,11 @@ rm -f specs.h options.h
 touch specs.h options.h
 for subdir in . $subdirs
 do
-	if [ -f $srcdir/$subdir/lang-specs.h ]; then
+	if test -f $srcdir/$subdir/lang-specs.h; then
 		echo "#include \"$subdir/lang-specs.h\"" >>specs.h
 		lang_specs_files="$lang_specs_files $srcdir/$subdir/lang-specs.h"
 	fi
-	if [ -f $srcdir/$subdir/lang-options.h ]; then
+	if test -f $srcdir/$subdir/lang-options.h; then
 		echo "#include \"$subdir/lang-options.h\"" >>options.h
 		lang_options_files="$lang_options_files $srcdir/$subdir/lang-options.h"
 	fi
@@ -5495,7 +5491,7 @@ oldstyle_subdirs=
 
 for s in .. $subdirs
 do
-	if [ $s != ".." ]
+	if test $s != ".."
 	then
 		language=
 		boot_language=
@@ -5506,14 +5502,14 @@ do
 		outputs=
 		lib2funcs=
 		. ${srcdir}/$s/config-lang.in
-		if [ "x$language" = x ]
+		if test "x$language" = x
 		then
 			echo "${srcdir}/$s/config-lang.in doesn't set \$language." 1>&2
 			exit 1
 		fi
 		all_lang_makefiles="$all_lang_makefiles ${srcdir}/$s/Make-lang.in ${srcdir}/$s/Makefile.in"
 		all_languages="$all_languages $language"
-		if [ "x$boot_language" = xyes ]
+		if test "x$boot_language" = xyes
 		then
 			all_boot_languages="$all_boot_languages $language"
 		fi
@@ -5522,7 +5518,7 @@ do
 		all_diff_excludes="$all_diff_excludes $diff_excludes"
 		all_headers="$all_headers $headers"
 		all_outputs="$all_outputs $outputs"
-		if [ x$outputs = x ]
+		if test x$outputs = x
 		then
 			oldstyle_subdirs="$oldstyle_subdirs $s"
 		fi
@@ -5546,7 +5542,7 @@ do
 	x=
 	for l in .. $all_languages
 	do
-		if [ $l != ".." ]; then
+		if test $l != ".."; then
 			x="$x $l.$t"
 		fi
 	done
@@ -5555,14 +5551,14 @@ done
 
 # If we're not building in srcdir, create .gdbinit.
 
-if [ ! -f Makefile.in ]; then
+if test ! -f Makefile.in; then
 	echo "dir ." > .gdbinit
 	echo "dir ${srcdir}" >> .gdbinit
-	if [ x$gdb_needs_out_file_path = xyes ]
+	if test x$gdb_needs_out_file_path = xyes
 	then
 		echo "dir ${srcdir}/config/"`dirname ${out_file}` >> .gdbinit
 	fi
-	if [ "x$subdirs" != x ]; then
+	if test "x$subdirs" != x; then
 		for s in $subdirs
 		do
 			echo "dir ${srcdir}/$s" >> .gdbinit
@@ -5576,7 +5572,7 @@ fi
 build_canonical=${build}
 host_canonical=${host}
 target_subdir=
-if [ "${host}" != "${target}" ] ; then
+if test "${host}" != "${target}" ; then
     target_subdir=${target}/
 fi
 
@@ -5588,7 +5584,7 @@ fi
 # libgcc.a, but that's OK because newib should have its own version of
 # assert.h.
 inhibit_libc=
-if [ x$with_newlib = xyes ]; then
+if test x$with_newlib = xyes; then
 	inhibit_libc=-Dinhibit_libc
 fi
 
@@ -5596,17 +5592,17 @@ fi
 # Override SCHED_OBJ and SCHED_CFLAGS to enable the Haifa scheduler.
 sched_prefix=
 sched_cflags=
-if [ x$enable_haifa = xyes ]; then
+if test x$enable_haifa = xyes; then
     echo "Using the Haifa scheduler."
     sched_prefix=haifa-
     sched_cflags=-DHAIFA
 fi
 
 
-if [ x$enable_haifa != x ]; then
+if test x$enable_haifa != x; then
     # Explicitly remove files that need to be recompiled for the Haifa scheduler.
     for x in genattrtab.o toplev.o loop.o unroll.o *sched.o; do
-	if [ -f $x ]; then
+	if test -f $x; then
 	    echo "Removing $x"
 	    rm -f $x
 	fi
@@ -5615,8 +5611,8 @@ fi
 
 # Warn if using init_priority.
 echo $ac_n "checking whether to enable init_priority by default""... $ac_c" 1>&6
-echo "configure:5619: checking whether to enable init_priority by default" >&5
-if [ x$enable_init_priority != xyes ]; then
+echo "configure:5615: checking whether to enable init_priority by default" >&5
+if test x$enable_init_priority != xyes; then
   enable_init_priority=no
 fi
 echo "$ac_t""$enable_init_priority" 1>&6
@@ -5685,7 +5681,7 @@ ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xma
 
 
 # Echo that links are built
-if [ x$host = x$target ]
+if test x$host = x$target
 then
 	str1="native "
 else
@@ -5693,25 +5689,25 @@ else
 	str2=" from $host"
 fi
 
-if [ x$host != x$build ]
+if test x$host != x$build
 then
 	str3=" on a $build system"
 fi
 
-if [ "x$str2" != x ] || [ "x$str3" != x ]
+if test "x$str2" != x || test "x$str3" != x
 then
 	str4=
 fi
 
 echo "Links are now set up to build a ${str1}compiler for ${target}$str4" 1>&2
 
-if [ "x$str2" != x ] || [ "x$str3" != x ]
+if test "x$str2" != x || test "x$str3" != x
 then
 	echo " ${str2}${str3}." 1>&2
 fi
 
 # Truncate the target if necessary
-if [ x$host_truncate_target != x ]; then
+if test x$host_truncate_target != x; then
 	target=`echo $target | sed -e 's/\(..............\).*/\1/'`
 fi
 
@@ -6200,9 +6196,9 @@ esac
 # FLAGS_TO_PASS has been modified to solve the problem there.
 # This is virtually a duplicate of what happens in configure.lang; we do
 # an extra check to make sure this only happens if ln -s can be used.
-if [ "$symbolic_link" = "ln -s" ]; then
+if test "$symbolic_link" = "ln -s"; then
  for d in .. ${subdirs} ; do
-   if [ $d != .. ]; then
+   if test $d != ..; then
 	STARTDIR=`pwd`
 	cd $d
 	for t in stage1 stage2 stage3 stage4 include
