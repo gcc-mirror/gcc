@@ -474,7 +474,7 @@ struct cumulative_args { int ints, floats; };
    invisible first argument.  */
 
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME)	\
- ((CUM).ints = ((FNTYPE) != 0 && aggregate_value_p ((FNTYPE)) \
+ ((CUM).ints = ((FNTYPE) != 0 && aggregate_value_p (TREE_TYPE ((FNTYPE))) \
 		? 4 : 0),			\
   (CUM).floats = 0)
 

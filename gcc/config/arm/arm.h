@@ -462,7 +462,7 @@ enum reg_class
    For a library call, FNTYPE is 0.
    On the ARM, the offset starts at 0.  */
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME)  \
-  ((CUM) = (((FNTYPE) && aggregate_value_p (FNTYPE)) ? 4 : 0))
+  ((CUM) = (((FNTYPE) && aggregate_value_p (TREE_TYPE ((FNTYPE))) ? 4 : 0))
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
