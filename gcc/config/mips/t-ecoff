@@ -11,7 +11,7 @@ CROSS_LIBGCC1 =
 
 # We must build libgcc2.a with -G 0, in case the user wants to link
 # without the $gp register.
-LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) -g1 -G 0
+TARGET_LIBGCC2_CFLAGS = -G 0
 
 # These are really part of libgcc1, but this will cause them to be
 # built correctly, so... [taken from t-sparclite]
