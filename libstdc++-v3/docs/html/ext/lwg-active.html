@@ -5,11 +5,11 @@
 <table>
 <tr>
 <td align="left">Doc. no.</td>
-<td align="left">J16/02-0027 = WG21 N1369</td>
+<td align="left">J16/02-0048 = WG21 N1390</td>
 </tr>
 <tr>
 <td align="left">Date:</td>
-<td align="left">10 May 2002</td>
+<td align="left">10 Sep 2002</td>
 </tr>
 <tr>
 <td align="left">Project:</td>
@@ -17,10 +17,10 @@
 </tr>
 <tr>
 <td align="left">Reply to:</td>
-<td align="left">Matt Austern &lt;austern@research.att.com&gt;</td>
+<td align="left">Matt Austern &lt;austern@apple.com&gt;</td>
 </tr>
 </table>
-<h1>C++ Standard Library Active Issues List (Revision 22)</h1>
+<h1>C++ Standard Library Active Issues List (Revision 23)</h1>
   <p>Reference ISO/IEC IS 14882:1998(E)</p>
   <p>Also see:</p>
   <ul>
@@ -78,7 +78,7 @@
   <p>Public information as to how to obtain a copy of the C++ Standard,
   join the standards committee, submit an issue, or comment on an issue
   can be found in the C++ FAQ at <a href="http://www.research.att.com/~austern/csc/faq.html">http://www.research.att.com/~austern/csc/faq.html</a>.
-  Public discussion of C++ Standard related issues occurs on <a href="news:comp.std.c++">news:comp.std.c++</a>.
+  Public discussion of C++ Standard related issues occurs on <a href="news:comp.std.c%2B%2B">news:comp.std.c++</a>.
   </p>
 
  <p>For committee members, files available on the committee's private
@@ -88,6 +88,10 @@
   directory as the issues list files.  </p>
 <h2>Revision History</h2>
 <ul>
+<li>R23: 
+Pre-Santa Cruz mailing.  Added new issues <a href="lwg-active.html#367">367</a>-<a href="lwg-active.html#382">382</a>.
+Moved issues in the TC to TC status.
+</li>
 <li>R22: 
 Post-Cura&ccedil;ao mailing.  Added new issues <a href="lwg-active.html#362">362</a>-<a href="lwg-active.html#366">366</a>.
 </li>
@@ -1486,7 +1490,7 @@ specified.  Both resolutions are consistent with the behavior of
 existing implementations.</p>
 <hr>
 <a name="225"><h3>225.&nbsp;std:: algorithms use of other unqualified algorithms</h3></a><p>
-<b>Section:</b>&nbsp;17.4.4.3 <a href="lib-intro.html#lib.global.functions"> [lib.global.functions]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;01 Apr 2000</p>
+<b>Section:</b>&nbsp;17.4.4.3 <a href="lib-intro.html#lib.global.functions"> [lib.global.functions]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;01 Apr 2000</p>
 <p>Are algorithms in std:: allowed to use other algorithms without qualification, so functions in
 user namespaces might be found through Koenig lookup?</p>
 <p>For example, a popular standard library implementation includes this
@@ -1586,13 +1590,14 @@ should have any effect.]</i></p>
 
 <p><i>[Cura&ccedil;ao: An LWG-subgroup spent an afternoon working on issues
 225, 226, and 229.  Their conclusion was that the issues should be
-separated into an LWG portion (Howard will write a proposal), and a
+separated into an LWG portion (Howard's paper, N1387=02-0045), and a
 EWG portion (Dave will write a proposal). The LWG and EWG had
-(separate) discussions of this plan the next day.]</i></p>
+(separate) discussions of this plan the next day.  The proposed
+resolution for this issue is in accordance with Howard's paper.]</i></p>
 
 <hr>
 <a name="226"><h3>226.&nbsp;User supplied specializations or overloads of namespace std function templates</h3></a><p>
-<b>Section:</b>&nbsp;17.4.3.1 <a href="lib-intro.html#lib.reserved.names"> [lib.reserved.names]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;01 Apr 2000</p>
+<b>Section:</b>&nbsp;17.4.3.1 <a href="lib-intro.html#lib.reserved.names"> [lib.reserved.names]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;01 Apr 2000</p>
 <p>The issues are:&nbsp;</p>
 <p>1. How can a 3rd party library implementor (lib1) write a version of a standard
 algorithm which is specialized to work with his own class template?&nbsp;</p>
@@ -1677,6 +1682,9 @@ not provide an operator&lt;&lt; for std::pair&lt;&gt;.
 
 <p><b>Proposed resolution:</b></p>
 
+<p>Adopt the wording in the <b>Customization Points</b> section of
+Howard Hinnant's paper, N1387=02-0045.</p>
+
 <p><i>[Tokyo: Summary, &quot;There is no conforming way to extend
 std::swap for user defined templates.&quot;&nbsp; The LWG agrees that
 there is a problem.&nbsp; Would like more information before
@@ -1734,13 +1742,14 @@ try to put together a proposal before the next meeting.]</i></p>
 
 <p><i>[Cura&ccedil;ao: An LWG-subgroup spent an afternoon working on issues
 225, 226, and 229.  Their conclusion was that the issues should be
-separated into an LWG portion (Howard will write a proposal), and a
+separated into an LWG portion (Howard's paper, N1387=02-0045), and a
 EWG portion (Dave will write a proposal). The LWG and EWG had
-(separate) discussions of this plan the next day.]</i></p>
+(separate) discussions of this plan the next day.  The proposed
+resolution is the one proposed by Howard.]</i></p>
 
 <hr>
 <a name="229"><h3>229.&nbsp;Unqualified references of other library entities</h3></a><p>
-<b>Section:</b>&nbsp;17.4.1.1 <a href="lib-intro.html#lib.contents"> [lib.contents]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;19 Apr 2000</p>
+<b>Section:</b>&nbsp;17.4.1.1 <a href="lib-intro.html#lib.contents"> [lib.contents]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;19 Apr 2000</p>
 <p>Throughout the library chapters, the descriptions of library entities refer
 to other library entities without necessarily qualifying the names.</p>
 
@@ -1784,13 +1793,15 @@ but that the wording may not be clear enough to fall under
 
 <p><i>[Cura&ccedil;ao: An LWG-subgroup spent an afternoon working on issues
 225, 226, and 229.  Their conclusion was that the issues should be
-separated into an LWG portion (Howard will write a proposal), and a
+separated into an LWG portion (Howard's paper, N1387=02-0045), and a
 EWG portion (Dave will write a proposal). The LWG and EWG had
-(separate) discussions of this plan the next day.]</i></p>
+(separate) discussions of this plan the next day.  This paper resolves
+issues 225 and 226.  In light of that resolution, the proposed
+resolution for the current issue makes sense.]</i></p>
 
 <hr>
 <a name="231"><h3>231.&nbsp;Precision in iostream?</h3></a><p>
-<b>Section:</b>&nbsp;22.2.2.2.2 <a href="lib-locales.html#lib.facet.num.put.virtuals"> [lib.facet.num.put.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;James Kanze, Stephen Clamage&nbsp; <b>Date:</b>&nbsp; 25 Apr 2000</p>
+<b>Section:</b>&nbsp;22.2.2.2.2 <a href="lib-locales.html#lib.facet.num.put.virtuals"> [lib.facet.num.put.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;James Kanze, Stephen Clamage&nbsp; <b>Date:</b>&nbsp; 25 Apr 2000</p>
 <p>What is the following program supposed to output?</p>
 <pre>#include &lt;iostream&gt;
 
@@ -1831,24 +1842,31 @@ etc. Plus, of course, if precision == 0 and flags &amp; floatfield ==
 of the anomalies of printf:-).</p>
 <p><b>Proposed resolution:</b></p>
 <p>
-In 22.2.2.2.2 <a href="lib-locales.html#lib.facet.num.put.virtuals"> [lib.facet.num.put.virtuals]</a>, paragraph 11, change 
-&quot;if <tt>(flags &amp; fixed) != 0</tt>&quot; to 
-&quot;if <tt>(flags &amp; floatfield) == fixed ||
-        (flags &amp; floatfield) == scientific</tt>&quot;
+Replace 22.2.2.2.2 <a href="lib-locales.html#lib.facet.num.put.virtuals"> [lib.facet.num.put.virtuals]</a>, paragraph 11, with the following 
+sentence:
 </p>
+<blockquote>
+For conversion from a floating-point type,
+<tt><i>str</i>.precision()</tt> is specified in the conversion
+specification.
+</blockquote>
 <p><b>Rationale:</b></p>
 <p>The floatfield determines whether numbers are formatted as if
 with %f, %e, or %g.  If the <tt>fixed</tt> bit is set, it's %f,
 if <tt>scientific</tt> it's %e, and if both bits are set, or 
-neither, it's %e.</p>
+neither, it's %g.</p>
 <p>Turning to the C standard, a precision of 0 is meaningful
-for %f and %e, but not for %g: for %g, precision 0 is taken
-to be the same as precision 1.</p>
-<p>The proposed resolution has the effect that the output of
-the above program will be &quot;1e+00&quot;.</p>
+for %f and %e.  For %g, precision 0 is taken to be the same as 
+precision 1.</p>
+<p>The proposed resolution has the effect that if neither
+<tt>fixed</tt> nor <tt>scientific</tt> is set we'll be
+specifying a precision of 0, which will be internally
+turned into 1.  There's no need to call it out as a special
+case.</p>
+<p>The output of the above program will be &quot;1e+00&quot;.</p>
 
-<p><i>[Cura&ccedil;ao: Howard will send Matt improved wording dealing with
-case not covered by current PR.]</i></p>
+<p><i>[Post-Cura&ccedil;ao: Howard provided improved wording covering the case
+where precision is 0 and mode is %g.]</i></p>
 
 <hr>
 <a name="233"><h3>233.&nbsp;Insertion hints in associative containers</h3></a><p>
@@ -2354,6 +2372,28 @@ throw, the string must compare equal to the argument.</li>
 <p>(Not all of these options are mutually exclusive.)</p>
 
 <p><b>Proposed resolution:</b></p>
+<p>NAD/Future</p>
+<p><b>Rationale:</b></p>
+
+<p>Throwing a bad_alloc while trying to construct a message for another
+exception-derived class is not necessarily a bad thing.  And the
+bad_alloc constructor already has a no throw spec on it (18.4.2.1).</p>
+
+<p>
+The copy constructors of all exception-derived classes already have a
+no throw spec.  Reference 18.6.1,  19.1 and 15.4/13.
+</p>
+
+<p><b>Future:</b></p>
+
+<p>All involved would like to see const char* constructors added, but
+this should probably be done for C++0X as opposed to a DR.</p>
+
+<p>I believe the no throw specs currently decorating these functions
+could be improved by some kind of static no throw spec checking
+mechanism (in a future C++ language).  As they stand, the copy
+constructors might fail via a call to unexpected.  I think what is
+intended here is that the copy constructors can't fail.</p>
 
 <p><i>[Toronto: some LWG members thought this was merely a QoI issue,
 but most believed that it was at least a borderline defect.  There was
@@ -2361,11 +2401,9 @@ more support for nonnormative advice to implementors than for a
 normative change.]</i></p>
 
 <p><i>[Redmond: discussed, without definite conclusion.  Most LWG
-members thought there was a real defect lurking here.  A small group
-(Herb, Kevlin, Howard, Martin, Dave) will try to make a
-recommendation.]</i></p>
-
-<p><i>[Cura&ccedil;ao: Howard will nag the others to work on a recommendation.]</i></p>
+members thought there was a real defect lurking here.  The above
+proposed resolution/rationale is from Howard, Herb, Kevlin,  Martin,
+and Dave.]</i></p>
 
 <hr>
 <a name="258"><h3>258.&nbsp;Missing allocator requirement</h3></a><p>
@@ -2553,7 +2591,7 @@ desirable to provide this feature in a different way.
 
 <hr>
 <a name="282"><h3>282.&nbsp;What types does numpunct grouping refer to?</h3></a><p>
-<b>Section:</b>&nbsp;22.2.2.2.2 <a href="lib-locales.html#lib.facet.num.put.virtuals"> [lib.facet.num.put.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;5 Dec 2000</p>
+<b>Section:</b>&nbsp;22.2.2.2.2 <a href="lib-locales.html#lib.facet.num.put.virtuals"> [lib.facet.num.put.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;5 Dec 2000</p>
 <p>
 Paragraph 16 mistakenly singles out integral types for inserting 
 thousands_sep() characters.  This conflicts with the syntax for floating 
@@ -2593,8 +2631,8 @@ floating-point input even though this is unambiguously required by the
 standard.
 ]</i></p>
 
-<p><i>[Cura&ccedil;ao: Howard will email Bill and other implementors to try to
-move the issue forward.]</i></p>
+<p><i>[Post-Cura&ccedil;ao: the above proposed resolution is the consensus of
+Howard, Bill, Pete, Benjamin, Nathan, Dietmar, Boris, and Martin.]</i></p>
 
 <hr>
 <a name="283"><h3>283.&nbsp;std::replace() requirement incorrect/insufficient</h3></a><p>
@@ -3099,22 +3137,42 @@ note in p24 (below) is that x be empty after the merge which is surely
 unintended in this case.
 </p>
 <p><b>Proposed resolution:</b></p>
-<p>
-Change 23.2.2.4, p23 to:
-</p>
+<p>In 23.2.2.4 <a href="lib-containers.html#lib.list.ops"> [lib.list.ops]</a>, replace paragraps 23-25 with:</p>
 <blockquote>
-<b>Effects</b>: If &amp;x == this, does nothing; otherwise, merges the
-argument list into the list.
+<p>
+23 Effects: if (&amp;x == this) does nothing; otherwise, merges the two
+sorted ranges [begin(), end()) and [x.begin(), x.end()).  The result
+is a range in which the elements will be sorted in non-decreasing
+order according to the ordering defined by comp; that is, for every
+iterator i in the range other than the first, the condition comp(*i,
+*(i - 1)) will be false.
+</p>
+
+<p>
+24 Notes: Stable: if (&amp;x != this), then for equivalent elements in the
+two original ranges, the elements from the original range [begin(),
+end()) always precede the elements from the original range [x.begin(),
+x.end()).  If (&amp;x != this) the range [x.begin(), x.end()) is empty
+after the merge.
+</p>
+
+<p>
+25 Complexity: At most size() + x.size() - 1 applications of comp if
+(&amp;x !  = this); otherwise, no applications of comp are performed.  If
+an exception is thrown other than by a comparison there are no
+effects.
+</p>
+
 </blockquote>
 
-<p><i>[Copenhagen: The proposed resolution does not fix all of the
-problems in 23.2.2.4 <a href="lib-containers.html#lib.list.ops"> [lib.list.ops]</a>, p22-25.  Three different
+<p><i>[Copenhagen: The original proposed resolution did not fix all of
+the problems in 23.2.2.4 <a href="lib-containers.html#lib.list.ops"> [lib.list.ops]</a>, p22-25.  Three different
 paragraphs (23, 24, 25) describe the effects of <tt>merge</tt>.
 Changing p23, without changing the other two, appears to introduce
 contradictions.  Additionally, &quot;merges the argument list into the
 list&quot; is excessively vague.]</i></p>
 
-<p><i>[Cura&ccedil;ao: Robert Klarer volunteers to work on this issue.]</i></p>
+<p><i>[Post-Cura&ccedil;ao: Robert Klarer provided new wording.]</i></p>
 
 <hr>
 <a name="304"><h3>304.&nbsp;Must <tt>*a</tt> return an lvalue when <tt>a</tt> is an input iterator?</h3></a><p>
@@ -5282,6 +5340,648 @@ rationale.
 <pre>
   basic_filebuf&lt;charT,traits&gt;* rdbuf();
   const basic_filebuf&lt;charT,traits&gt;* rdbuf() const;
+</pre>
+<hr>
+<a name="367"><h3>367.&nbsp;remove_copy/remove_copy_if and Input Iterators</h3></a><p>
+<b>Section:</b>&nbsp;25.2.7 <a href="lib-algorithms.html#lib.alg.remove"> [lib.alg.remove]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Anthony Williams&nbsp; <b>Date:</b>&nbsp;13 May 2002</p>
+<p>
+remove_copy and remove_copy_if (25.2.7 <a href="lib-algorithms.html#lib.alg.remove"> [lib.alg.remove]</a>) permit their
+input range to be marked with Input Iterators. However, since two
+operations are required against the elements to copy (comparison and
+assigment), when the input range uses Input Iterators, a temporary
+copy must be taken to avoid dereferencing the iterator twice. This
+therefore requires the value type of the InputIterator to be
+CopyConstructible. If the iterators are at least Forward Iterators,
+then the iterator can be dereferenced twice, or a reference to the
+result maintained, so the temporary is not required.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Add &quot;If InputIterator does not meet the requirements of forward
+iterator, then the value type of InputIterator must be copy
+constructible. Otherwise copy constructible is not required.&quot; to
+25.2.7 <a href="lib-algorithms.html#lib.alg.remove"> [lib.alg.remove]</a> paragraph 6.
+</p>
+<hr>
+<a name="368"><h3>368.&nbsp;basic_string::replace has two &quot;Throws&quot; paragraphs</h3></a><p>
+<b>Section:</b>&nbsp;21.3.5.6 <a href="lib-strings.html#lib.string::replace"> [lib.string::replace]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Beman Dawes&nbsp; <b>Date:</b>&nbsp;3 Jun 2002</p>
+<p>
+21.3.5.6 <a href="lib-strings.html#lib.string::replace"> [lib.string::replace]</a> basic_string::replace, second
+signature, given in paragraph 1, has two &quot;Throws&quot; paragraphs (3 and
+5).
+</p>
+
+<p>
+In addition, the second &quot;Throws&quot; paragraph (5) includes specification
+(beginning with &quot;Otherwise, the function replaces ...&quot;) that should be
+part of the &quot;Effects&quot; paragraph.
+</p>
+<p><b>Proposed resolution:</b></p>
+<hr>
+<a name="369"><h3>369.&nbsp;io stream objects and static ctors</h3></a><p>
+<b>Section:</b>&nbsp;27.3 <a href="lib-iostreams.html#lib.iostream.objects"> [lib.iostream.objects]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Ruslan Abdikeev&nbsp; <b>Date:</b>&nbsp;8 Jul 2002</p>
+<p>
+Is it safe to use standard iostream objects from constructors of
+static objects?  Are standard iostream objects constructed and are
+their associations established at that time?
+</p>
+
+<p>Surpisingly enough, Standard does NOT require that.</p>
+
+<p>
+27.3/2 [lib.iostream.objects] guarantees that standard iostream
+objects are constructed and their associations are established before
+the body of main() begins execution.  It also refers to ios_base::Init
+class as the panacea for constructors of static objects.
+</p>
+
+<p>
+However, there's nothing in 27.3 [lib.iostream.objects],
+in 27.4.2 [lib.ios.base], and in 27.4.2.1.6 [lib.ios::Init],
+that would require implementations to allow access to standard
+iostream objects from constructors of static objects.
+</p>
+
+<p>Details:</p>
+
+<p>Core text refers to some magic object ios_base::Init, which will
+be discussed below:</p>
+
+<blockquote>
+    &quot;The [standard iostream] objects are constructed, and their
+    associations are established at some time prior to or during
+    first time an object of class basic_ios&lt;charT,traits&gt;::Init
+    is constructed, and in any case before the body of main
+    begins execution.&quot; (27.3/2 [lib.iostream.objects])
+</blockquote>
+
+<p>
+The first <i>non-normative</i> footnote encourages implementations
+to initialize standard iostream objects earlier than required.
+</p>
+
+<p>However, the second <i>non-normative</i> footnote makes an explicit
+and unsupported claim:</p>
+
+<blockquote>
+  &quot;Constructors and destructors for static objects can access these
+  [standard iostream] objects to read input from stdin or write output
+  to stdout or stderr.&quot; (27.3/2 footnote 265 [lib.iostream.objects])
+</blockquote>
+
+<p>
+The only bit of magic is related to that ios_base::Init class.  AFAIK,
+the rationale behind ios_base::Init was to bring an instance of this
+class to each translation unit which #included &lt;iostream&gt; or
+related header.  Such an inclusion would support the claim of footnote
+quoted above, because in order to use some standard iostream object it
+is necessary to #include &lt;iostream&gt;.
+</p>
+
+<p>
+However, while Standard explicitly describes ios_base::Init as
+an appropriate class for doing the trick, I failed to found a
+mention of an _instance_ of ios_base::Init in Standard.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+At the end of header &lt;iostream&gt; synopsis in 27.3 <a href="lib-iostreams.html#lib.iostream.objects"> [lib.iostream.objects]</a>
+</p>
+
+<pre>
+       namespace std
+       {
+          ... extern istream cin; ...
+</pre>
+
+<p>add the following lines</p>
+
+<pre>
+          namespace
+          {
+             ios_base::Init &lt;some_implementation_defined_name&gt;;
+          }
+        }
+</pre>
+<hr>
+<a name="370"><h3>370.&nbsp;Minor error in basic_istream::get</h3></a><p>
+<b>Section:</b>&nbsp;27.6.1.3 <a href="lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Ray Lischner&nbsp; <b>Date:</b>&nbsp;15 Jul 2002</p>
+<p>Defect report for description of basic_istream::get (section 27.6.1.3 <a href="lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>), paragraph 15. The description for the get function
+with the following signature:</p>
+
+<pre>
+  basic_istream&lt;charT,traits&gt;&amp; get(basic_streambuf&lt;char_type,traits&gt;&amp;
+  sb);
+</pre>
+
+<p>is incorrect. It reads</p>
+
+<blockquote>
+  Effects: Calls get(s,n,widen('\n'))
+</blockquote>
+
+<p>which I believe should be:</p>
+
+<blockquote>
+  Effects: Calls get(sb,widen('\n'))
+</blockquote>
+<p><b>Proposed resolution:</b></p>
+<p>Change the <b>Effects</b> paragraph to:</p>
+<blockquote>
+  Effects: Calls get(sb,widen('\n'))
+</blockquote>
+<hr>
+<a name="371"><h3>371.&nbsp;Stability of multiset and multimap member functions</h3></a><p>
+<b>Section:</b>&nbsp;23.1 <a href="lib-containers.html#lib.container.requirements"> [lib.container.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Frank Compagner&nbsp; <b>Date:</b>&nbsp;20 Jul 2002</p>
+<p>
+The requirements for multiset and multimap containers (23.1
+[lib.containers.requirements], 23.1.2 [lib.associative.reqmnts],
+23.3.2 [lib.multimap] and 23.3.4 [lib.multiset]) make no mention of
+the stability of the required (mutating) member functions. It appears
+the standard allows these functions to reorder equivalent elements of
+the container at will, yet the pervasive red-black tree implementation
+appears to provide stable behaviour.
+</p>
+
+<p>This is of most concern when considering the behaviour of erase().
+A stability requirement would guarantee the correct working of the
+following 'idiom' that removes elements based on a certain predicate
+function.
+</p>
+
+<pre>
+  multimap&lt;int, int&gt; m;
+  multimap&lt;int, int&gt;::iterator i = m.begin();
+  while (i != m.end()) {
+      if (pred(i))
+          m.erase (i++);
+      else
+          ++i;
+  }
+</pre>
+
+<p>
+Although clause 23.1.2/8 guarantees that i remains a valid iterator
+througout this loop, absence of the stability requirement could
+potentially result in elements being skipped. This would make
+this code incorrect, and, furthermore, means that there is no way
+of erasing these elements without iterating first over the entire
+container, and second over the elements to be erased. This would
+be unfortunate, and have a negative impact on both performance and
+code simplicity.
+</p>
+
+<p>
+If the stability requirement is intended, it should be made explicit
+(probably through an extra paragraph in clause 23.1.2).
+</p>
+<p>
+If it turns out stability cannot be guaranteed, i'd argue that a
+remark or footnote is called for (also somewhere in clause 23.1.2) to
+warn against relying on stable behaviour (as demonstrated by the code
+above).  If most implementations will display stable behaviour, any
+problems emerging on an implementation without stable behaviour will
+be hard to track down by users. This would also make the need for an
+erase_if() member function that much greater.
+</p>
+
+<p>This issue is somewhat related to LWG issue <a href="lwg-closed.html#130">130</a>.</p>
+<p><b>Proposed resolution:</b></p>
+<hr>
+<a name="372"><h3>372.&nbsp;Inconsistent description of stdlib exceptions</h3></a><p>
+<b>Section:</b>&nbsp;17.4.4.8 <a href="lib-intro.html#lib.res.on.exception.handling"> [lib.res.on.exception.handling]</a>, 18.6.1 <a href="lib-support.html#lib.exception"> [lib.exception]</a>, &nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Randy Maddox&nbsp; <b>Date:</b>&nbsp;22 Jul 2002</p>
+
+<p>Paragraph 3 under clause 17.4.4.8 <a href="lib-intro.html#lib.res.on.exception.handling"> [lib.res.on.exception.handling]</a>, Restrictions on
+Exception Handling, states that &quot;Any other functions defined in the
+C++ Standard Library that do not have an exception-specification may
+throw implementation-defined exceptions unless otherwise specified.&quot;
+This statement is followed by a reference to footnote 178 at the
+bottom of that page which states, apparently in reference to the C++
+Standard Library, that &quot;Library implementations are encouraged (but
+not required) to report errors by throwing exceptions from (or derived
+from) the standard exceptions.&quot;</p>
+
+<p>These statements appear to be in direct contradiction to clause
+18.6.1 <a href="lib-support.html#lib.exception"> [lib.exception]</a>, which states &quot;The class exception defines the
+base class for the types of objects thrown as exceptions by the C++
+Standard library components ...&quot;.</p>
+
+<p>Is this inconsistent?</p>
+
+<p><b>Proposed resolution:</b></p>
+<hr>
+<a name="373"><h3>373.&nbsp;Are basic_istream and basic_ostream to use (exceptions()&amp;badbit) != 0 ?</h3></a><p>
+<b>Section:</b>&nbsp;27.6.1.2.1 <a href="lib-iostreams.html#lib.istream.formatted.reqmts"> [lib.istream.formatted.reqmts]</a>, 27.6.2.5.1 <a href="lib-iostreams.html#lib.ostream.formatted.reqmts"> [lib.ostream.formatted.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Keith Baker&nbsp; <b>Date:</b>&nbsp;23 Jul 2002</p>
+
+<p>
+In 27.6.1.2.1 <a href="lib-iostreams.html#lib.istream.formatted.reqmts"> [lib.istream.formatted.reqmts]</a> and 27.6.2.5.1 <a href="lib-iostreams.html#lib.ostream.formatted.reqmts"> [lib.ostream.formatted.reqmts]</a>
+(exception()&amp;badbit) != 0 is used in testing for rethrow, yet
+exception() is the constructor to class std::exception in 18.6.1 <a href="lib-support.html#lib.exception"> [lib.exception]</a> that has no return type. Should member function
+exceptions() found in 27.4.4 <a href="lib-iostreams.html#lib.ios"> [lib.ios]</a> be used instead?
+</p>
+
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="374"><h3>374.&nbsp;moneypunct::frac_digits returns int not unsigned</h3></a><p>
+<b>Section:</b>&nbsp;22.2.6.3.1 <a href="lib-locales.html#lib.locale.moneypunct.members"> [lib.locale.moneypunct.members]</a>, 22.2.6.3.2 <a href="lib-locales.html#lib.locale.moneypunct.virtuals"> [lib.locale.moneypunct.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Ray Lischner&nbsp; <b>Date:</b>&nbsp;8 Aug 2002</p>
+<p>
+In section 22.2.6.3.1 <a href="lib-locales.html#lib.locale.moneypunct.members"> [lib.locale.moneypunct.members]</a>, frac_digits() returns type
+&quot;int&quot;. This implies that frac_digits() might return a negative value,
+but a negative value is nonsensical. It should return &quot;unsigned&quot;.
+</p>
+
+<p>
+Similarly, in section 22.2.6.3.2 <a href="lib-locales.html#lib.locale.moneypunct.virtuals"> [lib.locale.moneypunct.virtuals]</a>, do_frac_digits()
+should return &quot;unsigned&quot;.
+</p>
+
+<p><b>Proposed resolution:</b></p>
+<hr>
+<a name="375"><h3>375.&nbsp;basic_ios should be ios_base in 27.7.1.3</h3></a><p>
+<b>Section:</b>&nbsp;27.7.1.3 <a href="lib-iostreams.html#lib.stringbuf.virtuals"> [lib.stringbuf.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Ray Lischner&nbsp; <b>Date:</b>&nbsp;14 Aug 2002</p>
+<p>
+In Section 27.7.1.3 <a href="lib-iostreams.html#lib.stringbuf.virtuals"> [lib.stringbuf.virtuals]</a>: Table 90, Table 91, and paragraph
+14 all contain references to &quot;basic_ios::&quot; which should be
+&quot;ios_base::&quot;.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Change all references to &quot;basic_ios&quot; in Table 90, Table 91, and
+paragraph 14 to &quot;ios_base&quot;.
+</p>
+<hr>
+<a name="376"><h3>376.&nbsp;basic_streambuf semantics</h3></a><p>
+<b>Section:</b>&nbsp;27.7.1.3 <a href="lib-iostreams.html#lib.stringbuf.virtuals"> [lib.stringbuf.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Ray Lischner&nbsp; <b>Date:</b>&nbsp;14 Aug 2002</p>
+<p>
+In Section 27.7.1.3 <a href="lib-iostreams.html#lib.stringbuf.virtuals"> [lib.stringbuf.virtuals]</a>, Table 90, the implication is that
+the four conditions should be mutually exclusive, but they are not.
+The first two cases, as written, are subcases of the third. I think it
+would be clearer if the conditions were rewritten as follows:
+</p>
+
+<blockquote>
+<p>
+  (which &amp; (ios_base::in|ios_base::out)) == ios_base::in
+</p>
+
+<p>
+  (which &amp; (ios_base::in|ios_base::out)) == ios_base::out
+</p>
+
+<p>
+  (which &amp; (ios_base::in|ios_base::out)) == 
+(ios_base::in|ios_base::out)
+   and way == either ios_base::beg or ios_base::end
+</p>
+
+<p>Otherwise</p>
+</blockquote>
+
+<p>
+As written, it is unclear what should be the result if cases 1 &amp; 2
+are true, but case 3 is false, e.g.,
+</p>
+
+<blockquote>
+  seekoff(0, ios_base::cur, ios_base::in | ios_base::out)
+</blockquote>
+
+<p><b>Proposed resolution:</b></p>
+<hr>
+<a name="377"><h3>377.&nbsp;basic_string::insert and length_error</h3></a><p>
+<b>Section:</b>&nbsp;21.3.5.4 <a href="lib-strings.html#lib.string::insert"> [lib.string::insert]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Ray Lischner&nbsp; <b>Date:</b>&nbsp;16 Aug 2002</p>
+<p>
+Section 21.3.5.4 <a href="lib-strings.html#lib.string::insert"> [lib.string::insert]</a>, paragraph 4, contains the following,
+&quot;Then throws length_error if size() &gt;= npos - rlen.&quot;
+</p>
+
+<p>
+Related to DR 83, this sentence should probably be removed.
+</p>
+<p><b>Proposed resolution:</b></p>
+<hr>
+<a name="378"><h3>378.&nbsp;locale immutability and locale::operator=()</h3></a><p>
+<b>Section:</b>&nbsp;22.1.1 <a href="lib-locales.html#lib.locale"> [lib.locale]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;6 Sep 2002</p>
+<p>
+I think there is a problem with 22.1.1, p6 which says that
+</p>
+<pre>
+    -6- An instance of locale is immutable; once a facet reference
+        is obtained from it, that reference remains usable as long
+        as the locale value itself exists.
+</pre>
+<p>
+and 22.1.1.2, p4:
+</p>
+<pre>
+    const locale&amp; operator=(const locale&amp; other) throw();
+
+    -4- Effects: Creates a copy of other, replacing the current value.
+</pre>
+<p>
+How can a reference to a facet obtained from a locale object remain
+valid after an assignment that clearly must replace all the facets
+in the locale object? Imagine a program such as this
+</p>
+<pre>
+    std::locale loc (&quot;de_DE&quot;);
+    const std::ctype&lt;char&gt; &amp;r0 = std::use_facet&lt;std::ctype&lt;char&gt; &gt;(loc);
+    loc = std::locale (&quot;en_US&quot;);
+    const std::ctype&lt;char&gt; &amp;r1 = std::use_facet&lt;std::ctype&lt;char&gt; &gt;(loc);
+</pre>
+<p>
+Is r0 really supposed to be preserved and destroyed only when loc goes
+out of scope?
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Suggest to replace 22.1.1 <a href="lib-locales.html#lib.locale"> [lib.locale]</a>, p6 with
+</p>
+<pre>
+    -6- Unless assigned a new value, locale objects are immutable;
+        once a facet reference is obtained from it, that reference
+        remains usable as long as the locale object itself exists
+        or until the locale object is assigned the value of another,
+        distinct locale object.
+</pre>
+<hr>
+<a name="379"><h3>379.&nbsp;nonsensical ctype::do_widen() requirement</h3></a><p>
+<b>Section:</b>&nbsp;22.2.1.1.2 <a href="lib-locales.html#lib.locale.ctype.virtuals"> [lib.locale.ctype.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;6 Sep 2002</p>
+<p>
+The last sentence in 22.2.1.1.2, p11 below doesn't seem to make sense.
+</p>
+<pre>
+  charT do_widen (char c) const;
+
+  -11- Effects: Applies the simplest reasonable transformation from
+       a char value or sequence of char values to the corresponding
+       charT value or values. The only characters for which unique
+       transformations are required are those in the basic source
+       character set (2.2). For any named ctype category with a
+       ctype&lt;charT&gt; facet ctw and valid ctype_base::mask value
+       M (is(M, c) || !ctw.is(M, do_widen(c))) is true.
+</pre>
+<p>
+Shouldn't the last sentence instead read
+</p>
+<pre>
+       For any named ctype category with a ctype&lt;char&gt; facet ctc
+       and valid ctype_base::mask value M
+       (ctc.is(M, c) || !is(M, do_widen(c))) is true.
+</pre>
+<p>
+I.e., if the narrow character c is not a member of a class of
+characters then neither is the widened form of c. (To paraphrase
+footnote 224.)
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Replace the last sentence of 22.2.1.1.2 <a href="lib-locales.html#lib.locale.ctype.virtuals"> [lib.locale.ctype.virtuals]</a>, p11 with the
+following text:
+</p>
+<pre>
+       For any named ctype category with a ctype&lt;char&gt; facet ctc
+       and valid ctype_base::mask value M
+       (ctc.is(M, c) || !is(M, do_widen(c))) is true.
+</pre>
+<hr>
+<a name="380"><h3>380.&nbsp;typos in codecvt tables 53 and 54</h3></a><p>
+<b>Section:</b>&nbsp;22.2.1.5.2 <a href="lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;6 Sep 2002</p>
+<p>
+Tables 53 and 54 in 22.2.1.5.2 <a href="lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a> are both titled &quot;convert
+result values,&quot; when surely &quot;do_in/do_out result values&quot; must have
+been intended for Table 53 and &quot;do_unshift result values&quot; for Table
+54.
+</p>
+<p>
+Table 54, row 3 says that the meaning of partial is &quot;more characters
+needed to be supplied to complete termination.&quot; The function is not
+supplied any characters, it is given a buffer which it fills with
+characters or, more precisely, destination elements (i.e., an escape
+sequence). So partial means that space for more than (to_limit - to)
+destination elements was needed to terminate a sequence given the
+value of state.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Change the title of Table 53 to &quot;do_in/do_out result values&quot; and
+the title of Table 54 to &quot;do_unshift result values.&quot;
+</p>
+<p>
+Change the text in Table 54, row 3, under the heading Meaning to
+&quot;space for more than (to_limit - to) destination elements was
+needed to terminate a sequence given the value of state.&quot;
+</p>
+<hr>
+<a name="381"><h3>381.&nbsp;detection of invalid mbstate_t in codecvt</h3></a><p>
+<b>Section:</b>&nbsp;22.2.1.5.2 <a href="lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;6 Sep 2002</p>
+<p>
+All but one codecvt member functions that take a state_type argument
+list as one of their preconditions that the state_type argument have
+a valid value. However, according to 22.2.1.5.2, p6,
+codecvt::do_unshift() is the only codecvt member that is supposed to
+return error if the state_type object is invalid.
+</p>
+
+<p>
+It seems to me that the treatment of state_type by all codecvt member
+functions should be the same and the current requirements should be
+changed. Since the detection of invalid state_type values may be
+difficult in general or computationally expensive in some specific
+cases, I propose the following:
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Add a new paragraph before 22.2.1.5.2, p5, and after the function
+declaration below
+</p>
+<pre>
+    result do_unshift(stateT&amp; state,
+    externT* to, externT* to_limit, externT*&amp; to_next) const;
+</pre>
+<p>
+as follows:
+</p>
+<pre>
+    Requires: (to &lt;= to_end) well defined and true; state initialized,
+    if at the beginning of a sequence, or else equal to the result of
+    converting the preceding characters in the sequence.
+</pre>
+<p>
+and change the text in Table 54, row 4, under the heading Meaning
+from
+</p>
+<pre>
+    state has invalid value
+</pre>
+<p>
+to
+</p>
+<pre>
+    an unspecified error has occurred
+</pre>
+<p>
+The return value of error should allow implementers to detect and
+report invalid state values but shouldn't require it, hence the
+word &quot;unspecified&quot; in the new wording.
+</p>
+<hr>
+<a name="382"><h3>382.&nbsp;codecvt do_in/out result</h3></a><p>
+<b>Section:</b>&nbsp;22.2.1.5 <a href="lib-locales.html#lib.locale.codecvt"> [lib.locale.codecvt]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;30 Aug  2002</p>
+<p>
+It seems that the descriptions of codecvt do_in() and do_out() leave
+sufficient room for interpretation so that two implementations of
+codecvt may not work correctly with the same filebuf. Specifically,
+the following seems less than adequately specified:
+</p>
+
+<ol>
+<li>
+  the conditions under which the functions terminate
+</li>
+<li>
+  precisely when the functions return ok
+</li>
+<li>
+  precisely when the functions return partial
+</li>
+<li>
+  the full set of conditions when the functions return error
+</li>
+</ol>
+
+<ol>
+<li>
+   22.2.1.5.2 <a href="lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>, p2 says this about the effects of the
+   function: ...Stops if it encounters a character it cannot
+   convert...  This assumes that there *is* a character to
+   convert. What happens when there is a sequence that doesn't form a
+   valid source character, such as an unassigned or invalid UNICODE
+   character, or a sequence that cannot possibly form a character
+   (e.g., the sequence &quot;\xc0\xff&quot; in UTF-8)?
+</li>
+<li>
+   Table 53 says that the function returns codecvt_base::ok
+   to indicate that the function(s) &quot;completed the conversion.&quot;
+   Suppose that the source sequence is &quot;\xc0\x80&quot; in UTF-8,
+   with from pointing to '\xc0' and (from_end==from + 1).
+   It is not clear whether the return value should be ok
+   or partial (see below).
+</li>
+<li>
+   Table 53 says that the function returns codecvt_base::partial
+   if &quot;not all source characters converted.&quot; With the from pointers
+   set up the same way as above, it is not clear whether the return
+   value should be partial or ok (see above).
+</li>
+<li>
+   Table 53, in the row describing the meaning of error mistakenly
+   refers to a &quot;from_type&quot; character, without the symbol from_type
+   having been defined. Most likely, the word &quot;source&quot; character
+   is intended, although that is not sufficient. The functions
+   may also fail when they encounter an invalid source sequence
+   that cannot possibly form a valid source character (e.g., as
+   explained in bullet 1 above).
+</li>
+</ol>
+<p>
+Finally, the conditions described at the end of 22.2.1.5.2 <a href="lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>, p4 don't seem to be possible:
+</p>
+<blockquote>
+    &quot;A return value of partial, if (from_next == from_end),
+    indicates that either the destination sequence has not
+    absorbed all the available destination elements, or that
+    additional source elements are needed before another
+    destination element can be produced.&quot;
+</blockquote>
+<p>
+If the value is partial, it's not clear to me that (from_next
+==from_end) could ever hold if there isn't enough room
+in the destination buffer. In order for (from_next==from_end) to
+hold, all characters in that range must have been successfully
+converted (according to 22.2.1.5.2 <a href="lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>, p2) and since there are no
+further source characters to convert, no more room in the
+destination buffer can be needed.
+</p>
+<p>
+It's also not clear to me that (from_next==from_end) could ever
+hold if additional source elements are needed to produce another
+destination character (not element as incorrectly stated in the
+text). partial is returned if &quot;not all source characters have
+been converted&quot; according to Table 53, which also implies that
+(from_next==from) does NOT hold.
+</p>
+<p>
+Could it be that the intended qualifying condition was actually
+(from_next != from_end), i.e., that the sentence was supposed
+to read
+</p>
+<blockquote>
+    &quot;A return value of partial, if (from_next != from_end),...&quot;
+</blockquote>
+<p>
+which would make perfect sense, since, as far as I understand it,
+partial can only occur if (from_next != from_end)?
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+To address these issues, I propose that paragraphs 2, 3, and 4
+be rewritten as follows. The proposal incorporates the accepted
+resolution of lwg issue 19.
+</p>
+<pre>
+-2- Effects: Converts characters in the range of source elements
+    [from, from_end), placing the results in sequential positions
+    starting at destination to. Converts no more than (from_end&shy;from)
+    source elements, and stores no more than (to_limit&shy;to)
+    destination elements.
+
+    Stops if it encounters a sequence of source elements it cannot
+    convert to a valid destination character. It always leaves the
+    from_next and to_next pointers pointing one beyond the last
+    element successfully converted.
+
+    [Note: If returns noconv, internT and externT are the same type
+    and the converted sequence is identical to the input sequence
+    [from, from_next). to_next is set equal to to, the value of
+    state is unchanged, and there are no changes to the values in
+    [to, to_limit). --end note]
+
+-3- Notes: Its operations on state are unspecified.
+    [Note: This argument can be used, for example, to maintain shift
+    state, to specify conversion options (such as count only), or to
+    identify a cache of seek offsets. --end note]
+
+-4- Returns: An enumeration value, as summarized in Table 53:
+
+    Table 53 -- do_in/do_out result values
+
+     Value      Meaning
+    +---------+----------------------------------------------------+
+    | ok      | successfully completed the conversion of all       |
+    |         | complete characters in the source range            |
+    +---------+----------------------------------------------------+
+    | partial | the characters in the source range would, after    |
+    |         | conversion, require space greater than that        |
+    |         | available in the destination range                 |
+    +---------+----------------------------------------------------+
+    | error   | encountered either a sequence of elements in the   |
+    |         | source range forming a valid source character that |
+    |         | could not be converted to a destination character, |
+    |         | or a sequence of elements in the source range that |
+    |         | could not possibly form a valid source character   |
+    +---------+----------------------------------------------------+
+    | noconv  | internT and externT are the same type, and input   |
+    |         | sequence is identical to converted sequence        |
+    +---------+----------------------------------------------------+
+
+    A return value of partial, i.e., if (from_next != from_end),
+    indicates that either the destination sequence has not absorbed
+    all the available destination elements, or that additional
+    source elements are needed before another destination character
+    can be produced.
 </pre>
 <p>----- End of document -----</p>
 </body>

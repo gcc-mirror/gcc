@@ -1,5 +1,18 @@
 2002-11-21  Phil Edwards  <pme@gcc.gnu.org>
 
+	* docs/doxygen/style.css:  Update.
+	* docs/doxygen/user.cfg.in:  Update.
+	* docs/html/documentation.html:  Regenerate.
+	* docs/html/17_intro/howto.html:  Tweak I/O sentry entry.
+	* docs/html/27_io/howto.html:  New section on headers.
+	* docs/html/faq/index.html:  Add i386 threading entry.
+	* docs/html/faq/index.txt:  Regenerate.
+
+	* docs/html/ext/lwg-active.html, docs/html/ext/lwg-defects.html:
+	Import R23.
+
+2002-11-21  Phil Edwards  <pme@gcc.gnu.org>
+
 	* docs/doxygen/TODO:  Note change in clause 27 docs.
 	* include/bits/basic_ios.h, include/bits/fpos.h,
 	include/bits/ios_base.h, include/bits/stl_deque.h,

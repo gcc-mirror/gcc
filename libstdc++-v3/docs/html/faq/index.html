@@ -70,7 +70,8 @@
          <li><a href="#3_5"><code>_XOPEN_SOURCE</code> /
                             <code>_GNU_SOURCE</code> / etc is always defined</a>
          </li>
-         <li><a href="#3_6">OS X ctype.h is broken!  How can I hack it?</a> </li>
+         <li><a href="#3_6">OS X ctype.h is broken!  How can I hack it?</a></li>
+         <li><a href="#3_7">Threading is broken on i386</a></li>
       </ol>
    </li>
 
@@ -495,6 +496,18 @@ which is no longer available, thanks deja...-->
          the patch is quite simple, and well-known.
          <a href="http://gcc.gnu.org/ml/gcc/2002-03/msg00817.html"> Here's a
          link to the solution.</a>
+      </p>
+
+<hr />
+   <h2><a name="3_7">Threading is broken on i386</a></h2>
+      <p>Support for atomic integer operations is/was broken on i386
+         platforms.  The assembly code accidentally used opcodes that are
+         only available on the i486 and later.  So if you configured GCC
+         to target, for example, i386-linux, but actually used the programs
+	 on an i686, then you would encounter no problems.  Only when
+	 actually running the code on a i386 will the problem appear.  
+      </p>
+      <p>This is fixed in 3.2.2.
       </p>
 
 <hr />
