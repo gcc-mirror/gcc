@@ -1,10 +1,6 @@
 // Build don't link:
 // Origin: Jakub Jelinek <jakub@redhat.com>
 
-// crash test - XFAIL *-*-*
-
-#include <iostream>
-
 class foo {
  public:
    class __iterator;
@@ -16,6 +12,6 @@ class foo {
 static void iteratorTest(const foo &x)
 {
    foo::const_iterator i = x.begin();		// ERROR - 
-   for (; i; ++i)				// ERROR - 
-      cout << *i;
+   for (; i; ++i)
+      *i;
 }

@@ -1534,6 +1534,8 @@ finish_id_expr (expr)
   if (TREE_CODE (expr) == IDENTIFIER_NODE)
     expr = do_identifier (expr, 1, NULL_TREE);
 
+  if (TREE_TYPE (expr) == error_mark_node)
+    expr = error_mark_node;
   return expr;
 }
 

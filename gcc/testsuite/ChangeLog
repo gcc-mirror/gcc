@@ -1,3 +1,8 @@
+2000-11-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.other/crash24.C: Adjust and remove XFAIL.
+	* g++.other/crash37.C: New test.
+
 2000-11-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/instantiate9.C: New test.
