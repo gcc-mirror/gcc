@@ -1,3 +1,25 @@
+Tue Feb 13 13:31:33 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (print_reg): Use ANY_FP_REG instead of FP_REG
+	* i386.h (MASK_128BIT_LONG_DOUBLE): Renumber
+	(MASK_SSE2): New.
+	(MASK_MIX_SSE_I387): New.
+	(TARGET_SSE): SSE2 imply SSE.
+	(TARGET_SSE2, TARGET_MIX_SSE_I387): New.
+	(TARGET_SWITCHES): Add "sse2", "mix-sse-i387".
+	(enum reg_class): Add new classes.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(ANY_FP_REG_P, ANY_FP_REGNO_P, SSE_REG_P, SSE_FLOAT_MODE): New macros.
+	(REG_CLASS_FROM_LETTER): 'x' and 'y' is SSE_REGS only when SSE is
+	supported. Add 'Y' to be SSE_REGS when SSE2 is supported.
+	(CLASS_MAX_NREGS): Use new macros.
+	(REGISTER_MOVE_COST): Rewrite using SECONDARY_MEMORY_MAYBE_NEEDED.
+	* i386.md (pushsf, movsf): Support SSE.
+	(pushdf_nointeger, pushdf_integer, pushdf): Support SSE, update
+	splitters to use ANY_FP_REGNO_P.
+	(movdf_nointeger, movdf_integer): Likewise.
+
 2001-02-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* combine.c (UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD): New macro.

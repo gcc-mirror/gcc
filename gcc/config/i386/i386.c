@@ -3285,7 +3285,7 @@ print_reg (x, code, file)
     case 4:
     case 8:
     case 12:
-      if (! FP_REG_P (x))
+      if (! ANY_FP_REG_P (x))
 	putc ('e', file);
       /* FALLTHRU */
     case 16:

@@ -104,7 +104,9 @@ extern int target_flags;
 #define MASK_ACCUMULATE_OUTGOING_ARGS 0x00008000/* Accumulate outgoing args */
 #define MASK_MMX		0x00010000	/* Support MMX regs/builtins */
 #define MASK_SSE		0x00020000	/* Support SSE regs/builtins */
-#define MASK_128BIT_LONG_DOUBLE 0x00040000	/* long double size is 128bit */
+#define MASK_SSE2		0x00040000	/* Support SSE2 regs/builtins */
+#define MASK_128BIT_LONG_DOUBLE 0x00080000	/* long double size is 128bit */
+#define MASK_MIX_SSE_I387	0x00100000	/* Mix SSE and i387 instructions */
 
 /* Temporary codegen switches */
 #define MASK_INTEL_SYNTAX	0x00000200
@@ -226,7 +228,9 @@ extern const int x86_partial_reg_dependency, x86_memory_mismatch_stall;
 
 #define ASSEMBLER_DIALECT ((target_flags & MASK_INTEL_SYNTAX) != 0)
 
-#define TARGET_SSE ((target_flags & MASK_SSE) != 0)
+#define TARGET_SSE ((target_flags & (MASK_SSE | MASK_SSE2)) != 0)
+#define TARGET_SSE2 ((target_flags & MASK_SSE2) != 0)
+#define TARGET_MIX_SSE_I387 ((target_flags & MASK_MIX_SSE_I387) != 0)
 #define TARGET_MMX ((target_flags & MASK_MMX) != 0)
 
 #define TARGET_SWITCHES							      \
@@ -298,9 +302,17 @@ extern const int x86_partial_reg_dependency, x86_memory_mismatch_stall;
   { "no-mmx",			-MASK_MMX,				      \
     N_("Do not support MMX builtins") },				      \
   { "sse",			 MASK_SSE,				      \
-    N_("Support MMX and SSE builtins") },				      \
+    N_("Support MMX and SSE builtins and code generation") },		      \
   { "no-sse",			-MASK_SSE,				      \
-    N_("Do not support MMX and SSE builtins") },			      \
+    N_("Do not support MMX and SSE builtins and code generation") },	      \
+  { "sse2",			 MASK_SSE2,				      \
+    N_("Support MMX, SSE and SSE2 builtins and code generation") },	      \
+  { "no-sse2",			-MASK_SSE2,				      \
+    N_("Do not support MMX, SSE and SSE2 builtins and code generation") },    \
+  { "mix-sse-i387",		 MASK_MIX_SSE_I387,			      \
+    N_("Use both SSE and i387 instruction sets for floating point arithmetics") },\
+  { "nomix-sse-i387",		-MASK_MIX_SSE_I387,			      \
+    N_("Use both SSE and i387 instruction sets for floating point arithmetics") },\
   { "128bit-long-double",	 MASK_128BIT_LONG_DOUBLE,		      \
     N_("sizeof(long double) is 16.") },					      \
   { "96bit-long-double",	-MASK_128BIT_LONG_DOUBLE,		      \
@@ -765,7 +777,8 @@ extern int ix86_arch;
       : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)))
 
 #define VALID_SSE_REG_MODE(MODE) \
-    ((MODE) == TImode || (MODE) == V4SFmode || (MODE) == V4SImode)
+    ((MODE) == TImode || (MODE) == V4SFmode || (MODE) == V4SImode \
+     || (MODE) == SFmode || (TARGET_SSE2 && (MODE) == DFmode))
 
 #define VALID_MMX_REG_MODE(MODE) \
     ((MODE) == DImode || (MODE) == V8QImode || (MODE) == V4HImode \
@@ -939,7 +952,12 @@ enum reg_class
   FLOAT_REGS,
   SSE_REGS,
   MMX_REGS,
-  FLOAT_INT_REGS,		/* FLOAT_REGS and GENERAL_REGS.  */
+  FP_TOP_SSE_REGS,
+  FP_SECOND_SSE_REGS,
+  FLOAT_SSE_REGS,
+  FLOAT_INT_REGS,
+  INT_SSE_REGS,
+  FLOAT_INT_SSE_REGS,
   ALL_REGS, LIM_REG_CLASSES
 };
 
@@ -968,7 +986,12 @@ enum reg_class
    "FLOAT_REGS",			\
    "SSE_REGS",				\
    "MMX_REGS",				\
+   "FP_TOP_SSE_REGS",			\
+   "FP_SECOND_SSE_REGS",		\
+   "FLOAT_SSE_REGS",			\
    "FLOAT_INT_REGS",			\
+   "INT_SSE_REGS",			\
+   "FLOAT_INT_SSE_REGS",		\
    "ALL_REGS" }
 
 /* Define which registers fit in which classes.
@@ -989,7 +1012,12 @@ enum reg_class
     { 0xff00,  0x0 },			/* FLOAT_REGS */		\
 { 0x1fe00000,  0x0 },			/* SSE_REGS */			\
 { 0xe0000000, 0x1f },			/* MMX_REGS */			\
+{ 0x1fe00100,  0x0 },			/* FP_TOP_SSE_REG */		\
+{ 0x1fe00200,  0x0 },			/* FP_SECOND_SSE_REG */		\
+{ 0x1fe0ff00,  0x0 },			/* FLOAT_SSE_REGS */		\
    { 0x1ffff,  0x0 },			/* FLOAT_INT_REGS */		\
+{ 0x1fe100ff,  0x0 },			/* INT_SSE_REGS */		\
+{ 0x1fe1ffff,  0x0 },			/* FLOAT_INT_SSE_REGS */	\
 { 0xffffffff, 0x1f }							\
 }
 
@@ -1013,8 +1041,14 @@ enum reg_class
 
 #define FP_REG_P(X) (REG_P (X) && FP_REGNO_P (REGNO (X)))
 #define FP_REGNO_P(n) ((n) >= FIRST_STACK_REG && (n) <= LAST_STACK_REG)
+#define ANY_FP_REG_P(X) (REG_P (X) && ANY_FP_REGNO_P (REGNO (X)))
+#define ANY_FP_REGNO_P(n) (FP_REGNO_P (n) || SSE_REGNO_P (n))
 
 #define SSE_REGNO_P(n) ((n) >= FIRST_SSE_REG && (n) <= LAST_SSE_REG)
+#define SSE_REG_P(n) (REG_P (n) && SSE_REGNO_P (REGNO (n)))
+
+#define SSE_FLOAT_MODE_P(m) \
+  ((TARGET_SSE && (m) == SFmode) || (TARGET_SSE2 && (m) == DFmode))
 
 #define MMX_REGNO_P(n) ((n) >= FIRST_MMX_REG && (n) <= LAST_MMX_REG)
 #define MMX_REG_P(xop) (REG_P (xop) && MMX_REGNO_P (REGNO (xop)))
@@ -1058,8 +1092,9 @@ enum reg_class
    (C) == 'b' ? BREG :						\
    (C) == 'c' ? CREG :						\
    (C) == 'd' ? DREG :						\
-   (C) == 'x' ? SSE_REGS :					\
-   (C) == 'y' ? MMX_REGS :					\
+   (C) == 'x' ? TARGET_SSE ? SSE_REGS : NO_REGS :		\
+   (C) == 'Y' ? TARGET_SSE2? SSE_REGS : NO_REGS :		\
+   (C) == 'y' ? TARGET_MMX ? MMX_REGS : NO_REGS :		\
    (C) == 'A' ? AD_REGS :					\
    (C) == 'D' ? DIREG :						\
    (C) == 'S' ? SIREG : NO_REGS)
