@@ -60,6 +60,7 @@ case "${target}" in
   *-sco3.2v[45]*)   frags=sco4.mt ;;
   *-isc*)        frags=isc.mt ;;
   *-netware*)    frags=netware.mt ;;
+  *-dgux*)	 frags=dgux.mt ;;
   *)             frags=${target_cpu}.mt ;;
 esac
 
