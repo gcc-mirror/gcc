@@ -2201,6 +2201,14 @@ find_barrier (num_mova, mova, from)
 	      if (num_mova)
 		si_limit -= GET_MODE_SIZE (mode);
 	    }
+
+	  /* See the code in machine_dependent_reorg, which has a similar if
+	     statement that generates new mova insn in many cases.  */
+	  if (GET_CODE (dst) == REG
+	      && ((REGNO (dst) >= FIRST_FP_REG
+		   && REGNO (dst) <= LAST_XD_REG)
+		  || REGNO (dst) == FPUL_REG))
+	    inc += 2;
 	}
 
       if (mova_p (from))

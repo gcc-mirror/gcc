@@ -9,6 +9,8 @@
 	* sh.md (floatsisf2_i4, floatsidf2_i, extendsfdf2_i4): Use it for
 	input operand that needs to be in fpul.
 	(fix_truncsfsi2, fix_truncsfsi2_i4): Use register_operand for output.
+	* sh.c (find_barrier): Take into account that machine_dependent_reorg
+	might add new insns.
 
 2000-09-18  Alexandre Oliva  <aoliva@redhat.com>
 
