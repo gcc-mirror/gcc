@@ -2163,11 +2163,14 @@
   [(set_attr "type" "move,store,load")
    (set_attr "length" "4,5,5")])
 
+;; This is disabled because it does not work.  Long doubles have only 8
+;; byte alignment.  Adding an offset of 8 or 12 to an 8 byte aligned %lo may 
+;; cause it to overflow.  See also GO_IF_LEGITIMATE_ADDRESS.
 (define_insn ""
   [(set (mem:TF (match_operand:SI 0 "symbolic_operand" "i,i"))
 	(match_operand:TF 1 "reg_or_0_operand" "re,G"))
    (clobber (match_scratch:SI 2 "=&r,&r"))]
-  "(reload_completed || reload_in_progress) && ! TARGET_PTR64"
+  "0 && (reload_completed || reload_in_progress) && ! TARGET_PTR64"
   "*
 {
   output_asm_insn (\"sethi %%hi(%a0),%2\", operands);
