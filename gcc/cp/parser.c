@@ -3637,6 +3637,15 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	    postfix_expression 
 	      = grok_array_decl (postfix_expression, index);
 	    idk = CP_ID_KIND_NONE;
+	    /* Array references are not permitted in
+	       constant-expressions.  */
+	    if (parser->constant_expression_p)
+	      {
+		if (!parser->allow_non_constant_expression_p)
+		  postfix_expression 
+		    = cp_parser_non_constant_expression ("an array reference");
+		parser->non_constant_expression_p = true;
+	      }
 	  }
 	  break;
 
@@ -3658,7 +3667,11 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	    if (parser->constant_expression_p)
 	      {
 		if (!parser->allow_non_constant_expression_p)
-		  return cp_parser_non_constant_expression ("a function call");
+		  {
+		    postfix_expression 
+		      = cp_parser_non_constant_expression ("a function call");
+		    break;
+		  }
 		parser->non_constant_expression_p = true;
 	      }
 
@@ -3737,6 +3750,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	    bool dependent_p;
 	    bool template_p;
 	    tree scope = NULL_TREE;
+	    enum cpp_ttype token_type = token->type;
 
 	    /* If this is a `->' operator, dereference the pointer.  */
 	    if (token->type == CPP_DEREF)
@@ -3839,6 +3853,15 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	       object on the left-hand side of the `.' or `->'
 	       operator.  */
 	    parser->context->object_type = NULL_TREE;
+	    /* These operators may not appear in constant-expressions.  */
+	    if (parser->constant_expression_p)
+	      {
+		if (!parser->allow_non_constant_expression_p)
+		  postfix_expression 
+		    = (cp_parser_non_constant_expression 
+		       (token_type == CPP_DEREF ? "'->'" : "`.'"));
+		parser->non_constant_expression_p = true;
+	      }
 	  }
 	  break;
 
@@ -3846,17 +3869,18 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	  /* postfix-expression ++  */
 	  /* Consume the `++' token.  */
 	  cp_lexer_consume_token (parser->lexer);
-	  /* Increments may not appear in constant-expressions.  */
-	  if (parser->constant_expression_p)
-	    {
-	      if (!parser->allow_non_constant_expression_p)
-		return cp_parser_non_constant_expression ("an increment");
-	      parser->non_constant_expression_p = true;
-	    }
 	  /* Generate a representation for the complete expression.  */
 	  postfix_expression 
 	    = finish_increment_expr (postfix_expression, 
 				     POSTINCREMENT_EXPR);
+	  /* Increments may not appear in constant-expressions.  */
+	  if (parser->constant_expression_p)
+	    {
+	      if (!parser->allow_non_constant_expression_p)
+		postfix_expression 
+		  = cp_parser_non_constant_expression ("an increment");
+	      parser->non_constant_expression_p = true;
+	    }
 	  idk = CP_ID_KIND_NONE;
 	  break;
 
@@ -3864,17 +3888,18 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	  /* postfix-expression -- */
 	  /* Consume the `--' token.  */
 	  cp_lexer_consume_token (parser->lexer);
-	  /* Decrements may not appear in constant-expressions.  */
-	  if (parser->constant_expression_p)
-	    {
-	      if (!parser->allow_non_constant_expression_p)
-		return cp_parser_non_constant_expression ("a decrement");
-	      parser->non_constant_expression_p = true;
-	    }
 	  /* Generate a representation for the complete expression.  */
 	  postfix_expression 
 	    = finish_increment_expr (postfix_expression, 
 				     POSTDECREMENT_EXPR);
+	  /* Decrements may not appear in constant-expressions.  */
+	  if (parser->constant_expression_p)
+	    {
+	      if (!parser->allow_non_constant_expression_p)
+		postfix_expression 
+		  = cp_parser_non_constant_expression ("a decrement");
+	      parser->non_constant_expression_p = true;
+	    }
 	  idk = CP_ID_KIND_NONE;
 	  break;
 
@@ -4217,6 +4242,8 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p)
   if (unary_operator != ERROR_MARK)
     {
       tree cast_expression;
+      tree expression = error_mark_node;
+      const char *non_constant_p = NULL;
 
       /* Consume the operator token.  */
       token = cp_lexer_consume_token (parser->lexer);
@@ -4227,32 +4254,40 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p)
       switch (unary_operator)
 	{
 	case INDIRECT_REF:
-	  return build_x_indirect_ref (cast_expression, "unary *");
-	  
+	  non_constant_p = "`*'";
+	  expression = build_x_indirect_ref (cast_expression, "unary *");
+	  break;
+
 	case ADDR_EXPR:
+	  non_constant_p = "`&'";
+	  /* Fall through.  */
 	case BIT_NOT_EXPR:
-	  return build_x_unary_op (unary_operator, cast_expression);
-	  
+	  expression = build_x_unary_op (unary_operator, cast_expression);
+	  break;
+
 	case PREINCREMENT_EXPR:
 	case PREDECREMENT_EXPR:
-	  if (parser->constant_expression_p)
-	    {
-	      if (!parser->allow_non_constant_expression_p)
-		return cp_parser_non_constant_expression (PREINCREMENT_EXPR
-							  ? "an increment"
-							  : "a decrement");
-	      parser->non_constant_expression_p = true;
-	    }
+	  non_constant_p = (unary_operator == PREINCREMENT_EXPR
+			    ? "`++'" : "`--'");
 	  /* Fall through.  */
 	case CONVERT_EXPR:
 	case NEGATE_EXPR:
 	case TRUTH_NOT_EXPR:
-	  return finish_unary_op_expr (unary_operator, cast_expression);
+	  expression = finish_unary_op_expr (unary_operator, cast_expression);
+	  break;
 
 	default:
 	  abort ();
-	  return error_mark_node;
 	}
+
+      if (non_constant_p && parser->constant_expression_p)
+	{
+	  if (!parser->allow_non_constant_expression_p)
+	    return cp_parser_non_constant_expression (non_constant_p);
+	  parser->non_constant_expression_p = true;
+	}
+
+      return expression;
     }
 
   return cp_parser_postfix_expression (parser, address_p);

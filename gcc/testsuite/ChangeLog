@@ -1,3 +1,10 @@
+2003-12-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13243
+	PR c++/12573
+	* g++.dg/template/crash14.C: New test.
+	* g++.dg/template/dependent-expr3.C: Add dg-error markers.
+
 2003-12-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/other/java1.C: New test.

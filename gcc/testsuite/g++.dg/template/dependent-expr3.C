@@ -9,6 +9,6 @@ template <typename K> struct Y : K {
 };
 
 template <class T> struct Z {
-  S< (bool)(&static_cast<Y<T> *>(0)->x == 0) >
-    s;
+  S< (bool)(&static_cast<Y<T> *>(0)->x == 0) > // { dg-error "" }
+  s; // { dg-error "" }
 };

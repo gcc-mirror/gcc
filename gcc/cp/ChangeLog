@@ -1,3 +1,13 @@
+2003-12-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13243
+	PR c++/12573
+	* parser.c (cp_parser_postfix_expression): Tighten handling of
+	integral constant expressions.
+	(cp_parser_unary_expression): Likewise.
+	* pt.c (value_dependent_expression_p): Remove handling for
+	COMPONENT_REFs.
+
 2003-12-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (add_method): Disallow destructor for java classes.
