@@ -1,3 +1,8 @@
+Mon May 18 12:07:37 1998  Richard Earnshaw (rearnsha@arm.com)
+
+	* stor-layout.c (layout_record): Fix off-by-one error when checking
+	length of the TYPE_BINFO vector.
+
 Mon May 18 10:59:23 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* dbxout.c (dbxout_parms): Use TREE_ARG to compute the type of a
