@@ -64,9 +64,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	%{bestGnum}} \
 %{!mmips-as: \
  	%{v*: -v} \
-	%{pic-none: -noshrlib} %{noshrlib} \
-	%{pic-lib: %{!noshrlib: -warn_nopic}} \
-	%{nostdlib} %{glue}}"
+	%{!noshrlib: %{pic-none: -noshrlib} %{!pic-none: -warn_nopic}} \
+	%{nostdlib} %{noshrlib} %{glue}}"
 
 #define LIB_SPEC "-lc"
 

@@ -158,6 +158,7 @@ extern void		text_section ();
 #ifndef HALF_PIC_P
 #define HALF_PIC_P() 0
 #define HALF_PIC_ENCODE(DECL)
+#define HALF_PIC_DECLARE(NAME)
 #define HALF_PIC_INIT()	error ("half-pic init called on systems that don't support it.")
 #define HALF_PIC_ADDRESS_P(X) 0
 #define HALF_PIC_PTR(X) X
@@ -2906,7 +2907,12 @@ do {									\
    in the usual manner as a label (by means of `ASM_OUTPUT_LABEL').  */
 
 #define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL)			\
-  mips_declare_object (STREAM, NAME, "", ":\n", 0);
+do									\
+ {									\
+   mips_declare_object (STREAM, NAME, "", ":\n", 0);			\
+   HALF_PIC_DECLARE (NAME);						\
+ }									\
+while (0)
 
 
 /* This is how to output a command to make the user-level label named NAME
@@ -2957,6 +2963,7 @@ do {									\
     STREAM = asm_out_text_file;						\
 									\
   current_function_name = NAME;						\
+  HALF_PIC_DECLARE (NAME);						\
 }
 
 /* This is how to output a reference to a user-level label named NAME.
@@ -3152,22 +3159,12 @@ do {									\
 }
 
 
-/* Output before read-only data.  */
-
-#define TEXT_SECTION_ASM_OP ".text"
-
-/* Output before writable data.  */
-
-#define DATA_SECTION_ASM_OP ".data"
-
-/* Output before writable  short data.  */
-
-#define SDATA_SECTION_ASM_OP ".sdata"
-
-/* Output before read-only data.  */
-
-#define RDATA_SECTION_ASM_OP ".rdata"
-#define READONLY_DATA_SECTION rdata_section
+/* Define the strings to put out for each section in the object file.  */
+#define TEXT_SECTION_ASM_OP	"\t.text"	/* instructions */
+#define DATA_SECTION_ASM_OP	"\t.data"	/* large data */
+#define SDATA_SECTION_ASM_OP	"\t.sdata"	/* small data */
+#define RDATA_SECTION_ASM_OP	"\t.rdata"	/* read-only data */
+#define READONLY_DATA_SECTION	rdata_section
 
 /* What other sections we support other than the normal .data/.text.  */
 
