@@ -52,7 +52,7 @@ char * realloc ();
 
 #include "libiberty.h"
 
-static char *ada_demangle  PARAMS ((const char*, int));
+static char *ada_demangle  PARAMS ((const char *, int));
 
 #define min(X,Y) (((X) < (Y)) ? (X) : (Y))
 
@@ -528,7 +528,7 @@ recursively_demangle PARAMS ((struct work_stuff *, const char **, string *,
 			      int));
 
 static void
-grow_vect PARAMS ((void**, size_t*, size_t, int));
+grow_vect PARAMS ((void **, size_t *, size_t, int));
 
 /* Translate count to integer, consuming tokens in the process.
    Conversion terminates on the first non-digit character.
@@ -909,9 +909,9 @@ cplus_demangle (mangled, options)
   char *ret;
   struct work_stuff work[1];
   memset ((char *) work, 0, sizeof (work));
-  work -> options = options;
-  if ((work -> options & DMGL_STYLE_MASK) == 0)
-    work -> options |= (int) current_demangling_style & DMGL_STYLE_MASK;
+  work->options = options;
+  if ((work->options & DMGL_STYLE_MASK) == 0)
+    work->options |= (int) current_demangling_style & DMGL_STYLE_MASK;
 
   /* The new-ABI demangling is implemented elsewhere.  */
   if (GNU_NEW_ABI_DEMANGLING)
@@ -928,43 +928,44 @@ cplus_demangle (mangled, options)
 
 /* Assuming *OLD_VECT points to an array of *SIZE objects of size
    ELEMENT_SIZE, grow it to contain at least MIN_SIZE objects,
-   updating *OLD_VECT and *SIZE as necessary. */
+   updating *OLD_VECT and *SIZE as necessary.  */
+
 static void
 grow_vect (old_vect, size, min_size, element_size)
-     void** old_vect;
-     size_t* size;
+     void **old_vect;
+     size_t *size;
      size_t min_size;
      int element_size;
 {
-  if (*size < min_size) {
-    *size *= 2;
-    if (*size < min_size)
-      *size = min_size;
-    *old_vect = xrealloc (*old_vect, *size * element_size);
-  }
+  if (*size < min_size)
+    {
+      *size *= 2;
+      if (*size < min_size)
+	*size = min_size;
+      *old_vect = xrealloc (*old_vect, *size * element_size);
+    }
 }
 
 /* Demangle ada names:
    1. Discard final __{DIGIT}+ or ${DIGIT}+
    2. Convert other instances of embedded "__" to `.'.
    3. Discard leading _ada_.
-   4. Remove everything after first ___ if it is followed by
-   'X'.
+   4. Remove everything after first ___ if it is followed by 'X'.
    5. Put symbols that should be suppressed in <...> brackets.
-   The resulting string is valid until the next call of ada_demangle.
-*/
+   The resulting string is valid until the next call of ada_demangle.  */
+
 static char *
 ada_demangle (mangled, option)
-     const char* mangled;
+     const char *mangled;
      int option ATTRIBUTE_UNUSED;
 {
   int i, j;
   int len0;
   const char* p;
-  char* demangled = NULL;
+  char *demangled = NULL;
   int at_start_name;
   int changed;
-  char* demangling_buffer = NULL;
+  char *demangling_buffer = NULL;
   size_t demangling_buffer_size = 0;
   
   changed = 0;
@@ -992,16 +993,16 @@ ada_demangle (mangled, option)
 	goto Suppress;
     }
   
-  /* Make demangled big enough for possible expansion by operator name. */
-  grow_vect ((void**) &(demangling_buffer),
+  /* Make demangled big enough for possible expansion by operator name.  */
+  grow_vect ((void **) &(demangling_buffer),
 	     &demangling_buffer_size,  2 * len0 + 1,
 	     sizeof (char));
   demangled = demangling_buffer;
   
-  if (isdigit ((unsigned char)mangled[len0 - 1])) {
-    for (i = len0-2; i >= 0 && isdigit ((unsigned char)mangled[i]); i -= 1)
+  if (isdigit ((unsigned char) mangled[len0 - 1])) {
+    for (i = len0 - 2; i >= 0 && isdigit ((unsigned char) mangled[i]); i -= 1)
       ;
-    if (i > 1 && mangled[i] == '_' && mangled[i-1] == '_')
+    if (i > 1 && mangled[i] == '_' && mangled[i - 1] == '_')
       {
 	len0 = i - 1;
 	changed = 1;
@@ -1022,7 +1023,7 @@ ada_demangle (mangled, option)
     {
       at_start_name = 0;
       
-      if (i < len0-2 && mangled[i] == '_' && mangled[i+1] == '_')
+      if (i < len0 - 2 && mangled[i] == '_' && mangled[i + 1] == '_')
 	{
 	  demangled[j] = '.';
 	  changed = at_start_name = 1;
@@ -1046,7 +1047,7 @@ ada_demangle (mangled, option)
     return demangled;
   
  Suppress:
-  grow_vect ((void**) &(demangling_buffer),
+  grow_vect ((void **) &(demangling_buffer),
 	     &demangling_buffer_size,  strlen (mangled) + 3,
 	     sizeof (char));
   demangled = demangling_buffer;
@@ -1073,7 +1074,7 @@ internal_cplus_demangle (work, mangled)
   string decl;
   int success = 0;
   char *demangled = NULL;
-  int s1,s2,s3,s4;
+  int s1, s2, s3, s4;
   s1 = work->constructor;
   s2 = work->destructor;
   s3 = work->static_type;
@@ -1126,7 +1127,7 @@ internal_cplus_demangle (work, mangled)
   work->destructor = s2;
   work->static_type = s3;
   work->type_quals = s4;
-  return (demangled);
+  return demangled;
 }
 
 
@@ -1287,7 +1288,7 @@ mop_up (work, declp, success)
   else
     {
       string_appendn (declp, "", 1);
-      demangled = declp -> b;
+      demangled = declp->b;
     }
   return (demangled);
 }
@@ -5096,6 +5097,7 @@ main (argc, argv)
 	case gnu_demangling:
 	case lucid_demangling:
 	case arm_demangling:
+	case java_demangling:
 	case edg_demangling:
 	  valid_symbols = standard_symbol_characters ();
 	  break;
