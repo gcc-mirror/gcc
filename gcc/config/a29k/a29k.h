@@ -1274,17 +1274,20 @@ extern char *a29k_function_name;
 
 #define ASM_APP_OFF ""
 
+/* The next few macros don't have tabs on most machines, but
+   at least one 29K assembler wants them.  */
+
 /* Output before instructions.  */
 
-#define TEXT_SECTION_ASM_OP ".text"
+#define TEXT_SECTION_ASM_OP "\t.text"
 
 /* Output before read-only data.  */
 
-#define READONLY_DATA_SECTION_ASM_OP ".use .lit"
+#define READONLY_DATA_SECTION_ASM_OP "\t.use .lit"
 
 /* Output before writable data.  */
 
-#define DATA_SECTION_ASM_OP ".data"
+#define DATA_SECTION_ASM_OP "\t.data"
 
 /* Define an extra section for read-only data, a routine to enter it, and
    indicate that it is for read-only data.  */
