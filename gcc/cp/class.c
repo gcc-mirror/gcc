@@ -5014,8 +5014,9 @@ finish_struct_1 (tree t)
   n_fields = count_fields (TYPE_FIELDS (t));
   if (n_fields > 7)
     {
-      struct sorted_fields_type *field_vec = ggc_alloc (sizeof (struct sorted_fields_type) 
-	+ n_fields * sizeof (tree));
+      struct sorted_fields_type *field_vec = GGC_NEWVAR
+         (struct sorted_fields_type,
+          sizeof (struct sorted_fields_type) + n_fields * sizeof (tree));
       field_vec->len = n_fields;
       add_fields_to_record_type (TYPE_FIELDS (t), field_vec, 0);
       qsort (field_vec->elts, n_fields, sizeof (tree),
