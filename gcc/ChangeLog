@@ -1,3 +1,7 @@
+Mon Aug 30 20:21:34 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cse.c: (fold_rtx): Cast to HOST_WIDE_INT in left shift.
+
 Mon Aug 30 16:07:49 1999  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (new_insn_dead_notes): Use sets_reg_or_subreg not
