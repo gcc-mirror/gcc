@@ -1,3 +1,8 @@
+2000-11-03  David Edelsohn  <edelsohn@gnu.org>
+
+	* include/c/bits/std_cwchar.h: Undefine macro that conflicts
+	with function name defined in this file.
+
 Thu Nov  2 23:19:20 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* include/c/bits/std_cctype.h: Undefine macros that conflict
