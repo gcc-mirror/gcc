@@ -92,18 +92,28 @@
    <dl>
       <dt> linux </dt>
 
-      <dd>If you are using gcc 3.1 or later on linux, and are using
-      the gnu locale model (enabled by default for sufficient
-      versions of glibc), the following locales are used and tested
-      in the libstdc++ testsuites: en_HK, en_US, fr_FR, fr_FR@euro,
-      de_DE, de_DE@euro, ja_JP.eucjp, and it_IT. Failure to have the
-      underlying "C" library locale information installed will mean
-      that C++ named locales for the above regions will not work:
-      because of this, the libstdc++ testsuite will not pass the
-      named locale tests. If this isn't an issue, don't worry about
-      it. If named locales are needed, the underlying locale
-      information must be installed. Note that rebuilding libstdc++
-      after locales are installed is not necessary.
+      <dd>If gcc 3.1.0 or later on is being used on linux, an attempt
+      will be made to use "C" library functionality necessary for C++
+      named locale support. 
+
+      <p>
+      The configure option --enable-clocale can be used force a
+      particular behavior.
+      </p>
+
+      <p>
+      If the 'gnu' locale model is being used, the following locales
+      are used and tested in the libstdc++ testsuites: en_HK, en_US,
+      fr_FR, fr_FR@euro, de_DE, de_DE@euro, ja_JP.eucjp, and
+      it_IT. Failure to have the underlying "C" library locale
+      information installed will mean that C++ named locales for the
+      above regions will not work: because of this, the libstdc++
+      testsuite will not pass the named locale tests. If this isn't an
+      issue, don't worry about it. If named locales are needed, the
+      underlying locale information must be installed. Note that
+      rebuilding libstdc++ after the "C" locales are installed is not
+      necessary.
+      </p>
 
       <p> To install
       support for locales, do only one of the following: </p>
@@ -250,7 +260,7 @@
    </p>
    <pre>
    lib/
-   include/g++-v3/
+   include/c++/<em>gcc-version</em>
       backward/
       bits/
       <em>cpu-vendor-os</em>/bits/
@@ -272,6 +282,22 @@
       <a href="faq/index.html#2_4">FAQ 2.4</a> for which files to examine.
    </p>
 
+   <p> In addition, there are some testing options that are mostly of
+   interest to library maintainers and system integrators. As such,
+   these tests may not work on all cpu and host combinations. These
+   options include, but are not necessarily limited to, the following:
+
+   <p>The library ABI can be tested using</p>
+   <pre>
+   make check-abi</pre>
+
+   <p>The library can also be tested using a bash script, instead of
+   the default dejagnu test harness</p>
+   <pre>
+   make check-script</pre>
+   or
+   <pre>
+   make check-script-install</pre>
 
 <hr />
 <h2><a name="usage">Using the library</a></h2>

@@ -1,3 +1,20 @@
+2002-09-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/configopts.html: Change grouping. Note ABI impacts.
+	Update information for locale model defaults.
+	* docs/html/install.html: Update include directory
+	information. 
+	Update testing information. 
+	Update linux issues for named locales.
+	* docs/html/abi.txt: Fix typos.
+	Add more info.
+
+	* src/misc-inst.cc: Add missing instantiations.
+	
+	* testsuite/abi_check.cc: Make output results more verbose.
+	
+	* config/os/gnu-linux/ctype_base.h: Remove shadow headers injections.
+
 2002-09-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/locale/generic/messages_members.cc: Add specialization for
