@@ -1,5 +1,11 @@
 2004-11-28  Theodore A. Roth  <troth@openavr.org>
 
+	* config/avr/avr.c (avr_handle_fndecl_attribute): Generate a
+	warning if the function name does not begin with "__vector" and the
+	function has either the 'signal' or 'interrupt' attribute.
+
+2004-11-28  Theodore A. Roth  <troth@openavr.org>
+
 	* config/avr/avr.c (avr_mcu_types): Add entries for atmega48,
 	atmega88, atmega168, attiny13, attiny2313, at90can128, atmega165,
 	atmega325, atmega3250, atmega645 and atmega6450.
