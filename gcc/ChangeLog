@@ -1,3 +1,13 @@
+2003-01-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* genattr.c (main): Rearrange output to avoid prototype warning.
+	* genautomata.c (transform_3): Fix ambiguous-else warning.
+	* local-alloc.c (requires_inout): Add parentheses around
+	assignment used as truth-value.
+	* timevar.c: Move system includes above local includes.  Include
+	toplev.h
+	* Makefile.in (timevar.o): Depend on toplev.h.
+
 2003-01-14  Denis Chertykov  <denisc@overta.ru>
 
 	* config/ip2k/ip2k.h (VALID_MACHINE_DECL_ATTRIBUTE): Remove.

@@ -441,12 +441,12 @@ main (argc, argv)
       printf ("   unit with given code is currently reserved in given\n");
       printf ("   DFA state.  */\n");
       printf ("extern int cpu_unit_reservation_p PARAMS ((state_t, int));\n");
+      printf ("#endif\n\n");
       printf ("/* Clean insn code cache.  It should be called if there\n");
       printf ("   is a chance that condition value in a\n");
       printf ("   define_insn_reservation will be changed after\n");
       printf ("   last call of dfa_start.  */\n");
       printf ("extern void dfa_clean_insn_cache PARAMS ((void));\n\n");
-      printf ("#endif\n\n");
       printf ("/* Initiate and finish work with DFA.  They should be\n");
       printf ("   called as the first and the last interface\n");
       printf ("   functions.  */\n");

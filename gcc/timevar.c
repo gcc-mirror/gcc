@@ -21,17 +21,18 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
-#include "coretypes.h"
-#include "tm.h"
-#include "intl.h"
-#include "rtl.h"
-
 #ifdef HAVE_SYS_TIMES_H
 # include <sys/times.h>
 #endif
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
 #endif
+#include "coretypes.h"
+#include "tm.h"
+#include "intl.h"
+#include "rtl.h"
+#include "toplev.h"
+
 
 #ifndef HAVE_CLOCK_T
 typedef int clock_t;

@@ -1660,7 +1660,7 @@ cfglayout.o : cfglayout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $
    insn-config.h $(BASIC_BLOCK_H) hard-reg-set.h output.h function.h \
    cfglayout.h
 timevar.o : timevar.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TIMEVAR_H) flags.h \
-   intl.h
+   intl.h toplev.h
 regrename.o : regrename.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h $(RECOG_H) function.h \
    resource.h $(OBSTACK_H) flags.h $(TM_P_H)

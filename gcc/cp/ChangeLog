@@ -1,3 +1,9 @@
+2003-01-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decl2.c (check_classfn): Fix uninitialized warning.
+	(build_anon_union_vars): Likewise.
+	* pt.c (tsubst_copy): Likewise.
+
 2003-01-14  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 	Further conform g++'s __vmi_class_type_info to the C++ ABI

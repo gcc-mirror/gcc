@@ -2427,7 +2427,7 @@ requires_inout (p)
   int num_matching_alts = 0;
   int len;
 
-  for ( ; c = *p; p += len)
+  for ( ; (c = *p); p += len)
     {
       len = CONSTRAINT_LEN (c, p);
       switch (c)
