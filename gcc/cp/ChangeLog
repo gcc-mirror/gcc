@@ -1,3 +1,27 @@
+2003-10-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/12698, c++/12699, c++/12700, c++/12566
+	* cp-tree.h (THUNK_ALIAS_P, THUNK_ALIAS): New.
+	(debug_class, debug_thunks): New.
+	* class.c (dump_class_hierarchy_1): New break out from ...
+	(dump_class_hierarchy): ... here.
+	(dump_thunk, debug_thunks, debug_class): New.
+	(update_vtable_entry_for_fn): Add ssizetype casts. Correct
+	continued search for primary binfo via virtual.
+	(build_vtbl_initializer): Follow covariant thunk alias.
+	* method.c (make_thunk): Clear DECL_THUNKS of the thunk.
+	(finish_thunk): Look for an alias of the covariant thunk and point
+	to it.
+	(use_thunk): We should never use an alias.
+	* semantics.c (emit_associated_thunks): Do not emit aliases.
+
+	PR c++/12566
+	* cp-tree.h (cp_fname_init): Add TYPE pointer param.
+	* decl.c (cp_fname_init): Add TYPE pointer param. Set it. Don't
+	create an ad-hoc ERROR_MARK.
+	(cp_make_fname_decl): Adjust.
+	* pt.c (tsubst_expr): Adjust.
+
 2003-10-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/12726

@@ -166,9 +166,11 @@ static int make_new_vtable (tree, tree);
 static int maybe_indent_hierarchy (FILE *, int, int);
 static tree dump_class_hierarchy_r (FILE *, int, tree, tree, int);
 static void dump_class_hierarchy (tree);
+static void dump_class_hierarchy_1 (FILE *, int, tree);
 static void dump_array (FILE *, tree);
 static void dump_vtable (tree, tree, tree);
 static void dump_vtt (tree, tree);
+static void dump_thunk (FILE *, int, tree);
 static tree build_vtable (tree, tree, tree);
 static void initialize_vtable (tree, tree);
 static void initialize_array (tree, tree);
@@ -2178,7 +2180,7 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
 	  if (thunk_binfo && (kind == bk_via_virtual
 			      || !BINFO_OFFSET_ZEROP (thunk_binfo)))
 	    {
-	      tree offset = BINFO_OFFSET (thunk_binfo);
+	      tree offset = convert (ssizetype, BINFO_OFFSET (thunk_binfo));
 
 	      if (kind == bk_via_virtual)
 		{
@@ -2188,8 +2190,9 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
 		    thunk_binfo = BINFO_INHERITANCE_CHAIN (thunk_binfo);
 
 		  virtual_offset = thunk_binfo;
-		  offset = size_binop (MINUS_EXPR, offset,
-				       BINFO_OFFSET (virtual_offset));
+		  offset = size_diffop
+		    (offset, convert
+		     (ssizetype, BINFO_OFFSET (virtual_offset)));
 		}
 	      if (fixed_offset)
 		/* There was an existing fixed offset, this must be
@@ -2251,15 +2254,13 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
    	 primary binfo which first introduced the function into the
    	 vtable.  If that enters a virtual base, we must use a vcall
    	 this-adjusting thunk.  Bleah! */
-      tree probe;
+      tree probe = first_defn;
+
+      while ((probe = get_primary_binfo (probe))
+	     && (unsigned) list_length (BINFO_VIRTUALS (probe)) > ix)
+	if (TREE_VIA_VIRTUAL (probe))
+	  virtual_base = probe;
       
-      for (probe = first_defn; (probe = get_primary_binfo (probe));)
-	{
-	  if (TREE_VIA_VIRTUAL (probe))
-	    virtual_base = probe;
-	  if ((unsigned) list_length (BINFO_VIRTUALS (probe)) <= ix)
-	    break;
-	}
       if (virtual_base)
 	/* Even if we find a virtual base, the correct delta is
 	   between the overrider and the binfo we're building a vtable
@@ -2273,8 +2274,8 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
   if (virtual_base)
     /* The `this' pointer needs to be adjusted from the declaration to
        the nearest virtual base.  */
-    delta = size_diffop (BINFO_OFFSET (virtual_base),
-			 BINFO_OFFSET (first_defn));
+    delta = size_diffop (convert (ssizetype, BINFO_OFFSET (virtual_base)),
+			 convert (ssizetype, BINFO_OFFSET (first_defn)));
   else if (lost)
     /* If the nearest definition is in a lost primary, we don't need an
        entry in our vtable.  Except possibly in a constructor vtable,
@@ -2286,8 +2287,9 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
        BINFO to pointing at the base where the final overrider
        appears.  */
     virtual_covariant:
-    delta = size_diffop (BINFO_OFFSET (TREE_VALUE (overrider)),
-			 BINFO_OFFSET (binfo));
+    delta = size_diffop (convert (ssizetype,
+				  BINFO_OFFSET (TREE_VALUE (overrider))),
+			 convert (ssizetype, BINFO_OFFSET (binfo)));
 
   modify_vtable_entry (t, binfo, overrider_fn, delta, virtuals);
 
@@ -6575,14 +6577,8 @@ dump_class_hierarchy_r (FILE *stream,
 /* Dump the BINFO hierarchy for T.  */
 
 static void
-dump_class_hierarchy (tree t)
+dump_class_hierarchy_1 (FILE *stream, int flags, tree t)
 {
-  int flags;
-  FILE *stream = dump_begin (TDI_class, &flags);
-
-  if (!stream)
-    return;
-  
   fprintf (stream, "Class %s\n", type_as_string (t, TFF_PLAIN_IDENTIFIER));
   fprintf (stream, "   size=%lu align=%lu\n",
 	   (unsigned long)(tree_low_cst (TYPE_SIZE (t), 0) / BITS_PER_UNIT),
@@ -6594,7 +6590,27 @@ dump_class_hierarchy (tree t)
 			   / BITS_PER_UNIT));
   dump_class_hierarchy_r (stream, flags, TYPE_BINFO (t), TYPE_BINFO (t), 0);
   fprintf (stream, "\n");
-  dump_end (TDI_class, stream);
+}
+
+/* Debug interface to heirarchy dumping.  */
+
+extern void
+debug_class (tree t)
+{
+  dump_class_hierarchy_1 (stderr, TDF_SLIM, t);
+}
+
+static void
+dump_class_hierarchy (tree t)
+{
+  int flags;
+  FILE *stream = dump_begin (TDI_class, &flags);
+
+  if (stream)
+    {
+      dump_class_hierarchy_1 (stream, flags, t);
+      dump_end (TDI_class, stream);
+    }
 }
 
 static void
@@ -6667,6 +6683,53 @@ dump_vtt (tree t, tree vtt)
     }
   
   dump_end (TDI_class, stream);
+}
+
+/* Dump a function or thunk and its thunkees.  */
+
+static void
+dump_thunk (FILE *stream, int indent, tree thunk)
+{
+  static const char spaces[] = "        ";
+  tree name = DECL_NAME (thunk);
+  tree thunks;
+      
+  fprintf (stream, "%.*s%p %s %s", indent, spaces,
+	   (void *)thunk,
+	   !DECL_THUNK_P (thunk) ? "function"
+	   : DECL_THIS_THUNK_P (thunk) ? "this-thunk" : "covariant-thunk",
+	   name ? IDENTIFIER_POINTER (name) : "<unset>");
+  if (!DECL_THUNK_P (thunk))
+    /*NOP*/;
+  else if (THUNK_ALIAS_P (thunk))
+    fprintf (stream, " alias to %p", (void *)THUNK_ALIAS (thunk));
+  else
+    {
+      HOST_WIDE_INT fixed_adjust = THUNK_FIXED_OFFSET (thunk);
+      tree virtual_adjust = THUNK_VIRTUAL_OFFSET (thunk);
+
+      fprintf (stream, " fixed=" HOST_WIDE_INT_PRINT_DEC, fixed_adjust);
+      if (!virtual_adjust)
+	/*NOP*/;
+      else if (DECL_THIS_THUNK_P (thunk))
+	fprintf (stream, " vcall="  HOST_WIDE_INT_PRINT_DEC,
+		 tree_low_cst (virtual_adjust, 0));
+      else
+	fprintf (stream, " vbase=" HOST_WIDE_INT_PRINT_DEC "(%s)",
+		 tree_low_cst (BINFO_VPTR_FIELD (virtual_adjust), 0),
+		 type_as_string (BINFO_TYPE (virtual_adjust), TFF_SCOPE));
+    }
+  fprintf (stream, "\n");
+  for (thunks = DECL_THUNKS (thunk); thunks; thunks = TREE_CHAIN (thunks))
+    dump_thunk (stream, indent + 2, thunks);
+}
+
+/* Dump the thunks for FN.  */
+
+extern void
+debug_thunks (tree fn)
+{
+  dump_thunk (stderr, 0, fn);
 }
 
 /* Virtual function table initialization.  */
@@ -7327,6 +7390,11 @@ build_vtbl_initializer (tree binfo,
 	{
 	  if (!DECL_NAME (fn))
 	    finish_thunk (fn);
+	  if (THUNK_ALIAS_P (fn))
+	    {
+	      fn = THUNK_ALIAS (fn);
+	      BV_FN (v) = fn;
+	    }
 	  fn_original = THUNK_TARGET (fn);
 	}
       

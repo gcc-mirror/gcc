@@ -2827,15 +2827,20 @@ emit_associated_thunks (tree fn)
       
       for (thunk = DECL_THUNKS (fn); thunk; thunk = TREE_CHAIN (thunk))
 	{
-	  use_thunk (thunk, /*emit_p=*/1);
-	  if (DECL_RESULT_THUNK_P (thunk))
+	  if (!THUNK_ALIAS_P (thunk))
 	    {
-	      tree probe;
-
-	      for (probe = DECL_THUNKS (thunk);
-		   probe; probe = TREE_CHAIN (probe))
-		use_thunk (probe, /*emit_p=*/1);
+	      use_thunk (thunk, /*emit_p=*/1);
+	      if (DECL_RESULT_THUNK_P (thunk))
+		{
+		  tree probe;
+		  
+		  for (probe = DECL_THUNKS (thunk);
+		       probe; probe = TREE_CHAIN (probe))
+		    use_thunk (probe, /*emit_p=*/1);
+		}
 	    }
+	  else
+	    my_friendly_assert (!DECL_THUNKS (thunk), 20031023);
 	}
     }
 }
