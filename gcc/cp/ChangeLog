@@ -1,3 +1,15 @@
+2000-05-14  Jason Merrill  <jason@casey.cygnus.com>
+
+	* except.c (check_handlers): New fn.
+	* cp-tree.h: Declare it.
+	* semantics.c (finish_handler_sequence): Call it.
+	(finish_function_handler_sequence): Likewise.
+	(finish_handler_parms): Set TREE_TYPE on the handler.
+	* cp-tree.h (PUBLICLY_UNIQUELY_DERIVED_P): New macro.
+	* search.c (get_base_distance_recursive): If protect>1, ignore
+	special access.
+	(get_base_distance): Don't reduce watch_access.
+
 2000-05-13  Gabriel Dos Reis <gdr@codesourcery.com>
 
 	* lex.c: #include diagnostic.h.
