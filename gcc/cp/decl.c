@@ -13711,9 +13711,14 @@ start_function (declspecs, declarator, attrs, flags)
   current_function_decl = decl1;
   cfun->decl = decl1;
 
-  my_friendly_assert ((DECL_PENDING_INLINE_P (decl1) 
-		       || !DECL_SAVED_FUNCTION_DATA (decl1)),
-		      20000911);
+  /* If we are (erroneously) defining a function that we have already
+     defined before, wipe out what we knew before.  */
+  if (!DECL_PENDING_INLINE_P (decl1) 
+      && DECL_SAVED_FUNCTION_DATA (decl1))
+    {
+      free (DECL_SAVED_FUNCTION_DATA (decl1));
+      DECL_SAVED_FUNCTION_DATA (decl1) = NULL;
+    }
 
   if (ctype && !doing_friend && !DECL_STATIC_FUNCTION_P (decl1))
     {

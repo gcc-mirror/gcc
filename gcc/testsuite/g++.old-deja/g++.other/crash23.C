@@ -1,0 +1,7 @@
+// Build don't link:
+// Origin: Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>
+
+class T;
+inline void operator<(T&, T&) { }
+inline void operator<(T&, T&) { }
+
