@@ -159,7 +159,8 @@ encode (HOST_WIDE_INT *words, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
    The integer is stored into *LOW and *HI as two `HOST_WIDE_INT' pieces.  */
 
 static void
-decode (HOST_WIDE_INT *words, unsigned HOST_WIDE_INT *low, HOST_WIDE_INT *hi)
+decode (HOST_WIDE_INT *words, unsigned HOST_WIDE_INT *low,
+	HOST_WIDE_INT *hi)
 {
   *low = words[0] + words[1] * BASE;
   *hi = words[2] + words[3] * BASE;
@@ -252,8 +253,9 @@ force_fit_type (tree t, int overflow)
    The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 int
-add_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, unsigned HOST_WIDE_INT l2,
-	    HOST_WIDE_INT h2, unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
+add_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
+	    unsigned HOST_WIDE_INT l2, HOST_WIDE_INT h2,
+	    unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
 {
   unsigned HOST_WIDE_INT l;
   HOST_WIDE_INT h;
@@ -272,8 +274,8 @@ add_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, unsigned HOST_WIDE_INT 
    The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 int
-neg_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, unsigned HOST_WIDE_INT *lv,
-	    HOST_WIDE_INT *hv)
+neg_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
+	    unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
 {
   if (l1 == 0)
     {
@@ -296,8 +298,9 @@ neg_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, unsigned HOST_WIDE_INT 
    The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 int
-mul_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, unsigned HOST_WIDE_INT l2,
-	    HOST_WIDE_INT h2, unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
+mul_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
+	    unsigned HOST_WIDE_INT l2, HOST_WIDE_INT h2,
+	    unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
 {
   HOST_WIDE_INT arg1[4];
   HOST_WIDE_INT arg2[4];
@@ -353,9 +356,9 @@ mul_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, unsigned HOST_WIDE_INT 
    Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 void
-lshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, HOST_WIDE_INT count,
-	       unsigned int prec, unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv,
-	       int arith)
+lshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
+	       HOST_WIDE_INT count, unsigned int prec,
+	       unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv, int arith)
 {
   unsigned HOST_WIDE_INT signmask;
 
@@ -417,8 +420,9 @@ lshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, HOST_WIDE_INT count,
    Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 void
-rshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, HOST_WIDE_INT count,
-	       unsigned int prec, unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv,
+rshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
+	       HOST_WIDE_INT count, unsigned int prec,
+	       unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv,
 	       int arith)
 {
   unsigned HOST_WIDE_INT signmask;
@@ -479,8 +483,9 @@ rshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, HOST_WIDE_INT count,
    Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 void
-lrotate_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, HOST_WIDE_INT count,
-		unsigned int prec, unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
+lrotate_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
+		HOST_WIDE_INT count, unsigned int prec,
+		unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
 {
   unsigned HOST_WIDE_INT s1l, s2l;
   HOST_WIDE_INT s1h, s2h;
@@ -500,8 +505,9 @@ lrotate_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, HOST_WIDE_INT count
    Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 void
-rrotate_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, HOST_WIDE_INT count,
-		unsigned int prec, unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
+rrotate_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
+		HOST_WIDE_INT count, unsigned int prec,
+		unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
 {
   unsigned HOST_WIDE_INT s1l, s2l;
   HOST_WIDE_INT s1h, s2h;
@@ -530,7 +536,8 @@ div_and_round_double (enum tree_code code, int uns,
 		      unsigned HOST_WIDE_INT lnum_orig, /* num == numerator == dividend */
 		      HOST_WIDE_INT hnum_orig,
 		      unsigned HOST_WIDE_INT lden_orig, /* den == denominator == divisor */
-		      HOST_WIDE_INT hden_orig, unsigned HOST_WIDE_INT *lquo,
+		      HOST_WIDE_INT hden_orig,
+		      unsigned HOST_WIDE_INT *lquo,
 		      HOST_WIDE_INT *hquo, unsigned HOST_WIDE_INT *lrem,
 		      HOST_WIDE_INT *hrem)
 {
@@ -906,7 +913,8 @@ negate_expr (tree t)
    same type as IN, but they will have the same signedness and mode.  */
 
 static tree
-split_tree (tree in, enum tree_code code, tree *conp, tree *litp, tree *minus_litp, int negate_p)
+split_tree (tree in, enum tree_code code, tree *conp, tree *litp,
+	    tree *minus_litp, int negate_p)
 {
   tree var = 0;
 
@@ -2416,7 +2424,8 @@ distribute_bit_expr (enum tree_code code, tree type, tree arg0, tree arg1)
    starting at BITPOS.  The field is unsigned if UNSIGNEDP is nonzero.  */
 
 static tree
-make_bit_field_ref (tree inner, tree type, int bitsize, int bitpos, int unsignedp)
+make_bit_field_ref (tree inner, tree type, int bitsize, int bitpos,
+		    int unsignedp)
 {
   tree result = build (BIT_FIELD_REF, type, inner,
 		       size_int (bitsize), bitsize_int (bitpos));
@@ -2447,7 +2456,8 @@ make_bit_field_ref (tree inner, tree type, int bitsize, int bitpos, int unsigned
    tree.  Otherwise we return zero.  */
 
 static tree
-optimize_bit_field_compare (enum tree_code code, tree compare_type, tree lhs, tree rhs)
+optimize_bit_field_compare (enum tree_code code, tree compare_type,
+			    tree lhs, tree rhs)
 {
   HOST_WIDE_INT lbitpos, lbitsize, rbitpos, rbitsize, nbitpos, nbitsize;
   tree type = TREE_TYPE (lhs);
@@ -2621,8 +2631,9 @@ optimize_bit_field_compare (enum tree_code code, tree compare_type, tree lhs, tr
    do anything with.  */
 
 static tree
-decode_field_reference (tree exp, HOST_WIDE_INT *pbitsize, HOST_WIDE_INT *pbitpos,
-			enum machine_mode *pmode, int *punsignedp, int *pvolatilep,
+decode_field_reference (tree exp, HOST_WIDE_INT *pbitsize,
+			HOST_WIDE_INT *pbitpos, enum machine_mode *pmode,
+			int *punsignedp, int *pvolatilep,
 			tree *pmask, tree *pand_mask)
 {
   tree outer_type = 0;
@@ -2821,8 +2832,8 @@ simple_operand_p (tree exp)
    type if both are specified.  */
 
 static tree
-range_binop (enum tree_code code, tree type, tree arg0, int upper0_p, tree arg1,
-	     int upper1_p)
+range_binop (enum tree_code code, tree type, tree arg0, int upper0_p,
+	     tree arg1, int upper1_p)
 {
   tree tem;
   int result;
@@ -3228,8 +3239,8 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
    can, 0 if we can't.  Set the output range into the specified parameters.  */
 
 static int
-merge_ranges (int *pin_p, tree *plow, tree *phigh, int in0_p, tree low0, tree high0,
-	      int in1_p, tree low1, tree high1)
+merge_ranges (int *pin_p, tree *plow, tree *phigh, int in0_p, tree low0,
+	      tree high0, int in1_p, tree low1, tree high1)
 {
   int no_overlap;
   int subset;
@@ -4397,7 +4408,8 @@ count_cond (tree expr, int lim)
    original expression.  */
 
 static tree
-fold_binary_op_with_conditional_arg (enum tree_code code, tree type, tree cond, tree arg, int cond_first_p)
+fold_binary_op_with_conditional_arg (enum tree_code code, tree type,
+				     tree cond, tree arg, int cond_first_p)
 {
   tree test, true_value, false_value;
   tree lhs = NULL_TREE;
@@ -4575,7 +4587,8 @@ fold_real_zero_addition_p (tree type, tree addend, int negate)
    can be made, and NULL_TREE otherwise.  */
 
 static tree
-fold_mathfn_compare (enum built_in_function fcode, enum tree_code code, tree type, tree arg0, tree arg1)
+fold_mathfn_compare (enum built_in_function fcode, enum tree_code code,
+		     tree type, tree arg0, tree arg1)
 {
   REAL_VALUE_TYPE c;
 
