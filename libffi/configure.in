@@ -32,7 +32,8 @@ fi
 AC_SUBST(libffi_basedir)
 AC_CONFIG_AUX_DIR(${libffi_basedir}..)
 
-AC_CANONICAL_HOST
+AC_CANONICAL_SYSTEM
+target_alias=${target_alias-$host_alias}
 
 AM_PROG_LIBTOOL
 
@@ -42,7 +43,12 @@ AC_EXEEXT
 AM_MAINTAINER_MODE
 
 AC_PROG_CC
+
 AC_PROG_LIBTOOL
+
+dnl The -no-testsuite modules omit the test subdir.
+AM_CONDITIONAL(TESTSUBDIR, test -d $srcdir/testsuite)
+
 
 TARGETDIR="unknown"
 case "$host" in
@@ -77,6 +83,8 @@ x86_64-*-linux*) TARGET=X86_64; TARGETDIR=x86;;
 sh-*-linux* | sh[[34]]*-*-linux*) TARGET=SH; TARGETDIR=sh;;
 sh64-*-linux* | sh5*-*-linux*) TARGET=SH64; TARGETDIR=sh64;;
 esac
+
+AC_SUBST(AM_RUNTESTFLAGS)
 
 if test $TARGETDIR = unknown; then
   AC_ERROR("libffi has not been ported to $host.")
@@ -221,7 +229,7 @@ else
   multilib_arg=
 fi
 
-AC_OUTPUT(include/Makefile include/ffi.h Makefile,
+AC_OUTPUT(include/Makefile testsuite/Makefile include/ffi.h Makefile,
 [
 if test -n "$CONFIG_FILES"; then
    LD="${ORIGINAL_LD_FOR_MULTILIBS}"

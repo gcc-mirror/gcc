@@ -2,7 +2,8 @@
 
 AUTOMAKE_OPTIONS = cygnus
 
-SUBDIRS = include
+SUBDIRS = include testsuite
+
 
 EXTRA_DIST = LICENSE ChangeLog.v1 src/mips/ffi.c src/mips/n32.S \
 		src/mips/n32.s src/mips/o32.S src/mips/o32.s \
@@ -52,6 +53,7 @@ AM_MAKEFLAGS = \
 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
 	"PICFLAG=$(PICFLAG)" \
 	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
+	"RUNTESTFLAGS=$(RUNTESTFLAGS)" \
 	"SHELL=$(SHELL)" \
 	"exec_prefix=$(exec_prefix)" \
 	"infodir=$(infodir)" \
@@ -83,7 +85,6 @@ noinst_LTLIBRARIES = libffi_convenience.la
 
 noinst_PROGRAMS = ffitest
 
-ffitest_OBJECTS = ffitest.lo
 ffitest_LDADD = libffi.la
 ffitest_LDFLAGS = -shared-libgcc
 
@@ -178,7 +179,7 @@ libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_SH64)
 libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_SH64)
 endif
 
-AM_CFLAGS = -fexceptions
+AM_CFLAGS = -Wall -g -fexceptions
 
 libffi_la_LDFLAGS = -release $(VERSION) 
 
@@ -231,3 +232,7 @@ maintainer-clean-multi:
 
 ## ################################################################
 
+CLEANFILES = $(libffi_convenience_la_OBJECTS)		\
+	     $(libffi_la_OBJECTS) 			\
+	     $(libffi_convenience_la_OBJECTS:.lo=.o)	\
+	     $(libffi_la_OBJECTS:.lo=.o)
