@@ -1,2 +1,2 @@
 extern void _text;
-static __SIZE_TYPE__ x = (__SIZE_TYPE__) &_text - 0x10000000L - 1;
+static unsigned long x = (unsigned long) &_text - 0x10000000L - 1;
