@@ -1,3 +1,8 @@
+2001-10-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* hex.c (hex_init): Delete.
+	(_hex_value): Const-ify and initialize at compile-time.
+
 2001-10-19  H.J. Lu <hjl@gnu.org>
 
 	* Makefile.in ($(TARGETLIB)): Also generate pic/$(TARGETLIB) if

@@ -1,3 +1,8 @@
+2001-10-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libiberty.h (_hex_value): Const-ify.
+	(hex_init): Delete.
+
 2001-10-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* demangle.h (demangler_engine): Const-ify.
