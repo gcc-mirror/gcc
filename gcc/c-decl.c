@@ -1549,7 +1549,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
     = composite_type (newtype, oldtype);
 
   /* Lay the type out, unless already done.  */
-  if (oldtype != TREE_TYPE (newdecl))
+  if (!comptypes (oldtype, TREE_TYPE (newdecl)))
     {
       if (TREE_TYPE (newdecl) != error_mark_node)
 	layout_type (TREE_TYPE (newdecl));
