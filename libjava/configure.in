@@ -386,6 +386,7 @@ EXTRA_CC_FILES=
 AC_SUBST(EXTRA_CC_FILES)
 
 PLATFORMOBJS=
+PLATFORM_INNER_NAT_HDRS=
 case "$TARGET_ECOS" in
    no) case "$host" in
       *mingw*)
@@ -400,6 +401,7 @@ case "$TARGET_ECOS" in
 	    PLATFORMNET=Posix
             PLATFORMOBJS=posix.lo
 	    PLATFORMH=posix.h
+	    PLATFORM_INNER_NAT_HDRS='java/lang/ConcreteProcess$$ProcessManager.h'
       ;;
       esac
       ;;
@@ -412,6 +414,7 @@ case "$TARGET_ECOS" in
       ;;
 esac
 AC_SUBST(PLATFORMOBJS)
+AC_SUBST(PLATFORM_INNER_NAT_HDRS)
 AC_CONFIG_LINKS(include/platform.h:include/$PLATFORMH)
 
 AC_EGREP_HEADER(uint32_t, stdint.h, AC_DEFINE(HAVE_INT32_DEFINED, 1,

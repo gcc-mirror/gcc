@@ -532,7 +532,8 @@ inner_nat_headers = java/io/ObjectOutputStream$$PutField.h \
 	gnu/java/net/PlainSocketImpl$$SocketInputStream.h \
 	gnu/java/net/PlainSocketImpl$$SocketOutputStream.h \
 	gnu/java/nio/PipeImpl$$SinkChannelImpl.h \
-	gnu/java/nio/PipeImpl$$SourceChannelImpl.h
+	gnu/java/nio/PipeImpl$$SourceChannelImpl.h \
+	$(PLATFORM_INNER_NAT_HDRS)
 
 nat_headers = $(ordinary_nat_headers) $(inner_nat_headers)
 nat_headers_install = $(ordinary_nat_headers)
@@ -641,6 +642,11 @@ gnu/java/nio/PipeImpl$$SinkChannelImpl.h: gnu/java/nio/PipeImpl.class
 gnu/java/nio/PipeImpl$$SourceChannelImpl.h: gnu/java/nio/PipeImpl.class
 	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
 	'gnu/java/nio/PipeImpl$$SourceChannelImpl'
+
+## Only used by PosixProcess.java
+java/lang/ConcreteProcess$$ProcessManager.h: java/lang/ConcreteProcess.class
+	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
+	'java/lang/ConcreteProcess$$ProcessManager'
 
 ## Headers we maintain by hand and which we want to install.
 extra_headers = java/lang/Object.h java/lang/Class.h

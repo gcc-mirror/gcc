@@ -1,5 +1,5 @@
 /* Runtime.java -- access to the VM process
-   Copyright (C) 1998, 2002, 2003 Free Software Foundation
+   Copyright (C) 1998, 2002, 2003, 2004 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -734,8 +734,11 @@ public class Runtime
    * @param dir the directory to use, may be null
    * @return the newly created process
    * @throws NullPointerException if cmd or env have null elements
+   * @throws IOException if the exec fails
    */
-  native Process execInternal(String[] cmd, String[] env, File dir);
+  native Process execInternal(String[] cmd, String[] env, File dir)
+    throws IOException;
+    
 
   /**
    * Get the system properties. This is done here, instead of in System,
