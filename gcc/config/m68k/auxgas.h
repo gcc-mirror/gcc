@@ -32,8 +32,6 @@ Boston, MA 02111-1307, USA.  */
   fprintf (FILE, "\t.ident \"%s\"\n", NAME);
 
 #ifdef USE_COLLECT2
-#undef ASM_OUTPUT_CONSTRUCTOR
-#undef ASM_OUTPUT_DESTRUCTOR
 /* for the sake of link-level compatibility with /bin/as version */
 #define NO_DOLLAR_IN_LABEL
 #define NO_DOT_IN_LABEL

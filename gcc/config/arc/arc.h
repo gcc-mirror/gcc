@@ -1373,28 +1373,6 @@ do {						\
    that we use).  */
 #define SET_ASM_OP "\t.set\t"
 
-/* A C statement (sans semicolon) to output an element in the table of
-   global constructors.  */
-#undef ASM_OUTPUT_CONSTRUCTOR
-#define ASM_OUTPUT_CONSTRUCTOR(FILE, NAME) \
-do {					\
-  ctors_section ();			\
-  fprintf (FILE, "\t.word\t%%st(");	\
-  assemble_name (FILE, NAME);		\
-  fprintf (FILE, ")\n");		\
-} while (0)
-
-/* A C statement (sans semicolon) to output an element in the table of
-   global destructors.  */
-#undef ASM_OUTPUT_DESTRUCTOR
-#define ASM_OUTPUT_DESTRUCTOR(FILE, NAME) \
-do {					\
-  dtors_section ();			\
-  fprintf (FILE, "\t.word\t%%st(");	\
-  assemble_name (FILE, NAME);		\
-  fprintf (FILE, ")\n");		\
-} while (0)
-
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
 #define REGISTER_NAMES \

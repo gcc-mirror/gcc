@@ -36,6 +36,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "toplev.h"
 #include "output.h"
 #include "parse.h"
+#include "function.h"
 #include "ggc.h"
 #include "target.h"
 
@@ -1881,6 +1882,9 @@ register_class ()
 void
 emit_register_classes ()
 {
+  /* ??? This isn't quite the correct test.  We also have to know
+     that the target is using gcc's crtbegin/crtend objects rather
+     than the ones that come with the operating system.  */
   if (SUPPORTS_WEAK && targetm.have_named_sections)
     {
       tree t;
@@ -1902,29 +1906,37 @@ emit_register_classes ()
       SET_DECL_ASSEMBLER_NAME (init_decl, init_name);
       TREE_STATIC (init_decl) = 1;
       current_function_decl = init_decl;
-      DECL_RESULT (init_decl) = build_decl(RESULT_DECL, NULL_TREE, void_type_node);
-      /*  DECL_EXTERNAL (init_decl) = 1;*/
-      TREE_PUBLIC (init_decl) = 1;
+      DECL_RESULT (init_decl) = build_decl (RESULT_DECL, NULL_TREE,
+					    void_type_node);
+
+      /* It can be a static function as long as collect2 does not have
+         to scan the object file to find its ctor/dtor routine.  */
+      TREE_PUBLIC (init_decl) = ! targetm.have_ctors_dtors;
+
+      /* Suppress spurious warnings.  */
+      TREE_USED (init_decl) = 1;
+
       pushlevel (0);
       make_decl_rtl (init_decl, NULL);
       init_function_start (init_decl, input_filename, 0);
       expand_function_start (init_decl, 0);
-      
+
+      /* Do not allow the function to be deferred.  */
+      current_function_cannot_inline
+	= "static constructors and destructors cannot be inlined";
+
       for ( t = registered_class; t; t = TREE_CHAIN (t))
 	emit_library_call (registerClass_libfunc, 0, VOIDmode, 1,
 			   XEXP (DECL_RTL (t), 0), Pmode);
       
       expand_function_end (input_filename, 0, 0);
       poplevel (1, 0, 1);
-      { 
-	/* Force generation, even with -O3 or deeper. Gross hack. FIXME */
-	int saved_flag = flag_inline_functions;
-	flag_inline_functions = 0;	
-	rest_of_compilation (init_decl);
-	flag_inline_functions = saved_flag;
-      }
+      rest_of_compilation (init_decl);
       current_function_decl = NULL_TREE;
-      assemble_constructor (XEXP (DECL_RTL (init_decl), 0), DEFAULT_INIT_PRIORITY);
+
+      if (targetm.have_ctors_dtors)
+	(* targetm.asm_out.constructor) (XEXP (DECL_RTL (init_decl), 0),
+					 DEFAULT_INIT_PRIORITY);
     }
 }
 

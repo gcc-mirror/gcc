@@ -248,27 +248,8 @@ const_section ()					\
    that are needed to tell the startup code which constructors need to
    be run.  */
 
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
-{									\
-  fprintf ((FILE),".globl $$PsectAttributes_NOOVR$$__gxx_init_1\n"); 	\
-  data_section();							\
-  fprintf ((FILE),"$$PsectAttributes_NOOVR$$__gxx_init_1:\n\t.long\t"); \
-  assemble_name ((FILE), (NAME));					\
-  fputc ('\n', (FILE));							\
-}
-
-/* This is used by a hook in varasm.c to write the assembler directives
-   that are needed to tell the startup code which destructors need to
-   be run.  */
-
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)				\
-{									\
-  fprintf ((FILE),".globl $$PsectAttributes_NOOVR$$__gxx_clean_1\n"); 	\
-  data_section();							\
-  fprintf ((FILE),"$$PsectAttributes_NOOVR$$__gxx_clean_1:\n\t.long\t");\
-  assemble_name ((FILE), (NAME));					\
-  fputc ('\n', (FILE));							\
-}
+#define TARGET_ASM_CONSTRUCTOR  vms_asm_out_constructor
+#define TARGET_ASM_DESTRUCTOR   vms_asm_out_destructor
 
 /* The following definitions are used in libgcc2.c with the __main
    function.  The _SHR symbol is used when the sharable image library

@@ -31,6 +31,21 @@ Boston, MA 02111-1307, USA.  */
 #undef SELECT_RTX_SECTION
 #include "svr3.h"
 
+/* We use collect2 instead of ctors_section constructors.  */
+#undef INIT_SECTION_ASM_OP
+#undef FINI_SECTION_ASM_OP
+#undef DTORS_SECTION_ASM_OP
+#undef DO_GLOBAL_CTORS_BODY
+
+/* Remove handling for a separate constant data section.  We put
+   constant data in text_section, which is the default.  */
+#undef SELECT_SECTION
+#undef SELECT_RTX_SECTION
+#undef EXTRA_SECTIONS
+#undef EXTRA_SECTION_FUNCTIONS
+#undef CONST_SECTION_ASM_OP
+#undef READONLY_DATA_SECTION
+
 #define DPX2
 
 /* See m68k.h.  7 means 68020 with 68881.
@@ -84,24 +99,11 @@ Boston, MA 02111-1307, USA.  */
 /* The native assembler doesn't support fmovecr.  */
 #define NO_ASM_FMOVECR
 
-#undef EXTRA_SECTIONS
-#undef EXTRA_SECTION_FUNCTIONS
-#undef READONLY_DATA_SECTION
-#define READONLY_DATA_SECTION data_section
-#undef SELECT_SECTION
-#undef SELECT_RTX_SECTION
-#define fini_section() while (0)
-
-#undef CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP "\tsection 15"
-#undef DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP "\tsection 15"
-#undef INIT_SECTION_ASM_OP
-#define BSS_SECTION_ASM_OP     "\tsection 14"
 #undef TEXT_SECTION_ASM_OP
-#define TEXT_SECTION_ASM_OP    "\tsection 10"
+#define TEXT_SECTION_ASM_OP	"\tsection 10"
 #undef DATA_SECTION_ASM_OP
-#define DATA_SECTION_ASM_OP  "\tsection 15"
+#define DATA_SECTION_ASM_OP	"\tsection 15"
+#define BSS_SECTION_ASM_OP	"\tsection 14"
 
 
 /* Don't try using XFmode.  */

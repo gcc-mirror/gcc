@@ -1,3 +1,8 @@
+2001-08-09  Richard Henderson  <rth@redhat.com>
+
+	* decl2.c (finish_objects): Use target hooks instead of
+	assemble_constructor and assemble_destructor.
+
 2001-08-08  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* g++spec.c (lang_specific_driver): Quote argument after `-Xlinker'.

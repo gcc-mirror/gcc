@@ -94,15 +94,6 @@ Boston, MA 02111-1307, USA.  */
    unless the specific tm.h file turns it on by defining
    USE_CONST_SECTION as 1.  */
 
-/* Define a few machine-specific details of the implementation of
-   constructors.
-
-   The __CTORS_LIST__ goes in the .init section.  Define CTOR_LIST_BEGIN
-   and CTOR_LIST_END to contribute to the .init section an instruction to
-   push a word containing 0 (or some equivalent of that).
-
-   Define ASM_OUTPUT_CONSTRUCTOR to push the address of the constructor.  */
-
 #define USE_CONST_SECTION	0
 
 #define INIT_SECTION_ASM_OP     "\t.section\t.init"
@@ -113,8 +104,12 @@ Boston, MA 02111-1307, USA.  */
 
 /* CTOR_LIST_BEGIN and CTOR_LIST_END are machine-dependent
    because they push on the stack.  */
+/* This is copied from i386/sysv3.h.  */
 
-#ifdef STACK_GROWS_DOWNWARD
+#define CTOR_LIST_BEGIN				\
+  asm (INIT_SECTION_ASM_OP);			\
+  asm ("pushl $0")
+#define CTOR_LIST_END CTOR_LIST_BEGIN
 
 /* Constructor list on stack is in reverse order.  Go to the end of the
    list and go backwards to call constructors in the right order.  */
@@ -126,18 +121,6 @@ do {								\
   while (p != beg)						\
     (*--p) ();							\
 } while (0)
-
-#else
-
-/* Constructor list on stack is in correct order.  Just call them.  */
-#define DO_GLOBAL_CTORS_BODY					\
-do {								\
-  func_ptr *p, *beg = alloca (0);				\
-  for (p = beg; *p; )						\
-    (*p++) ();							\
-} while (0)
-
-#endif /* STACK_GROWS_DOWNWARD */
 
 /* Add extra sections .rodata, .init and .fini.  */
 
@@ -187,44 +170,7 @@ const_section ()							\
     }									\
 }
 
-/* The ctors and dtors sections are not normally put into use 
-   by EXTRA_SECTIONS and EXTRA_SECTION_FUNCTIONS as defined in svr3.h,
-   but it can't hurt to define these macros for whatever systems use them.  */
-#define CTORS_SECTION_FUNCTION						\
-void									\
-ctors_section ()							\
-{									\
-  if (in_section != in_ctors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);		\
-      in_section = in_ctors;						\
-    }									\
-}
-
-#define DTORS_SECTION_FUNCTION						\
-void									\
-dtors_section ()							\
-{									\
-  if (in_section != in_dtors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);		\
-      in_section = in_dtors;						\
-    }									\
-}
-
-/* This is machine-dependent
-   because it needs to push something on the stack.  */
-#undef ASM_OUTPUT_CONSTRUCTOR
-
-/* A C statement (sans semicolon) to output an element in the table of
-   global destructors.  */
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
-  do {									\
-    fini_section ();                   					\
-    fputs (ASM_LONG, FILE);						\
-    assemble_name (FILE, NAME);              				\
-    fprintf (FILE, "\n");						\
-  } while (0)
+#define TARGET_ASM_CONSTRUCTOR  ix86_svr3_asm_out_constructor
 
 /* A C statement or statements to switch to the appropriate
    section for output of DECL.  DECL is either a `VAR_DECL' node
@@ -262,31 +208,3 @@ dtors_section ()							\
    go into the const section.  */
 
 #define SELECT_RTX_SECTION(MODE,RTX) const_section()
-
-/* This is copied from i386/sysv3.h.  */
-
-/* Define a few machine-specific details of the implementation of
-   constructors.
-
-   The __CTORS_LIST__ goes in the .init section.  Define CTOR_LIST_BEGIN
-   and CTOR_LIST_END to contribute to the .init section an instruction to
-   push a word containing 0 (or some equivalent of that).
-
-   ASM_OUTPUT_CONSTRUCTOR should be defined to push the address of the
-   constructor.  */
-
-#undef INIT_SECTION_ASM_OP
-#define INIT_SECTION_ASM_OP     "\t.section .init,\"x\""
-
-#define CTOR_LIST_BEGIN				\
-  asm (INIT_SECTION_ASM_OP);			\
-  asm ("pushl $0")
-#define CTOR_LIST_END CTOR_LIST_BEGIN
-
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
-  do {						\
-    init_section ();				\
-    fprintf (FILE, "\tpushl $");		\
-    assemble_name (FILE, NAME);			\
-    fprintf (FILE, "\n");			\
-  } while (0)

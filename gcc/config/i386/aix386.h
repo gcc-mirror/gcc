@@ -60,10 +60,5 @@ Boston, MA 02111-1307, USA.  */
   asm ("pushl $0")
 #define CTOR_LIST_END CTOR_LIST_BEGIN
 
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
-  do {						\
-    init_section ();				\
-    fprintf (FILE, "\tpushl $");		\
-    assemble_name (FILE, NAME);			\
-    fprintf (FILE, "\n");			\
-  } while (0)
+#undef TARGET_ASM_CONSTRUCTOR
+#define TARGET_ASM_CONSTRUCTOR  ix86_svr3_asm_out_constructor

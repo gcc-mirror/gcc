@@ -1,5 +1,165 @@
 2001-08-09  Richard Henderson  <rth@redhat.com>
 
+	* Makefile.in (MAYBE_USE_COLLECT2): Remove; purge all uses.
+	(USE_COLLECT2): Remove duplicate definition.
+	* config.gcc (a29k-udi, a29k-wrs-vxworks) [tm_file]: Remove a29k/udi.h.
+	(use_collect2): Remove dead code.
+	* configure.in (use_collect2): Remove will_use_collect2 and
+	maybe_use_collect2; add USE_COLLECT2 to host_xm_defines and xm_defines.
+	* configure: Rebuild.
+
+	* target.h (targetm.asm_out.constructor): New.
+	(targetm.asm_out.destructor, targetm.have_ctors_dtors): New.
+	* target-def.h (TARGET_ASM_CONSTRUCTOR): New.
+	(TARGET_ASM_DESTRUCTOR, TARGET_HAVE_CTORS_DTORS): New.
+	* varasm.c (in_ctors, in_dtors): New.
+	(assemble_constructor, assemble_destructor): Remove.
+	(default_stabs_asm_out_destructor): New.
+	(default_named_section_asm_out_destructor): New.
+	(dtors_section, default_dtor_section_asm_out_destructor): New.
+	(default_stabs_asm_out_constructor): New.
+	(default_named_section_asm_out_constructor): New.
+	(ctors_section, default_ctor_section_asm_out_constructor): New.
+	* output.h: Update declarations.
+	* c-decl.c (c_expand_body): Use target hooks instead of
+	assemble_constructor and assemble_destructor.
+	* profile.c (output_func_start_profiler): Likewise.
+	* objc/objc-act.c (finish_objc): Likewise.
+	(build_module_descriptor): Tidy.  Set TREE_PUBLIC properly
+	for the constructor.
+	* objc/Make-lang.in (objc-act.o): Depend on TARGET_H.
+
+	* crtstuff.c (CTORS_SECTION_ASM_OP): Don't define.
+	(DTORS_SECTION_ASM_OP): Likewise.
+	(__CTOR_LIST__): Use attribute section when possible.
+	(__DTOR_LIST__, __CTOR_END__, __DTOR_END__): Likewise.
+
+	* defaults.h (EH_FRAME_SECTION_NAME): Don't depend on
+	ASM_OUTPUT_CONSTRUCTOR.
+
+	* config/darwin.c (machopic_asm_out_constructor): New.
+	(machopic_asm_out_destructor): New.
+	* config/darwin-protos.h: Update declarations.
+	* config/darwin.h (ASM_OUTPUT_CONSTRUCTOR): Remove.
+	(ASM_OUTPUT_DESTRUCTOR): Remove.
+	(TARGET_ASM_CONSTRUCTOR, TARGET_ASM_DESTRUCTOR): New.
+	* config/nextstep.c (nextstep_asm_out_constructor): New.
+	(nextstep_asm_out_destructor): New.
+	* config/nextstep.h (ASM_OUTPUT_CONSTRUCTOR): Remove.
+	(ASM_OUTPUT_DESTRUCTOR): Remove.
+	(TARGET_ASM_CONSTRUCTOR, TARGET_ASM_DESTRUCTOR): New.
+	* config/nextstep21.h: Undef TARGET_ASM_*STRUCTOR instead of
+	ASM_OUTPUT_*STRUCTOR.
+	* config/i386/aix386ng.h: Likewise.
+
+	* config/elfos.h (CTORS_SECTION_ASM_OP, DTORS_SECTION_ASM_OP): Remove.
+	(EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS): No ctors/dtors.
+	(CTORS_SECTION_FUNCTION, DTORS_SECTION_FUNCTION): Remove.
+	(ASM_OUTPUT_CONSTRUCTOR, ASM_OUTPUT_DESTRUCTOR): Remove.
+	* config/lynx.h: Likewise.
+	* config/netware.h: Likewise.
+	* config/psos.h: Likewise.
+	* config/alpha/alpha-interix.h: Likewise.
+	* config/alpha/elf.h: Likewise.
+	* config/arc/arc.h: Likewise.
+	* config/arm/aof.h: Likewise.
+	* config/arm/coff.h: Likewise.
+	* config/arm/elf.h: Likewise.
+	* config/c4x/c4x.h: Likewise.
+	* config/h8300/h8300.h: Likewise.
+	* config/i386/cygwin.h: Likewise.
+	* config/i386/djgpp.h: Likewise.
+	* config/i386/i386-coff.h: Likewise.
+	* config/i386/i386-interix.h: Likewise.
+	* config/i386/sco5.h: Likewise.
+	* config/i386/vsta.h: Likewise.
+	* config/i386/win32.h: Likewise.
+	* config/i960/i960-coff.h: Likewise.
+	* config/ia64/sysv4.h: Likewise.
+	* config/m68hc11/m68hc11.h: Likewise.
+	* config/m68k/coff.h: Likewise.
+	* config/m68k/mot3300.h: Likewise.
+	* config/m88k/m88k.h: Likewise.
+	* config/mcore/mcore-pe.h: Likewise.
+	* config/mcore/mcore.h: Likewise.
+	* config/mips/elf.h: Likewise.
+	* config/mips/elf64.h: Likewise.
+	* config/mips/iris6.h: Likewise.
+	* config/pa/pa64-hpux.h: Likewise.
+	* config/rs6000/sysv4.h: Likewise.
+	* config/sh/sh.h: Likewise.
+	* config/sparc/litecoff.h: Likewise.
+
+	* config/svr3.h (CTORS_SECTION_ASM_OP): Remove.
+	(CTORS_SECTION_FUNCTION, DTORS_SECTION_FUNCTION): Remove.
+	(ASM_OUTPUT_CONSTRUCTOR, ASM_OUTPUT_DESTRUCTOR): Remove.
+	* config/1750a/1750a.h (ASM_OUTPUT_CONSTRUCTOR): Remove.
+	(ASM_OUTPUT_DESTRUCTOR): Remove.
+	* config/a29k/a29k.c: Move include of tree.h.
+	* config/a29k/udi.h: Delete file.
+	* config/alpha/alpha.c (vms_asm_out_constructor): New.
+	(vms_asm_out_destructor): New.
+	* config/alpha/vms.h (EXTRA_SECTIONS): No ctors/dtors.
+	(EXTRA_SECTION_FUNCTIONS): Likewise.
+	(ASM_OUTPUT_CONSTRUCTOR, ASM_OUTPUT_DESTRUCTOR): Remove.
+	(TARGET_ASM_CONSTRUCTOR, TARGET_ASM_DESTRUCTOR): New.
+	* config/c4x/c4x.c: Move include of tree.h.
+	* config/clipper/clipper.c (clix_asm_out_constructor): New.	
+	(clix_asm_out_destructor): New.
+	* config/clipper/clix.h (ASM_OUTPUT_CONSTRUCTOR): Remove.
+	(ASM_OUTPUT_DESTRUCTOR): Remove.
+	(TARGET_ASM_CONSTRUCTOR, TARGET_ASM_DESTRUCTOR): New.
+	* config/i386/aix386.h (ASM_OUTPUT_CONSTRUCTOR): Remove.
+	(TARGET_ASM_CONSTRUCTOR): New.
+	* config/i386/i386.c (ix86_svr3_asm_out_constructor): New.
+	(sco_asm_out_constructor): New.
+	* config/i386/sco5.h (TARGET_ASM_CONSTRUCTOR): New.
+	* config/i386/svr3gas.h: Remove stack grows up code.
+	Remove code duplicated from i386/sysv3.h.
+	(TARGET_ASM_CONSTRUCTOR): New.
+	(ASM_OUTPUT_CONSTRUCTOR, ASM_OUTPUT_DESTRUCTOR): Remove.
+	(DTORS_SECTION_FUNCTION, CTORS_SECTION_FUNCTION): Remove.
+	* config/i386/sysv3.h (ASM_OUTPUT_CONSTRUCTOR): Remove.
+	(TARGET_ASM_CONSTRUCTOR): New.
+	* config/m68hc11/m68hc11.c (m68hc11_asm_out_constructor): New.
+	(m68hc11_asm_out_destructor): New.
+	* config/m68hc11/m68hc11.h (TARGET_ASM_CONSTRUCTOR): New.
+	(TARGET_ASM_DESTRUCTOR): New.
+	* config/m68k/auxgas.h: Don't undef ASM_OUTPUT_*STRUCTOR.
+	* config/m68k/dpx2.h: Properly undef all the bits inherited from
+	config/svr3.h pertaining to section manipulation.
+	* config/m68k/dpx2g.h: Remove #if 0 code.
+	* config/m68k/m68k.c (m68k_svr3_asm_out_constructor): New.
+	* config/m68k/tower-as.h (ASM_OUTPUT_SOURCE_LINE): Fix typo.
+	(ASM_OUTPUT_CONSTRUCTOR): Remove.
+	(TARGET_ASM_CONSTRUCTOR): New.
+	* config/m88k/m88k.c (m88k_layout_frame): Don't use assign_stack_local.
+	(m88k_svr3_asm_out_constructor): New.
+	(m88k_svr3_asm_out_destructor): New.
+	* config/m88k/sysv3.h (ASM_OUTPUT_CONSTRUCTOR): Remove.
+	(ASM_OUTPUT_DESTRUCTOR): Remove.
+	(TARGET_ASM_CONSTRUCTOR, TARGET_ASM_DESTRUCTOR): New.
+	* config/mips/mips.h: Remove #if 0 ASM_OUTPUT_*STRUCTOR code.
+	* config/rs6000/aix.h: Likewise.
+	* config/mips/rtems64.h: Don't undef removed constructor related bits.
+	* config/mips/vxworks.h: Likewise.
+	* config/rs6000/lynx.h: Likewise.
+	* config/sh/elf.h: Likewise.
+	* config/rs6000/sysv4.h (CTORS_SECTION_ASM_OP): New.
+	(DTORS_SECTION_ASM_OP): New.
+	* config/sparc/linux64.h (ASM_OUTPUT_CONSTRUCTOR): Remove.
+	(ASM_OUTPUT_DESTRUCTOR): Remove.
+	* config/sparc/sol2-sld-64.h: Likewise.
+	* config/vax/vax.c (vms_asm_out_constructor): New.
+	(vms_asm_out_destructor): New.
+	* config/vax/vms.h (ASM_OUTPUT_CONSTRUCTOR): Remove.
+	(ASM_OUTPUT_DESTRUCTOR): Remove.
+	(TARGET_ASM_CONSTRUCTOR, TARGET_ASM_DESTRUCTOR): New.
+
+	* doc/tm.texi (@node Initialization): Update.
+
+2001-08-09  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/crtbegin.asm (__JCR_LIST__): New.
 	(__do_global_dtors_aux): Use gp-relative static data to avoid
 	one dynamic relocation.

@@ -4463,29 +4463,6 @@ do {									\
    collecting the lists of constructors and destructors.  */
 #define INVOKE__main
 
-/* Define this macro as a C statement to output on the stream STREAM the
-   assembler code to arrange to call the function named NAME at initialization
-   time.
-
-   Assume that NAME is the name of a C function generated automatically by the
-   compiler.  This function takes no arguments.  Use the function
-   `assemble_name' to output the name NAME; this performs any system-specific
-   syntactic transformations such as adding an underscore.
-
-   If you don't define this macro, nothing special is output to arrange to call
-   the function.  This is correct when the function will be called in some
-   other manner--for example, by means of the `collect2' program, which looks
-   through the symbol table to find these functions by their names.
-
-   Defined in svr4.h.  */
-/* #define ASM_OUTPUT_CONSTRUCTOR(STREAM, NAME) */
-
-/* This is like `ASM_OUTPUT_CONSTRUCTOR' but used for termination functions
-   rather than initialization functions.
-
-   Defined in svr4.h.  */
-/* #define ASM_OUTPUT_DESTRUCTOR(STREAM, NAME) */
-
 /* If your system uses `collect2' as the means of processing constructors, then
    that program normally uses `nm' to scan an object file for constructor
    functions to be called.  On certain kinds of systems, you can define these

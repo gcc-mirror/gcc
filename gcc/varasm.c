@@ -188,6 +188,12 @@ static enum in_section { no_section, in_text, in_data, in_named
 #ifdef BSS_SECTION_ASM_OP
   , in_bss
 #endif
+#ifdef CTORS_SECTION_ASM_OP
+  , in_ctors
+#endif
+#ifdef DTORS_SECTION_ASM_OP
+  , in_dtors
+#endif
 #ifdef EXTRA_SECTIONS
   , EXTRA_SECTIONS
 #endif
@@ -813,88 +819,127 @@ assemble_asm (string)
   fprintf (asm_out_file, "\t%s\n", TREE_STRING_POINTER (string));
 }
 
-/* Record an element in the table of global destructors.  The argument
-   should be a SYMBOL_REF of the function to be called.  */
+/* Record an element in the table of global destructors.  SYMBOL is
+   a SYMBOL_REF of the function to be called; PRIORITY is a number
+   between 0 and MAX_INIT_PRIORITY.  */
 
 void
-assemble_destructor (symbol, priority)
+default_stabs_asm_out_destructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  /* Tell GNU LD that this is part of the static destructor set.
+     This will work for any system that uses stabs, most usefully
+     aout systems.  */
+  fprintf (asm_out_file, "%s\"___DTOR_LIST__\",22,0,0,", ASM_STABS_OP);
+  assemble_name (asm_out_file, XSTR (symbol, 0));
+  fputc ('\n', asm_out_file);
+}
+
+void
+default_named_section_asm_out_destructor (symbol, priority)
      rtx symbol;
      int priority;
 {
-  const char *name;
+  const char *section = ".dtors";
+  char buf[16];
 
-  if (GET_CODE (symbol) != SYMBOL_REF)
-    abort ();
-  name = XSTR (symbol, 0);
-
-  if (priority != DEFAULT_INIT_PRIORITY
-      && targetm.have_named_sections)
+  /* ??? This only works reliably with the GNU linker.   */
+  if (priority != DEFAULT_INIT_PRIORITY)
     {
-      char buf[15];
       sprintf (buf, ".dtors.%.5u",
 	       /* Invert the numbering so the linker puts us in the proper
 		  order; constructors are run from right to left, and the
 		  linker sorts in increasing order.  */
 	       MAX_INIT_PRIORITY - priority);
-      named_section_flags (buf, SECTION_WRITE, POINTER_SIZE / BITS_PER_UNIT);
-      assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
-      return;
+      section = buf;
     }
 
-#ifdef ASM_OUTPUT_DESTRUCTOR
-  ASM_OUTPUT_DESTRUCTOR (asm_out_file, name);
-#else
-  if (flag_gnu_linker)
+  named_section_flags (section, SECTION_WRITE, POINTER_SIZE / BITS_PER_UNIT);
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+}
+
+#ifdef DTORS_SECTION_ASM_OP
+void
+dtors_section ()
+{
+  if (in_section != in_dtors)
     {
-      /* Now tell GNU LD that this is part of the static destructor set.  */
-      /* This code works for any machine provided you use GNU as/ld.  */
-      fprintf (asm_out_file, "%s\"___DTOR_LIST__\",22,0,0,", ASM_STABS_OP);
-      assemble_name (asm_out_file, name);
+      in_section = in_dtors;
+      fputs (DTORS_SECTION_ASM_OP, asm_out_file);
       fputc ('\n', asm_out_file);
     }
-#endif
 }
+
+void
+default_dtor_section_asm_out_destructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  dtors_section ();
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+}
+#endif
 
 /* Likewise for global constructors.  */
 
 void
-assemble_constructor (symbol, priority)
+default_stabs_asm_out_constructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  /* Tell GNU LD that this is part of the static destructor set.
+     This will work for any system that uses stabs, most usefully
+     aout systems.  */
+  fprintf (asm_out_file, "%s\"___CTOR_LIST__\",22,0,0,", ASM_STABS_OP);
+  assemble_name (asm_out_file, XSTR (symbol, 0));
+  fputc ('\n', asm_out_file);
+}
+
+void
+default_named_section_asm_out_constructor (symbol, priority)
      rtx symbol;
      int priority;
 {
-  const char *name;
+  const char *section = ".ctors";
+  char buf[16];
 
-  if (GET_CODE (symbol) != SYMBOL_REF)
-    abort ();
-  name = XSTR (symbol, 0);
-
-  if (priority != DEFAULT_INIT_PRIORITY
-      && targetm.have_named_sections)
+  /* ??? This only works reliably with the GNU linker.   */
+  if (priority != DEFAULT_INIT_PRIORITY)
     {
-      char buf[15];
       sprintf (buf, ".ctors.%.5u",
 	       /* Invert the numbering so the linker puts us in the proper
 		  order; constructors are run from right to left, and the
 		  linker sorts in increasing order.  */
 	       MAX_INIT_PRIORITY - priority);
-      named_section_flags (buf, SECTION_WRITE, POINTER_SIZE / BITS_PER_UNIT);
-      assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
-      return;
+      section = buf;
     }
 
-#ifdef ASM_OUTPUT_CONSTRUCTOR
-  ASM_OUTPUT_CONSTRUCTOR (asm_out_file, name);
-#else
-  if (flag_gnu_linker)
+  named_section_flags (section, SECTION_WRITE, POINTER_SIZE / BITS_PER_UNIT);
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+}
+
+#ifdef CTORS_SECTION_ASM_OP
+void
+ctors_section ()
+{
+  if (in_section != in_ctors)
     {
-      /* Now tell GNU LD that this is part of the static constructor set.  */
-      /* This code works for any machine provided you use GNU as/ld.  */
-      fprintf (asm_out_file, "%s\"___CTOR_LIST__\",22,0,0,", ASM_STABS_OP);
-      assemble_name (asm_out_file, name);
+      in_section = in_ctors;
+      fputs (CTORS_SECTION_ASM_OP, asm_out_file);
       fputc ('\n', asm_out_file);
     }
-#endif
 }
+
+void
+default_ctor_section_asm_out_constructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  ctors_section ();
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+}
+#endif
 
 /* CONSTANT_POOL_BEFORE_FUNCTION may be defined as an expression with
    a non-zero value if the constant pool should be output before the

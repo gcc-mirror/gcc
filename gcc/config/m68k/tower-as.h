@@ -82,8 +82,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define ASM_OUTPUT_SOURCE_LINE(FILE, LINENO)	\
   fprintf (FILE, "\tln\t%d\n",			\
-	   (sdb_begin_function_line		\
-	    ? last_linenum - sdb_begin_function_line : 1))
+	   (sdb_begin_function_line > -1	\
+	    ? (LINENO) - sdb_begin_function_line : 1))
 
 #undef ASM_OUTPUT_IDENT
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
@@ -581,10 +581,7 @@ do { fprintf (asm_out_file, "\ttag\t");	\
 
    The __CTORS_LIST__ goes in the .init section.  Define CTOR_LIST_BEGIN
    and CTOR_LIST_END to contribute to the .init section an instruction to
-   push a word containing 0 (or some equivalent of that).
-
-   ASM_OUTPUT_CONSTRUCTOR should be defined
-   to push the address of the constructor.  */
+   push a word containing 0 (or some equivalent of that).  */
 
 #define ASM_LONG	"\tlong"
 #undef INIT_SECTION_ASM_OP
@@ -601,10 +598,4 @@ do { fprintf (asm_out_file, "\ttag\t");	\
 
 #define BSS_SECTION_ASM_OP	"\tsection\t~bss"
 
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
-  do {						\
-    init_section ();				\
-    fprintf (FILE, "\tmov.l &");		\
-    assemble_name (FILE, NAME);			\
-    fprintf (FILE, ",-(%%sp)\n");		\
-  } while (0)
+#define TARGET_ASM_CONSTRUCTOR  m68k_svr3_asm_out_constructor

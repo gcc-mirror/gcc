@@ -211,14 +211,13 @@ Boston, MA 02111-1307, USA.
    and CTOR_LIST_END to contribute to the .init section an instruction to
    push a word containing 0 (or some equivalent of that).
 
-   Define ASM_OUTPUT_CONSTRUCTOR to push the address of the constructor.  */
+   Define TARGET_ASM_CONSTRUCTOR to push the address of the constructor.  */
 
 #define USE_CONST_SECTION	0
 
 #define INIT_SECTION_ASM_OP     "\t.section\t.init"
 #define FINI_SECTION_ASM_OP     "\t.section .fini,\"x\""
 #define CONST_SECTION_ASM_OP	"\t.section\t.rodata, \"x\""
-#define CTORS_SECTION_ASM_OP	INIT_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP    FINI_SECTION_ASM_OP
 
 /* CTOR_LIST_BEGIN and CTOR_LIST_END are machine-dependent
@@ -296,45 +295,6 @@ const_section ()							\
       in_section = in_const;						\
     }									\
 }
-
-/* The ctors and dtors sections are not normally put into use 
-   by EXTRA_SECTIONS and EXTRA_SECTION_FUNCTIONS as defined in svr3.h,
-   but it can't hurt to define these macros for whatever systems use them.  */
-#define CTORS_SECTION_FUNCTION						\
-void									\
-ctors_section ()							\
-{									\
-  if (in_section != in_ctors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);		\
-      in_section = in_ctors;						\
-    }									\
-}
-
-#define DTORS_SECTION_FUNCTION						\
-void									\
-dtors_section ()							\
-{									\
-  if (in_section != in_dtors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);		\
-      in_section = in_dtors;						\
-    }									\
-}
-
-/* This is machine-dependent
-   because it needs to push something on the stack.  */
-#undef ASM_OUTPUT_CONSTRUCTOR
-
-/* A C statement (sans semicolon) to output an element in the table of
-   global destructors.  */
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
-  do {									\
-    fini_section ();                   				\
-    fprintf (FILE, "%s\t ", ASM_LONG);					\
-    assemble_name (FILE, NAME);              				\
-    fprintf (FILE, "\n");						\
-  } while (0)
 
 /* A C statement or statements to switch to the appropriate
    section for output of DECL.  DECL is either a `VAR_DECL' node

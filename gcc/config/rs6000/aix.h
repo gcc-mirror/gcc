@@ -30,10 +30,6 @@ Boston, MA 02111-1307, USA.  */
 /* This is the only version of nm that collect2 can work with.  */
 #define REAL_NM_FILE_NAME "/usr/ucb/nm"
 
-/* AIX does not have any init/fini or ctor/dtor sections, so create
-    static constructors and destructors as normal functions.  */
-/* #define ASM_OUTPUT_CONSTRUCTOR(file, name) */
-/* #define ASM_OUTPUT_DESTRUCTOR(file, name) */
 #define USER_LABEL_PREFIX  ""
 /* Don't turn -B into -L if the argument specifies a relative file name.  */
 #define RELATIVE_PREFIX_NOT_LINKDIR

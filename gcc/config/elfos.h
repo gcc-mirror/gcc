@@ -225,8 +225,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* This is the pseudo-op used to generate a reference to a specific
    symbol in some section.  It is only used in machine-specific
-   configuration files, typically only in ASM_OUTPUT_CONSTRUCTOR and
-   ASM_OUTPUT_DESTRUCTOR.  This is the same for all known svr4
+   configuration files.  This is the same for all known svr4
    assemblers, except those in targets that don't use 32-bit pointers.
    Those should override INT_ASM_OP.  Yes, the name of the macro is
    misleading.  */
@@ -254,24 +253,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define CONST_SECTION_ASM_OP	"\t.section\t.rodata"
 
-/* Define the pseudo-ops used to switch to the .ctors and .dtors sections.
-
-   Note that we want to give these sections the SHF_WRITE attribute
-   because these sections will actually contain data (i.e. tables of
-   addresses of functions in the current root executable or shared library
-   file) and, in the case of a shared library, the relocatable addresses
-   will have to be properly resolved/relocated (and then written into) by
-   the dynamic linker when it actually attaches the given shared library
-   to the executing process.  (Note that on SVR4, you may wish to use the
-   `-z text' option to the ELF linker, when building a shared library, as
-   an additional check that you are doing everything right.  But if you do
-   use the `-z text' option when building a shared library, you will get
-   errors unless the .ctors and .dtors sections are marked as writable
-   via the SHF_WRITE attribute.)  */
-
-#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"aw\""
-#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"aw\""
-
 /* On svr4, we *do* have support for the .init and .fini sections, and we
    can put stuff in there to be executed before and after `main'.  We let
    crtstuff.c and other files know this by defining the following symbols.
@@ -287,7 +268,7 @@ Boston, MA 02111-1307, USA.  */
    includes this file.  */
 
 #undef  EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const, in_ctors, in_dtors
+#define EXTRA_SECTIONS in_const
 
 /* A default list of extra section function definitions.  For targets
    that use additional sections (e.g. .tdesc) you should override this
@@ -295,9 +276,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS		\
-  CONST_SECTION_FUNCTION		\
-  CTORS_SECTION_FUNCTION		\
-  DTORS_SECTION_FUNCTION
+  CONST_SECTION_FUNCTION
 
 #define READONLY_DATA_SECTION() const_section ()
 
@@ -311,28 +290,6 @@ const_section ()						\
     {								\
       fprintf (asm_out_file, "%s\n", CONST_SECTION_ASM_OP);	\
       in_section = in_const;					\
-    }								\
-}
-
-#define CTORS_SECTION_FUNCTION					\
-void								\
-ctors_section ()						\
-{								\
-  if (in_section != in_ctors)					\
-    {								\
-      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);	\
-      in_section = in_ctors;					\
-    }								\
-}
-
-#define DTORS_SECTION_FUNCTION					\
-void								\
-dtors_section ()						\
-{								\
-  if (in_section != in_dtors)					\
-    {								\
-      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);	\
-      in_section = in_dtors;					\
     }								\
 }
 
@@ -377,30 +334,6 @@ dtors_section ()						\
     }								\
   while (0)
      
-/* A C statement (sans semicolon) to output an
-   element in the table of global constructors.  */
-#define ASM_OUTPUT_CONSTRUCTOR(FILE, NAME)			\
-  do								\
-    {								\
-      ctors_section ();						\
-      fprintf (FILE, "%s", INT_ASM_OP);				\
-      assemble_name (FILE, NAME);				\
-      fprintf (FILE, "\n");					\
-    }								\
-  while (0)
-
-/* A C statement (sans semicolon) to output an
-   element in the table of global destructors.  */
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       			\
-  do								\
-    {								\
-      dtors_section ();                   			\
-      fprintf (FILE, "%s", INT_ASM_OP);				\
-      assemble_name (FILE, NAME);              			\
-      fprintf (FILE, "\n");					\
-    }								\
-  while (0)
-
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
 

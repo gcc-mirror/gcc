@@ -390,37 +390,8 @@ do {									\
   ASM_OUTPUT_INTERNAL_LABEL((FILE),(PREFIX),(NUM));			\
 } while (0)
 
-
-#undef ASM_OUTPUT_CONSTRUCTOR
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
-do {									\
-  if (TARGET_ELF) {							\
-     ctors_section ();							\
-     fprintf (FILE, "%s", INT_ASM_OP);					\
-     assemble_name (FILE, NAME);					\
-     fprintf (FILE, "\n");						\
-  } else {								\
-    init_section ();							\
-    fprintf (FILE, "\tpushl $");					\
-    assemble_name (FILE, NAME);						\
-    fprintf (FILE, "\n"); }						\
-  } while (0)
-
-#undef ASM_OUTPUT_DESTRUCTOR
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)				\
-do {									\
-  if (TARGET_ELF) {							\
-    dtors_section ();                   				\
-    fprintf (FILE, "%s", INT_ASM_OP);					\
-    assemble_name (FILE, NAME);              				\
-    fprintf (FILE, "\n");						\
-  } else {								\
-    fini_section ();                   					\
-    fprintf (FILE, "%s", INT_ASM_OP);					\
-    assemble_name (FILE, NAME);              				\
-    fprintf (FILE, "\n"); }						\
-  } while (0)
-
+#undef TARGET_ASM_CONSTRUCTOR
+#define TARGET_ASM_CONSTRUCTOR sco_asm_out_constructor
 
 #undef ASM_OUTPUT_IDENT
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
@@ -508,15 +479,13 @@ do {									\
   ((TARGET_ELF) ? DWARF2_DEBUG: SDB_DEBUG)
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const, in_init, in_fini, in_ctors, in_dtors
+#define EXTRA_SECTIONS in_const, in_init, in_fini
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
   CONST_SECTION_FUNCTION						\
   INIT_SECTION_FUNCTION							\
-  FINI_SECTION_FUNCTION							\
-  CTORS_SECTION_FUNCTION						\
-  DTORS_SECTION_FUNCTION
+  FINI_SECTION_FUNCTION
 
 #undef CONST_SECTION_FUNCTION
 #define CONST_SECTION_FUNCTION						\
@@ -553,30 +522,6 @@ init_section ()								\
     {									\
       fprintf (asm_out_file, "%s\n", INIT_SECTION_ASM_OP);		\
       in_section = in_init;						\
-    }									\
-}
-
-#undef CTORS_SECTION_FUNCTION
-#define CTORS_SECTION_FUNCTION						\
-void									\
-ctors_section ()							\
-{									\
-  if (in_section != in_ctors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);		\
-      in_section = in_ctors;						\
-    }									\
-}
-
-#undef DTORS_SECTION_FUNCTION
-#define DTORS_SECTION_FUNCTION						\
-void									\
-dtors_section ()							\
-{									\
-  if (in_section != in_dtors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);		\
-      in_section = in_dtors;						\
     }									\
 }
 

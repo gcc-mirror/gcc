@@ -45,17 +45,9 @@ Boston, MA 02111-1307, USA.  */
 #undef BSS_SECTION_ASM_OP
 #define BSS_SECTION_ASM_OP "\t.section\t.bss"
 
-/* Define the name of the .ctor section.  */
-#undef CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP "\t.section .ctor"
-
 /* Define the name of the .data section.  */
 #undef DATA_SECTION_ASM_OP
 #define DATA_SECTION_ASM_OP "\t.section .data"
-
-/* Define the name of the .dtor section.  */
-#undef DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP "\t.section .dtor"
 
 /* Define the name of the .ident op.  */
 #undef IDENT_ASM_OP
@@ -147,54 +139,8 @@ Boston, MA 02111-1307, USA.  */
    unless user explicitly requests it.  */
 #undef LOCAL_INCLUDE_DIR
 
-#undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_ctor, in_dtor
-
-#undef EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS					\
-  CTOR_SECTION_FUNCTION						\
-  DTOR_SECTION_FUNCTION
-
-#define CTOR_SECTION_FUNCTION					\
-void								\
-ctor_section ()							\
-{								\
-  if (in_section != in_ctor)					\
-    {								\
-      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);	\
-      in_section = in_ctor;					\
-    }								\
-}
-
-#define DTOR_SECTION_FUNCTION					\
-void								\
-dtor_section ()							\
-{								\
-  if (in_section != in_dtor)					\
-    {								\
-      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);	\
-      in_section = in_dtor;					\
-    }								\
-}
-
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
-  do {						\
-    ctor_section ();				\
-    fputs (ASM_LONG, FILE);			\
-    assemble_name (FILE, NAME);			\
-    fprintf (FILE, "\n");			\
-  } while (0)
-
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION  default_coff_asm_named_section
-
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)	\
-  do {						\
-    dtor_section ();                   		\
-    fputs (ASM_LONG, FILE);			\
-    assemble_name (FILE, NAME);              	\
-    fprintf (FILE, "\n");			\
-  } while (0)
 
 /* Output at beginning of assembler file.  */
 /* The .file command should always begin the output.  */

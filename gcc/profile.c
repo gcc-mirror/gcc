@@ -48,6 +48,7 @@ Boston, MA 02111-1307, USA.  */
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "gcov-io.h"
+#include "target.h"
 
 /* Additional information about the edges we need.  */
 struct edge_info
@@ -1122,13 +1123,11 @@ output_func_start_profiler ()
 		       build_function_type (void_type_node, NULL_TREE));
   DECL_EXTERNAL (fndecl) = 0;
 
-#if defined(ASM_OUTPUT_CONSTRUCTOR) && defined(ASM_OUTPUT_DESTRUCTOR)
   /* It can be a static function as long as collect2 does not have
      to scan the object file to find its ctor/dtor routine.  */
-  TREE_PUBLIC (fndecl) = 0;
-#else
-  TREE_PUBLIC (fndecl) = 1;
-#endif
+  TREE_PUBLIC (fndecl) = ! targetm.have_ctors_dtors;
+
+  TREE_USED (fndecl) = 1;
 
   DECL_RESULT (fndecl) = build_decl (RESULT_DECL, NULL_TREE, void_type_node);
 
@@ -1176,5 +1175,7 @@ output_func_start_profiler ()
     fflush (asm_out_file);
   current_function_decl = NULL_TREE;
 
-  assemble_constructor (XEXP (DECL_RTL (fndecl), 0), DEFAULT_INIT_PRIORITY);
+  if (targetm.have_ctors_dtors)
+    (* targetm.asm_out.constructor) (XEXP (DECL_RTL (fndecl), 0),
+				     DEFAULT_INIT_PRIORITY);
 }

@@ -183,36 +183,7 @@ rdata_section ()						\
 #define STARTFILE_SPEC "crt0.o%s"
 #define ENDFILE_SPEC  "%{!mno-lsim:-lsim}"
 
-#undef  CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"x\""
-#undef  DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"x\""
-
 #define INT_ASM_OP "\t.long\t"
-
-#undef  ASM_OUTPUT_CONSTRUCTOR
-#define ASM_OUTPUT_CONSTRUCTOR(STREAM, NAME) 	\
-  do						\
-    {						\
-      ctors_section ();				\
-      fprintf (STREAM, "%s", INT_ASM_OP);	\
-      assemble_name (STREAM, NAME);		\
-      fprintf (STREAM, "\n");			\
-    }						\
-  while (0)
-
-/* A C statement (sans semicolon) to output an element in the table of
-   global destructors.  */
-#undef  ASM_OUTPUT_DESTRUCTOR
-#define ASM_OUTPUT_DESTRUCTOR(STREAM, NAME) 	\
-  do						\
-    {						\
-      dtors_section ();                   	\
-      fprintf (STREAM, "%s", INT_ASM_OP);	\
-      assemble_name (STREAM, NAME);             \
-      fprintf (STREAM, "\n");			\
-    }						\
-  while (0)
 
 /* __CTOR_LIST__ and __DTOR_LIST__ must be defined by the linker script.  */
 #define CTOR_LISTS_DEFINED_EXTERNALLY
@@ -220,6 +191,7 @@ rdata_section ()						\
 #undef DO_GLOBAL_CTORS_BODY
 #undef DO_GLOBAL_DTORS_BODY
 #undef INIT_SECTION_ASM_OP
+#undef DTORS_SECTION_ASM_OP
 
 #define SUPPORTS_ONE_ONLY 1
 

@@ -76,20 +76,8 @@ Boston, MA 02111-1307, USA.  */
   asm ("\tst\t r0,r31,32");	/* REG_PARM_STACK_SPACE (0) == 32 */
 #define CTOR_LIST_END
 
-/* ASM_OUTPUT_CONSTRUCTOR outputs code into the .init section to push the
-   address of the constructor.  This becomes the body of __do_global_ctors
-   in crtstuff.c.  r13 is a temporary register.  */
-#undef	ASM_OUTPUT_CONSTRUCTOR
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
-  do {									\
-    init_section ();							\
-    fprintf (FILE, "\tor.u\t r13,r0,hi16(");				\
-    assemble_name (FILE, NAME);						\
-    fprintf (FILE, ")\n\tor\t r13,r13,lo16(");				\
-    assemble_name (FILE, NAME);						\
-    fprintf (FILE, ")\n\tsubu\t r31,r31,%d\n\tst\t r13,r31,%d\n",	\
-	     STACK_BOUNDARY / BITS_PER_UNIT, REG_PARM_STACK_SPACE (0));	\
-  } while (0)
+#define TARGET_ASM_CONSTRUCTOR  m88k_svr3_asm_out_constructor
+#define TARGET_ASM_DESTRUCTOR  m88k_svr3_asm_out_destructor
 
 #undef	DO_GLOBAL_CTORS_BODY
 #define DO_GLOBAL_CTORS_BODY						\
@@ -107,25 +95,6 @@ do {									\
   asm (FINI_SECTION_ASM_OP);						\
   func_ptr __DTOR_END__[4] = { (func_ptr) 0, (func_ptr) 0,		\
 			       (func_ptr) 0, (func_ptr) 0 }  
-
-/* A C statement (sans semicolon) to output an element in the table of
-   global destructors.  The table is constructed in the .fini section
-   so that an explicit linker script is not required.  The complication
-   is that this section is padded with NOP instructions and to either
-   8 or 16 byte alignment depending on the specific system.  A clever
-   way to avoid trouble is to output a block of 16 bytes where the
-   extra words are known values (-1).  */
-#undef	ASM_OUTPUT_DESTRUCTOR
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)	\
-  do {						\
-    register int i;				\
-    fini_section ();				\
-    fprintf (FILE, "\t%s\t ", ASM_LONG);	\
-    assemble_name (FILE,NAME);			\
-    fprintf (FILE, "\n");			\
-    for (i = 1; i < 4; i++)			\
-      fprintf (FILE, "\t%s\t -1\n", ASM_LONG);	\
-    } while (0)
 
 /* Walk the list looking for the terminating zero and ignoring all values of
    -1.  */

@@ -2438,15 +2438,14 @@ do {									 \
 
 #if defined(USING_SVR4_H)
 
-#define EXTRA_SECTIONS in_const, in_tdesc, in_sdata, in_ctors, in_dtors
+#define EXTRA_SECTIONS in_const, in_tdesc, in_sdata
 #define INIT_SECTION_FUNCTION
 #define FINI_SECTION_FUNCTION
 
 #else
 #if defined(USING_SVR3_H)
 
-#define EXTRA_SECTIONS in_const, in_tdesc, in_sdata, in_ctors, in_dtors, \
-		       in_init, in_fini
+#define EXTRA_SECTIONS in_const, in_tdesc, in_sdata, in_init, in_fini
 
 #else /* luna or other not based on svr[34].h.  */
 
@@ -2458,8 +2457,6 @@ const_section ()							\
 {									\
   text_section();							\
 }
-#define CTORS_SECTION_FUNCTION
-#define DTORS_SECTION_FUNCTION
 #define INIT_SECTION_FUNCTION
 #define FINI_SECTION_FUNCTION
 
@@ -2490,8 +2487,6 @@ sdata_section ()							\
     }									\
 }									\
 									\
-  CTORS_SECTION_FUNCTION						\
-  DTORS_SECTION_FUNCTION						\
   INIT_SECTION_FUNCTION							\
   FINI_SECTION_FUNCTION
 

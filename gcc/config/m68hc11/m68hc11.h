@@ -1582,8 +1582,7 @@ do {                                                                    \
 
 /* This is the pseudo-op used to generate a reference to a specific
    symbol in some section.  It is only used in machine-specific
-   configuration files, typically only in ASM_OUTPUT_CONSTRUCTOR and
-   ASM_OUTPUT_DESTRUCTOR.  This is the same for all known svr4
+   configuration files.  This is the same for all known svr4
    assemblers, except those in targets that don't use 32-bit pointers.
    Those should override INT_ASM_OP.  Yes, the name of the macro is
    misleading.  */
@@ -1600,31 +1599,8 @@ do {                                                                    \
 #undef DTORS_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"a\""
 
-#undef CTORS_SECTION_FUNCTION
-#define CTORS_SECTION_FUNCTION					\
-void								\
-ctors_section ()						\
-{								\
-  if (in_section != in_ctors)					\
-    {								\
-      fprintf (asm_out_file, "\t.globl\t__do_global_ctors\n");	\
-      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);	\
-      in_section = in_ctors;					\
-    }								\
-}
-
-#undef DTORS_SECTION_FUNCTION
-#define DTORS_SECTION_FUNCTION					\
-void								\
-dtors_section ()						\
-{								\
-  if (in_section != in_dtors)					\
-    {								\
-      fprintf (asm_out_file, "\t.globl\t__do_global_dtors\n");	\
-      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);	\
-      in_section = in_dtors;					\
-    }								\
-}
+#define TARGET_ASM_CONSTRUCTOR  m68hc11_asm_out_constructor
+#define TARGET_ASM_DESTRUCTOR   m68hc11_asm_out_destructor
 
 /* This is how to begin an assembly language file.  Most svr4 assemblers want
    at least a .file directive to come first, and some want to see a .version

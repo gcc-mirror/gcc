@@ -38,6 +38,10 @@ Boston, MA 02111-1307, USA.  */
 #include "target-def.h"
 
 static void vax_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+#if VMS_TARGET
+static void vms_asm_out_constructor PARAMS ((rtx, int));
+static void vms_asm_out_destructor PARAMS ((rtx, int));
+#endif
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_FUNCTION_PROLOGUE
@@ -833,11 +837,34 @@ vms_flush_pending_externals (file)
       fprintf (file, ",%d\n", p->size);
     }
 }
+
+static void
+vms_asm_out_constructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  fprintf (asm_out_file,".globl $$PsectAttributes_NOOVR$$__gxx_init_1\n");
+  data_section();
+  fprintf (asm_out_file,"$$PsectAttributes_NOOVR$$__gxx_init_1:\n\t.long\t");
+  assemble_name (asm_out_file, XSTR (symbol, 0));
+  fputc ('\n', asm_out_file);
+}
+
+static void
+vms_asm_out_destructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  fprintf (asm_out_file,".globl $$PsectAttributes_NOOVR$$__gxx_clean_1\n");
+  data_section();
+  fprintf (asm_out_file,"$$PsectAttributes_NOOVR$$__gxx_clean_1:\n\t.long\t");
+  assemble_name (asm_out_file, XSTR (symbol, 0));
+  fputc ('\n', asm_out_file);
+}
 #endif /* VMS_TARGET */
 
-#ifdef VMS
 /* Additional support code for VMS host. */
-
+/* ??? This should really be in libiberty; vax.c is a target file.  */
 #ifdef QSORT_WORKAROUND
   /*
 	Do not use VAXCRTL's qsort() due to a severe bug:  once you've
@@ -845,7 +872,7 @@ vms_flush_pending_externals (file)
 	and is longword aligned, you cannot safely sort anything which
 	is either not a multiple of 4 in size or not longword aligned.
 	A static "move-by-longword" optimization flag inside qsort() is
-	never reset.  This is known of affect VMS V4.6 through VMS V5.5-1,
+	never reset.  This is known to affect VMS V4.6 through VMS V5.5-1,
 	and was finally fixed in VMS V5.5-2.
 
 	In this work-around an insertion sort is used for simplicity.
@@ -919,5 +946,3 @@ not_qsort (array, count, size, compare)
   return;
 }
 #endif /* QSORT_WORKAROUND */
-
-#endif /* VMS */

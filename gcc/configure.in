@@ -1129,15 +1129,10 @@ if test x$use_collect2 = xno; then
 fi
 
 # Add a definition of USE_COLLECT2 if system wants one.
-# Also tell toplev.c what to do.
-# This substitutes for lots of t-* files.
-if test x$use_collect2 = x
+if test x$use_collect2 != x
 then
-	will_use_collect2=
-	maybe_use_collect2=
-else
-	will_use_collect2="collect2"
-	maybe_use_collect2="-DUSE_COLLECT2"
+	host_xm_defines="${host_xm_defines} USE_COLLECT2"
+	xm_defines="${xm_defines} USE_COLLECT2"
 fi
 
 # If we have gas in the build tree, make a link to it.
@@ -1152,11 +1147,7 @@ fi
 
 # If we have ld in the build tree, make a link to it.
 if test -f ../ld/Makefile; then
-#	if test x$use_collect2 = x; then
-#		rm -f ld; $symbolic_link ../ld/ld-new$host_exeext ld$host_exeext 2>/dev/null
-#	else
-		rm -f collect-ld; $symbolic_link ../ld/ld-new$host_exeext collect-ld$host_exeext 2>/dev/null
-#	fi
+	rm -f collect-ld; $symbolic_link ../ld/ld-new$host_exeext collect-ld$host_exeext 2>/dev/null
 fi
 
 # Figure out what assembler we will be using.
@@ -2089,7 +2080,6 @@ AC_SUBST(lang_options_files)
 AC_SUBST(lang_specs_files)
 AC_SUBST(lang_tree_files)
 AC_SUBST(local_prefix)
-AC_SUBST(maybe_use_collect2)
 AC_SUBST(md_file)
 AC_SUBST(objc_boehm_gc)
 AC_SUBST(out_file)
@@ -2103,7 +2093,6 @@ AC_SUBST(tm_p_file_list)
 AC_SUBST(tm_p_file)
 AC_SUBST(xm_file)
 AC_SUBST(xm_defines)
-AC_SUBST(will_use_collect2)
 AC_SUBST(c_target_objs)
 AC_SUBST(cxx_target_objs)
 AC_SUBST(target_cpu_default)
