@@ -1702,6 +1702,10 @@ package body Sem_Ch12 is
       Subp : Entity_Id;
 
    begin
+      if Nam = Error then
+         return;
+      end if;
+
       if Nkind (Nam) = N_Defining_Program_Unit_Name then
          Error_Msg_N ("name of formal subprogram must be a direct name", Nam);
          return;
@@ -1858,45 +1862,47 @@ package body Sem_Ch12 is
       --  Enter the new name, and branch to specific routine.
 
       case Nkind (Def) is
-         when N_Formal_Private_Type_Definition
-                        => Analyze_Formal_Private_Type (N, T, Def);
+         when N_Formal_Private_Type_Definition         =>
+            Analyze_Formal_Private_Type (N, T, Def);
 
-         when N_Formal_Derived_Type_Definition
-                        => Analyze_Formal_Derived_Type (N, T, Def);
+         when N_Formal_Derived_Type_Definition         =>
+            Analyze_Formal_Derived_Type (N, T, Def);
 
-         when N_Formal_Discrete_Type_Definition
-                        => Analyze_Formal_Discrete_Type (T, Def);
+         when N_Formal_Discrete_Type_Definition        =>
+            Analyze_Formal_Discrete_Type (T, Def);
 
-         when N_Formal_Signed_Integer_Type_Definition
-                        => Analyze_Formal_Signed_Integer_Type (T, Def);
+         when N_Formal_Signed_Integer_Type_Definition  =>
+            Analyze_Formal_Signed_Integer_Type (T, Def);
 
-         when N_Formal_Modular_Type_Definition
-                        => Analyze_Formal_Modular_Type (T, Def);
+         when N_Formal_Modular_Type_Definition         =>
+            Analyze_Formal_Modular_Type (T, Def);
 
-         when N_Formal_Floating_Point_Definition
-                        => Analyze_Formal_Floating_Type (T, Def);
+         when N_Formal_Floating_Point_Definition       =>
+            Analyze_Formal_Floating_Type (T, Def);
 
-         when N_Formal_Ordinary_Fixed_Point_Definition
-                        => Analyze_Formal_Ordinary_Fixed_Point_Type (T, Def);
+         when N_Formal_Ordinary_Fixed_Point_Definition =>
+            Analyze_Formal_Ordinary_Fixed_Point_Type (T, Def);
 
-         when N_Formal_Decimal_Fixed_Point_Definition
-                        => Analyze_Formal_Decimal_Fixed_Point_Type (T, Def);
+         when N_Formal_Decimal_Fixed_Point_Definition  =>
+            Analyze_Formal_Decimal_Fixed_Point_Type (T, Def);
 
-         when N_Array_Type_Definition
-                        => Analyze_Formal_Array_Type (T, Def);
+         when N_Array_Type_Definition =>
+            Analyze_Formal_Array_Type (T, Def);
 
-         when N_Access_To_Object_Definition |
-              N_Access_Function_Definition  |
-              N_Access_Procedure_Definition
-                        => Analyze_Generic_Access_Type (T, Def);
+         when N_Access_To_Object_Definition            |
+              N_Access_Function_Definition             |
+              N_Access_Procedure_Definition            =>
+            Analyze_Generic_Access_Type (T, Def);
 
-         when others =>
+         when N_Error                                  =>
+            null;
+
+         when others                                   =>
             raise Program_Error;
 
       end case;
 
       Set_Is_Generic_Type (T);
-
    end Analyze_Formal_Type_Declaration;
 
    ------------------------------------
