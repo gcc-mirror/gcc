@@ -1,3 +1,8 @@
+2004-07-20  Richard Henderson  <rth@redhat.com>
+
+	* cfgexpand.c (expand_gimple_cond_expr, expand_gimple_tailcall): Split,
+	(expand_gimple_basic_block): out from here.  Renamed from expand_block.
+
 2004-07-20  David S. Miller  <davem@nuts.davemloft.net>
 
 	* config/sparc/sparc.c (sparc_rtx_costs case MULT): Emit
