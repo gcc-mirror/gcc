@@ -40,6 +40,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 # define TARGET_SYSTEM_ROOT NULL
 #endif
 
+#ifndef TARGET_EBCDIC
+# define TARGET_EBCDIC 0
+#endif
+
 static int saved_lineno;
 
 /* CPP's options.  */
@@ -1590,6 +1594,7 @@ c_common_init ()
   cpp_opts->int_precision = TYPE_PRECISION (integer_type_node);
   cpp_opts->wchar_precision = TYPE_PRECISION (wchar_type_node);
   cpp_opts->unsigned_wchar = TREE_UNSIGNED (wchar_type_node);
+  cpp_opts->EBCDIC = TARGET_EBCDIC;
 
   if (flag_preprocess_only)
     {

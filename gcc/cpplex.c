@@ -1731,14 +1731,15 @@ maybe_read_ucs (pfile, pstr, limit, pc)
 	}
     }
 
-#ifdef TARGET_EBCDIC
-  cpp_error (pfile, DL_ERROR, "universal-character-name on EBCDIC target");
-  code = 0x3f;  /* EBCDIC invalid character */
-#else
- /* True extended characters are OK.  */
-  if (code >= 0xa0
-      && !(code & 0x80000000)
-      && !(code >= 0xD800 && code <= 0xDFFF))
+  if (CPP_OPTION (pfile, EBCDIC))
+    {
+      cpp_error (pfile, DL_ERROR, "universal-character-name on EBCDIC target");
+      code = 0x3f;  /* EBCDIC invalid character */
+    }
+  /* True extended characters are OK.  */
+  else if (code >= 0xa0
+	   && !(code & 0x80000000)
+	   && !(code >= 0xD800 && code <= 0xDFFF))
     ;
   /* The standard permits $, @ and ` to be specified as UCNs.  We use
      hex escapes so that this also works with EBCDIC hosts.  */
@@ -1747,7 +1748,6 @@ maybe_read_ucs (pfile, pstr, limit, pc)
   /* Don't give another error if one occurred above.  */
   else if (length == 0)
     cpp_error (pfile, DL_ERROR, "universal-character-name out of range");
-#endif
 
   *pstr = p;
   *pc = code;
@@ -1766,10 +1766,19 @@ cpp_parse_escape (pfile, pstr, limit, wide)
      const unsigned char *limit;
      int wide;
 {
+  /* Values of \a \b \e \f \n \r \t \v respectively.  */
+  static const uchar ascii[]  = {  7,  8, 27, 12, 10, 13,  9, 11 };
+  static const uchar ebcdic[] = { 47, 22, 39, 12, 21, 13,  5, 11 };
+
   int unknown = 0;
-  const unsigned char *str = *pstr;
+  const unsigned char *str = *pstr, *charconsts;
   cppchar_t c, mask;
   unsigned int width;
+
+  if (CPP_OPTION (pfile, EBCDIC))
+    charconsts = ebcdic;
+  else
+    charconsts = ascii;
 
   if (wide)
     width = CPP_OPTION (pfile, wchar_precision);
@@ -1784,12 +1793,12 @@ cpp_parse_escape (pfile, pstr, limit, wide)
   switch (c)
     {
     case '\\': case '\'': case '"': case '?': break;
-    case 'b': c = TARGET_BS;	  break;
-    case 'f': c = TARGET_FF;	  break;
-    case 'n': c = TARGET_NEWLINE; break;
-    case 'r': c = TARGET_CR;	  break;
-    case 't': c = TARGET_TAB;	  break;
-    case 'v': c = TARGET_VT;	  break;
+    case 'b': c = charconsts[1];  break;
+    case 'f': c = charconsts[3];  break;
+    case 'n': c = charconsts[4];  break;
+    case 'r': c = charconsts[5];  break;
+    case 't': c = charconsts[6];  break;
+    case 'v': c = charconsts[7];  break;
 
     case '(': case '{': case '[': case '%':
       /* '\(', etc, are used at beginning of line to avoid confusing Emacs.
@@ -1801,14 +1810,14 @@ cpp_parse_escape (pfile, pstr, limit, wide)
       if (CPP_WTRADITIONAL (pfile))
 	cpp_error (pfile, DL_WARNING,
 		   "the meaning of '\\a' is different in traditional C");
-      c = TARGET_BELL;
+      c = charconsts[0];
       break;
 
     case 'e': case 'E':
       if (CPP_PEDANTIC (pfile))
 	cpp_error (pfile, DL_PEDWARN,
 		   "non-ISO-standard escape sequence, '\\%c'", (int) c);
-      c = TARGET_ESC;
+      c = charconsts[2];
       break;
 
     case 'u': case 'U':
