@@ -340,6 +340,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
   register unsigned char *p;
   struct eh_range *prev_eh_ranges = NULL_EH_RANGE;
   struct eh_range *eh_ranges;
+  tree return_type = TREE_TYPE (TREE_TYPE (current_function_decl));
 
   jint int_value = -1;
 
@@ -707,15 +708,33 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	      VERIFICATION_ERROR ("invalid use of wide instruction");
 	    }
 	  break;
-	case OPCODE_ireturn:  type = int_type_node;    goto ret;
+	case OPCODE_return:   type = void_type_node;   goto ret;
+	case OPCODE_ireturn:
+	  if ((TREE_CODE (return_type) == BOOLEAN_TYPE
+	       || TREE_CODE (return_type) == CHAR_TYPE
+	       || TREE_CODE (return_type) == INTEGER_TYPE)
+	      && TYPE_PRECISION (return_type) <= 32)
+	    type = return_type;
+	  else
+	    type = NULL_TREE;
+	  goto ret;
 	case OPCODE_lreturn:  type = long_type_node;   goto ret;
 	case OPCODE_freturn:  type = float_type_node;  goto ret;
 	case OPCODE_dreturn:  type = double_type_node; goto ret;
-	case OPCODE_areturn:  type = ptr_type_node;    goto ret;
+	case OPCODE_areturn:
+	  if (TREE_CODE (return_type) == POINTER_TYPE)
+	    type = return_type;
+	  else
+	    type = NULL_TREE;
+	  goto ret;
 	ret:
-	  pop_type (type);
-	  /* ... fall through ... */
-	case OPCODE_return:
+	  if (type != return_type)
+	    VERIFICATION_ERROR ("incorrect ?return opcode");
+	  if (type != void_type_node)
+	    {
+	      if (pop_type_0 (type) == NULL_TREE)
+		VERIFICATION_ERROR ("return value has wrong type");
+	    }
 	  INVALIDATE_PC;
 	  break;
 	case OPCODE_getstatic: is_putting = 0;  is_static = 1;  goto field;
