@@ -1,5 +1,21 @@
 2004-09-02  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips_classify_symbol, mips_fetch_insns):
+	(mips_restore_gp, mips_set_return_address, mips_expand_prologue)
+	(mips16_fp_args, mips_avoid_hazard): Replace abort with gcc_assert.
+	(build_mips16_call_stub): Likewise.  Remove daft CALL_INSN checks.
+	(mips_issue_rate): Remove unreachable abort.
+	(mips_symbolic_constant_p, mips_symbolic_address_p, mips_symbol_insns)
+	(mips_output_move, mips_relational_operand_ok_p, mips_arg_info)
+	(mips_block_move_straight, print_operand_address, mips_file_start)
+	(mips_initial_elimination_offset, mips16_fp_args, dump_constants_1)
+	(mips_output_conditional_branch, mips_expand_builtin_direct)
+	(mips_expand_builtin_compare): Replace abort with gcc_unreachable.
+	* config/mips/mips.md (rotr<mode>3, consttable_float): Replace abort
+	with gcc_assert.
+
+2004-09-02  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (*lea_high64): Change split condition to
 	flow2_completed.  Add a peephole2 to generate a more parallel version.
 

@@ -810,8 +810,7 @@ mips_classify_symbol (rtx x)
       return SYMBOL_GENERAL;
     }
 
-  if (GET_CODE (x) != SYMBOL_REF)
-    abort ();
+  gcc_assert (GET_CODE (x) == SYMBOL_REF);
 
   if (CONSTANT_POOL_ADDRESS_P (x))
     {
@@ -973,7 +972,7 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
     case SYMBOL_GOTOFF_LOADGP:
       return false;
     }
-  abort ();
+  gcc_unreachable ();
 }
 
 
@@ -1077,7 +1076,7 @@ mips_symbolic_address_p (enum mips_symbol_type symbol_type,
     case SYMBOL_64_LOW:
       return true;
     }
-  abort ();
+  gcc_unreachable ();
 }
 
 
@@ -1204,7 +1203,7 @@ mips_symbol_insns (enum mips_symbol_type type)
       /* Check whether the offset is a 16- or 32-bit value.  */
       return mips_split_p[type] ? 2 : 1;
     }
-  abort ();
+  gcc_unreachable ();
 }
 
 /* Return true if X is a legitimate $sp-based address for mode MDOE.  */
@@ -1362,9 +1361,7 @@ mips_const_insns (rtx x)
 int
 mips_fetch_insns (rtx x)
 {
-  if (GET_CODE (x) != MEM)
-    abort ();
-
+  gcc_assert (GET_CODE (x) == MEM);
   return mips_address_insns (XEXP (x, 0), GET_MODE (x));
 }
 
@@ -2407,7 +2404,7 @@ mips_output_move (rtx dest, rtx src)
       retval[3] = COPNUM_AS_CHAR_FROM_REGNUM (REGNO (src));
       return retval;
     }
-  abort ();
+  gcc_unreachable ();
 }
 
 /* Restore $gp from its save slot.  Valid only when using o32 or
@@ -2418,8 +2415,7 @@ mips_restore_gp (void)
 {
   rtx address, slot;
 
-  if (!TARGET_ABICALLS || !TARGET_OLDABI)
-    abort ();
+  gcc_assert (TARGET_ABICALLS && TARGET_OLDABI);
 
   address = mips_add_offset (pic_offset_table_rtx,
 			     frame_pointer_needed
@@ -2469,7 +2465,7 @@ mips_relational_operand_ok_p (enum rtx_code code, rtx cmp1)
       return sleu_operand (cmp1, VOIDmode);
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -2839,8 +2835,7 @@ mips_set_return_address (rtx address, rtx scratch)
   rtx slot_address;
 
   compute_frame_size (get_frame_size ());
-  if (((cfun->machine->frame.mask >> 31) & 1) == 0)
-    abort ();
+  gcc_assert ((cfun->machine->frame.mask >> 31) & 1);
   slot_address = mips_add_offset (scratch, stack_pointer_rtx,
 				  cfun->machine->frame.gp_sp_offset);
 
@@ -2887,7 +2882,7 @@ mips_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
 	{
 	  rtx part = adjust_address (src, BLKmode, offset);
 	  if (!mips_expand_unaligned_load (regs[i], part, bits, 0))
-	    abort ();
+	    gcc_unreachable ();
 	}
     }
 
@@ -2899,7 +2894,7 @@ mips_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
       {
 	rtx part = adjust_address (dest, BLKmode, offset);
 	if (!mips_expand_unaligned_store (part, regs[i], bits, 0))
-	  abort ();
+	  gcc_unreachable ();
       }
 
   /* Mop up any left-over bytes.  */
@@ -3115,7 +3110,7 @@ mips_arg_info (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* Now decide whether the argument must go in an even-numbered register.
@@ -4998,7 +4993,7 @@ print_operand_address (FILE *file, rtx x)
 	output_addr_const (file, x);
 	return;
       }
-  abort ();
+  gcc_unreachable ();
 }
 
 /* When using assembler macros, keep track of all of small-data externs
@@ -5215,7 +5210,7 @@ mips_file_start (void)
 	case ABI_O64:  abi_string = "abiO64"; break;
 	case ABI_EABI: abi_string = TARGET_64BIT ? "eabi64" : "eabi32"; break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       /* Note - we use fprintf directly rather than called named_section()
 	 because in this way we can avoid creating an allocated section.  We
@@ -5845,7 +5840,7 @@ mips_initial_elimination_offset (int from, int to)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (TARGET_MIPS16 && to == HARD_FRAME_POINTER_REGNUM)
@@ -6155,9 +6150,7 @@ mips_expand_prologue (void)
 		 from the stack pointer, so use the frame pointer as a
 		 temporary.  We should always be using a frame pointer
 		 in this case anyway.  */
-	      if (!frame_pointer_needed)
-		abort ();
-
+	      gcc_assert (frame_pointer_needed);
 	      emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
 	      emit_insn (gen_sub3_insn (hard_frame_pointer_rtx,
 					hard_frame_pointer_rtx,
@@ -7088,8 +7081,7 @@ mips16_fp_args (FILE *file, int fp_code, int from_fp_p)
   unsigned int f;
 
   /* This code only works for the original 32 bit ABI and the O64 ABI.  */
-  if (!TARGET_OLDABI)
-    abort ();
+  gcc_assert (TARGET_OLDABI);
 
   if (from_fp_p)
     s = "mfc1";
@@ -7128,7 +7120,7 @@ mips16_fp_args (FILE *file, int fp_code, int from_fp_p)
 	    }
 	}
       else
-	abort ();
+	gcc_unreachable ();
 
       ++gparg;
       ++fparg;
@@ -7285,13 +7277,12 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
 
   /* This code will only work for o32 and o64 abis.  The other ABI's
      require more sophisticated support.  */
-  if (!TARGET_OLDABI)
-    abort ();
+  gcc_assert (TARGET_OLDABI);
 
   /* We can only handle SFmode and DFmode floating point return
      values.  */
-  if (fpret && GET_MODE (retval) != SFmode && GET_MODE (retval) != DFmode)
-    abort ();
+  if (fpret)
+    gcc_assert (GET_MODE (retval) == SFmode || GET_MODE (retval) == DFmode);
 
   /* If we're calling via a function pointer, then we must always call
      via a stub.  There are magic stubs provided in libgcc.a for each
@@ -7324,8 +7315,6 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
       insn = emit_call_insn (insn);
 
       /* Put the register usage information on the CALL.  */
-      if (GET_CODE (insn) != CALL_INSN)
-	abort ();
       CALL_INSN_FUNCTION_USAGE (insn) =
 	gen_rtx_EXPR_LIST (VOIDmode,
 			   gen_rtx_USE (VOIDmode, gen_rtx_REG (Pmode, 2)),
@@ -7526,9 +7515,6 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
 	insn = gen_call_value_internal (retval, fn, arg_size);
       insn = emit_call_insn (insn);
 
-      if (GET_CODE (insn) != CALL_INSN)
-	abort ();
-
       CALL_INSN_FUNCTION_USAGE (insn) =
 	gen_rtx_EXPR_LIST (VOIDmode,
 			   gen_rtx_USE (VOIDmode, gen_rtx_REG (word_mode, 18)),
@@ -7648,7 +7634,7 @@ dump_constants_1 (enum machine_mode mode, rtx value, rtx insn)
       }
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -8211,8 +8197,7 @@ mips_avoid_hazard (rtx after, rtx insn, int *hilo_delay,
 
       case HAZARD_DELAY:
 	set = single_set (insn);
-	if (set == 0)
-	  abort ();
+	gcc_assert (set != 0);
 	*delayed_reg = SET_DEST (set);
 	break;
       }
@@ -8706,7 +8691,7 @@ mips_output_conditional_branch (rtx insn, rtx *operands, int two_operands_p,
       }
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* NOTREACHED */
@@ -9241,9 +9226,6 @@ mips_issue_rate (void)
     default:
       return 1;
     }
-
-  abort ();
-
 }
 
 /* Implements TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD.  This should
@@ -9591,7 +9573,7 @@ mips_expand_builtin_direct (enum insn_code icode, rtx target, tree arglist)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
   return target;
 }
@@ -9665,7 +9647,7 @@ mips_expand_builtin_compare (enum mips_builtin_type builtin_type,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* If the comparison sets more than one register, we define the result
