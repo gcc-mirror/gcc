@@ -2163,6 +2163,7 @@ widen_memory_access (memref, mode, offset)
       /* Similarly for the decl.  */
       else if (DECL_P (expr)
 	       && DECL_SIZE_UNIT (expr)
+	       && TREE_CODE (DECL_SIZE_UNIT (expr)) == INTEGER_CST
 	       && compare_tree_int (DECL_SIZE_UNIT (expr), size) >= 0
 	       && (! memoffset || INTVAL (memoffset) >= 0))
 	break;
