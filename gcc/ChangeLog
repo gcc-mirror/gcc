@@ -3,6 +3,9 @@
 	* c-common.c (walk_stmt_tree): Remove.
 	* c-common.h: Remove the corresponding prototype.
 
+	* emit-rtl.c (push_to_full_sequence): Remove.
+	* rtl.h: Remove the corresponding prototype.
+
 2004-11-13  Richard Henderson  <rth@redhat.com>
 
 	* calls.c (precompute_register_parameters): Force all PARALLELs
