@@ -1073,10 +1073,14 @@ extern enum cmp_type hppa_branch_type;
 #define ASM_DOUBLE_ARG_DESCRIPTORS(FILE, ARG0, ARG1)	\
   do { fprintf (FILE, ",ARGW%d=FR", (ARG0));		\
        fprintf (FILE, ",ARGW%d=FU", (ARG1));} while (0)
+#define DFMODE_RETURN_STRING ",RTNVAL=FU"
+#define SFMODE_RETURN_STRING ",RTNVAL=FR"
 #else
 #define ASM_DOUBLE_ARG_DESCRIPTORS(FILE, ARG0, ARG1)	\
   do { fprintf (FILE, ",ARGW%d=FU", (ARG0));		\
        fprintf (FILE, ",ARGW%d=FR", (ARG1));} while (0)
+#define DFMODE_RETURN_STRING ",RTNVAL=FR"
+#define SFMODE_RETURN_STRING ",RTNVAL=FU"
 #endif
 
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
@@ -1175,9 +1179,9 @@ extern enum cmp_type hppa_branch_type;
 		   fprintf (FILE, ",ARGW%d=GR", i);			\
 	       }							\
 	     if (TYPE_MODE (fntype) == DFmode && ! TARGET_SOFT_FLOAT)	\
-	       fputs (",RTNVAL=FR", FILE);				\
+	       fputs (DFMODE_RETURN_STRING, FILE);			\
 	     else if (TYPE_MODE (fntype) == SFmode && ! TARGET_SOFT_FLOAT) \
-	       fputs (",RTNVAL=FU", FILE);				\
+	       fputs (SFMODE_RETURN_STRING, FILE);			\
 	     else if (fntype != void_type_node)				\
 	       fputs (",RTNVAL=GR", FILE);				\
 	     fputs ("\n", FILE);					\
