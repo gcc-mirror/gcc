@@ -999,7 +999,7 @@ allocate_dynamic_stack_space (size, target, known_align)
   /* If we added a variable amount to SIZE,
      we can no longer assume it is aligned.  */
 #if !defined (SETJMP_VIA_SAVE_AREA)
-  if (! MUST_ALIGN && known_align % STACK_BOUNDARY != 0)
+  if (MUST_ALIGN || known_align % STACK_BOUNDARY != 0)
 #endif
     size = round_push (size);
 #endif
