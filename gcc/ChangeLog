@@ -6,6 +6,13 @@
 
 Tue Jun 19 07:53:52 2001  Jeffrey A Law  (law@cygnus.com)
 
+	* ssa.c (remove_phi_alternative): Remove declaration.  No longer
+	static.  Second argument is a pointer to a basic block structure,
+	not a basic block index.
+	(convert_to_ssa): Do not remove dead code.
+	(convert_from_ssa): Do not remove dead code to create death notes.
+	* ssa.h (remove_phi_alternative): Declare.
+
 	* flow.c (delete_unreachable_blocks): Fix patch error in
 	previous change (call to find_unreachable_blocks was lost).
 

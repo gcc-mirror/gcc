@@ -1,5 +1,5 @@
 /* Static Single Assignment conversion routines for the GNU compiler.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -164,8 +164,6 @@ static inline rtx * phi_alternative
   PARAMS ((rtx, int));
 static rtx first_insn_after_basic_block_note
   PARAMS ((basic_block));
-static int remove_phi_alternative
-  PARAMS ((rtx, int));
 static void compute_dominance_frontiers_1
   PARAMS ((sbitmap *frontiers, int *idom, int bb, sbitmap done));
 static void compute_dominance_frontiers
@@ -427,15 +425,16 @@ phi_alternative (set, c)
    block C.  Return non-zero on success, or zero if no alternative is
    found for C.  */
 
-static int
-remove_phi_alternative (set, c)
+int
+remove_phi_alternative (set, block)
      rtx set;
-     int c;
+     basic_block block;
 {
   rtvec phi_vec = XVEC (SET_SRC (set), 0);
   int num_elem = GET_NUM_ELEM (phi_vec);
-  int v;
+  int v, c;
 
+  c = block->index;
   for (v = num_elem - 2; v >= 0; v -= 2)
     if (INTVAL (RTVEC_ELT (phi_vec, v + 1)) == c)
       {
@@ -1155,8 +1154,9 @@ convert_to_ssa ()
   if (in_ssa_form)
     abort ();
 
-  /* Need global_live_at_{start,end} up to date.  */
-  life_analysis (get_insns (), NULL, PROP_KILL_DEAD_CODE | PROP_SCAN_DEAD_CODE);
+  /* Need global_live_at_{start,end} up to date.  Do not remove any
+     dead code.  We'll let the SSA optimizers do that.  */
+  life_analysis (get_insns (), NULL, 0);
 
   idom = (int *) alloca (n_basic_blocks * sizeof (int));
   memset ((void *)idom, -1, (size_t)n_basic_blocks * sizeof (int));
@@ -2149,9 +2149,12 @@ convert_from_ssa()
   partition reg_partition;
   rtx insns = get_insns ();
 
-  /* Need global_live_at_{start,end} up to date.  */
-  life_analysis (insns, NULL, 
-		 PROP_KILL_DEAD_CODE | PROP_SCAN_DEAD_CODE | PROP_DEATH_NOTES);
+  /* Need global_live_at_{start,end} up to date.  There should not be
+     any significant dead code at this point, except perhaps dead
+     stores.  So do not take the time to perform dead code elimination. 
+
+     We also do not need death notes, so don't bother creating them.  */
+  life_analysis (insns, NULL, 0);
 
   /* Figure out which regs in copies and phi nodes don't conflict and
      therefore can be coalesced.  */
