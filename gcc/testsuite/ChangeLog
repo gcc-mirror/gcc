@@ -1,3 +1,8 @@
+2003-04-19  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/10405
+	* g++.dg/lookup/struct-hack1.C: New test.
+
 2003-04-20  Neil Booth  <neil@daikokuya.co.uk>
 
 	* ucs.c: Update diagnostic messages.
