@@ -381,6 +381,10 @@ struct cpp_reader
   cpp_token avoid_paste;
   cpp_token eof;
 
+  /* True if we have already warned about dollars in identifiers or
+     numbers for this buffer.  */
+  bool warned_dollar;
+
   /* Opaque handle to the dependencies of mkdeps.c.  */
   struct deps *deps;
 
