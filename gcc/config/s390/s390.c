@@ -205,10 +205,6 @@ enum processor_flags s390_arch_flags;
 const char *s390_tune_string;		/* for -mtune=<xxx> */
 const char *s390_arch_string;		/* for -march=<xxx> */
 
-/* String to specify backchain mode: 
-   "" no-backchain, "1" backchain, "2" kernel-backchain.  */
-const char *s390_backchain_string = TARGET_DEFAULT_BACKCHAIN;
-
 const char *s390_warn_framesize_string;
 const char *s390_warn_dynamicstack_string;
 const char *s390_stack_size_string;
@@ -6083,7 +6079,7 @@ s390_return_addr_rtx (int count, rtx frame ATTRIBUTE_UNUSED)
 
   /* Without backchain, we fail for all but the current frame.  */
 
-  if (!TARGET_BACKCHAIN && !TARGET_KERNEL_BACKCHAIN && count > 0)
+  if (!TARGET_BACKCHAIN && count > 0)
     return NULL_RTX;
 
   /* For the current frame, we need to make sure the initial
@@ -6095,10 +6091,10 @@ s390_return_addr_rtx (int count, rtx frame ATTRIBUTE_UNUSED)
       return gen_rtx_MEM (Pmode, return_address_pointer_rtx);
     }
 
-  if (TARGET_BACKCHAIN)
-    offset = RETURN_REGNUM * UNITS_PER_WORD;
-  else
+  if (TARGET_PACKED_STACK)
     offset = -2 * UNITS_PER_WORD;
+  else
+    offset = RETURN_REGNUM * UNITS_PER_WORD;
 
   addr = plus_constant (frame, offset);
   addr = memory_address (Pmode, addr);
@@ -6113,13 +6109,13 @@ s390_back_chain_rtx (void)
 {
   rtx chain;
 
-  gcc_assert (TARGET_BACKCHAIN || TARGET_KERNEL_BACKCHAIN);
+  gcc_assert (TARGET_BACKCHAIN);
 
-  if (TARGET_BACKCHAIN)
-    chain = stack_pointer_rtx;
-  else
+  if (TARGET_PACKED_STACK)
     chain = plus_constant (stack_pointer_rtx,
 			   STACK_POINTER_OFFSET - UNITS_PER_WORD);
+  else
+    chain = stack_pointer_rtx;
 
   chain = gen_rtx_MEM (Pmode, chain);
   return chain;
@@ -6287,10 +6283,9 @@ s390_frame_info (void)
   if (!TARGET_64BIT && cfun_frame_layout.frame_size > 0x7fff0000)
     fatal_error ("Total size of local variables exceeds architecture limit.");
   
-  cfun_frame_layout.save_backchain_p = (TARGET_BACKCHAIN 
-					|| TARGET_KERNEL_BACKCHAIN);
+  cfun_frame_layout.save_backchain_p = TARGET_BACKCHAIN;
 
-  if (TARGET_BACKCHAIN)
+  if (!TARGET_PACKED_STACK)
     {
       cfun_frame_layout.backchain_offset = 0;
       cfun_frame_layout.f0_offset = 16 * UNITS_PER_WORD;
@@ -6299,7 +6294,7 @@ s390_frame_info (void)
       cfun_frame_layout.gprs_offset = (cfun_frame_layout.first_save_gpr
 				       * UNITS_PER_WORD);
     }
-  else if (TARGET_KERNEL_BACKCHAIN)
+  else if (TARGET_BACKCHAIN) /* kernel stack layout */
     {
       cfun_frame_layout.backchain_offset = (STACK_POINTER_OFFSET
 					    - UNITS_PER_WORD);
@@ -6354,7 +6349,7 @@ s390_frame_info (void)
       && !current_function_stdarg)
     return;
 
-  if (TARGET_BACKCHAIN)
+  if (!TARGET_PACKED_STACK)
     cfun_frame_layout.frame_size += (STARTING_FRAME_OFFSET
 				     + cfun_frame_layout.high_fprs * 8);
   else
@@ -6753,7 +6748,7 @@ s390_emit_prologue (void)
 	  save_fpr (stack_pointer_rtx, offset, i + 16);
 	  offset += 8;
 	}
-      else if (TARGET_BACKCHAIN)
+      else if (!TARGET_PACKED_STACK)
 	  offset += 8;
     }
 
@@ -6771,11 +6766,11 @@ s390_emit_prologue (void)
 	  if (!call_really_used_regs[i + 16])
 	    RTX_FRAME_RELATED_P (insn) = 1;
 	}
-      else if (TARGET_BACKCHAIN)
+      else if (!TARGET_PACKED_STACK)
 	offset += 8;
     }
 
-  if (!TARGET_BACKCHAIN 
+  if (TARGET_PACKED_STACK
       && cfun_save_high_fprs_p
       && cfun_frame_layout.f8_offset + cfun_frame_layout.high_fprs * 8 > 0)
     {
@@ -6794,7 +6789,7 @@ s390_emit_prologue (void)
 	next_fpr = i + 16;
     }
   
-  if (TARGET_BACKCHAIN)
+  if (!TARGET_PACKED_STACK)
     next_fpr = cfun_save_high_fprs_p ? 31 : 0;
 
   /* Decrement stack pointer.  */
@@ -7050,7 +7045,7 @@ s390_emit_epilogue (bool sibcall)
 			   offset + next_offset, i);
 	      next_offset += 8;
 	    }
-	  else if (TARGET_BACKCHAIN)
+	  else if (!TARGET_PACKED_STACK)
 	    next_offset += 8;
 	}
       
@@ -7516,7 +7511,7 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 
   /* Find the register save area.  */
   t = make_tree (TREE_TYPE (sav), return_address_pointer_rtx);
-  if (TARGET_KERNEL_BACKCHAIN)
+  if (TARGET_BACKCHAIN && TARGET_PACKED_STACK) /* kernel stack layout */
     t = build (PLUS_EXPR, TREE_TYPE (sav), t,
 	       build_int_cst (NULL_TREE,
 			      -(RETURN_REGNUM - 2) * UNITS_PER_WORD
@@ -7589,11 +7584,11 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
       reg = gpr;
       n_reg = 1;
 
-      /* TARGET_KERNEL_BACKCHAIN on 31 bit: It is assumed here that no padding
+      /* kernel stack layout on 31 bit: It is assumed here that no padding
 	 will be added by s390_frame_info because for va_args always an even
 	 number of gprs has to be saved r15-r2 = 14 regs.  */
-      sav_ofs = (TARGET_KERNEL_BACKCHAIN
-		 ? (TARGET_64BIT ? 4 : 2) * 8 : 2 * UNITS_PER_WORD);
+      sav_ofs = ((TARGET_BACKCHAIN && TARGET_PACKED_STACK) ?
+		 (TARGET_64BIT ? 4 : 2) * 8 : 2 * UNITS_PER_WORD);
       sav_scale = UNITS_PER_WORD;
       size = UNITS_PER_WORD;
       max_reg = 4;
@@ -7610,7 +7605,8 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
       indirect_p = 0;
       reg = fpr;
       n_reg = 1;
-      sav_ofs = TARGET_KERNEL_BACKCHAIN ? 0 : 16 * UNITS_PER_WORD;
+      sav_ofs = ((TARGET_BACKCHAIN && TARGET_PACKED_STACK) ?
+		 0 : 16 * UNITS_PER_WORD);
       sav_scale = 8;
       /* TARGET_64BIT has up to 4 parameter in fprs */
       max_reg = TARGET_64BIT ? 3 : 1;
@@ -7628,11 +7624,11 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
       reg = gpr;
       n_reg = (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
-      /* TARGET_KERNEL_BACKCHAIN on 31 bit: It is assumed here that no padding
-	will be added by s390_frame_info because for va_args always an even
-	number of gprs has to be saved r15-r2 = 14 regs.  */
-      sav_ofs = TARGET_KERNEL_BACKCHAIN ? 
-	(TARGET_64BIT ? 4 : 2) * 8 : 2*UNITS_PER_WORD;
+      /* kernel stack layout on 31 bit: It is assumed here that no padding
+	 will be added by s390_frame_info because for va_args always an even
+	 number of gprs has to be saved r15-r2 = 14 regs.  */
+      sav_ofs = ((TARGET_BACKCHAIN && TARGET_PACKED_STACK) ? 
+		 (TARGET_64BIT ? 4 : 2) * 8 : 2 * UNITS_PER_WORD);
 
       if (size < UNITS_PER_WORD)
 	sav_ofs += UNITS_PER_WORD - size;

@@ -623,7 +623,8 @@ See RS/6000 and PowerPC Options.
 
 @emph{S/390 and zSeries Options}
 @gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type} @gol
--mhard-float  -msoft-float  -mbackchain  -mno-backchain -mkernel-backchain @gol
+-mhard-float  -msoft-float  -mbackchain  -mno-backchain @gol
+-mpacked-stack  -mno-packed-stack @gol
 -msmall-exec  -mno-small-exec  -mmvcle -mno-mvcle @gol
 -m64  -m31  -mdebug  -mno-debug  -mesa  -mzarch @gol
 -mtpf-trace -mno-tpf-trace  -mfused-madd  -mno-fused-madd @gol
@@ -10827,27 +10828,49 @@ generates IEEE floating-point instructions.  This is the default.
 
 @item -mbackchain
 @itemx -mno-backchain
-@itemx -mkernel-backchain
 @opindex mbackchain
 @opindex mno-backchain
-@opindex mkernel-backchain
-In order to provide a backchain the address of the caller's frame
-is stored within the callee's stack frame.
+Store (do not store) the address of the caller's frame as backchain pointer
+into the callee's stack frame.
 A backchain may be needed to allow debugging using tools that do not understand
 DWARF-2 call frame information.
-For @option{-mno-backchain} no backchain is maintained at all which is the
-default.
-If one of the other options is present the backchain pointer is placed either
-on top of the stack frame  (@option{-mkernel-backchain}) or on
-the bottom (@option{-mbackchain}).
-Beside the different backchain location @option{-mkernel-backchain}
-also changes stack frame layout breaking the ABI@.  This option
-is intended to be used for code which internally needs a backchain but has
-to get by with a limited stack size e.g.@: the linux kernel.
-Internal unwinding code not using DWARF-2 info has to be able to locate the
-return address of a function.  That will be eased be the fact that
-the return address of a function is placed two words below the backchain
-pointer.
+When @option{-mno-packed-stack} is in effect, the backchain pointer is stored
+at the bottom of the stack frame; when @option{-mpacked-stack} is in effect,
+the backchain is placed into the topmost word of the 96/160 byte register
+save area.
+
+In general, code compiled with @option{-mbackchain} is call-compatible with
+code compiled with @option{-mmo-backchain}; however, use of the backchain
+for debugging purposes usually requires that the whole binary is built with
+@option{-mbackchain}.  Note that the combination of @option{-mbackchain} and
+@option{-mpacked-stack} generates code that is not ABI-compatible.
+
+The default is to not maintain the backchain.
+
+@item -mpacked-stack
+@item -mno-packed-stack
+@opindex mpacked-stack
+@opindex mno-packed-stack
+Use (do not use) the packed stack layout.  When @option{-mno-packed-stack} is
+specified, the compiler uses the all fields of the 96/160 byte register save
+area only for their default purpose; unused fields still take up stack space.
+When @option{-mpacked-stack} is specified, register save slots are densely
+packed at the top of the register save area; unused space is reused for other
+purposes, allowing for more efficient use of the available stack space.
+However, when @option{-mbackchain} is also in effect, the topmost word of
+the save area is always used to store the backchain, and the return address
+register is always saved two words below the backchain.
+
+As long as the stack frame backchain is not used, code generated with 
+@option{-mpacked-stack} is call-compatible with code generated with
+@option{-mno-packed-stack}.  Note that some non-FSF releases of GCC 2.95 for
+S/390 or zSeries generated code that uses the stack frame backchain at run
+time, not just for debugging purposes.  Such code is not call-compatible
+with code compiled with @option{-mpacked-stack}.  Also, note that the
+combination of @option{-mbackchain} and @option{-mpacked-stack} generates code
+that is not ABI-compatible.
+
+The default is to not use the packed stack layout.
 
 @item -msmall-exec
 @itemx -mno-small-exec
