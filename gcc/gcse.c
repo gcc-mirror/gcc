@@ -4219,7 +4219,7 @@ pre_edge_insert (struct edge_list *edge_list, struct expr **index_map)
 			   handling this situation.  This one is easiest for
 			   now.  */
 
-			if ((eg->flags & EDGE_ABNORMAL) == EDGE_ABNORMAL)
+			if (eg->flags & EDGE_ABNORMAL)
 			  insert_insn_end_bb (index_map[j], bb, 0);
 			else
 			  {
@@ -6220,13 +6220,9 @@ insert_store (struct ls_expr * expr, edge e)
       return 0;
     }
 
-  /* We can't insert on this edge, so we'll insert at the head of the
-     successors block.  See Morgan, sec 10.5.  */
-  if ((e->flags & EDGE_ABNORMAL) == EDGE_ABNORMAL)
-    {
-      insert_insn_start_bb (insn, bb);
-      return 0;
-    }
+  /* We can't put stores in the front of blocks pointed to by abnormal
+     edges since that may put a store where one didn't used to be.  */
+  gcc_assert (!(e->flags & EDGE_ABNORMAL));
 
   insert_insn_on_edge (insn, e);
 
@@ -6490,6 +6486,25 @@ store_motion (void)
   /* Now we want to insert the new stores which are going to be needed.  */
   for (ptr = first_ls_expr (); ptr != NULL; ptr = next_ls_expr (ptr))
     {
+      /* If any of the edges we have above are abnormal, we can't move this
+	 store.  */
+      for (x = NUM_EDGES (edge_list) - 1; x >= 0; x--)
+	if (TEST_BIT (pre_insert_map[x], ptr->index)
+	    && (INDEX_EDGE (edge_list, x)->flags & EDGE_ABNORMAL))
+	  break;
+
+      if (x >= 0)
+	{
+	  if (gcse_file != NULL)
+	    fprintf (gcse_file,
+		     "Can't replace store %d: abnormal edge from %d to %d\n",
+		     ptr->index, INDEX_EDGE (edge_list, x)->src->index,
+		     INDEX_EDGE (edge_list, x)->dest->index);
+	  continue;
+	}
+		      
+      /* Now we want to insert the new stores which are going to be needed.  */
+
       FOR_EACH_BB (bb)
 	if (TEST_BIT (pre_delete_map[bb->index], ptr->index))
 	  delete_store (ptr, bb);
