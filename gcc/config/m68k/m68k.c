@@ -214,7 +214,7 @@ output_function_prologue (stream, size)
       /* Adding negative number is faster on the 68040.  */
       if (fsize + 4 < 0x8000)
 	{
-	  if (TARGET_5200)
+	  if (!TARGET_68040)
 	    {
 #ifdef MOTOROLA
 	      asm_fprintf (stream, "\tlea (%d,%Rsp),%Rsp\n", - (fsize + 4));
@@ -642,7 +642,7 @@ output_function_epilogue (stream, size)
     {
       if (fsize + 4 < 0x8000)
 	{
-	  if (TARGET_5200)
+	  if (!TARGET_68040)
 	    { 
 #ifdef MOTOROLA
 	      asm_fprintf (stream, "\tlea (%d,%Rsp),%Rsp\n", fsize + 4);
