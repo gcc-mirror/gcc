@@ -1,14 +1,14 @@
-// Compiles.   Shouldn't.
+//Build don't link:
 class A {
 private:
   int i1_;
 public:
-  void f(int const i1 = 1);
+  void f(int const i1 = 1); // ERROR -
 };
 
 void
-A::f(int const i1 = 1) // !!! SHOULD TRIGGER AN ERROR !!!
-{
+A::f(int const i1 = 1)
+{                          // ERROR - duplicate default argument
   i1_ = i1;
 }
 
