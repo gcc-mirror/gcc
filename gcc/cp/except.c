@@ -177,9 +177,6 @@ static tree FirstExceptionMatch;
 /* Used to cache a call to __unwind_function.  */
 static tree Unwind;
 
-/* Holds a ready to emit call to "terminate".  */
-static tree TerminateFunctionCall;
-
 /* ====================================================================== */
 
 
@@ -282,15 +279,13 @@ init_exception_processing ()
 			NOT_BUILT_IN, NULL_PTR);
 
   Unexpected = default_conversion (unexpected_fndecl);
-  Terminate = default_conversion (terminate_fndecl);
+  Terminate = terminate_fndecl;
   SetTerminate = default_conversion (set_terminate_fndecl);
   SetUnexpected = default_conversion (set_unexpected_fndecl);
   CatchMatch = default_conversion (catch_match_fndecl);
   FirstExceptionMatch = default_conversion (find_first_exception_match_fndecl);
   Unwind = default_conversion (unwind_fndecl);
   BuiltinReturnAddress = default_conversion (builtin_return_address_fndecl);
-
-  TerminateFunctionCall = build_function_call (Terminate, NULL_TREE);
 
   pop_lang_context ();
 
@@ -613,6 +608,13 @@ expand_start_catch_block (declspecs, declarator)
 	init_type = build_reference_type (init_type);
 
       exp = get_eh_value ();
+
+      /* Since pointers are passed by value, initialize a reference to
+	 pointer catch parm with the address of the value slot.  */
+      if (TREE_CODE (init_type) == REFERENCE_TYPE
+	  && TREE_CODE (TREE_TYPE (init_type)) == POINTER_TYPE)
+	exp = build_unary_op (ADDR_EXPR, exp, 1);
+
       exp = expr_tree_cons (NULL_TREE,
 		       build_eh_type_type (TREE_TYPE (decl)),
 		       expr_tree_cons (NULL_TREE,
@@ -643,12 +645,15 @@ expand_start_catch_block (declspecs, declarator)
          must call terminate.  See eh23.C.  */
       if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
 	{
+	  int yes = suspend_momentary ();
+	  tree term = build_function_call (Terminate, NULL_TREE);
+	  resume_momentary (yes);
+
 	  /* Generate the copy constructor call directly so we can wrap it.
 	     See also expand_default_init.  */
 	  init = ocp_convert (TREE_TYPE (decl), init,
 			      CONV_IMPLICIT|CONV_FORCE_TEMP, 0);
-	  init = build (TRY_CATCH_EXPR, TREE_TYPE (init), init,
-			TerminateFunctionCall);
+	  init = build (TRY_CATCH_EXPR, TREE_TYPE (init), init, term);
 	}
 
       /* Let `cp_finish_decl' know that this initializer is ok.  */
@@ -988,7 +993,6 @@ expand_builtin_throw ()
   /* no it didn't --> therefore we need to call terminate */
   emit_label (gotta_call_terminate);
   do_function_call (Terminate, NULL_TREE, NULL_TREE);
-  assemble_external (TREE_OPERAND (Terminate, 0));
 
   {
     rtx ret_val, x;
@@ -1065,7 +1069,6 @@ expand_end_eh_spec (raises)
   emit_label (cont);
   jumpif (make_tree (integer_type_node, flag), end);
   do_function_call (Terminate, NULL_TREE, NULL_TREE);
-  assemble_external (TREE_OPERAND (Terminate, 0));
   emit_barrier ();
   do_pending_stack_adjust ();
   RTL_EXPR_SEQUENCE (expr) = get_insns ();
@@ -1171,9 +1174,6 @@ expand_exception_blocks ()
 	 the setjmp/longjmp approach.  */
       if (exceptions_via_longjmp == 0)
 	{
-	  /* Is this necessary?  */
-	  assemble_external (TREE_OPERAND (Terminate, 0));
-
 	  expand_eh_region_start ();
 	}
 
@@ -1181,7 +1181,7 @@ expand_exception_blocks ()
       catch_clauses = NULL_RTX;
 
       if (exceptions_via_longjmp == 0)
-	expand_eh_region_end (TerminateFunctionCall);
+	expand_eh_region_end (build_function_call (Terminate, NULL_TREE));
 
       expand_leftover_cleanups ();
 
@@ -1310,6 +1310,7 @@ expand_throw (exp)
 	      cleanup = lookup_fnfields (TYPE_BINFO (TREE_TYPE (object)),
 					 dtor_identifier, 0);
 	      cleanup = TREE_VALUE (cleanup);
+	      mark_used (cleanup);
 	      mark_addressable (cleanup);
 	      /* Pretend it's a normal function.  */
 	      cleanup = build1 (ADDR_EXPR, cleanup_type, cleanup);

@@ -943,7 +943,8 @@ struct lang_decl_flags
   unsigned nonconverting : 1;
   unsigned declared_inline : 1;
   unsigned not_really_extern : 1;
-  unsigned dummy : 5;
+  unsigned comdat : 1;
+  unsigned dummy : 4;
 
   tree access;
   tree context;
@@ -1419,6 +1420,10 @@ extern int flag_new_for_scope;
 
 #define DECL_REALLY_EXTERN(NODE) \
   (DECL_EXTERNAL (NODE) && ! DECL_NOT_REALLY_EXTERN (NODE))
+
+/* Used to tell cp_finish_decl that it should approximate comdat linkage
+   as best it can for this decl.  */
+#define DECL_COMDAT(NODE) (DECL_LANG_SPECIFIC (NODE)->decl_flags.comdat)
 
 #define THUNK_DELTA(DECL) ((DECL)->decl.frame_size.i)
 
@@ -1955,8 +1960,10 @@ extern tree build_overload_call			PROTO((tree, tree, int));
 extern int null_ptr_cst_p			PROTO((tree));
 extern tree type_decays_to			PROTO((tree));
 extern tree build_user_type_conversion		PROTO((tree, tree, int));
-extern tree build_new_function_call		PROTO((tree, tree, tree));
+extern tree build_new_function_call		PROTO((tree, tree));
 extern tree build_new_op			PROTO((enum tree_code, int, tree, tree, tree));
+extern tree build_op_new_call			PROTO((enum tree_code, tree, tree, int));
+extern tree build_op_delete_call		PROTO((enum tree_code, tree, tree, int));
 extern int can_convert				PROTO((tree, tree));
 extern int can_convert_arg			PROTO((tree, tree, tree));
 

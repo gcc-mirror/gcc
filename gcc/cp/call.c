@@ -4479,8 +4479,8 @@ resolve_args (args)
 }
       
 tree
-build_new_function_call (fn, args, obj)
-     tree fn, args, obj;
+build_new_function_call (fn, args)
+     tree fn, args;
 {
   struct z_candidate *candidates = 0, *cand;
   tree explicit_targs = NULL_TREE;
@@ -4493,7 +4493,7 @@ build_new_function_call (fn, args, obj)
       template_only = 1;
     }
 
-  if (obj == NULL_TREE && really_overloaded_fn (fn))
+  if (really_overloaded_fn (fn))
     {
       tree t;
       tree templates = NULL_TREE;
@@ -4721,7 +4721,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	arglist = scratch_tree_cons (NULL_TREE, arg2, arg3);
 	if (flags & LOOKUP_GLOBAL)
 	  return build_new_function_call
-	    (lookup_name_nonclass (fnname), arglist, NULL_TREE);
+	    (lookup_name_nonclass (fnname), arglist);
 
 	/* FIXME */
 	rval = build_method_call
@@ -4746,7 +4746,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	if (flags & LOOKUP_GLOBAL)
 	  return build_new_function_call
 	    (lookup_name_nonclass (fnname),
-	     build_scratch_list (NULL_TREE, arg1), NULL_TREE);
+	     build_scratch_list (NULL_TREE, arg1));
 
 	arglist = scratch_tree_cons (NULL_TREE, arg1, build_scratch_list (NULL_TREE, arg2));
 
@@ -4810,9 +4810,6 @@ build_new_op (code, flags, arg1, arg2, arg3)
   if (code == POSTINCREMENT_EXPR || code == POSTDECREMENT_EXPR)
     arg2 = integer_zero_node;
 
-  fns = lookup_name_nonclass (fnname);
-  /* + Koenig lookup */
-
   if (arg2 && arg3)
     arglist = scratch_tree_cons (NULL_TREE, arg1, scratch_tree_cons
 		      (NULL_TREE, arg2, build_scratch_list (NULL_TREE, arg3)));
@@ -4820,6 +4817,9 @@ build_new_op (code, flags, arg1, arg2, arg3)
     arglist = scratch_tree_cons (NULL_TREE, arg1, build_scratch_list (NULL_TREE, arg2));
   else
     arglist = build_scratch_list (NULL_TREE, arg1);
+
+  fns = lookup_name_nonclass (fnname);
+  /* + Koenig lookup */
 
   if (fns && TREE_CODE (fns) == TREE_LIST)
     fns = TREE_VALUE (fns);
@@ -4861,8 +4861,8 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	      templates = scratch_tree_cons (NULL_TREE, fn, templates);
 	      candidates 
 		= add_template_candidate (candidates, fn, NULL_TREE,
-					  this_arglist,  TREE_TYPE
-					  (fnname), LOOKUP_NORMAL); 
+					  this_arglist,  TREE_TYPE (fnname),
+					  flags); 
 	    }
 	  else
 	    candidates = add_function_candidate
@@ -5070,6 +5070,145 @@ builtin:
       my_friendly_abort (367);
     }
 }
+
+/* Build up a call to operator new.  This has to be handled differently
+   from other operators in the way lookup is handled; first members are
+   considered, then globals.  CODE is either NEW_EXPR or VEC_NEW_EXPR.
+   TYPE is the type to be created.  ARGS are any new-placement args.
+   FLAGS are the usual overloading flags.  */
+
+tree
+build_op_new_call (code, type, args, flags)
+     enum tree_code code;
+     tree type, args;
+     int flags;
+{
+  tree fnname = ansi_opname[code];
+
+  if (IS_AGGR_TYPE (type) && ! (flags & LOOKUP_GLOBAL)
+      && (TYPE_GETS_NEW (type) & (1 << (code == VEC_NEW_EXPR))))
+    {
+      tree dummy = build1 (NOP_EXPR, build_pointer_type (type),
+			   error_mark_node);
+      dummy = build_indirect_ref (dummy, "new");
+      return build_method_call (dummy, fnname, args, NULL_TREE, flags);
+    }
+  else
+    return build_new_function_call (lookup_name_nonclass (fnname), args);
+}
+
+/* Build a call to operator delete.  This has to be handled very specially,
+   because the restrictions on what signatures match are different from all
+   other call instances.  For a normal delete, only a delete taking (void *)
+   or (void *, size_t) is accepted.  For a placement delete, only an exact
+   match with the placement new is accepted.
+
+   CODE is either DELETE_EXPR or VEC_DELETE_EXPR.
+   ADDR is the pointer to be deleted.  For placement delete, it is also
+     used to determine what the corresponding new looked like.
+   SIZE is the size of the memory block to be deleted.
+   FLAGS are the usual overloading flags.  */
+
+tree
+build_op_delete_call (code, addr, size, flags)
+     enum tree_code code;
+     tree addr, size;
+     int flags;
+{
+  tree fn, fns, fnname, fntype, argtypes, args, type;
+  int placement;
+
+  if (addr == error_mark_node)
+    return error_mark_node;
+
+  type = TREE_TYPE (TREE_TYPE (addr));
+  fnname = ansi_opname[code];
+
+  if (IS_AGGR_TYPE (type) && ! (flags & LOOKUP_GLOBAL))
+    fns = lookup_fnfields (TYPE_BINFO (type), fnname, 0);
+  else
+    fns = NULL_TREE;
+
+  if (fns)
+    {
+      /* Build this up like build_offset_ref does.  */
+      fns = build_tree_list (error_mark_node, fns);
+      TREE_TYPE (fns) = build_offset_type (type, unknown_type_node);
+    }
+  else
+    fns = lookup_name_nonclass (fnname);
+
+  /* We can recognize a placement delete because of LOOKUP_SPECULATIVELY;
+     if we are doing placement delete we do nothing if we don't find a
+     matching op delete.  */
+  placement = !!(flags & LOOKUP_SPECULATIVELY);
+  if (placement)
+    {
+      /* If placement, we are coming from build_new, and we know that addr
+	 is the allocation expression, so extract the info we need from it.
+	 Obviously, if the build_new process changes this may have to
+	 change as well.  */
+      /* The SAVE_EXPR.  */
+      tree t = TREE_OPERAND (addr, 0);
+      /* The CALL_EXPR.  */
+      t = TREE_OPERAND (t, 0);
+      /* The function.  */
+      argtypes = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
+      /* The second parm type.  */
+      argtypes = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (argtypes)));
+      /* The second argument.  */
+      args = TREE_CHAIN (TREE_OPERAND (t, 1));
+    }
+  else
+    {
+      /* First try it without the size argument.  */
+      argtypes = void_list_node;
+      args = NULL_TREE;
+    }
+
+  argtypes = tree_cons (NULL_TREE, ptr_type_node, argtypes);
+  fntype = build_function_type (void_type_node, argtypes);
+
+  /* Strip const and volatile from addr.  */
+  if (type != TYPE_MAIN_VARIANT (type))
+    addr = cp_convert (build_pointer_type (TYPE_MAIN_VARIANT (type)), addr);
+
+  /* instantiate_type will always return a plain function; pretend it's
+     overloaded.  */
+  if (TREE_CODE (fns) == FUNCTION_DECL)
+    fns = scratch_tree_cons (NULL_TREE, fns, NULL_TREE);
+
+  fn = instantiate_type (fntype, fns, 0);
+
+  if (fn != error_mark_node)
+    {
+      if (TREE_CODE (TREE_VALUE (fns)) == TREE_LIST)
+	/* Member functions.  */
+	enforce_access (TREE_PURPOSE (TREE_VALUE (fns)), fn);
+      return build_function_call (fn, expr_tree_cons (NULL_TREE, addr, args));
+    }
+
+  if (placement)
+    return NULL_TREE;
+
+  /* Normal delete; now try to find a match including the size argument.  */
+  argtypes = tree_cons (NULL_TREE, ptr_type_node,
+			tree_cons (NULL_TREE, sizetype, void_list_node));
+  fntype = build_function_type (void_type_node, argtypes);
+
+  fn = instantiate_type (fntype, fns, 0);
+
+  if (fn != error_mark_node)
+    return build_function_call
+      (fn, expr_tree_cons (NULL_TREE, addr,
+			   build_expr_list (NULL_TREE, size)));
+
+  cp_error ("no suitable operator delete for `%T'", type);
+  return error_mark_node;
+}
+
+/* If the current scope isn't allowed to access FUNCTION along
+   BASETYPE_PATH, give an error.  */
 
 static void
 enforce_access (basetype_path, function)
@@ -5474,6 +5613,8 @@ build_new_method_call (instance, name, args, basetype_path, flags)
     {
       explicit_targs = TREE_OPERAND (name, 1);
       name = TREE_OPERAND (name, 0);
+      if (TREE_CODE (name) == TEMPLATE_DECL)
+	name = DECL_NAME (name);
       template_only = 1;
     }
 
@@ -5526,10 +5667,13 @@ build_new_method_call (instance, name, args, basetype_path, flags)
     {
       instance_ptr = build_this (instance);
 
-      /* XXX this should be handled before we get here.  */
-      fns = build_field_call (basetype_path, instance_ptr, name, args);
-      if (fns)
-	return fns;
+      if (! template_only)
+	{
+	  /* XXX this should be handled before we get here.  */
+	  fns = build_field_call (basetype_path, instance_ptr, name, args);
+	  if (fns)
+	    return fns;
+	}
     }
   else
     {
@@ -5575,8 +5719,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 	      candidates = 
 		add_template_candidate (candidates, t, explicit_targs,
 					this_arglist,
-					TREE_TYPE (name), 
-					LOOKUP_NORMAL); 
+					TREE_TYPE (name), flags); 
 	    }
 	  else if (! template_only)
 	    candidates = add_function_candidate (candidates, t,

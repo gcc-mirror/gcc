@@ -1242,7 +1242,10 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
       return t;
     }
 
-  t = stabilize_reference (convert_from_reference (exp));
+  t = exp;
+  if (TREE_CODE (t) == OFFSET_REF)
+    t = resolve_offset_ref (t);
+  t = stabilize_reference (convert_from_reference (t));
   type = TREE_TYPE (t);
   code = TREE_CODE (type);
 
@@ -1270,15 +1273,14 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
   if (code == POINTER_TYPE)
     {
 #if 0
-      /* As of Valley Forge, you can delete a pointer to constant.  */
-      /* You can't delete a pointer to constant.  */
+      /* As of Valley Forge, you can delete a pointer to const.  */
       if (TREE_READONLY (TREE_TYPE (type)))
 	{
 	  error ("`const *' cannot be deleted");
 	  return error_mark_node;
 	}
 #endif
-      /* You also can't delete functions.  */
+      /* You can't delete functions.  */
       if (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
 	{
 	  error ("cannot delete a function");
@@ -1310,8 +1312,8 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
 	{
 	  /* Only do access checking here; we'll be calling op delete
 	     from the destructor.  */
-	  tree tmp = build_opfncall (DELETE_EXPR, LOOKUP_NORMAL, t,
-				     size_zero_node, NULL_TREE);
+	  tree tmp = build_op_delete_call (DELETE_EXPR, t,
+					   size_zero_node, LOOKUP_NORMAL);
 	  if (tmp == error_mark_node)
 	    return error_mark_node;
 	}
@@ -2403,6 +2405,7 @@ coerce_delete_type (type)
       || TREE_VALUE (arg_types) != ptr_type_node)
     e2 = 1, error ("`operator delete' takes type `void *' as first parameter");
 
+#if 0
   if (arg_types
       && TREE_CHAIN (arg_types)
       && TREE_CHAIN (arg_types) != void_list_node)
@@ -2434,8 +2437,12 @@ coerce_delete_type (type)
 	arg_types = tree_cons (NULL_TREE, ptr_type_node, TREE_CHAIN (arg_types));
     }
   else e3 |= e1;
+#endif
 
-  if (e3)
+  if (e2)
+    arg_types = tree_cons (NULL_TREE, ptr_type_node,
+			   arg_types ? TREE_CHAIN (arg_types): NULL_TREE);
+  if (e2 || e1)
     type = build_function_type (void_type_node, arg_types);
 
   return type;
@@ -2528,6 +2535,7 @@ import_export_vtable (decl, type, final)
 
       int found = CLASSTYPE_TEMPLATE_INSTANTIATION (type);
 
+#ifndef MULTIPLE_SYMBOL_SPACES
       if (! found && ! final)
 	{
 	  tree method;
@@ -2541,6 +2549,7 @@ import_export_vtable (decl, type, final)
 		break;
 	      }
 	}
+#endif
 
       if (final || ! found)
 	{
@@ -2759,26 +2768,8 @@ import_export_decl (decl)
 	{
 	  if (TREE_CODE (decl) == FUNCTION_DECL)
 	    comdat_linkage (decl);
-	  /* Dynamically initialized vars go into common.  */
-	  else if (DECL_INITIAL (decl) == NULL_TREE
-		   || DECL_INITIAL (decl) == error_mark_node)
-	    DECL_COMMON (decl) = 1;
-	  else if (EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl)))
-	    {
-	      DECL_COMMON (decl) = 1;
-	      DECL_INITIAL (decl) = error_mark_node;
-	    }
 	  else
-	    {
-	      /* Statically initialized vars are weak or comdat, if
-                 supported.  */
-	      if (flag_weak)
-		make_decl_one_only (decl);
-	      else
-		/* we can't do anything useful; leave vars for explicit
-                   instantiation.  */
-		DECL_NOT_REALLY_EXTERN (decl) = 0;
-	    }
+	    DECL_COMDAT (decl) = 1;
 	}
       else
 	DECL_NOT_REALLY_EXTERN (decl) = 0;
@@ -2786,7 +2777,8 @@ import_export_decl (decl)
   else if (DECL_FUNCTION_MEMBER_P (decl))
     {
       tree ctype = DECL_CLASS_CONTEXT (decl);
-      if (CLASSTYPE_INTERFACE_KNOWN (ctype) && ! DECL_ARTIFICIAL (decl))
+      if (CLASSTYPE_INTERFACE_KNOWN (ctype)
+	  && (! DECL_ARTIFICIAL (decl) || DECL_VINDEX (decl)))
 	{
 	  DECL_NOT_REALLY_EXTERN (decl)
 	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
@@ -3406,10 +3398,9 @@ build_expr_from_tree (t)
 	return do_identifier (TREE_OPERAND (t, 0), 0);
 
     case TEMPLATE_ID_EXPR:
-      return lookup_template_function (build_expr_from_tree
-				       (TREE_OPERAND (t, 0)),
-				       build_expr_from_tree
-				       (TREE_OPERAND (t, 1)));
+      return (lookup_template_function
+	      (build_expr_from_tree (TREE_OPERAND (t, 0)),
+	       build_expr_from_tree (TREE_OPERAND (t, 1))));
 
     case INDIRECT_REF:
       return build_x_indirect_ref
@@ -3568,7 +3559,8 @@ build_expr_from_tree (t)
       else
 	{
 	  tree name = TREE_OPERAND (t, 0);
-	  if (! really_overloaded_fn (name))
+	  if (TREE_CODE (name) == TEMPLATE_ID_EXPR
+	      || ! really_overloaded_fn (name))
 	    name = build_expr_from_tree (name);
 	  return build_x_function_call
 	    (name, build_expr_from_tree (TREE_OPERAND (t, 1)),

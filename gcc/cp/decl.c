@@ -2779,7 +2779,8 @@ duplicate_decls (newdecl, olddecl)
 	  TREE_TYPE (olddecl) = build_exception_variant (newtype,
 							 TYPE_RAISES_EXCEPTIONS (oldtype));
 
-	  if ((pedantic || ! DECL_IN_SYSTEM_HEADER (olddecl))
+	  if ((pedantic || (! DECL_IN_SYSTEM_HEADER (olddecl)
+			    && DECL_SOURCE_LINE (olddecl) != 0))
 	      && flag_exceptions
 	      && ! compexcepttypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl)))
 	    {
@@ -2862,6 +2863,7 @@ duplicate_decls (newdecl, olddecl)
     {
       DECL_INTERFACE_KNOWN (newdecl) |= DECL_INTERFACE_KNOWN (olddecl);
       DECL_NOT_REALLY_EXTERN (newdecl) |= DECL_NOT_REALLY_EXTERN (olddecl);
+      DECL_COMDAT (newdecl) |= DECL_COMDAT (olddecl);
     }
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
@@ -4382,6 +4384,44 @@ make_typename_type (context, name)
   return t;
 }
 
+/* Given a TYPE_DECL T looked up in CONTEXT, return a TYPENAME_TYPE
+   where the scope is either CONTEXT or the first base of CONTEXT along the
+   inheritance chain to T that depends on template parameters.
+
+   Called from lookup_name_real to implement the implicit typename
+   extension.  */
+
+static tree
+make_implicit_typename (context, t)
+     tree context, t;
+{
+  tree retval;
+
+  if (uses_template_parms (DECL_CONTEXT (t))
+      && DECL_CONTEXT (t) != context)
+    {
+      tree binfo = get_binfo (DECL_CONTEXT (t), context, 0);
+      while (binfo)
+	{
+	  tree next = BINFO_INHERITANCE_CHAIN (binfo);
+	  if (! uses_template_parms (BINFO_TYPE (next))
+	      || BINFO_TYPE (next) == context)
+	    break;
+	  binfo = next;
+	}
+      if (binfo)
+	retval = make_typename_type (BINFO_TYPE (binfo), DECL_NAME (t));
+      else
+	/* FIXME: find the enclosing class whose base t comes from.  */
+	retval = make_typename_type (DECL_CONTEXT (t), DECL_NAME (t));
+    }
+  else
+    retval = make_typename_type (context, DECL_NAME (t));
+  
+  TREE_TYPE (retval) = TREE_TYPE (t);
+  return retval;
+}
+
 /* Look up NAME in the current binding level and its superiors in the
    namespace of variables, functions and typedefs.  Return a ..._DECL
    node of some kind representing its definition if there is only one
@@ -4474,8 +4514,7 @@ lookup_name_real (name, prefer_type, nonclass)
 	  && val && TREE_CODE (val) == TYPE_DECL
 	  && ! DECL_ARTIFICIAL (val))
 	{
-	  tree t = make_typename_type (got_scope, DECL_NAME (val));
-	  TREE_TYPE (t) = TREE_TYPE (val);
+	  tree t = make_implicit_typename (got_scope, val);
 	  val = TYPE_MAIN_DECL (t);
 	}
 
@@ -4515,9 +4554,7 @@ lookup_name_real (name, prefer_type, nonclass)
 	  && uses_template_parms (DECL_CONTEXT (classval))
 	  && ! DECL_ARTIFICIAL (classval))
 	{
-	  tree t = make_typename_type (DECL_CONTEXT (classval),
-				       DECL_NAME (classval));
-	  TREE_TYPE (t) = TREE_TYPE (classval);
+	  tree t = make_implicit_typename (current_class_type, classval);
 	  classval = TYPE_MAIN_DECL (t);
 	}
     }
@@ -5984,7 +6021,12 @@ start_decl (declarator, declspecs, initialized)
 	  else
 	    {
 	      if (DECL_CONTEXT (field) != context)
-		cp_pedwarn ("ANSI C++ does not permit `%T::%D' to be defined as `%T::%D'", DECL_CONTEXT (field), DECL_NAME (decl), context, DECL_NAME (decl));
+		{
+		  cp_pedwarn ("ANSI C++ does not permit `%T::%D' to be defined as `%T::%D'",
+			      DECL_CONTEXT (field), DECL_NAME (decl),
+			      context, DECL_NAME (decl));
+		  DECL_CONTEXT (decl) = DECL_CONTEXT (field);
+		}
 	      if (duplicate_decls (decl, field))
 		decl = field;
 	    }
@@ -6683,6 +6725,35 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	      = build_static_name (current_function_decl, DECL_NAME (decl));
 	  else if (! DECL_ARTIFICIAL (decl))
 	    cp_warning_at ("sorry: semantics of inline function static data `%#D' are wrong (you'll wind up with multiple copies)", decl);
+	}
+
+      else if (TREE_CODE (decl) == VAR_DECL
+	       && DECL_LANG_SPECIFIC (decl)
+	       && DECL_COMDAT (decl))
+	{
+	  /* Dynamically initialized vars go into common.  */
+	  if (DECL_INITIAL (decl) == NULL_TREE
+	      || DECL_INITIAL (decl) == error_mark_node)
+	    DECL_COMMON (decl) = 1;
+	  else if (EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl)))
+	    {
+	      DECL_COMMON (decl) = 1;
+	      DECL_INITIAL (decl) = error_mark_node;
+	    }
+	  else
+	    {
+	      /* Statically initialized vars are weak or comdat, if
+                 supported.  */
+	      if (flag_weak)
+		make_decl_one_only (decl);
+	      else
+		{
+		  /* we can't do anything useful; leave vars for explicit
+		     instantiation.  */
+		  DECL_EXTERNAL (decl) = 1;
+		  DECL_NOT_REALLY_EXTERN (decl) = 0;
+		}
+	    }
 	}
 
       if (TREE_CODE (decl) == VAR_DECL && DECL_VIRTUAL_P (decl))

@@ -1,7 +1,7 @@
 *** Changes since G++ version 2.7.2:
 
-* A public review copy of the December 1996 Draft of the ANSI/ISO C++
-  proto-standard is now available. See
+* A public review copy of the December 1996 Draft of the ISO/ANSI C++
+  standard is now available. See
 
 	http://www.cygnus.com/misc/wp/
 
@@ -65,8 +65,17 @@
      + Template friends.
 
 * Exception handling support has been significantly improved and is on by
-  default.  This can result in significant runtime overhead.  You can turn
-  it off with -fno-exceptions.
+  default.  The compiler supports two mechanisms for walking back up the
+  call stack; one relies on static information about how registers are
+  saved, and causes no runtime overhead for code that does not throw
+  exceptions.  The other mechanism uses setjmp and longjmp equivalents, and
+  can result in quite a bit of runtime overhead.  You can determine which
+  mechanism is the default for your target by compiling a testcase that
+  uses exceptions and doing an 'nm' on the object file; if it uses __throw,
+  it's using the first mechanism.  If it uses __sjthrow, it's using the
+  second.
+
+  You can turn EH support off with -fno-exceptions.
 
 * RTTI support has been rewritten to work properly and is now on by default.
   This means code that uses virtual functions will have a modest space
@@ -90,9 +99,9 @@
 
 * New flags:
 
-     + New flags -Wsign-promo (warn about potentially confusing promotions
-       in overload resolution), -Wno-pmf-conversion (don't warn about
-       converting from a bound member function pointer to function pointer).
+     + New warning -Wno-pmf-conversion (don't warn about
+       converting from a bound member function pointer to function
+       pointer).
 
      + A flag -Weffc++ has been added for violations of some of the style 
        guidelines in Scott Meyers' _Effective C++_ books.
@@ -145,7 +154,7 @@
 * The name of a class is now implicitly declared in its own scope; A::A
   refers to A.
 
-* Local classes are now supported.
+* Local classes are now supported, though not inside templates.
 
 * __attribute__ can now be attached to types as well as declarations.
 

@@ -743,6 +743,9 @@ digest_init (type, init, tail)
 	init = DECL_INITIAL (init);
       else if (TREE_READONLY_DECL_P (init))
 	init = decl_constant_value (init);
+      else if (IS_AGGR_TYPE (type) && TYPE_NEEDS_CONSTRUCTING (type))
+	init = ocp_convert (type, init, CONV_IMPLICIT|CONV_FORCE_TEMP,
+			    LOOKUP_NORMAL);
       return init;
     }
 

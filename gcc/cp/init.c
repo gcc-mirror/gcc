@@ -2452,16 +2452,6 @@ build_new (placement, decl, init, use_global_new)
       return error_mark_node;
     }
 
-  /* If the first placement arg is of type nothrow_t, it's allowed to
-     return 0 on allocation failure.  */
-  nothrow = (placement && TREE_VALUE (placement)
-	     && TREE_TYPE (TREE_VALUE (placement))
-	     && IS_AGGR_TYPE (TREE_TYPE (TREE_VALUE (placement)))
-	     && (TYPE_IDENTIFIER (TREE_TYPE (TREE_VALUE (placement)))
-		 == get_identifier ("nothrow_t")));
-
-  check_new = flag_check_new || nothrow;
-
 #if 1
   /* Get a little extra space to store a couple of things before the new'ed
      array, if this isn't the default placement new.  */
@@ -2493,18 +2483,9 @@ build_new (placement, decl, init, use_global_new)
     }
 
   /* Allocate the object.  */
-  if (! use_global_new && TYPE_LANG_SPECIFIC (true_type)
-      && (TYPE_GETS_NEW (true_type) & (1 << has_array)))
-    rval = build_opfncall (code, LOOKUP_NORMAL,
-			   build_pointer_type (true_type), size, placement);
-  else if (placement)
-    {
-      rval = build_opfncall (code, LOOKUP_GLOBAL|LOOKUP_COMPLAIN,
-			     ptr_type_node, size, placement);
-      rval = cp_convert (build_pointer_type (true_type), rval);
-    }
-  else if (! has_array && flag_this_is_variable > 0
-	   && TYPE_NEEDS_CONSTRUCTING (true_type) && init != void_type_node)
+  
+  if (! has_array && ! placement && flag_this_is_variable > 0
+      && TYPE_NEEDS_CONSTRUCTING (true_type) && init != void_type_node)
     {
       if (init == NULL_TREE || TREE_CODE (init) == TREE_LIST)
 	rval = NULL_TREE;
@@ -2516,13 +2497,46 @@ build_new (placement, decl, init, use_global_new)
     }
   else
     {
-      rval = build_builtin_call (build_pointer_type (true_type),
-				 has_array ? BIVN : BIN,
-				 build_expr_list (NULL_TREE, size));
-      TREE_CALLS_NEW (rval) = 1;
+      rval = build_op_new_call
+	(code, true_type, expr_tree_cons (NULL_TREE, size, placement),
+	 LOOKUP_NORMAL | (use_global_new * LOOKUP_GLOBAL));
+      rval = cp_convert (build_pointer_type (true_type), rval);
     }
 
-  if (check_new && rval)
+  /*        unless an allocation function is declared with an empty  excep-
+     tion-specification  (_except.spec_),  throw(), it indicates failure to
+     allocate storage by throwing a bad_alloc exception  (clause  _except_,
+     _lib.bad.alloc_); it returns a non-null pointer otherwise If the allo-
+     cation function is declared  with  an  empty  exception-specification,
+     throw(), it returns null to indicate failure to allocate storage and a
+     non-null pointer otherwise.
+
+     So check for a null exception spec on the op new we just called.  */
+
+  nothrow = 0;
+  if (rval)
+    {
+      /* The CALL_EXPR.  */
+      tree t = TREE_OPERAND (rval, 0);
+      /* The function.  */
+      t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
+      t = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (t));
+
+      if (t && TREE_VALUE (t) == NULL_TREE)
+	nothrow = 1;
+    }
+  check_new = flag_check_new || nothrow;
+
+  if (flag_exceptions && rval)
+    {
+      /* This must last longer so we can use it in the cleanup.
+         The subexpressions don't need to last, because we won't look at
+	 them when expanding the cleanup.  */
+      int yes = suspend_momentary ();
+      alloc_expr = rval = save_expr (rval);
+      resume_momentary (yes);
+    }
+  else if (check_new && rval)
     alloc_expr = rval = save_expr (rval);
   else
     alloc_expr = NULL_TREE;
@@ -2705,13 +2719,47 @@ build_new (placement, decl, init, use_global_new)
 	  rval = xval;
 	}
 #endif
+
+      /* If any part of the object initialization terminates by throwing
+	 an exception and the new-expression does not contain a
+	 new-placement, then the deallocation function is called to free
+	 the memory in which the object was being constructed.  */
+      if (flag_exceptions && alloc_expr)
+	{
+	  enum tree_code dcode = has_array? VEC_DELETE_EXPR : DELETE_EXPR;
+	  tree cleanup, args = NULL_TREE;
+	  int flags = LOOKUP_NORMAL | (use_global_new * LOOKUP_GLOBAL);
+
+	  /* All cleanups must last longer than normal.  */
+	  int yes = suspend_momentary ();
+
+	  if (placement)
+	    flags |= LOOKUP_SPECULATIVELY;
+
+	  /* Copy size to the saveable obstack.  */
+	  size = copy_node (size);
+
+	  cleanup = build_op_delete_call (dcode, alloc_expr, size, flags);
+
+	  resume_momentary (yes);
+
+	  if (cleanup)
+	    {
+	      /* FIXME: this is a workaround for a crash due to overlapping
+		 exception regions.  Cleanups shouldn't really happen here.  */
+	      rval = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (rval), rval);
+
+	      rval = build (TRY_CATCH_EXPR, TREE_TYPE (rval), rval, cleanup);
+	      rval = build (COMPOUND_EXPR, TREE_TYPE (rval), alloc_expr, rval);
+	    }
+	}
     }
   else if (TYPE_READONLY (true_type))
     cp_error ("uninitialized const in `new' of `%#T'", true_type);
 
  done:
 
-  if (alloc_expr && rval != alloc_expr)
+  if (check_new && alloc_expr && rval != alloc_expr)
     {
       /* Did we modify the storage?  */
       tree ifexp = build_binary_op (NE_EXPR, alloc_expr,
@@ -3112,6 +3160,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 	    TREE_TYPE (cleanup) = void_type_node;
 	    RTL_EXPR_RTL (cleanup) = const0_rtx;
 	    TREE_SIDE_EFFECTS (cleanup) = 1;
+	    do_pending_stack_adjust ();
 	    start_sequence_for_rtl_expr (cleanup);
 
 	    e1 = build_array_eh_cleanup
@@ -3119,6 +3168,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 	       build_binary_op (MINUS_EXPR, maxindex, iterator, 1),
 	       type);
 	    expand_expr (e1, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	    do_pending_stack_adjust ();
 	    RTL_EXPR_SEQUENCE (cleanup) = get_insns ();
 	    end_sequence ();
 
@@ -3160,16 +3210,10 @@ build_x_delete (type, addr, which_delete, virtual_size)
 {
   int use_global_delete = which_delete & 1;
   int use_vec_delete = !!(which_delete & 2);
-  tree rval;
   enum tree_code code = use_vec_delete ? VEC_DELETE_EXPR : DELETE_EXPR;
+  int flags = LOOKUP_NORMAL | (use_global_delete * LOOKUP_GLOBAL);
 
-  if (! use_global_delete && TYPE_LANG_SPECIFIC (TREE_TYPE (type))
-      && (TYPE_GETS_DELETE (TREE_TYPE (type)) & (1 << use_vec_delete)))
-    rval = build_opfncall (code, LOOKUP_NORMAL, addr, virtual_size, NULL_TREE);
-  else
-    rval = build_builtin_call (void_type_node, use_vec_delete ? BIVD : BID,
-			       build_expr_list (NULL_TREE, addr));
-  return rval;
+  return build_op_delete_call (code, addr, virtual_size, flags);
 }
 
 /* Generate a call to a destructor. TYPE is the type to cast ADDR to.
@@ -3266,18 +3310,9 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       if (auto_delete == integer_zero_node)
 	return void_zero_node;
 
-      /* Pass the size of the object down to the operator delete() in
-	 addition to the ADDR.  */
-      if (TYPE_GETS_REG_DELETE (type) && !use_global_delete)
-	{
-	  tree virtual_size = c_sizeof_nowarn (type);
-	  return build_opfncall (DELETE_EXPR, LOOKUP_NORMAL, addr,
-				 virtual_size, NULL_TREE);
-	}
-
-      /* Call the builtin operator delete.  */
-      return build_builtin_call (void_type_node, BID,
-				 build_expr_list (NULL_TREE, addr));
+      return build_op_delete_call
+	(DELETE_EXPR, addr, c_sizeof_nowarn (type),
+	 LOOKUP_NORMAL | (use_global_delete * LOOKUP_GLOBAL));
     }
 
   /* Below, we will reverse the order in which these calls are made.

@@ -1306,7 +1306,8 @@ tree
 get_first_fn (from)
      tree from;
 {
-  if (TREE_CODE (from) == FUNCTION_DECL 
+  if (TREE_CODE (from) == FUNCTION_DECL
+      || TREE_CODE (from) == TEMPLATE_ID_EXPR
       || DECL_FUNCTION_TEMPLATE_P (from))
     return from;
 
@@ -1865,8 +1866,6 @@ tree
 get_type_decl (t)
      tree t;
 {
-  if (TREE_CODE (t) == IDENTIFIER_NODE)
-    return identifier_typedecl_value (t);
   if (TREE_CODE (t) == TYPE_DECL)
     return t;
   if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
