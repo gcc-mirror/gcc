@@ -33,7 +33,7 @@
 /* Define terminate, unexpected, set_terminate, set_unexpected as
    well as the default terminate func and default unexpected func.  */
 
-extern terminate_handler __terminate_func;
+extern terminate_handler __terminate_func __attribute__((__noreturn__));
 
 void
 terminate ()

@@ -2227,7 +2227,7 @@ structsp:
 		{ 
 		  $$.t = $<ttype>6;
 		  $$.new_type_flag = 1; 
-		  if (current_scope () == current_function_decl)
+		  if (current_class_type == NULL_TREE)
 		    clear_inline_text_obstack (); 
 		}
 	| class_head  %prec EMPTY
@@ -3719,7 +3719,7 @@ function_try_block:
 		    store_parm_decls ();
 		  expand_start_early_try_stmts ();
 		}
-	  ctor_initializer_opt compstmt_or_error
+	  ctor_initializer_opt compstmt
 		{ expand_start_all_catch (); }
 	  handler_seq
 		{

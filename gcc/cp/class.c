@@ -671,6 +671,7 @@ build_vtable (binfo, type)
   TYPE_BINFO_VTABLE (type) = decl;
   TYPE_BINFO_VIRTUALS (type) = virtuals;
 
+  DECL_ARTIFICIAL (decl) = 1;
   TREE_STATIC (decl) = 1;
 #ifndef WRITABLE_VTABLES
   /* Make them READONLY by default. (mrs) */
@@ -781,6 +782,7 @@ prepare_fresh_vtable (binfo, for_type)
   /* Remember which class this vtable is really for.  */
   DECL_CONTEXT (new_decl) = for_type;
 
+  DECL_ARTIFICIAL (new_decl) = 1;
   TREE_STATIC (new_decl) = 1;
   BINFO_VTABLE (binfo) = pushdecl_top_level (new_decl);
   DECL_VIRTUAL_P (new_decl) = 1;

@@ -25,8 +25,8 @@ Boston, MA 02111-1307, USA.  */
    The results of the automatic process should be easily reproducible with
    explicit code.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "cp-tree.h"
 #include "input.h"

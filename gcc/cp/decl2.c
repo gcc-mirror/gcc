@@ -158,11 +158,10 @@ int warn_ctor_dtor_privacy = 1;
 /* True if we want to implement vtables using "thunks".
    The default is off.  */
 
-#if defined(NEW_OVER) && defined (__i386__)
-int flag_vtable_thunks = 1;
-#else
-int flag_vtable_thunks;
+#ifndef DEFAULT_VTABLE_THUNKS
+#define DEFAULT_VTABLE_THUNKS 0
 #endif
+int flag_vtable_thunks = DEFAULT_VTABLE_THUNKS;
 
 /* True if we want to deal with repository information.  */
 
@@ -246,7 +245,12 @@ int warn_pmf2ptr = 1;
 
 /* Nonzero means warn about violation of some Effective C++ style rules.  */
 
-int warn_ecpp = 0;
+int warn_ecpp;
+
+/* Nonzero means warn where overload resolution chooses a promotion from
+   unsigned to signed over a conversion to an unsigned of the same size.  */
+
+int warn_sign_promo;
 
 /* Nonzero means `$' can be in an identifier.
    See cccp.c for reasons why this breaks some obscure ANSI C programs.  */
@@ -409,6 +413,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"all-virtual", &flag_all_virtual, 1},
   {"memoize-lookups", &flag_memoize_lookups, 1},
   {"elide-constructors", &flag_elide_constructors, 1},
+  {"handle-exceptions", &flag_exceptions, 1},
   {"handle-signatures", &flag_handle_signatures, 1},
   {"default-inline", &flag_default_inline, 1},
   {"dollars-in-identifiers", &dollars_in_ident, 1},
@@ -470,13 +475,17 @@ lang_decode_option (p)
       p += 2;
       /* Try special -f options.  */
 
+      if (!strcmp (p, "handle-exceptions")
+	  || !strcmp (p, "no-handle-exceptions"))
+	warning ("-fhandle-exceptions has been renamed to -fexceptions (and is now on by default)");
+
       if (!strcmp (p, "save-memoized"))
 	{
 	  flag_memoize_lookups = 1;
 	  flag_save_memoized_contexts = 1;
 	  found = 1;
 	}
-      if (!strcmp (p, "no-save-memoized"))
+      else if (!strcmp (p, "no-save-memoized"))
 	{
 	  flag_memoize_lookups = 0;
 	  flag_save_memoized_contexts = 0;
@@ -585,6 +594,8 @@ lang_decode_option (p)
 	warn_pmf2ptr = setting;
       else if (!strcmp (p, "effc++"))
 	warn_ecpp = setting;
+      else if (!strcmp (p, "sign-promo"))
+	warn_sign_promo = setting;
       else if (!strcmp (p, "comment"))
 	;			/* cpp handles this one.  */
       else if (!strcmp (p, "comments"))
@@ -613,6 +624,7 @@ lang_decode_option (p)
 	    warn_uninitialized = (setting ? 2 : 0);
 	  warn_template_debugging = setting;
 	  warn_reorder = setting;
+	  warn_sign_promo = setting;
 	}
 
       else if (!strcmp (p, "overloaded-virtual"))

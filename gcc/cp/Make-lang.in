@@ -247,6 +247,7 @@ c++.clean:
 c++.distclean:
 	-rm -f cp/config.status cp/Makefile
 	-rm -f cp/parse.output
+	-rm -f g++.c
 c++.extraclean:
 c++.maintainer-clean:
 	-rm -f cp/parse.c cp/parse.h
