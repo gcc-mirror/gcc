@@ -4251,21 +4251,27 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 	      else if (compparms (TYPE_ARG_TYPES (TREE_TYPE (new_fn)),
 		  		  TYPE_ARG_TYPES (TREE_TYPE (old_fn))))
 		{
-                  /* If this using declaration introduces a function
-                     recognized as a built-in, no longer mark it as
-                     anticipated in this scope.  */
-                  if (DECL_ANTICIPATED (old_fn))
-                    {
-                      DECL_ANTICIPATED (old_fn) = 0;
-                      break;
-                    }
-
 	          /* There was already a non-using declaration in
 		     this scope with the same parameter types. If both
 	             are the same extern "C" functions, that's ok.  */
-                  if (!decls_match (new_fn, old_fn))
-    	            error ("`%D' is already declared in this scope", name);
-		  break;
+                  if (decls_match (new_fn, old_fn))
+		    {
+		      /* If the OLD_FN was a builtin, there is now a
+			 real declaration.  */
+		      if (DECL_ANTICIPATED (old_fn))
+			DECL_ANTICIPATED (old_fn) = 0;
+		      break;
+		    }
+		  else if (!DECL_ANTICIPATED (old_fn))
+		    {
+		      /* If the OLD_FN was really declared, the
+			 declarations don't match.  */
+		      error ("`%D' is already declared in this scope", name);
+		      break;
+		    }
+
+		  /* If the OLD_FN was not really there, just ignore
+		     it and keep going.  */
 		}
 	    }
 
