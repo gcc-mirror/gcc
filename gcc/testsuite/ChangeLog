@@ -1,3 +1,7 @@
+2000-04-04  Geoff Keating  <geoffk@cygnus.com>
+
+	* gcc.dg/cast-qual-1.c: Revert last change.
+
 2000-04-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/cast-qual-1.c: Check casts through a pointer typedef.
