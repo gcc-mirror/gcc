@@ -1,6 +1,10 @@
+Mon Feb  8 11:37:24 1999  Marc Espie (espie@cvs.openbsd.org)
+
+	* m88k/t-luna-gas: Remove bash dependency.
+
 Mon Feb  8 11:34:44 1999  Graham <grahams@rcp.co.uk>
 
-	* collect2.c (xrealloc): fix typo in last change.
+	* collect2.c (xrealloc): Fix typo in last change.
 
 Mon Feb 8 09:13:38 PST 1999 Jeff Law  (law@cygnus.com)
 
