@@ -100,41 +100,6 @@ public class GtkContainerPeer extends GtkComponentPeer
     return new GdkGraphics (this);
   }
 
-  public void handleEvent (AWTEvent event)
-  {
-    int id = event.getID();
-      
-    switch (id)
-      {
-      case PaintEvent.PAINT:
-      case PaintEvent.UPDATE:
-	{
-	  try 
-	    {
-	      Graphics g = getGraphics ();
-
-	      // Some peers like GtkFileDialogPeer are repainted by Gtk itself
-	      if (g == null)
-	        break;
-
-	      g.setClip (((PaintEvent)event).getUpdateRect());
-
-	      if (id == PaintEvent.PAINT)
-		awtComponent.paint (g);
-	      else
-		awtComponent.update (g);
-	      
-	      g.dispose ();
-	    } 
-	  catch (InternalError e)
-	    { 
-	      System.err.println (e);
-	    }
-	}
-	break;
-      }
-  }
-
   public void beginLayout () { }
   public void endLayout () { }
   public boolean isPaintPending () { return false; }

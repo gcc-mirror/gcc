@@ -663,8 +663,9 @@ public class Container extends Component
   {
     if (!isShowing())
       return;
-    super.paint(g);
-    visitChildren(g, GfxPaintVisitor.INSTANCE, true);
+    // Visit heavyweights as well, in case they were
+    // erased when we cleared the background for this container.
+    visitChildren(g, GfxPaintVisitor.INSTANCE, false);
   }
 
   /**
@@ -678,11 +679,6 @@ public class Container extends Component
    */
   public void update(Graphics g)
   {
-    Rectangle clip = g.getClipBounds();
-    if (clip == null)
-      g.clearRect(0, 0, width, height);
-    else
-      g.clearRect(clip.x, clip.y, clip.width, clip.height);
     super.update(g);
   }
 
@@ -1204,8 +1200,12 @@ public class Container extends Component
         for (int i = ncomponents - 1; i >= 0; --i)
           {
             Component comp = component[i];
+            // If we're visiting heavyweights as well,
+            // don't recurse into Containers here. This avoids
+            // painting the same nested child multiple times.
             boolean applicable = comp.isVisible()
-              && (comp.isLightweight() || !lightweightOnly);
+              && (comp.isLightweight()
+                  || !lightweightOnly && ! (comp instanceof Container));
 
             if (applicable)
               visitChild(gfx, visitor, comp);
