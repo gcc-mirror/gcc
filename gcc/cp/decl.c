@@ -9883,7 +9883,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 			      dname);
 		    size = integer_one_node;
 		  }
-		if (pedantic && integer_zerop (size))
+		if (pedantic && !in_system_header && integer_zerop (size))
 		  cp_pedwarn ("ANSI C++ forbids zero-size array `%D'", dname);
 		if (TREE_CONSTANT (size))
 		  {

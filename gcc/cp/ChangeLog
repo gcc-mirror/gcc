@@ -1,3 +1,9 @@
+1999-10-06  Brendan Kehoe  <brendan@cygnus.com>
+
+	* decl.c (grokdeclarator): Only warn about non-zero arrays if
+	!in_system_header (linux socketbits.h can give this for
+	__cmsg_data, which is using a GNU extension).
+
 1999-10-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (start_static_storage_duration_function): Push the
