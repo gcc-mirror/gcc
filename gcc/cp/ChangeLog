@@ -1,3 +1,18 @@
+2003-01-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* parser.c (cp_parser_template_parameter): Adjust call to
+	cp_parser_parameter_declaration.
+	(cp_parser_parameter_declaration_list): Likewise.
+	(cp_parser_parameter_declaration): Replace
+	greater_than_is_operator_p with template_parm_p parameter.  Do not
+	cache tokens for template default arguments.
+
+	* pt.c (retrieve_local_specialization): Use htab_find, not
+	htab_find_with_hash.
+	(register_local_specialization): Use htab_find_slot, not
+	htab_find_slot_with_hash.
+	(instantiate_decl): Pass a hash function to htab_create.
+	
 2003-01-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* parser.c (cp_parser_binary_expression,
