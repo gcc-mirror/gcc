@@ -1324,7 +1324,8 @@ typedef struct ix86_args {
    If we are returning floats on the register stack, we cannot make
    sibling calls to functions that return floats.  (The stack adjust
    instruction will wind up after the sibcall jump, and not be executed.) */
-#define FUNCTION_OK_FOR_SIBCALL(DECL) (DECL \
+#define FUNCTION_OK_FOR_SIBCALL(DECL) \
+  (DECL \
    && (! flag_pic || ! TREE_PUBLIC (DECL)) \
    && (! TARGET_FLOAT_RETURNS_IN_80387 \
        || ! FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (TREE_TYPE (DECL)))) \
