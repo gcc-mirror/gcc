@@ -3807,7 +3807,7 @@ can_extend_p (to_mode, from_mode, unsignedp)
      enum machine_mode to_mode, from_mode;
      int unsignedp;
 {
-  return extendtab[(int) to_mode][(int) from_mode][unsignedp];
+  return extendtab[(int) to_mode][(int) from_mode][unsignedp != 0];
 }
 
 /* Generate the body of an insn to extend Y (with mode MFROM)
@@ -3819,7 +3819,7 @@ gen_extend_insn (x, y, mto, mfrom, unsignedp)
      enum machine_mode mto, mfrom;
      int unsignedp;
 {
-  return (GEN_FCN (extendtab[(int) mto][(int) mfrom][unsignedp]) (x, y));
+  return (GEN_FCN (extendtab[(int) mto][(int) mfrom][unsignedp != 0]) (x, y));
 }
 
 /* can_fix_p and can_float_p say whether the target machine
@@ -3838,13 +3838,14 @@ can_fix_p (fixmode, fltmode, unsignedp, truncp_ptr)
      int *truncp_ptr;
 {
   *truncp_ptr = 0;
-  if (fixtrunctab[(int) fltmode][(int) fixmode][unsignedp] != CODE_FOR_nothing)
-    return fixtrunctab[(int) fltmode][(int) fixmode][unsignedp];
+  if (fixtrunctab[(int) fltmode][(int) fixmode][unsignedp != 0]
+      != CODE_FOR_nothing)
+    return fixtrunctab[(int) fltmode][(int) fixmode][unsignedp != 0];
 
   if (ftrunc_optab->handlers[(int) fltmode].insn_code != CODE_FOR_nothing)
     {
       *truncp_ptr = 1;
-      return fixtab[(int) fltmode][(int) fixmode][unsignedp];
+      return fixtab[(int) fltmode][(int) fixmode][unsignedp != 0];
     }
   return CODE_FOR_nothing;
 }
@@ -3854,7 +3855,7 @@ can_float_p (fltmode, fixmode, unsignedp)
      enum machine_mode fixmode, fltmode;
      int unsignedp;
 {
-  return floattab[(int) fltmode][(int) fixmode][unsignedp];
+  return floattab[(int) fltmode][(int) fixmode][unsignedp != 0];
 }
 
 /* Generate code to convert FROM to floating point

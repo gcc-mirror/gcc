@@ -4,6 +4,9 @@
 
 Mon May 22 13:14:03 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* optabs.c (can_extend_p): Allow unsignedp to have any nonzero value.
+	(gen_extend_insn, can_fix_p, can_float_p): Likewise.
+	
 	* final.c (final_scan_insn, case NOTE_INSN_FUNCTION_BEG): Remove
 	dangling "else" that causes "break" to be conditional.
 	Also remove unneeded code at start.
