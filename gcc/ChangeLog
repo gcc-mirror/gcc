@@ -1,4 +1,9 @@
 2001-07-11  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (gen_int_relational): Tell the caller not to
+	reverse a branch if a NE comparison is implemented with GTU.
+
+2001-07-11  Richard Sandiford  <rsandifo@redhat.com>
 	    H.J. Lu  <hjl@gnu.org>
 
 	* mips.md (call_internal1): Use CONSTANT_ADDRESS_P to check for
