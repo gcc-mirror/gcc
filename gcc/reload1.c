@@ -1,5 +1,5 @@
 /* Reload pseudo regs into hard regs for insns that require hard regs.
-   Copyright (C) 1987, 88, 89, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -9189,7 +9189,7 @@ reload_combine_note_store (dst, set, data)
 {
   int regno = 0;
   int i;
-  unsigned size = GET_MODE_SIZE (GET_MODE (dst));
+  enum machine_mode mode = GET_MODE (dst);
 
   if (GET_CODE (dst) == SUBREG)
     {
@@ -9209,7 +9209,7 @@ reload_combine_note_store (dst, set, data)
       || GET_CODE (SET_DEST (set)) == SIGN_EXTRACT
       || GET_CODE (SET_DEST (set)) == STRICT_LOW_PART)
     {
-      for (i = (size - 1) / UNITS_PER_WORD + regno; i >= regno; i--)
+      for (i = HARD_REGNO_NREGS (regno, mode) - 1 + regno; i >= regno; i--)
 	{
 	  reg_state[i].use_index = -1;
 	  reg_state[i].store_ruid = reload_combine_ruid;
@@ -9217,7 +9217,7 @@ reload_combine_note_store (dst, set, data)
     }
   else
     {
-      for (i = (size - 1) / UNITS_PER_WORD + regno; i >= regno; i--)
+      for (i = HARD_REGNO_NREGS (regno, mode) - 1 + regno; i >= regno; i--)
 	{
 	  reg_state[i].store_ruid = reload_combine_ruid;
 	  reg_state[i].use_index = RELOAD_COMBINE_MAX_USES;
