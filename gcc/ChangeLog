@@ -1,5 +1,7 @@
 2000-07-17  Geoffrey Keating  <geoffk@cygnus.com>
 
+	* configure: Regenerate.
+	
 	* extend.texi (Extended Asm): Mention that a memory clobber
 	does not count as a side-effect.
 
