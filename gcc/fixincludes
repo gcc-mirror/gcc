@@ -44,6 +44,16 @@ case $LIB in
 	;;
 esac
 
+# Make SRCDIR absolute only if needed to avoid problems with the amd.
+cd $ORIGDIR
+case $SRCDIR in
+/*)
+	;;
+*)
+	cd $SRCDIR; SRCDIR=`${PWDCMD}`
+	;;
+esac
+
 # Fail if no arg to specify a directory for the output.
 if [ x$1 = x ]
 then echo fixincludes: no output directory specified
@@ -301,7 +311,7 @@ gobblegobble SIZE_TYPE" > ${LIB}/types.c
     foo=`cc -E -I${ORIGDIR} -I${SRCDIR} -I${SRCDIR}/config ${LIB}/types.c | grep gobblegobble | sed -e "s/gobblegobble[ 	]*//"`
     rm -f ${LIB}/types.c
     # Default to our preferred type.
-    if [ $foo = SIZE_TYPE ]; then foo="unsigned long int"; else true; fi
+    if [ "$foo" = SIZE_TYPE ]; then foo="unsigned long int"; else foo=`echo $foo | sed -e 's/^.*"\(.*\)".*$/\1/'`; fi
     sed -e "s/typedef[ 	a-z_]*[ 	]size_t/typedef $foo size_t/" ${LIB}/$file > ${LIB}/${file}.sed
     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
     if cmp $file ${LIB}/$file >/dev/null 2>&1; then
@@ -827,7 +837,6 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   chmod +w ${LIB}/$file 2>/dev/null
   chmod a+r ${LIB}/$file 2>/dev/null
 fi
-      -e 's@ va_list)@ __gnuc_va_list)@' \
 
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file, non-const arg
@@ -882,6 +891,7 @@ if [ -r ${LIB}/$file ]; then
   # Define __va_list__ (something harmless and unused) instead of va_list.
   # Don't claim to have defined va_list.
   sed -e 's@ va_list @ __gnuc_va_list @' \
+      -e 's@ va_list)@ __gnuc_va_list)@' \
       -e 's@ _VA_LIST_));@ __gnuc_va_list));@' \
       -e 's@ va_list@ __va_list__@' \
       -e 's@\*va_list@*__va_list__@' \
