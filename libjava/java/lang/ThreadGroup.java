@@ -1,5 +1,5 @@
 /* java.lang.ThreadGroup
-   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -204,16 +204,21 @@ public class ThreadGroup
     * @return the number of active threads in this ThreadGroup and
     *	      its descendants.
     * @specnote it isn't clear what the definition of an "Active" thread is.
-    *           Current JDKs regard all threads as active until they are 
-    *           finished, regardless of whether the thread has been started 
-    *           or not. We implement this behaviour.
-    *           There is open JDC bug, <A HREF="http://developer.java.sun.com/developer/bugParade/bugs/4089701.html">
+    *           Current JDKs regard a thread as active if has been
+    *           started and not finished.  We implement this behaviour.
+    *           There is a JDC bug, <A HREF="http://developer.java.sun.com/developer/bugParade/bugs/4089701.html">
     *           4089701</A>, regarding this issue.
     *           
     */
   public synchronized int activeCount()
   {
-    int total = threads.size();
+    int total = 0;
+    for (int i = 0; i < threads.size(); ++i)
+      {
+	if (((Thread) threads.elementAt(i)).isAlive ())
+	  ++total;
+      }
+
     for (int i=0; i < groups.size(); i++)
       {
         ThreadGroup g = (ThreadGroup) groups.elementAt(i);
@@ -274,7 +279,11 @@ public class ThreadGroup
   {
     Enumeration e = threads.elements();
     while (e.hasMoreElements() && next_index < list.length)
-      list[next_index++] = (Thread) e.nextElement();
+      {
+	Thread t = (Thread) e.nextElement();
+	if (t.isAlive ())
+	  list[next_index++] = t;
+      }
     if (recurse && next_index != list.length)
       {
 	e = groups.elements();
