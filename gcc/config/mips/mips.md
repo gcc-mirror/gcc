@@ -5410,6 +5410,90 @@ move\\t%0,%z4\\n\\
    (set_attr "mode"	"none")
    (set_attr "length"	"1")])
 
+;; Implement a switch statement when generating embedded PIC code.
+;; Switches are implemented by `tablejump' when not using -membedded-pic.
+
+(define_expand "casesi"
+  [(set (match_dup 5)
+	(minus:SI (match_operand:SI 0 "register_operand" "d")
+		  (match_operand:SI 1 "arith_operand" "dI")))
+   (set (cc0)
+	(compare:CC (match_dup 5)
+		    (match_operand:SI 2 "arith_operand" "")))
+   (set (pc)
+	(if_then_else (gtu (cc0)
+			   (const_int 0))
+		      (label_ref (match_operand 4 "" ""))
+		      (pc)))
+   (parallel
+    [(set (pc)
+	  (mem:SI (plus:SI (mult:SI (match_dup 5)
+				    (const_int 4))
+			   (label_ref (match_operand 3 "" "")))))
+     (clobber (match_scratch:SI 6 ""))
+     (clobber (reg:SI 31))])]
+  "TARGET_EMBEDDED_PIC"
+  "
+{
+  /* We need slightly different code for eight byte table entries.  */
+  if (TARGET_LONG64)
+    abort ();
+
+  if (operands[0])
+    {
+      rtx reg = gen_reg_rtx (SImode);
+
+      /* The constraints should handle this, but they don't.  */
+      operands[0] = force_reg (SImode, operands[0]);
+      if (! arith_operand (operands[1]))
+	operands[1] = force_reg (SImode, operands[1]);
+      if (! arith_operand (operands[2]))
+	operands[2] = force_reg (SImode, operands[2]);
+
+      /* If the index is too large, go to the default label.  */
+      emit_insn (gen_subsi3 (reg, operands[0], operands[1]));
+      emit_insn (gen_cmpsi (reg, operands[2]));
+      emit_insn (gen_bgtu (operands[4]));
+
+      /* Do the PIC jump.  */
+      emit_insn (gen_casesi_internal (reg, operands[3], gen_reg_rtx (SImode)));
+
+      DONE;
+    }
+}")
+
+;; An embedded PIC switch statement looks like this:
+;;	bal	$LS1
+;;	sll	$reg,$index,2
+;; $LS1:
+;;	addu	$reg,$reg,$31
+;;	lw	$reg,$L1-$LS1($reg)
+;;	addu	$reg,$reg,$31
+;;	j	$reg
+;; $L1:
+;;	.word	case1-$LS1
+;;	.word	case2-$LS1
+;;	...
+
+(define_insn "casesi_internal"
+  [(set (pc)
+	(mem:SI (plus:SI (mult:SI (match_operand:SI 0 "register_operand" "d")
+				  (const_int 4))
+			 (label_ref (match_operand 1 "" "")))))
+   (clobber (match_operand:SI 2 "register_operand" "d"))
+   (clobber (reg:SI 31))]
+  "TARGET_EMBEDDED_PIC"
+  "*
+{
+  output_asm_insn (\"%(bal\\t%S1\;sll\\t%0,2\\n%S1:\", operands);
+  output_asm_insn (\"addu\\t%0,%0,$31%)\", operands);
+  output_asm_insn (\"lw\\t%0,%1-%S1(%0)\;addu\\t%0,%0,$31\", operands);
+  return \"j\\t%0\";
+}"
+  [(set_attr "type"	"jump")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"6")])
+
 
 ;;
 ;;  ....................
