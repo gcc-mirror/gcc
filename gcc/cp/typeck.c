@@ -157,13 +157,15 @@ complete_type (type)
 }
 
 /* Like complete_type, but issue an error if the TYPE cannot be
-   completed.  VALUE is used for informative diagnostics.
+   completed.  VALUE is used for informative diagnostics.  WARN_ONLY
+   will cause a warning message to be printed, instead of an error.
    Returns NULL_TREE if the type cannot be made complete.  */
 
 tree
-complete_type_or_else (type, value)
+complete_type_or_diagnostic (type, value, warn_only)
      tree type;
      tree value;
+     int warn_only;
 {
   type = complete_type (type);
   if (type == error_mark_node)
@@ -171,7 +173,7 @@ complete_type_or_else (type, value)
     return NULL_TREE;
   else if (!COMPLETE_TYPE_P (type))
     {
-      cxx_incomplete_type_error (value, type);
+      cxx_incomplete_type_diagnostic (value, type, warn_only);
       return NULL_TREE;
     }
   else

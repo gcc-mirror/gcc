@@ -182,14 +182,29 @@ abstract_virtuals_error (decl, type)
 
 /* Print an error message for invalid use of an incomplete type.
    VALUE is the expression that was used (or 0 if that isn't known)
-   and TYPE is the type that was invalid.  */
+   and TYPE is the type that was invalid.  If WARN_ONLY is nonzero, a
+   warning is printed, otherwise an error is printed.  */
 
 void
-cxx_incomplete_type_error (value, type)
+cxx_incomplete_type_diagnostic (value, type, warn_only)
      tree value;
      tree type;
+     int warn_only;
 {
   int decl = 0;
+  void (*p_msg) PARAMS ((const char *, ...));
+  void (*p_msg_at) PARAMS ((const char *, ...));
+
+  if (warn_only)
+    {
+      p_msg = warning;
+      p_msg_at = cp_warning_at;
+    }
+  else
+    {
+      p_msg = error;
+      p_msg_at = cp_error_at;
+    }
   
   /* Avoid duplicate error message.  */
   if (TREE_CODE (type) == ERROR_MARK)
@@ -198,7 +213,7 @@ cxx_incomplete_type_error (value, type)
   if (value != 0 && (TREE_CODE (value) == VAR_DECL
 		     || TREE_CODE (value) == PARM_DECL))
     {
-      cp_error_at ("`%D' has incomplete type", value);
+      (*p_msg_at) ("`%D' has incomplete type", value);
       decl = 1;
     }
 retry:
@@ -210,12 +225,12 @@ retry:
     case UNION_TYPE:
     case ENUMERAL_TYPE:
       if (!decl)
-        error ("invalid use of undefined type `%#T'", type);
-      cp_error_at ("forward declaration of `%#T'", type);
+        (*p_msg) ("invalid use of undefined type `%#T'", type);
+      (*p_msg_at)  ("forward declaration of `%#T'", type);
       break;
 
     case VOID_TYPE:
-      error ("invalid use of `%T'", type);
+      (*p_msg) ("invalid use of `%T'", type);
       break;
 
     case ARRAY_TYPE:
@@ -224,32 +239,43 @@ retry:
           type = TREE_TYPE (type);
           goto retry;
         }
-      error ("invalid use of array with unspecified bounds");
+      (*p_msg) ("invalid use of array with unspecified bounds");
       break;
 
     case OFFSET_TYPE:
     bad_member:
-      error ("invalid use of member (did you forget the `&' ?)");
+      (*p_msg) ("invalid use of member (did you forget the `&' ?)");
       break;
 
     case TEMPLATE_TYPE_PARM:
-      error ("invalid use of template type parameter");
+      (*p_msg) ("invalid use of template type parameter");
       break;
 
     case UNKNOWN_TYPE:
       if (value && TREE_CODE (value) == COMPONENT_REF)
         goto bad_member;
       else if (value && TREE_CODE (value) == ADDR_EXPR)
-        error ("address of overloaded function with no contextual type information");
+        (*p_msg) ("address of overloaded function with no contextual type information");
       else if (value && TREE_CODE (value) == OVERLOAD)
-        error ("overloaded function with no contextual type information");
+        (*p_msg) ("overloaded function with no contextual type information");
       else
-        error ("insufficient contextual information to determine type");
+        (*p_msg) ("insufficient contextual information to determine type");
       break;
     
     default:
       abort ();
     }
+}
+
+/* Backward-compatibility interface to incomplete_type_diagnostic;
+   required by ../tree.c.  */
+#undef cxx_incomplete_type_error
+void
+cxx_incomplete_type_error (value, type)
+     tree value;
+     tree type;
+{
+  cxx_incomplete_type_diagnostic (value, type, 0);
 }
 
 

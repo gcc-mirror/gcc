@@ -4317,7 +4317,8 @@ extern tree condition_conversion		PARAMS ((tree));
 extern tree target_type				PARAMS ((tree));
 extern tree require_complete_type		PARAMS ((tree));
 extern tree complete_type			PARAMS ((tree));
-extern tree complete_type_or_else               PARAMS ((tree, tree));
+extern tree complete_type_or_diagnostic         PARAMS ((tree, tree, int));
+#define complete_type_or_else(T,V) (complete_type_or_diagnostic ((T), (V), 0))
 extern int type_unknown_p			PARAMS ((tree));
 extern tree commonparms				PARAMS ((tree, tree));
 extern tree original_type			PARAMS ((tree));
@@ -4376,7 +4377,11 @@ extern tree check_return_expr                   PARAMS ((tree));
   build_binary_op(code, arg1, arg2, 1)
 
 /* in typeck2.c */
+extern void cxx_incomplete_type_diagnostic	PARAMS ((tree, tree, int));
+#undef cxx_incomplete_type_error
 extern void cxx_incomplete_type_error		PARAMS ((tree, tree));
+#define cxx_incomplete_type_error(V,T) \
+  (cxx_incomplete_type_diagnostic ((V), (T), 0))
 extern tree error_not_base_type			PARAMS ((tree, tree));
 extern tree binfo_or_else			PARAMS ((tree, tree));
 extern void readonly_error			PARAMS ((tree, const char *, int));
