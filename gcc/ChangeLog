@@ -1,5 +1,10 @@
 2000-07-16  Neil Booth  <NeilB@earthling.net>
 
+	* cpplex.c: Update comments.
+	* README.Portability: Small update.
+
+2000-07-16  Neil Booth  <NeilB@earthling.net>
+
 	* README.Portability:  Small update.
 
 2000-07-15  Richard Henderson  <rth@cygnus.com>
