@@ -8245,7 +8245,16 @@ expand_builtin_setjmp (buf_addr, target)
      rtx target;
 {
   rtx lab1 = gen_label_rtx (), lab2 = gen_label_rtx ();
-  enum machine_mode sa_mode = Pmode, value_mode;
+  enum machine_mode sa_mode
+    = (
+#ifdef HAVE_save_stack_nonlocal
+       (HAVE_save_stack_nonlocal
+	? insn_operand_mode[(int) CODE_FOR_save_stack_nonlocal][0] : Pmode)
+#else
+       Pmode
+#endif
+       );
+  enum machine_mode value_mode = TYPE_MODE (integer_type_node);
   rtx stack_save;
   int old_inhibit_defer_pop = inhibit_defer_pop;
   int return_pops
@@ -8257,7 +8266,9 @@ expand_builtin_setjmp (buf_addr, target)
   rtx op0;
   int i;
 
-  value_mode = TYPE_MODE (integer_type_node);
+#ifdef STACK_SAVEAREA_MODE
+  sa_mode = STACK_SAVEAREA_MODE (sa_mode, SAVE_NONLOCAL);
+#endif
 
 #ifdef POINTERS_EXTEND_UNSIGNED
   buf_addr = convert_memory_address (Pmode, buf_addr);
@@ -8290,10 +8301,6 @@ expand_builtin_setjmp (buf_addr, target)
 					   GET_MODE_SIZE (Pmode)))),
      gen_rtx (LABEL_REF, Pmode, lab1));
 
-#ifdef HAVE_save_stack_nonlocal
-  if (HAVE_save_stack_nonlocal)
-    sa_mode = insn_operand_mode[(int) CODE_FOR_save_stack_nonlocal][0];
-#endif
 
   stack_save = gen_rtx (MEM, sa_mode,
 			plus_constant (buf_addr,
@@ -9344,17 +9351,24 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	rtx lab = gen_rtx (MEM, Pmode,
 			   plus_constant (buf_addr, GET_MODE_SIZE (Pmode)));
 	enum machine_mode sa_mode
+	  = (
 #ifdef HAVE_save_stack_nonlocal
-	  = (HAVE_save_stack_nonlocal
-	     ? insn_operand_mode[(int) CODE_FOR_save_stack_nonlocal][0]
-	     : Pmode);
+	     (HAVE_save_stack_nonlocal
+	      ? insn_operand_mode[(int) CODE_FOR_save_stack_nonlocal][0]
+	      : Pmode)
 #else
-	= Pmode;
+	     Pmode
 #endif
-	rtx stack = gen_rtx (MEM, sa_mode,
-			     plus_constant (buf_addr,
-					    2 * GET_MODE_SIZE (Pmode)));
+	     );
+	rtx stack;
 
+#ifdef STACK_SAVEAREA_MODE
+	sa_mode = STACK_SAVEAREA_MODE (sa_mode, STACK_NONLOCAL);
+#endif
+
+	stack = gen_rtx (MEM, sa_mode,
+			 plus_constant (buf_addr,
+					2 * GET_MODE_SIZE (Pmode)));
 	DECL_EXTERNAL (dummy_decl) = 1;
 	TREE_PUBLIC (dummy_decl) = 1;
 	make_decl_rtl (dummy_decl, NULL_PTR, 1);
