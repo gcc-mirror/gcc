@@ -1,5 +1,15 @@
 2002-11-25  Jason Thorpe  <thorpej@wasabisystems.com>
 
+	* gcc.c (static_spec_functions): Add if-exists-else spec
+	function.
+	(if_exists_else_spec_function): New function.
+	* doc/invoke.texi: Document the if-exists-else spec function.
+
+	* config/netbsd-elf.h (NETBSD_STARTFILE_SPEC): For -static, use
+	"%:if-exists-else(crtbeginT%O%s crtbegin%O%s)".
+
+2002-11-25  Jason Thorpe  <thorpej@wasabisystems.com>
+
 	* config.gcc (powerpc-*-netbsd*): Replace "svr4.h" with
 	"netbsd.h netbsd-elf.h" in tm_file.  Set tmake_file to
 	"${tmake_file} rs6000/t-netbsd".
