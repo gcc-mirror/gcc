@@ -1,5 +1,17 @@
 1999-01-18  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* typeck.c (build_component_ref): Wrap an OVERLOAD around a unique
+	non-static member function.
+
+1999-01-18  Nathan Sidwell  <nathan@acm.org>
+
+        * class.c (instantiate_type): Only diagnose illegal address of member
+        function if complaining.
+
+        * decl.c (lookup_name_real): Remove duplicate code.
+
+1999-01-18  Jason Merrill  <jason@yorick.cygnus.com>
+
 	* tree.c (copy_template_template_parm): Use permanent_obstack.
 
 1999-01-18  Kriang Lerdsuwanakij <lerdsuwa@scf-fs.usc.edu>

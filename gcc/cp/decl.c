@@ -5415,7 +5415,6 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
     flags = lookup_flags (prefer_type, namespaces_only);
 
   /* First, look in non-namespace scopes.  */
-  val = IDENTIFIER_BINDING (name); 
   for (val = IDENTIFIER_BINDING (name); val; val = TREE_CHAIN (val))
     {
       if (!LOCAL_BINDING_P (val) && nonclass)

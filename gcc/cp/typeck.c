@@ -2055,21 +2055,31 @@ build_component_ref (datum, component, basetype_path, protect)
 		 now.  Otherwise, we have to wait and see what context it is
 		 used in; a component_ref involving a non-static member
 		 function can only be used in a call (expr.ref).  */
+
 	      if (TREE_CHAIN (fndecls) == NULL_TREE
-		  && TREE_CODE (TREE_VALUE (fndecls)) == FUNCTION_DECL
-		  && DECL_STATIC_FUNCTION_P (TREE_VALUE (fndecls)))
+		  && TREE_CODE (TREE_VALUE (fndecls)) == FUNCTION_DECL)
 		{
-		  tree fndecl = TREE_VALUE (fndecls);
-		  enforce_access (TREE_PURPOSE (fndecls), fndecl);
-		  mark_used (fndecl);
-		  return fndecl;
+		  if (DECL_STATIC_FUNCTION_P (TREE_VALUE (fndecls)))
+		    {
+		      tree fndecl = TREE_VALUE (fndecls);
+		      enforce_access (TREE_PURPOSE (fndecls), fndecl);
+		      mark_used (fndecl);
+		      return fndecl;
+		    }
+		  else
+		    {
+		      /* A unique non-static member function.  Other parts
+			 of the compiler expect something with
+			 unknown_type_node to be really overloaded, so
+			 let's oblige.  */
+		      TREE_VALUE (fndecls)
+			= scratch_ovl_cons (TREE_VALUE (fndecls), NULL_TREE);
+		    }
 		}
-	      else
-		{
-		  ref = build (COMPONENT_REF, unknown_type_node,
-			       datum, fndecls);
-		  return ref;
-		}
+
+	      ref = build (COMPONENT_REF, unknown_type_node,
+			   datum, fndecls);
+	      return ref;
 	    }
 
 	  cp_error ("`%#T' has no member named `%D'", basetype, name);
