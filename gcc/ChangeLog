@@ -1,3 +1,8 @@
+2005-03-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/i386/emmintrin.h (_mm_extract_epi16): Correct the number
+	of closing parenthesis.
+
 2005-03-16  Roger Sayle  <roger@eyesopen.com>
 
 	PR tree-optimization/17454
