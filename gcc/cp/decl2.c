@@ -2811,6 +2811,13 @@ start_objects (method_type, initp)
   /* Mark this declaration as used to avoid spurious warnings.  */
   TREE_USED (current_function_decl) = 1;
 
+  /* Mark this function as a global constructor or destructor.  */
+  if (method_type == 'I')
+    DECL_GLOBAL_CTOR_P (current_function_decl) = 1;
+  else
+    DECL_GLOBAL_DTOR_P (current_function_decl) = 1;
+  GLOBAL_INIT_PRIORITY (current_function_decl) = initp;
+
   body = begin_compound_stmt (/*has_no_scope=*/0);
 
   /* We cannot allow these functions to be elided, even if they do not
