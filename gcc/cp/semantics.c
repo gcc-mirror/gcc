@@ -1203,6 +1203,11 @@ finish_named_return_value (return_id, init)
 	  store_return_init (decl);
 	}
     }
+
+  /* Don't use tree-inlining for functions with named return values.
+     That doesn't work properly because we don't do any translation of
+     the RETURN_INITs when they are copied.  */
+  DECL_UNINLINABLE (current_function_decl) = 1;
 }
 
 /* Cache the value of this class's main virtual function table pointer

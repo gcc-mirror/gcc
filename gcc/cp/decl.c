@@ -13445,7 +13445,14 @@ store_return_init (decl)
   if (DECL_REGISTER (decl))
     {
       original_result_rtx = DECL_RTL (decl);
-      DECL_RTL (decl) = gen_reg_rtx (DECL_MODE (decl));
+      /* Note that the mode of the old DECL_RTL may be wider than the
+	 mode of DECL_RESULT, depending on the calling conventions for
+	 the processor.  For example, on the Alpha, a 32-bit integer
+	 is returned in a DImode register -- the DECL_RESULT has
+	 SImode but the DECL_RTL for the DECL_RESULT has DImode.  So,
+	 here, we use the mode the back-end has already assigned for
+	 the return value.  */
+      DECL_RTL (decl) = gen_reg_rtx (GET_MODE (original_result_rtx));
     }
 }
 
