@@ -319,8 +319,11 @@ namespace tr1
       template<typename _Up>
         struct __second
         : public _Up
-	{ virtual void __dummy(); };
-           
+	{ 
+	  virtual void __dummy();
+	  virtual ~__second();
+	};
+
     public:
       static const bool __value = sizeof(__first<_Tp>) == sizeof(__second<_Tp>);
     };
