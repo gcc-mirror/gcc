@@ -3617,7 +3617,7 @@ count_one_set (regs, insn, x, last_set)
 		 it must be set in two basic blocks, so it cannot
 		 be moved out of the loop.  */
 	      if (regs->array[regno].set_in_loop > 0
-		  && last_set == 0)
+		  && last_set[regno] == 0)
 		regs->array[regno+i].may_not_optimize = 1;
 	      /* If this is not first setting in current basic block,
 		 see if reg was used in between previous one and this.
