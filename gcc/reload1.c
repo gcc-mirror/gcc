@@ -443,6 +443,9 @@ static void reload_combine_note_use PROTO((rtx *, rtx));
 static void reload_combine_note_store PROTO((rtx, rtx));
 static void reload_cse_move2add PROTO((rtx));
 static void move2add_note_store PROTO((rtx, rtx));
+#ifdef AUTO_INC_DEC
+static void add_auto_inc_notes PROTO((rtx, rtx));
+#endif
 
 /* Initialize the reload pass once per compilation.  */
 
@@ -1124,11 +1127,13 @@ reload (first, global, dumpfile)
      which are only valid during and after reload.  */
   reload_completed = 1;
 
-  /* Make a pass over all the insns and delete all USEs which we inserted
-     only to tag a REG_EQUAL note on them.  Remove all REG_DEAD and REG_UNUSED
-     notes.  Delete all CLOBBER insns and simplify (subreg (reg)) operands.
-     Also remove all REG_RETVAL and REG_LIBCALL notes since they are no longer
-     useful or accurate.  */
+  /* Make a pass over all the insns and delete all USEs which we
+     inserted only to tag a REG_EQUAL note on them.  Remove all
+     REG_DEAD and REG_UNUSED notes.  Delete all CLOBBER insns and
+     simplify (subreg (reg)) operands.  Also remove all REG_RETVAL and
+     REG_LIBCALL notes since they are no longer useful or accurate.
+     Strip and regenerate REG_INC notes that may have been moved
+     around.  */
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
@@ -1150,12 +1155,17 @@ reload (first, global, dumpfile)
 	  {
 	    if (REG_NOTE_KIND (*pnote) == REG_DEAD
 		|| REG_NOTE_KIND (*pnote) == REG_UNUSED
+		|| REG_NOTE_KIND (*pnote) == REG_INC
 		|| REG_NOTE_KIND (*pnote) == REG_RETVAL
 		|| REG_NOTE_KIND (*pnote) == REG_LIBCALL)
 	      *pnote = XEXP (*pnote, 1);
 	    else
 	      pnote = &XEXP (*pnote, 1);
 	  }
+
+#ifdef AUTO_INC_DEC
+	add_auto_inc_notes (insn, PATTERN (insn));
+#endif
 
 	/* And simplify (subreg (reg)) if it appears as an operand.  */
 	cleanup_subreg_operands (insn);
@@ -10131,3 +10141,33 @@ move2add_note_store (dst, set)
 	}
     }
 }
+
+#ifdef AUTO_INC_DEC
+static void
+add_auto_inc_notes (insn, x)
+     rtx insn;
+     rtx x;
+{
+  enum rtx_code code = GET_CODE (x);
+  char *fmt;
+  int i, j;
+
+  if (code == MEM && auto_inc_p (XEXP (x, 0)))
+    {
+      REG_NOTES (insn)
+	= gen_rtx_EXPR_LIST (REG_INC, XEXP (XEXP (x, 0), 0), REG_NOTES (insn));
+      return;
+    }
+
+  /* Scan all the operand sub-expressions.  */
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	add_auto_inc_notes (insn, XEXP (x, i));
+      else if (fmt[i] == 'E')
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  add_auto_inc_notes (insn, XVECEXP (x, i, j));
+    }
+}
+#endif

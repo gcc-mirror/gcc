@@ -2235,3 +2235,27 @@ regno_use_in (regno, x)
 
   return NULL_RTX;
 }
+
+
+/* Return 1 if X is an autoincrement side effect and the register is
+   not the stack pointer.  */
+int
+auto_inc_p (x)
+     rtx x;
+{
+  switch (GET_CODE (x))
+    {
+    case PRE_INC:
+    case POST_INC:
+    case PRE_DEC:
+    case POST_DEC:
+    case PRE_MODIFY:
+    case POST_MODIFY:
+      /* There are no REG_INC notes for SP.  */
+      if (XEXP (x, 0) != stack_pointer_rtx)
+	return 1;
+    default:
+      break;
+    }
+  return 0;
+}
