@@ -1,3 +1,7 @@
+Wed Dec  5 06:49:21 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* com.c (ffecom_1): Properly handle TREE_READONLY for INDIRECT_REF.
+
 Mon Dec  3 18:56:04 2001  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* com.c: Remove leading capital from diagnostic messages, as

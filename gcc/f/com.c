@@ -9556,8 +9556,10 @@ ffecom_1 (enum tree_code code, tree type, tree node)
 
   if (TREE_SIDE_EFFECTS (node))
     TREE_SIDE_EFFECTS (item) = 1;
-  if ((code == ADDR_EXPR) && staticp (node))
+  if (code == ADDR_EXPR && staticp (node))
     TREE_CONSTANT (item) = 1;
+  else if (code == INDIRECT_REF)
+    TREE_READONLY (item) = TYPE_READONLY (type);
   return fold (item);
 }
 
