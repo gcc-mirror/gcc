@@ -1,3 +1,13 @@
+2002-05-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* configure.in: Add support for WindISS.
+	* configure: Regenerated.
+	* configure.target: Add support for WindISS.
+	* config/os/windiss/bits/ctype_base.h: New file.
+	* config/os/windiss/bits/ctype_inline.h: Likewise.
+	* config/os/windiss/bits/ctype_noninline.h: Likewise.
+	* config/os/windiss/bits/os_defines.h: Likewise.
+
 2002-05-06  Paolo Carlini  <pcarlini@unitus.it>
 
 	Test all the facets for the temporary "C" locale switch issue.
