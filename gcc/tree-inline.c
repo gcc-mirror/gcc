@@ -993,20 +993,6 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
 	  }
       break;
 
-    case BIND_EXPR:
-      for (t = BIND_EXPR_VARS (node); t ; t = TREE_CHAIN (t))
-	{
-          /* We cannot inline functions that contain other functions.  */
-	  if (TREE_CODE (t) == FUNCTION_DECL && DECL_INITIAL (t))
-	    {
-	      inline_forbidden_reason
-		= N_("%Jfunction '%F' can never be inlined "
-		     "because it contains a nested function");
-	      return node;
-	    }
-	}
-      break;
-
     case GOTO_EXPR:
       t = TREE_OPERAND (node, 0);
 
