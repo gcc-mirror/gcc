@@ -30,7 +30,6 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "flags.h"
 #include "cp-tree.h"
-#include "class.h"
 #include "convert.h"
 
 #ifdef HAVE_STDLIB_H
@@ -482,11 +481,8 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
     {
       /* Look for a user-defined conversion to lvalue that we can use.  */
 
-      if (flag_ansi_overloading)
-	rval_as_conversion
-	  = build_type_conversion (CONVERT_EXPR, reftype, expr, 1);
-      else
-	rval_as_conversion = build_type_conversion (CONVERT_EXPR, type, expr, 1);
+      rval_as_conversion
+	= build_type_conversion (CONVERT_EXPR, reftype, expr, 1);
 
       if (rval_as_conversion && rval_as_conversion != error_mark_node
 	  && real_lvalue_p (rval_as_conversion))
@@ -556,96 +552,13 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
       if (rval != error_mark_node)
 	rval = build1 (NOP_EXPR, reftype, rval);
     }
-  else if (flag_ansi_overloading)
+  else
     {
       rval = convert_for_initialization (NULL_TREE, type, expr, flags,
 					 "converting", 0, 0);
       if (rval == error_mark_node)
 	return error_mark_node;
       rval = build_up_reference (reftype, rval, flags, 1);
-
-      if (rval && ! TYPE_READONLY (TREE_TYPE (reftype)))
-	cp_pedwarn ("initializing non-const `%T' with `%T' will use a temporary",
-		    reftype, intype);
-    }
-  else
-    {
-      tree rval_as_ctor = NULL_TREE;
-      
-      if (rval_as_conversion)
-	{
-	  if (rval_as_conversion == error_mark_node)
-	    {
-	      cp_error ("conversion from `%T' to `%T' is ambiguous",
-			intype, reftype);
-	      return error_mark_node;
-	    }
-	  rval_as_conversion = build_up_reference (reftype, rval_as_conversion,
-						   flags, 1);
-	}
-      
-      /* Definitely need to go through a constructor here.  */
-      if (TYPE_HAS_CONSTRUCTOR (type)
-	  && ! CLASSTYPE_ABSTRACT_VIRTUALS (type)
-	  && (rval = build_method_call
-	      (NULL_TREE, ctor_identifier,
-	       build_expr_list (NULL_TREE, expr), TYPE_BINFO (type),
-	       LOOKUP_NO_CONVERSION|LOOKUP_SPECULATIVELY
-	       | LOOKUP_ONLYCONVERTING)))
-	{
-	  tree init;
-
-	  if (toplevel_bindings_p ())
-	    {
-	      tree t = get_temp_name (type, toplevel_bindings_p ());
-	      init = build_method_call (t, ctor_identifier,
-					build_expr_list (NULL_TREE, expr),
-					TYPE_BINFO (type),
-					LOOKUP_NORMAL|LOOKUP_NO_CONVERSION
-					| LOOKUP_ONLYCONVERTING);
-
-	      if (init == error_mark_node)
-		return error_mark_node;
-
-	      make_decl_rtl (t, NULL_PTR, 1);
-	      static_aggregates = perm_tree_cons (expr, t, static_aggregates);
-	      rval = build_unary_op (ADDR_EXPR, t, 0);
-	    }
-	  else
-	    {
-	      init = build_method_call (NULL_TREE, ctor_identifier,
-					build_expr_list (NULL_TREE, expr),
-					TYPE_BINFO (type),
-					LOOKUP_NORMAL|LOOKUP_NO_CONVERSION
-					|LOOKUP_ONLYCONVERTING);
-
-	      if (init == error_mark_node)
-		return error_mark_node;
-
-	      rval = build_cplus_new (type, init);
-	      rval = build_up_reference (reftype, rval, flags, 1);
-	    }
-	  rval_as_ctor = rval;
-	}
-
-      if (rval_as_ctor && rval_as_conversion)
-	{
-	  cp_error ("ambiguous conversion from `%T' to `%T'; both user-defined conversion and constructor apply",
-		    intype, reftype);
-	  return error_mark_node;
-	}
-      else if (rval_as_ctor)
-	rval = rval_as_ctor;
-      else if (rval_as_conversion)
-	rval = rval_as_conversion;
-      else if (! IS_AGGR_TYPE (type) && ! IS_AGGR_TYPE (intype))
-	{
-	  rval = cp_convert (type, expr);
-	  if (rval == error_mark_node)
-	    return error_mark_node;
-	  
-	  rval = build_up_reference (reftype, rval, flags, 1);
-	}
 
       if (rval && ! TYPE_READONLY (TREE_TYPE (reftype)))
 	cp_pedwarn ("initializing non-const `%T' with `%T' will use a temporary",
@@ -685,190 +598,6 @@ convert_from_reference (val)
   return val;
 }
 
-/* See if there is a constructor of type TYPE which will convert
-   EXPR.  The reference manual seems to suggest (8.5.6) that we need
-   not worry about finding constructors for base classes, then converting
-   to the derived class.
-
-   MSGP is a pointer to a message that would be an appropriate error
-   string.  If MSGP is NULL, then we are not interested in reporting
-   errors.  */
-
-tree
-convert_to_aggr (type, expr, msgp, protect)
-     tree type, expr;
-     char **msgp;
-     int protect;
-{
-  tree basetype = type;
-  tree name = TYPE_IDENTIFIER (basetype);
-  tree function, fndecl, fntype, parmtypes, parmlist, result;
-#if 0
-  /* See code below that used this.  */
-  tree method_name;
-#endif
-  tree access;
-  int can_be_private, can_be_protected;
-
-  if (! TYPE_HAS_CONSTRUCTOR (basetype))
-    {
-      if (msgp)
-	*msgp = "type `%s' does not have a constructor";
-      return error_mark_node;
-    }
-
-  access = access_public_node;
-  can_be_private = 0;
-  can_be_protected = IDENTIFIER_CLASS_VALUE (name) || name == current_class_name;
-
-  parmlist = build_expr_list (NULL_TREE, expr);
-  parmtypes = scratch_tree_cons (NULL_TREE, TREE_TYPE (expr), void_list_node);
-
-  if (TYPE_USES_VIRTUAL_BASECLASSES (basetype))
-    {
-      parmtypes = expr_tree_cons (NULL_TREE, integer_type_node, parmtypes);
-      parmlist = scratch_tree_cons (NULL_TREE, integer_one_node, parmlist);
-    }
-
-  /* The type of the first argument will be filled in inside the loop.  */
-  parmlist = expr_tree_cons (NULL_TREE, integer_zero_node, parmlist);
-  parmtypes = scratch_tree_cons (NULL_TREE, build_pointer_type (basetype), parmtypes);
-
-  /* No exact conversion was found.  See if an approximate
-     one will do.  */
-  fndecl = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (basetype), 0);
-
-  {
-    int saw_private = 0;
-    int saw_protected = 0;
-    struct candidate *candidates
-      = (struct candidate *) alloca ((decl_list_length (fndecl)+1) * sizeof (struct candidate));
-    struct candidate *cp = candidates;
-
-    while (fndecl)
-      {
-	function = fndecl;
-	cp->h_len = 2;
-	cp->harshness = (struct harshness_code *)
-	  alloca (3 * sizeof (struct harshness_code));
-
-	compute_conversion_costs (fndecl, parmlist, cp, 2);
-	if ((cp->h.code & EVIL_CODE) == 0)
-	  {
-	    cp->u.field = fndecl;
-	    if (protect)
-	      {
-		if (TREE_PRIVATE (fndecl))
-		  access = access_private_node;
-		else if (TREE_PROTECTED (fndecl))
-		  access = access_protected_node;
-		else
-		  access = access_public_node;
-	      }
-	    else
-	      access = access_public_node;
-
-	    if (access == access_private_node
-		? (basetype == current_class_type
-		   || is_friend (basetype, cp->function)
-		   || purpose_member (basetype, DECL_ACCESS (fndecl)))
-		: access == access_protected_node
-		? (can_be_protected
-		   || purpose_member (basetype, DECL_ACCESS (fndecl)))
-		: 1)
-	      {
-		if (cp->h.code <= TRIVIAL_CODE)
-		  goto found_and_ok;
-		cp++;
-	      }
-	    else
-	      {
-		if (access == access_private_node)
-		  saw_private = 1;
-		else
-		  saw_protected = 1;
-	      }
-	  }
-	fndecl = DECL_CHAIN (fndecl);
-      }
-    if (cp - candidates)
-      {
-	/* Rank from worst to best.  Then cp will point to best one.
-	   Private fields have their bits flipped.  For unsigned
-	   numbers, this should make them look very large.
-	   If the best alternate has a (signed) negative value,
-	   then all we ever saw were private members.  */
-	if (cp - candidates > 1)
-	  qsort (candidates,	/* char *base */
-		 cp - candidates, /* int nel */
-		 sizeof (struct candidate), /* int width */
-		 (int (*) PROTO((const void *, const void *))) rank_for_overload); /* int (*compar)() */
-
-	--cp;
-	if (cp->h.code & EVIL_CODE)
-	  {
-	    if (msgp)
-	      *msgp = "ambiguous type conversion possible for `%s'";
-	    return error_mark_node;
-	  }
-
-	function = cp->function;
-	fndecl = cp->u.field;
-	goto found_and_ok;
-      }
-    else if (msgp)
-      {
-	if (saw_private)
-	  {
-	    if (saw_protected)
-	      *msgp = "only private and protected conversions apply";
-	    else
-	      *msgp = "only private conversions apply";
-	  }
-	else if (saw_protected)
-	  *msgp = "only protected conversions apply";
-	else
-	  *msgp = "no appropriate conversion to type `%s'";
-      }
-    return error_mark_node;
-  }
-  /* NOTREACHED */
-
- found:
-  if (access == access_private_node)
-    if (! can_be_private)
-      {
-	if (msgp)
-	  *msgp = TREE_PRIVATE (fndecl)
-	    ? "conversion to type `%s' is private"
-	    : "conversion to type `%s' is from private base class";
-	return error_mark_node;
-      }
-  if (access == access_protected_node)
-    if (! can_be_protected)
-      {
-	if (msgp)
-	  *msgp = TREE_PRIVATE (fndecl)
-	    ? "conversion to type `%s' is protected"
-	    : "conversion to type `%s' is from protected base class";
-	return error_mark_node;
-      }
-  function = fndecl;
- found_and_ok:
-
-  /* It will convert, but we don't do anything about it yet.  */
-  if (msgp == 0)
-    return NULL_TREE;
-
-  fntype = TREE_TYPE (function);
-
-  parmlist = convert_arguments (NULL_TREE, TYPE_ARG_TYPES (fntype),
-				parmlist, NULL_TREE, LOOKUP_NORMAL);
-
-  result = build_call (function, TREE_TYPE (fntype), parmlist);
-  return result;
-}
-
 /* Call this when we know (for any reason) that expr is not, in fact,
    zero.  This routine is like convert_pointer_to, but it pays
    attention to which specific instance of what type we want to
@@ -1119,71 +848,20 @@ ocp_convert (type, expr, convtype, flags)
 	 There may be some ambiguity between using a constructor
 	 vs. using a type conversion operator when both apply.  */
 
-      if (flag_ansi_overloading)
+      ctor = e;
+
+      if ((flags & LOOKUP_ONLYCONVERTING)
+	  && ! (IS_AGGR_TYPE (dtype) && DERIVED_FROM_P (type, dtype)))
 	{
-	  ctor = e;
-	  
-	  if ((flags & LOOKUP_ONLYCONVERTING)
-	      && ! (IS_AGGR_TYPE (dtype) && DERIVED_FROM_P (type, dtype)))
-	    {
-	      ctor = build_user_type_conversion (type, ctor, flags);
-	      flags |= LOOKUP_NO_CONVERSION;
-	    }
-	  if (ctor)
-	    ctor = build_method_call (NULL_TREE, ctor_identifier,
-				      build_expr_list (NULL_TREE, ctor),
-				      TYPE_BINFO (type), flags);
-	  if (ctor)
-	    return build_cplus_new (type, ctor);
+	  ctor = build_user_type_conversion (type, ctor, flags);
+	  flags |= LOOKUP_NO_CONVERSION;
 	}
-      else
-	{
-	  if (IS_AGGR_TYPE (dtype) && ! DERIVED_FROM_P (type, dtype)
-	      && TYPE_HAS_CONVERSION (dtype))
-	    conversion = build_type_conversion (CONVERT_EXPR, type, e, 1);
-
-	  if (conversion == error_mark_node)
-	    {
-	      if (flags & LOOKUP_COMPLAIN)
-		error ("ambiguous pointer conversion");
-	      return conversion;
-	    }
-
-	  if (TYPE_HAS_CONSTRUCTOR (complete_type (type)))
-	    ctor = build_method_call (NULL_TREE, ctor_identifier,
-				      build_expr_list (NULL_TREE, e),
-				      TYPE_BINFO (type),
-				      (flags & LOOKUP_NORMAL)
-				      | LOOKUP_SPECULATIVELY
-				      | (flags & LOOKUP_ONLYCONVERTING)
-				      | (flags & LOOKUP_NO_CONVERSION)
-				      | (conversion ? LOOKUP_NO_CONVERSION : 0));
-
-	  if (ctor == error_mark_node)
-	    {
-	      if (flags & LOOKUP_COMPLAIN)
-		cp_error ("in conversion to type `%T'", type);
-	      if (flags & LOOKUP_SPECULATIVELY)
-		return NULL_TREE;
-	      return error_mark_node;
-	    }
-      
-	  if (conversion && ctor)
-	    {
-	      if (flags & LOOKUP_COMPLAIN)
-		error ("both constructor and type conversion operator apply");
-	      if (flags & LOOKUP_SPECULATIVELY)
-		return NULL_TREE;
-	      return error_mark_node;
-	    }
-	  else if (conversion)
-	    return conversion;
-	  else if (ctor)
-	    {
-	      ctor = build_cplus_new (type, ctor);
-	      return ctor;
-	    }
-	}
+      if (ctor)
+	ctor = build_method_call (NULL_TREE, ctor_identifier,
+				  build_expr_list (NULL_TREE, ctor),
+				  TYPE_BINFO (type), flags);
+      if (ctor)
+	return build_cplus_new (type, ctor);
     }
 
   /* If TYPE or TREE_TYPE (E) is not on the permanent_obstack,
@@ -1339,64 +1017,8 @@ build_type_conversion (code, xtype, expr, for_sure)
 {
   /* C++: check to see if we can convert this aggregate type
      into the required type.  */
-  tree basetype;
-  tree conv;
-  tree winner = NULL_TREE;
-
-  if (flag_ansi_overloading)
-    return build_user_type_conversion
-      (xtype, expr, for_sure ? LOOKUP_NORMAL : 0);
-
-  if (expr == error_mark_node)
-    return error_mark_node;
-
-  basetype = TREE_TYPE (expr);
-  if (TREE_CODE (basetype) == REFERENCE_TYPE)
-    basetype = TREE_TYPE (basetype);
-
-  basetype = TYPE_MAIN_VARIANT (basetype);
-  if (! TYPE_LANG_SPECIFIC (basetype) || ! TYPE_HAS_CONVERSION (basetype))
-    return NULL_TREE;
-
-  /* Do we have an exact match?  */
-  {
-    tree typename = build_typename_overload (xtype);
-    if (lookup_fnfields (TYPE_BINFO (basetype), typename, 0))
-      return build_type_conversion_1 (xtype, basetype, expr, typename,
-				      for_sure);
-  }
-
-  /* Nope; try looking for others.  */
-  for (conv = lookup_conversions (basetype); conv; conv = TREE_CHAIN (conv))
-    {
-      tree cand = TREE_VALUE (conv);
-
-      if (winner && winner == cand)
-	continue;
-
-      if (can_convert (xtype, TREE_TYPE (TREE_TYPE (cand))))
-	{
-	  if (winner)
-	    {
-	      if (for_sure)
-		{
-		  cp_error ("ambiguous conversion from `%T' to `%T'", basetype,
-			    xtype);
-		  cp_error ("  candidate conversions include `%D' and `%D'",
-			    winner, cand);
-		}
-	      return NULL_TREE;
-	    }
-	  else
-	    winner = cand;
-	}
-    }
-
-  if (winner)
-    return build_type_conversion_1 (xtype, basetype, expr,
-				    DECL_NAME (winner), for_sure);
-
-  return NULL_TREE;
+  return build_user_type_conversion
+    (xtype, expr, for_sure ? LOOKUP_NORMAL : 0);
 }
 
 /* Convert the given EXPR to one of a group of types suitable for use in an

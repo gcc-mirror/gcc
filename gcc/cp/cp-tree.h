@@ -327,11 +327,6 @@ extern int flag_elide_constructors;
 
 extern int flag_ansi;
 
-/* Nonzero means do argument matching for overloading according to the
-   ANSI rules, rather than what g++ used to believe to be correct.  */
-
-extern int flag_ansi_overloading;
-
 /* Nonzero means recognize and handle signature language constructs.  */
 
 extern int flag_handle_signatures;
@@ -619,10 +614,6 @@ struct lang_type
 /* Nonzero means that this type has been redefined.  In this case, if
    convenient, don't reprocess any methods that appear in its redefinition.  */
 #define TYPE_REDEFINED(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.redefined)
-
-/* Nonzero means that this _CLASSTYPE node overloads the method call
-   operator.  In this case, all method calls go through `operator->()(...).  */
-#define TYPE_OVERLOADS_METHOD_CALL_EXPR(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_method_call_overloaded)
 
 /* Nonzero means that this type is a signature.  */
 # define IS_SIGNATURE(NODE) (TYPE_LANG_SPECIFIC(NODE)?TYPE_LANG_SPECIFIC(NODE)->type_flags.is_signature:0)
@@ -2039,19 +2030,14 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
 extern char **opname_tab, **assignop_tab;
 
 /* in call.c */
-extern struct candidate *ansi_c_filler;
 extern int get_arglist_len_in_bytes		PROTO((tree));
 
-extern int rank_for_overload			PROTO((struct candidate *, struct candidate *));
-extern void compute_conversion_costs		PROTO((tree, tree, struct candidate *, int));
 extern tree build_vfield_ref			PROTO((tree, tree));
 extern tree resolve_scope_to_name		PROTO((tree, tree));
 extern tree build_scoped_method_call		PROTO((tree, tree, tree, tree));
 extern tree build_addr_func			PROTO((tree));
 extern tree build_call				PROTO((tree, tree, tree));
 extern tree build_method_call			PROTO((tree, tree, tree, tree, int));
-extern tree build_overload_call_real		PROTO((tree, tree, int, struct candidate *, int));
-extern tree build_overload_call			PROTO((tree, tree, int));
 extern int null_ptr_cst_p			PROTO((tree));
 extern tree type_decays_to			PROTO((tree));
 extern tree build_user_type_conversion		PROTO((tree, tree, int));
@@ -2090,7 +2076,6 @@ extern void warn_hidden				PROTO((tree));
 /* in cvt.c */
 extern tree convert_to_reference		PROTO((tree, tree, int, int, tree));
 extern tree convert_from_reference		PROTO((tree));
-extern tree convert_to_aggr			PROTO((tree, tree, char **, int));
 extern tree convert_pointer_to_real		PROTO((tree, tree));
 extern tree convert_pointer_to			PROTO((tree, tree));
 extern tree ocp_convert				PROTO((tree, tree, int, int));
@@ -2399,7 +2384,6 @@ extern void yyhook				PROTO((int));
 /* in method.c */
 extern void init_method				PROTO((void));
 extern void do_inline_function_hair		PROTO((tree, tree));
-extern void  report_type_mismatch		PROTO((struct candidate *, tree, char *));
 extern char *build_overload_name		PROTO((tree, int, int));
 extern tree build_static_name			PROTO((tree, tree));
 extern tree build_decl_overload			PROTO((tree, tree, int));

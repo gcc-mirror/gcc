@@ -2470,24 +2470,10 @@ build_x_function_call (function, params, decl)
 	}
       else
 	{
-	  tree val = TREE_VALUE (function);
-
-	  if (flag_ansi_overloading)
-	    {
-	      /* Put back explicit template arguments, if any.  */
-	      if (template_id)
-		function = template_id;
-	      return build_new_function_call (function, params);
-	    }
-
-	  if (TREE_CODE (val) == TEMPLATE_DECL)
-	    return build_overload_call_real
-	      (function, params, LOOKUP_COMPLAIN, (struct candidate *)0, 0);
-	  else if (DECL_CHAIN (val) != NULL_TREE)
-	    return build_overload_call
-	      (function, params, LOOKUP_COMPLAIN);
-	  else
-	    my_friendly_abort (360);
+	  /* Put back explicit template arguments, if any.  */
+	  if (template_id)
+	    function = template_id;
+	  return build_new_function_call (function, params);
 	}
     }
 
@@ -3062,17 +3048,7 @@ build_x_binary_op (code, arg1, arg2)
   if (processing_template_decl)
     return build_min_nt (code, arg1, arg2);
 
-  if (flag_ansi_overloading)
-    return build_new_op (code, LOOKUP_NORMAL, arg1, arg2, NULL_TREE);
-
-  rval = build_opfncall (code, LOOKUP_SPECULATIVELY,
-			 arg1, arg2, NULL_TREE);
-  if (rval)
-    return build_opfncall (code, LOOKUP_NORMAL, arg1, arg2, NULL_TREE);
-  if (code == MEMBER_REF)
-    return build_m_component_ref (build_indirect_ref (arg1, NULL_PTR),
-				  arg2);
-  return build_binary_op (code, arg1, arg2, 1);
+  return build_new_op (code, LOOKUP_NORMAL, arg1, arg2, NULL_TREE);
 }
 
 tree
@@ -4131,21 +4107,10 @@ build_x_unary_op (code, xarg)
     {
       tree rval;
 
-      if (flag_ansi_overloading)
-	{
-	  rval = build_new_op (code, LOOKUP_NORMAL, xarg,
-			       NULL_TREE, NULL_TREE);
-	  if (rval || code != ADDR_EXPR)
-	    return rval;
-	}
-      else
-	{
-	  rval = build_opfncall (code, LOOKUP_SPECULATIVELY, xarg,
-				 NULL_TREE, NULL_TREE);
-	  if (rval)
-	    return build_opfncall (code, LOOKUP_NORMAL, xarg,
-				   NULL_TREE, NULL_TREE);
-	}
+      rval = build_new_op (code, LOOKUP_NORMAL, xarg,
+			   NULL_TREE, NULL_TREE);
+      if (rval || code != ADDR_EXPR)
+	return rval;
     }
 
   if (code == ADDR_EXPR)
@@ -4907,16 +4872,7 @@ build_x_conditional_expr (ifexp, op1, op2)
   if (processing_template_decl)
     return build_min_nt (COND_EXPR, ifexp, op1, op2);
 
-  if (flag_ansi_overloading)
-    return build_new_op (COND_EXPR, LOOKUP_NORMAL, ifexp, op1, op2);
-
-  /* See comments in `build_x_binary_op'.  */
-  if (op1 != 0)
-    rval = build_opfncall (COND_EXPR, LOOKUP_SPECULATIVELY, ifexp, op1, op2);
-  if (rval)
-    return build_opfncall (COND_EXPR, LOOKUP_NORMAL, ifexp, op1, op2);
-  
-  return build_conditional_expr (ifexp, op1, op2);
+  return build_new_op (COND_EXPR, LOOKUP_NORMAL, ifexp, op1, op2);
 }
 
 tree
@@ -7092,82 +7048,7 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
 
   if (IS_AGGR_TYPE (type)
       && (TYPE_NEEDS_CONSTRUCTING (type) || TREE_HAS_CONSTRUCTOR (rhs)))
-    {
-      if (flag_ansi_overloading)
-	return ocp_convert (type, rhs, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
-
-      if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (rhstype))
-	{
-	  /* This is sufficient to perform initialization.  No need,
-	     apparently, to go through X(X&) to do first-cut
-	     initialization.  Return through a TARGET_EXPR so that we get
-	     cleanups if it is used.  */
-	  if (TREE_CODE (rhs) == CALL_EXPR)
-	    {
-	      rhs = build_cplus_new (type, rhs);
-	      return rhs;
-	    }
-	  /* Handle the case of default parameter initialization and
-	     initialization of static variables.  */
-	  else if (TREE_CODE (rhs) == TARGET_EXPR)
-	    return rhs;
-	  else if (TREE_CODE (rhs) == INDIRECT_REF && TREE_HAS_CONSTRUCTOR (rhs))
-	    {
-	      my_friendly_assert (TREE_CODE (TREE_OPERAND (rhs, 0)) == CALL_EXPR, 318);
-	      if (exp)
-		{
-		  my_friendly_assert (TREE_VALUE (TREE_OPERAND (TREE_OPERAND (rhs, 0), 1)) == NULL_TREE, 316);
-		  TREE_VALUE (TREE_OPERAND (TREE_OPERAND (rhs, 0), 1))
-		    = build_unary_op (ADDR_EXPR, exp, 0);
-		}
-	      else
-		rhs = build_cplus_new (type, TREE_OPERAND (rhs, 0));
-	      return rhs;
-	    }
-	  else if (TYPE_HAS_TRIVIAL_INIT_REF (type))
-	    return rhs;
-	}
-      if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (rhstype)
-	  || (IS_AGGR_TYPE (rhstype) && UNIQUELY_DERIVED_FROM_P (type, rhstype)))
-	{
-	  if (TYPE_HAS_INIT_REF (type))
-	    {
-	      tree init = build_method_call (exp, ctor_identifier,
-					     build_expr_list (NULL_TREE, rhs),
-					     TYPE_BINFO (type), LOOKUP_NORMAL);
-
-	      if (init == error_mark_node)
-		return error_mark_node;
-
-	      if (exp == 0)
-		{
-		  exp = build_cplus_new (type, init);
-		  return exp;
-		}
-
-	      return build (COMPOUND_EXPR, type, init, exp);
-	    }
-
-	  /* ??? The following warnings are turned off because
-	     this is another place where the default X(X&) constructor
-	     is implemented.  */
-	  if (TYPE_HAS_ASSIGNMENT (type))
-	    cp_warning ("bitwise copy: `%T' defines operator=", type);
-
-	  if (TREE_CODE (TREE_TYPE (rhs)) == REFERENCE_TYPE)
-	    rhs = convert_from_reference (rhs);
-	  if (type != rhstype)
-	    {
-	      tree nrhs = build1 (NOP_EXPR, type, rhs);
-	      TREE_CONSTANT (nrhs) = TREE_CONSTANT (rhs);
-	      rhs = nrhs;
-	    }
-	  return rhs;
-	}
-
-      return ocp_convert (type, rhs, CONV_OLD_CONVERT,
-			  flags | LOOKUP_NO_CONVERSION);
-    }
+    return ocp_convert (type, rhs, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
 
   if (type == TREE_TYPE (rhs))
     {

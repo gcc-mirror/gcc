@@ -240,12 +240,12 @@ typeck2.o : typeck2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
 typeck.o : typeck.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
   $(srcdir)/../expr.h ../insn-codes.h
 class.o : class.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
-call.o : call.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h class.h
+call.o : call.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
 friend.o : friend.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H)
 init.o : init.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
   $(srcdir)/../expr.h ../insn-codes.h
-method.o : method.c $(CONFIG_H) $(CXX_TREE_H) class.h
-cvt.o : cvt.c $(CONFIG_H) $(CXX_TREE_H) class.h
+method.o : method.c $(CONFIG_H) $(CXX_TREE_H)
+cvt.o : cvt.c $(CONFIG_H) $(CXX_TREE_H)
 search.o : search.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../stack.h $(srcdir)/../flags.h
 tree.o : tree.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
 ptree.o : ptree.c $(CONFIG_H) $(CXX_TREE_H)

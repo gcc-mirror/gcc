@@ -3890,38 +3890,6 @@ tsubst (t, args, in_decl)
 	if (IDENTIFIER_OPNAME_P (DECL_NAME (r)))
 	  grok_op_properties (r, DECL_VIRTUAL_P (r), DECL_FRIEND_P (r));
 
-	/* Look for matching decls for the moment.  */
-	if (! member && ! flag_ansi_overloading)
-	  {
-	    tree decls = lookup_name_nonclass (DECL_NAME (t));
-	    tree d = NULL_TREE;
-    
-	    if (decls == NULL_TREE)
-	      /* no match */;
-	    else if (is_overloaded_fn (decls))
-	      for (decls = get_first_fn (decls); decls;
-		   decls = DECL_CHAIN (decls))
-		{
-		  if (TREE_CODE (decls) == FUNCTION_DECL
-		      && TREE_TYPE (decls) == type)
-		    {
-		      d = decls;
-		      break;
-		    }
-		}
-
-	    if (d)
-	      {
-		int dcl_only = ! DECL_INITIAL (d);
-		if (dcl_only)
-		  DECL_INITIAL (r) = error_mark_node;
-		duplicate_decls (r, d);
-		r = d;
-		if (dcl_only)
-		  DECL_INITIAL (r) = 0;
-	      }
-	  }
-
 	if (DECL_TEMPLATE_INFO (t) != NULL_TREE)
 	  {
 	    DECL_TEMPLATE_INFO (r) = perm_tree_cons (tmpl, argvec, NULL_TREE);
@@ -5539,7 +5507,7 @@ unify (tparms, targs, ntparms, parm, arg, strict)
       if (CLASSTYPE_TEMPLATE_INFO (parm) && uses_template_parms (parm))
 	{
 	  tree t = NULL_TREE;
-	  if (flag_ansi_overloading && ! strict)
+	  if (! strict)
 	    t = get_template_base (CLASSTYPE_TI_TEMPLATE (parm), arg);
 	  else if
 	    (CLASSTYPE_TEMPLATE_INFO (arg)
