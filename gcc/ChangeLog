@@ -1,3 +1,8 @@
+2003-03-16  Richard Henderson  <rth@redhat.com>
+
+        * config/i386/i386.md (movstrictqi, movstrictqi_1): Check
+        optimize_size as well.
+
 2003-03-16  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.c (print_operand): Handle 'b' modifier
