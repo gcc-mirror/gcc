@@ -1458,9 +1458,26 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
 #define REGISTER_NAMES \
-{"d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7",	\
- "a0", "a1", "a2", "a3", "a4", "a5", "a6", "sp",	\
- "fp0", "fp1", "fp2", "fp3", "fp4", "fp5", "fp6", "fp7", "argptr" }
+{REGISTER_PREFIX"d0", REGISTER_PREFIX"d1", REGISTER_PREFIX"d2",	\
+ REGISTER_PREFIX"d3", REGISTER_PREFIX"d4", REGISTER_PREFIX"d5",	\
+ REGISTER_PREFIX"d6", REGISTER_PREFIX"d7",			\
+ REGISTER_PREFIX"a0", REGISTER_PREFIX"a1", REGISTER_PREFIX"a2", \
+ REGISTER_PREFIX"a3", REGISTER_PREFIX"a4", REGISTER_PREFIX"a5", \
+ REGISTER_PREFIX"a6", REGISTER_PREFIX"sp",			\
+ REGISTER_PREFIX"fp0", REGISTER_PREFIX"fp1", REGISTER_PREFIX"fp2", \
+ REGISTER_PREFIX"fp3", REGISTER_PREFIX"fp4", REGISTER_PREFIX"fp5", \
+ REGISTER_PREFIX"fp6", REGISTER_PREFIX"fp7", REGISTER_PREFIX"argptr" }
+
+#define M68K_FP_REG_NAME REGISTER_PREFIX"fp"
+
+/* Return a register name by index, handling %fp nicely.
+   We don't replace %fp for targets that don't map it to %a6
+   since it may confuse GAS.  */
+#define M68K_REGNAME(r) ( \
+  ((FRAME_POINTER_REGNUM == 14) \
+    && ((r) == FRAME_POINTER_REGNUM) \
+    && frame_pointer_needed) ? \
+    M68K_FP_REG_NAME : reg_names[(r)])
 
 /* How to renumber registers for dbx and gdb.
    On the Sun-3, the floating point registers have numbers
