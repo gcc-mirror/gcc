@@ -6265,8 +6265,7 @@ expand_expr (exp, target, tmode, modifier)
 #ifdef POINTERS_EXTEND_UNSIGNED
 	      if (GET_MODE (temp) == Pmode && GET_MODE (temp) != mode
 		  && mode == ptr_mode)
-		temp = convert_modes (ptr_mode, Pmode, temp,
-				      POINTERS_EXTEND_UNSIGNED);
+		temp = convert_memory_address (ptr_mode, temp);
 #endif
 	      return temp;
 	    }
@@ -6288,7 +6287,7 @@ expand_expr (exp, target, tmode, modifier)
 #ifdef POINTERS_EXTEND_UNSIGNED
       if (GET_MODE (op0) == Pmode && GET_MODE (op0) != mode
 	  && mode == ptr_mode)
-	op0 = convert_modes (ptr_mode, Pmode, op0, POINTERS_EXTEND_UNSIGNED);
+	op0 = convert_memory_address (ptr_mode, op0);
 #endif
 
       return op0;
