@@ -1,5 +1,9 @@
 2004-01-07  Michael Koch  <konqueror@gmx.de>
 
+	* java/lang/reflect/Array.java: Merged documentation with classpath.
+
+2004-01-07  Michael Koch  <konqueror@gmx.de>
+
 	* java/text/CollationElementIterator.java
 	(textIndex): Renamed from index.
 	* java/text/CollationKey.java
