@@ -1,5 +1,5 @@
 ;;- Machine description for Advanced RISC Machines' ARM for GNU compiler
-;;  Copyright (C) 1991, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+;;  Copyright (C) 1991, 93-97, 1998 Free Software Foundation, Inc.
 ;;  Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
 ;;  and Martin Simmons (@harleqn.co.uk).
 ;;  More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
@@ -3918,8 +3918,10 @@
   enum rtx_code code = GET_CODE (operands[1]);
   rtx ccreg;
 
-  /* When compiling for SOFT_FLOAT, ensure both arms are in registers.  */
-  if (! TARGET_HARD_FLOAT)
+  /* When compiling for SOFT_FLOAT, ensure both arms are in registers. 
+     Otherwise, ensure it is a valid FP add operand */
+  if ((! TARGET_HARD_FLOAT)
+      || (! fpu_add_operand (operands[3], SFmode)))
     operands[3] = force_reg (SFmode, operands[3]);
 
   ccreg = gen_compare_reg (code, arm_compare_op0, arm_compare_op1,
@@ -3932,7 +3934,7 @@
   [(set (match_operand:DF 0 "s_register_operand" "")
 	(if_then_else:DF (match_operand 1 "comparison_operator" "")
 			 (match_operand:DF 2 "s_register_operand" "")
-			 (match_operand:DF 3 "nonmemory_operand" "")))]
+			 (match_operand:DF 3 "fpu_add_operand" "")))]
   "TARGET_HARD_FLOAT"
   "
 {
