@@ -203,6 +203,7 @@ static char *find_a_file	PROTO((struct path_prefix *, char *, int));
 static void add_prefix		PROTO((struct path_prefix *, char *, int, int, int *));
 static char *skip_whitespace	PROTO((char *));
 static void record_temp_file	PROTO((char *, int, int));
+static int check_live_switch	PROTO((int, int));
 static char *handle_braces	PROTO((char *));
 static char *save_string	PROTO((char *, int));
 static char *concat		PROTO((char *, char *, char *));
@@ -329,6 +330,11 @@ or with constant text in a single argument.
 The conditional text X in a %{S:X} or %{!S:X} construct may contain
 other nested % constructs or spaces, or even newlines.  They are
 processed as usual, as described above.
+
+The -O, -f, -m, and -w switches are handled specifically in these
+constructs.  If another value of -O or the negated form of a -f, -m, or
+-W switch is found later in the command line, the earlier switch
+value is ignored.
 
 The character | is used to indicate that a command should be piped to
 the following command, but only if -pipe is specified.
@@ -2113,6 +2119,8 @@ execute ()
    If a switch uses following arguments, then the `part1' field
    is the switch itself and the `args' field
    is a null-terminated vector containing the following arguments.
+   The `live_cond' field is 1 if the switch is true in a conditional spec,
+   -1 if false (overridden by a later switch), and is initialized to zero.
    The `valid' field is nonzero if any spec has looked at this switch;
    if it remains zero at the end of the run, it must be meaningless.  */
 
@@ -2120,6 +2128,7 @@ struct switchstr
 {
   char *part1;
   char **args;
+  int live_cond;
   int valid;
 };
 
@@ -2567,6 +2576,7 @@ process_command (argc, argv)
 	     -e0 or -e1 down into the linker.  */
 	  switches[n_switches].part1 = &argv[i][0];
 	  switches[n_switches].args = 0;
+	  switches[n_switches].live_cond = 0;
 	  switches[n_switches].valid = 0;
 	  n_switches++;
 	}
@@ -2633,6 +2643,8 @@ process_command (argc, argv)
 	    }
 	  else
 	    switches[n_switches].args = 0;
+
+	  switches[n_switches].live_cond = 0;
 	  switches[n_switches].valid = 0;
 	  /* This is always valid, since gcc.c itself understands it.  */
 	  if (!strcmp (p, "save-temps"))
@@ -3570,7 +3582,8 @@ handle_braces (p)
       register int i;
       --p;
       for (i = 0; i < n_switches; i++)
-	if (!strncmp (switches[i].part1, filter, p - filter))
+	if (!strncmp (switches[i].part1, filter, p - filter)
+	    && check_live_switch (i, p - filter))
 	  give_switch (i, 0);
     }
   else
@@ -3605,7 +3618,8 @@ handle_braces (p)
 	      char *string = save_string (p + 1, q - p - 2);
 
 	      for (i = 0; i < n_switches; i++)
-		if (!strncmp (switches[i].part1, filter, hard_match_len))
+		if (!strncmp (switches[i].part1, filter, hard_match_len)
+		    && check_live_switch (i, hard_match_len))
 		  {
 		    do_spec_1 (string, 0, &switches[i].part1[hard_match_len]);
 		    /* Pass any arguments this switch has.  */
@@ -3624,9 +3638,9 @@ handle_braces (p)
 	    {
 	      unsigned hard_match_len = p - filter - 1;
 
-	      if (!strncmp (switches[i].part1, filter, hard_match_len))
+	      if (!strncmp (switches[i].part1, filter, hard_match_len)
+		  && check_live_switch (i, hard_match_len))
 		{
-		  switches[i].valid = 1;
 		  present = 1;
 		}
 	    }
@@ -3637,9 +3651,9 @@ handle_braces (p)
 	  for (i = 0; i < n_switches; i++)
 	    {
 	      if (!strncmp (switches[i].part1, filter, p - filter)
-		  && switches[i].part1[p - filter] == 0)
+		  && switches[i].part1[p - filter] == 0
+		  && check_live_switch (i, p - filter))
 		{
-		  switches[i].valid = 1;
 		  present = 1;
 		  break;
 		}
@@ -3671,7 +3685,84 @@ handle_braces (p)
 
   return q;
 }
+
+/* Return 0 if switch number SWITCHNUM is obsoleted by a later switch
+   on the command line.  LENGTH is the length of the switch name we
+   are to compare for.  Otherwise return zero.
 
+   A -O switch is obsoleted by a later -O switch.  A -f, -m, or -W switch
+   whose value does not begin with "no-" is obsoleted by the same value
+   with the "no-", similarly for a switch with the "no-" prefix.  */
+
+static int
+check_live_switch (switchnum, length)
+     int switchnum;
+     int length;
+{
+  char *name = switches[switchnum].part1;
+  int i;
+
+  /* If we just have a single letter and it isn't "O", a negating
+     switch would always match, so ignore that case.  We will just
+     send the conflicting switches to the compiler phase.  */
+  if (length == 1 && name[0] != 'O')
+    return 1;
+
+  /* If we already processed this switch and determined if it was
+     live or not, return our past determination.  */
+  if (switches[switchnum].live_cond != 0)
+    return switches[switchnum].live_cond > 0;
+
+  /* Now search for duplicate in a manner that depends on the name.  */
+  switch (*name)
+    {
+    case 'O':
+      if (length == 1)
+	for (i = switchnum + 1; i < n_switches; i++)
+	  if (switches[i].part1[0] == 'O')
+	    {
+	      switches[switchnum].valid = 1;
+	      switches[switchnum].live_cond = -1;
+	      return 0;
+	    }
+      break;
+
+    case 'W':  case 'f':  case 'm':
+      if (length > 4 && ! strncmp (name + 1, "no-", 3))
+	{
+	  /* We have Xno-YYY, search for XYYY. */
+	  for (i = switchnum + 1; i < n_switches; i++)
+	    if (switches[i].part1[0] == name[0]
+		&& ! strcmp (&switches[i].part1[1], &name[4]))
+	    {
+	      switches[switchnum].valid = 1;
+	      switches[switchnum].live_cond = -1;
+	      return 0;
+	    }
+	}
+      else
+	{
+	  /* We have XYYY, search for Xno-YYY.  */
+	  for (i = switchnum + 1; i < n_switches; i++)
+	    if (switches[i].part1[0] == name[0]
+		&& switches[i].part1[1] == 'n'
+		&& switches[i].part1[2] == 'o'
+		&& switches[i].part1[3] == '-'
+		&& !strcmp (&switches[i].part1[4], &name[1]))
+	    {
+	      switches[switchnum].valid = 1;
+	      switches[switchnum].live_cond = -1;
+	      return 0;
+	    }
+	}
+      break;
+    }
+
+  /* Otherwise the switch is live.  */
+  switches[switchnum].live_cond = 1;
+  return 1;
+}
+
 /* Pass a switch to the current accumulating command
    in the same form that we received it.
    SWITCHNUM identifies the switch; it is an index into
