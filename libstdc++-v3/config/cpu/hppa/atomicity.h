@@ -76,7 +76,7 @@ namespace __gnu_cxx
   
   void
   __attribute__ ((__unused__))
-  __atomic_add(_Atomic_word* __mem, int __val)
+  __atomic_add(volatile _Atomic_word* __mem, int __val)
   {
     int tmp;
     volatile int& lock = _Atomicity_lock<0>::_S_atomicity_lock;
