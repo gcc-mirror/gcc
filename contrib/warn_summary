@@ -4,13 +4,17 @@
 #
 # By Kaveh Ghazi  (ghazi@caip.rutgers.edu)  12/13/97.
 
-# This function displays all warnings from stage3 of the bootstrap.
-stage3warns()
+# This function displays all warnings from stageN of the bootstrap.
+stageNwarns()
 {
+  stageNminus1=`expr $stageN - 1`
 # Some awks choke on long lines so grep them out.
   grep -v libf2c.a $1 | \
-	$AWK '/ warning: /{if(t==1)print} ; /stage2/{if(t==0)t=1}'
+	$AWK "/ warning: /{if(t==1)print} ; /stage$stageNminus1/{if(t==0)t=1} ; /stage$stageN/{if(t==1)t=0}"
 }
+
+usage="usage: `basename $0` [-s stage] [file(s)]"
+stageN=3
 
 # Find a good awk.
 if test -z "$AWK" ; then
@@ -23,18 +27,29 @@ if test -z "$AWK" ; then
   done
 fi
 
+while test -n "$1" ; do
+ case "$1" in
+   -s)  if test -z "$2"; then echo $usage; exit 1; fi; stageN="$2"; shift 2 ;;
+   -s*) stageN="`expr $1 : '-s\(.*\)'`" ; shift ;;
+   -*)  echo $usage ; exit 1 ;;
+   *)   break ;;
+ esac
+done
+
+
+
 for file in "$@" ; do
 
-  count=`stage3warns $file | wc -l`
-  echo There are $count warnings in stage3 of this bootstrap.
+  count=`stageNwarns $file | wc -l`
+  echo There are $count warnings in stage$stageN of this bootstrap.
 
   echo
   echo Number of warnings per file:
-  stage3warns $file | $AWK -F: '{print$1}' | sort | uniq -c | sort -nr
+  stageNwarns $file | $AWK -F: '{print$1}' | sort | uniq -c | sort -nr
 
   echo
   echo Number of warning types:
-  stage3warns $file | sed 's/.*warning: //; 
+  stageNwarns $file | sed 's/.*warning: //; 
 		s/`\(int\)'"'"'/"\1"/g;
 		s/`\(char\)'"'"'/"\1"/g;
 		s/`\(inline\)'"'"'/"\1"/g;
