@@ -756,6 +756,168 @@ expand_doubleword_shift (enum machine_mode op1_mode, optab binoptab,
   return true;
 }
 
+/* Subroutine of expand_binop.  Perform a double word multiplication of
+   operands OP0 and OP1 both of mode MODE, which is exactly twice as wide
+   as the target's word_mode.  This function return NULL_RTX if anything
+   goes wrong, in which case it may have already emitted instructions
+   which need to be deleted.
+
+   If we want to multiply two two-word values and have normal and widening
+   multiplies of single-word values, we can do this with three smaller
+   multiplications.  Note that we do not make a REG_NO_CONFLICT block here
+   because we are not operating on one word at a time.
+
+   The multiplication proceeds as follows:
+			         _______________________
+			        [__op0_high_|__op0_low__]
+			         _______________________
+        *			[__op1_high_|__op1_low__]
+        _______________________________________________
+			         _______________________
+    (1)				[__op0_low__*__op1_low__]
+		     _______________________
+    (2a)	    [__op0_low__*__op1_high_]
+		     _______________________
+    (2b)	    [__op0_high_*__op1_low__]
+         _______________________
+    (3) [__op0_high_*__op1_high_]
+
+
+  This gives a 4-word result.  Since we are only interested in the
+  lower 2 words, partial result (3) and the upper words of (2a) and
+  (2b) don't need to be calculated.  Hence (2a) and (2b) can be
+  calculated using non-widening multiplication.
+
+  (1), however, needs to be calculated with an unsigned widening
+  multiplication.  If this operation is not directly supported we
+  try using a signed widening multiplication and adjust the result.
+  This adjustment works as follows:
+
+      If both operands are positive then no adjustment is needed.
+
+      If the operands have different signs, for example op0_low < 0 and
+      op1_low >= 0, the instruction treats the most significant bit of
+      op0_low as a sign bit instead of a bit with significance
+      2**(BITS_PER_WORD-1), i.e. the instruction multiplies op1_low
+      with 2**BITS_PER_WORD - op0_low, and two's complements the
+      result.  Conclusion: We need to add op1_low * 2**BITS_PER_WORD to
+      the result.
+
+      Similarly, if both operands are negative, we need to add
+      (op0_low + op1_low) * 2**BITS_PER_WORD.
+
+      We use a trick to adjust quickly.  We logically shift op0_low right
+      (op1_low) BITS_PER_WORD-1 steps to get 0 or 1, and add this to
+      op0_high (op1_high) before it is used to calculate 2b (2a).  If no
+      logical shift exists, we do an arithmetic right shift and subtract
+      the 0 or -1.  */
+
+static rtx
+expand_doubleword_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
+		       bool umulp, enum optab_methods methods)
+{
+  int low = (WORDS_BIG_ENDIAN ? 1 : 0);
+  int high = (WORDS_BIG_ENDIAN ? 0 : 1);
+  rtx wordm1 = umulp ? NULL_RTX : GEN_INT (BITS_PER_WORD - 1);
+  rtx product, adjust, product_high, temp;
+
+  rtx op0_high = operand_subword_force (op0, high, mode);
+  rtx op0_low = operand_subword_force (op0, low, mode);
+  rtx op1_high = operand_subword_force (op1, high, mode);
+  rtx op1_low = operand_subword_force (op1, low, mode);
+
+  /* If we're using an unsigned multiply to directly compute the product
+     of the low-order words of the operands and perform any required
+     adjustments of the operands, we begin by trying two more multiplications
+     and then computing the appropriate sum.
+
+     We have checked above that the required addition is provided.
+     Full-word addition will normally always succeed, especially if
+     it is provided at all, so we don't worry about its failure.  The
+     multiplication may well fail, however, so we do handle that.  */
+
+  if (!umulp)
+    {
+      /* ??? This could be done with emit_store_flag where available.  */
+      temp = expand_binop (word_mode, lshr_optab, op0_low, wordm1,
+			   NULL_RTX, 1, methods);
+      if (temp)
+	op0_high = expand_binop (word_mode, add_optab, op0_high, temp,
+				 op0_high, 0, OPTAB_DIRECT);
+      else
+	{
+	  temp = expand_binop (word_mode, ashr_optab, op0_low, wordm1,
+			       NULL_RTX, 0, methods);
+	  if (!temp)
+	    return NULL_RTX;
+	  op0_high = expand_binop (word_mode, sub_optab, op0_high, temp,
+				   op0_high, 0, OPTAB_DIRECT);
+	}
+
+      if (!op0_high)
+	return NULL_RTX;
+    }
+
+  adjust = expand_binop (word_mode, smul_optab, op0_high, op1_low,
+			 NULL_RTX, 0, OPTAB_DIRECT);
+  if (!adjust)
+    return NULL_RTX;
+
+  /* OP0_HIGH should now be dead.  */
+
+  if (!umulp)
+    {
+      /* ??? This could be done with emit_store_flag where available.  */
+      temp = expand_binop (word_mode, lshr_optab, op1_low, wordm1,
+			   NULL_RTX, 1, methods);
+      if (temp)
+	op1_high = expand_binop (word_mode, add_optab, op1_high, temp,
+				 op1_high, 0, OPTAB_DIRECT);
+      else
+	{
+	  temp = expand_binop (word_mode, ashr_optab, op1_low, wordm1,
+			       NULL_RTX, 0, methods);
+	  if (!temp)
+	    return NULL_RTX;
+	  op1_high = expand_binop (word_mode, sub_optab, op1_high, temp,
+				   op1_high, 0, OPTAB_DIRECT);
+	}
+
+      if (!op1_high)
+	return NULL_RTX;
+    }
+
+  temp = expand_binop (word_mode, smul_optab, op1_high, op0_low,
+		       NULL_RTX, 0, OPTAB_DIRECT);
+  if (!temp)
+    return NULL_RTX;
+
+  /* OP1_HIGH should now be dead.  */
+
+  adjust = expand_binop (word_mode, add_optab, adjust, temp,
+			 adjust, 0, OPTAB_DIRECT);
+
+  if (target && !REG_P (target))
+    target = NULL_RTX;
+
+  if (umulp)
+    product = expand_binop (mode, umul_widen_optab, op0_low, op1_low,
+			    target, 1, OPTAB_DIRECT);
+  else
+    product = expand_binop (mode, smul_widen_optab, op0_low, op1_low,
+			    target, 1, OPTAB_DIRECT);
+
+  if (!product)
+    return NULL_RTX;
+
+  product_high = operand_subword (product, high, 1, mode);
+  adjust = expand_binop (word_mode, add_optab, product_high, adjust,
+			 REG_P (product_high) ? product_high : adjust,
+			 0, OPTAB_DIRECT);
+  emit_move_insn (product_high, adjust);
+  return product;
+}
+
 /* Wrapper around expand_binop which takes an rtx code to specify
    the operation to perform, not an optab pointer.  All other
    arguments are the same.  */
@@ -1399,197 +1561,51 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	delete_insns_since (last);
     }
 
-  /* If we want to multiply two two-word values and have normal and widening
-     multiplies of single-word values, we can do this with three smaller
-     multiplications.  Note that we do not make a REG_NO_CONFLICT block here
-     because we are not operating on one word at a time.
-
-     The multiplication proceeds as follows:
-			         _______________________
-			        [__op0_high_|__op0_low__]
-			         _______________________
-        *			[__op1_high_|__op1_low__]
-        _______________________________________________
-			         _______________________
-    (1)				[__op0_low__*__op1_low__]
-		     _______________________
-    (2a)	    [__op0_low__*__op1_high_]
-		     _______________________
-    (2b)	    [__op0_high_*__op1_low__]
-         _______________________
-    (3) [__op0_high_*__op1_high_]
-
-
-    This gives a 4-word result.  Since we are only interested in the
-    lower 2 words, partial result (3) and the upper words of (2a) and
-    (2b) don't need to be calculated.  Hence (2a) and (2b) can be
-    calculated using non-widening multiplication.
-
-    (1), however, needs to be calculated with an unsigned widening
-    multiplication.  If this operation is not directly supported we
-    try using a signed widening multiplication and adjust the result.
-    This adjustment works as follows:
-
-      If both operands are positive then no adjustment is needed.
-
-      If the operands have different signs, for example op0_low < 0 and
-      op1_low >= 0, the instruction treats the most significant bit of
-      op0_low as a sign bit instead of a bit with significance
-      2**(BITS_PER_WORD-1), i.e. the instruction multiplies op1_low
-      with 2**BITS_PER_WORD - op0_low, and two's complements the
-      result.  Conclusion: We need to add op1_low * 2**BITS_PER_WORD to
-      the result.
-
-      Similarly, if both operands are negative, we need to add
-      (op0_low + op1_low) * 2**BITS_PER_WORD.
-
-      We use a trick to adjust quickly.  We logically shift op0_low right
-      (op1_low) BITS_PER_WORD-1 steps to get 0 or 1, and add this to
-      op0_high (op1_high) before it is used to calculate 2b (2a).  If no
-      logical shift exists, we do an arithmetic right shift and subtract
-      the 0 or -1.  */
+  /* Attempt to synthesize double word multiplies using a sequence of word
+     mode multiplications.  We first attempt to generate a sequence using a
+     more efficient unsigned widening multiply, and if that fails we then
+     try using a signed widening multiply.  */
 
   if (binoptab == smul_optab
       && class == MODE_INT
       && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
       && smul_optab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing
-      && add_optab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing
-      && ((umul_widen_optab->handlers[(int) mode].insn_code
-	   != CODE_FOR_nothing)
-	  || (smul_widen_optab->handlers[(int) mode].insn_code
-	      != CODE_FOR_nothing)))
+      && add_optab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing)
     {
-      int low = (WORDS_BIG_ENDIAN ? 1 : 0);
-      int high = (WORDS_BIG_ENDIAN ? 0 : 1);
-      rtx op0_high = operand_subword_force (op0, high, mode);
-      rtx op0_low = operand_subword_force (op0, low, mode);
-      rtx op1_high = operand_subword_force (op1, high, mode);
-      rtx op1_low = operand_subword_force (op1, low, mode);
-      rtx product = 0;
-      rtx op0_xhigh = NULL_RTX;
-      rtx op1_xhigh = NULL_RTX;
+      rtx product = NULL_RTX;
 
-      /* If the target is the same as one of the inputs, don't use it.  This
-	 prevents problems with the REG_EQUAL note.  */
-      if (target == op0 || target == op1
-	  || (target != 0 && !REG_P (target)))
-	target = 0;
-
-      /* Multiply the two lower words to get a double-word product.
-	 If unsigned widening multiplication is available, use that;
-	 otherwise use the signed form and compensate.  */
-
-      if (umul_widen_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+      if (umul_widen_optab->handlers[(int) mode].insn_code
+	  != CODE_FOR_nothing)
 	{
-	  product = expand_binop (mode, umul_widen_optab, op0_low, op1_low,
-				  target, 1, OPTAB_DIRECT);
-
-	  /* If we didn't succeed, delete everything we did so far.  */
-	  if (product == 0)
+	  product = expand_doubleword_mult (mode, op0, op1, target,
+					    true, methods);
+	  if (!product)
 	    delete_insns_since (last);
-	  else
-	    op0_xhigh = op0_high, op1_xhigh = op1_high;
 	}
 
-      if (product == 0
+      if (product == NULL_RTX
 	  && smul_widen_optab->handlers[(int) mode].insn_code
-	       != CODE_FOR_nothing)
+	     != CODE_FOR_nothing)
 	{
-	  rtx wordm1 = GEN_INT (BITS_PER_WORD - 1);
-	  product = expand_binop (mode, smul_widen_optab, op0_low, op1_low,
-				  target, 1, OPTAB_DIRECT);
-	  op0_xhigh = expand_binop (word_mode, lshr_optab, op0_low, wordm1,
-				    NULL_RTX, 1, next_methods);
-	  if (op0_xhigh)
-	    op0_xhigh = expand_binop (word_mode, add_optab, op0_high,
-				      op0_xhigh, op0_xhigh, 0, next_methods);
-	  else
-	    {
-	      op0_xhigh = expand_binop (word_mode, ashr_optab, op0_low, wordm1,
-					NULL_RTX, 0, next_methods);
-	      if (op0_xhigh)
-		op0_xhigh = expand_binop (word_mode, sub_optab, op0_high,
-					  op0_xhigh, op0_xhigh, 0,
-					  next_methods);
-	    }
-
-	  op1_xhigh = expand_binop (word_mode, lshr_optab, op1_low, wordm1,
-				    NULL_RTX, 1, next_methods);
-	  if (op1_xhigh)
-	    op1_xhigh = expand_binop (word_mode, add_optab, op1_high,
-				      op1_xhigh, op1_xhigh, 0, next_methods);
-	  else
-	    {
-	      op1_xhigh = expand_binop (word_mode, ashr_optab, op1_low, wordm1,
-					NULL_RTX, 0, next_methods);
-	      if (op1_xhigh)
-		op1_xhigh = expand_binop (word_mode, sub_optab, op1_high,
-					  op1_xhigh, op1_xhigh, 0,
-					  next_methods);
-	    }
+	  product = expand_doubleword_mult (mode, op0, op1, target,
+					    false, methods);
+	  if (!product)
+	    delete_insns_since (last);
 	}
 
-      /* If we have been able to directly compute the product of the
-	 low-order words of the operands and perform any required adjustments
-	 of the operands, we proceed by trying two more multiplications
-	 and then computing the appropriate sum.
-
-	 We have checked above that the required addition is provided.
-	 Full-word addition will normally always succeed, especially if
-	 it is provided at all, so we don't worry about its failure.  The
-	 multiplication may well fail, however, so we do handle that.  */
-
-      if (product && op0_xhigh && op1_xhigh)
+      if (product != NULL_RTX)
 	{
-	  rtx product_high = operand_subword (product, high, 1, mode);
-	  rtx temp = expand_binop (word_mode, binoptab, op0_low, op1_xhigh,
-				   NULL_RTX, 0, OPTAB_DIRECT);
-
-	  if (!REG_P (product_high))
-	    product_high = force_reg (word_mode, product_high);
-
-	  if (temp != 0)
-	    temp = expand_binop (word_mode, add_optab, temp, product_high,
-				 product_high, 0, next_methods);
-
-	  if (temp != 0 && temp != product_high)
-	    emit_move_insn (product_high, temp);
-
-	  if (temp != 0)
-	    temp = expand_binop (word_mode, binoptab, op1_low, op0_xhigh,
-				 NULL_RTX, 0, OPTAB_DIRECT);
-
-	  if (temp != 0)
-	    temp = expand_binop (word_mode, add_optab, temp,
-				 product_high, product_high,
-				 0, next_methods);
-
-	  if (temp != 0 && temp != product_high)
-	    emit_move_insn (product_high, temp);
-
-	  emit_move_insn (operand_subword (product, high, 1, mode), product_high);
-
-	  if (temp != 0)
+	  if (mov_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
 	    {
-	      if (mov_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
-		{
-		  temp = emit_move_insn (product, product);
-		  set_unique_reg_note (temp,
-				       REG_EQUAL,
-				       gen_rtx_fmt_ee (MULT, mode,
-						       copy_rtx (op0),
-						       copy_rtx (op1)));
-		}
-
-	      return product;
+	      temp = emit_move_insn (target ? target : product, product);
+	      set_unique_reg_note (temp,
+				   REG_EQUAL,
+				   gen_rtx_fmt_ee (MULT, mode,
+						   copy_rtx (op0),
+						   copy_rtx (op1)));
 	    }
+	  return product;
 	}
-
-      /* If we get here, we couldn't do it for some reason even though we
-	 originally thought we could.  Delete anything we've emitted in
-	 trying to do it.  */
-
-      delete_insns_since (last);
     }
 
   /* It can't be open-coded in this mode.
