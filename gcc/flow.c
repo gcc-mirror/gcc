@@ -204,7 +204,8 @@ struct basic_block_def entry_exit_blocks[2]
     NULL,			/* aux */
     ENTRY_BLOCK,		/* index */
     0,				/* loop_depth */
-    0				/* count */
+    0,				/* count */
+    0				/* frequency */
   },
   {
     NULL,			/* head */
@@ -218,7 +219,8 @@ struct basic_block_def entry_exit_blocks[2]
     NULL,			/* aux */
     EXIT_BLOCK,			/* index */
     0,				/* loop_depth */
-    0				/* count */
+    0,				/* count */
+    0				/* frequency */
   }
 };
 
@@ -1507,6 +1509,7 @@ split_block (bb, insn)
   bb->succ = new_edge;
   new_bb->pred = new_edge;
   new_bb->count = bb->count;
+  new_bb->frequency = bb->frequency;
   new_bb->loop_depth = bb->loop_depth;
 
   new_edge->src = bb;
@@ -1627,6 +1630,7 @@ split_edge (edge_in)
   bb->pred = edge_in;
   bb->succ = edge_out;
   bb->count = edge_in->count;
+  /* ??? Set bb->frequency.  */
 
   edge_in->dest = bb;
   edge_in->flags &= ~EDGE_CRITICAL;
@@ -6355,8 +6359,9 @@ dump_flow_info (file)
       register basic_block bb = BASIC_BLOCK (i);
       register edge e;
 
-      fprintf (file, "\nBasic block %d: first insn %d, last %d, loop_depth %d, count %d.\n",
-	       i, INSN_UID (bb->head), INSN_UID (bb->end), bb->loop_depth, bb->count);
+      fprintf (file, "\nBasic block %d: first insn %d, last %d, loop_depth %d, count %d, freq %d.\n",
+	       i, INSN_UID (bb->head), INSN_UID (bb->end), bb->loop_depth,
+	       bb->count, bb->frequency);
 
       fprintf (file, "Predecessors: ");
       for (e = bb->pred; e; e = e->pred_next)
