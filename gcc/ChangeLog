@@ -1,3 +1,10 @@
+2003-12-18  Ulrich Weigand  <uweigand@de.ibm.com>
+	    Mark Dettinger  <dettinge@de.ibm.com>
+
+	* config/s390/s390.md (UNSPEC_SRST): New constant.
+	("strlendi", "strlensi"): New expanders.
+	("*strlendi", "*strlensi"): New insns.
+
 2003-12-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/sol2.h (LINK_ARCH32_SPEC): Define in terms of ...
