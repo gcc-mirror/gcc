@@ -3,7 +3,7 @@
 @setfilename g77.info
 
 @set last-update 2003-05-13
-@set copyrights-g77 1995,1996,1997,1998,1999,2000,2001,2002,2003
+@set copyrights-g77 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
 
 @include root.texi
 
@@ -851,7 +851,7 @@ by GNU Fortran.
 @cindex textbooks
 (If you need a text on Fortran,
 a few freely available electronic references have pointers from
-@uref{http://www.fortran.com/fortran/Books/}.  There is a `cooperative
+@uref{http://www.fortran.com/F/books.html}.  There is a `cooperative
 net project', @cite{User Notes on Fortran Programming} at
 @uref{ftp://vms.huji.ac.il/fortran/} and mirrors elsewhere; some of this
 material might not apply specifically to @command{g77}.)
@@ -7995,13 +7995,6 @@ Progress is being made on making this work
 @command{gcc}, and some of the relevant operating systems
 (such as GNU/Linux).
 
-@cindex alignment testing
-@cindex testing alignment
-A package that tests the degree to which a Fortran compiler
-(such as @command{g77})
-aligns 64-bit floating-point variables and arrays
-is available at @uref{ftp://alpha.gnu.org/gnu/g77/align/}.
-
 @node Prefer Automatic Uninitialized Variables
 @subsection Prefer Automatic Uninitialized Variables
 
@@ -8082,10 +8075,6 @@ But the result for a user might be like the result of a bug.
 Some of these problems are due to bugs in other software, some are
 missing features that are too much work to add, and some are places
 where people's opinions differ as to what is best.
-
-To find out about major bugs discovered in the current release and
-possible workarounds for them, see
-@uref{ftp://alpha.gnu.org/g77.plan}.
 
 (Note that some of this portion of the manual is lifted
 directly from the @command{gcc} manual, with minor modifications
@@ -8622,9 +8611,7 @@ Goldberg, `What Every Computer Scientist Should Know About
 Floating-Point Arithmetic', Computing Surveys, 23, March 1991, pp.@:
 5-48.
 An online version is available at
-@uref{http://docs.sun.com/},
-and there is a supplemented version, in PostScript form, at
-@uref{http://www.validgh.com/goldberg/paper.ps}.
+@uref{http://docs.sun.com/}.
 
 Information related to the IEEE 754
 floating-point standard by a leading light can be found at
@@ -8637,9 +8624,7 @@ and library code for GNU/Linux x86 systems.
 
 The supplement to the PostScript-formatted Goldberg document,
 referenced above, is available in HTML format.
-See `Differences Among IEEE 754 Implementations' by Doug Priest,
-available online at
-@uref{http://www.validgh.com/goldberg/addendum.html}.
+See `Differences Among IEEE 754 Implementations' by Doug Priest.
 This document explores some of the issues surrounding computing
 of extended (80-bit) results on processors such as the x86,
 especially when those results are arbitrarily truncated
@@ -10772,8 +10757,6 @@ are passed via this mechanism.
 If you want to contribute to @command{g77} by doing research,
 design, specification, documentation, coding, or testing,
 the following information should give you some ideas.
-More relevant information might be available from
-@uref{ftp://alpha.gnu.org/gnu/g77/projects/}.
 
 @menu
 * Efficiency::               Make @command{g77} itself compile code faster.
