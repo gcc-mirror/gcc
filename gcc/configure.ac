@@ -249,6 +249,15 @@ fi
 # Find C compiler
 # ---------------
 
+# If a non-executable a.out is present (e.g. created by GNU as above even if
+# invoked with -v only), the IRIX 6 native ld just overwrites the existing
+# file, even when creating an executable, so an execution test fails.
+# Remove possible default executable files to avoid this.
+#
+# FIXME: This really belongs into AC_PROG_CC and can be removed once
+# Autoconf includes it.
+rm -f a.out a.exe b.out
+
 # Find the native compiler
 AC_PROG_CC
 AC_PROG_CC_C_O
