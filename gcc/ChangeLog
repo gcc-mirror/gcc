@@ -1,3 +1,8 @@
+2003-04-17  Simon Law  <sfllaw@engmail.uwaterloo.ca>
+
+        * doc/include/gpl.texi: Fix double-spacing after "MA" to match
+        the one provided by the FSF.
+
 2003-04-17  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Binaries): Update URL and list of platforms
