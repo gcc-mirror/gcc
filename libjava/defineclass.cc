@@ -1414,6 +1414,14 @@ _Jv_VerifyClassName (unsigned char* ptr, _Jv_ushort length)
   unsigned char *limit = ptr+length;
   int ch;
 
+  if ('[' == UTF8_PEEK (ptr, limit))
+    {
+      if (! _Jv_VerifyOne (++ptr, limit, false))
+        throw_class_format_error ("erroneous class name");
+      else
+        return;
+    }
+
  next_level:
   do {
     if ((ch = UTF8_GET (ptr, limit))==-1)
