@@ -1,3 +1,8 @@
+1998-02-19  Mike Stump  <mrs@wrs.com>
+
+	* Makefile.in: Use $tooldir for sys-include to match toplevel
+	configure.
+
 Thu Feb 19 01:41:47 1998  Robin Kirkham <rjk@mlb.dmt.csiro.au>
 
 	* m68k.h (TARGET_SWITCHES): -mcpu32 now clears MASK_68881.
