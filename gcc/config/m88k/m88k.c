@@ -2,7 +2,7 @@
    Copyright (C) 1988, 1989, 1990, 1991 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Enhanced by Michael Meissner (meissner@osf.org)
-   Version 2 port by Tom Wood (Tom_Wood@NeXT.com)
+   Version 2 port by Tom Wood (twood@pets.sps.mot.com)
 
 This file is part of GNU CC.
 
@@ -47,27 +47,26 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.3.3.2 12/16/92 08:26:06";
-static char tm_sccs_id [] = TM_SCCS_ID;
+static char out_rcs_id[] = "$What: <@(#) m88k.c,v	1.8> $";
+static char tm_rcs_id [] = TM_RCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
 char *m88k_short_data;
 char *m88k_version;
 char m88k_volatile_code;
 
-int m88k_gp_threshold;
+unsigned m88k_gp_threshold = 0;
 int m88k_prologue_done	= 0;	/* Ln directives can now be emitted */
 int m88k_function_number = 0;	/* Counter unique to each function */
 int m88k_fp_offset	= 0;	/* offset of frame pointer if used */
 int m88k_stack_size	= 0;	/* size of allocated stack (including frame) */
 int m88k_case_index;
-int m88k_version_0300;		/* Version is at least 03.00 */
 
 rtx m88k_compare_reg;		/* cmp output pseudo register */
 rtx m88k_compare_op0;		/* cmpsi operand 0 */
 rtx m88k_compare_op1;		/* cmpsi operand 1 */
 
-enum attr_cpu m88k_cpu;		/* target cpu */
+enum processor_type m88k_cpu;	/* target cpu */
 
 /* Determine what instructions are needed to manufacture the integer VALUE
    in the given MODE.  */
@@ -356,7 +355,7 @@ legitimize_address (pic, orig, reg, scratch)
 
 	  if (GET_CODE (addr) == CONST_INT)
 	    {
-	      if (SMALL_INT (addr))
+	      if (ADD_INT (addr))
 		return plus_constant_for_output (base, INTVAL (addr));
 	      else if (! reload_in_progress && ! reload_completed)
 		addr = force_reg (Pmode, addr);
@@ -491,9 +490,9 @@ expand_block_move (dest_mem, src_mem, operands)
   int bytes = (constp ? INTVAL (operands[2]) : 0);
   int target = (int) m88k_cpu;
 
-  assert (CPU_M88100 == 0);
-  assert (CPU_M88110 == 1);
-  assert (CPU_M88000 == 2);
+  assert (PROCESSOR_M88100 == 0);
+  assert (PROCESSOR_M88110 == 1);
+  assert (PROCESSOR_M88000 == 2);
 
   if (constp && bytes <= 0)
     return;
@@ -590,7 +589,7 @@ block_move_loop (dest, dest_mem, src, src_mem, size, align)
 				offset_rtx));
   RTX_UNCHANGING_P (value_rtx) = RTX_UNCHANGING_P (src_mem);
   MEM_VOLATILE_P (value_rtx) = MEM_VOLATILE_P (src_mem);
-  MEM_IN_STRUCT_P (value_rtx) = 1;
+  MEM_IN_STRUCT_P (value_rtx) = MEM_IN_STRUCT_P (src_mem);
 
   emit_insn (gen_call_movstrsi_loop
 	     (gen_rtx (SYMBOL_REF, Pmode, IDENTIFIER_POINTER (entry_name)),
@@ -647,7 +646,7 @@ block_move_no_loop (dest, dest_mem, src, src_mem, size, align)
 				offset_rtx));
   RTX_UNCHANGING_P (value_rtx) = RTX_UNCHANGING_P (src_mem);
   MEM_VOLATILE_P (value_rtx) = MEM_VOLATILE_P (src_mem);
-  MEM_IN_STRUCT_P (value_rtx) = 1;
+  MEM_IN_STRUCT_P (value_rtx) = MEM_IN_STRUCT_P (src_mem);
 
   value_reg = ((((most - (size - remainder)) / align) & 1) == 0
 	       ? (align == 8 ? 6 : 5) : 4);
@@ -720,7 +719,7 @@ block_move_sequence (dest, dest_mem, src, src_mem, size, align, offset)
 				   gen_rtx (CONST_INT, SImode, offset_ld)));
 	  RTX_UNCHANGING_P (srcp) = RTX_UNCHANGING_P (src_mem);
 	  MEM_VOLATILE_P (srcp) = MEM_VOLATILE_P (src_mem);
-	  MEM_IN_STRUCT_P (srcp) = 1;
+	  MEM_IN_STRUCT_P (srcp) = MEM_IN_STRUCT_P (src_mem);
 	  emit_insn (gen_rtx (SET, VOIDmode, temp[next], srcp));
 	  offset_ld += amount[next];
 	  active[next] = TRUE;
@@ -735,7 +734,7 @@ block_move_sequence (dest, dest_mem, src, src_mem, size, align, offset)
 				   gen_rtx (CONST_INT, SImode, offset_st)));
 	  RTX_UNCHANGING_P (dstp) = RTX_UNCHANGING_P (dest_mem);
 	  MEM_VOLATILE_P (dstp) = MEM_VOLATILE_P (dest_mem);
-	  MEM_IN_STRUCT_P (dstp) = 1;
+	  MEM_IN_STRUCT_P (dstp) = MEM_IN_STRUCT_P (dest_mem);
 	  emit_insn (gen_rtx (SET, VOIDmode, dstp, temp[phase]));
 	  offset_st += amount[phase];
 	}
@@ -1553,7 +1552,7 @@ output_file_start (file, f_options, f_len, W_options, W_len)
 
   ASM_FIRST_LINE (file);
   if (TARGET_88110
-      && m88k_version != 0 && strcmp (m88k_version, "04.00") >= 0)
+      && TARGET_SVR4)
     fprintf (file, "\t%s\n", REQUIRES_88110_ASM_OP);
   output_file_directive (file, main_input_filename);
   /* Switch to the data section so that the coffsem symbol and the
@@ -2608,7 +2607,7 @@ m88k_builtin_saveregs (arglist)
 	 change_address (addr, Pmode,
 			 plus_constant (XEXP (addr, 0),
 					fixed * UNITS_PER_WORD)),
-	 8 - fixed, (8 - fixed) * UNITS_PER_WORD);
+	 8 - fixed, UNITS_PER_WORD * (8 - fixed));
 
   /* Return the address of the va_list constructor, but don't put it in a
      register.  This fails when not optimizing and produces worse code when
@@ -3070,4 +3069,21 @@ print_operand_address (file, addr)
       else
 	  output_addr_const (file, addr);
     }
+}
+
+/* Return true if X is an address which needs a temporary register when 
+   reloaded while generating PIC code.  */
+
+int
+pic_address_needs_scratch (x)
+     rtx x;
+{
+  /* An address which is a symbolic plus a non SMALL_INT needs a temp reg.  */
+  if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
+      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+      && ! ADD_INT (XEXP (XEXP (x, 0), 1)))
+    return 1;
+
+  return 0;
 }
