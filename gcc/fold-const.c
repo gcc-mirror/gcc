@@ -950,7 +950,7 @@ split_tree (in, code, varp, conp, varsignp)
   return 0;
 }
 
-/* Combine two constants NUM and ARG2 under operation CODE
+/* Combine two constants ARG1 and ARG2 under operation CODE
    to produce a new constant.
    We assume ARG1 and ARG2 have the same data type,
    or at least are the same kind of constant and the same machine mode.
