@@ -62,8 +62,9 @@ class FloatViewBufferImpl extends FloatBuffer
                                int limit, int position, int mark,
                                boolean readOnly)
   {
-    super (limit, limit, offset, position);
+    super (limit >> 2, limit >> 2, position >> 2, mark >> 2);
     this.bb = bb;
+    this.offset = offset;
     this.readOnly = readOnly;
     // FIXME: What if this is called from FloatViewBufferImpl and ByteBuffer has changed its endianess ?
     this.endian = bb.order ();
@@ -71,25 +72,26 @@ class FloatViewBufferImpl extends FloatBuffer
 
   public float get ()
   {
-    float result = bb.getFloat ((position () >> 2) + offset);
+    float result = bb.getFloat ((position () << 2) + offset);
     position (position () + 1);
     return result;
   }
 
   public float get (int index)
   {
-    return bb.getFloat ((index >> 2) + offset);
+    return bb.getFloat ((index << 2) + offset);
   }
 
   public FloatBuffer put (float value)
   {
-    bb.putFloat ((position () >> 2) + offset, value);
+    bb.putFloat ((position () << 2) + offset, value);
+    position (position () + 1);
     return this;
   }
   
   public FloatBuffer put (int index, float value)
   {
-    bb.putFloat ((index >> 2) + offset, value);
+    bb.putFloat ((index << 2) + offset, value);
     return this;
   }
 

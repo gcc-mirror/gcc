@@ -62,8 +62,9 @@ class DoubleViewBufferImpl extends DoubleBuffer
                                int limit, int position, int mark,
                                boolean readOnly)
   {
-    super (limit, limit, offset, position);
+    super (limit >> 3, limit >> 3, position >> 3, mark >> 3);
     this.bb = bb;
+    this.offset = offset;
     this.readOnly = readOnly;
     // FIXME: What if this is called from DoubleViewBufferImpl and ByteBuffer has changed its endianess ?
     this.endian = bb.order ();
@@ -71,25 +72,26 @@ class DoubleViewBufferImpl extends DoubleBuffer
 
   public double get ()
   {
-    double result = bb.getDouble ((position () >> 3) + offset);
+    double result = bb.getDouble ((position () << 3) + offset);
     position (position () + 1);
     return result;
   }
 
   public double get (int index)
   {
-    return bb.getDouble ((index >> 3) + offset);
+    return bb.getDouble ((index << 3) + offset);
   }
 
   public DoubleBuffer put (double value)
   {
-    bb.putDouble ((position () >> 3) + offset, value);
+    bb.putDouble ((position () << 3) + offset, value);
+    position (position () + 1);
     return this;
   }
   
   public DoubleBuffer put (int index, double value)
   {
-    bb.putDouble ((index >> 3) + offset, value);
+    bb.putDouble ((index << 3) + offset, value);
     return this;
   }
 

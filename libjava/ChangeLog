@@ -1,5 +1,32 @@
 2003-05-13  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/CharViewBufferImpl.java
+	(CharViewBufferImpl): Fixed super constructor call, initialize offset.
+	(get): Shift bits to the right direction.
+	(put): Likewise.
+	* gnu/java/nio/DoubleViewBufferImpl.java
+	(DoubleViewBufferImpl): Fixed super constructor call, initialize offset.
+	(get): Shift bits to the right direction.
+	(put): Likewise.
+	* gnu/java/nio/FloatViewBufferImpl.java
+	(FloatViewBufferImpl): Fixed super constructor call, initialize offset.
+	(get): Shift bits to the right direction.
+	(put): Likewise.
+	* gnu/java/nio/IntViewBufferImpl.java
+	(IntViewBufferImpl): Fixed super constructor call, initialize offset.
+	(get): Shift bits to the right direction.
+	(put): Likewise.
+	* gnu/java/nio/LongViewBufferImpl.java
+	(LongViewBufferImpl): Fixed super constructor call, initialize offset.
+	(get): Shift bits to the right direction.
+	(put): Likewise.
+	* gnu/java/nio/ShortViewBufferImpl.java
+	(ShortViewBufferImpl): Fixed super constructor call, initialize offset.
+	(get): Shift bits to the right direction.
+	(put): Likewise.
+
+2003-05-13  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/natDirectByteBufferImpl.cc
 	(allocateImpl): jlong -> RawData*.
 	(freeImpl): Likewise.
