@@ -1,3 +1,9 @@
+2002-04-02  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/arm.c (output_return_instruction): Do not create the
+	conditional part of the return instruction, if there is no
+	condition to be used.
+
 Tue Apr  2 06:47:40 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* stor-layout.c (layout_type, case ARRAY_TYPE): Give one-element array

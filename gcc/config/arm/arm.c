@@ -7210,7 +7210,10 @@ output_return_instruction (operand, really_return, reverse)
     abort ();
 
   /* Construct the conditional part of the instruction(s) to be emitted.  */
-  sprintf (conditional, "%%?%%%c0", reverse ? 'D' : 'd');
+  if (operand)
+    sprintf (conditional, "%%?%%%c0", reverse ? 'D' : 'd');
+  else
+    * conditional = 0;
 
   return_used_this_function = 1;
 
