@@ -1,3 +1,14 @@
+2003-12-16  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 12480
+	* c-pch.c (pch_init): Improve error message when precompiled
+	header can't be written.
+
+	PR 12606
+	* c-pch.c (pch_init): Make a PCH file appear invalid while it's
+	being written.
+	(c_common_write_pch): Make it valid once it's done.
+
 2003-12-17  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/11992

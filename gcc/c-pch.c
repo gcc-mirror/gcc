@@ -102,13 +102,14 @@ pch_init (void)
   FILE *f;
   struct c_pch_validity v;
   void *target_validity;
+  static const char partial_pch[IDENT_LENGTH] = "gpcWrite";
   
   if (! pch_file)
     return;
   
   f = fopen (pch_file, "w+b");
   if (f == NULL)
-    fatal_error ("can't open %s: %m", pch_file);
+    fatal_error ("can't create precompiled header %s: %m", pch_file);
   pch_outfile = f;
   
   if (strlen (host_machine) > 255 || strlen (target_machine) > 255
@@ -122,7 +123,7 @@ pch_init (void)
   v.pch_init = &pch_init;
   target_validity = targetm.get_pch_validity (&v.target_data_length);
   
-  if (fwrite (get_ident(), IDENT_LENGTH, 1, f) != 1
+  if (fwrite (partial_pch, IDENT_LENGTH, 1, f) != 1
       || fwrite (&v, sizeof (v), 1, f) != 1
       || fwrite (host_machine, v.host_machine_length, 1, f) != 1
       || fwrite (target_machine, v.target_machine_length, 1, f) != 1
@@ -188,6 +189,10 @@ c_common_write_pch (void)
 
   gt_pch_save (pch_outfile);
   cpp_write_pch_state (parse_in, pch_outfile);
+
+  if (fseek (pch_outfile, 0, SEEK_SET) != 0
+      || fwrite (get_ident (), IDENT_LENGTH, 1, pch_outfile) != 1)
+    fatal_error ("can't write %s: %m", pch_file);
 
   fclose (pch_outfile);
 }
