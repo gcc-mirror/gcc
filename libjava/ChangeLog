@@ -1,3 +1,8 @@
+2004-07-23  Mark Wielaard  <mark@klomp.org>
+
+	* gnu/java/net/DefaultContentHandlerFactory.java: New dummy
+	implementation.
+
 2004-07-22  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* Makefile.am (ordinary_java_source_files): Add
