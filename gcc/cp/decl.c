@@ -2253,26 +2253,29 @@ maybe_process_template_type_declaration (type, globalize, b)
     {
       maybe_check_template_type (type);
 
-      if (IS_AGGR_TYPE (type)
-	  && (/* If !GLOBALIZE then we are looking at a definition.
-		 It may not be a primary template.  (For example, in:
+      my_friendly_assert (IS_AGGR_TYPE (type) 
+			  || TREE_CODE (type) == ENUMERAL_TYPE, 0);
+			  
+			  
+      if (/* If !GLOBALIZE then we are looking at a definition.
+	     It may not be a primary template.  (For example, in:
 		  
-		 template <class T>
-		 struct S1 { class S2 {}; }
+	       template <class T>
+	       struct S1 { class S2 {}; }
 		  
-		 we have to push_template_decl for S2.)  */
-	      (processing_template_decl && !globalize)
-	      /* If we are declaring a friend template class, we will
-		 have GLOBALIZE set, since something like:
+	     we have to push_template_decl for S2.)  */
+	  (processing_template_decl && !globalize)
+	  /* If we are declaring a friend template class, we will
+	     have GLOBALIZE set, since something like:
 
-		 template <class T>
-		 struct S1 {
-		   template <class U>
-		   friend class S2; 
-		 };
+	       template <class T>
+	       struct S1 {
+		 template <class U>
+		 friend class S2; 
+	       };
 
-		 declares S2 to be at global scope.  */
-	      || PROCESSING_REAL_TEMPLATE_DECL_P ()))
+	     declares S2 to be at global scope.  */
+	  || PROCESSING_REAL_TEMPLATE_DECL_P ())
 	{
 	  /* This may change after the call to
 	     push_template_decl_real, but we want the original value.  */
@@ -2286,7 +2289,8 @@ maybe_process_template_type_declaration (type, globalize, b)
 	     declaration of the member class into the class scope.  In the
 	     friend case, push_template_decl will already have put the
 	     friend into global scope, if appropriate.  */
-	  if (!globalize && b->pseudo_global
+	  if (TREE_CODE (type) != ENUMERAL_TYPE
+	      && !globalize && b->pseudo_global
 	      && b->level_chain->parm_flag == 2)
 	    {
 	      pushdecl_with_scope (CLASSTYPE_TI_TEMPLATE (type),
@@ -11753,9 +11757,6 @@ start_enum (name)
       pushtag (name, enumtype, 0);
     }
 
-  if (b->pseudo_global)
-    cp_error ("template declaration of `%#T'", enumtype);
-
   if (current_class_type)
     TREE_ADDRESSABLE (b->tags) = 1;
 
@@ -11783,30 +11784,46 @@ finish_enum (enumtype, values)
 
   if (values)
     {
-      register tree pair;
-      register tree value = DECL_INITIAL (TREE_VALUE (values));
+      tree pair;
 
-      if (! processing_template_decl)
+      for (pair = values; pair; pair = TREE_CHAIN (pair))
 	{
-	  /* Speed up the main loop by performing some precalculations */
-	  TREE_TYPE (TREE_VALUE (values)) = enumtype;
-	  TREE_TYPE (value) = enumtype;
-	  minnode = maxnode = value;
-	}
-      TREE_VALUE (values) = value;
-      
-      for (pair = TREE_CHAIN (values); pair; pair = TREE_CHAIN (pair))
-	{
-	  value = DECL_INITIAL (TREE_VALUE (pair));
-	  if (! processing_template_decl)
+	  tree decl;
+	  tree value;
+
+	  /* The TREE_VALUE is a CONST_DECL for this enumeration
+	     constant.  */
+	  decl = TREE_VALUE (pair);
+
+	  /* The type of the CONST_DECL is the type of the enumeration,
+	     not an INTEGER_TYPE.  */
+	  TREE_TYPE (decl) = enumtype;
+
+	  /* The DECL_INITIAL will be NULL if we are processing a
+	     template declaration and this enumeration constant had no
+	     explicit initializer.  */
+	  value = DECL_INITIAL (decl);
+	  if (value)
 	    {
-	      TREE_TYPE (TREE_VALUE (pair)) = enumtype;
+	      /* Set the TREE_TYPE for the VALUE as well.  When
+		 processing a template, however, we might have a
+		 TEMPLATE_PARM_INDEX, and we should not change the
+		 type of such a thing.  */
+	      if (TREE_CODE (value) == TEMPLATE_PARM_INDEX)
+		DECL_INITIAL (decl) = value 
+		  = build1 (NOP_EXPR, enumtype, value);
 	      TREE_TYPE (value) = enumtype;
-	      if (tree_int_cst_lt (maxnode, value))
+
+	      if (!minnode)
+		minnode = maxnode = value;
+	      else if (tree_int_cst_lt (maxnode, value))
 		maxnode = value;
 	      else if (tree_int_cst_lt (value, minnode))
 		minnode = value;
 	    }
+
+	  /* In the list we're building up, we want the enumeration
+	     values, not the CONST_DECLs.  */
 	  TREE_VALUE (pair) = value;
 	}
     }
@@ -11922,15 +11939,16 @@ build_enumerator (name, value)
      /* Remove no-op casts from the value.  */
      if (value)
        STRIP_TYPE_NOPS (value);
-
-     /* We have to always copy here; not all INTEGER_CSTs are unshared,
-	and there's no wedding ring. Look at size_int()...*/
-     value = copy_node (value);
 #if 0
      /* To fix MAX_VAL enum consts. (bkoz)  */
      TREE_TYPE (value) = integer_type_node;
 #endif
    }
+
+ /* We have to always copy here; not all INTEGER_CSTs are unshared,
+    and there's no wedding ring. Look at size_int()...*/
+ if (value != NULL_TREE)
+   value = copy_node (value);
 
   /* C++ associates enums with global, function, or class declarations.  */
 
@@ -11969,6 +11987,23 @@ build_enumerator (name, value)
   result = saveable_tree_cons (name, decl, NULL_TREE);
   return result;
 }
+
+/* Called after we have finished the declaration of an enumeration
+   type, and, perhaps, some objects whose type involves the
+   enumeration type.  DECL, if non-NULL, is the declaration of the
+   first such object.  
+
+   If CURRENT_LOCAL_ENUM is NULL, the DECL is returned. 
+
+   If CURRENT_LOCAL_ENUM is non-NULL, it should be the CONST_DECL for
+   the last enumeration constant of an enumeration type that is a
+   member of a class.  The enumeration constants are already chained
+   together through their TREE_CHAIN fields.  This function sets the
+   TREE_CHAIN of the last enumeration constant to DECL.  The
+   CONST_DECL for the last enumeration constant is returned.  
+
+   CURRENT_LOCAL_ENUM will always be NULL when this function 
+   returns.  */
 
 tree
 grok_enum_decls (decl)
