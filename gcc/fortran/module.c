@@ -2404,14 +2404,15 @@ mio_expr (gfc_expr ** ep)
   switch (e->expr_type)
     {
     case EXPR_OP:
-      e->operator = MIO_NAME(gfc_intrinsic_op) (e->operator, intrinsics);
+      e->value.op.operator
+	= MIO_NAME(gfc_intrinsic_op) (e->value.op.operator, intrinsics);
 
-      switch (e->operator)
+      switch (e->value.op.operator)
 	{
 	case INTRINSIC_UPLUS:
 	case INTRINSIC_UMINUS:
 	case INTRINSIC_NOT:
-	  mio_expr (&e->op1);
+	  mio_expr (&e->value.op.op1);
 	  break;
 
 	case INTRINSIC_PLUS:
@@ -2430,8 +2431,8 @@ mio_expr (gfc_expr ** ep)
 	case INTRINSIC_GE:
 	case INTRINSIC_LT:
 	case INTRINSIC_LE:
-	  mio_expr (&e->op1);
-	  mio_expr (&e->op2);
+	  mio_expr (&e->value.op.op1);
+	  mio_expr (&e->value.op.op2);
 	  break;
 
 	default:

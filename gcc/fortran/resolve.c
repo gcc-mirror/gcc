@@ -1262,10 +1262,10 @@ resolve_operator (gfc_expr * e)
 
   /* Resolve all subnodes-- give them types.  */
 
-  switch (e->operator)
+  switch (e->value.op.operator)
     {
     default:
-      if (gfc_resolve_expr (e->op2) == FAILURE)
+      if (gfc_resolve_expr (e->value.op.op2) == FAILURE)
 	return FAILURE;
 
     /* Fall through...  */
@@ -1273,17 +1273,17 @@ resolve_operator (gfc_expr * e)
     case INTRINSIC_NOT:
     case INTRINSIC_UPLUS:
     case INTRINSIC_UMINUS:
-      if (gfc_resolve_expr (e->op1) == FAILURE)
+      if (gfc_resolve_expr (e->value.op.op1) == FAILURE)
 	return FAILURE;
       break;
     }
 
   /* Typecheck the new node.  */
 
-  op1 = e->op1;
-  op2 = e->op2;
+  op1 = e->value.op.op1;
+  op2 = e->value.op.op2;
 
-  switch (e->operator)
+  switch (e->value.op.operator)
     {
     case INTRINSIC_UPLUS:
     case INTRINSIC_UMINUS:
@@ -1296,7 +1296,7 @@ resolve_operator (gfc_expr * e)
 	}
 
       sprintf (msg, "Operand of unary numeric operator '%s' at %%L is %s",
-	       gfc_op2string (e->operator), gfc_typename (&e->ts));
+	       gfc_op2string (e->value.op.operator), gfc_typename (&e->ts));
       goto bad_op;
 
     case INTRINSIC_PLUS:
@@ -1312,7 +1312,7 @@ resolve_operator (gfc_expr * e)
 
       sprintf (msg,
 	       "Operands of binary numeric operator '%s' at %%L are %s/%s",
-	       gfc_op2string (e->operator), gfc_typename (&op1->ts),
+	       gfc_op2string (e->value.op.operator), gfc_typename (&op1->ts),
 	       gfc_typename (&op2->ts));
       goto bad_op;
 
@@ -1345,7 +1345,7 @@ resolve_operator (gfc_expr * e)
 	}
 
       sprintf (msg, "Operands of logical operator '%s' at %%L are %s/%s",
-	       gfc_op2string (e->operator), gfc_typename (&op1->ts),
+	       gfc_op2string (e->value.op.operator), gfc_typename (&op1->ts),
 	       gfc_typename (&op2->ts));
 
       goto bad_op;
@@ -1393,7 +1393,7 @@ resolve_operator (gfc_expr * e)
 	}
 
       sprintf (msg, "Operands of comparison operator '%s' at %%L are %s/%s",
-	       gfc_op2string (e->operator), gfc_typename (&op1->ts),
+	       gfc_op2string (e->value.op.operator), gfc_typename (&op1->ts),
 	       gfc_typename (&op2->ts));
 
       goto bad_op;
@@ -1401,10 +1401,10 @@ resolve_operator (gfc_expr * e)
     case INTRINSIC_USER:
       if (op2 == NULL)
 	sprintf (msg, "Operand of user operator '%s' at %%L is %s",
-		 e->uop->name, gfc_typename (&op1->ts));
+		 e->value.op.uop->name, gfc_typename (&op1->ts));
       else
 	sprintf (msg, "Operands of user operator '%s' at %%L are %s/%s",
-		 e->uop->name, gfc_typename (&op1->ts),
+		 e->value.op.uop->name, gfc_typename (&op1->ts),
 		 gfc_typename (&op2->ts));
 
       goto bad_op;
@@ -1417,7 +1417,7 @@ resolve_operator (gfc_expr * e)
 
   t = SUCCESS;
 
-  switch (e->operator)
+  switch (e->value.op.operator)
     {
     case INTRINSIC_PLUS:
     case INTRINSIC_MINUS:
@@ -3327,23 +3327,27 @@ gfc_find_forall_index (gfc_expr *expr, gfc_symbol *symbol)
       gfc_error ("Unsupported statement while finding forall index in "
                  "expression");
       break;
+
+    case EXPR_OP:
+      /* Find the FORALL index in the first operand.  */
+      if (expr->value.op.op1)
+	{
+	  if (gfc_find_forall_index (expr->value.op.op1, symbol) == SUCCESS)
+	    return SUCCESS;
+	}
+
+      /* Find the FORALL index in the second operand.  */
+      if (expr->value.op.op2)
+	{
+	  if (gfc_find_forall_index (expr->value.op.op2, symbol) == SUCCESS)
+	    return SUCCESS;
+	}
+      break;
+
     default:
       break;
     }
 
-  /* Find the FORALL index in the first operand.  */
-  if (expr->op1)
-    {
-      if (gfc_find_forall_index (expr->op1, symbol) == SUCCESS)
-        return SUCCESS;
-    }
-
-  /* Find the FORALL index in the second operand.  */
-  if (expr->op2)
-    {
-      if (gfc_find_forall_index (expr->op2, symbol) == SUCCESS)
-        return SUCCESS;
-    }
   return FAILURE;
 }
 

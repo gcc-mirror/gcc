@@ -414,7 +414,7 @@ gfc_conv_unary_op (enum tree_code code, gfc_se * se, gfc_expr * expr)
   gcc_assert (expr->ts.type != BT_CHARACTER);
   /* Initialize the operand.  */
   gfc_init_se (&operand, se);
-  gfc_conv_expr_val (&operand, expr->op1);
+  gfc_conv_expr_val (&operand, expr->value.op.op1);
   gfc_add_block_to_block (&se->pre, &operand.pre);
 
   type = gfc_typenode_for_spec (&expr->ts);
@@ -607,25 +607,25 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
   tree tmp;
 
   gfc_init_se (&lse, se);
-  gfc_conv_expr_val (&lse, expr->op1);
+  gfc_conv_expr_val (&lse, expr->value.op.op1);
   gfc_add_block_to_block (&se->pre, &lse.pre);
 
   gfc_init_se (&rse, se);
-  gfc_conv_expr_val (&rse, expr->op2);
+  gfc_conv_expr_val (&rse, expr->value.op.op2);
   gfc_add_block_to_block (&se->pre, &rse.pre);
 
-  if (expr->op2->ts.type == BT_INTEGER
-	 && expr->op2->expr_type == EXPR_CONSTANT)
+  if (expr->value.op.op2->ts.type == BT_INTEGER
+	 && expr->value.op.op2->expr_type == EXPR_CONSTANT)
     if (gfc_conv_cst_int_power (se, lse.expr, rse.expr))
       return;        
 
   gfc_int4_type_node = gfc_get_int_type (4);
 
-  kind = expr->op1->ts.kind;
-  switch (expr->op2->ts.type)
+  kind = expr->value.op.op1->ts.kind;
+  switch (expr->value.op.op2->ts.type)
     {
     case BT_INTEGER:
-      ikind = expr->op2->ts.kind;
+      ikind = expr->value.op.op2->ts.kind;
       switch (ikind)
 	{
 	case 1:
@@ -648,7 +648,7 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
 	{
 	case 1:
 	case 2:
-	  if (expr->op1->ts.type == BT_INTEGER)
+	  if (expr->value.op.op1->ts.type == BT_INTEGER)
 	    lse.expr = convert (gfc_int4_type_node, lse.expr);
 	  else
 	    gcc_unreachable ();
@@ -666,7 +666,7 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
 	  gcc_unreachable ();
 	}
       
-      switch (expr->op1->ts.type)
+      switch (expr->value.op.op1->ts.type)
 	{
 	case BT_INTEGER:
 	  fndecl = gfor_fndecl_math_powi[kind][ikind].integer;
@@ -780,14 +780,14 @@ gfc_conv_concat_op (gfc_se * se, gfc_expr * expr)
   tree args;
   tree tmp;
 
-  gcc_assert (expr->op1->ts.type == BT_CHARACTER
-	  && expr->op2->ts.type == BT_CHARACTER);
+  gcc_assert (expr->value.op.op1->ts.type == BT_CHARACTER
+	  && expr->value.op.op2->ts.type == BT_CHARACTER);
 
   gfc_init_se (&lse, se);
-  gfc_conv_expr (&lse, expr->op1);
+  gfc_conv_expr (&lse, expr->value.op.op1);
   gfc_conv_string_parameter (&lse);
   gfc_init_se (&rse, se);
-  gfc_conv_expr (&rse, expr->op2);
+  gfc_conv_expr (&rse, expr->value.op.op2);
   gfc_conv_string_parameter (&rse);
 
   gfc_add_block_to_block (&se->pre, &lse.pre);
@@ -846,10 +846,10 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
 
   checkstring = 0;
   lop = 0;
-  switch (expr->operator)
+  switch (expr->value.op.operator)
     {
     case INTRINSIC_UPLUS:
-      gfc_conv_expr (se, expr->op1);
+      gfc_conv_expr (se, expr->value.op.op1);
       return;
 
     case INTRINSIC_UMINUS:
@@ -951,19 +951,19 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
     }
 
   /* The only exception to this is **, which is handled separately anyway.  */
-  gcc_assert (expr->op1->ts.type == expr->op2->ts.type);
+  gcc_assert (expr->value.op.op1->ts.type == expr->value.op.op2->ts.type);
 
-  if (checkstring && expr->op1->ts.type != BT_CHARACTER)
+  if (checkstring && expr->value.op.op1->ts.type != BT_CHARACTER)
     checkstring = 0;
 
   /* lhs */
   gfc_init_se (&lse, se);
-  gfc_conv_expr (&lse, expr->op1);
+  gfc_conv_expr (&lse, expr->value.op.op1);
   gfc_add_block_to_block (&se->pre, &lse.pre);
 
   /* rhs */
   gfc_init_se (&rse, se);
-  gfc_conv_expr (&rse, expr->op2);
+  gfc_conv_expr (&rse, expr->value.op.op2);
   gfc_add_block_to_block (&se->pre, &rse.pre);
 
   /* For string comparisons we generate a library call, and compare the return

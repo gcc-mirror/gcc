@@ -1640,21 +1640,21 @@ gfc_extend_expr (gfc_expr * e)
   sym = NULL;
 
   actual = gfc_get_actual_arglist ();
-  actual->expr = e->op1;
+  actual->expr = e->value.op.op1;
 
-  if (e->op2 != NULL)
+  if (e->value.op.op2 != NULL)
     {
       actual->next = gfc_get_actual_arglist ();
-      actual->next->expr = e->op2;
+      actual->next->expr = e->value.op.op2;
     }
 
-  i = fold_unary (e->operator);
+  i = fold_unary (e->value.op.operator);
 
   if (i == INTRINSIC_USER)
     {
       for (ns = gfc_current_ns; ns; ns = ns->parent)
 	{
-	  uop = gfc_find_uop (e->uop->name, ns);
+	  uop = gfc_find_uop (e->value.op.uop->name, ns);
 	  if (uop == NULL)
 	    continue;
 
@@ -1687,6 +1687,8 @@ gfc_extend_expr (gfc_expr * e)
   e->expr_type = EXPR_FUNCTION;
   e->symtree = find_sym_in_symtree (sym);
   e->value.function.actual = actual;
+  e->value.function.esym = NULL;
+  e->value.function.isym = NULL;
 
   if (gfc_pure (NULL) && !gfc_pure (sym))
     {

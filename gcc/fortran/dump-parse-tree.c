@@ -415,7 +415,7 @@ gfc_show_expr (gfc_expr * p)
 
     case EXPR_OP:
       gfc_status ("(");
-      switch (p->operator)
+      switch (p->value.op.operator)
 	{
 	case INTRINSIC_UPLUS:
 	  gfc_status ("U+ ");
@@ -480,12 +480,12 @@ gfc_show_expr (gfc_expr * p)
 	    ("gfc_show_expr(): Bad intrinsic in expression!");
 	}
 
-      gfc_show_expr (p->op1);
+      gfc_show_expr (p->value.op.op1);
 
-      if (p->op2)
+      if (p->value.op.op2)
 	{
 	  gfc_status (" ");
-	  gfc_show_expr (p->op2);
+	  gfc_show_expr (p->value.op.op2);
 	}
 
       gfc_status (")");

@@ -16,6 +16,28 @@
 	* symbol.c (gfc_set_default_type): Issue error only once, by setting
 	and checking 'untyped' attribute.
 
+	* gfortran.h (gfc_expr): Move 'operator', 'op1', 'op2', and 'uop'
+	fields into new struct 'op' inside the 'value' union.
+	* arith.c (eval_intrinsic): Adapt all users.
+	* dependency.c (gfc_check_dependency): Likewise.
+	* dump-parse-tree.c (gfc_show_expr): Likewise.
+	* expr.c (gfc_get_expr): Don't clear removed fields.
+	(free_expr0, gfc_copy_expr, gfc_type_convert_binary,
+	gfc_is_constant_expr, simplify_intrinsic_op, check_init_expr,
+	check_intrinsic_op): Adapt to new field names.
+	* interface.c (gfc_extend_expr): Likewise.  Also explicitly
+	nullify 'esym' and 'isym' fields of new function call.
+	* iresolve.c (gfc_resolve_dot_product, gfc_resolve_matmul):
+	Adapt to renamed structure fields.
+	* matchexp.c (build_node, match_level_1, match_expr): Likewise.
+	* module.c (mio_expr): Likewise.
+	* resolve.c (resolve_operator): Likewise.
+	(gfc_find_forall_index): Likewise.  Only look through operands
+	if dealing with EXPR_OP
+	* trans-array.c (gfc_walk_op_expr): Adapt to renamed fields.
+	* trans-expr.c (gfc_conv_unary_op, gfc_conv_power_op,
+	gfc_conv_concat_op, gfc_conv_expr_op): Likewise.
+
 2005-02-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* intrinsic.h, st.c: Update copyright.

@@ -4194,18 +4194,18 @@ gfc_walk_op_expr (gfc_ss * ss, gfc_expr * expr)
   gfc_ss *head2;
   gfc_ss *newss;
 
-  head = gfc_walk_subexpr (ss, expr->op1);
-  if (expr->op2 == NULL)
+  head = gfc_walk_subexpr (ss, expr->value.op.op1);
+  if (expr->value.op.op2 == NULL)
     head2 = head;
   else
-    head2 = gfc_walk_subexpr (head, expr->op2);
+    head2 = gfc_walk_subexpr (head, expr->value.op.op2);
 
   /* All operands are scalar.  Pass back and let the caller deal with it.  */
   if (head2 == ss)
     return head2;
 
   /* All operands require scalarization.  */
-  if (head != ss && (expr->op2 == NULL || head2 != head))
+  if (head != ss && (expr->value.op.op2 == NULL || head2 != head))
     return head2;
 
   /* One of the operands needs scalarization, the other is scalar.
@@ -4223,7 +4223,7 @@ gfc_walk_op_expr (gfc_ss * ss, gfc_expr * expr)
       gcc_assert (head);
       newss->next = ss;
       head->next = newss;
-      newss->expr = expr->op1;
+      newss->expr = expr->value.op.op1;
     }
   else				/* head2 == head */
     {
@@ -4231,7 +4231,7 @@ gfc_walk_op_expr (gfc_ss * ss, gfc_expr * expr)
       /* Second operand is scalar.  */
       newss->next = head2;
       head2 = newss;
-      newss->expr = expr->op2;
+      newss->expr = expr->value.op.op2;
     }
 
   return head2;
