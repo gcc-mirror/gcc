@@ -2803,6 +2803,7 @@ expand_assignment (to, from, want_value, suggest_reg)
      Handling this in the normal way is safe because no computation is done
      before the call.  */
   if (TREE_CODE (from) == CALL_EXPR && ! aggregate_value_p (from)
+      && TREE_CODE (TYPE_SIZE (TREE_TYPE (from))) == INTEGER_CST
       && ! (TREE_CODE (to) == VAR_DECL && GET_CODE (DECL_RTL (to)) == REG))
     {
       rtx value;
