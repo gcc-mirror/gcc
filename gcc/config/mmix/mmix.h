@@ -129,7 +129,7 @@ struct machine_function
   %{!melf:-m mmo}%{melf:-m elf64mmix}"
 
 /* Put unused option values here.  */
-extern char *mmix_cc1_ignored_option;
+extern const char *mmix_cc1_ignored_option;
 
 #define TARGET_OPTIONS					\
    {{"set-program-start=", &mmix_cc1_ignored_option,	\
@@ -1017,7 +1017,7 @@ const_section ()						\
  } while (0)
 
 #define ASM_OUTPUT_BYTE(STREAM, VALUE) \
- fprintf (STREAM, "\tBYTE %d\n", (VALUE) & 255)
+ fprintf (STREAM, "\tBYTE %d\n", (int) (VALUE) & 255)
 
 #define ASM_BYTE_OP "\tBYTE\t"
 
@@ -1066,7 +1066,7 @@ const_section ()						\
 
 /* We insert a ":" to disambiguate against user symbols like L5.  */
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM) \
- sprintf (LABEL, "*%s:%ld", PREFIX, NUM)
+ sprintf (LABEL, "*%s:%ld", PREFIX, (long)(NUM))
 
 /* Insert "::"; these are rarer than internal labels.  FIXME: Make sure no
    ":" is seen in the object file; we don't really want that mmixal
