@@ -1858,7 +1858,7 @@ pushdecl (x)
 	      if (TYPE_NAME (TREE_TYPE (x)) == 0)
 	        TYPE_NAME (TREE_TYPE (x)) = x;
             }
-          else
+          else if (TREE_TYPE (x) != error_mark_node)
             {
               tree tt = TREE_TYPE (x);
 
