@@ -31,6 +31,7 @@ the executable file might be covered by the GNU General Public License. */
 #include "libioP.h"
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #ifdef TODO
 /* Add open, isatty */
