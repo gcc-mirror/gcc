@@ -3049,9 +3049,12 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
      not straightforward to generalize this.  Maybe we should make an array
      of possible modes in init_expmed?  Save this for GCC 2.7.  */
 
-  optab1 = (op1_is_pow2 ? (unsignedp ? lshr_optab : ashr_optab)
+  optab1 = ((op1_is_pow2 && op1 != const0_rtx)
+	    ? (unsignedp ? lshr_optab : ashr_optab)
 	    : (unsignedp ? udiv_optab : sdiv_optab));
-  optab2 = (op1_is_pow2 ? optab1 : (unsignedp ? udivmod_optab : sdivmod_optab));
+  optab2 = ((op1_is_pow2 && op1 != const0_rtx)
+	    ? optab1
+	    : (unsignedp ? udivmod_optab : sdivmod_optab));
 
   for (compute_mode = mode; compute_mode != VOIDmode;
        compute_mode = GET_MODE_WIDER_MODE (compute_mode))
