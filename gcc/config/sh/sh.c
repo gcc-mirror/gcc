@@ -197,6 +197,9 @@ static void sh_insert_attributes PARAMS ((tree, tree *));
 static void sh_asm_named_section PARAMS ((const char *, unsigned int));
 #endif
 static int sh_adjust_cost PARAMS ((rtx, rtx, rtx, int));
+static int sh_use_dfa_interface PARAMS ((void));
+static int sh_issue_rate PARAMS ((void));
+
 static bool sh_cannot_modify_jumps_p PARAMS ((void));
 
 static bool sh_ms_bitfield_layout_p PARAMS ((tree));
@@ -225,6 +228,12 @@ static bool sh_ms_bitfield_layout_p PARAMS ((tree));
 
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST sh_adjust_cost
+
+#undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE 
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE \
+				sh_use_dfa_interface
+#undef TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE sh_issue_rate
 
 #undef TARGET_CANNOT_MODIFY_JUMPS_P
 #define TARGET_CANNOT_MODIFY_JUMPS_P sh_cannot_modify_jumps_p
@@ -6724,6 +6733,29 @@ int
 sh_pr_n_sets ()
 {
   return REG_N_SETS (TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG);
+}
+
+/* This Function Returns non zero if DFA based scheduler
+   interface is to be used.At present supported only for
+   SH4.  */
+static int
+sh_use_dfa_interface()
+{
+        if (TARGET_SH4)
+                return 1;
+        else
+                return 0;
+}
+
+/* This function returns "2" that signifies dual issue 
+   for SH4 processor.To be used by DFA pipeline description.  */
+static int
+sh_issue_rate()
+{
+	if(TARGET_SH4)
+		return 2;
+	else
+		return 1;
 }
 
 /* SHmedia requires registers for branches, so we can't generate new

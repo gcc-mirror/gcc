@@ -117,6 +117,8 @@ extern char *sparc_v8plus_shift PARAMS ((rtx *, rtx, const char *));
    32 bits of REG are 0 before INSN.  */   
 extern int sparc_check_64 PARAMS ((rtx, rtx));
 extern rtx gen_df_reg PARAMS ((rtx, int));
+/* Used for DFA scheduling when cpu is ultrasparc.  */
+extern int ultrasparc_store_bypass_p PARAMS ((rtx, rtx));
 extern int sparc_extra_constraint_check PARAMS ((rtx, int, int));
 #endif /* RTX_CODE */
 

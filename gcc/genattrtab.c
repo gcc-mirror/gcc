@@ -115,6 +115,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "obstack.h"
 #include "errors.h"
 
+#include "genattrtab.h"
+
 static struct obstack obstack1, obstack2;
 struct obstack *hash_obstack = &obstack1;
 struct obstack *temp_obstack = &obstack2;
@@ -309,6 +311,8 @@ static int have_annul_true, have_annul_false;
 static int num_units, num_unit_opclasses;
 static int num_insn_ents;
 
+int num_dfa_decls;
+
 /* Used as operand to `operate_exp':  */
 
 enum operator {PLUS_OP, MINUS_OP, POS_MINUS_OP, EQ_OP, OR_OP, ORX_OP, MAX_OP, MIN_OP, RANGE_OP};
@@ -371,10 +375,7 @@ static void attr_hash_add_rtx	PARAMS ((int, rtx));
 static void attr_hash_add_string PARAMS ((int, char *));
 static rtx attr_rtx		PARAMS ((enum rtx_code, ...));
 static rtx attr_rtx_1		PARAMS ((enum rtx_code, va_list));
-static char *attr_printf	PARAMS ((unsigned int, const char *, ...))
-  ATTRIBUTE_PRINTF_2;
 static char *attr_string        PARAMS ((const char *, int));
-static rtx check_attr_test	PARAMS ((rtx, int, int));
 static rtx check_attr_value	PARAMS ((rtx, struct attr_desc *));
 static rtx convert_set_attr_alternative PARAMS ((rtx, struct insn_def *));
 static rtx convert_set_attr	PARAMS ((rtx, struct insn_def *));
@@ -458,10 +459,8 @@ static void write_const_num_delay_slots PARAMS ((void));
 static int n_comma_elts		PARAMS ((const char *));
 static char *next_comma_elt	PARAMS ((const char **));
 static struct attr_desc *find_attr PARAMS ((const char *, int));
-static void make_internal_attr	PARAMS ((const char *, rtx, int));
 static struct attr_value *find_most_used  PARAMS ((struct attr_desc *));
 static rtx find_single_value	PARAMS ((struct attr_desc *));
-static rtx make_numeric_value	PARAMS ((int));
 static void extend_range	PARAMS ((struct range *, int, int));
 static rtx attr_eq		PARAMS ((const char *, const char *));
 static const char *attr_numeral	PARAMS ((int));
@@ -739,7 +738,7 @@ attr_rtx VPARAMS ((enum rtx_code code, ...))
 
    rtx attr_printf (len, format, [arg1, ..., argn])  */
 
-static char *
+char *
 attr_printf VPARAMS ((unsigned int len, const char *fmt, ...))
 {
   char str[256];
@@ -920,7 +919,7 @@ attr_copy_rtx (orig)
 
    Return the new expression, if any.  */
 
-static rtx
+rtx
 check_attr_test (exp, is_const, lineno)
      rtx exp;
      int is_const;
@@ -5880,7 +5879,7 @@ find_attr (name, create)
 
 /* Create internal attribute with the given default value.  */
 
-static void
+void
 make_internal_attr (name, value, special)
      const char *name;
      rtx value;
@@ -5947,7 +5946,7 @@ find_single_value (attr)
 
 /* Return (attr_value "n") */
 
-static rtx
+rtx
 make_numeric_value (n)
      int n;
 {
@@ -6097,6 +6096,7 @@ from the machine description file `md'.  */\n\n");
 
   /* Read the machine description.  */
 
+  initiate_automaton_gen (argc, argv);
   while (1)
     {
       int lineno;
@@ -6125,6 +6125,46 @@ from the machine description file `md'.  */\n\n");
 	  gen_unit (desc, lineno);
 	  break;
 
+	case DEFINE_CPU_UNIT:
+	  gen_cpu_unit (desc);
+	  break;
+	  
+	case DEFINE_QUERY_CPU_UNIT:
+	  gen_query_cpu_unit (desc);
+	  break;
+	  
+	case DEFINE_BYPASS:
+	  gen_bypass (desc);
+	  break;
+	  
+	case EXCLUSION_SET:
+	  gen_excl_set (desc);
+	  break;
+	  
+	case PRESENCE_SET:
+	  gen_presence_set (desc);
+	  break;
+	  
+	case ABSENCE_SET:
+	  gen_absence_set (desc);
+	  break;
+	  
+	case DEFINE_AUTOMATON:
+	  gen_automaton (desc);
+	  break;
+	  
+	case AUTOMATA_OPTION:
+	  gen_automata_option (desc);
+	  break;
+	  
+	case DEFINE_RESERVATION:
+	  gen_reserv (desc);
+	  break;
+	  
+	case DEFINE_INSN_RESERVATION:
+	  gen_insn_reserv (desc);
+	  break;
+
 	default:
 	  break;
 	}
@@ -6149,9 +6189,14 @@ from the machine description file `md'.  */\n\n");
   if (num_delays)
     expand_delays ();
 
-  /* Expand DEFINE_FUNCTION_UNIT information into new attributes.  */
-  if (num_units)
-    expand_units ();
+  if (num_units || num_dfa_decls)
+    {
+      /* Expand DEFINE_FUNCTION_UNIT information into new attributes.  */
+      expand_units ();
+      /* Build DFA, output some functions and expand DFA information
+	 into new attributes.  */
+      expand_automata ();
+    }
 
   printf ("#include \"config.h\"\n");
   printf ("#include \"system.h\"\n");
@@ -6226,9 +6271,14 @@ from the machine description file `md'.  */\n\n");
 	write_eligible_delay ("annul_false");
     }
 
-  /* Write out information about function units.  */
-  if (num_units)
-    write_function_unit_info ();
+  if (num_units || num_dfa_decls)
+    {
+      /* Write out information about function units.  */
+      write_function_unit_info ();
+      /* Output code for pipeline hazards recognition based on DFA
+	 (deterministic finite state automata. */
+      write_automata ();
+    }
 
   /* Write out constant delay slot info */
   write_const_num_delay_slots ();

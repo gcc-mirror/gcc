@@ -654,6 +654,8 @@ Several passes use instruction attributes.  A definition of the
 attributes defined for a particular machine is in file
 @file{insn-attr.h}, which is generated from the machine description by
 the program @file{genattr}.  The file @file{insn-attrtab.c} contains
-subroutines to obtain the attribute values for insns.  It is generated
-from the machine description by the program @file{genattrtab}.
+subroutines to obtain the attribute values for insns and information
+about processor pipeline characteristics for the instruction
+scheduler.  It is generated from the machine description by the
+program @file{genattrtab}.
 @end itemize

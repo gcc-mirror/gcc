@@ -20,6 +20,9 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+/* Pointer to data describing the current DFA state.  */
+extern state_t curr_state;
+
 /* Forward declaration.  */
 struct ready_list;
 
@@ -184,7 +187,7 @@ struct haifa_insn_data
   int dep_count;
 
   /* An encoding of the blockage range function.  Both unit and range
-     are coded.  */
+     are coded.  This member is used only for old pipeline interface.  */
   unsigned int blockage;
 
   /* Number of instructions referring to this insn.  */
@@ -196,7 +199,8 @@ struct haifa_insn_data
 
   short cost;
 
-  /* An encoding of the function units used.  */
+  /* An encoding of the function units used.  This member is used only
+     for old pipeline interface.  */
   short units;
 
   /* This weight is an estimation of the insn's contribution to
