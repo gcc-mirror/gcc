@@ -620,7 +620,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #endif
 
 #ifndef HOT_TEXT_SECTION_NAME
-#define HOT_TEXT_SECTION_NAME "text.hot"
+#define HOT_TEXT_SECTION_NAME ".text.hot"
 #endif
 
 #ifndef NORMAL_TEXT_SECTION_NAME
@@ -628,7 +628,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #endif
 
 #ifndef UNLIKELY_EXECUTED_TEXT_SECTION_NAME
-#define UNLIKELY_EXECUTED_TEXT_SECTION_NAME "text.unlikely"
+#define UNLIKELY_EXECUTED_TEXT_SECTION_NAME ".text.unlikely"
 #endif
 
 #ifndef HAS_LONG_COND_BRANCH
