@@ -18,9 +18,10 @@
 #undef EXTRA_SECTION_FUNCTIONS
 #undef EXTRA_SECTIONS
 
-/*
- * put const's in the text section
- */
+/* GAS does not understand .ident so don't output anything for #ident.  */
+#undef ASM_OUTPUT_IDENT
+
+/* Put const's in the text section.  */
 #define const_section()  text_section()
 #define fini_section() while (0)
 			       
