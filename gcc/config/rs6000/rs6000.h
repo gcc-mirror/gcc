@@ -1417,7 +1417,7 @@ read_only_data_section ()				\
 {							\
   if (in_section != read_only_data)			\
     {							\
-      fprintf (asm_out_file, "\t.csect %s[RO]\n",	\
+      fprintf (asm_out_file, ".csect %s[RO]\n",	\
 	       xcoff_read_only_section_name);		\
       in_section = read_only_data;			\
     }							\
@@ -1428,7 +1428,7 @@ private_data_section ()					\
 {							\
   if (in_section != private_data)			\
     {							\
-      fprintf (asm_out_file, "\t.csect %s[RW]\n",	\
+      fprintf (asm_out_file, ".csect %s[RW]\n",	\
 	       xcoff_private_data_section_name);	\
 							\
       in_section = private_data;			\
@@ -1440,7 +1440,7 @@ read_only_private_data_section ()			\
 {							\
   if (in_section != read_only_private_data)		\
     {							\
-      fprintf (asm_out_file, "\t.csect %s[RO]\n",	\
+      fprintf (asm_out_file, ".csect %s[RO]\n",		\
 	       xcoff_private_data_section_name);	\
       in_section = read_only_private_data;		\
     }							\
@@ -1450,7 +1450,7 @@ void							\
 toc_section ()						\
 {							\
   if (in_section != toc)				\
-    fprintf (asm_out_file, "\t.toc\n");			\
+    fprintf (asm_out_file, ".toc\n");			\
 							\
   in_section = toc;					\
 }
@@ -1478,7 +1478,7 @@ toc_section ()						\
       RS6000_OUTPUT_BASENAME (FILE, NAME);			\
       fprintf (FILE, "\n");					\
     }								\
-  fprintf (FILE, "\t.csect ");					\
+  fprintf (FILE, ".csect ");					\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
   fprintf (FILE, "[DS]\n");					\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
@@ -1486,7 +1486,7 @@ toc_section ()						\
   fprintf (FILE, "\t.long .");					\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
   fprintf (FILE, ", TOC[tc0], 0\n");				\
-  fprintf (FILE, "\t.csect [PR]\n.");				\
+  fprintf (FILE, ".csect [PR]\n.");				\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
   fprintf (FILE, ":\n");					\
   if (write_symbols == XCOFF_DEBUG)				\
