@@ -1,3 +1,7 @@
+1999-01-21  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokdeclarator): Fix lang_c -> lang_name_c typo.
+
 1999-01-21  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (PARM_DECL_EXPR): Delete.
