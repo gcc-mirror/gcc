@@ -1,3 +1,7 @@
+2000-08-03  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.dg/cpp/20000625-2.c: Don't expect a warning on line 4.
+
 Thu Aug  3 01:46:33 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20000803-1.c: New test.

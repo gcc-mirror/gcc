@@ -171,15 +171,6 @@ recognize_objc_keyword ()
   return 0;
 }
 
-tree
-build_objc_string (len, str)
-    int len ATTRIBUTE_UNUSED;
-    const char *str ATTRIBUTE_UNUSED;
-{
-  abort ();
-  return NULL_TREE;
-}
-
 /* Used by c-typeck.c (build_external_ref), but only for objc.  */
 
 tree

@@ -142,7 +142,6 @@ extern int maybe_objc_comptypes                 PARAMS ((tree, tree, int));
 extern tree maybe_building_objc_message_expr    PARAMS ((void));
 extern tree maybe_objc_method_name		PARAMS ((tree));
 extern int recognize_objc_keyword		PARAMS ((void));
-extern tree build_objc_string			PARAMS ((int, const char *));
 extern tree lookup_objc_ivar			PARAMS ((tree));
 
 /* in c-parse.in */

@@ -1410,22 +1410,7 @@ my_build_string (len, str)
   return a_string;
 }
 
-/* Return a newly constructed OBJC_STRING_CST node whose value is
-   the LEN characters at STR.
-   The TREE_TYPE is not initialized.  */
-
-tree
-build_objc_string (len, str)
-     int len;
-     const char *str;
-{
-  tree s = build_string (len, str);
-
-  TREE_SET_CODE (s, OBJC_STRING_CST);
-  return s;
-}
-
-/* Given a chain of OBJC_STRING_CST's, build a static instance of
+/* Given a chain of STRING_CST's, build a static instance of
    NXConstanString which points at the concatenation of those strings.
    We place the string object in the __string_objects section of the
    __OBJC segment.  The Objective-C runtime will initialize the isa
@@ -1451,7 +1436,6 @@ build_objc_string_object (strings)
 
   add_class_reference (constant_string_id);
 
-  /* Combine_strings will work for OBJC_STRING_CST's too.  */
   string = combine_strings (strings);
   TREE_SET_CODE (string, STRING_CST);
   length = TREE_STRING_LENGTH (string) - 1;

@@ -32,6 +32,3 @@ DEFTREECODE (PROTOCOL_INTERFACE_TYPE, "protocol_interface_type", 't', 0)
 DEFTREECODE (KEYWORD_DECL, "keyword_decl", 'd', 0)
 DEFTREECODE (INSTANCE_METHOD_DECL, "instance_method_decl", 'd', 0)
 DEFTREECODE (CLASS_METHOD_DECL, "class_method_decl", 'd', 0)
-
-/* Objective-C constants.  */
-DEFTREECODE (OBJC_STRING_CST, "objc_string_cst", 'c', 3)

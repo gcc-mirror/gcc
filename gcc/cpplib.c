@@ -242,6 +242,16 @@ get_define_node (pfile)
       return 0;
     }
 
+  /* In Objective C, some keywords begin with '@', but general identifiers
+     do not, and you're not allowed to #define them.  */
+  if (token->val.node->name[0] == '@')
+    {
+      cpp_error_with_line (pfile, token->line, token->col,
+			   "\"%s\" cannot be used as a macro name",
+			   token->val.node->name);
+      return 0;
+    }
+
   /* Check for poisoned identifiers now.  */
   if (token->val.node->type == T_POISON)
     {
