@@ -3722,17 +3722,20 @@ simplify_subreg (enum machine_mode outermode, rtx op,
      of real and imaginary part.  */
   if (GET_CODE (op) == CONCAT)
     {
-      int is_realpart = byte < (unsigned int) GET_MODE_UNIT_SIZE (innermode);
-      rtx part = is_realpart ? XEXP (op, 0) : XEXP (op, 1);
-      unsigned int final_offset;
-      rtx res;
+      unsigned int inner_size, final_offset;
+      rtx part, res;
 
-      final_offset = byte % (GET_MODE_UNIT_SIZE (innermode));
+      inner_size = GET_MODE_UNIT_SIZE (innermode);
+      part = byte < inner_size ? XEXP (op, 0) : XEXP (op, 1);
+      final_offset = byte % inner_size;
+      if (final_offset + GET_MODE_SIZE (outermode) > inner_size)
+	return NULL_RTX;
+
       res = simplify_subreg (outermode, part, GET_MODE (part), final_offset);
       if (res)
 	return res;
       if (validate_subreg (outermode, GET_MODE (part), part, final_offset))
-        return gen_rtx_SUBREG (outermode, part, final_offset);
+	return gen_rtx_SUBREG (outermode, part, final_offset);
       return NULL_RTX;
     }
 
@@ -3786,7 +3789,9 @@ simplify_gen_subreg (enum machine_mode outermode, rtx op,
   if (newx)
     return newx;
 
-  if (GET_CODE (op) == SUBREG || GET_MODE (op) == VOIDmode)
+  if (GET_CODE (op) == SUBREG
+      || GET_CODE (op) == CONCAT
+      || GET_MODE (op) == VOIDmode)
     return NULL_RTX;
 
   if (validate_subreg (outermode, innermode, op, byte))
