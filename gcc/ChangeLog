@@ -1,3 +1,10 @@
+2003-11-13  Mark Mitchell  <mark@codesourcery.com>
+            Kean Johnston <jkj@sco.com>
+
+	PR c/13029
+	* toplev.c (check_global_declarations): Do not warn about unused
+	static consts.
+
 2003-11-13  Pavel Pisa  <pisa@cmp.felk.cvut.cz>
 	    Kazu Hirata  <kazu@cs.umass.edu>
 
