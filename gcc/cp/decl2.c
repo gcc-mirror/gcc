@@ -1755,7 +1755,6 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
     }
   if (TREE_CODE (value) == FUNCTION_DECL)
     {
-      check_default_args (value);
       if (asmspec)
 	{
 	  /* This must override the asm specifier which was placed
@@ -4500,8 +4499,8 @@ check_default_args (x)
 	saw_def = 1;
       else if (saw_def)
 	{
-	  cp_error ("default argument missing for parameter %P of `%#D'",
-		    i, x);
+	  cp_error_at ("default argument missing for parameter %P of `%+#D'",
+		       i, x);
 	  break;
 	}
     }

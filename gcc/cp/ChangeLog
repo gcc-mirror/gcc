@@ -1,7 +1,17 @@
+1998-05-28  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (start_decl): Always pedwarn about vacuously redeclaring 
+	a member.
+	(start_function): Call check_default_args.
+	* decl2.c (grokfield): Don't call check_default_args.
+	(check_default_args): Use cp_error_at.
+	* lex.c (do_pending_defargs): Call check_default_args.
+
 1998-05-27  Brendan Kehoe  <brendan@cygnus.com>
 
 	* call.c (build_method_call): Make sure get_type_value returns
 	something before we try to use its TYPE_MAIN_VARIANT.
+	(build_scoped_method_call): Likewise.
 
 1998-05-27  Jason Merrill  <jason@yorick.cygnus.com>
 
