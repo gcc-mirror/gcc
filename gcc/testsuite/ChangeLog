@@ -1,3 +1,14 @@
+2004-05-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/15044
+	* g++.dg/template/error12.C: New test.
+
+	PR c++/15317
+	* g++.dg/ext/attrib15.C: New test.
+
+	PR c++/15329
+	* g++.dg/template/ptrmem9.C: New test.
+
 2004-05-25  Paul Brook  <paul@codesourcery.com>
 
 	* gfortran.fortran-torture/compile/inquiry_1.f90: New test.
