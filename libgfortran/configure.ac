@@ -5,10 +5,6 @@ AC_PREREQ(2.59)
 AC_INIT([GNU Fortran Runtime Library], 0.2,,[libgfortran])
 AC_CONFIG_HEADER(config.h)
 
-# For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:0:0
-AC_SUBST(libtool_VERSION)
-
 # -------
 # Options
 # -------

@@ -1,3 +1,11 @@
+2004-07-04  Matthias Klose  <doko@debian.org>
+
+	* libtool-version: New.
+	* Makefile.am (libgfortran_la_LDFLAGS): Use -version-info for soname.
+	* Makefile.in: Regenerate.
+	* configure.ac: Remove libtool_VERSION macro
+	* configure: Regenerate
+
 2004-06-30  Steve Kargl  <sgk@troutmask.apl.washington.edu>
 	    Steven Bosscher  <stevenb@suse.de>
 
