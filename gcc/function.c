@@ -2991,14 +2991,19 @@ purge_addressof_1 (loc, insn, force, store, ht)
       result &= purge_addressof_1 (&SET_SRC (x), insn, force, 0, ht);
       return result;
     }
-
-  else if (code == ADDRESSOF && GET_CODE (XEXP (x, 0)) == MEM)
+  else if (code == ADDRESSOF)
     {
+      rtx sub, insns;
+
+      if (GET_CODE (XEXP (x, 0)) != MEM)
+	{
+	  put_addressof_into_stack (x, ht);
+	  return true;
+	}
+	  
       /* We must create a copy of the rtx because it was created by
 	 overwriting a REG rtx which is always shared.  */
-      rtx sub = copy_rtx (XEXP (XEXP (x, 0), 0));
-      rtx insns;
-
+      sub = copy_rtx (XEXP (XEXP (x, 0), 0));
       if (validate_change (insn, loc, sub, 0)
 	  || validate_replace_rtx (x, sub, insn))
 	return true;
@@ -3210,22 +3215,9 @@ purge_addressof_1 (loc, insn, force, store, ht)
 	    }
 	  goto restart;
 	}
-    give_up:;
-      /* else give up and put it into the stack */
     }
 
-  else if (code == ADDRESSOF)
-    {
-      put_addressof_into_stack (x, ht);
-      return true;
-    }
-  else if (code == SET)
-    {
-      result = purge_addressof_1 (&SET_DEST (x), insn, force, 1, ht);
-      result &= purge_addressof_1 (&SET_SRC (x), insn, force, 0, ht);
-      return result;
-    }
-
+ give_up:
   /* Scan all subexpressions.  */
   fmt = GET_RTX_FORMAT (code);
   for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
