@@ -6964,7 +6964,7 @@ do_output_reload (struct insn_chain *chain, struct reload *rl, int j)
    the same number of registers to store the reload value.  */
 
 static bool
-inherit_piecemeal_p (int r, int regno)
+inherit_piecemeal_p (int r ATTRIBUTE_UNUSED, int regno ATTRIBUTE_UNUSED)
 {
 #ifdef CANNOT_CHANGE_MODE_CLASS
   return (!REG_CANNOT_CHANGE_MODE_P (reload_spill_index[r],
