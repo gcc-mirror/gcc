@@ -96,6 +96,9 @@ Boston, MA 02111-1307, USA.  */
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
+/* Force the generation of dwarf .debug_frame sections even if not
+   compiling -g.  This guarantees that we can unwind the stack. */
+#define DWARF2_FRAME_INFO 1
 /* The size in bytes of a DWARF field indicating an offset or length
    relative to a debug info section, specified to be 4 bytes in the DWARF-2
    specification.  The SGI/MIPS ABI defines it to be the same as PTR_SIZE.  */
