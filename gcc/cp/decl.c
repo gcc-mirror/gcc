@@ -11953,7 +11953,11 @@ cplus_expand_expr_stmt (exp)
 	  warning ("at this point in file");
 	}
 
+#if 0
+      /* We should do this eventually, but right now this causes regex.o from
+	 libg++ to miscompile, and tString to core dump.  */
       exp = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (exp), exp);
+#endif
       expand_expr_stmt (break_out_cleanups (exp));
     }
 
