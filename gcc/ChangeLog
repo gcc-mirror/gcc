@@ -1,3 +1,9 @@
+2002-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/6396
+	* toplev.c (rest_of_compilation): Only run regrename and copy
+	propagation if optimizing.
+
 2002-04-30  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi (Contributors): Use MIPS instead of Mips and
