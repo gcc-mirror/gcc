@@ -3556,7 +3556,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		    }
 		}
 	      else if (specbits & (1 << (int) i))
-		pedwarn ("duplicate `%s'", IDENTIFIER_POINTER (id));
+		error ("duplicate `%s'", IDENTIFIER_POINTER (id));
 
 	      /* Diagnose "__thread extern".  Recall that this list
 		 is in the reverse order seen in the text.  */
@@ -3689,12 +3689,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       else
 	{
 	  ok = 1;
-	  if (!explicit_int && !defaulted_int && !explicit_char && pedantic)
+	  if (!explicit_int && !defaulted_int && !explicit_char)
 	    {
-	      pedwarn ("long, short, signed or unsigned used invalidly for `%s'",
-		       name);
-	      if (flag_pedantic_errors)
-		ok = 0;
+	      error ("long, short, signed or unsigned used invalidly for `%s'",
+		     name);
+	      ok = 0;
 	    }
 	}
 
