@@ -212,11 +212,10 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
      also make a chain of all returns.  */
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	&& ! INSN_DELETED_P (insn))
+    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
       {
 	mark_jump_label (PATTERN (insn), insn, cross_jump);
-	if (GET_CODE (insn) == JUMP_INSN)
+	if (! INSN_DELETED_P (insn) && GET_CODE (insn) == JUMP_INSN)
 	  {
 	    if (JUMP_LABEL (insn) != 0 && simplejump_p (insn))
 	      {
@@ -3380,7 +3379,8 @@ mark_jump_label (x, insn, cross_jump)
 	  }
 
 	XEXP (x, 0) = label;
-	++LABEL_NUSES (label);
+	if (! insn || ! INSN_DELETED_P (insn))
+	  ++LABEL_NUSES (label);
 
 	if (insn)
 	  {
@@ -3417,12 +3417,13 @@ mark_jump_label (x, insn, cross_jump)
      ADDR_DIFF_VEC.  Don't set the JUMP_LABEL of a vector.  */
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
-      {
-	int eltnum = code == ADDR_DIFF_VEC ? 1 : 0;
+      if (! INSN_DELETED_P (insn))
+	{
+	  int eltnum = code == ADDR_DIFF_VEC ? 1 : 0;
 
-	for (i = 0; i < XVECLEN (x, eltnum); i++)
-	  mark_jump_label (XVECEXP (x, eltnum, i), NULL_RTX, cross_jump);
-      }
+	  for (i = 0; i < XVECLEN (x, eltnum); i++)
+	    mark_jump_label (XVECEXP (x, eltnum, i), NULL_RTX, cross_jump);
+	}
       return;
       
     default:
