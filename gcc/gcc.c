@@ -675,7 +675,7 @@ static const char *cpp_unique_options =
  %{MMD:-MMD %W{!o: %b.d}%W{o*:%.d%*}}\
  %{M} %{MM} %W{MF*} %{MG} %{MP} %{MQ*} %{MT*}\
  %{!E:%{!M:%{!MM:%{MD|MMD:%{o*:-MQ %*}}}}}\
- %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3 -D__GXX_ABI_VERSION=101}\
+ %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3 -D__GXX_ABI_VERSION=102}\
  %{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
  %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
  %{fno-inline|O0|!O*:-D__NO_INLINE__} %{ffast-math:-D__FAST_MATH__}\
