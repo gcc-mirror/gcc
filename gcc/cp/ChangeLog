@@ -1,3 +1,7 @@
+2002-02-05  Jason Merrill  <jason@redhat.com>
+
+	* error.c (dump_type): Be more helpful about VECTOR_TYPE.
+
 2002-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* semantics.c (begin_switch_stmt): Clear SWITCH_TYPE.
