@@ -1,3 +1,10 @@
+2002-05-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/186, DR 259
+	* pt.c (do_decl_instantiation): Don't complain explicit
+	instantiation after explicit specialization.
+	(do_type_instantiation): Likewise.
+
 2002-05-09  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (tsubst_expr) [ASM_STMT]: Copy ASM_INPUT_P.
