@@ -168,7 +168,7 @@
     (q) = __udiv_qrnnd (&__r, (n1), (n0), (d));				\
     (r) = __r;								\
   } while (0)
-extern UDItype __udiv_qrnnd __P ((UDItype *, UDItype, UDItype, UDItype));
+extern UDItype __udiv_qrnnd PARAMS ((UDItype *, UDItype, UDItype, UDItype));
 #define UDIV_TIME 220
 #endif /* LONGLONG_STANDALONE */
 #endif /* __alpha */

@@ -89,13 +89,14 @@ __lshrdi3 (DWtype u, word_type b)
   if (bm <= 0)
     {
       w.s.high = 0;
-      w.s.low = (UWtype)uu.s.high >> -bm;
+      w.s.low = (UWtype) uu.s.high >> -bm;
     }
   else
     {
-      UWtype carries = (UWtype)uu.s.high << bm;
-      w.s.high = (UWtype)uu.s.high >> b;
-      w.s.low = ((UWtype)uu.s.low >> b) | carries;
+      UWtype carries = (UWtype) uu.s.high << bm;
+
+      w.s.high = (UWtype) uu.s.high >> b;
+      w.s.low = ((UWtype) uu.s.low >> b) | carries;
     }
 
   return w.ll;
@@ -119,13 +120,14 @@ __ashldi3 (DWtype u, word_type b)
   if (bm <= 0)
     {
       w.s.low = 0;
-      w.s.high = (UWtype)uu.s.low << -bm;
+      w.s.high = (UWtype) uu.s.low << -bm;
     }
   else
     {
-      UWtype carries = (UWtype)uu.s.low >> bm;
-      w.s.low = (UWtype)uu.s.low << b;
-      w.s.high = ((UWtype)uu.s.high << b) | carries;
+      UWtype carries = (UWtype) uu.s.low >> bm;
+
+      w.s.low = (UWtype) uu.s.low << b;
+      w.s.high = ((UWtype) uu.s.high << b) | carries;
     }
 
   return w.ll;
@@ -154,9 +156,10 @@ __ashrdi3 (DWtype u, word_type b)
     }
   else
     {
-      UWtype carries = (UWtype)uu.s.high << bm;
+      UWtype carries = (UWtype) uu.s.high << bm;
+
       w.s.high = uu.s.high >> b;
-      w.s.low = ((UWtype)uu.s.low >> b) | carries;
+      w.s.low = ((UWtype) uu.s.low >> b) | carries;
     }
 
   return w.ll;
@@ -668,7 +671,7 @@ __ucmpdi2 (DWtype a, DWtype b)
 #define HIGH_WORD_COEFF (((UDWtype) 1) << WORD_SIZE)
 
 DWtype
-__fixunstfdi (TFtype a)
+__fixunstfDI (TFtype a)
 {
   TFtype b;
   UDWtype v;
@@ -700,8 +703,8 @@ DWtype
 __fixtfdi (TFtype a)
 {
   if (a < 0)
-    return - __fixunstfdi (-a);
-  return __fixunstfdi (a);
+    return - __fixunstfDI (-a);
+  return __fixunstfDI (a);
 }
 #endif
 
@@ -710,7 +713,7 @@ __fixtfdi (TFtype a)
 #define HIGH_WORD_COEFF (((UDWtype) 1) << WORD_SIZE)
 
 DWtype
-__fixunsxfdi (XFtype a)
+__fixunsxfDI (XFtype a)
 {
   XFtype b;
   UDWtype v;
@@ -742,8 +745,8 @@ DWtype
 __fixxfdi (XFtype a)
 {
   if (a < 0)
-    return - __fixunsxfdi (-a);
-  return __fixunsxfdi (a);
+    return - __fixunsxfDI (-a);
+  return __fixunsxfDI (a);
 }
 #endif
 
@@ -752,7 +755,7 @@ __fixxfdi (XFtype a)
 #define HIGH_WORD_COEFF (((UDWtype) 1) << WORD_SIZE)
 
 DWtype
-__fixunsdfdi (DFtype a)
+__fixunsdfDI (DFtype a)
 {
   DFtype b;
   UDWtype v;
@@ -784,8 +787,8 @@ DWtype
 __fixdfdi (DFtype a)
 {
   if (a < 0)
-    return - __fixunsdfdi (-a);
-  return __fixunsdfdi (a);
+    return - __fixunsdfDI (-a);
+  return __fixunsdfDI (a);
 }
 #endif
 
@@ -794,7 +797,7 @@ __fixdfdi (DFtype a)
 #define HIGH_WORD_COEFF (((UDWtype) 1) << WORD_SIZE)
 
 DWtype
-__fixunssfdi (SFtype original_a)
+__fixunssfDI (SFtype original_a)
 {
   /* Convert the SFtype to a DFtype, because that is surely not going
      to lose any bits.  Some day someone else can write a faster version
@@ -813,7 +816,7 @@ __fixunssfdi (SFtype original_a)
   v = (UWtype) b;
   v <<= WORD_SIZE;
   /* Remove high part from the DFtype, leaving the low part as flonum.  */
-  a -= (DFtype)v;
+  a -= (DFtype) v;
   /* Convert that to fixed (but not to DWtype!) and add it in.
      Sometimes A comes out negative.  This is significant, since
      A has more bits than a long int does.  */
@@ -830,8 +833,8 @@ DWtype
 __fixsfdi (SFtype a)
 {
   if (a < 0)
-    return - __fixunssfdi (-a);
-  return __fixunssfdi (a);
+    return - __fixunssfDI (-a);
+  return __fixunssfDI (a);
 }
 #endif
 
@@ -943,11 +946,11 @@ __floatdisf (DWtype u)
   if (DF_SIZE < DI_SIZE
       && DF_SIZE > (DI_SIZE - DF_SIZE + SF_SIZE))
     {
-#define REP_BIT ((UWtype) 1 << (DI_SIZE - DF_SIZE))
+#define REP_BIT ((UDWtype) 1 << (DI_SIZE - DF_SIZE))
       if (! (- ((DWtype) 1 << DF_SIZE) < u
 	     && u < ((DWtype) 1 << DF_SIZE)))
 	{
-	  if ((UWtype) u & (REP_BIT - 1))
+	  if ((UDWtype) u & (REP_BIT - 1))
 	    u |= REP_BIT;
 	}
     }
@@ -974,7 +977,7 @@ __floatdisf (DWtype u)
 #include <limits.h>
 
 UWtype
-__fixunsxfsi (XFtype a)
+__fixunsxfSI (XFtype a)
 {
   if (a >= - (DFtype) LONG_MIN)
     return (Wtype) (a + LONG_MIN) - LONG_MIN;
@@ -996,7 +999,7 @@ __fixunsxfsi (XFtype a)
 #include <limits.h>
 
 UWtype
-__fixunsdfsi (DFtype a)
+__fixunsdfSI (DFtype a)
 {
   if (a >= - (DFtype) LONG_MIN)
     return (Wtype) (a + LONG_MIN) - LONG_MIN;
@@ -1018,7 +1021,7 @@ __fixunsdfsi (DFtype a)
 #include <limits.h>
 
 UWtype
-__fixunssfsi (SFtype a)
+__fixunssfSI (SFtype a)
 {
   if (a >= - (SFtype) LONG_MIN)
     return (Wtype) (a + LONG_MIN) - LONG_MIN;

@@ -1,0 +1,6 @@
+# This is really part of libgcc1, but this will cause them to be
+# built correctly, so... [taken from t-sparclite]
+LIB2FUNCS_EXTRA = qrnnd.S
+
+qrnnd.S: $(srcdir)/config/alpha/qrnnd.asm
+	cat $(srcdir)/config/alpha/qrnnd.asm > qrnnd.S

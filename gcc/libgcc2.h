@@ -99,6 +99,11 @@ typedef unsigned int USItype	__attribute__ ((mode (SI)));
 /* These typedefs are usually forbidden on archs with UNITS_PER_WORD 2 */
 typedef		 int DItype	__attribute__ ((mode (DI)));
 typedef unsigned int UDItype	__attribute__ ((mode (DI)));
+#if MIN_UNITS_PER_WORD > 4
+/* These typedefs are usually forbidden on archs with UNITS_PER_WORD 4 */
+typedef		 int TItype	__attribute__ ((mode (TI)));
+typedef unsigned int UTItype	__attribute__ ((mode (TI)));
+#endif
 #endif
 #endif
 
@@ -153,7 +158,17 @@ typedef int word_type __attribute__ ((mode (__word__)));
 #define float bogus_type
 #define double bogus_type
 
-#if MIN_UNITS_PER_WORD > 2
+#if MIN_UNITS_PER_WORD > 4
+#define W_TYPE_SIZE (8 * BITS_PER_UNIT)
+#define Wtype	DItype
+#define UWtype	UDItype
+#define HWtype	DItype
+#define UHWtype	UDItype
+#define DWtype	TItype
+#define UDWtype	UTItype
+#define __NW(a,b)	__ ## a ## di ## b
+#define __NDW(a,b)	__ ## a ## ti ## b
+#elif MIN_UNITS_PER_WORD > 2
 #define W_TYPE_SIZE (4 * BITS_PER_UNIT)
 #define Wtype	SItype
 #define UWtype	USItype
@@ -185,11 +200,42 @@ typedef int word_type __attribute__ ((mode (__word__)));
 #define __NDW(a,b)	__ ## a ## hi ## b
 #endif
 
+#define __muldi3	__NDW(mul,3)
+#define __divdi3	__NDW(div,3)
+#define __udivdi3	__NDW(udiv,3)
+#define __moddi3	__NDW(mod,3)
+#define __umoddi3	__NDW(umod,3)
+#define __negdi2	__NDW(neg,2)
+#define __lshrdi3	__NDW(lshr,3)
+#define __ashldi3	__NDW(ashl,3)
+#define __ashrdi3	__NDW(ashr,3)
+#define __ffsdi2	__NDW(ffs,2)
+#define __cmpdi2	__NDW(cmp,2)
+#define __ucmpdi2	__NDW(ucmp,2)
+#define __udivmoddi4	__NDW(udivmod,4)
+#define __fixunstfDI	__NDW(fixunstf,)
+#define __fixtfdi	__NDW(fixtf,)
+#define __fixunsxfDI	__NDW(fixunsxf,)
+#define __fixxfdi	__NDW(fixxf,)
+#define __fixunsdfDI	__NDW(fixunsdf,)
+#define __fixdfdi	__NDW(fixdf,)
+#define __fixunssfDI	__NDW(fixunssf,)
+#define __fixsfdi	__NDW(fixsf,)
+#define __floatdixf	__NDW(float,xf)
+#define __floatditf	__NDW(float,tf)
+#define __floatdidf	__NDW(float,df)
+#define __floatdisf	__NDW(float,sf)
+#define __fixunsxfSI	__NW(fixunsxf,)
+#define __fixunstfSI	__NW(fixunstf,)
+#define __fixunsdfSI	__NW(fixunsdf,)
+#define __fixunssfSI	__NW(fixunssf,)
+
 extern DWtype __muldi3 (DWtype, DWtype);
 extern DWtype __divdi3 (DWtype, DWtype);
 extern UDWtype __udivdi3 (UDWtype, UDWtype);
 extern UDWtype __umoddi3 (UDWtype, UDWtype);
 extern DWtype __moddi3 (DWtype, DWtype);
+
 /* __udivmoddi4 is static inline when building other libgcc2 portions.  */
 #if (!defined (L_udivdi3) && !defined (L_divdi3) && \
      !defined (L_umoddi3) && !defined (L_moddi3))
@@ -220,54 +266,24 @@ extern DWtype __fixdfdi (DFtype);
 extern DWtype __fixsfdi (SFtype);
 extern DFtype __floatdidf (DWtype);
 extern SFtype __floatdisf (DWtype);
-extern UWtype __fixunsdfsi (DFtype);
-extern UWtype __fixunssfsi (SFtype);
-extern DWtype __fixunsdfdi (DFtype);
-extern DWtype __fixunssfdi (SFtype);
+extern UWtype __fixunsdfSI (DFtype);
+extern UWtype __fixunssfSI (SFtype);
+extern DWtype __fixunsdfDI (DFtype);
+extern DWtype __fixunssfDI (SFtype);
 
 #if LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 96
 extern DWtype __fixxfdi (XFtype);
-extern DWtype __fixunsxfdi (XFtype);
+extern DWtype __fixunsxfDI (XFtype);
 extern XFtype __floatdixf (DWtype);
-extern UWtype __fixunsxfsi (XFtype);
+extern UWtype __fixunsxfSI (XFtype);
 #endif
 
 #if LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 128
-extern DWtype __fixunstfdi (TFtype);
+extern DWtype __fixunstfDI (TFtype);
 extern DWtype __fixtfdi (TFtype);
 extern TFtype __floatditf (DWtype);
 #endif
 #endif /* BITS_PER_UNIT == 8 */
-
-#define __muldi3	__NDW(mul,3)
-#define __divdi3	__NDW(div,3)
-#define __udivdi3	__NDW(udiv,3)
-#define __moddi3	__NDW(mod,3)
-#define __umoddi3	__NDW(umod,3)
-#define __negdi2	__NDW(neg,2)
-#define __lshrdi3	__NDW(lshr,3)
-#define __ashldi3	__NDW(ashl,3)
-#define __ashrdi3	__NDW(ashr,3)
-#define __ffsdi2	__NDW(ffs,2)
-#define __cmpdi2	__NDW(cmp,2)
-#define __ucmpdi2	__NDW(ucmp,2)
-#define __udivmoddi4	__NDW(udivmod,4)
-#define __fixunstfdi	__NDW(fixunstf,)
-#define __fixtfdi	__NDW(fixtf,)
-#define __fixunsxfdi	__NDW(fixunsxf,)
-#define __fixxfdi	__NDW(fixxf,)
-#define __fixunsdfdi	__NDW(fixunsdf,)
-#define __fixdfdi	__NDW(fixdf,)
-#define __fixunssfdi	__NDW(fixunssf,)
-#define __fixsfdi	__NDW(fixsf,)
-#define __floatdixf	__NDW(float,xf)
-#define __floatditf	__NDW(float,tf)
-#define __floatdidf	__NDW(float,df)
-#define __floatdisf	__NDW(float,sf)
-#define __fixunsxfsi	__NW(fixunsxf,)
-#define __fixunstfsi	__NW(fixunstf,)
-#define __fixunsdfsi	__NW(fixunsdf,)
-#define __fixunssfsi	__NW(fixunssf,)
 
 /* DWstructs are pairs of Wtype values in the order determined by
    LIBGCC2_WORDS_BIG_ENDIAN.  */
