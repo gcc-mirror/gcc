@@ -64,13 +64,13 @@ strstreambuf::strstreambuf(streamsize initial_capacity)
     _M_alloc_fun(0), _M_free_fun(0),
     _M_dynamic(true), _M_frozen(false), _M_constant(false)
 {
-  streamsize n = max(initial_capacity, streamsize(16));
-
-  char* buf = _M_alloc(n);
-  if (buf) {
-    setp(buf, buf + n);
-    setg(buf, buf, buf);
-  }
+  _M_buf_size = _M_buf_size_opt = max(initial_capacity, streamsize(16));
+  _M_buf = _M_alloc(_M_buf_size);
+  if (_M_buf) 
+    {
+      setp(_M_buf, _M_buf + _M_buf_size);
+      setg(_M_buf, _M_buf, _M_buf);
+    }
 }
 
 strstreambuf::strstreambuf(void* (*alloc_f)(size_t), void (*free_f)(void*))
@@ -78,12 +78,12 @@ strstreambuf::strstreambuf(void* (*alloc_f)(size_t), void (*free_f)(void*))
     _M_alloc_fun(alloc_f), _M_free_fun(free_f),
     _M_dynamic(true), _M_frozen(false), _M_constant(false)
 {
-  streamsize n = 16;
-
-  char* buf = _M_alloc(n);
-  if (buf) {
-    setp(buf, buf + n);
-    setg(buf, buf, buf);
+  _M_buf_size = _M_buf_size_opt = 16;
+  _M_buf = _M_alloc(_M_buf_size);
+  if (_M_buf) 
+    {
+      setp(_M_buf, _M_buf + _M_buf_size);
+      setg(_M_buf, _M_buf, _M_buf);
   }
 }
 
@@ -139,7 +139,14 @@ strstreambuf::strstreambuf(const unsigned char* get, streamsize n)
 strstreambuf::~strstreambuf()
 {
   if (_M_dynamic && !_M_frozen)
-    _M_free(eback());
+    {
+      char* p = this->eback();
+      _M_free(p);
+      if (p == _M_buf)
+	_M_buf = 0;
+    }
+  if (_M_buf)
+    _M_free(_M_buf);
 }
 
 void strstreambuf::freeze(bool frozenflag)
