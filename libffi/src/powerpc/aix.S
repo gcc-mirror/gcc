@@ -205,5 +205,20 @@ L(fp_return_value):
 L(float_return_value):
 	stfs	f1,0(r30)
 	b	L(done_return_value)
+	.long 0
+	.byte 0,0,0,1,128,4,0,0
 //END(ffi_call_AIX)
 
+.csect .text[PR]
+	.align 2
+	.globl ffi_call_DARWIN
+	.globl .ffi_call_DARWIN
+.csect ffi_call_DARWIN[DS]
+ffi_call_DARWIN:
+	.long .ffi_call_DARWIN, TOC[tc0], 0
+	.csect .text[PR]
+.ffi_call_DARWIN:
+	blr
+	.long 0
+	.byte 0,0,0,0,0,0,0,0
+//END(ffi_call_DARWIN)
