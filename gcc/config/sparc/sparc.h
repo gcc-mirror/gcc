@@ -2089,6 +2089,7 @@ extern struct rtx_def *legitimize_pic_address ();
    SPARC ABI.  */
 #define ADDTF3_LIBCALL "_Q_add"
 #define SUBTF3_LIBCALL "_Q_sub"
+#define NEGTF2_LIBCALL "_Q_neg"
 #define MULTF3_LIBCALL "_Q_mul"
 #define DIVTF3_LIBCALL "_Q_div"
 #define FLOATSITF2_LIBCALL "_Q_itoq"
@@ -2109,11 +2110,36 @@ extern struct rtx_def *legitimize_pic_address ();
    with soft-float, the SFmode and DFmode sqrt instructions will be absent,
    and the compiler will notice and try to use the TFmode sqrt instruction
    for calls to the builtin function sqrt, but this fails.  */
-#define INIT_TARGET_OPTABS	\
-  do {				\
-    INIT_SUBTARGET_OPTABS;	\
-    if (TARGET_FPU)		\
-      sqrt_optab->handlers[(int) TFmode].libfunc = gen_rtx (SYMBOL_REF, Pmode, "_Q_sqrt"); \
+#define INIT_TARGET_OPTABS						\
+  do {									\
+    INIT_SUBTARGET_OPTABS;						\
+    add_optab->handlers[(int) TFmode].libfunc				\
+      = gen_rtx (SYMBOL_REF, Pmode, ADDTF3_LIBCALL);			\
+    sub_optab->handlers[(int) TFmode].libfunc				\
+      = gen_rtx (SYMBOL_REF, Pmode, SUBTF3_LIBCALL);			\
+    neg_optab->handlers[(int) TFmode].libfunc				\
+      = gen_rtx (SYMBOL_REF, Pmode, NEGTF2_LIBCALL);			\
+    smul_optab->handlers[(int) TFmode].libfunc				\
+      = gen_rtx (SYMBOL_REF, Pmode, MULTF3_LIBCALL);			\
+    flodiv_optab->handlers[(int) TFmode].libfunc			\
+      = gen_rtx (SYMBOL_REF, Pmode, DIVTF3_LIBCALL);			\
+    eqtf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, EQTF2_LIBCALL);		\
+    netf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, NETF2_LIBCALL);		\
+    gttf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, GTTF2_LIBCALL);		\
+    getf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, GETF2_LIBCALL);		\
+    lttf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, LTTF2_LIBCALL);		\
+    letf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, LETF2_LIBCALL);		\
+    trunctfsf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, TRUNCTFSF2_LIBCALL);   \
+    trunctfdf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, TRUNCTFDF2_LIBCALL);   \
+    extendsftf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, EXTENDSFTF2_LIBCALL); \
+    extenddftf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, EXTENDDFTF2_LIBCALL); \
+    floatsitf_libfunc = gen_rtx (SYMBOL_REF, Pmode, FLOATSITF2_LIBCALL);    \
+    fixtfsi_libfunc = gen_rtx (SYMBOL_REF, Pmode, FIX_TRUNCTFSI2_LIBCALL);  \
+    fixunstfsi_libfunc							\
+      = gen_rtx (SYMBOL_REF, Pmode, FIXUNS_TRUNCTFSI2_LIBCALL);		\
+    if (TARGET_FPU)							\
+      sqrt_optab->handlers[(int) TFmode].libfunc			\
+	= gen_rtx (SYMBOL_REF, Pmode, "_Q_sqrt");			\
   } while (0)
 
 /* This is meant to be redefined in the host dependent files */
