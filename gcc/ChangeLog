@@ -1,3 +1,9 @@
+2004-02-18  Alan Modra  <amodra@bigpond.net.au>
+
+	PR optimization/14119
+	* combine.c (try_combine): When attemting to fix unrecognized insns,
+	don't delete SETs marked with REG_EH_REGION notes.
+
 2004-02-17  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* combine.c (simplify_if_then_else): Do not replace 
