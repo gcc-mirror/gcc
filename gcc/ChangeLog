@@ -1,3 +1,8 @@
+2003-08-31  Olivier Hainque  <hainque@act-europe.fr>
+
+        * builtins.c (expand_builtin_setjmp): Use emit_jump to jump around
+        the != 0 case, which ensures pending stack adjustments are flushed.
+
 2003-08-30  Zack Weinberg  <zack@codesourcery.com>
 
 	* configure.frag: Delete file.
