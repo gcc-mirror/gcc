@@ -58,6 +58,7 @@ extern int    m32r_not_same_reg (rtx, rtx);
 extern int    m32r_hard_regno_rename_ok (unsigned int, unsigned int);
 extern int    m32r_legitimate_pic_operand_p (rtx);
 extern rtx    m32r_legitimize_pic_address (rtx, rtx);
+extern rtx    m32r_return_addr (int);
 
 #ifdef HAVE_MACHINE_MODES
 extern int    call_address_operand (rtx, Mmode);

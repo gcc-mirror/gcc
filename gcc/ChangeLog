@@ -1,3 +1,13 @@
+2004-06-15  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
+
+	* config/m32r/m32r.h (RETURN_ADDR_RTX): Define.
+	(INCOMING_RETURN_ADDR_RTX): Define.
+	* config/m32r/m32r-protos.h (m32r_return_addr): Added.
+	* config/m32r/m32r.c (m32r_exppand_prologue): Changed for
+	__builtin_return_address(0).
+	(m32r_return_addr): Added for __builtin_return_address(0).
+	(m32r_reload_lr): Ditto.
+
 2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* doc/install.texi (Prerequisites): Update libbanshee,
@@ -5910,7 +5920,7 @@
 	* config/arm/t-xscale-elf: Disable iwmmxt multilibs until they can
 	be safely built.
 
-2004-04-16  Kazuhiro Inaoka <inaoka dot kazuhiro at renesas dot com>
+2004-04-16  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
 	* config/m32r/m32r.h (BIG_ENDIAN_BIT): Deleted to fix endian
 	bug.
