@@ -192,3 +192,18 @@ hook_rtx_rtx_null (rtx x ATTRIBUTE_UNUSED)
 {
   return 0;
 }
+
+/* Generic hook that takes a size_t and returns NULL.  */
+void *
+hook_voidp_size_t_null (size_t a ATTRIBUTE_UNUSED)
+{
+  return NULL;
+}
+
+/* Generic hook that takes a size_t and a pointer and returns false.  */
+bool
+hook_bool_voidp_size_t_false (void * a ATTRIBUTE_UNUSED,
+			      size_t b ATTRIBUTE_UNUSED)
+{
+  return false;
+}

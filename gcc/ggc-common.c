@@ -29,6 +29,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "toplev.h"
 #include "params.h"
+#include "hosthooks.h"
 
 #ifdef HAVE_SYS_RESOURCE_H
 # include <sys/resource.h>
@@ -450,19 +451,24 @@ gt_pch_save (FILE *f)
 
   mmi.size = ggc_pch_total_size (state.d);
 
-  /* Try to arrange things so that no relocation is necessary,
-     but don't try very hard.  On most platforms, this will always work,
-     and on the rest it's a lot of work to do better.  */
+  /* Try to arrange things so that no relocation is necessary, but
+     don't try very hard.  On most platforms, this will always work,
+     and on the rest it's a lot of work to do better.  
+     (The extra work goes in HOST_HOOKS_GT_PCH_GET_ADDRESS and
+     HOST_HOOKS_GT_PCH_USE_ADDRESS.)  */
+  mmi.preferred_base = host_hooks.gt_pch_get_address (mmi.size);
+      
 #if HAVE_MMAP_FILE
-  mmi.preferred_base = mmap (NULL, mmi.size,
-			     PROT_READ | PROT_WRITE, MAP_PRIVATE,
-			     fileno (state.f), 0);
-  if (mmi.preferred_base == (void *) MAP_FAILED)
-    mmi.preferred_base = NULL;
-  else
-    munmap (mmi.preferred_base, mmi.size);
-#else /* HAVE_MMAP_FILE */
-  mmi.preferred_base = NULL;
+  if (mmi.preferred_base == NULL)
+    {
+      mmi.preferred_base = mmap (NULL, mmi.size,
+				 PROT_READ | PROT_WRITE, MAP_PRIVATE,
+				 fileno (state.f), 0);
+      if (mmi.preferred_base == (void *) MAP_FAILED)
+	mmi.preferred_base = NULL;
+      else
+	munmap (mmi.preferred_base, mmi.size);
+    }
 #endif /* HAVE_MMAP_FILE */
 
   ggc_pch_this_base (state.d, mmi.preferred_base);
@@ -539,6 +545,7 @@ gt_pch_restore (FILE *f)
   size_t i;
   struct mmap_info mmi;
   void *addr;
+  bool needs_read;
 
   /* Delete any deletable objects.  This makes ggc_pch_read much
      faster, as it can be sure that no GCable objects remain other
@@ -571,47 +578,75 @@ gt_pch_restore (FILE *f)
   if (fread (&mmi, sizeof (mmi), 1, f) != 1)
     fatal_error ("can't read PCH file: %m");
 
-#if HAVE_MMAP_FILE
-  addr = mmap (mmi.preferred_base, mmi.size,
-	       PROT_READ | PROT_WRITE, MAP_PRIVATE,
-	       fileno (f), mmi.offset);
-
-#if HAVE_MINCORE
-  if (addr != mmi.preferred_base)
+  if (host_hooks.gt_pch_use_address (mmi.preferred_base, mmi.size))
     {
-      size_t page_size = getpagesize();
-      char one_byte;
+#if HAVE_MMAP_FILE
+      void *mmap_result;
 
-      if (addr != (void *) MAP_FAILED)
-	munmap (addr, mmi.size);
+      mmap_result = mmap (mmi.preferred_base, mmi.size,
+			  PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED,
+			  fileno (f), mmi.offset);
 
-      /* We really want to be mapped at mmi.preferred_base
-	 so we're going to resort to MAP_FIXED.  But before,
-	 make sure that we can do so without destroying a
-	 previously mapped area, by looping over all pages
-	 that would be affected by the fixed mapping.  */
-      errno = 0;
+      /* The file might not be mmap-able.  */
+      needs_read = mmap_result == MAP_FAILED;
 
-      for (i = 0; i < mmi.size; i+= page_size)
-	if (mincore ((char *)mmi.preferred_base + i, page_size, (void *)&one_byte) == -1
-	    && errno == ENOMEM)
-	  continue; /* The page is not mapped.  */
-	else
-	  break;
-
-      if (i >= mmi.size)
-	addr = mmap (mmi.preferred_base, mmi.size, 
-		     PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED,
-		     fileno (f), mmi.offset);
+      /* Sanity check for broken MAP_FIXED.  */
+      if (! needs_read && mmap_result != mmi.preferred_base)
+	abort ();
+#else
+      needs_read = true;
+#endif
+      addr = mmi.preferred_base;
     }
+  else
+    {
+#if HAVE_MMAP_FILE
+      addr = mmap (mmi.preferred_base, mmi.size,
+		   PROT_READ | PROT_WRITE, MAP_PRIVATE,
+		   fileno (f), mmi.offset);
+      
+#if HAVE_MINCORE
+      if (addr != mmi.preferred_base)
+	{
+	  size_t page_size = getpagesize();
+	  char one_byte;
+	  
+	  if (addr != (void *) MAP_FAILED)
+	    munmap (addr, mmi.size);
+	  
+	  /* We really want to be mapped at mmi.preferred_base
+	     so we're going to resort to MAP_FIXED.  But before,
+	     make sure that we can do so without destroying a
+	     previously mapped area, by looping over all pages
+	     that would be affected by the fixed mapping.  */
+	  errno = 0;
+	  
+	  for (i = 0; i < mmi.size; i+= page_size)
+	    if (mincore ((char *)mmi.preferred_base + i, page_size, 
+			 (void *)&one_byte) == -1
+		&& errno == ENOMEM)
+	      continue; /* The page is not mapped.  */
+	    else
+	      break;
+	  
+	  if (i >= mmi.size)
+	    addr = mmap (mmi.preferred_base, mmi.size, 
+			 PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED,
+			 fileno (f), mmi.offset);
+	}
 #endif /* HAVE_MINCORE */
+      
+      needs_read = addr == (void *) MAP_FAILED;
 
 #else /* HAVE_MMAP_FILE */
-  addr = MAP_FAILED;
+      needs_read = true;
 #endif /* HAVE_MMAP_FILE */
-  if (addr == (void *) MAP_FAILED)
+      if (needs_read)
+	addr = xmalloc (mmi.size);
+    }
+
+  if (needs_read)
     {
-      addr = xmalloc (mmi.size);
       if (fseek (f, mmi.offset, SEEK_SET) != 0
 	  || fread (&mmi, mmi.size, 1, f) != 1)
 	fatal_error ("can't read PCH file: %m");

@@ -320,6 +320,7 @@ c_lex (tree *value)
 {
   const cpp_token *tok;
   location_t atloc;
+  static bool no_more_pch;
 
  retry:
   tok = get_nonpadding_token ();
@@ -419,6 +420,12 @@ c_lex (tree *value)
     default:
       *value = NULL_TREE;
       break;
+    }
+
+  if (! no_more_pch)
+    {
+      no_more_pch = true;
+      c_common_no_more_pch ();
     }
 
   return tok->type;

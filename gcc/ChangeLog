@@ -1,3 +1,37 @@
+2003-07-29  Geoffrey Keating  <geoffk@apple.com>
+
+	* c-common.c (allow_pch): Remove.
+	* c-common.h (allow_pch): Remove.
+	(c_common_no_more_pch): Declare.
+	* c-lex.c (c_lex): Call c_common_no_more_pch when appropriate.
+	* c-pch.c: Include hosthooks.h.
+	(c_common_valid_pch): Don't check allow_pch.
+	(c_common_read_pch): Clear valid_pch to prevent reading PCH files.
+	(c_common_no_more_pch): New.
+	* ggc-common.c: Include hosthooks.h.
+	(gt_pch_save): Call gt_pch_get_address.
+	(gt_pch_restore): Call gt_pch_use_address.
+	* hooks.c (hook_voidp_size_t_null): New.
+	(hook_bool_voidp_size_t_false): New.
+	* hooks.h (hook_voidp_size_t_null): New.
+	(hook_bool_voidp_size_t_false): New.
+	* hosthooks-def.h (HOST_HOOKS_GT_PCH_GET_ADDRESS): New.
+	(HOST_HOOKS_GT_PCH_USE_ADDRESS): New.
+	(HOST_HOOKS_INITIALIZER): Add HOST_HOOKS_GT_PCH_GET_ADDRESS,
+	HOST_HOOKS_GT_PCH_USE_ADDRESS.
+	* hosthooks.h (struct host_hooks): Add gt_pch_get_address,
+	gt_pch_use_address.
+	* doc/hostconfig.texi (Host Common): Document
+	HOST_HOOKS_GT_PCH_GET_ADDRESS, HOST_HOOKS_GT_PCH_USE_ADDRESS.
+	* Makefile.in (c-pch.o): Depend on hosthooks.h.
+	(ggc-common.o): Likewise.
+
+	* config/rs6000/host-darwin.c (HOST_HOOKS_GT_PCH_GET_ADDRESS): Define.
+	(HOST_HOOKS_GT_PCH_USE_ADDRESS): Define.
+	(pch_address_space): New.
+	(darwin_rs6000_gt_pch_get_address): New.
+	(darwin_rs6000_gt_pch_use_address): New.
+
 2003-07-29  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in (LIBCPP_DEPS): Add HASHTAB_H.

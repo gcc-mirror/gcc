@@ -302,7 +302,7 @@ cp_lexer_new_main (void)
      which is a GC collection point.  So we have to grab the first
      token before allocating any memory.  */
   cp_lexer_get_preprocessor_token (NULL, &first_token);
-  cpp_get_callbacks (parse_in)->valid_pch = NULL;
+  c_common_no_more_pch ();
 
   /* Allocate the memory.  */
   lexer = ggc_alloc_cleared (sizeof (cp_lexer));
