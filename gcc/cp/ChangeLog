@@ -2,6 +2,10 @@
 
 	* GCC 3.0.4 Released.
 
+2002-02-20  Release Manager
+
+	* GCC 3.0.4 Released.
+
 2002-02-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl.c (start_method): Fix error in 2002-01-10 change.

@@ -2,6 +2,10 @@
 
 	* GCC 3.0.4 Released.
 
+2002-02-20  Release Manager
+
+	* GCC 3.0.4 Released.
+
 2002-02-19  Eric Christopher  <echristo@redhat.com>
 
 	PR 5405 Backport march/mtune patches for compatibility with

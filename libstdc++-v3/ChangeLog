@@ -1,3 +1,7 @@
+2002-02-20  Release Manager
+
+	* GCC 3.0.4 Released.
+
 2001-02-14	Joel Sherrill <joel@OARcorp.com>
 
 	* config/cpu/m68k/bits/atomicity.h: Corrected for RTEMS targets which
