@@ -1,3 +1,13 @@
+2002-04-11  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c (cris_target_asm_function_prologue): Cast
+	uses of PIC_OFFSET_TABLE_REGNUM to int to silence warnings.
+	(cris_target_asm_function_epilogue): Ditto.
+	(cris_initial_frame_pointer_offset): Ditto.
+	(cris_simple_epilogue): Ditto.
+	(cris_expand_builtin_va_arg): Variable-size types come in
+	by-reference.
+
 2002-04-10  Richard Henderson  <rth@redhat.com>
 
 	* except.c (add_ehl_entry): Allow duplicates after landing pad
