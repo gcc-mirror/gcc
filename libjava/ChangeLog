@@ -1,3 +1,11 @@
+2005-04-02  Mark Wielaard  <mark@klomp.org>
+
+	* javax/naming/directory/BasicAttributes.java (equals): Compare to any
+	Attributes and attribute order doesn't matter.
+	(BasicAttributesEnumeration.where): Initialize to zero.
+	(BasicAttributesEnumeration.nextElement): Update and compare where
+	appropriately (zero based).
+
 2005-04-01  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	PR libgcj/20090, PR libgcj/20526
