@@ -1,5 +1,8 @@
 2003-06-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config/rtems.h, config/sol2.h, config/svr4.h, config/usegas.h,
+	config/vxworks.h: GNU CC -> GCC.
+
 	* convert.c, dwarf2out.c, dwarfout.c, emit-rtl.c, function.c,
 	lists.c, print-rtl.c, print-tree.c, read-rtl.c, rtl-error.c,
 	stmt.c, toplev.c, integrate.h, loop.h, machmode.h, rtl.h,
