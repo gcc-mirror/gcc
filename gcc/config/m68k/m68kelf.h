@@ -1,7 +1,7 @@
 /* m68kelf support, derived from m68kv4.h */
 
 /* Target definitions for GNU compiler for mc680x0 running System V.4
-   Copyright (C) 1991, 1993, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 2000, 2002 Free Software Foundation, Inc.
 
    Written by Ron Guilmette (rfg@netcom.com) and Fred Fish (fnf@cygnus.com).
 
@@ -73,12 +73,17 @@ Boston, MA 02111-1307, USA.  */
 /* config/m68k.md has an explicit reference to the program counter,
    prefix this by the register prefix.  */
 
-#define ASM_RETURN_CASE_JUMP 			\
-  do {						\
-    if (TARGET_5200)				\
-      return "ext%.l %0\n\tjmp %%pc@(2,%0:l)";	\
-    else					\
-      return "jmp %%pc@(2,%0:w)";		\
+#define ASM_RETURN_CASE_JUMP				\
+  do {							\
+    if (TARGET_5200)					\
+      {							\
+	if (ADDRESS_REG_P (operands[0]))		\
+	  return "jmp %%pc@(2,%0:l)";			\
+	else						\
+	  return "ext%.l %0\n\tjmp %%pc@(2,%0:l)";	\
+      }							\
+    else						\
+      return "jmp %%pc@(2,%0:w)";			\
   } while (0)
 
 /* How to refer to registers in assembler output.
