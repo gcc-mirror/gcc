@@ -1,3 +1,8 @@
+2001-11-09  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2asm.c (dw2_force_const_mem): Invoke STRIP_NAME_ENCODING
+	on the symbol string.
+
 2001-11-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* pa/elf.h (ASM_DECLARE_FUNCTION_NAME,
@@ -37,7 +42,7 @@ Fri Nov  9 17:51:09 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(FIXED_REGISTERS): VRSAVE is fixed.
 	(CALL_USED_REGISTERS): VRSAVE is call used.
 
-2001-11-08  Jason Eckhardt  <jle@rice.edu>
+2001-11-09  Jason Eckhardt  <jle@rice.edu>
 
 	* config/mips/mips.c (mips_output_conditional_branch): Do not hard
 	code the branch target as ".+16/.+12", but rather use labels.

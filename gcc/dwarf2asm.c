@@ -763,6 +763,7 @@ dw2_force_const_mem (x)
      rtx x;
 {
   splay_tree_node node;
+  const char *str;
   tree decl;
 
   if (! indirect_pool)
@@ -773,7 +774,9 @@ dw2_force_const_mem (x)
 
   if (GET_CODE (x) != SYMBOL_REF)
     abort ();
-  node = splay_tree_lookup (indirect_pool, (splay_tree_key) XSTR (x, 0));
+
+  STRIP_NAME_ENCODING (str, XSTR (x, 0));
+  node = splay_tree_lookup (indirect_pool, (splay_tree_key) str);
   if (node)
     decl = (tree) node->value;
   else
@@ -782,9 +785,9 @@ dw2_force_const_mem (x)
 
       if (USE_LINKONCE_INDIRECT)
 	{
-	  char *ref_name = alloca (strlen (XSTR (x, 0)) + sizeof "DW.ref.");
+	  char *ref_name = alloca (strlen (str) + sizeof "DW.ref.");
 
-	  sprintf (ref_name, "DW.ref.%s", XSTR (x, 0));
+	  sprintf (ref_name, "DW.ref.%s", str);
 	  id = get_identifier (ref_name);
 	  decl = build_decl (VAR_DECL, id, ptr_type_node);
 	  DECL_ARTIFICIAL (decl) = 1;
@@ -804,11 +807,11 @@ dw2_force_const_mem (x)
 	  DECL_INITIAL (decl) = decl;
 	}
 
-      id = maybe_get_identifier (XSTR (x, 0));
+      id = maybe_get_identifier (str);
       if (id)
 	TREE_SYMBOL_REFERENCED (id) = 1;
 
-      splay_tree_insert (indirect_pool, (splay_tree_key) XSTR (x, 0),
+      splay_tree_insert (indirect_pool, (splay_tree_key) str,
 			 (splay_tree_value) decl);
     }
 
