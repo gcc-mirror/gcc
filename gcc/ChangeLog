@@ -1,3 +1,8 @@
+Tue 19-Sep-2000 18:26:57 BST  Neil Booth  <NeilB@earthling.net>
+
+        * cppfiles.c (read_include_file): Take no special action for
+	zero-length files.
+
 2000-09-19  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* final.c (insn_current_reference_address): Use INSN_SHUID of seq

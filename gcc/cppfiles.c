@@ -331,12 +331,6 @@ read_include_file (pfile, inc)
       if (count < 0)
 	goto perror_fail;
 
-      if (offset == 0)
-	{
-	  free (buf);
-	  return 0;
-	}
-
       if (offset < size)
 	buf = xrealloc (buf, offset);
       inc->st.st_size = offset;
