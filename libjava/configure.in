@@ -441,6 +441,15 @@ NATIVE=yes
 # We're in the tree with gcc, and need to include some of its headers.
 GCC_UNWIND_INCLUDE='-I$(libgcj_basedir)/../gcc'
 
+# Figure out where generated headers like libgcj-config.h get installed.
+changequote(,)dnl
+gcc_version_trigger=${srcdir}/../gcc/version.c
+gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^\"]*\)\".*/\1/'`
+gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
+tool_include_dir='$(libdir)/gcc-lib/$(target_alias)/'${gcc_version}/include
+changequote([,])dnl
+AC_SUBST(tool_include_dir)
+
 if test -n "${with_cross_host}"; then
    # We are being configured with a cross compiler.  AC_REPLACE_FUNCS
    # may not work correctly, because the compiler may not be able to
