@@ -53,6 +53,10 @@ extern RTX_CODE arm_canonicalize_comparison PARAMS ((RTX_CODE, rtx *));
 extern int    legitimate_pic_operand_p	PARAMS ((rtx));
 extern rtx    legitimize_pic_address	PARAMS ((rtx, enum machine_mode, rtx));
 extern int    arm_legitimate_address_p  PARAMS ((enum machine_mode, rtx, int));
+extern int    thumb_legitimate_address_p PARAMS ((enum machine_mode, rtx,
+						  int));
+extern int    thumb_legitimate_offset_p	PARAMS ((enum machine_mode,
+						 HOST_WIDE_INT));
 extern int    arm_rtx_costs		PARAMS ((rtx, RTX_CODE, RTX_CODE));
 extern int    const_double_rtx_ok_for_fpu	PARAMS ((rtx));
 extern int    neg_const_double_rtx_ok_for_fpu	PARAMS ((rtx));

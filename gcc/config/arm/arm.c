@@ -71,6 +71,10 @@ static unsigned  bit_count 			PARAMS ((Ulong));
 static int	 arm_address_register_rtx_p	PARAMS ((rtx, int));
 static int	 arm_legitimate_index_p		PARAMS ((enum machine_mode,
 							 rtx, int));
+static int	 thumb_base_register_rtx_p	PARAMS ((rtx, 
+							 enum machine_mode,
+							 int));
+inline static int thumb_index_register_rtx_p	PARAMS ((rtx, int));
 static int       const_ok_for_op 		PARAMS ((Hint, enum rtx_code));
 static int       eliminate_lr2ip		PARAMS ((rtx *));
 static rtx	 emit_multi_reg_push		PARAMS ((int));
@@ -2717,7 +2721,177 @@ arm_legitimate_index_p (mode, index, strict_p)
   return (code == CONST_INT
 	  && INTVAL (index) < range
 	  && INTVAL (index) > -range);
-}  
+}
+
+/* Return nonzero if X is valid as an ARM state addressing register.  */
+static int
+thumb_base_register_rtx_p (x, mode, strict_p)
+     rtx x;
+     enum machine_mode mode;
+     int strict_p;
+{
+  int regno;
+
+  if (GET_CODE (x) != REG)
+    return 0;
+
+  regno = REGNO (x);
+
+  if (strict_p)
+    return THUMB_REGNO_MODE_OK_FOR_BASE_P (regno, mode);
+
+  return (regno <= LAST_LO_REGNUM
+	  || regno >= FIRST_PSEUDO_REGISTER
+	  || regno == FRAME_POINTER_REGNUM
+	  || (GET_MODE_SIZE (mode) >= 4
+	      && (regno == STACK_POINTER_REGNUM
+		  || x == hard_frame_pointer_rtx
+		  || x == arg_pointer_rtx)));
+}
+
+/* Return nonzero if x is a legitimate index register.  This is the case
+   for any base register that can access a QImode object.  */
+inline static int
+thumb_index_register_rtx_p (x, strict_p)
+     rtx x;
+     int strict_p;
+{
+  return thumb_base_register_rtx_p (x, QImode, strict_p);
+}
+
+/* Return nonzero if x is a legitimate Thumb-state address.
+ 
+   The AP may be eliminated to either the SP or the FP, so we use the
+   least common denominator, e.g. SImode, and offsets from 0 to 64.
+
+   ??? Verify whether the above is the right approach.
+
+   ??? Also, the FP may be eliminated to the SP, so perhaps that
+   needs special handling also.
+
+   ??? Look at how the mips16 port solves this problem.  It probably uses
+   better ways to solve some of these problems.
+
+   Although it is not incorrect, we don't accept QImode and HImode
+   addresses based on the frame pointer or arg pointer until the
+   reload pass starts.  This is so that eliminating such addresses
+   into stack based ones won't produce impossible code.  */
+int
+thumb_legitimate_address_p (mode, x, strict_p)
+     enum machine_mode mode;
+     rtx x;
+     int strict_p;
+{
+  /* ??? Not clear if this is right.  Experiment.  */
+  if (GET_MODE_SIZE (mode) < 4
+      && !(reload_in_progress || reload_completed)
+      && (reg_mentioned_p (frame_pointer_rtx, x)
+	  || reg_mentioned_p (arg_pointer_rtx, x)
+	  || reg_mentioned_p (virtual_incoming_args_rtx, x)
+	  || reg_mentioned_p (virtual_outgoing_args_rtx, x)
+	  || reg_mentioned_p (virtual_stack_dynamic_rtx, x)
+	  || reg_mentioned_p (virtual_stack_vars_rtx, x)))
+    return 0;
+
+  /* Accept any base register.  SP only in SImode or larger.  */
+  else if (thumb_base_register_rtx_p (x, mode, strict_p))
+    return 1;
+
+  /* This is PC relative data before MACHINE_DEPENDENT_REORG runs.  */
+  else if (GET_MODE_SIZE (mode) >= 4 && CONSTANT_P (x)
+	   && GET_CODE (x) == SYMBOL_REF
+           && CONSTANT_POOL_ADDRESS_P (x) && ! flag_pic)
+    return 1;
+
+  /* This is PC relative data after MACHINE_DEPENDENT_REORG runs.  */
+  else if (GET_MODE_SIZE (mode) >= 4 && reload_completed
+	   && (GET_CODE (x) == LABEL_REF
+	       || (GET_CODE (x) == CONST
+		   && GET_CODE (XEXP (x, 0)) == PLUS
+		   && GET_CODE (XEXP (XEXP (x, 0), 0)) == LABEL_REF
+		   && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)))
+    return 1;
+
+  /* Post-inc indexing only supported for SImode and larger.  */
+  else if (GET_CODE (x) == POST_INC && GET_MODE_SIZE (mode) >= 4
+	   && thumb_index_register_rtx_p (XEXP (x, 0), strict_p))
+    return 1;
+
+  else if (GET_CODE (x) == PLUS)
+    {
+      /* REG+REG address can be any two index registers.  */
+      /* We disallow FRAME+REG addressing since we know that FRAME
+	 will be replaced with STACK, and SP relative addressing only
+	 permits SP+OFFSET.  */
+      if (GET_MODE_SIZE (mode) <= 4
+	  && XEXP (x, 0) != frame_pointer_rtx
+	  && XEXP (x, 1) != frame_pointer_rtx
+	  && XEXP (x, 0) != virtual_stack_vars_rtx
+	  && XEXP (x, 1) != virtual_stack_vars_rtx
+	  && thumb_index_register_rtx_p (XEXP (x, 0), strict_p)
+	  && thumb_index_register_rtx_p (XEXP (x, 1), strict_p))
+	return 1;
+
+      /* REG+const has 5-7 bit offset for non-SP registers.  */
+      else if ((thumb_index_register_rtx_p (XEXP (x, 0), strict_p)
+		|| XEXP (x, 0) == arg_pointer_rtx)
+	       && GET_CODE (XEXP (x, 1)) == CONST_INT
+	       && thumb_legitimate_offset_p (mode, INTVAL (XEXP (x, 1))))
+	return 1;
+
+      /* REG+const has 10 bit offset for SP, but only SImode and
+	 larger is supported.  */
+      /* ??? Should probably check for DI/DFmode overflow here
+	 just like GO_IF_LEGITIMATE_OFFSET does.  */
+      else if (GET_CODE (XEXP (x, 0)) == REG
+	       && REGNO (XEXP (x, 0)) == STACK_POINTER_REGNUM
+	       && GET_MODE_SIZE (mode) >= 4
+	       && GET_CODE (XEXP (x, 1)) == CONST_INT
+	       && INTVAL (XEXP (x, 1)) >= 0
+	       && INTVAL (XEXP (x, 1)) + GET_MODE_SIZE (mode) <= 1024
+	       && (INTVAL (XEXP (x, 1)) & 3) == 0)
+	return 1;
+
+      else if (GET_CODE (XEXP (x, 0)) == REG
+	       && REGNO (XEXP (x, 0)) == FRAME_POINTER_REGNUM
+	       && GET_MODE_SIZE (mode) >= 4
+	       && GET_CODE (XEXP (x, 1)) == CONST_INT
+	       && (INTVAL (XEXP (x, 1)) & 3) == 0)
+	return 1;
+    }
+
+  else if (GET_MODE_CLASS (mode) != MODE_FLOAT
+	   && GET_CODE (x) == SYMBOL_REF
+	   && CONSTANT_POOL_ADDRESS_P (x)
+	   && !(flag_pic
+		&& symbol_mentioned_p (get_pool_constant (x))))
+    return 1;
+
+  return 0;
+}
+
+/* Return nonzero if VAL can be used as an offset in a Thumb-state address
+   instruction of mode MODE.  */
+int
+thumb_legitimate_offset_p (mode, val)
+     enum machine_mode mode;
+     HOST_WIDE_INT val;
+{
+  switch (GET_MODE_SIZE (mode))
+    {
+    case 1:
+      return val >= 0 && val < 32;
+
+    case 2:
+      return val >= 0 && val < 64 && (val & 1) == 0;
+
+    default:
+      return (val >= 0
+	      && (val + GET_MODE_SIZE (mode)) <= 128
+	      && (val & 3) == 0);
+    }
+}
+
 
 
 #define REG_OR_SUBREG_REG(X)						\
