@@ -1,5 +1,5 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
-   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3384,7 +3384,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	       now we are treating part of the operand as an input, so
 	       we must change these to RELOAD_FOR_INPUT_ADDRESS.  */
 
-	    if (operand_type[i] == RELOAD_FOR_OUTPUT)
+	    if (modified[i] == RELOAD_WRITE)
 	      for (j = 0; j < n_reloads; j++)
 		if (reload_opnum[j] == i
 		    && reload_when_needed[j] == RELOAD_FOR_OUTPUT_ADDRESS)
