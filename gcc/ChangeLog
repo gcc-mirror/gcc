@@ -1,3 +1,7 @@
+2000-10-09  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* dbxout.c (dbxout_source_line): Remove extra tab.
+
 2000-10-09  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/elfos.h (UNIQUE_SECTION): Apply STRIP_NAME_ENCODING on name.
