@@ -507,7 +507,7 @@ asm_file_start (file)
   fprintf (file, ";\tBy Hitachi America Ltd and Cygnus Support\n");
   
   if (optimize_size)
-    fprintf (file, "; -Os\n")
+    fprintf (file, "; -Os\n");
   else if (optimize)
     fprintf (file, "; -O%d\n", optimize);
   if (TARGET_H8300H)
