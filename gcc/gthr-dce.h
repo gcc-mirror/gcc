@@ -74,6 +74,9 @@ typedef pthread_mutex_t __gthread_recursive_mutex_t;
 #pragma weak pthread_mutex_lock
 #pragma weak pthread_mutex_trylock
 #pragma weak pthread_mutex_unlock
+#pragma weak pthread_mutexattr_create
+#pragma weak pthread_mutexattr_setkind_np
+#pragma weak pthread_mutexattr_delete
 
 #ifdef _LIBOBJC
 /* Objective-C.  */
