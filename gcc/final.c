@@ -288,6 +288,8 @@ static void output_asm_name	PROTO((void));
 static void output_operand	PROTO((rtx, int));
 #ifdef LEAF_REGISTERS
 static void leaf_renumber_regs	PROTO((rtx));
+#endif
+#ifdef HAVE_cc0
 static int alter_cond		PROTO((rtx));
 #endif
 
