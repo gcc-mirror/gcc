@@ -1,5 +1,10 @@
 2001-12-14  Kazu Hirata  <kazu@hxi.com>
 
+	* config/h8300/h8300.md (anonymous pattern): Add a missing
+	mode.
+
+2001-12-14  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/h8300.c (h8300_adjust_insn_length): Fix a
 	comment typo.
 
