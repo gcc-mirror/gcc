@@ -1433,8 +1433,11 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   map->const_age = 0;
 
   /* Record the current insn in case we have to set up pointers to frame
-     and argument memory blocks.  */
+     and argument memory blocks.  If there are no insns yet, add a dummy
+     insn that can be used as an insertion point.  */
   map->insns_at_start = get_last_insn ();
+  if (map->insns_at_start == 0)
+    map->insns_at_start = emit_note (NULL_PTR, NOTE_INSN_DELETED);
 
   map->regno_pointer_flag = INLINE_REGNO_POINTER_FLAG (header);
   map->regno_pointer_align = INLINE_REGNO_POINTER_ALIGN (header);
