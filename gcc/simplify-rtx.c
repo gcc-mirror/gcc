@@ -50,6 +50,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
  ((((HOST_WIDE_INT) low) < 0) ? ((HOST_WIDE_INT) -1) : ((HOST_WIDE_INT) 0))
 
 static rtx neg_const_int (enum machine_mode, rtx);
+static bool mode_signbit_p (enum machine_mode, rtx);
 static int simplify_plus_minus_op_data_cmp (const void *, const void *);
 static rtx simplify_plus_minus (enum rtx_code, enum machine_mode, rtx,
 				rtx, int);
@@ -66,6 +67,39 @@ neg_const_int (enum machine_mode mode, rtx i)
   return gen_int_mode (- INTVAL (i), mode);
 }
 
+/* Test whether expression, X, is an immediate constant that represents
+   the most significant bit of machine mode MODE.  */
+
+static bool
+mode_signbit_p (enum machine_mode mode, rtx x)
+{
+  unsigned HOST_WIDE_INT val;
+  unsigned int width;
+
+  if (GET_MODE_CLASS (mode) != MODE_INT)
+    return false;
+
+  width = GET_MODE_BITSIZE (mode);
+  if (width == 0)
+    return false;
+  
+  if (width <= HOST_BITS_PER_WIDE_INT
+      && GET_CODE (x) == CONST_INT)
+    val = INTVAL (x);
+  else if (width <= 2 * HOST_BITS_PER_WIDE_INT
+	   && GET_CODE (x) == CONST_DOUBLE
+	   && CONST_DOUBLE_LOW (x) == 0)
+    {
+      val = CONST_DOUBLE_HIGH (x);
+      width -= HOST_BITS_PER_WIDE_INT;
+    }
+  else
+    return false;
+
+  if (width < HOST_BITS_PER_WIDE_INT)
+    val &= ((unsigned HOST_WIDE_INT) 1 << width) - 1;
+  return val == ((unsigned HOST_WIDE_INT) 1 << (width - 1));
+}
 
 /* Make a binary operation by properly ordering the operands and
    seeing if the expression folds.  */
@@ -912,6 +946,16 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 						   mode)) != 0)
 	    return simplify_gen_binary (XOR, mode, XEXP (op, 0), temp);
 
+	  /* (not (plus X C)) for signbit C is (xor X D) with D = ~C.  */
+	  if (GET_CODE (op) == PLUS
+	      && GET_CODE (XEXP (op, 1)) == CONST_INT
+	      && mode_signbit_p (mode, XEXP (op, 1))
+	      && (temp = simplify_unary_operation (NOT, mode,
+						   XEXP (op, 1),
+						   mode)) != 0)
+	    return simplify_gen_binary (XOR, mode, XEXP (op, 0), temp);
+
+
 
 	  /* (not (ashift 1 X)) is (rotate ~1 X).  We used to do this for
 	     operands other than 1, but that is not valid.  We could do a
@@ -1514,6 +1558,17 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 		}
 	    }
 
+	  /* (plus (xor X C1) C2) is (xor X (C1^C2)) if C2 is signbit.  */
+	  if ((GET_CODE (op1) == CONST_INT
+	       || GET_CODE (op1) == CONST_DOUBLE)
+	      && GET_CODE (op0) == XOR
+	      && (GET_CODE (XEXP (op0, 1)) == CONST_INT
+		  || GET_CODE (XEXP (op0, 1)) == CONST_DOUBLE)
+	      && mode_signbit_p (mode, op1))
+	    return simplify_gen_binary (XOR, mode, XEXP (op0, 0),
+					simplify_gen_binary (XOR, mode, op1,
+							     XEXP (op0, 1)));
+
 	  /* If one of the operands is a PLUS or a MINUS, see if we can
 	     simplify this by the associative law.
 	     Don't use the associative law for floating point.
@@ -1797,9 +1852,27 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	      && ((INTVAL (trueop1) & GET_MODE_MASK (mode))
 		  == GET_MODE_MASK (mode)))
 	    return simplify_gen_unary (NOT, mode, op0, mode);
-	  if (trueop0 == trueop1 && ! side_effects_p (op0)
+	  if (trueop0 == trueop1
+	      && ! side_effects_p (op0)
 	      && GET_MODE_CLASS (mode) != MODE_CC)
 	    return const0_rtx;
+
+	  /* Canonicalize XOR of the most significant bit to PLUS.  */
+	  if ((GET_CODE (op1) == CONST_INT
+	       || GET_CODE (op1) == CONST_DOUBLE)
+	      && mode_signbit_p (mode, op1))
+	    return simplify_gen_binary (PLUS, mode, op0, op1);
+	  /* (xor (plus X C1) C2) is (xor X (C1^C2)) if C1 is signbit.  */
+	  if ((GET_CODE (op1) == CONST_INT
+	       || GET_CODE (op1) == CONST_DOUBLE)
+	      && GET_CODE (op0) == PLUS
+	      && (GET_CODE (XEXP (op0, 1)) == CONST_INT
+		  || GET_CODE (XEXP (op0, 1)) == CONST_DOUBLE)
+	      && mode_signbit_p (mode, XEXP (op0, 1)))
+	    return simplify_gen_binary (XOR, mode, XEXP (op0, 0),
+					simplify_gen_binary (XOR, mode, op1,
+							     XEXP (op0, 1)));
+	      
 	  tem = simplify_associative_operation (code, mode, op0, op1);
 	  if (tem)
 	    return tem;
