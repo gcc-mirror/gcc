@@ -60,8 +60,9 @@ RANLIB = @RANLIB@
 
 CC = @CC@
 CFLAGS = @CFLAGS@
+GTHREAD_FLAGS=@GTHREAD_FLAGS@
 ALL_CFLAGS = -I. -I$(srcdir) $(CPPFLAGS) $(DEFS) $(CFLAGS) \
-	-DIN_GCC -DIN_TARGET_LIBS
+	$(GTHREAD_FLAGS) -DIN_GCC -DIN_TARGET_LIBS
 
 #
 # Define the cc1obj in terms of the CC that is passed on from higher
@@ -76,7 +77,7 @@ INCLUDES = -I$(srcdir)/objc  -I$(srcdir)/$(MULTISRCTOP)../gcc \
   -I$(srcdir)/$(MULTISRCTOP)../include
 
 OBJC_GCFLAGS=-DOBJC_WITH_GC=1
-OBJC_THREAD_FILE=thr-@OBJC_THREAD_FILE@
+OBJC_THREAD_FILE=thr-objc
 
 .SUFFIXES:
 .SUFFIXES: .c .m .o

@@ -1,3 +1,15 @@
+2000-05-12  H.J. Lu  (hjl@gnu.org)
+
+	* Makefile.in (GTHREAD_FLAGS): New.
+	(ALL_CFLAGS): Add $(GTHREAD_FLAGS).
+	(OBJC_THREAD_FILE): Changed to thr-objc.
+
+	* configure.in (GTHREAD_FLAGS): New, check and replace it for
+	Makefile.
+	(OBJC_THREAD_FILE): Removed.
+
+	* thr-objc.c: New.
+
 2000-07-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* objc/hash.h: Include string.h.

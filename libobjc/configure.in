@@ -91,17 +91,17 @@ the Objective C runtime system.  If necessary, install gcc now with
 
 AC_HEADER_STDC
 
-# Determine the name of the GCC thread file.
+# Determine CFLAGS for gthread.
 
-AC_CACHE_CHECK([for thread file],objc_cv_thread_file,
+AC_CACHE_CHECK([for gthread cflags],objc_cv_gthread_flags,
 [if test -f "$r"/gcc/Makefile
 then
-  objc_cv_thread_file=`grep \^GCC_THREAD_FILE "$r"/gcc/Makefile | awk -F= '{ print $2 }'`
+  objc_cv_gthread_flags=`grep \^GTHREAD_FLAGS "$r"/gcc/Makefile | awk -F= '{ print $2 }'`
 else
   AC_MSG_ERROR([not found])
 fi])
-OBJC_THREAD_FILE=$objc_cv_thread_file
-AC_SUBST(OBJC_THREAD_FILE)
+GTHREAD_FLAGS=$objc_cv_gthread_flags
+AC_SUBST(GTHREAD_FLAGS)
 
 AC_ARG_ENABLE(objc-gc,
 [  --enable-objc-gc       enable the use of Boehm's garbage collector with
