@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -44,6 +44,7 @@ import gnu.java.security.der.BitString;
 import gnu.java.security.der.DER;
 import gnu.java.security.der.DERReader;
 import gnu.java.security.der.DERValue;
+import gnu.java.security.x509.ext.Extension;
 
 import java.io.InputStream;
 import java.io.IOException;
@@ -57,11 +58,12 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CRLException;
-import java.security.cert.X509CRLEntry;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
@@ -72,10 +74,21 @@ import javax.security.auth.x500.X500Principal;
  * @author Casey Marshall (rsdio@metastatic.org)
  */
 public class X509CRL extends java.security.cert.X509CRL
+  implements GnuPKIExtension
 {
 
   // Constants and fields.
   // ------------------------------------------------------------------------
+
+  private static final boolean DEBUG = false;
+  private static void debug(String msg)
+  {
+    if (DEBUG)
+      {
+        System.err.print(">> X509CRL: ");
+        System.err.println(msg);
+      }
+  }
 
   private static final OID ID_DSA = new OID("1.2.840.10040.4.1");
   private static final OID ID_DSA_WITH_SHA1 = new OID("1.2.840.10040.4.3");
@@ -92,12 +105,10 @@ public class X509CRL extends java.security.cert.X509CRL
   private byte[] algParams;
   private Date thisUpdate;
   private Date nextUpdate;
-  private X500Principal issuerDN;
+  private X500DistinguishedName issuerDN;
   private HashMap revokedCerts;
   private HashMap extensions;
-  private HashSet critOids;
-  private HashSet nonCritOids;
-  
+
   private OID sigAlg;
   private byte[] sigAlgParams;
   private byte[] rawSig;
@@ -118,8 +129,6 @@ public class X509CRL extends java.security.cert.X509CRL
     super();
     revokedCerts = new HashMap();
     extensions = new HashMap();
-    critOids = new HashSet();
-    nonCritOids = new HashSet();
     try
       {
         parse(encoded);
@@ -141,7 +150,9 @@ public class X509CRL extends java.security.cert.X509CRL
 
   public boolean equals(Object o)
   {
-    return ((X509CRL) o).revokedCerts.equals(revokedCerts);
+    if (!(o instanceof X509CRL))
+      return false;
+    return ((X509CRL) o).getRevokedCertificates().equals(revokedCerts.values());
   }
 
   public int hashCode()
@@ -182,7 +193,7 @@ public class X509CRL extends java.security.cert.X509CRL
 
   public X500Principal getIssuerX500Principal()
   {
-    return issuerDN;
+    return new X500Principal(issuerDN.getDer());
   }
 
   public Date getThisUpdate()
@@ -197,9 +208,9 @@ public class X509CRL extends java.security.cert.X509CRL
     return null;
   }
 
-  public X509CRLEntry getRevokedCertificate(BigInteger serialNo)
+  public java.security.cert.X509CRLEntry getRevokedCertificate(BigInteger serialNo)
   {
-    return (X509CRLEntry) revokedCerts.get(serialNo);
+    return (java.security.cert.X509CRLEntry) revokedCerts.get(serialNo);
   }
 
   public Set getRevokedCertificates()
@@ -247,33 +258,68 @@ public class X509CRL extends java.security.cert.X509CRL
 
   public boolean hasUnsupportedCriticalExtension()
   {
-    return false; // XXX
+    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
+      {
+        Extension e = (Extension) it.next();
+        if (e.isCritical() && !e.isSupported())
+          return true;
+      }
+    return false;
   }
 
   public Set getCriticalExtensionOIDs()
   {
-    return Collections.unmodifiableSet(critOids);
+    HashSet s = new HashSet();
+    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
+      {
+        Extension e = (Extension) it.next();
+        if (e.isCritical())
+          s.add(e.getOid().toString());
+      }
+    return Collections.unmodifiableSet(s);
   }
 
   public Set getNonCriticalExtensionOIDs()
   {
-    return Collections.unmodifiableSet(nonCritOids);
+    HashSet s = new HashSet();
+    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
+      {
+        Extension e = (Extension) it.next();
+        if (!e.isCritical())
+          s.add(e.getOid().toString());
+      }
+    return Collections.unmodifiableSet(s);
   }
 
   public byte[] getExtensionValue(String oid)
   {
-    byte[] ext = (byte[]) extensions.get(oid);
-    if (ext != null)
-      return (byte[]) ext.clone();
+    Extension e = getExtension(new OID(oid));
+    if (e != null)
+      {
+        return e.getValue().getEncoded();
+      }
     return null;
   }
 
+  // GnuPKIExtension method.
+  // -------------------------------------------------------------------------
+
+  public Extension getExtension(OID oid)
+  {
+    return (Extension) extensions.get(oid);
+  }
+
+  public Collection getExtensions()
+  {
+    return extensions.values();
+  }
+
   // CRL methods.
-  // ------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
 
   public String toString()
   {
-    return gnu.java.security.x509.X509CRL.class.getName();
+    return X509CRL.class.getName();
   }
 
   public boolean isRevoked(Certificate cert)
@@ -302,17 +348,23 @@ public class X509CRL extends java.security.cert.X509CRL
 
   private void parse(InputStream in) throws Exception
   {
+    // CertificateList ::= SEQUENCE {
     DERReader der = new DERReader(in);
     DERValue val = der.read();
+    debug("start CertificateList len == " + val.getLength());
     if (!val.isConstructed())
-      throw new ASN1ParsingException("malformed CertificateList");
+      throw new IOException("malformed CertificateList");
     encoded = val.getEncoded();
 
+    //   tbsCertList ::= SEQUENCE {  -- TBSCertList
     val = der.read();
     if (!val.isConstructed())
-      throw new ASN1ParsingException("malformed TBSCertList");
+      throw new IOException("malformed TBSCertList");
+    debug("start tbsCertList  len == " + val.getLength());
     tbsCRLBytes = val.getEncoded();
 
+    //     version    Version OPTIONAL,
+    //                  -- If present must be v2
     val = der.read();
     if (val.getValue() instanceof BigInteger)
       {
@@ -321,78 +373,104 @@ public class X509CRL extends java.security.cert.X509CRL
       }
     else
       version = 1;
+    debug("read version == " + version);
 
+    //     signature   AlgorithmIdentifier,
+    debug("start AlgorithmIdentifier len == " + val.getLength());
     if (!val.isConstructed())
-      throw new ASN1ParsingException("malformed AlgorithmIdentifier");
+      throw new IOException("malformed AlgorithmIdentifier");
     DERValue algIdVal = der.read();
     algId = (OID) algIdVal.getValue();
+    debug("read object identifier == " + algId);
     if (val.getLength() > algIdVal.getEncodedLength())
       {
         val = der.read();
+        debug("read parameters  len == " + val.getEncodedLength());
         algParams = val.getEncoded();
         if (val.isConstructed())
           in.skip(val.getLength());
       }
 
-    issuerDN = new X500Principal(in);
+    //     issuer   Name,
+    val = der.read();
+    issuerDN = new X500DistinguishedName(val.getEncoded());
+    der.skip(val.getLength());
+    debug("read issuer == " + issuerDN);
 
+    //     thisUpdate   Time,
     thisUpdate = (Date) der.read().getValue();
+    debug("read thisUpdate == " + thisUpdate);
 
+    //     nextUpdate   Time OPTIONAL,
     val = der.read();
     if (val.getValue() instanceof Date)
       {
         nextUpdate = (Date) val.getValue();
+        debug("read nextUpdate == " + nextUpdate);
         val = der.read();
       }
+
+    //     revokedCertificates SEQUENCE OF SEQUENCE {
+    //       -- X509CRLEntry objects...
+    //     } OPTIONAL,
     if (val.getTag() != 0)
       {
         int len = 0;
         while (len < val.getLength())
           {
-            X509CRLEntry entry =
-               new gnu.java.security.x509.X509CRLEntry(version, in);
+            X509CRLEntry entry = new X509CRLEntry(version, der);
             revokedCerts.put(entry.getSerialNumber(), entry);
             len += entry.getEncoded().length;
           }
-      }
-    if (version >= 2 && val.getTagClass() != DER.UNIVERSAL && val.getTag() == 0)
-      {
         val = der.read();
-        int len = 0;
-        while (len < val.getLength())
-          {
-            DERValue ext = der.read();
-            OID extId = (OID) der.read().getValue();
-            DERValue val2 = der.read();
-            Boolean crit = Boolean.valueOf(false);
-            if (val2.getValue() instanceof Boolean)
-              {
-                crit = (Boolean) val2.getValue();
-                val2 = der.read();
-              }
-            byte[] extVal = (byte[]) val2.getValue();
-            extensions.put(extId.toString(), extVal);
-            if (crit.booleanValue())
-              critOids.add(extId.toString());
-            else
-              nonCritOids.add(extId.toString());
-            len += ext.getEncodedLength();
-          }
       }
 
-    val = der.read();
+    //    crlExtensions   [0] EXPLICIT Extensions OPTIONAL
+    //                        -- if present MUST be v2
+    if (val.getTagClass() != DER.UNIVERSAL && val.getTag() == 0)
+      {
+        if (version < 2)
+          throw new IOException("extra data in CRL");
+        DERValue exts = der.read();
+        if (!exts.isConstructed())
+          throw new IOException("malformed Extensions");
+        debug("start Extensions  len == " + exts.getLength());
+        int len = 0;
+        while (len < exts.getLength())
+          {
+            DERValue ext = der.read();
+            if (!ext.isConstructed())
+              throw new IOException("malformed Extension");
+            Extension e = new Extension(ext.getEncoded());
+            extensions.put(e.getOid(), e);
+            der.skip(ext.getLength());
+            len += ext.getEncodedLength();
+            debug("current count == " + len);
+          }
+        val = der.read();
+      }
+
+    debug("read tag == " + val.getTag());
     if (!val.isConstructed())
-      throw new ASN1ParsingException("malformed AlgorithmIdentifier");
+      throw new IOException("malformed AlgorithmIdentifier");
+    debug("start AlgorithmIdentifier  len == " + val.getLength());
     DERValue sigAlgVal = der.read();
+    debug("read tag == " + sigAlgVal.getTag());
+    if (sigAlgVal.getTag() != DER.OBJECT_IDENTIFIER)
+      throw new IOException("malformed AlgorithmIdentifier");
     sigAlg = (OID) sigAlgVal.getValue();
+    debug("signature id == " + sigAlg);
+    debug("sigAlgVal length == " + sigAlgVal.getEncodedLength());
     if (val.getLength() > sigAlgVal.getEncodedLength())
       {
         val = der.read();
+        debug("sig params tag = " + val.getTag() + " len == " + val.getEncodedLength());
         sigAlgParams = (byte[]) val.getEncoded();
         if (val.isConstructed())
           in.skip(val.getLength());
       }
     val = der.read();
+    debug("read tag = " + val.getTag());
     rawSig = val.getEncoded();
     signature = ((BitString) val.getValue()).toByteArray();
   }

@@ -1,5 +1,5 @@
 /* X509Certificate.java -- X.509 certificate.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -42,7 +42,9 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.ObjectStreamException;
+import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.StringWriter;
 
 import java.math.BigInteger;
 
@@ -64,10 +66,12 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.CertificateParsingException;
 
+import java.security.interfaces.DSAParams;
+import java.security.interfaces.DSAPublicKey;
 import java.security.spec.DSAParameterSpec;
-import java.security.spec.DSAPublicKeySpec;
-import java.security.spec.RSAPublicKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -77,17 +81,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
-import gnu.java.io.ASN1ParsingException;
 import gnu.java.security.OID;
-import gnu.java.security.der.BitString;
-import gnu.java.security.der.DER;
-import gnu.java.security.der.DERReader;
-import gnu.java.security.der.DERValue;
-import gnu.java.security.der.DERWriter;
+import gnu.java.security.der.*;
+import gnu.java.security.x509.ext.*;
 
 /**
  * An implementation of X.509 certificates.
@@ -95,65 +96,64 @@ import gnu.java.security.der.DERWriter;
  * @author Casey Marshall (rsdio@metastatic.org)
  */
 public class X509Certificate extends java.security.cert.X509Certificate
-  implements Serializable
+  implements Serializable, GnuPKIExtension
 {
 
   // Constants and fields.
   // ------------------------------------------------------------------------
 
-  private static final OID ID_DSA = new OID("1.2.840.10040.4.1");
-  private static final OID ID_DSA_WITH_SHA1 = new OID("1.2.840.10040.4.3");
-  private static final OID ID_RSA = new OID("1.2.840.113549.1.1.1");
-  private static final OID ID_RSA_WITH_MD2 = new OID("1.2.840.113549.1.1.2");
-  private static final OID ID_RSA_WITH_MD5 = new OID("1.2.840.113549.1.1.4");
-  private static final OID ID_RSA_WITH_SHA1 = new OID("1.2.840.113549.1.1.5");
+  private static final boolean DEBUG = false;
+  private static void debug(String msg)
+  {
+    if (DEBUG)
+      {
+        System.err.print(">> X509Certificate: ");
+        System.err.println(msg);
+      }
+  }
+  private static void debug(Throwable t)
+  {
+    if (DEBUG)
+      {
+        System.err.print(">> X509Certificate: ");
+        t.printStackTrace();
+      }
+  }
 
-  private static final OID ID_EXTENSION = new OID("2.5.29");
-  private static final OID ID_KEY_USAGE = ID_EXTENSION.getChild(15);
-  private static final OID ID_BASIC_CONSTRAINTS = ID_EXTENSION.getChild(19);
-  private static final OID ID_EXT_KEY_USAGE = ID_EXTENSION.getChild(37);
-
-  private static final int OTHER_NAME     = 0;
-  private static final int RFC882_NAME    = 1;
-  private static final int DNS_NAME       = 2;
-  private static final int X400_ADDRESS   = 3;
-  private static final int DIRECTORY_NAME = 4;
-  private static final int EDI_PARTY_NAME = 5;
-  private static final int URI            = 6;
-  private static final int IP_ADDRESS     = 7;
-  private static final int REGISTERED_ID  = 8;
+  protected static final OID ID_DSA = new OID ("1.2.840.10040.4.1");
+  protected static final OID ID_DSA_WITH_SHA1 = new OID ("1.2.840.10040.4.3");
+  protected static final OID ID_RSA = new OID ("1.2.840.113549.1.1.1");
+  protected static final OID ID_RSA_WITH_MD2 = new OID ("1.2.840.113549.1.1.2");
+  protected static final OID ID_RSA_WITH_MD5 = new OID ("1.2.840.113549.1.1.4");
+  protected static final OID ID_RSA_WITH_SHA1 = new OID ("1.2.840.113549.1.1.5");
+  protected static final OID ID_ECDSA_WITH_SHA1 = new OID ("1.2.840.10045.4.1");
 
   // This object SHOULD be serialized with an instance of
   // java.security.cert.Certificate.CertificateRep, thus all fields are
   // transient.
 
   // The encoded certificate.
-  private transient byte[] encoded;
+  protected transient byte[] encoded;
 
   // TBSCertificate part.
-  private transient byte[] tbsCertBytes;
-  private transient int version;
-  private transient BigInteger serialNo;
-  private transient OID algId;
-  private transient byte[] algVal;
-  private transient X500Principal issuer;
-  private transient Date notBefore;
-  private transient Date notAfter;
-  private transient X500Principal subject;
-  private transient PublicKey subjectKey;
-  private transient BitString issuerUniqueId;
-  private transient BitString subjectUniqueId;
-  private transient HashMap extensions;
-  private transient HashSet critOids;
-  private transient HashSet nonCritOids;
-  
-  private transient BitString keyUsage;
-  private transient int basicConstraints = -1;
+  protected transient byte[] tbsCertBytes;
+  protected transient int version;
+  protected transient BigInteger serialNo;
+  protected transient OID algId;
+  protected transient byte[] algVal;
+  protected transient X500DistinguishedName issuer;
+  protected transient Date notBefore;
+  protected transient Date notAfter;
+  protected transient X500DistinguishedName subject;
+  protected transient PublicKey subjectKey;
+  protected transient BitString issuerUniqueId;
+  protected transient BitString subjectUniqueId;
+  protected transient Map extensions;
 
   // Signature.
-  private transient OID sigAlgId;
-  private transient byte[] sigAlgVal;
-  private transient byte[] signature;
+  protected transient OID sigAlgId;
+  protected transient byte[] sigAlgVal;
+  protected transient byte[] signature;
 
   // Constructors.
   // ------------------------------------------------------------------------
@@ -173,20 +173,27 @@ public class X509Certificate extends java.security.cert.X509Certificate
   {
     super();
     extensions = new HashMap();
-    critOids = new HashSet();
-    nonCritOids = new HashSet();
     try
       {
         parse(encoded);
       }
     catch (IOException ioe)
       {
+        debug(ioe);
         throw ioe;
       }
     catch (Exception e)
       {
-        throw new CertificateException(e.toString());
+        debug(e);
+        CertificateException ce = new CertificateException(e.getMessage());
+        ce.initCause (e);
+        throw ce;
       }
+  }
+
+  protected X509Certificate()
+  {
+    extensions = new HashMap();
   }
 
   // X509Certificate methods.
@@ -202,9 +209,13 @@ public class X509Certificate extends java.security.cert.X509Certificate
     throws CertificateExpiredException, CertificateNotYetValidException
   {
     if (date.compareTo(notBefore) < 0)
-      throw new CertificateNotYetValidException();
+      {
+        throw new CertificateNotYetValidException();
+      }
     if (date.compareTo(notAfter) > 0)
-      throw new CertificateExpiredException();
+      {
+        throw new CertificateExpiredException();
+      }
   }
 
   public int getVersion()
@@ -219,22 +230,22 @@ public class X509Certificate extends java.security.cert.X509Certificate
 
   public Principal getIssuerDN()
   {
-    return getIssuerX500Principal();
+    return issuer;
   }
 
   public X500Principal getIssuerX500Principal()
   {
-    return issuer;
+    return new X500Principal(issuer.getDer());
   }
 
   public Principal getSubjectDN()
   {
-    return getSubjectX500Principal();
+    return subject;
   }
 
   public X500Principal getSubjectX500Principal()
   {
-    return subject;
+    return new X500Principal(subject.getDer());
   }
 
   public Date getNotBefore()
@@ -260,15 +271,22 @@ public class X509Certificate extends java.security.cert.X509Certificate
   public String getSigAlgName()
   {
     if (sigAlgId.equals(ID_DSA_WITH_SHA1))
-      return "SHA1withDSA";
-    if (sigAlgId.equals(ID_RSA_WITH_MD2 ))
-      return "MD2withRSA";
-    if (sigAlgId.equals(ID_RSA_WITH_MD5 ))
-      return "MD5withRSA";
-    if (sigAlgId.equals(ID_RSA_WITH_SHA1 ))
-      return "SHA1withRSA";
+      {
+        return "SHA1withDSA";
+      }
+    if (sigAlgId.equals(ID_RSA_WITH_MD2))
+      {
+        return "MD2withRSA";
+      }
+    if (sigAlgId.equals(ID_RSA_WITH_MD5))
+      {
+        return "MD5withRSA";
+      }
+    if (sigAlgId.equals(ID_RSA_WITH_SHA1))
+      {
+        return "SHA1withRSA";
+      }
     return "unknown";
-    // return sigAlgId.getShortName();
   }
 
   public String getSigAlgOID()
@@ -284,75 +302,81 @@ public class X509Certificate extends java.security.cert.X509Certificate
   public boolean[] getIssuerUniqueID()
   {
     if (issuerUniqueId != null)
-      return issuerUniqueId.toBooleanArray();
+      {
+        return issuerUniqueId.toBooleanArray();
+      }
     return null;
   }
 
   public boolean[] getSubjectUniqueID()
   {
     if (subjectUniqueId != null)
-      return subjectUniqueId.toBooleanArray();
+      {
+        return subjectUniqueId.toBooleanArray();
+      }
     return null;
   }
 
   public boolean[] getKeyUsage()
   {
-    if (keyUsage != null)
-      return keyUsage.toBooleanArray();
+    Extension e = getExtension(KeyUsage.ID);
+    if (e != null)
+      {
+        KeyUsage ku = (KeyUsage) e.getValue();
+        boolean[] result = new boolean[9];
+        boolean[] b = ku.getKeyUsage().toBooleanArray();
+        System.arraycopy(b, 0, result, 0, b.length);
+        return result;
+      }
     return null;
   }
 
   public List getExtendedKeyUsage() throws CertificateParsingException
   {
-    byte[] ext = (byte[]) extensions.get("2.5.29.37");
-    if (ext == null)
-      return null;
-    LinkedList usages = new LinkedList();
-    try
+    Extension e = getExtension(ExtendedKeyUsage.ID);
+    if (e != null)
       {
-        DERReader der = new DERReader(new ByteArrayInputStream(ext));
-        DERValue seq = der.read();
-        if (!seq.isConstructed())
-          throw new CertificateParsingException();
-        int len = 0;
-        while (len < seq.getLength())
+        List a = ((ExtendedKeyUsage) e.getValue()).getPurposeIds();
+        List b = new ArrayList(a.size());
+        for (Iterator it = a.iterator(); it.hasNext(); )
           {
-            DERValue oid = der.read();
-            if (!(oid.getValue() instanceof OID))
-              throw new CertificateParsingException();
-            usages.add(oid.getValue().toString());
-            len += DERWriter.definiteEncodingSize(oid.getLength())
-                 + oid.getLength() + 1;
+            b.add(it.next().toString());
           }
+        return Collections.unmodifiableList(b);
       }
-    catch (IOException ioe)
-      {
-        throw new CertificateParsingException();
-      }
-    return usages;
+    return null;
   }
 
   public int getBasicConstraints()
   {
-    return basicConstraints;
+    Extension e = getExtension(BasicConstraints.ID);
+    if (e != null)
+      {
+        return ((BasicConstraints) e.getValue()).getPathLengthConstraint();
+      }
+    return -1;
   }
 
   public Collection getSubjectAlternativeNames()
     throws CertificateParsingException
   {
-    byte[] ext = getExtensionValue("2.5.29.17");
-    if (ext == null)
-      return null;
-    return getAltNames(ext);
+    Extension e = getExtension(SubjectAlternativeNames.ID);
+    if (e != null)
+      {
+        return ((SubjectAlternativeNames) e.getValue()).getNames();
+      }
+    return null;
   }
 
   public Collection getIssuerAlternativeNames()
     throws CertificateParsingException
   {
-    byte[] ext = getExtensionValue("2.5.29.18");
-    if (ext == null)
-      return null;
-    return getAltNames(ext);
+    Extension e = getExtension(IssuerAlternativeNames.ID);
+    if (e != null)
+      {
+        return ((IssuerAlternativeNames) e.getValue()).getNames();
+      }
+    return null;
   }
 
 // X509Extension methods.
@@ -360,12 +384,10 @@ public class X509Certificate extends java.security.cert.X509Certificate
 
   public boolean hasUnsupportedCriticalExtension()
   {
-    for (Iterator it = critOids.iterator(); it.hasNext(); )
+    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
       {
-        String oid = (String) it.next();
-        if (!oid.equals("2.5.29.15") && !oid.equals("2.5.29.17") &&
-            !oid.equals("2.5.29.18") && !oid.equals("2.5.29.19") &&
-            !oid.equals("2.5.29.37"))
+        Extension e = (Extension) it.next();
+        if (e.isCritical() && !e.isSupported())
           return true;
       }
     return false;
@@ -373,24 +395,53 @@ public class X509Certificate extends java.security.cert.X509Certificate
 
   public Set getCriticalExtensionOIDs()
   {
-    return Collections.unmodifiableSet(critOids);
+    HashSet s = new HashSet();
+    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
+      {
+        Extension e = (Extension) it.next();
+        if (e.isCritical())
+          s.add(e.getOid().toString());
+      }
+    return Collections.unmodifiableSet(s);
   }
 
   public Set getNonCriticalExtensionOIDs()
   {
-    return Collections.unmodifiableSet(nonCritOids);
+    HashSet s = new HashSet();
+    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
+      {
+        Extension e = (Extension) it.next();
+        if (!e.isCritical())
+          s.add(e.getOid().toString());
+      }
+    return Collections.unmodifiableSet(s);
   }
 
   public byte[] getExtensionValue(String oid)
   {
-    byte[] ext = (byte[]) extensions.get(oid);
-    if (ext != null)
-      return (byte[]) ext.clone();
+    Extension e = getExtension(new OID(oid));
+    if (e != null)
+      {
+        return e.getValue().getEncoded();
+      }
     return null;
   }
 
+  // GnuPKIExtension method.
+  // -------------------------------------------------------------------------
+
+  public Extension getExtension(OID oid)
+  {
+    return (Extension) extensions.get(oid);
+  }
+
+  public Collection getExtensions()
+  {
+    return extensions.values();
+  }
+
   // Certificate methods.
-  // ------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
 
   public byte[] getEncoded() throws CertificateEncodingException
   {
@@ -398,7 +449,7 @@ public class X509Certificate extends java.security.cert.X509Certificate
   }
 
   public void verify(PublicKey key)
-    throws CertificateException, NoSuchAlgorithmException, 
+    throws CertificateException, NoSuchAlgorithmException,
            InvalidKeyException, NoSuchProviderException, SignatureException
   {
     Signature sig = Signature.getInstance(sigAlgId.toString());
@@ -415,8 +466,50 @@ public class X509Certificate extends java.security.cert.X509Certificate
 
   public String toString()
   {
-    // XXX say more than this.
-    return gnu.java.security.x509.X509Certificate.class.getName();
+    StringWriter str = new StringWriter();
+    PrintWriter out = new PrintWriter(str);
+    out.println(X509Certificate.class.getName() + " {");
+    out.println("  TBSCertificate {");
+    out.println("    version = " + version + ";");
+    out.println("    serialNo = " + serialNo + ";");
+    out.println("    signature = {");
+    out.println("      algorithm = " + getSigAlgName() + ";");
+    out.print("      parameters =");
+    if (sigAlgVal != null)
+      {
+        out.println();
+        out.print(Util.hexDump(sigAlgVal, "        "));
+      }
+    else
+      {
+        out.println(" null;");
+      }
+    out.println("    }");
+    out.println("    issuer = " + issuer.getName() + ";");
+    out.println("    validity = {");
+    out.println("      notBefore = " + notBefore + ";");
+    out.println("      notAfter  = " + notAfter + ";");
+    out.println("    }");
+    out.println("    subject = " + subject.getName() + ";");
+    out.println("    subjectPublicKeyInfo = {");
+    out.println("      algorithm = " + subjectKey.getAlgorithm());
+    out.println("      key =");
+    out.print(Util.hexDump(subjectKey.getEncoded(), "        "));
+    out.println("    };");
+    out.println("    issuerUniqueId  = " + issuerUniqueId + ";");
+    out.println("    subjectUniqueId = " + subjectUniqueId + ";");
+    out.println("    extensions = {");
+    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
+      {
+        out.println("      " + it.next());
+      }
+    out.println("    }");
+    out.println("  }");
+    out.println("  signatureAlgorithm = " + getSigAlgName() + ";");
+    out.println("  signatureValue =");
+    out.print(Util.hexDump(signature, "    "));
+    out.println("}");
+    return str.toString();
   }
 
   public PublicKey getPublicKey()
@@ -424,11 +517,25 @@ public class X509Certificate extends java.security.cert.X509Certificate
     return subjectKey;
   }
 
-  protected Object writeReplace() throws ObjectStreamException
+  public boolean equals(Object other)
   {
-    return super.writeReplace();
+    if (!(other instanceof X509Certificate))
+      return false;
+    try
+      {
+        if (other instanceof X509Certificate)
+          return Arrays.equals(encoded, ((X509Certificate) other).encoded);
+        byte[] enc = ((X509Certificate) other).getEncoded();
+        if (enc == null)
+          return false;
+        return Arrays.equals(encoded, enc);
+      }
+    catch (CertificateEncodingException cee)
+      {
+        return false;
+      }
   }
-  
+
   // Own methods.
   // ------------------------------------------------------------------------
 
@@ -438,68 +545,13 @@ public class X509Certificate extends java.security.cert.X509Certificate
   private void doVerify(Signature sig, PublicKey key)
     throws CertificateException, InvalidKeyException, SignatureException
   {
+    debug("verifying sig=" + sig + " key=" + key);
     sig.initVerify(key);
     sig.update(tbsCertBytes);
     if (!sig.verify(signature))
-      throw new CertificateException("signature not validated");
-  }
-
-  /**
-   * Read a GeneralNames structure.
-   */
-  private List getAltNames(byte[] encoded)
-    throws CertificateParsingException
-  {
-    LinkedList names = new LinkedList();
-    try
       {
-        ByteArrayInputStream in = new ByteArrayInputStream(encoded);
-        DERReader der = new DERReader(in);
-        DERValue seq = der.read();
-        if (!seq.isConstructed())
-          throw new CertificateParsingException();
-        int len = 0;
-        while (len < seq.getLength())
-          {
-            DERValue name = der.read();
-            ArrayList pair = new ArrayList(2);
-            Object nameVal = null;
-            switch (name.getTag())
-              {
-                case RFC882_NAME:
-                case DNS_NAME:
-                case URI:
-                  nameVal = new String((byte[]) name.getValue());
-                  break;
-                case IP_ADDRESS:
-                  nameVal = InetAddress.getByAddress(
-                    (byte[]) name.getValue()).getHostAddress();
-                  break;
-                case REGISTERED_ID:
-                  nameVal = new OID((byte[]) name.getValue());
-                  break;
-                case OTHER_NAME:
-                case X400_ADDRESS:
-                case DIRECTORY_NAME:
-                case EDI_PARTY_NAME:
-                  nameVal = name.getEncoded();
-                  break;
-                default:
-                  throw new CertificateParsingException();
-              }
-            pair.add(new Integer(name.getTag()));
-            pair.add(nameVal);
-            names.add(pair);
-            if (name.isConstructed())
-              in.skip(name.getLength());
-            len += name.getEncodedLength();
-          }
+        throw new CertificateException("signature not validated");
       }
-    catch (IOException ioe)
-      {
-        throw new CertificateParsingException(ioe.toString());
-      }
-    return Collections.unmodifiableList(names);
   }
 
   /**
@@ -513,20 +565,27 @@ public class X509Certificate extends java.security.cert.X509Certificate
 
     // Certificate ::= SEQUENCE {
     DERValue cert = der.read();
+    debug("start Certificate  len == " + cert.getLength());
+
     this.encoded = cert.getEncoded();
     if (!cert.isConstructed())
-      throw new ASN1ParsingException("malformed Certificate");
+      {
+        throw new IOException("malformed Certificate");
+      }
 
     // TBSCertificate ::= SEQUENCE {
     DERValue tbsCert = der.read();
     if (tbsCert.getValue() != DER.CONSTRUCTED_VALUE)
-      throw new ASN1ParsingException("malformed TBSCertificate");
+      {
+        throw new IOException("malformed TBSCertificate");
+      }
     tbsCertBytes = tbsCert.getEncoded();
+    debug("start TBSCertificate  len == " + tbsCert.getLength());
 
+    // Version ::= INTEGER [0] { v1(0), v2(1), v3(2) }
     DERValue val = der.read();
     if (val.getTagClass() == DER.CONTEXT && val.getTag() == 0)
       {
-        // Version ::= INTEGER [0] { v1(0), v2(1), v3(2) }
         version = ((BigInteger) der.read().getValue()).intValue() + 1;
         val = der.read();
       }
@@ -534,163 +593,154 @@ public class X509Certificate extends java.security.cert.X509Certificate
       {
         version = 1;
       }
+    debug("read version == " + version);
+
     // SerialNumber ::= INTEGER
     serialNo = (BigInteger) val.getValue();
+    debug("read serial number == " + serialNo);
 
     // AlgorithmIdentifier ::= SEQUENCE {
     val = der.read();
     if (!val.isConstructed())
-      throw new ASN1ParsingException("malformed AlgorithmIdentifier");
+      {
+        throw new IOException("malformed AlgorithmIdentifier");
+      }
     int certAlgLen = val.getLength();
+    debug("start AlgorithmIdentifier  len == " + certAlgLen);
     val = der.read();
+
+    //   algorithm    OBJECT IDENTIFIER,
     algId = (OID) val.getValue();
+    debug("read algorithm ID == " + algId);
+
+    //   parameters   ANY DEFINED BY algorithm OPTIONAL }
     if (certAlgLen > val.getEncodedLength())
       {
         val = der.read();
         if (val == null)
-          algVal = null;
+          {
+            algVal = null;
+          }
         else
-          algVal = val.getEncoded();
+          {
+            algVal = val.getEncoded();
+          }
         if (val.isConstructed())
-          encoded.skip(val.getLength());
+          {
+            encoded.skip(val.getLength());
+          }
+        debug("read algorithm parameters == " + algVal);
       }
 
-    issuer = new X500Principal(encoded);
+    // issuer   Name,
+    val = der.read();
+    issuer = new X500DistinguishedName(val.getEncoded());
+    der.skip(val.getLength());
+    debug("read issuer == " + issuer);
 
+    // Validity ::= SEQUENCE {
+    //   notBefore   Time,
+    //   notAfter    Time }
     if (!der.read().isConstructed())
-      throw new ASN1ParsingException("malformed Validity");
+      {
+        throw new IOException("malformed Validity");
+      }
     notBefore = (Date) der.read().getValue();
     notAfter  = (Date) der.read().getValue();
+    debug("read notBefore == " + notBefore);
+    debug("read notAfter == " + notAfter);
 
-    subject = new X500Principal(encoded);
+    // subject   Name,
+    val = der.read();
+    subject = new X500DistinguishedName(val.getEncoded());
+    der.skip(val.getLength());
+    debug("read subject == " + subject);
 
-    if (!der.read().isConstructed())
-      throw new ASN1ParsingException("malformed SubjectPublicKeyInfo");
-   
-    val = der.read();
-    if (!val.isConstructed())
-      throw new ASN1ParsingException("malformed AlgorithmIdentifier");
-    int keyAlgLen = val.getLength();
-    val = der.read();
-    OID keyID = (OID) val.getValue();
-    byte[] keyParams = null;
-    if (keyAlgLen > val.getEncodedLength())
+    // SubjectPublicKeyInfo ::= SEQUENCE {
+    //   algorithm         AlgorithmIdentifier,
+    //   subjectPublicKey  BIT STRING }
+    DERValue spki = der.read();
+    if (!spki.isConstructed())
       {
-        val = der.read();
-        keyParams = val.getEncoded();
-        if (algVal == null)
-          algVal = keyParams;
-        if (val.isConstructed())
-          encoded.skip(val.getLength());
+        throw new IOException("malformed SubjectPublicKeyInfo");
       }
-    val = der.read();
-    byte[] keyVal = ((BitString) val.getValue()).toByteArray();
-
-    if (keyID.equals(ID_DSA))
-      {
-        AlgorithmParameters params = AlgorithmParameters.getInstance("DSA");
-        params.init(keyParams, "ASN.1");
-        KeyFactory keyFac = KeyFactory.getInstance("DSA");
-        DSAParameterSpec spec = (DSAParameterSpec)
-          params.getParameterSpec(DSAParameterSpec.class);
-        subjectKey = keyFac.generatePublic(new DSAPublicKeySpec(
-          (BigInteger) new DERReader(keyVal).read().getValue(),
-          spec.getP(), spec.getQ(), spec.getG()));
-      }
-    else if (keyID.equals(ID_RSA))
-      {
-        KeyFactory keyFac = KeyFactory.getInstance("RSA");
-        DERReader rsaKey = new DERReader(keyVal);
-        if (!rsaKey.read().isConstructed())
-          throw new ASN1ParsingException("malformed RSAPublicKey");
-        subjectKey = keyFac.generatePublic(new RSAPublicKeySpec(
-          (BigInteger) rsaKey.read().getValue(),
-          (BigInteger) rsaKey.read().getValue()));
-      }
-    else
-      throw new ASN1ParsingException("unknown key algorithm " + keyID);
+    KeyFactory spkFac = KeyFactory.getInstance("X.509");
+    subjectKey = spkFac.generatePublic(new X509EncodedKeySpec(spki.getEncoded()));
+    der.skip(spki.getLength());
+    debug("read subjectPublicKey == " + subjectKey);
 
     if (version > 1)
-      val = der.read();
+      {
+        val = der.read();
+      }
     if (version >= 2 && val.getTagClass() != DER.UNIVERSAL && val.getTag() == 1)
       {
         byte[] b = (byte[]) val.getValue();
         issuerUniqueId = new BitString(b, 1, b.length-1, b[0] & 0xFF);
+        debug("read issuerUniqueId == " + issuerUniqueId);
         val = der.read();
       }
     if (version >= 2 && val.getTagClass() != DER.UNIVERSAL && val.getTag() == 2)
       {
         byte[] b = (byte[]) val.getValue();
         subjectUniqueId = new BitString(b, 1, b.length-1, b[0] & 0xFF);
+        debug("read subjectUniqueId == " + subjectUniqueId);
         val = der.read();
       }
     if (version >= 3 && val.getTagClass() != DER.UNIVERSAL && val.getTag() == 3)
       {
         val = der.read();
+        debug("start Extensions  len == " + val.getLength());
         int len = 0;
         while (len < val.getLength())
           {
             DERValue ext = der.read();
-            OID extId = (OID) der.read().getValue();
-            DERValue val2 = der.read();
-            Boolean crit = Boolean.valueOf(false);
-            if (val2.getValue() instanceof Boolean)
-              {
-                crit = (Boolean) val2.getValue();
-                val2 = der.read();
-              }
-            byte[] extVal = (byte[]) val2.getValue();
-            extensions.put(extId.toString(), extVal);
-            if (crit.booleanValue())
-              critOids.add(extId.toString());
-            else
-              nonCritOids.add(extId.toString());
-            if (extId.equals(ID_KEY_USAGE))
-              {
-                keyUsage = (BitString) DERReader.read(extVal).getValue();
-              }
-            else if (extId.equals(ID_BASIC_CONSTRAINTS))
-              {
-                DERReader bc = new DERReader(extVal);
-                DERValue constraints = bc.read();
-                if (!constraints.isConstructed())
-                  throw new ASN1ParsingException("malformed BasicConstraints");
-                if (constraints.getLength() > 0)
-                  {
-                    boolean ca = false;
-                    int constr = -1;
-                    val2 = bc.read();
-                    if (val2.getValue() instanceof Boolean)
-                      {
-                        ca = ((Boolean) val2.getValue()).booleanValue();
-                        if (constraints.getLength() > val2.getEncodedLength())
-                          val2 = bc.read();
-                      }
-                    if (val2.getValue() instanceof BigInteger)
-                      constr = ((BigInteger) val2.getValue()).intValue();
-                    basicConstraints = constr;
-                  }
-              }
+            debug("start extension  len == " + ext.getLength());
+            Extension e = new Extension(ext.getEncoded());
+            extensions.put(e.getOid(), e);
+            der.skip(ext.getLength());
             len += ext.getEncodedLength();
+            debug("count == " + len);
           }
       }
 
     val = der.read();
     if (!val.isConstructed())
-      throw new ASN1ParsingException("malformed AlgorithmIdentifier");
+      {
+        throw new IOException("malformed AlgorithmIdentifier");
+      }
     int sigAlgLen = val.getLength();
+    debug("start AlgorithmIdentifier  len == " + sigAlgLen);
     val = der.read();
     sigAlgId = (OID) val.getValue();
+    debug("read algorithm id == " + sigAlgId);
     if (sigAlgLen > val.getEncodedLength())
       {
         val = der.read();
         if (val.getValue() == null)
-          sigAlgVal = keyParams;
+          {
+            if (subjectKey instanceof DSAPublicKey)
+              {
+                AlgorithmParameters params =
+                  AlgorithmParameters.getInstance("DSA");
+                DSAParams dsap = ((DSAPublicKey) subjectKey).getParams();
+                DSAParameterSpec spec =
+                  new DSAParameterSpec(dsap.getP(), dsap.getQ(), dsap.getG());
+                params.init(spec);
+                sigAlgVal = params.getEncoded();
+              }
+          }
         else
-          sigAlgVal = (byte[]) val.getEncoded();
+          {
+            sigAlgVal = (byte[]) val.getEncoded();
+          }
         if (val.isConstructed())
-          encoded.skip(val.getLength());
+          {
+            encoded.skip(val.getLength());
+          }
+        debug("read parameters == " + sigAlgVal);
       }
     signature = ((BitString) der.read().getValue()).toByteArray();
+    debug("read signature ==\n" + Util.hexDump(signature, ">>>> "));
   }
 }
