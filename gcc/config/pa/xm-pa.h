@@ -47,9 +47,6 @@ extern int errno;
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33
 
-/* Don't try to use sys_siglist.  */
-#define NO_SYS_SIGLIST
-
 /* 4.3BSD, OSF1 and Lites on the PA are all derived from NET2 or
    later code from Berkeley.  */
 #define __BSD_NET2__

@@ -508,6 +508,5 @@ do { fprintf (asm_out_file, "\ttag\t");	\
 /* Definitions for collect2.  */
 
 #define OBJECT_FORMAT_COFF
-#define NO_SYS_SIGLIST
 #define MY_ISCOFF(magic) \
  ((magic) == MC68KWRMAGIC || (magic) == MC68KROMAGIC || (magic) == MC68KPGMAGIC)

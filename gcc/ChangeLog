@@ -1,3 +1,20 @@
+1999-12-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in (AC_DECL_SYS_SIGLIST, xm-siglist.h,
+	arm/xm-netbsd.h, NO_SYS_SIGLIST): Don't use.
+
+	* xm-siglist.h, arm/xm-netbsd.h, mips/xm-news.h, mips/xm-sysv4.h:
+	Delete files.
+
+	* gcc.texi (NO_SYS_SIGLIST, sys_siglist, SYS_SIGLIST_DECLARED):
+	Delete descriptions.
+
+	* i386/osf1elf.h, i386/xm-cygwin.h, i386/xm-mingw32.h, m68k/3b1.h,
+	m68k/a-ux.h, m68k/dpx2.h, m68k/plexus.h, m68k/xm-hp320.h,
+	m88k/xm-m88k.h, mips/x-sni-svr4, pa/xm-pa.h, pa/xm-pahpux.h,
+	pa/xm-papro.h, we32k/xm-we32k.h, winnt/xm-winnt.h, xm-interix.h,
+	xm-svr4.h: Remove all instances of sys_siglist handling.
+
 1999-12-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.md (cmp_zero_qi,

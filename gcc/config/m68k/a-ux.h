@@ -64,8 +64,6 @@ crt2.o%s "
 /*===================================================================*/
 /* Compilation environment -- mostly */
 
-#define NO_SYS_SIGLIST
-
 /* We provide atexit(), A/UX does not have it */
 #define NEED_ATEXIT
 

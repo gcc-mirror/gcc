@@ -423,8 +423,6 @@ GCC_NEED_DECLARATIONS(getrlimit setrlimit getrusage, [
 #endif
 ])
 
-AC_DECL_SYS_SIGLIST
-
 # mkdir takes a single argument on some systems. 
 GCC_FUNC_MKDIR_TAKES_ONE_ARG
 
@@ -767,7 +765,6 @@ changequote([,])dnl
 		;;
 	arm*-*-netbsd*)
 		tm_file=arm/netbsd.h
-		xm_file="arm/xm-netbsd.h ${xm_file}"
 		tmake_file="t-netbsd arm/t-netbsd"
        use_collect2=yes
 		;;
@@ -1190,7 +1187,7 @@ changequote([,])dnl
 changequote(,)dnl
 	i[34567]86-ncr-sysv4*)		# NCR 3000 - ix86 running system V.4
 changequote([,])dnl
-		xm_file="xm-siglist.h xm-alloca.h ${xm_file}"
+		xm_file="xm-alloca.h ${xm_file}"
 		xm_defines="USG POSIX SMALL_ARG_MAX"
 		xmake_file=i386/x-ncr3000
 		if test x$stabs = xyes -a x$gas = xyes
@@ -1249,7 +1246,7 @@ changequote([,])dnl
 changequote(,)dnl
 	i[34567]86-sequent-ptx4* | i[34567]86-sequent-sysv4*)
 changequote([,])dnl
-		xm_file="xm-siglist.h xm-alloca.h ${xm_file}"
+		xm_file="xm-alloca.h ${xm_file}"
 		xm_defines="USG POSIX SMALL_ARG_MAX"
 		xmake_file=x-svr4
 		tm_file=i386/ptx4-i.h
@@ -1500,7 +1497,7 @@ changequote([,])dnl
 changequote(,)dnl
 	i[34567]86-*-sco3.2v5*)	# 80386 running SCO Open Server 5
 changequote([,])dnl
-		xm_file="xm-siglist.h xm-alloca.h ${xm_file} i386/xm-sco5.h"
+		xm_file="xm-alloca.h ${xm_file} i386/xm-sco5.h"
 		xm_defines="USG SVR3"
 		xmake_file=i386/x-sco5
 		install_headers_dir=install-headers-cpio
@@ -1518,7 +1515,7 @@ changequote(,)dnl
 	i[34567]86-*-sco3.2v4*) 	# 80386 running SCO 3.2v4 system
 changequote([,])dnl
 		xm_file="${xm_file} i386/xm-sco.h"
-		xm_defines="USG SVR3 BROKEN_LDEXP SMALL_ARG_MAX NO_SYS_SIGLIST"
+		xm_defines="USG SVR3 BROKEN_LDEXP SMALL_ARG_MAX"
 		xmake_file=i386/x-sco4
 		install_headers_dir=install-headers-cpio
                 if test x$stabs = xyes
@@ -1557,7 +1554,7 @@ changequote([,])dnl
 changequote(,)dnl
 	i[34567]86-*-solaris2*)
 changequote([,])dnl
-		xm_file="xm-siglist.h xm-alloca.h ${xm_file}"
+		xm_file="xm-alloca.h ${xm_file}"
 		xm_defines="USG POSIX SMALL_ARG_MAX"
 		tm_file=i386/sol2.h
 		if test x$gas = xyes; then
@@ -1584,7 +1581,7 @@ changequote([,])dnl
 changequote(,)dnl
        i[34567]86-*-sysv5*)           # Intel x86 on System V Release 5
 changequote([,])dnl
-               xm_file="xm-alloca.h xm-siglist.h ${xm_file}"
+               xm_file="xm-alloca.h ${xm_file}"
                xm_defines="USG POSIX"
                tm_file=i386/sysv5.h
                if test x$stabs = xyes
@@ -1601,7 +1598,7 @@ changequote([,])dnl
 changequote(,)dnl
 	i[34567]86-*-sysv4*)		# Intel 80386's running system V.4
 changequote([,])dnl
-		xm_file="xm-siglist.h xm-alloca.h ${xm_file}"
+		xm_file="xm-alloca.h ${xm_file}"
 		xm_defines="USG POSIX SMALL_ARG_MAX"
 		tm_file=i386/sysv4.h
 		if test x$stabs = xyes
@@ -1615,7 +1612,7 @@ changequote([,])dnl
 changequote(,)dnl
 	i[34567]86-*-udk*)      # Intel x86 on SCO UW/OSR5 Dev Kit
 changequote([,])dnl
-		xm_file="xm-alloca.h xm-siglist.h ${xm_file}"
+		xm_file="xm-alloca.h ${xm_file}"
 		xm_defines="USG POSIX"
 		tm_file=i386/udk.h
 		tmake_file="i386/t-crtpic i386/t-udk"
@@ -1719,7 +1716,7 @@ changequote(,)dnl
 changequote([,])dnl
 		tm_file=i386/uwin.h
 		xm_file="${xm_file} i386/xm-uwin.h"
-		xm_defines="USG NO_STAB_H NO_SYS_SIGLIST"
+		xm_defines="USG NO_STAB_H"
 		tmake_file="i386/t-cygwin i386/t-uwin"
 		extra_objs=winnt.o
 		xmake_file=i386/x-cygwin
@@ -1733,7 +1730,7 @@ changequote(,)dnl
 changequote([,])dnl
 		tm_file="i386/i386-interix.h interix.h"
 		xm_file="i386/xm-i386-interix.h xm-interix.h"
-		xm_defines="USG NO_SYS_SIGLIST"
+		xm_defines="USG"
 		tmake_file="i386/t-interix"
 		extra_objs=interix.o
 		xmake_file=x-interix
@@ -1765,7 +1762,7 @@ changequote([,])dnl
 changequote(,)dnl
 	i[34567]86-dg-dgux*)
 changequote([,])dnl
-		xm_file="xm-alloca.h xm-siglist.h ${xm_file}"
+		xm_file="xm-alloca.h ${xm_file}"
 		xm_defines="USG POSIX"
 		out_file=i386/dgux.c
 		tm_file=i386/dgux.h
@@ -1859,7 +1856,7 @@ changequote([,])dnl
 		;;
 	m68000-hp-hpux*)		# HP 9000 series 300
 		xm_file="xm-alloca.h ${xm_file}"
-		xm_defines="USG NO_SYS_SIGLIST"
+		xm_defines="USG"
 		if test x$gas = xyes
 		then
 			xmake_file=m68k/x-hp320g
@@ -1964,7 +1961,6 @@ changequote([,])dnl
 	m68k-motorola-sysv*)
 		tm_file=m68k/mot3300.h
 		xm_file="xm-alloca.h m68k/xm-mot3300.h ${xm_file}"
-		xm_defines=NO_SYS_SIGLIST
 		if test x$gas = xyes
 		then
 			xmake_file=m68k/x-mot3300-gas
@@ -2061,7 +2057,7 @@ changequote([,])dnl
 		;;
 	m68k-hp-hpux7*)	# HP 9000 series 300 running HPUX version 7.
 		xm_file="xm-alloca.h ${xm_file}"
-		xm_defines="USG NO_SYS_SIGLIST"
+		xm_defines="USG"
 		if test x$gas = xyes
 		then
 			xmake_file=m68k/x-hp320g
@@ -2077,7 +2073,7 @@ changequote([,])dnl
 		;;
 	m68k-hp-hpux*)	# HP 9000 series 300
 		xm_file="xm-alloca.h ${xm_file}"
-		xm_defines="USG NO_SYS_SIGLIST"
+		xm_defines="USG"
 		if test x$gas = xyes
 		then
 			xmake_file=m68k/x-hp320g
@@ -2540,7 +2536,6 @@ changequote([,])dnl
 		;;
        mips*-*-linux*)                         # Linux MIPS, either endian.
 		xmake_file=x-linux
-		xm_file="xm-siglist.h ${xm_file}"
                case $machine in
                        mipsel-*)  tm_file="mips/elfl.h mips/linux.h" ;;
                        *)         tm_file="mips/elf.h mips/linux.h" ;;
@@ -2583,7 +2578,6 @@ changequote([,])dnl
 		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
-		xm_file="xm-siglist.h ${xm_file}"
 		xm_defines=USG
 		if test x$gas = xyes
 		then
@@ -2601,7 +2595,6 @@ changequote([,])dnl
 		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
-		xm_file="xm-siglist.h ${xm_file}"
 		xm_defines=USG
 		xmake_file=mips/x-sysv
 		if test x$gas = xyes
@@ -2680,7 +2673,6 @@ changequote([,])dnl
 		if test x$stabs = xyes; then
 			tm_file="${tm_file} dbx.h"
 		fi
-		xm_file="xm-siglist.h ${xm_file}"
 		xmake_file=mips/x-sysv
 		if test x$gas = xyes
 		then
@@ -2939,7 +2931,7 @@ changequote([,])dnl
 		;;
 	powerpc-*-sysv* | powerpc-*-elf*)
 		tm_file=rs6000/sysv4.h
-		xm_file="xm-siglist.h rs6000/xm-sysv4.h"
+		xm_file="rs6000/xm-sysv4.h"
 		xm_defines="USG POSIX"
 		extra_headers=ppc-asm.h
 		if test x$gas = xyes
@@ -2999,7 +2991,7 @@ changequote([,])dnl
 		;;
 	powerpc-*-linux-gnu*)
 		tm_file=rs6000/linux.h
-		xm_file="xm-siglist.h rs6000/xm-sysv4.h"
+		xm_file="rs6000/xm-sysv4.h"
 		xm_defines="USG ${xm_defines}"
 		out_file=rs6000/rs6000.c
 		if test x$gas = xyes
@@ -3017,7 +3009,7 @@ changequote([,])dnl
 		;;
         powerpc-wrs-vxworks*)
                 cpu_type=rs6000
-		xm_file="xm-siglist.h rs6000/xm-sysv4.h"
+		xm_file="rs6000/xm-sysv4.h"
 		xm_defines="USG POSIX"
                 tm_file=rs6000/vxppc.h
                 tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
@@ -3026,7 +3018,7 @@ changequote([,])dnl
                 ;;
 	powerpcle-*-sysv* | powerpcle-*-elf*)
 		tm_file=rs6000/sysv4le.h
-		xm_file="xm-siglist.h rs6000/xm-sysv4.h"
+		xm_file="rs6000/xm-sysv4.h"
 		xm_defines="USG POSIX"
 		if test x$gas = xyes
 		then
@@ -3075,7 +3067,7 @@ changequote([,])dnl
 		;;
 	powerpcle-*-solaris2*)
 		tm_file=rs6000/sol2.h
-		xm_file="xm-siglist.h rs6000/xm-sysv4.h"
+		xm_file="rs6000/xm-sysv4.h"
 		xm_defines="USG POSIX"
 		if test x$gas = xyes
 		then
@@ -3303,7 +3295,7 @@ changequote([,])dnl
 		fi
 		;;
         sparc-hal-solaris2*)
-                xm_file="xm-siglist.h sparc/xm-sysv4.h sparc/xm-sol2.h"
+                xm_file="sparc/xm-sysv4.h sparc/xm-sol2.h"
                 xm_defines="USG POSIX"
                 tm_file="sparc/sol2.h sparc/hal.h"
                 tmake_file="sparc/t-halos sparc/t-sol2"
@@ -3326,7 +3318,7 @@ changequote([,])dnl
 		else
 			tm_file=sparc/sol2-sld.h
 		fi
-		xm_file="xm-siglist.h sparc/xm-sysv4.h sparc/xm-sol2.h"
+		xm_file="sparc/xm-sysv4.h sparc/xm-sol2.h"
 		xm_defines="USG POSIX"
 		tmake_file=sparc/t-sol2
 		xmake_file=sparc/x-sysv4
@@ -3388,14 +3380,14 @@ changequote([,])dnl
 		;;
 	sparc-*-sysv4*)
 		tm_file=sparc/sysv4.h
-		xm_file="xm-siglist.h sparc/xm-sysv4.h"
+		xm_file="sparc/xm-sysv4.h"
 		xm_defines="USG POSIX"
 		tmake_file=t-svr4
 		xmake_file=sparc/x-sysv4
 		extra_parts="crtbegin.o crtend.o"
 		;;
 	sparc-*-vxsim*)
-		xm_file="xm-siglist.h sparc/xm-sysv4.h sparc/xm-sol2.h"
+		xm_file="sparc/xm-sysv4.h sparc/xm-sol2.h"
 		xm_defines="USG POSIX"
 		tm_file=sparc/vxsim.h
 		tmake_file=sparc/t-vxsparc

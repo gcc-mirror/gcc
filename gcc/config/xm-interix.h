@@ -40,8 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #define USE_C_ALLOCA 1
 #endif
 
-#define NO_SYS_SIGLIST 1
-
 /* Our strategy for finding global constructors is a bit different, although
    not a lot. */
 #define DO_GLOBAL_CTORS_BODY						\

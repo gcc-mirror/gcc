@@ -102,7 +102,6 @@ Boston, MA 02111-1307, USA.  */
 /***********************************************************************/
 
 #define NM_FLAGS ""
-#define NO_SYS_SIGLIST
 #define NO_DUP2
 
 #define SIZE_TYPE "int"

@@ -3,8 +3,6 @@
 
 #include <stdio.h>
 #include "i386/sysv4.h"	/* Base i386 target machine definitions */
-#define _sys_siglist sys_siglist
-extern char *sys_siglist[];
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 OSF/1)");

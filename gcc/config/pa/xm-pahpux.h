@@ -50,9 +50,6 @@ Boston, MA 02111-1307, USA.  */
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33
 
-/* Don't try to use sys_siglist.  */
-#define NO_SYS_SIGLIST
-
 /* HP's compiler has problems with enum bitfields.  */
 #define ONLY_INT_FIELDS
 
