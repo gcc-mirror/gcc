@@ -3017,10 +3017,12 @@ simplify_subreg (enum machine_mode outermode, rtx op,
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
       && REGNO (op) != ARG_POINTER_REGNUM
 #endif
-      && REGNO (op) != STACK_POINTER_REGNUM)
+      && REGNO (op) != STACK_POINTER_REGNUM
+      && subreg_offset_representable_p (REGNO (op), innermode,
+					byte, outermode))
     {
-      int final_regno = subreg_hard_regno (gen_rtx_SUBREG (outermode, op, byte),
-					   0);
+      rtx tem = gen_rtx_SUBREG (outermode, op, byte);
+      int final_regno = subreg_hard_regno (tem, 0);
 
       /* ??? We do allow it if the current REG is not valid for
 	 its mode.  This is a kludge to work around how float/complex
