@@ -635,7 +635,7 @@ extern void use_regs PROTO((rtx*, int, int));
 
 /* Write zeros through the storage of OBJECT.
    If OBJECT has BLKmode, SIZE is its length in bytes and ALIGN is its
-   alignment.
+   alignment.  */
 extern void clear_storage PROTO((rtx, rtx, int));
 
 /* Emit insns to set X from Y.  */
