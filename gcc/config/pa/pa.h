@@ -1690,6 +1690,7 @@ bss_section ()								\
 #define SMALL_INT(OP) INT_14_BITS (OP)
 /* Define functions in pa.c and used in insn-output.c.  */
 
+extern char *output_zdepi ();
 extern char *output_move_double ();
 extern char *output_fp_move_double ();
 extern char *output_block_move ();
