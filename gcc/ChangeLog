@@ -1,3 +1,8 @@
+2004-11-16  Fariborz Jahanian <fjahanian@apple.com>
+
+	* config/rs6000/altivec.md (altivec_vandc): Canonicalize
+	the pattern.
+
 2004-11-16  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_cc_modes_compatible): New function.
