@@ -1025,17 +1025,18 @@ optimize_mode_switching (FILE *file)
        exit block, so that we can note that there NORMAL_MODE is supplied /
        required.  */
     edge eg;
-    post_entry = split_edge (ENTRY_BLOCK_PTR->succ);
+    edge_iterator ei;
+    post_entry = split_edge (EDGE_SUCC (ENTRY_BLOCK_PTR, 0));
     /* The only non-call predecessor at this stage is a block with a
        fallthrough edge; there can be at most one, but there could be
        none at all, e.g. when exit is called.  */
-    for (pre_exit = 0, eg = EXIT_BLOCK_PTR->pred; eg; eg = eg->pred_next)
+    pre_exit = 0;
+    FOR_EACH_EDGE (eg, ei, EXIT_BLOCK_PTR->preds)
       if (eg->flags & EDGE_FALLTHRU)
 	{
 	  regset live_at_end = eg->src->global_live_at_end;
 
-	  if (pre_exit)
-	    abort ();
+	  gcc_assert (!pre_exit);
 	  pre_exit = split_edge (eg);
 	  COPY_REG_SET (pre_exit->global_live_at_start, live_at_end);
 	  COPY_REG_SET (pre_exit->global_live_at_end, live_at_end);
