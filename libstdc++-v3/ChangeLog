@@ -1,3 +1,7 @@
+2002-05-06  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/documentation.html:  Fix broken link.
+
 2002-05-04  Benjamin Kosnik  <bkoz@redhat.com>
 	    Paolo Carlini  <pcarlini@unitus.it>
 
