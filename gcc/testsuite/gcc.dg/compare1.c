@@ -22,5 +22,5 @@ int main()
 {
   enum machine_mode mode = DImode;
 
-  return (mode == Pmode); /* dg-bogus "warning:" "comparison between signed and unsigned" } */
+  return (mode == Pmode); /* { dg-bogus "warning:" "comparison between signed and unsigned" } */
 }
