@@ -7,6 +7,11 @@
 	__builtin_dwarf_cfa.
 	(FFI_INIT_TRAMPOLINE): Send closure reference through eax.
 
+2003-03-12  Andreas Schwab  <schwab@suse.de>
+
+	* configure.in: Avoid trailing /. in toolexeclibdir.
+	* configure: Rebuilt.
+
 2003-03-03  Andreas Tobler <a.tobler@schweiz.ch>
 
         * src/powerpc/darwin_closure.S: Recode to fit dynamic libraries.
