@@ -1,5 +1,13 @@
 2000-04-09  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* vec.cc: Include <new> and <exception>.
+	(__cxa_vec_ctor): Use __cxa_vec_dtor for cleanup.
+	(__cxa_vec_dtor): Catch dtor exceptions, and rethrow or
+	terminate.
+	(__cxa_vec_delete): Catch dtor exceptions.
+
+2000-04-09  Nathan Sidwell  <nathan@codesourcery.com>
+
 	Prepend __ to implementation defined names.
 	* inc/typeinfo (type_info): Rename _name to __name.
 	(type_info::type_info): Rename parameter.
