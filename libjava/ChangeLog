@@ -1,3 +1,27 @@
+1999-04-16  Per Bothner  <bothner@cygnus.com>
+
+	* gnu/gcj/convert/JIS0201.h:  New file, generated from Unicode table.
+	* gnu/gcj/convert/Input_JavaSrc.java: New BytesToUnicode class.
+	* gnu/gcj/convert/Input_SJIS.java: New BytesToUnicode class.
+	* gnu/gcj/convert/Output_EUCJIS.java:  New UnicodeToBytes class.
+	* gnu/gcj/convert/Output_SJIS.java:  New UnicodeToBytes class.
+	* gnu/gcj/convert/natInput_EUCJIS.cc:  New file.
+	* gnu/gcj/convert/natInput_SJIS.cc:  New file.
+	* gnu/gcj/convert/natOutput_EUCJIS.cc:  New file.
+	* gnu/gcj/convert/natOutput_SJIS.cc:  New file.
+	* gnu/gcj/convert/make-trie.c:  New file: functions to make a trie.
+	* gnu/gcj/convert/gen-from-JIS.c:  Invoke make-trie for output.
+	* gnu/gcj/convert/Unicode_to_JIS.cc:  New generated trie table.
+	* Makefile.am:  Various changes for new files and conversions.
+
+	* gnu/gcj/convert/UnicodeToBytes.java (write(String,int,int,char[])):
+	New overloading, allows greater efficiency.
+	* gnu/gcj/convert/Output_8859_1.java (write(String,int,int,char[])):
+	New overloading (for efficiency - avoids copying).
+
+	* gnu/gcj/convert/Output_UTF8.java:  Fix typo: 0xC0 -> 0c3F.
+	* gnu/gcj/convert/Input_UTF8.java:  Fix typos in bit masks.
+
 1999-04-15  Warren Levy  <warrenl@cygnus.com>
 
 	* Makefile.am (ordinary_java_source_files): Added new Connection 
