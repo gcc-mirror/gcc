@@ -1,3 +1,17 @@
+2000-10-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-typeck.c (check_init_type_bitfields): Remove.
+	(constructor_incremental): Likewise.
+	(struct constructor_stack): Remove incremental bit.
+	(struct initializer_stack): Likewise.
+	(start_init): Don't play with constructor_incremental.
+	(finish_init): Likewise.
+	(really_start_incremental_init): Likewise.
+	(push_init_level): Likewise.
+	(pop_init_level): Likewise.
+	(output_init_level): Likewise.
+	(output_pending_init_elements): Likewise.
+
 2000-10-21  Mike Coleman  <mcoleman2@kc.rr.com>
 
 	* c-pragma.c (handle_pragma_pack): Initialize align to -1.
