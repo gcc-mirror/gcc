@@ -1,3 +1,13 @@
+2003-12-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+ 	PR c++/13241
+	C++ ABI change. Mangling of symbols in expressions.
+	* mangle.c (write_mangled_name): Add top_level flag. Rework for
+	nested and unnested mangling. Deal with abi version 1 and version
+	2 differences.
+	(write_expression): Adjust write_mangled_name call.
+	(mangle_decl_string): Use write_mangled_name for all non-type decls.
+
 2003-12-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10779
