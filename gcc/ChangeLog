@@ -1,3 +1,10 @@
+2002-11-18  Neil Booth  <neil@daikokuya.co.uk>
+
+	PR preprocessor/8524
+	* cpplib.c (run_directive): Remove previous kludge to _Pragma.
+	Add a new one in its place, which hopefully works.
+	(skip_rest_of_line): Change test for bottom-of-context-stack.
+
 Mon Nov 18 21:29:03 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (addqi_1_slp): Fix output template.

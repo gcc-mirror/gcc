@@ -1,3 +1,7 @@
+2002-11-18  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/_Pragma5.c: New test.
+
 2002-11-18  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.c-torture/execute/20021118-2.c: New test.
