@@ -8,10 +8,10 @@
 # at the end of the search order.  When a new version of gcc is released,
 # gcc's limits.h hasn't been installed yet and hence isn't found.
 
-BOOT_CFLAGS = -O $(CFLAGS) -Iinclude
+# BOOT_CFLAGS = -O $(CFLAGS) -Iinclude
 
 # Don't run fixproto
-STMP_FIXPROTO =
+# STMP_FIXPROTO =
 
 # Don't install "assert.h" in gcc. We use the one in glibc.
-INSTALL_ASSERT_H =
+# INSTALL_ASSERT_H =
