@@ -1,3 +1,12 @@
+Fri Aug 17 15:48:57 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	Install the proper patch.
+	* function.c (put_var_into_stack): Temporarily clear DECL_RTL.
+	(assign_params): Avoid setting DECL_RTL to unfinished RTX.
+	(expand_function_start): Likewise.
+	* stmt.c (expand_decl): Likewise.
+	* varasm.c (make_decl_rtx): Likewise.
+
 Fri Aug 17 15:41:35 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* final.c: Undo my previous accidental checkin.

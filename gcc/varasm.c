@@ -681,6 +681,7 @@ make_decl_rtl (decl, asmspec)
   const char *name = 0;
   const char *new_name = 0;
   int reg_number;
+  rtx x;
 
   /* Check that we are not being given an automatic variable.  */
   /* A weak alias has TREE_PUBLIC set but not the other bits.  */
@@ -848,11 +849,11 @@ make_decl_rtl (decl, asmspec)
 	   && (TREE_PUBLIC (decl) || TREE_STATIC (decl)))))
     TREE_SIDE_EFFECTS (decl) = 1;
 
-  SET_DECL_RTL (decl, gen_rtx_MEM (DECL_MODE (decl),
-				   gen_rtx_SYMBOL_REF (Pmode, name)));
-  SYMBOL_REF_WEAK (XEXP (DECL_RTL (decl), 0)) = DECL_WEAK (decl);
+  x = gen_rtx_MEM (DECL_MODE (decl), gen_rtx_SYMBOL_REF (Pmode, name));
+  SYMBOL_REF_WEAK (XEXP (x, 0)) = DECL_WEAK (decl);
   if (TREE_CODE (decl) != FUNCTION_DECL)
-    set_mem_attributes (DECL_RTL (decl), decl, 1);
+    set_mem_attributes (x, decl, 1);
+  SET_DECL_RTL (decl, x);
 
   /* Optionally set flags or add text to the name to record information
      such as that it is a function name.

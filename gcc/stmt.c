@@ -3810,15 +3810,17 @@ expand_decl (decl)
   else if (DECL_SIZE (decl) == 0)
     /* Variable with incomplete type.  */
     {
+      rtx x;
       if (DECL_INITIAL (decl) == 0)
 	/* Error message was already done; now avoid a crash.  */
-	SET_DECL_RTL (decl, gen_rtx_MEM (BLKmode, const0_rtx));
+	x = gen_rtx_MEM (BLKmode, const0_rtx);
       else
 	/* An initializer is going to decide the size of this array.
 	   Until we know the size, represent its address with a reg.  */
-	SET_DECL_RTL (decl, gen_rtx_MEM (BLKmode, gen_reg_rtx (Pmode)));
+	x = gen_rtx_MEM (BLKmode, gen_reg_rtx (Pmode));
 
-      set_mem_attributes (DECL_RTL (decl), decl, 1);
+      set_mem_attributes (x, decl, 1);
+      SET_DECL_RTL (decl, x);
     }
   else if (DECL_MODE (decl) != BLKmode
 	   /* If -ffloat-store, don't put explicit float vars
@@ -3888,7 +3890,7 @@ expand_decl (decl)
   else
     /* Dynamic-size object: must push space on the stack.  */
     {
-      rtx address, size;
+      rtx address, size, x;
 
       /* Record the stack pointer on entry to block, if have
 	 not already done so.  */
@@ -3913,9 +3915,10 @@ expand_decl (decl)
 					      TYPE_ALIGN (TREE_TYPE (decl)));
 
       /* Reference the variable indirect through that rtx.  */
-      SET_DECL_RTL (decl, gen_rtx_MEM (DECL_MODE (decl), address));
+      x = gen_rtx_MEM (DECL_MODE (decl), address);
+      set_mem_attributes (x, decl, 1);
+      SET_DECL_RTL (decl, x);
 
-      set_mem_attributes (DECL_RTL (decl), decl, 1);
 
       /* Indicate the alignment we actually gave this variable.  */
 #ifdef STACK_BOUNDARY
