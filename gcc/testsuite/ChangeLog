@@ -1,3 +1,8 @@
+2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/17149
+	* g++.dg/template/access15.C: New.
+
 2004-08-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17163
