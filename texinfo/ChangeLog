@@ -1,3 +1,7 @@
+Tue Mar 17 10:33:28 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (clean, distclean): Add 'info' explicitly.
+
 Tue Mar  3 10:05:46 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* makeinfo/makeinfo.c (CommandTable): Fix braces in initializer.
