@@ -1,5 +1,5 @@
 /* Pipeline hazard description translator.
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
    Written by Vladimir Makarov <vmakarov@redhat.com>
    
@@ -8974,7 +8974,7 @@ output_internal_insn_latency_func ()
 	    else
 	      {
 		fprintf (output_file,
-			 "          if (%s (%s, %s)\n",
+			 "          if (%s (%s, %s))\n",
 			 bypass->bypass_guard_name, INSN_PARAMETER_NAME,
 			 INSN2_PARAMETER_NAME);
 		fprintf (output_file,

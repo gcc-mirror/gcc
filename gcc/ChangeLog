@@ -1,3 +1,8 @@
+2003-01-21  Andreas Schwab  <schwab@suse.de>
+
+	* genautomata.c (output_internal_insn_latency_func): Fix missing
+	close paren in output.
+
 2003-01-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* genautomata.c: Space savings in generated code:
