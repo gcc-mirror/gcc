@@ -1,3 +1,8 @@
+2000-12-27  Jeff Sturm  <jeff.sturm@commerceone.com>
+
+	* java/sql/DriverManager.java (getConnection): Don't set user/password
+	properties if null.
+
 2000-12-27  Warren Levy  <warrenl@redhat.com>
 
 	Fix for PR libgcj/1358:

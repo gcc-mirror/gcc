@@ -341,8 +341,10 @@ getConnection(String url, String user, String password) throws SQLException
 {
   Properties p = new Properties();
 
-  p.setProperty("user", user);
-  p.setProperty("password", password);
+  if (user != null)
+    p.setProperty("user", user);
+  if (password != null)
+    p.setProperty("password", password);
 
   return(getConnection(url, p));
 }
