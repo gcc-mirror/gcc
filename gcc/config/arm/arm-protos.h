@@ -76,6 +76,7 @@ extern int    nonimmediate_soft_df_operand PARAMS ((rtx, enum machine_mode));
 extern int    soft_df_operand		PARAMS ((rtx, enum machine_mode));
 extern int    index_operand		PARAMS ((rtx, enum machine_mode));
 extern int    const_shift_operand	PARAMS ((rtx, enum machine_mode));
+extern int    arm_comparison_operator	PARAMS ((rtx, enum machine_mode));
 extern int    shiftable_operator	PARAMS ((rtx, enum machine_mode));
 extern int    shift_operator		PARAMS ((rtx, enum machine_mode));
 extern int    equality_operator		PARAMS ((rtx, enum machine_mode));

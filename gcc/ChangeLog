@@ -1,3 +1,20 @@
+2000-08-15  Richard Earnshaw <rearnsha@arm.com>
+
+	ARM support for unordered FP operations.
+	* arm-protos.h (arm_comparison_operator): Declare.
+	* arm.c (arm_comparison_operator): New function.
+	(arm_select_cc_mode): Add unordered comparison codes.
+	(get_arm_condition_code): Likewise.
+	(arm_final_prescan_insn): Can't handle unordered jumps that can't
+	be done in one insn.
+	* arm.h (PREDICATE_CODES): Add arm_comparison_operator.
+	* arm.md (all uses of comparison_operator): Replace with
+	arm_comparison_operator.
+	(bunordered, bordered, bugt, bunlt, bunge, bunle, buneq, bltgt): New
+	expands.
+	(arm_buneq, arm_bltgt, arm_buneq_reversed, arm_bltgt_reveresed): New
+	patterns.
+	
 Tue Aug 15 00:36:36 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* gthr-posix.h: Conditionally include <sched.h>; include
