@@ -784,6 +784,9 @@ find_a_file (pprefix, name)
   struct prefix_list *pl;
   int len = pprefix->max_len + strlen (name) + 1;
 
+  if (debug)
+    fprintf (stderr, "Looking for '%s'\n", name);
+  
 #ifdef EXECUTABLE_SUFFIX
   len += strlen (EXECUTABLE_SUFFIX);
 #endif
@@ -792,34 +795,69 @@ find_a_file (pprefix, name)
 
   /* Determine the filename to execute (special case for absolute paths).  */
 
-  if (*name == '/')
+  if (*name == '/'
+#ifdef DIR_SEPARATOR
+      DIR_SEPARATOR == '\\' && name[1] == ':'
+      && (name[2] == DIR_SEPARATOR || name[2] == '/')
+#endif
+      )
     {
       if (access (name, X_OK) == 0)
 	{
 	  strcpy (temp, name);
+
+	  if (debug)
+	    fprintf (stderr, "  - found: absolute path\n");
+	  
 	  return temp;
 	}
+
+      if (debug)
+	fprintf (stderr, "  - failed to locate using absolute path\n");
     }
   else
     for (pl = pprefix->plist; pl; pl = pl->next)
       {
 	strcpy (temp, pl->prefix);
 	strcat (temp, name);
+
+	if (debug)
+	  fprintf (stderr, "  - try: %s\n", temp);
+	
 	if (! is_in_prefix_list (&our_file_names, temp, 1)
 	    /* This is a kludge, but there seems no way around it.  */
 	    && strcmp (temp, "./ld") != 0
 	    && access (temp, X_OK) == 0)
-	  return temp;
+	  {
+	    if (debug)
+	      fprintf (stderr, "  - found!\n");
+	    
+	    return temp;
+	  }
 
 #ifdef EXECUTABLE_SUFFIX
 	/* Some systems have a suffix for executable files.
 	   So try appending that.  */
 	strcat (temp, EXECUTABLE_SUFFIX);
+	
+	if (debug)
+	  fprintf (stderr, "  - try: %s\n", temp);
+	
 	if (! is_in_prefix_list (&our_file_names, temp, 1)
 	    && access (temp, X_OK) == 0)
-	  return temp;
+	  {
+	    if (debug)
+	      fprintf (stderr, "  - found!  (Uses executable suffix)\n");
+	    
+	    return temp;
+	  }
 #endif
+	if (debug && pl->next == NULL)
+	  fprintf (stderr, "  - failed to locate using relative paths\n");
       }
+
+  if (debug && pprefix->plist == NULL)
+    fprintf (stderr, "  - failed: no entries in prefix list\n");
 
   free (temp);
   return 0;
@@ -882,6 +920,9 @@ prefix_from_string (p, pprefix)
   char *startp, *endp;
   char *nstore = (char *) xmalloc (strlen (p) + 3);
 
+  if (debug)
+    fprintf (stderr, "Convert string '%s' into prefixes, separator = '%c'\n", p, PATH_SEPARATOR);
+  
   startp = endp = p;
   while (1)
     {
@@ -900,6 +941,9 @@ prefix_from_string (p, pprefix)
 	  else
 	    nstore[endp-startp] = 0;
 
+	  if (debug)
+	    fprintf (stderr, "  - add prefix: %s\n", nstore);
+	  
 	  add_prefix (pprefix, nstore);
 	  if (*endp == 0)
 	    break;
@@ -956,8 +1000,19 @@ main (argc, argv)
 
 #ifdef DEBUG
   debug = 1;
-  vflag = 1;
 #endif
+
+  /* Parse command line early for instances of -debug.  This allows
+     the debug flag to be set before functions like find_a_file()
+     are called.  */
+  {
+    int i;
+    
+    for (i = 1; argv[i] != NULL; i ++)
+      if (! strcmp (argv[i], "-debug"))
+	debug = 1;
+    vflag = debug;
+  }
 
 #ifndef DEFAULT_A_OUT_NAME
   output_file = "a.out";
@@ -986,8 +1041,8 @@ main (argc, argv)
      and a new one is installed (rare, but we should handle it).
      ??? Hopefully references to COLLECT_NAME can be removed at some point.  */
 
-  collect_name = getenv ("COLLECT_NAME");
-  collect_names = getenv ("COLLECT_NAMES");
+  GET_ENVIRONMENT (collect_name,  "COLLECT_NAME");
+  GET_ENVIRONMENT (collect_names, "COLLECT_NAMES");
 
   p = (char *) xmalloc (strlen ("COLLECT_NAMES=")
 			+ (collect_name ? strlen (collect_name) + 1 : 0)
@@ -1056,7 +1111,7 @@ main (argc, argv)
 #ifdef CROSS_COMPILE
   /* If we look for a program in the compiler directories, we just use
      the short name, since these directories are already system-specific.
-     But it we look for a took in the system directories, we need to
+     But it we look for a program in the system directories, we need to
      qualify the program name with the target machine.  */
 
   full_ld_suffix
@@ -1136,7 +1191,7 @@ main (argc, argv)
 	  argv[0] = ld_file_name;
 	  execvp (argv[0], argv);
 	}
-      fatal ("cannot find `ld'");
+      fatal ("cannot find `ld' (%s)", ld_file_name);
     }
 
 #ifdef REAL_NM_FILE_NAME
@@ -1273,8 +1328,7 @@ main (argc, argv)
 	    case 'd':
 	      if (!strcmp (arg, "-debug"))
 		{
-		  debug = 1;
-		  vflag = 1;
+		  /* Already parsed.  */
 		  ld1--;
 		  ld2--;
 		}
