@@ -1,3 +1,9 @@
+Sat Jan 20 12:46:57 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* stmt.c (expand_return): Don't return anything if size is zero.
+	Delete redundant assignment to BYTES.
+	* expr.c (move_block_from_reg): Do nothing if NREGS is zero.
+
 2001-01-20  Marek Michalkiewicz  <marekm@linux.org.pl>
 
 	* config/avr/avr.h (INIT_TARGET_OPTABS): Remove most of it, was

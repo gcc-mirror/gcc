@@ -1857,6 +1857,9 @@ move_block_from_reg (regno, x, nregs, size)
 #endif
   enum machine_mode mode;
 
+  if (nregs == 0)
+    return;
+
   /* If SIZE is that of a mode no bigger than a word, just use that
      mode's store operation.  */
   if (size <= UNITS_PER_WORD
