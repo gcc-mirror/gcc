@@ -1,3 +1,14 @@
+2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
+
+	* function.h (struct function): Remove cannot_inline field.
+	(current_function_cannot_inline): Remove.
+	* passes.c (rest_of_compilation): Reset DECL_DEFER_OUTPUT.
+	Simplify conditionals to ignore warn_return_type.
+	* tree-optimize.c (tree_rest_of_compilation): Do not reset
+	DECL_DEFER_OUTPUT.
+	* objc/objc-act.c (build_module_descriptor, finish_method_def):
+	Do not set current_function_cannot_inline.
+
 2004-06-15  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* cfglayout.c (fixup_reorder_chain): Handle case where the

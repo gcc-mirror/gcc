@@ -1,3 +1,11 @@
+2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
+
+	* cp-tree.h (struct language_function): Remove cannot_inline.
+	* decl.c (save_function_data): cannot_inline is no more.
+	(cxx_push_function_context): Likewise.
+	* decl2.c (start_objects, start_static_storage_duration_function):
+	Reset DECL_INLINE, set DECL_UNINLINABLE.
+
 2004-06-14  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/15967

@@ -1976,8 +1976,8 @@ start_objects (int method_type, int initp)
      have external linkage.  And, there's no point in deferring
      compilation of thes functions; they're all going to have to be
      out anyhow.  */
-  current_function_cannot_inline
-    = "static constructors and destructors cannot be inlined";
+  DECL_INLINE (current_function_decl) = 0;
+  DECL_UNINLINABLE (current_function_decl) = 1;
 
   return body;
 }
@@ -2131,8 +2131,8 @@ start_static_storage_duration_function (unsigned count)
 
   /* This function must not be deferred because we are depending on
      its compilation to tell us what is TREE_SYMBOL_REFERENCED.  */
-  current_function_cannot_inline 
-    = "static storage duration functions cannot be inlined";
+  DECL_INLINE (ssdf_decl) = 0;
+  DECL_UNINLINABLE (ssdf_decl) = 1;
 
   return body;
 }

@@ -151,14 +151,10 @@ write_resource_constructor (void)
   input_location = DECL_SOURCE_LOCATION (init_decl);
   expand_function_end ();
   poplevel (1, 0, 1);
-  { 
-    /* Force generation, even with -O3 or deeper.  Gross hack.
-       FIXME.  */
-    int saved_flag = flag_inline_functions;
-    flag_inline_functions = 0;	
-    rest_of_compilation (init_decl);
-    flag_inline_functions = saved_flag;
-  }
+
+  /* rest_of_compilation forces generation even if -finline-functions.  */
+  rest_of_compilation (init_decl);
+
   current_function_decl = NULL_TREE;
   if (targetm.have_ctors_dtors)
     targetm.asm_out.constructor (XEXP (DECL_RTL (init_decl), 0),

@@ -582,10 +582,6 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
   if (nested_p)
     ggc_push_context ();
 
-  /* There's no need to defer outputting this function any more; we
-     know we want to output it.  */
-  DECL_DEFER_OUTPUT (fndecl) = 0;
-
   /* Run the optimizers and output the assembler code for this function.  */
   rest_of_compilation (fndecl);
 

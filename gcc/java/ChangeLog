@@ -1,3 +1,10 @@
+2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
+
+	* class.c (emit_register_classes): Make the function uninlinable,
+	do not set current_function_cannot_inline.
+	* resource.c (write_resource_constructor): Do not reset
+	flag_inline_functions around rest_of_compilation.
+	
 2004-06-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR java/15769

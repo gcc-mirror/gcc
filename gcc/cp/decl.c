@@ -10491,15 +10491,6 @@ save_function_data (tree decl)
   f->x_named_label_uses = NULL;
   f->bindings = NULL;
   f->x_local_names = NULL;
-
-  /* If we've already decided that we cannot inline this function, we
-     must remember that fact when we actually go to expand the
-     function.  */
-  if (current_function_cannot_inline)
-    {
-      f->cannot_inline = current_function_cannot_inline;
-      DECL_INLINE (decl) = 0;
-    }
 }
 
 /* Add a note to mark the beginning of the main body of the constructor.
@@ -11155,11 +11146,6 @@ cxx_push_function_context (struct function * f)
 	  /* If we already parsed this function, and we're just expanding it
 	     now, restore saved state.  */
 	  *cp_function_chain = *DECL_SAVED_FUNCTION_DATA (fn);
-
-	  /* If we decided that we didn't want to inline this function,
-	     make sure the back-end knows that.  */
-	  if (!current_function_cannot_inline)
-	    current_function_cannot_inline = cp_function_chain->cannot_inline;
 
 	  /* We don't need the saved data anymore.  Unless this is an inline
 	     function; we need the named return value info for
