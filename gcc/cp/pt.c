@@ -1300,7 +1300,7 @@ instantiate_class_template (type)
       TREE_VALUE (d) = xref_tag_from_type (TREE_VALUE (d), NULL_TREE, 1);
 
     d = tsubst (DECL_TEMPLATE_INJECT (template), &TREE_VEC_ELT (args, 0),
-		     TREE_VEC_LENGTH (args), NULL_TREE);
+		TREE_VEC_LENGTH (args), NULL_TREE);
 
     for (; d; d = TREE_CHAIN (d))
       {

@@ -4455,9 +4455,9 @@ build_new_function_call (fn, args, obj)
 	  return error_mark_node;
 	}
 
-      /* Pedantically, it is ill-formed to define a function that could
-	 also be a template instantiation, but we won't implement that
-	 until things settle down.  */
+      /* Pedantically, normal function declarations are never considered
+	 to refer to template instantiations, but we won't implement that
+	 until we implement full template instantiation syntax.  */
       if (templates && ! cand->template && ! DECL_INITIAL (cand->fn))
 	add_maybe_template (cand->fn, templates);
 

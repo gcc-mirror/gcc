@@ -3310,30 +3310,6 @@ real_yylex ()
 #endif
 
 	    yylval.ttype = tmp;
-
-	    /* A user-invisible read-only initialized variable
-	       should be replaced by its value.  We only handle strings
-	       since that's the only case used in C (and C++).  */
-	    /* Note we go right after the local value for the identifier
-	       (e.g., __FUNCTION__ or __PRETTY_FUNCTION__).  We used to
-	       call lookup_name, but that could result in an error about
-	       ambiguities.  */
-	    tmp = IDENTIFIER_LOCAL_VALUE (yylval.ttype);
-	    if (tmp != NULL_TREE
-		&& TREE_CODE (tmp) == VAR_DECL
-		&& DECL_IGNORED_P (tmp)
-		&& TREE_READONLY (tmp)
-		&& DECL_INITIAL (tmp) != NULL_TREE
-		&& TREE_CODE (DECL_INITIAL (tmp)) == STRING_CST)
-	      {
-		tree stringval = DECL_INITIAL (tmp);
-	      
-		/* Copy the string value so that we won't clobber anything
-		   if we put something in the TREE_CHAIN of this one.  */
-		yylval.ttype = build_string (TREE_STRING_LENGTH (stringval),
-					     TREE_STRING_POINTER (stringval));
-		value = STRING;
-	      }
 	  }
 	if (value == NEW && ! global_bindings_p ())
 	  {
