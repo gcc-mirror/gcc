@@ -1,5 +1,18 @@
 2000-09-12  Michael Hayes  <mhayes@cygnus.com>
 
+	* loop.h (LOOP_REGS): New macro.
+	(struct loop_regs): New.
+	(struct loop_info): Add regs field.
+	* loop.c (set_in_loop): Remove global array and store 
+	in loop_regs structure as part of loop_info structure.
+	(n_times_set, may_not_optimize): Likewise.
+	(reg_single_usage, moved_once): Likewise.
+	(count_one_set): Add regs argument.
+	(combine_movables, rtx_equal_for_loop_p, combine_givs): Likewise.
+	(set_pseudo_multiple_uses): Pass regs pointer.
+
+2000-09-12  Michael Hayes  <mhayes@cygnus.com>
+
 	* unroll.c (iteration_info): Subsume into loop_iterations.
 	* loop.h (loop_info): New field iv.
 

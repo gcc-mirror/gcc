@@ -29,6 +29,9 @@ Boston, MA 02111-1307, USA.  */
 /* Get the loop info pointer of a loop.  */
 #define LOOP_INFO(LOOP) ((struct loop_info *) (LOOP)->aux) 
 
+/* Get a pointer to the loop registers structure.  */
+#define LOOP_REGS(LOOP) (&LOOP_INFO (loop)->regs)
+
 /* Get the luid of an insn.  Catch the error of trying to reference the LUID
    of an insn added during loop, since these don't have LUIDs.  */
 
@@ -173,8 +176,46 @@ typedef struct loop_mem_info
 } loop_mem_info;
 
 
-/* Information required to calculate the number of loop iterations. 
-   This is set by loop_iterations.  */
+
+struct loop_regs
+{
+  int num;
+
+  /* Indexed by register number, contains the number of times the reg
+     is set during the loop being scanned.
+     During code motion, a negative value indicates a reg that has been
+     made a candidate; in particular -2 means that it is an candidate that
+     we know is equal to a constant and -1 means that it is an candidate
+     not known equal to a constant.
+     After code motion, regs moved have 0 (which is accurate now)
+     while the failed candidates have the original number of times set.
+     
+     Therefore, at all times, == 0 indicates an invariant register;
+     < 0 a conditionally invariant one.  */
+  varray_type set_in_loop;
+
+  /* Original value of set_in_loop; same except that this value
+     is not set negative for a reg whose sets have been made candidates
+     and not set to 0 for a reg that is moved.  */
+  varray_type n_times_set;
+  
+  /* Index by register number, 1 indicates that the register
+     cannot be moved or strength reduced.  */
+  varray_type may_not_optimize;
+  
+  /* Contains the insn in which a register was used if it was used
+     exactly once; contains const0_rtx if it was used more than once.  */
+  varray_type single_usage;
+  
+  /* Nonzero means reg N has already been moved out of one loop.
+     This reduces the desire to move it out of another.  */
+  char *moved_once;
+
+  int multiple_uses;
+};
+
+
+/* Information pertaining to a loop.  */
 
 struct loop_info
 {
@@ -242,6 +283,8 @@ struct loop_info
   int num_mem_sets;
   /* The insn where the first of these was found.  */
   rtx first_loop_store_insn;
+  /* The registers used the in loop.  */
+  struct loop_regs regs;
 };
 
 /* Definitions used by the basic induction variable discovery code.  */
