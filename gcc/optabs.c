@@ -42,6 +42,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 optab add_optab;
 optab sub_optab;
 optab smul_optab;
+optab smul_highpart_optab;
+optab umul_highpart_optab;
 optab smul_widen_optab;
 optab umul_widen_optab;
 optab sdiv_optab;
@@ -383,7 +385,9 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
      Also try to make the last operand a constant.  */
   if (GET_RTX_CLASS (binoptab->code) == 'c'
       || binoptab == smul_widen_optab
-      || binoptab == umul_widen_optab)
+      || binoptab == umul_widen_optab
+      || binoptab == smul_highpart_optab
+      || binoptab == umul_highpart_optab)
     {
       commutative_op = 1;
 
@@ -1483,6 +1487,9 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	     since negative shift counts are meaningless.  */
 	  op1x = convert_to_mode (word_mode, op1, 1);
 	}
+
+      if (GET_MODE (op0) != mode)
+	op0 = convert_to_mode (mode, op0, unsignedp);
 
       /* Pass 1 for NO_QUEUE so we don't lose any increments
 	 if the libcall is cse'd or moved.  */
@@ -3727,6 +3734,8 @@ init_optabs ()
   add_optab = init_optab (PLUS);
   sub_optab = init_optab (MINUS);
   smul_optab = init_optab (MULT);
+  smul_highpart_optab = init_optab (UNKNOWN);
+  umul_highpart_optab = init_optab (UNKNOWN);
   smul_widen_optab = init_optab (UNKNOWN);
   umul_widen_optab = init_optab (UNKNOWN);
   sdiv_optab = init_optab (DIV);
