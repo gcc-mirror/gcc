@@ -3365,7 +3365,8 @@ expand_expr (exp, target, tmode, modifier)
   rtx original_target = target;
   int ignore = (target == const0_rtx
 		|| ((code == NON_LVALUE_EXPR || code == NOP_EXPR
-		     || code == CONVERT_EXPR || code == REFERENCE_EXPR)
+		     || code == CONVERT_EXPR || code == REFERENCE_EXPR
+		     || code == COND_EXPR)
 		    && TREE_CODE (type) == VOID_TYPE));
   tree context;
 
