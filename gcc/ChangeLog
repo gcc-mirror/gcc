@@ -1,3 +1,13 @@
+2001-12-31 Graham Stott  <grahams@redhat.com>
+
+	* except.h: Remove forward def of tree_node, rtx_def and
+	define of tree, rtx. Also remove undefs.
+
+2001-12-30  Graham Stott  <grahams@redhat.com>
+
+	* basic-block.h: Remove forward def of tree_node and
+	define of tree.
+
 2001-12-30  Richard Henderson  <rth@redhat.com>
 
 	* cfglayout.c (scope_def, scope_forest_info, forest,
