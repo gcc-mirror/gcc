@@ -1,3 +1,8 @@
+2002-01-04  H.J. Lu <hjl@gnu.org>
+
+	* toplev.c (rest_of_compilation): Fix a typo when calling
+	cleanup_cfg.
+
 2002-01-03  Kazu Hirata  <kazu@hxi.com>
 
 	* c-common.c: Fix formatting.
@@ -37,7 +42,7 @@
 	(profile_after_prologue): Likewise.
 	* function.c (expand_function_start): Likewise.
 	(expand_function_start): Likewise.
-	* config/alpha/alpha.c (direct_call_operand): 
+	* config/alpha/alpha.c (direct_call_operand):
 	(alpha_does_function_need_gp): Likewise.
 	(alpha_expand_prologue): Likewise.
 	* config/arm/arm.c (arm_expand_prologue): Likewise.
