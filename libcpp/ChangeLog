@@ -1,3 +1,9 @@
+2004-09-17  Zack Weinberg  <zack@codesourcery.com>
+
+	* directives.c (do_pragma): Save current buffer position
+	before lexing the pragma keywords; don't call
+	_cpp_backup_tokens in the defer_pragmas case.
+
 2004-09-15  Per Bothner  <per@bothner.com>
 
 	* include/line-map.h (line_map_start):  Add parameter names so
