@@ -44,7 +44,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* gcc should find libgcc.a itself, not ask linker to do so.  */
 
-3define LINK_LIBGCC_SPECIAL
+#define LINK_LIBGCC_SPECIAL
+
+/* GCC must match what sys/types.h uses for size_t.  */
+
+#define SIZE_TYPE "int"
 
 /* This is how to align the code that follows an unconditional branch.
    Don't define it, since it confuses the assembler (we hear).  */
