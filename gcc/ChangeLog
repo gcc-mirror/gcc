@@ -1,3 +1,9 @@
+Mon Mar 15 16:01:52 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* config/misp/mips.h (REGISTER_MOVE_COST): Make the cost of moving
+ 	from HI/LO/HILO/MD into general registers the same as for one
+ 	of moving general registers to HI/LO/HILO/MD.
+
 Mon Mar 15 12:39:38 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/m32r/m32r.c (init_idents): New function.  Initialise
