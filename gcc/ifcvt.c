@@ -2659,7 +2659,8 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
       if (end == merge_bb->end)
 	merge_bb->end = PREV_INSN (head);
 
-      squeeze_notes (&head, &end);
+      if (squeeze_notes (&head, &end))
+	return TRUE;
 
       reorder_insns (head, end, PREV_INSN (earliest));
     }

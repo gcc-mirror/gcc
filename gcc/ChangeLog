@@ -1,3 +1,15 @@
+2001-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* jump.c (squeeze_notes): Return true if no real insns were found.
+	* rtl.h (squeeze_notes): Adjust prototype.
+	* cfgcleanup.c (merge_blocks_move_predecessor_nojumps): If
+	squeeze_notes finds no real instructions, abort.
+	(merge_blocks_move_successor_nojumps): Likewise.
+	* loop.c (find_and_verify_loops): Likewise.
+	* stmt.c (expand_end_case): Likewise.
+	* ifcvt.c (dead_or_predicable): Return TRUE if squeeze_notes doesn't
+	find any real instructions.
+
 2001-11-15  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.c: Include c-lex.h.

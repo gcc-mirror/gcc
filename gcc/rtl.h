@@ -1340,7 +1340,7 @@ extern void mark_jump_label		PARAMS ((rtx, rtx, int));
 extern void cleanup_barriers		PARAMS ((void));
 
 /* In jump.c */
-extern void squeeze_notes		PARAMS ((rtx *, rtx *));
+extern bool squeeze_notes		PARAMS ((rtx *, rtx *));
 extern rtx delete_related_insns			PARAMS ((rtx));
 extern void delete_jump			PARAMS ((rtx));
 extern void delete_barrier		PARAMS ((rtx));
