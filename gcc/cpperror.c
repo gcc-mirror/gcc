@@ -37,8 +37,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "cpplib.h"
 
-static void v_cpp_message PROTO ((cpp_reader *, int, const char *, va_list));
-
 /* Print the file names and line numbers of the #include
    commands which led to the current file.  */
 
