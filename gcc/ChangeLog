@@ -1,3 +1,7 @@
+Tue Jan 12 02:53:46 1999  Richard Henderson  <rth@cygnus.com>
+
+	* cse.c (cse_insn): Never prefer (const (constant_p_rtx)).
+
 Tue Jan 12 02:36:10 PST 1999 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
