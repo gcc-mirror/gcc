@@ -1,3 +1,7 @@
+2001-04-11  Stan Shebs  <shebs@apple.com>
+
+	* MAINTAINERS: Add self as Darwin port maintainer.
+
 2001-04-11  Alan Modra  <amodra@one.net.au>
 
 	* MAINTAINERS: Update my email address.
