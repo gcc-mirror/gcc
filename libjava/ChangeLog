@@ -1,5 +1,10 @@
 2003-03-24  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/RandomAccessFile.java:
+	More little merges with libgcj.
+
+2003-03-24  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/natInetAddressNoNet.cc:
 	Include stddef.h.
 	* java/net/natPlainDatagramSocketImplNoNet.cc:
