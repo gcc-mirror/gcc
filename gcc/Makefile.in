@@ -99,7 +99,7 @@ GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(CROSS_GCC_CFLA
 
 # Special flags for compiling enquire.
 # We disable optimization to make floating point more reliable.
-ENQUIRE_CFLAGS = -DNO_SC -DNO_MEM -DNO_STDDEF -DNO_LONG_DOUBLE_IO -O0
+ENQUIRE_CFLAGS = -DNO_MEM -DNO_STDDEF -DNO_LONG_DOUBLE_IO -O0
 ENQUIRE_LDFLAGS = $(LDFLAGS)
 
 # Tools to use when building a cross-compiler.
