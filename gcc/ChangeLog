@@ -1,3 +1,8 @@
+2002-11-12  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/mips/t-iris6 (MULTILIB_OSDIRNAMES): Restore old
+	directories.
+
 2002-11-11  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/contrib.texi: Merge in the list from the libstdc++ web pages.
