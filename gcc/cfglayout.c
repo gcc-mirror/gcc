@@ -602,6 +602,7 @@ fixup_reorder_chain (void)
 #ifdef ENABLE_CHECKING
   verify_insn_chain ();
 #endif
+  delete_dead_jumptables ();
 
   /* Now add jumps and labels as needed to match the blocks new
      outgoing edges.  */
