@@ -1,3 +1,7 @@
+Mon Apr  3 14:10:34 2000  Donald Lindsay  <dlindsay@cygnus.com>
+
+	* execute/va-arg-{15,16,17,18,19}.c: New test.
+
 2000-03-26  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* compile/20000326-1.c: New test.
