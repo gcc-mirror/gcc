@@ -1,3 +1,9 @@
+2003-07-16  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR c++/10903
+	* pt.c (convert_nontype_argument): Fix thinko in diagnostic.
+	Improve.
+
 2003-07-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.def (LOOKUP_EXPR): Remove.

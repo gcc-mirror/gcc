@@ -3085,7 +3085,14 @@ convert_nontype_argument (tree type, tree expr)
     }
   else 
     {
-      error ("object `%E' cannot be used as template argument", expr);
+      if (TYPE_P (expr))
+        error ("type '%T' cannot be used as a value for a non-type "
+               "template-parameter", expr);
+      else if (DECL_P (expr))
+        error ("invalid use of '%D' as a non-type template-argument", expr);
+      else
+        error ("invalid use of '%E' as a non-type template-argument", expr);
+
       return NULL_TREE;
     }
 
