@@ -1,3 +1,9 @@
+2000-10-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc_build (MAKE): New variable.
+	(build_gcc): Use it.  Fix logging of errors.
+	(install_gcc): Likewise.
+
 2000-10-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc_build: Save the output from CVS into the logfile as well.

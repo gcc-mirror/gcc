@@ -37,6 +37,12 @@
 # If you are using password-based CVS, you must manually log in, and
 # not log out from, the CVS server before running this script.
 
+# You can set the following variables in the environment.  They 
+# have no corresponding command-line options because they should
+# only be needed infrequently:
+#
+#   MAKE                        The path to `make'.
+
 ########################################################################
 # Functions
 ########################################################################
@@ -142,8 +148,8 @@ build_gcc() {
 	error "Could not configure GCC"
 
     # Bootstrap the compiler
-    (eval make ${MAKE_OPTIONS} bootstrap |
-	tee -a ${LOGFILE}) 2>&1 || \
+    (eval ${MAKE} ${MAKE_OPTIONS} bootstrap 2>&1 |
+	tee -a ${LOGFILE}) || \
 	error "Could not build GCC"
 }
 
@@ -156,7 +162,7 @@ test_gcc() {
     changedir ${OBJDIR}
 
     echo "Running tests...  This will take a while."
-    (make -k check | tee -a ${LOGFILE}) 2>&1
+    (${MAKE} -k check 2>&1 | tee -a ${LOGFILE})
     (${DESTINATION}/contrib/test_summary | tee -a ${LOGFILE})
 }
 
@@ -184,7 +190,7 @@ install_gcc() {
     # Go to the object directory.
     changedir ${OBJDIR}
 
-    make install > ${LOGFILE} 2>&1 || \
+    (${MAKE} install 2>&1 | tee -a ${LOGFILE}) || \
 	error "Installation failed"
 }
 
@@ -214,6 +220,8 @@ TARFILE="${HOME}/dev/gcc.tgz"
 
 # Options to pass to configure.
 CONFIGURE_OPTIONS=
+# The `make' program.
+MAKE=${MAKE:-make}
 # Options to pass to make.
 MAKE_OPTIONS=
 
