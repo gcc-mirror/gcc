@@ -89,9 +89,9 @@ LOG_FILE="$TEST_DIR/$(date +%Y%m%d)-mkchecklog.txt"
 # the names of the specific test files to be run
 TESTS_FILE="$TEST_DIR/$(date +%Y%m%d)-mkcheckfiles.txt"
 
-# the heap size limit for testsuite binaries; start with a 2MB limit as per
-# http://gcc.gnu.org/ml/libstdc++/2000-10/msg00029.html
-MAX_MEM_USAGE=3072
+# the heap size and virtual mem limit for testsuite binaries
+# See http://gcc.gnu.org/ml/libstdc++/2000-10/msg00029.html
+MAX_MEM_USAGE=16384
 
 #
 # 2: clean, make files, append general test info
@@ -338,7 +338,8 @@ test_file()
         # printed by the executable will be lost and cannot be redirected,
         # because we need to capture the output of 'time'.  Bummer.
         TIMEFORMAT='timemark %R'
-        E_TIME_TEXT="$(exec 2>&1; ulimit -d $MAX_MEM_USAGE; \
+        E_TIME_TEXT="$(exec 2>&1;                                        \
+                     ulimit -d $MAX_MEM_USAGE; ulimit -v $MAX_MEM_USAGE; \
                      time $LTEXE $EXENAME)"
         E_ABNORMAL_TERMINATION=$?
         E_TIME="$(echo $E_TIME_TEXT | awk '{print $2}')"

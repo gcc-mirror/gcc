@@ -1,3 +1,7 @@
+2001-02-02  Phil Edwards  <pme@sources.redhat.com>
+
+	* mkcheck.in:  Also limit virtual memory size, for mmap-based mallocs.
+
 2001-02-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (toplevel_srcdir, auxdir): Set.
