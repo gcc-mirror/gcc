@@ -1,3 +1,8 @@
+2002-12-18  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.lang/pr8945.java: New file.
+	* libjava.lang/pr8945.out: New file.
+
 2002-12-12  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.loader/loader.exp (gcj_loader_test_one): Use
