@@ -7576,6 +7576,9 @@ thus speeding up the compiler.  The most important predicates to include
 in the list specified by this macro are those used in the most insn
 patterns.
 
+For each predicate function named in @var{PREDICATE_CODES}, a
+declaration will be generated in @file{insn-codes.h}.
+
 @item SPECIAL_MODE_PREDICATES
 @findex SPECIAL_MODE_PREDICATES
 Define this if you have special predicates that know special things

@@ -2,7 +2,7 @@
    - some macros CODE_FOR_... giving the insn_code_number value
    for each of the defined standard insn names.
    Copyright (C) 1987, 1991, 1995, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 static int insn_code_number;
 
 static void gen_insn PARAMS ((rtx));
+static void output_predicate_decls PARAMS ((void));
 static int print_md_constant PARAMS ((void **, void *));
 
 static void
@@ -44,6 +45,30 @@ gen_insn (insn)
   if (XSTR (insn, 0)[0] != 0 && XSTR (insn, 0)[0] != '*')
     printf ("  CODE_FOR_%s = %d,\n", XSTR (insn, 0),
 	    insn_code_number);
+}
+
+/* Print out declarations for all predicates mentioned in
+   PREDICATE_CODES.  */
+
+static void
+output_predicate_decls ()
+{
+#ifdef PREDICATE_CODES
+  static struct {
+    const char *name;
+    RTX_CODE codes[NUM_RTX_CODE];
+  } *p, predicate[] = {
+    PREDICATE_CODES
+    {NULL, {}}
+  };
+  
+  putc ('\n', stdout);
+  puts ("struct rtx_def;\n#include \"machmode.h\"\n");
+  for (p = predicate; p->name; p++)
+    printf ("extern int %s PARAMS ((struct rtx_def *, enum machine_mode));\n",
+	    p->name);
+  putc ('\n', stdout);
+#endif
 }
 
 extern int main PARAMS ((int, char **));
@@ -90,6 +115,8 @@ from the machine description file `md'.  */\n\n");
   printf ("\n#define MAX_INSN_CODE ((int) CODE_FOR_nothing)\n\n");
 
   traverse_md_constants (print_md_constant, stdout);
+
+  output_predicate_decls ();
 
   printf ("\n#endif /* MAX_INSN_CODE */\n");
 

@@ -1,3 +1,13 @@
+2001-01-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gencodes.c (output_predicate_decls): New function.
+	(main): Call it.
+	* machmode.h (GET_MODE_MASK): Arrange for it to be defined
+	even if it is not the first time machmode.h is #included.
+	* config/sh/sh.c (fpul_operand): Declare MODE argument.
+	* tm.texi (PREDICATE_CODES): Document predicate declarations.
+	* gcc.texi (Copyright): Added 2001.
+
 2001-01-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (c_common_lang_init): New function.  Warn if format

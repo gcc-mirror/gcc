@@ -1,5 +1,5 @@
 /* Output routines for GCC for Hitachi Super-H.
-   Copyright (C) 1993, 1994, 1995, 1997, 1997, 1998, 1999, 2000
+   Copyright (C) 1993, 1994, 1995, 1997, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com). 
@@ -4793,6 +4793,7 @@ fpscr_operand (op, mode)
 int
 fpul_operand (op, mode)
      rtx op;
+     enum machine_mode mode;
 {
   return (GET_CODE (op) == REG
 	  && (REGNO (op) == FPUL_REG || REGNO (op) >= FIRST_PSEUDO_REGISTER)

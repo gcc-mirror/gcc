@@ -1,5 +1,5 @@
 /* Machine mode definitions for GNU C-Compiler; included by rtl.h and tree.h.
-   Copyright (C) 1991, 1993, 1994, 1996, 1998, 1999, 2000
+   Copyright (C) 1991, 1993, 1994, 1996, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -96,7 +96,9 @@ extern const unsigned int mode_unit_size[];
 extern const unsigned int mode_bitsize[];
 #define GET_MODE_BITSIZE(MODE)  (mode_bitsize[(int) (MODE)])
 
-#ifdef HOST_WIDE_INT
+#endif /* not HAVE_MACHINE_MODES */
+
+#if defined HOST_WIDE_INT && ! defined GET_MODE_MASK
 
 /* Get a bitmask containing 1 for all bits in a word
    that fit within mode MODE.  */
@@ -105,7 +107,10 @@ extern const unsigned HOST_WIDE_INT mode_mask_array[];
 
 #define GET_MODE_MASK(MODE) mode_mask_array[(int) (MODE)]
 
-#endif /* HOST_WIDE_INT */
+#endif /* defined (HOST_WIDE_INT) && ! defined GET_MODE_MASK */
+
+#if ! defined GET_MODE_WIDER_MODE || ! defined GET_MODE_ALIGNMENT \
+    || ! defined GET_CLASS_NARROWEST_MODE
 
 /* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
 
@@ -153,4 +158,5 @@ extern enum machine_mode byte_mode;
 extern enum machine_mode word_mode;
 extern enum machine_mode ptr_mode;
 
-#endif /* not HAVE_MACHINE_MODES */
+#endif /* ! defined GET_MODE_WIDER_MODE || ! defined GET_MODE_ALIGNMENT
+	  || ! defined GET_CLASS_NARROWEST_MODE */
