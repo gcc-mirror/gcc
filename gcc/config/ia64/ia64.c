@@ -7769,7 +7769,7 @@ ia64_expand_fetch_and_op (binoptab, mode, arglist, target)
      do {
        old = tmp;
        ar.ccv = tmp;
-       ret = tmp + value;
+       ret = tmp <op> value;
        cmpxchgsz.acq tmp = [ptr], ret
      } while (tmp != old)
 */
@@ -7872,8 +7872,15 @@ ia64_expand_compare_and_swap (mode, boolp, arglist, target)
   else
     tmp = gen_reg_rtx (mode);
 
-  ccv = gen_rtx_REG (mode, AR_CCV_REGNUM);
-  emit_move_insn (ccv, old);
+  ccv = gen_rtx_REG (DImode, AR_CCV_REGNUM);
+  if (mode == DImode)
+    emit_move_insn (ccv, old);
+  else
+    {
+      rtx ccvtmp = gen_reg_rtx (DImode);
+      emit_insn (gen_zero_extendsidi2 (ccvtmp, old));
+      emit_move_insn (ccv, ccvtmp);
+    }
   emit_insn (gen_mf ());
   if (mode == SImode)
     insn = gen_cmpxchg_acq_si (tmp, mem, new, ccv);
