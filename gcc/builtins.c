@@ -3691,6 +3691,9 @@ expand_builtin (exp, target, subtarget, mode, ignore)
   tree arglist = TREE_OPERAND (exp, 1);
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
 
+  /* Perform postincrements before expanding builtin functions.  */
+  emit_queue ();
+
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
     return (*targetm.expand_builtin) (exp, target, subtarget, mode, ignore);
 

@@ -1,3 +1,9 @@
+2003-02-21  Glen Nakamura  <glen@imodulo.com>
+
+	PR optimization/8613
+	* builtins.c (expand_builtin): Emit postincrements before expanding
+	builtin functions.
+
 2003-02-21  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR fortran/9038
