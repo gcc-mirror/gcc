@@ -1,3 +1,7 @@
+2000-07-04  Jason Merrill  <jason@redhat.com>
+
+	* frame.h (frame_state): Move base_offset to end.
+
 Mon Jul  3 21:31:43 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* calls.c (emit_library_call_value_1): Revert previous change.

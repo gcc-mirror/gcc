@@ -30,12 +30,12 @@ typedef struct frame_state
   void *cfa;
   void *eh_ptr;
   long cfa_offset;
-  long base_offset;
   long args_size;
   long reg_or_offset[DWARF_FRAME_REGISTERS+1];
   unsigned short cfa_reg;
   unsigned short retaddr_column;
   char saved[DWARF_FRAME_REGISTERS+1];
+  long base_offset;
   char indirect;
 } frame_state;
 
