@@ -1,3 +1,8 @@
+2002-12-22  Anthony Green  <green@redhat.com>
+
+	* gcj.texi (Limitations): Add note about org.xml.sax and
+	org.w3c.dom.
+
 2002-12-20  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-write.c (generate_bytecode_insns) [SWITCH_EXPR]: Handle case
