@@ -195,13 +195,13 @@
 (define_insn_reservation "ir_sr70_hilo"
                                1
                           (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "hilo"))
+                               (eq_attr "type" "mthilo,mfhilo"))
                          "ri_insns")
 
 (define_insn_reservation "ir_sr70_arith"
                                1
                           (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "move,arith,shift,slt,clz,const"))
+                               (eq_attr "type" "arith,shift,slt,clz,const,trap"))
                          "ri_insns")
 
 ;; emulate repeat (dispatch stall) by spending extra cycle(s) in
@@ -235,12 +235,6 @@
                                (and (eq_attr "type" "idiv")
                                     (eq_attr "mode" "DI")))
                          "ri_alux,ipu_alux,(ipu_macc_iter*70)")
-
-(define_insn_reservation "ir_sr70_icmp"
-                               1
-                          (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "icmp"))
-                         "ri_insns")
 
 ;; extra reservations of fpu_fpu are for repeat latency
 (define_insn_reservation "ir_sr70_fadd_sf"
@@ -298,7 +292,7 @@
 (define_insn_reservation "ir_sr70_fabs"
                                4
                           (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "fabs,fneg"))
+                               (eq_attr "type" "fabs,fneg,fmove"))
                          "rf_insn,fpu_fpu")
 
 (define_insn_reservation "ir_sr70_fcmp"
