@@ -10162,26 +10162,22 @@ tree_add_const_value_attribute (dw_die_ref var_die, tree decl)
   tree init = DECL_INITIAL (decl);
   tree type = TREE_TYPE (decl);
 
-  if (TREE_READONLY (decl) && ! TREE_THIS_VOLATILE (decl) && init
-      && initializer_constant_valid_p (init, type) == null_pointer_node)
-    /* OK */;
-  else
+  if (!init)
     return;
-
-  switch (TREE_CODE (type))
-    {
-    case INTEGER_TYPE:
-      if (host_integerp (init, 0))
-	add_AT_unsigned (var_die, DW_AT_const_value,
-			 tree_low_cst (init, 0));
-      else
-	add_AT_long_long (var_die, DW_AT_const_value,
-			  TREE_INT_CST_HIGH (init),
-			  TREE_INT_CST_LOW (init));
-      break;
-
-    default:;
-    }
+  if (!TREE_READONLY (decl) || TREE_THIS_VOLATILE (decl))
+    return;
+  if (TREE_CODE (type) != INTEGER_TYPE)
+    return;
+  if (TREE_CODE (init) != INTEGER_CST)
+    return;
+  
+  if (host_integerp (init, 0))
+    add_AT_unsigned (var_die, DW_AT_const_value,
+		     tree_low_cst (init, 0));
+  else
+    add_AT_long_long (var_die, DW_AT_const_value,
+		      TREE_INT_CST_HIGH (init),
+		      TREE_INT_CST_LOW (init));
 }
 
 /* Generate a DW_AT_name attribute given some string value to be included as
@@ -10524,7 +10520,7 @@ add_abstract_origin_attribute (dw_die_ref die, tree origin)
      here.  */
 
   if (origin_die)
-      add_AT_die_ref (die, DW_AT_abstract_origin, origin_die);
+    add_AT_die_ref (die, DW_AT_abstract_origin, origin_die);
 }
 
 /* We do not currently support the pure_virtual attribute.  */
@@ -12455,7 +12451,7 @@ is_redundant_typedef (tree decl)
   return 0;
 }
 
-/* Returns the DIE for decl or aborts.  */
+/* Returns the DIE for decl or else.  */
 
 static dw_die_ref
 force_decl_die (tree decl)
@@ -12508,8 +12504,7 @@ force_decl_die (tree decl)
 	  gcc_unreachable ();
 	}
 
-      /* See if we can find the die for this deci now.
-	 If not then abort.  */
+      /* We should be able to find the die for this decl now.  */
       if (!decl_die)
 	decl_die = lookup_decl_die (decl);
       gcc_assert (decl_die);
@@ -12518,7 +12513,7 @@ force_decl_die (tree decl)
   return decl_die;
 }
 
-/* Returns the DIE for decl or aborts.  */
+/* Returns the DIE for decl or else.  */
 
 static dw_die_ref
 force_type_die (tree type)

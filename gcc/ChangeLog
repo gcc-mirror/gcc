@@ -1,3 +1,9 @@
+2005-04-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR debug/20505
+	* dwarf2out.c (tree_add_const_value_attribute): Only add if it's
+	an INTEGER_CST.
+
 2005-04-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 	 
         PR c++/18644
