@@ -1,3 +1,46 @@
+2000-03-16  Warren Levy  <warrenl@cygnus.com>
+
+	* java/awt/Color.java: New file.
+	* java/awt/Graphics.java: New file.
+	* java/awt/Image.java: New file.
+	* java/awt/Paint.java: New file.
+	* java/awt/PaintContext.java: New file.
+	* java/awt/Transparency.java: New file.
+	* java/util/Collection.java: New file.
+	* java/util/Comparator.java: New file.
+	* java/util/Iterator.java: New file.
+	* java/util/List.java: New file.
+	* java/util/ListIterator.java: New file.
+	* Makefile.am: Added above new files.
+	* Makefile.in: Rebuilt.
+
+	* java/awt/Font.java (PLAIN): New field.
+	(BOLD): New field.
+	(ITALIC): New field.
+	(ROMAN_BASELINE): New field.
+	(CENTER_BASELINE): New field.
+	(HANGING_BASELINE): New field.
+	(name): New field.
+	(style): New field.
+	(size): New field.
+	(pointSize): New field.
+	(Font): Implemented constructor.
+	(isPlain): Implemented method.
+	(isBold): Implemented method.
+	(isItalic): Implemented method.
+	(getName): Implemented method.
+	(getStyle): Implemented method.
+	(getSize): Implemented method.
+	(getSize2D): Implemented method.
+	(decode): Stubbed.
+	* java/awt/Frame.java (getFont): Stubbed.
+	(postEvent): Stubbed.
+	(remove): Stubbed.
+	* java/awt/Menu.java (postEvent): Stubbed.
+	* java/awt/MenuBar.java (getFont): Stubbed.
+	(postEvent): Stubbed.
+	* java/awt/Toolkit.java (getImage): Added abstract method.
+
 2000-03-15  Tom Tromey  <tromey@cygnus.com>
 
 	* java/io/natFileDescriptorWin32.cc (winerr): Now static.
