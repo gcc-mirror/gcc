@@ -1536,7 +1536,7 @@ struct rtx_def *
 alpha_builtin_saveregs (arglist)
      tree arglist;
 {
-  rtx block, addr, argsize;
+  rtx block, addr, dest, argsize;
   tree fntype = TREE_TYPE (current_function_decl);
   int stdarg = (TYPE_ARG_TYPES (fntype) != 0
 		&& (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
@@ -1591,14 +1591,28 @@ alpha_builtin_saveregs (arglist)
       /* Store the address of the first integer register in the __base
 	 member.  */
 
-      emit_move_insn (change_address (block, ptr_mode, XEXP (block, 0)), addr);
+      dest = change_address (block, ptr_mode, XEXP (block, 0));
+      emit_move_insn (dest, addr);
 
+      if (flag_check_memory_usage)
+	emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3, dest,
+			   ptr_mode, GEN_INT (GET_MODE_SIZE (ptr_mode)),
+			   TYPE_MODE (sizetype),
+			   GEN_INT (MEMORY_USE_RW), QImode);
+  
       /* Store the argsize as the __va_offset member.  */
-      emit_move_insn
-	(change_address (block, TYPE_MODE (integer_type_node),
-			 plus_constant (XEXP (block, 0),
-					POINTER_SIZE/BITS_PER_UNIT)),
-	 argsize);
+      dest = change_address (block, TYPE_MODE (integer_type_node),
+			     plus_constant (XEXP (block, 0),
+					    POINTER_SIZE/BITS_PER_UNIT));
+      emit_move_insn (dest, argsize);
+
+      if (flag_check_memory_usage)
+	emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3, dest,
+			   ptr_mode,
+			   GEN_INT (GET_MODE_SIZE
+				    (TYPE_MODE (integer_type_node))),
+			   TYPE_MODE (sizetype),
+			   GEN_INT (MEMORY_USE_RW), QImode);
 
       /* Return the address of the va_list constructor, but don't put it in a
 	 register.  Doing so would fail when not optimizing and produce worse
