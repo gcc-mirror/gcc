@@ -167,28 +167,9 @@ while [ $# != 0 ]; do
 	chmod +w $2/$file
 	chmod a+r $2/$file
 
-# The following have been removed from the sed command below
-# because it is more useful to leave these things in.
-# The only reason to remove them was for -pedantic,
-# which isn't much of a reason. -- rms.
-#	  /^[ 	]*#[ 	]*ident/d
-
-# This code makes Solaris SCSI fail, because it changes the
-# alignment within some critical structures.  See <sys/scsi/impl/commands.h>.
-#	  s/u_char\([ 	][ 	]*[a-zA-Z0-9_][a-zA-Z0-9_]*[ 	]*:[ 	]*[0-9][0-9]*\)/u_int\1/
-# Disable these also, since they probably aren't safe either.
-#	  s/u_short\([ 	][ 	]*[a-zA-Z0-9_][a-zA-Z0-9_]*[ 	]*:[ 	]*[0-9][0-9]*\)/u_int\1/
-#	  s/ushort\([ 	][ 	]*[a-zA-Z0-9_][a-zA-Z0-9_]*[ 	]*:[ 	]*[0-9][0-9]*\)/u_int\1/
-#	  s/evcm_t\([ 	][ 	]*[a-zA-Z0-9_][a-zA-Z0-9_]*[ 	]*:[ 	]*[0-9][0-9]*\)/u_int\1/
-#	  s/Pbyte\([ 	][ 	]*[a-zA-Z0-9_][a-zA-Z0-9_]*[ 	]*:[ 	]*SEQSIZ\)/unsigned int\1/
-
 # The change of u_char, etc, to u_int
 # applies to bit fields.
 	sed -e '
-	  s%^\([ 	]*#[ 	]*else\)[ 	]*/[^*].*%\1%
-	  s%^\([ 	]*#[ 	]*else\)[ 	]*[^/ 	].*%\1%
-	  s%^\([ 	]*#[ 	]*endif\)[ 	]*/[^*].*%\1%
-	  s%^\([ 	]*#[ 	]*endif\)[ 	]*[^/ 	].*%\1%
   	  s/#lint(on)/defined(lint)/g
   	  s/#lint(off)/!defined(lint)/g
   	  s/#machine(\([^)]*\))/defined(__\1__)/g
@@ -801,211 +782,17 @@ if [ \! -z "$file_to_fix" ]; then
 fi
 
 # Conditionalize all of <fs/rfs/rf_cache.h> on _KERNEL being defined.
-
-file=fs/rfs/rf_cache.h
-base=`basename $file`.$$
-if [ -r ${LIB}/$file ]; then
-  file_to_fix=${LIB}/$file
-else
-  if [ -r ${INPUT}/$file ]; then
-    file_to_fix=${INPUT}/$file
-  else
-    file_to_fix=""
-  fi
-fi
-if [ \! -z "$file_to_fix" ]; then
-  echo Checking $file_to_fix
-  if grep _KERNEL $file_to_fix > /dev/null; then
-    true
-  else
-    echo '#ifdef _KERNEL' > /tmp/$base
-    cat $file_to_fix >> /tmp/$base
-    echo '#endif /* defined(_KERNEL) */' >> /tmp/$base
-    echo Fixed $file_to_fix
-    rm -f ${LIB}/$file
-    cp /tmp/$base ${LIB}/$file
-    chmod a+r ${LIB}/$file
-    rm -f /tmp/$base
-  fi
-fi
-
 # Conditionalize all of <sys/erec.h> on _KERNEL being defined.
-
-file=sys/erec.h
-base=`basename $file`.$$
-if [ -r ${LIB}/$file ]; then
-  file_to_fix=${LIB}/$file
-else
-  if [ -r ${INPUT}/$file ]; then
-    file_to_fix=${INPUT}/$file
-  else
-    file_to_fix=""
-  fi
-fi
-if [ \! -z "$file_to_fix" ]; then
-  echo Checking $file_to_fix
-  if grep _KERNEL $file_to_fix > /dev/null; then
-    true
-  else
-    echo '#ifdef _KERNEL' > /tmp/$base
-    cat $file_to_fix >> /tmp/$base
-    echo '#endif /* defined(_KERNEL) */' >> /tmp/$base
-    echo Fixed $file_to_fix
-    rm -f ${LIB}/$file
-    cp /tmp/$base ${LIB}/$file
-    chmod a+r ${LIB}/$file
-    rm -f /tmp/$base
-  fi
-fi
-
 # Conditionalize all of <sys/err.h> on _KERNEL being defined.
-
-file=sys/err.h
-base=`basename $file`.$$
-if [ -r ${LIB}/$file ]; then
-  file_to_fix=${LIB}/$file
-else
-  if [ -r ${INPUT}/$file ]; then
-    file_to_fix=${INPUT}/$file
-  else
-    file_to_fix=""
-  fi
-fi
-if [ \! -z "$file_to_fix" ]; then
-  echo Checking $file_to_fix
-  if grep _KERNEL $file_to_fix > /dev/null; then
-    true
-  else
-    echo '#ifdef _KERNEL' > /tmp/$base
-    cat $file_to_fix >> /tmp/$base
-    echo '#endif /* defined(_KERNEL) */' >> /tmp/$base
-    echo Fixed $file_to_fix
-    rm -f ${LIB}/$file
-    cp /tmp/$base ${LIB}/$file
-    chmod a+r ${LIB}/$file
-    rm -f /tmp/$base
-  fi
-fi
-
 # Conditionalize all of <sys/char.h> on _KERNEL being defined.
-
-file=sys/char.h
-base=`basename $file`.$$
-if [ -r ${LIB}/$file ]; then
-  file_to_fix=${LIB}/$file
-else
-  if [ -r ${INPUT}/$file ]; then
-    file_to_fix=${INPUT}/$file
-  else
-    file_to_fix=""
-  fi
-fi
-if [ \! -z "$file_to_fix" ]; then
-  echo Checking $file_to_fix
-  if grep _KERNEL $file_to_fix > /dev/null; then
-    true
-  else
-    echo '#ifdef _KERNEL' > /tmp/$base
-    cat $file_to_fix >> /tmp/$base
-    echo '#endif /* defined(_KERNEL) */' >> /tmp/$base
-    echo Fixed $file_to_fix
-    rm -f ${LIB}/$file
-    cp /tmp/$base ${LIB}/$file
-    chmod a+r ${LIB}/$file
-    rm -f /tmp/$base
-  fi
-fi
-
 # Conditionalize all of <sys/getpages.h> on _KERNEL being defined.
-
-file=sys/getpages.h
-base=`basename $file`.$$
-if [ -r ${LIB}/$file ]; then
-  file_to_fix=${LIB}/$file
-else
-  if [ -r ${INPUT}/$file ]; then
-    file_to_fix=${INPUT}/$file
-  else
-    file_to_fix=""
-  fi
-fi
-if [ \! -z "$file_to_fix" ]; then
-  echo Checking $file_to_fix
-  if grep _KERNEL $file_to_fix > /dev/null; then
-    true
-  else
-    echo '#ifdef _KERNEL' > /tmp/$base
-    cat $file_to_fix >> /tmp/$base
-    echo '#endif /* defined(_KERNEL) */' >> /tmp/$base
-    echo Fixed $file_to_fix
-    rm -f ${LIB}/$file
-    cp /tmp/$base ${LIB}/$file
-    chmod a+r ${LIB}/$file
-    rm -f /tmp/$base
-  fi
-fi
-
 # Conditionalize all of <sys/map.h> on _KERNEL being defined.
-
-file=sys/map.h
-base=`basename $file`.$$
-if [ -r ${LIB}/$file ]; then
-  file_to_fix=${LIB}/$file
-else
-  if [ -r ${INPUT}/$file ]; then
-    file_to_fix=${INPUT}/$file
-  else
-    file_to_fix=""
-  fi
-fi
-if [ \! -z "$file_to_fix" ]; then
-  echo Checking $file_to_fix
-  if grep _KERNEL $file_to_fix > /dev/null; then
-    true
-  else
-    echo '#ifdef _KERNEL' > /tmp/$base
-    cat $file_to_fix >> /tmp/$base
-    echo '#endif /* defined(_KERNEL) */' >> /tmp/$base
-    echo Fixed $file_to_fix
-    rm -f ${LIB}/$file
-    cp /tmp/$base ${LIB}/$file
-    chmod a+r ${LIB}/$file
-    rm -f /tmp/$base
-  fi
-fi
-
 # Conditionalize all of <sys/cmn_err.h> on _KERNEL being defined.
-
-file=sys/cmn_err.h
-base=`basename $file`.$$
-if [ -r ${LIB}/$file ]; then
-  file_to_fix=${LIB}/$file
-else
-  if [ -r ${INPUT}/$file ]; then
-    file_to_fix=${INPUT}/$file
-  else
-    file_to_fix=""
-  fi
-fi
-if [ \! -z "$file_to_fix" ]; then
-  echo Checking $file_to_fix
-  if grep _KERNEL $file_to_fix > /dev/null; then
-    true
-  else
-    echo '#ifdef _KERNEL' > /tmp/$base
-    cat $file_to_fix >> /tmp/$base
-    echo '#endif /* defined(_KERNEL) */' >> /tmp/$base
-    echo Fixed $file_to_fix
-    rm -f ${LIB}/$file
-    cp /tmp/$base ${LIB}/$file
-    chmod a+r ${LIB}/$file
-    rm -f /tmp/$base
-  fi
-fi
-
 # Conditionalize all of <sys/kdebugger.h> on _KERNEL being defined.
 
-file=sys/kdebugger.h
+for file in fs/rfs/rf_cache.h sys/erec.h sys/err.h sys/char.h \
+            sys/getpages.h sys/map.h sys/cmn_err.h sys/kdebugger.h ; do
+
 base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
@@ -1032,36 +819,7 @@ if [ \! -z "$file_to_fix" ]; then
   fi
 fi
 
-# Conditionalize some of <netinet/in.h> on _KERNEL being defined.
-# This has been taken out because it breaks on some versions of
-# DYNIX/ptx, and it does not seem to do much good on any system.
-# file=netinet/in.h
-# base=`basename $file`.$$
-# if [ -r ${LIB}/$file ]; then
-#   file_to_fix=${LIB}/$file
-# else
-#   if [ -r ${INPUT}/$file ]; then
-#     file_to_fix=${INPUT}/$file
-#   else
-#     file_to_fix=""
-#   fi
-# fi
-# if [ \! -z "$file_to_fix" ]; then
-#   echo Checking $file_to_fix
-#   if grep _KERNEL $file_to_fix > /dev/null; then
-#     true
-#   else
-#     sed -e '/#ifdef INKERNEL/i\
-# #ifdef _KERNEL
-# ' \
-#     -e '/#endif[ 	]*\/\* INKERNEL \*\//a\
-# #endif /* _KERNEL */
-# ' \
-#     $file_to_fix > ${LIB}/${file}.sed
-#     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
-#     echo Fixed $file_to_fix
-#   fi
-# fi
+done
 
 # Conditionalize some of <sys/endian.h> on __GNUC__ and __GNUG__.
 
@@ -1093,32 +851,6 @@ if [ \! -z "$file_to_fix" ]; then
     echo Fixed $file_to_fix
   fi
 fi
-
-# Commented out because tmcconne@sedona.intel.com says we don't clearly need it
-# and the text in types.h is not erroneous.
-## In sys/types.h, don't name the enum for booleans.
-#
-#file=sys/types.h
-#base=`basename $file`.$$
-#if [ -r ${LIB}/$file ]; then
-#  file_to_fix=${LIB}/$file
-#else
-#  if [ -r ${INPUT}/$file ]; then
-#    file_to_fix=${INPUT}/$file
-#  else
-#    file_to_fix=""
-#  fi
-#fi
-#if [ \! -z "$file_to_fix" ]; then
-#  echo Checking $file_to_fix
-#  if grep "enum boolean" $file_to_fix > /dev/null; then
-#    sed -e 's/enum boolean/enum/' ${LIB}/$file > ${LIB}/${file}.sed
-#    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
-#    echo Fixed $file_to_fix
-#  else
-#    true
-#  fi
-#fi
 
 # Remove useless extern keyword from struct forward declarations in
 # <sys/stream.h> and <sys/strsubr.h>

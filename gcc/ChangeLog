@@ -1,3 +1,11 @@
+2003-07-27  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* fixinc/fixinc.svr4: Remove dead code.  Remove now-unnecessary 
+	cleanup of junk after #else and #endif directives.  Collapse repeated
+	clauses into for statment.
+
+	* fixinc/fixincl.sh: GNU C -> GCC.  Add usage comment.
+
 2003-07-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c (struct c_scope): Remove keep_if_subblocks field.
