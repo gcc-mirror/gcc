@@ -74,7 +74,8 @@ __extension__ \
      AP.__va_next_fp = (__va_freg *) AP.__va_next_o_limit; \
      AP.__va_next_fp_limit = (AP.__va_next_fp + \
 			      (__builtin_args_info (1) < 16 ? (16 - __builtin_args_info (1) + 1) / 2 : 0)); \
-     AP.__va_next_stack = (__va_greg *) __builtin_next_arg (__builtin_va_alist); \
+     AP.__va_next_stack = (__va_greg *) __builtin_next_arg (__builtin_va_alist) \
+       - (__builtin_args_info (0) >= 6 || __builtin_args_info (1) >= 16 ? 1 : 0); \
   })
 #else
 #ifdef __GCC_NEW_VARARGS__
