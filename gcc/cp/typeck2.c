@@ -143,6 +143,11 @@ abstract_virtuals_error (decl, type)
        CLASSTYPE_PURE_VIRTUALS holds the inline friends.  */
     return 0;
 
+  if (dependent_type_p (type))
+    /* For a dependent type, we do not yet know which functions are pure
+       virtuals.  */
+    return 0;
+
   u = CLASSTYPE_PURE_VIRTUALS (type);
   if (decl)
     {

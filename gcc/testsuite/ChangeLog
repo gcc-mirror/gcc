@@ -1,3 +1,8 @@
+2003-02-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9602
+	* g++.dg/template/friend16.C: New test.
+
 2003-02-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/5333
