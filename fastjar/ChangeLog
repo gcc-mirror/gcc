@@ -1,3 +1,11 @@
+2000-12-15  Tom Tromey  <tromey@redhat.com>
+            Kelley Cook <kelleycook@home.com>
+
+	* jargrep.c: Include getopt.h if it exists.
+	(optind): Declare.
+	* configure, config.h: Rebuilt.
+	* configure.in: Check for getopt.h.
+
 2000-12-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (fastjar_warn_cflags): Set when using gcc.
