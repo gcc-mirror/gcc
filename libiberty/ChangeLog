@@ -1,3 +1,8 @@
+2001-12-06  Richard Henderson  <rth@redhat.com>
+
+	* cplus-dem.c (libiberty_demanglers): Add no_demangling case.
+	(cplus_demangle): Support no_demangling.
+
 2001-11-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* _doprnt.c: Moved here from gcc/doprint.c.  Adjust to build

@@ -54,6 +54,7 @@
 
 extern enum demangling_styles
 {
+  no_demangling = -1,
   unknown_demangling = 0,
   auto_demangling = DMGL_AUTO,
   gnu_demangling = DMGL_GNU,
@@ -68,6 +69,7 @@ extern enum demangling_styles
 
 /* Define string names for the various demangling styles. */
 
+#define NO_DEMANGLING_STYLE_STRING            "none"
 #define AUTO_DEMANGLING_STYLE_STRING	      "auto"
 #define GNU_DEMANGLING_STYLE_STRING    	      "gnu"
 #define LUCID_DEMANGLING_STYLE_STRING	      "lucid"
