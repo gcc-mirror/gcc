@@ -1,3 +1,7 @@
+Wed Dec 24 22:34:55 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* tree.c (restore_tree_status): Do not dereference a null pointer.
+
 Tue Dec 23 12:56:46 1997 Paul Eggert <eggert@twinsun.com>:
 
 	* genattrtab.c (main): Check HAVE_{G,S}ETRLIMIT in addition to
