@@ -1,3 +1,8 @@
+2003-12-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* system.h (CONVERT_HARD_REGISTER_TO_SSA_P): Poison.
+	* config/i386/i386.h (CONVERT_HARD_REGISTER_TO_SSA_P): Remove.
+
 2003-12-21  Roger Sayle  <roger@eyesopen.com>
 
 	* config/ia64/hpux.h (TARGET_OS_CPP_BUILTINS): Define _ILP32
