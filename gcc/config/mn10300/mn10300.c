@@ -596,18 +596,19 @@ notice_update_cc (body, insn)
 	cc_status.value1 = 0;
       break;
 
-    case CC_SET_ZN_C0:
+    case CC_SET_ZN:
       /* Insn sets the Z,N flags of CC to recog_operand[0].
-	 V is always set to 0.  C may or may not be set to 0 but that's ok
-	 because alter_cond will change tests to use EQ/NE.  */
+	 V,C are unusable.  */
       CC_STATUS_INIT;
-      cc_status.flags |= CC_NO_OVERFLOW | CC_OVERFLOW_UNUSABLE;
+      cc_status.flags |= CC_NO_CARRY | CC_OVERFLOW_UNUSABLE;
       cc_status.value1 = recog_operand[0];
       break;
 
-    case CC_TST:
-      /* The insn sets all the condition codes, except v is bogus.  */
+    case CC_SET_ZNV:
+      /* Insn sets the Z,N,V flags of CC to recog_operand[0].
+	 C is unusable.  */
       CC_STATUS_INIT;
+      cc_status.flags |= CC_NO_CARRY;
       cc_status.value1 = recog_operand[0];
       break;
 
