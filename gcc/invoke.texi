@@ -144,7 +144,7 @@ in the following sections.
 @item Optimization Options
 @xref{Optimize Options,,Options that Control Optimization}.
 @smallexample
--fbranch-probabilities
+-fbranch-probabilities  -foptimize-register-moves
 -fcaller-saves  -fcse-follow-jumps  -fcse-skip-blocks
 -fdelayed-branch   -fexpensive-optimizations
 -ffast-math  -ffloat-store  -fforce-addr  -fforce-mem
@@ -1941,6 +1941,8 @@ Dump after flow analysis, to @file{@var{file}.flow}.
 @item c
 Dump after instruction combination, to the file
 @file{@var{file}.combine}.
+@item N
+Dump after the register move pass, to @file{@var{file}.regmove}.
 @item S
 Dump after the first instruction scheduling pass, to
 @file{@var{file}.sched}.
@@ -2234,6 +2236,13 @@ performed.
 
 @item -fexpensive-optimizations
 Perform a number of minor optimizations that are relatively expensive.
+
+@item -foptimize-register-moves
+Attempt to reassign register numbers in move instructions and as
+operands of other simple instructions in order to maximize the amount of
+register tying.  This is especially helpfu on machines with two-operand
+instructions.  GNU CC enables this optimization by default with @samp{-O2}
+or higher on those machines where it is likely to be of the most benefit.
 
 @item -fdelayed-branch
 If supported for the target machine, attempt to reorder instructions
