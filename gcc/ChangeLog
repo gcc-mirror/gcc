@@ -1,3 +1,10 @@
+2002-05-03  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-format.c (check_format_info_main): Don't check for presence of
+	parameter for * width until after operand number has been read,
+	and only check for it if format parameters are available.
+	Fixes PR c/6547.
+
 2002-05-03  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/alpha/netbsd.h (CPP_PREDEFINES): Add -D_LP64.
