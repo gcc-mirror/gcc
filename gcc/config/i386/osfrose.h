@@ -127,26 +127,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    our own exit function.  */
 #define HAVE_ATEXIT
 
-/* If defined, a C string constant for the assembler operation to
-   identify the following data as initialization code.  If not
-   defined, GNU CC will assume such a section does not exist.
-
-   OSF/rose doesn't presently have an init section, but this macro
-   also controls whether or not __main is called from main, collect
-   will however build an initialization section directly.  */
-
-#define INIT_SECTION_ASM_OP ".init"
-
 /* Define this macro meaning that gcc should find the library 'libgcc.a'
    by hand, rather than passing the argeument '-lgcc' to tell the linker
    to do the search */
 #define LINK_LIBGCC_SPECIAL
 
 /* Defines to be able to build libgcc.a with GCC.  */
-
-/* It might seem that these are not important, since gcc 2 will never
-   call libgcc for these functions.  But programs might be linked with
-   code compiled by gcc 1, and then these will be used.  */
 
 #define perform_udivsi3(a,b)						\
 {									\
