@@ -1,3 +1,9 @@
+2003-10-13  David S. Miller  <davem@redhat.com>
+
+	* ifcvt.c (num_removed_blocks): Rename to num_true_changes.
+	(find_cond_trap): Always increment if we emit a conditional
+	trap insn.
+
 2003-10-13  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (BUILD_RTL): Replace $(BUILD_PREFIX)insn-modes.o
