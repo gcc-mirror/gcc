@@ -1,3 +1,8 @@
+2003-10-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in ($(DESTDIR)$(infodir)/%.info): Conditionalize chmod
+	on existence of destination file.
+
 2003-10-21  Jan Hubicka  <jh@suse.cz>
 
 	* haifa-sched.c (choose_ready): Initialize index.

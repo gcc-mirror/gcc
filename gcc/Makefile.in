@@ -2969,6 +2969,7 @@ $(DESTDIR)$(infodir)/%.info: $(docobjdir)/%.info installdirs
 	  for f in $(<)*; do \
 	    realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
 	    $(INSTALL_DATA) $$f $(DESTDIR)$(infodir)/$$realfile; \
+	    chmod a-x $(DESTDIR)$(infodir)/$$realfile; \
 	  done; \
 	else true; fi
 	-if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
@@ -2978,7 +2979,6 @@ $(DESTDIR)$(infodir)/%.info: $(docobjdir)/%.info installdirs
 	    else true; fi; \
 	  else true; fi; \
 	else true; fi;
-	chmod a-x $(@)*
 
 # Install the man pages.
 install-man: installdirs $(GENERATED_MANPAGES) lang.install-man
