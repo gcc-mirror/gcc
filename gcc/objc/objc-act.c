@@ -490,6 +490,12 @@ lang_init ()
      and put it in input_filename.  */
   ungetc (check_newline (), finput);
 
+  /* The line number can be -1 if we had -g3 and the input file
+     had a directive specifying line 0.  But we want predefined
+     functions to have a line number of 0, not -1.  */
+  if (lineno == -1)
+    lineno = 0;
+
   /* If gen_declaration desired, open the output file.  */
   if (flag_gen_declaration)
     {
