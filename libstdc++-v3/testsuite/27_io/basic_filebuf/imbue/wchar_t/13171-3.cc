@@ -32,15 +32,22 @@ void test01()
 
   ios_base::sync_with_stdio(false);
 
-  locale::global(locale("en_US"));
-  cin.imbue(locale("en_US"));
-  cout.imbue(locale("en_US"));
-  cerr.imbue(locale("en_US"));
-  clog.imbue(locale("de_DE"));
-  
+  locale::global(__gnu_test::try_named_locale("en_US"));
+  cin.imbue(__gnu_test::try_named_locale("en_US"));
+  cout.imbue(__gnu_test::try_named_locale("en_US"));
+  cerr.imbue(__gnu_test::try_named_locale("en_US"));
+  clog.imbue(__gnu_test::try_named_locale("de_DE"));
+  wcin.imbue(__gnu_test::try_named_locale("en_US"));
+  wcout.imbue(__gnu_test::try_named_locale("en_US"));
+  wcerr.imbue(__gnu_test::try_named_locale("en_US"));
+  wclog.imbue(__gnu_test::try_named_locale("de_DE"));
+ 
   cout << 'f' << endl;
   cerr << 'r' << endl;
   clog << 'A' << endl;
+  wcout << L's' << endl;
+  wcerr << L'i' << endl;
+  wclog << L'L' << endl;
 }
 
 int main()
