@@ -3824,7 +3824,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 			       build_int_2 (pre_shift, 0), NULL_RTX, unsignedp);
 	    quotient = expand_mult (compute_mode, t1,
 				    gen_int_mode (ml, compute_mode),
-				    NULL_RTX, 0);
+				    NULL_RTX, 1);
 
 	    insn = get_last_insn ();
 	    set_unique_reg_note (insn,
