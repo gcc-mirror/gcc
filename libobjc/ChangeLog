@@ -1,3 +1,7 @@
+2000-08-14  Andreas Schwab  <schwab@suse.de>
+
+	* objc-features.texi (Top): Move @menu at end of node.
+
 2000-08-11  Manfred Hollstein  <manfredh@redhat.com>
 
 	* objc-features.texi: Move @node Top before @menu.

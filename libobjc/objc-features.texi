@@ -8,13 +8,6 @@
 @node Top, Executing code before main, (dir), (dir)
 @comment  node-name,  next,  previous,  up
 
-@menu
-* Executing code before main::  
-* Type encoding::               
-* Garbage Collection::          
-* Constant string objects::     
-@end menu
-
 @chapter GNU Objective-C runtime features
 
 This document is meant to describe some of the GNU Objective-C runtime
@@ -23,6 +16,12 @@ resources on the Internet that present the language.  Questions and
 comments about this document to Ovidiu Predescu
 @code{<ovidiu@@cup.hp.com>}.
 
+@menu
+* Executing code before main::  
+* Type encoding::               
+* Garbage Collection::          
+* Constant string objects::     
+@end menu
 
 @node Executing code before main, Type encoding, Top, Top
 @section @code{+load}: Executing code before main
