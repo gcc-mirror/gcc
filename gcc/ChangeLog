@@ -1,3 +1,11 @@
+2005-03-26  Per Bothner  <per@bothner.com>
+
+	Make -f[no-]show-column also control non-cpp diagnostics.
+	* c.opt (fshow-column): Move option from here ...
+	* common.opt (fshow-column): ... to here.
+	* diagnostic.c (diagnostic_build_prefix): Only print column number
+	if flag_show_column.
+
 2005-03-27  Steven Bosscher  <stevenb@suse.de>
 
 	* vax-protos.h (vax_output_int_move, vax_output_int_add,

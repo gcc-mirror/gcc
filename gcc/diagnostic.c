@@ -141,7 +141,7 @@ diagnostic_build_prefix (diagnostic_info *diagnostic)
     (s.file == NULL
      ? build_message_string ("%s: %s", progname, text)
 #ifdef USE_MAPPED_LOCATION
-     : s.column != 0
+     : flag_show_column && s.column != 0
      ? build_message_string ("%s:%d:%d: %s", s.file, s.line, s.column, text)
 #endif
      : build_message_string ("%s:%d: %s", s.file, s.line, text));
