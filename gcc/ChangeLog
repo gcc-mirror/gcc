@@ -1,5 +1,25 @@
 2000-06-13  Richard Henderson  <rth@cygnus.com>
 
+	* config/ia64/ia64.h (enum reg_class): Remove FR_INT_REGS, FR_FP_REGS,
+	GR_AND_FR_INT_REGS, GR_AND_FR_FP_REGS.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(FR_FP_REGNO_P, FR_INT_REGNO_P): Remove.
+	(HARD_REGNO_MODE_OK): Remove references to them.
+	(REGNO_REG_CLASS): Likewise.
+	(REG_CLASS_FROM_LETTER): Likewise.
+	(CLASS_MAX_NREGS): Likewise.
+	(REGISTER_MOVE_COST): Likewise.
+	* config/ia64/ia64.c (ia64_secondary_reload_class): Likewise.
+	* config/ia64/ia64.md (*): Replace "e" constraints with "f".
+	(movqi_internal): Special case moves from zero.
+	(movhi_internal, movsi_internal): Likewise.
+	(movdi_internal): Likewise.  Fill out "f" constraints.
+	(movsf_internal): Fill out "r" constraints.
+	(movdf_internal): Likewise.
+
+2000-06-13  Richard Henderson  <rth@cygnus.com>
+
 	* flow.c (insn_dead_p): Keep sets to PIC_OFFSET_TABLE_REGNUM
 	alive before reload.
 

@@ -1969,7 +1969,7 @@ ia64_secondary_reload_class (class, mode, x)
      because paradoxical subregs are not accepted by register_operand when
      INSN_SCHEDULING is defined.  Or alternatively, stop the paradoxical subreg
      stupidity in the *_operand functions in recog.c.  */
-  if ((class == FR_REGS || class == FR_INT_REGS || class == FR_FP_REGS)
+  if (class == FR_REGS
       && GET_CODE (x) == MEM
       && (GET_MODE (x) == SImode || GET_MODE (x) == HImode
 	  || GET_MODE (x) == QImode))
@@ -1978,15 +1978,7 @@ ia64_secondary_reload_class (class, mode, x)
   /* This can happen because of the ior/and/etc patterns that accept FP
      registers as operands.  If the third operand is a constant, then it
      needs to be reloaded into a FP register.  */
-  if ((class == FR_REGS || class == FR_INT_REGS || class == FR_FP_REGS)
-      && GET_CODE (x) == CONST_INT)
-    return GR_REGS;
-
-  /* Moving a integer from an FP register to memory requires a general register
-     as an intermediary.  This is not necessary if we are moving a DImode
-     subreg of a DFmode value from an FP register to memory, since stfd will
-     do the right thing in this case.  */
-  if (class == FR_INT_REGS && GET_CODE (x) == MEM && GET_MODE (x) == DImode)
+  if (class == FR_REGS && GET_CODE (x) == CONST_INT)
     return GR_REGS;
 
   /* ??? This happens if we cse/gcse a CCmode value across a call, and the
