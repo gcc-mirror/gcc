@@ -3191,6 +3191,12 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 	 the case for blocks within infinite loops.  */
       SET_REGNO_REG_SET (new_live_at_end, STACK_POINTER_REGNUM);
 
+      /* Similarly for the frame pointer before reload.  Any reference
+	 to any pseudo before reload is a potential reference of the
+	 frame pointer.  */
+      if (! reload_completed)
+	SET_REGNO_REG_SET (new_live_at_end, FRAME_POINTER_REGNUM);
+
       /* Regs used in phi nodes are not included in
 	 global_live_at_start, since they are live only along a
 	 particular edge.  Set those regs that are live because of a

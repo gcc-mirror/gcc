@@ -1,3 +1,8 @@
+2000-08-21  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (calculate_global_regs_live): Mark frame pointer live
+	everywhere before reload.
+
 2000-08-21  Jim Wilson  <wilson@cygnus.com>
 
 	* real.c (ereal_from_int, ereal_from_uint, significand_size): Handle
