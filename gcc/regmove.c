@@ -528,6 +528,14 @@ optimize_reg_copy_1 (insn, dest, src)
 	      REG_NOTES (insn) = note;
 	    }
 
+	  /* DEST is also dead if INSN has a REG_UNUSED note for DEST.  */
+	  if (! dest_death
+	      && (dest_death = find_regno_note (insn, REG_UNUSED, dregno)))
+	    {
+	      PUT_REG_NOTE_KIND (dest_death, REG_DEAD);
+	      remove_note (insn, dest_death);
+	    }
+
 	  /* Put death note of DEST on P if we saw it die.  */
 	  if (dest_death)
 	    {
