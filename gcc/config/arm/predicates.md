@@ -131,7 +131,7 @@
 })
 
 (define_predicate "arm_reload_memory_operand"
-  (and (match_code "reg,subreg")
+  (and (match_code "mem,reg,subreg")
        (match_test "(!CONSTANT_P (op)
 		     && (true_regnum(op) == -1
 			 || (GET_CODE (op) == REG
