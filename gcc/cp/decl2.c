@@ -91,6 +91,7 @@ static int generate_ctor_and_dtor_functions_for_priority
                                   PARAMS ((splay_tree_node, void *));
 static tree prune_vars_needing_no_initialization PARAMS ((tree));
 static void write_out_vars PARAMS ((tree));
+static void import_export_class	PARAMS ((tree));
 
 extern int current_class_depth;
 
@@ -2440,12 +2441,19 @@ import_export_vtable (decl, type, final)
 /* Determine whether or not we want to specifically import or export CTYPE,
    using various heuristics.  */
 
-void
+static void
 import_export_class (ctype)
      tree ctype;
 {
   /* -1 for imported, 1 for exported.  */
   int import_export = 0;
+
+  /* It only makes sense to call this function at EOF.  The reason is
+     that this function looks at whether or not the first non-inline
+     non-abstract virtual member function has been defined in this
+     translation unit.  But, we can't possibly know that until we've
+     seen the entire translation unit.  */
+  my_friendly_assert (at_eof, 20000226);
 
   if (CLASSTYPE_INTERFACE_KNOWN (ctype))
     return;

@@ -281,7 +281,7 @@ begin_while_stmt ()
   return r;
 }
 
-/* Process the COND of an if-statement, which may be given by
+/* Process the COND of a while-statement, which may be given by
    WHILE_STMT.  */
 
 void 
