@@ -4,15 +4,12 @@ typedef int Thingo;
   
 namespace A
 {
-    void
-    Thingo();
+  void Thingo();
 }
   
 void
 A::Thingo()
-{
-  ;
-}
+{ }
   
 int
 main()

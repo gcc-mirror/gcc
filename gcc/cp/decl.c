@@ -4127,8 +4127,7 @@ pushdecl (x)
 
       /* In case this decl was explicitly namespace-qualified, look it
 	 up in its namespace context.  */
-      if (TREE_CODE (x) == VAR_DECL && DECL_NAMESPACE_SCOPE_P (x)
-	  && namespace_bindings_p ())
+      if (DECL_NAMESPACE_SCOPE_P (x) && namespace_bindings_p ())
 	t = namespace_binding (name, DECL_CONTEXT (x));
       else
 	t = lookup_name_current_level (name);
