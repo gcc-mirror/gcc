@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.254 1998/07/16 19:33:37 karl Exp $
+% $Id: texinfo.tex,v 2.255 1998/07/19 13:49:22 karl Exp $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -58,7 +58,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.254 $
+\deftexinfoversion$Revision: 2.255 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -2569,10 +2569,22 @@ width0pt\relax} \fi
         % will have extra space inserted, because the \medbreak in the
         % start of the @defun won't see the skip inserted by the @end of
         % the previous defun.
+        % 
+        % But don't do any of this if we're not in vertical mode.  We
+        % don't want to do a \vskip and prematurely end a paragraph.
+        % 
+        % Avoid page breaks due to these extra skips, too.
+        % 
         \iflinks
-          \skip0 = \lastskip \ifdim\lastskip = 0pt \else \vskip-\lastskip \fi
-          \temp
-          \ifdim\skip0 = 0pt \else \vskip\skip0 \fi
+          \ifvmode
+            \skip0 = \lastskip
+            \ifdim\lastskip = 0pt \else \nobreak\vskip-\lastskip \fi
+          \fi
+          %
+          \temp % do the write
+          %
+          % 
+          \ifvmode \ifdim\skip0 = 0pt \else \nobreak\vskip\skip0 \fi \fi
         \fi
       }%
     }%
