@@ -1326,11 +1326,7 @@ lookup_template_function (fns, arglist)
     }
 
   if (arglist != NULL_TREE && !TREE_PERMANENT (arglist))
-    {
-      push_obstacks (&permanent_obstack, &permanent_obstack);
-      arglist = copy_list (arglist);
-      pop_obstacks ();
-    }
+    copy_to_permanent (arglist);
 
   return build_min (TEMPLATE_ID_EXPR,
 		    TREE_TYPE (fns) 
