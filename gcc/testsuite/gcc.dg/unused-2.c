@@ -8,7 +8,7 @@
 static void
 foo ()
 {
-  skip_it: ; /* { dg-warning "unused label" "unused label warning" } */
+  skip_it: ; /* { dg-warning "defined but not used" "unused label warning" } */
 }
 
 void
