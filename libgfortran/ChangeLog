@@ -1,3 +1,8 @@
+2004-09-06  Steven G. Kargl  <kargls@comcast.net>
+
+	* io/write.c (output_float): Typo in comment.  Remove debugging
+	printf.  Fix format for FP of form 1e10.
+
 2004-09-03  Richard Henderson  <rth@redhat.com>
 
 	* intrinsics/cshift0.c (DEF_COPY_LOOP, copy_loop_int, copy_loop_long,
