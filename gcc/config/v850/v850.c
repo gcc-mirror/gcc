@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for NEC V850 series
-   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -2350,11 +2350,26 @@ construct_restore_jr (op)
      be popping more registers than is strictly necessary, but
      it does save code space.  */
   
-  if (first == last)
-    sprintf (buff, "jr __return_%s", reg_names [first]);
+  if (TARGET_LONG_CALLS)
+    {
+      char name[40];
+      
+      if (first == last)
+	sprintf (name, "__return_%s", reg_names [first]);
+      else
+	sprintf (name, "__return_%s_%s", reg_names [first], reg_names [last]);
+      
+      sprintf (buff, "movhi hi(%s), r0, r6\n\tmovea lo(%s), r6, r6\n\tjmp r6",
+	       name, name);
+    }
   else
-    sprintf (buff, "jr __return_%s_%s", reg_names [first], reg_names [last]);
-
+    {
+      if (first == last)
+	sprintf (buff, "jr __return_%s", reg_names [first]);
+      else
+	sprintf (buff, "jr __return_%s_%s", reg_names [first], reg_names [last]);
+    }
+  
   return buff;
 }
 
@@ -2536,11 +2551,26 @@ construct_save_jarl (op)
      be pushing more registers than is strictly necessary, but
      it does save code space.  */
   
-  if (first == last)
-    sprintf (buff, "jarl __save_%s, r10", reg_names [first]);
+  if (TARGET_LONG_CALLS)
+    {
+      char name[40];
+      
+      if (first == last)
+	sprintf (name, "__save_%s", reg_names [first]);
+      else
+	sprintf (name, "__save_%s_%s", reg_names [first], reg_names [last]);
+      
+      sprintf (buff, "movhi hi(%s), r0, r11\n\tmovea lo(%s), r11, r11\n\tjarl .+4, r10\n\tadd 4, r10\n\tjmp r11",
+	       name, name);
+    }
   else
-    sprintf (buff, "jarl __save_%s_%s, r10", reg_names [first],
-	     reg_names [last]);
+    {
+      if (first == last)
+	sprintf (buff, "jarl __save_%s, r10", reg_names [first]);
+      else
+	sprintf (buff, "jarl __save_%s_%s, r10", reg_names [first],
+		 reg_names [last]);
+    }
 
   return buff;
 }
