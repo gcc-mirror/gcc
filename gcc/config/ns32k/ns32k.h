@@ -21,12 +21,33 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-/* Note that some other tm.h files include this one and then override
-   many of the definitions that relate to assembler syntax.  */
-
-/* Names to predefine in the preprocessor for this target machine.  */
-
-#define CPP_PREDEFINES "-Dns32000 -Dunix -Asystem=unix -Acpu=ns32k -Amachine=ns32k"
+#define TARGET_CPU_CPP_BUILTINS()			\
+  do							\
+    {							\
+      builtin_define ("__ns32000__");			\
+							\
+      /* CPU type */					\
+      if (TARGET_32532)					\
+	builtin_define ("__ns32532__");			\
+      else if (TARGET_32332)				\
+	builtin_define ("__ns32332__");			\
+      else						\
+	builtin_define ("__ns32032__");			\
+							\
+      /* FPU type */					\
+      if (TARGET_32381)					\
+	builtin_define ("__ns32381__");			\
+      else if (TARGET_32081)				\
+	builtin_define ("__ns32081__");			\
+							\
+      /* Misc. */					\
+      if (TARGET_RTD)					\
+	builtin_define ("__RTD__");			\
+							\
+      builtin_assert ("cpu=ns32k");			\
+      builtin_assert ("machine=ns32k");			\
+    }							\
+  while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION fprintf (stderr, " (32000, GAS syntax)");

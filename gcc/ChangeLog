@@ -1,3 +1,11 @@
+2002-06-03  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/ns32k/netbsd.h: Update copyright years.
+	(TARGET_OS_CPP_BUILTINS): Define.
+	(CPP_PREDEFINES): Remove.
+	* config/ns32k/ns32k.h (CPP_PREDEFINES): Remove.
+	(TARGET_CPU_CPP_BUILTINS): Define.
+
 2002-06-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* emit-rtl.c: Likewise.
