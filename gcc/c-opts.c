@@ -88,6 +88,9 @@ static bool quote_chain_split;
 /* If -Wunused-macros.  */
 static bool warn_unused_macros;
 
+/* If -Wvariadic-macros.  */
+static bool warn_variadic_macros = true;
+
 /* Number of deferred options.  */
 static size_t deferred_count;
 
@@ -644,6 +647,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_Wunused_macros:
       warn_unused_macros = value;
+      break;
+
+    case OPT_Wvariadic_macros:
+      warn_variadic_macros = value;
       break;
 
     case OPT_Wwrite_strings:
@@ -1359,6 +1366,11 @@ sanitize_cpp_opts (void)
      and/or -Wtraditional, whatever the ordering.  */
   cpp_opts->warn_long_long
     = warn_long_long && ((!flag_isoc99 && pedantic) || warn_traditional);
+
+  /* Similarly with -Wno-variadic-macros.  No check for c99 here, since
+     this also turns off warnings about GCCs extension.  */
+  cpp_opts->warn_variadic_macros
+    = warn_variadic_macros && (pedantic || warn_traditional);
 
   /* If we're generating preprocessor output, emit current directory
      if explicitly requested or if debugging information is enabled.
