@@ -2271,35 +2271,9 @@ emit_associated_thunks (fn)
      enabling you to output all the thunks with the function itself.  */
   if (DECL_VIRTUAL_P (fn))
     {
-      tree binfo;
-      tree v;
-
-      for (binfo = TYPE_BINFO (DECL_CONTEXT (fn));
-	   binfo;
-	   binfo = TREE_CHAIN (binfo))
-	for (v = BINFO_VIRTUALS (binfo); v; v = TREE_CHAIN (v))
-	  if (BV_FN (v) == fn
-	      && (!integer_zerop (BV_DELTA (v))
-		  || BV_USE_VCALL_INDEX_P (v)))
-	    {
-	      tree thunk;
-	      tree vcall_index;
-
-	      if (BV_USE_VCALL_INDEX_P (v))
-		{
-		  vcall_index = BV_VCALL_INDEX (v);
-		  my_friendly_assert (vcall_index != NULL_TREE, 20000621);
-		}
-	      else
-		vcall_index = NULL_TREE;
-
-	      thunk = make_thunk (build1 (ADDR_EXPR,
-					  vfunc_ptr_type_node,
-					  fn),
-				  BV_DELTA (v),
-				  vcall_index);
-	      use_thunk (thunk, /*emit_p=*/1);
-	    }
+      tree thunk;
+      for (thunk = DECL_THUNKS (fn); thunk; thunk = TREE_CHAIN (thunk))
+	use_thunk (thunk, /*emit_p=*/1);
     }
 }
 

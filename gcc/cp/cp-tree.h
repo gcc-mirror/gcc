@@ -121,11 +121,15 @@ struct diagnostic_context;
      For a FUNCTION_TYPE or METHOD_TYPE, this is TYPE_RAISES_EXCEPTIONS
 
   BINFO_VIRTUALS
-     For a binfo, this is a TREE_LIST.  The BV_DELTA of each node
-     gives the amount by which to adjust the `this' pointer when
-     calling the function.  If the method is an overriden version of a
-     base class method, then it is assumed that, prior to adjustment,
-     the this pointer points to an object of the base class.
+     For a binfo, this is a TREE_LIST.  There is an entry for each
+     virtual function declared either in BINFO or its direct and
+     indirect primary bases.
+
+     The BV_DELTA of each node gives the amount by which to adjust the
+     `this' pointer when calling the function.  If the method is an
+     overriden version of a base class method, then it is assumed
+     that, prior to adjustment, the this pointer points to an object
+     of the base class.
 
      The BV_VCALL_INDEX of each node, if non-NULL, gives the vtable
      index of the vcall offset for this entry.  If
@@ -1766,6 +1770,10 @@ struct lang_decl GTY(())
 	   non-virtual FUNCTION_DECL, this is DECL_FRIEND_CONTEXT.  */
 	tree context;
 	
+	/* In a FUNCTION_DECL for which DECL_THUNK_P does not hold, this
+	   is DECL_THUNKS.  */
+	tree thunks;
+
 	/* In a FUNCTION_DECL, this is DECL_CLONED_FUNCTION.  */
 	tree cloned_function;
 	
@@ -2048,6 +2056,11 @@ struct lang_decl GTY(())
    must be overridden by derived classes.  */
 #define DECL_NEEDS_FINAL_OVERRIDER_P(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->decl_flags.needs_final_overrider)
+
+/* The thunks associated with NODE, a FUNCTION_DECL that is not itself
+   a thunk.  */
+#define DECL_THUNKS(NODE) \
+  (DECL_LANG_SPECIFIC (NODE)->u.f.thunks)
 
 /* Nonzero if NODE is a thunk, rather than an ordinary function.  */
 #define DECL_THUNK_P(NODE)			\

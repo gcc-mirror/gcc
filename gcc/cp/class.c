@@ -103,7 +103,6 @@ varray_type local_classes;
 
 static tree get_vfield_name PARAMS ((tree));
 static void finish_struct_anon PARAMS ((tree));
-static tree build_vtable_entry PARAMS ((tree, tree, tree));
 static tree get_vtable_name PARAMS ((tree));
 static tree get_basefndecls PARAMS ((tree, tree));
 static int build_primary_vtable PARAMS ((tree, tree));
@@ -7673,7 +7672,6 @@ build_vtbl_initializer (binfo, orig_binfo, t, rtti_binfo, non_fn_entries_p)
       tree delta;
       tree vcall_index;
       tree fn;
-      tree pfn;
       tree init = NULL_TREE;
       
       fn = BV_FN (v);
@@ -7724,15 +7722,13 @@ build_vtbl_initializer (binfo, orig_binfo, t, rtti_binfo, non_fn_entries_p)
 	     So, we replace these functions with __pure_virtual.  */
 	  if (DECL_PURE_VIRTUAL_P (fn))
 	    fn = abort_fndecl;
-
+	  else if (!integer_zerop (delta) || vcall_index)
+	    fn = make_thunk (fn, delta, vcall_index);
 	  /* Take the address of the function, considering it to be of an
 	     appropriate generic type.  */
-	  pfn = build1 (ADDR_EXPR, vfunc_ptr_type_node, fn);
+	  init = build1 (ADDR_EXPR, vfunc_ptr_type_node, fn);
 	  /* The address of a function can't change.  */
-	  TREE_CONSTANT (pfn) = 1;
-
-	  /* Enter it in the vtable.  */
-	  init = build_vtable_entry (delta, vcall_index, pfn);
+	  TREE_CONSTANT (init) = 1;
 	}
 
       /* And add it to the chain of initializers.  */
@@ -8163,34 +8159,4 @@ build_rtti_vtbl_entries (binfo, vid)
   TREE_CONSTANT (init) = 1;
   *vid->last_init = build_tree_list (NULL_TREE, init);
   vid->last_init = &TREE_CHAIN (*vid->last_init);
-}
-
-/* Build an entry in the virtual function table.  DELTA is the offset
-   for the `this' pointer.  VCALL_INDEX is the vtable index containing
-   the vcall offset; NULL_TREE if none.  ENTRY is the virtual function
-   table entry itself.  It's TREE_TYPE must be VFUNC_PTR_TYPE_NODE,
-   but it may not actually be a virtual function table pointer.  (For
-   example, it might be the address of the RTTI object, under the new
-   ABI.)  */
-
-static tree
-build_vtable_entry (delta, vcall_index, entry)
-     tree delta;
-     tree vcall_index;
-     tree entry;
-{
-  tree fn = TREE_OPERAND (entry, 0);
-  
-  if ((!integer_zerop (delta) || vcall_index != NULL_TREE)
-      && fn != abort_fndecl)
-    {
-      entry = make_thunk (entry, delta, vcall_index);
-      entry = build1 (ADDR_EXPR, vtable_entry_type, entry);
-      TREE_READONLY (entry) = 1;
-      TREE_CONSTANT (entry) = 1;
-    }
-#ifdef GATHER_STATISTICS
-  n_vtable_entries += 1;
-#endif
-  return entry;
 }
