@@ -149,16 +149,7 @@ do {								\
   if (TARGET_SH3)						\
     sh_cpu = CPU_SH3;						\
 								\
-  /* We *MUST* always define optimize since we *HAVE* to run	\
-     shorten branches to get correct code.  */			\
-  /* ??? This is obsolete, since now shorten branches is no	\
-     longer required by the SH, and is always run once even	\
-     when not optimizing.  Changing this now might be		\
-     confusing though.  */					\
-  optimize = 1;							\
-  flag_delayed_branch = 1;					\
-								\
-  /* But never run scheduling before reload, since that can	\
+  /* Never run scheduling before reload, since that can		\
      break global alloc, and generates slower code anyway due	\
      to the pressure on R0.  */					\
   flag_schedule_insns = 0;					\
