@@ -1,3 +1,7 @@
+2004-06-14  Paul Brook  <paul@codesourcery.com>
+
+	* dwarf2out.c (output_call_frame_info): Support dwarf3 cie entries.
+
 2004-06-14  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* Makefile.in (FLAGS_H): New.

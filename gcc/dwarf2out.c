@@ -2082,7 +2082,11 @@ output_call_frame_info (int for_eh)
   dw2_asm_output_data_uleb128 (1, "CIE Code Alignment Factor");
   dw2_asm_output_data_sleb128 (DWARF_CIE_DATA_ALIGNMENT,
 			       "CIE Data Alignment Factor");
-  dw2_asm_output_data (1, DWARF_FRAME_RETURN_COLUMN, "CIE RA Column");
+
+  if (DW_CIE_VERSION == 1)
+    dw2_asm_output_data (1, DWARF_FRAME_RETURN_COLUMN, "CIE RA Column");
+  else
+    dw2_asm_output_data_uleb128 (DWARF_FRAME_RETURN_COLUMN, "CIE RA Column");
 
   if (augmentation[0])
     {
