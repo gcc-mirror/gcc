@@ -830,7 +830,7 @@ process_phi_nodes (struct loop *loop)
 	continue;
 
       phi = phi_nodes (bb);
-      bsi = bsi_start (bb);
+      bsi = bsi_after_labels (bb);
 
       /* BB has two predecessors. Using predecessor's aux field, set
 	 appropriate condition for the PHI node replacement.  */
