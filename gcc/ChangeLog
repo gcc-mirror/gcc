@@ -1,5 +1,10 @@
 2005-04-02  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR middle-end/20491
+	* final.c (alter_subreg): Don't call subreg_regno for a non-REG.
+
+2005-04-02  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR rtl-optimization/20290
 	* loop.c (for_each_insn_in_loop): Don't assume the loop body runs
 	in every iteration if the entry point is the exit test.
