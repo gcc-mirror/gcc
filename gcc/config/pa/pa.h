@@ -313,8 +313,12 @@ do {								\
    Don't define this if it is equal to PARM_BOUNDARY */
 #define MAX_PARM_BOUNDARY 64
 
-/* Boundary (in *bits*) on which stack pointer should be aligned.  */
-#define STACK_BOUNDARY 512
+/* Boundary (in *bits*) on which stack pointer is always aligned;
+   certain optimizations in combine depend on this.
+
+   GCC for the PA always rounds its stacks to a 512bit boundary,
+   but that happens late in the compilation process.  */
+#define STACK_BOUNDARY 64
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 32
