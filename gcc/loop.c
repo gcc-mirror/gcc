@@ -2338,8 +2338,8 @@ find_and_verify_loops (f)
 	  {
 	    rtx p;
 	    rtx our_next = next_real_insn (insn);
-	    int dest_loop = uid_loop_num[INSN_UID (JUMP_LABEL (insn))];
-	    int outer_loop;
+	    int dest_loop;
+	    int outer_loop = -1;
 
 	    /* Go backwards until we reach the start of the loop, a label,
 	       or a JUMP_INSN.  */
@@ -2354,15 +2354,17 @@ find_and_verify_loops (f)
 	    /* Check for the case where we have a jump to an inner nested
 	       loop, and do not perform the optimization in that case.  */
 
-	    if (dest_loop != -1)
+	    if (JUMP_LABEL (insn))
 	      {
-		for (outer_loop = dest_loop; outer_loop != -1;
-		     outer_loop = loop_outer_loop[outer_loop])
-		  if (outer_loop == this_loop_num)
-		    break;
+		dest_loop = uid_loop_num[INSN_UID (JUMP_LABEL (insn))];
+		if (dest_loop != -1)
+		  {
+		    for (outer_loop = dest_loop; outer_loop != -1;
+			 outer_loop = loop_outer_loop[outer_loop])
+		      if (outer_loop == this_loop_num)
+			break;
+		  }
 	      }
-	    else
-	      outer_loop = -1;
 
 	    /* If we stopped on a JUMP_INSN to the next insn after INSN,
 	       we have a block of code to try to move.
