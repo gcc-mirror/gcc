@@ -2190,6 +2190,9 @@ then the empty string.  When set all newly created @code{DatagramSocket}s will
 try to load a class @code{java.net.[impl.prefix]DatagramSocketImpl} instead of
 the normal @code{java.net.PlainDatagramSocketImpl}.
 
+@item gnu.gcj.progname
+The name that was used to invoked the program.
+
 @item gnu.gcj.runtime.NameFinder.demangle
 Whether names in a stack trace should be demangled.  Defaults to @code{true}.
 
