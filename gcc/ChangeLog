@@ -1,3 +1,14 @@
+2004-01-30  Jan Hubicka  <jh@suse.cz>
+
+	* varray.c:  Include hashtab.h
+	(varray_descriptor): New structure.
+	(hash_descriptor, eq_descriptor, varray_descriptor,
+	print_statistics): New static functions
+	(varray_init, varray_grow): Update statistics
+	(dump_varray_statistics): New function.
+	* varray.h (dump_varray_statistics): Declare.
+	* toplev.c (finalize): Call it.
+
 2004-01-30  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* configure.ac (gcc_cv_as_dwarf2_debug_line): Enable test for
