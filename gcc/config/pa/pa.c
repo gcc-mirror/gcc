@@ -528,6 +528,8 @@ emit_move_sequence (operands, mode, scratch_reg)
   register rtx operand0 = operands[0];
   register rtx operand1 = operands[1];
 
+  /* Handle secondary reloads for loads/stores of FP registers from
+     REG+D addresses where D does not fit in 5 bits.  */
   if (fp_reg_operand (operand0, mode)
       && GET_CODE (operand1) == MEM
       && !short_memory_operand  (operand1, mode)
@@ -546,6 +548,19 @@ emit_move_sequence (operands, mode, scratch_reg)
       emit_move_insn (scratch_reg, XEXP (operand0 , 0));
       emit_insn (gen_rtx (SET, VOIDmode, gen_rtx (MEM, mode,  scratch_reg),
 			  operand1));
+      return 1;
+    }
+  /* Handle secondary reloads for SAR.  These occur when trying to load
+     the SAR from memory or from a FP register.  */
+  else if (GET_CODE (operand0) == REG
+	   && REGNO_REG_CLASS (REGNO (operand0)) == SHIFT_REGS
+	   && (GET_CODE (operand1) == MEM
+	       || (GET_CODE (operand1) == REG
+		   && FP_REG_CLASS_P (REGNO_REG_CLASS (REGNO (operand1)))))
+	   && scratch_reg)
+    {
+      emit_move_insn (scratch_reg, operand1);
+      emit_move_insn (operand0, scratch_reg);
       return 1;
     }
   /* Handle most common case: storing into a register.  */
