@@ -345,6 +345,7 @@ static void scan_paradoxical_subregs	PROTO((rtx));
 static int hard_reg_use_compare		PROTO((struct hard_reg_n_uses *,
 					       struct hard_reg_n_uses *));
 static void order_regs_for_reload	PROTO((void));
+static void compare_spill_regs		PROTO((short *, short *));
 static void reload_as_needed		PROTO((rtx, int));
 static void forget_old_reloads_1	PROTO((rtx, rtx));
 static int reload_reg_class_lower	PROTO((short *, short *));
@@ -3588,6 +3589,14 @@ order_regs_for_reload ()
       potential_reload_regs[o++] = hard_reg_n_uses[i].regno;
 }
 
+/* Used in reload_as_needed to sort the spilled regs.  */
+static int
+compare_spill_regs (r1, r2)
+     short *r1, *r2;
+{
+  return *r1 < *r2 ? -1: 1;
+}
+
 /* Reload pseudo-registers into hard regs around each insn as needed.
    Additional register load insns are output before the insn that needs it
    and perhaps store insns after insns that modify the reloaded pseudo reg.
@@ -3634,6 +3643,11 @@ reload_as_needed (first, live_known)
 #endif
 
   num_not_at_initial_offset = 0;
+
+  /* Order the spilled regs, so that allocate_reload_regs can guarantee to
+     pack registers with group needs.  */
+  if (n_spills > 1)
+    qsort (spill_regs, n_spills, sizeof (short), compare_spill_regs);
 
   for (insn = first; insn;)
     {
@@ -4558,9 +4572,19 @@ allocate_reload_reg (r, insn, last_reload, noerror)
       /* I is the index in spill_regs.
 	 We advance it round-robin between insns to use all spill regs
 	 equally, so that inherited reloads have a chance
-	 of leapfrogging each other.  */
+	 of leapfrogging each other.  Don't do this, however, when we have
+	 group needs and failure would be fatal; if we only have a relatively
+	 small number of spill registers, and more than one of them has
+	 group needs, then by starting in the middle, we may end up 
+	 allocating the first one in such a way that we are not left with
+	 sufficient groups to handle the rest.  */
 
-      for (count = 0, i = last_spill_reg; count < n_spills; count++)
+      if (noerror || ! force_group)
+	i = last_spill_reg;
+      else
+	i = -1;
+	  
+      for (count = 0; count < n_spills; count++)
 	{
 	  int class = (int) reload_reg_class[r];
 
