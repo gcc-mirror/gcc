@@ -4542,6 +4542,12 @@ main (argc, argv)
   target_flags = 0;
   set_target_switch ("");
 
+  /* Unwind tables are always present in an ABI-conformant IA-64
+     object file, so the default should be ON. */
+#ifdef IA64_UNWIND_INFO
+  flag_unwind_tables = IA64_UNWIND_INFO;
+#endif
+
 #ifdef OPTIMIZATION_OPTIONS
   /* Allow default optimizations to be specified on a per-machine basis.  */
   OPTIMIZATION_OPTIONS (optimize, optimize_size);
