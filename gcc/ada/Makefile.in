@@ -1410,6 +1410,8 @@ ifeq ($(strip $(filter-out powerpc darwin%,$(arch) $(osys))),)
   GNATLIB_SHARED = gnatlib-shared-darwin
   SO_OPTS = -Wl,-flat_namespace
   RANLIB = ranlib -c
+  GMEM_LIB = gmemlib
+
   LIBRARY_VERSION := $(LIB_VERSION)
 
   soext = .dylib
