@@ -20,12 +20,13 @@ echo "  type (int_info), parameter :: int_infos(c) = (/ &"
 
 i=0
 for k in $kinds; do
-  echo -n "    int_info ($k, range(0_$k))"
+  # echo -n is not portable
+  str="    int_info ($k, range(0_$k))"
   i=`expr $i + 1`
   if [ $i -lt $c ]; then
-    echo ", &"
+    echo "$str, &"
   else
-    echo " /)"
+    echo "$str /)"
   fi
 done
 

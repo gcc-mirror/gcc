@@ -1,3 +1,8 @@
+2004-09-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* mk-sik-inc.sh: Use a temporary string instead of 'echo -n'.
+	* mk-srk-inc.sh: Likewise.
+
 2004-09-01  Paul Brook  <paul@codesourcery.com>
 
 	* runtime/error.c (generate_error): Set both iostat and
