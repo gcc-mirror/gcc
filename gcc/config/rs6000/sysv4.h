@@ -846,7 +846,7 @@ do {									\
     %{mcall-aixdesc: -mbig } \
     %{mcall-solaris: -mlittle } \
     %{mcall-linux: -mbig} }}}} \
-%{mcall-solaris: -mno-main-init -mregnames } \
+%{mcall-solaris: -mregnames } \
 %{meabi: %{!mcall-*: -mcall-sysv }} \
 %{!meabi: %{!mno-eabi: \
     %{mcall-solaris: -mno-eabi } \
