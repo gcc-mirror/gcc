@@ -176,7 +176,7 @@ static void build_next_objc_exception_stuff (void);
 
 static tree build_ivar_template (void);
 static tree build_method_template (void);
-static tree build_private_template (tree);
+static void build_private_template (tree);
 static void build_class_template (void);
 static void build_selector_template (void);
 static void build_category_template (void);
@@ -874,7 +874,7 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
 
       if (lhs_is_proto)
         {
-	  tree lproto, lproto_list = TYPE_PROTOCOL_LIST (lhs);
+	  tree lproto, lproto_list = TYPE_OBJC_PROTOCOL_LIST (TREE_TYPE (lhs));
 	  tree rproto, rproto_list;
 	  tree p;
 
@@ -886,7 +886,7 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
 	      if (IS_ID (lhs) != IS_ID (rhs))
 		return 0;
 
-	      rproto_list = TYPE_PROTOCOL_LIST (rhs);
+	      rproto_list = TYPE_OBJC_PROTOCOL_LIST (TREE_TYPE (rhs));
 
 	      if (!reflexive)
 		{
@@ -972,9 +972,9 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
 			 the protocol we're looking for, check for "one-off"
 			 protocols (e.g., `NSObject<MyProt> *foo;') attached
 			 to the rhs.  */
-		      if (!rproto)
+		      if (!rproto && TYPE_HAS_OBJC_INFO (TREE_TYPE (rhs)))
 			{
-			  rproto_list = TYPE_PROTOCOL_LIST (TREE_TYPE (rhs));
+			  rproto_list = TYPE_OBJC_PROTOCOL_LIST (TREE_TYPE (rhs));
 			  rproto = lookup_protocol_in_reflist (rproto_list, p);
 			}
 
@@ -1023,7 +1023,7 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
 		{
 		  tree rname = OBJC_TYPE_NAME (TREE_TYPE (lhs));
 		  tree rinter;
-		  tree rproto, rproto_list = TYPE_PROTOCOL_LIST (rhs);
+		  tree rproto, rproto_list = TYPE_OBJC_PROTOCOL_LIST (TREE_TYPE (rhs));
 
 		  /* Make sure the protocol is supported by the object on
 		     the lhs.  */
@@ -1045,9 +1045,9 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
 			     check for "one-off" protocols (e.g.,
 			     `NSObject<MyProt> *foo;') attached to the
 			     lhs.  */
-			  if (!lproto)
+			  if (!lproto && TYPE_HAS_OBJC_INFO (TREE_TYPE (lhs)))
 			    {
-			      lproto_list = TYPE_PROTOCOL_LIST
+			      lproto_list = TYPE_OBJC_PROTOCOL_LIST
 				(TREE_TYPE (lhs));
 			      lproto = lookup_protocol_in_reflist
 				(lproto_list, p);
@@ -1185,11 +1185,11 @@ objc_check_decl (tree decl)
 tree
 objc_get_protocol_qualified_type (tree interface, tree protocols)
 {
-  tree type;
+  /* If INTERFACE is not provided, default to 'id'.  */
+  tree type = (interface ? objc_is_id (interface) : objc_object_type);
+  bool is_ptr = (type != NULL_TREE);
 
-  if (!interface)
-    type = objc_object_type;
-  else if (!(type = objc_is_id (interface)))
+  if (!is_ptr)
     {
       type = objc_is_class_name (interface);
 
@@ -1202,13 +1202,27 @@ objc_get_protocol_qualified_type (tree interface, tree protocols)
   if (protocols)
     {
       type = build_variant_type_copy (type);
-      /* Look up protocols and install in lang specific list.  Note
-	 that the protocol list can have a different lifetime than T!  */
-      SET_TYPE_PROTOCOL_LIST (type, lookup_and_install_protocols (protocols));
 
-      /* Establish the ObjC-ness of this record.  */
-      if (TREE_CODE (type) == RECORD_TYPE)
-	TREE_STATIC_TEMPLATE (type) = 1;
+      /* For pointers (i.e., 'id' or 'Class'), attach the protocol(s)
+	 to the pointee.  */
+      if (is_ptr)
+	{
+	  TREE_TYPE (type) = build_variant_type_copy (TREE_TYPE (type));
+	  TYPE_POINTER_TO (TREE_TYPE (type)) = type;
+	  type = TREE_TYPE (type);
+	}
+
+      /* Look up protocols and install in lang specific list.  */
+      DUP_TYPE_OBJC_INFO (type, TYPE_MAIN_VARIANT (type));
+      TYPE_OBJC_PROTOCOL_LIST (type) = lookup_and_install_protocols (protocols);
+
+      /* For RECORD_TYPEs, point to the @interface; for 'id' and 'Class',
+	 return the pointer to the new pointee variant.  */
+      if (is_ptr)
+	type = TYPE_POINTER_TO (type);
+      else
+	TYPE_OBJC_INTERFACE (type)
+	  = TYPE_OBJC_INTERFACE (TYPE_MAIN_VARIANT (type));
     }
 
   return type;
@@ -2661,18 +2675,26 @@ objc_declare_class (tree ident_list)
 
       if (! objc_is_class_name (ident))
 	{
-	  tree record = lookup_name (ident);
-	
-	  if (record && ! TREE_STATIC_TEMPLATE (record))
+	  tree record = lookup_name (ident), type = record;
+
+	  if (record)
 	    {
-	      error ("%qs redeclared as different kind of symbol",
-		     IDENTIFIER_POINTER (ident));
-	      error ("%Jprevious declaration of '%D'",
-		     record, record);
+	      if (TREE_CODE (record) == TYPE_DECL)
+		type = DECL_ORIGINAL_TYPE (record);
+
+	      if (!TYPE_HAS_OBJC_INFO (type)
+		  || !TYPE_OBJC_INTERFACE (type))
+		{
+		  error ("%qs redeclared as different kind of symbol",
+			 IDENTIFIER_POINTER (ident));
+		  error ("%Jprevious declaration of '%D'",
+			 record, record);
+		}
 	    }
 
 	  record = xref_tag (RECORD_TYPE, ident);
-	  TREE_STATIC_TEMPLATE (record) = 1;
+	  INIT_TYPE_OBJC_INFO (record);
+	  TYPE_OBJC_INTERFACE (record) = ident;
 	  class_chain = tree_cons (NULL_TREE, ident, class_chain);
 	}
     }
@@ -3484,38 +3506,27 @@ build_objc_exception_stuff (void)
 			NULL, nothrow_list);
 }
 
+/* Construct a C struct corresponding to ObjC class CLASS, with the same
+   name as the class:
 
-/* struct <classname> {
+   struct <classname> {
      struct _objc_class *isa;
      ...
    };  */
 
-static tree
+static void
 build_private_template (tree class)
 {
-  tree ivar_context;
-
-  if (CLASS_STATIC_TEMPLATE (class))
+  if (!CLASS_STATIC_TEMPLATE (class))
     {
-      uprivate_record = CLASS_STATIC_TEMPLATE (class);
-      ivar_context = TYPE_FIELDS (CLASS_STATIC_TEMPLATE (class));
-    }
-  else
-    {
-      uprivate_record = start_struct (RECORD_TYPE, CLASS_NAME (class));
-      ivar_context = get_class_ivars (class);
+      tree record = start_struct (RECORD_TYPE, CLASS_NAME (class));
 
-      finish_struct (uprivate_record, ivar_context, NULL_TREE);
-
-      CLASS_STATIC_TEMPLATE (class) = uprivate_record;
-
+      finish_struct (record, get_class_ivars (class), NULL_TREE);
       /* mark this record as class template - for class type checking */
-      TREE_STATIC_TEMPLATE (uprivate_record) = 1;
+      INIT_TYPE_OBJC_INFO (record);
+      TYPE_OBJC_INTERFACE (record) = class;
+      CLASS_STATIC_TEMPLATE (class) = record;
     }
-
-  objc_instance_type = build_pointer_type (uprivate_record);
-
-  return ivar_context;
 }
 
 /* Begin code generation for protocols...  */
@@ -5574,7 +5585,9 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
       else
 	{
 	  class_tree = (IS_CLASS (rtype) ? objc_class_name : NULL_TREE);
-	  rprotos = TYPE_PROTOCOL_LIST (rtype);
+	  rprotos = (TYPE_HAS_OBJC_INFO (TREE_TYPE (rtype))
+		     ? TYPE_OBJC_PROTOCOL_LIST (TREE_TYPE (rtype))
+		     : NULL_TREE);
 	  rtype = NULL_TREE;
 	}
 
@@ -5615,14 +5628,14 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
       saved_rtype = rtype;
       if (TYPED_OBJECT (rtype))
 	{
-	  rprotos = TYPE_PROTOCOL_LIST (rtype);
-	  rtype = lookup_interface (OBJC_TYPE_NAME (rtype));
+	  rprotos = TYPE_OBJC_PROTOCOL_LIST (rtype);
+	  rtype = TYPE_OBJC_INTERFACE (rtype);
 	}
       /* If we could not find an @interface declaration, we must have
 	 only seen a @class declaration; so, we cannot say anything
 	 more intelligent about which methods the receiver will
 	 understand. */
-      if (!rtype)
+      if (!rtype || TREE_CODE (rtype) == IDENTIFIER_NODE)
 	rtype = saved_rtype;
       else if (TREE_CODE (rtype) == CLASS_INTERFACE_TYPE
 	  || TREE_CODE (rtype) == CLASS_IMPLEMENTATION_TYPE)
@@ -6355,9 +6368,9 @@ objc_is_public (tree expr, tree identifier)
 
   if (code == RECORD_TYPE)
     {
-      if (TREE_STATIC_TEMPLATE (basetype))
+      if (TYPE_HAS_OBJC_INFO (basetype) && TYPE_OBJC_INTERFACE (basetype))
 	{
-	  if (!lookup_interface (OBJC_TYPE_NAME (basetype)))
+	  if (TREE_CODE (TYPE_OBJC_INTERFACE (basetype)) == IDENTIFIER_NODE)
 	    {
 	      error ("cannot find interface declaration for %qs",
 		     IDENTIFIER_POINTER (OBJC_TYPE_NAME (basetype)));
@@ -6791,7 +6804,10 @@ continue_class (tree class)
       push_lang_context (lang_name_c);
 #endif
 
-      ivar_context = build_private_template (implementation_template);
+      build_private_template (implementation_template);
+      uprivate_record = CLASS_STATIC_TEMPLATE (implementation_template);
+      ivar_context = TYPE_FIELDS (uprivate_record);
+      objc_instance_type = build_pointer_type (uprivate_record);
 
       imp_entry = (struct imp_entry *) ggc_alloc (sizeof (struct imp_entry));
 
@@ -6823,15 +6839,7 @@ continue_class (tree class)
       push_lang_context (lang_name_c);
 #endif /* OBJCPLUS */
 
-      if (!CLASS_STATIC_TEMPLATE (class))
-	{
-	  tree record = start_struct (RECORD_TYPE, CLASS_NAME (class));
-	  finish_struct (record, get_class_ivars (class), NULL_TREE);
-	  CLASS_STATIC_TEMPLATE (class) = record;
-
-	  /* Mark this record as a class template for static typing.  */
-	  TREE_STATIC_TEMPLATE (record) = 1;
-	}
+      build_private_template (class);
 
 #ifdef OBJCPLUS
       pop_lang_context ();
@@ -7028,7 +7036,8 @@ encode_pointer (tree type, int curtype, int format)
 	      obstack_1grow (&util_obstack, '@');
 	      return;
 	    }
-	  else if (TREE_STATIC_TEMPLATE (pointer_to))
+	  else if (TYPE_HAS_OBJC_INFO (pointer_to)
+		   && TYPE_OBJC_INTERFACE (pointer_to))
 	    {
               if (generating_instance_variables)
 	        {
@@ -7514,8 +7523,13 @@ objc_types_are_equivalent (tree type1, tree type2)
   if (TYPE_MAIN_VARIANT (type1) != TYPE_MAIN_VARIANT (type2))
     return 0;
 
-  type1 = TYPE_PROTOCOL_LIST (type1);
-  type2 = TYPE_PROTOCOL_LIST (type2);
+  type1 = (TYPE_HAS_OBJC_INFO (type1)
+	   ? TYPE_OBJC_PROTOCOL_LIST (type1)
+	   : NULL_TREE);
+  type2 = (TYPE_HAS_OBJC_INFO (type2)
+	   ? TYPE_OBJC_PROTOCOL_LIST (type2)
+	   : NULL_TREE);
+
   if (list_length (type1) == list_length (type2))
     {
       for (; type2; type2 = TREE_CHAIN (type2))
@@ -7942,7 +7956,12 @@ gen_type_name_0 (tree type)
     type = DECL_NAME (type);
 
   strcat (errbuf, IDENTIFIER_POINTER (type));
-  proto = TYPE_PROTOCOL_LIST (orig);
+
+  /* For 'id' and 'Class', adopted protocols are stored in the pointee.  */
+  if (objc_is_id (orig))
+    orig = TREE_TYPE (orig);
+  
+  proto = TYPE_HAS_OBJC_INFO (orig) ? TYPE_OBJC_PROTOCOL_LIST (orig) : NULL_TREE;
 
   if (proto)
     {
