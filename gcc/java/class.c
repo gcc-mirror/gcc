@@ -1887,12 +1887,16 @@ emit_register_classes ()
      than the ones that come with the operating system.  */
   if (SUPPORTS_WEAK && targetm.have_named_sections)
     {
+#ifdef JCR_SECTION_NAME
       tree t;
       named_section_flags (JCR_SECTION_NAME, SECTION_WRITE,
 			   POINTER_SIZE / BITS_PER_UNIT);
       for (t = registered_class; t; t = TREE_CHAIN (t))
 	assemble_integer (XEXP (DECL_RTL (t), 0),
 			  POINTER_SIZE / BITS_PER_UNIT, 1);
+#else
+      abort ();
+#endif
     }
   else
     {
