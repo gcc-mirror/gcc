@@ -377,7 +377,8 @@ handle_pragma_redefine_extname (cpp_reader *dummy ATTRIBUTE_UNUSED)
     warning ("junk at end of #pragma redefine_extname");
 
   decl = identifier_global_value (oldname);
-  if (decl && TREE_CODE_CLASS (TREE_CODE (decl)) == 'd')
+  if (decl && (TREE_CODE (decl) == FUNCTION_DECL
+	       || TREE_CODE (decl) == VAR_DECL))
     {
       if (DECL_ASSEMBLER_NAME_SET_P (decl)
 	  && DECL_ASSEMBLER_NAME (decl) != newname)
