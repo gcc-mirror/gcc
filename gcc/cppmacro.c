@@ -1396,9 +1396,6 @@ _cpp_create_definition (pfile, node)
   else if (token->type != CPP_EOF && !(token->flags & PREV_WHITE))
     cpp_pedwarn (pfile, "ISO C requires whitespace after the macro name");
 
-  /* Setting it here means we don't catch leading comments.  */
-  pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
-
   for (;;)
     {
       /* Check the stringifying # constraint 6.10.3.2.1 of

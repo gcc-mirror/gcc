@@ -1033,7 +1033,7 @@ _cpp_lex_token (pfile, result)
 	}
 
       /* Skipping the comment has updated buffer->read_ahead.  */
-      if (!pfile->state.save_comments)
+      if (!pfile->state.save_comments || pfile->skipping)
 	{
 	  result->flags |= PREV_WHITE;
 	  goto next_char;
