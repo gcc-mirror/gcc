@@ -1,3 +1,10 @@
+2001-01-19  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (flag_vtable_thunks): Also depend on ENABLE_NEW_GXX_ABI.
+
+	* decl.c (init_decl_processing): Just force -fvtable-thunks on if
+	-fnew-abi.
+
 2001-01-19  Ute Pelkmann  <scope.muc@t-online.de>
 
 	* decl2.c (arg_assoc_class): Fix double iteration logic.

@@ -204,10 +204,14 @@ int warn_ctor_dtor_privacy = 1;
 /* True if we want to implement vtables using "thunks".
    The default is off.  */
 
+#if ENABLE_NEW_GXX_ABI
+int flag_vtable_thunks = 1;
+#else
 #ifndef DEFAULT_VTABLE_THUNKS
 #define DEFAULT_VTABLE_THUNKS 0
 #endif
 int flag_vtable_thunks = DEFAULT_VTABLE_THUNKS;
+#endif
 
 /* Nonzero means generate separate instantiation control files and juggle
    them at link time.  */
