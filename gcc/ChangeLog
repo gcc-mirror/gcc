@@ -1,3 +1,7 @@
+2003-01-30  Richard Henderson  <rth@redhat.com>
+
+	* tree-inline.c (walk_tree): Streamline duplicate hash table lookup.
+
 2003-01-30  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_compute_initial_elimination_offset): If optimizing for
