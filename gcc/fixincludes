@@ -1089,13 +1089,14 @@ if [ -r ${LIB}/$file ]; then
   if grep __cplusplus ${LIB}/$file >/dev/null 2>/dev/null; then
     true;
   else
-    echo Fixing $file, field new
+    echo Fixing $file, uses of new
     sed -e '/Widget	old, new;/i\
 #ifdef __cplusplus\
 	Widget	old, c_new;\
 #else' \
         -e '/Widget	old, new;/a\
-#endif' ${LIB}/$file > ${LIB}/${file}.sed
+#endif' \
+	-e 's/Widget new,/Widget c_new,/g' ${LIB}/$file > ${LIB}/${file}.sed
     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   fi
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
