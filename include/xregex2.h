@@ -529,10 +529,16 @@ extern int re_exec _RE_ARGS ((const char *));
 #  endif
 # endif
 #endif
-/* For now unconditionally define __restrict_arr to expand to nothing.
-   Ideally we would have a test for the compiler which allows defining
-   it to restrict.  */
-#define __restrict_arr
+
+/* GCC 3.1 and later support declaring arrays as non-overlapping
+   using the syntax array_name[restrict]  */
+#ifndef __restrict_arr
+# if ! (3 < __GNUC__ || (3 == __GNUC__ && 1 <= __GNUC_MINOR__)) || defined (__GNUG__)
+#  define __restrict_arr
+# else
+#  define __restrict_arr __restrict
+# endif
+#endif
 
 /* POSIX compatibility.  */
 extern int regcomp _RE_ARGS ((regex_t *__restrict __preg,
