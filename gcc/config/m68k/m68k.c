@@ -63,7 +63,7 @@ static void m68k_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void m68k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void m68k_coff_asm_named_section PARAMS ((const char *, unsigned int,
 						 unsigned int));
-#ifdef INIT_SECTION_ASM_OP
+#ifdef CTOR_LIST_BEGIN
 static void m68k_svr3_asm_out_constructor PARAMS ((rtx, int));
 #endif
 
@@ -4233,7 +4233,7 @@ m68k_coff_asm_named_section (name, flags, align)
   fprintf (asm_out_file, "\t.section\t%s,\"%c\"\n", name, flagchar);
 }
 
-#ifdef INIT_SECTION_ASM_OP
+#ifdef CTOR_LIST_BEGIN
 static void
 m68k_svr3_asm_out_constructor (symbol, priority)
      rtx symbol;
