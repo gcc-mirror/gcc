@@ -88,4 +88,36 @@ public ContentHandler() { }
   */
 public abstract Object getContent(URLConnection urlc) throws IOException;
 
+/*************************************************************************/
+
+/**
+  * This method reads from the <code>InputStream</code> of the passed in URL
+  * connection and uses the data downloaded to create an <code>Object</code>
+  * represening the content.  For example, if the URL is pointing to a GIF 
+  * file, this method might return an <code>Image</code> object.  This method 
+  * must be implemented by subclasses. If the object doesnt match any type in
+  * classes it returns null.
+  *
+  * @param urlc A <code>URLConnection</code> object to read data from.
+  *
+  * @return An object representing the data read
+  *
+  * @exception IOException If an error occurs
+  *
+  * @since 1.3
+  */
+public Object getContent(URLConnection urlc, Class[] classes)
+  throws IOException
+{
+  Object obj = getContent (urlc);
+
+  for (int i = 0; i < classes.length; i++)
+    {
+      if (classes [i].isInstance (obj))
+        return obj;
+    }
+
+  return null;
+}
+
 } // class ContentHandler
