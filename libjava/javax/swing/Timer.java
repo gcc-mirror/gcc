@@ -35,13 +35,17 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import java.awt.event.*;
-import java.util.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.Serializable;
+import java.util.EventListener;
+import java.util.Vector;
+import javax.swing.event.EventListenerList;
 
-
-public class Timer
+public class Timer implements Serializable
 {
   int ticks;
   static boolean verbose;

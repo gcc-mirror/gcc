@@ -35,9 +35,9 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-// Imports
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
@@ -52,8 +52,11 @@ import javax.swing.plaf.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class JComboBox extends JComponent implements ItemSelectable, 
-		ListDataListener, ActionListener, Accessible {
+public class JComboBox extends JComponent
+  implements ItemSelectable, ListDataListener, ActionListener, Accessible
+{
+  private static final long serialVersionUID = 5654585963292734470L;
+
 
 	//-------------------------------------------------------------
 	// Classes ----------------------------------------------------
@@ -766,6 +769,7 @@ public class JComboBox extends JComponent implements ItemSelectable,
 	/**
 	 * isFocusTraversable
 	 * @returns boolean
+         * @deprecated
 	 */
 	public boolean isFocusTraversable() {
 		return false; // TODO

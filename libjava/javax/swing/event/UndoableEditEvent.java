@@ -48,6 +48,8 @@ import javax.swing.undo.*;
  */
 public class UndoableEditEvent extends EventObject {
 
+  private static final long serialVersionUID = 4418044561759134484L;
+
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------
 	//-------------------------------------------------------------

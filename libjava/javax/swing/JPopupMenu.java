@@ -51,7 +51,8 @@ import javax.swing.plaf.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class JPopupMenu extends JComponent implements Accessible, MenuElement {
+public class JPopupMenu extends JComponent implements Accessible, MenuElement
+{
 
 	//-------------------------------------------------------------
 	// Classes ----------------------------------------------------

@@ -35,18 +35,33 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import java.awt.*;
-import java.awt.event.*;
-
-import javax.swing.event.*;
-import javax.swing.plaf.*;
-import javax.swing.text.*;
-import javax.accessibility.*;
-
-import java.util.*;
-import java.beans.*;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.ItemSelectable;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeListener;
+import javax.accessibility.AccessibleAction;
+import javax.accessibility.AccessibleIcon;
+import javax.accessibility.AccessibleStateSet;
+import javax.accessibility.AccessibleRelationSet;
+import javax.accessibility.AccessibleText;
+import javax.accessibility.AccessibleValue;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.plaf.ButtonUI;
+import javax.swing.text.AttributeSet;
 
 /**
  * Provides basic button functionality
@@ -54,7 +69,7 @@ import java.beans.*;
  * @author Ronald Veldema (rveldema@cs.vu.nl)
  */
 public abstract class AbstractButton extends JComponent
-			implements ItemSelectable, SwingConstants
+  implements ItemSelectable, SwingConstants
 {
 	Icon default_icon, pressed_button, disabled_button,
 	selected_button, disabled_selected_button, current_icon;

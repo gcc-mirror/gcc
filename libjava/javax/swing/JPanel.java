@@ -35,22 +35,21 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import java.awt.*;
-import javax.swing.plaf.*;
-
+import java.awt.FlowLayout;
+import java.awt.LayoutManager;
+import javax.swing.plaf.PanelUI;
+import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
-import javax.accessibility.AccessibleRole;
-import javax.accessibility.AccessibleState;
-import javax.accessibility.AccessibleStateSet;
 
 /**
  * An instance of JPanel can be added to a panel, frame etc
  *
  * @author Ronald Veldema (rveldema@cs.vu.nl)
  */
-public class JPanel extends JComponent
+public class JPanel extends JComponent implements Accessible
 {
     public JPanel()
     {

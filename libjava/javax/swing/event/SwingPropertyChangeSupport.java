@@ -49,6 +49,8 @@ import java.util.*;
 public final	class SwingPropertyChangeSupport
 				extends PropertyChangeSupport {
 
+  private static final long serialVersionUID = 7162625831330845068L;
+
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------
 	//-------------------------------------------------------------

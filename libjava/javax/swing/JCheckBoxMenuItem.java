@@ -46,7 +46,8 @@ import javax.accessibility.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class JCheckBoxMenuItem extends JMenuItem implements SwingConstants, Accessible {
+public class JCheckBoxMenuItem extends JMenuItem implements SwingConstants, Accessible
+{
 
 	//-------------------------------------------------------------
 	// Classes ----------------------------------------------------

@@ -49,7 +49,8 @@ import javax.swing.plaf.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class JProgressBar extends JComponent implements SwingConstants, Accessible {
+public class JProgressBar extends JComponent implements SwingConstants, Accessible
+{
 
 	//-------------------------------------------------------------
 	// Classes ----------------------------------------------------

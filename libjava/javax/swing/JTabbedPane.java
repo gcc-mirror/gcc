@@ -35,19 +35,18 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import java.util.*;
-import javax.swing.plaf.*;
-import java.awt.*;
-
-
+import java.awt.Component;
+import java.util.Vector;
+import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
-import javax.accessibility.AccessibleRole;
-import javax.accessibility.AccessibleState;
-import javax.accessibility.AccessibleStateSet;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.plaf.TabbedPaneUI;
 
-public class JTabbedPane extends JComponent
+public class JTabbedPane extends JComponent implements Accessible, SwingConstants
 {
     class Tab
     {

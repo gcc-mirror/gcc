@@ -35,21 +35,44 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import java.awt.*;
-import java.awt.peer.*;
-import java.awt.event.*;
-import java.io.*;
-
-import javax.swing.event.*;
-import javax.swing.border.*;
-import javax.swing.plaf.*;
-
-import java.util.*;
-import java.beans.*;
-
-import javax.accessibility.*;
+import java.awt.AWTEvent;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ActionListener;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.peer.LightweightPeer;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.io.Serializable;
+import java.util.Vector;
+import java.util.Hashtable;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleExtendedComponent;
+import javax.accessibility.AccessibleKeyBinding;
+import javax.accessibility.AccessibleRole;
+import javax.accessibility.AccessibleStateSet;
+import javax.swing.event.AncestorListener;
+import javax.swing.event.EventListenerList;
+import javax.swing.border.Border;
+import javax.swing.plaf.ComponentUI;
 
 /**
  * Every component in swing inherits from this class (JLabel, JButton, etc).

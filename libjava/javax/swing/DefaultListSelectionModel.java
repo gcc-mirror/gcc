@@ -35,12 +35,16 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import javax.swing.event.*;
-import java.util.*;
+import java.io.Serializable;
+import java.util.EventListener;
+import java.util.Vector;
+import javax.swing.event.EventListenerList;
+import javax.swing.event.ListSelectionListener;
 
-public class DefaultListSelectionModel implements ListSelectionModel
+public class DefaultListSelectionModel implements Cloneable, ListSelectionModel, Serializable
 {
     int mode = SINGLE_SELECTION;
 

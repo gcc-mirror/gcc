@@ -35,11 +35,10 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-
-
-public  interface SwingConstants
+public interface SwingConstants
 {
     public static final int CENTER       = 0;
     public static final int TOP          = 1;

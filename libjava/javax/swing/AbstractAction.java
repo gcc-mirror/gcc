@@ -35,9 +35,9 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-// Imports
 import java.awt.event.*;
 import java.beans.*;
 import java.io.*;
@@ -207,12 +207,4 @@ public abstract class AbstractAction
 	public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
 		changeSupport.removePropertyChangeListener(listener);
 	} // removePropertyChangeListener()
-
-	/**
-	 * actionPerformed
-	 * @param event TODO
-	 */
-	public abstract void actionPerformed(ActionEvent event);
-
-
-} // AbstractAction
+}

@@ -35,11 +35,28 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import java.awt.*;
-import javax.swing.plaf.*;
-import javax.accessibility.*;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.io.Serializable;
+import java.util.Hashtable;
+import java.util.Vector;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.plaf.TreeUI;
+import javax.swing.tree.DefaultTreeSelectionModel;
+import javax.swing.tree.TreeCellEditor;
+import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 public class JTree extends JComponent implements Scrollable, Accessible
 {

@@ -50,7 +50,8 @@ import javax.swing.plaf.*;
  * @version	1.0
  */
 public class JToolBar extends JComponent 
-		implements SwingConstants, Accessible {
+  implements SwingConstants, Accessible
+{
 
 	//-------------------------------------------------------------
 	// Classes ----------------------------------------------------

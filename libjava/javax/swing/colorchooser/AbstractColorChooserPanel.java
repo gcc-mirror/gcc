@@ -35,13 +35,14 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.colorchooser;
 
-// Imports
-import java.awt.*;
-import java.io.*;
-import javax.swing.*;
-import javax.swing.event.*;
+import java.awt.Color;
+import java.awt.Graphics;
+import javax.swing.Icon;
+import javax.swing.JColorChooser;
+import javax.swing.JPanel;
 
 /**
  * AbstractColorChooserPanel

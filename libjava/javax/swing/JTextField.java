@@ -35,12 +35,14 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import java.awt.event.*;
-import java.util.*;
-
-import javax.accessibility.*;
+import java.awt.event.ActionListener;
+import java.util.Vector;
+import javax.accessibility.AccessibleStateSet;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 
 public class JTextField extends JEditorPane
 {
