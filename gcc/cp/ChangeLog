@@ -1,3 +1,9 @@
+2002-09-30  Steve Ellcey  <sje@cup.hp.com>
+
+	* class.c (build_vtbl_initializer): Add cast.
+	(add_vcall_offset_vtbl_entries_1):
+	Use TARGET_VTABLE_DATA_ENTRY_DISTANCE for offset.
+
 2002-09-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (walk_subobject_offsets): Correct the calculation of

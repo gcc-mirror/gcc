@@ -7616,7 +7616,10 @@ build_vtbl_initializer (binfo, orig_binfo, t, rtti_binfo, non_fn_entries_p)
 	  int i;
 
 	  for (i = 1; i < TARGET_VTABLE_DATA_ENTRY_DISTANCE; ++i)
-	    add = tree_cons (NULL_TREE, null_pointer_node, add);
+	    add = tree_cons (NULL_TREE,
+			     build_c_cast (vtable_entry_type,
+				     size_zero_node),
+			     add);
 	  *prev = add;
 	}
     }
@@ -8061,7 +8064,8 @@ add_vcall_offset_vtbl_entries_1 (binfo, vid)
 
       /* The next vcall offset will be found at a more negative
 	 offset.  */
-      vid->index = size_binop (MINUS_EXPR, vid->index, ssize_int (1));
+      vid->index = size_binop (MINUS_EXPR, vid->index,
+			       ssize_int (TARGET_VTABLE_DATA_ENTRY_DISTANCE));
 
       /* Keep track of this function.  */
       VARRAY_PUSH_TREE (vid->fns, derived_virtuals);
