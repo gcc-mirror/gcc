@@ -1,3 +1,11 @@
+2002-05-07  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.h (TARGET_BUGGY_QP_LIB): Define to zero.
+	* config/sparc/sol2.h (TARGET_BUGGY_QP_LIB): Override to one.
+	* config/sparc/sparc.c (emit_soft_tfmode_libcall): If the Qp
+	library implementation clobbers the output before the inputs
+	are fully consumed, use stack temporary for the output.
+
 2002-05-09  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/netbsd.h (CPP_SPEC): Remove.

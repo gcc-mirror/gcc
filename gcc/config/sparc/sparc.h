@@ -2598,6 +2598,11 @@ do {                                                                    \
 #define LTTF2_LIBCALL "_Q_flt"
 #define LETF2_LIBCALL "_Q_fle"
 
+/* Assume by default that the _Qp_* 64-bit libcalls are implemented such
+   that the inputs are fully consumed before the output memory is clobbered.  */
+
+#define TARGET_BUGGY_QP_LIB	0
+
 /* We can define the TFmode sqrt optab only if TARGET_FPU.  This is because
    with soft-float, the SFmode and DFmode sqrt instructions will be absent,
    and the compiler will notice and try to use the TFmode sqrt instruction
