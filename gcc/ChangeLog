@@ -1,3 +1,9 @@
+Sun Jan 27 13:23:40 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* emit-rtl.c (get_mem_attrs): Don't default alignment for non-BLKmode
+	if not STRICT_ALIGNMENT.
+	* rtl.h (MEM_ALIGN): Likewise.
+
 2002-01-27  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	* doc/invoke.texi (-fdump-translation-unit): Revert this

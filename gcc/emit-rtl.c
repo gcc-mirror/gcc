@@ -292,7 +292,8 @@ get_mem_attrs (alias, expr, offset, size, align, mode)
       && (size == 0
 	  || (mode != BLKmode && GET_MODE_SIZE (mode) == INTVAL (size)))
       && (align == BITS_PER_UNIT
-	  || (mode != BLKmode && align == GET_MODE_ALIGNMENT (mode))))
+	  || (STRICT_ALIGNMENT
+	      && mode != BLKmode && align == GET_MODE_ALIGNMENT (mode))))
     return 0;
 
   attrs.alias = alias;
