@@ -48,6 +48,12 @@
 #ifndef HAVE_decscc
 #define HAVE_decscc 0
 #endif
+#ifndef HAVE_trap
+#define HAVE_trap 0
+#endif
+#ifndef HAVE_conditional_trap
+#define HAVE_conditional_trap 0
+#endif
 
 #ifndef MAX_CONDITIONAL_EXECUTE
 #define MAX_CONDITIONAL_EXECUTE   (BRANCH_COST + 1)
@@ -97,6 +103,7 @@ static int find_if_header		PARAMS ((basic_block));
 static int find_if_block		PARAMS ((basic_block, edge, edge));
 static int find_if_case_1		PARAMS ((basic_block, edge, edge));
 static int find_if_case_2		PARAMS ((basic_block, edge, edge));
+static int find_cond_trap		PARAMS ((basic_block, edge, edge));
 static int find_memory			PARAMS ((rtx *, void *));
 static int dead_or_predicable		PARAMS ((basic_block, basic_block,
 						 basic_block, rtx, int));
@@ -1757,10 +1764,9 @@ merge_if_block (test_bb, then_bb, else_bb, join_bb)
       if (combo_bb->succ == NULL_EDGE)
 	abort ();
 
-      /* There should sill be a branch at the end of the THEN or ELSE
+      /* There should still be a branch at the end of the THEN or ELSE
          blocks taking us to our final destination.  */
-      if (! any_uncondjump_p (combo_bb->end)
-          && ! returnjump_p (combo_bb->end))
+      if (GET_CODE (combo_bb->end) != JUMP_INSN)
 	abort ();
     }
 
@@ -1834,6 +1840,9 @@ find_if_header (test_bb)
     return FALSE;
 
   if (find_if_block (test_bb, then_edge, else_edge))
+    goto success;
+  if (HAVE_trap && HAVE_conditional_trap
+      && find_cond_trap (test_bb, then_edge, else_edge))
     goto success;
   if (post_dominators
       && (! HAVE_conditional_execution || reload_completed))
@@ -1963,6 +1972,125 @@ find_if_block (test_bb, then_edge, else_edge)
 
   /* Do the real work.  */
   return process_if_block (test_bb, then_bb, else_bb, join_bb);
+}
+
+/* Convert a branch over a trap, or a branch to a trap,
+   into a conditional trap.  */
+
+static int
+find_cond_trap (test_bb, then_edge, else_edge)
+     basic_block test_bb;
+     edge then_edge, else_edge;
+{
+  basic_block then_bb, else_bb, join_bb, trap_bb;
+  rtx trap, jump, cond, cond_earliest, seq;
+  enum rtx_code code;
+
+  then_bb = then_edge->dest;
+  else_bb = else_edge->dest;
+  join_bb = NULL;
+
+  /* Locate the block with the trap instruction.  */
+  /* ??? While we look for no successors, we really ought to allow
+     EH successors.  Need to fix merge_if_block for that to work.  */
+  /* ??? We can't currently handle merging the blocks if they are not
+     already adjacent.  Prevent losage in merge_if_block by detecting
+     this now.  */
+  if (then_bb->succ == NULL)
+    {
+      trap_bb = then_bb;
+      if (else_bb->index != then_bb->index + 1)
+	return FALSE;
+      join_bb = else_bb;
+      else_bb = NULL;
+    }
+  else if (else_bb->succ == NULL)
+    {
+      trap_bb = else_bb;
+      if (else_bb->index != then_bb->index + 1)
+	else_bb = NULL;
+      else if (then_bb->succ
+	  && ! then_bb->succ->succ_next
+	  && ! (then_bb->succ->flags & EDGE_COMPLEX)
+	  && then_bb->succ->dest->index == else_bb->index + 1)
+	join_bb = then_bb->succ->dest;
+    }
+  else
+    return FALSE;
+
+  /* The only instruction in the THEN block must be the trap.  */
+  trap = first_active_insn (trap_bb);
+  if (! (trap == trap_bb->end
+	 && GET_CODE (PATTERN (trap)) == TRAP_IF
+         && TRAP_CONDITION (PATTERN (trap)) == const_true_rtx))
+    return FALSE;
+
+  if (rtl_dump_file)
+    {
+      if (trap_bb == then_bb)
+	fprintf (rtl_dump_file,
+		 "\nTRAP-IF block found, start %d, trap %d",
+		 test_bb->index, then_bb->index);
+      else
+	fprintf (rtl_dump_file,
+		 "\nTRAP-IF block found, start %d, then %d, trap %d",
+		 test_bb->index, then_bb->index, trap_bb->index);
+      if (join_bb)
+	fprintf (rtl_dump_file, ", join %d\n", join_bb->index);
+      else
+	fputc ('\n', rtl_dump_file);
+    }
+
+  /* If this is not a standard conditional jump, we can't parse it.  */
+  jump = test_bb->end;
+  cond = noce_get_condition (jump, &cond_earliest);
+  if (! cond)
+    return FALSE;
+
+  /* If the conditional jump is more than just a conditional jump,
+     then we can not do if-conversion on this block.  */
+  if (! onlyjump_p (jump))
+    return FALSE;
+
+  /* We must be comparing objects whose modes imply the size.  */
+  if (GET_MODE (XEXP (cond, 0)) == BLKmode)
+    return FALSE;
+
+  /* Reverse the comparison code, if necessary.  */
+  code = GET_CODE (cond);
+  if (then_bb == trap_bb)
+    {
+      code = reversed_comparison_code (cond, jump);
+      if (code == UNKNOWN)
+	return FALSE;
+    }
+
+  /* Attempt to generate the conditional trap.  */
+  seq = gen_cond_trap (code, XEXP (cond, 0), XEXP (cond, 1),
+		       TRAP_CODE (PATTERN (trap)));
+  if (seq == NULL)
+    return FALSE;
+
+  /* Emit the new insns before cond_earliest; delete the old jump
+     and trap insns.  */
+
+  emit_insn_before (seq, cond_earliest);
+
+  test_bb->end = PREV_INSN (jump);
+  flow_delete_insn (jump);
+
+  trap_bb->end = PREV_INSN (trap);
+  flow_delete_insn (trap);
+
+  /* Merge the blocks!  */
+  if (trap_bb != then_bb && ! else_bb)
+    {
+      flow_delete_block (trap_bb);
+      num_removed_blocks++;
+    }
+  merge_if_block (test_bb, then_bb, else_bb, join_bb);
+
+  return TRUE;
 }
 
 /* Look for IF-THEN-ELSE cases in which one of THEN or ELSE is
