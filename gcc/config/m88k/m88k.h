@@ -198,13 +198,13 @@ extern char * reg_names[];
    Redefined in sysv4.h, and luna.h.  */
 #define VERSION_INFO1	"m88k, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.72 $"
+#define VERSION_INFO2   "$Revision: 1.1 $"
 #endif
 
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
 #ifdef __STDC__
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.72 $ " __DATE__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.1 $ " __DATE__
 #else
 #define TM_RCS_ID      "$What: <@(#) m88k.h,v	1.1.1.2.2.2> $"
 #endif  /* __STDC__ */

@@ -4302,6 +4302,11 @@ main (argc, argv)
     signal (SIGPIPE, fatal_error);
 #endif
 
+  { /* Warn users they are using developmental software.  */
+    static void snapshot_warning ();
+    snapshot_warning ();
+  }
+
   argbuf_length = 10;
   argbuf = (char **) xmalloc (argbuf_length * sizeof (char *));
 
@@ -5439,5 +5444,60 @@ print_multilib_info ()
 	}
 
       ++p;
+    }
+}
+
+/* For snapshots only.
+   Warn the user that this version of gcc is for testing and developing only.
+   If this is unix, we can restrict the warning to once per day.
+   Otherwise always issue it.  */
+
+#define TIMESTAMP_FILE ".gcc-test-time"
+#define ONE_DAY (24*60*60)
+
+static void
+snapshot_warning ()
+{
+  char *home;
+  int print_p = 1;
+
+#ifdef unix
+  home = getenv ("HOME");
+  if (home != NULL)
+    {
+      char *file_name = (char *) alloca (strlen (home) + 1 + sizeof (TIMESTAMP_FILE));
+      struct stat statbuf;
+      time_t now = time (NULL);
+      int s;
+
+      sprintf (file_name, "%s/%s", home, TIMESTAMP_FILE);
+      s = stat (file_name, &statbuf);
+      if (s == 0
+	  && (statbuf.st_mtime + ONE_DAY > now))
+	print_p = 0;
+      else
+	{
+	  FILE *f;
+
+	  if ((f = fopen (file_name, "w")) == NULL)
+	    {
+	      /* Ensure we have write access.  */
+	      chmod (file_name, s == 0 ? (statbuf.st_mode + 0200) : 0644);
+	      f = fopen (file_name, "w");
+	    }
+	  if (f != NULL)
+	    {
+	      fputc ('\n', f);
+	      fclose (f);
+	    }
+	}
+    }
+#endif
+
+  if (print_p)
+    {
+      fprintf (stderr, "*** This is a development snapshot of GCC.\n");
+      fprintf (stderr, "*** It is not reliable release, and the GCC developers\n");
+      fprintf (stderr, "*** warn you not to use it for anything except to test it.\n");
     }
 }

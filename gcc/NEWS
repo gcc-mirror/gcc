@@ -3,12 +3,17 @@ Noteworthy changes in GCC version 2.8.0:
 The -specs=file switch allows you to override default specs used in invoking
 programs like cc1, as, etc.
 
+Options -Wall and -Wimplicit now cause GCC to warn about implicit int
+in declarations (e.g. `register i;'), since the C Standard committee
+has decided to disallow this in the next revision of the standard.
+
 The following new targets are supported:
 
     Solaris 2.5 running on UltraSPARC's.
     The sparclet cpu (a.out file format).
     Solaris 2.51 running on PowerPC's.
     Linux running on PowerPC's.
+    Embedded target m32r-elf.
 
 New features for the Hitachi H8/300(H).
 
@@ -23,6 +28,17 @@ New features for SPARC-based systems:
     -mtune=xxx
     -mimpure-text and -mno-impure-text
 
+New features for all rs6000 and PowerPC systems:
+
+    -mcpu=604e
+    -mcpu=801
+    -mcpu=823
+    -mtune=xxx
+    -mupdate
+    -mno-update
+    -mfused-madd
+    -mno-fused-madd
+
 New features for PowerPC-based systems running either System V, Linux, Solaris,
 or embedded systems:
 
@@ -33,10 +49,16 @@ or embedded systems:
     -mcall-sysv-eabi
     -mcall-sysv-noeabi
     -msdata
+    -msdata=none
+    -msdata=default
+    -msdata=sysv
+    -msdata=eabi
     -memb
-    -mtune=xxx
     -msim
     -mmvme
+    wchar_t is now of type long, not unsigned short as per ABI.
+    -p/-pg support
+    -mcpu=403 now implies -mstrict-align.
 
 Options -mno-v8 and -mno-sparclite are no longer supported on SPARC
 targets.  Options -mcypress, -mv8, -msupersparc, -msparclite, -mf930,

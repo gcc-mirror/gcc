@@ -1,0 +1,26 @@
+This directory contains the version 2.7.2 release of the GNU C
+compiler.  It includes all of the support for compiling C++ and
+Objective C, including a run-time library for Objective C.
+
+The GNU C compiler is free software.  See the file COPYING for copying
+permission.
+
+See the file gcc.texi (together with other files that it includes) for
+installation and porting information.  The file INSTALL contains a
+copy of the installation information, as plain ASCII.
+
+Installing this package will create various files in subdirectories of
+/usr/local/lib, which are passes used by the compiler and a library
+named libgcc.a.  It will also create /usr/local/bin/gcc, which is
+the user-level command to do a compilation.
+
+See the Bugs chapter of the GCC Manual for how to report bugs
+usefully.  An online readable version of the manual is in the files
+gcc.info*.
+
+The files pself.c and pself1.c are not part of GCC.
+They are programs that print themselves on standard output.
+They were written by Dario Dariol and Giovanni Cozzi, and are
+included for your hacking pleasure.  Likewise pself2.c
+(Who is the author of that?) and pself3.c (by Vlad Taeerov and Rashit
+Fakhreyev).

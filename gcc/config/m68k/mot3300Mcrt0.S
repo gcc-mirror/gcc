@@ -143,7 +143,7 @@ LOCAL_LABEL(endofstart):
 
 #ifdef STRING
 	SECTION (.comment)
-	STRING ("$Id: mcrt0.S,v 1.5 1995/12/07 17:23:39 manfred Exp $\n")
+	STRING ("$Id: mot3300Mcrt0.S,v 1.1 1997/08/11 15:57:32 law Exp $\n")
 	STRING ("Contributed by manfred@lts.sel.alcatel.de (Manfred Hollstein, Germany)\n")
 #else
 	byte	'C,'o,'n,'t,'r,'i,'b,'u,'t,'e,'d,' ,'b,'y

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for Intel 860.
-   Copyright (C) 1989, 1991, 1993, 1995, 1996 Free Software Foundation, Inc.
-   Hacked substantially by Ron Guilmette (rfg@segfault.us.com) to cater to
+   Copyright (C) 1989, 91, 93, 95, 96, 1997 Free Software Foundation, Inc.
+   Hacked substantially by Ron Guilmette (rfg@monkeys.com) to cater to
    the whims of the System V Release 4 assembler.
 
 This file is part of GNU CC.
@@ -1369,7 +1369,7 @@ extern unsigned long sfmode_constant_to_ulong ();
    stack (where the i860 calling conventions require structs &
    unions to be passed).  */
 
-#define FLOAT_TYPE_VALUE	float
+#define FLOAT_VALUE_TYPE	float
 #define INTIFY(FLOATVAL)	(FLOATVAL)
 #define FLOATIFY(INTVAL)	(INTVAL)
 #define FLOAT_ARG_TYPE		float
