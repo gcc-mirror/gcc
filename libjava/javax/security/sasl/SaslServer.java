@@ -92,7 +92,6 @@ package javax.security.sasl;
  *
  * @see Sasl
  * @see SaslServerFactory
- * @version $Revision: 1.1 $
  */
 public interface SaslServer
 {

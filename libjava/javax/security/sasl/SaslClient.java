@@ -102,7 +102,6 @@ package javax.security.sasl;
  *
  * @see Sasl
  * @see SaslClientFactory
- * @version $Revision: 1.1 $
  */
 public interface SaslClient
 {

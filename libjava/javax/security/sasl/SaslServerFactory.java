@@ -55,7 +55,6 @@ import javax.security.auth.callback.CallbackHandler;
  *
  * @see SaslServer
  * @see Sasl
- * @version $Revision: 1.1 $
  */
 public interface SaslServerFactory
 {

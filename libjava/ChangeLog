@@ -1,5 +1,14 @@
 2004-10-20  Michael Koch  <konqueror@gmx.de>
 
+	* javax/security/sasl/SaslClient.java,
+	javax/security/sasl/SaslClientFactory.java,
+	javax/security/sasl/SaslException.java,
+	javax/security/sasl/SaslServer.java,
+	javax/security/sasl/SaslServerFactory.java:
+	Remvoed CVS tags.
+
+2004-10-20  Michael Koch  <konqueror@gmx.de>
+
 	* javax/security/auth/login/NullConfiguration.java,
 	javax/security/auth/x500/X500Principal.java,
 	javax/security/cert/X509Certificate.java,
