@@ -1023,7 +1023,7 @@ reload (first, global)
 	      did_spill = 1;
 
 	      /* Regardless of the state of spills, if we previously had
-		 a register that we thought we could eliminate, but no can
+		 a register that we thought we could eliminate, but now can
 		 not eliminate, we must run another pass.
 
 		 Consider pseudos which have an entry in reg_equiv_* which
