@@ -1,3 +1,14 @@
+2004-11-12  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* tree-data-ref.c (analyze_subscript_affine_affine): Correctly
+	compute the first overlapping iterations.
+
+2004-11-12  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	PR middle-end/18005
+	* tree-data-ref.c (estimate_niter_from_size_of_data): Ensure 
+	that arguments of EXACT_DIV_EXPR are INTEGER_CST.
+
 2004-11-12  Steven Bosscher  <stevenb@suse.de>
 
 	PR tree-optimization/18419
