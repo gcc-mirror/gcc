@@ -915,6 +915,15 @@ allocate_dynamic_stack_space (size, target, known_align)
      rtx target;
      int known_align;
 {
+  /* If we're asking for zero bytes, it doesn't matter what we point
+     to since we can't derefference it.  But return a reasonable
+     address anyway.  */
+  if (size == const0_rtx)
+    return virtual_stack_dynamic_rtx;
+
+  /* Otherwise, show we're calling alloca or equivalent.  */
+  current_function_calls_alloca = 1;
+
   /* Ensure the size is in the proper mode.  */
   if (GET_MODE (size) != VOIDmode && GET_MODE (size) != Pmode)
     size = convert_to_mode (Pmode, size, 1);
@@ -1060,6 +1069,10 @@ allocate_dynamic_stack_space (size, target, known_align)
   if (HAVE_probe)
     emit_insn (gen_probe ());
 #endif
+
+  /* Record the new stack level for nonlocal gotos.  */
+  if (nonlocal_goto_handler_slot != 0)
+    emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level, NULL_RTX);
 
   return target;
 }
