@@ -34,25 +34,25 @@ copy=cp
 # With GNU ld
 AC_ARG_WITH(gnu-ld,
 [  --with-gnu-ld           arrange to work with GNU ld.],
-gnu_ld=yes,
+gnu_ld="$with_gnu_ld",
 gnu_ld=no)
 
 # With GNU as
 AC_ARG_WITH(gnu-as,
 [  --with-gnu-as           arrange to work with GNU as.],
-gas=yes,
+gas="$with_gnu_as",
 gas=no)
 
 # With stabs
 AC_ARG_WITH(stabs,
 [  --with-stabs            arrange to use stabs instead of host debug format.],
-stabs=yes,
+stabs="$with_stabs",
 stabs=no)
 
 # With ELF
 AC_ARG_WITH(elf,
 [  --with-elf              arrange to use ELF instead of host debug format.],
-elf=yes,
+elf="$with_elf",
 elf=no)
 
 # Specify the local prefix
