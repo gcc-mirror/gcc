@@ -122,7 +122,7 @@
 
 ;; ??? Fix everything that tests this attribute.
 (define_attr "cpu"
-  "default,r3000,r3900,r6000,r4000,r4100,r4121,r4300,r4320,r4600,r4650,r5000,r5400,r5500,r8000,sr71000,r4kc,r5kc,r20kc"
+  "default,r3000,r3900,r6000,r4000,r4100,r4121,r4300,r4600,r4650,r5000,r5400,r5500,r8000,sr71000,r4kc,r5kc,r20kc"
   (const (symbol_ref "mips_cpu_attr")))
 
 ;; Does the instruction have a mandatory delay slot?
@@ -207,12 +207,12 @@
 
 (define_function_unit "memory" 1 0
   (and (eq_attr "type" "load")
-       (eq_attr "cpu" "!r3000,r3900,r4600,r4650,r4100,r4121,r4300,r4320,r5000"))
+       (eq_attr "cpu" "!r3000,r3900,r4600,r4650,r4100,r4121,r4300,r5000"))
   3 0)
 
 (define_function_unit "memory" 1 0
   (and (eq_attr "type" "load")
-       (eq_attr "cpu" "r3000,r3900,r4600,r4650,r4100,r4121,r4300,r4320,r5000"))
+       (eq_attr "cpu" "r3000,r3900,r4600,r4650,r4100,r4121,r4300,r5000"))
   2 0)
 
 (define_function_unit "memory"   1 0 (eq_attr "type" "store") 1 0)
@@ -225,7 +225,7 @@
 
 (define_function_unit "imuldiv"  1 0
   (and (eq_attr "type" "imul,imadd")
-       (eq_attr "cpu" "!r3000,r3900,r4000,r4600,r4650,r4100,r4121,r4300,r4320,r5000"))
+       (eq_attr "cpu" "!r3000,r3900,r4000,r4600,r4650,r4100,r4121,r4300,r5000"))
   17 17)
 
 ;; On them mips16, we want to stronly discourage a mult from appearing
@@ -262,12 +262,12 @@
 
 (define_function_unit "imuldiv"  1 0
   (and (eq_attr "type" "imul,imadd")
-       (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4300,r4320,r5000")))
+       (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4300,r5000")))
   5 5)
 
 (define_function_unit "imuldiv"  1 0
   (and (eq_attr "type" "imul,imadd")
-       (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4300,r4320")))
+       (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4300")))
   8 8)
 
 (define_function_unit "imuldiv"  1 0
@@ -277,7 +277,7 @@
 
 (define_function_unit "imuldiv"  1 0
   (and (eq_attr "type" "idiv")
-       (eq_attr "cpu" "!r3000,r3900,r4000,r4600,r4650,r4100,r4121,r4300,r4320,r5000"))
+       (eq_attr "cpu" "!r3000,r3900,r4000,r4600,r4650,r4100,r4121,r4300,r5000"))
   38 38)
 
 (define_function_unit "imuldiv"  1 0
@@ -308,12 +308,12 @@
 
 (define_function_unit "imuldiv" 1 0
   (and (eq_attr "type" "idiv")
-       (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4300,r4320")))
+       (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4300")))
   37 37)
 
 (define_function_unit "imuldiv" 1 0
   (and (eq_attr "type" "idiv")
-       (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4300,r4320")))
+       (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4300")))
   69 69)
 
 (define_function_unit "imuldiv" 1 0
@@ -334,7 +334,7 @@
 ;; instructions to be processed in the "imuldiv" unit.
 
 (define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "!r3000,r3900,r6000,r4300,r4320,r5000"))
+  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "!r3000,r3900,r6000,r4300,r5000"))
   3 0)
 
 (define_function_unit "adder" 1 1
@@ -346,7 +346,7 @@
   1 0)
 
 (define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fadd") (eq_attr "cpu" "!r3000,r3900,r6000,r4300,r4320"))
+  (and (eq_attr "type" "fadd") (eq_attr "cpu" "!r3000,r3900,r6000,r4300"))
   4 0)
 
 (define_function_unit "adder" 1 1
@@ -359,7 +359,7 @@
 
 (define_function_unit "adder" 1 1
   (and (eq_attr "type" "fabs,fneg")
-       (eq_attr "cpu" "!r3000,r3900,r4600,r4650,r4300,r4320,r5000"))
+       (eq_attr "cpu" "!r3000,r3900,r4600,r4650,r4300,r5000"))
   2 0)
 
 (define_function_unit "adder" 1 1
@@ -369,7 +369,7 @@
 (define_function_unit "mult" 1 1
   (and (eq_attr "type" "fmul")
        (and (eq_attr "mode" "SF")
-	    (eq_attr "cpu" "!r3000,r3900,r6000,r4600,r4650,r4300,r4320,r5000")))
+	    (eq_attr "cpu" "!r3000,r3900,r6000,r4600,r4650,r4300,r5000")))
   7 0)
 
 (define_function_unit "mult" 1 1
@@ -389,7 +389,7 @@
 
 (define_function_unit "mult" 1 1
   (and (eq_attr "type" "fmul")
-       (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r3000,r3900,r6000,r4300,r4320,r5000")))
+       (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r3000,r3900,r6000,r4300,r5000")))
   8 0)
 
 (define_function_unit "mult" 1 1
@@ -405,7 +405,7 @@
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fdiv")
        (and (eq_attr "mode" "SF")
-	    (eq_attr "cpu" "!r3000,r3900,r6000,r4600,r4650,r4300,r4320,r5000")))
+	    (eq_attr "cpu" "!r3000,r3900,r6000,r4600,r4650,r4300,r5000")))
   23 0)
 
 (define_function_unit "divide" 1 1
@@ -431,7 +431,7 @@
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fdiv")
        (and (eq_attr "mode" "DF")
-	    (eq_attr "cpu" "!r3000,r3900,r6000,r4600,r4650,r4300,r4320")))
+	    (eq_attr "cpu" "!r3000,r3900,r6000,r4600,r4650,r4300")))
   36 0)
 
 (define_function_unit "divide" 1 1
@@ -452,7 +452,7 @@
 ;;; ??? Is this number right?
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fsqrt,frsqrt")
-       (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r4600,r4650,r4300,r4320,r5000")))
+       (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r4600,r4650,r4300,r5000")))
   54 0)
 
 (define_function_unit "divide" 1 1
@@ -468,7 +468,7 @@
 ;;; ??? Is this number right?
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fsqrt,frsqrt")
-       (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r4600,r4650,r4300,r4320,r5000")))
+       (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r4600,r4650,r4300,r5000")))
   112 0)
 
 (define_function_unit "divide" 1 1
@@ -485,27 +485,27 @@
 ;; functional unit:
 
 (define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "fadd") (eq_attr "cpu" "r4300,r4320"))
+  (and (eq_attr "type" "fadd") (eq_attr "cpu" "r4300"))
   3 3)
 
 (define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "fcmp,fabs,fneg") (eq_attr "cpu" "r4300,r4320"))
+  (and (eq_attr "type" "fcmp,fabs,fneg") (eq_attr "cpu" "r4300"))
   1 1)
 
 (define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4300,r4320")))
+  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4300")))
   5 5)
 (define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4300,r4320")))
+  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4300")))
   8 8)
 
 (define_function_unit "imuldiv" 1 0
   (and (and (eq_attr "type" "fdiv") (eq_attr "type" "fsqrt,frsqrt"))
-       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4300,r4320")))
+       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4300")))
   29 29)
 (define_function_unit "imuldiv" 1 0
   (and (and (eq_attr "type" "fdiv") (eq_attr "type" "fsqrt,frsqrt"))
-       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4300,r4320")))
+       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4300")))
   58 58)
 
 ;; The following functional units do not use the cpu type, and use
@@ -1694,8 +1694,7 @@
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "
 {
-  if (!TARGET_MIPS4300
-      && !TARGET_MIPS4320)
+  if (!TARGET_MIPS4300)
     emit_insn (gen_muldf3_internal (operands[0], operands[1], operands[2]));
   else
     emit_insn (gen_muldf3_r4300 (operands[0], operands[1], operands[2]));
@@ -1706,8 +1705,7 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(mult:DF (match_operand:DF 1 "register_operand" "f")
 		 (match_operand:DF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
-   && !TARGET_MIPS4300 &&!TARGET_MIPS4320"
+  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && !TARGET_MIPS4300"
   "mul.d\\t%0,%1,%2"
   [(set_attr "type"	"fmul")
    (set_attr "mode"	"DF")])
@@ -1716,8 +1714,7 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(mult:DF (match_operand:DF 1 "register_operand" "f")
 		 (match_operand:DF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
-   && (TARGET_MIPS4300 || TARGET_MIPS4320)"
+  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && TARGET_MIPS4300"
   "*
 {
   output_asm_insn (\"mul.d\\t%0,%1,%2\", operands);
@@ -1736,7 +1733,7 @@
   "TARGET_HARD_FLOAT"
   "
 {
-  if (!TARGET_MIPS4300 && !TARGET_MIPS4320)
+  if (!TARGET_MIPS4300)
     emit_insn( gen_mulsf3_internal (operands[0], operands[1], operands[2]));
   else
     emit_insn( gen_mulsf3_r4300 (operands[0], operands[1], operands[2]));
@@ -1747,8 +1744,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(mult:SF (match_operand:SF 1 "register_operand" "f")
 		 (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT
-   && !TARGET_MIPS4300 && !TARGET_MIPS4320"
+  "TARGET_HARD_FLOAT && !TARGET_MIPS4300"
   "mul.s\\t%0,%1,%2"
   [(set_attr "type"	"fmul")
    (set_attr "mode"	"SF")])
@@ -1757,8 +1753,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(mult:SF (match_operand:SF 1 "register_operand" "f")
 		 (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT
-   && (TARGET_MIPS4300 || TARGET_MIPS4320)"
+  "TARGET_HARD_FLOAT && TARGET_MIPS4300"
   "*
 {
   output_asm_insn (\"mul.s\\t%0,%1,%2\", operands);
@@ -1809,7 +1804,6 @@
   if (TARGET_MAD
       || TARGET_MIPS5400
       || TARGET_MIPS5500
-      || TARGET_MIPS4320
       || ISA_MIPS32
       || ISA_MIPS64)
     return \"mul\\t%0,%1,%2\";
@@ -1874,7 +1868,6 @@
    (clobber (match_scratch:SI 6 "=a,a,a"))
    (clobber (match_scratch:SI 7 "=X,X,d"))]
   "(TARGET_MIPS3900
-   || TARGET_MIPS4320
    || TARGET_MIPS5400
    || TARGET_MIPS5500
    || ISA_HAS_MADD_MSUB)
@@ -1898,9 +1891,6 @@
       else
         return macc[which_alternative];
     }
-
-  if (TARGET_MIPS4320)
-    return macc[which_alternative];
 
   return madd[which_alternative];
 }"

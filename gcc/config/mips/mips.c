@@ -598,7 +598,6 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
   { "vr4111", PROCESSOR_R4111, 3 },
   { "vr4121", PROCESSOR_R4121, 3 },
   { "vr4300", PROCESSOR_R4300, 3 },
-  { "vr4320", PROCESSOR_R4320, 3 },
   { "r4400", PROCESSOR_R4000, 3 }, /* = r4000 */
   { "r4600", PROCESSOR_R4600, 3 },
   { "orion", PROCESSOR_R4600, 3 }, /* = r4600 */

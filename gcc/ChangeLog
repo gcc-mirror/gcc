@@ -1,5 +1,13 @@
 2002-10-01  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (PROCESSOR_R4320, TARGET_MIPS4320): Remove.
+	(GENERATE_MULT3_SI): Remove use of TARGET_MIPS4320.
+	* config/mips/mips.c (mips_cpu_info): Remove vr4320 entry.
+	* config/mips/mips.md (define_attr cpu): Remove r4320.
+	Remove vr4320 scheduler and uses of TARGET_MIPS4320.
+
+2002-10-01  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c (mips16_strings): New variable.
 	(mips_output_function_epilogue): Clear the SYMBOL_REF_FLAG of every
 	symbol in mips16_strings.  Free the list.
