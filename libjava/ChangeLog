@@ -1,3 +1,7 @@
+1999-11-05  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natThread.cc (destroy): Removed incorrect comment.
+
 1999-11-05  Jeff Sturm  <jsturm@sigma6.com>
 
 	* boehm.cc (_Jv_GCSetInitialHeapSize): Swapped size & current.

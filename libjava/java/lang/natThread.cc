@@ -104,8 +104,6 @@ java::lang::Thread::currentThread (void)
   return _Jv_ThreadCurrent ();
 }
 
-// FIXME: this is apparently the only way a thread can be removed from
-// a ThreadGroup.  That seems wrong.
 void
 java::lang::Thread::destroy (void)
 {
