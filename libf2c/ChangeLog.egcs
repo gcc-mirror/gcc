@@ -1,3 +1,10 @@
+1998-06-21  Dave Love  <d.love@dl.ac.uk>
+
+	* configure.in (version, target_alias): Define.
+
+	* Makefile.in (version, target_alias, libsubdir): Define.
+	(install): Remove check for libsubdir.
+
 Mon Apr 27 22:52:31 1998  Richard Henderson  <rth@cygnus.com>
 
 	* libU77/ltime_.c: Bounce the ftnint argument through a local time_t.

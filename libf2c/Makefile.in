@@ -26,6 +26,8 @@ SHELL = /bin/sh
 srcdir = @srcdir@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
+target_alias = @target_alias@
+version = @version@
 
 bindir = $(exec_prefix)/bin
 libdir = $(exec_prefix)/lib
@@ -34,6 +36,7 @@ mandir = $(prefix)/man
 infodir = $(prefix)/info
 includedir = $(prefix)/include
 docdir = $(datadir)/doc
+libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(version)
 
 TO_TOPDIR = ..
 
@@ -199,27 +202,6 @@ check:
 	cd libU77; $(MAKE) G77DIR=../../../gcc/ check
 
 install:
-	@if [ x$(libsubdir) = x ]; then \
-	  echo ''; \
-	  echo 'libf2c error: libsubdir environment variable is not'; \
-	  echo '  exported by top-level Makefile.  libg2c.a and g2c.h'; \
-	  echo '  are installed in the directory tree identified named'; \
-	  echo '  by that variable, the same tree in which the gcc-'; \
-	  echo '  specific executables, libraries, and so on are installed.'; \
-	  echo '  Rather than try to extract the name of this tree via'; \
-	  echo '  a kludge, libf2c/Makefile.in simply assumes it is passed'; \
-	  echo '  in as an environment variable.  Someone needs to make'; \
-	  echo '  the appropriate changes to the top-level Makefile.in for'; \
-	  echo '  this to happen.'; \
-	  echo ''; \
-	  echo '  In the meantime, you can try setting libsubdir explicitly'; \
-	  echo '  in the make command line via libsubdir=/foo/lib/gcc-lib/...,'; \
-	  echo '  where foo and ... indicate wherever the cc1 and f771'; \
-	  echo '  executables were installed as part of this overall'; \
-	  echo '  installation process.'; \
-	  echo ''; \
-	  exit 1; \
-	fi
 	$(INSTALL_DATA) $(LIBG2C) $(libsubdir)/$(LIBG2C).n
 	( cd $(libsubdir) ; $(RANLIB) $(LIBG2C).n )
 	mv -f $(libsubdir)/$(LIBG2C).n $(libsubdir)/$(LIBG2C)
