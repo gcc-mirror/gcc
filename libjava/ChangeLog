@@ -1,3 +1,12 @@
+2002-03-15  Anthony Green  <green@redhat.com>
+
+	* configure.in (tool_include_dir): Define.
+	* configure: Rebuilt.
+	* gcj/Makefile.am: Install libgcj-config.h relative to
+	tool_include_dir.
+	* gcj/Makefile: Rebuilt.
+	* gcj/libgcj-config.h: Add warning comment.
+
 2002-03-12  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* configure.host (powerpc*-darwin*): Enable interpreter.

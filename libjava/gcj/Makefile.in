@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -124,21 +124,25 @@ glibjava_CXX = @glibjava_CXX@
 here = @here@
 libgcj_basedir = @libgcj_basedir@
 mkinstalldirs = @mkinstalldirs@
+tool_include_dir = @tool_include_dir@
 
 AUTOMAKE_OPTIONS = foreign
 
 gcjdir = $(includedir)/gcj
-gcj_HEADERS = array.h cni.h field.h javaprims.h method.h libgcj-config.h
+gcj_HEADERS = array.h cni.h field.h javaprims.h method.h
+
+toolgcjdir = @tool_include_dir@/gcj
+toolgcj_HEADERS = libgcj-config.h
 CONFIG_HEADER = ../include/config.h libgcj-config.h
 CONFIG_CLEAN_FILES = 
-HEADERS =  $(gcj_HEADERS)
+HEADERS =  $(gcj_HEADERS) $(toolgcj_HEADERS)
 
 DIST_COMMON =  ./stamp-h2.in Makefile.am Makefile.in libgcj-config.h.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
@@ -193,6 +197,21 @@ uninstall-gcjHEADERS:
 	  rm -f $(DESTDIR)$(gcjdir)/$$p; \
 	done
 
+install-toolgcjHEADERS: $(toolgcj_HEADERS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(toolgcjdir)
+	@list='$(toolgcj_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
+	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(toolgcjdir)/$$p"; \
+	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(toolgcjdir)/$$p; \
+	done
+
+uninstall-toolgcjHEADERS:
+	@$(NORMAL_UNINSTALL)
+	list='$(toolgcj_HEADERS)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(toolgcjdir)/$$p; \
+	done
+
 tags: TAGS
 
 ID: $(HEADERS) $(SOURCES) $(LISP)
@@ -235,7 +254,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -256,20 +275,20 @@ all-recursive-am: libgcj-config.h
 install-exec-am:
 install-exec: install-exec-am
 
-install-data-am: install-gcjHEADERS
+install-data-am: install-gcjHEADERS install-toolgcjHEADERS
 install-data: install-data-am
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-am
-uninstall-am: uninstall-gcjHEADERS
+uninstall-am: uninstall-gcjHEADERS uninstall-toolgcjHEADERS
 uninstall: uninstall-am
 all-am: Makefile $(HEADERS) libgcj-config.h
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
 installdirs:
-	$(mkinstalldirs)  $(DESTDIR)$(gcjdir)
+	$(mkinstalldirs)  $(DESTDIR)$(gcjdir) $(DESTDIR)$(toolgcjdir)
 
 
 mostlyclean-generic:
@@ -302,11 +321,12 @@ maintainer-clean-am:  maintainer-clean-hdr maintainer-clean-tags \
 maintainer-clean: maintainer-clean-am
 
 .PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
-uninstall-gcjHEADERS install-gcjHEADERS tags mostlyclean-tags \
-distclean-tags clean-tags maintainer-clean-tags distdir info-am info \
-dvi-am dvi check check-am installcheck-am installcheck all-recursive-am \
-install-exec-am install-exec install-data-am install-data install-am \
-install uninstall-am uninstall all-redirect all-am all installdirs \
+uninstall-gcjHEADERS install-gcjHEADERS uninstall-toolgcjHEADERS \
+install-toolgcjHEADERS tags mostlyclean-tags distclean-tags clean-tags \
+maintainer-clean-tags distdir info-am info dvi-am dvi check check-am \
+installcheck-am installcheck all-recursive-am install-exec-am \
+install-exec install-data-am install-data install-am install \
+uninstall-am uninstall all-redirect all-am all installdirs \
 mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
