@@ -86,6 +86,23 @@ namespace std
       return (__i < __loc._M_impl->_M_facets_size && __facets[__i]);
     }
 
+  // Routine to access a cache for the locale.  If the cache didn't
+  // exist before, it gets constructed on the fly.
+  template<typename _Facet>
+    inline const __locale_cache<_Facet>&
+    __use_cache(const locale& __loc)
+    {
+      size_t __i = _Facet::id._M_id();
+      if (__builtin_expect(__i >= __loc._M_impl->_M_facets_size,false))
+	__throw_bad_cast();
+      __locale_cache_base* __cache = __loc._M_impl->_M_get_cache(__i);
+      if (__builtin_expect(!__cache, false))
+	{
+	  __cache = new __locale_cache<_Facet>(__loc);
+	  __loc._M_impl->_M_install_cache(__cache, __i);
+	}
+      return static_cast<const __locale_cache<_Facet>&>(*__cache);
+    }
 
   // Stage 1: Determine a conversion specifier.
   template<typename _CharT, typename _InIter>
@@ -769,19 +786,16 @@ namespace std
       _M_convert_int(_OutIter __s, ios_base& __io, _CharT __fill, 
 		     _ValueT __v) const
       {
+	typedef numpunct<_CharT>  __facet_type;
+	typedef __locale_cache<numpunct<_CharT> > __cache_type;
+ 	const locale& __loc = __io._M_getloc();
+	const __cache_type& __lc = __use_cache<__facet_type>(__loc);
+	const _CharT* __lit = __lc._M_atoms_out;
+
 	// Long enough to hold hex, dec, and octal representations.
 	int __ilen = 4 * sizeof(_ValueT);
 	_CharT* __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
 							     * __ilen));
-	// Buildup list of digits given the current ctype.
-	_CharT __lit[_S_end];
-	const locale __loc = __io.getloc();
-	if (__builtin_expect(has_facet<ctype<_CharT> >(__loc), true))
-	  {
-	    const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
-	    __ct.widen(_S_atoms_out, _S_atoms_out + _S_end, __lit);
-	  }
-
 	// [22.2.2.2.2] Stage 1, numeric conversion to character.
 	// Result is returned right-justified in the buffer.
 	int __len;
@@ -789,16 +803,14 @@ namespace std
 	__cs = __cs + __ilen - __len;
 	
 	// Add grouping, if necessary. 
-	const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
-	const string __grouping = __np.grouping();
 	_CharT* __cs2;
-	if (__grouping.size())
+	if (__lc._M_use_grouping)
 	  {
 	    // Grouping can add (almost) as many separators as the
 	    // number of digits, but no more.
 	    __cs2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
 							  * __len * 2));
-	    _M_group_int(__grouping, __np.thousands_sep(), __io, 
+	    _M_group_int(__lc._M_grouping, __lc._M_thousands_sep, __io, 
 			 __cs2, __cs, __len);
 	    __cs = __cs2;
 	  }
@@ -880,6 +892,11 @@ namespace std
 	else if (__prec < static_cast<streamsize>(0))
 	  __prec = static_cast<streamsize>(6);
 
+	typedef numpunct<_CharT>  __facet_type;
+	typedef __locale_cache<numpunct<_CharT> > __cache_type;
+	const locale __loc = __io._M_getloc();
+	const __cache_type& __lc = __use_cache<__facet_type>(__loc);
+
 	// [22.2.2.2.2] Stage 1, numeric conversion to character.
 	int __len;
 	// Long enough for the max format spec.
@@ -923,7 +940,6 @@ namespace std
 
       // [22.2.2.2.2] Stage 2, convert to char_type, using correct
       // numpunct.decimal_point() values for '.' and adding grouping.
-      const locale __loc = __io.getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
 
       _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
@@ -931,23 +947,21 @@ namespace std
       __ctype.widen(__cs, __cs + __len, __ws);
       
       // Replace decimal point.
-      const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
       const _CharT __cdec = __ctype.widen('.');
-      const _CharT __dec = __np.decimal_point();
+      const _CharT __dec = __lc._M_decimal_point;
       const _CharT* __p;
       if (__p = char_traits<_CharT>::find(__ws, __len, __cdec))
 	__ws[__p - __ws] = __dec;
 
       // Add grouping, if necessary. 
       _CharT* __ws2;
-      const string __grouping = __np.grouping();
-      if (__grouping.size())
+      if (__lc._M_use_grouping)
 	{
 	    // Grouping can add (almost) as many separators as the
 	    // number of digits, but no more.
-	    __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
+	    __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
 							  * __len * 2));
-	    _M_group_float(__grouping, __np.thousands_sep(), __p, 
+	    _M_group_float(__lc._M_grouping, __lc._M_thousands_sep, __p,
 			   __ws2, __ws, __len);
 	    __ws = __ws2;
 	}
@@ -981,14 +995,17 @@ namespace std
         }
       else
         {
-          locale __loc = __io.getloc();
-	  const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc); 
+	  typedef numpunct<_CharT>  __facet_type;
+	  typedef __locale_cache<numpunct<_CharT> > __cache_type;
+	  const locale __loc = __io._M_getloc();
+	  const __cache_type& __lc = __use_cache<__facet_type>(__loc);
+
 	  typedef basic_string<_CharT> 	__string_type;
 	  __string_type __name;
           if (__v)
-	    __name = __np.truename();
+	    __name = __lc._M_truename;
           else
-	    __name = __np.falsename();
+	    __name = __lc._M_falsename;
 
 	  const _CharT* __cs = __name.c_str();
 	  int __len = __name.size();
@@ -2443,6 +2460,69 @@ namespace std
       return __write(__s, __ws, __len);
     }
 #endif
+
+  template<typename _CharT>
+    __locale_cache<numpunct<_CharT> >::__locale_cache(const locale& __loc)
+      : _M_truename(0), _M_falsename(0), _M_use_grouping(false),
+	_M_grouping(0)
+    {
+      if (has_facet<numpunct<_CharT> >(__loc))
+	{
+	  const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
+	  _M_decimal_point = __np.decimal_point();
+	  _M_thousands_sep = __np.thousands_sep();
+
+	  string_type __false = __np.falsename();
+	  _CharT* __falsename = new _CharT[__false.length() + 1];
+	  __false.copy(__falsename, __false.length());
+	  __falsename[__false.length()] = _CharT();
+	  _M_falsename = __falsename;
+
+	  string_type __true = __np.truename();
+	  _CharT* __truename = new _CharT[__true.length() + 1];
+	  __true.copy(__truename, __true.length());
+	  __truename[__true.length()] = _CharT();
+	  _M_truename = __truename;
+
+	  string __grouping = __np.grouping();
+	  char* __group = new char[__grouping.length() + 1];
+	  __grouping.copy(__group, __grouping.length());
+	  __group[__grouping.length()] = 0;
+	  _M_grouping = __group;
+
+	  _M_use_grouping = __grouping.length() != 0 
+	    && __grouping.data()[0] != 0;
+	}
+
+      if (has_facet<ctype<_CharT> >(__loc))
+	{
+	  const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
+	  __ct.widen(__num_base::_S_atoms_out,
+		     __num_base::_S_atoms_out + __num_base::_S_end, 
+		     _M_atoms_out);
+	}
+    }
+
+  // Static locale cache initialization.  Only instantiated with char
+  // and wchar_t, so no need to check has_facet.
+  template<typename _CharT>
+    __locale_cache<numpunct<_CharT> >::
+    __locale_cache(const locale& __loc, bool)
+    {
+      // Grab pointers to numpunct static strings
+      const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
+      _M_thousands_sep = __np._M_thousands_sep;
+      _M_decimal_point = __np._M_decimal_point;
+      _M_falsename = __np._M_falsename;
+      _M_truename = __np._M_truename;
+      _M_grouping = __np._M_grouping;
+      _M_use_grouping = false;
+
+      const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
+      __ct.widen(__num_base::_S_atoms_out,
+		 __num_base::_S_atoms_out + __num_base::_S_end, 
+		 _M_atoms_out);
+    }
 
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.  

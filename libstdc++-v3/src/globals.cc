@@ -84,6 +84,11 @@ namespace __gnu_cxx
   fake_facet_vec facet_vec[_GLIBCPP_NUM_FACETS];
   _GLIBCPP_ASM_SYMVER(_ZN9__gnu_cxx9facet_vecE, _ZSt9facet_vec, GLIBCPP_3.2)
 
+  // To support combined facets and caches in facet array
+  typedef char fake_facet_cache_vec[sizeof(locale::facet*)]
+  __attribute__ ((aligned(__alignof__(locale::facet*))));
+  fake_facet_cache_vec facet_cache_vec[2 * _GLIBCPP_NUM_FACETS];
+
   typedef char fake_ctype_c[sizeof(std::ctype<char>)]
   __attribute__ ((aligned(__alignof__(std::ctype<char>))));
   fake_ctype_c ctype_c;
@@ -222,6 +227,17 @@ namespace __gnu_cxx
   __attribute__ ((aligned(__alignof__(messages<wchar_t>))));
   fake_messages_w messages_w;
   _GLIBCPP_ASM_SYMVER(_ZN9__gnu_cxx10messages_wE, _ZSt10messages_w, GLIBCPP_3.2)
+#endif
+
+  // Storage for static C locale caches
+  typedef char fake_locale_cache_np_c[sizeof(std::__locale_cache<numpunct<char> >)]
+  __attribute__ ((aligned(__alignof__(std::__locale_cache<numpunct<char> >))));
+  fake_locale_cache_np_c locale_cache_np_c;
+
+#ifdef _GLIBCPP_USE_WCHAR_T
+  typedef char fake_locale_cache_np_w[sizeof(std::__locale_cache<numpunct<wchar_t> >)]
+  __attribute__ ((aligned(__alignof__(std::__locale_cache<numpunct<wchar_t> >))));
+  fake_locale_cache_np_w locale_cache_np_w;
 #endif
 
   typedef char fake_filebuf[sizeof(stdio_filebuf<char>)]

@@ -49,6 +49,9 @@
 
 namespace std
 {
+  class __locale_cache_base;
+  template<typename _Facet> class __locale_cache;
+
   // 22.1.1 Class locale
   class locale
   {
@@ -72,6 +75,10 @@ namespace std
       friend bool 
       has_facet(const locale&) throw();
  
+    template<typename _Facet>
+      friend const __locale_cache<_Facet>&
+      __use_cache(const locale&);
+
     // Category values:
     // NB: Order must match _S_facet_categories definition in locale.cc
     static const category none		= 0;
@@ -196,6 +203,10 @@ namespace std
       friend bool  
       has_facet(const locale&) throw();
 
+    template<typename _Facet>
+      friend const __locale_cache<_Facet>&
+      __use_cache(const locale&);
+
   private:
     // Data Members.
     _Atomic_word			_M_references;
@@ -266,6 +277,25 @@ namespace std
       inline void 
       _M_init_facet(_Facet* __facet)
       { _M_install_facet(&_Facet::id, __facet);  }
+
+    // Retrieve the cache at __index.  0 is returned if the cache is
+    // missing.  Cache is actually located at __index +
+    // _M_facets_size.  __index must be < _M_facets_size.
+    inline __locale_cache_base*
+      _M_get_cache(size_t __index)
+      {
+	return (__locale_cache_base*)_M_facets[__index + _M_facets_size];
+      }
+
+    // Save the supplied cache at __id.  Assumes _M_get_cache has been
+    // called.
+    void
+    _M_install_cache(__locale_cache_base* __cache, int __id)
+    {
+      _M_facets[__id + _M_facets_size] = 
+	reinterpret_cast<locale::facet*>(__cache);
+    }
+      
   };
 
   template<typename _Facet>

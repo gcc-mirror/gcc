@@ -604,7 +604,7 @@ namespace std
 
     /**
      *  @brief  Locale access
-     *  @return  The locale currently in effect.
+     *  @return  A copy of the current locale.
      *
      *  If @c imbue(loc) has previously been called, then this function
      *  returns @c loc.  Otherwise, it returns a copy of @c std::locale(),
@@ -612,6 +612,16 @@ namespace std
     */
     inline locale 
     getloc() const { return _M_ios_locale; }
+
+    /**
+     *  @brief  Locale access
+     *  @return  A reference to the current locale.
+     *
+     *  Like getloc above, but returns a reference instead of
+     *  generating a copy.
+    */
+    inline const locale& 
+    _M_getloc() const { return _M_ios_locale; }
 
     // [27.4.2.5] ios_base storage functions
     /**

@@ -36,6 +36,7 @@ namespace __gnu_cxx
 
   // Defined in globals.cc.
   extern locale::facet* facet_vec[_GLIBCPP_NUM_FACETS];
+  extern locale::facet* facet_cache_vec[2 * _GLIBCPP_NUM_FACETS];
   extern char* facet_name[6 + _GLIBCPP_NUM_CATEGORIES];
 
   extern std::ctype<char>			ctype_c;
@@ -68,6 +69,11 @@ namespace __gnu_cxx
   extern time_put<wchar_t> 			time_put_w;
   extern std::messages<wchar_t> 		messages_w;
 #endif
+
+  extern std::__locale_cache<numpunct<char> >	locale_cache_np_c;
+#ifdef  _GLIBCPP_USE_WCHAR_T
+  extern std::__locale_cache<numpunct<wchar_t> >	locale_cache_np_w;
+#endif
 } // namespace __gnu_cxx
 
 namespace std
@@ -77,9 +83,13 @@ namespace std
   locale::_Impl::
   ~_Impl() throw()
   {
+    // Clean up facets, then caches.  No cache refcounts for now.
     for (size_t __i = 0; __i < _M_facets_size; ++__i)
       if (_M_facets[__i])
 	_M_facets[__i]->_M_remove_reference();
+    for (size_t __i = _M_facets_size; __i < 2*_M_facets_size; ++__i)
+      if (_M_facets[__i])
+	delete (__locale_cache_base*)_M_facets[__i];
     delete [] _M_facets;
 
     for (size_t __i = 0; 
@@ -94,8 +104,9 @@ namespace std
   {
     try
       { 
-	_M_facets = new facet*[_M_facets_size]; 
-	for (size_t __i = 0; __i < _M_facets_size; ++__i)
+	// Space for facets and matching caches
+	_M_facets = new facet*[2*_M_facets_size]; 
+	for (size_t __i = 0; __i < 2*_M_facets_size; ++__i)
 	  _M_facets[__i] = 0;
       }
     catch(...) 
@@ -129,9 +140,10 @@ namespace std
     locale::facet::_S_create_c_locale(__cloc, __s);
 
     try
-      { 
-	_M_facets = new facet*[_M_facets_size]; 
-	for (size_t __i = 0; __i < _M_facets_size; ++__i)
+      {
+	// Space for facets and matching caches
+	_M_facets = new facet*[2*_M_facets_size]; 
+	for (size_t __i = 0; __i < 2*_M_facets_size; ++__i)
 	  _M_facets[__i] = 0;
       }
     catch(...) 
@@ -214,8 +226,9 @@ namespace std
     locale::facet::_S_create_c_locale(locale::facet::_S_c_locale, 
 				      locale::facet::_S_c_name);
 
-    _M_facets = new(&facet_vec) facet*[_M_facets_size];
-    for (size_t __i = 0; __i < _M_facets_size; ++__i)
+    // Space for facets and matching caches
+    _M_facets = new(&facet_cache_vec) facet*[2*_M_facets_size];
+    for (size_t __i = 0; __i < 2*_M_facets_size; ++__i)
       _M_facets[__i] = 0;
 
     // Name all the categories.
@@ -263,6 +276,25 @@ namespace std
     _M_init_facet(new (&time_put_w) time_put<wchar_t>(1));
     _M_init_facet(new (&messages_w) std::messages<wchar_t>(1));
 #endif 
+
+    // Initialize the static locale caches for C locale.
+
+    locale ltmp(this);		// Doesn't bump refcount
+    _M_add_reference();		// Bump so destructor doesn't trash us
+
+    // These need to be built in static allocated memory.  There must
+    // be a better way to do this!
+    __locale_cache<numpunct<char> >* __lc =
+      new (&locale_cache_np_c) __locale_cache<numpunct<char> >(ltmp, true);
+    _M_facets[numpunct<char>::id._M_id() + _M_facets_size] =
+      reinterpret_cast<locale::facet*>(__lc);
+      
+#ifdef  _GLIBCPP_USE_WCHAR_T
+    __locale_cache<numpunct<wchar_t> >* __wlc =
+      new (&locale_cache_np_w) __locale_cache<numpunct<wchar_t> >(ltmp, true);
+    _M_facets[numpunct<wchar_t>::id._M_id() + _M_facets_size] =
+      reinterpret_cast<locale::facet*>(__wlc);
+#endif    
   }
   
   void
@@ -322,11 +354,16 @@ namespace std
 	    facet** __old = _M_facets;
 	    facet** __new;
 	    const size_t __new_size = __index + 4;
-	    __new = new facet*[__new_size]; 
+	    __new = new facet*[2 * __new_size]; 
 	    for (size_t __i = 0; __i < _M_facets_size; ++__i)
 	      __new[__i] = _M_facets[__i];
 	    for (size_t __i2 = _M_facets_size; __i2 < __new_size; ++__i2)
 	      __new[__i2] = 0;
+	    // Also copy caches and clear extra space
+	    for (size_t __i = 0; __i < _M_facets_size; ++__i)
+	      __new[__i + __new_size] = _M_facets[__i + _M_facets_size];
+	    for (size_t __i2 = _M_facets_size; __i2 < __new_size; ++__i2)
+	      __new[__i2 + __new_size] = 0;
 
 	    _M_facets_size = __new_size;
 	    _M_facets = __new;
