@@ -1,5 +1,9 @@
 Thu Aug 13 20:14:40 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* reload1.c (eliminate_regs_in_insn): Handle another case when
+	eliminating the frame pointer to the hard frame pointer.  Add
+	missing	ep->to_rtx check to one existing case.
+
 	* mips/mips.md (movhi_internal2+2): Fix typo mem:SI -> mem:HI.
 
 Thu Aug 13 17:08:11 1998  Jason Merrill  <jason@yorick.cygnus.com>
