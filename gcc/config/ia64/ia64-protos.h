@@ -52,6 +52,7 @@ extern int call_multiple_values_operation PARAMS((rtx, enum machine_mode));
 extern int predicate_operator PARAMS((rtx, enum machine_mode));
 extern int ia64_move_ok PARAMS((rtx, rtx));
 
+extern void ia64_expand_load_address PARAMS((rtx, rtx));
 extern void ia64_expand_fetch_and_op PARAMS ((enum fetchop_code,
 					      enum machine_mode, rtx []));
 extern void ia64_expand_op_and_fetch PARAMS ((enum fetchop_code,
