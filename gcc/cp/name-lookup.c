@@ -2036,6 +2036,15 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 	  oldval = NULL_TREE;
 	}
 
+      /* It is impossible to overload a built-in function; any
+	 explicit declaration eliminates the built-in declaration.
+	 So, if OLDVAL is a built-in, then we can just pretend it
+	 isn't there.  */
+      if (oldval 
+	  && TREE_CODE (oldval) == FUNCTION_DECL
+	  && DECL_ANTICIPATED (oldval))
+	oldval = NULL_TREE;
+
       *newval = oldval;
       for (tmp = decls.value; tmp; tmp = OVL_NEXT (tmp))
 	{
@@ -2059,33 +2068,18 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 	      else if (compparms (TYPE_ARG_TYPES (TREE_TYPE (new_fn)),
 		  		  TYPE_ARG_TYPES (TREE_TYPE (old_fn))))
 		{
+		  gcc_assert (!DECL_ANTICIPATED (old_fn));
+
 	          /* There was already a non-using declaration in
 		     this scope with the same parameter types. If both
 	             are the same extern "C" functions, that's ok.  */
                   if (decls_match (new_fn, old_fn))
-		    {
-		      /* If the OLD_FN was a builtin, we've seen a real 
-			 declaration in another namespace.  Use it instead.
-			 Set tmp1 to NULL so we can use the existing
-			 OVERLOAD logic at the end of this inner loop.
-		      */
-		      if (DECL_ANTICIPATED (old_fn))
-			{
-			  gcc_assert (! DECL_ANTICIPATED (new_fn));
-			  tmp1 = NULL;
-			}
-		      break;
-		    }
-		  else if (!DECL_ANTICIPATED (old_fn))
-		    {
-		      /* If the OLD_FN was really declared, the
-			 declarations don't match.  */
+		    break;
+		  else
+ 		    {
 		      error ("%qD is already declared in this scope", name);
 		      break;
 		    }
-
-		  /* If the OLD_FN was not really there, just ignore
-		     it and keep going.  */
 		}
 	    }
 

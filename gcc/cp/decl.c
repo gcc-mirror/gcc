@@ -7524,18 +7524,14 @@ grokdeclarator (const cp_declarator *declarator,
 	TYPE_FOR_JAVA (type) = 1;
 
       if (decl_context == FIELD)
-	{
-	  if (constructor_name_p (unqualified_id, current_class_type))
-	    pedwarn ("ISO C++ forbids nested type %qD with same name "
-                     "as enclosing class",
-		     unqualified_id);
-	  decl = build_lang_decl (TYPE_DECL, unqualified_id, type);
-	}
+	decl = build_lang_decl (TYPE_DECL, unqualified_id, type);
       else
+	decl = build_decl (TYPE_DECL, unqualified_id, type);
+      if (id_declarator && declarator->u.id.qualifying_scope)
+	error ("%Jtypedef name may not be a nested-name-specifier", decl);
+
+      if (decl_context != FIELD)
 	{
-	  decl = build_decl (TYPE_DECL, unqualified_id, type);
-	  if (in_namespace || ctype)
-	    error ("%Jtypedef name may not be a nested-name-specifier", decl);
 	  if (!current_function_decl)
 	    DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
 	  else if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (current_function_decl)
@@ -7547,6 +7543,10 @@ grokdeclarator (const cp_declarator *declarator,
 	       clones.  */
 	    DECL_ABSTRACT (decl) = 1;
 	}
+      else if (constructor_name_p (unqualified_id, current_class_type))
+	pedwarn ("ISO C++ forbids nested type %qD with same name "
+		 "as enclosing class",
+		 unqualified_id);
 
       /* If the user declares "typedef struct {...} foo" then the
 	 struct will have an anonymous name.  Fill that name in now.

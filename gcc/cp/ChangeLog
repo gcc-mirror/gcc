@@ -1,5 +1,13 @@
 2005-01-30  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/19395
+	* decl.c (grokdeclarator): Refactor code so that qualified names
+	are never allowed as the declarator in a typedef.
+
+	PR c++/19367
+	* name-lookup.c (do_nonmember_using_decl): Avoid overloading
+	builtin declarations.
+
 	PR c++/19457
 	* call.c (convert_like_real): Inline call to
 	dubious_conversion_warnings here.
