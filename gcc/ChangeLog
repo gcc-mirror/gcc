@@ -1,3 +1,22 @@
+2004-05-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	* combine.c (gen_binary): Remove.
+	(known_cond, simplify_shift_const
+	find_split_point, combine_simplify_rtx,
+	simplify_if_then_else, simplify_set,
+	simplify_logical, expand_field_assignment,
+	extract_left_shift, force_to_mode,
+	if_then_else_cond, apply_distributive_law,
+	simplify_and_const_int, simplify_shift_const,
+	gen_lowpart_for_combine, simplify_comparison,
+	reversed_comparison): Replace with
+	simplify_gen_binary, simplify_gen_relational or
+	distribute_and_simplify_rtx.
+	(distribute_and_simplify_rtx): New function.
+	* simplify-rtx.c (simplify_binary_operation):
+	Use nonzero_bits to simplify ANDs where we are
+	turning off bits already known to be off in OP0.
+
 2004-05-27  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/14478
