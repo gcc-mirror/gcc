@@ -1,3 +1,27 @@
+2004-08-21  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/linux64.h (DOT_SYMBOLS): Define.
+	(CRT_CALL_STATIC_FUNCTION): Define !DOT_SYMBOLS version.
+	(ASM_DECLARE_FUNCTION_SIZE): Modify for !DOT_SYMBOLS.
+	(ASM_OUTPUT_SOURCE_LINE, DBX_OUTPUT_BRAC, DBX_OUTPUT_NFUN): Likewise.
+	(RS6000_ABI_NAME): Define as "linux".
+	(SUBSUBTARGET_OVERRIDE_OPTIONS): Set dot_symbols.
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Select
+	ABI_AIX when rs6000_abi_name is "linux" and TARGET_64BIT.
+	* config/rs6000/rs6000-protos.h (rs6000_output_function_entry): Decl.
+	* config/rs6000/rs6000.c (dot_symbols): New global var.
+	(rs6000_output_function_entry): New function, modified for
+	!DOT_SYMBOLS..
+	(print_operand <case 'z'>): ..extracted from here.
+	(rs6000_assemble_visibility): Modify for !DOT_SYMBOLS.
+	(rs6000_output_function_epilogue): Likewise.
+	(rs6000_elf_declare_function_name): Likewise.
+	* config/rs6000/rs6000.h (DOT_SYMBOLS): Define.
+	(ASM_WEAKEN_DECL, ASM_OUTPUT_DEF_FROM_DECLS): Modify for !DOT_SYMBOLS.
+	* configure.ac (HAVE_LD_NO_DOT_SYMS): Add new AC_DEFINE.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 2004-08-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* reload.c (find_reloads_address): Fix thinko in previous change.
