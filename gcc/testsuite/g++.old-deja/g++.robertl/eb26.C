@@ -6,18 +6,23 @@
 
 class foo
 {
+public:
+  static int f();
+  class bar {
+    friend int foo::f();
+//  friend int f();
+    static int x;
   public:
-   static int f();
-   class bar {
-     friend int foo::f();
-//     friend int f();
-     static int x;
-     public:
-     static int f() {return foo::f();};
+    static int f() {return foo::f();};
    };
 };
 
 int foo::f() {
-   return bar::x;
+  return bar::x;
 }
 
+int
+main ()
+{
+  return foo::bar::f ();
+}

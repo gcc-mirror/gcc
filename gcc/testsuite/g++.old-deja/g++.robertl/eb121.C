@@ -3,7 +3,7 @@ class A {
 private:
   int i1_;
 public:
-  void f(int const i1 = 1); // ERROR -
+  void f(int const i1 = 1); // ERROR - previous specification
 };
 
 void
@@ -19,4 +19,3 @@ main()
   a.f();
   return 0;
 }
-
