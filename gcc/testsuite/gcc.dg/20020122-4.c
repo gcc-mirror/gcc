@@ -6,5 +6,6 @@
 void foo()
 {
   static int test;
-  asm volatile ("" : "=m"(test) : "m"(test));
+  int dummy;
+  asm volatile ("" : "=m"(test), "=r"(dummy) : "m"(test));
 }
