@@ -1789,12 +1789,14 @@ write_c_file (stream, name)
      FILE *stream;
      char *name;
 {
+  fprintf (stream, "#ifdef __cplusplus\nextern \"C\" {\n#endif\n");
 #ifndef LD_INIT_SWITCH
   if (! shared_obj)
     write_c_file_glob (stream, name);
   else
 #endif
     write_c_file_stat (stream, name);
+  fprintf (stream, "#ifdef __cplusplus\n}\n#endif\n");
 }
 
 static void
