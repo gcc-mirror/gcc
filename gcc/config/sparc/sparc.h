@@ -2099,54 +2099,11 @@ extern union tree_node *current_function_decl;
 #define EPILOGUE_USES(REGNO) \
   (!TARGET_FLAT && REGNO == 31)
 
-/* Output assembler code for a block containing the constant parts
-   of a trampoline, leaving space for the variable parts.  */
-
-/* On 32 bit sparcs, the trampoline contains five instructions:
-     sethi #TOP_OF_FUNCTION,%g1
-     or #BOTTOM_OF_FUNCTION,%g1,%g1
-     sethi #TOP_OF_STATIC,%g2
-     jmp g1
-     or #BOTTOM_OF_STATIC,%g2,%g2
-
-  On 64 bit sparcs, the trampoline contains 4 insns and two pseudo-immediate
-  constants (plus some padding):
-     rd %pc,%g1
-     ldx[%g1+20],%g5
-     ldx[%g1+28],%g1
-     jmp %g1
-     nop
-     nop
-     .xword context
-     .xword function  */
-/* ??? Stack is execute-protected in v9.  */
-
-#define TRAMPOLINE_TEMPLATE(FILE) \
-do {									\
-  if (TARGET_ARCH64)							\
-    {									\
-      fprintf (FILE, "\trd %%pc,%%g1\n");				\
-      fprintf (FILE, "\tldx [%%g1+24],%%g5\n");				\
-      fprintf (FILE, "\tldx [%%g1+32],%%g1\n");				\
-      fprintf (FILE, "\tjmp %%g1\n");					\
-      fprintf (FILE, "\tnop\n");					\
-      fprintf (FILE, "\tnop\n");					\
-      /* -mmedlow shouldn't generate .xwords, so don't use them at all */ \
-      fprintf (FILE, "\t.word 0,0,0,0\n");				\
-    }									\
-  else									\
-    {									\
-      ASM_OUTPUT_INT (FILE, const0_rtx);				\
-      ASM_OUTPUT_INT (FILE, const0_rtx);				\
-      ASM_OUTPUT_INT (FILE, const0_rtx);				\
-      ASM_OUTPUT_INT (FILE, GEN_INT (0x81C04000));	\
-      ASM_OUTPUT_INT (FILE, const0_rtx);				\
-    }									\
-} while (0)
-
 /* Length in units of the trampoline for entering a nested function.  */
 
-#define TRAMPOLINE_SIZE (TARGET_ARCH64 ? 40 : 20)
+#define TRAMPOLINE_SIZE (TARGET_ARCH64 ? 32 : 16)
+
+#define TRAMPOLINE_ALIGNMENT 128 /* 16 bytes */
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
@@ -2155,12 +2112,10 @@ do {									\
 void sparc_initialize_trampoline ();
 void sparc64_initialize_trampoline ();
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
-  do {								\
     if (TARGET_ARCH64)						\
       sparc64_initialize_trampoline (TRAMP, FNADDR, CXT);	\
     else							\
-      sparc_initialize_trampoline (TRAMP, FNADDR, CXT);		\
-  } while (0)
+      sparc_initialize_trampoline (TRAMP, FNADDR, CXT)
 
 /* Generate necessary RTL for __builtin_saveregs().
    ARGLIST is the argument list; see expr.c.  */

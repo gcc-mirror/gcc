@@ -2480,7 +2480,7 @@ output_move_quad (operands)
 	      int fix = offset - i * 4;
 
 	      /* Back up to the appropriate place. */
-	      temp[1] = gen_rtx_CONST_INT (VOIDmode, -fix);
+	      temp[1] = GEN_INT (-fix);
 	      if (addreg0)
 		{
 		  temp[0] = addreg0;
@@ -2495,7 +2495,7 @@ output_move_quad (operands)
 			       wordpart[i]);
 	      /* Don't modify the register that's the destination of the
 		 move. */
-	      temp[0] = gen_rtx_CONST_INT (VOIDmode, -(offset - fix));
+	      temp[0] = GEN_INT (-(offset - fix));
 	      if (addreg0 && REGNO (addreg0) != REGNO (wordpart[i][0]))
 		{
 		  temp[1] = addreg0;
@@ -2512,7 +2512,7 @@ output_move_quad (operands)
 	}
       if (offset)
 	{
-	  temp[1] = gen_rtx_CONST_INT (VOIDmode, -offset);
+	  temp[1] = GEN_INT (-offset);
 	  /* Undo the adds we just did.  */
 	  if (addreg0)
 	    {
@@ -2712,6 +2712,17 @@ output_scc_insn (operands, insn)
   rtx label = 0, next = insn;
   int need_label = 0;
 
+  /* This code used to be called with final_sequence nonzero (for fpcc
+     delay slots), but that is no longer allowed.  */
+  if (final_sequence)
+    abort ();
+
+  /* On UltraSPARC a conditional moves blocks until 3 cycles after prior loads
+     complete.  It might be beneficial here to use branches if any recent
+     instructions were loads.  */
+  if (TARGET_V9 && REGNO (operands[1]) == SPARC_ICC_REG)
+    return "mov 0,%0\n\tmov%C2 %x1,1,%0";
+
   /* Try doing a jump optimization which jump.c can't do for us
      because we did not expose that setcc works by using branches.
 
@@ -2724,21 +2735,12 @@ output_scc_insn (operands, insn)
       if (GET_CODE (next) == CODE_LABEL)
 	label = next;
       next = NEXT_INSN (next);
-      if (next == 0)
-	break;
     }
-  while (GET_CODE (next) == NOTE || GET_CODE (next) == CODE_LABEL);
+  while (next && GET_CODE (next) == NOTE || GET_CODE (next) == CODE_LABEL);
 
-  /* If we are in a sequence, and the following insn is a sequence also,
-     then just following the current insn's next field will take us to the
-     first insn of the next sequence, which is the wrong place.  We don't
-     want to optimize with a branch that has had its delay slot filled.
-     Avoid this by verifying that NEXT_INSN (PREV_INSN (next)) == next
-     which fails only if NEXT is such a branch.  */
-
-  if (next && GET_CODE (next) == JUMP_INSN && simplejump_p (next)
-      && (! final_sequence || NEXT_INSN (PREV_INSN (next)) == next))
+  if (next && GET_CODE (next) == JUMP_INSN && simplejump_p (next))
     label = JUMP_LABEL (next);
+
   /* If not optimizing, jump label fields are not set.  To be safe, always
      check here to whether label is still zero.  */
   if (label == 0)
@@ -2752,35 +2754,8 @@ output_scc_insn (operands, insn)
   /* operands[3] is an unused slot.  */
   operands[3] = label;
 
-  /* If we are in a delay slot, assume it is the delay slot of an fpcc
-     insn since our type isn't allowed anywhere else.  */
-
-  /* ??? Fpcc instructions no longer have delay slots, so this code is
-     probably obsolete.  */
-
-  /* The fastest way to emit code for this is an annulled branch followed
-     by two move insns.  This will take two cycles if the branch is taken,
-     and three cycles if the branch is not taken.
-
-     However, if we are in the delay slot of another branch, this won't work,
-     because we can't put a branch in the delay slot of another branch.
-     The above sequence would effectively take 3 or 4 cycles respectively
-     since a no op would have be inserted between the two branches.
-     In this case, we want to emit a move, annulled branch, and then the
-     second move.  This sequence always takes 3 cycles, and hence is faster
-     when we are in a branch delay slot.  */
-
-  if (final_sequence)
-    {
-      strcpy (string, "mov 0,%0\n\t");
-      strcat (string, output_cbranch (operands[2], 3, 0, 1, 0));
-      strcat (string, "\n\tmov 1,%0");
-    }
-  else
-    {
-      strcpy (string, output_cbranch (operands[2], 3, 0, 1, 0));
-      strcat (string, "\n\tmov 1,%0\n\tmov 0,%0");
-    }
+  strcpy (string, output_cbranch (operands[2], 3, 0, 1, 0));
+  strcat (string, "\n\tmov 1,%0\n\tmov 0,%0");
 
   if (need_label)
     strcat (string, "\n%l3:");
@@ -4380,13 +4355,16 @@ sparc_builtin_saveregs (arglist)
 
    ANNUL is non-zero if we should generate an annulling branch.
 
-   NOOP is non-zero if we have to follow this branch by a noop.  */
+   NOOP is non-zero if we have to follow this branch by a noop.
+
+   INSN, if set, is the insn.  */
 
 char *
-output_cbranch (op, label, reversed, annul, noop)
+output_cbranch (op, label, reversed, annul, noop, insn)
      rtx op;
      int label;
      int reversed, annul, noop;
+     rtx insn;
 {
   static char string[20];
   enum rtx_code code = GET_CODE (op);
@@ -4506,8 +4484,6 @@ output_cbranch (op, label, reversed, annul, noop)
   if (annul)
     strcat (string, ",a");
 
-  /* ??? If v9, optional prediction bit ",pt" or ",pf" goes here.  */
-
   if (! TARGET_V9)
     {
       labeloff = 3;
@@ -4515,6 +4491,11 @@ output_cbranch (op, label, reversed, annul, noop)
     }
   else
     {
+      rtx note;
+
+      if (insn && (note = find_reg_note (insn, REG_BR_PRED, NULL_RTX)))
+	strcat (string, INTVAL (XEXP (note, 0)) & ATTR_FLAG_likely ? ",pt" : ",pn");
+
       labeloff = 9;
       if (mode == CCFPmode || mode == CCFPEmode)
 	{
@@ -5372,34 +5353,49 @@ void
 sparc_initialize_trampoline (tramp, fnaddr, cxt)
      rtx tramp, fnaddr, cxt;
 {
-  rtx high_cxt = expand_shift (RSHIFT_EXPR, SImode, cxt,
-			      size_int (10), 0, 1);
-  rtx high_fn = expand_shift (RSHIFT_EXPR, SImode, fnaddr,
-			     size_int (10), 0, 1);
-  rtx low_cxt = expand_and (cxt, GEN_INT (0x3ff), 0);
-  rtx low_fn = expand_and (fnaddr, GEN_INT (0x3ff), 0);
-  rtx g1_sethi = gen_rtx_HIGH (SImode, GEN_INT (0x03000000));
-  rtx g2_sethi = gen_rtx_HIGH (SImode, GEN_INT (0x05000000));
-  rtx g1_ori = gen_rtx_HIGH (SImode, GEN_INT (0x82106000));
-  rtx g2_ori = gen_rtx_HIGH (SImode, GEN_INT (0x8410A000));
-  rtx tem = gen_reg_rtx (SImode);
-  emit_move_insn (tem, g1_sethi);
-  emit_insn (gen_iorsi3 (high_fn, high_fn, tem));
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 0)), high_fn);
-  emit_move_insn (tem, g1_ori);
-  emit_insn (gen_iorsi3 (low_fn, low_fn, tem));
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 4)), low_fn);
-  emit_move_insn (tem, g2_sethi);
-  emit_insn (gen_iorsi3 (high_cxt, high_cxt, tem));
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 8)), high_cxt);
-  emit_move_insn (tem, g2_ori);
-  emit_insn (gen_iorsi3 (low_cxt, low_cxt, tem));
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 16)), low_cxt);
+  /* SPARC 32 bit trampoline:
+
+ 	sethi %hi(fn),%g1
+ 	sethi %hi(static),%g2
+ 	jmp %g1+%lo(fn)
+ 	or %g2,%lo(static),%g2
+
+    SETHI i,r  = 00rr rrr1 00ii iiii iiii iiii iiii iiii
+    JMPL r+i,d = 10dd ddd1 1100 0rrr rr1i iiii iiii iiii
+   */
+
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 0)),
+		  expand_binop (SImode, ior_optab,
+				expand_shift (RSHIFT_EXPR, SImode, fnaddr,
+					      size_int (10), 0, 1),
+				GEN_INT (0x03000000),
+				NULL_RTX, 1, OPTAB_DIRECT));
+
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 4)),
+		  expand_binop (SImode, ior_optab,
+				expand_shift (RSHIFT_EXPR, SImode, cxt,
+					      size_int (10), 0, 1),
+				GEN_INT (0x05000000),
+				NULL_RTX, 1, OPTAB_DIRECT));
+
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 8)),
+		  expand_binop (SImode, ior_optab,
+				expand_and (fnaddr, GEN_INT (0x3ff), NULL_RTX),
+				GEN_INT (0x81c06000),
+				NULL_RTX, 1, OPTAB_DIRECT));
+
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 12)),
+		  expand_binop (SImode, ior_optab,
+				expand_and (cxt, GEN_INT (0x3ff), NULL_RTX),
+				GEN_INT (0x8410a000),
+				NULL_RTX, 1, OPTAB_DIRECT));
+
   emit_insn (gen_flush (validize_mem (gen_rtx_MEM (SImode, tramp))));
-  emit_insn (gen_flush (validize_mem (gen_rtx_MEM (SImode,
-					       plus_constant (tramp, 8)))));
-  emit_insn (gen_flush (validize_mem (gen_rtx_MEM (SImode,
-					       plus_constant (tramp, 16)))));
+  /* On UltraSPARC a flush flushes an entire cache line.  The trampoline is
+     aligned on a 16 byte boundary so one flush clears it all.  */
+  if (sparc_cpu != PROCESSOR_ULTRASPARC)
+    emit_insn (gen_flush (validize_mem (gen_rtx_MEM (SImode,
+						     plus_constant (tramp, 8)))));
 }
 
 /* The 64 bit version is simpler because it makes more sense to load the
@@ -5410,17 +5406,27 @@ void
 sparc64_initialize_trampoline (tramp, fnaddr, cxt)
      rtx tramp, fnaddr, cxt;
 {
-  emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, 24)), cxt);
-  emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, 32)), fnaddr);
+  /*
+	rd %pc,%g1
+	ldx [%g1+24],%g5
+	jmp %g5
+	ldx [%g1+16],%g5
+	+16 bytes data
+   */
+
+  emit_move_insn (gen_rtx_MEM (SImode, tramp),
+		  GEN_INT (0x83414000));
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 4)),
+		  GEN_INT (0xca586018));
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 8)),
+		  GEN_INT (0x81c04000));
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 12)),
+		  GEN_INT (0xca586010));
+  emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, 16)), cxt);
+  emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, 20)), fnaddr);
   emit_insn (gen_flush (validize_mem (gen_rtx_MEM (DImode, tramp))));
-  emit_insn (gen_flush (validize_mem (gen_rtx_MEM (DImode,
-					       plus_constant (tramp, 8)))));
-  emit_insn (gen_flush (validize_mem (gen_rtx_MEM (DImode,
-					       plus_constant (tramp, 16)))));
-  emit_insn (gen_flush (validize_mem (gen_rtx_MEM (DImode,
-					       plus_constant (tramp, 24)))));
-  emit_insn (gen_flush (validize_mem (gen_rtx_MEM (DImode,
-					       plus_constant (tramp, 32)))));
+  if (sparc_cpu != PROCESSOR_ULTRASPARC)
+    emit_insn (gen_flush (validize_mem (gen_rtx_MEM (DImode, plus_constant (tramp, 8)))));
 }
 
 /* Subroutines to support a flat (single) register window calling
@@ -6438,10 +6444,17 @@ sparc_v8plus_shift (operands, insn, opcode)
 
   if (GET_CODE (operands[3]) == SCRATCH)
     operands[3] = operands[0];
-  output_asm_insn ("sllx %H1,32,%3", operands);
-  if (sparc_check_64 (operands[1], insn) <= 0)
-    output_asm_insn ("srl %L1,0,%L1", operands);
-  output_asm_insn ("or %L1,%3,%3", operands);
+  if (GET_CODE (operands[1]) == CONST_INT)
+    {
+      output_asm_insn ("mov %1,%3", operands);
+    }
+  else
+    {
+      output_asm_insn ("sllx %H1,32,%3", operands);
+      if (sparc_check_64 (operands[1], insn) <= 0)
+	output_asm_insn ("srl %L1,0,%L1", operands);
+      output_asm_insn ("or %L1,%3,%3", operands);
+    }
 
   strcpy(asm_code, opcode);
   if (which_alternative != 2)

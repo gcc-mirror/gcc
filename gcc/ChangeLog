@@ -1,3 +1,12 @@
+Mon Jul 13 16:15:10 1998  John Carr  <jfc@mit.edu>
+
+	* sparc.c, sparc.h, sparc.md: New trampoline code.
+	Allow integer operand 1 to V8+ DImode shift instructions.
+	Fix bugs in V8+ wide multiply patterns.
+	In 32 bit mode, split DImode register moves and logical instructions. 
+	Write V9 branch prediction flag.
+	Use V9 conditional move more often for scc.
+
 Mon Jul 13 15:10:09 1998  Philippe De Muyter  <phdm@macqel.be>
 
 	* invoke.texi(-fno-builtin): Explain that the names of built-in

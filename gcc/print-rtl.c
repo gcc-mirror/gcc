@@ -253,8 +253,7 @@ print_rtx (in_rtx)
 
       case 't':
 	putc (' ', outfile);
-	fprintf (outfile, HOST_WIDE_INT_PRINT_HEX,
-		 (HOST_WIDE_INT) XTREE (in_rtx, i));
+	fprintf (outfile, HOST_PTR_PRINTF, (char *) XTREE (in_rtx, i));
 	break;
 
       case '*':

@@ -1308,6 +1308,22 @@
   [(set_attr "type" "multi")
    (set_attr "length" "3")])
 
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(match_operator:SI 2 "noov_compare_op"
+			   [(match_operand 1 "icc_or_fcc_reg_operand" "")
+			    (const_int 0)]))]
+  ;; 32 bit LTU/GEU are better implemented using addx/subx
+  "TARGET_V9 && REGNO (operands[1]) == SPARC_ICC_REG
+   && (GET_MODE (operands[1]) == CCXmode
+       || (GET_CODE (operands[2]) != LTU && GET_CODE (operands[2]) != GEU))"
+  [(set (match_dup 0) (const_int 0))
+   (set (match_dup 0)
+	(if_then_else:SI (match_op_dup:SI 2 [(match_dup 1) (const_int 0)])
+			 (const_int 1)
+			 (match_dup 0)))]
+  "")
+
 (define_insn "*scc_di"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(match_operator:DI 2 "noov_compare_op"
@@ -1521,7 +1537,7 @@
 {
   return output_cbranch (operands[0], 1, 0,
 			 final_sequence && INSN_ANNULLED_BRANCH_P (insn),
-			 ! final_sequence);
+			 ! final_sequence, insn);
 }"
   [(set_attr "type" "branch")])
 
@@ -1536,7 +1552,7 @@
 {
   return output_cbranch (operands[0], 1, 1,
 			 final_sequence && INSN_ANNULLED_BRANCH_P (insn),
-			 ! final_sequence);
+			 ! final_sequence, insn);
 }"
   [(set_attr "type" "branch")])
 
@@ -1552,7 +1568,7 @@
 {
   return output_cbranch (operands[1], 2, 0,
 			 final_sequence && INSN_ANNULLED_BRANCH_P (insn),
-			 ! final_sequence);
+			 ! final_sequence, insn);
 }"
   [(set_attr "type" "branch")])
 
@@ -1568,7 +1584,7 @@
 {
   return output_cbranch (operands[1], 2, 1,
 			 final_sequence && INSN_ANNULLED_BRANCH_P (insn),
-			 ! final_sequence);
+			 ! final_sequence, insn);
 }"
   [(set_attr "type" "branch")])
 
@@ -1584,7 +1600,7 @@
 {
   return output_cbranch (operands[1], 2, 0,
 			 final_sequence && INSN_ANNULLED_BRANCH_P (insn),
-			 ! final_sequence);
+			 ! final_sequence, insn);
 }"
   [(set_attr "type" "branch")])
 
@@ -1600,7 +1616,7 @@
 {
   return output_cbranch (operands[1], 2, 1,
 			 final_sequence && INSN_ANNULLED_BRANCH_P (insn),
-			 ! final_sequence);
+			 ! final_sequence, insn);
 }"
   [(set_attr "type" "branch")])
 
@@ -2239,6 +2255,20 @@
    PUT_MODE (operands[4], SImode);
    operands[2] = copy_rtx (operands[0]);
    PUT_MODE (operands[2], SImode);")
+
+;; Split register to register moves.
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(match_operand:DI 1 "arith_double_operand" "rIN"))]
+  "! TARGET_ARCH64 && GET_CODE (operands[1]) == REG && REGNO (operands[0]) < 32
+   && (GET_CODE (operands[1]) != REG || REGNO (operands[1]) < 32)
+   && ! reg_overlap_mentioned_p (operands[0], operands[1])"
+  [(set (match_dup 2) (match_dup 4))
+   (set (match_dup 3) (match_dup 5))]
+  "operands[2] = gen_highpart (SImode, operands[0]);
+   operands[3] = gen_lowpart (SImode, operands[0]);
+   operands[4] = gen_highpart (SImode, operands[1]);
+   operands[5] = gen_lowpart (SImode, operands[1]);")
 
 (define_insn "*movdi_sp32"
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand" "=r,T,U,Q,r,r,?f,?f,?Q")
@@ -3217,7 +3247,7 @@
 if (which_alternative == 1)
   return \"st %1,%0\";
 if (sparc_check_64 (operands[1], insn) > 0)
-  return \"nop\";
+  return final_sequence ? \"nop\" : \"\";
 return \"srl %1,0,%0\";
 "
   [(set_attr "type" "shift,store")])
@@ -3639,7 +3669,7 @@ return \"srl %1,0,%0\";
 				   gen_rtx_PLUS (DImode, operands[1],
 						 operands[2])),
 			  gen_rtx_CLOBBER (VOIDmode,
-				   gen_rtx_REG (SImode, SPARC_ICC_REG)))));
+				   gen_rtx_REG (CCmode, SPARC_ICC_REG)))));
       DONE;
     }
 }")
@@ -3648,7 +3678,7 @@ return \"srl %1,0,%0\";
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI (match_operand:DI 1 "arith_double_operand" "%r")
 		 (match_operand:DI 2 "arith_double_operand" "rHI")))
-   (clobber (reg:SI 100))]
+   (clobber (reg:CC 100))]
   "! TARGET_ARCH64"
   "*
 {
@@ -3681,7 +3711,7 @@ return \"srl %1,0,%0\";
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI (match_operand:DI 1 "arith_double_operand" "%r")
 		 (match_operand:DI 2 "arith_double_operand" "rHI")))
-   (clobber (reg:SI 100))]
+   (clobber (reg:CC 100))]
   "! TARGET_ARCH64 && reload_completed"
   [(parallel [(set (reg:CC_NOOV 100)
 		   (compare:CC_NOOV (plus:SI (match_dup 4)
@@ -3698,16 +3728,13 @@ return \"srl %1,0,%0\";
    operands[5] = gen_lowpart (SImode, operands[2]);
    operands[6] = gen_highpart (SImode, operands[0]);
    operands[7] = gen_highpart (SImode, operands[1]);
-   if (GET_CODE (operands[2]) == CONST_INT)
-     operands[8] = INTVAL (operands[2]) < 0 ? constm1_rtx : const0_rtx;
-   else
-     operands[8] = gen_highpart (SImode, operands[2]);")
+   operands[8] = gen_highpart (SImode, operands[2]);")
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(minus:DI (match_operand:DI 1 "arith_double_operand" "r")
 		  (match_operand:DI 2 "arith_double_operand" "rHI")))
-   (clobber (reg:SI 100))]
+   (clobber (reg:CC 100))]
   "! TARGET_ARCH64 && reload_completed"
   [(parallel [(set (reg:CC_NOOV 100)
 		   (compare:CC_NOOV (minus:SI (match_dup 4)
@@ -3749,7 +3776,7 @@ return \"srl %1,0,%0\";
   [(set (match_operand:DI 0 "register_operand" "=r")
       (plus:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
                (match_operand:DI 2 "register_operand" "r")))
-   (clobber (reg:SI 100))]
+   (clobber (reg:CC 100))]
   "! TARGET_ARCH64"
   "addcc %L2,%1,%L0\;addx %H2,0,%H0"
   [(set_attr "type" "multi")])
@@ -3823,7 +3850,7 @@ return \"srl %1,0,%0\";
 				   gen_rtx_MINUS (DImode, operands[1],
 						  operands[2])),
 			  gen_rtx_CLOBBER (VOIDmode,
-				   gen_rtx_REG (SImode, SPARC_ICC_REG)))));
+				   gen_rtx_REG (CCmode, SPARC_ICC_REG)))));
       DONE;
     }
 }")
@@ -3832,7 +3859,7 @@ return \"srl %1,0,%0\";
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(minus:DI (match_operand:DI 1 "register_operand" "r")
 		  (match_operand:DI 2 "arith_double_operand" "rHI")))
-   (clobber (reg:SI 100))]
+   (clobber (reg:CC 100))]
   "! TARGET_ARCH64"
   "*
 {
@@ -3862,7 +3889,7 @@ return \"srl %1,0,%0\";
   [(set (match_operand:DI 0 "register_operand" "=r")
       (minus:DI (match_operand:DI 1 "register_operand" "r")
                 (zero_extend:DI (match_operand:SI 2 "register_operand" "r"))))
-   (clobber (reg:SI 100))]
+   (clobber (reg:CC 100))]
   "! TARGET_ARCH64"
   "subcc %L1,%2,%L0\;addx %H1,0,%H0"
   [(set_attr "type" "multi")])
@@ -4113,11 +4140,27 @@ return \"srl %1,0,%0\";
    smul %1,%2,%4\;srlx %4,%3,%0"
   [(set_attr "length" "2")])
 
+;; The combiner changes TRUNCATE in the previous pattern to SUBREG.
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=h,r")
+	(subreg:SI
+	 (lshiftrt:DI
+	  (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r,r"))
+		   (sign_extend:DI (match_operand:SI 2 "register_operand" "r,r")))
+	  (match_operand:SI 3 "const_int_operand" "i,i"))
+	 1))
+   (clobber (match_scratch:SI 4 "=X,&h"))]
+  "TARGET_V8PLUS"
+  "@
+   smul %1,%2,%0\;srlx %0,%3,%0
+   smul %1,%2,%4\;srlx %4,%3,%0"
+  [(set_attr "length" "2")])
+
 (define_insn "const_smulsi3_highpart_v8plus"
   [(set (match_operand:SI 0 "register_operand" "=h,r")
 	(truncate:SI
 	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r,r"))
-			       (match_operand:SI 2 "register_operand" "r,r"))
+			       (match_operand 2 "small_int" "i,i"))
 		      (match_operand:SI 3 "const_int_operand" "i,i"))))
    (clobber (match_scratch:SI 4 "=X,&h"))]
   "TARGET_V8PLUS"
@@ -4510,6 +4553,23 @@ return \"srl %1,0,%0\";
   operands[4] = GEN_INT (~INTVAL (operands[2]) & 0xffffffff);
 }")
 
+;; Split DImode logical operations requiring two instructions.
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+	(match_operator:DI 1 "cc_arithop"	; AND, IOR, XOR
+			   [(match_operand:DI 2 "register_operand" "")
+			    (match_operand:DI 3 "arith_double_operand" "")]))]
+  "! TARGET_ARCH64 && reload_completed
+   && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < 32"
+  [(set (match_dup 4) (match_op_dup:SI 1 [(match_dup 6) (match_dup 8)]))
+   (set (match_dup 5) (match_op_dup:SI 1 [(match_dup 7) (match_dup 9)]))]
+  "operands[4] = gen_highpart (SImode, operands[0]);
+   operands[5] = gen_lowpart (SImode, operands[0]);
+   operands[6] = gen_highpart (SImode, operands[2]);
+   operands[7] = gen_lowpart (SImode, operands[2]);
+   operands[8] = gen_highpart (SImode, operands[3]);
+   operands[9] = gen_lowpart (SImode, operands[3]);")
+
 (define_insn "*and_not_di_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r,b")
 	(and:DI (not:DI (match_operand:DI 1 "register_operand" "r,b"))
@@ -4899,7 +4959,7 @@ return \"srl %1,0,%0\";
 			  gen_rtx_SET (VOIDmode, operand0,
 				   gen_rtx_NEG (DImode, operand1)),
 			  gen_rtx_CLOBBER (VOIDmode,
-				   gen_rtx_REG (SImode, SPARC_ICC_REG)))));
+				   gen_rtx_REG (CCmode, SPARC_ICC_REG)))));
       DONE;
     }
 }")
@@ -4907,7 +4967,7 @@ return \"srl %1,0,%0\";
 (define_insn "*negdi2_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(neg:DI (match_operand:DI 1 "register_operand" "r")))
-   (clobber (reg:SI 100))]
+   (clobber (reg:CC 100))]
   "! TARGET_ARCH64"
   "*
 {
@@ -5331,12 +5391,27 @@ return \"srl %1,0,%0\";
 
 (define_insn "ashldi3_v8plus"
   [(set (match_operand:DI 0 "register_operand" "=&h,&h,r")
-	(ashift:DI (match_operand:DI 1 "register_operand" "r,0,r")
+	(ashift:DI (match_operand:DI 1 "arith_operand" "rI,0,rI")
 		   (match_operand:SI 2 "arith_operand" "rI,rI,rI")))
    (clobber (match_scratch:SI 3 "=X,X,&h"))]
   "TARGET_V8PLUS"
   "*return sparc_v8plus_shift (operands, insn, \"sllx\");"
   [(set_attr "length" "5,5,6")])
+
+;; Optimize (1LL<<x)-1
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=h")
+	(plus:DI (ashift:DI (const_int 1)
+			    (match_operand:SI 2 "arith_operand" "rI"))
+		 (const_int -1)))]
+  "TARGET_V8PLUS"
+  "*
+{
+  if (GET_CODE (operands[2]) == REG && REGNO (operands[2]) == REGNO (operands[0]))
+    return \"mov 1,%L0\;sllx %L0,%2,%L0\;sub %L0,1,%L0\;srlx %L0,32,%H0\";
+  return \"mov 1,%H0\;sllx %H0,%2,%L0\;sub %L0,1,%L0\;srlx %L0,32,%H0\";
+}"
+  [(set_attr "length" "4")])
 
 (define_insn "*cmp_cc_ashift_1"
   [(set (reg:CC_NOOV 100)
@@ -5402,7 +5477,7 @@ if (! TARGET_ARCH64)
 
 (define_insn "ashrdi3_v8plus"
   [(set (match_operand:DI 0 "register_operand" "=&h,&h,r")
-	(ashiftrt:DI (match_operand:DI 1 "register_operand" "r,0,r")
+	(ashiftrt:DI (match_operand:DI 1 "arith_operand" "rI,0,rI")
 		     (match_operand:SI 2 "arith_operand" "rI,rI,rI")))
    (clobber (match_scratch:SI 3 "=X,X,&h"))]
   "TARGET_V8PLUS"
@@ -5454,7 +5529,7 @@ if (! TARGET_ARCH64)
 
 (define_insn "lshrdi3_v8plus"
   [(set (match_operand:DI 0 "register_operand" "=&h,&h,r")
-	(lshiftrt:DI (match_operand:DI 1 "register_operand" "r,0,r")
+	(lshiftrt:DI (match_operand:DI 1 "arith_operand" "rI,0,rI")
 		     (match_operand:SI 2 "arith_operand" "rI,rI,rI")))
    (clobber (match_scratch:SI 3 "=X,X,&h"))]
   "TARGET_V8PLUS"
@@ -6604,18 +6679,6 @@ if (! TARGET_ARCH64)
    (set (pc) (label_ref (match_operand 2 "" "")))]
   "TARGET_ARCH64 && short_branch (INSN_UID (insn), INSN_UID (operands[2])) && in_same_eh_region (insn, operands[2]) && in_same_eh_region (insn, ins1)"
   "call %a0,%1\;add %%o7,(%l2-.-4),%%o7")
-
-;; Other miscellaneous peepholes.
-
-;; (reg:SI 100) is created by the {add,neg,sub}di patterns.
-(define_peephole
-  [(parallel [(set (match_operand:SI 0 "register_operand" "=r")
-		   (minus:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
-			     (reg:SI 100)))
-	      (clobber (reg:CC 100))])
-   (set (reg:CC 100) (compare (match_dup 0) (const_int 0)))]
-  ""
-  "subxcc %r1,0,%0")
 
 ;; After a nonlocal goto, we need to restore the PIC register, but only
 ;; if we need it.  So do nothing much here, but we'll check for this in
