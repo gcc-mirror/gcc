@@ -3225,6 +3225,47 @@ function as well.
 
 @node Other Builtins
 @section Other built-in functions provided by GNU CC
+@cindex builtin functions
+@findex __builtin_isgreater
+@findex __builtin_isgreaterequal
+@findex __builtin_isless
+@findex __builtin_islessequal
+@findex __builtin_islessgreater
+@findex __builtin_isunordered
+@findex abort
+@findex abs
+@findex alloca
+@findex bcmp
+@findex bzero
+@findex cos
+@findex cosf
+@findex cosl
+@findex exit
+@findex _exit
+@findex fabs
+@findex fabsf
+@findex fabsl
+@findex ffs
+@findex fputs
+@findex labs
+@findex llabs
+@findex memcmp
+@findex memcpy
+@findex memset
+@findex printf
+@findex sin
+@findex sinf
+@findex sinl
+@findex sqrt
+@findex sqrtf
+@findex sqrtl
+@findex strchr
+@findex strcmp
+@findex strcpy
+@findex strlen
+@findex strpbrk
+@findex strrchr
+@findex strstr
 
 GNU CC provides a large number of built-in functions other than the ones
 mentioned above.  Some of these are for internal use in the processing
@@ -3235,15 +3276,47 @@ recommend general use of these functions.
 The remaining functions are provided for optimization purposes.
 
 GNU CC includes builtin versions of many of the functions in the
-standard C library.  These will always be treated as having the same
-meaning as the C library function even if you specify the
-@samp{-fno-builtin} (@pxref{C Dialect Options}) option.  These functions
-correspond to the C library functions @code{abort}, @code{abs},
-@code{alloca}, @code{cos}, @code{cosf}, @code{cosl}, @code{exit},
-@code{_exit}, @code{fabs}, @code{fabsf}, @code{fabsl}, @code{ffs},
-@code{labs}, @code{memcmp}, @code{memcpy}, @code{memset}, @code{sin},
-@code{sinf}, @code{sinl}, @code{sqrt}, @code{sqrtf}, @code{sqrtl},
-@code{strcmp}, @code{strcpy}, and @code{strlen}.
+standard C library.  The versions prefixed with @code{__builtin_} will
+always be treated as having the same meaning as the C library function
+even if you specify the @samp{-fno-builtin} (@pxref{C Dialect Options})
+option.  Many of these functions are only optimized in certain cases; if
+not optimized in a particular case, a call to the library function will
+be emitted.
+
+The functions @code{abort}, @code{exit}, and @code{_exit} are recognized
+and presumed not to return, but otherwise are not built in.
+@code{_exit} is not recognized in strict ISO C mode (@samp{-ansi},
+@samp{-std=c89} or @samp{-std=c99}).
+
+Outside strict ISO C mode, the functions @code{alloca}, @code{bcmp},
+@code{bzero}, and @code{ffs} may be handled as builtins.  Corresponding
+versions @code{__builtin_alloca}, @code{__builtin_bcmp},
+@code{__builtin_bzero}, and @code{__builtin_ffs} are also recognized in
+strict ISO C mode.
+
+The ISO C99 function @code{llabs} is handled as a builtin except in
+strict ISO C89 mode.  There are also builtin versions of the ISO C99
+functions @code{cosf}, @code{cosl}, @code{fabsf}, @code{fabsl},
+@code{sinf}, @code{sinl}, @code{sqrtf}, and @code{sqrtl}, that are
+recognized in any mode since ISO C89 reserves these names for the
+purpose to which ISO C99 puts them.  All these functions have
+corresponding versions prefixed with @code{__builtin_}.
+
+The following ISO C89 functions are recognized as builtins unless
+@samp{-fno-builtin} is specified: @code{abs}, @code{cos}, @code{fabs},
+@code{fputs}, @code{labs}, @code{memcmp}, @code{memcpy}, @code{memset},
+@code{printf}, @code{sin}, @code{sqrt}, @code{strchr}, @code{strcmp},
+@code{strcpy}, @code{strlen}, @code{strpbrk}, @code{strrchr}, and
+@code{strstr}.  All of these functions have corresponding versions
+prefixed with @code{__builtin_}, except that the version for @code{sqrt}
+is called @code{__builtin_fsqrt}.
+
+GNU CC provides builtin versions of the ISO C99 floating point
+comparison macros (that avoid raising exceptions for unordered
+operands): @code{__builtin_isgreater}, @code{__builtin_isgreaterequal},
+@code{__builtin_isless}, @code{__builtin_islessequal},
+@code{__builtin_islessgreater}, and @code{__builtin_isunordered}.
+
 
 @table @code
 @findex __builtin_constant_p
