@@ -1307,7 +1307,8 @@ try_combine (i3, i2, i1)
 	 The problem can also happen if the dest of I3 is a memory ref,
 	 if another dest in I2 is an indirect memory ref.  */
       for (i = 0; i < XVECLEN (p2, 0); i++)
-	if (GET_CODE (XVECEXP (p2, 0, i)) == SET
+	if ((GET_CODE (XVECEXP (p2, 0, i)) == SET
+	     || GET_CODE (XVECEXP (p2, 0, i)) == CLOBBER)
 	    && reg_overlap_mentioned_p (SET_DEST (PATTERN (i3)),
 					SET_DEST (XVECEXP (p2, 0, i))))
 	  break;
