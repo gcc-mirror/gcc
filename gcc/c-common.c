@@ -930,11 +930,14 @@ decl_attributes (node, attributes, prefix_attributes)
 
 	    pri = TREE_INT_CST_LOW (initp_expr);
 	
+	    while (TREE_CODE (type) == ARRAY_TYPE)
+	      type = TREE_TYPE (type);
+
 	    if (is_type || TREE_CODE (decl) != VAR_DECL
 		|| ! TREE_STATIC (decl)
 		|| DECL_EXTERNAL (decl)
-		|| (TREE_CODE (TREE_TYPE (decl)) != RECORD_TYPE
-		    && TREE_CODE (TREE_TYPE (decl)) != UNION_TYPE)
+		|| (TREE_CODE (type) != RECORD_TYPE
+		    && TREE_CODE (type) != UNION_TYPE)
 		/* Static objects in functions are initialized the
                    first time control passes through that
                    function. This is not precise enough to pin down an
