@@ -1,3 +1,12 @@
+2002-02-26  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natSystem.cc (init_properties): Use __VERSION__.
+	* gij.cc (version): Use __VERSION__.
+	* include/config.h.in: Rebuilt.
+	* acconfig.h (GCJVERSION): Removed.
+	* configure: Rebuilt.
+	* configure.in (GCJVERSION): Removed.
+
 2002-02-26  Andreas Schwab  <schwab@suse.de>
 
 	* acinclude.m4 (LIB_AC_PROG_CXX): Use glibjava_CXX instead of
