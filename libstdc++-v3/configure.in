@@ -50,8 +50,9 @@ AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 
 # Check for c++ or library specific bits that don't require linking.
-#GLIBCPP_CHECK_COMPILER_VERSION
 GLIBCPP_CHECK_GNU_MAKE
+#GLIBCPP_CHECK_COMPILER_VERSION
+GLIBCPP_CHECK_PCH
 
 # Enable all the variable C++ stuff.  C_MBCHAR must come early.
 GLIBCPP_ENABLE_CSTDIO
@@ -403,7 +404,6 @@ else
   sys/types.h])
 
   GLIBCPP_CHECK_COMPILER_FEATURES
-  GLIBCPP_CHECK_PCH
   GLIBCPP_CHECK_LINKER_FEATURES
   GLIBCPP_CHECK_MATH_SUPPORT
   GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT
