@@ -921,11 +921,16 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 	  /* Skip memory tags and variables that have never been
 	     written to.  We also need to check if the variables are
 	     call-clobbered because they may be overwritten by
-	     function calls.  */
-	  tag_stored_p = bitmap_bit_p (ai->written_vars, tag_ann->uid)
-			 || is_call_clobbered (tag);
-	  var_stored_p = bitmap_bit_p (ai->written_vars, v_ann->uid)
-			 || is_call_clobbered (var);
+	     function calls.
+
+	     Note this is effectively random accessing elements in
+	     the sparse bitset, which can be highly inefficient.
+	     So we first check the call_clobbered status of the
+	     tag and variable before querying the bitmap.  */
+	  tag_stored_p = is_call_clobbered (tag)
+			 || bitmap_bit_p (ai->written_vars, tag_ann->uid);
+	  var_stored_p = is_call_clobbered (var)
+			 || bitmap_bit_p (ai->written_vars, v_ann->uid);
 	  if (!tag_stored_p && !var_stored_p)
 	    continue;
 	     
