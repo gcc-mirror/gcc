@@ -171,7 +171,7 @@ unsigned int m32r_hard_regno_mode_ok[FIRST_PSEUDO_REGISTER] =
 {
   T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES,
   T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, S_MODES, S_MODES, S_MODES,
-  S_MODES, C_MODES, A_MODES
+  S_MODES, C_MODES, A_MODES, A_MODES
 };
 
 unsigned int m32r_mode_class [NUM_MACHINE_MODES];
@@ -462,6 +462,10 @@ m32r_encode_section_info (decl)
 
       strcpy (newstr + 1, str);
       *newstr = prefix;
+      /* Note - we cannot leave the string in the ggc_alloc'ed space.
+         It must reside in the stringtable's domain.  */
+      newstr = (char *) ggc_alloc_string (newstr, len + 2);
+
       XSTR (XEXP (rtl, 0), 0) = newstr;
     }
 }
@@ -732,6 +736,22 @@ reg_or_cmp_int16_operand (op, mode)
   if (GET_CODE (op) != CONST_INT)
     return 0;
   return CMP_INT16_P (INTVAL (op));
+}
+
+/* Return true if OP is a register or the constant 0.  */
+
+int
+reg_or_zero_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) == REG || GET_CODE (op) == SUBREG)
+    return register_operand (op, mode);
+
+  if (GET_CODE (op) != CONST_INT)
+    return 0;
+
+  return INTVAL (op) == 0;
 }
 
 /* Return true if OP is a const_int requiring two instructions to load.  */

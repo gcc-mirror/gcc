@@ -402,7 +402,7 @@ in the following sections.
 
 @emph{M32R/D Options}
 @gccoptlist{
--mcode-model=@var{model-type}  -msdata=@var{sdata-type} @gol
+-mm32rx -mcode-model=@var{model-type}  -msdata=@var{sdata-type} @gol
 -G @var{num}}
 
 @emph{M88K Options}
@@ -6227,6 +6227,10 @@ This option makes symbolic debugging impossible.
 These @option{-m} options are defined for Mitsubishi M32R/D architectures:
 
 @table @gcctabopt
+@item -mm32rx
+@opindex mm32rx
+Generate code for the M32R/X.  The default is to generate code for the M32R.
+
 @item -mcode-model=small
 @opindex mcode-model=small
 Assume all objects live in the lower 16MB of memory (so that their addresses
