@@ -1691,8 +1691,8 @@ while (0)
 
    Millicode calls always expect their arguments in the integer argument
    registers, and always return their result in %r29 (ret1).  They
-   are expected to clobber their arguments, %r1, %r29, and %r31 and
-   nothing else.
+   are expected to clobber their arguments, %r1, %r29, and the return
+   pointer which is %r31 on 32-bit and %r2 on 64-bit, and nothing else.
 
    This macro tells reorg that the references to arguments and
    millicode calls do not appear to happen until after the millicode call.

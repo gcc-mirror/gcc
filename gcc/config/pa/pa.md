@@ -3869,11 +3869,12 @@
 	      (clobber (match_dup 3))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
-	      (clobber (reg:SI 31))])
+	      (clobber (match_dup 4))])
    (set (match_operand:SI 0 "general_operand" "") (reg:SI 29))]
   ""
   "
 {
+  operands[4] = gen_rtx_REG (SImode, TARGET_64BIT ? 2 : 31);
   if (TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT)
     {
       rtx scratch = gen_reg_rtx (DImode);
@@ -3930,7 +3931,7 @@
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
-  ""
+  "!TARGET_64BIT"
   "* return output_mul_insn (0, insn);"
   [(set_attr "type" "milli")
    (set (attr "length")
@@ -3954,6 +3955,17 @@
 
 ;; Out of reach, can use ble
           (const_int 12)))])
+
+(define_insn ""
+  [(set (reg:SI 29) (mult:SI (reg:SI 26) (reg:SI 25)))
+   (clobber (match_operand:SI 0 "register_operand" "=a"))
+   (clobber (reg:SI 26))
+   (clobber (reg:SI 25))
+   (clobber (reg:SI 2))]
+  "TARGET_64BIT"
+  "* return output_mul_insn (0, insn);"
+  [(set_attr "type" "milli")
+   (set (attr "length") (const_int 4))])
 
 (define_expand "muldi3"
   [(set (match_operand:DI 0 "register_operand" "")
@@ -4012,15 +4024,22 @@
 	      (clobber (match_dup 4))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
-	      (clobber (reg:SI 31))])
+	      (clobber (match_dup 5))])
    (set (match_operand:SI 0 "general_operand" "") (reg:SI 29))]
   ""
   "
 {
   operands[3] = gen_reg_rtx (SImode);
-  operands[4] = gen_reg_rtx (SImode);
   if (TARGET_64BIT)
-    operands[4] = gen_rtx_REG (SImode, 2);
+    {
+      operands[5] = gen_rtx_REG (SImode, 2);
+      operands[4] = operands[5];
+    }
+  else
+    {
+      operands[5] = gen_rtx_REG (SImode, 31);
+      operands[4] = gen_reg_rtx (SImode);
+    }
   if (GET_CODE (operands[2]) == CONST_INT && emit_hpdiv_const (operands, 0))
     DONE;
 }")
@@ -4033,7 +4052,7 @@
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
-  ""
+  "!TARGET_64BIT"
   "*
    return output_div_insn (operands, 0, insn);"
   [(set_attr "type" "milli")
@@ -4059,6 +4078,20 @@
 ;; Out of reach, can use ble
           (const_int 12)))])
 
+(define_insn ""
+  [(set (reg:SI 29)
+	(div:SI (reg:SI 26) (match_operand:SI 0 "div_operand" "")))
+   (clobber (match_operand:SI 1 "register_operand" "=a"))
+   (clobber (match_operand:SI 2 "register_operand" "=&r"))
+   (clobber (reg:SI 26))
+   (clobber (reg:SI 25))
+   (clobber (reg:SI 2))]
+  "TARGET_64BIT"
+  "*
+   return output_div_insn (operands, 0, insn);"
+  [(set_attr "type" "milli")
+   (set (attr "length") (const_int 4))])
+
 (define_expand "udivsi3"
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
    (set (reg:SI 25) (match_operand:SI 2 "move_operand" ""))
@@ -4067,15 +4100,22 @@
 	      (clobber (match_dup 4))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
-	      (clobber (reg:SI 31))])
+	      (clobber (match_dup 5))])
    (set (match_operand:SI 0 "general_operand" "") (reg:SI 29))]
   ""
   "
 {
   operands[3] = gen_reg_rtx (SImode);
-  operands[4] = gen_reg_rtx (SImode);
   if (TARGET_64BIT)
-    operands[4] = gen_rtx_REG (SImode, 2);
+    {
+      operands[5] = gen_rtx_REG (SImode, 2);
+      operands[4] = operands[5];
+    }
+  else
+    {
+      operands[5] = gen_rtx_REG (SImode, 31);
+      operands[4] = gen_reg_rtx (SImode);
+    }
   if (GET_CODE (operands[2]) == CONST_INT && emit_hpdiv_const (operands, 1))
     DONE;
 }")
@@ -4088,7 +4128,7 @@
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
-  ""
+  "!TARGET_64BIT"
   "*
    return output_div_insn (operands, 1, insn);"
   [(set_attr "type" "milli")
@@ -4114,6 +4154,20 @@
 ;; Out of reach, can use ble
           (const_int 12)))])
 
+(define_insn ""
+  [(set (reg:SI 29)
+	(udiv:SI (reg:SI 26) (match_operand:SI 0 "div_operand" "")))
+   (clobber (match_operand:SI 1 "register_operand" "=a"))
+   (clobber (match_operand:SI 2 "register_operand" "=&r"))
+   (clobber (reg:SI 26))
+   (clobber (reg:SI 25))
+   (clobber (reg:SI 2))]
+  "TARGET_64BIT"
+  "*
+   return output_div_insn (operands, 1, insn);"
+  [(set_attr "type" "milli")
+   (set (attr "length") (const_int 4))])
+
 (define_expand "modsi3"
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
    (set (reg:SI 25) (match_operand:SI 2 "move_operand" ""))
@@ -4122,14 +4176,21 @@
 	      (clobber (match_dup 4))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
-	      (clobber (reg:SI 31))])
+	      (clobber (match_dup 5))])
    (set (match_operand:SI 0 "general_operand" "") (reg:SI 29))]
   ""
   "
 {
-  operands[4] = gen_reg_rtx (SImode);
   if (TARGET_64BIT)
-    operands[4] = gen_rtx_REG (SImode, 2);
+    {
+      operands[5] = gen_rtx_REG (SImode, 2);
+      operands[4] = operands[5];
+    }
+  else
+    {
+      operands[5] = gen_rtx_REG (SImode, 31);
+      operands[4] = gen_reg_rtx (SImode);
+    }
   operands[3] = gen_reg_rtx (SImode);
 }")
 
@@ -4140,7 +4201,7 @@
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
-  ""
+  "!TARGET_64BIT"
   "*
   return output_mod_insn (0, insn);"
   [(set_attr "type" "milli")
@@ -4166,6 +4227,19 @@
 ;; Out of reach, can use ble
           (const_int 12)))])
 
+(define_insn ""
+  [(set (reg:SI 29) (mod:SI (reg:SI 26) (reg:SI 25)))
+   (clobber (match_operand:SI 0 "register_operand" "=a"))
+   (clobber (match_operand:SI 1 "register_operand" "=&r"))
+   (clobber (reg:SI 26))
+   (clobber (reg:SI 25))
+   (clobber (reg:SI 2))]
+  "TARGET_64BIT"
+  "*
+  return output_mod_insn (0, insn);"
+  [(set_attr "type" "milli")
+   (set (attr "length") (const_int 4))])
+
 (define_expand "umodsi3"
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
    (set (reg:SI 25) (match_operand:SI 2 "move_operand" ""))
@@ -4174,14 +4248,21 @@
 	      (clobber (match_dup 4))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
-	      (clobber (reg:SI 31))])
+	      (clobber (match_dup 5))])
    (set (match_operand:SI 0 "general_operand" "") (reg:SI 29))]
   ""
   "
 {
-  operands[4] = gen_reg_rtx (SImode);
   if (TARGET_64BIT)
-    operands[4] = gen_rtx_REG (SImode, 2);
+    {
+      operands[5] = gen_rtx_REG (SImode, 2);
+      operands[4] = operands[5];
+    }
+  else
+    {
+      operands[5] = gen_rtx_REG (SImode, 31);
+      operands[4] = gen_reg_rtx (SImode);
+    }
   operands[3] = gen_reg_rtx (SImode);
 }")
 
@@ -4192,7 +4273,7 @@
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
-  ""
+  "!TARGET_64BIT"
   "*
   return output_mod_insn (1, insn);"
   [(set_attr "type" "milli")
@@ -4217,6 +4298,19 @@
 
 ;; Out of reach, can use ble
           (const_int 12)))])
+
+(define_insn ""
+  [(set (reg:SI 29) (umod:SI (reg:SI 26) (reg:SI 25)))
+   (clobber (match_operand:SI 0 "register_operand" "=a"))
+   (clobber (match_operand:SI 1 "register_operand" "=&r"))
+   (clobber (reg:SI 26))
+   (clobber (reg:SI 25))
+   (clobber (reg:SI 2))]
+  "TARGET_64BIT"
+  "*
+  return output_mod_insn (1, insn);"
+  [(set_attr "type" "milli")
+   (set (attr "length") (const_int 4))])
 
 ;;- and instructions
 ;; We define DImode `and` so with DImode `not` we can get
