@@ -1,6 +1,6 @@
 // Properties - Property list representation.
 
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -26,7 +26,7 @@ import java.io.PushbackReader;
  */
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * Status: Complete to JDK 1.1.
+ * Status: Complete to JDK 1.2.
  */
 
 public class Properties extends Hashtable
@@ -50,6 +50,11 @@ public class Properties extends Hashtable
 	}
       return r;
     }
+
+  public Object setProperty (String key, String value)
+  {
+    return put (key, value);
+  }
 
   public void list (PrintStream out)
     {
@@ -282,99 +287,105 @@ public class Properties extends Hashtable
     }
 
   public synchronized void save (OutputStream out, String comment)
-    {
+  {
+    try
+      {
+	store (out, comment);
+      }
+    catch (IOException _)
+      {
+      }
+  }
+
+  public synchronized void store (OutputStream out, String comment)
+    throws IOException
+  {
       // Use a buffer because writing a single string through
       // OutputStreamWriter is fairly expensive.
       BufferedWriter output
 	= new BufferedWriter (new OutputStreamWriter (out));
       String newline = System.getProperty("line.separator");
 
-      try
+      if (comment != null)
 	{
-	  if (comment != null)
-	    {
-	      // We just lose if COMMENT contains a newline.  This is
-	      // what JDK 1.1 does.
-	      output.write("#");
-	      output.write(comment);
-	      output.write(newline);
-	    }
-	  output.write("# ");
-	  output.write(new Date().toString());
+	  // We just lose if COMMENT contains a newline.  This is
+	  // what JDK 1.1 does.
+	  output.write("#");
+	  output.write(comment);
 	  output.write(newline);
-
-	  Enumeration keys = keys ();
-	  while (keys.hasMoreElements())
-	    {
-	      String key = (String) keys.nextElement();
-	      String value = (String) get (key);
-
-	      // FIXME: JCL says that the key can contain many Unicode
-	      // characters.  But it also doesn't say we should encode
-	      // it in any way.
-	      // FIXME: if key contains ':', '=', or whitespace, must
-	      // quote it here.  Note that JDK 1.1 does not do this.
-	      output.write(key);
-	      output.write("=");
-
-	      boolean leading = true;
-	      for (int i = 0; i < value.length(); ++i)
-		{
-		  boolean new_lead = false;
-		  char c = value.charAt(i);
-		  switch (c)
-		    {
-		    case '\n':
-		      output.write("\\n");
-		      break;
-		    case '\r':
-		      output.write("\\r");
-		      break;
-		    case '\t':
-		      output.write("\\t");
-		      break;
-		    case '\\':
-		      output.write("\\\\");
-		      break;
-
-		    case '#':
-		    case '!':
-		    case '=':
-		    case ':':
-		      output.write("\\");
-		      output.write(c);
-		      break;
-
-		    case ' ':
-		      new_lead = leading;
-		      if (leading)
-			output.write("\\");
-		      output.write(c);
-		      break;
-
-		    default:
-		      if (c < '\u0020' || c > '\u007e')
-			{
-			  output.write("\\u");
-			  output.write(Character.forDigit(c >>> 12, 16));
-			  output.write(Character.forDigit((c >>> 8) & 0xff,
-							  16));
-			  output.write(Character.forDigit((c >>> 4) & 0xff,
-							  16));
-			  output.write(Character.forDigit(c & 0xff, 16));
-			}
-		      else
-			output.write(c);
-		    }
-		  leading = new_lead;
-		}
-	      output.write(newline);
-	    }
-
-	  output.flush();
 	}
-      catch (IOException ignore)
+      output.write("# ");
+      output.write(new Date().toString());
+      output.write(newline);
+
+      Enumeration keys = keys ();
+      while (keys.hasMoreElements())
 	{
+	  String key = (String) keys.nextElement();
+	  String value = (String) get (key);
+
+	  // FIXME: JCL says that the key can contain many Unicode
+	  // characters.  But it also doesn't say we should encode
+	  // it in any way.
+	  // FIXME: if key contains ':', '=', or whitespace, must
+	  // quote it here.  Note that JDK 1.1 does not do this.
+	  output.write(key);
+	  output.write("=");
+
+	  boolean leading = true;
+	  for (int i = 0; i < value.length(); ++i)
+	    {
+	      boolean new_lead = false;
+	      char c = value.charAt(i);
+	      switch (c)
+		{
+		case '\n':
+		  output.write("\\n");
+		  break;
+		case '\r':
+		  output.write("\\r");
+		  break;
+		case '\t':
+		  output.write("\\t");
+		  break;
+		case '\\':
+		  output.write("\\\\");
+		  break;
+
+		case '#':
+		case '!':
+		case '=':
+		case ':':
+		  output.write("\\");
+		  output.write(c);
+		  break;
+
+		case ' ':
+		  new_lead = leading;
+		  if (leading)
+		    output.write("\\");
+		  output.write(c);
+		  break;
+
+		default:
+		  if (c < '\u0020' || c > '\u007e')
+		    {
+		      output.write("\\u");
+		      output.write(Character.forDigit(c >>> 12, 16));
+		      output.write(Character.forDigit((c >>> 8) & 0xff,
+						      16));
+		      output.write(Character.forDigit((c >>> 4) & 0xff,
+						      16));
+		      output.write(Character.forDigit(c & 0xff, 16));
+		    }
+		  else
+		    output.write(c);
+		}
+	      leading = new_lead;
+	    }
+	  output.write(newline);
 	}
-    }
+
+      output.flush();
+  }
 }

@@ -1,3 +1,8 @@
+2000-02-08  Tom Tromey  <tromey@cygnus.com>
+
+	* java/util/Properties.java (setProperty): New method.
+	(store): New method.
+
 2000-02-07  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/Runtime.java (_load): Declare.
