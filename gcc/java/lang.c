@@ -502,18 +502,13 @@ put_decl_node (node)
   if (TREE_CODE_CLASS (TREE_CODE (node)) == 'd'
       && DECL_NAME (node) != NULL_TREE)
     {
-#if 0
-      if (DECL_CONTEXT (node) != NULL_TREE)
-	{
-	  put_decl_node (DECL_CONTEXT (node));
-	  put_decl_string (".", 1);
-	}
-#endif
+      /* We want to print the type the DECL belongs to. We don't do
+	 that when we handle constructors. */
       if (TREE_CODE (node) == FUNCTION_DECL
-	  && DECL_INIT_P (node)
-	  && !DECL_ARTIFICIAL (node) && current_class)
-	put_decl_node (TYPE_NAME (current_class));
-      else
+	  && ! DECL_CONSTRUCTOR_P (node)
+	  && ! DECL_ARTIFICIAL (node) && DECL_CONTEXT (node))
+	put_decl_node (TYPE_NAME (DECL_CONTEXT (node)));
+      else if (! DECL_CONSTRUCTOR_P (node))
 	put_decl_node (DECL_NAME (node));
       if (TREE_CODE (node) == FUNCTION_DECL && TREE_TYPE (node) != NULL_TREE)
 	{
@@ -571,6 +566,21 @@ lang_printable_name (decl, v)
   decl_bufpos = 0;
   put_decl_node (decl);
   put_decl_string ("", 1);
+  return decl_buf;
+}
+
+/* Does the same thing that lang_printable_name, but add a leading
+   space to the DECL name string -- With Leading Space.  */
+
+const char *
+lang_printable_name_wls (decl, v)
+     tree decl;
+     int v  __attribute__ ((__unused__));
+{
+  decl_bufpos = 1;
+  put_decl_node (decl);
+  put_decl_string ("", 1);
+  decl_buf [0] = ' ';
   return decl_buf;
 }
 
