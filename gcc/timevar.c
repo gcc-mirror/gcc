@@ -1,5 +1,5 @@
 /* Timing variables for measuring compiler performance.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003 Free Software Foundation, Inc.
    Contributed by Alex Samuel <samuel@codesourcery.com>
 
 This file is part of GCC.
@@ -511,17 +511,6 @@ timevar_print (fp)
 
 #endif /* defined (HAVE_USER_TIME) || defined (HAVE_SYS_TIME)
 	  || defined (HAVE_WALL_TIME) */
-}
-
-/* Returns time (user + system) used so far by the compiler process,
-   in microseconds.  */
-
-long
-get_run_time ()
-{
-  struct timevar_time_def total_elapsed;
-  timevar_get (TV_TOTAL, &total_elapsed);
-  return total_elapsed.user + total_elapsed.sys;
 }
 
 /* Prints a message to stderr stating that time elapsed in STR is
