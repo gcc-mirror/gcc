@@ -2683,6 +2683,39 @@ m68hc11_expand_compare_and_branch (code, op0, op1, label)
   return 0;
 }
 
+/* Return 1 if the TO and FROM operands contain compatible address
+   increment and decrement modes for a split_move.  One of the two
+   operands must not use an autoinc mode or both must go in the
+   same direction.  */
+static int
+m68hc11_autoinc_compatible_p (to, from)
+     rtx to, from;
+{
+  enum { INCOP, DECOP } type_to, type_from;
+
+  /* If one of them is not a MEM, it is ok.  */
+  if (GET_CODE (to) != MEM || GET_CODE (from) != MEM)
+    return 1;
+
+  to = XEXP (to, 0);
+  from = XEXP (from, 0);
+
+  if (GET_CODE (to) == PRE_INC || GET_CODE (to) == POST_INC)
+    type_to = INCOP;
+  else if (GET_CODE (to) == PRE_DEC || GET_CODE (to) == POST_DEC)
+    type_to = DECOP;
+  else
+    return 1;
+  
+  if (GET_CODE (from) == PRE_INC || GET_CODE (from) == POST_INC)
+    type_from = INCOP;
+  else if (GET_CODE (from) == PRE_DEC || GET_CODE (from) == POST_DEC)
+    type_from = DECOP;
+  else
+    return 1;
+
+  return type_to == type_from;
+}
 
 /* Split a DI, SI or HI move into several smaller move operations.
    The scratch register 'scratch' is used as a temporary to load
@@ -2703,6 +2736,30 @@ m68hc11_split_move (to, from, scratch)
     mode = HImode;
   else
     mode = QImode;
+
+  /* If the TO and FROM contain autoinc modes that are not compatible
+     together (one pop and the other a push), we must change one to
+     an offsetable operand and generate an appropriate add at the end.  */
+  if (TARGET_M6812 && m68hc11_autoinc_compatible_p (to, from) == 0)
+    {
+      rtx reg;
+      int code;
+
+      /* Decide to change the source.  */
+      code = GET_CODE (XEXP (from, 0));
+      reg = XEXP (XEXP (from, 0), 0);
+      offset = GET_MODE_SIZE (GET_MODE (from));
+      if (code == PRE_DEC || code == POST_DEC)
+        offset = -offset;
+
+      if (code == PRE_DEC || code == PRE_INC)
+        emit_insn (gen_addhi3 (reg, reg, GEN_INT (offset)));
+      m68hc11_split_move (to, gen_rtx_MEM (GET_MODE (from), reg), scratch);
+      if (code == POST_DEC || code == POST_INC)
+        emit_insn (gen_addhi3 (reg, reg, GEN_INT (offset)));
+
+      return;
+    }
 
   if (TARGET_M6812
       && IS_STACK_PUSH (to)
