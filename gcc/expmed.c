@@ -1,6 +1,6 @@
 /* Medium-level subroutines: convert bit-field store and extract
    and shifts, multiplies and divides to rtl instructions.
-   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1851,10 +1851,7 @@ synth_mult (alg_out, t, cost_limit)
      int cost_limit;
 {
   int m;
-  struct algorithm *best_alg
-    = (struct algorithm *)alloca (sizeof (struct algorithm));
-  struct algorithm *alg_in
-    = (struct algorithm *)alloca (sizeof (struct algorithm));
+  struct algorithm *alg_in, *best_alg;
   unsigned int cost;
   unsigned HOST_WIDE_INT q;
 
@@ -1888,6 +1885,11 @@ synth_mult (alg_out, t, cost_limit)
 	  return;
 	}
     }
+
+  /* We'll be needing a couple extra algorithm structures now.  */
+
+  alg_in = (struct algorithm *)alloca (sizeof (struct algorithm));
+  best_alg = (struct algorithm *)alloca (sizeof (struct algorithm));
 
   /* If we have a group of zero bits at the low-order part of T, try
      multiplying by the remaining bits and then doing a shift.  */
@@ -2051,14 +2053,14 @@ synth_mult (alg_out, t, cost_limit)
 	}
     }
 
-  /* If we are getting a too long sequence for `struct algorithm'
-     to record, make this search fail.  */
-  if (best_alg->ops == MAX_BITS_PER_WORD)
-    return;
-
   /* If cost_limit has not decreased since we stored it in alg_out->cost,
      we have not found any algorithm.  */
   if (cost_limit == alg_out->cost)
+    return;
+
+  /* If we are getting a too long sequence for `struct algorithm'
+     to record, make this search fail.  */
+  if (best_alg->ops == MAX_BITS_PER_WORD)
     return;
 
   /* Copy the algorithm from temporary space to the space at alg_out.
