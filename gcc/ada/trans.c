@@ -2112,8 +2112,11 @@ tree_transform (Node_Id gnat_node)
 	for (gnat_temp = First (Elsif_Parts (gnat_node));
 	     Present (gnat_temp); gnat_temp = Next (gnat_temp))
 	  {
-	    tree gnu_elseif
-	      = build_nt (IF_STMT, gnat_to_gnu (Condition (gnat_temp)),
+            tree gnu_cond, gnu_elseif;
+
+            gnu_cond = gnat_to_gnu (Condition (gnat_temp));
+	    gnu_elseif
+	      = build_nt (IF_STMT, gnu_cond,
 			  build_block_stmt (Then_Statements (gnat_temp)),
 			  NULL_TREE, NULL_TREE);
 
@@ -2123,10 +2126,18 @@ tree_transform (Node_Id gnat_node)
 	    gnu_result = gnu_elseif;
 	  }
 
-      gnu_result = build_nt (IF_STMT, gnat_to_gnu (Condition (gnat_node)),
-			     build_block_stmt (Then_Statements (gnat_node)),
-			     nreverse (gnu_result),
-			     build_block_stmt (Else_Statements (gnat_node)));
+      {
+        tree gnu_cond, then_block, else_block;
+
+        gnu_cond = gnat_to_gnu (Condition (gnat_node));
+        then_block = build_block_stmt (Then_Statements (gnat_node));
+        else_block = build_block_stmt (Else_Statements (gnat_node));
+
+        gnu_result = build_nt (IF_STMT, gnu_cond, 
+  	    		       then_block,
+			       nreverse (gnu_result),
+			       else_block);
+      }
       break;
 
     case N_Case_Statement:

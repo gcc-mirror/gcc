@@ -1,3 +1,10 @@
+2004-04-22  Laurent GUERBY <laurent@guerby.net>
+
+	PR optimization/14984
+	PR optimization/14985
+	* trans.c (gigi): Fix non determinism leading to bootstrap
+	comparison failures.
+
 2004-04-21  Pascal Obry  <obry@gnat.com>
 
 	* adaint.c (__gnat_portable_spawn): Quote first argument (argv[0])
