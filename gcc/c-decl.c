@@ -150,17 +150,17 @@ tree ptr_type_node, const_ptr_type_node;
 
 tree string_type_node, const_string_type_node;
 
-/* Type `char[256]' or something like it.
+/* Type `char[SOMENUMBER]'.
    Used when an array of char is needed and the size is irrelevant.  */
 
 tree char_array_type_node;
 
-/* Type `int[256]' or something like it.
+/* Type `int[SOMENUMBER]' or something like it.
    Used when an array of int needed and the size is irrelevant.  */
 
 tree int_array_type_node;
 
-/* Type `wchar_t[256]' or something like it.
+/* Type `wchar_t[SOMENUMBER]' or something like it.
    Used when a wide string literal is created.  */
 
 tree wchar_array_type_node;
@@ -2495,6 +2495,7 @@ init_decl_processing ()
   tree void_ftype_any;
   int wchar_type_size;
   tree temp;
+  tree array_domain_type;
 
   current_function_decl = NULL;
   named_labels = NULL;
@@ -2655,18 +2656,22 @@ init_decl_processing ()
   const_string_type_node
     = build_pointer_type (build_type_variant (char_type_node, 1, 0));
 
-  /* make a type for arrays of 256 characters.
-     256 is picked randomly because we have a type for integers from 0 to 255.
+  /* Make a type to be the domain of a few array types
+     whose domains don`t really matter.
+     10 is small enough that it always fits in size_t.  */
+  array_domain_type = build_index_type (build_int_2 (10, 0));
+
+  /* make a type for arrays of characters.
      With luck nothing will ever really depend on the length of this
      array type.  */
   char_array_type_node
-    = build_array_type (char_type_node, unsigned_intQI_type_node);
+    = build_array_type (char_type_node, array_domain_type);
   /* Likewise for arrays of ints.  */
   int_array_type_node
-    = build_array_type (integer_type_node, unsigned_intQI_type_node);
+    = build_array_type (integer_type_node, array_domain_type);
   /* This is for wide string constants.  */
   wchar_array_type_node
-    = build_array_type (wchar_type_node, unsigned_intQI_type_node);
+    = build_array_type (wchar_type_node, array_domain_type);
 
   default_function_type
     = build_function_type (integer_type_node, NULL_TREE);
