@@ -119,7 +119,7 @@ build_sources() {
     inform "Updating ChangeLogs and version files"
 
     ${CVS} co -d "`basename ${SOURCE_DIRECTORY}`" \
-           -r ${BRANCH} gcc || \
+           -r ${CVSBRANCH} gcc || \
            error "Could not check out release sources"
     for x in `find ${SOURCE_DIRECTORY} -name ChangeLog`; do
       # Update this ChangeLog file only if it does not yet contain the
@@ -159,16 +159,16 @@ EOF
   # Tag the sources.
   if [ -n "${TAG}" ]; then
     inform "Tagging release sources"
-    ${CVS} rtag -r ${BRANCH} -F ${TAG} gcc || \
+    ${CVS} rtag -r ${CVSBRANCH} -F ${TAG} gcc || \
       error "Could not tag release sources"
-    BRANCH=$TAG
+    CVSBRANCH=$TAG
   fi
 
   # Export the current sources.
   inform "Retrieving release sources"
   ${CVS} \
        export -d "`basename ${SOURCE_DIRECTORY}`" \
-       -r ${BRANCH} gcc || \
+       -r ${CVSBRANCH} gcc || \
     error "Could not retrieve release sources"
 
   # Run gcc_update on them to set up the timestamps nicely.
@@ -431,8 +431,13 @@ RELEASE_REVISION=""
 # The complete name of the release.
 RELEASE=""
 
-# The name of the branch from which the release should be made.
+# The name of the branch from which the release should be made, in a 
+# user-friendly form.
 BRANCH=""
+
+# The name of the branch from which the release should be made, as used
+# for our version control system.
+CVSBRANCH=""
 
 # The tag to apply to the sources used for the release.
 TAG=""
@@ -547,7 +552,7 @@ if [ $SNAPSHOT -eq 0 ]; then
 
   # Compute the name of the branch, which is based solely on the major
   # and minor release numbers.
-  BRANCH="gcc-${RELEASE_MAJOR}_${RELEASE_MINOR}-branch"
+  CVSBRANCH="gcc-${RELEASE_MAJOR}_${RELEASE_MINOR}-branch"
 
   # If this is not a final release, set various parameters acordingly.
   if [ ${FINAL} -ne 1 ]; then
@@ -559,14 +564,15 @@ if [ $SNAPSHOT -eq 0 ]; then
 else
   RELEASE=$DATE
   # For now snapshots come from the 3.3 branch.
-  BRANCH=gcc-3_3-branch
-  FTP_PATH="${FTP_PATH}/snapshots/${LONG_DATE}"
+  BRANCH="3.3"
+  CVSBRANCH=gcc-3_3-branch
+  FTP_PATH="${FTP_PATH}/snapshots/${BRANCH}-${LONG_DATE}"
   TAG=gcc_ss_${DATE}
 
   # Building locally on gcc.gnu.org, we know what the last snapshot date
   # was.
   if [ $LOCAL -ne 0 ]; then
-    LAST_DATE=`cat ~/.snapshot_date`
+    LAST_DATE=`cat ~/.snapshot_date-${BRANCH}`
     LAST_LONG_DATE=`date --date=$LAST_DATE +%Y-%m-%d`
     LAST_DIR=~ftp/pub/gcc/snapshots/${LAST_LONG_DATE}
     OLD_TARS=${LAST_DIR}/gcc-${LAST_DATE}.tar.bz2
@@ -661,7 +667,7 @@ if [ $MODE_UPLOAD -ne 0 ]; then
 
     # Update snapshot date file.
     changedir ~
-    echo $DATE >.snapshot_date
+    echo $DATE > .snapshot_date-${BRANCH}
 
     # Remove working directory
     rm -rf ${WORKING_DIRECTORY}

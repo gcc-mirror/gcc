@@ -1,3 +1,12 @@
+2003-07-01  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc_release (BRANCH): Rename to...
+	(CVSBRANCH): ...new macro, and use BRANCH for the variant users
+	will see.
+	(FTP_BRANCH): For snapshots, include ${BRANCH} in the last part
+	of the directory name.
+	Use .snapshot_date-${BRANCH} instead of .snapshot_date.
+
 2003-06-28  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release: Command "all" now creates .gz files only for
