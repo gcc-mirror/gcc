@@ -1364,9 +1364,12 @@ mips_legitimate_address_p (mode, xinsn, strict)
 		  || code1 != CONST
 		  || GET_CODE (XEXP (xplus1, 0)) != MINUS)
 	      /* When assembling for machines with 64 bit registers,
-	         the assembler will not sign-extend the constant "foo"
-		 in "la x, foo(x)" */
-	      && (!TARGET_64BIT || (code1 == CONST_INT && INTVAL (xplus1) > 0))
+	         the assembler will sign-extend the constant "foo"
+		 in "la x, foo(x)" yielding the wrong result for:
+	         (set (blah:DI) (plus x y)).  */
+	      && (!TARGET_64BIT
+		  || trunc_int_for_mode (INTVAL (xplus1),
+					 SImode) == INTVAL (xplus1))
 	      && !TARGET_MIPS16)
 	    return 1;
 	}
