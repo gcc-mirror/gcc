@@ -1,3 +1,7 @@
+2001-01-30  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* fixinc/genfixes (AG): Fix "autogen4" thinko.
+
 2001-01-30  Herman A.J. ten Brugge  <Haj.Ten.Brugge@net.HCC.nl>
 
 	* regmove.c (try_auto_increment): Change REG_DEAD into REG_UNUSED
