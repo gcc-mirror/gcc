@@ -38,15 +38,7 @@ gnu::java::nio::SocketChannelImpl::SocketConnect (jint fd,
                                                   ::java::net::InetAddress *addr,
                                                   jint port)
 {
-  int result = _Jv_connect_address (fd, addr, port, addr, port);
-
-  if (result < 0)
-    {
-      char* strerr = strerror (errno);
-      throw new ::java::io::IOException (JvNewStringUTF (strerr));
-    }
-
-  return result;
+  throw new ::java::io::IOException (JvNewStringUTF ("SocketConnect not implemented"));
 }
 
 jint
@@ -54,15 +46,7 @@ gnu::java::nio::SocketChannelImpl::SocketBind (jint fd,
                                                ::java::net::InetAddress *addr,
                                                jint port)
 {
-  int result = _Jv_bind_address (fd, addr, port);
-
-  if (result < 0)
-    {
-      char* strerr = strerror (errno);
-      throw new ::java::io::IOException (JvNewStringUTF (strerr));
-    }
-
-  return result;
+  throw new ::java::io::IOException (JvNewStringUTF ("SocketBind not implemented"));
 }
 
 jint
