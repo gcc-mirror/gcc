@@ -65,13 +65,13 @@ make_compile='$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	  LANGUAGES="$(LANGUAGES)"'
 
 # Dependancies for libgcc1.c
-libgcc1_c_dep='$(srcdir)/libgcc1.c $(CONFIG_H)'
+libgcc1_c_dep='stmp-dirs $(srcdir)/libgcc1.c $(CONFIG_H)'
 
 # Dependancies for libgcc2.c
-libgcc2_c_dep='$(srcdir)/libgcc2.c $(CONFIG_H) $(MACHMODE_H) longlong.h frame.h gbl-ctors.h config.status stmp-int-hdrs tsystem.h'
+libgcc2_c_dep='stmp-dirs $(srcdir)/libgcc2.c $(CONFIG_H) $(MACHMODE_H) longlong.h frame.h gbl-ctors.h config.status stmp-int-hdrs tsystem.h'
 
 # Dependancies for fp-bit.c
-fpbit_c_dep='config.status tsystem.h'
+fpbit_c_dep='stmp-dirs config.status tsystem.h'
 
 #
 # Build libgcc1 components.
@@ -94,12 +94,7 @@ case X"$LIBGCC1" in
         flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
         out="libgcc/${dir}/${name}${objext}"
 
-	if [ $dir = . ]; then
-	  libgccdir="libgcc"
-	else
-	  libgccdir="libgcc/${dir}"
-	fi
-        echo ${out}: ${libgccdir} '$(srcdir)/config/$(LIB1ASMSRC)'
+        echo ${out}: stmp-dirs '$(srcdir)/config/$(LIB1ASMSRC)'
 	echo "	$gcc_compile" $flags -DL$name -xassembler-with-cpp \
 	  -c '$(srcdir)/config/$(LIB1ASMSRC)' -o $out
       done
@@ -161,12 +156,7 @@ for name in $LIB2FUNCS; do
     flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
     out="libgcc/${dir}/${name}${objext}"
 
-    if [ $dir = . ]; then
-      libgccdir="libgcc"
-    else
-      libgccdir="libgcc/${dir}"
-    fi
-    echo $out: $libgccdir $libgcc2_c_dep
+    echo $out: $libgcc2_c_dep
     echo "	$gcc_compile" '$(MAYBE_USE_COLLECT2)' $flags -DL$name \
       -c '$(srcdir)/libgcc2.c' -o $out
   done
@@ -179,12 +169,7 @@ for name in $LIB2FUNCS_EH; do
     flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
     out="libgcc/${dir}/${name}${objext}"
 
-    if [ $dir = . ]; then
-      libgccdir="libgcc"
-    else
-      libgccdir="libgcc/${dir}"
-    fi
-    echo $out: $libgccdir $libgcc2_c_dep
+    echo $out: $libgcc2_c_dep
     echo "	$gcc_compile" '$(MAYBE_USE_COLLECT2)' -fexceptions \
       $flags -DL$name -c '$(srcdir)/libgcc2.c' -o $out
   done
@@ -198,12 +183,7 @@ if [ "$FPBIT" ]; then
       flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
       out="libgcc/${dir}/${name}${objext}"
 
-      if [ $dir = . ]; then
-	libgccdir="libgcc"
-      else
-	libgccdir="libgcc/${dir}"
-      fi
-      echo $out: $libgccdir $FPBIT $fpbit_c_dep
+      echo $out: $FPBIT $fpbit_c_dep
       echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
 	-c $FPBIT -o $out
     done
@@ -218,12 +198,7 @@ if [ "$DPBIT" ]; then
       flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
       out="libgcc/${dir}/${name}${objext}"
 
-      if [ $dir = . ]; then
-	libgccdir="libgcc"
-      else
-	libgccdir="libgcc/${dir}"
-      fi
-      echo $out: $libgccdir $DPBIT $fpbit_c_dep
+      echo $out: $DPBIT $fpbit_c_dep
       echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
 	-c $DPBIT -o $out
     done
@@ -239,7 +214,7 @@ for file in $LIB2ADD; do
     fprime=`cat $file`
     for f in $fprime; do
 
-      lastout="force"
+      lastout="stmp-dirs $file"
       for ml in $MULTILIBS; do
         dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
         flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
@@ -268,12 +243,7 @@ for file in $LIB2ADD; do
 	flags="$flags -xassembler-with-cpp"
       fi
 
-      if [ $dir = . ]; then
-	libgccdir="libgcc"
-      else
-	libgccdir="libgcc/${dir}"
-      fi
-      echo $out: $libgccdir $file
+      echo $out: stmp-dirs $file
       echo "	$gcc_compile" $flags -c $file -o $out
     done
     libgcc2_objs="$libgcc2_objs ${oname}${objext}"
@@ -305,21 +275,25 @@ for ml in $MULTILIBS; do
 done
 
 echo ""
-all="libgcc"
+all=stmp-dirs
+dirs=libgcc
 
-echo "libgcc:; -mkdir libgcc"
 for ml in $MULTILIBS; do
   dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
   if [ $dir != . ]; then
-    echo "libgcc/${dir}: libgcc; -mkdir libgcc/${dir}"
-    echo "${dir}:; -mkdir ${dir}"
-    all="$all ${dir} libgcc/${dir}"
+    dirs="$dirs ${dir} libgcc/${dir}"
   fi
   all="$all ${dir}/libgcc.a"
 done
 
+echo 'stmp-dirs: force'
+echo '	for d in '"$dirs"'; do \'
+echo '	  if [ -d $$d ]; then true; else mkdir $$d; fi \'
+echo '	done'
+echo '	if [ -f stmp-dirs ]; then true; else touch stmp-dirs; fi'
+
 for f in $EXTRA_MULTILIB_PARTS; do
-  lastout="force"
+  lastout="stmp-dirs force"
   for ml in $MULTILIBS; do
     dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
     flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;

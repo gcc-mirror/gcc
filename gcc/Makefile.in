@@ -941,16 +941,6 @@ xlimits.h: glimits.h limitx.h limity.h
 #
 # Build libgcc.a.
 
-# Compiling libgcc.a requires making sure that cc1, etc. have been compiled.
-# But recompiling cc1 should not force recompilation of libgcc.a.
-# If you want to force recompilation, delete libgcc.a.
-libgcc.ready: $(GCC_PASSES) $(LANGUAGES) stmp-int-hdrs $(STMP_FIXPROTO)
-	-if [ -f libgcc.ready ] ; then \
-		true; \
-	else \
-		touch libgcc.ready; \
-	fi
-
 LIB2ADD = $(LIB2ADDEH) $(LIB2FUNCS_EXTRA) $(LANG_LIB2FUNCS)
 
 libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) xgcc$(exeext)
@@ -970,9 +960,15 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) xgcc$(exeext)
 	MULTILIBS=`$(GCC_FOR_TARGET) --print-multi-lib` \
 	EXTRA_MULTILIB_PARTS='$(EXTRA_MULTILIB_PARTS)' \
 	  $(SHELL) mklibgcc > tmp-libgcc.mk
-	$(SHELL) $(srcdir)/move-if-change tmp-libgcc.mk libgcc.mk
+	mv tmp-libgcc.mk libgcc.mk
 
-libgcc.a: libgcc.ready libgcc.mk $(FPBIT) $(DPBIT) $(LIB2ADD)
+# All the things that might cause us to want to recompile bits of libgcc.
+LIBGCC_DEPS = $(GCC_PASSES) $(LANGUAGES) stmp-int-hdrs $(STMP_FIXPROTO) \
+	libgcc.mk $(srcdir)/libgcc1.c $(srcdir)/libgcc2.c $(CONFIG_H) \
+	$(MACHMODE_H) longlong.h frame.h gbl-ctors.h config.status \
+	stmp-int-hdrs tsystem.h $(FPBIT) $(DPBIT) $(LIB2ADD)
+
+libgcc.a: $(LIBGCC_DEPS)
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	  HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
@@ -1003,7 +999,7 @@ s-mlib: $(srcdir)/genmultilib Makefile
 	touch s-mlib
 
 # Build multiple copies of libgcc.a, one for each target switch.
-stmp-multilib: libgcc.ready libgcc.mk $(FPBIT) $(DPBIT)
+stmp-multilib: $(LIBGCC_DEPS)
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	  HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
@@ -2137,7 +2133,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 # that don't exist in the distribution.
 INTL_CLEAN = intl.clean
 clean: mostlyclean $(INTL_CLEAN) lang.clean
-	-rm -f libgcc.a libgcc.ready
+	-rm -f libgcc.a
 	-rm -f *.dvi
 	-rm -f */*.dvi
 	-if [ -f md.pre-cpp ]; then \
