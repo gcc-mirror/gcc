@@ -8485,8 +8485,10 @@ flags can be updated.
 
 @defmac CASE_VECTOR_PC_RELATIVE
 Define this macro to be a C expression to indicate when jump-tables
-should contain relative addresses.  If jump-tables never contain
-relative addresses, then you need not define this macro.
+should contain relative addresses.  You need not define this macro if
+jump-tables never contain relative addresses, or jump-tables should
+contain relative addresses only when @option{-fPIC} or @option{-fPIC}
+is in effect.
 @end defmac
 
 @defmac CASE_DROPS_THROUGH

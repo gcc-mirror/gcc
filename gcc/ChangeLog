@@ -1,3 +1,9 @@
+2004-01-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/tm.texi (CASE_VECTOR_PC_RELATIVE): Mention that the
+	macro need not be defined if jump-tables should contain
+	relative addresses only when -fPIC or -fPIC is in effect.
+
 2004-01-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (function_arg_slotno): Use
