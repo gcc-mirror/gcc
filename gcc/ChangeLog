@@ -1,5 +1,7 @@
 2002-02-27  Graham Stott  <grahams@redhat.com>
 
+	* loop.c (prescan_loop): Handle PARALLEL.
+
 	* unroll.c (loop_iterations): Return 0 if the add_val for
 	a BIV is REG.
 
