@@ -1,5 +1,9 @@
 2001-01-19  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* search.c (get_vbase_1): Count only virtual bases.
+
+2001-01-19  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* class.c (duplicate_tag_error): Robustify flag clearing.
 
 2001-01-19  Nathan Sidwell  <nathan@codesourcery.com>
