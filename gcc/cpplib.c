@@ -169,7 +169,7 @@ static char *my_strerror		PROTO ((int));
 static void make_assertion		PROTO ((cpp_reader *, char *, U_CHAR *));
 static void path_include		PROTO ((cpp_reader *, char *));
 static void initialize_builtins		PROTO ((cpp_reader *));
-static void initialize_char_syntax	PROTO ((struct cpp_options *));
+static void initialize_char_syntax	PROTO ((void));
 #if 0
 static void trigraph_pcp ();
 #endif
@@ -339,11 +339,9 @@ U_CHAR is_hor_space[256] = { 0 };
 /* table to tell if c is horizontal or vertical space.  */
 U_CHAR is_space[256] = { 0 };
 
-/* Initialize syntactic classifications of characters.  */
-
+/* Initialize syntactic classifications of characters. */
 static void
-initialize_char_syntax (opts)
-     struct cpp_options *opts;
+initialize_char_syntax ()
 {
   register int i;
 
@@ -352,19 +350,20 @@ initialize_char_syntax (opts)
    * faster than saying (is_alpha (c) || c == '_'), etc.
    * Set up these things before calling any routines tthat
    * refer to them.
+   * XXX We should setlocale(LC_CTYPE, "C") here for safety.
    */
-  for (i = 'a'; i <= 'z'; i++) {
-    is_idchar[i - 'a' + 'A'] = 1;
-    is_idchar[i] = 1;
-    is_idstart[i - 'a' + 'A'] = 1;
-    is_idstart[i] = 1;
-  }
-  for (i = '0'; i <= '9'; i++)
-    is_idchar[i] = 1;
-  is_idchar['_'] = 1;
+  for (i = 0; i < 256; i++)
+    {
+      is_idchar[i]  = ISALNUM (i);
+      is_idstart[i] = ISALPHA (i);
+    }
+
+  is_idchar['_']  = 1;
   is_idstart['_'] = 1;
-  is_idchar['$'] = opts->dollars_in_ident;
-  is_idstart['$'] = opts->dollars_in_ident;
+
+  /* These will be reset later if -$ is in effect. */
+  is_idchar['$']  = 1;
+  is_idstart['$'] = 1;
 
   /* horizontal space table */
   is_hor_space[' '] = 1;
@@ -595,9 +594,8 @@ cpp_options_init (opts)
   opts->in_fname = NULL;
   opts->out_fname = NULL;
 
-  /* Initialize is_idchar to allow $.  */
   opts->dollars_in_ident = 1;
-  initialize_char_syntax (opts);
+  initialize_char_syntax ();
 
   opts->no_line_commands = 0;
   opts->no_trigraphs = 1;
@@ -4837,6 +4835,11 @@ cpp_start_read (pfile, fname)
      variable specifies other defaults.  */
   struct default_include *include_defaults = include_defaults_array;
 
+  /* Now that we know dollars_in_ident for real,
+     reset is_idchar/is_idstart. */
+  is_idchar['$'] = opts->dollars_in_ident;
+  is_idstart['$'] = opts->dollars_in_ident;
+  
   /* Add dirs from CPATH after dirs from -I.  */
   /* There seems to be confusion about what CPATH should do,
      so for the moment it is not documented.  */
@@ -4846,9 +4849,6 @@ cpp_start_read (pfile, fname)
   GET_ENV_PATH_LIST (p, "CPATH");
   if (p != 0 && ! opts->no_standard_includes)
     path_include (pfile, p);
-
-  /* Now that dollars_in_ident is known, initialize is_idchar.  */
-  initialize_char_syntax (opts);
 
   /* Do partial setup of input buffer for the sake of generating
      early #line directives (when -g is in effect).  */

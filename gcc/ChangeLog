@@ -1,4 +1,26 @@
-1998-11-26 01:17 -0500  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+1998-12-07  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* cpplib.c (initialize_char_syntax): Use ISALPHA and ISALNUM
+          so it'll work on non-ASCII platforms.  Always consider $ an
+          identifier character.  Take no arguments.
+	  (cpp_reader_init): Call initialize_char_syntax with no
+          arguments.
+	  (cpp_start_read): Don't call initialize_char_syntax again.
+          Clear is_idchar['$'] and is_idstart['$'] if not
+          opts->dollars_in_ident.
+
+	* cpplib.h (struct cpp_reader): Replace void *data element by
+          cpp_options *opts.  Rearrange elements to make gdb printout
+          less annoying (put buffer stack at end).
+	  (CPP_OPTIONS): Get rid of now-unnecessary cast.
+
+	* cppmain.c: s/data/opts/ when initializing cpp_reader
+          structure.
+	* c-decl.c: Likewise.
+	* objc/objc-act.c: Likewise.
+	* fix-header.c: Likewise.
+
+1998-12-07  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
 	* cpplib.h (struct cpp_buffer): Replace dir and dlen members
 	with a struct file_name_list pointer.

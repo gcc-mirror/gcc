@@ -632,7 +632,7 @@ read_scan_file (in_fname, argc, argv)
   obstack_init (&scan_file_obstack); 
 
   cpp_reader_init (&scan_in);
-  scan_in.data = &scan_options;
+  scan_in.opts = &scan_options;
   cpp_options_init (&scan_options);
   i = cpp_handle_options (&scan_in, argc, argv);
   if (i < argc && ! CPP_FATAL_ERRORS (&scan_in))

@@ -69,7 +69,7 @@ main (argc, argv)
   progname = p;
 
   cpp_reader_init (&parse_in);
-  parse_in.data = opts;
+  parse_in.opts = opts;
 
   cpp_options_init (opts);
   
