@@ -108,8 +108,7 @@ __throw_type_match_rtti_2 (const void *catch_type_r, const void *throw_type_r,
   if (const __user_type_info *p
       = dynamic_cast <const __user_type_info *> (&throw_type))
     {
-      /* The 1 skips conversions to private bases. */
-      return p->dcast (catch_type, 1, objptr, valp);
+      return p->upcast (catch_type, objptr, valp);
     }
   else if (const __pointer_type_info *fr =
 	   dynamic_cast <const __pointer_type_info *> (&throw_type))
@@ -154,10 +153,7 @@ __throw_type_match_rtti_2 (const void *catch_type_r, const void *throw_type_r,
 	return 1;
       else if (const __user_type_info *p
 	       = dynamic_cast <const __user_type_info *> (subfr))
-	{
-	  /* The 1 skips conversions to private bases. */
-	  return p->dcast (*subto, 1, objptr, valp);
-	}
+	return p->upcast (*subto, objptr, valp);
       else if (const __pointer_type_info *pfr
 	       = dynamic_cast <const __pointer_type_info *> (subfr))
 	{
@@ -274,14 +270,20 @@ __rtti_array (void *addr, const char *name)
 
 extern "C" void *
 __dynamic_cast (const type_info& (*from)(void), const type_info& (*to)(void),
-		int require_public, void *address,
-		const type_info & (*sub)(void), void *subptr)
+		int require_public, void *address, const type_info & (*sub)(void), void *subptr)
 {
-  void *ret;
-  if (static_cast <const __user_type_info &> (from ()).dcast
-      (to (), require_public, address, &ret, &(sub ()), subptr))
-    return ret;
-  return 0;
+  if (!require_public) abort();
+  return static_cast <__user_type_info const &> (from ()).dyncast
+      (/*boff=*/-2, to (), address, sub (), subptr);
+}
+
+extern "C" void *
+__dynamic_cast_2 (const type_info& (*from)(void), const type_info& (*to)(void),
+                  int boff,
+		  void *address, const type_info & (*sub)(void), void *subptr)
+{
+  return static_cast <__user_type_info const &> (from ()).dyncast
+      (boff, to (), address, sub (), subptr);
 }
 
 // type_info nodes and functions for the builtin types.  The mangling here

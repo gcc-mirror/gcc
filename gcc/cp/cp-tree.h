@@ -3596,6 +3596,7 @@ extern int types_overlap_p			PROTO((tree, tree));
 extern tree get_vbase				PROTO((tree, tree));
 extern tree get_binfo				PROTO((tree, tree, int));
 extern int get_base_distance			PROTO((tree, tree, int, tree *));
+extern tree get_dynamic_cast_base_type          PROTO((tree, tree));
 extern int accessible_p                         PROTO((tree, tree));
 extern tree lookup_field			PROTO((tree, tree, int, int));
 extern int lookup_fnfields_1                    PROTO((tree, tree));
