@@ -2202,10 +2202,10 @@ perform loop unrolling or function inlining when you specify @samp{-O2}.
 As compared to @samp{-O}, this option increases both compilation time
 and the performance of the generated code.
 
-@samp{-O2} turns on all optional optimizations except for loop unrolling
-and function inlining.  It also turns on the @samp{-fforce-mem} option
-on all machines and frame pointer elimination on machines where doing so
-does not interfere with debugging.
+@samp{-O2} turns on all optional optimizations except for loop unrolling,
+function inlining, and strict aliasing optimizations.  It also turns on the
+@samp{-fforce-mem} option on all machines and frame pointer elimination on
+machines where doing so does not interfere with debugging.
 
 @item -O3
 Optimize yet more.  @samp{-O3} turns on all optimizations specified by
@@ -2363,9 +2363,9 @@ math functions.
 @c --mew 26jan93
 The following options control specific optimizations.  The @samp{-O2}
 option turns on all of these optimizations except @samp{-funroll-loops}
-and @samp{-funroll-all-loops}.  On most machines, the @samp{-O} option
-turns on the @samp{-fthread-jumps} and @samp{-fdelayed-branch} options,
-but specific machines may handle it differently.
+@samp{-funroll-all-loops}, and @samp{-fstrict-aliasing}.  On most machines, the
+@samp{-O} option turns on the @samp{-fthread-jumps} and @samp{-fdelayed-branch}
+options, but specific machines may handle it differently.
 
 You can use the following flags in the rare cases when ``fine-tuning''
 of optimizations to be performed is desired.

@@ -4,6 +4,9 @@ Wed Oct 20 10:46:41 1999  Richard Earnshaw (rearnsha@arm.com)
 
 Wed Oct 20 22:57:58 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* toplev.c (main): Do not turn on strict aliasing by default.
+	* invoke.texi: Corresponding changes.
+
 	* sparc.md (movsf_const_intreg): If splitting, length must be > 1.
 	(movdf_const_intreg_sp64): Similarly.
 
