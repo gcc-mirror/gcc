@@ -46,7 +46,7 @@ extern int mvs_page_num, function_base_page;
 
 /* True if a label has been emitted.  */
 
-extern int mvs_label_emited;
+extern int mvs_label_emitted;
 
 /* The name of the current function.  */
 
@@ -1063,7 +1063,7 @@ enum reg_class
   if (!strcmp (PREFIX,"L"))						\
     {									\
       mvs_add_label(NUM);						\
-      mvs_label_emited = 1;						\
+      mvs_label_emitted = 1;						\
     }									\
   fprintf (FILE, "%s%d\tEQU\t*\n", PREFIX, NUM);			\
 }
