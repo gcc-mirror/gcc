@@ -420,10 +420,6 @@ struct cpp_callbacks
   void (*register_builtins) PARAMS ((cpp_reader *));
 };
 
-#define CPP_FATAL_LIMIT 1000
-/* True if we have seen a "fatal" error.  */
-#define CPP_FATAL_ERRORS(PFILE) (cpp_errors (PFILE) >= CPP_FATAL_LIMIT)
-
 /* Name under which this program was invoked.  */
 extern const char *progname;
 
@@ -593,13 +589,9 @@ extern int cpp_defined PARAMS ((cpp_reader *, const unsigned char *, int));
 #define DL_PEDWARN		0x02
 /* An error.  */
 #define DL_ERROR		0x03
-/* A fatal error.  We do not exit, to support use of cpplib as a
-   library, but may only return CPP_EOF tokens thereon.  It is the
-   caller's responsibility to check CPP_FATAL_ERRORS.  */
-#define DL_FATAL		0x04
 /* An internal consistency check failed.  Prints "internal error: ",
-   otherwise the same as DL_FATAL.  */
-#define DL_ICE			0x05
+   otherwise the same as DL_ERROR.  */
+#define DL_ICE			0x04
 /* Extracts a diagnostic level from an int.  */
 #define DL_EXTRACT(l)		(l & 0xf)
 /* Non-zero if a diagnostic level is one of the warnings.  */
