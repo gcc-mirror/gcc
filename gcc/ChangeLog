@@ -1,3 +1,8 @@
+2004-06-27  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_legitimate_offset_address_p):
+	Accept TOC addresses.
+
 2004-06-27  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_load_got): Update prototype.

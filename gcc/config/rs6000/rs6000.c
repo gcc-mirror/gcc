@@ -2625,9 +2625,6 @@ toc_relative_expr_p (rtx op)
   return constant_pool_expr_1 (op, &have_sym, &have_toc) && have_toc;
 }
 
-/* SPE offset addressing is limited to 5-bits worth of double words.  */
-#define SPE_CONST_OFFSET_OK(x) (((x) & ~0xf8) == 0)
-
 bool
 legitimate_constant_pool_address_p (rtx x)
 {
@@ -2647,6 +2644,9 @@ legitimate_small_data_p (enum machine_mode mode, rtx x)
 	  && small_data_operand (x, mode));
 }
 
+/* SPE offset addressing is limited to 5-bits worth of double words.  */
+#define SPE_CONST_OFFSET_OK(x) (((x) & ~0xf8) == 0)
+
 bool
 rs6000_legitimate_offset_address_p (enum machine_mode mode, rtx x, int strict)
 {
@@ -2658,6 +2658,8 @@ rs6000_legitimate_offset_address_p (enum machine_mode mode, rtx x, int strict)
     return false;
   if (!INT_REG_OK_FOR_BASE_P (XEXP (x, 0), strict))
     return false;
+  if (legitimate_constant_pool_address_p (x))
+    return true;
   if (GET_CODE (XEXP (x, 1)) != CONST_INT)
     return false;
 
