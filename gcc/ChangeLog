@@ -1,3 +1,10 @@
+Thu Jun  6 07:17:43 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	PR objc/6834
+	* objc/objc-lang.c (LANG_HOOKS_GET_ALIAS_SET): Define to be
+	c_common_get_alias_set.
+	(LANG_HOOKS_SAFE_FROM_P): Define to be c_safe_from_p.
+
 2002-06-05  Jeff Law  <law@redhat.com>
 
 	* pa.h (EXTRA_CONSTRAINT, T case): Further refine so that it
