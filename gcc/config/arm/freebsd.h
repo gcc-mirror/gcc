@@ -1,5 +1,5 @@
 /* Definitions for StrongARM running FreeBSD using the ELF format
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004 Free Software Foundation, Inc.
    Contributed by David E. O'Brien <obrien@FreeBSD.org> and BSDi.
 
    This file is part of GCC.
@@ -20,6 +20,7 @@
    Boston, MA 02111-1307, USA.  */
 
 
+#undef  SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS \
   { "fbsd_dynamic_linker", FBSD_DYNAMIC_LINKER }
 

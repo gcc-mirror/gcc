@@ -1,3 +1,10 @@
+2004-05-07  Loren James Rittle  <ljrittle@acm.org>
+
+	* config/alpha/freebsd.h (SUBTARGET_EXTRA_SPECS): Pass -Werror.
+	* config/arm/freebsd.h: Likewise.
+	* config/ia64/freebsd.h: Likewise.
+	* config/sparc/freebsd.h: Likewise.
+
 2004-05-06  Richard Henderson  <rth@redhat.com>
 
 	* stmt.c (parse_output_constraint): Don't warn for read-write
