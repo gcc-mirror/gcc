@@ -36,6 +36,15 @@
 
 package body Ada.Directories.Validity is
 
+   ---------------------------------
+   -- Is_Path_Name_Case_Sensitive --
+   ---------------------------------
+
+   function Is_Path_Name_Case_Sensitive return Boolean is
+   begin
+      return True;
+   end Is_Path_Name_Case_Sensitive;
+
    ------------------------
    -- Is_Valid_Path_Name --
    ------------------------
@@ -86,5 +95,3 @@ package body Ada.Directories.Validity is
    end Is_Valid_Simple_Name;
 
 end Ada.Directories.Validity;
-
-

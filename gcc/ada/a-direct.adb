@@ -34,6 +34,7 @@
 with Ada.Directories.Validity; use Ada.Directories.Validity;
 with Ada.Strings.Unbounded;    use Ada.Strings.Unbounded;
 with Ada.Unchecked_Deallocation;
+with Ada.Characters.Handling;  use Ada.Characters.Handling;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
@@ -67,15 +68,20 @@ package body Ada.Directories is
    --  Get the next entry in a directory, setting Entry_Fetched if successful
    --  or resetting Is_Valid if not.
 
+   procedure To_Lower_If_Case_Insensitive (S : in out String);
+   --  Put S in lower case if file and path names are case-insensitive
+
    ---------------
    -- Base_Name --
    ---------------
 
    function Base_Name (Name : String) return String is
-      Simple : constant String := Simple_Name (Name);
+      Simple : String := Simple_Name (Name);
       --  Simple'First is guaranteed to be 1
 
    begin
+      To_Lower_If_Case_Insensitive (Simple);
+
       --  Look for the last dot in the file name and return the part of the
       --  file name preceding this last dot. If the first dot is the first
       --  character of the file name, the base name is the empty string.
@@ -147,6 +153,7 @@ package body Ada.Directories is
             Last := Last + Extension'Length;
          end if;
 
+         To_Lower_If_Case_Insensitive (Result (1 .. Last));
          return Result (1 .. Last);
       end if;
    end Compose;
@@ -186,6 +193,7 @@ package body Ada.Directories is
                return Get_Current_Dir;
 
             else
+               To_Lower_If_Case_Insensitive (Result (1 .. Last));
                return Result (1 .. Last);
             end if;
          end;
@@ -333,9 +341,11 @@ package body Ada.Directories is
 
       --  The implementation uses GNAT.Directory_Operations.Get_Current_Dir
 
-      Cur : constant String := Get_Current_Dir;
+      Cur : String := Normalize_Pathname (Get_Current_Dir);
 
    begin
+      To_Lower_If_Case_Insensitive (Cur);
+
       if Cur'Length > 1 and then Cur (Cur'Last) = Dir_Separator then
          return Cur (1 .. Cur'Last - 1);
       else
@@ -609,12 +619,11 @@ package body Ada.Directories is
          --  Use GNAT.OS_Lib.Normalize_Pathname
 
          declare
-            Value : constant String := Normalize_Pathname (Name);
-            Result : String (1 .. Value'Length);
+            Value : String := Normalize_Pathname (Name);
+            subtype Result is String (1 .. Value'Length);
          begin
-            Result := Value;
-            return Result;
-            --  Should use subtype conversion, not junk copy ???
+            To_Lower_If_Case_Insensitive (Value);
+            return Result (Value);
          end;
       end if;
    end Full_Name;
@@ -718,7 +727,6 @@ package body Ada.Directories is
 
    begin
       --  First, the invalid cases
-
 
       if not (Is_Regular_File (Name) or else Is_Directory (Name)) then
          raise Name_Error;
@@ -836,13 +844,11 @@ package body Ada.Directories is
          --  The implementation uses GNAT.Directory_Operations.Base_Name
 
          declare
-            Value  : constant String :=
-                       GNAT.Directory_Operations.Base_Name (Name);
-            Result : String (1 .. Value'Length);
+            Value  : String := GNAT.Directory_Operations.Base_Name (Name);
+            subtype Result is String (1 .. Value'Length);
          begin
-            Result := Value;
-            return Result;
-            --  Should use subtype conversion instead of junk copy ???
+            To_Lower_If_Case_Insensitive (Value);
+            return Result (Value);
          end;
       end if;
    end Simple_Name;
@@ -943,5 +949,17 @@ package body Ada.Directories is
       Search.Value.Is_Valid := True;
    end Start_Search;
 
-end Ada.Directories;
+   ----------------------------------
+   -- To_Lower_If_Case_Insensitive --
+   ----------------------------------
 
+   procedure To_Lower_If_Case_Insensitive (S : in out String) is
+   begin
+      if not Is_Path_Name_Case_Sensitive then
+         for J in S'Range loop
+            S (J) := To_Lower (S (J));
+         end loop;
+      end if;
+   end To_Lower_If_Case_Insensitive;
+
+end Ada.Directories;
