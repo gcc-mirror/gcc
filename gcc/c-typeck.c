@@ -1016,19 +1016,19 @@ default_conversion (exp)
   if (TREE_CODE (exp) == COMPONENT_REF
       && DECL_BIT_FIELD (TREE_OPERAND (exp, 1)))
     {
-    tree width = DECL_SIZE (TREE_OPERAND (exp, 1));
-    HOST_WIDE_INT low = TREE_INT_CST_LOW (width);
+      tree width = DECL_SIZE (TREE_OPERAND (exp, 1));
+      HOST_WIDE_INT low = TREE_INT_CST_LOW (width);
 
-    /* If it's thinner than an int, promote it like a
-       C_PROMOTING_INTEGER_TYPE_P, otherwise leave it alone.  */
+      /* If it's thinner than an int, promote it like a
+	 C_PROMOTING_INTEGER_TYPE_P, otherwise leave it alone.  */
 
-    if (low < TYPE_PRECISION (integer_type_node))
-      {
-	if ( flag_traditional && TREE_UNSIGNED (type))
-	  return convert (unsigned_type_node, exp);
-	else
-	  return convert (integer_type_node, exp);
-      }
+      if (low < TYPE_PRECISION (integer_type_node))
+	{
+	  if (flag_traditional && TREE_UNSIGNED (type))
+	    return convert (unsigned_type_node, exp);
+	  else
+	    return convert (integer_type_node, exp);
+	}
     }
 
   if (C_PROMOTING_INTEGER_TYPE_P (type))
@@ -1085,7 +1085,7 @@ default_conversion (exp)
 			TREE_OPERAND (exp, 0), op1);
 	}
 
-      if (!lvalue_p (exp)
+      if (! lvalue_p (exp)
 	  && ! (TREE_CODE (exp) == CONSTRUCTOR && TREE_STATIC (exp)))
 	{
 	  error ("invalid use of non-lvalue array");
@@ -3183,6 +3183,11 @@ lvalue_p (ref)
 	  && TREE_CODE (TREE_TYPE (ref)) != METHOD_TYPE)
 	return 1;
       break;
+
+    case BIND_EXPR:
+    case RTL_EXPR:
+      if (TREE_CODE (TREE_TYPE (ref)) == ARRAY_TYPE)
+	return 1;
     }
   return 0;
 }
