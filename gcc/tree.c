@@ -2195,12 +2195,14 @@ unsave_expr_now (expr)
       break;
 
     case TARGET_EXPR:
-      sorry ("TARGET_EXPR reused inside UNSAVE_EXPR");
+      TREE_OPERAND (expr, 1) = TREE_OPERAND (expr, 3);
+      TREE_OPERAND (expr, 3) = NULL_TREE;
       break;
       
     case RTL_EXPR:
-      warning ("RTL_EXPR reused inside UNSAVE_EXPR");
-      RTL_EXPR_SEQUENCE (expr) = NULL_RTX;
+      /* I don't yet know how to emit a sequence multiple times.  */
+      if (RTL_EXPR_SEQUENCE (expr) != NULL_RTX)
+	abort ();
       break;
 
     case CALL_EXPR:

@@ -6705,7 +6705,7 @@ expand_expr (exp, target, tmode, modifier)
 	    DECL_RTL (slot) = target;
 	  }
 
-	exp1 = TREE_OPERAND (exp, 1);
+	exp1 = TREE_OPERAND (exp, 3) = TREE_OPERAND (exp, 1);
 	/* Mark it as expanded.  */
 	TREE_OPERAND (exp, 1) = NULL_TREE;
 

@@ -3687,12 +3687,9 @@ bc_expand_decl_init (decl)
 /* CLEANUP is an expression to be executed at exit from this binding contour;
    for example, in C++, it might call the destructor for this variable.
 
-   If CLEANUP contains any SAVE_EXPRs, then you must preevaluate them
-   either before or after calling `expand_decl_cleanup' but before compiling
-   any subsequent expressions.  This is because CLEANUP may be expanded
-   more than once, on different branches of execution.
-   For the same reason, CLEANUP may not contain a CALL_EXPR
-   except as its topmost node--else `preexpand_calls' would get confused.
+   We wrap CLEANUP in an UNSAVE_EXPR node, so that we can expand the
+   CLEANUP multiple times, and have the correct semantics.  This
+   happens in exception handling, and for non-local gotos.
 
    If CLEANUP is nonzero and DECL is zero, we record a cleanup
    that is not associated with any particular variable.   */
@@ -3711,6 +3708,8 @@ expand_decl_cleanup (decl, cleanup)
 
   if (cleanup != 0)
     {
+      cleanup = unsave_expr (cleanup);
+
       thisblock->data.block.cleanups
 	= temp_tree_cons (decl, cleanup, thisblock->data.block.cleanups);
       /* If this block has a cleanup, it belongs in stack_block_stack.  */
