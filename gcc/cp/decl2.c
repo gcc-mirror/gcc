@@ -2555,10 +2555,9 @@ import_export_vtable (decl, type, final)
       DECL_EXTERNAL (decl) = ! CLASSTYPE_VTABLE_NEEDS_WRITING (type);
       DECL_INTERFACE_KNOWN (decl) = 1;
 
-      /* For WIN32 we also want to put explicit instantiations in
-	 linkonce sections.  */
-      if (CLASSTYPE_EXPLICIT_INSTANTIATION (type))
-	maybe_make_one_only (decl);
+      /* Always make vtables weak.  */
+      if (flag_weak)
+	comdat_linkage (decl);
     }
   else
     {
@@ -2873,6 +2872,10 @@ import_export_decl (decl)
 	  DECL_NOT_REALLY_EXTERN (decl)
 	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
 		 || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines));
+
+	  /* Always make artificials weak.  */
+	  if (DECL_ARTIFICIAL (decl) && flag_weak)
+	    comdat_linkage (decl);
 	}
       else
 	comdat_linkage (decl);
@@ -2894,10 +2897,9 @@ import_export_decl (decl)
 	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
 		 || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines));
 
-	  /* For WIN32 we also want to put explicit instantiations in
-	     linkonce sections.  */
-	  if (CLASSTYPE_EXPLICIT_INSTANTIATION (ctype))
-	    maybe_make_one_only (decl);
+	  /* Always make artificials weak.  */
+	  if (flag_weak)
+	    comdat_linkage (decl);
 	}
       else if (TYPE_BUILT_IN (ctype) && ctype == TYPE_MAIN_VARIANT (ctype))
 	DECL_NOT_REALLY_EXTERN (decl) = 0;

@@ -7202,9 +7202,12 @@ mark_decl_instantiated (result, extern_p)
       DECL_INTERFACE_KNOWN (result) = 1;
       DECL_NOT_REALLY_EXTERN (result) = 1;
 
+      /* Always make artificials weak.  */
+      if (DECL_ARTIFICIAL (result) && flag_weak)
+	comdat_linkage (result);
       /* For WIN32 we also want to put explicit instantiations in
 	 linkonce sections.  */
-      if (TREE_PUBLIC (result))
+      else if (TREE_PUBLIC (result))
 	maybe_make_one_only (result);
     }
   else if (TREE_CODE (result) == FUNCTION_DECL)
