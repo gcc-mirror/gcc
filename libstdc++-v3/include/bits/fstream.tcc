@@ -182,7 +182,8 @@ namespace std
   
   template<typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::int_type 
-    basic_filebuf<_CharT, _Traits>::_M_underflow(bool __bump)
+    basic_filebuf<_CharT, _Traits>::
+    _M_underflow(bool __bump)
     {
       int_type __ret = traits_type::eof();
       const bool __testin = this->_M_mode & ios_base::in;
@@ -333,6 +334,53 @@ namespace std
   template<typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::int_type 
     basic_filebuf<_CharT, _Traits>::
+    _M_overflow(int_type __c)
+    {
+      int_type __ret = traits_type::eof();
+      const bool __testput = this->_M_out_beg < this->_M_out_lim;
+
+      if (__testput)
+	{
+	  // Need to restore current position. The position of the external
+	  // byte sequence (_M_file) corresponds to _M_filepos, and we need
+	  // to move it to _M_out_beg for the write.
+	  if (_M_filepos && _M_filepos != this->_M_out_beg)
+	    {
+	      off_type __off = this->_M_out_beg - _M_filepos;
+	      _M_file.seekoff(__off, ios_base::cur);
+	    }
+
+	  // Convert internal buffer to external representation, output.
+	  if (_M_convert_to_external(this->_M_out_beg, 
+				     this->_M_out_lim - this->_M_out_beg))
+	    {
+	      // Convert pending sequence to external representation, output.
+	      // If eof, then just attempt sync.
+	      if (!traits_type::eq_int_type(__c, traits_type::eof()))
+		{
+		  // User code must flush when switching modes (thus
+		  // don't sync).
+		  char_type __pending = traits_type::to_char_type(__c);
+		  if (_M_convert_to_external(&__pending, 1))
+		    {
+		      _M_set_indeterminate();
+		      __ret = traits_type::not_eof(__c);
+		    }
+		}
+	      else if (!_M_file.sync())
+		{
+		  _M_set_indeterminate();
+		  __ret = traits_type::not_eof(__c);
+		}
+	    }
+	}
+      _M_last_overflowed = true;	
+      return __ret;
+    }
+
+  template<typename _CharT, typename _Traits>
+    typename basic_filebuf<_CharT, _Traits>::int_type 
+    basic_filebuf<_CharT, _Traits>::
     overflow(int_type __c)
     {
       int_type __ret = traits_type::eof();
@@ -358,14 +406,16 @@ namespace std
     }
   
   template<typename _CharT, typename _Traits>
-    void
+    bool
     basic_filebuf<_CharT, _Traits>::
-    _M_convert_to_external(_CharT* __ibuf, streamsize __ilen,
-			   streamsize& __elen, streamsize& __plen)
+    _M_convert_to_external(_CharT* __ibuf, streamsize __ilen)
     {
+      // Sizes of external and pending output.
+      streamsize __elen = 0;
+      streamsize __plen = 0;
+
       const locale __loc = this->getloc();
       const __codecvt_type& __cvt = use_facet<__codecvt_type>(__loc);
-
       if (__cvt.always_noconv() && __ilen)
 	{
 	  __elen += _M_file.xsputn(reinterpret_cast<char*>(__ibuf), __ilen);
@@ -420,67 +470,8 @@ namespace std
 		}
 	    }
 	}
-    }
 
-  template<typename _CharT, typename _Traits>
-    typename basic_filebuf<_CharT, _Traits>::int_type 
-    basic_filebuf<_CharT, _Traits>::
-    _M_overflow(int_type __c)
-    {
-      int_type __ret = traits_type::eof();
-      const bool __testput = this->_M_out_beg < this->_M_out_lim;
-      const bool __testunbuffered = _M_file.is_open() && !this->_M_buf_size;
-
-      if (__testput || __testunbuffered)
-	{
-	  // Sizes of external and pending output.
-	  streamsize __elen = 0;
-	  streamsize __plen = 0;
-
-	  // Need to restore current position. The position of the external
-	  // byte sequence (_M_file) corresponds to _M_filepos, and we need
-	  // to move it to _M_out_beg for the write.
-	  if (_M_filepos && _M_filepos != this->_M_out_beg)
-	    {
-	      off_type __off = this->_M_out_beg - _M_filepos;
-	      _M_file.seekoff(__off, ios_base::cur);
-	    }
-
-	  // Convert internal buffer to external representation, output.
-	  // NB: In the unbuffered case, no internal buffer exists. 
-	  if (!__testunbuffered)
-	    _M_convert_to_external(this->_M_out_beg,
-				   this->_M_out_lim - this->_M_out_beg, 
-				   __elen, __plen);
-
-	  // Checks for codecvt.out failures and _M_file.xsputn failures,
-	  // respectively, inside _M_convert_to_external.
-	  if (__testunbuffered || (__elen && __elen == __plen))
-	    {
-	      // Convert pending sequence to external representation, output.
-	      // If eof, then just attempt sync.
-	      if (!traits_type::eq_int_type(__c, traits_type::eof()))
-		{
-		  char_type __pending = traits_type::to_char_type(__c);
-		  _M_convert_to_external(&__pending, 1, __elen, __plen);
-
-		  // User code must flush when switching modes (thus
-		  // don't sync).
-		  if (__elen == __plen && __elen)
-		    {
-		      _M_set_indeterminate();
-		      __ret = traits_type::not_eof(__c);
-		    }
-		}
-	      else if (!_M_file.sync())
-		{
-		  _M_set_indeterminate();
-		  __ret = traits_type::not_eof(__c);
-		}
-	    }
-	}
-      _M_last_overflowed = true;	
-      return __ret;
+      return __elen && __elen == __plen;
     }
 
   template<typename _CharT, typename _Traits>

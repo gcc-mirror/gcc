@@ -353,8 +353,8 @@ namespace std
        *  @doctodo
        *  @endif
       */
-      void
-      _M_convert_to_external(char_type*, streamsize, streamsize&, streamsize&);
+      bool
+      _M_convert_to_external(char_type*, streamsize);
 
       /**
        *  @brief  Manipulates the buffer.
