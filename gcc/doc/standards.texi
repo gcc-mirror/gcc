@@ -85,6 +85,10 @@ standard, use @option{-std=c99} or @option{-std=iso9899:1999}.  (While in
 development, drafts of this standard version were referred to as
 @dfn{C9X}.)
 
+Errors in the 1999 ISO C standard were corrected in a Technical
+Corrigendum published in 2001.  GCC does not support the uncorrected
+version.
+
 @opindex traditional
 GCC also has some limited support for traditional (pre-ISO) C with the
 @option{-traditional} option.  This support may be of use for compiling

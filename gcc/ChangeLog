@@ -1,3 +1,7 @@
+2001-11-12  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/standards.texi: Mention C99 TC1.
+
 2001-11-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mips-protos.h (mips_output_conditional_branch): Const-ify.
