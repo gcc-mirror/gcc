@@ -626,8 +626,8 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     _M_replace_aux(iterator __i1, iterator __i2, size_type __n2, _CharT __c)
     {
-      size_type __n1 = __i2 - __i1;
-      size_type __off1 = __i1 - _M_ibegin();
+      const size_type __n1 = __i2 - __i1;
+      const size_type __off1 = __i1 - _M_ibegin();
       if (max_size() - (this->size() - __n1) <= __n2)
 	__throw_length_error("basic_string::replace");
       _M_mutate (__off1, __n1, __n2);
