@@ -1,3 +1,12 @@
+2002-01-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.tcc (time_put::put): Correct output
+	iterator positions.
+	* testsuite/22_locale/time_put_members_char.cc (test02): Add.
+	* testsuite/22_locale/time_put_members_wchar_t.cc (test02): Add.
+	* testsuite/22_locale/time_get_members_wchar_t.cc (test06): Add.
+	* testsuite/22_locale/time_get_members_char.cc (test06): Add.
+
 2002-01-14  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	* docs/html/17_intro/porting-howto.xml: Update filebuf section.
