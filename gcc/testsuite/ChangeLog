@@ -1,3 +1,10 @@
+Wed Mar 11 00:03:49 1998  Robert Lipe  <robertl@dgii.com>
+
+	* g77.f-torture/compile/980310-1.f, g77.f-torture/compile/980310-2.f
+	g77.f-torture/compile/980310-3.f, g77.f-torture/compile/980310-4.f
+	g77.f-torture/compile/980310-6.f, g77.f-torture/compile/980310-7.f
+	g77.f-torture/compile/980310-8.f: New tests from egcs-bugs archives.
+	* g77.f-torture/execute/980310-5.f: New test from egcs-bugs archives.
 
 Tue Mar 10 00:31:51 1998  Alexandre Oliva   <oliva@dcc.unicamp.br>
 
