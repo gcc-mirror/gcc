@@ -3549,7 +3549,7 @@ fold (expr)
 	      TREE_TYPE (t) = type;
 	      TREE_OVERFLOW (t)
 		= (TREE_OVERFLOW (arg0)
-		   | force_fit_type (t, overflow));
+		   | force_fit_type (t, overflow && !TREE_UNSIGNED (type)));
 	      TREE_CONSTANT_OVERFLOW (t)
 		= TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg0);
 	    }
