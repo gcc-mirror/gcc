@@ -1422,12 +1422,12 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	 the worst that happens if we get it wrong is we issue an error
 	 message.  */
 
-      for (j = 0; j < TREE_STRING_LENGTH (TREE_PURPOSE (tail)); j++)
+      for (j = 0; j < TREE_STRING_LENGTH (TREE_PURPOSE (tail)) - 1; j++)
 	switch (TREE_STRING_POINTER (TREE_PURPOSE (tail))[j])
 	  {
 	  case '+':
 	    /* Make sure we can specify the matching operand.  */
-	    if (i >= '0' && i <= '9')
+	    if (i > 9)
 	      {
 		error ("output operand constraint %d contains `+'", i);
 		return;
@@ -1545,7 +1545,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       /* Make sure constraint has neither `=' nor `+'.  */
 
-      for (j = 0; j < TREE_STRING_LENGTH (TREE_PURPOSE (tail)); j++)
+      for (j = 0; j < TREE_STRING_LENGTH (TREE_PURPOSE (tail)) - 1; j++)
 	switch (TREE_STRING_POINTER (TREE_PURPOSE (tail))[j])
 	  {
 	  case '+':   case '=':
@@ -3448,29 +3448,13 @@ expand_decl (decl)
       enum machine_mode reg_mode
 	= promote_mode (type, DECL_MODE (decl), &unsignedp, 0);
 
-      if (TREE_CODE (type) == COMPLEX_TYPE)
-	{
-	  rtx realpart, imagpart;
-	  enum machine_mode partmode = TYPE_MODE (TREE_TYPE (type));
+      DECL_RTL (decl) = gen_reg_rtx (reg_mode);
+      mark_user_reg (DECL_RTL (decl));
 
-	  /* For a complex type variable, make a CONCAT of two pseudos
-	     so that the real and imaginary parts
-	     can be allocated separately.  */
-	  realpart = gen_reg_rtx (partmode);
-	  REG_USERVAR_P (realpart) = 1;
-	  imagpart = gen_reg_rtx (partmode);
-	  REG_USERVAR_P (imagpart) = 1;
-	  DECL_RTL (decl) = gen_rtx (CONCAT, reg_mode, realpart, imagpart);
-	}
-      else
-	{
-	  DECL_RTL (decl) = gen_reg_rtx (reg_mode);
-	  if (TREE_CODE (type) == POINTER_TYPE)
-	    mark_reg_pointer (DECL_RTL (decl),
-			      (TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl)))
-			       / BITS_PER_UNIT));
-	  REG_USERVAR_P (DECL_RTL (decl)) = 1;
-	}
+      if (TREE_CODE (type) == POINTER_TYPE)
+	mark_reg_pointer (DECL_RTL (decl),
+			  (TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl)))
+			   / BITS_PER_UNIT));
     }
   else if (TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST)
     {
