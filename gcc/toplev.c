@@ -1685,9 +1685,8 @@ crash_signal (signo)
      /* If this is missing, some compilers complain.  */
      int signo;
 {
-  fatal ("Internal error: %s.\n\
-Please submit a full bug report.\n\
-See %s for instructions.", strsignal (signo), GCCBUGURL);
+  error ("Internal error: %s.", strsignal (signo));
+  finish_abort ();
 }
 
 /* Strip off a legitimate source ending from the input string NAME of
