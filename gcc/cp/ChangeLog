@@ -1,3 +1,8 @@
+2002-11-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR C++/2521
+	* typeck.c (build_x_unary_op): Handle pointer-to-member.
+
 2002-10-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8160
