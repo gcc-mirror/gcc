@@ -1,3 +1,8 @@
+2004-10-05  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa.c (verify_ssa): Verify phi arguments only
+	contain renamed names.
+
 2004-10-05  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux.h: Formatting, whitespace.
