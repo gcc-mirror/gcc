@@ -1,3 +1,9 @@
+1998-11-27  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* bitset: explicitly convert basic_string<...>::npos to size_t in
+	default argument to constructor, to avoid parse error at `>'
+	(__STL_EXPLICIT_FUNCTION_TMPL_ARGS): replace #if with #ifdef
+
 1998-11-01  Mark Mitchell  <mark@markmitchell.com>
 
 	* stl_alloc.h (default_alloc_template::_S_free_list): Don't

@@ -626,7 +626,7 @@ public:
   template<class _CharT, class _Traits, class _Alloc>
   explicit bitset(const basic_string<_CharT,_Traits,_Alloc>& __s,
                   size_t __pos = 0,
-                  size_t __n = basic_string<_CharT,_Traits,_Alloc>::npos) 
+                  size_t __n = size_t(basic_string<_CharT,_Traits,_Alloc>::npos))
     : _Base() 
   {
     if (__pos > __s.size()) 
@@ -753,7 +753,7 @@ public:
 
   unsigned long to_ulong() const { return _M_do_to_ulong(); }
 
-#if __STL_EXPLICIT_FUNCTION_TMPL_ARGS
+#ifdef __STL_EXPLICIT_FUNCTION_TMPL_ARGS
   template <class _CharT, class _Traits, class _Alloc>
   basic_string<_CharT, _Traits, _Alloc> to_string() const {
     basic_string<_CharT, _Traits, _Alloc> __result;
