@@ -1,3 +1,7 @@
+Sun Oct 11 17:36:06 1998  Michael Tiemann  <tiemann@holodeck.cygnus.com>
+
+	* Makefile.in (cplus-dem.o, obstack.o): Depend upon config.h.
+
 Thu Oct  8 23:42:08 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Merge egcs & devo libiberty.

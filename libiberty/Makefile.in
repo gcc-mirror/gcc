@@ -221,7 +221,7 @@ basename.o: $(INCDIR)/libiberty.h
 choose-temp.o: config.h
 clock.o: config.h
 concat.o: $(INCDIR)/libiberty.h
-cplus-dem.o: $(INCDIR)/demangle.h
+cplus-dem.o: config.h $(INCDIR)/demangle.h
 fdmatch.o: $(INCDIR)/libiberty.h
 fnmatch.o: config.h $(INCDIR)/fnmatch.h
 getcwd.o: config.h
@@ -233,7 +233,7 @@ hex.o: $(INCDIR)/libiberty.h
 floatformat.o: $(INCDIR)/floatformat.h
 mkstemp.o: config.h
 objalloc.o: $(INCDIR)/objalloc.h
-obstack.o: $(INCDIR)/obstack.h
+obstack.o: config.h $(INCDIR)/obstack.h
 pexecute.o: config.h $(INCDIR)/libiberty.h
 spaces.o: $(INCDIR)/libiberty.h
 strerror.o: config.h $(INCDIR)/libiberty.h
