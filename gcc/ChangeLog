@@ -1,3 +1,7 @@
+2001-11-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cris.h: Revert thinko in last patch.
+
 2001-11-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* ChangeLog.0, ChangeLog.2, ChangeLog.3, ChangeLog.4, ChangeLog,
