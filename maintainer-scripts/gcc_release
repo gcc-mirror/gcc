@@ -520,7 +520,7 @@ FILE_LIST=""
 
 BZIP2="${BZIP2:-bzip2}"
 CVS="${CVS:-cvs -f -Q -z9}"
-DIFF="${DIFF:-diff -Nrc3pad}"
+DIFF="${DIFF:-diff -Nrcpad}"
 ENV="${ENV:-env}"
 GZIP="${GZIP:-gzip --best}"
 SCP="${SCP:-scp -p}"
