@@ -202,7 +202,7 @@ test -f libU77/makefile && mv libU77/makefile  libU77/makefile.ori
 # Get the version trigger filename from the toplevel
 if [[ "${with_gcc_version_trigger+set}" = set ]]; then
 	gcc_version_trigger=$with_gcc_version_trigger
-	gcc_version=`sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/' < ${gcc_version_trigger}`
+	gcc_version=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/'`
 else
 	gcc_version_trigger=
 	gcc_version=UNKNOWN

@@ -244,7 +244,7 @@ GTHREAD_FLAGS=@gthread_flags@
 gcc_version=@gcc_version@
 gcc_version_trigger=@gcc_version_trigger@
 version=$(gcc_version)
-mainversion=`sed -e 's/.*\"\([0-9]*\.[0-9]*\).*/\1/' < $(srcdir)/version.c`
+mainversion=`grep version_string $(srcdir)/version.c | sed -e 's/.*\"\([0-9]*\.[0-9]*\).*/\1/'`
 
 # Common prefix for installation directories.
 # NOTE: This directory must exist when you start installation.
@@ -760,6 +760,7 @@ EXPR_H = expr.h insn-codes.h
 REGS_H = regs.h varray.h $(MACHMODE_H)
 INTEGRATE_H = integrate.h varray.h
 LOOP_H = loop.h varray.h basic-block.h
+GCC_H = gcc.h version.h
 #
 # Language makefile fragments.
 
@@ -1413,8 +1414,6 @@ c-common.o : c-common.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-lex.h \
 
 # Language-independent files.
 
-gcc.h: version.h
-
 DRIVER_DEFINES = \
   -DSTANDARD_STARTFILE_PREFIX=\"$(unlibsubdir)/\" \
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc-lib/\" \
@@ -1423,13 +1422,13 @@ DRIVER_DEFINES = \
   -DSTANDARD_BINDIR_PREFIX=\"$(bindir)/\" \
   -DTOOLDIR_BASE_PREFIX=\"$(unlibsubdir)/../\"
 gcc.o: gcc.c $(CONFIG_H) system.h intl.h multilib.h \
-    Makefile $(lang_specs_files) prefix.h gcc.h
+    Makefile $(lang_specs_files) prefix.h $(GCC_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   $(DRIVER_DEFINES) \
   -c `echo $(srcdir)/gcc.c | sed 's,^\./,,'`
 
-gccspec.o: gccspec.c $(CONFIG_H) system.h gcc.h
-cppspec.o: cppspec.c $(CONFIG_H) system.h gcc.h
+gccspec.o: gccspec.c $(CONFIG_H) system.h $(GCC_H)
+cppspec.o: cppspec.c $(CONFIG_H) system.h $(GCC_H)
 
 tree-check.h: s-check ; @true
 s-check : gencheck $(srcdir)/move-if-change
@@ -1448,7 +1447,7 @@ gencheck.o : gencheck.c gencheck.h tree.def $(CONFIG_H) hconfig.h system.h \
 
 dumpvers: dumpvers.c
 
-version.o: version.c
+version.o: version.c version.h
 
 ggc-common.o: ggc-common.c $(CONFIG_H) $(RTL_H) $(TREE_H) \
 	flags.h ggc.h varray.h hash.h
@@ -1531,7 +1530,7 @@ optabs.o : optabs.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h  \
    toplev.h ggc.h real.h
 dbxout.o : dbxout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h $(REGS_H) \
    insn-config.h reload.h gstab.h xcoffout.h defaults.h output.h dbxout.h \
-   toplev.h gcc.h
+   toplev.h
 sdbout.o : sdbout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h except.h \
    function.h $(EXPR_H) output.h hard-reg-set.h $(REGS_H) defaults.h real.h \
    insn-config.h $(srcdir)/../include/obstack.h xcoffout.h c-pragma.h \

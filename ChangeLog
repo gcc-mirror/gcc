@@ -1,3 +1,8 @@
+2000-02-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure (gcc_version): When setting, narrow search to
+	lines containing `version_string'.
+
 2000-02-15  Denis Chertykov  <denisc@overta.ru>
 
 	* config.sub: Add support for avr target.

@@ -1,3 +1,19 @@
+2000-02-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* version.c: Include gansidecl.h and version.h.
+
+	* version.h: Wrap entire file in macro __GCC_VERSION_H__.
+	
+	* configure.in (gcc_version): When setting, narrow search to
+	lines containing `version_string'.
+
+	* Makefile.in (mainversion): Likewise. 
+	(GCC_H): New variable.
+	(gcc.h): Delete target.
+	(gcc.o, gccspec.o, cppspec.o): Depend on $(GCC_H), not gcc.h.
+	(version.o): Depend on version.h.
+	(dbxout.o): Don't depend on gcc.h.
+
 Wed Feb 16 15:04:49 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 			  Michael Meissner  <meissner@cygnus.com>
 

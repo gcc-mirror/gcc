@@ -1,3 +1,7 @@
+2000-02-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in (jvspec.o): Depend on $(GCC_H), not gcc.h.
+
 2000-02-15  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (jni_print_char): New function.

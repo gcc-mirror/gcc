@@ -86,7 +86,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.23 $"
+version="$Revision: 1.24 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -586,12 +586,12 @@ esac
 # the gcc version number changes.
 if [ "${with_gcc_version_trigger+set}" = set ]; then
     gcc_version_trigger="$with_gcc_version_trigger"
-    gcc_version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < ${with_gcc_version_trigger}`
+    gcc_version=`grep version_string ${with_gcc_version_trigger} | sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/'`
 else
     # If gcc's sources are available, define the trigger file.
     if [ -f ${topsrcdir}/gcc/version.c ] ; then
 	gcc_version_trigger=${topsrcdir}/gcc/version.c
-	gcc_version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < ${gcc_version_trigger}`
+	gcc_version=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/'`
 	case "$arguments" in
 	  *--with-gcc-version-trigger=$gcc_version_trigger* )
 	    ;;

@@ -75,7 +75,7 @@ C++ c++: cc1plus$(exeext)
 # Tell GNU make to ignore these if they exist.
 .PHONY: C++ c++
 
-g++spec.o: $(srcdir)/cp/g++spec.c system.h gcc.h
+g++spec.o: $(srcdir)/cp/g++spec.c system.h $(GCC_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/cp/g++spec.c
 
 $(INTL_TARGETS): $(srcdir)/cp/parse.c
