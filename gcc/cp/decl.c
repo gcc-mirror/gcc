@@ -11309,9 +11309,6 @@ xref_basetypes (code_type_node, name, ref, binfo)
   SET_CLASSTYPE_MARKED (ref);
   BINFO_BASETYPES (TYPE_BINFO (ref)) = binfos = make_tree_vec (len);
 
-  if (TREE_CODE (name) == TYPE_DECL)
-    name = DECL_NAME (name);
-
   for (i = 0; binfo; binfo = TREE_CHAIN (binfo))
     {
       /* The base of a derived struct is public by default.  */
@@ -11345,9 +11342,7 @@ xref_basetypes (code_type_node, name, ref, binfo)
 	  continue;
 	}
 
-      GNU_xref_hier (IDENTIFIER_POINTER (name),
-		     IDENTIFIER_POINTER (TYPE_IDENTIFIER (basetype)),
-		     via_public, via_virtual, 0);
+      GNU_xref_hier (name, basetype, via_public, via_virtual, 0);
 
 #if 1
       /* This code replaces similar code in layout_basetypes.
