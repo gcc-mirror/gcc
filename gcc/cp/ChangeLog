@@ -1,3 +1,13 @@
+2004-03-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/13170
+	* decl.c (xref_tag): Remove attribute handling.
+	* cp-tree.h: Adjust prototype.
+	* decl.c, parser.c, rtti.c: Adjust callers.
+	* parser.c (cp_parser_class_head): Pass back attributes in the
+	class head.
+	(cp_parser_class_specifier): Adjust.
+
 2004-03-08  Matt Austern  <austern@apple.com>
 
 	PR debug/14079

@@ -1523,7 +1523,7 @@ static tree cp_parser_class_name
 static tree cp_parser_class_specifier
   (cp_parser *);
 static tree cp_parser_class_head
-  (cp_parser *, bool *);
+  (cp_parser *, bool *, tree *);
 static enum tag_types cp_parser_class_key
   (cp_parser *);
 static void cp_parser_member_specification_opt
@@ -9208,7 +9208,6 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	    warning ("type attributes are honored only at type definition");
 
 	  type = xref_tag (tag_type, identifier, 
-			   /*attributes=*/NULL_TREE,
 			   (is_friend 
 			    || !is_declaration
 			    || cp_lexer_next_token_is_not (parser->lexer, 
@@ -11697,7 +11696,7 @@ cp_parser_class_specifier (cp_parser* parser)
 {
   cp_token *token;
   tree type;
-  tree attributes = NULL_TREE;
+  tree attributes;
   int has_trailing_semicolon;
   bool nested_name_specifier_p;
   unsigned saved_num_template_parameter_lists;
@@ -11707,7 +11706,8 @@ cp_parser_class_specifier (cp_parser* parser)
 
   /* Parse the class-head.  */
   type = cp_parser_class_head (parser,
-			       &nested_name_specifier_p);
+			       &nested_name_specifier_p,
+			       &attributes);
   /* If the class-head was a semantic disaster, skip the entire body
      of the class.  */
   if (!type)
@@ -11750,17 +11750,14 @@ cp_parser_class_specifier (cp_parser* parser)
      missing trailing `;'.  */
   token = cp_lexer_peek_token (parser->lexer);
   has_trailing_semicolon = (token->type == CPP_SEMICOLON);
-  /* Look for attributes to apply to this class.  */
+  /* Look for trailing attributes to apply to this class.  */
   if (cp_parser_allow_gnu_extensions_p (parser))
-    attributes = cp_parser_attributes_opt (parser);
-  /* If we got any attributes in class_head, xref_tag will stick them in
-     TREE_TYPE of the type.  Grab them now.  */
-  if (type != error_mark_node)
     {
-      attributes = chainon (TYPE_ATTRIBUTES (type), attributes);
-      TYPE_ATTRIBUTES (type) = NULL_TREE;
-      type = finish_struct (type, attributes);
+      tree sub_attr = cp_parser_attributes_opt (parser);
+      attributes = chainon (attributes, sub_attr);
     }
+  if (type != error_mark_node)
+    type = finish_struct (type, attributes);
   if (pop_p)
     pop_scope (CP_DECL_CONTEXT (TYPE_MAIN_DECL (type)));
   /* If this class is not itself within the scope of another class,
@@ -11867,7 +11864,8 @@ cp_parser_class_specifier (cp_parser* parser)
 
 static tree
 cp_parser_class_head (cp_parser* parser, 
-		      bool* nested_name_specifier_p)
+		      bool* nested_name_specifier_p,
+		      tree *attributes_p)
 {
   cp_token *token;
   tree nested_name_specifier;
@@ -12094,7 +12092,7 @@ cp_parser_class_head (cp_parser* parser,
       /* If the class was unnamed, create a dummy name.  */
       if (!id)
 	id = make_anon_name ();
-      type = xref_tag (class_key, id, attributes, /*globalize=*/false,
+      type = xref_tag (class_key, id, /*globalize=*/false,
 		       parser->num_template_parameter_lists);
     }
   else
@@ -12178,6 +12176,7 @@ cp_parser_class_head (cp_parser* parser,
       end_specialization ();
       --parser->num_template_parameter_lists;
     }
+  *attributes_p = attributes;
   return type;
 }
 

@@ -9315,8 +9315,7 @@ check_elaborated_type_specifier (enum tag_types tag_code,
    Define the tag as a forward-reference if it is not defined.
 
    If a declaration is given, process it here, and report an error if
-   multiple declarations are not identical.  ATTRIBUTE is the attribute
-   appeared in this declaration.
+   multiple declarations are not identical.
 
    GLOBALIZE is false when this is also a definition.  Only look in
    the current frame for the name (since C++ allows new names in any
@@ -9326,7 +9325,7 @@ check_elaborated_type_specifier (enum tag_types tag_code,
    a set of template parameters.  */
 
 tree
-xref_tag (enum tag_types tag_code, tree name, tree attributes, 
+xref_tag (enum tag_types tag_code, tree name,
 	  bool globalize, bool template_header_p)
 {
   enum tree_code code;
@@ -9482,16 +9481,6 @@ xref_tag (enum tag_types tag_code, tree name, tree attributes,
 	redeclare_class_template (t, current_template_parms);
     }
 
-  /* Add attributes only when defining a class. */
-  if (attributes)
-    {
-      /* The only place that xref_tag is called with non-null
-	 attributes is in cp_parser_class_head(), when defining a
-	 class.  */ 
-      my_friendly_assert (TYPE_ATTRIBUTES (t) == NULL_TREE, 20040113);
-      TYPE_ATTRIBUTES (t) = attributes;
-    }
-
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
 }
 
@@ -9508,7 +9497,7 @@ xref_tag_from_type (tree old, tree id, int globalize)
   if (id == NULL_TREE)
     id = TYPE_IDENTIFIER (old);
 
-  return xref_tag (tag_kind, id, /*attributes=*/NULL_TREE, globalize, false);
+  return xref_tag (tag_kind, id, globalize, false);
 }
 
 /* REF is a type (named NAME), for which we have just seen some
