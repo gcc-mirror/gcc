@@ -1,3 +1,9 @@
+2003-01-28  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
+
+	* Makefile.in (FLAGS_TO_PASS): Also pass DESTDIR.
+	(install, uninstall): Prepend $(DESTDIR) to destination
+	paths in all (un)installation commands.
+
 2003-01-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in ($(LIBG2C)): -rpath is glibcpp_toolexeclibdir.
