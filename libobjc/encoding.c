@@ -73,6 +73,11 @@ Boston, MA 02111-1307, USA.  */
 #undef STRUCTURE_SIZE_BOUNDARY
 #define STRUCTURE_SIZE_BOUNDARY (BITS_PER_UNIT * sizeof (struct{char a;}))
 
+/* Some ROUND_TYPE_ALIGN macros use TARGET_foo, and consequently
+   target_flags.  Define a dummy entry here to so we don't die.  */
+
+static int target_flags = 0;
+
 static inline int
 atoi (const char* str)
 {
