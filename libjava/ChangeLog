@@ -1,5 +1,12 @@
 2002-03-07  Adam Megacz  <adam@xwt.org>
 
+        * java/net/natPlainSocketImpl.cc: Changed USE_WINSOCK to
+        WIN32, and added thunks for read(), write(), and close().
+        * java/net/natPlainSocketImpl.cc (accept, read, read):
+        Disabled timeouts on WIN32 pending discussion.
+
+2002-03-07  Adam Megacz  <adam@xwt.org>
+
         * java/io/FileDescriptor.java: Initialize in/out/err in init().
         * java/io/natFileDescriptorWin32.cc (init()): Added function.
         * java/io/natFileDescriptorPosix.cc (init()): Added function.
