@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html>
+<head>
+   <meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
+   <meta NAME="KEYWORDS" CONTENT="libstdc++, license, licence">
+   <meta NAME="DESCRIPTION" CONTENT="Copying restrictions for libstdc++.">
+   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <title>libstdc++-v3 copying</title>
+<link REL=StyleSheet HREF="../lib3styles.css">
+</head>
+<body>
+
+<h1 CLASS="centered"><a name="top">Licenses for the Library</a></h1>
+
+<p><strong>As long as this sentence is in place, this page isn't
+official.  It is still experimental if you are reading this.</strong></p>
+
+<p>There are two licenses affecting GNU libstdc++-v3:  one for the code, and
+   one for the documentation.  Here we will describe both of them, and try
+   to answer some of the common questions.  If you have more questions, ask the
+   FSF or the gcc-help mailing list; the person writing this page is a
+   programmer, not a lawyer.
+</p>
+
+<hr>
+
+<h2>The Code:  Runtime GPL</h2>
+
+<p>The source code of libstdc++-v3 is distributed under version 2 of the
+   <a href="COPYING">GNU General Public License</a>, with the so-called
+   &quot;runtime exception,&quot; as follows (or see any header or
+   implementation file):
+   <pre>
+   As a special exception, you may use this file as part of a free software
+   library without restriction.  Specifically, if other files instantiate
+   templates or use macros or inline functions from this file, or you compile
+   this file and link it with other files to produce an executable, this
+   file does not by itself cause the resulting executable to be covered by
+   the GNU General Public License.  This exception does not however
+   invalidate any other reasons why the executable file might be covered by
+   the GNU General Public License.
+   </pre>
+</p>
+
+<p>Hopefully that text is self-explanatory.  If it isn't, you need to speak
+   to your lawyer, or the Free Software Foundation.  I am not a legal expert.
+   I do not even play one on television.
+</p>
+
+<!-- Most of the Q&A's are based on, paraphrased from, and outright stolen
+     from this thread:
+     http://gcc.gnu.org/ml/libstdc++/2000-q2/subjects.html#00050
+-->
+<p><strong>Q:  So any program which uses libstdc++ falls under the GPL?</strong>
+ <br>A:  <strong>No.</strong>  The special exception permits use of the
+     library in proprietary applications.
+</p>
+
+<p><strong>Q:  How is that different from the GNU {Lesser,Library}
+   GPL?</strong>
+ <!-- Quoting Jason Merrill from the thread above: -->
+ <br>A:  The LGPL requires that users be able to replace the LGPL code with a
+     modified version; this is trivial if the library in question is a C
+     shared library.  But there's no way to make that work with C++, where
+     much of the library consists of inline functions and templates, which
+     are expanded inside the code that uses the library.  So to allow people
+     to replace the library code, someone using the library would have to
+     distribute their own source, rendering the LGPL equivalent to the GPL.
+</p>
+
+<p><strong>Q:  I see.  So, what restrictions <em>are</em> there on
+   programs that use the library?</strong>
+ <br>A:  None.  We encourage such programs to be released as open source,
+     but we won't punish you or sue you if you choose otherwise.
+</p>
+
+<!-- Someone would probably shoot me if I uncommented this.
+<p><strong>Q:  I heard that the startup code for libstdc++-v3 detects
+   what license the program uses, and makes my program crash if it isn't
+   an open source license!  Is that true?</strong>
+ <br>A:  You are paranoid and insane.  Please calm down and try switching
+     to decaf.
+</p>
+-->
+
+<hr>
+
+<h2>The Docs:  FDL</h2>
+
+<p>The documentation shipped with the library and made available over the
+   web, including the pages generated from source comments, are copyrighted
+   by the Free Software Foundation, and placed under
+   the <a href="COPYING.DOC">GNU Free Documentation License version 1.1</a>.
+   There are no Front-Cover Texts, no Back-Cover Texts, and
+   <!-- as far as I know -->
+   no Invariant Sections.
+</p>
+
+<p>If you plan on making copies of the documentation, please let us know.
+   We can probably offer suggestions.
+</p>
+
+
+<!-- ####################################################### -->
+
+<hr>
+<P CLASS="fineprint"><em>
+Comments and suggestions are welcome, and may be sent to
+<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+</em></p>
+
+
+</body>
+</html>
+
+
