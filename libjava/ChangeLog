@@ -1,3 +1,14 @@
+2003-12-08  Olga Rodimina <rodimina@redhat.com>
+
+	* java/awt/Polygon.java
+	(translate): Fixed error that caused polygon 
+	to move right/left when up/down translation was required.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer.c:
+	(getSelectionStart): Initialized start position to 0. 
+	(getSelectionEnd): Initialized end position to 0.
+	(getCaretPosition): Initialized caret position to 0.
+	(getText): Initialized selected text to NULL 
+
 2003-12-08  Michael Koch  <konqueror@gmx.de>
 
 	Fix for PR libgcj/13176.
