@@ -1,3 +1,8 @@
+Tue Mar 13 14:38:44 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (abs?f expander): Support SSE case.
+	(abd?f_if): Add new "USE"; add splitters.
+
 2001-03-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cpp.texi (poison): Explain the macro expansion exception.
