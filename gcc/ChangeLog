@@ -1,5 +1,9 @@
 2004-08-30  Andrew Pinski  <apinski@apple.com>
 
+	* hard-reg-set.h: 
+	s/HOST_BITS_PER_WIDES_FAST_INT/HOST_BITS_PER_WIDEST_FAST_INT.
+	* ChangeLog: Fix previous ChangeLog entry.
+
 	PR rtl-opt/13987
 	* config.host (use_long_long_for_widest_fast_int): New, default is 
 	off.
@@ -20,7 +24,7 @@
 	(HARD_REG_SET_LONGS): Likewise.
 	(UHOST_BITS_PER_WIDE_INT): Likewise.
 	Change the checks for the fast cases to be based on
-	HOST_BITS_PER_WIDES_FAST_INT instead of HOST_BITS_PER_WIDE_INT.
+	HOST_BITS_PER_WIDEST_FAST_INT instead of HOST_BITS_PER_WIDE_INT.
 
 2004-08-30  Steven Bosscher  <stevenb@suse.de>
 
