@@ -387,6 +387,15 @@ handle_option (const char **argv, unsigned int lang_mask)
   return result;
 }
 
+/* Handle FILENAME from the command line.  */
+static void
+add_input_filename (const char *filename)
+{
+  num_in_fnames++;
+  in_fnames = xrealloc (in_fnames, num_in_fnames * sizeof (in_fnames[0]));
+  in_fnames[num_in_fnames - 1] = filename;
+}
+
 /* Decode and handle the vector of command line options.  LANG_MASK
    contains has a single bit set representing the current
    language.  */
@@ -417,15 +426,6 @@ handle_options (unsigned int argc, const char **argv, unsigned int lang_mask)
 	  error ("unrecognized command line option \"%s\"", opt);
 	}
     }
-}
-
-/* Handle FILENAME from the command line.  */
-void
-add_input_filename (const char *filename)
-{
-  num_in_fnames++;
-  in_fnames = xrealloc (in_fnames, num_in_fnames * sizeof (in_fnames[0]));
-  in_fnames[num_in_fnames - 1] = filename;
 }
 
 /* Parse command line options and set default flag values.  Do minimal
