@@ -66,4 +66,5 @@ extern regset *basic_block_live_at_start;
 
 #define REG_BLOCK_UNKNOWN -1
 #define REG_BLOCK_GLOBAL -2
-extern int *reg_basic_block;
+
+#define REG_BASIC_BLOCK(N) (reg_n_info[(N)].basic_block)

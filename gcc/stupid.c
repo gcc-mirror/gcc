@@ -197,7 +197,7 @@ stupid_life_analysis (f, nregs, file)
   allocate_for_life_analysis ();
 
   for (i = 0; i < max_regno; i++)
-    reg_n_deaths[i] = 1;
+    REG_N_DEATHS (i) = 1;
 
   bzero (regs_live, nregs);
 
@@ -277,7 +277,7 @@ stupid_life_analysis (f, nregs, file)
 
       /* Now find the best hard-register class for this pseudo register */
       if (N_REG_CLASSES > 1)
-	reg_renumber[r] = stupid_find_reg (reg_n_calls_crossed[r], 
+	reg_renumber[r] = stupid_find_reg (REG_N_CALLS_CROSSED (r), 
 					   reg_preferred_class (r),
 					   PSEUDO_REGNO_MODE (r),
 					   reg_where_born[r],
@@ -286,7 +286,7 @@ stupid_life_analysis (f, nregs, file)
 
       /* If no reg available in that class, try alternate class.  */
       if (reg_renumber[r] == -1 && reg_alternate_class (r) != NO_REGS)
-	reg_renumber[r] = stupid_find_reg (reg_n_calls_crossed[r],
+	reg_renumber[r] = stupid_find_reg (REG_N_CALLS_CROSSED (r),
 					   reg_alternate_class (r),
 					   PSEUDO_REGNO_MODE (r),
 					   reg_where_born[r],
@@ -315,7 +315,7 @@ stupid_reg_compare (r1p, r2p)
   if (tem != 0)
     return tem;
 
-  tem = reg_n_refs[r1] - reg_n_refs[r2];
+  tem = REG_N_REFS (r1) - REG_N_REFS (r2);
   if (tem != 0)
     return tem;
 
@@ -509,10 +509,10 @@ stupid_mark_refs (x, insn)
 		}
 
 	      /* Count the refs of this reg.  */
-	      reg_n_refs[regno]++;
+	      REG_N_REFS (regno)++;
 
 	      if (last_call_suid < reg_where_dead[regno])
-		reg_n_calls_crossed[regno] += 1;
+		REG_N_CALLS_CROSSED (regno) += 1;
 
 	      if (last_setjmp_suid < reg_where_dead[regno])
 		regs_crosses_setjmp[regno] = 1;
@@ -560,7 +560,7 @@ stupid_mark_refs (x, insn)
 	  /* Pseudo reg: record first use, last use and number of uses.  */
 
 	  reg_where_born[regno] = INSN_SUID (insn);
-	  reg_n_refs[regno]++;
+	  REG_N_REFS (regno)++;
 	  if (regs_live[regno] == 0)
 	    {
 	      regs_live[regno] = 1;

@@ -769,10 +769,10 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
        can use a different pseudo in each unrolled copy of the loop.  This
        results in better code.  */
     for (j = FIRST_PSEUDO_REGISTER; j < max_reg_before_loop; ++j)
-      if (regno_first_uid[j] > 0 && regno_first_uid[j] <= max_uid_for_loop
-	  && uid_luid[regno_first_uid[j]] >= copy_start_luid
-	  && regno_last_uid[j] > 0 && regno_last_uid[j] <= max_uid_for_loop
-	  && uid_luid[regno_last_uid[j]] <= copy_end_luid)
+      if (REGNO_FIRST_UID (j) > 0 && REGNO_FIRST_UID (j) <= max_uid_for_loop
+	  && uid_luid[REGNO_FIRST_UID (j)] >= copy_start_luid
+	  && REGNO_LAST_UID (j) > 0 && REGNO_LAST_UID (j) <= max_uid_for_loop
+	  && uid_luid[REGNO_LAST_UID (j)] <= copy_end_luid)
 	{
 	  /* However, we must also check for loop-carried dependencies.
 	     If the value the pseudo has at the end of iteration X is
@@ -783,7 +783,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	     regno_last_uid.  */
 	  /* ??? This check is simplistic.  We would get better code if
 	     this check was more sophisticated.  */
-	  if (set_dominates_use (j, regno_first_uid[j], regno_last_uid[j],
+	  if (set_dominates_use (j, REGNO_FIRST_UID (j), REGNO_LAST_UID (j),
 				 copy_start, copy_end))
 	    local_regno[j] = 1;
 
@@ -1375,7 +1375,7 @@ precondition_loop_p (initial_value, final_value, increment, loop_start,
   /* Fail if loop_iteration_var is not live before loop_start, since we need
      to test its value in the preconditioning code.  */
 
-  if (uid_luid[regno_first_uid[REGNO (loop_iteration_var)]]
+  if (uid_luid[REGNO_FIRST_UID (REGNO (loop_iteration_var))]
       > INSN_LUID (loop_start))
     {
       if (loop_dump_stream)
@@ -2464,10 +2464,10 @@ find_splittable_regs (unroll_type, loop_start, loop_end, end_insert_before,
       if (unroll_type != UNROLL_COMPLETELY
 	  && (loop_number_exit_count[uid_loop_num[INSN_UID (loop_start)]]
 	      || unroll_type == UNROLL_NAIVE)
-	  && (uid_luid[regno_last_uid[bl->regno]] >= INSN_LUID (loop_end)
+	  && (uid_luid[REGNO_LAST_UID (bl->regno)] >= INSN_LUID (loop_end)
 	      || ! bl->init_insn
 	      || INSN_UID (bl->init_insn) >= max_uid_for_loop
-	      || (uid_luid[regno_first_uid[bl->regno]]
+	      || (uid_luid[REGNO_FIRST_UID (bl->regno)]
 		  < INSN_LUID (bl->init_insn))
 	      || reg_mentioned_p (bl->biv->dest_reg, SET_SRC (bl->init_set)))
 	  && ! (biv_final_value = final_biv_value (bl, loop_start, loop_end)))
@@ -2676,15 +2676,15 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 	  && (loop_number_exit_count[uid_loop_num[INSN_UID (loop_start)]]
 	      || unroll_type == UNROLL_NAIVE)
 	  && v->giv_type != DEST_ADDR
-	  && ((regno_first_uid[REGNO (v->dest_reg)] != INSN_UID (v->insn)
+	  && ((REGNO_FIRST_UID (REGNO (v->dest_reg)) != INSN_UID (v->insn)
 	       /* Check for the case where the pseudo is set by a shift/add
 		  sequence, in which case the first insn setting the pseudo
 		  is the first insn of the shift/add sequence.  */
 	       && (! (tem = find_reg_note (v->insn, REG_RETVAL, NULL_RTX))
-		   || (regno_first_uid[REGNO (v->dest_reg)]
+		   || (REGNO_FIRST_UID (REGNO (v->dest_reg))
 		       != INSN_UID (XEXP (tem, 0)))))
 	      /* Line above always fails if INSN was moved by loop opt.  */
-	      || (uid_luid[regno_last_uid[REGNO (v->dest_reg)]]
+	      || (uid_luid[REGNO_LAST_UID (REGNO (v->dest_reg))]
 		  >= INSN_LUID (loop_end)))
 	  && ! (final_value = v->final_value))
 	continue;

@@ -163,15 +163,6 @@ char *reg_names[] = REGISTER_NAMES;
 
 enum machine_mode reg_raw_mode[FIRST_PSEUDO_REGISTER];
 
-/* Indexed by n, gives number of times (REG n) is set or clobbered.
-   This information remains valid for the rest of the compilation
-   of the current function; it is used to control register allocation.
-
-   This information applies to both hard registers and pseudo registers,
-   unlike much of the information above.  */
-
-short *reg_n_sets;
-
 /* Maximum cost of moving from a register in one class to a register in
    another class.  Based on REGISTER_MOVE_COST.  */
 
@@ -835,7 +826,7 @@ regclass (f, nregs)
 			}
 
 		      /* This makes one more setting of new insns's dest.  */
-		      reg_n_sets[REGNO (recog_operand[0])]++;
+		      REG_N_SETS (REGNO (recog_operand[0]))++;
 
 		      *recog_operand_loc[1] = recog_operand[0];
 		      for (i = insn_n_dups[insn_code_number] - 1; i >= 0; i--)
@@ -1658,6 +1649,43 @@ auto_inc_dec_reg_p (reg, mode)
 
 #endif /* REGISTER_CONSTRAINTS */
 
+/* Allocate enough space to hold NUM_REGS registers for the tables used for
+   reg_scan and flow_analysis that are indexed by the register number.  If
+   NEW_P is set, initialize all of the registers, otherwise only initialize the
+   new registers allocated.  The same table is kept from function to function,
+   only reallocating it when we need more room.  */
+
+void
+allocate_reg_info (num_regs, new_p)
+     int num_regs;
+     int new_p;
+{
+  static int regno_allocated = 0;
+  static int regno_max = 0;
+  int i;
+  int size;
+  int min = (new_p) ? 0 : regno_max+1;
+
+  if (num_regs > regno_allocated)
+    {
+      regno_allocated = num_regs + (num_regs / 20);	/* add some slop space */
+      size = regno_allocated * sizeof (reg_info);
+      reg_n_info = ((reg_n_info)
+		    ? (reg_info *) xrealloc ((char *)reg_n_info, size)
+		    : (reg_info *) xmalloc (size));
+    }
+
+  if (min < num_regs)
+    {
+      bzero ((char *) &reg_n_info[min], (num_regs - min) * sizeof (reg_info));
+      for (i = min; i < num_regs; i++)
+	REG_BASIC_BLOCK (i) = REG_BLOCK_UNKNOWN;
+    }
+
+  regno_max = num_regs;
+}
+
+
 /* This is the `regscan' pass of the compiler, run just before cse
    and again just before loop.
 
@@ -1666,27 +1694,6 @@ auto_inc_dec_reg_p (reg, mode)
    and counts the number of sets in the vector reg_n_sets.
 
    REPEAT is nonzero the second time this is called.  */
-
-/* Indexed by pseudo register number, gives uid of first insn using the reg
-   (as of the time reg_scan is called).  */
-
-int *regno_first_uid;
-
-/* Indexed by pseudo register number, gives uid of last insn using the reg
-   (as of the time reg_scan is called).  */
-
-int *regno_last_uid;
-
-/* Indexed by pseudo register number, gives uid of last insn using the reg
-   or mentioning it in a note (as of the time reg_scan is called).  */
-
-int *regno_last_note_uid;
-
-/* Record the number of registers we used when we allocated the above two
-   tables.  If we are called again with more than this, we must re-allocate
-   the tables.  */
-
-static int highest_regno_in_uid_map;
 
 /* Maximum number of parallel sets and clobbers in any insn in this fn.
    Always at least 3, since the combiner could put that many together
@@ -1702,26 +1709,7 @@ reg_scan (f, nregs, repeat)
 {
   register rtx insn;
 
-  if (!repeat || nregs > highest_regno_in_uid_map)
-    {
-      /* Leave some spare space in case more regs are allocated.  */
-      highest_regno_in_uid_map = nregs + nregs / 20;
-      regno_first_uid
-	= (int *) oballoc (highest_regno_in_uid_map * sizeof (int));
-      regno_last_uid
-	= (int *) oballoc (highest_regno_in_uid_map * sizeof (int));
-      regno_last_note_uid
-	= (int *) oballoc (highest_regno_in_uid_map * sizeof (int));
-      reg_n_sets
-	= (short *) oballoc (highest_regno_in_uid_map * sizeof (short));
-    }
-
-  bzero ((char *) regno_first_uid, highest_regno_in_uid_map * sizeof (int));
-  bzero ((char *) regno_last_uid, highest_regno_in_uid_map * sizeof (int));
-  bzero ((char *) regno_last_note_uid,
-	 highest_regno_in_uid_map * sizeof (int));
-  bzero ((char *) reg_n_sets, highest_regno_in_uid_map * sizeof (short));
-
+  allocate_reg_info (nregs, TRUE);
   max_parallel = 3;
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
@@ -1769,11 +1757,11 @@ reg_scan_mark_refs (x, insn, note_flag)
       {
 	register int regno = REGNO (x);
 
-	regno_last_note_uid[regno] = INSN_UID (insn);
+	REGNO_LAST_NOTE_UID (regno) = INSN_UID (insn);
 	if (!note_flag)
-	  regno_last_uid[regno] = INSN_UID (insn);
-	if (regno_first_uid[regno] == 0)
-	  regno_first_uid[regno] = INSN_UID (insn);
+	  REGNO_LAST_UID (regno) = INSN_UID (insn);
+	if (REGNO_FIRST_UID (regno) == 0)
+	  REGNO_FIRST_UID (regno) = INSN_UID (insn);
       }
       break;
 
@@ -1798,7 +1786,7 @@ reg_scan_mark_refs (x, insn, note_flag)
 	;
 
       if (GET_CODE (dest) == REG)
-	reg_n_sets[REGNO (dest)]++;
+	REG_N_SETS (REGNO (dest))++;
 
       /* If this is setting a pseudo from another pseudo or the sum of a
 	 pseudo and a constant integer and the other pseudo is known to be

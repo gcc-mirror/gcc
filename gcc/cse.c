@@ -873,11 +873,11 @@ make_regs_eqv (new, old)
       && ((new < FIRST_PSEUDO_REGISTER && FIXED_REGNO_P (new))
 	  || (new >= FIRST_PSEUDO_REGISTER
 	      && (firstr < FIRST_PSEUDO_REGISTER
-		  || ((uid_cuid[regno_last_uid[new]] > cse_basic_block_end
-		       || (uid_cuid[regno_first_uid[new]]
+		  || ((uid_cuid[REGNO_LAST_UID (new)] > cse_basic_block_end
+		       || (uid_cuid[REGNO_FIRST_UID (new)]
 			   < cse_basic_block_start))
-		      && (uid_cuid[regno_last_uid[new]]
-			  > uid_cuid[regno_last_uid[firstr]]))))))
+		      && (uid_cuid[REGNO_LAST_UID (new)]
+			  > uid_cuid[REGNO_LAST_UID (firstr)]))))))
     {
       reg_prev_eqv[firstr] = new;
       reg_next_eqv[new] = firstr;
@@ -6500,7 +6500,7 @@ cse_insn (insn, in_libcall_block)
 	  && find_reg_note (insn, REG_EQUIV, src) != 0
 	  && GET_CODE (dest) == REG
 	  && REGNO (dest) >= FIRST_PSEUDO_REGISTER
-	  && reg_n_sets[REGNO (dest)] != 1)
+	  && REG_N_SETS (REGNO (dest)) != 1)
 	sets[i].src_volatile = 1;
 
 #if 0

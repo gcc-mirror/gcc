@@ -262,7 +262,7 @@ setup_save_areas (pchanged)
   /* Find and record all call-used hard-registers in this function.  */
   CLEAR_HARD_REG_SET (hard_regs_used);
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
-    if (reg_renumber[i] >= 0 && reg_n_calls_crossed[i] > 0)
+    if (reg_renumber[i] >= 0 && REG_N_CALLS_CROSSED (i) > 0)
       {
 	int regno = reg_renumber[i];
 	int endregno 
