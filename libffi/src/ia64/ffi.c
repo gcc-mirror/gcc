@@ -41,7 +41,7 @@ typedef double float80;
 
 struct ia64_args {
     long scratch[2];	/* Two scratch words at top of stack.		*/
-			/* Allows sp to passed as arg pointer.		*/
+			/* Allows sp to be passed as arg pointer.	*/
     void * r8_contents;	/* Value to be passed in r8			*/
     long spare;		/* Not used.					*/
     float80 fp_regs[8]; /* Contents of 8 floating point argument 	*/
