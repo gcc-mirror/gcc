@@ -35,7 +35,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.176 $
+\deftexinfoversion$Revision: 2.177 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -2782,7 +2782,7 @@ width0pt\relax} \fi
 \outer\def\unnumberedsubsec{\parsearg\unnumberedsubsecyyy}
 \def\unnumberedsubsecyyy #1{\unnmhead2{#1}} %normally calls unnumberedsubseczzz
 \def\unnumberedsubseczzz #1{\seccheck{unnumberedsubsec}%
-\plainsecheading {#1}\gdef\thissection{#1}%
+\plainsubsecheading {#1}\gdef\thissection{#1}%
 {\chapternofonts%
 \edef\temp{{\realbackslash unnumbsubsecentry{#1}{\noexpand\folio}}}%
 \escapechar=`\\%
@@ -2827,7 +2827,7 @@ width0pt\relax} \fi
 \outer\def\unnumberedsubsubsec{\parsearg\unnumberedsubsubsecyyy}
 \def\unnumberedsubsubsecyyy #1{\unnmhead3{#1}} %normally unnumberedsubsubseczzz
 \def\unnumberedsubsubseczzz #1{\seccheck{unnumberedsubsubsec}%
-\plainsecheading {#1}\gdef\thissection{#1}%
+\plainsubsubsecheading {#1}\gdef\thissection{#1}%
 {\chapternofonts%
 \edef\temp{{\realbackslash unnumbsubsubsecentry{#1}{\noexpand\folio}}}%
 \escapechar=`\\%
@@ -2886,11 +2886,10 @@ width0pt\relax} \fi
                   \parindent=0pt\raggedright
                   \rm #1\hfill}}\bigskip \par\penalty 200}
 
-\def\heading{\parsearg\secheadingi}
-
-\def\subheading{\parsearg\subsecheadingi}
-
-\def\subsubheading{\parsearg\subsubsecheadingi}
+% @heading, @subheading, @subsubheading.
+\def\heading{\parsearg\plainsecheading}
+\def\subheading{\parsearg\plainsubsecheading}
+\def\subsubheading{\parsearg\plainsubsubsecheading}
 
 % These macros generate a chapter, section, etc. heading only
 % (including whitespace, linebreaking, etc. around it),
@@ -2999,11 +2998,13 @@ width0pt\relax} \fi
 \newskip \subsecheadingskip  \subsecheadingskip = 17pt plus 8pt minus 4pt
 \def\subsecheadingbreak{\dobreak \subsecheadingskip {-500}}
 \def\subsecheading#1#2#3#4{\sectionheading{subsec}{#2.#3.#4}{#1}}
+\def\plainsubsecheading#1{\sectionheading{subsec}{}{#1}}
 
 % Subsubsection titles.
 \let\subsubsecheadingskip = \subsecheadingskip
 \let\subsubsecheadingbreak = \subsecheadingbreak
 \def\subsubsecheading#1#2#3#4#5{\sectionheading{subsubsec}{#2.#3.#4.#5}{#1}}
+\def\plainsubsubsecheading#1{\sectionheading{subsubsec}{}{#1}}
 
 
 % Print any size section title.
