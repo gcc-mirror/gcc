@@ -1,3 +1,8 @@
+Thu Mar 26 10:23:24 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* cvt.c (perform_qualification_conversions): Use comp_target_types
+	instead of comp_ptr_ttypes.
+
 Wed Mar 25 16:10:50 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* cp-tree.h (enforce_access): Declare.

@@ -1078,7 +1078,7 @@ perform_qualification_conversions (type, expr)
      tree type;
      tree expr;
 {
-  if (comp_ptr_ttypes (type, TREE_TYPE(expr)))
+  if (comp_target_types (type, TREE_TYPE (expr), 0) == 1)
     return build1 (NOP_EXPR, type, expr);
   else
     return error_mark_node;
