@@ -8170,14 +8170,16 @@ discard_comments (start, length, newlines)
 	newline_fix (ibp);
       /* Delete any comment.  */
       if (cplusplus_comments && ibp[0] == '/') {
-	obp--;
+	/* Comments are equivalent to spaces.  */
+	obp[-1] = ' ';
 	ibp++;
 	while (ibp < limit && *ibp++ != '\n') ;
 	break;
       }
       if (ibp[0] != '*' || ibp + 1 >= limit)
 	break;
-      obp--;
+      /* Comments are equivalent to spaces.  */
+      obp[-1] = ' ';
       ibp++;
       while (ibp + 1 < limit) {
 	if (ibp[0] == '*'
