@@ -1,5 +1,5 @@
 /* UndoableEditSupport.java --
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,98 +38,112 @@ exception statement from your version. */
 
 package javax.swing.undo;
 
+import java.util.Iterator;
 import java.util.Vector;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
+
 /**
- * UndoableEditSupport
- * @author	Andrew Selkirk
+ * A helper class for supporting {@link
+ * javax.swing.event.UndoableEditListener}.
+ *
+ * @author <a href="mailto:aselkirk@sympatico.ca">Andrew Selkirk</a>
+ * @author <a href="mailto:brawer@dandelis.ch">Sascha Brawer</a>
  */
 public class UndoableEditSupport
 {
-
-  //-------------------------------------------------------------
-  // Variables --------------------------------------------------
-  //-------------------------------------------------------------
-
   /**
-   * updateLevel
+   * The number of times that {@link #beginUpdate()} has been called
+   * without a matching call to {@link #endUpdate()}.
    */
   protected int updateLevel;
+
 
   /**
    * compoundEdit
    */
   protected CompoundEdit compoundEdit;
 
+
   /**
-   * listeners
+   * The currently registered listeners.
    */
   protected Vector listeners = new Vector();
 
+
   /**
-   * realSource
+   * The source of the broadcast UndoableEditEvents.
    */
   protected Object realSource;
 
 
-  //-------------------------------------------------------------
-  // Initialization ---------------------------------------------
-  //-------------------------------------------------------------
-
   /**
-   * Constructor UndoableEditSupport
+   * Constructs a new helper for broadcasting UndoableEditEvents.  The
+   * events will indicate the newly constructed
+   * <code>UndoableEditSupport</code> instance as their source.
+   *
+   * @see #UndoableEditSupport(java.lang.Object)
    */
   public UndoableEditSupport()
   {
+    realSource = this;
   }
 
+
   /**
-   * Constructor UndoableEditSupport
-   * @param object TODO
+   * Constructs a new helper for broadcasting UndoableEditEvents.
+   *
+   * @param realSource the source of the UndoableEditEvents that will
+   * be broadcast by this helper. If <code>realSource</code> is
+   * <code>null</code>, the events will indicate the newly constructed
+   * <code>UndoableEditSupport</code> instance as their source.
    */
-  public UndoableEditSupport(Object object)
+  public UndoableEditSupport(Object realSource)
   {
-    realSource = object;
+    if (realSource == null)
+      realSource = this;
+    this.realSource = realSource;
   }
 
 
-  //-------------------------------------------------------------
-  // Methods ----------------------------------------------------
-  //-------------------------------------------------------------
-
   /**
-   * toString
-   * @returns String
+   * Returns a string representation of this object that may be useful
+   * for debugging.
    */
   public String toString()
   {
-    return (super.toString() + " realSource: " + realSource
-	    + " updateLevel: " + updateLevel);
+    // Note that often, this.realSource == this. Therefore, dumping
+    // realSource without additional checks may lead to infinite
+    // recursion. See Classpath bug #7119.
+    return super.toString() + " updateLevel: " + updateLevel
+      + " listeners: " + listeners + " compoundEdit: " + compoundEdit;
   }
 
+
   /**
-   * Add a listener.
-   * @param val the listener
+   * Registers a listener.
+   *
+   * @param val the listener to be added.
    */
   public synchronized void addUndoableEditListener(UndoableEditListener val)
   {
     listeners.add(val);
   }
 
+
   /**
-   * Remove a listener.
-   * @param val the listener
+   * Unregisters a listener.
+   * @param val the listener to be removed.
    */
   public synchronized void removeUndoableEditListener(UndoableEditListener val)
   {
     listeners.removeElement(val);
   }
 
+
   /**
-   * Return an array of all listeners.
-   * @returns all the listeners
+   * Returns an array containing the currently registered listeners.
    */
   public synchronized UndoableEditListener[] getUndoableEditListeners()
   {
@@ -137,78 +151,121 @@ public class UndoableEditSupport
     return (UndoableEditListener[]) listeners.toArray(result);
   }
 
+
   /**
-   * _postEdit
-   * @param value0 TODO
+   * Notifies all registered listeners that an {@link
+   * UndoableEditEvent} has occured.
+   *
+   * <p><b>Lack of Thread Safety:</b> It is <em>not</em> safe to call
+   * this method from concurrent threads, unless the call is protected
+   * by a synchronization on this <code>UndoableEditSupport</code>
+   * instance.
+   *
+   * @param edit the edit action to be posted.
    */
   protected void _postEdit(UndoableEdit edit)
   {
-    UndoableEditEvent event = new UndoableEditEvent(realSource, edit);
-    int max = listeners.size();
-    for (int i = 0; i < max; ++i)
-      {
-	UndoableEditListener l
-	  = (UndoableEditListener) (listeners.elementAt(i));
-	l.undoableEditHappened(event);
-      }
+    UndoableEditEvent event;
+    Iterator iter;
+
+    // Do nothing if we have no listeners.
+    if (listeners.isEmpty())
+      return;
+
+    event = new UndoableEditEvent(realSource, edit);
+
+    // We clone the vector because this allows listeners to register
+    // or unregister listeners in their undoableEditHappened method.
+    // Otherwise, this would throw exceptions (in the case of
+    // Iterator, a java.util.ConcurrentModificationException; in the
+    // case of a direct loop over the Vector elements, some
+    // index-out-of-bounds exception).
+    iter = ((Vector) listeners.clone()).iterator();
+    while (iter.hasNext())
+      ((UndoableEditListener) iter.next()).undoableEditHappened(event);
   }
 
+
   /**
-   * postEdit
-   * @param value0 TODO
+   * If {@link #beginEdit} has been called (so that the current
+   * update level is greater than zero), adds the specified edit
+   * to {@link #compoundEdit}. Otherwise, notify listeners of the
+   * edit by calling {@link #_postEdit(UndoableEdit)}.
+   *
+   * <p><b>Thread Safety:</b> It is safe to call this method from any
+   * thread without external synchronization.
+   *
+   * @param edit the edit action to be posted.
    */
   public synchronized void postEdit(UndoableEdit edit)
   {
-    if (compoundEdit == null)
+    if (compoundEdit != null)
       compoundEdit.addEdit(edit);
     else
       _postEdit(edit);
   }
 
+
   /**
-   * getUpdateLevel
-   * @returns int
+   * Returns the current update level.
    */
   public int getUpdateLevel()
   {
     return updateLevel;
   }
 
+
   /**
-   * beginUpdate
+   * Starts a (possibly nested) update session. If the current update
+   * level is zero, {@link #compoundEdit} is set to the result of the
+   * {@link #createCompoundEdit} method. In any case, the update level
+   * is increased by one.
+   *
+   * <p><b>Thread Safety:</b> It is safe to call this method from any
+   * thread without external synchronization.
    */
   public synchronized void beginUpdate()
   {
-    if (compoundEdit != null)
-      {
-	// FIXME: what?  We can't push a new one.  This isn't even
-	// documented anyway.
-	endUpdate();
-      }
-
-    compoundEdit = createCompoundEdit();
+    if (compoundEdit == null)
+      compoundEdit = createCompoundEdit();
     ++updateLevel;
   }
 
+
   /**
-   * createCompoundEdit
-   * @returns CompoundEdit
+   * Creates a new instance of {@link #CompoundEdit}. Called by {@link
+   * #beginUpdate}. If a subclass wants {@link #beginUpdate} to work
+   * on a specific {@link #compoundEdit}, it should override this
+   * method.
+   *
+   * @returns a newly created instance of {@link #CompoundEdit}.
    */
   protected CompoundEdit createCompoundEdit()
   {
     return new CompoundEdit();
   }
 
+
   /**
-   * endUpdate
+   * Ends an update session. If the terminated session was the
+   * outermost session, {@link #compoundEdit} will receive an
+   * <code>end</code> message, and {@link #_postEdit} gets called in
+   * order to notify any listeners. Finally, the
+   * <code>compoundEdit</code> is discarded.
+   *
+   * <p><b>Thread Safety:</b> It is safe to call this method from any
+   * thread without external synchronization.
    */
   public synchronized void endUpdate()
   {
-    // FIXME: assert updateLevel == 1;
+    if (updateLevel == 0)
+      throw new IllegalStateException();
+
+    if (--updateLevel > 0)
+      return;
+
     compoundEdit.end();
-    CompoundEdit c = compoundEdit;
+    _postEdit(compoundEdit);
     compoundEdit = null;
-    --updateLevel;
-    _postEdit(c);
   }
 }

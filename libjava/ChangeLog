@@ -1,3 +1,30 @@
+2004-01-07  Sascha Brawer  <brawer@dandelis.ch>
+
+	* javax/swing/DefaultBoundedRangeModel.java: Documented API.
+	(changeEvent): Create event object on demand.
+	(DefaultBoundedRangeModel, toString, setValue, setExtent,
+	setMinimum, setMaximum, setValueIsAdjusting, setRangeProperties,
+	fireStateChanged): Re-written.
+	* javax/swing/event/EventListenerList.java: Reformatted, document
+	typical usage.
+	(toString): Implemented.
+	(getListeners): Re-written.
+	(remove): Re-written.
+	(add): Re-written.
+	(NO_LISTENERS): New singleton field.
+	(listenerList): Declare as transient; document.
+	(serialVersionUID): Document.
+	(getListenerCount(Class)): More efficient implementation,
+	also accepts null argument.  Improve Javadoc.
+	(getListenerCount()): Remove unnecessary cast; docfix.
+	* javax/swing/undo/UndoableEditSupport.java:
+	Re-format, document.
+	(UndoableEditSupport): Set realSource field. Improve documentation.
+	(_postEdit): Iterate over cloned listener vector.
+	(toString): Don't emit realSource.
+	(beginUpdate, endUpdate): Support nested updates.
+	(postEdit): Use compound edit if present.
+
 2004-01-06  Graydon Hoare  <graydon@redhat.com>
 
 	* java/awt/Container.java (swapComponents): Add forgotten
