@@ -757,18 +757,26 @@ main (argc, argv)
   if (argc < 2)
     fatal ("no arguments");
 
+#ifdef SIGQUIT
   if (signal (SIGQUIT, SIG_IGN) != SIG_IGN)
     signal (SIGQUIT, handler);
+#endif
   if (signal (SIGINT, SIG_IGN) != SIG_IGN)
     signal (SIGINT, handler);
+#ifdef SIGALRM
   if (signal (SIGALRM, SIG_IGN) != SIG_IGN)
     signal (SIGALRM, handler);
+#endif
+#ifdef SIGHUP
   if (signal (SIGHUP, SIG_IGN) != SIG_IGN)
     signal (SIGHUP, handler);
+#endif
   if (signal (SIGSEGV, SIG_IGN) != SIG_IGN)
     signal (SIGSEGV, handler);
+#ifdef SIGBUS
   if (signal (SIGBUS, SIG_IGN) != SIG_IGN)
     signal (SIGBUS, handler);
+#endif
 
   /* Extract COMPILER_PATH and PATH into our prefix list.  */
   prefix_from_env ("COMPILER_PATH", &cpath);
@@ -1361,7 +1369,9 @@ scan_prog_file (prog_name, which_pass)
 
   /* Parent context from here on.  */
   int_handler  = (void (*) ())signal (SIGINT,  SIG_IGN);
+#ifdef SIGQUIT
   quit_handler = (void (*) ())signal (SIGQUIT, SIG_IGN);
+#endif
 
   if (close (pipe_fd[1]) < 0)
     fatal_perror ("close (%d)", pipe_fd[1]);
@@ -1419,7 +1429,9 @@ scan_prog_file (prog_name, which_pass)
   do_wait (nm_file_name);
 
   signal (SIGINT,  int_handler);
+#ifdef SIGQUIT
   signal (SIGQUIT, quit_handler);
+#endif
 }
 
 #endif /* OBJECT_FORMAT_NONE */
