@@ -20,6 +20,7 @@
 
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
+#include "dbxelf.h"
 #include "elfos.h"
 
 

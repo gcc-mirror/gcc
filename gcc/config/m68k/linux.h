@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
 /* Make sure CC1 is undefined.  */
 #undef CC1_SPEC
 
+#include "dbxelf.h"
 #include "elfos.h"
 #include "svr4.h"
 #include <linux.h>		/* some common stuff */

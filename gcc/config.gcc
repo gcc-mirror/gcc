@@ -1895,7 +1895,7 @@ m68k-*-coff*)
 	float_format=m68k
 	;;
 m68020-*-elf* | m68k-*-elf*)
-	tm_file="m68k/m68020-elf.h"
+	tm_file="m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/m68kemb.h m68k/m68020-elf.h"
 	xm_defines=POSIX
 	tmake_file=m68k/t-m68kelf
 	header_files=math-68881.h

@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Be ELF-like.  */
 /* TODO: convert includes to ${tm_file} list in config.gcc.  */
+#include "dbxelf.h"
 #include "elfos.h"
 #include "svr4.h"
 
