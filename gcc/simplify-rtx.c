@@ -1407,25 +1407,33 @@ simplify_binary_operation (code, mode, op0, op1)
       break;
 
     case DIV:
-      if (arg1s == 0)
+      if (arg1s == 0
+	  || (arg0s == (HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1)
+	      && arg1s == -1))
 	return 0;
       val = arg0s / arg1s;
       break;
 
     case MOD:
-      if (arg1s == 0)
+      if (arg1s == 0
+	  || (arg0s == (HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1)
+	      && arg1s == -1))
 	return 0;
       val = arg0s % arg1s;
       break;
 
     case UDIV:
-      if (arg1 == 0)
+      if (arg1 == 0
+	  || (arg0s == (HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1)
+	      && arg1s == -1))
 	return 0;
       val = (unsigned HOST_WIDE_INT) arg0 / arg1;
       break;
 
     case UMOD:
-      if (arg1 == 0)
+      if (arg1 == 0
+	  || (arg0s == (HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1)
+	      && arg1s == -1))
 	return 0;
       val = (unsigned HOST_WIDE_INT) arg0 % arg1;
       break;

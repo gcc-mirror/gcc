@@ -1,3 +1,8 @@
+2001-04-04  Diego Novillo  <dnovillo@redhat.com>
+
+	* simplify-rtx.c (simplify_binary_operation): Check for overflow
+	when folding integer division and modulo operations.
+
 2001-04-04  Andrew MacLeod  <amacleod@redhat.com>
 
 	* dwarf2out.c (output_cfi): Add 'for_eh' parameter, use PTR_SIZE 
