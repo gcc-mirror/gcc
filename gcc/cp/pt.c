@@ -484,18 +484,21 @@ complete_template_args (tmpl, extra_args, unbound_only)
 	 template class, so skip over it.  */
       skip = (! is_member_template (tmpl));
 
-      type = DECL_REAL_CONTEXT (tmpl);
-      for (i = depth; i; type = TYPE_CONTEXT (type))
-	if (PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type)))
-	  {
-	    if (skip)
-	      skip = 0;
-	    else
+      if (depth > skip)
+	{
+	  type = DECL_REAL_CONTEXT (tmpl);
+	  for (i = depth; i; type = TYPE_CONTEXT (type))
+	    if (PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type)))
 	      {
-		--i;
-		TREE_VEC_ELT (new_args, i) = CLASSTYPE_TI_ARGS (type);
+		if (skip)
+		  skip = 0;
+		else
+		  {
+		    --i;
+		    TREE_VEC_ELT (new_args, i) = CLASSTYPE_TI_ARGS (type);
+		  }
 	      }
-	  }
+	}
     }
 
   if (extra_arg_depth == 1)

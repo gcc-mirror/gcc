@@ -1,5 +1,8 @@
 1998-07-15  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* pt.c (complete_template_args): Don't look at the context unless
+	we have too.
+
 	* method.c (build_decl_overload_real): Fix namespace handling.
 
 	* typeck.c (build_unary_op): Extract a lone function from an
