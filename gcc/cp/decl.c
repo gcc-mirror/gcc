@@ -244,15 +244,6 @@ tree maybe_gc_cleanup;
 /* Array type `vtable_entry_type[]' */
 tree vtbl_type_node;
 
-/* Static decls which do not have static initializers have no
-   initializers as far as GNU C is concerned.  EMPTY_INIT_NODE
-   is a static initializer which makes varasm code place the decl
-   in data rather than in bss space.  Such gymnastics are necessary
-   to avoid the problem that the linker will not include a library
-   file if all the library appears to contribute are bss variables.  */
-
-tree empty_init_node;
-
 /* In a destructor, the point at which all derived class destroying
    has been done, just before any base class destroying will be done.  */
 
@@ -4376,7 +4367,6 @@ init_decl_processing ()
   TREE_TYPE (integer_two_node) = integer_type_node;
   integer_three_node = build_int_2 (3, 0);
   TREE_TYPE (integer_three_node) = integer_type_node;
-  empty_init_node = build_nt (CONSTRUCTOR, NULL_TREE, NULL_TREE);
 
   bool_type_node = make_unsigned_type (CHAR_TYPE_SIZE);
   TREE_SET_CODE (bool_type_node, BOOLEAN_TYPE);
@@ -5385,8 +5375,14 @@ start_decl (declarator, declspecs, initialized, raises)
   else
     tem = pushdecl (decl);
 	     
-  /* Tell the back-end to use or not use .common as appropriate.  */
-  DECL_COMMON (tem) = flag_conserve_space;
+  /* Tell the back-end to use or not use .common as appropriate.  If we say
+     -fconserve-space, we want this to save space, at the expense of wrong
+     semantics.  If we say -fno-conserve-space, we want this to produce
+     errors about redefs; to do this we force variables into the data
+     segment.  Common storage is okay for non-public uninitialized data;
+     the linker can't match it with storage from other files, and we may
+     save some disk space.  */
+  DECL_COMMON (tem) = flag_conserve_space || ! TREE_PUBLIC (tem);
 
 #if 0
   /* We don't do this yet for GNU C++.  */
@@ -5556,10 +5552,7 @@ grok_reference_init (decl, type, init, cleanupp)
      tree decl, type, init;
      tree *cleanupp;
 {
-  char *errstr = NULL;
-  int is_reference;
   tree tmp;
-  tree this_ptr_type, actual_init = NULL_TREE;
 
   if (init == NULL_TREE)
     {
@@ -5585,56 +5578,22 @@ grok_reference_init (decl, type, init, cleanupp)
 
   if (TREE_CODE (init) == TREE_LIST)
     init = build_compound_expr (init);
-  is_reference = TREE_CODE (TREE_TYPE (init)) == REFERENCE_TYPE;
-  tmp = is_reference ? convert_from_reference (init) : init;
 
   if (TREE_CODE (TREE_TYPE (type)) != ARRAY_TYPE
       && TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE)
     {
-      /* Note: default conversion is only called in very
-	 special cases.  */
+      /* Note: default conversion is only called in very special cases.  */
       init = default_conversion (init);
     }
 
-  /* Can we just enreference this lvalue?  */
-  if ((is_reference || lvalue_p (init)
-       || (actual_init = unary_complex_lvalue (ADDR_EXPR, init)))
-      && comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (type)),
-		    TYPE_MAIN_VARIANT (TREE_TYPE (tmp)), 0))
-    {
-      /* This section implements ANSI C++ June 5 1992 WP 8.4.3.5. */
+  tmp = convert_to_reference
+    (type, init, CONV_IMPLICIT, LOOKUP_SPECULATIVELY|LOOKUP_NORMAL, decl);
 
-      /* A reference to a volatile T cannot be initialized with
-	 a const T, and vice-versa.  */
-      if (TYPE_VOLATILE (TREE_TYPE (type)) && TREE_READONLY (init))
-	errstr = "cannot initialize a reference to a volatile `%T' with a const `%T'";
-      else if (TYPE_READONLY (TREE_TYPE (type)) && TREE_THIS_VOLATILE (init))
-	errstr = "cannot initialize a reference to a const `%T' with a volatile `%T'";
-      /* A reference to a plain T can be initialized only with a plain T. */
-      else if (!TYPE_VOLATILE (TREE_TYPE (type))
-	       && !TYPE_READONLY (TREE_TYPE (type)))
-	{
-	  if (TREE_READONLY (init))
-	    errstr = "cannot initialize a reference to `%T' with a const `%T'";
-	  else if (TREE_THIS_VOLATILE (init))
-	    errstr = "cannot initialize a reference to `%T' with a volatile `%T'";
-	}
-      if (errstr)
-	{
-	  cp_error (errstr, TREE_TYPE (type), TREE_TYPE (tmp));
-	  goto fail;
-	}
-    }
-  /* OK, can we generate a reference then?  */
-  else if ((actual_init = convert_to_reference
-	    (type, init, CONV_IMPLICIT,
-	     LOOKUP_SPECULATIVELY|LOOKUP_NORMAL, decl)))
+  if (tmp == error_mark_node)
+    goto fail;
+  else if (tmp != NULL_TREE)
     {
-      if (actual_init == error_mark_node)
-	goto fail;
-
-      init = actual_init;
-      is_reference = 1;
+      init = tmp;
 
       if (TREE_CODE (init) == WITH_CLEANUP_EXPR)
 	{
@@ -5643,61 +5602,17 @@ grok_reference_init (decl, type, init, cleanupp)
 	  *cleanupp = TREE_OPERAND (init, 2);
 	  TREE_OPERAND (init, 2) = error_mark_node;
 	}
+
+      if (TREE_SIDE_EFFECTS (init))
+	DECL_INITIAL (decl) = save_expr (init);
+      else
+	DECL_INITIAL (decl) = init;
     }
   else
     {
       cp_error ("cannot initialize `%T' from `%T'", type, TREE_TYPE (init));
       goto fail;
     }
-
-  /* In the case of initialization, it is permissible
-     to assign one reference to another.  */
-  this_ptr_type = build_pointer_type (TREE_TYPE (type));
-
-  if (is_reference)
-    {
-      if (TREE_SIDE_EFFECTS (init))
-	DECL_INITIAL (decl) = save_expr (init);
-      else
-	DECL_INITIAL (decl) = init;
-    }
-  else if (lvalue_p (init))
-    {
-      tmp = build_unary_op (ADDR_EXPR, init, 0);
-      if (TREE_CODE (tmp) == ADDR_EXPR
-	  && TREE_CODE (TREE_OPERAND (tmp, 0)) == WITH_CLEANUP_EXPR)
-	{
-	  if (*cleanupp) my_friendly_abort (1);
-	  *cleanupp = TREE_OPERAND (TREE_OPERAND (tmp, 0), 2);
-	  TREE_OPERAND (TREE_OPERAND (tmp, 0), 2) = error_mark_node;
-	}
-      if (IS_AGGR_TYPE (TREE_TYPE (this_ptr_type)))
-	DECL_INITIAL (decl) = convert_pointer_to (TREE_TYPE (this_ptr_type),
-						  tmp);
-      else
-	DECL_INITIAL (decl) = convert (this_ptr_type, tmp);
-
-      DECL_INITIAL (decl) = save_expr (DECL_INITIAL (decl));
-      if (DECL_INITIAL (decl) == current_class_decl)
-	DECL_INITIAL (decl) = copy_node (current_class_decl);
-      TREE_TYPE (DECL_INITIAL (decl)) = type;
-    }
-  /* If actual_init is set here, it is set from the first check above.  */
-  else if (actual_init)
-    {
-      /* The initializer for this decl goes into its
-	 DECL_REFERENCE_SLOT.  Make sure that we can handle
-	 multiple evaluations without ill effect.  */
-      if (TREE_CODE (actual_init) == ADDR_EXPR
-	  && TREE_CODE (TREE_OPERAND (actual_init, 0)) == TARGET_EXPR)
-	actual_init = save_expr (actual_init);
-      DECL_INITIAL (decl) = convert_pointer_to (TREE_TYPE (this_ptr_type),
-						actual_init);
-      DECL_INITIAL (decl) = save_expr (DECL_INITIAL (decl));
-      TREE_TYPE (DECL_INITIAL (decl)) = type;
-    }
-  else
-    my_friendly_abort (1);
 
   /* ?? Can this be optimized in some cases to
      hand back the DECL_INITIAL slot??  */
@@ -5892,8 +5807,7 @@ finish_decl (decl, init, asmspec_tree, need_pop)
 	{
 	  if (TREE_CODE (type) == ARRAY_TYPE)
 	    init = digest_init (type, init, (tree *) 0);
-	  else if (TREE_CODE (init) == CONSTRUCTOR
-		   && CONSTRUCTOR_ELTS (init) != NULL_TREE)
+	  else if (TREE_CODE (init) == CONSTRUCTOR)
 	    {
 	      if (TYPE_NEEDS_CONSTRUCTING (type))
 		{
@@ -5951,16 +5865,11 @@ finish_decl (decl, init, asmspec_tree, need_pop)
 	  if (current_binding_level == global_binding_level)
 	    {
 	      tree value;
-	      if (flag_conserve_space)
-		/* If we say -fconserve-space, we want this to save
-		   space, at the expense of wrong semantics. */
+	      if (DECL_COMMON (decl))
 		/* Should this be a NULL_TREE? */
 		value = error_mark_node;
 	      else
-		/* If we say -fno-conserve-space, we want this to
-		   produce errors about redefs, to do this we make it
-		   go in the data space */
-		value = digest_init (type, empty_init_node, (tree *) 0);
+		value = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
 	      DECL_INITIAL (decl) = value;
 	    }
 	  else
@@ -5972,10 +5881,17 @@ finish_decl (decl, init, asmspec_tree, need_pop)
 	  if (TREE_CODE (init) != TREE_VEC)
 	    init = store_init_value (decl, init);
 
+	  /* Don't let anyone try to initialize this variable
+	     until we are ready to do so.  */
 	  if (init)
-	    /* Don't let anyone try to initialize this variable
-	       until we are ready to do so.  */
-	    DECL_INITIAL (decl) = error_mark_node;
+	    {
+	      tree value;
+	      if (DECL_COMMON (decl))
+		value = error_mark_node;
+	      else
+		value = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
+	      DECL_INITIAL (decl) = value;
+	    }
 	}
     }
   else if (DECL_EXTERNAL (decl))
@@ -6002,27 +5918,19 @@ finish_decl (decl, init, asmspec_tree, need_pop)
 	cp_error ("uninitialized const `%D'", decl);
 
       /* Initialize variables in need of static initialization with
-	 `empty_init_node' to keep assemble_variable from putting them in
-	 the wrong program space.  Common storage is okay for non-public
-	 uninitialized data; the linker can't match it with storage from
-	 other files, and we may save some disk space.  Consts have to go
-	 into data, though, since the backend would put them in text
-	 otherwise.  */
+	 an empty CONSTRUCTOR to keep assemble_variable from putting them in
+	 the wrong program space.  */
       if (flag_pic == 0
 	  && TREE_STATIC (decl)
-	  && (TREE_PUBLIC (decl) || was_readonly)
+	  && TREE_PUBLIC (decl)
 	  && ! DECL_EXTERNAL (decl)
 	  && TREE_CODE (decl) == VAR_DECL
 	  && TYPE_NEEDS_CONSTRUCTING (type)
 	  && (DECL_INITIAL (decl) == NULL_TREE
 	      || DECL_INITIAL (decl) == error_mark_node)
-	  /* If we say -fconserve-space, we want this to save space,
-	     at the expense of wrong semantics. */
-	  && ! flag_conserve_space)
-	{
-	  tree value = digest_init (type, empty_init_node, (tree *) 0);
-	  DECL_INITIAL (decl) = value;
-	}
+	  && ! DECL_COMMON (decl))
+	DECL_INITIAL (decl) = build (CONSTRUCTOR, type, NULL_TREE,
+				     NULL_TREE);
     }
   else if (TREE_CODE (decl) == VAR_DECL
 	   && TREE_CODE (type) != REFERENCE_TYPE
@@ -6182,7 +6090,7 @@ finish_decl (decl, init, asmspec_tree, need_pop)
 	       && TREE_READONLY (decl)
 	       && DECL_INITIAL (decl) != NULL_TREE
 	       && DECL_INITIAL (decl) != error_mark_node
-	       && DECL_INITIAL (decl) != empty_init_node)
+	       && ! EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl)))
 	{
 	  DECL_INITIAL (decl) = save_expr (DECL_INITIAL (decl));
 
@@ -6889,9 +6797,8 @@ grokvardecl (type, declarator, specbits, initialized)
 	  if (initialized && DECL_INITIAL (decl)
 	      /* Complain about multiply-initialized
 		 member variables, but don't be faked
-		 out if initializer is faked up from `empty_init_node'.  */
-	      && (TREE_CODE (DECL_INITIAL (decl)) != CONSTRUCTOR
-		  || CONSTRUCTOR_ELTS (DECL_INITIAL (decl)) != NULL_TREE))
+		 out if initializer is empty.  */
+	      && ! EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl)))
 	    error_with_aggr_type (DECL_CONTEXT (decl),
 				  "multiple initializations of static member `%s::%s'",
 				  IDENTIFIER_POINTER (DECL_NAME (decl)));
@@ -7358,44 +7265,19 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 
       if (TREE_CODE (id) == IDENTIFIER_NODE)
 	{
-	  if (id == ridpointers[(int) RID_INT])
+	  if (id == ridpointers[(int) RID_INT]
+	      || id == ridpointers[(int) RID_CHAR]
+	      || id == ridpointers[(int) RID_BOOL]
+	      || id == ridpointers[(int) RID_WCHAR])
 	    {
 	      if (type)
-		error ("extraneous `int' ignored");
+		error ("extraneous `%T' ignored", id);
 	      else
 		{
-		  explicit_int = 1;
-		  type = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (id));
-		}
-	      goto found;
-	    }
-	  if (id == ridpointers[(int) RID_CHAR])
-	    {
-	      if (type)
-		error ("extraneous `char' ignored");
-	      else
-		{
-		  explicit_char = 1;
-		  type = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (id));
-		}
-	      goto found;
-	    }
-	  if (id == ridpointers[(int) RID_BOOL])
-	    {
-	      if (type)
-		error ("extraneous `bool' ignored");
-	      else
-		{
-		  type = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (id));
-		}
-	      goto found;
-	    }
-	  if (id == ridpointers[(int) RID_WCHAR])
-	    {
-	      if (type)
-		error ("extraneous `__wchar_t' ignored");
-	      else
-		{
+		  if (id == ridpointers[(int) RID_INT])
+		    explicit_int = 1;
+		  else if (id == ridpointers[(int) RID_CHAR])
+		    explicit_char = 1;
 		  type = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (id));
 		}
 	      goto found;
@@ -7459,6 +7341,17 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
      which case the type defaults to `unknown type' and is
      instantiated when assigning to a signature pointer or ref.  */
 
+  if (type == NULL_TREE
+      && (RIDBIT_SETP (RID_SIGNED, specbits)
+	  || RIDBIT_SETP (RID_UNSIGNED, specbits)
+	  || RIDBIT_SETP (RID_LONG, specbits)
+	  || RIDBIT_SETP (RID_SHORT, specbits)))
+    {
+      /* These imply 'int'.  */
+      type = integer_type_node;
+      explicit_int = 1;
+    }
+
   if (type == NULL_TREE)
     {
       explicit_int = -1;
@@ -7478,22 +7371,21 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	  opaque_typedef = 1;
 	  type = copy_node (opaque_type_node);
 	}
+      /* access declaration */
+      else if (decl_context == FIELD && declarator
+	       && TREE_CODE (declarator) == SCOPE_REF)
+	type = void_type_node;
       else
 	{
 	  if (funcdef_flag)
 	    {
 	      if (warn_return_type
-		  && return_type == return_normal
-		  && ! (RIDBIT_SETP (RID_SIGNED, specbits)
-			|| RIDBIT_SETP (RID_UNSIGNED, specbits)
-			|| RIDBIT_SETP (RID_LONG, specbits)
-			|| RIDBIT_SETP (RID_SHORT, specbits)))
+		  && return_type == return_normal)
 		/* Save warning until we know what is really going on.  */
 		warn_about_return_type = 1;
 	    }
-	  else if (decl_context == FIELD && declarator
-		   && TREE_CODE (declarator) == SCOPE_REF)
-	    /* OK -- access declaration */;
+	  else if (RIDBIT_SETP (RID_TYPEDEF, specbits))
+	    pedwarn ("ANSI C++ forbids typedef which does not specify a type");
 	  else if (declspecs == NULL_TREE &&
 		   (innermost_code != CALL_EXPR || pedantic))
 	    cp_pedwarn ("ANSI C++ forbids declaration `%D' with no type or storage class",
@@ -7521,6 +7413,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		    ctor_return_type);
 
       type = ctor_return_type;
+    }
+  /* Catch typedefs that only specify a type, like 'typedef int;'.  */
+  else if (RIDBIT_SETP (RID_TYPEDEF, specbits) && declarator == NULL_TREE)
+    {
+      /* Template "this is a type" syntax; just ignore for now.  */
+      if (processing_template_defn)
+	return void_type_node;
     }
 
   ctype = NULL_TREE;
@@ -8481,16 +8380,16 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 						      TREE_TYPE (type), TYPE_ARG_TYPES (type));
 		    else
 		      {
-			error ("cannot declare member function `%s::%s' within this class",
-			       TYPE_NAME_STRING (ctype), name);
+			cp_error ("cannot declare member function `%T::%D' within `%T'",
+				  ctype, name, current_class_type);
 			return void_type_node;
 		      }
 		  }
 		else if (TYPE_MAIN_VARIANT (ctype) == current_class_type)
 		  {
 		    if (extra_warnings)
-		      warning ("extra qualification `%s' on member `%s' ignored",
-			       TYPE_NAME_STRING (ctype), name);
+		      cp_warning ("redundant qualification `%T' on member `%D' ignored",
+				  ctype, name);
 		    type = build_offset_type (ctype, type);
 		  }
 		else if (TYPE_SIZE (ctype) != NULL_TREE
@@ -8659,7 +8558,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
       if (TREE_CODE (type) == OFFSET_TYPE || TREE_CODE (type) == METHOD_TYPE)
 	{
 	  cp_error_at ("typedef name may not be class-qualified", decl);
-	  TREE_TYPE (decl) = error_mark_node;
+	  return NULL_TREE;
 	}
       else if (quals)
 	{
@@ -10773,6 +10672,19 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
      (This does not mean `static' in the C sense!)  */
   TREE_STATIC (decl1) = 1;
 
+  /* Record the decl so that the function name is defined.
+     If we already have a decl for this name, and it is a FUNCTION_DECL,
+     use the old decl.  */
+
+  if (pre_parsed_p == 0)
+    {
+      current_function_decl = decl1 = pushdecl (decl1);
+      DECL_MAIN_VARIANT (decl1) = decl1;
+      fntype = TREE_TYPE (decl1);
+    }
+  else
+    current_function_decl = decl1;
+
   /* If this function belongs to an interface, it is public.
      If it belongs to someone else's interface, it is also external.
      It doesn't matter whether it's inline or not.  */
@@ -10799,19 +10711,6 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 				   || DECL_FUNCTION_MEMBER_P (decl1)));
 #endif
     }
-
-  /* Record the decl so that the function name is defined.
-     If we already have a decl for this name, and it is a FUNCTION_DECL,
-     use the old decl.  */
-
-  if (pre_parsed_p == 0)
-    {
-      current_function_decl = decl1 = pushdecl (decl1);
-      DECL_MAIN_VARIANT (decl1) = decl1;
-      fntype = TREE_TYPE (decl1);
-    }
-  else
-    current_function_decl = decl1;
 
   if (ctype != NULL_TREE && DECL_STATIC_FUNCTION_P (decl1))
     {

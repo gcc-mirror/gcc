@@ -1117,13 +1117,7 @@ expand_aggr_init (exp, init, alias_this)
       int was_const_elts = TYPE_READONLY (TREE_TYPE (type));
       tree itype = init ? TREE_TYPE (init) : NULL_TREE;
       if (was_const_elts)
-	{
-	  tree atype = build_cplus_array_type (TYPE_MAIN_VARIANT (TREE_TYPE (type)),
-					       TYPE_DOMAIN (type));
-	  if (init && (TREE_TYPE (exp) == TREE_TYPE (init)))
-	    TREE_TYPE (init) = atype;
-	  TREE_TYPE (exp) = atype;
-	}
+	TREE_TYPE (exp) = TYPE_MAIN_VARIANT (type);
       if (init && TREE_TYPE (init) == NULL_TREE)
 	{
 	  /* Handle bad initializers like:
@@ -2613,40 +2607,9 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals)
      enum overload_flags flags;
      tree quals;
 {
-  /* first, lets find out if what we are making a friend needs overloading */
-  tree previous_decl;
-  int was_c_linkage = 0;
-
   /* Every decl that gets here is a friend of something.  */
   DECL_FRIEND_P (decl) = 1;
 
-  /* If we find something in scope, let see if it has extern "C" linkage.  */
-  /* This code is pretty general and should be ripped out and reused
-     as a separate function. */
-  if (DECL_NAME (decl))
-    {
-      previous_decl = lookup_name (DECL_NAME (decl), 0);
-      if (previous_decl && TREE_CODE (previous_decl) == TREE_LIST)
-	{
-	  do
-	    {
-	      if (TREE_TYPE (TREE_VALUE (previous_decl)) == TREE_TYPE (decl))
-		{
-		  previous_decl = TREE_VALUE (previous_decl);
-		  break;
-		}
-	      previous_decl = TREE_CHAIN (previous_decl);
-	    }
-	  while (previous_decl);
-	}
-
-      /* It had extern "C" linkage, so don't overload this.  */
-      if (previous_decl && TREE_CODE (previous_decl) == FUNCTION_DECL
-	  && TREE_TYPE (decl) == TREE_TYPE (previous_decl)
-	  && DECL_LANGUAGE (previous_decl) == lang_c)
-	was_c_linkage = 1;
-    }
-	  
   if (ctype)
     {
       tree cname = TYPE_NAME (ctype);
@@ -2711,7 +2674,6 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals)
 	  decl = void_type_node;
 	}
     }
-  /* never overload C functions */
   else if (TREE_CODE (decl) == FUNCTION_DECL
 	   && ((IDENTIFIER_LENGTH (declarator) == 4
 		&& IDENTIFIER_POINTER (declarator)[0] == 'm'
@@ -2720,8 +2682,7 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals)
 		   && IDENTIFIER_POINTER (declarator)[0] == '_'
 		   && IDENTIFIER_POINTER (declarator)[1] == '_'
 		   && strncmp (IDENTIFIER_POINTER (declarator)+2,
-			       "builtin_", 8) == 0)
-	       || was_c_linkage))
+			       "builtin_", 8) == 0)))
     {
       /* raw "main", and builtin functions never gets overloaded,
 	 but they can become friends.  */

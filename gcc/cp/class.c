@@ -2400,6 +2400,10 @@ override_one_vtable (binfo, old, t)
 		}
 	      TREE_VALUE (virtuals) = TREE_VALUE (old_virtuals);
 	    }
+	  else if (choose == NEITHER)
+	    {
+	      TREE_VALUE (virtuals) = TREE_VALUE (old_virtuals);
+	    }  
 	}
       else
 	{
