@@ -311,17 +311,15 @@ find_basic_blocks (f, nregs, file)
   register int i;
   rtx nonlocal_label_list = nonlocal_label_rtx_list ();
   int in_libcall_block = 0;
-  int extra_uids_for_flow = 0;
 
   /* Count the basic blocks.  Also find maximum insn uid value used.  */
 
   {
+    rtx prev_call = 0;
     register RTX_CODE prev_code = JUMP_INSN;
     register RTX_CODE code;
     int eh_region = 0;
     int call_had_abnormal_edge = 0;
-
-    max_uid_for_flow = 0;
 
     for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
       {
@@ -331,44 +329,41 @@ find_basic_blocks (f, nregs, file)
 	  in_libcall_block = 1;
 
 	code = GET_CODE (insn);
-	if (INSN_UID (insn) > max_uid_for_flow)
-	  max_uid_for_flow = INSN_UID (insn);
-	if (code == CODE_LABEL)
-	  i++;
-	else if (GET_RTX_CLASS (code) == 'i')
+
+	/* A basic block starts at label, or after something that can jump.  */
+	if (code == CODE_LABEL
+	    || (GET_RTX_CLASS (code) == 'i'
+		&& (prev_code == JUMP_INSN
+		    || (prev_code == CALL_INSN && call_had_abnormal_edge)
+		    || prev_code == BARRIER)))
 	  {
-	    if (prev_code == JUMP_INSN || prev_code == BARRIER)
-	      i++;
-	    else if (prev_code == CALL_INSN)
+	    i++;
+
+	    /* If the previous insn was a call that did not create an
+	       abnormal edge, we want to add a nop so that the CALL_INSN
+	       itself is not at basic_block_end.  This allows us to easily
+	       distinguish between normal calls and those which create
+	       abnormal edges in the flow graph.  */
+
+	    if (i > 0 && !call_had_abnormal_edge && prev_call != 0)
 	      {
-		if (call_had_abnormal_edge)
-		  i++;
-		else
-		  {
-		    /* Else this call does not force a new block to be
-		       created.  However, it may still be the end of a basic
-		       block if it is followed by a CODE_LABEL or a BARRIER.
-
-		       To disambiguate calls which force new blocks to be
-		       created from those which just happen to be at the end
-		       of a block we insert nops during find_basic_blocks_1
-		       after calls which are the last insn in a block by
-		       chance.  We must account for such insns in
-		       max_uid_for_flow.  */
-
-		    extra_uids_for_flow++;
-		  }
+		rtx nop = gen_rtx_USE (VOIDmode, const0_rtx);
+		emit_insn_after (nop, prev_call);
 	      }
 	  }
-
 	/* We change the code of the CALL_INSN, so that it won't start a
 	   new block.  */
 	if (code == CALL_INSN && in_libcall_block)
 	  code = INSN;
 
-        /* Record whether this call created an edge.  */
-        if (code == CALL_INSN)
-	  call_had_abnormal_edge = (nonlocal_label_list != 0 || eh_region);
+	/* Record whether this call created an edge.  */
+	if (code == CALL_INSN)
+	  {
+	    prev_call = insn;
+	    call_had_abnormal_edge = (nonlocal_label_list != 0 || eh_region);
+	  }
+	else if (code != NOTE && code != BARRIER)
+	  prev_call = 0;
 
 	if (code != NOTE)
 	  prev_code = code;
@@ -385,12 +380,12 @@ find_basic_blocks (f, nregs, file)
 
   n_basic_blocks = i;
 
+  max_uid_for_flow = get_max_uid ();
 #ifdef AUTO_INC_DEC
   /* Leave space for insns life_analysis makes in some cases for auto-inc.
      These cases are rare, so we don't need too much space.  */
   max_uid_for_flow += max_uid_for_flow / 10;
 #endif
-  max_uid_for_flow += extra_uids_for_flow;
 
   /* Allocate some tables that last till end of compiling this function
      and some needed only in find_basic_blocks and life_analysis.  */
@@ -512,20 +507,6 @@ find_basic_blocks_1 (f, nonlocal_labels)
 		 is considered to start a reachable block.  */
 	      if (LABEL_PRESERVE_P (insn))
 		block_live[i] = 1;
-	    }
-
-	  /* If the previous insn was a call that did not create an
-	     abnormal edge, we want to add a nop so that the CALL_INSN
-	     itself is not at basic_block_end.  This allows us to easily
-	     distinguish between normal calls and those which create
-	     abnormal edges in the flow graph.  */
-
-	  if (i > 0 && !call_had_abnormal_edge
-	      && GET_CODE (basic_block_end[i-1]) == CALL_INSN)
-	    {
-	      rtx nop = gen_rtx_USE (VOIDmode, const0_rtx);
-	      nop = emit_insn_after (nop, basic_block_end[i-1]);
-	      basic_block_end[i-1] = nop;
 	    }
 	}
 
