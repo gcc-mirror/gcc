@@ -6775,6 +6775,9 @@ mips_expand_epilogue ()
 					   g6_rtx));
 		  tsize = 0;
 		}
+	      
+	      if (tsize && tsize != orig_tsize)
+		tsize_rtx = GEN_INT (tsize);
 	    }
 
 	  if (TARGET_LONG64)
