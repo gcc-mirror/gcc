@@ -42,10 +42,14 @@ using __STD::cout;
 using __STD::cin;
 using __STD::cerr;
 using __STD::clog;
+#ifdef _GLIBCPP_USE_WCHAR_T
 using __STD::wcout;
 using __STD::wcin;
 using __STD::wcerr;
 using __STD::wclog;
+#endif
+
+using __STD::endl;
 #endif /* __STL_USE_NAMESPACES */
 
 #endif /* _CPP_BACKWARD_IOSTREAM_H */
