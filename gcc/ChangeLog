@@ -1,3 +1,15 @@
+Wed Feb 28 19:18:23 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (attribute mode): Add "TI".
+	(movsf_1): Add pxor support; remove constant propagation splitter.
+	(movdf_integer): Likewise.
+	(movdf_nointeger): Likewise.
+	(movxf constant prop splitter): Handle all modes; update for SSE.
+	* i386.h (CONST_DOUBLE_OK_FOR_LETTER): Add 'H' for SSE constants.
+	* i386.c (standard_80387_constant_p): Rewrite.
+	(standard_sse_constant_p): New.
+	* i386-protos.h (standard_sse_constant_p): New.
+
 Wed Feb 28 19:05:37 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (sse_setccsf, sse_setccdf): New.

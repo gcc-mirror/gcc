@@ -1136,7 +1136,8 @@ enum reg_class
    load 0.0 into the function value register.  */
 
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  \
-  ((C) == 'G' ? standard_80387_constant_p (VALUE) : 0)
+  ((C) == 'G' ? standard_80387_constant_p (VALUE) \
+   : ((C) == 'H' ? standard_sse_constant_p (VALUE) : 0))
 
 /* Place additional restrictions on the register class to use when it
    is necessary to be able to hold a value of mode MODE in a reload

@@ -1644,38 +1644,27 @@ int
 standard_80387_constant_p (x)
      rtx x;
 {
+  if (GET_CODE (x) != CONST_DOUBLE || !FLOAT_MODE_P (GET_MODE (x)))
+    return -1;
+  /* Note that on the 80387, other constants, such as pi, that we should support
+     too.  On some machines, these are much slower to load as standard constant,
+     than to load from doubles in memory.  */
+  if (x == CONST0_RTX (GET_MODE (x)))
+    return 1;
+  if (x == CONST1_RTX (GET_MODE (x)))
+    return 2;
+  return 0;
+}
+
+/* Return 1 if X is FP constant we can load to SSE register w/o using memory.
+ */
+int
+standard_sse_constant_p (x)
+     rtx x;
+{
   if (GET_CODE (x) != CONST_DOUBLE)
     return -1;
-
-#if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
-  {
-    REAL_VALUE_TYPE d;
-    jmp_buf handler;
-    int is0, is1;
-
-    if (setjmp (handler))
-      return 0;
-
-    set_float_handler (handler);
-    REAL_VALUE_FROM_CONST_DOUBLE (d, x);
-    is0 = REAL_VALUES_EQUAL (d, dconst0) && !REAL_VALUE_MINUS_ZERO (d);
-    is1 = REAL_VALUES_EQUAL (d, dconst1);
-    set_float_handler (NULL_PTR);
-
-    if (is0)
-      return 1;
-
-    if (is1)
-      return 2;
-
-    /* Note that on the 80387, other constants, such as pi,
-       are much slower to load as standard constants
-       than to load from doubles in memory!  */
-    /* ??? Not true on K6: all constants are equal cost.  */
-  }
-#endif
-
-  return 0;
+  return (x == CONST0_RTX (GET_MODE (x)));
 }
 
 /* Returns 1 if OP contains a symbol reference */
