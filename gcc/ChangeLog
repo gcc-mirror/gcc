@@ -1,3 +1,13 @@
+Thu May  9 11:50:09 2002  Jeffrey A Law  (law@cygnus.com)
+
+	* i386.md (type attribute): Add "rotate" for rotate insns.
+	(rotate insns): Set type to "rotate".
+	(various attributes and function units): Treat rotate like shift.
+	(pent_pair attribute): Only rotates by one bit position are
+	pairable.
+	(sbb insns): Explicitly set pent_pair attribute on a couple
+	that were missing it.
+
 Thu May  9 18:29:24 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (sh_builtin_saveregs): If starting with an odd fp register,
