@@ -116,14 +116,7 @@ extern int target_flags;
 
 /* Defines for a K&R CC */
 
-#ifdef OLD_CC
-#define CPP_SPEC "%{!gnu:-nostdinc %{!nostinc:-I/usr/include}} \
-  %{gnu:%{nostdinc}} %{!gnu:-traditional} -Dvolatile=__volatile"
-#define CC1_SPEC "%{!gnu:-traditional -fwritable-strings -fno-defer-pop} \
-  %{pg:} %{p:}"
-#else
 #define CC1_SPEC "%{pg:} %{p:}"
-#endif
   
 #define LINK_SPEC "-u main"
 
@@ -408,14 +401,6 @@ extern int target_flags;
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On the HP-PA, the cpu registers can hold any mode.  We
    force this to be an even register is it cannot hold the full mode.  */
-#if 0
-#define HARD_REGNO_MODE_OK(REGNO, MODE) \
-  ((REGNO) == 0 ? (MODE) == CCmode || (MODE) == CCFPmode		\
-   : (REGNO) < 32 ? ((GET_MODE_SIZE (MODE) <= 4) ? 1 : ((REGNO) & 1) == 0)\
-   : (REGNO) < 48 ? (GET_MODE_SIZE (MODE) >= 4)				\
-   : (GET_MODE_SIZE (MODE) > 4 ? ((REGNO) & 1) == 0			\
-      : GET_MODE_SIZE (MODE) == 4))
-#endif
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   ((REGNO) == 0 ? (MODE) == CCmode || (MODE) == CCFPmode		\
    : (REGNO) < 32 ? ((GET_MODE_SIZE (MODE) <= 4) ? 1 : ((REGNO) & 1) == 0)\
@@ -428,7 +413,7 @@ extern int target_flags;
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
    for any hard reg, then this must be 0 for correct output.  */
 #define MODES_TIEABLE_P(MODE1, MODE2) \
-  ((MODE1) == (MODE2) || GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2))
+  (GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2))
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -442,12 +427,7 @@ extern int target_flags;
 /* Base register for access to local variables of the function.  */
 #define FRAME_POINTER_REGNUM 4
 
-/* Value should be nonzero if functions must have frame pointers.
-   Zero means the frame pointer need not be set up (and parms
-   may be accessed via the stack pointer) in functions that seem suitable.
-   This is computed in `reload', in reload1.c.  */
-extern int leaf_function;
-
+/* Value should be nonzero if functions must have frame pointers. */
 #define FRAME_POINTER_REQUIRED (current_function_calls_alloca)
   
 
@@ -656,13 +636,11 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 
    ??? Have to check on this.*/
 
-/* #define FIRST_PARM_OFFSET(FNDECL) 36  */
 #define FIRST_PARM_OFFSET(FNDECL) -32 
 
 /* Absolute value of offset from top-of-stack address to location to store the
    function parameter if it can't go in a register.
    Addresses for following parameters are computed relative to this one.  */
-/* #define FIRST_PARM_CALLER_OFFSET(FNDECL) 36 */
 #define FIRST_PARM_CALLER_OFFSET(FNDECL) -32 
 
 
@@ -991,20 +969,6 @@ extern union tree_node *current_function_decl;
    Ordinarily they are not call used registers, but they are for
    _builtin_saveregs, so we must make this explicit.  */
 
-
-#if 0
-#define EXPAND_BUILTIN_SAVEREGS(ARGLIST)				\
-  (emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, TImode, 23))),	\
-   (TARGET_SNAKE ?							\
-    (emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, DFmode, 56))),	\
-     emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, DFmode, 58))),	\
-     emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, DFmode, 60))),	\
-     emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, DFmode, 62)))) :	\
-    (emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, DFmode, 36))),	\
-     emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, DFmode, 37))),	\
-     emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, DFmode, 38))),	\
-     emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, DFmode, 39))))))
-#endif
 #define EXPAND_BUILTIN_SAVEREGS(ARGLIST) (rtx)hppa_builtin_saveregs (ARGLIST)
 
 
@@ -1710,22 +1674,11 @@ bss_section ()								\
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   output_ascii ((FILE), (P), (SIZE))
 
-#if 0
-#define ASM_OUTPUT_REG_PUSH(FILE,REGNO)  \
-  fprintf (FILE, "\tstws,mb %s,4(0,30)\n", reg_names[REGNO])
-
-/* This is how to output an insn to pop a register from the stack.
-   It need not be very fast code.  */
-
-#define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
-  fprintf (FILE, "\tldws,ma -4(0,30),%s\n", reg_names[REGNO])
-#endif
-
 #define ASM_OUTPUT_REG_PUSH(FILE,REGNO)
 #define ASM_OUTPUT_REG_POP(FILE,REGNO) 
 /* This is how to output an element of a case-vector that is absolute.
    Note that this method makes filling these branch delay slots
-   virtually impossible.  */
+   impossible.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
   fprintf (FILE, "\tb L$%04d\n\tnop\n", VALUE)
