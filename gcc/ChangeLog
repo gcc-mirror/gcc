@@ -1,3 +1,8 @@
+2003-10-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* final.c (final_scan_insn): Run FINAL_PRESCAN_INSNS on asm insns
+	as well.
+
 2003-10-18  Richard Sandiford  <rsandifo@redhat.com>
 
 	* rtl.h (rtl_size): Declare.
