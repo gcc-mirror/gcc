@@ -819,7 +819,8 @@ reload (first, global, dumpfile)
 	 and constant, it is probably not addressable because the constant is
 	 out of range, in that case record the address; we will generate
 	 hairy code to compute the address in a register each time it is
-	 needed.
+	 needed.  Similarly if it is a hard register, but one that is not
+	 valid as an address register.
 
 	 If the location is not addressable, but does not have one of the
 	 above forms, assign a stack slot.  We have to do this to avoid the
@@ -839,6 +840,8 @@ reload (first, global, dumpfile)
 					 XEXP (x, 0)))
 	      reg_equiv_mem[i] = x, reg_equiv_address[i] = 0;
 	    else if (CONSTANT_P (XEXP (x, 0))
+		     || (GET_CODE (XEXP (x, 0)) == REG
+			 && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER)
 		     || (GET_CODE (XEXP (x, 0)) == PLUS
 			 && GET_CODE (XEXP (XEXP (x, 0), 0)) == REG
 			 && (REGNO (XEXP (XEXP (x, 0), 0))
