@@ -5,6 +5,9 @@ Tue Feb 16 01:37:33 1999  Charles G Waldman  <cgw@alum.mit.edu>
 
 Mon Feb 15 11:33:51 1999  Jeffrey A Law  (law@cygnus.com)
 
+	Sat Jan 16 21:48:17 1999  Marc Espie (Marc.Espie@openbsd.org)
+        * gcc.c: (do_spec_1): Fix obvious typo.
+
 	* jump.c: Include insn-attr.h.
 	(delete_computation): If reload has completed and insn scheduling
 	after reload is enabled, then do not depend on REG_DEAD notes.
