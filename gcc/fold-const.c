@@ -69,7 +69,7 @@ static tree int_const_binop (enum tree_code, tree, tree, int);
 static tree const_binop (enum tree_code, tree, tree, int);
 static hashval_t size_htab_hash (const void *);
 static int size_htab_eq (const void *, const void *);
-static tree fold_convert (tree, tree);
+static tree fold_convert_const (enum tree_code, tree, tree);
 static enum tree_code invert_tree_comparison (enum tree_code);
 static enum tree_code swap_tree_comparison (enum tree_code);
 static int comparison_to_compcode (enum tree_code);
@@ -1657,14 +1657,17 @@ size_diffop (tree arg0, tree arg1)
 }
 
 
-/* Given T, a tree representing type conversion of ARG1, a constant,
-   return a constant tree representing the result of conversion.  */
+/* Attempt to fold type conversion operation CODE of expression ARG1 to
+   type TYPE.  If no simplification can be done return NULL_TREE.  */
 
 static tree
-fold_convert (tree t, tree arg1)
+fold_convert_const (enum tree_code code, tree type, tree arg1)
 {
-  tree type = TREE_TYPE (t);
   int overflow = 0;
+  tree t;
+
+  if (TREE_TYPE (arg1) == type)
+    return arg1;
 
   if (POINTER_TYPE_P (type) || INTEGRAL_TYPE_P (type))
     {
@@ -1673,7 +1676,7 @@ fold_convert (tree t, tree arg1)
 	  /* If we would build a constant wider than GCC supports,
 	     leave the conversion unfolded.  */
 	  if (TYPE_PRECISION (type) > 2 * HOST_BITS_PER_WIDE_INT)
-	    return t;
+	    return NULL_TREE;
 
 	  /* If we are trying to make a sizetype for a small integer, use
 	     size_int to pick up cached types to reduce duplicate nodes.  */
@@ -1701,6 +1704,7 @@ fold_convert (tree t, tree arg1)
 	       || TREE_OVERFLOW (arg1));
 	  TREE_CONSTANT_OVERFLOW (t)
 	    = TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg1);
+	  return t;
 	}
       else if (TREE_CODE (arg1) == REAL_CST)
 	{
@@ -1766,8 +1770,8 @@ fold_convert (tree t, tree arg1)
 	    = TREE_OVERFLOW (arg1) | force_fit_type (t, overflow);
 	  TREE_CONSTANT_OVERFLOW (t)
 	    = TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg1);
+	  return t;
 	}
-      TREE_TYPE (t) = type;
     }
   else if (TREE_CODE (type) == REAL_TYPE)
     {
@@ -1795,8 +1799,7 @@ fold_convert (tree t, tree arg1)
 	  return t;
 	}
     }
-  TREE_CONSTANT (t) = 1;
-  return t;
+  return NULL_TREE;
 }
 
 /* Return an expr equal to X but certainly not valid as an lvalue.  */
@@ -5583,17 +5586,8 @@ fold (tree expr)
 				convert (TREE_TYPE (t), and1)));
 	}
 
-      if (!wins)
-	{
-	  if (TREE_CONSTANT (t) != TREE_CONSTANT (arg0))
-	    {
-	      if (t == orig_t)
-		t = copy_node (t);
-	      TREE_CONSTANT (t) = TREE_CONSTANT (arg0);
-	    }
-	  return t;
-	}
-      return fold_convert (t, arg0);
+      tem = fold_convert_const (code, TREE_TYPE (t), arg0);
+      return tem ? tem : t;
 
     case VIEW_CONVERT_EXPR:
       if (TREE_CODE (TREE_OPERAND (t, 0)) == VIEW_CONVERT_EXPR)

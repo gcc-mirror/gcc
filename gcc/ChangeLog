@@ -1,3 +1,15 @@
+2004-02-15  Roger Sayle  <roger@eyesopen.com>
+
+	Backport from mainline:
+
+	2004-01-20  Roger Sayle  <roger@eyesopen.com>
+	* fold-const.c (fold_convert): Rename to fold_convert_const.
+	(fold_convert_const): Change arguments to take a tree_code,
+	a type and the operand/expression to be converted.  Return
+	NULL_TREE if no simplification is possible.
+	(fold): Adjust call to fold_convert to match new fold_convert_const.
+	Avoid modifying the tree passed to fold in-place.
+
 2004-02-15  Jan Hubicka  <jh@suse.cz>
 
 	* cselib.c (value_pool): New.
