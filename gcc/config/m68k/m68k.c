@@ -1880,9 +1880,9 @@ print_operand_address (file, addr)
 	      {
 		output_addr_const (file, addr);
 	        if ((flag_pic == 1) && (breg == pic_offset_table_rtx))
-	          fprintf (file, ":w");
+	          fprintf (file, ".w");
 	        if ((flag_pic == 2) && (breg == pic_offset_table_rtx))
-	          fprintf (file, ":l");
+	          fprintf (file, ".l");
 	      }
 	    fprintf (file, "(%s", reg_names[REGNO (breg)]);
 	    if (ireg != 0)
