@@ -1,5 +1,10 @@
 2005-02-15  Mark Wielaard  <mark@klomp.org>
 
+	* java/net/URLClassLoader.java (JarURLLoader.JarURLLoader): Just use
+	space for parsing CLASS_PATH attribute.
+
+2005-02-15  Mark Wielaard  <mark@klomp.org>
+
 	* java/net/URLClassLoader.java (JarURLLoader.JarURLLoader): Don't look
 	aside for "GCJLIBS" in directory where jarfiles are loaded.
 	(JarURLLoader.getClass): Removed method.
