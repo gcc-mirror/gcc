@@ -287,6 +287,7 @@ $load_table:
 #error "osf.S out of sync with ffi.h"
 #endif
 
+#ifdef __ELF__
 	.section	.eh_frame,"aw",@progbits
 __FRAME_BEGIN__:
 	.4byte	$LECIE1-$LSCIE1	 # Length of Common Information Entry
@@ -346,3 +347,4 @@ $LASFDE3:
 	.byte	0x12	 # uleb128 0x12
 	.align 3
 $LEFDE3:
+#endif
