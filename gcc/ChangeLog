@@ -1,3 +1,92 @@
+2005-02-28  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (EASY_VECTOR_15): Remove.
+	(EASY_VECTOR_15_ADD_SELF): Remove.
+	(num_insns_constant_wide): Not static.
+	(validate_condition_mode): Not static.
+	(toc_relative_expr_p): Not static.
+	(legitimate_indirect_address_p): Not static.
+	(macho_lo_sum_memory_operand): Not static.
+	(invalid_e500_subreg): Not static.
+	(easy_vector_same): Not static.
+	(easy_vector_splat_const): Not static.
+	(RS6000_SYMBOL_REF_TLS_P): Remove.
+	(any_operand): Delete.
+	(any_parallel_operand): Delete.
+	(count_register_operand): Delete.
+	(altivec_register_operand): Delete.
+	(xer_operand): Delete.
+	(s8bit_cint_operand): Delete.
+	(short_cint_operand): Delete.
+	(u_short_cint_operand): Delete.
+	(non_short_cint_operand): Delete.
+	(exact_log2_cint_operand): Delete.
+	(gpc_reg_operand): Delete.
+	(cc_reg_operand): Delete.
+	(cc_reg_not_cr0_operand): Delete.
+	(reg_or_short_operand): Delete.
+	(reg_or_neg_short_operand): Delete.
+	(reg_or_aligned_short_operand): Delete.
+	(reg_or_u_short_operand): Delete.
+	(reg_or_cint_operand): Delete.
+	(reg_or_arith_cint_operand): Delete.
+	(reg_or_add_cint64_operand): Delete.
+	(reg_or_sub_cint64_operand): Delete.
+	(reg_or_logical_cint_operand): Delete.
+	(got_operand): Delete.
+	(got_no_const_operand): Delete.
+	(easy_fp_constant): Delete.
+	(easy_vector_constant): Delete.
+	(easy_vector_constant_add_self): Delete.
+	(zero_constant): Delete.
+	(zero_fp_constant): Delete.
+	(volatile_mem_operand): Delete.
+	(offsettable_mem_operand): Delete.
+	(mem_or_easy_const_operand): Delete.
+	(add_operand): Delete.
+	(non_add_cint_operand): Delete.
+	(logical_operand): Delete.
+	(non_logical_cint_operand): Delete.
+	(mask_operand): Delete.
+	(mask_operand_wrap): Delete.
+	(mask64_operand): Delete.
+	(mask64_2_operand): Delete.
+	(and64_operand): Delete.
+	(and64_2_operand): Delete.
+	(and_operand): Delete.
+	(reg_or_mem_operand): Delete.
+	(lwa_operand): Delete.
+	(symbol_ref_operand): Delete.
+	(call_operand): Delete.
+	(current_file_function_operand): Delete.
+	(input_operand): Delete.
+	(rs6000_nonimmediate_operand): Delete.
+	(rs6000_tls_symbol_ref): Delete.
+	(save_world_operation): Delete.
+	(restore_world_operation): Delete.
+	(load_multiple_operation): Delete.
+	(store_multiple_operation): Delete.
+	(vrsave_operation): Delete.
+	(mfcr_operation): Delete.
+	(mtcrf_operation): Delete.
+	(lmw_operation): Delete.
+	(stmw_operation): Delete.
+	(branch_comparison_operator): Delete.
+	(branch_positive_comparison_operator): Delete.
+	(scc_comparison_operator): Delete.
+	(trap_comparison_operator): Delete.
+	(boolean_operator): Delete.
+	(boolean_or_operator): Delete.
+	(min_max_operator): Delete.
+	* config/rs6000/rs6000.h (RS6000_SYMBOL_REF_TLS_P): Move to here.
+	(EASY_VECTOR_15): Moved to here.
+	(EASY_VECTOR_15_ADD_SELF): Move to here.
+	(PREDICATE_CODES): Delete.
+	* config/rs6000/rs6000-protos.h: Delete predicate functions.
+	Declare functions no longer static.
+	* config/rs6000/predicates.md: New.
+	* config/rs6000/rs6000.md: Include predicates.md
+
 2005-02-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* calls.c (emit_call_1): Don't use  REG_ALWAYS_RETURN.

@@ -251,6 +251,10 @@ extern int target_flags;
 #define HAVE_AS_TLS 0
 #endif
 
+/* Return 1 for a symbol ref for a thread-local storage symbol.  */
+#define RS6000_SYMBOL_REF_TLS_P(RTX) \
+  (GET_CODE (RTX) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (RTX) != 0)
+
 #ifdef IN_LIBGCC2
 /* For libgcc2 we make sure this is a compile time constant */
 #if defined (__64BIT__) || defined (__powerpc64__)
@@ -1931,6 +1935,9 @@ typedef struct rs6000_args
     || easy_vector_constant (X, GET_MODE (X)))			\
    && !rs6000_tls_referenced_p (X))
 
+#define EASY_VECTOR_15(n) ((n) >= -16 && (n) <= 15)
+#define EASY_VECTOR_15_ADD_SELF(n) ((n) >= 0x10 && (n) <= 0x1e && !((n) & 1))
+
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
    We have two alternate definitions for each of them.
@@ -2537,87 +2544,6 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
 /* Print a memory address as an operand to reference that memory location.  */
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
-
-/* Define the codes that are matched by predicates in rs6000.c.  */
-
-#define PREDICATE_CODES							   \
-  {"any_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,		   \
-		   LABEL_REF, SUBREG, REG, MEM}},			   \
-  {"any_parallel_operand", {PARALLEL}},					   \
-  {"zero_constant", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,	   \
-		    LABEL_REF, SUBREG, REG, MEM}},			   \
-  {"short_cint_operand", {CONST_INT}},					   \
-  {"u_short_cint_operand", {CONST_INT}},				   \
-  {"non_short_cint_operand", {CONST_INT}},				   \
-  {"exact_log2_cint_operand", {CONST_INT}},				   \
-  {"gpc_reg_operand", {SUBREG, REG}},					   \
-  {"cc_reg_operand", {SUBREG, REG}},					   \
-  {"cc_reg_not_cr0_operand", {SUBREG, REG}},				   \
-  {"reg_or_short_operand", {SUBREG, REG, CONST_INT}},			   \
-  {"reg_or_neg_short_operand", {SUBREG, REG, CONST_INT}},		   \
-  {"reg_or_aligned_short_operand", {SUBREG, REG, CONST_INT}},		   \
-  {"reg_or_u_short_operand", {SUBREG, REG, CONST_INT}},			   \
-  {"reg_or_cint_operand", {SUBREG, REG, CONST_INT}},			   \
-  {"reg_or_arith_cint_operand", {SUBREG, REG, CONST_INT}},		   \
-  {"reg_or_add_cint64_operand", {SUBREG, REG, CONST_INT}},		   \
-  {"reg_or_sub_cint64_operand", {SUBREG, REG, CONST_INT}},		   \
-  {"reg_or_logical_cint_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}}, \
-  {"got_operand", {SYMBOL_REF, CONST, LABEL_REF}},			   \
-  {"got_no_const_operand", {SYMBOL_REF, LABEL_REF}},			   \
-  {"easy_fp_constant", {CONST_DOUBLE}},					   \
-  {"easy_vector_constant", {CONST_VECTOR}},				   \
-  {"easy_vector_constant_add_self", {CONST_VECTOR}},			   \
-  {"zero_fp_constant", {CONST_DOUBLE}},					   \
-  {"reg_or_mem_operand", {SUBREG, MEM, REG}},				   \
-  {"lwa_operand", {SUBREG, MEM, REG}},					   \
-  {"volatile_mem_operand", {MEM}},					   \
-  {"offsettable_mem_operand", {MEM}},					   \
-  {"mem_or_easy_const_operand", {SUBREG, MEM, CONST_DOUBLE}},		   \
-  {"add_operand", {SUBREG, REG, CONST_INT}},				   \
-  {"non_add_cint_operand", {CONST_INT}},				   \
-  {"and_operand", {SUBREG, REG, CONST_INT}},				   \
-  {"and64_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},		   \
-  {"and64_2_operand", {SUBREG, REG, CONST_INT}},			   \
-  {"logical_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},		   \
-  {"non_logical_cint_operand", {CONST_INT, CONST_DOUBLE}},		   \
-  {"mask_operand", {CONST_INT}},					   \
-  {"mask_operand_wrap", {CONST_INT}},					   \
-  {"mask64_operand", {CONST_INT}},					   \
-  {"mask64_2_operand", {CONST_INT}},					   \
-  {"count_register_operand", {REG}},					   \
-  {"xer_operand", {REG}},						   \
-  {"symbol_ref_operand", {SYMBOL_REF}},					   \
-  {"rs6000_tls_symbol_ref", {SYMBOL_REF}},				   \
-  {"call_operand", {SYMBOL_REF, REG}},					   \
-  {"current_file_function_operand", {SYMBOL_REF}},			   \
-  {"input_operand", {SUBREG, MEM, REG, CONST_INT,			   \
-		     CONST_DOUBLE, SYMBOL_REF}},			   \
-  {"rs6000_nonimmediate_operand", {SUBREG, MEM, REG}},		   	   \
-  {"load_multiple_operation", {PARALLEL}},				   \
-  {"store_multiple_operation", {PARALLEL}},				   \
-  {"lmw_operation", {PARALLEL}},					   \
-  {"stmw_operation", {PARALLEL}},					   \
-  {"vrsave_operation", {PARALLEL}},					   \
-  {"save_world_operation", {PARALLEL}},                                    \
-  {"restore_world_operation", {PARALLEL}},                                 \
-  {"mfcr_operation", {PARALLEL}},					   \
-  {"mtcrf_operation", {PARALLEL}},					   \
-  {"branch_comparison_operator", {EQ, NE, LE, LT, GE,			   \
-				  GT, LEU, LTU, GEU, GTU,		   \
-				  UNORDERED, ORDERED,			   \
-				  UNGE, UNLE }},			   \
-  {"branch_positive_comparison_operator", {EQ, LT, GT, LTU, GTU,	   \
-					   UNORDERED }},		   \
-  {"scc_comparison_operator", {EQ, NE, LE, LT, GE,			   \
-			       GT, LEU, LTU, GEU, GTU,			   \
-			       UNORDERED, ORDERED,			   \
-			       UNGE, UNLE }},				   \
-  {"trap_comparison_operator", {EQ, NE, LE, LT, GE,			   \
-				GT, LEU, LTU, GEU, GTU}},		   \
-  {"boolean_operator", {AND, IOR, XOR}},				   \
-  {"boolean_or_operator", {IOR, XOR}},					   \
-  {"altivec_register_operand", {REG}},	                                   \
-  {"min_max_operator", {SMIN, SMAX, UMIN, UMAX}},
 
 /* uncomment for disabling the corresponding default options */
 /* #define  MACHINE_no_sched_interblock */
