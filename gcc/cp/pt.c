@@ -9854,7 +9854,25 @@ instantiate_decl (d, defer_ok)
 
   if (pattern_defined)
     {
-      repo_template_used (d);
+      /* Let the repository code that this template definition is
+	 available.
+
+	 The repository doesn't need to know about cloned functions
+	 because they never actually show up in the object file.  It
+	 does need to know about the clones; those are the symbols
+	 that the linker will be emitting error messages about.  */
+      if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (d)
+	  || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (d))
+	{
+	  tree t;
+
+	  for (t = TREE_CHAIN (d);
+	       t && DECL_CLONED_FUNCTION_P (t); 
+	       t = TREE_CHAIN (t))
+	    repo_template_used (t);
+	}
+      else
+	repo_template_used (d);
 
       if (flag_external_templates && ! DECL_INTERFACE_KNOWN (d))
 	{
