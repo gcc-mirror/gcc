@@ -61,10 +61,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 #define CC1_SPEC       ""
 
-#ifndef CC1PLUS_SPEC
-#define CC1PLUS_SPEC "%{!fgnu-binutils: -fno-gnu-binutils}"
-#endif
-
 #ifdef ASM_SPEC
 #undef ASM_SPEC
 #endif
