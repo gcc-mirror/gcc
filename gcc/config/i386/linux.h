@@ -1,20 +1,29 @@
 /* Definitions for Intel 386 running Linux
- * Copyright (C) 1992 Free Software Foundation, Inc.
- *
- * Written by H.J. Lu (hlu@eecs.wsu.edu)
- *
- * Linux is a POSIX.1 compatible UNIX clone for i386, which uses GNU
- * stuffs as the native stuffs.
- */
+   Copyright (C) 1992, 1994 Free Software Foundation, Inc.
+   Contributed by H.J. Lu (hjl@nynexst.com)
+
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #if 0	/* The FSF has fixed the known bugs. But ....... */
 
 /* Linux has a hacked gas 1.38.1, which can handle repz, repnz
- * and fildll.
- */
+ and fildll.  */
 
 #define GOOD_GAS
-
 #endif
 
 /* This is tested by i386/gas.h.  */
@@ -52,8 +61,8 @@
 #define HAVE_ATEXIT
 
 /* Linux uses ctype from glibc.a. I am not sure how complete it is.
- * For now, we play safe. It may change later.
- */
+   For now, we play safe. It may change later. */
+
 #if 0
 #undef MULTIBYTE_CHARS
 #define MULTIBYTE_CHARS	1
@@ -66,31 +75,11 @@
 #undef STARTFILE_SPEC
 #undef GPLUSPLUS_INCLUDE_DIR
 
-#ifdef CROSS_COMPILE
-
-/*
- * For cross-compile, we just need to search `$(tooldir)/lib'
- */
-
-#define STARTFILE_SPEC  \
-  "%{pg:gcrt0.o%s -static} %{!pg:%{p:gcrt0.o%s -static} %{!p:crt0.o%s %{g*:-static} %{!static:%{nojump:-nojump}} %{static:-static}}} -L"TOOLDIR"/lib"
-
-/*
- *The cross-compile uses this.
- */
-#define GPLUSPLUS_INCLUDE_DIR TOOLDIR"/g++-include"
-
-#else
-
 #define STARTFILE_SPEC  \
   "%{pg:gcrt0.o%s -static} %{!pg:%{p:gcrt0.o%s -static} %{!p:crt0.o%s %{g*:-static}%{!static:%{nojump:-nojump}} %{static:-static}}}"
 
-/*
- *The native Linux system uses this.
- */
+/*  The native Linux system uses this. */
 #define GPLUSPLUS_INCLUDE_DIR "/usr/g++-include"
-
-#endif
 
 /* There are conflicting reports about whether this system uses
    a different assembler syntax.  wilson@cygnus.com says # is right.  */
