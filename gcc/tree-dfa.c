@@ -1053,3 +1053,46 @@ mark_call_clobbered_vars_to_rename (void)
       bitmap_set_bit (vars_to_rename, var_ann (var)->uid);
     }
 }
+
+/* If REF is a COMPONENT_REF for a structure that can have sub-variables, and
+   we know where REF is accessing, return the variable in REF that has the
+   sub-variables.  If the return value is not NULL, POFFSET will be the
+   offset, in bits, of REF inside the return value, and PSIZE will be the
+   size, in bits, of REF inside the return value.  */
+
+tree
+okay_component_ref_for_subvars (tree ref, HOST_WIDE_INT *poffset,
+				HOST_WIDE_INT *psize)
+{
+  tree result = NULL;
+  HOST_WIDE_INT bitsize;
+  HOST_WIDE_INT bitpos;
+  tree offset;
+  enum machine_mode mode;
+  int unsignedp;
+  int volatilep;
+
+  gcc_assert (!SSA_VAR_P (ref));
+  *poffset = 0;  
+  *psize = (unsigned int) -1;
+  
+  if (ref_contains_array_ref (ref))
+    return result;
+  ref = get_inner_reference (ref, &bitsize, &bitpos, &offset, &mode,
+			     &unsignedp, &volatilep, false);
+  if (TREE_CODE (ref) == INDIRECT_REF)
+    return result;
+  else if (offset == NULL && bitsize != -1 && SSA_VAR_P (ref))
+    {
+      *poffset = bitpos;      
+      *psize = bitsize;
+      if (get_subvars_for_var (ref) != NULL)
+	return ref;
+    }
+  else if (SSA_VAR_P (ref))
+    {
+      if (get_subvars_for_var (ref) != NULL)
+	return ref;
+    }
+  return NULL_TREE;
+}

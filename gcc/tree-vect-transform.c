@@ -353,12 +353,14 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   tag = STMT_VINFO_MEMTAG (stmt_info);
   gcc_assert (tag);
   get_var_ann (vect_ptr)->type_mem_tag = tag;
-  
+  get_var_ann (vect_ptr)->subvars = STMT_VINFO_SUBVARS (stmt_info);
+
   /* Mark for renaming all aliased variables
      (i.e, the may-aliases of the type-mem-tag).  */
   nvuses = NUM_VUSES (vuses);
   nv_may_defs = NUM_V_MAY_DEFS (v_may_defs);
   nv_must_defs = NUM_V_MUST_DEFS (v_must_defs);
+
   for (i = 0; i < nvuses; i++)
     {
       tree use = VUSE_OP (vuses, i);

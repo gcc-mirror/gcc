@@ -167,5 +167,6 @@ extern struct tree_opt_pass pass_rest_of_compilation;
 extern struct tree_opt_pass pass_sink_code;
 extern struct tree_opt_pass pass_fre;
 extern struct tree_opt_pass pass_linear_transform;
+extern struct tree_opt_pass pass_create_structure_vars;
 
 #endif /* GCC_TREE_PASS_H */

@@ -266,6 +266,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-tree-nrv -fdump-tree-vect @gol
 -fdump-tree-sink @gol
 -fdump-tree-sra@r{[}-@var{n}@r{]} @gol
+-fdump-tree-salias @gol
 -fdump-tree-fre@r{[}-@var{n}@r{]} @gol
 -ftree-vectorizer-verbose=@var{n} @gol
 -feliminate-dwarf2-dups -feliminate-unused-debug-types @gol
@@ -322,6 +323,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-loop-linear -ftree-loop-im -ftree-loop-ivcanon -fivopts @gol
 -ftree-dominator-opts -ftree-dse -ftree-copyrename -ftree-sink @gol
 -ftree-ch -ftree-sra -ftree-ter -ftree-lrs -ftree-fre -ftree-vectorize @gol
+-ftree-salias @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os}
 
@@ -3819,6 +3821,11 @@ appending @file{.ch} to the source file name.
 Dump SSA related information to a file.  The file name is made by appending
 @file{.ssa} to the source file name.
 
+@item salias
+@opindex fdump-tree-salias
+Dump structure aliasing variable information to a file.  This file name
+is made by appending @file{.salias} to the source file name.
+
 @item alias
 @opindex fdump-tree-alias
 Dump aliasing information for each function.  The file name is made by
@@ -4694,6 +4701,10 @@ between FRE and PRE is that FRE only considers expressions
 that are computed on all paths leading to the redundant computation.
 This analysis faster than PRE, though it exposes fewer redundancies.
 This flag is enabled by default at @option{-O} and higher.
+
+@item -ftree-salias
+Perform structural alias analysis on trees.  This flag
+is enabled by default at @option{-O} and higher.
 
 @item -ftree-sink
 Perform forward store motion  on trees.  This flag is

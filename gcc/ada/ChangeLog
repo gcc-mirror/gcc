@@ -1,3 +1,8 @@
+2005-03-12  Daniel Berlin <dberlin@dberlin.org>
+
+	* misc.c (gnat_post_options): Turn off structural
+	aliasing for now.
+	
 2005-03-08  Laurent Guerby <laurent@guerby.net>
 
 	* system-linux-sparc.ads: Fix typo in previous commit.

@@ -70,7 +70,7 @@ static bool vect_base_addr_differ_p (struct data_reference *,
 				     struct data_reference *drb, bool *);
 static tree vect_object_analysis (tree, tree, bool, tree, 
 				  struct data_reference **, tree *, tree *, 
-				  tree *, bool *, tree *);
+				  tree *, bool *, tree *, subvar_t *);
 static tree vect_address_analysis (tree, tree, bool, tree, 
 				   struct data_reference *, tree *, tree *, 
 				   tree *, bool *);
@@ -1377,6 +1377,7 @@ vect_address_analysis (tree expr, tree stmt, bool is_read, tree vectype,
   tree oprnd0, oprnd1, base_address, offset_expr, base_addr0, base_addr1;
   tree address_offset = ssize_int (0), address_misalign = ssize_int (0);
   tree dummy;
+  subvar_t dummy2;
 
   switch (TREE_CODE (expr))
     {
@@ -1426,9 +1427,10 @@ vect_address_analysis (tree expr, tree stmt, bool is_read, tree vectype,
       return base_addr0 ? base_addr0 : base_addr1;
 
     case ADDR_EXPR:
-      base_address = vect_object_analysis (TREE_OPERAND (expr, 0), stmt, is_read, 
-				   vectype, &dr, offset, misalign, step, 
-				   base_aligned, &dummy);
+      base_address = vect_object_analysis (TREE_OPERAND (expr, 0), stmt,
+					   is_read, vectype, &dr, offset, 
+					   misalign, step, base_aligned, 
+					   &dummy, &dummy2);
       return base_address;
 
     case SSA_NAME:
@@ -1507,6 +1509,7 @@ vect_address_analysis (tree expr, tree stmt, bool is_read, tree vectype,
    STEP - evolution of the DR_REF in the loop
    BASE_ALIGNED - indicates if BASE is aligned
    MEMTAG - memory tag for aliasing purposes
+   SUBVAR - Sub-variables of the variable
  
    If something unexpected is encountered (an unsupported form of data-ref),
    then NULL_TREE is returned.  */
@@ -1515,7 +1518,8 @@ static tree
 vect_object_analysis (tree memref, tree stmt, bool is_read,
 		      tree vectype, struct data_reference **dr,
 		      tree *offset, tree *misalign, tree *step,
-		      bool *base_aligned, tree *memtag)
+		      bool *base_aligned, tree *memtag,
+		      subvar_t *subvars)
 {
   tree base = NULL_TREE, base_address = NULL_TREE;
   tree object_offset = ssize_int (0), object_misalign = ssize_int (0);
@@ -1611,6 +1615,8 @@ vect_object_analysis (tree memref, tree stmt, bool is_read,
 	   us to object.  */
 	DR_BASE_NAME ((*dr)) = memref;
 
+      if (SSA_VAR_P (memref) && var_can_have_subvars (memref))	
+	*subvars = get_subvars_for_var (memref);
       base_address = build_fold_addr_expr (memref);
       *memtag = memref;
     }
@@ -1698,6 +1704,9 @@ vect_object_analysis (tree memref, tree stmt, bool is_read,
     /* MEMREF cannot be analyzed.  */
     return NULL_TREE;
 
+  if (SSA_VAR_P (*memtag) && var_can_have_subvars (*memtag))
+    *subvars = get_subvars_for_var (*memtag);
+
   /* Part 2: Combine the results of object and address analysis to calculate 
      INITIAL_OFFSET, STEP and misalignment info.  */
   *offset = size_binop (PLUS_EXPR, object_offset, address_offset);
@@ -1780,6 +1789,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 	  tree scalar_type, vectype;	  
 	  tree base, offset, misalign, step, tag;
 	  bool base_aligned;
+	  subvar_t subvars;
 
 	  /* Assumption: there exists a data-ref in stmt, if and only if 
              it has vuses/vdefs.  */
@@ -1843,7 +1853,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 	  dr = NULL; 
 	  base = vect_object_analysis (memref, stmt, is_read, vectype, &dr, 
 				       &offset, &misalign, &step, 
-				       &base_aligned, &tag);
+				       &base_aligned, &tag, &subvars);
 	  if (!base)
 	    {
 	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
@@ -1860,6 +1870,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 	  STMT_VINFO_VECT_MISALIGNMENT (stmt_info) = misalign;
 	  STMT_VINFO_VECT_BASE_ALIGNED_P (stmt_info) = base_aligned;
 	  STMT_VINFO_MEMTAG (stmt_info) = tag;
+	  STMT_VINFO_SUBVARS (stmt_info) = subvars;
 	  STMT_VINFO_VECTYPE (stmt_info) = vectype;
 	  VARRAY_PUSH_GENERIC_PTR (*datarefs, dr);
 	  STMT_VINFO_DATA_REF (stmt_info) = dr;

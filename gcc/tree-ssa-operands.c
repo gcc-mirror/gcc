@@ -683,8 +683,12 @@ finalize_ssa_v_must_defs (v_must_def_optype *old_ops_p,
   if (num == 0)
     return NULL;
 
-  /* There should only be a single V_MUST_DEF per assignment.  */
-  gcc_assert (TREE_CODE (stmt) != MODIFY_EXPR || num <= 1);
+  /* In the presence of subvars, there may be more than one V_MUST_DEF per
+     statement (one for each subvar).  It is a bit expensive to verify that
+     all must-defs in a statement belong to subvars if there is more than one
+     MUST-def, so we don't do it.  Suffice to say, if you reach here without
+     having subvars, and have num >1, you have hit a bug. */
+     
 
   old_ops = *old_ops_p;
 
@@ -907,7 +911,6 @@ build_ssa_operands (tree stmt, stmt_ann_t ann, stmt_operands_p old_ops,
 	  lhs = TREE_OPERAND (lhs, 0);
 
 	if (TREE_CODE (lhs) != ARRAY_REF && TREE_CODE (lhs) != ARRAY_RANGE_REF
-	    && TREE_CODE (lhs) != COMPONENT_REF
 	    && TREE_CODE (lhs) != BIT_FIELD_REF
 	    && TREE_CODE (lhs) != REALPART_EXPR
 	    && TREE_CODE (lhs) != IMAGPART_EXPR)
@@ -1021,6 +1024,49 @@ get_stmt_operands (tree stmt)
 }
 
 
+/* Return true if OFFSET and SIZE define a range that overlaps with some
+   portion of the range of SV, a subvar.  If there was an exact overlap,
+   *EXACT will be set to true upon return. */
+
+static bool
+overlap_subvar (HOST_WIDE_INT offset, HOST_WIDE_INT size,
+		subvar_t sv,  bool *exact)
+{
+  /* There are three possible cases of overlap.
+     1. We can have an exact overlap, like so:   
+     |offset, offset + size             |
+     |sv->offset, sv->offset + sv->size |
+     
+     2. We can have offset starting after sv->offset, like so:
+     
+           |offset, offset + size              |
+     |sv->offset, sv->offset + sv->size  |
+
+     3. We can have offset starting before sv->offset, like so:
+     
+     |offset, offset + size    |
+       |sv->offset, sv->offset + sv->size|
+  */
+
+  if (exact)
+    *exact = false;
+  if (offset == sv->offset && size == sv->size)
+    {
+      if (exact)
+	*exact = true;
+      return true;
+    }
+  else if (offset >= sv->offset && offset < (sv->offset + sv->size))
+    {
+      return true;
+    }
+  else if (offset < sv->offset && (offset + size > sv->offset))
+    {
+      return true;
+    }
+  return false;
+
+}
 /* Recursively scan the expression pointed by EXPR_P in statement referred to
    by INFO.  FLAGS is one of the OPF_* constants modifying how to interpret the
    operands found.  */
@@ -1068,11 +1114,25 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
     case PARM_DECL:
     case RESULT_DECL:
     case CONST_DECL:
-      /* If we found a variable, add it to DEFS or USES depending
-	 on the operand flags.  */
-      add_stmt_operand (expr_p, s_ann, flags);
-      return;
-
+      {
+	subvar_t svars;
+	
+	/* Add the subvars for a variable if it has subvars, to DEFS or USES.
+	   Otherwise, add the variable itself.  
+	   Whether it goes to USES or DEFS depends on the operand flags.  */
+	if (var_can_have_subvars (expr)
+	    && (svars = get_subvars_for_var (expr)))
+	  {
+	    subvar_t sv;
+	    for (sv = svars; sv; sv = sv->next)
+	      add_stmt_operand (&sv->var, s_ann, flags);
+	  }
+	else
+	  {
+	    add_stmt_operand (expr_p, s_ann, flags);
+	  }
+	return;
+      }
     case MISALIGNED_INDIRECT_REF:
       get_expr_operands (stmt, &TREE_OPERAND (expr, 1), flags);
       /* fall through */
@@ -1104,30 +1164,39 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
     case COMPONENT_REF:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-      /* Similarly to arrays, references to compound variables (complex
-	 types and structures/unions) are globbed.
+      {
+	tree ref;
+	HOST_WIDE_INT offset, size;
+ 	/* This component ref becomes an access to all of the subvariables
+	   it can touch,  if we can determine that, but *NOT* the real one.
+	   If we can't determine which fields we could touch, the recursion
+	   will eventually get to a variable and add *all* of its subvars, or
+	   whatever is the minimum correct subset.  */
 
-	 FIXME: This means that
-
-     			a.x = 6;
-			a.y = 7;
-			foo (a.x, a.y);
-
-	 will not be constant propagated because the two partial
-	 definitions to 'a' will kill each other.  Note that SRA may be
-	 able to fix this problem if 'a' can be scalarized.  */
-
-      /* If the LHS of the compound reference is not a regular variable,
-	 recurse to keep looking for more operands in the subexpression.  */
-      if (SSA_VAR_P (TREE_OPERAND (expr, 0)))
-	add_stmt_operand (expr_p, s_ann, flags);
-      else
-	get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags);
-
-      if (code == COMPONENT_REF)
-	get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_none);
-      return;
-
+	ref = okay_component_ref_for_subvars (expr, &offset, &size);
+	if (ref)
+	  {	  
+	    subvar_t svars = get_subvars_for_var (ref);
+	    subvar_t sv;
+	    for (sv = svars; sv; sv = sv->next)
+	      {
+		bool exact;		
+		if (overlap_subvar (offset, size, sv, &exact))
+		  {
+		    if (exact)
+		      flags &= ~opf_kill_def;
+		    add_stmt_operand (&sv->var, s_ann, flags);
+		  }
+	      }
+	  }
+	else
+	  get_expr_operands (stmt, &TREE_OPERAND (expr, 0), 
+			     flags & ~opf_kill_def);
+	
+	if (code == COMPONENT_REF)
+	  get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_none);
+	return;
+      }
     case WITH_SIZE_EXPR:
       /* WITH_SIZE_EXPR is a pass-through reference to its first argument,
 	 and an rvalue reference to its second argument.  */
@@ -1158,7 +1227,6 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	  op = TREE_OPERAND (expr, 0);
 	if (TREE_CODE (op) == ARRAY_REF
 	    || TREE_CODE (op) == ARRAY_RANGE_REF
-	    || TREE_CODE (op) == COMPONENT_REF
 	    || TREE_CODE (op) == REALPART_EXPR
 	    || TREE_CODE (op) == IMAGPART_EXPR)
 	  subflags = opf_is_def;
@@ -1554,9 +1622,10 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
 	    {
 	      if (flags & opf_kill_def)
 		{
-		  /* Only regular variables may get a V_MUST_DEF
-		     operand.  */
-		  gcc_assert (v_ann->mem_tag_kind == NOT_A_TAG);
+		  /* Only regular variables or struct fields may get a
+		     V_MUST_DEF operand.  */
+		  gcc_assert (v_ann->mem_tag_kind == NOT_A_TAG 
+			      || v_ann->mem_tag_kind == STRUCT_FIELD);
 		  /* V_MUST_DEF for non-aliased, non-GIMPLE register 
 		    variable definitions.  */
 		  append_v_must_def (var);
@@ -1615,25 +1684,59 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
     }
 }
 
-
+  
 /* Record that VAR had its address taken in the statement with annotations
    S_ANN.  */
 
 static void
 note_addressable (tree var, stmt_ann_t s_ann)
 {
+  tree ref;
+  subvar_t svars;
+  HOST_WIDE_INT offset;
+  HOST_WIDE_INT size;
+
   if (!s_ann)
     return;
+  
+  /* If this is a COMPONENT_REF, and we know exactly what it touches, we only
+     take the address of the subvariables it will touch.
+     Otherwise, we take the address of all the subvariables, plus the real
+     ones.  */
 
+  if (var && TREE_CODE (var) == COMPONENT_REF 
+      && (ref = okay_component_ref_for_subvars (var, &offset, &size)))
+    {
+      subvar_t sv;
+      svars = get_subvars_for_var (ref);
+      
+      if (s_ann->addresses_taken == NULL)
+	s_ann->addresses_taken = BITMAP_GGC_ALLOC ();      
+      
+      for (sv = svars; sv; sv = sv->next)
+	{
+	  if (overlap_subvar (offset, size, sv, NULL))
+	    bitmap_set_bit (s_ann->addresses_taken, var_ann (sv->var)->uid);
+	}
+      return;
+    }
+  
   var = get_base_address (var);
   if (var && SSA_VAR_P (var))
     {
       if (s_ann->addresses_taken == NULL)
-	s_ann->addresses_taken = BITMAP_GGC_ALLOC ();
+	s_ann->addresses_taken = BITMAP_GGC_ALLOC ();      
+      
       bitmap_set_bit (s_ann->addresses_taken, var_ann (var)->uid);
+      if (var_can_have_subvars (var)
+	  && (svars = get_subvars_for_var (var)))
+	{
+	  subvar_t sv;
+	  for (sv = svars; sv; sv = sv->next)
+	    bitmap_set_bit (s_ann->addresses_taken, var_ann (sv->var)->uid);
+	}
     }
 }
-
 
 /* Add clobbering definitions for .GLOBAL_VAR or for each of the call
    clobbered variables in the function.  */
