@@ -2261,6 +2261,9 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    }
 	  break;
 
+	case 0:
+	  break;
+
 	default:
 	  if (NOTE_LINE_NUMBER (insn) <= 0)
 	    abort ();
