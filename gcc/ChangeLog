@@ -1,3 +1,7 @@
+Thu Mar 25 02:02:13 1999  Axel Thimm <Axel.Thimm@physik.fu-berlin.de>
+
+	* Makefile.in (RANLIB_TEST): Improve test.
+
 Thu Mar 25 01:15:33 1999  Donn Terry  <donn@interix.com>
 
 	* combine.c (force_to_mode, case PLUS): Use sign extended mask
