@@ -706,7 +706,19 @@ output_scc_di(op, operand1, operand2, dest)
      rtx dest;
 {
   rtx loperands[7];
+  enum rtx_code op_code = GET_CODE (op);
 
+  /* The m68k cmp.l instruction requires operand1 to be a reg as used
+     below.  Swap the operands and change the op if these requirements
+     are not fulfilled.  */
+  if (GET_CODE (operand2) == REG && GET_CODE (operand1) != REG)
+    {
+      rtx tmp = operand1;
+
+      operand1 = operand2;
+      operand2 = tmp;
+      op_code = swap_condition (op_code);
+    }
   loperands[0] = operand1;
   if (GET_CODE (operand1) == REG)
     loperands[1] = gen_rtx (REG, SImode, REGNO (operand1) + 1);
@@ -743,7 +755,7 @@ output_scc_di(op, operand1, operand2, dest)
 #endif
   loperands[5] = dest;
   
-  switch (GET_CODE (op))
+  switch (op_code)
     {
       case EQ:
         ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
