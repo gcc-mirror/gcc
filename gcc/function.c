@@ -4378,6 +4378,7 @@ assign_parms (fndecl, second_time)
 	  if (nominal_mode != passed_mode
 	      || promoted_nominal_mode != promoted_mode)
 	    {
+	      int save_tree_used;
 	      /* ENTRY_PARM has been converted to PROMOTED_MODE, its
 		 mode, by the caller.  We now have to convert it to 
 		 NOMINAL_MODE, if different.  However, PARMREG may be in
@@ -4404,8 +4405,11 @@ assign_parms (fndecl, second_time)
 	      push_to_sequence (conversion_insns);
 	      tempreg = convert_to_mode (nominal_mode, tempreg, unsignedp);
 
+	      /* TREE_USED gets set erroneously during expand_assignment.  */
+	      save_tree_used = TREE_USED (parm);
 	      expand_assignment (parm,
 				 make_tree (nominal_type, tempreg), 0, 0);
+	      TREE_USED (parm) = save_tree_used;
 	      conversion_insns = get_insns ();
 	      did_conversion = 1;
 	      end_sequence ();

@@ -1,3 +1,8 @@
+Wed Jan 20 18:15:08 1999  Dave Brolley  <brolley@cygnus.com>
+
+	* function.c (assign_parms): Save and restore setting of
+ 	TREE_USED (parm).
+
 Wed Jan 20 12:51:42 1999  Mark Mitchell  <mark@markmitchell.com>
 
 	* arm.md: Use MEM_COPY_ATTRIBUTES where appropriate throughout.
