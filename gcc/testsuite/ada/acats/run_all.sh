@@ -9,7 +9,7 @@
 # gccflags="-O3 -fomit-frame-pointer -funroll-all-loops -finline-functions"
 # gnatflags="-gnatN"
 
-gccflags=""
+gccflags="-O2"
 gnatflags="-gnatws"
 
 target_run () {

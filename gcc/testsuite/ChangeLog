@@ -1,3 +1,7 @@
+2004-04-17  Laurent GUERBY <laurent@guerby.net>
+
+	* ada/acats/run_all.sh: use -O2 by default.
+	
 2004-04-17  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/vr-mult-[12].c: New tests.
