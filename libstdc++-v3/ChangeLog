@@ -1,3 +1,10 @@
+2001-06-24  Gabriel Dos Reis  <gdr@codesourcery.com>
+            David Edelsohn <dje@watson.ibm.com>
+
+	* libmath/stubs.c: New file.
+	* libmath/Makefile.am (libmath_la_SOURCES): Add stubs.c.
+	* libmath/Makefile.in: Regenerate.
+
 20010617 Release Manager
 
         * GCC 3.0 Released.
