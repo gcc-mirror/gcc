@@ -5267,7 +5267,7 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 
 	arg1_tree = ffecom_arg_ptr_to_expr (arg2, &arg1_len);
 
-	arg2_tree = convert (((gfrt == FFEINTRIN_impCTIME_subr) ?
+	arg2_tree = convert (((codegen_imp == FFEINTRIN_impCTIME_subr) ?
 			      ffecom_f2c_longint_type_node :
 			      ffecom_f2c_integer_type_node),
 			     ffecom_expr (arg1));

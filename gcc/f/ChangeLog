@@ -1,3 +1,7 @@
+Mon May  3 19:41:48 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* com.c (ffecom_expr_intrinsic_): Fix test of CTIME_subr.
+
 Mon May  3 18:11:48 1999  Craig Burley  <craig@jcb-sc.com>
 
 	Reverse order of two arguments to CTIME_subr, DTIME_subr,
