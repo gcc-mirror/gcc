@@ -5198,6 +5198,7 @@ sh_expand_epilogue ()
       int sp_in_r0 = 0;
       int align;
       rtx r0 = gen_rtx_REG (Pmode, R0_REG);
+      int tmp_regno = R20_REG;
       
       /* We loop twice: first, we save 8-byte aligned registers in the
 	 higher addresses, that are known to be aligned.  Then, we
@@ -5312,10 +5313,15 @@ sh_expand_epilogue ()
 		}
 	      else if (TARGET_REGISTER_P (i))
 		{
-		  rtx r1 = gen_rtx_REG (mode, R1_REG);
+		  rtx tmp_reg = gen_rtx_REG (mode, tmp_regno);
 
-		  insn = emit_move_insn (r1, mem_rtx);
-		  mem_rtx = r1;
+		  /* Give the scheduler a bit of freedom by using R20..R23
+		     in a round-robin fashion.  Don't use R1 here because
+		     we want to use it for EH_RETURN_STACKADJ_RTX.  */
+		  insn = emit_move_insn (tmp_reg, mem_rtx);
+		  mem_rtx = tmp_reg;
+		  if (++tmp_regno > R23_REG)
+		    tmp_regno = R20_REG;
 		}
 
 	      insn = emit_move_insn (reg_rtx, mem_rtx);
