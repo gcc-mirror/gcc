@@ -2164,6 +2164,7 @@ stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) xlimits.h
 # this is necessary because VPATH could add a dirname.
 # Using basename would be simpler, but some systems don't have it.
 # The touch command is here to workaround an AIX/Linux NFS bug.
+	-if [ -d include ] ; then true; else mkdir include; chmod a+rx include; fi
 	for file in .. $(USER_H); do \
 	  if [ X$$file != X.. ]; then \
 	    realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
@@ -2301,7 +2302,6 @@ fixhdr.ready: fix-header
 # if it has already been run on the files in `include'.
 stmp-fixproto: fixhdr.ready fixproto stmp-int-hdrs
 	@echo "Various warnings and error messages from fixproto are normal"
-	-if [ -d include ] ; then true; else mkdir include; chmod a+rx include; fi
 	-if [ -f include/fixed ] ; then true; \
 	else \
 	  : This line works around a 'make' bug in BSDI 1.1.; \
