@@ -1,5 +1,11 @@
 2004-06-27  Mark Wielaard  <mark@klomp.org>
 
+	* gnu/java/net/protocol/http/Connection.java (userAgent): New static
+	final field.
+	(sendRequest): Use new field in user-agent http agent.
+
+2004-06-27  Mark Wielaard  <mark@klomp.org>
+
 	* java/awt/EventQueue.java (postEvent): Throw NullPointerException
 	when argument is null.
 

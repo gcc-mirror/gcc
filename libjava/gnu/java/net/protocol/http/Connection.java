@@ -80,6 +80,8 @@ public final class Connection extends HttpURLConnection
   private static boolean proxyInUse = false;
   private static String proxyHost = null;
 
+  private static final String userAgent;
+
   static 
   {
     // Recognize some networking properties listed at
@@ -101,6 +103,14 @@ public final class Connection extends HttpURLConnection
 	      }
 	  }
       }
+
+    userAgent = "gnu-classpath/"
+      + System.getProperty("gnu.classpath.version")
+      + " ("
+      + System.getProperty("gnu.classpath.vm.shortname")
+      + "/"
+      + System.getProperty("java.vm.version")
+      + ")";
   }
 
   /**
@@ -215,8 +225,7 @@ public final class Connection extends HttpURLConnection
       setRequestProperty ("Connection", "Close");
     
     if (getRequestProperty ("user-agent") == null)
-      setRequestProperty ("user-agent", "gnu-libgcj/"
-                          + System.getProperty ("java.vm.version"));
+      setRequestProperty ("user-agent", userAgent);
     
     if (getRequestProperty ("accept") == null)
       setRequestProperty ("accept", "*/*");
