@@ -1,5 +1,16 @@
 2004-03-02  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/m68hc11.md (SOFT_TMP_REGNUM): Define.
+	(SOFT_XY_REGNUM): Define.
+	(cmp split): Use the above instead of hard coded numbers.
+	(8-bit op split): No need to check the mode; allow Q_REG.
+	(ashift split): Adjust the first operand if it uses the SP and we
+	are pushing the shifted value.
+	(plus shift split): Fix when a source is in register D+X.
+	("doloop_end"): Pass dummy arguments to gen_rtx_NE.
+
+2004-03-02  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* config/m68hc11/m68hc11.c (m68hc11_check_z_replacement): Fix when
 	comparing with Z register.
 
