@@ -1,3 +1,16 @@
+2000-05-25  Richard Henderson  <rth@cygnus.com>
+
+	* config/alpha/alpha.c (alpha_comparison_operator): Don't be
+	so strict about DImode.
+	(alpha_swapped_comparison_operator): Likewise.
+	* config/alpha/alpha.md (*setne_internal): Name it.  Allow
+	any integer output mode.
+	(*setcc_internal): Likewise.
+	(*setcc_swapped_internal): Likewise.
+	(*movdicc_internal, *movdicc_lbc, *movdicc_lbs): Name them.
+	(*mov[qhs]icc_internal): New.
+	(*mov[qhs]icc_lbc, *mov[qhs]icc_lbs): New.
+
 2000-05-25  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* vax.h (CPP_SPEC): Define __GFLOAT and GFLOAT when -mg is specified.
