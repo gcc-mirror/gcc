@@ -1,3 +1,8 @@
+2002-09-07  Igor Shevlyakov <igor@microunity.com>
+
+        * varasm.c (decode_rtx_const): Don't check undefined field for
+	CONST_VECTOR.
+
 2002-09-07  Glen Nakamura  <glen@imodulo.com>
 
 	PR opt/7814
