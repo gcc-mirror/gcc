@@ -41,9 +41,10 @@ package java.beans;
 import gnu.java.beans.BeanInfoEmbryo;
 import gnu.java.beans.ExplicitBeanInfo;
 import gnu.java.beans.IntrospectionIncubator;
+import gnu.java.lang.ClassHelper;
+
 import java.util.Hashtable;
 import java.util.Vector;
-import gnu.java.lang.ClassHelper;
 
 /**
  * Introspector is the class that does the bulk of the

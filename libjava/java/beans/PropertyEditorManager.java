@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package java.beans;
 
-import gnu.java.lang.ClassHelper;
 import gnu.java.beans.editors.ColorEditor;
 import gnu.java.beans.editors.FontEditor;
 import gnu.java.beans.editors.NativeBooleanEditor;
@@ -49,6 +48,8 @@ import gnu.java.beans.editors.NativeIntEditor;
 import gnu.java.beans.editors.NativeLongEditor;
 import gnu.java.beans.editors.NativeShortEditor;
 import gnu.java.beans.editors.StringEditor;
+import gnu.java.lang.ClassHelper;
+
 import java.awt.Color;
 import java.awt.Font;
 
