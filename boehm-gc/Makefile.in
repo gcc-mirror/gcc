@@ -271,6 +271,9 @@ uninstall-toolexeclibLTLIBRARIES:
 .c.o:
 	$(COMPILE) -c $<
 
+.s.o:
+	$(COMPILE) -c $<
+
 .S.o:
 	$(COMPILE) -c $<
 
@@ -285,9 +288,6 @@ distclean-compile:
 maintainer-clean-compile:
 
 .c.lo:
-	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
-
-.s.lo:
 	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
 
 .S.lo:
@@ -486,7 +486,7 @@ maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 $(all_objs) : config.h gc_priv.h gc_hdrs.h gc.h gc_mark.h
 
-.s.o:
+.s.lo:
 	$(LTCOMPILE) -x assembler-with-cpp -c $<
 
 # Multilib support.
