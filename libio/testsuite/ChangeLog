@@ -1,3 +1,8 @@
+Wed Jun 23 13:02:49 1999  Mark Mitchell <mark@codesourcery.com>
+
+	* lib/libio.exp (test_libio): Use additional_flags, not 
+	additional_options. 
+
 Wed Nov 25 01:00:07 1998  Marc Espie <espie@quatramaran.ens.fr>
 
 	* Makefile.in (just-check): Ignore errors.
