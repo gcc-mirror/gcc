@@ -1,5 +1,20 @@
 Thu Oct 29 23:55:43 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
+	* reload1.c (struct elim_table): Delete MAX_OFFSET member.
+	(update_eliminable_offsets): Don't compute it.
+	(set_initial_elim_offsets): Don't initialize it.
+	Break out some code into set_initial_label_offsets so the rest of
+	this function can be called from reload_as_needed.
+	Assume that INITIAL_FRAME_POINTER_OFFSET is defeined when
+	ELIMINABLE_REGS isn't.
+	(set_initial_label_offsets): New function, broken out of
+	set_initial_elim_offsets.
+	(set_offsets_for_label): New function, broken out of set_label_offsets
+	and reload_as_needed.
+	(reload): Call the two new functions.
+	(reload_as_needed): Call set_initial_elim_offsets instead of
+	duplicating the code.  Likewise for set_offsets_for_label.
+
 	* reload1.c (choose_reload_regs): Fix typo in Oct 17 change.
 	(emit_reload_insns): Ensure that when we set reg_reloaded_valid for
 	any hard reg, reg_reloaded_dead contains valid data.
