@@ -8,8 +8,8 @@
 	* config/i64/elf.h (TARGET_VERSION): Add.  Also, move inclusion of
 	target headers to tm_file.
 	* config/i64/linux.h (TARGET_VERSION): Likewise.
-	* config/i64/frebsd.h: New file.
-	* config/frebsd.h: Tidy up.
+	* config/i64/freebsd.h: New file.
+	* config/freebsd.h: Tidy up.
 	(_USING_CONFIG_FREEBSD): Define.
 	(FBSD_CPP_PREDEFINES): Add __KPRINTF_ATTRIBUTE__.
 	(FBSD_CPP_SPEC): Define generic FreeBSD spec.
