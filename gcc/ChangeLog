@@ -1,3 +1,8 @@
+2004-07-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (output_indirect_call): Only use %r2 as the link register in
+	indirect calls with the long PA 2.0 pc-relative branch.
+
 2004-07-10  Daniel Jacobowitz  <dan@debian.org>
 
 	* config/i386/i386.c (override_options): Pick a 64-bit CPU
