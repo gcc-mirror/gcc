@@ -1,3 +1,7 @@
+1999-02-25  Richard Henderson  <rth@cygnus.com>
+
+	* lang-specs.h: Define __FAST_MATH__ when appropriate.
+
 1999-02-24  Mike Stump  <mrs@wrs.com>
 
 	* typeck.c (convert_for_assignment): Allow boolean integral constant

@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 	%{ansi:-trigraphs -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
+	%{ffast-math:-D__FAST_MATH__}\
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{fleading-underscore} %{fno-leading-underscore}\
@@ -42,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
 		   -undef -D__OBJC__ -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
 		   %{!undef:%{!ansi:%p} %P} %{trigraphs}\
 		   %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
+		   %{ffast-math:-D__FAST_MATH__}\
 		   %{!Q:-quiet} -dumpbase %b.m %{d*} %{m*} %{a*}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
 		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*} \
@@ -60,6 +62,7 @@ Boston, MA 02111-1307, USA.  */
 	 %{ansi:-trigraphs -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
+	%{ffast-math:-D__FAST_MATH__}\
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{fleading-underscore} %{fno-leading-underscore}\
