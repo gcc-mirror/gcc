@@ -1118,6 +1118,14 @@ building a cross compiler, if @file{@var{prefix}/@var{target}/sys-include}
 doesn't pre-exist.  If @file{@var{prefix}/@var{target}/sys-include} does
 pre-exist, the @var{dir} argument may be omitted.  @command{fixincludes}
 will be run on these files to make them compatible with GCC.
+
+@item --without-headers
+Tells GCC not use any target headers from a libc when building a cross
+compiler.  When crossing to GNU/Linux, you need the headers so gcc
+can build the exception handling for libgcc.
+See @uref{http://www.objsw.com/CrossGCC/,,CrossGCC} for more information
+on this option.
+
 @item --with-libs
 @itemx --with-libs=``@var{dir1} @var{dir2} @dots{} @var{dirN}''
 Deprecated in favor of @option{--with-sysroot}.
