@@ -1,4 +1,4 @@
-Fri Jul 24 18:58:37 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Fri Jul 24 18:58:37 1998  Klaus Espenlaub  <kespenla@student.informatik.uni-ulm.de>
 
 	* rs6000.h (ASM_OUTPUT_CONSTRUCTOR, ASM_OUTPUT_DESTRUCTOR): Delete.
 
