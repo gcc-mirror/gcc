@@ -2200,6 +2200,26 @@ fix = {
 
 
 /*
+ * Solaris 2.5.1 and 2.6 use an outdated prototype for send & recv
+ * in sys/socket.h.  This is corrected in Solaris 7 and up.
+ */
+fix = {
+    hackname = solaris_socket;
+    files = sys/socket.h;
+    select = '@\(#\)socket.h' "[ \t]+1.[123][0-9][ \t]+9[567]/[0-9/]+ SMI";
+    c_fix = format;
+    c_fix_arg = "extern int %1(int, %2void *, int, int);";
+    c_fix_arg = '^extern int (recv|send)\(int,'
+                ' (const )*char '
+                '\*, int, int\);';
+
+    test_text = '#ident   "@(#)socket.h   1.30    97/01/20 SMI"'"\n"
+                "extern int recv(int, char *, int, int);\n"
+                "extern int send(int, const char *, int, int);";
+};
+
+
+/*
  * Solaris 2.8 has what appears to be some gross workaround for 
  * some old version of their c++ compiler.  G++ doesn't want it
  * either, but doesn't want to be tied to SunPRO version numbers.
@@ -2213,6 +2233,25 @@ fix = {
 
     test_text = "#if\tdefined(__cplusplus) && (__cplusplus < 54321L)";
 };
+
+
+/*
+ * Sun Solaris 2.5.1 doesn't define 'getpagesize' in <unistd.h>, as is done
+ * on Solaris 2.6 and up.
+ */
+fix = {
+    hackname  = solaris_unistd;
+    files = unistd.h;
+    select = '@\(#\)unistd.h' "[ \t]+1.3[0-9][ \t]+9[567]/[0-9/]+ SMI";
+    bypass = "getpagesize";
+    c_fix = format;
+    c_fix_arg = "extern int getpagesize();\n%0";
+    c_fix_arg = '^extern (pid_t|int) getpgid\(.*\);';
+    test_text = '#ident "@(#)unistd.h   1.33    95/08/28 SMI"'"\n"
+                "extern pid_t getpgid(pid_t);\n"
+                "extern int getpgid();";
+};
+
 
 /*
  * <widec.h> until Solaris 2.5.1 defines macros for a couple of <wchar.h>

@@ -135,7 +135,7 @@ do
     :
 
   else
-    ${DIFF:-diff} -u $f ${TESTBASE}/$f >&2 || :
+    ${DIFF:-diff} -c $f ${TESTBASE}/$f >&2 || :
     exitok=false
   fi
 done
