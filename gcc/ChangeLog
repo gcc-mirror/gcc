@@ -1,3 +1,8 @@
+1998-09-19  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* ginclude/varargs.h: Add support for C4x target.
+	* ginclude/stdargs.h: Likewise.
+
 Sat Sep 19 12:05:09 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_return_addr): SET should be VOIDmode.

@@ -57,6 +57,9 @@
 #ifdef __v850__
 #include "va-v850.h"
 #else
+#if defined (_TMS320C4x) || defined (_TMS320C3x)
+#include <va-c4x.h>
+#else
 
 #ifdef __NeXT__
 
@@ -132,6 +135,7 @@ typedef void *__gnuc_va_list;
 /* Copy __gnuc_va_list into another variable of this type.  */
 #define __va_copy(dest, src) (dest) = (src)
 
+#endif /* not TMS320C3x or TMS320C4x */
 #endif /* not v850 */
 #endif /* not mn10200 */
 #endif /* not mn10300 */
