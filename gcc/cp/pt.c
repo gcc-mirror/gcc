@@ -4863,6 +4863,8 @@ tsubst_decl (t, args, type, in_decl)
 	tree argvec;
 	tree gen_tmpl;
 	int member;
+	int args_depth;
+	int parms_depth;
 
 	/* Nobody should be tsubst'ing into non-template functions.  */
 	my_friendly_assert (DECL_TEMPLATE_INFO (t) != NULL_TREE, 0);
@@ -4884,6 +4886,47 @@ tsubst_decl (t, args, type, in_decl)
 	      {
 		r = spec;
 		break;
+	      }
+
+	    /* Here, we deal with the peculiar case:
+
+		 template <class T> struct S { 
+		   template <class U> friend void f();
+		 };
+		 template <class U> friend void f() {}
+		 template S<int>;
+		 template void f<double>();
+
+	       Here, the ARGS for the instantiation of will be {int,
+	       double}.  But, we only need as many ARGS as there are
+	       levels of template parameters in CODE_PATTERN.  We are
+	       careful not to get fooled into reducing the ARGS in
+	       situations like:
+
+		 template <class T> struct S { template <class U> void f(U); }
+		 template <class T> template <> void S<T>::f(int) {}
+
+	       which we can spot because the pattern will be a
+	       specialization in this case.  */
+	    args_depth = TMPL_ARGS_DEPTH (args);
+	    parms_depth = 
+	      TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (DECL_TI_TEMPLATE (t))); 
+	    if (args_depth > parms_depth
+		&& !DECL_TEMPLATE_SPECIALIZATION (t))
+	      {
+		my_friendly_assert (DECL_FRIEND_P (t), 0);
+
+		if (parms_depth > 1)
+		  {
+		    int i;
+
+		    args = make_temp_vec (parms_depth);
+		    for (i = 0; i < parms_depth; ++i)
+		      TREE_VEC_ELT (args, i) = 
+			TREE_VEC_ELT (args, i + (args_depth - parms_depth));
+		  }
+		else
+		  args = TREE_VEC_ELT (args, args_depth - parms_depth);
 	      }
 	  }
 	else
@@ -7739,9 +7782,6 @@ regenerate_decl_from_template (decl, tmpl)
   tree code_pattern;
   tree new_decl;
   tree gen_tmpl;
-  tree subst_args;
-  int args_depth;
-  int parms_depth;
   int unregistered;
 
   args = DECL_TI_ARGS (decl);
@@ -7760,51 +7800,15 @@ regenerate_decl_from_template (decl, tmpl)
      register_specialization for it.  */
   my_friendly_assert (unregistered, 0);
 
-  /* Do the substitution to get the new declaration.  Normally, of
-     course, we want the full set of ARGS.  However, one peculiar case
-     is code like this: 
-
-       template <class T> struct S { 
-	 template <class U> friend void f();
-       };
-       template <class U> friend void f() {}
-       template S<int>;
-       template void f<double>();
-
-     Here, the ARGS for the instantiation of will be {int, double}.
-     But, we only need as many ARGS as there are levels of template
-     parameters in CODE_PATTERN.  We are careful not to get fooled
-     into reducing the ARGS in situations like:
-
-       template <class T> struct S { template <class U> void f(U); }
-       template <class T> template <> void S<T>::f(int) {}
-
-     which we can spot because the innermost template args for the
-     CODE_PATTERN don't use any template parameters.  */
-  args_depth = TMPL_ARGS_DEPTH (args);
-  parms_depth = 
-    TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (DECL_TI_TEMPLATE (code_pattern)));
-  if (args_depth > parms_depth
-      && !DECL_TEMPLATE_SPECIALIZATION (code_pattern))
-    {
-      int i;
-
-      subst_args = make_temp_vec (parms_depth);
-      for (i = 0; i < parms_depth; ++i)
-	TREE_VEC_ELT (subst_args, i) = 
-	  TREE_VEC_ELT (args, i + (args_depth - parms_depth));
-    }
-  else
-    subst_args = args;
-
-  new_decl = tsubst (code_pattern, subst_args, NULL_TREE);
+  /* Do the substitution to get the new declaration.  */
+  new_decl = tsubst (code_pattern, args, NULL_TREE);
 
   if (TREE_CODE (decl) == VAR_DECL)
     {
       /* Set up DECL_INITIAL, since tsubst doesn't.  */
       pushclass (DECL_CONTEXT (decl), 2);
       DECL_INITIAL (new_decl) = 
-	tsubst_expr (DECL_INITIAL (code_pattern), subst_args, 
+	tsubst_expr (DECL_INITIAL (code_pattern), args, 
 		     DECL_TI_TEMPLATE (decl));
       popclass (1);
     }
