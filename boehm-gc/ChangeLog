@@ -1,3 +1,9 @@
+2003-07-25  Roger Sayle  <roger@eyesopen.com>
+
+	* configure.host: Only use +ESdbgasm when using the HPUX native
+	compiler on PA-Risc.  It isn't recognized by GCC and is silently
+	ignored by HP's compilers on ia64.
+
 2003-04-28  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* configure.in: define GC_DLL under mingw if --enable-shared
