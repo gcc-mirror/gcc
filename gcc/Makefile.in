@@ -1399,7 +1399,7 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(libdir)/g++-include\" \
-	  -DLOCAL_INCLUDE_DIR=\"$(local_prefix)/include\" \
+	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
 	  -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
 	  -DTOOLDIR=\"$(tooldir)/\" \
@@ -1426,7 +1426,7 @@ stamp-proto:	$(srcdir)/protoize.c getopt.h $(CONFIG_H)
           -DGPLUSPLUS_INCLUDE_DIR=\"$(libdir)/g++-include\" \
           -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
-	  -DLOCAL_INCLUDE_DIR=\"$(local_prefix)/include\" \
+	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
 	  -DUNPROTOIZE $(srcdir)/protoize.c
 	mv protoize.o unprotoize.o
@@ -1435,7 +1435,7 @@ stamp-proto:	$(srcdir)/protoize.c getopt.h $(CONFIG_H)
           -DGPLUSPLUS_INCLUDE_DIR=\"$(libdir)/g++-include\" \
           -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
-	  -DLOCAL_INCLUDE_DIR=\"$(local_prefix)/include\" \
+	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
 	  $(srcdir)/protoize.c
 	touch stamp-proto
