@@ -52,17 +52,19 @@ AT&T C compiler.  From the example below I would conclude the following:
 #include "insn-config.h"
 #include "reload.h"
 
-/* Mips systems use the SDB functions to dump out symbols, but
-   do not supply usable syms.h include files.  */
-#if defined(USG) && !defined(MIPS) && !defined (hpux) && !defined(_WIN32) && !defined(__linux__)
+/* Mips systems use the SDB functions to dump out symbols, but do not
+   supply usable syms.h include files.  Which syms.h file to use is a
+   target parameter so don't use the native one if we're cross compiling.  */
+
+#if defined(USG) && !defined(MIPS) && !defined (hpux) && !defined(_WIN32) && !defined(__linux__) && !defined(CROSS_COMPILE)
 #include <syms.h>
 /* Use T_INT if we don't have T_VOID.  */
 #ifndef T_VOID
 #define T_VOID T_INT
 #endif
-#else /* not USG, or MIPS */
+#else
 #include "gsyms.h"
-#endif /* not USG, or MIPS */
+#endif
 
 /* #include <storclass.h>  used to be this instead of syms.h.  */
 
@@ -521,11 +523,15 @@ plain_type_1 (type, level)
 
     case REAL_TYPE:
       {
-	int size = int_size_in_bytes (type) * BITS_PER_UNIT;
-	if (size == FLOAT_TYPE_SIZE)
+	int precision = TYPE_PRECISION (type);
+	if (precision == FLOAT_TYPE_SIZE)
 	  return T_FLOAT;
-	if (size == DOUBLE_TYPE_SIZE)
+	if (precision == DOUBLE_TYPE_SIZE)
 	  return T_DOUBLE;
+#ifdef EXTENDED_SDB_BASIC_TYPES
+	if (precision == LONG_DOUBLE_TYPE_SIZE)
+	  return T_LNGDBL;
+#endif
 	return 0;
       }
 
