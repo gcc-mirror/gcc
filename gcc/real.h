@@ -77,7 +77,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* REAL_VALUE_TYPE is an array of the minimum number of HOST_WIDE_INTs
    required to hold MAX_LONG_DOUBLE_TYPE_SIZE bits.  */
+#if MAX_LONG_DOUBLE_TYPE_SIZE == 128
+/* For 128 bit reals, we calculate internally with extra precision.  */
+#define N (160 / BITS_PER_UNIT)
+#else
 #define N (MAX_LONG_DOUBLE_TYPE_SIZE / BITS_PER_UNIT)
+#endif
 #define S sizeof (HOST_WIDE_INT)
 typedef struct {
   HOST_WIDE_INT r[N/S + (N%S ? 1 : 0)]; /* round up */
