@@ -1,3 +1,7 @@
+1998-03-04 12:37  Ulrich Drepper <drepper@cygnus.com>
+
+	* cinst.cc [INSERT] (operator<<): Correct type of numeric argument.
+
 Fri Feb  6 01:36:21 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (piclist): Check value of enable_shared, not PICFLAG.
