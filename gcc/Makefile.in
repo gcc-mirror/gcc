@@ -151,7 +151,7 @@ bindir = $(exec_prefix)/bin
 libdir = $(exec_prefix)/lib
 # Directory in which the compiler finds executables, libraries, etc.
 libsubdir = $(libdir)/gcc-lib/$(target)/$(version)
-# Directory for header file assert.h.
+# Directory to search for site-specific includes.
 includedir = $(local_prefix)/include
 # assertdir is overridden in cross-make.
 # (But this currently agrees with what is in cross-make.)
@@ -1688,10 +1688,13 @@ install-headers-tar: stmp-headers install-include-dir
 install-headers-cpio: stmp-headers install-include-dir
 	cd include; find . -print | cpio -pdum $(libsubdir)/include
 
-# Put assert.h in /usr/local/include, so it won't override GNU libc's assert.h.
-# Don't replace the assert.h already there if it is not from GCC.
-# This code would be simpler if it tested for -f ... && ! grep ...
-# but supposedly the ! operator is missing in sh on some systems.
+# Put assert.h where it won't override GNU libc's assert.h.
+# It goes in a dir that is searched after GNU libc's headers;
+# thus, the following conditionals are no longer needed.
+# But it's not worth deleting them now.
+## Don't replace the assert.h already there if it is not from GCC.
+## This code would be simpler if it tested for -f ... && ! grep ...
+## but supposedly the ! operator is missing in sh on some systems.
 install-assert-h: assert.h install-dir
 	if [ -f $(assertdir)/assert.h ]; \
 	then \
