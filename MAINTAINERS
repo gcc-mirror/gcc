@@ -99,7 +99,7 @@ VxWorks ports		Zack Weinberg		zack@codesourcery.com
 VxWorks ports		Nathan Sidwell		nathan@codesourcery.com
 windows, cygwin, mingw	Christopher Faylor	cgf@redhat.com
 
-			Various Maintainers
+			Language Front Ends Maintainers
 
 C front end/ISO C99	Joseph Myers		jsm@polyomino.org.uk
 C front end/ISO C99	Richard Henderson	rth@redhat.com
@@ -114,18 +114,22 @@ fortran 95		Toon Moene		toon@moene.indiv.nluug.nl
 c++			Jason Merrill		jason@redhat.com
 c++                     Mark Mitchell		mark@codesourcery.com
 c++			Nathan Sidwell		nathan@codesourcery.com
-cpplib			Dave Brolley		brolley@redhat.com
-cpplib			Per Bothner		per@bothner.com
-cpplib			Zack Weinberg		zack@codesourcery.com
-cpplib			Neil Booth		neil@daikokuya.co.uk
 java			Per Bothner		per@bothner.com
 java			Andrew Haley		aph@redhat.com
-libgcj			Tom Tromey		tromey@redhat.com
-libgcj			Bryce McKinlay		bryce@gcc.gnu.org
 mercury			Fergus Henderson	fjh@cs.mu.oz.au
 objective-c		Stan Shebs		shebs@apple.com
 objective-c		Ovidiu Predescu		ovidiu@cup.hp.com
 objective-c		Ziemowit Laski		zlaski@apple.com
+treelang                Tim Josling             tej@melbpc.org.au
+
+			Various Maintainers
+
+cpplib			Dave Brolley		brolley@redhat.com
+cpplib			Per Bothner		per@bothner.com
+cpplib			Zack Weinberg		zack@codesourcery.com
+cpplib			Neil Booth		neil@daikokuya.co.uk
+libgcj			Tom Tromey		tromey@redhat.com
+libgcj			Bryce McKinlay		bryce@gcc.gnu.org
 libobjc			Nicola Pero		n.pero@mi.flashnet.it
 libobjc			Andrew Pinski		pinskia@physics.uc.edu
 alias analysis		John Carr		jfc@mit.edu
@@ -167,7 +171,6 @@ docs co-maintainer	Gerald Pfeifer		gerald@pfeifer.com
 docs co-maintainer	Joseph Myers		jsm@polyomino.org.uk
 predict.def		Jan Hubicka		jh@suse.cz
 contrib/regression	Geoff Keating		geoffk@geoffk.org
-treelang                Tim Josling             tej@melbpc.org.au
 new regalloc (ra*)	Michael Matz		matz@suse.de
 gcov			Jan Hubicka		jh@suse.cz
 gcov			Nathan Sidwell		nathan@codesourcery.com

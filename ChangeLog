@@ -1,3 +1,8 @@
+2004-10-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* MAINTAINERS (Language Front Ends Maintainers): New.  Move
+	entries belonging to this category.
+
 2004-10-06  Josef Zlomek  <josef.zlomek@email.cz>
 
 	* MAINTAINERS: Update my e-mail address.
