@@ -1,4 +1,4 @@
-## Linker script for GNU ld 2.11.94+ only.
+## Linker script for GNU ld 2.13.91+ only.
 ##
 ## Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 ##
@@ -25,7 +25,6 @@ GLIBCXX_3.4 {
   global:
 
     # Names inside the 'extern' block are demangled names.
-    # All but the last are terminated with a semicolon.
     extern "C++"
     {
       std::[A-Za-k]*;
@@ -56,7 +55,7 @@ GLIBCXX_3.4 {
       std::__num_base::_S_format_int*;
       std::__num_base::_S_atoms_in;
       std::__num_base::_S_atoms_out;
-      std::__numpunct_cache*
+      std::__numpunct_cache*;
     };
 
     # Names not in an 'extern' block are mangled names.
@@ -168,6 +167,8 @@ GLIBCXX_3.4 {
     _ZN9__gnu_cxx17_Atomic_add_mutexE;
     _ZN9__gnu_cxx22_Atomic_add_mutex_onceE;
     _ZN9__gnu_cxx31__gthread_atomic_add_mutex_onceEv;
+
+  # DO NOT DELETE THIS LINE.  Port-specific symbols, if any, will be here.
 
   local:
     *;

@@ -2270,9 +2270,9 @@ if test $enable_symvers != no; then
   AC_MSG_RESULT($glibcxx_shared_libgcc)
 fi
 
-# For GNU ld, we need at least this version.  It's 2.12 in the same format
+# For GNU ld, we need at least this version.  It's 2.14 in the same format
 # as the tested-for version.  See GLIBCXX_CHECK_LINKER_FEATURES for more.
-glibcxx_min_gnu_ld_version=21200
+glibcxx_min_gnu_ld_version=21400
 
 # Check to see if unspecified "yes" value can win, given results
 # above.
@@ -2317,6 +2317,7 @@ case $enable_symvers in
 esac
 
 AC_SUBST(SYMVER_MAP)
+AC_SUBST(port_specific_symbol_file)
 AM_CONDITIONAL(GLIBCXX_BUILD_VERSIONED_SHLIB, test $enable_symvers != no)
 AC_MSG_CHECKING([versioning on shared library symbols])
 AC_MSG_RESULT($enable_symvers)
