@@ -64,7 +64,8 @@ Obtain the library snapshot via ftp (including these release notes) from
   ftp://gcc.gnu.org/pub/libstdc++/
 
 The library is maintained by Benjamin Kosnik, Gabriel
-Dos Reis, Phil Edwards, and Ulrich Drepper.  
+Dos Reis, Phil Edwards, Ulrich Drepper, Loren James Rittle,
+and Paolo Carlini.  
 
 
 Development tools:

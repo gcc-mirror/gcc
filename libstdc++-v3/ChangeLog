@@ -1,3 +1,10 @@
+2002-08-22  Paolo Carlini  <pcarlini@unitus.it>
+
+	* docs/html/faq/index.html: Add Loren James Rittle and
+	Paolo Carlini to the list of v3 maintainers.
+	* docs/html/faq/index.txt: Ditto.
+	* docs/html/17_intro/RELEASE-NOTES: Ditto.
+
 2002-08-22  Benjamin Kosnik  <bkoz@redhat.com>
 	    Phil Edwards  <pme@gcc.gnu.org>
 	    Ulrich Drepper  <drepper@redhat.com>
