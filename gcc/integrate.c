@@ -1334,7 +1334,6 @@ copy_insn_list (insns, map, static_chain_value)
       switch (GET_CODE (insn))
 	{
 	case INSN:
-	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
 	  pattern = PATTERN (insn);
 	  set = single_set (insn);
 	  copy = 0;
@@ -1505,10 +1504,10 @@ copy_insn_list (insns, map, static_chain_value)
 #else
 	  try_constants (copy, map);
 #endif
+	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
 	  break;
 
 	case JUMP_INSN:
-	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
 	  if (map->integrating && returnjump_p (insn))
 	    {
 	      if (map->local_return_label == 0)
@@ -1526,6 +1525,7 @@ copy_insn_list (insns, map, static_chain_value)
 	  cc0_insn = 0;
 #endif
 	  try_constants (copy, map);
+	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
 
 	  /* If this used to be a conditional jump insn but whose branch
 	     direction is now know, we must do something special.  */
@@ -1555,7 +1555,6 @@ copy_insn_list (insns, map, static_chain_value)
 	  /* If this is a CALL_PLACEHOLDER insn then we need to copy the
 	     three attached sequences: normal call, sibling call and tail
 	     recursion.  */
-	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
 	  if (GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
 	    {
 	      rtx sequence[3];
@@ -1594,6 +1593,7 @@ copy_insn_list (insns, map, static_chain_value)
 
 	  SIBLING_CALL_P (copy) = SIBLING_CALL_P (insn);
 	  CONST_OR_PURE_CALL_P (copy) = CONST_OR_PURE_CALL_P (insn);
+	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
 
 	  /* Because the USAGE information potentially contains objects other
 	     than hard registers, we need to copy it.  */
