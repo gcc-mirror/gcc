@@ -681,6 +681,49 @@ static unsigned lookup_filename ();
   } while (0)
 #endif
 
+/* choose a reasonable default for ASM_OUTPUT_ASCII, as that is what
+   varasm.c does.  If the below is changed, please also change
+   definition in varasm.c Both of these should be factored out, into a
+   higher layer.  */
+#ifndef ASM_OUTPUT_ASCII
+#define ASM_OUTPUT_ASCII(MYFILE, MYSTRING, MYLENGTH) \
+  do {									      \
+    FILE *_hide_asm_out_file = MYFILE;					      \
+    char *_hide_p = MYSTRING;						      \
+    int _hide_thissize = MYLENGTH;					      \
+    {									      \
+      FILE *asm_out_file = _hide_asm_out_file;				      \
+      char *p = _hide_p;						      \
+      int thissize = _hide_thissize;					      \
+      int i;								      \
+      fprintf (asm_out_file, "\t.ascii \"");				      \
+									      \
+      for (i = 0; i < thissize; i++)					      \
+	{								      \
+	  register int c = p[i];					      \
+	  if (c == '\"' || c == '\\')					      \
+	    putc ('\\', asm_out_file);					      \
+	  if (c >= ' ' && c < 0177)					      \
+	    putc (c, asm_out_file);					      \
+	  else								      \
+	    {								      \
+	      fprintf (asm_out_file, "\\%o", c);			      \
+	      /* After an octal-escape, if a digit follows,		      \
+		 terminate one string constant and start another.	      \
+		 The Vax assembler fails to stop reading the escape	      \
+		 after three digits, so this is the only way we		      \
+		 can get it to parse the data properly.  */		      \
+	      if (i < thissize - 1					      \
+		  && p[i + 1] >= '0' && p[i + 1] <= '9')		      \
+		fprintf (asm_out_file, "\"\n\t.ascii \"");		      \
+	  }								      \
+	}								      \
+      fprintf (asm_out_file, "\"\n");					      \
+    }									      \
+  }									      \
+  while (0)
+#endif
+
 #ifndef ASM_OUTPUT_DWARF_STRING
 #define ASM_OUTPUT_DWARF_STRING(FILE,P) \
   ASM_OUTPUT_ASCII ((FILE), P, strlen (P)+1)
