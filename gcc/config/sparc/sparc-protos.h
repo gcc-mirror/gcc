@@ -91,7 +91,7 @@ extern const char *output_sibcall PARAMS ((rtx, rtx));
 extern char *output_v9branch PARAMS ((rtx, int, int, int, int, int, rtx));
 extern void emit_v9_brxx_insn PARAMS ((enum rtx_code, rtx, rtx));
 extern void print_operand PARAMS ((FILE *, rtx, int));
-extern int mems_ok_for_ldd_peep PARAMS ((rtx, rtx));
+extern int mems_ok_for_ldd_peep PARAMS ((rtx, rtx, rtx));
 extern int arith_double_4096_operand PARAMS ((rtx, enum machine_mode));
 extern int arith_4096_operand PARAMS ((rtx, enum machine_mode));
 extern int zero_operand PARAMS ((rtx, enum machine_mode));

@@ -1,3 +1,12 @@
+2001-12-19  Dan Nicolaescu  <dann@ics.uci.edu>
+
+	* config/sparc/sparc.md (ldd peephole2s): For load peepholes pass
+	the destination register as a parameter to mems_ok_for_ldd_peep.
+	For store peepholes pass NULL_RTX.  Move all volatile checks ...
+	* config/sparc/sparc.c (mems_ok_for_ldd_peep): ... here.  Add a
+	register parameter, check it's not the same as base for an address.
+	* config/sparc/sparc-protos.h (mems_ok_for_ldd_peep): Update.
+
 2001-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/ia64/ia64.c (ia64_single_set): Return first set for
@@ -151,7 +160,7 @@ objc:
 
 2001-12-17  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c: Remove is_gpr_return_reg prototype.
+	* config/rs6000/rs6000.c: Remove is_gpr_return_reg prototype.
 
 2001-12-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
@@ -179,7 +188,7 @@ Mon Dec 17 14:21:21 2001  Jeffrey A Law  (law@redhat.com)
 	definition.
 	* doc/tm.texi: Document MODE_BASE_REG_CLASS.
 
-        * config/arm/arm.h (MODE_BASE_REG_CLASS): Define.
+	* config/arm/arm.h (MODE_BASE_REG_CLASS): Define.
 
 2001-12-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -202,12 +211,12 @@ Mon Dec 17 14:21:21 2001  Jeffrey A Law  (law@redhat.com)
 
 2001-12-17  Dale Johannesen  <dalej@apple.com>
 
-         * config/rs6000/rs6000.h:  CPP_CPU_SPEC: add mcpu=7400.
-         ASM_CPU_SPEC: Ditto.
-         RTX_COSTS: Fix timing info for 7450 multiply.
-         * config/rs6000/rs6000.md:  Fix timing info for 7450 imul.
-         Allow floats to be kept in int regs in movsf_low,
-         movsf_low_st (Darwin only)
+	 * config/rs6000/rs6000.h:  CPP_CPU_SPEC: add mcpu=7400.
+	 ASM_CPU_SPEC: Ditto.
+	 RTX_COSTS: Fix timing info for 7450 multiply.
+	 * config/rs6000/rs6000.md:  Fix timing info for 7450 imul.
+	 Allow floats to be kept in int regs in movsf_low,
+	 movsf_low_st (Darwin only)
 
 2001-12-17  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -294,7 +303,7 @@ Mon Dec 17 17:57:05 CET 2001  Jan Hubicka  <jh@suse.cz>
 	(dw2_asm_output_nstring): Use assemble_integer for the null terminator.
 	(dw2_asm_output_data_uleb128, dw2_asm_output_data_sleb128): Use
 	integer_asm_op to get the byte pseudo-op.  Use assemble_integer
-        if it returns NULL.
+	if it returns NULL.
 	* dwarf2asm.h (dw2_assemble_integer): Declare.
 	* dwarfout.c: Include dwarf2asm.h.  Use dwarf2 functions for the
 	default	implementation of most macros.
@@ -526,7 +535,7 @@ Mon Dec 17 17:57:05 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-12-16  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config.gcc: Add powerpc-*-eabisimaltivec*.
+	* config.gcc: Add powerpc-*-eabisimaltivec*.
 
 2001-12-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
@@ -625,15 +634,15 @@ Sun Dec 16 13:13:01 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-12-15  Dan Nicolaescu  <dann@ics.uci.edu>
 
-        * config/sparc/sparc.c (mems_ok_for_ldd_peep): Rename from
+	* config/sparc/sparc.c (mems_ok_for_ldd_peep): Rename from
 	addrs_ok_for_ldd_peep_withmem; take MEMs as parameters, not
-        addrs; eliminate restriction of only using fp and sp as base
-        registers.
-        * config/sparc/sparc-protos.h: Update.
-        * config/sparc/sparc.md (movdi): Use TARGET_V9 not TARGET_ARCH64.
-        (*cmp_cc_set, *cmp_ccx_set64, *movdi_zero): New insns derived
-        from old define_peepholes.
-        Convert all the ldd/std peepholes to peephole2.
+	addrs; eliminate restriction of only using fp and sp as base
+	registers.
+	* config/sparc/sparc-protos.h: Update.
+	* config/sparc/sparc.md (movdi): Use TARGET_V9 not TARGET_ARCH64.
+	(*cmp_cc_set, *cmp_ccx_set64, *movdi_zero): New insns derived
+	from old define_peepholes.
+	Convert all the ldd/std peepholes to peephole2.
 
 2001-12-15  Ulrich Weigand  <uweigand@de.ibm.com>
 

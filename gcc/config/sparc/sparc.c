@@ -5673,26 +5673,40 @@ registers_ok_for_ldd_peep (reg1, reg2)
 }
 
 /* Return 1 if the addresses in mem1 and mem2 are suitable for use in
-   an ldd or std insn. 
-      
+   an ldd or std insn.
+   
    This can only happen when addr1 and addr2, the addresses in mem1
    and mem2, are consecutive memory locations (addr1 + 4 == addr2).
-   addr1 must also be aligned on a 64-bit boundary.  */
+   addr1 must also be aligned on a 64-bit boundary.
+
+   Also iff dependent_reg_rtx is not null it should not be used to
+   compute the address for mem1, i.e. we cannot optimize a sequence
+   like:
+   	ld [%o0], %o0
+	ld [%o0 + 4], %o1
+   to
+   	ldd [%o0], o0
+   For stores we don't have a similar problem, so dependent_reg_rtx is
+   NULL_RTX.  */
 
 int
-mems_ok_for_ldd_peep (mem1, mem2)
-      rtx mem1, mem2;
+mems_ok_for_ldd_peep (mem1, mem2, dependent_reg_rtx)
+      rtx mem1, mem2, dependent_reg_rtx;
 {
   rtx addr1, addr2;
   unsigned int reg1;
   int offset1;
 
-  addr1 = XEXP (mem1, 0);
-  addr2 = XEXP (mem2, 0);
+  /* The mems cannot be volatile.  */
+  if (MEM_VOLATILE_P (mem1) || MEM_VOLATILE_P (mem2))
+    return 0;
 
-  /* mem1 should be aligned on a 64-bit boundary */
+  /* MEM1 should be aligned on a 64-bit boundary.  */
   if (MEM_ALIGN (mem1) < 64)
     return 0;
+  
+  addr1 = XEXP (mem1, 0);
+  addr2 = XEXP (mem2, 0);
   
   /* Extract a register number and offset (if used) from the first addr.  */
   if (GET_CODE (addr1) == PLUS)
@@ -5729,6 +5743,9 @@ mems_ok_for_ldd_peep (mem1, mem2)
   if (reg1 != REGNO (XEXP (addr2, 0)))
     return 0;
 
+  if (dependent_reg_rtx != NULL_RTX && reg1 == REGNO (dependent_reg_rtx))
+    return 0;
+  
   /* The first offset must be evenly divisible by 8 to ensure the 
      address is 64 bit aligned.  */
   if (offset1 % 8 != 0)
