@@ -1,3 +1,9 @@
+2004-07-09  James E Wilson  <wilson@specifixinc.com>
+
+	PR target/16364
+	* config/ia64/ia64.c (ia64_function_arg): For a single element HFA,
+	do return a parallel if hfa_mode == XFmode and mode == TImode.
+
 2004-07-09 Jan Beulich <jbeulich@novell.com>
 
 	* builtin-types.def (BT_UINT): Rename from BT_UNSIGNED.
