@@ -338,4 +338,7 @@ do {						\
 /* For PIC code we need to explicitly specify (PLT) and (GOT) relocs.  */
 #define NEED_PLT_GOT	flag_pic
 
+/* The ELF assembler handles GOT addressing differently to NetBSD.  */
+#define GOT_PCREL	0
+
 #include "arm/aout.h"
