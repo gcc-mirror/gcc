@@ -2,6 +2,7 @@
    mode, but not in C90 mode.  Also check correct stringizing.
 */
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
+/* { dg-do run } */
 /* { dg-options "-std=iso9899:1990 -pedantic-errors" } */
 
 #define str(x) xstr(x)

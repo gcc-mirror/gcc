@@ -1,5 +1,9 @@
 2000-07-31  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* gcc.dg/c90-digraph-1.c: Restore { dg-do run } marker.
+	* gcc.dg/noncompile/990416-1.c: Do not expect an implicit-
+	declaration warning for __builtin_dwarf_reg_size.
+
 	* gcc.dg/c99-impl-decl-1.c: No longer XFAIL.
 
 2000-07-31  Joseph S. Myers  <jsm28@cam.ac.uk>
