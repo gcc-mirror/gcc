@@ -550,6 +550,7 @@ alpha64-dec-*vms*)
 		  | sed 's/.*-.*-\(.*\)$/\1/' | sed 's/\./_/g'`
 		;;
 	esac
+	install_headers_dir=install-headers-cp
 	prefix=/gnu
 	local_prefix=/gnu
 	;;
@@ -567,6 +568,7 @@ alpha*-dec-*vms*)
 		  | sed 's/.*-.*-\(.*\)$/\1/' | sed 's/\./_/g'`
 		;;
 	esac
+	install_headers_dir=install-headers-cp
 	prefix=/gnu
 	local_prefix=/gnu
 	;;
