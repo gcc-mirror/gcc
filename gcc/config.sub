@@ -335,7 +335,7 @@ case $basic_machine in
 		;;
 	amigaunix | amix)
 		basic_machine=m68k-cbm
-		os=-amix
+		os=-sysv4
 		;;
 	cray | ymp)
 		basic_machine=ymp-cray
@@ -470,7 +470,7 @@ case $os in
 	# Each alternative must end in a *, to match a version number.
 	-bsd* | -sysv* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
 	      | -vms* | -sco* | -esix* | -isc* | -aix* | -sunos* | -hpux* \
-	      | -unos* | -osf* | -luna* | -dgux* | -solari* | -sym* | -amix* \
+	      | -unos* | -osf* | -luna* | -dgux* | -solari* | -sym* \
 	      | -amigados* | -msdos* | -newsos* | -unicos* | -aos* \
 	      | -nindy* | -vxworks* | -ebmon* | -hds* | -m88kbcs*)
 		;;
