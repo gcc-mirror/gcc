@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package java.awt.font;
 
+import java.io.InvalidObjectException;
 import java.text.AttributedCharacterIterator;
 
 public final class TextAttribute extends AttributedCharacterIterator.Attribute
@@ -115,6 +116,7 @@ public final class TextAttribute extends AttributedCharacterIterator.Attribute
   }
   
   protected Object readResolve ()
+    throws InvalidObjectException
   {
     throw new Error ("not implemented");
   }
