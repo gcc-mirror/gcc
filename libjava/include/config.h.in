@@ -151,6 +151,9 @@
    getenv("GCJ_PROPERTIES").  */
 #undef DISABLE_GETENV_PROPERTIES
 
+/* Define if we should ignore arguments to main().  */
+#undef DISABLE_MAIN_ARGS
+
 /* Define if you have /proc/self/exe */
 #undef HAVE_PROC_SELF_EXE
 
@@ -158,7 +161,6 @@
 /* Define if you have dladdr() */
 #undef HAVE_DLADDR
 
- 
 /* Define if getuid() and friends are missing.  */
 #undef NO_GETUID
 
@@ -170,9 +172,6 @@
 
 /* Define if you are using JVMPI.  */
 #undef ENABLE_JVMPI
-
-/* The number of bytes in a void *.  */
-#undef SIZEOF_VOID_P
 
 /* Define if you have the access function.  */
 #undef HAVE_ACCESS
@@ -251,6 +250,9 @@
 
 /* Define if you have the open function.  */
 #undef HAVE_OPEN
+
+/* Define if you have the opendir function.  */
+#undef HAVE_OPENDIR
 
 /* Define if you have the pipe function.  */
 #undef HAVE_PIPE
@@ -407,6 +409,9 @@
 
 /* Define if dlopen is available */
 #undef HAVE_DLOPEN
+
+/* The number of bytes in type void * */
+#undef SIZEOF_VOID_P
 
 /* Define if <inttypes.h> is available */
 #undef HAVE_INTTYPES_H

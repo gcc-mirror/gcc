@@ -1001,13 +1001,18 @@ _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv,
 
   java::lang::Runtime *runtime = NULL;
 
+
+#ifdef DISABLE_MAIN_ARGS
+  _Jv_ThisExecutable ("[Embedded App]");
+#else
 #ifdef HAVE_PROC_SELF_EXE
   char exec_name[20];
   sprintf (exec_name, "/proc/%d/exe", getpid ());
   _Jv_ThisExecutable (exec_name);
 #else
   _Jv_ThisExecutable (argv[0]);
-#endif
+#endif /* HAVE_PROC_SELF_EXE */
+#endif /* DISABLE_MAIN_ARGS */
 
   try
     {
@@ -1021,7 +1026,11 @@ _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv,
       // for `main'; that way it will be set up if `main' is a JNI method.
       runtime = java::lang::Runtime::getRuntime ();
 
+#ifdef DISABLE_MAIN_ARGS
+      arg_vec = JvConvertArgv (0, 0);
+#else      
       arg_vec = JvConvertArgv (argc - 1, argv + 1);
+#endif
 
       using namespace gnu::gcj::runtime;
       if (klass)

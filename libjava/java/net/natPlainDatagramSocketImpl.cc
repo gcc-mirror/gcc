@@ -36,6 +36,7 @@ details.  */
 #include <bstring.h>
 #endif
 
+#ifndef DISABLE_JAVA_NET
 // Avoid macro definitions of bind from system headers, e.g. on
 // Solaris 7 with _XOPEN_SOURCE.  FIXME
 static inline int
@@ -43,6 +44,7 @@ _Jv_bind (int fd, struct sockaddr *addr, int addrlen)
 {
   return ::bind (fd, addr, addrlen);
 }
+#endif /* DISABLE_JAVA_NET */
 
 #ifdef bind
 #undef bind

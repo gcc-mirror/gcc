@@ -1,3 +1,24 @@
+2002-02-06  Anthony Green  <green@redhat.com>
+
+	* java/net/natPlainSocketImpl.cc: Fix DISABLE_JAVA_NET targets.
+	Implement missing method stubs.
+	java/net/natPlainDatagramSocketImpl.cc: Fix DISABLE_JAVA_NET
+	targets.
+	* java/lang/natSystem.cc (getSystemTimeZone): Some targets have no
+	concept of timezones.
+	(init_properties): Don't refer to _Jv_Environment_Properties
+	when this feature is not available.
+	* include/config.h.in: Rebuilt.
+	* acconfig.h: Add DISABLE_MAIN_ARGS.
+	* prims.cc (_Jv_RunMain): Use DISABLE_MAIN_ARGS.
+	* configure: Rebuilt.
+	* configure.in: Add --disable-main-args option.  Test for
+          opendir function.  Replace AC_CHECK_SIZEOF with
+          AC_COMPILE_CHECK_SIZEOF.
+	* java/io/natFile.cc (performList): Check HAVE_OPENDIR.
+	* aclocal.m4: Rebuilt.
+	* acinclude.m4: Add AC_COMPILE_CHECK_SIZEOF.
+
 2002-02-06  Tom Tromey  <tromey@redhat.com>
 
 	* verify.cc (require_array_type): If argument is a null array of

@@ -63,6 +63,14 @@ if test "$enable_getenv_properties" = no; then
    AC_DEFINE(DISABLE_GETENV_PROPERTIES)
 fi
 
+dnl Whether we should use arguments to main()
+if test -z "$enable_main_args"; then
+   enable_main_args=${enable_main_args_default-yes}
+fi
+if test "$enable_main_args" = no; then
+   AC_DEFINE(DISABLE_MAIN_ARGS)
+fi
+
 
 dnl Should we use hashtable-based synchronization?
 dnl Currently works only for Linux X86/ia64
@@ -187,7 +195,7 @@ dnl If the target is an eCos system, use the appropriate eCos
 dnl I/O routines.
 dnl FIXME: this should not be a local option but a global target
 dnl system; at present there is no eCos target.
-TARGET_ECOS="no"
+TARGET_ECOS=${PROCESS-"no"}
 AC_ARG_WITH(ecos,
 [  --with-ecos             enable runtime eCos target support],
 TARGET_ECOS="$with_ecos"
@@ -463,7 +471,7 @@ if test -n "${with_cross_host}"; then
    fi
    NATIVE=no
 else
-   AC_CHECK_FUNCS(strerror ioctl select fstat open fsync sleep)
+   AC_CHECK_FUNCS(strerror ioctl select fstat open fsync sleep opendir)
    AC_CHECK_FUNCS(gmtime_r localtime_r readdir_r getpwuid_r getcwd)
    AC_CHECK_FUNCS(access stat mkdir rename rmdir unlink realpath utime chmod)
    AC_CHECK_FUNCS(nl_langinfo setlocale)
@@ -707,8 +715,7 @@ LT_AC_PROG_GCJ
 
 CPPFLAGS=$GCJ_SAVE_CPPFLAGS
 
-dnl FIXME: cross compilation
-AC_CHECK_SIZEOF(void *)
+AC_COMPILE_CHECK_SIZEOF(void *)
 
 ZLIBS=
 ZDEPS=

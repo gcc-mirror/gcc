@@ -37,6 +37,8 @@ details.  */
 typedef int socklen_t;
 #endif
 
+#ifndef DISABLE_JAVA_NET
+
 // Avoid macro definitions of bind, connect from system headers, e.g. on
 // Solaris 7 with _XOPEN_SOURCE.  FIXME
 static inline int
@@ -79,6 +81,7 @@ _Jv_recv (T_ret (*recv_func) (T_fd s, T_buf buf, T_len len, T_flags flags),
 {
   return recv_func ((T_fd) s, (T_buf) buf, (T_len) len, (T_flags) flags);
 }
+#endif /* DISABLE_JAVA_NET */
 
 #include <gcj/cni.h>
 #include <gcj/javaprims.h>
@@ -149,6 +152,48 @@ java::net::PlainSocketImpl::getOption (jint)
 {
   throw new SocketException (
     JvNewStringLatin1 ("SocketImpl.getOption: unimplemented"));
+}
+
+jint
+java::net::PlainSocketImpl::read(void)
+{
+  throw new SocketException (
+    JvNewStringLatin1 ("SocketImpl.read: unimplemented"));
+}
+
+jint
+java::net::PlainSocketImpl::read(jbyteArray buffer, jint offset, jint count)
+{
+  throw new SocketException (
+    JvNewStringLatin1 ("SocketImpl.read: unimplemented"));
+}
+
+void
+java::net::PlainSocketImpl::write(jint b)
+{
+  throw new SocketException (
+    JvNewStringLatin1 ("SocketImpl.write: unimplemented"));
+}
+
+void
+java::net::PlainSocketImpl::write(jbyteArray b, jint offset, jint len)
+{
+  throw new SocketException (
+    JvNewStringLatin1 ("SocketImpl.write: unimplemented"));
+}
+
+jint
+java::net::PlainSocketImpl::available(void)
+{
+  throw new SocketException (
+    JvNewStringLatin1 ("SocketImpl.available: unimplemented"));
+}
+
+void
+java::net::PlainSocketImpl::close(void)
+{
+  throw new SocketException (
+    JvNewStringLatin1 ("SocketImpl.close: unimplemented"));
 }
 
 #else /* DISABLE_JAVA_NET */
