@@ -1,3 +1,8 @@
+Mon Sep 13 09:38:53 1999  Andreas Schwab  <schwab@suse.de>
+
+	* tree.c (fix_sizetype):  Exchange the types for TYPE_SIZE and
+	TYPE_SIZE_UNIT.
+
 Sun Sep 12 23:28:20 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (gcc.o, gccspec.o, cppspec.o): Depend on gcc.h.

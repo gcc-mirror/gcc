@@ -5167,8 +5167,8 @@ static void
 fix_sizetype (type)
      tree type;
 {
-  TREE_TYPE (TYPE_SIZE (type)) = sizetype;
-  TREE_TYPE (TYPE_SIZE_UNIT (type)) = bitsizetype;
+  TREE_TYPE (TYPE_SIZE (type)) = bitsizetype;
+  TREE_TYPE (TYPE_SIZE_UNIT (type)) = sizetype;
 }
 
 /* Call this function after calling build_common_tree_nodes and set_sizetype.
