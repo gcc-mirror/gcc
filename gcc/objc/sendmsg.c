@@ -94,7 +94,6 @@ __inline__
 IMP
 get_imp (Class class, SEL sel)
 {
-  IMP impl;
   void* res = sarray_get_safe (class->dtable, (size_t) sel->sel_id);
   if (res == 0)
     {
@@ -342,7 +341,6 @@ static void
 __objc_install_dispatch_table_for_class (Class class)
 {
   Class super;
-  int counter;
 
   /* If the class has not yet had it's class links resolved, we must 
      re-compute all class links */
@@ -545,6 +543,12 @@ __objc_block_forward (id rcv, SEL op, ...)
   res = __objc_forward (rcv, op, args);
   if (res)
     __builtin_return (res);
+  else
+#if INVISIBLE_STRUCT_RETURN
+    return (__big) {0};
+#else
+    return nil;
+#endif
 }
 
 
@@ -599,6 +603,8 @@ __objc_forward (id object, SEL sel, arglist_t args)
     /* The object doesn't respond to doesNotRecognize: or error:;  Therefore,
        a default action is taken. */
     objc_error (object, OBJC_ERR_UNIMPLEMENTED, "%s\n", msg);
+
+    return 0;
   }
 }
 
@@ -618,13 +624,13 @@ __objc_print_dtable_stats()
 	 );
 
   printf("arrays: %d = %ld bytes\n", narrays, 
-	 (int)narrays*sizeof(struct sarray));
+	 (long)narrays*sizeof(struct sarray));
   total += narrays*sizeof(struct sarray);
   printf("buckets: %d = %ld bytes\n", nbuckets, 
-	 (int)nbuckets*sizeof(struct sbucket));
+	 (long)nbuckets*sizeof(struct sbucket));
   total += nbuckets*sizeof(struct sbucket);
 
-  printf("idxtables: %d = %ld bytes\n", idxsize, (int)idxsize*sizeof(void*));
+  printf("idxtables: %d = %ld bytes\n", idxsize, (long)idxsize*sizeof(void*));
   total += idxsize*sizeof(void*);
   printf("-----------------------------------\n");
   printf("total: %d bytes\n", total);

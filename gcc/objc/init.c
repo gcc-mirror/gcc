@@ -381,7 +381,7 @@ __objc_force_linking (void)
 /* Run through the statics list, removing modules as soon as all its statics
    have been initialized.  */
 static void
-objc_init_statics ()
+objc_init_statics (void)
 {
   struct objc_list **cell = &uninitialized_statics;
   struct objc_static_instances **statics_in_module;
