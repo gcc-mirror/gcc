@@ -1,4 +1,4 @@
-2004-08-31  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2004-09-01  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* misc.c (gnat_print_type): Use TYPE_RM_SIZE_NUM.
 
@@ -45,7 +45,7 @@
 	(gnat_substitute_in_type, case ARRAY_TYPE): If old had a
 	MIN_EXPR for the size, copy it into new.
 
-2004-08-31  Robert Dewar  <dewar@gnat.com>
+2004-09-01  Robert Dewar  <dewar@gnat.com>
 
 	* exp_ch6.adb (Expand_Call): Properly handle validity checks for
 	packed indexed component where array is an IN OUT formal. This
@@ -56,13 +56,13 @@
 	* gnat-style.texi: Minor updates (note that boolean constants and
 	variables are joined with AND/OR rather than short circuit forms).
 
-2004-08-31  Ed Schonberg  <schonberg@gnat.com>
+2004-09-01  Ed Schonberg  <schonberg@gnat.com>
 
 	* exp_util.adb (Safe_Unchecked_Type_Conversion): Conversion is safe if
 	it is an upward conversion of an untagged type with no representation
 	change.
 
-2004-08-31  Thomas Quinot  <quinot@act-europe.fr>
+2004-09-01  Thomas Quinot  <quinot@act-europe.fr>
 
 	* rtsfind.ads: Move RCI_Subp_Info and RCI_Subp_Info_Array to
 	System.Partition_Interface.
@@ -76,7 +76,7 @@
 	consistent treatment of entity references contained within the
 	enclosed procedure call.
 
-2004-08-31  Vincent Celier  <celier@gnat.com>
+2004-09-01  Vincent Celier  <celier@gnat.com>
 
 	* bindgen.adb: (Set_EA_Last): New procedure
 	(Gen_Exception_Table_Ada, Gen_Exception_Table_C): Use new procedure
@@ -103,7 +103,7 @@
 	* bld.adb (Put_Include_Project): Use '/', not '\' on Windows as
 	directory separator when defining BASE_DIR.
 
-2004-08-19  Pascal Obry  <obry@gnat.com>
+2004-09-01  Pascal Obry  <obry@gnat.com>
 
 	* gprcmd.adb (Extend): Do not output trailing directory separator. This
 	is not needed and it confuses Windows GNU/make which does not report
