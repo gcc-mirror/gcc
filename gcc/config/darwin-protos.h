@@ -56,3 +56,10 @@ extern void darwin_encode_section_info PARAMS ((tree));
 #endif /* TREE_CODE */
 
 extern void machopic_finish PARAMS ((FILE *));
+
+#ifdef GCC_C_PRAGMA_H
+extern void darwin_init_pragma PARAMS ((int (*) (tree *)));
+extern void darwin_pragma_ignore PARAMS ((cpp_reader *));
+extern void darwin_pragma_options PARAMS ((cpp_reader *));
+extern void darwin_pragma_unused PARAMS ((cpp_reader *));
+#endif

@@ -1,3 +1,7 @@
+2001-06-28  Stan Shebs  <shebs@apple.com>
+
+	* gcc.dg/pragma-darwin.c: New test.
+
 2001-06-28  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* lib/objc.exp (objc_target_compile): Don't need -lposix4 on any
