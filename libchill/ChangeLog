@@ -1,3 +1,8 @@
+1998-09-20  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in: Add dummy targets "info", "install-info", "clean-info"
+	and "dvi".
+
 1998-09-13  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* configure.in: Use 'if test' not brackets.
