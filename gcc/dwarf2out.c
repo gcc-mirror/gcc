@@ -862,6 +862,10 @@ dwarf2out_frame_debug (insn)
   label = dwarf2out_cfi_label ();
     
   insn = PATTERN (insn);
+  /* Assume that in a PARALLEL prologue insn, only the first elt is
+     significant.  Currently this is true.  */
+  if (GET_CODE (insn) == PARALLEL)
+    insn = XVECEXP (insn, 0, 0);
   assert (GET_CODE (insn) == SET);
 
   src = SET_SRC (insn);
@@ -1233,7 +1237,10 @@ output_call_frame_info (for_eh)
   /* Output the CIE. */
   ASM_GENERATE_INTERNAL_LABEL (l1, CIE_AFTER_SIZE_LABEL, for_eh);
   ASM_GENERATE_INTERNAL_LABEL (l2, CIE_END_LABEL, for_eh);
-  ASM_OUTPUT_DWARF_DELTA (asm_out_file, l2, l1);
+  if (for_eh)
+    ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, l2, l1);
+  else
+    ASM_OUTPUT_DWARF_DELTA (asm_out_file, l2, l1);
   if (flag_verbose_asm)
     fprintf (asm_out_file, "\t%s Length of Common Information Entry",
 	     ASM_COMMENT_START);
@@ -1246,7 +1253,7 @@ output_call_frame_info (for_eh)
     fprintf (asm_out_file, "\t%s CIE Identifier Tag", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  if (DWARF_OFFSET_SIZE == 8)
+  if (for_eh ? PTR_SIZE == 8 : DWARF_OFFSET_SIZE == 8)
     {
       ASM_OUTPUT_DWARF_DATA4 (asm_out_file, DW_CIE_ID);
       fputc ('\n', asm_out_file);
@@ -1309,12 +1316,13 @@ output_call_frame_info (for_eh)
   for (i = 0; i < fde_table_in_use; ++i)
     {
       fde = &fde_table[i];
-      if (fde->dw_fde_cfi == NULL)
-	continue;
 
       ASM_GENERATE_INTERNAL_LABEL (l1, FDE_AFTER_SIZE_LABEL, for_eh + i*2);
       ASM_GENERATE_INTERNAL_LABEL (l2, FDE_END_LABEL, for_eh + i*2);
-      ASM_OUTPUT_DWARF_DELTA (asm_out_file, l2, l1);
+      if (for_eh)
+	ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, l2, l1);
+      else
+	ASM_OUTPUT_DWARF_DELTA (asm_out_file, l2, l1);
       if (flag_verbose_asm)
 	fprintf (asm_out_file, "\t%s FDE Length", ASM_COMMENT_START);
       fputc ('\n', asm_out_file);
@@ -1374,7 +1382,7 @@ output_call_frame_info (for_eh)
   if (for_eh)
     {
       /* Emit terminating zero for table.  */
-      ASM_OUTPUT_DWARF_DATA (asm_out_file, 0);
+      ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
       fputc ('\n', asm_out_file);
     }
 #endif
