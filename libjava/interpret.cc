@@ -1,6 +1,6 @@
 // interpret.cc - Code for the interpreter
 
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -3127,6 +3127,10 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
 
 	  case op_iload:
 	    LOADI (wide);
+	    NEXT_INSN;
+
+	  case op_fload:
+	    LOADF (wide);
 	    NEXT_INSN;
 
 	  case op_aload:
