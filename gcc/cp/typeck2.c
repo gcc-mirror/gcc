@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "toplev.h"
 #include "output.h"
+#include "diagnostic.h"
 
 static tree process_init_constructor PARAMS ((tree, tree, tree *));
 

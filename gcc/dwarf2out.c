@@ -56,6 +56,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "md5.h"
 #include "tm_p.h"
+#include "diagnostic.h"
 
 /* DWARF2 Abbreviation Glossary:
    CFA = Canonical Frame Address

@@ -51,6 +51,7 @@ end ifc
 #include "output.h"
 #include "toplev.h"
 #include "ggc.h"
+#include "diagnostic.h"  
   
 #ifdef MULTIBYTE_CHARS
 #include <locale.h>

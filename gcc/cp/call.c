@@ -34,6 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "expr.h"
 #include "ggc.h"
+#include "diagnostic.h"
 
 extern int inhibit_warnings;
 
@@ -3716,7 +3717,6 @@ convert_like_real (convs, expr, fn, argnum, inner)
      int argnum;
      int inner;
 {
-  extern int warningcount, errorcount;
   int savew, savee;
 
   tree totype = TREE_TYPE (convs);

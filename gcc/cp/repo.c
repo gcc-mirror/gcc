@@ -33,6 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "toplev.h"
 #include "ggc.h"
+#include "diagnostic.h"
 
 static tree repo_get_id PARAMS ((tree));
 static char *extract_string PARAMS ((char **));

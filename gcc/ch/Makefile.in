@@ -269,12 +269,12 @@ $(srcdir)/hash.h:
 
 actions.o : actions.c $(CONFIG_H) $(CHILL_TREE_H) actions.h $(RTL_H)	\
 	lex.h $(srcdir)/../flags.h $(srcdir)/../input.h			\
-	$(EXPR_H) $(srcdir)/../system.h $(srcdir)/../toplev.h
+	$(EXPR_H) $(srcdir)/../system.h $(srcdir)/../toplev.h diagnostic.h
 convert.o : convert.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h \
 	$(srcdir)/../tree.h $(srcdir)/../system.h $(srcdir)/../toplev.h \
 	$(srcdir)/../convert.h
 decl.o : decl.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h lex.h \
-	$(srcdir)/../system.h $(srcdir)/../toplev.h
+	$(srcdir)/../system.h $(srcdir)/../toplev.h diagnostic.h
 except.o : except.c $(CONFIG_H) $(srcdir)/../tree.h $(RTL_H) $(CHILL_TREE_H) \
 	$(srcdir)/../system.h $(srcdir)/../toplev.h
 expr.o : expr.c $(CONFIG_H) $(RTL_H) $(CHILL_TREE_H) $(srcdir)/../flags.h \

@@ -1,3 +1,21 @@
+2001-06-10  Mark Mitchell <mark@codesourcery.com>
+	    Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* Make-lang.in (cp/call.o): Depend on diagnostic.h
+	(cp/typeck.o): Depend on diagnostic.h
+	(cp/typeck2.o): Depend on diagnostic.h
+	(cp/repo.o): Depend on dignostic.h	
+	* typeck.c: #include diagnostic.h
+	(convert_for_initialization): Remove extern declaration for
+	warningcount and errorcount.
+
+	* call.c: #include diagnostic.h
+	(convert_like_real): Remove extern declaration for warnincount and
+	errorcount. 
+
+	* repo.c: #include diagnostic.h
+	* typeck2.c: #include diagnostic.h
+
 2001-06-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (duplicate_decls): Fix DECL_TEMPLATE_RESULT thinko
