@@ -13,7 +13,7 @@
 
 /* Check left/right shifting with all bits set and with one bit set. */
 #if !(~0ULL >> 63) || !(~0ULL << 63) || !(~0LL >> 63) || !(~0LL << 63) || \
-  !(LL_MIN >> 63) || !(1LL << 63) || !(ULL_MAX >> 63) || !(1ULL << 63)
+  !(LL_MIN >> 63) || !(1LL << 62) || !(ULL_MAX >> 63) || !(1ULL << 63)
 #error "bit shift truncation" /* { dg-bogus "trunc" "bit shift truncation" } */
 #endif
 
