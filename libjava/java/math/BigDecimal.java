@@ -1,5 +1,5 @@
 /* java.math.BigDecimal -- Arbitrary precision decimals.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -133,16 +133,27 @@ public class BigDecimal extends Number implements Comparable {
       throw 
 	new IllegalArgumentException("illegal rounding mode: " + roundingMode);
 
-    if (scale < 0)
-      throw new ArithmeticException ("scale is negative: " + scale);
+    if (newScale < 0)
+      throw new ArithmeticException ("scale is negative: " + newScale);
 
     if (intVal.signum () == 0)	// handle special case of 0.0/0.0
       return ZERO;
     
-    BigInteger dividend = intVal.multiply (BigInteger.valueOf (10).pow 
-					(newScale + 1 - (scale - val.scale)));
+    // Ensure that pow gets a non-negative value.
+    int valScale = val.scale;
+    BigInteger valIntVal = val.intVal;
+    int power = newScale + 1 - (scale - val.scale);
+    if (power < 0)
+      {
+	// Effectively increase the scale of val to avoid an
+	// IllegalArgumentException for a negative power.
+        valIntVal = valIntVal.multiply (BigInteger.valueOf (10).pow (-power));
+	power = 0;
+      }
+
+    BigInteger dividend = intVal.multiply (BigInteger.valueOf (10).pow (power));
     
-    BigInteger parts[] = dividend.divideAndRemainder (val.intVal);
+    BigInteger parts[] = dividend.divideAndRemainder (valIntVal);
 //      System.out.println("int: " + parts[0]);
 //      System.out.println("rem: " + parts[1]);
 
@@ -346,5 +357,16 @@ public class BigDecimal extends Number implements Comparable {
   public double doubleValue() 
   {
     return Double.valueOf(toString()).doubleValue();
+  }
+
+  public BigDecimal setScale (int scale) throws ArithmeticException
+  {
+    return setScale (scale, ROUND_UNNECESSARY);
+  }
+
+  public BigDecimal setScale (int scale, int roundingMode)
+    throws ArithmeticException, IllegalArgumentException
+  {
+    return divide (ONE, scale, roundingMode);
   }
 }
