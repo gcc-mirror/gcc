@@ -951,6 +951,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		  else if (normalizep != 1)
 		    target = expand_and (uval, target,
 					 (GET_CODE (target) == REG
+					  && ! preserve_subexpressions_p ()
 					  ? target : NULL_RTX));
 		  
 		  seq = gen_sequence ();
