@@ -1,3 +1,10 @@
+2004-01-02  Andreas Schwab  <schwab@suse.de>
+
+	* doc/c-tree.texi: Fix @item vs. @itemx.
+	* doc/cpp.texi: Likewise.
+	* doc/install.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+
 2004-01-02  Andreas Jaeger  <aj@suse.de>, Gerald Pfeifer  <gp@suse.de>
 
 	* doc/install.texi (Specific): Mention x86_64.

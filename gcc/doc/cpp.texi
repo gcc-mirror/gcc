@@ -9,7 +9,7 @@
 @copying
 @c man begin COPYRIGHT
 Copyright @copyright{} 1987, 1989, 1991, 1992, 1993, 1994, 1995, 1996,
-1997, 1998, 1999, 2000, 2001, 2002, 2003
+1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
@@ -2041,7 +2041,7 @@ runtime is used, this macro is not defined, so that you can use this
 macro to determine which runtime (NeXT or GNU) is being used.
 
 @item __LP64__
-@item _LP64
+@itemx _LP64
 These macros are defined, with value 1, if (and only if) the compilation
 is for a target where @code{long int} and pointer both use 64-bits and
 @code{int} uses 32-bit.

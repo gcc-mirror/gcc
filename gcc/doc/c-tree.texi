@@ -1,4 +1,4 @@
-@c Copyright (c) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+@c Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -790,7 +790,7 @@ This predicate holds whenever its argument represents a class-type with
 default constructor.
 
 @item CLASSTYPE_HAS_MUTABLE
-@item TYPE_HAS_MUTABLE_P
+@itemx TYPE_HAS_MUTABLE_P
 These predicates hold for a class-type having a mutable data member.
 
 @item CLASSTYPE_NON_POD_P
@@ -1974,7 +1974,7 @@ real part and the second operand is the imaginary part.
 These nodes represent the conjugate of their operand.
 
 @item REALPART_EXPR
-@item IMAGPART_EXPR
+@itemx IMAGPART_EXPR
 These nodes represent respectively the real and the imaginary parts
 of complex numbers (their sole argument).
 
