@@ -1,3 +1,8 @@
+2000-08-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cvt.c (warn_ref_binding): New static function, broken out of ...
+	(convert_to_reference): ... here. Use it.	
+
 2000-08-11  Kriang Lerdsuwanakij <lerdsuwa@scf-fs.usc.edu>
 
 	* parse.y (template_arg): Add rule for template qualified with

@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 static tree cp_convert_to_pointer PARAMS ((tree, tree));
 static tree convert_to_pointer_force PARAMS ((tree, tree));
 static tree build_up_reference PARAMS ((tree, tree, int));
+static void warn_ref_binding PARAMS ((tree, tree, tree));
 
 /* Change of width--truncation and extension of integers or reals--
    is represented with NOP_EXPR.  Proper functioning of many things
@@ -410,6 +411,37 @@ build_up_reference (type, arg, flags)
   return rval;
 }
 
+/* Subroutine of convert_to_reference. REFTYPE is the target reference type.
+   INTYPE is the original rvalue type and DECL is an optional _DECL node
+   for diagnostics.
+   
+   [dcl.init.ref] says that if an rvalue is used to
+   initialize a reference, then the reference must be to a
+   non-volatile const type.  */
+
+static void
+warn_ref_binding (reftype, intype, decl)
+     tree reftype, intype, decl;
+{
+  tree ttl = TREE_TYPE (reftype);
+  
+  if (!CP_TYPE_CONST_NON_VOLATILE_P (ttl))
+    {
+      const char *msg;
+
+      if (CP_TYPE_VOLATILE_P (ttl) && decl)
+	  msg = "initialization of volatile reference type `%#T' from rvalue of type `%T'";
+      else if (CP_TYPE_VOLATILE_P (ttl))
+	  msg = "conversion to volatile reference type `%#T' from rvalue of type `%T'";
+      else if (decl)
+	  msg = "initialization of non-const reference type `%#T' from rvalue of type `%T'";
+      else
+	  msg = "conversion to non-const reference type `%#T' from rvalue of type `%T'";
+
+      cp_pedwarn (msg, reftype, intype);
+    }
+}
+
 /* For C++: Only need to do one-level references, but cannot
    get tripped up on signed/unsigned differences.
 
@@ -472,27 +504,10 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	  tree ttl = TREE_TYPE (reftype);
 	  tree ttr = lvalue_type (expr);
 
-	  /* [dcl.init.ref] says that if an rvalue is used to
-	     initialize a reference, then the reference must be to a
-	     non-volatile const type.  */
-	  if (! real_lvalue_p (expr)
-	      && !CP_TYPE_CONST_NON_VOLATILE_P (ttl))
-	    {
-	      const char *msg;
-
-	      if (CP_TYPE_VOLATILE_P (ttl) && decl)
-		msg = "initialization of volatile reference type `%#T'";
-	      else if (CP_TYPE_VOLATILE_P (ttl))
-		msg = "conversion to volatile reference type `%#T'";
-	      else if (decl)
-		msg = "initialization of non-const reference type `%#T'";
-	      else
-		msg = "conversion to non-const reference type `%#T'";
-
-	      cp_pedwarn (msg, reftype);
-	      cp_pedwarn ("from rvalue of type `%T'", intype);
-	    }
-	  else if (! (convtype & CONV_CONST)
+	  if (! real_lvalue_p (expr))
+	    warn_ref_binding (reftype, intype, decl);
+	  
+	  if (! (convtype & CONV_CONST)
 		   && !at_least_as_qualified_p (ttl, ttr))
 	    cp_pedwarn ("conversion from `%T' to `%T' discards qualifiers",
 			ttr, reftype);
@@ -528,11 +543,8 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 					 "converting", 0, 0);
       if (rval == NULL_TREE || rval == error_mark_node)
 	return rval;
+      warn_ref_binding (reftype, intype, decl);
       rval = build_up_reference (reftype, rval, flags);
-
-      if (rval && ! CP_TYPE_CONST_P (TREE_TYPE (reftype)))
-	cp_pedwarn ("initializing non-const `%T' with `%T' will use a temporary",
-		    reftype, intype);
     }
 
   if (rval)
