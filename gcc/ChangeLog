@@ -1,3 +1,7 @@
+2001-11-22  Graham Stott  <grahams@redhat.com>
+
+	* local-alloc.c (combine_regs): Handle SUBREG_REG being a MEM.
+
 Thu Nov 22 06:49:14 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/i386/i386.md (leave, leave_rex64): Have RTL reflect what
