@@ -685,7 +685,7 @@
 #     define DATASTART ((ptr_t) get_etext())
 #     define STACKBOTTOM ((ptr_t) 0xc0000000)
 #     define DATAEND	/* not needed */
-#     define MPROTECT_VDB
+#     undef MPROTECT_VDB
 #     include <unistd.h>
 #     define GETPAGESIZE() getpagesize()
 #   endif
