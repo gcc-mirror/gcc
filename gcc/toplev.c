@@ -693,6 +693,8 @@ char *lang_options[] =
   "-fno-nonnull-objects",
   "-foperator-names",
   "-fno-operator-names",
+  "-frepo",
+  "-fno-repo",
   "-fsave-memoized",
   "-fno-save-memoized",
   "-fshort-temps",
