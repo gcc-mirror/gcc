@@ -104,7 +104,7 @@ public class PrintStream extends FilterOutputStream
    */
   public PrintStream (OutputStream out)
   {
-    this(out, false);
+    this (out, false);
   }
 
   /**
@@ -123,9 +123,34 @@ public class PrintStream extends FilterOutputStream
    */
   public PrintStream (OutputStream out, boolean auto_flush)
   {
-    super(out);
+    super (out);
 
     converter = UnicodeToBytes.getDefaultEncoder();
+    this.auto_flush = auto_flush;
+  }
+
+  /**
+   * This method intializes a new <code>PrintStream</code> object to write
+   * to the specified output sink.  This constructor also allows "auto-flush"
+   * functionality to be specified where the stream will be flushed after
+   * every line is terminated or newline character is written.
+   * <p>
+   * Note that this class is deprecated in favor of <code>PrintWriter</code>.
+   *
+   * @param out The <code>OutputStream</code> to write to.
+   * @param auto_flush <code>true</code> to flush the stream after every 
+   * line, <code>false</code> otherwise
+   * @param encoding The name of the character encoding to use for this
+   * object.
+   *
+   * @deprecated
+   */
+  public PrintStream (OutputStream out, boolean auto_flush, String encoding)
+    throws UnsupportedEncodingException
+  {
+    super (out);
+
+    converter = UnicodeToBytes.getEncoder (encoding);
     this.auto_flush = auto_flush;
   }
 
@@ -503,17 +528,18 @@ public class PrintStream extends FilterOutputStream
   {
     try
       {
-	out.write(oneByte);
-	if (auto_flush && oneByte == '\n')
-	  flush();
+        out.write (oneByte);
+
+        if (auto_flush && oneByte == '\n')
+          flush ();
       }
     catch (InterruptedIOException iioe)
       {
-	Thread.currentThread().interrupt();
+        Thread.currentThread ().interrupt ();
       }
     catch (IOException e)
       {
-	setError ();
+        setError ();
       }
   }
 
@@ -529,18 +555,18 @@ public class PrintStream extends FilterOutputStream
   {
     try
       {
-	out.write (buffer, offset, len);
+        out.write (buffer, offset, len);
         
-	if (auto_flush)
-	  flush();
+        if (auto_flush)
+          flush ();
       }
     catch (InterruptedIOException iioe)
       {
-	Thread.currentThread().interrupt();
+        Thread.currentThread ().interrupt ();
       }
     catch (IOException e)
       {
-	setError ();
+        setError ();
       }
   }
 

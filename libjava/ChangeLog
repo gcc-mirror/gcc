@@ -1,5 +1,12 @@
 2003-05-27  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/PrintStream.java
+	(PrintStream): Reformatted.
+	(PrintStream): New method, merged from classpath.
+	(write): Reformatted.
+
+2003-05-27  Michael Koch  <konqueror@gmx.de>
+
 	* java/lang/System.java:
 	Explicitely import needed classes.
 
