@@ -1678,7 +1678,7 @@ easy_fp_constant (rtx op, enum machine_mode mode)
     abort ();
 }
 
-/* Returns the constant for the splat instrunction, if exists.  */
+/* Returns the constant for the splat instruction, if exists.  */
 
 static int
 easy_vector_splat_const (int cst, enum machine_mode mode)

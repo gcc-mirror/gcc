@@ -204,7 +204,7 @@
 ;; ??? A simple alu insn issued on an LS unit has 0 cycle latency to an EX
 ;; insn, to a store (for data), and to an xfer insn.  It has 1 cycle latency to
 ;; another LS insn (excluding store data).  A simple alu insn issued on an EX
-;; unit has a latency of 5 cycles when the results goes to a LS unit (exluding
+;; unit has a latency of 5 cycles when the results goes to a LS unit (excluding
 ;; store data), otherwise a latency of 1 cycle.
 
 ;; ??? We can not handle latencies properly for simple alu instructions
