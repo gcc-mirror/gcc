@@ -197,6 +197,15 @@ struct lang_hooks
      parameter.  */
   int (*safe_from_p) PARAMS ((rtx, tree));
 
+  /* Function to finish handling an incomplete decl at the end of
+     compilation.  Default hook is does nothing.  */
+  void (*finish_incomplete_decl) PARAMS ((tree));
+
+  /* Function used by unsafe_for_reeval.  A non-negative number is
+     returned directly from unsafe_for_reeval, a negative number falls
+     through.  The default hook returns a negative number.  */
+  int (*unsafe_for_reeval) PARAMS ((tree));
+
   /* Hook called by staticp for language-specific tree codes.  */
   int (*staticp) PARAMS ((tree));
 

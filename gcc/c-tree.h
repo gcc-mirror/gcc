@@ -383,7 +383,7 @@ extern int system_header_p;
 extern int mesg_implicit_function_declaration;
 
 /* In c-decl.c */
-extern void finish_incomplete_decl PARAMS ((tree));
+extern void c_finish_incomplete_decl PARAMS ((tree));
 
 extern tree static_ctors;
 extern tree static_dtors;

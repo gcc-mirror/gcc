@@ -133,10 +133,6 @@ static int type_hash_marked_p PARAMS ((const void *));
 static void type_hash_mark PARAMS ((const void *));
 static int mark_tree_hashtable_entry PARAMS((void **, void *));
 
-/* If non-null, these are language-specific helper functions for
-   unsafe_for_reeval.  Return negative to not handle some tree.  */
-int (*lang_unsafe_for_reeval) PARAMS ((tree));
-
 /* Set the DECL_ASSEMBLER_NAME for a node.  If it is the sort of thing
    that the assembler should talk about, set DECL_ASSEMBLER_NAME to an
    appropriate IDENTIFIER_NODE.  Otherwise, set it to the
@@ -1688,12 +1684,9 @@ unsafe_for_reeval (expr)
       break;
 
     default:
-      if (lang_unsafe_for_reeval != 0)
-	{
-	  tmp = (*lang_unsafe_for_reeval) (expr);
-	  if (tmp >= 0)
-	    return tmp;
-	}
+      tmp = (*lang_hooks.unsafe_for_reeval) (expr);
+      if (tmp >= 0)
+	return tmp;
       break;
     }
 

@@ -2323,7 +2323,6 @@ c_apply_type_quals_to_decl (type_quals, decl)
     }
 }
 
-
 /* Return the typed-based alias set for T, which may be an expression
    or a type.  Return -1 if we don't do anything special.  */
 
@@ -3709,7 +3708,7 @@ c_safe_from_p (target, exp)
 /* Hook used by unsafe_for_reeval to handle language-specific tree codes.  */
 
 int
-c_unsafe_for_reeval (exp)
+c_common_unsafe_for_reeval (exp)
      tree exp;
 {
   /* Statement expressions may not be reevaluated, likewise compound

@@ -481,12 +481,6 @@ gnat_init_decl_processing ()
 {
   lineno = 0;
 
-  /* incomplete_decl_finalize_hook is defined in toplev.c. It needs to be set
-     by each front end to the appropriate routine that handles incomplete 
-     VAR_DECL nodes. This routine will be invoked by compile_file when a  
-     VAR_DECL node of DECL_SIZE zero is encountered.  */
-  incomplete_decl_finalize_hook = finish_incomplete_decl;
-
   /* Make the binding_level structure for global names.  */
   current_function_decl = 0;
   current_binding_level = 0;
@@ -709,7 +703,7 @@ incomplete_type_error (dont_care_1, dont_care_2)
    init_decl_processing.  */
 
 void
-finish_incomplete_decl (dont_care)
+gnat_finish_incomplete_decl (dont_care)
      tree dont_care ATTRIBUTE_UNUSED;
 {
   gigi_abort (405);

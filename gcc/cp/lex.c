@@ -648,9 +648,6 @@ cxx_init (filename)
   init_spew ();
   init_tree ();
   init_cp_semantics ();
-
-  lang_unsafe_for_reeval = c_unsafe_for_reeval;
-
   init_operators ();
   init_method ();
   init_error ();
