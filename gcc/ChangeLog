@@ -1,3 +1,8 @@
+2004-06-30  Richard Sandiford  <rsandifo@redhat.com>
+	    Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/3000.md: Improve description.
+
 2004-06-30  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/cirrus.md (cirrus_arm_movdi, cirrus_movsf_hard_insn,
@@ -146,7 +151,7 @@
 
 2004-06-29  Per Bothner  <per@bothner.com>
 
-	* config/i386/winnt.c (i386_pe_encode_section_info):  Smash rtlname's 
+	* config/i386/winnt.c (i386_pe_encode_section_info):  Smash rtlname's
 	XSTR in place, so we don't lose SYMBOL_REF_DECL info.
 
 2004-06-29  Zack Weinberg  <zack@codesourcery.com>
