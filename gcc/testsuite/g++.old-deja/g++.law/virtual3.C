@@ -29,7 +29,7 @@ BugStream& BugStream::eval()
    cerr << s << endl;
    
    // reset the stream for the next command    
-   clear(0);
+   clear(ios::goodbit);
    rdbuf()->freeze(0);
    seekp(0);
    

@@ -1,3 +1,16 @@
+2000-10-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.old-deja/g++.brendan/label2.C: Tweak to work with V3.
+	* g++.old-deja/g++.law/builtin1.C: Likewise.
+	* g++.old-deja/g++.law/ctors10.C: Likewise.
+	* g++.old-deja/g++.law/virtual3.C: Likewise.
+	* g++.old-deja/g++.mike/p658.C: Likewise.
+	* g++.old-deja/g++.other/sibcall1.C: Likewise.
+	* g++.old-deja/g++.other/vaarg2.C: Likewise.
+	* g++.old-deja/g++.robertl/eb124.C: Likewise.
+	* g++.old-deja/g++.robertl/eb44.C: Likewise.
+	* g++.old-deja/g++.robertl/eb77.C: Likewise.
+
 2000-10-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.c-torture/compile/20001024-1.c: New test.

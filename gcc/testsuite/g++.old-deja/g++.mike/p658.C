@@ -1,8 +1,7 @@
 // prms-id: 658
 
 #include <ostream.h>
-
-extern "C" void abort();
+#include <stdlib.h>
 
 /* We may not find the libg++ <bool.h>.  */
 #ifndef FALSE

@@ -12,8 +12,8 @@ main(int, char* [])
   int nLine = 0;
 
   while( true ) {
-    char* line = 0;
-    s.gets(&line);
+    char line[100];
+    s.get(line, 100);
 
     if( ! line ) {
       break;
