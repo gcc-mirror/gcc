@@ -1,3 +1,27 @@
+2003-11-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md: (stm_h8300s_2): Change the name to
+	stm_h8300s_2_advanced.
+	(stm_h8300s_2_normal): New.
+	(stm_h8300s_2): Likewise.
+	(stm_h8300s_3): Change the name to stm_h8300s_3_advanced.
+	(stm_h8300s_3_normal): New.
+	(stm_h8300s_3): Likewise.
+	(stm_h8300s_4): Change the name to stm_h8300s_4_advanced.
+	(stm_h8300s_4_normal): New.
+	(stm_h8300s_4): Likewise.
+	(ldm_h8300s_2): Change the name to ldm_h8300s_2_advanced.
+	(ldm_h8300s_2_normal): New.
+	(ldm_h8300s_2): Likewise.
+	(ldm_h8300s_3): Change the name to ldm_h8300s_3_advanced.
+	(ldm_h8300s_3_normal): New.
+	(ldm_h8300s_3): Likewise.
+	(ldm_h8300s_4): Change the name to ldm_h8300s_4_advanced.
+	(ldm_h8300s_4_normal): New.
+	(ldm_h8300s_4): Likewise.
+	(two peephole2's): Enable only with !TARGET_NORMAL_MODE.
+	(two peephole2's): New.
+
 2003-11-24  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* genattrtab.c (simplify_cond): Update indices correctly.
