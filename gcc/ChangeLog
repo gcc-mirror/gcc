@@ -1,3 +1,32 @@
+Tue Jul  9 22:37:44 2002  Stephen Clarke <stephen.clarke@superh.com>
+                          J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (sh_adjust_cost): Special handling of SHMEDIA code.
+	* sh.md (attribute issues): Replace with:
+	(attribute pipe_model).  All users changed.
+	(attribute type): Change pt / ptabs to pt_media / ptabs_media.
+	All users changed.
+	(function units sh5issue, sh5fds): New.
+	(attribute is_mac_media): New.
+	(adddi3_media, subdi3_media, divsi3_i1_media, anddi3): Add type.
+	(andcdi3, iordi3, xordi3, ashldi3_media, lshrdi3_media): Likewise.
+	(ashrdi3_media, negdi_media, extendsidi2, movqi_media): Likewise.
+	(movhi_media, shori_media, movv2sf_i, jump_media): Likewise.
+	(call_media, call_value_media, sibcall_media): Likewise.
+	(casesi_jump_media, casesi_shift_media, casesi_load_media): Likewise.
+	(return_media_i, addsf3_media, subsf3_media, mulsf3_media): Likewise.
+	(mac_media, divsf3_media, floatdisf2, floatsisf2_media): Likewise.
+	(fix_truncsfdi2, fix_truncsfsi2_media, cmpeqsf_media): Likewise.
+	(cmpgtsf_media, cmpgesf_media, cmpunsf_media, negsf2_media): Likewise.
+	(sqrtsf2_media, abssf2_media, adddf3_media, subdf3_media): Likewise.
+	(muldf3_media, divdf3_media, floatdidf2, floatsidf2_media): Likewise.
+	(fix_truncdfdi2, fix_truncdfsi2_media, cmpeqdf_media): Likewise.
+	(cmpgtdf_media, cmpgedf_media,cmpundf_media, negdf2_media): Likewise.
+	(sqrtdf2_media, absdf2_media, extendsfdf2_media): Likewise.
+	(truncdfsf2_media): Likewise.
+	(movsi_media, movsi_media_nofpu, movdi_media): Use new types.
+	(movdi_media_nofpui, movdf_media, movdf_media_nofpu): Likewise.
+
 Tue Jul  9 21:39:50 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (PREDICATE_CODES): Add general_extend_operand and inqhi_operand.

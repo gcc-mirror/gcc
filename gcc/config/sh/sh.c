@@ -6985,7 +6985,18 @@ sh_adjust_cost (insn, link, dep_insn, cost)
 {
   rtx reg;
 
-  if (GET_CODE(insn) == CALL_INSN)
+  if (TARGET_SHMEDIA)
+    {
+      /* On SHmedia, if the dependence is an anti-dependence or
+         output-dependence, there is no cost. */              
+      if (REG_NOTE_KIND (link) != 0)
+        cost = 0;
+
+      if (get_attr_is_mac_media (insn)
+          && get_attr_is_mac_media (dep_insn))
+        cost = 1;
+    }
+  else if (GET_CODE(insn) == CALL_INSN)
     {
       /* The only input for a call that is timing-critical is the
 	 function's address.  */
