@@ -1113,7 +1113,7 @@ insert_regs (x, classp, modified)
 	 will do the right thing.  */
       if (reg_in_table[regno] >= 0
 	  && reg_tick[regno] == reg_in_table[regno] + 1)
-	reg_tick++;
+	reg_tick[regno]++;
       mention_regs (x);
       return 1;
     }
