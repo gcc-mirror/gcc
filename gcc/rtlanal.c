@@ -1557,7 +1557,7 @@ refers_to_regno_p (regno, endregno, x, loc)
       else if (fmt[i] == 'E')
 	{
 	  int j;
-	  for (j = XVECLEN (x, i) - 1; j >=0; j--)
+	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	    if (loc != &XVECEXP (x, i, j)
 		&& refers_to_regno_p (regno, endregno, XVECEXP (x, i, j), loc))
 	      return 1;

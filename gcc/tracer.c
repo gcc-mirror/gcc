@@ -347,7 +347,7 @@ layout_superblocks ()
 	  RBI (best->dest)->visited = 1;
 	}
       else
-	for (; bb != EXIT_BLOCK_PTR; bb=bb->next_bb)
+	for (; bb != EXIT_BLOCK_PTR; bb = bb->next_bb)
 	  {
 	    if (!RBI (bb)->visited)
 	      {

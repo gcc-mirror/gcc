@@ -342,7 +342,7 @@ cgraph_expand_functions ()
 	      }
 	  }
       }
-  for (i = order_pos - 1; i >=0; i--)
+  for (i = order_pos - 1; i >= 0; i--)
     {
       node = order[i];
       if (node->output)

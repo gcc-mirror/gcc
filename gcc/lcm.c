@@ -129,7 +129,7 @@ compute_antinout_edge (antloc, transp, antin, antout)
      optimistic initialization of ANTIN above.  */
   FOR_EACH_BB_REVERSE (bb)
     {
-      *qin++ =bb;
+      *qin++ = bb;
       bb->aux = bb;
     }
 

@@ -323,7 +323,7 @@ print_path (path)
   /* We first write out the operations (XEXP or XVECEXP) in reverse
      order, then write "insn", then the indices in forward order.  */
 
-  for (i = len - 1; i >=0 ; i--)
+  for (i = len - 1; i >= 0 ; i--)
     {
       if (ISLOWER(path[i]))
 	printf ("XVECEXP (");

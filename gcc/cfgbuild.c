@@ -811,7 +811,7 @@ find_many_sub_basic_blocks (blocks)
 	{
 	  bb->count = 0;
 	  bb->frequency = 0;
-	  for (e = bb->pred; e; e=e->pred_next)
+	  for (e = bb->pred; e; e = e->pred_next)
 	    {
 	      bb->count += e->count;
 	      bb->frequency += EDGE_FREQUENCY (e);
@@ -852,7 +852,7 @@ find_sub_basic_blocks (bb)
 	{
 	  b->count = 0;
 	  b->frequency = 0;
-	  for (e = b->pred; e; e=e->pred_next)
+	  for (e = b->pred; e; e = e->pred_next)
 	    {
 	      b->count += e->count;
 	      b->frequency += EDGE_FREQUENCY (e);

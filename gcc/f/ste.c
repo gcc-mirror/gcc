@@ -2725,8 +2725,8 @@ ffeste_R810 (ffestw block, unsigned long casenum)
 	  }
 	else
 	  pushok = pushcase (texprlow, convert, tlabel, &duplicate);
-	assert((pushok !=2) || (pushok !=0));
-	if (pushok==2)
+	assert((pushok != 2) || (pushok != 0));
+	if (pushok == 2)
 	  {
 	    ffebad_start_msg ("SELECT (at %0) has duplicate cases -- check integer overflow of CASE(s)",
 	      FFEBAD_severityFATAL);
