@@ -1,5 +1,15 @@
 2004-04-11  Aldy Hernandez  <aldyh@redhat.com>
 
+	* config/rs6000/rs6000.md: Document why a pattern is not
+	available.
+
+	* config/rs6000/rs6000.c (rs6000_emit_cmove): Disable comparisons
+	of floats on the E500.
+	(branch_positive_comparison_operator): Do not allow NE even on the
+	E500.
+
+2004-04-11  Aldy Hernandez  <aldyh@redhat.com>
+
 	* config/rs6000/rs6000.c (rs6000_assemble_integer): Change
 	in_text_unlikely_section to in_unlikely_text_section.
 
