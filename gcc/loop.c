@@ -490,6 +490,8 @@ scan_loop (loop_start, end, nregs)
      if it was used exactly once; contains const0_rtx if it was used more
      than once.  */
   rtx *reg_single_usage = 0;
+  /* Nonzero if we are scanning instructions in a sub-loop.  */
+  int loop_depth = 0;
 
   n_times_set = (short *) alloca (nregs * sizeof (short));
   n_times_used = (short *) alloca (nregs * sizeof (short));
@@ -921,12 +923,18 @@ scan_loop (loop_start, end, nregs)
 		     && NEXT_INSN (NEXT_INSN (p)) == end
 		     && simplejump_p (p)))
 	maybe_never = 1;
-      /* At the virtual top of a converted loop, insns are again known to
-	 be executed: logically, the loop begins here even though the exit
-	 code has been duplicated.  */
-      else if (GET_CODE (p) == NOTE
-	       && NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_VTOP)
-	maybe_never = call_passed = 0;
+      else if (GET_CODE (p) == NOTE)
+	{
+	  /* At the virtual top of a converted loop, insns are again known to
+	     be executed: logically, the loop begins here even though the exit
+	     code has been duplicated.  */
+	  if (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_VTOP && loop_depth == 0)
+	    maybe_never = call_passed = 0;
+	  else if (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG)
+	    loop_depth++;
+	  else if (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)
+	    loop_depth--;
+	}
     }
 
   /* If one movable subsumes another, ignore that other.  */
@@ -3157,6 +3165,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
   int call_seen;
   rtx test;
   rtx end_insert_before;
+  int loop_depth = 0;
 
   reg_iv_type = (enum iv_mode *) alloca (max_reg_before_loop
 					 * sizeof (enum iv_mode *));
@@ -3288,13 +3297,18 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		    || (NEXT_INSN (p) == loop_end && condjump_p (p)))))
 	not_every_iteration = 1;
 
-      /* At the virtual top of a converted loop, insns are again known to
-	 be executed each iteration: logically, the loop begins here
-	 even though the exit code has been duplicated.  */
-
-      else if (GET_CODE (p) == NOTE
-	       && NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_VTOP)
-	not_every_iteration = 0;
+      else if (GET_CODE (p) == NOTE)
+	{
+	  /* At the virtual top of a converted loop, insns are again known to
+	     be executed each iteration: logically, the loop begins here
+	     even though the exit code has been duplicated.  */
+	  if (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_VTOP && loop_depth == 0)
+	    not_every_iteration = 0;
+	  else if (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG)
+	    loop_depth++;
+	  else if (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)
+	    loop_depth--;
+	}
 
       /* Unlike in the code motion pass where MAYBE_NEVER indicates that
 	 an insn may never be executed, NOT_EVERY_ITERATION indicates whether
@@ -3444,6 +3458,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
      biv and a constant (or invariant), and it is not a biv.  */
 
   not_every_iteration = 0;
+  loop_depth = 0;
   p = scan_start;
   while (1)
     {
@@ -3560,13 +3575,18 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		    || (NEXT_INSN (p) == loop_end && condjump_p (p)))))
 	not_every_iteration = 1;
 
-      /* At the virtual top of a converted loop, insns are again known to
-	 be executed each iteration: logically, the loop begins here
-	 even though the exit code has been duplicated.  */
-
-      else if (GET_CODE (p) == NOTE
-	       && NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_VTOP)
-	not_every_iteration = 0;
+      else if (GET_CODE (p) == NOTE)
+	{
+	  /* At the virtual top of a converted loop, insns are again known to
+	     be executed each iteration: logically, the loop begins here
+	     even though the exit code has been duplicated.  */
+	  if (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_VTOP && loop_depth == 0)
+	    not_every_iteration = 0;
+	  else if (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG)
+	    loop_depth++;
+	  else if (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)
+	    loop_depth--;
+	}
 
       /* Unlike in the code motion pass where MAYBE_NEVER indicates that
 	 an insn may never be executed, NOT_EVERY_ITERATION indicates whether
