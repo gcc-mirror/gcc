@@ -1,3 +1,8 @@
+2003-01-30  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.c (arm_output_epilogue): Update stack pointer
+	when popping saved IP register off the stack.
+
 2003-01-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/rs6000/aix43.h: Fix comment typos.
