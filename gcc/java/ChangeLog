@@ -1,3 +1,8 @@
+2000-04-26  Tom Tromey  <tromey@cygnus.com>
+
+	* zextract.c (find_zip_file_start): New function.
+	(read_zip_archive): Use it.
+
 Mon Apr 24 14:59:36 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (end_class_declaration): Reset the interface number
