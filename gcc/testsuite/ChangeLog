@@ -1,3 +1,7 @@
+2001-11-05  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/defined.c: Update.
+
 2001-11-04  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* gcc.c-torture/execute/anon-1.c: New test.
