@@ -184,8 +184,6 @@ static rtx free_insn;
 #define last_filename (current_function->emit->x_last_filename)
 #define first_label_num (current_function->emit->x_first_label_num)
 
-extern int rtx_equal_function_value_matters;
-
 static rtx make_jump_insn_raw		PROTO((rtx));
 static rtx make_call_insn_raw		PROTO((rtx));
 static rtx find_line_note		PROTO((rtx));

@@ -120,12 +120,6 @@ static int virtuals_instantiated;
 void (*save_machine_status) PROTO((struct function *));
 void (*restore_machine_status) PROTO((struct function *));
 
-/* Nonzero if we need to distinguish between the return value of this function
-   and the return value of a function called by this function.  This helps
-   integrate.c  */
-
-extern int rtx_equal_function_value_matters;
-
 /* The FUNCTION_DECL for an inline function currently being expanded.  */
 tree inline_function_decl;
 

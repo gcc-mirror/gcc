@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-attr.h"
 #include "flags.h"
 #include "expr.h"
+#include "function.h"
 #include "recog.h"
 
 /* Save the operands last given to a compare for use when we

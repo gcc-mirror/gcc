@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include <stdio.h>
 #include "rtl.h"
+#include "tree.h"
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "real.h"
@@ -35,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "recog.h"
 #include "expr.h"
-#include "tree.h"
+#include "function.h"
 #include "obstack.h"
 
 /* Forward declarations.  */

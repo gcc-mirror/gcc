@@ -1,3 +1,25 @@
+Tue Aug 24 12:35:20 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* tree.h (current_function_calls_setjmp,
+ 	current_function_calls_longjmp): Delete declarations.
+	* dsp16xx.c: Include "function.h".
+	* elxsi.c: Likewise.
+	* gmicro.c: Likewise.
+	* h8300.c: Likewise.
+	* i370.c: Likewise.
+	* m32r.c: Likewise.
+	* mn10200.c: Likewise.
+	* mn10300.c: Likewise.
+	* ns32k.c: Likewise.
+	* spur.c: Likewise.
+	* v850.c: Likewise.
+
+	* rtl.h (rtx_equal_function_value_matters): Declare.
+	* toplev.c (rtx_equal_function_value_matters): Don't declare.
+	* cse.c: Likewise.
+	* function.c: Likewise.
+	* emit-rtl.c: Likewise.
+
 Tue Aug 24 02:47:44 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* expr.c (convert_move): Fix arguments to TRULY_NOOP_TRUNCATION
