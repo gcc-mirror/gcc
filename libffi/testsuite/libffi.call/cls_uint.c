@@ -36,6 +36,8 @@ int main (void)
 
   res = (*((cls_ret_uint)pcl))(2147483647);
   /* { dg-output "2147483647: 2147483647" } */
-  CHECK(res == 2147483647);
+  printf("res: %d\n",res);
+  /* { dg-output "\nres: 2147483647" } */
+
   exit(0);
 }

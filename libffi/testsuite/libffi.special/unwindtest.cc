@@ -49,18 +49,20 @@ typedef int (*closure_test_type1)(float, float, float, float, signed short,
 int main (void)
 {
   ffi_cif cif;
-  ffi_closure cl;
+  static ffi_closure cl;
+  ffi_closure *pcl = &cl;
   ffi_type * cl_arg_types[17];
+  int res;
   {
     cl_arg_types[1] = NULL;
 
     CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 0,
 		       &ffi_type_void, cl_arg_types) == FFI_OK);
-    CHECK(ffi_prep_closure(&cl, &cif, closure_test_fn, NULL) == FFI_OK);
+    CHECK(ffi_prep_closure(pcl, &cif, closure_test_fn, NULL) == FFI_OK);
 
     try
       {
-	(*((closure_test_type)(&cl)))();
+	(*((closure_test_type)(pcl)))();
       } catch (int exception_code)
       {
 	CHECK(exception_code == 9);
@@ -94,11 +96,11 @@ int main (void)
       CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 16,
 			 &ffi_type_sint, cl_arg_types) == FFI_OK);
 
-      CHECK(ffi_prep_closure(&cl, &cif, closure_test_fn1,
+      CHECK(ffi_prep_closure(pcl, &cif, closure_test_fn1,
 			     (void *) 3 /* userdata */)  == FFI_OK);
       try
 	{
-	  (*((closure_test_type1)(&cl)))
+	  (*((closure_test_type1)pcl))
 	    (1.1, 2.2, 3.3, 4.4, 127, 5.5, 6.6, 8, 9, 10, 11, 12.0, 13,
 	     19, 21, 1);
 	  /* { dg-output "\n1 2 3 4 127 5 6 8 9 10 11 12 13 19 21 1 3: 255" } */

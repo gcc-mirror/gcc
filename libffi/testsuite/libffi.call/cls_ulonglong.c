@@ -34,9 +34,13 @@ int main (void)
   CHECK(ffi_prep_closure(pcl, &cif, cls_ret_ulonglong_fn, NULL)  == FFI_OK);
   res = (*((cls_ret_ulonglong)pcl))(214LL);
   /* { dg-output "214: 214" } */
-  CHECK(res == 214LL);
+  printf("res: %lld\n", res);
+  /* { dg-output "\nres: 214" } */
+
   res = (*((cls_ret_ulonglong)pcl))(9223372035854775808LL);
   /* { dg-output "\n9223372035854775808: 9223372035854775808" } */
-  CHECK(res == 9223372035854775808LL);
+  printf("res: %lld\n", res);
+  /* { dg-output "\nres: 9223372035854775808" } */
+
   exit(0);
 }

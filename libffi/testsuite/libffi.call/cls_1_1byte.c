@@ -72,13 +72,15 @@ int main (void)
 
   ffi_call(&cif, FFI_FN(cls_struct_1_1byte_fn), &res_dbl, args_dbl);
   /* { dg-output "12 178: 190" } */
-  CHECK( res_dbl.a == (g_dbl.a + f_dbl.a));
+  printf("res: %d\n", res_dbl.a);
+  /* { dg-output "\nres: 190" } */
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_struct_1_1byte_gn, NULL) == FFI_OK);
 
   res_dbl = ((cls_struct_1_1byte(*)(cls_struct_1_1byte, cls_struct_1_1byte))(pcl))(g_dbl, f_dbl);
   /* { dg-output "\n12 178: 190" } */
-  CHECK( res_dbl.a == (g_dbl.a + f_dbl.a));
+  printf("res: %d\n", res_dbl.a);
+  /* { dg-output "\nres: 190" } */
 
   exit(0);
 }

@@ -75,15 +75,15 @@ int main (void)
 
   ffi_call(&cif, FFI_FN(cls_struct_3byte_fn1), &res_dbl, args_dbl);
   /* { dg-output "15 125 9 19: 24 144" } */
-  CHECK( res_dbl.a == (g_dbl.a + f_dbl.a));
-  CHECK( res_dbl.b == (g_dbl.b + f_dbl.b));
+  printf("res: %d %d\n", res_dbl.a, res_dbl.b);
+  /* { dg-output "\nres: 24 144" } */
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_struct_3byte_gn1, NULL) == FFI_OK);
 
   res_dbl = ((cls_struct_3byte_1(*)(cls_struct_3byte_1, cls_struct_3byte_1))(pcl))(g_dbl, f_dbl);
   /* { dg-output "\n15 125 9 19: 24 144" } */
-  CHECK( res_dbl.a == (g_dbl.a + f_dbl.a));
-  CHECK( res_dbl.b == (g_dbl.b + f_dbl.b));
+  printf("res: %d %d\n", res_dbl.a, res_dbl.b);
+  /* { dg-output "\nres: 24 144" } */
 
   exit(0);
 }

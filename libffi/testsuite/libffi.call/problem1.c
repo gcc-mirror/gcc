@@ -75,19 +75,15 @@ int main(void)
     args[2] = NULL;
     ffi_call(&cif, FFI_FN(callee), &res, args);
     /* { dg-output "1 2 3 1 2 3: 2 4 6" } */
-
-    CHECK(res.a == 2.0);
-    CHECK(res.b == 4.0);
-    CHECK(res.c == 6.0);
+    printf("res: %g %g %g\n", res.a, res.b, res.c);
+    /* { dg-output "\nres: 2 4 6" } */
 
     CHECK(ffi_prep_closure(pcl, &cif, stub, NULL) == FFI_OK);
 
     res = ((my_ffi_struct(*)(struct my_ffi_struct, struct my_ffi_struct))(pcl))(g, f);
     /* { dg-output "\n1 2 3 1 2 3: 2 4 6" } */
-
-    CHECK(res.a == 2.0);
-    CHECK(res.b == 4.0);
-    CHECK(res.c == 6.0);
+    printf("res: %g %g %g\n", res.a, res.b, res.c);
+    /* { dg-output "\nres: 2 4 6" } */
 
     exit(0);;
 }

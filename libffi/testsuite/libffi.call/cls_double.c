@@ -36,6 +36,8 @@ int main (void)
 
   res = (*((cls_ret_double)pcl))(21474.789);
   /* { dg-output "21474.789000: 21474.789000" } */
-  CHECK(res == 21474.789000);
+  printf("res: %.6f\n", res);
+  /* { dg-output "\nres: 21474.789000" } */
+
   exit(0);
 }

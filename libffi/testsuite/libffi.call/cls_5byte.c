@@ -79,17 +79,15 @@ int main (void)
 
   ffi_call(&cif, FFI_FN(cls_struct_5byte_fn), &res_dbl, args_dbl);
   /* { dg-output "127 120 1 12 128 9: 139 248 10" } */
-  CHECK( res_dbl.a == (g_dbl.a + f_dbl.a));
-  CHECK( res_dbl.b == (g_dbl.b + f_dbl.b));
-  CHECK( res_dbl.c == (g_dbl.c + f_dbl.c));
+  printf("res: %d %d %d\n", res_dbl.a, res_dbl.b, res_dbl.c);
+  /* { dg-output "\nres: 139 248 10" } */
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_struct_5byte_gn, NULL) == FFI_OK);
 
   res_dbl = ((cls_struct_5byte(*)(cls_struct_5byte, cls_struct_5byte))(pcl))(g_dbl, f_dbl);
   /* { dg-output "\n127 120 1 12 128 9: 139 248 10" } */
-  CHECK( res_dbl.a == (g_dbl.a + f_dbl.a));
-  CHECK( res_dbl.b == (g_dbl.b + f_dbl.b));
-  CHECK( res_dbl.c == (g_dbl.c + f_dbl.c));
+  printf("res: %d %d %d\n", res_dbl.a, res_dbl.b, res_dbl.c);
+  /* { dg-output "\nres: 139 248 10" } */
 
   exit(0);
 }

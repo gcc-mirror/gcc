@@ -81,19 +81,15 @@ int main (void)
 
   ffi_call(&cif, FFI_FN(cls_struct_18byte_fn), &res_dbl, args_dbl);
   /* { dg-output "1 127 126 3 4 125 124 5: 5 252 250 8" } */
-  CHECK( res_dbl.a == (g_dbl.a + f_dbl.a));
-  CHECK( res_dbl.b == (g_dbl.b + f_dbl.b));
-  CHECK( res_dbl.c == (g_dbl.c + f_dbl.c));
-  CHECK( res_dbl.d == (g_dbl.d + f_dbl.d));
+  printf("res: %g %d %d %g\n", res_dbl.a, res_dbl.b, res_dbl.c, res_dbl.d);
+  /* { dg-output "\nres: 5 252 250 8" } */
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_struct_18byte_gn, NULL) == FFI_OK);
 
   res_dbl = ((cls_struct_18byte(*)(cls_struct_18byte, cls_struct_18byte))(pcl))(g_dbl, f_dbl);
   /* { dg-output "\n1 127 126 3 4 125 124 5: 5 252 250 8" } */
-  CHECK( res_dbl.a == (g_dbl.a + f_dbl.a));
-  CHECK( res_dbl.b == (g_dbl.b + f_dbl.b));
-  CHECK( res_dbl.c == (g_dbl.c + f_dbl.c));
-  CHECK( res_dbl.d == (g_dbl.d + f_dbl.d));
+  printf("res: %g %d %d %g\n", res_dbl.a, res_dbl.b, res_dbl.c, res_dbl.d);
+  /* { dg-output "\nres: 5 252 250 8" } */
 
   exit(0);
 }
