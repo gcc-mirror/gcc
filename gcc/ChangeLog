@@ -1,3 +1,9 @@
+2003-01-20  Richard Henderson  <rth@redhat.com>
+
+	PR opt/8848
+	* ifcvt.c (noce_process_if_block): Correct arguments to
+	modified_between_p for no-else-block case.
+
 2003-01-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (const_costs): Remove a warning.
