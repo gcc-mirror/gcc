@@ -94,6 +94,7 @@ struct processor_costs
   const int mghi;     /* cost of an MGHI instruction.  */
   const int mh;       /* cost of an MH instruction.  */
   const int mhi;      /* cost of an MHI instruction.  */
+  const int ml;       /* cost of an ML instruction.  */
   const int mr;       /* cost of an MR instruction.  */
   const int ms;       /* cost of an MS instruction.  */
   const int msg;      /* cost of an MSG instruction.  */
@@ -102,6 +103,8 @@ struct processor_costs
   const int msgr;     /* cost of an MSGR instruction.  */
   const int msr;      /* cost of an MSR instruction.  */
   const int mult_df;  /* cost of multiplication in DFmode.  */
+  const int sqdbr;    /* cost of square root in DFmode.  */
+  const int sqebr;    /* cost of square root in SFmode.  */
 };
 
 const struct processor_costs *s390_cost;
@@ -113,6 +116,7 @@ struct processor_costs z900_cost =
   COSTS_N_INSNS (10),    /* MGHI  */
   COSTS_N_INSNS (5),     /* MH    */
   COSTS_N_INSNS (4),     /* MHI   */
+  COSTS_N_INSNS (5),     /* ML    */
   COSTS_N_INSNS (5),     /* MR    */
   COSTS_N_INSNS (4),     /* MS    */
   COSTS_N_INSNS (15),    /* MSG   */
@@ -121,6 +125,8 @@ struct processor_costs z900_cost =
   COSTS_N_INSNS (10),    /* MSGR  */
   COSTS_N_INSNS (4),     /* MSR   */
   COSTS_N_INSNS (7),     /* multiplication in DFmode */
+  COSTS_N_INSNS (44),    /* SQDBR */
+  COSTS_N_INSNS (35),    /* SQEBR */
 };
 
 static const
@@ -130,6 +136,7 @@ struct processor_costs z990_cost =
   COSTS_N_INSNS (2),     /* MGHI  */
   COSTS_N_INSNS (2),     /* MH    */
   COSTS_N_INSNS (2),     /* MHI   */
+  COSTS_N_INSNS (4),     /* ML    */
   COSTS_N_INSNS (4),     /* MR    */
   COSTS_N_INSNS (5),     /* MS    */
   COSTS_N_INSNS (6),     /* MSG   */
@@ -138,6 +145,8 @@ struct processor_costs z990_cost =
   COSTS_N_INSNS (4),     /* MSGR  */
   COSTS_N_INSNS (4),     /* MSR   */
   COSTS_N_INSNS (1),     /* multiplication in DFmode */
+  COSTS_N_INSNS (66),    /* SQDBR */
+  COSTS_N_INSNS (38),    /* SQEBR */
 };
 
 
@@ -1882,13 +1891,28 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
     case LSHIFTRT:
     case ROTATE:
     case ROTATERT:
-    case PLUS:
     case AND:
     case IOR:
     case XOR:
-    case MINUS:
     case NEG:
     case NOT:
+      *total = COSTS_N_INSNS (1);
+      return false;
+
+    case PLUS:
+    case MINUS:
+      /* Check for multiply and add.  */
+      if (GET_MODE (x) == DFmode
+	  && GET_CODE (XEXP (x, 0)) == MULT
+	  && TARGET_HARD_FLOAT && TARGET_IEEE_FLOAT && TARGET_FUSED_MADD)
+	{
+	  /* This is the multiply and add case.  */
+	  *total = s390_cost->mult_df 
+	    + rtx_cost (XEXP (XEXP (x, 0), 0), MULT) 
+	    + rtx_cost (XEXP (XEXP (x, 0), 1), MULT) 
+	    + rtx_cost (XEXP (x, 1), code);
+	  return true;  /* Do not do an additional recursive descent.  */
+	}
       *total = COSTS_N_INSNS (1);
       return false;
 
@@ -1896,7 +1920,7 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
       switch (GET_MODE (x))
 	{
 	case SImode:
-	  {	  
+	  {
 	    rtx left = XEXP (x, 0);
 	    rtx right = XEXP (x, 1);
 	    if (GET_CODE (right) == CONST_INT
@@ -1928,6 +1952,11 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
 		    && GET_CODE (right) == SIGN_EXTEND)
 		  /* mulsidi case: mr, m */
 		  *total = s390_cost->m;
+		else if (GET_CODE (left) == ZERO_EXTEND
+			 && GET_CODE (right) == ZERO_EXTEND
+			 && TARGET_CPU_ZARCH)
+		  /* umulsidi case: ml, mlr */
+		  *total = s390_cost->ml;
 		else
 		  /* Complex calculation is required.  */
 		  *total = COSTS_N_INSNS (40);
@@ -1950,7 +1979,15 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
       *total = COSTS_N_INSNS (33);
       return false;
 
+    case SQRT:
+      if (GET_MODE (x) == SFmode)
+	*total = s390_cost->sqebr;
+      else /* DFmode */
+	*total = s390_cost->sqdbr;
+      return false;
+
     case SIGN_EXTEND:
+    case ZERO_EXTEND:
       if (outer_code == MULT)
 	*total = 0;
       return false;
