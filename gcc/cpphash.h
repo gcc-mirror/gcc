@@ -166,10 +166,10 @@ struct tokenrun
 };
 
 /* Accessor macros for struct cpp_context.  */
-#define FIRST(c) (c->u.iso.first)
-#define LAST(c) (c->u.iso.last)
-#define CUR(c) (c->u.trad.cur)
-#define RLIMIT(c) (c->u.trad.rlimit)
+#define FIRST(c) ((c)->u.iso.first)
+#define LAST(c) ((c)->u.iso.last)
+#define CUR(c) ((c)->u.trad.cur)
+#define RLIMIT(c) ((c)->u.trad.rlimit)
 
 typedef struct cpp_context cpp_context;
 struct cpp_context
