@@ -551,9 +551,10 @@ assign_stack_local_1 (mode, size, align, function)
     {
       tree type;
 
-      alignment = GET_MODE_ALIGNMENT (mode);
       if (mode == BLKmode)
 	alignment = BIGGEST_ALIGNMENT;
+      else
+        alignment = GET_MODE_ALIGNMENT (mode);
 
       /* Allow the target to (possibly) increase the alignment of this
 	 stack slot.  */
@@ -676,9 +677,10 @@ assign_stack_temp_for_type (mode, size, keep, type)
   else 
     alias_set = 0;
 
-  align = GET_MODE_ALIGNMENT (mode);
   if (mode == BLKmode)
     align = BIGGEST_ALIGNMENT;
+  else
+    align = GET_MODE_ALIGNMENT (mode);
 
   if (! type)
     type = type_for_mode (mode, 0);
