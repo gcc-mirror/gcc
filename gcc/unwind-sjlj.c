@@ -202,6 +202,19 @@ _Unwind_GetRegionStart (struct _Unwind_Context *context)
   return 0;
 }
 
+#ifndef __ia64__
+_Unwind_Ptr
+_Unwind_GetDataRelBase (struct _Unwind_Context *context)
+{
+  return 0;
+}
+
+_Unwind_Ptr
+_Unwind_GetTextRelBase (struct _Unwind_Context *context)
+{
+  return 0;
+}
+#endif
 
 static inline _Unwind_Reason_Code
 uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
