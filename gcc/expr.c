@@ -5595,7 +5595,8 @@ expand_expr (exp, target, tmode, modifier)
       && TREE_CODE (exp) != BIT_FIELD_REF
       && TREE_CODE (exp) != INDIRECT_REF
       && TREE_CODE (exp) != CALL_EXPR
-      && TREE_CODE (exp) != VAR_DECL)
+      && TREE_CODE (exp) != VAR_DECL
+      && TREE_CODE (exp) != RTL_EXPR)
     {
       enum machine_mode mode = GET_MODE (target);
 
@@ -5613,6 +5614,7 @@ expand_expr (exp, target, tmode, modifier)
       && TREE_CODE (exp) != INDIRECT_REF
       && TREE_CODE (exp) != VAR_DECL
       && TREE_CODE (exp) != CALL_EXPR
+      && TREE_CODE (exp) != RTL_EXPR
       && GET_MODE_CLASS (tmode) == MODE_INT
       && tmode > MAX_INTEGER_COMPUTATION_MODE)
     fatal ("unsupported wide integer operation");
