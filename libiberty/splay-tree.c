@@ -235,7 +235,7 @@ splay_tree_new (compare_fn, delete_key_fn, delete_value_fn)
      splay_tree_delete_key_fn delete_key_fn;
      splay_tree_delete_value_fn delete_value_fn;
 {
-  splay_tree sp = (splay_tree) xmalloc (sizeof (struct splay_tree));
+  splay_tree sp = (splay_tree) xmalloc (sizeof (struct splay_tree_s));
   sp->root = 0;
   sp->comp = compare_fn;
   sp->delete_key = delete_key_fn;
@@ -284,7 +284,7 @@ splay_tree_insert (sp, key, value)
       /* Create a new node, and insert it at the root.  */
       splay_tree_node node;
       
-      node = (splay_tree_node) xmalloc (sizeof (struct splay_tree_node));
+      node = (splay_tree_node) xmalloc (sizeof (struct splay_tree_node_s));
       node->key = key;
       node->value = value;
       
