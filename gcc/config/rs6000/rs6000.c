@@ -498,7 +498,7 @@ struct gcc_target targetm = TARGET_INITIALIZER;
    type and sometimes adjust other TARGET_ options.  */
 
 void
-rs6000_override_options (const char *default_cpu);
+rs6000_override_options (const char *default_cpu)
 {
   size_t i, j;
   struct rs6000_cpu_select *ptr;
@@ -3977,7 +3977,7 @@ function_arg_partial_nregs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 int
 function_arg_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED, 
 				enum machine_mode mode ATTRIBUTE_UNUSED, 
-'				tree type, int named ATTRIBUTE_UNUSED)
+				tree type, int named ATTRIBUTE_UNUSED)
 {
   if (DEFAULT_ABI == ABI_V4
       && ((type && AGGREGATE_TYPE_P (type))
