@@ -1578,6 +1578,7 @@ delete_unreachable_blocks ()
       /* A loop because chains of blocks might be combineable.  */
       while ((s = b->succ) != NULL
 	     && s->succ_next == NULL
+	     && (s->flags & EDGE_EH) == 0
 	     && (c = s->dest) != EXIT_BLOCK_PTR
 	     && c->pred->pred_next == NULL
 	     && merge_blocks (s, b, c))
