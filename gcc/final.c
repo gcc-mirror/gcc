@@ -527,13 +527,15 @@ shorten_branches (first)
       else if (GET_CODE (body) == SEQUENCE)
 	{
 	  int i;
-
+	  int const_delay_slots;
+#ifdef DELAY_SLOTS
+	  const_delay_slots = const_num_delay_slots (XVECEXP (body, 0, 1));
+#else
+	  const_delay_slots = 0;
+#endif
 	  /* Inside a delay slot sequence, we do not do any branch shortening
-	     (on the only machine known to have both variable-length branches
-	     and delay slots, the ROMP, branch-with-execute is the same size
-	     as the maximum branch anyway).  So we only have to handle normal
-	     insns (actually, reorg never puts ASM insns in a delay slot, but
-	     we don't take advantage of that knowledge here).  */
+	     if the shortening could change the number of delay slots
+	     of the branch. */
 	  for (i = 0; i < XVECLEN (body, 0); i++)
 	    {
 	      rtx inner_insn = XVECEXP (body, 0, i);
@@ -547,7 +549,16 @@ shorten_branches (first)
 		inner_length = insn_default_length (inner_insn);
 	      
 	      insn_lengths[inner_uid] = inner_length;
-	      varying_length[inner_uid] = 0;
+	      if (const_delay_slots)
+		{
+		  if ((varying_length[inner_uid]
+		       = insn_variable_length_p (inner_insn)) != 0)
+		    varying_length[uid] = 1;
+		  insn_addresses[inner_uid] = (insn_current_address +
+					       insn_lengths[uid]);
+		}
+	      else
+		varying_length[inner_uid] = 0;
 	      insn_lengths[uid] += inner_length;
 	    }
 	}
@@ -572,16 +583,45 @@ shorten_branches (first)
       something_changed = 0;
       for (insn_current_address = FIRST_INSN_ADDRESS, insn = first;
 	   insn != 0;
-	   insn_current_address += insn_lengths[uid], insn = NEXT_INSN (insn))
+	   insn = NEXT_INSN (insn))
 	{
 	  int new_length;
 
 	  uid = INSN_UID (insn);
 	  insn_addresses[uid] = insn_current_address;
 	  if (! varying_length[uid])
-	    continue;
+	    {
+	      insn_current_address += insn_lengths[uid];
+	      continue;
+	    }
+	  if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
+	    {
+	      int i;
+	      
+	      body = PATTERN (insn);
+	      new_length = 0;
+	      for (i = 0; i < XVECLEN (body, 0); i++)
+		{
+		  rtx inner_insn = XVECEXP (body, 0, i);
+		  int inner_uid = INSN_UID (inner_insn);
+		  int inner_length;
 
-	  new_length = insn_current_length (insn);
+		  insn_addresses[inner_uid] = insn_current_address;
+		  inner_length = insn_current_length (inner_insn);
+		  if (inner_length != insn_lengths[inner_uid])
+		    {
+		      insn_lengths[inner_uid] = inner_length;
+		      something_changed = 1;
+		    }
+		  insn_current_address += insn_lengths[inner_uid];
+		  new_length += inner_length;
+		}
+	    }
+	  else
+	    {
+	      new_length = insn_current_length (insn);
+	      insn_current_address += new_length;
+	    }
 	  if (new_length != insn_lengths[uid])
 	    {
 	      insn_lengths[uid] = new_length;
