@@ -1,3 +1,18 @@
+2004-07-17  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* langhooks.h (builtin_function): New langhook.
+	* langhooks-def.h (LANG_HOOKS_BUILTIN_FUNCTION): New.
+	(LANG_HOOKS_INITIALIZER): Update.
+	* tree.h (builtin_function): Remove.
+	* doc/tm.texi: Update.
+	* c-tree.h (builtin_function): Declare.
+	* c-common.c, config/alpha/alpha.c, config/arm/arm.c,
+	config/c4x/c4x.c, config/frv/frv.c, config/i386/i386.c,
+	config/ia64/ia64.c, config/iq2000/iq2000.c,
+	config/rs6000/rs6000.c, config/s390/s390.c, config/sh/sh.c,
+	config/stormy16/stormy16.c: All callers of builtin_function
+	changed.
+
 2004-07-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/16556

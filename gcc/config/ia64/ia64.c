@@ -8184,8 +8184,9 @@ ia64_init_builtins (void)
     (*lang_hooks.types.register_builtin_type) (long_double_type_node,
 					       "__float128");
 
-#define def_builtin(name, type, code) \
-  builtin_function ((name), (type), (code), BUILT_IN_MD, NULL, NULL_TREE)
+#define def_builtin(name, type, code)					\
+  lang_hooks.builtin_function ((name), (type), (code), BUILT_IN_MD,	\
+			       NULL, NULL_TREE)
 
   def_builtin ("__sync_val_compare_and_swap_si", si_ftype_psi_si_si,
 	       IA64_BUILTIN_VAL_COMPARE_AND_SWAP_SI);

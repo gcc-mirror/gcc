@@ -180,6 +180,8 @@ extern void c_pop_function_context (struct function *);
 extern void push_parm_decl (tree);
 extern tree pushdecl_top_level (tree);
 extern tree set_array_declarator_type (tree, tree, int);
+extern tree builtin_function (const char *, tree, int, enum built_in_class,
+			      const char *, tree);
 extern void shadow_tag (tree);
 extern void shadow_tag_warned (tree, int);
 extern tree start_enum (tree);

@@ -2109,9 +2109,9 @@ xstormy16_init_builtins (void)
 	  else
 	    args = tree_cons (NULL_TREE, arg, args);
 	}
-      builtin_function (s16builtins[i].name,
-			build_function_type (ret_type, args),
-			i, BUILT_IN_MD, NULL, NULL);
+      lang_hooks.builtin_function (s16builtins[i].name,
+				   build_function_type (ret_type, args),
+				   i, BUILT_IN_MD, NULL, NULL);
     }
 }
 

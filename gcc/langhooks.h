@@ -407,6 +407,18 @@ struct lang_hooks
      KNOWN_TYPE carries the true type of the OBJ_TYPE_REF_OBJECT.  */
   tree (*fold_obj_type_ref) (tree, tree);
 
+  /* Return a definition for a builtin function named NAME and whose data type
+     is TYPE.  TYPE should be a function type with argument types.
+     FUNCTION_CODE tells later passes how to compile calls to this function.
+     See tree.h for its possible values.
+
+     If LIBRARY_NAME is nonzero, use that for DECL_ASSEMBLER_NAME,
+     the name to be called if we can't opencode the function.  If
+     ATTRS is nonzero, use that for the function's attribute list.  */
+  tree (*builtin_function) (const char *name, tree type, int function_code,
+			    enum built_in_class class,
+			    const char *library_name, tree attrs);
+
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
      and langhooks.c accordingly.  */
 };

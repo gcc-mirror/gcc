@@ -9291,8 +9291,8 @@ sh_media_init_builtins (void)
 	  if (signature < SH_BLTIN_NUM_SHARED_SIGNATURES)
 	    shared[signature] = type;
 	}
-      builtin_function (d->name, type, d - bdesc, BUILT_IN_MD,
-			NULL, NULL_TREE);
+      lang_hooks.builtin_function (d->name, type, d - bdesc, BUILT_IN_MD,
+				   NULL, NULL_TREE);
     }
 }
 

@@ -3306,11 +3306,6 @@ extern GTY(()) tree current_function_func_begin_label;
    chain of FILE_DECLs; currently only C uses it.  */
 
 extern GTY(()) tree current_file_decl;
-
-/* Declare a predefined function.  Return the declaration.  This function is
-   provided by each language frontend.  */
-extern tree builtin_function (const char *, tree, int, enum built_in_class,
-			      const char *, tree);
 
 /* In tree.c */
 extern unsigned crc32_string (unsigned, const char *);

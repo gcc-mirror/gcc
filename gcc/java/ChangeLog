@@ -1,3 +1,7 @@
+2004-07-17  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* java-tree.h (builtin_function): Declare.
+
 2004-07-16  Steven Bosscher  <stevenb@suse.de>
 
 	* parse.y (java_complete_expand_methods, java_expand_classes): Don't

@@ -50,6 +50,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target-def.h"
 #include "targhooks.h"
 #include "integrate.h"
+#include "langhooks.h"
 
 #ifndef FRV_INLINE
 #define FRV_INLINE inline
@@ -8888,7 +8889,7 @@ frv_pack_insns (void)
 
 
 #define def_builtin(name, type, code) \
-  builtin_function ((name), (type), (code), BUILT_IN_MD, NULL, NULL)
+  lang_hooks.builtin_function ((name), (type), (code), BUILT_IN_MD, NULL, NULL)
 
 struct builtin_description
 {

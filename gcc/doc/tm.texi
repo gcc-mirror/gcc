@@ -9110,7 +9110,8 @@ instructions that would otherwise not normally be generated because
 they have no equivalent in the source language (for example, SIMD vector
 instructions or prefetch instructions).
 
-To create a built-in function, call the function @code{builtin_function}
+To create a built-in function, call the function
+@code{lang_hooks.builtin_function}
 which is defined by the language front end.  You can use any type nodes set
 up by @code{build_common_tree_nodes} and @code{build_common_tree_nodes_2};
 only language front ends that use those two functions will call
