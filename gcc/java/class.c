@@ -773,7 +773,11 @@ add_field (class, name, field_type, flags)
       /* Always make field externally visible.  This is required so
 	 that native methods can always access the field.  */
       TREE_PUBLIC (field) = 1;
+      /* Considered external until we know what classes are being
+	 compiled into this object file.  */
+      DECL_EXTERNAL (field) = 1;
     }
+
   return field;
 }
 
@@ -1095,8 +1099,6 @@ build_class_ref (type)
 	      DECL_EXTERNAL (decl) = 1;
 	      make_decl_rtl (decl, NULL);
 	      pushdecl_top_level (decl);
-	      if (is_compiled == 1)
-		DECL_EXTERNAL (decl) = 1;
 	    }
 	}
 
