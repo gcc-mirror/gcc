@@ -29,6 +29,7 @@
 
 // 27.4.3 template class fpos
 
+#include <cwchar> // for mbstate_t
 #include <ios>
 #include <debug_assert.h>
 
@@ -36,7 +37,7 @@ void test01()
 {
   bool test = true;
 
-  typedef mbstate_t state_type;
+  typedef std::mbstate_t state_type;
   state_type state01;
   state_type state02;
 
@@ -72,7 +73,7 @@ void test02()
 {
   bool test = true;
 
-  typedef mbstate_t state_type;
+  typedef std::mbstate_t state_type;
   state_type state01;
   state_type state02;
 
@@ -132,7 +133,7 @@ void test03()
 {
   bool test = true;
 
-  typedef mbstate_t state_type;
+  typedef std::mbstate_t state_type;
   state_type state01;
   state_type state02;
 

@@ -20,6 +20,7 @@
 
 // 27.6.1.3 unformatted input functions
 
+#include <cstring> // for strncmp,...
 #include <istream>
 #include <sstream>
 #include <fstream>
@@ -56,7 +57,7 @@ test01()
   is_04.read(carray, 9);
   state2 = is_04.rdstate();
   VERIFY( state1 == state2 );
-  VERIFY( !strncmp(carray, "soul eyes", 9) );
+  VERIFY( !std::strncmp(carray, "soul eyes", 9) );
   VERIFY( is_04.peek() == ':' );
 
   state1 = is_03.rdstate();
@@ -65,7 +66,7 @@ test01()
   VERIFY( state1 != state2 );
   VERIFY( static_cast<bool>(state2 & stateeof) ); 
   VERIFY( static_cast<bool>(state2 & statefail) ); 
-  VERIFY( !strncmp(carray, "soul eyes: john coltrane quartet", 35) );
+  VERIFY( !std::strncmp(carray, "soul eyes: john coltrane quartet", 35) );
 
 
   // istream& ignore(streamsize n = 1, int_type delim = traits::eof())
@@ -377,7 +378,7 @@ aaaaaaaaaaaaaa
   char tmp[it];
   std::stringbuf sb(charray, std::ios_base::in);
   std::istream ifs(&sb);
-  std::streamsize blen = strlen(charray);
+  std::streamsize blen = std::strlen(charray);
   VERIFY(ifs);
   while(ifs.getline(tmp, it) || ifs.gcount())
     {
@@ -401,7 +402,7 @@ aaaaaaaaaaaaaa
 	  // or
 	  // -> n - 1 characters are stored
           ifs.clear(ifs.rdstate() & ~std::ios::failbit);
-          VERIFY((ifs.gcount() == 0) || (strlen(tmp) == it - 1));
+          VERIFY((ifs.gcount() == 0) || (std::strlen(tmp) == it - 1));
           VERIFY(ifs);
           continue;
         }
@@ -411,7 +412,7 @@ aaaaaaaaaaaaaa
 	  //
 	  // -> strlen(__s) < n - 1 
 	  // -> delimiter was seen -> gcount() > strlen(__s)
-          VERIFY(ifs.gcount() == strlen(tmp) + 1);
+          VERIFY(ifs.gcount() == std::strlen(tmp) + 1);
           continue;
         }
     }

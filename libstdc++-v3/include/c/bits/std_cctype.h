@@ -31,172 +31,35 @@
 // ISO C++ 14882: <ccytpe>
 //
 
+// Note: This is not a conforming implementation.
+
 #ifndef _CPP_CCTYPE
 #define _CPP_CCTYPE 1
 
-// This keeps isanum, et al from being propagated as macros.
-#if __linux__
-#define __NO_CTYPE 1
-#endif
+#include <bits/c++config.h>
 
-# pragma GCC system_header
-# include_next <ctype.h>
+#pragma GCC system_header
+#include_next <ctype.h>
 
-// Sequester the C non-inline implementations in the _C_Swamp::
-// namespace, and provide C++ inlines for them in the std:: namespace
-// where they belong.
-
-namespace std 
+namespace std
 {
-  // NB: If not using namespaces, can't have any of these definitions,
-  // as they will duplicate what's in the global namespace. 
+  extern "C" int isalnum(int __c);
+  extern "C" int isalpha(int __c);
+  extern "C" int isblank(int __c);
+  extern "C" int iscntrl(int __c);
+  extern "C" int isdigit(int __c);
+  extern "C" int isgraph(int __c);
+  extern "C" int islower(int __c);
+  extern "C" int isprint(int __c);
+  extern "C" int ispunct(int __c);
+  extern "C" int isspace(int __c);
+  extern "C" int isupper(int __c);
+  extern "C" int isxdigit(int __c);
+  extern "C" int tolower(int __c);
+  extern "C" int toupper(int __c);
+}
 
-#ifdef toupper
-  inline int 
-  _S_toupper_helper(int __c) { return toupper(__c); }
-# undef toupper
-  inline int 
-  toupper(int __c) { return _S_toupper_helper(__c); }
-#else
-  inline int 
-  toupper(int __c) { return ::toupper(__c); }
-#endif
-
-#ifdef tolower
-  inline int 
-  _S_tolower_helper(int __c) { return tolower(__c); }
-# undef tolower
-  inline int 
-  tolower(int __c) { return _S_tolower_helper(__c); }
-#else
-  inline int 
-  tolower(int __c) { return ::tolower(__c); }
-#endif
-
-#ifdef isspace
-  inline int 
-  _S_isspace_helper(int __c) { return isspace(__c); }
-# undef isspace
-  inline int 
-  isspace(int __c) { return _S_isspace_helper(__c); }
-#else
-  inline int 
-  isspace(int __c) { return ::isspace(__c); }
-#endif
-
-#ifdef isprint
-  inline int 
-  _S_isprint_helper(int __c) { return isprint(__c); }
-# undef isprint
-  inline int 
-  isprint(int __c) { return _S_isprint_helper(__c); }
-#else
-  inline int 
-  isprint(int __c) { return ::isprint(__c); }
-#endif
-
-#ifdef iscntrl
-  inline int 
-  _S_iscntrl_helper(int __c) { return iscntrl(__c); }
-# undef iscntrl
-  inline int 
-  iscntrl(int __c) { return _S_iscntrl_helper(__c); }
-#else
-  inline int 
-  iscntrl(int __c) { return ::iscntrl(__c); }
-#endif
-
-#ifdef isupper
-  inline int 
-  _S_isupper_helper(int __c) { return isupper(__c); }
-# undef isupper
-  inline int 
-  isupper(int __c) { return _S_isupper_helper(__c); }
-#else
-  inline int 
-  isupper(int __c) { return ::isupper(__c); }
-#endif
-
-#ifdef islower
-  inline int 
-  _S_islower_helper(int __c) { return islower(__c); }
-# undef islower
-  inline int 
-  islower(int __c) { return _S_islower_helper(__c); }
-#else
-  inline int 
-  islower(int __c) { return ::islower(__c); }
-#endif
-
-#ifdef isalpha
-  inline int 
-  _S_isalpha_helper(int __c) { return isalpha(__c); }
-# undef isalpha
-  inline int 
-  isalpha(int __c) { return _S_isalpha_helper(__c); }
-#else
-  inline int 
-  isalpha(int __c) { return ::isalpha(__c); }
-#endif
-
-#ifdef isdigit
-  inline int 
-  _S_isdigit_helper(int __c) { return isdigit(__c); }
-# undef isdigit
-  inline int 
-  isdigit(int __c) { return _S_isdigit_helper(__c); }
-#else
-  inline int 
-  isdigit(int __c) { return ::isdigit(__c); }
-#endif
-
-#ifdef ispunct
-  inline int 
-  _S_ispunct_helper(int __c) { return ispunct(__c); }
-# undef ispunct
-  inline int 
-  ispunct(int __c) { return _S_ispunct_helper(__c); }
-#else
-  inline int 
-  ispunct(int __c) { return ::ispunct(__c); }
-#endif
-
-#ifdef isxdigit
-  inline int 
-  _S_isxdigit_helper(int __c) { return isxdigit(__c); }
-# undef isxdigit
-  inline int 
-  isxdigit(int __c) { return _S_isxdigit_helper(__c); }
-#else
-  inline int 
-  isxdigit(int __c) { return ::isxdigit(__c); }
-#endif
-
-#ifdef isalnum
-  inline int 
-  _S_isalnum_helper(int __c) { return isalnum(__c); }
-# undef isalnum
-  inline int 
-  isalnum(int __c) { return _S_isalnum_helper(__c); }
-#else
-  inline int 
-  isalnum(int __c) { return ::isalnum(__c); }
-#endif
-
-#ifdef isgraph
-  inline int 
-  _S_isgraph_helper(int __c) { return isgraph(__c); }
-# undef isgraph
-  inline int 
-  isgraph(int __c) { return _S_isgraph_helper(__c); }
-#else
-  inline int 
-  isgraph(int __c) { return ::isgraph(__c); }
-#endif
-
-} // namespace std
-
-#endif // _CPP_CCTYPE
+#endif 
 
 
 

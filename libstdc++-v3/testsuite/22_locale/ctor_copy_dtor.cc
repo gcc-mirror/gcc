@@ -20,14 +20,15 @@
 
 // 22.1.1.2 locale constructors and destructors [lib.locale.cons]
 
+#include <cwchar> // for mbstate_t
 #include <locale>
 #include <stdexcept>
 #include <debug_assert.h>
 
-typedef std::codecvt<char, char, mbstate_t> 		c_codecvt;
-typedef std::codecvt_byname<char, char, mbstate_t> 	c_codecvt_byname;
-typedef std::codecvt<wchar_t, char, mbstate_t>		w_codecvt;
-typedef std::codecvt_byname<wchar_t, char, mbstate_t>	w_codecvt_byname;
+typedef std::codecvt<char, char, std::mbstate_t> 		c_codecvt;
+typedef std::codecvt_byname<char, char, std::mbstate_t> 	c_codecvt_byname;
+typedef std::codecvt<wchar_t, char, std::mbstate_t>		w_codecvt;
+typedef std::codecvt_byname<wchar_t, char, std::mbstate_t>	w_codecvt_byname;
 
 class gnu_codecvt: public c_codecvt { }; 
 

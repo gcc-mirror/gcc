@@ -20,6 +20,7 @@
 
 // 22.1.1.1.2 - class locale::facet [lib.locale.facet]
 
+#include <cwchar> // for mbstate_t
 #include <locale>
 #include <iterator>
 #include <debug_assert.h>
@@ -30,7 +31,7 @@ typedef std::ostreambuf_iterator<char>		output_iterator;
 
 class gnu_collate: public std::collate<char> { }; 
 class gnu_ctype: public std::ctype<char> { }; 
-class gnu_codecvt: public std::codecvt<char, char, mbstate_t> { }; 
+class gnu_codecvt: public std::codecvt<char, char, std::mbstate_t> { }; 
 class gnu_moneypunct: public std::moneypunct<char> { }; 
 class gnu_moneypunct_true: public std::moneypunct<char, true> { }; 
 class gnu_money_get: public std::money_get<char> { }; 

@@ -31,23 +31,24 @@
 // ISO C++ 14882: 26.5  C library
 //
 
-// Note: this is not a conforming implementation.
+// Note: This is not a conforming implementation.
 
 #ifndef _CPP_CMATH
 #define _CPP_CMATH 1
-# pragma GCC system_header
-# include_next <math.h>
-# include_next <stdlib.h>
 
-# include <bits/c++config.h>
+#include <bits/c++config.h>
+#include <bits/std_cstdlib.h>
+ 
+#pragma GCC system_header
+#include_next <math.h>
 
-namespace std {
-
-  inline int 
-  abs(int i) { return i > 0 ? i : -i; }
-
+namespace std 
+{
   inline long 
-  abs(long i) { return i > 0 ? i : -i; }
+  abs(long __i) { return ::labs(__i); }
+
+  inline ldiv_t
+  div(long __i, long __j) { return ::ldiv(__i, __j); }
 
 #if _GLIBCPP_HAVE___BUILTIN_FABSF
   inline float 
@@ -212,7 +213,8 @@ namespace std {
   { return ::pow(static_cast<double>(__x), static_cast<double>(__y)); }
 #endif
 
-  float pow(float, int);
+  float 
+  pow(float, int);
 
 #if _GLIBCPP_HAVE___BUILTIN_SINF
   inline float 
@@ -310,12 +312,10 @@ namespace std {
 
   extern "C" double modf(double __x, double* __iptr);
 
-#if 0
   extern "C" double pow(double __x, double __y);
 
-  extern "C" double pow(double, int);
-#endif
-  using ::pow;
+  double 
+  pow(double __x, int __i);
 
 #if _GLIBCPP_HAVE___BUILTIN_SIN
   inline double 
@@ -552,7 +552,10 @@ namespace std {
 #endif
 } // std
 
-#endif // _CPP_CMATH
+#endif
+
+
+
 
 
 

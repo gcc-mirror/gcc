@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,10 +31,29 @@
 // ISO C++ 14882: 20.5  Date and time
 //
 
-// Note: this is not a conforming implementation.
+// Note: This is not a conforming implementation.
 
 #ifndef _CPP_CTIME
 #define _CPP_CTIME 1
-# pragma GCC system_header
-# include_next <time.h>
+
+#pragma GCC system_header
+#include_next <time.h>
+
+namespace std
+{
+  using ::clock_t;
+  using ::time_t;
+  using ::tm;
+
+  extern "C" clock_t clock(void); 
+  extern "C" double difftime(time_t, time_t); 
+  extern "C" time_t mktime(struct tm*); 
+  extern "C" time_t time(time_t*); 
+  extern "C" char* asctime(const struct tm*); 
+  extern "C" char* ctime(const time_t*); 
+  extern "C" struct tm* gmtime(const time_t*); 
+  extern "C" struct tm* localtime(const time_t*); 
+  extern "C" size_t strftime(char*, size_t, const char*, const struct tm*);
+}
+
 #endif

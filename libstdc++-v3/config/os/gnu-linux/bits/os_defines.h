@@ -31,11 +31,22 @@
 #ifndef _GLIBCPP_OS_DEFINES
 #  define _GLIBCPP_OS_DEFINES
 
+// By enabling this, all GNU extensions are enabled.
+#define _GNU_SOURCE 1
 
-/* System-specific #define, typedefs, corrections, etc, go here.  This
-   file will come before all others. */
+// By enabling this, all ISO C99, ISO C9X functionality is enabled.
+#define _ISOC99_SOURCE 1
 
+// This keeps isanum, et al from being propagated as macros.
+#define __NO_CTYPE 1
+
+# if defined __GLIBC__ && __GLIBC__ >= 2
+// We must not see the optimized string functions GNU libc defines.
+#  define __NO_STRING_INLINES
+# endif
 
 #endif
+
+
 
 

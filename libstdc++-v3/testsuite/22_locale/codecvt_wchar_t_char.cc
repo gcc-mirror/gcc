@@ -20,6 +20,7 @@
 
 // 22.2.1.5 - Template class codecvt [lib.locale.codecvt]
 
+#include <cwchar> // for mbstate_t
 #include <locale>
 #include <debug_assert.h>
 
@@ -34,8 +35,8 @@
 //   w_codecvt::state_type state01 = {0, 0};
 // .. except Ulrich says: Use memset. Always use memset. Feel the force...
 void
-zero_state(mbstate_t& state)
-{ memset(&state, 0, sizeof(mbstate_t)); }
+zero_state(std::mbstate_t& state)
+{ std::memset(&state, 0, sizeof(std::mbstate_t)); }
 
 // Required instantiation
 // codecvt<wchar_t, char, mbstate_t>

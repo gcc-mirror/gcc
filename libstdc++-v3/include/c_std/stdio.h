@@ -57,7 +57,7 @@
   using std::setvbuf;
   using std::fprintf;
   using std::fscanf;
-//  using std::printf;
+  using std::printf;
   using std::scanf;
   using std::sprintf;
   using std::sscanf;
