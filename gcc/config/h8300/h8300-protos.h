@@ -31,6 +31,7 @@ extern unsigned int compute_plussi_length PARAMS ((rtx *));
 extern int compute_plussi_cc PARAMS ((rtx *));
 extern const char *output_a_shift PARAMS ((rtx *));
 extern unsigned int compute_a_shift_length PARAMS ((rtx, rtx *));
+extern int compute_a_shift_cc PARAMS ((rtx, rtx *));
 extern const char *emit_a_rotate PARAMS ((enum rtx_code, rtx *));
 extern const char *output_simode_bld PARAMS ((int, rtx[]));
 extern void print_operand_address PARAMS ((FILE *, rtx));

@@ -1,3 +1,13 @@
+2003-04-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Add a prototype for
+	compute_a_shift_cc.
+	* config/h8300/h8300.c (shift_one): Update the CC status.
+	(shift_two): Likewise.
+	(output_a_shift_cc): Set cc_inline and cc_special.
+	(compute_a_shift_cc): New.
+	* config/h8300/h8300.md (shift insns): Use compute_a_shift_cc.
+
 2003-04-04  Richard Henderson  <rth@redhat.com>
 
 	* cse.c (fold_rtx): Fix 03-30 change; do check insn non-null.
