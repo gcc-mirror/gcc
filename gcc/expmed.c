@@ -1,7 +1,7 @@
 /* Medium-level subroutines: convert bit-field store and extract
    and shifts, multiplies and divides to rtl instructions.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1209,8 +1209,8 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
   if (int_mode == BLKmode)
     int_mode = int_mode_for_mode (mode);
   if (int_mode == BLKmode)
-    abort();    /* Should probably push op0 out to memory and then
-		   do a load.  */
+    abort ();    /* Should probably push op0 out to memory and then
+		    do a load.  */
 
   /* OFFSET is the number of words or bytes (UNIT says which)
      from STR_RTX to the first word or byte containing part of the field.  */
@@ -2637,7 +2637,7 @@ choose_multiplier (d, n, precision, multiplier_ptr, post_shift_ptr, lgup_ptr)
     abort ();
   /* assert that mlow < mhigh.  */
   if (! (mlow_hi < mhigh_hi || (mlow_hi == mhigh_hi && mlow_lo < mhigh_lo)))
-    abort();
+    abort ();
 
   /* If precision == N, then mlow, mhigh exceed 2^N
      (but they do not exceed 2^(N+1)).  */
@@ -4702,18 +4702,18 @@ do_cmp_and_jump (arg1, arg2, op, mode, label)
 	     that's the only equality operations we do */
 	case EQ:
 	  if (arg2 != const0_rtx || mode != GET_MODE(arg1))
-	    abort();
+	    abort ();
 	  do_jump_by_parts_equality_rtx (arg1, label2, label);
 	  break;
 
 	case NE:
 	  if (arg2 != const0_rtx || mode != GET_MODE(arg1))
-	    abort();
+	    abort ();
 	  do_jump_by_parts_equality_rtx (arg1, label, label2);
 	  break;
 
 	default:
-	  abort();
+	  abort ();
 	}
 
       emit_label (label2);

@@ -1,5 +1,5 @@
 /* Simple garbage collection for the GNU compiler.
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -165,7 +165,7 @@ ggc_del_root (base)
       x = x->next;
     }
 
-  abort();
+  abort ();
 }
 
 /* Add a hash table to be scanned when all roots have been processed.  We

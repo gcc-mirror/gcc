@@ -1,7 +1,7 @@
 /* Gcov.c: prepend line execution counts and branch probabilities to a
    source file.
    Copyright (C) 1990, 1991, 1992, 1993, 1994, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by James E. Wilson of Cygnus Support.
    Mangled by Bob Manson of Cygnus Support.
 
@@ -615,7 +615,7 @@ create_program_flow_graph (bptr)
 	{
 	  gcov_type tmp_count = 0;
 	  if (da_file && __read_gcov_type (&tmp_count, da_file, 8))
-	    abort();
+	    abort ();
 
 	  arcptr->arc_count = tmp_count;
 	  arcptr->count_valid = 1;
@@ -760,7 +760,7 @@ read_files ()
   /* Read and ignore the first word of the .da file, which is the count of
      how many numbers follow.  */
   if (da_file && __read_long (&total, da_file, 8))
-    abort();
+    abort ();
 
   while (! feof (bbg_file))
     {
@@ -885,7 +885,7 @@ scan_for_source_files ()
       else if (line_num < 0)
 	{
 	  /* Don't know what this is, but it's garbage.  */
-	  abort();
+	  abort ();
 	}
     }
 }

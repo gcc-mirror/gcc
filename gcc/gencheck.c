@@ -1,5 +1,5 @@
 /* Generate check macros for tree codes.
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,7 +27,7 @@ static const char *const tree_codes[] = {
 #include "tree.def"
 #include "c-common.def"
 #include "gencheck.h"
-(char*)0
+(char*) 0
 };
 
 static void usage PARAMS ((void));
