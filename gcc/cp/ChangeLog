@@ -1,15 +1,15 @@
 2002-07-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
-	* typeck2.c (incomplete_type_error): Fix typo caused by
-	CVS conflict in my last patch.
+	* typeck2.c (cxx_incomplete_type_diagnostic): Fix typo caused
+	by CVS conflict in my last patch.
 
 2002-07-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/6716
 	* pt.c (can_complete_type_without_circularity): New function.
 	(instantiate_class_template): Use it.
-	* typeck2.c (incomplete_type_error): Improve error message
-	due to incomplete fields.
+	* typeck2.c (cxx_incomplete_type_diagnostic): Improve error
+	message due to incomplete fields.
 
 2002-07-01  Mark Mitchell  <mark@codesourcery.com>
 
