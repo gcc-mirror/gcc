@@ -1,5 +1,10 @@
 2003-10-13  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/File.java: Reformated.
+	(equals): Check for obj == null.
+
+2003-10-13  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/JarURLConnection.java
 	(jarFileURL): Added dcoumentation.
 	(jarFileURLConnection): Reformated documentation.
