@@ -8343,11 +8343,9 @@ arm_expand_prologue ()
 	      insn = gen_rtx_MEM (SImode, insn);
 	    }
 
-	  insn = gen_rtx_SET (SImode, ip_rtx, insn);
-	  insn = emit_insn (insn);
-	  /* Add a reg note to stop propogate_one_insn() from barfing.  */
-	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, ip_rtx,
-						REG_NOTES (insn));
+	  emit_insn (gen_rtx_SET (SImode, ip_rtx, insn));
+	  /* Add a USE to stop propagate_one_insn() from barfing.  */
+	  emit_insn (gen_rtx_USE (VOIDmode, ip_rtx));
 	}
     }
 
@@ -10162,10 +10160,9 @@ thumb_expand_prologue ()
 	      reg = gen_rtx (REG, SImode, LAST_LO_REGNUM);
 
 	      /* Save it by copying it into a high, scratch register.  */
-	      insn = emit_insn (gen_movsi (spare, reg));
-	      /* Add a reg note to stop propogate_one_insn() from barfing.  */
-	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, spare,
-						    REG_NOTES (insn));
+	      emit_insn (gen_movsi (spare, reg));
+	      /* Add a USE to stop propagate_one_insn() from barfing.  */
+	      emit_insn (gen_rtx_USE (VOIDmode, spare));
 
 	      /* Decrement the stack.  */
 	      emit_insn (gen_movsi (reg, GEN_INT (- amount)));
