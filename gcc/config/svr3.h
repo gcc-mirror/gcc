@@ -255,9 +255,20 @@ do {								\
   INIT_SECTION_FUNCTION						\
   FINI_SECTION_FUNCTION
 
+#define BSS_SECTION_FUNCTION					\
+void								\
+bss_section ()							\
+{								\
+  if (in_section != in_bss)					\
+    {								\
+      fprintf (asm_out_file, "\t%s\n", BSS_SECTION_ASM_OP);	\
+      in_section = in_bss;					\
+    }								\
+}
+
 #define INIT_SECTION_FUNCTION					\
 void								\
-init_section ()						\
+init_section ()							\
 {								\
   if (in_section != in_init)					\
     {								\
@@ -293,7 +304,9 @@ const_section ()							\
     }									\
 }
 
-#if 0
+/* The ctors and dtors sections are not normally put into use 
+   by EXTRA_SECTIONS and EXTRA_SECTION_FUNCTIONS as defined in svr3.h,
+   but it can't hurt to define these macros for whatever systems use them.  */
 #define CTORS_SECTION_FUNCTION						\
 void									\
 ctors_section ()							\
@@ -315,7 +328,6 @@ dtors_section ()							\
       in_section = in_dtors;						\
     }									\
 }
-#endif
 
 /* This is machine-dependent
    because it needs to push something on the stack.  */
