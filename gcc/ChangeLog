@@ -1,3 +1,13 @@
+2004-03-25  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (vfp_print_multi): Remove.
+	(arm_output_fldmx): New function.
+	(vfp_emit_fstmx): Return block size, not insn. Add ARM10 VFPr1 bugfix.
+	(arm_expand_prologue): Update to match.
+	(arm_get_vfp_saved_size): New Function.
+	(arm_get_frame_offsets): Use it.
+	(arm_output_epilogue): Use new functions.
+
 2004-03-24  Richard Henderson  <rth@redhat.com>
 
 	* alias.c (alias_invariant, alias_invariant_size): Mark GTY.

@@ -7809,29 +7809,35 @@ print_multi_reg (FILE *stream, const char *instr, int reg, int mask)
 }
 
 
-/* Output the operands of a FLDM/FSTM instruction to STREAM.
-   REG is the base register,
-   INSTR is the possibly suffixed load or store instruction.
-   FMT specifies now to print the register name.
-   START and COUNT specify the register range.  */
+/* Output a FLDMX instruction to STREAM.
+   BASE if the register containing the address.
+   REG and COUNT specify the register range.
+   Extra registers may be added to avoid hardware bugs.  */
 
 static void
-vfp_print_multi (FILE *stream, const char *instr, int reg,
-		 const char * fmt, int start, int count)
+arm_output_fldmx (FILE * stream, unsigned int base, int reg, int count)
 {
   int i;
 
-  fputc ('\t', stream);
-  asm_fprintf (stream, instr, reg);
-  fputs (", {", stream);
-
-  for (i = start; i < start + count; i++)
+  /* Workaround ARM10 VFPr1 bug.  */
+  if (count == 2 && !arm_arch6)
     {
-      if (i > start)
+      if (reg == 15)
+	reg--;
+      count++;
+    }
+
+  fputc ('\t', stream);
+  asm_fprintf (stream, "fldmfdx\t%r!, {", base);
+
+  for (i = reg; i < reg + count; i++)
+    {
+      if (i > reg)
 	fputs (", ", stream);
-      asm_fprintf (stream, fmt, i);
+      asm_fprintf (stream, "d%d", i);
     }
   fputs ("}\n", stream);
+
 }
 
 
@@ -7863,15 +7869,26 @@ vfp_output_fstmx (rtx * operands)
 }
 
 
-/* Emit RTL to save block of VFP register pairs to the stack.  */
+/* Emit RTL to save block of VFP register pairs to the stack.  Returns the
+   number of bytes pushed.  */
 
-static rtx
+static int
 vfp_emit_fstmx (int base_reg, int count)
 {
   rtx par;
   rtx dwarf;
   rtx tmp, reg;
   int i;
+
+  /* Workaround ARM10 VFPr1 bug.  Data corruption can occur when exactly two
+     register pairs are stored by a store multiple insn.  We avoid this
+     by pushing an extra pair.  */
+  if (count == 2 && !arm_arch6)
+    {
+      if (base_reg == LAST_VFP_REGNUM - 3)
+	base_reg -= 2;
+      count++;
+    }
 
   /* ??? The frame layout is implementation defined.  We describe
      standard format 1 (equivalent to a FSTMD insn and unused pad word).
@@ -7922,7 +7939,9 @@ vfp_emit_fstmx (int base_reg, int count)
   par = emit_insn (par);
   REG_NOTES (par) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, dwarf,
 				       REG_NOTES (par));
-  return par;
+  RTX_FRAME_RELATED_P (par) = 1;
+
+  return count * 8 + 4;
 }
 
 
@@ -8864,6 +8883,50 @@ arm_compute_save_reg_mask (void)
   return save_reg_mask;
 }
 
+
+/* Return the number of bytes required to save VFP registers.  */
+static int
+arm_get_vfp_saved_size (void)
+{
+  unsigned int regno;
+  int count;
+  int saved;
+
+  saved = 0;
+  /* Space for saved VFP registers.  */
+  if (TARGET_HARD_FLOAT && TARGET_VFP)
+    {
+      count = 0;
+      for (regno = FIRST_VFP_REGNUM;
+	   regno < LAST_VFP_REGNUM;
+	   regno += 2)
+	{
+	  if ((!regs_ever_live[regno] || call_used_regs[regno])
+	      && (!regs_ever_live[regno + 1] || call_used_regs[regno + 1]))
+	    {
+	      if (count > 0)
+		{
+		  /* Workaround ARM10 VFPr1 bug.  */
+		  if (count == 2 && !arm_arch6)
+		    count++;
+		  saved += count * 8 + 4;
+		}
+	      count = 0;
+	    }
+	  else
+	    count++;
+	}
+      if (count > 0)
+	{
+	  if (count == 2 && !arm_arch6)
+	    count++;
+	  saved += count * 8 + 4;
+	}
+    }
+  return saved;
+}
+
+
 /* Generate a function exit sequence.  If REALLY_RETURN is false, then do
    everything bar the final return instruction.  */
 const char *
@@ -9306,34 +9369,15 @@ arm_output_epilogue (rtx sibling)
 
       if (TARGET_HARD_FLOAT && TARGET_VFP)
 	{
-	  int nregs = 0;
+	  int saved_size;
 
-	  /* We save regs in pairs.  */
-	  /* A special insn for saving/restoring VFP registers.  This does
-	     not have base+offset addressing modes, so we use IP to
-	     hold the address.  Each block requires nregs*2+1 words.  */
-	  start_reg = FIRST_VFP_REGNUM;
-	  /* Count how many blocks of registers need saving.  */
-	  for (reg = FIRST_VFP_REGNUM; reg < LAST_VFP_REGNUM; reg += 2)
-	    {
-	      if ((!regs_ever_live[reg] || call_used_regs[reg])
-		  && (!regs_ever_live[reg + 1] || call_used_regs[reg + 1]))
-		{
-		  if (start_reg != reg)
-		    floats_offset += 4;
-		  start_reg = reg + 2;
-		}
-	      else
-		{
-		  floats_offset += 8;
-		  nregs++;
-		}
-	    }
-	  if (start_reg != reg)
-	    floats_offset += 4;
+	  /* The fldmx insn does not have base+offset addressing modes,
+	     so we use IP to hold the address.  */
+	  saved_size = arm_get_vfp_saved_size ();
 
-	  if (nregs > 0)
+	  if (saved_size > 0)
 	    {
+	      floats_offset += saved_size;
 	      asm_fprintf (f, "\tsub\t%r, %r, #%d\n", IP_REGNUM,
 			   FP_REGNUM, floats_offset - vfp_offset);
 	    }
@@ -9344,20 +9388,16 @@ arm_output_epilogue (rtx sibling)
 		  && (!regs_ever_live[reg + 1] || call_used_regs[reg + 1]))
 		{
 		  if (start_reg != reg)
-		    {
-		      vfp_print_multi (f, "fldmfdx\t%r!", IP_REGNUM, "d%d",
-				       (start_reg - FIRST_VFP_REGNUM) / 2,
-				       (reg - start_reg) / 2);
-		    }
+		    arm_output_fldmx (f, IP_REGNUM,
+				      (start_reg - FIRST_VFP_REGNUM) / 2,
+				      (reg - start_reg) / 2);
 		  start_reg = reg + 2;
 		}
 	    }
 	  if (start_reg != reg)
-	    {
-	      vfp_print_multi (f, "fldmfdx\t%r!", IP_REGNUM, "d%d",
-			       (start_reg - FIRST_VFP_REGNUM) / 2,
-			       (reg - start_reg) / 2);
-	    }
+	    arm_output_fldmx (f, IP_REGNUM,
+			      (start_reg - FIRST_VFP_REGNUM) / 2,
+			      (reg - start_reg) / 2);
 	}
 
       if (TARGET_IWMMXT)
@@ -9478,20 +9518,16 @@ arm_output_epilogue (rtx sibling)
 		  && (!regs_ever_live[reg + 1] || call_used_regs[reg + 1]))
 		{
 		  if (start_reg != reg)
-		    {
-		      vfp_print_multi (f, "fldmfdx\t%r!", SP_REGNUM, "d%d",
-				       (start_reg - FIRST_VFP_REGNUM) / 2,
-				       (reg - start_reg) / 2);
-		    }
+		    arm_output_fldmx (f, SP_REGNUM,
+				      (start_reg - FIRST_VFP_REGNUM) / 2,
+				      (reg - start_reg) / 2);
 		  start_reg = reg + 2;
 		}
 	    }
 	  if (start_reg != reg)
-	    {
-	      vfp_print_multi (f, "fldmfdx\t%r!", SP_REGNUM, "d%d",
-			       (start_reg - FIRST_VFP_REGNUM) / 2,
-			       (reg - start_reg) / 2);
-	    }
+	    arm_output_fldmx (f, SP_REGNUM,
+			      (start_reg - FIRST_VFP_REGNUM) / 2,
+			      (reg - start_reg) / 2);
 	}
       if (TARGET_IWMMXT)
 	for (reg = FIRST_IWMMXT_REGNUM; reg <= LAST_IWMMXT_REGNUM; reg++)
@@ -9855,7 +9891,6 @@ arm_get_frame_offsets (void)
   struct arm_stack_offsets *offsets;
   unsigned long func_type;
   int leaf;
-  bool new_block;
   int saved;
   HOST_WIDE_INT frame_size;
 
@@ -9915,27 +9950,7 @@ arm_get_frame_offsets (void)
 
 	  /* Space for saved VFP registers.  */
 	  if (TARGET_HARD_FLOAT && TARGET_VFP)
-	    {
-	      new_block = TRUE;
-	      for (regno = FIRST_VFP_REGNUM;
-		   regno < LAST_VFP_REGNUM;
-		   regno += 2)
-		{
-		  if ((regs_ever_live[regno] && !call_used_regs[regno])
-		      || (regs_ever_live[regno + 1]
-			  && !call_used_regs[regno + 1]))
-		    {
-		      if (new_block)
-			{
-			  saved += 4;
-			  new_block = FALSE;
-			}
-		      saved += 8;
-		    }
-		  else
-		    new_block = TRUE;
-		}
-	    }
+	    saved += arm_get_vfp_saved_size ();
 	}
     }
   else /* TARGET_THUMB */
@@ -10317,22 +10332,14 @@ arm_expand_prologue (void)
 		  && (!regs_ever_live[reg + 1] || call_used_regs[reg + 1]))
 		{
 		  if (start_reg != reg)
-		    {
-		      insn = vfp_emit_fstmx (start_reg,
-					    (reg - start_reg) / 2);
-		      RTX_FRAME_RELATED_P (insn) = 1;
-		      saved_regs += (start_reg - reg) * 4 + 4;
-		    }
+		    saved_regs += vfp_emit_fstmx (start_reg,
+						  (reg - start_reg) / 2);
 		  start_reg = reg + 2;
 		}
 	    }
 	  if (start_reg != reg)
-	    {
-	      insn = vfp_emit_fstmx (start_reg,
-				    (reg - start_reg) / 2);
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	      saved_regs += (start_reg - reg) * 4 + 4;
-	    }
+	    saved_regs += vfp_emit_fstmx (start_reg,
+					  (reg - start_reg) / 2);
 	}
     }
 
