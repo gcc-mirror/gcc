@@ -609,7 +609,7 @@ store_init_value (tree decl, tree init)
   else if (TYPE_NEEDS_CONSTRUCTING (type))
     return build2 (INIT_EXPR, type, decl, value);
   else if (TREE_STATIC (decl)
-	   && (! TREE_CONSTANT (value)
+	   && (TREE_SIDE_EFFECTS (value)
 	       || ! initializer_constant_valid_p (value, TREE_TYPE (value))))
     return split_nonconstant_init (decl, value);
   

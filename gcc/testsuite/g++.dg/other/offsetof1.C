@@ -11,4 +11,4 @@ struct F
   char j;
 };
 
-static int ary[((__SIZE_TYPE__)&((struct F *)0)->j)];
+static int ary[__builtin_offsetof(F, j)];

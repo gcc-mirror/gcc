@@ -1,5 +1,9 @@
 2004-08-30  Richard Henderson  <rth@redhat.com>
 
+	* g++.dg/other/offsetof1.C: Use __builtin_offsetof.
+
+2004-08-30  Richard Henderson  <rth@redhat.com>
+
 	* lib/fortran-torture.exp (fortran-torture-execute): Honor
 	additional_flags set by alternate driver.
 	(ieee-options): New procedure.

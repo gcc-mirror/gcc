@@ -319,7 +319,7 @@ build_base_path (enum tree_code code,
       expr = build_indirect_ref (expr, NULL);
       expr = build_simple_base_path (expr, binfo);
       if (want_pointer)
-	expr = build_unary_op (ADDR_EXPR, expr, 0);
+	expr = build_address (expr);
       target_type = TREE_TYPE (expr);
       goto out;
     }
