@@ -1,3 +1,8 @@
+2003-07-22  Geoffrey Keating  <geoffk@apple.com>
+
+	* cpplex.c (_cpp_process_line_notes): Mention option name in
+	trigraphs warning.
+
 2003-07-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* combine.c (if_then_else_cond): Simplify the comparison of
