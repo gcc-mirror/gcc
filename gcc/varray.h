@@ -176,7 +176,7 @@ extern varray_type varray_grow	PARAMS ((varray_type, size_t));
 extern void varray_check_failed PARAMS ((varray_type, size_t,
 					const char *, int,
 					const char *)) ATTRIBUTE_NORETURN;
-#define VARRAY_CHECK(VA, N, T)					\
+#define VARRAY_CHECK(VA, N, T) __extension__			\
 (*({ varray_type _va = VA;					\
      size_t _n = N; 						\
      if (_n >= _va->num_elements)				\

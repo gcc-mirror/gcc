@@ -1,3 +1,15 @@
+2000-05-06  Zack Weinberg  <zack@wolery.cumb.org>
+
+ 	* cpphash.h: Remove conditional #define of __extension__.
+ 	* rtl.h: Add __extension__ to RTL_CHECK1, RTL_CHECK2,
+ 	RTL_CHECKC1, RTL_CHECKC2, and RTVEC_ELT macros
+ 	(ENABLE_RTL_CHECKING only).
+ 	* tree.h: Add __extension__ to TREE_CHECK, TREE_CLASS_CHECK,
+ 	CST_OR_CONSTRUCTOR_CHECK, and EXPR_CHECK macros
+ 	(ENABLE_TREE_CHECKING only).
+ 	* varray.h: Add __extension__ to VARRAY_CHECK macro
+ 	(ENABLE_CHECKING only).
+
 2000-05-06  Richard Earnshaw (reanrsha@arm.com)
 
 	Use new tail-calling mechanism on ARM.
