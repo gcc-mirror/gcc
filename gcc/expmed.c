@@ -326,17 +326,13 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
      If the target is memory, storing any naturally aligned field can be
      done with a simple store.  For targets that support fast unaligned
-     memory, any naturally sized, unit aligned field can be done directly.
-
-     It's okay if the requested bitsize is greater than fieldmode's
-     bitsize; that just means the mode has padding bits.  */
+     memory, any naturally sized, unit aligned field can be done directly.  */
 
   byte_offset = (bitnum % BITS_PER_WORD) / BITS_PER_UNIT
                 + (offset * UNITS_PER_WORD);
 
   if (bitpos == 0
-      && GET_MODE_BITSIZE (fieldmode) != 0
-      && bitsize >= GET_MODE_BITSIZE (fieldmode)
+      && bitsize == GET_MODE_BITSIZE (fieldmode)
       && (GET_CODE (op0) != MEM
 	  ? ((GET_MODE_SIZE (fieldmode) >= UNITS_PER_WORD
 	     || GET_MODE_SIZE (GET_MODE (op0)) == GET_MODE_SIZE (fieldmode))
@@ -1033,12 +1029,9 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   if (GET_CODE (op0) == REG
       && mode == GET_MODE (op0)
       && bitnum == 0
-      && GET_MODE_BITSIZE (GET_MODE (op0)) != 0
-      && bitsize >= GET_MODE_BITSIZE (GET_MODE (op0)))
+      && bitsize == GET_MODE_BITSIZE (GET_MODE (op0)))
     {
-      /* We're trying to extract a full register from itself.
-         (If the requested bitsize is greater than the bitsize of op0,
-         that just means op0's mode has padding bits.)  */
+      /* We're trying to extract a full register from itself.  */
       return op0;
     }
 
