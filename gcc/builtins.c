@@ -4474,7 +4474,7 @@ tree
 std_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 {
   tree addr, t, type_size, rounded_size, valist_tmp;
-  unsigned int align, boundary;
+  unsigned HOST_WIDE_INT align, boundary;
 
 #ifdef ARGS_GROW_DOWNWARD
   /* All of the alignment and movement below is for args-grow-up machines.
@@ -4520,7 +4520,7 @@ std_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
       t = fold (build3 (COND_EXPR, sizetype, t, size_zero_node,
 			size_binop (MINUS_EXPR, rounded_size, type_size)));
       t = fold_convert (TREE_TYPE (addr), t);
-      addr = build2 (PLUS_EXPR, TREE_TYPE (addr), addr, t);
+      addr = fold (build2 (PLUS_EXPR, TREE_TYPE (addr), addr, t));
     }
 
   /* Compute new value for AP.  */

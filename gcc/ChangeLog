@@ -1,3 +1,8 @@
+2004-07-10  Richard Henderson  <rth@redhat.com>
+
+	* builtins.c (std_gimplify_va_arg_expr): Widen align/boundary
+	to HOST_WIDE_INT.  Fold pad-args-down arithmetic.
+
 2004-07-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.h (store_bit_field, extract_bit_field): Remove last argument.
