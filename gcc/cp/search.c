@@ -85,7 +85,6 @@ struct vbase_info
 
 static tree get_vbase_1 PARAMS ((tree, tree, unsigned int *));
 static tree lookup_field_1 PARAMS ((tree, tree));
-static int lookup_fnfields_here PARAMS ((tree, tree));
 static int is_subobject_of_p PARAMS ((tree, tree, tree));
 static tree virtual_context PARAMS ((tree, tree, tree));
 static tree dfs_check_overlap PARAMS ((tree, void *));
@@ -1249,33 +1248,6 @@ is_subobject_of_p (parent, binfo, most_derived)
   return 0;
 }
 
-/* Very similar to lookup_fnfields_1 but it ensures that at least one
-   function was declared inside the class given by TYPE.  It really should
-   only return functions that match the given TYPE.  Therefore, it should
-   only be called for situations that ignore using-declarations, such as
-   determining overrides.  */
-
-static int
-lookup_fnfields_here (type, name)
-     tree type, name;
-{
-  int idx = lookup_fnfields_1 (type, name);
-  tree fndecls;
-
-  /* ctors and dtors are always only in the right class.  */
-  if (idx <= 1)
-    return idx;
-  fndecls = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), idx);
-  while (fndecls)
-    {
-      if (TYPE_MAIN_VARIANT (DECL_CONTEXT (OVL_CURRENT (fndecls)))
-	  == TYPE_MAIN_VARIANT (type))
-	return idx;
-      fndecls = OVL_CHAIN (fndecls);
-    }
-  return -1;
-}
-
 struct lookup_field_info {
   /* The type in which we're looking.  */
   tree type;
@@ -2015,7 +1987,7 @@ look_for_overrides_r (type, fndecl)
   if (DECL_DESTRUCTOR_P (fndecl))
     ix = CLASSTYPE_DESTRUCTOR_SLOT;
   else
-    ix = lookup_fnfields_here (type, DECL_NAME (fndecl));
+    ix = lookup_fnfields_1 (type, DECL_NAME (fndecl));
   if (ix >= 0)
     {
       tree fns = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), ix);
@@ -2029,7 +2001,9 @@ look_for_overrides_r (type, fndecl)
           tree btypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
           
           if (!DECL_VIRTUAL_P (fn))
-            ;
+            /*  Not a virtual */;
+          else if (DECL_CONTEXT (fn) != type)
+            /*  Introduced with a using declaration */;
 	  else if (thistype == NULL_TREE)
 	    {
 	      if (compparms (TREE_CHAIN (btypes), dtypes))
