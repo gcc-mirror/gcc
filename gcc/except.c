@@ -2455,10 +2455,10 @@ expand_builtin_eh_stub ()
      to pick out the handler field (first element), and jump to there, 
      leaving the pointer to _eh_conext in the same hardware register. */
 
-  temp = gen_rtx_MEM (Pmode, handler);  
+  temp = gen_rtx_MEM (Pmode, handler);
   MEM_IN_STRUCT_P (temp) = 1;
   RTX_UNCHANGING_P (temp) = 1;
-  emit_insn (gen_rtx_SET (Pmode, offset, temp));
+  emit_move_insn (offset, temp);
   emit_insn (gen_rtx_USE (Pmode, handler));
 
   emit_indirect_jump (offset);

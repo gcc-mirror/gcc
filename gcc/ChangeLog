@@ -1,3 +1,8 @@
+Thu Jun 11 17:14:15 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* except.c (expand_builtin_eh_stub): Call emit_move_insn rather than
+	calling gen_rtx_SET.
+
 Thu Jun 11 18:45:49 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* config/rs6000/x-aix43 (AR): Delete.
