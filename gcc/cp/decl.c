@@ -11206,16 +11206,24 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 	     we keep the consistency between `current_class_type'
 	     and `current_class_decl'.  */
 	  tree t = last_function_parms;
-	  int i = suspend_momentary ();
 
 	  my_friendly_assert (t != NULL_TREE
 			      && TREE_CODE (t) == PARM_DECL, 162);
 
-	  /* Fool build_indirect_ref.  */
-	  current_class_decl = NULL_TREE;
-	  C_C_D = build_indirect_ref (t, NULL_PTR);
-	  current_class_decl = t;
-	  resume_momentary (i);
+	  if (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE)
+	    {
+	      int i = suspend_momentary ();
+
+	      /* Fool build_indirect_ref.  */
+	      current_class_decl = NULL_TREE;
+	      C_C_D = build_indirect_ref (t, NULL_PTR);
+	      current_class_decl = t;
+	      resume_momentary (i);
+	    }
+	  else
+	    /* We're having a signature pointer here.  */
+	    C_C_D = current_class_decl = t;
+
 	}
     }
   else
