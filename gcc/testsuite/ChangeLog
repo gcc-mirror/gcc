@@ -1,3 +1,9 @@
+2005-03-29  Dale Ranta  <dir@lanl.gov>
+	    Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/20163
+	* gfortran.dg/pr20163-2.f: New test.
+
 2005-03-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.old-deja/g++.warn/compare1.C: Fix typo.

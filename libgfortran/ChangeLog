@@ -1,3 +1,10 @@
+2005-03-29  Dale Ranta  <dir@lanl.gov>
+	    Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/20163
+	* io/open.c (st_open): call library_end() before returning even if
+	an error arises.
+
 2005-03-25  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/19678
