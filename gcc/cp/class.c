@@ -3863,7 +3863,10 @@ build_base_field (record_layout_info rli, tree binfo,
 	  tree b;
 
 	  b = get_primary_binfo (binfo);
-	  if (!b || BINFO_PRIMARY_BASE_OF (b) != binfo)
+	  if (!b)
+	    break;
+	  b = CANONICAL_BINFO (b, rli->t);
+	  if (BINFO_PRIMARY_BASE_OF (b) != binfo)
 	    break;
 	  if (TREE_VIA_VIRTUAL (b))
 	    record_subobject_offsets (BINFO_TYPE (b),
