@@ -1,3 +1,10 @@
+2003-04-08  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* function.c (postponed_insns): New.
+	(purge_addressof_1): Postpone processing of insns if addressofs
+	are not put into stack.
+	(purge_addressof): Process postponed insns.	
+
 2003-04-08  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (NORMAL_MODE): If interrupt handler and TARGET_FMOVD,
