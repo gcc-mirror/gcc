@@ -318,6 +318,8 @@ build_target_expr_with_type (tree init, tree type)
 {
   tree slot;
 
+  my_friendly_assert (!VOID_TYPE_P (type), 20040130);
+
   if (TREE_CODE (init) == TARGET_EXPR)
     return init;
   else if (CLASS_TYPE_P (type) && !TYPE_HAS_TRIVIAL_INIT_REF (type)
@@ -342,7 +344,11 @@ build_target_expr_with_type (tree init, tree type)
 tree
 force_target_expr (tree type, tree init)
 {
-  tree slot = build_local_temp (type);
+  tree slot;
+
+  my_friendly_assert (!VOID_TYPE_P (type), 20040130);
+
+  slot = build_local_temp (type);
   return build_target_expr (slot, init);
 }
 
