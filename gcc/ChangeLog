@@ -1,3 +1,9 @@
+2005-03-21  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/fr30/fr30.h (TARGET_SMALL_MODEL_MASK, TARGET_SMALL_MODEL)
+	(TARGET_DEFAULT, target_flags, TARGET_SWITCHES): Delete.
+	* config/fr30/fr30.opt: New file.
+
 2005-03-18  Daniel Berlin  <dberlin@dberlin.org>
 	
 	Fix PR tree-optimization/20542
