@@ -1433,15 +1433,8 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
   VARRAY_GENERIC_PTR_NOGC_INIT (stack, 10, "stack");
 
   /* We can handle anything that get_inner_reference can deal with.  */
-  for (p = expr_p; ; p = &TREE_OPERAND (*p, 0))
-    {
-      /* Fold INDIRECT_REFs now to turn them into ARRAY_REFs.  */
-      if (TREE_CODE (*p) == INDIRECT_REF)
-	*p = fold_indirect_ref (*p);
-      if (!handled_component_p (*p))
-	break;
-      VARRAY_PUSH_GENERIC_PTR_NOGC (stack, *p);
-    }
+  for (p = expr_p; handled_component_p (*p); p = &TREE_OPERAND (*p, 0))
+    VARRAY_PUSH_GENERIC_PTR_NOGC (stack, *p);
 
   gcc_assert (VARRAY_ACTIVE_SIZE (stack));
 
@@ -2852,10 +2845,16 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 	     This kind of code arises in C++ when an object is bound
 	     to a const reference, and if "x" is a TARGET_EXPR we want
 	     to take advantage of the optimization below.  */
-	  tree t = fold_indirect_ref (*from_p);
-	  if (t != *from_p)
+	  tree pointer;
+
+	  pointer = TREE_OPERAND (*from_p, 0);
+	  STRIP_NOPS (pointer);
+	  if (TREE_CODE (pointer) == ADDR_EXPR
+	      && (lang_hooks.types_compatible_p 
+		  (TREE_TYPE (TREE_OPERAND (pointer, 0)),
+		   TREE_TYPE (*from_p))))
 	    {
-	      *from_p = t;
+	      *from_p = TREE_OPERAND (pointer, 0); 
 	      ret = GS_OK;
 	    }
 	  else
@@ -2908,55 +2907,6 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 	  {
 	    *expr_p = *from_p;
 	    return gimplify_cond_expr (expr_p, pre_p, post_p, *to_p);
-	  }
-	else
-	  ret = GS_UNHANDLED;
-	break;
-
-      case CALL_EXPR:
-	/* For calls that return in memory, give *to_p as the CALL_EXPR's
-	   return slot so that we don't generate a temporary.  */
-	if (aggregate_value_p (*from_p, *from_p))
-	  {
-	    tree init = *from_p;
-	    tree fn = TREE_OPERAND (init, 0);
-	    tree args = TREE_OPERAND (init, 1);
-	    tree rettype = TREE_TYPE (TREE_TYPE (TREE_TYPE (fn)));
-	    tree arg = *to_p;
-	    tree type;
-
-	    /* Only use the original target if *to_p isn't already
-	       addressable; if its address escapes, and the called function
-	       uses the NRV optimization, a conforming program could see
-	       *to_p change before the called function returns.  */
-	    bool use_temp = !is_gimple_non_addressable (*to_p);
-	    if (use_temp)
-	      {
-		arg = create_tmp_var (rettype, "ret");
-		*from_p = arg;
-	      }
-
-	    type = TREE_TYPE (arg);
-	    /* FIXME: Mark the address as not escaping.  */
-	    lang_hooks.mark_addressable (arg);
-	    arg = build1 (ADDR_EXPR, build_pointer_type (type), arg);
-	    /* The return type might have different cv-quals from arg.  */
-	    arg = convert (build_pointer_type (rettype), arg);
-	    args = tree_cons (NULL_TREE, arg, args);
-	    init = build3 (CALL_EXPR, rettype, fn, args, NULL_TREE);
-	    CALL_EXPR_HAS_RETURN_SLOT_ADDR (init) = 1;
-	    TREE_USED (init) = 1;
-
-	    if (use_temp)
-	      gimplify_and_add (init, pre_p);
-	    else if (want_value)
-	      {
-		gimplify_and_add (init, pre_p);
-		*expr_p = *to_p;
-	      }
-	    else
-	      *expr_p = init;
-	    ret = GS_OK;
 	  }
 	else
 	  ret = GS_UNHANDLED;
@@ -3594,7 +3544,7 @@ gimplify_target_expr (tree *expr_p, tree *pre_p, tree *post_p)
 	  ret = GS_OK;
           if (TREE_CODE (init) == BIND_EXPR)
 	    gimplify_bind_expr (&init, temp, pre_p);
-	  if (init != temp)
+          if (init != temp)
 	    {
 	      init = build (MODIFY_EXPR, void_type_node, temp, init);
 	      ret = gimplify_expr (&init, pre_p, post_p, is_gimple_stmt,
@@ -3845,13 +3795,9 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  recalculate_side_effects (*expr_p);
 	  break;
 
-	case INDIRECT_REF:
-	  *expr_p = fold_indirect_ref (*expr_p);
-	  if (*expr_p != save_expr)
-	    break;
-	  /* else fall through.  */
 	case ALIGN_INDIRECT_REF:
 	case MISALIGNED_INDIRECT_REF:
+	case INDIRECT_REF:
 	  ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
 			       is_gimple_reg, fb_rvalue);
 	  recalculate_side_effects (*expr_p);

@@ -8973,29 +8973,6 @@ fold (tree expr)
 			     build2 (LE_EXPR, type,
 				     TREE_OPERAND (arg0, 0), arg1)));
 
-      /* Convert ABS_EXPR<x> >= 0 to true.  */
-      else if (code == GE_EXPR
-	       && tree_expr_nonnegative_p (arg0)
-	       && ! TREE_SIDE_EFFECTS (arg0)
-	       && (integer_zerop (arg1)
-		   || (! HONOR_NANS (TYPE_MODE (TREE_TYPE (arg0)))
-                       && real_zerop (arg1))))
-	return constant_boolean_node (true, type);
-
-      /* Convert ABS_EXPR<x> < 0 to false.  */
-      else if (code == LT_EXPR
-	       && tree_expr_nonnegative_p (arg0)
-	       && ! TREE_SIDE_EFFECTS (arg0)
-	       && (integer_zerop (arg1) || real_zerop (arg1)))
-	return constant_boolean_node (false, type);
-
-      /* Convert ABS_EXPR<x> == 0 or ABS_EXPR<x> != 0 to x == 0 or x != 0.  */
-      else if ((code == EQ_EXPR || code == NE_EXPR)
-	       && TREE_CODE (arg0) == ABS_EXPR
-	       && ! TREE_SIDE_EFFECTS (arg0)
-	       && (integer_zerop (arg1) || real_zerop (arg1)))
-	return fold (build2 (code, type, TREE_OPERAND (arg0, 0), arg1));
-
       /* If this is an EQ or NE comparison with zero and ARG0 is
 	 (1 << foo) & bar, convert it to (bar >> foo) & 1.  Both require
 	 two operations, but the latter can be done in one less insn
@@ -11217,21 +11194,17 @@ build_fold_addr_expr (tree t)
   return build_fold_addr_expr_with_type (t, build_pointer_type (TREE_TYPE (t)));
 }
 
-/* Given a pointer value T, return a simplified version of an indirection
-   through T, or NULL_TREE if no simplification is possible.  */
+/* Builds an expression for an indirection through T, simplifying some
+   cases.  */
 
-static tree
-fold_indirect_ref_1 (tree t)
+tree
+build_fold_indirect_ref (tree t)
 {
   tree type = TREE_TYPE (TREE_TYPE (t));
   tree sub = t;
   tree subtype;
 
   STRIP_NOPS (sub);
-  subtype = TREE_TYPE (sub);
-  if (!POINTER_TYPE_P (subtype))
-    return NULL_TREE;
-
   if (TREE_CODE (sub) == ADDR_EXPR)
     {
       tree op = TREE_OPERAND (sub, 0);
@@ -11246,6 +11219,7 @@ fold_indirect_ref_1 (tree t)
     }
 
   /* *(foo *)fooarrptr => (*fooarrptr)[0] */
+  subtype = TREE_TYPE (sub);
   if (TREE_CODE (TREE_TYPE (subtype)) == ARRAY_TYPE
       && lang_hooks.types_compatible_p (type, TREE_TYPE (TREE_TYPE (subtype))))
     {
@@ -11253,34 +11227,7 @@ fold_indirect_ref_1 (tree t)
       return build4 (ARRAY_REF, type, sub, size_zero_node, NULL_TREE, NULL_TREE);
     }
 
-  return NULL_TREE;
-}
-
-/* Builds an expression for an indirection through T, simplifying some
-   cases.  */
-
-tree
-build_fold_indirect_ref (tree t)
-{
-  tree sub = fold_indirect_ref_1 (t);
-
-  if (sub)
-    return sub;
-  else
-    return build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (t)), t);
-}
-
-/* Given an INDIRECT_REF T, return either T or a simplified version.  */
-
-tree
-fold_indirect_ref (tree t)
-{
-  tree sub = fold_indirect_ref_1 (TREE_OPERAND (t, 0));
-
-  if (sub)
-    return sub;
-  else
-    return t;
+  return build1 (INDIRECT_REF, type, t);
 }
 
 /* Strip non-trapping, non-side-effecting tree nodes from an expression
