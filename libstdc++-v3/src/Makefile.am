@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id$
+## $Id: Makefile.am,v 1.25 2000/07/26 21:30:45 pme Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -314,3 +314,14 @@ wstring-inst.o: string-inst.cc
 wstring-inst.lo: string-inst.cc
 	$(LTCXXCOMPILE) -fimplicit-templates -c -DC=wchar_t $< -o $@
 
+all: INCLUDES
+INCLUDES: Makefile
+	$(MAKE) \
+	  top_builddir=`CDPATH=:. && cd $(top_builddir) && pwd` \
+	  top_srcdir=`CDPATH=:. && cd $(top_srcdir) && pwd` \
+	  tmp-INCLUDES
+	-rm -f INCLUDES
+	mv tmp-INCLUDES INCLUDES
+
+tmp-INCLUDES: Makefile
+	echo -I$(top_builddir) $(INCLUDES) > $@
