@@ -1,3 +1,7 @@
+2003-01-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* lang.c (dump_compound_expr): Prototype.
+
 2003-01-03  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR java/8712:
