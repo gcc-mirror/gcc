@@ -137,6 +137,9 @@ extern int target_flags;
 /* Nonzero for the 64bit model: ints, longs, and pointers are 64 bits.  */
 #define MASK_64BIT		0x400
 
+/* Disable use of FPRs.  */
+#define MASK_NO_FPR		0x800
+
 #define TARGET_POWER			(target_flags & MASK_POWER)
 #define TARGET_POWER2			(target_flags & MASK_POWER2)
 #define TARGET_POWERPC			(target_flags & MASK_POWERPC)
@@ -148,6 +151,7 @@ extern int target_flags;
 #define TARGET_NO_SUM_IN_TOC		(target_flags & MASK_NO_SUM_IN_TOC)
 #define TARGET_MINIMAL_TOC		(target_flags & MASK_MINIMAL_TOC)
 #define TARGET_64BIT			(target_flags & MASK_64BIT)
+#define TARGET_NO_FPR			(target_flags & MASK_NO_FPR)
 
 /* Run-time compilation parameters selecting different hardware subsets.
 
@@ -180,6 +184,8 @@ extern int target_flags;
   {"minimal-toc",	MASK_MINIMAL_TOC},			\
   {"minimal-toc",	- (MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC)}, \
   {"no-minimal-toc",	- MASK_MINIMAL_TOC},			\
+  {"fp-regs",		- MASK_NO_FPR},				\
+  {"no-fp-regs",	MASK_NO_FPR},				\
   {"",			TARGET_DEFAULT}}
 
 #define TARGET_DEFAULT MASK_POWER
@@ -566,11 +572,17 @@ extern char *rs6000_cpu_string;
 
 /* Define this macro to change register usage conditional on target flags.
    Set MQ register fixed (already call_used) if not POWER architecture
-   (RIOS1, RIOS2, RSC, and PPC601) so that it will not be allocated.  */
+   (RIOS1, RIOS2, RSC, and PPC601) so that it will not be allocated.
+   Conditionally disable FPRs.  */
 
-#define CONDITIONAL_REGISTER_USAGE					\
-    if (!TARGET_POWER)							\
-	fixed_regs[64] = 1;
+#define CONDITIONAL_REGISTER_USAGE	\
+{					\
+  if (! TARGET_POWER)			\
+    fixed_regs[64] = 1;			\
+  if (TARGET_NO_FPR)			\
+    for (i = 32; i < 64; i++)			\
+      fixed_regs[i] = call_used_regs[i] = 1; \
+}
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
