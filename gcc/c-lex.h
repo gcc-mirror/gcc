@@ -42,6 +42,7 @@ enum rid
   RID_VOLATILE,
   RID_INLINE,
   RID_NOALIAS,
+  RID_ITERATOR,
 
   RID_MAX
 };
