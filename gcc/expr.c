@@ -6063,6 +6063,142 @@ expand_operands (tree exp0, tree exp1, rtx target, rtx *op0, rtx *op1,
 }
 
 
+/* A subroutine of expand_expr.  Evaluate the address of EXP.
+   The TARGET, TMODE and MODIFIER arguments are as for expand_expr.  */
+
+static rtx
+expand_expr_addr_expr (tree exp, rtx target, enum machine_mode tmode,
+		       enum expand_modifier modifier)
+{
+  rtx result, subtarget;
+  tree inner, offset;
+  HOST_WIDE_INT bitsize, bitpos;
+  int volatilep, unsignedp;
+  enum machine_mode mode1;
+
+  /* If we are taking the address of a constant and are at the top level,
+     we have to use output_constant_def since we can't call force_const_mem
+     at top level.  */
+  /* ??? This should be considered a front-end bug.  We should not be
+     generating ADDR_EXPR of something that isn't an LVALUE.  The only
+     exception here is STRING_CST.  */
+  if (TREE_CODE (exp) == CONSTRUCTOR
+      || TREE_CODE_CLASS (TREE_CODE (exp)) == 'c')
+    return XEXP (output_constant_def (exp, 0), 0);
+
+  /* Everything must be something allowed by is_gimple_addressable.  */
+  switch (TREE_CODE (exp))
+    {
+    case INDIRECT_REF:
+      /* This case will happen via recursion for &a->b.  */
+      return expand_expr (TREE_OPERAND (exp, 0), target, tmode, EXPAND_NORMAL);
+
+    case CONST_DECL:
+      /* Recurse and make the output_constant_def clause above handle this.  */
+      return expand_expr_addr_expr (DECL_INITIAL (exp), target,
+				    tmode, modifier);
+
+    case REALPART_EXPR:
+      /* The real part of the complex number is always first, therefore
+	 the address is the same as the address of the parent object.  */
+      offset = 0;
+      bitpos = 0;
+      inner = TREE_OPERAND (exp, 0);
+      break;
+
+    case IMAGPART_EXPR:
+      /* The imaginary part of the complex number is always second.
+	 The expresion is therefore always offset by the size of the
+	 scalar type.  */
+      offset = 0;
+      bitpos = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (exp)));
+      inner = TREE_OPERAND (exp, 0);
+      break;
+
+    default:
+      /* If the object is a DECL, then expand it for its rtl.  Don't bypass
+	 expand_expr, as that can have various side effects; LABEL_DECLs for
+	 example, may not have their DECL_RTL set yet.  Assume language
+	 specific tree nodes can be expanded in some interesting way.  */
+      if (DECL_P (exp)
+	  || TREE_CODE (exp) >= LAST_AND_UNUSED_TREE_CODE)
+	{
+	  result = expand_expr (exp, target, tmode,
+				modifier == EXPAND_INITIALIZER
+				? EXPAND_INITIALIZER : EXPAND_CONST_ADDRESS);
+
+	  /* If the DECL isn't in memory, then the DECL wasn't properly
+	     marked TREE_ADDRESSABLE, which will be either a front-end
+	     or a tree optimizer bug.  */
+	  if (GET_CODE (result) != MEM)
+	    abort ();
+	  result = XEXP (result, 0);
+
+	  /* ??? Is this needed anymore?  */
+	  if (!TREE_USED (exp) == 0)
+	    {
+	      assemble_external (exp);
+	      TREE_USED (exp) = 1;
+	    }
+
+	  if (modifier != EXPAND_INITIALIZER
+	      && modifier != EXPAND_CONST_ADDRESS)
+	    result = force_operand (result, target);
+	  return result;
+	}
+
+      inner = get_inner_reference (exp, &bitsize, &bitpos, &offset,
+				   &mode1, &unsignedp, &volatilep);
+      break;
+    }
+
+  /* We must have made progress.  */
+  if (inner == exp)
+    abort ();
+
+  subtarget = offset || bitpos ? NULL_RTX : target;
+  result = expand_expr_addr_expr (inner, subtarget, tmode, modifier);
+
+  if (tmode == VOIDmode)
+    {
+      tmode = GET_MODE (result);
+      if (tmode == VOIDmode)
+	tmode = Pmode;
+    }
+
+  if (offset)
+    {
+      rtx tmp;
+
+      if (modifier != EXPAND_NORMAL)
+	result = force_operand (result, NULL);
+      tmp = expand_expr (offset, NULL, tmode, EXPAND_NORMAL);
+
+      if (modifier == EXPAND_SUM)
+	result = gen_rtx_PLUS (tmode, result, tmp);
+      else
+	{
+	  subtarget = bitpos ? NULL_RTX : target;
+	  result = expand_simple_binop (tmode, PLUS, result, tmp, subtarget,
+					1, OPTAB_LIB_WIDEN);
+	}
+    }
+
+  if (bitpos)
+    {
+      /* Someone beforehand should have rejected taking the address
+	 of such an object.  */
+      if (bitpos % BITS_PER_UNIT != 0)
+	abort ();
+
+      result = plus_constant (result, bitpos / BITS_PER_UNIT);
+      if (modifier < EXPAND_SUM)
+	result = force_operand (result, target);
+    }
+
+  return result;
+}
+
 /* expand_expr: generate code for computing expression EXP.
    An rtx for the computed value is returned.  The value is never null.
    In the case of a void EXP, const0_rtx is returned.
@@ -7952,135 +8088,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return const0_rtx;
 
     case ADDR_EXPR:
-      if (modifier == EXPAND_STACK_PARM)
-	target = 0;
-      /* If we are taking the address of something erroneous, just
-	 return a zero.  */
-      if (TREE_CODE (TREE_OPERAND (exp, 0)) == ERROR_MARK)
-	return const0_rtx;
-      /* If we are taking the address of a constant and are at the
-	 top level, we have to use output_constant_def since we can't
-	 call force_const_mem at top level.  */
-      else if (cfun == 0
-	       && (TREE_CODE (TREE_OPERAND (exp, 0)) == CONSTRUCTOR
-		   || (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, 0)))
-		       == 'c')))
-	op0 = XEXP (output_constant_def (TREE_OPERAND (exp, 0), 0), 0);
-      else
-	{
-	  /* We make sure to pass const0_rtx down if we came in with
-	     ignore set, to avoid doing the cleanups twice for something.  */
-	  op0 = expand_expr (TREE_OPERAND (exp, 0),
-			     ignore ? const0_rtx : NULL_RTX, VOIDmode,
-			     (modifier == EXPAND_INITIALIZER
-			      ? modifier : EXPAND_CONST_ADDRESS));
-
-	  /* If we are going to ignore the result, OP0 will have been set
-	     to const0_rtx, so just return it.  Don't get confused and
-	     think we are taking the address of the constant.  */
-	  if (ignore)
-	    return op0;
-
-	  /* We would like the object in memory.  If it is a constant, we can
-	     have it be statically allocated into memory.  For a non-constant,
-	     we need to allocate some memory and store the value into it.  */
-
-	  if (CONSTANT_P (op0))
-	    op0 = force_const_mem (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))),
-				   op0);
-	  else if (REG_P (op0) || GET_CODE (op0) == SUBREG
-		   || GET_CODE (op0) == CONCAT || GET_CODE (op0) == PARALLEL
-		   || GET_CODE (op0) == LO_SUM)
-	    {
-	      /* If this object is in a register, it can't be BLKmode.  */
-	      tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
-	      rtx memloc = assign_temp (inner_type, 1, 1, 1);
-
-	      if (GET_CODE (op0) == PARALLEL)
-	        /* Handle calls that pass values in multiple
-		   non-contiguous locations.  The Irix 6 ABI has examples
-		   of this.  */
-		emit_group_store (memloc, op0, inner_type,
-				  int_size_in_bytes (inner_type));
-	      else
-		emit_move_insn (memloc, op0);
-
-	      op0 = memloc;
-	    }
-
-	  if (!MEM_P (op0))
-	    abort ();
-
-	  mark_temp_addr_taken (op0);
-	  if (modifier == EXPAND_SUM || modifier == EXPAND_INITIALIZER)
-	    {
-	      op0 = XEXP (op0, 0);
-	      if (GET_MODE (op0) == Pmode && mode == ptr_mode)
-		op0 = convert_memory_address (ptr_mode, op0);
-	      return op0;
-	    }
-
-	  /* If OP0 is not aligned as least as much as the type requires, we
-	     need to make a temporary, copy OP0 to it, and take the address of
-	     the temporary.  We want to use the alignment of the type, not of
-	     the operand.  Note that this is incorrect for FUNCTION_TYPE, but
-	     the test for BLKmode means that can't happen.  The test for
-	     BLKmode is because we never make mis-aligned MEMs with
-	     non-BLKmode.
-
-	     We don't need to do this at all if the machine doesn't have
-	     strict alignment.  */
-	  if (STRICT_ALIGNMENT && GET_MODE (op0) == BLKmode
-	      && (TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0)))
-		  > MEM_ALIGN (op0))
-	      && MEM_ALIGN (op0) < BIGGEST_ALIGNMENT)
-	    {
-	      tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
-	      rtx new;
-
-	      if (TYPE_ALIGN_OK (inner_type))
-		abort ();
-
-	      if (TREE_ADDRESSABLE (inner_type))
-		{
-		  /* We can't make a bitwise copy of this object, so fail.  */
-		  error ("cannot take the address of an unaligned member");
-		  return const0_rtx;
-		}
-
-	      new = assign_stack_temp_for_type
-		(TYPE_MODE (inner_type),
-		 MEM_SIZE (op0) ? INTVAL (MEM_SIZE (op0))
-		 : int_size_in_bytes (inner_type),
-		 1, build_qualified_type (inner_type,
-					  (TYPE_QUALS (inner_type)
-					   | TYPE_QUAL_CONST)));
-
-	      emit_block_move (new, op0, expr_size (TREE_OPERAND (exp, 0)),
-			       (modifier == EXPAND_STACK_PARM
-				? BLOCK_OP_CALL_PARM : BLOCK_OP_NORMAL));
-
-	      op0 = new;
-	    }
-
-	  op0 = force_operand (XEXP (op0, 0), target);
-	}
-
-      if (flag_force_addr
-	  && !REG_P (op0)
-	  && modifier != EXPAND_CONST_ADDRESS
-	  && modifier != EXPAND_INITIALIZER
-	  && modifier != EXPAND_SUM)
-	op0 = force_reg (Pmode, op0);
-
-      if (REG_P (op0)
-	  && ! REG_USERVAR_P (op0))
-	mark_reg_pointer (op0, TYPE_ALIGN (TREE_TYPE (type)));
-
-      if (GET_MODE (op0) == Pmode && mode == ptr_mode)
-	op0 = convert_memory_address (ptr_mode, op0);
-
-      return op0;
+      return expand_expr_addr_expr (TREE_OPERAND (exp, 0), target,
+				    tmode, modifier);
 
     /* COMPLEX type for Extended Pascal & Fortran  */
     case COMPLEX_EXPR:
