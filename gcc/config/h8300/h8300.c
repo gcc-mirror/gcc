@@ -1434,6 +1434,9 @@ notice_update_cc (body, insn)
       if (cc_status.value1 != 0
 	  && reg_overlap_mentioned_p (recog_data.operand[0], cc_status.value1))
 	cc_status.value1 = 0;
+      if (cc_status.value2 != 0
+	  && reg_overlap_mentioned_p (recog_data.operand[0], cc_status.value2))
+	cc_status.value2 = 0;
       break;
 
     case CC_SET_ZN:
@@ -1452,6 +1455,8 @@ notice_update_cc (body, insn)
       CC_STATUS_INIT;
       cc_status.flags |= CC_NO_CARRY;
       cc_status.value1 = recog_data.operand[0];
+      if (GET_CODE (body) == SET && REG_P (SET_SRC (body)))
+	cc_status.value2 = SET_SRC (body);
       break;
 
     case CC_COMPARE:
