@@ -598,8 +598,8 @@ again:
   else
     ungetc (i, infile);
 
-  for (i = 0; i < GET_RTX_LENGTH (GET_CODE (return_rtx)); i++)
-    switch (*format_ptr++)
+  for (i = 0; format_ptr[i] != 0; i++)
+    switch (format_ptr[i])
       {
 	/* 0 means a field for internal use only.
 	   Don't expect it to be present in the input.  */
@@ -668,7 +668,7 @@ again:
 	      /* 'S' fields are optional and should be NULL if no string
 		 was given.  Also allow normal 's' and 'T' strings to be
 		 omitted, treating them in the same way as empty strings.  */
-	      XSTR (return_rtx, i) = (format_ptr[-1] == 'S' ? NULL : "");
+	      XSTR (return_rtx, i) = (format_ptr[i] == 'S' ? NULL : "");
 	      break;
 	    }
 
@@ -676,7 +676,7 @@ again:
 	     DEFINE_INSN_AND_SPLIT, or DEFINE_PEEPHOLE automatically
 	     gets a star inserted as its first character, if it is
 	     written with a brace block instead of a string constant.  */
-	  star_if_braced = (format_ptr[-1] == 'T');
+	  star_if_braced = (format_ptr[i] == 'T');
 
 	  stringbuf = read_string (infile, star_if_braced);
 
@@ -741,7 +741,7 @@ again:
       default:
 	fprintf (stderr,
 		 "switch format wrong in rtl.read_rtx(). format was: %c.\n",
-		 format_ptr[-1]);
+		 format_ptr[i]);
 	fprintf (stderr, "\tfile position: %ld\n", ftell (infile));
 	abort ();
       }

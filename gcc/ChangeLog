@@ -1,5 +1,9 @@
 2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
 
+	* read-rtl.c (read_rtx): Tidy use of format_ptr.
+
+2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
+
 	* read-rtl.c (string_obstack): New file-scope variable.
 	(read_string, read_quoted_string, read_braced_string)
 	(read_escape): Remove obstack parameter and use string_obstack instead.
