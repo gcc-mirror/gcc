@@ -7,7 +7,6 @@
 
 #include "config.h"
 
-#ifndef HAVE_STRERROR
 #ifdef HAVE_SYS_ERRLIST
 /* Note that errno.h (not sure what OS) or stdio.h (BSD 4.4, at least)
    might declare sys_errlist in a way that the compiler might consider
@@ -17,16 +16,13 @@
 #define sys_nerr sys_nerr__
 #define sys_errlist sys_errlist__
 #endif
-#endif
 
 #include <stdio.h>
 #include <errno.h>
 
-#ifndef HAVE_STRERROR
 #ifdef HAVE_SYS_ERRLIST
 #undef sys_nerr
 #undef sys_errlist
-#endif
 #endif
 
 /*  Routines imported from standard C runtime libraries. */
@@ -464,9 +460,10 @@ static int num_error_names = 0;
    same name, it differs from other implementations in that it is dynamically
    initialized rather than statically initialized. */
 
-#ifndef HAVE_STRERROR
 #ifndef HAVE_SYS_ERRLIST
 
+#define sys_nerr sys_nerr__
+#define sys_errlist sys_errlist__
 static int sys_nerr;
 static const char **sys_errlist;
 
@@ -475,7 +472,6 @@ static const char **sys_errlist;
 extern int sys_nerr;
 extern char *sys_errlist[];
 
-#endif
 #endif
 
 /*
@@ -542,7 +538,6 @@ init_error_tables ()
 	}
     }
 
-#ifndef HAVE_STRERROR
 #ifndef HAVE_SYS_ERRLIST
 
   /* Now attempt to allocate the sys_errlist table, zero it out, and then
@@ -562,7 +557,6 @@ init_error_tables ()
 	}
     }
 
-#endif
 #endif
 
 }
