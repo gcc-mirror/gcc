@@ -29,15 +29,6 @@ if {![istarget mips*-*-*] || [gcc_target_object_format] != "elf"} {
 # flags where possible.
 set asm_abi_flags {-32 -n32 -64 -mabi=o64 -mabi=eabi}
 
-# Return true if the configuration uses MEABI by default.
-proc is_meabi_config {} {
-    return [expr {[istarget mipsisa32*-*-elf*]
-		  || [istarget mipsisa32el-*-elf*]
-		  || [istarget mipsisa64-*-elf*]
-		  || [istarget mipsisa64el-*-elf*]
-		  || [istarget mipsisa64sr71k-*-elf*]}]
-}
-
 # Try to assemble mips-abi.s (an empty file), passing -v in order to
 # get the assembler command line.  Check whether an appropriate ABI
 # flag is passed.
@@ -100,22 +91,17 @@ foreach flag $default_flags {
 # If the command line does specify an ABI, just check for the
 # appropriate assembler flag.
 switch -- $default_abi {
-    -mabi=meabi { check_mips_abi "MEABI" "" "" }
     -mabi=eabi { check_mips_abi "EABI" "-mabi=eabi" "" }
     -mabi=32 { check_mips_abi "o32" "-32" "" }
     -mabi=n32 { check_mips_abi "n32" "-n32" "" }
     -mabi=o64 { check_mips_abi "o64" "-mabi=o64" "" }
     -mabi=64 { check_mips_abi "n64" "-64" "" }
     "" {
-	# MEABI configs shouldn't pass an ABI flag by default
-	# but the others should.  It doesn't seem worthwhile
-	# duplicating the configuration to ABI logic here,
-	# so just accept any ABI.
-	if {[is_meabi_config]} {
-	    check_mips_abi "default" "" ""
-	} else {
-	    check_mips_abi "default" $asm_abi_flags ""
-	}
+	# An ABI should be passed to the assembler by default.
+	# It doesn't seem worthwhile to duplicate the
+	# configuration to ABI logic here, so just accept any ABI.
+	check_mips_abi "default" $asm_abi_flags ""
+
 	# See whether passing a -mabi flag does the right thing.
 	# Only try ABIs that the SGI assembler also understands.
 	check_mips_abi "o32" "-32" "-mabi=32"
