@@ -178,8 +178,9 @@ extern void find_reloads PROTO((rtx, int, int, int, short *));
 /* Compute the sum of X and Y, making canonicalizations assumed in an
    address, namely: sum constant integers, surround the sum of two
    constants with a CONST, put the constant as the second operand, and
-   group the constant on the outermost sum.  */
-extern rtx form_sum PROTO((rtx, rtx));
+   group the constant on the outermost sum.  If DIFF_P is nonzero, compute
+   the difference instead.  */
+extern rtx form_sum PROTO((rtx, rtx, int));
 
 /* Substitute into the current INSN the registers into which we have reloaded
    the things that need reloading.  */
