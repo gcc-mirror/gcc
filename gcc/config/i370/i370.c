@@ -101,6 +101,13 @@ static void i370_label_scan PARAMS ((void));
 /* defines and functions specific to the HLASM assembler */
 #ifdef TARGET_HLASM
 
+#define MVS_HASH_PRIME 999983
+#if defined(HOST_EBCDIC)
+#define MVS_SET_SIZE 256
+#else
+#define MVS_SET_SIZE 128
+#endif
+
 #ifndef MAX_MVS_LABEL_SIZE
 #define MAX_MVS_LABEL_SIZE 8
 #endif
@@ -124,9 +131,7 @@ alias_node_t;
 static alias_node_t *alias_anchor = 0;
 
 /* Alias number */
-#ifdef LONGEXTERNAL
 static int alias_number = 0;
-#endif
 
 /* Define the length of the internal MVS function table.  */
 #define MVS_FUNCTION_TABLE_LENGTH 32
@@ -829,6 +834,22 @@ mvs_function_check (name)
   return 0;
 }
 
+/* Generate a hash for a given key. */
+
+static int
+mvs_hash_alias (key)
+     char *key;
+{
+  int h;
+  int i;
+  int l = strlen (key);
+
+  h = key[0];
+  for (i = 1; i < l; i++)
+    h = ((h * MVS_SET_SIZE) + key[i]) % MVS_HASH_PRIME;
+  return (h);
+}
+
 
 /* Add the alias to the current alias list.  */
 
@@ -836,7 +857,7 @@ void
 mvs_add_alias (realname, aliasname, emitted)
      const char *realname;
      const char *aliasname;
-     int emitted;
+     int   emitted;
 {
   alias_node_t *ap;
 
@@ -848,18 +869,46 @@ mvs_add_alias (realname, aliasname, emitted)
   alias_anchor = ap;
 }
 
-/* Check to see if the name needs aliasing */
+/* Check to see if the name needs aliasing. ie. the name is either:
+     1. Longer than 8 characters
+     2. Contains an underscore
+     3. Is mixed case */
 
 int
 mvs_need_alias (realname)
       const char *realname;
 {
+   int i, j = strlen (realname);
+
    if (mvs_function_check (realname))
      return 0;
-   if (strlen (realname) > MAX_MVS_LABEL_SIZE)
+#if 0
+   if (!strcmp (realname, "gccmain"))
+     return 0;
+   if (!strcmp (realname, "main"))
+     return 0;
+#endif
+   if (j > MAX_MVS_LABEL_SIZE)
      return 1;
    if (strchr (realname, '_') != 0)
      return 1;
+   if (isupper (realname[0]))
+     {
+       for (i = 1; i < j; i++)
+	 {
+	   if (islower (realname[i]))
+	     return 1;
+	 }
+     }
+   else
+     {
+       for (i = 1; i < j; i++)
+         {
+	   if (isupper (realname[i]))
+	     return 1;
+	 }
+     }
+
    return 0;
 }
 
@@ -884,7 +933,16 @@ mvs_get_alias (realname, aliasname)
     }
   if (mvs_need_alias (realname))
     {
-      sprintf (aliasname, "ALS%05d", alias_number++);
+      char c1, c2;
+
+      c1 = realname[0];
+      c2 = realname[1];
+      if (islower (c1)) c1 = toupper (c1);
+      else if (c1 == '_') c1 = 'A';
+      if (islower (c2)) c2 = toupper (c2);
+      else if (c2 == '_' || c2 == '\0') c2 = '#';
+
+      sprintf (aliasname, "%c%c%06d", c1, c2, mvs_hash_alias (realname));
       mvs_add_alias (realname, aliasname, 0);
       return 1;
     }
@@ -922,7 +980,16 @@ mvs_check_alias (realname, aliasname)
     }
   if (mvs_need_alias (realname))
     {
-      sprintf (aliasname, "ALS%05d", alias_number++);
+      char c1, c2;
+
+      c1 = realname[0];
+      c2 = realname[1];
+      if (islower (c1)) c1 = toupper (c1);
+      else if (c1 == '_') c1 = 'A';
+      if (islower (c2)) c2 = toupper (c2);
+      else if (c2 == '_' || c2 == '\0') c2 = '#';
+
+      sprintf (aliasname, "%c%c%06d", c1, c2, mvs_hash_alias (realname));
       mvs_add_alias (realname, aliasname, 0);
       alias_anchor->alias_emitted = 1;
       return 2;
@@ -939,8 +1006,9 @@ mvs_check_alias (realname, aliasname)
 }
 
 /* Called from check_newline via the macro HANDLE_PRAGMA.
-   FINPUT is the source file input stream.
-   NODE is the tree node for the token after the "pragma".
+   p_getc is a pointer to get character routine.
+   p_ungetc is a pointer to un-get character routine.
+   pname is the pointer to the name of the pragma to process.
    The result is 1 if the pragma was handled.  */
 
 int
