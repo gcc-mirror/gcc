@@ -1,3 +1,12 @@
+2003-11-28  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.h (MASK_MFCRF): New.
+	(TARGET_MFCRF): Test target_flags, not processor type.
+	(TARGET_SWITCHES): Add mfcrf and no-mfcrf.
+	Change Don't to Do not.
+	* config/rs6000/rs6000.c (processors_target_table): Add MASK_MFCRF
+	to power4, 970, G5.
+
 2003-11-27  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* cse.c (cse_set_around_loop): When changing a constant load
@@ -3598,7 +3607,7 @@
 
 	* config/i386/i386.c (x86_this_parameter): Fix typo.
 
-203-10-11  Jan Hubicka  <jh@suse.cz>
+203-10-11  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (web.o): New.
 	* web.c: New file.

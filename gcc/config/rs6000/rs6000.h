@@ -187,7 +187,10 @@ extern int target_flags;
 /* Return small structures in memory (as the AIX ABI requires).  */
 #define MASK_AIX_STRUCT_RET	0x00040000
 
-/* The only remaining free bits are 0x00780000. sysv4.h uses
+/* Use single field mfcr instruction.  */
+#define MASK_MFCRF		0x00080000
+
+/* The only remaining free bits are 0x00700000. sysv4.h uses
    0x00800000 -> 0x40000000, and 0x80000000 is not available
    because target_flags is signed.  */
 
@@ -209,6 +212,17 @@ extern int target_flags;
 #define TARGET_SCHED_PROLOG	(target_flags & MASK_SCHED_PROLOG)
 #define TARGET_ALTIVEC		(target_flags & MASK_ALTIVEC)
 #define TARGET_AIX_STRUCT_RET	(target_flags & MASK_AIX_STRUCT_RET)
+
+/* Define TARGET_MFCRF if the target assembler supports the optional
+   field operand for mfcr and the target processor supports the
+   instruction.  */
+
+#ifdef HAVE_AS_MFCRF
+#define TARGET_MFCRF		(target_flags & MASK_MFCRF)
+#else
+#define TARGET_MFCRF 0
+#endif
+
 
 #define TARGET_32BIT		(! TARGET_64BIT)
 #define TARGET_HARD_FLOAT	(! TARGET_SOFT_FLOAT)
@@ -259,19 +273,19 @@ extern int target_flags;
   {"powerpc-gpopt",	MASK_POWERPC | MASK_PPC_GPOPT,			\
 			N_("Use PowerPC General Purpose group optional instructions")},\
   {"no-powerpc-gpopt",	- MASK_PPC_GPOPT,				\
-			N_("Don't use PowerPC General Purpose group optional instructions")},\
+			N_("Do not use PowerPC General Purpose group optional instructions")},\
   {"powerpc-gfxopt",	MASK_POWERPC | MASK_PPC_GFXOPT,			\
 			N_("Use PowerPC Graphics group optional instructions")},\
   {"no-powerpc-gfxopt",	- MASK_PPC_GFXOPT,				\
-			N_("Don't use PowerPC Graphics group optional instructions")},\
+			N_("Do not use PowerPC Graphics group optional instructions")},\
   {"powerpc64",		MASK_POWERPC64,					\
 			N_("Use PowerPC-64 instruction set")},		\
   {"no-powerpc64",	- MASK_POWERPC64,				\
-			N_("Don't use PowerPC-64 instruction set")},	\
+			N_("Do not use PowerPC-64 instruction set")},	\
   {"altivec",		MASK_ALTIVEC ,					\
 			N_("Use AltiVec instructions")},		\
   {"no-altivec",	- MASK_ALTIVEC ,					\
-			N_("Don't use AltiVec instructions")},	\
+			N_("Do not use AltiVec instructions")},	\
   {"new-mnemonics",	MASK_NEW_MNEMONICS,				\
 			N_("Use new mnemonics for PowerPC architecture")},\
   {"old-mnemonics",	-MASK_NEW_MNEMONICS,				\
@@ -282,11 +296,11 @@ extern int target_flags;
   {"fp-in-toc",		- MASK_NO_FP_IN_TOC,				\
 			N_("Place floating point constants in TOC")},	\
   {"no-fp-in-toc",	MASK_NO_FP_IN_TOC,				\
-			N_("Don't place floating point constants in TOC")},\
+			N_("Do not place floating point constants in TOC")},\
   {"sum-in-toc",	- MASK_NO_SUM_IN_TOC,				\
 			N_("Place symbol+offset constants in TOC")},	\
   {"no-sum-in-toc",	MASK_NO_SUM_IN_TOC,				\
-			N_("Don't place symbol+offset constants in TOC")},\
+			N_("Do not place symbol+offset constants in TOC")},\
   {"minimal-toc",	MASK_MINIMAL_TOC,				\
 			"Use only one TOC entry per procedure"},	\
   {"minimal-toc",	- (MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC),	\
@@ -294,9 +308,9 @@ extern int target_flags;
   {"no-minimal-toc",	- MASK_MINIMAL_TOC,				\
 			N_("Place variable addresses in the regular TOC")},\
   {"hard-float",	- MASK_SOFT_FLOAT,				\
-			N_("Use hardware fp")},				\
+			N_("Use hardware floating point")},		\
   {"soft-float",	MASK_SOFT_FLOAT,				\
-			N_("Do not use hardware fp")},			\
+			N_("Do not use hardware floating point")},	\
   {"multiple",		MASK_MULTIPLE,					\
 			N_("Generate load/store multiple instructions")},	\
   {"no-multiple",	- MASK_MULTIPLE,				\
@@ -312,11 +326,11 @@ extern int target_flags;
   {"fused-madd",	- MASK_NO_FUSED_MADD,				\
 			N_("Generate fused multiply/add instructions")},\
   {"no-fused-madd",	MASK_NO_FUSED_MADD,				\
-			N_("Don't generate fused multiply/add instructions")},\
+			N_("Do not generate fused multiply/add instructions")},\
   {"sched-prolog",      MASK_SCHED_PROLOG,                              \
 			""},						\
   {"no-sched-prolog",   -MASK_SCHED_PROLOG,                             \
-			N_("Don't schedule the start and end of the procedure")},\
+			N_("Do not schedule the start and end of the procedure")},\
   {"sched-epilog",      MASK_SCHED_PROLOG,                              \
 			""},						\
   {"no-sched-epilog",   -MASK_SCHED_PROLOG,                             \
@@ -326,9 +340,13 @@ extern int target_flags;
   {"svr4-struct-return", - MASK_AIX_STRUCT_RET,				\
 			N_("Return small structures in registers (SVR4 default)")},\
   {"no-aix-struct-return", - MASK_AIX_STRUCT_RET,			\
-			""},\
+			""},						\
   {"no-svr4-struct-return", MASK_AIX_STRUCT_RET,			\
-			""},\
+			""},						\
+  {"mfcrf",		MASK_MFCRF,					\
+			N_("Generate single field mfcr instruction")},	\
+  {"no-mfcrf",		- MASK_MFCRF,					\
+			N_("Do not generate single field mfcr instruction")},\
   SUBTARGET_SWITCHES							\
   {"",			TARGET_DEFAULT | MASK_SCHED_PROLOG,		\
 			""}}
@@ -529,16 +547,6 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 #define DEFAULT_SCHED_FINISH_NOP_INSERTION_SCHEME          \
   (rs6000_cpu == PROCESSOR_POWER4 ? sched_finish_regroup_exact : sched_finish_none)
 
-/* Define TARGET_MFCRF if the target assembler supports the optional
-   field operand for mfcr and the target processor supports the
-   instruction.  */
-
-#ifdef HAVE_AS_MFCRF
-#define TARGET_MFCRF (rs6000_cpu == PROCESSOR_POWER4)
-#else
-#define TARGET_MFCRF 0
-#endif
-
 #define TARGET_LONG_DOUBLE_128 (rs6000_long_double_type_size == 128)
 #define TARGET_ALTIVEC_ABI rs6000_altivec_abi
 #define TARGET_ALTIVEC_VRSAVE rs6000_altivec_vrsave
@@ -555,7 +563,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
    defined, is executed once just after all the command options have
    been parsed.
 
-   Don't use this macro to turn on various extra optimizations for
+   Do not use this macro to turn on various extra optimizations for
    `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.
 
    On the RS/6000 this is used to define the target cpu type.  */
