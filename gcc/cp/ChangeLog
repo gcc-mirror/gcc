@@ -1,5 +1,9 @@
 2003-03-09  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/9373
+	* cp-lang.c (cxx_get_alias_set): Use alias set zero for
+	pointers to member functions.
+
 	PR c++/8534
 	* decl.c (build_ptrmemfunc_type): Do not allow default arugments
 	in pointer-to-member-function types.
