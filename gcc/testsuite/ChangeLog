@@ -1,3 +1,10 @@
+2004-02-20  Josef Zlomek  <zlomekj@suse.cz>
+
+	Backport from mainline:
+	2004-02-14  Josef Zlomek  <zlomekj@suse.cz>
+
+	* gcc.c-torture/compile/20040214-2.c: New test.
+
 2004-02-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14186
