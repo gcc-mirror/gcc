@@ -2034,7 +2034,7 @@ expand_call (exp, target, ignore)
      the call.  */
 
   try_tail_call = 0;
-  if (optimize >= 2
+  if (flag_optimize_sibling_calls
       && currently_expanding_call == 1
       && stmt_loop_nest_empty ()
       && ! any_pending_cleanups (1))

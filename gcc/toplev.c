@@ -519,6 +519,10 @@ int flag_no_peephole = 0;
 
 int flag_fast_math = 0;
 
+/* Nonzero allows GCC to optimize sibling and tail recursive calls.  */
+
+int flag_optimize_sibling_calls = 0;
+
 /* Nonzero means the front end generally wants `errno' maintained by math
    operations, like built-in SQRT, unless overridden by flag_fast_math.  */
 
@@ -863,6 +867,8 @@ lang_independent_options f_options[] =
    "Defer popping functions args from stack until later" },
   {"omit-frame-pointer", &flag_omit_frame_pointer, 1,
    "When possible do not generate stack frames"},
+  {"optimize-sibling-calls", &flag_optimize_sibling_calls, 1,
+   "Optimize sibling and tail recursive calls" },
   {"cse-follow-jumps", &flag_cse_follow_jumps, 1,
    "When running CSE, follow jumps to their targets" },
   {"cse-skip-blocks", &flag_cse_skip_blocks, 1,
@@ -2991,7 +2997,7 @@ rest_of_compilation (decl)
   /* We may have potential sibling or tail recursion sites.  Select one
      (of possibly multiple) methods of performing the call.  */
   init_EXPR_INSN_LIST_cache ();
-  if (optimize)
+  if (flag_optimize_sibling_calls)
     optimize_sibling_and_tail_recursive_calls ();
   
   if (ggc_p)
@@ -4733,6 +4739,7 @@ main (argc, argv)
 
   if (optimize >= 2)
     {
+      flag_optimize_sibling_calls = 1;
       flag_cse_follow_jumps = 1;
       flag_cse_skip_blocks = 1;
       flag_gcse = 1;
