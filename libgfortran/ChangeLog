@@ -1,3 +1,14 @@
+2004-06-13  Paul Brook  <paul@codesourcery.com>
+
+	* Makefile.am (gfor_helper_src): Add runtime/normalize.f90.
+	* configure.ac: Add checks for nextafter and nextafterf.
+	* Makefile.in, config.h.in, configure: Regenerate.
+	* libgfortran.h (normalize_r4_i4, normalize_r8_i8): Declare.
+	* intrinsics/rand.c (rand): Use normalize_r4_i4.
+	* intrinsics/random.c (random_r4): Use normalize_r4_i4.
+	(random_r8): Use normalize_r8_i8.
+	* runtime/normalize.c: New file.
+
 2004-06-13  Steven G. Kargl  <kargls@comcast.net>
 	    Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
