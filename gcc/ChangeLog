@@ -1,3 +1,11 @@
+2001-04-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-typeck.c (convert_arguments): -Wtraditional now activates
+	-Wconversion warnings, except for changes in signed-ness.
+	Detect complex<->int & int<->complex conversions as well.
+
+	* invoke.texi (-Wtraditional): Document it.
+
 Tue Apr 10 17:45:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcse.c (update_ld_motion_stores): Don't use variable I for an insn.
