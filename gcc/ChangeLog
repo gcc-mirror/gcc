@@ -1,3 +1,14 @@
+2001-08-22  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config.gcc: Add stormy16-*-elf case.
+	* config/stormy16/stormy-abi: New file.
+	* config/stormy16/stormy16-lib2.c: New file.
+	* config/stormy16/stormy16-protos.h: New file.
+	* config/stormy16/stormy16.c: New file.
+	* config/stormy16/stormy16.h: New file.
+	* config/stormy16/stormy16.md: New file.
+	* config/stormy16/t-stormy16: New file.
+
 Sat Aug 25 15:46:51 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (no-accumulate-outgoing-args): Use proper mask.

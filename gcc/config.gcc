@@ -3099,6 +3099,10 @@ sparc64-*-linux*)		# 64-bit Sparc's running GNU/Linux
 	fi
 	float_format=sparc
 	;;
+stormy16-*-elf)
+	tmake_file="stormy16/t-stormy16"
+	extra_parts="crtbegin.o crtend.o"
+	;;
 strongarm-*-elf*)
 	tm_file=arm/strongarm-elf.h
 	tmake_file=arm/t-strongarm-elf
