@@ -1288,9 +1288,9 @@ zero if not, and negative if the information isn't available.
 ")
 
 DEFDOC (IDATE_unix, "Get local time info.", "\
-Fills @var{@1@} with the numerical values at the current local time
-of day, month (in the range 1--12), and year in elements 1, 2, and 3,
-respectively.
+Fills @var{@1@} with the numerical values at the current local time.
+The day (in the range 1--31), month (in the range 1--12),
+and year appear in elements 1, 2, and 3 of @var{@1@}, respectively.
 The year has four significant digits.
 
 @cindex Y10K compliance
@@ -1308,7 +1308,7 @@ as of the Year 10000.
 DEFDOC (IDATE_vxt, "Get local time info (VAX/VMS).", "\
 Returns the numerical values of the current local time.
 The month (in the range 1--12) is returned in @var{@1@},
-the day (in the range 1--7) in @var{@2@},
+the day (in the range 1--31) in @var{@2@},
 and the year in @var{@3@} (in the range 0--99).
 
 @cindex Y2K compliance
