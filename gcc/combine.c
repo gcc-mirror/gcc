@@ -6002,7 +6002,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 
 	  /* Prefer ZERO_EXTENSION, since it gives more information to
 	     backends.  */
-	  if (rtx_cost (temp, SET) < rtx_cost (temp1, SET))
+	  if (rtx_cost (temp, SET) <= rtx_cost (temp1, SET))
 	    return temp;
 	  return temp1;
 	}
@@ -6218,7 +6218,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	{
 	  rtx temp1 = gen_rtx_SIGN_EXTEND (pos_mode, pos_rtx);
 
-	  /* Preffer ZERO_EXTENSION, since it gives more information to
+	  /* Prefer ZERO_EXTENSION, since it gives more information to
 	     backends.  */
 	  if (rtx_cost (temp1, SET) < rtx_cost (temp, SET))
 	    temp = temp1;
