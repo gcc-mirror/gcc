@@ -1,3 +1,8 @@
+2002-01-14  Hartmut Penner  <hpenner@de.ibm.com>
+
+	* combine.c (simplify_shift_const): Always generate new rtx 
+	for shift expression instead of reusing given expression. 
+
 Mon Jan 14 07:08:55 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/alpha/alpha.c (alpha_expand_mov): Don't call
