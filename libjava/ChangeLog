@@ -1,3 +1,9 @@
+2004-07-11  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* gnu/java/net/natPlainDatagramSocketImplWin32.cc (several):
+	Removed IPv4-related conditional compilation.
+	(mcastGrp): Added missing declarations.
+
 2004-07-11  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR libgcj/16478	
