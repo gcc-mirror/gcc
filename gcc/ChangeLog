@@ -1,3 +1,12 @@
+Fri Oct  2 01:24:19 1998  Geoff Keating  <geoffk@ozemail.com.au>
+
+	* gcse.c: New definition NEVER_SET for reg_first_set, reg_last_set,
+	mem_first_set, mem_last_set; because 0 can be a CUID.
+	(oprs_unchanged_p): Use new definition.
+	(record_last_reg_set_info): Likewise.
+	(record_last_mem_set_info): Likewise.
+	(compute_hash_table): Likewise.
+
 Fri Oct  2 01:20:04 1998  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm.c (add_constant): New parameter address_only, change caller.

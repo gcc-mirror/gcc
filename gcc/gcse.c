@@ -1055,6 +1055,8 @@ compute_sets (f)
 
 /* Hash table support.  */
 
+#define NEVER_SET -1
+
 /* For each register, the cuid of the first/last insn in the block to set it,
    or zero if not set.  */
 static int *reg_first_set;
@@ -1130,22 +1132,22 @@ oprs_unchanged_p (x, insn, avail_p)
     {
     case REG:
       if (avail_p)
-	return (reg_last_set[REGNO (x)] == 0
+	return (reg_last_set[REGNO (x)] == NEVER_SET
 		|| reg_last_set[REGNO (x)] < INSN_CUID (insn));
       else
-	return (reg_first_set[REGNO (x)] == 0
+	return (reg_first_set[REGNO (x)] == NEVER_SET
 		|| reg_first_set[REGNO (x)] >= INSN_CUID (insn));
 
     case MEM:
       if (avail_p)
 	{
-	  if (mem_last_set != 0
+	  if (mem_last_set != NEVER_SET
 	      && mem_last_set >= INSN_CUID (insn))
 	    return 0;
 	}
       else
 	{
-	  if (mem_first_set != 0
+	  if (mem_first_set != NEVER_SET
 	      && mem_first_set < INSN_CUID (insn))
 	    return 0;
 	}
@@ -1959,7 +1961,7 @@ record_last_reg_set_info (insn, regno)
      rtx insn;
      int regno;
 {
-  if (reg_first_set[regno] == 0)
+  if (reg_first_set[regno] == NEVER_SET)
     reg_first_set[regno] = INSN_CUID (insn);
   reg_last_set[regno] = INSN_CUID (insn);
   SET_BIT (reg_set_in_block[BLOCK_NUM (insn)], regno);
@@ -1971,7 +1973,7 @@ static void
 record_last_mem_set_info (insn)
      rtx insn;
 {
-  if (mem_first_set == 0)
+  if (mem_first_set == NEVER_SET)
     mem_first_set = INSN_CUID (insn);
   mem_last_set = INSN_CUID (insn);
   mem_set_in_block[BLOCK_NUM (insn)] = 1;
@@ -2041,16 +2043,17 @@ compute_hash_table (f, set_p)
       rtx insn;
       int regno;
       int in_libcall_block;
+      int i;
 
       /* First pass over the instructions records information used to
 	 determine when registers and memory are first and last set.
 	 ??? The mem_set_in_block and hard-reg reg_set_in_block computation
 	 could be moved to compute_sets since they currently don't change.  */
 
-      bzero ((char *) reg_first_set, max_gcse_regno * sizeof (int));
-      bzero ((char *) reg_last_set, max_gcse_regno * sizeof (int));
-      mem_first_set = 0;
-      mem_last_set = 0;
+      for (i = 0; i < max_gcse_regno; i++)
+	reg_first_set[i] = reg_last_set[i] = NEVER_SET;
+      mem_first_set = NEVER_SET;
+      mem_last_set = NEVER_SET;
 
       for (insn = basic_block_head[bb];
 	   insn && insn != NEXT_INSN (basic_block_end[bb]);
