@@ -1,3 +1,8 @@
+2001-05-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	* defaults.h (TARGET_PTRMEMFUNC_VBIT_LOCATION): Define.
+	* tm.texi (TARGET_PRTMEMFUNC_VBIT_LOCATION): Document.
+
 2001-05-11  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (group_barrier_needed_p): Don't allow
