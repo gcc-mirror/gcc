@@ -935,8 +935,10 @@ fix = {
 };
 
 
-/* __private_extern__ doesn't exist in FSF GCC.  Even if it did,
-   why would you ever put it in a system header file?  */
+/*
+ *  __private_extern__ doesn't exist in FSF GCC.  Even if it did,
+ *  why would you ever put it in a system header file?
+ */
 fix = {
   hackname  = darwin_private_extern;
   mach      = "*-*-darwin*";
