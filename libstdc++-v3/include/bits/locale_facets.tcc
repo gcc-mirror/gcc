@@ -872,6 +872,9 @@ namespace std
 	else if (__prec < static_cast<streamsize>(0))
 	  __prec = static_cast<streamsize>(6);
 
+	typedef __locale_cache<_CharT> __cache_type;
+	__cache_type& __lc = static_cast<__cache_type&>(__io._M_cache());
+
 	// [22.2.2.2.2] Stage 1, numeric conversion to character.
 	int __len;
 	// Long enough for the max format spec.
@@ -917,7 +920,6 @@ namespace std
       // numpunct.decimal_point() values for '.' and adding grouping.
       const locale __loc = __io.getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
-      const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
 
       _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
 							   * __len));
@@ -925,21 +927,20 @@ namespace std
       
       // Replace decimal point.
       const _CharT __cdec = __ctype.widen('.');
-      const _CharT __dec = __np.decimal_point();
+      const _CharT __dec = __lc._M_decimal_point;
       const _CharT* __p;
       if (__p = char_traits<_CharT>::find(__ws, __len, __cdec))
 	__ws[__p - __ws] = __dec;
 
       // Add grouping, if necessary. 
       _CharT* __ws2;
-      const string __grouping = __np.grouping();
-      if (__grouping.size())
+      if (__lc._M_use_grouping)
 	{
 	    // Grouping can add (almost) as many separators as the
 	    // number of digits, but no more.
 	    __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
 							  * __len * 2));
-	    _M_group_float(__grouping, __np.thousands_sep(), __p, 
+	    _M_group_float(__lc._M_grouping, __lc._M_thousands_sep, __p,
 			   __ws2, __ws, __len);
 	    __ws = __ws2;
 	}

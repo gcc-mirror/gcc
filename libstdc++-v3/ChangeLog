@@ -1,3 +1,8 @@
+2003-02-21  Jerry Quinn  <jlquinn@optonline.net>
+
+        * include/bits/locale_facets.tcc (_M_convert_float): Replace
+	numpunct facet accesses with data from __locale_cache.
+
 2003-02-20  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/faq/index.html (3.9):  New note, wchar_t on FreeBSD.
@@ -60,7 +65,6 @@
 	cache literal string, grouping flag, thousands separator.
 	(__locale_cache<_CharT>::__locale_cache): New.
 	(__locale_cache<_CharT>::_M_init): New.
-	(__locale_cache<_CharT>::_M_populate): New.
 	* src/ios.cc: Clear _M_locale_cache in constructor.
 	* src/locale-inst.cc (__locale_cache<char>, __locale_cache<_char_t>):
 	New.
