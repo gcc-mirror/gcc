@@ -3950,7 +3950,7 @@ expand_decl_cleanup (decl, cleanup)
       /* If this was optimized so that there is no exception region for the
 	 cleanup, then mark the TREE_LIST node, so that we can later tell
 	 if we need to call expand_eh_region_end.  */
-      if (expand_eh_region_start_tree (cleanup))
+      if (expand_eh_region_start_tree (decl, cleanup))
 	TREE_ADDRESSABLE (t) = 1;
 
       if (cond_context)
@@ -3972,11 +3972,12 @@ expand_decl_cleanup (decl, cleanup)
 }
 
 /* Arrange for the top element of the dynamic cleanup chain to be
-   popped if we exit the current binding contour.  If the current
-   contour is left via an exception, then __sjthrow will pop the top
-   element off the dynamic cleanup chain.  The code that avoids doing
-   the action we push into the cleanup chain in the exceptional case
-   is contained in expand_cleanups.
+   popped if we exit the current binding contour.  DECL is the
+   associated declaration, if any, otherwise NULL_TREE.  If the
+   current contour is left via an exception, then __sjthrow will pop
+   the top element off the dynamic cleanup chain.  The code that
+   avoids doing the action we push into the cleanup chain in the
+   exceptional case is contained in expand_cleanups.
 
    This routine is only used by expand_eh_region_start, and that is
    the only way in which an exception region should be started.  This
@@ -3984,7 +3985,8 @@ expand_decl_cleanup (decl, cleanup)
    for exception handling.  */
 
 int
-expand_dcc_cleanup ()
+expand_dcc_cleanup (decl)
+     tree decl;
 {
   struct nesting *thisblock = block_stack;
   tree cleanup;
@@ -4003,7 +4005,7 @@ expand_dcc_cleanup ()
 
   /* Add the cleanup in a manner similar to expand_decl_cleanup.  */
   thisblock->data.block.cleanups
-    = temp_tree_cons (NULL_TREE, cleanup, thisblock->data.block.cleanups);
+    = temp_tree_cons (decl, cleanup, thisblock->data.block.cleanups);
 
   /* If this block has a cleanup, it belongs in stack_block_stack.  */
   stack_block_stack = thisblock;
@@ -4011,11 +4013,12 @@ expand_dcc_cleanup ()
 }
 
 /* Arrange for the top element of the dynamic handler chain to be
-   popped if we exit the current binding contour.  If the current
-   contour is left via an exception, then __sjthrow will pop the
-   top element off the dynamic handler chain.  The code that avoids
-   doing the action we push into the handler chain in the exceptional
-   case is contained in expand_cleanups.
+   popped if we exit the current binding contour.  DECL is the
+   assciated declaration, if any, otherwise NULL_TREE.  If the current
+   contour is left via an exception, then __sjthrow will pop the top
+   element off the dynamic handler chain.  The code that avoids doing
+   the action we push into the handler chain in the exceptional case
+   is contained in expand_cleanups.
 
    This routine is only used by expand_eh_region_start, and that is
    the only way in which an exception region should be started.  This
@@ -4023,7 +4026,8 @@ expand_dcc_cleanup ()
    for exception handling.  */
 
 int
-expand_dhc_cleanup ()
+expand_dhc_cleanup (decl)
+     tree decl;
 {
   struct nesting *thisblock = block_stack;
   tree cleanup;
@@ -4042,7 +4046,7 @@ expand_dhc_cleanup ()
 
   /* Add the cleanup in a manner similar to expand_decl_cleanup.  */
   thisblock->data.block.cleanups
-    = temp_tree_cons (NULL_TREE, cleanup, thisblock->data.block.cleanups);
+    = temp_tree_cons (decl, cleanup, thisblock->data.block.cleanups);
 
   /* If this block has a cleanup, it belongs in stack_block_stack.  */
   stack_block_stack = thisblock;
@@ -4303,6 +4307,8 @@ expand_start_case (exit_flag, expr, type, printname)
     emit_note (NULL_PTR, NOTE_INSN_DELETED);
 
   thiscase->data.case_stmt.start = get_last_insn ();
+
+  start_cleanup_deferal ();
 }
 
 
@@ -4355,6 +4361,7 @@ expand_start_case_dummy ()
   thiscase->data.case_stmt.num_ranges = 0;
   case_stack = thiscase;
   nesting_stack = thiscase;
+  start_cleanup_deferal ();
 }
 
 /* End a dummy case statement.  */
@@ -4362,6 +4369,7 @@ expand_start_case_dummy ()
 void
 expand_end_case_dummy ()
 {
+  end_cleanup_deferal ();
   POPSTACK (case_stack);
 }
 
@@ -5355,6 +5363,8 @@ expand_end_case (orig_index)
       if (count != 0)
 	range = fold (build (MINUS_EXPR, index_type, maxval, minval));
 
+      end_cleanup_deferal ();
+
       if (count == 0)
 	{
 	  expand_expr (index_expr, const0_rtx, VOIDmode, 0);
@@ -5622,6 +5632,8 @@ expand_end_case (orig_index)
       reorder_insns (before_case, get_last_insn (),
 		     thiscase->data.case_stmt.start);
     }
+  else
+    end_cleanup_deferal ();
 
   if (thiscase->exit_label)
     emit_label (thiscase->exit_label);

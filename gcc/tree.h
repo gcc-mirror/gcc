@@ -1697,7 +1697,8 @@ extern void mark_block_as_not_eh_region		PROTO((void));
 extern int is_eh_region				PROTO((void));
 extern int conditional_context			PROTO((void));
 extern tree last_cleanup_this_contour		PROTO((void));
-extern int expand_dhc_cleanup			PROTO((void));
+extern int expand_dhc_cleanup			PROTO((tree));
+extern int expand_dcc_cleanup			PROTO((tree));
 extern void expand_start_case			PROTO((int, tree, tree,
 						       char *));
 extern void expand_end_case			PROTO((tree));

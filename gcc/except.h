@@ -88,6 +88,13 @@ struct eh_queue {
 
 extern void expand_eh_region_start		PROTO((void));
 
+/* Just like expand_eh_region_start, except if a cleanup action is
+   entered on the cleanup chain, the TREE_PURPOSE of the element put
+   on the chain is DECL.  DECL should be the associated VAR_DECL, if
+   any, otherwise it should be NULL_TREE.  */
+
+extern void expand_eh_region_start_for_decl	PROTO((tree));
+
 /* Start an exception handling region for the given cleanup action.
    All instructions emitted after this point are considered to be part
    of the region until expand_eh_region_end () is invoked.  CLEANUP is
@@ -100,7 +107,7 @@ extern void expand_eh_region_start		PROTO((void));
    generation, and optimizes it so as to not need the exception
    region.  */
 
-extern int expand_eh_region_start_tree		PROTO((tree));
+extern int expand_eh_region_start_tree		PROTO((tree, tree));
 
 /* End an exception handling region.  The information about the region
    is found on the top of ehstack.

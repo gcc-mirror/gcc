@@ -911,7 +911,8 @@ start_dynamic_handler ()
    of a using an exception region.  */
 
 int
-expand_eh_region_start_tree (cleanup)
+expand_eh_region_start_tree (decl, cleanup)
+     tree decl;
      tree cleanup;
 {
   rtx note;
@@ -952,52 +953,25 @@ expand_eh_region_start_tree (cleanup)
 	{
 	  /* Arrange for returns and gotos to pop the entry we make on the
 	     dynamic cleanup stack.  */
-	  expand_dcc_cleanup ();
+	  expand_dcc_cleanup (decl);
 	  start_dynamic_cleanup (func, arg);
 	  return 1;
 	}
     }
 
-  if (exceptions_via_longjmp)
-    {
-      /* We need a new block to record the start and end of the
-	 dynamic handler chain.  We could always do this, but we
-	 really want to permit jumping into such a block, and we want
-	 to avoid any errors or performance impact in the SJ EH code
-	 for now.  */
-      expand_start_bindings (0);
-
-      /* But we don't need or want a new temporary level.  */
-      pop_temp_slots ();
-
-      /* Mark this block as created by expand_eh_region_start.  This
-	 is so that we can pop the block with expand_end_bindings
-	 automatically.  */
-      mark_block_as_eh_region ();
-
-      /* Arrange for returns and gotos to pop the entry we make on the
-	 dynamic handler stack.  */
-      expand_dhc_cleanup ();
-    }
-
-  if (exceptions_via_longjmp == 0)
-    note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_BEG);
-  emit_label (push_eh_entry (&ehstack));
-  if (exceptions_via_longjmp == 0)
-    NOTE_BLOCK_NUMBER (note)
-      = CODE_LABEL_NUMBER (ehstack.top->entry->exception_handler_label);
-  if (exceptions_via_longjmp)
-    start_dynamic_handler ();
+  expand_eh_region_start_for_decl (decl);
 
   return 0;
 }
 
-/* Start an exception handling region.  All instructions emitted after
-   this point are considered to be part of the region until
-   expand_eh_region_end is invoked.  */
+/* Just like expand_eh_region_start, except if a cleanup action is
+   entered on the cleanup chain, the TREE_PURPOSE of the element put
+   on the chain is DECL.  DECL should be the associated VAR_DECL, if
+   any, otherwise it should be NULL_TREE.  */
 
 void
-expand_eh_region_start ()
+expand_eh_region_start_for_decl (decl)
+     tree decl;
 {
   rtx note;
 
@@ -1024,7 +998,7 @@ expand_eh_region_start ()
 
       /* Arrange for returns and gotos to pop the entry we make on the
 	 dynamic handler stack.  */
-      expand_dhc_cleanup ();
+      expand_dhc_cleanup (decl);
     }
 
   if (exceptions_via_longjmp == 0)
@@ -1035,6 +1009,16 @@ expand_eh_region_start ()
       = CODE_LABEL_NUMBER (ehstack.top->entry->exception_handler_label);
   if (exceptions_via_longjmp)
     start_dynamic_handler ();
+}
+
+/* Start an exception handling region.  All instructions emitted after
+   this point are considered to be part of the region until
+   expand_eh_region_end is invoked.  */
+
+void
+expand_eh_region_start ()
+{
+  expand_eh_region_start_for_decl (NULL_TREE);
 }
 
 /* End an exception handling region.  The information about the region
