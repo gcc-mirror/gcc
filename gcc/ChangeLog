@@ -1,3 +1,7 @@
+2001-03-27  Alan Modra  <alan@linuxcare.com.au>
+
+	* c-typeck.c (digest_init): Fold init expression.
+
 2001-03-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* sbitmap.c (sbitmap_copy): Call memcpy, not bcopy.
