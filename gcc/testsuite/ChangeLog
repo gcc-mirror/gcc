@@ -1,3 +1,7 @@
+2001-06-11  Bernd Schmidt  <bernds@redhat.com>
+
+	* g++.old-deja/g++.other/stepanov_v1p2.C: Remove.
+
 2001-06-11  Richard Henderson  <rth@redhat.com>
 
 	* g++.old-deja/g++.law/code-gen5.C: Don't send raw pointers to assert.
