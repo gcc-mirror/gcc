@@ -1,3 +1,18 @@
+Tue Sep 14 16:30:16 1999  Richard Henderson  <rth@cygnus.com>
+
+	* ginclude/stdarg.h, ginclude/varargs.h: Implement in
+	terms of builtin functions and types.
+
+	* mips.c (mips_build_va_list): New.
+	(mips_va_start, mips_va_arg): New.
+	* mips.h (BUILD_VA_LIST_TYPE): New.
+	(EXPAND_BUILTIN_VA_START, EXPAND_BUILTIN_VA_ARG): New.
+
+	* sh.c (sh_builtin_saveregs): Use get_varargs_alias_set.
+	(sh_build_va_list, sh_va_start, sh_va_arg): New.
+	* sh.h (BUILD_VA_LIST_TYPE): New.
+	(EXPAND_BUILTIN_VA_START, EXPAND_BUILTIN_VA_ARG): New.
+
 Tue Sep 14 16:20:24 1999  Richard Henderson  <rth@cygnus.com>
 
 	* recog.h (struct recog_data): Make dup_num, operand_address_p,
