@@ -1043,7 +1043,10 @@ assemble_end_function (decl, fnname)
   ASM_DECLARE_FUNCTION_SIZE (asm_out_file, fnname, decl);
 #endif
   if (! CONSTANT_POOL_BEFORE_FUNCTION)
-    output_constant_pool (fnname, decl);
+    {
+      output_constant_pool (fnname, decl);
+      function_section (decl);	/* need to switch back */
+    }
 
   /* Output any constants which should appear after the function.  */
   output_after_function_constants ();
