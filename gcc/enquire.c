@@ -421,6 +421,13 @@
 
 #ifdef VERIFY
 #include "limits.h"
+#endif
+
+#ifndef SYS_FLOAT_H_WRAP
+#define SYS_FLOAT_H_WRAP 0
+#endif
+
+#if SYS_FLOAT_H_WRAP || defined VERIFY
 #include "float.h"
 #endif
 
@@ -477,7 +484,8 @@ Procedure endian ARGS((int bits_per_byte));
 int exponent ARGS((Long_double x, double *fract, int *exp));
 int floor_log ARGS((int base, Long_double x));
 Procedure f_define ARGS((char *desc, char *extra, char *sort, char *name,
-			 int prec, Long_double val, char *mark));
+			 int prec, Long_double val, Long_double req,
+			 char *mark));
 Procedure i_define ARGS((char *desc, char *extra, char *sort, char *name,
 			 long val, long lim, long req, char *mark));
 Procedure u_define ARGS((char *desc, char *extra, char *sort, char *name,
@@ -704,6 +712,8 @@ int main(argc, argv) int argc; char *argv[]; {
 	if (F) {
 		printf ("#ifndef _FLOAT_H___\n");
 		printf ("#define _FLOAT_H___\n");
+		if (SYS_FLOAT_H_WRAP)
+			printf ("#include_next <float.h>\n");
 	}
 #ifdef ID
 	printf("%sProduced on %s by enquire version %s, CWI, Amsterdam%s\n",
@@ -798,6 +808,8 @@ Procedure describe(description, extra) char *description, *extra; {
 
 Procedure i_define(desc, extra, sort, name, val, lim, req, mark)
      char *desc, *extra, *sort, *name; long val, lim, req; char *mark; {
+	if (SYS_FLOAT_H_WRAP && F && val == req)
+		return;
 	/* Produce a #define for a signed int type */
 	describe(desc, extra);
 	printf("#undef %s%s\n", sort, name);
@@ -812,15 +824,13 @@ Procedure i_define(desc, extra, sort, name, val, lim, req, mark)
 	} else {
 		printf("#define %s%s (%ld%s)\n", sort, name, val, mark);
 	}
-	/* If VERIFY is not set, val and req are just the same value;
-	   if it is set, val is the value as calculated, and req is
-	   the #defined constant
-	*/
+#ifdef VERIFY
 	if (val != req) {
 		printf("%s*** Verify failed for above #define!\n", co);
 		printf("       Compiler has %ld for value%s\n\n", req, oc);
 		bugs++;
 	}
+#endif
 	Vprintf("\n");
 }
 
@@ -830,17 +840,21 @@ Procedure u_define(desc, extra, sort, name, val, req, mark)
 	describe(desc, extra);
 	printf("#undef %s%s\n", sort, name);
 	printf("#define %s%s %lu%s%s\n", sort, name, val, U, mark);
+#ifdef VERIFY
 	if (val != req) {
 		printf("%s*** Verify failed for above #define!\n", co);
 		printf("       Compiler has %lu for value%s\n\n", req, oc);
 		bugs++;
 	}
+#endif
 	Vprintf("\n");
 }
 
-Procedure f_define(desc, extra, sort, name, precision, val, mark)
+Procedure f_define(desc, extra, sort, name, precision, val, req, mark)
      char *desc, *extra, *sort, *name; int precision;
-     Long_double val; char *mark; {
+     Long_double val, req; char *mark; {
+	if (SYS_FLOAT_H_WRAP && F && val == req)
+		return;
 	/* Produce a #define for a float/double/long double */
 	describe(desc, extra);
 	printf ("#undef %s%s\n", sort, name);
@@ -1747,7 +1761,6 @@ extern char *f_rep();
 #define UPROP	usprop
 #define Uname	"USHRT"
 
-#ifdef VERIFY
 #ifdef SHRT_MAX
 #define I_MAX		SHRT_MAX
 #endif
@@ -1791,7 +1804,6 @@ extern char *f_rep();
 #ifdef FLT_MAX_10_EXP
 #define F_MAX_10_EXP	FLT_MAX_10_EXP
 #endif
-#endif /* VERIFY */
 
 #endif /* PASS1 */
 
@@ -1833,7 +1845,6 @@ extern char *f_rep();
 #define UPROP	uiprop
 #define Uname	"UINT"
 
-#ifdef VERIFY
 #ifdef INT_MAX
 #define I_MAX		INT_MAX
 #endif
@@ -1871,7 +1882,6 @@ extern char *f_rep();
 #ifdef DBL_MAX_10_EXP
 #define F_MAX_10_EXP	DBL_MAX_10_EXP
 #endif
-#endif /* VERIFY */
 
 #endif /* PASS2 */
 
@@ -1919,7 +1929,6 @@ extern char *f_rep();
 #define UPROP	ulprop
 #define Uname	"ULONG"
 
-#ifdef VERIFY
 #ifdef LONG_MAX
 #define I_MAX	LONG_MAX
 #endif
@@ -1957,52 +1966,53 @@ extern char *f_rep();
 #ifdef LDBL_MAX_10_EXP
 #define F_MAX_10_EXP	LDBL_MAX_10_EXP
 #endif
-#endif /* VERIFY */
 
 #endif /* PASS3 */
 
+#define UNDEFINED (-2)
+
 #ifndef I_MAX
-#define I_MAX	int_max
+#define I_MAX	((unsigned long) UNDEFINED)
 #endif
 #ifndef I_MIN
-#define I_MIN	int_min
+#define I_MIN	((unsigned long) UNDEFINED)
 #endif
 #ifndef U_MAX
-#define U_MAX	u_max
+#define U_MAX	((unsigned long) UNDEFINED)
 #endif
 
 #ifndef F_RADIX
-#define F_RADIX		f_radix
+#define F_RADIX		UNDEFINED
 #endif
 #ifndef F_MANT_DIG
-#define F_MANT_DIG	f_mant_dig
+#define F_MANT_DIG	UNDEFINED
 #endif
 #ifndef F_DIG
-#define F_DIG		f_dig
+#define F_DIG		UNDEFINED
 #endif
 #ifndef F_ROUNDS
-#define F_ROUNDS	f_rounds
+#define F_ROUNDS	UNDEFINED
 #endif
 #ifndef F_EPSILON
-#define F_EPSILON	f_epsilon
+#define F_EPSILON	((Number) UNDEFINED)
 #endif
 #ifndef F_MIN_EXP
-#define F_MIN_EXP	f_min_exp
+#define F_MIN_EXP	UNDEFINED
 #endif
 #ifndef F_MIN
-#define F_MIN		f_min
+#define F_MIN		((Number) UNDEFINED)
 #endif
 #ifndef F_MIN_10_EXP
-#define F_MIN_10_EXP	f_min_10_exp
+#define F_MIN_10_EXP	UNDEFINED
 #endif
 #ifndef F_MAX_EXP
-#define F_MAX_EXP	f_max_exp
+#define F_MAX_EXP	UNDEFINED
 #endif
 #ifndef F_MAX
-#define F_MAX		f_max
+#define F_MAX		((Number) UNDEFINED)
 #endif
 #ifndef F_MAX_10_EXP
-#define F_MAX_10_EXP	f_max_10_exp
+#define F_MAX_10_EXP	UNDEFINED
 #endif
 
 #ifndef VERIFY
@@ -2407,7 +2417,9 @@ int FPROP(bits_per_byte) int bits_per_byte; {
 	}
 	if (PASS == 1) { /* only for FLT */
 		flt_rounds= f_rounds;
-		if (F)
+		/* Prefer system float.h definition of F_ROUNDS,
+		   since it's more likely to be right than our "1".  */
+		if (F && (!SYS_FLOAT_H_WRAP || F_ROUNDS == UNDEFINED))
 		  i_define(D_FLT_ROUNDS, "", "FLT", "_ROUNDS",
 			   (long) f_rounds, 1L, (long) F_ROUNDS, "");
 	} else if (f_rounds != flt_rounds) {
@@ -2494,7 +2506,9 @@ int FPROP(bits_per_byte) int bits_per_byte; {
 
 	/* Possible loss of precision warnings here from non-stdc compilers */
 	if (F) f_define(D_EPSILON, thing,
-			Fname, "_EPSILON", digs, (Long_double) f_epsilon, MARK);
+			Fname, "_EPSILON", digs,
+			(Long_double) f_epsilon,
+			(Long_double) F_EPSILON, MARK);
 	if (V || F) F_check(digs, (Long_double) f_epsilon);
 	Unexpected(21);
 	if (F) Validate(digs, (Long_double) f_epsilon, (Long_double) F_EPSILON,
@@ -2572,7 +2586,9 @@ int FPROP(bits_per_byte) int bits_per_byte; {
 	/* Possible loss of precision warnings here from non-stdc compilers */
 	if (setjmp(lab) == 0) {
 		if (F) f_define(D_MIN, thing,
-				Fname, "_MIN", digs, (Long_double) f_min, MARK);
+				Fname, "_MIN", digs,
+				(Long_double) f_min,
+				(Long_double) F_MIN, MARK);
 		if (V || F) F_check(digs, (Long_double) f_min);
 	} else {
 		eek_a_bug("xxx_MIN caused a trap");
@@ -2666,7 +2682,9 @@ int FPROP(bits_per_byte) int bits_per_byte; {
 	if (setjmp(lab)==0) {
 	/* Possible loss of precision warnings here from non-stdc compilers */
 		if (F) f_define(D_MAX, thing,
-				Fname, "_MAX", digs, (Long_double) f_max, MARK);
+				Fname, "_MAX", digs,
+				(Long_double) f_max,
+				(Long_double) F_MAX, MARK);
 		if (V || F) F_check(digs, (Long_double) f_max);
 	} else {
 		eek_a_bug("xxx_MAX caused a trap");
