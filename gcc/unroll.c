@@ -354,6 +354,17 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	    delete_insn (prev);
 #endif
 	}
+
+      /* Remove the loop notes since this is no longer a loop.  */
+      if (loop_info->vtop)
+	delete_insn (loop_info->vtop);
+      if (loop_info->cont)
+	delete_insn (loop_info->cont);
+      if (loop_start)
+	delete_insn (loop_start);
+      if (loop_end)
+	delete_insn (loop_end);
+
       return;
     }
   else if (loop_info->n_iterations > 0
@@ -1282,6 +1293,19 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
     emit_label_after (exit_label, loop_end);
 
  egress:
+  if (unroll_type == UNROLL_COMPLETELY)
+    {
+      /* Remove the loop notes since this is no longer a loop.  */
+      if (loop_info->vtop)
+	delete_insn (loop_info->vtop);
+      if (loop_info->cont)
+	delete_insn (loop_info->cont);
+      if (loop_start)
+	delete_insn (loop_start);
+      if (loop_end)
+	delete_insn (loop_end);
+    }
+
   if (map->const_equiv_varray)
     VARRAY_FREE (map->const_equiv_varray);
   if (map->label_map)

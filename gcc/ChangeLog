@@ -1,3 +1,11 @@
+Tue Nov  2 04:10:24 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* jump.c (jump_optimize_1): Swap the incscc and the conditional mode
+	detection code
+
+	* unroll.c (unroll_loop): Remove LOOP notes when loop is
+	completely unrolled.
+
 Tue Nov  2 16:57:22 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* cse.c (simplify_plus_minus, check_fold_const): Delete declarations.
