@@ -761,14 +761,18 @@ finish_parenthesized_expr (expr)
   return expr;
 }
 
-/* Begin a statement-expression.  Returns a new RTL_EXPR if
-   appropriate. */
+/* Begin a statement-expression.  The value returned must be passed to
+   finish_stmt_expr.  */
 
 tree 
 begin_stmt_expr ()
 {
   keep_next_level ();
-  return processing_template_decl ? NULL_TREE : expand_start_stmt_expr(); 
+  /* If we're processing_template_decl, then the upcoming compound
+     statement will be chained onto the tree structure, starting at
+     last_tree.  We return last_tree so that we can later unhook the
+     compound statement.  */
+  return processing_template_decl ? last_tree : expand_start_stmt_expr(); 
 }
 
 /* Finish a statement-expression.  RTL_EXPR should be the value
@@ -807,6 +811,14 @@ finish_stmt_expr (rtl_expr, expr)
     }
   else
     result = expr;
+
+  if (processing_template_decl)
+    {
+      /* Remove the compound statement from the tree structure; it is
+	 now saved in the BIND_EXPR.  */
+      last_tree = rtl_expr;
+      TREE_CHAIN (last_tree) = NULL_TREE;
+    }
   
   return result;
 }

@@ -1,3 +1,9 @@
+Tue Apr 28 13:22:01 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* semantics.c (begin_stmt_expr): Avoid duplicating the effect of
+	the expression in templates.
+	(finish_stmt_expr): Likewise.
+
 1998-04-28  Brendan Kehoe  <brendan@cygnus.com>
 
 	* decl2.c (ambiguous_decl): Fix NAME parm to be a tree, not int.
