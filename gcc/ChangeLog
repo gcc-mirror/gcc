@@ -1,3 +1,12 @@
+2000-12-07  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/mips/elf.h (ASM_OUTPUT_SECTION_NAME): emit @nobits
+        if changing into .bss section.
+        * config/mips/elf64.h: same.
+        * config/mips/iris6.h: same.
+        * config/mips/netbsd.h: same.
+        * config/mips/openbsd.h: same.
+
 2000-12-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cppfiles.c (read_name_map): Return null if open () fails.
