@@ -1,3 +1,8 @@
+2000-11-26  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gjavah.c (version), jcf-dump.c (version), jv-scan.c (version):
+	Update copyright year to 2000.
+
 2000-11-23  Anthony Green  <green@redhat.com>
 
 	* jcf-parse.c (init_jcf_parse): Register current_file_list root.
