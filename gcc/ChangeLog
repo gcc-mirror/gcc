@@ -1,3 +1,8 @@
+Thu Mar  4 10:03:12 1999  Vasco Pedro  <vp@di.fct.unl.pt>
+
+	* fold-const.c (merge_ranges): In not in0, but in1, handle
+	upper bounds equal like subset case.
+
 Thu Mar  4 08:28:34 1999  Aymeric Vincent  <Aymeric.Vincent@emi.u-bordeaux.fr>
 
 	* configure.in (m68k-*-gnu*): New target.
