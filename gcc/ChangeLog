@@ -1,3 +1,14 @@
+Sat Jun 19 05:25:05 1999  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.h (CONDITIONAL_REGISTER_USAGE): If flag_pic, never use
+	PIC_OFFSET_TABLE_REGNUM for general alloaction.
+	(INITIAL_ELIMINATION_OFFSET): Count the fact that the PIC register
+	must be stacked if it is used for PIC accesses.
+	* arm.c (use_return_insn): Handle PIC register specially.
+	(output_return_instruction): Likewise.
+	(output_func_{prologue,epilogue}): Likewise.
+	(output_expand_prologue): Likewise.
+
 Fri Jun 18 15:44:18 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_expand_block_move): Use get_insns rather than

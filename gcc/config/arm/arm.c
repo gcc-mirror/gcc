@@ -583,9 +583,14 @@ use_return_insn (iscond)
     return 0;
   if ((iscond && arm_is_strong)
       || TARGET_THUMB_INTERWORK)
-    for (regno = 0; regno < 16; regno++)
-      if (regs_ever_live[regno] && ! call_used_regs[regno])
+    {
+      for (regno = 0; regno < 16; regno++)
+	if (regs_ever_live[regno] && ! call_used_regs[regno])
+	  return 0;
+
+      if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
 	return 0;
+    }
       
   /* Can't be done if any of the FPU regs are pushed, since this also
      requires an insn */
@@ -5319,6 +5324,9 @@ output_return_instruction (operand, really_return, reverse)
     if (regs_ever_live[reg] && ! call_used_regs[reg])
       live_regs++;
 
+  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+    live_regs++;
+
   if (live_regs || (regs_ever_live[14] && ! lr_save_eliminated))
     live_regs++;
 
@@ -5338,7 +5346,9 @@ output_return_instruction (operand, really_return, reverse)
 		reverse ? "ldm%?%D0fd\t%|sp!, {" : "ldm%?%d0fd\t%|sp!, {");
 
       for (reg = 0; reg <= 10; reg++)
-        if (regs_ever_live[reg] && ! call_used_regs[reg])
+        if (regs_ever_live[reg] 
+	    && (! call_used_regs[reg]
+		|| (flag_pic && reg == PIC_OFFSET_TABLE_REGNUM)))
           {
 	    strcat (instr, "%|");
             strcat (instr, reg_names[reg]);
@@ -5498,6 +5508,9 @@ output_func_prologue (f, frame_size)
     if (regs_ever_live[reg] && ! call_used_regs[reg])
       live_regs_mask |= (1 << reg);
 
+  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+    live_regs_mask |= (1 << PIC_OFFSET_TABLE_REGNUM);
+
   if (frame_pointer_needed)
     live_regs_mask |= 0xD800;
   else if (regs_ever_live[14])
@@ -5573,6 +5586,12 @@ output_func_epilogue (f, frame_size)
         live_regs_mask |= (1 << reg);
 	floats_offset += 4;
       }
+
+  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+    {
+      live_regs_mask |= (1 << PIC_OFFSET_TABLE_REGNUM);
+      floats_offset += 4;
+    }
 
   if (frame_pointer_needed)
     {
@@ -5834,12 +5853,17 @@ arm_expand_prologue ()
     store_arg_regs = 1;
 
   if (! volatile_func)
-    for (reg = 0; reg <= 10; reg++)
-      if (regs_ever_live[reg] && ! call_used_regs[reg])
-	live_regs_mask |= 1 << reg;
+    {
+      for (reg = 0; reg <= 10; reg++)
+	if (regs_ever_live[reg] && ! call_used_regs[reg])
+	  live_regs_mask |= 1 << reg;
 
-  if (! volatile_func && regs_ever_live[14])
-    live_regs_mask |= 0x4000;
+      if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+	live_regs_mask |= 1 << PIC_OFFSET_TABLE_REGNUM;
+
+      if (regs_ever_live[14])
+	live_regs_mask |= 0x4000;
+    }
 
   if (frame_pointer_needed)
     {

@@ -726,7 +726,7 @@ extern const char * structure_size_string;
   if (flag_pic)						\
     {							\
       fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
-      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 0;	\
+      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	\
     }							\
   else if (TARGET_APCS_STACK)				\
     {							\
@@ -1263,6 +1263,9 @@ do {									\
           for (regno = 0; regno <= 10; regno++)				\
 	    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
 	      saved_hard_reg = 1, offset += 4;				\
+	  /* PIC register is a fixed reg, so call_used_regs set.  */	\
+	  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])	\
+	    saved_hard_reg = 1, offset += 4;				\
           for (regno = 16; regno <=23; regno++)				\
 	    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
 	      offset += 12;						\
