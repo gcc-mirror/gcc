@@ -1070,30 +1070,35 @@ regclass (f, nregs, dump)
       bzero (in_inc_dec, nregs);
 #endif
 
-      loop_cost = 1;
-
       /* Scan the instructions and record each time it would
 	 save code to put a certain register in a certain class.  */
 
-      for (index = 0; index < n_basic_blocks; index++)
+      if (!optimize)
 	{
-	  basic_block bb = BASIC_BLOCK (index);
-
-	  /* Show that an insn inside a loop is likely to be executed three
-	     times more than insns outside a loop.  This is much more aggressive
-	     than the assumptions made elsewhere and is being tried as an
-	     experiment.  */
-	  if (optimize_size)
-	    loop_cost = 1;
-	  else
-	    loop_cost = 1 << (2 * MIN (bb->loop_depth - 1, 5));
-	  for (insn = bb->head; ; insn = NEXT_INSN (insn))
-	    {
-	      insn = scan_one_insn (insn, pass);
-	      if (insn == bb->end)
-		break;
-	    }
+	  loop_cost = 1;
+	  for (insn = f; insn; insn = NEXT_INSN (insn))
+	    insn = scan_one_insn (insn, pass);
 	}
+      else
+	for (index = 0; index < n_basic_blocks; index++)	
+	  {
+	    basic_block bb = BASIC_BLOCK (index);
+
+	    /* Show that an insn inside a loop is likely to be executed three
+	       times more than insns outside a loop.  This is much more aggressive
+	       than the assumptions made elsewhere and is being tried as an
+	       experiment.  */
+	    if (optimize_size)
+	      loop_cost = 1;
+	    else
+	      loop_cost = 1 << (2 * MIN (bb->loop_depth - 1, 5));
+	    for (insn = bb->head; ; insn = NEXT_INSN (insn))
+	      {
+		insn = scan_one_insn (insn, pass);
+		if (insn == bb->end)
+		  break;
+	      }
+	  }
       
       /* Now for each register look at how desirable each class is
 	 and find which class is preferred.  Store that in
