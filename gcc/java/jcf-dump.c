@@ -239,6 +239,9 @@ DEFUN(utf8_equal_string, (jcf, index, value),
     MAX_STACK, MAX_LOCALS, CODE_LENGTH); \
   disassemble_method (jcf, jcf->read_ptr, CODE_LENGTH); }
 
+#define HANDLE_EXCEPTION_TABLE(ENTRIES, COUNT) \
+  print_exception_table (jcf, ENTRIES, COUNT)
+
 #define HANDLE_EXCEPTIONS_ATTRIBUTE(COUNT) \
 { int n = (COUNT); int i; \
   COMMON_HANDLE_ATTRIBUTE(JCF, attribute_name, attribute_length); \
@@ -286,7 +289,6 @@ DEFUN(utf8_equal_string, (jcf, index, value),
     fprintf (out, "\nAttributes (count: %d):\n", attributes_count);
 
 #include "javaop.h"
-#include "jcf-reader.c"
 
 static void
 DEFUN(print_constant_ref, (stream, jcf, index),
@@ -336,7 +338,9 @@ void
 DEFUN(print_constant_terse, (out, jcf, index, expected),
       FILE *out AND JCF *jcf AND int index AND int expected)
 {
-  if (JPOOL_TAG (jcf, index) != expected)
+  if (! CPOOL_INDEX_IN_RANGE (&jcf->cpool, index))
+    fprintf (out, "<constant pool index %d not in range>", index);
+  else if (JPOOL_TAG (jcf, index) != expected)
     {
       fprintf (out, "<Unexpected constant type ");
       print_constant (out, jcf, index, 1);
@@ -610,6 +614,39 @@ DEFUN(print_signature, (stream, jcf, signature_index, int options),
     }
 }
 
+
+static void
+DEFUN(print_exception_table, (jcf, entries, count),
+      JCF *jcf AND unsigned char *entries AND int count)
+{
+  /* Print exception table. */
+  int i = count;
+  if (i > 0)
+    {
+      unsigned char *ptr = entries;
+      fprintf (out, "Exceptions (count: %d):\n", i);
+      for (; --i >= 0;  ptr+= 8)
+	{
+	  int start_pc = GET_u2 (ptr);
+	  int end_pc = GET_u2 (ptr+2);
+	  int handler_pc = GET_u2 (ptr+4);
+	  int catch_type = GET_u2 (ptr+6);
+	  fprintf (out, "  start: %d, end: %d, handler: %d, type: %d",
+		   start_pc, end_pc, handler_pc, catch_type);
+	  if (catch_type == 0)
+	    fputs (" /* finally */", out);
+	  else
+	    {
+	      fputc('=', out);
+	      print_constant_terse (out, jcf, catch_type, CONSTANT_Class);
+	    }
+	  fputc ('\n', out);
+	}
+    }
+}
+
+#include "jcf-reader.c"
+
 int
 DEFUN (usage, (), )
 {
@@ -876,6 +913,7 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
 #undef PTR
   int PC;
   int i;
+  int saw_wide = 0;
   if (flag_disassemble_methods == 0)
     return;
 #define BCODE byte_ops
@@ -923,9 +961,7 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
 /* Print out operand (a local variable index) for LOAD opcodes.
    These all push local variable onto the opcode stack. */
 #define LOAD(OPERAND_TYPE, OPERAND_VALUE) \
-  INT_temp = (OPERAND_VALUE); \
-  if (oldpc+1 == PC) /* nothing - local index implied by opcode */; \
-  else fprintf (out, " %d", INT_temp);
+  INT_temp = saw_wide ? IMMEDIATE_u2 : (OPERAND_VALUE); goto load_store;
 
 /* Handle STORE opcodes same as LOAD opcodes.
    These all store a value from the opcode stack in a local variable. */
@@ -994,7 +1030,8 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
   fprintf (out, " %d", saw_index ? INT_temp : oldpc + INT_temp)
 
 #define RET(OPERAND_TYPE, OPERAND_VALUE) \
-  INT_temp = (OPERAND_VALUE); \
+  INT_temp = saw_wide ? IMMEDIATE_u2 : (OPERAND_VALUE); \
+  saw_wide = 0; \
   fprintf (out, " %d", INT_temp);
 
 #define SWITCH(OPERAND_TYPE, TABLE_OR_LOOKUP) \
@@ -1022,11 +1059,14 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
   SPECIAL_##OPERAND_VALUE(OPERAND_TYPE)
 
 #define SPECIAL_IINC(OPERAND_TYPE) \
-  INT_temp = IMMEDIATE_u1; \
-  fprintf (out, "%d %d", INT_temp, IMMEDIATE_s1)
+  INT_temp = saw_wide ? IMMEDIATE_u2 : IMMEDIATE_u1; \
+  fprintf (out, " %d", INT_temp); \
+  INT_temp = saw_wide ? IMMEDIATE_s2 : IMMEDIATE_s1; \
+  saw_wide = 0; \
+  fprintf (out, " %d", INT_temp)
 
 #define SPECIAL_WIDE(OPERAND_TYPE) \
-  INT_temp = IMMEDIATE_u1; fprintf (out, "%d", INT_temp)
+  saw_wide = 1;
 
 #define SPECIAL_EXIT(OPERAND_TYPE) /* nothing */
 #define SPECIAL_ENTER(OPERAND_TYPE) /* nothing */
@@ -1040,33 +1080,19 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
    TEST(OPERAND_TYPE, OPERAND_VALUE)
 
 #include "javaop.def"
-	default:
-	  fprintf (out, "%3d: unknown(%3d)\n", oldpc, byte_ops[PC]);
-	}
-    }
 
-  /* Print exception table. */
-  i = GET_u2(byte_ops+len);
-  if (i > 0)
-    {
-      unsigned char *ptr = byte_ops+len+2;
-      fprintf (out, "Exceptions (count: %d):\n", i);
-      for (; --i >= 0;  ptr+= 8)
-	{
-	  int start_pc = GET_u2 (ptr);
-	  int end_pc = GET_u2 (ptr+2);
-	  int handler_pc = GET_u2 (ptr+4);
-	  int catch_type = GET_u2 (ptr+6);
-	  fprintf (out, "  start: %d, end: %d, handler: %d, type: %d",
-		   start_pc, end_pc, handler_pc, catch_type);
-	  if (catch_type == 0)
-	    fputs (" /* finally */", out);
+	load_store:
+	  if (oldpc+1 == PC) /* nothing - local index implied by opcode */;
 	  else
 	    {
-	      fputc('=', out);
-	      print_constant_terse (out, jcf, catch_type, CONSTANT_Class);
+	      saw_wide = 0;
+	      fprintf (out, " %d", INT_temp);
 	    }
 	  fputc ('\n', out);
+	  break;
+
+	default:
+	  fprintf (out, "%3d: unknown(%3d)\n", oldpc, byte_ops[PC]);
 	}
     }
 }

@@ -83,6 +83,9 @@ DEFUN(get_attribute, (jcf),
       exception_table_length = JCF_readu2 (jcf);
       if (code_length + 8 * exception_table_length + 12 > attribute_length)
 	return -1;
+#ifdef HANDLE_EXCEPTION_TABLE
+      HANDLE_EXCEPTION_TABLE (jcf->read_ptr, exception_table_length);
+#endif
       JCF_SKIP (jcf, 2 * 4 * exception_table_length);
       attributes_count = JCF_readu2 (jcf);
       for (j = 0; j < attributes_count; j++)
