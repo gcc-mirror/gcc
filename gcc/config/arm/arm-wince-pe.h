@@ -63,4 +63,4 @@ Boston, MA 02111-1307, USA.  */
 #define PE_SUBTARGET_CPP_SPEC "-D__pe__ -DARM -D__unaligned=__attribute__((aligned(1))) "
 
 #undef  SIZE_TYPE
-#define SIZE_TYPE "unsigned long"
+#define SIZE_TYPE "long unsigned int"
