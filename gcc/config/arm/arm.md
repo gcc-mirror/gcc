@@ -2935,7 +2935,10 @@
 			   : preserve_subexpressions_p ()));
       DONE;
     }
-  if (CONSTANT_P (operands[1]) && flag_pic)
+  if (flag_pic
+      && (CONSTANT_P (operands[1])
+	 || symbol_mentioned_p (operands[1])
+	 || label_mentioned_p (operands[1])))
     operands[1] = legitimize_pic_address (operands[1], SImode,
 					  ((reload_in_progress
 					    || reload_completed)
@@ -4505,18 +4508,33 @@
 (define_expand "call"
   [(parallel [(call (match_operand 0 "memory_operand" "")
 	            (match_operand 1 "general_operand" ""))
+ 	      (use (match_operand 2 "" ""))
 	      (clobber (reg:SI 14))])]
   ""
   "
   {
-    if (TARGET_LONG_CALLS && GET_CODE (XEXP (operands[0], 0)) != REG)
-      XEXP (operands[0], 0) = force_reg (Pmode, XEXP (operands[0], 0));
+    rtx callee = XEXP (operands[0], 0);
+    
+    /* Decide if we need to generate an indirect call by loading the 32 bit
+       address of the callee into a register and then jumping to the contents
+       of that register.  operands[2] contains the long_call / short_call
+       attribute.  The third parameter to arm_is_longcall_p tells it that it
+       is being passed a (MEM) and not a SYMREF().  */
+     
+    /* In an untyped call, we can get NULL for operand 2.  */
+    if (operands[2] == NULL_RTX)
+      operands[2] = const0_rtx;
+      
+    if (GET_CODE (callee) != REG
+       && arm_is_longcall_p (operands[0], INTVAL (operands[2]), 0))
+      XEXP (operands[0], 0) = force_reg (Pmode, callee);
   }"
 )
 
 (define_insn "*call_reg"
   [(call (mem:SI (match_operand:SI 0 "s_register_operand" "r"))
          (match_operand 1 "" "g"))
+   (use (match_operand:SI 2 "immediate_operand" "n"))
    (clobber (reg:SI 14))]
   ""
   "*
@@ -4529,6 +4547,7 @@
 (define_insn "*call_mem"
   [(call (mem:SI (match_operand:SI 0 "memory_operand" "m"))
 	 (match_operand 1 "general_operand" "g"))
+   (use (match_operand:SI 2 "" ""))
    (clobber (reg:SI 14))]
   ""
   "*
@@ -4541,12 +4560,21 @@
   [(parallel [(set (match_operand 0 "" "=rf")
 	           (call (match_operand 1 "memory_operand" "m")
 		         (match_operand 2 "general_operand" "g")))
+	      (use (match_operand:SI 3 "" ""))
 	      (clobber (reg:SI 14))])]
   ""
   "
   {
-    if (TARGET_LONG_CALLS && GET_CODE (XEXP (operands[1], 0)) != REG)
-      XEXP (operands[1], 0) = force_reg (Pmode, XEXP (operands[1], 0));
+    rtx callee = XEXP (operands[1], 0);
+    
+    /* In an untyped call, we can get NULL for operand 2.  */
+    if (operands[3] == 0)
+      operands[3] = const0_rtx;
+      
+    /* See the comment in define_expand \"call\".  */
+    if (GET_CODE (callee) != REG
+	&& arm_is_longcall_p (operands[1], INTVAL (operands[3]), 0))
+       XEXP (operands[1], 0) = force_reg (Pmode, callee);
   }"
 )
 
@@ -4554,6 +4582,7 @@
   [(set (match_operand 0 "" "=rf")
         (call (mem:SI (match_operand:SI 1 "s_register_operand" "r"))
 	      (match_operand 2 "general_operand" "g")))
+   (use (match_operand 3 "" ""))
    (clobber (reg:SI 14))]
   ""
   "*
@@ -4566,6 +4595,7 @@
   [(set (match_operand 0 "" "=rf")
 	(call (mem:SI (match_operand 1 "memory_operand" "m"))
 	(match_operand 2 "general_operand" "g")))
+   (use (match_operand 3 "" ""))
    (clobber (reg:SI 14))]
   "! CONSTANT_ADDRESS_P (XEXP (operands[1], 0))"
   "*
@@ -4580,8 +4610,10 @@
 (define_insn "*call_symbol"
   [(call (mem:SI (match_operand:SI 0 "" "X"))
 	 (match_operand:SI 1 "general_operand" "g"))
+   (use (match_operand 2 "" ""))
    (clobber (reg:SI 14))]
-  "! TARGET_LONG_CALLS && GET_CODE (operands[0]) == SYMBOL_REF"
+  "! arm_is_longcall_p (operands[0], INTVAL (operands[2]), 1)
+   && GET_CODE (operands[0]) == SYMBOL_REF"
   "*
   {
     return NEED_PLT_RELOC ? \"bl%?\\t%a0(PLT)\" : \"bl%?\\t%a0\";
@@ -4592,8 +4624,10 @@
   [(set (match_operand 0 "s_register_operand" "=rf")
 	(call (mem:SI (match_operand:SI 1 "" "X"))
 	(match_operand:SI 2 "general_operand" "g")))
+   (use (match_operand 3 "" ""))
    (clobber (reg:SI 14))]
-  "! TARGET_LONG_CALLS && GET_CODE(operands[1]) == SYMBOL_REF"
+  "! arm_is_longcall_p (operands[1], INTVAL (operands[3]), 1)
+   && GET_CODE (operands[1]) == SYMBOL_REF"
   "*
   {
     return NEED_PLT_RELOC ? \"bl%?\\t%a1(PLT)\" : \"bl%?\\t%a1\";
