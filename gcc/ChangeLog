@@ -1,3 +1,8 @@
+Thu Apr  2 01:01:34 1998  Richard Henderson  <rth@cygnus.com>
+
+	* configure (alpha-*-linuxecoff, alpha-*-linux-gnulibc1):
+	Run fixincludes.
+
 Wed Apr  1 22:26:22 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* fold-const.c optimze_bit_field_compare): Initialize rnbitpos,

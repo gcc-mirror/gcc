@@ -315,7 +315,6 @@ for machine in $build $host $target; do
 		xm_file="${xm_file} alpha/xm-linux.h"
 		gas=no
 		xmake_file=none
-		fixincludes=Makefile.in
 		gas=yes gnu_ld=yes
 		;;
 	alpha*-*-linux-gnulibc1*)
@@ -323,7 +322,6 @@ for machine in $build $host $target; do
 		xm_file="${xm_file} alpha/xm-linux.h"
 		tmake_file="t-linux t-linux-gnulibc1"
 		xmake_file=none
-		fixincludes=Makefile.in
 		gas=yes gnu_ld=yes
  		if [[ x$enable_threads = xyes ]]; then
  			thread_file='posix'
