@@ -1,3 +1,7 @@
+1999-11-03  Tom Tromey  <tromey@cygnus.com>
+
+	* gcconfig.h: Merged in local changes from old config.h.
+
 1999-11-02  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* gcconfig.h: Don't define MPROTECT_VDB on Linux/i386.
