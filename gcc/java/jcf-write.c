@@ -2034,6 +2034,61 @@ generate_bytecode_insns (exp, target, state)
 	  }
 	else
 	  offset = 0;
+
+	/* If the rhs is a binary expression and the left operand is
+	   `==' to the lhs then we have an OP= expression.  In this
+	   case we must do some special processing.  */
+	if (TREE_CODE_CLASS (TREE_CODE (rhs)) == '2'
+	    && lhs == TREE_OPERAND (rhs, 0))
+	  {
+	    if (TREE_CODE (lhs) == COMPONENT_REF)
+	      {
+		tree field = TREE_OPERAND (lhs, 1);
+		if (! FIELD_STATIC (field))
+		  {
+		    /* Duplicate the object reference so we can get
+		       the field.  */
+		    emit_dup (TYPE_IS_WIDE (field) ? 2 : 1, 0, state);
+		    NOTE_POP (1);
+		  }
+		field_op (field, (FIELD_STATIC (field)
+				  ? OPCODE_getstatic
+				  : OPCODE_getfield),
+			  state);
+
+		NOTE_PUSH (TYPE_IS_WIDE (TREE_TYPE (field)) ? 2 : 1);
+	      }
+	    else if (TREE_CODE (lhs) == VAR_DECL
+		     || TREE_CODE (lhs) == PARM_DECL)
+	      {
+		if (FIELD_STATIC (lhs))
+		  {
+		    field_op (lhs, OPCODE_getstatic, state);
+		    NOTE_PUSH (TYPE_IS_WIDE (TREE_TYPE (lhs)) ? 2 : 1);
+		  }
+		else
+		  emit_load (lhs, state);
+	      }
+	    else if (TREE_CODE (lhs) == ARRAY_REF)
+	      {
+		/* Duplicate the array and index, which are on the
+		   stack, so that we can load the old value.  */
+		emit_dup (2, 0, state);
+		NOTE_POP (2);
+		jopcode = OPCODE_iaload + adjust_typed_op (TREE_TYPE (lhs), 7);
+		RESERVE (1);
+		OP1 (jopcode);
+		NOTE_PUSH (TYPE_IS_WIDE (TREE_TYPE (lhs)) ? 2 : 1);
+	      }
+	    else
+	      abort ();
+
+	    /* This function correctly handles the case where the LHS
+	       of a binary expression is NULL_TREE.  */
+	    rhs = build (TREE_CODE (rhs), TREE_TYPE (rhs),
+			 NULL_TREE, TREE_OPERAND (rhs, 1));
+	  }
+
 	generate_bytecode_insns (rhs, STACK_TARGET, state);
 	if (target != IGNORE_TARGET)
 	  emit_dup (TYPE_IS_WIDE (type) ? 2 : 1 , offset, state);
@@ -2112,7 +2167,11 @@ generate_bytecode_insns (exp, target, state)
 	}
       else
 	{
-	  generate_bytecode_insns (arg0, target, state);
+	  /* ARG0 will be NULL_TREE if we're handling an `OP='
+	     expression.  In this case the stack already holds the
+	     LHS.  See the MODIFY_EXPR case.  */
+	  if (arg0 != NULL_TREE)
+	    generate_bytecode_insns (arg0, target, state);
 	  if (jopcode >= OPCODE_lshl && jopcode <= OPCODE_lushr)
 	    arg1 = convert (int_type_node, arg1);
 	  generate_bytecode_insns (arg1, target, state);

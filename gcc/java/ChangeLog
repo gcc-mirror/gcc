@@ -1,3 +1,11 @@
+2001-11-18  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR java/1401:
+	* jcf-write.c (generate_bytecode_insns) [binop]: Handle case where
+	arg0 is null.
+	(generate_bytecode_insns) [MODIFY_EXPR]: Handle `OP=' case
+	correctly.
+
 2001-11-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* lang.c (finish_parse): Rename to java_finish.
