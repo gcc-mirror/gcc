@@ -73,13 +73,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef LINK_SPEC
 #define LINK_SPEC "\
-%{G*} \
-%{!mgas: \
-	%{mips1} %{mips2} %{mips3} %{bestGnum} \
-	%{shared} %{non_shared} %{call_shared} %{no_archive} %{exact_version} \
-	%{!shared: %{!non_shared: \
-		   %{!call_shared: -call_shared -no_unresolved}}} \
-	-_SYSTYPE_SVR4 }"
+%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} \
+%{bestGnum} %{shared} %{non_shared} \
+%{call_shared} %{no_archive} %{exact_version} \
+%{!shared: %{!non_shared: \
+	   %{!call_shared: -call_shared -no_unresolved}}} \
+-_SYSTYPE_SVR4"
 
 #undef LIB_SPEC
 #define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} -lc crtn.o%s"

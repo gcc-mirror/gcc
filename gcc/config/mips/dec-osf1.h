@@ -25,13 +25,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 -Asystem(unix) -Asystem(xpg4) -Acpu(mips) -Amachine(mips)"
 
 #define LINK_SPEC "\
-%{G*} \
-%{!mgas: \
-	%{EL} %{!EL: -EL} \
-	%{EB: %e-EB not supported} \
-	%{mips1} %{mips2} %{mips3} %{bestGnum} \
-	%{shared} %{non_shared} %{call_shared} %{no_archive} %{exact_version} \
-	%{!shared: %{!non_shared: %{!call_shared: -non_shared}}}}"
+%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} \
+%{bestGnum} %{shared} %{non_shared} \
+%{call_shared} %{no_archive} %{exact_version} \
+%{!shared: %{!non_shared: %{!call_shared: -non_shared}}}"
 
 #include "mips/ultrix.h"
 
