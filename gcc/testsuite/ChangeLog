@@ -1,3 +1,8 @@
+2005-01-19  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/tree-ssa/loop-1.c:  Ignore declaration when
+	counting function calls on ia64.
+
 2005-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/15139
