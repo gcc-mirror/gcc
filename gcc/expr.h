@@ -825,9 +825,6 @@ extern void emit_stack_restore PROTO((enum save_level, rtx, rtx));
    says how many bytes.  */
 extern rtx allocate_dynamic_stack_space PROTO((rtx, rtx, int));
 
-/* Emit code to copy function value to a new temp reg and return that reg.  */
-extern rtx function_value ();
-
 /* Return an rtx that refers to the value returned by a library call
    in its original home.  This becomes invalid if any more code is emitted.  */
 extern rtx hard_libcall_value PROTO((enum machine_mode));
@@ -850,3 +847,13 @@ extern rtx assemble_static_space PROTO((int));
    It is up to the language front end to install a hook
    if it has any such codes that expand_expr needs to know about.  */
 extern rtx (*lang_expand_expr) ();
+
+#ifdef TREE_CODE
+/* Build bytecode call descriptor for function SUBR. */
+extern rtx bc_build_calldesc PROTO((tree));
+
+/* Emit a type code to be used by the runtime support in handling
+   parameter passing.   The type code consists of the machine mode
+   plus the minimal alignment shifted left 8 bits.  */
+extern tree bc_runtime_type_code PROTO((tree));
+#endif
