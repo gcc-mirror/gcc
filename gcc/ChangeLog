@@ -1,3 +1,16 @@
+2002-05-09  David S. Miller  <davem@redhat.com>
+
+	* rtl.h (struct rtx_def): Document unchanging and in_struct flags
+	more accurately.
+	(INSN_ANNULLED_BRANCH_P): Only valid for JUMP_INSN and CALL_INSN, fix
+	comment.
+	(INSN_FROM_TARGET_P): Valid also for CALL_INSN.
+	* doc/rtl.texi: Document these macros more accurately.
+	* recog.c (whole file): Only mess with INSN_ANNULLED_BRANCH_P for
+	JUMP_INSNs and CALL_INSNs.
+	* resource.c (whole file): Only mess with INSN_ANNULLED_BRANCH_P
+	or INSN_FROM_TARGET_P if the code is appropriate.
+
 2002-05-10  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	* config/avr/avr.c (print_operand): Check that addr is a SYMBOL_REF

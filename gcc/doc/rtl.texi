@@ -395,15 +395,13 @@ indicates that the insn represents a call to a const or pure function.
 Stored in the @code{unchanging} field and printed as @samp{/u}.
 
 @findex INSN_ANNULLED_BRANCH_P
-@cindex @code{insn} and @samp{/u}
 @cindex @code{jump_insn} and @samp{/u}
-@cindex @code{unchanging}, in @code{insn} and @code{jump_insn}
+@cindex @code{call_insn} and @samp{/u}
+@cindex @code{unchanging}, in @code{jump_insn} and @code{call_insn}
 @item INSN_ANNULLED_BRANCH_P (@var{x})
-In an @code{insn} or @code{jump_insn} in the delay slot of a branch insn,
-indicates that an
-annulling branch should be used.  See the discussion under
-@code{sequence} below.  Stored in the @code{unchanging} field and printed
-as @samp{/u}.
+In a @code{jump_insn} or @code{call_insn} indicates that the branch is
+an annulling one.  See the discussion under @code{sequence} below.
+Stored in the @code{unchanging} field and printed as @samp{/u}.
 
 @findex INSN_DEAD_CODE_P
 @cindex @code{insn} and @samp{/s}
@@ -430,10 +428,11 @@ nonzero if the insn has been deleted.  Stored in the
 @findex INSN_FROM_TARGET_P
 @cindex @code{insn} and @samp{/s}
 @cindex @code{jump_insn} and @samp{/s}
-@cindex @code{in_struct}, in @code{insn} and @code{jump_insn}
+@cindex @code{call_insn} and @samp{/s}
+@cindex @code{in_struct}, in @code{insn} and @code{jump_insn} and @code{call_insn}
 @item INSN_FROM_TARGET_P (@var{x})
-In an @code{insn} or @code{jump_insn} in a delay slot of a branch,
-indicates that the insn
+In an @code{insn} or @code{jump_insn} or @code{call_insn} in a delay
+slot of a branch, indicates that the insn
 is from the target of the branch.  If the branch insn has
 @code{INSN_ANNULLED_BRANCH_P} set, this insn will only be executed if
 the branch is taken.  For annulled branches with

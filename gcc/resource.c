@@ -175,10 +175,21 @@ next_insn_no_annul (insn)
     {
       /* If INSN is an annulled branch, skip any insns from the target
 	 of the branch.  */
-      if (INSN_ANNULLED_BRANCH_P (insn)
+      if (GET_CODE (insn) == JUMP_INSN
+	  && INSN_ANNULLED_BRANCH_P (insn)
 	  && NEXT_INSN (PREV_INSN (insn)) != insn)
-	while (INSN_FROM_TARGET_P (NEXT_INSN (insn)))
-	  insn = NEXT_INSN (insn);
+	{
+	  rtx next = NEXT_INSN (insn);
+	  enum rtx_code code = GET_CODE (next);
+
+	  while ((code == INSN || code == JUMP_INSN || code == CALL_INSN)
+		 && INSN_FROM_TARGET_P (next))
+	    {
+	      insn = next;
+	      next = NEXT_INSN (insn);
+	      code = GET_CODE (next);
+	    }
+	}
 
       insn = NEXT_INSN (insn);
       if (insn && GET_CODE (insn) == INSN
@@ -1007,16 +1018,18 @@ mark_target_live_regs (insns, target, res)
 	{
 	  rtx link;
 	  rtx real_insn = insn;
+	  enum rtx_code code = GET_CODE (insn);
 
 	  /* If this insn is from the target of a branch, it isn't going to
 	     be used in the sequel.  If it is used in both cases, this
 	     test will not be true.  */
-	  if (INSN_FROM_TARGET_P (insn))
+	  if ((code == INSN || code == JUMP_INSN || code == CALL_INSN)
+	      && INSN_FROM_TARGET_P (insn))
 	    continue;
 
 	  /* If this insn is a USE made by update_block, we care about the
 	     underlying insn.  */
-	  if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == USE
+	  if (code == INSN && GET_CODE (PATTERN (insn)) == USE
 	      && INSN_P (XEXP (PATTERN (insn), 0)))
 	      real_insn = XEXP (PATTERN (insn), 0);
 
