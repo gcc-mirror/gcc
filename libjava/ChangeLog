@@ -1,3 +1,8 @@
+2002-12-08  Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	* java/util/Hashtable.java (internalContainsValue): Removed.
+	(containsValue): Don't delegate to internalContainsValue.
+
 2003-12-06  Michael Koch  <konqueror@gmx.de>
 
 	* javax/naming/directory/Attribute.java,
