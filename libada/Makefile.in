@@ -130,44 +130,20 @@ gnatlib-plain:
 	  TRACE="$(TRACE)" \
 	  gnatlib
 
-gnatlib-sjlj:
+gnatlib-sjlj gnatlib-zcx gnatlib-shared:
 	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
 	  GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	  GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
 	  TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
 	  THREAD_KIND="$(THREAD_KIND)" \
 	  TRACE="$(TRACE)" \
-	  gnatlib-sjlj
-
-gnatlib-zcx:
-	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
-	  GNATLIBFLAGS="$(GNATLIBFLAGS)" \
-	  GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
-	  TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
-	  THREAD_KIND="$(THREAD_KIND)" \
-	  TRACE="$(TRACE)" \
-	  gnatlib-zcx
-
-gnatlib-shared:
-	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
-	  GNATLIBFLAGS="$(GNATLIBFLAGS)" \
-	  GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
-	  GNATLIBLDFLAGS="$(GNATLIBLDFLAGS)" \
-	  TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
-	  THREAD_KIND="$(THREAD_KIND)" \
-	  TRACE="$(TRACE)" \
-	  gnatlib-shared
+	  $@
 
 .PHONY: rts-zfp rts-ravenscar
-rts-zfp:
+rts-zfp rts-ravenscar:
 	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
 	  GNATMAKE=../gnatmake-cross \
-	  rts-zfp
-
-rts-ravenscar:
-	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
-	  GNATMAKE=../gnatmake-cross \
-	  rts-ravenscar
+	  $@
 
 # Rules to build gnattools.
 .PHONY: gnattools gnattools-native gnattools-cross regnattools

@@ -1,3 +1,8 @@
+2004-04-26  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* Makefile.in: Put back merge of some targets to avoid code duplication.
+	Remove at the same obsolete variable GNATLIBLDFLAGS.
+
 2004-04-19  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.ac: Fix stupid brain-fade; set default_gnattools_target
