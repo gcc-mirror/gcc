@@ -1072,7 +1072,7 @@ Language-independent support for testing @command{gcov}, and for checking
 that branch profiling produces expected values, is provided by the
 expect file @file{gcov.exp}.  @command{gcov} tests also rely on procedures
 in @file{gcc.dg.exp} to compile and run the test program.  A typical
-@command{gcov} test contains the following DejaGNU commands within comments:
+@command{gcov} test contains the following DejaGnu commands within comments:
 
 @smallexample
 @{ dg-options "-fprofile-arcs -ftest-coverage" @}
@@ -1201,9 +1201,10 @@ Within each test, the main program and one functional piece are
 compiled by the GCC under test.  The other piece can be compiled by
 an alternate compiler.  If no alternate compiler is specified,
 then all three source files are all compiled by the GCC under test.
-It's also possible to specify a pair of lists of compiler options,
-one list for each compiler, so that each test will be compiled with
-each pair of options.
+You can specify pairs of sets of compiler options.  The first element
+of such a pair specifies options used with the GCC under test, and the
+second element of the pair specifies options used with the alternate
+compiler.  Each test is compiled with each pair of options.
 
 @file{compat.exp} defines default pairs of compiler options.
 These can be overridden by defining the environment variable
@@ -1224,11 +1225,13 @@ built a second time using @code{-fpic} by the compiler under test
 and @code{-fPIC -O2} by the alternate compiler.
 
 An alternate compiler is specified by defining an environment
-variable; for C++ define @env{ALT_CXX_UNDER_TEST} to be the full
-pathname of an installed compiler.  That will be written to the
-@file{site.exp} file used by DejaGNU.  The default is to build each
+variable to be the full pathname of an installed compiler; for C
+define @env{ALT_CC_UNDER_TEST}, and for C++ define
+@env{ALT_CXX_UNDER_TEST}.  These will be written to the
+@file{site.exp} file used by DejaGnu.  The default is to build each
 test with the compiler under test using the first of each pair of
 compiler options from @env{COMPAT_OPTIONS}.  When
+@env{ALT_CC_UNDER_TEST} or
 @env{ALT_CXX_UNDER_TEST} is @code{same}, each test is built using
 the compiler under test but with combinations of the options from
 @env{COMPAT_OPTIONS}.
@@ -1253,3 +1256,23 @@ runtime support.  A test that fails for the alternate compiler but
 passes for the compiler under test probably tests for a bug that was
 fixed in the compiler under test but is present in the alternate
 compiler.
+
+The binary compatibility tests support a small number of test framework
+commands that appear within comments in a test file.
+
+@table @code
+@item dg-require-*
+These commands can be used in @file{@var{testname}_main.@var{suffix}}
+to skip the test if specific support is not available on the target.
+
+@item dg-options
+The specified options are used for compiling this particular source
+file, appended to the options from @env{COMPAT_OPTIONS}.  When this
+command appears in @file{@var{testname}_main.@var{suffix}} the options
+are also used to link the test program.
+
+@item dg-xfail-if
+This command can be used in a secondary source file to specify that
+compilation is expected to fail for particular options on particular
+targets.
+@end table

@@ -1,3 +1,8 @@
+2004-08-10  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/sourcebuild.texi (compat testing): Document available test
+	framework commands.  Use the preferred spelling of DejaGnu.
+
 2004-08-10  Daniel Berlin <dberlin@dberlin.org>
 
 	* lambda.h: Add matrix type, and prototypes for remainder of
