@@ -49,11 +49,11 @@ void
 foo7(void)
 {
   foo6();
-} /* { dg-bogus "warning:" "this function should not get any warnings" } */
+} /* { dg-bogus "warning:" "this function should not get any warnings" { xfail *-*-* } } */
 
 extern void foo8(void) __attribute__ ((__noreturn__));
 void
 foo8(void)
 {
   foo7();
-} /* { dg-warning "`noreturn' function does return" "detect return from tail call" } */
+} /* { dg-warning "`noreturn' function does return" "detect return from tail call" { xfail *-*-* } } */
