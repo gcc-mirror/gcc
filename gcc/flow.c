@@ -6723,8 +6723,8 @@ set_block_for_new_insns (insn, bb)
     {
       if (GET_CODE (insn) == NOTE)
 	break;
-      if ((size_t)INSN_UID (insn) >= basic_block_for_insn->num_elements 
-	  || BLOCK_NUM (insn) == 0)
+      if (INSN_UID (insn) >= basic_block_for_insn->num_elements 
+	  || BLOCK_FOR_INSN (insn) == 0)
 	set_block_for_insn (insn, bb);
       else
 	break;

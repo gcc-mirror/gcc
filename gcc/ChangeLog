@@ -1,3 +1,9 @@
+Tue Apr 10 17:45:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* gcse.c (update_ld_motion_stores): Don't use variable I for an insn.
+	* flow.c (set_block_for_new_insns): Remove needless cast and
+	properly check for unset block number.
+
 2001-04-10  Andrew MacLeod  <amacleod@redhat.com>
 
 	* function.c (purge_single_hard_subreg_set): Only check REGNO if 
