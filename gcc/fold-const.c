@@ -3806,11 +3806,10 @@ fold_truthop (code, truth_type, lhs, rhs)
     {
       if (l_const && integer_zerop (l_const) && integer_pow2p (ll_mask))
 	{
-	  /* Do not sign extend the constant here.  The left operand
-	     is either always unsigned or there is a BIT_AND_EXPR that
-	     masks out the extension bits.  */
-	  if (!	(ll_unsignedp || ll_and_mask != 0))
-	    abort ();
+	  /* Make the left operand unsigned, since we are only interested
+	     in the value of one bit.  Otherwise we are doing the wrong
+	     thing below.  */
+	  ll_unsignedp = 1;
 	  l_const = ll_mask;
 	}
       else
@@ -3822,8 +3821,7 @@ fold_truthop (code, truth_type, lhs, rhs)
     {
       if (r_const && integer_zerop (r_const) && integer_pow2p (rl_mask))
 	{
-	  if (!	(rl_unsignedp || rl_and_mask != 0))
-	    abort ();
+	  rl_unsignedp = 1;
 	  r_const = rl_mask;
 	}
       else
