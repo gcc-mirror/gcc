@@ -1,3 +1,8 @@
+2002-07-16  Jim Wilson  <wilson@redhat.com>
+
+	* toplev.c (lang_dependent_init): Create function context for
+	init_expr_once.
+
 2002-07-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/linux.h (CRIS_LINK_SUBTARGET_SPEC): Don't
