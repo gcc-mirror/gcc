@@ -4827,8 +4827,8 @@ layout_virtual_bases (t, base_offsets)
 
 #ifdef STRUCTURE_SIZE_BOUNDARY
   /* Packed structures don't need to have minimum size.  */
-  if (! TYPE_PACKED (rec))
-    TYPE_ALIGN (rec) = MAX (TYPE_ALIGN (rec), STRUCTURE_SIZE_BOUNDARY);
+  if (! TYPE_PACKED (t))
+    TYPE_ALIGN (t) = MAX (TYPE_ALIGN (t), STRUCTURE_SIZE_BOUNDARY);
 #endif
 
   /* DSIZE is the size of the class without the virtual bases.  */
