@@ -17075,8 +17075,8 @@ else
 fi
 
   for ac_func in ccos ccosf ccosh ccoshf cexp cexpf \
-  c_log c_logf clog10 clog10f cpow cpowf csin csinf csinh csinhf csqrt \
-  csqrtf ctan ctanf ctanh ctanhf carg cargf nan hypot hypotf atan2f expf \
+  csin csinf csinh csinhf csqrt \
+  csqrtf ctan ctanf ctanh ctanhf nan hypot hypotf atan2f expf \
   copysignf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
@@ -17140,7 +17140,7 @@ done
      && test x$ac_cv_func_copysignl = x"yes"; then
     USE_COMPLEX_LONG_DOUBLE=yes
     for ac_func in ccoshl ccosl cexpl cpowl csinhl csinl \
-    csqrtl ctanhl ctanl cargl hypotl signbitl c_logl clog10l
+    csqrtl ctanhl ctanl hypotl signbitl clog10l
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:17147: checking for $ac_func" >&5

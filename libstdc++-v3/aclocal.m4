@@ -755,8 +755,8 @@ AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT, [
   AC_CHECK_HEADERS([complex.h])
   AC_CHECK_LIB(m, main)
   AC_REPLACE_MATHFUNCS(ccos ccosf ccosh ccoshf cexp cexpf \
-  c_log c_logf clog10 clog10f cpow cpowf csin csinf csinh csinhf csqrt \
-  csqrtf ctan ctanf ctanh ctanhf carg cargf nan hypot hypotf atan2f expf \
+  csin csinf csinh csinhf csqrt \
+  csqrtf ctan ctanf ctanh ctanhf nan hypot hypotf atan2f expf \
   copysignf)
 
   dnl Compile the long double complex functions only if the function 
@@ -768,7 +768,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT, [
      && test x$ac_cv_func_copysignl = x"yes"; then
     USE_COMPLEX_LONG_DOUBLE=yes
     AC_REPLACE_MATHFUNCS(ccoshl ccosl cexpl cpowl csinhl csinl \
-    csqrtl ctanhl ctanl cargl hypotl signbitl c_logl clog10l)
+    csqrtl ctanhl ctanl hypotl signbitl clog10l)
   fi
 
   AC_SUBST(USE_COMPLEX_LONG_DOUBLE)

@@ -1,3 +1,31 @@
+2000-12-05  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* src/complex.cc (pow): Remove definitions for explicit
+	specializations. 
+	* libmath/mathconf.h: Remove declarations for c_log, c_logf,
+	c_logl. 
+	* libmath/complex-stub.h: Remove declarations for cpow, cpowf,
+	cpowl. 
+	* libmath/cpow.c: Remove.
+	* libmath/cpowf.c: Remove.
+	* libmath/cpowl.c: Remove.
+	* libmath/Makefile.am (EXTRA_LONG_DOUBLE_yes): Remove c_logl,
+	cpowl, 
+	(EXTRA_DIST): Remove c_log, c_logf, carg, cargf.
+	* libmath/Makefile.in: Regenarate.
+	* libmath/c_log.c: Remove
+	* libmath/c_logf.c: Likewise.
+	* libmath/c_logl.c: Likewise.
+	* libmath/carg.c: Likewise.
+	* libmath/cargf.c: Likewise.
+	* libmath/cargl.c: Likewise.
+	* include/bits/std_complex.h (pow): Define primary templates.
+	(complex<>): Remove friend declarations for pow<>().
+	* acinclude.m4: Remove check for c_log, c_logf, c_logl, carg,
+	cargf.
+	* aclocal.m4: Regenarate.
+	* configure: Regenarate.
+
 2000-12-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* docs/configopts.html, docs/documentation.html,
