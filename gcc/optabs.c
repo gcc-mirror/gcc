@@ -4560,9 +4560,9 @@ expand_fix (to, from, unsignedp)
 				 NULL_RTX, 0, OPTAB_LIB_WIDEN);
 	  expand_fix (to, target, 0);
 	  target = expand_binop (GET_MODE (to), xor_optab, to,
-				 GEN_INT (trunc_int_for_mode
-					  ((HOST_WIDE_INT) 1 << (bitsize - 1),
-					   GET_MODE (to))),
+				 gen_int_mode
+				 ((HOST_WIDE_INT) 1 << (bitsize - 1),
+				  GET_MODE (to)),
 				 to, 1, OPTAB_LIB_WIDEN);
 
 	  if (target != to)

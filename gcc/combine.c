@@ -6033,7 +6033,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	return new;
 
       if (GET_CODE (new) == CONST_INT)
-	return GEN_INT (trunc_int_for_mode (INTVAL (new), mode));
+	return gen_int_mode (INTVAL (new), mode);
 
       /* If we know that no extraneous bits are set, and that the high
 	 bit is not set, convert the extraction to the cheaper of
@@ -10792,7 +10792,7 @@ simplify_comparison (code, pop0, pop1)
 	      unsigned HOST_WIDE_INT temp = const_op & GET_MODE_MASK (mode);
 
 	      temp >>= INTVAL (XEXP (op0, 1));
-	      op1 = GEN_INT (trunc_int_for_mode (temp, mode));
+	      op1 = gen_int_mode (temp, mode);
 	      op0 = XEXP (op0, 0);
 	      continue;
 	    }

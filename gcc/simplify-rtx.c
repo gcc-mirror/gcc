@@ -114,7 +114,7 @@ neg_const_int (mode, i)
      enum machine_mode mode;
      rtx i;
 {
-  return GEN_INT (trunc_int_for_mode (- INTVAL (i), mode));
+  return gen_int_mode (- INTVAL (i), mode);
 }
 
 
@@ -376,7 +376,7 @@ simplify_unary_real (p)
 	default:
 	  abort ();
 	}
-      args->result = GEN_INT (trunc_int_for_mode (i, args->mode));
+      args->result = gen_int_mode (i, args->mode);
     }
   else
     {

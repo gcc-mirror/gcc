@@ -1,3 +1,15 @@
+2002-03-19  Lars Brinkhoff  <lars@nocrew.org>
+
+	* emit-rtl.c (gen_int_mode): New function.
+	* rtl.h: Prototype for it.
+	* combine.c (make_extraction, simplify_comparison), expmed.c
+	(store_bit_field, expand_mult_highpart, expand_divmod), expr.c
+	(convert_modes, store_field), optabs.c (expand_fix),
+	simplify-rtx.c (neg_const_int, simplify_unary_real),
+
+	* config/rs6000/rs6000.c, config/rs6000/rs6000.md:
+	Use it instead of GEN_INT (trunc_int_for_mode (...)).
+
 2002-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/5656
@@ -95,8 +107,8 @@
 
 2002-03-18  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.h (PREDICATE_CODES): Add PARALLEL to
-        any_operand.
+	* config/rs6000/rs6000.h (PREDICATE_CODES): Add PARALLEL to
+	any_operand.
 
 2002-03-17  Richard Henderson  <rth@redhat.com>
 
