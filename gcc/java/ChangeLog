@@ -1,3 +1,8 @@
+2000-04-17  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (fold_constant_for_init): Let VAR_DECL and FIELD_DECL be
+	processed by the method's switch statement.
+
 2000-05-19  Tom Tromey  <tromey@cygnus.com>
 
 	* java-tree.h: Added init state enum.

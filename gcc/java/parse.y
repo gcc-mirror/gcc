@@ -14593,8 +14593,6 @@ fold_constant_for_init (node, context)
 
   if (code == INTEGER_CST || code == REAL_CST)
     return convert (TREE_TYPE (context), node);
-  if (TREE_TYPE (node) != NULL_TREE && code != VAR_DECL && code != FIELD_DECL)
-    return NULL_TREE;
 
   switch (code)
     {
