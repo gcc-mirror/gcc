@@ -6,7 +6,7 @@
                  void g (T);
          };
          B b;
- };
+ }
  void g()
  {
          f(42);
