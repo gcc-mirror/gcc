@@ -1,3 +1,14 @@
+2001-02-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (toplevel_srcdir, auxdir): Set.
+	* acinclude.m4 (glibcpp_basedir): Set based on auxdir.
+	* aclocal.m4, configure, Makefile.in: Rebuilt.
+	* libio/Makefile.in, math/Makefile.in, src/Makefile.in: Likewise.
+	* libsupc++-v3/Makefile.am (INCLUDES): Use toplevel_srcdir.
+	* libsupc++-v3/Makefile.in: Rebuilt.
+	* libsupc++-v3/configure.in, libsupc++-v3/configure: Removed.
+	* libsupc++-v3/aclocal.m4, libsupc++-v3/config.h.in: Likewise.
+
 2001-01-30   Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/c_locale_generic.cc: Remove langinfo include.
