@@ -292,6 +292,10 @@ struct processor_costs {
   const int muldi;        /* cost of DImode multiplication.  */
   const int divsi;        /* cost of SImode division.  */
   const int divdi;        /* cost of DImode division.  */
+  const int fp;           /* cost of simple SFmode and DFmode insns.  */
+  const int dmul;         /* cost of DFmode multiplication (and fmadd).  */
+  const int sdiv;         /* cost of SFmode division (fdivs).  */
+  const int ddiv;         /* cost of DFmode division (fdiv).  */
 };
 
 const struct processor_costs *rs6000_cost;
@@ -307,6 +311,10 @@ struct processor_costs size32_cost = {
   1,    /* muldi */
   1,    /* divsi */
   1,    /* divdi */
+  1,    /* fp */
+  1,    /* dmul */
+  1,    /* sdiv */
+  1,    /* ddiv */
 };
 
 /* Instruction size costs on 64bit processors.  */
@@ -318,6 +326,10 @@ struct processor_costs size64_cost = {
   1,    /* muldi */
   1,    /* divsi */
   1,    /* divdi */
+  1,    /* fp */
+  1,    /* dmul */
+  1,    /* sdiv */
+  1,    /* ddiv */
 };
 
 /* Instruction costs on RIOS1 processors.  */
@@ -329,6 +341,10 @@ struct processor_costs rios1_cost = {
   5,    /* muldi */
   19,   /* divsi */
   19,   /* divdi */
+  2,    /* fp */
+  2,    /* dmul */
+  19,   /* sdiv */
+  19,   /* ddiv */
 };
 
 /* Instruction costs on RIOS2 processors.  */
@@ -340,6 +356,10 @@ struct processor_costs rios2_cost = {
   2,    /* muldi */
   13,   /* divsi */
   13,   /* divdi */
+  2,    /* fp */
+  2,    /* dmul */
+  17,   /* sdiv */
+  17,   /* ddiv */
 };
 
 /* Instruction costs on RS64A processors.  */
@@ -351,6 +371,10 @@ struct processor_costs rs64a_cost = {
   34,   /* muldi */
   65,   /* divsi */
   67,   /* divdi */
+  4,    /* fp */
+  4,    /* dmul */
+  31,   /* sdiv */
+  31,   /* ddiv */
 };
 
 /* Instruction costs on MPCCORE processors.  */
@@ -362,6 +386,10 @@ struct processor_costs mpccore_cost = {
   2,    /* muldi */
   6,    /* divsi */
   6,    /* divdi */
+  4,    /* fp */
+  5,    /* dmul */
+  10,   /* sdiv */
+  17,   /* ddiv */
 };
 
 /* Instruction costs on PPC403 processors.  */
@@ -373,6 +401,10 @@ struct processor_costs ppc403_cost = {
   4,    /* muldi */
   33,   /* divsi */
   33,   /* divdi */
+  11,   /* fp */
+  11,   /* dmul */
+  11,   /* sdiv */
+  11,   /* ddiv */
 };
 
 /* Instruction costs on PPC405 processors.  */
@@ -384,6 +416,10 @@ struct processor_costs ppc405_cost = {
   5,    /* muldi */
   35,   /* divsi */
   35,   /* divdi */
+  11,   /* fp */
+  11,   /* dmul */
+  11,   /* sdiv */
+  11,   /* ddiv */
 };
 
 /* Instruction costs on PPC440 processors.  */
@@ -395,6 +431,10 @@ struct processor_costs ppc440_cost = {
   3,    /* muldi */
   34,   /* divsi */
   34,   /* divdi */
+  5,    /* fp */
+  5,    /* dmul */
+  19,   /* sdiv */
+  33,   /* ddiv */
 };
 
 /* Instruction costs on PPC601 processors.  */
@@ -406,6 +446,10 @@ struct processor_costs ppc601_cost = {
   5,    /* muldi */
   36,   /* divsi */
   36,   /* divdi */
+  4,    /* fp */
+  5,    /* dmul */
+  17,   /* sdiv */
+  31,   /* ddiv */
 };
 
 /* Instruction costs on PPC603 processors.  */
@@ -417,6 +461,10 @@ struct processor_costs ppc603_cost = {
   5,    /* muldi */
   37,   /* divsi */
   37,   /* divdi */
+  3,    /* fp */
+  4,    /* dmul */
+  18,   /* sdiv */
+  33,   /* ddiv */
 };
 
 /* Instruction costs on PPC604 processors.  */
@@ -428,6 +476,10 @@ struct processor_costs ppc604_cost = {
   4,    /* muldi */
   20,   /* divsi */
   20,   /* divdi */
+  3,    /* fp */
+  3,    /* dmul */
+  18,   /* sdiv */
+  32,   /* ddiv */
 };
 
 /* Instruction costs on PPC604e processors.  */
@@ -439,9 +491,13 @@ struct processor_costs ppc604e_cost = {
   2,    /* muldi */
   20,   /* divsi */
   20,   /* divdi */
+  3,    /* fp */
+  3,    /* dmul */
+  18,   /* sdiv */
+  32,   /* ddiv */
 };
 
-/* Instruction costs on PPC620 and PPC630 processors.  */
+/* Instruction costs on PPC620 processors.  */
 static const
 struct processor_costs ppc620_cost = {
   5,    /* mulsi */
@@ -450,6 +506,25 @@ struct processor_costs ppc620_cost = {
   7,    /* muldi */
   21,   /* divsi */
   37,   /* divdi */
+  3,    /* fp */
+  3,    /* dmul */
+  18,   /* sdiv */
+  32,   /* ddiv */
+};
+
+/* Instruction costs on PPC630 processors.  */
+static const
+struct processor_costs ppc630_cost = {
+  5,    /* mulsi */
+  4,    /* mulsi_const */
+  3,    /* mulsi_const9 */
+  7,    /* muldi */
+  21,   /* divsi */
+  37,   /* divdi */
+  3,    /* fp */
+  3,    /* dmul */
+  17,   /* sdiv */
+  21,   /* ddiv */
 };
 
 /* Instruction costs on PPC750 and PPC7400 processors.  */
@@ -461,6 +536,10 @@ struct processor_costs ppc750_cost = {
   5,    /* muldi */
   17,   /* divsi */
   17,   /* divdi */
+  3,    /* fp */
+  3,    /* dmul */
+  17,   /* sdiv */
+  31,   /* ddiv */
 };
 
 /* Instruction costs on PPC7450 processors.  */
@@ -472,6 +551,10 @@ struct processor_costs ppc7450_cost = {
   4,    /* muldi */
   23,   /* divsi */
   23,   /* divdi */
+  5,    /* fp */
+  5,    /* dmul */
+  21,   /* sdiv */
+  35,   /* ddiv */
 };
 
 /* Instruction costs on PPC8540 processors.  */
@@ -483,6 +566,10 @@ struct processor_costs ppc8540_cost = {
   4,    /* muldi */
   19,   /* divsi */
   19,   /* divdi */
+  4,    /* fp */
+  4,    /* dmul */
+  29,   /* sdiv */
+  29,   /* ddiv */
 };
 
 /* Instruction costs on POWER4 and POWER5 processors.  */
@@ -494,6 +581,10 @@ struct processor_costs power4_cost = {
   4,    /* muldi */
   18,   /* divsi */
   34,   /* divdi */
+  3,    /* fp */
+  3,    /* dmul */
+  17,   /* sdiv */
+  17,   /* ddiv */
 };
 
 
@@ -1370,8 +1461,11 @@ rs6000_override_options (const char *default_cpu)
 	break;
 
       case PROCESSOR_PPC620:
-      case PROCESSOR_PPC630:
 	rs6000_cost = &ppc620_cost;
+	break;
+
+      case PROCESSOR_PPC630:
+	rs6000_cost = &ppc630_cost;
 	break;
 
       case PROCESSOR_PPC750:
@@ -16419,6 +16513,8 @@ static bool
 rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, 
 		  int *total)
 {
+  enum machine_mode mode = GET_MODE (x);
+
   switch (code)
     {
       /* On the RS/6000, if it is valid in the insn, it is free.
@@ -16433,16 +16529,30 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
       return true;
 
     case PLUS:
-      *total = ((GET_CODE (XEXP (x, 1)) == CONST_INT
-		 && ((unsigned HOST_WIDE_INT) (INTVAL (XEXP (x, 1))
-					       + 0x8000) >= 0x10000)
-		 && ((INTVAL (XEXP (x, 1)) & 0xffff) != 0))
-		? COSTS_N_INSNS (2)
-		: COSTS_N_INSNS (1));
+      if (mode == DFmode)
+	*total = GET_CODE (XEXP (x, 0)) == MULT
+		 ? COSTS_N_INSNS (rs6000_cost->dmul)
+		 : COSTS_N_INSNS (rs6000_cost->fp);
+      else if (mode == SFmode)
+	*total = COSTS_N_INSNS (rs6000_cost->fp);
+      else
+	*total = ((GET_CODE (XEXP (x, 1)) == CONST_INT
+		  && ((unsigned HOST_WIDE_INT) (INTVAL (XEXP (x, 1))
+						+ 0x8000) >= 0x10000)
+		  && ((INTVAL (XEXP (x, 1)) & 0xffff) != 0))
+		 ? COSTS_N_INSNS (2)
+		 : COSTS_N_INSNS (1));
       return true;
 
     case MINUS:
-      *total = COSTS_N_INSNS (1);
+      if (mode == DFmode)
+	*total = GET_CODE (XEXP (x, 0)) == MULT
+		 ? COSTS_N_INSNS (rs6000_cost->dmul)
+		 : COSTS_N_INSNS (rs6000_cost->fp);
+      else if (mode == SFmode)
+	*total = COSTS_N_INSNS (rs6000_cost->fp);
+      else
+        *total = COSTS_N_INSNS (1);
       return true;
 
     case AND:
@@ -16464,7 +16574,11 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 	  else
 	    *total = COSTS_N_INSNS (rs6000_cost->mulsi_const);
 	}
-      else if (GET_MODE (XEXP (x, 1)) == DImode)
+      else if (mode == DFmode)
+	*total = COSTS_N_INSNS (rs6000_cost->dmul);
+      else if (mode == SFmode)
+	*total = COSTS_N_INSNS (rs6000_cost->fp);
+      else if (mode == DImode)
 	*total = COSTS_N_INSNS (rs6000_cost->muldi);
       else
 	*total = COSTS_N_INSNS (rs6000_cost->mulsi);
@@ -16472,6 +16586,12 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 
     case DIV:
     case MOD:
+      if (FLOAT_MODE_P (mode))
+	{
+	  *total = mode == DFmode ? COSTS_N_INSNS (rs6000_cost->ddiv)
+				  : COSTS_N_INSNS (rs6000_cost->sdiv);
+	  return true;
+	}
       if (GET_CODE (XEXP (x, 1)) == CONST_INT
 	  && exact_log2 (INTVAL (XEXP (x, 1))) >= 0)
 	{
@@ -16492,9 +16612,17 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
       *total = COSTS_N_INSNS (4);
       return true;
 
+    case NEG:
+    case ABS:
+      if (FLOAT_MODE_P (mode))
+	*total = COSTS_N_INSNS (rs6000_cost->fp);
+      else
+	*total = COSTS_N_INSNS (1);
+      return true;
+
     case MEM:
       /* MEM should be slightly more expensive than (plus (reg) (const)).  */
-      *total = 5;
+      *total = COSTS_N_INSNS (1) + 1;
       return true;
 
     default:

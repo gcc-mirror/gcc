@@ -1,3 +1,17 @@
+2004-07-07  Roger Sayle  <roger@eyesopen.com>
+
+	* config/rs6000/rs6000.c (struct processor_costs): Add new fields
+	for simple floating point operations "fp", double precision
+	multiplication "dmul", and single and double precision division
+	"sdiv" and "ddiv".  Update all CPU variant tables as appropriate.
+	(ppc630_cost): New table split from ppc620_cost, to distinguish
+	differences in floating point latencies.
+	(rs6000_override_options): Use ppc630_cost for PROCESSOR_PPC630.
+	(rs6000_rtx_costs): Add support for single and double precision
+	floating point addition, subtraction, multiplication, division,
+	fused-multiply-add, fused-multiply-sub, negation, absolute value
+	and negative absolute value.  Tweak MEM case to use prefered idiom.
+
 2004-07-07  Richard Henderson  <rth@redhat.com>
 
 	* tree-flow-inline.h (may_propagate_copy): Move...
