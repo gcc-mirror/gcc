@@ -749,7 +749,7 @@ finalize_pic ()
 
   /* Initialize every time through, since we can't easily
      know this to be permanent.  */
-  global_offset_table = gen_rtx (SYMBOL_REF, Pmode, "*__GLOBAL_OFFSET_TABLE_");
+  global_offset_table = gen_rtx (SYMBOL_REF, Pmode, "_GLOBAL_OFFSET_TABLE_");
   pic_pc_rtx = gen_rtx (CONST, Pmode,
 			gen_rtx (MINUS, Pmode,
 				 global_offset_table,
