@@ -2104,23 +2104,25 @@ DEFUN(process_file, (jcf, out),
 #define OPT_classpath     LONG_OPT (0)
 #define OPT_CLASSPATH     OPT_classpath
 #define OPT_bootclasspath LONG_OPT (1)
-#define OPT_HELP          LONG_OPT (2)
-#define OPT_TEMP          LONG_OPT (3)
-#define OPT_VERSION       LONG_OPT (4)
-#define OPT_PREPEND       LONG_OPT (5)
-#define OPT_FRIEND        LONG_OPT (6)
-#define OPT_ADD           LONG_OPT (7)
-#define OPT_APPEND        LONG_OPT (8)
-#define OPT_M             LONG_OPT (9)
-#define OPT_MM            LONG_OPT (10)
-#define OPT_MG            LONG_OPT (11)
-#define OPT_MD            LONG_OPT (12)
-#define OPT_MMD           LONG_OPT (13)
+#define OPT_extdirs       LONG_OPT (2)
+#define OPT_HELP          LONG_OPT (3)
+#define OPT_TEMP          LONG_OPT (4)
+#define OPT_VERSION       LONG_OPT (5)
+#define OPT_PREPEND       LONG_OPT (6)
+#define OPT_FRIEND        LONG_OPT (7)
+#define OPT_ADD           LONG_OPT (8)
+#define OPT_APPEND        LONG_OPT (9)
+#define OPT_M             LONG_OPT (10)
+#define OPT_MM            LONG_OPT (11)
+#define OPT_MG            LONG_OPT (12)
+#define OPT_MD            LONG_OPT (13)
+#define OPT_MMD           LONG_OPT (14)
 
 static const struct option options[] =
 {
   { "classpath",     required_argument, NULL, OPT_classpath },
   { "bootclasspath", required_argument, NULL, OPT_bootclasspath },
+  { "extdirs",       required_argument, NULL, OPT_extdirs },
   { "CLASSPATH",     required_argument, NULL, OPT_CLASSPATH },
   { "help",          no_argument,       NULL, OPT_HELP },
   { "stubs",         no_argument,       &stubs, 1 },
@@ -2163,6 +2165,7 @@ help ()
   printf ("  --classpath PATH        Set path to find .class files\n");
   printf ("  -IDIR                   Append directory to class path\n");
   printf ("  --bootclasspath PATH    Override built-in class path\n");
+  printf ("  --extdirs PATH          Set extensions directory path\n");
   printf ("  -d DIRECTORY            Set output directory name\n");
   printf ("  -o FILE                 Set output file name\n");
   printf ("  -td DIRECTORY           Set temporary directory name\n");
@@ -2244,6 +2247,10 @@ DEFUN(main, (argc, argv),
 
 	case OPT_bootclasspath:
 	  jcf_path_bootclasspath_arg (optarg);
+	  break;
+
+	case OPT_extdirs:
+	  jcf_path_extdirs_arg (optarg);
 	  break;
 
 	case OPT_HELP:

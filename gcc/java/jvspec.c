@@ -68,6 +68,7 @@ static const char jvgenmain_spec[] =
 		   %{<findirect-dispatch} \
 		   %{<fno-store-check} %{<foutput-class-dir}\
 		   %{<fclasspath*} %{<fCLASSPATH*} %{<fbootclasspath*}\
+		   %{<fextdirs*}\
 		   %{<fuse-divide-subroutine} %{<fno-use-divide-subroutine}\
 		   %{<fcheck-references} %{<fno-check-references}\
 		   %{<ffilelist-file}\
