@@ -4429,7 +4429,7 @@ build_x_va_arg (tree expr, tree type)
   if (! pod_type_p (type))
     {
       /* Undefined behavior [expr.call] 5.2.2/7.  */
-      warning ("cannot receive objects of non-POD type %q#T' through %<...%>; "
+      warning ("cannot receive objects of non-POD type %q#T through %<...%>; "
                "call will abort at runtime", type);
       expr = convert (build_pointer_type (type), null_node);
       expr = build2 (COMPOUND_EXPR, TREE_TYPE (expr),
@@ -4677,8 +4677,8 @@ build_over_call (struct z_candidate *cand, int flags)
       tree base_binfo;
       
       if (convs[i]->bad_p)
-	pedwarn ("passing `%T' as `this' argument of `%#D' discards qualifiers",
-		    TREE_TYPE (argtype), fn);
+	pedwarn ("passing %qT as %<this%> argument of %q#D discards qualifiers",
+                 TREE_TYPE (argtype), fn);
 
       /* [class.mfct.nonstatic]: If a nonstatic member function of a class
 	 X is called for an object that is not of type X, or of a type

@@ -2416,7 +2416,7 @@ define_label (location_t location, tree name)
     pedwarn ("label named wchar_t");
 
   if (DECL_INITIAL (decl) != NULL_TREE)
-    error ("duplicate label `%D'", decl);
+    error ("duplicate label %qD", decl);
   else
     {
       /* Mark label as having been defined.  */
@@ -3936,7 +3936,7 @@ grok_reference_init (tree decl, tree type, tree init, tree *cleanup)
       if ((DECL_LANG_SPECIFIC (decl) == 0
 	   || DECL_IN_AGGR_P (decl) == 0)
 	  && ! DECL_THIS_EXTERN (decl))
-	error ("`%D' declared as reference but not initialized", decl);
+	error ("%qD declared as reference but not initialized", decl);
       return NULL_TREE;
     }
 
@@ -4008,7 +4008,7 @@ maybe_deduce_size_from_array_init (tree decl, tree init)
       if (failure == 2)
 	{
 	  if (do_default)
-	    error ("array size missing in `%D'", decl);
+	    error ("array size missing in %qD", decl);
 	  /* If a `static' var's size isn't known, make it extern as
 	     well as static, so it does not get allocated.  If it's not
 	     `static', then don't mark it extern; finish_incomplete_decl
@@ -10970,8 +10970,7 @@ revert_static_member_fn (tree decl)
 
   if (cp_type_quals (TREE_TYPE (TREE_VALUE (args)))
       != TYPE_UNQUALIFIED)
-    error ("static member function `%#D' declared with type qualifiers",
-	      decl);
+    error ("static member function %q#D declared with type qualifiers", decl);
 
   args = TREE_CHAIN (args);
   tmp = build_function_type (TREE_TYPE (function), args);

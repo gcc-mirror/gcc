@@ -211,7 +211,7 @@ reopen_repo_file_for_write (void)
 
   if (repo_file == 0)
     {
-      error ("can't create repository information file `%s'", repo_name);
+      error ("can't create repository information file %qs", repo_name);
       flag_use_repository = 0;
     }
 }

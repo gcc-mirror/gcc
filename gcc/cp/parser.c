@@ -1990,7 +1990,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree scope, tree id)
 		    if (TREE_CODE (field) == TYPE_DECL
 			&& DECL_NAME (field) == id)
 		      {
-			inform ("(perhaps `typename %T::%E' was intended)",
+			inform ("(perhaps %<typename %T::%E%> was intended)",
 			        BINFO_TYPE (b), id);
 			break;
 		      }

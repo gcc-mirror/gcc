@@ -1,9 +1,27 @@
 2004-10-31  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	Convert diagnostics to use quoting flag q 9/n
+	* typeck.c (build_x_unary_op, convert_member_func_to_ptr, 
+	get_delta_difference):  Use new quotation style.
+	* repo.c (reopen_repo_file_for_write): Likewise.
+	* pt.c (do_type_instantiation): Likewise.
+	* parser.c (cp_parser_diagnose_invalid_type_name): 
+	* name-lookup.c (push_overloaded_decl, set_decl_namespace): 
+	* error.c (cp_print_error_function,
+	print_instantiation_full_context): Likewise.
+	* decl.c (define_label, grok_reference_init, 
+	maybe_deduce_size_from_array_init, revert_static_member_fn): 
+	* decl2.c (check_classfn): Likewise.
+	* class.c (add_method, check_field_decls, layout_class_type, 
+	resolve_address_of_overloaded_function): Likewise.
+	* call.c (build_x_va_arg, build_over_call): Likewise.
+
+2004-10-31  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	Convert diagnostics to use quoting flag q 8/n
 	* cvt.c (cp_convert_to_pointer, warn_ref_binding, 
 	convert_to_reference, ocp_convert, convert_to_void 
-	cp_convert_to_pointer): 
+	cp_convert_to_pointer): Use new quotation style.
 
 2004-10-31  Mark Mitchell  <mark@codesourcery.com>
 

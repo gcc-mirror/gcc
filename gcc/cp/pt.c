@@ -10843,7 +10843,7 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
   if (storage != NULL_TREE)
     {
       if (pedantic && !in_system_header)
-	pedwarn("ISO C++ forbids the use of `%E' on explicit instantiations", 
+	pedwarn("ISO C++ forbids the use of %qE on explicit instantiations", 
                 storage);
 
       if (storage == ridpointers[(int) RID_INLINE])

@@ -995,7 +995,7 @@ add_method (tree type, tree method)
 		return;
 	      else
 		{
-		  cp_error_at ("`%#D' and `%#D' cannot be overloaded",
+		  cp_error_at ("%q#D and %q#D cannot be overloaded",
 			       method, fn);
 
 		  /* We don't call duplicate_decls here to merge
@@ -2872,7 +2872,8 @@ check_field_decls (tree t, tree *access_decls,
 	    }
 	  if (TREE_CODE (type) == REFERENCE_TYPE)
 	    {
-	      cp_error_at ("%qD may not have reference type `%T' because it is a member of a union",
+	      cp_error_at ("%qD may not have reference type %qT because"
+                           " it is a member of a union",
 			   x, type);
 	      continue;
 	    }
@@ -4599,7 +4600,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	      else
 		{
 		  if (warn_abi && TREE_CODE (t) == UNION_TYPE)
-		    warning ("size assigned to `%T' may not be "
+		    warning ("size assigned to %qT may not be "
 			     "ABI-compliant and may change in a future "
 			     "version of GCC", 
 			     t);
@@ -5615,9 +5616,9 @@ resolve_address_of_overloaded_function (tree target_type,
   else 
     {
       if (flags & tf_error)
-	error ("\
-cannot resolve overloaded function `%D' based on conversion to type `%T'", 
-		  DECL_NAME (OVL_FUNCTION (overload)), target_type);
+	error ("cannot resolve overloaded function %qD based on"
+               " conversion to type %qT", 
+               DECL_NAME (OVL_FUNCTION (overload)), target_type);
       return error_mark_node;
     }
   

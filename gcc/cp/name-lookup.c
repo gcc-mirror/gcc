@@ -2008,7 +2008,7 @@ push_overloaded_decl (tree decl, int flags)
 	  if (IS_AGGR_TYPE (t) && warn_shadow
 	      && (! DECL_IN_SYSTEM_HEADER (decl)
 		  || ! DECL_IN_SYSTEM_HEADER (old)))
-	    warning ("`%#D' hides constructor for `%#T'", decl, t);
+	    warning ("%q#D hides constructor for %q#T", decl, t);
 	  old = NULL_TREE;
 	}
       else if (is_overloaded_fn (old))
@@ -3000,8 +3000,8 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
   
   /* It is ok for friends to be qualified in parallel space.  */
   if (!friendp && !is_ancestor (current_namespace, scope))
-    error ("declaration of `%D' not in a namespace surrounding `%D'",
-	      decl, scope);
+    error ("declaration of %qD not in a namespace surrounding %qD",
+           decl, scope);
   DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
   if (scope != current_namespace)
     {
