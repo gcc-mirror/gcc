@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_SPEC			/* But we have a GAS assembler.  */
 
 #define CPP_PREDEFINES \
-  "-DIP2K -D__INT_MAX__=SHRT_MAX -D_DOUBLE_IS_32BITS -D__BUFSIZ__=512 -D__FILENAME_MAX__=128"
+  "-DIP2K -D_DOUBLE_IS_32BITS -D__BUFSIZ__=512 -D__FILENAME_MAX__=128"
 /* Define this to be a string constant containing `-D' options to
    define the predefined macros that identify this machine and system.
    These macros will be predefined unless the `-ansi' option is
