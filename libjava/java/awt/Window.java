@@ -209,7 +209,8 @@ public class Window extends Container implements Accessible
   }
 
   /**
-   * Makes this window visible and brings it to the front.
+   * Shows on-screen this window and any of its owned windows for whom
+   * isVisible returns true.
    */
   public void show()
   {
@@ -218,13 +219,7 @@ public class Window extends Container implements Accessible
     if (peer == null)
       addNotify();
 
-    validate();
-    super.show();
-    toFront();
-  }
-
-  public void hide()
-  {
+    // Show visible owned windows.
     synchronized (ownedWindows)
       {
 	Iterator e = ownedWindows.iterator();
@@ -232,7 +227,10 @@ public class Window extends Container implements Accessible
 	  {
 	    Window w = (Window)(((Reference) e.next()).get());
 	    if (w != null)
-	      w.hide();
+	      {
+		if (w.isVisible())
+		  w.getPeer().setVisible(true);
+	      }
      	    else
 	      // Remove null weak reference from ownedWindows.
 	      // Unfortunately this can't be done in the Window's
@@ -241,7 +239,29 @@ public class Window extends Container implements Accessible
 	      e.remove();
 	  }
       }
+    validate();
+    super.show();
+    toFront();
+  }
 
+  public void hide()
+  {
+    // Hide visible owned windows.
+    synchronized (ownedWindows)
+      {
+	Iterator e = ownedWindows.iterator();
+	while(e.hasNext())
+	  {
+	    Window w = (Window)(((Reference) e.next()).get());
+	    if (w != null)
+	      {
+		if (w.isVisible() && w.getPeer() != null)
+		  w.getPeer().setVisible(false);
+	      }
+     	    else
+	      e.remove();
+	  }
+      }
     super.hide();
   }
 

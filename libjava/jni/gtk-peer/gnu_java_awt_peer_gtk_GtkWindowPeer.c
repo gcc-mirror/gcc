@@ -60,6 +60,10 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_create
   window_widget = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   window = GTK_WINDOW (window_widget);
 
+  // Avoid GTK runtime assertion failures.
+  width = (width < 1) ? 1 : width;
+  height = (height < 1) ? 1 : height;
+
   gtk_window_set_default_size (window, width, height);
 
   /* We must set this window's size requisition.  Otherwise when a
@@ -80,6 +84,8 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_create
 
   gtk_window_set_type_hint (window, type);
 
+  gtk_window_group_add_window (global_gtk_window_group, window);
+
   vbox = gtk_vbox_new (0, 0);
   layout = gtk_layout_new (NULL, NULL);
   gtk_box_pack_end (GTK_BOX (vbox), layout, 1, 1, 0);
@@ -93,7 +99,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_create
   NSA_SET_PTR (env, obj, window_widget);
 }
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkWindowPeer_setVisible
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetVisible
   (JNIEnv *env, jobject obj, jboolean visible)
 {
   void *ptr;
@@ -146,32 +152,6 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectHooks
 
   connect_awt_hook (env, obj, 1, GTK_WIDGET (ptr)->window);
 
-  gdk_threads_leave ();
-}
-
-void
-setup_window (JNIEnv *env, jobject obj, GtkWidget *window, jint width, 
-	      jint height, jboolean visible)
-{
-  GtkWidget *layout, *vbox;
-
-  gdk_threads_enter();
-  gtk_window_set_policy (GTK_WINDOW (window), 1, 1, 0);
-  gtk_widget_set_usize (window, width, height);
-
-  vbox = gtk_vbox_new (0, 0);
-  layout = gtk_layout_new (NULL, NULL);
-  gtk_box_pack_end (GTK_BOX (vbox), layout, 1, 1, 0);
-  gtk_container_add (GTK_CONTAINER (window), vbox);
-  gtk_widget_realize (layout);
-  connect_awt_hook (env, obj, 1, GTK_LAYOUT(layout)->bin_window);
-  gtk_widget_show (layout);
-  gtk_widget_show (vbox);
-
-  gtk_widget_realize (window);
-
-  connect_awt_hook (env, obj, 1, window->window);
-  set_visible (window, visible);
   gdk_threads_leave ();
 }
 
@@ -250,6 +230,10 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_setSize
 {
   void *ptr = NSA_GET_PTR (env, obj);
 
+  // Avoid GTK runtime assertion failures.
+  width = (width < 1) ? 1 : width;
+  height = (height < 1) ? 1 : height;
+
   gdk_threads_enter ();
   gtk_widget_set_size_request (GTK_WIDGET(ptr), width, height);
   gdk_threads_leave ();
@@ -260,6 +244,10 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetBounds
   (JNIEnv *env, jobject obj, jint x, jint y, jint width, jint height)
 {
   void *ptr = NSA_GET_PTR (env, obj);
+
+  // Avoid GTK runtime assertion failures.
+  width = (width < 1) ? 1 : width;
+  height = (height < 1) ? 1 : height;
 
   gdk_threads_enter ();
   gtk_window_move (GTK_WINDOW(ptr), x, y);
@@ -314,43 +302,3 @@ Java_gnu_java_awt_peer_gtk_GtkFramePeer_getMenuBarHeight
 
   return height;
 }
-
-
-void
-gdk_window_get_root_geometry (GdkWindow *window,
-			      gint      *x,
-			      gint      *y,
-			      gint      *width,
-			      gint      *height,
-			      gint      *border,
-			      gint      *depth)
-{
-  GdkWindow *private;
-
-  g_return_if_fail (window != NULL);
-  
-  private = (GdkWindow*) window;
-  if (x)
-    *x = 0;
-  if (y)
-    *y = 0;
-  if (width)
-    *width = 0;
-  if (height)
-    *height = 0;
-  if (border)
-    *border = 0;
-  if (depth)
-    *depth = 0;
-
-  if (GDK_WINDOW_DESTROYED (private))
-    return;
-  
-  private = gdk_window_get_toplevel (private);
-  if (GDK_WINDOW_DESTROYED(private))
-    return;
-  
-  gdk_window_get_geometry (private, x, y, width, height, depth);
-      
-}
-

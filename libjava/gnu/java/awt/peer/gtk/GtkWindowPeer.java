@@ -56,6 +56,15 @@ public class GtkWindowPeer extends GtkContainerPeer
   static protected final int GDK_WINDOW_TYPE_HINT_DOCK = 6;
   static protected final int GDK_WINDOW_TYPE_HINT_DESKTOP = 7;
 
+  // Unfortunately, X does not provide a clean way to calculate the
+  // dimensions of a window's borders before it has been displayed.
+  // So when creating the application's first window we guess the
+  // border dimensions.  Then if need be for that window, we fix the
+  // dimensions upon receipt of the first configure event.  Windows
+  // created after the first one will use the latest inset values
+  // received in postConfigureEvent.
+  static Insets latestInsets = new Insets (20, 6, 6, 6);
+
   native void create (int type, boolean decorated,
 		      int width, int height,
 		      GtkWindowPeer parent);
@@ -109,18 +118,19 @@ public class GtkWindowPeer extends GtkContainerPeer
     set ("title", title);
   }
 
+  native void setSize (int width, int height);
+
   public void setResizable (boolean resizable)
   {
     // Call setSize; otherwise when resizable is changed from true to
     // false the window will shrink to the dimensions it had before it
     // was resizable.
     setSize (awtComponent.getWidth() - insets.left - insets.right,
-	     awtComponent.getHeight() - insets.top - insets.bottom);
+    	     awtComponent.getHeight() - insets.top - insets.bottom);
     set ("allow_shrink", resizable);
     set ("allow_grow", resizable);
   }
 
-  native void setSize (int width, int height);
   native void setBoundsCallback (Window window,
 				 int x, int y,
 				 int width, int height);
@@ -159,7 +169,13 @@ public class GtkWindowPeer extends GtkContainerPeer
 	insets.bottom = bottom;
 	insets.right = right;
 
-	awtComponent.validate();
+	synchronized (latestInsets)
+	  {
+	    latestInsets.top = top;
+	    latestInsets.left = left;
+	    latestInsets.bottom = bottom;
+	    latestInsets.right = right;
+	  }
       }
     else
       {
@@ -178,15 +194,21 @@ public class GtkWindowPeer extends GtkContainerPeer
 			       frame_y,
 			       frame_width,
 			       frame_height);
-
-	    if (frame_width != awtComponent.getWidth()
-		|| frame_height != awtComponent.getHeight())
-	      setSize (width, height);
-
-	    awtComponent.validate();
 	  }
       }
+    awtComponent.validate();
   }
 
-  native public void setVisible (boolean b);
+  native void nativeSetVisible (boolean b);
+  public void setVisible (boolean b)
+  {
+    // Prevent the window manager from automatically placing this
+    // window when it is shown.
+    if (b)
+      setBounds (awtComponent.getX(),
+		 awtComponent.getY(),
+		 awtComponent.getWidth(),
+		 awtComponent.getHeight());
+    nativeSetVisible (b);
+  }
 }
