@@ -3489,8 +3489,14 @@ rest_of_compilation (decl)
     }
 
   /* If optimizing, then go ahead and split insns now since we are about
-     to recompute flow information anyway.  */
+     to recompute flow information anyway.  Since we can't split insns after
+     reload, do the splitting unconditionally here to avoid gcc from losing
+     REG_DEAD notes.  */
+#ifdef STACK_REGS
+  if (1)
+#else
   if (optimize > 0)
+#endif
     {
       int old_labelnum = max_label_num ();
 

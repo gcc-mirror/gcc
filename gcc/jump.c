@@ -1874,35 +1874,6 @@ reversed_comparison_code (comparison, insn)
 					 XEXP (comparison, 1), insn);
 }
 
-/* Given a comparison, COMPARISON, inside a conditional jump insn, INSN,
-   return non-zero if it is safe to reverse this comparison.  It is if our
-   floating-point is not IEEE, if this is an NE or EQ comparison, or if
-   this is known to be an integer comparison.  
- 
-   Use of this function is depreached and you should use
-   REVERSED_COMPARISON_CODE bits instead.
- */
-
-int
-can_reverse_comparison_p (comparison, insn)
-     rtx comparison;
-     rtx insn;
-{
-  enum rtx_code code;
-
-  /* If this is not actually a comparison, we can't reverse it.  */
-  if (GET_RTX_CLASS (GET_CODE (comparison)) != '<')
-    return 0;
-
-  code = reversed_comparison_code (comparison, insn);
-  if (code == UNKNOWN)
-    return 0;
-
-  /* The code will follow can_reverse_comparison_p with reverse_condition,
-     so see if it will get proper result.  */
-  return (code == reverse_condition (GET_CODE (comparison)));
-}
-
 /* Given an rtx-code for a comparison, return the code for the negated
    comparison.  If no such code exists, return UNKNOWN.
 
