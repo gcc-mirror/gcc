@@ -1995,7 +1995,7 @@ compute_frame_size (size, fregs_live)
   fsize += current_function_outgoing_args_size;
   if (! leaf_function_p () || fsize)
     fsize += 32;
-  return TARGET_SNAKE ? (fsize + 63 & ~63) : fsize;
+  return fsize + 63 & ~63;
 }
      
 rtx hp_profile_label_rtx;
