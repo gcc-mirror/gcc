@@ -2690,7 +2690,10 @@ push_template_decl_real (tree decl, int is_friend)
 	       || TREE_CODE (decl) == FUNCTION_DECL)
 	/* OK */;
       else
-	error ("template declaration of `%#D'", decl);
+	{
+	  error ("template declaration of `%#D'", decl);
+	  return error_mark_node;
+	}
     }
 
   /* Check to see that the rules regarding the use of default

@@ -4658,7 +4658,9 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
   const char *asmspec = NULL;
   int was_readonly = 0;
 
-  if (! decl)
+  if (decl == error_mark_node)
+    return;
+  else if (! decl)
     {
       if (init)
 	error ("assignment (not initialization) in declaration");
