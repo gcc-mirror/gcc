@@ -9338,9 +9338,9 @@
               (unspec_volatile [(return)] VUNSPEC_EPILOGUE)])]
   "TARGET_ARM"
   "*
-  if (USE_RETURN_INSN (FALSE))
+  if (use_return_insn (FALSE, next_nonnote_insn (insn)))
     return output_return_instruction (const_true_rtx, FALSE, FALSE);
-  return arm_output_epilogue (FALSE);
+  return arm_output_epilogue (next_nonnote_insn (insn));
   "
 ;; Length is absolute worst case
   [(set_attr "length" "44")
@@ -9356,7 +9356,7 @@
   "TARGET_EITHER"
   "*
   if (TARGET_ARM)
-    return arm_output_epilogue (TRUE);
+    return arm_output_epilogue (NULL);
   else /* TARGET_THUMB */
     return thumb_unexpanded_epilogue ();
   "

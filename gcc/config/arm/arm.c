@@ -1002,14 +1002,17 @@ arm_current_func_type (void)
   return cfun->machine->func_type;
 }
 
-/* Return 1 if it is possible to return using a single instruction.  */
+/* Return 1 if it is possible to return using a single instruction.  
+   If SIBLING is non-null, this is a test for a return before a sibling
+   call.  SIBLING is the call insn, so we can examine its register usage.  */
 
 int
-use_return_insn (int iscond)
+use_return_insn (int iscond, rtx sibling)
 {
   int regno;
   unsigned int func_type;
   unsigned long saved_int_regs;
+  unsigned HOST_WIDE_INT stack_adjust;
 
   /* Never use a return instruction before reload has run.  */
   if (!reload_completed)
@@ -1025,7 +1028,9 @@ use_return_insn (int iscond)
   /* So do interrupt functions that use the frame pointer.  */
   if (IS_INTERRUPT (func_type) && frame_pointer_needed)
     return 0;
-  
+
+  stack_adjust = arm_get_frame_size () + current_function_outgoing_args_size;
+
   /* As do variadic functions.  */
   if (current_function_pretend_args_size
       || cfun->machine->uses_anonymous_args
@@ -1033,11 +1038,50 @@ use_return_insn (int iscond)
       || ARM_FUNC_TYPE (func_type) == ARM_FT_EXCEPTION_HANDLER
       /* Or if the function calls alloca */
       || current_function_calls_alloca
-      /* Or if there is a stack adjustment.  */
-      || (arm_get_frame_size () + current_function_outgoing_args_size != 0))
+      /* Or if there is a stack adjustment.  However, if the stack pointer
+	 is saved on the stack, we can use a pre-incrementing stack load.  */
+      || !(stack_adjust == 0 || (frame_pointer_needed && stack_adjust == 4)))
     return 0;
 
   saved_int_regs = arm_compute_save_reg_mask ();
+
+  /* Unfortunately, the insn
+
+       ldmib sp, {..., sp, ...}
+
+     triggers a bug on most SA-110 based devices, such that the stack
+     pointer won't be correctly restored if the instruction takes a
+     page fault.  We work around this problem by poping r3 along with
+     the other registers, since that is never slower than executing
+     another instruction.  
+
+     We test for !arm_arch5 here, because code for any architecture
+     less than this could potentially be run on one of the buggy
+     chips.  */
+  if (stack_adjust == 4 && !arm_arch5)
+    {
+      /* Validate that r3 is a call-clobbered register (always true in
+	 the default abi) ... */
+      if (!call_used_regs[3])
+	return 0;
+
+      /* ... that it isn't being used for a return value (always true
+	 until we implement return-in-regs), or for a tail-call
+	 argument ... */
+      if (sibling)
+	{
+	  if (GET_CODE (sibling) != CALL_INSN)
+	    abort ();
+
+	  if (find_regno_fusage (sibling, USE, 3))
+	    return 0;
+	}
+
+      /* ... and that there are no call-saved registers in r0-r2
+	 (always true in the default ABI).  */
+      if (saved_int_regs & 0x7)
+	return 0;
+    }
 
   /* Can't be done if interworking with Thumb, and any registers have been
      stacked.  */
@@ -8194,7 +8238,24 @@ output_return_instruction (rtx operand, int really_return, int reverse)
 	     frame_pointer_needed is true, but only if sp already
 	     points to the base of the saved core registers.  */
 	  if (live_regs_mask & (1 << SP_REGNUM))
-	    sprintf (instr, "ldm%sfd\t%%|sp, {", conditional);
+	    {
+	      unsigned HOST_WIDE_INT stack_adjust =
+		arm_get_frame_size () + current_function_outgoing_args_size;
+	      
+	      if (stack_adjust != 0 && stack_adjust != 4)
+		abort ();
+
+	      if (stack_adjust && arm_arch5)
+		sprintf (instr, "ldm%sib\t%%|sp, {", conditional);
+	      else
+		{
+		  /* If we can't use ldmib (SA110 bug), then try to pop r3
+		     instead.  */
+		  if (stack_adjust)
+		    live_regs_mask |= 1 << 3;
+		  sprintf (instr, "ldm%sfd\t%%|sp, {", conditional);
+		}
+	    }
 	  else
 	    sprintf (instr, "ldm%sfd\t%%|sp!, {", conditional);
 
@@ -8401,7 +8462,7 @@ arm_output_function_prologue (FILE *f, HOST_WIDE_INT frame_size)
 }
 
 const char *
-arm_output_epilogue (int really_return)
+arm_output_epilogue (rtx sibling)
 {
   int reg;
   unsigned long saved_regs_mask;
@@ -8414,10 +8475,11 @@ arm_output_epilogue (int really_return)
   FILE * f = asm_out_file;
   rtx eh_ofs = cfun->machine->eh_epilogue_sp_ofs;
   unsigned int lrm_count = 0;
+  int really_return = (sibling == NULL);
 
   /* If we have already generated the return instruction
      then it is futile to generate anything else.  */
-  if (use_return_insn (FALSE) && return_used_this_function)
+  if (use_return_insn (FALSE, sibling) && return_used_this_function)
     return "";
 
   func_type = arm_current_func_type ();
@@ -8730,7 +8792,7 @@ arm_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
       /* We need to take into account any stack-frame rounding.  */
       frame_size = arm_get_frame_size ();
 
-      if (use_return_insn (FALSE)
+      if (use_return_insn (FALSE, NULL)
 	  && return_used_this_function
 	  && (frame_size + current_function_outgoing_args_size) != 0
 	  && !frame_pointer_needed)
@@ -10187,7 +10249,7 @@ arm_final_prescan_insn (rtx insn)
 	      /* Fail if a conditional return is undesirable (eg on a
 		 StrongARM), but still allow this if optimizing for size.  */
 	      else if (GET_CODE (scanbody) == RETURN
-		       && !use_return_insn (TRUE)
+		       && !use_return_insn (TRUE, NULL)
 		       && !optimize_size)
 		fail = TRUE;
 	      else if (GET_CODE (scanbody) == RETURN

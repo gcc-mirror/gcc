@@ -1870,7 +1870,7 @@ typedef struct
 /* Determine if the epilogue should be output as RTL.
    You should override this if you define FUNCTION_EXTRA_EPILOGUE.  */
 #define USE_RETURN_INSN(ISCOND)				\
-  (TARGET_ARM ? use_return_insn (ISCOND) : 0)
+  (TARGET_ARM ? use_return_insn (ISCOND, NULL) : 0)
 
 /* Definitions for register eliminations.
 
