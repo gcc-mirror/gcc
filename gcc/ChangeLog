@@ -1,3 +1,9 @@
+Tue Jun  6 19:25:32 2000  Philippe De Muyter  <phdm@macqel.be>
+
+	* configure.in (Make the links): Typo fix : the file that must be
+	included without #ifdef IN_GCC is `auto-host.h', not `auto-config.h'.
+	* configure: File rebuilt.
+
 2000-06-06  Nathan Sidwell  <nathan@codesourcery.com>
 
  	* eh-common.h (EH_ALLOC_SIZE, EH_ALLOC_ALIGN): New #defines.
