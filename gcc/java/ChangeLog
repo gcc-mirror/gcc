@@ -1,3 +1,9 @@
+2000-01-29  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (formal_parameter:): Set `$$' to NULL_TREE for better
+	error handling/recovery.
+	* java-tree.h (SYNCHRONIZED_EXPR): Fixed typo in comment.
+
 2000-01-27  Andrew Haley  <aph@cygnus.com>
 
         * jcf-write.c (emit_goto): RESERVE 3 bytes for insn.
@@ -67,6 +73,11 @@ Mon Jan 17 11:58:17 2000  Joerg Brunsmann  <joerg.brunsmann@fernuni-hagen.de>
 
 	* parse.y (build_string_concatenation): Only use
 	StringBuffer(String) shortcut if String arg is constant.
+
+Wed Jan 12 20:20:11 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-write.c (generate_bytecode_insns): binop: Change the type of
+	the shift value to int. Fixed typo in comment.
 
 2000-01-11  Mumit Khan  <khan@xraylith.wisc.edu>
 

@@ -2089,11 +2089,13 @@ generate_bytecode_insns (exp, target, state)
       else
 	{
 	  generate_bytecode_insns (arg0, target, state);
+	  if (jopcode >= OPCODE_lshl && jopcode <= OPCODE_lushr)
+	    arg1 = convert (int_type_node, arg1);
 	  generate_bytecode_insns (arg1, target, state);
 	}
       /* For most binary operations, both operands and the result have the
 	 same type.  Shift operations are different.  Using arg1's type
-	 gets us the correct SP adjustment in all casesd. */
+	 gets us the correct SP adjustment in all cases. */
       if (target == STACK_TARGET)
 	emit_binop (jopcode, TREE_TYPE (arg1), state);
       break;
