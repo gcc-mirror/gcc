@@ -483,7 +483,7 @@ static  void update_upper_bound(fresh_fn_ptr fresh,get_stamp_fn_ptr get_stamp,
     {
       flow_var v2 = (flow_var)e;
 	  
-      if (fv_has_contour(v2)) // v2 isn't aliased, and we discovered a contour
+      if (fv_has_contour(v2)) /* v2 isn't aliased, and we discovered a contour */
 	{
 	  gen_e shape = fv_instantiate_contour(v2);
 	     
@@ -532,7 +532,7 @@ static  void update_upper_bound(fresh_fn_ptr fresh,get_stamp_fn_ptr get_stamp,
 
 }
 
-// END
+/* END */
 
 
 void flowrow_inclusion(fresh_fn_ptr fresh,get_stamp_fn_ptr get_stamp, 
@@ -604,7 +604,7 @@ void flowrow_inclusion(fresh_fn_ptr fresh,get_stamp_fn_ptr get_stamp,
 	      gen_e rest1 = flowrow_get_rest(e1),
 		rest2 = flowrow_get_rest(e2);
 
-	      //assert( flowrow_is_var(rest1) && flowrow_is_var(rest2));
+	      /*assert( flowrow_is_var(rest1) && flowrow_is_var(rest2));*/
 
 	      if ( eq(rest1,rest2))
 		  failure("Recursive row resolution\n");
@@ -919,19 +919,21 @@ sort_kind flowrow_base_sort(gen_e e)
 }
 #endif /* NONSPEC */
 
+static const char* field_eq_name;
+static bool field_eq(const flowrow_field f)
+{
+  return (! strcmp(f->label,field_eq_name));
+}
 
 gen_e flowrow_extract_field(const char *name, gen_e e)
 {
-  
-  static bool field_eq(const flowrow_field f)
-    {
-      return (! strcmp(f->label,name));
-    }
-  
   if (flowrow_is_row(e))
     {
       flowrow_map fields = flowrow_get_fields(e);
-      flowrow_field f = flowrow_map_find(fields,field_eq);
+      flowrow_field f;
+      
+      field_eq_name = name;
+      f = flowrow_map_find(fields,field_eq);
 
       if (f)
 	return f->expr;
