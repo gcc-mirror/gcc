@@ -2,7 +2,6 @@
    Motorola m88100 running Omron Luna/88k.
    Copyright (C) 1991 Free Software Foundation, Inc.
    Contributed by Jeffery Friedl (jfriedl@omron.co.jp)
-   Currently supported by Tom Wood (wood@dg-rtp.dg.com)
 
 This file is part of GNU CC.
 

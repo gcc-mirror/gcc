@@ -4,8 +4,8 @@
    Written by Ron Guilmette (rfg@ncd.com).
    Contributed to FSF by Network Computing Devices.
    Other contributions by Vince Guarna (vguarna@urbana.mcd.mot.com),
-   Ray Essick (essick@i88.isc.com), and Wilson Tien (wtien@urbana.mcd.mot.com).
-   Currently supported by Tom Wood (wood@dg-rtp.dg.com)
+   Ray Essick (essick@i88.isc.com), Wilson Tien (wtien@urbana.mcd.mot.com),
+   and Tom Wood (Tom_Wood@NeXT.com)
 
 This file is part of GNU CC.
 

@@ -2,7 +2,7 @@
    Motorola m88100 running the AT&T/Unisoft/Motorola V.3 reference port.
    Copyright (C) 1990, 1991 Free Software Foundation, Inc.
    Contributed by Ray Essick (ressick@mot.com)
-   Currently supported by Tom Wood (wood@dg-rtp.dg.com)
+   Enhanced by Tom Wood (Tom_Wood@NeXT.com)
 
 This file is part of GNU CC.
 
