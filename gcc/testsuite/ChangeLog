@@ -51,6 +51,11 @@
 	* g++.dg/inherit/covariant10.C: New test.
 	* g++.dg/inherit/covariant11.C: New test.
 
+2003-10-20  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
+
+	PR target/12654
+	* gcc.c-torture/execute/20031020-1.c: New test.
+
 2003-10-20  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* gcc.dg/old-style-asm-1.c: Also check for (set (pc) on lines
