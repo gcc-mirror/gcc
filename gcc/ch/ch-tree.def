@@ -35,7 +35,7 @@ DEFTREECODE (CLASS_METHOD_DECL, "class_method_decl", 'd', 0)
 
 /* A 'SEIZE (OLD->NEW)!POSTFIX' or 'GRANT (OLD->NEW)!POSTFIX' is
    represented as an ALIAS_DECL where DECL_OLD_PREFIX, DECL_NEW_PREFIX,
-   and DECL_POSTFIX points to OLD, NEW, and POSTFIX, repectively.
+   and DECL_POSTFIX points to OLD, NEW, and POSTFIX, respectively.
    These are IDENTIFIER_NODEs, or NULL if empty.
    DECL_NAME is NEW!POSTFIX.  After binding, DECL_ABSTRACT_ORIGIN
    (if not an error_mark) points to a decl whose DECL_NAME is OLD!POSTFIX.

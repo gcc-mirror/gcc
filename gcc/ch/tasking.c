@@ -1959,7 +1959,7 @@ build_receive_buffer_case_label (buffer, loclist)
 
   if (TREE_CHAIN (loclist) != NULL_TREE)
     {
-      error ("buffer receive alternative requires only 1 defining occurence.");
+      error ("buffer receive alternative requires only 1 defining occurrence.");
       return error_mark_node;
     }
 
@@ -1969,7 +1969,7 @@ build_receive_buffer_case_label (buffer, loclist)
 
       /* here we change the mode of rc_state->sig_code to
 	 REF ARRAY (0:65535) REF __tmp_DESCR_type.
-	 This is neccesary, cause we cannot evaluate the buffer twice
+	 This is necessary, cause we cannot evaluate the buffer twice
 	 (once here where we compare against the address of the buffer
 	 and second in build_receive_buffer_case_end, where we use the
 	 address build the descriptor, which gets passed to __wait_buffer).
@@ -2046,7 +2046,7 @@ build_receive_buffer_case_label (buffer, loclist)
 
   if (! CH_LOCATION_P (var))
     {
-      error ("defining occurence in receive buffer alternative must be a location.");
+      error ("defining occurrence in receive buffer alternative must be a location.");
       had_errors = 1;
     }
 
@@ -2097,7 +2097,7 @@ build_receive_case_label (signame, loclist)
  * LABEL_CNT is the case-label counter passed from build_receive_case_start.
  * ELSE_CLAUSE defines if the RECEIVE CASE action had an ELSE(1) or not(0).
  * BUF_LIST is a tree-list of tree-lists, where TREE_VALUE defines the 
- * BUFFER location and TREE_PURPOSE defines the defining occurence.
+ * BUFFER location and TREE_PURPOSE defines the defining occurrence.
  */
 static void
 build_receive_buffer_case_end (buf_list, else_clause)

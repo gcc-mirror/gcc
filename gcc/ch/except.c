@@ -130,7 +130,7 @@ static tree BISJ;
 static tree jbuf_ident, prev_ident, handlers_ident;
 static tree exception_stack_decl = 0;
 
-/* Chain of cleanups assocated with exception handlers.
+/* Chain of cleanups associated with exception handlers.
    The TREE_PURPOSE is an INTEGER_CST whose value is the
    DECL_ACTION_NESTING_LEVEL (when the handled actions was entered).
    The TREE_VALUE is an expression to expand when we exit that action. */
