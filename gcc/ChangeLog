@@ -1,3 +1,12 @@
+Mon Dec  7 11:04:40 1998  Catherine Moore  <clm@cygnus.com>
+ 
+        * configure.in:  (arm*-*-ecos-elf):  New target.
+        * configure:  Regenerated.
+        * config/arm/elf.h (ASM_WEAKEN_LABEL):  Define.
+        * config/arm/ecos-elf.h:  New file.
+        * config/arm/unknown-elf.h (TARGET_VERSION):  Check
+        for redefinition.
+ 
 Mon Dec  7 16:15:51 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.c (output_far_jump): Emit braf only for TARGET_SH2.

@@ -325,6 +325,12 @@ do {						\
 } while (0)
 #endif
 
+/* This is how we tell the assembler that a symbol is weak.  */
+
+#define ASM_WEAKEN_LABEL(FILE,NAME) \
+  do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME); \
+       fputc ('\n', FILE); } while (0)
+
 #include "arm/aout.h"
 
 
