@@ -201,8 +201,8 @@ _Jv_RegisterClassHookDefault (jclass klass)
   // The BC ABI makes this check unnecessary: we always resolve all
   // data references via the appropriate class loader, so the kludge
   // that required this check has gone.
-#if 0
   // If the class is already registered, don't re-register it.
+  jclass check_class = klass->next;
   while (check_class != NULL)
     {
       if (check_class == klass)
@@ -227,7 +227,6 @@ _Jv_RegisterClassHookDefault (jclass klass)
 
       check_class = check_class->next;
     }
-#endif
 
   // FIXME: this is really bogus!
   if (! klass->engine)

@@ -1,5 +1,8 @@
 2004-12-20  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/natClassLoader.cc (_Jv_RegisterClassHookDefault):
+	Re-enable duplicate class registration error.
+
 	* testsuite/libjava.jar/jar.exp (gcj_jar_interpret): Updated.
 	* testsuite/libjava.verify/verify.exp (gcj_verify_run): Updated.
 	* testsuite/libjava.jni/jni.exp (gcj_jni_test_one): Updated.
