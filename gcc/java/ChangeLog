@@ -1,5 +1,8 @@
 2001-12-08  Tom Tromey  <tromey@redhat.com>
 
+	* gjavah.c (cxx_keywords): Re-sorted.
+	* lex.c (cxx_keywords): Re-sorted.
+
 	* gjavah.c (HANDLE_METHOD): Set `decompiled' before doing anything
 	else.
 
