@@ -1,3 +1,11 @@
+2004-01-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.tcc (_S_construct(_InIterator,
+	_InIterator, const _Alloc&, input_iterator_tag)): Simplify
+	the double loop, streamline.
+
+	* include/bits/basic_string.tcc: Very minor tweaks.
+
 2004-01-30  Loren J. Rittle  <ljrittle@acm.org>
 
 	* scripts/check_performance: Only compile with $THREAD_FLAG

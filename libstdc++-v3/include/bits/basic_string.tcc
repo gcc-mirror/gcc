@@ -92,45 +92,29 @@ namespace std
 	  return _S_empty_rep()._M_refdata();
 	// Avoid reallocation for common case.
 	_CharT __buf[100];
-	size_type __i = 0;
-	while (__beg != __end && __i < sizeof(__buf) / sizeof(_CharT))
+	size_type __len = 0;
+	while (__beg != __end && __len < sizeof(__buf) / sizeof(_CharT))
 	  { 
-	    __buf[__i++] = *__beg; 
-	    ++__beg; 
+	    __buf[__len++] = *__beg; 
+	    ++__beg;
 	  }
-	_Rep* __r = _Rep::_S_create(__i, size_type(0), __a);
-	traits_type::copy(__r->_M_refdata(), __buf, __i);
-	__r->_M_length = __i;
+	_Rep* __r = _Rep::_S_create(__len, size_type(0), __a);
+	traits_type::copy(__r->_M_refdata(), __buf, __len);
 	try 
 	  {
-	    // NB: this loop looks precisely this way because
-	    // it avoids comparing __beg != __end any more
-	    // than strictly necessary; != might be expensive!
-	    for (;;)
+	    while (__beg != __end)
 	      {
-		_CharT* __p = __r->_M_refdata() + __r->_M_length;
-		_CharT* __last = __r->_M_refdata() + __r->_M_capacity;
-		for (;;)
+		if (__len == __r->_M_capacity)
 		  {
-		    if (__beg == __end)
-		      {
-			__r->_M_length = __p - __r->_M_refdata();
-			*__p = _Rep::_S_terminal;       // grrr.
-			return __r->_M_refdata();
-		      }
-		    if (__p == __last)
-		      break;
-		    *__p++ = *__beg; 
-		    ++__beg;
+		    // Allocate more space.
+		    _Rep* __another = _Rep::_S_create(__len + 1, __len, __a);
+		    traits_type::copy(__another->_M_refdata(), 
+				      __r->_M_refdata(), __len);
+		    __r->_M_destroy(__a);
+		    __r = __another;
 		  }
-		// Allocate more space.
-		const size_type __len = __r->_M_capacity;
-		_Rep* __another = _Rep::_S_create(__len + 1, __len, __a);
-		traits_type::copy(__another->_M_refdata(), 
-				  __r->_M_refdata(), __len);
-		__r->_M_destroy(__a);
-		__r = __another;
-		__r->_M_length = __len;
+		__r->_M_refdata()[__len++] = *__beg; 
+		++__beg;
 	      }
 	  }
 	catch(...) 
@@ -138,7 +122,9 @@ namespace std
 	    __r->_M_destroy(__a); 
 	    __throw_exception_again;
 	  }
-	return 0;
+	__r->_M_length = __len;
+	__r->_M_refdata()[__len] = _Rep::_S_terminal;       // grrr.
+	return __r->_M_refdata();
       }
   
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -167,7 +153,6 @@ namespace std
 	    __throw_exception_again;
 	  }
 	__r->_M_length = __dnew;
-
 	__r->_M_refdata()[__dnew] = _Rep::_S_terminal;  // grrr.
 	return __r->_M_refdata();
       }
@@ -209,9 +194,8 @@ namespace std
     : _M_dataplus(_S_construct(__str._M_data()
 			       + __str._M_check(__pos,
 						"basic_string::basic_string"),
-			       __str._M_data() + __pos 
-			       + __str._M_limit(__pos, __n),
-			       _Alloc()), _Alloc())
+			       __str._M_data() + __str._M_limit(__pos, __n)
+			       + __pos, _Alloc()), _Alloc())
     { }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -221,8 +205,8 @@ namespace std
     : _M_dataplus(_S_construct(__str._M_data()
 			       + __str._M_check(__pos,
 						"basic_string::basic_string"),
-			       __str._M_data() + __pos
-			       + __str._M_limit(__pos, __n), __a), __a)
+			       __str._M_data() + __str._M_limit(__pos, __n)
+			       + __pos, __a), __a)
     { }
 
   // TBD: DPG annotate
@@ -262,7 +246,7 @@ namespace std
       if (_M_rep() != __str._M_rep())
 	{
 	  // XXX MT
-	  allocator_type __a = this->get_allocator();
+	  const allocator_type __a = this->get_allocator();
 	  _CharT* __tmp = __str._M_rep()->_M_grab(__a, __str.get_allocator());
 	  _M_rep()->_M_dispose(__a);
 	  _M_data(__tmp);
