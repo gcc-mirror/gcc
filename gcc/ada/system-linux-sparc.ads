@@ -58,7 +58,7 @@ pragma Pure (System);
    Max_Mantissa          : constant := 63;
    Fine_Delta            : constant := 2.0 ** (-Max_Mantissa);
 
-   Tick                  : constant := 0.000_001;;
+   Tick                  : constant := 0.000_001;
 
    --  Storage-related Declarations
 
