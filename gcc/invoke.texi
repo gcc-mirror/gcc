@@ -858,7 +858,7 @@ affected.
 Determine the language standard.  A value for this option must be provided;
 possible values are 
 
-@itemize @minus
+@table @samp
 @item iso9899:1990
 Same as -ansi
 
@@ -890,7 +890,7 @@ same as -std=iso9899:1999, deprecated
 @item gnu9x
 same as -std=gnu99, deprecated
 
-@end itemize
+@end table
 
 Even when this option is not specified, you can still use some of the
 features of newer standards in so far as they do not conflict with
@@ -3592,6 +3592,8 @@ program uses when determining what switches to pass to @file{cc1},
 are processed in order, from left to right.
 @end table
 
+@c man end
+
 @node Spec Files
 @section Specifying subprocesses and the switches to pass to them
 @cindex Spec Files
@@ -4018,6 +4020,8 @@ compilers to run).
 GCC also knows implicitly that arguments starting in @samp{-l} are to be
 treated as compiler output files, and passed to the linker in their
 proper position among the other output files.
+
+@c man begin OPTIONS
 
 @node Target Options
 @section Specifying Target Machine and Compiler Version
@@ -7742,8 +7746,8 @@ If you specify this option, you can not use the @code{asm} or
 @code{__asm__} keywords in functions with memory checking enabled.  GNU
 CC cannot understand what the @code{asm} statement may do, and therefore
 cannot generate the appropriate code, so it will reject it.  However, if
-you specify the function attribute @code{no_check_memory_usage} (see
-@pxref{Function Attributes}, GNU CC will disable memory checking within a
+you specify the function attribute @code{no_check_memory_usage}
+(@pxref{Function Attributes}), GNU CC will disable memory checking within a
 function; you may use @code{asm} statements inside such functions.  You
 may have an inline expansion of a non-checked function within a checked
 function; in that case GNU CC will not generate checks for the inlined
@@ -7870,9 +7874,13 @@ Be warned that you should know what you are doing when invoking this
 option, and that not all targets provide complete support for it.
 @end table
 
+@c man end
+
 @node Environment Variables
 @section Environment Variables Affecting GCC
 @cindex environment variables
+
+@c man begin ENVIRONMENT
 
 This section describes several environment variables that affect how GCC
 operates.  Some of them work by specifying directories or prefixes to use
