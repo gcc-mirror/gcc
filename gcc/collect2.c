@@ -585,7 +585,10 @@ main (argc, argv)
 
   /* Determine the full path name of the C compiler to use.  */
   c_file_name = getenv ("COLLECT_GCC");
-  if (c_file_name == 0 || c_file_name[0] != '/')
+  /* If this is absolute, it must be a file that exists.
+     If it is relative, it must be something that execvp was able to find.
+     Either way, we can pass it to execvp and find the same executable.  */
+  if (c_file_name == 0)
     {
       c_file_name = xcalloc (clen + sizeof ("gcc"), 1);
       bcopy (prefix, c_file_name, len);
