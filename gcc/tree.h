@@ -2862,7 +2862,6 @@ extern tree getdecls				PARAMS ((void));
 /* Function to return the chain of structure tags in the current scope level.  */
 extern tree gettags				PARAMS ((void));
 
-extern tree build_nonstandard_integer_type	PARAMS ((unsigned int, int));
 extern tree build_range_type PARAMS ((tree, tree, tree));
 
 /* In alias.c */

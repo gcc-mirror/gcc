@@ -22,7 +22,7 @@ struct bf1
   unsigned int : 5;
   double e: 1;			/* { dg-error "invalid type" } */
   float f: 1;			/* { dg-error "invalid type" } */
-  unsigned long g: 5;		/* { dg-warning "GCC extension" } */
+  unsigned long g: 5;		/* { dg-warning "GCC extension|ISO C" } */
   ui h: 5;
   enum foo i: 2;		/* { dg-error "narrower" } */
   enum foo j: 3;
