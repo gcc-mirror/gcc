@@ -1,3 +1,8 @@
+2003-07-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* ggc-common.c (gt_pch_save): Cast MAP_FAILED to void *.
+	(gt_pch_restore): Likewise.
+
 2003-07-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/alpha/alpha.c: Fix comment typos.
