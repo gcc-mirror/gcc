@@ -1,3 +1,18 @@
+2004-03-11  Dhruv Matani  <dhruvbird@HotPOP.com>
+
+	* include/Makefile.am (ext_headers): Add
+	${ext_srcdir}/bitmap_allocator.h .
+	* include/Makefile.in: Regenerate.
+	* docs/html/ext/ballocator_doc.txt: New file.
+	* include/ext/bitmap_allocator.h: New file.
+	* testsuite/performance/20_util/allocator/list_sort_search.cc: New test.
+	* testsuite/performance/20_util/allocator/map_mt_find.cc: Likewise.
+	* testsuite/performance/20_util/allocator/producer_consumer.cc: Add
+	test for the bitmap_allocator<>.
+	* testsuite/performance/20_util/allocator/insert.cc: Likewise.
+	* testsuite/performance/20_util/allocator/insert_insert.cc: Likewise.
+	* testsuite/performance/20_util/allocator/map_thread.cc: Likewise.
+
 2004-03-11  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/std_complex.h (pow(const complex&, const _Tp&),

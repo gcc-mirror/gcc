@@ -202,6 +202,7 @@ ext_srcdir = ${glibcxx_srcdir}/include/ext
 ext_builddir = ./ext
 ext_headers = \
 	${ext_srcdir}/algorithm \
+	${ext_srcdir}/bitmap_allocator.h \
 	${ext_srcdir}/debug_allocator.h \
 	${ext_srcdir}/demangle.h \
 	${ext_srcdir}/enc_filebuf.h \
