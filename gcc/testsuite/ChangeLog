@@ -1,3 +1,8 @@
+2003-12-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13310
+	* g++.dg/template/crash15.C: New test.
+
 2003-12-15  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++.old-deja/g++.pt/vaarg3.C: Don't expect an error for passing
