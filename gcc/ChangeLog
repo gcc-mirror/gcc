@@ -1,3 +1,10 @@
+2004-09-13  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (x86_schedule): New global variable.
+	(override_options): Disable scheduling when not supported.
+	* i386.h (x86_schedule): Declare.
+	(TARGET_SCHEDULE): New macro.
+
 2004-09-12  Richard Henderson  <rth@redhat.com>
 
 	PR c++/16254
