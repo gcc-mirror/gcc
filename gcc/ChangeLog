@@ -1,3 +1,8 @@
+2002-01-10  Richard Henderson  <rth@redhat.com>
+
+	* regrename.c (find_oldest_value_reg): Fix typo in mode change check.
+	(copyprop_hardreg_forward_1): Likewise.  Use mode_change_ok.
+
 2002-01-10  Kazu Hirata  <kazu@hxi.com>
 
 	* combine.c (can_combine_p): Fix a comment typo.
