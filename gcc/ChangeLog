@@ -1,3 +1,7 @@
+2003-11-19  Eric Christopher  <echristo@redhat.com>
+
+	* reload1.c (reload): Revert 2 previous checkins.
+
 2003-11-19  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* cpptrad.c (_cpp_scan_out_logical_line): Improve test for
