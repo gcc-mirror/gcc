@@ -1,3 +1,43 @@
+2001-08-29  Catherine Moore  <clm@redhat.com>
+
+	* config/v850/v850.h (MULDI3_LIBCALL, UCMPDI2_LIBCALL, CMPDI2_LIBCALL,
+	NEGDI2_LIBCALL, INIT_TARGET_OPTABS, MASK_STRICT_ALIGN): Define.
+	(PREDICATE_CODES): Include new predicates.
+	(RTX_COSTS): Handle UMOD and UDIV.  Tune MULT for v850e.
+	(TARGET_SWITCHES):  Add strict-align.
+	(TARGET_STRICT_ALIGN): New.
+	(MASK_DEFAULT, STRICT_ALIGNMENT):  Redefine.	
+	* config/v850/t-v850 (MULTILIB_OPTIONS, MULTILIB_DIRNAMES):
+	Define.
+	(LIB1ASMFUNCS): Add v850_negdi2, v850_cmpdi2, v850_ucmpdi2,
+	v850_muldi3.
+	* config/v850/lib1funcs.asm (L_callt_save_r2_r29, L_return_r2_r29,
+	L_callt_save_r2_r31, L_return_r2_r31,
+	L_save_all_interrupt): Change addi to add.
+	(L_save_interrupt, L_return_interrupt): Rework.
+	(__return_r31):  Correct .size directive.
+	(mulsi3, divsi3, udivsi3, umodsi3, modsi3): Tune for v850e.
+	(v850_negdi2, v850_cmpdi2, v850_ucmpdi2, v850_muldi3):
+	New routines.
+	* config/v850/v850.c (expand_prologue): Call
+	gen_callt_save_interrupt, gen_callt_restore_all_interrupt,
+	gen_callt_return_interrupt and gen_callt_save_all_interrupt.
+	(reg_or_int9_operand): New predicate.
+	(reg_or_const_operand): New routine.
+	* config/v850/v850.md (return_interrupt): Changed from
+	restore_interrupt.
+	(callt_save_all_interrupt): Changed from save_all_interrupt_v850e.
+	(callt_save_interrupt): Change save sequence.
+	(callt_return_interrupt): New.
+	(save_interrupt): Don't use runtime function for LONG_CALLS
+	and TARGET_PROLOG_FUNCTION.
+	(save_all_interrupt): Likewise.
+	(mulsi3): Use new predicate.
+	(moviscc): Disallow some combination of constants.
+	Fix define_split for sasf insns, so that it will not generate bad
+	code if operand0 and operand5 are the same.
+	* config/v850/v850-protos.h: Prototype new predicates.
+
 2002-08-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-common.c (builtin_define_type_precision): New function.

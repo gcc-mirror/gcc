@@ -31,70 +31,87 @@ Boston, MA 02111-1307, USA.  */
 	.text
 	.globl ___mulsi3
 	.type  ___mulsi3,@function
-
-/*
- * #define SHIFT 12
- * #define MASK ((1 << SHIFT) - 1)
- *  
- * #define STEP(i, j)                             \
- * ({                                             \
- *     short a_part = (a >> (i)) & MASK;          \
- *     short b_part = (b >> (j)) & MASK;          \
- *     int res = (((int)a_part) * ((int)b_part)); \
- *     res;                                       \
- * })
- *
- * int
- * __mulsi3 (unsigned a, unsigned b)
- * {
- *    return STEP (0, 0) +
- *        ((STEP (SHIFT, 0) + STEP (0, SHIFT)) << SHIFT) +
- *        ((STEP (0, 2 * SHIFT) + STEP (SHIFT, SHIFT) + STEP (2 * SHIFT, 0))
- *         << (2 * SHIFT));
- * }
- */
-
 ___mulsi3:
-        mov r6,r13
-        movea lo(4095),r0,r16
-        and r16,r13
-        mov r7,r15
-        and r16,r15
-        mov r13,r10
-        mulh r15,r10
-        shr 12,r6
-        mov r6,r14
-        and r16,r14
-        mov r14,r11
-        mulh r15,r11
-        shr 12,r7
-        mov r7,r12
-        and r16,r12
-        shr 12,r7
-        and r16,r7
-        mulh r13,r7
-        shr 12,r6
-        mulh r12,r13
-        and r16,r6
-        add r13,r11
-        shl 12,r11
-        add r11,r10
-        mov r14,r11
-        mulh r12,r11
-        mulh r15,r6
-        add r11,r7
-        add r6,r7
-        shl 24,r7
-        add r7,r10
-        jmp [r31]
+#ifdef __v850__	
+/*
+   #define SHIFT 12
+   #define MASK ((1 << SHIFT) - 1)
+    
+   #define STEP(i, j)                               \
+   ({                                               \
+       short a_part = (a >> (i)) & MASK;            \
+       short b_part = (b >> (j)) & MASK;            \
+       int res = (((int) a_part) * ((int) b_part)); \
+       res;                                         \
+   })
+  
+   int
+   __mulsi3 (unsigned a, unsigned b)
+   {
+      return STEP (0, 0) +
+          ((STEP (SHIFT, 0) + STEP (0, SHIFT)) << SHIFT) +
+          ((STEP (0, 2 * SHIFT) + STEP (SHIFT, SHIFT) + STEP (2 * SHIFT, 0))
+           << (2 * SHIFT));
+   }
+*/
+        mov   r6, r14
+        movea lo(32767), r0, r10
+        and   r10, r14
+        mov   r7,  r15
+        and   r10, r15
+        shr   15,  r6
+        mov   r6,  r13
+        and   r10, r13
+        shr   15,  r7
+        mov   r7,  r12
+        and   r10, r12
+        shr   15,  r6
+        shr   15,  r7
+        mov   r14, r10
+        mulh  r15, r10
+        mov   r14, r11
+        mulh  r12, r11
+        mov   r13, r16
+        mulh  r15, r16
+        mulh  r14, r7
+        mulh  r15, r6
+        add   r16, r11
+        mulh  r13, r12
+        shl   15,  r11
+        add   r11, r10
+        add   r12, r7
+        add   r6,  r7
+        shl   30,  r7
+        add   r7,  r10
+        jmp   [r31]
+#endif /* __v850__ */
+#if defined(__v850e__) || defined(__v850ea__)
+        /* This routine is almost unneccesarry because gcc
+           generates the MUL instruction for the RTX mulsi3.
+           But if someone wants to link his application with
+           previsously compiled v850 objects then they will 
+	   need this function.  */
+ 
+        /* It isn't good to put the inst sequence as below;
+              mul r7, r6,
+              mov r6, r10, r0
+           In this case, there is a RAW hazard between them.
+           MUL inst takes 2 cycle in EX stage, then MOV inst
+           must wait 1cycle.  */
+        mov   r7, r10
+        mul   r6, r10, r0
+        jmp   [r31]
+#endif /* __v850e__ */
 	.size ___mulsi3,.-___mulsi3
-#endif
+#endif /* L_mulsi3 */
+
 
 #ifdef L_udivsi3
 	.text
 	.global ___udivsi3
 	.type	___udivsi3,@function
 ___udivsi3:
+#ifdef __v850__
 	mov 1,r12
 	mov 0,r10
 	cmp r6,r7
@@ -126,6 +143,16 @@ ___udivsi3:
 	bne .L9
 .L8:
 	jmp [r31]
+
+#else /* defined(__v850e__) */
+
+	/* See comments at end of __mulsi3.  */
+	mov   r6, r10	
+	divu  r7, r10, r0
+	jmp   [r31]		
+
+#endif /* __v850e__ */
+
 	.size ___udivsi3,.-___udivsi3
 #endif
 
@@ -134,6 +161,7 @@ ___udivsi3:
 	.globl ___divsi3
 	.type  ___divsi3,@function
 ___divsi3:
+#ifdef __v850__
 	add -8,sp
 	st.w r31,4[sp]
 	st.w r22,0[sp]
@@ -157,6 +185,16 @@ ___divsi3:
 	ld.w 4[sp],r31
 	add 8,sp
 	jmp [r31]
+
+#else /* defined(__v850e__) */
+
+	/* See comments at end of __mulsi3.  */
+	mov   r6, r10
+	div   r7, r10, r0
+	jmp   [r31]
+
+#endif /* __v850e__ */
+
 	.size ___divsi3,.-___divsi3
 #endif
 
@@ -165,6 +203,7 @@ ___divsi3:
 	.globl ___umodsi3
 	.type  ___umodsi3,@function
 ___umodsi3:
+#ifdef __v850__
 	add -12,sp
 	st.w r31,8[sp]
 	st.w r7,4[sp]
@@ -178,6 +217,15 @@ ___umodsi3:
 	ld.w 8[sp],r31
 	add 12,sp
 	jmp [r31]
+
+#else /* defined(__v850e__) */
+
+	/* See comments at end of __mulsi3.  */
+	divu  r7, r6, r10
+	jmp   [r31]
+
+#endif /* __v850e__ */
+
 	.size ___umodsi3,.-___umodsi3
 #endif /* L_umodsi3 */
 
@@ -186,6 +234,7 @@ ___umodsi3:
 	.globl ___modsi3
 	.type  ___modsi3,@function
 ___modsi3:
+#ifdef __v850__	
 	add -12,sp
 	st.w r31,8[sp]
 	st.w r7,4[sp]
@@ -199,6 +248,15 @@ ___modsi3:
 	ld.w 8[sp],r31
 	add 12,sp
 	jmp [r31]
+
+#else /* defined(__v850e__) */
+
+	/* See comments at end of __mulsi3.  */
+	div  r7, r6, r10
+	jmp [r31]
+
+#endif /* __v850e__ */
+
 	.size ___modsi3,.-___modsi3
 #endif /* L_modsi3 */
 
@@ -1642,3 +1700,186 @@ __callt_return_r31c:	.short ctoff(.L_callt_return_r31c)
 #endif
 
 #endif /* __v850e__ */
+
+/*  libgcc2 routines for NEC V850.  */
+/*  Double Integer Arithmetical Operation.  */
+
+#ifdef L_negdi2
+	.text
+	.global ___negdi2
+	.type   ___negdi2, @function
+___negdi2:
+	not	r6, r10
+	add	1,  r10
+	setf	l,  r6
+	not	r7, r11
+	add	r6, r11
+	jmp	[lp]
+
+	.size ___negdi2,.-___negdi2
+#endif
+
+#ifdef L_cmpdi2
+	.text
+	.global ___cmpdi2
+	.type	___cmpdi2,@function
+___cmpdi2:
+	# Signed comparison bitween each high word.
+	cmp	r9, r7
+	be	.L_cmpdi_cmp_low
+	setf	ge, r10
+	setf	gt, r6
+	add	r6, r10
+	jmp	[lp]
+.L_cmpdi_cmp_low:
+	# Unsigned comparigon bitween each low word.
+	cmp     r8, r6
+	setf	nl, r10
+	setf	h,  r6
+	add	r6, r10
+	jmp	[lp]	
+	.size ___cmpdi2, . - ___cmpdi2	
+#endif
+
+#ifdef L_ucmpdi2
+	.text
+	.global ___ucmpdi2
+	.type	___ucmpdi2,@function
+___ucmpdi2:
+	cmp	r9, r7  # Check if each high word are same.
+	be	.L_ucmpdi_check_psw
+	cmp     r8, r6  # Compare the word.
+.L_ucmpdi_check_psw:
+	setf	nl, r10 # 
+	setf	h,  r6  # 
+	add	r6, r10 # Add the result of comparison NL and comparison H.
+	jmp	[lp]	
+	.size ___ucmpdi2, . - ___ucmpdi2
+#endif
+
+#ifdef L_muldi3
+	.text
+	.global ___muldi3
+	.type	___muldi3,@function
+___muldi3:
+#ifdef __v850__
+        jarl  __save_r26_r31, r10
+        addi  16,  sp, sp
+        mov   r6,  r5
+        shr   15,  r5
+        movea lo(32767), r0, r14
+        and   r14, r5
+        mov   r8,  r10
+        shr   15,  r10
+        and   r14, r10
+        mov   r6,  r19
+        shr   30,  r19
+        mov   r7,  r12
+        shl   2,   r12
+        or    r12, r19
+        and   r14, r19
+        mov   r8,  r13
+        shr   30,  r13
+        mov   r9,  r12
+        shl   2,   r12
+        or    r12, r13
+        and   r14, r13
+        mov   r7,  r11
+        shr   13,  r11
+        and   r14, r11
+        mov   r9,  r31
+        shr   13,  r31
+        and   r14, r31
+        mov   r7,  r29
+        shr   28,  r29
+        and   r14, r29
+        mov   r9,  r12
+        shr   28,  r12
+        and   r14, r12
+        and   r14, r6
+        and   r14, r8
+        mov   r6,  r14
+        mulh  r8,  r14
+        mov   r6,  r16
+        mulh  r10, r16
+        mov   r6,  r18
+        mulh  r13, r18
+        mov   r6,  r15
+        mulh  r31, r15
+        mulh  r12, r6
+        mov   r5,  r17
+        mulh  r10, r17
+        add   -16, sp
+        mov   r5,  r12
+        mulh  r8,  r12
+        add   r17, r18
+        mov   r5,  r17
+        mulh  r31, r17
+        add   r12, r16
+        mov   r5,  r12
+        mulh  r13, r12
+        add   r17, r6
+        mov   r19, r17
+        add   r12, r15
+        mov   r19, r12
+        mulh  r8,  r12
+        mulh  r10, r17
+        add   r12, r18
+        mov   r19, r12
+        mulh  r13, r12
+        add   r17, r15
+        mov   r11, r13
+        mulh  r8,  r13
+        add   r12, r6
+        mov   r11, r12
+        mulh  r10, r12
+        add   r13, r15
+        mulh  r29, r8
+        add   r12, r6
+        mov   r16, r13
+        shl   15,  r13
+        add   r14, r13
+        mov   r18, r12
+        shl   30,  r12
+        mov   r13, r26
+        add   r12, r26
+        shr   15,  r14
+        movhi hi(131071), r0,  r12
+        movea lo(131071), r12, r13
+        and   r13, r14
+        mov   r16, r12
+        and   r13, r12
+        add   r12, r14
+        mov   r18, r12
+        shl   15,  r12
+        and   r13, r12
+        add   r12, r14
+        shr   17,  r14
+        shr   17,  r16
+        add   r14, r16
+        shl   13,  r15
+        shr   2,   r18
+        add   r18, r15
+        add   r15, r16
+        mov   r16, r27
+        add   r8,  r6
+        shl   28,  r6
+        add   r6,  r27
+        mov   r26, r10
+        mov   r27, r11
+        jr    __return_r26_r31
+#endif /* __v850__ */
+#if defined(__v850e__) || defined(__v850ea__)
+	/*  (Ahi << 32 + Alo) * (Bhi << 32 + Blo) */
+	/*   r7           r6      r9         r8   */
+	mov  r8, r10
+	mulu r7, r8,  r0		/* Ahi * Blo */
+	mulu r6, r9,  r0		/* Alo * Bhi */
+	mulu r6, r10, r11		/* Alo * Blo */
+	add  r8, r11
+	add  r9, r11
+	jmp  [r31]
+
+#endif /* defined(__v850e__)  || defined(__v850ea__) */
+	.size ___muldi3, . - ___muldi3
+#endif

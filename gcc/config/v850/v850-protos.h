@@ -1,22 +1,22 @@
 /* Prototypes for v850.c functions used in the md file & elsewhere.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
 
-This file is part of GNU CC.
+   This file is part of GNU CC.
 
-GNU CC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+   GNU CC is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
 
-GNU CC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   GNU CC is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.  */
+   You should have received a copy of the GNU General Public License
+   along with GNU CC; see the file COPYING.  If not, write to
+   the Free Software Foundation, 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.  */
 
 /* Function prototypes that cannot exist in v850.h due to dependency
    complications.  */
@@ -53,6 +53,8 @@ extern void   notice_update_cc              PARAMS ((rtx, rtx));
 extern char * construct_save_jarl           PARAMS ((rtx));
 extern char * construct_restore_jr          PARAMS ((rtx));
 #ifdef HAVE_MACHINE_MODES
+extern int    reg_or_int9_operand           PARAMS ((rtx, Mmode));
+extern int    reg_or_const_operand          PARAMS ((rtx, Mmode));
 extern char * construct_dispose_instruction PARAMS ((rtx));
 extern char * construct_prepare_instruction PARAMS ((rtx));
 extern int    pattern_is_ok_for_prepare     PARAMS ((rtx, Mmode));
