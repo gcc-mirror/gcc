@@ -262,7 +262,7 @@ or with constant text in a single argument.
 	arguments.  CC considers `-o foo' as being one switch whose
 	name starts with `o'.  %{o*} would substitute this text,
 	including the space; thus, two arguments would be generated.
- %{S*:X} substitutes X if one or more switches whose names with -S are
+ %{S*:X} substitutes X if one or more switches whose names start with -S are
 	specified to CC.  Note that the tail part of the -S option
 	(i.e. the part matched by the `*') will be substituted for each
 	occurrence of %* within X.
@@ -429,14 +429,14 @@ static struct compiler default_compilers[] =
 {
   {".c", "@c"},
   {"@c",
-   "cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P} %I\
+   "cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d}\
         -undef -D__GNUC__=2 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
-	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
+	%{!undef:%{!ansi:%p} %P} %{trigraphs} \
         %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C\
+	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*}\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
    "%{!M:%{!MM:%{!E:cc1 %{!pipe:%g.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a}\
@@ -449,26 +449,26 @@ static struct compiler default_compilers[] =
 		      %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
                       %{!pipe:%g.s} %A\n }}}}"},
   {"-",
-   "%{E:cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P} %I\
+   "%{E:cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d}\
         -undef -D__GNUC__=2 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C\
+	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*}\
         %i %W{o*}}\
     %{!E:%e-E required when input is from standard input}"},
   {".m", "@objective-c"},
   {"@objective-c",
-   "cpp -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P} %I\
+   "cpp -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d}\
         -undef -D__OBJC__ -D__GNUC__=2 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C\
+	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*}\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
    "%{!M:%{!MM:%{!E:cc1obj %{!pipe:%g.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.m %{d*} %{m*} %{a}\
@@ -484,27 +484,27 @@ static struct compiler default_compilers[] =
   {".h", "@c-header"},
   {"@c-header",
    "%{!E:%eCompilation of header file requested} \
-    cpp %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P} %I\
+    cpp %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	 %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} \
         -undef -D__GNUC__=2 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C\
+	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*}\
         %i %W{o*}"},
   {".cc", "@c++"},
   {".cxx", "@c++"},
   {".C", "@c++"},
   {"@c++",
-   "cpp -lang-c++ %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P} %I\
+   "cpp -lang-c++ %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C++ does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} \
 	-undef -D__GNUC__=2 -D__GNUG__=2 -D__cplusplus \
 	%{ansi:-trigraphs -$ -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
         %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional} %{trigraphs}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C\
+	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*}\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
    "%{!M:%{!MM:%{!E:cc1plus %{!pipe:%g.i} %1 %2\
 		   %{!Q:-quiet} -dumpbase %b.cc %{d*} %{m*} %{a}\
@@ -543,13 +543,13 @@ static struct compiler default_compilers[] =
             %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o} %i %A\n }"},
   {".S", "@assembler-with-cpp"},
   {"@assembler-with-cpp",
-   "cpp -lang-asm %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P} %I\
+   "cpp -lang-asm %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{trigraphs} \
         -undef -$ %{!undef:%p %P} -D__ASSEMBLER__ \
         %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C\
+	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*}\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.s}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
    "%{!M:%{!MM:%{!E:%{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
                     %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
@@ -2536,6 +2536,18 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      obstack_grow (&obstack, input_basename, basename_length);
 	    else
 	      {
+#ifdef MKTEMP_EACH_FILE /* ??? This has a problem: the total number of
+			   values mktemp can return is limited.
+			   That matters for the names of object files.
+			   In 2.4, do something about that.  */
+		/* Choose a new temp_filename, but get rid of the
+		   suffix that the spec wants to add to it.  */
+		choose_temp_base ();
+		while (*p == '.' || isalpha (*p))
+		  p++;
+		obstack_grow (&obstack, temp_filename, temp_filename_length);
+		delete_this_arg = 1;
+#else
 		obstack_grow (&obstack, temp_filename, temp_filename_length);
 		if (c == 'u' || c == 'U')
 		  {
@@ -2546,6 +2558,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		    sprintf (buff, "%d", unique);
 		    obstack_grow (&obstack, buff, strlen (buff));
 		  }
+#endif
 		delete_this_arg = 1;
 	      }
 	    arg_going = 1;
