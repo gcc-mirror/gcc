@@ -1,3 +1,7 @@
+2004-10-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* gcc.dg/20040910-1.c: Adjust regex.
+
 2004-10-30  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/18084
