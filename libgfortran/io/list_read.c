@@ -142,8 +142,17 @@ next_char (void)
     }
 
   if (length == 0)
-    longjmp (g.eof_jump, 1);
-  c = *p;
+    {
+      /* For internal files return a newline instead of signalling EOF.  */
+      /* ??? This isn't quite right, but we don't handle internal files
+	 with multiple records.  */
+      if (is_internal_unit ())
+	c = '\n';
+      else
+	longjmp (g.eof_jump, 1);
+    }
+  else
+    c = *p;
 
 done:
   at_eol = (c == '\n');

@@ -1,3 +1,8 @@
+2004-08-31  Bud Davis  <bdavis9659@comcast.net>
+
+	PR libfortran/16805
+	* gfortran.dg/list_read_2.f90: New test.
+
 2004-08-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/key1.C: New test.
