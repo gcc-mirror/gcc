@@ -18,6 +18,16 @@
 	* parse.y (check_abstract_method_definitions): Also check if
 	`other_method' is abstract.
 
+2000-06-23  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (set_super_info): Handle ACC_PRIVATE for (inner)
+	classes.
+	* java-tree.h (TYPE_PRIVATE_INNER_CLASS): New macro.
+	(struct lang_type): New field `pic.'
+	(CLASS_PRIVATE): New macro.
+	* parse.y (check_inner_class_access): New function.
+	(jdep_resolve_class): Call it.
+
 2000-06-23  Tom Tromey  <tromey@cygnus.com>
 
 	* parse.y (patch_incomplete_class_ref): Initialize the returned
@@ -83,6 +93,11 @@
 	`saved_context'.
 
 	* lang.c (lang_get_alias_set): Mark parameter with ATTRIBUTE_UNUSED.
+
+2000-06-09  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* parse.y (register_fields): Permit static fields in inner classes
+	if they are final. Fix for PR gcj/255.
 
 2000-06-06  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 

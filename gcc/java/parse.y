@@ -100,6 +100,7 @@ static int process_imports PARAMS ((void));
 static void read_import_dir PARAMS ((tree));
 static int find_in_imports_on_demand PARAMS ((tree));
 static void find_in_imports PARAMS ((tree));
+static void check_inner_class_access PARAMS ((tree, tree, tree));
 static int check_pkg_class_access PARAMS ((tree, tree));
 static void register_package PARAMS ((tree));
 static tree resolve_package PARAMS ((tree, tree *));
@@ -4117,11 +4118,11 @@ register_fields (flags, type, variable_list)
       tree init = TREE_VALUE (current);
       tree current_name = EXPR_WFL_NODE (cl);
 
-      /* Can't declare static fields in inner classes */
+      /* Can't declare non-final static fields in inner classes */
       if ((flags & ACC_STATIC) && !TOPLEVEL_CLASS_TYPE_P (class_type)
-	  && !CLASS_INTERFACE (TYPE_NAME (class_type)))
+          && !(flags & ACC_FINAL))
 	parse_error_context 
-	  (cl, "Field `%s' can't be static in innerclass `%s'. Only members of interfaces and top-level classes can be static",
+          (cl, "Field `%s' can't be static in inner class `%s' unless it is final",
 	   IDENTIFIER_POINTER (EXPR_WFL_NODE (cl)),
 	   lang_printable_name (class_type, 0));
 
@@ -5207,6 +5208,7 @@ jdep_resolve_class (dep)
   if (!decl)
     complete_class_report_errors (dep);
 
+  check_inner_class_access (decl, JDEP_ENCLOSING (dep), JDEP_WFL (dep));
   return decl;
 }
 
@@ -6778,6 +6780,27 @@ lookup_package_type (name, from)
   strncpy (subname, name, sub-name);
   subname [sub-name] = '\0';
   return get_identifier (subname);
+}
+
+static void
+check_inner_class_access (decl, enclosing_type, cl)
+     tree decl, enclosing_type, cl;
+{
+  /* We don't issue an error message when CL is null. CL can be null
+     as a result of processing a JDEP crafted by
+     source_start_java_method for the purpose of patching its parm
+     decl. But the error would have been already trapped when fixing
+     the method's signature. */
+  if (!(cl && PURE_INNER_CLASS_DECL_P (decl) && CLASS_PRIVATE (decl))
+      || (PURE_INNER_CLASS_DECL_P (enclosing_type)
+	  && common_enclosing_context_p (TREE_TYPE (enclosing_type), 
+					  TREE_TYPE (decl)))
+      || enclosing_context_p (TREE_TYPE (enclosing_type), TREE_TYPE (decl)))
+    return;
+
+  parse_error_context (cl, "Can't access nested %s %s. Only public classes and interfaces in other packages can be accessed",
+		       (CLASS_INTERFACE (decl) ? "interface" : "class"),
+		       lang_printable_name (decl, 0));
 }
 
 /* Check that CLASS_NAME refers to a PUBLIC class. Return 0 if no
