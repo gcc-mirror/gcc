@@ -1,3 +1,8 @@
+2003-07-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* combine.c (simplify_comparison): Don't share rtx when converting 
+	(ne (and (not X) 1) 0) to (eq (and X 1) 0).
+
 2003-07-18  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix.h (AGGREGATE_PADDING_FIXED): Define.
