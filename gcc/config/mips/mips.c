@@ -6955,7 +6955,7 @@ mips_output_function_prologue (file, size)
 #ifndef FUNCTION_NAME_ALREADY_DECLARED
   const char *fnname;
 #endif
-  long tsize = current_frame_info.total_size;
+  HOST_WIDE_INT tsize = current_frame_info.total_size;
 
   ASM_OUTPUT_SOURCE_FILENAME (file, DECL_SOURCE_FILE (current_function_decl));
 
@@ -7078,11 +7078,10 @@ mips_output_function_prologue (file, size)
 	      || GET_CODE (offset) != CONST_INT)
 	    continue;
 	  if (REGNO (base) == (unsigned) STACK_POINTER_REGNUM
-	      && (unsigned HOST_WIDE_INT) INTVAL (offset)
-	      == tsize + (REGNO (src) - 4) * UNITS_PER_WORD)
+	      && INTVAL (offset) == tsize + (REGNO (src) - 4) * UNITS_PER_WORD)
 	    ;
 	  else if (REGNO (base) == (unsigned) HARD_FRAME_POINTER_REGNUM
-		   && ((unsigned HOST_WIDE_INT) INTVAL (offset)
+		   && (INTVAL (offset)
 		       == (tsize
 			   + (REGNO (src) - 4) * UNITS_PER_WORD
 			   - current_function_outgoing_args_size)))
