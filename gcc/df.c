@@ -1061,7 +1061,7 @@ df_uses_record (df, loc, ref_type, bb, insn, flags)
 #ifdef CLASS_CANNOT_CHANGE_MODE
       if (CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (x),
 				      GET_MODE (SUBREG_REG (x))))
-      flags |= DF_REF_MODE_CHANGE;
+        flags |= DF_REF_MODE_CHANGE;
 #endif
 
       /* ... Fall through ...  */
@@ -1088,7 +1088,7 @@ df_uses_record (df, loc, ref_type, bb, insn, flags)
 #ifdef CLASS_CANNOT_CHANGE_MODE
 		  if (CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (dst),
 						  GET_MODE (SUBREG_REG (dst))))
-		  use_flags |= DF_REF_MODE_CHANGE;
+		    use_flags |= DF_REF_MODE_CHANGE;
 #endif
 		  df_uses_record (df, &SUBREG_REG (dst), DF_REF_REG_USE, bb,
 				  insn, use_flags);
@@ -1114,7 +1114,7 @@ df_uses_record (df, loc, ref_type, bb, insn, flags)
 #ifdef CLASS_CANNOT_CHANGE_MODE
 	      if (CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (dst),
 					      GET_MODE (SUBREG_REG (dst))))
-	      use_flags |= DF_REF_MODE_CHANGE;
+  	        use_flags |= DF_REF_MODE_CHANGE;
 #endif
 	      df_uses_record (df, &SUBREG_REG (dst), DF_REF_REG_USE, bb,
 			     insn, use_flags);
