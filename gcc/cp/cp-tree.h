@@ -1159,6 +1159,7 @@ struct lang_type_class GTY(())
   tree vfields;
   tree vcall_indices;
   tree vtables;
+  tree typeinfo_var;
   tree vbases;
   tree tags;
   tree as_base;
@@ -1636,6 +1637,12 @@ struct lang_type GTY(())
    first, followed by the construction vtables and VTT, if any.  */
 #define CLASSTYPE_VTABLES(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->vtables)
+
+/* The std::type_info variable representing this class, or NULL if no
+   such variable has been created.  This field is only set for the
+   TYPE_MAIN_VARIANT of the class.  */
+#define CLASSTYPE_TYPEINFO_VAR(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->typeinfo_var)
 
 /* Accessor macros for the vfield slots in structures.  */
 
