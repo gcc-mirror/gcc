@@ -1,5 +1,10 @@
 2004-10-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* gcc.c-torture/compile/pr17529.c: Fix test for non x86.
+	Also xfail as the patch was reverted.
+
+2004-10-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR middle-end/16973
 	* gcc.dg/pr16973.c: New test.
 
