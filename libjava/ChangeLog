@@ -1,3 +1,8 @@
+2003-01-24  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/ClassLoader.java (findLoadedClass): Removed erroneous
+	comment.
+
 2003-01-22  Andrew Haley  <aph@redhat.com>
 
         * x86_64-signal.h: Add simple handler for x86_64 32-bit mode.
