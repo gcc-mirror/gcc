@@ -82,7 +82,6 @@ int lhd_tree_inlining_start_inlining		PARAMS ((tree));
 void lhd_tree_inlining_end_inlining		PARAMS ((tree));
 tree lhd_tree_inlining_convert_parm_for_inlining PARAMS ((tree, tree, tree));
 
-/* In toplev.c */
 void write_global_declarations PARAMS ((void));
 
 #define LANG_HOOKS_NAME			"GNU unknown"

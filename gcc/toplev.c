@@ -2200,36 +2200,6 @@ compile_file ()
       timevar_pop (TV_DUMP);
     }
 }
-
-/* Default for lang_hooks.decls.final_write_globals */
-void write_global_declarations ()
-{
-  tree globals = (*lang_hooks.decls.getdecls) ();
-
-  /* Really define vars that have had only a tentative definition.
-     Really output inline functions that must actually be callable
-     and have not been output so far.  */
-
-  {
-    int len = list_length (globals);
-    tree *vec = (tree *) xmalloc (sizeof (tree) * len);
-    int i;
-    tree decl;
-
-    /* Process the decls in reverse order--earliest first.
-       Put them into VEC from back to front, then take out from front.  */
-
-    for (i = 0, decl = globals; i < len; i++, decl = TREE_CHAIN (decl))
-      vec[len - i - 1] = decl;
-
-    wrapup_global_declarations (vec, len);
-
-    check_global_declarations (vec, len);
-
-    /* Clean up.  */
-    free (vec);
-  }
-}
 
 /* This is called from various places for FUNCTION_DECL, VAR_DECL,
    and TYPE_DECL nodes.
