@@ -10111,7 +10111,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    }
 	}
       /* C++ aggregate types.  */
-      else if (TREE_CODE (id) == TYPE_DECL || TREE_CODE (id) == TEMPLATE_DECL)
+      else if (TREE_CODE (id) == TYPE_DECL)
 	{
 	  if (type)
 	    cp_error ("multiple declarations `%T' and `%T'", type,

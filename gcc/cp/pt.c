@@ -1797,10 +1797,8 @@ process_template_parm (list, next)
     {
       tree p = TREE_VALUE (tree_last (list));
 
-      if (TREE_CODE (p) == TYPE_DECL)
+      if (TREE_CODE (p) == TYPE_DECL || TREE_CODE (p) == TEMPLATE_DECL)
 	idx = TEMPLATE_TYPE_IDX (TREE_TYPE (p));
-      else if (TREE_CODE (p) == TEMPLATE_DECL)
-	idx = TEMPLATE_TYPE_IDX (TREE_TYPE (DECL_TEMPLATE_RESULT (p)));
       else
 	idx = TEMPLATE_PARM_IDX (DECL_INITIAL (p));
       ++idx;
@@ -3803,8 +3801,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       /* Create a new TEMPLATE_DECL and TEMPLATE_TEMPLATE_PARM node to store
          template arguments */
 
-      tree parm = copy_template_template_parm (TREE_TYPE (template));
-      tree template2 = TYPE_STUB_DECL (parm);
+      tree parm;
       tree arglist2;
 
       parmlist = DECL_INNERMOST_TEMPLATE_PARMS (template);
@@ -3813,8 +3810,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       if (arglist2 == error_mark_node)
 	return error_mark_node;
 
-      TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (parm)
-	= tree_cons (template2, arglist2, NULL_TREE);
+      parm = copy_template_template_parm (TREE_TYPE (template), arglist2);
       TYPE_SIZE (parm) = 0;
       return parm;
     }
@@ -6333,7 +6329,7 @@ tsubst (t, args, complain, in_decl)
 			if (TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
 			  arg = TYPE_NAME (arg);
 
-			r = lookup_template_class (DECL_NAME (arg), 
+			r = lookup_template_class (arg, 
 						   argvec, in_decl, 
 						   DECL_CONTEXT (arg),
 						   /*entering_scope=*/0);
@@ -6383,7 +6379,7 @@ tsubst (t, args, complain, in_decl)
 		  return error_mark_node;
 
 		TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (r)
-		  = tree_cons (TYPE_NAME (t), argvec, NULL_TREE);
+		  = tree_cons (TYPE_TI_TEMPLATE (t), argvec, NULL_TREE);
 	      }
 	    break;
 
