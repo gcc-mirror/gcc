@@ -65,6 +65,7 @@ package java.io;
  */
 public class BufferedInputStream extends FilterInputStream
 {
+
   /**
    * This is the default buffer size
    */
@@ -103,17 +104,11 @@ public class BufferedInputStream extends FilterInputStream
   protected int marklimit;
 
   /**
-   * This is the maximum size we have to allocate for the mark buffer.
-   * This number may be huge (Integer.MAX_VALUE). The class will continue
-   * to allocate new chunks (specified by <code>CHUNKSIZE</code>) until the
-   * the size specified by this field is achieved.
+   * This is the initial buffer size. When the buffer is grown because
+   * of marking requirements, it will be grown by bufferSize increments.
+   * The underlying stream will be read in chunks of bufferSize.
    */
-  private int marktarget = 0;
-
-  /**
-   * This is the number of bytes to allocate to reach marktarget.
-   */
-  static final private int CHUNKSIZE = 1024;
+  private final int bufferSize;
 
   /**
    * This method initializes a new <code>BufferedInputStream</code> that will
@@ -143,6 +138,9 @@ public class BufferedInputStream extends FilterInputStream
     if (size <= 0)
       throw new IllegalArgumentException();
     buf = new byte[size];
+    // initialize pos & count to bufferSize, to prevent refill from
+    // allocating a new buffer (if the caller starts out by calling mark()).
+    pos = count = bufferSize = size;
   }
 
   /**
@@ -173,6 +171,8 @@ public class BufferedInputStream extends FilterInputStream
   {
     // Free up the array memory.
     buf = null;
+    pos = count = 0;
+    markpos = -1;
     super.close();
   }
 
@@ -196,9 +196,7 @@ public class BufferedInputStream extends FilterInputStream
    */
   public synchronized void mark(int readlimit)
   {
-    marktarget = marklimit = readlimit;
-    if (marklimit > CHUNKSIZE)
-      marklimit = CHUNKSIZE;
+    marklimit = readlimit;
     markpos = pos;
   }
 
@@ -230,9 +228,6 @@ public class BufferedInputStream extends FilterInputStream
   {
     if (pos >= count && !refill())
       return -1;	// EOF
-
-    if (markpos >= 0 && pos - markpos > marktarget)
-      markpos = -1;
 
     return buf[pos++] & 0xFF;
   }
@@ -278,9 +273,6 @@ public class BufferedInputStream extends FilterInputStream
     off += totalBytesRead;
     len -= totalBytesRead;
 
-    if (markpos >= 0 && pos - markpos > marktarget)
-      markpos = -1;
-
     while (len > 0 && super.available() > 0 && refill())
       {
 	int remain = Math.min(count - pos, len);
@@ -289,9 +281,6 @@ public class BufferedInputStream extends FilterInputStream
 	off += remain;
 	len -= remain;
 	totalBytesRead += remain;
-
-	if (markpos >= 0 && pos - markpos > marktarget)
-	  markpos = -1;
       }
 
     return totalBytesRead;
@@ -339,22 +328,17 @@ public class BufferedInputStream extends FilterInputStream
     while (n > 0L)
       {
 	if (pos >= count && !refill())
-	  if (n < origN)
-	    break;
-	  else
-	    return 0;	// No bytes were read before EOF.
+          break;
 
 	int numread = (int) Math.min((long) (count - pos), n);
 	pos += numread;
 	n -= numread;
-
-        if (markpos >= 0 && pos - markpos > marktarget)
-          markpos = -1;
       }
 
     return origN - n;
   }
 
+  // GCJ LOCAL: package-private for use by InputStreamReader
   /**
    * Called to refill the buffer (when count is equal to pos).
    *
@@ -366,39 +350,31 @@ public class BufferedInputStream extends FilterInputStream
     if (buf == null)
       throw new IOException("Stream closed.");
 
-    if (markpos < 0)
-      count = pos = 0;
-    else if (markpos > 0)
+    if (markpos == -1 || count - markpos >= marklimit)
       {
-        // Shift the marked bytes (if any) to the beginning of the array
-	// but don't grow it.  This saves space in case a reset is done
-	// before we reach the max capacity of this array.
-        System.arraycopy(buf, markpos, buf, 0, count - markpos);
+	markpos = -1;
+	pos = count = 0;
+      }
+    else
+      {
+	byte[] newbuf = buf;
+	if (markpos < bufferSize)
+	  {
+	    newbuf = new byte[count - markpos + bufferSize];
+	  }
+	System.arraycopy(buf, markpos, newbuf, 0, count - markpos);
+	buf = newbuf;
 	count -= markpos;
 	pos -= markpos;
 	markpos = 0;
       }
-    else if (count >= buf.length && count < marktarget)	// BTW, markpos == 0
-      {
-	// Need to grow the buffer now to have room for marklimit bytes.
-	// Note that the new buffer is one greater than marklimit.
-	// This is so that there will be one byte past marklimit to be read
-	// before having to call refill again, thus allowing marklimit to be
-	// invalidated.  That way refill doesn't have to check marklimit.
-	marklimit += CHUNKSIZE;
-	if (marklimit >= marktarget)
-	  marklimit = marktarget;
-	byte[] newbuf = new byte[marklimit + 1];
-	System.arraycopy(buf, 0, newbuf, 0, count);
-	buf = newbuf;
-      }
 
-    int numread = super.read(buf, count, buf.length - count);
+    int numread = super.read(buf, count, bufferSize);
 
-    if (numread < 0)	// EOF
+    if (numread <= 0)	// EOF
       return false;
 
     count += numread;
-    return numread > 0;
+    return true;
   }
 }

@@ -282,11 +282,9 @@ public class InputStreamReader extends Reader
       {
 	// We have knowledge of the internals of BufferedInputStream
 	// here.  Eww.
-	in.mark (0);
 	// BufferedInputStream.refill() can only be called when
 	// `pos>=count'.
 	boolean r = in.pos < in.count || in.refill ();
-	in.reset ();
 	if (! r)
 	  return -1;
 	converter.setInput(in.buf, in.pos, in.count);
