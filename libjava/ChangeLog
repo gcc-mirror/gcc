@@ -1,5 +1,9 @@
 2003-09-27  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/URL.java (getURLStreamHandler): Compile fixes.
+
+2003-09-27  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/URL.java (getURLStreamHandler):
 	Check if we have to use cache before trying to retrieve handler from
 	cache. Rename facName to clsName to match classpath more. Reformated

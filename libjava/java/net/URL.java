@@ -106,6 +106,11 @@ import java.util.StringTokenizer;
   * caching behavior is disabled.  This property is specific to this
   * implementation.  Sun's JDK may or may not do protocol caching, but it
   * almost certainly does not examine this property.
+  * <p>
+  * Please also note that an application can install its own factory for
+  * loading protocol handlers (see setURLStreamHandlerFactory).  If this is
+  * done, then the above information is superseded and the behavior of this
+  * class in loading protocol handlers is dependent on that factory.
   *
   * @author Aaron M. Renn <arenn@urbanophile.com>
   * @author Warren Levy <warrenl@cygnus.com>
@@ -751,7 +756,7 @@ public final class URL implements Serializable
   private static synchronized URLStreamHandler
     getURLStreamHandler (String protocol)
   {
-    URLStreamHandler ph;
+    URLStreamHandler ph = null;
 
     // First, see if a protocol handler is in our cache.
     if (cache_handlers)
@@ -797,7 +802,7 @@ public final class URL implements Serializable
 	propVal = propVal + "gnu.gcj.protocol|sun.net.www.protocol";
 
 	// Finally loop through our search path looking for a match.
-	StringTokenizer pkgPrefix = new StringTokenizer (ph_search_path, "|");
+	StringTokenizer pkgPrefix = new StringTokenizer (propVal, "|");
         
 	do
           {
