@@ -1,3 +1,8 @@
+2001-02-14	Joel Sherrill <joel@OARcorp.com>
+
+	* config/arm/rtems-elf.h, config/h8300/rtems.h: Removed redundant
+	-Acpu() and -Amachine() to eliminate warnings.
+
 2002-02-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/linux.h (ASM_OUTPUT_ALIGNED_BSS): New.

@@ -24,8 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #define HAS_INIT_SECTION
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__rtems__ -D__ELF__ \
-   -Asystem(rtems) -Acpu(arm) -Amachine(arm)"
+#define CPP_PREDEFINES "-D__rtems__ -D__ELF__ -Asystem(rtems)"
 
 #undef INVOKE_main
 
