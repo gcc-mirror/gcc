@@ -1,8 +1,8 @@
 ;;- Machine description for SPARC chip for GNU C compiler
-;;   Copyright (C) 1987, 88, 89, 92, 93, 1994 Free Software Foundation, Inc.
-;;   Contributed by Michael Tiemann (tiemann@cygnus.com)
-;;   64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
-;;   at Cygnus Support.
+;;  Copyright (C) 1987, 88, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
+;;  Contributed by Michael Tiemann (tiemann@cygnus.com)
+;;  64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
+;;  at Cygnus Support.
 
 ;; This file is part of GNU CC.
 
@@ -5069,9 +5069,9 @@
 ;; Special pattern for the FLUSH instruction.
 
 (define_insn "flush"
-  [(unspec_volatile [(match_operand 0 "" "")] 3)]
+  [(unspec_volatile [(match_operand 0 "memory_operand" "m")] 3)]
   ""
-  "* return TARGET_V9 ? \"flush %a0\" : \"iflush %a0\";"
+  "* return TARGET_V9 ? \"flush %f0\" : \"iflush %f0\";"
   [(set_attr "type" "misc")])
 
 ;; find first set.
