@@ -1,5 +1,9 @@
 2001-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* cppmacro.c (stringify_arg): Null terminate strings.
+
+2001-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* cppfiles.c: Update comments.
 	(struct include_file): Remove "defined" memeber.
 	(find_or_create_entry): Make a copy of the file name, and
