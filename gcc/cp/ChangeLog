@@ -1,3 +1,8 @@
+2004-07-19  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* typeck.c (build_modify_expr, build_x_modify_expr): Set
+	TREE_NO_WARNING on assignments with an operator other than '='.
+
 2004-07-10  Steven Bosscher  <stevenb@suse.de>
 	    Joseph S. Myers  <jsm@polyomino.org.uk>
 

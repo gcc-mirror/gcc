@@ -1,3 +1,9 @@
+2004-07-19  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* g++.dg/warn/Wparentheses-1.C, g++.dg/warn/Wparentheses-2.C,
+	gcc.dg/Wparentheses-10.c: New tests.
+	* gcc.dg/Wparentheses-5.c: Remove XFAILs.
+
 2004-07-18  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/16465

@@ -1,3 +1,34 @@
+2004-07-19  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-tree.h (struct c_expr): Define.
+	(C_SET_EXP_ORIGINAL_CODE): Remove.
+	(parser_build_binary_op, build_compound_expr): Update prototypes.
+	* c-parse.in (%union): Add exprtype.
+	(FUNC_NAME): Mark as ttype.
+	(expr, expr_no_commas, cast_expr, unary_expr, primary): Change to
+	exprtype.
+	(expr): Update.  Define directly in terms of expr_no_commas
+	instead of using nonnull_exprlist.
+	(nonnull_exprlist, unary_expr, cast_expr, expr_no_commas, primary,
+	offsetof_member_designator, typespec_nonreserved_nonattr, init,
+	initval, designator, component_declarator,
+	component_notype_declarator, enumerator, array_declarator,
+	condition, exexpr, switch_statement, stmt_nocomp, stmt,
+	nonnull_asm_operands, ivar_declarator, receiver): Update.  Don't
+	set C_EXP_ORIGINAL_CODE.  Use TREE_NO_WARNING for assignments
+	where appropriate.
+	* c-common.h (C_EXP_ORIGINAL_CODE): Remove.
+	* c-common.c (c_common_truthvalue_conversion): Don't check
+	C_EXP_ORIGINAL_CODE.
+	* c-typeck.c (parser_build_binary_op): Use c_expr structures.
+	Don't use C_EXP_ORIGINAL_CODE.
+	(default_conversion, default_function_array_conversion): Don't use
+	C_EXP_ORIGINAL_CODE.  Preserve TREE_NO_WARNING.
+	(internal_build_compound_expr): Merge into build_compound_expr.
+	(build_compound_expr): Take two operands instead of a TREE_LIST.
+	* objc/objc-act.c (get_super_receiver): Update calls to
+	build_compound_expr.
+
 2004-07-12  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/sh/sh.c (sh_use_dfa_interface): Remove.
