@@ -1,3 +1,9 @@
+Mon Mar 30 00:21:03 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* genemit.c (DONE): Rework so that it works in the true arm if
+	an if-else conditional.
+	(FAIL): Likewise.
+
 Sun Mar 29 12:45:23 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* rs6000.c: Do not include stdioh or ctype.h anymore.
