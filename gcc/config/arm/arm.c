@@ -4398,6 +4398,15 @@ arm_xscale_rtx_costs (rtx x, int code, int outer_code, int *total)
 		 + (REG_OR_SUBREG_REG (XEXP (x, 1)) ? 0 : 4);
       return true;
 
+    case COMPARE:
+      /* A COMPARE of a MULT is slow on XScale; the muls instruction
+	 will stall until the multiplication is complete.  */
+      if (GET_CODE (XEXP (x, 0)) == MULT)
+	*total = 4 + rtx_cost (XEXP (x, 0), code);
+      else
+	*total = arm_rtx_costs_1 (x, code, outer_code);
+      return true;
+
     default:
       *total = arm_rtx_costs_1 (x, code, outer_code);
       return true;
