@@ -8208,10 +8208,11 @@ CFLAGS="$CFLAGS -I${srcdir} -I${srcdir}/../include"
 
 
 
+
 for ac_func in getenv atol sbrk abort atof getcwd getwd \
 	strsignal putc_unlocked fputs_unlocked fwrite_unlocked \
         fprintf_unlocked strstr errno snprintf vasprintf \
-	malloc realloc calloc free basename getopt clock
+	malloc realloc calloc free basename getopt clock getpagesize
 do
   ac_tr_decl=`echo "HAVE_DECL_$ac_func" | $as_tr_cpp`
 echo "$as_me:$LINENO: checking whether $ac_func is declared" >&5

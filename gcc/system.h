@@ -303,6 +303,10 @@ extern char *getenv (const char *);
 extern int getopt (int, char * const *, const char *);
 #endif
 
+#if defined(HAVE_DECL_GETPAGESIZE) && !HAVE_DECL_GETPAGESIZE
+extern long getpagesize (void);
+#endif
+
 #if defined (HAVE_DECL_GETWD) && !HAVE_DECL_GETWD
 extern char *getwd (char *);
 #endif

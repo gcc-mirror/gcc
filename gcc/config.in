@@ -198,6 +198,10 @@
    */
 #undef HAVE_DECL_GETOPT
 
+/* Define to 1 if we found a declaration for 'getpagesize', otherwise define
+   to 0. */
+#undef HAVE_DECL_GETPAGESIZE
+
 /* Define to 1 if we found a declaration for 'getrlimit', otherwise define to
    0. */
 #undef HAVE_DECL_GETRLIMIT

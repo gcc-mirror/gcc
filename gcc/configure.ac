@@ -998,7 +998,7 @@ CFLAGS="$CFLAGS -I${srcdir} -I${srcdir}/../include"
 gcc_AC_CHECK_DECLS(getenv atol sbrk abort atof getcwd getwd \
 	strsignal putc_unlocked fputs_unlocked fwrite_unlocked \
         fprintf_unlocked strstr errno snprintf vasprintf \
-	malloc realloc calloc free basename getopt clock, , ,[
+	malloc realloc calloc free basename getopt clock getpagesize, , ,[
 #include "ansidecl.h"
 #include "system.h"])
 
