@@ -3151,6 +3151,7 @@ static void
 output_uleb128 (value)
      register unsigned long value;
 {
+  unsigned long save_value = value;
   fprintf (asm_out_file, "\t%s\t", ASM_BYTE_OP);
   do
     {
@@ -3168,6 +3169,8 @@ output_uleb128 (value)
 	}
     }
   while (value != 0);
+  if (flag_verbose_asm)
+    fprintf (asm_out_file, "\t%s ULEB128 0x%x", ASM_COMMENT_START, save_value);
 }
 
 /* Output an signed LEB128 quantity.  */
@@ -3177,6 +3180,7 @@ output_sleb128 (value)
 {
   register int more;
   register unsigned byte;
+  long save_value = value;
   fprintf (asm_out_file, "\t%s\t", ASM_BYTE_OP);
   do
     {
@@ -3196,6 +3200,8 @@ output_sleb128 (value)
 	}
     }
   while (more);
+  if (flag_verbose_asm)
+    fprintf (asm_out_file, "\t%s SLEB128 %d", ASM_COMMENT_START, save_value);
 }
 
 /* Select the encoding of an attribute value.  */
@@ -3258,10 +3264,7 @@ output_value_format (v)
   enum dwarf_form form = value_format (v);
   output_uleb128 (form);
   if (flag_verbose_asm)
-    {
-      fprintf (asm_out_file, "\t%s %s",
-	       ASM_COMMENT_START, dwarf_form_name (form));
-    }
+    fprintf (asm_out_file, " (%s)", dwarf_form_name (form));
   fputc ('\n', asm_out_file);
 }
 
@@ -3277,17 +3280,12 @@ output_abbrev_section ()
       register dw_die_ref abbrev = abbrev_die_table[abbrev_id];
       output_uleb128 (abbrev_id);
       if (flag_verbose_asm)
-	{
-	  fprintf (asm_out_file, "\t%s abbrev code = %u",
-		   ASM_COMMENT_START, abbrev_id);
-	}
+	fprintf (asm_out_file, " (abbrev code)");
       fputc ('\n', asm_out_file);
       output_uleb128 (abbrev->die_tag);
       if (flag_verbose_asm)
-	{
-	  fprintf (asm_out_file, "\t%s TAG: %s",
-		   ASM_COMMENT_START, dwarf_tag_name (abbrev->die_tag));
-	}
+	fprintf (asm_out_file, " (TAG: %s)",
+		 dwarf_tag_name (abbrev->die_tag));
       fputc ('\n', asm_out_file);
       fprintf (asm_out_file, "\t%s\t0x%x", ASM_BYTE_OP,
 	       (abbrev->die_child != NULL)
@@ -3305,11 +3303,8 @@ output_abbrev_section ()
 	{
 	  output_uleb128 (a_attr->dw_attr);
 	  if (flag_verbose_asm)
-	    {
-	      fprintf (asm_out_file, "\t%s %s",
-		       ASM_COMMENT_START,
-		       dwarf_attr_name (a_attr->dw_attr));
-	    }
+	    fprintf (asm_out_file, " (%s)",
+		     dwarf_attr_name (a_attr->dw_attr));
 	  fputc ('\n', asm_out_file);
 	  output_value_format (&a_attr->dw_attr_val);
 	}
@@ -3357,7 +3352,7 @@ output_loc_operands (loc)
       fputc ('\n', asm_out_file);
       break;
     case DW_OP_consts:
-      output_sleb128 (val1->v.val_unsigned);
+      output_sleb128 (val1->v.val_int);
       fputc ('\n', asm_out_file);
       break;
     case DW_OP_pick:
@@ -3413,13 +3408,13 @@ output_loc_operands (loc)
       fputc ('\n', asm_out_file);
       break;
     case DW_OP_fbreg:
-      output_sleb128 (val1->v.val_unsigned);
+      output_sleb128 (val1->v.val_int);
       fputc ('\n', asm_out_file);
       break;
     case DW_OP_bregx:
       output_uleb128 (val1->v.val_unsigned);
       fputc ('\n', asm_out_file);
-      output_sleb128 (val2->v.val_unsigned);
+      output_sleb128 (val2->v.val_int);
       fputc ('\n', asm_out_file);
       break;
     case DW_OP_piece:
@@ -3466,12 +3461,8 @@ output_die (die)
   register dw_loc_descr_ref loc;
   output_uleb128 (die->die_abbrev);
   if (flag_verbose_asm)
-    {
-      fprintf (asm_out_file, "\t%s DIE (0x%x) %s",
-	       ASM_COMMENT_START,
-	       die->die_offset,
-	       dwarf_tag_name (die->die_tag));
-    }
+    fprintf (asm_out_file, " (DIE (0x%x) %s)",
+	     die->die_offset, dwarf_tag_name (die->die_tag));
   fputc ('\n', asm_out_file);
   for (a = die->die_attr; a != NULL; a = a->dw_attr_next)
     {
@@ -3598,6 +3589,9 @@ output_die (die)
     {
       /* Add null byte to terminate sibling list. */
       ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
+      if (flag_verbose_asm)
+	fprintf (asm_out_file, "\t%s end of children of DIE 0x%x",
+		 ASM_COMMENT_START, die->die_offset);
       fputc ('\n', asm_out_file);
     }
 }
@@ -4073,8 +4067,18 @@ output_call_frame_info ()
   register dw_cfi_ref cfi;
   unsigned long fde_pad;
 
+  /* Only output the info if it will be interesting.  */
+  for (i = 0; i < fde_table_in_use; ++i)
+    if (fde_table[i].dw_fde_cfi != NULL)
+      break;
+  if (i == fde_table_in_use)
+    return;
+
   /* (re-)initialize the beginning FDE offset.  */
   next_fde_offset = DWARF_ROUND (cie_size, PTR_SIZE);
+
+  fputc ('\n', asm_out_file);
+  ASM_OUTPUT_SECTION (asm_out_file, FRAME_SECTION);
 
   /* Output the CIE. */
   ASM_OUTPUT_DWARF_DATA (asm_out_file, next_fde_offset - DWARF_OFFSET_SIZE);
@@ -4112,17 +4116,11 @@ output_call_frame_info ()
   fputc ('\n', asm_out_file);
   output_uleb128 (1);
   if (flag_verbose_asm)
-    {
-      fprintf (asm_out_file, "\t%s CIE Code Alignment Factor",
-	       ASM_COMMENT_START);
-    }
+    fprintf (asm_out_file, " (CIE Code Alignment Factor)");
   fputc ('\n', asm_out_file);
   output_sleb128 (DWARF_CIE_DATA_ALIGNMENT);
   if (flag_verbose_asm)
-    {
-      fprintf (asm_out_file, "\t%s CIE Data Alignment Factor",
-	       ASM_COMMENT_START);
-    }
+    fprintf (asm_out_file, " (CIE Data Alignment Factor)");
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DWARF_FRAME_RETURN_COLUMN);
   if (flag_verbose_asm)
@@ -4152,6 +4150,8 @@ output_call_frame_info ()
   for (i = 0; i < fde_table_in_use; ++i)
     {
       fde = &fde_table[i];
+      if (fde->dw_fde_cfi == NULL)
+	continue;
       fde_size = size_of_fde (fde, &fde_pad);
       ASM_OUTPUT_DWARF_DATA (asm_out_file, fde_size - DWARF_OFFSET_SIZE);
       if (flag_verbose_asm)
@@ -4576,10 +4576,7 @@ output_line_info ()
 	  fputc ('\n', asm_out_file);
 	  output_uleb128 (current_file);
 	  if (flag_verbose_asm)
-	    {
-	      fprintf (asm_out_file, "\t%s \"%s\"",
-		       ASM_COMMENT_START, file_table[current_file]);
-	    }
+	    fprintf (asm_out_file, " (\"%s\")", file_table[current_file]);
 	  fputc ('\n', asm_out_file);
 	}
       line_offset = line_info->dw_line_num - current_line;
@@ -4683,10 +4680,7 @@ output_line_info ()
 	  fputc ('\n', asm_out_file);
 	  output_uleb128 (current_file);
 	  if (flag_verbose_asm)
-	    {
-	      fprintf (asm_out_file, "\t%s \"%s\"",
-		       ASM_COMMENT_START, file_table[current_file]);
-	    }
+	    fprintf (asm_out_file, " (\"%s\")", file_table[current_file]);
 	  fputc ('\n', asm_out_file);
 	}
       if (line_info->dw_line_num != current_line)
@@ -5921,13 +5915,13 @@ add_byte_size_attribute (die, tree_node)
    "containing object" for the bit-field to the highest order bit of the
    bit-field itself.
 
-   For any given bit-field, the "containing object" is a hypothetical object (of
-   some integral or enum type) within which the given bit-field lives.  The
-   type of this hypothetical "containing object" is always the same as the
-   declared type of the individual bit-field itself.
-   The determination of the exact location of the "containing object" for a
-   bit-field is rather complicated.  It's handled by the `field_byte_offset'
-   function (above).
+   For any given bit-field, the "containing object" is a hypothetical
+   object (of some integral or enum type) within which the given bit-field
+   lives.  The type of this hypothetical "containing object" is always the
+   same as the declared type of the individual bit-field itself.  The
+   determination of the exact location of the "containing object" for a
+   bit-field is rather complicated.  It's handled by the
+   `field_byte_offset' function (above).
 
    Note that it is the size (in bytes) of the hypothetical "containing object"
    which will be given in the DW_AT_byte_size attribute for this bit-field.
@@ -6047,6 +6041,17 @@ add_pure_or_virtual_attribute (die, func_decl)
 
 /********************* utility routines for DIEs *************************/
 
+/* Add source coordinate attributes for the given decl.  */
+static void
+add_src_coords_attributes (die, decl)
+     register dw_die_ref die;
+     register tree decl;
+{
+  register unsigned file_index = lookup_filename (DECL_SOURCE_FILE (decl));
+  add_AT_unsigned (die, DW_AT_decl_file, file_index);
+  add_AT_unsigned (die, DW_AT_decl_line, DECL_SOURCE_LINE (decl));
+}
+
 /* Add an DW_AT_name attribute and source coordinate attribute for the
    given decl, but only if it actually has a name.  */
 static void
@@ -6055,7 +6060,6 @@ add_name_and_src_coords_attributes (die, decl)
      register tree decl;
 {
   register tree decl_name;
-  register unsigned file_index;
   if (TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
     decl_name = DECL_ASSEMBLER_NAME (decl);
   else
@@ -6064,9 +6068,7 @@ add_name_and_src_coords_attributes (die, decl)
   if (decl_name && IDENTIFIER_POINTER (decl_name))
     {
       add_name_attribute (die, IDENTIFIER_POINTER (decl_name));
-      file_index = lookup_filename (DECL_SOURCE_FILE (decl));
-      add_AT_unsigned (die, DW_AT_decl_file, file_index);
-      add_AT_unsigned (die, DW_AT_decl_line, DECL_SOURCE_LINE (decl));
+      add_src_coords_attributes (die, decl);
     }
 }
 
@@ -6448,6 +6450,8 @@ gen_enumeration_type_die (type, context_die)
       register tree link;
       TREE_ASM_WRITTEN (type) = 1;
       add_byte_size_attribute (type_die, type);
+      if (type_tag (type))
+	add_src_coords_attributes (type_die, TYPE_STUB_DECL (type));
       for (link = TYPE_FIELDS (type);
 	   link != NULL; link = TREE_CHAIN (link))
 	{
@@ -7263,6 +7267,8 @@ gen_struct_or_union_type_die (type, context_die)
          this type is expressed in terms of this type itself.  */
       TREE_ASM_WRITTEN (type) = 1;
       add_byte_size_attribute (type_die, type);
+      if (type_tag (type))
+	add_src_coords_attributes (type_die, TYPE_STUB_DECL (type));
       push_decl_scope (type);
       gen_member_die (type, type_die);
       pop_decl_scope ();
@@ -8411,12 +8417,8 @@ dwarf2out_finish ()
 
   if (fde_table_in_use)
     {
-#ifdef MIPS_DEBUGGING_INFO /* Not currently useful otherwise.  */
       /* Output call frame information.  */
-      fputc ('\n', asm_out_file);
-      ASM_OUTPUT_SECTION (asm_out_file, FRAME_SECTION);
       output_call_frame_info ();
-#endif
 
       /* Output the address range information.  */
       fputc ('\n', asm_out_file);
