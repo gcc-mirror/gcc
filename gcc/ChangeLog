@@ -1,3 +1,9 @@
+2000-04-11  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.h: (INCOMING_RETURN_ADDR_RTX): Remove Dwarf2
+	restriction.
+	(DWARF_FRAME_RETURN_COLUMN): Remove Dwarf2 restriction.
+
 2000-04-10  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* config/elfos.h (SELECT_SECTION): Decide whether to use a data or
