@@ -1,3 +1,11 @@
+2003-10-25  Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	PR libgcj/11780:
+	* java/lang/reflect/natMethod.cc (invoke): Look up caller and perform
+	accessibility check only if target is non-public and accessible flag
+	is not set.
+	* java/lang/reflect/natField.cc (getAddr): Likewise.
+
 2003-10-24  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkDialogPeer.java (handleEvent):
