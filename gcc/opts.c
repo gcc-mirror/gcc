@@ -21,6 +21,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "intl.h"
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
@@ -136,6 +137,8 @@ static char *write_langs (unsigned int lang_mask);
 static void complain_wrong_lang (const char *, const struct cl_option *,
 				 unsigned int lang_mask);
 static void handle_options (unsigned int, const char **, unsigned int);
+static void wrap_help (const char *help, const char *item, size_t item_width);
+static void print_help (void);
 
 /* Perform a binary search to find which option the command-line INPUT
    matches.  Returns its index in the option array, and N_OPTS
@@ -177,7 +180,7 @@ find_opt (const char *input, int lang_mask)
     {
       md = (mn + mx) / 2;
       opt_len = cl_options[md].opt_len;
-      comp = strncmp (input, cl_options[md].opt_text, opt_len);
+      comp = strncmp (input, cl_options[md].opt_text + 1, opt_len);
 
       if (comp < 0)
 	mx = md;
@@ -197,7 +200,7 @@ find_opt (const char *input, int lang_mask)
       const struct cl_option *opt = &cl_options[mn];
 
       /* Is this switch a prefix of the input?  */
-      if (!strncmp (input, opt->opt_text, opt->opt_len))
+      if (!strncmp (input, opt->opt_text + 1, opt->opt_len))
 	{
 	  /* If language is OK, and the match is exact or the switch
 	     takes a joined argument, return it.  */
@@ -374,7 +377,7 @@ handle_option (const char **argv, unsigned int lang_mask)
       value = integral_argument (arg);
       if (value == -1)
 	{
-	  error ("argument to \"-%s\" should be a non-negative integer",
+	  error ("argument to \"%s\" should be a non-negative integer",
 		 option->opt_text);
 	  goto done;
 	}
@@ -612,7 +615,7 @@ common_handle_option (size_t scode, const char *arg,
       abort ();
 
     case OPT__help:
-      display_help ();
+      print_help ();
       exit_after_options = true;
       break;
 
@@ -1476,4 +1479,84 @@ fast_math_flags_set_p (void)
 	  && flag_unsafe_math_optimizations
 	  && flag_finite_math_only
 	  && !flag_errno_math);
+}
+
+/* Output --help text.  */
+static void
+print_help (void)
+{
+  size_t i, len;
+
+  printf (_("\nThe following options are language-independent:\n"));
+
+  for (i = 0; i < cl_options_count; i++)
+    {
+      const char *help = cl_options[i].help;
+      const char *opt, *tab;
+
+      /* During transition, ignore switches with no help.  */
+      if (!help)
+	continue;
+
+      /* Get the translation.  */
+      help = _(help);
+
+      tab = strchr (help, '\t');
+      if (tab)
+	{
+	  len = tab - help;
+	  opt = help;
+	  help = tab + 1;
+	}
+      else
+	{
+	  opt = cl_options[i].opt_text;
+	  len = strlen (opt);
+	}
+
+      wrap_help (help, opt, len);
+    }
+
+  puts ( "\n" );
+  display_help ();
+}
+
+/* Output ITEM, of length ITEM_WIDTH, in the left column, followed by
+   word-wrapped HELP in a second column.  */
+static void
+wrap_help (const char *help, const char *item, size_t item_width)
+{
+  const size_t columns = 80, col_width = 27;
+  size_t remaining, room, len;
+
+  remaining = strlen (help);
+
+  do
+    {
+      room = columns - 3 - MAX (col_width, item_width);
+      len = remaining;
+
+      if (room < len)
+	{
+	  size_t i;
+
+	  for (i = 0; help[i]; i++)
+	    {
+	      if (i >= room && len != remaining)
+		break;
+	      if (help[i] == ' ')
+		len = i;
+	      else if (help[i] == '-')
+		len = i + 1;
+	    }
+	}
+
+      printf( "  %-*.*s %.*s\n", col_width, item_width, item, len, help);
+      item_width = 0;
+      while (help[len] == ' ')
+	len++;
+      help += len;
+      remaining -= len;
+    }
+  while (remaining);
 }

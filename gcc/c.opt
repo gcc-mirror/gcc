@@ -38,6 +38,14 @@
 ; decoder will convert the argument for you, or complain to the user
 ; if the argument is invalid.
 
+; The third field is the help text to output with --help.  This is
+; automatically line-wrapped on output.  Normally the switch is output
+; automatically, with the help text on the right hand side of the
+; output.  However, if the help text contains a tab character, the
+; text to the left of the tab is output instead of the switch, and the
+; text to its right forms the help.  This is useful for elaborating on
+; what type of argument a switch takes, for example.
+
 ; Comments can appear on their own line anwhere in the file, preceded
 ; by a semicolon.  Whitespace is permitted before the semicolon.
 

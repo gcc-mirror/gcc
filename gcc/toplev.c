@@ -3942,18 +3942,6 @@ display_help (void)
   unsigned long i;
   const char *lang;
 
-  printf (_("  -ffixed-<register>      Mark <register> as being unavailable to the compiler\n"));
-  printf (_("  -fcall-used-<register>  Mark <register> as being corrupted by function calls\n"));
-  printf (_("  -fcall-saved-<register> Mark <register> as being preserved across functions\n"));
-  printf (_("  -finline-limit=<number> Limits the size of inlined functions to <number>\n"));
-  printf (_("  -fmessage-length=<number> Limits diagnostics messages lengths to <number> characters per line.  0 suppresses line-wrapping\n"));
-  printf (_("  -fdiagnostics-show-location=[once | every-line] Indicates how often source location information should be emitted, as prefix, at the beginning of diagnostics when line-wrapping\n"));
-  printf (_("  -ftls-model=[global-dynamic | local-dynamic | initial-exec | local-exec] Indicates the default thread-local storage code generation model\n"));
-  printf (_("  -fstack-limit-register=<register>  Trap if the stack goes past <register>\n"));
-  printf (_("  -fstack-limit-symbol=<name>  Trap if the stack goes past symbol <name>\n"));
-  printf (_("  -frandom-seed=<string>  Make compile reproducible using <string>\n"));
-
-
   for (i = ARRAY_SIZE (f_options); i--;)
     {
       const char *description = f_options[i].description;
@@ -3963,8 +3951,6 @@ display_help (void)
 		f_options[i].string, _(description));
     }
 
-  printf (_("  -O[number]              Set optimization level to [number]\n"));
-  printf (_("  -Os                     Optimize for space rather than speed\n"));
   for (i = LAST_PARAM; i--;)
     {
       const char *description = compiler_params[i].help;
@@ -3976,9 +3962,6 @@ display_help (void)
 		length > 0 ? length : 1, "                     ",
 		_(description));
     }
-  printf (_("  -pedantic               Issue warnings needed by strict compliance to ISO C\n"));
-  printf (_("  -pedantic-errors        Like -pedantic except that errors are produced\n"));
-  printf (_("  -w                      Suppress warnings\n"));
 
   for (i = ARRAY_SIZE (W_options); i--;)
     {
@@ -3989,31 +3972,12 @@ display_help (void)
 		W_options[i].string, _(description));
     }
 
-  printf (_("  -Wextra                 Print extra (possibly unwanted) warnings\n"));
-  printf (_("  -Wunused                Enable unused warnings\n"));
-  printf (_("  -Wlarger-than-<number>  Warn if an object is larger than <number> bytes\n"));
-  printf (_("  -p                      Enable function profiling\n"));
-  printf (_("  -o <file>               Place output into <file> \n"));
-  printf (_("\
-  -G <number>             Put global and static data smaller than <number>\n\
-                          bytes into a special section (on some targets)\n"));
-
   for (i = ARRAY_SIZE (debug_args); i--;)
     {
       if (debug_args[i].description != NULL)
 	printf ("  -g%-21s %s\n",
 		debug_args[i].arg, _(debug_args[i].description));
     }
-
-  printf (_("  -aux-info <file>        Emit declaration info into <file>\n"));
-  printf (_("  -quiet                  Do not display functions compiled or elapsed time\n"));
-  printf (_("  -version                Display the compiler's version\n"));
-  printf (_("  -d[letters]             Enable dumps from specific passes of the compiler\n"));
-  printf (_("  -dumpbase <file>        Base name to be used for dumps from specific passes\n"));
-#if defined INSN_SCHEDULING
-  printf (_("  -fsched-verbose=<number> Set the verbosity level of the scheduler\n"));
-#endif
-  printf (_("  --help                  Display this information\n"));
 
   undoc = 0;
   lang  = "language";

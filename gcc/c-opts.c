@@ -675,7 +675,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     case OPT_fthis_is_variable:
     case OPT_fvtable_thunks:
     case OPT_fxref:
-      warning ("switch \"-%s\" is no longer supported", option->opt_text);
+      warning ("switch \"%s\" is no longer supported", option->opt_text);
       break;
 
     case OPT_fabi_version_:
@@ -691,7 +691,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       if (value)
 	flag_external_templates = true;
     cp_deprecated:
-      warning ("switch \"-%s\" is deprecated, please see documentation "
+      warning ("switch \"%s\" is deprecated, please see documentation "
 	       "for details", option->opt_text);
       break;
 

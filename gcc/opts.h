@@ -26,6 +26,7 @@ extern void decode_options (unsigned int argc, const char **argv);
 struct cl_option
 {
   const char *opt_text;
+  const char *help;
   unsigned short back_chain;
   unsigned char opt_len;
   unsigned int flags;
