@@ -1199,7 +1199,7 @@ record_reg_life (insn, block, regstack)
 	   if (GET_CODE (XEXP (note, 0)) == USE)
 	     record_reg_life_pat (SET_DEST (XEXP (note, 0)), &src, NULL_PTR, 0);
 
-      record_reg_life_pat (PATTERN (insn), &src, &dest, 1);
+      record_reg_life_pat (PATTERN (insn), &src, &dest, 0);
       for (regno = FIRST_STACK_REG; regno <= LAST_STACK_REG; regno++)
 	if (! TEST_HARD_REG_BIT (regstack->reg_set, regno))
 	  {
