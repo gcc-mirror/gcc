@@ -34,11 +34,11 @@ void test02(std::filebuf& in, bool pass)
 
   // seekpos
   p = in.pubseekpos(0, ios_base::in);
-  if (pass)
-    VERIFY( p != bad );
+  VERIFY( p == bad );
 
   p = in.pubseekpos(0, ios_base::out); 
-  VERIFY( p == bad );
+  if (pass)
+    VERIFY( p != bad );
 
   p = in.pubseekpos(0); 
   if (pass)
@@ -52,14 +52,13 @@ int main()
 {
   using namespace std;
 
-  // movie star, submarine scientist!
-  filebuf in1;
-  in1.open(name_01, ios_base::in);
-  filebuf in2;
-  filebuf in3;
-  in3.open(name_03, ios_base::in);
-  test02(in1, true);
-  test02(in2, false);
-  test02(in3, true);
+  filebuf out1;
+  out1.open(name_01, ios_base::out);
+  filebuf out2;
+  filebuf out3;
+  out3.open(name_03, ios_base::out);
+  test02(out1, true);
+  test02(out2, false);
+  test02(out3, true);
   return 0;
 }

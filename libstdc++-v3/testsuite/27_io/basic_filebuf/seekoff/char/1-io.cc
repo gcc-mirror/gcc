@@ -27,7 +27,7 @@
 // @require@ %-*.tst %-*.txt
 // @diff@ %-*.tst %*.txt
 
-const char name_01[] = "seekoff-2.tst";
+const char name_01[] = "seekoff-1io.tst";
 
 void test05() 
 {
@@ -38,7 +38,7 @@ void test05()
   typedef filebuf::pos_type 	pos_type;
   typedef filebuf::off_type 	off_type;
 
-  bool				test = true;
+  bool 				test = true;
   streamsize 			strmsz_1, strmsz_2;
   streamoff  			strmof_1, strmof_2;
 
@@ -57,61 +57,62 @@ void test05()
 
   // in | out
   {
-    constraint_filebuf fb_03;
-    fb_03.pubsetbuf(0, 0);
-    fb_03.open(name_01, ios_base::out | ios_base::in);
-    VERIFY( fb_03.unbuffered() );
-    // 27filebuf-3.txt = bd23456789:;<=>?...
+    constraint_filebuf fb;
+    fb.open(name_01, ios_base::out | ios_base::in);
+    VERIFY( !fb.write_position() );
+    VERIFY( !fb.read_position() );
+
     //beg
-    strmsz_1 = fb_03.in_avail(); 
-    pt_1 = fb_03.pubseekoff(2, ios_base::beg);
-    strmsz_2 = fb_03.in_avail(); 
+    strmsz_1 = fb.in_avail(); 
+    pt_1 = fb.pubseekoff(2, ios_base::beg);
+    strmsz_2 = fb.in_avail(); 
     off_1 = pt_1;
     VERIFY( off_1 > 0 );
-    c1 = fb_03.snextc(); //current in pointer +1
+    c1 = fb.snextc(); //current in pointer +1
     VERIFY( c1 == '9' );
-    fb_03.pubseekoff(3, ios_base::beg);
-    c2 = fb_03.sputc('\n');  //current in pointer +1
-    fb_03.pubseekoff(4, ios_base::beg);
-    c3 = fb_03.sgetc();
+    fb.pubseekoff(3, ios_base::beg);
+    c2 = fb.sputc('\n');  //current in pointer +1
+    fb.pubseekoff(4, ios_base::beg);
+    c3 = fb.sgetc();
     VERIFY( c2 != c3 ); 
     VERIFY( c3 == '9' );
-    fb_03.pubsync(); 
-    c1 = fb_03.sgetc();
+    fb.pubsync(); 
+    c1 = fb.sgetc();
     VERIFY( c1 == c3 );
+
     //cur
-    // 27filebuf-3.txt = bd2\n456789:;<=>?...
-    pt_2 = fb_03.pubseekoff(2, ios_base::cur);
+    pt_2 = fb.pubseekoff(2, ios_base::cur);
     off_2 = pt_2;
     VERIFY( (off_2 == (off_1 + 2 + 1 + 1)) );
-    c1 = fb_03.snextc(); //current in pointer +1
+    c1 = fb.snextc(); //current in pointer +1
     VERIFY( c1 == '1' );
-    fb_03.pubseekoff(0, ios_base::cur);
-    c2 = fb_03.sputc('x');  //test current out pointer
-    c3 = fb_03.sputc('\n');
-    fb_03.pubseekoff(0, ios_base::cur);
-    c1 = fb_03.sgetc();
-    fb_03.pubsync(); 
-    c3 = fb_03.sgetc();
+    fb.pubseekoff(0, ios_base::cur);
+    c2 = fb.sputc('x');  //test current out pointer
+    c3 = fb.sputc('\n');
+    fb.pubseekoff(0, ios_base::cur);
+    c1 = fb.sgetc();
+    fb.pubsync(); 
+    c3 = fb.sgetc();
     VERIFY( c1 == c3 );
+
     //end
-    // 27filebuf-3.txt = "bd2\n456x\n9" 
-    pt_2 = fb_03.pubseekoff(0, ios_base::end);
+    pt_2 = fb.pubseekoff(0, ios_base::end);
     off_1 = pt_2;
     VERIFY( off_1 > off_2 ); //weak, but don't know exactly where it ends
-    c3 = fb_03.sputc('\n');
-    strmsz_1 = fb_03.sputn("because because because. . .", 28);  
+    c3 = fb.sputc('\n');
+    strmsz_1 = fb.sputn("because because because. . .", 28);  
     VERIFY( strmsz_1 == 28 );
-    fb_03.pubseekoff(-1, ios_base::end);
-    fb_03.sgetc();
-    c1 = fb_03.sungetc();
+    fb.pubseekoff(-1, ios_base::end);
+    fb.sgetc();
+    c1 = fb.sungetc();
     // Defect?  retval of sungetc is not necessarily the character ungotten.
     // So re-get it.
-    c1 = fb_03.sgetc();
-    fb_03.pubsync(); 
-    c3 = fb_03.sgetc();
+    c1 = fb.sgetc();
+    fb.pubsync(); 
+    c3 = fb.sgetc();
     VERIFY( c1 == c3 );
-    VERIFY( fb_03.unbuffered() );
+    VERIFY( !fb.write_position() );
+    VERIFY( fb.read_position() );
   }
 }
 

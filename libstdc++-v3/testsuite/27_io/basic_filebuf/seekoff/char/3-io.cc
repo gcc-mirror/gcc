@@ -18,106 +18,48 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 27.8.1.4 Overridden virtual functions
+// 27.7.1.3 Overridden virtual functions
 
 #include <fstream>
 #include <testsuite_hooks.h>
-#include <testsuite_io.h>
 
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %*.txt
-
-const char name_01[] = "seekoff-1.tst";
-
-void test05() 
+void test02(std::filebuf& in, bool pass)
 {
+  bool test = true;
   using namespace std;
-  using namespace __gnu_cxx_test;
-
-  typedef filebuf::int_type 	int_type;
-  typedef filebuf::pos_type 	pos_type;
-  typedef filebuf::off_type 	off_type;
-
-  bool 				test = true;
-  streamsize 			strmsz_1, strmsz_2;
-  streamoff  			strmof_1, strmof_2;
-
-  int_type c1;
-  int_type c2;
-  int_type c3;
-
-  pos_type pt_1(off_type(-1));
-  pos_type pt_2(off_type(0));
-  off_type off_1 = 0;
-  off_type off_2 = 0;
+  typedef streambuf::pos_type pos_type;
+  typedef streambuf::off_type off_type;
+  pos_type bad = pos_type(off_type(-1));
+  pos_type p = 0;
 
   // seekoff
-  // pubseekoff(off_type off, ios_base::seekdir way, ios_base::openmode which)
-  // alters the stream position to off
+  p = in.pubseekoff(0, ios_base::beg, ios_base::in);
+  if (pass)
+    VERIFY( p != bad );
 
-  // in | out
-  {
-    constraint_filebuf fb_03;
-    fb_03.open(name_01, ios_base::out | ios_base::in);
-    VERIFY( !fb_03.write_position() );
-    VERIFY( !fb_03.read_position() );
-    // 27filebuf-3.txt = bd23456789:;<=>?...
-    //beg
-    strmsz_1 = fb_03.in_avail(); 
-    pt_1 = fb_03.pubseekoff(2, ios_base::beg);
-    strmsz_2 = fb_03.in_avail(); 
-    off_1 = pt_1;
-    VERIFY( off_1 > 0 );
-    c1 = fb_03.snextc(); //current in pointer +1
-    VERIFY( c1 == '9' );
-    fb_03.pubseekoff(3, ios_base::beg);
-    c2 = fb_03.sputc('\n');  //current in pointer +1
-    fb_03.pubseekoff(4, ios_base::beg);
-    c3 = fb_03.sgetc();
-    VERIFY( c2 != c3 ); 
-    VERIFY( c3 == '9' );
-    fb_03.pubsync(); 
-    c1 = fb_03.sgetc();
-    VERIFY( c1 == c3 );
-    //cur
-    // 27filebuf-3.txt = bd2\n456789:;<=>?...
-    pt_2 = fb_03.pubseekoff(2, ios_base::cur);
-    off_2 = pt_2;
-    VERIFY( (off_2 == (off_1 + 2 + 1 + 1)) );
-    c1 = fb_03.snextc(); //current in pointer +1
-    VERIFY( c1 == '1' );
-    fb_03.pubseekoff(0, ios_base::cur);
-    c2 = fb_03.sputc('x');  //test current out pointer
-    c3 = fb_03.sputc('\n');
-    fb_03.pubseekoff(0, ios_base::cur);
-    c1 = fb_03.sgetc();
-    fb_03.pubsync(); 
-    c3 = fb_03.sgetc();
-    VERIFY( c1 == c3 );
-    //end
-    // 27filebuf-3.txt = "bd2\n456x\n9" 
-    pt_2 = fb_03.pubseekoff(0, ios_base::end);
-    off_1 = pt_2;
-    VERIFY( off_1 > off_2 ); //weak, but don't know exactly where it ends
-    c3 = fb_03.sputc('\n');
-    strmsz_1 = fb_03.sputn("because because because. . .", 28);  
-    VERIFY( strmsz_1 == 28 );
-    fb_03.pubseekoff(-1, ios_base::end);
-    fb_03.sgetc();
-    c1 = fb_03.sungetc();
-    // Defect?  retval of sungetc is not necessarily the character ungotten.
-    // So re-get it.
-    c1 = fb_03.sgetc();
-    fb_03.pubsync(); 
-    c3 = fb_03.sgetc();
-    VERIFY( c1 == c3 );
-    VERIFY( !fb_03.write_position() );
-    VERIFY( fb_03.read_position() );
-  }
+  p = in.pubseekoff(0, ios_base::beg, ios_base::out); 
+  if (pass)
+    VERIFY( p != bad );
+
+  p = in.pubseekoff(0, ios_base::beg); 
+  if (pass)
+    VERIFY( p != bad );
 }
 
-main() 
+const char name_01[] = "filebuf_virtuals-1.tst"; // file with data in it
+const char name_03[] = "filebuf_members-1.tst"; // empty file
+
+int main() 
 {
-  test05();
+  using namespace std;
+
+  filebuf in1;
+  in1.open(name_01, ios_base::in | ios_base::out);
+  filebuf in2;
+  filebuf in3;
+  in3.open(name_03, ios_base::in | ios_base::out);
+  test02(in1, true);
+  test02(in2, false);
+  test02(in3, true);
   return 0;
 }
