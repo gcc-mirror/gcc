@@ -1,3 +1,16 @@
+2002-01-22  H.J. Lu <hjl@gnu.org>
+
+	* g++.dg/special/ecos.exp: Append .exe instead of a.out as the
+	link output.
+	* gcc.dg/special/ecos.exp: Likewise.
+	* lib/g++-dg.exp: Likewise.
+	* lib/g77-dg.exp: Likewise.
+	* lib/gcc-dg.exp : Likewise.
+	* lib/mike-g++.exp: Likewise.
+	* lib/mike-g77.exp: Likewise.
+	* lib/mike-gcc.exp: Likewise.
+	* lib/objc-dg.exp: Likewise.
+
 2002-01-22  Janis Johnson  <janis187@us.ibm.com>
 
 	PR target/5379

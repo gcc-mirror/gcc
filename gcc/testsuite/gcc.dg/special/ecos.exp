@@ -124,7 +124,7 @@ if { [ check_weak_available ] == 1 } {
         set lines [gcc_target_compile "$srcdir/$subdir/wkali-2b.c" "wkali-2b.o" object ""]
         if [string match "*only weak aliases*" $lines] then {
 	    xfail "wkali-2b.o"
-	    file delete $srcdir/$subdir/a.out
+	    file delete $srcdir/$subdir/wkali-2.exe
         } elseif ![string match "" $lines] then {
             fail "wkali-2b.o"
         } else {

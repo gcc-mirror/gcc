@@ -113,12 +113,12 @@ proc postbase  { src_code run groups args } {
 	link
 	{
 	    set compile_type "executable";
-	    set output_file "$tmpdir/a.out";
+	    append output_file ".exe";
 	}
 	run
 	{
 	    set compile_type "executable";
-	    set output_file "$tmpdir/a.out";
+	    append output_file ".exe";
 	    set run yes;
 	}
 	default
