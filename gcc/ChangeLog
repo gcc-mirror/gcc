@@ -1,3 +1,9 @@
+Sat Sep 16 19:42:50 EDT 2000  John Wehle  (john@feith.com)
+
+	* rtlanal.c (rtx_varies_p): Volatile asms vary.
+	(rtx_unstable_p): Restructure code.  Volatile asms
+	are unstable.
+
 Sat Sep 16 14:35:55 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* stor-layout.c (place_field): Don't do anything if field or

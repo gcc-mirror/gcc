@@ -52,20 +52,36 @@ rtx_unstable_p (x)
   register int i;
   register const char *fmt;
 
-  if (code == MEM)
-    return ! RTX_UNCHANGING_P (x) || rtx_unstable_p (XEXP (x, 0));
+  switch (code)
+    {
+    case MEM:
+      return ! RTX_UNCHANGING_P (x) || rtx_unstable_p (XEXP (x, 0));
 
-  if (code == QUEUED)
-    return 1;
+    case QUEUED:
+      return 1;
 
-  if (CONSTANT_P (x))
-    return 0;
+    case CONST:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case SYMBOL_REF:
+    case LABEL_REF:
+      return 0;
 
-  if (code == REG)
-    /* As in rtx_varies_p, we have to use the actual rtx, not reg number.  */
-    return ! (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
-	      || x == arg_pointer_rtx || x == pic_offset_table_rtx
-	      || RTX_UNCHANGING_P (x));
+    case REG:
+      /* As in rtx_varies_p, we have to use the actual rtx, not reg number.  */
+      return ! (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
+		|| x == arg_pointer_rtx || x == pic_offset_table_rtx
+		|| RTX_UNCHANGING_P (x));
+
+    case ASM_OPERANDS:
+      if (MEM_VOLATILE_P (x))
+	return 1;
+
+      /* FALLTHROUGH */
+
+    default:
+      break;
+    }
 
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -126,6 +142,12 @@ rtx_varies_p (x)
 	 (in fact is it related specifically to operand 1).  */
       return rtx_varies_p (XEXP (x, 1));
       
+    case ASM_OPERANDS:
+      if (MEM_VOLATILE_P (x))
+	return 1;
+
+      /* FALLTHROUGH */
+
     default:
       break;
     }
