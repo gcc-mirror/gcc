@@ -41,10 +41,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "tree-inline.h"
 #include "c-tree.h"
-/* In order to ensure we use a common subset of valid specifiers
-   (between the various C family frontends) in this file, we restrict
-   ourselves to the generic specifier set.  */
-#undef GCC_DIAG_STYLE
 #include "toplev.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
@@ -1131,7 +1127,8 @@ fname_decl (unsigned int rid, tree id)
       input_line = saved_lineno;
     }
   if (!ix && !current_function_decl)
-    pedwarn_with_decl (decl, "`%s' is not defined outside of function scope");
+    pedwarn ("%H'%D' is not defined outside of function scope",
+             &DECL_SOURCE_LOCATION (decl), decl);
 
   return decl;
 }
@@ -3916,18 +3913,19 @@ c_add_case_label (splay_tree cases, tree cond, tree low_value,
       if (high_value)
 	{
 	  error ("duplicate (or overlapping) case value");
-	  error_with_decl (duplicate,
-			   "this is the first entry overlapping that value");
+	  error ("%Hthis is the first entry overlapping that value",
+                 &DECL_SOURCE_LOCATION (duplicate));
 	}
       else if (low_value)
 	{
 	  error ("duplicate case value") ;
-	  error_with_decl (duplicate, "previously used here");
+	  error ("%Hpreviously used here", &DECL_SOURCE_LOCATION (duplicate));
 	}
       else
 	{
 	  error ("multiple default labels in one switch");
-	  error_with_decl (duplicate, "this is the first default label");
+	  error ("%Hthis is the first default label",
+                 &DECL_SOURCE_LOCATION (duplicate));
 	}
       if (!cases->root)
 	add_stmt (build_case_label (NULL_TREE, NULL_TREE, label));
@@ -4958,8 +4956,8 @@ handle_section_attribute (tree *node, tree name ATTRIBUTE_UNUSED, tree args,
 	      && current_function_decl != NULL_TREE
 	      && ! TREE_STATIC (decl))
 	    {
-	      error_with_decl (decl,
-			       "section attribute cannot be specified for local variables");
+	      error ("%Hsection attribute cannot be specified for "
+                     "local variables", &DECL_SOURCE_LOCATION (decl));
 	      *no_add_attrs = true;
 	    }
 
@@ -4969,8 +4967,8 @@ handle_section_attribute (tree *node, tree name ATTRIBUTE_UNUSED, tree args,
 		   && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
 			      TREE_STRING_POINTER (TREE_VALUE (args))) != 0)
 	    {
-	      error_with_decl (*node,
-			       "section of `%s' conflicts with previous declaration");
+	      error ("%Hsection of '%D' conflicts with previous declaration",
+                     &DECL_SOURCE_LOCATION (*node), *node);
 	      *no_add_attrs = true;
 	    }
 	  else
@@ -4978,15 +4976,15 @@ handle_section_attribute (tree *node, tree name ATTRIBUTE_UNUSED, tree args,
 	}
       else
 	{
-	  error_with_decl (*node,
-			   "section attribute not allowed for `%s'");
+	  error ("%Hsection attribute not allowed for '%D'",
+                 &DECL_SOURCE_LOCATION (*node), *node);
 	  *no_add_attrs = true;
 	}
     }
   else
     {
-      error_with_decl (*node,
-		       "section attributes are not supported for this target");
+      error ("%Hsection attributes are not supported for this target",
+             &DECL_SOURCE_LOCATION (*node));
       *no_add_attrs = true;
     }
 
@@ -5060,8 +5058,8 @@ handle_aligned_attribute (tree *node, tree name ATTRIBUTE_UNUSED, tree args,
   else if (TREE_CODE (decl) != VAR_DECL
 	   && TREE_CODE (decl) != FIELD_DECL)
     {
-      error_with_decl (decl,
-		       "alignment may not be specified for `%s'");
+      error ("%Halignment may not be specified for '%D'",
+             &DECL_SOURCE_LOCATION (decl), decl);
       *no_add_attrs = true;
     }
   else
@@ -5099,8 +5097,8 @@ handle_alias_attribute (tree *node, tree name, tree args,
   if ((TREE_CODE (decl) == FUNCTION_DECL && DECL_INITIAL (decl))
       || (TREE_CODE (decl) != FUNCTION_DECL && ! DECL_EXTERNAL (decl)))
     {
-      error_with_decl (decl,
-		       "`%s' defined both normally and as an alias");
+      error ("%H'%D' defined both normally and as an alias",
+             &DECL_SOURCE_LOCATION (decl), decl);
       *no_add_attrs = true;
     }
   else if (decl_function_context (decl) == 0)
@@ -5224,16 +5222,14 @@ handle_no_instrument_function_attribute (tree *node, tree name,
 
   if (TREE_CODE (decl) != FUNCTION_DECL)
     {
-      error_with_decl (decl,
-		       "`%s' attribute applies only to functions",
-		       IDENTIFIER_POINTER (name));
+      error ("%H'%E' attribute applies only to functions",
+             &DECL_SOURCE_LOCATION (decl), name);
       *no_add_attrs = true;
     }
   else if (DECL_INITIAL (decl))
     {
-      error_with_decl (decl,
-		       "can't set `%s' attribute after definition",
-		       IDENTIFIER_POINTER (name));
+      error ("%Hcan't set '%E' attribute after definition",
+             &DECL_SOURCE_LOCATION (decl), name);
       *no_add_attrs = true;
     }
   else
@@ -5274,16 +5270,14 @@ handle_no_limit_stack_attribute (tree *node, tree name,
 
   if (TREE_CODE (decl) != FUNCTION_DECL)
     {
-      error_with_decl (decl,
-		       "`%s' attribute applies only to functions",
-		       IDENTIFIER_POINTER (name));
+      error ("%H'%E' attribute applies only to functions",
+             &DECL_SOURCE_LOCATION (decl), name);
       *no_add_attrs = true;
     }
   else if (DECL_INITIAL (decl))
     {
-      error_with_decl (decl,
-		       "can't set `%s' attribute after definition",
-		       IDENTIFIER_POINTER (name));
+      error ("%Hcan't set '%E' attribute after definition",
+             &DECL_SOURCE_LOCATION (decl), name);
       *no_add_attrs = true;
     }
   else
