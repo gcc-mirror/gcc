@@ -1,6 +1,6 @@
-// 1999-09-20 bkoz
+// 2002-01-08 bkoz
 
-// Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,18 +27,18 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-// 27.6.2.1 basic_ostream
-// NB: This file is for testing ostream with NO OTHER INCLUDES.
-
-#include <ostream>
+// 27.6.1.5 - Template class basic_iostream
+// NB: This file is for testing iostream with NO OTHER INCLUDES.
 
 // { dg-do compile }
+
+#include <istream>
 
 namespace test 
 {
   using namespace std;
   typedef short type_t;
-  template class basic_ostream<type_t, char_traits<type_t> >;
+  template class basic_iostream<type_t, char_traits<type_t> >;
 } // test
 
 int main() 

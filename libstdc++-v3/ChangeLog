@@ -1,3 +1,19 @@
+2002-01-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/fstream.tcc (filebuf::close()): Fix close for input
+	streams.
+	(filebuf::_M_really_overflow): Match indeterminate and sync calls.
+	* testsuite/27_io/filebuf.cc: Compile only.
+	* testsuite/27_io/filebuf_members.cc: Move tests to here.
+	* testsuite/27_io/filebuf_virtuals.cc: And here.
+	Revert sungetc, sync changes for expected values.
+	* testsuite/27_io/filebuf-*: Move to...
+	* testsuite/27_io/filebuf_virtuals-*: ...here.
+	* testsuite/27_io/istream.cc: Compile only, activate.
+	* testsuite/27_io/ostream.cc: Same.
+	* testsuite/27_io/iostream.cc: New.
+	* testsuite/27_io/iostream_members.cc: New.
+
 2002-01-25  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* testsuite/thread/pthread1.cc: Enable on cygwin.

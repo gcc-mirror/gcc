@@ -1,6 +1,7 @@
 // File based streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -181,31 +182,31 @@ namespace std
       __filebuf_type *__ret = NULL;
       if (this->is_open())
 	{
+	  const int_type __eof = traits_type::eof();
 	  bool __testput = _M_out_cur && _M_out_beg < _M_out_end;
-	  if (__testput
-	      && _M_really_overflow(traits_type::eof()) != traits_type::eof())
-	    {
-	      // NB: Do this here so that re-opened filebufs will be cool...
-	      _M_mode = ios_base::openmode(0);
-	      _M_destroy_internal_buffer();
-	      
-	      _M_pback_destroy();
-	      if (_M_pback)
-		{
-		  delete [] _M_pback;
-		  _M_pback = NULL;
-		}
+	  if (__testput && _M_really_overflow(__eof) == __eof)
+	    return __ret;
 
+	  // NB: Do this here so that re-opened filebufs will be cool...
+	  _M_mode = ios_base::openmode(0);
+	  _M_destroy_internal_buffer();
+	  
+	  _M_pback_destroy();
+	  if (_M_pback)
+	    {
+	      delete [] _M_pback;
+	      _M_pback = NULL;
+	    }
+	  
 #if 0
 	  // XXX not done
 	  if (_M_last_overflowed)
 	    {
 	      _M_output_unshift();
-	      _M_really_overflow(traits_type::eof());
+	      _M_really_overflow(__eof);
 	    }
 #endif
-	      __ret = this;
-	    }
+	  __ret = this;
 	}
 
       // Can actually allocate this file as part of an open and never
@@ -429,11 +430,11 @@ namespace std
 
 	  // NB: Need this so that external byte sequence reflects
 	  // internal buffer.
-	  if (__len == __plen)
-	    _M_set_indeterminate();
-
-	  if (!_M_file->sync())
-	    __ret = traits_type::not_eof(__c);
+	  if (__len == __plen && !_M_file->sync())
+	    {
+	      _M_set_indeterminate();
+	      __ret = traits_type::not_eof(__c);
+	    }
 #else
 	  // Part one: Allocate temporary conversion buffer on
 	  // stack. Convert internal buffer plus __c (ie,
@@ -607,5 +608,10 @@ namespace std
 } // namespace std
 
 #endif // _CPP_BITS_FSTREAM_TCC
+
+
+
+
+
 
 
