@@ -1630,7 +1630,7 @@ else
   if { (eval echo configure:1631: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
     for file in conftest.*; do
       case $file in
-      *.c | *.o | *.obj) ;;
+      *.$ac_ext | *.c | *.o | *.obj) ;;
       *) ac_cv_exeext=`echo $file | sed -e s/conftest//` ;;
       esac
     done
@@ -8532,7 +8532,7 @@ fi
 # Define here any compiler flags that you need in order to make backtrace() work.
 BACKTRACESPEC=
 case "${host}" in
- x86_64*-*-linux*)
+ x86_64*-*-linux*|i?86-*)
     BACKTRACESPEC=-fno-omit-frame-pointer
     ;;
 esac
