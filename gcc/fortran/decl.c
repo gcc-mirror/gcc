@@ -1785,6 +1785,22 @@ gfc_match_subroutine (void)
 }
 
 
+/* Return nonzero if we're currenly compiling a contained procedure.  */
+
+static int
+contained_procedure (void)
+{
+  gfc_state_data *s;
+
+  for (s=gfc_state_stack; s; s=s->previous)
+    if ((s->state == COMP_SUBROUTINE || s->state == COMP_FUNCTION)
+       && s->previous != NULL
+       && s->previous->state == COMP_CONTAINS)
+      return 1;
+
+  return 0;
+}
+
 /* Match any of the various end-block statements.  Returns the type of
    END to the caller.  The END INTERFACE, END IF, END DO and END
    SELECT statements cannot be replaced by a single END statement.  */
@@ -1797,6 +1813,7 @@ gfc_match_end (gfc_statement * st)
   locus old_loc;
   const char *block_name;
   const char *target;
+  int eos_ok;
   match m;
 
   old_loc = gfc_current_locus;
@@ -1820,61 +1837,73 @@ gfc_match_end (gfc_statement * st)
     case COMP_PROGRAM:
       *st = ST_END_PROGRAM;
       target = " program";
+      eos_ok = 1;
       break;
 
     case COMP_SUBROUTINE:
       *st = ST_END_SUBROUTINE;
       target = " subroutine";
+      eos_ok = !contained_procedure ();
       break;
 
     case COMP_FUNCTION:
       *st = ST_END_FUNCTION;
       target = " function";
+      eos_ok = !contained_procedure ();
       break;
 
     case COMP_BLOCK_DATA:
       *st = ST_END_BLOCK_DATA;
       target = " block data";
+      eos_ok = 1;
       break;
 
     case COMP_MODULE:
       *st = ST_END_MODULE;
       target = " module";
+      eos_ok = 1;
       break;
 
     case COMP_INTERFACE:
       *st = ST_END_INTERFACE;
       target = " interface";
+      eos_ok = 0;
       break;
 
     case COMP_DERIVED:
       *st = ST_END_TYPE;
       target = " type";
+      eos_ok = 0;
       break;
 
     case COMP_IF:
       *st = ST_ENDIF;
       target = " if";
+      eos_ok = 0;
       break;
 
     case COMP_DO:
       *st = ST_ENDDO;
       target = " do";
+      eos_ok = 0;
       break;
 
     case COMP_SELECT:
       *st = ST_END_SELECT;
       target = " select";
+      eos_ok = 0;
       break;
 
     case COMP_FORALL:
       *st = ST_END_FORALL;
       target = " forall";
+      eos_ok = 0;
       break;
 
     case COMP_WHERE:
       *st = ST_END_WHERE;
       target = " where";
+      eos_ok = 0;
       break;
 
     default:
@@ -1884,17 +1913,9 @@ gfc_match_end (gfc_statement * st)
 
   if (gfc_match_eos () == MATCH_YES)
     {
-      state = gfc_current_state ();
-
-      if (*st == ST_ENDIF || *st == ST_ENDDO || *st == ST_END_SELECT
-	  || *st == ST_END_INTERFACE || *st == ST_END_FORALL
-	  || *st == ST_END_WHERE
-	  || /* A contained procedure requires END FUNCTION/SUBROUTINE.  */
-	     ((state == COMP_FUNCTION || state == COMP_SUBROUTINE)
-              && gfc_state_stack->previous != NULL
-              && gfc_state_stack->previous->state == COMP_CONTAINS))
+      if (!eos_ok)
 	{
-
+	  /* We would have required END [something]  */
 	  gfc_error ("%s statement expected at %C",
 		     gfc_ascii_statement (*st));
 	  goto cleanup;
