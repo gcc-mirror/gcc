@@ -1,3 +1,17 @@
+2000-07-30 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+	   Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (set_ldp_prologue): Add for RTL prologue/epilogue.
+	(push_st, push_dp, pop_st, pop_dp, popqi_unspec): Likewise.
+	(nodb_call, return_from_epilogue): Likewise.
+	(return_from_interrupt_epilogue, prologue, epilogue): Likewise.
+	* config/c4x/c4x.c (c4x_expand_prologue, c4x_expand_eplilogue): Add.
+	* config/c4x/c4x-protos.h (c4x_interrupt_function_p): Add.
+	(c4x_expand_prologue, c4x_expand_epilogue): Likewise.
+	(c4x_valid_type_attribute_p): Likewise.
+	* config/c4x/c4x.h (FUNCTION_PROLOGUE, FUNCTION_EPILOGUE): Delete.
+	(FUNCTION_BLOCK_PROFILER_EXIT): Convert to emit RTL.
+	
 2000-07-30  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_emit_move_sequence): Use loadqi_big_constant

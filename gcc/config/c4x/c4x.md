@@ -455,6 +455,13 @@
 ; 11 loadqf_int
 ; 12 storeqf_int
 ; 13 Conditional load on overflow
+; 14 push_st
+; 15 pop_st
+; 16 push_dp
+; 17 pop_dp
+; 18 popqi_unspec
+; 19 popqf_unspec
+; 20 andn_st
 ; 22 rptb_init
 
 ;
@@ -489,24 +496,6 @@
 (define_function_unit "dummy" 1 0 (const_int 0) 1 1)
 (define_function_unit "dummy" 1 0 (const_int 0) 2 1)
 (define_function_unit "dummy" 1 0 (const_int 0) 3 1)
-
-;(define_function_unit "ar0" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setar0" "1")
-;                 (eq_attr "usear0" "1")))
-;       3 1 )
-
-;(define_function_unit "ar0" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setlda_ar0" "1")
-;                 (eq_attr "usear0" "1")))
-;       2 1 )
-
-;(define_function_unit "ar0" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "usear0" "1")
-;                 (eq_attr "readar0" "1")))
-;       2 1 )
 
 ; The attribute setar0 is set to 1 for insns where ar0 is a dst operand.
 ; Note that the attributes unarycc and binarycc do not apply
@@ -553,24 +542,6 @@
                                      (const_int 1) (const_int 0))]
              (const_int 0)))
 
-;(define_function_unit "ar1" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setar1" "1")
-;                 (eq_attr "usear1" "1")))
-;       3 1 )
-
-;(define_function_unit "ar1" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setlda_ar1" "1")
-;                 (eq_attr "usear1" "1")))
-;       2 1 )
-
-;(define_function_unit "ar1" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "usear1" "1")
-;                 (eq_attr "readar1" "1")))
-;       2 1 )
-
 (define_attr "setar1" ""
        (cond [(eq_attr "type" "unary,binary")
                        (if_then_else (match_operand 0 "ar1_reg_operand" "")
@@ -609,24 +580,6 @@
                        (if_then_else (match_operand 2 "ar1_reg_operand" "")
                                      (const_int 1) (const_int 0))]
              (const_int 0)))
-
-;(define_function_unit "ar2" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setar2" "1")
-;                 (eq_attr "usear2" "1")))
-;       3 1 )
-
-;(define_function_unit "ar2" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setlda_ar2" "1")
-;                 (eq_attr "usear2" "1")))
-;       2 1 )
-
-;(define_function_unit "ar2" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "usear2" "1")
-;                 (eq_attr "readar2" "1")))
-;       2 1 )
 
 (define_attr "setar2" ""
        (cond [(eq_attr "type" "unary,binary")
@@ -667,24 +620,6 @@
                                      (const_int 1) (const_int 0))]
              (const_int 0)))
 
-;(define_function_unit "ar3" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setar3" "1")
-;                 (eq_attr "usear3" "1")))
-;       3 1 )
-
-;(define_function_unit "ar3" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setlda_ar3" "1")
-;                 (eq_attr "usear3" "1")))
-;       2 1 )
-
-;(define_function_unit "ar3" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "usear3" "1")
-;                 (eq_attr "readar3" "1")))
-;       2 1 )
-
 (define_attr "setar3" ""
        (cond [(eq_attr "type" "unary,binary")
                        (if_then_else (match_operand 0 "ar3_reg_operand" "")
@@ -723,24 +658,6 @@
                        (if_then_else (match_operand 2 "ar3_reg_operand" "")
                                      (const_int 1) (const_int 0))]
              (const_int 0)))
-
-;(define_function_unit "ar4" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setar4" "1")
-;                 (eq_attr "usear4" "1")))
-;       3 1 )
-
-;(define_function_unit "ar4" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setlda_ar4" "1")
-;                 (eq_attr "usear4" "1")))
-;       2 1 )
-
-;(define_function_unit "ar4" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "usear4" "1")
-;                 (eq_attr "readar4" "1")))
-;       2 1 )
 
 (define_attr "setar4" ""
        (cond [(eq_attr "type" "unary,binary")
@@ -781,24 +698,6 @@
                                      (const_int 1) (const_int 0))]
              (const_int 0)))
 
-;(define_function_unit "ar5" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setar5" "1")
-;                 (eq_attr "usear5" "1")))
-;       3 1 )
-
-;(define_function_unit "ar5" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setlda_ar5" "1")
-;                 (eq_attr "usear5" "1")))
-;       2 1 )
-
-;(define_function_unit "ar5" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "usear5" "1")
-;                 (eq_attr "readar5" "1")))
-;       2 1 )
-
 (define_attr "setar5" ""
        (cond [(eq_attr "type" "unary,binary")
                        (if_then_else (match_operand 0 "ar5_reg_operand" "")
@@ -837,24 +736,6 @@
                        (if_then_else (match_operand 2 "ar5_reg_operand" "")
                                      (const_int 1) (const_int 0))]
              (const_int 0)))
-
-;(define_function_unit "ar6" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setar6" "1")
-;                 (eq_attr "usear6" "1")))
-;       3 1 )
-
-;(define_function_unit "ar6" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setlda_ar6" "1")
-;                 (eq_attr "usear6" "1")))
-;       2 1 )
-
-;(define_function_unit "ar6" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "usear6" "1")
-;                 (eq_attr "readar6" "1")))
-;       2 1 )
 
 (define_attr "setar6" ""
        (cond [(eq_attr "type" "unary,binary")
@@ -895,24 +776,6 @@
                                      (const_int 1) (const_int 0))]
              (const_int 0)))
 
-;(define_function_unit "ar7" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setar7" "1")
-;                 (eq_attr "usear7" "1")))
-;       3 1 )
-
-;(define_function_unit "ar7" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setlda_ar7" "1")
-;                 (eq_attr "usear7" "1")))
-;       2 1 )
-
-;(define_function_unit "ar7" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "usear7" "1")
-;                 (eq_attr "readar7" "1")))
-;       2 1 )
-
 (define_attr "setar7" ""
        (cond [(eq_attr "type" "unary,binary")
                        (if_then_else (match_operand 0 "ar7_reg_operand" "")
@@ -952,18 +815,6 @@
                                      (const_int 1) (const_int 0))]
              (const_int 0)))
 
-;(define_function_unit "ir0" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setir0" "1")
-;                 (eq_attr "useir0" "1")))
-;       3 1 )
-
-;(define_function_unit "ir0" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setlda_ir0" "1")
-;                 (eq_attr "useir0" "1")))
-;       2 1 )
-
 (define_attr "setir0" ""
        (cond [(eq_attr "type" "unary,binary")
                        (if_then_else (match_operand 0 "ir0_reg_operand" "")
@@ -987,18 +838,6 @@
                        (if_then_else (match_operand 2 "ir0_mem_operand" "")
                                      (const_int 1) (const_int 0))]
              (const_int 0)))
-
-;(define_function_unit "ir1" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setir1" "1")
-;                 (eq_attr "useir1" "1")))
-;       3 1 )
-
-;(define_function_unit "ir1" 1 0
-;       (and (eq_attr "cpu" "c4x")
-;            (and (eq_attr "setlda_ir1" "1")
-;                 (eq_attr "useir1" "1")))
-;       2 1 )
 
 (define_attr "setir1" ""
        (cond [(eq_attr "type" "unary,binary")
@@ -1040,18 +879,6 @@
 ;
 ; Let's ignore functional groups 2 and 3 for now, since they are not
 ; so important.
-
-;(define_function_unit "group1" 1 0
-;       (and (eq_attr "cpu" "c3x")
-;            (and (eq_attr "setgroup1" "1")
-;                 (eq_attr "usegroup1" "1")))
-;       3 1)
-
-;(define_function_unit "group1" 1 0
-;       (and (eq_attr "cpu" "c3x")
-;            (and (eq_attr "usegroup1" "1")
-;                 (eq_attr "readarx" "1")))
-;       2 1)
 
 (define_attr "setgroup1" ""
        (cond [(eq_attr "type" "lda,unary,binary")
@@ -1106,6 +933,13 @@
         (high:QI (match_operand:QI 1 "" "")))]
   "! TARGET_SMALL"
   "* return (TARGET_C3X) ? \"ldp\\t%A1\" : \"ldpk\\t%A1\";"
+  [(set_attr "type" "ldp")])
+
+(define_insn "set_ldp_prologue"
+  [(set (match_operand:QI 0 "dp_reg_operand" "=z")
+        (high:QI (match_operand:QI 1 "" "")))]
+  "TARGET_SMALL && TARGET_PARANOID"
+  "* return (TARGET_C3X) ? \"ldp\\t@data_sec\" : \"ldpk\\t@data_sec\";"
   [(set_attr "type" "ldp")])
 
 (define_insn "set_high"
@@ -1544,6 +1378,18 @@
 }")
 
 
+; As far as GCC is concerned, the moves are performed in parallel
+; thus it must be convinced that there is no aliasing.
+; It also assumes that the input operands are simultaneously loaded
+; and then the output operands are simultaneously stored.
+; With the C4x, if there are parallel stores to the same address
+; both stores are executed.
+; If there is a parallel load and store to the same address,
+; the load is performed first.
+; The problem with this pattern is that reload can spoil
+; the show when it eliminates a reference to the frame pointer.
+; This can invalidate the memory addressing mode, i.e., when
+; the displacement is greater than 1.
 (define_insn "movqi_parallel"
   [(set (match_operand:QI 0 "parallel_operand" "=q,S<>!V,q,S<>!V")
         (match_operand:QI 1 "parallel_operand" "S<>!V,q,S<>!V,q"))
@@ -1560,16 +1406,53 @@
 ;
 ; PUSH/POP
 ;
-(define_insn "*pushqi"
+(define_insn "pushqi"
   [(set (mem:QI (pre_inc:QI (reg:QI 20)))
         (match_operand:QI 0 "reg_operand" "r"))]
   ""
   "push\\t%0"
   [(set_attr "type" "push")])
 
-(define_insn "*popqi"
+(define_insn "push_st"
+  [(set (mem:QI (pre_inc:QI (reg:QI 20))) (unspec:QI [(reg:QI 21)] 14))
+   (use (reg:QI 21))]
+  ""
+  "push\\tst"
+  [(set_attr "type" "push")])
+
+(define_insn "push_dp"
+  [(set (mem:QI (pre_inc:QI (reg:QI 20))) (unspec:QI [(reg:QI 16)] 16))
+   (use (reg:QI 16))]
+  ""
+  "push\\tdp"
+  [(set_attr "type" "push")])
+
+(define_insn "popqi"
   [(set (match_operand:QI 0 "reg_operand" "=r")
         (mem:QI (post_dec:QI (reg:QI 20))))
+   (clobber (reg:CC 21))]
+  ""
+  "pop\\t%0"
+  [(set_attr "type" "pop")])
+
+(define_insn "pop_st"
+  [(set (unspec:QI [(reg:QI 21)] 15) (mem:QI (post_dec:QI (reg:QI 20))))
+   (clobber (reg:CC 21))]
+  ""
+  "pop\\tst"
+  [(set_attr "type" "pop")])
+
+(define_insn "pop_dp"
+  [(set (unspec:QI [(reg:QI 16)] 17) (mem:QI (post_dec:QI (reg:QI 20))))
+   (clobber (reg:CC 16))]
+  ""
+  "pop\\tdp"
+  [(set_attr "type" "pop")])
+
+(define_insn "popqi_unspec"
+  [(set (unspec:QI [(match_operand:QI 0 "reg_operand" "=r")] 18)
+        (mem:QI (post_dec:QI (reg:QI 20))))
+   (clobber (match_dup 0))
    (clobber (reg:CC 21))]
   ""
   "pop\\t%0"
@@ -2597,6 +2480,19 @@
    and3\\t%2,%1,%0"
   [(set_attr "type" "binary,binary,binary,binary")
    (set_attr "data" "not_uint16,uint16,int16,uint16")])
+
+(define_insn "andn_st"
+  [(set (unspec:QI [(reg:QI 21)] 20)
+        (and:QI (unspec:QI [(reg:QI 21)] 20)
+                (match_operand:QI 0 "" "N")))
+   (use (match_dup 0))
+   (use (reg:CC 21))
+   (clobber (reg:CC 21))]
+  ""
+  "@
+   andn\\t%N0,st"
+  [(set_attr "type" "misc")
+   (set_attr "data" "not_uint16")])
 
 (define_split
   [(set (match_operand:QI 0 "std_reg_operand" "")
@@ -3669,14 +3565,14 @@
 ;
 ; PUSH/POP
 ;
-(define_insn "*pushqf"
+(define_insn "pushqf"
   [(set (mem:QF (pre_inc:QI (reg:QI 20)))
         (match_operand:QF 0 "reg_operand" "f"))]
  ""
  "pushf\\t%0"
  [(set_attr "type" "push")])
 
-(define_insn "*popqf"
+(define_insn "popqf"
   [(set (match_operand:QF 0 "reg_operand" "=f")
         (mem:QF (post_dec:QI (reg:QI 20))))
    (clobber (reg:CC 21))]
@@ -3684,6 +3580,14 @@
  "popf\\t%0"
  [(set_attr "type" "pop")])
 
+(define_insn "popqf_unspec"
+  [(set (unspec:QF [(match_operand:QF 0 "reg_operand" "=f")] 19)
+        (mem:QF (post_dec:QI (reg:QI 20))))
+   (clobber (match_dup 0))
+   (clobber (reg:CC 21))]
+ ""
+ "popf\\t%0"
+ [(set_attr "type" "pop")])
 
 ;
 ; ABSF
@@ -4269,7 +4173,7 @@
   ""
   "@
    ldiv\\t%1,%0"
-  [(set_attr "type" "binary")])
+  [(set_attr "type" "unary")])
 
 ; Move operand 2 to operand 0 if condition (operand 1) is true
 ; else move operand 3 to operand 0.
@@ -5065,6 +4969,13 @@
 			       force_reg (Pmode, XEXP (operands[0], 0)));
 }")
 
+(define_insn "nodb_call"
+ [(call (mem:QI (match_operand:QI 0 "call_address_operand" "Ur"))
+	(const_int 0))]
+  ""
+  "call%U0\\t%C0"
+  [(set_attr "type" "call")])
+
 (define_insn "*callv_c3x"
  [(set (match_operand 0 "" "=r")
        (call (mem:QI (match_operand:QI 1 "call_address_operand" "Ur"))
@@ -5111,6 +5022,18 @@
   [(return)]
   "c4x_null_epilogue_p ()"
   "rets"
+  [(set_attr "type" "rets")])
+
+(define_insn "return_from_epilogue"
+  [(return)]
+  "reload_completed && ! c4x_interrupt_function_p ()"
+  "rets"
+  [(set_attr "type" "rets")])
+
+(define_insn "return_from_interrupt_epilogue"
+  [(return)]
+  "reload_completed && c4x_interrupt_function_p ()"
+  "reti"
   [(set_attr "type" "rets")])
 
 (define_insn "*return_cc"
@@ -5188,6 +5111,7 @@
    (set (match_dup 0)
         (plus:QI (match_dup 0)
                  (const_int -1)))
+   (use (reg:QI 20))
    (clobber (reg:CC_NOOV 21))]
   "TARGET_DB && TARGET_LOOP_UNSIGNED"
   "*
@@ -5224,6 +5148,7 @@
    (set (match_dup 0)
         (plus:QI (match_dup 0)
                  (const_int -1)))
+   (use (reg:QI 20))
    (clobber (reg:CC_NOOV 21))]
   "reload_completed && TARGET_DB && TARGET_LOOP_UNSIGNED"
   [(parallel [(set (pc)
@@ -5258,6 +5183,7 @@
    (set (match_dup 0)
         (plus:QI (match_dup 0)
                  (const_int -1)))
+   (use (reg:QI 20))
    (clobber (reg:CC_NOOV 21))]
   "TARGET_DB && (find_reg_note (insn, REG_NONNEG, 0) || TARGET_LOOP_UNSIGNED)"
   "*
@@ -5296,6 +5222,7 @@
    (set (match_dup 0)
         (plus:QI (match_dup 0)
                  (const_int -1)))
+   (use (reg:QI 20))
    (clobber (reg:CC_NOOV 21))]
   "reload_completed && TARGET_DB && TARGET_LOOP_UNSIGNED"
   [(parallel [(set (pc)
@@ -5322,6 +5249,15 @@
   "nop")
 ; Default to misc type attr.
 
+(define_expand "prologue"
+  [(const_int 1)]
+  ""                           
+  "c4x_expand_prologue (); DONE;")
+
+(define_expand "epilogue"
+  [(const_int 1)]
+  ""
+  "c4x_expand_epilogue (); DONE;")
 
 ;
 ; RPTB
@@ -5391,6 +5327,7 @@
                  (const_int -1)))
    (use (reg:QI 25))
    (use (reg:QI 26))
+   (use (reg:QI 20))
    (clobber (reg:CC_NOOV 21))]
   ""
   "*
@@ -5421,6 +5358,7 @@
    (use (match_operand:QI 4 "const_int_operand" ""))
    (use (reg:QI 25))
    (use (reg:QI 26))
+   (use (reg:QI 20))
    (clobber (reg:CC_NOOV 21))]
   "reload_completed"
   [(parallel [(set (pc)
@@ -5806,7 +5744,7 @@
 ;
 ; PUSH/POP
 ;
-(define_insn "*pushhf"
+(define_insn "pushhf"
   [(set (mem:HF (pre_inc:QI (reg:QI 20)))
         (match_operand:HF 0 "reg_operand" "h"))]
  ""
@@ -5838,7 +5776,7 @@
  [(set_attr "type" "push")])
 
 ; we can not use this because the popf will destroy the low 8 bits
-;(define_insn "*pophf"
+;(define_insn "pophf"
 ;  [(set (match_operand:HF 0 "reg_operand" "=h")
 ;        (mem:HF (post_dec:QI (reg:QI 20))))
 ;   (clobber (reg:CC 21))]
@@ -5877,7 +5815,7 @@
  ""
  "@
   popf\\t%0"
-  [(set_attr "type" "unary")])
+  [(set_attr "type" "pop")])
 
 ;
 ; FIX
@@ -6824,6 +6762,22 @@
    c4x_compare_op1 = operands[1];
    DONE;")
 
+(define_insn "*cmphi_cc"
+  [(set (reg:CC 21)
+        (compare:CC (match_operand:HI 0 "src_operand" "rR,rS<>")
+                    (match_operand:HI 1 "src_operand" "R,rS<>")))]
+  "valid_operands (COMPARE, operands, HImode)"
+  "#"
+  [(set_attr "type" "multi")])
+
+(define_insn "*cmphi_cc_noov"
+  [(set (reg:CC_NOOV 21)
+        (compare:CC_NOOV (match_operand:HI 0 "src_operand" "rR,rS<>")
+                         (match_operand:HI 1 "src_operand" "R,rS<>")))]
+  "valid_operands (COMPARE, operands, HImode)"
+  "#"
+  [(set_attr "type" "multi")])
+
 ; This works only before reload because we need 2 extra registers.
 ; Use unspec to avoid recursive split.
 (define_split
@@ -6851,10 +6805,31 @@
   "")
 
 ; This is normally not used. The define splits above are used first.
+(define_split
+  [(set (reg:CC 21)
+        (compare:CC (match_operand:HI 0 "src_operand" "")
+                    (match_operand:HI 1 "src_operand" "")))]
+  "reload_completed"
+  [(parallel [(set (reg:CC 21)
+                   (compare:CC (match_dup 0) (match_dup 1)))
+              (use (reg:QI 20))])]
+  "")
+
+(define_split
+  [(set (reg:CC_NOOV 21)
+        (compare:CC_NOOV (match_operand:HI 0 "src_operand" "")
+                         (match_operand:HI 1 "src_operand" "")))]
+  "reload_completed"
+  [(parallel [(set (reg:CC_NOOV 21)
+                   (compare:CC_NOOV (match_dup 0) (match_dup 1)))
+              (use (reg:QI 20))])]
+  "")
+
 (define_insn "*cmphi"
   [(set (reg:CC 21)
         (compare:CC (match_operand:HI 0 "src_operand" "rR,rS<>")
-                    (match_operand:HI 1 "src_operand" "R,rS<>")))]
+                    (match_operand:HI 1 "src_operand" "R,rS<>")))
+   (use (reg:QI 20))]
   "valid_operands (COMPARE, operands, HImode)"
   "*
    {
@@ -6904,7 +6879,8 @@
 (define_insn "*cmphi_noov"
   [(set (reg:CC_NOOV 21)
         (compare:CC_NOOV (match_operand:HI 0 "src_operand" "rR,rS<>")
-                    (match_operand:HI 1 "src_operand" "R,rS<>")))]
+                         (match_operand:HI 1 "src_operand" "R,rS<>")))
+   (use (reg:QI 20))]
   "valid_operands (COMPARE, operands, HImode)"
   "*
    {
@@ -7031,6 +7007,7 @@
      (set (match_dup 0)
           (plus:QI (match_dup 0)
                    (const_int -1)))
+     (use (reg:QI 20))
      (clobber (reg:CC_NOOV 21))])]
   "! c4x_label_conflict (insn, operands[2], operands[1])"
   "db%I3\\t%0,%l1\\n\\tb%3\\t%l2"
