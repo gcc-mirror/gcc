@@ -100,7 +100,7 @@ begin_init_stmts (stmt_expr_p, compound_stmt_p)
   if (building_stmt_tree ())
     *stmt_expr_p = begin_stmt_expr ();
   else
-    *stmt_expr_p = genrtl_begin_stmt_expr ();
+    *stmt_expr_p = begin_global_stmt_expr ();
   
   if (building_stmt_tree ())
     *compound_stmt_p = begin_compound_stmt (/*has_no_scope=*/1);
@@ -125,7 +125,7 @@ finish_init_stmts (stmt_expr, compound_stmt)
   if (building_stmt_tree ())
     stmt_expr = finish_stmt_expr (stmt_expr);
   else
-    stmt_expr = genrtl_finish_stmt_expr (stmt_expr);
+    stmt_expr = finish_global_stmt_expr (stmt_expr);
   
   /* To avoid spurious warnings about unused values, we set 
      TREE_USED.  */
