@@ -1,3 +1,8 @@
+1998-07-06  Mike Stump  <mrs@wrs.com>
+
+	* Make-lang.in (f77.stage?): Use mv -f instead of just mv so that
+	we can move g77.c.
+
 Sat Jun 27 12:18:33 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Make-lang.in (g77): Depend on mkstemp.o.  Link in mkstemp.o
