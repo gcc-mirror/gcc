@@ -1,5 +1,11 @@
 1999-08-03  Nathan Sidwell  <nathan@acm.org>
 
+	* g++.old-deja/g++.brendan/crash63.C: Expect a POD warning
+	* g++.old-deja/g++.brendan/crash64.C: Likewise
+	* g++.old-deja/g++.brendan/overload8.C: Likewise
+
+1999-08-03  Nathan Sidwell  <nathan@acm.org>
+
 	* g++.old-deja/g++.other/struct1.C: New test.
 
 1999-08-03  Nathan Sidwell  <nathan@acm.org>
