@@ -2180,7 +2180,8 @@ substitute_in_type (t, f, r)
 
 /* Stabilize a reference so that we can use it any number of times
    without causing its operands to be evaluated more than once.
-   Returns the stabilized reference.
+   Returns the stabilized reference.  This works by means of save_expr,
+   so see the caveats in the comments about save_expr.
 
    Also allows conversion expressions whose operands are references.
    Any other kind of expression is returned unchanged.  */
