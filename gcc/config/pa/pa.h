@@ -56,6 +56,13 @@ enum cmp_type				/* comparison type */
 #define LINK_SPEC "-u main"
 #endif
 
+/* Make gcc agree with <machine/ansi.h> */
+
+#define SIZE_TYPE "unsigned int"
+#define PTRDIFF_TYPE "int"
+#define WCHAR_TYPE "short unsigned int"
+#define WCHAR_TYPE_SIZE 16
+
 /* Omit frame pointer at high optimization levels.  */
   
 #define OPTIMIZATION_OPTIONS(OPTIMIZE) \
@@ -700,7 +707,7 @@ HP-PA immediate field sizes:
    (TYPE is null for libcalls where that information may not be available.)  */
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-    (((((CUM) & 01) && (TYPE) != 0 && TYPE_ALIGN (TYPE) > BITS_PER_WORD)\
+    (((((CUM) & 01) && (TYPE) != 0 && FUNCTION_ARG_SIZE(MODE, TYPE) > 1)\
       && (CUM)++), (CUM) += FUNCTION_ARG_SIZE(MODE, TYPE))
 
 /* Determine where to put an argument to a function.
@@ -718,20 +725,23 @@ HP-PA immediate field sizes:
 
 /* On the HP-PA the first four words of args are normally in registers
    and the rest are pushed.  But any arg that won't entirely fit in regs
-   is pushed.  */
+   is pushed.
+
+   Arguments passed in registers are either 1 or 2 words long. */
 
 #define FUNCTION_ARG_PADDING(MODE, TYPE) function_arg_padding ((MODE), (TYPE))
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)		      		\
   (4 >= ((CUM) + FUNCTION_ARG_SIZE ((MODE), (TYPE)))			\
-   ? gen_rtx (REG,							\
-	      (MODE),							\
-	      ((MODE) == SFmode ?					\
-	       (TARGET_SNAKE ? 56 + 2 * (CUM) : 36  + (CUM)) :		\
-	       ((MODE) == DFmode ? ((CUM) ?				\
-				    (TARGET_SNAKE ? 62 : 39) :		\
-				    (TARGET_SNAKE ? 58 : 37)) :        	\
-		(27 - (CUM) - FUNCTION_ARG_SIZE ((MODE), (TYPE))))))	\
+   ? gen_rtx (REG, (MODE),						\
+	      (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1			\
+	       ? ((MODE) == DFmode					\
+		  ? ((CUM) ? (TARGET_SNAKE ? 62 : 39)			\
+		     : (TARGET_SNAKE ? 58 : 37))			\
+		  : ((CUM) ? 23 : 25))					\
+	       : ((MODE) == SFmode					\
+		  ? (TARGET_SNAKE ? 56 + 2 * (CUM) : 36  + (CUM))	\
+		  : (27 - (CUM) - FUNCTION_ARG_SIZE ((MODE), (TYPE))))))\
    : 0)
 
 /* Define where a function finds its arguments.
