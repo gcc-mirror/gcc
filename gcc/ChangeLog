@@ -1,3 +1,9 @@
+Fri Dec 17 01:32:38 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* i386.md (test?i_1): Use "nonmemory_operand" predicate, simplify
+	condition.
+	(one_cmpl?i*): Pass "NOT" to unary_operator_ok.
+
 1999-12-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (INTREGRATE_H): Rename to INTEGRATE_H.
