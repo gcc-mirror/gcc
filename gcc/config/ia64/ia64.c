@@ -6335,7 +6335,32 @@ ia64_encode_section_info (decl)
     }
 }
 
-/* Output assmebly directives for prologue regions.  */
+/* Output assembly directives for prologue regions.  */
+
+/* The current basic block number.  */
+
+static int block_num;
+
+/* True if we need a copy_state command at the start of the next block.  */
+
+static int need_copy_state;
+
+/* The function emits unwind directives for the start of an epilogue.  */
+
+static void
+process_epilogue ()
+{
+  /* If this isn't the last block of the function, then we need to label the
+     current state, and copy it back in at the start of the next block.  */
+
+  if (block_num != n_basic_blocks - 1)
+    {
+      fprintf (asm_out_file, "\t.label_state 1\n");
+      need_copy_state = 1;
+    }
+
+  fprintf (asm_out_file, "\t.restore sp\n");
+}
 
 /* This function processes a SET pattern looking for specific patterns
    which result in emitting an assembly directive required for unwinding.  */
@@ -6383,14 +6408,14 @@ process_set (asm_out_file, pat)
 		  fputc ('\n', asm_out_file);
 		}
 	      else
-		fprintf (asm_out_file, "\t.restore sp\n");
+		process_epilogue ();
 	    }
 	  else
 	    abort ();
 	}
       else if (GET_CODE (src) == REG
 	       && REGNO (src) == HARD_FRAME_POINTER_REGNUM)
-	fprintf (asm_out_file, "\t.restore sp\n");
+	process_epilogue ();
       else
 	abort ();
 
@@ -6561,11 +6586,27 @@ process_for_unwind_directive (asm_out_file, insn)
      FILE *asm_out_file;
      rtx insn;
 {
-  if ((flag_unwind_tables
-       || (flag_exceptions && !exceptions_via_longjmp))
-      && RTX_FRAME_RELATED_P (insn))
+  if (flag_unwind_tables
+      || (flag_exceptions && !exceptions_via_longjmp))
     {
       rtx pat;
+
+      if (GET_CODE (insn) == NOTE
+	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_BASIC_BLOCK)
+	{
+	  block_num = NOTE_BASIC_BLOCK (insn)->index;
+
+	  /* Restore unwind state from immediately before the epilogue.  */
+	  if (need_copy_state)
+	    {
+	      fprintf (asm_out_file, "\t.body\n");
+	      fprintf (asm_out_file, "\t.copy_state 1\n");
+	      need_copy_state = 0;
+	    }
+	}
+
+      if (! RTX_FRAME_RELATED_P (insn))
+	return;
 
       pat = find_reg_note (insn, REG_FRAME_RELATED_EXPR, NULL_RTX);
       if (pat)
