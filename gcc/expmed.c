@@ -4288,7 +4288,7 @@ emit_store_flag_force (target, code, op0, op1, mode, unsignedp, normalizep)
       || reg_mentioned_p (target, op0) || reg_mentioned_p (target, op1))
     target = gen_reg_rtx (GET_MODE (target));
 
-  emit_move_insn (target, const0_rtx);
+  emit_move_insn (target, const1_rtx);
   tem = compare_from_rtx (op0, op1, code, unsignedp, mode, NULL_RTX, 0);
   if (GET_CODE (tem) == CONST_INT)
     return tem;
@@ -4298,7 +4298,7 @@ emit_store_flag_force (target, code, op0, op1, mode, unsignedp, normalizep)
     abort ();
 
   emit_jump_insn ((*bcc_gen_fctn[(int) code]) (label));
-  emit_move_insn (target, const1_rtx);
+  emit_move_insn (target, const0_rtx);
   emit_label (label);
 
   return target;
