@@ -9065,8 +9065,12 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	     definition of a new type; a new type can only be declared in a
 	     declaration context.  */
 
+ 	  /* Warn about attributes. They are ignored.  */
+ 	  if (attributes)
+	    warning ("type attributes are honored only at type definition");
+
 	  type = xref_tag (tag_type, identifier, 
-			   attributes,
+			   /*attributes=*/NULL_TREE,
 			   (is_friend 
 			    || !is_declaration
 			    || cp_lexer_next_token_is_not (parser->lexer, 
