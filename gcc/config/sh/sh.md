@@ -2293,7 +2293,7 @@
     FAIL;
 }")
 
-(define_insn "ashlhi3"
+(define_insn "*ashlhi3_n"
   [(set (match_operand:HI 0 "arith_reg_operand" "=r")
 	(ashift:HI (match_operand:HI 1 "arith_reg_operand" "0")
 		   (match_operand:HI 2 "const_int_operand" "n")))
@@ -2307,6 +2307,22 @@
 	       (const_string "4")]
 	      (const_string "6")))
    (set_attr "type" "arith")])
+
+(define_expand "ashlhi3"
+  [(parallel [(set (match_operand:HI 0 "arith_reg_operand" "")
+		   (ashift:HI (match_operand:HI 1 "arith_reg_operand" "")
+			      (match_operand:SI 2 "nonmemory_operand" "")))
+	      (clobber (reg:SI T_REG))])]
+  "TARGET_SH1"
+  "
+{
+  if (GET_CODE (operands[2]) != CONST_INT)
+    FAIL;
+  /* It may be possible to call gen_ashlhi3 directly with more generic
+     operands.  Make sure operands[1] is a HImode register here.  */
+  if (!arith_reg_operand (operands[1], HImode))
+    operands[1] = copy_to_mode_reg (HImode, operands[1]);
+}")
 
 (define_split
   [(set (match_operand:HI 0 "arith_reg_operand" "")
