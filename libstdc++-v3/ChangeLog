@@ -1,8 +1,15 @@
 2000-11-27  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
+        * config/cpu/arm/bits/atomicity.h (__exchange_and_add): Add
+	__volatile__ to asm.
+        (__atomic_add): Likewise.
+        (__compare_and_swap): Likewise.
+        (__always_swap): Likewise.
+        (__test_and_set): Likewise.
+	
         * config/cpu/powerpc/bits/atomicity.h: Replace '__ATOMICITY_INLINE'
         with 'inline'.
-        (__ex__atomic_add): Add __volatile__ to asm.
+        (__exchange_and_add): Add __volatile__ to asm.
         (__atomic_add): Likewise.
         (__compare_and_swap): Likewise.
         (__always_swap): Likewise.
