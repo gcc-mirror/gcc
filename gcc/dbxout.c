@@ -1108,8 +1108,10 @@ dbxout_type (type, full, show_arg_types)
 		In April 93, mrs@cygnus.com said there is no such problem.
 		The type decls made automatically by struct specifiers
 		are marked with DECL_IGNORED_P in C++.  */
+#if 0 /* This creates output for anonymous classes which confuses GDB. */
 	     && ! (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 		   && DECL_IGNORED_P (TYPE_NAME (type)))
+#endif
 	     && !full)
 	    || TYPE_SIZE (type) == 0
 	    /* No way in DBX fmt to describe a variable size.  */
