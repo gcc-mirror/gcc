@@ -1,5 +1,5 @@
 // The -*- C++ -*- dynamic memory management header.
-// Copyright (C) 1994, 96-97, 1998 Free Software Foundation
+// Copyright (C) 1994, 1996, 1997, 1998 Free Software Foundation
 
 #ifndef __NEW__
 #define __NEW__

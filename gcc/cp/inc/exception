@@ -1,5 +1,5 @@
 // Exception Handling support header for -*- C++ -*-
-// Copyright (C) 1995, 96-97, 1998 Free Software Foundation
+// Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation
 
 #ifndef __EXCEPTION__
 #define __EXCEPTION__

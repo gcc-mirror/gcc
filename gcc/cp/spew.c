@@ -1,5 +1,6 @@
 /* Type Analyzer for GNU C++.
-   Copyright (C) 1987, 89, 92-97, 98, 99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000 Free Software Foundation, Inc.
    Hacked... nay, bludgeoned... by Mark Eichin (eichin@cygnus.com)
 
 This file is part of GNU CC.

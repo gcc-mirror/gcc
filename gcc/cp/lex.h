@@ -1,5 +1,6 @@
 /* Define constants and variables for communication with parse.y.
-   Copyright (C) 1987, 92-97, 1998, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   2000 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
    and by Brendan Kehoe (brendan@cygnus.com).
 
