@@ -257,11 +257,9 @@ case $basic_machine in
 		;;
 	hp9k2[0-9][0-9] | hp9k31[0-9])
 		basic_machine=m68000-hp
-		os=-hpux
 		;;
 	hp9k3[2-9][0-9])
 		basic_machine=m68k-hp
-		os=-hpux
 		;;
 	hp9k7[0-9][0-9] | hp7[0-9][0-9] | hp9k8[0-9]7 | hp8[0-9]7)
 		basic_machine=hppa1.1-hp
