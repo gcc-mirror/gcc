@@ -1366,7 +1366,7 @@
 				       (match_dup 0) (match_dup 1)))]
   "")
 
-(define_expand "maxdi3"
+(define_expand "smaxdi3"
   [(set (match_dup 3)
 	(le:DI (match_operand:DI 1 "reg_or_0_operand" "")
 	       (match_operand:DI 2 "reg_or_8bit_operand" "")))
