@@ -1,3 +1,18 @@
+2001-12-14  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md (udivqi3): Remove.
+	(divqi3): Likewise.
+	(udivhi3): Likewise.
+	(divhi3): Likewise.
+	(umodqi3): Likewise.
+	(modqi3): Likewise.
+	(umodhi3): Likewise.
+	(modhi3): Likewise.
+	(udivmodqi3): New.
+	(divmodqi3): Likewise.
+	(udivmodhi3): Likewise.
+	(divmodhi3): Likewise.
+
 Sat Dec 15 01:39:12 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (flow_find_cross_jump): Replace tests for note
