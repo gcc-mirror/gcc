@@ -111,6 +111,15 @@ static char *spec_version;
 
 static char *spec_machine = DEFAULT_TARGET_MACHINE;
 
+/* Nonzero if cross-compiling.
+   When -b is used, the value comes from the `specs' file.  */
+
+#ifdef CROSS_COMPILE
+static int cross_compile = 1;
+#else
+static int cross_compile = 0;
+#endif
+
 /* This is the obstack which we use to allocate many strings.  */
 
 static struct obstack obstack;
@@ -385,8 +394,8 @@ static struct compiler default_compilers[] =
         %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C\
-        %i %{!M:%{!MM:%{!E:%{!pipe:%g.cpp}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n\
-    %{!M:%{!MM:%{!E:cc1 %{!pipe:%g.cpp} %1 \
+        %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n\
+    %{!M:%{!MM:%{!E:cc1 %{!pipe:%g.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
 		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
@@ -416,8 +425,8 @@ static struct compiler default_compilers[] =
         %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C\
-        %i %{!M:%{!MM:%{!E:%{!pipe:%g.cpp}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n\
-    %{!M:%{!MM:%{!E:cc1obj %{!pipe:%g.cpp} %1 \
+        %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n\
+    %{!M:%{!MM:%{!E:cc1obj %{!pipe:%g.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.m %{d*} %{m*} %{a}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
 		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*} \
@@ -451,8 +460,8 @@ static struct compiler default_compilers[] =
         %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional} %{trigraphs}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C\
-        %i %{!M:%{!MM:%{!E:%{!pipe:%g.cpp}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n\
-    %{!M:%{!MM:%{!E:cc1plus %{!pipe:%g.cpp} %1 %2\
+        %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n\
+    %{!M:%{!MM:%{!E:cc1plus %{!pipe:%g.i} %1 %2\
 		   %{!Q:-quiet} -dumpbase %b.cc %{d*} %{m*} %{a}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} %{traditional}\
 		   %{v:-version} %{pg:-p} %{p} %{f*}\
@@ -479,7 +488,7 @@ static struct compiler default_compilers[] =
 	    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
        %{!S:as %{R} %{j} %{J} %{h} %{d2} %a \
 	       %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%b.o}\
-	       %{!pipe:%g.s} %A\n }}}}"},
+	       %{!pipe:%g.s} %A\n }"},
   {".s", "@assembler"},
   {"@assembler",
    "%{!S:as %{R} %{j} %{J} %{h} %{d2} %a \
@@ -508,11 +517,21 @@ static int n_default_compilers
 
 /* Here is the spec for running the linker, after compiling all files.  */
 
+#ifdef LINK_LIBGCC_SPECIAL
+/* Have gcc do the search.  */
+static char *link_command_spec = "\
+%{!c:%{!M:%{!MM:%{!E:%{!S:ld %X %l %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
+			%{r} %{s} %{T*} %{t} %{x} %{z}\
+			%{!A:%{!nostdlib:%S}} \
+			%{L*} %D %o %{!nostdlib:libgcc.a%s %L libgcc.a%s %{!A:%E}}\n }}}}}";
+#else
+/* Use -l and have the linker do the search.  */
 static char *link_command_spec = "\
 %{!c:%{!M:%{!MM:%{!E:%{!S:ld %X %l %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{T*} %{t} %{x} %{z}\
 			%{!A:%{!nostdlib:%S}} \
-			%{L*} %D %o %{!nostdlib:libgcc.a%s %L libgcc.a%s %{!A:%E}}\n }}}}}";
+			%{L*} %D %o %{!nostdlib:-lgcc %L -lgcc %{!A:%E}}\n }}}}}";
+#endif
 
 /* A vector of options to give to the linker.
    These options are accumlated by %x
@@ -729,7 +748,8 @@ set_spec (name, spec)
     startfile_spec = sl->spec;
   else if (! strcmp (name, "switches_need_spaces"))
     switches_need_spaces = sl->spec;
-
+  else if (! strcmp (name, "cross_compile"))
+    cross_compile = atoi (sl->spec);
   /* Free the old spec */
   if (old_spec)
     free (old_spec);
@@ -790,10 +810,6 @@ static struct path_prefix library_prefix = { 0, 0, "libraryfile" };
 
 static char *machine_suffix = 0;
 
-/* Nonzero means don't bypass the machine_suffix.  */
-
-static int machine_explicit;
-
 /* Default prefixes to attach to command names.  */
 
 #ifdef CROSS_COMPILE  /* Don't use these prefixes for a cross compiler.  */
@@ -802,7 +818,7 @@ static int machine_explicit;
 #endif
 
 #ifndef STANDARD_EXEC_PREFIX
-#define STANDARD_EXEC_PREFIX "/usr/local/lib/gcc/"
+#define STANDARD_EXEC_PREFIX "/usr/local/lib/gcc-lib/"
 #endif /* !defined STANDARD_EXEC_PREFIX */
 
 static char *standard_exec_prefix = STANDARD_EXEC_PREFIX;
@@ -1041,7 +1057,7 @@ find_a_file (pprefix, name, mode)
      int mode;
 {
   char *temp;
-  char *file_suffix = (mode & X_OK != 0 ? EXECUTABLE_SUFFIX : "");
+  char *file_suffix = ((mode & X_OK) != 0 ? EXECUTABLE_SUFFIX : "");
   struct prefix_list *pl;
   int len = pprefix->max_len + strlen (name) + strlen (file_suffix) + 1;
 
@@ -1089,7 +1105,7 @@ find_a_file (pprefix, name, mode)
 	  }
 	/* Certain prefixes can't be used without the machine suffix
 	   when the machine or version is explicitly specified.  */
-	if (!machine_explicit || !pl->require_machine_suffix)
+	if (!pl->require_machine_suffix)
 	  {
 	    strcpy (temp, pl->prefix);
 	    strcat (temp, name);
@@ -1411,7 +1427,7 @@ execute ()
 
   /* If -v, print what we are about to do, and maybe query.  */
 
-  if (verbose_flag)
+  if (verbose_flag || save_temps_flag)
     {
       /* Print each piped command as a separate line.  */
       for (i = 0; i < n_commands ; i++)
@@ -1683,6 +1699,7 @@ process_command (argc, argv)
 	  printf ("*switches_need_spaces:\n%s\n\n", switches_need_spaces);
 	  printf ("*signed_char:\n%s\n\n", signed_char_spec);
 	  printf ("*predefines:\n%s\n\n", cpp_predefines);
+	  printf ("*cross_compile:\n%d\n\n", cross_compile);
 
 	  exit (0);
 	}
@@ -1783,25 +1800,9 @@ process_command (argc, argv)
   add_prefix (&startfile_prefix, standard_exec_prefix, 0, 1, 0);
   add_prefix (&startfile_prefix, standard_exec_prefix_1, 0, 1, 0);
 
-  /* Use the md prefixes only if not cross-compiling.  */
-  if (!strcmp (spec_machine, DEFAULT_TARGET_MACHINE))
-    {
-#ifdef MD_EXEC_PREFIX
-      add_prefix (&exec_prefix, md_exec_prefix, 0, 1, 0);
-      add_prefix (&startfile_prefix, md_exec_prefix, 0, 1, 0);
-#endif
+  /* More prefixes are enabled in main, after we read the specs file
+     and determine whether this is cross-compilation or not.  */
 
-#ifdef MD_STARTFILE_PREFIX
-      add_prefix (&startfile_prefix, md_startfile_prefix, 0, 1, 0);
-#endif
-    }
-
-  add_prefix (&startfile_prefix, standard_startfile_prefix, 0, 0, 0);
-  add_prefix (&startfile_prefix, standard_startfile_prefix_1, 0, 0, 0);
-  add_prefix (&startfile_prefix, standard_startfile_prefix_2, 0, 0, 0);
-#if 0 /* Can cause surprises, and one can use -B./ instead.  */
-  add_prefix (&startfile_prefix, "./", 0, 1, 0);
-#endif
 
   /* Then create the space for the vectors and scan again.  */
 
@@ -2092,7 +2093,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    break;
 
 	  /* Dump out the directories specified with LIBRARY_PATH,
-	     followed by the directories that we search for startfiles.  */
+	     followed by the absolute directories
+	     that we search for startfiles.  */
 	  case 'D':
 	    for (i = 0; i < 2; i++)
 	      {
@@ -2100,22 +2102,37 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		  = (i == 0 ? library_prefix.plist : startfile_prefix.plist);
 		for (; pl; pl = pl->next)
 		  {
+#ifdef RELATIVE_PREFIX_NOT_LINKDIR
+		    /* Used on systems which record the specified -L dirs
+		       and use them to search for dynamic linking.  */
+		    /* Relative directories always come from -B,
+		       and it is better not to use them for searching
+		       at run time.  In particular, stage1 loses  */
+		    if (pl->prefix[0] != '/')
+		      continue;
+#endif
 		    if (machine_suffix)
 		      {
 			if (is_linker_dir (pl->prefix, machine_suffix))
 			  {
 			    do_spec_1 ("-L", 0, 0);
+#ifdef SPACE_AFTER_L_OPTION
+			    do_spec_1 (" ", 0, 0);
+#endif
 			    do_spec_1 (pl->prefix, 1, 0);
 			    do_spec_1 (machine_suffix, 1, 0);
 			    /* Make this a separate argument.  */
 			    do_spec_1 (" ", 0, 0);
 			  }
 		      }
-		    if (!machine_explicit || !pl->require_machine_suffix)
+		    if (!pl->require_machine_suffix)
 		      {
 			if (is_linker_dir (pl->prefix, ""))
 			  {
 			    do_spec_1 ("-L", 0, 0);
+#ifdef SPACE_AFTER_L_OPTION
+			    do_spec_1 (" ", 0, 0);
+#endif
 			    do_spec_1 (pl->prefix, 1, 0);
 			    /* Make this a separate argument.  */
 			    do_spec_1 (" ", 0, 0);
@@ -2569,6 +2586,7 @@ handle_braces (p)
   if (suffix)
     {
       int found = (input_suffix != 0
+		   && strlen (input_suffix) == p - filter
 		   && strncmp (input_suffix, filter, p - filter) == 0);
 
       if (p[0] == '}')
@@ -2765,7 +2783,6 @@ is_linker_dir (path1, path2)
 
   return (stat (path, &st) >= 0 && S_ISDIR (st.st_mode));
 }
-	
 
 /* On fatal signals, delete all the temporary files.  */
 
@@ -2836,6 +2853,29 @@ main (argc, argv)
   /* Read the specs file unless it is a default one.  */
   if (specs_file != 0 && strcmp (specs_file, "specs"))
     read_specs (specs_file);
+
+  /* If not cross-compiling, look for startfiles in the standard places.  */
+  /* The fact that these are done here, after reading the specs file,
+     means that it cannot be found in these directories.
+     But that's okay.  It should never be there anyway.  */
+  if (!cross_compile)
+    {
+#ifdef MD_EXEC_PREFIX
+      add_prefix (&exec_prefix, md_exec_prefix, 0, 0, 0);
+      add_prefix (&startfile_prefix, md_exec_prefix, 0, 0, 0);
+#endif
+
+#ifdef MD_STARTFILE_PREFIX
+      add_prefix (&startfile_prefix, md_startfile_prefix, 0, 0, 0);
+#endif
+
+      add_prefix (&startfile_prefix, standard_startfile_prefix, 0, 0, 0);
+      add_prefix (&startfile_prefix, standard_startfile_prefix_1, 0, 0, 0);
+      add_prefix (&startfile_prefix, standard_startfile_prefix_2, 0, 0, 0);
+#if 0 /* Can cause surprises, and one can use -B./ instead.  */
+      add_prefix (&startfile_prefix, "./", 0, 1, 0);
+#endif
+    }
 
   /* Now we have the specs.
      Set the `valid' bits for switches that match anything in any spec.  */
@@ -2974,7 +3014,7 @@ main (argc, argv)
 }
 
 /* Find the proper compilation spec for the file name NAME,
-   whose length is LENGTH.  LANGUAGE is the specified langauge,
+   whose length is LENGTH.  LANGUAGE is the specified language,
    or 0 if none specified.  */
 
 static struct compiler *
