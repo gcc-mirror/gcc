@@ -2118,4 +2118,27 @@ get_best_mode (int bitsize, int bitpos, unsigned int align,
   return mode;
 }
 
+/* Gets minimal and maximal values for MODE (signed or unsigned depending on
+   SIGN).  */
+
+void
+get_mode_bounds (enum machine_mode mode, int sign, rtx *mmin, rtx *mmax)
+{
+  int size = GET_MODE_BITSIZE (mode);
+
+  if (size > HOST_BITS_PER_WIDE_INT)
+    abort ();
+
+  if (sign)
+    {
+      *mmin = GEN_INT (-((unsigned HOST_WIDE_INT) 1 << (size - 1)));
+      *mmax = GEN_INT (((unsigned HOST_WIDE_INT) 1 << (size - 1)) - 1);
+    }
+  else
+    {
+      *mmin = const0_rtx;
+      *mmax = GEN_INT (((unsigned HOST_WIDE_INT) 1 << (size - 1) << 1) - 1);
+    }
+}
+
 #include "gt-stor-layout.h"

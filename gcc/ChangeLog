@@ -1,3 +1,40 @@
+2004-02-17  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* loop-iv.c: New file.
+	* Makefile.in (loop-iv.o): New.
+	* basic_block.h (FOR_BB_INSNS, FOR_BB_INSNS_REVERSE): New macros.
+	* cfgloop.c (fill_sons_in_loop, get_loop_body_in_dom_order,
+	num_loop_branches): New functions.
+	* cfgloop.h (get_loop_body_in_dom_order, num_loop_branches,
+	iv_analysis_loop_init, iv_get_reaching_def, iv_analyse, get_iv_value,
+	find_simple_exit, iv_number_of_iterations, iv_analysis_done,
+	get_simple_loop_desc, free_simple_loop_desc): Declare.
+	(simple_loop_desc): New inline function.
+	(struct rtx_iv, struct niter_desc): New.
+	* cfgloopmanip.c (loopify): Specify semantics more precisely.
+	* expr.c (force_operand): Handle subregs of expressions created by
+	loop unroller.
+	* loop-init.c (loop_optimizer_init, loop_optimizer_finalize): Move
+	parts of the initialization to toplev.c
+	* loop-unroll.c (loop_exit_at_end_p): New.
+	(unroll_and_peel_loops): Call iv_analysis_done.
+	(decide_peel_once_rolling, decide_peel_completely,
+	decide_unroll_stupid, decide_unroll_constant_iterations,
+	decide_unroll_runtime_iterations, decide_peel_simple,
+	peel_loop_simple, unroll_loop_stupid, unroll_loop_constant_iterations,
+	unroll_loop_runtime_iterations): Use new simple loop analysis.
+	* loop-unswitch.c (compare_and_jump_seq): New.
+	(may_unswitch_on_p): Renamed to ...
+	(may_unswitch_on): Use new iv analysis.
+	(reversed_condition): Export.
+	(unswitch_single_loop, unswitch_loop): Use new iv analysis.
+	* predict.c (estimate_probability): Use new simple loop analysis.
+	* rtl.h (get_mode_bounds, reversed_condition,compare_and_jump_seq,
+	canon_condition, simplify_using_condition): Declare.
+	* stor-layout.c (get_mode_bounds): New.
+	* toplev.c (rest_of_handle_loop2): Some parts of
+	initialization/finalization moved here from loop-init.c.
+
 2004-02-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.h (FIXED_REGISTERS): Add the soft frame

@@ -3034,10 +3034,15 @@ static void
 rest_of_handle_loop2 (tree decl, rtx insns)
 {
   struct loops *loops;
+  basic_block bb;
+
   timevar_push (TV_LOOP);
   open_dump_file (DFI_loop2, decl);
   if (rtl_dump_file)
     dump_flow_info (rtl_dump_file);
+
+  /* Initialize structures for layout changes.  */
+  cfg_layout_initialize ();
 
   loops = loop_optimizer_init (rtl_dump_file);
 
@@ -3055,6 +3060,12 @@ rest_of_handle_loop2 (tree decl, rtx insns)
 
       loop_optimizer_finalize (loops, rtl_dump_file);
     }
+
+  /* Finalize layout changes.  */
+  FOR_EACH_BB (bb)
+    if (bb->next_bb != EXIT_BLOCK_PTR)
+      bb->rbi->next = bb->next_bb;
+  cfg_layout_finalize ();
 
   cleanup_cfg (CLEANUP_EXPENSIVE);
   delete_trivially_dead_insns (insns, max_reg_num ());
