@@ -1,3 +1,9 @@
+2004-05-03  Eric Christopher  <echristo@redhat.com>
+
+	* config/s390/s390.h (CONDITIONAL_REGISTER_USAGE): Move body...
+	* config/s390/s390.c (s390_conditional_register_usage): ...here.
+	* config/s390/s390-protos.h: Prototype.
+
 2004-05-03  Joe Buck <jbuck@welsh-buck.org>
 
 	* cppfiles.c (pchf_adder): Eliminate use of |= in d->have_once_only

@@ -28,6 +28,7 @@ extern void s390_load_got (int);
 extern void s390_emit_prologue (void);
 extern void s390_emit_epilogue (bool);
 extern void s390_function_profiler (FILE *, int);
+extern void s390_conditional_register_usage (void);
 
 #ifdef RTX_CODE
 extern int s390_extra_constraint_str (rtx, int, const char *);
