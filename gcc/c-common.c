@@ -309,8 +309,7 @@ check_case_value (value)
     return value;
 
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
-  if (TREE_CODE (value) == NON_LVALUE_EXPR)
-    value = TREE_OPERAND (value, 0);
+  STRIP_TYPE_NOPS (value);
 
   if (TREE_CODE (value) != INTEGER_CST
       && value != error_mark_node)
