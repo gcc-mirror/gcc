@@ -5876,6 +5876,10 @@ as appropriate.
 @node CYCLE and EXIT
 @subsection The @code{CYCLE} and @code{EXIT} Statements
 
+@cindex CYCLE statement
+@cindex EXIT statement
+@cindex statements, CYCLE
+@cindex statements, EXIT
 The @code{CYCLE} and @code{EXIT} statements specify that
 the remaining statements in the current iteration of a
 particular active (enclosing) @code{DO} loop are to be skipped.
@@ -11716,6 +11720,7 @@ but the result is not pretty.
 @node Increasing Precision/Range
 @subsection Increasing Precision/Range
 @cindex -r8
+@cindex -qrealsize=8
 @cindex -i8
 @cindex f2c
 @cindex increasing precision
@@ -11725,7 +11730,8 @@ but the result is not pretty.
 @cindex Toolpack
 @cindex Netlib
 
-Some compilers, such as @code{f2c}, have an option (@samp{-r8} or
+Some compilers, such as @code{f2c}, have an option (@samp{-r8},
+@samp{-qrealsize=8} or
 similar) that provides automatic treatment of @code{REAL}
 entities such that they have twice the storage size, and
 a corresponding increase in the range and precision, of what
@@ -12448,6 +12454,7 @@ A number giving the length of the record contents;
 @item
 the length of record contents again (for backspace).
 @end enumerate
+
 The record length is of C type
 @code{long}; this means that it is 8 bytes on 64-bit systems such as
 Alpha GNU/Linux and 4 bytes on other systems, such as x86 GNU/Linux.
