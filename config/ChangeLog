@@ -1,11 +1,19 @@
-Tue Apr 28 07:34:11 1998  Michael Meissner  <meissner@cygnus.com>
+Wed Apr 22 12:24:28 1998  Michael Meissner  <meissner@cygnus.com>
 
-	* mt-ospace: New file for targets where space is more important
-	than speed.
+	* mt-ospace: New file, support using -Os instead of -O2 to compile
+	the libraries.
 
 Wed Apr 22 10:53:14 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* mt-linux (CXXFLAGS_FOR_TARGET): Set this instead of CXXFLAGS.
+
+Sat Apr 11 22:43:17 1998  J. Kean Johnston  <jkj@sco.com>
+
+	* mh-svsv5: New file - support for SCO UnixWare 7 / SVR5.
+
+Thu Mar 26 01:54:25 1998  Geoffrey Noer  <noer@cygnus.com>
+
+	* mh-cygwin32: stop configuring and building dosrel.
 
 Thu Sep 11 16:43:27 1997  Jim Wilson  <wilson@cygnus.com>
 
