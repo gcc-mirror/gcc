@@ -1,5 +1,8 @@
 2005-02-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree-ssa-ccp.c (visit_assignment): Verify that result of
+	VIEW_CONVERT_EXPR is_gimple_min_invariant.
+
 	* print-tree.c (print_node_brief): Print LABEL_DECL_UID.
 	(print_node): Likewise.
 	Print TYPE_SIZES_GIMPLIFIED.
