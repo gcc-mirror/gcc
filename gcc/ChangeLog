@@ -2,6 +2,9 @@
 
 	* emit-rtl.c (gen_lowpart_common): Use trunc_int_for_mode.
 
+	* sibcall.c (skip_pic_restore): New.
+	(identify_call_return_value): Use it.
+
 2000-09-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-tree.texi: Moved here from cp/ir.texi.  Documented nested
