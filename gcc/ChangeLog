@@ -5,6 +5,8 @@
 
 2003-06-17  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
+	* doc/tm.texi (MD_FALLBACK_FRAME_STATE_FOR): Mention MAKE_THROW_FRAME.
+
 	* config/rs6000/linux.h (MD_FALLBACK_FRAME_STATE_FOR): Partly revert
 	2003-01-23 patch. Corrected to handle kernels with changed ucontext.
 

@@ -3068,6 +3068,9 @@ the stack pointer value.  If the frame can be decoded, the register save
 addresses should be updated in @var{fs} and the macro should branch to
 @var{success}.  If the frame cannot be decoded, the macro should do
 nothing.
+
+For proper signal handling in Java this macro is accompanied by
+@code{MAKE_THROW_FRAME}, defined in @file{libjava/include/*-signal.h} headers.
 @end table
 
 @node Stack Checking
