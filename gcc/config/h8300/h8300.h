@@ -615,7 +615,7 @@ enum reg_class {
 /* On the H8 the return value is in R0/R1.  */
 
 #define LIBCALL_VALUE(MODE) \
-  gen_rtx_REG (MODE, 0)
+  gen_rtx_REG (MODE, R0_REG)
 
 /* 1 if N is a possible register number for a function value.
    On the H8, R0 is the only register thus used.  */
