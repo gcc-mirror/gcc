@@ -85,9 +85,13 @@ extern int target_flags;
 
 #define MASK_AUTO_PIC	0x00000400	/* generate automatically PIC */
 
-#define MASK_INLINE_DIV_LAT 0x00000800	/* inline div, min latency.  */
+#define MASK_INLINE_FLOAT_DIV_LAT 0x00000800 /* inline div, min latency.  */
 
-#define MASK_INLINE_DIV_THR 0x00001000	/* inline div, max throughput.  */
+#define MASK_INLINE_FLOAT_DIV_THR 0x00001000 /* inline div, max throughput.  */
+
+#define MASK_INLINE_INT_DIV_LAT   0x00000800 /* inline div, min latency.  */
+
+#define MASK_INLINE_INT_DIV_THR   0x00001000 /* inline div, max throughput.  */
 
 #define MASK_DWARF2_ASM 0x40000000	/* test dwarf2 line info via gas.  */
 
@@ -113,12 +117,19 @@ extern int target_flags;
 
 #define TARGET_AUTO_PIC		(target_flags & MASK_AUTO_PIC)
 
-#define TARGET_INLINE_DIV_LAT	(target_flags & MASK_INLINE_DIV_LAT)
+#define TARGET_INLINE_FLOAT_DIV_LAT (target_flags & MASK_INLINE_FLOAT_DIV_LAT)
 
-#define TARGET_INLINE_DIV_THR	(target_flags & MASK_INLINE_DIV_THR)
+#define TARGET_INLINE_FLOAT_DIV_THR (target_flags & MASK_INLINE_FLOAT_DIV_THR)
 
-#define TARGET_INLINE_DIV \
-  (target_flags & (MASK_INLINE_DIV_LAT | MASK_INLINE_DIV_THR))
+#define TARGET_INLINE_INT_DIV_LAT   (target_flags & MASK_INLINE_INT_DIV_LAT)
+
+#define TARGET_INLINE_INT_DIV_THR   (target_flags & MASK_INLINE_INT_DIV_THR)
+
+#define TARGET_INLINE_FLOAT_DIV \
+  (target_flags & (MASK_INLINE_FLOAT_DIV_LAT | MASK_INLINE_FLOAT_DIV_THR))
+
+#define TARGET_INLINE_INT_DIV \
+  (target_flags & (MASK_INLINE_INT_DIV_LAT | MASK_INLINE_INT_DIV_THR))
 
 #define TARGET_DWARF2_ASM	(target_flags & MASK_DWARF2_ASM)
 
@@ -165,10 +176,14 @@ extern int ia64_tls_size;
       N_("gp is constant (but save/restore gp on indirect calls)") },	\
   { "auto-pic",		MASK_AUTO_PIC,					\
       N_("Generate self-relocatable code") },				\
-  { "inline-divide-min-latency", MASK_INLINE_DIV_LAT,			\
-      N_("Generate inline division, optimize for latency") },		\
-  { "inline-divide-max-throughput", MASK_INLINE_DIV_THR,		\
-      N_("Generate inline division, optimize for throughput") },	\
+  { "inline-float-divide-min-latency", MASK_INLINE_FLOAT_DIV_LAT,	\
+      N_("Generate inline floating point division, optimize for latency") },\
+  { "inline-float-divide-max-throughput", MASK_INLINE_FLOAT_DIV_THR,	\
+      N_("Generate inline floating point division, optimize for throughput") },\
+  { "inline-int-divide-min-latency", MASK_INLINE_INT_DIV_LAT,		\
+      N_("Generate inline integer division, optimize for latency") },	\
+  { "inline-int-divide-max-throughput", MASK_INLINE_INT_DIV_THR,	\
+      N_("Generate inline integer division, optimize for throughput") },\
   { "dwarf2-asm", 	MASK_DWARF2_ASM,				\
       N_("Enable Dwarf 2 line debug info via GNU as")},			\
   { "no-dwarf2-asm", 	-MASK_DWARF2_ASM,				\

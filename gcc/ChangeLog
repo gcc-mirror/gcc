@@ -1,3 +1,49 @@
+2002-11-01  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.h (MASK_INLINE_DIV_LAT): Remove.
+	(MASK_INLINE_DIV_THR): Remove.
+	(TARGET_INLINE_DIV_LAT): Remove.
+	(TARGET_INLINE_DIV_THR): Remove.
+	(TARGET_INLINE_DIV): Remove.
+	(MASK_INLINE_FLOAT_DIV_LAT): New macro.
+	(MASK_INLINE_FLOAT_DIV_THR): New macro.
+	(MASK_INLINE_INT_DIV_LAT): New macro.
+	(MASK_INLINE_INT_DIV_THR): New macro.
+	(TARGET_INLINE_FLOAT_DIV_LAT): New macro.
+	(TARGET_INLINE_FLOAT_DIV_THR): New macro.
+	(TARGET_INLINE_INT_DIV_LAT): New macro.
+	(TARGET_INLINE_INT_DIV_THR): New macro.
+	(TARGET_INLINE_FLOAT_DIV): New macro.
+	(TARGET_INLINE_INT_DIV): New macro.
+	* config/ia64/ia64.md (divsi3): Change to use new macros.
+	(modsi3): Ditto.
+	(udivsi3): Ditto.
+	(umodsi3): Ditto.
+	(divsi3_internal): Ditto.
+	(divdi3): Ditto.
+	(moddi3): Ditto.
+	(udivdi3): Ditto.
+	(umoddi3): Ditto.
+	(divdi3_internal_lat): Ditto.
+	(divdi3_internal_thr): Ditto.
+	(divsf3): Ditto.
+	(divsf3_internal_lat): Ditto.
+	(divsf3_internal_thr): Ditto.
+	(divdf3): Ditto.
+	(divdf3_internal_lat): Ditto.
+	(divdf3_internal_thr): Ditto.
+	(divtf3): Ditto.
+	(divtf3_internal_lat): Ditto.
+	(divtf3_internal_thr): Ditto.
+	* config/ia64/ia64.c (ia64_override_options): Change
+	to check new macros for conflicts in settings.
+	* doc/invoke.texi (-minline-divide-min-latency): Remove.
+	(-minline-divide-max-throughput): Remove.
+	(-minline-float-divide-min-latency): New.
+	(-minline-float-divide-max-throughput): New.
+	(-minline-int-divide-min-latency): New.
+	(-minline-int-divide-max-throughput): New.
+	
 2002-11-01  Richard Earnshaw  (rearnsha@arm.com)
 
 	PR target/7856
