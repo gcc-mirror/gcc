@@ -84,7 +84,6 @@ proc default_treelang_version { } {
 set treelang_initialized 0
 
 proc treelang_init { args } {
-    global rootme
     global tmpdir
     global libdir
     global gluefile wrap_flags
@@ -115,21 +114,8 @@ proc treelang_init { args } {
 
     treelang_maybe_build_wrapper "${tmpdir}/treelang-testglue.o"
 
-    set treelang_libgcc_s_path "${rootme}"
-    set compiler [lindex $TREELANG_UNDER_TEST 0]
-    if { [is_remote host] == 0 && [which $compiler] != 0 } {
-	foreach i "[exec $compiler --print-multi-lib]" {
-	    set mldir ""
-	    regexp -- "\[a-z0-9=/\.-\]*;" $i mldir
-	    set mldir [string trimright $mldir "\;@"]
-	    if { "$mldir" == "." } {
-		continue
-	    }
-	    if { [llength [glob -nocomplain ${rootme}/${mldir}/libgcc_s*.so.*]] >= 1 } {
-		append treelang_libgcc_s_path ":${rootme}/${mldir}"
-	    }
-	}
-    }
+    set treelang_libgcc_s_path \
+	[gcc-set-multilib-library-path $TREELANG_UNDER_TEST]
 }
 
 proc treelang_target_compile { source dest type options } {

@@ -1,3 +1,13 @@
+2005-03-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/g++.exp (g++_link_flags): Use gcc-set-multilib-library-path.
+	(g++_init): Make sure that CXXFLAGS is set.
+	* lib/gcc-defs.exp (gcc-set-multilib-library-path): New function.
+	* lib/gcc-dg.exp: Use gcc-set-multilib-library-path.
+	* lib/gfortran.exp (gfortran_link_flags): Likewise. 
+	* lib/objc.exp (objc_init): Likewise.
+	* lib/treelang.exp (treelang_init): Likewise.
+
 2005-03-25  Pat Haugen  <pthaugen@us.ibm.com>
 
 	PR tree-optimization/20470
