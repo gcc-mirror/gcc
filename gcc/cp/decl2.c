@@ -929,18 +929,15 @@ maybe_retrofit_in_chrg (fn)
 {
   tree basetype, arg_types, parms, parm, fntype;
 
-  if (DECL_CONSTRUCTOR_P (fn)
-      && TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn))
-      && ! DECL_CONSTRUCTOR_FOR_VBASE_P (fn))
-    /* OK */;
-  else if (! DECL_CONSTRUCTOR_P (fn)
-	   && TREE_CHAIN (DECL_ARGUMENTS (fn)) == NULL_TREE)
-    /* OK */;
-  else
+  /* If we've already add the in-charge parameter don't do it again.  */
+  if (DECL_HAS_IN_CHARGE_PARM_P (fn))
     return;
 
-  if (DECL_CONSTRUCTOR_P (fn))
-    DECL_CONSTRUCTOR_FOR_VBASE_P (fn) = 1;
+  /* We don't need an in-charge parameter for constructors that don't
+     have virtual bases.  */
+  if (DECL_CONSTRUCTOR_P (fn)
+      && !TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
+    return;
 
   /* First add it to DECL_ARGUMENTS...  */
   parm = build_decl (PARM_DECL, in_charge_identifier, integer_type_node);
@@ -962,6 +959,9 @@ maybe_retrofit_in_chrg (fn)
     fntype = build_exception_variant (fntype,
 				      TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)));
   TREE_TYPE (fn) = fntype;
+
+  /* Now we've got the in-charge parameter.  */
+  DECL_HAS_IN_CHARGE_PARM_P (fn) = 1;
 }
 
 /* Classes overload their constituent function names automatically.

@@ -1265,7 +1265,7 @@ add_function_candidate (candidates, fn, ctype, arglist, flags)
     {
       parmlist = TREE_CHAIN (parmlist);
       arglist = TREE_CHAIN (arglist);
-      if (TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
+      if (DECL_HAS_IN_CHARGE_PARM_P (fn))
 	{
 	  parmlist = TREE_CHAIN (parmlist);
 	  arglist = TREE_CHAIN (arglist);
@@ -2287,14 +2287,16 @@ build_user_type_conversion_1 (totype, expr, flags)
 
   if (ctors)
     {
-      tree t = build_int_2 (0, 0);
-      TREE_TYPE (t) = build_pointer_type (totype);
-      args = build_tree_list (NULL_TREE, expr);
-      if (TYPE_USES_VIRTUAL_BASECLASSES (totype))
-	args = tree_cons (NULL_TREE, integer_one_node, args);
-      args = tree_cons (NULL_TREE, t, args);
+      tree t;
 
       ctors = TREE_VALUE (ctors);
+
+      t = build_int_2 (0, 0);
+      TREE_TYPE (t) = build_pointer_type (totype);
+      args = build_tree_list (NULL_TREE, expr);
+      if (DECL_HAS_IN_CHARGE_PARM_P (OVL_CURRENT (ctors)))
+	args = tree_cons (NULL_TREE, integer_one_node, args);
+      args = tree_cons (NULL_TREE, t, args);
     }
   for (; ctors; ctors = OVL_NEXT (ctors))
     {
@@ -3658,7 +3660,7 @@ convert_like_real (convs, expr, fn, argnum, inner)
 	    TREE_TYPE (t) = build_pointer_type (DECL_CONTEXT (fn));
 
 	    args = build_tree_list (NULL_TREE, expr);
-	    if (TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
+	    if (DECL_HAS_IN_CHARGE_PARM_P (fn))
 	      args = tree_cons (NULL_TREE, integer_one_node, args);
 	    args = tree_cons (NULL_TREE, t, args);
 	  }
@@ -3930,7 +3932,7 @@ build_over_call (cand, args, flags)
       converted_args = tree_cons (NULL_TREE, TREE_VALUE (arg), converted_args);
       arg = TREE_CHAIN (arg);
       parm = TREE_CHAIN (parm);
-      if (TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
+      if (DECL_HAS_IN_CHARGE_PARM_P (fn))
 	{
 	  converted_args = tree_cons
 	    (NULL_TREE, TREE_VALUE (arg), converted_args);
@@ -4031,13 +4033,12 @@ build_over_call (cand, args, flags)
 
   if (! flag_elide_constructors)
     /* Do things the hard way.  */;
-  else if (DECL_CONSTRUCTOR_P (fn)
-	   && TREE_VEC_LENGTH (convs) == 1
-	   && copy_args_p (fn))
+  else if (TREE_VEC_LENGTH (convs) == 1
+	   && DECL_COPY_CONSTRUCTOR_P (fn))
     {
       tree targ;
       arg = TREE_CHAIN (converted_args);
-      if (TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
+      if (DECL_HAS_IN_CHARGE_PARM_P (fn))
 	arg = TREE_CHAIN (arg);
       arg = TREE_VALUE (arg);
 

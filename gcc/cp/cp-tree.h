@@ -1834,7 +1834,7 @@ struct lang_decl_flags
   unsigned const_memfunc : 1;
   unsigned volatile_memfunc : 1;
   unsigned pure_virtual : 1;
-  unsigned constructor_for_vbase_attr : 1;
+  unsigned has_in_charge_parm_p : 1;
 
   unsigned mutable_flag : 1;
   unsigned deferred : 1;
@@ -1909,6 +1909,10 @@ struct lang_decl
 /* For FUNCTION_DECLs: nonzero means that this function is a constructor.  */
 #define DECL_CONSTRUCTOR_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.constructor_attr)
 
+/* Nonzero if NODE (a FUNCTION_DECL) is a copy constructor.  */
+#define DECL_COPY_CONSTRUCTOR_P(NODE) \
+  (DECL_CONSTRUCTOR_P (NODE) && copy_args_p (NODE))
+
 /* There ought to be a better way to find out whether or not something is
    a destructor.  */
 #define DECL_DESTRUCTOR_P(NODE)				\
@@ -1923,9 +1927,11 @@ struct lang_decl
 #define DECL_OVERLOADED_OPERATOR_P(NODE)	\
   (IDENTIFIER_OPNAME_P (DECL_NAME ((NODE))))
 
-/* For FUNCTION_DECLs: nonzero means that this function is a constructor
-   for an object with virtual baseclasses.  */
-#define DECL_CONSTRUCTOR_FOR_VBASE_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.constructor_for_vbase_attr)
+/* For FUNCTION_DECLs: nonzero means that this function is a
+   constructor or a destructor with an extra in-charge parameter to
+   control whether or not virtual bases are constructed.  */
+#define DECL_HAS_IN_CHARGE_PARM_P(NODE) \
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.has_in_charge_parm_p)
 
 /* Non-zero for a FUNCTION_DECL that declares a type-info function.
    This only happens in the old abi.  */
