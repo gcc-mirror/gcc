@@ -1960,8 +1960,7 @@ function which might generate new pseudo registers.
 
 This requirement exists even for subword modes on a RISC machine where
 fetching those modes from memory normally requires several insns and
-some temporary registers.  Look in @file{spur.md} to see how the
-requirement can be satisfied.
+some temporary registers.
 
 @findex change_address
 During reload a memory reference with an invalid address may be passed
