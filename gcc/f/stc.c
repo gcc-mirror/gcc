@@ -10203,8 +10203,7 @@ ffestc_R904 ()
 {
   int i;
   int expect_file;
-  const char *const status_strs[]
-  =
+  static const char *const status_strs[] =
   {
     "New",
     "Old",
@@ -10212,29 +10211,25 @@ ffestc_R904 ()
     "Scratch",
     "Unknown"
   };
-  const char *const access_strs[]
-  =
+  static const char *const access_strs[] =
   {
     "Append",
     "Direct",
     "Keyed",
     "Sequential"
   };
-  const char *const blank_strs[]
-  =
+  static const char *const blank_strs[] =
   {
     "Null",
     "Zero"
   };
-  const char *const carriagecontrol_strs[]
-  =
+  static const char *const carriagecontrol_strs[] =
   {
     "Fortran",
     "List",
     "None"
   };
-  const char *const dispose_strs[]
-  =
+  static const char *const dispose_strs[] =
   {
     "Delete",
     "Keep",
@@ -10244,42 +10239,36 @@ ffestc_R904 ()
     "Submit",
     "Submit/Delete"
   };
-  const char *const form_strs[]
-  =
+  static const char *const form_strs[] =
   {
     "Formatted",
     "Unformatted"
   };
-  const char *const organization_strs[]
-  =
+  static const char *const organization_strs[] =
   {
     "Indexed",
     "Relative",
     "Sequential"
   };
-  const char *const position_strs[]
-  =
+  static const char *const position_strs[] =
   {
     "Append",
     "AsIs",
     "Rewind"
   };
-  const char *const action_strs[]
-  =
+  static const char *const action_strs[] =
   {
     "Read",
     "ReadWrite",
     "Write"
   };
-  const char *const delim_strs[]
-  =
+  static const char *const delim_strs[] =
   {
     "Apostrophe",
     "None",
     "Quote"
   };
-  const char *const recordtype_strs[]
-  =
+  static const char *const recordtype_strs[] =
   {
     "Fixed",
     "Segmented",
@@ -10288,8 +10277,7 @@ ffestc_R904 ()
     "Stream_LF",
     "Variable"
   };
-  const char *const pad_strs[]
-  =
+  static const char *const pad_strs[] =
   {
     "No",
     "Yes"
@@ -10458,8 +10446,7 @@ ffestc_R904 ()
 void
 ffestc_R907 ()
 {
-  const char *const status_strs[]
-  =
+  static const char *const status_strs[] =
   {
     "Delete",
     "Keep",

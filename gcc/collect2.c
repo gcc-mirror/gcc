@@ -796,21 +796,21 @@ main (argc, argv)
      int argc;
      char *argv[];
 {
-  const char *const ld_suffix	= "ld";
+  static const char *const ld_suffix	= "ld";
   const char *full_ld_suffix	= ld_suffix;
-  const char *const real_ld_suffix = "real-ld";
-  const char *const collect_ld_suffix = "collect-ld";
-  const char *const nm_suffix	= "nm";
+  static const char *const real_ld_suffix = "real-ld";
+  static const char *const collect_ld_suffix = "collect-ld";
+  static const char *const nm_suffix	= "nm";
   const char *full_nm_suffix	= nm_suffix;
-  const char *const gnm_suffix	= "gnm";
+  static const char *const gnm_suffix	= "gnm";
   const char *full_gnm_suffix	= gnm_suffix;
 #ifdef LDD_SUFFIX
-  const char *const ldd_suffix	= LDD_SUFFIX;
+  static const char *const ldd_suffix	= LDD_SUFFIX;
   const char *full_ldd_suffix	= ldd_suffix;
 #endif
-  const char *const strip_suffix = "strip";
+  static const char *const strip_suffix = "strip";
   const char *full_strip_suffix = strip_suffix;
-  const char *const gstrip_suffix = "gstrip";
+  static const char *const gstrip_suffix = "gstrip";
   const char *full_gstrip_suffix = gstrip_suffix;
   const char *arg;
   FILE *outf;

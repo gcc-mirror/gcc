@@ -4507,7 +4507,7 @@ push_member_name (decl)
      tree decl;
      
 {
-  const char *string
+  const char *const string
     = DECL_NAME (decl) ? IDENTIFIER_POINTER (DECL_NAME (decl)) : "<anonymous>";
   PUSH_SPELLING (SPELLING_MEMBER, string, u.s);
 }

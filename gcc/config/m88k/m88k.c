@@ -2407,7 +2407,7 @@ output_function_profiler (file, labelno, name, savep)
 {
   char label[256];
   char dbi[256];
-  const char *temp = (savep ? reg_names[2] : reg_names[10]);
+  const char *const temp = (savep ? reg_names[2] : reg_names[10]);
 
   /* Remember to update FUNCTION_PROFILER_LENGTH.  */
 

@@ -56,7 +56,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    used for comparisons.  In that case, $c and $C are the lower-case and
    upper-case forms of the comparison, respectively.  */
 
-const char * const optabs[] =
+static const char * const optabs[] =
 { "extendtab[$B][$A][0] = CODE_FOR_$(extend$a$b2$)",
   "extendtab[$B][$A][1] = CODE_FOR_$(zero_extend$a$b2$)",
   "fixtab[$A][$B][0] = CODE_FOR_$(fix$F$a$I$b2$)",

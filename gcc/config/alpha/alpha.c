@@ -7795,7 +7795,7 @@ alpha_write_one_linkage (node, data)
      splay_tree_node node;
      void *data;
 {
-  const char *name = (const char *) node->key;
+  const char *const name = (const char *) node->key;
   struct alpha_links *links = (struct alpha_links *) node->value;
   FILE *stream = (FILE *) data;
 
@@ -8498,7 +8498,7 @@ static void
 unicosmk_output_default_externs (file)
 	FILE *file;
 {
-  static const char *externs[] =
+  static const char *const externs[] =
     { "__T3E_MISMATCH" };
 
   int i;

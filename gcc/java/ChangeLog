@@ -1,3 +1,8 @@
+2001-09-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* expr.c (expand_invoke): Const-ification.
+	* parse.y (patch_method_invocation): Likewise.
+
 2001-09-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gjavah.c (cxx_keywords): Const-ification.

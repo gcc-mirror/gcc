@@ -866,7 +866,7 @@ format_with_decl (buffer, decl)
   
   if (*p == '%')		/* Print the name.  */
     {
-      const char *n = (DECL_NAME (decl)
+      const char *const n = (DECL_NAME (decl)
 		 ? (*decl_printable_name) (decl, 2)
 		 : _("((anonymous))"));
       output_add_string (buffer, n);

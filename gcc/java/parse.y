@@ -10308,15 +10308,15 @@ patch_method_invocation (patch, primary, where, from_super,
       /* Calls to clone() on array types are permitted as a special-case. */
       && !is_array_clone_call)
     {
-      const char *fct_name = IDENTIFIER_POINTER (DECL_NAME (list));
-      const char *access =
+      const char *const fct_name = IDENTIFIER_POINTER (DECL_NAME (list));
+      const char *const access =
 	java_accstring_lookup (get_access_flags_from_decl (list));
-      const char *klass =
+      const char *const klass =
 	IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (DECL_CONTEXT (list))));
-      const char *refklass =
+      const char *const refklass =
 	IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class)));
-      const char *what = (DECL_CONSTRUCTOR_P (list)
-			  ? "constructor" : "method");
+      const char *const what = (DECL_CONSTRUCTOR_P (list)
+				? "constructor" : "method");
       /* FIXME: WFL yields the wrong message here but I don't know
 	 what else to use.  */
       parse_error_context (wfl,
@@ -14828,7 +14828,7 @@ array_constructor_check_entry (type, entry)
   /* Check and report errors */
   if (!new_value)
     {
-      const char *msg = (!valid_cast_to_p (type_value, type) ?
+      const char *const msg = (!valid_cast_to_p (type_value, type) ?
 		   "Can't" : "Explicit cast needed to");
       if (!array_type_string)
 	array_type_string = xstrdup (lang_printable_name (type, 1));

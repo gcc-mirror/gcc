@@ -8616,7 +8616,7 @@ output_call (insn, call_dest, operand_number)
 
 #define GEN_LOCAL_LABEL_FOR_SYMBOL(BUF,SYMBOL,LENGTH,N)		\
   do {								\
-    const char *symbol_ = (SYMBOL);				\
+    const char *const symbol_ = (SYMBOL);			\
     char *buffer_ = (BUF);					\
     if (symbol_[0] == '"')					\
       {								\

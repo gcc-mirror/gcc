@@ -516,7 +516,7 @@ plain_type_1 (type, level)
 	    && DECL_NAME (TYPE_NAME (type)) != 0
 	    && TREE_CODE (DECL_NAME (TYPE_NAME (type))) == IDENTIFIER_NODE)
 	  {
-	    const char *name
+	    const char *const name
 	      = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
 
 	    if (!strcmp (name, "char"))
@@ -1679,7 +1679,7 @@ sdbout_end_function (line)
 static void
 sdbout_end_epilogue ()
 {
-  const char *name
+  const char *const name
     = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl));
 
 #ifdef PUT_SDB_EPILOGUE_END

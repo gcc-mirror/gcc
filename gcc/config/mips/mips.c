@@ -9548,7 +9548,7 @@ mips_output_conditional_branch (insn,
 	   would otherwise; that way we skip the annulled instruction
 	   in the delay slot.  */
 
-	const char *target
+	const char *const target
 	  = ((mips_branch_likely || length == 16) ? ".+16" : ".+12");
 	char *c;
 
@@ -9625,7 +9625,7 @@ mips_output_conditional_branch (insn,
 	   anything.  */
 
 	/* The target of the reversed branch.  */
-	const char *target
+	const char *const target
 	  = ((mips_branch_likely || length == 20) ? ".+20" : ".+16");
 	const char *at_register = mips_reg_names[ASSEMBLER_SCRATCH_REGNUM];
 	const char *gp_register = mips_reg_names[PIC_OFFSET_TABLE_REGNUM];

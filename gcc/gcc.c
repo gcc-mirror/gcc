@@ -4580,7 +4580,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	  case 'C':
 	    {
-	      const char* spec 
+	      const char *const spec
 		= (input_file_compiler->cpp_spec 
 		   ? input_file_compiler->cpp_spec 
 		   : cpp_spec);

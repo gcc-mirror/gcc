@@ -2363,7 +2363,7 @@ output_movsisf(insn, operands, l)
 	  
 	  if (GET_CODE (src) == CONST_INT)
 	    {
-	      const char *clr_op0 =
+	      const char *const clr_op0 =
 		AVR_ENHANCED ? (AS1 (clr,%A0) CR_TAB
 				AS1 (clr,%B0) CR_TAB
 				AS2 (movw,%C0,%A0))
@@ -4756,7 +4756,7 @@ encode_section_info (decl)
 	   && TREE_CODE (decl) == VAR_DECL
 	   && avr_progmem_p (decl))
     {
-      const char *const dsec = ".progmem.data";
+      static const char *const dsec = ".progmem.data";
       DECL_SECTION_NAME (decl) = build_string (strlen (dsec), dsec);
       TREE_READONLY (decl) = 1;
     }

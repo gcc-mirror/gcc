@@ -304,7 +304,7 @@ mod_regno_adjust (instr, op)
      rtx *op;
 {
   static char outstr[40];
-  const char *r = (!strncmp (instr, "dvr", 3) ? "r" : "");
+  const char *const r = (!strncmp (instr, "dvr", 3) ? "r" : "");
   int modregno_gcc = REGNO (op[3]), modregno_1750 = REGNO (op[0]) + 1;
 
   if (modregno_gcc == modregno_1750

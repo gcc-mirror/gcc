@@ -905,7 +905,7 @@ void
 visualize_stall_cycles (stalls)
      int stalls;
 {
-  const char *const prefix = ";;       ";
+  static const char *const prefix = ";;       ";
   const char *suffix = "\n";
   char *p;
 

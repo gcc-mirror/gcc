@@ -3409,7 +3409,7 @@ sjlj_size_of_call_site_table ()
 static void
 dw2_output_call_site_table ()
 {
-  const char *function_start_lab
+  const char *const function_start_lab
     = IDENTIFIER_POINTER (current_function_func_begin_label);
   int n = cfun->eh->call_site_data_used;
   int i;
