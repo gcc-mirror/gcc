@@ -1,3 +1,8 @@
+2002-06-18  Richard Henderson  <rth@redhat.com>
+
+	* print-rtl.c (print_rtx): Adjust NOTE argument numbers for
+	2002-06-02 change.
+
 Tue Jun 18 20:53:32 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* t-sh (MULTILIB_EXCEPTIONS): Set to ml.

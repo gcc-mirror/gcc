@@ -228,7 +228,7 @@ print_rtx (in_rtx)
 	      fprintf (outfile, " [%d]", ORIGINAL_REGNO (in_rtx));
 	    break;
 	  }
-	if (i == 3 && GET_CODE (in_rtx) == NOTE)
+	if (i == 4 && GET_CODE (in_rtx) == NOTE)
 	  {
 	    switch (NOTE_LINE_NUMBER (in_rtx))
 	      {
@@ -356,7 +356,7 @@ print_rtx (in_rtx)
 	break;
 
       case 'i':
-	if (i == 5 && GET_CODE (in_rtx) == NOTE)
+	if (i == 6 && GET_CODE (in_rtx) == NOTE)
 	  {
 	    /* This field is only used for NOTE_INSN_DELETED_LABEL, and
 	       other times often contains garbage from INSN->NOTE death.  */
