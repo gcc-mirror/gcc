@@ -3676,8 +3676,6 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	      if (p[1] != 0)
 		break;
 	      verbose_flag++;
-	      if (strcmp (linker_name_spec, "collect2") == 0)
-		add_linker_option ("-v", 2);
 	      break;
 
 	    case 'S':

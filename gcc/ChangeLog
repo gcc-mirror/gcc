@@ -1,3 +1,7 @@
+2004-11-25  Andrew Haley  <aph@redhat.com>
+
+	* gcc.c (process_command): Don't supply -v to linker.
+
 2004-11-25  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): Use %qs
