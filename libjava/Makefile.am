@@ -504,6 +504,8 @@ gnu/java/beans/ExplicitBeanInfo.java \
 gnu/java/beans/IntrospectionIncubator.java \
 gnu/gcj/awt/BitMaskExtent.java \
 gnu/gcj/awt/Buffers.java \
+gnu/gcj/awt/ComponentDataBlitOp.java \
+gnu/gcj/awt/GLightweightPeer.java \
 java/applet/Applet.java \
 java/applet/AppletStub.java \
 java/applet/AppletContext.java \
@@ -536,6 +538,7 @@ java/awt/Font.java \
 java/awt/FontMetrics.java \
 java/awt/Frame.java \
 java/awt/Graphics.java \
+java/awt/Graphics2D.java \
 java/awt/GraphicsConfiguration.java \
 java/awt/IllegalComponentStateException.java \
 java/awt/Image.java \
@@ -557,6 +560,7 @@ java/awt/Panel.java \
 java/awt/Point.java \
 java/awt/PopupMenu.java	\
 java/awt/Rectangle.java	\
+java/awt/RenderingHints.java \
 java/awt/ScrollPane.java \
 java/awt/Scrollbar.java	\
 java/awt/Shape.java \
@@ -617,6 +621,7 @@ java/awt/geom/PathIterator.java	\
 java/awt/geom/Point2D.java \
 java/awt/geom/Rectangle2D.java \
 java/awt/geom/RectangularShape.java \
+java/awt/image/BufferedImage.java \
 java/awt/image/ColorModel.java \
 java/awt/image/ComponentColorModel.java	\
 java/awt/image/ComponentSampleModel.java \
@@ -631,6 +636,7 @@ java/awt/image/ImageProducer.java \
 java/awt/image/IndexColorModel.java \
 java/awt/image/PackedColorModel.java \
 java/awt/image/Raster.java \
+java/awt/image/RasterOp.java \
 java/awt/image/SampleModel.java	\
 java/awt/image/SinglePixelPackedSampleModel.java \
 java/awt/image/WritableRaster.java \

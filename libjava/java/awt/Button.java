@@ -11,6 +11,7 @@ import java.awt.peer.ButtonPeer;
 import java.awt.peer.ComponentPeer;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.EventListener;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
@@ -31,18 +32,19 @@ public class Button extends Component
 
   public void addActionListener (ActionListener l)
   {
-    listeners = AWTEventMulticaster.add (listeners, l);
+    actionListener = AWTEventMulticaster.add (actionListener, l);
   }
 
   public void addNotify ()
   {
     if (peer == null)
       peer = (ComponentPeer) getToolkit ().createButton (this);
+    super.addNotify();
   }
 
   public String getActionCommand ()
   {
-    return command;
+    return actionCommand;
   }
 
   public String getLabel ()
@@ -55,10 +57,21 @@ public class Button extends Component
     return "Button[" + label + "]";
   }
 
+  void dispatchEventImpl(AWTEvent e)
+  {
+      super.dispatchEventImpl(e);
+      
+      if (e.id <= ActionEvent.ACTION_LAST 
+	  && e.id >= ActionEvent.ACTION_FIRST
+	  && (actionListener != null 
+	      || (eventMask & AWTEvent.ACTION_EVENT_MASK) != 0))
+	  processEvent(e);
+  }
+
   protected void processActionEvent (ActionEvent e)
   {
-    if (listeners != null)
-      listeners.actionPerformed (e);
+    if (actionListener != null)
+      actionListener.actionPerformed (e);
   }
 
   protected void processEvent (AWTEvent e)
@@ -71,12 +84,19 @@ public class Button extends Component
 
   public void removeActionListener (ActionListener l)
   {
-    listeners = AWTEventMulticaster.remove (listeners, l);
+    actionListener = AWTEventMulticaster.remove (actionListener, l);
+  }
+
+  public EventListener[] getListeners(Class listenerType)
+  {
+    if (listenerType == ActionListener.class)
+      return getListenersImpl(listenerType, actionListener);
+    return super.getListeners(listenerType);
   }
 
   public void setActionCommand (String command)
   {
-    this.command = (command == null) ? label : command;
+    this.actionCommand = (command == null) ? label : command;
   }
 
   public void setLabel (String label)
@@ -89,7 +109,8 @@ public class Button extends Component
       }
   }
 
-  private String label;
-  private String command;
-  private ActionListener listeners;
+  String label;
+  String actionCommand;
+
+  transient ActionListener actionListener;
 }

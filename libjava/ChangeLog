@@ -1,3 +1,148 @@
+2000-08-16  Rolf W. Rasmussen  <rolfwr@ii.uib.no>
+
+	* gnu/gcj/awt/ComponentDataBlitOp.java: New file.
+	* gnu/gcj/awt/GLightweightPeer.java: New file.
+	* java/awt/BorderLayout.java: Implemented all methods.
+	* java/awt/Button.java (actionListener, actionCommand): Renamed
+	and modifier change.
+	(addNotify): Call super.
+	(dispatchEventImpl): New method.
+	(getListeners): New method.
+	(label): Made package-private, not private.
+	* java/awt/Canvas.java: Implemented class body.
+	* java/awt/Color.java (brighter): New method.
+	(darker): New method.
+	(hashCode): New method.
+	* java/awt/Component.java (visible, enabled, eventMask): Set defaults.
+	(getGraphicsConfiguration): Delegate to
+	getGraphicsConfigurationImpl().
+	(getGraphicsConfigurationImpl): New method.
+	(getToolkit): Only return value from peer if not null.
+	(isDisplayable): Check with parent.
+	(isShowing): No parent implies not showing.
+	(getForeground): Check parent property if local is null.
+	(getBackground): Likewise.
+	(getFont): Likewise.
+	(setForeground): Inform peer.
+	(setBackground): Likewise
+	(setLocale): Invalidate component.
+	(getColorModel): Implemented.
+	(setLocation): Invalidate, or ignore if no change.
+	(setSize): Invalidate, or ignore if no change.
+	(setBounds): Invalidate, or ignore if no change.
+	(isOpaque): By default, heavyweight implies opaque.
+	(isLightweight): Implemented.
+	(getMaximumSize): Implemented.
+	(doLayout): Implemented, NOP.
+	(validate): Implemented, NOP.
+	(invalidate): Only propagate to parent if parent was valid.
+	(getGraphics): Implemented.
+	(getFontMetrics): Implemented.
+	(update): Implemented.
+	(paintAll): Implemented.
+	(repaint): Implemented all repaint methods.
+	(print): Implemented.
+	(printAll): Implemented.
+	(createImage): Implemented.
+	(dispatchEvent): Give the peer a chance to handle the event.
+	(dispatchEventImpl): Dispatch paint events.
+	(enableEvents): Lightweights enable events on parent component.
+	(coalesceEvents): Coalesce paint events, and select event type
+	using a switch.
+	(coalescePaintEvents): New method.
+	(processEvent): Fix unfortunate ordering of statements, and call
+	correct method for MOUSE_CLICKED.
+	(processPaintEvent): New method.
+	(addNotify): Allow container to notify children before event
+	mask is set in peer.
+	(addNotifyContainerChildren): New method.
+	(removeNotify): Visibility should not change on removeNotify.
+	(paramString): Implemented.
+	(list): Implemented two of the list methods.
+	* Container (myInsets): Removed, insets are managed by peer.
+	(getInsets): Query peer.
+	(addImpl): Fix reparenting, enable events for lightweights,
+	initialize component array.
+	(validate): Call doLayout in validateTree() instead.
+	(validateTree): Do nothing if already valid. Call beginValidate(),
+	endValidate() on peer. Call validateTree() instead of validate()
+	for children that are containers. Mark valid after validation of
+	children.
+	(setFont): Partial implementation.
+	(paint): Implemented.
+	(visitChildren): New method.
+	(visitChild): New method.
+	(update): Implemented.
+	(print): Implemented.
+	(paintComponents): Implemented.
+	(printComponents): Consider translation and clipping.
+	(getComponentAt): Ignore invisible children. Return this if no
+	child match.
+	(addNotify): Call super.
+	(addNotifyContainerChildren): New method.
+	(paramString): Implemented.
+	(list): Implemented.
+	* java/awt/EventQueue (invokeAndWait): Get system event queue the
+	right way.
+	(invokeLater): Likewise.
+	(isDispatchThread): Likewise.
+	* java/awt/FontMetrics (getLeading): Formula change.
+	(getDescent): Consider leading also.
+	(getMaxAscent): Default to getAscent().
+	(getMaxDescent): Default to getDescent.
+	(getMaxAdvance): Return value signifying unknown.
+	(charWidth): Both methods implemented.
+	(charsWidth): Implemented.
+	(bytesWidth): Implemented.
+	(getWidths): Implemented.
+	* java/awt/Frame.java (NORMAL, ICONIFIED, iconImage, isResizable,
+	state): New fields.
+	(Frame): Rearragend constuctor chaining to disallow null being
+	passed as a graphics configuration.
+	(getTitle): Return empty string if null.
+	(dispose): Removed.
+	(getIconImage): New method.
+	(setIconImage): New method.
+	(finalize): New method.
+	(setMenuBar): Notify peer.
+	(isResizable): New method.
+	(setResizable): New method.
+	(getState): New method.
+	(getFont): Removed.
+	(remove): Implemented.
+	(removeNotify): New method.
+	(getFrames): New method.
+	* java/awt/Graphics.java: Implemented body of class.
+	* java/awt/Graphics2D.java: New file.
+	* java/awt/GraphicsConfiguration.java: Enabled part of the API.
+	* java/awt/Image.java: Implemented body of class.
+	* java/awt/Panel.java (Panel): Call correct super constructor.
+	(addNotify): Implemented.
+	* java/awt/Rectangle.java (isEmpty): Fixed reversed logic.
+	* java/awt/RenderingHints.java: New file.
+	* java/awt/Toolkit.java (createComponent): Implemented.
+	(getSystemEventQueue): Delegate to getSystemEventQueueImpl().
+	* java/awt/Window.java (Window): Two new constructors. Reordered
+	constructor chaining.
+	(getGraphicsConfigurationImpl): New method.
+	(finalize): Call super.
+	(addNotify): Call super.
+	(pack): Do layout stuff.
+	(show): Ensure that peer exists and that component is valid.
+	(dispose): Dispose owned children.
+	(getOwner): Simplify code, casting null pointers is valid.
+	(getGraphicsConfiguration): Ask peer if local value is null.
+	* java/awt/event/ActionEvent.java (getActionCommand): Renamed from
+	getcmd().
+	* java/awt/image/BufferedImage.java: New file.
+	* java/awt/image/RasterOp.java: New file.
+	* java/awt/peer/ComponentPeer.java (getGraphicsConfiguration):
+	More powerfull replacement for getColorModel().
+	(getColorModel) Removed.
+	(setEventMask) New method.
+	* Makefile.am: Added new files.
+	* Makefile.in: Rebuilt.
+
 2000-08-15  Andrew Haley  <aph@cygnus.com>
 
 	* include/jvm.h (_Jv_HashCode): New hash code.

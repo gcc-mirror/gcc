@@ -8,15 +8,20 @@ details.  */
 
 package java.awt;
 
+import java.awt.peer.ComponentPeer;
+
 /* An incomplete placeholder. */
 
 public class Panel extends Container
 {
   public Panel()
-  {
-    super();
+  { 
+    this(
+	 // should be: new FlowLayout()
+	 null // FIXME
+	 );
   }
-  
+
   public Panel(LayoutManager layout)
   {
     super();
@@ -27,6 +32,8 @@ public class Panel extends Container
 
   public void addNotify()
   {
-    // FIXME
+    if (getPeer() == null)
+      peer = (ComponentPeer) getToolkit().createPanel(this);
+    super.addNotify();
   }
 }

@@ -14,8 +14,9 @@ import java.io.PrintWriter;
 import java.util.EventListener;
 import java.awt.peer.ComponentPeer;
 import java.awt.peer.ContainerPeer;
+import java.awt.peer.LightweightPeer;
 
-/* A very incomplete placeholder. */
+/* A somewhat incomplete class. */
 
 public abstract class Container extends Component
 {
@@ -29,9 +30,6 @@ public abstract class Container extends Component
 
   /* Anything else is non-serializable, and should be declared "transient". */
   transient ContainerListener containerListener;  
-
-  // Insets.
-  private transient Insets myInsets;
 
   public Container()
   {
@@ -65,7 +63,10 @@ public abstract class Container extends Component
 
   public Insets getInsets()
   {
-    return myInsets;
+    if (peer == null)
+	return new Insets(0, 0, 0, 0);
+	
+    return ((ContainerPeer) peer).getInsets();
   }
 
   /** @deprecated Use getInsets() instead. */
@@ -112,13 +113,21 @@ public abstract class Container extends Component
 
     // Reparent component, and make sure component is instantiated if
     // we are.
-    if (comp.parent != this)
+    if (comp.parent != null)
       comp.parent.remove (comp);
     comp.parent = this;
     if (peer != null)
-      comp.addNotify ();
+      {
+	comp.addNotify ();
+    
+	if (comp.isLightweight())
+	  enableEvents(comp.eventMask);
+      }
 
     invalidate ();
+
+    if (component == null)
+	component = new Component[4]; // FIXME, better initial size?
 
     // This isn't the most efficient implementation.  We could do less
     // copying when growing the array.  It probably doesn't matter.
@@ -228,20 +237,48 @@ public abstract class Container extends Component
   {
     if (! isValid ())
       {
-	doLayout ();
 	validateTree ();
       }
   }
 
   protected void validateTree()
   {
+    if (valid) return; 
+
+    ContainerPeer cPeer = null;
+    if ((peer != null) && !(peer instanceof LightweightPeer))
+      {
+	cPeer = (ContainerPeer) peer;
+	cPeer.beginValidate();
+      }
+
+    doLayout ();
     for (int i = 0; i < ncomponents; ++i)
-      component[i].validate ();
+      {
+	Component comp = component[i];
+	if (comp instanceof Container)
+	  {
+	    ((Container) comp).validateTree();
+	  }
+	else
+	  {
+	    component[i].validate();
+	  }
+      }
+    
+    /* children will call invalidate() when they are layed out. It
+       is therefore imporant that valid is not set to true
+       before after the children has been layed out. */
+    valid = true;
+
+    if (cPeer != null)
+      cPeer.endValidate();
   }
 
   public void setFont(Font f)
   {
-    // FIXME
+    super.setFont(f);
+    // FIXME, should invalidate all children with font == null
   }
 
   public Dimension getPreferredSize()
@@ -307,28 +344,91 @@ public abstract class Container extends Component
 
   public void paint(Graphics g)
   {
-    // FIXME
+    if (!isShowing())
+      return;
+    super.paint(g);
+    visitChildren(g, GfxPaintVisitor.INSTANCE, true);
+  }
+
+  /** 
+   * Perform a graphics operation on the children of this container.
+   * For each applicable child, the visitChild() method will be called
+   * to perform the graphics operation.
+   *
+   * @param gfx The graphics object that will be used to derive new
+   * graphics objects for the children.
+   *
+   * @param visitor Object encapsulating the graphics operation that
+   * should be performed.
+   *
+   * @param lightweightOnly If true, only lightweight components will
+   * be visited.
+   */
+  private void visitChildren(Graphics gfx, GfxVisitor visitor,
+		     boolean lightweightOnly)
+  {
+    // FIXME: do locking
+
+    for (int i = 0; i < ncomponents; ++i)
+      {
+	Component comp = component[i];
+	boolean applicable = comp.isVisible()
+	  && (comp.isLightweight() || !lightweightOnly);
+
+	if (applicable)
+	  visitChild(gfx, visitor, comp);
+      }
+  }
+
+  /**
+   * Perform a graphics operation on a child. A translated and clipped
+   * graphics object will be created, and the visit() method of the
+   * visitor will be called to perform the operation.
+   *
+   * @param gfx The graphics object that will be used to derive new
+   * graphics objects for the child.
+   *
+   * @param visitor Object encapsulating the graphics operation that
+   * should be performed.
+   *
+   * @param comp The child component that should be visited.
+   */
+  private void visitChild(Graphics gfx, GfxVisitor visitor,
+			  Component comp)
+  {
+    Rectangle bounds = comp.getBounds();
+    Rectangle clip = gfx.getClipBounds().intersection(bounds);
+    
+    if (clip.isEmpty()) return;
+
+    Graphics gfx2 = gfx.create();
+    gfx2.setClip(clip.x, clip.y, clip.width, clip.height);
+    gfx2.translate(bounds.x, bounds.y);
+    
+    visitor.visit(comp, gfx2);
   }
 
   public void update(Graphics g)
   {
-    // FIXME
+    super.update(g);
   }
 
   public void print(Graphics g)
   {
-    // FIXME
+    super.print(g);
+    visitChildren(g, GfxPrintVisitor.INSTANCE, true);
   }
 
   public void paintComponents(Graphics g)
   {
-    // FIXME
+    super.paint(g);
+    visitChildren(g, GfxPaintAllVisitor.INSTANCE, true);
   }
 
   public void printComponents(Graphics g)
   {
-    for (int i = 0; i < ncomponents; ++i)
-      component[i].printAll (g);
+    super.paint(g);
+    visitChildren(g, GfxPrintAllVisitor.INSTANCE, true);
   }
   
   void dispatchEventImpl(AWTEvent e)
@@ -393,12 +493,16 @@ public abstract class Container extends Component
       return null;
     for (int i = 0; i < ncomponents; ++i)
       {
+	// Ignore invisible children...
+	if (!component[i].isVisible())
+	  continue;
+	
 	int x2 = x - component[i].x;
 	int y2 = y - component[i].y;
 	if (component[i].contains (x2, y2))
 	  return component[i];
       }
-    return null;
+    return this;
   }
 
   /** @deprecated Use getComponentAt() instead */
@@ -425,8 +529,17 @@ public abstract class Container extends Component
 
   public void addNotify ()
   {
+    super.addNotify();
+  }
+
+  void addNotifyContainerChildren()
+  {
     for (int i = ncomponents;  --i >= 0; )
-      component[i].addNotify();
+      {
+	component[i].addNotify();
+	if (component[i].isLightweight())
+	  enableEvents(component[i].eventMask);
+      }
   }
 
   public void removeNotify()
@@ -450,7 +563,11 @@ public abstract class Container extends Component
 
   protected String paramString()
   {
-    return "FIXME";
+    String param = super.paramString();
+    if (layoutMgr != null)
+      param = param + "," + layoutMgr.getClass().getName();
+
+    return param;
   }
   
   public void list (PrintStream out, int indent)
@@ -470,4 +587,39 @@ public abstract class Container extends Component
     for (int i = 0; i < ncomponents; ++i)
       component[i].list (out, indent + 2);
   }
+
+
+  /* The following classes are used in concert with the
+     visitChildren() method to implement all the graphics operations
+     that requires traversal of the containment hierarchy. */
+
+  abstract static class GfxVisitor
+  {
+    public abstract void visit(Component c, Graphics gfx);
+  }
+
+  static class GfxPaintVisitor extends GfxVisitor
+  {
+    public void visit(Component c, Graphics gfx) { c.paint(gfx); }
+    public static final GfxVisitor INSTANCE = new GfxPaintVisitor();
+  }
+
+  static class GfxPrintVisitor extends GfxVisitor
+  {
+    public void visit(Component c, Graphics gfx) { c.print(gfx); }
+    public static final GfxVisitor INSTANCE = new GfxPrintVisitor();
+  }
+
+  static class GfxPaintAllVisitor extends GfxVisitor
+  {
+    public void visit(Component c, Graphics gfx) { c.paintAll(gfx); }
+    public static final GfxVisitor INSTANCE = new GfxPaintAllVisitor();
+  }
+
+  static class GfxPrintAllVisitor extends GfxVisitor
+  {
+    public void visit(Component c, Graphics gfx) { c.printAll(gfx); }
+    public static final GfxVisitor INSTANCE = new GfxPrintAllVisitor();
+  }
+
 }

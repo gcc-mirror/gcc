@@ -145,8 +145,7 @@ public class EventQueue
   public static void invokeAndWait(Runnable runnable)
     throws InterruptedException, InvocationTargetException
   {
-    // FIXME: Is this an appropriate way to access the event queue?
-    EventQueue eq = Toolkit.systemEventQueue; 
+    EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue(); 
     Thread current = Thread.currentThread();
     if (current == eq.dispatchThread)
       throw new Error("Can't call invokeAndWait from event dispatch thread");
@@ -169,8 +168,7 @@ public class EventQueue
   /** @since JDK1.2 */
   static void invokeLater(Runnable runnable)
   {
-    // FIXME: Is this an appropriate way to access the event queue?
-    EventQueue eq = Toolkit.systemEventQueue; 
+    EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue(); 
 
     InvocationEvent ie = 
       new InvocationEvent(eq, runnable, null, false);
@@ -180,8 +178,7 @@ public class EventQueue
   
   static boolean isDispatchThread()
   {
-    // FIXME: Is this an appropriate way to access the event queue?
-    EventQueue eq = Toolkit.systemEventQueue; 
+    EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue(); 
     return (Thread.currentThread() == eq.dispatchThread);
   }
   
