@@ -1,6 +1,6 @@
 // nonstandard construct and destroy functions -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -72,13 +72,13 @@ namespace std
    * object's constructor with an initializer.
    * @endif
    */
-  template <class _T1, class _T2>
+  template<typename _T1, typename _T2>
     inline void
     _Construct(_T1* __p, const _T2& __value)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 402. wrong new expression in [some_]allocator::construct
-      ::new (static_cast<void*>(__p)) _T1(__value); 
+      ::new(static_cast<void*>(__p)) _T1(__value); 
     }
   
   /**
@@ -87,13 +87,13 @@ namespace std
    * object's default constructor (no initializers).
    * @endif
    */
-  template <class _T1>
+  template<typename _T1>
     inline void
     _Construct(_T1* __p)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 402. wrong new expression in [some_]allocator::construct     
-      ::new (static_cast<void*>(__p)) _T1();
+      ::new(static_cast<void*>(__p)) _T1();
     }
 
   /**
@@ -101,7 +101,7 @@ namespace std
    * Destroy the object pointed to by a pointer type.
    * @endif
    */
-  template <class _Tp>
+  template<typename _Tp>
     inline void
     _Destroy(_Tp* __pointer)
     { __pointer->~_Tp(); }
@@ -113,7 +113,7 @@ namespace std
    * This is a helper function used only by _Destroy().
    * @endif
    */
-  template <class _ForwardIterator>
+  template<typename _ForwardIterator>
     inline void
     __destroy_aux(_ForwardIterator __first, _ForwardIterator __last, __false_type)
     { for ( ; __first != __last; ++__first) std::_Destroy(&*__first); }
@@ -127,7 +127,7 @@ namespace std
    * This is a helper function used only by _Destroy().
    * @endif
    */
-  template <class _ForwardIterator> 
+  template<typename _ForwardIterator> 
     inline void
     __destroy_aux(_ForwardIterator, _ForwardIterator, __true_type)
     { }
@@ -139,7 +139,7 @@ namespace std
    * away, otherwise the objects' destructors must be invoked.
    * @endif
    */
-  template <class _ForwardIterator>
+  template<typename _ForwardIterator>
     inline void
     _Destroy(_ForwardIterator __first, _ForwardIterator __last)
     {
