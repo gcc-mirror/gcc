@@ -8811,15 +8811,14 @@ merge_outer_ops (pop0, pconst0, op1, const1, mode, pcomp_p)
    are ASHIFTRT and ROTATE, which are always done in their original mode,  */
 
 static rtx
-simplify_shift_const (x, code, result_mode, varop, input_count)
+simplify_shift_const (x, code, result_mode, varop, orig_count)
      rtx x;
      enum rtx_code code;
      enum machine_mode result_mode;
      rtx varop;
-     int input_count;
+     int orig_count;
 {
   enum rtx_code orig_code = code;
-  int orig_count = input_count;
   unsigned int count;
   int signed_count;
   enum machine_mode mode = result_mode;
@@ -8833,26 +8832,26 @@ simplify_shift_const (x, code, result_mode, varop, input_count)
   int complement_p = 0;
   rtx new;
 
-  /* If we were given an invalid count, don't do anything except exactly
-     what was requested.  */
-
-  if (input_count < 0 || input_count >= (int) GET_MODE_BITSIZE (mode))
-    {
-      if (x)
-	return x;
-
-      return gen_rtx_fmt_ee (code, mode, varop, GEN_INT (input_count));
-    }
-
-  count = input_count;
-
   /* Make sure and truncate the "natural" shift on the way in.  We don't
      want to do this inside the loop as it makes it more difficult to
      combine shifts.  */
 #ifdef SHIFT_COUNT_TRUNCATED
   if (SHIFT_COUNT_TRUNCATED)
-    count %= GET_MODE_BITSIZE (mode);
+    orig_count &= GET_MODE_BITSIZE (mode) - 1;
 #endif
+
+  /* If we were given an invalid count, don't do anything except exactly
+     what was requested.  */
+
+  if (orig_count < 0 || orig_count >= (int) GET_MODE_BITSIZE (mode))
+    {
+      if (x)
+	return x;
+
+      return gen_rtx_fmt_ee (code, mode, varop, GEN_INT (orig_count));
+    }
+
+  count = orig_count;
 
   /* Unless one of the branches of the `if' in this loop does a `continue',
      we will `break' the loop after the `if'.  */
