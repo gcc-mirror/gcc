@@ -4588,9 +4588,7 @@ expand_expr (exp, target, tmode, modifier)
       if (RTL_EXPR_RTL (exp) == 0)
 	{
 	  RTL_EXPR_RTL (exp)
-	    = expand_expr (TREE_OPERAND (exp, 0),
-			   target ? target : const0_rtx,
-			   tmode, modifier);
+	    = expand_expr (TREE_OPERAND (exp, 0), target, tmode, modifier);
 	  cleanups_this_call
 	    = tree_cons (NULL_TREE, TREE_OPERAND (exp, 2), cleanups_this_call);
 	  /* That's it for this cleanup.  */
@@ -5602,12 +5600,7 @@ expand_expr (exp, target, tmode, modifier)
 		/* All temp slots at this level must not conflict.  */
 		preserve_temp_slots (target);
 		DECL_RTL (slot) = target;
-	      }
 
-	    /* We set IGNORE when we know that we're already
-	       doing this for a cleanup.  */
-	    if (ignore == 0)
-	      {
 		/* Since SLOT is not known to the called function
 		   to belong to its stack frame, we must build an explicit
 		   cleanup.  This case occurs when we must build up a reference
@@ -5618,7 +5611,8 @@ expand_expr (exp, target, tmode, modifier)
 		if (TREE_OPERAND (exp, 2) == 0)
 		  TREE_OPERAND (exp, 2) = maybe_build_cleanup (slot);
 		if (TREE_OPERAND (exp, 2))
-		  cleanups_this_call = tree_cons (NULL_TREE, TREE_OPERAND (exp, 2),
+		  cleanups_this_call = tree_cons (NULL_TREE,
+						  TREE_OPERAND (exp, 2),
 						  cleanups_this_call);
 	      }
 	  }
