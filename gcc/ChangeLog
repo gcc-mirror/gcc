@@ -1,3 +1,15 @@
+2004-01-09  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* final.c (FIRST_INSN_ADDRESS): Remove.
+	(shorten_branches): Don't use FIRST_INSN_ADDRESS.
+	* system.h (FIRST_INSN_ADDRESS): Poison.
+	* config/avr/avr.h: Remove a comment about FIRST_INSN_ADDRESS.
+	* config/m32r/m32r-protos.h: Remove the prototype for
+	m32r_first_insn_address.
+	* config/m32r/m32r.c (m32r_first_insn_address): Remove.
+	* config/m32r/m32r.h (FIRST_INSN_ADDRESS): Likewise.
+	* doc/md.texi (FIRST_INSN_ADDRESS): Likewise.
+
 2004-01-09  J. Brobecker  <brobecker@gnat.com>
 
 	* dwarf2out.c (gen_enumeration_type_die): Return the DIE that

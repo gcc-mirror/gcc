@@ -736,12 +736,6 @@ compute_alignments (void)
 /* Make a pass over all insns and compute their actual lengths by shortening
    any branches of variable length if possible.  */
 
-/* Give a default value for the lowest address in a function.  */
-
-#ifndef FIRST_INSN_ADDRESS
-#define FIRST_INSN_ADDRESS 0
-#endif
-
 /* shorten_branches might be called multiple times:  for example, the SH
    port splits out-of-range conditional branches in MACHINE_DEPENDENT_REORG.
    In order to do this, it needs proper length information, which it obtains
@@ -971,7 +965,7 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
 #endif /* CASE_VECTOR_SHORTEN_MODE */
 
   /* Compute initial lengths, addresses, and varying flags for each insn.  */
-  for (insn_current_address = FIRST_INSN_ADDRESS, insn = first;
+  for (insn_current_address = 0, insn = first;
        insn != 0;
        insn_current_address += insn_lengths[uid], insn = NEXT_INSN (insn))
     {
@@ -1072,7 +1066,7 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
     {
       something_changed = 0;
       insn_current_align = MAX_CODE_ALIGN - 1;
-      for (insn_current_address = FIRST_INSN_ADDRESS, insn = first;
+      for (insn_current_address = 0, insn = first;
 	   insn != 0;
 	   insn = NEXT_INSN (insn))
 	{

@@ -1887,19 +1887,6 @@ m32r_compute_frame_size (int size)	/* # of var. bytes allocated.  */
   return total_size;
 }
 
-/* When the `length' insn attribute is used, this macro specifies the
-   value to be assigned to the address of the first insn in a
-   function.  If not specified, 0 is used.  */
-
-int
-m32r_first_insn_address (void)
-{
-  if (! current_frame_info.initialized)
-    m32r_compute_frame_size (get_frame_size ());
-
-  return 0;
-}
-
 /* The table we use to reference PIC data.  */
 static rtx global_offset_table;
                                                                                 

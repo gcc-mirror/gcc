@@ -2301,11 +2301,6 @@ extern int avr_case_values_threshold;
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
   fprintf (FILE, "/* profiler %d */", (LABELNO))
 
-/* `FIRST_INSN_ADDRESS'
-   When the `length' insn attribute is used, this macro specifies the
-   value to be assigned to the address of the first insn in a
-   function.  If not specified, 0 is used.  */
-
 #define ADJUST_INSN_LENGTH(INSN, LENGTH) (LENGTH =\
 					  adjust_insn_length (INSN, LENGTH))
 /* If defined, modifies the length assigned to instruction INSN as a
