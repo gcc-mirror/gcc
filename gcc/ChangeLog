@@ -1,3 +1,10 @@
+2002-01-23  Alan Modra  <amodra@bigpond.net.au>
+
+	* combine.c (simplify_and_const_int): Don't trunc_int_for_mode
+	"nonzero" as that might add "1" bits.  Ensure "constop" is
+	properly sign extened.
+	(force_to_mode): Tweak for sign extended constop.
+
 2002-01-22  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (some_small_symbolic_mem_operand) Use

@@ -6701,7 +6701,8 @@ force_to_mode (x, mode, mask, reg, just_select)
 	     need it.  */
 
 	  if (GET_CODE (x) == AND && GET_CODE (XEXP (x, 1)) == CONST_INT
-	      && (unsigned HOST_WIDE_INT) INTVAL (XEXP (x, 1)) == mask)
+	      && ((INTVAL (XEXP (x, 1)) & GET_MODE_MASK (GET_MODE (x)))
+		  == (HOST_WIDE_INT) mask))
 	    x = XEXP (x, 0);
 
 	  /* If it remains an AND, try making another AND with the bits
@@ -7755,7 +7756,6 @@ simplify_and_const_int (x, mode, varop, constop)
      MODE.  */
 
   nonzero = nonzero_bits (varop, mode) & GET_MODE_MASK (mode);
-  nonzero = trunc_int_for_mode (nonzero, mode);
 
   /* Turn off all bits in the constant that are known to already be zero.
      Thus, if the AND isn't needed at all, we will have CONSTOP == NONZERO_BITS
@@ -7823,19 +7823,22 @@ simplify_and_const_int (x, mode, varop, constop)
   /* If we are only masking insignificant bits, return VAROP.  */
   if (constop == nonzero)
     x = varop;
-
-  /* Otherwise, return an AND.  See how much, if any, of X we can use.  */
-  else if (x == 0 || GET_CODE (x) != AND || GET_MODE (x) != mode)
-    x = gen_binary (AND, mode, varop, GEN_INT (constop));
-
   else
     {
+      /* Otherwise, return an AND.  */
       constop = trunc_int_for_mode (constop, mode);
-      if (GET_CODE (XEXP (x, 1)) != CONST_INT
-	  || (unsigned HOST_WIDE_INT) INTVAL (XEXP (x, 1)) != constop)
-	SUBST (XEXP (x, 1), GEN_INT (constop));
+      /* See how much, if any, of X we can use.  */
+      if (x == 0 || GET_CODE (x) != AND || GET_MODE (x) != mode)
+	x = gen_binary (AND, mode, varop, GEN_INT (constop));
 
-      SUBST (XEXP (x, 0), varop);
+      else
+	{
+	  if (GET_CODE (XEXP (x, 1)) != CONST_INT
+	      || (unsigned HOST_WIDE_INT) INTVAL (XEXP (x, 1)) != constop)
+	    SUBST (XEXP (x, 1), GEN_INT (constop));
+
+	  SUBST (XEXP (x, 0), varop);
+	}
     }
 
   return x;
