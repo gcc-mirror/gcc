@@ -1,3 +1,9 @@
+2001-07-20  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/mips/mips.h (ISA_HAS_NMADD_NMSUB): New macro.
+
+	* config/mips/mips.md (nmadd/nmsub): Use macro.
+
 2001-07-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cppinit.c (remove_dup_dir): Make static.
@@ -119,6 +125,7 @@
 	previous args.
 	(copy_object): Caller changed.
 
+>>>>>>> 1.10722
 2001-07-19  Andreas Schwab  <schwab@suse.de>
 
 	* configure.in (assembler dwarf2 debug_line support): Define nop
