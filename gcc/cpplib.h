@@ -153,7 +153,7 @@ enum cpp_ttype
 
 /* C language kind, used when calling cpp_reader_init.  */
 enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_STDC89, CLK_STDC94, CLK_STDC99,
-	     CLK_GNUCXX, CLK_CXX98, CLK_OBJC, CLK_OBJCXX, CLK_ASM};
+	     CLK_GNUCXX, CLK_CXX98, CLK_ASM};
 
 /* Payload of a NUMBER, STRING, CHAR or COMMENT token.  */
 struct cpp_string
@@ -260,7 +260,8 @@ struct cpp_options
   /* Nonzero means handle cplusplus style comments */
   unsigned char cplusplus_comments;
 
-  /* Nonzero means handle #import, for objective C.  */
+  /* Nonzero means define __OBJC__, treat @ as a special token, and
+     use the OBJC[PLUS]_INCLUDE_PATH environment variable.  */
   unsigned char objc;
 
   /* Nonzero means don't copy comments into the output file.  */

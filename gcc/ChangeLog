@@ -1,3 +1,16 @@
+2002-05-17  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-common.c (c_common_init_options): Use C89 for Objective-C,
+	and set the options flag.
+	* cppinit.c (lang_flags): Remove objc.
+	(lang_defaults): Remove OBJC and OBJCXX.
+	(set_lang): Update.
+	(COMMAND_LINE_OPTIONS): Remove -+ and -lang-objc++.
+	(cpp_handle_option): Remove -+ and -lang-objc++.
+	For ObjC, just set a flag.
+	(print_help): Update.
+	* cpplib.h (enum c_lang): Remove CLK_OBJC and CLK_OBJCXX.
+
 2002-05-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* doc/install.texi (Specific, mips-sgi-irix6): Document need to
