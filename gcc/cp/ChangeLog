@@ -10,7 +10,7 @@
 	* decl.c (pushdecl): Don't set DECL_CONTEXT for a template
 	paramter. 
 	* lex.c (do_identifier): Use DECL_TEMPLATE_PARM_P.
-	(push_inline_template_parms_recursive): Set it.
+	* pt.c (push_inline_template_parms_recursive): Set it.
 	(decl_template_parm_p): Remove.
 	(check_template_shadow): Use DECL_TEMPLATE_PARM_P.
 	(process_template_parm): Set it.

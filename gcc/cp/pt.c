@@ -357,10 +357,15 @@ push_inline_template_parms_recursive (parmlist, levels)
 
 	case PARM_DECL:
 	  {
-	    /* Make a CONST_DECL as is done in process_template_parm. */
+	    /* Make a CONST_DECL as is done in process_template_parm.
+	       It is ugly that we recreate this here; the original
+	       version built in process_template_parm is no longer
+	       available.  */
 	    tree decl = build_decl (CONST_DECL, DECL_NAME (parm),
 				    TREE_TYPE (parm));
+	    SET_DECL_ARTIFICIAL (decl);
 	    DECL_INITIAL (decl) = DECL_INITIAL (parm);
+	    DECL_TEMPLATE_PARM_P (decl) = 1;
 	    pushdecl (decl);
 	  }
 	  break;
@@ -1467,33 +1472,6 @@ int comp_template_parms (parms1, parms2)
   return 1;
 }
 
-
-/* Returns 1 iff DECL is a template parameter.  */
-
-int decl_template_parm_p (decl)
-     tree decl;
-{
-  /* For template template parms. */
-  if (TREE_CODE (decl) == TEMPLATE_DECL
-      && TREE_TYPE (decl)
-      && TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TEMPLATE_PARM)
-    return 1;
-
-  /* For template type parms. */
-  if (TREE_CODE (decl) == TYPE_DECL
-      && TREE_TYPE (decl)
-      && TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TYPE_PARM)
-    return 1;
-
-  /* For template non-type parms. */
-  if (TREE_CODE (decl) == CONST_DECL
-      && DECL_INITIAL (decl) 
-      && TREE_CODE (DECL_INITIAL (decl)) == TEMPLATE_PARM_INDEX)
-    return 1;
-
-  return 0;
-}
-
 /* Complain if DECL shadows a template parameter.
 
    [temp.local]: A template-parameter shall not be redeclared within its
@@ -1510,7 +1488,7 @@ check_template_shadow (decl)
       /* We check for decl != olddecl to avoid bogus errors for using a
 	 name inside a class.  We check TPFI to avoid duplicate errors for
 	 inline member templates.  */
-      if (decl != olddecl && decl_template_parm_p (olddecl)
+      if (decl != olddecl && DECL_TEMPLATE_PARM_P (olddecl)
 	  && ! TEMPLATE_PARMS_FOR_INLINE (current_template_parms))
 	{
 	  cp_error_at ("declaration of `%#D'", decl);
@@ -1671,6 +1649,7 @@ process_template_parm (list, next)
 				     decl, TREE_TYPE (parm));
     }
   SET_DECL_ARTIFICIAL (decl);
+  DECL_TEMPLATE_PARM_P (decl) = 1;
   pushdecl (decl);
   parm = build_tree_list (defval, parm);
   return chainon (list, parm);
