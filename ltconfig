@@ -1108,6 +1108,7 @@ freebsd*)
     freebsd-elf*)
       library_names_spec='${libname}${release}.so$versuffix ${libname}${release}.so $libname.so'
       need_version=no
+      need_lc=no
       need_lib_prefix=no
       ;;
     freebsd-*)
