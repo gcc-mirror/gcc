@@ -158,17 +158,42 @@ extern int target_flags;
     { "", TARGET_DEFAULT}}
 /* TARGET_DEFAULT is defined in sun*.h and isi.h, etc.  */
 
-/* This is meant to be redefined in the host dependent files */
-#define SUBTARGET_SWITCHES
+/* This macro is similar to `TARGET_SWITCHES' but defines names of
+   command options that have values.  Its definition is an
+   initializer with a subgrouping for each command option.
+
+   Each subgrouping contains a string constant, that defines the
+   fixed part of the option name, and the address of a variable.  The
+   variable, type `char *', is set to the variable part of the given
+   option if the fixed part matches.  The actual option name is made
+   by appending `-m' to the specified name.  */
+#define TARGET_OPTIONS							\
+{ { "align-loops=",	&m68k_align_loops_string },			\
+  { "align-jumps=",	&m68k_align_jumps_string },			\
+  { "align-functions=",	&m68k_align_funcs_string },			\
+  SUBTARGET_OPTIONS							\
+}
+
+/* Sometimes certain combinations of command options do not make
+   sense on a particular target machine.  You can define a macro
+   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
+   defined, is executed once just after all the command options have
+   been parsed.
+
+   Don't use this macro to turn on various extra optimizations for
+   `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
 
 #define OVERRIDE_OPTIONS		\
 {					\
+  override_options();			\
   if (! TARGET_68020 && flag_pic == 2)	\
     error("-fPIC is not currently supported on the 68000 or 68010\n");	\
   SUBTARGET_OVERRIDE_OPTIONS;		\
 }
 
-/* This is meant to be redefined in the host dependent files */
+/* These are meant to be redefined in the host dependent files */
+#define SUBTARGET_SWITCHES
+#define SUBTARGET_OPTIONS
 #define SUBTARGET_OVERRIDE_OPTIONS
 
 /* target machine storage layout */
@@ -223,7 +248,7 @@ extern int target_flags;
 #define STACK_BOUNDARY 16
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
-#define FUNCTION_BOUNDARY 16
+#define FUNCTION_BOUNDARY (1 << (m68k_align_funcs + 3))
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 16
@@ -234,6 +259,15 @@ extern int target_flags;
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 1
+
+/* Maximum power of 2 that code can be aligned to.  */
+#define MAX_CODE_ALIGN	2			/* 4 byte alignment */
+
+/* Align loop starts for optimal branching.  */
+#define ASM_OUTPUT_LOOP_ALIGN(FILE) ASM_OUTPUT_ALIGN ((FILE), m68k_align_loops)
+
+/* This is how to align an instruction for optimal branching. */
+#define ASM_OUTPUT_ALIGN_CODE(FILE) ASM_OUTPUT_ALIGN ((FILE), m68k_align_jumps)
 
 #define SELECT_RTX_SECTION(MODE, X)					\
 {									\
@@ -2042,6 +2076,15 @@ extern char *output_move_const_single ();
 extern char *output_move_const_double ();
 extern char *output_btst ();
 extern char *output_scc_di ();
+
+/* Variables in m68k.c */
+extern char *m68k_align_loops_string;
+extern char *m68k_align_jumps_string;
+extern char *m68k_align_funcs_string;
+extern int m68k_align_loops;
+extern int m68k_align_jumps;
+extern int m68k_align_funcs;
+
 
 /*
 Local variables:
