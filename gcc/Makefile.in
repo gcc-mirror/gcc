@@ -1340,11 +1340,11 @@ c-common.o : c-common.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-lex.h \
 # Language-independent files.
 
 DRIVER_DEFINES = \
-  -DSTANDARD_STARTFILE_PREFIX=\"$(unlibsubdir)/\" \
+  -DSTANDARD_STARTFILE_PREFIX=\"$(libdir)/\" \
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc-lib/\" \
   -DDEFAULT_TARGET_VERSION=\"$(version)\" \
   -DDEFAULT_TARGET_MACHINE=\"$(target_alias)\" \
-  -DTOOLDIR_BASE_PREFIX=\"$(unlibsubdir)/../\"
+  -DTOOLDIR_BASE_PREFIX=\"$(exec_prefix)/\"
 gcc.o: gcc.c $(CONFIG_H) system.h gansidecl.h multilib.h Makefile \
 	$(lang_specs_files)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
