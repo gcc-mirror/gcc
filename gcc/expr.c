@@ -8615,8 +8615,11 @@ do_jump_for_compare (comparison, if_false_label, if_true_label)
   else if (if_false_label)
     {
       rtx insn;
-      rtx prev = PREV_INSN (get_last_insn ());
+      rtx prev = get_last_insn ();
       rtx branch = 0;
+
+      if (prev != 0)
+	prev = PREV_INSN (prev);
 
       /* Output the branch with the opposite condition.  Then try to invert
 	 what is generated.  If more than one insn is a branch, or if the
