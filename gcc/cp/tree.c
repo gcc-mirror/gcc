@@ -49,7 +49,6 @@ static tree build_target_expr PARAMS ((tree, tree));
 static tree count_trees_r PARAMS ((tree *, int *, void *));
 static tree verify_stmt_tree_r PARAMS ((tree *, int *, void *));
 static tree find_tree_r PARAMS ((tree *, int *, void *));
-extern int cp_statement_code_p PARAMS ((enum tree_code));
 
 static tree handle_java_interface_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static tree handle_com_interface_attribute PARAMS ((tree *, tree, tree, int, bool *));
@@ -1119,27 +1118,6 @@ is_aggr_type_2 (t1, t2)
     return 0;
   return IS_AGGR_TYPE (t1) && IS_AGGR_TYPE (t2);
 }
-
-/* Returns nonzero if CODE is the code for a statement.  */
-
-int
-cp_statement_code_p (code)
-     enum tree_code code;
-{
-  switch (code)
-    {
-    case CTOR_INITIALIZER:
-    case TRY_BLOCK:
-    case HANDLER:
-    case EH_SPEC_BLOCK:
-    case USING_STMT:
-    case TAG_DEFN:
-      return 1;
-
-    default:
-      return 0;
-    }
-}
 
 #define PRINT_RING_SIZE 4
 
@@ -1275,7 +1253,7 @@ verify_stmt_tree_r (tp, walk_subtrees, data)
   htab_t *statements = (htab_t *) data;
   void **slot;
 
-  if (!statement_code_p (TREE_CODE (t)))
+  if (!STATEMENT_CODE_P (TREE_CODE (t)))
     return NULL_TREE;
 
   /* If this statement is already present in the hash table, then
@@ -2406,7 +2384,6 @@ cp_end_inlining (fn)
 void
 init_tree ()
 {
-  lang_statement_code_p = cp_statement_code_p;
   list_hash_table = htab_create_ggc (31, list_hash, list_hash_eq, NULL);
 }
 

@@ -7569,7 +7569,7 @@ tsubst_expr (t, args, complain, in_decl)
   if (processing_template_decl)
     return tsubst_copy (t, args, complain, in_decl);
 
-  if (!statement_code_p (TREE_CODE (t)))
+  if (!STATEMENT_CODE_P (TREE_CODE (t)))
     return tsubst_copy_and_build (t, args, complain, in_decl);
     
   switch (TREE_CODE (t))

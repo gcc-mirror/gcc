@@ -902,6 +902,10 @@ enum cplus_tree_code {
 };
 #undef DEFTREECODE
 
+#define cp_stmt_codes					\
+   CTOR_INITIALIZER,	TRY_BLOCK,	HANDLER,	\
+   EH_SPEC_BLOCK,	USING_STMT,	TAG_DEFN
+
 enum languages { lang_c, lang_cplusplus, lang_java };
 
 /* Macros to make error reporting functions' lives easier.  */

@@ -1,3 +1,32 @@
+2003-04-09  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-common.h (lang_statement_code_p): Remove declaration.
+	(statement_code_p): Ditto.
+	(c_common_stmt_codes): Define; list of c-common statement codes.
+	(statement_code_p): New extern declaration.
+	(STATEMENT_CODE_P): Define.
+	(INIT_STATEMENT_CODES): Define.
+	* c-common.c (statement_code_p): Kill the function, declare
+	as an array of bools instead.
+	(lang_statement_code_p): Remove.
+	(walk_stmt_tree): Use STATEMENT_CODE_P not statement_code_p.
+	(c_safe_from_p): Ditto.
+	* c-objc-common.c (c_objc_common_init): Use INIT_STATEMENT_CODES
+	to initialize the statement_code_p array.
+	* tree-inline.c (walk_tree): Use STATEMENT_CODE_P instead of
+	statement_code_p.
+	(copy_tree_r): Ditto.
+	* cp/cp-tree.h (cp_stmt_codes): Define; list of C++ specific
+	statement tree codes.
+	* cp/lex.c (cxx_init): Add missing print line break.  Use
+	INIT_STATEMENT_CODES to initialize the statement_code_p array.
+	* cp/parser.c (cp_parser_statement): Use STATEMENT_CODE_P
+	instead of statement_code_p.
+	* cp/pt.c (tsubst_expr): Ditto.
+	* cp/tree.c (verify_stmt_tree_r): Ditto.
+	(cp_statement_code_p): Remove.
+	(init_tree): Don't set lang_statement_code_p, it's gone.
+
 2003-04-09  Dan Nicolaescu  <dann@ics.uci.edu>
 	    Zack Weinberg  <zack@codesourcery.com>
 
