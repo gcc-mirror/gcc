@@ -2471,45 +2471,42 @@ check_format_info_main (status, res, info, format_chars, format_length,
      tree params;
      int arg_num;
 {
-  int i;
-  int suppressed;
-  const char *length_chars = NULL;
-  enum format_lengths length_chars_val = FMT_LEN_none;
-  enum format_std_version length_chars_std = STD_C89;
-  int format_char;
   const char *orig_format_chars = format_chars;
-  tree cur_param;
-  tree wanted_type;
-  int main_arg_num;
-  tree main_arg_params;
-  enum format_std_version wanted_type_std;
-  const char *wanted_type_name;
-  format_wanted_type width_wanted_type;
-  format_wanted_type precision_wanted_type;
-  format_wanted_type main_wanted_type;
-  format_wanted_type *first_wanted_type;
-  format_wanted_type *last_wanted_type;
-  tree first_fillin_param;
-  const format_kind_info *fki = NULL;
-  const format_flag_spec *flag_specs = NULL;
-  const format_flag_pair *bad_flag_pairs = NULL;
-  const format_length_info *fli = NULL;
-  const format_char_info *fci = NULL;
-  char flag_chars[256];
+  tree first_fillin_param = params;
+
+  const format_kind_info *fki = &format_types[info->format_type];
+  const format_flag_spec *flag_specs = fki->flag_specs;
+  const format_flag_pair *bad_flag_pairs = fki->bad_flag_pairs;
+
   /* -1 if no conversions taking an operand have been found; 0 if one has
      and it didn't use $; 1 if $ formats are in use.  */
   int has_operand_number = -1;
 
-  first_fillin_param = params;
   init_dollar_format_checking (info->first_arg_num, first_fillin_param);
-  fki = &format_types[info->format_type];
-  flag_specs = fki->flag_specs;
-  bad_flag_pairs = fki->bad_flag_pairs;
+
   while (1)
     {
-      int aflag;
-      first_wanted_type = NULL;
-      last_wanted_type = NULL;
+      int i;
+      int suppressed = FALSE;
+      const char *length_chars = NULL;
+      enum format_lengths length_chars_val = FMT_LEN_none;
+      enum format_std_version length_chars_std = STD_C89;
+      int format_char;
+      tree cur_param;
+      tree wanted_type;
+      int main_arg_num = 0;
+      tree main_arg_params = 0;
+      enum format_std_version wanted_type_std;
+      const char *wanted_type_name;
+      format_wanted_type width_wanted_type;
+      format_wanted_type precision_wanted_type;
+      format_wanted_type main_wanted_type;
+      format_wanted_type *first_wanted_type = NULL;
+      format_wanted_type *last_wanted_type = NULL;
+      const format_length_info *fli = NULL;
+      const format_char_info *fci = NULL;
+      char flag_chars[256];
+      int aflag = 0;
       if (*format_chars == 0)
 	{
 	  if (format_chars - orig_format_chars != format_length)
@@ -2537,9 +2534,6 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	  continue;
 	}
       flag_chars[0] = 0;
-      suppressed = FALSE;
-      main_arg_num = 0;
-      main_arg_params = 0;
 
       if ((fki->flags & FMT_FLAG_ARG_CONVERT) && has_operand_number != 0)
 	{
@@ -2653,7 +2647,8 @@ check_format_info_main (status, res, info, format_chars, format_length,
 		  ++format_chars;
 		}
 	      if (found_width && !non_zero_width_char)
-		status_warning (status, "zero width in scanf format");
+		status_warning (status, "zero width in %s format",
+				fki->name);
 	      if (found_width)
 		{
 		  i = strlen (flag_chars);
@@ -2888,7 +2883,6 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	flag_chars[i - d] = 0;
       }
 
-      aflag = 0;
       if ((fki->flags & FMT_FLAG_SCANF_A_KLUDGE)
 	  && index (flag_chars, 'a') != 0)
 	aflag = 1;
