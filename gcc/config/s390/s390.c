@@ -213,6 +213,7 @@ struct machine_function GTY(())
   int first_save_gpr;
   int first_restore_gpr;
   int last_save_gpr;
+  int last_restore_gpr;
 
   /* Size of stack frame.  */
   HOST_WIDE_INT frame_size;
@@ -242,7 +243,7 @@ static rtx find_ltrel_base (rtx);
 static void replace_ltrel_base (rtx *, rtx);
 static void s390_optimize_prolog (bool);
 static int find_unused_clobbered_reg (void);
-static void s390_frame_info (void);
+static void s390_frame_info (int, int);
 static rtx save_fpr (rtx, int, int);
 static rtx restore_fpr (rtx, int, int);
 static rtx save_gprs (rtx, int, int, int);
@@ -4942,64 +4943,24 @@ s390_output_pool_entry (rtx exp, enum machine_mode mode, unsigned int align)
 static void
 s390_optimize_prolog (bool base_used)
 {
-  int save_first, save_last, restore_first, restore_last;
-  int i, j;
   rtx insn, new_insn, next_insn;
 
-  /* Recompute regs_ever_live data for special registers.  */
+  /* Do a final recompute of the frame-related data.  */
+
+  s390_frame_info (base_used, cfun->machine->save_return_addr_p);
   regs_ever_live[BASE_REGISTER] = base_used;
   regs_ever_live[RETURN_REGNUM] = cfun->machine->save_return_addr_p;
   regs_ever_live[STACK_POINTER_REGNUM] = cfun->machine->frame_size > 0;
 
-
-  /* Find first and last gpr to be saved.  */
-
-  for (i = 6; i < 16; i++)
-    if (regs_ever_live[i])
-      if (!global_regs[i]
-	  || i == STACK_POINTER_REGNUM
-          || i == RETURN_REGNUM
-          || i == BASE_REGISTER
-          || (flag_pic && i == (int)PIC_OFFSET_TABLE_REGNUM))
-	break;
-
-  for (j = 15; j > i; j--)
-    if (regs_ever_live[j])
-      if (!global_regs[j]
-	  || j == STACK_POINTER_REGNUM
-          || j == RETURN_REGNUM
-          || j == BASE_REGISTER
-          || (flag_pic && j == (int)PIC_OFFSET_TABLE_REGNUM))
-	break;
-
-  if (i == 16)
-    {
-      /* Nothing to save/restore.  */
-      save_first = restore_first = -1;
-      save_last = restore_last = -1;
-    }
-  else
-    {
-      /* Save/restore from i to j.  */
-      save_first = restore_first = i;
-      save_last = restore_last = j;
-    }
-
-  /* Varargs functions need to save gprs 2 to 6.  */
-  if (current_function_stdarg)
-    {
-      save_first = 2;
-      if (save_last < 6)
-        save_last = 6;
-    }
-
-
   /* If all special registers are in fact used, there's nothing we
      can do, so no point in walking the insn list.  */
-  if (i <= BASE_REGISTER && j >= BASE_REGISTER
-      && (TARGET_CPU_ZARCH || (i <= RETURN_REGNUM && j >= RETURN_REGNUM)))
-    return;
 
+  if (cfun->machine->first_save_gpr <= BASE_REGISTER 
+      && cfun->machine->last_save_gpr >= BASE_REGISTER
+      && (TARGET_CPU_ZARCH 
+          || (cfun->machine->first_save_gpr <= RETURN_REGNUM 
+              && cfun->machine->last_save_gpr >= RETURN_REGNUM)))
+    return;
 
   /* Search for prolog/epilog insns and replace them.  */
 
@@ -5028,9 +4989,10 @@ s390_optimize_prolog (bool base_used)
 	  if (first > BASE_REGISTER || last < BASE_REGISTER)
 	    continue;
 
-	  if (save_first != -1)
+	  if (cfun->machine->first_save_gpr != -1)
 	    {
-	      new_insn = save_gprs (base, off, save_first, save_last);
+	      new_insn = save_gprs (base, off, cfun->machine->first_save_gpr,
+				    cfun->machine->last_save_gpr);
 	      new_insn = emit_insn_before (new_insn, insn);
 	      INSN_ADDRESSES_NEW (new_insn, -1);
 	    }
@@ -5052,9 +5014,10 @@ s390_optimize_prolog (bool base_used)
 	  if (GET_CODE (base) != REG || off < 0)
 	    continue;
 
-	  if (save_first != -1)
+	  if (cfun->machine->first_save_gpr != -1)
 	    {
-	      new_insn = save_gprs (base, off, save_first, save_last);
+	      new_insn = save_gprs (base, off, cfun->machine->first_save_gpr,
+				    cfun->machine->last_save_gpr);
 	      new_insn = emit_insn_before (new_insn, insn);
 	      INSN_ADDRESSES_NEW (new_insn, -1);
 	    }
@@ -5078,9 +5041,10 @@ s390_optimize_prolog (bool base_used)
 	  if (first > BASE_REGISTER || last < BASE_REGISTER)
 	    continue;
 
-	  if (restore_first != -1)
+	  if (cfun->machine->first_restore_gpr != -1)
 	    {
-	      new_insn = restore_gprs (base, off, restore_first, restore_last);
+	      new_insn = restore_gprs (base, off, cfun->machine->first_restore_gpr,
+				       cfun->machine->last_restore_gpr);
 	      new_insn = emit_insn_before (new_insn, insn);
 	      INSN_ADDRESSES_NEW (new_insn, -1);
 	    }
@@ -5102,9 +5066,10 @@ s390_optimize_prolog (bool base_used)
 	  if (GET_CODE (base) != REG || off < 0)
 	    continue;
 
-	  if (restore_first != -1)
+	  if (cfun->machine->first_restore_gpr != -1)
 	    {
-	      new_insn = restore_gprs (base, off, restore_first, restore_last);
+	      new_insn = restore_gprs (base, off, cfun->machine->first_restore_gpr,
+				       cfun->machine->last_restore_gpr);
 	      new_insn = emit_insn_before (new_insn, insn);
 	      INSN_ADDRESSES_NEW (new_insn, -1);
 	    }
@@ -5258,11 +5223,14 @@ find_unused_clobbered_reg (void)
   return 0;
 }
 
-/* Fill FRAME with info about frame of current function.  */
+/* Fill cfun->machine with info about frame of current function.  
+   BASE_USED and RETURN_ADDR_USED specify whether we assume the
+   base and return address register will need to be saved.  */
 
 static void
-s390_frame_info (void)
+s390_frame_info (int base_used, int return_addr_used)
 {
+  int live_regs[16];
   int i, j;
   HOST_WIDE_INT fsize = get_frame_size ();
 
@@ -5283,59 +5251,65 @@ s390_frame_info (void)
 
   /* Does function need to setup frame and save area.  */
 
-  if (! current_function_is_leaf
+  if (!current_function_is_leaf
       || TARGET_TPF_PROFILING
       || cfun->machine->frame_size > 0
       || current_function_calls_alloca
       || current_function_stdarg)
     cfun->machine->frame_size += STARTING_FRAME_OFFSET;
 
-  /* If we use the return register, we'll need to make sure
-     it is going to be saved/restored.  */
+  /* Find first and last gpr to be saved.  We trust regs_ever_live
+     data, except that we don't save and restore global registers.
 
-  if (!current_function_is_leaf
-      || TARGET_TPF_PROFILING
-      || regs_ever_live[RETURN_REGNUM])
-    cfun->machine->save_return_addr_p = 1;
+     Also, all registers with special meaning to the compiler need
+     to be handled extra.  */
 
-  /* Find first and last gpr to be saved.  Note that at this point,
-     we assume the base register and -on S/390- the return register
-     always need to be saved.  This is done because the usage of these
-     register might change even after the prolog was emitted.
-     If it turns out later that we really don't need them, the
-     prolog/epilog code is modified again.  */
+  for (i = 0; i < 16; i++)
+    live_regs[i] = regs_ever_live[i] && !global_regs[i];
 
-  regs_ever_live[BASE_REGISTER] = 1;
-  if (!TARGET_CPU_ZARCH || cfun->machine->save_return_addr_p)
-    regs_ever_live[RETURN_REGNUM] = 1;
-  regs_ever_live[STACK_POINTER_REGNUM] = cfun->machine->frame_size > 0;
+  if (flag_pic)
+    live_regs[PIC_OFFSET_TABLE_REGNUM] = 
+    regs_ever_live[PIC_OFFSET_TABLE_REGNUM];
+
+  live_regs[BASE_REGISTER] = base_used;
+  live_regs[RETURN_REGNUM] = return_addr_used;
+  live_regs[STACK_POINTER_REGNUM] = cfun->machine->frame_size > 0;
 
   for (i = 6; i < 16; i++)
-    if (regs_ever_live[i])
-      if (!global_regs[i]
-	  || i == STACK_POINTER_REGNUM
-          || i == RETURN_REGNUM
-          || i == BASE_REGISTER
-          || (flag_pic && i == (int)PIC_OFFSET_TABLE_REGNUM))
-	break;
-
+    if (live_regs[i])
+      break;
   for (j = 15; j > i; j--)
-    if (regs_ever_live[j])
-      if (!global_regs[j]
-	  || j == STACK_POINTER_REGNUM
-          || j == RETURN_REGNUM
-          || j == BASE_REGISTER
-          || (flag_pic && j == (int)PIC_OFFSET_TABLE_REGNUM))
-	break;
+    if (live_regs[j])
+      break;
 
-  /* Save / Restore from gpr i to j.  */
-  cfun->machine->first_save_gpr = i;
-  cfun->machine->first_restore_gpr = i;
-  cfun->machine->last_save_gpr  = j;
+  if (i == 16)
+    {
+      /* Nothing to save/restore.  */
+      cfun->machine->first_save_gpr = -1;
+      cfun->machine->first_restore_gpr = -1;
+      cfun->machine->last_save_gpr = -1;
+      cfun->machine->last_restore_gpr = -1;
+    }
+  else
+    {
+      /* Save / Restore from gpr i to j.  */
+      cfun->machine->first_save_gpr = i;
+      cfun->machine->first_restore_gpr = i;
+      cfun->machine->last_save_gpr = j;
+      cfun->machine->last_restore_gpr = j;
+    }
 
   /* Varargs functions need to save gprs 2 to 6.  */
   if (current_function_stdarg)
-    cfun->machine->first_save_gpr = 2;
+    {
+      if (cfun->machine->first_save_gpr == -1
+          || cfun->machine->first_save_gpr > 2)
+        cfun->machine->first_save_gpr = 2;
+
+      if (cfun->machine->last_save_gpr == -1
+          || cfun->machine->last_save_gpr < 6)
+        cfun->machine->last_save_gpr = 6;
+    }
 }
 
 /* Return offset between argument pointer and frame pointer
@@ -5344,30 +5318,15 @@ s390_frame_info (void)
 HOST_WIDE_INT
 s390_arg_frame_offset (void)
 {
-  HOST_WIDE_INT fsize = get_frame_size ();
-  int save_fprs_p, i;
+  /* See the comment in s390_emit_prologue about the assumptions we make
+     whether or not the base and return address register need to be saved.  */
+  int return_addr_used = !current_function_is_leaf
+			 || TARGET_TPF_PROFILING
+			 || regs_ever_live[RETURN_REGNUM]
+			 || cfun->machine->save_return_addr_p;
 
-  /* fprs 8 - 15 are caller saved for 64 Bit ABI.  */
-  save_fprs_p = 0;
-  if (TARGET_64BIT)
-    for (i = 24; i < 32; i++)
-      if (regs_ever_live[i] && !global_regs[i])
-	{
-          save_fprs_p = 1;
-	  break;
-	}
-
-  fsize = fsize + save_fprs_p * 64;
-
-  /* Does function need to setup frame and save area.  */
-
-  if (! current_function_is_leaf
-      || TARGET_TPF_PROFILING
-      || fsize > 0
-      || current_function_calls_alloca
-      || current_function_stdarg)
-    fsize += STARTING_FRAME_OFFSET;
-  return fsize + STACK_POINTER_OFFSET;
+  s390_frame_info (1, !TARGET_CPU_ZARCH || return_addr_used);
+  return cfun->machine->frame_size + STACK_POINTER_OFFSET;
 }
 
 /* Emit insn to save fpr REGNUM at offset OFFSET relative
@@ -5556,9 +5515,29 @@ s390_emit_prologue (void)
   rtx temp_reg;
   int i;
 
-  /* Compute frame_info.  */
+  /* At this point, we decide whether we'll need to save/restore the
+     return address register.  This decision is final on zSeries machines;
+     on S/390 it can still be overridden in s390_split_branches.  */
 
-  s390_frame_info ();
+  if (!current_function_is_leaf
+      || TARGET_TPF_PROFILING
+      || regs_ever_live[RETURN_REGNUM])
+    cfun->machine->save_return_addr_p = 1;
+
+  /* Compute frame info.  Note that at this point, we assume the base 
+     register and -on S/390- the return register always need to be saved.
+     This is done because the usage of these registers might change even 
+     after the prolog was emitted.  If it turns out later that we really 
+     don't need them, the prolog/epilog code is modified again.  */
+
+  s390_frame_info (1, !TARGET_CPU_ZARCH || cfun->machine->save_return_addr_p);
+
+  /* We need to update regs_ever_live to avoid data-flow problems.  */
+
+  regs_ever_live[BASE_REGISTER] = 1;
+  regs_ever_live[RETURN_REGNUM] = !TARGET_CPU_ZARCH 
+				  || cfun->machine->save_return_addr_p;
+  regs_ever_live[STACK_POINTER_REGNUM] = cfun->machine->frame_size > 0;
 
   /* Choose best register to use for temp use within prologue.
      See below for why TPF must use the register 1.  */
@@ -5736,7 +5715,7 @@ s390_emit_epilogue (bool sibcall)
   if (cfun->machine->first_restore_gpr != -1)
     {
       area_bottom = cfun->machine->first_restore_gpr * UNITS_PER_WORD;
-      area_top = (cfun->machine->last_save_gpr + 1) * UNITS_PER_WORD;
+      area_top = (cfun->machine->last_restore_gpr + 1) * UNITS_PER_WORD;
     }
   else
     {
@@ -5834,7 +5813,7 @@ s390_emit_epilogue (bool sibcall)
 	 to stack location from where they get restored.  */
 
       for (i = cfun->machine->first_restore_gpr;
-	   i <= cfun->machine->last_save_gpr;
+	   i <= cfun->machine->last_restore_gpr;
 	   i++)
 	{
 	  /* These registers are special and need to be
@@ -5862,7 +5841,7 @@ s390_emit_epilogue (bool sibcall)
 
 	  if (cfun->machine->save_return_addr_p
 	      || (cfun->machine->first_restore_gpr < BASE_REGISTER
-		  && cfun->machine->last_save_gpr > RETURN_REGNUM))
+		  && cfun->machine->last_restore_gpr > RETURN_REGNUM))
 	    {
 	      int return_regnum = find_unused_clobbered_reg();
 	      if (!return_regnum)
@@ -5885,7 +5864,7 @@ s390_emit_epilogue (bool sibcall)
 
       insn = restore_gprs (frame_pointer, offset,
 			   cfun->machine->first_restore_gpr,
-			   cfun->machine->last_save_gpr);
+			   cfun->machine->last_restore_gpr);
       emit_insn (insn);
     }
 
