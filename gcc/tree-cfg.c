@@ -3973,7 +3973,7 @@ remove_forwarder_block (basic_block bb, basic_block **worklist)
 
   /* If the destination block consists of an nonlocal label, do not merge
      it.  */
-  label = first_stmt (bb);
+  label = first_stmt (dest);
   if (label
       && TREE_CODE (label) == LABEL_EXPR
       && DECL_NONLOCAL (LABEL_EXPR_LABEL (label)))
