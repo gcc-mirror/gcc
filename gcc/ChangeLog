@@ -1,3 +1,16 @@
+2004-01-13  Steven Bosscher  <stevenb@suse.de>
+
+	PR c++/13376
+	* function.h (struct function): Kill `name' field.
+	(current_function_name): Make it an extern function.
+	* function.c (current_function_name): New function.
+	* graph.c: Update all uses of current_function_name.
+	* gcse.c: Likewise.
+	* config/alpha/alpha.c, config/avr/avr.c, config/c4x/c4x.c,
+	config/mips/mips.c, config/pdp11/pdp11.c: Likewise.
+	* config/ip2k/ip2k.c (function_prologue): Use MAIN_NAME_P
+	instead of a strcmp with "main".
+
 2004-01-13  Jan Hubicka  <jh@suse.cz>
 
 	* c-decl.c (diagnose_mismatched_decls):  Fix warning calls.

@@ -6408,8 +6408,6 @@ allocate_struct_function (tree fndecl)
   DECL_SAVED_INSNS (fndecl) = cfun;
   cfun->decl = fndecl;
 
-  current_function_name = (*lang_hooks.decl_printable_name) (fndecl, 2);
-
   result = DECL_RESULT (fndecl);
   if (aggregate_value_p (result, fndecl))
     {
@@ -8068,6 +8066,13 @@ init_function_once (void)
   VARRAY_INT_INIT (prologue, 0, "prologue");
   VARRAY_INT_INIT (epilogue, 0, "epilogue");
   VARRAY_INT_INIT (sibcall_epilogue, 0, "sibcall_epilogue");
+}
+
+/* Returns the name of the current function.  */
+const char *
+current_function_name (void)
+{
+  return (*lang_hooks.decl_printable_name) (cfun->decl, 2);
 }
 
 #include "gt-function.h"

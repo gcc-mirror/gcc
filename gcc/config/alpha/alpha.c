@@ -9739,7 +9739,7 @@ unicosmk_add_call_info_word (rtx x)
   ++machine->ciw_count;
 
   return GEN_INT (machine->ciw_count
-		  + strlen (current_function_name)/8 + 5);
+		  + strlen (current_function_name ())/8 + 5);
 }
 
 static char unicosmk_section_buf[100];

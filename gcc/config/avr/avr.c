@@ -662,13 +662,14 @@ avr_output_function_prologue (FILE *file, HOST_WIDE_INT size)
     }
   else if (minimize && (frame_pointer_needed || live_seq > 6)) 
     {
+      const char *cfun_name = current_function_name ();
       fprintf (file, ("\t"
 		      AS1 (ldi, r26) ",lo8(" HOST_WIDE_INT_PRINT_DEC ")" CR_TAB
 		      AS1 (ldi, r27) ",hi8(" HOST_WIDE_INT_PRINT_DEC ")" CR_TAB), size, size);
 
       fprintf (file, (AS2 (ldi, r30, pm_lo8(.L_%s_body)) CR_TAB
-		      AS2 (ldi, r31, pm_hi8(.L_%s_body)) CR_TAB)
-	       ,current_function_name, current_function_name);
+		      AS2 (ldi, r31, pm_hi8(.L_%s_body)) CR_TAB),
+	       cfun_name, cfun_name);
       
       prologue_size += 4;
       
@@ -684,7 +685,7 @@ avr_output_function_prologue (FILE *file, HOST_WIDE_INT size)
 		   (18 - live_seq) * 2);
 	  ++prologue_size;
 	}
-      fprintf (file, ".L_%s_body:\n", current_function_name);
+      fprintf (file, ".L_%s_body:\n", cfun_name);
     }
   else
     {
@@ -871,7 +872,7 @@ avr_output_function_epilogue (FILE *file, HOST_WIDE_INT size)
 
  out:
   fprintf (file, "/* epilogue end (size=%d) */\n", epilogue_size);
-  fprintf (file, "/* function %s size %d (%d) */\n", current_function_name,
+  fprintf (file, "/* function %s size %d (%d) */\n", current_function_name (),
 	   prologue_size + function_size + epilogue_size, function_size);
   commands_in_file += prologue_size + function_size + epilogue_size;
   commands_in_prologues += prologue_size;

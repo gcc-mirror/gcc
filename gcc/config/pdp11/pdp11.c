@@ -148,7 +148,8 @@ pdp11_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
     int via_ac = -1;
 
     fprintf (stream,
-	     "\n\t;	/* function prologue %s*/\n", current_function_name);
+	     "\n\t;	/* function prologue %s*/\n",
+	     current_function_name ());
 
     /* if we are outputting code for main, 
        the switch FPU to right mode if TARGET_FPU */
