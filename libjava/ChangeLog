@@ -1,5 +1,7 @@
 2001-09-05  Tom Tromey  <tromey@redhat.com>
 
+	* java/util/Properties.java: Re-merged from Classpath.
+
 	From Eric Blake, via Classpath:
 	* java/lang/String.java (CaseInsensitiveComparator): New class.
 	(CASE_INSENSITIVE_ORDER): Use instance of CaseInsensitiveComparator.
