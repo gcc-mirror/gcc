@@ -1,3 +1,18 @@
+Tue Sep  7 17:15:21 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	Add some machine-dependent GC roots.
+	* sparc.c: Include ggc.h. 
+	(sparc_add_gc_roots): New function.
+	(mark_ultrasparc_pipeline_state): Likewise.
+	(override_options): Call sparc_add_gc_roots.
+	* pa.c: Include ggc.h.
+	(pa_add_gc_roots): New function.
+	(mark_deferred_plabels): Likewise.
+	(override_options): Call pa_add_gc_roots.
+	* mips.c: Include ggc.h.
+	(mips_add_gc_roots): New function.
+	(override_options): Use it.
+
 Tue Sep  7 11:39:41 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cpperror.c (cpp_file_line_for_message): Constify a char*.
