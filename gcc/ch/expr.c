@@ -1,6 +1,7 @@
 /* Convert language-specific tree expression to rtl instructions,
    for GNU CHILL compiler.
-   Copyright (C) 1992, 93, 94, 98, 99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1998, 1999, 2000
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2264,8 +2265,9 @@ build_chill_sizeof (type)
 	  return error_mark_node;
 	}
       
-      temp = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type),
-			 size_int (TYPE_PRECISION (char_type_node)));
+      temp = size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
+			 size_int (TYPE_PRECISION (char_type_node)
+				   / BITS_PER_UNIT));
       if (signame != NULL_TREE)
         {
           /* we have a signal definition. This signal may have no
@@ -3344,9 +3346,9 @@ build_concat_expr (op0, op1)
 
       if (TREE_CODE (type0) == SET_TYPE)
 	{
-	  result_size = size_binop (PLUS_EXPR,
-				    discrete_count (TYPE_DOMAIN (type0)),
-				    discrete_count (TYPE_DOMAIN (type1)));
+	  result_size = fold (build (PLUS_EXPR, integer_type_node,
+				     discrete_count (TYPE_DOMAIN (type0)),
+				     discrete_count (TYPE_DOMAIN (type1))));
 	  result_class.mode = build_bitstring_type (result_size);
 	}
       else
@@ -4250,15 +4252,16 @@ build_chill_repetition_op (count_op, string)
 	    for (temp = vallist; temp; temp = TREE_CHAIN (temp))
 	      {
 		tree new_value
-		  = fold (size_binop (PLUS_EXPR, origin, TREE_VALUE (temp)));
+		  = fold (build (PLUS_EXPR, TREE_TYPE (origin),
+				 TREE_VALUE (temp)));
 		tree new_purpose = NULL_TREE;
+
 		if (! TREE_CONSTANT (TREE_VALUE (temp)))
 		  tree_const = 0;
 		if (TREE_PURPOSE (temp))
 		  {
-		    new_purpose = fold (size_binop (PLUS_EXPR,
-						    origin,
-						    TREE_PURPOSE (temp)));
+		    new_purpose = fold (build (PLUS_EXPR, TREE_TYPE (origin),
+					       origin, TREE_PURPOSE (temp)));
 		    if (! TREE_CONSTANT (TREE_PURPOSE (temp)))
 		      tree_const = 0;
 		  }

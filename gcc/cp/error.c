@@ -2,7 +2,6 @@
    This code is non-reentrant.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
    Free Software Foundation, Inc.
-
    This file is part of GNU CC.
 
 GNU CC is free software; you can redistribute it and/or modify
@@ -1651,8 +1650,9 @@ dump_expr (t, flags)
 	if (TREE_CODE (type) == ARRAY_REF)
 	  type = build_cplus_array_type
 	    (TREE_OPERAND (type, 0),
-	     build_index_type (size_binop (MINUS_EXPR, TREE_OPERAND (type, 1),
-					   integer_one_node)));
+	     build_index_type (fold (build (MINUS_EXPR, integer_type_node,
+					    TREE_OPERAND (type, 1),
+					    integer_one_node))));
 	dump_type (type, flags);
 	if (TREE_OPERAND (t, 2))
 	  {

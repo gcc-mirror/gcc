@@ -4792,7 +4792,7 @@ cp_make_lang_type (code)
      canonical binfo for them.  Ideally, this would be done lazily for
      all types.  */
   if (IS_AGGR_TYPE_CODE (code) || code == TEMPLATE_TYPE_PARM)
-    TYPE_BINFO (t) = make_binfo (integer_zero_node, t, NULL_TREE, NULL_TREE);
+    TYPE_BINFO (t) = make_binfo (size_zero_node, t, NULL_TREE, NULL_TREE);
 
   return t;
 }

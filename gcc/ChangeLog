@@ -1,3 +1,71 @@
+Sun Feb 27 16:40:33 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* builtins.c (c_strlen): Use size_diffop and return ssizetype value.
+	(expand_builtin_strcpy): Pass correct type to size_binop.
+	(expand_builtin_strcmp): Likewise.
+	Clean up conditional structure.
+	* c-decl.c (init_decl_processing): Don't call set_sizetype twice.
+	(complete_array_type): Don't use size_binop for MAXINDEX.
+	* c-typeck.c (c_sizeof): Use size_one_node and TYPE_SIZE_UNIT.
+	(c_sizeof_nowarn, c_size_in_bytes): Likewise.
+	(c_alignof): Use size_one_node.
+	(build_unary_op): Pass arg of proper type to size_binop.
+	(really_start_incremental_init, push_init_level): Use sizetype for
+	constructor{,_bit,_unfilled}_index.
+	(pop_init_label, output_init_element): Likewise.
+	(output_pending_init_elements, process_init_element): Likewise.
+	* calls.c (compute_argument_block_size): Field VAR is ssizetype.
+	* expr.c (store_expr): Use size_int.
+	(store_constructor): Use proper types for size_binop args.
+	(get_inner_reference, expand_expr, case ARRAY_REF): Likewise.
+	(expand_expr_unaligned): Likewise.
+	(string_contant): Return object of sizetype.
+	* expr.h (SUB_PARM_SIZE): Call size_diffop and pass proper types.
+	(ARGS_SIZE_RTX): Call ARGS_SIZE_TREE.
+	(ARGS_SIZE_TREE): Pass proper types to size_binop.
+	* fold-const.c (int_const_binop): Refine when size_int is called.
+	(fold_convert): Likewise.
+	(size_int_wide): Rework to take KIND as arg, only take low order
+	bits, handle new sizetype_tab datatype, and chain entries in
+	size_table.
+	(size_int_type_wide): New function.
+	(size_binop): Validate types of arguments.
+	(ssize_binop): Deleted.
+	(size_diffop): New function.
+	(extract_muldiv): Only fold division into multiplication for sizetypes.
+	* function.c (assign_parms): Use size_diffop and make sure
+	VAR field is of ssizetype; also pass proper type to size_binop.
+	(locate_and_pad_parm, pad_to_arg_alignment): Likewise.
+	(round_down): Deleted from here.
+	* store-layout.c (sizetype_tab): Now an array.
+	(sizetype_set, early_root_list): New variables.
+	(variable_size): Use size_one_node.
+	(round_up): Pass proper type to size_binop.
+	(round_down): Moved to here and corrected as above.
+	(layout_record): Pass proper arg types to size_binop.
+	(layout_type): Likewise.
+	If sizetype_set is zero, record the type just laid out.
+	(make_unsigned_type): Don't call set_sizetype;
+	(make_signed_type): Likewise; also, call fixup_signed_type.
+	(initialize_sizetypes): New function.
+	(set_sizetype): Make copy of types, set TYPE_IS_SIZETYPE, and
+	set name of bitsizetype to "bit_size_type".
+	Fix up type of sizes of all types made before call.
+	* tm.texi (ROUND_TYPE_SIZE_UNIT): New macro.
+	* tree.c (fix_sizetype): Deleted.
+	(build_common_tree_nodes): Call initialize_sizetypes.
+	(build_common_tree_nodes_2): Don't call fix_sizetype.
+	* tree.h (TYPE_IS_SIZETYPE): New macro.
+	(initialize_sizetype): New declaration.
+	(enum size_type_kind): New type.
+	(struct sizetype_tab): Deleted.
+	(sizetype_tab): Now array; adjust sizetype macros.
+	(size_diffop, size_int_type_wide): New functions.
+	(size_int_wide): Change number of args and type; access macros changed.
+	(ssize_int, sbitsize_int): New macros.
+	* config/i960/i960.h (ROUND_TYPE_SIZE): Use size_int.
+	(ROUND_TYPE_SIZE_UNIT): New macro.
+
 2000-02-27  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* c-lex.c (putback_buffer): Make 'buffer' an unsigned char *.

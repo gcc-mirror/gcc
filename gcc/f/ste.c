@@ -1,5 +1,5 @@
 /* ste.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2000 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -959,8 +959,9 @@ ffeste_io_dofio_ (ffebld expr)
   if (size == NULL_TREE)	/* Already filled in for CHARACTER type. */
     {				/* "(ftnlen) sizeof(type)" */
       size = size_binop (CEIL_DIV_EXPR,
-			 TYPE_SIZE (ffecom_tree_type[bt][kt]),
-			 size_int (TYPE_PRECISION (char_type_node)));
+			 TYPE_SIZE_UNIT (ffecom_tree_type[bt][kt]),
+			 size_int (TYPE_PRECISION (char_type_node)
+				   / BITS_PER_UNIT));
 #if 0	/* Assume that while it is possible that char * is wider than
 	   ftnlen, no object in Fortran space can get big enough for its
 	   size to be wider than ftnlen.  I really hope nobody wastes
@@ -977,13 +978,13 @@ ffeste_io_dofio_ (ffebld expr)
       = is_complex ? ffecom_f2c_ftnlen_two_node : ffecom_f2c_ftnlen_one_node;
   else
     {
-      num_elements = size_binop (CEIL_DIV_EXPR,
-				 TYPE_SIZE (TREE_TYPE (TREE_TYPE (variable))),
-				 size);
-      num_elements = size_binop (CEIL_DIV_EXPR,
-				 num_elements,
-				 size_int (TYPE_PRECISION
-					   (char_type_node)));
+      num_elements
+	= size_binop (CEIL_DIV_EXPR,
+		      TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (variable))),
+		      convert (sizetype, size));
+      num_elements = size_binop (CEIL_DIV_EXPR, num_elements,
+				 size_int (TYPE_PRECISION (char_type_node)
+					   / BITS_PER_UNIT));
       num_elements = convert (ffecom_f2c_ftnlen_type_node,
 			      num_elements);
     }
@@ -1050,8 +1051,9 @@ ffeste_io_dolio_ (ffebld expr)
   if (size == NULL_TREE)	/* Already filled in for CHARACTER type. */
     {				/* "(ftnlen) sizeof(type)" */
       size = size_binop (CEIL_DIV_EXPR,
-			 TYPE_SIZE (ffecom_tree_type[bt][kt]),
-			 size_int (TYPE_PRECISION (char_type_node)));
+			 TYPE_SIZE_UNIT (ffecom_tree_type[bt][kt]),
+			 size_int (TYPE_PRECISION (char_type_node)
+				   / BITS_PER_UNIT));
 #if 0	/* Assume that while it is possible that char * is wider than
 	   ftnlen, no object in Fortran space can get big enough for its
 	   size to be wider than ftnlen.  I really hope nobody wastes
@@ -1067,13 +1069,13 @@ ffeste_io_dolio_ (ffebld expr)
     num_elements = ffecom_integer_one_node;
   else
     {
-      num_elements = size_binop (CEIL_DIV_EXPR,
-				 TYPE_SIZE (TREE_TYPE (TREE_TYPE (variable))),
-				 size);
-      num_elements = size_binop (CEIL_DIV_EXPR,
-				 num_elements,
-				 size_int (TYPE_PRECISION
-					   (char_type_node)));
+      num_elements
+	= size_binop (CEIL_DIV_EXPR,
+		      TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (variable))),
+		      convert (sizetype, size));
+      num_elements = size_binop (CEIL_DIV_EXPR, num_elements,
+				 size_int (TYPE_PRECISION (char_type_node)
+					   / BITS_PER_UNIT));
       num_elements = convert (ffecom_f2c_ftnlen_type_node,
 			      num_elements);
     }
@@ -1139,8 +1141,9 @@ ffeste_io_douio_ (ffebld expr)
   if (size == NULL_TREE)	/* Already filled in for CHARACTER type. */
     {				/* "(ftnlen) sizeof(type)" */
       size = size_binop (CEIL_DIV_EXPR,
-			 TYPE_SIZE (ffecom_tree_type[bt][kt]),
-			 size_int (TYPE_PRECISION (char_type_node)));
+			 TYPE_SIZE_UNIT (ffecom_tree_type[bt][kt]),
+			 size_int (TYPE_PRECISION (char_type_node)
+				   / BITS_PER_UNIT));
 #if 0	/* Assume that while it is possible that char * is wider than
 	   ftnlen, no object in Fortran space can get big enough for its
 	   size to be wider than ftnlen.  I really hope nobody wastes
@@ -1157,12 +1160,13 @@ ffeste_io_douio_ (ffebld expr)
       = is_complex ? ffecom_f2c_ftnlen_two_node : ffecom_f2c_ftnlen_one_node;
   else
     {
-      num_elements = size_binop (CEIL_DIV_EXPR,
-				 TYPE_SIZE (TREE_TYPE (TREE_TYPE (variable))),
-				 size);
+      num_elements
+	= size_binop (CEIL_DIV_EXPR,
+		      TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (variable))),
+		      convert (sizetype, size));
       num_elements = size_binop (CEIL_DIV_EXPR, num_elements,
-				 size_int (TYPE_PRECISION
-					   (char_type_node)));
+				 size_int (TYPE_PRECISION (char_type_node)
+					   / BITS_PER_UNIT));
       num_elements = convert (ffecom_f2c_ftnlen_type_node,
 			      num_elements);
     }
@@ -1759,13 +1763,13 @@ ffeste_io_icilist_ (bool have_err,
   else if (unitexp && unitlenexp)
     {
       /* An array, but all the info is constant, so compute now.  */
-      unitnuminit = size_binop (CEIL_DIV_EXPR,
-				TYPE_SIZE (TREE_TYPE (TREE_TYPE (unitexp))),
-				unitlenexp);
-      unitnuminit = size_binop (CEIL_DIV_EXPR,
-				unitnuminit,
-				size_int (TYPE_PRECISION
-					  (char_type_node)));
+      unitnuminit
+	= size_binop (CEIL_DIV_EXPR,
+		      TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (unitexp))),
+		      convert (sizetype, unitlenexp));
+      unitnuminit = size_binop (CEIL_DIV_EXPR, unitnuminit,
+				size_int (TYPE_PRECISION (char_type_node)
+					  / BITS_PER_UNIT));
       unitnumexp = unitnuminit;
     }
   else
@@ -1874,13 +1878,13 @@ ffeste_io_icilist_ (bool have_err,
       && unitexp != error_mark_node
       && unitlenexp != error_mark_node)
     {
-      unitnumexp = size_binop (CEIL_DIV_EXPR,
-			       TYPE_SIZE (TREE_TYPE (TREE_TYPE (unitexp))),
-			       unitlenexp);
-      unitnumexp = size_binop (CEIL_DIV_EXPR,
-			       unitnumexp,
-			       size_int (TYPE_PRECISION
-					 (char_type_node)));
+      unitnumexp
+	= size_binop (CEIL_DIV_EXPR,
+		      TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (unitexp))),
+		      convert (sizetype, unitlenexp));
+      unitnumexp = size_binop (CEIL_DIV_EXPR, unitnumexp,
+			       size_int (TYPE_PRECISION (char_type_node)
+					 / BITS_PER_UNIT));
       ffeste_f2c_compile_ (unitnumfield, unitnumexp);
     }
 

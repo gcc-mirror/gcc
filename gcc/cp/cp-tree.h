@@ -3618,7 +3618,8 @@ extern void push_lang_context			PARAMS ((tree));
 extern void pop_lang_context			PARAMS ((void));
 extern tree instantiate_type			PARAMS ((tree, tree, int));
 extern void print_class_statistics		PARAMS ((void));
-extern tree skip_rtti_stuff	                PARAMS ((tree, tree, unsigned HOST_WIDE_INT *));
+extern tree skip_rtti_stuff	                PARAMS ((tree, tree,
+							 HOST_WIDE_INT *));
 extern void build_self_reference		PARAMS ((void));
 extern void warn_hidden				PARAMS ((tree));
 extern tree get_enclosing_class			PARAMS ((tree));

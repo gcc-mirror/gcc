@@ -969,10 +969,10 @@ ffecom_arrayref_ (tree item, ffebld expr, int want_ptr)
 			   item,
 			   size_binop (MULT_EXPR,
 				       size_in_bytes (TREE_TYPE (array)),
-				       fold (build (MINUS_EXPR,
-						    tree_type_x,
-						    element,
-						    min))));
+				       convert (sizetype,
+						fold (build (MINUS_EXPR,
+							     tree_type_x,
+							     element, min)))));
 	}
       if (! want_ptr)
 	{
@@ -9090,14 +9090,13 @@ ffecom_tree_canonize_ptr_ (tree *decl, tree *offset,
       if (TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST)
 	{
 	  /* An offset into COMMON.  */
-	  *offset = size_binop (PLUS_EXPR,
-				*offset,
-				TREE_OPERAND (t, 1));
+	  *offset = fold (build (PLUS_EXPR, TREE_TYPE (*offset),
+				 *offset, TREE_OPERAND (t, 1)));
 	  /* Convert offset (presumably in bytes) into canonical units
 	     (presumably bits).  */
-	  *offset = size_binop (MULT_EXPR,
-				TYPE_SIZE (TREE_TYPE (TREE_TYPE (t))),
-				*offset);
+	  *offset = fold (build (MULT_EXPR, TREE_TYPE (*offset),
+				 TYPE_SIZE (TREE_TYPE (TREE_TYPE (t))),
+				 *offset));
 	  break;
 	}
       /* Not a COMMON reference, so an unrecognized pattern.  */
@@ -9258,16 +9257,17 @@ ffecom_tree_canonize_ref_ (tree *decl, tree *offset,
 	    || (*decl == error_mark_node))
 	  return;
 
-	*offset = size_binop (MULT_EXPR,
-			      TYPE_SIZE (TREE_TYPE (TREE_TYPE (array))),
-			      size_binop (MINUS_EXPR,
-					  element,
-					  TYPE_MIN_VALUE
-					  (TYPE_DOMAIN
-					   (TREE_TYPE (array)))));
+	*offset
+	  = size_binop (MULT_EXPR,
+			TYPE_SIZE (TREE_TYPE (TREE_TYPE (array))),
+			convert (sizetype,
+				 fold (build (MINUS_EXPR, TREE_TYPE (element),
+					      element,
+					      TYPE_MIN_VALUE
+					      (TYPE_DOMAIN
+					       (TREE_TYPE (array)))))));;
 
-	*offset = size_binop (PLUS_EXPR,
-			      init_offset,
+	*offset = size_binop (PLUS_EXPR, convert (sizetype, init_offset),
 			      *offset);
 
 	*size = TYPE_SIZE (TREE_TYPE (t));
@@ -15632,6 +15632,11 @@ type_for_mode (mode, unsignedp)
 
   if (mode == TYPE_MODE (long_long_integer_type_node))
     return unsignedp ? long_long_unsigned_type_node : long_long_integer_type_node;
+
+#if HOST_BITS_PER_WIDE_INT >= 64
+  if (mode == TYPE_MODE (intTI_type_node))
+    return unsignedp ? unsigned_intTI_type_node : intTI_type_node;
+#endif
 
   if (mode == TYPE_MODE (float_type_node))
     return float_type_node;

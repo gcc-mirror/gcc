@@ -31,10 +31,16 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "ggc.h"
 
+/* Set to one when set_sizetype has been called.  */
+static int sizetype_set;
+
+/* List of types created before set_sizetype has been called.  We do not
+   make this a GGC root since we want these nodes to be reclaimed.  */
+static tree early_type_list;
+
 /* Data type for the expressions representing sizes of data types.
    It is the first integer type laid out.  */
-
-struct sizetype_tab sizetype_tab;
+tree sizetype_tab[(int) TYPE_KIND_LAST];
 
 /* If nonzero, this is an upper limit on alignment of structure fields.
    The value is measured in bits.  */
@@ -114,7 +120,7 @@ variable_size (size)
       else
 	error ("variable-size type declared outside of any function");
 
-      return size_int (1);
+      return size_one_node;
     }
 
   if (immediate_size_expand)
@@ -214,16 +220,29 @@ int_mode_for_mode (mode)
   return mode;
 }
 
-/* Return the value of VALUE, rounded up to a multiple of DIVISOR.  */
+/* Return the value of VALUE, rounded up to a multiple of DIVISOR.
+   This can only be applied to objects of a sizetype.  */
 
 tree
 round_up (value, divisor)
      tree value;
      int divisor;
 {
-  return size_binop (MULT_EXPR,
-		     size_binop (CEIL_DIV_EXPR, value, size_int (divisor)),
-		     size_int (divisor));
+  tree arg = size_int_type (divisor, TREE_TYPE (value));
+
+  return size_binop (MULT_EXPR, size_binop (CEIL_DIV_EXPR, value, arg), arg);
+}
+
+/* Likewise, but round down.  */
+
+tree
+round_down (value, divisor)
+     tree value;
+     int divisor;
+{
+  tree arg = size_int_type (divisor, TREE_TYPE (value));
+
+  return size_binop (MULT_EXPR, size_binop (FLOOR_DIV_EXPR, value, arg), arg);
 }
 
 /* Set the size, mode and alignment of a ..._DECL node.
@@ -632,8 +651,8 @@ layout_record (rec)
   else
     {
       if (const_size)
-	var_size
-	  = size_binop (PLUS_EXPR, var_size, bitsize_int (const_size));
+	var_size = size_binop (PLUS_EXPR, var_size, bitsize_int (const_size));
+
       TYPE_SIZE (rec) = var_size;
     }
 
@@ -652,7 +671,7 @@ layout_record (rec)
       TYPE_BINFO_SIZE_UNIT (rec)
 	= convert (sizetype,
 		   size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (rec),
-			       size_int (BITS_PER_UNIT)));
+			       bitsize_int (BITS_PER_UNIT)));
     }
   
   {
@@ -964,8 +983,10 @@ layout_type (type)
 	    /* The initial subtraction should happen in the original type so
 	       that (possible) negative values are handled appropriately.  */
 	    length = size_binop (PLUS_EXPR, size_one_node,
-				 fold (build (MINUS_EXPR, TREE_TYPE (lb),
-					      ub, lb)));
+				 convert (sizetype,
+					  fold (build (MINUS_EXPR,
+						       TREE_TYPE (lb),
+						       ub, lb))));
 
 	    /* If neither bound is a constant and sizetype is signed, make
 	       sure the size is never negative.  We should really do this
@@ -990,7 +1011,8 @@ layout_type (type)
 		  element_size = integer_one_node;
 	      }
 
-	    TYPE_SIZE (type) = size_binop (MULT_EXPR, element_size, length);
+	    TYPE_SIZE (type) = size_binop (MULT_EXPR, element_size,
+					   convert (bitsizetype, length));
 
 	    /* If we know the size of the element, calculate the total
 	       size directly, rather than do some division thing below.
@@ -1000,8 +1022,7 @@ layout_type (type)
 	       Note that we can't do this in the case where the size of
 	       the elements is one bit since TYPE_SIZE_UNIT cannot be
 	       set correctly in that case.  */
-	    if (TYPE_SIZE_UNIT (element) != 0
-		&& element_size != integer_one_node)
+	    if (TYPE_SIZE_UNIT (element) != 0 && ! integer_onep (element_size))
 	      TYPE_SIZE_UNIT (type)
 		= size_binop (MULT_EXPR, TYPE_SIZE_UNIT (element), length);
 	  }
@@ -1254,7 +1275,7 @@ layout_type (type)
     TYPE_SIZE_UNIT (type)
       = convert (sizetype,
 		 size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (type),
-			     size_int (BITS_PER_UNIT)));
+			     bitsize_int (BITS_PER_UNIT)));
 
   /* Once again evaluate only once, either now or as soon as safe.  */
   if (TYPE_SIZE_UNIT (type) != 0
@@ -1286,6 +1307,14 @@ layout_type (type)
 	
   pop_obstacks ();
   resume_momentary (old);
+
+  /* If this type is created before sizetype has been permanently set,
+     record it so set_sizetype can fix it up.  */
+  if (! sizetype_set)
+    {
+      TREE_CHAIN (type) = early_type_list;
+      early_type_list = type;
+    }
 }
 
 /* Create and return a type for signed integers of PRECISION bits.  */
@@ -1298,35 +1327,7 @@ make_signed_type (precision)
 
   TYPE_PRECISION (type) = precision;
 
-  /* Create the extreme values based on the number of bits.  */
-
-  TYPE_MIN_VALUE (type)
-    = build_int_2 ((precision - HOST_BITS_PER_WIDE_INT > 0
-		    ? 0 : (HOST_WIDE_INT) (-1) << (precision - 1)),
-		   (((HOST_WIDE_INT) (-1)
-		     << (precision - HOST_BITS_PER_WIDE_INT - 1 > 0
-			 ? precision - HOST_BITS_PER_WIDE_INT - 1
-			 : 0))));
-  TYPE_MAX_VALUE (type)
-    = build_int_2 ((precision - HOST_BITS_PER_WIDE_INT > 0
-		    ? -1 : ((HOST_WIDE_INT) 1 << (precision - 1)) - 1),
-		   (precision - HOST_BITS_PER_WIDE_INT - 1 > 0
-		    ? (((HOST_WIDE_INT) 1
-			<< (precision - HOST_BITS_PER_WIDE_INT - 1))) - 1
-		    : 0));
-
-  /* Give this type's extreme values this type as their type.  */
-
-  TREE_TYPE (TYPE_MIN_VALUE (type)) = type;
-  TREE_TYPE (TYPE_MAX_VALUE (type)) = type;
-
-  /* The first type made with this or `make_unsigned_type'
-     is the type for size values.  */
-  if (sizetype == 0)
-    set_sizetype (type);
-
-  /* Lay out the type: set its alignment, size, etc.  */
-  layout_type (type);
+  fixup_signed_type (type);
   return type;
 }
 
@@ -1340,17 +1341,39 @@ make_unsigned_type (precision)
 
   TYPE_PRECISION (type) = precision;
 
-  /* The first type made with this or `make_signed_type'
-     is the type for size values.  */
-
-  if (sizetype == 0)
-    {
-      TREE_UNSIGNED (type) = 1;
-      set_sizetype (type);
-    }
-
   fixup_unsigned_type (type);
   return type;
+}
+
+/* Initialize sizetype and bitsizetype to a reasonable and temporary
+   value to enable integer types to be created.  */
+
+void
+initialize_sizetypes ()
+{
+  tree t = make_node (INTEGER_TYPE);
+
+  /* Set this so we do something reasonable for the build_int_2 calls
+     below.  */
+  integer_type_node = t;
+
+  TYPE_MODE (t) = SImode;
+  TYPE_ALIGN (t) = GET_MODE_ALIGNMENT (SImode);
+  TYPE_SIZE (t) = build_int_2 (GET_MODE_BITSIZE (SImode), 0);
+  TYPE_SIZE_UNIT (t) = build_int_2 (GET_MODE_SIZE (SImode), 0);
+  TREE_UNSIGNED (t) = 1;
+  TYPE_PRECISION (t) = GET_MODE_BITSIZE (SImode);
+  TYPE_MIN_VALUE (t) = build_int_2 (0, 0);
+
+  /* 1000 avoids problems with possible overflow and is certainly
+     larger than any size value we'd want to be storing.  */
+  TYPE_MAX_VALUE (t) = build_int_2 (1000, 0);
+
+  /* These two must be different nodes because of the caching done in
+     size_int_wide.  */
+  sizetype = t;
+  bitsizetype = copy_node (t);
+  integer_type_node = 0;
 }
 
 /* Set sizetype to TYPE, and initialize *sizetype accordingly.
@@ -1367,8 +1390,14 @@ set_sizetype (type)
      precision.  */
   int precision = MIN (oprecision + BITS_PER_UNIT_LOG + 1,
 		       2 * HOST_BITS_PER_WIDE_INT);
+  unsigned int i;
+  tree t, next;
 
-  sizetype = type;
+  if (sizetype_set)
+    abort ();
+
+  /* Make copies of nodes since we'll be setting TYPE_IS_SIZETYPE.  */
+  sizetype = copy_node (type);
   bitsizetype = make_node (INTEGER_TYPE);
   TYPE_NAME (bitsizetype) = TYPE_NAME (type);
   TYPE_PRECISION (bitsizetype) = precision;
@@ -1384,22 +1413,43 @@ set_sizetype (type)
     {
       usizetype = sizetype;
       ubitsizetype = bitsizetype;
-      ssizetype = make_signed_type (oprecision);
-      sbitsizetype = make_signed_type (precision);
+      ssizetype = copy_node (make_signed_type (oprecision));
+      sbitsizetype = copy_node (make_signed_type (precision));
     }
   else
     {
       ssizetype = sizetype;
       sbitsizetype = bitsizetype;
-      usizetype = make_unsigned_type (oprecision);
-      ubitsizetype = make_unsigned_type (precision);
+      usizetype = copy_node (make_unsigned_type (oprecision));
+      ubitsizetype = copy_node (make_unsigned_type (precision));
     }
-  TYPE_NAME (bitsizetype) = TYPE_NAME (sizetype);
+
+  TYPE_NAME (bitsizetype) = get_identifier ("bit_size_type");
+
+  for (i = 0; i < sizeof sizetype_tab / sizeof sizetype_tab[0]; i++)
+    TYPE_IS_SIZETYPE (sizetype_tab[i]) = 1;
 
   ggc_add_tree_root ((tree *) &sizetype_tab,
 		     sizeof sizetype_tab / sizeof (tree));
-}
 
+  /* Go down each of the types we already made and set the proper type
+     for the sizes in them.  */
+  for (t = early_type_list; t != 0; t = next)
+    {
+      next = TREE_CHAIN (t);
+      TREE_CHAIN (t) = 0;
+
+      if (TREE_CODE (t) != INTEGER_TYPE)
+	abort ();
+
+      TREE_TYPE (TYPE_SIZE (t)) = bitsizetype;
+      TREE_TYPE (TYPE_SIZE_UNIT (t)) = sizetype;
+    }
+
+  early_type_list = 0;
+  sizetype_set = 1;
+}
+
 /* Set the extreme values of TYPE based on its precision in bits,
    then lay it out.  Used when make_signed_type won't do
    because the tree code is not INTEGER_TYPE.
@@ -1531,7 +1581,8 @@ get_best_mode (bitsize, bitpos, align, largest_mode, volatilep)
 /* Return the alignment of MODE. This will be bounded by 1 and
    BIGGEST_ALIGNMENT.  */
 
-unsigned get_mode_alignment (mode)
+unsigned int
+get_mode_alignment (mode)
      enum machine_mode mode;
 {
   unsigned alignment = GET_MODE_UNIT_SIZE (mode);

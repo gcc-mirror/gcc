@@ -874,6 +874,11 @@ struct tree_block
    its size.  */
 #define TYPE_NO_FORCE_BLK(NODE) (TYPE_CHECK (NODE)->type.no_force_blk_flag)
 
+/* In an INTEGER_TYPE, it means the type represents a size.  We use this
+   both for validity checking and to permit optimziations that are unsafe
+   for other types.  */
+#define TYPE_IS_SIZETYPE(NODE) (TYPE_CHECK (NODE)->type.no_force_blk_flag)
+
 /* Nonzero in a type considered volatile as a whole.  */
 #define TYPE_VOLATILE(NODE) ((NODE)->common.volatile_flag)
 
@@ -1657,6 +1662,7 @@ extern tree build_expr_wfl              PARAMS ((tree, const char *, int, int));
 
 extern tree make_signed_type		PARAMS ((int));
 extern tree make_unsigned_type		PARAMS ((int));
+extern void initialize_sizetypes	PARAMS ((void));
 extern void set_sizetype		PARAMS ((tree));
 extern tree signed_or_unsigned_type 	PARAMS ((int, tree));
 extern void fixup_unsigned_type		PARAMS ((tree));
@@ -1784,12 +1790,40 @@ extern tree convert			PARAMS ((tree, tree));
 extern unsigned int expr_align		PARAMS ((tree));
 extern tree size_in_bytes		PARAMS ((tree));
 extern HOST_WIDE_INT int_size_in_bytes	PARAMS ((tree));
-extern tree size_binop			PARAMS ((enum tree_code, tree, tree));
-extern tree ssize_binop			PARAMS ((enum tree_code, tree, tree));
-extern tree size_int_wide		PARAMS ((HOST_WIDE_INT, int));
 
-#define size_int(L) size_int_wide ((HOST_WIDE_INT) (L), 0)
-#define bitsize_int(L) size_int_wide ((HOST_WIDE_INT) (L), 1)
+/* Define data structures, macros, and functions for handling sizes
+   and the various types used to represent sizes.  */
+
+enum size_type_kind
+{
+  SIZETYPE,		/* Normal representation of sizes in bytes. */
+  SSIZETYPE,		/* Signed representation of sizes in bytes. */
+  USIZETYPE,		/* Unsigned representation of sizes in bytes.  */
+  BITSIZETYPE,		/* Normal representation of sizes in bits.  */
+  SBITSIZETYPE,		/* Signed representation of sizes in bits.  */
+  UBITSIZETYPE,	        /* Unsifgned representation of sizes in bits.  */
+  TYPE_KIND_LAST};
+
+extern tree sizetype_tab[(int) TYPE_KIND_LAST];
+
+#define sizetype sizetype_tab[(int) SIZETYPE]
+#define bitsizetype sizetype_tab[(int) BITSIZETYPE]
+#define ssizetype sizetype_tab[(int) SSIZETYPE]
+#define usizetype sizetype_tab[(int) USIZETYPE]
+#define sbitsizetype sizetype_tab[(int) SBITSIZETYPE]
+#define ubitsizetype sizetype_tab[(int) UBITSIZETYPE]
+
+extern tree size_binop			PARAMS ((enum tree_code, tree, tree));
+extern tree size_diffop			PARAMS ((tree, tree));
+extern tree size_int_wide		PARAMS ((HOST_WIDE_INT,
+						 enum size_type_kind));
+extern tree size_int_type_wide		PARAMS ((HOST_WIDE_INT, tree));
+
+#define size_int_type(L, T) size_int_type_wide ((HOST_WIDE_INT) (L), T)
+#define size_int(L) size_int_wide ((HOST_WIDE_INT) (L), SIZETYPE)
+#define ssize_int(L) size_int_wide ((HOST_WIDE_INT) (L), SSIZETYPE)
+#define bitsize_int(L) size_int_wide ((HOST_WIDE_INT) (L), BITSIZETYPE)
+#define sbitsize_int(L) size_int_wide ((HOST_WIDE_INT) (L), SBITSIZETYPE)
 
 extern tree round_up			PARAMS ((tree, int));
 extern tree get_pending_sizes		PARAMS ((void));
@@ -1801,22 +1835,6 @@ extern void put_pending_sizes		PARAMS ((tree));
   ((BITS_PER_UNIT > 1) + (BITS_PER_UNIT > 2) + (BITS_PER_UNIT > 4) \
    + (BITS_PER_UNIT > 8) + (BITS_PER_UNIT > 16) + (BITS_PER_UNIT > 32) \
    + (BITS_PER_UNIT > 64) + (BITS_PER_UNIT > 128) + (BITS_PER_UNIT > 256))
-
-struct sizetype_tab
-{
-  tree xsizetype, xbitsizetype;
-  tree xssizetype, xusizetype;
-  tree xsbitsizetype, xubitsizetype;
-};
-
-extern struct sizetype_tab sizetype_tab;
-
-#define sizetype sizetype_tab.xsizetype
-#define bitsizetype sizetype_tab.xbitsizetype
-#define ssizetype sizetype_tab.xssizetype
-#define usizetype sizetype_tab.xusizetype
-#define sbitsizetype sizetype_tab.xsbitsizetype
-#define ubitsizetype sizetype_tab.xubitsizetype
 
 /* If nonzero, an upper limit on alignment of structure fields, in bits. */
 extern unsigned int maximum_field_alignment;

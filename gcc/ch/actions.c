@@ -1,5 +1,6 @@
 /* Implement actions for CHILL.
-   Copyright (C) 1992, 93, 94, 98, 99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1998, 1999, 2000
+   Free Software Foundation, Inc.
    Authors: Per Bothner, Bill Cox, Michael Tiemann, Michael North
 
 This file is part of GNU CC.
@@ -466,13 +467,12 @@ check_non_null (expr)
   return expr;
 }
 
-/*
- * There are four conditions to generate a runtime check:
- *    1) assigning a longer INT to a shorter (signs irrelevant)
- *    2) assigning a signed to an unsigned
- *    3) assigning an unsigned to a signed of the same size.
- *    4) TYPE is a discrete subrange
- */
+/*  There are four conditions to generate a runtime check:
+    1) assigning a longer INT to a shorter (signs irrelevant)
+    2) assigning a signed to an unsigned
+    3) assigning an unsigned to a signed of the same size.
+    4) TYPE is a discrete subrange  */
+
 tree
 chill_convert_for_assignment (type, expr, place)
      tree type, expr;
@@ -558,10 +558,10 @@ chill_convert_for_assignment (type, expr, place)
     }
   result = convert (type, expr);
 
-  /* If the type is a array of PACK bits and the expression is an array constructor,
-     then build a CONSTRUCTOR for a bitstring.  Bitstrings are zero based, so
-     decrement the value of each CONSTRUCTOR element by the amount of the lower
-     bound of the array.  */
+  /* If the type is a array of PACK bits and the expression is an array
+     constructor, then build a CONSTRUCTOR for a bitstring.  Bitstrings are
+     zero based, so decrement the value of each CONSTRUCTOR element by the
+     amount of the lower bound of the array.  */
   if (TREE_CODE (type) == ARRAY_TYPE && TYPE_PACKED (type)
       && TREE_CODE (result) == CONSTRUCTOR)
     {
@@ -569,6 +569,7 @@ chill_convert_for_assignment (type, expr, place)
       tree new_list = NULL_TREE;
       long index;
       tree element;
+
       for (element = TREE_OPERAND (result, 1);
 	   element != NULL_TREE;
 	   element = TREE_CHAIN (element))
@@ -579,18 +580,21 @@ chill_convert_for_assignment (type, expr, place)
 	      switch (TREE_CODE (purpose))
 		{
 		case INTEGER_CST:
-		  new_list = tree_cons (NULL_TREE,
-					size_binop (MINUS_EXPR, purpose, domain_min),
-					new_list);
+		  new_list
+		    = tree_cons (NULL_TREE,
+				 fold (build (MINUS_EXPR, TREE_TYPE (purpose),
+					      purpose, domain_min)),
+				 new_list);
 		  break;
 		case RANGE_EXPR:
 		  for (index  = TREE_INT_CST_LOW (TREE_OPERAND (purpose, 0));
 		       index <= TREE_INT_CST_LOW (TREE_OPERAND (purpose, 1));
 		       index++)
 		    new_list = tree_cons (NULL_TREE,
-					  size_binop (MINUS_EXPR,
-						      build_int_2 (index, 0),
-						      domain_min),
+					  fold (build (MINUS_EXPR,
+						       integer_type_node,
+						       build_int_2 (index, 0),
+						       domain_min)),
 					  new_list);
 		  break;
 		default:
@@ -1697,11 +1701,12 @@ chill_expand_assignment (lhs, modifycode, rhs)
       tree from_pos = save_expr (TREE_OPERAND (lhs, 0));
       tree set = TREE_OPERAND (lhs, 1);
       tree domain = TYPE_DOMAIN (TREE_TYPE (set));
-      tree set_length = size_binop (PLUS_EXPR,
-				    size_binop (MINUS_EXPR,
-						TYPE_MAX_VALUE (domain),
-						TYPE_MIN_VALUE (domain)),
-				    integer_one_node);
+      tree set_length
+	= fold (build (PLUS_EXPR, integer_type_node,
+		       fold (build (MINUS_EXPR, integer_type_node,
+				    TYPE_MAX_VALUE (domain),
+				    TYPE_MIN_VALUE (domain))),
+		       integer_one_node));
       tree filename = force_addr_of (get_chill_filename());
       
       if (TREE_CODE (TREE_TYPE (lhs)) != BOOLEAN_TYPE)
@@ -1750,19 +1755,22 @@ chill_expand_assignment (lhs, modifycode, rhs)
       tree numbits = TREE_OPERAND (lhs, 1);
       tree from_pos = save_expr (TREE_OPERAND (lhs, 2));
       tree domain = TYPE_DOMAIN (TREE_TYPE (set));
-      tree set_length = size_binop (PLUS_EXPR,
-				    size_binop (MINUS_EXPR,
-						TYPE_MAX_VALUE (domain),
-						TYPE_MIN_VALUE (domain)),
-				    integer_one_node);
+      tree set_length
+	= fold (build (PLUS_EXPR, integer_type_node,
+		       fold (build (MINUS_EXPR, integer_type_node,
+				    TYPE_MAX_VALUE (domain),
+				    TYPE_MIN_VALUE (domain))),
+		       integer_one_node));
       tree filename = force_addr_of (get_chill_filename());
       tree to_pos;
+
       switch (TREE_CODE (TREE_TYPE (rhs)))
 	{
 	case SET_TYPE:
-	  to_pos = size_binop (MINUS_EXPR,
-			       size_binop (PLUS_EXPR, from_pos, numbits),
-			       integer_one_node);
+	  to_pos = fold (build (MINUS_EXPR, integer_type_node,
+				fold (build (PLUS_EXPR, integer_type_node,
+					     from_pos, numbits)),
+				integer_one_node));
 	  break;
 	case BOOLEAN_TYPE:
 	  to_pos = from_pos;
@@ -1812,7 +1820,7 @@ expand_varying_length_assignment (lhs, rhs)
   min_domain_val = TYPE_MIN_VALUE (TYPE_DOMAIN (base_array));
 
   lhs = build_component_ref (lhs, var_length_id);
-  rhs = size_binop (MINUS_EXPR, rhs, min_domain_val);
+  rhs = fold (build (MINUS_EXPR, TREE_TYPE (rhs), rhs, min_domain_val));
 
   expand_expr_stmt (build_chill_modify_expr (lhs, rhs));
 }

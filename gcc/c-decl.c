@@ -2887,6 +2887,7 @@ init_decl_processing ()
   tree ptr_ftype_void, ptr_ftype_ptr;
   int wchar_type_size;
   tree array_domain_type;
+  tree t;
 
   current_function_decl = NULL;
   named_labels = NULL;
@@ -2939,14 +2940,17 @@ init_decl_processing ()
      Traditionally, use a signed type.
      Note that stddef.h uses `unsigned long',
      and this must agree, even if long and int are the same size.  */
-  set_sizetype
-    (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (SIZE_TYPE))));
-  if (flag_traditional && TREE_UNSIGNED (sizetype))
-    set_sizetype (signed_type (sizetype));
+  t = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (SIZE_TYPE)));
+  if (flag_traditional && TREE_UNSIGNED (t))
+    t = signed_type (t);
+    
+  set_sizetype (t);
 
   /* Create the widest literal types. */
-  widest_integer_literal_type_node = make_signed_type (HOST_BITS_PER_WIDE_INT * 2);
-  widest_unsigned_literal_type_node = make_unsigned_type (HOST_BITS_PER_WIDE_INT * 2);
+  widest_integer_literal_type_node
+    = make_signed_type (HOST_BITS_PER_WIDE_INT * 2);
+  widest_unsigned_literal_type_node
+    = make_unsigned_type (HOST_BITS_PER_WIDE_INT * 2);
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, 
 			widest_integer_literal_type_node));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, 
@@ -3661,13 +3665,14 @@ complete_array_type (type, initial_value, do_default)
       else if (TREE_CODE (initial_value) == CONSTRUCTOR)
 	{
 	  tree elts = CONSTRUCTOR_ELTS (initial_value);
-	  maxindex = size_binop (MINUS_EXPR, integer_zero_node, size_one_node);
+	  maxindex = build_int_2 (-1, -1);
 	  for (; elts; elts = TREE_CHAIN (elts))
 	    {
 	      if (TREE_PURPOSE (elts))
 		maxindex = TREE_PURPOSE (elts);
 	      else
-		maxindex = size_binop (PLUS_EXPR, maxindex, size_one_node);
+		maxindex = fold (build (PLUS_EXPR, integer_type_node,
+					maxindex, integer_one_node));
 	    }
 	  maxindex = copy_node (maxindex);
 	}

@@ -1158,9 +1158,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
 
       args[i].slot_offset.constant = -args_size->constant;
       if (args_size->var)
-	{
-	  SUB_PARM_SIZE (args[i].slot_offset, args_size->var);
-	}
+	SUB_PARM_SIZE (args[i].slot_offset, args_size->var);
 #endif
 
       /* Increment ARGS_SO_FAR, which has info about which arg-registers
@@ -1205,14 +1203,14 @@ compute_argument_block_size (reg_parm_stack_space, args_size,
 	{
 	  args_size->var
 	    = size_binop (MAX_EXPR, args_size->var,
-			  size_int (reg_parm_stack_space));
+			  ssize_int (reg_parm_stack_space));
 
 #ifndef OUTGOING_REG_PARM_STACK_SPACE
 	  /* The area corresponding to register parameters is not to count in
 	     the size of the block we need.  So make the adjustment.  */
 	  args_size->var
 	    = size_binop (MINUS_EXPR, args_size->var,
-			  size_int (reg_parm_stack_space));
+			  ssize_int (reg_parm_stack_space));
 #endif
 	}
     }

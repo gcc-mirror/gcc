@@ -211,7 +211,8 @@ cp_convert_to_pointer (type, expr)
 	    expr = cplus_expand_constant (expr);
 
 	  if (binfo && ! TREE_VIA_VIRTUAL (binfo))
-	    expr = size_binop (code, expr, BINFO_OFFSET (binfo));
+	    expr = size_binop (code, convert (sizetype,expr),
+			       BINFO_OFFSET (binfo));
 	}
       else if (TYPE_PTRMEMFUNC_P (type))
 	{

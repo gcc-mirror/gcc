@@ -801,7 +801,7 @@ construct_virtual_bases (type, this_ref, this_ptr, init_list, flag)
       exp = build (PLUS_EXPR,
 		   TREE_TYPE (this_ptr),
 		   this_ptr,
-		   BINFO_OFFSET (vbases));
+		   fold (build1 (NOP_EXPR, this_ptr, BINFO_OFFSET (vbases))));
       exp = build1 (NOP_EXPR, 
 		    build_pointer_type (BINFO_TYPE (vbases)), 
 		    exp);
@@ -2482,7 +2482,8 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, use_global_delete)
     }
 
   /* The below is short by BI_header_size */
-  virtual_size = fold (size_binop (MULT_EXPR, size_exp, maxindex));
+  virtual_size = size_binop (MULT_EXPR, size_exp,
+			     convert (sizetype, maxindex));
 
   tbase = create_temporary_var (ptype);
   tbase_init = build_modify_expr (tbase, NOP_EXPR,
@@ -2525,7 +2526,8 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, use_global_delete)
       tree base_tbd;
 
       /* The below is short by BI_header_size */
-      virtual_size = fold (size_binop (MULT_EXPR, size_exp, maxindex));
+      virtual_size = size_binop (MULT_EXPR, size_exp,
+				 convert (sizetype, maxindex));
 
       if (! TYPE_VEC_NEW_USES_COOKIE (type))
 	/* no header */

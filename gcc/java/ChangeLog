@@ -1,3 +1,7 @@
+Sun Feb 27 16:40:33 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (build_java_ret): Pass proper type to size_binop.
+
 2000-02-25  Anthony Green  <green@cygnus.com>
 
 	* expr.c (build_class_init): Mark the decl to be ignored by

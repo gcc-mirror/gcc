@@ -164,6 +164,8 @@ get_pointer_alignment (exp, max_align)
    way, because it could contain a zero byte in the middle.
    TREE_STRING_LENGTH is the size of the character array, not the string.
 
+   The value returned is of type `ssizetype'.
+
    Unfortunately, string_constant can't access the values of const char
    arrays with initializers, so neither can we do so here.  */
 
@@ -178,25 +180,29 @@ c_strlen (src)
   src = string_constant (src, &offset_node);
   if (src == 0)
     return 0;
+
   max = TREE_STRING_LENGTH (src);
   ptr = TREE_STRING_POINTER (src);
+
   if (offset_node && TREE_CODE (offset_node) != INTEGER_CST)
     {
       /* If the string has an internal zero byte (e.g., "foo\0bar"), we can't
 	 compute the offset to the following null if we don't know where to
 	 start searching for it.  */
       int i;
+
       for (i = 0; i < max; i++)
 	if (ptr[i] == 0)
 	  return 0;
+
       /* We don't know the starting offset, but we do know that the string
 	 has no internal zero bytes.  We can assume that the offset falls
 	 within the bounds of the string; otherwise, the programmer deserves
 	 what he gets.  Subtract the offset from the length of the string,
-	 and return that.  */
-      /* This would perhaps not be valid if we were dealing with named
-         arrays in addition to literal string constants.  */
-      return size_binop (MINUS_EXPR, size_int (max), offset_node);
+	 and return that.  This would perhaps not be valid if we were dealing
+	 with named arrays in addition to literal string constants.  */
+
+      return size_diffop (size_int (max), offset_node);
     }
 
   /* We have a known offset into the string.  Start searching there for
@@ -210,6 +216,7 @@ c_strlen (src)
 	return 0;
       offset = TREE_INT_CST_LOW (offset_node);
     }
+
   /* If the offset is known to be out of bounds, warn, and call strlen at
      runtime.  */
   if (offset < 0 || offset > max)
@@ -217,18 +224,20 @@ c_strlen (src)
       warning ("offset outside bounds of constant string");
       return 0;
     }
+
   /* Use strlen to search for the first zero byte.  Since any strings
      constructed with build_string will have nulls appended, we win even
      if we get handed something like (char[4])"abcd".
 
      Since OFFSET is our starting index into the string, no further
      calculation is needed.  */
-  return size_int (strlen (ptr + offset));
+  return ssize_int (strlen (ptr + offset));
 }
 
 /* Given TEM, a pointer to a stack frame, follow the dynamic chain COUNT
    times to get the address of either a higher stack frame, or a return
    address located within it (depending on FNDECL_CODE).  */
+
 rtx
 expand_builtin_return_addr (fndecl_code, count, tem)
      enum built_in_function fndecl_code;
@@ -1437,6 +1446,7 @@ expand_builtin_memcpy (arglist)
 
 /* Expand expression EXP, which is a call to the strcpy builtin.  Return 0
    if we failed the caller should emit a normal call.  */
+
 static rtx
 expand_builtin_strcpy (exp)
      tree exp;
@@ -1448,7 +1458,8 @@ expand_builtin_strcpy (exp)
       /* Arg could be non-pointer if user redeclared this fcn wrong.  */
       || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
       || TREE_CHAIN (arglist) == 0
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE)
+      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
+	  != POINTER_TYPE))
     return 0;
   else
     {
@@ -1457,11 +1468,12 @@ expand_builtin_strcpy (exp)
       if (len == 0)
 	return 0;
 
-      len = size_binop (PLUS_EXPR, len, integer_one_node);
-
+      len = size_binop (PLUS_EXPR, len, ssize_int (1));
       chainon (arglist, build_tree_list (NULL_TREE, len));
     }
+
   result = expand_builtin_memcpy (arglist);
+
   if (! result)
     TREE_CHAIN (TREE_CHAIN (arglist)) = 0;
   return result;
@@ -1469,6 +1481,7 @@ expand_builtin_strcpy (exp)
 
 /* Expand expression EXP, which is a call to the memset builtin.  Return 0
    if we failed the caller should emit a normal call.  */
+
 static rtx
 expand_builtin_memset (exp)
      tree exp;
@@ -1610,6 +1623,7 @@ expand_builtin_memcmp (exp, arglist, target)
 /* Expand expression EXP, which is a call to the strcmp builtin.  Return 0
    if we failed the caller should emit a normal call, otherwise try to get
    the result in TARGET, if convenient.  */
+
 static rtx
 expand_builtin_strcmp (exp, target)
      tree exp;
@@ -1625,21 +1639,24 @@ expand_builtin_strcmp (exp, target)
       /* Arg could be non-pointer if user redeclared this fcn wrong.  */
       || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
       || TREE_CHAIN (arglist) == 0
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE)
+      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
+	  != POINTER_TYPE))
     return 0;
-  else if (!HAVE_cmpstrsi)
+
+  else if (! HAVE_cmpstrsi)
     return 0;
   {
     tree arg1 = TREE_VALUE (arglist);
     tree arg2 = TREE_VALUE (TREE_CHAIN (arglist));
-    tree len, len2;
+    tree len = c_strlen (arg1);
+    tree len2 = c_strlen (arg2);
     rtx result;
-    len = c_strlen (arg1);
+
     if (len)
-      len = size_binop (PLUS_EXPR, integer_one_node, len);
-    len2 = c_strlen (arg2);
+      len = size_binop (PLUS_EXPR, ssize_int (1), len);
+
     if (len2)
-      len2 = size_binop (PLUS_EXPR, integer_one_node, len2);
+      len2 = size_binop (PLUS_EXPR, ssize_int (1), len2);
 
     /* If we don't have a constant length for the first, use the length
        of the second, if we know it.  We don't require a constant for
@@ -1651,6 +1668,7 @@ expand_builtin_strcmp (exp, target)
        two fixed strings, or if the code was machine-generated.  We should
        add some code to the `memcmp' handler below to deal with such
        situations, someday.  */
+
     if (!len || TREE_CODE (len) != INTEGER_CST)
       {
 	if (len2)
@@ -1658,16 +1676,15 @@ expand_builtin_strcmp (exp, target)
 	else if (len == 0)
 	  return 0;
       }
-    else if (len2 && TREE_CODE (len2) == INTEGER_CST)
-      {
-	if (tree_int_cst_lt (len2, len))
-	  len = len2;
-      }
+    else if (len2 && TREE_CODE (len2) == INTEGER_CST
+	     && tree_int_cst_lt (len2, len))
+      len = len2;
 
     chainon (arglist, build_tree_list (NULL_TREE, len));
     result = expand_builtin_memcmp (exp, arglist, target);
     if (! result)
       TREE_CHAIN (TREE_CHAIN (arglist)) = 0;
+
     return result;
   }
 }
@@ -1675,6 +1692,7 @@ expand_builtin_strcmp (exp, target)
 
 /* Expand a call to __builtin_saveregs, generating the result in TARGET,
    if that's convenient.  */
+
 rtx
 expand_builtin_saveregs ()
 {

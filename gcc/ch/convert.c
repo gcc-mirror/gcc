@@ -1,5 +1,6 @@
 /* Language-level data type conversion for GNU CHILL.
-   Copyright (C) 1992, 93, 94, 98, 99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1998, 1999, 2000
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -858,14 +859,12 @@ digest_array_tuple (type, init, allow_missing_elements)
 	    }
 	  /* Calculate the last element of the gap. */
 	  if (*ptr)
-	    {
-	      /* Actually end up with correct type. */
-	      last = size_binop (MINUS_EXPR,
-				 CONSTRUCTOR_ELT_LO (*ptr),
-				 integer_one_node);
-	    }
+	    last = fold (build (MINUS_EXPR, integer_type_node,
+				CONSTRUCTOR_ELT_LO (*ptr),
+				integer_one_node));
 	  else
 	    last = domain_max;
+
 	  if (TREE_CODE (last) == INTEGER_CST && tree_int_cst_lt (last, first))
 	    ; /* Empty "gap" - no missing elements. */
 	  else if (default_value)
@@ -1058,16 +1057,17 @@ convert (type, expr)
 	{
 	  /* Note that array_type_nelts returns 1 less than the size. */
 	  nentries = array_type_nelts (TREE_TYPE (e));
-	  needed_padding = size_binop (MINUS_EXPR,
-				       array_type_nelts (target_array_type),
-				       nentries);
+	  needed_padding = fold (build (MINUS_EXPR, integer_type_node,
+					array_type_nelts (target_array_type),
+					nentries));
 	  if (TREE_CODE (needed_padding) != INTEGER_CST)
 	    {
 	      padding_max_size = size_in_bytes (TREE_TYPE (e));
 	      if (TREE_CODE (padding_max_size) != INTEGER_CST)
 		padding_max_size = TYPE_ARRAY_MAX_SIZE (TREE_TYPE (e));
 	    }
-	  nentries = size_binop (PLUS_EXPR, nentries, integer_one_node);
+	  nentries = fold (build (PLUS_EXPR, integer_type_node,
+				  nentries, integer_one_node));
 	}
       else if (TREE_CODE (e) == CONSTRUCTOR)
 	{

@@ -1559,13 +1559,8 @@ int_const_binop (code, arg1, arg2, notrunc, forsize)
       abort ();
     }
 
-  if (TREE_TYPE (arg1) == sizetype && hi == 0
-      && low >= 0
-      && (TYPE_MAX_VALUE (sizetype) == NULL
-	  || low <= TREE_INT_CST_LOW (TYPE_MAX_VALUE (sizetype)))
-      && ! overflow
-      && ! TREE_OVERFLOW (arg1) && ! TREE_OVERFLOW (arg2))
-    t = size_int (low);
+  if (forsize && hi == 0 && low >= 0 && low < 1000)
+    return size_int_type_wide (low, TREE_TYPE (arg1));
   else
     {
       t = build_int_2 (low, hi);
@@ -1797,19 +1792,25 @@ const_binop (code, arg1, arg2, notrunc)
 }
 
 /* Return an INTEGER_CST with value whose low-order HOST_BITS_PER_WIDE_INT
-   bits are given by NUMBER.
-
-   If BIT_P is nonzero, this represents a size in bit and the type of the
-   result will be bitsizetype, othewise it represents a size in bytes and
-   the type of the result will be sizetype.  */
+   bits are given by NUMBER and of the sizetype represented by KIND.  */
 
 tree
-size_int_wide (number, bit_p)
+size_int_wide (number, kind)
      HOST_WIDE_INT number;
-     int bit_p;
+     enum size_type_kind kind;
+{
+  return size_int_type_wide (number, sizetype_tab[(int) kind]);
+}
+
+/* Likewise, but the desired type is specified explicitly.  */
+
+tree
+size_int_type_wide (number, type)
+     HOST_WIDE_INT number;
+     tree type;
 {
   /* Type-size nodes already made for small sizes.  */
-  static tree size_table[2 * HOST_BITS_PER_WIDE_INT + 1][2];
+  static tree size_table[2 * HOST_BITS_PER_WIDE_INT + 1];
   static int init_p = 0;
   tree t;
   
@@ -1826,8 +1827,10 @@ size_int_wide (number, bit_p)
   if (number >= 0
       && number < (int) (sizeof size_table / sizeof size_table[0]) / 2)
     {
-      if (size_table[number][bit_p] != 0)
-	return size_table[number][bit_p];
+      if (size_table[number] != 0)
+	for (t = size_table[number]; t != 0; t = TREE_CHAIN (t))
+	  if (TREE_TYPE (t) == type)
+	    return t;
 
       if (! ggc_p)
 	{
@@ -1837,8 +1840,9 @@ size_int_wide (number, bit_p)
 	}
 
       t = build_int_2 (number, 0);
-      TREE_TYPE (t) = bit_p ? bitsizetype : sizetype;
-      size_table[number][bit_p] = t;
+      TREE_TYPE (t) = type;
+      TREE_CHAIN (t) = size_table[number];
+      size_table[number] = t;
 
       if (! ggc_p)
 	pop_obstacks ();
@@ -1846,14 +1850,15 @@ size_int_wide (number, bit_p)
       return t;
     }
 
-  t = build_int_2 (number, 0);
-  TREE_TYPE (t) = bit_p ? bitsizetype : sizetype;
+  t = build_int_2 (number, number < 0 ? -1 : 0);
+  TREE_TYPE (t) = type;
   TREE_OVERFLOW (t) = TREE_CONSTANT_OVERFLOW (t) = force_fit_type (t, 0);
   return t;
 }
 
-/* Combine operands OP1 and OP2 with arithmetic operation CODE.
-   CODE is a tree code.  Data type is taken from `sizetype',
+/* Combine operands OP1 and OP2 with arithmetic operation CODE.  CODE
+   is a tree code.  The type of the result is taken from the operands.
+   Both must be the same type integer type and it must be a size type.
    If the operands are constant, so is the result.  */
 
 tree
@@ -1861,6 +1866,12 @@ size_binop (code, arg0, arg1)
      enum tree_code code;
      tree arg0, arg1;
 {
+  tree type = TREE_TYPE (arg0);
+
+  if (type != TREE_TYPE (arg1)
+      || TREE_CODE (type) != INTEGER_TYPE || ! TYPE_IS_SIZETYPE (type))
+    abort ();
+
   /* Handle the special case of two integer constants faster.  */
   if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
     {
@@ -1880,41 +1891,49 @@ size_binop (code, arg0, arg1)
   if (arg0 == error_mark_node || arg1 == error_mark_node)
     return error_mark_node;
 
-  return fold (build (code, sizetype, arg0, arg1));
+  return fold (build (code, type, arg0, arg1));
 }
 
-/* Combine operands OP1 and OP2 with arithmetic operation CODE.
-   CODE is a tree code.  Data type is taken from `ssizetype',
-   If the operands are constant, so is the result.  */
+/* Given two values, either both of sizetype or both of bitsizetype,
+   compute the difference between the two values.  Return the value
+   in signed type corresponding to the type of the operands.  */
 
 tree
-ssize_binop (code, arg0, arg1)
-     enum tree_code code;
+size_diffop (arg0, arg1)
      tree arg0, arg1;
 {
-  /* Handle the special case of two integer constants faster.  */
-  if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
-    {
-      /* And some specific cases even faster than that.  */
-      if (code == PLUS_EXPR && integer_zerop (arg0))
-	return arg1;
-      else if ((code == MINUS_EXPR || code == PLUS_EXPR)
-	       && integer_zerop (arg1))
-	return arg0;
-      else if (code == MULT_EXPR && integer_onep (arg0))
-	return arg1;
+  tree type = TREE_TYPE (arg0);
+  tree ctype;
 
-      /* Handle general case of two integer constants.  We convert
-         arg0 to ssizetype because int_const_binop uses its type for the
-	 return value.  */
-      arg0 = convert (ssizetype, arg0);
-      return int_const_binop (code, arg0, arg1, 0, 0);
-    }
+  if (TREE_TYPE (arg1) != type || TREE_CODE (type) != INTEGER_TYPE
+      || ! TYPE_IS_SIZETYPE (type))
+    abort ();
 
-  if (arg0 == error_mark_node || arg1 == error_mark_node)
-    return error_mark_node;
+  /* If the type is already signed, just do the simple thing.  */
+  if (! TREE_UNSIGNED (type))
+    return size_binop (MINUS_EXPR, arg0, arg1);
 
-  return fold (build (code, ssizetype, arg0, arg1));
+  ctype = (type == bitsizetype || type == ubitsizetype
+	   ? sbitsizetype : ssizetype);
+
+  /* If either operand is not a constant, do the conversions to the signed
+     type and subtract.  The hardware will do the right thing with any
+     overflow in the subtraction.  */
+  if (TREE_CODE (arg0) != INTEGER_CST || TREE_CODE (arg1) != INTEGER_CST)
+    return size_binop (MINUS_EXPR, convert (ctype, arg0),
+		       convert (ctype, arg1));
+
+  /* If ARG0 is larger than ARG1, subtract and return the result in CTYPE.
+     Otherwise, subtract the other way, convert to CTYPE (we know that can't
+     overflow) and negate (which can't either).  Special-case a result
+     of zero while we're here.  */
+  if (tree_int_cst_equal (arg0, arg1))
+    return convert (ctype, integer_zero_node);
+  else if (tree_int_cst_lt (arg1, arg0))
+    return convert (ctype, size_binop (MINUS_EXPR, arg0, arg1));
+  else
+    return size_binop (MINUS_EXPR, convert (ctype, integer_zero_node),
+		       convert (ctype, size_binop (MINUS_EXPR, arg1, arg0)));
 }
 
 /* This structure is used to communicate arguments to fold_convert_1.  */
@@ -1958,6 +1977,14 @@ fold_convert (t, arg1)
 	     leave the conversion unfolded.  */
 	  if (TYPE_PRECISION (type) > 2 * HOST_BITS_PER_WIDE_INT)
 	    return t;
+
+	  /* If we are trying to make a sizetype for a small integer, use
+	     size_int to pick up cached types to reduce duplicate nodes.  */
+	  if (TREE_CODE (type) == INTEGER_CST && TYPE_IS_SIZETYPE (type)
+	      && TREE_INT_CST_HIGH (arg1) == 0
+	      && TREE_INT_CST_LOW (arg1) >= 0
+	      && TREE_INT_CST_LOW (arg1) < 1000)
+	    return size_int_type_wide (TREE_INT_CST_LOW (arg1), type);
 
 	  /* Given an integer constant, make new constant with new type,
 	     appropriately sign-extended or truncated.  */
@@ -4471,8 +4498,13 @@ extract_muldiv (t, c, code, wide_type)
       /* If these operations "cancel" each other, we have the main
 	 optimizations of this pass, which occur when either constant is a
 	 multiple of the other, in which case we replace this with either an
-	 operation or CODE or TCODE.  */
-      if ((code == MULT_EXPR && tcode == EXACT_DIV_EXPR)
+	 operation or CODE or TCODE.  If we have an unsigned type that is
+	 not a sizetype, we canot do this for division since it will change
+	 the result if the original computation overflowed.  */
+      if ((code == MULT_EXPR && tcode == EXACT_DIV_EXPR
+	   && (! TREE_UNSIGNED (ctype)
+	       || (TREE_CODE (ctype) == INTEGER_TYPE
+		   && TYPE_IS_SIZETYPE (ctype))))
 	  || (tcode == MULT_EXPR
 	      && code != TRUNC_MOD_EXPR && code != CEIL_MOD_EXPR
 	      && code != FLOOR_MOD_EXPR && code != ROUND_MOD_EXPR))
