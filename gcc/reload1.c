@@ -2573,7 +2573,7 @@ eliminate_regs (x, mem_mode, insn)
 		   )
 		  || x_size == new_size)
 	      )
-	    return adjust_address_nv (x, GET_MODE (x), SUBREG_BYTE (x));
+	    return adjust_address_nv (new, GET_MODE (x), SUBREG_BYTE (x));
 	  else
 	    return gen_rtx_SUBREG (GET_MODE (x), new, SUBREG_BYTE (x));
 	}

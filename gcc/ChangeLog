@@ -1,3 +1,8 @@
+Mon Apr 29 17:19:10 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* reload1.c (eliminate_regs, case SUBREG): Fix typo in
+	adjust_address_nv call.
+
 2002-04-29  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/install.texi (Testing): Provide additional information, and
