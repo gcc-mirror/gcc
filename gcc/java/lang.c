@@ -126,62 +126,62 @@ int flag_emit_class_files = 0;
 
 int flag_filelist_file = 0;
 
-/* When non zero, we emit xref strings. Values of the flag for xref
+/* When nonzero, we emit xref strings. Values of the flag for xref
    backends are defined in xref_flag_table, xref.c.  */
 
 int flag_emit_xref = 0;
 
-/* When non zero, -Wall was turned on.  */
+/* When nonzero, -Wall was turned on.  */
 int flag_wall = 0;
 
-/* When non zero, check for redundant modifier uses.  */
+/* When nonzero, check for redundant modifier uses.  */
 int flag_redundant = 0;
 
-/* When non zero, call a library routine to do integer divisions. */
+/* When nonzero, call a library routine to do integer divisions. */
 int flag_use_divide_subroutine = 1;
 
-/* When non zero, generate code for the Boehm GC.  */
+/* When nonzero, generate code for the Boehm GC.  */
 int flag_use_boehm_gc = 0;
 
-/* When non zero, assume the runtime uses a hash table to map an
+/* When nonzero, assume the runtime uses a hash table to map an
    object to its synchronization structure.  */
 int flag_hash_synchronization;
 
-/* When non zero, assume all native functions are implemented with
+/* When nonzero, assume all native functions are implemented with
    JNI, not CNI.  */
 int flag_jni = 0;
 
-/* When non zero, warn when source file is newer than matching class
+/* When nonzero, warn when source file is newer than matching class
    file.  */
 int flag_newer = 1;
 
-/* When non zero, generate checks for references to NULL.  */
+/* When nonzero, generate checks for references to NULL.  */
 int flag_check_references = 0;
 
 /* The encoding of the source file.  */
 const char *current_encoding = NULL;
 
-/* When non zero, report the now deprecated empty statements.  */
+/* When nonzero, report the now deprecated empty statements.  */
 int flag_extraneous_semicolon;
 
-/* When non zero, always check for a non gcj generated classes archive.  */
+/* When nonzero, always check for a non gcj generated classes archive.  */
 int flag_force_classes_archive_check;
 
 /* When zero, don't optimize static class initialization. This flag shouldn't
    be tested alone, use STATIC_CLASS_INITIALIZATION_OPTIMIZATION_P instead.  */
 int flag_optimize_sci = 1;
 
-/* When non zero, use offset tables for virtual method calls
+/* When nonzero, use offset tables for virtual method calls
    in order to improve binary compatibility. */
 int flag_indirect_dispatch = 0;
 
 /* When zero, don't generate runtime array store checks. */
 int flag_store_check = 1;
 
-/* When non zero, print extra version information.  */
+/* When nonzero, print extra version information.  */
 static int version_flag = 0;
 
-/* Set non-zero if the user specified -finline-functions on the command 
+/* Set nonzero if the user specified -finline-functions on the command
    line.  */
 int flag_really_inline = 0;
 
