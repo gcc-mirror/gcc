@@ -1,5 +1,10 @@
 2003-11-23  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc (__add_grouping):
+	Cosmetic reformatting.
+
+2003-11-23  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc (_M_extract_float,
 	_M_extract_int): Remove a wrong comment and simplify
 	the corresponding code using char_traits::find().

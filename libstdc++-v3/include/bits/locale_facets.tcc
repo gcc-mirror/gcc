@@ -2265,20 +2265,20 @@ namespace std
     __add_grouping(_CharT* __s, _CharT __sep,  
 		   const char* __gbeg, const char* __gend, 
 		   const _CharT* __first, const _CharT* __last)
-  {
-    if (__last - __first > *__gbeg)
-      {
-	const bool __bump = __gbeg + 1 != __gend;
-	__s = std::__add_grouping(__s,  __sep, __gbeg + __bump,
-				  __gend, __first, __last - *__gbeg);
-	__first = __last - *__gbeg;
-	*__s++ = __sep;
-      }
-    do
-      *__s++ = *__first++;
-    while (__first != __last);
-    return __s;
-  }
+    {
+      if (__last - __first > *__gbeg)
+	{
+	  const bool __bump = __gbeg + 1 != __gend;
+	  __s = std::__add_grouping(__s,  __sep, __gbeg + __bump,
+				    __gend, __first, __last - *__gbeg);
+	  __first = __last - *__gbeg;
+	  *__s++ = __sep;
+	}
+      do
+	*__s++ = *__first++;
+      while (__first != __last);
+      return __s;
+    }
 
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.  
