@@ -1,3 +1,19 @@
+1999-09-09  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (convert_to_void): Prototype new function.
+	(require_complete_type_in_void): Remove prototype.
+	* cvt.c (convert_to_void): New function.
+	(ocp_convert): Use convert_to_void.
+	* decl.c (cplus_expand_expr_stmt): Likewise, for complete
+	expressions.
+	* typeck.c (require_complete_type_in_void): Remove function.
+	(build_compound_expr): Use convert_to_void.
+	(build_static_cast): Likewise.
+	(build_c_cast): Likewise.
+	* semantics.c (finish_expr_stmt): Do not decay full expressions.
+	
+	* typeck.c (build_x_compound_expr): Add FIXME.
+
 1999-09-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (lang_decl_flags): Remove permanent_attr.

@@ -1,3 +1,7 @@
+Thu Sep  9 12:32:57 BST 1999  Nathan Sidwell  <nathan@acm.org>
+
+	* extend.texi (Volatiles): New node.
+
 Thu Sep  9 12:20:34 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* toplev.c (documented_lang_options): 

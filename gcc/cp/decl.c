@@ -14336,24 +14336,14 @@ void
 cplus_expand_expr_stmt (exp)
      tree exp;
 {
-  exp = require_complete_type_in_void (exp);
+  if (stmts_are_full_exprs_p)
+    exp = convert_to_void (exp, "statement");
   
-  if (TREE_CODE (exp) == FUNCTION_DECL)
-    {
-      cp_warning ("reference, not call, to function `%D'", exp);
-      warning ("at this point in file");
-    }
-
 #if 0
   /* We should do this eventually, but right now this causes regex.o from
      libg++ to miscompile, and tString to core dump.  */
   exp = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (exp), exp);
 #endif
-
-  /* Strip unused implicit INDIRECT_REFs of references.  */
-  if (TREE_CODE (exp) == INDIRECT_REF
-      && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == REFERENCE_TYPE)
-    exp = TREE_OPERAND (exp, 0);
 
   /* If we don't do this, we end up down inside expand_expr
      trying to do TYPE_MODE on the ERROR_MARK, and really
