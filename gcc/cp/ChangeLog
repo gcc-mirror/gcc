@@ -1,3 +1,7 @@
+2003-03-01  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Make-lang.in (CXX_C_OBJS): Update.
+
 2003-02-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9892

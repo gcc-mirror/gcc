@@ -1,6 +1,6 @@
 /* Part of CPP library.  (include file handling)
-   Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1998, 2003,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1998,
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -90,7 +90,7 @@ struct include_file {
   const char *name;		/* actual path name of file */
   const char *header_name;	/* the original header found */
   const cpp_hashnode *cmacro;	/* macro, if any, preventing reinclusion.  */
-  const struct search_path *foundhere;
+  const struct cpp_path *foundhere;
 				/* location in search path where file was
 				   found, for #include_next and sysp.  */
   const unsigned char *buffer;	/* pointer to cached file contents */
@@ -133,8 +133,8 @@ static struct file_name_map *read_name_map
 				PARAMS ((cpp_reader *, const char *));
 static char *read_filename_string PARAMS ((int, FILE *));
 static char *remap_filename 	PARAMS ((cpp_reader *, char *,
-					 struct search_path *));
-static struct search_path *search_from PARAMS ((cpp_reader *,
+					 struct cpp_path *));
+static struct cpp_path *search_from PARAMS ((cpp_reader *,
 						enum include_type));
 static struct include_file *
 	find_include_file PARAMS ((cpp_reader *, const cpp_token *,
@@ -153,7 +153,6 @@ static int report_missing_guard		PARAMS ((splay_tree_node, void *));
 static splay_tree_node find_or_create_entry PARAMS ((cpp_reader *,
 						     const char *));
 static void handle_missing_header PARAMS ((cpp_reader *, const char *, int));
-static int remove_component_p	PARAMS ((const char *));
 
 /* Set up the splay tree we use to store information about all the
    file names seen in this compilation.  We also have entries for each
@@ -161,7 +160,7 @@ static int remove_component_p	PARAMS ((const char *));
    don't try to open it again in future.
 
    The key of each node is the file name, after processing by
-   _cpp_simplify_pathname.  The path name may or may not be absolute.
+   simplify_path.  The path name may or may not be absolute.
    The path string has been malloced, as is automatically freed by
    registering free () as the splay tree key deletion function.
 
@@ -208,8 +207,7 @@ _cpp_never_reread (file)
 }
 
 /* Lookup a filename, which is simplified after making a copy, and
-   create an entry if none exists.  errno is nonzero iff a (reported)
-   stat() error occurred during simplification.  */
+   create an entry if none exists.  */
 static splay_tree_node
 find_or_create_entry (pfile, fname)
      cpp_reader *pfile;
@@ -218,8 +216,15 @@ find_or_create_entry (pfile, fname)
   splay_tree_node node;
   struct include_file *file;
   char *name = xstrdup (fname);
+  int saved_errno = 0;
 
-  _cpp_simplify_pathname (name);
+  if (pfile->cb.simplify_path)
+    {
+      errno = 0;
+      (pfile->cb.simplify_path) (name);
+      saved_errno = errno;
+    }
+
   node = splay_tree_lookup (pfile->all_include_files, (splay_tree_key) name);
   if (node)
     free (name);
@@ -228,7 +233,7 @@ find_or_create_entry (pfile, fname)
       file = xcnew (struct include_file);
       file->name = name;
       file->header_name = name;
-      file->err_no = errno;
+      file->err_no = saved_errno;
       node = splay_tree_insert (pfile->all_include_files,
 				(splay_tree_key) file->name,
 				(splay_tree_value) file);
@@ -337,7 +342,9 @@ validate_pch (pfile, filename, pchname)
     file->pch = pfile->cb.valid_pch (pfile, pchname, file->fd);
   if (INCLUDE_PCH_P (file))
     {
-      file->header_name = _cpp_simplify_pathname (xstrdup (filename));
+      char *f = xstrdup (filename);
+      (pfile->cb.simplify_path) (f);
+      file->header_name = f;
       return file;
     }
   close (file->fd);
@@ -640,7 +647,7 @@ cpp_included (pfile, fname)
      cpp_reader *pfile;
      const char *fname;
 {
-  struct search_path *path;
+  struct cpp_path *path;
   char *name, *n;
   splay_tree_node nd;
 
@@ -653,7 +660,7 @@ cpp_included (pfile, fname)
 
   /* Search directory path for the file.  */
   name = (char *) alloca (strlen (fname) + pfile->max_include_len + 2);
-  for (path = CPP_OPTION (pfile, quote_include); path; path = path->next)
+  for (path = pfile->quote_include; path; path = path->next)
     {
       memcpy (name, path->name, path->len);
       name[path->len] = '/';
@@ -682,7 +689,7 @@ find_include_file (pfile, header, type)
      enum include_type type;
 {
   const char *fname = (const char *) header->val.str.text;
-  struct search_path *path;
+  struct cpp_path *path;
   struct include_file *file;
   char *name, *n;
 
@@ -695,7 +702,7 @@ find_include_file (pfile, header, type)
   if (type == IT_INCLUDE_NEXT && pfile->buffer->inc->foundhere)
     path = pfile->buffer->inc->foundhere->next;
   else if (header->type == CPP_HEADER_NAME)
-    path = CPP_OPTION (pfile, bracket_include);
+    path = pfile->bracket_include;
   else
     path = search_from (pfile, type);
 
@@ -905,7 +912,7 @@ _cpp_pop_file_buffer (pfile, inc)
 
    If we're handling -include or -imacros, use the "" chain, but with
    the preprocessor's cwd prepended.  */
-static struct search_path *
+static struct cpp_path *
 search_from (pfile, type)
      cpp_reader *pfile;
      enum include_type type;
@@ -917,9 +924,9 @@ search_from (pfile, type)
   if (type == IT_CMDLINE)
     goto use_cwd;
 
-  /* Ignore the current file's directory if -I- was given.  */
-  if (CPP_OPTION (pfile, ignore_srcdir))
-    return CPP_OPTION (pfile, quote_include);
+  /* Ignore the current file's directory?  */
+  if (pfile->quote_ignores_source_dir)
+    return pfile->quote_include;
 
   if (! buffer->search_cached)
     {
@@ -931,14 +938,14 @@ search_from (pfile, type)
 	{
 	  /* We don't guarantee NAME is null-terminated.  This saves
 	     allocating and freeing memory.  Drop a trailing '/'.  */
-	  buffer->dir.name = buffer->inc->name;
+	  buffer->dir.name = (char *) buffer->inc->name;
 	  if (dlen > 1)
 	    dlen--;
 	}
       else
 	{
 	use_cwd:
-	  buffer->dir.name = ".";
+	  buffer->dir.name = (char *) ".";
 	  dlen = 1;
 	}
 
@@ -946,7 +953,7 @@ search_from (pfile, type)
 	pfile->max_include_len = dlen;
 
       buffer->dir.len = dlen;
-      buffer->dir.next = CPP_OPTION (pfile, quote_include);
+      buffer->dir.next = pfile->quote_include;
       buffer->dir.sysp = pfile->map->sysp;
     }
 
@@ -1089,7 +1096,7 @@ static char *
 remap_filename (pfile, name, loc)
      cpp_reader *pfile;
      char *name;
-     struct search_path *loc;
+     struct cpp_path *loc;
 {
   struct file_name_map *map;
   const char *from, *p;
@@ -1138,158 +1145,29 @@ remap_filename (pfile, name, loc)
   return name;
 }
 
-/* Returns true if it is safe to remove the final component of path,
-   when it is followed by a ".." component.  We use lstat to avoid
-   symlinks if we have it.  If not, we can still catch errors with
-   stat ().  */
-static int
-remove_component_p (path)
-     const char *path;
+/* Set the include chain for "" to QUOTE, for <> to BRACKET.  If
+   QUOTE_IGNORES_SOURCE_DIR, then "" includes do not look in the
+   directory of the including file.
+
+   If BRACKET does not lie in the QUOTE chain, it is set to QUOTE.  */
+void
+cpp_set_include_chains (pfile, quote, bracket, quote_ignores_source_dir)
+     cpp_reader *pfile;
+     cpp_path *quote, *bracket;
+     int quote_ignores_source_dir;
 {
-  struct stat s;
-  int result;
+  pfile->quote_include = quote;
+  pfile->bracket_include = quote;
+  pfile->quote_ignores_source_dir = quote_ignores_source_dir;
+  pfile->max_include_len = 0;
 
-#ifdef HAVE_LSTAT
-  result = lstat (path, &s);
-#else
-  result = stat (path, &s);
-#endif
-
-  /* There's no guarantee that errno will be unchanged, even on
-     success.  Cygwin's lstat(), for example, will often set errno to
-     ENOSYS.  In case of success, reset errno to zero.  */
-  if (result == 0)
-    errno = 0;
-
-  return result == 0 && S_ISDIR (s.st_mode);
-}
-
-/* Simplify a path name in place, deleting redundant components.  This
-   reduces OS overhead and guarantees that equivalent paths compare
-   the same (modulo symlinks).
-
-   Transforms made:
-   foo/bar/../quux	foo/quux
-   foo/./bar		foo/bar
-   foo//bar		foo/bar
-   /../quux		/quux
-   //quux		//quux  (POSIX allows leading // as a namespace escape)
-
-   Guarantees no trailing slashes.  All transforms reduce the length
-   of the string.  Returns PATH.  errno is 0 if no error occurred;
-   nonzero if an error occurred when using stat () or lstat ().  */
-char *
-_cpp_simplify_pathname (path)
-     char *path;
-{
-#ifndef VMS
-  char *from, *to;
-  char *base, *orig_base;
-  int absolute = 0;
-
-  errno = 0;
-  /* Don't overflow the empty path by putting a '.' in it below.  */
-  if (*path == '\0')
-    return path;
-
-#if defined (HAVE_DOS_BASED_FILE_SYSTEM)
-  /* Convert all backslashes to slashes.  */
-  for (from = path; *from; from++)
-    if (*from == '\\') *from = '/';
-
-  /* Skip over leading drive letter if present.  */
-  if (ISALPHA (path[0]) && path[1] == ':')
-    from = to = &path[2];
-  else
-    from = to = path;
-#else
-  from = to = path;
-#endif
-
-  /* Remove redundant leading /s.  */
-  if (*from == '/')
+  for (; quote; quote = quote->next)
     {
-      absolute = 1;
-      to++;
-      from++;
-      if (*from == '/')
-	{
-	  if (*++from == '/')
-	    /* 3 or more initial /s are equivalent to 1 /.  */
-	    while (*++from == '/');
-	  else
-	    /* On some hosts // differs from /; Posix allows this.  */
-	    to++;
-	}
+      quote->name_map = NULL;
+      quote->len = strlen (quote->name);
+      if (quote->len > pfile->max_include_len)
+	pfile->max_include_len = quote->len;
+      if (quote == bracket)
+	pfile->bracket_include = bracket;
     }
-
-  base = orig_base = to;
-  for (;;)
-    {
-      int move_base = 0;
-
-      while (*from == '/')
-	from++;
-
-      if (*from == '\0')
-	break;
-
-      if (*from == '.')
-	{
-	  if (from[1] == '\0')
-	    break;
-	  if (from[1] == '/')
-	    {
-	      from += 2;
-	      continue;
-	    }
-	  else if (from[1] == '.' && (from[2] == '/' || from[2] == '\0'))
-	    {
-	      /* Don't simplify if there was no previous component.  */
-	      if (absolute && orig_base == to)
-		{
-		  from += 2;
-		  continue;
-		}
-	      /* Don't simplify if the previous component was "../",
-		 or if an error has already occurred with (l)stat.  */
-	      if (base != to && errno == 0)
-		{
-		  /* We don't back up if it's a symlink.  */
-		  *to = '\0';
-		  if (remove_component_p (path))
-		    {
-		      while (to > base && *to != '/')
-			to--;
-		      from += 2;
-		      continue;
-		    }
-		}
-	      move_base = 1;
-	    }
-	}
-
-      /* Add the component separator.  */
-      if (to > orig_base)
-	*to++ = '/';
-
-      /* Copy this component until the trailing null or '/'.  */
-      while (*from != '\0' && *from != '/')
-	*to++ = *from++;
-
-      if (move_base)
-	base = to;
-    }
-
-  /* Change the empty string to "." so that it is not treated as stdin.
-     Null terminate.  */
-  if (to == path)
-    *to++ = '.';
-  *to = '\0';
-
-  return path;
-#else /* VMS  */
-  errno = 0;
-  return path;
-#endif /* !VMS  */
 }

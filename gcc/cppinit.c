@@ -1,6 +1,6 @@
 /* CPP Library.
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -25,25 +25,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "tm.h"
 #include "cpplib.h"
 #include "cpphash.h"
-#include "prefix.h"
 #include "intl.h"
 #include "mkdeps.h"
-#include "cppdefault.h"
-
-/* Windows does not natively support inodes, and neither does MSDOS.
-   Cygwin's emulation can generate non-unique inodes, so don't use it.
-   VMS has non-numeric inodes.  */
-#ifdef VMS
-# define INO_T_EQ(A, B) (!memcmp (&(A), &(B), sizeof (A)))
-# define INO_T_COPY(DEST, SRC) memcpy(&(DEST), &(SRC), sizeof (SRC))
-#else
-# if (defined _WIN32 && ! defined (_UWIN)) || defined __MSDOS__
-#  define INO_T_EQ(A, B) 0
-# else
-#  define INO_T_EQ(A, B) ((A) == (B))
-# endif
-# define INO_T_COPY(DEST, SRC) (DEST) = (SRC)
-#endif
 
 /* Internal structures and prototypes.  */
 
@@ -64,12 +47,6 @@ struct pending_option
 struct cpp_pending
 {
   struct pending_option *directive_head, *directive_tail;
-
-  struct search_path *quote_head, *quote_tail;
-  struct search_path *brack_head, *brack_tail;
-  struct search_path *systm_head, *systm_tail;
-  struct search_path *after_head, *after_tail;
-
   struct pending_option *imacros_head, *imacros_tail;
   struct pending_option *include_head, *include_tail;
 };
@@ -88,36 +65,18 @@ struct cpp_pending
   } while (0)
 #endif
 
-static void path_include		PARAMS ((cpp_reader *,
-						 const char *, int));
 static void init_library		PARAMS ((void));
 static void init_builtins		PARAMS ((cpp_reader *));
 static void mark_named_operators	PARAMS ((cpp_reader *));
-static void append_include_chain	PARAMS ((cpp_reader *,
-						 char *, int, int));
-static struct search_path * remove_dup_dir	PARAMS ((cpp_reader *,
-						 struct search_path *,
-						 struct search_path **));
-static struct search_path * remove_dup_nonsys_dirs PARAMS ((cpp_reader *,
-						 struct search_path **,
-						 struct search_path *));
-static struct search_path * remove_dup_dirs PARAMS ((cpp_reader *,
-						 struct search_path **));
-static void merge_include_chains	PARAMS ((cpp_reader *));
 static bool push_include		PARAMS ((cpp_reader *,
 						 struct pending_option *));
 static void free_chain			PARAMS ((struct pending_option *));
-static void init_standard_includes	PARAMS ((cpp_reader *));
 static void read_original_filename	PARAMS ((cpp_reader *));
 static void new_pending_directive	PARAMS ((struct cpp_pending *,
 						 const char *,
 						 cl_directive_handler));
 static int parse_option			PARAMS ((const char *));
 static void post_options		PARAMS ((cpp_reader *));
-
-/* Fourth argument to append_include_chain: chain to use.
-   Note it's never asked to append to the quote chain.  */
-enum { BRACKET = 0, SYSTEM, AFTER };
 
 /* If we have designated initializers (GCC >2.7) these tables can be
    initialized, constant data.  Otherwise, they have to be filled in at
@@ -151,277 +110,6 @@ END
 #undef s
 #undef END
 #undef TRIGRAPH_MAP
-
-/* Read ENV_VAR for a colon-separated list of file names; and
-   add all the names to the search path for include files.  */
-static void
-path_include (pfile, env_var, path)
-     cpp_reader *pfile;
-     const char *env_var;
-     int path;
-{
-  char *p, *q, *name;
-
-  GET_ENVIRONMENT (q, env_var);
-  if (!q)
-    return;
-
-  for (p = q; *q; p = q + 1)
-    {
-      /* Find the end of this name.  */
-      q = p;
-      while (*q != 0 && *q != PATH_SEPARATOR) q++;
-      if (q == p)
-	{
-	  /* An empty name in the path stands for the current directory.  */
-	  name = (char *) xmalloc (2);
-	  name[0] = '.';
-	  name[1] = 0;
-	}
-      else
-	{
-	  /* Otherwise use the directory that is named.  */
-	  name = (char *) xmalloc (q - p + 1);
-	  memcpy (name, p, q - p);
-	  name[q - p] = 0;
-	}
-
-      append_include_chain (pfile, name, path, path == SYSTEM);
-    }
-}
-
-/* Append DIR to include path PATH.  DIR must be allocated on the
-   heap; this routine takes responsibility for freeing it.  CXX_AWARE
-   is nonzero if the header contains extern "C" guards for C++,
-   otherwise it is zero.  */
-static void
-append_include_chain (pfile, dir, path, cxx_aware)
-     cpp_reader *pfile;
-     char *dir;
-     int path;
-     int cxx_aware;
-{
-  struct cpp_pending *pend = CPP_OPTION (pfile, pending);
-  struct search_path *new;
-  struct stat st;
-  unsigned int len;
-
-  if (*dir == '\0')
-    {
-      free (dir);
-      dir = xstrdup (".");
-    }
-  _cpp_simplify_pathname (dir);
-
-  if (stat (dir, &st))
-    {
-      /* Dirs that don't exist are silently ignored.  */
-      if (errno != ENOENT)
-	cpp_errno (pfile, DL_ERROR, dir);
-      else if (CPP_OPTION (pfile, verbose))
-	fprintf (stderr, _("ignoring nonexistent directory \"%s\"\n"), dir);
-      free (dir);
-      return;
-    }
-
-  if (!S_ISDIR (st.st_mode))
-    {
-      cpp_error_with_line (pfile, DL_ERROR, 0, 0, "%s: Not a directory", dir);
-      free (dir);
-      return;
-    }
-
-  len = strlen (dir);
-  if (len > pfile->max_include_len)
-    pfile->max_include_len = len;
-
-  new = (struct search_path *) xmalloc (sizeof (struct search_path));
-  new->name = dir;
-  new->len = len;
-  INO_T_COPY (new->ino, st.st_ino);
-  new->dev  = st.st_dev;
-  /* Both systm and after include file lists should be treated as system
-     include files since these two lists are really just a concatenation
-     of one "system" list.  */
-  if (path == SYSTEM || path == AFTER)
-    new->sysp = cxx_aware ? 1 : 2;
-  else
-    new->sysp = 0;
-  new->name_map = NULL;
-  new->next = NULL;
-
-  switch (path)
-    {
-    case BRACKET:	APPEND (pend, brack, new); break;
-    case SYSTEM:	APPEND (pend, systm, new); break;
-    case AFTER:		APPEND (pend, after, new); break;
-    }
-}
-
-/* Handle a duplicated include path.  PREV is the link in the chain
-   before the duplicate, or NULL if the duplicate is at the head of
-   the chain.  The duplicate is removed from the chain and freed.
-   Returns PREV.  */
-static struct search_path *
-remove_dup_dir (pfile, prev, head_ptr)
-     cpp_reader *pfile;
-     struct search_path *prev;
-     struct search_path **head_ptr;
-{
-  struct search_path *cur;
-
-  if (prev != NULL)
-    {
-      cur = prev->next;
-      prev->next = cur->next;
-    }
-  else
-    {
-      cur = *head_ptr;
-      *head_ptr = cur->next;
-    }
-
-  if (CPP_OPTION (pfile, verbose))
-    fprintf (stderr, _("ignoring duplicate directory \"%s\"\n"), cur->name);
-
-  free ((PTR) cur->name);
-  free (cur);
-
-  return prev;
-}
-
-/* Remove duplicate non-system directories for which there is an equivalent
-   system directory latter in the chain.  The range for removal is between
-   *HEAD_PTR and END.  Returns the directory before END, or NULL if none.
-   This algorithm is quadratic in the number system directories, which is
-   acceptable since there aren't usually that many of them.  */
-static struct search_path *
-remove_dup_nonsys_dirs (pfile, head_ptr, end)
-     cpp_reader *pfile;
-     struct search_path **head_ptr;
-     struct search_path *end;
-{
-  int sysdir = 0;
-  struct search_path *prev = NULL, *cur, *other;
-
-  for (cur = *head_ptr; cur; cur = cur->next)
-    {
-      if (cur->sysp)
-	{
-	  sysdir = 1;
-	  for (other = *head_ptr, prev = NULL;
-	       other != end;
-	       other = other ? other->next : *head_ptr)
-	    {
-	      if (!other->sysp
-		  && INO_T_EQ (cur->ino, other->ino)
-		  && cur->dev == other->dev)
-		{
-		  other = remove_dup_dir (pfile, prev, head_ptr);
-		  if (CPP_OPTION (pfile, verbose))
-		    fprintf (stderr,
-  _("  as it is a non-system directory that duplicates a system directory\n"));
-		}
-	      prev = other;
-	    }
-	}
-    }
-
-  if (!sysdir)
-    for (cur = *head_ptr; cur != end; cur = cur->next)
-      prev = cur;
-
-  return prev;
-}
-
-/* Remove duplicate directories from a chain.  Returns the tail of the
-   chain, or NULL if the chain is empty.  This algorithm is quadratic
-   in the number of -I switches, which is acceptable since there
-   aren't usually that many of them.  */
-static struct search_path *
-remove_dup_dirs (pfile, head_ptr)
-     cpp_reader *pfile;
-     struct search_path **head_ptr;
-{
-  struct search_path *prev = NULL, *cur, *other;
-
-  for (cur = *head_ptr; cur; cur = cur->next)
-    {
-      for (other = *head_ptr; other != cur; other = other->next)
-	if (INO_T_EQ (cur->ino, other->ino) && cur->dev == other->dev)
-	  {
-	    cur = remove_dup_dir (pfile, prev, head_ptr);
-	    break;
-	  }
-      prev = cur;
-    }
-
-  return prev;
-}
-
-/* Merge the four include chains together in the order quote, bracket,
-   system, after.  Remove duplicate dirs (as determined by
-   INO_T_EQ()).  The system_include and after_include chains are never
-   referred to again after this function; all access is through the
-   bracket_include path.  */
-static void
-merge_include_chains (pfile)
-     cpp_reader *pfile;
-{
-  struct search_path *quote, *brack, *systm, *qtail;
-
-  struct cpp_pending *pend = CPP_OPTION (pfile, pending);
-
-  quote = pend->quote_head;
-  brack = pend->brack_head;
-  systm = pend->systm_head;
-  qtail = pend->quote_tail;
-
-  /* Paste together bracket, system, and after include chains.  */
-  if (systm)
-    pend->systm_tail->next = pend->after_head;
-  else
-    systm = pend->after_head;
-
-  if (brack)
-    pend->brack_tail->next = systm;
-  else
-    brack = systm;
-
-  /* This is a bit tricky.  First we drop non-system dupes of system
-     directories from the merged bracket-include list.  Next we drop
-     dupes from the bracket and quote include lists.  Then we drop
-     non-system dupes from the merged quote-include list.  Finally,
-     if qtail and brack are the same directory, we cut out brack and
-     move brack up to point to qtail.
-
-     We can't just merge the lists and then uniquify them because
-     then we may lose directories from the <> search path that should
-     be there; consider -Ifoo -Ibar -I- -Ifoo -Iquux.  It is however
-     safe to treat -Ibar -Ifoo -I- -Ifoo -Iquux as if written
-     -Ibar -I- -Ifoo -Iquux.  */
-
-  remove_dup_nonsys_dirs (pfile, &brack, systm);
-  remove_dup_dirs (pfile, &brack);
-
-  if (quote)
-    {
-      qtail = remove_dup_dirs (pfile, &quote);
-      qtail->next = brack;
-
-      qtail = remove_dup_nonsys_dirs (pfile, &quote, brack);
-
-      /* If brack == qtail, remove brack as it's simpler.  */
-      if (qtail && brack && INO_T_EQ (qtail->ino, brack->ino)
-	  && qtail->dev == brack->dev)
-	brack = remove_dup_dir (pfile, qtail, &quote);
-    }
-  else
-    quote = brack;
-
-  CPP_OPTION (pfile, quote_include) = quote;
-  CPP_OPTION (pfile, bracket_include) = brack;
-}
 
 /* A set of booleans indicating what CPP features each source language
    requires.  */
@@ -529,7 +217,6 @@ cpp_create_reader (lang)
   CPP_OPTION (pfile, warn_endif_labels) = 1;
   CPP_OPTION (pfile, warn_deprecated) = 1;
   CPP_OPTION (pfile, warn_long_long) = !CPP_OPTION (pfile, c99);
-  CPP_OPTION (pfile, sysroot) = cpp_SYSROOT;
 
   CPP_OPTION (pfile, pending) =
     (struct cpp_pending *) xcalloc (1, sizeof (struct cpp_pending));
@@ -588,7 +275,6 @@ void
 cpp_destroy (pfile)
      cpp_reader *pfile;
 {
-  struct search_path *dir, *dirn;
   cpp_context *context, *contextn;
   tokenrun *run, *runn;
 
@@ -626,13 +312,6 @@ cpp_destroy (pfile)
       free (run->base);
       if (run != &pfile->base_run)
 	free (run);
-    }
-
-  for (dir = CPP_OPTION (pfile, quote_include); dir; dir = dirn)
-    {
-      dirn = dir->next;
-      free ((PTR) dir->name);
-      free (dir);
     }
 
   for (context = pfile->base_context.next; context; context = contextn)
@@ -751,69 +430,6 @@ init_builtins (pfile)
     (*pfile->cb.register_builtins) (pfile);
 }
 
-/* And another subroutine.  This one sets up the standard include path.  */
-static void
-init_standard_includes (pfile)
-     cpp_reader *pfile;
-{
-  const struct default_include *p;
-  const char *specd_prefix = CPP_OPTION (pfile, include_prefix);
-  int default_len, specd_len;
-  char *default_prefix;
-
-  /* Search "translated" versions of GNU directories.
-     These have /usr/local/lib/gcc... replaced by specd_prefix.  */
-  default_len = 0;
-  specd_len = 0;
-  default_prefix = NULL;
-  if (specd_prefix != 0 && cpp_GCC_INCLUDE_DIR_len)
-    {
-      /* Remove the `include' from /usr/local/lib/gcc.../include.
-	 GCC_INCLUDE_DIR will always end in /include.  */
-      default_len = cpp_GCC_INCLUDE_DIR_len;
-      default_prefix = (char *) alloca (default_len + 1);
-      specd_len = strlen (specd_prefix);
-
-      memcpy (default_prefix, cpp_GCC_INCLUDE_DIR, default_len);
-      default_prefix[default_len] = '\0';
-    }
-
-  for (p = cpp_include_defaults; p->fname; p++)
-    {
-      /* Some standard dirs are only for C++.  */
-      if (!p->cplusplus
-	  || (CPP_OPTION (pfile, cplusplus)
-	      && !CPP_OPTION (pfile, no_standard_cplusplus_includes)))
-	{
-	  char *str;
-
-	  /* Should this dir start with the sysroot?  */
-	  if (p->add_sysroot && CPP_OPTION (pfile, sysroot))
-	    str = concat (CPP_OPTION (pfile, sysroot), p->fname, NULL);
-
-	  /* Does this dir start with the prefix?  */
-	  else if (default_len
-		   && !strncmp (p->fname, default_prefix, default_len))
-	    {
-	      /* Yes; change prefix and add to search list.  */
-	      int flen = strlen (p->fname);
-	      int this_len = specd_len + flen - default_len;
-
-	      str = (char *) xmalloc (this_len + 1);
-	      memcpy (str, specd_prefix, specd_len);
-	      memcpy (str + specd_len,
-		      p->fname + default_len,
-		      flen - default_len + 1);
-	    }
-
-	  else
-	    str = update_path (p->fname, p->component);
-
-	  append_include_chain (pfile, str, SYSTEM, p->cxx_aware);
-	}
-    }
-}
-
 /* Pushes a command line -imacro and -include file indicated by P onto
    the buffer stack.  Returns nonzero if successful.  */
 static bool
@@ -925,11 +541,6 @@ cpp_read_main_file (pfile, fname, table)
      const char *fname;
      hash_table *table;
 {
-  static const char *const lang_env_vars[] =
-    { "C_INCLUDE_PATH", "CPLUS_INCLUDE_PATH",
-      "OBJC_INCLUDE_PATH", "OBJCPLUS_INCLUDE_PATH" };
-  size_t lang;
-
   sanity_checks (pfile);
 
   post_options (pfile);
@@ -938,35 +549,6 @@ cpp_read_main_file (pfile, fname, table)
      finished processing the command line options, so initializing the
      hashtable is deferred until now.  */
   _cpp_init_hashtable (pfile, table);
-
-  /* Several environment variables may add to the include search path.
-     CPATH specifies an additional list of directories to be searched
-     as if specified with -I, while C_INCLUDE_PATH, CPLUS_INCLUDE_PATH,
-     etc. specify an additional list of directories to be searched as
-     if specified with -isystem, for the language indicated.  */
-  path_include (pfile, "CPATH", BRACKET);
-  lang = (CPP_OPTION (pfile, objc) << 1) + CPP_OPTION (pfile, cplusplus);
-  path_include (pfile, lang_env_vars[lang], SYSTEM);
-
-  /* Set up the include search path now.  */
-  if (! CPP_OPTION (pfile, no_standard_includes))
-    init_standard_includes (pfile);
-
-  merge_include_chains (pfile);
-
-  /* With -v, print the list of dirs to search.  */
-  if (CPP_OPTION (pfile, verbose))
-    {
-      struct search_path *l;
-      fprintf (stderr, _("#include \"...\" search starts here:\n"));
-      for (l = CPP_OPTION (pfile, quote_include); l; l = l->next)
-	{
-	  if (l == CPP_OPTION (pfile, bracket_include))
-	    fprintf (stderr, _("#include <...> search starts here:\n"));
-	  fprintf (stderr, " %s\n", l->name);
-	}
-      fprintf (stderr, _("End of search list.\n"));
-    }
 
   if (CPP_OPTION (pfile, deps.style) != DEPS_NONE)
     {
@@ -1149,26 +731,17 @@ new_pending_directive (pend, text, handler)
    I.e. a const string initializer with parens around it.  That is
    what N_("string") resolves to, so we make no_* be macros instead.  */
 #define no_ass N_("assertion missing after %s")
-#define no_dir N_("directory name missing after %s")
 #define no_fil N_("file name missing after %s")
 #define no_mac N_("macro name missing after %s")
-#define no_pth N_("path name missing after %s")
 
 /* This is the list of all command line options, with the leading
    "-" removed.  It must be sorted in ASCII collating order.  */
 #define COMMAND_LINE_OPTIONS                                                  \
   DEF_OPT("A",                        no_ass, OPT_A)                          \
   DEF_OPT("D",                        no_mac, OPT_D)                          \
-  DEF_OPT("I",                        no_dir, OPT_I)                          \
   DEF_OPT("U",                        no_mac, OPT_U)                          \
-  DEF_OPT("idirafter",                no_dir, OPT_idirafter)                  \
   DEF_OPT("imacros",                  no_fil, OPT_imacros)                    \
-  DEF_OPT("include",                  no_fil, OPT_include)                    \
-  DEF_OPT("iprefix",                  no_pth, OPT_iprefix)                    \
-  DEF_OPT("isysroot",                 no_dir, OPT_isysroot)                   \
-  DEF_OPT("isystem",                  no_dir, OPT_isystem)                    \
-  DEF_OPT("iwithprefix",              no_dir, OPT_iwithprefix)                \
-  DEF_OPT("iwithprefixbefore",        no_dir, OPT_iwithprefixbefore)
+  DEF_OPT("include",                  no_fil, OPT_include)
 
 #define DEF_OPT(text, msg, code) code,
 enum opt_code
@@ -1305,14 +878,6 @@ cpp_handle_option (pfile, argc, argv)
 	case OPT_D:
 	  new_pending_directive (pend, arg, cpp_define);
 	  break;
-	case OPT_iprefix:
-	  CPP_OPTION (pfile, include_prefix) = arg;
-	  CPP_OPTION (pfile, include_prefix_len) = strlen (arg);
-	  break;
-
-	case OPT_isysroot:
-	  CPP_OPTION (pfile, sysroot) = arg;
-	  break;
 
 	case OPT_A:
 	  if (arg[0] == '-')
@@ -1340,37 +905,6 @@ cpp_handle_option (pfile, argc, argv)
 	case OPT_U:
 	  new_pending_directive (pend, arg, cpp_undef);
 	  break;
-	case OPT_I:           /* Add directory to path for includes.  */
-	  if (!strcmp (arg, "-"))
-	    {
-	      /* -I- means:
-		 Use the preceding -I directories for #include "..."
-		 but not #include <...>.
-		 Don't search the directory of the present file
-		 for #include "...".  (Note that -I. -I- is not the same as
-		 the default setup; -I. uses the compiler's working dir.)  */
-	      if (! CPP_OPTION (pfile, ignore_srcdir))
-		{
-		  pend->quote_head = pend->brack_head;
-		  pend->quote_tail = pend->brack_tail;
-		  pend->brack_head = 0;
-		  pend->brack_tail = 0;
-		  CPP_OPTION (pfile, ignore_srcdir) = 1;
-		}
-	      else
-		{
-		  cpp_error (pfile, DL_ERROR, "-I- specified twice");
-		  return argc;
-		}
-	    }
-	  else
-	    append_include_chain (pfile, xstrdup (arg), BRACKET, 0);
-	  break;
-	case OPT_isystem:
-	  /* Add directory to beginning of system include path, as a system
-	     include directory.  */
-	  append_include_chain (pfile, xstrdup (arg), SYSTEM, 0);
-	  break;
 	case OPT_include:
 	case OPT_imacros:
 	  {
@@ -1385,69 +919,9 @@ cpp_handle_option (pfile, argc, argv)
 	      APPEND (pend, imacros, o);
 	  }
 	  break;
-	case OPT_iwithprefix:
-	  /* Add directory to end of path for includes,
-	     with the default prefix at the front of its name.  */
-	  /* fall through */
-	case OPT_iwithprefixbefore:
-	  /* Add directory to main path for includes,
-	     with the default prefix at the front of its name.  */
-	  {
-	    char *fname;
-	    int len;
-
-	    len = strlen (arg);
-
-	    if (CPP_OPTION (pfile, include_prefix) != 0)
-	      {
-		size_t ipl = CPP_OPTION (pfile, include_prefix_len);
-		fname = xmalloc (ipl + len + 1);
-		memcpy (fname, CPP_OPTION (pfile, include_prefix), ipl);
-		memcpy (fname + ipl, arg, len + 1);
-	      }
-	    else if (cpp_GCC_INCLUDE_DIR_len)
-	      {
-		fname = xmalloc (cpp_GCC_INCLUDE_DIR_len + len + 1);
-		memcpy (fname, cpp_GCC_INCLUDE_DIR, cpp_GCC_INCLUDE_DIR_len);
-		memcpy (fname + cpp_GCC_INCLUDE_DIR_len, arg, len + 1);
-	      }
-	    else
-	      fname = xstrdup (arg);
-
-	    append_include_chain (pfile, fname,
-			  opt_code == OPT_iwithprefix ? SYSTEM: BRACKET, 0);
-	  }
-	  break;
-	case OPT_idirafter:
-	  /* Add directory to end of path for includes.  */
-	  append_include_chain (pfile, xstrdup (arg), AFTER, 0);
-	  break;
 	}
     }
   return i + 1;
-}
-
-/* Handle command-line options in (argc, argv).
-   Can be called multiple times, to handle multiple sets of options.
-   Returns if an unrecognized option is seen.
-   Returns number of strings consumed.  */
-int
-cpp_handle_options (pfile, argc, argv)
-     cpp_reader *pfile;
-     int argc;
-     char **argv;
-{
-  int i;
-  int strings_processed;
-
-  for (i = 0; i < argc; i += strings_processed)
-    {
-      strings_processed = cpp_handle_option (pfile, argc - i, argv + i);
-      if (strings_processed == 0)
-	break;
-    }
-
-  return i;
 }
 
 static void

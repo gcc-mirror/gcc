@@ -1,3 +1,47 @@
+2003-03-01  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in (C_AND_OBJC_OBJS, c-incpath.o, c-lex.o, LIBCPP_OBJS,
+	cppinit.o, cppdefault.o, fix-header): Update.
+	* c-incpath.c: New file.
+	* c-incpath.h: New file.
+	* c-lex.c: Include c-incpath.h.
+	(init_c_lex): Register path simplifier.
+	* c-opts.c: Include cppdefault.h and c-incpath.h.
+	(TARGET_SYSTEM_ROOT, verbose, iprefix, sysroot, std_inc,
+	std_cxx_inc, quote_chain_split, add_prefixed_path): New.
+	(COMMAND_LINE_OPTIONS): Add more options from cpplib.
+	(missing_arg, c_common_decode_option): Handle them.
+	(c_common_post_options): Register include chains.
+	(print_help): Update.
+	* cppdefault.h (struct default include): Update.
+	Move some macros to ...
+	* cppdefault.c: ... here.
+	(cpp_include_defaults): Add extra field add_sysroot.
+	* cppfiles.c (include_file, search_from, find_or_create_entry,
+	cpp_included, find_include_file, remap_filename): Update for
+	renaming of search_path to cpp_path, and of the chain headers.
+	(remove_component_p, _cpp_simplify_pathname): Move to c-incpath.c.
+	* cpphash.h (struct search_path): Move to cpplib.h.
+	(struct cpp_buffer, struct cpp_reader): Update.
+	(_cpp_simplify_pathname): Remove.
+	* cppinit.c: Don't include prefix.h and cppdefault.h.
+	(INO_T_EQ, INO_T_COPY, path_include, append_include_chain,
+	remove_dup_dir, remove_dup_nonsys_dirs, remove_dup_dirs,
+	init_standard_includes, BRACKET, SYSTEM, AFTER, no_dir,
+	no_pth, cpp_handle_options): Remove.
+	(struct pending_option): Remove chain members.
+	(cpp_destroy, cpp_read_main_file, COMMAND_LINE_OPTIONS,
+	cpp_handle_option): Update.
+	* cpplib.h (struct cpp_path, cpp_set_include_chains): New.
+	(struct cpp_options): Remove quote_include, bracket_include,
+	include_prefix, include_prefix_len, verbose, ignore_srcdir,
+	no_standard_includes, no_standard_cplusplus_includes.
+	(struct cpp_callbacks): Add simplify_path.
+	(cpp_handle_options): Remove.
+	* fix-header.c: Include c-incpath.h.
+	(read_scan_file): Update to use c-incpath functionality.
+	* doc/passes.texi: Update.
+
 2003-03-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (bit_operand): Accept MEM only if it

@@ -82,8 +82,10 @@ the other C-like languages: @file{c-common.c},
 @file{c-pragma.c},
 @file{c-semantics.c},
 @file{c-lex.c},
+@file{c-incpath.c}
 @file{c-common.h},
 @file{c-dump.h},
+@file{c-incpath.h}
 and
 @file{c-pragma.h},
 
