@@ -1,3 +1,8 @@
+2004-04-26  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/invoke.texi (Overall Options): Document default for -o
+	for PCH files.
+
 2004-04-26  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* builtins.c (expand_builtin_update_setjmp_buf): New function.

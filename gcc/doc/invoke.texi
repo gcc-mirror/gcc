@@ -869,10 +869,12 @@ Place output in file @var{file}.  This applies regardless to whatever
 sort of output is being produced, whether it be an executable file,
 an object file, an assembler file or preprocessed C code.
 
-If @option{-o} is not specified, the default is to put an executable file
-in @file{a.out}, the object file for @file{@var{source}.@var{suffix}} in
-@file{@var{source}.o}, its assembler file in @file{@var{source}.s}, and
-all preprocessed C source on standard output.
+If @option{-o} is not specified, the default is to put an executable
+file in @file{a.out}, the object file for
+@file{@var{source}.@var{suffix}} in @file{@var{source}.o}, its
+assembler file in @file{@var{source}.s}, a precompiled header file in
+@file{@var{source}.@var{suffix}.gch}, and all preprocessed C source on
+standard output.
 
 @item -v
 @opindex v
