@@ -1,3 +1,26 @@
+2002-06-15  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/BufferedOutputStream.java: Re-merged with Classpath.
+	* java/io/CharConversionException.java: Likewise.
+	* java/io/EOFException.java: Likewise.
+	* java/io/FileNotFoundException.java: Likewise.
+	* java/io/IOException.java: Likewise.
+	* java/io/InterruptedIOException.java: Likewise.
+	* java/io/InvalidClassException.java: Likewise.
+	* java/io/InvalidObjectException.java: Likewise.
+	* java/io/NotActiveException.java: Likewise.
+	* java/io/NotSerializableException.java: Likewise.
+	* java/io/ObjectStreamException.java: Likewise.
+	* java/io/ObjectStreamConstants.java: Likewise.
+	* java/io/OptionalDataException.java: Likewise.
+	* java/io/PipedInputStream.java: Likewise.
+	* java/io/PushbackInputStream.java: Likewise.
+	* java/io/StreamCorruptedException.java: Likewise.
+	* java/io/SyncFailedException.java: Likewise.
+	* java/io/UTFDataFormatException.java: Likewise.
+	* java/io/UnsupportedEncodingException.java: Likewise.
+	* java/io/WriteAbortedException.java: Likewise.
+
 2002-06-15  Nathanael Nerode  <neroden@twcny.rr.com>
 
 	* java/text/ChoiceFormat.java: Update comments from Classpath.

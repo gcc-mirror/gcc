@@ -1,5 +1,5 @@
-/* NotSerializableException.java -- Unexpected end of file exception
-   Copyright (C) 1998 Free Software Foundation, Inc.
+/* NotSerializableException.java -- a Serializable class that isn't
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,42 +39,36 @@ exception statement from your version. */
 package java.io;
 
 /**
-  * This exception is thrown when a class may not be serialized.  The
-  * descriptive message will consist of the name of the class in question.
-  *
-  * @version 0.0
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This exception is thrown when a class implements Serializable because
+ * of a superclass, but should not be serialized.  The descriptive message
+ * will consist of the name of the class in question.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @since 1.1
+ * @status updated to 1.4
+ */
 public class NotSerializableException extends ObjectStreamException
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 2906642554793891381L;
 
-/*
- * Constructors
- */
+  /**
+   * Create an exception without a descriptive error message.
+   */
+  public NotSerializableException()
+  {
+  }
 
-/**
-  * Create a new NotSerializableException without a descriptive error message
-  */
-public
-NotSerializableException()
-{
-  super();
-}
-
-/*************************************************************************/
-
-/**
-  * Create a new NotSerializableException with a descriptive error message String
-  * This should be the name of the class that cannot be serialized.
-  *
-  * @param message The descriptive error message
-  */
-public
-NotSerializableException(String message)
-{
-  super(message);
-}
-
+  /**
+   * Create an exception with a descriptive error message, which should
+   * be the name of the class.
+   *
+   * @param message the descriptive error message
+   */
+  public NotSerializableException(String message)
+  {
+    super(message);
+  }
 } // class NotSerializableException
-

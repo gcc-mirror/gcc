@@ -1,5 +1,5 @@
 /* IOException.java -- Generic input/output exception
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -38,51 +38,37 @@ exception statement from your version. */
 
 package java.io;
 
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * Status:  Complete to 1.1.
- */
-
 /**
   * This exception is thrown to indicate an I/O problem of some sort
   * occurred.  Since this is a fairly generic exception, often a subclass
   * of IOException will actually be thrown in order to provide a more
   * detailed indication of what happened.
   *
-  * @version 0.0
-  *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   * @author Tom Tromey <tromey@cygnus.com>
-  * @date September 24, 1998
+  * @status updated to 1.4
   */
 public class IOException extends Exception
 {
+  /**
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = 7818375828146090155L;
 
-/*
- * Constructors
- */
+  /**
+   * Create an exception without a descriptive error message.
+   */
+  public IOException()
+  {
+  }
 
-/**
-  * Create a new IOException without a descriptive error message
-  */
-public
-IOException()
-{
-  super();
-}
-
-/*************************************************************************/
-
-/**
-  * Create a new IOException with a descriptive error message String
-  *
-  * @param message The descriptive error message
-  */
-public
-IOException(String message)
-{
-  super(message);
-}
-
+  /**
+   * Create an exception with a descriptive error message.
+   *
+   * @param message the descriptive error message
+   */
+  public IOException(String message)
+  {
+    super(message);
+  }
 } // class IOException
-

@@ -201,6 +201,7 @@ public class PushbackInputStream extends FilterInputStream
   public synchronized int read(byte[] b, int off, int len) throws IOException
   {
     int numBytes = Math.min(buf.length - pos, len);
+
     if (numBytes > 0)
       {
 	System.arraycopy (buf, pos, b, off, numBytes);
@@ -209,10 +210,10 @@ public class PushbackInputStream extends FilterInputStream
 	off += numBytes;
       }
 
-    if (len > 0)
+    if (len > 0) 
       {
         len = super.read(b, off, len);
-	if (len == -1) // EOF
+        if (len == -1) //EOF
 	  return numBytes > 0 ? numBytes : -1;
 	numBytes += len;
       }
@@ -318,7 +319,8 @@ public class PushbackInputStream extends FilterInputStream
 	int numread = (int) Math.min((long) (buf.length - pos), n);
 	pos += numread;
 	n -= numread;
-	n -= super.skip(n);
+	if (n > 0)
+	  n -= super.skip(n);
       }
 
     return origN - n;

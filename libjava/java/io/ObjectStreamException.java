@@ -1,5 +1,5 @@
-/* ObjectStreamException.java -- Superclass of all serialisation exceptions
-   Copyright (C) 1998, 2000, 2001 Free Software Foundation, Inc.
+/* ObjectStreamException.java -- Superclass of all serialization exceptions
+   Copyright (C) 1998, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -38,49 +38,37 @@ exception statement from your version. */
 
 package java.io;
 
-/* Written using on-line Java Platform 1.2 API Specification.
- * Status:  Believed complete and correct.
+/**
+ * This exception is thrown when a problem occurs during serialization.
+ * There are more specific subclasses than give more fine grained
+ * indications of the precise failure.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Warren Levy <warrenl@cygnus.com>
+ * @since 1.1
+ * @status updated to 1.4
  */
-
-/**
-  * This exception is thrown when a problem occurs during serialization.
-  * There are more specific subclasses than give more fine grained 
-  * indications of the precise failure.
-  *
-  * @version 0.0
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Warren Levy <warrenl@cygnus.com>
-  * @date February 7, 2000. 
-  */
-public abstract class ObjectStreamException extends IOException 
+public abstract class ObjectStreamException extends IOException
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 7260898174833392607L;
 
-/*
- * Constructors
- */
+  /**
+   * Create an exception without a descriptive error message.
+   */
+  protected ObjectStreamException()
+  {
+  }
 
-/**
-  * Create a new ObjectStreamException without a descriptive error message
-  */
-protected
-ObjectStreamException()
-{
-  super();
-}
-
-/*************************************************************************/
-
-/**
-  * Create a new ObjectStreamException with a descriptive error message String
-  *
-  * @param message The descriptive error message
-  */
-protected
-ObjectStreamException(String message)
-{
-  super(message);
-}
-
+  /**
+   * Create an exception with a descriptive error message.
+   *
+   * @param message the descriptive error message
+   */
+  protected ObjectStreamException(String message)
+  {
+    super(message);
+  }
 } // class ObjectStreamException
-

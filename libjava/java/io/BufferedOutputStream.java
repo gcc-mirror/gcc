@@ -140,6 +140,7 @@ flush() throws IOException
 
   out.write(buf, 0, count);
   count = 0;
+  out.flush();
 }
 
 /*************************************************************************/

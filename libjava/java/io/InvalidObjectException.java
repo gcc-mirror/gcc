@@ -1,5 +1,5 @@
-/* InvalidObjectException.java -- An I/O operation was interrupted.
-   Copyright (C) 1998 Free Software Foundation, Inc.
+/* InvalidObjectException.java -- deserialization failed verification
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,30 +39,28 @@ exception statement from your version. */
 package java.io;
 
 /**
-  * This exception is thrown when an object fails a validation test
-  * during serialization.
-  *
-  * @version 0.0
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This exception is thrown when an object fails a validation test
+ * during serialization.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @since 1.1
+ * @status updated to 1.4
+ */
 public class InvalidObjectException extends ObjectStreamException
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 3233174318281839583L;
 
-/*
- * Constructors
- */
-
-/**
-  * Create a new InvalidObjectException with a descriptive error message String
-  *
-  * @param message The descriptive error message
-  */
-public
-InvalidObjectException(String message)
-{
-  super(message);
-}
-
+  /**
+   * Create an exception with a descriptive error message String. This should
+   * be the cause of the verification failure.
+   *
+   * @param message the descriptive error message
+   */
+  public InvalidObjectException(String message)
+  {
+    super(message);
+  }
 } // class InvalidObjectException
-

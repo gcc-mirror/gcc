@@ -1,5 +1,5 @@
-/* NotActiveException.java -- Unexpected end of file exception
-   Copyright (C) 1998 Free Software Foundation, Inc.
+/* NotActiveException.java -- thrown when serialization is not active
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,41 +39,34 @@ exception statement from your version. */
 package java.io;
 
 /**
-  * This exception is thrown when a problem occurs due to the fact that
-  * serialization is not active.
-  *
-  * @version 0.0
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This exception is thrown when a problem occurs due to the fact that
+ * serialization is not active.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @since 1.1
+ * @status updated to 1.4
+ */
 public class NotActiveException extends ObjectStreamException
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -3893467273049808895L;
 
-/*
- * Constructors
- */
+  /**
+   * Create an exception without a descriptive error message.
+   */
+  public NotActiveException()
+  {
+  }
 
-/**
-  * Create a new NotActiveException without a descriptive error message
-  */
-public
-NotActiveException()
-{
-  super();
-}
-
-/*************************************************************************/
-
-/**
-  * Create a new NotActiveException with a descriptive error message String
-  *
-  * @param message The descriptive error message
-  */
-public
-NotActiveException(String message)
-{
-  super(message);
-}
-
+  /**
+   * Create an exception with a descriptive error message.
+   *
+   * @param message the descriptive error message
+   */
+  public NotActiveException(String message)
+  {
+    super(message);
+  }
 } // class NotActiveException
-
