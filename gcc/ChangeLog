@@ -1,5 +1,10 @@
 2004-02-26  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* builtins.c (apply_args_register_offset): Remove.
+	* tree.h: Remove the corresponding prototype.
+
+2004-02-26  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* stor-layout.c (is_pending_size): Remove.
 	* tree.h: Remove the corresponding prototype.
 

@@ -883,20 +883,6 @@ static enum machine_mode apply_result_mode[FIRST_PSEUDO_REGISTER];
    used for calling a function.  */
 static int apply_args_reg_offset[FIRST_PSEUDO_REGISTER];
 
-/* Return the offset of register REGNO into the block returned by
-   __builtin_apply_args.  This is not declared static, since it is
-   needed in objc-act.c.  */
-
-int
-apply_args_register_offset (int regno)
-{
-  apply_args_size ();
-
-  /* Arguments are always put in outgoing registers (in the argument
-     block) if such make sense.  */
-  return apply_args_reg_offset[OUTGOING_REGNO (regno)];
-}
-
 /* Return the size required for the block returned by __builtin_apply_args,
    and initialize apply_args_mode.  */
 
