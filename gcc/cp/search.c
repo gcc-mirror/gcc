@@ -120,7 +120,6 @@ static tree bfs_walk
 	       void *));
 static tree lookup_field_queue_p PARAMS ((tree, void *));
 static tree lookup_field_r PARAMS ((tree, void *));
-static tree context_for_name_lookup PARAMS ((tree));
 static tree canonical_binfo PARAMS ((tree));
 static tree shared_marked_p PARAMS ((tree, void *));
 static tree shared_unmarked_p PARAMS ((tree, void *));
@@ -714,7 +713,7 @@ at_function_scope_p ()
 
 /* Return the scope of DECL, as appropriate when doing name-lookup.  */
 
-static tree
+tree
 context_for_name_lookup (decl)
      tree decl;
 {
@@ -724,9 +723,9 @@ context_for_name_lookup (decl)
      definition, the members of the anonymous union are considered to
      have been defined in the scope in which the anonymous union is
      declared.  */ 
-  tree context = CP_DECL_CONTEXT (decl);
+  tree context = DECL_CONTEXT (decl);
 
-  while (TYPE_P (context) && ANON_AGGR_TYPE_P (context))
+  while (context && TYPE_P (context) && ANON_AGGR_TYPE_P (context))
     context = TYPE_CONTEXT (context);
   if (!context)
     context = global_namespace;

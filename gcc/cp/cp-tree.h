@@ -4211,6 +4211,7 @@ extern void init_search_processing		PARAMS ((void));
 extern void reinit_search_statistics		PARAMS ((void));
 extern tree current_scope			PARAMS ((void));
 extern int at_function_scope_p                  PARAMS ((void));
+extern tree context_for_name_lookup		PARAMS ((tree));
 extern tree lookup_conversions			PARAMS ((tree));
 extern tree binfo_for_vtable			PARAMS ((tree));
 extern tree binfo_from_vbase			PARAMS ((tree));
