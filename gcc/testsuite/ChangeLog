@@ -1,3 +1,8 @@
+2005-02-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/17816
+	* g++.dg/other/redecl2.C: New.
+
 2005-02-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/19891

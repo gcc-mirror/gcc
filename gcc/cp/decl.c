@@ -1913,7 +1913,8 @@ redeclaration_error_message (tree newdecl, tree olddecl)
       /* If this is a pure function, its olddecl will actually be
 	 the original initialization to `0' (which we force to call
 	 abort()).  Don't complain about redefinition in this case.  */
-      if (DECL_LANG_SPECIFIC (olddecl) && DECL_PURE_VIRTUAL_P (olddecl))
+      if (DECL_LANG_SPECIFIC (olddecl) && DECL_PURE_VIRTUAL_P (olddecl)
+	  && DECL_INITIAL (olddecl) == NULL_TREE)
 	return 0;
 
       /* If both functions come from different namespaces, this is not

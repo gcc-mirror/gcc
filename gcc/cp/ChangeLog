@@ -1,3 +1,9 @@
+2005-02-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/17816
+	* decl.c (redeclaration_error_message): Report redefinition of
+	pure virtual function.
+
 2005-02-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/19891
