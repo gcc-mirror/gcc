@@ -26,20 +26,19 @@ __CTOR_LIST__:
 __DTOR_LIST__:
 	data8	-1
 
-.section .IA_64.unwind
-	.align	8
-__EH_FRAME_BEGIN__:
-
 .section .sdata
 	.type dtor_ptr#,@object
 	.size dtor_ptr#,8
 dtor_ptr:
 	data8	__DTOR_LIST__# + 8
 
-	.type segrel_ofs#,@object
-	.size segrel_ofs#,8
-segrel_ofs:
+#ifndef SHARED
+	.type __ia64_app_header#,@object
+	.size __ia64_app_header#,8
+	.global __ia64_app_header
+__ia64_app_header:
 	data8	@segrel(.Lsegrel_ref#)
+#endif
 
 	/* A handle for __cxa_finalize to manage c++ local destructors.  */
 	.global __dso_handle#
@@ -56,14 +55,6 @@ __dso_handle:
 #endif
 	.hidden __dso_handle#
 
-	/* The frame object.  */
-	/* ??? How can we rationally keep this size correct?  */
-.section .bss
-	.type frame_object#,@object
-	.size frame_object#,64
-	.align 8
-frame_object:
-	.zero 64
 
 /*
  * Fragment of the ELF _fini routine that invokes our dtor cleanup.
@@ -94,25 +85,28 @@ frame_object:
 	  ;;
 	}
 
+#ifndef SHARED
 /*
- * Fragment of the ELF _init routine that sets up the frame info.
+ * Fragment of the ELF _init routine that sets up __ia64_app_header
  */
 
 .section .init,"ax","progbits"
-	{ .mlx
-	  movl r2 = @gprel(__do_frame_setup#)
+.Lsegrel_ref:
+	{ .mmi
+	  addl r2 = @gprel(__ia64_app_header), gp
+	  mov r16 = ip
 	  ;;
 	}
-	{ .mii
-	  nop.m 0
-	  add r2 = r2, gp
+	{ .mmi
+	  ld8 r3 = [r2]
 	  ;;
-	  mov b6 = r2
-	}
-	{ .bbb
-	  br.call.sptk.many b0 = b6
+	  sub r16 = r16, r3
 	  ;;
 	}
+	{ .mfb
+	  st8 [r2] = r16
+	}
+#endif
 
 .section .text
 	.align	16
@@ -194,33 +188,6 @@ __do_global_dtors_aux:
 	  cmp.ne p6, p0 = r0, r16
 (p6)	  br.cond.sptk.few 0b
 	}
-	/*
-		if (__deregister_frame_info)
-		  __deregister_frame_info(__EH_FRAME_BEGIN__)
-	*/
-	{ .mmi
-	  mov gp = loc2
-	  ;;
-	  addl r16 = @ltoff(@fptr(__deregister_frame_info#)), gp
-	  addl out0 = @ltoff(__EH_FRAME_BEGIN__#), gp
-	  ;;
-	}
-	{ .mmi
-	  ld8 r16 = [r16]
-	  ld8 out0 = [out0]
-	  ;;
-	}
-	{ .mmi
-	  cmp.ne p7, p0 = r0, r16
-	  ;;
-(p7)	  ld8 r18 = [r16], 8
-	  ;;
-	}
-	{ .mib
-(p7)	  ld8 gp = [r16]
-(p7)	  mov b6 = r18
-(p7)	  br.call.sptk.many b0 = b6
-	}
 	{ .mii
 	  mov gp = loc2
 	  mov b0 = loc1
@@ -232,66 +199,6 @@ __do_global_dtors_aux:
 	}
 	.endp	__do_global_dtors_aux#
 
-	.proc	__do_frame_setup#
-__do_frame_setup:
-	/*
-		if (__register_frame_info)
-		  __register_frame_info(__EH_FRAME_BEGIN__)
-	*/
-	{ .mii
-	  alloc loc2 = ar.pfs, 0, 3, 2, 0
-	  addl r16 = @ltoff(@fptr(__register_frame_info#)), gp
-	  addl out0 = @ltoff(__EH_FRAME_BEGIN__#), gp
-	}
-	/* frame_object.pc_base = segment_base_offset;
-	   pc_base is at offset 0 within frame_object.  */
-.Lsegrel_ref:
-	{ .mmi
-	  addl out1 = @ltoff(frame_object#), gp
-	  ;;
-	  addl r2 = @gprel(segrel_ofs#), gp
-	  mov r3 = ip
-	  ;;
-	}
-	{ .mmi
-	  ld8 r2 = [r2]
-	  ld8 r16 = [r16]
-	  mov loc0 = b0
-	  ;;
-	}
-	{ .mii
-	  ld8 out1 = [out1]
-	  cmp.ne p7, p0 = r0, r16
-	  sub r3 = r3, r2
-	  ;;
-	}
-	{ .mmi
-	  st8 [out1] = r3 
-(p7)	  ld8 r18 = [r16], 8
-	  mov loc1 = gp
-	  ;;
-	}
-	{ .mfb
-	  ld8 out0 = [out0]  
-	}
-	{ .mib
-(p7)	  ld8 gp = [r16]
-(p7)	  mov b6 = r18
-(p7)	  br.call.sptk.many b0 = b6
-	}
-	{ .mii
-	  mov gp = loc1
-	  mov b0 = loc0
-	  mov ar.pfs = loc2
-	}
-	{ .bbb
-	  br.ret.sptk.many b0
-	  ;;
-	}
-	.endp	__do_frame_setup#
-
 #ifdef SHARED
 .weak __cxa_finalize#
 #endif
-.weak __deregister_frame_info#
-.weak __register_frame_info#
