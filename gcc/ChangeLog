@@ -1,3 +1,11 @@
+2003-01-25  Roger Sayle  <roger@eyesopen.com>
+
+	* gcse.c (bypass_last_basic_block): New global variable.
+	(bypass_block):  Use redirect_edge_and_branch_force to redirect
+	fall-through edges.  Use bypass_last_basic_block to determine
+	which blocks have valid PRE information.
+	(bypass_conditional_jumps): Initialize bypass_last_basic_block.
+
 Sat Jan 25 22:31:59 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (local_cprop_pass): Update reg_sets table when needed.

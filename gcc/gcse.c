@@ -4527,6 +4527,13 @@ one_cprop_pass (pass, cprop_jumps, bypass_jumps)
 
 /* Bypass conditional jumps.  */
 
+/* The value of last_basic_block at the beginning of the jump_bypass
+   pass.  The use of redirect_edge_and_branch_force may introduce new
+   basic blocks, but the data flow analysis is only valid for basic
+   block indices less than bypass_last_basic_block.  */
+
+static int bypass_last_basic_block;
+
 /* Find a set of REGNO to a constant that is available at the end of basic
    block BB.  Returns NULL if no such set is found.  Based heavily upon
    find_avail_set.  */
@@ -4597,6 +4604,13 @@ bypass_block (bb, setcc, jump)
   for (e = bb->pred; e; e = enext)
     {
       enext = e->pred_next;
+      if (e->flags & EDGE_COMPLEX)
+	continue;
+
+      /* We can't redirect edges from new basic blocks.  */
+      if (e->src->index >= bypass_last_basic_block)
+	continue;
+
       for (i = 0; i < reg_use_count; i++)
 	{
 	  struct reg_use *reg_used = &reg_use_table[i];
@@ -4630,12 +4644,13 @@ bypass_block (bb, setcc, jump)
 	  else
 	    dest = NULL;
 
-	  /* Once basic block indices are stable, we should be able
-	     to use redirect_edge_and_branch_force instead.  */
 	  old_dest = e->dest;
-	  if (dest != NULL && dest != old_dest
-	      && redirect_edge_and_branch (e, dest))
-	    {
+	  if (dest != NULL
+	      && dest != old_dest
+	      && dest != EXIT_BLOCK_PTR)
+            {
+	      redirect_edge_and_branch_force (e, dest);
+
 	      /* Copy the register setter to the redirected edge.
 		 Don't copy CC0 setters, as CC0 is dead after jump.  */
 	      if (setcc)
@@ -4678,6 +4693,8 @@ bypass_conditional_jumps ()
   /* Note we start at block 1.  */
   if (ENTRY_BLOCK_PTR->next_bb == EXIT_BLOCK_PTR)
     return 0;
+
+  bypass_last_basic_block = last_basic_block;
 
   changed = 0;
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb->next_bb,
