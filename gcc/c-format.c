@@ -1418,11 +1418,6 @@ check_format_arg (ctx, format_tree, arg_num)
 
   if (integer_zerop (format_tree))
     {
-      /* FIXME: instead of warning about a null format string here,
-	 functions for which we want to perform this check should be
-	 marked with the "nonnull" attribute on the appropriate arguments.  */
-      status_warning (status, "null format string");
-
       /* Skip to first argument to check, so we can see if this format
 	 has any arguments (it shouldn't).  */
       while (arg_num + 1 < info->first_arg_num)
