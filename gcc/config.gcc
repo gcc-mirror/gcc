@@ -2274,7 +2274,7 @@ fi
 				${srcdir}/config/arm/arm-cores.def | \
 				sed -e 's/^[^,]*,[ 	]*//' | \
 				sed -e 's/,.*$//'`
-			  eval "with_$which=$new_val"
+			  eval "target_${which}_cname=$new_val"
 			echo "For $val real value is $new_val"
 			  true
 			else
@@ -2557,16 +2557,12 @@ fi
 		;;
 
 	arm*-*-*)
-		case "x$with_cpu" in
-		x)
-			# The most generic
-			target_cpu_default2="TARGET_CPU_generic"
-			;;
-
-		*)
-			target_cpu_default2="TARGET_CPU_$with_cpu"
-			;;
-		esac
+		if test x$target_cpu_cname = x
+		then
+			target_cpu_default2=TARGET_CPU_generic
+		else
+			target_cpu_default2=TARGET_CPU_$target_cpu_cname
+		fi
 		;;
 
 	m68k*-linux*)
