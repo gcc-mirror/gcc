@@ -704,11 +704,6 @@ rs6000_override_options (const char *default_cpu)
 
   const size_t ptt_size = ARRAY_SIZE (processor_target_table);
 
-  /* Save current -mmultiple/-mno-multiple status.  */
-  int multiple = TARGET_MULTIPLE;
-  /* Save current -mstring/-mno-string status.  */
-  int string = TARGET_STRING;
-
   /* Some OSs don't support saving the high part of 64-bit registers on
      context switch.  Other OSs don't support saving Altivec registers.
      On those OSs, we don't touch the MASK_POWERPC64 or MASK_ALTIVEC
@@ -730,6 +725,10 @@ rs6000_override_options (const char *default_cpu)
   if (OS_MISSING_ALTIVEC)
     set_masks &= ~MASK_ALTIVEC;
 #endif
+
+  /* Don't override these by the processor default if given explicitly.  */
+  set_masks &= ~(target_flags_explicit
+		 & (MASK_MULTIPLE | MASK_STRING | MASK_SOFT_FLOAT));
 
   /* Identify the processor type.  */
   rs6000_select[0].string = default_cpu;
@@ -766,17 +765,7 @@ rs6000_override_options (const char *default_cpu)
   /* If we are optimizing big endian systems for space, use the load/store
      multiple and string instructions.  */
   if (BYTES_BIG_ENDIAN && optimize_size)
-    target_flags |= MASK_MULTIPLE | MASK_STRING;
-
-  /* If -mmultiple or -mno-multiple was explicitly used, don't
-     override with the processor default */
-  if ((target_flags_explicit & MASK_MULTIPLE) != 0)
-    target_flags = (target_flags & ~MASK_MULTIPLE) | multiple;
-
-  /* If -mstring or -mno-string was explicitly used, don't override
-     with the processor default.  */
-  if ((target_flags_explicit & MASK_STRING) != 0)
-    target_flags = (target_flags & ~MASK_STRING) | string;
+    target_flags |= ~target_flags_explicit & (MASK_MULTIPLE | MASK_STRING);
 
   /* Don't allow -mmultiple or -mstring on little endian systems
      unless the cpu is a 750, because the hardware doesn't support the
