@@ -1,3 +1,8 @@
+2002-03-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in: Give texi2pod its input file as a command
+	line argument, not on stdin.
+
 2002-03-12  Andrew MacLeod  <amacleod@redhat.com>
 
 	* config/sparc/sparc.h (RETURN_ADDR_RTX): Include v9 stack bias in

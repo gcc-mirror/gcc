@@ -2334,7 +2334,7 @@ generated-manpages: $(docdir)/gcov.1 $(docdir)/cpp.1 $(docdir)/gcc.1 \
 
 $(docdir)/gcov.1: $(docdir)/gcov.texi
 	$(STAMP) $(docdir)/gcov.1
-	-$(TEXI2POD) < $(docdir)/gcov.texi > gcov.pod
+	-$(TEXI2POD) $(docdir)/gcov.texi > gcov.pod
 	-($(POD2MAN) --section=1 gcov.pod > $(docdir)/gcov.1.T$$$$ && \
 		mv -f $(docdir)/gcov.1.T$$$$ $(docdir)/gcov.1) || \
 		(rm -f $(docdir)/gcov.1.T$$$$ && exit 1)
@@ -2343,7 +2343,7 @@ $(docdir)/gcov.1: $(docdir)/gcov.texi
 $(docdir)/cpp.1: $(docdir)/cpp.texi $(docdir)/cppenv.texi \
   $(docdir)/cppopts.texi
 	$(STAMP) $(docdir)/cpp.1
-	-$(TEXI2POD) < $(docdir)/cpp.texi > cpp.pod
+	-$(TEXI2POD) $(docdir)/cpp.texi > cpp.pod
 	-($(POD2MAN) --section=1 cpp.pod > $(docdir)/cpp.1.T$$$$ && \
 		mv -f $(docdir)/cpp.1.T$$$$ $(docdir)/cpp.1) || \
 		(rm -f $(docdir)/cpp.1.T$$$$ && exit 1)
@@ -2352,7 +2352,7 @@ $(docdir)/cpp.1: $(docdir)/cpp.texi $(docdir)/cppenv.texi \
 $(docdir)/gcc.1: $(docdir)/invoke.texi $(docdir)/cppenv.texi \
   $(docdir)/cppopts.texi
 	$(STAMP) $(docdir)/gcc.1
-	-$(TEXI2POD) < $(docdir)/invoke.texi > gcc.pod
+	-$(TEXI2POD) $(docdir)/invoke.texi > gcc.pod
 	-($(POD2MAN) --section=1 gcc.pod > $(docdir)/gcc.1.T$$$$ && \
 		mv -f $(docdir)/gcc.1.T$$$$ $(docdir)/gcc.1) || \
 		(rm -f $(docdir)/gcc.1.T$$$$ && exit 1)
@@ -2360,7 +2360,7 @@ $(docdir)/gcc.1: $(docdir)/invoke.texi $(docdir)/cppenv.texi \
 
 $(docdir)/gfdl.7: $(docdir)/include/fdl.texi
 	$(STAMP) $(docdir)/gfdl.7
-	-$(TEXI2POD) < $(docdir)/include/fdl.texi > gfdl.pod
+	-$(TEXI2POD) $(docdir)/include/fdl.texi > gfdl.pod
 	-($(POD2MAN) --section=7 gfdl.pod > $(docdir)/gfdl.7.T$$$$ && \
 		mv -f $(docdir)/gfdl.7.T$$$$ $(docdir)/gfdl.7) || \
 		(rm -f $(docdir)/gfdl.7.T$$$$ && exit 1)
@@ -2368,7 +2368,7 @@ $(docdir)/gfdl.7: $(docdir)/include/fdl.texi
 
 $(docdir)/gpl.7: $(docdir)/include/gpl.texi
 	$(STAMP) $(docdir)/gpl.7
-	-$(TEXI2POD) < $(docdir)/include/gpl.texi > gpl.pod
+	-$(TEXI2POD) $(docdir)/include/gpl.texi > gpl.pod
 	-($(POD2MAN) --section=7 gpl.pod > $(docdir)/gpl.7.T$$$$ && \
 		mv -f $(docdir)/gpl.7.T$$$$ $(docdir)/gpl.7) || \
 		(rm -f $(docdir)/gpl.7.T$$$$ && exit 1)
@@ -2376,7 +2376,7 @@ $(docdir)/gpl.7: $(docdir)/include/gpl.texi
 
 $(docdir)/fsf-funding.7: $(docdir)/include/funding.texi
 	$(STAMP) $(docdir)/fsf-funding.7
-	-$(TEXI2POD) < $(docdir)/include/funding.texi > fsf-funding.pod
+	-$(TEXI2POD) $(docdir)/include/funding.texi > fsf-funding.pod
 	-($(POD2MAN) --section=7 fsf-funding.pod \
 		> $(docdir)/fsf-funding.7.T$$$$ && \
 	    mv -f $(docdir)/fsf-funding.7.T$$$$ $(docdir)/fsf-funding.7) || \
