@@ -1,3 +1,8 @@
+Thu Oct 29 14:10:22 EST 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* except.c (emit_eh_context): Make the EH context register stay alive
+	at -O0 so stupid.c doesn't get confused.
+
 1998-10-29 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* emit-rtl.c (try_split): Do not try to split a BARRIER.
