@@ -306,10 +306,10 @@ read_scan_file (scan_file)
       partial_count++;
       partial = (struct partial_proto*)
 	obstack_alloc (&scan_file_obstack, sizeof(struct partial_proto));
-      partial->fname
-	= obstack_copy0 (&scan_file_obstack, fname, strlen (fname));
-      partial->rtype
-	= obstack_copy0 (&scan_file_obstack, rtype, strlen (rtype));
+      partial->fname = obstack_alloc (&scan_file_obstack, strlen(fname) + 1);
+      strcpy (partial->fname, fname);
+      partial->rtype = obstack_alloc (&scan_file_obstack, strlen(rtype) + 1);
+      strcpy (partial->rtype, rtype);
       partial->line_seen = atoi(line_seen);
       partial->fn = fn;
       fn->partial = partial;
