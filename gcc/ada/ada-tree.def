@@ -61,13 +61,13 @@ DEFTREECODE (STMT_STMT, "stmt_stmt", 's', 1)
 /* A loop.  LOOP_STMT_TOP_COND and LOOP_STMT_BOT_COND are the tests to exit a
    loop at the top and bottom, respectively.  LOOP_STMT_UPDATE is the statement
    to update the loop iterator at the continue point.  LOOP_STMT_BODY are the
-   statements in the body of the loop.  LOOP_STMT_LABEL is used during
-   gimplification to point to the LABEL_DECL of the end label of the loop.  */
+   statements in the body of the loop.  LOOP_STMT_LABEL points to the LABEL_DECL
+   of the end label of the loop.  */
 DEFTREECODE (LOOP_STMT, "loop_stmt", 's', 5)
 
 /* Conditionally exit a loop.  EXIT_STMT_COND is the condition, which, if
    true, will cause the loop to be exited.  If no condition is specified,
-   the loop is unconditionally exited.  EXIT_STMT_LOOP is the LOOP_STMT
+   the loop is unconditionally exited.  EXIT_STMT_LABEL is the end label
    corresponding to the loop to exit.  */
 DEFTREECODE (EXIT_STMT, "exit_stmt", 's', 2)
 
@@ -85,4 +85,3 @@ DEFTREECODE (HANDLER_STMT, "handler_stmt", 's', 3)
 
 /* A statement that emits a USE for its single operand.  */
 DEFTREECODE (USE_STMT, "use_expr", 's', 1)
-

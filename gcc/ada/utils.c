@@ -467,6 +467,13 @@ gnat_install_builtins ()
   gnat_define_builtin ("__builtin_memcpy", ftype, BUILT_IN_MEMCPY,
 		       "memcpy", false);
 
+  tmp = tree_cons (NULL_TREE, size_type_node, void_list_node);
+  tmp = tree_cons (NULL_TREE, ptr_void_type_node, tmp);
+  tmp = tree_cons (NULL_TREE, ptr_void_type_node, tmp);
+  ftype = build_function_type (integer_type_node, tmp);
+  gnat_define_builtin ("__builtin_memcmp", ftype, BUILT_IN_MEMCMP,
+		       "memcmp", false);
+
   tmp = tree_cons (NULL_TREE, integer_type_node, void_list_node);
   ftype = build_function_type (integer_type_node, tmp);
   gnat_define_builtin ("__builtin_clz", ftype, BUILT_IN_CLZ, "clz", true);
@@ -2489,7 +2496,8 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
       for (i = 0, inner_type = type; i < ndim;
 	   i++, inner_type = TREE_TYPE (inner_type))
 	tem = build (ARRAY_REF, TREE_TYPE (inner_type), tem,
-		     convert (TYPE_DOMAIN (inner_type), size_zero_node));
+		     convert (TYPE_DOMAIN (inner_type), size_zero_node),
+		     NULL_TREE, NULL_TREE);
 
       field_list
 	= chainon (field_list,
@@ -2847,10 +2855,10 @@ convert (tree type, tree expr)
   if (type == etype)
     return expr;
   /* If we're converting between two aggregate types that have the same main
-     variant, just make a NOP_EXPR.  */
+     variant, just make a VIEW_CONVER_EXPR.  */
   else if (AGGREGATE_TYPE_P (type)
 	   && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (etype))
-    return build1 (NOP_EXPR, type, expr);
+    return build1 (VIEW_CONVERT_EXPR, type, expr);
 
   /* If the input type has padding, remove it by doing a component reference
      to the field.  If the output type has padding, make a constructor

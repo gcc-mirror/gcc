@@ -84,6 +84,14 @@ gnat_truthvalue_conversion (tree expr)
     case ERROR_MARK:
       return expr;
 
+    case INTEGER_CST:
+      return (integer_zerop (expr) ? convert (type, integer_zero_node)
+	      : convert (type, integer_one_node));
+
+    case REAL_CST:
+      return (real_zerop (expr) ? convert (type, integer_zero_node)
+	      : convert (type, integer_one_node));
+
     case COND_EXPR:
       /* Distribute the conversion into the arms of a COND_EXPR.  */
       return fold
@@ -578,10 +586,8 @@ nonbinary_modular_operation (enum tree_code op_code,
    have to do here is validate the work done by SEM and handle subtypes.  */
 
 tree
-build_binary_op (enum tree_code op_code,
-                 tree result_type,
-                 tree left_operand,
-                 tree right_operand)
+build_binary_op (enum tree_code op_code, tree result_type,
+                 tree left_operand, tree right_operand)
 {
   tree left_type  = TREE_TYPE (left_operand);
   tree right_type = TREE_TYPE (right_operand);
@@ -739,17 +745,7 @@ build_binary_op (enum tree_code op_code,
       if (operation_type != right_type
 	  && (! CONTAINS_PLACEHOLDER_P (TYPE_SIZE (operation_type))))
 	{
-	  /* For a variable-size type, with both BLKmode, convert using
-	     CONVERT_EXPR instead of an unchecked conversion since we don't
-	     need to make a temporary (and can't anyway).  */
-	  if (TREE_CODE (TYPE_SIZE (operation_type)) != INTEGER_CST
-	      && TYPE_MODE (TREE_TYPE (right_operand)) == BLKmode
-	      && TREE_CODE (right_operand) != UNCONSTRAINED_ARRAY_REF)
-	    right_operand = build1 (CONVERT_EXPR, operation_type,
-				    right_operand);
-	  else
-	    right_operand = convert (operation_type, right_operand);
-
+	  right_operand = convert (operation_type, right_operand);
 	  right_type = operation_type;
 	}
 
@@ -894,7 +890,8 @@ build_binary_op (enum tree_code op_code,
 	 just compare the data pointer.  */
       else if (TYPE_FAT_POINTER_P (left_base_type)
 	       && TREE_CODE (right_operand) == CONSTRUCTOR
-	       && integer_zerop (TREE_VALUE (CONSTRUCTOR_ELTS (right_operand))))
+	       && integer_zerop (TREE_VALUE
+				 (CONSTRUCTOR_ELTS (right_operand))))
 	{
 	  right_operand = build_component_ref (left_operand, NULL_TREE,
 					       TYPE_FIELDS (left_base_type),
@@ -1008,9 +1005,12 @@ build_binary_op (enum tree_code op_code,
     return build1 (NULL_EXPR, operation_type, TREE_OPERAND (left_operand, 0));
   else if (TREE_CODE (right_operand) == NULL_EXPR)
     return build1 (NULL_EXPR, operation_type, TREE_OPERAND (right_operand, 0));
+  else if (op_code == ARRAY_REF || op_code == ARRAY_RANGE_REF)
+    result = fold (build (op_code, operation_type, left_operand, right_operand,
+			  NULL_TREE, NULL_TREE));
   else
-    result = fold (build (op_code, operation_type,
-			  left_operand, right_operand));
+    result
+      = fold (build (op_code, operation_type, left_operand, right_operand));
 
   TREE_SIDE_EFFECTS (result) |= has_side_effects;
   TREE_CONSTANT (result)

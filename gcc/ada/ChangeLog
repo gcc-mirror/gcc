@@ -1,3 +1,26 @@
+2004-06-14  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* ada-tree.def (LOOP_STMT, EXIT_STMT): Update documentation.
+	* ada-tree.h (EXIT_STMT_LABEL): Renamed from EXIT_STMT_LOOP.
+	* decl.c (gnat_to_gnu_entity): Also set force_global for imported
+	subprograms.
+	* trans.c (gnu_loop_label_stack): Renamed from gnu_loop_stmt_stack;
+	all callers changed.
+	(gnat_to_gnu, case N_Loop_Statement, case N_Exit_Statement): Change
+	the way that EXIT_STMT finds the loop label.
+	(gnat_gimplify_stmt, case LOOP_STMT, EXIT_STMT): Likewise.
+	(gnat_gimplify_stmt, case DECL_STMT): Handle variable-sized decls here.
+	(add_stmt): Use annotate_with_locus insted of setting directly.
+	(pos_to_construct): Set TREE_PURPOSE of each entry to index.
+	(gnat_stabilize_reference, case ARRAY_RANGE_REF): Merge with ARRAY_REF.
+	* utils.c (gnat_install_builtins): Install __builtin_memcmp.
+	(build_vms_descriptor): Add extra args to ARRAY_REF.
+	(convert): Use VIEW_CONVERT_EXPR between aggregate types.
+	* utils2.c (gnat_truthvalue_conversion, case INTEGER_CST, REAL_CST):
+	New cases.
+	(build_binary_op): Don't make explicit CONVERT_EXPR.
+	Add extra rgs to ARRAY_REF.
+
 2004-06-14  Pascal Obry  <obry@gnat.com>
 
 	* gnat_ugn.texi: Document relocatable vs. dynamic Library_Kind on
