@@ -2082,14 +2082,27 @@ resolve_offset_ref (exp)
       my_friendly_abort (55);
     }
 
-  /* If this is a reference to a member function, then return
-     the address of the member function (which may involve going
-     through the object's vtable), otherwise, return an expression
-     for the dereferenced pointer-to-member construct.  */
-  addr = build_unary_op (ADDR_EXPR, base, 0);
+  /* Ensure that we have an object.  */
+  if (TREE_CODE (base) == NOP_EXPR
+      && TREE_OPERAND (base, 0) == error_mark_node)
+    addr = error_mark_node;
+  else
+    {
+      /* If this is a reference to a member function, then return the
+	 address of the member function (which may involve going
+	 through the object's vtable), otherwise, return an expression
+	 for the dereferenced pointer-to-member construct.  */
+      addr = build_unary_op (ADDR_EXPR, base, 0);
+    }
 
   if (TREE_CODE (TREE_TYPE (member)) == OFFSET_TYPE)
     {
+      if (addr == error_mark_node)
+	{
+	  cp_error ("object missing in `%E'", exp);
+	  return error_mark_node;
+	}
+
       basetype = TYPE_OFFSET_BASETYPE (TREE_TYPE (member));
       addr = convert_pointer_to (basetype, addr);
       member = convert (ptrdiff_type_node,

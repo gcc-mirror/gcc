@@ -2463,8 +2463,8 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
       idx = save_expr (build_component_ref (function,
 					    index_identifier,
 					    NULL_TREE, 0));
-      e1 = build (GT_EXPR, boolean_type_node, idx,
-		  convert (delta_type_node, integer_zero_node));
+      e1 = fold (build (GT_EXPR, boolean_type_node, idx,
+			convert (delta_type_node, integer_zero_node)));
       delta = convert (ptrdiff_type_node,
 		       build_component_ref (function, delta_identifier, NULL_TREE, 0));
       delta2 = DELTA2_FROM_PTRMEMFUNC (function);
@@ -2473,7 +2473,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
       instance
 	= convert_pointer_to_real (TYPE_METHOD_BASETYPE (TREE_TYPE (fntype)),
 				   instance_ptr);
-      if (instance == error_mark_node)
+      if (instance == error_mark_node && instance_ptr != error_mark_node)
 	return instance;
 
       vtbl = convert_pointer_to (ptr_type_node, instance);
@@ -2503,7 +2503,14 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 
       e3 = PFN_FROM_PTRMEMFUNC (function);
       TREE_TYPE (e2) = TREE_TYPE (e3);
-      function = build_conditional_expr (e1, e2, e3);
+      e1 = build_conditional_expr (e1, e2, e3);
+
+      if (instance_ptr == error_mark_node
+	  && TREE_CODE (e1) != ADDR_EXPR
+	  && TREE_CODE (TREE_OPERAND (e1, 0)) != FUNCTION_DECL)
+	cp_error ("object missing in `%E'", function);
+
+      function = e1;
 
       /* Make sure this doesn't get evaluated first inside one of the
          branches of the COND_EXPR.  */
@@ -5408,7 +5415,11 @@ build_c_cast (type, expr, allow_nonconverting)
 	 convert references to their expanded types,
 	 but don't convert any other types.  */
       if (TREE_CODE (TREE_TYPE (value)) == FUNCTION_TYPE
-	  || TREE_CODE (TREE_TYPE (value)) == METHOD_TYPE
+	  || (TREE_CODE (TREE_TYPE (value)) == METHOD_TYPE
+	      /* Don't do the default conversion if we want a
+		 pointer to a function.  */
+	      && TREE_CODE (type) != POINTER_TYPE
+	      && TREE_CODE (TREE_TYPE (type)) != FUNCTION_TYPE)
 	  || TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
 	  || TREE_CODE (TREE_TYPE (value)) == REFERENCE_TYPE)
 	value = default_conversion (value);

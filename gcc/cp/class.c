@@ -3635,6 +3635,7 @@ finish_struct_1 (t, warn_anon)
 
   if (fn_fields)
     {
+      TYPE_METHODS (t) = fn_fields;
       method_vec = finish_struct_methods (t, fn_fields, nonprivate_method);
 
       if (TYPE_HAS_CONSTRUCTOR (t)

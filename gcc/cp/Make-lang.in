@@ -146,7 +146,7 @@ cplib2.ready: $(GCC_PASSES) $(LIBGCC2_DEPS) stmp-int-hdrs
 	  else \
 	    echo "" > cplib2.new; \
 	  fi; \
-	  if cmp -s cplib2.new cplib2.txt; then \
+	  if cmp -s cplib2.new cplib2.txt; then true; else \
 	    touch cplib2.ready; \
 	  fi; \
 	  rm -f cplib2.new; \

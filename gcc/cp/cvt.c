@@ -282,6 +282,44 @@ convert_to_pointer_force (type, expr)
       form = TREE_CODE (intype);
     }
 
+  if (TREE_CODE (type) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
+    {
+      /* Allow an implicit this pointer for pointer to member
+         functions.  */
+      if (TYPE_PTRMEMFUNC_P (intype))
+	{
+	  tree decl, basebinfo;
+	  tree fntype = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (intype));
+	  tree t = TYPE_METHOD_BASETYPE (fntype);
+
+	  if (current_class_type == 0
+	      || get_base_distance (t, current_class_type, 0, &basebinfo) == -1)
+	    {
+	      decl = build1 (NOP_EXPR, t, error_mark_node);
+	    }
+	  else if (current_class_ptr == 0)
+	    decl = build1 (NOP_EXPR, t, error_mark_node);
+	  else
+	    decl = current_class_ref;
+
+	  expr = build (OFFSET_REF, fntype, decl, expr);
+	  intype = TREE_TYPE (expr);
+	}
+
+      if (TREE_CODE (expr) == OFFSET_REF && TREE_CODE (intype) == METHOD_TYPE)
+	expr = resolve_offset_ref (expr);
+      if (TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE)
+	expr = build_addr_func (expr);
+      if (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE)
+	{
+	  if (pedantic
+	      && TREE_CODE (TREE_TYPE (TREE_TYPE (expr))) == METHOD_TYPE)
+	    cp_pedwarn ("cannot convert `%T' to `%T'", intype, type);
+	  return build1 (NOP_EXPR, type, expr);
+	}
+    }
+
   if (form == POINTER_TYPE)
     {
       intype = TYPE_MAIN_VARIANT (intype);

@@ -2858,6 +2858,8 @@ mark_decl_instantiated (result, extern_p)
       DECL_INTERFACE_KNOWN (result) = 1;
       DECL_NOT_REALLY_EXTERN (result) = 1;
     }
+  else if (TREE_CODE (result) == FUNCTION_DECL)
+    mark_inline_for_output (result);
 }
 
 /* Given two function templates PAT1 and PAT2, return:
