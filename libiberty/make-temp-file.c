@@ -45,26 +45,9 @@ Boston, MA 02111-1307, USA.  */
 #include "libiberty.h"
 extern int mkstemps PARAMS ((char *, int));
 
-#ifndef IN_GCC
-#if defined (__MSDOS__) || (defined (_WIN32) && ! defined (__CYGWIN__) && ! defined (_UWIN))
-#define DIR_SEPARATOR '\\'
-#endif
-#endif
-
+/* '/' works just fine on MS-DOS based systems.  */
 #ifndef DIR_SEPARATOR
 #define DIR_SEPARATOR '/'
-#endif
-
-/* On MSDOS, write temp files in current dir
-   because there's no place else we can expect to use.  */
-/* ??? Although the current directory is tried as a last resort,
-   this is left in so that on MSDOS it is preferred to /tmp on the
-   off chance that someone requires this, since that was the previous
-   behaviour.  */
-#ifdef __MSDOS__
-#ifndef P_tmpdir
-#define P_tmpdir "."
-#endif
 #endif
 
 /* Name of temporary file.
@@ -92,9 +75,11 @@ try (dir, base)
   return 0;
 }
 
-static char tmp[] = { DIR_SEPARATOR, 't', 'm', 'p', 0 };
-static char usrtmp[] =
+static const char tmp[] = { DIR_SEPARATOR, 't', 'm', 'p', 0 };
+static const char usrtmp[] =
 { DIR_SEPARATOR, 'u', 's', 'r', DIR_SEPARATOR, 't', 'm', 'p', 0 };
+static const char vartmp[] =
+{ DIR_SEPARATOR, 'v', 'a', 'r', DIR_SEPARATOR, 't', 'm', 'p', 0 };
 
 static char *memoized_tmpdir;
 
@@ -116,7 +101,8 @@ choose_tmpdir ()
   base = try (P_tmpdir, base);
 #endif
 
-  /* Try /usr/tmp, then /tmp.  */
+  /* Try /var/tmp, /usr/tmp, then /tmp.  */
+  base = try (vartmp, base);
   base = try (usrtmp, base);
   base = try (tmp, base);
  

@@ -1,3 +1,9 @@
+2001-03-21  Zack Weinberg  <zackw@stanford.edu>
+
+	* make-temp-file.c: Always default DIR_SEPARATOR to '/'.
+	Don't default P_tmpdir to anything.  Try /var/tmp before
+	/usr/tmp.
+
 2001-03-20  Zack Weinberg  <zackw@stanford.edu>
 
 	* choose-temp.c: Split off make_temp_file, and the code
