@@ -1,3 +1,8 @@
+Thu Nov  8 18:00:55 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* explow.c (convert_memory_address, case SUBREG): Only return
+	inner object if SUBREG_PROMOTED_VAR_P or known to be pointer.
+
 2001-11-08  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (GCC_FOR_TARGET): Add build_tooldir/sys-include.
