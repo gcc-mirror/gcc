@@ -1,5 +1,5 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1987, 92-97, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 92-97, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -72,8 +72,6 @@ typedef struct class_stack_node {
 static int current_class_stack_size;
 static class_stack_node_t current_class_stack;
 
-struct base_info;
-
 static tree get_vfield_name PROTO((tree));
 static void finish_struct_anon PROTO((tree));
 static tree build_vbase_pointer PROTO((tree, tree));
@@ -92,7 +90,7 @@ static tree get_vtable_entry_n PROTO((tree, unsigned HOST_WIDE_INT));
 static void add_virtual_function PROTO((tree *, tree *, int *, tree, tree));
 static tree delete_duplicate_fields_1 PROTO((tree, tree));
 static void delete_duplicate_fields PROTO((tree));
-static void finish_struct_bits PROTO((tree, int));
+static void finish_struct_bits PROTO((tree));
 static int alter_access PROTO((tree, tree, tree, tree));
 static void handle_using_decl PROTO((tree, tree));
 static int overrides PROTO((tree, tree));
@@ -107,7 +105,7 @@ static void modify_one_vtable PROTO((tree, tree, tree));
 static void modify_all_vtables PROTO((tree, tree));
 static void modify_all_direct_vtables PROTO((tree, int, tree, tree));
 static void modify_all_indirect_vtables PROTO((tree, int, int, tree, tree));
-static void determine_primary_base PROTO((tree, struct base_info *));
+static void determine_primary_base PROTO((tree, int *));
 static void finish_struct_methods PROTO((tree));
 static void maybe_warn_about_overly_private_class PROTO ((tree));
 static int field_decl_cmp PROTO ((const tree *, const tree *));
@@ -133,15 +131,15 @@ static void check_methods PROTO((tree));
 static void remove_zero_width_bit_fields PROTO((tree));
 static void check_bases PROTO((tree, int *, int *, int *));
 static void check_bases_and_members PROTO((tree, int *));
-static void create_vtable_ptr PROTO((tree, int *, int *, int *, tree *, tree *));
-static void layout_class_type PROTO((tree, int *, int *, int *, tree *, tree *));
+static void create_vtable_ptr PROTO((tree, int *, int *, tree *, tree *));
+static void layout_class_type PROTO((tree, int *, int *, tree *, tree *));
 static void fixup_pending_inline PROTO((struct pending_inline *));
 static void fixup_inline_methods PROTO((tree));
 static void set_primary_base PROTO((tree, int, int *));
 static void propagate_binfo_offsets PROTO((tree, tree));
-static int layout_basetypes PROTO((tree, int));
+static void layout_basetypes PROTO((tree));
 static tree dfs_mark_primary_bases_and_set_vbase_offsets PROTO((tree, void *));
-static int layout_virtual_bases PROTO((tree, int));
+static void layout_virtual_bases PROTO((tree));
 static void remove_base_fields PROTO((tree));
 
 /* Variables shared between class.c and call.c.  */
@@ -1501,12 +1499,6 @@ handle_using_decl (using_decl, t)
     alter_access (t, binfo, fdecl, access);
 }
 
-struct base_info
-{
-  int has_virtual;
-  int max_has_virtual;
-};
-
 /* Run through the base clases of T, updating
    CANT_HAVE_DEFAULT_CTOR_P, CANT_HAVE_CONST_CTOR_P, and
    NO_CONST_ASN_REF_P.  Also set flag bits in T based on properties of
@@ -1653,12 +1645,13 @@ set_primary_base (t, i, has_virtual_p)
 /* Determine the primary class for T.  */
 
 static void
-determine_primary_base (t, b)
+determine_primary_base (t, has_virtual_p)
      tree t;
-     struct base_info *b;
+     int *has_virtual_p;
 {
   int i, n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
-  bzero ((char *) b, sizeof (struct base_info));
+
+  *has_virtual_p = 0;
 
   for (i = 0; i < n_baseclasses; i++)
     {
@@ -1679,7 +1672,7 @@ determine_primary_base (t, b)
 
 	  if (!CLASSTYPE_HAS_PRIMARY_BASE_P (t))
 	    {
-	      set_primary_base (t, i, &b->has_virtual);
+	      set_primary_base (t, i, has_virtual_p);
 	      CLASSTYPE_VFIELDS (t) = copy_list (CLASSTYPE_VFIELDS (basetype));
 	    }
 	  else
@@ -1697,38 +1690,22 @@ determine_primary_base (t, b)
 				 VF_BASETYPE_VALUE (vfields),
 				 CLASSTYPE_VFIELDS (t));
 
-	      if (b->has_virtual == 0)
-		set_primary_base (t, i, &b->has_virtual);
+	      if (*has_virtual_p == 0)
+		set_primary_base (t, i, has_virtual_p);
 	    }
 	}
     }
 
   if (!TYPE_VFIELD (t))
     CLASSTYPE_VFIELD_PARENT (t) = -1;
-
-  {
-    tree vfields;
-    /* Find the base class with the largest number of virtual functions.  */
-    for (vfields = CLASSTYPE_VFIELDS (t); 
-	 vfields; 
-	 vfields = TREE_CHAIN (vfields))
-      {
-	if (CLASSTYPE_VSIZE (VF_BASETYPE_VALUE (vfields)) > b->max_has_virtual)
-	  b->max_has_virtual = CLASSTYPE_VSIZE (VF_BASETYPE_VALUE (vfields));
-	if (VF_DERIVED_VALUE (vfields)
-	    && CLASSTYPE_VSIZE (VF_DERIVED_VALUE (vfields)) > b->max_has_virtual)
-	  b->max_has_virtual = CLASSTYPE_VSIZE (VF_DERIVED_VALUE (vfields));
-      }
-  }
 }
 
-/* Set memoizing fields and bits of T (and its variants) for later use.
-   MAX_HAS_VIRTUAL is the largest size of any T's virtual function tables.  */
+/* Set memoizing fields and bits of T (and its variants) for later
+   use.  */
 
 static void
-finish_struct_bits (t, max_has_virtual)
+finish_struct_bits (t)
      tree t;
-     int max_has_virtual;
 {
   int i, n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
 
@@ -1756,7 +1733,7 @@ finish_struct_bits (t, max_has_virtual)
       variants = TYPE_NEXT_VARIANT (variants);
     }
 
-  if (n_baseclasses && max_has_virtual)
+  if (n_baseclasses && TYPE_POLYMORPHIC_P (t))
     /* For a class w/o baseclasses, `finish_struct' has set
        CLASS_TYPE_ABSTRACT_VIRTUALS correctly (by
        definition). Similarly for a class whose base classes do not
@@ -4011,12 +3988,11 @@ check_bases_and_members (t, empty_p)
    TYPE_FIELDS list.  */
 
 static void
-create_vtable_ptr (t, empty_p, has_virtual_p, max_has_virtual_p,
+create_vtable_ptr (t, empty_p, has_virtual_p, 
 		   pending_virtuals_p, pending_hard_virtuals_p)
      tree t;
      int *empty_p;
      int *has_virtual_p;
-     int *max_has_virtual_p;
      tree *pending_virtuals_p;
      tree *pending_hard_virtuals_p;
 {
@@ -4025,14 +4001,8 @@ create_vtable_ptr (t, empty_p, has_virtual_p, max_has_virtual_p,
   /* If possible, we reuse the virtual function table pointer from one
      of our base classes.  */
   if (CLASSTYPE_N_BASECLASSES (t))
-    {
-      struct base_info base_info;
-
-      /* Remember where we got our vfield from.  */
-      determine_primary_base (t, &base_info);
-      *has_virtual_p = base_info.has_virtual;
-      *max_has_virtual_p = base_info.max_has_virtual;
-    }
+    /* Remember where we got our vfield from.  */
+    determine_primary_base (t, has_virtual_p);
 
   /* Loop over the virtual functions, adding them to our various
      vtables.  */
@@ -4333,13 +4303,11 @@ dfs_mark_primary_bases_and_set_vbase_offsets (binfo, data)
 }
 
 /* Set BINFO_OFFSET for all of the virtual bases for T.  Update
-   TYPE_ALIGN and TYPE_SIZE for T.  Return the maximum of MAX and the
-   largest CLASSTYPE_VSIZE for any of the virtual bases.  */
+   TYPE_ALIGN and TYPE_SIZE for T.  */
 
-static int
-layout_virtual_bases (t, max)
+static void
+layout_virtual_bases (t)
      tree t;
-     int max;
 {
   tree vbase;
   int dsize;
@@ -4390,10 +4358,6 @@ layout_virtual_bases (t, max)
 		  dfs_mark_primary_bases_and_set_vbase_offsets,
 		  dfs_mark_primary_bases_queue_p, 
 		  t);
-
-	/* While we're here, see if this new virtual base class has
-	   more virtual functions than we expected.  */
-	max = MAX (CLASSTYPE_VSIZE (basetype), max);
       }
 
   /* We're done with the various marks, now, so clear them.  */
@@ -4406,22 +4370,16 @@ layout_virtual_bases (t, max)
   TYPE_SIZE (t) = size_int (dsize);
   TYPE_SIZE_UNIT (t) = size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (t),
 				   size_int (BITS_PER_UNIT));
-
-  return max;
 }
 
 /* Finish the work of layout_record, now taking virtual bases into account.
    Also compute the actual offsets that our base classes will have.
    This must be performed after the fields are laid out, since virtual
-   baseclasses must lay down at the end of the record.
+   baseclasses must lay down at the end of the record.  */
 
-   Returns the maximum number of virtual functions any of the
-   baseclasses provide.  */
-
-static int
-layout_basetypes (rec, max)
+static void
+layout_basetypes (rec)
      tree rec;
-     int max;
 {
   tree vbase_types;
 
@@ -4437,7 +4395,7 @@ layout_basetypes (rec, max)
   remove_base_fields (rec);
 
   /* Allocate the virtual base classes.  */
-  max = layout_virtual_bases (rec, max);
+  layout_virtual_bases (rec);
 
   /* Get all the virtual base types that this type uses.  The
      TREE_VALUE slot holds the virtual baseclass type.  Note that
@@ -4458,8 +4416,6 @@ layout_basetypes (rec, max)
 			basetype, rec);
 	}
     }
-
-  return max;
 }
 
 /* Calculate the TYPE_SIZE, TYPE_ALIGN, etc for T.  Calculate
@@ -4467,12 +4423,11 @@ layout_basetypes (rec, max)
    pointer.  */
 
 static void
-layout_class_type (t, empty_p, has_virtual_p, max_has_virtual_p,
+layout_class_type (t, empty_p, has_virtual_p, 
 		   pending_virtuals_p, pending_hard_virtuals_p)
      tree t;
      int *empty_p;
      int *has_virtual_p;
-     int *max_has_virtual_p;
      tree *pending_virtuals_p;
      tree *pending_hard_virtuals_p;
 {
@@ -4484,7 +4439,7 @@ layout_class_type (t, empty_p, has_virtual_p, max_has_virtual_p,
 			     TYPE_FIELDS (t));
 
   /* Create a pointer to our virtual function table.  */
-  create_vtable_ptr (t, empty_p, has_virtual_p, max_has_virtual_p,
+  create_vtable_ptr (t, empty_p, has_virtual_p,
 		     pending_virtuals_p, pending_hard_virtuals_p);
 
   /* CLASSTYPE_INLINE_FRIENDS is really TYPE_NONCOPIED_PARTS.  Thus,
@@ -4545,7 +4500,7 @@ layout_class_type (t, empty_p, has_virtual_p, max_has_virtual_p,
      virtual function table.  */
   if (CLASSTYPE_N_BASECLASSES (t))
     /* layout_basetypes will remove the base subobject fields.  */
-    *max_has_virtual_p = layout_basetypes (t, *max_has_virtual_p);
+    layout_basetypes (t);
 }
      
 /* Create a RECORD_TYPE or UNION_TYPE node for a C struct or union declaration
@@ -4581,7 +4536,6 @@ finish_struct_1 (t)
 {
   tree x;
   int has_virtual;
-  int max_has_virtual;
   tree pending_virtuals = NULL_TREE;
   tree pending_hard_virtuals = NULL_TREE;
   int n_fields = 0;
@@ -4607,7 +4561,6 @@ finish_struct_1 (t)
   CLASSTYPE_GOT_SEMICOLON (t) = 0;
   CLASSTYPE_VFIELD_PARENT (t) = -1;
   has_virtual = 0;
-  max_has_virtual = 0;
   CLASSTYPE_RTTI (t) = NULL_TREE;
 
   /* Do end-of-class semantic processing: checking the validity of the
@@ -4615,7 +4568,7 @@ finish_struct_1 (t)
   check_bases_and_members (t, &empty);
 
   /* Layout the class itself.  */
-  layout_class_type (t, &empty, &has_virtual, &max_has_virtual,
+  layout_class_type (t, &empty, &has_virtual,
 		     &pending_virtuals, &pending_hard_virtuals);
 
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
@@ -4669,11 +4622,6 @@ finish_struct_1 (t)
 	= size_binop (PLUS_EXPR, offset, DECL_FIELD_BITPOS (vfield));
       TYPE_VFIELD (t) = vfield;
     }
-
-  if (has_virtual > max_has_virtual)
-    max_has_virtual = has_virtual;
-  if (max_has_virtual > 0)
-    TYPE_POLYMORPHIC_P (t) = 1;
 
   if (flag_rtti && TYPE_POLYMORPHIC_P (t) && !pending_hard_virtuals)
     modify_all_vtables (t, NULL_TREE);
@@ -4756,7 +4704,7 @@ finish_struct_1 (t)
 	CLASSTYPE_NEEDS_VIRTUAL_REINIT (t) = 1;
     }
 
-  if (max_has_virtual || CLASSTYPE_HAS_PRIMARY_BASE_P (t))
+  if (TYPE_POLYMORPHIC_P (t))
     {
       CLASSTYPE_VSIZE (t) = has_virtual;
       if (CLASSTYPE_HAS_PRIMARY_BASE_P (t))
@@ -4801,7 +4749,7 @@ finish_struct_1 (t)
     CLASSTYPE_VFIELDS (t) 
       = chainon (CLASSTYPE_VFIELDS (t), build_tree_list (NULL_TREE, t));
 
-  finish_struct_bits (t, max_has_virtual);
+  finish_struct_bits (t);
 
   /* Complete the rtl for any static member objects of the type we're
      working on.  */

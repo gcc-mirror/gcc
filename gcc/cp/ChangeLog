@@ -1,5 +1,15 @@
 2000-01-02  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (struct base_info): Remove.
+	(determine_primary_base): Take has_virtual_p rather than a
+	base_info as input.  Don't calculate max_has_virtual.
+	(finish_struct_bits): Remove max_has_virtual argument.
+	(create_vtable_ptr): Remove max_has_virtual_p argument.
+	(layout_virtual_bases): Remove max argument.
+	(layout_basetypes): Likewise.
+	(layout_class_type): Remove max_has_virtual_p argument.
+	(finish_struct_1): Remove max_has_virtual.
+	
 	* cp-tree.h (dfs_mark_primary_bases_queue_p): New function.
 	(layout_basetypes): Remove.
 	* class.c (propagate_binfo_offsets): Moved here from tree.c.
