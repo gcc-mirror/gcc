@@ -1,5 +1,11 @@
 2002-08-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (x86_field_alignment): Don't check
+	TARGET_ALIGN_DOUBLE for the second time.
+	Apply min for all MODE_INT and MODE_CLASS_INT modes.
+
+2002-08-06  Jakub Jelinek  <jakub@redhat.com>
+
 	* config.gcc (*-*-linux*): Default to --enable-threads=posix if no
 	--{enable,disable}-threads is given to configure.
 	(alpha*-*-linux*, hppa*-*-linux*, i[34567]86-*-linux*,
