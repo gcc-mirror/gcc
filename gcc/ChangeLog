@@ -1,3 +1,26 @@
+2002-03-25  Zack Weinberg  <zack@codesourcery.com>
+
+	* toplev.c: Don't include setjmp.h.  Kill float_handler_set,
+	float_handled, float_handler, float_signal, set_float_handler,
+	and do_float_handler.  Set handler for SIGFPE to crash_signal.
+	* toplev.h: Don't prototype do_float_handler.
+
+	* c-lex.c: Fold parse_float into lex_number.  Make warning
+	about portability of hex float constants more informative, and
+	don't issue it on top of a syntax error.
+	* fold-const.c: Fold const_binop_1 and fold_convert_1 into
+	their callers.
+	* real.h: Define REAL_VALUE_ABS here...
+	* simplify-rtx.c: ... not here.  Fold check_fold_consts,
+	simplify_unary_real, simplify_binary_real, and
+	simplify_binary_is2orm1 into their callers.
+	* tree.c: Fold build_real_from_int_cst_1 into caller.
+
+	* doc/tm.texi: Document REAL_VALUE_ABS and REAL_VALUE_NEGATIVE.
+
+	* tsystem.h: Include float.h here...
+	* libgcc2.c: ... not here.
+
 2002-03-25  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	Fixes for: PR bootstrap/3591, target/5676
@@ -52,7 +75,7 @@
 
 2002-03-24  Richard Henderson  <rth@redhat.com>
 
-	* recog.c (peephole2_optimize): Split blocks when EH insns are 
+	* recog.c (peephole2_optimize): Split blocks when EH insns are
 	generated in the middle of a block.  Do global life update if
 	zapped EH edges.
 
@@ -63,7 +86,7 @@
 2002-03-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	preprocessor/3951
-	* gcc.c (cpp_options): Pass -MD through as -MD not -M -MF.	
+	* gcc.c (cpp_options): Pass -MD through as -MD not -M -MF.
 	* cppinit.c (cpp_handle_option): Set no_ouput if -MD or -MMD.
 	(init_dependency_output): Don't make no_output decision here.
 
@@ -154,7 +177,7 @@ objc:
 	PR java/5489
 	* arm.md (return, sibcall_epilogue): Pass const_true_rtx as the
 	operand argument to output_return_instruction.
-	* arm.c (arm_print_operand, case 'd'): If the operand is 
+	* arm.c (arm_print_operand, case 'd'): If the operand is
 	const_true_rtx then just return.
 	(arm_print_operand, case 'D'): If the operand is const_true_rtx
 	then abort.
@@ -171,7 +194,7 @@ objc:
 	(warn_switch): Update comment.
 	* stmt.c (expand_end_case): Check for and, when
 	warn_switch_no_default, warn of a missing default case.
-	
+
 2002-03-23  Alan Modra  <amodra@bigpond.net.au>
 
 	* real.h (N): Special case 128 bit doubles.

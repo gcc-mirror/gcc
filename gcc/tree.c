@@ -122,7 +122,6 @@ struct type_hash
 
 htab_t type_hash_table;
 
-static void build_real_from_int_cst_1 PARAMS ((PTR));
 static void set_type_quals PARAMS ((tree, int));
 static void append_random_chars PARAMS ((char *));
 static int type_hash_eq PARAMS ((const void*, const void*));
@@ -591,31 +590,8 @@ real_value_from_int_cst (type, i)
   return d;
 }
 
-/* Args to pass to and from build_real_from_int_cst_1.  */
-
-struct brfic_args
-{
-  tree type;			/* Input: type to conver to.  */
-  tree i;			/* Input: operand to convert.  */
-  REAL_VALUE_TYPE d;		/* Output: floating point value.  */
-};
-
-/* Convert an integer to a floating point value while protected by a floating
-   point exception handler.  */
-
-static void
-build_real_from_int_cst_1 (data)
-     PTR data;
-{
-  struct brfic_args *args = (struct brfic_args *) data;
-
-  args->d = real_value_from_int_cst (args->type, args->i);
-}
-
 /* Given a tree representing an integer constant I, return a tree
-   representing the same value as a floating-point constant of type TYPE.
-   We cannot perform this operation if there is no way of doing arithmetic
-   on floating-point values.  */
+   representing the same value as a floating-point constant of type TYPE.  */
 
 tree
 build_real_from_int_cst (type, i)
@@ -625,27 +601,13 @@ build_real_from_int_cst (type, i)
   tree v;
   int overflow = TREE_OVERFLOW (i);
   REAL_VALUE_TYPE d;
-  struct brfic_args args;
 
   v = make_node (REAL_CST);
   TREE_TYPE (v) = type;
 
-  /* Setup input for build_real_from_int_cst_1() */
-  args.type = type;
-  args.i = i;
-
-  if (do_float_handler (build_real_from_int_cst_1, (PTR) &args))
-    /* Receive output from build_real_from_int_cst_1() */
-    d = args.d;
-  else
-    {
-      /* We got an exception from build_real_from_int_cst_1() */
-      d = dconst0;
-      overflow = 1;
-    }
+  d = real_value_from_int_cst (type, i);
 
   /* Check for valid float value for this type on this target machine.  */
-
 #ifdef CHECK_FLOAT_VALUE
   CHECK_FLOAT_VALUE (TYPE_MODE (type), d, overflow);
 #endif

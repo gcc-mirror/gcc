@@ -828,38 +828,33 @@ java_parse_escape_sequence ()
     }
 }
 
-/* Isolate the code which may raise an arithmetic exception in its
-   own function.  */
-
 #ifndef JC1_LITE
-struct jpa_args
-{
-  YYSTYPE *java_lval;
-  char *literal_token;
-  int fflag;
-  int number_beginning;
-};
-
 #define IS_ZERO(X) (ereal_cmp (X, dconst0) == 0)
 
-static void java_perform_atof	PARAMS ((PTR));
+/* Subroutine of java_lex: converts floating-point literals to tree
+   nodes.  LITERAL_TOKEN is the input literal, JAVA_LVAL is where to
+   store the result.  FFLAG indicates whether the literal was tagged
+   with an 'f', indicating it is of type 'float'; NUMBER_BEGINNING
+   is the line number on which to report any error.  */
+
+static void java_perform_atof	PARAMS ((YYSTYPE *, char *, int, int));
 
 static void
-java_perform_atof (av)
-     PTR av;
+java_perform_atof (java_lval, literal_token, fflag, number_beginning)
+     YYSTYPE *java_lval;
+     char *literal_token;
+     int fflag;
+     int number_beginning;
 {
-  struct jpa_args *a = (struct jpa_args *)av;
-  YYSTYPE *java_lval = a->java_lval;
-  int number_beginning = a->number_beginning;
   REAL_VALUE_TYPE value;
-  tree type = (a->fflag ? FLOAT_TYPE_NODE : DOUBLE_TYPE_NODE);
+  tree type = (fflag ? FLOAT_TYPE_NODE : DOUBLE_TYPE_NODE);
 
   SET_REAL_VALUE_ATOF (value,
-		       REAL_VALUE_ATOF (a->literal_token, TYPE_MODE (type)));
+		       REAL_VALUE_ATOF (literal_token, TYPE_MODE (type)));
 
   if (REAL_VALUE_ISINF (value) || REAL_VALUE_ISNAN (value))
     {
-      JAVA_FLOAT_RANGE_ERROR ((a->fflag ? "float" : "double"));
+      JAVA_FLOAT_RANGE_ERROR (fflag ? "float" : "double");
       value = DCONST0;
     }
   else if (IS_ZERO (value))
@@ -867,7 +862,7 @@ java_perform_atof (av)
       /* We check to see if the value is really 0 or if we've found an
 	 underflow.  We do this in the most primitive imaginable way.  */
       int really_zero = 1;
-      char *p = a->literal_token;
+      char *p = literal_token;
       if (*p == '-')
 	++p;
       while (*p && *p != 'e' && *p != 'E')
@@ -1161,9 +1156,6 @@ java_lex (java_lval)
 		}
 	      else
 		{
-#ifndef JC1_LITE
-		  struct jpa_args a;
-#endif
 		  if (stage != 4) /* Don't push back fF/dD.  */
 		    java_unget_unicode ();
 		  
@@ -1176,17 +1168,10 @@ java_lex (java_lval)
 		  JAVA_LEX_LIT (literal_token, radix);
 
 #ifndef JC1_LITE
-		  a.literal_token = literal_token;
-		  a.fflag = fflag;
-		  a.java_lval = java_lval;
-		  a.number_beginning = number_beginning;
-		  if (do_float_handler (java_perform_atof, (PTR) &a))
-		    return FP_LIT_TK;
-
-		  JAVA_FLOAT_RANGE_ERROR ((fflag ? "float" : "double"));
-#else
-		  return FP_LIT_TK;
+		  java_perform_atof (java_lval, literal_token,
+				     fflag, number_beginning);
 #endif
+		  return FP_LIT_TK;
 		}
 	    }
 	} /* JAVA_ASCII_FPCHAR (c) */

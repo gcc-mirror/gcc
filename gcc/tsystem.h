@@ -33,8 +33,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define HAVE_DECL_GETOPT 1
 #endif
 
-/* GCC supplies this header.  */
+/* GCC supplies these headers.  */
 #include <stddef.h>
+#include <float.h>
 
 #ifdef inhibit_libc
 
