@@ -180,12 +180,12 @@ libgcj.jar: $(built_java_source_files) $(java_source_files) $(x_java_source_file
 	@: $(shell echo Creating list of files to compile...) $(shell rm -f tmp-list || :) $(shell touch tmp-list) $(foreach source,$?,$(shell echo $(source) >> tmp-list))
 	@set fnord $(MAKEFLAGS); amf=$$2; fail=no; \
 	javac="$(JAVAC)"; \
-	cat tmp-list | while read f; do \
+	cat tmp-list | (while read f; do \
 	  echo $$javac $(JCFLAGS) -classpath $(here):$(srcdir) -d $(here) $$f; \
 	  $$javac $(JCFLAGS) -classpath $(here):$(srcdir) -d $(here) $$f \
 	    || case "$$amf" in *=*) exit 1;; *k*) fail=yes ;; *) exit 1;; esac; \
 	done; \
-	test "$$fail" = no
+	test "$$fail" = no)
 	-@rm -f tmp-list libgcj.jar
 ## Note that we explicitly want to include directory information.
 	find java gnu org -type d -o -type f -name '*.class' | \

@@ -1,3 +1,9 @@
+2001-07-25  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libgcj.jar): Correctly fail when bytecode
+	compilation fails.
+
 2001-07-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* prims.cc (_JNI_OnLoad): New function.
