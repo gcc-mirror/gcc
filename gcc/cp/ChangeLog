@@ -1,5 +1,9 @@
 2002-12-01  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/5919
+	* pt.c (unify): Use variably_modified_type_p to test validity of
+	template argument types.
+	
 	PR c++/8727
 	* cp-tree.h (lang_type_class): Add typeinfo_var.
 	(CLASSTYPE_TYPEINFO_VAR): New macro.
