@@ -50,6 +50,8 @@ static struct binding_level *make_binding_level PARAMS ((void));
 static boolean emit_init_test_initialization PARAMS ((struct hash_entry *,
 						      hash_table_key));
 static tree create_primitive_vtable PARAMS ((const char *));
+static tree check_local_named_variable PARAMS ((tree, tree, int, int *));
+static tree check_local_unnamed_variable PARAMS ((tree, tree, tree));
 
 /* Set to non-zero value in order to emit class initilization code
    before static field references.  */
@@ -140,6 +142,58 @@ push_jvm_slot (index, decl)
   return decl;
 }
 
+/* Find out if 'decl' passed in fits the defined PC location better than
+   'best'.  Return decl if it does, return best if it doesn't.  If decl
+   is returned, then updated is set to true.  */
+
+static tree
+check_local_named_variable (best, decl, pc, updated)
+     tree best;
+     tree decl;
+     int pc;
+     int *updated;
+{
+  if (pc >= DECL_LOCAL_START_PC (decl)
+      && pc < DECL_LOCAL_END_PC (decl))
+    {
+      if (best == NULL_TREE
+	  || (DECL_LOCAL_START_PC (decl) > DECL_LOCAL_START_PC (best)
+	      && DECL_LOCAL_END_PC (decl) < DECL_LOCAL_END_PC (best)))
+        {
+	  *updated = 1;
+	  return decl;
+	}
+    }
+  
+  return best;
+}
+
+/* Find the best declaration based upon type.  If 'decl' fits 'type' better
+   than 'best', return 'decl'.  Otherwise return 'best'.  */
+
+static tree
+check_local_unnamed_variable (best, decl, type)
+     tree best;
+     tree decl;
+     tree type;
+{
+    if (TREE_TYPE (decl) == type
+	|| (TREE_CODE (TREE_TYPE (decl)) == TREE_CODE (type)
+	    && TYPE_PRECISION (TREE_TYPE (decl)) <= 32
+	    && TYPE_PRECISION (type) <= 32
+	    && TREE_CODE (type) != POINTER_TYPE)
+	|| (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
+	    && type == ptr_type_node))
+      {
+	if (best == NULL_TREE
+	    || (TREE_TYPE (decl) == type && TREE_TYPE (best) != type))
+	  return decl;
+      }
+
+    return best;
+}
+
+
 /* Find a VAR_DECL (or PARM_DECL) at local index INDEX that has type TYPE,
    that is valid at PC (or -1 if any pc).
    If there is no existing matching decl, allocate one.  */
@@ -152,32 +206,41 @@ find_local_variable (index, type, pc)
 {
   tree decl = TREE_VEC_ELT (decl_map, index);
   tree best = NULL_TREE;
+  int found_scoped_var = 0;
 
+  /* Scan through every declaration that has been created in this slot. */
   while (decl != NULL_TREE)
     {
-      int in_range;
-      in_range = pc < 0
-	|| (pc >= DECL_LOCAL_START_PC (decl)
-	    && pc < DECL_LOCAL_END_PC (decl));
-
-      if ((TREE_TYPE (decl) == type
-	   || (TREE_CODE (TREE_TYPE (decl)) == TREE_CODE (type)
-	       && TYPE_PRECISION (TREE_TYPE (decl)) <= 32
-	       && TYPE_PRECISION (type) <= 32
-	       && TREE_CODE (type) != POINTER_TYPE)
-	   || (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
-	       && type == ptr_type_node))
-	   && in_range)
+       /* Variables created in give_name_to_locals() have a name and have
+ 	 a specified scope, so we can handle them specifically.  We want
+ 	 to use the specific decls created for those so they are assigned
+ 	 the right variables in the debugging information. */
+      if (DECL_NAME (decl) != NULL_TREE)
 	{
-	  if (best == NULL_TREE
-              || (DECL_LOCAL_START_PC (decl) > DECL_LOCAL_START_PC (best)
-                  && DECL_LOCAL_END_PC (decl) < DECL_LOCAL_START_PC (best)))
-	    best = decl;
-	}
+	  /* This is a variable we have a name for, so it has a scope
+	     supplied in the class file.  But it only matters when we
+	     actually have a PC to use.  If pc<0, then we are asking
+	     for a stack slot and this decl won't be one of those. */
+ 	  if (pc >= 0)
+ 	    best = check_local_named_variable (best, decl, pc,
+ 					       &found_scoped_var);
+ 	}
+      /* We scan for type information unless we found a variable in the
+	 proper scope already. */
+      else if (!found_scoped_var)
+ 	{
+ 	  /* If we don't have scoping information for a variable, we use
+ 	     a different method to look it up. */
+ 	  best = check_local_unnamed_variable (best, decl, type);
+ 	}
+
       decl = DECL_LOCAL_SLOT_CHAIN (decl);
     }
+
   if (best != NULL_TREE)
     return best;
+
+  /* If we don't find a match, create one with the type passed in. */
   return push_jvm_slot (index, build_decl (VAR_DECL, NULL_TREE, type));
 }
 
