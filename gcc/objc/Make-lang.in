@@ -103,16 +103,13 @@ objc-runtime: objc-headers libobjc.a
 # copy objc header files into build directory
 objc-headers: stmp-fixinc
 	if [ -d include ]; then true; else mkdir include; fi
-	if [ -d objc ]; then true; else mkdir objc; fi
-	thisdir1=`pwd`; \
-	srcdir1=`cd $(srcdir); pwd`; \
 	cd objc; \
-	if [ -f $${srcdir1}/objc/Makefile ]; then \
-	  $(MAKE) -f $${srcdir1}/objc/Makefile copy-headers \
-	  srcdir=$${srcdir1} tooldir=$(tooldir) \
+	if [ -f Makefile ]; then \
+	  $(MAKE) copy-headers \
+	  tooldir=$(tooldir) \
 	  AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
-	  GCC_FOR_TARGET="$${thisdir1}/xgcc -B$${thisdir1}/" \
-	  GCC_CFLAGS="$(GCC_CFLAGS)" incinstalldir=$${thisdir1}/include; \
+	  GCC_FOR_TARGET="../xgcc -B../" \
+	  GCC_CFLAGS="$(GCC_CFLAGS)" incinstalldir=../include; \
 	fi
 	touch objc-headers
 
