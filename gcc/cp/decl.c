@@ -1030,9 +1030,6 @@ pop_binding (tree id, tree decl)
 
       /* Add it to the free list.  */
       cxx_binding_free (binding);
-
-      /* Clear the SCOPE so the garbage collector doesn't walk it.  */
-      binding->scope = NULL;
     }
 }
 

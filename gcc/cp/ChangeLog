@@ -1,3 +1,10 @@
+2003-09-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* decl.c (pop_binding): Don't mess with nullifying binding->scope
+	here. 
+	* name-lookup.c: Re-format.
+	(cxx_binding_free): Nullify binding->scope.
+
 2003-09-29  Jan Hubicka  <jh@suse.cz>
 
 	PR C++/12047
