@@ -1,3 +1,61 @@
+2003-03-15    <gcc@integrable-solutions.net>
+	
+	Compile-time improvement: 2/n.
+	* cp-tree.h (struct cxx_binding): New datatype;
+	(struct lang_identifier): Use it.
+	(LOCAL_BINDING_P): Adjust definition.
+	(INHERITED_VALUE_BINDING_P): Likewise.
+	(BINDING_SCOPE): Likewise.
+	(BINDING_HAS_LEVEL_P): Likewise.
+	(BINDING_VALUE): Likewise.
+	(BINDING_TYPE): Likewise.
+	(IDENTIFIER_VALUE): Likewise.
+	(struct tree_binding): Remove.
+	(TS_CP_BINDING): Likewise.
+	((union lang_tree_node): Remove field "binding".
+	(cxx_binding_clear): New macro.
+	(binding_for_name): Adjust return type.
+	(qualified_lookup_using_namespace): Adjust prototype.
+	(lookup_using_namespace): Adjust prototype.
+	(cxx_scope_find_binding_for_name): Declare.
+	* cp-tree.def: Remove CPLUS_BINDING definition.
+	* decl.c (push_binding): Adjust local variable type.
+	(add_binding): Likewise.
+	(push_class_binding): Likewise.
+	(pop_binding): Likewise.
+	(poplevel): Likewise.
+	(poplevel_class): Likewise.
+	(free_bindings):  Adjust type.
+	(find_binding): Adjust return type, add a third parameter. Remove
+	non-useful assertion now that we use static typing.  
+	(cxx_scope_find_binding_for_name): New function.
+	(binding_for_name): Use it.  Adjust local variable type. Simplify. 
+	(namespace_binding):  Simplify.
+	(set_namespace_binding): Likewise.
+	(set_identifier_type_value_with_scope): Adjust local variable type.
+	(lookup_tag): Don't type-abuse of local variable 'old'.
+	(lookup_namespace_name): Likewise.  Allocate binding on stack.
+	(select_decl): Adjust prototype.
+	(unqualified_namespace_lookup):  Allocate binding on stack.
+	Don't type-abuse of local variable 'val'.
+	(lookup_name_real): Likewise.
+	(maybe_inject_for_scope_var): Adjust local variable type.
+	(cp_tree_node_structure): Remove CPLUS_BINDING case label.
+	(namespace_binding): Adjust logic, simplify.
+	(BINDING_LEVEL): Adjust definition.
+	(push_class_level_binding): Adjust local variable type.
+	(struct cxx_saved_binding): Adjust field 'binding' type.
+	* decl2.c (ambiguous_decl): Adjust prototype.
+	(lookup_using_namespace): Adjust local variable type.
+	(qualified_lookup_using_namespace): Catch type error and correct
+	ensueing logic error.
+	(do_nonmember_using_decl): Adjust local variable type.  Allocate
+	temporary cxx_binding on stack.
+	(do_toplevel_using_decl): Adjust local variable type.
+	* ptree.c (cxx_print_cxx_binding): New function.
+	(cxx_print_identifier): Use it.
+	(cxx_print_xnode): Delete CPLUS_BINDING case label.
+
 2003-03-15  Roger Sayle  <roger@eyesopen.com>
 
 	* tree.c (count_functions): Fix whitespace.
