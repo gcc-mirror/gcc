@@ -1,3 +1,8 @@
+2002-08-01  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* configure.host: Add SH support.
+        * sysdep/sh/locks.h: New file.
+
 2002-07-31  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/awt/Frame.java (Frame): Remove println calls.

@@ -135,6 +135,14 @@ case "${host}" in
 	enable_getenv_properties_default=no
 	enable_main_args_default=no
 	;;
+  sh-* | sh[34]*-*)
+	sysdeps_dir=sh
+	libgcj_flags="${libgcj_flags} -mieee"
+	libgcj_interpreter=yes
+	CHECKREFSPEC=-fcheck-references
+	EXCEPTIONSPEC=
+	enable_hash_synchronization_default=yes
+	;;
 esac
 
 # This case statement supports generic port properties and may refine
