@@ -327,7 +327,8 @@ print_operand_address (file, addr)
 int
 can_use_return_insn ()
 {
-  int size = get_frame_size ();
+  /* SIZE includes the fixed stack space needed for function calls.  */
+  int size = get_frame_size () + (!leaf_function_p () ? 12 : 0);
 
   return (reload_completed
 	  && size == 0
@@ -341,7 +342,17 @@ can_use_return_insn ()
 void
 expand_prologue ()
 {
-  unsigned int size = get_frame_size ();
+  unsigned int size;
+
+  /* We have to end the current sequence so leaf_function_p will
+     work.  We then start a new sequence to hold the prologue/epilogue.  */
+  end_sequence ();
+
+  /* SIZE includes the fixed stack space needed for function calls.  */
+  size = get_frame_size () + (!leaf_function_p () ? 12 : 0);
+
+  /* Start a new sequence for the prologue/epilogue.  */
+  start_sequence ();
 
   /* If this is an old-style varargs function, then its arguments
      need to be flushed back to the stack.  */
@@ -378,7 +389,17 @@ expand_prologue ()
 void
 expand_epilogue ()
 {
-  unsigned int size = get_frame_size ();
+  unsigned int size;
+
+  /* We have to end the current sequence so leaf_function_p will
+     work.  We then start a new sequence to hold the prologue/epilogue.  */
+  end_sequence ();
+
+  /* SIZE includes the fixed stack space needed for function calls.  */
+  size = get_frame_size () + (!leaf_function_p () ? 12 : 0);
+
+  /* Start a new sequence for the prologue/epilogue.  */
+  start_sequence ();
 
   /* Cut back the stack.  */
   if (frame_pointer_needed)
@@ -528,6 +549,8 @@ int
 initial_offset (from, to)
      int from, to;
 {
+  /* The difference between the argument pointer and the frame pointer
+     is the size of the callee register save area.  */
   if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
     {
       if (regs_ever_live[2] || regs_ever_live[3]
@@ -538,18 +561,24 @@ initial_offset (from, to)
 	return 0;
     }
 
+  /* The difference between the argument pointer and the stack pointer is
+     the sum of the size of this function's frame, the callee register save
+     area, and the fixed stack space needed for function calls (if any).  */
   if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
     {
       if (regs_ever_live[2] || regs_ever_live[3]
 	  || regs_ever_live[6] || regs_ever_live[7]
 	  || frame_pointer_needed)
-	return get_frame_size () + 16;
+	return (get_frame_size () + 16 + (!leaf_function_p () ? 12 : 0));
       else
-	return get_frame_size ();
+	return (get_frame_size () + (!leaf_function_p () ? 12 : 0));
     }
 
+  /* The difference between the frame pointer and stack pointer is the sum
+     of the size of this function's frame and the fixed stack space needed
+     for function calls (if any).  */
   if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-    return get_frame_size ();
+    return get_frame_size () + (!leaf_function_p () ? 12 : 0);
 
   abort ();
 }
