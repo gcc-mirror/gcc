@@ -1088,7 +1088,9 @@ constant_call_address_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  return GET_CODE (op) == MEM && CONSTANT_ADDRESS_P (XEXP (op, 0));
+  return GET_CODE (op) == MEM && 
+	 CONSTANT_ADDRESS_P (XEXP (op, 0)) && 
+	 GET_CODE (XEXP (op, 0)) !=  CONST_INT;
 }
 
 /* Match exactly zero and one.  */

@@ -1,3 +1,8 @@
+2000-03-02  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* config/i386/i386.c: (constant_call_address_operand): Reject
+	CONST_INT.
+
 2000-03-02  Jason Merrill  <jason@casey.cygnus.com>
 
 	* cpplib.h (CPP_PEDANTIC): Only true if system_header_p is not set
