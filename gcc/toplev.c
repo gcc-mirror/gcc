@@ -2313,8 +2313,7 @@ compile_file (name)
 	    if (! TREE_READONLY (decl)
 		|| TREE_PUBLIC (decl)
 		|| !optimize
-		|| TREE_ADDRESSABLE (decl)
-		|| TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (decl)))
+		|| TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
 	      rest_of_decl_compilation (decl, NULL_PTR, 1, 1);
 	    else
 	      /* Cancel the RTL for this decl so that, if debugging info
@@ -2327,9 +2326,8 @@ compile_file (name)
 	    && ! TREE_ASM_WRITTEN (decl)
 	    && DECL_INITIAL (decl) != 0
 	    && DECL_SAVED_INSNS (decl) != 0
-	    && (TREE_ADDRESSABLE (decl)
-		|| flag_keep_inline_functions
-		|| TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (decl)))
+	    && (flag_keep_inline_functions
+		|| TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
 	    && ! DECL_EXTERNAL (decl))
 	  {
 	    temporary_allocation ();
@@ -2342,25 +2340,20 @@ compile_file (name)
 	   We don't warn about variables,
 	   because many programs have static variables
 	   that exist only to get some text into the object file.  */
-	if ((warn_unused
-	     || TREE_USED (decl)
-	     || (DECL_NAME (decl) && TREE_USED (DECL_NAME (decl))))
-	    && TREE_CODE (decl) == FUNCTION_DECL
+	if (TREE_CODE (decl) == FUNCTION_DECL
+	    && (warn_unused
+		|| TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
 	    && DECL_INITIAL (decl) == 0
 	    && DECL_EXTERNAL (decl)
 	    && ! TREE_PUBLIC (decl))
 	  {
-	    /* This should be a pedwarn, except that there is
-	       no easy way to prevent it from happening when the
-	       name is used only inside a sizeof.
-	       This at least avoids being incorrect.  */
-	    warning_with_decl (decl, 
+	    pedwarn_with_decl (decl, 
 			       "`%s' declared `static' but never defined");
 	    /* This symbol is effectively an "extern" declaration now.  */
 	    TREE_PUBLIC (decl) = 1;
 	    assemble_external (decl);
-
 	  }
+
 	/* Warn about static fns or vars defined but not used,
 	   but not about inline functions or static consts
 	   since defining those in header files is normal practice.  */
