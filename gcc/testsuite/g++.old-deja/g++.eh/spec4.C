@@ -15,8 +15,8 @@ f () throw (short)
 
 main ()
 {
-  set_terminate (my_term);
-  set_unexpected (my_unexp);
+  std::set_terminate (my_term);
+  std::set_unexpected (my_unexp);
 
   try
     {
@@ -30,7 +30,7 @@ main ()
     {
       return 3;
     }
-  catch (bad_exception)
+  catch (std::bad_exception)
     {
       return 4;
     }

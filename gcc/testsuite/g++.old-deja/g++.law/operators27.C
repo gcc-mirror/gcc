@@ -11,7 +11,7 @@ int FLAG=0;
 
 extern "C" int printf( const char *, ...);
 
-void * operator new(size_t, const nothrow_t&) throw()         { FLAG=1; return 0; }
+void * operator new(size_t, const std::nothrow_t&) throw()         { FLAG=1; return 0; }
 
 class K {
 private:
@@ -24,7 +24,7 @@ public:
 
 int main(void)
 {
-    K * pK = new (nothrow) K( 10);
+    K * pK = new (std::nothrow) K( 10);
     if ( FLAG != 1 )
 	printf ("FAIL\n");
     else

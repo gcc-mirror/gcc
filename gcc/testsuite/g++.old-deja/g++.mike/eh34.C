@@ -10,7 +10,7 @@ void my_unexpected() {
 foo() throw () { throw "Hi"; }
 
 main() {
-  set_unexpected (my_unexpected);
+  std::set_unexpected (my_unexpected);
   foo();
   return 1;
 }

@@ -2,7 +2,7 @@
 // excess errors test - XFAIL a29k-*-* sparc64-*-elf sh-*-* arm-*-pe**-*
 
 #include <exception>
-
+using std::uncaught_exception;
 class A {
 public:
   ~A() {

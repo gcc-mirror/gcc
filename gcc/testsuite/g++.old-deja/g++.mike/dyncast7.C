@@ -21,7 +21,7 @@ int main() {
   try {
     B b;
     x (b);
-  } catch (exception& e) {
+  } catch (std::exception& e) {
     // If we get a bad_cast, it is wrong.
     return 1;
   }

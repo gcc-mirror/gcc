@@ -12,7 +12,7 @@ void throw_an_unexpected_exception() throw() {
 }
 
 int main() {
-  set_terminate(my_terminate_handler);
+  std::set_terminate(my_terminate_handler);
   throw_an_unexpected_exception();
   return 1;
 }

@@ -1,5 +1,4 @@
 // Build don't link:
-// excess errors test - XFAIL *-*-*
 
 namespace Jazz {
   int horn( int h ) { return 1; }
