@@ -71,7 +71,7 @@
 	* clipper.h: Move prototypes to clipper-protos.h.  Fix compile time
 	warnings.
 
-Thu Jan 13 16:03:06 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu Jan 13 16:03:06 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_combine_note_store): Use HARD_REGNO_NREGS.
 
