@@ -1,3 +1,10 @@
+2005-03-29  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR rtl-optimization/20532
+	* simplify-rtx.c (simplify_binary_operation): Protect from
+	overflow when adding coefficients for PLUS or MINUS.  Handle
+	CONST_DOUBLE exact power of two as multiplier.
+
 2005-03-29  Richard Henderson  <rth@redhat.com>
 
 	PR c/20519
