@@ -1,3 +1,8 @@
+2005-03-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20157
+	* g++.dg/template/error18.C: New test.
+
 2005-03-09  Ben Elliston  <bje@au.ibm.com>
 
 	PR debug/16792

@@ -1,3 +1,8 @@
+2005-03-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20157
+	* pt.c (determine_specialization): Reject non-specializations. 
+
 2005-03-11  Per Bothner  <per@bothner.com>
 
 	* cp-tree.h (struct cp_declarator): New id_loc field.
