@@ -1,5 +1,5 @@
 /* Hash tables for Objective C internal structures
-   Copyright (C) 1993, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -80,11 +80,24 @@ void
 hash_delete (cache_ptr cache)
 {
   node_ptr node;
-
+  node_ptr next_node;
+  unsigned int i;
 
   /* Purge all key/value pairs from the table.  */
-  while ((node = hash_next (cache, NULL)))
-    hash_remove (cache, node->key);
+  /* Step through the nodes one by one and remove every node WITHOUT
+     using hash_next. this makes hash_delete much more efficient. */
+  for (i = 0;i < cache->size;i++) {
+    if ((node = cache->node_table[i])) {
+      /* an entry in the hash table has been found, now step through the
+	 nodes next in the list and free them. */
+      while ((next_node = node->next)) {
+	hash_remove (cache,node->key);
+	node = next_node;
+      }
+
+      hash_remove (cache,node->key);
+    }
+  }
 
   /* Release the array of nodes and the cache itself.  */
   objc_free(cache->node_table);
@@ -242,7 +255,7 @@ hash_value_for_key (cache_ptr cache, const void *key)
     do {
       if ((*cache->compare_func)(node->key, key)) {
         retval = node->value;
-	break;
+              break;
       } else
         node = node->next;
     } while (!retval && node);
