@@ -181,6 +181,60 @@ typedef int word_type __attribute__ ((mode (__word__)));
 #define __NDW(a,b)	__ ## a ## hi ## b
 #endif
 
+extern DWtype __muldi3 (DWtype, DWtype);
+extern DWtype __divdi3 (DWtype, DWtype);
+extern UDWtype __udivdi3 (UDWtype, UDWtype);
+extern UDWtype __umoddi3 (UDWtype, UDWtype);
+extern DWtype __moddi3 (DWtype, DWtype);
+/* __udivmoddi4 is static inline when building other libgcc2 portions.  */
+#if (!defined (L_udivdi3) && !defined (L_divdi3) && \
+     !defined (L_umoddi3) && !defined (L_moddi3))
+extern UDWtype __udivmoddi4 (UDWtype, UDWtype, UDWtype *);
+#endif
+
+/* __negdi2 is static inline when building other libgcc2 portions.  */
+#if !defined(L_divdi3) && !defined(L_moddi3)
+extern DWtype __negdi2 (DWtype);
+#endif
+
+extern DWtype __lshrdi3 (DWtype, word_type);
+extern DWtype __ashldi3 (DWtype, word_type);
+extern DWtype __ashrdi3 (DWtype, word_type);
+extern DWtype __ffsdi2 (DWtype);
+
+/* __udiv_w_sdiv is static inline when building other libgcc2 portions.  */
+#if (!defined(L_udivdi3) && !defined(L_divdi3) && \
+     !defined(L_umoddi3) && !defined(L_moddi3))
+extern UWtype __udiv_w_sdiv (UWtype *, UWtype, UWtype, UWtype);
+#endif
+
+extern word_type __cmpdi2 (DWtype, DWtype);
+extern word_type __ucmpdi2 (DWtype, DWtype);
+
+#if BITS_PER_UNIT == 8
+extern DWtype __fixdfdi (DFtype);
+extern DWtype __fixsfdi (SFtype);
+extern DFtype __floatdidf (DWtype);
+extern SFtype __floatdisf (DWtype);
+extern UWtype __fixunsdfsi (DFtype);
+extern UWtype __fixunssfsi (SFtype);
+extern DWtype __fixunsdfdi (DFtype);
+extern DWtype __fixunssfdi (SFtype);
+
+#if LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 96
+extern DWtype __fixxfdi (XFtype);
+extern DWtype __fixunsxfdi (XFtype);
+extern XFtype __floatdixf (DWtype);
+extern UWtype __fixunsxfsi (XFtype);
+#endif
+
+#if LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 128
+extern DWtype __fixunstfdi (TFtype);
+extern DWtype __fixtfdi (TFtype);
+extern TFtype __floatditf (DWtype);
+#endif
+#endif /* BITS_PER_UNIT == 8 */
+
 #define __muldi3	__NDW(mul,3)
 #define __divdi3	__NDW(div,3)
 #define __udivdi3	__NDW(udiv,3)
@@ -237,56 +291,5 @@ typedef union
 #include "longlong.h"
 
 #endif /* udiv or mul */
-
-extern DWtype __muldi3 (DWtype, DWtype);
-extern DWtype __divdi3 (DWtype, DWtype);
-extern UDWtype __udivdi3 (UDWtype, UDWtype);
-extern UDWtype __umoddi3 (UDWtype, UDWtype);
-extern DWtype __moddi3 (DWtype, DWtype);
-/* __udivmoddi4 is static inline when building other libgcc2 portions.  */
-#if (!defined (L_udivdi3) && !defined (L_divdi3) && \
-     !defined (L_umoddi3) && !defined (L_moddi3))
-extern UDWtype __udivmoddi4 (UDWtype, UDWtype, UDWtype *);
-#endif
-
-/* __negdi2 is static inline when building other libgcc2 portions.  */
-#if !defined(L_divdi3) && !defined(L_moddi3)
-extern DWtype __negdi2 (DWtype);
-#endif
-
-extern DWtype __lshrdi3 (DWtype, word_type);
-extern DWtype __ashldi3 (DWtype, word_type);
-extern DWtype __ashrdi3 (DWtype, word_type);
-extern DWtype __ffsdi2 (DWtype);
-
-/* __udiv_w_sdiv is static inline when building other libgcc2 portions.  */
-#if (!defined(L_udivdi3) && !defined(L_divdi3) && \
-     !defined(L_umoddi3) && !defined(L_moddi3))
-extern UWtype __udiv_w_sdiv (UWtype *, UWtype, UWtype, UWtype);
-#endif
-
-extern word_type __cmpdi2 (DWtype, DWtype);
-extern word_type __ucmpdi2 (DWtype, DWtype);
-extern DFtype __floatdidf (DWtype);
-extern SFtype __floatdisf (DWtype);
-extern UWtype __fixunsdfsi (DFtype);
-extern UWtype __fixunssfsi (SFtype);
-extern DWtype __fixunsdfdi (DFtype);
-extern DWtype __fixdfdi (DFtype);
-extern DWtype __fixunssfdi (SFtype);
-extern DWtype __fixsfdi (SFtype);
-
-#if LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 96
-extern DWtype __fixxfdi (XFtype);
-extern DWtype __fixunsxfdi (XFtype);
-extern XFtype __floatdixf (DWtype);
-extern UWtype __fixunsxfsi (XFtype);
-#endif
-
-#if LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 128
-extern DWtype __fixunstfdi (TFtype);
-extern DWtype __fixtfdi (TFtype);
-extern TFtype __floatditf (DWtype);
-#endif
 
 #endif /* __LIBGCC2_H__ */
