@@ -1,3 +1,8 @@
+2004-04-13  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* strerror.c: Include config.h, and redefine sys_nerr and
+	sys_errlist, before including ansidecl.h and libiberty.h.
+
 2004-04-13  Jeff Law  <law@redhat.com>
 
 	* hashtab.c (htab_remove_elt_with_hash): New function.

@@ -2,9 +2,6 @@
    Written by Fred Fish.  fnf@cygnus.com
    This file is in the public domain.  --Per Bothner.  */
 
-#include "ansidecl.h"
-#include "libiberty.h"
-
 #include "config.h"
 
 #ifdef HAVE_SYS_ERRLIST
@@ -16,6 +13,9 @@
 #define sys_nerr sys_nerr__
 #define sys_errlist sys_errlist__
 #endif
+
+#include "ansidecl.h"
+#include "libiberty.h"
 
 #include <stdio.h>
 #include <errno.h>
