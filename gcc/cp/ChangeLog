@@ -1,3 +1,8 @@
+2003-03-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/8316, c++/9315, c++/10136
+	* call.c (joust): Improve wording.
+
 2003-03-17  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (finish_function): Don't skip a block.
