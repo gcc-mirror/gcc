@@ -444,8 +444,20 @@ DEFTREECODE (METHOD_CALL_EXPR, "method_call_expr", "e", 4)
 DEFTREECODE (WITH_CLEANUP_EXPR, "with_cleanup_expr", "e", 3)
 
 /* Specify a cleanup point.
-   Operand 0 is the expression that has cleanups that we want ensure are
-   cleaned up.  */
+   Operand 0 is an expression that may have cleanups.  If it does, those
+   cleanups are executed after the expression is expanded.
+
+   Note that if the expression is a reference to storage, it is forced out
+   of memory before the cleanups are run.  This is necessary to handle
+   cases where the cleanups modify the storage referenced; in the
+   expression 't.i', if 't' is a struct with an integer member 'i' and a
+   cleanup which modifies 'i', the value of the expression depends on
+   whether the cleanup is run before or after 't.i' is evaluated.  When
+   expand_expr is run on 't.i', it returns a MEM.  This is not good enough;
+   the value of 't.i' must be forced out of memory.
+
+   As a consequence, the operand of a CLEANUP_POINT_EXPR must not have
+   BLKmode, because it will not be forced out of memory.  */
 DEFTREECODE (CLEANUP_POINT_EXPR, "cleanup_point_expr", "e", 1)
 
 /* The following two codes are used in languages that have types where
