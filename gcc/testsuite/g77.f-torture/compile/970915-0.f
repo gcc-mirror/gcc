@@ -1,5 +1,6 @@
 * fixed by patch to safe_from_p to avoid visiting any SAVE_EXPR
 * node twice in a given top-level call to it.
+* (JCB com.c patch of 1998-06-04.)
 
       SUBROUTINE TSTSIG11
       IMPLICIT COMPLEX (A-Z)
