@@ -1,3 +1,9 @@
+2001-11-04  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.texi: Split off invoke.texi (preliminary to using it
+	to generate a man page).
+	* Make-lang.in: Reflect in build rules.
+
 Fri Nov  2 10:51:34 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* com.c (ffecom_initialize_char_syntax_, U_CHAR, is_idchar,
