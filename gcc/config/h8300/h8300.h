@@ -125,7 +125,7 @@ extern int target_flags;
 
 /* Align all values on the H8/300H the same way as the H8/300.  Specifically,
    32 bit and larger values are aligned on 16 bit boundaries.
-   This is all the hardware requires, but the default is 32 bits for the 300H.
+   This is all the hardware requires, but the default is 32 bits for the H8/300H.
    ??? Now watch someone add hardware floating point requiring 32 bit
    alignment.  */
 #define TARGET_ALIGN_300 (target_flags & MASK_ALIGN_300)
@@ -977,7 +977,7 @@ struct cum_arg
 #define Pmode (TARGET_H8300H || TARGET_H8300S ? SImode : HImode)
 
 /* ANSI C types.
-   We use longs for the 300H because ints can be 16 or 32.
+   We use longs for the H8/300H and the H8S because ints can be 16 or 32.
    GCC requires SIZE_TYPE to be the same size as pointers.  */
 #define SIZE_TYPE (TARGET_H8300 ? "unsigned int" : "long unsigned int")
 #define PTRDIFF_TYPE (TARGET_H8300 ? "int" : "long int")

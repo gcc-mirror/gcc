@@ -497,10 +497,10 @@ reti:
 	POPP	S2P
 	rts
 
-	; takes A0/A1 numerator (A0P for 300H)
-	; A2/A3 denominator (A1P for 300H)
-	; returns A0/A1 quotient (A0P for 300H)
-	; S0/S1 remainder (S0P for 300H)
+	; takes A0/A1 numerator (A0P for H8/300H)
+	; A2/A3 denominator (A1P for H8/300H)
+	; returns A0/A1 quotient (A0P for H8/300H)
+	; S0/S1 remainder (S0P for H8/300H)
 	; trashes S2
 
 #ifdef __H8300__
