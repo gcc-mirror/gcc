@@ -1190,7 +1190,7 @@ extern struct rtx_def *legitimize_pic_address ();
 
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
-#define MOVE_MAX 4
+#define MOVE_MAX 8
 
 /* Define if normal loads of shorter-than-word items from memory clears
    the rest of the bigs in the register.  */
