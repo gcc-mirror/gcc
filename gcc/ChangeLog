@@ -1,3 +1,8 @@
+2003-07-21  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppfiles.c (open_file_pch): Don't put unused entries in the
+	splay tree.  Remove dead code.
+
 2003-07-21  Geoffrey Keating  <geoffk@apple.com>
 
 	* c-pragma.c (maybe_apply_pragma_weak): Don't get DECL_ASSEMBLER_NAME
