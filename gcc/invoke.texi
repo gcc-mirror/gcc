@@ -356,10 +356,10 @@ in the following sections.
 -mlong-load-store  -mno-big-switch  -mno-disable-fpregs
 -mno-disable-indexing  -mno-fast-indirect-calls  -mno-gas
 -mno-jump-in-delay  -mno-long-load-store  
--mno-portable-runtime  -mno-soft-float  -mno-space  
+-mno-portable-runtime  -mno-soft-float
 -mno-space-regs  -msoft-float  -mpa-risc-1-0  
 -mpa-risc-1-1  -mpa-risc-2-0 -mportable-runtime
--mschedule=@var{cpu type}  -mspace  -mspace-regs
+-mschedule=@var{cpu type}  -mspace-regs
 
 @emph{Intel 960 Options}
 -m@var{cpu type}  -masm-compat  -mclean-linkage
@@ -5738,11 +5738,6 @@ allows GCC to emit code which performs faster indirect calls.
 
 This option will not work in the presense of shared libraries or nested
 functions.
-
-@item -mspace
-Optimize for space rather than execution time.  Currently this only
-enables out of line function prologues and epilogues.  This option is
-incompatible with PIC code generation and profiling.
 
 @item -mlong-load-store
 Generate 3-instruction load and store sequences as sometimes required by
