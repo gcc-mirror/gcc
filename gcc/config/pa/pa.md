@@ -862,25 +862,30 @@
   operands[5] = hppa_compare_op1;
 }")
 
-; We need the first constraint alternative in order to avoid
-; earlyclobbers on all other alternatives.
+;; We used to accept any register for op1.
+;;
+;; However, it loses sometimes because the compiler will end up using
+;; different registers for op0 and op1 in some critical cases.  local-alloc
+;; will  not tie op0 and op1 because op0 is used in multiple basic blocks.
+;;
+;; If/when global register allocation supports tying we should allow any
+;; register for op1 again.
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r,r")
+  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
 	(if_then_else:SI
 	 (match_operator 5 "comparison_operator"
-	    [(match_operand:SI 3 "register_operand" "r,r,r,r,r")
-	     (match_operand:SI 4 "arith11_operand" "rI,rI,rI,rI,rI")])
-	 (match_operand:SI 1 "reg_or_cint_move_operand" "0,r,J,N,K")
+	    [(match_operand:SI 3 "register_operand" "r,r,r,r")
+	     (match_operand:SI 4 "arith11_operand" "rI,rI,rI,rI")])
+	 (match_operand:SI 1 "reg_or_cint_move_operand" "0,J,N,K")
 	 (const_int 0)))]
   ""
   "@
    {com%I4clr|cmp%I4clr},%S5 %4,%3,%%r0\;ldi 0,%0
-   {com%I4clr|cmp%I4clr},%B5 %4,%3,%0\;copy %1,%0
    {com%I4clr|cmp%I4clr},%B5 %4,%3,%0\;ldi %1,%0
    {com%I4clr|cmp%I4clr},%B5 %4,%3,%0\;ldil L'%1,%0
    {com%I4clr|cmp%I4clr},%B5 %4,%3,%0\;{zdepi|depwi,z} %Z1,%0"
-  [(set_attr "type" "multi,multi,multi,multi,nullshift")
-   (set_attr "length" "8,8,8,8,8")])
+  [(set_attr "type" "multi,multi,multi,nullshift")
+   (set_attr "length" "8,8,8,8")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r,r,r,r,r")
