@@ -422,9 +422,9 @@ local_alloc ()
 
   qty_phys_reg = (short *) alloca (max_qty * sizeof (short));
   qty_phys_copy_sugg = (HARD_REG_SET *) alloca (max_qty * sizeof (HARD_REG_SET));
-  qty_phys_num_copy_sugg = (short *) alloca (max_qty * sizeof (char));
+  qty_phys_num_copy_sugg = (short *) alloca (max_qty * sizeof (short));
   qty_phys_sugg = (HARD_REG_SET *) alloca (max_qty * sizeof (HARD_REG_SET));
-  qty_phys_num_sugg = (short *) alloca (max_qty * sizeof (char));
+  qty_phys_num_sugg = (short *) alloca (max_qty * sizeof (short));
   qty_birth = (int *) alloca (max_qty * sizeof (int));
   qty_death = (int *) alloca (max_qty * sizeof (int));
   qty_scratch_rtx = (rtx *) alloca (max_qty * sizeof (rtx));
