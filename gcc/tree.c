@@ -269,6 +269,10 @@ static void build_real_from_int_cst_1 PROTO((PTR));
 extern char *mode_name[];
 
 void gcc_obstack_init ();
+
+/* If non-null, a language specific helper for unsave_expr_now. */
+
+int (*lang_unsave_expr_now) PROTO((tree));
 
 /* Init the principal obstacks.  */
 
@@ -2426,7 +2430,11 @@ first_rtl_op (code)
 }
 
 /* Modify a tree in place so that all the evaluate only once things
-   are cleared out.  Return the EXPR given.  */
+   are cleared out.  Return the EXPR given.  
+
+   LANG_UNSAVE_EXPR_NOW, if set, is a pointer to a function to handle
+   language specific nodes.
+*/
 
 tree
 unsave_expr_now (expr)
@@ -2473,6 +2481,8 @@ unsave_expr_now (expr)
       break;
 
     default:
+      if (lang_unsave_expr_now)
+	(*lang_unsave_expr_now) (expr);
       break;
     }
 

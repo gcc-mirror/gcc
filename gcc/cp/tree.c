@@ -2859,3 +2859,41 @@ make_ptrmem_cst (type, member)
   return ptrmem_cst;
 }
 
+/* Initialize unsave for C++. */
+void
+init_cplus_unsave ()
+{
+  lang_unsave_expr_now = cplus_unsave_expr_now;
+}
+
+/* The C++ version of unsave_expr_now.
+   See gcc/tree.c:unsave_expr_now for comments. */
+
+tree
+cplus_unsave_expr_now (expr)
+     tree expr;
+{
+  if (expr == NULL)
+    return expr;
+
+  else if (TREE_CODE (expr) == AGGR_INIT_EXPR)
+    {
+      unsave_expr_now (TREE_OPERAND (expr,0));
+      if (TREE_OPERAND (expr, 1)
+	  && TREE_CODE (TREE_OPERAND (expr, 1)) == TREE_LIST)
+	{
+	  tree exp = TREE_OPERAND (expr, 1);
+	  while (exp)
+	    {
+	      unsave_expr_now (TREE_VALUE (exp));
+	      exp = TREE_CHAIN (exp);
+	    }
+	}
+      unsave_expr_now (TREE_OPERAND (expr,2));
+      return expr;
+    }
+
+  else
+    return expr;
+}
+

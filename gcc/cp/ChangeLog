@@ -1,3 +1,11 @@
+1999-08-13  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	cp-tree.h (init_cplus_unsave): New.
+	(cplus_unsave_expr_now): New.
+	lex.c (init_parse): Call init_cplus_unsave.
+	tree.c (init_cplus_unsave): New.
+	(cplus_unsave_expr_now): New.
+
 1999-08-11  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* lang-options.h: Add -fms-extensions.

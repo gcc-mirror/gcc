@@ -1,3 +1,9 @@
+Fri Aug 13 14:18:27 1999  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	tree.c (lang_unsave_expr_now) : New.
+	(unsave_expr_now): Call lang_unsave_expr_now.
+	tree.h (lang_unsave_expr_now) : New.
+
 Fri Aug 13 00:49:46 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* toplev.c (flag_new_exceptions): On by default.

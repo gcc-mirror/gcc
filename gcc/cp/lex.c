@@ -524,6 +524,7 @@ init_parse (filename)
   set_identifier_size (sizeof (struct lang_identifier));
   decl_printable_name = lang_printable_name;
 
+  init_cplus_unsave ();
   init_cplus_expand ();
 
   bcopy (cplus_tree_code_type,
