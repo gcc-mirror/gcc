@@ -4463,6 +4463,7 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 	     because it was assumed we would find that equivalent.  */
 	      || INSN_UID (p) < reload_first_uid))
 	{
+	  rtx tem;
 	  pat = single_set (p);
 	  /* First check for something that sets some reg equal to GOAL.  */
 	  if (pat != 0
@@ -4481,7 +4482,31 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 		      && rtx_renumbered_equal_p (goal, SET_SRC (pat)))
 		  || (goal_mem
 		      && (valueno = true_regnum (valtry = SET_SRC (pat))) >= 0
-		      && rtx_renumbered_equal_p (goal, SET_DEST (pat)))))
+		      && rtx_renumbered_equal_p (goal, SET_DEST (pat)))
+		  /* If we are looking for a constant,
+		     and something equivalent to that constant was copied
+		     into a reg, we can use that reg.  */
+		  || (goal_const && (tem = find_reg_note (p, REG_EQUIV, 0))
+		      && rtx_equal_p (XEXP (tem, 0), goal)
+		      && (valueno = true_regnum (valtry = SET_DEST (pat))))
+		  || (goal_const && (tem = find_reg_note (p, REG_EQUIV, 0))
+		      && GET_CODE (SET_DEST (pat)) == REG
+		      && GET_CODE (XEXP (tem, 0)) == CONST_DOUBLE
+		      && GET_MODE_CLASS (GET_MODE (XEXP (tem, 0))) == MODE_FLOAT
+		      && GET_CODE (goal) == CONST_INT
+		      && INTVAL (goal) == CONST_DOUBLE_LOW (XEXP (tem, 0))
+		      && (valtry = operand_subword (SET_DEST (pat), 0, 0,
+						    VOIDmode))
+		      && (valueno = true_regnum (valtry)))
+		  || (goal_const && (tem = find_reg_note (p, REG_EQUIV, 0))
+		      && GET_CODE (SET_DEST (pat)) == REG
+		      && GET_CODE (XEXP (tem, 0)) == CONST_DOUBLE
+		      && GET_MODE_CLASS (GET_MODE (XEXP (tem, 0))) == MODE_FLOAT
+		      && GET_CODE (goal) == CONST_INT
+		      && INTVAL (goal) == CONST_DOUBLE_HIGH (XEXP (tem, 0))
+		      && (valtry
+			  = operand_subword (SET_DEST (pat), 1, 0, VOIDmode))
+		      && (valueno = true_regnum (valtry)))))
 	    if (other >= 0
 		? valueno == other
 		: ((unsigned) valueno < FIRST_PSEUDO_REGISTER
