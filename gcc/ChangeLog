@@ -1,3 +1,10 @@
+2004-10-17  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* cfgrtl.c (rtl_verify_flow_info_1): When checking insns in a bb,
+	handle barriers in a bb by checking that it points to a NULL bb.
+	* emit-rtl.c (emit_barrier_before): Set BLOCK_FOR_INSN to NULL.
+	(emit_barrier_after, emit_barrier): Ditto.
+
 2004-10-18  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/extend.texi (Attribute Syntax): Clarify details of
