@@ -599,9 +599,7 @@ __objc_exec_class (Module_t module)
 
   /* Scan the unclaimed category hash.  Attempt to attach any unclaimed
      categories to objects.  */
-  for (cell = &unclaimed_categories;
-       *cell;
-       ({ if (*cell) cell = &(*cell)->tail; }))
+  for (cell = &unclaimed_categories; *cell; )
     {
       Category_t category = (*cell)->head;
       Class class = objc_lookup_class (category->class_name);
@@ -630,6 +628,8 @@ __objc_exec_class (Module_t module)
              only done for root classes. */
           __objc_register_instance_methods_to_class(class);
 	}
+      else
+	cell = &(*cell)->tail;
     }
   
   if (unclaimed_proto_list && objc_lookup_class ("Protocol"))
