@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader.  */
+/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
@@ -141,9 +141,6 @@
 /* Define if you have the getgid function.  */
 #undef HAVE_GETGID
 
-/* Define if you have the getpagesize function.  */
-#undef HAVE_GETPAGESIZE
-
 /* Define if you have the getrlimit function.  */
 #undef HAVE_GETRLIMIT
 
@@ -167,6 +164,9 @@
 
 /* Define if you have the mempcpy function.  */
 #undef HAVE_MEMPCPY
+
+/* Define if you have the mmap function.  */
+#undef HAVE_MMAP
 
 /* Define if you have the munmap function.  */
 #undef HAVE_MUNMAP
@@ -263,6 +263,9 @@
 
 /* Define if you have the <sys/file.h> header file.  */
 #undef HAVE_SYS_FILE_H
+
+/* Define if you have the <sys/mman.h> header file.  */
+#undef HAVE_SYS_MMAN_H
 
 /* Define if you have the <sys/param.h> header file.  */
 #undef HAVE_SYS_PARAM_H
@@ -362,12 +365,6 @@
 /* Define if valgrind's memcheck.h header is installed. */
 #undef HAVE_MEMCHECK_H
 
-/* Define if you want to use __cxa_atexit, rather than atexit, to
-   register C++ destructors for local statics and global objects.
-   This is essential for fully standards-compliant handling of
-   destructors, but requires __cxa_atexit in libc. */
-#undef DEFAULT_USE_CXA_ATEXIT
-
 /* Define if you want the C and C++ compilers to support multibyte
    character sets for source code. */
 #undef MULTIBYTE_CHARS
@@ -404,14 +401,14 @@
 /* Define if printf supports %p. */
 #undef HAVE_PRINTF_PTR
 
-/* Define if mmap can get us zeroed pages from /dev/zero. */
-#undef HAVE_MMAP_DEV_ZERO
-
-/* Define if mmap can get us zeroed pages using MAP_ANON(YMOUS). */
-#undef HAVE_MMAP_ANON
-
 /* Define if read-only mmap of a plain file works. */
 #undef HAVE_MMAP_FILE
+
+/* Define if mmap of /dev/zero works. */
+#undef HAVE_MMAP_DEV_ZERO
+
+/* Define if mmap with MAP_ANON(YMOUS) works. */
+#undef HAVE_MMAP_ANON
 
 /* Define if you have the iconv() function. */
 #undef HAVE_ICONV
@@ -526,6 +523,12 @@
 
 /* Define to 1 if HOST_WIDE_INT must be 64 bits wide (see hwint.h). */
 #undef NEED_64BIT_HOST_WIDE_INT
+
+/* Define if you want to use __cxa_atexit, rather than atexit, to
+   register C++ destructors for local statics and global objects.
+   This is essential for fully standards-compliant handling of
+   destructors, but requires __cxa_atexit in libc. */
+#undef DEFAULT_USE_CXA_ATEXIT
 
 /* Define to the name of a file containing a list of extra machine modes
    for this architecture. */
