@@ -61,6 +61,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <sys/param.h>
 #include <unistd.h>
 
+/* In at least 5.0 and 5.01, there is no _SC_PAGE_SIZE macro, only a
+   _SC_PAGESIZE macro.  */
+#ifdef _SC_PAGESIZE
+#define _SC_PAGE_SIZE _SC_PAGESIZE
+#endif
+
 #ifdef _SC_PAGE_SIZE
 #define getpagesize()	sysconf(_SC_PAGE_SIZE)
 
