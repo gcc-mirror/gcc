@@ -4546,9 +4546,7 @@ store_constructor (exp, target, cleared, size)
       for (elt = CONSTRUCTOR_ELTS (exp); elt; elt = TREE_CHAIN (elt))
 	{
 	  tree field = TREE_PURPOSE (elt);
-#ifdef WORD_REGISTER_OPERATIONS
 	  tree value = TREE_VALUE (elt);
-#endif
 	  enum machine_mode mode;
 	  HOST_WIDE_INT bitsize;
 	  HOST_WIDE_INT bitpos = 0;
@@ -4562,7 +4560,7 @@ store_constructor (exp, target, cleared, size)
 	  if (field == 0)
 	    continue;
 
-	  if (cleared && is_zeros_p (TREE_VALUE (elt)))
+	  if (cleared && is_zeros_p (value))
 	    continue;
 
 	  if (host_integerp (DECL_SIZE (field), 1))
@@ -4655,7 +4653,7 @@ store_constructor (exp, target, cleared, size)
 	    }
 
 	  store_constructor_field (to_rtx, bitsize, bitpos, mode,
-				   TREE_VALUE (elt), type, cleared,
+				   value, type, cleared,
 				   get_alias_set (TREE_TYPE (field)));
 	}
     }
