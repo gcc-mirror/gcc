@@ -1,5 +1,11 @@
 2005-01-05  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/15719:
+	* interpret.cc (run) <insn_dcmpl, insn_dcmpg>: Set tmpval
+	correctly.
+
+2005-01-05  Tom Tromey  <tromey@redhat.com>
+
 	* java/lang/natRuntime.cc (insertSystemProperties): Set
 	java.ext.dirs earlier.
 

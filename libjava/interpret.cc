@@ -2087,11 +2087,11 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
       NEXT_INSN;
 
     insn_dcmpl:
-      tmpval = 1;
+      tmpval = -1;
       goto dcmp;
 
     insn_dcmpg:
-      tmpval = -1;
+      tmpval = 1;
 
     dcmp:
       {
