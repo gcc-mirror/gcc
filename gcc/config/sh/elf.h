@@ -43,6 +43,8 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_OUTPUT_DESTRUCTOR
 #undef ASM_DECLARE_FUNCTION_NAME
 #undef MAX_OFILE_ALIGNMENT
+#undef INIT_SECTION_ASM_OP
+#undef FINI_SECTION_ASM_OP
 
 /* Be ELF-like.  */
 #include "svr4.h"
@@ -110,13 +112,15 @@ do {									\
   fprintf ((FILE), "\t.stabs \"\",%d,0,0,Letext\nLetext:\n", N_SO);	\
 } while (0)
 
-/* Arrange to call __main, rather than using crtbegin.o and crtend.o
-   and relying on .init and .fini being executed at appropriate times.  */
-#undef INIT_SECTION_ASM_OP
-#undef FINI_SECTION_ASM_OP
-#undef STARTFILE_SPEC
-#undef ENDFILE_SPEC
-
 /* HANDLE_SYSV_PRAGMA (defined by svr4.h) takes precedence over HANDLE_PRAGMA.
    We want to use the HANDLE_PRAGMA from sh.h.  */
 #undef HANDLE_SYSV_PRAGMA
+
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC \
+  "%{!shared: crt1.o%s} crti.o%s \
+   %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC \
+  "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"

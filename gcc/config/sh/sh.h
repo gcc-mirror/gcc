@@ -78,6 +78,11 @@ extern int code_for_indirect_jump_scratch;
 	    }								\
 	}								\
     }									\
+  if (flag_pic)								\
+    {									\
+      fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;				\
+      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;			\
+    }									\
   /* Hitachi saves and restores mac registers on call.  */		\
   if (TARGET_HITACHI && ! TARGET_NOMACSAVE)				\
     {									\
@@ -106,6 +111,7 @@ extern int target_flags;
 #define RELAX_BIT	(1<<15)
 #define HITACHI_BIT     (1<<22)
 #define NOMACSAVE_BIT   (1<<23)
+#define PREFERGOT_BIT	(1<<24)
 #define PADSTRUCT_BIT  (1<<28)
 #define LITTLE_ENDIAN_BIT (1<<29)
 #define IEEE_BIT (1<<30)
@@ -178,6 +184,9 @@ extern int target_flags;
 /* Nonzero if generating code for a little endian SH.  */
 #define TARGET_LITTLE_ENDIAN     (target_flags & LITTLE_ENDIAN_BIT)
 
+/* Nonzero if we should prefer @GOT calls when generating PIC.  */
+#define TARGET_PREFERGOT	(target_flags & PREFERGOT_BIT)
+
 #define TARGET_SWITCHES  			\
 { {"1",	        SH1_BIT},			\
   {"2",	        SH2_BIT},			\
@@ -198,6 +207,7 @@ extern int target_flags;
   {"l",		LITTLE_ENDIAN_BIT},  		\
   {"no-ieee",  	-IEEE_BIT},			\
   {"padstruct", PADSTRUCT_BIT},    		\
+  {"prefergot",	PREFERGOT_BIT},			\
   {"relax",	RELAX_BIT},			\
   {"space", 	SPACE_BIT},			\
   SUBTARGET_SWITCHES                            \
@@ -255,6 +265,9 @@ do {									\
 	 || PREFERRED_DEBUGGING_TYPE == DWARF2_DEBUG);			\
    else									\
     flag_omit_frame_pointer = 0;					\
+									\
+  if (! TARGET_PREFERGOT)						\
+    flag_no_function_cse = 1;						\
 									\
   /* Never run scheduling before reload, since that can			\
      break global alloc, and generates slower code anyway due		\
@@ -537,6 +550,12 @@ do {									\
 /* Fake register that holds the address on the stack of the
    current function's return address.  */
 #define RETURN_ADDRESS_POINTER_REGNUM 23
+
+/* Register to hold the addressing base for position independent
+   code access to data items.  */
+#define PIC_OFFSET_TABLE_REGNUM	12
+
+#define GOT_SYMBOL_NAME "*_GLOBAL_OFFSET_TABLE_"
 
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms may be accessed
@@ -1400,6 +1419,8 @@ extern int current_function_anonymous_args;
 
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)			\
 {								\
+  if (flag_pic)							\
+    (X) = legitimize_pic_address (OLDX, MODE, NULL_RTX);	\
   if (GET_CODE (X) == PLUS					\
       && (GET_MODE_SIZE (MODE) == 4				\
 	  || GET_MODE_SIZE (MODE) == 8)				\
@@ -1708,6 +1729,44 @@ extern int current_function_anonymous_args;
     && GET_CODE (PATTERN (X)) != CLOBBER	\
     && get_attr_is_sfunc (X)))
 
+
+/* Position Independent Code.  */
+/* Define this macro if references to a symbol must be treated
+   differently depending on something about the variable or function
+   named by the symbol (such as what section it is in).
+
+   On SH, if using PIC, mark a SYMBOL_REF for a non-global symbol
+   so that we may access it using GOTOFF instead of GOT.  */
+
+#define ENCODE_SECTION_INFO(DECL) \
+do									\
+  {									\
+    if (flag_pic)							\
+      {									\
+	rtx rtl = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'		\
+		   ? TREE_CST_RTL (DECL) : DECL_RTL (DECL));		\
+									\
+	SYMBOL_REF_FLAG (XEXP (rtl, 0)) =				\
+	  (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'			\
+	   || ! TREE_PUBLIC (DECL));					\
+      }									\
+  }									\
+while (0)
+
+#define FINALIZE_PIC							\
+  current_function_uses_pic_offset_table |= profile_flag | profile_block_flag
+
+/* We can't directly access anything that contains a symbol,
+   nor can we indirect via the constant pool.  */
+#define LEGITIMATE_PIC_OPERAND_P(X)				\
+	(! nonpic_symbol_mentioned_p (X)			\
+	 && (! CONSTANT_POOL_ADDRESS_P (X)			\
+	     || ! nonpic_symbol_mentioned_p (get_pool_constant (X))))
+
+#define SYMBOLIC_CONST_P(X)	\
+((GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == LABEL_REF)	\
+  && nonpic_symbol_mentioned_p (X))
+
 /* Compute the cost of an address.  For the SH, all valid addresses are
    the same cost.  */
 /* ??? Perhaps we should make reg+reg addresses have higher cost because
@@ -2003,12 +2062,12 @@ do { char dstr[30];					\
 
 #define ASM_OUTPUT_INT(STREAM, EXP)		\
   (fprintf ((STREAM), "\t.long\t"),      	\
-   output_addr_const ((STREAM), (EXP)),  	\
+   output_pic_addr_const ((STREAM), (EXP)),  	\
    fputc ('\n', (STREAM)))
 
 #define ASM_OUTPUT_SHORT(STREAM, EXP)	\
   (fprintf ((STREAM), "\t.short\t"),	\
-   output_addr_const ((STREAM), (EXP)),	\
+   output_pic_addr_const ((STREAM), (EXP)),	\
    fputc ('\n', (STREAM)))
 
 #define ASM_OUTPUT_CHAR(STREAM, EXP)		\
@@ -2279,3 +2338,34 @@ do {									\
   fpscr_set_from_mem ((MODE), (HARD_REGS_LIVE))
 
 #define DWARF_LINE_MIN_INSTR_LENGTH 2
+
+#undef INIT_SECTION_ASM_OP
+#define INIT_SECTION_ASM_OP	".section\t.init"
+#undef FINI_SECTION_ASM_OP
+#define FINI_SECTION_ASM_OP	".section\t.fini"
+
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC \
+  "crt1.o%s crti.o%s crtbegin.o%s"
+
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC \
+  "crtend.o%s crtn.o%s"
+
+/* SH constant pool breaks the devices in crtstuff.c to control section
+   in where code resides.  We have to write it as asm code.  */
+#define CRT_CALL_STATIC_FUNCTION(func) \
+  if (0) \
+     /* This avoids warnings about the static function being unused.  */ \
+     func (); \
+  else \
+    /* We should be passing FUNC to the asm statement as an asm input	\
+       operand, but this breaks with -fPIC.  FIXME.  */			\
+    asm \
+      ("mov.l	1f,r1\n\
+	mova	2f,r0\n\
+	braf	r1\n\
+	lds	r0,pr\n\
+0:	.p2align 2\n\
+1:	.long	" USER_LABEL_PREFIX #func " - 0b\n\
+2:")

@@ -1,3 +1,50 @@
+2000-09-02  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/t-elf, config/sh/crt1.asm, config/sh/crti.asm,
+	config/sh/crtn.asm: New files.
+	* config/sh/t-sh (EXTRA_MULTILIB_PARTS): Set.
+	(crt1.o, crti.o, crtn.o): New targets.
+	* configure.in [sh-*-elf*, sh-*-rtemself*] (tmake_file): Added
+	sh/t-elf.
+	* configure: Rebuilt.
+	* config/sh/sh.h (INIT_SECTION_ASM_OP, FINI_SECTION_ASM_OP,
+	STARTFILE_SPEC, ENDFILE_SPEC, CRT_CALL_STATIC_FUNCTION): Define.
+	* config/sh/elf.h (INIT_SECTION_ASM_OP, FINI_SECTION_ASM_OP):
+	Undefine for config/elfos.h to redefine.
+	(STARTFILE_SPEC, ENDFILE_SPEC): Redefine after config/elfos.h.
+
+2000-09-02  Alexandre Oliva  <aoliva@redhat.com>, Niibe Yutaka  <gniibe@m17n.org>, Kaz Kojima  <kkojima@rr.iij4u.or.jp>
+
+	* config/sh/sh-protos.h (nonpic_symbol_mentioned_p,
+	legitimize_pic_address, output_pic_addr_const): Declare.
+	* config/sh/sh.h (CONDITIONAL_REGISTER_USAGE): Fix PIC register.
+	(PREFERGOT_BIT, TARGET_PREFERGOT): Likewise.
+	(TARGET_SWITCHES): New switch -mprefergot.
+	(OVERRIDE_OPTIONS): Set flag_no_function_cse unless -mprefergot.
+	(PIC_OFFSET_TABLE_REGNUM): Define.
+	(GOT_SYMBOL_TABLE): Likewise.
+	(LEGITIMIZE_ADDRESS): Use legitimize_pic_address.
+	(ENCODE_SECTION_INFO): Define.
+	(FINALIZE_PIC): New macros.
+	(LEGITIMATE_PIC_OPERAND_P, SYMBOLIC_CONST_P): New macro.
+	(ASM_OUTPUT_INT, ASM_OUTPUT_SHORT): Use output_pic_addr_const.
+	* config/sh/sh.c (print_operand_address): Use output_pic_addr_const.
+	(prepare_move_operands): Call emit_pic_move or
+	emit_pic_const_move if appropriate.
+	(output_far_jump): For PIC, use braf and output long offset.
+	(machine_dependent_reorg): 
+	(sh_expand_prologue): Save and initialize the PIC register.
+	(sh_expand_epilogue): Restore it.
+	(initial_elimination_offset): Account for it.
+	(nonpic_symbol_mentioned_p): New function.
+	(legitimize_pic_address): Likewise.
+	(output_pic_addr_const): Likewise.
+	* config/sh/sh.md (calli_pcrel, call_valuei_pcrel): New insns.
+	(call, call_value): Use them.
+	(GOTaddr2picreg, sym_label2reg, symGOT2reg, symGOTOFF2reg,
+	symPLT_label2reg): New expands.
+	* invoke.texi (SH Options): Document -mprefergot.
+
 2000-09-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* rtl.h (ASM_OPERANDS_INPUT_CONSTRAINT_EXP): New macro.

@@ -201,7 +201,7 @@ print_operand_address (stream, x)
       break;
 
     default:
-      output_addr_const (stream, x);
+      output_pic_addr_const (stream, x);
       break;
     }
 }
@@ -457,6 +457,31 @@ prepare_move_operands (operands, mode)
      rtx operands[];
      enum machine_mode mode;
 {
+  if (mode == SImode && flag_pic)
+    {
+      rtx temp;
+      if (SYMBOLIC_CONST_P (operands[1]))
+	{
+	  if (GET_CODE (operands[0]) == MEM)
+	    operands[1] = force_reg (Pmode, operands[1]);
+	  else
+	    {
+	      temp = no_new_pseudos ? operands[0] : gen_reg_rtx (Pmode);
+	      operands[1] = legitimize_pic_address (operands[1], SImode, temp);
+	    }
+	}
+      else if (GET_CODE (operands[1]) == CONST
+	       && GET_CODE (XEXP (operands[1], 0)) == PLUS
+	       && SYMBOLIC_CONST_P (XEXP (XEXP (operands[1], 0), 0)))
+	{
+	  temp = legitimize_pic_address (XEXP (XEXP (operands[1], 0), 0),
+					 SImode, gen_reg_rtx (Pmode));
+	  operands[1] = expand_binop (SImode, add_optab, temp,
+				      XEXP (XEXP (operands[1], 0), 1),
+				      gen_reg_rtx (Pmode), 0, OPTAB_LIB_WIDEN);
+	}
+    }
+
   if (! reload_in_progress && ! reload_completed)
     {
       /* Copy the source to a register if both operands aren't registers.  */
@@ -702,7 +727,10 @@ output_far_jump (insn, op)
   else
     {
       far = 1;
-      jump = "mov.l	%O0,%1;jmp	@%1";
+      if (flag_pic)
+	jump = "mov.l	%O0,%1;braf	%1";
+      else
+	jump = "mov.l	%O0,%1;jmp	@%1";
     }
   /* If we have a scratch register available, use it.  */
   if (GET_CODE (PREV_INSN (insn)) == INSN
@@ -730,7 +758,10 @@ output_far_jump (insn, op)
     output_asm_insn (".align	2", 0);
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (this.lab));
   this.op = op;
-  output_asm_insn (far ? ".long	%O2" : ".word %O2-%O0", &this.lab);
+  if (far && flag_pic)
+    output_asm_insn (".long	%O2-%O0", &this.lab);
+  else
+    output_asm_insn (far ? ".long	%O2" : ".word %O2-%O0", &this.lab);
   return "";
 }
 
@@ -3214,6 +3245,19 @@ machine_dependent_reorg (first)
 		      /* Remove the clobber of r0.  */
 		      XEXP (clobber, 0) = gen_rtx_SCRATCH (Pmode);
 		    }
+		  /* This is a mova needing a label.  Create it.  */
+		  else if (GET_CODE (src) == CONST
+			   && GET_CODE (XEXP (src, 0)) == UNSPEC
+			   && XINT (XEXP (src, 0), 1) == 1
+			   && GET_CODE (XVECEXP (XEXP (src, 0),
+						 0, 0)) == CONST)
+		    {
+		      lab = add_constant (XVECEXP (XEXP (src, 0),
+						   0, 0), mode, 0);
+		      newsrc = gen_rtx_LABEL_REF (VOIDmode, lab);
+		      newsrc = gen_rtx_UNSPEC (VOIDmode,
+					       gen_rtvec (1, newsrc), 1);
+		    }
 		  else
 		    {
 		      lab = add_constant (src, mode, 0);
@@ -3874,7 +3918,20 @@ sh_expand_prologue ()
      that already happens to be at the function start into the prologue.  */
   if (target_flags != save_flags)
     emit_insn (gen_toggle_sz ());
+  if (flag_pic && (current_function_uses_pic_offset_table
+		   || regs_ever_live[PIC_OFFSET_TABLE_REGNUM]))
+    {
+      if ((live_regs_mask & (1 << PIC_OFFSET_TABLE_REGNUM)) != 0)
+	abort ();
+      d += UNITS_PER_WORD;
+      live_regs_mask |= (1 << PIC_OFFSET_TABLE_REGNUM);
+    }
   push_regs (live_regs_mask, live_regs_mask2);
+
+  if (flag_pic && (current_function_uses_pic_offset_table
+		   || regs_ever_live[PIC_OFFSET_TABLE_REGNUM]))
+    emit_insn (gen_GOTaddr2picreg ());
+
   if (target_flags != save_flags)
     emit_insn (gen_toggle_sz ());
 
@@ -3926,6 +3983,8 @@ sh_expand_epilogue ()
 
   if (target_flags != save_flags)
     emit_insn (gen_toggle_sz ());
+  if (flag_pic && current_function_uses_pic_offset_table)
+    live_regs_mask |= (1 << PIC_OFFSET_TABLE_REGNUM);
   if (live_regs_mask & (1 << PR_REG))
     pop (PR_REG);
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -4329,6 +4388,11 @@ initial_elimination_offset (from, to)
 
   int live_regs_mask, live_regs_mask2;
   live_regs_mask = calc_live_regs (&regs_saved, &live_regs_mask2);
+  if (flag_pic && current_function_uses_pic_offset_table)
+    {
+      regs_saved++;
+      live_regs_mask |= (1 << PIC_OFFSET_TABLE_REGNUM);
+    }
   total_auto_space = rounded_frame_size (regs_saved);
   target_flags = save_flags;
 
@@ -5188,4 +5252,185 @@ sh_insn_length_adjustment (insn)
       return sum;
     }
   return 0;
+}
+
+/* Return TRUE if X references a SYMBOL_REF whose symbol doesn't have
+   @GOT or @GOTOFF.  */
+int
+nonpic_symbol_mentioned_p (x)
+     rtx x;
+{
+  register const char *fmt;
+  register int i;
+
+  if (GET_CODE (x) == SYMBOL_REF)
+    return 1;
+
+  if (GET_CODE (x) == UNSPEC
+      && (XINT (x, 1) >= 6 && XINT (x, 1) <= 9))
+      return 0;
+
+  fmt = GET_RTX_FORMAT (GET_CODE (x));
+  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'E')
+	{
+	  register int j;
+
+	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	    if (nonpic_symbol_mentioned_p (XVECEXP (x, i, j)))
+	      return 1;
+	}
+      else if (fmt[i] == 'e' && nonpic_symbol_mentioned_p (XEXP (x, i)))
+	return 1;
+    }
+
+  return 0;
+}
+
+/* Convert a non-PIC address in `orig' to a PIC address using @GOT or
+   @GOTOFF in `reg'. */
+rtx
+legitimize_pic_address (orig, mode, reg)
+     rtx orig;
+     enum machine_mode mode;
+     rtx reg;
+{
+  if (GET_CODE (orig) == LABEL_REF
+      || (GET_CODE (orig) == SYMBOL_REF
+	  && (CONSTANT_POOL_ADDRESS_P (orig)
+	      /* SYMBOL_REF_FLAG is set on static symbols.  */
+	      || SYMBOL_REF_FLAG (orig))))
+    {
+      if (reg == 0)
+	reg = gen_reg_rtx (Pmode);
+
+      emit_insn (gen_symGOTOFF2reg (reg, orig));
+      return reg;
+    }
+  else if (GET_CODE (orig) == SYMBOL_REF)
+    {
+      if (reg == 0)
+	reg = gen_reg_rtx (Pmode);
+
+      emit_insn (gen_symGOT2reg (reg, orig));
+      return reg;
+    }
+  return orig;
+}
+
+/* Like output_addr_const(), but recognize PIC unspecs and special
+   expressions.  */
+void
+output_pic_addr_const (file, x)
+     FILE *file;
+     rtx x;
+{
+  char buf[256];
+
+  switch (GET_CODE (x))
+    {
+    case PC:
+      if (flag_pic)
+	putc ('.', file);
+      else
+	abort ();
+      break;
+
+    case SYMBOL_REF:
+      assemble_name (file, XSTR (x, 0));
+      break;
+
+    case LABEL_REF:
+      x = XEXP (x, 0);
+      /* FALLTHRU */
+    case CODE_LABEL:
+      ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (x));
+      assemble_name (asm_out_file, buf);
+      break;
+
+    case CONST:
+      output_pic_addr_const (file, XEXP (x, 0));
+      break;
+
+    case CONST_INT:
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
+      break;
+
+    case CONST_DOUBLE:
+      if (GET_MODE (x) == VOIDmode)
+	{
+	  /* We can use %d if the number is <32 bits and positive.  */
+	  if (CONST_DOUBLE_HIGH (x) || CONST_DOUBLE_LOW (x) < 0)
+	    fprintf (file, "0x%lx%08lx",
+		     (unsigned long) CONST_DOUBLE_HIGH (x),
+		     (unsigned long) CONST_DOUBLE_LOW (x));
+	  else
+	    fprintf (file, HOST_WIDE_INT_PRINT_DEC, CONST_DOUBLE_LOW (x));
+	}
+      else
+	/* We can't handle floating point constants;
+	   PRINT_OPERAND must handle them.  */
+	output_operand_lossage ("floating constant misused");
+      break;
+
+    case PLUS:
+      /* Some assemblers need integer constants to appear first.  */
+      if (GET_CODE (XEXP (x, 0)) == CONST_INT)
+	{
+	  output_pic_addr_const (file, XEXP (x, 0));
+	  fprintf (file, "+");
+	  output_pic_addr_const (file, XEXP (x, 1));
+	}
+      else if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	       || GET_CODE (XEXP (x, 0)) == PC)
+	{
+	  output_pic_addr_const (file, XEXP (x, 1));
+	  fprintf (file, "+");
+	  output_pic_addr_const (file, XEXP (x, 0));
+	}
+      else
+	abort ();
+      break;
+
+    case MINUS:
+      output_pic_addr_const (file, XEXP (x, 0));
+      fprintf (file, "-");
+      if (GET_CODE (XEXP (x, 1)) == CONST)
+	{
+	  putc ('(', file);
+	  output_pic_addr_const (file, XEXP (x, 1));
+	  putc (')', file);
+	}
+      else
+	output_pic_addr_const (file, XEXP (x, 1));
+      break;
+
+    case UNSPEC:
+      if ((XVECLEN (x, 0)) > 3)
+ 	abort ();
+      output_pic_addr_const (file, XVECEXP (x, 0, 0));
+      switch (XINT (x, 1))
+ 	{
+	case 6:
+	  /* GLOBAL_OFFSET_TABLE or local symbols, no suffix.  */
+	  break;
+ 	case 7:
+ 	  fputs ("@GOT", file);
+ 	  break;
+	case 8:
+	  fputs ("@GOTOFF", file);
+	  break;
+        case 9:
+	  fputs ("@PLT", file);
+	  break;
+ 	default:
+ 	  output_operand_lossage ("invalid UNSPEC as operand");
+ 	  break;
+ 	}
+      break;
+
+    default:
+      output_operand_lossage ("invalid expression as operand");
+    }
 }

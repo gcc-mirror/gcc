@@ -27,3 +27,12 @@ MULTILIB_MATCHES = m2=m3 m2=m4-nofpu
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
+
+$(T)crt1.o: $(srcdir)/config/sh/crt1.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -c -o $(T)crt1.o -x assembler-with-cpp $(srcdir)/config/sh/crt1.asm
+$(T)crti.o: $(srcdir)/config/sh/crti.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -c -o $(T)crti.o -x assembler-with-cpp $(srcdir)/config/sh/crti.asm
+$(T)crtn.o: $(srcdir)/config/sh/crtn.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -c -o $(T)crtn.o -x assembler-with-cpp $(srcdir)/config/sh/crtn.asm
+
+EXTRA_MULTILIB_PARTS= crt1.o crti.o crtn.o crtbegin.o crtend.o
