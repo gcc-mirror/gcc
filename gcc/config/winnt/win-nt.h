@@ -33,32 +33,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
         fprintf (FILE, ".global\t__fltused\n");			\
   } while (0)
 
-
-/* Value is the previously stored DECL_ASSEMBLER_NAME with a suffix 
-   consisting of an atsign (@) followed by string of digits that represents
-   the number of bytes of arguments passed to the function, if it has the 
-   attribute STDCALL. */
-
-#define MODIFY_ASSEMBLER_NAME(fndecl) \
-      TREE_CODE (fndecl) == FUNCTION_DECL \
-	? \
-	  chain_member_value (get_identifier ("stdcall"), \
-                              DECL_MACHINE_ATTRIBUTES (fndecl)) \
-	    ? \
-	      (tree) gen_stdcall_suffix (fndecl) \
-	    : (tree) DECL_ASSEMBLER_NAME (fndecl) \
-	: (tree) DECL_ASSEMBLER_NAME (fndecl)
-
-/* Value is 1 if the declaration has either of the attributes: CDECL or
-   STDCALL and 0 otherwise */
-
-#define VALID_MACHINE_DECL_ATTRIBUTE(decl,attr,name) \
-  ((TREE_CODE(decl) == FUNCTION_DECL) \
-   || (TREE_CODE(decl) == FIELD_DECL) \
-   || (TREE_CODE(decl) == TYPE_DECL)) \
-  && ((get_identifier("stdcall") == name) \
-   || (get_identifier("cdecl") == name))
-
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC ""
 
