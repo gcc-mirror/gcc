@@ -171,6 +171,7 @@ package body Snames is
      "compile_time_warning#" &
      "component_alignment#" &
      "convention_identifier#" &
+     "detect_blocking#" &
      "discard_names#" &
      "elaboration_checks#" &
      "eliminate#" &

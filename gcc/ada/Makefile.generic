@@ -374,13 +374,13 @@ else
 link: $(LINKER) archive-objects force
 	@$(display) $(GNATMAKE) $(EXEC_RULE) -B -P$(PROJECT_FILE) $(ADA_SOURCES)
 	@$(GNATMAKE) $(EXEC_RULE) -B -P$(PROJECT_FILE) $(ADA_SOURCES) \
-		 -largs $(MAIN_OBJECT) $(LARGS) $(LDFLAGS) $(FLDFLAGS)
+		 -largs $(OBJ_DIR)/$(MAIN_OBJECT) $(LARGS) $(LDFLAGS) $(FLDFLAGS)
 
 internal-build: $(LINKER) archive-objects force
-	@$(display) $(GNATMAKE) -B -P$(PROJECT_FILE) $(ADA_SOURCES) $(EXEC_RULE) $(ADAFLAGS)
+	@$(display) $(GNATMAKE) $(EXEC_RULE) -B -P$(PROJECT_FILE) $(ADA_SOURCES) $(ADAFLAGS)
 	@$(GNATMAKE) $(EXEC_RULE) \
 		 -B -P$(PROJECT_FILE) $(ADA_SOURCES) $(ADAFLAGS) \
-		 -largs $(MAIN_OBJECT) $(LARGS) $(LDFLAGS) $(FLDFLAGS)
+		 -largs $(OBJ_DIR)/$(MAIN_OBJECT) $(LARGS) $(LDFLAGS) $(FLDFLAGS)
 endif
 
 else

@@ -66,7 +66,7 @@ package body Exp_Dist is
    --       converted to and from this type to make it suitable for
    --       System.Partition_Interface.Get_Unique_Remote_Pointer in order
    --       to avoid memory leaks when the same remote object arrive on the
-   --       same partition by following different pathes
+   --       same partition through several paths;
 
    --    2) It also has the same dispatching table as the designated type D,
    --       and thus can be used as an object designated by a value of type

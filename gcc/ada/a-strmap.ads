@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -39,8 +39,6 @@ with Ada.Characters.Latin_1;
 
 package Ada.Strings.Maps is
 pragma Preelaborate (Maps);
-
-   package L renames Ada.Characters.Latin_1;
 
    --------------------------------
    -- Character Set Declarations --
@@ -139,10 +137,6 @@ pragma Preelaborate (Maps);
    type Character_Mapping_Function is
       access function (From : in Character) return Character;
 
-   ------------------
-   -- Private Part --
-   ------------------
-
 private
    pragma Inline (Is_In);
    pragma Inline (Value);
@@ -160,6 +154,8 @@ private
    Null_Set : constant Character_Set := (others => False);
 
    type Character_Mapping is array (Character) of Character;
+
+   package L renames Ada.Characters.Latin_1;
 
    Identity : constant Character_Mapping :=
      (L.NUL                         &  -- NUL                             0

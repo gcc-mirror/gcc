@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -445,8 +445,7 @@ package Sinput is
    --  represent the standard 1,9,17.. spacing pattern.
 
    function Get_Logical_Line_Number
-     (P    : Source_Ptr)
-      return Logical_Line_Number;
+     (P : Source_Ptr) return Logical_Line_Number;
    --  The line number of the specified source position is obtained by
    --  doing a binary search on the source positions in the lines table
    --  for the unit containing the given source position. The returned
@@ -457,8 +456,7 @@ package Sinput is
    --  the same as the physical line number.
 
    function Get_Physical_Line_Number
-     (P    : Source_Ptr)
-      return Physical_Line_Number;
+     (P : Source_Ptr) return Physical_Line_Number;
    --  The line number of the specified source position is obtained by
    --  doing a binary search on the source positions in the lines table
    --  for the unit containing the given source position. The returned
@@ -478,9 +476,8 @@ package Sinput is
    --  given source location.
 
    function Line_Start
-     (L    : Physical_Line_Number;
-      S    : Source_File_Index)
-      return Source_Ptr;
+     (L : Physical_Line_Number;
+      S : Source_File_Index) return Source_Ptr;
    --  Finds the source position of the start of the given line in the
    --  given source file, using a physical line number to identify the line.
 
@@ -525,8 +522,7 @@ package Sinput is
 
    function Physical_To_Logical
      (Line : Physical_Line_Number;
-      S    : Source_File_Index)
-      return Logical_Line_Number;
+      S    : Source_File_Index) return Logical_Line_Number;
    --  Given a physical line number in source file whose source index is S,
    --  return the corresponding logical line number. If the physical line
    --  number is one containing a Source_Reference pragma, the result will

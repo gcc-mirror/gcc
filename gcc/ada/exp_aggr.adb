@@ -4125,7 +4125,7 @@ package body Exp_Aggr is
                raise Program_Error;
             end if;
 
-            --  Name in assignment is explicit dereference.
+            --  Name in assignment is explicit dereference
 
             Target := New_Copy (Tmp);
          end if;

@@ -149,13 +149,18 @@ package body Fname is
       if Name_Len > 8 then
          return False;
 
-      --  Definitely predefined if prefix is a- i- or s-
+      --  Definitely predefined if prefix is a- i- or s- followed by letter
 
-      elsif Name_Len > 2
+      elsif Name_Len >=  3
         and then Name_Buffer (2) = '-'
-        and then (Name_Buffer (1) = 'a' or else
-                  Name_Buffer (1) = 'i' or else
+        and then (Name_Buffer (1) = 'a'
+                    or else
+                  Name_Buffer (1) = 'i'
+                    or else
                   Name_Buffer (1) = 's')
+        and then (Name_Buffer (3) in 'a' .. 'z'
+                    or else
+                  Name_Buffer (3) in 'A' .. 'Z')
       then
          return True;
       end if;

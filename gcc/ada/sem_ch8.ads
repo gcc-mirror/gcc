@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,8 +65,8 @@ package Sem_Ch8 is
    --  specifications, more specialized procedures are invoked.
 
    procedure End_Use_Clauses (Clause : Node_Id);
-   --  Invoked on scope exit, to undo the effect of local use clauses. U is
-   --  the first Use clause of a scope being exited. This can be the current
+   --  Invoked on scope exit, to undo the effect of local use clauses. Clause
+   --  is the first use-clause of a scope being exited. This can be the current
    --  scope, or some enclosing scopes when building a clean environment to
    --  compile an instance body for inlining.
 
@@ -108,11 +108,15 @@ package Sem_Ch8 is
    --  Initializes data structures used for visibility analysis. Must be
    --  called before analyzing each new main source program.
 
-   procedure Install_Use_Clauses (Clause : Node_Id);
-   --  applies the use clauses appearing in a given declarative part,
+   procedure Install_Use_Clauses
+     (Clause             : Node_Id;
+      Force_Installation : Boolean := False);
+   --  Applies the use clauses appearing in a given declarative part,
    --  when the corresponding scope has been placed back on the scope
    --  stack after unstacking to compile a different context (subunit or
-   --  parent of generic body).
+   --  parent of generic body). Force_Installation is used when called from
+   --  Analyze_Subunit.Re_Install_Use_Clauses to insure that, after the
+   --  analysis of the subunit, the parent's environment is again identical.
 
    function In_Open_Scopes (S : Entity_Id) return Boolean;
    --  S is the entity of a scope. This function determines if this scope

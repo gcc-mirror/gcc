@@ -2444,7 +2444,8 @@ _flush_cache()
       && ! defined (hpux) \
       && ! defined (_AIX) \
       && ! (defined (__alpha__)  && defined (__osf__)) \
-      && ! defined (__MINGW32__))
+      && ! defined (__MINGW32__) \
+      && ! (defined (__mips) && defined (__sgi)))
 
 /* Dummy function to satisfy g-trasym.o.  Currently Solaris sparc, HP/UX,
    GNU/Linux x86, Tru64 & Windows provide a non-dummy version of this

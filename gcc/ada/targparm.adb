@@ -374,6 +374,13 @@ package body Targparm is
             Fatal := True;
             Set_Standard_Output;
 
+         --  Test for pragma Detect_Blocking;
+
+         elsif System_Text (P .. P + 22) = "pragma Detect_Blocking;" then
+            P := P + 23;
+            Opt.Detect_Blocking := True;
+            goto Line_Loop_Continue;
+
          --  Discard_Names
 
          elsif System_Text (P .. P + 20) = "pragma Discard_Names;" then

@@ -348,7 +348,7 @@ package System.Rident is
 
                      --    pragma Dispatching_Policy (FIFO_Within_Priorities);
                      --    pragma Locking_Policy (Ceiling_Locking);
-                     --    pragma Detect_Blocking_Mode ???
+                     --    pragma Detect_Blocking
 
                      Ravenscar  =>
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,15 +32,14 @@ package body Switch is
 
    function Is_Front_End_Switch (Switch_Chars : String) return Boolean is
       Ptr : constant Positive := Switch_Chars'First;
-
    begin
       return Is_Switch (Switch_Chars)
         and then
-        (Switch_Chars (Ptr + 1) = 'I'
-         or else (Switch_Chars'Length >= 5
-                  and then Switch_Chars (Ptr + 1 .. Ptr + 4) = "gnat")
-         or else (Switch_Chars'Length >= 5
-                  and then Switch_Chars (Ptr + 1 .. Ptr + 4) = "fRTS"));
+          (Switch_Chars (Ptr + 1) = 'I'
+            or else (Switch_Chars'Length >= 5
+                      and then Switch_Chars (Ptr + 1 .. Ptr + 4) = "gnat")
+            or else (Switch_Chars'Length >= 5
+                      and then Switch_Chars (Ptr + 2 .. Ptr + 4) = "RTS"));
    end Is_Front_End_Switch;
 
    ---------------
@@ -90,8 +89,8 @@ package body Switch is
      (Switch_Chars : String;
       Max          : Integer;
       Ptr          : in out Integer;
-      Result       : out Pos) is
-
+      Result       : out Pos)
+   is
       Temp : Nat;
 
    begin

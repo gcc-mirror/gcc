@@ -436,6 +436,7 @@ begin
    Write_Line ("        i    check if-then layout");
    Write_Line ("        k    check casing rules for keywords");
    Write_Line ("        l    check reference manual layout");
+   Write_Line ("        Lnnn check max nest level < nnn");
    Write_Line ("        m    check line length <= 79 characters");
    Write_Line ("        n    check casing of package Standard identifiers");
    Write_Line ("        Mnnn check line length <= nnn characters");

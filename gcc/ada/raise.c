@@ -467,33 +467,16 @@ db_phases (int phases)
 */
 
 
-/* This is the structure of exception objects as built by the GNAT runtime
-   library (a-exexpr.adb). The layouts should exactly match, and the "common"
-   header is mandated by the exception handling ABI.  */
+/* This is an incomplete "proxy" of the structure of exception objects as
+   built by the GNAT runtime library. Accesses to other fields than the common
+   header are performed through subprogram calls to aleviate the need of an
+   exact counterpart here and potential alignment/size issues for the common
+   header. See a-exexpr.adb.  */
 
 typedef struct
 {
   _Unwind_Exception common;
   /* ABI header, maximally aligned. */
-
-  _Unwind_Ptr id;
-  /* Id of the exception beeing propagated, filled by Propagate_Exception.
-
-     This is compared against the ttype entries associated with actions in the
-     examined context to see if one of these actions matches.  */
-
-  int  n_cleanups_to_trigger;
-  /* Number of cleanups on the propagation way for the occurrence. This is
-     initialized to 0 by Propagate_Exception and computed by the personality
-     routine during the first phase of the propagation (incremented for each
-     context in which only cleanup actions match).
-
-     This is used by Propagate_Exception when the occurrence is not handled,
-     to control a forced unwinding phase aimed at triggering all the cleanups
-     before calling Unhandled_Exception_Terminate.
-
-     This is also used by __gnat_eh_personality to identify the point at which
-     the notification routine shall be called for a handled occurrence.  */
 } _GNAT_Exception;
 
 /* The two constants below are specific ttype identifiers for special
@@ -846,21 +829,26 @@ get_call_site_action_for (_Unwind_Context *uw_context,
    PROPAGATED_EXCEPTION is caught by the handling code controlled by CHOICE.
    This takes care of the special Non_Ada_Error case on VMS.  */
 
-#define Is_Handled_By_Others __gnat_is_handled_by_others
-#define Language_For __gnat_language_for
-#define Import_Code_For __gnat_import_code_for
+#define Is_Handled_By_Others  __gnat_is_handled_by_others
+#define Language_For          __gnat_language_for
+#define Import_Code_For       __gnat_import_code_for
+#define EID_For               __gnat_eid_for
+#define Adjust_N_Cleanups_For __gnat_adjust_n_cleanups_for
 
-extern bool Is_Handled_By_Others (_Unwind_Ptr e);
-extern char Language_For (_Unwind_Ptr e);
+extern bool Is_Handled_By_Others (_Unwind_Ptr eid);
+extern char Language_For (_Unwind_Ptr eid);
 
-extern Exception_Code Import_Code_For (_Unwind_Ptr e);
+extern Exception_Code Import_Code_For (_Unwind_Ptr eid);
+
+extern Exception_Id EID_For (_GNAT_Exception * e);
+extern void Adjust_N_Cleanups_For (_GNAT_Exception * e, int n);
 
 static int
 is_handled_by (_Unwind_Ptr choice, _GNAT_Exception * propagated_exception)
 {
   /* Pointer to the GNAT exception data corresponding to the propagated
      occurrence.  */
-  _Unwind_Ptr E = propagated_exception->id;
+  _Unwind_Ptr E = (_Unwind_Ptr) EID_For (propagated_exception);
 
   /* Base matching rules: An exception data (id) matches itself, "when
      all_others" matches anything and "when others" matches anything unless
@@ -1066,7 +1054,7 @@ __gnat_eh_personality (int uw_version,
     {
       if (action.kind == cleanup)
 	{
-	  gnat_exception->n_cleanups_to_trigger ++;
+	  Adjust_N_Cleanups_For (gnat_exception, 1);
 	  return _URC_CONTINUE_UNWIND;
 	}
       else
@@ -1090,7 +1078,7 @@ __gnat_eh_personality (int uw_version,
      Ada.Exceptions.Exception_Propagation to decide wether unwinding should
      proceed further or Unhandled_Exception_Terminate should be called.  */
   if (action.kind == cleanup)
-    gnat_exception->n_cleanups_to_trigger --;
+    Adjust_N_Cleanups_For (gnat_exception, -1);
 
   setup_to_install
     (uw_context, uw_exception, action.landing_pad, action.ttype_filter);

@@ -24,8 +24,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Csets; use Csets;
-with Uintp; use Uintp;
+with Csets;   use Csets;
+with Stylesw; use Stylesw;
+with Uintp;   use Uintp;
 
 with GNAT.Spelling_Checker; use GNAT.Spelling_Checker;
 
@@ -114,7 +115,6 @@ package body Util is
       end if;
 
       if Is_Bad_Spelling_Of (Name_Buffer (1 .. Name_Len), S) then
-
          for J in 1 .. S'Last loop
             M1 (P1 + J - 1) := Fold_Upper (S (J));
          end loop;
@@ -126,7 +126,6 @@ package body Util is
       else
          return False;
       end if;
-
    end Bad_Spelling_Of;
 
    ----------------------
@@ -360,7 +359,6 @@ package body Util is
 
    procedure Discard_Junk_List (L : List_Id) is
       pragma Warnings (Off, L);
-
    begin
       null;
    end Discard_Junk_List;
@@ -371,7 +369,6 @@ package body Util is
 
    procedure Discard_Junk_Node (N : Node_Id) is
       pragma Warnings (Off, N);
-
    begin
       null;
    end Discard_Junk_Node;
@@ -627,6 +624,15 @@ package body Util is
    procedure Push_Scope_Stack is
    begin
       Scope.Increment_Last;
+
+      if Style_Check_Max_Nesting_Level
+        and then Scope.Last = Style_Max_Nesting_Level + 1
+      then
+         Error_Msg
+           ("(style) maximum nesting level exceeded",
+            First_Non_Blank_Location);
+      end if;
+
       Scope.Table (Scope.Last).Junk := False;
       Scope.Table (Scope.Last).Node := Empty;
 

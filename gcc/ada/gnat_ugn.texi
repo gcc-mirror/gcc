@@ -5429,6 +5429,14 @@ Clear :
 @end cartouche
 @end smallexample
 
+@item ^Lnnn^MAX_NESTING=nnn^
+@emph{Set maximum nesting level}
+If the sequence ^Lnnn^MAX_NESTING=nnn^, where nnn is a decimal number in
+the range 0-999, appears in the string after @option{-gnaty} then the
+maximum level of nesting of constructs (including subprograms, loops,
+blocks, packages, and conditionals) may not exceed the given value. A
+value of zero disconnects this style check.
+
 @item ^m^LINE_LENGTH^
 @emph{Check maximum line length.}
 If the ^letter m^word LINE_LENGTH^ appears in the string after @option{-gnaty}
@@ -12447,19 +12455,11 @@ library-related attributes are checked only for such project files.
 
 The @code{Library_Kind} attribute has a string value that must be one of the
 following (case insensitive): @code{"static"}, @code{"dynamic"} or
-@code{"relocatable"}. If this attribute is not specified, the library is a
-static library, that is an archive of object files that can be potentially
-linked into an static executable. Otherwise, the library may be dynamic or
+@code{"relocatable"} (which is a synonym for @code{"dynamic"}). If this
+attribute is not specified, the library is a static library, that is
+an archive of object files that can be potentially linked into an
+static executable. Otherwise, the library may be dynamic or
 relocatable, that is a library that is loaded only at the start of execution.
-Depending on the operating system, there may or may not be a distinction
-between dynamic and relocatable libraries. For Unix and VMS Unix there is no
-such distinction.
-
-@ifset unw
-On Windows @code{"relocatable"} will build a relocatable @code{DLL}
-and @code{"dynamic"} will build a non-relocatable @code{DLL}.
-@pxref{Introduction to Dynamic Link Libraries (DLLs)}.
-@end ifset
 
 If you need to build both a static and a dynamic library, you should use two
 different object directories, since in some cases some extra code needs to
@@ -14870,6 +14870,14 @@ contains only one file to reformat
 The additional @command{gnatpp} switches are defined in this subsection.
 
 @table @option
+@item ^-files @var{filename}^/FILES=@var{output_file}^
+@cindex @option{^-files^/FILES^} (@code{gnatpp})
+Take the argument source files from the specified file. This file should be an
+ordinary textual file containing file names separated by spaces or
+line breaks. You can use this switch more then once in the same call to
+@command{gnatpp}. You also can combine this switch with explicit list of
+files.
+
 @item ^-v^/VERBOSE^
 @cindex @option{^-v^/VERBOSE^} (@code{gnatpp})
 Verbose mode;
@@ -16033,6 +16041,13 @@ Only output information about source files.
 @item ^-u^/OUTPUT=UNITS^
 @cindex @option{^-u^/OUTPUT=UNITS^} (@code{gnatls})
 Only output information about compilation units.
+
+@item ^-files^/FILES^=@var{file}
+@cindex @option{^-files^/FILES^} (@code{gnatls})
+Take as arguments the files listed in text file @var{file}.
+Text file @var{file} may contain empty lines that are ignored.
+Each non empty line should contain the name of an existing file.
+Several such switches may be specified simultaneously.
 
 @item ^-aO^/OBJECT_SEARCH=^@var{dir}
 @itemx ^-aI^/SOURCE_SEARCH=^@var{dir}

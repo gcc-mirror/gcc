@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -992,16 +992,16 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    ----------
 
    function Tanh (X : Float_Type'Base) return Float_Type'Base is
-      P0 : constant Float_Type'Base := -0.16134_11902E4;
-      P1 : constant Float_Type'Base := -0.99225_92967E2;
-      P2 : constant Float_Type'Base := -0.96437_49299E0;
+      P0 : constant Float_Type'Base := -0.16134_11902_39962_28053E+4;
+      P1 : constant Float_Type'Base := -0.99225_92967_22360_83313E+2;
+      P2 : constant Float_Type'Base := -0.96437_49277_72254_69787E+0;
 
-      Q0 : constant Float_Type'Base :=  0.48402_35707E4;
-      Q1 : constant Float_Type'Base :=  0.22337_72071E4;
-      Q2 : constant Float_Type'Base :=  0.11274_47438E3;
-      Q3 : constant Float_Type'Base :=  0.10000000000E1;
+      Q0 : constant Float_Type'Base :=  0.48402_35707_19886_88686E+4;
+      Q1 : constant Float_Type'Base :=  0.22337_72071_89623_12926E+4;
+      Q2 : constant Float_Type'Base :=  0.11274_47438_05349_49335E+3;
+      Q3 : constant Float_Type'Base :=  0.10000_00000_00000_00000E+1;
 
-      Half_Ln3 : constant Float_Type'Base := 0.54930_61443;
+      Half_Ln3 : constant Float_Type'Base := 0.54930_61443_34054_84570;
 
       P, Q, R : Float_Type'Base;
       Y : constant Float_Type'Base := abs X;

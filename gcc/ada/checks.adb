@@ -695,6 +695,17 @@ package body Checks is
    --  and perhaps this is not quite the right value, but it is good
    --  enough to catch the normal cases (and the relevant ACVC tests!)
 
+   --  The situation is as follows. In GNAT 3 (GCC 2.x), the size in bits
+   --  is computed in 32 bits without an overflow check. That's a real
+   --  problem for Ada. So what we do in GNAT 3 is to approximate the
+   --  size of an array by manually multiplying the element size by the
+   --  number of elements, and comparing that against the allowed limits.
+
+   --  In GNAT 5, the size in byte is still computed in 32 bits without
+   --  an overflow check in the dynamic case, but the size in bits is
+   --  computed in 64 bits. We assume that's good enough, so we use the
+   --  size in bits for the test.
+
    procedure Apply_Array_Size_Check (N : Node_Id; Typ : Entity_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
       Ctyp : constant Entity_Id  := Component_Type (Typ);
@@ -774,13 +785,19 @@ package body Checks is
    --  Start of processing for Apply_Array_Size_Check
 
    begin
-      if not Expander_Active
-        or else Storage_Checks_Suppressed (Typ)
-      then
+      --  No need for a check if not expanding
+
+      if not Expander_Active then
          return;
       end if;
 
-      --  It is pointless to insert this check inside an  init proc, because
+      --  No need for a check if checks are suppressed
+
+      if Storage_Checks_Suppressed (Typ) then
+         return;
+      end if;
+
+      --  It is pointless to insert this check inside an init proc, because
       --  that's too late, we have already built the object to be the right
       --  size, and if it's too large, too bad!
 
@@ -803,112 +820,151 @@ package body Checks is
          end if;
       end loop;
 
-      --  First step is to calculate the maximum number of elements. For this
-      --  calculation, we use the actual size of the subtype if it is static,
-      --  and if a bound of a subtype is non-static, we go to the bound of the
-      --  base type.
+      --  GCC 3 case
 
-      Siz := Uint_1;
-      Indx := First_Index (Typ);
-      while Present (Indx) loop
-         Xtyp := Etype (Indx);
-         Lo := Type_Low_Bound (Xtyp);
-         Hi := Type_High_Bound (Xtyp);
+      if Opt.GCC_Version = 3 then
 
-         --  If any bound raises constraint error, we will never get this
-         --  far, so there is no need to generate any kind of check.
+         --  No problem if size is known at compile time (even if the front
+         --  end does not know it) because the back end does do overflow
+         --  checking on the size in bytes if it is compile time known.
 
-         if Raises_Constraint_Error (Lo)
+         if Size_Known_At_Compile_Time (Typ) then
+            return;
+         end if;
+
+         --  No problem on 64-bit machines, we just don't bother with
+         --  the case where the size in bytes overflows 64-bits.
+
+         if System_Address_Size = 64 then
+            return;
+         end if;
+      end if;
+
+      --  Following code is temporarily deleted, since GCC 3 is returning
+      --  zero for size in bits of large dynamic arrays. ???
+
+--           --  Otherwise we check for the size in bits exceeding 2**31-1 * 8.
+--           --  This is the case in which we could end up with problems from
+--           --  an unnoticed overflow in computing the size in bytes
+--
+--           Check_Siz := (Uint_2 ** 31 - Uint_1) * Uint_8;
+--
+--           Sizx :=
+--             Make_Attribute_Reference (Loc,
+--               Prefix => New_Occurrence_Of (Typ, Loc),
+--               Attribute_Name => Name_Size);
+
+      --  GCC 2 case (for now this is for GCC 3 dynamic case as well)
+
+      begin
+         --  First step is to calculate the maximum number of elements. For
+         --  this calculation, we use the actual size of the subtype if it is
+         --  static, and if a bound of a subtype is non-static, we go to the
+         --  bound of the base type.
+
+         Siz := Uint_1;
+         Indx := First_Index (Typ);
+         while Present (Indx) loop
+            Xtyp := Etype (Indx);
+            Lo := Type_Low_Bound (Xtyp);
+            Hi := Type_High_Bound (Xtyp);
+
+            --  If any bound raises constraint error, we will never get this
+            --  far, so there is no need to generate any kind of check.
+
+            if Raises_Constraint_Error (Lo)
               or else
-            Raises_Constraint_Error (Hi)
+                Raises_Constraint_Error (Hi)
+            then
+               Uintp.Release (Umark);
+               return;
+            end if;
+
+            --  Otherwise get bounds values
+
+            if Is_Static_Expression (Lo) then
+               Lob := Expr_Value (Lo);
+            else
+               Lob := Expr_Value (Type_Low_Bound (Base_Type (Xtyp)));
+               Static := False;
+            end if;
+
+            if Is_Static_Expression (Hi) then
+               Hib := Expr_Value (Hi);
+            else
+               Hib := Expr_Value (Type_High_Bound (Base_Type (Xtyp)));
+               Static := False;
+            end if;
+
+            Siz := Siz *  UI_Max (Hib - Lob + 1, Uint_0);
+            Next_Index (Indx);
+         end loop;
+
+         --  Compute the limit against which we want to check. For subprograms,
+         --  where the array will go on the stack, we use 8*2**24, which (in
+         --  bits) is the size of a 16 megabyte array.
+
+         if Is_Subprogram (Scope (Ent)) then
+            Check_Siz := Uint_2 ** 27;
+         else
+            Check_Siz := Uint_2 ** 31;
+         end if;
+
+         --  If we have all static bounds and Siz is too large, then we know
+         --  we know we have a storage error right now, so generate message
+
+         if Static and then Siz >= Check_Siz then
+            Insert_Action (N,
+              Make_Raise_Storage_Error (Loc,
+                 Reason => SE_Object_Too_Large));
+            Error_Msg_N ("?Storage_Error will be raised at run-time", N);
+            Uintp.Release (Umark);
+            return;
+         end if;
+
+         --  Case of component size known at compile time. If the array
+         --  size is definitely in range, then we do not need a check.
+
+         if Known_Esize (Ctyp)
+           and then Siz * Esize (Ctyp) < Check_Siz
          then
             Uintp.Release (Umark);
             return;
          end if;
 
-         --  Otherwise get bounds values
+         --  Here if a dynamic check is required
 
-         if Is_Static_Expression (Lo) then
-            Lob := Expr_Value (Lo);
-         else
-            Lob := Expr_Value (Type_Low_Bound (Base_Type (Xtyp)));
-            Static := False;
-         end if;
+         --  What we do is to build an expression for the size of the array,
+         --  which is computed as the 'Size of the array component, times
+         --  the size of each dimension.
 
-         if Is_Static_Expression (Hi) then
-            Hib := Expr_Value (Hi);
-         else
-            Hib := Expr_Value (Type_High_Bound (Base_Type (Xtyp)));
-            Static := False;
-         end if;
-
-         Siz := Siz *  UI_Max (Hib - Lob + 1, Uint_0);
-         Next_Index (Indx);
-      end loop;
-
-      --  Compute the limit against which we want to check. For subprograms,
-      --  where the array will go on the stack, we use 8*2**24, which (in
-      --  bits) is the size of a 16 megabyte array.
-
-      if Is_Subprogram (Scope (Ent)) then
-         Check_Siz := Uint_2 ** 27;
-      else
-         Check_Siz := Uint_2 ** 31;
-      end if;
-
-      --  If we have all static bounds and Siz is too large, then we know we
-      --  know we have a storage error right now, so generate message
-
-      if Static and then Siz >= Check_Siz then
-         Insert_Action (N,
-           Make_Raise_Storage_Error (Loc,
-             Reason => SE_Object_Too_Large));
-         Error_Msg_N ("?Storage_Error will be raised at run-time", N);
          Uintp.Release (Umark);
-         return;
-      end if;
-
-      --  Case of component size known at compile time. If the array
-      --  size is definitely in range, then we do not need a check.
-
-      if Known_Esize (Ctyp)
-        and then Siz * Esize (Ctyp) < Check_Siz
-      then
-         Uintp.Release (Umark);
-         return;
-      end if;
-
-      --  Here if a dynamic check is required
-
-      --  What we do is to build an expression for the size of the array,
-      --  which is computed as the 'Size of the array component, times
-      --  the size of each dimension.
-
-      Uintp.Release (Umark);
-
-      Sizx :=
-        Make_Attribute_Reference (Loc,
-          Prefix         => New_Occurrence_Of (Ctyp, Loc),
-          Attribute_Name => Name_Size);
-
-      Indx := First_Index (Typ);
-
-      for J in 1 .. Number_Dimensions (Typ) loop
-         if Sloc (Etype (Indx)) = Sloc (N) then
-            Ensure_Defined (Etype (Indx), N);
-         end if;
 
          Sizx :=
-           Make_Op_Multiply (Loc,
-             Left_Opnd  => Sizx,
-             Right_Opnd =>
-               Make_Attribute_Reference (Loc,
-                 Prefix => New_Occurrence_Of (Typ, Loc),
-                 Attribute_Name => Name_Length,
-                 Expressions => New_List (
-                   Make_Integer_Literal (Loc, J))));
-         Next_Index (Indx);
-      end loop;
+           Make_Attribute_Reference (Loc,
+             Prefix =>         New_Occurrence_Of (Ctyp, Loc),
+             Attribute_Name => Name_Size);
+
+         Indx := First_Index (Typ);
+         for J in 1 .. Number_Dimensions (Typ) loop
+            if Sloc (Etype (Indx)) = Sloc (N) then
+               Ensure_Defined (Etype (Indx), N);
+            end if;
+
+            Sizx :=
+              Make_Op_Multiply (Loc,
+                Left_Opnd  => Sizx,
+                Right_Opnd =>
+                  Make_Attribute_Reference (Loc,
+                    Prefix         => New_Occurrence_Of (Typ, Loc),
+                    Attribute_Name => Name_Length,
+                    Expressions    => New_List (
+                                        Make_Integer_Literal (Loc, J))));
+            Next_Index (Indx);
+         end loop;
+      end;
+
+      --  Common code to actually emit the check
 
       Code :=
         Make_Raise_Storage_Error (Loc,
@@ -916,11 +972,12 @@ package body Checks is
             Make_Op_Ge (Loc,
               Left_Opnd  => Sizx,
               Right_Opnd =>
-                Make_Integer_Literal (Loc, Check_Siz)),
-            Reason => SE_Object_Too_Large);
+                Make_Integer_Literal (Loc,
+                  Intval    => Check_Siz)),
+                  Reason    => SE_Object_Too_Large);
 
       Set_Size_Check_Code (Defining_Identifier (N), Code);
-      Insert_Action (N, Code);
+      Insert_Action (N, Code, Suppress => All_Checks);
    end Apply_Array_Size_Check;
 
    ----------------------------

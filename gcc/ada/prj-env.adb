@@ -1484,7 +1484,7 @@ package body Prj.Env is
             --  If there are Ada sources, call action with the name of every
             --  source directory.
 
-            if Projects.Table (Project).Sources_Present then
+            if Projects.Table (Project).Ada_Sources_Present then
                while Current /= Nil_String loop
                   The_String := String_Elements.Table (Current);
                   Action (Get_Name_String (The_String.Value));
@@ -1948,7 +1948,7 @@ package body Prj.Env is
                      --  Add to path all source directories of this project
                      --  if there are Ada sources.
 
-                     if Projects.Table (Project).Sources_Present then
+                     if Projects.Table (Project).Ada_Sources_Present then
                         Add_To_Source_Path (Data.Source_Dirs);
                      end if;
                   end if;

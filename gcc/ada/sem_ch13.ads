@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,8 +46,7 @@ package Sem_Ch13 is
 
    function Minimum_Size
      (T      : Entity_Id;
-      Biased : Boolean := False)
-      return   Nat;
+      Biased : Boolean := False) return Nat;
    --  Given a primitive type, determines the minimum number of bits required
    --  to represent all values of the type. This function may not be called
    --  with any other types. If the flag Biased is set True, then the minimum
@@ -96,10 +95,7 @@ package Sem_Ch13 is
    --  definition clause that applies to type T. This procedure links
    --  the node N onto the Rep_Item chain for the type T.
 
-   function Rep_Item_Too_Early
-     (T     : Entity_Id;
-      N     : Node_Id)
-      return  Boolean;
+   function Rep_Item_Too_Early (T : Entity_Id; N : Node_Id) return Boolean;
    --  Called at the start of processing a representation clause or a
    --  representation pragma. Used to check that the representation item
    --  is not being applied to an incompleted type or to a generic formal
@@ -110,8 +106,7 @@ package Sem_Ch13 is
    function Rep_Item_Too_Late
      (T     : Entity_Id;
       N     : Node_Id;
-      FOnly : Boolean := False)
-      return  Boolean;
+      FOnly : Boolean := False) return Boolean;
    --  Called at the start of processing a representation clause or a
    --  representation pragma. Used to check that a representation item
    --  for entity T does not appear too late (according to the rules in

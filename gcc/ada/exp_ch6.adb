@@ -534,6 +534,7 @@ package body Exp_Ch6 is
          Temp  : Entity_Id;
          Indic : Node_Id := New_Occurrence_Of (Etype (Formal), Loc);
          Var   : Entity_Id;
+         F_Typ : constant Entity_Id := Etype (Formal);
          V_Typ : Entity_Id;
          Crep  : Boolean;
 
@@ -549,7 +550,7 @@ package body Exp_Ch6 is
             Var := Make_Var (Expression (Actual));
 
             Crep := not Same_Representation
-                          (Etype (Formal), Etype (Expression (Actual)));
+                          (F_Typ, Etype (Expression (Actual)));
 
          else
             V_Typ := Etype (Actual);
@@ -567,21 +568,19 @@ package body Exp_Ch6 is
          --  right size.
 
          if Ekind (Formal) = E_In_Out_Parameter
-           or else (Is_Array_Type (Etype (Formal))
-                     and then not Is_Constrained (Etype (Formal)))
+           or else (Is_Array_Type (F_Typ) and then not Is_Constrained (F_Typ))
          then
             if Nkind (Actual) = N_Type_Conversion then
                if Conversion_OK (Actual) then
-                  Init := OK_Convert_To
-                            (Etype (Formal), New_Occurrence_Of (Var, Loc));
+                  Init := OK_Convert_To (F_Typ, New_Occurrence_Of (Var, Loc));
                else
-                  Init := Convert_To
-                            (Etype (Formal), New_Occurrence_Of (Var, Loc));
+                  Init := Convert_To (F_Typ, New_Occurrence_Of (Var, Loc));
                end if;
 
             elsif Ekind (Formal) = E_Out_Parameter
-              and then Number_Dimensions (Etype (Formal)) = 1
-              and then not Has_Non_Null_Base_Init_Proc (Etype (Formal))
+              and then Is_Array_Type (F_Typ)
+              and then Number_Dimensions (F_Typ) = 1
+              and then not Has_Non_Null_Base_Init_Proc (F_Typ)
             then
                --  Actual is a one-dimensional array or slice, and the type
                --  requires no initialization. Create a temporary of the
@@ -591,7 +590,7 @@ package body Exp_Ch6 is
                Indic :=
                  Make_Subtype_Indication (Loc,
                    Subtype_Mark =>
-                     New_Occurrence_Of (Etype (Formal), Loc),
+                     New_Occurrence_Of (F_Typ, Loc),
                    Constraint   =>
                      Make_Index_Or_Discriminant_Constraint (Loc,
                        Constraints => New_List (
@@ -617,16 +616,16 @@ package body Exp_Ch6 is
 
          elsif Ekind (Formal) = E_Out_Parameter
            and then Nkind (Actual) = N_Type_Conversion
-           and then (Is_Bit_Packed_Array (Etype (Formal))
+           and then (Is_Bit_Packed_Array (F_Typ)
                        or else
                      Is_Bit_Packed_Array (Etype (Expression (Actual))))
          then
             if Conversion_OK (Actual) then
                Init :=
-                 OK_Convert_To (Etype (Formal), New_Occurrence_Of (Var, Loc));
+                 OK_Convert_To (F_Typ, New_Occurrence_Of (Var, Loc));
             else
                Init :=
-                 Convert_To (Etype (Formal), New_Occurrence_Of (Var, Loc));
+                 Convert_To (F_Typ, New_Occurrence_Of (Var, Loc));
             end if;
 
          elsif Ekind (Formal) = E_In_Parameter then

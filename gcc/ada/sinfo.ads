@@ -1383,7 +1383,7 @@ package Sinfo is
    --    This is used to clarify output from the packed array cases.
 
    --  Procedure_To_Call (Node4-Sem)
-   --    Present in N_Allocator. N_Free_Statement, and N_Return_Statement
+   --    Present in N_Allocator, N_Free_Statement, and N_Return_Statement
    --    nodes. References the entity for the declaration of the procedure
    --    to be called to accomplish the required operation (i.e. for the
    --    Allocate procedure in the case of N_Allocator and N_Return_Statement

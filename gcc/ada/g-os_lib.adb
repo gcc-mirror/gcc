@@ -43,6 +43,8 @@ package body GNAT.OS_Lib is
    --  Note: OpenVMS should be a constant, but it cannot be, because it
    --        prevents bootstrapping on some platforms.
 
+   On_Windows : constant Boolean := Directory_Separator = '\';
+
    pragma Import (Ada, OpenVMS, "system__openvms");
    --  Needed to avoid doing useless checks when non on a VMS platform (see
    --  Normalize_Pathname).
@@ -1584,8 +1586,9 @@ package body GNAT.OS_Lib is
 
                --  Remove trailing directory separator, if any
 
-               if Result (Last) = '/' or else
-                  Result (Last) = Directory_Separator
+               if Last > 1 and then
+                 (Result (Last) = '/' or else
+                  Result (Last) = Directory_Separator)
                then
                   Last := Last - 1;
                end if;
@@ -1602,13 +1605,26 @@ package body GNAT.OS_Lib is
 
             Last := S1'Last;
 
-            if S1 (Last) = '/' or else S1 (Last) = Directory_Separator then
-               Last := Last - 1;
+            if Last > 1
+              and then (S1 (Last) = '/'
+                          or else
+                        S1 (Last) = Directory_Separator)
+            then
+               --  Special case for Windows: C:\
+
+               if Last = 3
+                 and then S1 (1) /= Directory_Separator
+                 and then S1 (2) = ':'
+               then
+                  null;
+
+               else
+                  Last := Last - 1;
+               end if;
             end if;
 
             return S1 (1 .. Last);
          end if;
-
       end Final_Value;
 
    --  Start of processing for Normalize_Pathname
@@ -1666,13 +1682,23 @@ package body GNAT.OS_Lib is
          end loop;
       end if;
 
-      --  Resolving logical names from VMS.
-      --  If we have a Unix path on VMS such as /temp/..., and TEMP is a
-      --  logical name, we need to resolve this logical name.
-      --  We find the directory, change to it, get the current directory,
-      --  and change the directory to this value.
+      --  Resolve directory names for VMS and Windows
 
-      if OpenVMS and then Path_Buffer (1) = '/' then
+      --  On VMS, if we have a Unix path such as /temp/..., and TEMP is a
+      --  logical name, we need to resolve this logical name.
+
+      --  On Windows, if we have an absolute path starting with a directory
+      --  separator, we need to have the drive letter appended in front.
+
+      --  For both platforms, Get_Current_Dir will return a suitable
+      --  directory name (logical names resolved on VMS, path starting with
+      --  a drive letter on Windows). So we find the directory, change to it,
+      --  call Get_Current_Dir and change the directory to the returned value.
+      --  Then, of course, we return to the previous directory.
+
+      if (OpenVMS or On_Windows)
+        and then Path_Buffer (1) = Directory_Separator
+      then
          declare
             Cur_Dir : String := Get_Directory ("");
             --  Save the current directory, so that we can change dir back to
@@ -1685,21 +1711,21 @@ package body GNAT.OS_Lib is
             --  set to ASCII.NUL to call chdir.
 
             Pos : Positive := End_Path;
-            --  Position of the last directory separator ('/')
+            --  Position of the last directory separator
 
             Status : Integer;
             --  Value returned by chdir
 
          begin
-            --  Look for the last '/'
+            --  Look for the last directory separator
 
-            while Path (Pos) /= '/' loop
+            while Path (Pos) /= Directory_Separator loop
                Pos := Pos - 1;
             end loop;
 
-            --  Get the previous character that is not a '/'
+            --  Get the previous character that is not a directory separator
 
-            while Pos > 1 and then Path (Pos) = '/' loop
+            while Pos > 1 and then Path (Pos) = Directory_Separator loop
                Pos := Pos - 1;
             end loop;
 
@@ -1934,7 +1960,6 @@ package body GNAT.OS_Lib is
         (Name  : C_File_Name;
          Fmode : Mode) return File_Descriptor;
       pragma Import (C, C_Open_Read, "__gnat_open_read");
-
    begin
       return C_Open_Read (Name, Fmode);
    end Open_Read;
@@ -1944,7 +1969,6 @@ package body GNAT.OS_Lib is
       Fmode : Mode) return File_Descriptor
    is
       C_Name : String (1 .. Name'Length + 1);
-
    begin
       C_Name (1 .. Name'Length) := Name;
       C_Name (C_Name'Last)      := ASCII.NUL;
@@ -1963,7 +1987,6 @@ package body GNAT.OS_Lib is
         (Name  : C_File_Name;
          Fmode : Mode) return File_Descriptor;
       pragma Import (C, C_Open_Read_Write, "__gnat_open_rw");
-
    begin
       return C_Open_Read_Write (Name, Fmode);
    end Open_Read_Write;
@@ -1973,7 +1996,6 @@ package body GNAT.OS_Lib is
       Fmode : Mode) return File_Descriptor
    is
       C_Name : String (1 .. Name'Length + 1);
-
    begin
       C_Name (1 .. Name'Length) := Name;
       C_Name (C_Name'Last)      := ASCII.NUL;
@@ -2005,9 +2027,7 @@ package body GNAT.OS_Lib is
    is
       function rename (From, To : Address) return Integer;
       pragma Import (C, rename, "rename");
-
       R : Integer;
-
    begin
       R := rename (Old_Name, New_Name);
       Success := (R = 0);
@@ -2020,14 +2040,11 @@ package body GNAT.OS_Lib is
    is
       C_Old_Name : String (1 .. Old_Name'Length + 1);
       C_New_Name : String (1 .. New_Name'Length + 1);
-
    begin
       C_Old_Name (1 .. Old_Name'Length) := Old_Name;
       C_Old_Name (C_Old_Name'Last)      := ASCII.NUL;
-
       C_New_Name (1 .. New_Name'Length) := New_Name;
       C_New_Name (C_New_Name'Last)      := ASCII.NUL;
-
       Rename_File (C_Old_Name'Address, C_New_Name'Address, Success);
    end Rename_File;
 
@@ -2062,7 +2079,6 @@ package body GNAT.OS_Lib is
    is
       Junk   : Process_Id;
       Result : Integer;
-
    begin
       Spawn_Internal (Program_Name, Args, Result, Junk, Blocking => True);
       return Result;

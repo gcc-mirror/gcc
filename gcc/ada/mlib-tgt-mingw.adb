@@ -96,9 +96,7 @@ package body MLib.Tgt is
       Lib_Dir      : String;
       Symbol_Data  : Symbol_Record;
       Driver_Name  : Name_Id := No_Name;
-      Lib_Address  : String  := "";
       Lib_Version  : String  := "";
-      Relocatable  : Boolean := False;
       Auto_Init    : Boolean := False)
    is
       pragma Unreferenced (Foreign);
@@ -108,125 +106,24 @@ package body MLib.Tgt is
       pragma Unreferenced (Interfaces);
       pragma Unreferenced (Lib_Version);
 
-      Strip_Name  : constant String := "strip";
-      Strip_Exec  : String_Access;
-
-      procedure Strip_Reloc (Lib_File : String);
-      --  Strip .reloc section to build a non relocatable DLL
-
-      -----------------
-      -- Strip_Reloc --
-      -----------------
-
-      procedure Strip_Reloc (Lib_File : String) is
-         Arguments   : Argument_List (1 .. 3);
-         Success     : Boolean;
-         Line_Length : Natural;
-
-      begin
-         --  Look for strip executable
-
-         Strip_Exec := Locate_Exec_On_Path (Strip_Name);
-
-         if Strip_Exec = null then
-            Fail (Strip_Name, " not found in path");
-
-         elsif Opt.Verbose_Mode then
-            Write_Str  ("found ");
-            Write_Line (Strip_Exec.all);
-         end if;
-
-         --  Call it: strip -R .reloc <dll>
-
-         Arguments (1) := new String'("-R");
-         Arguments (2) := new String'(".reloc");
-         Arguments (3) := new String'(Lib_File);
-
-         if not Opt.Quiet_Output then
-            Write_Str (Strip_Exec.all);
-            Line_Length := Strip_Exec'Length;
-
-            for K in Arguments'Range loop
-
-               --  Make sure the Output buffer does not overflow
-
-               if Line_Length + 1 + Arguments (K)'Length >
-                 Integer (Opt.Max_Line_Length)
-               then
-                  Write_Eol;
-                  Line_Length := 0;
-               end if;
-
-               Write_Char (' ');
-               Write_Str  (Arguments (K).all);
-               Line_Length := Line_Length + 1 + Arguments (K)'Length;
-            end loop;
-
-            Write_Eol;
-         end if;
-
-         Spawn (Strip_Exec.all, Arguments, Success);
-
-         if not Success then
-            Fail (Strip_Name, " execution error.");
-         end if;
-
-         for K in Arguments'Range loop
-            Free (Arguments (K));
-         end loop;
-      end Strip_Reloc;
-
       Lib_File : constant String :=
-        Lib_Dir & Directory_Separator & "lib" &
+        Lib_Dir & Directory_Separator &
         Files.Ext_To (Lib_Filename, DLL_Ext);
-
-      I_Base    : aliased String := "-Wl,--image-base," & Lib_Address;
-
-      Options_2 : Argument_List (1 .. 1);
-      O_Index   : Natural := 0;
 
    --  Start of processing for Build_Dynamic_Library
 
    begin
       if Opt.Verbose_Mode then
-         Write_Str ("building ");
-
-         if not Relocatable then
-            Write_Str ("non-");
-         end if;
-
-         Write_Str ("relocatable shared library ");
+         Write_Str ("building relocatable shared library ");
          Write_Line (Lib_File);
-      end if;
-
-      if not Relocatable then
-         O_Index := O_Index + 1;
-         Options_2 (O_Index) := I_Base'Unchecked_Access;
       end if;
 
       Tools.Gcc
         (Output_File => Lib_File,
          Objects     => Ofiles,
          Options     => Options,
-         Driver_Name => Driver_Name,
-         Options_2   => Options_2 (1 .. O_Index));
-
-      if not Relocatable then
-
-         --  Strip reloc symbols from the DLL
-
-         Strip_Reloc (Lib_File);
-      end if;
+         Driver_Name => Driver_Name);
    end Build_Dynamic_Library;
-
-   -------------------------
-   -- Default_DLL_Address --
-   -------------------------
-
-   function Default_DLL_Address return String is
-   begin
-      return "0x11000000";
-   end Default_DLL_Address;
 
    -------------
    -- DLL_Ext --

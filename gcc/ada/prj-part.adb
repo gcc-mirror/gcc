@@ -161,22 +161,26 @@ package body Prj.Part is
      (Context_Clause    : With_Id;
       Imported_Projects : out Project_Node_Id;
       Project_Directory : Name_Id;
-      From_Extended     : Extension_Origin);
+      From_Extended     : Extension_Origin;
+      In_Limited        : Boolean);
    --  Parse the imported projects that have been stored in table Withs,
    --  if any. From_Extended is used for the call to Parse_Single_Project
-   --  below.
+   --  below. When In_Limited is True, the importing path includes at least
+   --  one "limited with".
 
    procedure Parse_Single_Project
      (Project       : out Project_Node_Id;
       Extends_All   : out Boolean;
       Path_Name     : String;
       Extended      : Boolean;
-      From_Extended : Extension_Origin);
+      From_Extended : Extension_Origin;
+      In_Limited    : Boolean);
    --  Parse a project file.
    --  Recursive procedure: it calls itself for imported and extended
    --  projects. When From_Extended is not None, if the project has already
    --  been parsed and is an extended project A, return the ultimate
-   --  (not extended) project that extends A.
+   --  (not extended) project that extends A. When In_Limited is True,
+   --  the importing path includes at least one "limited with".
 
    function Project_Path_Name_Of
      (Project_File_Name : String;
@@ -472,7 +476,8 @@ package body Prj.Part is
             Extends_All   => Dummy,
             Path_Name     => Path_Name,
             Extended      => False,
-            From_Extended => None);
+            From_Extended => None,
+            In_Limited    => False);
 
          --  If Project is an extending-all project, create the eventual
          --  virtual extending projects and check that there are no illegally
@@ -668,7 +673,8 @@ package body Prj.Part is
      (Context_Clause    : With_Id;
       Imported_Projects : out Project_Node_Id;
       Project_Directory : Name_Id;
-      From_Extended     : Extension_Origin)
+      From_Extended     : Extension_Origin;
+      In_Limited        : Boolean)
    is
       Current_With_Clause : With_Id := Context_Clause;
 
@@ -690,7 +696,7 @@ package body Prj.Part is
          Current_With := Withs.Table (Current_With_Clause);
          Current_With_Clause := Current_With.Next;
 
-         Limited_With := Current_With.Limited_With;
+         Limited_With := In_Limited or Current_With.Limited_With;
 
          declare
             Original_Path : constant String :=
@@ -783,7 +789,8 @@ package body Prj.Part is
                      Extends_All   => Extends_All,
                      Path_Name     => Imported_Path_Name,
                      Extended      => False,
-                     From_Extended => From_Extended);
+                     From_Extended => From_Extended,
+                     In_Limited    => Limited_With);
 
                else
                   Extends_All := Is_Extending_All (Withed_Project);
@@ -833,7 +840,8 @@ package body Prj.Part is
       Extends_All   : out Boolean;
       Path_Name     : String;
       Extended      : Boolean;
-      From_Extended : Extension_Origin)
+      From_Extended : Extension_Origin;
+      In_Limited    : Boolean)
    is
       Normed_Path_Name    : Name_Id;
       Canonical_Path_Name : Name_Id;
@@ -1159,7 +1167,8 @@ package body Prj.Part is
               (Context_Clause    => First_With,
                Imported_Projects => Imported_Projects,
                Project_Directory => Project_Directory,
-               From_Extended     => From_Ext);
+               From_Extended     => From_Ext,
+               In_Limited        => In_Limited);
             Set_First_With_Clause_Of (Project, Imported_Projects);
          end;
 
@@ -1255,7 +1264,8 @@ package body Prj.Part is
                         Extends_All   => Extends_All,
                         Path_Name     => Extended_Project_Path_Name,
                         Extended      => True,
-                        From_Extended => From_Ext);
+                        From_Extended => From_Ext,
+                        In_Limited    => In_Limited);
                   end;
 
                   --  A project that extends an extending-all project is also

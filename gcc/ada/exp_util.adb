@@ -2384,6 +2384,34 @@ package body Exp_Util is
    ---------------------------------
 
    function Is_Possibly_Unaligned_Slice (P : Node_Id) return Boolean is
+
+      function Has_Non_Trivial_Component_Clause (E : Entity_Id) return Boolean;
+      --  Check whether the component clause might place the component at an
+      --  alignment that will require the use of a copy when a slice is passed
+      --  as a parameter.  The code is conservative because at this point the
+      --  expander does not know the alignment choice that the back-end will
+      --  make. For now we return true if the component is not the first one
+      --  in the enclosing record. This routine is a place holder for further
+      --  analysis of this kind.
+
+      --------------------------------------
+      -- Has_Non_Trivial_Component_Clause --
+      --------------------------------------
+
+      function Has_Non_Trivial_Component_Clause (E : Entity_Id) return Boolean
+      is
+         Rep_Clause : constant Node_Id := Component_Clause (E);
+      begin
+         if No (Rep_Clause) then
+            return False;
+         else
+            return Intval (Position (Rep_Clause)) /= Uint_0
+              or else Intval (First_Bit (Rep_Clause)) /= Uint_0;
+         end if;
+      end Has_Non_Trivial_Component_Clause;
+
+   --  Start of processing for Is_Possibly_Unaligned_Slice
+
    begin
       --  ??? GCC3 will eventually handle strings with arbitrary alignments,
       --  but for now the following check must be disabled.
@@ -2448,7 +2476,8 @@ package body Exp_Util is
                     or else
                   Known_Alignment (Etype (Prefix (Pref)))
                     or else
-                  Present (Component_Clause (Entity (Selector_Name (Pref)))));
+                      Has_Non_Trivial_Component_Clause
+                        (Entity (Selector_Name (Pref))));
       end;
    end Is_Possibly_Unaligned_Slice;
 

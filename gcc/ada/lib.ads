@@ -537,13 +537,19 @@ package Lib is
    --  be kept consistent).
 
    procedure Replace_Linker_Option_String
-     (S : String_Id; Match_String : String);
+     (S            : String_Id;
+      Match_String : String);
    --  Replace an existing Linker_Option if the prefix Match_String
    --  matches, otherwise call Store_Linker_Option_String.
 
    procedure Store_Compilation_Switch (Switch : String);
    --  Called to register a compilation switch, either front-end or
    --  back-end, which may influence the generated output file(s).
+
+   procedure Disable_Switch_Storing;
+   --  Disable the registration of compilation switches with
+   --  Store_Compilation_Switch. This is used to not register switches added
+   --  automatically by the gcc driver.
 
    procedure Store_Linker_Option_String (S : String_Id);
    --  This procedure is called to register the string from a pragma

@@ -1052,9 +1052,9 @@ package body Rtsfind is
 
    function RTU_Loaded (U : RTU_Id) return Boolean is
    begin
-      return True and Present (RT_Unit_Table (U).Entity);
-      --  Temp kludge, return True, deals with bug of loading unit with
-      --  WITH not being registered as a proper rtsfind load ???
+      return True or else Present (RT_Unit_Table (U).Entity);
+      --  Temporary kludge until we get proper interaction to ensure that
+      --  an explicit WITH of a unit is properly registered in rtsfind ???
    end RTU_Loaded;
 
    --------------------

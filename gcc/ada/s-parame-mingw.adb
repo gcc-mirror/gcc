@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                       A D A . S T O R A G E _ I O                        --
+--                    S Y S T E M . P A R A M E T E R S                     --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--             Copyright (C) 2004 Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,31 +31,43 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Unchecked_Conversion;
+--  This is the Windows (native) specific version
 
-package body Ada.Storage_IO is
+package body System.Parameters is
 
-   type Buffer_Ptr is access all Buffer_Type;
-   type Elmt_Ptr   is access all Element_Type;
+   -------------------------
+   -- Adjust_Storage_Size --
+   -------------------------
 
-   function To_Buffer_Ptr is new Unchecked_Conversion (Elmt_Ptr, Buffer_Ptr);
-
-   ----------
-   -- Read --
-   ----------
-
-   procedure Read (Buffer : Buffer_Type; Item : out Element_Type) is
+   function Adjust_Storage_Size (Size : Size_Type) return Size_Type is
    begin
-      To_Buffer_Ptr (Item'Unrestricted_Access).all := Buffer;
-   end Read;
+      if Size = Unspecified_Size then
+         return Default_Stack_Size;
 
-   -----------
-   -- Write --
-   -----------
+      elsif Size < Minimum_Stack_Size then
+         return Minimum_Stack_Size;
 
-   procedure Write (Buffer : out Buffer_Type; Item : Element_Type) is
+      else
+         return Size;
+      end if;
+   end Adjust_Storage_Size;
+
+   ------------------------
+   -- Default_Stack_Size --
+   ------------------------
+
+   function Default_Stack_Size return Size_Type is
    begin
-      Buffer := To_Buffer_Ptr (Item'Unrestricted_Access).all;
-   end Write;
+      return 20 * 1024;
+   end Default_Stack_Size;
 
-end Ada.Storage_IO;
+   ------------------------
+   -- Minimum_Stack_Size --
+   ------------------------
+
+   function Minimum_Stack_Size return Size_Type is
+   begin
+      return 1024;
+   end Minimum_Stack_Size;
+
+end System.Parameters;

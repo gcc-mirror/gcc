@@ -291,7 +291,7 @@ package body Sem_Dist is
       Remote_Subp_Decl      : Node_Id;
       RS_Pkg_Specif         : Node_Id;
       RS_Pkg_E              : Entity_Id;
-      RAS_Type              : Entity_Id;
+      RAS_Type              : Entity_Id := New_Type;
       Async_E               : Entity_Id;
       All_Calls_Remote_E    : Entity_Id;
       Attribute_Subp        : Entity_Id;
@@ -304,24 +304,14 @@ package body Sem_Dist is
 
       if not Expander_Active then
          return;
+      end if;
 
-      elsif Ekind (New_Type) = E_Record_Type then
-         RAS_Type := New_Type;
-
-      else
-         --  If the remote type has not been constructed yet, create
-         --  it and its attributes now.
-
-         Attribute_Subp := TSS (New_Type, TSS_RAS_Access);
-
-         if No (Attribute_Subp) then
-            Add_RAST_Features (Parent (New_Type));
-         end if;
-
-         RAS_Type := Equivalent_Type (New_Type);
+      if Ekind (RAS_Type) /= E_Record_Type then
+         RAS_Type := Equivalent_Type (RAS_Type);
       end if;
 
       Attribute_Subp := TSS (RAS_Type, TSS_RAS_Access);
+      pragma Assert (Present (Attribute_Subp));
       Remote_Subp_Decl := Unit_Declaration_Node (Remote_Subp);
 
       if Nkind (Remote_Subp_Decl) = N_Subprogram_Body then
@@ -457,9 +447,6 @@ package body Sem_Dist is
       Loc             : constant Source_Ptr := Sloc (Pref);
       Call_Node       : Node_Id;
       New_Type        : constant Entity_Id := Etype (Pref);
-      RAS             : constant Entity_Id :=
-                          Corresponding_Remote_Type (New_Type);
-      RAS_Decl        : constant Node_Id   := Parent (RAS);
       Explicit_Deref  : constant Node_Id   := Parent (Pref);
       Deref_Subp_Call : constant Node_Id   := Parent (Explicit_Deref);
       Deref_Proc      : Entity_Id;
@@ -491,15 +478,12 @@ package body Sem_Dist is
          return;
       end if;
 
-      Deref_Proc := TSS (New_Type, TSS_RAS_Dereference);
-
       if not Expander_Active then
          return;
-
-      elsif No (Deref_Proc) then
-         Add_RAST_Features (RAS_Decl);
-         Deref_Proc := TSS (New_Type, TSS_RAS_Dereference);
       end if;
+
+      Deref_Proc := TSS (New_Type, TSS_RAS_Dereference);
+      pragma Assert (Present (Deref_Proc));
 
       if Ekind (Deref_Proc) = E_Function then
          Call_Node :=

@@ -106,7 +106,7 @@ package body Exception_Propagation is
 
    type Unwind_Word is mod 2 ** System.Word_Size;
    for Unwind_Word'Size use System.Word_Size;
-   --  Map the corresponding C type used in Unwind_Exception below.
+   --  Map the corresponding C type used in Unwind_Exception below
 
    type Unwind_Exception is record
       Class    : Exception_Class := GNAT_Exception_Class;
@@ -114,52 +114,59 @@ package body Exception_Propagation is
       Private1 : Unwind_Word;
       Private2 : Unwind_Word;
    end record;
-   --  Map the GCC struct used for exception handling.
+   --  Map the GCC struct used for exception handling
 
    for Unwind_Exception'Alignment use Standard'Maximum_Alignment;
    --  The C++ ABI mandates the common exception header to be at least
    --  doubleword aligned, and the libGCC implementation actually makes it
-   --  maximally aligned (see unwind.h). We need to match this because:
-
-   --  1/ We pass pointers to such headers down to the underlying
-   --     libGCC unwinder,
-
-   --    and
-
-   --  2/ The GNAT_GCC_Exception record below starts with this common
-   --     common header and has a C counterpart which needs to be laid
-   --     out identically in raise.c. If the alignment of the C and Ada
-   --     common headers mismatch, their size may also differ, and the
-   --     layouts may not match anymore.
+   --  maximally aligned (see unwind.h). See additional comments on the
+   --  alignment below.
 
    ---------------------------------------------------------------
    --  GNAT specific entities to deal with the GCC eh circuitry --
    ---------------------------------------------------------------
 
    --  A GNAT exception object to be dealt with by the personality routine
-   --  called by the GCC unwinding runtime. This structure shall match the
-   --  one in raise.c and is currently experimental as it might be merged
-   --  with the GNAT runtime definition some day.
+   --  called by the GCC unwinding runtime.
 
    type GNAT_GCC_Exception is record
       Header : Unwind_Exception;
       --  ABI Exception header first.
 
       Id : Exception_Id;
-      --  GNAT Exception identifier. This is used by the personality
-      --  routine to determine if the context it examines contains a
-      --  handler for the exception beeing propagated.
+      --  GNAT Exception identifier.  This is filled by Propagate_Exception
+      --  and then used by the personality routine to determine if the context
+      --  it examines contains a handler for the exception beeing propagated.
 
       N_Cleanups_To_Trigger : Integer;
-      --  Number of cleanup only frames encountered in SEARCH phase.
-      --  This is used to control the forced unwinding triggered when
-      --  no handler has been found.
+      --  Number of cleanup only frames encountered in SEARCH phase.  This is
+      --  initialized to 0 by Propagate_Exception and maintained by the
+      --  personality routine to control a forced unwinding phase triggering
+      --  all the cleanups before calling Unhandled_Exception_Terminate when
+      --  an exception is not handled.
 
       Next_Exception : EOA;
       --  Used to create a linked list of exception occurrences.
    end record;
 
    pragma Convention (C, GNAT_GCC_Exception);
+
+   --  There is a subtle issue with the common header alignment, since the C
+   --  version is aligned on BIGGEST_ALIGNMENT, the Ada version is aligned on
+   --  Standard'Maximum_Alignment, and those two values don't quite represent
+   --  the same concepts and so may be decoupled someday. One typical reason
+   --  is that BIGGEST_ALIGNMENT may be larger than what the underlying system
+   --  allocator guarantees, and there are extra costs involved in allocating
+   --  objects aligned to such factors.
+
+   --  To deal with the potential alignment differences between the C and Ada
+   --  representations, the Ada part of the whole structure is only accessed
+   --  by the personality routine through the accessors declared below.  Ada
+   --  specific fields are thus always accessed through consistent layout, and
+   --  we expect the actual alignment to always be large enough to avoid traps
+   --  from the C accesses to the common header. Besides, accessors aleviate
+   --  the need for a C struct whole conterpart, both painful and errorprone
+   --  to maintain anyway.
 
    type GNAT_GCC_Exception_Access is access all GNAT_GCC_Exception;
 
@@ -250,6 +257,15 @@ package body Exception_Propagation is
 
    function Import_Code_For (E : Exception_Data_Ptr) return Exception_Code;
    pragma Export (C, Import_Code_For, "__gnat_import_code_for");
+
+   function EID_For (GNAT_Exception : GNAT_GCC_Exception_Access)
+     return Exception_Id;
+   pragma Export (C, EID_For, "__gnat_eid_for");
+
+   procedure Adjust_N_Cleanups_For
+     (GNAT_Exception : GNAT_GCC_Exception_Access;
+      Adjustment     : Integer);
+   pragma Export (C, Adjust_N_Cleanups_For, "__gnat_adjust_n_cleanups_for");
 
    ------------
    -- Remove --
@@ -457,6 +473,7 @@ package body Exception_Propagation is
       --  already been performed by Propagate_Exception. This hook remains for
       --  potential future necessity in optimizing the overall scheme, as well
       --  a useful debugging tool.
+
       null;
    end Begin_Handler;
 
@@ -466,7 +483,6 @@ package body Exception_Propagation is
 
    procedure End_Handler (GCC_Exception : GNAT_GCC_Exception_Access) is
       Removed : Boolean;
-
    begin
       Removed := Remove (Get_Current_Excep.all, GCC_Exception);
       pragma Assert (Removed);
@@ -553,6 +569,30 @@ package body Exception_Propagation is
       Unhandled_Exception_Terminate;
    end Propagate_Exception;
 
+   ---------------------------
+   -- Adjust_N_Cleanups_For --
+   ---------------------------
+
+   procedure Adjust_N_Cleanups_For
+     (GNAT_Exception : GNAT_GCC_Exception_Access;
+      Adjustment     : Integer)
+   is
+   begin
+      GNAT_Exception.N_Cleanups_To_Trigger :=
+        GNAT_Exception.N_Cleanups_To_Trigger + Adjustment;
+   end Adjust_N_Cleanups_For;
+
+   -------------
+   -- EID_For --
+   -------------
+
+   function EID_For
+     (GNAT_Exception : GNAT_GCC_Exception_Access) return Exception_Id
+   is
+   begin
+      return GNAT_Exception.Id;
+   end EID_For;
+
    ---------------------
    -- Import_Code_For --
    ---------------------
@@ -612,29 +652,29 @@ package body Exception_Propagation is
    --  An attempt was made to use the Private_Data pointer for this purpose.
    --  It did not work because:
 
-   --  1/ The Private_Data has to be saved by Save_Occurrence to be usable
+   --  1) The Private_Data has to be saved by Save_Occurrence to be usable
    --     as a key in case of a later reraise,
 
-   --  2/ There is no easy way to synchronize End_Handler for an occurrence
+   --  2) There is no easy way to synchronize End_Handler for an occurrence
    --     and the data attached to potential copies, so these copies may end
    --     up pointing to stale data. Moreover ...
 
-   --  3/ The same address may be reused for different occurrences, which
+   --  3) The same address may be reused for different occurrences, which
    --     defeats the idea of using it as a key.
 
    --  The example below illustrates:
 
    --  Saved_CE : Exception_Occurrence;
-   --
+
    --  begin
    --    raise Constraint_Error;
    --  exception
    --    when CE: others =>
    --      Save_Occurrence (Saved_CE, CE);      <= Saved_CE.PDA = CE.PDA
    --  end;
-   --
+
    --                                           <= Saved_CE.PDA is stale (!)
-   --
+
    --  begin
    --    raise Program_Error;                   <= Saved_CE.PDA = PE.PDA (!!)
    --  exception

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1999-2002 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1999-2004 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,10 @@
 --  The traceback information is in the form of absolute code locations.
 --  These code locations may be converted to corresponding source locations
 --  using the external addr2line utility, or from within GDB.
+
+--  In order to use this facility, in some cases the binder must be invoked
+--  with -E switch (store the backtrace with exception occurence). Please
+--  refer to gnatbind documentation for more information.
 
 --  To analyze the code locations later using addr2line or gdb, the necessary
 --  units must be compiled with the debugging switch -g in the usual manner.

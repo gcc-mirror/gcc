@@ -1406,12 +1406,16 @@ begin
                        Units.Table (ALIs.Table (A).First_Unit).Last_Arg
             loop
                --  Do not compile with the front end switches except for --RTS
+               --  if the binder generated file is in Ada.
 
                declare
                   Arg : String_Ptr renames Args.Table (Index);
                begin
                   if not Is_Front_End_Switch (Arg.all)
-                    or else Arg (Arg'First + 2 .. Arg'First + 5) = "RTS="
+                    or else
+                      (Ada_Bind_File
+                        and then Arg'Length > 5
+                        and then Arg (Arg'First + 2 .. Arg'First + 5) = "RTS=")
                   then
                      Binder_Options_From_ALI.Increment_Last;
                      Binder_Options_From_ALI.Table

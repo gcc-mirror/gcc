@@ -928,6 +928,7 @@ begin
            Pragma_Component_Alignment          |
            Pragma_Controlled                   |
            Pragma_Convention                   |
+           Pragma_Detect_Blocking              |
            Pragma_Discard_Names                |
            Pragma_Eliminate                    |
            Pragma_Elaborate                    |
