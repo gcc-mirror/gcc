@@ -1,3 +1,18 @@
+2003-07-08  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in: Update.
+	* c-opts.c (c_common_handle_option): opt_text now contains the '-'.
+	* c.opt: Update documentation.
+	* common.opt: Add some help text.
+	* opts.c: Include intl.h.
+	(wrap_help, print_help): New.
+	(find_opt, handle_option, common_handle_option): opt_text now
+	contains the '-'.  Use print_help to output help.
+	* opts.h (struct cl_option): New member "help".
+	* opts.sh: Update to handle help text output and to prepend
+	options with '-'.
+	* toplev.c (display_help): Remove some help text.
+
 2003-07-07  David Edelsohn  <edelsohn@gnu.org>
 	    Fariborz Jahanian  <fjahanian@apple.com>
 
