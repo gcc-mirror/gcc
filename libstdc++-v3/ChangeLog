@@ -1,3 +1,17 @@
+2003-07-30  Gawain Bolton  <gp.bolton@computer.org>
+
+	PR libstdc++/11504.  
+	* include/bits/stl_tree.h: Replace C-style casts with C++-style
+	casts.  Changes to avoid casting away constness.  Eliminate
+	_Rb_tree_base_iterator class.  Change _Rb_tree_iterator to use
+	initialization lists.  Move out implementation of __black_count()
+	to...
+        * src/stl_tree.cc: ...here and rename _Rb_tree_black_count().
+        Rename_Rb_tree_base_iterator::_M_increment() to
+        _Rb_tree_increment and _Rb_tree_base_iterator::_M_decrement() to
+        _Rb_tree_decrement.
+        * config/linker-map.gnu: Add and change symbols here.
+
 2003-07-30  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/html/22_locale/howto.html: Use locale::classic() instead
