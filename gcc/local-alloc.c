@@ -1634,7 +1634,7 @@ qty_sugg_compare_1 (q1, q2)
 			: qty_phys_num_sugg[*q1] * FIRST_PSEUDO_REGISTER);
   register int sugg2 = (qty_phys_num_copy_sugg[*q2]
 			? qty_phys_num_copy_sugg[*q2]
-			: qty_phys_num_sugg[*q2] * FIRST_PSUEDO_REGISTER);
+			: qty_phys_num_sugg[*q2] * FIRST_PSEUDO_REGISTER);
 
   /* Note that the quotient will never be bigger than
      the value of floor_log2 times the maximum number of
