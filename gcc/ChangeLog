@@ -1,3 +1,8 @@
+Fri Aug 27 01:01:51 1999  Philip Blundell  <pb@nexus.co.uk>  
+
+	* jump.c (duplicate_loop_exit_test): Call reg_scan_update after
+	creating new registers.
+
 1999-08-26 23:09 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* i386.h: Declare ix86_cpu_string, ix86_arch_string,
