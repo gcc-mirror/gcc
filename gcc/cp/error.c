@@ -1539,9 +1539,20 @@ args_as_string (p, v)
      int v;
 {
   if (p == NULL_TREE)
-    return "...";
+    return "";
 
-  return type_as_string (p, v);
+  if (TREE_CODE_CLASS (TREE_CODE (TREE_VALUE (p))) == 't')
+    return type_as_string (p, v);
+
+  OB_INIT ();
+  for (; p; p = TREE_CHAIN (p))
+    {
+      dump_type (TREE_TYPE (TREE_VALUE (p)), v);
+      if (TREE_CHAIN (p))
+	OB_PUTS (", ");
+    }
+  OB_FINISH ();
+  return (char *)obstack_base (&scratch_obstack);
 }
 
 char *

@@ -4841,6 +4841,8 @@ instantiate_type (lhstype, rhs, complain)
   if (TREE_TYPE (rhs) != NULL_TREE && ! (type_unknown_p (rhs)))
     return rhs;
 
+  rhs = copy_node (rhs);
+
   /* This should really only be used when attempting to distinguish
      what sort of a pointer to function we have.  For now, any
      arithmetic operation which is not supported on pointers
@@ -5246,6 +5248,12 @@ instantiate_type (lhstype, rhs, complain)
 	TREE_TYPE (rhs) = lhstype;
 	TREE_OPERAND (rhs, 0) = fn;
 	TREE_CONSTANT (rhs) = staticp (fn);
+	if (TREE_CODE (lhstype) == POINTER_TYPE &&
+	    TREE_CODE (TREE_TYPE (lhstype)) == METHOD_TYPE)
+	  {
+	    build_ptrmemfunc_type (lhstype);
+	    rhs = build_ptrmemfunc (lhstype, rhs, 0);
+	  }
       }
       return rhs;
 

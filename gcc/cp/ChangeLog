@@ -3,7 +3,172 @@ Thu Aug  8 17:48:16 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
 	* decl2.c (import_export_vtable): Delete code that disabled vtable
  	heuristic on systems with ASM_OUTPUT_EXTERNAL.
 
+Wed Aug  7 12:44:11 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (build_x_function_call): Handle static call context
+	better.
+
+	* decl.c (finish_function): Set the DECL_CONTEXT of the result to
+ 	the function, not its outer block.
+
+	* call.c (build_field_call): Pass fields on to build_opfncall
+ 	regardless of TYPE_OVERLOADS_CALL_EXPR.
+	(build_method_call): Pass on to build_new_method_call sooner.
+
+	* typeck.c (build_ptrmemfunc): Just return what instantiate_type
+	gives us.
+	* class.c (instantiate_type): Don't put a POINTER_TYPE to
+ 	METHOD_TYPE on an expression.  Also make a copy of rhs instead of
+	modifying it.
+
+Tue Aug  6 12:58:46 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (compare_ics): Handle qual_conv after lvalue_conv.
+	(add_builtin_candidate): Don't take enums for ++.
+	(build_new_method_call): Handle non-aggregates and field calls.
+	Move new overloading code from...
+	* cvt.c: Here.
+
+	* decl.c (grokparms): Don't check default args in templates.
+
+Mon Aug  5 17:17:06 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (build_new_op): Fix args to build_unary_op.
+	(add_builtin_candidates): Don't call type_promotes_to on float.
+
+	* decl.c (grokparms): Check the type of the default arg.
+
+	* cvt.c (build_new_op): Pass non-overloaded cases on rather than
+	returning NULL_TREE.
+
+	* typeck.c (build_x_binary_op): Avoid doing extra work.
+	(build_x_unary_op): Ditto.
+	(build_x_conditional_expr): Ditto.
+	* cvt.c (build_over_call): Return.
+	(add_builtin_candidate): Fix MEMBER_REF.
+	(build_new_op): Ditto.
+
+Mon Aug  5 17:07:47 1996  Mike Stump  <mrs@cygnus.com>
+
+	* method.c (build_overload_name): Put bug fix into code but leave
+ 	disabled for now so we can be bug compatible with older releases
+ 	that do repeats incorrectly.  In the future, we can enable it.
+
+Mon Aug  5 13:46:28 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (convert_like): Don't call build_cplus_new twice.
+
+	* call.c, cp-tree.h, cvt.c, decl2.c, init.c, method.c, pt.c, typeck.c:
+	Control new overloading code with -fansi-overloading.
+
+Sun Aug  4 15:29:11 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (build_over_call): Call build_cplus_new.
+	* call.c (build_method_call): Ditto.
+	* typeck.c (build_function_call_real): Ditto.
+	(build_conditional_expr): If both operands are TARGET_EXPRs, wrap
+	the COND_EXPR in a TARGET_EXPR so they use the same slot.
+
+	* cvt.c (build_up_reference): Propagate INDIRECT_BIND to 
+	recursive calls.
+	* typeck.c (complete_type): Propagate
+ 	TYPE_NEEDS_{CONSTRUCTING,DESTRUCTOR}.
+
+Sat Aug  3 14:05:07 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (joust): More ?: kludging.  Sigh.
+	(build_over_call): Don't try to synthesize global fns.
+
+	* search.c (lookup_conversions): Use binfo marking.
+
+Sat Aug  3 12:33:42 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* search.c (build_mi_matrix): Use the correct value of cid
+	when determining the new mi_size.
+
+Sat Aug  3 01:27:41 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (add_builtin_candidates): Do consider type conversion ops
+	for the first parms of += et al.
+	(strip_top_quals): New fn.
+	(reference_binding): Use it instead of TYPE_MAIN_VARIANT.
+	(implicit_conversion): Ditto.
+	(add_builtin_candidates): Be careful about arrays.
+	(build_new_method_call): Handle vtable optimization.
+
+Fri Aug  2 01:26:59 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h (LOOKUP_NO_TEMP_BIND): New flag.
+	* cvt.c (reference_binding): Use it.
+	(implicit_conversion): Use it.
+	(add_builtin_candidate, COND_EXPR): Use it.
+
+	* cvt.c (build_new_function_call): Check for error args.
+
+	* typeck.c (comptypes): Just check DERIVED_FROM_P, not UNIQUELY.
+
+	* gxx.gperf: Add __null.
+	* hash.h: Regenerate.
+	* lex.h: Add RID_NULL.
+	* lex.c (init_lex): Create null_pointer_node here, stick it in
+ 	RID_NULL.
+	* decl.c (init_decl_processing): Still set its type here.
+	* cvt.c (cp_convert_to_pointer): Don't produce null_pointer_node.
+	(convert_to_pointer_force): Ditto.
+	(null_ptr_cst_p): Check for null_pointer_node; only accept (void*)0
+	if (! pedantic).
+	* call.c (convert_harshness): Use null_ptr_cst_p.
+	* typeck.c (convert_for_assignment): Ditto.  Don't produce
+	null_pointer_node.
+
+	* error.c (args_as_string): Handle lists of actual args, too.
+	* cvt.c (null_ptr_cst): Support (void*)0 for now.
+	(build_user_type_conversion_1): Improve diagnostics.
+	(build_new_function_call): Likewise.
+	(build_object_call): Likewise.
+	(build_new_method_call): Likewise.  Move call before def diagnostic...
+	(build_over_call): Here.
+
+	* cvt.c (build_new_method_call): Don't complain about no match if
+ 	LOOKUP_SPECULATIVELY.
+	(build_over_call): Fix 'this' for virtual fn.
+	(build_new_method_call): Add diagnostic.
+
+Thu Aug  1 16:45:09 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (add_function_candidate): Expect 'this' and 'in_chrg' for
+ 	constructors to be passed in.
+	(build_over_call): Likewise.
+	(build_user_type_conversion_1): Pass them in.
+	(convert_like): Likewise.
+	(build_object_call): Handle overloaded conversions.
+	(build_over_call): Pass the right args to build_vfn_ref.
+	(standard_conversion): Fix pmf convs.
+	(joust): Handle comparing statics and non-statics.
+	(build_new_method_call): New fn.
+	* call.c (build_method_call): Call it if NEW_OVER.
+
+Thu Aug  1 16:06:14 1996  Mike Stump  <mrs@cygnus.com>
+
+	* lex.c (do_identifier): Don't use %O on IDENTIFIER_OPNAME_Ps, use
+ 	%D instead.
+
+Thu Aug  1 15:24:02 1996  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (expand_throw): Use maybe_build_cleanup_and_delete
+ 	instead of just maybe_build_cleanup so that we deallocate the
+ 	thrown object.
+
+Thu Aug  1 15:18:00 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* decl2.c (finish_prevtable_vardecl): Make non-static for pt.c's use.
+	* cp-tree.h (finish_prevtable_vardecl): Add decl.
+
 Thu Aug  1 11:53:51 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* pt.c (instantiate_class_template): Call complete_type. Also, if
+ 	we're at the end of the file and we just instantiated a template
+ 	class with a vtable, call finish_prevtable_vardecl.
 
 	* error.c (dump_decl): Don't explode (or explode more gracefully
  	as appropriate) if the object being dumped has a null type.

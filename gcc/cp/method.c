@@ -674,7 +674,14 @@ build_overload_name (parmtypes, begin, end)
 
 	  if (TREE_USED (parmtype))
 	    {
+#if 0
+	      /* We can turn this on at some point when we want
+		 improved symbol mangling.  */
+	      nrepeats++;
+#else
+	      /* This is bug compatible with 2.7.x  */
 	      flush_repeats (parmtype);
+#endif
 	      goto next;
 	    }
 
@@ -1193,9 +1200,8 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
   int try_second;
   int binary_is_unary;
 
-#ifdef NEW_OVER
-  return build_new_op (code, flags, xarg1, xarg2, arg3);
-#endif
+  if (flag_ansi_overloading)
+    return build_new_op (code, flags, xarg1, xarg2, arg3);
 
   if (xarg1 == error_mark_node)
     return error_mark_node;
