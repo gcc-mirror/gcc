@@ -1199,6 +1199,15 @@
 [(set_attr "conds" "set")
  (set_attr "length" "8")])
 
+;;; ??? This pattern is bogus.  If operand3 has bits outside the range
+;;; represented by the bitfield, then this will produce incorrect results.
+;;; Somewhere, the value needs to be truncated.  On targets like the m68k,
+;;; which have a real bitfield insert instruction, the truncation happens
+;;; in the bitfield insert instruction itself.  Since arm does not have a
+;;; bitfield insert instruction, we would have to emit code here to truncate
+;;; the value before we insert.  This loses some of the advantage of having
+;;; this insv pattern, so this pattern needs to be reevalutated.
+
 (define_expand "insv"
   [(set (zero_extract:SI (match_operand:SI 0 "s_register_operand" "")
                          (match_operand:SI 1 "general_operand" "")
@@ -1207,9 +1216,11 @@
   ""
   "
 {
-  HOST_WIDE_INT mask = (((HOST_WIDE_INT)1) << INTVAL (operands[1])) - 1;
+  int start_bit = INTVAL (operands[2]);
+  int width = INTVAL (operands[1]);
+  HOST_WIDE_INT mask = (((HOST_WIDE_INT)1) << width) - 1;
   rtx target, subtarget;
-
+  
   target = operands[0];
   /* Avoid using a subreg as a subtarget, and avoid writing a paradoxical 
      subreg as the final target.  */
@@ -1228,16 +1239,19 @@
       /* Since we are inserting a known constant, we may be able to
 	 reduce the number of bits that we have to clear so that
 	 the mask becomes simple.  */
+      /* ??? This code does not check to see if the new mask is actually
+	 simpler.  It may not be.  */
       rtx op1 = gen_reg_rtx (SImode);
-      HOST_WIDE_INT mask2 = ((mask & ~INTVAL (operands[3]))
-			     << INTVAL (operands[2]));
+      /* ??? Truncate operand3 to fit in the bitfield.  See comment before
+	 start of this pattern.  */
+      HOST_WIDE_INT op3_value = mask & INTVAL (operands[3]);
+      HOST_WIDE_INT mask2 = ((mask & ~op3_value) << start_bit);
 
       emit_insn (gen_andsi3 (op1, operands[0], GEN_INT (~mask2)));
       emit_insn (gen_iorsi3 (subtarget, op1,
-			     GEN_INT (INTVAL (operands[3])
-				      << INTVAL (operands[2]))));
+			     GEN_INT (op3_value << start_bit)));
     }
-  else if (INTVAL (operands[2]) == 0
+  else if (start_bit == 0
 	   && ! (const_ok_for_arm (mask)
 		 || const_ok_for_arm (~mask)))
     {
@@ -1245,18 +1259,18 @@
 	 we can shift operand[3] up, operand[0] down, OR them together
 	 and rotate the result back again.  This takes 3 insns, and
 	 the third might be mergable into another op.  */
-
+      /* The shift up copes with the possibility that operand[3] is
+         wider than the bitfield.  */
       rtx op0 = gen_reg_rtx (SImode);
       rtx op1 = gen_reg_rtx (SImode);
 
-      emit_insn (gen_ashlsi3 (op0, operands[3],
-			      GEN_INT (32 - INTVAL (operands[1]))));
+      emit_insn (gen_ashlsi3 (op0, operands[3], GEN_INT (32 - width)));
       emit_insn (gen_iorsi3 (op1, gen_rtx (LSHIFTRT, SImode, operands[0],
 					   operands[1]),
 			     op0));
       emit_insn (gen_rotlsi3 (subtarget, op1, operands[1]));
     }
-  else if ((INTVAL (operands[1]) + INTVAL (operands[2]) == 32)
+  else if ((width + start_bit == 32)
 	   && ! (const_ok_for_arm (mask)
 		 || const_ok_for_arm (~mask)))
     {
@@ -1265,8 +1279,7 @@
       rtx op0 = gen_reg_rtx (SImode);
       rtx op1 = gen_reg_rtx (SImode);
 
-      emit_insn (gen_ashlsi3 (op0, operands[3],
-			      GEN_INT (32 - INTVAL (operands[1]))));
+      emit_insn (gen_ashlsi3 (op0, operands[3], GEN_INT (32 - width)));
       emit_insn (gen_ashlsi3 (op1, operands[0], operands[1]));
       emit_insn (gen_iorsi3 (subtarget,
 			     gen_rtx (LSHIFTRT, SImode, op1,
@@ -1286,13 +1299,14 @@
 	  op0 = tmp;
 	}
 
+      /* Mask out any bits in operand[3] that are not needed.  */
       emit_insn (gen_andsi3 (op1, operands[3], op0));
 
       if (GET_CODE (op0) == CONST_INT
-	  && (const_ok_for_arm (mask << INTVAL (operands[2]))
-	      || const_ok_for_arm (~ (mask << INTVAL (operands[2])))))
+	  && (const_ok_for_arm (mask << start_bit)
+	      || const_ok_for_arm (~ (mask << start_bit))))
 	{
-	  op0 = GEN_INT (~(mask << INTVAL (operands[2])));
+	  op0 = GEN_INT (~(mask << start_bit));
 	  emit_insn (gen_andsi3 (op2, operands[0], op0));
 	}
       else
@@ -1305,12 +1319,13 @@
 	      op0 = tmp;
 	    }
 
-	  if (INTVAL (operands[2]) != 0)
+	  if (start_bit != 0)
 	    op0 = gen_rtx (ASHIFT, SImode, op0, operands[2]);
+	    
 	  emit_insn (gen_andsi_notsi_si (op2, operands[0], op0));
 	}
 
-      if (INTVAL (operands[2]) != 0)
+      if (start_bit != 0)
 	op1 = gen_rtx (ASHIFT, SImode, op1, operands[2]);
 
       emit_insn (gen_iorsi3 (subtarget, op1, op2));
