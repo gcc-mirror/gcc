@@ -1,3 +1,16 @@
+2005-04-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/m68k/m68k-protos.h: Add a prototype for
+	valid_dbcc_comparison_p_2.
+	* config/m68k/m68k.c (not_sp_operand, symbolic_operand,
+	extend_operator, const_uint32_operand, const_sint32_operand,
+	general_src_operand, nonimmediate_src_operand,
+	memory_src_operand, post_inc_operand, pre_dec_operand,
+	pcrel_address): Move to predicates to predicates.md.
+	* config/m68k/m68k.h (PREDICATE_CODES): Remove.
+	* config/m68k/m68k.md: Include predicates.md.
+	* config/m68k/predicates.md: New.
+
 2005-04-04  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.md (*truncdfsf2_i387_1): New pattern.
