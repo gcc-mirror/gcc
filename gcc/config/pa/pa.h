@@ -922,6 +922,8 @@ extern int may_call_alloca;
 	fputs ("\tldw	40(%r22),%r29\n", FILE);			\
 	fputs ("\t.word	0\n", FILE);					\
 	fputs ("\t.word	0\n", FILE);					\
+	fputs ("\t.word	0\n", FILE);					\
+	fputs ("\t.word	0\n", FILE);					\
       }									\
     else								\
       {									\
@@ -949,14 +951,17 @@ extern int may_call_alloca;
    If the code part of the trampoline ever grows to > 32 bytes, then it
    will become necessary to hack on the cacheflush pattern in pa.md.  */
 
-#define TRAMPOLINE_SIZE (TARGET_64BIT ? 72 : 11 * 4)
+#define TRAMPOLINE_SIZE (TARGET_64BIT ? 72 : 52)
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
    CXT is an RTX for the static chain value for the function.
 
-   Move the function address to the trampoline template at offset 12.
-   Move the static chain value to trampoline template at offset 16.  */
+   Move the function address to the trampoline template at offset 36.
+   Move the static chain value to trampoline template at offset 40.
+   Move the trampoline address to trampoline template at offset 44.
+   Move r19 to trampoline template at offset 48.  The latter two
+   words create a plabel for the indirect call to the trampoline.  */
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) 			\
 {									\
@@ -968,6 +973,11 @@ extern int may_call_alloca;
       emit_move_insn (gen_rtx_MEM (Pmode, start_addr), (FNADDR));	\
       start_addr = memory_address (Pmode, plus_constant ((TRAMP), 40));	\
       emit_move_insn (gen_rtx_MEM (Pmode, start_addr), (CXT));		\
+      start_addr = memory_address (Pmode, plus_constant ((TRAMP), 44));	\
+      emit_move_insn (gen_rtx_MEM (Pmode, start_addr), (TRAMP));	\
+      start_addr = memory_address (Pmode, plus_constant ((TRAMP), 48));	\
+      emit_move_insn (gen_rtx_MEM (Pmode, start_addr),			\
+		      gen_rtx_REG (Pmode, 19));				\
       /* fdc and fic only use registers for the address to flush,	\
 	 they do not accept integer displacements.  */ 			\
       start_addr = force_reg (Pmode, (TRAMP));				\
@@ -1002,6 +1012,13 @@ extern int may_call_alloca;
 				  gen_reg_rtx (Pmode), gen_reg_rtx (Pmode)));\
     }									\
 }
+
+/* Perform any machine-specific adjustment in the address of the trampoline.
+   ADDR contains the address that was passed to INITIALIZE_TRAMPOLINE.
+   Adjust the trampoline address to point to the plabel at offset 44.  */
+   
+#define TRAMPOLINE_ADJUST_ADDRESS(ADDR) \
+  if (!TARGET_64BIT) (ADDR) = memory_address (Pmode, plus_constant ((ADDR), 46))
 
 /* Emit code for a call to builtin_saveregs.  We must emit USE insns which
    reference the 4 integer arg registers and 4 fp arg registers.
