@@ -1,3 +1,11 @@
+2002-06-20 Jan Hubicka  <jh@suse.cz>
+
+	* cfglayout.c (scope_to_insns_initialize): Call set_block_levels.
+	(scope_to_insns_finalize): Do not call set_block_levels; handle
+	sequences.
+	(choose_inner_scope): New.
+	* rtl.h (choose_inner_scope): Declare.
+
 2002-06-20  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa-protos.h (pa_asm_output_mi_thunk): Change third argument to

@@ -241,6 +241,10 @@ scope_to_insns_initialize ()
 	    }
 	}
     }
+
+  /* Tag the blocks with a depth number so that change_scope can find
+     the common parent easily.  */
+  set_block_levels (DECL_INITIAL (cfun->decl), 0);
 }
 
 /* For each lexical block, set BLOCK_NUMBER to the depth at which it is
@@ -257,6 +261,20 @@ set_block_levels (block, level)
       set_block_levels (BLOCK_SUBBLOCKS (block), level + 1);
       block = BLOCK_CHAIN (block);
     }
+}
+
+/* Return sope resulting from combination of S1 and S2.  */
+tree
+choose_inner_scope (s1, s2)
+     tree s1, s2;
+{
+   if (!s1)
+     return s2;
+   if (!s2)
+     return s1;
+   if (BLOCK_NUMBER (s1) > BLOCK_NUMBER (s2))
+     return s1;
+   return s2;
 }
 
 /* Emit lexical block notes needed to change scope from S1 to S2.  */
@@ -315,10 +333,6 @@ scope_to_insns_finalize ()
   tree cur_block = DECL_INITIAL (cfun->decl);
   rtx insn, note;
 
-  /* Tag the blocks with a depth number so that change_scope can find
-     the common parent easily.  */
-  set_block_levels (cur_block, 0);
-
   insn = get_insns ();
   if (!active_insn_p (insn))
     insn = next_active_insn (insn);
@@ -327,6 +341,18 @@ scope_to_insns_finalize ()
       tree this_block;
 
       this_block = INSN_SCOPE (insn);
+      /* For sequences compute scope resulting from merging all scopes
+         of instructions nested inside. */
+      if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+	{
+	  int i;
+	  rtx body = PATTERN (insn);
+
+	  this_block = NULL;
+	  for (i = 0; i < XVECLEN (body, 0); i++)
+	    this_block = choose_inner_scope (this_block,
+			    		 INSN_SCOPE (XVECEXP (body, 0, i)));
+	}
       if (! this_block)
 	continue;
 

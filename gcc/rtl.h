@@ -1414,6 +1414,9 @@ extern rtx next_label			PARAMS ((rtx));
 extern rtx next_cc0_user		PARAMS ((rtx));
 extern rtx prev_cc0_setter		PARAMS ((rtx));
 
+/* In cfglayout.c  */
+extern tree choose_inner_scope		PARAMS ((tree, tree));
+
 /* In jump.c */
 extern rtx next_nondeleted_insn		PARAMS ((rtx));
 extern enum rtx_code reverse_condition	PARAMS ((enum rtx_code));
