@@ -1,0 +1,3 @@
+# We need urem and udiv from some kind of support library (e.g. libc) and
+# at this point we don't have that available
+LIBGCC1_TEST =
