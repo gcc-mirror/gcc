@@ -1,3 +1,8 @@
+2005-03-02  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/8927
+	* gcc.dg/pr8927-1.c: New test.
+
 2005-03-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20232

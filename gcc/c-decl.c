@@ -2312,26 +2312,26 @@ implicitly_declare (tree functionid)
    ID, including a reference to a builtin outside of function-call
    context.  Establish a binding of the identifier to error_mark_node
    in an appropriate scope, which will suppress further errors for the
-   same identifier.  */
+   same identifier.  The error message should be given location LOC.  */
 void
-undeclared_variable (tree id)
+undeclared_variable (tree id, location_t loc)
 {
   static bool already = false;
   struct c_scope *scope;
 
   if (current_function_decl == 0)
     {
-      error ("%qE undeclared here (not in a function)", id);
+      error ("%H%qE undeclared here (not in a function)", &loc, id);
       scope = current_scope;
     }
   else
     {
-      error ("%qE undeclared (first use in this function)", id);
+      error ("%H%qE undeclared (first use in this function)", &loc, id);
 
       if (!already)
 	{
-	  error ("(Each undeclared identifier is reported only once");
-	  error ("for each function it appears in.)");
+	  error ("%H(Each undeclared identifier is reported only once", &loc);
+	  error ("%Hfor each function it appears in.)", &loc);
 	  already = true;
 	}
 

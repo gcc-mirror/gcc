@@ -4803,10 +4803,11 @@ c_parser_postfix_expression (c_parser *parser)
 	}
       {
 	tree id = c_parser_peek_token (parser)->value;
+	location_t loc = c_parser_peek_token (parser)->location;
 	c_parser_consume_token (parser);
 	expr.value = build_external_ref (id,
 					 (c_parser_peek_token (parser)->type
-					  == CPP_OPEN_PAREN));
+					  == CPP_OPEN_PAREN), loc);
 	expr.original_code = ERROR_MARK;
       }
       break;
