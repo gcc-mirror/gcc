@@ -1,3 +1,7 @@
+Mon May  4 20:23:51 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* alpha.h (DBX_CONTIN_LENGTH): Decrease to 3000.
+
 1998-05-04  Ulrich Drepper  <drepper@cygnus.com>
 
 	* c-common.c (format_char_info): Add new field hhlen.
