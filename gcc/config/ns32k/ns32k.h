@@ -1309,22 +1309,11 @@ __transfer_from_trampoline ()		\
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
   fprintf (FILE, "\tmovd tos,%s\n", reg_names[REGNO])
 
-/* This is how to output the definition of a user-level label named NAME,
-   such as the label on a static function or variable NAME.  */
-
-#ifdef COLLECT
-#define ASM_OUTPUT_LABEL(STREAM,NAME) fprintf ((STREAM), "%s:\n", (NAME))
-#endif
-
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
 
-#ifdef COLLECT
-#define TARGET_ASM_GLOBALIZE_LABEL ns32k_globalize_label
-#else
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP ".globl "
-#endif
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
