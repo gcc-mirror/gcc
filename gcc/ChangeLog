@@ -1,3 +1,12 @@
+Wed May  6 01:09:01 1998  Jeffrey A Law  (law@cygnus.com)
+			  Jim Wilson (wilson@cygnus.com)
+
+	* haifa-sched.c (find_rgns): In no_loops case, fix test for leaf
+	blocks.  Check for 1 successor which is the EXIT_BLOCK.
+
+	* haifa-sched.c (find_rgns): Detect unreachable blocks, including
+	unreachable loops with more than one block.
+
 Wed May  6 08:22:24 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* fix-header.c (write_rbrac): Add "abort" to functions which need to
