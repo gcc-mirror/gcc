@@ -1,3 +1,12 @@
+2000-08-03  Anthony Green  <green@cygnus.com>
+
+	* dwarf2out.c (gen_compile_unit_die): Add java language support.
+	(add_bound_info): Check for java language.
+	(is_java): New function.
+	* dwarfout.c (output_compile_unit_die): Ditto.
+	* dwarf.h (dwarf_source_language): Add java source language type.
+	* dwarf2.h (dwarf_source_language): Ditto.
+
 Thu Aug  3 20:32:25 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* reg-stack.c (subst_stack_regs_pat):  Use replace_reg to swap
