@@ -1,3 +1,57 @@
+2005-01-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/frv/frv.c (frv_legitimize_tls_address): New.
+	(TARGET_HAVE_TLS): Define.
+	(FRV_SYMBOL_REF_TLS_P): Define.
+	(frv_override_options): Handle new register classes.
+	(frv_legitimate_address_p): Reject tls addresses.
+	(frv_legitimize_address): Handle TLS addresses.
+	(gen_inlined_tls_plt): New.
+	(gen_tlsmoff): New.
+	(frv_legitimize_tls_address): New.
+	(unspec_got_name): Add TLS entries.
+	(got12_operand): Add R_FRV_TLSMOFF12 case.
+	(frv_emit_move): Fixup TLS addresses.
+	(frv_emit_movsi): Legitimize TLS addresses.
+
+	* config/frv/frv.h (MASK_BIG_TLS): New.
+	(TARGET_BIG_TLS): New.
+	(HAVE_AS_TLS): Define.
+	(TARGET_SWITCHES): Add -mTLS and -mtls options.
+	(enum reg_class): Add GR8_REGS, GR9_REGS, GR89_REGS.
+	(REG_CLASS_NAMES): Same.
+	(REG_CLASS_CONTENTS): Same.
+	(CONSTRAINT_LEN): New.
+	(REG_CLASS_FROM_CONSTRAINT): New.
+	(PREDICATE_CODES): Add symbolic_operand.
+
+	* config/frv/frv.md (define_constants): Add UNSPEC_GETTLSOFF,
+	UNSPEC_TLS_LOAD_GOTTLSOFF12, UNSPEC_TLS_INDIRECT_CALL,
+	UNSPEC_TLS_TLSDESC_LDD, UNSPEC_TLS_TLSDESC_LDD_AUX,
+	UNSPEC_TLS_TLSOFF_LD, UNSPEC_TLS_LDDI, UNSPEC_TLSOFF_HILO,
+	R_FRV_GOTTLSOFF_HI, R_FRV_GOTTLSOFF_LO, R_FRV_TLSMOFFHI,
+	R_FRV_TLSMOFFLO, R_FRV_TLSMOFF12, R_FRV_TLSDESCHI,
+	R_FRV_TLSDESCLO, R_FRV_GOTTLSDESCHI, R_FRV_GOTTLSDESCLO, GR8_REG,
+	GR9_REG, GR14_REG, LRREG.
+	(type): Add load_or_call attribute.
+	("load_or_call"): New reservation.
+	("call_gettlsoff"): New.
+	("tls_indirect_call"): New.
+	("tls_load_gottlsoff12"): New.
+	("tlsoff_hilo"): New.
+	("tls_tlsdesc_ldd"): New.
+	("tls_tlsoff_ld"): New.
+	("tls_lddi"): New.
+
+	* config/frv/frv-protos.h (symbolic_operand): Protoize.
+
+	2005-01-25  Alexandre Oliva  <aoliva@redhat.com>
+
+        * config/frv/frv.h (ASM_OUTPUT_DWARF_DTPREL): Define.
+        * config/frv/frv-protos.h (frv_output_dwarf_dtprel): Declare.
+        * config/frv/frv.c (TLS_BIAS): Define.
+        (frv_output_dwarf_dtprel): New.
+
 2005-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/19579

@@ -1,5 +1,5 @@
 /* Target macros for the FRV port of GCC.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
    Contributed by Red Hat Inc.
 
@@ -309,6 +309,7 @@ extern int target_flags;
 #define MASK_LONG_CALLS	     0x00000800 /* Use indirect calls */
 #define MASK_ALIGN_LABELS    0x00001000 /* Optimize label alignments */
 #define MASK_LINKED_FP	     0x00002000 /* Follow ABI linkage requirements.  */
+#define MASK_BIG_TLS         0x00008000 /* Assume a big TLS segment */
 
 			 		/* put debug masks up high */
 #define MASK_DEBUG_ARG	     0x40000000	/* debug argument handling */
@@ -353,6 +354,7 @@ extern int target_flags;
 #define TARGET_NO_NESTED_CE	((target_flags & MASK_NO_NESTED_CE) != 0)
 #define TARGET_FDPIC	        ((target_flags & MASK_FDPIC) != 0)
 #define TARGET_INLINE_PLT	((target_flags & MASK_INLINE_PLT) != 0)
+#define TARGET_BIG_TLS		((target_flags & MASK_BIG_TLS) != 0)
 #define TARGET_GPREL_RO		((target_flags & MASK_GPREL_RO) != 0)
 #define TARGET_PACK		((target_flags & MASK_PACK) != 0)
 #define TARGET_LONG_CALLS	((target_flags & MASK_LONG_CALLS) != 0)
@@ -413,6 +415,10 @@ extern int target_flags;
 #define TARGET_FR405_BUILTINS					\
   (frv_cpu_type == FRV_CPU_FR405				\
    || frv_cpu_type == FRV_CPU_FR450)
+
+#ifndef HAVE_AS_TLS
+#define HAVE_AS_TLS 0
+#endif
 
 /* This macro defines names of command options to set and clear bits in
    `target_flags'.  Its definition is an initializer with a subgrouping for
@@ -494,6 +500,8 @@ extern int target_flags;
  { "no-fdpic",	         -MASK_FDPIC,		"Disable file descriptor PIC mode" }, \
  { "inline-plt",	  MASK_INLINE_PLT,	"Enable inlining of PLT in function calls" }, \
  { "no-inline-plt",	 -MASK_INLINE_PLT,	"Disable inlining of PLT in function calls" }, \
+ { "TLS",		  MASK_BIG_TLS,         "Assume a large TLS segment" }, \
+ { "tls",                -MASK_BIG_TLS,		"Do not assume a large TLS segment" }, \
  { "gprel-ro",		  MASK_GPREL_RO,	"Enable use of GPREL for read-only data in FDPIC" }, \
  { "no-gprel-ro",	 -MASK_GPREL_RO,	"Disable use of GPREL for read-only data in FDPIC" }, \
  { "tomcat-stats",	  0, 			"Cause gas to print tomcat statistics" }, \
@@ -1267,6 +1275,9 @@ enum reg_class
   CR_REGS,
   LCR_REG,
   LR_REG,
+  GR8_REGS,
+  GR9_REGS,
+  GR89_REGS,
   FDPIC_REGS,
   FDPIC_FPTR_REGS,
   FDPIC_CALL_REGS,
@@ -1304,6 +1315,9 @@ enum reg_class
    "CR_REGS",								\
    "LCR_REG",								\
    "LR_REG",								\
+   "GR8_REGS",                                                          \
+   "GR9_REGS",                                                          \
+   "GR89_REGS",                                                         \
    "FDPIC_REGS",							\
    "FDPIC_FPTR_REGS",							\
    "FDPIC_CALL_REGS",							\
@@ -1342,6 +1356,9 @@ enum reg_class
   { 0x00000000,0x00000000,0x00000000,0x00000000,0x0000ff00,0x0}, /* CR_REGS  */\
   { 0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x400}, /* LCR_REGS */\
   { 0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x200}, /* LR_REGS  */\
+  { 0x00000100,0x00000000,0x00000000,0x00000000,0x00000000,0x0}, /* GR8_REGS */\
+  { 0x00000200,0x00000000,0x00000000,0x00000000,0x00000000,0x0}, /* GR9_REGS */\
+  { 0x00000300,0x00000000,0x00000000,0x00000000,0x00000000,0x0}, /* GR89_REGS */\
   { 0x00008000,0x00000000,0x00000000,0x00000000,0x00000000,0x0}, /* FDPIC_REGS */\
   { 0x00004000,0x00000000,0x00000000,0x00000000,0x00000000,0x0}, /* FDPIC_FPTR_REGS */\
   { 0x0000c000,0x00000000,0x00000000,0x00000000,0x00000000,0x0}, /* FDPIC_CALL_REGS */\
@@ -1580,6 +1597,17 @@ extern enum reg_class reg_class_from_letter[];
    : (C) == 'T' ? EXTRA_CONSTRAINT_FOR_T (VALUE)			\
    : (C) == 'U' ? EXTRA_CONSTRAINT_FOR_U (VALUE)			\
    : 0)
+
+#define CONSTRAINT_LEN(C, STR) \
+  ((C) == 'D' ? 3 : DEFAULT_CONSTRAINT_LEN ((C), (STR)))
+
+#define REG_CLASS_FROM_CONSTRAINT(C, STR) \
+  (((C) == 'D' && (STR)[1] == '8' && (STR)[2] == '9') ? GR89_REGS : \
+   ((C) == 'D' && (STR)[1] == '0' && (STR)[2] == '9') ? GR9_REGS : \
+   ((C) == 'D' && (STR)[1] == '0' && (STR)[2] == '8') ? GR8_REGS : \
+   ((C) == 'D' && (STR)[1] == '1' && (STR)[2] == '4') ? FDPIC_FPTR_REGS : \
+   ((C) == 'D' && (STR)[1] == '1' && (STR)[2] == '5') ? FDPIC_REGS : \
+   REG_CLASS_FROM_LETTER ((C)))
 
 
 /* Basic Stack Layout.  */
@@ -2578,6 +2606,13 @@ do {									\
   assemble_name (STREAM, LABEL);					\
 } while (0)
 
+#if HAVE_AS_TLS
+/* Emit a dtp-relative reference to a TLS variable.  */
+
+#define ASM_OUTPUT_DWARF_DTPREL(FILE, SIZE, X) \
+  frv_output_dwarf_dtprel ((FILE), (SIZE), (X))
+#endif
+
 /* Whether to emit the gas specific dwarf2 line number support.  */
 #define DWARF2_ASM_LINE_DEBUG_INFO (TARGET_DEBUG_LOC)
 
@@ -3025,6 +3060,7 @@ do {                                                                    \
 					  CONST }}, 			\
   { "upper_int16_operand",		{ CONST_INT }},			\
   { "uint16_operand",			{ CONST_INT }},			\
+  { "symbolic_operand",                 { SYMBOL_REF, CONST_INT }},     \
   { "relational_operator",		{ EQ, NE, LE, LT, GE, GT,	\
 					  LEU, LTU, GEU, GTU }},	\
   { "integer_relational_operator",	{ EQ, NE, LE, LT, GE, GT,	\
