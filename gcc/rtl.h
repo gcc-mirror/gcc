@@ -1517,7 +1517,7 @@ extern int operands_match_p		PARAMS ((rtx, rtx));
 extern int safe_from_earlyclobber	PARAMS ((rtx, rtx));
 
 /* In stmt.c */
-extern void set_file_and_line_for_stmt	PARAMS ((char *, int));
+extern void set_file_and_line_for_stmt	PARAMS ((const char *, int));
 extern void expand_null_return		PARAMS ((void));
 extern void emit_jump			PARAMS ((rtx));
 extern int preserve_subexpressions_p	PARAMS ((void));

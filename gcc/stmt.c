@@ -373,7 +373,7 @@ struct stmt_status
 
   /* Filename and line number of last line-number note,
      whether we actually emitted it or not.  */
-  char *x_emit_filename;
+  const char *x_emit_filename;
   int x_emit_lineno;
 
   struct goto_fixup *x_goto_fixup_chain;
@@ -639,7 +639,7 @@ in_control_zone_p ()
 /* Record the current file and line.  Called from emit_line_note.  */
 void
 set_file_and_line_for_stmt (file, line)
-     char *file;
+     const char *file;
      int line;
 {
   /* If we're outputting an inline function, and we add a line note,
@@ -1351,7 +1351,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   nclobbers = 0;
   for (tail = clobbers; tail; tail = TREE_CHAIN (tail))
     {
-      char *regname = TREE_STRING_POINTER (TREE_VALUE (tail));
+      const char *regname = TREE_STRING_POINTER (TREE_VALUE (tail));
 
       i = decode_reg_name (regname);
       if (i >= 0 || i == -4)
@@ -1379,7 +1379,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       tmp = outputs;
       while (tmp)
 	{
-	  char *constraint = TREE_STRING_POINTER (TREE_PURPOSE (tmp));
+	  const char *constraint = TREE_STRING_POINTER (TREE_PURPOSE (tmp));
 
 	  if (n_occurrences (',', constraint) != nalternatives)
 	    {
@@ -1797,7 +1797,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       for (tail = clobbers; tail; tail = TREE_CHAIN (tail))
 	{
-	  char *regname = TREE_STRING_POINTER (TREE_VALUE (tail));
+	  const char *regname = TREE_STRING_POINTER (TREE_VALUE (tail));
 	  int j = decode_reg_name (regname);
 
 	  if (j < 0)

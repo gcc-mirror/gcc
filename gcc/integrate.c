@@ -521,8 +521,8 @@ compare_blocks (v1, v2)
      const PTR v1;
      const PTR v2;
 {
-  tree b1 = *((tree *) v1);
-  tree b2 = *((tree *) v2);
+  tree b1 = *((const tree *) v1);
+  tree b2 = *((const tree *) v2);
 
   return ((char *) BLOCK_ABSTRACT_ORIGIN (b1) 
 	  - (char *) BLOCK_ABSTRACT_ORIGIN (b2));
@@ -536,10 +536,10 @@ find_block (v1, v2)
      const PTR v1;
      const PTR v2;
 {
-  tree b1 = (tree) v1;
-  tree b2 = *((tree *) v2);
+  const union tree_node *b1 = (const union tree_node *) v1;
+  tree b2 = *((const tree *) v2);
 
-  return ((char *) b1 - (char *) BLOCK_ABSTRACT_ORIGIN (b2));
+  return ((const char *) b1 - (char *) BLOCK_ABSTRACT_ORIGIN (b2));
 }
 
 /* Integrate the procedure defined by FNDECL.  Note that this function

@@ -351,6 +351,10 @@ static void flow_loop_tree_node_add	PARAMS ((struct loop *, struct loop *));
 static void flow_loops_tree_build	PARAMS ((struct loops *));
 static int flow_loop_level_compute	PARAMS ((struct loop *, int));
 static int flow_loops_level_compute	PARAMS ((struct loops *));
+static basic_block get_common_dest	PARAMS ((basic_block, basic_block));
+static basic_block chain_reorder_blocks	PARAMS ((edge, basic_block));
+static void make_reorder_chain		PARAMS ((basic_block));
+static void fixup_reorder_chain		PARAMS ((void));
 
 /* This function is always defined so it can be called from the
    debugger, and it is declared extern so we don't get warnings about
@@ -2454,8 +2458,8 @@ life_analysis (f, nregs, file, remove_dead_code)
      FILE *file;
      int remove_dead_code;
 {
-  register int i;
 #ifdef ELIMINABLE_REGS
+  register int i;
   static struct {int from, to; } eliminables[] = ELIMINABLE_REGS;
 #endif
   int flags;
@@ -7074,6 +7078,9 @@ static basic_block reorder_last_visited;
 
 enum reorder_skip_type {REORDER_SKIP_BEFORE, REORDER_SKIP_AFTER,
 			REORDER_SKIP_BLOCK_END};
+
+static rtx skip_insns_between_block	PARAMS ((basic_block,
+						 enum reorder_skip_type));
 
 /* Skip over insns BEFORE or AFTER BB which are typically associated with
    basic block BB.  */
