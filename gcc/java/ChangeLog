@@ -1,3 +1,10 @@
+2002-03-27  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	Fix for PR java/5850:
+	* parse.y (lookup_field_wrapper): Call itself recursively for enclosing
+	context if nothing was found in the current context.
+	* expr.c (lookup_field): Don't look in enclosing contexts.
+
 2002-03-26  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR java/5942:
