@@ -3608,7 +3608,14 @@ handle_directive (ip, op)
 	case '<':
 	  if (!kt->angle_brackets)
 	    break;
-	  while (*bp && *bp != '>') bp++;
+	  while (bp < limit && *bp != '>' && *bp != '\n') {
+	    if (*bp == '\\' && bp[1] == '\n') {
+	      ip->lineno++;
+	      copy_command = 1;
+	      bp++;
+	    }
+	    bp++;
+	  }
 	  break;
 
 	case '/':
