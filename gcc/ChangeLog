@@ -1,3 +1,8 @@
+2004-10-26  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 18149
+	* config/i386/darwin.h (ASM_SPEC): Undef it before defining.
+
 2004-10-25  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/darwin.h (LINK_SPEC): Default weak_reference_mismatches
