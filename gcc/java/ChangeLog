@@ -1,3 +1,7 @@
+2001-02-15  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* Make-lang.in (jvspec.o): Modify rule to match that of cp/g++spec.o.
+
 2001-02-14  Tom Tromey  <tromey@redhat.com>
             Alexandre Petit-Bianco  <apbianco@redhat.com>
 
