@@ -4210,15 +4210,3 @@ move\\t%0,%z4\\n\\
 
   /* fall through and generate default code */
 }")
-
-
-;;
-;; Local variables:
-;; mode:emacs-lisp
-;; comment-start: ";; "
-;; eval: (set-syntax-table (copy-sequence (syntax-table)))
-;; eval: (modify-syntax-entry ?[ "(]")
-;; eval: (modify-syntax-entry ?] ")[")
-;; eval: (modify-syntax-entry ?{ "(}")
-;; eval: (modify-syntax-entry ?} "){")
-;; End:
