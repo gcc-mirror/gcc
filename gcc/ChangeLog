@@ -31,6 +31,14 @@
 
 2004-07-20  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* vec.h (VEC_T_length, VEC_T_index, VEC_T_iterate, VEC_T_truncate,
+	VEC_T_replace, VEC_T_quick_insert, VEC_T_safe_insert,
+	VEC_T_ordered_remove, VEC_T_unordered_remove): Use unsigned, not
+	size_t.
+	(struct VEC): Use unsigned for num and alloc.
+	* vec.c (struct vec_prefix): Likewise.
+	(vec_o_reserve): Adjust.
+
 	* dbxout.c (dbxout_type): Fix printf format.
 
 	* tree.h (binfo_member): Remove.
