@@ -103,10 +103,6 @@ Boston, MA 02111-1307, USA.  */
 #undef	DOLLARS_IN_IDENTIFIERS
 #define DOLLARS_IN_IDENTIFIERS 2
 
-/* Allow #sccs (but don't do anything). */
-
-#define SCCS_DIRECTIVE
-
 /* We use Dbx symbol format.  */
 
 #define DBX_DEBUGGING_INFO

@@ -83,10 +83,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define ENDFILE_SPEC "crtn.o%s"
 
-/* cpp has to support a #sccs directive for the /usr/include files */
-
-#define SCCS_DIRECTIVE
-
 /* GAS register prefix assembly syntax: */
 
 /* User labels have no prefix */

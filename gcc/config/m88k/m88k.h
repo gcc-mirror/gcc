@@ -1446,9 +1446,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 /* The 88open ABI says size_t is unsigned int.  */
 #define SIZE_TYPE "unsigned int"
 
-/* Allow and ignore #sccs directives */
-#define SCCS_DIRECTIVE
-
 /* Handle #pragma pack and sometimes #pragma weak.  */
 #define HANDLE_SYSV_PRAGMA
 

@@ -3252,8 +3252,8 @@ This directive is not part of the C standard, but it is not an official
 GNU extension either.  We believe it came from System V@.
 
 @findex #sccs
-The @samp{#sccs} directive is recognized on some systems, because it
-appears in their header files.  It is a very old, obscure, extension
+The @samp{#sccs} directive is recognized, because it appears in the
+header files of some systems.  It is a very old, obscure, extension
 which we did not invent, and we have been unable to find any
 documentation of what it should do, so GCC simply ignores it.
 

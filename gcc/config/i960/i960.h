@@ -1151,9 +1151,6 @@ struct cum_args { int ca_nregparms; int ca_nstackparms; };
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 0
 
-/* Allow and ignore #sccs directives.  */
-#define	SCCS_DIRECTIVE
-
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
 #define MOVE_MAX 16

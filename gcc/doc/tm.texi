@@ -8584,11 +8584,6 @@ Defining @code{STDC_0_IN_SYSTEM_HEADERS} makes GNU CPP follows the host
 convention when processing system header files, but when processing user
 files @code{__STDC__} will always expand to 1.
 
-@findex SCCS_DIRECTIVE
-@item SCCS_DIRECTIVE
-Define this if the preprocessor should ignore @code{#sccs} directives
-and print no error message.
-
 @findex NO_IMPLICIT_EXTERN_C
 @item NO_IMPLICIT_EXTERN_C
 Define this macro if the system header files support C++ as well as C@.

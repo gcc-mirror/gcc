@@ -541,9 +541,6 @@ init_section ()								\
   do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME);		\
 	fputc ('\n', FILE); } while (0)
 
-#undef SCCS_DIRECTIVE
-#define SCCS_DIRECTIVE 1
-
 /*
  * Define sizes and types
  */

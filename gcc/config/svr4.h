@@ -192,10 +192,6 @@ Boston, MA 02111-1307, USA.
 			%{!ansi:values-Xa.o%s} \
  			crtbegin.o%s"
 
-/* Allow #sccs in preprocessor.  */
-
-#define SCCS_DIRECTIVE
-
 /* The numbers used to denote specific machine registers in the System V
    Release 4 DWARF debugging information are quite likely to be totally
    different from the numbers used in BSD stabs debugging information
