@@ -165,7 +165,7 @@ Introduction, gccint, GNU Compiler Collection (GCC) Internals}.
 * C++ Extensions::  GNU extensions to the C++ language.
 * Objective-C::     GNU Objective-C runtime features.
 * Compatibility::   Binary Compatibility
-* Gcov::	    gcov: a GCC test coverage program.
+* Gcov::            @command{gcov}---a test coverage program.
 * Trouble::         If you have trouble using GCC.
 * Bugs::            How, why and where to report bugs.
 * Service::         How to find suppliers of support for GCC.

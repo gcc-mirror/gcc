@@ -30,7 +30,7 @@ included in the gfdl(7) man page.
 @end ignore
 
 @node Gcov
-@chapter @command{gcov}: a Test Coverage Program
+@chapter @command{gcov}---a Test Coverage Program
 
 @command{gcov} is a tool you can use in conjunction with GCC to
 test code coverage in your programs.
