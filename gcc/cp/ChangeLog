@@ -1,3 +1,52 @@
+2004-06-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* error.c (pp_template_argument_list_start): Remove.
+	(pp_template_argument_list_end): Likewise.
+	(pp_separate_with_comma): Use pp_cxx_separate_with.
+	(reinit_global_formatting_buffer): Remove.
+	(pp_non_consecutive_character): Likewise.
+	(dump_scope): Use pp_cxx_colon_colon.
+	(dump_template_parameter): Use pp_cxx_identifier,
+	pp_cxx_tree_identifier and pp_cxx_whitespace. 
+	(dump_templat_bindings): Replace use of pp_string with sequence
+	of pp_cxx_whitespace and pp_equal.
+	(dump_type): Use pp_cxx_identifier, pp_cxx_tree_identifier,
+	pp_cxx_colon_colon, pp_cxx_whitespace throughout.  Don't set
+	padding here. 
+	(dump_aggr_type): Use pp_cxx_identifier amd pp_cxx_tree_identifier.
+	(dump_type_prefix): Don't set padding.  Use pp_cxx_whitespace,
+	pp_cxx_left_parent, pp_cxx_colon_colon and pp_cxx_star troughout.
+	(dump_type_suffix): Use pp_cxx_right_paren, pp_cxx_left_bracket,
+	pp_cxx_right_bracket, pp_cxx_identifier throughout,
+	(dump_decl): Likewise.
+	(dump_template_decl): Likewise.
+	(dump_function_decl): Likewise.  Set padding as appropriate.
+	(dump_parameters): Use pp_cxx_left_paren, pp_cxx_identifier and
+	pp_cxx_right_paren. 
+	(dump_exception_spec): Likewise.
+	(dump_function_name): Use pp_cxx_tree_identifier and
+	pp_cxx_identifier. 
+	(dump_template_parms): Use pp_cxx_begin_template_argument_list and
+	pp_cxx_end_template_argument_list.
+	(dump_expr): Use pp_cxx_left_paren, pp_cxx_right_paren,
+	pp_cxx_colon_colon, pp_cxx_identifier, pp_cxx_tree_identifier and
+	pp_cxx_whitespace throughout. 
+	(dump_binary_op): Use pp_cxx_whitespace, pp_cxx_left_paren and
+	pp_cxx_right_paren. 
+	(dump_unary_op): Likewise.
+	(reinit_cxx_pp): New function.
+	(type_as_string); Use it.
+	(expr_as_string): Likewise.
+	(decl_as_string); Likewise.
+	(context_as_string): Likewise.
+	(lang_decl_name): Likewise.
+	(decl_to_string): Likewise.
+	(expr_to_string): Likewise.
+	(parm_to_string): Likewise.
+	(type_to_string): Likewise.
+	(args_to_string): Likewise.
+	(cv_to_string): Likewise.
+
 2004-06-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (cp_cv_quals): New type.
