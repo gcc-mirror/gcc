@@ -1474,15 +1474,9 @@ primary:
 		     `const (3)' is equivalent to `const int (3)'.  */
 		  tree type;
 
-		  if ($3 == error_mark_node)
-		    {
-		      $$ = error_mark_node;
-		      break;
-		    }
-
-		  type = cp_build_qualified_type (integer_type_node,
-						  cp_type_qual_from_rid ($1));
-		  $$ = build_c_cast (type, build_compound_expr ($3));
+		  type = hash_tree_cons (NULL_TREE, $1, NULL_TREE);
+		  type = groktypename (build_decl_list (type, NULL_TREE));
+		  $$ = build_functional_cast (type, $3);
 		}
 	| functional_cast
 	| DYNAMIC_CAST '<' type_id '>' '(' expr ')'

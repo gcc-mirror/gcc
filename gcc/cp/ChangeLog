@@ -1,3 +1,7 @@
+1999-09-20  Nathan Sidwell  <nathan@acm.org>
+
+	* parse.y (primary): Use build_functional_cast for CV_QUALIFIER.
+
 1999-09-20  Nick Clifton  <nickc@cygnus.com>
 
 	* decl2.c (lang_decode_option): Extend comment.
