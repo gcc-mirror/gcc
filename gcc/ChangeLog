@@ -1,3 +1,10 @@
+2001-01-23  Chris Demetriou  <cgd@sibyte.com>
+	    Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cpperror.c: Merge handlers of PEDWARN and WARNING.
+        Have -Werror make pedantic warnings errors, like the
+        rest of GCC.
+
 2001-01-23  Phil Edwards  <pme@sources.redhat.com>
 
 	* c-tree.texi (IDENTIFIER_LENGTH):  Fix typo.

@@ -154,41 +154,24 @@ _cpp_begin_message (pfile, code, file, pos)
 
   switch (code)
     {
+    case PEDWARN:
     case WARNING:
       if (CPP_IN_SYSTEM_HEADER (pfile)
 	  && ! CPP_OPTION (pfile, warn_system_headers))
 	return 0;
-      if (! CPP_OPTION (pfile, warnings_are_errors))
-	{
-          if (CPP_OPTION (pfile, inhibit_warnings))
-	    return 0;
-	  is_warning = 1;
-	}
-      else
+      if (CPP_OPTION (pfile, warnings_are_errors)
+	  || (code == PEDWARN && CPP_OPTION (pfile, pedantic_errors)))
 	{
 	  if (CPP_OPTION (pfile, inhibit_errors))
 	    return 0;
 	  if (pfile->errors < CPP_FATAL_LIMIT)
 	    pfile->errors++;
 	}
-      break;
-
-    case PEDWARN:
-      if (CPP_IN_SYSTEM_HEADER (pfile)
-	  && ! CPP_OPTION (pfile, warn_system_headers))
-	return 0;
-      if (! CPP_OPTION (pfile, pedantic_errors))
+      else
 	{
           if (CPP_OPTION (pfile, inhibit_warnings))
 	    return 0;
 	  is_warning = 1;
-	}
-      else
-	{
-	  if (CPP_OPTION (pfile, inhibit_errors))
-	    return 0;
-	  if (pfile->errors < CPP_FATAL_LIMIT)
-	    pfile->errors++;
 	}
       break;
 	
