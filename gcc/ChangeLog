@@ -1,3 +1,8 @@
+2004-11-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_handle_notshared_attribute): Wrap declaration and use
+	with #if TARGET_DLLIMPORT_DECL_ATTRIBUTES.
+
 2004-11-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-if-conv.c (tree_if_convert_cond_expr): Remove two "if"
