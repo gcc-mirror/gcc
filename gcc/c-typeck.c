@@ -3014,9 +3014,16 @@ build_unary_op (code, xarg, noconvert)
 
 	if (typecode == POINTER_TYPE)
 	  {
-	    if ((pedantic || warn_pointer_arith)
-		&& (TREE_CODE (TREE_TYPE (result_type)) == FUNCTION_TYPE
-		    || TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE))
+	    /* If pointer target is an undefined struct,
+	       we just cannot know how to do the arithmetic.  */
+	    if (TYPE_SIZE (TREE_TYPE (result_type)) == 0)
+	      error ("%s of pointer to unknown structure",
+		       ((code == PREINCREMENT_EXPR
+			 || code == POSTINCREMENT_EXPR)
+			? "increment" : "decrement"));
+	    else if ((pedantic || warn_pointer_arith)
+		     && (TREE_CODE (TREE_TYPE (result_type)) == FUNCTION_TYPE
+			 || TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE))
 	      pedwarn ("wrong type argument to %s",
 		       ((code == PREINCREMENT_EXPR
 			 || code == POSTINCREMENT_EXPR)
