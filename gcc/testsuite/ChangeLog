@@ -1,3 +1,8 @@
+2003-05-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/4494
+	* g++.dg/warn/main.C: New test.
+
 2003-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/nonnull-3.c: New test.

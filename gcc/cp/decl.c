@@ -13382,8 +13382,9 @@ start_function (tree declspecs, tree declarator, tree attrs, int flags)
 	ctype = TYPE_METHOD_BASETYPE (fntype);
       else if (DECL_MAIN_P (decl1))
 	{
-	  /* If this doesn't return integer_type, complain.  */
-	  if (TREE_TYPE (TREE_TYPE (decl1)) != integer_type_node)
+	  /* If this doesn't return integer_type, or a typedef to
+	     integer_type, complain.  */
+	  if (!same_type_p (TREE_TYPE (TREE_TYPE (decl1)), integer_type_node))
 	    {
 	      if (pedantic || warn_return_type)
 		pedwarn ("return type for `main' changed to `int'");
