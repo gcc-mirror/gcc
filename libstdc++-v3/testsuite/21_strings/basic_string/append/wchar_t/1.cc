@@ -18,7 +18,7 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 21.3.5.3 basic_string::assign
+// 21.3.5.2 basic_string::append
 
 #include <string>
 #include <stdexcept>

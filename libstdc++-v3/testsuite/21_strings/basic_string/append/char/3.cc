@@ -1,6 +1,6 @@
-// 2001-10-30 Benjamin Kosnik  <bkoz@redhat.com>
+// 2004-25-10  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,8 +23,8 @@
 #include <string>
 #include <testsuite_hooks.h>
 
-// assign(const _CharT* __s, size_type __n)
-// assign(const _CharT* __s)
+// Upon reallocation (basic_string::reserve) we were copying from
+// deallocated memory.
 void
 test03()
 {
@@ -32,24 +32,21 @@ test03()
 
   using namespace std;
  
-  string one; 
-  string two;
-  const char * source = "Selling England by the pound";
+  const char * source = "Kesto";
 
-  one.assign(source);
-  VERIFY( one == "Selling England by the pound" );
-
-  one.assign(source, 28);
-  VERIFY( one == "Selling England by the pound" );
-
-  two.assign(source, 7);
-  VERIFY( two == "Selling" );
-  
-  one.assign(one.c_str() + 8, 20);
-  VERIFY( one == "England by the pound" );
-
-  one.assign(one.c_str() + 8, 6);
-  VERIFY( one == "by the" );
+  for (unsigned i = 0; i < 10; ++i)
+    {
+      string one(source);
+      string two(source);
+      for (unsigned j = 0; j < 18; ++j)
+	{
+	  VERIFY( one == two );
+	  one.append(one);
+	  one += 'x';
+	  two.append(two.c_str(), two.size());
+	  two += 'x';
+	}
+    }
 }
 
 int main()
