@@ -1,3 +1,7 @@
+2002-01-19  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* config.gcc (hppa*64*-*-hpux11*): Fix tmake_file.
+
 2002-01-19  Tom Rix  <trix@redhat.com>
 
 	* config/rs6000/rs6000.md: Fix DF split for 64 bit hosts.
