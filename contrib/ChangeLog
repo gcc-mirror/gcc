@@ -1,3 +1,8 @@
+Thu Sep  3 10:11:32 1998  Robert Lipe   <robertl@dgii.com>
+
+	* egcs_update: Do the pass 1 CVS update only for files that
+	may reasonably be under CVS control. 
+
 1998-08-14  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* test_installed: new script for testing already-installed
