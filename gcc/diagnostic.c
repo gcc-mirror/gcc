@@ -113,10 +113,11 @@ static void output_unsigned_decimal PARAMS ((output_buffer *, unsigned int));
 static void output_long_decimal PARAMS ((output_buffer *, long int));
 static void output_long_unsigned_decimal PARAMS ((output_buffer *,
                                                   long unsigned int));
-static void output_octal PARAMS ((output_buffer *, int));
-static void output_long_octal PARAMS ((output_buffer *, long int));
-static void output_hexadecimal PARAMS ((output_buffer *, int));
-static void output_long_hexadecimal PARAMS ((output_buffer *, long int));
+static void output_octal PARAMS ((output_buffer *, unsigned int));
+static void output_long_octal PARAMS ((output_buffer *, unsigned long int));
+static void output_hexadecimal PARAMS ((output_buffer *, unsigned int));
+static void output_long_hexadecimal PARAMS ((output_buffer *,
+                                             unsigned long int));
 static void output_append_r PARAMS ((output_buffer *, const char *, int));
 static void wrap_text PARAMS ((output_buffer *, const char *, const char *));
 static void maybe_wrap_text PARAMS ((output_buffer *, const char *,
@@ -431,7 +432,7 @@ output_long_unsigned_decimal (buffer, i)
 static void
 output_octal (buffer, i)
      output_buffer *buffer;
-     int i;
+     unsigned int i;
 {
   output_formatted_integer (buffer, "%o", i);
 }
@@ -439,7 +440,7 @@ output_octal (buffer, i)
 static void
 output_long_octal (buffer, i)
      output_buffer *buffer;
-     long int i;
+     unsigned long int i;
 {
   output_formatted_integer (buffer, "%lo", i);
 }
@@ -447,7 +448,7 @@ output_long_octal (buffer, i)
 static void
 output_hexadecimal (buffer, i)
      output_buffer *buffer;
-     int i;
+     unsigned int i;
 {
   output_formatted_integer (buffer, "%x", i);
 }
@@ -455,7 +456,7 @@ output_hexadecimal (buffer, i)
 static void
 output_long_hexadecimal (buffer, i)
      output_buffer *buffer;
-     long int i;
+     unsigned long int i;
 {
   output_formatted_integer (buffer, "%lx", i);
 }
@@ -579,7 +580,6 @@ static void
 output_format (buffer)
      output_buffer *buffer;
 {
-  const char *msg = buffer->cursor;
   for (; *buffer->cursor; ++buffer->cursor)
     {
       int long_integer = 0;
@@ -624,9 +624,9 @@ output_format (buffer)
         case 'o':
           if (long_integer)
             output_long_octal
-              (buffer, va_arg (buffer->format_args, long int));
+              (buffer, va_arg (buffer->format_args, unsigned long int));
           else
-            output_octal (buffer, va_arg (buffer->format_args, int));
+            output_octal (buffer, va_arg (buffer->format_args, unsigned int));
           break;
 
         case 's':
@@ -645,9 +645,10 @@ output_format (buffer)
         case 'x':
           if (long_integer)
             output_long_hexadecimal
-              (buffer, va_arg (buffer->format_args, long int));
+              (buffer, va_arg (buffer->format_args, unsigned long int));
           else
-            output_hexadecimal (buffer, va_arg (buffer->format_args, int));
+            output_hexadecimal
+              (buffer, va_arg (buffer->format_args, unsigned int));
           break;
 
         case '%':
@@ -657,13 +658,15 @@ output_format (buffer)
         case '.':
           {
             int n;
+            const char *s;
             /* We handle no precision specifier but `%.*s'.  */
             if (*++buffer->cursor != '*')
               abort ();
             else if (*++buffer->cursor != 's')
               abort();
             n = va_arg (buffer->format_args, int);
-            output_append (buffer, msg, msg + n);
+            s = va_arg (buffer->format_args, const char *);
+            output_append (buffer, s, s + n);
           }
           break;
 
@@ -1799,6 +1802,7 @@ output_verbatim VPARAMS ((output_buffer *buffer, const char *msg, ...))
   msg = va_arg (ap, const char *);
 #endif
   output_do_verbatim (buffer, msg, ap);
+  va_end (ap);
 }
 
 /* Same as above but use diagnostic_buffer.  */
@@ -1816,12 +1820,15 @@ verbatim VPARAMS ((const char *msg, ...))
 #endif
   output_do_verbatim (diagnostic_buffer, msg, ap);
   output_to_stream (diagnostic_buffer, stderr);
+  va_end (ap);
 }
 
 /* Report a diagnostic MESSAGE (an error or a WARNING) involving
    entities in ARGUMENTS.  FILE and LINE indicate where the diagnostic
    occurs.  This function is *the* subroutine in terms of which front-ends
-   should implement their specific diagnostic handling modules.  */
+   should implement their specific diagnostic handling modules.
+   The front-end independent format specifiers are exactly those described
+   in the documentation of output_format.  */
 void
 report_diagnostic (msg, args, file, line, warn)
      const char *msg;
