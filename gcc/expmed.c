@@ -682,15 +682,21 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
   /* Make sure UNIT isn't larger than BITS_PER_WORD, we can only handle that
      much at a time.  */
   int unit = MIN (align * BITS_PER_UNIT, BITS_PER_WORD);
-  rtx word;
   int bitsdone = 0;
 
-  if (GET_CODE (value) == CONST_DOUBLE
-      && (word = gen_lowpart_common (word_mode, value)) != 0)
-    value = word;
-
+  /* If VALUE is a constant other than a CONST_INT, get it into a register in
+     WORD_MODE.  If we can do this using gen_lowpart_common, do so.  Note
+     that VALUE might be a floating-point constant.  */
   if (CONSTANT_P (value) && GET_CODE (value) != CONST_INT)
-    value = copy_to_mode_reg (word_mode, value);
+    {
+      rtx word = gen_lowpart_common (word_mode, value);
+
+      if (word)
+	value = word;
+      else
+	value = gen_lowpart_common (word_mode,
+				    force_reg (GET_MODE (value), value));
+    }
 
   while (bitsdone < bitsize)
     {
