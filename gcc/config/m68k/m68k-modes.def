@@ -19,4 +19,4 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* 80-bit floating point (IEEE extended, in a 96-bit field) */
-FLOAT_MODE (XF, 12, ieee_extended_motorola_format);
+FRACTIONAL_FLOAT_MODE (XF, 80, 12, ieee_extended_motorola_format);

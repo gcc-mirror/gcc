@@ -13401,7 +13401,7 @@ ix86_init_mmx_sse_builtins (void)
     {
       /* The __float80 type.  */
       float80_type = make_node (REAL_TYPE);
-      TYPE_PRECISION (float80_type) = 96;
+      TYPE_PRECISION (float80_type) = 80;
       layout_type (float80_type);
       (*lang_hooks.types.register_builtin_type) (float80_type, "__float80");
     }

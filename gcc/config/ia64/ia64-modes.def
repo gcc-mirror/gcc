@@ -22,35 +22,35 @@ Boston, MA 02111-1307, USA.  */
 
 /* IA64 requires both XF and TF modes.
    XFmode is __float80 is IEEE extended; TFmode is __float128
-   is IEEE quad.
+   is IEEE quad.  Both these modes occupy 16 bytes, but XFmode
+   only has 80 significant bits.  */
 
-   IEEE extended is 128 bits wide, except in ILP32 mode, but we
-   have to say it's 12 bytes so that the bitsize and wider_mode
-   tables are correctly set up.  We correct its size below.  */
-
-FLOAT_MODE (XF, 12, ieee_extended_intel_128_format);
+FRACTIONAL_FLOAT_MODE (XF, 80, 16, ieee_extended_intel_128_format);
 FLOAT_MODE (TF, 16, ieee_quad_format);
 
 /* The above produces:
 
    mode	  ILP32 size/align	LP64 size/align
-   XF	  12/4			12/4
+   XF	  16/16			16/16
    TF	  16/16			16/16
 
    psABI expectations:
 
    mode   ILP32 size/align	LP64 size/align
-   XF	  -			16/16
+   XF	  12/4			-
    TF	  -			-
 
    HPUX expectations:
 
    mode	  ILP32 size/align	LP64 size/align
-   XF	  16/16			16/16
+   XF	  -			-
    TF	  16/8			-
 
    We fix this up here.  */
 
+ADJUST_FLOAT_FORMAT (XF, (TARGET_ILP32 && !TARGET_HPUX)
+			 ? &ieee_extended_intel_96_format
+			 : &ieee_extended_intel_128_format);
 ADJUST_BYTESIZE  (XF, (TARGET_ILP32 && !TARGET_HPUX) ? 12 : 16);
 ADJUST_ALIGNMENT (XF, (TARGET_ILP32 && !TARGET_HPUX) ?  4 : 16);
 

@@ -448,10 +448,10 @@ while (0)
 #define DOUBLE_TYPE_SIZE 64
 
 /* long double is XFmode normally, TFmode for HPUX.  */
-#define LONG_DOUBLE_TYPE_SIZE (TARGET_HPUX ? 128 : 96)
+#define LONG_DOUBLE_TYPE_SIZE (TARGET_HPUX ? 128 : 80)
 
 /* We always want the XFmode operations from libgcc2.c.  */
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 96
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 80
 
 #define DEFAULT_SIGNED_CHAR 1
 
