@@ -1,3 +1,8 @@
+2001-03-07  Tom Tromey  <tromey@redhat.com>
+
+	* configure.in: Allow config-lang.in to set `lang_requires' to list
+	of other required languages.
+
 2001-02-20  Laurynas Biveinis  <lauras@softhome.net>
 
 	* MAINTAINERS: add myself to Write After Approval list.

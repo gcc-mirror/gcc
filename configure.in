@@ -993,6 +993,39 @@ else
 		exit 1
 	fi
 fi
+
+# First scan to see if an enabled language requires some other language.
+# We assume that a given config-lang.in will list all the language
+# front ends it requires, even if some are required indirectly.
+for lang in ${srcdir}/gcc/*/config-lang.in ..
+do
+   case $lang in
+    ..)
+       ;;
+    # The odd quoting in the next line works around
+    # an apparent bug in bash 1.12 on linux.
+    ${srcdir}/gcc/[*]/config-lang.in)
+       ;;
+    *)
+       lang_alias=`sed -n -e 's,^language=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^language=\([^ 	]*\).*$,\1,p' $lang`
+       this_lang_requires=`sed -n -e 's,^lang_requires=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^lang_requires=\([^ 	]*\).*$,\1,p' $lang`
+       for other in $this_lang_requires
+       do
+	  case ,${enable_languages}, in
+	   *,$other,*)
+	      ;;
+	   *,all,*)
+	      ;;
+	   *)
+	      echo " \`$other' language required by \`$lang_alias'; enabling" 1>&2
+	      enable_languages="$enable_languages,$other"
+	      ;;
+	  esac
+       done
+       ;;
+   esac
+done
+
 subdirs=
 for lang in ${srcdir}/gcc/*/config-lang.in ..
 do
@@ -1025,7 +1058,6 @@ do
 	  ;;
 	esac
 done
-
 
 # Remove the entries in $skipdirs and $noconfigdirs from $configdirs and
 # $target_configdirs.
