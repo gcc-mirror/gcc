@@ -1099,6 +1099,7 @@ extern int find_string_constant PARAMS ((struct CPool *, tree));
 extern int find_class_constant PARAMS ((struct CPool *, tree));
 extern int find_fieldref_index PARAMS ((struct CPool *, tree));
 extern int find_methodref_index PARAMS ((struct CPool *, tree));
+extern int find_methodref_with_class_index PARAMS ((struct CPool *, tree, tree));
 extern void write_constant_pool PARAMS ((struct CPool *, unsigned char *, int));
 extern int count_constant_pool_bytes PARAMS ((struct CPool *));
 extern int encode_newarray_type PARAMS ((tree));
