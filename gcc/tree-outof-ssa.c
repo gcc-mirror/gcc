@@ -51,9 +51,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define SSANORM_PERFORM_TER		0x1
 #define SSANORM_COMBINE_TEMPS		0x2
-#define SSANORM_REMOVE_ALL_PHIS		0x4
-#define SSANORM_COALESCE_PARTITIONS	0x8
-#define SSANORM_USE_COALESCE_LIST	0x10
+#define SSANORM_COALESCE_PARTITIONS	0x4
+#define SSANORM_USE_COALESCE_LIST	0x8
 
 /* Used to hold all the components required to do SSA PHI elimination.
    The node and pred/succ list is a simple linear list of nodes and
@@ -2382,9 +2381,7 @@ remove_ssa_form (FILE *dump, var_map map, int flags)
       for (phi = phi_nodes (bb); phi; phi = next)
 	{
 	  next = PHI_CHAIN (phi);
-	  if ((flags & SSANORM_REMOVE_ALL_PHIS) 
-	      || var_to_partition (map, PHI_RESULT (phi)) != NO_PARTITION)
-	    remove_phi_node (phi, NULL_TREE, bb);
+	  remove_phi_node (phi, NULL_TREE, bb);
 	}
     }
 
@@ -2492,7 +2489,7 @@ rewrite_out_of_ssa (void)
 {
   var_map map;
   int var_flags = 0;
-  int ssa_flags = (SSANORM_REMOVE_ALL_PHIS | SSANORM_USE_COALESCE_LIST);
+  int ssa_flags = SSANORM_USE_COALESCE_LIST;
 
   /* If elimination of a PHI requires inserting a copy on a backedge,
      then we will have to split the backedge which has numerous
