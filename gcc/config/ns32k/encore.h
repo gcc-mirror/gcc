@@ -144,65 +144,12 @@ do {									\
   fprintf ((file), "\"\n");				\
 }
 
+/* Modify syntax of jsr instructions.  */
+#define CALL_MEMREF_IMPLICIT
+
 #define NO_ABSOLUTE_PREFIX_IF_SYMBOLIC
 
- /*
-  *  Dollar signs are required before immediate operands, double
-  *  floating point constants use $0f syntax, and external addresses
-  *  should be prefixed with a question mark to avoid assembler warnings
-  *  about undefined symbols.
-  */
-
-#define PRINT_OPERAND(FILE, X, CODE)					\
-{ if (CODE == '$') putc ('$', FILE);					\
-  else if (CODE == '?') fputc ('?', FILE);				\
-  else if (GET_CODE (X) == REG)						\
-    fprintf (FILE, "%s", reg_names[REGNO (X)]);				\
-  else if (GET_CODE (X) == MEM)						\
-    {									\
-      rtx xfoo;								\
-      xfoo = XEXP (X, 0);						\
-      switch (GET_CODE (xfoo))						\
-	{								\
-	case MEM:							\
-	  if (GET_CODE (XEXP (xfoo, 0)) == REG)				\
-	    if (REGNO (XEXP (xfoo, 0)) == STACK_POINTER_REGNUM)		\
-	      fprintf (FILE, "0(0(sp))");				\
-	    else fprintf (FILE, "0(0(%s))",				\
-			  reg_names[REGNO (XEXP (xfoo, 0))]);		\
-	  else								\
-	    {								\
-	      fprintf (FILE, "0(");					\
-	      output_address (xfoo);					\
-	      putc (')', FILE);						\
-	    }								\
-	  break;							\
-	case REG:							\
-	  fprintf (FILE, "0(%s)", reg_names[REGNO (xfoo)]);		\
-	  break;							\
-	case PRE_DEC:							\
-	case POST_INC:							\
-	  fprintf (FILE, "tos");					\
-	  break;							\
-	case CONST_INT:							\
-	  fprintf (FILE, "@%d", INTVAL (xfoo));				\
-	  break;							\
-	default:							\
-	  output_address (xfoo);					\
-	  break;							\
-	}								\
-    }									\
-  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != DImode)	\
-    if (GET_MODE (X) == DFmode)						\
-      { union { double d; int i[2]; } u;				\
-	u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
-	fprintf (FILE, "$0f%.20e", u.d); }				\
-    else { union { double d; int i[2]; } u;				\
-	   u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X); \
-	   fprintf (FILE, "$0f%.20e", u.d); }				\
-  else if (GET_CODE (X) == CONST)					\
-    output_addr_const (FILE, X);					\
-  else { putc ('$', FILE); output_addr_const (FILE, X); }}
+#define PRINT_OPERAND(FILE, X, CODE) print_operand(FILE, X, CODE)
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR)  print_operand_address(FILE, ADDR)
 
