@@ -1462,7 +1462,7 @@ check_for_new_type (string, inptree)
 {
   if (inptree.new_type_flag
       && (pedantic || strcmp (string, "cast") != 0))
-    pedwarn ("ISO C++ forbids defining types within %s",string);
+    pedwarn ("ISO C++ forbids defining types within %s", string);
 }
 
 /* Add new exception specifier SPEC, to the LIST we currently have.
