@@ -295,8 +295,8 @@ while [ $# != 0 ]; do
 	  /#define.BSD43__IO/		s/'\''\([cgx]\)'\''/\1/g
 	  /[^A-Z0-9_]CTRL[ 	]*(/		s/\([^'\'']\))/'\''\1'\'')/
 	  /[^A-Z0-9]_CTRL[ 	]*(/		s/\([^'\'']\))/'\''\1'\'')/
-	  /#define[ 	]*[	]CTRL/		s/'\''\([cgx]\)'\''/\1/g
-	  /#define[ 	]*[	]_CTRL/		s/'\''\([cgx]\)'\''/\1/g
+	  /#define[ 	]*[ 	]CTRL/		s/'\''\([cgx]\)'\''/\1/g
+	  /#define[ 	]*[ 	]_CTRL/		s/'\''\([cgx]\)'\''/\1/g
 	  /#define.BSD43_CTRL/		s/'\''\([cgx]\)'\''/\1/g
 	  /#[el]*if/{
 		s/[a-zA-Z0-9_][a-zA-Z0-9_]*/ & /g
