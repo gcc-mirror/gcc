@@ -92,8 +92,9 @@ static int version_done = 0;
 static unsigned int work_nesting_level = 0;
 
 /* Prepare to handle switches.  */
-int
-treelang_init_options (void)
+unsigned int
+treelang_init_options (unsigned int argc ATTRIBUTE_UNUSED,
+		       const char **argv ATTRIBUTE_UNUSED)
 {
   return CL_Treelang;
 }

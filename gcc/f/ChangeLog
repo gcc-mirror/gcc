@@ -1,3 +1,8 @@
+Wed Jul  2 21:16:02 2003  Neil Booth  <neil@daikokuya.co.uk>
+
+	* top.c (ffe_init_options): Update prototype.
+	* top.h (ffe_init_options): Update prototype.
+
 2003-06-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* com.c (input_file_stack_tick): Delete redundant declaration.

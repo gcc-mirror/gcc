@@ -26,7 +26,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define skip_leading_substring(whole,  part) \
    (strncmp (whole, part, strlen (part)) ? NULL : whole + strlen (part))
 
-extern int toplev_main			(int, char **);
+extern int toplev_main			(unsigned int, const char **);
 extern int read_integral_parameter	(const char *, const char *,
 					 const int);
 extern void strip_off_ending		(char *, int);
@@ -101,10 +101,6 @@ extern const char *aux_info_file_name;
 extern const char *asm_file_name;
 extern bool exit_after_options;
 extern bool version_flag;
-
-/* Copy of arguments to toplev_main.  */
-extern int save_argc;
-extern char **save_argv;
 
 extern int target_flags_explicit;
 

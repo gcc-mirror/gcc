@@ -104,7 +104,7 @@ extern tree last_assemble_variable_decl;
 
 extern void reg_alloc (void);
 
-static void general_init (char *);
+static void general_init (const char *);
 static void do_compile (void);
 static void process_options (void);
 static void backend_init (void);
@@ -172,9 +172,8 @@ static bool no_backend;
 
 const char *progname;
 
-/* Copy of arguments to toplev_main.  */
-int save_argc;
-char **save_argv;
+/* Copy of argument vector to toplev_main.  */
+static const char **save_argv;
 
 /* Name of top-level original source file (what was input to cpp).
    This comes from the #-command at the beginning of the actual input.
@@ -4408,7 +4407,7 @@ print_switch_values (FILE *file, int pos, int max,
 		     const char *indent, const char *sep, const char *term)
 {
   size_t j;
-  char **p;
+  const char **p;
 
   /* Fill in the -frandom-seed option, if the user didn't pass it, so
      that it can be printed below.  This helps reproducibility.  Of
@@ -4537,9 +4536,9 @@ init_asm_output (const char *name)
    options are parsed.  Signal handlers, internationalization etc.
    ARGV0 is main's argv[0].  */
 static void
-general_init (char *argv0)
+general_init (const char *argv0)
 {
-  char *p;
+  const char *p;
 
   p = argv0 + strlen (argv0);
   while (p != argv0 && !IS_DIR_SEPARATOR (p[-1]))
@@ -4975,8 +4974,10 @@ do_compile (void)
    It is not safe to call this function more than once.  */
 
 int
-toplev_main (int argc, char **argv)
+toplev_main (unsigned int argc, const char **argv)
 {
+  save_argv = argv;
+
   /* Initialization of GCC's environment, and diagnostics.  */
   general_init (argv[0]);
 

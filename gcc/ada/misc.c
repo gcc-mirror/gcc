@@ -78,12 +78,10 @@
 #include "options.h"
 
 extern FILE *asm_out_file;
-extern int save_argc;
-extern char **save_argv;
 
 static size_t gnat_tree_size		PARAMS ((enum tree_code));
 static bool gnat_init			PARAMS ((void));
-static int gnat_init_options		PARAMS ((void));
+static unsigned int gnat_init_options	(unsigned int, const char **);
 static int gnat_handle_option (size_t scode, const char *arg, int value);
 static HOST_WIDE_INT gnat_get_alias_set	PARAMS ((tree));
 static void gnat_print_decl		PARAMS ((FILE *, tree, int));
@@ -181,6 +179,10 @@ const char *const tree_code_name[] = {
 };
 #undef DEFTREECODE
 
+/* Command-line argc and argv.  */
+static unsigned int save_argc;
+static const char **save_argv;
+
 /* gnat standard argc argv */
 
 extern int gnat_argc;
@@ -222,7 +224,7 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
 {
   enum opt_code code = (enum opt_code) scode;
   char *q;
-  int i;
+  unsigned int i;
 
   /* Ignore file names.  */
   if (code == N_OPTS)
@@ -279,13 +281,16 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
 
 /* Initialize for option processing.  */
 
-static int
-gnat_init_options ()
+static unsigned int
+gnat_init_options (unsigned int argc, const char **argv)
 {
-  /* Initialize gnat_argv with save_argv size */
-  gnat_argv = (char **) xmalloc ((save_argc + 1) * sizeof (gnat_argv[0])); 
-  gnat_argv[0] = save_argv[0];     /* name of the command */ 
+  /* Initialize gnat_argv with save_argv size.  */
+  gnat_argv = (char **) xmalloc ((argc + 1) * sizeof (argv[0])); 
+  gnat_argv[0] = argv[0];     /* name of the command */ 
   gnat_argc = 1;
+
+  save_argc = argc;
+  save_argv = argv;
 
   return CL_Ada;
 }

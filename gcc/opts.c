@@ -131,11 +131,11 @@ static size_t find_opt (const char *, int);
 static int common_handle_option (size_t scode, const char *arg, int value);
 static void handle_param (const char *);
 static void set_Wextra (int);
-static unsigned int handle_option (char **argv, unsigned int lang_mask);
+static unsigned int handle_option (const char **argv, unsigned int lang_mask);
 static char *write_langs (unsigned int lang_mask);
 static void complain_wrong_lang (const char *, const struct cl_option *,
 				 unsigned int lang_mask);
-static void handle_options (unsigned int, char **, unsigned int lang_mask);
+static void handle_options (unsigned int, const char **, unsigned int);
 
 /* Perform a binary search to find which option the command-line INPUT
    matches.  Returns its index in the option array, and N_OPTS
@@ -286,7 +286,7 @@ complain_wrong_lang (const char *text, const struct cl_option *option,
 /* Handle the switch beginning at ARGV for the language indicated by
    LANG_MASK.  Returns the number of switches consumed.  */
 static unsigned int
-handle_option (char **argv, unsigned int lang_mask)
+handle_option (const char **argv, unsigned int lang_mask)
 {
   size_t opt_index;
   const char *opt, *arg = 0;
@@ -408,7 +408,7 @@ handle_option (char **argv, unsigned int lang_mask)
    contains has a single bit set representing the current
    language.  */
 static void
-handle_options (unsigned int argc, char **argv, unsigned int lang_mask)
+handle_options (unsigned int argc, const char **argv, unsigned int lang_mask)
 {
   unsigned int n, i;
 
@@ -427,16 +427,12 @@ handle_options (unsigned int argc, char **argv, unsigned int lang_mask)
 /* Parse command line options and set default flag values.  Do minimal
    options processing.  */
 void
-decode_options (int argc, char **argv)
+decode_options (unsigned int argc, const char **argv)
 {
-  int i, lang_mask;
-
-  /* Save in case md file wants to emit args as a comment.  */
-  save_argc = argc;
-  save_argv = argv;
+  unsigned int i, lang_mask;
 
   /* Perform language-specific options initialization.  */
-  lang_mask = (*lang_hooks.init_options) ();
+  lang_mask = (*lang_hooks.init_options) (argc, argv);
 
   /* Scan to see what optimization level has been specified.  That will
      determine the default value of many flags.  */
@@ -450,7 +446,7 @@ decode_options (int argc, char **argv)
       else if (argv[i][0] == '-' && argv[i][1] == 'O')
 	{
 	  /* Handle -Os, -O2, -O3, -O69, ...  */
-	  char *p = &argv[i][2];
+	  const char *p = &argv[i][2];
 
 	  if ((p[0] == 's') && (p[1] == 0))
 	    {

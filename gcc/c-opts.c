@@ -92,8 +92,8 @@ static bool quote_chain_split;
 /* If -Wunused-macros.  */
 static bool warn_unused_macros;
 
-/* Number of deferred options, deferred options array size.  */
-static size_t deferred_count, deferred_size;
+/* Number of deferred options.  */
+static size_t deferred_count;
 
 /* Number of deferred options scanned for -include.  */
 static size_t include_cursor;
@@ -191,29 +191,16 @@ missing_arg (enum opt_code code)
 static void
 defer_opt (enum opt_code code, const char *arg)
 {
-  /* FIXME: this should be in c_common_init_options, which should take
-     argc and argv.  */
-  if (!deferred_opts)
-    {
-      extern int save_argc;
-      deferred_size = save_argc;
-      deferred_opts = (struct deferred_opt *)
-	xmalloc (deferred_size * sizeof (struct deferred_opt));
-    }
-
-  if (deferred_count == deferred_size)
-    abort ();
-
   deferred_opts[deferred_count].code = code;
   deferred_opts[deferred_count].arg = arg;
   deferred_count++;
 }
 
 /* Common initialization before parsing options.  */
-int
-c_common_init_options (void)
+unsigned int
+c_common_init_options (unsigned int argc, const char **argv ATTRIBUTE_UNUSED)
 {
-  static const int lang_flags[] = {CL_C, CL_ObjC, CL_CXX, CL_ObjCXX};
+  static const unsigned int lang_flags[] = {CL_C, CL_ObjC, CL_CXX, CL_ObjCXX};
 
   /* This is conditionalized only because that is the way the front
      ends used to do it.  Maybe this should be unconditional?  */
@@ -241,6 +228,9 @@ c_common_init_options (void)
   flag_const_strings = c_dialect_cxx ();
   flag_exceptions = c_dialect_cxx ();
   warn_pointer_arith = c_dialect_cxx ();
+
+  deferred_opts = (struct deferred_opt *)
+    xmalloc (argc * sizeof (struct deferred_opt));
 
   return lang_flags[c_language];
 }
@@ -1406,6 +1396,7 @@ push_command_line_include (void)
 
   if (include_cursor == deferred_count)
     {
+      free (deferred_opts);
       /* Restore the line map from <command line>.  */
       cpp_change_file (parse_in, LC_RENAME, main_input_filename);
       /* -Wunused-macros should only warn about macros defined hereafter.  */

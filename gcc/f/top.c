@@ -156,8 +156,9 @@ ffe_is_digit_string_ (const char *s)
 }
 
 /* Get ready for options handling.  */
-int
-ffe_init_options ()
+unsigned int
+ffe_init_options (unsigned int argc ATTRIBUTE_UNUSED,
+		  const char **argv ATTRIBUTE_UNUSED)
 {
   /* Set default options for Fortran.  */
   flag_move_all_movables = 1;

@@ -133,6 +133,13 @@ hook_int_size_t_constcharptr_int_0 (size_t a ATTRIBUTE_UNUSED,
   return 0;
 }
 
+unsigned int
+hook_uint_uint_constcharptrptr_0 (unsigned int a ATTRIBUTE_UNUSED,
+				  const char **b ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
 void
 hook_void_tree (a)
      tree a ATTRIBUTE_UNUSED;
