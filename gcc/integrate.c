@@ -413,6 +413,7 @@ save_for_inline_copying (fndecl)
   int max_uid;
   rtx first_nonparm_insn;
   char *new, *new1;
+  rtx *new2;
 
   /* Make and emit a return-label if we have not already done so. 
      Do this before recording the bounds on label numbers.  */
@@ -537,6 +538,16 @@ save_for_inline_copying (fndecl)
     if (GET_CODE (regno_reg_rtx[i]) == MEM)
       XEXP (regno_reg_rtx[i], 0)
 	= copy_for_inline (XEXP (regno_reg_rtx[i], 0));
+
+  /* Copy the parm_reg_stack_loc array, and substitute for all of the rtx
+     contained in it.  */
+  new2 = savealloc (max_parm_reg * sizeof (rtx));
+  bcopy ((char *) parm_reg_stack_loc, (char *) new2,
+	 max_parm_reg * sizeof (rtx));
+  parm_reg_stack_loc = new2;
+  for (i = LAST_VIRTUAL_REGISTER + 1; i < max_parm_reg; ++i)
+    if (parm_reg_stack_loc[i])
+      parm_reg_stack_loc[i] = copy_for_inline (parm_reg_stack_loc[i]);
 
   /* Copy the tree of subblocks of the function, and the decls in them.
      We will use the copy for compiling this function, then restore the original
