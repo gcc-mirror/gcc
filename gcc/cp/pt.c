@@ -107,6 +107,7 @@ finish_member_template_decl (template_parameters, decl)
     return NULL_TREE;
   else if (TREE_CODE (decl) == TREE_LIST)
     {
+      /* Assume that the class is the only declspec.  */
       decl = TREE_VALUE (decl);
       if (IS_AGGR_TYPE (decl) && CLASSTYPE_TEMPLATE_INFO (decl))
 	{
@@ -2958,6 +2959,7 @@ instantiate_class_template (type)
 	template = DECL_TI_TEMPLATE (template);
     }
 
+  /* FIXME deal with partial specializations of member templates.  */
   t = most_specialized_class
     (DECL_TEMPLATE_SPECIALIZATIONS (template), args);
 
@@ -3615,6 +3617,7 @@ tsubst (t, args, in_decl)
 	if (PRIMARY_TEMPLATE_P (t))
 	  TREE_TYPE (DECL_INNERMOST_TEMPLATE_PARMS (tmpl)) = tmpl;
 
+	/* FIXME deal with partial specializations.  */
 	if (TREE_CODE (decl) == TYPE_DECL)
 	  return tmpl;
 

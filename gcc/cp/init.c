@@ -1836,6 +1836,7 @@ build_offset_ref (type, name)
   tree basebinfo = NULL_TREE;
   int dtor = 0;
 
+  /* class templates can come in as TEMPLATE_DECLs here.  */
   if (TREE_CODE (name) != IDENTIFIER_NODE)
     return name;
 
