@@ -1,5 +1,8 @@
 2001-09-28  Richard Henderson  <rth@redhat.com>
 
+	* varasm.c (assemble_integer): Bound alignment check by
+	BIGGEST_ALIGNMENT.
+
 	* cfgrtl.c (redirect_edge_and_branch): Abort if redirect_jump fails.
 
 2001-09-28  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>

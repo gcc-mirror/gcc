@@ -1913,7 +1913,7 @@ assemble_integer (x, size, align, force)
   /* First try to use the standard 1, 2, 4, 8, and 16 byte
      ASM_OUTPUT... macros.  */
 
-  if (align >= size * BITS_PER_UNIT)
+  if (align >= MIN (size * BITS_PER_UNIT, BIGGEST_ALIGNMENT))
     switch (size)
       {
 #ifdef ASM_OUTPUT_CHAR
