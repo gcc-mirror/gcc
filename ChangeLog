@@ -1,3 +1,10 @@
+2002-12-18  H.J. Lu <hjl@gnu.org>
+
+	* Makefile.tpl: Add @build_prefix@ before $(BUILD_SUBDIR).
+	* Makefile.in: Regenerated.
+
+	* configure.in (build_prefix): New. Substitute.
+
 2002-12-18  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.tpl: Don't let real targets depend on phony targets.
