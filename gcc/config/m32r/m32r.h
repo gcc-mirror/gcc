@@ -40,6 +40,58 @@ Boston, MA 02111-1307, USA.  */
 #undef ENDFILE_SPEC
 #undef SUBTARGET_SWITCHES
 
+
+/* M32R/X overrides.  */
+/* Print subsidiary information on the compiler version in use.  */
+#define TARGET_VERSION fprintf (stderr, " (m32r/x)");
+
+/* Additional flags for the preprocessor.  */
+#define CPP_CPU_SPEC "%{m32rx:-D__M32RX__} %{m32r:-U__M32RX__}"
+
+/* Assembler switches.  */
+#define ASM_CPU_SPEC \
+"%{m32r} %{m32rx} %{!O0: %{O*: -O}} --no-warn-explicit-parallel-conflicts"
+
+/* Use m32rx specific crt0/crtinit/crtfini files.  */
+#define STARTFILE_CPU_SPEC "%{!shared:crt0.o%s} %{m32rx:m32rx/crtinit.o%s} %{!m32rx:crtinit.o%s}"
+#define ENDFILE_CPU_SPEC "-lgloss %{m32rx:m32rx/crtfini.o%s} %{!m32rx:crtfini.o%s}"
+
+/* Extra machine dependent switches.  */
+#define SUBTARGET_SWITCHES							\
+    { "32rx",			TARGET_M32RX_MASK, "Compile for the m32rx" },	\
+    { "32r",			-TARGET_M32RX_MASK, "" },
+
+/* Define this macro as a C expression for the initializer of an array of
+   strings to tell the driver program which options are defaults for this
+   target and thus do not need to be handled specially when using
+   `MULTILIB_OPTIONS'.  */
+#define SUBTARGET_MULTILIB_DEFAULTS , "m32r"
+
+/* Number of additional registers the subtarget defines.  */
+#define SUBTARGET_NUM_REGISTERS 1
+
+/* 1 for registers that cannot be allocated.  */
+#define SUBTARGET_FIXED_REGISTERS , 1
+
+/* 1 for registers that are not available across function calls.  */
+#define SUBTARGET_CALL_USED_REGISTERS , 1
+
+/* Order to allocate model specific registers.  */
+#define SUBTARGET_REG_ALLOC_ORDER , 19
+
+/* Registers which are accumulators.  */
+#define SUBTARGET_REG_CLASS_ACCUM 0x80000
+
+/* All registers added.  */
+#define SUBTARGET_REG_CLASS_ALL SUBTARGET_REG_CLASS_ACCUM
+
+/* Additional accumulator registers.  */
+#define SUBTARGET_ACCUM_P(REGNO) ((REGNO) == 19)
+
+/* Define additional register names.  */
+#define SUBTARGET_REGISTER_NAMES , "a1"
+/* end M32R/X overrides.  */
+
 /* Print subsidiary information on the compiler version in use.  */
 #ifndef	TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (m32r)")
@@ -160,6 +212,12 @@ extern int target_flags;
 
 /* Target machine to compile for.  */
 #define TARGET_M32R 		1
+
+/* Support extended instruction set.  */
+#define TARGET_M32RX_MASK       (1 << 5)
+#define TARGET_M32RX            (target_flags & TARGET_M32RX_MASK)
+#undef  TARGET_M32R
+#define TARGET_M32R             (! TARGET_M32RX)
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -513,7 +571,7 @@ extern enum m32r_sdata m32r_sdata;
    16    - arg pointer
    17    - carry flag
    18	 - accumulator
-
+   19    - accumulator 1 in the m32r/x
    By default, the extension registers are not available.  */
 
 #ifndef SUBTARGET_FIXED_REGISTERS
@@ -2051,6 +2109,7 @@ enum m32r_function_type
    matched by the predicate.  The list should have a trailing comma.  */
 
 #define PREDICATE_CODES							\
+{ "reg_or_zero_operand",        { REG, SUBREG, CONST_INT }},            \
 { "conditional_move_operand",	{ REG, SUBREG, CONST_INT }},		\
 { "carry_compare_operand",	{ EQ, NE }},				\
 { "eqne_comparison_operator",	{ EQ, NE }},				\

@@ -1,3 +1,17 @@
+2001-11-09 Ben Elliston  <bje@redhat.com>
+	   Michael Meissner  <meissner@redhat.com>
+           Andrew MacLeod  <amacleod@redhat.com>
+	   Richard Henderson  <rth@redhat.com>
+	   Nick Clifton  <nickc@redhat.com>
+	   Catherine Moore  <clm@redhat.com>
+
+	* m32r.c: Add support for m32rx processor.
+	* m32r.h: Ditto.
+	* m32r.md: Ditto.
+	* t-m32r: Ditto.
+	* m32r-protos.h: Add prototypes for m32rx functions.
+	* doc/invoke.texi: Document -m32rx option.
+
 2001-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.md (movdf): Avoid calling validize_mem during

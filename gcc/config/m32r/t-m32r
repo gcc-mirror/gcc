@@ -36,16 +36,29 @@ crtfini.o: $(srcdir)/config/m32r/initfini.c $(GCC_PASSES) $(CONFIG_H)
 	  -DCRT_FINI -finhibit-size-directive -fno-inline-functions \
 	  -g0 -mmodel=medium -c $(srcdir)/config/m32r/initfini.c -o crtfini.o
 
+m32rx:
+	mkdir $@
+
+m32rx/crtinit.o: m32rx $(srcdir)/config/m32r/initfini.c $(GCC_PASSES) $(CONFIG_H)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
+	-DCRT_INIT -finhibit-size-directive -fno-inline-functions \
+	-g0 -mmodel=medium -c $(srcdir)/config/m32r/initfini.c -m32rx \
+	-o m32rx/crtinit.o
+
+m32rx/crtfini.o: m32rx $(srcdir)/config/m32r/initfini.c $(GCC_PASSES) $(CONFIG_H)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
+	-DCRT_FINI -finhibit-size-directive -fno-inline-functions \
+	-g0 -mmodel=medium -c $(srcdir)/config/m32r/initfini.c -m32rx \
+	-o m32rx/crtfini.o
 
 # -mmodel={small,medium} requires separate libraries.
 # We don't build libraries for the large model, instead we use the medium
 # libraries.  The only difference is that the large model can handle jumps
 # more than 26 signed bits away.
 
-MULTILIB_OPTIONS = mmodel=small/mmodel=medium
-MULTILIB_DIRNAMES = small medium
+MULTILIB_OPTIONS = mmodel=small/mmodel=medium m32r/m32rx
+MULTILIB_DIRNAMES = small medium m32r m32rx
 MULTILIB_MATCHES = mmodel?medium=mmodel?large
-
 
 # Set MULTILIB_EXTRA_OPTS so shipped libraries have small data in .sdata and
 # SHN_M32R_SCOMMON.

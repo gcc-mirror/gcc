@@ -90,6 +90,8 @@ extern int    m32r_block_immediate_operand 	PARAMS ((rtx, Mmode));
 extern int    extend_operand			PARAMS ((rtx, Mmode));
 extern int    reg_or_eq_int16_operand		PARAMS ((rtx, Mmode));
 extern int    int8_operand			PARAMS ((rtx, Mmode));
+extern int    reg_or_zero_operand               PARAMS ((rtx, Mmode));
+
 #endif /* HAVE_MACHINE_MODES */
 
 #ifdef TREE_CODE
