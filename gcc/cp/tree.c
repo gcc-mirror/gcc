@@ -495,14 +495,16 @@ build_cplus_array_type (elt_type, index_type)
 {
   tree t;
   int type_quals = cp_type_quals (elt_type);
+  int cv_quals = type_quals & (TYPE_QUAL_CONST|TYPE_QUAL_VOLATILE);
+  int other_quals = type_quals & ~(TYPE_QUAL_CONST|TYPE_QUAL_VOLATILE);
 
-  if (type_quals != TYPE_UNQUALIFIED)
-    elt_type = cp_build_qualified_type (elt_type, TYPE_UNQUALIFIED);
+  if (cv_quals)
+    elt_type = cp_build_qualified_type (elt_type, other_quals);
 
   t = build_cplus_array_type_1 (elt_type, index_type);
 
-  if (type_quals != TYPE_UNQUALIFIED)
-    t = cp_build_qualified_type (t, type_quals);
+  if (cv_quals)
+    t = cp_build_qualified_type (t, cv_quals);
 
   return t;
 }
