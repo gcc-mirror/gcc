@@ -1863,11 +1863,22 @@ write_c_file_glob (stream, name)
       write_list (stream, "\t\t&", frame_tables.first);
       fprintf (stream, "\t0\n};\n");
 
-      fprintf (stream, "extern void __register_frame_table (void *);\n");
+      /* This must match what's in frame.h.  */
+      fprintf (stream, "struct object {\n");
+      fprintf (stream, "  void *pc_begin;\n");
+      fprintf (stream, "  void *pc_end;\n");
+      fprintf (stream, "  void *fde_begin;\n");
+      fprintf (stream, "  void *fde_array;\n");
+      fprintf (stream, "  __SIZE_TYPE__ count;\n");
+      fprintf (stream, "  struct object *next;\n");
+      fprintf (stream, "};\n");
+
+      fprintf (stream, "extern void __register_frame_table (void *, struct object *);\n");
       fprintf (stream, "extern void __deregister_frame (void *);\n");
 
       fprintf (stream, "static void reg_frame () {\n");
-      fprintf (stream, "\t__register_frame_table (frame_table);\n");
+      fprintf (stream, "\tstatic struct object ob;\n");
+      fprintf (stream, "\t__register_frame_table (frame_table, &ob);\n");
       fprintf (stream, "\t}\n");
 
       fprintf (stream, "static void dereg_frame () {\n");
