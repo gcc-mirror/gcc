@@ -1,3 +1,8 @@
+1999-07-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (grokdeclarator): Don't give names "for linkage purposes"
+	to anonymous cv-qualified types.
+
 1999-07-01  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* lex.c (real_yylex) : Change integer literal overflow handling to
