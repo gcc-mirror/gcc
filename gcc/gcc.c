@@ -124,6 +124,13 @@ static int cross_compile = 0;
 
 static struct obstack obstack;
 
+/* This is the obstack to build an environment variable to pass to
+   collect2 that describes all of the relavant switches of what to
+   pass the compiler in building the list of pointers to constructors
+   and destructors.  */
+
+static struct obstack collect_obstack;
+
 extern char *version_string;
 
 static void set_spec ();
@@ -237,6 +244,8 @@ or with constant text in a single argument.
  %{|!S:X} like %{!S:X}, but if there is an S switch, substitute `-'.
  %{.S:X} substitutes X, but only if processing a file with suffix S.
  %{!.S:X} substitutes X, but only if NOT processing a file with suffix S.
+ %(Spec) processes a specification defined in a specs file as *Spec:
+ %[Spec] as above, but put __ around -D arguments
 
 The conditional text X in a %{S:X} or %{!S:X} construct may contain
 other nested % constructs or spaces, or even newlines.  They are
@@ -352,7 +361,7 @@ static char *switches_need_spaces = SWITCHES_NEED_SPACES;
 #ifndef WORD_SWITCH_TAKES_ARG
 #define WORD_SWITCH_TAKES_ARG(STR)			\
  (!strcmp (STR, "Tdata") || !strcmp (STR, "include")	\
-  || !strcmp (STR, "imacros"))
+  || !strcmp (STR, "imacros") || !strcmp (STR, "aux-info"))
 #endif
 
 /* Record the mapping from file suffixes for compilation specs.  */
@@ -399,6 +408,7 @@ static struct compiler default_compilers[] =
 		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
 		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
+		   %{aux-info*}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
               %{!S:as %{R} %{j} %{J} %{h} %{d2} %a \
@@ -431,6 +441,7 @@ static struct compiler default_compilers[] =
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
 		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*} \
     		   -lang-objc %{gen-decls} \
+		   %{aux-info*}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
               %{!S:as %{R} %{j} %{J} %{h} %{d2} %a \
@@ -465,6 +476,7 @@ static struct compiler default_compilers[] =
 		   %{!Q:-quiet} -dumpbase %b.cc %{d*} %{m*} %{a}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} %{traditional}\
 		   %{v:-version} %{pg:-p} %{p} %{f*}\
+		   %{aux-info*}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
               %{!S:as %{R} %{j} %{J} %{h} %{d2} %a \
@@ -475,6 +487,7 @@ static struct compiler default_compilers[] =
    "cc1 %i %1 %{!Q:-quiet} %{d*} %{m*} %{a}\
 	%{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} %{traditional}\
 	%{v:-version} %{pg:-p} %{p} %{f*}\
+	%{aux-info*}\
 	%{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 	%{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
     %{!S:as %{R} %{j} %{J} %{h} %{d2} %a \
@@ -484,6 +497,7 @@ static struct compiler default_compilers[] =
    "cc1plus %i %1 %2 %{!Q:-quiet} %{d*} %{m*} %{a}\
 	    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} %{traditional}\
 	    %{v:-version} %{pg:-p} %{p} %{f*}\
+	    %{aux-info*}\
 	    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 	    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
        %{!S:as %{R} %{j} %{J} %{h} %{d2} %a \
@@ -528,7 +542,7 @@ static char *link_command_spec = "\
 /* Use -l and have the linker do the search.  */
 static char *link_command_spec = "\
 %{!c:%{!M:%{!MM:%{!E:%{!S:ld %X %l %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
-			%{r} %{T*} %{t} %{x} %{z}\
+			%{r} %{s} %{T*} %{t} %{x} %{z}\
 			%{!A:%{!nostdlib:%S}} \
 			%{L*} %D %o %{!nostdlib:-lgcc %L -lgcc %{!A:%E}}\n }}}}}";
 #endif
@@ -620,7 +634,6 @@ read_specs (filename)
 	  else if (in[0] == '#')
 	    {
 	      while (*in && *in != '\n') in++;
-	      if (*in) in++;
 	    }
 	  else
 	    *out++ = *in++;
@@ -678,7 +691,7 @@ skip_whitespace (p)
 }
 
 /* Structure to keep track of the specs that have been defined so far.  These
-   are accessed using %Sspecname in a compiler or link spec. */
+   are accessed using %(specname) or %[specname] in a compiler or link spec. */
 
 struct spec_list
 {
@@ -1045,6 +1058,103 @@ choose_temp_base ()
   mktemp (temp_filename);
   temp_filename_length = strlen (temp_filename);
 }
+
+
+/* Routine to add variables to the environment.  We do this to pass
+   the pathname of the gcc driver, and the directories search to the
+   collect2 program, which is being run as ld.  This way, we can be
+   sure of executing the right compiler when collect2 wants to build
+   constructors and destructors.  Since the environment variables we
+   use come from an obstack, we don't have to worry about allocating
+   space for them.  */
+
+#ifndef HAVE_PUTENV
+
+putenv (str)
+     char *str;
+{
+#ifndef __MSDOS__		/* not sure about MS/DOS */
+#ifndef VMS			/* nor about VMS */
+
+  extern char **environ;
+  char **old_environ = environ;
+  char **envp;
+  int num_envs = 0;
+  int name_len = 1;
+  int str_len = strlen (str);
+  char *p = str;
+  int ch;
+
+  while ((ch = *p++) != '\0' && ch != '=')
+    name_len++;
+
+  if (!ch)
+    abort ();
+
+  /* Search for replacing an existing environment variable, and
+     count the number of total environment variables.  */
+  for (envp = old_environ; *envp; envp++)
+    {
+      num_envs++;
+      if (!strncmp (str, *envp, name_len))
+	{
+	  *envp = str;
+	  return;
+	}
+    }
+
+  /* Add a new environment variable */
+  environ = (char **) xmalloc (sizeof (char *) * (num_envs+2));
+  *environ = str;
+  bcopy (old_environ, environ+1, sizeof (char *) * (num_envs+1));
+
+#endif	/* VMS */
+#endif	/* __MSDOS__ */
+}
+
+#endif	/* HAVE_PUTENV */
+
+
+/* Rebuild the COMPILER_PATH and LIBRARY_PATH environment variables for collect.  */
+
+static void
+putenv_from_prefixes (paths, env_var)
+     struct path_prefix *paths;
+     char *env_var;
+{
+  int suffix_len = (machine_suffix) ? strlen (machine_suffix) : 0;
+  int first_time = TRUE;
+  struct prefix_list *pprefix;
+
+  obstack_grow (&collect_obstack, env_var, strlen (env_var));
+
+  for (pprefix = paths->plist; pprefix != 0; pprefix = pprefix->next)
+    {
+      int len = strlen (pprefix->prefix);
+
+      if (machine_suffix)
+	{
+	  if (!first_time)
+	    obstack_grow (&collect_obstack, ":", 1);
+	    
+	  first_time = FALSE;
+	  obstack_grow (&collect_obstack, pprefix->prefix, len);
+	  obstack_grow (&collect_obstack, machine_suffix, suffix_len);
+	}
+
+      if (!pprefix->require_machine_suffix)
+	{
+	  if (!first_time)
+	    obstack_grow (&collect_obstack, ":", 1);
+
+	  first_time = FALSE;
+	  obstack_grow (&collect_obstack, pprefix->prefix, len);
+	}
+    }
+  obstack_grow (&collect_obstack, "\0", 1);
+  putenv (obstack_finish (&collect_obstack));
+}
+
 
 /* Search for NAME using the prefix list PREFIXES.  MODE is passed to
    access to check permissions.
@@ -1427,7 +1537,7 @@ execute ()
 
   /* If -v, print what we are about to do, and maybe query.  */
 
-  if (verbose_flag || save_temps_flag)
+  if (verbose_flag)
     {
       /* Print each piped command as a separate line.  */
       for (i = 0; i < n_commands ; i++)
@@ -2508,6 +2618,10 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		      do_spec_1 (buf, 0, NULL);
 		    }
 		}
+
+	      /* Discard the closing paren or bracket.  */
+	      if (*p)
+		p++;
 	    }
 	    break;
 
@@ -2622,7 +2736,7 @@ handle_braces (p)
 
 	  /* First see whether we have %*.  */
 	  substitution = 0;
-	  while (*r && *r == '}')
+	  while (r < q)
 	    {
 	      if (*r == '%' && r[1] == '*')
 		substitution = 1;
@@ -2828,6 +2942,13 @@ main (argc, argv)
 
   obstack_init (&obstack);
 
+  /* Set up to remember the pathname of gcc and any options
+     needed for collect.  */
+  obstack_init (&collect_obstack);
+  obstack_grow (&collect_obstack, "COLLECT_GCC=", sizeof ("COLLECT_GCC=")-1);
+  obstack_grow (&collect_obstack, programname, strlen (programname)+1);
+  putenv (obstack_finish (&collect_obstack));
+
   /* Choose directory for temp files.  */
 
   choose_temp_base ();
@@ -2983,6 +3104,40 @@ main (argc, argv)
   if (error_count == 0)
     {
       int tmp = execution_count;
+      int i;
+      int first_time;
+
+      /* Rebuild the COMPILER_PATH and LIBRARY_PATH environment variables
+	 for collect.  */
+      putenv_from_prefixes (&exec_prefix, "COMPILER_PATH=");
+      putenv_from_prefixes (&startfile_prefix, "LIBRARY_PATH=");
+
+      /* Build COLLECT_GCC_OPTIONS to have all of the options specified to
+	 the compiler.  */
+      obstack_grow (&collect_obstack, "COLLECT_GCC_OPTIONS=",
+		    sizeof ("COLLECT_GCC_OPTIONS=")-1);
+
+      first_time = TRUE;
+      for (i = 0; i < n_switches; i++)
+	{
+	  char **args;
+	  if (!first_time)
+	    obstack_grow (&collect_obstack, " ", 1);
+
+	  first_time = FALSE;
+	  obstack_grow (&collect_obstack, "-", 1);
+	  obstack_grow (&collect_obstack, switches[i].part1,
+			strlen (switches[i].part1));
+
+	  for (args = switches[i].args; args && *args; args++)
+	    {
+	      obstack_grow (&collect_obstack, " ", 1);
+	      obstack_grow (&collect_obstack, *args, strlen (*args));
+	    }
+	}
+      obstack_grow (&collect_obstack, "\0", 1);
+      putenv (obstack_finish (&collect_obstack));
+
       value = do_spec (link_command_spec);
       if (value < 0)
 	error_count = 1;
@@ -3236,10 +3391,21 @@ validate_all_switches ()
   struct compiler *comp;
   register char *p;
   register char c;
+  struct spec_list *spec;
 
   for (comp = compilers; comp->spec; comp++)
     {
       p = comp->spec;
+      while (c = *p++)
+	if (c == '%' && *p == '{')
+	  /* We have a switch spec.  */
+	  validate_switches (p + 1);
+    }
+
+  /* look through the linked list of extra specs read from the specs file */
+  for (spec = specs ; spec ; spec = spec->next)
+    {
+      p = spec->spec;
       while (c = *p++)
 	if (c == '%' && *p == '{')
 	  /* We have a switch spec.  */
