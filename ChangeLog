@@ -1,3 +1,11 @@
+2001-12-07  Turly O'Connor  <turly@apple.com>
+	* MAINTAINERS (Write After Approval): Add myself.
+	* rs6000.c (rs6000_trampoline_size): Handle ABI_DARWIN case.
+	(rs6000_initialize_trampoline): Call __trampoline_setup for
+	ABI_DARWIN too.
+	* darwin-tramp.asm: New file, implements __trampoline_setup.
+	* t-darwin: LIB2FUNCS_EXTRA now includes darwin_tramp.asm.
+
 2001-12-07  Paolo Carlini  <pcarlini@unitus.it>
 
 	* MAINTAINERS (Write After Approval): Add myself.
