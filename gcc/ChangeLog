@@ -1,5 +1,12 @@
 2003-08-20  Gunther Nikl  <gni@gecko.de>
 
+	* config/m68k/m68k.c (output_move_const_into_data_reg,
+	output_move_himode): unify MOTOROLA/MIT handling of moveq
+	* config/m68k/m68k.md (movsi_const0, anonymous define_insn):
+	Likewise
+
+2003-08-20  Gunther Nikl  <gni@gecko.de>
+
 	* config/m68k/m68k.c (m68k_output_function_prologue): use %U in
 	label name
 	* config/m68k/m68k.c (m68k_output_function_epilogue): replace

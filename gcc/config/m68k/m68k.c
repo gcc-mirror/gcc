@@ -1604,41 +1604,21 @@ output_move_const_into_data_reg (operands)
   switch (const_method (operands[1]))
     {
     case MOVQ :
-#if defined (MOTOROLA)
-      return "moveq%.l %1,%0";
-#else
       return "moveq %1,%0";
-#endif
     case NOTB :
       operands[1] = GEN_INT (i ^ 0xff);
-#if defined (MOTOROLA)
-      return "moveq%.l %1,%0\n\tnot%.b %0";
-#else
       return "moveq %1,%0\n\tnot%.b %0";
-#endif	 
     case NOTW :
       operands[1] = GEN_INT (i ^ 0xffff);
-#if defined (MOTOROLA)
-      return "moveq%.l %1,%0\n\tnot%.w %0";
-#else
       return "moveq %1,%0\n\tnot%.w %0";
-#endif	 
     case NEGW :
-#if defined (MOTOROLA)
-      return "moveq%.l %#-128,%0\n\tneg%.w %0";
-#else
       return "moveq %#-128,%0\n\tneg%.w %0";
-#endif	 
     case SWAP :
       {
 	unsigned u = i;
 
 	operands[1] = GEN_INT ((u << 16) | (u >> 16));
-#if defined (MOTOROLA)
-	return "moveq%.l %1,%0\n\tswap %0";
-#else
 	return "moveq %1,%0\n\tswap %0";
-#endif	 
       }
     case MOVL :
 	return "move%.l %1,%0";
@@ -1717,11 +1697,7 @@ output_move_himode (operands)
 	       && INTVAL (operands[1]) < 128
 	       && INTVAL (operands[1]) >= -128)
 	{
-#if defined(MOTOROLA)
-	  return "moveq%.l %1,%0";
-#else
 	  return "moveq %1,%0";
-#endif
 	}
       else if (INTVAL (operands[1]) < 0x8000
 	       && INTVAL (operands[1]) >= -0x8000)
@@ -1821,11 +1797,7 @@ output_move_qimode (operands)
       && INTVAL (operands[1]) < 128
       && INTVAL (operands[1]) >= -128)
     {
-#if defined(MOTOROLA)
-      return "moveq%.l %1,%0";
-#else
       return "moveq %1,%0";
-#endif
     }
   if (operands[1] == const0_rtx && ADDRESS_REG_P (operands[0]))
     return "sub%.l %0,%0";
