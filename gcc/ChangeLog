@@ -1,3 +1,8 @@
+2002-09-20  Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
+
+	* config/arm/arm.md (sign_extract_onebit, not_signextract_onebit):
+	Add clobber of the condition code register.
+
 2002-09-18  Richard Earnshaw (rearnsha@arm.com)
 
 	PR optimization/7967
