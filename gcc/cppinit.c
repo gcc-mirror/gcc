@@ -858,8 +858,9 @@ static void sanity_checks (pfile)
 
   if (CPP_OPTION (pfile, precision) > BITS_PER_HOST_WIDEST_INT)
     cpp_error (pfile, DL_FATAL,
-	       "preprocessor arithmetic has maximum precision of %u bits; target requires %u bits",
-	       BITS_PER_HOST_WIDEST_INT, CPP_OPTION (pfile, precision));
+	       "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits",
+	       (unsigned long)BITS_PER_HOST_WIDEST_INT,
+	       (unsigned long)CPP_OPTION (pfile, precision));
 
   if (CPP_OPTION (pfile, precision) < CPP_OPTION (pfile, int_precision))
     cpp_error (pfile, DL_FATAL,
@@ -878,8 +879,9 @@ static void sanity_checks (pfile)
 
   if (CPP_OPTION (pfile, wchar_precision) > BITS_PER_CPPCHAR_T)
     cpp_error (pfile, DL_FATAL,
-	       "CPP on this host cannot handle wide character constants over %u bits, but the target requires %u bits",
-	       BITS_PER_CPPCHAR_T, CPP_OPTION (pfile, wchar_precision));
+	       "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits",
+	       (unsigned long)BITS_PER_CPPCHAR_T,
+	       (unsigned long)CPP_OPTION (pfile, wchar_precision));
 }
 #else
 # define sanity_checks(PFILE)

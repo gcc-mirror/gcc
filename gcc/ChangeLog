@@ -1,3 +1,7 @@
+2002-05-21  Andreas Jaeger  <aj@suse.de>
+
+	* cppinit.c (sanity_checks): Avoid printf mismatch warnings.
+
 2002-05-21  Richard Henderson  <rth@redhat.com>
 
 	* reg-stack.c (swap_rtx_condition, subst_stack_regs_pat): Use
@@ -33,7 +37,7 @@ Tue May 21 10:51:54 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(cselib_invalidate_regno): Use it to determine which hard
 	registers to scan when mode is not VOIDmode.
 
-2002-05-20  Duraid Madina   <duraid@fl.net.au>   
+2002-05-20  Duraid Madina   <duraid@fl.net.au>
 
 	* tradcpp.c (fixup_newlines): Use old-style function header.
 
@@ -215,7 +219,7 @@ config/alpha:
 
 	* toplev.c (display_help): Kill -a -ax help.
 
-	* config/1750a/1750a.h, config/alpha/alpha.h, 
+	* config/1750a/1750a.h, config/alpha/alpha.h,
 	config/clipper/clipper.h, config/dsp16xx/dsp16xx.h,
 	config/h8300/h8300.h, config/i960/i960.h, config/m68k/tower-as.h,
 	config/m88k/m88k.h, config/vax/vax.h, config/we32k/we32k.h:
@@ -258,7 +262,7 @@ config/alpha:
 	config/i386/i386-protos.h, config/i386/win32.h, config/i386/winnt.c,
 	config/ia64/ia64.c, config/ia64/ia64.h, config/m32r/m32r.c,
 	config/m32r/m32r.h, config/mcore/mcore.c, config/mcore/mcore.h,
-	config/pa/pa.c, config/rs6000/rs6000.c, config/rs6000/sysv4.h, 
+	config/pa/pa.c, config/rs6000/rs6000.c, config/rs6000/sysv4.h,
 	config/rs6000/xcoff.h, config/sh/sh.c, config/sh/sh.h,
 	config/v850/v850.c, config/v850/v850.h:
 	Move STRIP_NAME_ENCODING to out-of-line function and add
