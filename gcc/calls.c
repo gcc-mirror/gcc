@@ -132,8 +132,22 @@ static void store_one_arg	PROTO ((struct arg_data *, rtx, int, int,
    arguments on the stack, but that is too difficult to compute, so we just
    assume any function call might require the stack.  */
 
+static tree calls_function_save_exprs;
+
 static int
 calls_function (exp, which)
+     tree exp;
+     int which;
+{
+  int val;
+  calls_function_save_exprs = 0;
+  val = calls_function_1 (exp, which);
+  calls_function_save_exprs = 0;
+  return val;
+}
+
+static int
+calls_function_1 (exp, which)
      tree exp;
      int which;
 {
@@ -167,7 +181,12 @@ calls_function (exp, which)
     case SAVE_EXPR:
       if (SAVE_EXPR_RTL (exp) != 0)
 	return 0;
-      break;
+      if (value_member (exp, calls_function_save_exprs))
+	return 0;
+      calls_function_save_exprs = tree_cons (NULL_TREE, exp,
+					     calls_function_save_exprs);
+      return (TREE_OPERAND (exp, 0) != 0
+	      && calls_function_1 (TREE_OPERAND (exp, 0), which));
 
     case BLOCK:
       {
@@ -175,7 +194,7 @@ calls_function (exp, which)
 
 	for (local = BLOCK_VARS (exp); local; local = TREE_CHAIN (local))
 	  if (DECL_INITIAL (local) != 0
-	      && calls_function (DECL_INITIAL (local), which))
+	      && calls_function_1 (DECL_INITIAL (local), which))
 	    return 1;
       }
       {
@@ -184,7 +203,7 @@ calls_function (exp, which)
 	for (subblock = BLOCK_SUBBLOCKS (exp);
 	     subblock;
 	     subblock = TREE_CHAIN (subblock))
-	  if (calls_function (subblock, which))
+	  if (calls_function_1 (subblock, which))
 	    return 1;
       }
       return 0;
@@ -203,7 +222,7 @@ calls_function (exp, which)
 
   for (i = 0; i < length; i++)
     if (TREE_OPERAND (exp, i) != 0
-	&& calls_function (TREE_OPERAND (exp, i), which))
+	&& calls_function_1 (TREE_OPERAND (exp, i), which))
       return 1;
 
   return 0;
