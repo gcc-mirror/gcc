@@ -67,7 +67,12 @@ FLAGS_TO_PASS= \
 	AR='$(AR)' \
 	RANLIB='$(RANLIB)' \
 	PICFLAG='$(PICFLAG)' \
-	RUNTESTFLAGS='$(RUNTESTFLAGS)'
+	RUNTESTFLAGS='$(RUNTESTFLAGS)' \
+	prefix='$(prefix)' \
+	exec_prefix='$(exec_prefix)' \
+	libdir='$(libdir)' \
+	libsubdir='$(libsubdir)' \
+	tooldir='$(tooldir)'
 
 LIBG2C = libg2c.a
 
