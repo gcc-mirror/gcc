@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -493,10 +493,66 @@ begin
                end;
          end;
 
+         --  Get the arguments from the command line and from the eventual
+         --  argument file(s) specified on the command line.
+
          for Arg in Command_Arg + 1 .. Argument_Count loop
-            Last_Switches.Increment_Last;
-            Last_Switches.Table (Last_Switches.Last) :=
-              new String'(Argument (Arg));
+            declare
+               The_Arg : constant String := Argument (Arg);
+            begin
+               --  Check if an argument file is specified
+
+               if The_Arg (The_Arg'First) = '@' then
+                  declare
+                     Arg_File : Ada.Text_IO.File_Type;
+                     Line     : String (1 .. 256);
+                     Last     : Natural;
+
+                  begin
+                     --  Open the file. Fail if the file cannot be found.
+
+                     begin
+                        Open
+                          (Arg_File, In_File,
+                           The_Arg (The_Arg'First + 1 .. The_Arg'Last));
+
+                     exception
+                        when others =>
+                           Put
+                             (Standard_Error, "Cannot open argument file """);
+                           Put
+                             (Standard_Error,
+                              The_Arg (The_Arg'First + 1 .. The_Arg'Last));
+
+                           Put_Line (Standard_Error, """");
+                           raise Error_Exit;
+                     end;
+
+                     --  Read line by line and put the content of each
+                     --  non empty line in the Last_Switches table.
+
+                     while not End_Of_File (Arg_File) loop
+                        Get_Line (Arg_File, Line, Last);
+
+                        if Last /= 0 then
+                           Last_Switches.Increment_Last;
+                           Last_Switches.Table (Last_Switches.Last) :=
+                             new String'(Line (1 .. Last));
+                        end if;
+                     end loop;
+
+                     Close (Arg_File);
+                  end;
+
+               else
+                  --  It is not an argument file; just put the argument in
+                  --  the Last_Switches table.
+
+                  Last_Switches.Increment_Last;
+                  Last_Switches.Table (Last_Switches.Last) :=
+                    new String'(The_Arg);
+               end if;
+            end;
          end loop;
       end if;
    end if;

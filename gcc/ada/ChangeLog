@@ -1,3 +1,42 @@
+2004-01-26  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_ch3.adb (Build_Slice_Assignment): New TSS procedure for
+	one-dimensional array an slice assignments, when component type is
+	controlled.
+
+	* exp_ch5.adb (Expand_Assign_Array): If array is one-dimensional,
+	component type is controlled, and control_actions are in effect, use
+	TSS procedure rather than generating inline code.
+
+	* exp_tss.ads (TSS_Slice_Assign): New TSS procedure for one-dimensional
+	arrays with controlled components.
+
+2004-01-26  Vincent Celier  <celier@gnat.com>
+
+	* gnatcmd.adb (GNATCmd): Add specification of argument file on the
+	command line for the non VMS case.
+
+	* gnatlink.adb (Process_Binder_File): When building object file, if
+	GNU linker is used, put all object paths between quotes, to prevent ld
+	error when there are unusual characters (such as '!') in the paths.
+
+	* Makefile.generic: When there are sources in Ada and the main is in
+	C/C++, invoke gnatmake with -B, instead of -z.
+
+	* vms_conv.adb (Preprocess_Command_Data): New procedure, extracted
+	from VMS_Conversion.
+	(Process_Argument): New procedure, extracted from VMS_Conversion. Add
+	specification of argument file on the command line.
+
+2004-01-26  Bernard Banner  <banner@gnat.com>
+
+	* Makefile.in: Enable GMEM_LIB and SYMLIB for x86_64
+
+2004-01-26  Ed Schonberg  <schonberg@gnat.com>
+
+	* snames.adb: Update copyright notice.
+	Add info on slice assignment for controlled arrays.
+
 2004-01-23  Robert Dewar  <dewar@gnat.com>
 
 	* exp_aggr.adb: Minor reformatting

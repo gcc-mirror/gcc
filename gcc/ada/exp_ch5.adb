@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@ with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Pakd; use Exp_Pakd;
+with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Hostparm; use Hostparm;
 with Nlists;   use Nlists;
@@ -160,6 +161,10 @@ package body Exp_Ch5 is
       --  This switch is set to True if the array move must be done using
       --  an explicit front end generated loop.
 
+      procedure Apply_Dereference (Arg : in out Node_Id);
+      --  If the argument is an access to an array, and the assignment is
+      --  converted into a procedure call, apply explicit dereference.
+
       function Has_Address_Clause (Exp : Node_Id) return Boolean;
       --  Test if Exp is a reference to an array whose declaration has
       --  an address clause, or it is a slice of such an array.
@@ -184,6 +189,20 @@ package body Exp_Ch5 is
       --  decision that something is possibly unaligned is only to
       --  generate a front end loop, which is not so terrible.
       --  It would really be better if backend handled this ???
+
+      -----------------------
+      -- Apply_Dereference --
+      -----------------------
+
+      procedure Apply_Dereference (Arg : in out Node_Id) is
+         Typ : constant Entity_Id := Etype (Arg);
+      begin
+         if Is_Access_Type (Typ) then
+            Rewrite (Arg, Make_Explicit_Dereference (Loc,
+              Prefix => Relocate_Node (Arg)));
+            Analyze_And_Resolve (Arg, Designated_Type (Typ));
+         end if;
+      end Apply_Dereference;
 
       ------------------------
       -- Has_Address_Clause --
@@ -704,10 +723,47 @@ package body Exp_Ch5 is
          --  Cases where either Forwards_OK or Backwards_OK is true
 
          if Forwards_OK (N) or else Backwards_OK (N) then
-            Rewrite (N,
-              Expand_Assign_Array_Loop
-                (N, Larray, Rarray, L_Type, R_Type, Ndim,
-                 Rev => not Forwards_OK (N)));
+            if Controlled_Type (Component_Type (L_Type))
+              and then Base_Type (L_Type) = Base_Type (R_Type)
+              and then Ndim = 1
+              and then not No_Ctrl_Actions (N)
+            then
+               declare
+                  Proc : constant Entity_Id :=
+                           TSS (Base_Type (L_Type), TSS_Slice_Assign);
+                  Actuals : List_Id;
+
+               begin
+                  Apply_Dereference (Larray);
+                  Apply_Dereference (Rarray);
+                  Actuals := New_List (
+                    Duplicate_Subexpr (Larray,   Name_Req => True),
+                    Duplicate_Subexpr (Rarray,   Name_Req => True),
+                    Duplicate_Subexpr (Left_Lo,  Name_Req => True),
+                    Duplicate_Subexpr (Left_Hi,  Name_Req => True),
+                    Duplicate_Subexpr (Right_Lo, Name_Req => True),
+                    Duplicate_Subexpr (Right_Hi, Name_Req => True));
+
+                  if Forwards_OK (N) then
+                     Append_To (Actuals,
+                       New_Occurrence_Of (Standard_False, Loc));
+                  else
+                     Append_To (Actuals,
+                       New_Occurrence_Of (Standard_True, Loc));
+                  end if;
+
+                  Rewrite (N,
+                    Make_Procedure_Call_Statement (Loc,
+                      Name => New_Reference_To (Proc, Loc),
+                      Parameter_Associations => Actuals));
+               end;
+
+            else
+               Rewrite (N,
+                 Expand_Assign_Array_Loop
+                   (N, Larray, Rarray, L_Type, R_Type, Ndim,
+                    Rev => not Forwards_OK (N)));
+            end if;
 
          --  Case of both are false with No_Implicit_Conditionals
 
@@ -806,19 +862,53 @@ package body Exp_Ch5 is
                    Right_Opnd => Cright_Lo);
             end if;
 
-            Rewrite (N,
-              Make_Implicit_If_Statement (N,
-                Condition => Condition,
+            if Controlled_Type (Component_Type (L_Type))
+              and then Base_Type (L_Type) = Base_Type (R_Type)
+              and then Ndim = 1
+              and then not No_Ctrl_Actions (N)
+            then
 
-                Then_Statements => New_List (
-                  Expand_Assign_Array_Loop
-                   (N, Larray, Rarray, L_Type, R_Type, Ndim,
-                    Rev => False)),
+               --  Call TSS procedure for array assignment, passing the
+               --  the explicit bounds of right- and left-hand side.
 
-                Else_Statements => New_List (
-                  Expand_Assign_Array_Loop
-                   (N, Larray, Rarray, L_Type, R_Type, Ndim,
-                    Rev => True))));
+               declare
+                  Proc     : constant Node_Id :=
+                               TSS (Base_Type (L_Type), TSS_Slice_Assign);
+                  Actuals : List_Id;
+
+               begin
+                  Apply_Dereference (Larray);
+                  Apply_Dereference (Rarray);
+                  Actuals := New_List (
+                    Duplicate_Subexpr (Larray,   Name_Req => True),
+                    Duplicate_Subexpr (Rarray,   Name_Req => True),
+                    Duplicate_Subexpr (Left_Lo,  Name_Req => True),
+                    Duplicate_Subexpr (Left_Hi,  Name_Req => True),
+                    Duplicate_Subexpr (Right_Lo, Name_Req => True),
+                    Duplicate_Subexpr (Right_Hi, Name_Req => True));
+                  Append_To (Actuals, Condition);
+
+                  Rewrite (N,
+                    Make_Procedure_Call_Statement (Loc,
+                      Name => New_Reference_To (Proc, Loc),
+                      Parameter_Associations => Actuals));
+               end;
+
+            else
+               Rewrite (N,
+                 Make_Implicit_If_Statement (N,
+                   Condition => Condition,
+
+                   Then_Statements => New_List (
+                     Expand_Assign_Array_Loop
+                      (N, Larray, Rarray, L_Type, R_Type, Ndim,
+                       Rev => False)),
+
+                   Else_Statements => New_List (
+                     Expand_Assign_Array_Loop
+                      (N, Larray, Rarray, L_Type, R_Type, Ndim,
+                       Rev => True))));
+            end if;
          end if;
 
          Analyze (N, Suppress => All_Checks);
