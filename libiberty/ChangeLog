@@ -1,3 +1,9 @@
+Wed Feb  3 00:01:15 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* clock.c (HZ): Define in terms of (ISO C) CLOCKS_PER_SEC on 
+	platforms that don't have HZ.
+	* getruntime.c (HZ): Likewise.
+
 Sat Jan 30 13:28:04 1999  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (xstrdup.o): Depend on config.h.
