@@ -141,7 +141,7 @@ display ""
 display "	=== ACATS tests ==="
 
 if [ $# -eq 0 ]; then
-   chapters=`cd $dir/tests; echo *`
+   chapters=`cd $dir/tests; echo [a-z]*`
 else
    chapters=$*
 fi
@@ -199,7 +199,7 @@ for chapter in $chapters; do
          continue
       fi
 
-      target_gnatmake $extraflags -I$dir/support $main
+      target_gnatmake $extraflags -I$dir/support $main >> $dir/acats.log 2>&1
       if [ $? -ne 0 ]; then
          display "FAIL:	$i"
          failed="${failed}${i} "
