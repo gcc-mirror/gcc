@@ -1,3 +1,7 @@
+2000-08-07  Graham Stott  <grahams@cygnus.co.uk>
+
+	* mn10300.h (PREFERRED_RELOAD_CLASS): Limit memory reloads.
+
 2000-08-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	* sh.h (EXTRA_CONSTRAINT_Q): Adjust to GNU Coding Standards.
