@@ -1232,6 +1232,44 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   last_assemble_variable_decl = 0;
 
+  if (DECL_RTL_SET_P (decl) && GET_CODE (DECL_RTL (decl)) == REG)
+    {
+      /* Do output symbol info for global register variables, but do nothing
+	 else for them.  */
+
+      if (TREE_ASM_WRITTEN (decl))
+	return;
+      TREE_ASM_WRITTEN (decl) = 1;
+
+      /* Do no output if -fsyntax-only.  */
+      if (flag_syntax_only)
+	return;
+
+#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
+      /* File-scope global variables are output here.  */
+      if ((write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
+	   && top_level)
+	dbxout_symbol (decl, 0);
+#endif
+#ifdef SDB_DEBUGGING_INFO
+      if (write_symbols == SDB_DEBUG && top_level
+	  /* Leave initialized global vars for end of compilation;
+	     see comment in compile_file.  */
+	  && (TREE_PUBLIC (decl) == 0 || DECL_INITIAL (decl) == 0))
+	sdbout_symbol (decl, 0);
+#endif
+
+      /* Don't output any DWARF debugging information for variables here.
+	 In the case of local variables, the information for them is output
+	 when we do our recursive traversal of the tree representation for
+	 the entire containing function.  In the case of file-scope variables,
+	 we output information for all of them at the very end of compilation
+	 while we are doing our final traversal of the chain of file-scope
+	 declarations.  */
+
+      return;
+    }
+
   /* Normally no need to say anything here for external references,
      since assemble_external is called by the language-specific code
      when a declaration is first seen.  */
@@ -1244,13 +1282,6 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     return;
-
-  /* Do nothing for global register variables.  */
-  if (DECL_RTL_SET_P (decl) && GET_CODE (DECL_RTL (decl)) == REG)
-    {
-      TREE_ASM_WRITTEN (decl) = 1;
-      return;
-    }
 
   /* If type was incomplete when the variable was declared,
      see if it is complete now.  */
@@ -1380,6 +1411,27 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
            (decl, "requested alignment for %s is greater than implemented alignment of %d.",rounded);
 #endif
        
+#ifdef DBX_DEBUGGING_INFO
+      /* File-scope global variables are output here.  */
+      if (write_symbols == DBX_DEBUG && top_level)
+	dbxout_symbol (decl, 0);
+#endif
+#ifdef SDB_DEBUGGING_INFO
+      if (write_symbols == SDB_DEBUG && top_level
+	  /* Leave initialized global vars for end of compilation;
+	     see comment in compile_file.  */
+	  && (TREE_PUBLIC (decl) == 0 || DECL_INITIAL (decl) == 0))
+	sdbout_symbol (decl, 0);
+#endif
+
+      /* Don't output any DWARF debugging information for variables here.
+	 In the case of local variables, the information for them is output
+	 when we do our recursive traversal of the tree representation for
+	 the entire containing function.  In the case of file-scope variables,
+	 we output information for all of them at the very end of compilation
+	 while we are doing our final traversal of the chain of file-scope
+	 declarations.  */
+
 #if 0 /* ??? We should either delete this or add a comment describing what
 	 it was intended to do and why we shouldn't delete it.  */
       if (flag_shared_data)
@@ -1441,6 +1493,29 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   /* Record current section so we can restore it if dbxout.c clobbers it.  */
   saved_in_section = in_section;
+
+  /* Output the dbx info now that we have chosen the section.  */
+
+#ifdef DBX_DEBUGGING_INFO
+  /* File-scope global variables are output here.  */
+  if (write_symbols == DBX_DEBUG && top_level)
+    dbxout_symbol (decl, 0);
+#endif
+#ifdef SDB_DEBUGGING_INFO
+  if (write_symbols == SDB_DEBUG && top_level
+      /* Leave initialized global vars for end of compilation;
+	 see comment in compile_file.  */
+      && (TREE_PUBLIC (decl) == 0 || DECL_INITIAL (decl) == 0))
+    sdbout_symbol (decl, 0);
+#endif
+
+  /* Don't output any DWARF debugging information for variables here.
+     In the case of local variables, the information for them is output
+     when we do our recursive traversal of the tree representation for
+     the entire containing function.  In the case of file-scope variables,
+     we output information for all of them at the very end of compilation
+     while we are doing our final traversal of the chain of file-scope
+     declarations.  */
 
   /* If the debugging output changed sections, reselect the section
      that's supposed to be selected.  */
