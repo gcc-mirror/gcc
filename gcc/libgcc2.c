@@ -296,7 +296,7 @@ __udiv_w_sdiv (rp, a1, a0, d)
 	  /* Divide (c1*2^32 + c0) by d */
 	  sdiv_qrnnd (q, r, c1, c0, d);
 	  /* Add 2^31 to quotient */
-	  q += 1 << 31;
+	  q += (USItype) 1 << 31;
 	}
     }
   else
