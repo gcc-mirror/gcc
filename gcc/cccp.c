@@ -3984,34 +3984,18 @@ get_filename:
 
     strncpy (fname, fbeg, flen);
     fname[flen] = 0;
-    if (search_start)
+    /* If -M was specified, and this header file won't be added to the
+       dependency list, then don't count this as an error, because we can
+       still produce correct output.  Otherwise, we can't produce correct
+       output, because there may be dependencies we need inside the missing
+       file, and we don't know what directory this missing file exists in.  */
+    if (print_deps
+	&& (print_deps <= (angle_brackets || (system_include_depth > 0))))
+      warning ("No include path in which to find %s", fname);
+    else if (search_start)
       error_from_errno (fname);
     else
       error ("No include path in which to find %s", fname);
-    
-    /* For -M, add this file to the dependencies.  */
-    if (print_deps > (angle_brackets || (system_include_depth > 0))) {
-      /* Break the line before this.  */
-      deps_output ("", 0);
-
-      /* If it was requested as a system header file,
-	 then assume it belongs in the first place to look for such.  */
-      if (angle_brackets) {
-	for (searchptr = search_start; searchptr; searchptr = searchptr->next) {
-	  if (searchptr->fname) {
-	    if (searchptr->fname[0] == 0)
-	      continue;
-	    deps_output (searchptr->fname, 0);
-	    deps_output ("/", 0);
-	    break;
-	  }
-	}
-      }
-      /* Otherwise, omit the directory, as if the file existed
-	 in the directory with the source.  */
-      deps_output (fbeg, flen);
-      deps_output (" ", 0);
-    }
   } else {
     struct stat stat_f;
 
