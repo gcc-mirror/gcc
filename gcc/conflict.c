@@ -201,21 +201,20 @@ conflict_graph_add (graph, reg1, reg2)
 {
   int smaller = MIN (reg1, reg2);
   int larger = MAX (reg1, reg2);
+  struct conflict_graph_arc_def dummy;
   conflict_graph_arc arc;
-  void **hash_table_slot;
+  void **slot;
 
   /* A reg cannot conflict with itself.  */
   if (reg1 == reg2)
     abort ();
 
-  /* If the conflict is already there, do nothing. 
-
-     FIXME: This is a little wastful; it would be faster to look up the
-     conflict in the hash table, returning it if it exists and
-     inserting a new entry if it doesn't, all in one operation.  This
-     would save an extra hash lookup.  However, the hashtab interface
-     doesn't really allow this right now.  */
-  if (conflict_graph_conflict_p (graph, reg1, reg2))
+  dummy.smaller = smaller;
+  dummy.larger = larger;
+  slot = htab_find_slot (graph->arc_hash_table, (void *) &dummy, 1);
+  
+  /* If the conflict is already there, do nothing.  */
+  if (*slot != NULL)
     return 0;
 
   /* Allocate an arc.  */
@@ -234,9 +233,7 @@ conflict_graph_add (graph, reg1, reg2)
   graph->neighbor_heads[larger] = arc;
 
   /* Put it in the hash table.  */
-  hash_table_slot = htab_find_slot (graph->arc_hash_table, 
-				    (void *) arc, 1);
-  *hash_table_slot = (void *) arc;
+  *slot = (void *) arc;
 
   return 1;
 }
@@ -532,4 +529,3 @@ conflict_graph_compute (regs, p)
 
   return graph;
 }
-
