@@ -1,5 +1,9 @@
 Sun Feb 15 21:33:55 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* gcc.c: Get system includes, prototypes and macros via "system.h"
+	instead of doing it manually.  Change all calls of the ctype
+	macros to custom versions defined in "system.h".
+
 	* system.h: Fix return type of bcmp prototype from `void' to `int'.
 	Make bcopy, bcmp and bzero prototypes explicitly `extern'.
 	Add a prototype for getenv.
