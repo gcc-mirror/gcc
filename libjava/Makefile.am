@@ -188,7 +188,7 @@ libgcj.jar: $(built_java_source_files) $(java_source_files) $(x_java_source_file
 	test "$$fail" = no
 	-@rm -f tmp-list libgcj.jar
 ## Note that we explicitly want to include directory information.
-	find java gnu -type d -o -type f -name '*.class' | \
+	find java gnu org -type d -o -type f -name '*.class' | \
 	  sed -e '/\/\./d' -e '/\/xlib/d' | \
 	  $(ZIP) cfM0E@ $@
 
@@ -977,7 +977,6 @@ java/util/TooManyListenersException.java \
 java/util/Vector.java \
 java/util/WeakHashMap.java
 
-
 ## List of all .java files to be compiled.  Please keep this list
 ## alphabetical.  Please put files from java/lang, java/io, and java/util
 ## into core_java_source_files. Please put files from gnu/gcj/convert 
@@ -1252,6 +1251,60 @@ java/util/zip/ZipException.java	\
 java/util/zip/ZipFile.java \
 java/util/zip/ZipInputStream.java \
 java/util/zip/ZipOutputStream.java \
+org/w3c/dom/Attr.java \
+org/w3c/dom/CDATASection.java \
+org/w3c/dom/CharacterData.java \
+org/w3c/dom/Comment.java \
+org/w3c/dom/DOMException.java \
+org/w3c/dom/DOMImplementation.java \
+org/w3c/dom/Document.java \
+org/w3c/dom/DocumentFragment.java \
+org/w3c/dom/DocumentType.java \
+org/w3c/dom/Element.java \
+org/w3c/dom/Entity.java \
+org/w3c/dom/EntityReference.java \
+org/w3c/dom/NamedNodeMap.java \
+org/w3c/dom/Node.java \
+org/w3c/dom/NodeList.java \
+org/w3c/dom/Notation.java \
+org/w3c/dom/ProcessingInstruction.java \
+org/w3c/dom/Text.java \
+org/w3c/dom/ranges/DocumentRange.java \
+org/w3c/dom/ranges/Range.java \
+org/w3c/dom/ranges/RangeException.java \
+org/w3c/dom/traversal/DocumentTraversal.java \
+org/w3c/dom/traversal/NodeFilter.java \
+org/w3c/dom/traversal/NodeIterator.java \
+org/w3c/dom/traversal/TreeWalker.java \
+org/xml/sax/ext/DeclHandler.java \
+org/xml/sax/ext/LexicalHandler.java \
+org/xml/sax/helpers/AttributeListImpl.java \
+org/xml/sax/helpers/AttributesImpl.java \
+org/xml/sax/helpers/DefaultHandler.java \
+org/xml/sax/helpers/LocatorImpl.java \
+org/xml/sax/helpers/NamespaceSupport.java \
+org/xml/sax/helpers/ParserAdapter.java \
+org/xml/sax/helpers/ParserFactory.java \
+org/xml/sax/helpers/XMLFilterImpl.java \
+org/xml/sax/helpers/XMLReaderAdapter.java \
+org/xml/sax/helpers/XMLReaderFactory.java \
+org/xml/sax/AttributeList.java \
+org/xml/sax/Attributes.java \
+org/xml/sax/ContentHandler.java \
+org/xml/sax/DTDHandler.java \
+org/xml/sax/DocumentHandler.java \
+org/xml/sax/EntityResolver.java \
+org/xml/sax/ErrorHandler.java \
+org/xml/sax/HandlerBase.java \
+org/xml/sax/InputSource.java \
+org/xml/sax/Locator.java \
+org/xml/sax/Parser.java \
+org/xml/sax/SAXException.java \
+org/xml/sax/SAXNotRecognizedException.java \
+org/xml/sax/SAXNotSupportedException.java \
+org/xml/sax/SAXParseException.java \
+org/xml/sax/XMLFilter.java \
+org/xml/sax/XMLReader.java \
 $(awt_java_source_files) \
 $(convert_source_files)
 
