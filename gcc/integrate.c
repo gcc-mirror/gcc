@@ -67,6 +67,7 @@ static void note_modified_parmregs PROTO((rtx, rtx));
 static rtx copy_for_inline	PROTO((rtx));
 static void integrate_parm_decls PROTO((tree, struct inline_remap *, rtvec));
 static void integrate_decl_tree	PROTO((tree, int, struct inline_remap *));
+static void save_constants_in_decl_trees PROTO ((tree));
 static void subst_constants	PROTO((rtx *, rtx, struct inline_remap *));
 static void restore_constants	PROTO((rtx *));
 static void set_block_origin_self PROTO((tree));
@@ -430,6 +431,10 @@ save_for_inline_copying (fndecl)
 	      save_constants (&REG_NOTES (insn));
 	  }
 
+      /* Also scan all decls, and replace any constant pool references with the
+	 actual constant.  */
+      save_constants_in_decl_trees (DECL_INITIAL (fndecl));
+
       /* Clear out the constant pool so that we can recreate it with the
 	 copied constants below.  */
       init_const_rtx_hash_table ();
@@ -789,6 +794,10 @@ save_for_inline_nocopy (fndecl)
 	  note_stores (PATTERN (insn), note_modified_parmregs);
 	}
     }
+
+  /* Also scan all decls, and replace any constant pool references with the
+     actual constant.  */
+  save_constants_in_decl_trees (DECL_INITIAL (fndecl));
 
   /* We have now allocated all that needs to be allocated permanently
      on the rtx obstack.  Set our high-water mark, so that we
@@ -2030,6 +2039,23 @@ integrate_decl_tree (let, level, map)
 	  BLOCK_ABSTRACT_ORIGIN (node) = let;
 	}
     }
+}
+
+/* Given a BLOCK node LET, search for all DECL_RTL fields, and pass them
+   through save_constants.  */
+
+static void
+save_constants_in_decl_trees (let)
+     tree let;
+{
+  tree t;
+
+  for (t = BLOCK_VARS (let); t; t = TREE_CHAIN (t))
+    if (DECL_RTL (t) != 0)
+      save_constants (&DECL_RTL (t));
+
+  for (t = BLOCK_SUBBLOCKS (let); t; t = TREE_CHAIN (t))
+    save_constants_in_decl_trees (t);
 }
 
 /* Create a new copy of an rtx.
