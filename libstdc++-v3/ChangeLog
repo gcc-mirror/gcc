@@ -1,3 +1,12 @@
+2004-01-23  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/13831
+	* include/bits/fstream.tcc (underflow): Remove unused
+	variable.
+	* include/bits/streambuf_iterator.h (equal): Ditto.
+	* include/bits/locale_facets.h (_M_convert_from_char):
+	Ditto.
+
 2004-01-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR c/13814
