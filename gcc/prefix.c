@@ -279,8 +279,9 @@ translate_name (name)
   if (prefix == 0)
     prefix = PREFIX;
 
-  /* Remove any trailing directory separator from what we got.  */
-  if (IS_DIR_SEPARATOR (prefix[strlen (prefix) - 1]))
+  /* Remove any trailing directory separator from what we got. First check
+     for an empty prefix.  */
+  if (prefix[0] && IS_DIR_SEPARATOR (prefix[strlen (prefix) - 1]))
     {
       char * temp = xstrdup (prefix);
       temp[strlen (temp) - 1] = 0;
