@@ -1,3 +1,9 @@
+2004-06-24  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/15239
+	* expmed.c (expand_mult): Remove artificial restriction on the
+	maximum cost of a synthetic multiplication sequence.
+
 2004-06-24  Eric Christopher  <echristo@redhat.com>
 
 	* combine.c (distribute_notes): Don't delete sets to
