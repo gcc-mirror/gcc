@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for mc680x0 running NeXTSTEP
-   Copyright (C) 1989, 90, 91, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90, 91, 92, 93, 94, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -191,9 +191,8 @@ Boston, MA 02111-1307, USA.  */
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)                          \
 {                                                                          \
   rtx _addr, _func;                                                        \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 2)), TRAMP);   \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 18)), CXT);    \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 22)), FNADDR); \
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 10)), CXT);    \
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 14)), FNADDR); \
   _addr = memory_address (SImode, (TRAMP));                                  \
   _func =  gen_rtx (SYMBOL_REF, Pmode, "__enable_execute_stack");          \
   emit_library_call (_func, 0, VOIDmode, 1, _addr, Pmode);                   \
