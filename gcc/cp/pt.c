@@ -4836,7 +4836,7 @@ tsubst_friend_class (friend_tmpl, args)
       if (TREE_CODE (context) == NAMESPACE_DECL)
 	push_nested_namespace (context);
       else
-	push_nested_class (context, 2);
+	push_nested_class (tsubst (context, args, tf_none, NULL_TREE), 2);
     }
 
   /* First, we look for a class template.  */

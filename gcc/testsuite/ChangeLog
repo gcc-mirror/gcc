@@ -1,3 +1,8 @@
+2002-06-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/6695
+	* g++.dg/template/friend7.C: New file.
+
 2002-06-27  Aldy Hernandez  <aldyh@redhat.com>
 
         * gcc.c-torture/execute/string-opt-8.c (strncmp): Fix typo in
