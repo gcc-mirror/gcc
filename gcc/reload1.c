@@ -9714,11 +9714,10 @@ reload_combine ()
 
 /* Check if DST is a register or a subreg of a register; if it is,
    update reg_state[regno].store_ruid and reg_state[regno].use_index
-   accordingly.  Called via note_stores from reload_combine.
-   The second argument, SET, is ignored.  */
+   accordingly.  Called via note_stores from reload_combine.  */
 static void
 reload_combine_note_store (dst, set)
-     rtx dst, set ATTRIBUTE_UNUSED;
+     rtx dst, set;
 {
   int regno = 0;
   int i;
@@ -9742,8 +9741,11 @@ reload_combine_note_store (dst, set)
       || GET_CODE (SET_DEST (set)) == SIGN_EXTRACT
       || GET_CODE (SET_DEST (set)) == STRICT_LOW_PART)
     {
-      reg_state[regno].use_index = -1;
-      reg_state[regno].store_ruid = reload_combine_ruid;
+      for (i = size / UNITS_PER_WORD - 1 + regno; i >= regno; i--)
+	{
+	  reg_state[i].use_index = -1;
+	  reg_state[i].store_ruid = reload_combine_ruid;
+	}
     }
   else
     {
@@ -10058,20 +10060,12 @@ move2add_note_store (dst, set)
 
   regno += REGNO (dst);
 
-  if (HARD_REGNO_NREGS (regno, mode) == 1 && GET_CODE (set) == SET)
+  if (HARD_REGNO_NREGS (regno, mode) == 1 && GET_CODE (set) == SET
+      && GET_CODE (SET_DEST (set)) != ZERO_EXTRACT
+      && GET_CODE (SET_DEST (set)) != SIGN_EXTRACT
+      && GET_CODE (SET_DEST (set)) != STRICT_LOW_PART)
     {
       rtx src = SET_SRC (set);
-
-      /* Indicate that this register has been recently written to,
-	 but the exact contents are not available.  */
-      if (GET_CODE (SET_DEST (set)) == ZERO_EXTRACT
-	  || GET_CODE (SET_DEST (set)) == SIGN_EXTRACT
-	  || GET_CODE (SET_DEST (set)) == STRICT_LOW_PART)
-	{
-	  reg_set_luid[regno] = move2add_luid;
-	  reg_offset[regno] = dst;
-	  return;
-	}
 
       reg_mode[regno] = mode;
       switch (GET_CODE (src))
