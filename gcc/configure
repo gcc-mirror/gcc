@@ -2229,7 +2229,7 @@ EOF
 fi
 
 # Find some useful tools
-for ac_prog in mawk gawk nawk awk
+for ac_prog in gawk mawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -5093,7 +5093,7 @@ else
 	saved_CFLAGS="${CFLAGS}"
 	CC="${CC_FOR_BUILD}" CFLAGS="${CFLAGS_FOR_BUILD}" \
 	${realsrcdir}/configure \
-		--target=$target --host=$build --build=$build
+		--target=$target_alias --host=$build_alias --build=$build_alias
 	CFLAGS="${saved_CFLAGS}"
 
 	# We just finished tests for the build machine, so rename
@@ -6870,7 +6870,7 @@ elif test -f $gcc_cv_as_gas_srcdir/configure.in -a -f ../gas/Makefile; then
 	gcc_cv_gas_minor_version=`expr "$gcc_cv_gas_version" : "VERSION=[0-9]*\.\([0-9]*\)"`
 fi
 
-if test "x$gcc_cv_as" = x -a x$build = x$host; then
+if test "x$gcc_cv_as" = x; then
 	# Search the same directories that the installed compiler will
 	# search.  Else we may find the wrong assembler and lose.  If we
 	# do not find a suitable assembler binary, then try the user's
@@ -6963,7 +6963,7 @@ elif test -f $gcc_cv_ld_gld_srcdir/configure.in -a -f ../ld/Makefile; then
 	gcc_cv_gld_minor_version=`expr "$gcc_cv_gld_version" : "VERSION=[0-9]*\.\([0-9]*\)"`
 fi
 
-if test "x$gcc_cv_ld" = x -a x$build = x$host; then
+if test "x$gcc_cv_ld" = x; then
 	# Search the same directories that the installed compiler will
 	# search.  Else we may find the wrong linker and lose.  If we
 	# do not find a suitable linker binary, then try the user's
@@ -7033,32 +7033,28 @@ echo $ac_n "checking what nm to use""... $ac_c" 1>&6
 echo "configure:7034: checking what nm to use" >&5
 if test -x nm$host_exeext; then
 	gcc_cv_nm=./nm$host_exeext
-elif test x$build = x$host; then
-	if test "x$program_prefix" != xNONE; then
-		gcc_cv_nm=${program_prefix}nm$host_exeext
-	else
-		gcc_cv_nm=`echo nm | sed ${program_transform_name}`$host_exeext
-	fi
+elif test "x$program_prefix" != xNONE; then
+	gcc_cv_nm=${program_prefix}nm$host_exeext
+else
+	gcc_cv_nm=`echo nm | sed ${program_transform_name}`$host_exeext
 fi
 echo "$ac_t""$gcc_cv_nm" 1>&6
 
 # Figure out what objdump we will be using.
 echo $ac_n "checking what objdump to use""... $ac_c" 1>&6
-echo "configure:7048: checking what objdump to use" >&5
+echo "configure:7046: checking what objdump to use" >&5
 if test -x objdump$host_exeext; then
 	gcc_cv_objdump=./objdump$host_exeext
-elif test x$build = x$host; then
-	if test "x$program_prefix" != xNONE; then
-		gcc_cv_objdump=${program_prefix}objdump$host_exeext
-	else
-		gcc_cv_objdump=`echo objdump | sed ${program_transform_name}`$host_exeext
-	fi
+elif test "x$program_prefix" != xNONE; then
+	gcc_cv_objdump=${program_prefix}objdump$host_exeext
+else
+	gcc_cv_objdump=`echo objdump | sed ${program_transform_name}`$host_exeext
 fi
 echo "$ac_t""$gcc_cv_objdump" 1>&6
 
 # Figure out what assembler alignment features are present.
 echo $ac_n "checking assembler alignment features""... $ac_c" 1>&6
-echo "configure:7062: checking assembler alignment features" >&5
+echo "configure:7058: checking assembler alignment features" >&5
 gcc_cv_as_alignment_features=none
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
 	# Gas version 2.6 and later support for .balign and .p2align.
@@ -7106,7 +7102,7 @@ fi
 echo "$ac_t""$gcc_cv_as_alignment_features" 1>&6
 
 echo $ac_n "checking assembler subsection support""... $ac_c" 1>&6
-echo "configure:7110: checking assembler subsection support" >&5
+echo "configure:7106: checking assembler subsection support" >&5
 gcc_cv_as_subsections=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 9 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
@@ -7146,7 +7142,7 @@ fi
 echo "$ac_t""$gcc_cv_as_subsections" 1>&6
 
 echo $ac_n "checking assembler weak support""... $ac_c" 1>&6
-echo "configure:7150: checking assembler weak support" >&5
+echo "configure:7146: checking assembler weak support" >&5
 gcc_cv_as_weak=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 2 -o "$gcc_cv_gas_major_version" -gt 2; then
@@ -7169,7 +7165,7 @@ fi
 echo "$ac_t""$gcc_cv_as_weak" 1>&6
 
 echo $ac_n "checking assembler hidden support""... $ac_c" 1>&6
-echo "configure:7173: checking assembler hidden support" >&5
+echo "configure:7169: checking assembler hidden support" >&5
 gcc_cv_as_hidden=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 10 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
@@ -7195,7 +7191,7 @@ libgcc_visibility=$gcc_cv_as_hidden
 
 
 echo $ac_n "checking assembler leb128 support""... $ac_c" 1>&6
-echo "configure:7199: checking assembler leb128 support" >&5
+echo "configure:7195: checking assembler leb128 support" >&5
 gcc_cv_as_leb128=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 11 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
@@ -7240,7 +7236,7 @@ fi
 echo "$ac_t""$gcc_cv_as_leb128" 1>&6
 
 echo $ac_n "checking assembler eh_frame optimization""... $ac_c" 1>&6
-echo "configure:7244: checking assembler eh_frame optimization" >&5
+echo "configure:7240: checking assembler eh_frame optimization" >&5
 gcc_cv_as_eh_frame=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 12 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
@@ -7321,7 +7317,7 @@ fi
 echo "$ac_t""$gcc_cv_as_eh_frame" 1>&6
 
 echo $ac_n "checking assembler section merging support""... $ac_c" 1>&6
-echo "configure:7325: checking assembler section merging support" >&5
+echo "configure:7321: checking assembler section merging support" >&5
 gcc_cv_as_shf_merge=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 12 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
@@ -7347,7 +7343,7 @@ case "$target" in
   # All TARGET_ABI_OSF targets.
   alpha*-*-osf* | alpha*-*-linux* | alpha*-*-*bsd*)
     echo $ac_n "checking assembler supports explicit relocations""... $ac_c" 1>&6
-echo "configure:7351: checking assembler supports explicit relocations" >&5
+echo "configure:7347: checking assembler supports explicit relocations" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_explicit_relocs'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7397,7 +7393,7 @@ EOF
     ;;
   sparc*-*-*)
     echo $ac_n "checking assembler .register pseudo-op support""... $ac_c" 1>&6
-echo "configure:7401: checking assembler .register pseudo-op support" >&5
+echo "configure:7397: checking assembler .register pseudo-op support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_register_pseudo_op'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7425,7 +7421,7 @@ EOF
     fi
 
     echo $ac_n "checking assembler supports -relax""... $ac_c" 1>&6
-echo "configure:7429: checking assembler supports -relax" >&5
+echo "configure:7425: checking assembler supports -relax" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_relax_opt'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7453,7 +7449,7 @@ EOF
     fi
 
     echo $ac_n "checking assembler and linker support unaligned pc related relocs""... $ac_c" 1>&6
-echo "configure:7457: checking assembler and linker support unaligned pc related relocs" >&5
+echo "configure:7453: checking assembler and linker support unaligned pc related relocs" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_sparc_ua_pcrel'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7479,8 +7475,8 @@ EOF
 
     fi
 
-    echo $ac_n "checking assembler and linker support unaligned pc related relocs against hidden symbols""... $ac_c" 1>&6
-echo "configure:7484: checking assembler and linker support unaligned pc related relocs against hidden symbols" >&5
+    echo $ac_n "checking assembler and linker support unaligned pc related relocs against hidden AC_ACVERSION,AC_AIX,AC_ALLOCA,AC_ARG_ARRAY,AC_ARG_ENABLE,AC_ARG_PROGRAM,AC_ARG_WITH,AC_BEFORE,AC_CACHE_CHECK,AC_CACHE_LOAD,AC_CACHE_SAVE,AC_CACHE_VAL,AC_CANONICAL_BUILD,AC_CANONICAL_HOST,AC_CANONICAL_SYSTEM,AC_CANONICAL_TARGET,AC_CHAR_UNSIGNED,AC_CHECKING,AC_CHECK_FILE,AC_CHECK_FILES,AC_CHECK_FUNC,AC_CHECK_FUNCS,AC_CHECK_HEADER,AC_CHECK_HEADERS,AC_CHECK_HEADERS_DIRENT,AC_CHECK_HEADER_DIRENT,AC_CHECK_LIB,AC_CHECK_PROG,AC_CHECK_PROGS,AC_CHECK_SIZEOF,AC_CHECK_TOOL,AC_CHECK_TOOL_PREFIX,AC_CHECK_TYPE,AC_COMPILE_CHECK,AC_CONFIG_AUX_DIR,AC_CONFIG_AUX_DIRS,AC_CONFIG_AUX_DIR_DEFAULT,AC_CONFIG_HEADER,AC_CONFIG_SUBDIRS,AC_CONST,AC_CROSS_CHECK,AC_CYGWIN,AC_CYGWIN32,AC_C_BIGENDIAN,AC_C_CHAR_UNSIGNED,AC_C_CONST,AC_C_CROSS,AC_C_INLINE,AC_C_LONG_DOUBLE,AC_C_STRINGIZE,AC_DECL_SYS_SIGLIST,AC_DECL_YYTEXT,AC_DEFINE,AC_DEFINE_UNQUOTED,AC_DEFUN,AC_DIR_HEADER,AC_DIVERSION_CMDS,AC_DIVERSION_CURRENT,AC_DIVERSION_ICMDS,AC_DIVERSION_INIT,AC_DIVERSION_NORMAL,AC_DIVERSION_NORMAL_1,AC_DIVERSION_NORMAL_2,AC_DIVERSION_NORMAL_3,AC_DIVERSION_NORMAL_4,AC_DIVERSION_NOTICE,AC_DIVERSION_SED,AC_DIVERT_POP,AC_DIVERT_PUSH,AC_DYNIX_SEQ,AC_EGREP_CPP,AC_EGREP_HEADER,AC_ENABLE,AC_EPI,AC_ERROR,AC_EXEEXT,AC_F77_LIBRARY_LDFLAGS,AC_FD_CC,AC_FD_MSG,AC_FIND_X,AC_FIND_XTRA,AC_FUNC_ALLOCA,AC_FUNC_CHECK,AC_FUNC_CLOSEDIR_VOID,AC_FUNC_FNMATCH,AC_FUNC_GETLOADAVG,AC_FUNC_GETMNTENT,AC_FUNC_GETPGRP,AC_FUNC_MEMCMP,AC_FUNC_MMAP,AC_FUNC_MMAP_ANYWHERE,AC_FUNC_MMAP_FILE,AC_FUNC_SELECT_ARGTYPES,AC_FUNC_SETPGRP,AC_FUNC_SETVBUF_REVERSED,AC_FUNC_STRCOLL,AC_FUNC_STRFTIME,AC_FUNC_UTIME_NULL,AC_FUNC_VFORK,AC_FUNC_VPRINTF,AC_FUNC_WAIT3,AC_GCC_TRADITIONAL,AC_GETGROUPS_T,AC_GETLOADAVG,AC_HAVE_FUNCS,AC_HAVE_HEADERS,AC_HAVE_LIBRARY,AC_HAVE_POUNDBANG,AC_HEADER_CHECK,AC_HEADER_DIRENT,AC_HEADER_EGREP,AC_HEADER_MAJOR,AC_HEADER_STAT,AC_HEADER_STDC,AC_HEADER_SYS_WAIT,AC_HEADER_TIME,AC_INIT,AC_INIT_BINSH,AC_INIT_NOTICE,AC_INIT_PARSE_ARGS,AC_INIT_PREPARE,AC_INLINE,AC_INT_16_BITS,AC_IRIX_SUN,AC_ISC_POSIX,AC_LANG,AC_LANG_C,AC_LANG_CPLUSPLUS,AC_LANG_FORTRAN77,AC_LANG_RESTORE,AC_LANG_SAVE,AC_LINK_FILES,AC_LIST_HEADER,AC_LN_S,AC_LONG_64_BITS,AC_LONG_DOUBLE,AC_LONG_FILE_NAMES,AC_MAJOR_HEADER,AC_MEMORY_H,AC_MINGW32,AC_MINIX,AC_MINUS_C_MINUS_O,AC_MMAP,AC_MODE_T,AC_MSG_CHECKING,AC_MSG_ERROR,AC_MSG_RESULT,AC_MSG_WARN,AC_OBJEXT,AC_OBSOLETE,AC_OFF_T,AC_OUTPUT,AC_OUTPUT_COMMANDS,AC_OUTPUT_FILES,AC_OUTPUT_HEADER,AC_OUTPUT_LINKS,AC_OUTPUT_MAKE_DEFS,AC_OUTPUT_SUBDIRS,AC_PATH_PROG,AC_PATH_PROGS,AC_PATH_X,AC_PATH_XTRA,AC_PATH_X_DIRECT,AC_PATH_X_XMKMF,AC_PID_T,AC_PREFIX,AC_PREFIX_DEFAULT,AC_PREFIX_PROGRAM,AC_PREREQ,AC_PREREQ_CANON,AC_PREREQ_COMPARE,AC_PREREQ_SPLIT,AC_PRO,AC_PROGRAMS_CHECK,AC_PROGRAMS_PATH,AC_PROGRAM_CHECK,AC_PROGRAM_EGREP,AC_PROGRAM_PATH,AC_PROG_AWK,AC_PROG_CC,AC_PROG_CC_C_O,AC_PROG_CC_G,AC_PROG_CC_GNU,AC_PROG_CC_WORKS,AC_PROG_CPP,AC_PROG_CXX,AC_PROG_CXXCPP,AC_PROG_CXX_EXIT_DECLARATION,AC_PROG_CXX_G,AC_PROG_CXX_GNU,AC_PROG_CXX_WORKS,AC_PROG_ECHO_N,AC_PROG_F77,AC_PROG_F77_C_O,AC_PROG_F77_G,AC_PROG_F77_GNU,AC_PROG_F77_WORKS,AC_PROG_GCC_TRADITIONAL,AC_PROG_INSTALL,AC_PROG_LEX,AC_PROG_LN_S,AC_PROG_MAKE_SET,AC_PROG_RANLIB,AC_PROG_YACC,AC_PROVIDE,AC_PROVIDE_AC_ARG_ENABLE,AC_PROVIDE_AC_ARG_PROGRAM,AC_PROVIDE_AC_ARG_WITH,AC_PROVIDE_AC_CANONICAL_BUILD,AC_PROVIDE_AC_CANONICAL_HOST,AC_PROVIDE_AC_CANONICAL_SYSTEM,AC_PROVIDE_AC_CANONICAL_TARGET,AC_PROVIDE_AC_CHECK_FUNC,AC_PROVIDE_AC_CHECK_FUNCS,AC_PROVIDE_AC_CHECK_HEADER,AC_PROVIDE_AC_CHECK_HEADERS,AC_PROVIDE_AC_CHECK_PROG,AC_PROVIDE_AC_CHECK_PROGS,AC_PROVIDE_AC_CHECK_TOOL,AC_PROVIDE_AC_CHECK_TOOL_PREFIX,AC_PROVIDE_AC_CHECK_TYPE,AC_PROVIDE_AC_CONFIG_AUX_DIRS,AC_PROVIDE_AC_CONFIG_AUX_DIR_DEFAULT,AC_PROVIDE_AC_CONFIG_HEADER,AC_PROVIDE_AC_C_CONST,AC_PROVIDE_AC_C_INLINE,AC_PROVIDE_AC_C_STRINGIZE,AC_PROVIDE_AC_EGREP_CPP,AC_PROVIDE_AC_EGREP_HEADER,AC_PROVIDE_AC_FUNC_ALLOCA,AC_PROVIDE_AC_FUNC_MMAP_ANYWHERE,AC_PROVIDE_AC_FUNC_MMAP_FILE,AC_PROVIDE_AC_FUNC_VFORK,AC_PROVIDE_AC_HEADER_STDC,AC_PROVIDE_AC_HEADER_SYS_WAIT,AC_PROVIDE_AC_HEADER_TIME,AC_PROVIDE_AC_INIT,AC_PROVIDE_AC_INIT_BINSH,AC_PROVIDE_AC_INIT_NOTICE,AC_PROVIDE_AC_INIT_PARSE_ARGS,AC_PROVIDE_AC_INIT_PREPARE,AC_PROVIDE_AC_ISC_POSIX,AC_PROVIDE_AC_LANG_C,AC_PROVIDE_AC_OUTPUT_COMMANDS,AC_PROVIDE_AC_PATH_PROG,AC_PROVIDE_AC_PROG_AWK,AC_PROVIDE_AC_PROG_CC,AC_PROVIDE_AC_PROG_CC_C_O,AC_PROVIDE_AC_PROG_CC_G,AC_PROVIDE_AC_PROG_CC_GNU,AC_PROVIDE_AC_PROG_CC_WORKS,AC_PROVIDE_AC_PROG_CPP,AC_PROVIDE_AC_PROG_ECHO_N,AC_PROVIDE_AC_PROG_MAKE_SET,AC_PROVIDE_AC_PROG_RANLIB,AC_PROVIDE_AC_REQUIRE_CPP,AC_PROVIDE_AC_SEARCH_LIBS,AC_PROVIDE_AC_TRY_COMMAND,AC_PROVIDE_AC_TRY_COMPILE,AC_PROVIDE_AC_TRY_COMPILER,AC_PROVIDE_AC_TRY_CPP,AC_PROVIDE_AC_TRY_EVAL,AC_PROVIDE_AC_TRY_LINK,AC_PROVIDE_AC_TRY_LINK_FUNC,AC_PROVIDE_AC_TRY_RUN,AC_PROVIDE_AC_TRY_RUN_NATIVE,AC_PROVIDE_AC_TYPE_GETGROUPS,AC_PROVIDE_AC_TYPE_OFF_T,AC_PROVIDE_AC_TYPE_PID_T,AC_PROVIDE_AC_TYPE_SIZE_T,AC_PROVIDE_AC_TYPE_UID_T,AC_PROVIDE_AM_GNU_GETTEXT,AC_PROVIDE_AM_ICONV,AC_PROVIDE_AM_LANGINFO_CODESET,AC_PROVIDE_AM_LC_MESSAGES,AC_PROVIDE_AM_PATH_PROG_WITH_TEST,AC_PROVIDE_AM_WITH_NLS,AC_PROVIDE_gcc_AC_CHECK_DECL,AC_PROVIDE_gcc_AC_CHECK_DECLS,AC_PROVIDE_gcc_AC_CHECK_PROG_VER,AC_PROVIDE_gcc_AC_COMPILE_CHECK_SIZEOF,AC_PROVIDE_gcc_AC_C_CHARSET,AC_PROVIDE_gcc_AC_C_CHAR_BIT,AC_PROVIDE_gcc_AC_C_COMPILE_ENDIAN,AC_PROVIDE_gcc_AC_C_FLOAT_FORMAT,AC_PROVIDE_gcc_AC_C_LONG_DOUBLE,AC_PROVIDE_gcc_AC_C_LONG_LONG,AC_PROVIDE_gcc_AC_C_VOLATILE,AC_PROVIDE_gcc_AC_C__BOOL,AC_PROVIDE_gcc_AC_EXAMINE_OBJECT,AC_PROVIDE_gcc_AC_FUNC_MKDIR_TAKES_ONE_ARG,AC_PROVIDE_gcc_AC_FUNC_PRINTF_PTR,AC_PROVIDE_gcc_AC_HEADER_STDBOOL,AC_PROVIDE_gcc_AC_HEADER_STRING,AC_PROVIDE_gcc_AC_PROG_GNAT,AC_PROVIDE_gcc_AC_PROG_INSTALL,AC_PROVIDE_gcc_AC_PROG_LN,AC_PROVIDE_gcc_AC_PROG_LN_S,AC_PROVIDE_jm_GLIBC21,AC_REPLACE_FUNCS,AC_REQUIRE,AC_REQUIRE_CPP,AC_RESTARTABLE_SYSCALLS,AC_RETSIGTYPE,AC_REVISION,AC_RSH,AC_SCO_INTL,AC_SEARCH_LIBS,AC_SETVBUF_REVERSED,AC_SET_MAKE,AC_SITE_LOAD,AC_SIZEOF_TYPE,AC_SIZE_T,AC_STAT_MACROS_BROKEN,AC_STDC_HEADERS,AC_STRCOLL,AC_STRUCT_ST_BLKSIZE,AC_STRUCT_ST_BLOCKS,AC_STRUCT_ST_RDEV,AC_STRUCT_TIMEZONE,AC_STRUCT_TM,AC_ST_BLKSIZE,AC_ST_BLOCKS,AC_ST_RDEV,AC_SUBST,AC_SUBST_ADAC,AC_SUBST_ALL,AC_SUBST_ALLOCA,AC_SUBST_AWK,AC_SUBST_BISON,AC_SUBST_BUILD_INCLUDED_LIBINTL,AC_SUBST_BUILD_INFO,AC_SUBST_CATALOGS,AC_SUBST_CATOBJEXT,AC_SUBST_CC,AC_SUBST_CFLAGS,AC_SUBST_COLLECT2_LIBS,AC_SUBST_CPP,AC_SUBST_CPPFLAGS,AC_SUBST_CROSS,AC_SUBST_CXXFLAGS,AC_SUBST_DATADIRNAME,AC_SUBST_DEFS,AC_SUBST_FFLAGS,AC_SUBST_FILE,AC_SUBST_FLEX,AC_SUBST_FORBUILD,AC_SUBST_GENCAT,AC_SUBST_GENERATED_MANPAGES,AC_SUBST_GLIBC21,AC_SUBST_GMSGFMT,AC_SUBST_GNATBIND,AC_SUBST_GNAT_LIBEXC,AC_SUBST_HOST_CC,AC_SUBST_HOST_CFLAGS,AC_SUBST_HOST_PREFIX,AC_SUBST_HOST_PREFIX_1,AC_SUBST_INSTALL,AC_SUBST_INSTALL_DATA,AC_SUBST_INSTALL_PROGRAM,AC_SUBST_INSTOBJEXT,AC_SUBST_INTLBISON,AC_SUBST_INTLDEPS,AC_SUBST_INTLLIBS,AC_SUBST_INTLOBJS,AC_SUBST_INTL_LIBTOOL_SUFFIX_PREFIX,AC_SUBST_LDFLAGS,AC_SUBST_LIBICONV,AC_SUBST_LIBS,AC_SUBST_LN,AC_SUBST_LN_S,AC_SUBST_MAKEINFO,AC_SUBST_MKINSTALLDIRS,AC_SUBST_MSGFMT,AC_SUBST_NO_MINUS_C_MINUS_O,AC_SUBST_OUTPUT_OPTION,AC_SUBST_PACKAGE,AC_SUBST_POSUB,AC_SUBST_RANLIB,AC_SUBST_SET_MAKE,AC_SUBST_SHELL,AC_SUBST_STMP_FIXINC,AC_SUBST_STMP_FIXPROTO,AC_SUBST_SYSTEM_HEADER_DIR,AC_SUBST_TARGET_GETGROUPS_T,AC_SUBST_USE_INCLUDED_LIBINTL,AC_SUBST_USE_NLS,AC_SUBST_VERSION,AC_SUBST_XGETTEXT,AC_SUBST_bindir,AC_SUBST_build,AC_SUBST_build_alias,AC_SUBST_build_cpu,AC_SUBST_build_os,AC_SUBST_build_vendor,AC_SUBST_datadir,AC_SUBST_enable_multilib,AC_SUBST_enable_shared,AC_SUBST_exec_prefix,AC_SUBST_have_mktemp_command,AC_SUBST_host,AC_SUBST_host_alias,AC_SUBST_host_cpu,AC_SUBST_host_os,AC_SUBST_host_vendor,AC_SUBST_includedir,AC_SUBST_infodir,AC_SUBST_inhibit_libc,AC_SUBST_libdir,AC_SUBST_libexecdir,AC_SUBST_libgcc_visibility,AC_SUBST_localstatedir,AC_SUBST_mandir,AC_SUBST_manext,AC_SUBST_objext,AC_SUBST_oldincludedir,AC_SUBST_prefix,AC_SUBST_program_transform_name,AC_SUBST_sbindir,AC_SUBST_sharedstatedir,AC_SUBST_stage1_cflags,AC_SUBST_strict1_warn,AC_SUBST_sysconfdir,AC_SUBST_target,AC_SUBST_target_alias,AC_SUBST_target_cpu,AC_SUBST_target_os,AC_SUBST_target_vendor,AC_SUBST_warn_cflags,AC_SYS_INTERPRETER,AC_SYS_LONG_FILE_NAMES,AC_SYS_RESTARTABLE_SYSCALLS,AC_SYS_SIGLIST_DECLARED,AC_TEST_CPP,AC_TEST_PROGRAM,AC_TIMEZONE,AC_TIME_WITH_SYS_TIME,AC_TRY_COMMAND,AC_TRY_COMPILE,AC_TRY_COMPILER,AC_TRY_CPP,AC_TRY_EVAL,AC_TRY_LINK,AC_TRY_LINK_FUNC,AC_TRY_RUN,AC_TRY_RUN_NATIVE,AC_TYPE_GETGROUPS,AC_TYPE_MODE_T,AC_TYPE_OFF_T,AC_TYPE_PID_T,AC_TYPE_SIGNAL,AC_TYPE_SIZE_T,AC_TYPE_UID_T,AC_UID_T,AC_UNISTD_H,AC_USG,AC_UTIME_NULL,AC_VALIDATE_CACHED_SYSTEM_TUPLE,AC_VERBOSE,AC_VFORK,AC_VPRINTF,AC_WAIT3,AC_WARN,AC_WITH,AC_WORDS_BIGENDIAN,AC_XENIX_DIR,AC_YYTEXT_POINTER,AM_GNU_GETTEXT,AM_ICONV,AM_LANGINFO_CODESET,AM_LC_MESSAGES,AM_PATH_PROG_WITH_TEST,AM_WITH_NLS,GCC_PATH_PROG,__file__,__gnu__,__line__,__m4_version__,__unix__,builtin,changecom,changequote,changesyntax,debugfile,debugmode,decr,define,defn,divert,divnum,dnl,dumpdef,errprint,esyscmd,gcc_AC_CHECK_DECL,gcc_AC_CHECK_DECLS,gcc_AC_CHECK_PROG_VER,gcc_AC_COMPILE_CHECK_SIZEOF,gcc_AC_C_CHARSET,gcc_AC_C_CHAR_BIT,gcc_AC_C_COMPILE_ENDIAN,gcc_AC_C_ENUM_BF_UNSIGNED,gcc_AC_C_FLOAT_FORMAT,gcc_AC_C_LONG_DOUBLE,gcc_AC_C_LONG_LONG,gcc_AC_C_VOLATILE,gcc_AC_C__BOOL,gcc_AC_EXAMINE_OBJECT,gcc_AC_FUNC_MKDIR_TAKES_ONE_ARG,gcc_AC_FUNC_PRINTF_PTR,gcc_AC_HEADER_STDBOOL,gcc_AC_HEADER_STRING,gcc_AC_PROG_GNAT,gcc_AC_PROG_INSTALL,gcc_AC_PROG_LN,gcc_AC_PROG_LN_S,gt_cv_func_gnugettext_libc,gt_cv_func_gnugettext_libintl,ifdef,ifelse,incr,index,indir,jm_GLIBC21,len,m4exit,m4wrap,maketemp,patsubst,popdef,pushdef,regexp,sinclude,substr,symbols,syncoutput,syscmd,sysval,traceoff,traceon,translit,undefine,undivert""... $ac_c" 1>&6
+echo "configure:7480: checking assembler and linker support unaligned pc related relocs against hidden AC_ACVERSION,AC_AIX,AC_ALLOCA,AC_ARG_ARRAY,AC_ARG_ENABLE,AC_ARG_PROGRAM,AC_ARG_WITH,AC_BEFORE,AC_CACHE_CHECK,AC_CACHE_LOAD,AC_CACHE_SAVE,AC_CACHE_VAL,AC_CANONICAL_BUILD,AC_CANONICAL_HOST,AC_CANONICAL_SYSTEM,AC_CANONICAL_TARGET,AC_CHAR_UNSIGNED,AC_CHECKING,AC_CHECK_FILE,AC_CHECK_FILES,AC_CHECK_FUNC,AC_CHECK_FUNCS,AC_CHECK_HEADER,AC_CHECK_HEADERS,AC_CHECK_HEADERS_DIRENT,AC_CHECK_HEADER_DIRENT,AC_CHECK_LIB,AC_CHECK_PROG,AC_CHECK_PROGS,AC_CHECK_SIZEOF,AC_CHECK_TOOL,AC_CHECK_TOOL_PREFIX,AC_CHECK_TYPE,AC_COMPILE_CHECK,AC_CONFIG_AUX_DIR,AC_CONFIG_AUX_DIRS,AC_CONFIG_AUX_DIR_DEFAULT,AC_CONFIG_HEADER,AC_CONFIG_SUBDIRS,AC_CONST,AC_CROSS_CHECK,AC_CYGWIN,AC_CYGWIN32,AC_C_BIGENDIAN,AC_C_CHAR_UNSIGNED,AC_C_CONST,AC_C_CROSS,AC_C_INLINE,AC_C_LONG_DOUBLE,AC_C_STRINGIZE,AC_DECL_SYS_SIGLIST,AC_DECL_YYTEXT,AC_DEFINE,AC_DEFINE_UNQUOTED,AC_DEFUN,AC_DIR_HEADER,AC_DIVERSION_CMDS,AC_DIVERSION_CURRENT,AC_DIVERSION_ICMDS,AC_DIVERSION_INIT,AC_DIVERSION_NORMAL,AC_DIVERSION_NORMAL_1,AC_DIVERSION_NORMAL_2,AC_DIVERSION_NORMAL_3,AC_DIVERSION_NORMAL_4,AC_DIVERSION_NOTICE,AC_DIVERSION_SED,AC_DIVERT_POP,AC_DIVERT_PUSH,AC_DYNIX_SEQ,AC_EGREP_CPP,AC_EGREP_HEADER,AC_ENABLE,AC_EPI,AC_ERROR,AC_EXEEXT,AC_F77_LIBRARY_LDFLAGS,AC_FD_CC,AC_FD_MSG,AC_FIND_X,AC_FIND_XTRA,AC_FUNC_ALLOCA,AC_FUNC_CHECK,AC_FUNC_CLOSEDIR_VOID,AC_FUNC_FNMATCH,AC_FUNC_GETLOADAVG,AC_FUNC_GETMNTENT,AC_FUNC_GETPGRP,AC_FUNC_MEMCMP,AC_FUNC_MMAP,AC_FUNC_MMAP_ANYWHERE,AC_FUNC_MMAP_FILE,AC_FUNC_SELECT_ARGTYPES,AC_FUNC_SETPGRP,AC_FUNC_SETVBUF_REVERSED,AC_FUNC_STRCOLL,AC_FUNC_STRFTIME,AC_FUNC_UTIME_NULL,AC_FUNC_VFORK,AC_FUNC_VPRINTF,AC_FUNC_WAIT3,AC_GCC_TRADITIONAL,AC_GETGROUPS_T,AC_GETLOADAVG,AC_HAVE_FUNCS,AC_HAVE_HEADERS,AC_HAVE_LIBRARY,AC_HAVE_POUNDBANG,AC_HEADER_CHECK,AC_HEADER_DIRENT,AC_HEADER_EGREP,AC_HEADER_MAJOR,AC_HEADER_STAT,AC_HEADER_STDC,AC_HEADER_SYS_WAIT,AC_HEADER_TIME,AC_INIT,AC_INIT_BINSH,AC_INIT_NOTICE,AC_INIT_PARSE_ARGS,AC_INIT_PREPARE,AC_INLINE,AC_INT_16_BITS,AC_IRIX_SUN,AC_ISC_POSIX,AC_LANG,AC_LANG_C,AC_LANG_CPLUSPLUS,AC_LANG_FORTRAN77,AC_LANG_RESTORE,AC_LANG_SAVE,AC_LINK_FILES,AC_LIST_HEADER,AC_LN_S,AC_LONG_64_BITS,AC_LONG_DOUBLE,AC_LONG_FILE_NAMES,AC_MAJOR_HEADER,AC_MEMORY_H,AC_MINGW32,AC_MINIX,AC_MINUS_C_MINUS_O,AC_MMAP,AC_MODE_T,AC_MSG_CHECKING,AC_MSG_ERROR,AC_MSG_RESULT,AC_MSG_WARN,AC_OBJEXT,AC_OBSOLETE,AC_OFF_T,AC_OUTPUT,AC_OUTPUT_COMMANDS,AC_OUTPUT_FILES,AC_OUTPUT_HEADER,AC_OUTPUT_LINKS,AC_OUTPUT_MAKE_DEFS,AC_OUTPUT_SUBDIRS,AC_PATH_PROG,AC_PATH_PROGS,AC_PATH_X,AC_PATH_XTRA,AC_PATH_X_DIRECT,AC_PATH_X_XMKMF,AC_PID_T,AC_PREFIX,AC_PREFIX_DEFAULT,AC_PREFIX_PROGRAM,AC_PREREQ,AC_PREREQ_CANON,AC_PREREQ_COMPARE,AC_PREREQ_SPLIT,AC_PRO,AC_PROGRAMS_CHECK,AC_PROGRAMS_PATH,AC_PROGRAM_CHECK,AC_PROGRAM_EGREP,AC_PROGRAM_PATH,AC_PROG_AWK,AC_PROG_CC,AC_PROG_CC_C_O,AC_PROG_CC_G,AC_PROG_CC_GNU,AC_PROG_CC_WORKS,AC_PROG_CPP,AC_PROG_CXX,AC_PROG_CXXCPP,AC_PROG_CXX_EXIT_DECLARATION,AC_PROG_CXX_G,AC_PROG_CXX_GNU,AC_PROG_CXX_WORKS,AC_PROG_ECHO_N,AC_PROG_F77,AC_PROG_F77_C_O,AC_PROG_F77_G,AC_PROG_F77_GNU,AC_PROG_F77_WORKS,AC_PROG_GCC_TRADITIONAL,AC_PROG_INSTALL,AC_PROG_LEX,AC_PROG_LN_S,AC_PROG_MAKE_SET,AC_PROG_RANLIB,AC_PROG_YACC,AC_PROVIDE,AC_PROVIDE_AC_ARG_ENABLE,AC_PROVIDE_AC_ARG_PROGRAM,AC_PROVIDE_AC_ARG_WITH,AC_PROVIDE_AC_CANONICAL_BUILD,AC_PROVIDE_AC_CANONICAL_HOST,AC_PROVIDE_AC_CANONICAL_SYSTEM,AC_PROVIDE_AC_CANONICAL_TARGET,AC_PROVIDE_AC_CHECK_FUNC,AC_PROVIDE_AC_CHECK_FUNCS,AC_PROVIDE_AC_CHECK_HEADER,AC_PROVIDE_AC_CHECK_HEADERS,AC_PROVIDE_AC_CHECK_PROG,AC_PROVIDE_AC_CHECK_PROGS,AC_PROVIDE_AC_CHECK_TOOL,AC_PROVIDE_AC_CHECK_TOOL_PREFIX,AC_PROVIDE_AC_CHECK_TYPE,AC_PROVIDE_AC_CONFIG_AUX_DIRS,AC_PROVIDE_AC_CONFIG_AUX_DIR_DEFAULT,AC_PROVIDE_AC_CONFIG_HEADER,AC_PROVIDE_AC_C_CONST,AC_PROVIDE_AC_C_INLINE,AC_PROVIDE_AC_C_STRINGIZE,AC_PROVIDE_AC_EGREP_CPP,AC_PROVIDE_AC_EGREP_HEADER,AC_PROVIDE_AC_FUNC_ALLOCA,AC_PROVIDE_AC_FUNC_MMAP_ANYWHERE,AC_PROVIDE_AC_FUNC_MMAP_FILE,AC_PROVIDE_AC_FUNC_VFORK,AC_PROVIDE_AC_HEADER_STDC,AC_PROVIDE_AC_HEADER_SYS_WAIT,AC_PROVIDE_AC_HEADER_TIME,AC_PROVIDE_AC_INIT,AC_PROVIDE_AC_INIT_BINSH,AC_PROVIDE_AC_INIT_NOTICE,AC_PROVIDE_AC_INIT_PARSE_ARGS,AC_PROVIDE_AC_INIT_PREPARE,AC_PROVIDE_AC_ISC_POSIX,AC_PROVIDE_AC_LANG_C,AC_PROVIDE_AC_OUTPUT_COMMANDS,AC_PROVIDE_AC_PATH_PROG,AC_PROVIDE_AC_PROG_AWK,AC_PROVIDE_AC_PROG_CC,AC_PROVIDE_AC_PROG_CC_C_O,AC_PROVIDE_AC_PROG_CC_G,AC_PROVIDE_AC_PROG_CC_GNU,AC_PROVIDE_AC_PROG_CC_WORKS,AC_PROVIDE_AC_PROG_CPP,AC_PROVIDE_AC_PROG_ECHO_N,AC_PROVIDE_AC_PROG_MAKE_SET,AC_PROVIDE_AC_PROG_RANLIB,AC_PROVIDE_AC_REQUIRE_CPP,AC_PROVIDE_AC_SEARCH_LIBS,AC_PROVIDE_AC_TRY_COMMAND,AC_PROVIDE_AC_TRY_COMPILE,AC_PROVIDE_AC_TRY_COMPILER,AC_PROVIDE_AC_TRY_CPP,AC_PROVIDE_AC_TRY_EVAL,AC_PROVIDE_AC_TRY_LINK,AC_PROVIDE_AC_TRY_LINK_FUNC,AC_PROVIDE_AC_TRY_RUN,AC_PROVIDE_AC_TRY_RUN_NATIVE,AC_PROVIDE_AC_TYPE_GETGROUPS,AC_PROVIDE_AC_TYPE_OFF_T,AC_PROVIDE_AC_TYPE_PID_T,AC_PROVIDE_AC_TYPE_SIZE_T,AC_PROVIDE_AC_TYPE_UID_T,AC_PROVIDE_AM_GNU_GETTEXT,AC_PROVIDE_AM_ICONV,AC_PROVIDE_AM_LANGINFO_CODESET,AC_PROVIDE_AM_LC_MESSAGES,AC_PROVIDE_AM_PATH_PROG_WITH_TEST,AC_PROVIDE_AM_WITH_NLS,AC_PROVIDE_gcc_AC_CHECK_DECL,AC_PROVIDE_gcc_AC_CHECK_DECLS,AC_PROVIDE_gcc_AC_CHECK_PROG_VER,AC_PROVIDE_gcc_AC_COMPILE_CHECK_SIZEOF,AC_PROVIDE_gcc_AC_C_CHARSET,AC_PROVIDE_gcc_AC_C_CHAR_BIT,AC_PROVIDE_gcc_AC_C_COMPILE_ENDIAN,AC_PROVIDE_gcc_AC_C_FLOAT_FORMAT,AC_PROVIDE_gcc_AC_C_LONG_DOUBLE,AC_PROVIDE_gcc_AC_C_LONG_LONG,AC_PROVIDE_gcc_AC_C_VOLATILE,AC_PROVIDE_gcc_AC_C__BOOL,AC_PROVIDE_gcc_AC_EXAMINE_OBJECT,AC_PROVIDE_gcc_AC_FUNC_MKDIR_TAKES_ONE_ARG,AC_PROVIDE_gcc_AC_FUNC_PRINTF_PTR,AC_PROVIDE_gcc_AC_HEADER_STDBOOL,AC_PROVIDE_gcc_AC_HEADER_STRING,AC_PROVIDE_gcc_AC_PROG_GNAT,AC_PROVIDE_gcc_AC_PROG_INSTALL,AC_PROVIDE_gcc_AC_PROG_LN,AC_PROVIDE_gcc_AC_PROG_LN_S,AC_PROVIDE_jm_GLIBC21,AC_REPLACE_FUNCS,AC_REQUIRE,AC_REQUIRE_CPP,AC_RESTARTABLE_SYSCALLS,AC_RETSIGTYPE,AC_REVISION,AC_RSH,AC_SCO_INTL,AC_SEARCH_LIBS,AC_SETVBUF_REVERSED,AC_SET_MAKE,AC_SITE_LOAD,AC_SIZEOF_TYPE,AC_SIZE_T,AC_STAT_MACROS_BROKEN,AC_STDC_HEADERS,AC_STRCOLL,AC_STRUCT_ST_BLKSIZE,AC_STRUCT_ST_BLOCKS,AC_STRUCT_ST_RDEV,AC_STRUCT_TIMEZONE,AC_STRUCT_TM,AC_ST_BLKSIZE,AC_ST_BLOCKS,AC_ST_RDEV,AC_SUBST,AC_SUBST_ADAC,AC_SUBST_ALL,AC_SUBST_ALLOCA,AC_SUBST_AWK,AC_SUBST_BISON,AC_SUBST_BUILD_INCLUDED_LIBINTL,AC_SUBST_BUILD_INFO,AC_SUBST_CATALOGS,AC_SUBST_CATOBJEXT,AC_SUBST_CC,AC_SUBST_CFLAGS,AC_SUBST_COLLECT2_LIBS,AC_SUBST_CPP,AC_SUBST_CPPFLAGS,AC_SUBST_CROSS,AC_SUBST_CXXFLAGS,AC_SUBST_DATADIRNAME,AC_SUBST_DEFS,AC_SUBST_FFLAGS,AC_SUBST_FILE,AC_SUBST_FLEX,AC_SUBST_FORBUILD,AC_SUBST_GENCAT,AC_SUBST_GENERATED_MANPAGES,AC_SUBST_GLIBC21,AC_SUBST_GMSGFMT,AC_SUBST_GNATBIND,AC_SUBST_GNAT_LIBEXC,AC_SUBST_HOST_CC,AC_SUBST_HOST_CFLAGS,AC_SUBST_HOST_PREFIX,AC_SUBST_HOST_PREFIX_1,AC_SUBST_INSTALL,AC_SUBST_INSTALL_DATA,AC_SUBST_INSTALL_PROGRAM,AC_SUBST_INSTOBJEXT,AC_SUBST_INTLBISON,AC_SUBST_INTLDEPS,AC_SUBST_INTLLIBS,AC_SUBST_INTLOBJS,AC_SUBST_INTL_LIBTOOL_SUFFIX_PREFIX,AC_SUBST_LDFLAGS,AC_SUBST_LIBICONV,AC_SUBST_LIBS,AC_SUBST_LN,AC_SUBST_LN_S,AC_SUBST_MAKEINFO,AC_SUBST_MKINSTALLDIRS,AC_SUBST_MSGFMT,AC_SUBST_NO_MINUS_C_MINUS_O,AC_SUBST_OUTPUT_OPTION,AC_SUBST_PACKAGE,AC_SUBST_POSUB,AC_SUBST_RANLIB,AC_SUBST_SET_MAKE,AC_SUBST_SHELL,AC_SUBST_STMP_FIXINC,AC_SUBST_STMP_FIXPROTO,AC_SUBST_SYSTEM_HEADER_DIR,AC_SUBST_TARGET_GETGROUPS_T,AC_SUBST_USE_INCLUDED_LIBINTL,AC_SUBST_USE_NLS,AC_SUBST_VERSION,AC_SUBST_XGETTEXT,AC_SUBST_bindir,AC_SUBST_build,AC_SUBST_build_alias,AC_SUBST_build_cpu,AC_SUBST_build_os,AC_SUBST_build_vendor,AC_SUBST_datadir,AC_SUBST_enable_multilib,AC_SUBST_enable_shared,AC_SUBST_exec_prefix,AC_SUBST_have_mktemp_command,AC_SUBST_host,AC_SUBST_host_alias,AC_SUBST_host_cpu,AC_SUBST_host_os,AC_SUBST_host_vendor,AC_SUBST_includedir,AC_SUBST_infodir,AC_SUBST_inhibit_libc,AC_SUBST_libdir,AC_SUBST_libexecdir,AC_SUBST_libgcc_visibility,AC_SUBST_localstatedir,AC_SUBST_mandir,AC_SUBST_manext,AC_SUBST_objext,AC_SUBST_oldincludedir,AC_SUBST_prefix,AC_SUBST_program_transform_name,AC_SUBST_sbindir,AC_SUBST_sharedstatedir,AC_SUBST_stage1_cflags,AC_SUBST_strict1_warn,AC_SUBST_sysconfdir,AC_SUBST_target,AC_SUBST_target_alias,AC_SUBST_target_cpu,AC_SUBST_target_os,AC_SUBST_target_vendor,AC_SUBST_warn_cflags,AC_SYS_INTERPRETER,AC_SYS_LONG_FILE_NAMES,AC_SYS_RESTARTABLE_SYSCALLS,AC_SYS_SIGLIST_DECLARED,AC_TEST_CPP,AC_TEST_PROGRAM,AC_TIMEZONE,AC_TIME_WITH_SYS_TIME,AC_TRY_COMMAND,AC_TRY_COMPILE,AC_TRY_COMPILER,AC_TRY_CPP,AC_TRY_EVAL,AC_TRY_LINK,AC_TRY_LINK_FUNC,AC_TRY_RUN,AC_TRY_RUN_NATIVE,AC_TYPE_GETGROUPS,AC_TYPE_MODE_T,AC_TYPE_OFF_T,AC_TYPE_PID_T,AC_TYPE_SIGNAL,AC_TYPE_SIZE_T,AC_TYPE_UID_T,AC_UID_T,AC_UNISTD_H,AC_USG,AC_UTIME_NULL,AC_VALIDATE_CACHED_SYSTEM_TUPLE,AC_VERBOSE,AC_VFORK,AC_VPRINTF,AC_WAIT3,AC_WARN,AC_WITH,AC_WORDS_BIGENDIAN,AC_XENIX_DIR,AC_YYTEXT_POINTER,AM_GNU_GETTEXT,AM_ICONV,AM_LANGINFO_CODESET,AM_LC_MESSAGES,AM_PATH_PROG_WITH_TEST,AM_WITH_NLS,GCC_PATH_PROG,__file__,__gnu__,__line__,__m4_version__,__unix__,builtin,changecom,changequote,changesyntax,debugfile,debugmode,decr,define,defn,divert,divnum,dnl,dumpdef,errprint,esyscmd,gcc_AC_CHECK_DECL,gcc_AC_CHECK_DECLS,gcc_AC_CHECK_PROG_VER,gcc_AC_COMPILE_CHECK_SIZEOF,gcc_AC_C_CHARSET,gcc_AC_C_CHAR_BIT,gcc_AC_C_COMPILE_ENDIAN,gcc_AC_C_ENUM_BF_UNSIGNED,gcc_AC_C_FLOAT_FORMAT,gcc_AC_C_LONG_DOUBLE,gcc_AC_C_LONG_LONG,gcc_AC_C_VOLATILE,gcc_AC_C__BOOL,gcc_AC_EXAMINE_OBJECT,gcc_AC_FUNC_MKDIR_TAKES_ONE_ARG,gcc_AC_FUNC_PRINTF_PTR,gcc_AC_HEADER_STDBOOL,gcc_AC_HEADER_STRING,gcc_AC_PROG_GNAT,gcc_AC_PROG_INSTALL,gcc_AC_PROG_LN,gcc_AC_PROG_LN_S,gt_cv_func_gnugettext_libc,gt_cv_func_gnugettext_libintl,ifdef,ifelse,incr,index,indir,jm_GLIBC21,len,m4exit,m4wrap,maketemp,patsubst,popdef,pushdef,regexp,sinclude,substr,symbols,syncoutput,syscmd,sysval,traceoff,traceon,translit,undefine,undivert" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_sparc_ua_pcrel_hidden'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7522,7 +7518,7 @@ EOF
     case "$tm_file" in
     *64*)
 	echo $ac_n "checking for 64 bit support in assembler ($gcc_cv_as)""... $ac_c" 1>&6
-echo "configure:7526: checking for 64 bit support in assembler ($gcc_cv_as)" >&5
+echo "configure:7522: checking for 64 bit support in assembler ($gcc_cv_as)" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_flags64'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7567,7 +7563,7 @@ EOF
 
     if test "x$gcc_cv_as_flags64" != xno; then
 	echo $ac_n "checking for assembler offsetable %lo() support""... $ac_c" 1>&6
-echo "configure:7571: checking for assembler offsetable %lo() support" >&5
+echo "configure:7567: checking for assembler offsetable %lo() support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_offsetable_lo10'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7607,7 +7603,7 @@ EOF
 
   i[34567]86-*-* | x86_64-*-*)
     echo $ac_n "checking assembler instructions""... $ac_c" 1>&6
-echo "configure:7611: checking assembler instructions" >&5
+echo "configure:7607: checking assembler instructions" >&5
     gcc_cv_as_instructions=
     if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
       if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 9 -o "$gcc_cv_gas_major_version" -gt 2; then
@@ -7634,7 +7630,7 @@ EOF
     echo "$ac_t""$gcc_cv_as_instructions" 1>&6
 
     echo $ac_n "checking assembler GOTOFF in data directives""... $ac_c" 1>&6
-echo "configure:7638: checking assembler GOTOFF in data directives" >&5
+echo "configure:7634: checking assembler GOTOFF in data directives" >&5
     gcc_cv_as_gotoff_in_data=no
     if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x
     then
@@ -7664,7 +7660,7 @@ EOF
 esac
 
 echo $ac_n "checking assembler dwarf2 debug_line support""... $ac_c" 1>&6
-echo "configure:7668: checking assembler dwarf2 debug_line support" >&5
+echo "configure:7664: checking assembler dwarf2 debug_line support" >&5
 gcc_cv_as_dwarf2_debug_line=no
 # ??? Not all targets support dwarf2 debug_line, even within a version
 # of gas.  Moreover, we need to emit a valid instruction to trigger any
@@ -7720,7 +7716,7 @@ fi
 echo "$ac_t""$gcc_cv_as_dwarf2_debug_line" 1>&6
 
 echo $ac_n "checking assembler --gdwarf2 support""... $ac_c" 1>&6
-echo "configure:7724: checking assembler --gdwarf2 support" >&5
+echo "configure:7720: checking assembler --gdwarf2 support" >&5
 gcc_cv_as_gdwarf2_flag=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x;
 then
@@ -7749,7 +7745,7 @@ fi
 echo "$ac_t""$gcc_cv_as_gdwarf2_flag" 1>&6
 
 echo $ac_n "checking assembler --gstabs support""... $ac_c" 1>&6
-echo "configure:7753: checking assembler --gstabs support" >&5
+echo "configure:7749: checking assembler --gstabs support" >&5
 gcc_cv_as_gstabs_flag=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x;
 then
@@ -7777,7 +7773,7 @@ fi
 echo "$ac_t""$gcc_cv_as_gstabs_flag" 1>&6
 
 echo $ac_n "checking linker PT_GNU_EH_FRAME support""... $ac_c" 1>&6
-echo "configure:7781: checking linker PT_GNU_EH_FRAME support" >&5
+echo "configure:7777: checking linker PT_GNU_EH_FRAME support" >&5
 gcc_cv_ld_eh_frame_hdr=no
 if test x$gcc_cv_gld_major_version != x -a x$gcc_cv_gld_minor_version != x; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 12 -o "$gcc_cv_gld_major_version" -gt 2 && grep 'EMUL = elf' ../ld/Makefile > /dev/null; then
@@ -7940,7 +7936,7 @@ fi
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:7944: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:7940: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"
