@@ -89,7 +89,7 @@ OLDAR = ar
 
 # The GCC to use for compiling libgcc2.a.  Usually the one we just built.
 # Don't use this as a dependency--use $(GCC_PASSES) or $(GCC_PARTS).
-GCC_FOR_TARGET = ./gcc
+GCC_FOR_TARGET = ./xgcc
 
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
 # It omits XCFLAGS, and specifies -B./.
@@ -209,11 +209,11 @@ INSTALL_HEADERS=install-headers
 # Select which version of fixincludes to use (I.E. regular versus SVR4)
 FIXINCLUDES=fixincludes
 
-# List of things which should already be built whenever we try to use gcc
+# List of things which should already be built whenever we try to use xgcc
 # to compile anything (without linking).
-GCC_PASSES=gcc cc1 cpp $(EXTRA_PASSES)
+GCC_PASSES=xgcc cc1 cpp $(EXTRA_PASSES)
 
-# List of things which should already be built whenever we try to use gcc
+# List of things which should already be built whenever we try to use xgcc
 # to link anything.
 GCC_PARTS=$(GCC_PASSES) libgcc.a $(EXTRA_PROGRAMS) $(USE_COLLECT2) $(EXTRA_PARTS)
 
@@ -388,7 +388,7 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
     _bb _shtab _clear_cache _trampoline __main _exit
 
 # Header files that are made available under the same name
-# to programs compiled with gcc.
+# to programs compiled with GCC.
 USER_H = assert.h va-hp800.h va-i860.h va-mips.h va-pyr.h va-sparc.h \
     va-spur.h va-m88k.h va-i960.h proto.h $(EXTRA_HEADERS)
 
@@ -418,7 +418,7 @@ all.internal: start.encap rest.encap
 # This is what to compile if making a cross-compiler.
 all.cross: native gcc-cross cross-test $(EXTRA_PARTS)
 # This is what must be made before installing GCC and converting libraries.
-start.encap: native gcc specs $(LIBGCC1_TARGET)
+start.encap: native xgcc specs $(LIBGCC1_TARGET)
 # Use this to make a GCC that will be used only to recompile GCC.
 for-bootstrap: start.encap libgcc.a
 # These can't be made, with COFF encapsulation, until after GCC can run.
@@ -460,20 +460,21 @@ cross-test.o: cross-test.c native gcc-cross
 # This is used only if the user explicitly asks for it.
 compilations: ${OBJS}
 
-gcc: gcc.o version.o $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o gccnew gcc.o version.o $(LIBS)
-# Go via `gccnew' to avoid `file busy' if $(CC) is `gcc'.
-	mv -f gccnew gcc
+# We call this executable `xgcc' rather than `gcc'
+# to avoid confusion if the current directory is in the path
+# and CC is `gcc'.  It is renamed to `gcc' when it is installed.
+xgcc: gcc.o version.o $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o xgcc gcc.o version.o $(LIBS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
-specs: gcc
-	./gcc -dumpspecs > specs
+specs: xgcc
+	./xgcc -dumpspecs > specs
 
-# We do want to create an executable named `gcc', so we can use it to
+# We do want to create an executable named `xgcc', so we can use it to
 # compile libgcc2.a.
 # Also create gcc-cross, so that install-common will install properly.
-gcc-cross: gcc
-	cp gcc gcc-cross
+gcc-cross: xgcc
+	cp xgcc gcc-cross
 
 cc1:$(P) $(C_OBJS) $(OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1 $(C_OBJS) $(OBJS) $(LIBS)
@@ -500,9 +501,9 @@ enquire.o: $(srcdir)/enquire.c $(GCC_PASSES)
 
 # Build libgcc.a.
 # This is done in two parts because some functions, in libgcc1.c,
-# must be compiled with something other than gcc,
-# while the rest, in libgcc2.c, must be compiled with gcc.
-# That means we can't do libgcc2.c until after gcc, cc1, etc.
+# must be compiled with something other than GCC,
+# while the rest, in libgcc2.c, must be compiled with xgcc.
+# That means we can't do libgcc2.c until after xgcc, cc1, etc.
 
 # Use this as value of LIBGCC1 to cause conversion to GNU library format.
 # LIBCONVERT should put its output in libgcc1.conv.
@@ -518,7 +519,7 @@ libgcc1.null: $(CROSS_TOOLS) $(GCC_PASSES)
 	rm -f dummy.o dummy.c
 
 # Compile the library of arithmetic subroutines with the native compiler.
-# Don't compile it with gcc!
+# Don't compile it with GCC!
 # (That would cause most arithmetic functions to call themselves.)
 libgcc1.a: libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
 	-rm -f tmplibgcc1.a
@@ -1105,7 +1106,7 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c
 	  -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
-proto: config.status protoize unprotoize SYSCALLS.c.X protoize.1 unprotoize.1
+proto: config.status protoize unprotoize SYSCALLS.c.X
 
 protoize: protoize.o getopt.o getopt1.o getpwd.o version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) \
@@ -1118,7 +1119,6 @@ unprotoize: unprotoize.o getopt.o getopt1.o getpwd.o version.o $(LIBDEPS)
 unprotoize.o:	stamp-proto ;
 
 stamp-proto:	$(srcdir)/protoize.c getopt.h $(CONFIG_H)
-	touch stamp-proto
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
           -DGPLUSPLUS_INCLUDE_DIR=\"$(libdir)/g++-include\" \
@@ -1134,25 +1134,12 @@ stamp-proto:	$(srcdir)/protoize.c getopt.h $(CONFIG_H)
 	  -DLOCAL_INCLUDE_DIR=\"$(prefix)/include\" \
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
 	  $(srcdir)/protoize.c
+	touch stamp-proto
 
 getopt.o: $(srcdir)/getopt.c getopt.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/getopt.c
 getopt1.o: $(srcdir)/getopt1.c getopt.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/getopt1.c
-
-protoize.1:	$(srcdir)/proto-man ./cpp
-	./cpp -traditional $(srcdir)/proto-man \
-		| grep -v '^#' \
-			| awk 'NF > 0 {print}' > tmp-proto.1
-	-rm -f protoize.1
-	mv tmp-proto.1 protoize.1
-
-unprotoize.1:	$(srcdir)/proto-man ./cpp
-	./cpp -traditional -DUNPRO $(srcdir)/proto-man \
-		| grep -v '^#' \
-			| awk 'NF > 0 {print}' > tmp-unproto.1
-	-rm -f unprotoize.1
-	mv tmp-unproto.1 unprotoize.1
 
 # This info describes the target machine, so compile with GCC just built.
 SYSCALLS.c.X: $(srcdir)/sys-types.h $(srcdir)/sys-protos.h $(GCC_PASSES)
@@ -1223,7 +1210,7 @@ mostlyclean:
 	-rm -f tmplibgcc* tmpcopy
 	for name in $(LIB1FUNCS); do rm -f $${name}.c; done
 # Delete other temporary files.
-	-rm -f tmp-float.h tmp-gcc.xtar.Z tmp-limits.h gccnew
+	-rm -f tmp-float.h tmp-gcc.xtar.Z tmp-limits.h
 	-rm -f tmp-foo1 tmp-foo2 tmp-proto.* tmp-unproto.1 tmp-SYSCALLS.s
 # Delete the stamp files.
 	-rm -f stamp-* tmp-*
@@ -1270,7 +1257,6 @@ extraclean: distclean
 realclean: distclean
 	-rm -f cp-parse.c cp-parse.h cp-parse.output
 	-rm -f objc-parse.c objc-parse.output
-	-rm -f protoize.1 unprotoize.1
 	-rm -f c-parse.c c-parse.h c-parse.output
 	-rm -f cexp.c cexp.output TAGS 
 	-rm -f cpp.info* cpp.??s cpp.*aux
@@ -1391,7 +1377,7 @@ install-common: native install-dir
 	  else true; fi; \
 	else \
 	  rm -f $(bindir)/gcc; \
-	  $(INSTALL_PROGRAM) gcc $(bindir)/gcc; \
+	  $(INSTALL_PROGRAM) xgcc $(bindir)/gcc; \
 	  rm -f $(bindir)/gcc-$(target)-1; \
 	  ln $(bindir)/gcc $(bindir)/gcc-$(target)-1; \
 	  mv $(bindir)/gcc-$(target)-1 $(bindir)/gcc-$(target); \
@@ -1414,21 +1400,13 @@ install-proto: proto install-dir
 	chmod a-x $(libsubdir)/SYSCALLS.c.X
 
 # Install the man pages.
-install-man: install-dir $(srcdir)/gcc.1 $(srcdir)/cccp.1 \
-   protoize.1 unprotoize.1 $(srcdir)/g++.1
+install-man: install-dir $(srcdir)/gcc.1 $(srcdir)/cccp.1 $(srcdir)/g++.1
 	-rm -f $(mandir)/gcc$(manext)
 	-$(INSTALL_DATA) $(srcdir)/gcc.1 $(mandir)/gcc$(manext)
 	-chmod a-x $(mandir)/gcc$(manext)
 	-rm -f $(mandir)/cccp$(manext)
 	-$(INSTALL_DATA) $(srcdir)/cccp.1 $(mandir)/cccp$(manext)
 	-chmod a-x $(mandir)/cccp$(manext)
-	-rm -f $(mandir)/protoize$(manext)
-	-$(INSTALL_DATA) protoize.1 $(mandir)/protoize$(manext)
-	-chmod a-x $(mandir)/protoize$(manext)
-	-rm -f $(mandir)/unprotoize$(manext)
-	-$(INSTALL_DATA) unprotoize.1 $(mandir)/unprotoize$(manext)
-	-chmod a-x $(mandir)/unprotoize$(manext)
-	-rm -f $(mandir)/g++$(manext)
 	-$(INSTALL_DATA) $(srcdir)/g++.1 $(mandir)/g++$(manext)
 	-chmod a-x $(mandir)/g++$(manext)
 
@@ -1527,11 +1505,7 @@ install-fixincludes: install-headers
 install-collect2: collect2
 	$(INSTALL_PROGRAM) collect2 $(libsubdir)/ld
 # Install the driver program as $(libsubdir)/gcc for collect2.
-	-if [ -f gcc-cross ] ; then \
-	  $(INSTALL_PROGRAM) gcc-cross $(libsubdir)/gcc; \
-	else \
-	  $(INSTALL_PROGRAM) gcc $(libsubdir)/gcc; \
-	fi
+	$(INSTALL_PROGRAM) xgcc $(libsubdir)/gcc
 
 # Cancel installation by deleting the installed files.
 uninstall:
@@ -1617,6 +1591,7 @@ maketest:
 	-rm tm.h aux-output.c config.h md
 	make clean
 # You must then run config to set up for compilation.
+
 bootstrap: force
 # Only build the C compiler for stage1, because that is the only one that
 # we can guarantee will build with the native compiler, and also it is the
@@ -1645,18 +1620,18 @@ bootstrap3: force
 
 compare: force
 	for file in *.o; do \
-	  tail +10c $$file > tmp-foo1; \
-	  tail +10c stage2/$$file > tmp-foo2; \
-	  cmp tmp-foo1 tmp-foo2 || echo $$file differs; \
+	  tail +16c $$file > tmp-foo1; \
+	  tail +16c stage2/$$file > tmp-foo2 2>/dev/null \
+	    && (cmp tmp-foo1 tmp-foo2 || echo $$file differs); \
 	done
 	-rm -f tmp-foo*
 
 # Similar, but compare with stage3 directory
 compare3: force
 	for file in *.o; do \
-	  tail +10c $$file > tmp-foo1; \
-	  tail +10c stage3/$$file > tmp-foo2; \
-	  cmp tmp-foo1 tmp-foo2 || echo $$file differs; \
+	  tail +16c $$file > tmp-foo1; \
+	  tail +16c stage3/$$file > tmp-foo2 2>/dev/null \
+	    && (cmp tmp-foo1 tmp-foo2 || echo $$file differs); \
 	done
 	-rm -f tmp-foo*
 
