@@ -82,9 +82,6 @@ Boston, MA 02111-1307, USA.  */
 /* Prefix for internally generated assembler labels.  */
 #define LPREFIX ".L"
 
-#define ASM_OUTPUT_LABELREF(FILE, NAME) \
-  fprintf (FILE, "%s", NAME);  
-
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */

@@ -3078,6 +3078,12 @@ s390_emit_epilogue ()
 
       insn = emit_insn (gen_add2_insn (frame_pointer, frame_off));
       RTX_FRAME_RELATED_P (insn) = 1;
+      REG_NOTES (insn) = 
+	gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+			   gen_rtx_SET (VOIDmode, frame_pointer,
+				   gen_rtx_PLUS (Pmode, frame_pointer,
+			           GEN_INT (frame.frame_size - offset))),
+			   REG_NOTES (insn));
     }
 
   /* Restore call saved fprs.  */

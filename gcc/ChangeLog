@@ -1,3 +1,11 @@
+2002-01-08  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/linux.h (ASM_OUTPUT_LABELREF): Remove.
+	* config/s390/s390.c (s390_emit_epilog): Add REG_FRAME_RELATED_EXPR
+	to insn adjusting stack/frame pointer.
+	* config/s390/s390.md (reload_la_64, reload_la_31): Do not 
+	accept operands that cause the insn to be non-splittable.
+
 2002-01-08  Graham Stott  <grahams@redhat.com>
 
 	* c-tree.h (C_TYPE_FIELDS_READONLY): Uppercase macro parameter.
