@@ -1,3 +1,8 @@
+2003-09-26  Loren James Rittle  <ljrittle@acm.org>
+
+	* config/i386/i386.h (ix86_return_in_memory): Revert my last patch.
+	* objc/objc-act.c (tm_p.h): Include.
+
 2003-09-26  Per Bothner  <pbothner@apple.com>
 
 	* dbxout.c (dbxout_typedefs):  Output typedefs in forward order.
