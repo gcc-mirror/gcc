@@ -1,3 +1,8 @@
+2003-01-31  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin.h (LINK_COMMAND_SPEC): Update for Nathan's recent
+	change to LINK_COMMAND_SPEC in gcc.c.
+
 2003-01-31  Jan Hubicka  <jh@suse.cz>
 
 	PR c/9506
@@ -55,7 +60,6 @@
 	warnings.
 	(write_root): Cast gt_pch_n_S to suppress warning.
 	* Makefile.in: Remove -Wno-error from gtype-desc.o and c-decl.o.
-	* cp/Make-lang.in: Remove -Wno-error from cp/decl.o.
 	* config/rs6000/rs6000.c (print_operand): Mask off high bits only
 	when they might exist.
 	* config/rs6000/t-rs6000: Remove -Wno-error from varasm.o,

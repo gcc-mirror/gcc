@@ -190,7 +190,8 @@ Boston, MA 02111-1307, USA.  */
     %{!Zdynamiclib:%{A} %{e*} %{m} %{N} %{n} %{r} %{u*} %{x} %{z}} \
     %{@:-o %f%u.out}%{!@:%{o*}%{!o:-o a.out}} \
     %{!Zdynamiclib:%{!A:%{!nostdlib:%{!nostartfiles:%S}}}} \
-    %{L*} %(link_libgcc) %o %{!nostdlib:%{!nodefaultlibs:%G %L}} \
+    %{L*} %(link_libgcc) %o %{fprofile-arcs:-lgcov} \
+    %{!nostdlib:%{!nodefaultlibs:%G %L}} \
     %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} %{F*} \
     %{!--help:%{!no-c++filt|c++filt:| c++filt3 }} }}}}}}}}"
 
