@@ -361,8 +361,6 @@ dtors_section ()							\
 	   (DECL) && TREE_READONLY (DECL) ? "a" : "aw")
 #endif
 
-#define INT_ASM_OP		"\t.long\t"
-
 /* The MS compilers take alignment as a number of bytes, so we do as well */
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG) \

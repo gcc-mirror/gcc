@@ -1,3 +1,25 @@
+2001-05-20  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/att.h (ASM_SHORT, ASM_LONG): Add trailing \t.
+	(ASM_DOUBLE): Remove.
+	* config/i386/bsd.h, config/i386/sco5.h: Likewise.
+	* config/i386/sun386.h: Likewise.
+
+	* config/i386/i386.h (UNALIGNED_SHORT_ASM_OP): New.
+	(UNALIGNED_INT_ASM_OP, INT_ASM_OP): New.
+	
+	* config/i386/cygwin.h (INT_ASM_OP): Remove.
+	* config/i386/freebsd-aout.h, config/i386/i386-aout.h: Likewise.
+	* config/i386/i386-coff.h, config/i386/i386-interix.h: Likewise.
+	* config/i386/netbsd.h, config/i386/openbsd.h: Likewise.
+	
+	* config/i386/cygwin.h: Adjust uses of ASM_LONG for trailing \t.
+	* config/i386/djgpp.h, config/i386/i386.h: Likewise.
+	* config/i386/i386elf.h, config/i386/ptx4-i.h: Likewise.
+	* config/i386/sco5.h, config/i386/svr3gas.h: Likewise.
+	* config/i386/sysv4.h, config/i386/vsta.h: Likewise.
+	* config/i386/win32.h: Likewise.
+
 2001-05-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* invoke.texi: Add more options to summary list.
@@ -181,9 +203,9 @@ Fri May 18 07:26:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-05-18  Per Bothner  <per@bothner.com>
 
-        Changes needed for java/jvspec.c
-        * gcc.h (n_infiles, outfiles):  Add declarations.
-        * gcc.c (n_infiles, outfiles):  Mske no longer static.
+	Changes needed for java/jvspec.c
+	* gcc.h (n_infiles, outfiles):  Add declarations.
+	* gcc.c (n_infiles, outfiles):  Mske no longer static.
 
 Fri May 18 10:14:42 2001  Jeffrey A Law  (law@cygnus.com)
 
@@ -598,7 +620,7 @@ Wed May 16 18:53:23 CEST 2001  Jan Hubicka  <jh@suse.cz>
 2001-05-16  Jakub Jelinek  <jakub@redhat.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 
-        * gcc.c (give_switch): Don't write before start of string.
+	* gcc.c (give_switch): Don't write before start of string.
 	Always append suffix.
 
 2001-05-16  Nathan Sidwell  <nathan@codesourcery.com>

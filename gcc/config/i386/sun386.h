@@ -34,9 +34,8 @@ Boston, MA 02111-1307, USA.  */
 /* Assembler pseudos to introduce constants of various size.  */
 
 #define ASM_BYTE_OP "\t.byte\t"
-#define ASM_SHORT "\t.value"
-#define ASM_LONG "\t.long"
-#define ASM_DOUBLE "\t.double"
+#define ASM_SHORT "\t.value\t"
+#define ASM_LONG "\t.long\t"
 
 /* How to output an ASCII string constant.  */
 

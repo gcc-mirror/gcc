@@ -245,8 +245,3 @@ do {                                                                    \
 
 /* Define this so we can compile MS code for use with WINE.  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP
-
-/* This is the pseudo-op used to generate a 32-bit word of data with a
-   specific value in some section.  */
-
-#define INT_ASM_OP "\t.long\t"
