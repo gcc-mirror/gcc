@@ -1,3 +1,18 @@
+2004-03-03  Jan Hubicka  <jh@suse.cz>
+
+	* cselib.c (hash_table):  Remove GTY marker.
+	(reg_values): Turn into array.
+	(used_regs): Likewise.
+	(n_used_regs): New static variable.
+	(reg_values_old): Kill.
+	(clear_table): Update uses of arrays.
+	(cselib_lookup): Likewise.
+	(cselib_record_set): Likewise.
+	(cselib_init): Likewise.
+	(cselib_finish): Likewise.
+	(cselib_udpate_varray_sizes): Kill.
+	* cselib.h (cselib_update_varray_sizes): Kill.
+
 2004-03-03  Paul Brook  <paul@codesourcery.com>
 
 	* flow.c (ior_reg_cond, and_reg_cond): Remove stray ")".

@@ -74,7 +74,7 @@ static void cselib_record_sets (rtx);
      the locations of the entries with the rtx we are looking up.  */
 
 /* A table that enables us to look up elts by their value.  */
-static GTY((param_is (cselib_val))) htab_t hash_table;
+static htab_t hash_table;
 
 /* This is a global so we don't have to pass this through every function.
    It is used in new_elt_loc_list to set SETTING_INSN.  */
@@ -101,9 +101,9 @@ static int n_useless_values;
    which the register was set; if the mode is unknown or the value is
    no longer valid in that mode, ELT will be NULL for the first
    element.  */
-static GTY(()) varray_type reg_values;
-static GTY((deletable (""))) varray_type reg_values_old;
-#define REG_VALUES(I) VARRAY_ELT_LIST (reg_values, (I))
+struct elt_list **reg_values;
+unsigned int reg_values_size;
+#define REG_VALUES(i) reg_values[i]
 
 /* The largest number of hard regs used by any entry added to the
    REG_VALUES table.  Cleared on each clear_table() invocation.  */
@@ -111,8 +111,8 @@ static unsigned int max_value_regs;
 
 /* Here the set of indices I with REG_VALUES(I) != 0 is saved.  This is used
    in clear_table() for fast emptying.  */
-static GTY(()) varray_type used_regs;
-static GTY((deletable (""))) varray_type used_regs_old;
+static unsigned int *used_regs;
+static unsigned int n_used_regs;
 
 /* We pass this to cselib_invalidate_mem to invalidate all of
    memory for a non-const call instruction.  */
@@ -206,12 +206,12 @@ clear_table (void)
 {
   unsigned int i;
 
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (used_regs); i++)
-    REG_VALUES (VARRAY_UINT (used_regs, i)) = 0;
+  for (i = 0; i < n_used_regs; i++)
+    REG_VALUES (used_regs[i]) = 0;
 
   max_value_regs = 0;
 
-  VARRAY_POP_ALL (used_regs);
+  n_used_regs = 0;
 
   htab_empty (hash_table);
 
@@ -913,7 +913,7 @@ cselib_lookup (rtx x, enum machine_mode mode, int create)
 	  /* Maintain the invariant that the first entry of
 	     REG_VALUES, if present, must be the value used to set the
 	     register, or NULL.  */
-	  VARRAY_PUSH_UINT (used_regs, i);
+	  used_regs[n_used_regs++] = i;
 	  REG_VALUES (i) = new_elt_list (REG_VALUES (i), NULL);
 	}
       REG_VALUES (i)->next = new_elt_list (REG_VALUES (i)->next, e);
@@ -1185,7 +1185,7 @@ cselib_record_set (rtx dest, cselib_val *src_elt, cselib_val *dest_addr_elt)
 
       if (REG_VALUES (dreg) == 0)
 	{
-	  VARRAY_PUSH_UINT (used_regs, dreg);
+	  used_regs[n_used_regs++] = dreg;
 	  REG_VALUES (dreg) = new_elt_list (REG_VALUES (dreg), src_elt);
 	}
       else
@@ -1371,22 +1371,6 @@ cselib_process_insn (rtx insn)
     remove_useless_values ();
 }
 
-/* Make sure our varrays are big enough.  Not called from any cselib routines;
-   it must be called by the user if it allocated new registers.  */
-
-void
-cselib_update_varray_sizes (void)
-{
-  unsigned int nregs = max_reg_num ();
-
-  if (nregs == cselib_nregs)
-    return;
-
-  cselib_nregs = nregs;
-  VARRAY_GROW (reg_values, nregs);
-  VARRAY_GROW (used_regs, nregs);
-}
-
 /* Initialize cselib for one pass.  The caller must also call
    init_alias_analysis.  */
 
@@ -1406,18 +1390,22 @@ cselib_init (void)
     callmem = gen_rtx_MEM (BLKmode, const0_rtx);
 
   cselib_nregs = max_reg_num ();
-  if (reg_values_old != NULL && VARRAY_SIZE (reg_values_old) >= cselib_nregs)
+
+  /* We preserve reg_values to allow expensive clearing of the whole thing.
+     Reallocate it however if it happens to be too large.  */
+  if (!reg_values || reg_values_size < cselib_nregs
+      || (reg_values_size > 10 && reg_values_size > cselib_nregs * 4))
     {
-      reg_values = reg_values_old;
-      used_regs = used_regs_old;
+      if (reg_values)
+	free (reg_values);
+      /* Some space for newly emit instructions so we don't end up
+	 reallocating in between passes.  */
+      reg_values_size = cselib_nregs + (63 + cselib_nregs) / 16;
+      reg_values = xcalloc (reg_values_size, sizeof (reg_values));
     }
-  else
-    {
-      VARRAY_ELT_LIST_INIT (reg_values, cselib_nregs, "reg_values");
-      VARRAY_UINT_INIT (used_regs, cselib_nregs, "used_regs");
-    }
-  hash_table = htab_create_ggc (31, get_value_hash, entry_and_rtx_equal_p,
-				NULL);
+  used_regs = xmalloc (sizeof (*used_regs) * cselib_nregs);
+  n_used_regs = 0;
+  hash_table = htab_create (31, get_value_hash, entry_and_rtx_equal_p, NULL);
   cselib_current_insn_in_libcall = false;
 }
 
@@ -1431,13 +1419,14 @@ cselib_finish (void)
   free_alloc_pool (cselib_val_pool);
   free_alloc_pool (value_pool);
   clear_table ();
-  reg_values_old = reg_values;
+  htab_delete (hash_table);
   reg_values = 0;
-  used_regs_old = used_regs;
   used_regs = 0;
   hash_table = 0;
   n_useless_values = 0;
   next_unknown_value = 0;
+  free (used_regs);
+  used_regs = 0;
 }
 
 #include "gt-cselib.h"
