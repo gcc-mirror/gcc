@@ -1,3 +1,7 @@
+2001-04-03  Andreas Schwab  <schwab@suse.de>
+
+	* include/backward/fstream.h: Define filebuf and wfilebuf.
+
 2001-04-02  Zack Weinberg  <zackw@stanford.edu>
 
 	* testsuite/lib/libstdc++.exp (dg-test): Annotate result
