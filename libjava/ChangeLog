@@ -1,3 +1,10 @@
+2000-04-12  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natString.cc (unintern): Added `obj' argument.
+	(intern): Register finalizer for string.
+	* java/lang/String.java (unintern): Now static; added obj
+	argument.
+
 2000-04-11  Tom Tromey  <tromey@cygnus.com>
 
 	* java/util/Vector.java (VectorEnumeration): Now `final'.
