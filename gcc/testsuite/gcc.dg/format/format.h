@@ -67,6 +67,8 @@ extern FILE *stdout;
 
 extern int fprintf (FILE *restrict, const char *restrict, ...);
 extern int printf (const char *restrict, ...);
+extern int fprintf_unlocked (FILE *restrict, const char *restrict, ...);
+extern int printf_unlocked (const char *restrict, ...);
 extern int sprintf (char *restrict, const char *restrict, ...);
 extern int vfprintf (FILE *restrict, const char *restrict, va_list);
 extern int vprintf (const char *restrict, va_list);

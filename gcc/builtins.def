@@ -70,6 +70,15 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
 	       false, true, false)
 
+/* Like DEF_FALLBACK_BUILTIN, except that the function is not one that
+   is specified by ANSI/ISO C.  So, when we're being fully conformant
+   we ignore the version of these builtins that does not begin with
+   __builtin.  */
+#undef DEF_EXT_FALLBACK_BUILTIN
+#define DEF_EXT_FALLBACK_BUILTIN(ENUM, NAME, TYPE)	\
+  DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
+	       false, true, true)
+
 /* A library builtin (like __builtin_strchr) is a builtin equivalent
    of an ANSI/ISO standard library function.  In addition to the
    `__builtin' version, we will create an ordinary version (e.g,
@@ -110,6 +119,15 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define DEF_FRONT_END_LIB_BUILTIN(ENUM, NAME, TYPE)	        \
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_FRONTEND, TYPE, TYPE,	\
 	       true, true, false)
+
+/* Like DEF_FRONT_END_LIB_BUILTIN, except that the function is not one
+   that is specified by ANSI/ISO C.  So, when we're being fully
+   conformant we ignore the version of these builtins that does not
+   begin with __builtin.  */
+#undef DEF_EXT_FRONT_END_LIB_BUILTIN			
+#define DEF_EXT_FRONT_END_LIB_BUILTIN(ENUM, NAME, TYPE)	        \
+  DEF_BUILTIN (ENUM, NAME, BUILT_IN_FRONTEND, TYPE, TYPE,	\
+	       true, true, true)
 
 /* A built-in that is not currently used.  */
 #undef DEF_UNUSED_BUILTIN					
@@ -369,6 +387,37 @@ DEF_FALLBACK_BUILTIN(BUILT_IN_FWRITE,
 DEF_FRONT_END_LIB_BUILTIN(BUILT_IN_FPRINTF,
 			 "__builtin_fprintf",
 			 BT_FN_INT_PTR_CONST_STRING_VAR)
+
+/* Stdio unlocked builtins.  */
+
+DEF_EXT_FALLBACK_BUILTIN(BUILT_IN_PUTCHAR_UNLOCKED,
+			 "__builtin_putchar_unlocked",
+			 BT_FN_INT_INT)
+DEF_EXT_FALLBACK_BUILTIN(BUILT_IN_PUTS_UNLOCKED,
+			 "__builtin_puts_unlocked",
+			 BT_FN_INT_CONST_STRING)
+DEF_EXT_FRONT_END_LIB_BUILTIN(BUILT_IN_PRINTF_UNLOCKED,
+			      "__builtin_printf_unlocked",
+			      BT_FN_INT_CONST_STRING_VAR)
+DEF_EXT_FALLBACK_BUILTIN(BUILT_IN_FPUTC_UNLOCKED,
+			 "__builtin_fputc_unlocked",
+			 BT_FN_INT_INT_PTR)
+/* Declare the __builtin_ style with arguments and the regular style
+   without them.  We rely on stdio.h to supply the arguments for the
+   regular style declaration since we had to use void* instead of
+   FILE* in the __builtin_ prototype supplied here.  */
+DEF_BUILTIN (BUILT_IN_FPUTS_UNLOCKED,
+	     "__builtin_fputs_unlocked",
+	     BUILT_IN_NORMAL,
+	     BT_FN_INT_CONST_STRING_PTR,
+	     BT_FN_INT_VAR,
+	     true, true, true)
+DEF_EXT_FALLBACK_BUILTIN(BUILT_IN_FWRITE_UNLOCKED,
+			 "__builtin_fwrite_unlocked",
+			 BT_FN_SIZE_CONST_PTR_SIZE_SIZE_PTR)
+DEF_EXT_FRONT_END_LIB_BUILTIN(BUILT_IN_FPRINTF_UNLOCKED,
+			      "__builtin_fprintf_unlocked",
+			      BT_FN_INT_PTR_CONST_STRING_VAR)
 
   /* ISO C99 floating point unordered comparisons.  */
 DEF_GCC_BUILTIN(BUILT_IN_ISGREATER, 

@@ -142,7 +142,7 @@ static rtx expand_builtin_strrchr	PARAMS ((tree, rtx,
 static rtx expand_builtin_alloca	PARAMS ((tree, rtx));
 static rtx expand_builtin_ffs		PARAMS ((tree, rtx, rtx));
 static rtx expand_builtin_frame_address	PARAMS ((tree));
-static rtx expand_builtin_fputs		PARAMS ((tree, int));
+static rtx expand_builtin_fputs		PARAMS ((tree, int, int));
 static tree stabilize_va_list		PARAMS ((tree, int));
 static rtx expand_builtin_expect	PARAMS ((tree, rtx));
 static tree fold_builtin_constant_p	PARAMS ((tree));
@@ -3287,12 +3287,16 @@ expand_builtin_ffs (arglist, target, subtarget)
    long, we attempt to transform this call into __builtin_fputc().  */
 
 static rtx
-expand_builtin_fputs (arglist, ignore)
+expand_builtin_fputs (arglist, ignore, unlocked)
      tree arglist;
      int ignore;
+     int unlocked;
 {
-  tree len, fn, fn_fputc = built_in_decls[BUILT_IN_FPUTC],
-    fn_fwrite = built_in_decls[BUILT_IN_FWRITE];
+  tree len, fn;
+  tree fn_fputc = unlocked ? built_in_decls[BUILT_IN_FPUTC_UNLOCKED]
+    : built_in_decls[BUILT_IN_FPUTC];
+  tree fn_fwrite = unlocked ? built_in_decls[BUILT_IN_FWRITE_UNLOCKED]
+    : built_in_decls[BUILT_IN_FWRITE];
 
   /* If the return value is used, or the replacement _DECL isn't
      initialized, don't do the transformation.  */
@@ -3581,6 +3585,12 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       case BUILT_IN_FPUTC:
       case BUILT_IN_FPUTS:
       case BUILT_IN_FWRITE:
+      case BUILT_IN_PUTCHAR_UNLOCKED:
+      case BUILT_IN_PUTS_UNLOCKED:
+      case BUILT_IN_PRINTF_UNLOCKED:
+      case BUILT_IN_FPUTC_UNLOCKED:
+      case BUILT_IN_FPUTS_UNLOCKED:
+      case BUILT_IN_FWRITE_UNLOCKED:
         return expand_call (exp, target, ignore);
 
       default:
@@ -3863,9 +3873,18 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_PUTS:
     case BUILT_IN_FPUTC:
     case BUILT_IN_FWRITE:
+    case BUILT_IN_PUTCHAR_UNLOCKED:
+    case BUILT_IN_PUTS_UNLOCKED:
+    case BUILT_IN_FPUTC_UNLOCKED:
+    case BUILT_IN_FWRITE_UNLOCKED:
       break;
     case BUILT_IN_FPUTS:
-      target = expand_builtin_fputs (arglist, ignore);
+      target = expand_builtin_fputs (arglist, ignore,/*unlocked=*/ 0);
+      if (target)
+	return target;
+      break;
+    case BUILT_IN_FPUTS_UNLOCKED:
+      target = expand_builtin_fputs (arglist, ignore,/*unlocked=*/ 1);
       if (target)
 	return target;
       break;

@@ -116,4 +116,11 @@ foo (quad_t q, u_quad_t uq, quad_t *qn, size_t z, size_t *zn, long long int ll,
   printf ("%IC", lc); /* { dg-warning "flag" "bad use of I flag" } */
   printf ("%IS", ls); /* { dg-warning "flag" "bad use of I flag" } */
   printf ("%Im"); /* { dg-warning "flag" "bad use of I flag" } */
+
+  /* As an extension, GCC does format checking on "unlocked"
+     i.e. thread unsafe versions of these functions.  */
+  fprintf_unlocked (stdout, "%d", i);
+  fprintf_unlocked (stdout, "%ld", i); /* { dg-warning "format" "fprintf_unlocked" } */
+  printf_unlocked ("%d", i);
+  printf_unlocked ("%ld", i); /* { dg-warning "format" "printf_unlocked" } */
 }
