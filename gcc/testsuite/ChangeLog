@@ -1,3 +1,7 @@
+2001-06-10  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.f-torture/execute/20010610.f: New.
+
 2001-06-09  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* g++.dg/mangle1.C: Change regex to allow USER_LABEL_PREFIX == "_"
