@@ -1428,6 +1428,7 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
      rtx x, y;
      enum rtx_code comparison;
      rtx size;
+     enum machine_mode mode;
      int unsignedp;
      int align;
 {
