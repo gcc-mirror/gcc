@@ -4,6 +4,8 @@ Wed Nov  3 12:12:59 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 Wed Nov  3 03:26:28 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* reload.c (find_reloads): Fix typos in recent change.
+
 	* dwarf2out.c: Do not include ctype.h.
 
 Tue Nov  2 21:53:44 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>

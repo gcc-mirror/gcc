@@ -4109,9 +4109,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
      do after the insn (such as for output addresses) are fine.  */
   if (no_input_reloads)
     for (i = 0; i < n_reloads; i++)
-      if (reload_in[i] != 0
-	  && reload_when_needed[i] != RELOAD_FOR_OUTADDR_ADDRESS
-	  && reload_when_needed[i] != RELOAD_FOR_OUTPUT_ADDRESS)
+      if (rld[i].in != 0
+	  && rld[i].when_needed != RELOAD_FOR_OUTADDR_ADDRESS
+	  && rld[i].when_needed != RELOAD_FOR_OUTPUT_ADDRESS)
 	abort ();
 #endif
 
