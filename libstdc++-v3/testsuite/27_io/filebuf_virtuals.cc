@@ -74,6 +74,7 @@ const char name_03[] = "filebuf_virtuals-3.txt"; // empty file, need to create
 const char name_04[] = "filebuf_virtuals-4.txt"; // empty file, need to create
 const char name_05[] = "filebuf_virtuals-5.txt"; // empty file, need to create
 const char name_06[] = "filebuf_virtuals-6.txt"; // empty file, need to create
+const char name_07[] = "filebuf_virtuals-7.txt"; // empty file, need to create
 
 class derived_filebuf: public std::filebuf
 {
@@ -702,6 +703,42 @@ void test13()
   fbuf1.close();
 }
 
+class OverBuf : public std::filebuf
+{
+public:
+  int_type pub_overflow(int_type c = traits_type::eof())
+  { return std::filebuf::overflow(c); }
+};
+
+// libstdc++/9988
+void test14()
+{
+  using namespace std;
+  bool test = true;
+  
+  OverBuf fb;
+  fb.open(name_07, ios_base::out | ios_base::trunc);
+  
+  fb.sputc('a');
+  fb.pub_overflow('b');
+  fb.pub_overflow();
+  fb.sputc('c');
+  fb.close();
+
+  filebuf fbin;
+  fbin.open(name_07, ios_base::in);
+  filebuf::int_type c;
+  c = fbin.sbumpc();
+  VERIFY( c == 'a' );
+  c = fbin.sbumpc();
+  VERIFY( c == 'b' );
+  c = fbin.sbumpc();
+  VERIFY( c == 'c' );
+  c = fbin.sbumpc();
+  VERIFY( c == filebuf::traits_type::eof() );
+  fbin.close();
+}
+
 main() 
 {
   test01();
@@ -719,5 +756,6 @@ main()
   test11();
   test12();
   test13();
+  test14();
   return 0;
 }
