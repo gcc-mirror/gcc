@@ -4,6 +4,8 @@
 
 	* cfgrtl.c (cfg_layout_merge_blocks): Remove new_e.
 
+	* expr.c (expand_assignment): Remove orig_to_rtx.
+
 2005-03-08  Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (cleanup_control_flow): If removal of a computed

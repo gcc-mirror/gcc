@@ -3824,7 +3824,6 @@ expand_assignment (tree to, tree from)
     {
       enum machine_mode mode1;
       HOST_WIDE_INT bitsize, bitpos;
-      rtx orig_to_rtx;
       tree offset;
       int unsignedp;
       int volatilep = 0;
@@ -3837,7 +3836,7 @@ expand_assignment (tree to, tree from)
       /* If we are going to use store_bit_field and extract_bit_field,
 	 make sure to_rtx will be safe for multiple use.  */
 
-      orig_to_rtx = to_rtx = expand_expr (tem, NULL_RTX, VOIDmode, 0);
+      to_rtx = expand_expr (tem, NULL_RTX, VOIDmode, 0);
 
       if (offset != 0)
 	{
