@@ -1,3 +1,29 @@
+2000-09-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (push_switch): Change prototype.
+	(check_cp_case_value): Remove declaration.
+	(decl_constant_value): Likewise.
+	* decl.c (struct cp_switch): Add switch_stmt and cases.
+	(case_compare): New function.
+	(push_switch): Set switch_stmt.  Initialize cases.
+	(pop_switch): Clean up cases.
+	(define_case_label): Rename to ...
+	(finish_case_label): ... this.  Do semantic analysis for case
+	labels here.
+	(start_function): Correct comment.
+	* decl2.c (check_cp_case_value): Remove.
+	* expr.c (do_case): Remove.
+	* pt.c (tsubst_expr): Adjust call to finish_case_label.
+	* semantics.c (genrtl_do_poplevel): Remove declaration.
+	(RECHAIN_STMTS): Remove.
+	(finish_break_stmt): Use build_break_stmt.
+	(finish_continue_stmt): Use build_continue_stmt.
+	(finish_switch_cond): Adjust condition here, rater than in
+	c_expand_start_case.
+	(finish_case_label): Remove.
+	* typeck.c (c_expand_return): Remove.
+	(c_expand_start_case): Likewise.
+	
 2000-09-07  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* ir.texi: Document type nodes.

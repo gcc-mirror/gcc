@@ -187,6 +187,7 @@ static tree check_special_function_return_type
   PARAMS ((special_function_kind, tree, tree, tree));
 static tree push_cp_library_fn PARAMS ((enum tree_code, tree));
 static tree build_cp_library_fn PARAMS ((tree, enum tree_code, tree));
+static int case_compare PARAMS ((splay_tree_key, splay_tree_key));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PARAMS ((void));
@@ -5176,17 +5177,52 @@ struct cp_switch
 {
   struct binding_level *level;
   struct cp_switch *next;
+  /* The SWITCH_STMT being built.  */
+  tree switch_stmt;
+  /* A splay-tree mapping the low element of a case range to the high
+     element, or NULL_TREE if there is no high element.  Used to
+     determine whether or not a new case label duplicates an old case
+     label.  We need a tree, rather than simply a hash table, because
+     of the GNU case range extension.  */
+  splay_tree cases;
 };
 
+/* A stack of the currently active switch statements.  The innermost
+   switch statement is on the top of the stack.  There is no need to
+   mark the stack for garbage collection because it is only active
+   during the processing of the body of a function, and we never
+   collect at that point.  */
+   
 static struct cp_switch *switch_stack;
 
+static int
+case_compare (k1, k2)
+     splay_tree_key k1;
+     splay_tree_key k2;
+{
+  /* Consider a NULL key (such as arises with a `default' label) to be
+     smaller than anything else.  */
+  if (!k1)
+    return k2 ? -1 : 0;
+  else if (!k2)
+    return k1 ? 1 : 0;
+
+  return tree_int_cst_compare ((tree) k1, (tree) k2);
+}
+
+/* Called right after a switch-statement condition is parsed.
+   SWITCH_STMT is the switch statement being parsed.  */
+
 void
-push_switch ()
+push_switch (switch_stmt)
+     tree switch_stmt;
 {
   struct cp_switch *p
     = (struct cp_switch *) xmalloc (sizeof (struct cp_switch));
   p->level = current_binding_level;
   p->next = switch_stack;
+  p->switch_stmt = switch_stmt;
+  p->cases = splay_tree_new (case_compare, NULL, NULL);
   switch_stack = p;
 }
 
@@ -5196,6 +5232,7 @@ pop_switch ()
   struct cp_switch *cs;
   
   cs = switch_stack;
+  splay_tree_delete (cs->cases);
   switch_stack = switch_stack->next;
   free (cs);
 }
@@ -5204,14 +5241,150 @@ pop_switch ()
    is a bad place for one.  */
 
 void
-define_case_label ()
+finish_case_label (low_value, high_value)
+     tree low_value;
+     tree high_value;
 {
-  tree cleanup = last_cleanup_this_contour ();
+  tree label;
+  tree cleanup;
+  tree type;
+  tree cond;
+  tree case_label;
+  splay_tree_node node;
 
   if (! switch_stack)
-    /* Don't crash; we'll complain in do_case.  */
+    {
+      if (high_value)
+	error ("case label not within a switch statement");
+      else if (low_value)
+	cp_error ("case label `%E' not within a switch statement", 
+		  low_value);
+      else
+	error ("`default' label not within a switch statement");
+      return;
+    }
+
+  label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
+
+  if (processing_template_decl)
+    {
+      /* For templates, just add the case label; we'll do semantic
+	 analysis at instantiation-time.  */
+      add_stmt (build_case_label (low_value, high_value, label));
+      return;
+    }
+
+  /* Find the condition on which this switch statement depends.  */
+  cond = SWITCH_COND (switch_stack->switch_stmt);
+  if (cond && TREE_CODE (cond) == TREE_LIST)
+    cond = TREE_VALUE (cond);
+  /* If there was an error processing the switch condition, bail now
+     before we get more confused.  */
+  if (!cond || cond == error_mark_node)
+    return;
+  type = TREE_TYPE (cond);
+
+  if ((low_value && TREE_TYPE (low_value) 
+       && POINTER_TYPE_P (TREE_TYPE (low_value))) 
+      || (high_value && TREE_TYPE (high_value)
+	  && POINTER_TYPE_P (TREE_TYPE (high_value))))
+    error ("pointers are not permitted as case values");
+
+  /* Case ranges are a GNU extension.  */
+  if (high_value && pedantic)
+    pedwarn ("ISO C++ forbids range expressions in switch statement");
+
+  if (low_value)
+    {
+      low_value = check_case_value (low_value);
+      low_value = convert_and_check (type, low_value);
+    }
+  if (high_value)
+    {
+      high_value = check_case_value (high_value);
+      high_value = convert_and_check (type, high_value);
+    }
+
+  /* If an error has occurred, bail out now.  */
+  if (low_value == error_mark_node || high_value == error_mark_node)
     return;
 
+  /* If the LOW_VALUE and HIGH_VALUE are the same, then this isn't
+     really a case range, even though it was written that way.  Remove
+     the HIGH_VALUE to simplify later processing.  */
+  if (tree_int_cst_equal (low_value, high_value))
+    high_value = NULL_TREE;
+  if (low_value && high_value 
+      && !tree_int_cst_lt (low_value, high_value)) 
+    warning ("empty range specified");
+
+  /* Look up the LOW_VALUE in the table of case labels we already
+     have.  */
+  node = splay_tree_lookup (switch_stack->cases, (splay_tree_key) low_value);
+  /* If there was not an exact match, check for overlapping ranges.
+     There's no need to do this if there's no LOW_VALUE or HIGH_VALUE;
+     that's a `default' label and the only overlap is an exact match.  */
+  if (!node && (low_value || high_value))
+    {
+      splay_tree_node low_bound;
+      splay_tree_node high_bound;
+
+      /* Even though there wasn't an exact match, there might be an
+	 overlap between this case range and another case range.
+	 Since we've (inductively) not allowed any overlapping case
+	 ranges, we simply need to find the greatest low case label
+	 that is smaller that LOW_VALUE, and the smallest low case
+	 label that is greater than LOW_VALUE.  If there is an overlap
+	 it will occur in one of these two ranges.  */
+      low_bound = splay_tree_predecessor (switch_stack->cases,
+					  (splay_tree_key) low_value);
+      high_bound = splay_tree_successor (switch_stack->cases,
+					 (splay_tree_key) low_value);
+
+      /* Check to see if the LOW_BOUND overlaps.  It is smaller than
+	 the LOW_VALUE, so there is no need to check unless the
+	 LOW_BOUND is in fact itself a case range.  */
+      if (low_bound
+	  && CASE_HIGH ((tree) low_bound->value)
+	  && tree_int_cst_compare (CASE_HIGH ((tree) low_bound->value),
+				    low_value) >= 0)
+	node = low_bound;
+      /* Check to see if the HIGH_BOUND overlaps.  The low end of that
+	 range is bigger than the low end of the current range, so we
+	 are only interested if the current range is a real range, and
+	 not an ordinary case label.  */
+      else if (high_bound 
+	       && high_value
+	       && (tree_int_cst_compare ((tree) high_bound->key,
+					 high_value)
+		   <= 0))
+	node = high_bound;
+    }
+  /* If there was an overlap, issue an error.  */
+  if (node)
+    {
+      tree duplicate = CASE_LABEL_DECL ((tree) node->value);
+
+      if (high_value)
+	{
+	  error ("duplicate (or overlapping) case value");
+	  cp_error_at ("this is the first entry overlapping that value",
+		       duplicate);
+	}
+      else if (low_value)
+	{
+	  cp_error ("duplicate case value `%E'", low_value) ;
+	  cp_error_at ("previously used here", duplicate);
+	}
+      else
+	{
+	  error ("multiple default labels in one switch");
+	  cp_error_at ("this is the first default label", duplicate);
+	}
+      return;
+    }
+
+  cleanup = last_cleanup_this_contour ();
   if (cleanup)
     {
       static int explained = 0;
@@ -5228,9 +5401,18 @@ define_case_label ()
 
   /* After labels, make any new cleanups go into their
      own new (temporary) binding contour.  */
-
   current_binding_level->more_cleanups_ok = 0;
   current_function_return_value = NULL_TREE;
+
+  /* Add a representation for the case label to the statement
+     tree.  */
+  case_label = build_case_label (low_value, high_value, label);
+  add_stmt (case_label);
+
+  /* Register this case label in the splay tree.  */
+  splay_tree_insert (switch_stack->cases, 
+		     (splay_tree_key) low_value,
+		     (splay_tree_value) case_label);
 }
 
 /* Return the list of declarations of the current level.
@@ -13601,7 +13783,7 @@ start_function (declspecs, declarator, attrs, flags)
   if (flags & SF_INCLASS_INLINE)
     maybe_begin_member_template_processing (decl1);
 
-  /* Effective C++ rule 15.  See also c_expand_return.  */
+  /* Effective C++ rule 15.  */
   if (warn_ecpp
       && DECL_OVERLOADED_OPERATOR_P (decl1) == NOP_EXPR
       && TREE_CODE (TREE_TYPE (fntype)) == VOID_TYPE)

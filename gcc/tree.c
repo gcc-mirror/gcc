@@ -4293,6 +4293,21 @@ tree_int_cst_lt (t1, t2)
   return INT_CST_LT_UNSIGNED (t1, t2);
 }
 
+/* Returns -1 if T1 < T2, 0 if T1 == T2, and 1 if T1 > T2.  */
+
+int
+tree_int_cst_compare (t1, t2)
+     tree t1;
+     tree t2;
+{
+  if (tree_int_cst_lt (t1, t2))
+    return -1;
+  else if (tree_int_cst_lt (t2, t1))
+    return 1;
+  else 
+    return 0;
+}
+
 /* Return 1 if T is an INTEGER_CST that can be represented in a single
    HOST_WIDE_INT value.  If POS is nonzero, the result must be positive.  */
 

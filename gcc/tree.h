@@ -1943,6 +1943,7 @@ extern int attribute_list_equal		PARAMS ((tree, tree));
 extern int attribute_list_contained	PARAMS ((tree, tree));
 extern int tree_int_cst_equal		PARAMS ((tree, tree));
 extern int tree_int_cst_lt		PARAMS ((tree, tree));
+extern int tree_int_cst_compare         PARAMS ((tree, tree));
 extern int host_integerp		PARAMS ((tree, int));
 extern HOST_WIDE_INT tree_low_cst	PARAMS ((tree, int));
 extern int tree_int_cst_msb		PARAMS ((tree));
@@ -2497,6 +2498,8 @@ extern int expand_dcc_cleanup			PARAMS ((tree));
 extern void expand_start_case			PARAMS ((int, tree, tree,
 						       const char *));
 extern void expand_end_case			PARAMS ((tree));
+extern int add_case_node                        PARAMS ((tree, tree,
+							 tree, tree *));
 extern int pushcase				PARAMS ((tree,
 						       tree (*) (tree, tree),
 						       tree, tree *));

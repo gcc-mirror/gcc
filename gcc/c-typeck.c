@@ -54,7 +54,6 @@ static tree qualify_type		PARAMS ((tree, tree));
 static int comp_target_types		PARAMS ((tree, tree));
 static int function_types_compatible_p	PARAMS ((tree, tree));
 static int type_lists_compatible_p	PARAMS ((tree, tree));
-static tree decl_constant_value		PARAMS ((tree));
 static tree lookup_field		PARAMS ((tree, tree, tree *));
 static tree convert_arguments		PARAMS ((tree, tree, tree, tree));
 static tree pointer_int_sum		PARAMS ((enum tree_code, tree, tree));
@@ -838,7 +837,7 @@ c_alignof_expr (expr)
 
 /* Return either DECL or its known constant value (if it has one).  */
 
-static tree
+tree
 decl_constant_value (decl)
      tree decl;
 {
@@ -6629,14 +6628,12 @@ c_expand_return (retval)
       if ((warn_return_type || flag_isoc99)
 	  && valtype != 0 && TREE_CODE (valtype) != VOID_TYPE)
 	pedwarn_c99 ("`return' with no value, in function returning non-void");
-      expand_null_return ();
     }
   else if (valtype == 0 || TREE_CODE (valtype) == VOID_TYPE)
     {
       current_function_returns_null = 1;
       if (pedantic || TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)
 	pedwarn ("`return' with a value, in function returning void");
-      expand_return (retval);
     }
   else
     {
@@ -6701,11 +6698,11 @@ c_expand_return (retval)
 	  break;
 	}
 
-      t = build (MODIFY_EXPR, TREE_TYPE (res), res, t);
-      TREE_SIDE_EFFECTS (t) = 1;
-      expand_return (t);
+      retval = build (MODIFY_EXPR, TREE_TYPE (res), res, t);
       current_function_returns_value = 1;
     }
+
+  genrtl_return_stmt (build_return_stmt (retval));
 }
 
 /* Start a C switch statement, testing expression EXP.

@@ -55,22 +55,8 @@ static void genrtl_handler PARAMS ((tree));
 static void genrtl_catch_block PARAMS ((tree));
 static void genrtl_ctor_stmt PARAMS ((tree));
 static void genrtl_subobject PARAMS ((tree));
-static tree genrtl_do_poplevel PARAMS ((void));
 static void genrtl_named_return_value PARAMS ((void));
 static void cp_expand_stmt PARAMS ((tree));
-
-/* When parsing a template, LAST_TREE contains the last statement
-   parsed.  These are chained together through the TREE_CHAIN field,
-   but often need to be re-organized since the parse is performed
-   bottom-up.  This macro makes LAST_TREE the indicated SUBSTMT of
-   STMT.  */
-
-#define RECHAIN_STMTS(stmt, substmt)		\
-  do {						\
-    substmt = TREE_CHAIN (stmt);		\
-    TREE_CHAIN (stmt) = NULL_TREE;		\
-    last_tree = stmt;				\
-  } while (0)
 
 /* Finish processing the COND, the SUBSTMT condition for STMT.  */
 
@@ -520,7 +506,7 @@ finish_for_stmt (for_stmt)
 void
 finish_break_stmt ()
 {
-  add_stmt (build_stmt (BREAK_STMT));
+  add_stmt (build_break_stmt ());
 }
 
 /* Finish a continue-statement.  */
@@ -528,7 +514,7 @@ finish_break_stmt ()
 void
 finish_continue_stmt ()
 {
-  add_stmt (build_stmt (CONTINUE_STMT));
+  add_stmt (build_continue_stmt ());
 }
 
 /* Begin a switch-statement.  Returns a new SWITCH_STMT if
@@ -553,6 +539,9 @@ finish_switch_cond (cond, switch_stmt)
 {
   if (!processing_template_decl)
     {
+      tree type;
+      tree index;
+
       /* Convert the condition to an integer or enumeration type.  */
       cond = build_expr_type_conversion (WANT_INT | WANT_ENUM, cond, 1);
       if (cond == NULL_TREE)
@@ -565,9 +554,19 @@ finish_switch_cond (cond, switch_stmt)
 	  cond = default_conversion (cond);
 	  cond = fold (build1 (CLEANUP_POINT_EXPR, TREE_TYPE (cond), cond));
 	}
+
+      type = TREE_TYPE (cond);
+      index = get_unwidened (cond, NULL_TREE);
+      /* We can't strip a conversion from a signed type to an unsigned,
+	 because if we did, int_fits_type_p would do the wrong thing
+	 when checking case values for being in range,
+	 and it's too hard to do the right thing.  */
+      if (TREE_UNSIGNED (TREE_TYPE (cond))
+	  == TREE_UNSIGNED (TREE_TYPE (index)))
+	cond = index;
     }
   FINISH_COND (cond, switch_stmt, SWITCH_COND (switch_stmt));
-  push_switch ();
+  push_switch (switch_stmt);
 }
 
 /* Finish the body of a switch-statement, which may be given by
@@ -581,21 +580,6 @@ finish_switch_stmt (switch_stmt)
   pop_switch (); 
   do_poplevel ();
   finish_stmt ();
-}
-
-/* Finish a case-label.  */
-
-void 
-finish_case_label (low_value, high_value)
-     tree low_value;
-     tree high_value;
-{
-  /* Add a representation for the case label to the statement
-     tree.  */
-  add_stmt (build_stmt (CASE_LABEL, low_value, high_value));
-  /* And warn about crossing initializations, etc.  */
-  if (!processing_template_decl)
-    define_case_label ();
 }
 
 /* Generate the RTL for T, which is a TRY_BLOCK. */

@@ -95,8 +95,8 @@ DEFTREECODE (SCOPE_STMT, "scope_stmt", 'e', 1)
 /* Used to represent a CASE_LABEL. The operands are CASE_LOW and
    CASE_HIGH, respectively. If CASE_LOW is NULL_TREE, the label is a
    'default' label. If CASE_HIGH is NULL_TREE, the label is a normal case
-   label. */
-DEFTREECODE (CASE_LABEL, "case_label", 'e', 2)
+   label.  The CASE_LABEL_DECL is a LABEL_DECL for this node.  */
+DEFTREECODE (CASE_LABEL, "case_label", 'e', 3)
 
 /* A STMT_EXPR represents a statement-expression.  The
    STMT_EXPR_STMT is the statement given by the expression.  */

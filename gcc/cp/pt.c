@@ -7269,7 +7269,8 @@ tsubst_expr (t, args, complain, in_decl)
     case CASE_LABEL:
       prep_stmt (t);
       finish_case_label (tsubst_expr (CASE_LOW (t), args, complain, in_decl),
-			 tsubst_expr (CASE_HIGH (t), args, complain, in_decl));
+			 tsubst_expr (CASE_HIGH (t), args, complain,
+				      in_decl));
       break;
 
     case LABEL_STMT:

@@ -1,3 +1,41 @@
+2000-09-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.h (add_stmt): Change prototype.
+	(RECHAIN_STMTS): New macro.
+	(CASE_LABEL_DECL): Likewise.
+	(genrtl_case_label): Change prototype.
+	(c_expand_start_case): Remove prototype.
+	(build_case_label): Change prototype.
+	(decl_constant_value): Declare.
+	* c-common.c (check_case_value): Handle C++'s extensions to C
+	semantics.
+	* c-commnon.def (CASE_LABEL): Add room for the CASE_LABEL_DECL
+	field. 
+	* c-parse.in (stmt): Adjust handling of return statements and case
+	laels.
+	* c-semantics.c (add_stmt): Return the new statement.
+	(genrtl_return_stmt): Take the RETURN_STMT as input, not the
+	returned expression.  Directly generate RTL, rather than calling
+	c_expand_return.
+	(genrtl_switch_stmt): Don't call c_expand_start_case.
+	(build_case_label): Take the LABEL_DECL as input, too.
+	(genrtl_case_label): Just call add_case_node.
+	(expand_stmt): Adjust calls to genrtl_return_stmt and
+	genrtl_case_label.
+	* c-tree.h (c_expand_start_case): Declare.
+	* c-typeck.c (decl_constant_value): Give it external linkage.
+	(c_expand_return): Don't call expand_return or expand_null_return;
+	use genrtl_return_stmt instead.
+	* stmt.c (struct nesting): Remove num_ranges field.
+	(add_case_node): Give it external linkage.
+	(expand_start_case): Don't set num_ranges.
+	(expand_start_case_dummy): Don't clear it.
+	(pushcase): Rely on add_case_node to handle `default' labels.
+	(add_case_node): Handle `default' labels.
+	* tree.c (tree_int_cst_compare): New function.
+	* tree.h (tree_int_cst_compare): Declare.
+	(add_case_node): Likewise.
+
 2000-09-10  Richard Henderson  <rth@cygnus.com>
 
 	* c-parse.in: Revert last change.
