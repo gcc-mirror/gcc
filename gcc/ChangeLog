@@ -1,3 +1,10 @@
+2004-04-18  Alan Modra  <amodra@bigpond.net.au>
+
+	PR bootstrap/14992
+	* configure.ac: Define HAVE_LD_AS_NEEDED only for linux.
+	* configure: Regenerate.
+	* gcc.c (init_gcc_specs): Revert earlier change.
+	
 2004-04-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR other/14918
