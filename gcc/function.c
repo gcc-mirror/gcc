@@ -821,10 +821,12 @@ assign_temp (type, keep, memory_required, dont_promote)
      tree type;
      int keep;
      int memory_required;
-     int dont_promote;
+     int dont_promote ATTRIBUTE_UNUSED;
 {
   enum machine_mode mode = TYPE_MODE (type);
+#ifndef PROMOTE_FOR_CALL_ONLY
   int unsignedp = TREE_UNSIGNED (type);
+#endif
 
   if (mode == BLKmode || memory_required)
     {

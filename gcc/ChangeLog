@@ -1,3 +1,24 @@
+2000-01-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* elfos.h (ASM_OUTPUT_LIMITED_STRING): Add parentheses around
+	assignment used as truth value.
+
+	* function.c (assign_temp): Mark parameter `dont_promote' with
+	ATTRIBUTE_UNUSED.  Wrap variable `unsignedp' with macro
+	PROMOTE_FOR_CALL_ONLY.
+
+	* genrecog.c (write_subroutine): Mark variable `operands' with
+	ATTRIBUTE_UNUSED.
+
+	* optabs.c (prepare_cmp_insn): Mark parameter `align' with
+	ATTRIBUTE_UNUSED.
+
+	* sdbout.c (sdbout_init): Likewise for parameter `asm_file'.
+	(sdbout_begin_block, sdbout_end_block): Likewise for `file'.
+
+	* toplev.c (note_deferral_of_defined_inline_function): Likewise
+	for `decl'.
+
 2000-01-09  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x.h: Tidy up comments.
