@@ -3752,6 +3752,15 @@
 }
 ")
 
+(define_expand "builtin_setjmp_receiver"
+  [(match_operand 0 "" "")]
+  "flag_pic"
+  "
+{
+  emit_insn (gen_GOTaddr2picreg ());
+  DONE;
+}")
+
 (define_expand "call_site"
   [(unspec [(match_dup 0)] UNSPEC_CALLER)]
   ""

@@ -1,3 +1,7 @@
+2001-04-12  kaz Kojima  <kkojima@rr.iij4u.or.jp>
+
+	* sh.md (builtin_setjmp_receiver): New expander.
+
 2001-04-12  Kelley Cook <kelley.cook@home.com>
 
 	* config-lang.in (lang_dirs): Add in zlib.
