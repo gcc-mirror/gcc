@@ -1,5 +1,5 @@
 /* InetAddress.java -- Class to model an Internet address
-   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -662,6 +662,14 @@ public class InetAddress implements Serializable
     return lookup (hostname, null, true);
   }
 
+  /**
+   * This native method looks up the hostname of the local machine
+   * we are on.  If the actual hostname cannot be determined, then the
+   * value "localhost" will be used.  This native method wrappers the
+   * "gethostname" function.
+   *
+   * @return The local hostname.
+   */
   private static native String getLocalHostname();
 
   /**
