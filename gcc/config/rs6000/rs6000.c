@@ -11302,13 +11302,13 @@ rs6000_generate_compare (enum rtx_code code)
 	{
 	case EQ: case UNEQ: case NE: case LTGT:
 	  if (op_mode == SFmode)
-	    cmp = flag_finite_math_only
+	    cmp = flag_unsafe_math_optimizations
 	      ? gen_tstsfeq_gpr (compare_result, rs6000_compare_op0,
 				 rs6000_compare_op1)
 	      : gen_cmpsfeq_gpr (compare_result, rs6000_compare_op0,
 				 rs6000_compare_op1);
 	  else if (op_mode == DFmode)
-	    cmp = flag_finite_math_only
+	    cmp = flag_unsafe_math_optimizations
 	      ? gen_tstdfeq_gpr (compare_result, rs6000_compare_op0,
 				 rs6000_compare_op1)
 	      : gen_cmpdfeq_gpr (compare_result, rs6000_compare_op0,
@@ -11317,13 +11317,13 @@ rs6000_generate_compare (enum rtx_code code)
 	  break;
 	case GT: case GTU: case UNGT: case UNGE: case GE: case GEU:
 	  if (op_mode == SFmode)
-	    cmp = flag_finite_math_only
+	    cmp = flag_unsafe_math_optimizations
 	      ? gen_tstsfgt_gpr (compare_result, rs6000_compare_op0,
 				 rs6000_compare_op1)
 	      : gen_cmpsfgt_gpr (compare_result, rs6000_compare_op0,
 				 rs6000_compare_op1);
 	  else if (op_mode == DFmode)
-	    cmp = flag_finite_math_only
+	    cmp = flag_unsafe_math_optimizations
 	      ? gen_tstdfgt_gpr (compare_result, rs6000_compare_op0,
 				 rs6000_compare_op1)
 	      : gen_cmpdfgt_gpr (compare_result, rs6000_compare_op0,
@@ -11332,13 +11332,13 @@ rs6000_generate_compare (enum rtx_code code)
 	  break;
 	case LT: case LTU: case UNLT: case UNLE: case LE: case LEU:
 	  if (op_mode == SFmode)
-	    cmp = flag_finite_math_only
+	    cmp = flag_unsafe_math_optimizations
 	      ? gen_tstsflt_gpr (compare_result, rs6000_compare_op0,
 				 rs6000_compare_op1)
 	      : gen_cmpsflt_gpr (compare_result, rs6000_compare_op0,
 				 rs6000_compare_op1);
 	  else if (op_mode == DFmode)
-	    cmp = flag_finite_math_only
+	    cmp = flag_unsafe_math_optimizations
 	      ? gen_tstdflt_gpr (compare_result, rs6000_compare_op0,
 				 rs6000_compare_op1)
 	      : gen_cmpdflt_gpr (compare_result, rs6000_compare_op0,
@@ -11370,13 +11370,13 @@ rs6000_generate_compare (enum rtx_code code)
 
 	  /* Do the EQ.  */
 	  if (op_mode == SFmode)
-	    cmp = flag_finite_math_only
+	    cmp = flag_unsafe_math_optimizations
 	      ? gen_tstsfeq_gpr (compare_result2, rs6000_compare_op0,
 				 rs6000_compare_op1)
 	      : gen_cmpsfeq_gpr (compare_result2, rs6000_compare_op0,
 				 rs6000_compare_op1);
 	  else if (op_mode == DFmode)
-	    cmp = flag_finite_math_only
+	    cmp = flag_unsafe_math_optimizations
 	      ? gen_tstdfeq_gpr (compare_result2, rs6000_compare_op0,
 				 rs6000_compare_op1)
 	      : gen_cmpdfeq_gpr (compare_result2, rs6000_compare_op0,
@@ -11412,9 +11412,9 @@ rs6000_generate_compare (enum rtx_code code)
 					     rs6000_compare_op1)));
 
   /* Some kinds of FP comparisons need an OR operation;
-     under flag_finite_math_only we don't bother.  */
+     under flag_unsafe_math_optimizations we don't bother.  */
   if (rs6000_compare_fp_p
-      && ! flag_finite_math_only
+      && ! flag_unsafe_math_optimizations
       && ! (TARGET_HARD_FLOAT && TARGET_E500 && !TARGET_FPRS)
       && (code == LE || code == GE
 	  || code == UNEQ || code == LTGT
