@@ -726,8 +726,7 @@ static int constant_fits_type_p		PARAMS ((tree, tree));
 typedef struct
 {
   int compstmt_count;
-  int line;
-  const char *file;
+  location_t locus;
   int needs_warning;
   tree if_stmt;
 } if_elt;
@@ -919,8 +918,8 @@ c_expand_start_cond (cond, compstmt_count, if_stmt)
 
   /* Record this if statement.  */
   if_stack[if_stack_pointer].compstmt_count = compstmt_count;
-  if_stack[if_stack_pointer].file = input_filename;
-  if_stack[if_stack_pointer].line = lineno;
+  if_stack[if_stack_pointer].locus.file = input_filename;
+  if_stack[if_stack_pointer].locus.line = lineno;
   if_stack[if_stack_pointer].needs_warning = 0;
   if_stack[if_stack_pointer].if_stmt = if_stmt;
   if_stack_pointer++;
@@ -943,9 +942,8 @@ c_expand_end_cond ()
 {
   if_stack_pointer--;
   if (if_stack[if_stack_pointer].needs_warning)
-    warning_with_file_and_line (if_stack[if_stack_pointer].file,
-				if_stack[if_stack_pointer].line,
-				"suggest explicit braces to avoid ambiguous `else'");
+    warning ("%Hsuggest explicit braces to avoid ambiguous `else'",
+             &if_stack[if_stack_pointer].locus);
   last_expr_type = NULL_TREE;
 }
 
@@ -4787,9 +4785,7 @@ shadow_warning (msgcode, name, decl)
   };
 
   warning (msgs[msgcode], name);
-  warning_with_file_and_line (DECL_SOURCE_FILE (decl),
-			      DECL_SOURCE_LINE (decl),
-			      "shadowed declaration is here");
+  warning ("%Hshadowed declaration is here", &DECL_SOURCE_LOCATION (decl));
 }
 
 /* Attribute handlers common to C front ends.  */

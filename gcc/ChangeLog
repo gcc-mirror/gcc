@@ -1,3 +1,10 @@
+2003-04-30  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	* c-common.c (if_elt): Use location_t in lieu of "file, line" pair.
+	(c_expand_start_cond): Adjust.
+	(c_expand_end_cond): Don't use warning_with_file_and_file.
+	(shadow_warning): Likewise.
+
 2003-04-30  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree.h (DECL_POINTER_DEPTH): Remove.
