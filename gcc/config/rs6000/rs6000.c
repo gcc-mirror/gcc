@@ -675,6 +675,18 @@ xer_operand (op, mode)
   return 0;
 }
 
+/* Return 1 if OP is a signed 8-bit constant.  Int multiplication
+   by such constants completes more quickly. */
+
+int
+s8bit_cint_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return ( GET_CODE (op) == CONST_INT
+	  && (INTVAL (op) >= -128 && INTVAL (op) <= 127));
+}
+
 /* Return 1 if OP is a constant that can fit in a D field.  */
 
 int
@@ -2082,20 +2094,18 @@ rs6000_emit_move (dest, source, mode)
 	  if (GET_CODE (operands[1]) != LABEL_REF)
 	    emit_insn (gen_rtx_USE (VOIDmode, operands[1]));
 
+#if TARGET_MACHO
 	  /* Darwin uses a special PIC legitimizer.  */
 	  if (DEFAULT_ABI == ABI_DARWIN && flag_pic)
 	    {
-#if TARGET_MACHO
-	      rtx temp_reg = ((reload_in_progress || reload_completed)
-			      ? operands[0] : NULL);
-
 	      operands[1] =
 		rs6000_machopic_legitimize_pic_address (operands[1], mode,
-							temp_reg);
-#endif
-	      emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+							operands[0]);
+	      if (operands[0] != operands[1])
+		emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
 	      return;
 	    }
+#endif
 
 	  /* If we are to limit the number of things we put in the TOC and
 	     this is a symbol plus a constant we can add in one insn,
@@ -5897,6 +5907,15 @@ print_operand_address (file, x)
     {
       output_addr_const (file, XEXP (x, 1));
       fprintf (file, "@l(%s)", reg_names[ REGNO (XEXP (x, 0)) ]);
+    }
+#endif
+#if TARGET_MACHO
+  else if (GET_CODE (x) == LO_SUM && GET_CODE (XEXP (x, 0)) == REG
+           && CONSTANT_P (XEXP (x, 1)))
+    {
+      fprintf (file, "lo16(");
+      output_addr_const (file, XEXP (x, 1));
+      fprintf (file, ")(%s)", reg_names[ REGNO (XEXP (x, 0)) ]);
     }
 #endif
   else if (LEGITIMATE_CONSTANT_POOL_ADDRESS_P (x))
@@ -10209,7 +10228,7 @@ machopic_output_stub (file, symb, stub)
    position-independent addresses go into a reg.  This is REG if non
    zero, otherwise we allocate register(s) as necessary.  */
 
-#define SMALL_INT(X) ((unsigned) (INTVAL(X) + 0x4000) < 0x8000)
+#define SMALL_INT(X) ((unsigned) (INTVAL(X) + 0x8000) < 0x10000)
 
 rtx
 rs6000_machopic_legitimize_pic_address (orig, mode, reg)
@@ -10247,7 +10266,10 @@ rs6000_machopic_legitimize_pic_address (orig, mode, reg)
 	  else if (! reload_in_progress && ! reload_completed)
 	    offset = force_reg (Pmode, offset);
 	  else
-	    abort ();
+	    {
+ 	      rtx mem = force_const_mem (Pmode, orig);
+	      return machopic_legitimize_pic_address (mem, Pmode, reg);
+	    }
 	}
       return gen_rtx (PLUS, Pmode, base, offset);
     }

@@ -219,3 +219,8 @@ Boston, MA 02111-1307, USA.  */
 /* XXX: Darwin supports neither .quad, or .llong, but it also doesn't
    support 64 bit powerpc either, so this just keeps things happy.  */
 #define DOUBLE_INT_ASM_OP "\t.quad\t"
+
+/* Get HOST_WIDE_INT and CONST_INT to be 32 bits, for compile time
+   space/speed.  */
+#undef MAX_LONG_TYPE_SIZE
+#define MAX_LONG_TYPE_SIZE 32
