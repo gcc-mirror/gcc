@@ -1,3 +1,8 @@
+2000-01-01  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* expmed.c (emit_store_flag): Prevent losing a pending stack
+	adjust the same way we prevent losing queued increments.
+
 Fri Dec 31 19:10:31 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* function.c (update_temp_slot_address): Handle case where sum of
