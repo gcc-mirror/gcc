@@ -1,3 +1,9 @@
+2004-07-09  David S. Miller  <davem@nuts.davemloft.net>
+
+	* config/sparc/sparc.c (*_costs): Scale instruction costs
+	by COSTS_N_INSNS.
+	(sparc_rtx_costs): Adjust as appropriate.
+
 2004-07-09  Jan Beulich  <jbeulich@novell.com>
 
 	* config/i386/mm3dnow.h: New.
