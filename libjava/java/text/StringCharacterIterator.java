@@ -1,6 +1,6 @@
 // StringCharacterIterator.java - Iterate over string of Unicode characters.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -106,20 +106,14 @@ public final class StringCharacterIterator implements CharacterIterator
 
   public StringCharacterIterator (String text)
     {
-      // FIXME: remove check for null once we have compiler/runtime
-      // support for NullPointerException.
-      this (text, 0, text == null ? 0 : text.length(), 0);
+      this (text, 0, text.length(), 0);
     }
   public StringCharacterIterator (String text, int pos)
     {
-      // FIXME: remove check for null once we have compiler/runtime
-      // support for NullPointerException.
-      this (text, 0, text == null ? 0 : text.length(), pos);
+      this (text, 0, text.length(), pos);
     }
   public StringCharacterIterator (String text, int begin, int end, int pos)
     {
-      if (text == null)
-	throw new NullPointerException ();
       if (begin < 0 || begin > end || end > text.length()
 	  // In 1.1 we would also throw if `pos == end'.
 	  || pos < begin || pos > end)

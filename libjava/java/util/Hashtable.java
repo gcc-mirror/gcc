@@ -164,7 +164,8 @@ public class Hashtable extends Dictionary implements Cloneable, Serializable
     return newTable;
   }
 
-  public synchronized boolean contains(Object value) throws NullPointerException
+  public synchronized boolean contains(Object value)
+    throws NullPointerException
   {
     // An exception is thrown here according to the JDK 1.2 doc.
     if (value == null)
@@ -180,10 +181,6 @@ public class Hashtable extends Dictionary implements Cloneable, Serializable
 
   public synchronized boolean containsKey(Object key)
   {
-    // The Map interface mandates that we throw this.
-    if (key == null)
-      throw new NullPointerException ();
-
     for (HashtableEntry elem = bucket[Math.abs(key.hashCode()
 					       % bucket.length)];
 	 elem != null; elem = elem.nextEntry)
@@ -200,11 +197,6 @@ public class Hashtable extends Dictionary implements Cloneable, Serializable
 
   public synchronized Object get(Object key)
   {
-    // The Dictionary interface mandates that get() throw a
-    // NullPointerException if key is null.
-    if (key == null)
-      throw new NullPointerException ();
-
     for (HashtableEntry elem = bucket[Math.abs (key.hashCode()
 						% bucket.length)];
 	 elem != null; elem = elem.nextEntry)
@@ -225,8 +217,10 @@ public class Hashtable extends Dictionary implements Cloneable, Serializable
   }
 
   public synchronized Object put(Object key, Object value)
-				throws NullPointerException
+    throws NullPointerException
   {
+    // We could really just check `value == null', but checking both
+    // is a bit clearer.
     if (key == null || value == null)
       throw new NullPointerException();
 

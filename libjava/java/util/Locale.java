@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -65,10 +65,6 @@ public final class Locale implements java.io.Serializable, Cloneable
   public Locale (String languageCode, String countryCode,
 		 String variantCode)
   {
-    // We must explicitly check the arguments.
-    if (languageCode == null || countryCode == null
-	|| variantCode == null)
-      throw new NullPointerException ();
     language = languageCode.toLowerCase();
     country = countryCode.toUpperCase();
     variant = variantCode.toUpperCase();
