@@ -1559,7 +1559,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 		{
 		  XVECEXP (body, 0, i++)
 		    = gen_rtx (CLOBBER, VOIDmode,
-			       gen_rtx (MEM, QImode,
+			       gen_rtx (MEM, BLKmode,
 					gen_rtx (SCRATCH, VOIDmode, 0)));
 		  continue;
 		}
