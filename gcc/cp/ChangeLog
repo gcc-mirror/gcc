@@ -1,3 +1,10 @@
+1998-12-05  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (coerce_new_type): Use same_type_p.
+	(coerce_delete_type): Likewise.
+
+	* call.c (check_dtor_name): Return 1, not error_mark_node.
+
 1998-12-04  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* lex.c (handle_cp_pragma): Disable #pragma interface/implementation
