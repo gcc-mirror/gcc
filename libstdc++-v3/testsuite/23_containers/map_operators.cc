@@ -22,11 +22,12 @@
 
 #include <map>
 #include <string>
+#include <iostream>
 
 // map and set
 // libstdc++/86: map & set iterator comparisons are not type-safe
 // XXX this is XFAIL for the time being, ie this should not compile
-int main(void)
+void test01()
 {
   bool test = true;
   std::map<unsigned int, int> mapByIndex;
@@ -39,6 +40,31 @@ int main(void)
   
   test &= itr != mapByName.end(); // XXX - notice, it's not mapByIndex!!
   test &= itr == mapByName.end(); // XXX - notice, it's not mapByIndex!!
+
+  return 0;
+}
+
+// http://sources.redhat.com/ml/libstdc++/2000-11/msg00093.html
+void test02()
+{
+    typedef std::map<int,const int> MapInt;
+
+    MapInt m;
+
+    for (unsigned i=0;i<10;++i)
+        m.insert(MapInt::value_type(i,i));
+
+    for (MapInt::const_iterator i=m.begin();i!=m.end();++i)
+        std::cerr << i->second << ' ';
+
+    for (MapInt::const_iterator i=m.begin();m.end()!=i;++i)
+        std::cerr << i->second << ' ';
+}
+
+int main()
+{
+  test01();
+  test02();
 
   return 0;
 }

@@ -3,7 +3,8 @@
 	* include/bits/stl_tree.h: Overload operators == and != to be able
 	to handle the case (const_iterator,iterator) and
 	(iterator,const_iterator), thus fixing libstdc++/737 and the like.
-
+	* testsuite/23_containers/map_operators.cc (test02): New tests.
+	
 2000-11-17  Loren J. Rittle  <ljrittle@acm.org>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Correct last patch
