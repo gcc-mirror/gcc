@@ -814,13 +814,7 @@ dbxout_type_methods (type)
       {
 	static int warned;
 	if (!warned)
-	  {
 	    warned = 1;
-#ifdef HAVE_TEMPLATES
-	    if (warn_template_debugging)
-	      warning ("dbx info for template class methods not yet supported");
-#endif
-	  }
 	return;
       }
   }
