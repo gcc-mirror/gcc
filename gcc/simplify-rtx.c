@@ -259,13 +259,18 @@ simplify_replace_rtx (x, old, new)
 			      simplify_replace_rtx (XEXP (x, 2), old, new));
 
     case 'x':
-      /* The only case we try to handle is a lowpart SUBREG of a single-word
-	 CONST_INT.  */
-      if (code == SUBREG && subreg_lowpart_p (x) && old == SUBREG_REG (x)
-	  && GET_CODE (new) == CONST_INT
-	  && GET_MODE_SIZE (GET_MODE (old)) <= UNITS_PER_WORD)
-	return GEN_INT (INTVAL (new) & GET_MODE_MASK (mode));
-
+      /* The only case we try to handle is a SUBREG.  */
+      if (code == SUBREG)
+	{
+	  rtx exp;
+	  exp = simplify_gen_subreg (GET_MODE (x),
+				     simplify_replace_rtx (SUBREG_REG (x),
+				     			   old, new),
+				     GET_MODE (SUBREG_REG (x)),
+				     SUBREG_BYTE (x));
+	  if (exp)
+	   x = exp;
+	}
       return x;
 
     default:
@@ -2385,6 +2390,37 @@ simplify_subreg (outermode, op, innermode, byte)
     }
   return NULL_RTX;
 }
+/* Make a SUBREG operation or equivalent if it folds.  */
+
+rtx
+simplify_gen_subreg (outermode, op, innermode, byte)
+     rtx op;
+     unsigned int byte;
+     enum machine_mode outermode, innermode;
+{
+  rtx new;
+  /* Little bit of sanity checking.  */
+  if (innermode == VOIDmode || outermode == VOIDmode
+      || innermode == BLKmode || outermode == BLKmode)
+    abort ();
+
+  if (GET_MODE (op) != innermode
+      && GET_MODE (op) != VOIDmode)
+    abort ();
+
+  if (byte % GET_MODE_SIZE (outermode)
+      || byte >= GET_MODE_SIZE (innermode))
+    abort ();
+
+  new = simplify_subreg (outermode, op, innermode, byte);
+  if (new)
+    return new;
+
+  if (GET_CODE (op) == SUBREG || GET_MODE (op) == VOIDmode)
+    return NULL_RTX;
+
+  return gen_rtx_SUBREG (outermode, op, byte);
+}
 /* Simplify X, an rtx expression.
 
    Return the simplified expression or NULL if no simplifications
@@ -2454,6 +2490,13 @@ simplify_rtx (x)
 					     ? GET_MODE (XEXP (x, 0))
 					     : GET_MODE (XEXP (x, 1))),
 					    XEXP (x, 0), XEXP (x, 1));
+    case 'x':
+      /* The only case we try to handle is a SUBREG.  */
+      if (code == SUBREG)
+        return simplify_gen_subreg (mode, SUBREG_REG (x),
+				    GET_MODE (SUBREG_REG (x)),
+				    SUBREG_BYTE (x));
+      return NULL;
     default:
       return NULL;
     }

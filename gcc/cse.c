@@ -3408,16 +3408,8 @@ fold_rtx (x, insn)
 
       if (folded_arg0 != SUBREG_REG (x))
 	{
-	  new = 0;
-
-	  if (GET_MODE_CLASS (mode) == MODE_INT
-	      && GET_MODE_SIZE (mode) == UNITS_PER_WORD
-	      && GET_MODE (SUBREG_REG (x)) != VOIDmode)
-	    new = operand_subword (folded_arg0,
-				   (SUBREG_BYTE (x) / UNITS_PER_WORD), 0,
-				   GET_MODE (SUBREG_REG (x)));
-	  if (new == 0 && subreg_lowpart_p (x))
-	    new = gen_lowpart_if_possible (mode, folded_arg0);
+	  new = simplify_subreg (mode, folded_arg0,
+				 GET_MODE (SUBREG_REG (x)), SUBREG_BYTE (x));
 	  if (new)
 	    return new;
 	}
