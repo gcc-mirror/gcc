@@ -344,6 +344,8 @@ print_node (file, prefix, node, indent)
 	fputs (" packed", file);
       if (TREE_CODE (node) == FIELD_DECL && DECL_BIT_FIELD (node))
 	fputs (" bit-field", file);
+      if (TREE_CODE (node) == FIELD_DECL && DECL_NONADDRESSABLE_P (node))
+	fputs (" nonaddressable", file);
 
       if (TREE_CODE (node) == LABEL_DECL && DECL_TOO_LATE (node))
 	fputs (" too-late", file);
