@@ -1,3 +1,7 @@
+2001-04-03  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+
+	* include/bits/stl_iterator_base_types.h: Fix typo
+
 2001-04-03  Andreas Schwab  <schwab@suse.de>
 
 	* include/backward/fstream.h: Define filebuf and wfilebuf.
