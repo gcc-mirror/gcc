@@ -1,3 +1,8 @@
+2000-08-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mn10300/mn10300.h (DBX_REGISTER_NUMBER): Remap register
+	numbers to the ranges used by GDB.
+
 2000-08-25  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.h (struct machine_function): Add n_varargs.

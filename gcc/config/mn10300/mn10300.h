@@ -1042,7 +1042,12 @@ do { char dstr[30];					\
 
 #define DWARF2_ASM_LINE_DEBUG_INFO 1
 
-#define DBX_REGISTER_NUMBER(REGNO) REGNO
+#define DBX_REGISTER_NUMBER(REGNO) \
+  (REGNO_DATA_P ((REGNO)) ? (0 + (REGNO) - FIRST_DATA_REGNUM) \
+   : REGNO_ADDRESS_P ((REGNO)) ? (4 + (REGNO) - FIRST_ADDRESS_REGNUM) \
+   : REGNO_SP_P ((REGNO)) ? 8 \
+   : REGNO_EXTENDED_P ((REGNO)) ? (15 + (REGNO) - FIRST_EXTENDED_REGNUM) \
+   : -1)
 
 /* GDB always assumes the current function's frame begins at the value
    of the stack pointer upon entry to the current function.  Accessing
