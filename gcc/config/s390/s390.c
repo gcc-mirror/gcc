@@ -816,6 +816,10 @@ optimization_options (level, size)
 {
   /* ??? There are apparently still problems with -fcaller-saves.  */
   flag_caller_saves = 0;
+
+  /* By default, always emit DWARF-2 unwind info.  This allows debugging
+     without maintaining a stack frame back-chain.  */
+  flag_asynchronous_unwind_tables = 1;
 }
 
 void
