@@ -3347,7 +3347,9 @@ rest_of_compilation (decl)
 #endif
 
   /* If optimizing, then go ahead and split insns now.  */
+#ifndef STACK_REGS
   if (optimize > 0)
+#endif
     split_all_insns (0);
 
   cleanup_cfg (optimize ? CLEANUP_EXPENSIVE : 0);
@@ -3418,10 +3420,6 @@ rest_of_compilation (decl)
       close_dump_file (DFI_ce3, print_rtl_with_bb, insns);
       timevar_pop (TV_IFCVT2);
     }
-#ifdef STACK_REGS
-  if (optimize)
-    split_all_insns (1);
-#endif
 
 #ifdef INSN_SCHEDULING
   if (optimize > 0 && flag_schedule_insns_after_reload)
