@@ -42,10 +42,7 @@ Boston, MA 02111-1307, USA.  */
    SPARC_{V9,ARCH64} to a minimum.  No attempt is made to support both v8
    and v9 in the v9 compiler.
 
-   If a combination v8/v9 compiler is too slow, it should always be possible
-   to #define TARGET_{V9,ARCH64} as 0 (and potentially other v9-only
-   options), and #define SPARC_{V9,ARCH64} as 0.
-   I measured the difference once and it was around 10%.  /dje 960120
+   ??? All uses of SPARC_V9 have been removed.  Try not to add new ones.
 */
 
 #ifndef SPARC_V9
@@ -440,7 +437,29 @@ extern int target_flags;
 #define ARCH64_SWITCHES
 #endif
 
-extern enum attr_cpu sparc_cpu;
+/* Processor type.
+   These must match the values for the cpu attribute in sparc.md.  */
+enum processor_type {
+  PROCESSOR_V7,
+  PROCESSOR_CYPRESS,
+  PROCESSOR_V8,
+  PROCESSOR_SUPERSPARC,
+  PROCESSOR_SPARCLITE,
+  PROCESSOR_F930,
+  PROCESSOR_F934,
+  PROCESSOR_SPARCLET,
+  PROCESSOR_90C701,
+  PROCESSOR_V8PLUS,
+  PROCESSOR_V9,
+  PROCESSOR_ULTRASPARC
+};
+
+/* This is set from -m{cpu,tune}=xxx.  */
+extern enum processor_type sparc_cpu;
+
+/* Recast the cpu class to be the cpu attribute.
+   Every file includes us, but not every file includes insn-attr.h.  */
+#define sparc_cpu_attr ((enum attr_cpu) sparc_cpu)
 
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
    command options that have values.  Its definition is an
@@ -459,17 +478,26 @@ extern enum attr_cpu sparc_cpu;
 	extern char *m88k_short_data;
 	#define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }  */
 
-/* ??? This isn't as fancy as rs6000.h.  Maybe in time.  */
-extern char *sparc_cpu_string;
-
 #define TARGET_OPTIONS \
-{ \
-  { "cpu=", &sparc_cpu_string }, \
+{					\
+  {"cpu=",  &sparc_select[1].string},	\
+  {"tune=", &sparc_select[2].string},	\
   SUBTARGET_OPTIONS \
 }
 
 /* This is meant to be redefined in target specific files.  */
 #define SUBTARGET_OPTIONS
+
+/* sparc_select[0] is reserved for the default cpu.  */
+struct sparc_cpu_select
+{
+  char *string;
+  char *name;
+  int set_tune_p;
+  int set_arch_p;
+};
+
+extern struct sparc_cpu_select sparc_select[];
 
 /* target machine storage layout */
 
@@ -647,11 +675,11 @@ extern char *sparc_cpu_string;
    32+32+32+4 == 100.
    Register 0 is used as the integer condition code register.  */
 
-#if SPARC_V9
 #define FIRST_PSEUDO_REGISTER 100
-#else
-#define FIRST_PSEUDO_REGISTER 64
-#endif
+
+/* Additional V9 fp regs.  */
+#define SPARC_FIRST_V9_FP_REG 64
+#define SPARC_LAST_V9_FP_REG  99
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
@@ -670,11 +698,14 @@ extern char *sparc_cpu_string;
    ??? Register 1 is used as a temporary by the 64 bit sethi pattern, so must
    currently be a fixed register until this pattern is rewritten.
    Register 1 is also used when restoring call-preserved registers in large
-   stack frames.  */
+   stack frames.
 
-#if SPARC_V9
+   Registers fixed in arch32 and not arch64 (or vice-versa) are marked in
+   CONDITIONAL_REGISTER_USAGE in order to properly handle -ffixed-.
+*/
+
 #define FIXED_REGISTERS  \
- {0, 1, 0, 0, 0, 0, 1, 1,	\
+ {0, 0, 0, 0, 0, 0, 1, 1,	\
   0, 0, 0, 0, 0, 0, 1, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 1, 1,	\
@@ -690,18 +721,6 @@ extern char *sparc_cpu_string;
   0, 0, 0, 0, 0, 0, 0, 0,	\
 				\
   0, 0, 0, 0}
-#else
-#define FIXED_REGISTERS  \
- {0, 0, 0, 0, 0, 1, 1, 1,	\
-  0, 0, 0, 0, 0, 0, 1, 0,	\
-  0, 0, 0, 0, 0, 0, 0, 0,	\
-  0, 0, 0, 0, 0, 0, 1, 1,	\
-				\
-  0, 0, 0, 0, 0, 0, 0, 0,	\
-  0, 0, 0, 0, 0, 0, 0, 0,	\
-  0, 0, 0, 0, 0, 0, 0, 0,	\
-  0, 0, 0, 0, 0, 0, 0, 0}
-#endif
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -710,26 +729,6 @@ extern char *sparc_cpu_string;
    and the register where structure-value addresses are passed.
    Aside from that, you can include as many other registers as you like.  */
 
-#if SPARC_V9 && SPARC_ARCH64
-#define CALL_USED_REGISTERS  \
- {1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  0, 0, 0, 0, 0, 0, 0, 0,	\
-  0, 0, 0, 0, 0, 0, 1, 1,	\
-				\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  0, 0, 0, 0, 0, 0, 0, 0,	\
-  0, 0, 0, 0, 0, 0, 0, 0,	\
-				\
-  0, 0, 0, 0, 0, 0, 0, 0,	\
-  0, 0, 0, 0, 0, 0, 0, 0,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-				\
-  1, 1, 1, 1}
-#else
-#if SPARC_V9 && ! SPARC_ARCH64
 #define CALL_USED_REGISTERS  \
  {1, 1, 1, 1, 1, 1, 1, 1,	\
   1, 1, 1, 1, 1, 1, 1, 1,	\
@@ -747,19 +746,6 @@ extern char *sparc_cpu_string;
   1, 1, 1, 1, 1, 1, 1, 1,	\
 				\
   1, 1, 1, 1}
-#else
-#define CALL_USED_REGISTERS  \
- {1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  0, 0, 0, 0, 0, 0, 0, 0,	\
-  0, 0, 0, 0, 0, 0, 1, 1,	\
-				\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1}
-#endif
-#endif
 
 /* If !TARGET_FPU, then make the fp registers fixed so that they won't
    be allocated.  On v9, also make the fp cc regs fixed.  */
@@ -767,9 +753,25 @@ extern char *sparc_cpu_string;
 #define CONDITIONAL_REGISTER_USAGE				\
 do								\
   {								\
-    if (SPARC_V9 && ! SPARC_ARCH64)				\
+    if (! SPARC_ARCH64)						\
       {								\
 	fixed_regs[5] = 1;					\
+      }								\
+    if (SPARC_ARCH64)						\
+      {								\
+	int regno;						\
+	fixed_regs[1] = 1;					\
+	/* ??? We need to scan argv for -fcall-used-.  */	\
+	for (regno = 48; regno < 80; regno++)			\
+	  call_used_regs[regno] = 0;				\
+      }								\
+    if (! TARGET_V9)						\
+      {								\
+	int regno;						\
+	for (regno = SPARC_FIRST_V9_FP_REG;			\
+	     regno <= SPARC_LAST_V9_FP_REG;			\
+	     regno++)						\
+	  fixed_regs[regno] = 1;				\
       }								\
     if (! TARGET_FPU)						\
       {								\
@@ -982,60 +984,38 @@ extern int sparc_mode_class[];
    trying to compile _fixunsdfsi because fix_truncdfsi2 won't match its
    constraints.  */
 
-#if SPARC_V9
 enum reg_class { NO_REGS, FPCC_REGS, GENERAL_REGS, FP_REGS, EXTRA_FP_REGS,
 		 GENERAL_OR_FP_REGS, GENERAL_OR_EXTRA_FP_REGS,
 		 ALL_REGS, LIM_REG_CLASSES };
-#else
-enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
-#endif
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
 /* Give names of register classes as strings for dump file.   */
 
-#if SPARC_V9
 #define REG_CLASS_NAMES \
   { "NO_REGS", "FPCC_REGS", "GENERAL_REGS", "FP_REGS", "EXTRA_FP_REGS", \
     "GENERAL_OR_FP_REGS", "GENERAL_OR_EXTRA_FP_REGS", "ALL_REGS" }
-#else
-#define REG_CLASS_NAMES \
-  { "NO_REGS", "GENERAL_REGS", "FP_REGS", "ALL_REGS" }
-#endif
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#if SPARC_V9
 #define REG_CLASS_CONTENTS \
   {{0, 0, 0, 0}, {0, 0, 0, 0xf}, {-2, 0, 0, 0}, \
    {0, -1, 0, 0}, {0, -1, -1, 0}, {-2, -1, 0, 0}, {-2, -1, -1, 0}, \
    {-2, -1, -1, 0xf}}
-#else
-#if 0 && defined (__GNUC__)
-#define REG_CLASS_CONTENTS {0LL, 0xfffffffeLL, 0xffffffff00000000LL, 0xfffffffffffffffeLL}
-#else
-#define REG_CLASS_CONTENTS {{0, 0}, {-2, 0}, {0, -1}, {-2, -1}}
-#endif
-#endif
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-#if SPARC_V9
 #define REGNO_REG_CLASS(REGNO) \
   ((REGNO) == 0 ? NO_REGS		\
    : (REGNO) < 32 ? GENERAL_REGS	\
    : (REGNO) < 64 ? FP_REGS		\
    : (REGNO) < 96 ? EXTRA_FP_REGS	\
    : FPCC_REGS)
-#else
-#define REGNO_REG_CLASS(REGNO) \
-  ((REGNO) >= 32 ? FP_REGS : (REGNO) == 0 ? NO_REGS : GENERAL_REGS)
-#endif
 
 /* This is the order in which to allocate registers normally.  
    
@@ -1044,11 +1024,11 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
    will get allocated to the float return register, thus saving a move
    instruction at the end of the function.
 
-   On v9, the float registers are ordered a little "funny" because some
-   of them (%f16-%f47) are call-preserved.  */
-#if SPARC_V9
+   The float registers are ordered a little "funny" because in the 64 bit
+   architecture, some of them (%f16-%f47) are call-preserved.  */
+
 #define REG_ALLOC_ORDER \
-{ 8, 9, 10, 11, 12, 13,			\
+{ 8, 9, 10, 11, 12, 13, 2, 3,		\
   15, 16, 17, 18, 19, 20, 21, 22,	\
   23, 24, 25, 26, 27, 28, 29, 31,	\
   34, 35, 36, 37, 38, 39,		/* %f2-%f7 */   \
@@ -1061,28 +1041,16 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
   72, 73, 74, 75, 76, 77, 78, 79,	/* %f40-%f47 */ \
   32, 33,				/* %f0,%f1 */   \
   96, 97, 98, 99,			/* %fcc0-3 */   \
-  1, 5, 2, 3, 4, 6, 7, 0, 14, 30}
-#else
-#define REG_ALLOC_ORDER \
-{ 8, 9, 10, 11, 12, 13, 2, 3, 		\
-  15, 16, 17, 18, 19, 20, 21, 22, 	\
-  23, 24, 25, 26, 27, 28, 29, 31,	\
-  34, 35, 36, 37, 38, 39,		\
-  40, 41, 42, 43, 44, 45, 46, 47,	\
-  48, 49, 50, 51, 52, 53, 54, 55,	\
-  56, 57, 58, 59, 60, 61, 62, 63,	\
-  32, 33,				\
   1, 4, 5, 6, 7, 0, 14, 30}
-#endif
 
 /* This is the order in which to allocate registers for
    leaf functions.  If all registers can fit in the "i" registers,
    then we have the possibility of having a leaf function.
-   v9: The floating point registers are ordered a little "funny" because some
-   of them (%f16-%f47) are call-preserved.   */
-#if SPARC_V9
+   The floating point registers are ordered a little "funny" because in the
+   64 bit architecture some of them (%f16-%f47) are call-preserved.   */
+
 #define REG_LEAF_ALLOC_ORDER \
-{ 24, 25, 26, 27, 28, 29,		\
+{ 2, 3, 24, 25, 26, 27, 28, 29,		\
   15, 8, 9, 10, 11, 12, 13,		\
   16, 17, 18, 19, 20, 21, 22, 23,	\
   34, 35, 36, 37, 38, 39,		\
@@ -1095,19 +1063,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
   72, 73, 74, 75, 76, 77, 78, 79,	\
   32, 33,				\
   96, 97, 98, 99,			\
-  1, 5, 2, 3, 4, 6, 7, 0, 14, 30, 31}
-#else
-#define REG_LEAF_ALLOC_ORDER \
-{ 2, 3, 24, 25, 26, 27, 28, 29,		\
-  15, 8, 9, 10, 11, 12, 13,		\
-  16, 17, 18, 19, 20, 21, 22, 23,	\
-  34, 35, 36, 37, 38, 39,		\
-  40, 41, 42, 43, 44, 45, 46, 47,	\
-  48, 49, 50, 51, 52, 53, 54, 55,	\
-  56, 57, 58, 59, 60, 61, 62, 63,	\
-  32, 33,				\
   1, 4, 5, 6, 7, 0, 14, 30, 31}
-#endif
 
 #define ORDER_REGS_FOR_LOCAL_ALLOC order_regs_for_local_alloc ()
 
@@ -1116,7 +1072,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
    register is used and is not permitted in a leaf function.  We make %g7
    a global reg if -mflat and voila.  Since %g7 is a system register and is
    fixed it won't be used by gcc anyway.  */
-#if SPARC_V9
+
 #define LEAF_REGISTERS \
 { 1, 1, 1, 1, 1, 1, 1, 0,	\
   0, 0, 0, 0, 0, 0, 1, 0,	\
@@ -1131,17 +1087,6 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
   1, 1, 1, 1, 1, 1, 1, 1,	\
   1, 1, 1, 1, 1, 1, 1, 1,	\
   1, 1, 1, 1}
-#else
-#define LEAF_REGISTERS \
-{ 1, 1, 1, 1, 1, 1, 1, 0,	\
-  0, 0, 0, 0, 0, 0, 1, 0,	\
-  0, 0, 0, 0, 0, 0, 0, 0,	\
-  1, 1, 1, 1, 1, 1, 0, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1}
-#endif
 
 extern char leaf_reg_remap[];
 #define LEAF_REG_REMAP(REGNO) (leaf_reg_remap[REGNO])
@@ -1151,26 +1096,21 @@ extern char leaf_reg_remap[];
 #define BASE_REG_CLASS GENERAL_REGS
 
 /* Local macro to handle the two v9 classes of FP regs.  */
-#if SPARC_V9
 #define FP_REG_CLASS_P(CLASS) ((CLASS) == FP_REGS || (CLASS) == EXTRA_FP_REGS)
-#else
-#define FP_REG_CLASS_P(CLASS) ((CLASS) == FP_REGS)
-#endif
 
-/* Get reg_class from a letter such as appears in the machine description.  */
+/* Get reg_class from a letter such as appears in the machine description.
+   In the not-v9 case, coerce v9's 'e' class to 'f', so we can use 'e' in the
+   .md file for v8 and v9.  */
 
-#if SPARC_V9
 #define REG_CLASS_FROM_LETTER(C) \
-  ((C) == 'f' ? FP_REGS		\
-   : (C) == 'e' ? EXTRA_FP_REGS	\
-   : (C) == 'c' ? FPCC_REGS	\
-   : NO_REGS)
-#else
-/* Coerce v9's 'e' class to 'f', so we can use 'e' in the .md file for
-   v8 and v9.  */
-#define REG_CLASS_FROM_LETTER(C) \
-  ((C) == 'f' ? FP_REGS : (C) == 'e' ? FP_REGS : NO_REGS)
-#endif
+(TARGET_V9			\
+ ? ((C) == 'f' ? FP_REGS	\
+    : (C) == 'e' ? EXTRA_FP_REGS \
+    : (C) == 'c' ? FPCC_REGS	\
+    : NO_REGS)			\
+ : ((C) == 'f' ? FP_REGS	\
+    : (C) == 'e' ? FP_REGS	\
+    : NO_REGS))
 
 /* The letters I, J, K, L and M in a register constraint string
    can be used to stand for particular ranges of immediate operands.
@@ -2704,7 +2644,7 @@ extern struct rtx_def *legitimize_pic_address ();
 
 /* Adjust the cost of dependencies.  */
 #define ADJUST_COST(INSN,LINK,DEP,COST) \
-  if (sparc_cpu == CPU_SUPERSPARC) \
+  if (sparc_cpu == PROCESSOR_SUPERSPARC) \
     (COST) = supersparc_adjust_cost (INSN, LINK, DEP, COST)
 
 /* Conditional branches with empty delay slots have a length of two.  */
@@ -2759,19 +2699,11 @@ extern struct rtx_def *legitimize_pic_address ();
  "%f8", "%f9", "%f10", "%f11", "%f12", "%f13", "%f14", "%f15",		\
  "%f16", "%f17", "%f18", "%f19", "%f20", "%f21", "%f22", "%f23",	\
  "%f24", "%f25", "%f26", "%f27", "%f28", "%f29", "%f30", "%f31",	\
- SPARC64_REGISTER_NAMES							\
-}
-
-#if SPARC_V9
-#define SPARC64_REGISTER_NAMES \
  "%f32", "%f33", "%f34", "%f35", "%f36", "%f37", "%f38", "%f39",	\
  "%f40", "%f41", "%f42", "%f43", "%f44", "%f45", "%f46", "%f47",	\
  "%f48", "%f49", "%f50", "%f51", "%f52", "%f53", "%f54", "%f55",	\
  "%f56", "%f57", "%f58", "%f59", "%f60", "%f61", "%f62", "%f63",	\
- "%fcc0", "%fcc1", "%fcc2", "%fcc3"
-#else
-#define SPARC64_REGISTER_NAMES
-#endif
+ "%fcc0", "%fcc1", "%fcc2", "%fcc3"}
 
 /* Define additional names for use in asm clobbers and asm declarations.
 
