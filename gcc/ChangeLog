@@ -1,3 +1,8 @@
+2004-10-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.h (MEMBER_TYPE_FORCES_BLK): Adjust for e500
+	doubles.
+
 2004-10-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* stmt.c (expand_case): Update a comment.
