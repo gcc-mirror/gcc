@@ -71,7 +71,6 @@ set_args (int argc, char **argv)
 void
 get_args (int *argc, char ***argv)
 {
-
   *argc = argc_save;
   *argv = argv_save;
 }
@@ -112,4 +111,3 @@ cleanup ()
 {
   close_units ();
 }
-

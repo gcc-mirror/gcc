@@ -780,7 +780,7 @@ write_int (fnode *f, const char *source, int len, char *(*conv) (uint64_t))
 
   memcpy (p, q, digits);
 
-done:
+ done:
   return;
 }
 
@@ -865,7 +865,7 @@ write_decimal (fnode *f, const char *source, int len, char *(*conv) (int64_t))
 
   memcpy (p, q, digits);
 
-done:
+ done:
   return;
 }
 
@@ -928,7 +928,6 @@ btoa (uint64_t n)
 void
 write_i (fnode * f, const char *p, int len)
 {
-
   write_decimal (f, p, len, (void *) itoa);
 }
 
@@ -936,7 +935,6 @@ write_i (fnode * f, const char *p, int len)
 void
 write_b (fnode * f, const char *p, int len)
 {
-
   write_int (f, p, len, btoa);
 }
 
@@ -944,14 +942,12 @@ write_b (fnode * f, const char *p, int len)
 void
 write_o (fnode * f, const char *p, int len)
 {
-
   write_int (f, p, len, otoa);
 }
 
 void
 write_z (fnode * f, const char *p, int len)
 {
-
   write_int (f, p, len, xtoa);
 }
 
@@ -959,7 +955,6 @@ write_z (fnode * f, const char *p, int len)
 void
 write_d (fnode *f, const char *p, int len)
 {
-
   write_float (f, p, len);
 }
 
@@ -967,7 +962,6 @@ write_d (fnode *f, const char *p, int len)
 void
 write_e (fnode *f, const char *p, int len)
 {
-
   write_float (f, p, len);
 }
 
@@ -975,7 +969,6 @@ write_e (fnode *f, const char *p, int len)
 void
 write_f (fnode *f, const char *p, int len)
 {
-
   write_float (f, p, len);
 }
 
@@ -983,7 +976,6 @@ write_f (fnode *f, const char *p, int len)
 void
 write_en (fnode *f, const char *p, int len)
 {
-
   write_float (f, p, len);
 }
 
@@ -991,7 +983,6 @@ write_en (fnode *f, const char *p, int len)
 void
 write_es (fnode *f, const char *p, int len)
 {
-
   write_float (f, p, len);
 }
 
@@ -1172,7 +1163,6 @@ write_real (const char *source, int length)
 static void
 write_complex (const char *source, int len)
 {
-
   if (write_char ('('))
     return;
   write_real (source, len);

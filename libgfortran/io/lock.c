@@ -34,7 +34,6 @@ global_t g;
 void
 library_start (void)
 {
-
   if (g.in_library)
     internal_error ("Recursive library calls not allowed");
 
@@ -81,4 +80,3 @@ library_end (void)
   memset (&ioparm, '\0', sizeof (ioparm));
   ioparm.library_return = t;
 }
-

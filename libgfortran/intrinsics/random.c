@@ -485,7 +485,6 @@ prefix(random_r8) (GFC_REAL_8 *x)
 void
 prefix(arandom_r4) (gfc_array_r4 *x)
 {
-
   index_type count[GFC_MAX_DIMENSIONS - 1];
   index_type extent[GFC_MAX_DIMENSIONS - 1];
   index_type stride[GFC_MAX_DIMENSIONS - 1];
@@ -550,7 +549,6 @@ prefix(arandom_r4) (gfc_array_r4 *x)
 void
 prefix(arandom_r8) (gfc_array_r8 *x)
 {
-
   index_type count[GFC_MAX_DIMENSIONS - 1];
   index_type extent[GFC_MAX_DIMENSIONS - 1];
   index_type stride[GFC_MAX_DIMENSIONS - 1];
@@ -614,10 +612,8 @@ prefix(arandom_r8) (gfc_array_r8 *x)
    must be called with no argument or exactly one argument.  */
 
 void
-random_seed (GFC_INTEGER_4 *size, gfc_array_i4 * put, 
-		     gfc_array_i4 * get)
+random_seed (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 {
-
   int i;
 
   if (size == NULL && put == NULL && get == NULL)
@@ -670,5 +666,3 @@ random_seed (GFC_INTEGER_4 *size, gfc_array_i4 * put,
         get->data[i * get->dim[0].stride] = (GFC_INTEGER_4) kiss_seed[i];
     }
 }
-
-

@@ -123,7 +123,6 @@ __pack (gfc_array_char * ret, const gfc_array_char * array,
 
       if (vector != NULL) 
 	{ 
-
 	  /* The return array will have as many
 	     elements as there are in VECTOR.  */ 
 	  total = vector->dim[0].ubound + 1 - vector->dim[0].lbound; 

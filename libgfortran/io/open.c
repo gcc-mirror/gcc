@@ -30,106 +30,61 @@ static st_option access_opt[] = {
   {"sequential", ACCESS_SEQUENTIAL},
   {"direct", ACCESS_DIRECT},
   {NULL}
-}, action_opt[] =
-{
-  {
-  "read", ACTION_READ}
-  ,
-  {
-  "write", ACTION_WRITE}
-  ,
-  {
-  "readwrite", ACTION_READWRITE}
-  ,
-  {
-  NULL}
-}
+};
 
-, blank_opt[] =
+static st_option action_opt[] =
 {
-  {
-  "null", BLANK_NULL}
-  ,
-  {
-  "zero", BLANK_ZERO}
-  ,
-  {
-  NULL}
-}
+  { "read", ACTION_READ},
+  { "write", ACTION_WRITE},
+  { "readwrite", ACTION_READWRITE},
+  { NULL}
+};
 
-, delim_opt[] =
+static st_option blank_opt[] =
 {
-  {
-  "none", DELIM_NONE}
-  ,
-  {
-  "apostrophe", DELIM_APOSTROPHE}
-  ,
-  {
-  "quote", DELIM_QUOTE}
-  ,
-  {
-  NULL}
-}
+  { "null", BLANK_NULL},
+  { "zero", BLANK_ZERO},
+  { NULL}
+};
 
-, form_opt[] =
+static st_option delim_opt[] =
 {
-  {
-  "formatted", FORM_FORMATTED}
-  ,
-  {
-  "unformatted", FORM_UNFORMATTED}
-  ,
-  {
-  NULL}
-}
+  { "none", DELIM_NONE},
+  { "apostrophe", DELIM_APOSTROPHE},
+  { "quote", DELIM_QUOTE},
+  { NULL}
+};
 
-, position_opt[] =
+static st_option form_opt[] =
 {
-  {
-  "asis", POSITION_ASIS}
-  ,
-  {
-  "rewind", POSITION_REWIND}
-  ,
-  {
-  "append", POSITION_APPEND}
-  ,
-  {
-  NULL}
-}
+  { "formatted", FORM_FORMATTED},
+  { "unformatted", FORM_UNFORMATTED},
+  { NULL}
+};
 
-, status_opt[] =
+static st_option position_opt[] =
 {
-  {
-  "unknown", STATUS_UNKNOWN}
-  ,
-  {
-  "old", STATUS_OLD}
-  ,
-  {
-  "new", STATUS_NEW}
-  ,
-  {
-  "replace", STATUS_REPLACE}
-  ,
-  {
-  "scratch", STATUS_SCRATCH}
-  ,
-  {
-  NULL}
-}
+  { "asis", POSITION_ASIS},
+  { "rewind", POSITION_REWIND},
+  { "append", POSITION_APPEND},
+  { NULL}
+};
 
-, pad_opt[] =
+static st_option status_opt[] =
 {
-  {
-  "yes", PAD_YES}
-  ,
-  {
-  "no", PAD_NO}
-  ,
-  {
-  NULL}
+  { "unknown", STATUS_UNKNOWN},
+  { "old", STATUS_OLD},
+  { "new", STATUS_NEW},
+  { "replace", STATUS_REPLACE},
+  { "scratch", STATUS_SCRATCH},
+  { NULL}
+};
+
+static st_option pad_opt[] =
+{
+  { "yes", PAD_YES},
+  { "no", PAD_NO},
+  { NULL}
 };
 
 
@@ -141,7 +96,6 @@ static st_option access_opt[] = {
 void
 test_endfile (gfc_unit * u)
 {
-
   if (u->endfile == NO_ENDFILE && file_length (u->s) == file_position (u->s))
     u->endfile = AT_ENDFILE;
 }
@@ -153,7 +107,6 @@ test_endfile (gfc_unit * u)
 static void
 edit_modes (gfc_unit * u, unit_flags * flags)
 {
-
   /* Complain about attempts to change the unchangeable.  */
 
   if (flags->status != STATUS_UNSPECIFIED &&
@@ -416,7 +369,7 @@ new_unit (unit_flags * flags)
 
   test_endfile (u);
 
-cleanup:
+ cleanup:
 
   /* Free memory associated with a temporary filename.  */
 
@@ -431,7 +384,6 @@ cleanup:
 static void
 already_open (gfc_unit * u, unit_flags * flags)
 {
-
   if (ioparm.file == NULL)
     {
       edit_modes (u, flags);

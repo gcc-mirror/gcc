@@ -220,4 +220,3 @@ __eoshift2_8 (gfc_array_char * ret, const gfc_array_char * array,
 {
   __eoshift2 (ret, array, *pshift, bound, pdim ? *pdim : 1);
 }
-

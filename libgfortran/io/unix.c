@@ -181,8 +181,8 @@ fix_fd (int fd)
 
   input = output = error = 0;
 
-/* Unix allocates the lowest descriptors first, so a loop is not
- * required, but this order is. */
+  /* Unix allocates the lowest descriptors first, so a loop is not
+     required, but this order is. */
 
   if (fd == STDIN_FILENO)
     {
@@ -271,7 +271,6 @@ readn (int fd, char *buffer, int len)
 const char *
 get_oserror (void)
 {
-
   return strerror (errno);
 }
 
@@ -281,7 +280,6 @@ get_oserror (void)
 void
 sys_exit (int code)
 {
-
   exit (code);
 }
 
@@ -295,7 +293,6 @@ sys_exit (int code)
 static try
 fd_flush (unix_stream * s)
 {
-
   if (s->ndirty == 0)
     return SUCCESS;;
 
@@ -476,7 +473,6 @@ fd_alloc_w_at (unix_stream * s, int *len, gfc_offset where)
 static try
 fd_sfree (unix_stream * s)
 {
-
   if (s->ndirty != 0 &&
       (s->buffer != s->small_buffer || options.all_unbuffered ||
        s->unbuffered))
@@ -489,7 +485,6 @@ fd_sfree (unix_stream * s)
 static int
 fd_seek (unix_stream * s, gfc_offset offset)
 {
-
   s->physical_offset = s->logical_offset = offset;
 
   return (lseek (s->fd, offset, SEEK_SET) < 0) ? FAILURE : SUCCESS;
@@ -503,7 +498,6 @@ fd_seek (unix_stream * s, gfc_offset offset)
 static try
 fd_truncate (unix_stream * s)
 {
-
   if (lseek (s->fd, s->logical_offset, SEEK_SET) == -1)
     return FAILURE;
 
@@ -511,9 +505,7 @@ fd_truncate (unix_stream * s)
      the fd is a regular file at this point */
 
   if (ftruncate (s->fd, s->logical_offset))
-   {
     return FAILURE;
-   }
 
   s->physical_offset = s->file_length = s->logical_offset;
 
@@ -524,7 +516,6 @@ fd_truncate (unix_stream * s)
 static try
 fd_close (unix_stream * s)
 {
-
   if (fd_flush (s) == FAILURE)
     return FAILURE;
 
@@ -543,7 +534,6 @@ fd_close (unix_stream * s)
 static void
 fd_open (unix_stream * s)
 {
-
   if (isatty (s->fd))
     s->unbuffered = 1;
 
@@ -578,7 +568,6 @@ static int page_size, page_mask;
 static try
 mmap_flush (unix_stream * s)
 {
-
   if (!s->mmaped)
     return fd_flush (s);
 
@@ -683,7 +672,6 @@ mmap_alloc_w_at (unix_stream * s, int *len, gfc_offset where)
 static int
 mmap_seek (unix_stream * s, gfc_offset offset)
 {
-
   s->logical_offset = offset;
   return SUCCESS;
 }
@@ -707,7 +695,6 @@ mmap_close (unix_stream * s)
 static try
 mmap_sfree (unix_stream * s)
 {
-
   return SUCCESS;
 }
 
@@ -810,7 +797,6 @@ mem_alloc_w_at (unix_stream * s, int *len, gfc_offset where)
 static int
 mem_seek (unix_stream * s, gfc_offset offset)
 {
-
   if (offset > s->file_length)
     {
       errno = ESPIPE;
@@ -825,7 +811,6 @@ mem_seek (unix_stream * s, gfc_offset offset)
 static int
 mem_truncate (unix_stream * s)
 {
-
   return SUCCESS;
 }
 
@@ -842,7 +827,6 @@ mem_close (unix_stream * s)
 static try
 mem_sfree (unix_stream * s)
 {
-
   return SUCCESS;
 }
 
@@ -858,8 +842,8 @@ mem_sfree (unix_stream * s)
 void
 empty_internal_buffer(stream *strm)
 {
-   unix_stream * s = (unix_stream *) strm;
-   memset(s->buffer, ' ', s->file_length);
+  unix_stream * s = (unix_stream *) strm;
+  memset(s->buffer, ' ', s->file_length);
 }
 
 /* open_internal()-- Returns a stream structure from an internal file */
@@ -925,7 +909,6 @@ fd_to_stream (int fd, int prot)
 int
 unit_to_fd(int unit)
 {
-
   gfc_unit *us;
 
   us = find_unit(unit);
@@ -943,7 +926,6 @@ unit_to_fd(int unit)
 static int
 unpack_filename (char *cstring, const char *fstring, int len)
 {
-
   len = fstrlen (fstring, len);
   if (len >= PATH_MAX)
     return 1;
@@ -1065,7 +1047,7 @@ regular_file (unit_action action, unit_status status)
       internal_error ("regular_file(): Bad status");
     }
 
-  // mode |= O_LARGEFILE;
+  /* mode |= O_LARGEFILE; */
 
   return open (path, mode,
 	       S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
@@ -1121,7 +1103,6 @@ open_external (unit_action action, unit_status status)
 stream *
 input_stream (void)
 {
-
   return fd_to_stream (STDIN_FILENO, PROT_READ);
 }
 
@@ -1132,7 +1113,6 @@ input_stream (void)
 stream *
 output_stream (void)
 {
-
   return fd_to_stream (STDOUT_FILENO, PROT_WRITE);
 }
 
@@ -1386,7 +1366,6 @@ inquire_formatted (const char *string, int len)
 const char *
 inquire_unformatted (const char *string, int len)
 {
-
   return inquire_formatted (string, len);
 }
 
@@ -1413,7 +1392,6 @@ inquire_access (const char *string, int len, int mode)
 const char *
 inquire_read (const char *string, int len)
 {
-
   return inquire_access (string, len, R_OK);
 }
 
@@ -1424,7 +1402,6 @@ inquire_read (const char *string, int len)
 const char *
 inquire_write (const char *string, int len)
 {
-
   return inquire_access (string, len, W_OK);
 }
 
@@ -1435,7 +1412,6 @@ inquire_write (const char *string, int len)
 const char *
 inquire_readwrite (const char *string, int len)
 {
-
   return inquire_access (string, len, R_OK | W_OK);
 }
 
@@ -1445,7 +1421,6 @@ inquire_readwrite (const char *string, int len)
 gfc_offset
 file_length (stream * s)
 {
-
   return ((unix_stream *) s)->file_length;
 }
 
@@ -1455,7 +1430,6 @@ file_length (stream * s)
 gfc_offset
 file_position (stream * s)
 {
-
   return ((unix_stream *) s)->logical_offset;
 }
 

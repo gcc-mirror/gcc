@@ -88,4 +88,3 @@ __transpose (gfc_array_char * ret, gfc_array_char * source)
       rptr += rxstride - (rystride * xcount);
     }
 }
-

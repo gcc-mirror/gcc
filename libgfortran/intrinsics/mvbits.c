@@ -60,4 +60,3 @@ SUB_NAME (const TYPE *from, const GFC_INTEGER_4 *frompos,
 #  undef TYPE
 #  undef UTYPE
 #endif
-

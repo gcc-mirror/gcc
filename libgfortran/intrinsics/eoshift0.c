@@ -204,4 +204,3 @@ __eoshift0_8 (gfc_array_char * ret, const gfc_array_char * array,
 {
   __eoshift0 (ret, array, *pshift, pbound, pdim ? *pdim : 1);
 }
-

@@ -33,7 +33,6 @@ Boston, MA 02111-1307, USA.  */
 void
 prefix(exit_i4) (GFC_INTEGER_4 * status)
 {
-
   if (status == NULL)
     exit(0);
   exit(*status);
@@ -42,7 +41,6 @@ prefix(exit_i4) (GFC_INTEGER_4 * status)
 void
 prefix(exit_i8) (GFC_INTEGER_8 * status)
 {
-
   if (status == NULL)
     exit(0);
   exit((int) *status);
