@@ -1,3 +1,7 @@
+2004-09-20  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (estimate_probability): Remove unnecesary code.
+
 2004-09-19  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vectorizer.h (stmt_vec_info): Add vect_dr_base field.
