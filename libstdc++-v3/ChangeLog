@@ -1,3 +1,9 @@
+2003-12-10  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/13217
+	* include/bits/fstream.tcc (underflow): Deal gracefully with
+	read errors: throw ios_base::failure.
+
 2003-12-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/10063
@@ -358,7 +364,7 @@
 
 	PR libstdc++/11544
 	PR libstdc++/11603
-	* include/bits/fstream.tcc (underflow): Throw ios_base:failure
+	* include/bits/fstream.tcc (underflow): Throw ios_base::failure
 	upon incomplete or invalid byte sequences in the file.
 	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11544-1.cc: New.
 	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11544-2.cc: New.
