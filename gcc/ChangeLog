@@ -1,3 +1,8 @@
+2003-03-03  James E Wilson  <wilson@tuliptree.org>
+
+	* optabs.c (add_equal_note): Delete SUBREG_REG use.
+	Fixes PR c/7872.
+
 2003-03-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*ixorsi3_ashift_16): New.

@@ -171,11 +171,9 @@ add_equal_note (insns, target, code, op0, op1)
     return 1;
 
   if (! rtx_equal_p (SET_DEST (set), target)
-      /* For a STRICT_LOW_PART, the REG_NOTE applies to what is inside the
-	 SUBREG.  */
+      /* For a STRICT_LOW_PART, the REG_NOTE applies to what is inside it.  */
       && (GET_CODE (SET_DEST (set)) != STRICT_LOW_PART
-	  || ! rtx_equal_p (SUBREG_REG (XEXP (SET_DEST (set), 0)),
-			    target)))
+	  || ! rtx_equal_p (XEXP (SET_DEST (set), 0), target)))
     return 1;
 
   /* If TARGET is in OP0 or OP1, check if anything in SEQ sets TARGET
