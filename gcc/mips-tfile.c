@@ -2926,7 +2926,7 @@ parse_def (name_start)
 
      #.def   SMANIP<long unsigned int>; .scl 10; .type 0x8; .size 8; .endef */
 
-  for (name_end_p1 = name_start; (ch = *name_end_p1) != ';' || ch == '\0'; name_end_p1++)
+  for (name_end_p1 = name_start; (ch = *name_end_p1) != ';' && ch != '\0'; name_end_p1++)
     ;
 
   if (ch == '\0')
@@ -2992,16 +2992,20 @@ parse_def (name_start)
 	}
 
       if (!arg_was_number)
-	for (arg_end_p1 = arg_start+1; (ch = *arg_end_p1) != ';'; arg_end_p1++)
-	  {
-	    if (ch == '\0' || isspace (ch))
-	      {
-		error_line = __LINE__;
-		saber_stop ();
-		goto bomb_out;
-	      }
-	  }
+	{
+	  /* Allow spaces and such in names for G++ templates.  */
+	  for (arg_end_p1 = arg_start+1;
+	       (ch = *arg_end_p1) != ';' && ch != '\0';
+	       arg_end_p1++)
+	    ;
 
+	  if (ch == '\0')
+	    {
+	      error_line = __LINE__;
+	      saber_stop ();
+	      goto bomb_out;
+	    }
+	}
 
       /* Classify the directives now.  */
       len = dir_end_p1 - dir_start;
