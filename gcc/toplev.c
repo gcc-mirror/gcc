@@ -3681,10 +3681,7 @@ main (argc, argv, envp)
 	    }
 	  else if (!strcmp (str, "p"))
 	    {
-	      if (!output_bytecode)
-		profile_flag = 1;
-	      else
-		error ("profiling not supported in bytecode compilation");
+	      profile_flag = 1;
 	    }
 	  else if (!strcmp (str, "a"))
 	    {
