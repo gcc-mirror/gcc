@@ -1,3 +1,8 @@
+2000-04-27  Ulrich Drepper  <drepper@cygnus.com>
+
+	* i386.h (FUNCTION_BLOCK_PROFILER_EXIT): Generate mem reference
+ 	for call instruction with mode QImode.
+
 2000-04-27  Alex Samuel  <samuel@codesourcery.com>
 
 	* Makefile.in (OBJS): Add timevar.o.
