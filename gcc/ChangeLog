@@ -1,3 +1,7 @@
+2003-03-18  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/rs6000.md (macho_correct_pic): Correct pattern.
+
 2003-03-18  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.md (UNSPECV_SETJMP_RECEIVER): New.
