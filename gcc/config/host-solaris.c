@@ -48,7 +48,7 @@ sol_gt_pch_use_address (void *base, size_t size, int fd, size_t offset)
 
   /* Solaris isn't good about honoring the mmap START parameter
      without MAP_FIXED set.  Before we give up, search the desired
-     address space with mincore to see if the space is really free.
+     address space with mincore to see if the space is really free.  */
   if (addr != base)
     {
       size_t page_size = getpagesize();
