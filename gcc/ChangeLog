@@ -1,3 +1,7 @@
+2000-11-13  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* loop.c (basic_induction_var): Revert accidental checkin.
+
 2000-11-13  Hans-Peter Nilsson  <hp@axis.com>
 
 	* c-lex.c (cb_leave_file): Harmonize conditions and order of
