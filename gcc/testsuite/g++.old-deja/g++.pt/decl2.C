@@ -5,4 +5,4 @@
 
 template <class T> struct foo { foo(); };
 template<class T> foo<T>::foo() {}
-T; // ERROR - ICE - XFAIL *-*-*
+T; // ERROR - no type
