@@ -3415,10 +3415,10 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
       emit_label (afterward);
     }
 
-  /* Don't allow jumping into a block that has cleanups or a stack level.  */
+  /* Don't allow jumping into a block that has a stack level.
+     Cleanups are allowed, though.  */
   if (dont_jump_in
-      || thisblock->data.block.stack_level != 0
-      || thisblock->data.block.cleanups != 0)
+      || thisblock->data.block.stack_level != 0)
     {
       struct label_chain *chain;
 
@@ -3429,7 +3429,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 	  DECL_TOO_LATE (chain->label) = 1;
 	  /* If any goto without a fixup came to this label,
 	     that must be an error, because gotos without fixups
-	     come from outside all saved stack-levels and all cleanups.  */
+	     come from outside all saved stack-levels.  */
 	  if (TREE_ADDRESSABLE (chain->label))
 	    error_with_decl (chain->label,
 			     "label `%s' used before containing binding contour");
