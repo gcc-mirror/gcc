@@ -1,3 +1,7 @@
+2002-03-07  H.J. Lu  (hjl@gnu.org)
+
+	* configure.in: Enable gprof for mips*-*-linux*.
+
 2002-03-05  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* MAINTAINERS (Write After Approval): Add myself.
