@@ -1145,11 +1145,11 @@ readonly_data () 						\
 
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
   do { ctors_section();				\
-       fprintf(FILE, "\t%s\t_%s\n", ASM_WORD_OP, NAME); } while (0)
+       fprintf(FILE, "%s_%s\n", ASM_WORD_OP, NAME); } while (0)
 
 #define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)	\
   do { dtors_section();				\
-       fprintf(FILE, "\t%s\t_%s\n", ASM_WORD_OP, NAME); } while (0)
+       fprintf(FILE, "%s_%s\n", ASM_WORD_OP, NAME); } while (0)
 
 #undef DO_GLOBAL_CTORS_BODY
 #define DO_GLOBAL_CTORS_BODY			\
@@ -1335,12 +1335,12 @@ do { char dstr[30];					\
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE) \
-  asm_fprintf (FILE, "\t%s .L%d\n", ASM_WORD_OP, VALUE)
+  asm_fprintf (FILE, "%s.L%d\n", ASM_WORD_OP, VALUE)
 
 /* This is how to output an element of a case-vector that is relative.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
-  fprintf (FILE, "\t%s .L%d-.L%d\n", ASM_WORD_OP, VALUE, REL)
+  fprintf (FILE, "%s.L%d-.L%d\n", ASM_WORD_OP, VALUE, REL)
 
 /* This is how to output an assembler line
    that says to advance the location counter
@@ -1354,7 +1354,7 @@ do { char dstr[30];					\
    that says to advance the location counter by SIZE bytes.  */
 
 #define ASM_OUTPUT_IDENT(FILE, NAME)			\
-  fprintf(FILE, "%s\t \"%s\"\n", IDENT_ASM_OP, NAME)
+  fprintf(FILE, "%s\"%s\"\n", IDENT_ASM_OP, NAME)
 
 #define ASM_OUTPUT_SKIP(FILE, SIZE) \
   fprintf (FILE, "\t.space %d\n", (SIZE))

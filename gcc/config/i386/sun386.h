@@ -45,7 +45,7 @@ do								\
 { int i = 0; 							\
   while (i < (size))						\
     { if (i%10 == 0) { if (i!=0) fprintf ((FILE), "\n");	\
-		       fprintf ((FILE), "%s ", ASM_BYTE_OP); }	\
+		       fprintf ((FILE), "%s", ASM_BYTE_OP); }	\
       else fprintf ((FILE), ",");				\
       fprintf ((FILE), "0x%x", ((p)[i++] & 0377)) ;}		\
       fprintf ((FILE), "\n");					\

@@ -3055,7 +3055,7 @@ i386_dwarf_output_addr_const (file, x)
      FILE *file;
      rtx x;
 {
-  fprintf (file, "\t%s\t", INT_ASM_OP);
+  fprintf (file, "%s", INT_ASM_OP);
   if (flag_pic)
     output_pic_addr_const (file, x, '\0');
   else

@@ -134,7 +134,7 @@ output_file_start (file, f_options, f_len, W_options, W_len)
       char indent[256];
 
       time_t now = time ((time_t *)0);
-      sprintf (indent, "]\"\n\t%s\t \"@(#)%s [", IDENT_ASM_OP, main_input_filename);
+      sprintf (indent, "]\"\n%s\"@(#)%s [", IDENT_ASM_OP, main_input_filename);
       fprintf (file, indent+3);
       pos = fprintf (file, "gcc %s, %.24s,", VERSION_STRING, ctime (&now));
       output_options (file, f_options, f_len, W_options, W_len,

@@ -117,7 +117,7 @@ extern char *current_function_original_name;
 	          fprintf ((FILE), "\"\n");				\
 	          bytes_in_chunk = 0;					\
 	        }							\
-	      fprintf ((FILE), "\t%s\t%d\n", ASM_BYTE_OP, ch);		\
+	      fprintf ((FILE), "%s%d\n", ASM_BYTE_OP, ch);		\
 	    }								\
           else								\
 	    {								\
@@ -127,7 +127,7 @@ extern char *current_function_original_name;
 	          bytes_in_chunk = 0;					\
 	        }							\
 	      if (bytes_in_chunk == 0)					\
-	        fprintf ((FILE), "\t%s\t\"", ASCII_DATA_ASM_OP);	\
+	        fprintf ((FILE), "%s\"", ASCII_DATA_ASM_OP);		\
 	      putc (ch, (FILE));					\
 	      bytes_in_chunk++;						\
 	    }								\
