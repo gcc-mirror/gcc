@@ -85,18 +85,6 @@ namespace std
   using ::div_t;
   using ::ldiv_t;
 
-#ifdef _GLIBCPP_USE_LONG_LONG
-# ifdef _GLIBCPP_HAVE_LLDIV_T
-  using ::lldiv_t;
-# else
-  struct lldiv_t
-  {
-    long long quot;
-    long long rem;
-  };
-# endif
-#endif 
-
   extern "C" double atof(const char*); 
   extern "C" int atoi(const char*); 
   extern "C" long int atol(const char*); 
@@ -135,8 +123,13 @@ namespace std
 
   inline ldiv_t
   div(long __i, long __j) { return ::ldiv(__i, __j); }
+} // namespace std
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#if _GLIBCPP_USE_C99
+namespace c99
+{
+  using ::lldiv_t;
+
   inline long long 
   abs(long long __x) { return __x >= 0 ? __x : -__x; }
 
@@ -154,18 +147,11 @@ namespace std
   extern "C" long long int atoll(const char*); 
   extern "C" long long int strtoll(const char*, char**, int); 
   extern "C" unsigned long long int strtoull(const char*, char**, int); 
-#endif
 
 #ifdef _GLIBCPP_HAVE_STRTOLD
   extern "C" long double strtold(const char*, char**); 
 #endif
-}
+} // namespace c99
+#endif
 
 #endif 
-
-
-
-
-
-
-

@@ -467,9 +467,6 @@ dnl Check to see if the (stdlib function) argument passed is
 dnl 1) declared when using the c++ compiler
 dnl 2) has "C" linkage
 dnl
-dnl Define HAVE_STRTOLD if "strtold" is declared and links
-dnl Define HAVE_STRTOF if "strtof" is declared and links
-dnl
 dnl argument 1 is name of function to check
 dnl
 dnl ASSUMES argument is a math function with TWO parameters
@@ -612,8 +609,9 @@ dnl 1) make sure the name is declared when using the c++ compiler
 dnl 2) make sure the name has "C" linkage
 dnl This might seem like overkill but experience has shown that it's not...
 dnl
-dnl Define HAVE_STRTOF etc if "strtof" is found.
-dnl Define HAVE_STRTOLD etc if "strtold" is found.
+dnl Define HAVE_STRTOLD if "strtold" is declared and links
+dnl Define HAVE_STRTOF if "strtof" is declared and links
+dnl Define HAVE_DRAND48 if "drand48" is declared and links
 dnl
 dnl GLIBCPP_CHECK_STDLIB_SUPPORT
 AC_DEFUN(GLIBCPP_CHECK_STDLIB_SUPPORT, [
@@ -623,6 +621,7 @@ AC_DEFUN(GLIBCPP_CHECK_STDLIB_SUPPORT, [
 
   AC_CHECK_FUNCS(strtof)
   GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_2(strtold)
+  AC_CHECK_FUNCS(drand48)
 
   CXXFLAGS="$ac_save_CXXFLAGS"
 ])
@@ -1338,7 +1337,7 @@ dnl GLIBCPP_ENABLE_LONG_LONG
 dnl --enable-long-long defines _GLIBCPP_USE_LONG_LONG
 dnl --disable-long-long leaves _GLIBCPP_USE_LONG_LONG undefined
 dnl  +  Usage:  GLIBCPP_ENABLE_LONG_LONG[(DEFAULT)]
-dnl       Where DEFAULT is either `yes' or `no'.  If ommitted, it
+dnl       Where DEFAULT is either `yes' or `no'.  If omitted, it
 dnl       defaults to `no'.
 dnl  +  If 'long long' stuff is not available, ignores DEFAULT and sets `no'.
 dnl
@@ -1356,44 +1355,93 @@ AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
    *)   AC_MSG_ERROR([Unknown argument to enable/disable long long]) ;;
    esac],
   enable_long_long=GLIBCPP_ENABLE_LONG_LONG_DEFAULT)dnl
- 
-  # Allow use of os-dependent settings, so that macros that turn on
-  # C99 capabilities can be defined and used in a consistent way.
-  OS_INC_PATH=${srcdir}/$os_include_dir
-  ac_test_CFLAGS="${CFLAGS+set}"
-  ac_save_CFLAGS="$CFLAGS"
-  CFLAGS="-I$OS_INC_PATH"
-
-  # Check for the existence of functions used if long long is enabled.
-  AC_CHECK_FUNC(strtoll,,ac_strtoll=no)
-  AC_CHECK_FUNC(strtoull,,ac_strtoull=no)
-
-  # Check for lldiv_t, et. al.
-  AC_MSG_CHECKING([for lldiv_t declaration])
-  AC_CACHE_VAL(glibcpp_lldiv_t_use, [
-  AC_TRY_COMPILE([#include <bits/os_defines.h>
-                  #include <stdlib.h>], 
-                   [ lldiv_t mydivt;], 
-                   [glibcpp_lldiv_t_use=yes], [glibcpp_lldiv_t_use=no])
-  ])
-  AC_MSG_RESULT($glibcpp_lldiv_t_use)
-  if test x$glibcpp_lldiv_t_use = x"yes"; then
-    AC_DEFINE(HAVE_LLDIV_T)
-  fi
-
-  AC_MSG_CHECKING([for enabled long long])
-  if test x"$ac_strtoll" = xno || test x"$ac_strtoull" = xno; then 
-    enable_long_long=no; 
-  fi; 
-  AC_MSG_RESULT($enable_long_long)
 
   # Option parsed, now set things appropriately
   if test x"$enable_long_long" = xyes; then
     AC_DEFINE(_GLIBCPP_USE_LONG_LONG)
   fi
+])
 
-  # Reset CFLAGS
-  CFLAGS="$ac_save_CFLAGS"
+ 
+dnl
+dnl Check for ISO/IEC 9899:1999 "C99" support.
+dnl
+dnl GLIBCPP_ENABLE_C99
+dnl --enable-c99 defines _GLIBCPP_USE_C99
+dnl --disable-c99 leaves _GLIBCPP_USE_C99 undefined
+dnl  +  Usage:  GLIBCPP_ENABLE_C99[(DEFAULT)]
+dnl       Where DEFAULT is either `yes' or `no'.  If omitted, it
+dnl       defaults to `no'.
+dnl  +  If 'C99' stuff is not available, ignores DEFAULT and sets `no'.
+dnl
+dnl GLIBCPP_ENABLE_C99
+AC_DEFUN(GLIBCPP_ENABLE_C99, [dnl
+  define([GLIBCPP_ENABLE_C99_DEFAULT], ifelse($1, yes, yes, no))dnl
+
+  AC_ARG_ENABLE(c99,
+  changequote(<<, >>)dnl
+  <<--enable-c99      turns on 'ISO/IEC 9899:1999 support' [default=>>GLIBCPP_ENABLE_C99_DEFAULT],
+  changequote([, ])dnl
+  [case "$enableval" in
+   yes) enable_c99=yes ;;
+   no)  enable_c99=no ;;
+   *)   AC_MSG_ERROR([Unknown argument to enable/disable C99]) ;;
+   esac],
+  enable_c99=GLIBCPP_ENABLE_C99_DEFAULT)dnl
+ 
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+
+  # Check for the existence of <math.h> functions used if C99 is enabled.
+  AC_TRY_COMPILE([#include <math.h>],[fpclassify(0.0);],, [ac_c99_math=no])
+  AC_TRY_COMPILE([#include <math.h>],[isfinite(0.0);],, [ac_c99_math=no])
+  AC_TRY_COMPILE([#include <math.h>],[isinf(0.0);],, [ac_c99_math=no])
+  AC_TRY_COMPILE([#include <math.h>],[isnan(0.0);],, [ac_c99_math=no])
+  AC_TRY_COMPILE([#include <math.h>],[isnormal(0.0);],, [ac_c99_math=no])
+  AC_TRY_COMPILE([#include <math.h>],[signbit(0.0);],, [ac_c99_math=no])
+  AC_TRY_COMPILE([#include <math.h>],[isgreater(0,0);],, [ac_c99_math=no])
+  AC_TRY_COMPILE([#include <math.h>],[isgreaterequal(0,0);],, [ac_c99_math=no])
+  AC_TRY_COMPILE([#include <math.h>],[isless(0,0);],, [ac_c99_math=no])
+  AC_TRY_COMPILE([#include <math.h>],[islessequal(0,0);],, [ac_c99_math=no])
+  AC_TRY_COMPILE([#include <math.h>],[islessgreater(0,0);],, [ac_c99_math=no])
+  AC_TRY_COMPILE([#include <math.h>],[isunordered(0,0);],, [ac_c99_math=no])
+
+  # Check for the existence in <stdlib.h> of lldiv_t, et. al.
+  AC_CHECK_FUNC(strtoll,,ac_c99_stdlib=no)
+  AC_CHECK_FUNC(strtoull,,ac_c99_stdlib=no)
+  AC_CHECK_FUNC(llabs,,ac_c99_stdlib=no)
+  AC_CHECK_FUNC(lldiv,,ac_c99_stdlib=no)
+  AC_CHECK_FUNC(atoll,,ac_c99_stdlib=no)
+	
+  AC_MSG_CHECKING([for lldiv_t declaration])
+  AC_CACHE_VAL(ac_c99_lldiv_t, [
+  AC_TRY_COMPILE([#include <stdlib.h>], 
+                   [ lldiv_t mydivt;], 
+                   [ac_c99_lldiv_t=yes], [ac_c99_lldiv_t=no])
+  ])
+  AC_MSG_RESULT($ac_c99_lldiv_t)
+  if test x"$ac_c99_lldiv_t" = x"no"; then
+    ac_c99_stdlib=no; 
+  fi; 
+
+  # Check for the existence of <wchar.h> functions used if C99 is enabled.
+  AC_CHECK_FUNC(wcstold,,ac_c99_wchar=no)
+  AC_CHECK_FUNC(wcstoll,,ac_c99_wchar=no)
+  AC_CHECK_FUNC(wcstoull,,ac_c99_wchar=no)
+
+  AC_MSG_CHECKING([for enabled ISO C99 support])
+  if test x"$ac_c99_math" = x"no" || test x"$ac_c99_wchar" = x"no" \
+	|| test x"$ac_c99_stdlib" = x"no"; then 
+    enable_c99=no; 
+  fi; 
+  AC_MSG_RESULT($enable_c99)
+
+  # Option parsed, now set things appropriately
+  if test x"$enable_c99" = x"yes"; then
+    AC_DEFINE(_GLIBCPP_USE_C99)
+  fi
+
+  AC_LANG_RESTORE
 ])
 
 
@@ -1763,6 +1811,7 @@ AC_DEFUN([AM_PROG_LIBTOOL])
 AC_DEFUN([AC_LIBTOOL_DLOPEN])
 AC_DEFUN([AC_PROG_LD])
 ])
+
 
 
 # Do all the work for Automake.  This macro actually does too much --

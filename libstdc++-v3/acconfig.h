@@ -12,6 +12,9 @@
 // Include support for 'long long' and 'unsigned long long'.
 #undef _GLIBCPP_USE_LONG_LONG
 
+// Define if code specialized for wchar_t should be used.
+#undef _GLIBCPP_USE_C99
+
 // Include support for 'long double'.
 #undef _GLIBCPP_USE_LONG_DOUBLE
 
@@ -30,16 +33,13 @@
 // Define if you have the copysignf function.
 #undef _GLIBCPP_HAVE_COPYSIGNF
 
-// Define if lldiv_t exists in stdlib.h.
-#undef HAVE_LLDIV_T
-
-// Define if mbstate_t exists in wchar.h.  */
+// Define if mbstate_t exists in wchar.h.
 #undef HAVE_MBSTATE_T
 
-// Define if you have the modff function.  */
+// Define if you have the modff function.
 #undef HAVE_MODFF
 
-// Define if you have the modfl function.  */
+// Define if you have the modfl function.
 #undef HAVE_MODFL
 
 // Define if the compiler/host combination has __builtin_abs
@@ -98,6 +98,15 @@
 // Systems that have certain non-standard functions prefixed with an
 // underscore, we'll handle those here. Must come after config.h.in.
 //
+
+#if defined(_GLIBCPP_USE_C99) && defined(__cplusplus)
+// Placeholder for declarations in c99 namespace.
+namespace std
+{
+  namespace c99 { }
+  using namespace c99;
+}
+#endif
 
 #if defined (HAVE__ISNAN) && ! defined (HAVE_ISNAN)
 # define HAVE_ISNAN 1

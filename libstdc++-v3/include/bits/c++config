@@ -49,6 +49,10 @@
 // by the compiler, but instead instantiated into the library binary.
 #define _GLIBCPP_FULLY_COMPLIANT_HEADERS 1
 
+// Define this to permit user-level control of the expansion of string
+// buffers (via a fn pointer), see basic_string.* for more.
+//#define _GLIBCPP_ALLOC_CONTROL
+
 // To enable older, ARM-style iostreams and other anachronisms use this.
 //#define _GLIBCPP_DEPRECATED 1
 
@@ -59,86 +63,54 @@
 //#define _GLIBCPP_CONCEPT_CHECKS 1
 
 // From SGI's stl_config.h; generic settings and user hooks (_NOTHREADS).
-#if defined(_PTHREADS) && !defined(_NOTHREADS)
-#    define __STL_PTHREADS
+#ifdef _REENTRANT
+# define __STL_THREADS
 #endif
+
+#if defined(_PTHREADS) && !defined(_NOTHREADS)
+# define __STL_PTHREADS
+#endif
+
 #if defined(_UITHREADS) && !defined(_PTHREADS) && !defined(_NOTHREADS)
-#    define __STL_UITHREADS
+# define __STL_UITHREADS
+#endif
+
+#if defined(__STL_WIN32THREADS) || defined(__STL_SGI_THREADS) \
+    || defined(__STL_PTHREADS)  || defined(__STL_UITHREADS)
+# define __STL_THREADS
+# define __STL_VOLATILE volatile
+#else
+# define __STL_VOLATILE
 #endif
 
 // This is also a user hook, but via -f[no-]exceptions, not direct #defines.
 #ifdef __EXCEPTIONS
-#  define __STL_USE_EXCEPTIONS
-#  define __STL_TRY try
-#  define __STL_CATCH_ALL catch(...)
-#  define __STL_THROW(x) throw x
-#  define __STL_RETHROW throw
-#  define __STL_NOTHROW throw()
-#  define __STL_UNWIND(action) catch(...) { action; throw; }
+# define __STL_USE_EXCEPTIONS
+# define __STL_TRY try
+# define __STL_CATCH_ALL catch(...)
+# define __STL_THROW(x) throw x
+# define __STL_RETHROW throw
+# define __STL_NOTHROW throw()
+# define __STL_UNWIND(action) catch(...) { action; throw; }
 #else
-#  define __STL_TRY 
-#  define __STL_CATCH_ALL if (false)
-#  define __STL_THROW(x) 
-#  define __STL_RETHROW 
-#  define __STL_NOTHROW 
-#  define __STL_UNWIND(action) 
+# define __STL_TRY 
+# define __STL_CATCH_ALL if (false)
+# define __STL_THROW(x) 
+# define __STL_RETHROW 
+# define __STL_NOTHROW 
+# define __STL_UNWIND(action) 
 #endif
 
 // This is the "underlying allocator" for STL.  The alternatives are
 // homegrown schemes involving a kind of mutex and free list; see stl_alloc.h.
 #define __USE_MALLOC
 
-// Define this to permit user-level control of the expansion of string
-// buffers (via a fn pointer), see basic_string.* for more.
-//#define _GLIBCPP_ALLOC_CONTROL
-
 // The remainder of the prewritten config is mostly automatic; all the
 // user hooks are listed above.
 
-#ifdef _REENTRANT
-#  define __STL_THREADS
-#endif
-#ifdef _PTHREADS
-#  define __STL_PTHREADS
-#endif
-//#ifndef __STRICT_ANSI__
-//#  define __STL_LONG_LONG
-//#endif
-
-// Mingw32, GCC compiler using the Microsoft C runtime (settings taken from
-// SGI's stl_config.h)
-#if defined(__MINGW32__)
-#  define __STL_NO_DRAND48
-#  ifdef _MT
-#    define __STL_WIN32THREADS
-#  endif
-#endif
-
-// Cygwin32, GCC compiler on MS Windows (settings taken from SGI's
-// stl_config.h)
-#if defined(__CYGWIN__)
-#  define __STL_NO_DRAND48
-#endif
-
-// XXX Only used in the SGI rope extensions; this is from stl_config.h and
+// XXX 
+// Only used in the SGI rope extensions; this is from stl_config.h and
 // should be cleaned up.
-#ifdef __STL_ASSERTIONS
-# include <stdio.h>
-# define __stl_assert(expr) \
-    if (!(expr)) { fprintf(stderr, "%s:%d STL assertion failure: %s\n", \
-                          __FILE__, __LINE__, # expr); abort(); }
-#else
 # define __stl_assert(expr)
-#endif
-
-
-#if defined(__STL_WIN32THREADS) || defined(__STL_SGI_THREADS) \
-    || defined(__STL_PTHREADS)  || defined(__STL_UITHREADS)
-#   define __STL_THREADS
-#   define __STL_VOLATILE volatile
-#else
-#   define __STL_VOLATILE
-#endif
-
 
 // End of prewritten config; the discovered settings follow.
