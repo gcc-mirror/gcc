@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3219,8 +3219,9 @@ package body Sem_Util is
       ------------------------------
 
       function Has_Dependent_Constraint (Comp : Entity_Id) return Boolean is
-         Comp_Decl  : constant Node_Id   := Parent (Comp);
-         Subt_Indic : constant Node_Id   := Subtype_Indication (Comp_Decl);
+         Comp_Decl  : constant Node_Id := Parent (Comp);
+         Subt_Indic : constant Node_Id :=
+           Subtype_Indication (Component_Definition (Comp_Decl));
          Constr     : Node_Id;
          Assn       : Node_Id;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1651,6 +1651,17 @@ package body Sem_Ch7 is
          --  Local entities are not immediately visible outside of the package.
 
          Set_Is_Immediately_Visible (Id, False);
+
+         --  If this is a private type with a full view (for example a local
+         --  subtype of a private type declared elsewhere), ensure that the
+         --  full view is also removed from visibility: it may be exposed when
+         --  swapping views in an instantiation.
+
+         if Is_Type (Id)
+           and then Present (Full_View (Id))
+         then
+            Set_Is_Immediately_Visible (Full_View (Id), False);
+         end if;
 
          if Is_Tagged_Type (Id) and then Ekind (Id) = E_Record_Type then
             Check_Abstract_Overriding (Id);

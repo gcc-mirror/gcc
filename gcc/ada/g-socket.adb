@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2001-2003 Ada Core Technologies, Inc.            --
+--           Copyright (C) 2001-2004 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1403,7 +1403,8 @@ package body GNAT.Sockets is
 
    begin
       Ada.Exceptions.Raise_Exception
-        (Socket_Error'Identity, Image (Error) & Socket_Error_Message (Error));
+        (Socket_Error'Identity,
+         Image (Error) & C.Strings.Value (Socket_Error_Message (Error)));
    end Raise_Socket_Error;
 
    ----------

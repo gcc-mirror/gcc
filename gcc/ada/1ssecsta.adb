@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,7 +94,7 @@ package body System.Secondary_Stack is
       end if;
 
       Address := Sec_Stack.Mem (Sec_Stack.Top)'Address;
-      Sec_Stack.Top := Sec_Stack.Top + Mark_Id (Max_Size);
+      Sec_Stack.Top := Sec_Stack.Top + Max_Size;
    end SS_Allocate;
 
    -------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2002-2003 Ada Core Technologies, Inc.           --
+--            Copyright (C) 2002-2004 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,7 +59,7 @@ package GNAT.Sockets.Thin is
    function Socket_Errno return Integer renames GNAT.OS_Lib.Errno;
    --  Returns last socket error number.
 
-   function Socket_Error_Message (Errno : Integer) return String;
+   function Socket_Error_Message (Errno : Integer) return C.Strings.chars_ptr;
    --  Returns the error message string for the error number Errno. If
    --  Errno is not known it returns "Unknown system error".
 

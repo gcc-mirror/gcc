@@ -9375,7 +9375,7 @@ package body Sem_Prag is
 
                      declare
                         Sindic : constant Node_Id :=
-                                   Subtype_Indication (Comp);
+                          Subtype_Indication (Component_Definition (Comp));
 
                      begin
                         if Nkind (Sindic) = N_Subtype_Indication then

@@ -157,7 +157,7 @@ const char *object_library_extension = ".a";
 #elif defined (__FreeBSD__)
 char *object_file_option = "";
 char *run_path_option = "";
-char shared_libgnat_default = SHARED;
+char shared_libgnat_default = STATIC;
 int link_max = 2147483647;
 unsigned char objlist_file_supported = 0;
 unsigned char using_gnu_linker = 0;

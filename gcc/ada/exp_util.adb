@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2009,6 +2009,7 @@ package body Exp_Util is
                N_Compilation_Unit_Aux                   |
                N_Component_Clause                       |
                N_Component_Declaration                  |
+               N_Component_Definition                   |
                N_Component_List                         |
                N_Constrained_Array_Definition           |
                N_Decimal_Fixed_Point_Definition         |
@@ -2813,13 +2814,22 @@ package body Exp_Util is
                   Make_Component_Declaration (Loc,
                     Defining_Identifier =>
                       Make_Defining_Identifier (Loc, Name_uParent),
-                    Subtype_Indication => New_Reference_To (Constr_Root, Loc)),
+                    Component_Definition =>
+                      Make_Component_Definition (Loc,
+                        Aliased_Present    => False,
+                        Subtype_Indication =>
+                          New_Reference_To (Constr_Root, Loc))),
 
                   Make_Component_Declaration (Loc,
                     Defining_Identifier =>
                       Make_Defining_Identifier (Loc,
                         Chars => New_Internal_Name ('C')),
-                    Subtype_Indication => New_Reference_To (Str_Type, Loc))),
+                    Component_Definition =>
+                      Make_Component_Definition (Loc,
+                        Aliased_Present    => False,
+                        Subtype_Indication =>
+                          New_Reference_To (Str_Type, Loc)))),
+
                 Variant_Part => Empty))));
 
       Insert_Actions (E, List_Def);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -958,15 +958,21 @@ package body Exp_Pakd is
                Typedef :=
                  Make_Unconstrained_Array_Definition (Loc,
                    Subtype_Marks => Indexes,
-                   Subtype_Indication =>
-                      New_Occurrence_Of (Ctyp, Loc));
+                   Component_Definition =>
+                     Make_Component_Definition (Loc,
+                       Aliased_Present    => False,
+                       Subtype_Indication =>
+                          New_Occurrence_Of (Ctyp, Loc)));
 
             else
                Typedef :=
                   Make_Constrained_Array_Definition (Loc,
                     Discrete_Subtype_Definitions => Indexes,
-                    Subtype_Indication =>
-                      New_Occurrence_Of (Ctyp, Loc));
+                    Component_Definition =>
+                      Make_Component_Definition (Loc,
+                        Aliased_Present    => False,
+                        Subtype_Indication =>
+                          New_Occurrence_Of (Ctyp, Loc)));
             end if;
 
             Decl :=

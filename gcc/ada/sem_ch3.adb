@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -906,7 +906,8 @@ package body Sem_Ch3 is
    begin
       Generate_Definition (Id);
       Enter_Name (Id);
-      T := Find_Type_Of_Object (Subtype_Indication (N), N);
+      T := Find_Type_Of_Object (Subtype_Indication (Component_Definition (N)),
+                                N);
 
       --  If the subtype is a constrained subtype of the enclosing record,
       --  (which must have a partial view) the back-end does not handle
@@ -916,15 +917,16 @@ package body Sem_Ch3 is
       --  removed from discriminant constraints.
 
       if Ekind (T) = E_Access_Subtype
-        and then Is_Entity_Name (Subtype_Indication (N))
+        and then Is_Entity_Name (Subtype_Indication (Component_Definition (N)))
         and then Comes_From_Source (T)
         and then Nkind (Parent (T)) = N_Subtype_Declaration
         and then Etype (Directly_Designated_Type (T)) = Current_Scope
       then
          Rewrite
-           (Subtype_Indication (N),
+           (Subtype_Indication (Component_Definition (N)),
              New_Copy_Tree (Subtype_Indication (Parent (T))));
-         T := Find_Type_Of_Object (Subtype_Indication (N), N);
+         T := Find_Type_Of_Object
+                 (Subtype_Indication (Component_Definition (N)), N);
       end if;
 
       --  If the component declaration includes a default expression, then we
@@ -944,7 +946,7 @@ package body Sem_Ch3 is
       if Is_Indefinite_Subtype (T) and then Chars (Id) /= Name_uParent then
          Error_Msg_N
            ("unconstrained subtype in component declaration",
-            Subtype_Indication (N));
+            Subtype_Indication (Component_Definition (N)));
 
       --  Components cannot be abstract, except for the special case of
       --  the _Parent field (case of extending an abstract tagged type)
@@ -954,9 +956,9 @@ package body Sem_Ch3 is
       end if;
 
       Set_Etype (Id, T);
-      Set_Is_Aliased (Id, Aliased_Present (N));
+      Set_Is_Aliased (Id, Aliased_Present (Component_Definition (N)));
 
-      --  If the this component is private (or depends on a private type),
+      --  If this component is private (or depends on a private type),
       --  flag the record type to indicate that some operations are not
       --  available.
 
@@ -2727,7 +2729,7 @@ package body Sem_Ch3 is
    ----------------------------
 
    procedure Array_Type_Declaration (T : in out Entity_Id; Def : Node_Id) is
-      Component_Def : constant Node_Id := Subtype_Indication (Def);
+      Component_Def : constant Node_Id := Component_Definition (Def);
       Element_Type  : Entity_Id;
       Implicit_Base : Entity_Id;
       Index         : Node_Id;
@@ -2764,7 +2766,8 @@ package body Sem_Ch3 is
          Nb_Index := Nb_Index + 1;
       end loop;
 
-      Element_Type := Process_Subtype (Component_Def, P, Related_Id, 'C');
+      Element_Type := Process_Subtype (Subtype_Indication (Component_Def),
+                                       P, Related_Id, 'C');
 
       --  Constrained array case
 
@@ -2830,7 +2833,7 @@ package body Sem_Ch3 is
 
       Set_Component_Type (Base_Type (T), Element_Type);
 
-      if Aliased_Present (Def) then
+      if Aliased_Present (Component_Definition (Def)) then
          Set_Has_Aliased_Components (Etype (T));
       end if;
 
@@ -2874,12 +2877,13 @@ package body Sem_Ch3 is
 
       if Is_Indefinite_Subtype (Element_Type) then
          Error_Msg_N
-           ("unconstrained element type in array declaration ",
-            Component_Def);
+           ("unconstrained element type in array declaration",
+            Subtype_Indication (Component_Def));
 
       elsif Is_Abstract (Element_Type) then
-         Error_Msg_N ("The type of a component cannot be abstract ",
-              Component_Def);
+         Error_Msg_N
+           ("The type of a component cannot be abstract",
+            Subtype_Indication (Component_Def));
       end if;
 
    end Array_Type_Declaration;
@@ -2900,15 +2904,15 @@ package body Sem_Ch3 is
       Discr_Con_Elist : Elist_Id;
       Discr_Con_El    : Elmt_Id;
 
-      Subt            : Entity_Id;
+      Subt : Entity_Id;
 
    begin
       --  Set the designated type so it is available in case this is
       --  an access to a self-referential type, e.g. a standard list
       --  type with a next pointer. Will be reset after subtype is built.
 
-      Set_Directly_Designated_Type (Derived_Type,
-        Designated_Type (Parent_Type));
+      Set_Directly_Designated_Type
+        (Derived_Type, Designated_Type (Parent_Type));
 
       Subt := Process_Subtype (S, N);
 
@@ -5592,10 +5596,10 @@ package body Sem_Ch3 is
                if Discrim_Present then
                   null;
 
-               elsif Nkind (Parent (Def)) = N_Component_Declaration
+               elsif Nkind (Parent (Parent (Def))) = N_Component_Declaration
                  and then
                    Has_Per_Object_Constraint
-                     (Defining_Identifier (Parent (Def)))
+                     (Defining_Identifier (Parent (Parent (Def))))
                then
                   null;
 
@@ -9525,11 +9529,18 @@ package body Sem_Ch3 is
       Related_Nod : Node_Id) return Entity_Id
    is
       Def_Kind : constant Node_Kind := Nkind (Obj_Def);
-      P        : constant Node_Id   := Parent (Obj_Def);
+      P        : Node_Id := Parent (Obj_Def);
       T        : Entity_Id;
       Nam      : Name_Id;
 
    begin
+      --  If the parent is a component_definition node we climb to the
+      --  component_declaration node
+
+      if Nkind (P) = N_Component_Definition then
+         P := Parent (P);
+      end if;
+
       --  Case of an anonymous array subtype
 
       if Def_Kind = N_Constrained_Array_Definition

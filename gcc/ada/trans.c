@@ -2805,9 +2805,8 @@ tree_transform (Node_Id gnat_node)
 	  case N_Expanded_Name:
 	  case N_Attribute_Reference:
 	    if (Is_Eliminated (Entity (Name (gnat_node))))
-	      post_error_ne ("cannot call eliminated subprogram &!",
-			     gnat_node, Entity (Name (gnat_node)));
-	  }
+	      Eliminate_Error_Msg (gnat_node, Entity (Name (gnat_node)));
+          }
 
 	if (TREE_CODE (gnu_subprog_type) != FUNCTION_TYPE)
 	  gigi_abort (317);
