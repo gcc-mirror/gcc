@@ -1,3 +1,62 @@
+2003-02-10  Raif S. Naffah <raif@fl.net.au>
+
+	* java/math/BigInteger.java:
+	Updated notice to include years 2002 and 3.
+	Added 2 private (int) arrays with values from the HAC (Handbook of
+	Applied Cryptography -A. Menezes & al): k[] that contains bit lengths
+	and t[] that contains nbr. of tests --used in isProbablePrime().
+
+	* java/math/BigInteger.java (make(long)): Merged into valueOf(long).
+
+	* java/math/BigInteger.java (make(int[],int), add(int,int),
+	add(BI,BI,int), times(BI,int), divide(long,long,BI,BI,int), gcd(BI),
+	isProbablePrime(int), shift(BI,int), valueOf(String,int), neg(BI),
+	bitOp(int,BI,BI), and(BI,int)): Use valueOf(long) instead of
+	make(long).
+
+	* java/math/BigInteger.java (euclidInv): Reduce number of work vars
+	(euclidInv(int,int,int)): Now returns an array of 2 ints instead of 3.
+	(euclidInv(BI,BI,BI)): Used to return an array of 2 BIs; now accepts 6
+	BIs and returns void.
+	(modInverse(BI)): Use new signatures of euclidInv().
+
+	* java/math/BigInteger.java (isProbablePrime(int)): Use divide() with
+	static small primes instead of remainder().
+	Use pre-computed max nbr of trials based on bitlength of BI to test.
+	Use pre-computed small primes for the trial tests instead of random
+	numbers.
+
+	* java/math/BigInteger.java (isOdd, isMinusOne, pow): Removed.
+	not used.
+
+	* java/math/BigInteger.java (format(int,StringBuffer)): Removed
+	invoacation of MPN.chars_per_word().  not used.
+
+	* java/math/BigInteger.java (gcd(int,int)): Declared 'tmp' once as
+	local var and used where needed.
+
+	* java/math/BigInteger.java (modPow(BI,BI)): Fixed spelling.
+	Combined declaration with initialisation of locals.
+	Removed unused var.
+
+	* java/math/BigInteger.java: Style changes
+	(pow(int)): Removed 'else' keyword.
+	(toString(int)): idem.
+	(doubleValue()): idem.
+	(bitLength()): idem.
+	(equals(Object)): Use static methods name in same class w/o prepending
+	class name.
+	(doubleValue()): idem.
+	(setNegative(BI)): idem.
+	(negate()): idem.
+	(and(BI,int)): idem.
+	(and(BI)): idem.
+	(gcd(BI)): idem.
+	(byteArrayToIntArray()): Removed casting to (int). this is
+	std. behaviour.
+	(canonicalize()): idem.
+	(alloc(int)): Always instantiate a new BI.
+
 2003-02-10  Tom Tromey  <tromey@redhat.com>
 
 	* java/sql/Timestamp.java (compareTo(Object)): New method.
