@@ -271,7 +271,9 @@ static int all_blocks		PARAMS ((tree, tree *));
    can always export `prologue_epilogue_contains'.  */
 static int *record_insns	PARAMS ((rtx)) ATTRIBUTE_UNUSED;
 static int contains		PARAMS ((rtx, int *));
+#ifdef HAVE_return
 static void emit_return_into_block PARAMS ((basic_block));
+#endif
 static void put_addressof_into_stack PARAMS ((rtx, struct hash_table *));
 static boolean purge_addressof_1 PARAMS ((rtx *, rtx, int, int, 
 					  struct hash_table *));
@@ -6581,6 +6583,7 @@ prologue_epilogue_contains (insn)
   return 0;
 }
 
+#ifdef HAVE_return
 /* Insert gen_return at the end of block BB.  This also means updating
    block_for_insn appropriately.  */
 
@@ -6601,6 +6604,7 @@ emit_return_into_block (bb)
     }
   bb->end = end;
 }
+#endif /* HAVE_return */
 
 /* Generate the prologue and epilogue RTL if the machine supports it.  Thread
    this into place with notes indicating where the prologue ends and where
