@@ -179,8 +179,12 @@ getAllAttributeKeys()
   if (attribs == null)
     return(s);
 
-  for (int i = 0; i < attribs.length; i++)
+    for (int i = 0; i < attribs.length; i++)
     {
+      if (attribs[i].begin_index > getEndIndex()
+	  || attribs[i].end_index <= getBeginIndex())
+	continue;
+
       Set key_set = attribs[i].attribs.keySet();
       Iterator iter = key_set.iterator();
       while (iter.hasNext())
@@ -327,7 +331,7 @@ getAttribute(AttributedCharacterIterator.Attribute attrib)
           // Check for attribute match and range match
           if (obj.equals(attrib))
             if ((ci.getIndex() >= attribs[i].begin_index) &&
-                (ci.getIndex() <= attribs[i].end_index))
+                (ci.getIndex() < attribs[i].end_index))
               return(attribs[i].attribs.get(obj));
         }
     }
@@ -351,7 +355,7 @@ getAttributes()
   for (int i = 0; i < attribs.length; i++)
     {
        if ((ci.getIndex() >= attribs[i].begin_index) &&
-           (ci.getIndex() <= attribs[i].end_index))
+           (ci.getIndex() < attribs[i].end_index))
          m.putAll(attribs[i].attribs);
     }
 
