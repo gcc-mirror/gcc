@@ -1,3 +1,7 @@
+2004-05-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* btest-gcc.sh: Remove g77.sum from TESTLOGS.
+
 2003-09-18  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* btest-gcc.sh: Add make check-target-libffi.
