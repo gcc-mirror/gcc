@@ -550,7 +550,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	       of a reg that's used in notes.  A subsequent optimization
 	       might arrange to use that reg for real.  */	       
 	    && regno_last_note_uid[REGNO (SET_DEST (set))] == INSN_UID (insn)
-	    && ! side_effects_p (SET_SRC (set)))
+	    && ! side_effects_p (SET_SRC (set))
+	    && ! find_reg_note (insn, REG_RETVAL, 0))
 	  delete_insn (insn);
       }
 
