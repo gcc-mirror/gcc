@@ -3691,20 +3691,15 @@ builtin_function_2 (builtin_name, name, builtin_type, type, function_code,
 {
   tree bdecl = NULL_TREE;
   tree decl = NULL_TREE;
+
   if (builtin_name != 0)
-    {
-      bdecl = builtin_function (builtin_name, builtin_type, function_code,
-				class, library_name_p ? name : NULL,
-				attrs);
-    }
+    bdecl = builtin_function (builtin_name, builtin_type, function_code,
+			      class, library_name_p ? name : NULL, attrs);
+
   if (name != 0 && !flag_no_builtin && !builtin_function_disabled_p (name)
       && !(nonansi_p && flag_no_nonansi_builtin))
-    {
-      decl = builtin_function (name, type, function_code, class, NULL,
-			       attrs);
-      if (nonansi_p)
-	DECL_BUILT_IN_NONANSI (decl) = 1;
-    }
+    decl = builtin_function (name, type, function_code, class, NULL, attrs);
+
   return (bdecl != 0 ? bdecl : decl);
 }
 
