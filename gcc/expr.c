@@ -9119,7 +9119,7 @@ do_jump_for_compare (comparison, if_false_label, if_true_label)
 	 emit a jump to the false label and define the true label.  */
 
       if (bcc_gen_fctn[(int) GET_CODE (comparison)] != 0)
-	emit_jump_insn ((*bcc_gen_fctn[(int) GET_CODE (comparison)]) (if_false_label));
+	emit_jump_insn ((*bcc_gen_fctn[(int) GET_CODE (comparison)])(if_false_label));
       else
 	abort ();
 
@@ -9130,9 +9130,9 @@ do_jump_for_compare (comparison, if_false_label, if_true_label)
 	/* If there's only one preceding insn...  */
 	insn = get_insns ();
       else
-	insn = NEXT_INSN (prev);
+	insn = NEXT_INSN (NEXT_INSN (prev));
 
-      for (insn = NEXT_INSN (insn); insn; insn = NEXT_INSN (insn))
+      for (; insn; insn = NEXT_INSN (insn))
 	if (GET_CODE (insn) == JUMP_INSN)
 	  {
 	    if (branch)
