@@ -194,6 +194,8 @@ SYSCALLS.c.X-warn = -Wno-strict-prototypes -Wno-error
 # $(GCC_WARN_CFLAGS), or nothing.
 WARN_CFLAGS = @warn_cflags@
 
+CPPFLAGS = @CPPFLAGS@
+
 # These exists to be overridden by the x-* and t-* files, respectively.
 X_CFLAGS =
 T_CFLAGS =
