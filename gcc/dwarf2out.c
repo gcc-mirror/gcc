@@ -22,8 +22,7 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-/* TODO: Implement .debug_str handling, and share entries somehow.
-	 Emit .debug_line header even when there are no functions, since
+/* TODO: Emit .debug_line header even when there are no functions, since
 	   the file numbers are used by .debug_info.  Alternately, leave
 	   out locations for types and decls.
 	 Avoid talking about ctors and op= for PODs.
@@ -60,6 +59,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "diagnostic.h"
 #include "debug.h"
 #include "target.h"
+#include "hashtable.h"
 
 #ifdef DWARF2_DEBUGGING_INFO
 static void dwarf2out_source_line	PARAMS ((unsigned int, const char *));
@@ -255,6 +255,16 @@ static dw_cfi_ref cie_cfi_head;
    associated with the current function (body) definition.  */
 static unsigned current_funcdef_fde;
 
+struct ht *debug_str_hash;
+
+struct indirect_string_node
+{
+  struct ht_identifier id;
+  unsigned int refcount;
+  unsigned int form;
+  char *label;
+};
+
 /* Forward declarations for functions defined in this file.  */
 
 static char *stripattributes		PARAMS ((const char *));
@@ -283,6 +293,11 @@ static void get_cfa_from_loc_descr 	PARAMS ((dw_cfa_location *,
 static struct dw_loc_descr_struct *build_cfa_loc
 					PARAMS ((dw_cfa_location *));
 static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
+
+/* .debug_str support.  */
+static hashnode indirect_string_alloc	PARAMS ((hash_table *));
+static int output_indirect_string	PARAMS ((struct cpp_reader *,
+						 hashnode, const PTR));
 
 /* How to start an assembler comment.  */
 #ifndef ASM_COMMENT_START
@@ -2176,7 +2191,7 @@ typedef struct dw_val_struct
 	int external;
       } val_die_ref;
       unsigned val_fde_index;
-      char *val_str;
+      struct indirect_string_node *val_str;
       char *val_lbl_id;
       unsigned char val_flag;
     }
@@ -3473,7 +3488,6 @@ static void break_out_includes		PARAMS ((dw_die_ref));
 static void add_sibling_attributes	PARAMS ((dw_die_ref));
 static void build_abbrev_table		PARAMS ((dw_die_ref));
 static void output_location_lists   	PARAMS ((dw_die_ref));
-static unsigned long size_of_string	PARAMS ((const char *));
 static int constant_size		PARAMS ((long unsigned));
 static unsigned long size_of_die	PARAMS ((dw_die_ref));
 static void calc_die_sizes		PARAMS ((dw_die_ref));
@@ -3627,6 +3641,14 @@ static char *gen_internal_sym 		PARAMS ((const char *));
 /* Standard ELF section names for compiled code and data.  */
 #ifndef TEXT_SECTION_NAME
 #define TEXT_SECTION_NAME	".text"
+#endif
+
+/* Section flags for .debug_str section.  */
+#ifdef HAVE_GAS_SHF_MERGE
+#define DEBUG_STR_SECTION_FLAGS \
+  (SECTION_DEBUG | SECTION_MERGE | SECTION_STRINGS | 1)
+#else
+#define DEBUG_STR_SECTION_FLAGS	SECTION_DEBUG
 #endif
 
 /* Labels we insert at beginning sections we can reference instead of
@@ -4406,11 +4428,23 @@ add_AT_string (die, attr_kind, str)
      const char *str;
 {
   dw_attr_ref attr = (dw_attr_ref) xmalloc (sizeof (dw_attr_node));
+  struct indirect_string_node *node;
+  
+  if (! debug_str_hash)
+    {
+      debug_str_hash = ht_create (10);
+      debug_str_hash->alloc_node = indirect_string_alloc;
+    }
+
+  node = (struct indirect_string_node *)
+	 ht_lookup (debug_str_hash, (const unsigned char *) str,
+		    strlen (str), HT_ALLOC);
+  node->refcount++;
 
   attr->dw_attr_next = NULL;
   attr->dw_attr = attr_kind;
   attr->dw_attr_val.val_class = dw_val_class_str;
-  attr->dw_attr_val.v.val_str = xstrdup (str);
+  attr->dw_attr_val.v.val_str = node;
   add_dwarf_attr (die, attr);
 }
 
@@ -4420,7 +4454,52 @@ AT_string (a)
      dw_attr_ref a;
 {
   if (a && AT_class (a) == dw_val_class_str)
-    return a->dw_attr_val.v.val_str;
+    return (const char *) HT_STR (&a->dw_attr_val.v.val_str->id);
+
+  abort ();
+}
+
+/* Find out whether a string should be output inline in DIE
+   or out-of-line in .debug_str section.  */
+
+static int AT_string_form PARAMS ((dw_attr_ref));
+static int
+AT_string_form (a)
+     dw_attr_ref a;
+{
+  if (a && AT_class (a) == dw_val_class_str)
+    {
+      struct indirect_string_node *node;
+      unsigned int len;
+      extern int const_labelno;
+      char label[32];
+
+      node = a->dw_attr_val.v.val_str;
+      if (node->form)
+	return node->form;
+
+      len = HT_LEN (&node->id) + 1;
+
+      /* If the string is shorter or equal to the size
+	 of the reference, it is always better to put it
+	 inline.  */
+      if (len <= DWARF_OFFSET_SIZE || node->refcount == 0)
+	return node->form = DW_FORM_string;
+
+      if ((DEBUG_STR_SECTION_FLAGS & SECTION_MERGE) == 0)
+	{
+	  /* If we cannot expect the linker to merge strings
+	     in .debug_str section, only put it into .debug_str
+	     if it is worth even in this single module.  */
+	  if ((len - DWARF_OFFSET_SIZE) * node->refcount <= len)
+	    return node->form = DW_FORM_string;
+	}
+
+      ASM_GENERATE_INTERNAL_LABEL (label, "LC", const_labelno);
+      ++const_labelno;
+      node->label = xstrdup (label);
+      return node->form = DW_FORM_strp;
+    }
 
   abort ();
 }
@@ -4776,9 +4855,13 @@ free_AT (a)
   switch (AT_class (a))
     {
     case dw_val_class_str:
+      if (a->dw_attr_val.v.val_str->refcount)
+	a->dw_attr_val.v.val_str->refcount--;
+      break;
+
     case dw_val_class_lbl_id:
     case dw_val_class_lbl_offset:
-      free (a->dw_attr_val.v.val_str);
+      free (a->dw_attr_val.v.val_lbl_id);
       break;
 
     case dw_val_class_float:
@@ -5670,20 +5753,6 @@ build_abbrev_table (die)
     build_abbrev_table (c);
 }
 
-/* Return the size of a string, including the null byte.
-
-   This used to treat backslashes as escapes, and hence they were not included
-   in the count.  However, that conflicts with what ASM_OUTPUT_ASCII does,
-   which treats a backslash as a backslash, escaping it if necessary, and hence
-   we must include them in the count.  */
-
-static unsigned long
-size_of_string (str)
-     const char *str;
-{
-  return strlen (str) + 1;
-}
-
 /* Return the power-of-two number of bytes necessary to represent VALUE.  */
 
 static int
@@ -5764,7 +5833,10 @@ size_of_die (die)
 	  size += DWARF_OFFSET_SIZE;
 	  break;
 	case dw_val_class_str:
-	  size += size_of_string (AT_string (a));
+	  if (AT_string_form (a) == DW_FORM_strp)
+	    size += DWARF_OFFSET_SIZE;
+	  else
+	    size += HT_LEN (&a->dw_attr_val.v.val_str->id) + 1;
 	  break;
 	default:
 	  abort ();
@@ -5836,7 +5908,7 @@ size_of_pubnames ()
   for (i = 0; i < pubname_table_in_use; ++i)
     {
       pubname_ref p = &pubname_table[i];
-      size += DWARF_OFFSET_SIZE + size_of_string (p->name);
+      size += DWARF_OFFSET_SIZE + strlen (p->name) + 1;
     }
 
   size += DWARF_OFFSET_SIZE;
@@ -5925,7 +5997,7 @@ value_format (a)
     case dw_val_class_lbl_offset:
       return DW_FORM_data;
     case dw_val_class_str:
-      return DW_FORM_string;
+      return AT_string_form (a);
 
     default:
       abort ();
@@ -6084,6 +6156,7 @@ output_loc_list (list_head)
 		       "Location list terminator end (%s)",
 		       list_head->ll_symbol);
 }
+
 /* Output the DIE and its attributes.  Called recursively to generate
    the definitions of each child DIE.  */
 
@@ -6223,7 +6296,12 @@ output_die (die)
 	  break;
 
 	case dw_val_class_str:
-	  dw2_asm_output_nstring (AT_string (a), -1, "%s", name);
+	  if (AT_string_form (a) == DW_FORM_strp)
+	    dw2_asm_output_offset (DWARF_OFFSET_SIZE,
+				   a->dw_attr_val.v.val_str->label,
+				   "%s", name);
+	  else
+	    dw2_asm_output_nstring (AT_string (a), -1, "%s", name);
 	  break;
 
 	default:
@@ -11706,6 +11784,43 @@ dwarf2out_init (main_input_filename)
     }
 }
 
+/* Allocate a string in .debug_str hash table.  */
+
+static hashnode
+indirect_string_alloc (tab)
+     hash_table *tab ATTRIBUTE_UNUSED;
+{
+  struct indirect_string_node *node;
+
+  node = xmalloc (sizeof (struct indirect_string_node));
+  node->refcount = 0;
+  node->form = 0;
+  node->label = NULL;
+  return (hashnode) node;
+}
+
+/* A helper function for dwarf2out_finish called through
+   ht_forall.  Emit one queued .debug_str string.  */
+
+static int
+output_indirect_string (pfile, h, v)
+     struct cpp_reader *pfile ATTRIBUTE_UNUSED;
+     hashnode h;
+     const PTR v ATTRIBUTE_UNUSED;
+{
+  struct indirect_string_node *node;
+
+  node = (struct indirect_string_node *) h;
+  if (node->form == DW_FORM_strp)
+    {
+      named_section_flags (DEBUG_STR_SECTION, DEBUG_STR_SECTION_FLAGS);
+      ASM_OUTPUT_LABEL (asm_out_file, node->label);
+      assemble_string ((const char *) HT_STR (&node->id),
+		       HT_LEN (&node->id) + 1);
+    }
+  return 1;
+}
+
 /* Output stuff that dwarf requires at the end of every file,
    and generate the DWARF-2 debugging info.  */
 
@@ -11845,5 +11960,10 @@ dwarf2out_finish (input_filename)
       named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG);
       dw2_asm_output_data (1, DW_MACINFO_end_file, "End file");
     }
+
+  /* If we emitted any DW_FORM_strp form attribute, output string
+     table too.  */
+  if (debug_str_hash)
+    ht_forall (debug_str_hash, output_indirect_string, NULL);
 }
 #endif /* DWARF2_DEBUGGING_INFO || DWARF2_UNWIND_INFO */

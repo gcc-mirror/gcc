@@ -1,3 +1,24 @@
+2001-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (debug_str_hash): New.
+	(struct indirect_string_node): New.
+	(struct dw_val_struct): Change type of val_str to it.
+	(DEBUG_STR_SECTION_FLAGS): Define.
+	(add_AT_string): Push string into hashtable, increment reference
+	counter.
+	(AT_string): Return string from ht_identifier.
+	(AT_string_form): New.
+	(free_AT): For dw_val_class_str, just decrement reference counter.
+	(size_of_string): Remove.
+	(size_of_die): Use AT_string_form to decide what size the string
+	occupies in DIE.
+	(size_of_pubnames): Use strlen instead of size_of_string.
+	(value_format): Use AT_string_form for dw_val_class_str.
+	(output_die): Output DW_FORM_strp strings using
+	dw2_asm_output_offset.
+	(indirect_string_alloc, output_indirect_string): New.
+	(dwarf2out_finish): Emit .debug_str strings if there are any.
+
 2001-11-08  Andreas Franck  <afranck@gmx.de>
 
 	* configure.in: Add AC_ARG_PROGRAM to support program name
