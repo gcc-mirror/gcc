@@ -110,6 +110,18 @@ exitok=true
 
 find * -type f -print > ${TESTDIR}/LIST
 
+#  Special hack for sys/types.h:  the #define-d types for size_t,
+#  ptrdiff_t and wchar_t are different for each port.  Therefore,
+#  strip off the defined-to type so that the test results are the
+#  same for all platforms.
+#
+sed 's/\(#define __[A-Z_]*_TYPE__\).*/\1/' sys/types.h > XX
+mv -f XX sys/types.h
+
+#  The following subshell weirdness is for saving an exit
+#  status from within a while loop that reads input.  If you can
+#  think of a cleaner way, suggest away, please...
+#
 exitok=`
 exec < ${TESTDIR}/LIST
 while read f

@@ -33,6 +33,8 @@ Boston, MA 02111-1307, USA.  */
 #include "machname.h"
 #include "libiberty.h"
 
+#include "tm.h"
+
 #ifndef STDIN_FILENO
 # define STDIN_FILENO   0
 #endif
@@ -175,7 +177,6 @@ typedef struct {
   tCC*        pz_type;
   tCC*        pz_TYPE;
   tCC*        pz_gtype;
-  tCC*        pz_cxx_guard;
 } t_gnu_type_map;
 
 extern int gnu_type_map_ct;

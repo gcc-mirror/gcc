@@ -164,19 +164,28 @@ emit_gnu_type ( text, rm )
   /*
    *  Now print out the reformed typedef
    */
-  printf ("\
-#ifndef __%s_TYPE__\n\
-#define __%s_TYPE__ %s\n\
-#endif\n",
-          p_tm->pz_TYPE, p_tm->pz_TYPE, p_tm->pz_gtype );
-
-  printf ("\
+  {
+    tSCC z_fmt[] = "\
+#ifndef __%s_TYPE__\n#define __%s_TYPE__ %s\n#endif\n\
+\
 #if !defined(_GCC_%s_T)%s\n\
-#define _GCC_%s_T\n\
-typedef __%s_TYPE__ %s_t;\n\
-#endif\n",
-          p_tm->pz_TYPE, p_tm->pz_cxx_guard,
-          p_tm->pz_TYPE, p_tm->pz_TYPE, p_tm->pz_type);
+\
+#define _GCC_%s_T\ntypedef __%s_TYPE__ %s_t;\n#endif\n";
+
+    const char* pz_guard;
+
+    /*
+     *  We magically know that the first entry and only the first
+     *  entry needs guarding against __cplusplus (it is "wchar_t").
+     *  If others wind up needing similar special treatment, then
+     *  go look into inclhack.def.  This code, obviously, works closely
+     *  with that file  :-)
+     */
+    pz_guard = (p_tm == gnu_type_map) ? " && ! defined(__cplusplus)" : "";
+    printf (z_fmt, p_tm->pz_TYPE, p_tm->pz_TYPE, p_tm->pz_gtype,
+            p_tm->pz_TYPE, pz_guard,
+            p_tm->pz_TYPE, p_tm->pz_TYPE, p_tm->pz_type);
+  }
 
   return text;
 }
