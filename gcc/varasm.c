@@ -250,12 +250,14 @@ in_data_section ()
 
 /* Tell assembler to change to section NAME for DECL.
    If DECL is NULL, just switch to section NAME.
-   If NAME is NULL, get the name from DECL.  */
+   If NAME is NULL, get the name from DECL.
+   If RELOC is 1, the initializer for DECL contains relocs.  */
 
 void
-named_section (decl, name)
+named_section (decl, name, reloc)
      tree decl;
      char *name;
+     int reloc;
 {
   if (decl != NULL_TREE
       && TREE_CODE_CLASS (TREE_CODE (decl)) != 'd')
@@ -270,7 +272,7 @@ named_section (decl, name)
       in_section = in_named;
     
 #ifdef ASM_OUTPUT_SECTION_NAME
-      ASM_OUTPUT_SECTION_NAME (asm_out_file, decl, name);
+      ASM_OUTPUT_SECTION_NAME (asm_out_file, decl, name, reloc);
 #else
       /* Section attributes are not supported if this macro isn't provided -
 	 some host formats don't support them at all.  The front-end should
@@ -279,6 +281,29 @@ named_section (decl, name)
 #endif
     }
 }
+
+#ifdef ASM_OUTPUT_SECTION_NAME
+#ifndef UNIQUE_SECTION
+#define UNIQUE_SECTION(DECL,RELOC)				\
+do {								\
+  int len;							\
+  char *name, *string;						\
+								\
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
+  /* Strip off any encoding in name.  */			\
+  STRIP_NAME_ENCODING (name, name);				\
+								\
+  len = strlen (name) + 1;					\
+  string = alloca (len + 1);					\
+  sprintf (string, ".%s", name);				\
+								\
+  DECL_SECTION_NAME (DECL) = build_string (len, string);	\
+} while (0)
+#endif
+#ifndef UNIQUE_SECTION_P
+#define UNIQUE_SECTION_P(DECL) 0
+#endif
+#endif
 
 #ifdef BSS_SECTION_ASM_OP
 
@@ -376,7 +401,7 @@ function_section (decl)
 {
   if (decl != NULL_TREE
       && DECL_SECTION_NAME (decl) != NULL_TREE)
-    named_section (decl, (char *) 0);
+    named_section (decl, (char *) 0, 0);
   else
     text_section ();
 }
@@ -391,7 +416,7 @@ variable_section (decl, reloc)
      int reloc;
 {
   if (IN_NAMED_SECTION (decl))
-    named_section (decl, NULL);
+    named_section (decl, NULL, reloc);
   else
     {
       /* C++ can have const variables that get initialized from constructors,
@@ -410,12 +435,7 @@ variable_section (decl, reloc)
 #ifdef SELECT_SECTION
       SELECT_SECTION (decl, reloc);
 #else
-      if (TREE_READONLY (decl)
-	  && ! TREE_THIS_VOLATILE (decl)
-	  && DECL_INITIAL (decl)
-	  && (DECL_INITIAL (decl) == error_mark_node
-	      || TREE_CONSTANT (DECL_INITIAL (decl)))
-	  && ! (flag_pic && reloc))
+      if (DECL_READONLY_SECTION (decl, reloc))
 	readonly_data_section ();
       else
 	data_section ();
@@ -430,7 +450,7 @@ void
 exception_section ()
 {
 #ifdef ASM_OUTPUT_SECTION_NAME
-  named_section (NULL_TREE, ".gcc_except_table");
+  named_section (NULL_TREE, ".gcc_except_table", 0);
 #else
   if (flag_pic)
     data_section ();
@@ -938,18 +958,10 @@ assemble_start_function (decl, fnname)
 #ifdef ASM_OUTPUT_SECTION_NAME
   /* If the function is to be put in its own section and it's not in a section
      already, indicate so.  */
-  if (flag_function_sections
-      && DECL_SECTION_NAME (decl) == NULL_TREE)
-    {
-#ifdef UNIQUE_SECTION
-      DECL_SECTION_NAME(decl) = UNIQUE_SECTION (decl);
-#else
-      char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-      /* Strip off any encoding in name.  */
-      STRIP_NAME_ENCODING (name, name);
-      DECL_SECTION_NAME (decl) = build_string (strlen (name), name);
-#endif
-    }
+  if ((flag_function_sections
+       && DECL_SECTION_NAME (decl) == NULL_TREE)
+      || UNIQUE_SECTION_P (decl))
+    UNIQUE_SECTION (decl, 0);
 #endif
 
   function_section (decl);
@@ -1437,6 +1449,11 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
     reloc = contains_pointers_p (TREE_TYPE (decl));
   else if (DECL_INITIAL (decl))
     reloc = output_addressed_constants (DECL_INITIAL (decl));
+
+#ifdef ASM_OUTPUT_SECTION_NAME
+  if (UNIQUE_SECTION_P (decl))
+    UNIQUE_SECTION (decl, reloc);
+#endif
 
   /* Switch to the appropriate section.  */
   variable_section (decl, reloc);
@@ -3050,7 +3067,7 @@ output_constant_def_contents (exp, reloc, labelno)
   int align;
 
   if (IN_NAMED_SECTION (exp))
-    named_section (exp, NULL);
+    named_section (exp, NULL, reloc);
   else
     {
       /* First switch to text section, except for writable strings.  */

@@ -1976,7 +1976,7 @@ do { fputs ("\t.SPACE $PRIVATE$\n\
 
    We make the section read-only and executable for a function decl,
    read-only for a const data decl, and writable for a non-const data decl.  */
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
+#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC) \
   if (DECL && TREE_CODE (DECL) == FUNCTION_DECL)		\
     {								\
       fputs ("\t.SPACE $TEXT$\n", FILE);			\
@@ -1984,7 +1984,7 @@ do { fputs ("\t.SPACE $PRIVATE$\n\
 	       "\t.SUBSPA %s%s%s,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY,SORT=24\n",\
 	       TARGET_GAS ? "" : "$", NAME, TARGET_GAS ? "" : "$"); \
     }								\
-  else if (DECL && TREE_READONLY (DECL))			\
+  else if (DECL && DECL_READONLY_SECTION (DECL, RELOC))		\
     {								\
       fputs ("\t.SPACE $TEXT$\n", FILE);			\
       fprintf (FILE,						\

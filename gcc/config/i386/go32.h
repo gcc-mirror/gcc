@@ -58,7 +58,7 @@ dtor_section ()							\
   } while (0)
 
 /* Allow (eg) __attribute__((section "locked")) to work */
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME)\
+#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC)\
   do {						\
     fprintf (FILE, "\t.section %s\n", NAME);	\
   } while (0)
@@ -79,11 +79,6 @@ dtor_section ()							\
 #define ASM_FILE_START(FILE)						\
   do {									\
 	output_file_directive (FILE, main_input_filename);		\
-  } while (0)
-
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME)\
-  do {						\
-    fprintf (FILE, "\t.section %s\n", NAME);	\
   } while (0)
 
 /* This is how to output an assembler line

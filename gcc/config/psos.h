@@ -87,10 +87,10 @@ while (0)
 
 /* Switch into a generic section. */
 
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
+#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC) \
   fprintf (FILE, ".section\t%s,\"%s\",@progbits\n", NAME, \
 	   (DECL) && TREE_CODE (DECL) == FUNCTION_DECL ? "ax" : \
-	   (DECL) && TREE_READONLY (DECL) ? "a" : "aw")
+	   (DECL) && DECL_READONLY_SECTION (DECL, RELOC) ? "a" : "aw")
 
 
 /* Define the pseudo-ops used to switch to the .ctors and .dtors

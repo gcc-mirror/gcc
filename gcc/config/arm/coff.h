@@ -87,11 +87,11 @@ do {								\
    NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
    NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
    define this macro in such cases.  */
-#define ASM_OUTPUT_SECTION_NAME(STREAM, DECL, NAME) \
+#define ASM_OUTPUT_SECTION_NAME(STREAM, DECL, NAME, RELOC) \
 do {								\
   if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)		\
     fprintf (STREAM, "\t.section %s,\"x\"\n", (NAME));		\
-  else if ((DECL) && TREE_READONLY (DECL))			\
+  else if ((DECL) && DECL_READONLY_SECTION (DECL, RELOC))	\
     fprintf (STREAM, "\t.section %s,\"\"\n", (NAME));		\
   else								\
     fprintf (STREAM, "\t.section %s,\"w\"\n", (NAME));		\

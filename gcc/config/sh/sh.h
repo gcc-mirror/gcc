@@ -1373,7 +1373,7 @@ dtors_section()							\
    NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
    define this macro in such cases.  */
 
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
+#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC) \
    do { fprintf (FILE, ".section\t%s\n", NAME); } while (0)
 
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME) \

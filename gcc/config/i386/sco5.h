@@ -477,18 +477,18 @@ do {									\
 #define USER_LABEL_PREFIX ""
 
 #undef ASM_OUTPUT_SECTION_NAME
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
+#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC) \
 do {									\
   char *snam = NAME ;							\
   if (strcmp(NAME, ".gcc_except_table") == 0) snam = ".gccexc" ;	\
   if (TARGET_ELF)							\
     fprintf (FILE, ".section\t%s,\"%s\",@progbits\n", NAME, 		\
 	   (DECL) && TREE_CODE (DECL) == FUNCTION_DECL ? "ax" : 	\
-	   (DECL) && TREE_READONLY (DECL) ? "a" : "aw");		\
+	   (DECL) && DECL_READONLY_SECTION (DECL, RELOC) ? "a" : "aw");	\
   else									\
     fprintf (FILE, ".section\t%s,\"%s\"\n", snam,			\
 	(DECL) && TREE_CODE (DECL) == FUNCTION_DECL ? "x" : 		\
-	(DECL) && TREE_READONLY (DECL) ? "a" : "w");			\
+	(DECL) && DECL_READONLY_SECTION (DECL, RELOC) ? "a" : "w");	\
 } while (0)
 
 #undef ASM_OUTPUT_SKIP

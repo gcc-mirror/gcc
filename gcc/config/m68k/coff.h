@@ -103,10 +103,10 @@ Boston, MA 02111-1307, USA.  */
 /* Support generic sections */
 
 #undef ASM_OUTPUT_SECTION_NAME
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
+#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC) \
   fprintf((FILE), ".section\t%s,\"%c\"\n", (NAME), \
 	  (DECL) && (TREE_CODE (DECL) == FUNCTION_DECL || \
-		     TREE_READONLY (DECL)) ? 'x' : 'd')
+		     DECL_READONLY_SECTION (DECL, RELOC)) ? 'x' : 'd')
 
 /* Support the ctors and dtors sections for g++.  */
 

@@ -338,12 +338,12 @@ dtors_section ()							\
    NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
    NULL_TREE.  */
 
-#define ASM_OUTPUT_SECTION_NAME(F, DECL, NAME)				\
+#define ASM_OUTPUT_SECTION_NAME(F, DECL, NAME, RELOC)			\
 do {									\
   extern FILE *asm_out_text_file;					\
   if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)			\
     fprintf (asm_out_text_file, "\t.section %s,1,6,4,4\n", (NAME));	\
-  else if ((DECL) && TREE_READONLY (DECL))				\
+  else if ((DECL) && DECL_READONLY_SECTION (DECL, RELOC))		\
     fprintf (F, "\t.section %s,1,2,0,8\n", (NAME));			\
   else									\
     fprintf (F, "\t.section %s,1,3,0,8\n", (NAME));			\
