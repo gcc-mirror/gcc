@@ -1,5 +1,5 @@
 /* Front-end tree definitions for GNU compiler.
-   Copyright (C) 1989, 1991, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1994, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -136,10 +136,12 @@ extern REAL_VALUE_TYPE ereal_negate PROTO((REAL_VALUE_TYPE));
 extern HOST_WIDE_INT efixi	PROTO((REAL_VALUE_TYPE));
 extern unsigned HOST_WIDE_INT efixui PROTO((REAL_VALUE_TYPE));
 extern void ereal_from_int	PROTO((REAL_VALUE_TYPE *,
-				       HOST_WIDE_INT, HOST_WIDE_INT));
+				       HOST_WIDE_INT, HOST_WIDE_INT,
+				       enum machine_mode));
 extern void ereal_from_uint	PROTO((REAL_VALUE_TYPE *,
 				       unsigned HOST_WIDE_INT,
-				       unsigned HOST_WIDE_INT));
+				       unsigned HOST_WIDE_INT,
+				       enum machine_mode));
 extern void ereal_to_int	PROTO((HOST_WIDE_INT *, HOST_WIDE_INT *,
 				       REAL_VALUE_TYPE));
 extern REAL_VALUE_TYPE ereal_ldexp PROTO((REAL_VALUE_TYPE, int));
@@ -181,10 +183,11 @@ extern REAL_VALUE_TYPE real_value_truncate ();
 #define REAL_VALUE_TO_INT ereal_to_int
 
 /* Here the cast to HOST_WIDE_INT sign-extends arguments such as ~0.  */
-#define REAL_VALUE_FROM_INT(d, lo, hi) \
-  ereal_from_int (&d, (HOST_WIDE_INT) (lo), (HOST_WIDE_INT) (hi))
+#define REAL_VALUE_FROM_INT(d, lo, hi, mode) \
+  ereal_from_int (&d, (HOST_WIDE_INT) (lo), (HOST_WIDE_INT) (hi), mode)
 
-#define REAL_VALUE_FROM_UNSIGNED_INT(d, lo, hi) (ereal_from_uint (&d, lo, hi))
+#define REAL_VALUE_FROM_UNSIGNED_INT(d, lo, hi, mode) \
+  ereal_from_uint (&d, lo, hi, mode)
 
 /* IN is a REAL_VALUE_TYPE.  OUT is an array of longs. */
 #if LONG_DOUBLE_TYPE_SIZE == 96
