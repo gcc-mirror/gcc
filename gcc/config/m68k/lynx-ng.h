@@ -1,5 +1,5 @@
 /* Definitions for Motorola 680x0 running LynxOS, using Lynx's old as and ld.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -17,9 +17,9 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include "m68k/m68k.h"
-#include "m68k/coff.h"
-#include "lynx-ng.h"
+#include <m68k/m68k.h>
+#include <m68k/coff.h>
+#include <lynx-ng.h>
 
 /* See m68k.h.  7 means 68020 with 68881.  */
 
