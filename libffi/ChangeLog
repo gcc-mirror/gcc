@@ -1,3 +1,8 @@
+2002-05-27  Bo Thorsen  <bo@suse.de>
+
+	* src/x86/ffi.c (ffi_prep_args): Remove unused variable and
+	fix formatting.
+
 2002-05-14  Release Manager
 
 	* GCC 3.1 Released.
