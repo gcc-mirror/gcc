@@ -1,3 +1,8 @@
+2004-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-operands.c (fini_ssa_operands): ggc_free unused arrays.
+	* tree-ssanames (init_ssanames): Likewise.
+
 2004-09-03  Ziemowit Laski  <zlaski@apple.com>
 
 	* stub-objc.c (objc_is_id, objc_declare_alias, objc_declare_class,
