@@ -1,5 +1,5 @@
-/* Pattern.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* Pattern.java -- Compiled regular expression ready to be applied.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,13 +35,19 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-// Stub class until java.util.regex is implemented.
 package java.util.regex;
 
+import gnu.regexp.RE;
+import gnu.regexp.RESyntax;
+import gnu.regexp.REException;
+
 import java.io.Serializable;
+import java.util.ArrayList;
+
 
 /**
- * @author Michael Koch
+ * Compiled regular expression ready to be applied. 
+ *
  * @since 1.4
  */
 public class Pattern implements Serializable
@@ -56,8 +62,10 @@ public class Pattern implements Serializable
   public static final int UNICODE_CASE = 64;
   public static final int UNIX_LINES = 1;
   
-  private String regex;
-  private int flags;
+  private final String regex;
+  private final int flags;
+
+  private final RE re;
 
   private Pattern (String regex)
     throws PatternSyntaxException
@@ -71,9 +79,48 @@ public class Pattern implements Serializable
     this.regex = regex;
     this.flags = flags;
 
-    throw new Error ("Not implemented");
+    int gnuFlags = 0;
+    if ((flags & CASE_INSENSITIVE) != 0)
+      gnuFlags |= RE.REG_ICASE;
+    if ((flags & MULTILINE) != 0)
+      gnuFlags |= RE.REG_MULTILINE;
+    if ((flags & DOTALL) != 0)
+      gnuFlags |= RE.REG_DOT_NEWLINE;
+    // not yet supported:
+    // if ((flags & UNICODE_CASE) != 0) gnuFlags =
+    // if ((flags & CANON_EQ) != 0) gnuFlags =
+
+    // Eventually there will be such a thing as JDK 1_4 syntax
+    RESyntax syntax = RESyntax.RE_SYNTAX_PERL5;
+    if ((flags & UNIX_LINES) != 0)
+      {
+	// Use a syntax set with \n for linefeeds?
+	syntax = new RESyntax(syntax);
+	syntax.setLineSeparator("\n");
+      }
+
+    if ((flags & COMMENTS) != 0)
+      {
+	// Use a syntax with support for comments?
+      }
+
+    try
+      {
+	this.re = new RE(regex, gnuFlags, syntax);
+      }
+    catch (REException e)
+      {
+	throw new PatternSyntaxException(e.getMessage(),
+					 regex, e.getPosition());
+      }
   }
  
+  // package private accessor method
+  RE getRE()
+  {
+    return re;
+  }
+
   /**
    * @param regex The regular expression
    *
@@ -82,7 +129,7 @@ public class Pattern implements Serializable
   public static Pattern compile (String regex)
     throws PatternSyntaxException
   {
-    throw new Error ("Not implemented");
+    return compile(regex, 0);
   }
   
   /**
@@ -116,7 +163,7 @@ public class Pattern implements Serializable
    */
   public static boolean matches (String regex, CharSequence input) 
   {
-    throw new Error ("Not implemented");
+    return compile(regex).matcher(input).matches();
   }
   
   /**
@@ -124,7 +171,7 @@ public class Pattern implements Serializable
    */
   public Matcher matcher (CharSequence input)
   {
-    throw new Error ("Not implemented");
+    return new Matcher(this, input);
   }
   
   /**
@@ -132,7 +179,7 @@ public class Pattern implements Serializable
    */
   public String[] split (CharSequence input)
   {
-    throw new Error ("Not implemented");
+    return split(input, 0);
   }
   
   /**
@@ -141,11 +188,67 @@ public class Pattern implements Serializable
    */
   public String[] split (CharSequence input, int limit)
   {
-    throw new Error ("Not implemented");
+    Matcher matcher = new Matcher(this, input);
+    ArrayList list = new ArrayList();
+    int empties = 0;
+    int count = 0;
+    int start = 0;
+    int end;
+    boolean matched;
+
+    while (matched = matcher.find() && (limit <= 0 || count < limit - 1))
+      {
+	++count;
+	end = matcher.start();
+	if (start == end)
+	  empties++;
+	else
+	  {
+	    while (empties-- > 0)
+	      list.add("");
+
+	    String text = input.subSequence(start, end).toString();
+	    list.add(text);
+	  }
+	start = matcher.end();
+      }
+
+    // We matched nothing.
+    if (!matched && count == 0)
+      return new String[] { input.toString() };
+    
+    // Is the last token empty?
+    boolean emptyLast = (start == input.length());
+
+    // Can/Must we add empties or an extra last token at the end?
+    if (list.size() < limit || limit < 0 || (limit == 0 && !emptyLast))
+      {
+	if (limit > list.size())
+	  {
+	    int max = limit - list.size();
+	    empties = (empties > max) ? max : empties;
+	  }
+	while (empties-- > 0)
+	  list.add("");
+      }
+
+    // last token at end
+    if (limit != 0 || (limit == 0 && !emptyLast))
+      {
+	String t = input.subSequence(start, input.length()).toString();
+	if ("".equals(t) && limit == 0)
+	  ; // Don't add.
+	else
+	  list.add(t);
+      }
+
+    String[] output = new String [list.size()];
+    list.toArray(output);
+    return output;
   }
   
   public String pattern ()
   {
-    throw new Error ("Not implemented");
+    return regex;
   }
 }

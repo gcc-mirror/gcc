@@ -1,5 +1,5 @@
-/* Matcher.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* Matcher.java -- Instance of a regular expression applied to a char sequence.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,13 +38,27 @@ exception statement from your version. */
 
 package java.util.regex;
 
+import gnu.regexp.RE;
+import gnu.regexp.REMatch;
+
 /**
- * @author Michael Koch
+ * Instance of a regular expression applied to a char sequence.
+ *
  * @since 1.4
  */
 public class Matcher
 {
   private Pattern pattern;
+  private CharSequence input;
+  private int position;
+  private int appendPosition;
+  private REMatch match;
+
+  Matcher(Pattern pattern, CharSequence input)
+  {
+    this.pattern = pattern;
+    this.input = input;
+  }
   
   /**
    * @param sb The target string buffer
@@ -58,7 +72,12 @@ public class Matcher
   public Matcher appendReplacement (StringBuffer sb, String replacement)
     throws IllegalStateException
   {
-    throw new Error("Not implemented");
+    assertMatchOp();
+    sb.append(input.subSequence(appendPosition,
+				match.getStartIndex()).toString());
+    sb.append(match.substituteInto(replacement));
+    appendPosition = match.getEndIndex();
+    return this;
   }
 
   /**
@@ -66,7 +85,8 @@ public class Matcher
    */
   public StringBuffer appendTail (StringBuffer sb)
   {
-    throw new Error("Not implemented");
+    sb.append(input.subSequence(appendPosition, input.length()).toString());
+    return sb;
   }
  
   /**
@@ -76,7 +96,8 @@ public class Matcher
   public int end ()
     throws IllegalStateException
   {
-    throw new Error ("Not implemented");
+    assertMatchOp();
+    return match.getEndIndex();
   }
   
   /**
@@ -90,14 +111,36 @@ public class Matcher
   public int end (int group)
     throws IllegalStateException
   {
-    throw new Error ("Not implemented");
+    assertMatchOp();
+    return match.getEndIndex(group);
   }
  
   public boolean find ()
   {
-    throw new Error ("Not implemented");
-  }
-  
+    boolean first = (match == null);
+    match = pattern.getRE().getMatch(input, position);
+    if (match != null)
+      {
+	int endIndex = match.getEndIndex();
+	// Are we stuck at the same position?
+	if (!first && endIndex == position)
+	  {
+	    match = null;
+	    // Not at the end of the input yet?
+	    if (position < input.length() - 1)
+	      {
+		position++;
+		return find(position);
+	      }
+	    else
+	      return false;
+	  }
+	position = endIndex;
+	return true;
+      }
+    return false;
+  } 
+
   /**
    * @param start The index to start the new pattern matching
    *
@@ -106,7 +149,13 @@ public class Matcher
    */
   public boolean find (int start)
   {
-    throw new Error ("Not implemented");
+    match = pattern.getRE().getMatch(input, start);
+    if (match != null)
+      {
+	position = match.getEndIndex();
+	return true;
+      }
+    return false;
   }
  
   /**
@@ -115,7 +164,8 @@ public class Matcher
    */
   public String group ()
   {
-    throw new Error ("Not implemented");
+    assertMatchOp();
+    return match.toString();
   }
   
   /**
@@ -129,7 +179,8 @@ public class Matcher
   public String group (int group)
     throws IllegalStateException
   {
-    throw new Error ("Not implemented");
+    assertMatchOp();
+    return match.toString(group);
   }
 
   /**
@@ -137,7 +188,9 @@ public class Matcher
    */
   public String replaceFirst (String replacement)
   {
-    throw new Error ("Not implemented");
+    reset();
+    // Semantics might not quite match
+    return pattern.getRE().substitute(input, replacement, position);
   }
 
   /**
@@ -145,17 +198,25 @@ public class Matcher
    */
   public String replaceAll (String replacement)
   {
-    throw new Error ("Not implemented");
+    reset();
+    return pattern.getRE().substituteAll(input, replacement, position);
   }
   
   public int groupCount ()
   {
-    throw new Error("Not implemented");
+    return pattern.getRE().getNumSubs();
   }
  
   public boolean lookingAt ()
   {
-    throw new Error("Not implemented");
+    match = pattern.getRE().getMatch(input, 0);
+    if (match != null)
+      {
+	if (match.getStartIndex() == 0)
+	  return true;
+	match = null;
+      }
+    return false;
   }
   
   /**
@@ -170,7 +231,7 @@ public class Matcher
    */
   public boolean matches ()
   {
-    throw new Error("Not implemented");
+    return find(0);
   }
   
   /**
@@ -183,7 +244,9 @@ public class Matcher
   
   public Matcher reset ()
   {
-    throw new Error ("Not implemented");
+    position = 0;
+    match = null;
+    return this;
   }
   
   /**
@@ -191,7 +254,8 @@ public class Matcher
    */
   public Matcher reset (CharSequence input)
   {
-    throw new Error ("Not implemented");
+    this.input = input;
+    return reset();
   }
   
   /**
@@ -203,7 +267,8 @@ public class Matcher
   public int start ()
     throws IllegalStateException
   {
-    throw new Error("Not implemented");
+    assertMatchOp();
+    return match.getStartIndex();
   }
 
   /**
@@ -217,6 +282,12 @@ public class Matcher
   public int start (int group)
     throws IllegalStateException
   {
-    throw new Error("Not implemented");
+    assertMatchOp();
+    return match.getStartIndex(group);
+  }
+
+  private void assertMatchOp()
+  {
+    if (match == null) throw new IllegalStateException();
   }
 }
