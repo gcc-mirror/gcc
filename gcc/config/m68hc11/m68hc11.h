@@ -1442,7 +1442,7 @@ extern unsigned char m68hc11_reg_valid_for_index[FIRST_PSEUDO_REGISTER];
 
 /* Move costs between classes of registers */
 #define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)	\
-    (m68hc11_register_move_cost (CLASS1, CLASS2))
+    (m68hc11_register_move_cost (MODE, CLASS1, CLASS2))
 
 /* Move cost between register and memory.
     - Move to a 16-bit register is reasonable,
