@@ -213,6 +213,9 @@ extern struct rtx_def *mips_function_value ();
   (mips_abi == ABI_EABI && (NAMED)					\
    && FUNCTION_ARG_PASS_BY_REFERENCE (CUM, MODE, TYPE, NAMED))
 
+#undef LONG_MAX_SPEC
+#define LONG_MAX_SPEC "%{!mno-long64:-D__LONG_MAX__=9223372036854775807LL}"
+
 /* ??? Unimplemented stuff follows.  */
 
 /* ??? Add support for 16 byte/128 bit long doubles here when
@@ -226,4 +229,6 @@ extern struct rtx_def *mips_function_value ();
 /* ??? Could optimize structure passing by putting the right register rtx
    into the field decl, so that if we use the field, we can take the value from
    a register instead of from memory.  */
+
+
 

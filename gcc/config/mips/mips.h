@@ -824,6 +824,16 @@ while (0)
 #define SUBTARGET_CPP_SPEC ""
 #endif
 
+/* If we're using 64bit longs, then we have to define __LONG_MAX__
+   correctly.  Similarly for 64bit ints and __INT_MAX__.  */
+#ifndef LONG_MAX_SPEC
+#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_LONG64)
+#define LONG_MAX_SPEC "%{!mno-long64:-D__LONG_MAX__=9223372036854775807L}"
+#else
+#define LONG_MAX_SPEC "%{mlong64:-D__LONG_MAX__=9223372036854775807L}"
+#endif
+#endif
+
 /* CPP_SPEC is the set of arguments to pass to the preprocessor.  */
 
 #ifndef CPP_SPEC
@@ -845,6 +855,7 @@ while (0)
 %{mabi=eabi:-D__mips_eabi} \
 %{EB:-UMIPSEL -U_MIPSEL -U__MIPSEL -U__MIPSEL__ -D_MIPSEB -D__MIPSEB -D__MIPSEB__ %{!ansi:-DMIPSEB}} \
 %{EL:-UMIPSEB -U_MIPSEB -U__MIPSEB -U__MIPSEB__ -D_MIPSEL -D__MIPSEL -D__MIPSEL__ %{!ansi:-DMIPSEL}} \
+%(long_max_spec) \
 %(subtarget_cpp_spec) "
 #endif
 
@@ -862,6 +873,7 @@ while (0)
   { "subtarget_cc1_spec", SUBTARGET_CC1_SPEC },				\
   { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },				\
   { "subtarget_cpp_size_spec", SUBTARGET_CPP_SIZE_SPEC },		\
+  { "long_max_spec", LONG_MAX_SPEC },					\
   { "mips_as_asm_spec", MIPS_AS_ASM_SPEC },				\
   { "gas_asm_spec", GAS_ASM_SPEC },					\
   { "target_asm_spec", TARGET_ASM_SPEC },				\
