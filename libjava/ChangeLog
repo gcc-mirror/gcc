@@ -1,3 +1,10 @@
+2003-01-07  Tom Tromey  <tromey@redhat.com>
+
+	* include/posix.h (_Jv_platform_usleep): Wrap in ifdef
+	JV_HASH_SYNCHRONIZATION.
+	* include/win32.h (_Jv_platform_usleep): Wrap in ifdef
+	JV_HASH_SYNCHRONIZATION.
+
 2003-01-04  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/List.java: Merged with Classpath.
