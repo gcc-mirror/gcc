@@ -1,3 +1,9 @@
+2004-02-26  Michael Matz  <matz@suse.de>
+
+	* gcc.dg/20000724-1.c: Add regparm attribute to decl and def.
+	* gcc.dg/991214-1.c: Likewise.
+	* gcc.dg/i386-asm-1.c: Likewise.
+
 2004-02-26  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14246
