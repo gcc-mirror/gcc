@@ -1,3 +1,9 @@
+2004-06-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/darwin.c (machopic_indirect_data_reference): Copy
+	the SYMBOL_REF_DECL from the original RTX for the new
+	non-lazy pointer RTX.
+
 2004-06-03 Mark G. Adams  <mark.g.adams@sympatico.ca>
 
 	* tree.h: Remove include of version.h

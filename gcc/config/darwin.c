@@ -499,6 +499,8 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
       ptr_ref = gen_rtx_SYMBOL_REF (Pmode,
 				    machopic_non_lazy_ptr_name (name));
 
+     SYMBOL_REF_DECL (ptr_ref) = SYMBOL_REF_DECL (orig);
+
       ptr_ref = gen_rtx_MEM (Pmode, ptr_ref);
       RTX_UNCHANGING_P (ptr_ref) = 1;
 
