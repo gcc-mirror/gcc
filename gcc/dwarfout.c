@@ -5257,10 +5257,16 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 
   output_pending_types_for_scope (NULL_TREE);
 
-  /* The above call should have totally emptied the pending_types_list.  */
-
-  if (pending_types != 0)
-    abort ();
+  /* The above call should have totally emptied the pending_types_list
+     if this is not a nested function or class.  If this is a nested type,
+     then the remaining pending_types will be emitted when the containing type
+     is handled.  */
+  
+  if (! DECL_CONTEXT (decl))
+    {
+      if (pending_types != 0)
+	abort ();
+    }
 
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 
@@ -6013,6 +6019,12 @@ dwarfout_finish ()
 
       ASM_OUTPUT_POP_SECTION (asm_out_file);
     }
+
+  /* There should not be any pending types left at the end.  We need
+     this now because it may not have been checked on the last call to
+     dwarfout_file_scope_decl.  */
+  if (pending_types != 0)
+    abort ();
 }
 
 #endif /* DWARF_DEBUGGING_INFO */
