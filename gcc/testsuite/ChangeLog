@@ -1,3 +1,8 @@
+2004-10-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/16567
+        * gcc.c-torture/compile/nested-1.c: New test.
+
 2004-10-14  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* testsuite/gcc.dg/vect/vect-44.c: xfail on i?86-*-*, x86_64-*-*,
