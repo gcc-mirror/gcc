@@ -1,3 +1,8 @@
+2003-01-25  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/fixfixes.c(wrap_fix): the wrapper guard must be a function
+	of *both* the file name and the fix name.
+
 2003-01-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
