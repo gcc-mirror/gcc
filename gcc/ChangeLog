@@ -1,3 +1,20 @@
+2000-11-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (c_getstr): Constify variable.
+	* gmon-sol2.c (_mcleanup): Comment out #endif labels.
+	* conflict.c (const_conflict_graph_arc): New typedef.
+	(arc_hash, arc_eq): Avoid needlessly casting away const-ness.
+	* cppmacro.c (builtin_macro): Likewise.
+	* dwarf2out.c (output_comp_unit): Constify variable.
+	* fix-header.c (v_fatal): Add ATTRIBUTE_PRINTF.
+	* protoize.c (IS_SAME_PATH_CHAR): Use TOUPPER, not toupper.
+	* ssa.c (ssa_rename_from_hash_function): Avoid needlessly casting
+	away const-ness.
+	* tradcpp.c (rescan, do_line, macroexpand, macarg): Use
+	ISALNUM/ISDIGIT/ISPRINT, not isalnum/isdigit/isprint. 
+	* varasm.c (const_str_htab_hash, const_str_htab_eq,
+	compare_constant_1, record_constant_1): Constify.
+
 2000-11-18  Richard Henderson  <rth@redhat.com>
 
 	* c-decl.c (grokdeclarator): Special case the creation of an

@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Macro to see if the path elements match.  */
 #ifdef HAVE_DOS_BASED_FILE_SYSTEM
-#define IS_SAME_PATH_CHAR(a,b) (toupper (a) == toupper (b))
+#define IS_SAME_PATH_CHAR(a,b) (TOUPPER (a) == TOUPPER (b))
 #else
 #define IS_SAME_PATH_CHAR(a,b) ((a) == (b))
 #endif
