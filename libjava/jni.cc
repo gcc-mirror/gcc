@@ -1612,7 +1612,10 @@ add_char (char *buf, jchar c, int *here)
       buf[(*here)++] = '_';
       buf[(*here)++] = '3';
     }
-  else if (c == '/')
+
+  // Also check for `.' here because we might be passed an internal
+  // qualified class name like `foo.bar'.
+  else if (c == '/' || c == '.')
     buf[(*here)++] = '_';
   else if ((c >= '0' && c <= '9')
       || (c >= 'a' && c <= 'z')
