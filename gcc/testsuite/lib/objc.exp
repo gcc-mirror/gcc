@@ -1,4 +1,5 @@
-# Copyright (C) 1992, 1993, 1994, 1996, 1997, 2000 Free Software Foundation, Inc.
+# Copyright (C) 1992, 1993, 1994, 1996, 1997, 2000, 2001
+# Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -113,13 +114,14 @@ proc objc_init { args } {
 }
 
 proc objc_target_compile { source dest type options } {
+    global rootme;
     global tmpdir;
     global gluefile wrap_flags;
     global OBJC_UNDER_TEST
     global TOOL_OPTIONS
     global ld_library_path
 
-    set ld_library_path "."
+    set ld_library_path ".:${rootme}"
     lappend options "libs=-lobjc"
 
     # On Solaris 2.8, we need to include libposix4 in order to get

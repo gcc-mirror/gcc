@@ -1,3 +1,8 @@
+2001-06-13  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* lib/objc.exp (objc_target_compile): Add ${rootme} to ld_library_path
+	variable.
+
 2001-06-12  Richard Henderson  <rth@redhat.com>
 
 	* g++.old-deja/g++.other/crash27.C: Don't XFAIL.
