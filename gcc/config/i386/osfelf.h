@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-DOSF -DOSF1 -Dunix -Asystem(xpg4)"
 
 #undef  CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] \
+#define CPP_SPEC "%(cpp_cpu) \
 %{mrose: -D__ROSE__ %{!pic-none: -D__SHARED__}} \
 %{!mrose: -D__ELF__ %{fpic: -D__SHARED__}} \
 %{mno-underscores: -D__NO_UNDERSCORES__} \

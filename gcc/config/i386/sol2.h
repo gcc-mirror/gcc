@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80386 running Solaris 2
-   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Fred Fish (fnf@cygnus.com).
 
 This file is part of GNU CC.
@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
    executed.  This macro forces the assembler to do the padding, since
    it knows what it is doing. */
 
-#define FORCE_INIT_SECTION_ALIGN do { asm (ALIGN_ASM_OP ## " 16"); } while (0)
+#define FORCE_INIT_SECTION_ALIGN asm (ALIGN_ASM_OP ## " 16")
 #define FORCE_FINI_SECTION_ALIGN FORCE_INIT_SECTION_ALIGN
 
 /* Add "sun" to the list of symbols defined for SVR4.  */
@@ -39,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
   "-Dunix -D__svr4__ -D__SVR4 -Dsun -Asystem(svr4)"
 
 #undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] \
+#define CPP_SPEC "%(cpp_cpu) \
    %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude}"
 
 #undef LIB_SPEC
@@ -53,7 +53,7 @@ Boston, MA 02111-1307, USA.  */
 #define STARTFILE_SPEC "%{!shared: \
 			 %{!symbolic: \
 			  %{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}}}\
-			%{pg:gmon.o%s}%{!pg:crti.o%s} \
+			%{pg:gmon.o%s} crti.o%s \
 			%{ansi:values-Xc.o%s} \
 			%{!ansi: \
 			 %{traditional:values-Xt.o%s} \
@@ -72,12 +72,14 @@ Boston, MA 02111-1307, USA.  */
    %{YP,*} \
    %{R*} \
    %{compat-bsd: \
-     %{!YP,*:%{p:-Y P,/usr/ucblib:/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-       %{!p:-Y P,/usr/ucblib:/usr/ccs/lib:/usr/lib}} \
+     %{!YP,*:%{pg:-Y P,/usr/ucblib:/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
+     %{!pg:%{p:-Y P,/usr/ucblib:/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
+       %{!p:-Y P,/usr/ucblib:/usr/ccs/lib:/usr/lib}}} \
      -R /usr/ucblib} \
    %{!compat-bsd: \
-     %{!YP,*:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-       %{!p:-Y P,/usr/ccs/lib:/usr/lib}}} \
+     %{!YP,*:%{pg:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
+     %{!pg:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
+       %{!p:-Y P,/usr/ccs/lib:/usr/lib}}}} \
    %{Qy:} %{!Qn:-Qy}"
 
 /* This defines which switch letters take arguments.
@@ -90,3 +92,4 @@ Boston, MA 02111-1307, USA.  */
    || (CHAR) == 'h' \
    || (CHAR) == 'z')
 
+#define STDC_0_IN_SYSTEM_HEADERS

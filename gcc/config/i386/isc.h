@@ -19,7 +19,7 @@
 #define LIB_SPEC "%{shlib:-lc_s} %{posix:-lcposix} %{Xp:-lcposix} -lc -lg"
 
 #undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] %{posix:-D_POSIX_SOURCE} %{Xp:-D_POSIX_SOURCE}"
+#define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} %{Xp:-D_POSIX_SOURCE}"
 
 /* ISC 2.2 uses `char' for `wchar_t'.  */
 #undef WCHAR_TYPE
@@ -87,3 +87,7 @@
     }                                            \
     fputs ("\"\n", FILE);                        \
   } while (0)
+
+/* Work around assembler forward label references generated in exception
+   handling code. */
+#define DWARF2_UNWIND_INFO 0

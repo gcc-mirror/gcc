@@ -832,7 +832,7 @@ dtors_section ()							\
 /* You are in a maze of GCC specs ... all alike */
 
 #undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] \
+#define CPP_SPEC "%(cpp_cpu) \
   %{fpic:%{mcoff:%e-fpic is not valid with -mcoff}} \
   %{fPIC:%{mcoff:%e-fPIC is not valid with -mcoff}} \
   -D__i386 -D__unix -D_SCO_DS=1 -D_M_I386 -D_M_XENIX -D_M_UNIX \

@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define CPP_PREDEFINES "-Dunix -Asystem(svr3)"
 
-#define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] %{posix:-D_POSIX_SOURCE}"
+#define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE}"
 
 /* Writing `int' for a bitfield forces int alignment for the structure.  */
 
