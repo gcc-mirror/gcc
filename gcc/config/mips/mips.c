@@ -3267,6 +3267,51 @@ mips_gen_conditional_trap (operands)
 			      gen_rtx (cmp_code, GET_MODE (operands[0]), op0, op1),
 			      operands[1]));
 }
+
+/* Return true if operand OP is a condition code register.
+   Only for use during or after reload.  */
+
+int
+fcc_register_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return ((mode == VOIDmode || mode == GET_MODE (op))
+	  && (reload_in_progress || reload_completed)
+	  && (GET_CODE (op) == REG || GET_CODE (op) == SUBREG)
+	  && ST_REG_P (true_regnum (op)));
+}
+
+/* Emit code to move general operand SRC into condition-code
+   register DEST.  SCRATCH is a scratch TFmode float register.
+   The sequence is:
+
+	FP1 = SRC
+	FP2 = 0.0f
+	DEST = FP2 < FP1
+
+   where FP1 and FP2 are single-precision float registers
+   taken from SCRATCH.  */
+
+void
+mips_emit_fcc_reload (dest, src, scratch)
+     rtx dest, src, scratch;
+{
+  rtx fp1, fp2;
+
+  /* Change the source to SFmode.  */
+  if (GET_CODE (src) == MEM)
+    src = adjust_address (src, SFmode, 0);
+  else if (GET_CODE (src) == REG || GET_CODE (src) == SUBREG)
+    src = gen_rtx_REG (SFmode, true_regnum (src));
+
+  fp1 = gen_rtx_REG (SFmode, REGNO (scratch));
+  fp2 = gen_rtx_REG (SFmode, REGNO (scratch) + FP_INC);
+
+  emit_move_insn (copy_rtx (fp1), src);
+  emit_move_insn (copy_rtx (fp2), CONST0_RTX (SFmode));
+  emit_insn (gen_slt_sf (dest, fp2, fp1));
+}
 
 /* Write a loop to move a constant number of bytes.
    Generate load/stores as follows:

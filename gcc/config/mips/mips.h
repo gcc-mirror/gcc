@@ -1582,6 +1582,10 @@ do {							\
 /* For MIPS, width of a floating point register.  */
 #define UNITS_PER_FPREG (TARGET_FLOAT64 ? 8 : 4)
 
+/* If register $f0 holds a floating-point value, $f(0 + FP_INC) is
+   the next available register.  */
+#define FP_INC (TARGET_FLOAT64 || TARGET_SINGLE_FLOAT ? 1 : 2)
+
 /* A C expression for the size in bits of the type `int' on the
    target machine.  If you don't define this, the default is one
    word.  */
@@ -4001,6 +4005,7 @@ while (0)
   {"se_nonimmediate_operand",   { SUBREG, REG, MEM, SIGN_EXTEND }},	\
   {"consttable_operand",	{ LABEL_REF, SYMBOL_REF, CONST_INT,	\
 				  CONST_DOUBLE, CONST }},		\
+  {"fcc_register_operand",	{ REG, SUBREG }},			\
   {"extend_operator",           { SIGN_EXTEND, ZERO_EXTEND }},          \
   {"highpart_shift_operator",   { ASHIFTRT, LSHIFTRT, ROTATERT, ROTATE }},
 

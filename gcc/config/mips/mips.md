@@ -5786,77 +5786,39 @@ move\\t%0,%z4\\n\\
    (set_attr "mode"	"SI")
    (set_attr "length"	"8,4,4,8,4,8,4,4,4,4,8,4,8")])
 
-;; Reload condition code registers.  These need scratch registers.
-
+;; Reload condition code registers.  reload_incc and reload_outcc
+;; both handle moves from arbitrary operands into condition code
+;; registers.  reload_incc handles the more common case in which
+;; a source operand is constrained to be in a condition-code
+;; register, but has not been allocated to one.
+;;
+;; Sometimes, such as in movcc, we have a CCmode destination whose
+;; constraints do not include 'z'.  reload_outcc handles the case
+;; when such an operand is allocated to a condition-code register.
+;;
+;; Note that reloads from a condition code register to some
+;; other location can be done using ordinary moves.  Moving
+;; into a GPR takes a single movcc, moving elsewhere takes
+;; two.  We can leave these cases to the generic reload code.
 (define_expand "reload_incc"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(match_operand:CC 1 "general_operand" "z"))
+  [(set (match_operand:CC 0 "fcc_register_operand" "=z")
+	(match_operand:CC 1 "general_operand" ""))
    (clobber (match_operand:TF 2 "register_operand" "=&f"))]
   "ISA_HAS_8CC && TARGET_HARD_FLOAT"
   "
 {
-  rtx source;
-  rtx fp1, fp2;
-  int regno;
-
-  /* This is called when are copying some value into a condition code
-     register.  Operand 0 is the condition code register.  Operand 1
-     is the source.  Operand 2 is a scratch register; we use TFmode
-     because we actually need two floating point registers.  */
-  if (! ST_REG_P (true_regnum (operands[0]))
-      || ! FP_REG_P (true_regnum (operands[2])))
-    abort ();
-
-  /* We need to get the source in SFmode so that the insn is
-     recognized.  */
-  if (GET_CODE (operands[1]) == MEM)
-    source = adjust_address (operands[1], SFmode, 0);
-  else if (GET_CODE (operands[1]) == REG || GET_CODE (operands[1]) == SUBREG)
-    source = gen_rtx_REG (SFmode, true_regnum (operands[1]));
-  else
-    source = operands[1];
-
-  /* FP1 and FP2 are the two halves of the TFmode scratch operand.  They
-     will be single registers in 64-bit mode and register pairs in 32-bit
-     mode.  SOURCE is loaded into FP1 and zero is loaded into FP2.  */
-  regno = REGNO (operands[2]);
-  fp1 = gen_rtx_REG (SFmode, regno);
-  fp2 = gen_rtx_REG (SFmode, regno + HARD_REGNO_NREGS (regno, DFmode));
-
-  emit_insn (gen_move_insn (fp1, source));
-  emit_insn (gen_move_insn (fp2, gen_rtx_REG (SFmode, 0)));
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0],
-			  gen_rtx_LT (CCmode, fp2, fp1)));
-
+  mips_emit_fcc_reload (operands[0], operands[1], operands[2]);
   DONE;
 }")
 
 (define_expand "reload_outcc"
-  [(set (match_operand:CC 0 "general_operand" "=z")
-	(match_operand:CC 1 "register_operand" "z"))
-   (clobber (match_operand:CC 2 "register_operand" "=&d"))]
+  [(set (match_operand:CC 0 "fcc_register_operand" "=z")
+	(match_operand:CC 1 "register_operand" ""))
+   (clobber (match_operand:TF 2 "register_operand" "=&f"))]
   "ISA_HAS_8CC && TARGET_HARD_FLOAT"
   "
 {
-  /* This is called when we are copying a condition code register out
-     to save it somewhere.  Operand 0 should be the location we are
-     going to save it to.  Operand 1 should be the condition code
-     register.  Operand 2 should be a scratch general purpose register
-     created for us by reload.  The mips_secondary_reload_class
-     function should have told reload that we don't need a scratch
-     register if the destination is a general purpose register anyhow.  */
-  if (ST_REG_P (true_regnum (operands[0]))
-      || GP_REG_P (true_regnum (operands[0]))
-      || ! ST_REG_P (true_regnum (operands[1]))
-      || ! GP_REG_P (true_regnum (operands[2])))
-    abort ();
-
-  /* All we have to do is copy the value from the condition code to
-     the data register, which movcc can handle, and then store the
-     value into the real final destination.  */
-  emit_insn (gen_move_insn (operands[2], operands[1]));
-  emit_insn (gen_move_insn (operands[0], operands[2]));
-
+  mips_emit_fcc_reload (operands[0], operands[1], operands[2]);
   DONE;
 }")
 

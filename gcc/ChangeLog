@@ -1,3 +1,19 @@
+2003-02-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mips.h (FP_INC): Define.
+
+	Backport fix for PR6362:
+	2002-10-01  Richard Sandiford  <rsandifo@redhat.com>
+	
+	* config/mips/mips-protos.h (mips_emit_fcc_reload): Declare.
+	* config/mips/mips.h (PREDICATE_CODES): Add fcc_register_operand.
+	* config/mips/mips.c (fcc_register_operand): New function.
+	(mips_emit_fcc_reload): New function, extracted from reload_incc.
+	* cnfig/mips/mips.md (reload_incc): Change destination prediate
+	to fcc_register_operand.  Remove misleading source constraint.
+	Use mips_emit_fcc_reload.
+	(reload_outcc): Duplicate reload_incc.
+
 2003-02-11  Bob Wilson  <bob.wilson@acm.org>
 
 	Backport following patch:
