@@ -76,7 +76,7 @@ sub missing {
     for $f (sort keys %listed) {
 	if ($f =~ /(.*)\.c$/) {
 	    $base = $1;
-	    if (! $listed{"$base.lo"}) {
+	    if (! $listed{"$base.o"}) {
 		print "O $f\n";
 	    }
 	}
@@ -213,7 +213,10 @@ sub locals_first {
 
 sub deps {
 
-    $crule .= "\t\$(LTCOMPILE) -c -o \$@ \$<\n";
+    $crule  = "\tif [ x\"\$(PICFLAG)\" != x ]; then \\\n";
+    $crule .= "\t  \$(COMPILE.c) \$(PICFLAG) \$< -o pic/\$@; \\\n";
+    $crule .= "\telse true; fi\n";
+    $crule .= "\t\$(COMPILE.c) \$< \$(OUTPUT_OPTION)\n";
     $crule .= "\n";
 
     $incdir = shift @ARGV;
@@ -262,7 +265,7 @@ sub deps {
 	    }
 	    @deps = sort { &locals_first($a,$b) } keys %scanned;
 	    $obj = $f;
-	    $obj =~ s/\.c$/.lo/;
+	    $obj =~ s/\.c$/.o/;
 	    $obj = "./$obj:";
 	    if ($#deps >= 0) {
 		print OUT "$obj \$(srcdir)/$f";

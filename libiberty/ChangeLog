@@ -1,3 +1,12 @@
+2004-12-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in: Undo to 2004-12-17.
+	* aclocal.m4: Likewise.
+	* config.table: Likewise.
+	* configure.ac: Likewise.
+	* maint-tool: Likewise.
+	* configure: Likewise.
+
 2004-12-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/19072

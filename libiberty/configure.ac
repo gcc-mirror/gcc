@@ -4,9 +4,6 @@ AC_PREREQ(2.59)
 AC_INIT
 AC_CONFIG_SRCDIR([xmalloc.c])
 
-# FIXME: libiberty doesn't support --disable-static
-enable_static=yes
-
 # This works around the fact that libtool configuration may change LD
 # for this particular configuration, but some shells, instead of
 # keeping the changes in LD private, export them just because LD is
@@ -121,15 +118,27 @@ if test x$GCC = xyes; then
 fi
 AC_SUBST(ac_libiberty_warn_cflags)
 
+AC_PROG_CC_C_O
+# autoconf is lame and doesn't give us any substitution variable for this.
+if eval "test \"`echo '$ac_cv_prog_cc_'${ac_cc}_c_o`\" = no"; then
+  NO_MINUS_C_MINUS_O=yes
+else
+  OUTPUT_OPTION='-o $@'
+fi
+AC_SUBST(NO_MINUS_C_MINUS_O)
+AC_SUBST(OUTPUT_OPTION)
+
 AC_C_CONST
 AC_C_INLINE
 AC_C_BIGENDIAN_CROSS
 
+dnl When we start using libtool:
 dnl Default to a non shared library.  This may be overridden by the
 dnl configure option --enable-shared.
-AM_DISABLE_SHARED
+dnl AM_DISABLE_SHARED
 
-AM_PROG_LIBTOOL
+dnl When we start using libtool:
+dnl AM_PROG_LIBTOOL
 
 dnl When we start using automake:
 dnl AM_CONFIG_HEADER(config.h:config.in)
@@ -506,16 +515,13 @@ fi
 
 # Figure out which version of pexecute to use.
 case "${host}" in
-     *-*-mingw* | *-*-winnt*)	pex=./pex-win32  ;;
-     *-*-msdosdjgpp*)		pex=./pex-djgpp  ;;
-     *-*-msdos*)		pex=./pex-msdos  ;;
-     *-*-os2-emx*)		pex=./pex-os2    ;;
-     *)				pex=./pex-unix   ;;
+     *-*-mingw* | *-*-winnt*)	pexecute=./pex-win32.o  ;;
+     *-*-msdosdjgpp*)		pexecute=./pex-djgpp.o  ;;
+     *-*-msdos*)		pexecute=./pex-msdos.o  ;;
+     *-*-os2-emx*)		pexecute=./pex-os2.o    ;;
+     *)				pexecute=./pex-unix.o   ;;
 esac
-pexecute=${pex}.o
-ltpexecute=${pex}.lo
 AC_SUBST(pexecute)
-AC_SUBST(ltpexecute)
 
 libiberty_AC_FUNC_STRNCMP
 
@@ -528,7 +534,6 @@ else
 fi
 AC_SUBST(INSTALL_DEST)
 
-# Add `./' to avoid VPATH.
 m4_pattern_allow(LIBOBJS)
 L=""
 for l in x $LIBOBJS; do
@@ -538,19 +543,6 @@ for l in x $LIBOBJS; do
   esac
 done
 LIBOBJS="$L"
-
-m4_pattern_allow(LTLIBOBJS)
-L=""
-for l in x $LTLIBOBJS; do
-  case $l in
-    x) ;;
-    *) L="$L ./$l" ;;
-  esac
-done
-LTLIBOBJS="$L"
-
-dnl Delete it when we start creating shared library with libtool.
-AC_SUBST(enable_shared)
 
 # We need multilib support, but only if configuring for the target.
 AC_CONFIG_FILES([Makefile testsuite/Makefile])
