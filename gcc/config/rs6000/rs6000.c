@@ -2567,7 +2567,7 @@ print_operand_address (file, x)
 {
   if (GET_CODE (x) == REG)
     fprintf (file, "0(%s)", reg_names[ REGNO (x) ]);
-  else if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == CONST)
+  else if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == CONST || GET_CODE (x) == LABEL_REF)
     {
       output_addr_const (file, x);
       if (small_data_operand (x, GET_MODE (x)))
