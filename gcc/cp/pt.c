@@ -3527,7 +3527,7 @@ mangle_class_name_for_template (name, parms, arglist)
 
       if (TREE_CODE (parm) == TYPE_DECL)
 	{
-	  cat (type_as_string_real (arg, 0, 1));
+	  cat (type_as_string (arg, TS_CHASE_TYPEDEFS));
 	  continue;
 	}
       else if (TREE_CODE (parm) == TEMPLATE_DECL)
@@ -3551,7 +3551,7 @@ mangle_class_name_for_template (name, parms, arglist)
 	    }
 	  else
 	    /* Output the parameter declaration */
-	    cat (type_as_string_real (arg, 0, 1));
+	    cat (type_as_string (arg, TS_CHASE_TYPEDEFS));
 	  continue;
 	}
       else
@@ -4401,7 +4401,7 @@ print_template_context (err)
 	    /* Avoid redundancy with the the "In function" line.  */;
 	  else 
 	    fprintf (stderr, "%s: In instantiation of `%s':\n",
-		     file, decl_as_string (p->decl, 0));
+		     file, decl_as_string (p->decl, TS_DECL_TYPE | TS_FUNC_NORETURN));
 	  
 	  line = p->line;
 	  file = p->file;
@@ -4412,7 +4412,7 @@ print_template_context (err)
   for (; p; p = p->next)
     {
       fprintf (stderr, "%s:%d:   instantiated from `%s'\n", file, line,
-	       decl_as_string (p->decl, 0));
+	       decl_as_string (p->decl, TS_DECL_TYPE | TS_FUNC_NORETURN));
       line = p->line;
       file = p->file;
     }
