@@ -1,3 +1,8 @@
+2002-01-09  Bo Thorsen  <bo@suse.co.uk>
+
+	* config/cpu/x86-64/bits/cpu_limits.h (__glibcpp_long_bits): Add
+	definition.
+
 2002-01-08  Benjamin Kosnik  <bkoz@redhat.com>
 
         libstdc++/2913

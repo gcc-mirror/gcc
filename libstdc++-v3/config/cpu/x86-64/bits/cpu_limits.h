@@ -28,6 +28,8 @@
 #ifndef _GLIBCPP_CPU_LIMITS
 #define _GLIBCPP_CPU_LIMITS 1
 
+#define __glibcpp_long_bits 64
+
 #define __glibcpp_long_double_bits 80
 
 #endif
