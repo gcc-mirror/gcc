@@ -1,5 +1,10 @@
 2003-03-18  Paolo Carlini  <pcarlini@unitus.it>
 
+	* testsuite/21_strings/basic_string/append/wchar_t/1.cc:
+	Correct size, taking into account sizeof(wchar_t).
+
+2003-03-18  Paolo Carlini  <pcarlini@unitus.it>
+
 	Reshuffle 21_strings testsuite.
 	* testsuite/21_strings/append.cc, c_strings.cc, invariants.cc,
 	assign.cc, ctor_copy_dtor.cc, nonmember.cc, capacity.cc,
