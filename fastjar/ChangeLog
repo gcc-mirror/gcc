@@ -1,3 +1,7 @@
+2002-02-23  Anthony Green  <green@redhat.com>
+
+	* jartool.c (main): Fix handling of -C.
+
 2002-01-30  Tom Tromey  <tromey@redhat.com>
 
 	* jartool.c (main): NULL-terminate new_argv.  Pass 0 as argument
