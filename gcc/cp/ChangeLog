@@ -1,6 +1,6 @@
 1998-06-25  Benjamin Kosnik  <bkoz@lisa.cygnus.com>
 
-	* decl.c (start_enum): Put local enums on permanant_obstack.
+	* decl.c (start_enum): Put local enums on permanent_obstack.
 
 1998-06-25  Mark Mitchell  <mark@markmitchell.com>
 
