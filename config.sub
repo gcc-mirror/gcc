@@ -423,7 +423,6 @@ case $basic_machine in
 		;;
 	i370-ibm* | ibm*)
 		basic_machine=i370-ibm
-		os=-mvs
 		;;
 # I'm not sure what "Sysv32" means.  Should this be sysv3.2?
 	i[34567]86v32)
@@ -511,6 +510,10 @@ case $basic_machine in
 	msdos)
 		basic_machine=i386-unknown
 		os=-msdos
+		;;
+	mvs)
+		basic_machine=i370-ibm
+		os=-mvs
 		;;
 	ncr3000)
 		basic_machine=i486-ncr
@@ -896,7 +899,7 @@ case $os in
 	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -sunos | -sunos[34]*\
 	      | -hpux* | -unos* | -osf* | -luna* | -dgux* | -solaris* | -sym* \
 	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
-	      | -aos* \
+	      | -aos* | -opened* \
 	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
 	      | -clix* | -riscos* | -uniplus* | -iris* | -rtu* | -xenix* \
 	      | -hiux* | -386bsd* | -netbsd* | -openbsd* | -freebsd* | -riscix* \
@@ -923,6 +926,9 @@ case $os in
 		;;
 	-sunos6*)
 		os=`echo $os | sed -e 's|sunos6|solaris3|'`
+		;;
+	-opened*)
+		os=-openedition
 		;;
 	-osfrose*)
 		os=-osfrose
@@ -1184,7 +1190,7 @@ case $basic_machine in
 			-genix*)
 				vendor=ns
 				;;
-			-mvs*)
+			-mvs* | -opened*)
 				vendor=ibm
 				;;
 			-ptx*)

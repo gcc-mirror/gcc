@@ -162,6 +162,9 @@ case "${host}" in
   mips*-*-sysv*)
     host_makefile_frag="${host_makefile_frag} config/mh-riscos"
     ;;
+  i370-ibm-opened*)
+    host_makefile_frag="${host_makefile_frag} config/mh-openedition"
+    ;;
   i[3456]86-*-sysv5*)
     host_makefile_frag="${host_makefile_frag} config/mh-sysv5"
     ;;
