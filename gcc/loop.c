@@ -4304,17 +4304,17 @@ strength_reduce (loop, flags)
 	 provided all givs are reduced.  */
       bl->eliminable = loop_biv_eliminable_p (loop, bl, threshold, insn_count);
 
+      /* This will be true at the end, if all givs which depend on this
+	 biv have been strength reduced.
+	 We can't (currently) eliminate the biv unless this is so.  */
+      bl->all_reduced = 1;
+
       /* Check each extension dependent giv in this class to see if its
 	 root biv is safe from wrapping in the interior mode.  */
       check_ext_dependant_givs (bl, loop_info);
 
       /* Combine all giv's for this iv_class.  */
       combine_givs (regs, bl);
-
-      /* This will be true at the end, if all givs which depend on this
-	 biv have been strength reduced.
-	 We can't (currently) eliminate the biv unless this is so.  */
-      bl->all_reduced = 1;
 
       for (v = bl->giv; v; v = v->next_iv)
 	{
@@ -6646,6 +6646,7 @@ check_ext_dependant_givs (bl, loop_info)
 			 INSN_UID (v->insn), why);
 	      }
 	    v->ignore = 1;
+	    bl->all_reduced = 0;
 	  }
       }
 }
