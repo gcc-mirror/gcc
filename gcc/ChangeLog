@@ -24,6 +24,15 @@
 
 2004-12-13  Richard Henderson  <rth@redhat.com>
 
+	PR target/17990
+	* config/i386/i386.md (negsf2): Fix condition for using sse.
+	(negdf2, abssf2, absdf2): Likewise.
+	(negsf2_if, abssf2_if): Don't disable if sse enabled.
+	(movv4sf_internal splitter): Postpone til after reload.
+	(movv2di_internal splitter): Likewise.
+
+2004-12-13  Richard Henderson  <rth@redhat.com>
+
 	PR middle-end/17930
 	* toplev.c (rest_of_compilation): Fix computation of
 	preferred_incoming_stack_boundary.
