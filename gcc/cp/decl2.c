@@ -1420,6 +1420,10 @@ finish_static_data_member_decl (decl, init, asmspec_tree, flags)
       VARRAY_PUSH_TREE (pending_statics, decl);
     }
 
+  if (LOCAL_CLASS_P (current_class_type))
+    pedwarn ("local class `%#T' shall not have static data member `%#D'",
+	     current_class_type, decl);
+
   /* Static consts need not be initialized in the class definition.  */
   if (init != NULL_TREE && TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
     {
