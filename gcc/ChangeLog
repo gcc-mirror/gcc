@@ -1,3 +1,10 @@
+Sun Sep 14 12:24:30 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* fixinc.math: New file to fix math.h on some systems.
+	* configure.in (freebsd, netbsd): Use fixinc.math on these
+	systems.
+	* configure: Rebuilt.
+
 Sun Sep 14 11:11:05 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* regmove.c (regmove_optimize): If we end up moving the
