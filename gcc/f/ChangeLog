@@ -1,3 +1,12 @@
+Sun Apr 25 20:55:10 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Fix 19990325-0.f and 19990325-1.f:
+	* com.c (ffecom_possible_partial_overlap_): New function.
+	(ffecom_expand_let_stmt): Use it to determine whether to assign
+	to a COMPLEX operand through a temp.
+
+	* version.c: Bump version.
+
 Sat Apr 24 12:19:53 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* expr.c (ffeexpr_finished_): Convert DATA implied-do

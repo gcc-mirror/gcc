@@ -1503,6 +1503,48 @@ ffecom_widest_expr_type_ (ffebld list)
 }
 #endif
 
+/* Check whether a partial overlap between two expressions is possible.
+
+   Can *starting* to write a portion of expr1 change the value
+   computed (perhaps already, *partially*) by expr2?
+
+   Currently, this is a concern only for a COMPLEX expr1.  But if it
+   isn't in COMMON or local EQUIVALENCE, since we don't support
+   aliasing of arguments, it isn't a concern.  */
+
+static bool
+ffecom_possible_partial_overlap_ (ffebld expr1, ffebld expr2)
+{
+  ffesymbol sym;
+  ffestorag st;
+
+  switch (ffebld_op (expr1))
+    {
+    case FFEBLD_opSYMTER:
+      sym = ffebld_symter (expr1);
+      break;
+
+    case FFEBLD_opARRAYREF:
+      if (ffebld_op (ffebld_left (expr1)) != FFEBLD_opSYMTER)
+	return FALSE;
+      sym = ffebld_symter (ffebld_left (expr1));
+      break;
+
+    default:
+      return FALSE;
+    }
+
+  if (ffesymbol_where (sym) != FFEINFO_whereCOMMON
+      && (ffesymbol_where (sym) != FFEINFO_whereLOCAL
+	  || ! (st = ffesymbol_storage (sym))
+	  || ! ffestorag_parent (st)))
+    return FALSE;
+
+  /* It's in COMMON or local EQUIVALENCE.  */
+
+  return TRUE;
+}
+
 /* Check whether dest and source might overlap.  ffebld versions of these
    might or might not be passed, will be NULL if not.
 
@@ -11154,6 +11196,7 @@ ffecom_expand_let_stmt (ffebld dest, ffebld source)
   if (ffeinfo_basictype (ffebld_info (dest)) != FFEINFO_basictypeCHARACTER)
     {
       bool dest_used;
+      tree assign_temp;
 
       /* This attempts to replicate the test below, but must not be
 	 true when the test below is false.  (Always err on the side
@@ -11173,6 +11216,22 @@ ffecom_expand_let_stmt (ffebld dest, ffebld source)
 	}
 
       ffecom_prepare_expr_w (NULL_TREE, dest);
+
+      /* For COMPLEX assignment like C1=C2, if partial overlap is possible,
+	 create a temporary through which the assignment is to take place,
+	 since MODIFY_EXPR doesn't handle partial overlap properly.  */
+      if (ffebld_basictype (dest) == FFEINFO_basictypeCOMPLEX
+	  && ffecom_possible_partial_overlap_ (dest, source))
+	{
+	  assign_temp = ffecom_make_tempvar ("complex_let",
+					     ffecom_tree_type
+					     [ffebld_basictype (dest)]
+					     [ffebld_kindtype (dest)],
+					     FFETARGET_charactersizeNONE,
+					     -1);
+	}
+      else
+	assign_temp = NULL_TREE;
 
       ffecom_prepare_end ();
 
@@ -11195,6 +11254,27 @@ ffecom_expand_let_stmt (ffebld dest, ffebld source)
 
       if (dest_used)
 	expr_tree = source_tree;
+      else if (assign_temp)
+	{
+#ifdef MOVE_EXPR
+	  /* The back end understands a conceptual move (evaluate source;
+	     store into dest), so use that, in case it can determine
+	     that it is going to use, say, two registers as temporaries
+	     anyway.  So don't use the temp (and someday avoid generating
+	     it, once this code starts triggering regularly).  */
+	  expr_tree = ffecom_2s (MOVE_EXPR, void_type_node,
+				 dest_tree,
+				 source_tree);
+#else
+	  expr_tree = ffecom_2s (MODIFY_EXPR, void_type_node,
+				 assign_temp,
+				 source_tree);
+	  expand_expr_stmt (expr_tree);
+	  expr_tree = ffecom_2s (MODIFY_EXPR, void_type_node,
+				 dest_tree,
+				 assign_temp);
+#endif
+	}
       else
 	expr_tree = ffecom_2s (MODIFY_EXPR, void_type_node,
 			       dest_tree,
