@@ -825,11 +825,13 @@ struct cum_arg
 /* Nonzero if X is a constant address suitable as an 8-bit absolute,
    which is a special case of the 'R' operand.  */
 
-#define EIGHTBIT_CONSTANT_ADDRESS_P(X)						\
-  ((GET_CODE (X) == CONST_INT)							\
-   && ((TARGET_H8300 && IN_RANGE (INTVAL (X) & 0xffff, 0xff00, 0xffff))		\
-       || (TARGET_H8300H && IN_RANGE (INTVAL (X), 0xffff00, 0xffffff))		\
-       || (TARGET_H8300S && IN_RANGE (INTVAL (X), 0xffffff00, 0xffffffff))))
+#define EIGHTBIT_CONSTANT_ADDRESS_P(X)					\
+  ((GET_CODE (X) == CONST_INT)						\
+   && ((TARGET_H8300 && IN_RANGE (INTVAL (X) & 0xffff, 0xff00, 0xffff))	\
+       || (TARGET_H8300H && IN_RANGE (INTVAL (X) & 0xffffffff,		\
+				      0xffff00, 0xffffff))		\
+       || (TARGET_H8300S && IN_RANGE (INTVAL (X) & 0xffffffff,		\
+				      0xffffff00, 0xffffffff))))
 
 /* Nonzero if X is a constant address suitable as an 16-bit absolute
    on H8/300H and H8S.  */
@@ -837,11 +839,13 @@ struct cum_arg
 #define TINY_CONSTANT_ADDRESS_P(X)					\
   ((GET_CODE (X) == CONST_INT)						\
    && ((TARGET_H8300H							\
-	&& (IN_RANGE (INTVAL (X), 0x000000, 0x007fff)			\
-	    || IN_RANGE (INTVAL (X), 0xff8000, 0xffffff)))		\
+	&& (IN_RANGE (INTVAL (X) & 0xffffffff, 0x000000, 0x007fff)	\
+	    || IN_RANGE (INTVAL (X) & 0xffffffff, 0xff8000, 0xffffff)))	\
        || (TARGET_H8300S						\
-	   && (IN_RANGE (INTVAL (X), 0x00000000, 0x00007fff)		\
-	       || IN_RANGE (INTVAL (X), 0xffff8000, 0xffffffff)))))
+	   && (IN_RANGE (INTVAL (X) & 0xffffffff,			\
+			 0x00000000, 0x00007fff)			\
+	       || IN_RANGE (INTVAL (X) & 0xffffffff,			\
+			    0xffff8000, 0xffffffff)))))
 
 /* 'U' if valid for a bset destination;
    i.e. a register, register indirect, or the eightbit memory region
