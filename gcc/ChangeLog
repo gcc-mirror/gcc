@@ -1,3 +1,8 @@
+2004-03-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/c-tree.texi (DECL_ASSEMBLER_NAME): Mention that using this
+	macro results in memory allocation.
+
 2004-03-02  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/freebsd-spec.h (FBSD_DYNAMIC_LINKER): Add.
