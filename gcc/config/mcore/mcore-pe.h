@@ -22,7 +22,12 @@ Boston, MA 02111-1307, USA.  */
 /* Run-time Target Specification.  */
 #define TARGET_VERSION fputs (" (MCORE/pe)", stderr)
 
-#define SUBTARGET_CPP_PREDEFINES " -D__pe__"
+#define TARGET_OS_CPP_BUILTINS()				\
+  do								\
+    {								\
+      builtin_define ("__pe__");				\
+    }								\
+  while (0)
 
 /* The MCore ABI says that bitfields are unsigned by default.  */
 /* The EPOC C++ environment does not support exceptions.  */

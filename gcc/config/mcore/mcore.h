@@ -46,28 +46,28 @@ Boston, MA 02111-1307, USA.  */
    predefined attributes later on.  This can be solved by using one attribute,
    say __declspec__, and passing args to it.  The problem with that approach
    is that args are not accumulated: each new appearance would clobber any
-   existing args.  XXX- FIXME the definition below relies upon string
-   concatenation, which is non-portable.  */
-#define CPP_PREDEFINES \
-  "-D__mcore__ -D__MCORE__=1 -D__declspec(x)=__attribute__((x))" SUBTARGET_CPP_PREDEFINES
+   existing args.  */
+#define TARGET_CPU_CPP_BUILTINS()					  \
+  do									  \
+    {									  \
+      builtin_define ("__mcore__");					  \
+      builtin_define ("__MCORE__");					  \
+      builtin_define ("__declspec(x)=__attribute__((x))");		  \
+      if (TARGET_LITTLE_END)						  \
+        builtin_define ("__MCORELE__");					  \
+      else								  \
+        builtin_define ("__MCOREBE__");					  \
+      if (TARGET_M340)							  \
+        builtin_define ("__M340__");					  \
+      else								  \
+        builtin_define ("__M210__");					  \
+    }									  \
+  while (0)
 
-/* If -m4align is ever re-enabled then uncomment this line as well:
-   #define CPP_SPEC "%{!m4align:-D__MCORE_ALIGN_8__} %{m4align:-D__MCORE__ALIGN_4__}" */
-
-#undef  CPP_SPEC
-#define CPP_SPEC "							\
-%{mbig-endian:								\
-  %{mlittle-endian:%echoose either big or little endian, not both}	\
-  -D__MCOREBE__}							\
-%{m210:									\
-  %{m340:%echoose either m340 or m210 not both}				\
-  %{mlittle-endian:%ethe m210 does not have little endian support}	\
-  -D__M210__}								\
-%{!mbig-endian: -D__MCORELE__}						\
-%{!m210: -D__M340__}							\
-"
 /* If -m4align is ever re-enabled then add this line to the definition of CPP_SPEC
    %{!m4align:-D__MCORE_ALIGN_8__} %{m4align:-D__MCORE__ALIGN_4__} */
+#undef CPP_SPEC
+#define CPP_SPEC "%{m210:%{mlittle-endian:%ethe m210 does not have little endian support}}";
 
 /* We don't have a -lg library, so don't put it in the list.  */
 #undef	LIB_SPEC

@@ -1,3 +1,11 @@
+2003-03-12  Neil Booth  <neil@daikokuya.co.uk>
+
+	* config/mcore/mcore-elf.h (CPP_PREDEFINES): Replace with
+	TARGET_OS_CPP_BUILTINS.
+	* config/mcore/mcore-pe.h: Similarly.
+	* config/mcore/mcore.h: Replace CPP_PREDEFINES and part of
+	CPP_SPEC with TARGET_CPU_CPP_BUILTINS.
+
 2003-03-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c/9928

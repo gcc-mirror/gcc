@@ -25,7 +25,12 @@ Boston, MA 02111-1307, USA.  */
 /* Run-time Target Specification.  */
 #define TARGET_VERSION fputs (" (Motorola MCORE/elf)", stderr)
 
-#define SUBTARGET_CPP_PREDEFINES " -D__ELF__"
+#define TARGET_OS_CPP_BUILTINS()				\
+  do								\
+    {								\
+      builtin_define ("__ELF__");				\
+    }								\
+  while (0)
 
 /* Use DWARF2 debugging info.  */
 #define DWARF2_DEBUGGING_INFO 1
