@@ -1,3 +1,17 @@
+2004-06-30  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-common.h (check_function_format): Remove first parameter.
+	* c-format.c (format_check_context): Remove status.
+	(check_format_info, check_format_info_main,
+	maybe_read_dollar_number, avoid_dollar_number,
+	finish_dollar_format_checking, check_format_types,
+	check_function_format): Remove first parameter.  Don't use
+	status_warning.
+	(check_format_arg): Don't use status_warning.
+	(status_warning): Remove.
+	* c-common.c (check_function_arguments): Update call to
+	check_function_format.
+
 2004-06-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc-protos.h (output_cbranch): Constify return
