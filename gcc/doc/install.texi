@@ -1415,31 +1415,14 @@ this is especially true for slow drives and network filesystems.
 
 In order to build GNAT, the Ada compiler, you need a working GNAT
 compiler (GNAT version 3.14 or later, or GCC version 3.1 or later),
+including GNAT tools such as @command{gnatmake} and @command{gnatlink},
 since the Ada front end is written in Ada (with some
 GNAT-specific extensions), and GNU make.
-
-However, you do not need a full installation of GNAT, just the GNAT
-binary @file{gnat1}, a copy of @file{gnatbind}, and a compiler driver
-which can deal with Ada input (by invoking the @file{gnat1} binary).
-Of course, you still need a working C compiler, with the same compiler
-driver.
 
 @command{configure} does not test whether the GNAT installation works
 and has a sufficiently recent version; if too old a GNAT version is
 installed, the build will fail unless @option{--enable-languages} is
 used to disable building the Ada front end.
-
-Additional build tools (such as @command{gnatmake}) or a working GNAT
-run-time library installation are usually @emph{not} required.  However,
-if you want to bootstrap the compiler using a minimal version of GNAT,
-you have to issue the following commands before invoking @samp{make
-bootstrap} (this assumes that you start with an unmodified and consistent
-source distribution):
-
-@example
-    cd @var{srcdir}/gcc/ada
-    touch treeprs.ads [es]info.h nmake.ad[bs]
-@end example
 
 At the moment, the GNAT library and several tools for GNAT are not built
 by @samp{make bootstrap}.  For a native build, you have to invoke
@@ -1456,8 +1439,6 @@ following commands (assuming @command{make} is GNU make):
 @example
     cd @var{objdir}
     @var{srcdir}/configure --enable-languages=c,ada
-    cd @var{srcdir}/gcc/ada
-    touch treeprs.ads [es]info.h nmake.ad[bs]
     cd @var{objdir}
     make bootstrap
     cd gcc
