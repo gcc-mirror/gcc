@@ -67,7 +67,7 @@ typedef void *__gnuc_va_list;
   (((sizeof (TYPE) + sizeof (int) - 1) / sizeof (int)) * sizeof (int))
 
 #define va_start(AP, LASTARG) 						\
- (AP = ((__gnuc_va_list) __builtin_next_arg ()))
+ (AP = ((__gnuc_va_list) __builtin_next_arg (LASTARG)))
 
 #undef va_end
 void va_end (__gnuc_va_list);		/* Defined in libgcc.a */

@@ -39,7 +39,7 @@ typedef unsigned __gnuc_va_list[2];
 #define va_start(AP, LASTARG)				\
 __extension__						\
 ({ __asm__ ("st	g14,%0" : "=m" (*(AP)));		\
-   (AP)[1] = (unsigned) __builtin_next_arg () - *AP; })
+   (AP)[1] = (unsigned) __builtin_next_arg (LASTARG) - *AP; })
 #else
 
 #define	va_alist __builtin_va_alist

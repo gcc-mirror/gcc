@@ -61,7 +61,7 @@ typedef struct {
  ((pvar) = *(__gnuc_va_list *) __builtin_saveregs (),			\
   (pvar).__ireg_used = __builtin_args_info (0) / 4,		\
   (pvar).__freg_used = __builtin_args_info (1) / 4,		\
-  (pvar).__mem_ptr = __builtin_next_arg ())
+  (pvar).__mem_ptr = __builtin_next_arg (firstarg))
 
 #endif /* _STDARG_H */
 

@@ -30,7 +30,8 @@ typedef void *__gnuc_va_list;
 
 #ifdef _STDARG_H
 
-#define va_start(AP,LASTARG) (AP = ((__gnuc_va_list) __builtin_next_arg ()))
+#define va_start(AP,LASTARG) \
+  (AP = ((__gnuc_va_list) __builtin_next_arg (LASTARG)))
 
 #else /* _VARARGS_H */
 

@@ -23,11 +23,14 @@ typedef void * __gnuc_va_list;
 
 #ifdef _STDARG_H
 
+/* Call __builtin_next_arg even though we aren't using its value, so that
+   we can verify that LASTARG is correct.  */
 #ifdef __GCC_NEW_VARARGS__
-#define va_start(AP, LASTARG)	(AP = (char *) __builtin_saveregs ())
+#define va_start(AP, LASTARG) \
+  (__builtin_next_arg (LASTARG), AP = (char *) __builtin_saveregs ())
 #else
 #define va_start(AP, LASTARG)					\
-  (__builtin_saveregs (), AP = ((char *) __builtin_next_arg ()))
+  (__builtin_saveregs (), AP = ((char *) __builtin_next_arg (LASTARG)))
 #endif
 
 #else
