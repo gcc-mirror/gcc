@@ -1,3 +1,16 @@
+2005-04-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/Makefile.am (noinst_PROGRAMS): Remove.
+	(site.exp): Write out the path to the baseline file.
+	(check-abi): Use DejaGNU.
+	(check-abi-verbose): Remove.
+	* testsuite/Makefile.in: Regenerated.
+	* testsuite/abi_check.cc (main): Check the return value from
+	compare_symbols.
+	* testsuite/testsuite_abi.cc (compare_symbols): Return a value.
+	* testsuite/testsuite_abi.h (compare_symbols): Adjust prototype.
+	* testsuite/libstdc++-abi/abi.exp: New file.
+
 2005-03-31  Chris Jefferson  <chris@bubblescope.net>
 
         * include/tr1/tuple: Support iteration via tuple_iterate.h.

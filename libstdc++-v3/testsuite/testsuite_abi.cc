@@ -281,7 +281,7 @@ examine_symbol(const char* name, const char* file)
     { __throw_exception_again; }
 }
 
-void 
+int
 compare_symbols(const char* baseline_file, const char* test_file, 
 		bool verbose)
 {
@@ -393,6 +393,8 @@ compare_symbols(const char* baseline_file, const char* test_file,
   cout << "# of incompatible symbols:\t " << incompatible.size() << endl;
   cout << endl;
   cout << "using: " << baseline_file << endl;
+
+  return !(missing_names.size() || incompatible.size());
 }
 
 
