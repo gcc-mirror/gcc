@@ -1,5 +1,79 @@
 2003-02-11  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/ByteBufferImpl.java:
+	Reformated and removed some code.
+	(backing_buffer): Removed.	
+	(array_offset): Removed.
+	(ro): Renamed to readOnly.
+	(ByteBufferImpl): Use parent constructor, initialize readOnly.
+	* gnu/java/nio/CharBufferImpl.java:
+	Reformated and removed some code.
+	(array_offset): Removed.
+	(ro): Renamed to readOnly.
+	(CharBufferImpl): Use parent constructor, initialize readOnly.
+	(inc_pos): Removed.
+	(order): New method.
+	* gnu/java/nio/DoubleBufferImpl.java:
+	Reformated and removed some code.
+	(array_offset): Removed.
+	(ro): Renamed to readOnly.
+	(DoubleBufferImpl): Use parent constructor, initialize readOnly.
+	(inc_pos): Removed.
+	(order): New method.
+	* gnu/java/nio/FloatBufferImpl.java:
+	Reformated and removed some code.
+	(array_offset): Removed.
+	(ro): Renamed to readOnly.
+	(FloatBufferImpl): Use parent constructor, initialize readOnly.
+	(inc_pos): Removed.
+	(order): New method.
+	* gnu/java/nio/IntBufferImpl.java:
+	Reformated and removed some code.
+	(array_offset): Removed.
+	(ro): Renamed to readOnly.
+	(IntBufferImpl): Use parent constructor, initialize readOnly.
+	(inc_pos): Removed.
+	(order): New method.
+	* gnu/java/nio/LongBufferImpl.java:
+	Reformated and removed some code.
+	(array_offset): Removed.
+	(ro): Renamed to readOnly.
+	(LongBufferImpl): Use parent constructor, initialize readOnly.
+	(inc_pos): Removed.
+	(order): New method.
+	* gnu/java/nio/ShortBufferImpl.java:
+	Reformated and removed some code.
+	(array_offset): Removed.
+	(ro): Renamed to readOnly.
+	(ShortBufferImpl): Use parent constructor, initialize readOnly.
+	(inc_pos): Removed.
+	(order): New method.
+	* Makefile.am
+	(ordinary_java_source_files): Added the following files:
+	gnu/java/nio/ByteBufferImpl.java
+	gnu/java/nio/CharBufferImpl.java
+	gnu/java/nio/DoubleBufferImpl.java
+	gnu/java/nio/FloatBufferImpl.java
+	gnu/java/nio/IntBufferImpl.java
+	gnu/java/nio/LongBufferImpl.java
+	gnu/java/nio/ShortBufferImpl.java
+	java/nio/DoubleBuffer.java
+	java/nio/FloatBuffer.java
+	java/nio/IntBuffer.java
+	java/nio/LongBuffer.java
+	java/nio/ShortBuffer.java
+	(nat_source_files): Added the following files:
+	gnu/java/nio/natByteBufferImpl.cc
+	gnu/java/nio/natCharBufferImpl.cc
+	gnu/java/nio/natDoubleBufferImpl.cc
+	gnu/java/nio/natFloatBufferImpl.cc
+	gnu/java/nio/natIntBufferImpl.cc
+	gnu/java/nio/natLongBufferImpl.cc
+	gnu/java/nio/natShortBufferImpl.cc
+	* Makefile.in: Regenerated.
+
+2003-02-11  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/natCharBufferImpl.cc
 	(nio_cast): Removed.
 	(nio_put_*): Removed.
