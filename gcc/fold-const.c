@@ -2814,10 +2814,16 @@ make_range (exp, pin_p, plow, phigh)
 	      || (n_high != 0 && TREE_OVERFLOW (n_high)))
 	    break;
 
-	  /* Check for a range which has wrapped around the maximum value
-	     thus making n_high < n_low.  Normalize any such range it.  */
+	  /* Check for an unsigned range which has wrapped around the maximum
+	     value thus making n_high < n_low, and normalize it.  */
 	  if (n_low && n_high && tree_int_cst_lt (n_high, n_low))
-	    low = n_high, high = n_low, in_p = ! in_p;
+	    {
+	      low = range_binop (PLUS_EXPR, type, n_high, 0,
+				 convert (type, integer_one_node), 0);
+	      high = range_binop (MINUS_EXPR, type, n_low, 0,
+				 convert (type, integer_one_node), 0);
+	      in_p = ! in_p;
+	    }
 	  else
 	    low = n_low, high = n_high;
 
