@@ -1,5 +1,7 @@
 2003-06-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* config/mips/mips.md (trap): Use break 0 when !TARGET_GAS.
+
 	* config/mips/iris6-o32.h (MIPS_ISA_DEFAULT): Remove.
 	(MIPS_CPU_STRING_DEFAULT): Redefine to mips2.
 
