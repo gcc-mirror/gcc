@@ -298,11 +298,6 @@ static struct dw_loc_descr_struct *build_cfa_loc
 static void def_cfa_1		 	PARAMS ((const char *,
 						 dw_cfa_location *));
 
-/* .debug_str support.  */
-static hashnode indirect_string_alloc	PARAMS ((hash_table *));
-static int output_indirect_string	PARAMS ((struct cpp_reader *,
-						 hashnode, const PTR));
-
 /* How to start an assembler comment.  */
 #ifndef ASM_COMMENT_START
 #define ASM_COMMENT_START ";#"
@@ -3045,6 +3040,12 @@ get_cfa_from_loc_descr (cfa, loc)
 
 /* And now, the support for symbolic debugging information.  */
 #ifdef DWARF2_DEBUGGING_INFO
+
+/* .debug_str support.  */
+static hashnode indirect_string_alloc	PARAMS ((hash_table *));
+static int output_indirect_string	PARAMS ((struct cpp_reader *,
+                                                 hashnode, const PTR));
+
 
 static void dwarf2out_init 		PARAMS ((const char *));
 static void dwarf2out_finish		PARAMS ((const char *));
