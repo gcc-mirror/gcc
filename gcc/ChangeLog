@@ -666,6 +666,13 @@ Fri Apr 13 21:40:28 2001  Loren J. Rittle  <ljrittle@acm.org>
 	* rtl.h (memory_address, force_reg, emit_queue, emit_move_insn,
 	gen_move_insn): Delete redundant declarations.
 
+2001-04-13  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+ 
+	* Makefile.in (CFLAGS, BOOT_CFLAGS): Partly revert 2000-10-27 patch.
+	(stage1_build): Instead pass down STAGE1_CFLAGS here. Pass down
+	MAKEINFO and MAKEINFOFLAGS too.
+	(stage4_build): Correctly order -B flags.
+
 2001-04-13  Alan Modra  <amodra@one.net.au>
 
 	* pa.c (hppa_init_pic_save): Set rtx_unchanging for
@@ -1039,7 +1046,7 @@ Tue Apr 10 17:45:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* function.c (purge_single_hard_subreg_set): Only check REGNO if
 	the subreg was a hard register. Pseudos are left as subregs.
 
-2001-04-29  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+2001-04-09  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* Makefile.in (LIB2FUNCS_STATIC_EXTRA): New macro.
 	(LIB2ADD_ST): New macro, pass it to mklibgcc.
