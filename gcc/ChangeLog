@@ -1,3 +1,10 @@
+2003-06-16  Aldy Hernandez  <aldyh@redhat.com>
+
+	* simplify-rtx.c (simplify_subreg): Do not over-extend vector
+	constants.
+
+	* testsuite/gcc.c-torture/execute/simd-4.c: New.
+
 2003-06-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config/ip2k/ip2k.h: Remove target-independent comments.
