@@ -1,6 +1,6 @@
 /* Process declarations and variables for C compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -3622,12 +3622,16 @@ reparse_absdcl_as_casts (decl, expr)
       type = groktypename (TREE_VALUE (CALL_DECLARATOR_PARMS (decl)));
       decl = TREE_OPERAND (decl, 0);
 
-      expr = digest_init (type, expr, (tree *) 0);
-      if (TREE_CODE (type) == ARRAY_TYPE && !COMPLETE_TYPE_P (type))
+      if (processing_template_decl)
+	expr = build_min (CONSTRUCTOR, type, decl, CONSTRUCTOR_ELTS (expr));
+      else
 	{
-	  int failure = complete_array_type (type, expr, 1);
-	  if (failure)
-	    my_friendly_abort (78);
+	  expr = digest_init (type, expr, (tree *) 0);
+	  if (TREE_CODE (type) == ARRAY_TYPE && !COMPLETE_TYPE_P (type))
+	    {
+	      int failure = complete_array_type (type, expr, 1);
+	      my_friendly_assert (!failure, 78);
+	    }
 	}
     }
 
