@@ -1,3 +1,8 @@
+2002-08-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (pushdecl_class_level): Honor requests to bind names to
+	OVERLOADs.
+
 2002-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl2.c (build_call_from_tree): Fix uninitialized variable.
