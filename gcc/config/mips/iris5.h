@@ -17,7 +17,9 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+#ifndef TARGET_DEFAULT
 #define	TARGET_DEFAULT	MASK_ABICALLS
+#endif
 #define ABICALLS_ASM_OP ".option pic2"
 
 #include "mips/iris4.h"
