@@ -5249,6 +5249,13 @@
   "nop")
 ; Default to misc type attr.
 
+(define_insn "return_indirect_internal"
+  [(return)
+   (use (match_operand:QI 0 "reg_operand" ""))]
+  "reload_completed"                           
+  "bu%#\\t%0"
+  [(set_attr "type" "jump")])
+
 (define_expand "prologue"
   [(const_int 1)]
   ""                           
