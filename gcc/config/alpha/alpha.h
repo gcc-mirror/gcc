@@ -2211,7 +2211,8 @@ do {									\
   {"aligned_memory_operand", {MEM}},			\
   {"unaligned_memory_operand", {MEM}},			\
   {"reg_or_unaligned_mem_operand", {SUBREG, REG, MEM}},	\
-  {"any_memory_operand", {MEM}},
+  {"any_memory_operand", {MEM}},			\
+  {"hard_fp_register_operand", {SUBREG, REG}},
 
 /* Tell collect that the object format is ECOFF.  */
 #define OBJECT_FORMAT_COFF

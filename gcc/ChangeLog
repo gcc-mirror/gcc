@@ -1,3 +1,14 @@
+Sat Apr  4 13:50:01 1998  Richard Henderson  <rth@cygnus.com>
+
+	* haifa-sched.c (split_block_insns): Don't supress insn splitting
+	on subsequent passes.
+
+	* alpha.c (hard_fp_register_operand): New function.
+	* alpha.h (PREDICATE_CODES): Add it.
+	* alpha.md (extendsidi2): Kill bogus f<-f cvtql+cvtlq case.  Add an
+	f<-m case and accompanying define_split.
+	(trapb): Use a unique unspec_volatile number.
+
 Sat Apr  4 13:32:08 1998  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in (alpha-*-linux-gnu*): Undo Feb 3 change brought in

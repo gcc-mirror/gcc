@@ -20,6 +20,23 @@
 ;; Boston, MA 02111-1307, USA.
 
 ;;- See file "rtl.def" for documentation on define_insn, match_*, et. al.
+
+;; Uses of UNSPEC in this file:
+;;
+;;	0	arg_home
+;;	1	cttz
+;;	2	insxh
+;;	3	mskxh
+;;	4	cvtlq
+;;	
+;; UNSPEC_VOLATILE:
+;;
+;;	0	imb
+;;	1	blockage
+;;	2	builtin_setjmp_receiver
+;;	3	builtin_longjmp
+;;	4	trapb
+
 
 ;; Processor type -- this attribute must exactly match the processor_type
 ;; enumeration in alpha.h.
@@ -343,27 +360,47 @@
 ; ??? The FPU communicates with memory and the integer register file
 ; via two fp store units.  We need a slot in the fst immediately, and
 ; a slot in LOW after the operand data is ready.  At which point the
-; data may be movedeither to the store queue or the integer register
+; data may be moved either to the store queue or the integer register
 ; file and the insn retired.
 
 
 ;; First define the arithmetic insns.  Note that the 32-bit forms also
 ;; sign-extend.
 
-;; Note that we can do sign extensions in both FP and integer registers.
-;; However, the result must be in the same type of register as the input.
-;; The register preferencing code can't handle this case very well, so, for
-;; now, don't let the FP case show up here for preferencing.  Also,
-;; sign-extends in FP registers take two instructions.
+;; Handle 32-64 bit extension from memory to a floating point register
+;; specially, since this ocurrs frequently in int->double conversions.
+;; This is done with a define_split after reload converting the plain
+;; sign-extension into a load+unspec, which of course results in lds+cvtlq.
+;;
+;; Note that while we must retain the =f case in the insn for reload's
+;; benefit, it should be eliminated after reload, so we should never emit
+;; code for that case.  But we don't reject the possibility.
+
 (define_insn "extendsidi2"
-  [(set (match_operand:DI 0 "register_operand" "=r,r,*f")
-	(sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,m,*f")))]
+  [(set (match_operand:DI 0 "register_operand" "=r,r,?f")
+	(sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,m,m")))]
   ""
   "@
    addl %1,$31,%0
    ldl %0,%1
-   cvtql %1,%0\;cvtlq %0,%0"
-  [(set_attr "type" "iadd,ild,fadd")])
+   lds %0,%1\;cvtlq %0,%0"
+  [(set_attr "type" "iadd,ild,fld")])
+
+;; Due to issues with CLASS_CANNOT_CHANGE_SIZE, we cannot use a subreg here.
+(define_split
+  [(set (match_operand:DI 0 "hard_fp_register_operand" "")
+	(sign_extend:DI (match_operand:SI 1 "memory_operand" "")))]
+  "reload_completed"
+  [(set (match_dup 2) (match_dup 1))
+   (set (match_dup 0) (unspec:DI [(match_dup 2)] 4))]
+  "operands[2] = gen_rtx_REG (SImode, REGNO (operands[0]));")
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=f")
+	(unspec:DI [(match_operand:SI 1 "register_operand" "f")] 4))]
+  ""
+  "cvtlq %1,%0"
+  [(set_attr "type" "fadd")])
 
 ;; Do addsi3 the way expand_binop would do if we didn't have one.  This
 ;; generates better code.  We have the anonymous addsi3 pattern below in
@@ -5122,7 +5159,7 @@
 ;; by alpha_reorg.
 
 (define_insn "trapb"
-  [(unspec_volatile [(const_int 0)] 3)]
+  [(unspec_volatile [(const_int 0)] 4)]
   ""
   "trapb"
   [(set_attr "type" "misc")])

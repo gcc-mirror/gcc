@@ -519,6 +519,18 @@ reg_or_fp0_operand (op, mode)
   return fp0_operand (op, mode) || register_operand (op, mode);
 }
 
+/* Return 1 if OP is a hard floating-point register.  */
+
+int
+hard_fp_register_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return ((GET_CODE (op) == REG && REGNO_REG_CLASS (REGNO (op)) == FLOAT_REGS)
+	  || (GET_CODE (op) == SUBREG
+	      && hard_fp_register_operand (SUBREG_REG (op), mode)));
+}
+
 /* Return 1 if OP is a register or a constant integer.  */
 
 
