@@ -1,5 +1,8 @@
 2002-10-24  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	PR other/3337
+	PR bootstrap/6763
+	PR bootstrap/8122
 	* testsuite/testsuite_hooks.cc (__set_testsuite_memlimit): Use
 	__typeof__ (r.rlim_cur), not rlim_t in declaration of limit.
 
