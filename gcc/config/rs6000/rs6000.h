@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -460,8 +460,8 @@ extern int rs6000_default_long_calls;
 #define CAN_DEBUG_WITHOUT_FP
 
 /* Target pragma.  */
-#define REGISTER_TARGET_PRAGMAS(PFILE) do { \
-  cpp_register_pragma (PFILE, 0, "longcall", rs6000_pragma_longcall); \
+#define REGISTER_TARGET_PRAGMAS() do {				\
+  c_register_pragma (0, "longcall", rs6000_pragma_longcall);	\
 } while (0)
 
 /* Target #defines.  */

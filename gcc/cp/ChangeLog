@@ -1,3 +1,9 @@
+2003-01-01  Neil Booth  <neil@daikokuya.co.uk>
+
+	* lex.c: Remove superfluous include of cpplib.h.
+	(CONSTRAINT): Define without conditions.
+	(init_cp_pragma): Use c_register_pragma.
+
 2002-12-31  Neil Booth  <neil@daikokuya.co.uk>
 
 	* .cvsignore: Remove.

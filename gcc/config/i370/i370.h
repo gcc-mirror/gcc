@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  System/370 version.
-   Copyright (C) 1989, 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
-   Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
+   2003 Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
    Modified for OS/390 LanguageEnvironment C by Dave Pitts (dpitts@cozx.com)
    Hacked for Linux-ELF/390 by Linas Vepstas (linas@linas.org)
@@ -150,8 +150,7 @@ extern int mvs_function_name_length;
 
 #ifdef TARGET_HLASM
 /* HLASM requires #pragma map.  */
-#define REGISTER_TARGET_PRAGMAS(PFILE) \
-  cpp_register_pragma (PFILE, 0, "map", i370_pr_map)
+#define REGISTER_TARGET_PRAGMAS() c_register_pragma (0, "map", i370_pr_map)
 #endif /* TARGET_HLASM */
 
 /* Define maximum length of page minus page escape overhead.  */

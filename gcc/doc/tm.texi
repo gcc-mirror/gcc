@@ -1,5 +1,5 @@
-@c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002
-@c Free Software Foundation, Inc.
+@c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,
+@c 2002, 2003 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -8785,11 +8785,10 @@ This macro is no longer supported.  You must use
 @findex REGISTER_TARGET_PRAGMAS
 @findex #pragma
 @findex pragma
-@item REGISTER_TARGET_PRAGMAS (@var{pfile})
+@item REGISTER_TARGET_PRAGMAS ()
 Define this macro if you want to implement any target-specific pragmas.
 If defined, it is a C expression which makes a series of calls to
-@code{cpp_register_pragma} for each pragma, with @var{pfile} passed as
-the first argument to to these functions.  The macro may also do any
+@code{c_register_pragma} for each pragma.  The macro may also do any
 setup required for the pragmas.
 
 The primary reason to define this macro is to provide compatibility with
@@ -8803,9 +8802,9 @@ Preprocessor macros that appear on pragma lines are not expanded.  All
 @samp{#pragma} directives that do not match any registered pragma are
 silently ignored, unless the user specifies @option{-Wunknown-pragmas}.
 
-@deftypefun void cpp_register_pragma (cpp_reader *@var{pfile}, const char *@var{space}, const char *@var{name}, void (*@var{callback}) (cpp_reader *))
+@deftypefun void c_register_pragma (const char *@var{space}, const char *@var{name}, void (*@var{callback}) (struct cpp_reader *))
 
-Each call to @code{cpp_register_pragma} establishes one pragma.  The
+Each call to @code{c_register_pragma} establishes one pragma.  The
 @var{callback} routine will be called when the preprocessor encounters a
 pragma of the form
 

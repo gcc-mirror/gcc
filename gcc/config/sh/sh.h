@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Hitachi / SuperH SH.
-   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
-   Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
+   2003 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -3165,10 +3165,10 @@ extern enum mdep_reorg_phase_e mdep_reorg_phase;
 #define TARGET_MEM_FUNCTIONS
 
 /* Handle Hitachi compiler's pragmas.  */
-#define REGISTER_TARGET_PRAGMAS(PFILE) do {				    \
-  cpp_register_pragma (PFILE, 0, "interrupt", sh_pr_interrupt);		    \
-  cpp_register_pragma (PFILE, 0, "trapa", sh_pr_trapa);			    \
-  cpp_register_pragma (PFILE, 0, "nosave_low_regs", sh_pr_nosave_low_regs); \
+#define REGISTER_TARGET_PRAGMAS() do {					\
+  c_register_pragma (0, "interrupt", sh_pr_interrupt);			\
+  c_register_pragma (0, "trapa", sh_pr_trapa);				\
+  c_register_pragma (0, "nosave_low_regs", sh_pr_nosave_low_regs);	\
 } while (0)
 
 /* Set when processing a function with pragma interrupt turned on.  */

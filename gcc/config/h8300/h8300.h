@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Hitachi H8/300 version generating coff
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -1257,12 +1257,12 @@ struct cum_arg
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
 
 /* H8300 specific pragmas.  */
-#define REGISTER_TARGET_PRAGMAS(PFILE)					\
-  do									\
-    {									\
-      cpp_register_pragma (PFILE, 0, "saveall", h8300_pr_saveall);	\
-      cpp_register_pragma (PFILE, 0, "interrupt", h8300_pr_interrupt);	\
-    }									\
+#define REGISTER_TARGET_PRAGMAS()				\
+  do								\
+    {								\
+      c_register_pragma (0, "saveall", h8300_pr_saveall);	\
+      c_register_pragma (0, "interrupt", h8300_pr_interrupt);	\
+    }								\
   while (0)
 
 #define FINAL_PRESCAN_INSN(insn, operand, nop)	\

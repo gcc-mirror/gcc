@@ -1,5 +1,5 @@
 /* Target definitions for Darwin (Mac OS X) systems.
-   Copyright (C) 1989, 1990, 1991, 1992, 1993, 2000, 2001, 2002
+   Copyright (C) 1989, 1990, 1991, 1992, 1993, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
@@ -793,12 +793,12 @@ enum machopic_addr_class {
 
 #define TARGET_TERMINATE_DW2_EH_FRAME_INFO false
 
-#define DARWIN_REGISTER_TARGET_PRAGMAS(PFILE)				\
-  do {									\
-    cpp_register_pragma (PFILE, 0, "mark", darwin_pragma_ignore);	\
-    cpp_register_pragma (PFILE, 0, "options", darwin_pragma_options);	\
-    cpp_register_pragma (PFILE, 0, "segment", darwin_pragma_ignore);	\
-    cpp_register_pragma (PFILE, 0, "unused", darwin_pragma_unused);	\
+#define DARWIN_REGISTER_TARGET_PRAGMAS()			\
+  do {								\
+    c_register_pragma (0, "mark", darwin_pragma_ignore);	\
+    c_register_pragma (0, "options", darwin_pragma_options);	\
+    c_register_pragma (0, "segment", darwin_pragma_ignore);	\
+    c_register_pragma (0, "unused", darwin_pragma_unused);	\
   } while (0)
 
 #undef ASM_APP_ON

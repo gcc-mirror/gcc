@@ -1,6 +1,6 @@
 /* Separate lexical analyzer for GNU C++.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -61,13 +61,7 @@ static void init_operators PARAMS ((void));
 static void copy_lang_type PARAMS ((tree));
 
 /* A constraint that can be tested at compile time.  */
-#ifdef __STDC__
 #define CONSTRAINT(name, expr) extern int constraint_##name [(expr) ? 1 : -1]
-#else
-#define CONSTRAINT(name, expr) extern int constraint_/**/name [(expr) ? 1 : -1]
-#endif
-
-#include "cpplib.h"
 
 /* Functions and data structures for #pragma interface.
 
@@ -403,18 +397,13 @@ init_reswords ()
 static void
 init_cp_pragma ()
 {
-  cpp_register_pragma (parse_in, 0, "vtable", handle_pragma_vtable);
-  cpp_register_pragma (parse_in, 0, "unit", handle_pragma_unit);
-
-  cpp_register_pragma (parse_in, 0, "interface", handle_pragma_interface);
-  cpp_register_pragma (parse_in, 0, "implementation",
-		       handle_pragma_implementation);
-
-  cpp_register_pragma (parse_in, "GCC", "interface", handle_pragma_interface);
-  cpp_register_pragma (parse_in, "GCC", "implementation",
-		       handle_pragma_implementation);
-  cpp_register_pragma (parse_in, "GCC", "java_exceptions",
-		       handle_pragma_java_exceptions);
+  c_register_pragma (0, "vtable", handle_pragma_vtable);
+  c_register_pragma (0, "unit", handle_pragma_unit);
+  c_register_pragma (0, "interface", handle_pragma_interface);
+  c_register_pragma (0, "implementation", handle_pragma_implementation);
+  c_register_pragma ("GCC", "interface", handle_pragma_interface);
+  c_register_pragma ("GCC", "implementation", handle_pragma_implementation);
+  c_register_pragma ("GCC", "java_exceptions", handle_pragma_java_exceptions);
 }
 
 /* Initialize the C++ front end.  This function is very sensitive to
