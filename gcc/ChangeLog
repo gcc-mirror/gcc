@@ -1,3 +1,8 @@
+2003-03-22  Svein E. Seldal  <Svein.Seldal@solidas.com>
+
+	* config/c4x/t-c4x (MULTILIB_MATCHES): Make gcc recognize a c33 as
+	a c30 instead of a c40 processor.
+	
 2003-03-21  Richard Henderson  <rth@redhat.com>
 
 	PR opt/2001
