@@ -9,7 +9,7 @@
 
 /* 
 
-@deftypefn int gettimeofday (struct timeval *@var{tp}, void *@var{tz})
+@deftypefn Supplemental int gettimeofday (struct timeval *@var{tp}, void *@var{tz})
 
 Writes the current time to @var{tp}.  This implementation requires
 that @var{tz} be NULL.  Returns 0 on success, -1 on failure.
