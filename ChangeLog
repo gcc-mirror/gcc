@@ -1,3 +1,8 @@
+Sat May 23 23:44:13 1998  Alexandre Oliva <oliva@dcc.unicamp.br>
+
+	* Makefile.in (boostrap2-lean, bootstrap3-lean,
+	bootstrap4-lean): new targets
+
 Mon May 11 23:55:56 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mpw-* Delete.  Not used.
