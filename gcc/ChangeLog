@@ -1,5 +1,10 @@
 2002-06-16  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.h (BIGGEST_FIELD_ALIGNMENT): Define instead
+	of ADJUST_FIELD_ALIGN if IN_TARGET_LIBS.
+
+2002-06-16  Richard Henderson  <rth@redhat.com>
+
 	PR opt/6722
 	* regclass.c (globalize_reg): Update regs_invalidated_by_call.
 
