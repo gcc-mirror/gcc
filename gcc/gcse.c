@@ -1947,9 +1947,6 @@ hash_scan_set (pat, insn, set_p)
 	     so we should not extend the lifetime of the pseudo.  */
 	  && ((note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) == 0
 	      || GET_CODE (XEXP (note, 0)) != MEM))
-  	{
-  	  /* An expression is not anticipatable if its operands are
-  	     modified before this insn or if this is not the only SET in
 	{
 	  /* An expression is not anticipatable if its operands are
 	     modified before this insn.  */

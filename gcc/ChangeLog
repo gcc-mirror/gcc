@@ -1,3 +1,7 @@
+2001-09-17  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+
+	* gcse.c (hash_scan_set): Fix merge glitch in last patch.
+
 2001-09-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* listing: Remove obsolete file.
