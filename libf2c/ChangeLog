@@ -1,3 +1,11 @@
+Wed Jul  7 15:58:16 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* libU77/date_.c (G77_date_y2kbug_0): G77_time_0 returns
+	longint, not integer, and G77_ctime_0 takes longint, not
+	integer, argument.
+
+	* libU77/Version.c: Bump version.
+
 Mon Jun 28 10:22:30 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* libI77/rsne.c: Fix NAMELIST bug by applying 19990627
