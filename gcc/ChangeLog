@@ -1,3 +1,10 @@
+2002-05-31  Matthew Woodcraft  <mattheww@chiark.greenend.org.uk>
+
+	* gcc.c (cpp_unique_options): Remove "-d" options.
+	(cpp_debug_options): New spec string.
+	(default_compilers): Use it.
+	* objc/lang-specs.h: Likewise.
+
 2002-05-31  Nathanael Nerode  <neroden@twcny.rr.com>
 
 	* gcc/Makefile.in: Replace HOST_PREFIX, HOST_PREFIX_1 with 

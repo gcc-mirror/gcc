@@ -1,3 +1,7 @@
+2002-05-31  Matthew Woodcraft  <mattheww@chiark.greenend.org.uk>
+
+	* lang-specs.h: Use cpp_debug_options.
+
 2002-05-28  Zack Weinberg  <zack@codesourcery.com>
 
 	* bld.c, com.c, expr.c, target.c: Include real.h.

@@ -39,7 +39,8 @@ Boston, MA 02111-1307, USA.  */
        %{!Wno-deprecated:-D__DEPRECATED}\
        %{!fno-exceptions:-D__EXCEPTIONS}\
        -D__GXX_ABI_VERSION=100\
-       %{ansi:-D__STRICT_ANSI__ -trigraphs -$} %(cpp_options)}\
+       %{ansi:-D__STRICT_ANSI__ -trigraphs -$} %(cpp_options)\
+       %(cpp_debug_options)}\
      %{!E:%{!M:%{!MM:\
        %{save-temps:cc1plus -E \
 		    %{!no-gcc:-D__GNUG__=%v1}\

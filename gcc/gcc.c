@@ -694,8 +694,12 @@ static const char *cpp_unique_options =
 /* This contains cpp options which are common with cc1_options and are passed
    only when preprocessing only to avoid duplication.  */
 static const char *cpp_options =
-"%(cpp_unique_options) %{std*} %{d*} %{W*&pedantic*} %{w} %{m*} %{f*}\
+"%(cpp_unique_options) %{std*} %{W*&pedantic*} %{w} %{m*} %{f*}\
  %{O*} %{undef}";
+
+/* This contains cpp options which are not passed when the preprocessor
+   output will be used by another program.  */
+static const char *cpp_debug_options = "%{d*}";
 
 /* NB: This is shared amongst all front-ends.  */
 static const char *cc1_options =
@@ -832,7 +836,8 @@ static const struct compiler default_compilers[] =
   {"@c",
    /* cc1 has an integrated ISO C preprocessor.  We should invoke the
       external preprocessor if -save-temps is given.  */
-     "%{E|M|MM:%(trad_capable_cpp) %{ansi:-std=c89} %(cpp_options)}\
+     "%{E|M|MM:%(trad_capable_cpp) %{ansi:-std=c89} %(cpp_options)\
+	  %(cpp_debug_options)}\
       %{!E:%{!M:%{!MM:\
           %{traditional|ftraditional:\
 %eGNU C no longer supports -traditional without -E}\
@@ -848,7 +853,8 @@ static const struct compiler default_compilers[] =
   {".h", "@c-header", 0},
   {"@c-header",
    "%{!E:%ecompilation of header file requested} \
-    %(trad_capable_cpp) %{ansi:-std=c89} %(cpp_options)", 0},
+    %(trad_capable_cpp) %{ansi:-std=c89} %(cpp_options) %(cpp_debug_options)",
+   0},
   {".i", "@cpp-output", 0},
   {"@cpp-output",
    "%{!M:%{!MM:%{!E:cc1 -fpreprocessed %i %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}", 0},
@@ -858,6 +864,7 @@ static const struct compiler default_compilers[] =
   {".S", "@assembler-with-cpp", 0},
   {"@assembler-with-cpp",
    "%(trad_capable_cpp) -lang-asm %(cpp_options)\
+      %{E|M|MM:%(cpp_debug_options)}\
       %{!M:%{!MM:%{!E:%{!S:-o %{|!pipe:%g.s} |\n\
        as %(asm_debug) %(asm_options) %{!pipe:%g.s} %A }}}}", 0},
 #include "specs.h"
@@ -1369,6 +1376,7 @@ static struct spec_list static_specs[] =
   INIT_STATIC_SPEC ("invoke_as",		&invoke_as),
   INIT_STATIC_SPEC ("cpp",			&cpp_spec),
   INIT_STATIC_SPEC ("cpp_options",		&cpp_options),
+  INIT_STATIC_SPEC ("cpp_debug_options",	&cpp_debug_options),
   INIT_STATIC_SPEC ("cpp_unique_options",	&cpp_unique_options),
   INIT_STATIC_SPEC ("trad_capable_cpp",		&trad_capable_cpp),
   INIT_STATIC_SPEC ("cc1",			&cc1_spec),
