@@ -1,0 +1,34 @@
+STMP_FIXPROTO =
+OTHER_FIXINCLUDES_DIRS=${srcdir}
+RANLIB = :
+RANLIB_TEST = false
+OLDCC = cl
+MAKE = make
+SHELL = sh
+SYMLINK = cp
+INSTALL = $(srcdir)/install.sh -c
+.SUFFIXES: .obj
+.c.obj:
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+.adb.obj:
+	$(CC) -c $(ALL_ADAFLAGS) $<
+.ads.obj:
+	$(CC) -c $(ALL_ADAFLAGS) $<
+exeext = .exe
+objext = .obj
+
+CC = gcc
+CLIB = 
+LDFLAGS = 
+
+ld.o: $(srcdir)/config/winnt/ld.c
+	$(CC) -I. -I$(srcdir) -I$(srcdir)/config -c $(srcdir)/config/winnt/ld.c
+ 
+ld.exe: ld.o
+	$(CC) -o ld.exe ld.o
+
+oldnames.o: $(srcdir)/config/winnt/oldnames.c
+	$(CC) -I. -I$(srcdir) -I$(srcdir)/config -c $(srcdir)/config/winnt/oldnames.c
+
+spawnv.o: $(srcdir)/config/winnt/spawnv.c
+	$(CC) -I. -I$(srcdir) -I$(srcdir)/config -c $(srcdir)/config/winnt/spawnv.c
