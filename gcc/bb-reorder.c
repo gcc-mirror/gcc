@@ -695,6 +695,10 @@ fixup_reorder_chain ()
 	  if (RBI (bb)->next == e_fall->dest)
 	    continue;
 
+	  /* An fallthru to exit block.  */
+	  if (!RBI (bb)->next && e_fall->dest == EXIT_BLOCK_PTR)
+	    continue;
+
 	  /* We need a new jump insn.  If the block has only one outgoing
 	     edge, then we can stuff the new jump insn in directly.  */
 	  if (bb->succ->succ_next == NULL)

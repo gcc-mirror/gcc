@@ -1,3 +1,8 @@
+Tue Sep 11 17:55:54 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* bb-reorder.c (fixup_reorder_chain): Fallthru edge to exit block
+	is OK.
+
 2001-09-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (split_specs_attrs): Allow for empty attributes with
