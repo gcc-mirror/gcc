@@ -1,5 +1,11 @@
 2003-10-15  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/zip/InflaterInputStream.java
+	(InflaterInputStream): Renamed infl to inf and bufsize to size,
+	added description to exception, check for inf == null and size < 0.
+
+2003-10-15  Michael Koch  <konqueror@gmx.de>
+
 	* java/text/AttributedCharacterIterator.java,
 	java/text/CharacterIterator.java: Reformated.
 
