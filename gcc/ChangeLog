@@ -1,3 +1,8 @@
+2001-02-28  Richard Henderson  <rth@redhat.com>
+
+	* caller-save.c (save_call_clobbered_regs): Fix typo in
+	comparison last change.
+
 Wed Feb 28 19:31:42 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (pentium4_cost): New.
