@@ -261,7 +261,7 @@ public class SelectorImpl extends AbstractSelector
                 if (unhandledWakeup)
                   {
                     unhandledWakeup = false;
-                    selectThread.interrupted ();
+                    Thread.interrupted ();
                   }
                 selectThread = null;
               }
