@@ -1,3 +1,13 @@
+2003-08-29  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	* Makefile.in (restage1): Pass BOOT_CFLAGS to recursive make.
+	(restage2): Likewise.
+	(restage3): Likewise.
+	(restage4): Likewise.
+	(restageprofile): Likewise.
+	(restagefeedback): Likewise.
+	(bubblestrap): Likewise.
+
 2003-08-29  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc: Narrow unsupported target match to avoid clobbering

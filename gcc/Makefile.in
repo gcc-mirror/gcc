@@ -3601,19 +3601,19 @@ restage1: unstage1
 	$(MAKE) stage1_build
 
 restage2: unstage2
-	$(MAKE) LANGUAGES="$(LANGUAGES)" stage2_build
+	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" stage2_build
 
 restage3: unstage3
-	$(MAKE) LANGUAGES="$(LANGUAGES)" stage3_build
+	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" stage3_build
 
 restage4: unstage4
-	$(MAKE) LANGUAGES="$(LANGUAGES)" stage4_build
+	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" stage4_build
 
 restageprofile: unstageprofile
-	$(MAKE) LANGUAGES="$(LANGUAGES)" stageprofile_build
+	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" stageprofile_build
 
 restagefeedback: unstagefeedback
-	$(MAKE) LANGUAGES="$(LANGUAGES)" stagefeedback_build
+	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" stagefeedback_build
 
 # Bubble up a bugfix through all the stages.  Primarily useful for fixing
 # bugs that cause the compiler to crash while building stage 2.
@@ -3626,14 +3626,14 @@ bubblestrap:
 	  fi; \
 	fi
 	if test -f stage1_copy; then $(MAKE) unstage1; fi
-	$(MAKE) LANGUAGES="$(LANGUAGES)" stage1_copy
+	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" stage1_copy
 	if test -f stage2_copy; then $(MAKE) unstage2; fi
-	$(MAKE) LANGUAGES="$(LANGUAGES)" stage2_copy
+	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" stage2_copy
 	if test -f stage3_copy; then $(MAKE) unstage3; fi
-	$(MAKE) LANGUAGES="$(LANGUAGES)" stage3_build
+	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" stage3_build
 	if test -f stage4_copy; then \
 	  $(MAKE) stage3_copy; $(MAKE) unstage4; \
-	  $(MAKE) LANGUAGES="$(LANGUAGES)" stage4_build || exit 1; \
+	  $(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" stage4_build || exit 1; \
 	fi
 
 quickstrap:
