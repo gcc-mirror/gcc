@@ -1,3 +1,7 @@
+2000-10-18  Chip Salzenberg  <chip@valinux.com>
+
+        * libio/libio.h (_IO_USER_LOCK): Define.
+
 2000-10-18   Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* libsupc++/Makefile.am (exception): Change exception.cc to
