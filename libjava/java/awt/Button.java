@@ -1,116 +1,277 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Button.java -- AWT button widget
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
-   This file is part of libjava.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libjava License.  Please consult the file "LIBJAVA_LICENSE" for
-details.  */
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
+
 
 package java.awt;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.peer.ButtonPeer;
 import java.awt.peer.ComponentPeer;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import java.util.EventListener;
 
 /**
- * @author Tom Tromey <tromey@cygnus.com>
- * @date July 30, 2000
+  * This class provides a button widget for the AWT. 
+  *
+  * @author Aaron M. Renn (arenn@urbanophile.com)
+  * @author Tom Tromey <tromey@cygnus.com>
+  */
+public class Button extends Component implements java.io.Serializable
+{
+
+/*
+ * Static Variables
  */
 
-public class Button extends Component
+// FIXME: Need readObject/writeObject for serialization
+
+// Serialization version constant
+private static final long serialVersionUID = -8774683716313001058L;
+
+/*************************************************************************/
+
+/*
+ * Instance Variables
+ */
+
+/**
+  * @serial The action command name for this button.
+  */
+private String actionCommand;
+
+/**
+  * @serial The label for this button.
+  */
+private String label;
+
+// List of ActionListeners for this class.
+private transient ActionListener action_listeners;
+
+/*************************************************************************/
+
+/*
+ * Constructors
+ */
+
+/**
+  * Initializes a new instance of <code>Button</code> with no label.
+  */
+public
+Button()
 {
-  public Button ()
-  {
-    this (null);
-  }
-
-  public Button (String label)
-  {
-    this.label = label;
-  }
-
-  public void addActionListener (ActionListener l)
-  {
-    actionListener = AWTEventMulticaster.add (actionListener, l);
-  }
-
-  public void addNotify ()
-  {
-    if (peer == null)
-      peer = getToolkit ().createButton (this);
-    super.addNotify();
-  }
-
-  public String getActionCommand ()
-  {
-    return actionCommand;
-  }
-
-  public String getLabel ()
-  {
-    return label;
-  }
-
-  protected String paramString ()
-  {
-    return "Button[" + label + "]";
-  }
-
-  void dispatchEventImpl(AWTEvent e)
-  {
-      super.dispatchEventImpl(e);
-      
-      if (e.id <= ActionEvent.ACTION_LAST 
-	  && e.id >= ActionEvent.ACTION_FIRST
-	  && (actionListener != null 
-	      || (eventMask & AWTEvent.ACTION_EVENT_MASK) != 0))
-	  processEvent(e);
-  }
-
-  protected void processActionEvent (ActionEvent e)
-  {
-    if (actionListener != null)
-      actionListener.actionPerformed (e);
-  }
-
-  protected void processEvent (AWTEvent e)
-  {
-    if (e instanceof ActionEvent)
-      processActionEvent ((ActionEvent) e);
-    else
-      super.processEvent (e);
-  }
-
-  public void removeActionListener (ActionListener l)
-  {
-    actionListener = AWTEventMulticaster.remove (actionListener, l);
-  }
-
-  public EventListener[] getListeners(Class listenerType)
-  {
-    if (listenerType == ActionListener.class)
-      return getListenersImpl(listenerType, actionListener);
-    return super.getListeners(listenerType);
-  }
-
-  public void setActionCommand (String command)
-  {
-    this.actionCommand = (command == null) ? label : command;
-  }
-
-  public void setLabel (String label)
-  {
-    this.label = label;
-    if (peer != null)
-      {
-	ButtonPeer bp = (ButtonPeer) peer;
-	bp.setLabel (label);
-      }
-  }
-
-  String label;
-  String actionCommand;
-
-  transient ActionListener actionListener;
+  this(null);
 }
+
+/*************************************************************************/
+
+/**
+  * Initializes a new instance of <code>Button</code> with the specified
+  * label.  The action command name is also initialized to this value.
+  *
+  * @param label The label to display on the button.
+  */
+public
+Button(String label)
+{
+  this.label = label;
+  actionCommand = label;
+}
+
+/*************************************************************************/
+
+/*
+ * Instance Variables
+ */
+
+/**
+  * Returns the label for this button.
+  *
+  * @return The label for this button.
+  */
+public String
+getLabel()
+{
+  return(label);
+}
+
+/*************************************************************************/
+
+/**
+  * Sets the label for this button to the specified value.
+  *
+  * @param label The new label for this button.
+  */
+public synchronized void
+setLabel(String label)
+{
+  this.label = label;
+  if (peer != null)
+    {
+      ButtonPeer bp = (ButtonPeer) peer;
+      bp.setLabel (label);
+    }
+}
+
+/*************************************************************************/
+
+/**
+  * Returns the action command name for this button.
+  *
+  * @return The action command name for this button.
+  */
+public String
+getActionCommand()
+{
+  return(actionCommand);
+}
+
+/*************************************************************************/
+
+/**
+  * Sets the action command name for this button to the specified value.
+  *
+  * @param actionCommand The new action command name.
+  */
+public void
+setActionCommand(String actionCommand)
+{
+  this.actionCommand = actionCommand == null ? label : actionCommand;
+}
+
+/*************************************************************************/
+
+/**
+  * Adds a new entry to the list of listeners that will receive
+  * action events from this button.
+  *
+  * @param listener The listener to add.
+  */
+public synchronized void
+addActionListener(ActionListener listener)
+{
+  action_listeners = AWTEventMulticaster.add(action_listeners, listener);
+}
+
+/*************************************************************************/
+
+/**
+  * Removes the specified listener from the list of listeners that will
+  * receive action events from this button.
+  * 
+  * @param listener The listener to remove.
+  */
+public synchronized void
+removeActionListener(ActionListener listener)
+{
+  action_listeners = AWTEventMulticaster.remove(action_listeners, listener);
+}
+
+public EventListener[]
+getListeners(Class listenerType)
+{
+  if (listenerType == ActionListener.class)
+    return getListenersImpl(listenerType, action_listeners);
+  return super.getListeners(listenerType);
+}
+
+/*************************************************************************/
+
+/**
+  * Notifies this button that it should create its native peer object.
+  */
+public void
+addNotify()
+{
+  if (peer == null)
+    peer = getToolkit ().createButton (this);
+  super.addNotify();
+}
+
+/*************************************************************************/
+
+/**
+  * Processes an event for this button.  If the specified event is an
+  * instance of <code>ActionEvent</code>, then the
+  * <code>processActionEvent()</code> method is called to dispatch it
+  * to any registered listeners.  Otherwise, the superclass method
+  * will be invoked.  Note that this method will not be called at all
+  * unless <code>ActionEvent</code>'s are enabled.  This will be done
+  * implicitly if any listeners are added.
+  *
+  * @param event The event to process.
+  */
+protected void
+processEvent(AWTEvent event)
+{
+  if (event instanceof ActionEvent)
+    processActionEvent((ActionEvent)event);
+  else
+    super.processEvent(event);
+}
+
+/*************************************************************************/
+
+/**
+  * This method dispatches an action event for this button to any
+  * registered listeners.
+  *
+  * @param event The event to process.
+  */
+protected void
+processActionEvent(ActionEvent event)
+{
+  if (action_listeners != null)
+    action_listeners.actionPerformed(event);
+}
+
+void
+dispatchEventImpl(AWTEvent e)
+{
+  super.dispatchEventImpl(e);
+
+  if (e.id <= ActionEvent.ACTION_LAST 
+      && e.id >= ActionEvent.ACTION_FIRST
+      && (action_listeners != null 
+	  || (eventMask & AWTEvent.ACTION_EVENT_MASK) != 0))
+    processEvent(e);
+}
+
+/*************************************************************************/
+
+/**
+  * Returns a debugging string for this button.
+  *
+  * @return A debugging string for this button.
+  */
+protected String
+paramString()
+{
+  return(getClass().getName() + "(label=" + getLabel() + ",actionCommand=" +
+         getActionCommand() + ")");
+}
+
+} // class Button 
+
