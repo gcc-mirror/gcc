@@ -394,7 +394,8 @@ copy_decl_for_inlining (decl, from_fn, to_fn)
   DECL_ABSTRACT_ORIGIN (copy) = DECL_ORIGIN (decl);
 
   /* The new variable/label has no RTL, yet.  */
-  SET_DECL_RTL (copy, NULL_RTX);
+  if (!TREE_STATIC (copy) && !DECL_EXTERNAL (copy))
+    SET_DECL_RTL (copy, NULL_RTX);
 
   /* These args would always appear unused, if not for this.  */
   TREE_USED (copy) = 1;
@@ -405,10 +406,10 @@ copy_decl_for_inlining (decl, from_fn, to_fn)
     ;
   else if (DECL_CONTEXT (decl) != from_fn)
     /* Things that weren't in the scope of the function we're inlining
-       from aren't in the scope we're inlining too, either.  */
+       from aren't in the scope we're inlining to, either.  */
     ;
   else if (TREE_STATIC (decl))
-    /* Function-scoped static variables should say in the original
+    /* Function-scoped static variables should stay in the original
        function.  */
     ;
   else

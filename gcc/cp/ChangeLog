@@ -16,6 +16,32 @@
 	
 2003-01-02  Jason Merrill  <jason@redhat.com>
 
+	* call.c (build_conditional_expr): Stabilize lvalues properly.
+	* cvt.c (ocp_convert): Don't build NOP_EXPRs of class type.
+	* tree.c (lvalue_p_1): Don't allow sloppy NOP_EXPRs as lvalues.
+	Don't allow CALL_EXPR or VA_ARG_EXPR, either.
+
+	* call.c (convert_like_real): Call decl_constant_value for an
+	IDENTITY_CONV even if there are no more conversions.
+
+	* cvt.c (build_up_reference): Don't push unnamed temps.
+
+	* decl2.c (do_namespace_alias): Namespace aliases are DECL_EXTERNAL.
+
+	* dump.c (cp_dump_tree): Don't try to dump class-specific fields
+	for a backend struct.
+
+	* except.c (wrap_cleanups_r, build_throw): Make
+	MUST_NOT_THROW_EXPRs void.
+	* init.c (expand_default_init): Update to handle MUST_NOT_THROW_EXPR.
+
+	* init.c (build_vec_delete_1): Pre-evaluate the base address.
+
+	* init.c (get_temp_regvar): Simplify logic.
+
+	* tree.c (cp_copy_res_decl_for_inlining): Only do debug tweaks if
+	our replacement is a decl.
+
 	* decl.c (cp_make_fname_decl): Push the decls inside the
 	outermost scope.
 

@@ -1,5 +1,10 @@
 2003-01-02  Jason Merrill  <jason@redhat.com>
 
+	* fold-const.c (fold) [COND_EXPR]: Avoid NOP_EXPRs better.
+
+	* integrate.c (copy_decl_for_inlining): Don't clear the rtl for
+	static/external decls.
+        
 	* c-common.c (finish_fname_decls): Put the DECL_STMTs inside the
 	outermost scope.
 	* c-decl.c (c_make_fname_decl): Push the decls there, too.

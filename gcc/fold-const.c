@@ -7002,7 +7002,11 @@ fold (expr)
 
 	      /* Avoid adding NOP_EXPRs in case this is an lvalue.  */
 	      if (TYPE_MAIN_VARIANT (comp_type) == TYPE_MAIN_VARIANT (type))
-		comp_type = type;
+		{
+		  comp_type = type;
+		  comp_op0 = arg1;
+		  comp_op1 = arg2;
+		}
 
 	      switch (comp_code)
 		{

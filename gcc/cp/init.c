@@ -1206,13 +1206,16 @@ expand_default_init (binfo, true_exp, exp, init, flags)
       else
 	init = ocp_convert (type, init, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
 
-      if (TREE_CODE (init) == TRY_CATCH_EXPR)
-	/* We need to protect the initialization of a catch parm
-	   with a call to terminate(), which shows up as a TRY_CATCH_EXPR
+      if (TREE_CODE (init) == MUST_NOT_THROW_EXPR)
+	/* We need to protect the initialization of a catch parm with a
+	   call to terminate(), which shows up as a MUST_NOT_THROW_EXPR
 	   around the TARGET_EXPR for the copy constructor.  See
-	   expand_start_catch_block.  */
-	TREE_OPERAND (init, 0) = build (INIT_EXPR, TREE_TYPE (exp), exp,
-					TREE_OPERAND (init, 0));
+	   initialize_handler_parm.  */
+	{
+	  TREE_OPERAND (init, 0) = build (INIT_EXPR, TREE_TYPE (exp), exp,
+					  TREE_OPERAND (init, 0));
+	  TREE_TYPE (init) = void_type_node;
+	}
       else
 	init = build (INIT_EXPR, TREE_TYPE (exp), exp, init);
       TREE_SIDE_EFFECTS (init) = 1;
@@ -2652,10 +2655,14 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, use_global_delete)
   if (controller)
     {
       TREE_OPERAND (controller, 1) = body;
-      return controller;
+      body = controller;
     }
-  else
-    return cp_convert (void_type_node, body);
+
+  if (TREE_CODE (base) == SAVE_EXPR)
+    /* Pre-evaluate the SAVE_EXPR outside of the BIND_EXPR.  */
+    body = build (COMPOUND_EXPR, void_type_node, base, body);
+
+  return cp_convert (void_type_node, body);
 }
 
 /* Create an unnamed variable of the indicated TYPE.  */ 
@@ -2693,7 +2700,7 @@ get_temp_regvar (type, init)
   decl = create_temporary_var (type);
   if (building_stmt_tree ())
     add_decl_stmt (decl);
-  if (!building_stmt_tree ())
+  else
     SET_DECL_RTL (decl, assign_temp (type, 2, 0, 1));
   finish_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
 
