@@ -34,6 +34,9 @@
 	* config/sparc/sparc.c (eligible_for_epilogue_delay): Accept
 	floating point instructions for epilogue delay.
 
+	* config/sparc/sparc.h (ASM_ARCH64_SPEC): Pass -no-undeclared-regs
+	to gas if it supports .register pseudo.
+
 2000-03-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* function.c (free_temps_for_rtl_expr): Don't free slots

@@ -310,7 +310,11 @@ Unrecognized value in TARGET_CPU_DEFAULT.
    This is what GAS uses.  Add %(asm_arch) to ASM_SPEC to enable.  */
 
 #define ASM_ARCH32_SPEC "-32"
+#ifdef HAVE_AS_REGISTER_PSEUDO_OP
+#define ASM_ARCH64_SPEC "-64 -no-undeclared-regs"
+#else
 #define ASM_ARCH64_SPEC "-64"
+#endif
 #define ASM_ARCH_DEFAULT_SPEC \
 (DEFAULT_ARCH32_P ? ASM_ARCH32_SPEC : ASM_ARCH64_SPEC)
 
