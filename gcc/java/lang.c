@@ -138,6 +138,9 @@ int flag_jni = 0;
    file.  */
 int flag_newer = 1;
 
+/* When non zero, generate checks for references to NULL.  */
+int flag_check_references = 0;
+
 /* The encoding of the source file.  */
 const char *current_encoding = NULL;
 
@@ -164,7 +167,8 @@ lang_f_options[] =
   {"use-divide-subroutine", &flag_use_divide_subroutine, 1},
   {"use-boehm-gc", &flag_use_boehm_gc, 1},
   {"hash-synchronization", &flag_hash_synchronization, 1},
-  {"jni", &flag_jni, 1}
+  {"jni", &flag_jni, 1},
+  {"check-references", &flag_check_references, 1},
 };
 
 static struct string_option

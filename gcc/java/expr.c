@@ -710,36 +710,46 @@ build_java_array_length_access (node)
   length = java_array_type_length (type);
   if (length >= 0)
     return build_int_2 (length, 0);
-
-  return fold (build1 (INDIRECT_REF,
-		       int_type_node,
+  return fold (build1 (INDIRECT_REF, int_type_node,
 		       fold (build (PLUS_EXPR, ptr_type_node,
-				    node, 
+				    java_check_reference (node, 1), 
 				    JAVA_ARRAY_LENGTH_OFFSET(node)))));
 }
 
-/* Optionally checks an array against the NULL pointer, eventually throwing a
-   NullPointerException. It could replace signal handling, but tied to NULL.
-   ARG1: the pointer to check, ARG2: the expression to use if
-   the pointer is non-null and ARG3 the type that should be returned.   */
+/* Optionally checks a reference against the NULL pointer.  ARG1: the
+   expr, ARG2: we should check the reference.  Don't generate extra
+   checks if we're not generating code.  */
+
+tree 
+java_check_reference (expr, check)
+     tree expr;
+     int check;
+{
+  if (!flag_syntax_only && check)
+    {
+      tree cond;
+      expr = save_expr (expr);
+      cond = build (COND_EXPR, void_type_node,
+		    build (EQ_EXPR, boolean_type_node, expr, null_pointer_node),
+		    build (CALL_EXPR, void_type_node, 
+			   build_address_of (soft_nullpointer_node),
+			   NULL_TREE, NULL_TREE),
+		    empty_stmt_node);
+      expr = build (COMPOUND_EXPR, TREE_TYPE (expr), cond, expr);
+    }
+
+  return expr;
+}
+
+/* Reference an object: just like an INDIRECT_REF, but with checking.  */
 
 tree
-build_java_arraynull_check (node, expr, type)
-    tree node ATTRIBUTE_UNUSED;
-    tree expr;
-    tree type ATTRIBUTE_UNUSED;
+build_java_indirect_ref (type, expr, check)
+     tree type;
+     tree expr;
+     int check;
 {
-#if 0
-  static int java_array_access_throws_null_exception = 0;
-  node = ???;
-  if (java_array_access_throws_null_exception)
-      return (build (COND_EXPR, 
-		     type,
-		     build (EQ_EXPR, int_type_node, node, null_pointer_node),
-		     build_java_athrow (node), expr ));
-  else
-#endif
-      return (expr);
+  return build1 (INDIRECT_REF, type, java_check_reference (expr, check));
 }
 
 static tree
@@ -792,15 +802,15 @@ build_java_arrayaccess (array, type, index)
 	  TREE_SIDE_EFFECTS( throw ) = 1;
 	}
     }
-
+  
   node = build1 (INDIRECT_REF, type, 
 		 fold (build (PLUS_EXPR, ptr_type_node, 
-			      array, 
+			      java_check_reference (array, flag_check_references), 
 			      (throw ? build (COMPOUND_EXPR, int_type_node, 
 					      throw, arith )
 			             : arith))));
-
-  return (fold (build_java_arraynull_check (array, node, type)));
+  
+  return node;
 }
 
 /* Makes sure that INDEXED_TYPE is appropriate. If not, make it from
@@ -1008,7 +1018,7 @@ expand_java_array_length ()
   tree array  = pop_value (ptr_type_node);
   tree length = build_java_array_length_access (array);
 
-  push_value (build_java_arraynull_check (array, length, int_type_node));
+  push_value (length);
 }
 
 /* Emit code for the call to _Jv_Monitor{Enter,Exit}. CALL can be
@@ -1118,7 +1128,8 @@ build_get_class (value)
   return build (COMPONENT_REF, class_ptr_type,
 		build1 (INDIRECT_REF, dtable_type,
 			build (COMPONENT_REF, dtable_ptr_type,
-			       build1 (INDIRECT_REF, object_type_node, value),
+			       build_java_indirect_ref (object_type_node, value,
+							flag_check_references),
 			       vtable_field)),
 		class_field);
 }
@@ -1485,8 +1496,8 @@ build_field_ref (self_value, self_class, name)
 #ifdef JAVA_USE_HANDLES
       self_value = unhand_expr (self_value);
 #endif
-      self_value = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (self_value)),
-			   self_value);
+      self_value = build_java_indirect_ref (TREE_TYPE (TREE_TYPE (self_value)),
+					    self_value, flag_check_references);
       return fold (build (COMPONENT_REF, TREE_TYPE (field_decl),
 			  self_value, field_decl));
     }
@@ -1780,7 +1791,8 @@ invoke_build_dtable (is_invoke_interface, arg_list)
   
   if (dtable_ident == NULL_TREE)
     dtable_ident = get_identifier ("vtable");
-  dtable = build1 (INDIRECT_REF, object_type_node, objectref );
+  dtable = build_java_indirect_ref (object_type_node, objectref, 
+				    flag_check_references);
   dtable = build (COMPONENT_REF, dtable_ptr_type, dtable,
 		  lookup_field (&object_type_node, dtable_ident));
 
@@ -1829,7 +1841,7 @@ build_invokeinterface (dtable, method)
       ggc_add_tree_root (&class_ident, 1);
     }
 
-  dtable = build1 (INDIRECT_REF, dtable_type, dtable);
+  dtable = build_java_indirect_ref (dtable_type, dtable, flag_check_references);
   dtable = build (COMPONENT_REF, class_ptr_type, dtable,
 		  lookup_field (&dtable_type, class_ident));
 
@@ -1875,7 +1887,7 @@ expand_invoke (opcode, method_ref_index, nargs)
   const char *self_name
     = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (self_type)));
   tree call, func, method, arg_list, method_type;
-  tree cond = NULL_TREE;
+  tree check = NULL_TREE;
 
   if (! CLASS_LOADED_P (self_type))
     {
@@ -1957,7 +1969,7 @@ expand_invoke (opcode, method_ref_index, nargs)
 	 the new `self' expression once.  */
       tree save_arg = save_expr (TREE_VALUE (arg_list));
       TREE_VALUE (arg_list) = save_arg;
-      cond = build (EQ_EXPR, boolean_type_node, save_arg, null_pointer_node);
+      check = java_check_reference (save_arg, 1);
       func = build_known_method_ref (method, method_type, self_type,
 				     method_signature, arg_list);
     }
@@ -1974,20 +1986,9 @@ expand_invoke (opcode, method_ref_index, nargs)
   call = build (CALL_EXPR, TREE_TYPE (method_type), func, arg_list, NULL_TREE);
   TREE_SIDE_EFFECTS (call) = 1;
 
-  if (cond != NULL_TREE)
+  if (check != NULL_TREE)
     {
-      /* We have to make the `then' branch a compound expression to
-	 make the types turn out right.  This seems bizarre.  */
-      call = build (COND_EXPR, TREE_TYPE (call), cond,
-		    build (COMPOUND_EXPR, TREE_TYPE (call),
-			   build (CALL_EXPR, void_type_node,
-				  build_address_of (soft_nullpointer_node),
-				  NULL_TREE, NULL_TREE),
-			   (FLOAT_TYPE_P (TREE_TYPE (call))
-			    ? build_real (TREE_TYPE (call), dconst0)
-			    : build1 (CONVERT_EXPR, TREE_TYPE (call),
-				      integer_zero_node))),
-		    call);
+      call = build (COMPOUND_EXPR, TREE_TYPE (call), check, call);
       TREE_SIDE_EFFECTS (call) = 1;
     }
 
@@ -2428,8 +2429,9 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	    init = init_decl;
 	  }
 	expand_assignment (build (COMPONENT_REF, TREE_TYPE (data_fld),
-				  build1 (INDIRECT_REF, array_type, 
-					  array_decl), data_fld), init, 0, 0);
+				  build_java_indirect_ref (array_type, 
+					  array_decl, flag_check_references), 
+				  data_fld), init, 0, 0);
 	return tmp;
       }
     case BLOCK:
