@@ -633,6 +633,10 @@ in the following sections.
 -mbranch-expensive  -mbranch-cheap @gol
 -msplit  -mno-split  -munix-asm  -mdec-asm}
 
+@emph{Xstormy16 Options}
+@gccoptlist{
+-msim}
+
 @item Code Generation Options
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
 @gccoptlist{
@@ -5109,6 +5113,7 @@ that macro, which enables you to change the defaults.
 * CRIS Options::
 * MMIX Options::
 * PDP-11 Options::
+* Xstormy16 Options::
 @end menu
 
 @node M680x0 Options
@@ -9809,6 +9814,18 @@ Use Unix assembler syntax.  This is the default when configured for
 @opindex mdec-asm
 Use DEC assembler syntax.  This is the default when configured for any
 PDP-11 target other than @samp{pdp11-*-bsd}.
+@end table
+
+@node Xstormy16 Options
+@subsection Xstormy16 Options
+@cindex Xstormy16 Options
+
+These options are defined for Xstormy16:
+
+@table @gcctabopt
+@item -msim
+@opindex msim
+Choose startup files and linker script suitable for the simulator.
 @end table
 
 @node Code Gen Options
