@@ -246,7 +246,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_FEATURES, [
     # this is the suspicious part
     CXXFLAGS=''
   fi
-  if test x"$ac_fdsections" = x"yes" && x"$enable_debug" = x"no"; then
+  if test x"$ac_fdsections" = x"yes" && test x"$enable_debug" = x"no"; then
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
   fi
   AC_MSG_RESULT($ac_fdsections)
@@ -314,7 +314,7 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
   fi
 
   # Set linker optimization flags.
-  if test x"$ac_cv_prog_gnu_ld" = x"yes" && x"$enable_debug" = x"no"; then
+  if test x"$ac_cv_prog_gnu_ld" = x"yes" && test x"$enable_debug" = x"no"; then
     OPT_LDFLAGS='-Wl,-O1'
   fi
 
@@ -1337,9 +1337,9 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
   AM_CONDITIONAL(GLIBCPP_NEED_LIBIO, test "$need_libio" = yes)
   AM_CONDITIONAL(GLIBCPP_NEED_WLIBIO, test "$need_wlibio" = yes)
   if test "$need_libio" = yes || test "$need_wlibio" = yes; then
-	libio_la=../libio/libio.la
+    libio_la=../libio/libio.la
   else
-	libio_la=
+    libio_la=
   fi
   AC_SUBST(libio_la)
 ])
@@ -1467,7 +1467,7 @@ AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
   AC_MSG_CHECKING([for lldiv_t declaration])
   AC_CACHE_VAL(glibcpp_lldiv_t_use, [
   AC_TRY_COMPILE([#include <bits/os_defines.h>
-		  #include <stdlib.h>], 
+                  #include <stdlib.h>], 
                    [ lldiv_t mydivt;], 
                    [glibcpp_lldiv_t_use=yes], [glibcpp_lldiv_t_use=no])
   ])
@@ -1486,7 +1486,7 @@ AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
   if test x"$enable_long_long" = xyes; then
     AC_DEFINE(_GLIBCPP_USE_LONG_LONG)
   fi
-	
+
   # Reset CFLAGS
   CFLAGS="$ac_save_CFLAGS"
 ])
