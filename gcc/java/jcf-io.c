@@ -30,6 +30,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "toplev.h"
 #include "java-tree.h"
 
+#include "zlib.h"
+
 /* DOS brain-damage */
 #ifndef O_BINARY
 #define O_BINARY 0 /* MS-DOS brain-damage */
@@ -149,12 +151,17 @@ DEFUN(open_in_zip, (jcf, zipfile, zipmember, is_system),
   ZipDirectory *zipd;
   int i, len;
   ZipFile *zipf = opendir_in_zip (zipfile, is_system);
+  z_stream d_stream; /* decompression stream */
 
   if (zipf == NULL)
     return -2;
 
   if (!zipmember)
     return 0;
+
+  d_stream.zalloc = (alloc_func) 0;
+  d_stream.zfree = (free_func) 0;
+  d_stream.opaque = (voidpf) 0;
 
   len = strlen (zipmember);
   
@@ -165,17 +172,45 @@ DEFUN(open_in_zip, (jcf, zipfile, zipmember, is_system),
 	  strncmp (ZIPDIR_FILENAME (zipd), zipmember, len) == 0)
 	{
 	  JCF_ZERO (jcf);
-	  jcf->buffer = ALLOC (zipd->size);
-	  jcf->buffer_end = jcf->buffer + zipd->size;
-	  jcf->read_ptr = jcf->buffer;
-	  jcf->read_end = jcf->buffer_end;
+
 	  jcf->filbuf = jcf_unexpected_eof;
 	  jcf->filename = xstrdup (zipfile);
 	  jcf->classname = xstrdup (zipmember);
 	  jcf->zipd = (void *)zipd;
-	  if (lseek (zipf->fd, zipd->filestart, 0) < 0
-	      || read (zipf->fd, jcf->buffer, zipd->size) != zipd->size)
-	    return -2;
+
+	  if (zipd->compression_method == Z_NO_COMPRESSION)
+	    {
+	      jcf->buffer = ALLOC (zipd->size);
+	      jcf->buffer_end = jcf->buffer + zipd->size;
+	      jcf->read_ptr = jcf->buffer;
+	      jcf->read_end = jcf->buffer_end;
+	      if (lseek (zipf->fd, zipd->filestart, 0) < 0
+		  || read (zipf->fd, jcf->buffer, zipd->size) != zipd->size)
+	        return -2;
+	    }
+	  else
+	    {
+	      char *buffer;
+	      jcf->buffer = ALLOC (zipd->uncompressed_size);
+	      d_stream.next_out = jcf->buffer;
+	      d_stream.avail_out = zipd->uncompressed_size;
+	      jcf->buffer_end = jcf->buffer + zipd->uncompressed_size;
+	      jcf->read_ptr = jcf->buffer;
+	      jcf->read_end = jcf->buffer_end;
+	      buffer = ALLOC (zipd->size);
+	      d_stream.next_in = buffer;
+	      d_stream.avail_in = zipd->size;
+	      if (lseek (zipf->fd, zipd->filestart, 0) < 0
+		  || read (zipf->fd, buffer, zipd->size) != zipd->size)
+		return -2;
+	      /* Handle NO_HEADER using undocumented zlib feature.
+                 This is a very common hack.  */
+	      inflateInit2 (&d_stream, -MAX_WBITS);
+	      inflate (&d_stream, Z_NO_FLUSH);
+	      inflateEnd (&d_stream);
+	      FREE (buffer);
+	    }
+
 	  return 0;
 	}
     }
