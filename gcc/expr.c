@@ -8379,6 +8379,7 @@ defer_cleanups_to (old_cleanups)
   while (cleanups_this_call != old_cleanups)
     {
       (*interim_eh_hook) (TREE_VALUE (cleanups_this_call));
+      last = cleanups_this_call;
       cleanups_this_call = TREE_CHAIN (cleanups_this_call);
     }      
 
