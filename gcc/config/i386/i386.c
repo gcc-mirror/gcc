@@ -9048,7 +9048,7 @@ ix86_memory_move_cost (mode, class, in)
 	/* Compute number of 32bit moves needed.  TFmode is moved as XFmode.  */
 	if (mode == TFmode)
 	  mode = XFmode;
-	return ((in ? ix86_cost->int_load[1] : ix86_cost->int_store[1])
+	return ((in ? ix86_cost->int_load[2] : ix86_cost->int_store[2])
 		* (int) GET_MODE_SIZE (mode) / 4);
     }
 }
