@@ -88,7 +88,6 @@ echo 'man9dir = $(mandir)/man9'
 
 echo 'infodir = $(prefix)/info'
 echo 'includedir = $(prefix)/include'
-echo 'gxx_includedir = $(includedir)/g++'
 echo 'docdir = $(datadir)/doc'
 echo ''
 echo 'SHELL = /bin/sh'
