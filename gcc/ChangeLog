@@ -1,3 +1,7 @@
+2002-01-07  Jason Merrill  <jason@redhat.com>
+
+	* unwind-dw2.c (execute_cfa_program): Use < again.
+
 2002-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* predict.c (combine_predictions_for_insn): Avoid division by zero.
