@@ -152,7 +152,9 @@ while [ $# != 0 ]; do
   echo "Finding header files in $1:"
   cd ${INPUT}
   cd $1
-  files=`find . -name '*.h' -type f -print`
+# Check .h files which are symlinks as well as those which are files.
+# A link to a header file will not be processed by anything but this.
+  files=`find . -name '*.h' \( -type f -o -type l \) -print`
   echo 'Checking header files:'
 # Note that BSD43_* are used on recent MIPS systems.
   for file in $files; do
@@ -680,7 +682,7 @@ fi
 # many other systems have similar text but correct versions of the file.
 # To ensure only Sun's is fixed, we grep for a likely unique string.
 file=memory.h
-if egrep '/\*	@\(#\)memory.h 1.4 88/08/19 SMI; from S5R2 1.2	\*/' $file > /dev/null; then
+if egrep '/\*	@\(#\)memory\.h 1\.[2-4] 8./../.. SMI; from S5R2 1\.2	\*/' $file > /dev/null; then
   if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
     cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
     chmod +w ${LIB}/$file 2>/dev/null
