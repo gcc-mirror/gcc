@@ -30,6 +30,7 @@
 # It accepts a few command line arguments.  For example:
 # -o: re-reads logs that have been mailed already (.sum.sent)
 # -t: prevents logs from being renamed
+# -p: prepend specified file (or list of files: -p "a b") to the report
 # -i: append specified file (or list of files: -i "a b") to the report
 # -m: specify the e-mail address to send notes to.  An appropriate default
 #     should be selected from the log files.
@@ -54,6 +55,7 @@ while true; do
     case "$1" in 
       -o) filesuffix=.sent; move=false; : ${mailto=nobody}; shift;;
       -t) move=false; shift;;
+      -p) prepend_logs=${prepend_logs+"$prepend_logs "}"$2"; shift 2;;
       -i) append_logs=${append_logs+"$append_logs "}"$2"; shift 2;;
       -m) mailto=$2; forcemail=true; shift 2;;
       -f) unset mailto; forcemail=true; shift;;
@@ -83,7 +85,8 @@ if $forcemail || $anychange; then :; else mailto=nobody; fi &&
 $AWK '
 BEGIN {
   lang="";
-  print "cat <<EOF |";
+  print "cat <<\\EOF |";
+'${prepend_logs+"  system(\"cat $prepend_logs\"); "}'
 }
 $1 ~ /\/configure$/ { $1 = "configure flags:"; configflags = $0 }
 /^Running target / { print ""; print; }
@@ -93,13 +96,13 @@ $1 ~ /\/configure$/ { $1 = "configure flags:"; configflags = $0 }
   if (lang == "") lang = " "$2" "; else lang = " ";
 }
 /\/ss(\/|c? )/ {
-  program="ss"; comment="";
+  program="ss";
   if (lang == " ") address="nobody";
   else if (lang == " gcc ") address="gcc2@cygnus.com";
   else address="g++@cygnus.com";
 }
 /\/egcsh?((-[^ ]*)?\/|c?[ -])/ {
-  address="egcs@cygnus.com";
+  address="egcs@cygnus.com"; # testsuite-results@gcc.ml.org";
   if (version == 0) version="egcs";
 }
 /--disable-haifa/ { prefix="haifa-disabled "; }
@@ -114,6 +117,8 @@ $2 == "version" { save = $0; $1 = ""; $2 = ""; version = $0; gsub(/^ */, "", ver
 /^$/ && blanks>0 { print; --blanks; }
 END { if (lang != "") {
   print "";
+  print "Compiler version: " prefix version lang;
+  print "Platform: " host;
   print configflags;
   '${BOOT_CFLAGS+'print "BOOT_CFLAGS='"${BOOT_CFLAGS}"'";'}'
   if (boot_cflags != 0) print boot_cflags;
