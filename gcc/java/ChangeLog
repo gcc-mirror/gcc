@@ -1,5 +1,7 @@
 2001-10-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* gjavah.c (jni_print_char): Fix thinko in last change.
+
 	* gjavah.c (jni_print_char, decode_signature_piece): Use
 	safe-ctype macros and/or fold extra calls into fewer ones.
 	* lex.c (java_read_unicode, java_lex): Likewise.

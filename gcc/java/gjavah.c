@@ -287,7 +287,7 @@ jni_print_char (stream, ch)
     fputs ("_3", stream);
   else if (ch == '/')
     fputs ("_", stream);
-  else if (ISXDIGIT (ch))
+  else if (ISALNUM (ch))
     fputc (ch, stream);
   else
     {
