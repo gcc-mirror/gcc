@@ -241,6 +241,7 @@ i386_pe_mark_dllexport (tree decl)
   const char *oldname;
   char  *newname;
   rtx rtlname;
+  rtx symref;
   tree idp;
 
   rtlname = XEXP (DECL_RTL (decl), 0);
@@ -271,8 +272,9 @@ i386_pe_mark_dllexport (tree decl)
      identical.  */
   idp = get_identifier (newname);
 
-  XEXP (DECL_RTL (decl), 0) =
-    gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (idp));
+  symref = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (idp));
+  SYMBOL_REF_DECL (symref) = decl;
+  XEXP (DECL_RTL (decl), 0) = symref;
 }
 
 /* Mark a DECL as being dllimport'd.  */
@@ -284,6 +286,7 @@ i386_pe_mark_dllimport (tree decl)
   char  *newname;
   tree idp;
   rtx rtlname, newrtl;
+  rtx symref;
 
   rtlname = XEXP (DECL_RTL (decl), 0);
   if (GET_CODE (rtlname) == SYMBOL_REF)
@@ -320,9 +323,9 @@ i386_pe_mark_dllimport (tree decl)
      identical.  */
   idp = get_identifier (newname);
 
-  newrtl = gen_rtx_MEM (Pmode,
-			gen_rtx_SYMBOL_REF (Pmode,
-					    IDENTIFIER_POINTER (idp)));
+  symref = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (idp));
+  SYMBOL_REF_DECL (symref) = decl;
+  newrtl = gen_rtx_MEM (Pmode,symref);
   XEXP (DECL_RTL (decl), 0) = newrtl;
 
   /* Can't treat a pointer to this as a constant address */
@@ -450,7 +453,13 @@ i386_pe_encode_section_info (tree decl, rtx rtl, int first)
 
       /* Remove DLL_IMPORT_PREFIX.  */
       tree idp = get_identifier (oldname + strlen (DLL_IMPORT_PREFIX));
-      rtx newrtl = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (idp));
+      rtx symref = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (idp));
+      SYMBOL_REF_DECL (symref) = decl;
+      XEXP (DECL_RTL (decl), 0) = symref;
+      DECL_NON_ADDR_CONST_P (decl) = 0;
+
+      /* We previously set TREE_PUBLIC and DECL_EXTERNAL.
+	 We leave these alone for now.  */
 
       if (DECL_INITIAL (decl) || !DECL_EXTERNAL (decl))
 	warning ("%J'%D' defined locally after being "
@@ -458,13 +467,6 @@ i386_pe_encode_section_info (tree decl, rtx rtl, int first)
       else
 	warning ("%J'%D' redeclared without dllimport attribute "
 		 "after being referenced with dllimport linkage", decl, decl);
-
-      XEXP (DECL_RTL (decl), 0) = newrtl;
-
-      DECL_NON_ADDR_CONST_P (decl) = 0;
-
-      /* We previously set TREE_PUBLIC and DECL_EXTERNAL.
-	 We leave these alone for now.  */
     }
 }
 
