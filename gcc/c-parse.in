@@ -3259,7 +3259,6 @@ _yylex ()
       /* These tokens should not survive translation phase 4.  */
     case CPP_HASH:
     case CPP_PASTE:
-    case CPP_BACKSLASH:
       error ("syntax error before '%s' token", NAME(last_token));
       goto retry;
 

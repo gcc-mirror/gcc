@@ -361,10 +361,6 @@ read_token (t)
       error ("syntax error before '#' token");
       goto retry;
 
-    case CPP_BACKSLASH:
-      error ("syntax error before '\\' token");
-      goto retry;
-
     default:
       abort ();
     }

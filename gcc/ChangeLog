@@ -1,3 +1,11 @@
+2000-11-01  Neil Booth  <neilb@earthling.net>
+
+	* c-parse.in (_yylex): Remove CPP_BACKSLASH case.
+	* cp/spew.c: Similarly.
+	* cpplex.c (_cpp_lex_token): Backslashes are now CPP_OTHER.
+	* cppmacro.c (stringify_arg): Similarly.
+	* cpplib.h (CPP_BACKSLASH): Delete.
+
 2000-10-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_strstr): New function.

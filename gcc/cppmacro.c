@@ -386,7 +386,7 @@ stringify_arg (pfile, arg)
 	dest = cpp_spell_token (pfile, token, dest);
       total_len = dest - start;
 
-      if (token->type == CPP_BACKSLASH)
+      if (token->type == CPP_OTHER && token->val.aux == '\\')
 	backslash_count++;
       else
 	backslash_count = 0;
