@@ -1,3 +1,18 @@
+2002-11-11  Jesse Rosenstock  <jmr@ugcs.caltech.edu>
+
+	* gnu/java/nio/charset/ISO_8859_1.java,
+	gnu/java/nio/charset/Provider.java,
+	gnu/java/nio/charset/US_ASCII.java,
+	gnu/java/nio/charset/UTF_16.java,
+	gnu/java/nio/charset/UTF_16BE.java,
+	gnu/java/nio/charset/UTF_16Decoder.java,
+	gnu/java/nio/charset/UTF_16Encoder.java,
+	gnu/java/nio/charset/UTF_16LE.java,
+	gnu/java/nio/charset/UTF_8.java: New files.
+	* Makefile.am ():
+	Added new files.
+	* Makefile.in: Regenerated.
+	
 2002-11-11  Michael Koch <konqueror@gmx.de>
 
 	* java/nio/charset/CharacterCodingException.java:
