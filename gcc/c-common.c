@@ -4136,6 +4136,17 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 		    BUILT_IN_COS, BUILT_IN_NORMAL, "cos");
   builtin_function ("__builtin_cosl", ldouble_ftype_ldouble,
 		    BUILT_IN_COS, BUILT_IN_NORMAL, "cosl");
+  /* We declare these without argument so that the initial declaration
+     for these identifiers is a builtin.  That allows us to redeclare
+     them later with argument without worrying about the explicit
+     declarations in stdio.h being taken as the initial declaration.
+     Also, save the _DECL for these so we can use them later.  */
+  built_in_decls[BUILT_IN_FPUTC] =
+    builtin_function ("__builtin_fputc", int_ftype_any,
+		      BUILT_IN_FPUTC, BUILT_IN_NORMAL, "fputc");
+  built_in_decls[BUILT_IN_FPUTS] =
+    builtin_function ("__builtin_fputs", int_ftype_any,
+		      BUILT_IN_FPUTS, BUILT_IN_NORMAL, "fputs");
 
   if (! no_builtins)
     {
@@ -4178,6 +4189,15 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
       builtin_function ("cos", double_ftype_double, BUILT_IN_COS,
 			BUILT_IN_NORMAL, NULL_PTR);
       builtin_function ("cosl", ldouble_ftype_ldouble, BUILT_IN_COS,
+			BUILT_IN_NORMAL, NULL_PTR);
+      /* We declare these without argument so that the initial
+         declaration for these identifiers is a builtin.  That allows
+         us to redeclare them later with argument without worrying
+         about the explicit declarations in stdio.h being taken as the
+         initial declaration.  */
+      builtin_function ("fputc", int_ftype_any, BUILT_IN_FPUTC,
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("fputs", int_ftype_any, BUILT_IN_FPUTS,
 			BUILT_IN_NORMAL, NULL_PTR);
 
       /* Declare these functions volatile
