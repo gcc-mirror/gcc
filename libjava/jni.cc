@@ -75,15 +75,22 @@ extern struct JNIInvokeInterface _Jv_JNI_InvokeFunctions;
 // 16.
 #define FRAME_SIZE 32
 
+// Mark value indicating this is an overflow frame.
+#define MARK_NONE    0
+// Mark value indicating this is a user frame.
+#define MARK_USER    1
+// Mark value indicating this is a system frame.
+#define MARK_SYSTEM  2
+
 // This structure is used to keep track of local references.
 struct _Jv_JNI_LocalFrame
 {
   // This is true if this frame object represents a pushed frame (eg
   // from PushLocalFrame).
-  int marker :  1;
+  int marker :  2;
 
   // Number of elements in frame.
-  int size   : 31;
+  int size   : 30;
 
   // Next frame in chain.
   _Jv_JNI_LocalFrame *next;
@@ -169,7 +176,7 @@ _Jv_JNI_DeleteLocalRef (JNIEnv *env, jobject obj)
 	}
 
       // Don't go past a marked frame.
-      JvAssert (! frame->marker);
+      JvAssert (frame->marker == MARK_NONE);
     }
 
   JvAssert (0);
@@ -194,7 +201,7 @@ _Jv_JNI_EnsureLocalCapacity (JNIEnv *env, jint size)
       return JNI_ERR;
     }
 
-  frame->marker = true;
+  frame->marker = MARK_NONE;
   frame->size = size;
   memset (&frame->vec[0], 0, size * sizeof (jobject));
   frame->next = env->locals;
@@ -211,7 +218,7 @@ _Jv_JNI_PushLocalFrame (JNIEnv *env, jint size)
     return r;
 
   // The new frame is on top.
-  env->locals->marker = true;
+  env->locals->marker = MARK_USER;
 
   return 0;
 }
@@ -248,7 +255,7 @@ _Jv_JNI_NewLocalRef (JNIEnv *env, jobject obj)
 }
 
 static jobject
-_Jv_JNI_PopLocalFrame (JNIEnv *env, jobject result)
+_Jv_JNI_PopLocalFrame (JNIEnv *env, jobject result, int stop)
 {
   _Jv_JNI_LocalFrame *rf = env->locals;
 
@@ -260,7 +267,7 @@ _Jv_JNI_PopLocalFrame (JNIEnv *env, jobject result)
 	  unmark_for_gc (rf->vec[i]);
 
       // If the frame we just freed is the marker frame, we are done.
-      done = rf->marker;
+      done = (rf->marker == stop);
 
       _Jv_JNI_LocalFrame *n = rf->next;
       // When N==NULL, we've reached the stack-allocated frame, and we
@@ -277,6 +284,20 @@ _Jv_JNI_PopLocalFrame (JNIEnv *env, jobject result)
     }
 
   return result == NULL ? NULL : _Jv_JNI_NewLocalRef (env, result);
+}
+
+static jobject
+_Jv_JNI_PopLocalFrame (JNIEnv *env, jobject result)
+{
+  return _Jv_JNI_PopLocalFrame (env, result, MARK_USER);
+}
+
+// Pop a `system' frame from the stack.  This is `extern "C"' as it is
+// used by the compiler.
+extern "C" void
+_Jv_JNI_PopSystemFrame (JNIEnv *env)
+{
+  _Jv_JNI_PopLocalFrame (env, NULL, MARK_SYSTEM);
 }
 
 // This function is used from other template functions.  It wraps the
@@ -1598,6 +1619,69 @@ mangled_name (jclass klass, _Jv_Utf8Const *func_name,
   buf[here] = '\0';
 }
 
+// Return the current thread's JNIEnv; if one does not exist, create
+// it.  Also create a new system frame for use.  This is `extern "C"'
+// because the compiler calls it.
+extern "C" JNIEnv *
+_Jv_GetJNIEnvNewFrame (jclass klass)
+{
+  JNIEnv *env = _Jv_GetCurrentJNIEnv ();
+  if (env == NULL)
+    {
+      env = (JNIEnv *) _Jv_MallocUnchecked (sizeof (JNIEnv));
+      env->p = &_Jv_JNIFunctions;
+      env->ex = NULL;
+      env->klass = klass;
+      env->locals = NULL;
+
+      _Jv_SetCurrentJNIEnv (env);
+    }
+
+  _Jv_JNI_LocalFrame *frame
+    = (_Jv_JNI_LocalFrame *) _Jv_MallocUnchecked (sizeof (_Jv_JNI_LocalFrame)
+						  + (FRAME_SIZE
+						     * sizeof (jobject)));
+
+  frame->marker = MARK_SYSTEM;
+  frame->size = FRAME_SIZE;
+  frame->next = env->locals;
+  env->locals = frame;
+
+  for (int i = 0; i < frame->size; ++i)
+    frame->vec[i] = NULL;
+
+  return env;
+}
+
+// Return the function which implements a particular JNI method.  If
+// we can't find the function, we throw the appropriate exception.
+// This is `extern "C"' because the compiler uses it.
+extern "C" void *
+_Jv_LookupJNIMethod (jclass klass, _Jv_Utf8Const *name,
+		     _Jv_Utf8Const *signature)
+{
+  char buf[10 + 6 * (name->length + signature->length)];
+  int long_start;
+  void *function;
+
+  mangled_name (klass, name, signature, buf, &long_start);
+  char c = buf[long_start];
+  buf[long_start] = '\0';
+  function = _Jv_FindSymbolInExecutable (buf);
+  if (function == NULL)
+    {
+      buf[long_start] = c;
+      function = _Jv_FindSymbolInExecutable (buf);
+      if (function == NULL)
+	{
+	  jstring str = JvNewStringUTF (name->data);
+	  JvThrow (new java::lang::AbstractMethodError (str));
+	}
+    }
+
+  return function;
+}
+
 // This function is the stub which is used to turn an ordinary (CNI)
 // method call into a JNI call.
 void
@@ -1605,21 +1689,7 @@ _Jv_JNIMethod::call (ffi_cif *, void *ret, ffi_raw *args, void *__this)
 {
   _Jv_JNIMethod* _this = (_Jv_JNIMethod *) __this;
 
-  JNIEnv env;
-  _Jv_JNI_LocalFrame *frame
-    = (_Jv_JNI_LocalFrame *) alloca (sizeof (_Jv_JNI_LocalFrame)
-				     + FRAME_SIZE * sizeof (jobject));
-
-  env.p = &_Jv_JNIFunctions;
-  env.ex = NULL;
-  env.klass = _this->defining_class;
-  env.locals = frame;
-
-  frame->marker = true;
-  frame->next = NULL;
-  frame->size = FRAME_SIZE;
-  for (int i = 0; i < frame->size; ++i)
-    frame->vec[i] = NULL;
+  JNIEnv *env = _Jv_GetJNIEnvNewFrame (_this->defining_class);
 
   // FIXME: we should mark every reference parameter as a local.  For
   // now we assume a conservative GC, and we assume that the
@@ -1629,33 +1699,16 @@ _Jv_JNIMethod::call (ffi_cif *, void *ret, ffi_raw *args, void *__this)
   // a value we don't cache that fact -- we might subsequently load a
   // library which finds the function in question.
   if (_this->function == NULL)
-    {
-      char buf[10 + 6 * (_this->self->name->length
-			 + _this->self->signature->length)];
-      int long_start;
-      mangled_name (_this->defining_class, _this->self->name,
-		    _this->self->signature, buf, &long_start);
-      char c = buf[long_start];
-      buf[long_start] = '\0';
-      _this->function = _Jv_FindSymbolInExecutable (buf);
-      if (_this->function == NULL)
-	{
-	  buf[long_start] = c;
-	  _this->function = _Jv_FindSymbolInExecutable (buf);
-	  if (_this->function == NULL)
-	    {
-	      jstring str = JvNewStringUTF (_this->self->name->data);
-	      JvThrow (new java::lang::AbstractMethodError (str));
-	    }
-	}
-    }
+    _this->function = _Jv_LookupJNIMethod (_this->defining_class,
+					   _this->self->name,
+					   _this->self->signature);
 
   JvAssert (_this->args_raw_size % sizeof (ffi_raw) == 0);
   ffi_raw real_args[2 + _this->args_raw_size / sizeof (ffi_raw)];
   int offset = 0;
 
   // First argument is always the environment pointer.
-  real_args[offset++].ptr = &env;
+  real_args[offset++].ptr = env;
 
   // For a static method, we pass in the Class.  For non-static
   // methods, the `this' argument is already handled.
@@ -1669,14 +1722,10 @@ _Jv_JNIMethod::call (ffi_cif *, void *ret, ffi_raw *args, void *__this)
   ffi_raw_call (&_this->jni_cif, (void (*) (...)) _this->function,
 		ret, real_args);
 
-  do
-    {
-      _Jv_JNI_PopLocalFrame (&env, NULL);
-    }
-  while (env.locals != frame);
+  _Jv_JNI_PopSystemFrame (env);
 
-  if (env.ex)
-    JvThrow (env.ex);
+  if (env->ex)
+    JvThrow (env->ex);
 }
 
 #endif /* INTERPRETER */
