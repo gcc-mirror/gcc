@@ -3189,7 +3189,7 @@ assign_parms (tree fndecl)
 
 #ifdef ARGS_GROW_DOWNWARD
   current_function_arg_offset_rtx
-    = (stack_args_size.var == 0 ? GEN_INT (-all.stack_args_size.constant)
+    = (all.stack_args_size.var == 0 ? GEN_INT (-all.stack_args_size.constant)
        : expand_expr (size_diffop (all.stack_args_size.var,
 				   size_int (-all.stack_args_size.constant)),
 		      NULL_RTX, VOIDmode, 0));
