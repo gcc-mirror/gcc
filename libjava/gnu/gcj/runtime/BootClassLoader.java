@@ -55,13 +55,6 @@ public final class BootClassLoader extends URLClassLoader
 		  addURL(new URL("file", "", -1, dirname + files[i]));
 	      }
 	  }
-
-	String w3clib = (libdir + File.separator
-			 + System.mapLibraryName ("w3c-gcj"));
-	addURL(new URL("gcjlib", "", -1, w3clib));
-	String saxlib = (libdir + File.separator
-			 + System.mapLibraryName ("sax-gcj"));
-	addURL(new URL("gcjlib", "", -1, saxlib));
       }
     catch (java.net.MalformedURLException x)
       {

@@ -1,3 +1,20 @@
+2005-03-24  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/gcj/runtime/BootClassLoader.java (BootClassLoader): Don't
+	add sax and w3c libraries.
+	* Makefile.am (libgij_la_LIBADD): Added libsax-gcj.la and
+	libw3c-gcj.la.
+	* external/w3c_dom/Makefile.in: Rebuilt.
+	* external/w3c_dom/Makefile.am (libw3c_gcj_la_GCJFLAGS): Include
+	AM_GCJFLAGS.
+	(libw3c_gcj_la_LDFLAGS): New variable.
+	(noinst_LTLIBRARIES): Renamed.
+	* external/sax/Makefile.in: Rebuilt.
+	* external/sax/Makefile.am (libsax_gcj_la_GCJFLAGS): Include
+	AM_GCJFLAGS.
+	(libsax_gcj_la_LDFLAGS): New variable.
+	(noinst_LTLIBRARIES): Renamed.
+
 2005-03-23  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
