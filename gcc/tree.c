@@ -2692,7 +2692,7 @@ build1 (code, type, node)
      tree type;
      tree node;
 {
-  register struct obstack *obstack = current_obstack;
+  register struct obstack *obstack = expression_obstack;
   register int i, length;
   register tree_node_kind kind;
   register tree t;
@@ -2704,7 +2704,6 @@ build1 (code, type, node)
     kind = e_kind;
 #endif
 
-  obstack = expression_obstack;
   length = sizeof (struct tree_exp);
 
   t = (tree) obstack_alloc (obstack, length);
