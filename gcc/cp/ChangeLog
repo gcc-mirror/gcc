@@ -1,5 +1,12 @@
 2004-08-19  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (build_shared_int_cst): Remove.
+	* tree.c (shared_int_cache): Remove.
+	(build_shared_int_cst): Remove.
+	* class.c (finish_struct_1): Use build_int_cst.
+
+2004-08-19  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* decl.c (finish_enum): Do not copy value node early, copy
 	later.
 	* lex.c (cxx_init): Force null_node to be unique.

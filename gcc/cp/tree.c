@@ -1366,25 +1366,6 @@ build_min_non_dep (enum tree_code code, tree non_dep, ...)
   return t;
 }
 
-/* Returns an INTEGER_CST (of type `int') corresponding to I.
-   Multiple calls with the same value of I may or may not yield the
-   same node; therefore, callers should never modify the node
-   returned.  */
-
-static GTY(()) tree shared_int_cache[256];
-
-tree
-build_shared_int_cst (int i)
-{
-  if (i >= 256)
-    return build_int_cst (NULL_TREE, i, 0);
-
-  if (!shared_int_cache[i])
-    shared_int_cache[i] = build_int_cst (NULL_TREE, i, 0);
-
-  return shared_int_cache[i];
-}
-
 tree
 get_type_decl (tree t)
 {

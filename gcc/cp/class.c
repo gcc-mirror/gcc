@@ -5085,7 +5085,7 @@ finish_struct_1 (tree t)
 	       thunk base function.  */
 	    DECL_VINDEX (fndecl) = NULL_TREE;
 	  else if (TREE_CODE (DECL_VINDEX (fndecl)) != INTEGER_CST)
-	    DECL_VINDEX (fndecl) = build_shared_int_cst (vindex);
+	    DECL_VINDEX (fndecl) = build_int_cst (NULL_TREE, vindex, 0);
 	}
     }
 

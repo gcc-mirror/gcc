@@ -4246,7 +4246,6 @@ extern tree cp_build_type_attribute_variant     (tree, tree);
 extern tree cp_build_qualified_type_real        (tree, int, tsubst_flags_t);
 #define cp_build_qualified_type(TYPE, QUALS) \
   cp_build_qualified_type_real ((TYPE), (QUALS), tf_error | tf_warning)
-extern tree build_shared_int_cst                (int);
 extern special_function_kind special_function_p (tree);
 extern bool name_p                              (tree);
 extern int count_trees                          (tree);
