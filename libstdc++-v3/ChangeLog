@@ -1,4 +1,14 @@
 2001-12-28  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/stl_algo.h (count returning void,
+	count_if returning void, __random_sample, random_sample,
+	random_sample_n, __is_heap, is_heap, is_sorted):  Move to...
+	* include/ext/algorithm:  ...here, new file.
+	* include/Makefile.am (ext_headers):  Add new file.
+	* include/Makefile.in:  Regenerate.
+	* testsuite/ext/headers.cc:  Include <ext/algorithm>.
+
+2001-12-28  Paolo Carlini  <pcarlini@unitus.it>
             Nathan Myers  <ncm@cantrip.org>
 
 	* include/bits/basic_string.h (insert(__pos, __s, __n)):
