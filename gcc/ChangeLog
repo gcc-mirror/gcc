@@ -1,3 +1,9 @@
+Sat Sep 18 15:20:38 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* configure.in: Pick up thread library on Solaris/x86 just
+	like on Solaris/sparc.
+	* configure: Rebuilt.
+
 Sat Sep 18 11:15:58 1999  Alex Samuel  <samuel@codesourcery.com>
 
 	* rtl.h (global_rtx_index): New enum.
