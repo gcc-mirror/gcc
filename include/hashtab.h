@@ -98,6 +98,10 @@ struct htab
   /* The following member is used for debugging.  Its value is number
      of collisions fixed for time of work with the hash table. */
   unsigned int collisions;
+
+  /* This is non-zero if we are allowed to return NULL for function calls
+     that allocate memory.  */
+  int return_allocation_failure;
 };
 
 typedef struct htab *htab_t;
@@ -108,6 +112,12 @@ enum insert_option {NO_INSERT, INSERT};
 /* The prototypes of the package functions. */
 
 extern htab_t	htab_create	PARAMS ((size_t, htab_hash,
+					 htab_eq, htab_del));
+
+/* This function is like htab_create, but may return NULL if memory
+   allocation fails, and also signals that htab_find_slot_with_hash and
+   htab_find_slot are allowed to return NULL when inserting.  */
+extern htab_t	htab_try_create	PARAMS ((size_t, htab_hash,
 					 htab_eq, htab_del));
 extern void	htab_delete	PARAMS ((htab_t));
 extern void	htab_empty	PARAMS ((htab_t));
