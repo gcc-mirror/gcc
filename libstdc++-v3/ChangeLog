@@ -1,3 +1,9 @@
+2004-10-05  Christopher Jefferson  <caj@cs.york.ac.uk>
+
+	* include/bits/stl_algobase.h (iter_swap): delegate to swap via
+	__iter_swap when iterator's value_types are equal.
+	(struct __iter_swap): New.
+
 2004-10-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.ac (libtool_VERSION): To 6:3:0.
