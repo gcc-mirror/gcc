@@ -5345,7 +5345,7 @@ build_conditional_expr (ifexp, op1, op2)
     op2 = convert_for_initialization
       (NULL_TREE, result_type, op2, LOOKUP_NORMAL, "converting", NULL_TREE, 0);
 
-  if (TREE_CONSTANT (ifexp))
+  if (TREE_CODE (ifexp) == INTEGER_CST)
     return integer_zerop (ifexp) ? op2 : op1;
 
   return convert_from_reference
