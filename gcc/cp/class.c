@@ -3723,7 +3723,7 @@ layout_empty_base (binfo, eoc, binfo_offsets)
   
   /* This routine should only be used for empty classes.  */
   my_friendly_assert (is_empty_class (basetype), 20000321);
-  alignment = ssize_int (CLASSTYPE_ALIGN (basetype));
+  alignment = ssize_int (CLASSTYPE_ALIGN_UNIT (basetype));
 
   /* This is an empty base class.  We first try to put it at offset
      zero.  */

@@ -1637,6 +1637,10 @@ struct lang_type
 #define CLASSTYPE_SIZE_UNIT(NODE) (TYPE_LANG_SPECIFIC(NODE)->size_unit)
 #define CLASSTYPE_ALIGN(NODE) (TYPE_LANG_SPECIFIC(NODE)->align)
 
+/* The alignment of NODE, without its virtual bases, in bytes.  */
+#define CLASSTYPE_ALIGN_UNIT(NODE) \
+  (CLASSTYPE_ALIGN (NODE) / BITS_PER_UNIT)
+
 /* A cons list of virtual functions which cannot be inherited by
    derived classes.  When deriving from this type, the derived
    class must provide its own definition for each of these functions.  */
