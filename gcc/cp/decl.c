@@ -398,10 +398,6 @@ struct binding_level
     /* The binding level which this one is contained in (inherits from).  */
     struct binding_level *level_chain;
 
-    /* List of decls in `names' that have incomplete
-       structure or union types.  */
-    tree incomplete;
-
     /* List of VAR_DECLS saved from a previous for statement.
        These would be dead in ISO-conforming code, but might
        be referenced in ARM-era code.  These are stored in a
@@ -483,6 +479,12 @@ static struct binding_level *global_binding_level;
 /* Nonzero means unconditionally make a BLOCK for the next level pushed.  */
 
 static int keep_next_level_flag;
+
+/* A TREE_LIST of VAR_DECLs.  The TREE_PURPOSE is a RECORD_TYPE or
+   UNION_TYPE; the TREE_VALUE is a VAR_DECL with that type.  At the
+   time the VAR_DECL was declared, the type was incomplete.  */
+
+static tree incomplete_vars;
 
 #if defined(DEBUG_CP_BINDING_LEVELS)
 static int binding_depth = 0;
@@ -1957,7 +1959,6 @@ mark_binding_level (arg)
       ggc_mark_tree (lvl->shadowed_labels);
       ggc_mark_tree (lvl->blocks);
       ggc_mark_tree (lvl->this_class);
-      ggc_mark_tree (lvl->incomplete);
       ggc_mark_tree (lvl->dead_vars_from_for);
     }
 }
@@ -1995,8 +1996,6 @@ print_binding_level (lvl)
   int i = 0, len;
   fprintf (stderr, " blocks=");
   fprintf (stderr, HOST_PTR_PRINTF, lvl->blocks);
-  fprintf (stderr, " n_incomplete=%d parm_flag=%d keep=%d",
-	   list_length (lvl->incomplete), lvl->parm_flag, lvl->keep);
   if (lvl->tag_transparent)
     fprintf (stderr, " tag-transparent");
   if (lvl->more_cleanups_ok)
@@ -2397,7 +2396,6 @@ mark_saved_scope (arg)
       ggc_mark_tree (t->x_previous_class_type);
       ggc_mark_tree (t->x_previous_class_values);
       ggc_mark_tree (t->x_saved_tree);
-      ggc_mark_tree (t->incomplete);
       ggc_mark_tree (t->lookups);
 
       mark_stmt_tree (&t->x_stmt_tree);
@@ -4242,22 +4240,8 @@ pushdecl (x)
       if (TREE_CODE (x) == FUNCTION_DECL)
 	check_default_args (x);
 
-      /* Keep count of variables in this level with incomplete type.  */
-      if (TREE_CODE (x) == VAR_DECL
-	  && TREE_TYPE (x) != error_mark_node
-	  && ((!COMPLETE_TYPE_P (TREE_TYPE (x))
-	       && PROMOTES_TO_AGGR_TYPE (TREE_TYPE (x), ARRAY_TYPE))
-	      /* RTTI TD entries are created while defining the type_info.  */
-	      || (TYPE_LANG_SPECIFIC (TREE_TYPE (x))
-		  && TYPE_BEING_DEFINED (TREE_TYPE (x)))))
-	{
-	  if (namespace_bindings_p ())
-	    namespace_scope_incomplete
-	      = tree_cons (NULL_TREE, x, namespace_scope_incomplete);
-	  else
-	    current_binding_level->incomplete
-	      = tree_cons (NULL_TREE, x, current_binding_level->incomplete);
-	}
+      if (TREE_CODE (x) == VAR_DECL)
+	maybe_register_incomplete_var (x);
     }
 
   if (need_new_binding)
@@ -6650,6 +6634,7 @@ cxx_init_decl_processing ()
   ggc_add_tree_root (&current_lang_name, 1);
   ggc_add_tree_root (&static_aggregates, 1);
   ggc_add_tree_root (&free_bindings, 1);
+  ggc_add_tree_root (&incomplete_vars, 1);
 }
 
 /* Generate an initializer for a function naming variable from
@@ -7431,7 +7416,7 @@ start_decl_1 (decl)
       if ((! processing_template_decl || ! uses_template_parms (type))
 	  && !COMPLETE_TYPE_P (complete_type (type)))
 	{
-	  error ("aggregate `%#D' has incomplete type and cannot be initialized",
+	  error ("aggregate `%#D' has incomplete type and cannot be defined",
 		 decl);
 	  /* Change the type so that assemble_variable will give
 	     DECL an rtl we can live with: (mem (const_int 0)).  */
@@ -14442,72 +14427,60 @@ finish_method (decl)
   return decl;
 }
 
-/* Called when a new struct TYPE is defined.
-   If this structure or union completes the type of any previous
-   variable declaration, lay it out and output its rtl.  */
+
+/* VAR is a VAR_DECL.  If its type is incomplete, remember VAR so that
+   we can lay it out later, when and if its type becomes complete.  */
 
 void
-hack_incomplete_structures (type)
+maybe_register_incomplete_var (var)
+     tree var;
+{
+  my_friendly_assert (TREE_CODE (var) == VAR_DECL, 20020406);
+
+  /* Keep track of variables with incomplete types.  */
+  if (!processing_template_decl && TREE_TYPE (var) != error_mark_node 
+      && DECL_EXTERNAL (var))
+    {
+      tree inner_type = TREE_TYPE (var);
+      
+      while (TREE_CODE (inner_type) == ARRAY_TYPE)
+	inner_type = TREE_TYPE (inner_type);
+      inner_type = TYPE_MAIN_VARIANT (inner_type);
+      
+      if ((!COMPLETE_TYPE_P (inner_type) && CLASS_TYPE_P (inner_type))
+	  /* RTTI TD entries are created while defining the type_info.  */
+	  || (TYPE_LANG_SPECIFIC (inner_type)
+	      && TYPE_BEING_DEFINED (inner_type)))
+	incomplete_vars = tree_cons (inner_type, var, incomplete_vars);
+    }
+}
+
+/* Called when a class type (given by TYPE) is defined.  If there are
+   any existing VAR_DECLs whose type hsa been completed by this
+   declaration, update them now.  */
+
+void
+complete_vars (type)
      tree type;
 {
-  tree *list;
-  struct binding_level *level;
+  tree *list = &incomplete_vars;
 
-  if (!type) /* Don't do this for class templates.  */
-    return;
-
-  if (namespace_bindings_p ())
+  my_friendly_assert (CLASS_TYPE_P (type), 20020406);
+  while (*list) 
     {
-      level = 0;
-      list = &namespace_scope_incomplete;
-    }
-  else
-    {
-      level = innermost_nonclass_level ();
-      list = &level->incomplete;
-    }
-
-  while (1)
-    {
-      while (*list)
+      if (same_type_p (type, TREE_PURPOSE (*list)))
 	{
-	  tree decl = TREE_VALUE (*list);
-	  if ((decl && TREE_TYPE (decl) == type)
-	      || (TREE_TYPE (decl)
-		  && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
-		  && TREE_TYPE (TREE_TYPE (decl)) == type))
-	    {
-	      int toplevel = toplevel_bindings_p ();
-	      if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
-		  && TREE_TYPE (TREE_TYPE (decl)) == type)
-		layout_type (TREE_TYPE (decl));
-	      layout_decl (decl, 0);
-	      rest_of_decl_compilation (decl, NULL, toplevel, 0);
-	      if (! toplevel)
-		{
-		  tree cleanup;
-		  expand_decl (decl);
-		  cleanup = maybe_build_cleanup (decl);
-		  expand_decl_init (decl);
-		  if (! expand_decl_cleanup (decl, cleanup))
-		    error ("parser lost in parsing declaration of `%D'",
-			      decl);
-		}
-	      *list = TREE_CHAIN (*list);
-	    }
-	  else
-	    list = &TREE_CHAIN (*list);
-	}
-
-      /* Keep looking through artificial binding levels generated
-	 for local variables.  */
-      if (level && level->keep == 2)
-	{
-	  level = level->level_chain;
-	  list = &level->incomplete;
+	  tree var = TREE_VALUE (*list);
+	  /* Make sure that the type of the VAR has been laid out.  It
+	     might not have been if the type of VAR is an array.  */
+	  layout_type (TREE_TYPE (var));
+	  /* Lay out the variable itself.  */
+	  layout_decl (var, 0);
+	  /* Remove this entry from the list.  */
+	  *list = TREE_CHAIN (*list);
 	}
       else
-	break;
+	list = &TREE_CHAIN (*list);
     }
 }
 

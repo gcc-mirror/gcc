@@ -1,3 +1,26 @@
+2002-04-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/5571
+	* class.c (layout_class_type): Remember incomplete static
+	variables.
+	(finish_struct_1): Call complete_vars, not
+	hack_incomplete_structures.
+	* cp-tree.h (hack_incomplete_structures): Rename to ...
+	(complete_vars): ... this.
+	(struct saved_scope): Remove incomplete.
+	(namespace_scope_incomplete): Remove.
+	* decl.c (struct binding_level): Remove incomplete.
+	(incomplete_vars): New variable.
+	(mark_binding_level): Don't mark incomplete.
+	(print_binding_level): Don't print it.
+	(mark_saved_scope): Don't mark incomplete.
+	(pushdecl): Use maybe_register_incopmlete_var.
+	(cxx_init_decl_processing): Register incomplete_vars for GC.
+	(start_decl_1): Clarify error message.
+	(hack_incomplete_vars): Remove.
+	(maybe_register_incomplete_var): New function.
+	(complete_vars): Likewise.
+
 2002-04-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/4934
