@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
       SCOPE_BEGIN_P (in SCOPE_STMT)
       DECL_PRETTY_FUNCTION_P (in VAR_DECL)
       NEW_FOR_SCOPE_P (in FOR_STMT)
+      ASM_INPUT_P (in ASM_STMT)
    1: C_DECLARED_LABEL_FLAG (in LABEL_DECL)
       STMT_IS_FULL_EXPR_P (in _STMT)
    2: STMT_LINENO_FOR_FN_P (in _STMT)
@@ -666,6 +667,10 @@ extern tree strip_array_types                   PARAMS ((tree));
    initialization variables. */
 #define NEW_FOR_SCOPE_P(NODE) (TREE_LANG_FLAG_0 (NODE))
 
+/* Nonzero if we want to create an ASM_INPUT instead of an
+   ASM_OPERAND with no operands.  */
+#define ASM_INPUT_P(NODE) (TREE_LANG_FLAG_0 (NODE))
+
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
 
 enum c_tree_code {
@@ -694,7 +699,7 @@ extern void genrtl_case_label                   PARAMS ((tree));
 extern void genrtl_compound_stmt                PARAMS ((tree));
 extern void genrtl_asm_stmt                     PARAMS ((tree, tree,
 							 tree, tree,
-							 tree));
+							 tree, int));
 extern void genrtl_decl_cleanup                 PARAMS ((tree, tree));
 extern int stmts_are_full_exprs_p               PARAMS ((void));
 extern int anon_aggr_type_p                     PARAMS ((tree));

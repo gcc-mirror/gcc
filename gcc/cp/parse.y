@@ -1,6 +1,6 @@
 /* YACC parser for C++ syntax.
    Copyright (C) 1988, 1989, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -3398,7 +3398,8 @@ simple_stmt:
                 { $$ = finish_return_stmt ($2); }
 	| asm_keyword maybe_cv_qualifier '(' string ')' ';'
 		{ $$ = finish_asm_stmt ($2, $4, NULL_TREE, NULL_TREE,
-					NULL_TREE); }
+					NULL_TREE);
+		  ASM_INPUT_P ($$) = 1; }
 	/* This is the case with just output operands.  */
 	| asm_keyword maybe_cv_qualifier '(' string ':' asm_operands ')' ';'
 		{ $$ = finish_asm_stmt ($2, $4, $6, NULL_TREE, NULL_TREE); }
