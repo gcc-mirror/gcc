@@ -1,3 +1,8 @@
+2004-09-22  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/16721
+	* testsuite/gcc.dg/tree-ssa/pr16721.c: New test.
+
 2004-09-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.dg/20030123-1.c: Add prototypes for builtin functions.

@@ -552,6 +552,9 @@ dump_variable (FILE *file, tree var)
   if (is_global_var (var))
     fprintf (file, ", is global");
 
+  if (TREE_THIS_VOLATILE (var))
+    fprintf (file, ", is volatile");
+
   if (is_call_clobbered (var))
     fprintf (file, ", call clobbered");
 
