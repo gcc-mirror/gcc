@@ -1019,7 +1019,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	}
     }
 
-  if (processing_template_decl && ! current_function_decl
+  if (processing_template_decl
       && (TREE_CODE (value) == VAR_DECL || TREE_CODE (value) == FUNCTION_DECL))
     value = push_template_decl (value);
 
