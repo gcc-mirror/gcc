@@ -1,3 +1,7 @@
+2000-07-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h (__FUNCTION__): Wrap definition in #ifndef.
+
 2000-07-21  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.h (SIZE_TYPE): Define.
