@@ -2487,8 +2487,8 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
 					convert (unsigned_type, rhs),
 					size_int (lbitsize), 0)))
 	{
-	  warning ("comparison is always %s due to width of bitfield",
-		   code == NE_EXPR ? "one" : "zero");
+	  warning ("comparison is always %d due to width of bitfield",
+		   code == NE_EXPR);
 	  return convert (compare_type,
 			  (code == NE_EXPR
 			   ? integer_one_node : integer_zero_node));
@@ -2500,8 +2500,8 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
 			      size_int (lbitsize - 1), 0);
       if (! integer_zerop (tem) && ! integer_all_onesp (tem))
 	{
-	  warning ("comparison is always %s due to width of bitfield",
-		   code == NE_EXPR ? "one" : "zero");
+	  warning ("comparison is always %d due to width of bitfield",
+		   code == NE_EXPR);
 	  return convert (compare_type,
 			  (code == NE_EXPR
 			   ? integer_one_node : integer_zero_node));
@@ -3486,8 +3486,7 @@ fold_truthop (code, truth_type, lhs, rhs)
 						      type, ll_mask)),
 					0)))
 	{
-	  warning ("comparison is always %s",
-		   wanted_code == NE_EXPR ? "one" : "zero");
+	  warning ("comparison is always %d", wanted_code == NE_EXPR);
 	  
 	  return convert (truth_type,
 			  wanted_code == NE_EXPR
@@ -3504,9 +3503,8 @@ fold_truthop (code, truth_type, lhs, rhs)
 						      type, rl_mask)),
 					0)))
 	{
-	  warning ("comparison is always %s",
-		   wanted_code == NE_EXPR ? "one" : "zero");
-	  
+	  warning ("comparison is always %d", wanted_code == NE_EXPR);
+
 	  return convert (truth_type,
 			  wanted_code == NE_EXPR
 			  ? integer_one_node : integer_zero_node);
@@ -3604,7 +3602,7 @@ fold_truthop (code, truth_type, lhs, rhs)
 	}
       else
 	{
-	  warning ("`and' of mutually exclusive equal-tests is always zero");
+	  warning ("`and' of mutually exclusive equal-tests is always 0");
 	  return convert (truth_type, integer_zero_node);
 	}
     }
