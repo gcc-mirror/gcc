@@ -827,6 +827,7 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   chmod +w ${LIB}/$file 2>/dev/null
   chmod a+r ${LIB}/$file 2>/dev/null
 fi
+      -e 's@ va_list)@ __gnuc_va_list)@' \
 
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file, non-const arg
