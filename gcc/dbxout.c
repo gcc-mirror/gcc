@@ -854,6 +854,7 @@ dbxout_type (type, full, show_arg_types)
      int show_arg_types;
 {
   register tree tem;
+  static int anonymous_type_number = 0;
 
   /* If there was an input error and we don't really have a type,
      avoid crashing and write something that is at least valid
@@ -1081,7 +1082,10 @@ dbxout_type (type, full, show_arg_types)
 	    if (TREE_CODE (TYPE_NAME (type)) != IDENTIFIER_NODE)
 	      abort ();
 #endif
-	    dbxout_type_name (type);
+	    if (TYPE_NAME (type) != 0)
+	      dbxout_type_name (type);
+	    else
+	      fprintf (asmfile, "$$%d", anonymous_type_number++);
 	    fprintf (asmfile, ":");
 	    typevec[TYPE_SYMTAB_ADDRESS (type)] = TYPE_XREF;
 	    break;
