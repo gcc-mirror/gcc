@@ -1,6 +1,6 @@
 // PipedOutputStream.java - Write bytes to a pipe.
 
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -81,12 +81,15 @@ public class PipedOutputStream extends OutputStream
     destination.receive(oneByte);
   }
 
-  // This is mentioned in the JCL book, but we don't really need it.
-  // If there were a corresponding receive() method on
-  // PipedInputStream then we could get better performance using
-  // this.
-  // public void write (byte[] buffer, int offset, int count)
-  // throws IOException;
+  public void write (byte[] buffer, int offset, int count) throws IOException
+  {
+    if (closed)
+      throw new IOException ();
+    if (offset < 0 || count < 0 || offset + count > buffer.length)
+      throw new ArrayIndexOutOfBoundsException ();
+    for (int i = 0; i < count; ++i)
+      destination.receive (buffer[offset + i]);
+  }
 
   // Instance variables.
   private PipedInputStream destination;
