@@ -35,10 +35,10 @@ struct ZipDirectory {
   int direntry_size;
   int filename_offset;
   int compression_method;
-  long size; /* length of file */
-  long uncompressed_size; /* length of uncompressed data */
-  long filestart;  /* start of file in archive */
-  long filename_length;
+  unsigned size; /* length of file */
+  unsigned uncompressed_size; /* length of uncompressed data */
+  unsigned filestart;  /* start of file in archive */
+  int filename_length;
   /* char mid_padding[...]; */
   /* char filename[filename_length]; */
   /* char end_padding[...]; */
