@@ -1598,7 +1598,9 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
      in .bss, then we have to use .data.  */
   /* ??? We should handle .bss via select_section mechanisms rather than
      via special target hooks.  That would eliminate this special case.  */
-  else if (!DECL_COMMON (decl))
+  /* Duplicate BSS test in asm_emit_uninitialized instead of having it
+     return success or failure for that case.  Shrug.  */
+  else if (TREE_PUBLIC (decl) && !DECL_COMMON (decl))
     ;
 #endif
   else if (DECL_INITIAL (decl) == 0
