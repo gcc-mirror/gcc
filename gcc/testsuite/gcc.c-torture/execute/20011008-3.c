@@ -84,9 +84,10 @@ __db_txnlist_lsnadd(int val, DB_TXNLIST *elp, DB_LSN *lsnp, u_int32_t flags)
 int main (void)
 {
   DB_TXNLIST el;
-  DB_LSN lsn;
+  DB_LSN lsn, lsn_a[1235];
   
   el.u.l.ntxns = 1234;
+  el.u.l.lsn_array = lsn_a;
   
   if (__db_txnlist_lsnadd (0, &el, &lsn, 0) != 1)
     abort ();
