@@ -1360,87 +1360,63 @@
 ;;  ....................
 ;;
 
-;; Early Vr4300 silicon has a CPU bug where multiplies with certain
-;; operands may corrupt immediately following multiplies. This is a
-;; simple fix to insert NOPs.
-
 (define_expand "muldf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(mult:DF (match_operand:DF 1 "register_operand" "f")
 		 (match_operand:DF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "
-{
-  if (!TARGET_MIPS4300)
-    emit_insn (gen_muldf3_internal (operands[0], operands[1], operands[2]));
-  else
-    emit_insn (gen_muldf3_r4300 (operands[0], operands[1], operands[2]));
-  DONE;
-}")
+  "")
 
 (define_insn "muldf3_internal"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(mult:DF (match_operand:DF 1 "register_operand" "f")
 		 (match_operand:DF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && !TARGET_MIPS4300"
+  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && !TARGET_4300_MUL_FIX"
   "mul.d\\t%0,%1,%2"
   [(set_attr "type"	"fmul")
    (set_attr "mode"	"DF")])
+
+;; Early VR4300 silicon has a CPU bug where multiplies with certain
+;; operands may corrupt immediately following multiplies. This is a
+;; simple fix to insert NOPs.
 
 (define_insn "muldf3_r4300"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(mult:DF (match_operand:DF 1 "register_operand" "f")
 		 (match_operand:DF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && TARGET_MIPS4300"
-  "*
-{
-  output_asm_insn (\"mul.d\\t%0,%1,%2\", operands);
-  if (TARGET_4300_MUL_FIX)
-    output_asm_insn (\"nop\", operands);
-  return \"\";
-}"
+  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && TARGET_4300_MUL_FIX"
+  "mul.d\\t%0,%1,%2\;nop"
   [(set_attr "type"	"fmul")
    (set_attr "mode"	"DF")
-   (set_attr "length"	"8")])	;; mul.d + nop
+   (set_attr "length"	"8")])
 
 (define_expand "mulsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(mult:SF (match_operand:SF 1 "register_operand" "f")
 		 (match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
-  "
-{
-  if (!TARGET_MIPS4300)
-    emit_insn( gen_mulsf3_internal (operands[0], operands[1], operands[2]));
-  else
-    emit_insn( gen_mulsf3_r4300 (operands[0], operands[1], operands[2]));
-  DONE;
-}")
+  "")
 
 (define_insn "mulsf3_internal"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(mult:SF (match_operand:SF 1 "register_operand" "f")
 		 (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && !TARGET_MIPS4300"
+  "TARGET_HARD_FLOAT && !TARGET_4300_MUL_FIX"
   "mul.s\\t%0,%1,%2"
   [(set_attr "type"	"fmul")
    (set_attr "mode"	"SF")])
+
+;; See muldf3_r4300.
 
 (define_insn "mulsf3_r4300"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(mult:SF (match_operand:SF 1 "register_operand" "f")
 		 (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_MIPS4300"
-  "*
-{
-  output_asm_insn (\"mul.s\\t%0,%1,%2\", operands);
-  if (TARGET_4300_MUL_FIX)
-    output_asm_insn (\"nop\", operands);
-  return \"\";
-}"
+  "TARGET_HARD_FLOAT && TARGET_4300_MUL_FIX"
+  "mul.s\\t%0,%1,%2\;nop"
   [(set_attr "type"	"fmul")
    (set_attr "mode"	"SF")
-   (set_attr "length"	"8")])	;; mul.s + nop
+   (set_attr "length"	"8")])
 
 
 ;; ??? The R4000 (only) has a cpu bug.  If a double-word shift executes while
