@@ -1,5 +1,6 @@
 /* ObjectOutputStream.java -- Class used to write serialized objects
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,18 +39,17 @@ exception statement from your version. */
 
 package java.io;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
-import java.security.PrivilegedAction;
-import java.security.AccessController;
-import java.util.Hashtable;
-
+import gnu.classpath.Configuration;
 import gnu.java.io.ObjectIdentityWrapper;
 import gnu.java.lang.reflect.TypeSignature;
 import gnu.java.security.action.SetAccessibleAction;
-import gnu.classpath.Configuration;
+
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.util.Hashtable;
 
 /**
  * An <code>ObjectOutputStream</code> can be used to write objects

@@ -38,8 +38,9 @@ exception statement from your version. */
 
 package java.io;
 
-import java.nio.channels.FileChannel;
 import gnu.java.nio.channels.FileChannelImpl;
+
+import java.nio.channels.FileChannel;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1

@@ -249,7 +249,7 @@ public class CharArrayWriter extends Writer
    * application programmers by setting their initial buffer size big
    * enough to hold everything if possible.
    */
-  private final void resize (int len)
+  private void resize (int len)
   {
     if (count + len >= buf.length)
       {
