@@ -1,5 +1,12 @@
 2004-06-19  Richard Henderson  <rth@redhat.com>
 
+	PR target/15941
+	* function.c (assign_parms): If not padding upward or intentionally
+	forcing upward padding, take offset_rtx into account when determining
+	the alignment for stack_parm.
+
+2004-06-19  Richard Henderson  <rth@redhat.com>
+
 	PR target/15550
 	* ifcvt.c (noce_try_move): Recognize all generated instructions.
 
