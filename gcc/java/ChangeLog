@@ -1,3 +1,8 @@
+Wed Apr 26 14:29:33 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* decl.c (complete_start_java_method): Don't call _Jv_InitClass
+ 	from <clinit>
+
 2000-04-26  Tom Tromey  <tromey@cygnus.com>
 
 	* zextract.c (find_zip_file_start): New function.

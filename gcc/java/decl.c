@@ -1692,6 +1692,7 @@ complete_start_java_method (fndecl)
 
   if (METHOD_STATIC (fndecl) && ! METHOD_PRIVATE (fndecl)
       && ! flag_emit_class_files
+      && ! DECL_CLINIT_P (fndecl)
       && ! CLASS_INTERFACE (TYPE_NAME (current_class)))
     {
       tree clas = DECL_CONTEXT (fndecl);
