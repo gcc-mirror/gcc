@@ -1542,8 +1542,8 @@ create_definition (buf, limit, pfile, predefinition)
       while (is_idchar[*bp]) {
 	bp++;
 	/* do we have a "special" rest-args extension here? */
-	if (limit - bp > REST_EXTENSION_LENGTH &&
-	    strncmp (rest_extension, bp, REST_EXTENSION_LENGTH) == 0) {
+	if (limit - bp > REST_EXTENSION_LENGTH
+	    && strncmp (rest_extension, bp, REST_EXTENSION_LENGTH) == 0) {
 	  rest_args = 1;
 	  temp->rest_args = 1;
 	  break;
@@ -1570,8 +1570,8 @@ create_definition (buf, limit, pfile, predefinition)
 	struct arglist *otemp;
 
 	for (otemp = temp->next; otemp != NULL; otemp = otemp->next)
-	  if (temp->length == otemp->length &&
-	    strncmp (temp->name, otemp->name, temp->length) == 0) {
+	  if (temp->length == otemp->length
+	      && strncmp (temp->name, otemp->name, temp->length) == 0) {
 	      U_CHAR *name;
 
 	      name = (U_CHAR *) alloca (temp->length + 1);
@@ -3798,11 +3798,10 @@ do_line (pfile, keyword)
       }
     }
 
-    hash_bucket =
-      &fname_table[hashf (fname, fname_length, FNAME_HASHSIZE)];
+    hash_bucket = &fname_table[hashf (fname, fname_length, FNAME_HASHSIZE)];
     for (hp = *hash_bucket; hp != NULL; hp = hp->next)
-      if (hp->length == fname_length &&
-	  strncmp (hp->value.cpval, fname, fname_length) == 0) {
+      if (hp->length == fname_length
+	  && strncmp (hp->value.cpval, fname, fname_length) == 0) {
 	ip->nominal_fname = hp->value.cpval;
 	break;
       }
@@ -6430,10 +6429,9 @@ cpp_handle_options (pfile, argc, argv)
 #if 0
 	else if (!strcmp (argv[i], "-pcp")) {
 	  char *pcp_fname = argv[++i];
-	  pcp_outfile = 
-	    ((pcp_fname[0] != '-' || pcp_fname[1] != '\0')
-	     ? fopen (pcp_fname, "w")
-	     : fdopen (dup (fileno (stdout)), "w"));
+	  pcp_outfile = ((pcp_fname[0] != '-' || pcp_fname[1] != '\0')
+			 ? fopen (pcp_fname, "w")
+			 : fdopen (dup (fileno (stdout)), "w"));
 	  if (pcp_outfile == 0)
 	    cpp_pfatal_with_name (pfile, pcp_fname);
 	  no_precomp = 1;

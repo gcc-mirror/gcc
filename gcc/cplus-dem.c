@@ -1362,8 +1362,8 @@ demangle_prefix (work, mangled, declp)
 	  success = 0;
 	}
     }
-  else if ((scan == *mangled) &&
-	   (isdigit (scan[2]) || (scan[2] == 'Q') || (scan[2] == 't')))
+  else if ((scan == *mangled)
+	   && (isdigit (scan[2]) || (scan[2] == 'Q') || (scan[2] == 't')))
     {
       /* The ARM says nothing about the mangling of local variables.
 	 But cfront mangles local variables by prepending __<nesting_level>
@@ -2349,15 +2349,15 @@ remember_type (work, start, len)
       if (work -> typevec_size == 0)
 	{
 	  work -> typevec_size = 3;
-	  work -> typevec =
-	    (char **) xmalloc (sizeof (char *) * work -> typevec_size);
+	  work -> typevec
+	    = (char **) xmalloc (sizeof (char *) * work -> typevec_size);
 	}
       else
 	{
 	  work -> typevec_size *= 2;
-	  work -> typevec =
-	    (char **) xrealloc ((char *)work -> typevec,
-				sizeof (char *) * work -> typevec_size);
+	  work -> typevec
+	    = (char **) xrealloc ((char *)work -> typevec,
+				  sizeof (char *) * work -> typevec_size);
 	}
     }
   tem = xmalloc (len + 1);

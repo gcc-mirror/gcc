@@ -7358,9 +7358,9 @@ nonzero_bits (x, mode)
       if (GET_MODE (XEXP (x, 0)) != VOIDmode)
 	{
 	  inner_nz &= GET_MODE_MASK (GET_MODE (XEXP (x, 0)));
-	  if (inner_nz &
-	      (((HOST_WIDE_INT) 1
-		<< (GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))) - 1))))
+	  if (inner_nz
+	      & (((HOST_WIDE_INT) 1
+		  << (GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))) - 1))))
 	    inner_nz |= (GET_MODE_MASK (mode)
 			  & ~ GET_MODE_MASK (GET_MODE (XEXP (x, 0))));
 	}

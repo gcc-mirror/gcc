@@ -1013,19 +1013,19 @@ dbxout_type (type, full, show_arg_types)
 
       if (next_type_number == typevec_len)
 	{
-	  typevec =
-	    (struct typeinfo *) xrealloc (typevec,
-					  typevec_len * 2 * sizeof typevec[0]);
+	  typevec
+	    = (struct typeinfo *) xrealloc (typevec,
+					    typevec_len * 2 * sizeof typevec[0]);
 	  bzero ((char *) (typevec + typevec_len),
 		 typevec_len * sizeof typevec[0]);
 	  typevec_len *= 2;
 	}
 
 #ifdef DBX_USE_BINCL
-      typevec[TYPE_SYMTAB_ADDRESS (type)].file_number =
-	current_file->file_number;
-      typevec[TYPE_SYMTAB_ADDRESS (type)].type_number =
-	current_file->next_type_number++;
+      typevec[TYPE_SYMTAB_ADDRESS (type)].file_number
+	= current_file->file_number;
+      typevec[TYPE_SYMTAB_ADDRESS (type)].type_number
+	= current_file->next_type_number++;
 #endif
     }
 

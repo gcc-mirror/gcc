@@ -178,10 +178,10 @@ gen_formal_list_for_type (fntype, style)
         formal_list = concat (formal_list, ", ");
 
       this_type = gen_type ("", TREE_VALUE (formal_type), ansi);
-      formal_list =
-          (strlen (this_type))
-              ? concat (formal_list, affix_data_type (this_type))
-              : concat (formal_list, data_type);
+      formal_list
+	= ((strlen (this_type))
+	   ? concat (formal_list, affix_data_type (this_type))
+	   : concat (formal_list, data_type));
 
       formal_type = TREE_CHAIN (formal_type);
     }
