@@ -1,3 +1,8 @@
+2003-11-19  Gerald Pfeifer  <gp@suse.de>
+
+	* doc/install.texi (Specific): Remove information on old versions
+	of glibc versus old versions of GCC.
+
 2003-11-19  Richard SAndiford  <rsandifo@redhat.com>
 
 	* emit-rtl.c (gen_lowpart): Don't force MEMs into a register unless
