@@ -1,6 +1,6 @@
 // posix-threads.cc - interface between libjava and POSIX threads.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -336,6 +336,22 @@ _Jv_ThreadRegister (_Jv_Thread_t *data)
   // is called. Since it may need to be accessed from the new thread, work 
   // around the potential race here by explicitly setting it again.
   data->thread = pthread_self ();
+
+# ifdef SLOW_PTHREAD_SELF
+    // Clear all self cache slots that might be needed by this thread.
+    int dummy;
+    int low_index = SC_INDEX(&dummy) + SC_CLEAR_MIN;
+    int high_index = SC_INDEX(&dummy) + SC_CLEAR_MAX;
+    for (int i = low_index; i <= high_index; ++i) 
+      {
+        int current_index = i;
+	if (current_index < 0)
+	  current_index += SELF_CACHE_SIZE;
+	if (current_index >= SELF_CACHE_SIZE)
+	  current_index -= SELF_CACHE_SIZE;
+	_Jv_self_cache[current_index].high_sp_bits = BAD_HIGH_SP_VALUE;
+      }
+# endif
 }
 
 void
@@ -356,7 +372,7 @@ really_start (void *x)
   _Jv_ThreadRegister (info->data);
 
   info->method (info->data->thread_obj);
-  
+
   if (! (info->data->flags & FLAG_DAEMON))
     {
       pthread_mutex_lock (&daemon_mutex);
@@ -365,7 +381,7 @@ really_start (void *x)
 	pthread_cond_signal (&daemon_cond);
       pthread_mutex_unlock (&daemon_mutex);
     }
-  
+
   return NULL;
 }
 
@@ -418,3 +434,23 @@ _Jv_ThreadWait (void)
     pthread_cond_wait (&daemon_cond, &daemon_mutex);
   pthread_mutex_unlock (&daemon_mutex);
 }
+
+#if defined(SLOW_PTHREAD_SELF)
+
+// Support for pthread_self() lookup cache.
+
+volatile self_cache_entry _Jv_self_cache[SELF_CACHE_SIZE];
+
+
+_Jv_ThreadId_t
+_Jv_ThreadSelf_out_of_line(volatile self_cache_entry *sce, size_t high_sp_bits)
+{
+  pthread_t self = pthread_self();
+  // The ordering between the following writes matters.
+  // On Alpha, we probably need a memory barrier in the middle.
+  sce -> high_sp_bits = high_sp_bits;
+  sce -> self = self;
+  return self;
+}
+
+#endif /* SLOW_PTHREAD_SELF */

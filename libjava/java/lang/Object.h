@@ -42,8 +42,8 @@ public:
   void wait (void);
   void wait (jlong timeout);
 
-  friend jint _Jv_MonitorEnter (jobject obj);
-  friend jint _Jv_MonitorExit (jobject obj);
+  friend void _Jv_MonitorEnter (jobject obj);
+  friend void _Jv_MonitorExit (jobject obj);
   friend void _Jv_InitializeSyncMutex (void);
   friend void _Jv_FinalizeObject (jobject obj);
 
@@ -63,10 +63,12 @@ private:
   // This does not actually refer to a Java object.  Instead it is a
   // placeholder for a piece of internal data (the synchronization
   // information).
-  jobject sync_info;
+# ifndef JV_HASH_SYNCHRONIZATION
+    jobject sync_info;
+# endif
 
-  // Initialize the sync_info field.
-  void sync_init (void);
+    // Initialize the sync_info field.  Not called with JV_HASH_SYNCHRONIZATION.
+    void sync_init (void);
 };
 
 #endif /* __JAVA_LANG_OBJECT_H__ */

@@ -360,8 +360,8 @@ _Jv_ClassReader::parse ()
 
 void _Jv_ClassReader::read_constpool ()
 {
-  tags    = (unsigned char*) _Jv_AllocBytesChecked (pool_count);
-  offsets = (unsigned int *) _Jv_AllocBytesChecked (sizeof (int)
+  tags    = (unsigned char*) _Jv_AllocBytes (pool_count);
+  offsets = (unsigned int *) _Jv_AllocBytes (sizeof (int)
 						    * pool_count) ;
 
   /** first, we scan the constant pool, collecting tags and offsets */
@@ -625,9 +625,9 @@ void _Jv_ClassReader::handleConstantPool ()
   /** now, we actually define the class' constant pool */
 
   // the pool is scanned explicitly by the collector
-  jbyte *pool_tags = (jbyte*) _Jv_AllocBytesChecked (pool_count);
+  jbyte *pool_tags = (jbyte*) _Jv_AllocBytes (pool_count);
   _Jv_word *pool_data
-    = (_Jv_word*) _Jv_AllocBytesChecked (pool_count * sizeof (_Jv_word));
+    = (_Jv_word*) _Jv_AllocBytes (pool_count * sizeof (_Jv_word));
   
   def->constants.tags = pool_tags;
   def->constants.data = pool_data;
@@ -965,7 +965,7 @@ _Jv_ClassReader::checkExtends (jclass sub, jclass super)
 
 void _Jv_ClassReader::handleInterfacesBegin (int count)
 {
-  def->interfaces = (jclass*) _Jv_AllocBytesChecked (count*sizeof (jclass));
+  def->interfaces = (jclass*) _Jv_AllocBytes (count*sizeof (jclass));
   def->interface_count = count;
 }
 
@@ -1032,10 +1032,10 @@ _Jv_ClassReader::checkImplements (jclass sub, jclass super)
 void _Jv_ClassReader::handleFieldsBegin (int count)
 {
   def->fields = (_Jv_Field*) 
-    _Jv_AllocBytesChecked (count * sizeof (_Jv_Field));
+    _Jv_AllocBytes (count * sizeof (_Jv_Field));
   def->field_count = count;
   def->field_initializers = (_Jv_ushort*)
-    _Jv_AllocBytesChecked (count * sizeof (_Jv_ushort));
+    _Jv_AllocBytes (count * sizeof (_Jv_ushort));
   for (int i = 0; i < count; i++)
     def->field_initializers[i] = (_Jv_ushort) 0;
 }
@@ -1172,11 +1172,11 @@ void
 _Jv_ClassReader::handleMethodsBegin (int count)
 {
   def->methods = (_Jv_Method*)
-    _Jv_AllocBytesChecked (sizeof (_Jv_Method)*count);
+    _Jv_AllocBytes (sizeof (_Jv_Method)*count);
 
   def->interpreted_methods
-    = (_Jv_MethodBase **) _Jv_AllocBytesChecked (sizeof (_Jv_MethodBase *)
-						 * count);
+    = (_Jv_MethodBase **) _Jv_AllocBytes (sizeof (_Jv_MethodBase *)
+					  * count);
 
   for (int i = 0; i < count; i++)
     def->interpreted_methods[i] = 0;
@@ -1235,7 +1235,7 @@ void _Jv_ClassReader::handleCodeAttribute
 {
   int size = _Jv_InterpMethod::size (exc_table_length, code_length);
   _Jv_InterpMethod *method = 
-    (_Jv_InterpMethod*) (_Jv_AllocBytesChecked (size));
+    (_Jv_InterpMethod*) (_Jv_AllocBytes (size));
 
   method->max_stack      = max_stack;
   method->max_locals     = max_locals;
@@ -1282,7 +1282,7 @@ void _Jv_ClassReader::handleMethodsEnd ()
 	  else
 	    {
 	      _Jv_JNIMethod *m = (_Jv_JNIMethod *)
-		_Jv_AllocBytesChecked (sizeof (_Jv_JNIMethod));
+		_Jv_AllocBytes (sizeof (_Jv_JNIMethod));
 	      m->defining_class = def;
 	      m->self = method;
 	      m->function = NULL;

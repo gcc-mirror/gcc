@@ -21,4 +21,35 @@ extern "C"
   JV_MARKARRAY_DECL;
 };
 
+// Enough stuff to inline _Jv_AllocObj.  Ugly.
+#include <gcj/javaprims.h>
+#include <java/lang/Class.h>
+#include <string.h>
+
+extern "C" void * GC_gcj_malloc(size_t, void *);
+extern "C" void * GC_malloc_atomic(size_t);
+
+inline void *
+_Jv_AllocObj (jsize size, jclass klass)
+{
+  // This should call GC_GCJ_MALLOC, but that would involve
+  // including gc.h.
+  return GC_gcj_malloc (size, klass->vtable);
+}
+
+inline void *
+_Jv_AllocPtrFreeObj (jsize size, jclass klass)
+{
+#ifdef JV_HASH_SYNCHRONIZATION
+  void * obj = GC_malloc_atomic(size);
+  *((_Jv_VTable **) obj) = klass->vtable;
+#else
+  void * obj = GC_gcj_malloc(size, klass->vtable);
+#endif
+  return obj;
+}
+
+// _Jv_AllocBytes (jsize size) should go here, too.  But clients don't
+// usually include this header.
+
 #endif /* __JV_BOEHM_GC__ */

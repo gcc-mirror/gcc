@@ -1,3 +1,71 @@
+2001-05-23  Tom Tromey  <tromey@redhat.com>
+
+	* posix-threads.cc (_Jv_self_cache): Renamed from self_cache.
+	* gcj/Makefile.in: Rebuilt.
+	* gcj/Makefile.am (gcj_HEADERS): Added libgcj-config.h.
+	* gcj/javaprims.h: Include gcj/libgcj-config.h.
+	* gcj/libgcj-config.h.in: New file.
+	* libgcj.spec.in (*jc1): Added @HASH_SYNC_SPEC@.
+	* configure: Rebuilt.
+	* configure.in: Enable hash synchronization by default on some
+	platforms.
+	(HASH_SYNC_SPEC): New subst.
+	(AC_CONFIG_HEADER): Added gcj/libgcj-config.h.
+	Correctly use `test -z' instead of `test -n' in a couple places.
+	(JV_HASH_SYNCHRONIZATION): Use AC_DEFINE; don't add to
+	LIBGCJ_CXXFLAGS.
+	* configure.host (enable_java_net_default): Initialize.
+	(enable_hash_synchronization_default): New variable.
+
+2001-05-23  Hans Boehm <Hans_Boehm@hp.com>
+
+	* boehm.cc (_Jv_MarkObj): Don't mark sync_info when hash
+	synchronization in use.
+	(_Jv_MarkArray): Likewise.
+	(_Jv_AllocBytes): Don't check return result.
+	(handle_out_of_memory): New function.
+	(_Jv_InitGC): Set GC_oom_fn.
+	(trace_one_vtable): New global.
+	(_Jv_AllocTraceOne): New function.
+	* configure.in: Added --enable-hash-synchronization.
+	* defineclass.cc, prims.cc, resolve.cc, java/lang/natString.cc,
+	java/net/natInetAddress.cc: Remove _Jv_AllocBytesChecked.
+	* nogc.cc (_Jv_AllocObj): Throw out-of-memory.
+	(_Jv_AllocArray): Likewise.
+	(_Jv_AllocBytes): Likewise.
+	(_Jv_AllocPtrFreeObject): New function.
+	(_Jv_AllocTraceOne): Likewise.
+	* posix-threads.cc (_Jv_ThreadRegister): Handle slow
+	pthread_self().
+	(self_cache): New global.
+	(_Jv_ThreadSelf_out_of_line): New function.
+	* prims.cc (_Jv_AllocBytesChecked): Removed.
+	(_Jv_ThrowNoMemory): New function.
+	(_Jv_AllocObject): Don't check for null return from allocator.
+	(_Jv_NewObjectArray): Likewise.
+	(_Jv_AllocPtrFreeObject): New function.
+	(_Jv_NewPrimArray): Allocate pointer-free object if possible.
+	* include/javaprims.h (_Jv_AllocPtrFreeObject): Declare.
+	(_Jv_MonitorEnter, _Jv_MonitorExit): Don't return value.
+	* include/boehm-gc.h (_Jv_AllocObj): Define.
+	(_Jv_AllocPtrFreeObj): Define.
+	* include/jvm.h (_Jv_AllocPtrFreeObj): Declare.
+	(_Jv_ThrowNoMemory): Declare.
+	(_Jv_AllocTraceOne): Declare.
+	(_Jv_AllocBytesChecked): Removed.
+	* include/posix-threads.h (_Jv_MutexInit, _Jv_MutexLock,
+	_Jv_MutexUnlock): Handle LOCK_DEBUG.
+	(_Jv_ThreadSelf): Handle case where system pthread_self() is
+	slow.
+	* java/lang/Class.h (Class): Declare _Jv_AllocPtrFreeObj as
+	friend.
+	* java/lang/Object.h (sync_info): Conditional upon presence of
+	hash synchronization.
+	* java/lang/natObject.cc: Much new code to handle thin locks and
+	hash synchronization.
+	* java/lang/natString.cc (_Jv_AllocString): Allocate pointer-free
+	object if possible.
+
 2001-05-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gij.cc (version): Update copyright year.

@@ -85,6 +85,7 @@ GCLIBS = @GCLIBS@
 GCOBJS = @GCOBJS@
 GCSPEC = @GCSPEC@
 GCTESTSPEC = @GCTESTSPEC@
+HASH_SYNC_SPEC = @HASH_SYNC_SPEC@
 INCLTDL = @INCLTDL@
 JC1GCSPEC = @JC1GCSPEC@
 LIBDATASTARTSPEC = @LIBDATASTARTSPEC@
@@ -123,13 +124,13 @@ libgcj_basedir = @libgcj_basedir@
 AUTOMAKE_OPTIONS = foreign
 
 gcjdir = $(includedir)/gcj
-gcj_HEADERS = array.h cni.h field.h javaprims.h method.h
+gcj_HEADERS = array.h cni.h field.h javaprims.h method.h libgcj-config.h
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
-CONFIG_HEADER = ../include/config.h
+CONFIG_HEADER = ../include/config.h libgcj-config.h
 CONFIG_CLEAN_FILES = 
 HEADERS =  $(gcj_HEADERS)
 
-DIST_COMMON =  Makefile.am Makefile.in
+DIST_COMMON =  ./stamp-h2.in Makefile.am Makefile.in libgcj-config.h.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -145,6 +146,34 @@ Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
+
+libgcj-config.h: stamp-h2
+	@if test ! -f $@; then \
+		rm -f stamp-h2; \
+		$(MAKE) stamp-h2; \
+	else :; fi
+stamp-h2: $(srcdir)/libgcj-config.h.in $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES= CONFIG_HEADERS=gcj/libgcj-config.h \
+	     $(SHELL) ./config.status
+	@echo timestamp > stamp-h2 2> /dev/null
+$(srcdir)/libgcj-config.h.in: @MAINTAINER_MODE_TRUE@$(srcdir)/stamp-h2.in
+	@if test ! -f $@; then \
+		rm -f $(srcdir)/stamp-h2.in; \
+		$(MAKE) $(srcdir)/stamp-h2.in; \
+	else :; fi
+$(srcdir)/stamp-h2.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOHEADER)
+	@echo timestamp > $(srcdir)/stamp-h2.in 2> /dev/null
+
+mostlyclean-hdr:
+
+clean-hdr:
+
+distclean-hdr:
+	-rm -f libgcj-config.h
+
+maintainer-clean-hdr:
 
 install-gcjHEADERS: $(gcj_HEADERS)
 	@$(NORMAL_INSTALL)
@@ -171,15 +200,15 @@ ID: $(HEADERS) $(SOURCES) $(LISP)
 	here=`pwd` && cd $(srcdir) \
 	  && mkid -f$$here/ID $$unique $(LISP)
 
-TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+TAGS:  $(HEADERS) $(SOURCES) libgcj-config.h.in $(TAGS_DEPENDENCIES) $(LISP)
 	tags=; \
 	here=`pwd`; \
 	list='$(SOURCES) $(HEADERS)'; \
 	unique=`for i in $$list; do echo $$i; done | \
 	  awk '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
-	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
-	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+	test -z "$(ETAGS_ARGS)libgcj-config.h.in$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags libgcj-config.h.in $$unique $(LISP) -o $$here/TAGS)
 
 mostlyclean-tags:
 
@@ -218,6 +247,9 @@ check-am: all-am
 check: check-am
 installcheck-am:
 installcheck: installcheck-am
+all-recursive-am: libgcj-config.h
+	$(MAKE) $(AM_MAKEFLAGS) all-recursive
+
 install-exec-am:
 install-exec: install-exec-am
 
@@ -229,7 +261,7 @@ install-am: all-am
 install: install-am
 uninstall-am: uninstall-gcjHEADERS
 uninstall: uninstall-am
-all-am: Makefile $(HEADERS)
+all-am: Makefile $(HEADERS) libgcj-config.h
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
@@ -246,31 +278,32 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-tags mostlyclean-generic
+mostlyclean-am:  mostlyclean-hdr mostlyclean-tags mostlyclean-generic
 
 mostlyclean: mostlyclean-am
 
-clean-am:  clean-tags clean-generic mostlyclean-am
+clean-am:  clean-hdr clean-tags clean-generic mostlyclean-am
 
 clean: clean-am
 
-distclean-am:  distclean-tags distclean-generic clean-am
+distclean-am:  distclean-hdr distclean-tags distclean-generic clean-am
 	-rm -f libtool
 
 distclean: distclean-am
 
-maintainer-clean-am:  maintainer-clean-tags maintainer-clean-generic \
-		distclean-am
+maintainer-clean-am:  maintainer-clean-hdr maintainer-clean-tags \
+		maintainer-clean-generic distclean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
 maintainer-clean: maintainer-clean-am
 
-.PHONY: uninstall-gcjHEADERS install-gcjHEADERS tags mostlyclean-tags \
+.PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
+uninstall-gcjHEADERS install-gcjHEADERS tags mostlyclean-tags \
 distclean-tags clean-tags maintainer-clean-tags distdir info-am info \
-dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
-install-exec install-data-am install-data install-am install \
-uninstall-am uninstall all-redirect all-am all installdirs \
+dvi-am dvi check check-am installcheck-am installcheck all-recursive-am \
+install-exec-am install-exec install-data-am install-data install-am \
+install uninstall-am uninstall all-redirect all-am all installdirs \
 mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
