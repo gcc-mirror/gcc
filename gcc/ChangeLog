@@ -1,5 +1,6 @@
 2002-04-01  Richard Henderson  <rth@redhat.com>
 
+	PR target/1538
 	* fixinc/inclhack.def (solaris_sys_varargs_h): New.
 	* fixinc/fixincl.x: Rebuild.
 
