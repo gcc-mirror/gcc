@@ -1,3 +1,7 @@
+2004-09-20  Daniel Berlin  <dberlin@dberlin.org>
+
+	* Makefile.in: Fix flags.h dependencies to be $(FLAGS_H).
+
 2004-09-21  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/17126
