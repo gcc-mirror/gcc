@@ -1917,16 +1917,121 @@ fi
 done
 
 
-GCC_NEED_DECLARATIONS(malloc realloc calloc free bcopy bzero bcmp \
-	index rindex getenv atol sbrk abort)
+echo $ac_n "checking whether the printf functions support %p""... $ac_c" 1>&6
+echo "configure:1922: checking whether the printf functions support %p" >&5
+if eval "test \"`echo '$''{'gcc_cv_func_printf_ptr'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  if test "$cross_compiling" = yes; then
+  gcc_cv_func_printf_ptr=no
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1930 "configure"
+#include "confdefs.h"
+#include <stdio.h>
+
+main()
+{
+  char buf[64];
+  char *p = buf, *q = NULL;
+  sprintf(buf, "%p", p);
+  sscanf(buf, "%p", &q);
+  exit (p != q);
+}
+EOF
+if { (eval echo configure:1943: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest && (./conftest; exit) 2>/dev/null
+then
+  gcc_cv_func_printf_ptr=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -fr conftest*
+  gcc_cv_func_printf_ptr=no
+fi
+rm -fr conftest*
+fi
+
+rm -f core core.* *.core
+fi
+
+echo "$ac_t""$gcc_cv_func_printf_ptr" 1>&6
+if test $gcc_cv_func_printf_ptr = yes ; then
+  cat >> confdefs.h <<\EOF
+#define HOST_PTR_PRINTF "%p"
+EOF
+
+fi
+
+
+for ac_func in malloc realloc calloc free bcopy bzero bcmp \
+	index rindex getenv atol sbrk abort
+do
+echo $ac_n "checking whether $ac_func must be declared""... $ac_c" 1>&6
+echo "configure:1971: checking whether $ac_func must be declared" >&5
+if eval "test \"`echo '$''{'gcc_cv_decl_needed_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1976 "configure"
+#include "confdefs.h"
+
+#include <stdio.h>
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+int main() {
+char *(*pfn) = (char *(*)) $ac_func
+; return 0; }
+EOF
+if { (eval echo configure:2003: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  eval "gcc_cv_decl_needed_$ac_func=no"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "gcc_cv_decl_needed_$ac_func=yes"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$gcc_cv_decl_needed_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+  gcc_tr_decl=NEED_DECLARATION_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $gcc_tr_decl 1
+EOF
+
+else
+  echo "$ac_t""no" 1>&6
+fi
+
+done
+
 
 echo $ac_n "checking for sys_siglist declaration in signal.h or unistd.h""... $ac_c" 1>&6
-echo "configure:1925: checking for sys_siglist declaration in signal.h or unistd.h" >&5
+echo "configure:2030: checking for sys_siglist declaration in signal.h or unistd.h" >&5
 if eval "test \"`echo '$''{'ac_cv_decl_sys_siglist'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1930 "configure"
+#line 2035 "configure"
 #include "confdefs.h"
 #include <sys/types.h>
 #include <signal.h>
@@ -1938,7 +2043,7 @@ int main() {
 char *msg = *(sys_siglist + 1);
 ; return 0; }
 EOF
-if { (eval echo configure:1942: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2047: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_decl_sys_siglist=yes
 else

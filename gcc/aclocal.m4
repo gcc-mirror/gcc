@@ -42,6 +42,27 @@ GCC_NEED_DECLARATION($ac_func)
 done
 ])
 
+dnl See if the printf functions in libc support %p in format strings.
+AC_DEFUN(GCC_FUNC_PRINTF_PTR,
+[AC_CACHE_CHECK(whether the printf functions support %p,
+  gcc_cv_func_printf_ptr,
+[AC_TRY_RUN([#include <stdio.h>
+
+main()
+{
+  char buf[64];
+  char *p = buf, *q = NULL;
+  sprintf(buf, "%p", p);
+  sscanf(buf, "%p", &q);
+  exit (p != q);
+}], gcc_cv_func_printf_ptr=yes, gcc_cv_func_printf_ptr=no,
+	gcc_cv_func_printf_ptr=no)
+rm -f core core.* *.core])
+if test $gcc_cv_func_printf_ptr = yes ; then
+  AC_DEFINE(HOST_PTR_PRINTF, "%p")
+fi
+])
+
 dnl See if symbolic links work and if not, try to substitute either hard links or simple copy.
 AC_DEFUN(GCC_PROG_LN_S,
 [AC_MSG_CHECKING(whether ln -s works)
