@@ -99,6 +99,18 @@ rtx gtdf2_libfunc;
 rtx gedf2_libfunc;
 rtx ltdf2_libfunc;
 rtx ledf2_libfunc;
+rtx floatdisf_libfunc;
+rtx floatsisf_libfunc;
+rtx floatdidf_libfunc;
+rtx floatsidf_libfunc;
+rtx fixsfsi_libfunc;
+rtx fixsfdi_libfunc;
+rtx fixdfsi_libfunc;
+rtx fixdfdi_libfunc;
+rtx fixunssfsi_libfunc;
+rtx fixunssfdi_libfunc;
+rtx fixunsdfsi_libfunc;
+rtx fixunsdfdi_libfunc;
 
 /* Indexed by the rtx-code for a conditional (eg. EQ, LT,...)
    gives the gen_function to make a branch to test that condition.  */
@@ -2508,7 +2520,7 @@ expand_float (to, from, unsignedp)
   /* No hardware instruction available; call a library
      to convert from SImode or DImode into SFmode or DFmode.  */
     {
-      char *fnname;
+      rtx libfcn;
       rtx insns;
 
       to = protect_from_queue (to, 1);
@@ -2524,18 +2536,18 @@ expand_float (to, from, unsignedp)
       if (GET_MODE (to) == SFmode)
 	{
 	  if (GET_MODE (from) == SImode)
-	    fnname = "__floatsisf";
+	    libfcn = floatsisf_libfunc;
 	  else if (GET_MODE (from) == DImode)
-	    fnname = "__floatdisf";
+	    libfcn = floatdisf_libfunc;
 	  else
 	    abort ();
 	}
       else if (GET_MODE (to) == DFmode)
 	{
 	  if (GET_MODE (from) == SImode)
-	    fnname = "__floatsidf";
+	    libfcn = floatsidf_libfunc;
 	  else if (GET_MODE (from) == DImode)
-	    fnname = "__floatdidf";
+	    libfcn = floatdidf_libfunc;
 	  else
 	    abort ();
 	}
@@ -2544,8 +2556,7 @@ expand_float (to, from, unsignedp)
 
       start_sequence ();
 
-      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, fnname),
-			       0, GET_MODE (to), 1, from, GET_MODE (from));
+      emit_library_call (libfcn, 0, GET_MODE (to), 1, from, GET_MODE (from));
       insns = get_insns ();
       end_sequence ();
 
@@ -2585,7 +2596,7 @@ expand_fix (to, from, unsignedp)
   register rtx target = to;
   enum machine_mode fmode, imode;
   int must_trunc = 0;
-  char *fnname = 0;
+  rtx libfcn = 0;
 
   /* We first try to find a pair of modes, one real and one integer, at
      least as wide as FROM and TO, respectively, in which we can open-code
@@ -2711,25 +2722,25 @@ expand_fix (to, from, unsignedp)
   else if (GET_MODE (from) == SFmode)
     {
       if (GET_MODE (to) == SImode)
-	fnname = unsignedp ? "__fixunssfsi" : "__fixsfsi";
+	libfcn = unsignedp ? fixunssfsi_libfunc : fixsfsi_libfunc;
       else if (GET_MODE (to) == DImode)
-	fnname = unsignedp ? "__fixunssfdi" : "__fixsfdi";
+	libfcn = unsignedp ? fixunssfdi_libfunc : fixsfdi_libfunc;
       else
 	abort ();
     }
   else if (GET_MODE (from) == DFmode)
     {
       if (GET_MODE (to) == SImode)
-	fnname = unsignedp ? "__fixunsdfsi" : "__fixdfsi";
+	libfcn = unsignedp ? fixunsdfsi_libfunc : fixdfsi_libfunc;
       else if (GET_MODE (to) == DImode)
-	fnname = unsignedp ? "__fixunsdfdi" : "__fixdfdi";
+	libfcn = unsignedp ? fixunsdfdi_libfunc : fixdfdi_libfunc;
       else
 	abort ();
     }
   else
     abort ();
 
-  if (fnname)
+  if (libfcn)
     {
       rtx insns;
 
@@ -2741,8 +2752,7 @@ expand_fix (to, from, unsignedp)
 
       start_sequence ();
 
-      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, fnname),
-			       0, GET_MODE (to), 1, from, GET_MODE (from));
+      emit_library_call (libfcn, 0, GET_MODE (to), 1, from, GET_MODE (from));
       insns = get_insns ();
       end_sequence ();
 
@@ -3972,4 +3982,16 @@ init_optabs ()
   gedf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__gedf2");
   ltdf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__ltdf2");
   ledf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__ledf2");
+  floatdisf_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__floatdisf");
+  floatsisf_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__floatsisf");
+  floatdidf_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__floatdidf");
+  floatsidf_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__floatsidf");
+  fixsfsi_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixsfsi");
+  fixsfdi_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixsfdi");
+  fixdfsi_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixdfsi");
+  fixdfdi_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixdfdi");
+  fixunssfsi_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixunssfsi");
+  fixunssfdi_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixunssfdi");
+  fixunsdfsi_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixunsdfsi");
+  fixunsdfdi_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixunsdfdi");
 }
