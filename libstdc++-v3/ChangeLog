@@ -1,4 +1,15 @@
 2003-07-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_PCH): Fix missed variable.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	
+2003-07-04  Jerry Quinn  <jlquinn@optonline.net>
+
+	* include/bits/locale_facets.tcc (__int_to_char): Move common case
+	to the top.
+
+2003-07-04  Benjamin Kosnik  <bkoz@redhat.com>
             Petur Runolfsson  <peturr02@ru.is>
 	
 	* config/io/basic_file_stdio.cc: Revert.
