@@ -9103,7 +9103,7 @@ do_jump (exp, if_false_label, if_true_label)
 	if (integer_zerop (TREE_OPERAND (exp, 1)))
 	  do_jump (TREE_OPERAND (exp, 0), if_true_label, if_false_label);
 	else if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_FLOAT
-		 || GET_MODE_CLASS (TYPE_MODE (inner_type) == MODE_COMPLEX_INT))
+		 || GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_INT)
 	  do_jump
 	    (fold
 	     (build (TRUTH_ANDIF_EXPR, TREE_TYPE (exp),
@@ -9137,7 +9137,7 @@ do_jump (exp, if_false_label, if_true_label)
 	if (integer_zerop (TREE_OPERAND (exp, 1)))
 	  do_jump (TREE_OPERAND (exp, 0), if_false_label, if_true_label);
 	else if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_FLOAT
-		 || GET_MODE_CLASS (TYPE_MODE (inner_type) == MODE_COMPLEX_INT))
+		 || GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_INT)
 	  do_jump
 	    (fold
 	     (build (TRUTH_ORIF_EXPR, TREE_TYPE (exp),
