@@ -129,6 +129,8 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * @exception EOFException If end of file is reached before reading
    * the boolean
    * @exception IOException If any other error occurs
+   *
+   * @see DataOutput#writeBoolean
    */
   public final boolean readBoolean() throws IOException
   {
@@ -148,7 +150,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * @exception EOFException If end of file is reached before reading the byte
    * @exception IOException If any other error occurs
    *
-   * @see DataOutput
+   * @see DataOutput#writeByte
    */
   public final byte readByte() throws IOException
   {
@@ -178,7 +180,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * @exception EOFException If end of file is reached before reading the char
    * @exception IOException If any other error occurs
    *
-   * @see DataOutput
+   * @see DataOutput#writeChar
    */
   public final char readChar() throws IOException
   {
@@ -204,8 +206,8 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * the double
    * @exception IOException If any other error occurs
    *
-   * @see java.lang.Double
-   * @see DataOutput
+   * @see DataOutput#writeDouble
+   * @see java.lang.Double#longBitsToDouble
    */
   public final double readDouble() throws IOException
   {
@@ -221,7 +223,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * in the class <code>java.lang.Float</code>
    * <p>
    * This method can read a <code>float</code> written by an object
-   * implementing the * <code>writeFloat()</code> method in the
+   * implementing the <code>writeFloat()</code> method in the
    * <code>DataOutput</code> interface.
    *
    * @return The <code>float</code> value read
@@ -229,8 +231,9 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * @exception EOFException If end of file is reached before reading the float
    * @exception IOException If any other error occurs
    *
-   * @see java.lang.Float
-   * @see DataOutput */
+   * @see DataOutput#writeFloat 
+   * @see java.lang.Float#intBitsToFloat
+   */
   public final float readFloat() throws IOException
   {
     return Float.intBitsToFloat(readInt());
@@ -240,32 +243,38 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * This method reads raw bytes into the passed array until the array is
    * full.  Note that this method blocks until the data is available and
    * throws an exception if there is not enough data left in the stream to
-   * fill the buffer
+   * fill the buffer.  Note also that zero length buffers are permitted.
+   * In this case, the method will return immediately without reading any
+   * bytes from the stream.
    *
    * @param b The buffer into which to read the data
    *
-   * @exception EOFException If end of file is reached before filling
-   * the buffer
-   * @exception IOException If any other error occurs */
+   * @exception EOFException If end of file is reached before filling the
+   * buffer
+   * @exception IOException If any other error occurs
+   */
   public final void readFully(byte[] b) throws IOException
   {
     readFully(b, 0, b.length);
   }
 
   /**
-   * This method reads raw bytes into the passed array
-   * <code>buf</code> starting <code>offset</code> bytes into the
-   * buffer.  The number of bytes read will be exactly
-   * <code>len</code> Note that this method blocks until the data is
-   * available and * throws an exception if there is not enough data
-   * left in the stream to read <code>len</code> bytes.
+   * This method reads raw bytes into the passed array <code>buf</code>
+   * starting
+   * <code>offset</code> bytes into the buffer.  The number of bytes read
+   * will be
+   * exactly <code>len</code>.  Note that this method blocks until the data is
+   * available and throws an exception if there is not enough data left in
+   * the stream to read <code>len</code> bytes.  Note also that zero length
+   * buffers are permitted.  In this case, the method will return immediately
+   * without reading any bytes from the stream.
    *
    * @param buf The buffer into which to read the data
    * @param offset The offset into the buffer to start storing data
    * @param len The number of bytes to read into the buffer
    *
-   * @exception EOFException If end of file is reached before filling
-   * the buffer
+   * @exception EOFException If end of file is reached before filling the
+   * buffer
    * @exception IOException If any other error occurs
    */
   public final void readFully(byte[] b, int off, int len) throws IOException
@@ -282,20 +291,20 @@ public class DataInputStream extends FilterInputStream implements DataInput
   }
 
   /**
-   * This method reads a Java <code>int</code> value from an input
-   * stream It operates by reading four bytes from the stream and
-   * converting them to a single Java <code>int</code> The bytes are
-   * stored most significant byte first (i.e., "big endian")
-   * regardless of the native host byte ordering.
+   * This method reads a Java <code>int</code> value from an input stream
+   * It operates by reading four bytes from the stream and converting them to
+   * a single Java <code>int</code>.  The bytes are stored most
+   * significant byte first (i.e., "big endian") regardless of the native
+   * host byte ordering.
    * <p>
-   * As an example, if <code>byte1</code> through <code>byte4</code>
-   * represent the first four bytes read from the stream, they will be
+   * As an example, if <code>byte1</code> through <code>byte4</code> represent
+   * the first four bytes read from the stream, they will be
    * transformed to an <code>int</code> in the following manner:
    * <p>
-   * <code>(int)(((byte1 & 0xFF) << 24) + ((byte2 & 0xFF) << 16) + 
-   * ((byte3 & 0xFF) << 8) + (byte4 & 0xFF)))</code>
+   * <code>(int)(((byte1 & 0xFF) << 24) + ((byte2 & 0xFF) << 16) +
+   * ((byte3 & 0xFF)<< 8) + (byte4 & 0xFF)))</code>
    * <p>
-   * The value returned is in the range of 0 to 65535.
+   * The value returned is in the range of -2147483648 to 2147483647.
    * <p>
    * This method can read an <code>int</code> written by an object
    * implementing the <code>writeInt()</code> method in the
@@ -306,7 +315,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * @exception EOFException If end of file is reached before reading the int
    * @exception IOException If any other error occurs
    *
-   * @see DataOutput
+   * @see DataOutput#writeInt
    */
   public final int readInt() throws IOException
   {
@@ -428,22 +437,24 @@ public class DataInputStream extends FilterInputStream implements DataInput
   }
 
   /**
-   * This method reads a Java long value from an input stream
-   * It operates by reading eight bytes from the stream and converting them to 
-   * a single Java <code>long</code>  The bytes are stored most
+   * This method reads a Java <code>long</code> value from an input stream
+   * It operates by reading eight bytes from the stream and converting them to
+   * a single Java <code>long</code>.  The bytes are stored most
    * significant byte first (i.e., "big endian") regardless of the native
-   * host byte ordering. 
+   * host byte ordering.
    * <p>
-   * As an example, if <code>byte1</code> through <code>byte8</code>
-   * represent the first eight bytes read from the stream, they will
-   * be transformed to an <code>long</code> in the following manner:
+   * As an example, if <code>byte1</code> through <code>byte8</code> represent
+   * the first eight bytes read from the stream, they will be
+   * transformed to an <code>long</code> in the following manner:
    * <p>
-   * <code>(long)((((long)byte1 & 0xFF) << 56) + (((long)byte2 & 0xFF) << 48) + 
-   * (((long)byte3 & 0xFF) << 40) + (((long)byte4 & 0xFF) << 32) + 
-   * (((long)byte5 & 0xFF) << 24) + (((long)byte6 & 0xFF) << 16) + 
-   * (((long)byte7 & 0xFF) << 8) + ((long)byte9 & 0xFF)))</code>
+   * <code>(long)(((byte1 & 0xFF) << 56) + ((byte2 & 0xFF) << 48) +
+   * ((byte3 & 0xFF) << 40) + ((byte4 & 0xFF) << 32) +
+   * ((byte5 & 0xFF) << 24) + ((byte6 & 0xFF) << 16) +
+   * ((byte7 & 0xFF) << 8) + (byte8 & 0xFF)))
+   * </code>
    * <p>
-   * The value returned is in the range of 0 to 65535.
+   * The value returned is in the range of -9223372036854775808 to
+   * 9223372036854775807.
    * <p>
    * This method can read an <code>long</code> written by an object
    * implementing the <code>writeLong()</code> method in the
@@ -454,7 +465,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * @exception EOFException If end of file is reached before reading the long
    * @exception IOException If any other error occurs
    *
-   * @see DataOutput
+   * @see DataOutput#writeLong
    */
   public final long readLong() throws IOException
   {
@@ -474,7 +485,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * respectively, they will be transformed to a <code>short</code>. in
    * the following manner:
    * <p>
-   * <code>(short)(((byte1 & 0xFF) << 8) | (byte2 & 0xFF)</code>
+   * <code>(short)(((byte1 & 0xFF) << 8) | (byte2 & 0xFF))</code>
    * <p>
    * The value returned is in the range of -32768 to 32767.
    * <p>
@@ -487,14 +498,14 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * @exception EOFException If end of file is reached before reading the value
    * @exception IOException If any other error occurs
    *
-   * @see DataOutput
+   * @see DataOutput#writeShort
    */
   public final short readShort() throws IOException
   {
     readFully (buf, 0, 2);
     return convertToShort(buf);
   }
-
+  
   /**
    * This method reads 8 unsigned bits into a Java <code>int</code>
    * value from the stream. The value returned is in the range of 0 to
@@ -509,7 +520,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * @exception EOFException If end of file is reached before reading the value
    * @exception IOException If any other error occurs
    *
-   * @see DataOutput
+   * @see DataOutput#writeByte
    */
   public final int readUnsignedByte() throws IOException
   {
@@ -540,6 +551,8 @@ public class DataInputStream extends FilterInputStream implements DataInput
    *
    * @exception EOFException If end of file is reached before reading the value
    * @exception IOException If any other error occurs
+   *
+   * @see DataOutput#writeShort
    */
   public final int readUnsignedShort() throws IOException
   {
@@ -616,7 +629,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * @exception UTFDataFormatException If the data is not in UTF-8 format
    * @exception IOException If any other error occurs
    *
-   * @see DataOutput
+   * @see DataOutput#writeUTF
    */
   public final String readUTF() throws IOException
   {
@@ -632,6 +645,8 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * @return The String read from the source
    *
    * @exception IOException If an error occurs
+   *
+   * @see DataInput#readUTF
    */
   public final static String readUTF(DataInput in) throws IOException
   {
@@ -654,7 +669,9 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * to skip. 
    *
    * @param n The requested number of bytes to skip.
+   *
    * @return The requested number of bytes to skip.
+   *
    * @exception IOException If an error occurs.
    * @specnote The JDK docs claim that this returns the number of bytes 
    *  actually skipped. The JCL claims that this method can throw an 
