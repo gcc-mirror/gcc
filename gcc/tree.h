@@ -457,7 +457,7 @@ extern void tree_vec_elt_check_failed PARAMS ((int, int, const char *,
    is sufficient to check bounds at the time the reference is seated,
    and assume that all future uses of the reference are safe, since
    the address of references cannot change.  (2) When a reference
-   supertype is seated to an subtype object.  The bounds "remember"
+   supertype is seated to a subtype object.  The bounds "remember"
    the true size of the complete object, so that subsequent upcasts of
    the address of the reference will be checked properly (is such a
    thing valid C++?).  */

@@ -708,7 +708,7 @@ cfg_layout_can_duplicate_bb_p (bb)
   if (bb == EXIT_BLOCK_PTR || bb == ENTRY_BLOCK_PTR)
     return false;
 
-  /* Duplicating fallthru block to exit would require adding an jump
+  /* Duplicating fallthru block to exit would require adding a jump
      and splitting the real last BB.  */
   for (s = bb->succ; s; s = s->succ_next)
     if (s->dest == EXIT_BLOCK_PTR && s->flags & EDGE_FALLTHRU)
@@ -862,7 +862,7 @@ cfg_layout_redirect_edge (e, dest)
   src->next_bb = old_next_bb;
 }
 
-/* Create an duplicate of the basic block BB and redirect edge E into it.  */
+/* Create a duplicate of the basic block BB and redirect edge E into it.  */
 
 basic_block
 cfg_layout_duplicate_bb (bb, e)

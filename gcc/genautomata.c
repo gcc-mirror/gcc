@@ -2492,7 +2492,7 @@ add_excls (dest_list, source_list, excl_pos)
     }
 }
 
-/* Checking NAMES in an presence clause vector and returning formed
+/* Checking NAMES in a presence clause vector and returning formed
    unit_set_el_list.  The function is called only after processing all
    exclusion sets.  */
 static unit_set_el_t
@@ -4531,7 +4531,7 @@ get_excl_set (in_set)
 /* The page contains abstract data for work with presence/absence sets
    (see presence_set/absence_set in file rtl.def).  */
 
-/* The following variables refer to correspondingly an presence and an
+/* The following variables refer to correspondingly a presence and an
    absence set returned by get_presence_absence_set.  This is bit
    string of length equal to cpu units number.  */
 static reserv_sets_t presence_set, absence_set;

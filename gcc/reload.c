@@ -2143,13 +2143,13 @@ operands_match_p (x, y)
   /* If two operands must match, because they are really a single
      operand of an assembler insn, then two postincrements are invalid
      because the assembler insn would increment only once.
-     On the other hand, an postincrement matches ordinary indexing
+     On the other hand, a postincrement matches ordinary indexing
      if the postincrement is the output operand.  */
   if (code == POST_DEC || code == POST_INC || code == POST_MODIFY)
     return operands_match_p (XEXP (x, 0), y);
   /* Two preincrements are invalid
      because the assembler insn would increment only once.
-     On the other hand, an preincrement matches ordinary indexing
+     On the other hand, a preincrement matches ordinary indexing
      if the preincrement is the input operand.
      In this case, return 2, since some callers need to do special
      things when this happens.  */

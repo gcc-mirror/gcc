@@ -2380,7 +2380,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements, no_share)
 	       copy SET_SRC (x) to SET_DEST (x) in some way.  So
 	       we generate the move and see whether it requires more
 	       than one insn.  If it does, we emit those insns and
-	       delete INSN.  Otherwise, we an just replace the pattern
+	       delete INSN.  Otherwise, we can just replace the pattern
 	       of INSN; we have already verified above that INSN has
 	       no other function that to do X.  */
 

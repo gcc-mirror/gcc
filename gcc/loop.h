@@ -248,7 +248,7 @@ struct loop_reg
      During code motion, a negative value indicates a reg that has
      been made a candidate; in particular -2 means that it is an
      candidate that we know is equal to a constant and -1 means that
-     it is an candidate not known equal to a constant.  After code
+     it is a candidate not known equal to a constant.  After code
      motion, regs moved have 0 (which is accurate now) while the
      failed candidates have the original number of times set.
 

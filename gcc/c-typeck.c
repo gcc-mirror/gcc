@@ -5214,7 +5214,7 @@ really_start_incremental_init (type)
 	    constructor_max_index = build_int_2 (-1, -1);
 
 	  /* constructor_max_index needs to be an INTEGER_CST.  Attempts
-	     to initialize VLAs will cause an proper error; avoid tree
+	     to initialize VLAs will cause a proper error; avoid tree
 	     checking errors as well by setting a safe value.  */
 	  if (constructor_max_index
 	      && TREE_CODE (constructor_max_index) != INTEGER_CST)
@@ -5404,7 +5404,7 @@ push_init_level (implicit)
 	    constructor_max_index = build_int_2 (-1, -1);
 
 	  /* constructor_max_index needs to be an INTEGER_CST.  Attempts
-	     to initialize VLAs will cause an proper error; avoid tree
+	     to initialize VLAs will cause a proper error; avoid tree
 	     checking errors as well by setting a safe value.  */
 	  if (constructor_max_index
 	      && TREE_CODE (constructor_max_index) != INTEGER_CST)

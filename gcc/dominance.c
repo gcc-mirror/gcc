@@ -101,7 +101,7 @@ struct dom_info
      number of that node in DFS order counted from 1.  This is an index
      into most of the other arrays in this structure.  */
   TBB *dfs_order;
-  /* If x is the DFS-index of a node which corresponds with an basic block,
+  /* If x is the DFS-index of a node which corresponds with a basic block,
      dfs_to_bb[x] is that basic block.  Note, that in our structure there are
      more nodes that basic blocks, so only dfs_to_bb[dfs_order[bb->index]]==bb
      is true for every basic block bb, but not the opposite.  */

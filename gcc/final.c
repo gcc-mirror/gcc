@@ -994,7 +994,7 @@ compute_alignments ()
 	    }
 	}
       /* In case block is frequent and reached mostly by non-fallthru edge,
-	 align it.  It is most likely an first block of loop.  */
+	 align it.  It is most likely a first block of loop.  */
       if (has_fallthru
 	  && branch_frequency + fallthru_frequency > BB_FREQ_MAX / 10
 	  && branch_frequency > fallthru_frequency * 2)
@@ -4011,7 +4011,7 @@ leaf_function_p ()
   return 1;
 }
 
-/* Return 1 if branch is an forward branch.
+/* Return 1 if branch is a forward branch.
    Uses insn_shuid array, so it works only in the final pass.  May be used by
    output templates to customary add branch prediction hints.
  */

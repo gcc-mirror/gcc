@@ -1,5 +1,36 @@
 2002-12-12  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* c-decl.c: Fix a comment typo.
+	* cfg.c: Likewise.
+	* cfgcleanup.c: Likewise.
+	* cfglayout.c: Likewise.
+	* cfgrtl.c: Likewise.
+	* c-typeck.c: Likewise.
+	* dominance.c: Likewise.
+	* dwarf2asm.c: Likewise.
+	* dwarfout.c: Likewise.
+	* expmed.c: Likewise.
+	* expr.c: Likewise.
+	* final.c: Likewise.
+	* flow.c: Likewise.
+	* function.c: Likewise.
+	* gcc.c: Likewise.
+	* genautomata.c: Likewise.
+	* integrate.c: Likewise.
+	* loop.c: Likewise.
+	* loop.h: Likewise.
+	* output.h: Likewise.
+	* profile.c: Likewise.
+	* ra.h: Likewise.
+	* reload1.c: Likewise.
+	* reload.c: Likewise.
+	* sched-rgn.c: Likewise.
+	* stmt.c: Likewise.
+	* tree.h: Likewise.
+	* vmsdbgout.c: Likewise.
+
+2002-12-12  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md: Add a new peephole2.
 
 2002-12-12  Kazu Hirata  <kazu@cs.umass.edu>
