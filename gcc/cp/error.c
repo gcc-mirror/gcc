@@ -20,6 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "cp-tree.h"
 #include "obstack.h"
@@ -700,6 +701,8 @@ dump_decl (t, v)
     case FUNCTION_DECL:
       if (GLOBAL_IORD_P (DECL_ASSEMBLER_NAME (t)))
 	dump_global_iord (DECL_ASSEMBLER_NAME (t));
+      else if (! DECL_LANG_SPECIFIC (t))
+	OB_PUTS ("{internal}");
       else
 	dump_function_decl (t, v);
       break;
@@ -1386,6 +1389,10 @@ dump_expr (t, nop)
       else
 	dump_unary_op ("*", t, 0);
       OB_PUTC (')');
+      break;
+
+    case DEFAULT_ARG:
+      OB_PUTS ("{unparsed}");
       break;
 
     case TREE_LIST:

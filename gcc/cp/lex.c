@@ -25,11 +25,11 @@ Boston, MA 02111-1307, USA.  */
 /* Cause the `yydebug' variable to be defined.  */
 #define YYDEBUG 1
 
+#include "config.h"
 #include <sys/types.h>
 #include <stdio.h>
 #include <errno.h>
 #include <setjmp.h>
-#include "config.h"
 #include "input.h"
 #include "tree.h"
 #include "lex.h"
@@ -1865,10 +1865,9 @@ do_pending_defargs ()
 	defarg_parm = TREE_CHAIN (defarg_parm);
 
       for (; defarg_parm; defarg_parm = TREE_CHAIN (defarg_parm))
-	if (TREE_PURPOSE (defarg_parm))
+	if (TREE_PURPOSE (defarg_parm)
+	    && TREE_CODE (TREE_PURPOSE (defarg_parm)) == DEFAULT_ARG)
 	  {
-	    my_friendly_assert (TREE_CODE (TREE_PURPOSE (defarg_parm))
-				== DEFAULT_ARG, 2349);
 	    feed_defarg (defarg_fn, defarg_parm);
 
 	    /* Return to the parser, which will process this defarg

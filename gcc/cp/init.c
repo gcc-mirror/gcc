@@ -22,6 +22,7 @@ Boston, MA 02111-1307, USA.  */
 /* High-level class interface.  */
 
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "rtl.h"
 #include "cp-tree.h"

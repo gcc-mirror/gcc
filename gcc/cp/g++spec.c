@@ -1,7 +1,8 @@
+#include "config.h"
+
 #include <sys/types.h>
 #include <stdio.h>
 
-#include "config.h"
 #include "gansidecl.h"
 
 /* This bit is set if we saw a `-xfoo' language specification.  */

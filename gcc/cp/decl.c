@@ -27,8 +27,8 @@ Boston, MA 02111-1307, USA.  */
 /* ??? not all decl nodes are given the most useful possible
    line numbers.  For example, the CONST_DECLs for enum values.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "rtl.h"
 #include "flags.h"
@@ -2576,7 +2576,7 @@ duplicate_decls (newdecl, olddecl)
 		  {
 		    cp_error ("default argument given for parameter %d of `%#D'",
 			      i, newdecl);
-		    cp_error_at ("conflicts with previous specification in `%#D'",
+		    cp_error_at ("after previous specification in `%#D'",
 				 olddecl);
 		  }
 	      }
@@ -2699,6 +2699,7 @@ duplicate_decls (newdecl, olddecl)
 							 TYPE_RAISES_EXCEPTIONS (oldtype));
 
 	  if ((pedantic || ! DECL_IN_SYSTEM_HEADER (olddecl))
+	      && flag_exceptions
 	      && ! compexcepttypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl)))
 	    {
 	      cp_pedwarn ("declaration of `%D' throws different exceptions",

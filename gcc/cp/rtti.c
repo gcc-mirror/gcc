@@ -21,6 +21,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "cp-tree.h"
 #include "flags.h"
@@ -33,7 +34,7 @@ Boston, MA 02111-1307, USA.  */
 
 extern tree define_function ();
 extern tree build_t_desc_overload ();
-extern struct obstack *permanent_obstack;
+extern struct obstack permanent_obstack;
 
 tree type_info_type_node;
 tree tinfo_fn_id;

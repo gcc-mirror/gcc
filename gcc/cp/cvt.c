@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
    but what kind of conversions it does will depend on the language.  */
 
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "flags.h"
 #include "cp-tree.h"
@@ -1100,7 +1101,10 @@ ocp_convert (type, expr, convtype, flags)
 	  
 	  if ((flags & LOOKUP_ONLYCONVERTING)
 	      && ! (IS_AGGR_TYPE (dtype) && DERIVED_FROM_P (type, dtype)))
-	    ctor = build_user_type_conversion (type, ctor, flags);
+	    {
+	      ctor = build_user_type_conversion (type, ctor, flags);
+	      flags |= LOOKUP_NO_CONVERSION;
+	    }
 	  if (ctor)
 	    ctor = build_method_call (NULL_TREE, ctor_identifier,
 				      build_tree_list (NULL_TREE, ctor),
