@@ -1,3 +1,7 @@
+Sat Dec  5 15:14:52 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* i960.h (BOOL_TYPE_SIZE): Define.
+
 Sun Dec  6 00:28:16 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (valid_parallel_load_store): Flog functionality
