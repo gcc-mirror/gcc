@@ -281,8 +281,10 @@ calls_function_1 (exp, which)
     case CALL_EXPR:
       if (which == 0)
 	return 1;
-      else if (TYPE_RETURNS_STACK_DEPRESSED
-	       (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
+      else if ((TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))))
+		== FUNCTION_TYPE)
+	       && (TYPE_RETURNS_STACK_DEPRESSED
+		   (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))))))
 	return 1;
       else if (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
 	       && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
@@ -2195,7 +2197,8 @@ expand_call (exp, target, ignore)
     flags |= flags_from_decl_or_type (TREE_TYPE (TREE_TYPE (p)));
 
   /* Mark if the function returns with the stack pointer depressed.  */
-  if (TYPE_RETURNS_STACK_DEPRESSED (TREE_TYPE (TREE_TYPE (p))))
+  if (TREE_CODE (TREE_TYPE (TREE_TYPE (p))) == FUNCTION_TYPE
+      && TYPE_RETURNS_STACK_DEPRESSED (TREE_TYPE (TREE_TYPE (p))))
     {
       flags |= ECF_SP_DEPRESSED;
       flags &= ~ (ECF_PURE | ECF_CONST);

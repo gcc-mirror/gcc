@@ -1,3 +1,9 @@
+Wed Aug 16 08:10:32 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* calls.c (calls_function_1, expand_call): Only test
+	TYPE_RETURNS_STACK_DEPRESSED for FUNCTION_TYPE.
+	* function.c (thread_prologue_and_epilogue_insns): Likewise.
+
 2000-08-16  Richard Henderson  <rth@cygnus.com>
 
 	* combine.c (simplify_shift_const): Revert previous two
