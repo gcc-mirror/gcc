@@ -97,7 +97,6 @@ extern void compiler_error PROTO((char *, HOST_WIDE_INT,
 static tree get_time_identifier PROTO((char *));
 static int check_newline PROTO((void));
 static int skip_white_space PROTO((int));
-static int yynextch PROTO((void));
 static void finish_defarg PROTO((void));
 static int my_get_run_time PROTO((void));
 static int get_last_nonwhite_on_line PROTO((void));
@@ -1392,23 +1391,6 @@ restore_pending_input (p)
   token_obstack = p->token_obstack;
   end_of_file = p->eof;
   free (p);
-}
-
-/* Return next non-whitespace input character, which may come
-   from `finput', or from `nextchar'.  */
-
-static int
-yynextch ()
-{
-  int c;
-
-  if (nextchar >= 0)
-    {
-      c = nextchar;
-      nextchar = -1;
-    }
-  else c = getch ();
-  return skip_white_space (c);
 }
 
 /* Unget character CH from the input stream.
