@@ -1324,10 +1324,11 @@ duplicate_decls (newdecl, olddecl)
 	      warning_with_decl (olddecl, "non-prototype definition here");
 	    }
 	}
-      /* Warn if function is now inline
-	 but was previously declared not inline and has been called.  */
+      /* Warn about mismatches in various flags.  */
       else
 	{
+	  /* Warn if function is now inline
+	     but was previously declared not inline and has been called.  */
 	  if (TREE_CODE (olddecl) == FUNCTION_DECL
 	      && ! TREE_INLINE (olddecl) && TREE_INLINE (newdecl)
 	      && TREE_USED (olddecl))
@@ -1345,8 +1346,10 @@ duplicate_decls (newdecl, olddecl)
 	      && !TREE_PUBLIC (newdecl))
 	    warning_with_decl (newdecl, "static declaration for `%s' follows non-static");
 
-	  /* These bits are logically part of the type.  */
-	  if (pedantic
+	  /* These bits are logically part of the type, for variables.
+	     But not for functions
+	     (where qualifiers are not valid ANSI anyway).  */
+	  if (pedantic && TREE_CODE (olddecl) != FUNCTION_DECL
 	      && (TREE_READONLY (newdecl) != TREE_READONLY (olddecl)
 		  || TREE_THIS_VOLATILE (newdecl) != TREE_THIS_VOLATILE (olddecl)))
 	    pedwarn_with_decl (newdecl, "type qualifiers for `%s' conflict with previous decl");
@@ -3885,9 +3888,20 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	DECL_ARG_TYPE (decl) = type;
 	if (type == float_type_node)
 	  DECL_ARG_TYPE (decl) = double_type_node;
-	else if (TREE_CODE (type) == INTEGER_TYPE
-		 && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
-	  DECL_ARG_TYPE (decl) = integer_type_node;
+	/* Don't use TYPE_PREISION to decide whether to promote,
+	   because we should convert short if it's the same size as int,
+	   but we should not convert long if it's the same size as int.  */
+	else if (type == char_type_node || type == signed_char_type_node
+		 || type == unsigned_char_type_node
+		 || type == short_integer_type_node
+		 || type == short_unsigned_type_node)
+	  {
+	    if (TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)
+		&& TREE_UNSIGNED (type))
+	      DECL_ARG_TYPE (decl) = unsigned_type_node;
+	    else
+	      DECL_ARG_TYPE (decl) = integer_type_node;
+	  }
 
 	DECL_ARG_TYPE_AS_WRITTEN (decl) = type_as_written;
       }
