@@ -198,6 +198,7 @@ extern int target_flags;
 
 #undef	DBX_OUTPUT_MAIN_SOURCE_FILE_END
 #define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME) \
+  text_section (); \
   if (!TARGET_PORTABLE_RUNTIME) \
     fputs ("\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n", FILE); \
   else \
