@@ -1,3 +1,8 @@
+2005-01-01  Roger Sayle  <roger@eyesopen.com>
+
+	* tree.c (int_fits_type_p): Compare the result of force_fit_type
+	with the original constant rather than require TREE_OVERFLOW.
+
 2005-01-01  Steven Bosscher  <stevenb@suse.de>
 
 	PR middle-end/17544
