@@ -496,16 +496,18 @@ enum cp_tree_index
     CPTI_DELTA_TYPE,
     CPTI_CLEANUP_TYPE,
 
-    CPTI_TP_DESC_TYPE,
-    CPTI_ACCESS_MODE_TYPE,
+    CPTI_TI_DESC_TYPE,
     CPTI_BLTN_DESC_TYPE,
-    CPTI_USER_DESC_TYPE,
-    CPTI_CLASS_DESC_TYPE,
     CPTI_PTR_DESC_TYPE,
-    CPTI_ATTR_DESC_TYPE,
+    CPTI_REF_DESC_TYPE,
+    CPTI_ARY_DESC_TYPE,
     CPTI_FUNC_DESC_TYPE,
-    CPTI_PTMF_DESC_TYPE,
+    CPTI_ENUM_DESC_TYPE,
+    CPTI_CLASS_DESC_TYPE,
+    CPTI_SI_CLASS_DESC_TYPE,
+    CPTI_VMI_CLASS_DESC_TYPE,
     CPTI_PTMD_DESC_TYPE,
+    CPTI_BASE_DESC_TYPE,
     
     CPTI_CLASS_STAR_TYPE,
     CPTI_CLASS_TYPE,
@@ -517,8 +519,9 @@ enum cp_tree_index
     CPTI_VTBL_PTR_TYPE,
     CPTI_STD,
     CPTI_TYPE_INFO_TYPE,
-    CPTI_TINFO_FN_ID,
-    CPTI_TINFO_FN_TYPE,
+    CPTI_TINFO_DECL_ID,
+    CPTI_TINFO_DECL_TYPE,
+    CPTI_TINFO_VAR_ID,
     CPTI_ABORT_FNDECL,
     CPTI_GLOBAL_DELETE_FNDECL,
 
@@ -573,16 +576,20 @@ extern tree cp_global_trees[CPTI_MAX];
 #define wchar_decl_node			cp_global_trees[CPTI_WCHAR_DECL]
 #define vtable_entry_type		cp_global_trees[CPTI_VTABLE_ENTRY_TYPE]
 #define delta_type_node			cp_global_trees[CPTI_DELTA_TYPE]
-#define __tp_desc_type_node		cp_global_trees[CPTI_TP_DESC_TYPE]
-#define __access_mode_type_node		cp_global_trees[CPTI_ACCESS_MODE_TYPE]
-#define __bltn_desc_type_node		cp_global_trees[CPTI_BLTN_DESC_TYPE]
-#define __user_desc_type_node		cp_global_trees[CPTI_USER_DESC_TYPE]
-#define __class_desc_type_node		cp_global_trees[CPTI_CLASS_DESC_TYPE]
-#define __ptr_desc_type_node		cp_global_trees[CPTI_PTR_DESC_TYPE]
-#define __attr_desc_type_node		cp_global_trees[CPTI_ATTR_DESC_TYPE]
-#define __func_desc_type_node		cp_global_trees[CPTI_FUNC_DESC_TYPE]
-#define __ptmf_desc_type_node		cp_global_trees[CPTI_PTMF_DESC_TYPE]
-#define __ptmd_desc_type_node		cp_global_trees[CPTI_PTMD_DESC_TYPE]
+
+#define ti_desc_type_node		cp_global_trees[CPTI_TI_DESC_TYPE]
+#define bltn_desc_type_node		cp_global_trees[CPTI_BLTN_DESC_TYPE]
+#define ptr_desc_type_node		cp_global_trees[CPTI_PTR_DESC_TYPE]
+#define ref_desc_type_node		cp_global_trees[CPTI_REF_DESC_TYPE]
+#define ary_desc_type_node		cp_global_trees[CPTI_ARY_DESC_TYPE]
+#define func_desc_type_node		cp_global_trees[CPTI_FUNC_DESC_TYPE]
+#define enum_desc_type_node		cp_global_trees[CPTI_ENUM_DESC_TYPE]
+#define class_desc_type_node		cp_global_trees[CPTI_CLASS_DESC_TYPE]
+#define si_class_desc_type_node		cp_global_trees[CPTI_SI_CLASS_DESC_TYPE]
+#define vmi_class_desc_type_node	cp_global_trees[CPTI_VMI_CLASS_DESC_TYPE]
+#define ptmd_desc_type_node		cp_global_trees[CPTI_PTMD_DESC_TYPE]
+#define base_desc_type_node		cp_global_trees[CPTI_BASE_DESC_TYPE]
+
 #define class_star_type_node		cp_global_trees[CPTI_CLASS_STAR_TYPE]
 #define class_type_node			cp_global_trees[CPTI_CLASS_TYPE]
 #define record_type_node		cp_global_trees[CPTI_RECORD_TYPE]
@@ -593,8 +600,9 @@ extern tree cp_global_trees[CPTI_MAX];
 #define vtbl_ptr_type_node		cp_global_trees[CPTI_VTBL_PTR_TYPE]
 #define std_node			cp_global_trees[CPTI_STD]
 #define type_info_type_node		cp_global_trees[CPTI_TYPE_INFO_TYPE]
-#define tinfo_fn_id			cp_global_trees[CPTI_TINFO_FN_ID]
-#define tinfo_fn_type			cp_global_trees[CPTI_TINFO_FN_TYPE]
+#define tinfo_decl_id			cp_global_trees[CPTI_TINFO_DECL_ID]
+#define tinfo_decl_type			cp_global_trees[CPTI_TINFO_DECL_TYPE]
+#define tinfo_var_id                    cp_global_trees[CPTI_TINFO_VAR_ID]
 #define abort_fndecl			cp_global_trees[CPTI_ABORT_FNDECL]
 #define global_delete_fndecl		cp_global_trees[CPTI_GLOBAL_DELETE_FNDECL]
 
@@ -1830,7 +1838,8 @@ struct lang_decl
    for an object with virtual baseclasses.  */
 #define DECL_CONSTRUCTOR_FOR_VBASE_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.constructor_for_vbase_attr)
 
-/* Non-zero for a FUNCTION_DECL that declares a type-info function.  */
+/* Non-zero for a FUNCTION_DECL that declares a type-info function.
+   This only happens in the old abi.  */
 #define DECL_TINFO_FN_P(NODE) 					\
   (TREE_CODE (NODE) == FUNCTION_DECL				\
    && DECL_ARTIFICIAL (NODE)					\

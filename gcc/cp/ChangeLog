@@ -1,3 +1,49 @@
+2000-01-24  Nathan Sidwell  <sidwell@codesourcery.com>
+
+	* cp-tree.h (CPTI_TP_DESC_TYPE, CPTI_ACCESS_MODE_TYPE,
+	CPTI_USER_DESC_TYPE, CPTI_CLASS_DESC_TYPE, CPTI_ATTR_DESC_TYPE,
+	CPTI_PTMF_DESC_TYPE): Remove cp_tree_index enumerations.
+	(CPTI_TI_DESC_TYPE, CPTI_REF_DESC_TYPE, CPTI_ARY_DESC_TYPE,
+	CPTI_ENUM_DESC_TYPE, CPTI_CLASS_DESC_TYPE, CPTI_SI_CLASS_DESC_TYPE,
+	CPTI_VMI_CLASS_DESC_TYPE, CPTI_BASE_DESC_TYPE): New enumerations.
+	(CPTI_TINFO_FN_ID, CPTI_TINFO_FN_TYPE): Rename to ...
+	(CPTI_TINFO_DECL_ID, CPTI_TINFO_DECL_TYPE): ... here.
+	(CPTI_TINFO_VAR_ID): New enumeration.
+	(__tp_desc_type_node, __access_mode_type_node,
+	__bltn_desc_type_node, __user_desc_type_node,
+	__class_desc_type_node, __ptr_desc_type_node,
+	__attr_desc_type_node, __func_desc_type_node,
+	__ptmf_desc_type_node, __ptmd_desc_type_node): Remove #defines.
+	(ti_desc_type_node, bltn_desc_type_node, ptr_desc_type_node,
+	ref_desc_type_node, ary_desc_type_node, func_desc_type_node,
+	enum_desc_type_node, class_desc_type_node,
+	si_class_desc_type_node, vmi_class_desc_type_node,
+	ptmd_desc_type_node, base_desc_type_node): New #defines.
+	(tinfo_fn_id, tinfo_fn_type): Rename to ...
+	(tinfo_decl_id, tinfo_decl_type): ... here. Adjust.
+	(tinfo_var_id): New enumeration.
+	(DECL_TINFO_FN_P): Augment comment.
+	* decl.c (cp_global_trees): Adjust documentation.
+	* rtti.c (init_rtti_processing): Adjust for tinfo_decl_id,
+	tinfo_decl_type and tinfo_var_id.
+	(get_tinfo_decl_dynamic): Adjust for tinfo_decl_type.
+	(build_typeid): Remove unused variable.
+	(get_tinfo_var): Use tinfo_var_id.
+	(tinfo_name): New static function.
+	(get_tinfo_decl): Adjust for tinfo_decl_id and tinfo_decl_type.
+	(tinfo_from_decl): Likewise.
+	(get_base_offset): New static function, broken out of
+	expand_class_desc.
+	(expand_si_desc): Use tinfo_name.
+	(expand_class_desc): Likewise. Lose local static variable.
+	Use base_desc_type_node. Use get_base_offset.
+	(expand_ptr_desc): Use tinfo_name.
+	(expand_attr_desc): Likewise.
+	(expand_generic_desc): Likewise.
+
+	* tinfo.cc (__GXX_ABI_VERSION): Test value and existance.
+	* tinfo.h (__GXX_ABI_VERSION): Test value and existance.
+
 2000-01-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (__eprintf): Remove declaration.
