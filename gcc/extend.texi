@@ -265,7 +265,7 @@ example:
 
 @example
 #define SEARCH(array, target)                     \
-(@{                                               \
+(@{                                                \
   __label__ found;                                \
   typeof (target) _SEARCH_target = (target);      \
   typeof (*(array)) *_SEARCH_array = (array);     \
@@ -274,7 +274,7 @@ example:
   for (i = 0; i < max; i++)                       \
     for (j = 0; j < max; j++)                     \
       if (_SEARCH_array[i][j] == _SEARCH_target)  \
-        @{ value = i; goto found; @}              \
+        @{ value = i; goto found; @}                \
   value = -1;                                     \
  found:                                           \
   value;                                          \
@@ -346,7 +346,8 @@ never pass it as an argument.
 An alternate way to write the above example is
 
 @example
-static const int array[] = @{ &&foo - &&foo, &&bar - &&foo, &&hack - &&foo @};
+static const int array[] = @{ &&foo - &&foo, &&bar - &&foo,
+                             &&hack - &&foo @};
 goto *(&&foo + array[i]);
 @end example
 
@@ -2547,7 +2548,8 @@ int foo __attribute__((section ("shared"), shared)) = 0;
 int
 main()
 @{
-  /* Read and write foo. All running copies see the same value. */
+  /* Read and write foo.  All running
+     copies see the same value.  */
   return 0;
 @}
 @end smallexample
@@ -3123,9 +3125,10 @@ significantly, or combined, by writing the keyword @code{volatile} after
 the @code{asm}.  For example:
 
 @example
-#define get_and_set_priority(new)  \
-(@{ int __old; \
-   asm volatile ("get_and_set_priority %0, %1": "=g" (__old) : "g" (new)); \
+#define get_and_set_priority(new)              \
+(@{ int __old;                                  \
+   asm volatile ("get_and_set_priority %0, %1" \
+                 : "=g" (__old) : "g" (new));  \
    __old; @})
 @end example
 
@@ -3832,8 +3835,9 @@ you may want it to be folded if it involves constants, but need to call
 a function if it does not.  For example:
 
 @smallexample
-#define Scale_Value(X)  \
-  (__builtin_constant_p (X) ? ((X) * SCALE + OFFSET) : Scale (X))
+#define Scale_Value(X)      \
+  (__builtin_constant_p (X) \
+  ? ((X) * SCALE + OFFSET) : Scale (X))
 @end smallexample
 
 You may use this builtin function in either a macro or an inline

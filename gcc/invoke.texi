@@ -190,7 +190,7 @@ in the following sections.
 @xref{Objective-C Dialect Options,,Options Controlling Objective-C Dialect}.
 @gccoptlist{
 -fconstant-string-class=@var{class name} @gol
--fgnu-runtime  -fnext-runtime  -gen-decls
+-fgnu-runtime  -fnext-runtime  -gen-decls @gol
 -Wno-protocol  -Wselector}
 
 @item Language Independent Options
@@ -217,7 +217,7 @@ in the following sections.
 -Wmissing-format-attribute  -Wmissing-noreturn @gol
 -Wmultichar  -Wno-format-extra-args -Wno-format-y2k @gol
 -Wno-import  -Wpacked  -Wpadded @gol
--Wparentheses -Wpointer-arith  -Wredundant-decls @gol
+-Wparentheses  -Wpointer-arith  -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
 -Wsign-compare  -Wswitch  -Wsystem-headers @gol
 -Wtrigraphs  -Wundef  -Wuninitialized @gol
@@ -227,14 +227,14 @@ in the following sections.
 
 @item C-only Warning Options
 @gccoptlist{
--Wbad-function-cast -Wmissing-prototypes -Wnested-externs @gol
--Wstrict-prototypes -Wtraditional}
+-Wbad-function-cast  -Wmissing-prototypes  -Wnested-externs @gol
+-Wstrict-prototypes  -Wtraditional}
 
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{
 -a  -ax  -d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
--fdump-unnumbered -fdump-translation-unit=@var{file} @gol
+-fdump-unnumbered  -fdump-translation-unit=@var{file} @gol
 -fdump-class-layout=@var{file}  -fmem-report  -fpretend-float @gol
 -fprofile-arcs  -ftest-coverage  -ftime-report @gol
 -g  -g@var{level}  -gcoff  -gdwarf  -gdwarf-1  -gdwarf-1+  -gdwarf-2 @gol
@@ -314,8 +314,8 @@ in the following sections.
 @gccoptlist{
 -m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040 @gol
 -m68060  -mcpu32 -m5200  -m68881  -mbitfield  -mc68000  -mc68020   @gol
--mfpa -mnobitfield  -mrtd  -mshort  -msoft-float  -mpcrel @gol
--malign-int -mstrict-align}
+-mfpa  -mnobitfield  -mrtd  -mshort  -msoft-float  -mpcrel @gol
+-malign-int  -mstrict-align}
 
 @emph{M68hc1x Options}
 @gccoptlist{
@@ -333,11 +333,11 @@ in the following sections.
 -mcmodel=@var{code model} @gol
 -m32  -m64 @gol
 -mapp-regs  -mbroken-saverestore  -mcypress @gol
--mepilogue -mfaster-structs -mflat @gol
+-mepilogue  -mfaster-structs -mflat @gol
 -mfpu  -mhard-float  -mhard-quad-float @gol
 -mimpure-text  -mlive-g0  -mno-app-regs @gol
--mno-epilogue -mno-faster-structs -mno-flat  -mno-fpu @gol
--mno-impure-text -mno-stack-bias  -mno-unaligned-doubles @gol
+-mno-epilogue  -mno-faster-structs  -mno-flat  -mno-fpu @gol
+-mno-impure-text  -mno-stack-bias  -mno-unaligned-doubles @gol
 -msoft-float  -msoft-quad-float  -msparclite  -mstack-bias @gol
 -msupersparc  -munaligned-doubles  -mv8}
 
@@ -359,28 +359,28 @@ in the following sections.
 
 @emph{ARM Options}
 @gccoptlist{
--mapcs-frame -mno-apcs-frame @gol
--mapcs-26 -mapcs-32 @gol
--mapcs-stack-check -mno-apcs-stack-check @gol
--mapcs-float -mno-apcs-float @gol
--mapcs-reentrant -mno-apcs-reentrant @gol
--msched-prolog -mno-sched-prolog @gol
--mlittle-endian -mbig-endian -mwords-little-endian @gol
--malignment-traps -mno-alignment-traps @gol
--msoft-float -mhard-float -mfpe @gol
--mthumb-interwork -mno-thumb-interwork @gol
--mcpu=@var{name} -march=@var{name} -mfpe=@var{name}  @gol
+-mapcs-frame  -mno-apcs-frame @gol
+-mapcs-26  -mapcs-32 @gol
+-mapcs-stack-check  -mno-apcs-stack-check @gol
+-mapcs-float  -mno-apcs-float @gol
+-mapcs-reentrant  -mno-apcs-reentrant @gol
+-msched-prolog  -mno-sched-prolog @gol
+-mlittle-endian  -mbig-endian  -mwords-little-endian @gol
+-malignment-traps  -mno-alignment-traps @gol
+-msoft-float  -mhard-float  -mfpe @gol
+-mthumb-interwork  -mno-thumb-interwork @gol
+-mcpu=@var{name}  -march=@var{name}  -mfpe=@var{name}  @gol
 -mstructure-size-boundary=@var{n} @gol
--mbsd -mxopen -mno-symrename @gol
+-mbsd -mxopen  -mno-symrename @gol
 -mabort-on-noreturn @gol
--mlong-calls -mno-long-calls @gol
--msingle-pic-base -mno-single-pic-base @gol
+-mlong-calls  -mno-long-calls @gol
+-msingle-pic-base  -mno-single-pic-base @gol
 -mpic-register=@var{reg} @gol
 -mnop-fun-dllimport @gol
 -mpoke-function-name @gol
--mthumb -marm @gol
--mtpcs-frame -mtpcs-leaf-frame @gol
--mcaller-super-interworking -mcallee-super-interworking }
+-mthumb  -marm @gol
+-mtpcs-frame  -mtpcs-leaf-frame @gol
+-mcaller-super-interworking  -mcallee-super-interworking }
 
 @emph{MN10200 Options}
 @gccoptlist{
@@ -493,13 +493,13 @@ in the following sections.
 
 @emph{DEC Alpha Options}
 @gccoptlist{
--mfp-regs  -mno-fp-regs -mno-soft-float  -msoft-float @gol
--malpha-as -mgas @gol
+-mfp-regs  -mno-fp-regs  -mno-soft-float  -msoft-float @gol
+-malpha-as  -mgas @gol
 -mieee  -mieee-with-inexact  -mieee-conformant @gol
 -mfp-trap-mode=@var{mode}  -mfp-rounding-mode=@var{mode} @gol
 -mtrap-precision=@var{mode}  -mbuild-constants @gol
 -mcpu=@var{cpu type} @gol
--mbwx -mno-bwx -mcix -mno-cix -mmax -mno-max @gol
+-mbwx  -mno-bwx  -mcix  -mno-cix  -mmax  -mno-max @gol
 -mmemory-latency=@var{time}}
 
 @emph{Clipper Options}
@@ -508,7 +508,7 @@ in the following sections.
 
 @emph{H8/300 Options}
 @gccoptlist{
--mrelax  -mh -ms -mint32  -malign-300}
+-mrelax  -mh  -ms  -mint32  -malign-300}
 
 @emph{SH Options}
 @gccoptlist{
@@ -532,43 +532,44 @@ in the following sections.
 
 @emph{TMS320C3x/C4x Options}
 @gccoptlist{
--mcpu=@var{cpu} -mbig -msmall -mregparm -mmemparm @gol
--mfast-fix -mmpyi -mbk -mti -mdp-isr-reload @gol
--mrpts=@var{count}  -mrptb -mdb -mloop-unsigned @gol
--mparallel-insns -mparallel-mpy -mpreserve-float}
+-mcpu=@var{cpu}  -mbig  -msmall  -mregparm  -mmemparm @gol
+-mfast-fix  -mmpyi  -mbk  -mti  -mdp-isr-reload @gol
+-mrpts=@var{count}  -mrptb  -mdb  -mloop-unsigned @gol
+-mparallel-insns  -mparallel-mpy  -mpreserve-float}
 
 @emph{V850 Options}
 @gccoptlist{
--mlong-calls -mno-long-calls -mep -mno-ep @gol
--mprolog-function -mno-prolog-function -mspace @gol
--mtda=@var{n} -msda=@var{n} -mzda=@var{n} @gol
--mv850 -mbig-switch}
+-mlong-calls  -mno-long-calls  -mep  -mno-ep @gol
+-mprolog-function  -mno-prolog-function  -mspace @gol
+-mtda=@var{n}  -msda=@var{n}  -mzda=@var{n} @gol
+-mv850  -mbig-switch}
 
 @emph{NS32K Options}
 @gccoptlist{
--m32032 -m32332 -m32532 -m32081 -m32381 -mmult-add -mnomult-add @gol
--msoft-float -mrtd -mnortd -mregparam -mnoregparam -msb -mnosb @gol
--mbitfield -mnobitfield -mhimem -mnohimem}
+-m32032  -m32332  -m32532  -m32081  -m32381 @gol
+-mmult-add  -mnomult-add -msoft-float  -mrtd  -mnortd @gol
+-mregparam  -mnoregparam  -msb  -mnosb @gol
+-mbitfield  -mnobitfield  -mhimem  -mnohimem}
 
 @emph{AVR Options}
 @gccoptlist{
--mmcu=@var{mcu} -msize -minit-stack=@var{n} -mno-interrupts @gol
--mcall-prologues -mno-tablejump -mtiny-stack}
+-mmcu=@var{mcu}  -msize  -minit-stack=@var{n}  -mno-interrupts @gol
+-mcall-prologues  -mno-tablejump  -mtiny-stack}
 
 @emph{MCore Options}
 @gccoptlist{
--mhardlit -mno-hardlit -mdiv -mno-div -mrelax-immediates  @gol
--mno-relax-immediates -mwide-bitfields -mno-wide-bitfields @gol
--m4byte-functions -mno-4byte-functions -mcallgraph-data @gol
--mno-callgraph-data -mslow-bytes -mno-slow-bytes -mno-lsim @gol
--mlittle-endian -mbig-endian -m210 -m340 -mstack-increment}
+-mhardlit  -mno-hardlit  -mdiv  -mno-div  -mrelax-immediates  @gol
+-mno-relax-immediates  -mwide-bitfields  -mno-wide-bitfields @gol
+-m4byte-functions  -mno-4byte-functions  -mcallgraph-data @gol
+-mno-callgraph-data  -mslow-bytes  -mno-slow-bytes  -mno-lsim @gol
+-mlittle-endian  -mbig-endian  -m210  -m340  -mstack-increment}
 
 @emph{IA-64 Options}
 @gccoptlist{
--mbig-endian -mlittle-endian -mgnu-as -mgnu-ld -mno-pic @gol
--mvolatile-asm-stop -mb-step -mregister-names -mno-sdata @gol
--mconstant-gp -mauto-pic -minline-divide-min-latency @gol
--minline-divide-max-throughput -mno-dwarf2-asm @gol
+-mbig-endian  -mlittle-endian  -mgnu-as  -mgnu-ld  -mno-pic @gol
+-mvolatile-asm-stop  -mb-step  -mregister-names  -mno-sdata @gol
+-mconstant-gp  -mauto-pic  -minline-divide-min-latency @gol
+-minline-divide-max-throughput  -mno-dwarf2-asm @gol
 -mfixed-range=@var{register range}}
 
 @item Code Generation Options
@@ -581,12 +582,12 @@ in the following sections.
 -fno-common  -fno-ident  -fno-gnu-linker @gol
 -fpcc-struct-return  -fpic  -fPIC @gol
 -freg-struct-return  -fshared-data  -fshort-enums @gol
--fshort-double  -fvolatile  -fvolatile-global -fvolatile-static @gol
+-fshort-double  -fvolatile @gol
+-fvolatile-global  -fvolatile-static @gol
 -fverbose-asm  -fpack-struct  -fstack-check @gol
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
 -fargument-alias  -fargument-noalias @gol
--fargument-noalias-global @gol
--fleading-underscore}
+-fargument-noalias-global  -fleading-underscore}
 @end table
 
 @menu
@@ -4144,7 +4145,8 @@ lib          Libraries to include on the command line to the linker
 libgcc       Decides which GCC support library to pass to the linker
 linker       Sets the name of the linker
 predefines   Defines to be passed to the C preprocessor
-signed_char  Defines to pass to CPP to say whether @code{char} is signed by default
+signed_char  Defines to pass to CPP to say whether @code{char} is signed
+             by default
 startfile    Object files to include at the start of the link
 @end smallexample
 
@@ -8305,8 +8307,10 @@ function, so the call site information may not be available to the
 profiling functions otherwise.)
 
 @example
-void __cyg_profile_func_enter (void *this_fn, void *call_site);
-void __cyg_profile_func_exit  (void *this_fn, void *call_site);
+void __cyg_profile_func_enter (void *this_fn,
+                               void *call_site);
+void __cyg_profile_func_exit  (void *this_fn,
+                               void *call_site);
 @end example
 
 The first argument is the address of the start of the current function,
