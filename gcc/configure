@@ -5246,23 +5246,25 @@ elif [ -f $gcc_cv_as_gas_srcdir/configure.in ]; then
 	done
 	gcc_cv_gas_major_version=`expr "$gcc_cv_gas_version" : "VERSION=\([0-9]*\)"`
 	gcc_cv_gas_minor_version=`expr "$gcc_cv_gas_version" : "VERSION=[0-9]*\.\([0-9]*\)"`
-	# Gas version 2.6 and later support for .balign and .p2align.
-	# bytes to skip when using .p2align.
-	if [ "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 6 -o "$gcc_cv_gas_major_version" -gt 2 ]; then
-		gcc_cv_as_alignment_features=".balign and .p2align"
-		cat >> confdefs.h <<\EOF
+	if [ x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x ]; then
+		# Gas version 2.6 and later support for .balign and .p2align.
+		# bytes to skip when using .p2align.
+		if [ "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 6 -o "$gcc_cv_gas_major_version" -gt 2 ]; then
+			gcc_cv_as_alignment_features=".balign and .p2align"
+			cat >> confdefs.h <<\EOF
 #define HAVE_GAS_BALIGN_AND_P2ALIGN 1
 EOF
 
-	fi
-	# Gas version 2.8 and later support specifying the maximum
-	# bytes to skip when using .p2align.
-	if [ "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 8 -o "$gcc_cv_gas_major_version" -gt 2 ]; then
-		gcc_cv_as_alignment_features=".p2align including maximum skip"
-		cat >> confdefs.h <<\EOF
+		fi
+		# Gas version 2.8 and later support specifying the maximum
+		# bytes to skip when using .p2align.
+		if [ "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 8 -o "$gcc_cv_gas_major_version" -gt 2 ]; then
+			gcc_cv_as_alignment_features=".p2align including maximum skip"
+			cat >> confdefs.h <<\EOF
 #define HAVE_GAS_MAX_SKIP_P2ALIGN 1
 EOF
 
+		fi
 	fi
 elif [ x$host = x$target ]; then
 	# Native build.
