@@ -214,7 +214,7 @@ extern const int x86_partial_reg_dependency, x86_memory_mismatch_stall;
 #define TARGET_CMOVE ((x86_cmove & (1 << ix86_arch)) || TARGET_SSE)
 #define TARGET_DEEP_BRANCH_PREDICTION (x86_deep_branch & CPUMASK)
 #define TARGET_DOUBLE_WITH_ADD (x86_double_with_add & CPUMASK)
-#define TARGET_USE_SAHF (x86_use_sahf & CPUMASK)
+#define TARGET_USE_SAHF ((x86_use_sahf & CPUMASK) && !TARGET_64BIT)
 #define TARGET_MOVX (x86_movx & CPUMASK)
 #define TARGET_PARTIAL_REG_STALL (x86_partial_reg_stall & CPUMASK)
 #define TARGET_USE_LOOP (x86_use_loop & CPUMASK)
