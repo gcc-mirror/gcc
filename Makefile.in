@@ -616,7 +616,6 @@ INSTALL_MODULES = \
 	install-sn \
 	install-tar \
 	install-tcl \
-	install-texinfo \
 	install-textutils \
 	install-tgas \
 	install-time \
