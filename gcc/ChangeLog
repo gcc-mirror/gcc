@@ -1,3 +1,13 @@
+2001-08-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	* regclass.c (call_really_used_regs): New array for registers which
+	are actually used by a call.
+	(init_reg_sets_1): Initialize regs_invalidated_by_call with the
+	new array.
+	(fix_register): Set call_really_used too.
+	* config/ia64/ia64.h (CALL_REALLY_USED_REGISTERS): Initialize.
+	* doc/tm.texi (CALL_REALLY_USED_REGISTERS): Document.
+
 2001-08-01  Richard Henderson  <rth@redhat.com>
 
 	* read-rtl.c (read_name): Consider \r whitespace.

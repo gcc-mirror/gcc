@@ -1700,6 +1700,17 @@ If a register has 0 in @code{CALL_USED_REGISTERS}, the compiler
 automatically saves it on function entry and restores it on function
 exit, if the register is used within the function.
 
+@findex CALL_REALLY_USED_REGISTERS
+@item CALL_REALLY_USED_REGISTERS
+@cindex call-used register
+@cindex call-clobbered register
+@cindex call-saved register
+Like @code{CALL_USED_REGISTERS} except this macro doesn't require 
+that the entire set of @code{FIXED_REGISTERS} be included.  
+(@code{CALL_USED_REGISTERS} must be a superset of @code{FIXED_REGISTERS}).
+This macro is optional.  If not specified, it defaults to the value 
+of @code{CALL_USED_REGISTERS}.
+
 @findex HARD_REGNO_CALL_PART_CLOBBERED
 @item HARD_REGNO_CALL_PART_CLOBBERED (@var{regno}, @var{mode})
 @cindex call-used register
