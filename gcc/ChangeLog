@@ -1,3 +1,10 @@
+2002-07-29  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (expand_builtin):  Change the default behavior to
+	only issue an error if the builtin function doesn't have a 
+	fallback library call.  Remove several cases handled by the
+	new default.
+
 2002-07-29  John David Anglin  <dave@hiauly1.hia.nrc>
 
 	* real.c (ieee_24, ieee_53, ieee_64, ieee_113): Define only if the
