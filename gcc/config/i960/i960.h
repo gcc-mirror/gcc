@@ -63,7 +63,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	"%{mka:-AKA}%{mkb:-AKB}%{msa:-ASA}%{msb:-ASB}\
 	%{mmc:-AMC}%{mca:-ACA}%{mcc:-ACC}%{mcf:-ACF}\
 	%{!mka:%{!mkb:%{!msa:%{!msb:%{!mmc:%{!mca:%{!mcc:%{!mcf:-AKB}}}}}}}}\
-	%{mlink-relax:-link-relax}"
+	%{mlink-relax:-linkrelax}"
 
 /* Specs for the linker, to handle processor variations.
    For compatibility with Intel's gnu960 tool chain, pass -F and -A options
