@@ -123,6 +123,10 @@ Boston, MA 02111-1307, USA.  */
    required characters, so we define this to be a null string.  */
 
 #define FILE_NAME_JOINER ""
+
+/* vprintf() has been available since VMS V4.6.  */
+
+#define HAVE_VPRINTF
 
 #ifdef VAXC
 /* Customizations/kludges for building with DEC's VAX C compiler
