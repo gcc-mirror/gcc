@@ -672,6 +672,11 @@ Tue Nov 30 12:28:34 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
         check.
         * expr.c (expand_java_arraystore): Likewise. 
 
+1999-11-28 Anthony Green <green@cygnus.com>
+
+	* decl.c (find_local_variable): Reuse single slot decls when
+	  appropriate.
+
 Wed Nov 24 17:33:26 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
         * jcf-parse.c (saw_java_source): Global variable removed.
