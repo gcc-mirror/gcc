@@ -1,3 +1,16 @@
+Thu Mar 13 18:39:42 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cselib.c (clear_table): Do not take argument; always clear just
+	used slots.
+	(cselib_process_insn):  Update call of clear_table
+	(cselib_init): Do not call clear_table.
+	(cselib_finish): Clear table.
+
+	* cse.c (count_reg_usage): Do not check side_effects_p.
+	* rtlanal.c (set_noop_p): Check side_effects_p only when set looks
+	like noop.
+	(find_reg_equal_equiv_note): Do not use find_reg_note.
+
 2003-03-14  Richard Henderson  <rth@redhat.com>
 
 	PR target/9700

@@ -7494,15 +7494,8 @@ count_reg_usage (x, counts, dest, incr)
       /* Unless we are setting a REG, count everything in SET_DEST.  */
       if (GET_CODE (SET_DEST (x)) != REG)
 	count_reg_usage (SET_DEST (x), counts, NULL_RTX, incr);
-
-      /* If SRC has side-effects, then we can't delete this insn, so the
-	 usage of SET_DEST inside SRC counts.
-
-	 ??? Strictly-speaking, we might be preserving this insn
-	 because some other SET has side-effects, but that's hard
-	 to do and can't happen now.  */
       count_reg_usage (SET_SRC (x), counts,
-		       side_effects_p (SET_SRC (x)) ? NULL_RTX : SET_DEST (x),
+		       SET_DEST (x),
 		       incr);
       return;
 
