@@ -1,5 +1,12 @@
 2000-05-30  Mark Mitchell  <mark@codesourcery.com>
 
+	* call.c (add_template_candidate_real): Handle member template
+	constructors for classes with virtual bases.
+	(build_user_type_conversion_1): Use in_charge_arg_for_name.
+	(build_new_method_call): Use DECL_NONSTATIC_MEMBER_FUNCTION_P.
+
+	* ir.texi: Update thunk documentation.
+	
 	* call.c (joust): Fix handling of overloaded builtin operators.
 
 2000-05-30  Zack Weinberg  <zack@wolery.cumb.org>

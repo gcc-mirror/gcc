@@ -2141,11 +2141,25 @@ add_template_candidate_real (candidates, tmpl, ctype, explicit_targs,
 {
   int ntparms = DECL_NTPARMS (tmpl);
   tree targs = make_tree_vec (ntparms);
+  tree args_without_in_chrg;
   struct z_candidate *cand;
   int i;
   tree fn;
 
-  i = fn_type_unification (tmpl, explicit_targs, targs, arglist,
+  /* TEMPLATE_DECLs do not have the in-charge parameter, nor the VTT
+     parameter.  So, skip it here before attempting to perform
+     argument deduction.  */
+  if ((DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (tmpl)
+       || DECL_BASE_CONSTRUCTOR_P (tmpl))
+      && TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (tmpl)))
+    args_without_in_chrg = tree_cons (NULL_TREE, 
+				      TREE_VALUE (arglist),
+				      TREE_CHAIN (TREE_CHAIN (arglist)));
+  else
+    args_without_in_chrg = arglist;
+
+  i = fn_type_unification (tmpl, explicit_targs, targs,
+			   args_without_in_chrg,
 			   return_type, strict);
 
   if (i != 0)
@@ -2320,7 +2334,9 @@ build_user_type_conversion_1 (totype, expr, flags)
       TREE_TYPE (t) = build_pointer_type (totype);
       args = build_tree_list (NULL_TREE, expr);
       if (DECL_HAS_IN_CHARGE_PARM_P (OVL_CURRENT (ctors)))
-	args = tree_cons (NULL_TREE, integer_one_node, args);
+	args = tree_cons (NULL_TREE, 
+			  in_charge_arg_for_name (complete_ctor_identifier), 
+			  args);
       args = tree_cons (NULL_TREE, t, args);
     }
   for (; ctors; ctors = OVL_NEXT (ctors))
@@ -4229,7 +4245,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
   tree explicit_targs = NULL_TREE;
   tree basetype, mem_args = NULL_TREE, fns, instance_ptr;
   tree pretty_name;
-  tree user_args = args;
+  tree user_args;
   tree templates = NULL_TREE;
   int template_only = 0;
 
@@ -4374,7 +4390,8 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 	  if ((flags & LOOKUP_ONLYCONVERTING)
 	      && DECL_NONCONVERTING_P (t))
 	    continue;
-	  if (TREE_CODE (TREE_TYPE (t)) == METHOD_TYPE)
+
+	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (t))
 	    this_arglist = mem_args;
 	  else
 	    this_arglist = args;
