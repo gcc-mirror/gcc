@@ -1413,14 +1413,15 @@ dbxout_symbol (decl, local)
 	    /* Handle the case of a C++ structure or union
 	       where the TYPE_NAME is a TYPE_DECL
 	       which gives both a typedef name and a tag.  */
-	    /* dbx requires the tag first and the typedef second.
-	       ??? there is a bug here.  It generates spurious tags
-	       for C code.  */
+	    /* dbx requires the tag first and the typedef second.  */
 	    if ((TREE_CODE (type) == RECORD_TYPE
 		 || TREE_CODE (type) == UNION_TYPE)
 		&& TYPE_NAME (type) == decl
 		&& !(use_gnu_debug_info_extensions && have_used_extensions)
-		&& !TREE_ASM_WRITTEN (TYPE_NAME (type)))
+		&& !TREE_ASM_WRITTEN (TYPE_NAME (type))
+		/* Distinguish the implicit typedefs of C++
+		   from explicit ones that might be found in C.  */
+		&& DECL_SOURCE_LINE (decl) == 0)
 	      {
 		tree name = TYPE_NAME (type);
 		if (TREE_CODE (name) == TYPE_DECL)
