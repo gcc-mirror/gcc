@@ -1255,7 +1255,7 @@ namespace std
       while (__res >= __trans.size())
 	{
 	  // Increment size of translated string.
-	  string_type::size_type __newsize = __trans.size() * 2;
+	  typename string_type::size_type __newsize = __trans.size() * 2;
 	  __trans.resize(__newsize);
 	  __res = _M_transform_helper(__trans.begin().base(), __orig.c_str(), 
 				      __trans.size());
