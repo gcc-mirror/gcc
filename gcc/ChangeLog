@@ -1,3 +1,11 @@
+Thu Dec 20 16:58:46 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* cfgcleanup.c (flow_find_cross_jump): Avoid incrementing of ninsns
+	if one of block does not contain jump.
+	(outgoing_edge_math): Revert last path; require edges to be noncomplex
+	nonfake to match single exit edge; require conditional jumps to not
+	have side effect.
+
 2001-12-20  Turly O'Connor  <turly@apple.com>
 
 	* tm.texi (ASM_OUTPUT_OPERAND): Change documentation references to
