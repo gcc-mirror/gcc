@@ -27,6 +27,7 @@ extern void position_after_white_space PARAMS ((void));
 extern int c_lex PARAMS ((tree *));
 extern const char *init_c_lex PARAMS ((const char *));
 
+extern void save_and_forget_protocol_qualifiers PARAMS ((void));
 extern void forget_protocol_qualifiers PARAMS ((void));
 extern void remember_protocol_qualifiers PARAMS ((void));
 extern tree is_class_name PARAMS ((tree));
