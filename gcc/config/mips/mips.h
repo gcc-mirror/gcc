@@ -3448,7 +3448,9 @@ rdata_section ()							\
 
 #define SELECT_SECTION(DECL, RELOC)					\
 {									\
-  if (int_size_in_bytes (TREE_TYPE (DECL)) <= mips_section_threshold	\
+  int size = int_size_in_bytes (TREE_TYPE (DECL));			\
+									\
+  if (size <= mips_section_threshold && size > 0			\
       && mips_section_threshold > 0)					\
     sdata_section ();							\
 									\
