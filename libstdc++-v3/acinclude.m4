@@ -664,7 +664,7 @@ dnl Run through flags (either default or command-line) and set things.
 if test -n "$enable_cxx_flags"; then
     for f in $enable_cxx_flags; do
         case "$f" in
-            -fhonor-std)  AC_DEFINE(_GLIBCPP_USE_NAMESPACES) ;;
+            -fhonor-std)  ;;
             -*)  ;;
             *)   # and we're trying to pass /what/ exactly?
                  AC_MSG_ERROR([compiler flags start with a -]) ;;
@@ -680,7 +680,7 @@ dnl
 dnl Check for certain special build configurations.
 dnl
 dnl GLIBCPP_ENABLE_NAMESPACES
-dnl --enable-namespaces sets '-fhonor-std' and defines _GLIBCPP_USE_NAMESPACES
+dnl --enable-namespaces sets '-fhonor-std' and 
 dnl --disable-namespaces sets '-fno-honor-std' (the macro should be
 dnl     undefined by default in whatever.h.in).
 dnl  +  Eventually, this will go away.
@@ -702,7 +702,6 @@ enable_namespaces=GLIBCPP_ENABLE_NAMESPACES_DEFAULT)dnl
 dnl Option parsed, now set things appropriately
 case "$enable_namespaces" in
     yes)  NAMESPACES='-fhonor-std'
-          AC_DEFINE(_GLIBCPP_USE_NAMESPACES)
           ;;
     no)   NAMESPACES='-fno-honor-std'
           ;;

@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -56,7 +56,7 @@ namespace std
 # undef toupper
   inline int 
   toupper(int __c) { return _S_toupper_helper(__c); }
-#elif _GLIBCPP_USE_NAMESPACES 
+#else
   inline int 
   toupper(int __c) { return ::toupper(__c); }
 #endif
@@ -67,7 +67,7 @@ namespace std
 # undef tolower
   inline int 
   tolower(int __c) { return _S_tolower_helper(__c); }
-#elif _GLIBCPP_USE_NAMESPACES 
+#else
   inline int 
   tolower(int __c) { return ::tolower(__c); }
 #endif
@@ -78,7 +78,7 @@ namespace std
 # undef isspace
   inline int 
   isspace(int __c) { return _S_isspace_helper(__c); }
-#elif _GLIBCPP_USE_NAMESPACES 
+#else
   inline int 
   isspace(int __c) { return ::isspace(__c); }
 #endif
@@ -89,7 +89,7 @@ namespace std
 # undef isprint
   inline int 
   isprint(int __c) { return _S_isprint_helper(__c); }
-#elif _GLIBCPP_USE_NAMESPACES 
+#else
   inline int 
   isprint(int __c) { return ::isprint(__c); }
 #endif
@@ -100,7 +100,7 @@ namespace std
 # undef iscntrl
   inline int 
   iscntrl(int __c) { return _S_iscntrl_helper(__c); }
-#elif _GLIBCPP_USE_NAMESPACES 
+#else
   inline int 
   iscntrl(int __c) { return ::iscntrl(__c); }
 #endif
@@ -111,7 +111,7 @@ namespace std
 # undef isupper
   inline int 
   isupper(int __c) { return _S_isupper_helper(__c); }
-#elif _GLIBCPP_USE_NAMESPACES 
+#else
   inline int 
   isupper(int __c) { return ::isupper(__c); }
 #endif
@@ -122,7 +122,7 @@ namespace std
 # undef islower
   inline int 
   islower(int __c) { return _S_islower_helper(__c); }
-#elif _GLIBCPP_USE_NAMESPACES 
+#else
   inline int 
   islower(int __c) { return ::islower(__c); }
 #endif
@@ -133,7 +133,7 @@ namespace std
 # undef isalpha
   inline int 
   isalpha(int __c) { return _S_isalpha_helper(__c); }
-#elif _GLIBCPP_USE_NAMESPACES 
+#else
   inline int 
   isalpha(int __c) { return ::isalpha(__c); }
 #endif
@@ -144,7 +144,7 @@ namespace std
 # undef isdigit
   inline int 
   isdigit(int __c) { return _S_isdigit_helper(__c); }
-#elif _GLIBCPP_USE_NAMESPACES 
+#else
   inline int 
   isdigit(int __c) { return ::isdigit(__c); }
 #endif
@@ -155,7 +155,7 @@ namespace std
 # undef ispunct
   inline int 
   ispunct(int __c) { return _S_ispunct_helper(__c); }
-#elif _GLIBCPP_USE_NAMESPACES 
+#else
   inline int 
   ispunct(int __c) { return ::ispunct(__c); }
 #endif
@@ -166,7 +166,7 @@ namespace std
 # undef isxdigit
   inline int 
   isxdigit(int __c) { return _S_isxdigit_helper(__c); }
-#elif _GLIBCPP_USE_NAMESPACES 
+#else
   inline int 
   isxdigit(int __c) { return ::isxdigit(__c); }
 #endif
@@ -177,7 +177,7 @@ namespace std
 # undef isalnum
   inline int 
   isalnum(int __c) { return _S_isalnum_helper(__c); }
-#elif _GLIBCPP_USE_NAMESPACES 
+#else
   inline int 
   isalnum(int __c) { return ::isalnum(__c); }
 #endif
@@ -188,7 +188,7 @@ namespace std
 # undef isgraph
   inline int 
   isgraph(int __c) { return _S_isgraph_helper(__c); }
-#elif _GLIBCPP_USE_NAMESPACES 
+#else
   inline int 
   isgraph(int __c) { return ::isgraph(__c); }
 #endif
