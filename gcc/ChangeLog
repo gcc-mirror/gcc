@@ -1,3 +1,8 @@
+Sun Dec  6 07:49:29 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* gcc.texi (Bug Reporting): 40Kb is a soft limit, larger
+	compressed reports are ok and preferred over URLs
+
 Sun Dec  6 07:45:33 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* invoke.texi (Warning Options): Soften the tone of -pedantic
