@@ -1,5 +1,5 @@
 /* Test that the preprocessor is capable of 64-bit arithmetic.
-   (Must turn off -pedantic, since `LL' constants are only in C9x.)  */
+   (Must turn off -pedantic, since `LL' constants are only in C99.)  */
 /* { dg-do preprocess } */
 /* { dg-options "" } */
 

@@ -1,6 +1,6 @@
 /* GNU C dependencies:
    Checker support hooks
-   ISO C 9x array element initialization
+   ISO C99 array element initialization
    void-pointer arithmetic */
 
 typedef __SIZE_TYPE__ size_t;
