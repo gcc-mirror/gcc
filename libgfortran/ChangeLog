@@ -7,6 +7,11 @@
 	* runtime/memory.c (internal_malloc, internal_malloc64): Allow
 	allocating zero memory.
 
+	PR fortran/17631
+	* Makefile.am (gfor_helper_src): Add intrinsics/mvbits.h.
+	* Makefile.in: Regenerate.
+	* intrinsics/mvbits.h: New file.
+
 2004-10-04  Paul Brook  <paul@codesourcery.com>
 	Bud Davis  <bdavis9659@comcast.net>
 

@@ -52,6 +52,7 @@ intrinsics/etime.c \
 intrinsics/getcwd.c \
 intrinsics/getXid.c \
 intrinsics/ishftc.c \
+intrinsics/mvbits.c \
 intrinsics/pack_generic.c \
 intrinsics/size.c \
 intrinsics/spread_generic.c \

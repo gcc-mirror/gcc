@@ -323,6 +323,7 @@ void gfc_resolve_verify (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 
 /* Intrinsic subroutine resolution.  */
 void gfc_resolve_cpu_time (gfc_code *);
+void gfc_resolve_mvbits (gfc_code *);
 void gfc_resolve_system_clock(gfc_code *);
 void gfc_resolve_random_number (gfc_code *);
 void gfc_resolve_getarg (gfc_code *);
