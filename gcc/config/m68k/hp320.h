@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  HP-UX 68000/68020 version.
-   Copyright (C) 1987, 1988, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -595,12 +595,16 @@ do { register int i;			\
 	   (LABEL_NO));
 
 #endif /* not HPUX_ASM */
+
 /* In m68k svr4, a symbol_ref rtx can be a valid PIC operand if it is an
    operand of a function call. */
 #undef LEGITIMATE_PIC_OPERAND_P
 #define LEGITIMATE_PIC_OPERAND_P(X) \
-  (! symbolic_operand (X, VOIDmode) \
-   || ((GET_CODE(X) == SYMBOL_REF) && SYMBOL_REF_FLAG(X)))
+  ((! symbolic_operand (X, VOIDmode) \
+    && ! (GET_CODE (X) == CONST_DOUBLE && CONST_DOUBLE_MEM (X)	\
+	  && GET_CODE (CONST_DOUBLE_MEM (X)) == MEM		\
+	  && symbolic_operand (XEXP (CONST_DOUBLE_MEM (X), 0), VOIDmode))) \
+   || (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_FLAG (X)))
 
 /* hpux8 and later have C++ compatible include files, so do not
    pretend they are `extern "C"'.  */
