@@ -42,8 +42,8 @@ typedef short 			__vector __ev64_s16__;
 typedef unsigned short  	__vector __ev64_u16__;
 typedef int 			__vector __ev64_s32__;
 typedef unsigned 		__vector __ev64_u32__;
-typedef long long 		__ev64_s64__;
-typedef unsigned long long 	__ev64_u64__;
+typedef long long 		__vector __ev64_s64__;
+typedef unsigned long long 	__vector __ev64_u64__;
 typedef float 			__vector __ev64_fs__;
 typedef int 			__vector __ev64_opaque__;
 
@@ -651,8 +651,17 @@ __ev_create_u64 (uint64_t a)
   return u.v;
 }
 
-#define __ev_convert_u64(a) ((uint64_t) (a))
-#define __ev_convert_s64(a) ((int64_t) (a))
+static inline uint64_t
+__ev_convert_u64 (__ev64_opaque__ a)
+{
+  return (uint64_t) a;
+}
+
+static inline int64_t
+__ev_convert_s64 (__ev64_opaque__ a)
+{
+  return (int64_t) a;
+}
 
 /* __ev_get_* functions.  */
 
