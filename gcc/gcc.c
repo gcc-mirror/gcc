@@ -4748,7 +4748,7 @@ main (argc, argv)
 
   i = n_infiles;
 #ifdef LANG_SPECIFIC_DRIVER
-  i += lang_specific_extra_ofiles;
+  i += lang_specific_extra_outfiles;
 #endif
   outfiles = (char **) xmalloc (i * sizeof (char *));
   bzero ((char *) outfiles, n_infiles * sizeof (char *));
