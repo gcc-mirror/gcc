@@ -67,6 +67,11 @@
 # include <byteswap.h>
 # define SWAP(i) bswap_32 (i)
 #else
+
+#ifndef __GNUC__
+#define inline /* nothing: don't inline if the compiler is not GCC */
+#endif
+
 static inline nls_uint32
 SWAP (i)
      nls_uint32 i;

@@ -1,3 +1,8 @@
+2004-04-07  Joe Buck <jbuck@welsh-buck.org>
+
+	* plural.y: don't assume that the inline keyword can be used.
+	* gettextP.h: likewise.
+
 2003-07-07  Zack Weinberg  <zack@codesourcery.com>
 
 	* README: Update.

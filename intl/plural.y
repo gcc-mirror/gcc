@@ -54,6 +54,11 @@
 
 %{
 /* Prototypes for local functions.  */
+
+#ifndef __GNUC__
+#define inline /* nothing: don't inline if the compiler is not GCC */
+#endif
+
 static struct expression *new_exp PARAMS ((int nargs, enum operator op,
 					   struct expression * const *args));
 static inline struct expression *new_exp_0 PARAMS ((enum operator op));
