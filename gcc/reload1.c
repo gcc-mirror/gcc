@@ -8215,7 +8215,29 @@ reload_cse_record_set (set, body)
       /* This is an assignment to a register.  Update the value we
          have stored for the register.  */
       if (sreg >= 0)
-	reg_values[dreg] = reg_values[sreg];
+	{
+	  rtx x;
+
+	  /* This is a copy from one register to another.  Any values
+	     which were valid for SREG are now valid for DREG.  If the
+	     mode changes, we use gen_lowpart_common to extract only
+	     the part of the value that is copied.  */
+	  reg_values[dreg] = 0;
+	  for (x = reg_values[sreg]; x; x = XEXP (x, 1))
+	    {
+	      rtx tmp;
+
+	      if (XEXP (x, 0) == 0)
+		continue;
+	      if (dest_mode == GET_MODE (XEXP (x, 0)))
+		tmp = XEXP (x, 0);
+	      else
+		tmp = gen_lowpart_common (dest_mode, XEXP (x, 0));
+	      if (tmp)
+		reg_values[dreg] = gen_rtx (EXPR_LIST, dest_mode, tmp,
+					    reg_values[dreg]);
+	    }	      
+	}
       else
 	reg_values[dreg] = gen_rtx (EXPR_LIST, dest_mode, src, NULL_RTX);
 
