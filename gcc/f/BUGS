@@ -6,18 +6,37 @@ permission notice.
 Bugs in GNU Fortran
 *******************
 
-   This section identifies bugs that `g77' *users* might run into.
-This includes bugs that are actually in the `gcc' back end (GBE) or in
-`libf2c', because those sets of code are at least somewhat under the
-control of (and necessarily intertwined with) `g77', so it isn't worth
-separating them out.
+   This section identifies bugs that `g77' *users* might run into in
+this version of `g77'.  This includes bugs that are actually in the
+`gcc' back end (GBE) or in `libf2c', because those sets of code are at
+least somewhat under the control of (and necessarily intertwined with)
+`g77', so it isn't worth separating them out.
+
+   For information on bugs in *other* versions of `g77', *Note News
+About GNU Fortran: News.
 
    For information on bugs that might afflict people who configure,
 port, build, and install `g77', *Note Problems Installing::.
 
+   * The `IDate' Intrinsic (VXT) fails to return the year in the
+     documented, non-Y2K-compliant range of 0-99, instead returning 100
+     for the year 2000.
+
+     Fixed in `egcs' 1.2.
+
+   * Year 2000 (Y2K) compliance information is missing from the
+     documentation.
+
+     Fixed in `egcs' 1.2.
+
    * `g77' crashes when compiling I/O statements using keywords that
      define `INTEGER' values, such as `IOSTAT=J', where J is other than
      default `INTEGER' (such as `INTEGER*2').
+
+     Fixed in `egcs' 1.2.
+
+   * The `-ax' option is not obeyed when compiling Fortran programs.
+     (It is not passed to the `f771' driver.)
 
      Fixed in `egcs' 1.2.
 
@@ -27,44 +46,16 @@ port, build, and install `g77', *Note Problems Installing::.
 
      Fixed in `egcs' 1.2.
 
-   * `g77' sometimes crashes when compiling code containing the
-     construct `CMPLX(0.)' or similar.  This is a `gcc' back-end bug.
-     It can be worked around using `-fno-emulate-complex', though that
-     might trigger other, older bugs.  Compiling without optimization
-     is another work-around.
-
-     Fixed in `egcs' 1.1.
-
-   * Automatic arrays aren't working on HP-UX systems, at least in
-     HP-UX version 10.20.  Writing into them apparently causes
+   * Automatic arrays possibly aren't working on HP-UX systems, at
+     least in HP-UX version 10.20.  Writing into them apparently causes
      over-writing of statically declared data in the main program.
      This probably means the arrays themselves are being
      under-allocated, or pointers to them being improperly handled,
      e.g. not passed to other procedures as they should be.
 
-   * Some Fortran code has been found to be miscompiled by `g77' built
-     on `gcc' version 2.8.1 on m68k-next-nextstep3 configurations when
-     using the `-O2' option.  Even a C function is known to miscompile
-     on that configuration when using the `-O2 -funroll-loops' options.
-
-     Fixed in `egcs'.
-
-   * A code-generation bug afflicts Intel x86 targets when `-O2' is
-     specified compiling, for example, an old version of the `DNRM2'
-     routine.  The x87 coprocessor stack is being mismanaged in cases
-     where assigned `GOTO' and `ASSIGN' are involved.
-
-     Fixed in `egcs' version 1.1.
-
    * `g77' fails to warn about use of a "live" iterative-DO variable as
      an implied-DO variable in a `WRITE' or `PRINT' statement (although
      it does warn about this in a `READ' statement).
-
-   * A compiler crash, or apparently infinite run time, can result when
-     compiling complicated expressions involving `COMPLEX' arithmetic
-     (especially multiplication).
-
-     Fixed in `egcs' version 1.1.
 
    * Something about `g77''s straightforward handling of label
      references and definitions sometimes prevents the GBE from
@@ -171,13 +162,6 @@ port, build, and install `g77', *Note Problems Installing::.
      `-fno-emulate-complex' avoids the work-around, reverting to using
      the same "broken" mechanism as that used by versions of `g77'
      prior to 0.5.20.
-
-   * `g77' sometimes produces invalid assembler code when using the
-     `-fPIC' option (such as compiling for ELF targets) on the Intel
-     x86 architecture target.  The symptom is that the assembler
-     complains about invalid opcodes.  This bug is in the gcc back end.
-
-     Fixed in `egcs' version 1.0.2.
 
    * `g77' currently inserts needless padding for things like `COMMON
      A,IPAD' where `A' is `CHARACTER*1' and `IPAD' is `INTEGER(KIND=1)'
