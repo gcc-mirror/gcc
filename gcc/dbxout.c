@@ -622,7 +622,7 @@ dbxout_type_fields (type)
 	      && DECL_ASSEMBLER_NAME (tem))
 	    {
 	      have_used_extensions = 1;
-	      CHARS (3 + IDENTIFIER_LENGTH (DECL_NAME (TYPE_NAME (DECL_FCONTEXT (tem)))));
+	      CHARS (3 + IDENTIFIER_LENGTH (DECL_ASSEMBLER_NAME (tem)));
 	      fputs (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (tem)), asmfile);
 	      dbxout_type (DECL_FCONTEXT (tem), 0, 0);
 	      fprintf (asmfile, ":");
@@ -2006,15 +2006,9 @@ dbxout_symbol_name (decl, suffix, letter)
 {
   /* One slight hitch: if this is a VAR_DECL which is a static
      class member, we must put out the mangled name instead of the
-     DECL_NAME.  */
-
-  char *name;
-  /* Note also that static member (variable) names DO NOT begin
+     DECL_NAME.  Note also that static member (variable) names DO NOT begin
      with underscores in .stabs directives.  */
-  if (DECL_LANG_SPECIFIC (decl))
-    name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  else
-    name = IDENTIFIER_POINTER (DECL_NAME (decl));
+  char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   if (name == 0)
     name = "(anon)";
   fprintf (asmfile, "%s \"%s%s:", ASM_STABS_OP, name,
