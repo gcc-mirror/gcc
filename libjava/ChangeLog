@@ -1,3 +1,8 @@
+2000-04-19  Tom Tromey  <tromey@cygnus.com>
+
+	* jni.cc (_Jv_JNI_FindClass): Use system class loader if class
+	doesn't have a loader.
+
 2000-04-19  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* boehm.cc: (_Jv_MarkObj, _Jv_MarkArray): Cast pointers for
