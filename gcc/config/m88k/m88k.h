@@ -1,6 +1,6 @@
-/* Definitions of target machine for GNU compiler.
+/* Definitions of target machine for GNU compiler for
    Motorola m88100 in an 88open OCS/BCS environment.
-   Copyright (C) 1988, 1989, 1990, 1991, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1988, 89, 90, 91, 93, 1994 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Enhanced by Michael Meissner (meissner@osf.org)
    Version 2 port by Tom Wood (twood@pets.sps.mot.com)
@@ -197,13 +197,13 @@ extern char * reg_names[];
    Redefined in sysv4.h, and luna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.56 $"
+#define VERSION_INFO2   "$Revision: 1.57 $"
 #endif
 
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
 #ifdef __STDC__
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.56 $ " __DATE__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.57 $ " __DATE__
 #else
 #define TM_RCS_ID      "$What$"
 #endif  /* __STDC__ */
@@ -1966,6 +1966,7 @@ do {									 \
 	 && DECL_INITIAL (DECL) == error_mark_node			 \
 	 && !size_directive_output)					 \
        {								 \
+	 size_directive_output = 1;					 \
 	 fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);			 \
 	 assemble_name (FILE, name);					 \
 	 fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL))); \
