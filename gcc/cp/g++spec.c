@@ -32,6 +32,10 @@ Boston, MA 02111-1307, USA.  */
 #define MATH_LIBRARY "-lm"
 #endif
 
+#ifndef LIBSTDCXX
+#define LIBSTDCXX "-lstdc++"
+#endif
+
 void
 lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
      void (*fn)();
@@ -232,7 +236,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   /* Add `-lstdc++' if we haven't already done so.  */
   if (library)
     {
-      arglist[j++] = "-lstdc++";
+      arglist[j++] = LIBSTDCXX;
       added_libraries++;
     }
   if (saw_math)
