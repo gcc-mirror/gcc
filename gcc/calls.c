@@ -607,7 +607,7 @@ expand_call (exp, target, ignore)
 				     structure_value_addr);
 
       /* If inlining succeeded, return.  */
-      if ((int) temp != -1)
+      if ((HOST_WIDE_INT) temp != -1)
 	{
 	  int i;
 
