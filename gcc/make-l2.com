@@ -1,7 +1,6 @@
 $! Set the def dir to proper place for use in batch. Works for interactive too.
 $flnm = f$enviroment("PROCEDURE")     ! get current procedure name
 $set default 'f$parse(flnm,,,"DEVICE")''f$parse(flnm,,,"DIRECTORY")'
-$@$diska:[eric]test_gcc2
 $!
 $! Command file to build libgcc2.olb.  You should only run this once you 
 $! have the current compiler installed, otherwise some of the builtins will
@@ -47,7 +46,7 @@ $compile_libgcc2:
 $subroutine
 $objname = p1
 $if p2.nes."" then objname = p2
-$gcc/machine/include=([],[.config])/debug/define="''p1'" libgcc2.c/obj='objname'.obj
+$gcc/include=([],[.config])/debug/define="''p1'" libgcc2.c/obj='objname'.obj
 $lib libgcc2.olb 'objname'.obj
 $del 'objname'.obj;/nolog
 $endsubroutine

@@ -5414,6 +5414,7 @@ gen_input_reload (reloadreg, in, before_insn)
 	 we emit below.  */
 
       if (CONSTANT_P (XEXP (in, 1))
+	  || GET_CODE (XEXP (in, 1)) == MEM
 	  || (GET_CODE (XEXP (in, 1)) == REG
 	      && REGNO (XEXP (in, 1)) >= FIRST_PSEUDO_REGISTER))
 	move_operand = XEXP (in, 1), other_operand = XEXP (in, 0);
