@@ -63,11 +63,6 @@ split_loop_bb (basic_block bb, rtx insn)
   /* Add dest to loop.  */
   add_bb_to_loop (e->dest, e->src->loop_father);
 
-  /* Fix dominators.  */
-  add_to_dominance_info (CDI_DOMINATORS, e->dest);
-  redirect_immediate_dominators (CDI_DOMINATORS, e->src, e->dest);
-  set_immediate_dominator (CDI_DOMINATORS, e->dest, e->src);
-
   return e;
 }
 
@@ -88,8 +83,7 @@ remove_bbs (basic_block *bbs, int nbbs)
   for (i = 0; i < nbbs; i++)
     {
       remove_bb_from_loops (bbs[i]);
-      delete_from_dominance_info (CDI_DOMINATORS, bbs[i]);
-      delete_block (bbs[i]);
+      delete_basic_block (bbs[i]);
     }
 }
 
@@ -1070,19 +1064,45 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
   return true;
 }
 
+/* A callback for make_forwarder block, to redirect all edges except for
+   MFB_KJ_EDGE to the entry part.  E is the edge for that we should decide
+   whether to redirect it.  */
+
+static edge mfb_kj_edge;
+static bool
+mfb_keep_just (edge e)
+{
+  return e != mfb_kj_edge;
+}
+
+/* A callback for make_forwarder block, to update data structures for a basic
+   block JUMP created by redirecting an edge (only the latch edge is being
+   redirected).  */
+
+static void
+mfb_update_loops (basic_block jump)
+{
+  struct loop *loop = jump->succ->dest->loop_father;
+
+  if (dom_computed[CDI_DOMINATORS])
+    set_immediate_dominator (CDI_DOMINATORS, jump, jump->pred->src);
+  add_bb_to_loop (jump, loop);
+  loop->latch = jump;
+}
+
 /* Creates a pre-header for a LOOP.  Returns newly created block.  Unless
    CP_SIMPLE_PREHEADERS is set in FLAGS, we only force LOOP to have single
    entry; otherwise we also force preheader block to have only one successor.
-   The function also updates dominators stored in DOM.  */
+   The function also updates dominators.  */
+
 static basic_block
 create_preheader (struct loop *loop, int flags)
 {
   edge e, fallthru;
   basic_block dummy;
-  basic_block jump, src = 0;
   struct loop *cloop, *ploop;
   int nentry = 0;
-  rtx insn;
+  bool irred = false;
 
   cloop = loop->outer;
 
@@ -1090,6 +1110,7 @@ create_preheader (struct loop *loop, int flags)
     {
       if (e->src == loop->latch)
 	continue;
+      irred |= (e->flags & EDGE_IRREDUCIBLE_LOOP) != 0;
       nentry++;
     }
   if (!nentry)
@@ -1102,17 +1123,9 @@ create_preheader (struct loop *loop, int flags)
 	return NULL;
     }
 
-  insn = first_insn_after_basic_block_note (loop->header);
-  if (insn)
-    insn = PREV_INSN (insn);
-  else
-    insn = get_last_insn ();
-  if (insn == BB_END (loop->header))
-    {
-      /* Split_block would not split block after its end.  */
-      emit_note_after (NOTE_INSN_DELETED, insn);
-    }
-  fallthru = split_block (loop->header, insn);
+  mfb_kj_edge = loop_latch_edge (loop);
+  fallthru = make_forwarder_block (loop->header, mfb_keep_just,
+				   mfb_update_loops);
   dummy = fallthru->src;
   loop->header = fallthru->dest;
 
@@ -1122,35 +1135,22 @@ create_preheader (struct loop *loop, int flags)
     if (ploop->latch == dummy)
       ploop->latch = fallthru->dest;
 
-  add_to_dominance_info (CDI_DOMINATORS, fallthru->dest);
-
-  /* Redirect edges.  */
+  /* Reorganize blocks so that the preheader is not stuck in the middle of the
+     loop.  */
   for (e = dummy->pred; e; e = e->pred_next)
-    {
-      src = e->src;
-      if (src == loop->latch)
-	break;
-    }
-  if (!e)
-    abort ();
+    if (e->src != loop->latch)
+      break;
+  move_block_after (dummy, e->src);
 
-  dummy->frequency -= EDGE_FREQUENCY (e);
-  dummy->count -= e->count;
-  fallthru->count -= e->count;
-  jump = redirect_edge_and_branch_force (e, loop->header);
-  if (jump)
-    {
-      add_to_dominance_info (CDI_DOMINATORS, jump);
-      set_immediate_dominator (CDI_DOMINATORS, jump, src);
-      add_bb_to_loop (jump, loop);
-      loop->latch = jump;
-    }
-
-  /* Update structures.  */
-  redirect_immediate_dominators (CDI_DOMINATORS, dummy, loop->header);
-  set_immediate_dominator (CDI_DOMINATORS, loop->header, dummy);
   loop->header->loop_father = loop;
   add_bb_to_loop (dummy, cloop);
+
+  if (irred)
+    {
+      dummy->flags |= BB_IRREDUCIBLE_LOOP;
+      dummy->succ->flags |= EDGE_IRREDUCIBLE_LOOP;
+    }
+
   if (rtl_dump_file)
     fprintf (rtl_dump_file, "Created preheader block for loop %i\n",
 	     loop->num);
@@ -1212,7 +1212,6 @@ loop_split_edge_with (edge e, rtx insns)
   /* Create basic block for it.  */
 
   new_bb = split_edge (e);
-  add_to_dominance_info (CDI_DOMINATORS, new_bb);
   add_bb_to_loop (new_bb, loop_c);
   new_bb->flags = insns ? BB_SUPERBLOCK : 0;
 
@@ -1225,10 +1224,6 @@ loop_split_edge_with (edge e, rtx insns)
 
   if (insns)
     emit_insn_after (insns, BB_END (new_bb));
-
-  set_immediate_dominator (CDI_DOMINATORS, new_bb, src);
-  set_immediate_dominator (CDI_DOMINATORS, dest,
-			   recount_dominator (CDI_DOMINATORS, dest));
 
   if (dest->loop_father->latch == src)
     dest->loop_father->latch = new_bb;

@@ -1686,7 +1686,7 @@ cfg.o : cfg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) flags.h insn-
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h $(RECOG_H) \
    function.h except.h $(GGC_H) $(TM_P_H) alloc-pool.h
 cfghooks.o: cfghooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
-   $(BASIC_BLOCK_H) cfglayout.h
+   $(BASIC_BLOCK_H) cfglayout.h $(TIMEVAR_H) toplev.h
 cfgrtl.o : cfgrtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) flags.h \
    insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h $(RECOG_H) \
    function.h except.h $(GGC_H) $(TM_P_H) insn-config.h $(EXPR_H)

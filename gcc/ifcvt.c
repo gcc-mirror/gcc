@@ -2103,8 +2103,6 @@ merge_if_block (struct ce_if_block * ce_info)
 	{
 	  bb = fallthru;
 	  fallthru = block_fallthru (bb);
-	  if (dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY)
-	    delete_from_dominance_info (CDI_POST_DOMINATORS, bb);
 	  merge_blocks (combo_bb, bb);
 	  num_true_changes++;
 	}
@@ -2120,8 +2118,6 @@ merge_if_block (struct ce_if_block * ce_info)
       if (combo_bb->global_live_at_end)
 	COPY_REG_SET (combo_bb->global_live_at_end,
 		      then_bb->global_live_at_end);
-      if (dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY)
-	delete_from_dominance_info (CDI_POST_DOMINATORS, then_bb);
       merge_blocks (combo_bb, then_bb);
       num_true_changes++;
     }
@@ -2131,8 +2127,6 @@ merge_if_block (struct ce_if_block * ce_info)
      get their addresses taken.  */
   if (else_bb)
     {
-      if (dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY)
-       	delete_from_dominance_info (CDI_POST_DOMINATORS, else_bb);
       merge_blocks (combo_bb, else_bb);
       num_true_changes++;
     }
@@ -2188,8 +2182,6 @@ merge_if_block (struct ce_if_block * ce_info)
 	COPY_REG_SET (combo_bb->global_live_at_end,
 		      join_bb->global_live_at_end);
 
-      if (dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY)
-	delete_from_dominance_info (CDI_POST_DOMINATORS, join_bb);
       merge_blocks (combo_bb, join_bb);
       num_true_changes++;
     }
@@ -2205,7 +2197,7 @@ merge_if_block (struct ce_if_block * ce_info)
 
       /* Remove the jump and cruft from the end of the COMBO block.  */
       if (join_bb != EXIT_BLOCK_PTR)
-	tidy_fallthru_edge (combo_bb->succ, combo_bb, join_bb);
+	tidy_fallthru_edge (combo_bb->succ);
     }
 
   num_updated_if_blocks++;
@@ -2643,11 +2635,7 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
   /* Delete the trap block if possible.  */
   remove_edge (trap_bb == then_bb ? then_edge : else_edge);
   if (trap_bb->pred == NULL)
-    {
-      if (dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY)
-	delete_from_dominance_info (CDI_POST_DOMINATORS, trap_bb);
-      delete_block (trap_bb);
-    }
+    delete_basic_block (trap_bb);
 
   /* If the non-trap block and the test are now adjacent, merge them.
      Otherwise we must insert a direct branch.  */
@@ -2829,9 +2817,7 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
 
   new_bb = redirect_edge_and_branch_force (FALLTHRU_EDGE (test_bb), else_bb);
   then_bb_index = then_bb->index;
-  if (dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY)
-    delete_from_dominance_info (CDI_POST_DOMINATORS, then_bb);
-  delete_block (then_bb);
+  delete_basic_block (then_bb);
 
   /* Make rest of code believe that the newly created block is the THEN_BB
      block we removed.  */
@@ -2839,8 +2825,6 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
     {
       new_bb->index = then_bb_index;
       BASIC_BLOCK (then_bb_index) = new_bb;
-      if (dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY)
-	add_to_dominance_info (CDI_POST_DOMINATORS, new_bb);
     }
   /* We've possibly created jump to next insn, cleanup_cfg will solve that
      later.  */
@@ -2909,9 +2893,7 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
 		    then_bb->global_live_at_start,
 		    else_bb->global_live_at_end, BITMAP_IOR);
 
-  if (dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY)
-    delete_from_dominance_info (CDI_POST_DOMINATORS, else_bb);
-  delete_block (else_bb);
+  delete_basic_block (else_bb);
 
   num_true_changes++;
   num_updated_if_blocks++;

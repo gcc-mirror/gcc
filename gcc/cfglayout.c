@@ -1268,7 +1268,6 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
       bb->rbi->duplicated = 1;
       /* Add to loop.  */
       add_bb_to_loop (new_bb, bb->loop_father->copy);
-      add_to_dominance_info (CDI_DOMINATORS, new_bb);
       /* Possibly set header.  */
       if (bb->loop_father->header == bb && bb->loop_father != base)
 	new_bb->loop_father->header = new_bb;

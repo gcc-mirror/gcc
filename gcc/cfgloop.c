@@ -33,6 +33,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    considered to belong to inner loop with same header.  */
 #define HEAVY_EDGE_RATIO 8
 
+#define HEADER_BLOCK(B) (* (int *) (B)->aux)
+#define LATCH_EDGE(E) (*(int *) (E)->aux)
+
 static void flow_loops_cfg_dump (const struct loops *, FILE *);
 static void flow_loop_entry_edges_find (struct loop *);
 static void flow_loop_exit_edges_find (struct loop *);
@@ -42,10 +45,8 @@ static basic_block flow_loop_pre_header_find (basic_block);
 static int flow_loop_level_compute (struct loop *);
 static int flow_loops_level_compute (struct loops *);
 static void establish_preds (struct loop *);
-static basic_block make_forwarder_block (basic_block, int, int, edge, int);
 static void canonicalize_loop_headers (void);
 static bool glb_enum_p (basic_block, void *);
-static void redirect_edge_with_latch_update (edge, basic_block);
 
 /* Dump loop related CFG information.  */
 
@@ -547,78 +548,41 @@ flow_loop_scan (struct loop *loop, int flags)
   return 1;
 }
 
-#define HEADER_BLOCK(B) (* (int *) (B)->aux)
-#define LATCH_EDGE(E) (*(int *) (E)->aux)
+/* A callback to update latch and header info for basic block JUMP created
+   by redirecting an edge.  */
 
-/* Redirect edge and update latch and header info.  */
 static void
-redirect_edge_with_latch_update (edge e, basic_block to)
+update_latch_info (basic_block jump)
 {
-  basic_block jump;
-
-  jump = redirect_edge_and_branch_force (e, to);
-  if (jump)
-    {
-      alloc_aux_for_block (jump, sizeof (int));
-      HEADER_BLOCK (jump) = 0;
-      alloc_aux_for_edge (jump->pred, sizeof (int));
-      LATCH_EDGE (jump->succ) = LATCH_EDGE (e);
-      LATCH_EDGE (jump->pred) = 0;
-    }
+  alloc_aux_for_block (jump, sizeof (int));
+  HEADER_BLOCK (jump) = 0;
+  alloc_aux_for_edge (jump->pred, sizeof (int));
+  LATCH_EDGE (jump->pred) = 0;
 }
 
-/* Split BB into entry part and rest; if REDIRECT_LATCH, redirect edges
-   marked as latch into entry part, analogically for REDIRECT_NONLATCH.
-   In both of these cases, ignore edge EXCEPT.  If CONN_LATCH, set edge
-   between created entry part and BB as latch one.  Return created entry
-   part.  */
+/* A callback for make_forwarder block, to redirect all edges except for
+   MFB_KJ_EDGE to the entry part.  E is the edge for that we should decide
+   whether to redirect it.  */
 
-static basic_block
-make_forwarder_block (basic_block bb, int redirect_latch, int redirect_nonlatch, edge except, int conn_latch)
+static edge mfb_kj_edge;
+static bool
+mfb_keep_just (edge e)
 {
-  edge e, next_e, fallthru;
-  basic_block dummy;
-  rtx insn;
+  return e != mfb_kj_edge;
+}
 
-  insn = PREV_INSN (first_insn_after_basic_block_note (bb));
+/* A callback for make_forwarder block, to redirect the latch edges into an
+   entry part.  E is the edge for that we should decide whether to redirect
+   it.  */
 
-  /* For empty block split_block will return NULL.  */
-  if (BB_END (bb) == insn)
-    emit_note_after (NOTE_INSN_DELETED, insn);
-
-  fallthru = split_block (bb, insn);
-  dummy = fallthru->src;
-  bb = fallthru->dest;
-
-  bb->aux = xmalloc (sizeof (int));
-  HEADER_BLOCK (dummy) = 0;
-  HEADER_BLOCK (bb) = 1;
-
-  /* Redirect back edges we want to keep.  */
-  for (e = dummy->pred; e; e = next_e)
-    {
-      next_e = e->pred_next;
-      if (e == except
-	  || !((redirect_latch && LATCH_EDGE (e))
-	       || (redirect_nonlatch && !LATCH_EDGE (e))))
-	{
-	  dummy->frequency -= EDGE_FREQUENCY (e);
-	  dummy->count -= e->count;
-	  if (dummy->frequency < 0)
-	    dummy->frequency = 0;
-	  if (dummy->count < 0)
-	    dummy->count = 0;
-	  redirect_edge_with_latch_update (e, bb);
-	}
-    }
-
-  alloc_aux_for_edge (fallthru, sizeof (int));
-  LATCH_EDGE (fallthru) = conn_latch;
-
-  return dummy;
+static bool
+mfb_keep_nonlatch (edge e)
+{
+  return LATCH_EDGE (e);
 }
 
 /* Takes care of merging natural loops with shared headers.  */
+
 static void
 canonicalize_loop_headers (void)
 {
@@ -675,19 +639,10 @@ canonicalize_loop_headers (void)
 
   FOR_EACH_BB (header)
     {
-      int num_latch;
-      int want_join_latch;
       int max_freq, is_heavy;
-      edge heavy;
+      edge heavy, tmp_edge;
 
-      if (!HEADER_BLOCK (header))
-	continue;
-
-      num_latch = HEADER_BLOCK (header);
-
-      want_join_latch = (num_latch > 1);
-
-      if (!want_join_latch)
+      if (HEADER_BLOCK (header) <= 1)
 	continue;
 
       /* Find a heavy edge.  */
@@ -713,13 +668,28 @@ canonicalize_loop_headers (void)
 
       if (is_heavy)
 	{
-	  basic_block new_header =
-	    make_forwarder_block (header, true, true, heavy, 0);
-	  if (num_latch > 2)
-	    make_forwarder_block (new_header, true, false, NULL, 1);
+	  /* Split out the heavy edge, and create inner loop for it.  */
+	  mfb_kj_edge = heavy;
+	  tmp_edge = make_forwarder_block (header, mfb_keep_just,
+					   update_latch_info);
+	  alloc_aux_for_block (tmp_edge->dest, sizeof (int));
+	  HEADER_BLOCK (tmp_edge->dest) = 1;
+	  alloc_aux_for_edge (tmp_edge, sizeof (int));
+	  LATCH_EDGE (tmp_edge) = 0;
+	  HEADER_BLOCK (header)--;
 	}
-      else
-	make_forwarder_block (header, true, false, NULL, 1);
+
+      if (HEADER_BLOCK (header) > 1)
+	{
+	  /* Create a new latch block.  */
+	  tmp_edge = make_forwarder_block (header, mfb_keep_nonlatch,
+					   update_latch_info);
+	  alloc_aux_for_block (tmp_edge->dest, sizeof (int));
+	  HEADER_BLOCK (tmp_edge->src) = 0;
+	  HEADER_BLOCK (tmp_edge->dest) = 1;
+	  alloc_aux_for_edge (tmp_edge, sizeof (int));
+	  LATCH_EDGE (tmp_edge) = 1;
+	}
     }
 
   free_aux_for_blocks ();
