@@ -1,3 +1,8 @@
+2002-10-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_decompose_address): Do not range check the
+	displacement if base or index is the argument pointer register.
+
 2002-10-24  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR other/3337
