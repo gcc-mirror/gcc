@@ -3233,10 +3233,13 @@ rs6000_stack_info ()
 
   info_ptr->total_size   = RS6000_ALIGN (total_raw_size, ABI_STACK_BOUNDARY / BITS_PER_UNIT);
 
-  /* Determine if we need to allocate any stack frame.
-     For AIX We need to push the stack if a frame pointer is needed (because
-     the stack might be dynamically adjusted), if we are debugging, if the
-     total stack size is more than 220 bytes, or if we make calls.
+  /* Determine if we need to allocate any stack frame:
+
+     For AIX we need to push the stack if a frame pointer is needed (because
+     the stack might be dynamically adjusted), if we are debugging, if we
+     make calls, or if the sum of fp_save, gp_save, fpmem, and local variables
+     are more than the space needed to save all non-volatile registers:
+     32-bit: 18*8 + 19*4 = 220 or 64-bit: 18*8 + 19*8 = 296
 
      For V.4 we don't have the stack cushion that AIX uses, but assume that
      the debugger can handle stackless frames.  */
@@ -3252,7 +3255,8 @@ rs6000_stack_info ()
   else
     info_ptr->push_p = (frame_pointer_needed
 			|| write_symbols != NO_DEBUG
-			|| info_ptr->total_size > 220);
+			|| ((info_ptr->total_size - info_ptr->fixed_size)
+			    > (TARGET_32BIT ? 220 : 296)));
 
   /* Calculate the offsets */
   switch (abi)
@@ -3294,7 +3298,15 @@ rs6000_stack_info ()
     }
 
   if (info_ptr->fpmem_p)
-    info_ptr->fpmem_offset = STARTING_FRAME_OFFSET - info_ptr->total_size + info_ptr->vars_size;
+    {
+      info_ptr->fpmem_offset = info_ptr->main_save_offset - info_ptr->fpmem_size;
+      rs6000_fpmem_size   = info_ptr->fpmem_size;
+      rs6000_fpmem_offset = (info_ptr->push_p
+		    ? info_ptr->total_size + info_ptr->fpmem_offset
+		    : info_ptr->fpmem_offset);
+    }
+  else
+    info_ptr->fpmem_offset = 0;  
 
   /* Zero offsets if we're not saving those registers */
   if (!info_ptr->fp_size)
@@ -3314,14 +3326,6 @@ rs6000_stack_info ()
 
   if (!info_ptr->main_save_p)
     info_ptr->main_save_offset = 0;
-
-  if (!info_ptr->fpmem_p)
-    info_ptr->fpmem_offset = 0;
-  else
-    {
-      rs6000_fpmem_size   = info_ptr->fpmem_size;
-      rs6000_fpmem_offset = info_ptr->total_size + info_ptr->fpmem_offset;
-    }
 
   return info_ptr;
 }
