@@ -2872,7 +2872,7 @@ STAGE2_FLAGS_TO_PASS = \
 # we can guarantee will build with the native compiler, and also it is the
 # only thing useful for building stage2.
 stage1_build:
-	+$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)"
+	$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)"
 	touch stage1_build
 	echo stage1_build > stage_last
 
@@ -2887,19 +2887,19 @@ stage1_copy: stage1_build
 # because alloca.o is newer, we permit these recursive makes to compile
 # alloca.o.  Then cc1 is newer, so it won't have to be relinked.
 stage2_build: stage1_copy
-	+$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" \
+	$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" \
 		 STAGE_PREFIX=stage1/ \
 		 $(STAGE2_FLAGS_TO_PASS)
 	touch stage2_build
 	echo stage2_build > stage_last
 
 stage2_copy: stage2_build
-	+$(MAKE) stage2
+	$(MAKE) stage2
 	touch stage2_copy
 	echo stage3_build > stage_last
 
 stage3_build: stage2_copy
-	+$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" \
+	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" \
 		 STAGE_PREFIX=stage2/ \
 		 $(STAGE2_FLAGS_TO_PASS)
 	touch stage3_build
@@ -2907,12 +2907,12 @@ stage3_build: stage2_copy
 
 # For bootstrap4:
 stage3_copy: stage3_build
-	+$(MAKE) stage3
+	$(MAKE) stage3
 	touch stage3_copy
 	echo stage4_build > stage_last
 
 stage4_build: stage3_copy
-	+$(MAKE) CC="stage3/xgcc$(exeext) -B$(build_tooldir)/bin/ -Bstage3/" \
+	$(MAKE) CC="stage3/xgcc$(exeext) -B$(build_tooldir)/bin/ -Bstage3/" \
 		 STAGE_PREFIX=stage3/ \
 		 $(STAGE2_FLAGS_TO_PASS)
 	touch stage4_build
