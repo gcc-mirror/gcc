@@ -62,7 +62,7 @@ __extension__ \
 #define va_alist  __builtin_va_alist
 #define va_dcl    int __builtin_va_alist;...
 
-#ifdef __SH3E___
+#ifdef __SH3E__
 
 #define va_start(AP) \
 __extension__ \
@@ -124,8 +124,6 @@ enum __va_type_classes {
 #ifdef __SH3E__
 
 #ifdef __LITTLE_ENDIAN__
-#warning SH3e little endian varargs/stdarg support has not been written yet.
-#endif
 
 #define va_arg(pvar,TYPE)					\
 __extension__							\
@@ -143,20 +141,59 @@ __extension__							\
     }								\
   else								\
     {								\
-      __va_greg *__r;						\
-      if (pvar.__va_next_o + ((sizeof (TYPE) + 3) / 4) <= pvar.__va_next_o_limit) 		\
+      __va_greg *_r;						\
+      if (pvar.__va_next_o + ((sizeof (TYPE) + 3) / 4)		\
+	  <= pvar.__va_next_o_limit) 				\
 	{							\
-	  __r = (__va_greg *) pvar.__va_next_o;			\
-          pvar.__va_next_o += (sizeof (TYPE) + 3) / 4;		\
+	  _r = pvar.__va_next_o;				\
+	  pvar.__va_next_o += (sizeof (TYPE) + 3) / 4;		\
 	}							\
       else							\
 	{							\
-          __r = (__va_greg *) pvar.__va_next_stack;             \
-          pvar.__va_next_stack += (sizeof (TYPE) + 3) / 4;	\
+	  _r = pvar.__va_next_stack;				\
+	  pvar.__va_next_stack += (sizeof (TYPE) + 3) / 4;	\
 	}							\
-      __result = (char *) __r;					\
+      __result = (char *) _r;					\
     } 								\
   (TYPE *) __result;}))
+
+#else /* ! __LITTLE_ENDIAN__ */
+
+#define va_arg(pvar,TYPE)					\
+__extension__							\
+(*({int __type = __builtin_classify_type (* (TYPE *) 0);	\
+  void * __result;						\
+  if (__type == __real_type_class && sizeof(TYPE) == 4)		\
+						/* float? */	\
+    {								\
+      __va_freg *__r;						\
+      if (pvar.__va_next_fp < pvar.__va_next_fp_limit)		\
+	__r = (__va_freg *) pvar.__va_next_fp++;		\
+      else							\
+	__r = (__va_freg *) pvar.__va_next_stack++;		\
+      __result = (char *) __r;					\
+    }								\
+  else								\
+    {								\
+      __va_greg *_r;						\
+      if (pvar.__va_next_o + ((sizeof (TYPE) + 3) / 4)		\
+	  <= pvar.__va_next_o_limit) 				\
+	{							\
+	  pvar.__va_next_o += (sizeof (TYPE) + 3) / 4;		\
+	  _r = pvar.__va_next_o;				\
+	}							\
+      else							\
+	{							\
+	  pvar.__va_next_stack += (sizeof (TYPE) + 3) / 4;	\
+	  _r = pvar.__va_next_stack;				\
+	}							\
+      __result = ((char *) _r					\
+		  - (sizeof (TYPE) < 4 ? sizeof (TYPE)		\
+		     : ((sizeof (TYPE) + 3) / 4) * 4));		\
+    } 								\
+  (TYPE *) __result;}))
+
+#endif /* __LITTLE_ENDIAN__ */
 
 #else /* ! SH3E */
 
