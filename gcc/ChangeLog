@@ -1,3 +1,8 @@
+Thu Jul 16 14:48:04 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.c (do_spec_1): Cope with %g/%u/%U options which do not have
+	a suffix.
+
 Fri Jul 17 03:24:40 1998  Hans-Peter Nilsson  <hp@axis.se>
 
 	* extend.texi (Explicit Reg Vars): Typo: change "may deleted" into "may
