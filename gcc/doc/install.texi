@@ -2541,12 +2541,15 @@ A port to the AT&T DSP1610 family of processors.
 @end html
 @heading @anchor{*-*-freebsd*}*-*-freebsd*
 
-The version of binutils installed in @file{/usr/bin} is known to work unless
-otherwise specified in any per-architecture notes.  However, binutils
-2.12.1 or greater is known to improve overall testsuite results.
+The version of binutils installed in @file{/usr/bin} probably works with
+this release of GCC.  However, on FreeBSD 4, bootstrapping against the
+latest FSF binutils is known to improve overall testsuite results; and,
+on FreeBSD/alpha, using binutils 2.14 or later is required to build libjava.
 
 Support for FreeBSD 1 was discontinued in GCC 3.2.
 
+Support for FreeBSD 2 will be discontinued after GCC 3.4.  The
+following was true for GCC 3.1 but the current status is unknown.
 For FreeBSD 2 or any mutant a.out versions of FreeBSD 3: All
 configuration support and files as shipped with GCC 2.95 are still in
 place.  FreeBSD 2.2.7 has been known to bootstrap completely; however,
@@ -2563,9 +2566,9 @@ of the configuration used in the stock FreeBSD configuration of GCC.  In
 particular, @option{--enable-threads} is now configured by default.
 However, as a general user, do not attempt to replace the system
 compiler with this release.  Known to bootstrap and check with good
-results on FreeBSD 4.8-STABLE and 5-CURRENT@.  In the past, known to
+results on FreeBSD 4.9-STABLE and 5-CURRENT@.  In the past, known to
 bootstrap and check with good results on FreeBSD 3.0, 3.4, 4.0, 4.2,
-4.3, 4.4, 4.5-STABLE@.
+4.3, 4.4, 4.5, 4.8-STABLE@.
 
 In principle, @option{--enable-threads} is now compatible with
 @option{--enable-libgcj} on FreeBSD@.  However, it has only been built

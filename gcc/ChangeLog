@@ -1,3 +1,7 @@
+2004-03-02  Loren James Rittle  <ljrittle@acm.org>
+
+	* gcc/doc/install.texi (*-*-freebsd*): Update target information.
+
 2004-03-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR bootstrap/14356
