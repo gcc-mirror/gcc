@@ -1,3 +1,10 @@
+2005-03-06  Tom Tromey  <tromey@redhat.com>
+
+	PR java/20215:
+	* include/jvm.h (_Jv_Linker::find_field_helper): Updated.
+	* link.cc (find_field_helper): Added 'type' argument.
+	(find_field): Updated.
+
 2005-03-06  Roger Sayle  <roger@eyesopen.com>
 
 	PR libgcj/20155
