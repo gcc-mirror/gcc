@@ -304,14 +304,14 @@ __sel_register_typed_name (const char *name, const char *types,
       if (orig)
 	j = orig;
       else
-	j = __objc_xmalloc (sizeof (struct objc_selector));
+	j = objc_malloc (sizeof (struct objc_selector));
 
       j->sel_id = (void*)i;
       /* Can we use the pointer or must copy types?  Don't copy if NULL */
       if ((is_const) || (types == 0))
 	j->sel_types = (const char*)types;
       else {
-	j->sel_types = (char *)__objc_xmalloc(strlen(types)+1);
+	j->sel_types = (char *) objc_malloc(strlen(types)+1);
 	strcpy(j->sel_types, types);
       }
       l = (struct objc_list*)sarray_get (__objc_selector_array, i);
@@ -323,14 +323,14 @@ __sel_register_typed_name (const char *name, const char *types,
       if (orig)
 	j = orig;
       else
-	j = __objc_xmalloc (sizeof (struct objc_selector));
+	j = objc_malloc (sizeof (struct objc_selector));
 	
       j->sel_id = (void*)i;
       /* Can we use the pointer or must copy types?  Don't copy if NULL */
       if ((is_const) || (types == 0))
 	j->sel_types = (const char*)types;
       else {
-	j->sel_types = (char *)__objc_xmalloc(strlen(types)+1);
+	j->sel_types = (char *) objc_malloc(strlen(types)+1);
 	strcpy(j->sel_types, types);
       }
       l = 0;
@@ -347,7 +347,7 @@ __sel_register_typed_name (const char *name, const char *types,
     if ((is_const) || (name == 0))
       new_name = name;
     else {
-      new_name = (char *)__objc_xmalloc(strlen(name)+1);
+      new_name = (char *) objc_malloc(strlen(name)+1);
       strcpy(new_name, name);
     }
 
