@@ -2367,15 +2367,6 @@ since it is known that the calling function loaded the correct value.
 
 Not all ELF targets support this attribute.
 
-@item tls_model ("@var{tls_model}")
-@cindex @code{tls_model} attribute
-The @code{tls_model} attribute sets thread-local storage model
-(@pxref{Thread-Local}) of a particular @code{__thread} variable,
-overriding @code{-ftls-model=} command line switch on a per-variable
-basis.
-The @var{tls_model} argument should be one of @code{global-dynamic},
-@code{local-dynamic}, @code{initial-exec} or @code{local-exec}.
-
 @item regparm (@var{number})
 @cindex functions that are passed arguments in registers on the 386
 On the Intel 386, the @code{regparm} attribute causes the compiler to
@@ -2958,15 +2949,13 @@ It is an error to ask for the alignment of an incomplete type.
 
 The keyword @code{__attribute__} allows you to specify special
 attributes of variables or structure fields.  This keyword is followed
-by an attribute specification inside double parentheses.  Ten
-attributes are currently defined for variables: @code{aligned},
-@code{mode}, @code{nocommon}, @code{packed}, @code{section},
-@code{transparent_union}, @code{unused}, @code{deprecated},
-@code{vector_size}, and @code{weak}.  Some other attributes are defined
-for variables on particular target systems.  Other attributes are
-available for functions (@pxref{Function Attributes}) and for types
-(@pxref{Type Attributes}).  Other front ends might define more
-attributes (@pxref{C++ Extensions,,Extensions to the C++ Language}).
+by an attribute specification inside double parentheses.  Some
+attributes are currently defined generically for variables.
+Other attributes are defined for variables on particular target
+systems.  Other attributes are available for functions
+(@pxref{Function Attributes}) and for types (@pxref{Type Attributes}).
+Other front ends might define more attributes
+(@pxref{C++ Extensions,,Extensions to the C++ Language}).
 
 You may also specify attributes with @samp{__} preceding and following
 each keyword.  This allows you to use them in header files without
@@ -3034,6 +3023,40 @@ up to a maximum of 8 byte alignment, then specifying @code{aligned(16)}
 in an @code{__attribute__} will still only provide you with 8 byte
 alignment.  See your linker documentation for further information.
 
+@item common
+@itemx nocommon
+@cindex @code{common} attribute
+@cindex @code{nocommon} attribute
+@opindex fcommon
+@opindex fno-common
+The @code{common} attribute requests GCC to place a variable in
+``common'' storage.  The @code{nocommon} attribute requests the
+opposite -- to allocate space for it directly.
+
+These attributes override the default chosen by the 
+@option{-fno-common} and @option{-fcommon} flags respectively.
+
+@item deprecated
+@cindex @code{deprecated} attribute
+The @code{deprecated} attribute results in a warning if the variable
+is used anywhere in the source file.  This is useful when identifying
+variables that are expected to be removed in a future version of a
+program.  The warning also includes the location of the declaration
+of the deprecated variable, to enable users to easily find further
+information about why the variable is deprecated, or what they should
+do instead.  Note that the warnings only occurs for uses:
+
+@smallexample
+extern int old_var __attribute__ ((deprecated));
+extern int old_var;
+int new_fn () @{ return old_var; @}
+@end smallexample
+
+results in a warning on line 3 but not line 2.
+
+The @code{deprecated} attribute can also be used for functions and
+types (@pxref{Function Attributes}, @pxref{Type Attributes}.)
+
 @item mode (@var{mode})
 @cindex @code{mode} attribute
 This attribute specifies the data type for the declaration---whichever
@@ -3044,18 +3067,6 @@ You may also specify a mode of @samp{byte} or @samp{__byte__} to
 indicate the mode corresponding to a one-byte integer, @samp{word} or
 @samp{__word__} for the mode of a one-word integer, and @samp{pointer}
 or @samp{__pointer__} for the mode used to represent pointers.
-
-@item nocommon
-@cindex @code{nocommon} attribute
-@opindex fno-common
-This attribute specifies requests GCC not to place a variable
-``common'' but instead to allocate space for it directly.  If you
-specify the @option{-fno-common} flag, GCC will do this for all
-variables.
-
-Specifying the @code{nocommon} attribute for a variable provides an
-initialization of zeros.  A variable may only be initialized in one
-source file.
 
 @item packed
 @cindex @code{packed} attribute
@@ -3150,6 +3161,17 @@ linkers work.  See @code{section} attribute for more information.
 
 The @code{shared} attribute is only available on Windows NT@.
 
+@item tls_model ("@var{tls_model}")
+@cindex @code{tls_model} attribute
+The @code{tls_model} attribute sets thread-local storage model
+(@pxref{Thread-Local}) of a particular @code{__thread} variable,
+overriding @code{-ftls-model=} command line switch on a per-variable
+basis.
+The @var{tls_model} argument should be one of @code{global-dynamic},
+@code{local-dynamic}, @code{initial-exec} or @code{local-exec}.
+
+Not all targets support this attribute.
+
 @item transparent_union
 This attribute, attached to a function parameter which is a union, means
 that the corresponding argument may have the type of any union member,
@@ -3162,26 +3184,6 @@ applies to all function parameters with that type.
 This attribute, attached to a variable, means that the variable is meant
 to be possibly unused.  GCC will not produce a warning for this
 variable.
-
-@item deprecated
-The @code{deprecated} attribute results in a warning if the variable
-is used anywhere in the source file.  This is useful when identifying
-variables that are expected to be removed in a future version of a
-program.  The warning also includes the location of the declaration
-of the deprecated variable, to enable users to easily find further
-information about why the variable is deprecated, or what they should
-do instead.  Note that the warnings only occurs for uses:
-
-@smallexample
-extern int old_var __attribute__ ((deprecated));
-extern int old_var;
-int new_fn () @{ return old_var; @}
-@end smallexample
-
-results in a warning on line 3 but not line 2.
-
-The @code{deprecated} attribute can also be used for functions and
-types (@pxref{Function Attributes}, @pxref{Type Attributes}.)
 
 @item vector_size (@var{bytes})
 This attribute specifies the vector size for the variable, measured in
@@ -3214,7 +3216,13 @@ the @code{int}.
 
 @item weak
 The @code{weak} attribute is described in @xref{Function Attributes}.
+@end table
 
+@subsection M32R/D Variable Attributes
+
+One attribute is currently defined for the M32R/D.
+
+@table @code
 @item model (@var{model-name})
 @cindex variable addressability on the M32R/D
 Use this attribute on the M32R/D to set the addressability of an object.
@@ -3227,16 +3235,18 @@ addresses can be loaded with the @code{ld24} instruction).
 Medium and large model objects may live anywhere in the 32-bit address space
 (the compiler will generate @code{seth/add3} instructions to load their
 addresses).
+@end table
 
 @subsection i386 Variable Attributes
 
 Two attributes are currently defined for i386 configurations:
 @code{ms_struct} and @code{gcc_struct}
 
+@table @code
 @item ms_struct
 @itemx gcc_struct
-@cindex @code{ms_struct}
-@cindex @code{gcc_struct}
+@cindex @code{ms_struct} attribute
+@cindex @code{gcc_struct} attribute
 
 If @code{packed} is used on a structure, or if bit-fields are used
 it may be that the Microsoft ABI packs them differently
@@ -3247,12 +3257,7 @@ either format.
 
 Currently @option{-m[no-]ms-bitfields} is provided for the Windows X86
 compilers to match the native Microsoft compiler.
-
 @end table
-
-To specify multiple attributes, separate them by commas within the
-double parentheses: for example, @samp{__attribute__ ((aligned (16),
-packed))}.
 
 @node Type Attributes
 @section Specifying Attributes of Types
