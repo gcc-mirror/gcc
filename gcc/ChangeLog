@@ -1,3 +1,8 @@
+2004-04-02  Gabor Loki <loki@inf.u-szeged.hu>
+
+       * opts.c (decode_options): Do function inlining with very small
+       max-inline-insns-* parameters when optimizing for size.
+
 2004-04-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/i386/i386.h (TARGET_NOCONA): New macro.
