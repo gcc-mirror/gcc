@@ -619,7 +619,7 @@ void GC_finalize()
 void GC_enqueue_all_finalizers()
 {
     struct finalizable_object * curr_fo, * prev_fo, * next_fo;
-    ptr_t real_ptr, real_link;
+    ptr_t real_ptr;
     register int i;
     int fo_size;
     

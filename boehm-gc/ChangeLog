@@ -1,3 +1,8 @@
+2000-05-07  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	Imported version 5.0alpha7.
+        * acinclude.m4: Update version to 5.0a7.
+
 2000-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcconfig.h (SPARC): Define ALIGNMENT to 8 for 64bit SPARC.

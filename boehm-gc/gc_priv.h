@@ -1415,7 +1415,7 @@ extern GC_bool GC_objects_are_marked;	/* There are marked objects in  */
   extern GC_bool GC_incremental;
 			/* Using incremental/generational collection. */
 #else
-# define GC_incremental TRUE
+# define GC_incremental FALSE
 			/* Hopefully allow optimizer to remove some code. */
 #endif
 
