@@ -1174,6 +1174,19 @@ reload (rtx first, int global)
 	  replace_pseudos_in (& XEXP (PATTERN (insn), 0),
 			      VOIDmode, PATTERN (insn));
 
+	/* Discard obvious no-ops, even without -O.  This optimization
+	   is fast and doesn't interfere with debugging.  */
+	if (NONJUMP_INSN_P (insn)
+	    && GET_CODE (PATTERN (insn)) == SET
+	    && REG_P (SET_SRC (PATTERN (insn)))
+	    && REG_P (SET_DEST (PATTERN (insn)))
+	    && (REGNO (SET_SRC (PATTERN (insn)))
+		== REGNO (SET_DEST (PATTERN (insn)))))
+	  {
+	    delete_insn (insn);
+	    continue;
+	  }
+
 	pnote = &REG_NOTES (insn);
 	while (*pnote != 0)
 	  {
