@@ -1,3 +1,7 @@
+2002-09-18  Richard Henderson  <rth@redhat.com>
+
+	* real.c (round_for_format): Collect sticky as unsigned long, not bool.
+
 2002-09-19  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.md: (floatdisf2): Rename to
