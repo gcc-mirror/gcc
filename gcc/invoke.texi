@@ -93,7 +93,7 @@ in the following sections.
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
 @smallexample
--ansi  -fallow-single-precision  -fcond-mismatch  -fno-asm
+-ansi -flang-isoc9x -fallow-single-precision  -fcond-mismatch  -fno-asm
 -fno-builtin  -ffreestanding  -fhosted  -fsigned-bitfields  -fsigned-char
 -funsigned-bitfields  -funsigned-char  -fwritable-strings
 -traditional  -traditional-cpp  -trigraphs
@@ -643,6 +643,15 @@ programs that might use these names for other things.
 
 The functions @code{alloca}, @code{abort}, @code{exit}, and
 @code{_exit} are not builtin functions when @samp{-ansi} is used.
+
+@item -flang-isoc9x
+Enable support for features found in the C9X standard.  In particular,
+enable support for the C9X @code{restrict} keyword.  
+
+Even when this option is not specified, you can still use some C9X
+features in so far as they do not conflict with previous C standards.
+For example, you may use @code{__restrict__} even when -flang-isoc9x
+is not specified. 
 
 @item -fno-asm
 Do not recognize @code{asm}, @code{inline} or @code{typeof} as a

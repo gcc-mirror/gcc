@@ -468,6 +468,10 @@ int flag_no_nonansi_builtin;
 
 int flag_traditional;
 
+/* Nonzero means use the ISO C9x dialect of C.  */
+
+int flag_isoc9x = 0;
+
 /* Nonzero means that we have builtin functions, and main is an int */
 
 int flag_hosted = 1;
@@ -648,6 +652,8 @@ c_decode_option (argc, argv)
       flag_traditional = 0;
       flag_writable_strings = 0;
     }
+  else if (!strcmp (p, "-flang-isoc9x"))
+    flag_isoc9x = 1;
   else if (!strcmp (p, "-fdollars-in-identifiers"))
     dollars_in_ident = 1;
   else if (!strcmp (p, "-fno-dollars-in-identifiers"))
@@ -4322,7 +4328,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
   tree type = NULL_TREE;
   int longlong = 0;
   int constp;
+  int restrictp;
   int volatilep;
+  int type_quals = TYPE_UNQUALIFIED;
   int inlinep;
   int explicit_int = 0;
   int explicit_char = 0;
@@ -4632,19 +4640,26 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	type = build_complex_type (type);
     }
 
-  /* Set CONSTP if this declaration is `const', whether by
-     explicit specification or via a typedef.
-     Likewise for VOLATILEP.  */
-
+  /* Figure out the type qualifiers for the declaration.  There are
+     two ways a declaration can become qualified.  One is something
+     like `const int i' where the `const' is explicit.  Another is
+     something like `typedef const int CI; CI i' where the type of the
+     declaration contains the `const'.  */
   constp = !! (specbits & 1 << (int) RID_CONST) + TYPE_READONLY (type);
+  restrictp = !! (specbits & 1 << (int) RID_RESTRICT) + TYPE_RESTRICT (type);
   volatilep = !! (specbits & 1 << (int) RID_VOLATILE) + TYPE_VOLATILE (type);
   inlinep = !! (specbits & (1 << (int) RID_INLINE));
   if (constp > 1)
     pedwarn ("duplicate `const'");
+  if (restrictp > 1)
+    pedwarn ("duplicate `restrict'");
   if (volatilep > 1)
     pedwarn ("duplicate `volatile'");
-  if (! flag_gen_aux_info && (TYPE_READONLY (type) || TYPE_VOLATILE (type)))
+  if (! flag_gen_aux_info && (TYPE_QUALS (type)))
     type = TYPE_MAIN_VARIANT (type);
+  type_quals = ((constp ? TYPE_QUAL_CONST : 0)
+		| (restrictp ? TYPE_QUAL_RESTRICT : 0)
+		| (volatilep ? TYPE_QUAL_VOLATILE : 0));
 
   /* Warn if two storage classes are given. Default to `auto'.  */
 
@@ -4878,13 +4893,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	     is set correctly.  */
 
 	  type = build_array_type (type, itype);
-	  if (constp || volatilep)
-	    type = c_build_type_variant (type, constp, volatilep);
+	  if (type_quals)
+	    type = c_build_qualified_type (type, type_quals);
 
 #if 0	/* don't clear these; leave them set so that the array type
 	   or the variable is itself const or volatile.  */
-	  constp = 0;
-	  volatilep = 0;
+	  type_quals = TYPE_UNQUALIFIED;
 #endif
 
 	  if (size_varies)
@@ -4949,12 +4963,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 				      flag_traditional 
 				      ? NULL_TREE : arg_types);
 #endif
-	  /* ANSI seems to say that `const int foo ();'
-	     does not make the function foo const.  */
-	  if (constp || volatilep)
-	    type = c_build_type_variant (type, constp, volatilep);
-	  constp = 0;
-	  volatilep = 0;
+	  /* Type qualifiers before the return type of the function
+	     qualify the return type, not the function type.  */
+	  if (type_quals)
+	    type = c_build_qualified_type (type, type_quals);
+	  type_quals = TYPE_UNQUALIFIED;
 
 	  type = build_function_type (type, arg_types);
 	  declarator = TREE_OPERAND (declarator, 0);
@@ -4978,12 +4991,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	     for the pointer.  */
 
 	  if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
-	      && (constp || volatilep))
-	    pedwarn ("ANSI C forbids const or volatile function types");
-	  if (constp || volatilep)
-	    type = c_build_type_variant (type, constp, volatilep);
-	  constp = 0;
-	  volatilep = 0;
+	      && type_quals)
+	    pedwarn ("ANSI C forbids qualified function types");
+	  if (type_quals)
+	    type = c_build_qualified_type (type, type_quals);
+	  type_quals = TYPE_UNQUALIFIED;
 	  size_varies = 0;
 
 	  type = build_pointer_type (type);
@@ -4995,13 +5007,21 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	    {
 	      register tree typemodlist;
 	      int erred = 0;
+
+	      constp = 0;
+	      volatilep = 0;
+	      restrictp = 0;
 	      for (typemodlist = TREE_TYPE (declarator); typemodlist;
 		   typemodlist = TREE_CHAIN (typemodlist))
 		{
-		  if (TREE_VALUE (typemodlist) == ridpointers[(int) RID_CONST])
+		  tree qualifier = TREE_VALUE (typemodlist);
+
+		  if (qualifier == ridpointers[(int) RID_CONST])
 		    constp++;
-		  else if (TREE_VALUE (typemodlist) == ridpointers[(int) RID_VOLATILE])
+		  else if (qualifier == ridpointers[(int) RID_VOLATILE])
 		    volatilep++;
+		  else if (qualifier == ridpointers[(int) RID_RESTRICT])
+		    restrictp++;
 		  else if (!erred)
 		    {
 		      erred = 1;
@@ -5012,6 +5032,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		pedwarn ("duplicate `const'");
 	      if (volatilep > 1)
 		pedwarn ("duplicate `volatile'");
+	      if (restrictp > 1)
+		pedwarn ("duplicate `restrict'");
+
+	      type_quals = ((constp ? TYPE_QUAL_CONST : 0)
+			    | (restrictp ? TYPE_QUAL_RESTRICT : 0)
+			    | (volatilep ? TYPE_QUAL_VOLATILE : 0));
 	    }
 
 	  declarator = TREE_OPERAND (declarator, 0);
@@ -5038,10 +5064,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       /* Note that the grammar rejects storage classes
 	 in typenames, fields or parameters */
       if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
-	  && (constp || volatilep))
-	pedwarn ("ANSI C forbids const or volatile function types");
-      if (constp || volatilep)
-	type = c_build_type_variant (type, constp, volatilep);
+	  && type_quals)
+	pedwarn ("ANSI C forbids qualified function types");
+      if (type_quals)
+	type = c_build_qualified_type (type, type_quals);
       decl = build_decl (TYPE_DECL, declarator, type);
       if ((specbits & (1 << (int) RID_SIGNED))
 	  || (typedef_decl && C_TYPEDEF_EXPLICITLY_SIGNED (typedef_decl)))
@@ -5073,10 +5099,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       /* Note that the grammar rejects storage classes
 	 in typenames, fields or parameters */
       if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
-	  && (constp || volatilep))
+	  && type_quals)
 	pedwarn ("ANSI C forbids const or volatile function types");
-      if (constp || volatilep)
-	type = c_build_type_variant (type, constp, volatilep);
+      if (type_quals)
+	type = c_build_qualified_type (type, type_quals);
       pop_obstacks ();
       return type;
     }
@@ -5116,20 +5142,20 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  {
 	    /* Transfer const-ness of array into that of type pointed to.  */
 	    type = TREE_TYPE (type);
-	    if (constp || volatilep)
-	      type = c_build_type_variant (type, constp, volatilep);
+	    if (type_quals)
+	      type = c_build_qualified_type (type, type_quals);
 	    type = build_pointer_type (type);
-	    volatilep = constp = 0;
+	    type_quals = TYPE_UNQUALIFIED;
 	    size_varies = 0;
 	  }
 	else if (TREE_CODE (type) == FUNCTION_TYPE)
 	  {
-	    if (pedantic && (constp || volatilep))
-	      pedwarn ("ANSI C forbids const or volatile function types");
-	    if (constp || volatilep)
-	      type = c_build_type_variant (type, constp, volatilep);
+	    if (pedantic && type_quals)
+	      pedwarn ("ANSI C forbids qualified function types");
+	    if (type_quals)
+	      type = c_build_qualified_type (type, type_quals);
 	    type = build_pointer_type (type);
-	    volatilep = constp = 0;
+	    type_quals = TYPE_UNQUALIFIED;
 	  }
 
 	decl = build_decl (PARM_DECL, declarator, type);
@@ -5177,13 +5203,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	    type = error_mark_node;
 	  }
 	/* Move type qualifiers down to element of an array.  */
-	if (TREE_CODE (type) == ARRAY_TYPE && (constp || volatilep))
+	if (TREE_CODE (type) == ARRAY_TYPE && type_quals)
 	  {
-	    type = build_array_type (c_build_type_variant (TREE_TYPE (type),
-							   constp, volatilep),
+	    type = build_array_type (c_build_qualified_type (TREE_TYPE (type),
+							     type_quals),
 				     TYPE_DOMAIN (type));
 #if 0 /* Leave the field const or volatile as well.  */
-	    constp = volatilep = 0;
+	    type_quals = TYPE_UNQUALIFIED;
 #endif
 	  }
 	decl = build_decl (FIELD_DECL, declarator, type);
@@ -5222,18 +5248,18 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	decl = build_decl (FUNCTION_DECL, declarator, type);
 	decl = build_decl_attribute_variant (decl, decl_machine_attr);
 
-	if (pedantic && (constp || volatilep)
-	    && ! DECL_IN_SYSTEM_HEADER (decl))
-	  pedwarn ("ANSI C forbids const or volatile functions");
+	if (pedantic && type_quals && ! DECL_IN_SYSTEM_HEADER (decl))
+	  pedwarn ("ANSI C forbids qualified function types");
 
 	if (pedantic
 	    && TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (decl))) == void_type_node
-	    && (TYPE_READONLY (TREE_TYPE (TREE_TYPE (decl)))
-		|| TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (decl))))
+	    && TYPE_QUALS (TREE_TYPE (TREE_TYPE (decl)))
 	    && ! DECL_IN_SYSTEM_HEADER (decl))
-	  pedwarn ("ANSI C forbids const or volatile void function return type");
+	  pedwarn ("ANSI C forbids qualified void function return type");
 
-	if (volatilep
+	/* GNU C interprets a `volatile void' return type to indicate
+	   that the function does not return.  */
+	if ((type_quals & TYPE_QUAL_VOLATILE)
 	    && TREE_TYPE (TREE_TYPE (decl)) != void_type_node)
 	  warning ("`noreturn' function returns non-void value");
 
@@ -5263,13 +5289,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	int extern_ref = !initialized && (specbits & (1 << (int) RID_EXTERN));
 
 	/* Move type qualifiers down to element of an array.  */
-	if (TREE_CODE (type) == ARRAY_TYPE && (constp || volatilep))
+	if (TREE_CODE (type) == ARRAY_TYPE && type_quals)
 	  {
-	    type = build_array_type (c_build_type_variant (TREE_TYPE (type),
-							   constp, volatilep),
+	    type = build_array_type (c_build_qualified_type (TREE_TYPE (type),
+							     type_quals),
 				     TYPE_DOMAIN (type));
 #if 0 /* Leave the variable const or volatile as well.  */
-	    constp = volatilep = 0;
+	    type_quals = TYPE_UNQUALIFIED;
 #endif
 	  }
 
@@ -5316,14 +5342,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       DECL_REGISTER (decl) = 1;
 
     /* Record constancy and volatility.  */
+    c_apply_type_quals_to_decl (type_quals, decl);
 
-    if (constp)
-      TREE_READONLY (decl) = 1;
-    if (volatilep)
-      {
-	TREE_SIDE_EFFECTS (decl) = 1;
-	TREE_THIS_VOLATILE (decl) = 1;
-      }
     /* If a type has volatile components, it should be stored in memory.
        Otherwise, the fact that those components are volatile
        will be ignored, and would even crash the compiler.  */

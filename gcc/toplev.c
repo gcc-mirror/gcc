@@ -949,6 +949,7 @@ documented_lang_options[] =
   { "-traditional", "Attempt to support traditional K&R style C"},
   { "-fnotraditional", "" },
   { "-fno-traditional", "" },
+  { "-flang-isoc9x", "Enable C9X features"},
 
   { "-fasm", "" },
   { "-fno-asm", "Do not recognise the 'asm' keyword" },

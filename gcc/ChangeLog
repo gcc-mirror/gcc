@@ -1,3 +1,73 @@
+Wed Oct 21 09:18:58 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* invoke.texi: Document -flang-isoc9x.
+
+	* Makefile.in (OBJS): Add splay-tree.o.
+	(c-common.o): Depend on rtl.h.
+	(splay-tree.o): List dependencies and provide build rule.
+	
+	* rtl.h (record_alias_subset): New function.
+	* alias.c: Include splay-tree.h.
+	(alias_set_entry): New type.
+	(CHECK_ALIAS_SETS_FOR_CONSISTENCY): Remove.
+	(DIFFERENT_ALIAS_SETS_P): Use mem_in_disjoint_alias_sets_p.
+	(mems_in_disjoin_alias_sets_p): New function.
+	(alias_set_compare): Likewise.
+	(insert_subset_children): Likewise.
+	(get_alias_set_entry): Likewise.
+
+	* tree.h (TYPE_RESTRICT): New macro.
+	(TYPE_UNQUALIFIED): New manifest constant.
+	(TYPE_QUAL_CONST): Likewise
+	(TYPE_QUAL_VOLATILE): Likewise.
+	(TYPE_QUAL_RESTRICT): Likewise.
+	(tree_type): Add restrict_flag.  Reduce count of free bits.
+	(DECL_POINTER_ALIAS_SET): New macro.
+	(DECL_POINTER_ALIAS_SET_KNOWN_P): Likewise.
+	(tree_decl): Add pointer_alias_set.
+	(build_qualified_type): New function.
+	(build_type_variant): Define in terms of build_qualified_type.
+	* tree.c (set_type_quals): New function.
+	(make_node): Initializae DECL_POINTER_ALIAS_SET.
+	(build_type_attribute_variant): Use build_qualified_type and
+	set_type_quals.
+	(build_type_variant): Rename, and modify, to become...
+	(build_qualified_type): New function.
+	(build_complex_type): Use set_type_quals.
+
+	* c-tree.h (C_TYPE_OBJECT_P): New macro.
+	(C_TYPE_FUNCTION_P): Likewise.
+	(C_TYPE_INCOMPLETE_P): Likewise.
+	(C_TYPE_OBJECT_OR_INCOMPLETE_P): Likewise.
+	(c_apply_type_quals_to_decl): New function.
+	(c_build_qualified_type): New function.
+	(c_build_type_variant): Define in terms of c_build_qualified_type.
+	(flag_isoc9x): Declare.
+	* c-typeck.c (qualify_type): Use c_build_qualified_type.
+	(common_type): Change to use TYPE_QUALS.
+	(comptypes): Likewise.
+	(convert_for_assignment): Likewise.
+	* c-aux-info.c (gen_type): Likewise.  Deal with `restrict'.
+	* c-decl.c (flag_isoc9x): Define.
+	(c_decode_option): Handle -flang-isoc9x.
+	(grokdeclarator): Update to handle restrict.  Use TYPE_QUALS,
+	c_build_qualified_type, etc.  Use c_apply_type_quals_to_decl.
+	* c-lex.c (init_lex): Deal with restrict.
+	(init_lex): Don't treat restrict as a reserved word in
+	-traditional mode, or without -flang-isoc9x.
+	* c-lex.h (rid): Add RID_RESTRICT.
+	* c-parse.gperf (restrict, __restrict, __restrict__): Make
+	equivalent to RID_RESTRICT.
+	* c-parse.in (TYPE_QUAL): Update comment.
+	* c-common.c: Include rtl.h.
+	(c_find_base_decl): New function.
+	(c_build_type_variant): Rename, and modify, to become ...
+	(c_build_qualified_type): New function.
+	(c_apply_type_quals_to_decl): Likewise.
+	(c_get_alias_set): For INDIRECT_REFs, check to see if we can find
+	a particular alias set for the reference.
+	* toplev.c (documented_lang_options): Add -flang-isoc9x.
+
 Wed Oct 21 09:15:06 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.h (TARGET_SWITCHES): Document arm specific

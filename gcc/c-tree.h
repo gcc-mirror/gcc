@@ -80,6 +80,22 @@ extern int pedantic;
    nonzero if the definition of the type has already started.  */
 #define C_TYPE_BEING_DEFINED(type) TYPE_LANG_FLAG_0 (type)
 
+/* C types are partitioned into three subsets: object, function, and
+   incomplete types.  */
+#define C_TYPE_OBJECT_P(type) \
+  (TREE_CODE (type) != FUNCTION_TYPE && TYPE_SIZE (type))
+
+#define C_TYPE_FUNCTION_P(type) \
+  (TREE_CODE (type) == FUNCTION_TYPE)
+
+#define C_TYPE_INCOMPLETE_P(type) \
+  (TREE_CODE (type) != FUNCTION_TYPE && TYPE_SIZE (type) == 0)
+
+/* For convenience we define a single macro to identify the class of
+   object or incomplete types.  */
+#define C_TYPE_OBJECT_OR_INCOMPLETE_P(type) \
+  (!C_TYPE_FUNCTION_P (type))
+
 /* In a RECORD_TYPE, a sorted array of the fields of the type.  */
 struct lang_type
 {
@@ -165,6 +181,7 @@ extern void decl_attributes                     PROTO((tree, tree, tree));
 extern void init_function_format_info		PROTO((void));
 extern void check_function_format		PROTO((tree, tree, tree));
 extern int c_get_alias_set                      PROTO((tree));
+extern void c_apply_type_quals_to_decl          PROTO((int, tree));
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error                     PROTO((enum tree_code));
@@ -267,7 +284,11 @@ extern tree build_enumerator                    PROTO((tree, tree));
 /* Declare a predefined function.  Return the declaration.  */
 extern tree builtin_function                    PROTO((char *, tree, enum built_in_function function_, char *));
 /* Add qualifiers to a type, in the fashion for C.  */
-extern tree c_build_type_variant                PROTO((tree, int, int));
+extern tree c_build_qualified_type              PROTO((tree, int));
+#define c_build_type_variant(TYPE, CONST_P, VOLATILE_P)		  \
+  c_build_qualified_type (TYPE, 				  \
+			  ((CONST_P) ? TYPE_QUAL_CONST : 0) |	  \
+			  ((VOLATILE_P) ? TYPE_QUAL_VOLATILE : 0))
 extern int  c_decode_option                     PROTO((int, char **));
 extern void c_mark_varargs                      PROTO((void));
 extern tree check_identifier                    PROTO((tree, tree));
@@ -496,6 +517,10 @@ extern int warn_main;
 /* Nonzero means do some things the same way PCC does.  */
 
 extern int flag_traditional;
+
+/* Nonzero means use the ISO C9x dialect of C.  */
+
+extern int flag_isoc9x;
 
 /* Nonzero means to allow single precision math even if we're generally
    being traditional. */
