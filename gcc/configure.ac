@@ -384,8 +384,8 @@ AC_ARG_ENABLE(checking,
 [  --enable-checking[=LIST]
 			  enable expensive run-time checks.  With LIST,
 			  enable only specific categories of checks.
-			  Categories are: misc,tree,rtl,rtlflag,gc,gcac,fold;
-			  default is misc,tree,gc,rtlflag],
+			  Categories are: fold,gc,gcac,misc,rtlflag,rtl,
+			  tree,valgrind; default is gc,misc,rtlflag,tree],
 [ac_checking=
 ac_tree_checking=
 ac_rtl_checking=
@@ -403,13 +403,13 @@ no)	;;
 	for check
 	do
 		case $check in
-		misc)	ac_checking=1 ;;
-		tree)	ac_tree_checking=1 ;;
-		rtlflag)	ac_rtlflag_checking=1 ;;
-		rtl)	ac_rtl_checking=1 ;;
+		fold)	ac_fold_checking=1 ;;
 		gc)	ac_gc_checking=1 ;;
 		gcac)	ac_gc_always_collect=1 ;;
-		fold)	ac_fold_checking=1 ;;
+		misc)	ac_checking=1 ;;
+		rtlflag)	ac_rtlflag_checking=1 ;;
+		rtl)	ac_rtl_checking=1 ;;
+		tree)	ac_tree_checking=1 ;;
 		valgrind)	ac_checking_valgrind=1 ;;
 		*)	AC_MSG_ERROR(unknown check category $check) ;;
 		esac

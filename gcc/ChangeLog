@@ -1,5 +1,11 @@
 2004-07-11  Phil Edwards  <phil@codesourcery.com>
 
+	* configure.ac:  Alphabetize --enable-checking list, add
+	missing valgrind entry.
+	* configure:  Regenerate.
+
+2004-07-11  Phil Edwards  <phil@codesourcery.com>
+
 	* doc/install.texi (Testing):  Fix syntax in "make check" example.
 
 2004-07-10  James E Wilson  <wilson@specifixinc.com>
