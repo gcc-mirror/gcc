@@ -104,9 +104,50 @@ build_sources() {
     || error "Could not create \`${WORKING_DIRECTORY}'"
   changedir "${WORKING_DIRECTORY}"
 
+  # If this is a final release, make sure that the ChangeLogs
+  # and version strings are updated.
+  if [ ${FINAL} -ne 0 ]; then
+    inform "Updating ChangeLogs and version files"
+
+    ${CVS} co -d "`basename ${SOURCE_DIRECTORY}`" \
+           -r ${BRANCH} gcc || \
+           error "Could not check out release sources"
+    for x in `find ${SOURCE_DIRECTORY} -name ChangeLog`; do
+      cat - ${x} > ${x}.new <<EOF
+${DATE} Release Manager
+
+        * GCC ${RELEASE} Released.
+
+EOF
+      mv ${x}.new ${x} || \
+        error "Could not update ${x}"
+      (changedir `dirname ${x}` && \
+        ${CVS} ci -m 'Mark ChangeLog' `basename ${x}`) || \
+        error "Could not commit ${x}"
+    done
+
+    # Update `gcc/version.c'.  There are other version files
+    # as well, but it is unclear whether nor not they
+    # should be updated.
+    for x in gcc/version.c; do 
+      y=`basename ${x}`
+      (changedir `dirname ${SOURCE_DIRECTORY}/${x}` && \
+          sed -e 's|= \".*\"|= \"${RELEASE}\"|g' < ${y} > ${y}.new && \
+	  mv ${y}.new ${y} && \
+          ${CVS} ci -m 'Update version' ${y}) || \
+	  error "Could not update ${x}"
+    done
+
+    # Make sure we tag the sources for a final release.
+    TAG="gcc_`echo ${RELEASE} | tr . _`_release"
+
+    rm -rf ${SOURCE_DIRECTORY}
+  fi
+
+  # Tag the sources.
   if [ -n "${TAG}" ]; then
     inform "Tagging release sources"
-    ${CVS} -z 9 rtag -r ${BRANCH} ${TAG} gcc || \
+    ${CVS} rtag -r ${BRANCH} ${TAG} gcc || \
       error "Could not tag release sources"
     BRANCH=$TAG
   fi
@@ -114,7 +155,7 @@ build_sources() {
   # Export the current sources.
   inform "Retrieving release sources"
   ${CVS} \
-       -z 9 export -d "`basename ${SOURCE_DIRECTORY}`" \
+       export -d "`basename ${SOURCE_DIRECTORY}`" \
        -r ${BRANCH} gcc || \
     error "Could not retrieve release sources"
 
@@ -137,7 +178,7 @@ build_sources() {
   for file in *.html; do
     newfile=`echo $file | sed -e 's/.html//' | tr "[:lower:]" "[:upper:]"`
     (${ENV} TERM=vt100 lynx -dump $file \
-       | sed -e 's#file://localhost.*\(/[^/]*\)#http://gcc.gnu.org\1#g' \
+       | sed -e "s#file://localhost`/bin/pwd`\(.*\)#http://gcc.gnu.org\1#g" \
        > $newfile) || \
      error "Could not regenerate documentation"
   done
@@ -443,7 +484,7 @@ if [ ${FINAL} -ne 1 ]; then
   RELEASE="${RELEASE}-${DATE}"
   FTP_PATH="${FTP_PATH}/snapshots"
 else
-  FTP_PATH="${FTP_PATH}/releases"
+  FTP_PATH="${FTP_PATH}/releases/gcc-${RELEASE}"
 fi
 
 # Compute the name of the WORKING_DIRECTORY and the SOURCE_DIRECTORY.
