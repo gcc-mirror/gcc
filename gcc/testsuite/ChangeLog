@@ -1,3 +1,7 @@
+2003-01-02  Neil Booth  <neil@daikokuya.co.uk>
+
+	* g++.dg/parse/parse6.C: New test.
+
 2003-01-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.dg/h8300-stack-1.c: New.
