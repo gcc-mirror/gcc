@@ -1695,6 +1695,34 @@ reload (first, global, dumpfile)
 			}
 		    }
 		  /* We can't complete a group, so start one.  */
+#ifdef SMALL_REGISTER_CLASSES
+		  /* Look for a pair neither of which is explicitly used.  */
+		  if (i == FIRST_PSEUDO_REGISTER)
+		    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+		      {
+			int k;
+			j = potential_reload_regs[i];
+			/* Verify that J+1 is a potential reload reg.  */
+			for (k = 0; k < FIRST_PSEUDO_REGISTER; k++)
+			  if (potential_reload_regs[k] == j + 1)
+			    break;
+			if (j >= 0 && j + 1 < FIRST_PSEUDO_REGISTER
+			    && k < FIRST_PSEUDO_REGISTER
+			    && spill_reg_order[j] < 0 && spill_reg_order[j + 1] < 0
+			    && TEST_HARD_REG_BIT (reg_class_contents[class], j)
+			    && TEST_HARD_REG_BIT (reg_class_contents[class], j + 1)
+			    && HARD_REGNO_MODE_OK (j, group_mode[class])
+			    && ! TEST_HARD_REG_BIT (counted_for_nongroups,
+						    j + 1)
+			    && ! TEST_HARD_REG_BIT (bad_spill_regs, j + 1)
+			    /* Reject J at this stage
+			       if J+1 was explicitly used.  */
+			    && ! regs_explicitly_used[j + 1])
+			  break;
+		      }
+#endif
+		  /* Now try any group at all
+		     whose registers are not in bad_spill_regs.  */
 		  if (i == FIRST_PSEUDO_REGISTER)
 		    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 		      {
