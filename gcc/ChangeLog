@@ -1,3 +1,11 @@
+2003-07-17  Geoffrey Keating  <geoffk@apple.com>
+
+	* c-opts.c (this_input_filename): New.
+	(finish_options): Take new parameter, name of file being compiled.
+	Update callers.  Set this_input_filename.
+	(push_command_line_include): Use this_input_filename not
+	main_input_filename.
+
 2003-07-17  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in: Depend .pot generation on options.c.
