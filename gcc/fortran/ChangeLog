@@ -4,6 +4,9 @@
 	* trans-decl.c (gfc_build_function_decl): Create a new chardecl
 	for every assumed length character dummy argument.
 
+	PR fortran/15140
+	* trans-decl.c (gfc_trans_deferred_vars): Remove bogus assertion.
+	
 2004-07-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
  	PR fortran/15324

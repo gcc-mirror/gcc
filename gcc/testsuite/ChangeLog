@@ -6,6 +6,9 @@
 	PR fortran/15129
 	* gfortran.dg/pr15129.f90: New test.
 
+	PR fortran/15140
+	* gfortran.dg/pr15140.f90: New test.
+
 2004-07-14  Mike Stump  <mrs@apple.com>
 
 	* gcc.dg/20020426-2.c: Improve type safety wrt unsignedness.
