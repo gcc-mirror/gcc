@@ -1127,6 +1127,13 @@ defer_fn (tree fn ATTRIBUTE_UNUSED)
   abort ();
 }
 
+/* Should not be called for treelang.   */
+
+cpp_options 
+*cpp_get_options (cpp_reader * cr ATTRIBUTE_UNUSED)
+{
+  abort ();
+}
 
 /* Create the predefined scalar types of C,
    and some nodes representing standard constants (0, 1, (void *) 0).

@@ -1,4 +1,10 @@
 \input texinfo  @c -*-texinfo-*-
+
+@c NOTE THIS IS NOT A GOOD EXAMPLE OF HOW TO DO A MANUAL. FIXME!!!
+@c NOTE THIS IS NOT A GOOD EXAMPLE OF HOW TO DO A MANUAL. FIXME!!!
+@c NOTE THIS IS NOT A GOOD EXAMPLE OF HOW TO DO A MANUAL. FIXME!!!
+
+
 @c %**start of header
 @setfilename treelang.info
 
