@@ -668,7 +668,7 @@ typedef char * va_list;\n\
 #endif /* __LINT__ */\n\
 #endif /*  !(defined(_VA_LIST) || defined(_VA_LIST_)) */\n\
 #endif /*  #ifndef __INT_VARARGS_H  */\n\
-_EOF_",
+_EOF_\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *

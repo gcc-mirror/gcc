@@ -1,6 +1,9 @@
 Fri Jun 18 07:02 1999  Bruce Korb <ddsinc09@ix.netcom.com>
 
 	* fixinc/mkfixinc.sh: enable the fixincl program for DG/UX
+	* fixinc/inclhack.def(dgux_int_varargs): script must end with \n
+	*fixinc/fixincl.x: regen
+	*fixinc/inclhack.sh: regen
 
 Thu Jun 17 15:06:10 PDT 1999 Don Lindsay  <dlindsay@cygnus.com>
 
