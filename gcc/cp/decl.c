@@ -11018,8 +11018,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  decl = build_lang_decl (TYPE_DECL, declarator, type);
 	}
       else
-	decl = build_decl (TYPE_DECL, declarator, type);
-
+	{
+	  decl = build_decl (TYPE_DECL, declarator, type);
+	  if (!current_function_decl)
+	    DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
+	}
+      
       /* If the user declares "typedef struct {...} foo" then the
 	 struct will have an anonymous name.  Fill that name in now.
 	 Nothing can refer to it, so nothing needs know about the name
