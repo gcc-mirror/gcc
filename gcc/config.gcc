@@ -2805,6 +2805,14 @@ hppa*-*-* | parisc*-*-*)
 	then
 		target_cpu_default2="MASK_GAS|MASK_JUMP_IN_DELAY"
 	fi
+	case $machine in
+		hppa1.0* | parisc1.0*)
+			tm_file="pa/pa-700.h ${tm_file}"
+			;;
+		hppa1.1* | parisc1.1*)
+			tm_file="pa/pa-7100.h ${tm_file}"
+			;;
+	esac
 	;;
 
 mips*-*-ecoff* | mips*-*-elf*)

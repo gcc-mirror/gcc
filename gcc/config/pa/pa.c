@@ -197,37 +197,38 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 void
 override_options ()
 {
-  /* Default to 8000 scheduling.  */
-  if (pa_cpu_string && ! strcmp (pa_cpu_string, "7100"))
+  if (pa_cpu_string == NULL)
+    pa_cpu_string = TARGET_SCHED_DEFAULT;
+
+  if (! strcmp (pa_cpu_string, "8000"))
+    {
+      pa_cpu_string = "8000";
+      pa_cpu = PROCESSOR_8000;
+    }
+  else if (! strcmp (pa_cpu_string, "7100"))
     {
       pa_cpu_string = "7100";
       pa_cpu = PROCESSOR_7100;
     }
-  else if (pa_cpu_string && ! strcmp (pa_cpu_string, "700"))
+  else if (! strcmp (pa_cpu_string, "700"))
     {
       pa_cpu_string = "700";
       pa_cpu = PROCESSOR_700;
     }
-  else if (pa_cpu_string && ! strcmp (pa_cpu_string, "7100LC"))
+  else if (! strcmp (pa_cpu_string, "7100LC"))
     {
       pa_cpu_string = "7100LC";
       pa_cpu = PROCESSOR_7100LC;
     }
-  else if (pa_cpu_string && ! strcmp (pa_cpu_string, "7200"))
+  else if (! strcmp (pa_cpu_string, "7200"))
     {
       pa_cpu_string = "7200";
       pa_cpu = PROCESSOR_7200;
     }
-  else if (pa_cpu_string && ! strcmp (pa_cpu_string, "7300"))
+  else if (! strcmp (pa_cpu_string, "7300"))
     {
       pa_cpu_string = "7300";
       pa_cpu = PROCESSOR_7300;
-    }
-  else if (pa_cpu_string == NULL
-	   || ! strcmp (pa_cpu_string, "8000"))
-    {
-      pa_cpu_string = "8000";
-      pa_cpu = PROCESSOR_8000;
     }
   else
     {
