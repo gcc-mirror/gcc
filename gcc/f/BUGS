@@ -40,7 +40,15 @@ via `http://egcs.cygnus.com/onlinedocs/g77_bugs.html'.  Follow the
 port, build, and install `g77', see "Problems Installing" in
 `egcs/gcc/f/INSTALL'.
 
-   The following information was last updated on 1999-05-06:
+   The following information was last updated on 1999-06-25:
+
+   * Input to a `NAMELIST' read involving a repeat count, such as
+     `K(5)=10*3', is not properly handled by `libf2c'.  The first item
+     is written to `K(5)', but the remaining nine are written elsewhere
+     (still within the array), not necessarily starting at `K(6)'.
+
+     A fix is pending, certainly for `gcc' 3.0, perhaps for 2.96 if
+     such a release is made.
 
    * `g77' fails to warn about use of a "live" iterative-DO variable as
      an implied-DO variable in a `WRITE' or `PRINT' statement (although
