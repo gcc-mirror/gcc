@@ -632,6 +632,11 @@ static struct label_alignment *label_align;
 void
 init_insn_lengths ()
 {
+  if (label_align)
+    {
+      free (label_align);
+      label_align = 0;
+    }
   if (uid_shuid)
     {
       free (uid_shuid);
@@ -775,19 +780,11 @@ get_attr_length (insn)
 #endif
 
 #ifndef LABEL_ALIGN_AFTER_BARRIER
-#define LABEL_ALIGN_AFTER_BARRIER(LABEL) 1
+#define LABEL_ALIGN_AFTER_BARRIER(LABEL) align_jumps_log
 #endif
 
 #ifndef LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP
-#define LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP 0
-#endif
-
-#ifndef JUMP_ALIGN
-#define JUMP_ALIGN(LABEL) align_jumps_log
-#endif
-
-#ifndef JUMP_ALIGN_MAX_SKIP
-#define JUMP_ALIGN_MAX_SKIP (align_jumps-1)
+#define LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP (align_jumps-1)
 #endif
 
 #ifndef ADDR_VEC_ALIGN
@@ -938,85 +935,6 @@ insn_current_reference_address (branch)
 }
 #endif /* HAVE_ATTR_length */
 
-void
-compute_alignments ()
-{
-  int i;
-  int log, max_skip, max_log;
-
-  if (label_align)
-    {
-      free (label_align);
-      label_align = 0;
-    }
-
-  max_labelno = max_label_num ();
-  min_labelno = get_first_label_num ();
-  label_align = (struct label_alignment *) xcalloc ((max_labelno - min_labelno + 1),
-	     sizeof (struct label_alignment));
-
-  /* If not optimizing or optimizing for size, don't assign any alignments.  */
-  for (i = 0; i < n_basic_blocks; i++)
-    {
-      basic_block bb = BASIC_BLOCK (i);
-      rtx label = bb->head;
-      int fallthru_frequency = 0, branch_frequency = 0, has_fallthru = 0;
-      edge e;
-
-      if (GET_CODE (label) != CODE_LABEL)
-	continue;
-      max_log = LABEL_ALIGN (label);
-      max_skip = LABEL_ALIGN_MAX_SKIP;
-
-      for (e = bb->pred; e; e = e->pred_next)
-	{
-	  if (e->flags & EDGE_FALLTHRU)
-	    has_fallthru = 1, fallthru_frequency += EDGE_FREQUENCY (e);
-	  else
-	    branch_frequency += EDGE_FREQUENCY (e);
-	}
-
-      /* There are two purposes to align block with no fallthru incomming edge:
-	 1) to avoid fetch stalls when branch destination is near cache boundary
-	 2) to improve cache effciency in case the previous block is not executed
-	    (so it does not need to be in the cache).
-
-	 We to catch first case, we align frequently executed blocks.
-	 To catch the second, we align blocks that are executed more frequently
-	 than the predecesor and the predecesor is likely to not be executed
-	 when function is called.  */
-
-      if (!has_fallthru
-	  && (branch_frequency > BB_FREQ_MAX / 10
-	      || (bb->frequency > BASIC_BLOCK (i - 1)->frequency * 10
-		  && (BASIC_BLOCK (i - 1)->frequency
-		      <= ENTRY_BLOCK_PTR->frequency / 2))))
-	{
-	  log = JUMP_ALIGN (label);
-	  if (max_log < log)
-	    {
-	      max_log = log;
-	      max_skip = JUMP_ALIGN_MAX_SKIP;
-	    }
-	}
-      /* In case block is frequent and reached mostly by non-fallthru edge,
-	 align it.  It is most likely an first block of loop.  */
-      if (has_fallthru
-	  && branch_frequency + fallthru_frequency > BB_FREQ_MAX / 10
-	  && branch_frequency > fallthru_frequency * 5)
-	{
-	  log = LOOP_ALIGN (label);
-	  if (max_log < log)
-	    {
-	      max_log = log;
-	      max_skip = LOOP_ALIGN_MAX_SKIP;
-	    }
-	}
-      LABEL_TO_ALIGNMENT (label) = max_log;
-      LABEL_TO_MAX_SKIP (label) = max_skip;
-    }
-}
-
 /* Make a pass over all insns and compute their actual lengths by shortening
    any branches of variable length if possible.  */
 
@@ -1054,29 +972,20 @@ shorten_branches (first)
 
 #endif
 
+  /* We must do some computations even when not actually shortening, in
+     order to get the alignment information for the labels.  */
+
+  init_insn_lengths ();
+
   /* Compute maximum UID and allocate label_align / uid_shuid.  */
   max_uid = get_max_uid ();
 
+  max_labelno = max_label_num ();
+  min_labelno = get_first_label_num ();
+  label_align = (struct label_alignment *)
+    xcalloc ((max_labelno - min_labelno + 1), sizeof (struct label_alignment));
+
   uid_shuid = (int *) xmalloc (max_uid * sizeof *uid_shuid);
-
-  if (max_labelno != max_label_num ())
-    {
-      int old = max_labelno;
-      int n_labels;
-      int n_old_labels;
-
-      max_labelno = max_label_num ();
-
-      n_labels = max_labelno - min_labelno + 1;
-      n_old_labels = old - min_labelno + 1;
-
-      label_align = (struct label_alignment *) xrealloc
-	(label_align, n_labels * sizeof (struct label_alignment));
-
-      if (n_old_labels < n_labels)
-	memset (label_align + n_old_labels, 0,
-		(n_labels - n_old_labels) * sizeof (struct label_alignment));
-    }
 
   /* Initialize label_align and set up uid_shuid to be strictly
      monotonically rising with insn order.  */
@@ -1103,14 +1012,6 @@ shorten_branches (first)
       else if (GET_CODE (insn) == CODE_LABEL)
 	{
 	  rtx next;
-	  
-	  /* Merge in alignments computed by compute_alignments.  */
-	  log = LABEL_TO_ALIGNMENT (insn);
-	  if (max_log < log)
-	    {
-	      max_log = log;
-	      max_skip = LABEL_TO_MAX_SKIP (insn);
-	    }
 
 	  log = LABEL_ALIGN (insn);
 	  if (max_log < log)
@@ -1162,6 +1063,41 @@ shorten_branches (first)
 		break;
 	      }
 	}
+      /* Again, we allow NOTE_INSN_LOOP_BEG - INSN - CODE_LABEL
+	 sequences in order to handle reorg output efficiently.  */
+      else if (GET_CODE (insn) == NOTE
+	       && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
+	{
+	  rtx label;
+	  int nest = 0;
+
+	  /* Search for the label that starts the loop.
+	     Don't skip past the end of the loop, since that could
+	     lead to putting an alignment where it does not belong.
+	     However, a label after a nested (non-)loop would be OK.  */
+	  for (label = insn; label; label = NEXT_INSN (label))
+	    {
+	      if (GET_CODE (label) == NOTE
+		  && NOTE_LINE_NUMBER (label) == NOTE_INSN_LOOP_BEG)
+		nest++;
+	      else if (GET_CODE (label) == NOTE
+		       && NOTE_LINE_NUMBER (label) == NOTE_INSN_LOOP_END
+		       && --nest == 0)
+		break;
+	      else if (GET_CODE (label) == CODE_LABEL)
+		{
+		  log = LOOP_ALIGN (label);
+		  if (max_log < log)
+		    {
+		      max_log = log;
+		      max_skip = LOOP_ALIGN_MAX_SKIP;
+		    }
+		  break;
+		}
+	    }
+	}
+      else
+	continue;
     }
 #ifdef HAVE_ATTR_length
 

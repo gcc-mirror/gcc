@@ -20,9 +20,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Compute branch alignments based on frequency information in the CFG.  */
-extern void compute_alignments  PARAMS ((void));
-
 /* Initialize data in final at the beginning of a compilation.  */
 extern void init_final		PARAMS ((const char *));
 
