@@ -4,6 +4,10 @@ Tue Aug 24 23:43:03 1999  Mark Mitchell  <mark@codesourcery.com>
 	NOTE_INSN_EH_REGION_END correctly.
 
 Tue Aug 24 23:26:44 1999  Michael Tiemann  <tiemann@holodeck.cygnus.com>
+			  Jeff Law <law@cygnus.com>
+
+	* loop.c (strength_reduce): Automatically unroll loops if the
+	unrolled loop size is smaller than the rolled loop size.
 
 	* loop.c (insert_bct): Replace use of sdiv_optab with asr_optab
 	and delete comment that code should be rewritten.
