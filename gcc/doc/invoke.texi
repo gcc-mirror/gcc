@@ -4129,7 +4129,7 @@ equivalent and mean that functions will not be aligned.
 Some assemblers only support this flag when @var{n} is a power of two;
 in that case, it is rounded up.
 
-If @var{n} is not specified, use a machine-dependent default.
+If @var{n} is not specified or is zero, use a machine-dependent default.
 
 Enabled at levels @option{-O2}, @option{-O3}.
 
@@ -4141,11 +4141,14 @@ Align all branch targets to a power-of-two boundary, skipping up to
 make code slower, because it must insert dummy operations for when the
 branch target is reached in the usual flow of the code.
 
+@option{-fno-align-labels} and @option{-falign-labels=1} are
+equivalent and mean that labels will not be aligned.
+
 If @option{-falign-loops} or @option{-falign-jumps} are applicable and
 are greater than this value, then their values are used instead.
 
-If @var{n} is not specified, use a machine-dependent default which is
-very likely to be @samp{1}, meaning no alignment.
+If @var{n} is not specified or is zero, use a machine-dependent default
+which is very likely to be @samp{1}, meaning no alignment.
 
 Enabled at levels @option{-O2}, @option{-O3}.
 
@@ -4157,7 +4160,10 @@ like @option{-falign-functions}.  The hope is that the loop will be
 executed many times, which will make up for any execution of the dummy
 operations.
 
-If @var{n} is not specified, use a machine-dependent default.
+@option{-fno-align-loops} and @option{-falign-loops=1} are
+equivalent and mean that loops will not be aligned.
+
+If @var{n} is not specified or is zero, use a machine-dependent default.
 
 Enabled at levels @option{-O2}, @option{-O3}.
 
@@ -4169,7 +4175,10 @@ where the targets can only be reached by jumping, skipping up to @var{n}
 bytes like @option{-falign-functions}.  In this case, no dummy operations
 need be executed.
 
-If @var{n} is not specified, use a machine-dependent default.
+@option{-fno-align-jumps} and @option{-falign-jumps=1} are
+equivalent and mean that loops will not be aligned.
+
+If @var{n} is not specified or is zero, use a machine-dependent default.
 
 Enabled at levels @option{-O2}, @option{-O3}.
 
