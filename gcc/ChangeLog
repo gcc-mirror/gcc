@@ -1,3 +1,9 @@
+2001-08-28  Dale Johannesen  <dalej@apple.com>
+
+	* config/darwin.c (machopic_function_base_name): Add const
+	qualifier to a string.
+	(darwin_encode_section_info): Ditto.
+
 2001-08-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* tree.c (default_valid_attribute_p): Don't use PARAMS on a

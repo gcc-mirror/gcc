@@ -213,7 +213,7 @@ static int current_pic_label_num;
 char *
 machopic_function_base_name ()
 {
-  static char *name = NULL;
+  static const char *name = NULL;
   static const char *current_name;
 
   current_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl));
@@ -997,7 +997,8 @@ darwin_encode_section_info (decl)
   char code = '\0';
   int defined = 0;
   rtx sym_ref;
-  char *orig_str, *new_str;
+  const char *orig_str;
+  char *new_str;
   size_t len, new_len;
 
   if ((TREE_CODE (decl) == FUNCTION_DECL
