@@ -4461,11 +4461,6 @@ store_constructor (exp, target, align, cleared, size)
 					   index, integer_one_node), 0, 0);
 		  expand_end_loop ();
 		  emit_label (loop_end);
-
-		  /* Needed by stupid register allocation. to extend the
-		     lifetime of pseudo-regs used by target past the end
-		     of the loop.  */
-		  emit_insn (gen_rtx_USE (GET_MODE (target), target));
 		}
 	    }
 	  else if ((index != 0 && TREE_CODE (index) != INTEGER_CST)
