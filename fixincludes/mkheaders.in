@@ -77,7 +77,7 @@ rm -rf ${incdir}/*
 if [ x${STMP_FIXINC} != x ] ; then
 	TARGET_MACHINE="${target}" target_canonical="${target}" \
 	    MACRO_LIST="${itoolsdatadir}/macro_list" \
-	    ${SHELL} ./fixinc.sh ${incdir} \
+	    @SHELL@ ./fixinc.sh ${incdir} \
 	    ${SYSTEM_HEADER_DIR} ${OTHER_FIXINCLUDES_DIRS}
 	rm -f ${incdir}/syslimits.h
 	if [ -f ${incdir}/limits.h ]; then
@@ -90,7 +90,7 @@ fi
 cp ${itoolsdatadir}/include/* ${incdir}
 
 if [ x${STMP_FIXPROTO} != x ] ; then
-  mkinstalldirs="${SHELL} ${itoolsdir}/mkinstalldirs"
+  mkinstalldirs="@SHELL@ ${itoolsdir}/mkinstalldirs"
   export FIXPROTO_DEFINES mkinstalldirs
-  ${SHELL} fixproto ${incdir} ${incdir} ${SYSTEM_HEADER_DIR} || exit 1
+  @SHELL@ fixproto ${incdir} ${incdir} ${SYSTEM_HEADER_DIR} || exit 1
 fi

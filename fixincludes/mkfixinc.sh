@@ -35,8 +35,7 @@ case $machine in
         ;;
 
     *)
-	../${build_subdir}/fixincludes/fixincl -v < /dev/null
-	cat < ${srcdir}/fixinc.in > ${target}
+	cat < ${srcdir}/fixinc.in > ${target} || exit 1
 	;;
 esac
 chmod 755 ${target}
