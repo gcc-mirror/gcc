@@ -1221,7 +1221,6 @@ extern void c_common_no_more_pch (void);
 extern void builtin_define_with_value (const char *, const char *, int);
 extern void c_stddef_cpp_builtins (void);
 extern void fe_file_change (const struct line_map *);
-extern int c_estimate_num_insns (tree decl);
 extern void c_parse_error (const char *, enum cpp_ttype, tree);
 
 /* The following have been moved here from c-tree.h, since they're needed
