@@ -7,8 +7,6 @@
 // 	* cp-cvt.c (build_default_binary_type_conversion): Look deeper into
 // 	what ARG1 and ARG2 are if they're POINTER_TYPEs.
 
-volatile void exit(int);
-
 class CountableSet
 {
 	public:
@@ -71,7 +69,7 @@ class	SimpleSet : virtual public MutSet<T>
 		SimpleSet()
 		{
 			size = 0;
-			array = ((void*)0) ; // ERROR - implicit conversion
+			array = 0;
 		}
  		int	Get(int p, T& t)
 		{

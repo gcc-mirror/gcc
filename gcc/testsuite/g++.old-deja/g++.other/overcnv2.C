@@ -4,7 +4,7 @@
 // the type of the argument -- but because it is non-const.
 
 struct A  {
-  operator const char *() const;
+  operator const char *() const { return ""; }
 };
 
 struct B : public A {
@@ -14,5 +14,10 @@ struct B : public A {
 int main()
 {
   B b;
-  (const char *)b;		// WARNING - surprising overload resolution
+  if ((const char *)b != 0)  // WARNING - surprising overload resolution
+    return 1;
+  if ((const char *)(const B)b == 0)
+    return 2;
+  if ((const char *)(const B &)b == 0)
+    return 3;
 }
