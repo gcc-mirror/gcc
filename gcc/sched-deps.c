@@ -1156,7 +1156,7 @@ sched_analyze (struct deps *deps, rtx head, rtx tail)
   rtx loop_notes = 0;
 
   if (current_sched_info->use_cselib)
-    cselib_init ();
+    cselib_init (true);
 
   for (insn = head;; insn = NEXT_INSN (insn))
     {
