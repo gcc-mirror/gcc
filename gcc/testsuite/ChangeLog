@@ -1,3 +1,11 @@
+2001-07-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* lib/g++.exp (g++_set_ld_library_path): Renamed to
+	${tool}_set_ld_library_path.
+	Changed caller.
+	* lib/objc.exp (${tool}_set_ld_library_path): New, copied from
+	g++.exp.
+
 2001-07-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/lineno5.C: New test.
