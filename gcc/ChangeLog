@@ -1,3 +1,8 @@
+2004-11-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* expr.c (emit_group_load) <CONCAT>: Use extract_bit_field
+	to load from the stack.
+
 2004-11-12  Richard Henderson  <rth@redhat.com>
 
 	* toplev.c (floor_log2): Rename from floor_log2_wide, use CLZ_HWI.
