@@ -1464,6 +1464,22 @@ lookup_fnfields_1 (tree type, tree name)
   return -1;
 }
 
+/* Like lookup_fnfields_1, except that the name is extracted from
+   FUNCTION, which is a FUNCTION_DECL or a TEMPLATE_DECL.  */
+
+int
+class_method_index_for_fn (tree class_type, tree function)
+{
+  gcc_assert (TREE_CODE (function) == FUNCTION_DECL
+	      || DECL_FUNCTION_TEMPLATE_P (function));
+
+  return lookup_fnfields_1 (class_type,
+			    DECL_CONSTRUCTOR_P (function) ? ctor_identifier :
+			    DECL_DESTRUCTOR_P (function) ? dtor_identifier :
+			    DECL_NAME (function));
+}
+
+
 /* DECL is the result of a qualified name lookup.  QUALIFYING_SCOPE is
    the class or namespace used to qualify the name.  CONTEXT_CLASS is
    the class corresponding to the object in which DECL will be used.

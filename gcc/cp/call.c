@@ -4614,7 +4614,7 @@ build_over_call (struct z_candidate *cand, int flags)
 	 primary template because `B<T>::g' and `B<int>::g' may have
 	 different access.  */
       if (DECL_TEMPLATE_INFO (fn)
-	  && is_member_template (DECL_TI_TEMPLATE (fn)))
+	  && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (fn)))
 	perform_or_defer_access_check (cand->access_path,
 				       DECL_TI_TEMPLATE (fn));
       else

@@ -1657,17 +1657,7 @@ resort_type_method_vec (void* obj,
     }
 }
 
-/* Warn about duplicate methods in fn_fields.  Also compact method
-   lists so that lookup can be made faster.
-
-   Data Structure: List of method lists.  The outer list is a
-   TREE_LIST, whose TREE_PURPOSE field is the field name and the
-   TREE_VALUE is the DECL_CHAIN of the FUNCTION_DECLs.  TREE_CHAIN
-   links the entire list of methods for TYPE_METHODS.  Friends are
-   chained in the same way as member functions (? TREE_CHAIN or
-   DECL_CHAIN), but they live in the TREE_TYPE field of the outer
-   list.  That allows them to be quickly deleted, and requires no
-   extra storage.
+/* Warn about duplicate methods in fn_fields.
 
    Sort methods that are not special (i.e., constructors, destructors,
    and type conversion operators) so that we can find them faster in
@@ -1686,11 +1676,9 @@ finish_struct_methods (tree t)
 
   len = VEC_length (tree, method_vec);
 
-  /* First fill in entry 0 with the constructors, entry 1 with destructors,
-     and the next few with type conversion operators (if any).  */
+  /* Clear DECL_IN_AGGR_P for all functions.  */
   for (fn_fields = TYPE_METHODS (t); fn_fields; 
        fn_fields = TREE_CHAIN (fn_fields))
-    /* Clear out this flag.  */
     DECL_IN_AGGR_P (fn_fields) = 0;
 
   if (TYPE_HAS_DESTRUCTOR (t) && !CLASSTYPE_DESTRUCTORS (t))

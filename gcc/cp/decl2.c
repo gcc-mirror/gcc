@@ -596,7 +596,7 @@ check_classfn (tree ctype, tree function, tree template_parms)
   if (DECL_USE_TEMPLATE (function)
       && !(TREE_CODE (function) == TEMPLATE_DECL
 	   && DECL_TEMPLATE_SPECIALIZATION (function))
-      && is_member_template (DECL_TI_TEMPLATE (function)))
+      && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (function)))
     /* Since this is a specialization of a member template,
        we're not going to find the declaration in the class.
        For example, in:
@@ -622,11 +622,7 @@ check_classfn (tree ctype, tree function, tree template_parms)
   /* OK, is this a definition of a member template?  */
   is_template = (template_parms != NULL_TREE);
 
-  ix = lookup_fnfields_1 (complete_type (ctype),
-			  DECL_CONSTRUCTOR_P (function) ? ctor_identifier :
-			  DECL_DESTRUCTOR_P (function) ? dtor_identifier :
-			  DECL_NAME (function));
-
+  ix = class_method_index_for_fn (complete_type (ctype), function);
   if (ix >= 0)
     {
       VEC(tree) *methods = CLASSTYPE_METHOD_VEC (ctype);
