@@ -301,7 +301,13 @@ rtx
 expr_size (exp)
      tree exp;
 {
-  tree size = size_in_bytes (TREE_TYPE (exp));
+  tree size;
+
+  if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'd'
+      && DECL_SIZE_UNIT (exp) != 0)
+    size = DECL_SIZE_UNIT (exp);
+  else
+    size = size_in_bytes (TREE_TYPE (exp));
 
   if (TREE_CODE (size) != INTEGER_CST
       && contains_placeholder_p (size))
