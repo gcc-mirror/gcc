@@ -21,10 +21,10 @@
 #if 1.2 /* { dg-error "loating point numbers" "floating point in #if" } */
 #endif
 
-#if 4uu /* { dg-error "(too many|two) `u'" "too many suffixes" } */
+#if 4uu /* { dg-error "too many 'u'" "too many suffixes" } */
 #endif
 
-#if 124123231lll /* { dg-error "too many `l'" "too many suffixes" } */
+#if 124123231lll /* { dg-error "too many 'l'" "too many suffixes" } */
 #endif
 
 #if 099 /* { dg-error "digits beyond the radix" "decimal in octal constant" } */
