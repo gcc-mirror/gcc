@@ -1244,6 +1244,8 @@ write into string constants.
 
 Writing into string constants is a very bad idea; ``constants'' should
 be constant.
+
+This option is deprecated.
 @end table
 
 @node C++ Dialect Options
