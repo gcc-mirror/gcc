@@ -1,3 +1,9 @@
+2003-05-16  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/mips/t-elf: Remove obsolete rules adding dependencies on tm.h.
+	* config/mips/t-isa3264, config/mips/t-r3900: Likewise.
+	* config/mips/t-sr71k: Likewise.
+
 2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* arc.c (arc_output_function_prologue,
