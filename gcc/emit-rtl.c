@@ -2113,7 +2113,8 @@ widen_memory_access (memref, mode, offset)
 
 	  /* Is the field at least as large as the access?  If so, ok,
 	     otherwise strip back to the containing structure.  */
-	  if (compare_tree_int (DECL_SIZE_UNIT (field), size) >= 0
+	  if (TREE_CODE (DECL_SIZE_UNIT (field)) == INTEGER_CST
+	      && compare_tree_int (DECL_SIZE_UNIT (field), size) >= 0
 	      && INTVAL (memoffset) >= 0)
 	    break;
 
