@@ -1,3 +1,9 @@
+2002-01-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gennews (files): Replace egcs-1.1/egcs-1.1.2.html,
+	egcs-1.1/egcs-1.1.1.html, and egcs-1.1/egcs-1.1.html by
+	egcs-1.1/index.html.
+
 2001-12-20  Release Manager
 
 	* GCC 3.0.3 Released.
