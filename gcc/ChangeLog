@@ -1,3 +1,10 @@
+Fri Sep 17 15:11:20 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (warn_about_unused_variables): Declare.
+	* stmt.c (warn_about_unused_variables): New function, split out
+	from ...
+	(expand_end_bindings): Here.
+
 Fri Sep 17 15:07:37 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* stmt.c (preserve_subexpressions_p): Don't crash when
