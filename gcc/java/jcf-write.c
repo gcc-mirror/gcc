@@ -2396,6 +2396,13 @@ generate_bytecode_insns (exp, target, state)
 	  }
 	nargs = state->code_SP - save_SP;
 	state->code_SP = save_SP;
+	if (f == soft_fmod_node)
+	  {
+	    RESERVE (1);
+	    OP1 (OPCODE_drem);
+	    NOTE_PUSH (2);
+	    break;
+	  }
 	if (TREE_CODE (exp) == NEW_CLASS_EXPR)
 	  NOTE_POP (1);  /* Pop implicit this. */
 	if (TREE_CODE (f) == FUNCTION_DECL && DECL_CONTEXT (f) != NULL_TREE)
