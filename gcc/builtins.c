@@ -57,7 +57,7 @@ Boston, MA 02111-1307, USA.  */
 const char *const built_in_class_names[4]
   = {"NOT_BUILT_IN", "BUILT_IN_FRONTEND", "BUILT_IN_MD", "BUILT_IN_NORMAL"};
 
-#define DEF_BUILTIN(x) STRINGIFY(x),
+#define DEF_BUILTIN(x) STRINGX(x),
 const char *const built_in_names[(int) END_BUILTINS] =
 {
 #include "builtins.def"

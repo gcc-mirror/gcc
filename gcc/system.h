@@ -355,21 +355,6 @@ extern void abort PARAMS ((void));
 #endif
 
 
-
-/* Define a STRINGIFY macro that's right for ANSI or traditional C.
-   Note: if the argument passed to STRINGIFY is itself a macro, eg
-   #define foo bar, STRINGIFY(foo) will produce "foo", not "bar".
-   Although the __STDC__ case could be made to expand this via a layer
-   of indirection, the traditional C case can not do so.  Therefore
-   this behavior is not supported. */
-#ifndef STRINGIFY
-# ifdef HAVE_STRINGIZE
-#  define STRINGIFY(STRING) #STRING
-# else
-#  define STRINGIFY(STRING) "STRING"
-# endif
-#endif /* ! STRINGIFY */
-
 #if HAVE_SYS_STAT_H
 # include <sys/stat.h>
 #endif
@@ -481,6 +466,7 @@ extern void abort PARAMS ((void));
 
 /* Get libiberty declarations. */
 #include "libiberty.h"
+#include "symcat.h"
 
 /* Provide a default for the HOST_BIT_BUCKET.
    This suffices for POSIX-like hosts.  */

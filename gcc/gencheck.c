@@ -21,7 +21,7 @@ Boston, MA 02111-1307, USA.  */
 #include "hconfig.h"
 #include "system.h"
 
-#define DEFTREECODE(SYM, NAME, TYPE, LEN)   STRINGIFY(SYM),
+#define DEFTREECODE(SYM, NAME, TYPE, LEN)   STRINGX(SYM),
 
 const char *tree_codes[] = {
 #include "tree.def"

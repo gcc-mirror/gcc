@@ -26,7 +26,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpphash.h"
 #include "intl.h"
 #include "obstack.h"
-#include "symcat.h"
 
 /* Chained list of answers to an assertion.  */
 struct answer

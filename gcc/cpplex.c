@@ -38,7 +38,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "cpplib.h"
 #include "cpphash.h"
-#include "symcat.h"
 
 /* Tokens with SPELL_STRING store their spelling in the token list,
    and it's length in the token->val.name.len.  */

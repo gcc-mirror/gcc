@@ -1,3 +1,20 @@
+2001-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h: Include symcat.h.
+	(STRINGIFY): Don't define.
+
+	* configure.in: Adjust comment.
+
+	* builtins.c: Use STRINGX, not STRINGIFY.
+	* gencheck.c: Likewise.
+	* gengenrtl.c: Likewise.
+	* protoize.c: Likewise.
+
+	* cpplex.c: Don't include symcat.h.
+	* cpplib.c: Likewise.
+
+	* gansidecl.h (HAVE_STRINGIZE): Don't define.
+
 2001-03-27  Alan Modra  <alan@linuxcare.com.au>
 
 	* c-typeck.c (digest_init): Fold init expression.
