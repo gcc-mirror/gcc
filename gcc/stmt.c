@@ -3124,7 +3124,8 @@ mark_block_as_not_eh_region ()
 int
 is_eh_region ()
 {
-  return block_stack && block_stack->data.block.exception_region;
+  return (current_function && block_stack
+	  && block_stack->data.block.exception_region);
 }
 
 /* Given a pointer to a BLOCK node, save a pointer to the most recently
