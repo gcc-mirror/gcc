@@ -1,3 +1,9 @@
+2003-04-22  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/t-spe: Merge in t-fprules into file.
+
+        * config.gcc: Add t-spe to powerpc-eabispe.
+
 2003-04-22  Kean Johnston  <jkj@sco.com>
 
 	* tlink.c (recompile_files): Add missing '=' to putenv calls
