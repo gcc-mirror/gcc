@@ -315,6 +315,32 @@ straighten_stack (insn, regstack)
   
   change_stack (insn, regstack, &temp_stack, emit_insn_after);
 }
+
+/* Pop a register from the stack */
+
+static void
+pop_stack (regstack, regno)
+     stack regstack;
+     int   regno;
+{
+  int top = regstack->top;
+
+  CLEAR_HARD_REG_BIT (regstack->reg_set, regno);
+  regstack->top--;
+  /* If regno was not at the top of stack then adjust stack */
+  if (regstack->reg [top] != regno)
+    {
+      int i;
+      for (i = regstack->top; i >= 0; i--)
+	if (regstack->reg [i] == regno)
+	  {
+	    int j;
+	    for (j = i; j < top; j++)
+	      regstack->reg [j] = regstack->reg [j + 1];
+	    break;
+	  }
+    }
+}
 
 /* Return non-zero if any stack register is mentioned somewhere within PAT.  */
 
@@ -2067,9 +2093,8 @@ compare_for_stack_reg (insn, regstack, pat)
 
   if (src1_note)
     {
-      CLEAR_HARD_REG_BIT (regstack->reg_set, REGNO (XEXP (src1_note, 0)));
+      pop_stack (regstack, REGNO (XEXP (src1_note, 0)));
       replace_reg (&XEXP (src1_note, 0), FIRST_STACK_REG);
-      regstack->top--;
     }
 
   /* If the second operand dies, handle that.  But if the operands are
@@ -2088,9 +2113,8 @@ compare_for_stack_reg (insn, regstack, pat)
       if (get_hard_regnum (regstack, XEXP (src2_note, 0)) == FIRST_STACK_REG
 	  && src1_note)
 	{
-	  CLEAR_HARD_REG_BIT (regstack->reg_set, REGNO (XEXP (src2_note, 0)));
+	  pop_stack (regstack, REGNO (XEXP (src2_note, 0)));
 	  replace_reg (&XEXP (src2_note, 0), FIRST_STACK_REG + 1);
-	  regstack->top--;
 	}
       else
 	{
