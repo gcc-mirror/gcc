@@ -9799,7 +9799,8 @@ move\\t%0,%z4\\n\\
   "*
 {
   /* .cpadd expands to add REG,REG,$gp when pic, and nothing when not pic.  */
-  if (mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_N32)
+  if (mips_abi == ABI_32 || mips_abi == ABI_O64
+      || (mips_abi == ABI_N32 && TARGET_GAS))
     output_asm_insn (\".cpadd\\t%0\", operands);
   return \"%*j\\t%0\";
 }"

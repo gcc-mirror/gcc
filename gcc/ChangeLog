@@ -1,3 +1,9 @@
+Mon Dec 16 23:39:19 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* mips.h (ASM_OUTPUT_ADDR_DIFF_ELT): Do not use qpword on API_N32/not
+	gas
+	* mips.md (tablejump insn): Likewise.
+
 2002-12-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/include/gcc-common.texi: Change version number to 3.4.
