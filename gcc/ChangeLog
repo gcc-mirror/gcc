@@ -6,7 +6,7 @@
 	(MAX_RGN_BLOCKS): Delete.
 	(MAX_RGN_INSNS): Delete.
 	(too_large): Return bool.  Convert to PARAM_VALUE.
-	* Makefile.in (sched-rgn): Depend on $(PARAMS_H).
+	* Makefile.in (sched-rgn.o): Depend on $(PARAMS_H).
 	* doc/invoke.texi (param): Document max-sched-region-blocks and
 	max-sched-region-insns.
 
