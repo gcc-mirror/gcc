@@ -468,9 +468,9 @@ init_operators ()
   
 #define DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, ASSN_P) \
   my_friendly_assert ((strlen ("operator ") + strlen (NAME) + 1		    \
-		       <= 256),						    \
+                       + ISALPHA (NAME[0])  <= 256),    		    \
 		      20000526);					    \
-  sprintf (buffer, "operator %s", NAME);				    \
+  sprintf (buffer, ISALPHA (NAME[0]) ? "operator %s" : "operator%s", NAME); \
   identifier = get_identifier (buffer);					    \
   IDENTIFIER_OPNAME_P (identifier) = 1;					    \
 									    \

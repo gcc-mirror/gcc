@@ -1,3 +1,8 @@
+2000-06-09  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* lex.c (DEF_OPERATOR): Say `operator@' -not- `operator @'
+	whenever @ is a symbolic name.
+
 2000-06-08  Mark Mitchell  <mark@codesourcery.com>
 
 	Remove old ABI mangling code.
