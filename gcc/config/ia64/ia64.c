@@ -5241,17 +5241,27 @@ ia64_adjust_cost (insn, link, dep_insn, cost)
 
   src = set ? SET_SRC (set) : 0;
   addr = 0;
-  if (set && GET_CODE (SET_DEST (set)) == MEM)
-    addr = XEXP (SET_DEST (set), 0);
-  else if (set && GET_CODE (src) == MEM)
-    addr = XEXP (src, 0);
-  else if (set && GET_CODE (src) == ZERO_EXTEND
-	   && GET_CODE (XEXP (src, 0)) == MEM)
-    addr = XEXP (XEXP (src, 0), 0);
-  else if (set && GET_CODE (src) == UNSPEC
-	   && XVECLEN (XEXP (src, 0), 0) > 0
-	   && GET_CODE (XVECEXP (src, 0, 0)) == MEM)
-    addr = XEXP (XVECEXP (src, 0, 0), 0);
+  if (set)
+    {
+      if (GET_CODE (SET_DEST (set)) == MEM)
+	addr = XEXP (SET_DEST (set), 0);
+      else if (GET_CODE (SET_DEST (set)) == SUBREG
+	       && GET_CODE (SUBREG_REG (SET_DEST (set))) == MEM)
+	addr = XEXP (SUBREG_REG (SET_DEST (set)), 0);
+      else
+	{
+	  addr = src;
+	  if (GET_CODE (addr) == UNSPEC && XVECLEN (addr, 0) > 0)
+	    addr = XVECEXP (addr, 0, 0);
+	  while (GET_CODE (addr) == SUBREG || GET_CODE (addr) == ZERO_EXTEND)
+	    addr = XEXP (addr, 0);
+	  if (GET_CODE (addr) == MEM)
+	    addr = XEXP (addr, 0);
+	  else
+	    addr = 0;
+	}
+    }
+
   if (addr && GET_CODE (addr) == POST_MODIFY)
     addr = XEXP (addr, 0);
 

@@ -10,6 +10,8 @@
 	* ifcvt.c (dead_or_predicable): Return TRUE if squeeze_notes doesn't
 	find any real instructions.
 
+	* config/ia64/ia64.c (ia64_adjust_cost): Handle SUBREGs.
+
 2001-11-15  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.c: Include c-lex.h.
