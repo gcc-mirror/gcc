@@ -118,7 +118,6 @@ typedef char * const_pointer_type;
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
-#include <string.h>
 
 #else /* !defined(POSIX) */
 
@@ -166,15 +165,10 @@ extern int setjmp ();
 extern void longjmp ();
 #endif
 
-extern char *   strcat ();
-extern int      strcmp ();
-extern char *   strcpy ();
 #if 0 /* size_t from sys/types.h may fail to match GCC.
 	 If so, we would get a warning from this.  */
 extern size_t   strlen ()
 #endif
-extern int      strncmp ();
-extern char *   strncpy ();
 extern char *   rindex ();
 
 /* Fork is not declared because the declaration caused a conflict
@@ -678,15 +672,6 @@ fancy_abort ()
   exit (1);
 }
 
-/* Make a duplicate of a given string in a newly allocated area.  */
-
-static char *
-dupstr (s)
-     const char *s;
-{
-  return strcpy ((char *) xmalloc (strlen (s) + 1), s);
-}
-
 /* Make a duplicate of the first N bytes of a given string in a newly
    allocated area.  */
 
@@ -695,8 +680,9 @@ dupnstr (s, n)
      const char *s;
      size_t n;
 {
-  char *ret_val = strncpy ((char *) xmalloc (n + 1), s, n);
+  char *ret_val = (char *) xmalloc (n + 1);
 
+  strncpy (ret_val, s, n);
   ret_val[n] = '\0';
   return ret_val;
 }
@@ -1035,7 +1021,7 @@ add_symbol (p, s)
      const char *s;
 {
   p->hash_next = NULL;
-  p->symbol = dupstr (s);
+  p->symbol = savestring (s);
   p->ddip = NULL;
   p->fip = NULL;
   return p;
@@ -1176,7 +1162,7 @@ continue_outer: ;
   *copy_p++ = '\n';
   *copy_p++ = '\0';
 
-  return (got_unexpanded ? dupstr (line_buf) : 0);
+  return (got_unexpanded ? savestring (line_buf) : 0);
 }
 
 /* Return the absolutized filename for the given relative
@@ -1279,7 +1265,7 @@ abspath (cwd, rel_filename)
   /* Make a copy (in the heap) of the stuff left in the absolutization
      buffer and return a pointer to the copy.  */
 
-  return dupstr (abs_buffer);
+  return savestring (abs_buffer);
 }
 
 /* Given a filename (and possibly a directory name from which the filename
