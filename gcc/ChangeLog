@@ -1,3 +1,8 @@
+Thu Apr  2 17:34:27 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* regclass.c (memory_move_secondary_cost): Protect uses of
+	SECONDARY_{INPUT,OUTPUT}_RELOAD_CLASS with #ifdef tests.
+
 Thu Apr  2 07:06:57 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* m68k.c (standard_68881_constant_p): Don't use fmovecr on 68060.
