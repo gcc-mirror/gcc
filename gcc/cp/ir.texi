@@ -842,7 +842,7 @@ These nodes represent non-static data members.  The @code{DECL_SIZE} and
 @code{INTEGER_CST}.  These values are indexed from zero, where zero
 indicates the first bit in the object.
 
-FIXME: Talk about bitfields.
+If @code{DECL_C_BIT_FIELD} holds, this field is a bitfield.
 
 @item NAMESPACE_DECL
 @xref{Namespaces}.
