@@ -1429,9 +1429,8 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	      
 	  if (fns == NULL_TREE) 
 	    {
-	      cp_error ("no member function `%s' declared in `%T'",
-			IDENTIFIER_POINTER (name),
-			ctype);
+	      cp_error ("no member function `%D' declared in `%T'",
+			name, ctype);
 	      return error_mark_node;
 	    }
 	  else

@@ -2954,7 +2954,8 @@ nested_name_specifier_1:
 		      $$ = lastiddecl;
 		      maybe_note_name_used_in_class ($1, $$);
 		    }
-		  got_scope = $$ = TYPE_MAIN_VARIANT (TREE_TYPE ($$));
+		  got_scope = $$ =
+		    complete_type (TYPE_MAIN_VARIANT (TREE_TYPE ($$)));
 		}
 	| SELFNAME SCOPE
 		{
