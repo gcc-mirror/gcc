@@ -806,8 +806,8 @@
 ;; in an fp register, or an fp number is an integer register.
 
 (define_insn ""
-  [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,f,Q,Q,rf")
-	(match_operand:SI 1 "move_operand" "rI,K,Q,!Q,rJ,!f,!fr"))]
+  [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,f,Q,Q")
+	(match_operand:SI 1 "move_operand" "rI,K,Q,!Q,rJ,!f"))]
   "register_operand (operands[0], SImode)
    || register_operand (operands[1], SImode)
    || operands[1] == const0_rtx"
@@ -817,10 +817,9 @@
    ld %1,%0
    ld %1,%0
    st %r1,%0
-   st %r1,%0
-   st %r1,[%@-4]\;ld [%@-4],%0"
-  [(set_attr "type" "move,move,load,load,store,store,multi")
-   (set_attr "length" "*,1,*,*,*,*,*")])
+   st %r1,%0"
+  [(set_attr "type" "move,move,load,load,store,store")
+   (set_attr "length" "*,1,*,*,*,*")])
 
 ;; Special pic pattern, for loading the address of a label into a register.
 ;; It clobbers o7 because the call puts the return address (i.e. pc value)
@@ -1110,8 +1109,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:TF 0 "reg_or_nonsymb_mem_operand" "=f,r,Q,Q,f,&r,?f,?r")
-	(match_operand:TF 1 "reg_or_nonsymb_mem_operand" "f,r,f,r,Q,Q,r,f"))]
+  [(set (match_operand:TF 0 "reg_or_nonsymb_mem_operand" "=f,r,Q,Q,f,&r")
+	(match_operand:TF 1 "reg_or_nonsymb_mem_operand" "f,r,f,r,Q,Q"))]
   "TARGET_FPU
    && (register_operand (operands[0], TFmode)
        || register_operand (operands[1], TFmode))"
@@ -1121,8 +1120,8 @@
     return output_fp_move_quad (operands);
   return output_move_quad (operands);
 }"
-  [(set_attr "type" "fp,move,fpstore,store,fpload,load,multi,multi")
-   (set_attr "length" "4,4,5,5,5,5,5,5")])
+  [(set_attr "type" "fp,move,fpstore,store,fpload,load")
+   (set_attr "length" "4,4,5,5,5,5")])
 
 ;; Exactly the same as above, except that all `f' cases are deleted.
 ;; This is necessary to prevent reload from ever trying to use a `f' reg
@@ -1194,8 +1193,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand" "=T,U,f,r,Q,Q,f,&r,?f,?r")
-	(match_operand:DF 1 "reg_or_nonsymb_mem_operand" "U,T,f,r,f,r,Q,Q,r,f"))]
+  [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand" "=T,U,f,r,Q,Q,f,&r")
+	(match_operand:DF 1 "reg_or_nonsymb_mem_operand" "U,T,f,r,f,r,Q,Q"))]
   "TARGET_FPU
    && (register_operand (operands[0], DFmode)
        || register_operand (operands[1], DFmode))"
@@ -1205,8 +1204,8 @@
     return output_fp_move_double (operands);
   return output_move_double (operands);
 }"
-  [(set_attr "type" "fpstore,fpload,fp,move,fpstore,store,fpload,load,multi,multi")
-   (set_attr "length" "1,1,2,2,3,3,3,3,3,3")])
+  [(set_attr "type" "fpstore,fpload,fp,move,fpstore,store,fpload,load")
+   (set_attr "length" "1,1,2,2,3,3,3,3")])
 
 ;; Exactly the same as above, except that all `f' cases are deleted.
 ;; This is necessary to prevent reload from ever trying to use a `f' reg
@@ -1251,8 +1250,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand" "=r,Q,&r,&r,?f,?f,?f,?r,?Q")
-	(match_operand:DI 1 "general_operand" "r,r,Q,i,r,f,Q,f,f"))]
+  [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand" "=r,Q,&r,&r,?f,?f,?Q")
+	(match_operand:DI 1 "general_operand" "r,r,Q,i,f,Q,f"))]
   "register_operand (operands[0], DImode)
    || register_operand (operands[1], DImode)
    || operands[1] == const0_rtx"
@@ -1262,8 +1261,8 @@
     return output_fp_move_double (operands);
   return output_move_double (operands);
 }"
-  [(set_attr "type" "move,store,load,multi,multi,fp,fpload,multi,fpstore")
-   (set_attr "length" "2,3,3,3,3,2,3,3,3")])
+  [(set_attr "type" "move,store,load,multi,fp,fpload,fpstore")
+   (set_attr "length" "2,3,3,3,2,3,3")])
 
 ;; Floating-point move insns.
 
@@ -1300,20 +1299,19 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:SF 0 "reg_or_nonsymb_mem_operand" "=f,r,rf,f,r,Q,Q")
-	(match_operand:SF 1 "reg_or_nonsymb_mem_operand" "f,r,!rf,Q,Q,f,r"))]
+  [(set (match_operand:SF 0 "reg_or_nonsymb_mem_operand" "=f,r,f,r,Q,Q")
+	(match_operand:SF 1 "reg_or_nonsymb_mem_operand" "f,r,Q,Q,f,r"))]
   "TARGET_FPU
    && (register_operand (operands[0], SFmode)
        || register_operand (operands[1], SFmode))"
   "@
    fmovs %1,%0
    mov %1,%0
-   st %r1,[%@-4]\;ld [%@-4],%0
    ld %1,%0
    ld %1,%0
    st %r1,%0
    st %r1,%0"
-  [(set_attr "type" "fp,move,multi,fpload,load,fpstore,store")])
+  [(set_attr "type" "fp,move,fpload,load,fpstore,store")])
 
 ;; Exactly the same as above, except that all `f' cases are deleted.
 ;; This is necessary to prevent reload from ever trying to use a `f' reg
