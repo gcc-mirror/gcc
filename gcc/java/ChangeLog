@@ -1,3 +1,10 @@
+2001-01-11  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* parse.y (resolve_expression_name): Permit instance variables from
+	enclosing context in super constructor call.
+	(resolve_qualified_expression_name): Permit enclosing class's qualified
+	"this" in super constructor call.
+
 2001-01-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (build_utf8_ref): Remove last argument in call to
