@@ -79,12 +79,7 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
     return 1;
 
   int r;
-  pthread_mutex_t *pmu;
-#ifdef HAVE_RECURSIVE_MUTEX
-  pmu = mu;
-#else
-  pmu = &mu->mutex2;
-#endif
+  pthread_mutex_t *pmu = _Jv_PthreadGetMutex (mu);
 
   if (millis == 0 && nanos == 0)
     r = pthread_cond_wait (cv, pmu);

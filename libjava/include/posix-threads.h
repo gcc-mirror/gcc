@@ -30,15 +30,25 @@ details.  */
 //
 
 typedef pthread_cond_t _Jv_ConditionVariable_t;
-#ifdef HAVE_RECURSIVE_MUTEX
+
+// FIXME: it is ugly to use LINUX_THREADS as the define.  Instead
+// think of a better scheme.
+#ifdef LINUX_THREADS
+
+// On Linux we use implementation details of mutexes in order to get
+// faster results.
 typedef pthread_mutex_t _Jv_Mutex_t;
-#else
-// Some systems do not have recursive mutexes, so we must simulate
-// them.  Solaris is one such system.
+
+#else /* LINUX_THREADS */
+
 typedef struct
 {
   // Mutex used when locking this structure transiently.
   pthread_mutex_t mutex;
+#ifndef HAVE_RECURSIVE_MUTEX
+  // Some systems do not have recursive mutexes, so we must simulate
+  // them.  Solaris is one such system.
+
   // Mutex the thread holds the entire time this mutex is held.  This
   // is used to make condition variables work properly.
   pthread_mutex_t mutex2;
@@ -46,10 +56,18 @@ typedef struct
   pthread_cond_t cond;
   // Thread holding this mutex.  If COUNT is 0, no thread is holding.
   pthread_t thread;
-  // Number of times mutex is held.  If 0, the lock is not held.
+#endif /* HAVE_RECURSIVE_MUTEX */
+
+  // Number of times mutex is held.  If 0, the lock is not held.  We
+  // do this even if we have a native recursive mutex so that we can
+  // keep track of whether the lock is held; this lets us do error
+  // checking.  FIXME it would be nice to optimize this; on some
+  // systems we could do so by relying on implementation details of
+  // recursive mutexes.
   int count;
 } _Jv_Mutex_t;
-#endif /* HAVE_RECURSIVE_MUTEX */
+
+#endif /* LINUX_THREADS */
 
 typedef struct
 {
@@ -65,23 +83,41 @@ typedef struct
 typedef void _Jv_ThreadStartFunc (java::lang::Thread *);
 
 
+// This convenience function is used to return the POSIX mutex
+// corresponding to our mutex.
+inline pthread_mutex_t *
+_Jv_PthreadGetMutex (_Jv_Mutex_t *mu)
+{
+#if defined (LINUX_THREADS)
+  return mu;
+#elif defined (HAVE_RECURSIVE_MUTEX)
+  return &mu->mutex;
+#else
+  return &mu->mutex2;
+#endif
+}
+
+#include <stdio.h>
+
 // This is a convenience function used only by the pthreads thread
 // implementation.  This is slow, but that's too bad -- we need to do
 // the checks for correctness.  It might be nice to be able to compile
 // this out.
-inline int _Jv_PthreadCheckMonitor (_Jv_Mutex_t *mu)
+inline int
+_Jv_PthreadCheckMonitor (_Jv_Mutex_t *mu)
 {
-  pthread_mutex_t *pmu;
-#ifdef HAVE_RECURSIVE_MUTEX
-  pmu = mu;
-#else
-  pmu = &mu->mutex2;
-#endif
+  pthread_mutex_t *pmu = _Jv_PthreadGetMutex (mu);
   // See if the mutex is locked by this thread.
   if (pthread_mutex_trylock (pmu))
     return 1;
+#ifdef LINUX_THREADS
+  // On Linux we exploit knowledge of the implementation.
+  int r = pmu->m_count == 1;
+#else
+  int r = mu->count == 0;
+#endif
   pthread_mutex_unlock (pmu);
-  return 0;
+  return r;
 }
 
 //
@@ -133,7 +169,10 @@ _Jv_CondNotifyAll (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu)
 inline void
 _Jv_MutexInit (_Jv_Mutex_t *mu)
 {
-  pthread_mutex_init (mu, NULL);
+  pthread_mutex_init (_Jv_PthreadGetMutex (mu), NULL);
+#ifndef LINUX_THREADS
+  mu->count = 0;
+#endif
 }
 #else
 void _Jv_MutexInit (_Jv_Mutex_t *mu);
@@ -166,13 +205,23 @@ extern void _Jv_MutexDestroy (_Jv_Mutex_t *mu);
 inline int
 _Jv_MutexLock (_Jv_Mutex_t *mu)
 {
-  return pthread_mutex_lock (mu);
+  int r = pthread_mutex_lock (mu);
+#ifndef LINUX_THREADS
+  if (! r)
+    ++mu->count;
+#endif
+  return r;
 }
 
 inline int
 _Jv_MutexUnlock (_Jv_Mutex_t *mu)
 {
-  return pthread_mutex_unlock (mu);
+  int r = pthread_mutex_unlock (mu);
+#ifndef LINUX_THREADS
+  if (! r)
+    --mu->count;
+#endif
+  return r;
 }
 
 #else /* HAVE_RECURSIVE_MUTEX */
