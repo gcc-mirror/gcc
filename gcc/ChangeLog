@@ -1,3 +1,31 @@
+2001-11-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* arm/aof.h (aof_text_section, aof_data_section): Don't declare.
+	(common_section): Delete unused variable.
+	(ASM_OUTPUT_ASCII): Fix signed/unsigned warnings.
+	(ASM_GENERATE_INTERNAL_LABEL): Fix format specifier warning.
+	* arm-protos.h (arm_poke_function_name, aof_add_import,
+	aof_delete_import): Const-ify.
+	* arm.c (legitimize_pic_address): Wrap variables in the macro
+	controlling their usage.
+	(arm_finalize_pic): Mark variable with ATTRIBUTE_UNUSED.
+	(arm_poke_function_name, pic_chain, import, aof_add_import,
+	aof_delete_import): Const-ify.
+	* i386.c (ix86_osf_output_function_prologue): Const-ify.
+	* i386/sysv4.h (ASM_OUTPUT_FLOAT, ASM_OUTPUT_DOUBLE,
+	ASM_OUTPUT_LONG_DOUBLE): Fix format specifier warnings.
+	* i860/fx2800.h (DBX_OUTPUT_STANDARD_TYPES): Const-ify.
+	* i860/sysv3.h: Add missing comment closure.
+	* m68k/apollo68.h (ASM_RETURN_CASE_JUMP): Add missing semi-colon.
+	* m88k/dgux.h (SELECT_RTX_SECTION): Add missing argument in call
+	to symbolic_operand.
+	
+	* config.gcc (m680[02]0-*-*): Rename case from m68000-*-*.
+	(i960-*-*): Set tmake_file.
+	(sparc86x-*-elf*): Fix typo in header name.
+	
+	* sched-rgn.c (schedule_insns): Delete unused variable.
+
 2001-11-04  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	PR c/2820

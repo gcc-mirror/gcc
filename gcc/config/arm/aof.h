@@ -52,12 +52,10 @@ Boston, MA 02111-1307, USA.  */
    two areas with the same attributes will be linked adjacently in the
    resulting executable, so we have to be careful not to do pc-relative 
    addressing across such boundaries.  */
-char *aof_text_section ();
 #define TEXT_SECTION_ASM_OP aof_text_section ()
 
 #define SELECT_RTX_SECTION(MODE,RTX,ALIGN) text_section ();
 
-char *aof_data_section ();
 #define DATA_SECTION_ASM_OP aof_data_section ()
 
 #define EXTRA_SECTIONS in_zero_init, in_common
@@ -85,7 +83,6 @@ zero_init_section ()						\
 void								\
 common_section ()						\
 {								\
-  static int common_count = 1;					\
   if (in_section != in_common)					\
     {								\
       in_section = in_common;					\
@@ -232,10 +229,10 @@ do {							\
   int i;						\
   const char *ptr = (PTR);				\
   fprintf ((STREAM), "\tDCB");				\
-  for (i = 0; i < (LEN); i++)				\
+  for (i = 0; i < (long)(LEN); i++)			\
     fprintf ((STREAM), " &%02x%s", 			\
 	     (unsigned ) *(ptr++),			\
-	     (i + 1 < (LEN)				\
+	     (i + 1 < (long)(LEN)				\
 	      ? ((i & 3) == 3 ? "\n\tDCB" : ",")	\
 	      : "\n"));					\
 }
@@ -313,7 +310,7 @@ do {					\
   fprintf ((STREAM), "|%s|", NAME)
 
 #define ASM_GENERATE_INTERNAL_LABEL(STRING,PREFIX,NUM)	\
-  sprintf ((STRING), "*|%s..%d|", (PREFIX), (NUM))
+  sprintf ((STRING), "*|%s..%ld|", (PREFIX), (long)(NUM))
 
 #define ASM_FORMAT_PRIVATE_NAME(OUTVAR,NAME,NUMBER)	\
  ((OUTVAR) = (char *) alloca (strlen ((NAME)) + 10),	\

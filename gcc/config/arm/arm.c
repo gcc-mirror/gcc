@@ -2251,7 +2251,9 @@ legitimize_pic_address (orig, mode, reg)
 {
   if (GET_CODE (orig) == SYMBOL_REF)
     {
+#ifndef AOF_ASSEMBLER
       rtx pic_ref, address;
+#endif
       rtx insn;
       int subregs = 0;
 
@@ -2375,7 +2377,7 @@ legitimize_pic_address (orig, mode, reg)
 
 void
 arm_finalize_pic (prologue)
-     int prologue;
+     int prologue ATTRIBUTE_UNUSED;
 {
 #ifndef AOF_ASSEMBLER
   rtx l1, pic_tmp, pic_tmp2, seq, pic_rtx;
@@ -7313,7 +7315,7 @@ output_return_instruction (operand, really_return, reverse)
 void
 arm_poke_function_name (stream, name)
    FILE * stream;
-   char * name;
+   const char * name;
 {
   unsigned long alignlength;
   unsigned long length;
@@ -10675,7 +10677,7 @@ rtx aof_pic_label = NULL_RTX;
 struct pic_chain
 {
   struct pic_chain * next;
-  char * symname;
+  const char * symname;
 };
 
 static struct pic_chain * aof_pic_chain = NULL;
@@ -10765,14 +10767,14 @@ aof_data_section ()
 struct import
 {
   struct import * next;
-  char * name;
+  const char * name;
 };
 
 static struct import * imports_list = NULL;
 
 void
 aof_add_import (name)
-     char * name;
+     const char * name;
 {
   struct import * new;
 
@@ -10788,7 +10790,7 @@ aof_add_import (name)
 
 void
 aof_delete_import (name)
-     char * name;
+     const char * name;
 {
   struct import ** old;
 

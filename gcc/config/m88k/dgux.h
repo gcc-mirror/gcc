@@ -298,7 +298,7 @@ func_ptr __DTOR_END__[1] = { (func_ptr) (-1) }
 #undef SELECT_RTX_SECTION
 #define SELECT_RTX_SECTION(MODE,RTX,ALIGN)      \
 {                                               \
-  if (flag_pic && symbolic_operand (RTX))       \
+  if (flag_pic && symbolic_operand ((RTX), (MODE))) \
     data_section ();                            \
   else                                          \
     const_section ();                           \

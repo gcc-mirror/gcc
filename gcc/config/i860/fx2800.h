@@ -100,7 +100,8 @@ Boston, MA 02111-1307, USA.  */
    sets long & unsigned long in 18 & 19, not in 100 & 101 as shown above. */
 
 #define DBX_OUTPUT_STANDARD_TYPES(syms)	\
-{ char *dtyps[]={"", "char", "short int", "int", "logical*1",		\
+{ static const char *const dtyps[] = {					\
+	"", "char", "short int", "int", "logical*1",			\
 	"logical*2", "logical*4", "float", "double", "complex",		\
 	"doublecomplex", "character", "void", "nil", "boolean",		\
 	"unsigned char", "short unsigned int", "unsigned int",		\

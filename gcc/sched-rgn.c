@@ -2963,8 +2963,6 @@ schedule_insns (dump_file)
       for (rgn = 0; rgn < nr_regions; rgn++)
 	if (RGN_NR_BLOCKS (rgn) == 1)
 	  {
-	    int b;
-
 	    sbitmap_zero (blocks);
 	    SET_BIT (blocks, rgn_bb_table[RGN_BLOCKS (rgn)]);
 

@@ -182,7 +182,7 @@ Boston, MA 02111-1307, USA.  */
     if (TARGET_5200)				\
       return "ext%.l %0\n\tjmp %%pc@(2,%0:l)";	\
     else					\
-      return "jmp %%pc@(2,%0:w)"		\
+      return "jmp %%pc@(2,%0:w)";		\
   } while (0)
 
 /* Here are the new register names.  */
