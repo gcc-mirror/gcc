@@ -1,5 +1,6 @@
 2003-03-23  Arpad Beszedes <beszedes@cc.u-szeged.hu>
 
+	PR middle-end/9967
 	* builtins.c (expand_builtin_fputs): When optimizing for size,
 	don't transform fputs into fwrite.
 
