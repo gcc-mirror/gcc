@@ -1,4 +1,4 @@
-2004-06-01  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+2004-06-05  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15478
 	* doc/install.texi: Document GMP as prerequisite. Document
