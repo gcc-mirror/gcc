@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2001, 2002, 2003  Free Software Foundation
+/* Copyright (C) 1999, 2001, 2002, 2003, 2004  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -19,7 +19,7 @@ public final class VMClassLoader extends java.net.URLClassLoader
 {
   private VMClassLoader ()
   {	
-    super (init());
+    super (new URL[0]);
     String p
       = System.getProperty ("gnu.gcj.runtime.VMClassLoader.library_control",
 			    "");
@@ -36,22 +36,21 @@ public final class VMClassLoader extends java.net.URLClassLoader
       lib_control = LIB_FULL;
   }
 
-  private static URL[] init() 
+  private void init() 
   {
     StringTokenizer st
 	= new StringTokenizer (System.getProperty ("java.class.path", "."),
 			       System.getProperty ("path.separator", ":"));
 
-    java.util.Vector p = new java.util.Vector();
     while (st.hasMoreElements ()) 
       {  
 	String e = st.nextToken ();
 	try
 	  {
 	    if (!e.endsWith (File.separator) && new File (e).isDirectory ())
-	      p.addElement (new URL("file", "", -1, e + File.separator));
+	      addURL(new URL("file", "", -1, e + File.separator));
 	    else
-	      p.addElement (new URL("file", "", -1, e));
+	      addURL(new URL("file", "", -1, e));
 	  } 
 	catch (java.net.MalformedURLException x)
 	  {
@@ -62,16 +61,12 @@ public final class VMClassLoader extends java.net.URLClassLoader
     // compiled into this executable may be found.
     try
       {
-	p.addElement (new URL("core", "", -1, "/"));
+	addURL(new URL("core", "", -1, "/"));
       }
     catch (java.net.MalformedURLException x)
       {
 	// This should never happen.
       }
-
-    URL[] urls = new URL[p.size()];
-    p.copyInto (urls);
-    return urls;
   }
 
   /** This is overridden to search the internal hash table, which 
@@ -81,6 +76,13 @@ public final class VMClassLoader extends java.net.URLClassLoader
    */
   protected native Class findClass(String name) 
     throws java.lang.ClassNotFoundException;
+
+  // This can be package-private because we only call it from native
+  // code during startup.
+  static void initialize ()
+  {
+    instance.init();
+  }
 
   // This keeps track of shared libraries we've already tried to load.
   private HashSet tried_libraries = new HashSet();
