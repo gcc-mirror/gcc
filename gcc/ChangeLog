@@ -1,3 +1,11 @@
+Mon Feb  1 20:00:40 1999  Richard Henderson  <rth@cygnus.com>
+
+	* recog.c (check_asm_operands): Treat indeterminate operand ok
+	results as success.  Try harder to resolve a matching constraint.
+	* stmt.c (expand_asm_operands): Recognize when an output operand's
+	constraint does not allow memory.  Treat indeterminate operand ok
+	results as failure.  Try harder to resolve a matching constraint.
+	
 Mon Feb  1 15:00:02 1999  Ken Raeburn  <raeburn@cygnus.com>
 
 	Use varrays for constant-equivalence data:

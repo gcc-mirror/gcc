@@ -188,7 +188,9 @@ check_asm_operands (x)
   for (i = 0; i < noperands; i++)
     {
       const char *c = constraints[i];
-      if (ISDIGIT ((unsigned char)c[0]))
+      if (c[0] == '%')
+	c++;
+      if (ISDIGIT ((unsigned char)c[0]) && c[1] == '\0')
 	c = constraints[c[0] - '0'];
 
       if (! asm_operand_ok (operands[i], c))
@@ -1550,13 +1552,16 @@ decode_asm_operands (body, operands, operand_locs, constraints, modes)
   return template;
 }
 
-/* Check if an asm_operand matches it's constraints.  */
+/* Check if an asm_operand matches it's constraints. 
+   Return > 0 if ok, = 0 if bad, < 0 if inconclusive.  */
 
 int
 asm_operand_ok (op, constraint)
      rtx op;
      const char *constraint;
 {
+  int result = 0;
+
   /* Use constrain_operands after reload.  */
   if (reload_completed)
     abort ();
@@ -1578,9 +1583,11 @@ asm_operand_ok (op, constraint)
 
 	case '0': case '1': case '2': case '3': case '4':
 	case '5': case '6': case '7': case '8': case '9':
-	  /* Our caller is supposed to have given us the proper
-	     matching constraint.  */
-	  /* abort (); */
+	  /* For best results, our caller should have given us the
+	     proper matching constraint, but we can't actually fail
+	     the check if they didn't.  Indicate that results are
+	     inconclusive.  */
+	  result = -1;
 	  break;
 
 	case 'p':
@@ -1600,15 +1607,24 @@ asm_operand_ok (op, constraint)
 	  break;
 
 	case '<':
+	  /* ??? Before flow, auto inc/dec insns are not supposed to exist,
+	     excepting those that expand_call created.  Further, on some
+	     machines which do not have generalized auto inc/dec, an inc/dec
+	     is not a memory_operand.
+
+	     Match any memory and hope things are resolved after reload.  */
+
 	  if (GET_CODE (op) == MEM
-	      && (GET_CODE (XEXP (op, 0)) == PRE_DEC
+	      && (1
+		  || GET_CODE (XEXP (op, 0)) == PRE_DEC
                   || GET_CODE (XEXP (op, 0)) == POST_DEC))
 	    return 1;
 	  break;
 
 	case '>':
 	  if (GET_CODE (op) == MEM
-	      && (GET_CODE (XEXP (op, 0)) == PRE_INC
+	      && (1
+		  || GET_CODE (XEXP (op, 0)) == PRE_INC
                   || GET_CODE (XEXP (op, 0)) == POST_INC))
 	    return 1;
 	  break;
@@ -1745,7 +1761,7 @@ asm_operand_ok (op, constraint)
 	}
     }
 
-  return 0;
+  return result;
 }
 
 /* Given an rtx *P, if it is a sum containing an integer constant term,
