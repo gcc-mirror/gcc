@@ -1,3 +1,8 @@
+2003-11-08  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/10467
+	* gcc.dg/20031108-1.c: New test case.
+
 2003-11-07  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/pch/warn-1.c: Allow for more helpful error message.
