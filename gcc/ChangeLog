@@ -15,6 +15,7 @@
 	* fixinc/Makefile.in:  compile fixfixes.c and fixtests.c as separate
 	modules.  Removed the vestiges of the script version.
 	Added support for "make check".
+	* fixinc/check.diff: base diff file (needs work!!)
 	* fixinc/check.tpl: quiet the fixup output
 	* fixinc/fixtests.c(main): obsolete
 	* fixinc/fixincl.sh:  don't bother copying fixincl to ..
