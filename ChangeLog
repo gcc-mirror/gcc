@@ -1,3 +1,8 @@
+2001-07-12  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* configure.in (noconfigdirs): Don't compile libiberty, libstdcxx
+	and libgcj on m68hc11/m68hc12.
+
 20010617 Release Manager
 
         * GCC 3.0 Released.
