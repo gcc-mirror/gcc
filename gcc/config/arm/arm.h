@@ -1760,10 +1760,14 @@ typedef struct
 
 
 /* Addressing modes, and classification of registers for them.  */
-#define HAVE_POST_INCREMENT  1
-#define HAVE_PRE_INCREMENT   TARGET_ARM
-#define HAVE_POST_DECREMENT  TARGET_ARM
-#define HAVE_PRE_DECREMENT   TARGET_ARM
+#define HAVE_POST_INCREMENT   1
+#define HAVE_PRE_INCREMENT    TARGET_ARM
+#define HAVE_POST_DECREMENT   TARGET_ARM
+#define HAVE_PRE_DECREMENT    TARGET_ARM
+#define HAVE_PRE_MODIFY_DISP  TARGET_ARM
+#define HAVE_POST_MODIFY_DISP TARGET_ARM
+#define HAVE_PRE_MODIFY_REG   TARGET_ARM
+#define HAVE_POST_MODIFY_REG  TARGET_ARM
 
 /* Macros to check register numbers against specific register classes.  */
 
@@ -2001,65 +2005,73 @@ typedef struct
    floating SYMBOL_REF to the constant pool.  Allow REG-only and
    AUTINC-REG if handling TImode or HImode.  Other symbol refs must be
    forced though a static cell to ensure addressability.  */
-#define ARM_GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)			\
-{									\
-  if (ARM_BASE_REGISTER_RTX_P (X))					\
-    goto LABEL;								\
-  else if ((GET_CODE (X) == POST_INC || GET_CODE (X) == PRE_DEC)	\
-	   && GET_CODE (XEXP (X, 0)) == REG				\
-	   && ARM_REG_OK_FOR_BASE_P (XEXP (X, 0)))			\
-    goto LABEL;								\
-  else if (GET_MODE_SIZE (MODE) >= 4 && reload_completed		\
-	   && (GET_CODE (X) == LABEL_REF				\
-	       || (GET_CODE (X) == CONST				\
-		   && GET_CODE (XEXP ((X), 0)) == PLUS			\
-		   && GET_CODE (XEXP (XEXP ((X), 0), 0)) == LABEL_REF	\
-		   && GET_CODE (XEXP (XEXP ((X), 0), 1)) == CONST_INT)))\
-    goto LABEL;								\
-  else if ((MODE) == TImode)						\
-    ;									\
-  else if ((MODE) == DImode || (TARGET_SOFT_FLOAT && (MODE) == DFmode))	\
-    {									\
-      if (GET_CODE (X) == PLUS && ARM_BASE_REGISTER_RTX_P (XEXP (X, 0))	\
-	  && GET_CODE (XEXP (X, 1)) == CONST_INT)			\
-	{								\
-	  HOST_WIDE_INT val = INTVAL (XEXP (X, 1));			\
-          if (val == 4 || val == -4 || val == -8)			\
-	    goto LABEL;							\
-	}								\
-    }									\
-  else if (GET_CODE (X) == PLUS)					\
-    {									\
-      rtx xop0 = XEXP (X, 0);						\
-      rtx xop1 = XEXP (X, 1);						\
-									\
-      if (ARM_BASE_REGISTER_RTX_P (xop0))				\
-	ARM_GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop0), xop1, LABEL);	\
-      else if (ARM_BASE_REGISTER_RTX_P (xop1))				\
-	ARM_GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop1), xop0, LABEL);	\
-    }									\
-  /* Reload currently can't handle MINUS, so disable this for now */	\
-  /* else if (GET_CODE (X) == MINUS)					\
-    {									\
-      rtx xop0 = XEXP (X,0);						\
-      rtx xop1 = XEXP (X,1);						\
-									\
-      if (ARM_BASE_REGISTER_RTX_P (xop0))				\
-	ARM_GO_IF_LEGITIMATE_INDEX (MODE, -1, xop1, LABEL);		\
-    } */								\
-  else if (GET_MODE_CLASS (MODE) != MODE_FLOAT				\
-	   && GET_CODE (X) == SYMBOL_REF				\
-	   && CONSTANT_POOL_ADDRESS_P (X)				\
-	   && ! (flag_pic						\
-		 && symbol_mentioned_p (get_pool_constant (X))))	\
-    goto LABEL;								\
-  else if ((GET_CODE (X) == PRE_INC || GET_CODE (X) == POST_DEC)	\
-	   && (GET_MODE_SIZE (MODE) <= 4)				\
-	   && GET_CODE (XEXP (X, 0)) == REG				\
-	   && ARM_REG_OK_FOR_BASE_P (XEXP (X, 0)))			\
-    goto LABEL;								\
+#define ARM_GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)			 \
+{									 \
+  if (ARM_BASE_REGISTER_RTX_P (X))					 \
+    goto LABEL;								 \
+  else if ((GET_CODE (X) == POST_INC || GET_CODE (X) == PRE_DEC)	 \
+	   && GET_CODE (XEXP (X, 0)) == REG				 \
+	   && ARM_REG_OK_FOR_BASE_P (XEXP (X, 0)))			 \
+    goto LABEL;								 \
+  else if ((GET_CODE (X) == POST_MODIFY || GET_CODE (X) == PRE_MODIFY)	 \
+	   && GET_MODE_SIZE (MODE) <= 4					 \
+	   && GET_CODE (XEXP (X, 0)) == REG				 \
+	   && ARM_REG_OK_FOR_BASE_P (XEXP (X, 0))			 \
+	   && GET_CODE (XEXP (X, 1)) == PLUS				 \
+	   && XEXP (XEXP (X, 1), 0) == XEXP (X, 0))			 \
+    ARM_GO_IF_LEGITIMATE_INDEX (MODE, REGNO (XEXP (X, 0)), 		 \
+				XEXP (XEXP (X, 1), 1), LABEL);		 \
+  else if (GET_MODE_SIZE (MODE) >= 4 && reload_completed		 \
+	   && (GET_CODE (X) == LABEL_REF				 \
+	       || (GET_CODE (X) == CONST				 \
+		   && GET_CODE (XEXP ((X), 0)) == PLUS			 \
+		   && GET_CODE (XEXP (XEXP ((X), 0), 0)) == LABEL_REF	 \
+		   && GET_CODE (XEXP (XEXP ((X), 0), 1)) == CONST_INT))) \
+    goto LABEL;								 \
+  else if ((MODE) == TImode)						 \
+    ;									 \
+  else if ((MODE) == DImode || (TARGET_SOFT_FLOAT && (MODE) == DFmode))	 \
+    {									 \
+      if (GET_CODE (X) == PLUS && ARM_BASE_REGISTER_RTX_P (XEXP (X, 0))	 \
+	  && GET_CODE (XEXP (X, 1)) == CONST_INT)			 \
+	{								 \
+	  HOST_WIDE_INT val = INTVAL (XEXP (X, 1));			 \
+          if (val == 4 || val == -4 || val == -8)			 \
+	    goto LABEL;							 \
+	}								 \
+    }									 \
+  else if (GET_CODE (X) == PLUS)					 \
+    {									 \
+      rtx xop0 = XEXP (X, 0);						 \
+      rtx xop1 = XEXP (X, 1);						 \
+									 \
+      if (ARM_BASE_REGISTER_RTX_P (xop0))				 \
+	ARM_GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop0), xop1, LABEL);	 \
+      else if (ARM_BASE_REGISTER_RTX_P (xop1))				 \
+	ARM_GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop1), xop0, LABEL);	 \
+    }									 \
+  /* Reload currently can't handle MINUS, so disable this for now */	 \
+  /* else if (GET_CODE (X) == MINUS)					 \
+    {									 \
+      rtx xop0 = XEXP (X,0);						 \
+      rtx xop1 = XEXP (X,1);						 \
+									 \
+      if (ARM_BASE_REGISTER_RTX_P (xop0))				 \
+	ARM_GO_IF_LEGITIMATE_INDEX (MODE, -1, xop1, LABEL);		 \
+    } */								 \
+  else if (GET_MODE_CLASS (MODE) != MODE_FLOAT				 \
+	   && GET_CODE (X) == SYMBOL_REF				 \
+	   && CONSTANT_POOL_ADDRESS_P (X)				 \
+	   && ! (flag_pic						 \
+		 && symbol_mentioned_p (get_pool_constant (X))))	 \
+    goto LABEL;								 \
+  else if ((GET_CODE (X) == PRE_INC || GET_CODE (X) == POST_DEC)	 \
+	   && (GET_MODE_SIZE (MODE) <= 4)				 \
+	   && GET_CODE (XEXP (X, 0)) == REG				 \
+	   && ARM_REG_OK_FOR_BASE_P (XEXP (X, 0)))			 \
+    goto LABEL;								 \
 }
-     
+
 /* ---------------------thumb version----------------------------------*/     
 #define THUMB_LEGITIMATE_OFFSET(MODE, VAL)				\
   (GET_MODE_SIZE (MODE) == 1 ? ((unsigned HOST_WIDE_INT) (VAL) < 32)	\
@@ -2570,79 +2582,99 @@ extern int making_const_table;
        : 0))))
 
 /* Output the address of an operand.  */
-#define ARM_PRINT_OPERAND_ADDRESS(STREAM, X)  			\
-{								\
-    int is_minus = GET_CODE (X) == MINUS;			\
-								\
-    if (GET_CODE (X) == REG)					\
-      asm_fprintf (STREAM, "[%r, #0]", REGNO (X));		\
-    else if (GET_CODE (X) == PLUS || is_minus)			\
-      {								\
-	rtx base = XEXP (X, 0);					\
-	rtx index = XEXP (X, 1);				\
-	HOST_WIDE_INT offset = 0;				\
-	if (GET_CODE (base) != REG)				\
-	  {							\
-	    /* Ensure that BASE is a register */ 		\
-            /* (one of them must be). */			\
-	    rtx temp = base;					\
-	    base = index;					\
-	    index = temp;					\
-	  }							\
-	switch (GET_CODE (index))				\
-	  {							\
-	  case CONST_INT:					\
-	    offset = INTVAL (index);				\
-	    if (is_minus)					\
-	      offset = -offset;					\
-	    asm_fprintf (STREAM, "[%r, #%d]", 			\
-		         REGNO (base), offset);			\
-	    break;						\
-								\
-	  case REG:						\
-	    asm_fprintf (STREAM, "[%r, %s%r]", 			\
-		     REGNO (base), is_minus ? "-" : "",		\
-		     REGNO (index));				\
-	    break;						\
-								\
-	  case MULT:						\
-	  case ASHIFTRT:					\
-	  case LSHIFTRT:					\
-	  case ASHIFT:						\
-	  case ROTATERT:					\
-	  {							\
-	    asm_fprintf (STREAM, "[%r, %s%r", 			\
-		         REGNO (base), is_minus ? "-" : "", 	\
-                         REGNO (XEXP (index, 0)));		\
-	    arm_print_operand (STREAM, index, 'S');		\
-	    fputs ("]", STREAM);				\
-	    break;						\
-	  }							\
-	    							\
-	  default:						\
-	    abort();						\
-	}							\
-    }							        \
-  else if (   GET_CODE (X) == PRE_INC || GET_CODE (X) == POST_INC\
-	   || GET_CODE (X) == PRE_DEC || GET_CODE (X) == POST_DEC)\
-    {								\
-      extern int output_memory_reference_mode;			\
-      								\
-      if (GET_CODE (XEXP (X, 0)) != REG)			\
-	abort ();						\
-								\
-      if (GET_CODE (X) == PRE_DEC || GET_CODE (X) == PRE_INC)	\
-	asm_fprintf (STREAM, "[%r, #%s%d]!", 			\
-		     REGNO (XEXP (X, 0)),			\
-		     GET_CODE (X) == PRE_DEC ? "-" : "",	\
-		     GET_MODE_SIZE (output_memory_reference_mode));\
-      else							\
-	asm_fprintf (STREAM, "[%r], #%s%d", 			\
-		     REGNO (XEXP (X, 0)),			\
-		     GET_CODE (X) == POST_DEC ? "-" : "",	\
-		     GET_MODE_SIZE (output_memory_reference_mode));\
-    }								\
-  else output_addr_const (STREAM, X);				\
+#define ARM_PRINT_OPERAND_ADDRESS(STREAM, X)				\
+{									\
+    int is_minus = GET_CODE (X) == MINUS;				\
+									\
+    if (GET_CODE (X) == REG)						\
+      asm_fprintf (STREAM, "[%r, #0]", REGNO (X));			\
+    else if (GET_CODE (X) == PLUS || is_minus)				\
+      {									\
+	rtx base = XEXP (X, 0);						\
+	rtx index = XEXP (X, 1);					\
+	HOST_WIDE_INT offset = 0;					\
+	if (GET_CODE (base) != REG)					\
+	  {								\
+	    /* Ensure that BASE is a register */			\
+            /* (one of them must be). */				\
+	    rtx temp = base;						\
+	    base = index;						\
+	    index = temp;						\
+	  }								\
+	switch (GET_CODE (index))					\
+	  {								\
+	  case CONST_INT:						\
+	    offset = INTVAL (index);					\
+	    if (is_minus)						\
+	      offset = -offset;						\
+	    asm_fprintf (STREAM, "[%r, #%d]",				\
+		         REGNO (base), offset);				\
+	    break;							\
+									\
+	  case REG:							\
+	    asm_fprintf (STREAM, "[%r, %s%r]",				\
+		     REGNO (base), is_minus ? "-" : "",			\
+		     REGNO (index));					\
+	    break;							\
+									\
+	  case MULT:							\
+	  case ASHIFTRT:						\
+	  case LSHIFTRT:						\
+	  case ASHIFT:							\
+	  case ROTATERT:						\
+	  {								\
+	    asm_fprintf (STREAM, "[%r, %s%r",				\
+		         REGNO (base), is_minus ? "-" : "",		\
+                         REGNO (XEXP (index, 0)));			\
+	    arm_print_operand (STREAM, index, 'S');			\
+	    fputs ("]", STREAM);					\
+	    break;							\
+	  }								\
+									\
+	  default:							\
+	    abort();							\
+	}								\
+    }									\
+  else if (GET_CODE (X) == PRE_INC || GET_CODE (X) == POST_INC		\
+	   || GET_CODE (X) == PRE_DEC || GET_CODE (X) == POST_DEC)	\
+    {									\
+      extern enum machine_mode output_memory_reference_mode;		\
+									\
+      if (GET_CODE (XEXP (X, 0)) != REG)				\
+	abort ();							\
+									\
+      if (GET_CODE (X) == PRE_DEC || GET_CODE (X) == PRE_INC)		\
+	asm_fprintf (STREAM, "[%r, #%s%d]!",				\
+		     REGNO (XEXP (X, 0)),				\
+		     GET_CODE (X) == PRE_DEC ? "-" : "",		\
+		     GET_MODE_SIZE (output_memory_reference_mode));	\
+      else								\
+	asm_fprintf (STREAM, "[%r], #%s%d",				\
+		     REGNO (XEXP (X, 0)),				\
+		     GET_CODE (X) == POST_DEC ? "-" : "",		\
+		     GET_MODE_SIZE (output_memory_reference_mode));	\
+    }									\
+  else if (GET_CODE (X) == PRE_MODIFY)					\
+    {									\
+      asm_fprintf (STREAM, "[%r, ", REGNO (XEXP (X, 0)));		\
+      if (GET_CODE (XEXP (XEXP (X, 1), 1)) == CONST_INT)		\
+	asm_fprintf (STREAM, "#%d]!", 					\
+		     INTVAL (XEXP (XEXP (X, 1), 1)));			\
+      else								\
+	asm_fprintf (STREAM, "%r]!", 					\
+		     REGNO (XEXP (XEXP (X, 1), 1)));			\
+    }									\
+  else if (GET_CODE (X) == POST_MODIFY)					\
+    {									\
+      asm_fprintf (STREAM, "[%r], ", REGNO (XEXP (X, 0)));		\
+      if (GET_CODE (XEXP (XEXP (X, 1), 1)) == CONST_INT)		\
+	asm_fprintf (STREAM, "#%d", 					\
+		     INTVAL (XEXP (XEXP (X, 1), 1)));			\
+      else								\
+	asm_fprintf (STREAM, "%r", 					\
+		     REGNO (XEXP (XEXP (X, 1), 1)));			\
+    }									\
+  else output_addr_const (STREAM, X);					\
 }
 
 #define THUMB_PRINT_OPERAND_ADDRESS(STREAM, X)		\

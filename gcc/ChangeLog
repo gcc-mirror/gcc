@@ -1,3 +1,10 @@
+2003-01-15  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.h (HAVE_PRE_MODIFY_DISP, HAVE_PRE_MODIFY_REG): Define.
+	(HAVE_POST_MODIFY_DISP, HAVE_POST_MODIFY_REG): Define.
+	(ARM_GO_IF_LEGITIMATE_ADDRESS): Handle pre/post-modify addresses.
+	(ARM_PRINT_OPERAND_ADDRESS): Likewise.
+
 Wed Jan 15 12:23:21 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR f/9258
