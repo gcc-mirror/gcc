@@ -1297,13 +1297,13 @@ struct cum_args {int regs;};
 	      something_reloaded = 1;					\
 	    }								\
 									\
-	  if (REG_P (XEXP (XEXP (X, 0), 0))				\
-	      && (REGNO (XEXP (XEXP (X, 0), 0))				\
+	  if (REG_P (XEXP (XEXP (XEXP (X, 0), 0), 0))			\
+	      && (REGNO (XEXP (XEXP (XEXP (X, 0), 0), 0))		\
 		  >= FIRST_PSEUDO_REGISTER))				\
 	    {								\
 	      /* First one is a pseudo - reload that.  */		\
-	      push_reload (XEXP (XEXP (X, 0), 0), NULL_RTX,		\
-			   &XEXP (XEXP (X, 0), 0), NULL, 		\
+	      push_reload (XEXP (XEXP (XEXP (X, 0), 0), 0), NULL_RTX,	\
+			   &XEXP (XEXP (XEXP (X, 0), 0), 0), NULL, 	\
 			   GENERAL_REGS,				\
 			   GET_MODE (X), VOIDmode, 0, 0, OPNUM, TYPE);	\
 	      something_reloaded = 1;					\

@@ -1,3 +1,9 @@
+2002-07-02  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/7177
+	* config/cris/cris.h (LEGITIMIZE_RELOAD_ADDRESS): Correct number
+	of indirections for register inside sign-extended mem part.
+
 2002-07-01  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* emit-rtl.c (init_emit_once): Add missing cast to HOST_WIDE_INT.
