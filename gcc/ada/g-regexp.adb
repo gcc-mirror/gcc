@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.27 $
+--                            $Revision$
 --                                                                          --
 --            Copyright (C) 1999-2001 Ada Core Technologies, Inc.           --
 --                                                                          --
@@ -32,7 +32,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Text_IO;
+with System.IO;
 with Unchecked_Deallocation;
 with Ada.Exceptions;
 with GNAT.Case_Util;
@@ -1226,8 +1226,8 @@ package body GNAT.Regexp is
             end loop;
 
             if Debug then
-               Ada.Text_IO.New_Line;
-               Ada.Text_IO.Put_Line ("Secondary table : ");
+               System.IO.New_Line;
+               System.IO.Put_Line ("Secondary table : ");
                Print_Table (R.States, Nb_State, False);
             end if;
 
@@ -1267,39 +1267,39 @@ package body GNAT.Regexp is
       begin
          --  Print the header line
 
-         Ada.Text_IO.Put ("   [*]  ");
+         System.IO.Put ("   [*]  ");
 
          for Column in 1 .. Alphabet_Size  loop
-            Ada.Text_IO.Put (String'(1 .. 1 => Reverse_Mapping (Column))
-                             & "   ");
+            System.IO.Put
+              (String'(1 .. 1 => Reverse_Mapping (Column)) & "   ");
          end loop;
 
          if Is_Primary then
-            Ada.Text_IO.Put ("closure....");
+            System.IO.Put ("closure....");
          end if;
 
-         Ada.Text_IO.New_Line;
+         System.IO.New_Line;
 
          --  Print every line
 
          for State in 1 .. Num_States loop
-            Ada.Text_IO.Put (State'Img);
+            System.IO.Put (State'Img);
 
             for K in 1 .. 3 - State'Img'Length loop
-               Ada.Text_IO.Put (" ");
+               System.IO.Put (" ");
             end loop;
 
             for K in 0 .. Alphabet_Size loop
-               Ada.Text_IO.Put (Table (State, K)'Img & "  ");
+               System.IO.Put (Table (State, K)'Img & "  ");
             end loop;
 
             for K in Alphabet_Size + 1 .. Table'Last (2) loop
                if Table (State, K) /= 0 then
-                  Ada.Text_IO.Put (Table (State, K)'Img & ",");
+                  System.IO.Put (Table (State, K)'Img & ",");
                end if;
             end loop;
 
-            Ada.Text_IO.New_Line;
+            System.IO.New_Line;
          end loop;
 
       end Print_Table;
@@ -1347,8 +1347,8 @@ package body GNAT.Regexp is
 
          if Debug then
             Print_Table (Table.all, Num_States);
-            Ada.Text_IO.Put_Line ("Start_State : " & Start_State'Img);
-            Ada.Text_IO.Put_Line ("End_State   : " & End_State'Img);
+            System.IO.Put_Line ("Start_State : " & Start_State'Img);
+            System.IO.Put_Line ("End_State   : " & End_State'Img);
          end if;
 
          --  Creates the secondary table
@@ -1453,13 +1453,14 @@ package body GNAT.Regexp is
          New_Table.all := (others => (others => 0));
 
          if Debug then
-            Ada.Text_IO.Put_Line ("Reallocating table: Lines from "
-                                  & State_Index'Image (Table'Last (1)) & " to "
-                                  & State_Index'Image (New_Lines));
-            Ada.Text_IO.Put_Line ("   and columns from "
-                                  & Column_Index'Image (Table'Last (2))
-                                  & " to "
-                                  & Column_Index'Image (New_Columns));
+            System.IO.Put_Line ("Reallocating table: Lines from "
+                                & State_Index'Image (Table'Last (1))
+                                & " to "
+                                & State_Index'Image (New_Lines));
+            System.IO.Put_Line ("   and columns from "
+                                & Column_Index'Image (Table'Last (2))
+                                & " to "
+                                & Column_Index'Image (New_Columns));
          end if;
 
          for J in Table'Range (1) loop

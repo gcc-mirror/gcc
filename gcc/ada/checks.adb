@@ -1863,7 +1863,7 @@ package body Checks is
    -- Determine_Range --
    ---------------------
 
-   Cache_Size : constant := 2 ** 6;
+   Cache_Size : constant := 2 ** 10;
    type Cache_Index is range 0 .. Cache_Size - 1;
    --  Determine size of below cache (power of 2 is more efficient!)
 
@@ -2705,7 +2705,7 @@ package body Checks is
       --  validity checks on the validity checking code itself!
 
       else
-         Validity_Checks_On  := False;
+         Validity_Checks_On := False;
          Insert_Action
            (Expr,
             Make_Raise_Constraint_Error (Loc,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -150,9 +150,9 @@ package body Exp_Ch6 is
    --  reference to the object itself, and the call becomes a call to the
    --  corresponding protected subprogram.
 
-   ---------------------------------
-   --  Check_Overriding_Operation --
-   ---------------------------------
+   --------------------------------
+   -- Check_Overriding_Operation --
+   --------------------------------
 
    procedure Check_Overriding_Operation (Subp : Entity_Id) is
       Typ     : constant Entity_Id := Find_Dispatching_Type (Subp);
@@ -2659,9 +2659,12 @@ package body Exp_Ch6 is
 
    --  Initialize scalar out parameters if Initialize/Normalize_Scalars
 
+   --  Reset Pure indication if any parameter has root type System.Address
+
    procedure Expand_N_Subprogram_Body (N : Node_Id) is
       Loc      : constant Source_Ptr := Sloc (N);
       H        : constant Node_Id    := Handled_Statement_Sequence (N);
+      Body_Id  : Entity_Id;
       Spec_Id  : Entity_Id;
       Except_H : Node_Id;
       Scop     : Entity_Id;
@@ -2712,17 +2715,47 @@ package body Exp_Ch6 is
 
       --  Find entity for subprogram
 
+      Body_Id := Defining_Entity (N);
+
       if Present (Corresponding_Spec (N)) then
          Spec_Id := Corresponding_Spec (N);
       else
-         Spec_Id := Defining_Entity (N);
+         Spec_Id := Body_Id;
+      end if;
+
+      --  If this is a Pure function which has any parameters whose root
+      --  type is System.Address, reset the Pure indication, since it will
+      --  likely cause incorrect code to be generated.
+
+      if Is_Pure (Spec_Id)
+        and then Is_Subprogram (Spec_Id)
+        and then not Has_Pragma_Pure_Function (Spec_Id)
+      then
+         declare
+            F : Entity_Id := First_Formal (Spec_Id);
+
+         begin
+            while Present (F) loop
+               if Is_RTE (Root_Type (Etype (F)), RE_Address) then
+                  Set_Is_Pure (Spec_Id, False);
+
+                  if Spec_Id /= Body_Id then
+                     Set_Is_Pure (Body_Id, False);
+                  end if;
+
+                  exit;
+               end if;
+
+               Next_Formal (F);
+            end loop;
+         end;
       end if;
 
       --  Initialize any scalar OUT args if Initialize/Normalize_Scalars
 
       if Init_Or_Norm_Scalars and then Is_Subprogram (Spec_Id) then
          declare
-            F : Entity_Id := First_Formal (Spec_Id);
+            F : Entity_Id        := First_Formal (Spec_Id);
             V : constant Boolean := Validity_Checks_On;
 
          begin
@@ -2881,7 +2914,6 @@ package body Exp_Ch6 is
             Set_Privals (Dec, Next_Op, Loc);
             Set_Discriminals (Dec, Next_Op, Loc);
          end if;
-
       end if;
 
       --  If subprogram contains a parameterless recursive call, then we may
