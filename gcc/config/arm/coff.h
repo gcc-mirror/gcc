@@ -87,6 +87,7 @@ extern int arm_structure_size_boundary;
    NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
    NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
    define this macro in such cases.  */
+#undef  ASM_OUTPUT_SECTION_NAME
 #define ASM_OUTPUT_SECTION_NAME(STREAM, DECL, NAME, RELOC)	\
   do								\
     {								\
