@@ -1,5 +1,6 @@
 // prms-id: 6610
-
+// There is a bug in vtable thunks with multiple/virtual inheritance.
+// execution test fails - XFAIL *-*-linux-gnu *-*-linux
 int fail = 1;
 struct B;
 struct A { virtual int f(const B*) = 0; int g(const B*); };
