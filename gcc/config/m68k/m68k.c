@@ -439,7 +439,7 @@ m68k_save_reg (unsigned int regno, bool interrupt_handler)
   if (!regs_ever_live[regno])
     return false;
 
-  /* Otherwise save everthing that isn't call-clobbered.  */
+  /* Otherwise save everything that isn't call-clobbered.  */
   return !call_used_regs[regno];
 }
 
@@ -1152,7 +1152,7 @@ m68k_output_pic_call(rtx dest)
 
   if (!(GET_CODE (dest) == MEM && GET_CODE (XEXP (dest, 0)) == SYMBOL_REF))
     out = "jsr %0";
-      /* We output a BSR instruction if we've using -fpic or we're building for
+      /* We output a BSR instruction if we're using -fpic or we're building for
        * a target that supports long branches.  If we're building -fPIC on the
        * 68000, 68010 or ColdFire we generate one of two sequences:
        * a shorter one that uses a GOT entry or a longer one that doesn't.
@@ -1625,7 +1625,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
     {
       rtx base;
 
-      /* Make sure this is CONST has not already been legitimized */
+      /* Make sure this has not already been legitimized.  */
       if (GET_CODE (XEXP (orig, 0)) == PLUS
 	  && XEXP (XEXP (orig, 0), 0) == pic_offset_table_rtx)
 	return orig;
