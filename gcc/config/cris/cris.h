@@ -67,6 +67,7 @@ Boston, MA 02111-1307, USA.  */
 #define CRIS_PLT_GOTOFFSET_SUFFIX ":PLTG"
 #define CRIS_PLT_PCOFFSET_SUFFIX ":PLT"
 
+/* If you tweak this, don't forget to check cris_expand_builtin_va_arg.  */
 #define CRIS_FUNCTION_ARG_SIZE(MODE, TYPE)	\
   ((MODE) != BLKmode ? GET_MODE_SIZE (MODE)	\
    : (unsigned) int_size_in_bytes (TYPE))
@@ -936,7 +937,8 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
   ? 1 : 0)
 
 /* Structs may be passed by value, but they must not be more than 8
-   bytes long.  */
+   bytes long.  If you tweak this, don't forget to adjust
+   cris_expand_builtin_va_arg.  */
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
  (MUST_PASS_IN_STACK (MODE, TYPE)					\
   || CRIS_FUNCTION_ARG_SIZE (MODE, TYPE) > 8)				\

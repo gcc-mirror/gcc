@@ -1,3 +1,12 @@
+2002-04-11  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c (cris_override_options): Tweak error message
+	for PIC not implemented.
+
+	* config/cris/cris.h: Tweak comments related to parameter-passing.
+
+	* t-cris (TARGET_LIBGCC2_CFLAGS): Don't -Dinhibit_libc here.
+
 2002-04-10  Richard Henderson  <rth@redhat.com>
 
 	* except.c (add_ehl_entry): Allow duplicates after landing pad
