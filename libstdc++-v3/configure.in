@@ -72,22 +72,21 @@ GLIBCPP_ENABLE_THREADS
 GLIBCPP_ENABLE_CXX_FLAGS([none])
 GLIBCPP_ENABLE_SJLJ_EXCEPTIONS
 
-if test -n "$with_cross_host"; then
+if test -n "$with_cross_host" || test x"$build" != x"$host"; then
 
-  # We are being configured with a cross compiler.  AC_REPLACE_FUNCS
-  # may not work correctly, because the compiler may not be able to
-  # link executables.
+  # We are being configured with some form of cross compiler.
+  # mknumeric_limits may not work correctly, either because the
+  # compiler may not run on this machine, may not be able to link
+  # executables, or may produce executables we can't run on this
+  # machine.
   xcompiling=1
-  NATIVE=no
 
   # If Canadian cross, then don't pick up tools from the build
   # directory.
-  if test x"$build" != x"$with_cross_host" && x"$build" != x"$target"; then
+  if test -n "$with_cross_host" && test x"$build" != x"$with_cross_host"; then
     CANADIAN=yes
-    NULL_TARGET=yes
   else
     CANADIAN=no
-    NULL_TARGET=no
   fi
 
   case "$target_alias" in
@@ -198,9 +197,7 @@ else
   # that include AC_TRY_COMPILE now, as the linker is assumed to be
   # working.
   xcompiling=0
-  NATIVE=yes
   CANADIAN=no
-  NULL_TARGET=no
 
   # Check for available headers.
   AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h machine/endian.h \
@@ -231,8 +228,6 @@ AC_LINK_FILES($os_include_dir/bits/ctype_noninline.h, \
 include/bits/ctype_noninline.h)
 AC_LINK_FILES($ATOMICITYH/bits/atomicity.h, include/bits/atomicity.h)
 
-AM_CONDITIONAL(NULL_TARGET, test "$NULL_TARGET" = yes)
-AM_CONDITIONAL(NATIVE, test "$NATIVE" = yes || test "$NULL_TARGET" = yes)
 AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
  
 AC_CACHE_SAVE

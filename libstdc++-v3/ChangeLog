@@ -1,3 +1,10 @@
+2001-07-06  Daniel Jacobowitz  <drow@mvista.com>
+
+        * configure.in: Remove NATIVE, NULL_TARGET.
+        Set CANADIAN only for Canadian crosses.  Set xcompiling
+        for both Canadian crosses and host-x-host crosses.
+        * configure: Regenerated.
+
 2001-07-06  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
         * include/bits/stl_vector.h (vector::_M_initialize_aux): Fix typo.
