@@ -113,7 +113,7 @@ extern void mips_finish_declare_object (FILE *, tree, int, int);
 
 extern rtx mips_rewrite_small_data (rtx);
 extern HOST_WIDE_INT compute_frame_size (HOST_WIDE_INT);
-extern int mips_initial_elimination_offset (int, int);
+extern HOST_WIDE_INT mips_initial_elimination_offset (int, int);
 extern rtx mips_return_addr (int, rtx);
 extern void mips_expand_prologue (void);
 extern void mips_expand_epilogue (int);
