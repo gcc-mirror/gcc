@@ -7,7 +7,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 configure options</TITLE>
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: configopts.html,v 1.1 2000/12/10 04:03:08 pme Exp $ -->
+<!-- $Id: configopts.html,v 1.2 2001/01/02 22:52:51 bkoz Exp $ -->
 </HEAD>
 <BODY>
 
@@ -56,13 +56,13 @@ options</A></H1>
      </P>
 
  <DT><TT>--enable-cstdio  </TT>[default]
- <DD><P>This is an abbreviated form of <TT>'--enable-cstdio=libio'</TT>
+ <DD><P>This is an abbreviated form of <TT>'--enable-cstdio=stdio'</TT>
         (described next).
      </P>
 
  <DT><TT>--enable-cstdio=LIB  </TT>
  <DD><P>Select a target-specific I/O package.  As of libstdc++-v3
-        snapshot 2.90.8, the choices are 'libio' to specify the GNU
+        snapshot 2.91, the choices are 'libio' to specify the GNU
         I/O package (from
         <A HREF="http://sources.redhat.com/glibc/">glibc</A>, the
         GNU C library), or 'stdio' to use a generic "C" abstraction.
@@ -71,8 +71,13 @@ options</A></H1>
  <DT><TT>--enable-long-long  </TT>
  <DD><P>The &quot;long long&quot; type was introduced in C99.  It is
         provided as a GNU extension to C++98 in g++.  This flag builds
-        support for &quot;long long&quot; into the library (specialized
-        templates and the like).
+        support for &quot;long long&quot; into the library
+        (specialized templates and the like). This option is off by
+        default: if enabled, users will have to either use the
+        new-style "C" headers by default (ie cmath not math.h) or add
+        appropriate compile-time flags to all compile lines to allow
+        "C" visibility of this feature (on gnu-linux, the flag is
+        -D_ISOC99_SOURCE). 
      </P>
 
  <DT><TT>--enable-cheaders=OPTION  </TT>
@@ -89,7 +94,7 @@ options</A></H1>
      </P>
 
  <DT><TT>--enable-threads=LIB  </TT>
- <DD><P>Select a threading library.  As of libstdc++-v3 snapshot 2.90.8,
+ <DD><P>Select a threading library.  As of libstdc++-v3 snapshot 2.91,
         the choices are:
         'yes' for some kind of default (hmmmmm);
         'decosf1', 'irix', 'mach', 'os2', 'posix'/'pthreads'
@@ -100,7 +105,8 @@ options</A></H1>
         single-threaded library.
      </P>
      <P>All of this is currently undergoing a lot of changes.  As of
-        2.90.8, 'single' and 'posix' are the only implemented models.
+        2.91, 'single' and 'posix' are the only implemented
+        models. Default is off.
      </P>
 
  <DT><TT>--enable-version-specific-runtime-libs  </TT>
@@ -151,12 +157,14 @@ options</A></H1>
         you discover more!
      </P>
 
- <DT><TT>--enable-wchar  </TT>[default]
- <DD><P>Certain template specializations are required for wide character
-        conversion support.  This is tricky and currently changing rapidly,
-        and can cause problems on new platforms.  Disabling wide character
-        specializations is useful for initial porting steps, but builds
-        only a subset of what is required by ISO.
+ <DT><TT>--enable-c-mbchar  </TT>[default]
+ <DD><P>Certain template specializations are required for wide
+        character conversion support.  This is tricky and currently
+        changing rapidly, and can cause problems on new platforms.
+        Disabling wide character specializations is useful for initial
+        porting steps, but builds only a subset of what is required by
+        ISO. Default is on, but the <TT>--enable-c_stdio=stdio </TT>
+        option currently turns it off.
      </P>
 </DL>
 </P>
@@ -169,7 +177,7 @@ options</A></H1>
 
 <HR>
 <P CLASS="fineprint"><EM>
-$Id: configopts.html,v 1.1 2000/12/10 04:03:08 pme Exp $
+$Id: configopts.html,v 1.2 2000/12/21 22:52:51 bkoz Exp $
 </EM></P>
 
 
