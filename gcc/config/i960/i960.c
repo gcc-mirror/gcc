@@ -433,7 +433,7 @@ gen_compare_reg (code, x, y)
      rtx x, y;
 {
   rtx cc_reg;
-  enum machine_mode ccmode = SELECT_CC_MODE (code, x);
+  enum machine_mode ccmode = SELECT_CC_MODE (code, x, y);
   enum machine_mode mode
     = GET_MODE (x) == VOIDmode ? GET_MODE (y) : GET_MODE (x);
 
