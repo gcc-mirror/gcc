@@ -379,7 +379,7 @@ aaaaaaaaaaaaaa
   std::stringbuf sb(charray, std::ios_base::in);
   std::istream ifs(&sb);
   std::streamsize blen = std::strlen(charray);
-  VERIFY(ifs);
+  VERIFY(!(!ifs));
   while(ifs.getline(tmp, it) || ifs.gcount())
     {
       br += ifs.gcount();
@@ -403,7 +403,7 @@ aaaaaaaaaaaaaa
 	  // -> n - 1 characters are stored
           ifs.clear(ifs.rdstate() & ~std::ios::failbit);
           VERIFY((ifs.gcount() == 0) || (std::strlen(tmp) == it - 1));
-          VERIFY(ifs);
+          VERIFY(!(!ifs));
           continue;
         }
       else 
@@ -458,10 +458,11 @@ test06()
 int
 test07()
 {
+  bool test = true;
   const char* tfn = "testsuite/istream_unformatted-3.txt";
   std::ifstream infile;
   infile.open(tfn);
-  VERIFY( infile );
+  VERIFY( !(!infile) );
   while (infile)
     {
       std::string line;
