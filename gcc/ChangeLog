@@ -1,3 +1,7 @@
+Fri Apr 27 10:41:06 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* tm.texi (TARGET_MEM_FUNCTIONS): Update text.
+
 2001-04-26  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/sparc/sparc.md (movsf_no_f_insn): Add more alternatives
