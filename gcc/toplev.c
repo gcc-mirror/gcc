@@ -648,7 +648,7 @@ int flag_exceptions;
 /* Nonzero means use the new model for exception handling. Replaces 
    -DNEW_EH_MODEL as a compile option. */
 
-int flag_new_exceptions = 0;
+int flag_new_exceptions = 1;
 
 /* Nonzero means don't place uninitialized global data in common storage
    by default.  */
