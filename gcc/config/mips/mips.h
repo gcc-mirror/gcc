@@ -1455,7 +1455,7 @@ extern enum reg_class mips_char_to_class[];
    needed to represent mode MODE in a register of class CLASS.  */
 
 #define CLASS_UNITS(mode, num)						\
-  ((GET_MODE_SIZE (mode) + ((num) * UNITS_PER_WORD) + 1) / ((num) * UNITS_PER_WORD))
+  ((GET_MODE_SIZE (mode) + ((num) * UNITS_PER_WORD) - 1) / ((num) * UNITS_PER_WORD))
 
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
   (((CLASS) == FP_REGS && TARGET_FLOAT64)				\
