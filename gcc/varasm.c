@@ -2149,6 +2149,12 @@ const_hash (exp)
   else if (code == COMPLEX_CST)
     return const_hash (TREE_REALPART (exp)) * 5
       + const_hash (TREE_IMAGPART (exp));
+  else if (code == CONSTRUCTOR && TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
+    {
+      len = int_size_in_bytes (TREE_TYPE (exp));
+      p = (char*) alloca (len);
+      get_set_constructor_bytes (exp, (unsigned char *) p, len);
+    }
   else if (code == CONSTRUCTOR)
     {
       register tree link;
@@ -2273,6 +2279,12 @@ compare_constant_1 (exp, p)
       if (p == 0) return 0;
       p = compare_constant_1 (TREE_IMAGPART (exp), p);
       return p;
+    }
+  else if (code == CONSTRUCTOR && TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
+    {
+      len = int_size_in_bytes (TREE_TYPE (exp));
+      strp = (char*) alloca (len);
+      get_set_constructor_bytes (exp, (unsigned char *) strp, len);
     }
   else if (code == CONSTRUCTOR)
     {
@@ -2416,6 +2428,16 @@ record_constant_1 (exp)
     {
       record_constant_1 (TREE_REALPART (exp));
       record_constant_1 (TREE_IMAGPART (exp));
+      return;
+    }
+  else if (code == CONSTRUCTOR && TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
+    {
+      int nbytes = int_size_in_bytes (TREE_TYPE (exp));
+      obstack_grow (&permanent_obstack, &nbytes, sizeof (nbytes));
+      obstack_blank (&permanent_obstack, nbytes);
+      get_set_constructor_bytes (exp,
+				 (unsigned char *) permanent_obstack.next_free,
+				 nbytes);
       return;
     }
   else if (code == CONSTRUCTOR)
@@ -2573,6 +2595,9 @@ copy_constant (exp)
 	CONSTRUCTOR_ELTS (copy) = list;
 	for (tail = list; tail; tail = TREE_CHAIN (tail))
 	  TREE_VALUE (tail) = copy_constant (TREE_VALUE (tail));
+	if (TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
+	  for (tail = list; tail; tail = TREE_CHAIN (tail))
+	    TREE_PURPOSE (tail) = copy_constant (TREE_PURPOSE (tail));
 
 	return copy;
       }
@@ -3488,6 +3513,22 @@ output_constant (exp, size)
 	output_constructor (exp, size);
       else
 	abort ();
+      return;
+
+    case SET_TYPE:
+      if (TREE_CODE (exp) == INTEGER_CST)
+	assemble_integer (expand_expr (exp, NULL_RTX,
+				       VOIDmode, EXPAND_INITIALIZER),
+			  byte_size, 1);
+      else if (TREE_CODE (exp) == CONSTRUCTOR)
+	{
+	  unsigned char *buffer = (unsigned char *) alloca (byte_size);
+	  if (get_set_constructor_bytes (constructor, buffer, byte_size))
+	    abort ();
+	  assemble_string (buffer, byte_size);
+	}
+      else
+	error ("unknown set constructor type");
       return;
     }
 
