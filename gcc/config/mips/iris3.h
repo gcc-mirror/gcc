@@ -35,7 +35,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{.cxx:	-D_LANGUAGE_C_PLUS_PLUS} \
 %{.C:	-D_LANGUAGE_C_PLUS_PLUS} \
 %{.m:	-D_LANGUAGE_OBJECTIVE_C} \
-%{!.S: %{!.s: %{!.cc: %{!.cxx: %{!.C: %{!.m: -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}}}}}"
+%{!.S: %{!.s: %{!.cc: %{!.cxx: %{!.C: %{!.m: -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}}}}} \
+%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
+%{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+%{mips3:-U__mips -D__mips=3}"
 
 #define LIB_SPEC	\
 	"%{!p:%{!pg:%{!static:%{!g*:-lc_s}} -lc}}%{p:-lc_p}%{pg:-lc_p} crtn.o%s"
@@ -93,9 +96,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define NO_DOLLAR_IN_LABEL 1
 
-/* Specify size_t, ptrdiff_t, and wchar_t types.  */
-#define SIZE_TYPE	"unsigned int"
-#define PTRDIFF_TYPE	"int"
+/* Specify wchar_t types.  */
 #define WCHAR_TYPE	"unsigned char"
 #define WCHAR_TYPE_SIZE BITS_PER_UNIT
 
