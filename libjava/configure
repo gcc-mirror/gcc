@@ -272,7 +272,7 @@ PACKAGE_STRING=
 PACKAGE_BUGREPORT=
 
 ac_unique_file="java/lang/System.java"
-ac_subdirs_all="$ac_subdirs_all $DIRLTDL"
+ac_subdirs_all="$ac_subdirs_all libltdl"
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>
@@ -4881,7 +4881,7 @@ exec 5>>./config.log
 
 
 
-subdirs="$subdirs $DIRLTDL"
+subdirs="$subdirs libltdl"
 
 
 if test -z "$with_target_subdir" || test "$with_target_subdir" = "."; then

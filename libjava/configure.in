@@ -163,7 +163,7 @@ AC_SUBST(INCLTDL)
 AC_SUBST(LIBLTDL)
 AC_SUBST(DIRLTDL)
 AM_PROG_LIBTOOL
-AC_CONFIG_SUBDIRS($DIRLTDL)
+AC_CONFIG_SUBDIRS(libltdl)
 
 if test -z "$with_target_subdir" || test "$with_target_subdir" = "."; then
    COMPPATH=.
