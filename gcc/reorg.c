@@ -1185,7 +1185,8 @@ optimize_skip (insn)
      we have one insn followed by a branch to the same label we branch to.
      In both of these cases, inverting the jump and annulling the delay
      slot give the same effect in fewer insns.  */
-  if ((next_trial == next_active_insn (JUMP_LABEL (insn)))
+  if ((next_trial == next_active_insn (JUMP_LABEL (insn))
+       && ! (next_trial == 0 && current_function_epilogue_delay_list != 0))
       || (next_trial != 0
 	  && GET_CODE (next_trial) == JUMP_INSN
 	  && JUMP_LABEL (insn) == JUMP_LABEL (next_trial)
