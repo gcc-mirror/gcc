@@ -1,5 +1,48 @@
 2002-09-04  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/DatagramSocket.java
+	(DatagramSocket): Added documentation.
+	(close): Likewise.
+	(getLocalAddress): Likewise.
+	(getLocalPort): Likewise.
+	(receive): Likewise.
+	(send): Likewise.
+	(setSoTimeout): Likewise.
+	(connect): New method.
+	(disconnect): New method.
+	(getInetAddress): New method (FIXME)
+	(getPort): New method.
+	(setReuseAddress): New method.
+	(getReuseAddress): New method.
+	(setBroadcast): New method.
+	(getBroadcast): New method.
+	(setTrafficClass): New method.
+	(getTrafficClass): New method.
+	* java/net/MulticastSocket.java):
+	(getTTL): Added @see in documentation.
+	(setTTL): Added @see in documentation.
+	(setLoopbackMode): New method.
+	(getLoopbackMode): New method.
+	* java/net/PlainSocketImpl.java:
+	Added new constants for the options SO_BROADCAST, SO_OOBINLINE,
+	IP_MULTICAST_IF2, IP_MULTICAST_LOOP, IP_TOS
+	* java/net/PlainDatagramSocketImpl.java
+	Added new constants for the options SO_BROADCAST, SO_OOBINLINE,
+	IP_MULTICAST_IF2, IP_MULTICAST_LOOP, IP_TOS
+	* java/net/natPlainSocketImpl.cc
+	(getOption): Implemented the options SO_BROADCAST, SO_OOBINLINE,
+	IP_MULTICAST_IF2, IP_MULTICAST_LOOP, IP_TOS
+	(setOption): Implemented the options SO_BROADCAST, SO_OOBINLINE,
+	IP_MULTICAST_IF2, IP_MULTICAST_LOOP, IP_TOS
+	This should also fix SO_KEEPALIVE
+	* java/net/natPlainDatagramSocketImpl.cc
+	(getOption): Implemented the options SO_BROADCAST, SO_OOBINLINE,
+	IP_MULTICAST_IF2, IP_MULTICAST_LOOP, IP_TOS
+	(setOption): Implemented the options SO_BROADCAST, SO_OOBINLINE,
+	IP_MULTICAST_IF2, IP_MULTICAST_LOOP, IP_TOS
+
+2002-09-04  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/SocketOptions.java: added static variables to be JDK 1.4
 	compatible (SO_BROADCAST, SO_OOBINLINE, IP_MULTICAST_IF2,
 	IP_MULTICAST_LOOP, IP_TOS
