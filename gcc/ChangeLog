@@ -1,3 +1,32 @@
+2003-03-06  Kurt Garloff  <garloff@suse.de>
+            Geoffrey Keating  <geoffk@apple.com>
+            Dale Johannesen  <dalej@apple.com>
+	* params.def: Introduce parameter max-inline-insns-rtl for
+	a separate limit for the RTL inliner.
+	* params.h: Likewise.
+	* integrate.c (function_cannot_inline_p): Use it.
+	* toplev.c (decode_f_option): Set multiple parameters 
+	controlling inlining with -finline-limit.
+	* params.def: Fix orthographic and typographic errors.
+	* doc/invoke.texi: Document parameters controlling inlining
+	and the way -finline-limit sets multiple of them.
+	* tree.h (struct tree_decl): Introduce inlined_function_flag,
+	recording whether the function became eligible for inlining
+	by a compiler flag rather than the declaration.
+	Provide DID_INLINE_FUNC macro to access it.
+	* c-decl.c (grokdeclarator): Set DID_INLINE_FUNC.
+	* cp/decl.c (grokfndecl): Likewise.
+	* toplev.c (rest_of_compilation): Likewise.
+	* cp/optimize (maybe_clone_body): Copy DID_INLINE_FUNC.
+	* print-tree.c (print_node): Report it.
+	* params.def: Introduce new max-inline-insns-auto limit.
+        * params.h: Likewise.
+	* tree-inline.c (inlinable_function_p): Apply it to functions
+	with DID_INLINE_FUNC set.
+	* toplev.c (decode_f_option): Initialize it from -finline-limit
+	value.
+	* doc/invoke.texi: Document new parameter.
+
 2003-03-06  Michael Matz  <matz@suse.de>
 
 	* i386/i386.c (ix86_save_reg): Also test

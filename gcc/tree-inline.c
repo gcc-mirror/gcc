@@ -930,6 +930,7 @@ inlinable_function_p (fn, id)
 {
   int inlinable;
   int currfn_insns;
+  int max_inline_insns_single = MAX_INLINE_INSNS_SINGLE;
 
   /* If we've already decided this function shouldn't be inlined,
      there's no need to check again.  */
@@ -938,7 +939,13 @@ inlinable_function_p (fn, id)
 
   /* Assume it is not inlinable.  */
   inlinable = 0;
-
+       
+  /* We may be here either because fn is declared inline or because
+     we use -finline-functions.  For the second case, we are more
+     restrictive.  */
+  if (DID_INLINE_FUNC (fn))
+    max_inline_insns_single = MAX_INLINE_INSNS_AUTO;
+   
   /* The number of instructions (estimated) of current function.  */
   currfn_insns = DECL_NUM_STMTS (fn) * INSNS_PER_STMT;
 
@@ -957,7 +964,7 @@ inlinable_function_p (fn, id)
      function to be of MAX_INLINE_INSNS_SINGLE size.  Make special
      allowance for extern inline functions, though.  */
   else if (! (*lang_hooks.tree_inlining.disregard_inline_limits) (fn)
-	   && currfn_insns > MAX_INLINE_INSNS_SINGLE)
+	   && currfn_insns > max_inline_insns_single)
     ;
   /* We can't inline functions that call __builtin_longjmp at all.
      The non-local goto machenery really requires the destination

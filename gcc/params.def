@@ -50,10 +50,22 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    gets decreased.  */
 DEFPARAM (PARAM_MAX_INLINE_INSNS_SINGLE,
 	  "max-inline-insns-single",
-	  "The maximum number of instructions in a single function eliglible for inlining",
+	  "The maximum number of instructions in a single function eligible for inlining",
 	  300)
 
-/* The repeated inlining limit. After this number of instructions 
+/* The single function inlining limit for functions that are
+   inlined by virtue of -finline-functions (-O3).
+   This limit should be chosen to be below or equal to the limit
+   that is applied to functions marked inlined (or defined in the
+   class declaration in C++) given by the "max-inline-insns-single"
+   parameter.
+   The default value is 300.  */
+DEFPARAM (PARAM_MAX_INLINE_INSNS_AUTO,
+	  "max-inline-insns-auto",
+	  "The maximum number of instructions when automatically inlining",
+	  300)
+
+/* The repeated inlining limit.  After this number of instructions 
    (in the internal gcc representation, not real machine instructions)
    got inlined by repeated inlining, gcc starts to decrease the maximum
    number of inlinable instructions in the tree inliner.
@@ -62,16 +74,14 @@ DEFPARAM (PARAM_MAX_INLINE_INSNS_SINGLE,
    could otherwise become very high.
    It is recommended to set this value to twice the value of the single
    function limit (set by the "max-inline-insns-single" parameter) or
-   higher. The default value is 600.
+   higher.  The default value is 600.
    Higher values mean that more inlining is done, resulting in
    better performance of the code, at the expense of higher 
    compile-time resource (time, memory) requirements and larger
-   binaries.  
-   This parameters also controls the maximum size of functions considered
-   for inlining in the RTL inliner.  */
+   binaries.  */
 DEFPARAM (PARAM_MAX_INLINE_INSNS,
 	  "max-inline-insns",
-	  "The maximuem number of instructions by repeated inlining before gcc starts to throttle inlining",
+	  "The maximum number of instructions by repeated inlining before gcc starts to throttle inlining",
 	  600)
 
 /* After the repeated inline limit has been exceeded (see
@@ -79,7 +89,7 @@ DEFPARAM (PARAM_MAX_INLINE_INSNS,
    decrease the size of single functions eligible for inlining.
    The slope of this linear function is given the negative
    reciprocal value (-1/x) of this parameter. 
-   The default vlue is 32.
+   The default value is 32.
    This linear function is used until it falls below a minimum
    value specified by the "min-inline-insns" parameter.  */
 DEFPARAM (PARAM_MAX_INLINE_SLOPE,
@@ -90,15 +100,25 @@ DEFPARAM (PARAM_MAX_INLINE_SLOPE,
 /* When gcc has inlined so many instructions (by repeated
    inlining) that the throttling limits the inlining very much,
    inlining for very small functions is still desirable to
-   achieve good runtime performance. The size of single functions 
+   achieve good runtime performance.  The size of single functions 
    (measured in gcc instructions) which will still be eligible for 
-   inlining then is given by this parameter. It defaults to 130.
+   inlining then is given by this parameter.  It defaults to 130.
    Only much later (after exceeding 128 times the recursive limit)
    inlining is cut down completely.  */
 DEFPARAM (PARAM_MIN_INLINE_INSNS,
 	  "min-inline-insns",
 	  "The number of instructions in a single functions still eligible to inlining after a lot recursive inlining",
 	  130)
+
+/* For languages that (still) use the RTL inliner, we can specify
+   limits for the RTL inliner separately.
+   The parameter here defines the maximum number of RTL instructions
+   a function may have to be eligible for inlining in the RTL inliner.
+   The default value is 600.  */
+DEFPARAM (PARAM_MAX_INLINE_INSNS_RTL,
+	  "max-inline-insns-rtl",
+	  "The maximum number of instructions for the RTL inliner",
+	  600)
 
 /* The maximum number of instructions to consider when looking for an
    instruction to fill a delay slot.  If more than this arbitrary

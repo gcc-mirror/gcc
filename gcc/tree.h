@@ -1642,6 +1642,11 @@ struct tree_type GTY(())
    where it is called.  */
 #define DECL_INLINE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.inline_flag)
 
+/* Nonzero in a FUNCTION_DECL means this function has been found inlinable
+   only by virtue of -finline-functions  */
+#define DID_INLINE_FUNC(NODE) \
+  (FUNCTION_DECL_CHECK (NODE)->decl.inlined_function_flag)
+
 /* In a FUNCTION_DECL, nonzero if the function cannot be inlined.  */
 #define DECL_UNINLINABLE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.uninlinable)
 
@@ -1827,7 +1832,8 @@ struct tree_decl GTY(())
   unsigned user_align : 1;
   unsigned uninlinable : 1;
   unsigned thread_local_flag : 1;
-  /* Two unused bits.  */
+  unsigned inlined_function_flag : 1;
+  /* One unused bit.  */
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;

@@ -2430,12 +2430,17 @@ rest_of_compilation (decl)
 		  goto exit_rest_of_compilation;
 		}
 	    }
-	  else
-	    /* ??? Note that this has the effect of making it look
-		 like "inline" was specified for a function if we choose
-		 to inline it.  This isn't quite right, but it's
-		 probably not worth the trouble to fix.  */
-	    inlinable = DECL_INLINE (decl) = 1;
+          else 
+            {
+	      /* ??? Note that we used to just make it look like if
+		 the "inline" keyword was specified when we decide
+		 to inline it (because of -finline-functions).
+		 garloff at suse dot de, 2002-04-24: Add another flag to
+		 actually record this piece of information.  */
+	      if (!DECL_INLINE (decl))
+		DID_INLINE_FUNC (decl) = 1;
+	      inlinable = DECL_INLINE (decl) = 1;
+	    }
 	}
 
       insns = get_insns ();
@@ -3949,6 +3954,16 @@ decode_f_option (arg)
 	read_integral_parameter (option_value, arg - 2,
 				 MAX_INLINE_INSNS);
       set_param_value ("max-inline-insns", val);
+      set_param_value ("max-inline-insns-single", val/2);
+      set_param_value ("max-inline-insns-auto", val/2);
+      set_param_value ("max-inline-insns-rtl", val);
+      if (val/4 < MIN_INLINE_INSNS)
+	{
+	  if (val/4 > 10)
+	    set_param_value ("min-inline-insns", val/4);
+	  else
+	    set_param_value ("min-inline-insns", 10);
+	}
     }
   else if ((option_value = skip_leading_substring (arg, "tls-model=")))
     {
