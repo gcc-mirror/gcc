@@ -2190,6 +2190,7 @@ extern void sms_schedule (FILE *);
 struct rtl_hooks
 {
   rtx (*gen_lowpart) (enum machine_mode, rtx);
+  rtx (*gen_lowpart_no_emit) (enum machine_mode, rtx);
   rtx (*reg_nonzero_bits) (rtx, enum machine_mode, rtx, enum machine_mode,
 			   unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT *);
   rtx (*reg_num_sign_bit_copies) (rtx, enum machine_mode, rtx, enum machine_mode,
