@@ -1,3 +1,15 @@
+2001-09-29  Alexandre Oliva  <aoliva@redhat.com>
+
+	* reload.c (find_reloads): Mark new USE insns with QImode.
+	(find_reloads_toplev, find_reloads_address, subst_reg_equivs,
+	find_reloads_subreg_address): Likewise.
+	* regrename.c (note_sets, clear_dead_regs): Abort if pseudos are
+	encountered.
+	* reload1.c (reload_combine_note_use): Likewise, inside USEs and
+	CLOBBERs.
+	(reload): Make sure there are no USEs with mode other than
+	VOIDmode.  At the end, remove those marked with QImode.
+
 2001-09-28  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/i386/sol2.h (CPLUSPLUS_CPP_SPEC): Define.

@@ -112,6 +112,11 @@ note_sets (x, set, data)
     return;
   regno = REGNO (x);
   nregs = HARD_REGNO_NREGS (regno, GET_MODE (x));
+
+  /* There must not be pseudos at this point.  */
+  if (regno + nregs > FIRST_PSEUDO_REGISTER)
+    abort ();
+
   while (nregs-- > 0)
     SET_HARD_REG_BIT (*pset, regno + nregs);
 }
@@ -132,6 +137,11 @@ clear_dead_regs (pset, kind, notes)
 	rtx reg = XEXP (note, 0);
 	unsigned int regno = REGNO (reg);
 	int nregs = HARD_REGNO_NREGS (regno, GET_MODE (reg));
+
+	/* There must not be pseudos at this point.  */
+	if (regno + nregs > FIRST_PSEUDO_REGISTER)
+	  abort ();
+
 	while (nregs-- > 0)
 	  CLEAR_HARD_REG_BIT (*pset, regno + nregs);
       }
