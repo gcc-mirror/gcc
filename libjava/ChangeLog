@@ -1,3 +1,9 @@
+2003-07-01  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/gcj/convert/natIconv.cc
+	(iconv_init): Fixed possible memory leak by releasing allocated iconv
+	handle.
+
 2003-06-30  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* glib-2.0.m4: New file.
