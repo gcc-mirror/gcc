@@ -1,5 +1,5 @@
-/* Implementation of gettext(3) function.
-   Copyright (C) 1995, 1997, 2000, 2001 Free Software Foundation, Inc.
+/* Implementation of the dngettext(3) function.
+   Copyright (C) 1995-1997, 2000, 2001 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU Library General Public License as published
@@ -20,12 +20,7 @@
 # include <config.h>
 #endif
 
-#ifdef _LIBC
-# define __need_NULL
-# include <stddef.h>
-#else
-# include <stdlib.h>		/* Just for NULL.  */
-#endif
+#include <locale.h>
 
 #include "gettextP.h"
 #ifdef _LIBC
@@ -41,24 +36,26 @@
    code is also used in GNU C Library where the names have a __
    prefix.  So we have to make a difference here.  */
 #ifdef _LIBC
-# define GETTEXT __gettext
-# define DCGETTEXT __dcgettext
+# define DNGETTEXT __dngettext
+# define DCNGETTEXT __dcngettext
 #else
-# define GETTEXT gettext__
-# define DCGETTEXT dcgettext__
+# define DNGETTEXT dngettext__
+# define DCNGETTEXT dcngettext__
 #endif
 
-/* Look up MSGID in the current default message catalog for the current
-   LC_MESSAGES locale.  If not found, returns MSGID itself (the default
-   text).  */
+/* Look up MSGID in the DOMAINNAME message catalog of the current
+   LC_MESSAGES locale and skip message according to the plural form.  */
 char *
-GETTEXT (msgid)
-     const char *msgid;
+DNGETTEXT (domainname, msgid1, msgid2, n)
+     const char *domainname;
+     const char *msgid1;
+     const char *msgid2;
+     unsigned long int n;
 {
-  return DCGETTEXT (NULL, msgid, LC_MESSAGES);
+  return DCNGETTEXT (domainname, msgid1, msgid2, n, LC_MESSAGES);
 }
 
 #ifdef _LIBC
 /* Alias for function name in GNU C Library.  */
-weak_alias (__gettext, gettext);
+weak_alias (__dngettext, dngettext);
 #endif

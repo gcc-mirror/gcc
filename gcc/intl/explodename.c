@@ -1,33 +1,27 @@
-/* Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+/* Copyright (C) 1995-1998, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Ulrich Drepper <drepper@gnu.ai.mit.edu>, 1995.
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU Library General Public License as published
+   by the Free Software Foundation; either version 2, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Library General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+   You should have received a copy of the GNU Library General Public
+   License along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   USA.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
 
-#if defined STDC_HEADERS || defined _LIBC
-# include <stdlib.h>
-#endif
-
-#if defined HAVE_STRING_H || defined _LIBC
-# include <string.h>
-#else
-# include <strings.h>
-#endif
+#include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 
 #include "loadinfo.h"
@@ -42,6 +36,18 @@
 #endif
 
 /* @@ end of prolog @@ */
+
+char *
+_nl_find_language (name)
+     const char *name;
+{
+  while (name[0] != '\0' && name[0] != '_' && name[0] != '@'
+	 && name[0] != '+' && name[0] != ',')
+    ++name;
+
+  return (char *) name;
+}
+
 
 int
 _nl_explode_name (name, language, modifier, territory, codeset,
@@ -74,9 +80,7 @@ _nl_explode_name (name, language, modifier, territory, codeset,
   mask = 0;
   syntax = undecided;
   *language = cp = name;
-  while (cp[0] != '\0' && cp[0] != '_' && cp[0] != '@'
-	 && cp[0] != '+' && cp[0] != ',')
-    ++cp;
+  cp = _nl_find_language (*language);
 
   if (*language == cp)
     /* This does not make sense: language has to be specified.  Use
@@ -108,9 +112,8 @@ _nl_explode_name (name, language, modifier, territory, codeset,
 
 	  if (*codeset != cp && (*codeset)[0] != '\0')
 	    {
-	      *normalized_codeset = _nl_normalize_codeset (
-	      				*((unsigned char **) codeset),
-	      				cp - *codeset);
+	      *normalized_codeset = _nl_normalize_codeset (*codeset,
+							   cp - *codeset);
 	      if (strcmp (*codeset, *normalized_codeset) == 0)
 		free ((char *) *normalized_codeset);
 	      else

@@ -1,7 +1,14 @@
-/* config.in.  Generated automatically from configure.in by autoheader.  */
+/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
+
+/* Define if using alloca.c.  */
+#undef C_ALLOCA
 
 /* Define to empty if the keyword does not work.  */
 #undef const
+
+/* Define to one of _getb67, GETB67, getb67 for Cray-2 and Cray-YMP systems.
+   This function is required for alloca.c support on those systems.  */
+#undef CRAY_STACKSEG_END
 
 /* Define to the type of elements in the array set by `getgroups'.
    Usually this is either `int' or `gid_t'.  */
@@ -9,6 +16,12 @@
 
 /* Define to `int' if <sys/types.h> doesn't define.  */
 #undef gid_t
+
+/* Define if you have alloca, as a function or macro.  */
+#undef HAVE_ALLOCA
+
+/* Define if you have <alloca.h> and it should be used (not on Ultrix).  */
+#undef HAVE_ALLOCA_H
 
 /* Define if you don't have vprintf but do have _doprnt.  */
 #undef HAVE_DOPRNT
@@ -40,6 +53,15 @@
 /* Define to `unsigned' if <sys/types.h> doesn't define.  */
 #undef size_t
 
+/* If using the C implementation of alloca, define if you know the
+   direction of stack growth for your system; otherwise it will be
+   automatically deduced at run-time.
+ STACK_DIRECTION > 0 => grows toward higher addresses
+ STACK_DIRECTION < 0 => grows toward lower addresses
+ STACK_DIRECTION = 0 => direction of growth unknown
+ */
+#undef STACK_DIRECTION
+
 /* Define if you have the ANSI C header files.  */
 #undef STDC_HEADERS
 
@@ -51,21 +73,6 @@
 
 /* Define vfork as fork if vfork does not work.  */
 #undef vfork
-
-/* Define to 1 if NLS is requested.  */
-#undef ENABLE_NLS
-
-/* Define as 1 if you have catgets and don't want to use GNU gettext.  */
-#undef HAVE_CATGETS
-
-/* Define as 1 if you have gettext and don't want to use GNU gettext.  */
-#undef HAVE_GETTEXT
-
-/* Define if your locale.h file contains LC_MESSAGES.  */
-#undef HAVE_LC_MESSAGES
-
-/* Define as 1 if you have the stpcpy function.  */
-#undef HAVE_STPCPY
 
 /* Define if your assembler supports specifying the maximum number
    of bytes to skip when using the GAS .p2align command. */
@@ -107,6 +114,12 @@
 /* Define if you have the dcgettext function.  */
 #undef HAVE_DCGETTEXT
 
+/* Define if you have the feof_unlocked function.  */
+#undef HAVE_FEOF_UNLOCKED
+
+/* Define if you have the fgets_unlocked function.  */
+#undef HAVE_FGETS_UNLOCKED
+
 /* Define if you have the fprintf_unlocked function.  */
 #undef HAVE_FPRINTF_UNLOCKED
 
@@ -122,6 +135,15 @@
 /* Define if you have the getcwd function.  */
 #undef HAVE_GETCWD
 
+/* Define if you have the getegid function.  */
+#undef HAVE_GETEGID
+
+/* Define if you have the geteuid function.  */
+#undef HAVE_GETEUID
+
+/* Define if you have the getgid function.  */
+#undef HAVE_GETGID
+
 /* Define if you have the getpagesize function.  */
 #undef HAVE_GETPAGESIZE
 
@@ -134,6 +156,9 @@
 /* Define if you have the gettimeofday function.  */
 #undef HAVE_GETTIMEOFDAY
 
+/* Define if you have the getuid function.  */
+#undef HAVE_GETUID
+
 /* Define if you have the isascii function.  */
 #undef HAVE_ISASCII
 
@@ -142,6 +167,9 @@
 
 /* Define if you have the lstat function.  */
 #undef HAVE_LSTAT
+
+/* Define if you have the mempcpy function.  */
+#undef HAVE_MEMPCPY
 
 /* Define if you have the munmap function.  */
 #undef HAVE_MUNMAP
@@ -196,6 +224,9 @@
 
 /* Define if you have the times function.  */
 #undef HAVE_TIMES
+
+/* Define if you have the tsearch function.  */
+#undef HAVE_TSEARCH
 
 /* Define if you have the <argz.h> header file.  */
 #undef HAVE_ARGZ_H
@@ -256,9 +287,6 @@
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
-
-/* Define if you have the i library (-li).  */
-#undef HAVE_LIBI
 
 /* Define to enable the use of a default linker. */
 #undef DEFAULT_LINKER
@@ -466,6 +494,25 @@
 
 /* Define to the version of the distribution. */
 #undef VERSION
+
+/* Define if you have the iconv() function. */
+#undef HAVE_ICONV
+
+/* Define as const if the declaration of iconv() needs const. */
+#undef ICONV_CONST
+
+/* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
+#undef HAVE_LANGINFO_CODESET
+
+/* Define if your <locale.h> file defines LC_MESSAGES. */
+#undef HAVE_LC_MESSAGES
+
+/* Define to 1 if translation of program messages to the user's native language
+   is requested. */
+#undef ENABLE_NLS
+
+/* Define if the GNU gettext() function is already present or preinstalled. */
+#undef HAVE_GETTEXT
 
 /* Define to 1 if installation paths should be looked up in Windows32
    Registry. Ignored on non windows32 hosts. */

@@ -1,3 +1,9 @@
+2001-10-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in.in: Upgrade to gettext-0.10.40.
+	* cat-id-tbl.c: Remove file.
+	* stamp-cat-id: Remove file.
+
 2001-10-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* POTFILES.in: Add newly-added files.
