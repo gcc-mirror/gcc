@@ -1,3 +1,9 @@
+2002-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/3711
+	* builtins.c (std_expand_builtin_va_arg): Do all computations on
+	trees.
+
 Fri Mar  8 06:48:45 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* rtl.c (copy_most_rtx): Move from here ...
