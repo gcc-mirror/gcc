@@ -19,6 +19,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA. */
 
+#include <sys/cygwin.h>
+
 #define EXECUTABLE_SUFFIX ".exe"
 
 /* Even though Cygwin tries to hide the DOS based filesystem, it
@@ -45,7 +47,6 @@ do {									\
   if (_epath != NULL && *_epath != 0					\
       && ! cygwin_posix_path_list_p (_epath))				\
     {									\
-      char *p;								\
       _posixepath = (char *) xmalloc					\
 	(cygwin_win32_to_posix_path_list_buf_size (_epath));		\
       cygwin_win32_to_posix_path_list (_epath, _posixepath);		\
