@@ -6699,7 +6699,7 @@ schedule_block (bb, rgn_n_insns)
 
   if (sched_verbose >= 2)
     {
-      fprintf (dump, ";;\t\tReady list initially:  ");
+      fprintf (dump, ";;\t\tReady list initially:             ");
       debug_ready_list (ready, n_ready);
     }
 
@@ -6973,7 +6973,7 @@ compute_block_forward_dependences (bb)
 /* Initialize variables for region data dependence analysis.
    n_bbs is the number of region blocks */
 
-HAIFA_INLINE static void
+__inline static void
 init_rgn_data_dependences (n_bbs)
      int n_bbs;
 {
@@ -8518,7 +8518,9 @@ schedule_insns (dump_file)
 	     We could (should?) recompute register live information.  Doing
 	     so may even be beneficial.  */
 
-	  compute_preds_succs (s_preds, s_succs, num_preds, num_succs);
+	  /* CYGNUS LOCAL edge_splitting/law */
+	  compute_preds_succs (s_preds, s_succs, num_preds, num_succs, 0);
+	  /* END CYGNUS LOCAL */
 
 	  /* Compute the dominators and post dominators.  We don't currently use
 	     post dominators, but we should for speculative motion analysis.  */
