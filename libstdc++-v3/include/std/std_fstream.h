@@ -450,12 +450,12 @@ namespace std
 
   // Generic definitions.
   template <typename _CharT, typename _Traits>
-    basic_filebuf<_CharT, _Traits>::int_type
+    typename basic_filebuf<_CharT, _Traits>::int_type
     basic_filebuf<_CharT, _Traits>::underflow() 
     { return _M_underflow_common(false); }
 
   template <typename _CharT, typename _Traits>
-    basic_filebuf<_CharT, _Traits>::int_type
+    typename basic_filebuf<_CharT, _Traits>::int_type
     basic_filebuf<_CharT, _Traits>::uflow() 
     { return _M_underflow_common(true); }
 

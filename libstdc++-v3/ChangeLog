@@ -1,3 +1,7 @@
+2003-04-14  M. Warner Losh  <imp@bsdimp.com>
+
+	* include/std/std_fstream.h: Add required typename.
+
 2003-04-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* os/hpux/ctype_inline.h: Replace with gnu-linux version.
