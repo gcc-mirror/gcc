@@ -1,3 +1,20 @@
+- do doxygen manpages
+
+- implement __convert_to_v and __convert_from_v without "C" library
+functions and and LANG environment variable dependencies.
+
+- use localedata to implement generic named (non-MT-safe) locales?
+Figure out a way to use ICU data, like libjava?
+
+- tuning for executable size, compilation speed, startup allocation,
+executable speed.
+
+- benchmarking addition to the testsuite that does the above.
+
+- thread testing addition to the testsuite.
+
+- implement symbol versioning for ELF targets.
+
 - exception specifications need to be reviewed for all parts of the
 library support and utility areas, particularly <new>. 
 
@@ -41,16 +58,6 @@ needs to be drawn throughout the entire STL implementation.
 is still subject to some debate on the library issues list, so I
 suggest punting till the dust clears.
 
-- complex<float> seems to be the single largest source of internal
-compiler errors when compiling the c++ library across non-x86
-platforms. Somebody needs to make sure the complex support builtin to
-gcc is actually working. Just as a "for-instance" these things give ICEs:
-class complex<float>& complex<float>::operator-=<float>(const complex<float> &)
-class complex<float>& complex<float>::operator/=<float>(const complex<float> &)
-class complex<float>& complex<float>::operator+=<float>(const complex<float> &)
-class complex<float>& complex<float>::operator-=<float>(const complex<float> &)
-class complex<float>& complex<float>::operator*=<float>(const complex<float> &)
-
 - Protect valarray::result_type (not Standard) and make it work with
   the various helper classes.
 
@@ -81,8 +88,6 @@ sources, with macro-guards.
 - write filebuf for wide characters
 
 - add feature-test macros for non-standard extensions
-
-- move major extensions into separate namespace (e.g. stl::)
 
 - create MT abstraction layer
 
