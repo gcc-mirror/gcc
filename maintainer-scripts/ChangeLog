@@ -1,5 +1,10 @@
 2004-05-02  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* crontab: Move GCC 3.4 snapshots from Wednesday afternoon to
+	Friday night, where gcc.gnu.org has less load.
+	
+2004-05-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
 	* crontab: Adjust temporary directory used for snapshot generation.
 	Move GCC 3.3 snapshots to Wednesday 22:32, where gcc.gnu.org has 
 	less load.

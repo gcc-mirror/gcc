@@ -2,4 +2,4 @@
 50  0 * * * sh /home/gccadmin/scripts/update_web_docs
 55  0 * * * sh /home/gccadmin/scripts/update_web_docs_libstdcxx
 32 22 * * 3 sh /home/gccadmin/scripts/gcc_release -s 3.3:gcc-3_3-branch -l -d /sourceware/snapshot-tmp/gcc all
-42 16 * * 3 sh /home/gccadmin/scripts/gcc_release -s 3.4:gcc-3_4-branch -l -d /sourceware/snapshot-tmp/gcc all
+32 22 * * 5 sh /home/gccadmin/scripts/gcc_release -s 3.4:gcc-3_4-branch -l -d /sourceware/snapshot-tmp/gcc all
