@@ -685,6 +685,13 @@ namespace std
               __streambuf_type* __sb = this->rdbuf();
               int_type __c = __sb->sgetc();
 
+	      // N.B. On LFS-enabled platforms streamsize is still 32 bits
+	      // wide: if we want to implement the standard mandated behavior
+	      // for n == max() (see 27.6.1.3/24) we are at risk of signed
+	      // integer overflow: thus these contortions. Also note that,
+	      // by definition, when more than 2G chars are actually ignored,
+	      // _M_gcount (the return value of gcount, that is) cannot be
+	      // really correct, being unavoidably too small.
 	      while (true)
 		{
 		  while (_M_gcount < __n
@@ -700,7 +707,7 @@ namespace std
 		    break;
 		}
 
-	      if (traits_type::eq_int_type(__c, __eof))
+	      if (_M_gcount < __n)
                 __err |= ios_base::eofbit;
             }
           catch(...)
@@ -730,6 +737,7 @@ namespace std
               __streambuf_type* __sb = this->rdbuf();
               int_type __c = __sb->sgetc();
 
+	      // See comment above.
 	      while (true)
 		{
 		  while (_M_gcount < __n
@@ -747,9 +755,11 @@ namespace std
 		    break;
 		}
 
-              if (traits_type::eq_int_type(__c, __eof))
+	      if (_M_gcount == __n)
+		;
+              else if (traits_type::eq_int_type(__c, __eof))
                 __err |= ios_base::eofbit;
-	      else if (traits_type::eq_int_type(__c, __delim))
+	      else
 		{
 		  ++_M_gcount;
 		  __sb->sbumpc();

@@ -1,3 +1,15 @@
+2005-01-05  Paolo Carlini  <pcarlini@suse.de>
+
+	* src/istream.cc (basic_istream<char>::ignore(streamsize),
+	basic_istream<char>::ignore(streamsize, int_type),
+	basic_istream<wchar_t>::ignore(streamsize),
+	basic_istream<wchar_t>::ignore(streamsize, int_type)): At the end,
+	first check _M_gcount vs __n. 	
+	* include/bits/istream.tcc (ignore(streamsize), ignore(streamsize,
+	int_type)): Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/4.cc: New.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/4.cc: Likewise.
+
 2005-01-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/testsuite_hooks.cc: Use __throw_exception_again

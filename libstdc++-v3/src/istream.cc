@@ -123,7 +123,8 @@ namespace std
 	      const int_type __eof = traits_type::eof();
 	      __streambuf_type* __sb = this->rdbuf();
 	      int_type __c = __sb->sgetc();
-	      
+
+	      // See comment in istream.tcc.
 	      while (true)
 		{
 		  while (_M_gcount < __n
@@ -151,7 +152,7 @@ namespace std
 		    break;
 		}
 
-	      if (traits_type::eq_int_type(__c, __eof))
+	      if (_M_gcount < __n)
 		__err |= ios_base::eofbit;
 	    }
 	  catch(...)
@@ -216,9 +217,11 @@ namespace std
 		    break;
 		}
 
-	      if (traits_type::eq_int_type(__c, __eof))
+	      if (_M_gcount == __n)
+		;
+	      else if (traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
-	      else if (traits_type::eq_int_type(__c, __delim))
+	      else
 		{
 		  ++_M_gcount;
 		  __sb->sbumpc();
@@ -429,7 +432,7 @@ namespace std
 		    break;
 		}
 
-	      if (traits_type::eq_int_type(__c, __eof))
+	      if (_M_gcount < __n)
 		__err |= ios_base::eofbit;
 	    }
 	  catch(...)
@@ -494,9 +497,11 @@ namespace std
 		    break;
 		}
 
-	      if (traits_type::eq_int_type(__c, __eof))
+	      if (_M_gcount == __n)
+		;
+	      else if (traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
-	      else if (traits_type::eq_int_type(__c, __delim))
+	      else
 		{
 		  ++_M_gcount;
 		  __sb->sbumpc();
