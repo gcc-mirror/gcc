@@ -1,3 +1,28 @@
+1999-09-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (cc1plus): Depend on $(GGC).
+	* Makefile.in (OBJS): Add ggc-simple.o.
+	(OBJDEPS): Likewise.
+	* cp-tree.h (language_function): Rename members to `x_' versions;
+	we now have x_named_labels, x_ctor_label, x_dtor_label,
+	x_base_init_list, x_member_init_list, x_base_init_expr,
+	x_current_class_ptr, x_current_class_ref, x_last_tree,
+	x_last_expr_type, x_last_dtor_insn, x_last_parm_cleanup_insn, and
+	x_result_rtx. 
+	(dtor_label, ctor_label, current_base_init_list,
+	current_member_init_list, base_init_expr, current_class_ptr,
+	current_class_ref, last_tree, last_expr_type): Adjust accordingly.
+	* decl.c: Include ggc.h.
+	(last_dtor_insn): Adjust to use x_ names.
+	(last_parm_cleanup_insn): Likewise.
+	(original_result_rtx): Likewise.
+	(named_labels): Likewise.
+	(mark_binding_level): New function.
+	(mark_cp_function_context): Likewise.
+	(mark_false_label_stack): Likewise.
+	(lang_mark_tree): Likewise.
+	(lang_cleanup_tree): Likewise.
+	
 1999-09-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (CXX_TREE_H): Include function.h.
