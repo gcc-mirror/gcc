@@ -169,12 +169,12 @@ public class ZipEntry implements ZipConstants, Cloneable
     synchronized (cal)
       {
 	cal.setTime(new Date(time*1000L));
-	dostime = (cal.get(cal.YEAR) - 1980 & 0x7f) << 25
-	  | (cal.get(cal.MONTH) + 1) << 21
-	  | (cal.get(cal.DAY_OF_MONTH)) << 16
-	  | (cal.get(cal.HOUR_OF_DAY)) << 11
-	  | (cal.get(cal.MINUTE)) << 5
-	  | (cal.get(cal.SECOND)) >> 1;
+	dostime = (cal.get(Calendar.YEAR) - 1980 & 0x7f) << 25
+	  | (cal.get(Calendar.MONTH) + 1) << 21
+	  | (cal.get(Calendar.DAY_OF_MONTH)) << 16
+	  | (cal.get(Calendar.HOUR_OF_DAY)) << 11
+	  | (cal.get(Calendar.MINUTE)) << 5
+	  | (cal.get(Calendar.SECOND)) >> 1;
       }
     dostime = (int) (dostime / 1000L);
     this.known |= KNOWN_TIME;

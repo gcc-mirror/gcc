@@ -335,7 +335,7 @@ public class DERReader implements DER
               Integer.parseInt(str.substring( 6,  8)),    // hour
               Integer.parseInt(str.substring( 8, 10)));   // minute
             if (date.length() == 12);
-              calendar.set(calendar.SECOND,
+              calendar.set(Calendar.SECOND,
                 Integer.parseInt(str.substring(10, 12)));
           }
         catch (NumberFormatException nfe)
@@ -362,13 +362,13 @@ public class DERReader implements DER
                 case 18:
                 case 17:
                 case 16:
-                  calendar.set(calendar.MILLISECOND,
+                  calendar.set(Calendar.MILLISECOND,
                     Integer.parseInt(date.substring(15)));
                 case 14:
-                  calendar.set(calendar.SECOND,
+                  calendar.set(Calendar.SECOND,
                     Integer.parseInt(date.substring(12, 14)));
                 case 12:
-                  calendar.set(calendar.MINUTE,
+                  calendar.set(Calendar.MINUTE,
                     Integer.parseInt(date.substring(10, 12)));
               }
           }

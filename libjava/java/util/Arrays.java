@@ -2400,7 +2400,7 @@ public class Arrays
     {
       int size = a.length;
       for (int i = 0; i < size; i++)
-        if (this.equals(o, a[i]))
+        if (ArrayList.equals(o, a[i]))
           return i;
       return -1;
     }
@@ -2409,7 +2409,7 @@ public class Arrays
     {
       int i = a.length;
       while (--i >= 0)
-        if (this.equals(o, a[i]))
+        if (ArrayList.equals(o, a[i]))
           return i;
       return -1;
     }

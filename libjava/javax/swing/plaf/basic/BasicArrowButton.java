@@ -223,7 +223,7 @@ public class BasicArrowButton extends JButton implements SwingConstants
       setIcon(new arrowIcon(arrow));
     else
       ((arrowIcon) getIcon()).setArrow(arrow);
-    this.direction = direction;
+    this.direction = dir;
   }
 
   /**
