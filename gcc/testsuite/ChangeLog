@@ -1,5 +1,10 @@
 2003-06-27  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10468
+	* g++.dg/ext/typeof6.C: New test.
+
+2003-06-27  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/10796
 	* g++.dg/init/enum1.C: New test.
 

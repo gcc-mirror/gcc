@@ -1,5 +1,10 @@
 2003-06-27  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10468
+	* pt.c (tsubst): Handle qualified TYPEOF_TYPEs correctly.
+
+2003-06-27  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/10796
 	* decl.c (finish_enum): Implement DR377.
 
