@@ -1,3 +1,8 @@
+2000-07-05  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.dg/cpp/ident.c: Don't expect #ident strings in the
+	assembly output.
+
 2000-07-04  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.dg/cpp/ident.c: New test.
