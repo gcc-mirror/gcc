@@ -1,4 +1,4 @@
-/* config.h.in.  Generated from configure.in by autoheader.  */
+/* config.h.in.  Generated from configure.ac by autoheader.  */
 // acconfig.h symbols and macros for libstdc++ v3 -*- C++ -*-
 
 // Defines libstdc++ version.

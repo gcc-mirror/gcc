@@ -1,5 +1,16 @@
 2003-08-05  Phil Edwards  <pme@gcc.gnu.org>
 
+	* configure.in:  Rename...
+	* configure.ac:  ...to this.
+	* docs/html/17_intro/porting.texi:  Update name.
+
+	* docs/html/17_intro/porting.html:  Regenerate.
+	* config.h.in, Makefile.in, include/Makefile.in, libmath/Makefile.in,
+	libsupc++/Makefile.in, po/Makefile.in, src/Makefile.in,
+	testsuite/Makefile.in:  Regenerate (picks up new dependancy).
+
+2003-08-05  Phil Edwards  <pme@gcc.gnu.org>
+
 	* acinclude.m4 (GLIBCXX_ENABLE_SJLJ_EXCEPTIONS):  Put down the crack
 	pipe, open the window to let out the fumes, redo the option-handling
 	logic to properly execute the detection test.

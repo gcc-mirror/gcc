@@ -75,7 +75,7 @@ works.  It is difficult to test the C++ compiler without a working
 library, but you should at least try some minimal test cases.
 
 (Note that what we think of as a ``target,'' the library refers to as
-a ``host.''  The comment at the top of @file{configure.in} explains why.)
+a ``host.''  The comment at the top of @file{configure.ac} explains why.)
 
 Here are the primary steps required to port the library:
 
