@@ -1,3 +1,8 @@
+2004-12-03  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/cfg.texi (Edges): Update. Document the edge_iterator data
+	type and its methods.
+
 2004-12-02  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (write_complex_part): Use simplify_gen_subreg when the
