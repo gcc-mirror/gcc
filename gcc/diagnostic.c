@@ -35,6 +35,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "intl.h"
 #include "diagnostic.h"
 #include "langhooks.h"
+#include "langhooks-def.h"
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free  free
