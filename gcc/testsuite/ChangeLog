@@ -1,3 +1,8 @@
+2003-12-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/13106
+	* g++.dg/warn/noreturn-3.C: New test.
+
 2003-12-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/13118

@@ -1,3 +1,9 @@
+2003-12-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/13106
+	* decl.c (finish_function): Check if return type is dependent before
+	issuing no return statement warning.
+
 2003-12-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/13118
