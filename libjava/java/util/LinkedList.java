@@ -183,6 +183,11 @@ public class LinkedList extends AbstractSequentialList
     
     if (first.next != null)
       first.next.previous = null;
+    else
+      last = null;
+
+    first = first.next;
+    
     return r;
   }
 
@@ -195,7 +200,12 @@ public class LinkedList extends AbstractSequentialList
     Object r = last.data;
     
     if (last.previous != null)
-      last.previous.next = null;    
+      last.previous.next = null;
+    else
+      first = null;
+    
+    last = last.previous;
+    
     return r;
   }
 
