@@ -5260,19 +5260,23 @@ finish_struct (t, fieldlist)
   /* Promote each bit-field's type to int if it is narrower than that.  */
   for (x = fieldlist; x; x = TREE_CHAIN (x))
     if (DECL_BIT_FIELD (x)
-	&& C_PROMOTING_INTEGER_TYPE_P (TREE_TYPE (x)))
-    {
-      tree type = TREE_TYPE (x);
+	&& (C_PROMOTING_INTEGER_TYPE_P (TREE_TYPE (x))
+	    || DECL_FIELD_SIZE (x) < TYPE_PRECISION (integer_type_node)))
+      {
+	tree type = TREE_TYPE (x);
 
-      /* Preserve unsignedness if traditional or if not really any wider.  */
-      if (TREE_UNSIGNED (type)
-	  && (flag_traditional
-	      || (TYPE_PRECISION (type)
-		  == TYPE_PRECISION (integer_type_node))))
-	TREE_TYPE (x) = unsigned_type_node;
-      else
-	TREE_TYPE (x) = integer_type_node;
-    }
+	/* Preserve unsignedness if traditional
+	   or if not really getting any wider.  */
+	if (TREE_UNSIGNED (type)
+	    && (flag_traditional
+		||
+		(TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)
+		 &&
+		 DECL_FIELD_SIZE (x) == TYPE_PRECISION (integer_type_node))))
+	  TREE_TYPE (x) = unsigned_type_node;
+	else
+	  TREE_TYPE (x) = integer_type_node;
+      }
 
   /* If this structure or union completes the type of any previous
      variable declaration, lay it out and output its rtl.  */
