@@ -1,3 +1,9 @@
+2004-04-17  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* g++.dg/lookup/java1.C: Update for chage of
+	_Jv_AllocObject.
+	* g++.dg/lookup/java2.C: Likewise.
+
 2004-04-17  Laurent GUERBY <laurent@guerby.net>
 
 	* ada/acats/run_all.sh: use -O2 by default.

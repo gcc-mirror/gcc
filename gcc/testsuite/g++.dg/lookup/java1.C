@@ -45,7 +45,7 @@ void Bar1(void)
  * Step 2: constructor declaration
  */
 
-extern "C" jobject _Jv_AllocObject (jclass, jint) __attribute__((__malloc__));
+extern "C" jobject _Jv_AllocObject (jclass) __attribute__((__malloc__));
 
 void Bar2(void)
 {
