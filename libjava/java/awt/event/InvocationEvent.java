@@ -62,7 +62,12 @@ public class InvocationEvent extends AWTEvent implements ActiveEvent
       runnable.run ();
 
     if (notifier != null)
-      notifier.notifyAll ();
+      {
+        synchronized (notifier)
+	  {
+	    notifier.notifyAll ();
+	  }
+      }
   }
 
   public Exception getException ()
