@@ -1,4 +1,4 @@
-#   Copyright (C) 1997 Free Software Foundation, Inc.
+#   Copyright (C) 1997, 2003 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,17 +25,7 @@ if ![info exists DEFAULT_CFLAGS] then {
     set DEFAULT_CFLAGS " -ansi -pedantic-errors"
 }
 
-if { [ check_weak_available ] == 1 } {
-
-    dg-init
-
-    dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
-	"" $DEFAULT_CFLAGS
-
-    dg-finish
-
-} elseif { [ check_weak_available ] == 0 } {
-    unsupported "gcc.dg/weak"
-} else {
-    unresolved "gcc.dg/weak"
-}
+dg-init
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
+    "" $DEFAULT_CFLAGS
+dg-finish
