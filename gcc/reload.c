@@ -2530,6 +2530,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	     regardless of what the constraint says.  */
 	  int force_reload = 0;
 	  int offmemok = 0;
+	  /* Nonzero if a constant forced into memory would be OK for this
+	     operand.  */
+	  int constmemok = 0;
 	  int earlyclobber = 0;
 
 	  /* If the operand is a SUBREG, extract
@@ -2718,6 +2721,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		  win = 1;
 		if (CONSTANT_P (operand))
 		  badop = 0;
+		constmemok = 1;
 		break;
 
 	      case '<':
@@ -2784,6 +2788,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		  win = 1;
 		if (CONSTANT_P (operand) || GET_CODE (operand) == MEM)
 		  badop = 0;
+		constmemok = 1;
 		offmemok = 1;
 		break;
 
@@ -2917,6 +2922,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    this_alternative_win[i] = 1;
 	  else
 	    {
+	      int const_to_mem = 0;
+
 	      this_alternative_offmemok[i] = offmemok;
 	      losers++;
 	      if (badop)
@@ -2949,9 +2956,12 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		  && (PREFERRED_RELOAD_CLASS (operand,
 					      (enum reg_class) this_alternative[i])
 		      == NO_REGS)
-		  && this_alternative[i] != (int) NO_REGS
 		  && operand_mode[i] != VOIDmode)
-		losers++;
+		{
+		  const_to_mem = 1;
+		  if (this_alternative[i] != (int) NO_REGS)
+		    losers++;
+		}
 
 	      /* If we can't reload this value at all, reject this
 		 alternative.  Note that we could also lose due to
@@ -2968,10 +2978,14 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		 since such reloads may be able to be eliminated later.
 		 If we are reloading a SCRATCH, we won't be generating any
 		 insns, just using a register, so it is also preferred. 
-		 So bump REJECT in other cases.  */
+		 So bump REJECT in other cases.  Don't do this in the
+		 case where we are forcing a constant into memory and
+		 it will then win since we don't want to have a different
+		 alternative match then.  */
 	      if (! (GET_CODE (operand) == REG
 		     && REGNO (operand) >= FIRST_PSEUDO_REGISTER)
-		  && GET_CODE (operand) != SCRATCH)
+		  && GET_CODE (operand) != SCRATCH
+		  && ! (const_to_mem && constmemok))
 		reject++;
 	    }
 
