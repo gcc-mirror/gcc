@@ -399,7 +399,18 @@ case $machine in
 	xm_defines=POSIX
 	gas=yes
 	gnu_ld=yes
+
+	# NetBSD 2.0 and later get POSIX threads enabled by default.
+	# Allow them to be explicitly enabled on any other version.
 	case x${enable_threads} in
+	x)
+		case $machine in
+		*-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
+			thread_file='posix'
+			tm_defines="${tm_defines} NETBSD_ENABLE_PTHREADS"
+			;;
+		esac
+		;;
 	xyes | xposix)
 		thread_file='posix'
 		tm_defines="${tm_defines} NETBSD_ENABLE_PTHREADS"

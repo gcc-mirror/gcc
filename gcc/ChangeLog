@@ -1,3 +1,8 @@
+2003-02-27  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config.gcc (*-*-netbsd[2-9]*, *-*-netbsdelf[2-9]*): Enable
+	POSIX thread support by default.
+
 2003-02-27  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/cygwin.h: Don't include any other files directly.
