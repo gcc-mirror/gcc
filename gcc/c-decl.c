@@ -1280,7 +1280,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	 not undefined behavior, and is the most convenient way to get
 	 some effects (see e.g.  what unwind-dw2-fde-glibc.c does to
 	 the definition of _Unwind_Find_FDE in unwind-dw2-fde.c), but
-	 we do diagnose it if -Wtraditional. */
+	 we do diagnose it if -Wtraditional.  */
       if (TREE_PUBLIC (olddecl) && !TREE_PUBLIC (newdecl))
 	{
 	  /* Two exceptions to the rule.  If olddecl is an extern
@@ -1483,7 +1483,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	 definition.  */
       && !(TREE_CODE (newdecl) == FUNCTION_DECL
 	   && DECL_INITIAL (newdecl) && !DECL_INITIAL (olddecl))
-      /* Don't warn about redundant redeclarations of builtins. */
+      /* Don't warn about redundant redeclarations of builtins.  */
       && !(TREE_CODE (newdecl) == FUNCTION_DECL
 	   && !DECL_BUILT_IN (newdecl)
 	   && DECL_BUILT_IN (olddecl)

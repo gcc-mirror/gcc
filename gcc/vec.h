@@ -202,7 +202,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    Push a new element onto the end, returns a pointer to the slot
    filled in. For object vectors, the new value can be NULL, in which
    case NO initialization is performed.  Aborts if there is
-   insufficient space in the vector. */
+   insufficient space in the vector.  */
 
 #define VEC_quick_push(TDEF,V,O)	\
 	(VEC_OP(TDEF,quick_push)(V,O VEC_CHECK_INFO))

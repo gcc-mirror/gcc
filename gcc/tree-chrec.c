@@ -241,7 +241,7 @@ chrec_fold_automatically_generated_operands (tree op0,
       || op1 == chrec_not_analyzed_yet)
     return chrec_not_analyzed_yet;
   
-  /* The default case produces a safe result. */
+  /* The default case produces a safe result.  */
   return chrec_dont_know;
 }
 

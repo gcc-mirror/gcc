@@ -1703,7 +1703,7 @@ set_pt_malloc (tree ptr)
   struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
 
   /* If the pointer has already been found to point to arbitrary
-     memory locations, it is unsafe to mark it as pointing to malloc. */
+     memory locations, it is unsafe to mark it as pointing to malloc.  */
   if (pi->pt_anything)
     return;
 

@@ -193,7 +193,7 @@ mf_file_function_line_tree (location_t location)
   char *string;
   tree result;
 
-  /* Add FILENAME[:LINENUMBER]. */
+  /* Add FILENAME[:LINENUMBER].  */
   file = xloc.file;
   if (file == NULL && current_function_decl != NULL_TREE)
     file = DECL_SOURCE_FILE (current_function_decl);
@@ -251,7 +251,7 @@ static GTY (()) tree mf_cache_shift_decl;
 /* extern uintptr_t __mf_lc_mask; */
 static GTY (()) tree mf_cache_mask_decl;
 
-/* Their function-scope local shadows, used in single-threaded mode only. */
+/* Their function-scope local shadows, used in single-threaded mode only.  */
 
 /* auto const unsigned char __mf_lc_shift_l; */
 static GTY (()) tree mf_cache_shift_decl_l;
@@ -413,7 +413,7 @@ execute_mudflap_function_ops (void)
 
 /* Create and initialize local shadow variables for the lookup cache
    globals.  Put their decls in the *_l globals for use by
-   mf_build_check_statement_for. */
+   mf_build_check_statement_for.  */
 
 static void
 mf_decl_cache_locals (void)
@@ -462,7 +462,7 @@ mf_decl_cache_locals (void)
 static void
 mf_decl_clear_locals (void)
 {
-  /* Unset local shadows. */
+  /* Unset local shadows.  */
   mf_cache_shift_decl_l = NULL_TREE;
   mf_cache_mask_decl_l = NULL_TREE;
 }

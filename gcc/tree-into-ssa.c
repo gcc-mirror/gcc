@@ -67,7 +67,7 @@ struct def_blocks_d
      Ith block contains a definition of VAR.  */
   bitmap def_blocks;
 
-  /* Blocks that contain a phi node for VAR. */
+  /* Blocks that contain a phi node for VAR.  */
   bitmap phi_blocks;
 
   /* Blocks where VAR is live-on-entry.  Similar semantics as

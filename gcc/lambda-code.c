@@ -288,7 +288,7 @@ print_lambda_linear_expression (FILE * outfile,
 /* Print a lambda loop structure LOOP to OUTFILE.  The depth/number of
    coefficients is given by DEPTH, the number of invariants is 
    given by INVARIANTS, and the character to start variable names with is given
-   by START. */
+   by START.  */
 
 void
 print_lambda_loop (FILE * outfile, lambda_loop loop, int depth,
@@ -487,7 +487,7 @@ lcm (int a, int b)
 }
 
 /* Compute the loop bounds for the auxiliary space NEST.
-   Input system used is Ax <= b.  TRANS is the unimodular transformation. */
+   Input system used is Ax <= b.  TRANS is the unimodular transformation.  */
 
 static lambda_loopnest
 lambda_compute_auxillary_space (lambda_loopnest nest,
@@ -702,7 +702,7 @@ lambda_compute_auxillary_space (lambda_loopnest nest,
 
 	    }
 	}
-      /* creates a new system by deleting the i'th variable. */
+      /* creates a new system by deleting the i'th variable.  */
       newsize = 0;
       for (j = 0; j < size; j++)
 	{
@@ -1360,7 +1360,7 @@ gcc_loop_to_lambda_loop (struct loop *loop, int depth,
   if (VEC_length (tree, *invariants) > (unsigned int) (2 * depth))
     abort ();
 
-  /* We might have some leftover. */
+  /* We might have some leftover.  */
   if (TREE_CODE (test) == LT_EXPR)
     extra = -1 * stepint;
   else if (TREE_CODE (test) == NE_EXPR)
@@ -1785,7 +1785,7 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
       newloop = LN_LOOPS (new_loopnest)[i];
 
       /* Linear offset is a bit tricky to handle.  Punt on the unhandled
-         cases for now. */
+         cases for now.  */
       offset = LL_LINEAR_OFFSET (newloop);
 
       if (LLE_DENOMINATOR (offset) != 1
@@ -1793,7 +1793,7 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 	abort ();
 
       /* Now build the  new lower bounds, and insert the statements
-         necessary to generate it on the loop preheader. */
+         necessary to generate it on the loop preheader.  */
       newlowerbound = lle_to_gcc_expression (LL_LOWER_BOUND (newloop),
 					     LL_LINEAR_OFFSET (newloop),
 					     new_ivs,

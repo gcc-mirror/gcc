@@ -1432,7 +1432,7 @@ vect_transform_loop_bound (loop_vec_info loop_vinfo)
 	     &loop_exit_bsi, false, &indx_before_incr, &indx_after_incr);
 
   /* bsi_insert is using BSI_NEW_STMT. We need to bump it back 
-     to point to the exit condition. */
+     to point to the exit condition.  */
   bsi_next (&loop_exit_bsi);
   if (bsi_stmt (loop_exit_bsi) != orig_cond_expr)
     abort ();
@@ -2887,7 +2887,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 }
 
 
-/* Utility functions used by vect_mark_stmts_to_be_vectorized. */
+/* Utility functions used by vect_mark_stmts_to_be_vectorized.  */
 
 /* Function vect_mark_relevant.
 

@@ -155,7 +155,7 @@ lambda_matrix_get_column (lambda_matrix mat, int n, int col,
     vec[i] = mat[i][col];
 }
 
-/* Delete rows r1 to r2 (not including r2). */
+/* Delete rows r1 to r2 (not including r2).  */
 
 void
 lambda_matrix_delete_rows (lambda_matrix mat, int rows, int from, int to)
@@ -463,7 +463,7 @@ lambda_matrix_hermite (lambda_matrix mat, int n,
    "U.A = S".  This decomposition is also known as "right Hermite".
    
    Ref: Algorithm 2.1 page 33 in "Loop Transformations for
-   Restructuring Compilers" Utpal Banerjee. */
+   Restructuring Compilers" Utpal Banerjee.  */
 
 void
 lambda_matrix_right_hermite (lambda_matrix A, int m, int n,
@@ -508,7 +508,7 @@ lambda_matrix_right_hermite (lambda_matrix A, int m, int n,
    V.S".  This decomposition is also known as "left Hermite".
    
    Ref: Algorithm 2.2 page 36 in "Loop Transformations for
-   Restructuring Compilers" Utpal Banerjee. */
+   Restructuring Compilers" Utpal Banerjee.  */
 
 void
 lambda_matrix_left_hermite (lambda_matrix A, int m, int n,

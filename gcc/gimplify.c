@@ -4123,7 +4123,7 @@ gimplify_type_sizes (tree type, tree *list_p)
       break;
 
     case ARRAY_TYPE:
-      /* These anonymous types don't have declarations, so handle them here. */
+      /* These anonymous types don't have declarations, so handle them here.  */
       gimplify_type_sizes (TYPE_DOMAIN (type), list_p);
       break;
 

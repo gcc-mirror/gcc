@@ -467,7 +467,7 @@ if_convertable_stmt_p (struct loop *loop, basic_block bb, tree stmt)
    - Basic block is after exit block but before latch.
    - Basic block edge(s) is not normal.
    EXIT_BB_SEEN is true if basic block with exit edge is already seen.
-   BB is inside loop LOOP. */
+   BB is inside loop LOOP.  */
 
 static bool
 if_convertable_bb_p (struct loop *loop, basic_block bb, bool exit_bb_seen)
@@ -847,7 +847,7 @@ process_phi_nodes (struct loop *loop)
 }
 
 /* Combine all basic block from the given LOOP into one or two super
-   basic block.  Replace PHI nodes with conditional modify expression. */
+   basic block.  Replace PHI nodes with conditional modify expression.  */
 
 static void
 combine_blocks (struct loop *loop)

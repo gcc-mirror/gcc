@@ -1251,7 +1251,7 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
       if (GET_CODE (XVECEXP (PATTERN (i3), 0, i)) == CLOBBER)
 	{
           /* Don't substitute for a register intended as a clobberable
-	     operand. */
+	     operand.  */
 	  rtx reg = XEXP (XVECEXP (PATTERN (i3), 0, i), 0);
 	  if (rtx_equal_p (reg, dest))
 	    return 0;

@@ -425,7 +425,7 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
 	{
 	  /* If LHS is NULL, it means that we couldn't get the base
 	     address of the reference.  In which case, we should not
-	     remove this store. */
+	     remove this store.  */
 	  mark_stmt_necessary (stmt, true);
 	}
       else if (DECL_P (lhs))

@@ -2557,7 +2557,7 @@ c_type_hash (const void *p)
   tree t2;
   switch (TREE_CODE (t))
     {
-    /* For pointers, hash on pointee type plus some swizzling. */
+    /* For pointers, hash on pointee type plus some swizzling.  */
     case POINTER_TYPE:
       return c_type_hash (TREE_TYPE (t)) ^ 0x3003003;
     /* Hash on number of elements and total size.  */
@@ -3009,7 +3009,7 @@ c_common_nodes_and_builtins (void)
 
   record_builtin_type (RID_VOID, NULL, void_type_node);
 
-  /* This node must not be shared. */
+  /* This node must not be shared.  */
   void_zero_node = make_node (INTEGER_CST);
   TREE_TYPE (void_zero_node) = void_type_node;
 
