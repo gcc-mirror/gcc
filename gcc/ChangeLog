@@ -1,3 +1,7 @@
+Thu Jul  2 17:57:20 1998  Douglas B. Rupp  <rupp@gnat.com>
+
+	* cpperror.c: Include errno.h.
+
 Thu Jul  2 16:46:36 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* c-decl.c (grokdeclarator): Don't warn about implicit int in
