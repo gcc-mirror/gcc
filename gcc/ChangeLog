@@ -59,6 +59,15 @@ Thu Mar 30 06:32:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* config/rs6000/rs6000.h (SLOW_UNALIGNED_ACCESS): Align is in bits.
 	* config/sh/sh.h (MOVE_BY_PIECES_P): Likewise.
 	
+2000-03-29  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.h: Undo effects of previous delta:
+	(ASM_SPEC): Do not define.
+	(SUBTARGET_EXTRA_ASM_SPEC): Do not define.
+
+	* config/arm/linux-elf.h: (SUBTARGET_EXTRA_ASM_SPEC) Fix
+	typo. 
+
 2000-03-29  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppinit.c (cpp_start_read): Call initialize_dependency_output
