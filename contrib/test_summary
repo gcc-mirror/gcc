@@ -85,7 +85,7 @@ if $forcemail || $anychange; then :; else mailto=nobody; fi &&
 $AWK '
 BEGIN {
   lang="";
-  print "cat <<\\EOF |";
+  print "cat <<\EOF |";
 '${prepend_logs+"  system(\"cat $prepend_logs\"); "}'
 }
 $1 ~ /\/configure$/ { $1 = "configure flags:"; configflags = $0 }
