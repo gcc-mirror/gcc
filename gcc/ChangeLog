@@ -1,3 +1,12 @@
+2004-06-21  Kelley Cook  <kcook@gcc.gnu.org>
+
+	PR target/15551
+	* config/i386/i386.md: Change UNSPEC_STACK_PROBE to UNSPECV_STACK_PROBE.
+	(allocate_stack_worker): Make unspec_volatile.
+	(allocate_stack_worker_rex64):  Likewise.
+	(allocate_stack_worker_postreload):  Likewise.
+	(allocate_stack_worker_rex64_postreload):  Likewise.
+
 2004-06-21  Daniel Berlin  <dberlin@dberlin.org>
     
 	Fix PR optimization/15982
