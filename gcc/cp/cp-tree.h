@@ -4199,6 +4199,7 @@ extern tree cp_build_qualified_type_real        PROTO((tree, int, int));
 extern void remap_save_expr                     PROTO((tree *, splay_tree, tree, int *));
 #define cp_build_qualified_type(TYPE, QUALS) \
   cp_build_qualified_type_real ((TYPE), (QUALS), /*complain=*/1)
+extern tree build_shared_int_cst                PROTO((int));
 
 /* in typeck.c */
 extern int string_conv_p			PROTO((tree, tree, int));

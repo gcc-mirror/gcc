@@ -4126,7 +4126,7 @@ build_over_call (cand, args, flags)
     {
       tree t, *p = &TREE_VALUE (converted_args);
       tree binfo = get_binfo
-	(DECL_CONTEXT (fn), TREE_TYPE (TREE_TYPE (*p)), 0);
+	(DECL_VIRTUAL_CONTEXT (fn), TREE_TYPE (TREE_TYPE (*p)), 0);
       *p = convert_pointer_to_real (binfo, *p);
       if (TREE_SIDE_EFFECTS (*p))
 	*p = save_expr (*p);
