@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
    however invalidate any other reasons why the executable file might be
    covered by the GNU General Public License.  */
 
-#include <pthreads/pthread.h>
+#include <pthread.h>
 #include <objc/thr.h>
 #include "runtime.h"
 
