@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -241,11 +241,11 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
       }									\
   }
 
-#define LINK_SECTION_ASM_OP ".link"
-#define READONLY_SECTION_ASM_OP ".rdata"
-#define LITERALS_SECTION_ASM_OP ".literals"
-#define CTORS_SECTION_ASM_OP ".ctors"
-#define DTORS_SECTION_ASM_OP ".dtors"
+#define LINK_SECTION_ASM_OP "\t.link"
+#define READONLY_SECTION_ASM_OP "\t.rdata"
+#define LITERALS_SECTION_ASM_OP "\t.literals"
+#define CTORS_SECTION_ASM_OP "\t.ctors"
+#define DTORS_SECTION_ASM_OP "\t.dtors"
 
 #undef EXTRA_SECTIONS
 #define EXTRA_SECTIONS	in_link, in_rdata, in_literals, in_ctors, in_dtors
@@ -327,7 +327,7 @@ extern void dtors_section	PARAMS ((void));
 /* This says how to output assembler code to declare an                
    uninitialized external linkage data object.  */ 
 
-#define COMMON_ASM_OP ".comm"
+#define COMMON_ASM_OP "\t.comm\t"
 
 #undef ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\

@@ -1974,15 +1974,15 @@ do {									    \
    scheduling priorities of insns.  */
 
 
-#define TEXT_SECTION_ASM_OP ".text"
+#define TEXT_SECTION_ASM_OP "\t.text"
 /* A C expression whose value is a string containing the assembler
    operation that should precede instructions and read-only data.
-   Normally `".text"' is right.  */
+   Normally `"\t.text"' is right.  */
 
-#define DATA_SECTION_ASM_OP ".data"
+#define DATA_SECTION_ASM_OP "\t.data"
 /* A C expression whose value is a string containing the assembler
    operation to identify the following data as writable initialized
-   data.  Normally `".data"' is right.  */
+   data.  Normally `"\t.data"' is right.  */
 
 #define EXTRA_SECTIONS in_progmem
 /* A list of names for sections other than the standard two, which are
@@ -2198,10 +2198,10 @@ progmem_section (void)							      \
 /* A C statement to output to the stdio stream STREAM an assembler
    instruction to assemble a single byte containing the number VALUE.  */
 
-#define ASM_BYTE_OP ".byte "
+#define ASM_BYTE_OP "\t.byte "
 /* A C string constant giving the pseudo-op to use for a sequence of
    single-byte constants.  If this macro is not defined, the default
-   is `"byte"'.  */
+   is `"\t.byte\t"'.  */
 
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)	 gas_output_ascii (FILE,P,SIZE)
 /* `ASM_OUTPUT_ASCII (STREAM, PTR, LEN)'
@@ -2284,9 +2284,9 @@ do {									\
 #undef TYPE_ASM_OP
 #undef SIZE_ASM_OP
 #undef WEAK_ASM_OP
-#define TYPE_ASM_OP	".type"
-#define SIZE_ASM_OP	".size"
-#define WEAK_ASM_OP	".weak"
+#define TYPE_ASM_OP	"\t.type\t"
+#define SIZE_ASM_OP	"\t.size\t"
+#define WEAK_ASM_OP	"\t.weak\t"
 /* Define the strings used for the special svr4 .type and .size directives.
    These strings generally do not vary from one system running svr4 to
    another, but if a given system (e.g. m88k running svr) needs to use
@@ -2424,7 +2424,7 @@ do {									 \
    since some versions of gas, such as 2.2 did not accept it.  */
 
 #define STRING_LIMIT	((unsigned) 64)
-#define STRING_ASM_OP	".string"
+#define STRING_ASM_OP	"\t.string\t"
 /* Some svr4 assemblers have a limit on the number of characters which
    can appear in the operand of a .string directive.  If your assembler
    has such a limitation, you should define STRING_LIMIT to reflect that

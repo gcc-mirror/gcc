@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha
    running Windows/NT.
-   Copyright (C) 1995, 1996, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1999, 2000 Free Software Foundation, Inc.
 
    Donn Terry, Softway Systems, Inc.
    From code
@@ -80,7 +80,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define USE_CONST_SECTION	1
 
-#define CONST_SECTION_ASM_OP	".rdata"
+#define CONST_SECTION_ASM_OP	"\t.rdata"
 
 /* Define the pseudo-ops used to switch to the .ctors and .dtors sections.
 
@@ -97,8 +97,8 @@ Boston, MA 02111-1307, USA.  */
    errors unless the .ctors and .dtors sections are marked as writable
    via the SHF_WRITE attribute.)  */
 
-#define CTORS_SECTION_ASM_OP	".ctors"
-#define DTORS_SECTION_ASM_OP	".dtors"
+#define CTORS_SECTION_ASM_OP	"\t.ctors"
+#define DTORS_SECTION_ASM_OP	"\t.dtors"
 
 /* A default list of other sections which we might be "in" at any given
    time.  For targets that use additional sections (e.g. .tdesc) you
@@ -156,7 +156,7 @@ dtors_section ()							\
     }									\
 }
 
-#define INT_ASM_OP		".long"
+#define INT_ASM_OP		"\t.long\t"
 
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */
@@ -182,7 +182,7 @@ dtors_section ()							\
    ld -r (specifically -rU). */
 #define CTOR_LISTS_DEFINED_EXTERNALLY 1
 
-#define SET_ASM_OP	".set"
+#define SET_ASM_OP	"\t.set\t"
 /* Output a definition (implements alias) */
 #define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)				\
 do									\

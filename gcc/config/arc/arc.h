@@ -1334,7 +1334,7 @@ do {									\
 }
 
 /* This is how to output an assembler line for a numeric constant byte.  */
-#define ASM_BYTE_OP	".byte"
+#define ASM_BYTE_OP	"\t.byte\t"
 #define ASM_OUTPUT_BYTE(FILE, VALUE)  \
   fprintf (FILE, "\t%s\t0x%x\n", ASM_BYTE_OP, (VALUE))
 
@@ -1416,7 +1416,7 @@ do {						\
 /* ??? This is needed because dwarfout.c provides a default definition too
    late for defaults.h (which contains the default definition of ASM_OUTPUT_DEF
    that we use).  */
-#define SET_ASM_OP ".set"
+#define SET_ASM_OP "\t.set\t"
 
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */

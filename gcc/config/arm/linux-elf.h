@@ -1,5 +1,5 @@
 /* Definitions for ARM running Linux-based GNU systems using ELF
-   Copyright (C) 1993, 1994, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Philip Blundell <philb@gnu.org>
 
 This file is part of GNU CC.
@@ -116,7 +116,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Attach a special .ident directive to the end of the file to identify
    the version of GCC which compiled this code.  */
-#define IDENT_ASM_OP 	".ident"
+#define IDENT_ASM_OP 	"\t.ident\t"
 
 /* Output #ident as a .ident.  */
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
@@ -159,7 +159,7 @@ do {				 				\
    definition in the target-specific file which includes this file.  */
 #define SUBTARGET_EXTRA_SECTION_FUNCTIONS	CONST_SECTION_FUNCTION
 
-#define CONST_SECTION_ASM_OP	".section\t.rodata"
+#define CONST_SECTION_ASM_OP	"\t.section\t.rodata"
 
 #define CONST_SECTION_FUNCTION						\
 void									\
@@ -262,8 +262,8 @@ const_section ()							\
    crtstuff.c and other files know this by defining the following symbols.
    The definitions say how to change sections to the .init and .fini
    sections.  This is the same for all known svr4 assemblers.  */
-#define INIT_SECTION_ASM_OP	".section\t.init"
-#define FINI_SECTION_ASM_OP	".section\t.fini"
+#define INIT_SECTION_ASM_OP	"\t.section\t.init"
+#define FINI_SECTION_ASM_OP	"\t.section\t.fini"
 
 
 /* This is how we tell the assembler that a symbol is weak.  */

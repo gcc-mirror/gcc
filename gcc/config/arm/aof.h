@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for Advanced RISC Machines
    ARM compilation, AOF Assembler.
-   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 2000 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@armltd.co.uk)
 
 This file is part of GNU CC.
@@ -366,8 +366,8 @@ do {					\
 
 /* How initialization functions are handled */
 
-#define CTORS_SECTION_ASM_OP "AREA\t|C$$gnu_ctorsvec|, DATA, READONLY"
-#define DTORS_SECTION_ASM_OP "AREA\t|C$$gnu_dtorsvec|, DATA, READONLY"
+#define CTORS_SECTION_ASM_OP "\tAREA\t|C$$gnu_ctorsvec|, DATA, READONLY"
+#define DTORS_SECTION_ASM_OP "\tAREA\t|C$$gnu_dtorsvec|, DATA, READONLY"
 
 #define ASM_OUTPUT_CONSTRUCTOR(STREAM,NAME)	\
 do {						\
