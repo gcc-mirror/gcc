@@ -2606,12 +2606,15 @@ copy_rtx_and_substitute (orig, map)
 	  || SET_DEST (orig) == virtual_incoming_args_rtx)
 	{
 	  /* In case a translation hasn't occurred already, make one now. */
-	  rtx junk = copy_rtx_and_substitute (SET_DEST (orig), map);
-	  rtx equiv_reg = map->reg_map[REGNO (SET_DEST (orig))];
-	  rtx equiv_loc = map->const_equiv_map[REGNO (equiv_reg)];
-	  HOST_WIDE_INT loc_offset
+	  rtx equiv_reg;
+	  rtx equiv_loc;
+	  HOST_WIDE_INT loc_offset;
+
+	  copy_rtx_and_substitute (SET_DEST (orig), map);
+	  equiv_reg = map->reg_map[REGNO (SET_DEST (orig))];
+	  equiv_loc = map->const_equiv_map[REGNO (equiv_reg)];
+	  loc_offset
 	    = GET_CODE (equiv_loc) == REG ? 0 : INTVAL (XEXP (equiv_loc, 1));
-	      
 	  return gen_rtx_SET (VOIDmode, SET_DEST (orig),
 			      force_operand
 			      (plus_constant
