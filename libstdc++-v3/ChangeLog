@@ -1,4 +1,11 @@
 2004-05-14  Paolo Carlini  <pcarlini@suse.de>
+	    Ivan Godard  <igodard@pacbell.net>
+
+	PR libstdc++/15361
+	* include/std/std_bitset.h (_Base_bitset<_Nw>::_M_do_find_next): Fix.
+	* testsuite/23_containers/bitset/ext/15361.cc: New.
+
+2004-05-14  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/14775
 	* acconfig.h: Rename _GLIBCXX_MEM_LIMITS to _GLIBCXX_RES_LIMITS.
