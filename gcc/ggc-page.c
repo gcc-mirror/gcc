@@ -226,7 +226,7 @@ static struct globals
   size_t bytes_mapped;
 
   /* The current depth in the context stack.  */
-  unsigned char context_depth;
+  unsigned short context_depth;
 
   /* A file descriptor open to /dev/zero for reading.  */
 #if defined (HAVE_MMAP_ANYWHERE) && !defined(MAP_ANONYMOUS)
