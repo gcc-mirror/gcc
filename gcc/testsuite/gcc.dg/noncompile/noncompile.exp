@@ -17,48 +17,12 @@
 # Please email any bugs, comments, and/or additions to this file to:
 # bug-gcc@prep.ai.mit.edu
 
-# GCC testsuite that uses the `dg.exp' driver.
+# Test error reporting.
+# Don't run this directory with any default CFLAGS, but do cycle through
+# torture options.
 
-# Load support procs.
 load_lib gcc-dg.exp
 
-# Utility for scanning compiler result, invoked via dg-final.
-# Call pass if pattern is present, otherwise fail.
-proc scan-assembler { testcase pattern } {
-    global subdir
-
-    set fd [open [file rootname $testcase].s r]
-    set text [read $fd]
-    close $fd
-
-    if [regexp -- $pattern $text] {
-	pass "$subdir/$testcase scan-assembler"
-    } else {
-	fail "$subdir/$testcase scan-assembler"
-    }
-}
-
-# Call pass if pattern is not present, otherwise fail.
-proc scan-assembler-not { testcase pattern } {
-    global subdir
-
-    set fd [open [file rootname $testcase].s r]
-    set text [read $fd]
-    close $fd
-
-    if ![regexp -- $pattern $text] {
-	pass "$subdir/$testcase scan-assembler-not"
-    } else {
-	fail "$subdir/$testcase scan-assembler-not"
-    }
-}
-
-# Initialize `dg'.
 dg-init
-
-# Main loop.
-# Don't run this directory with any default CFLAGS.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] "" ""
-
-# All done.
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] ""
 dg-finish
