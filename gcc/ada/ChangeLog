@@ -1,3 +1,25 @@
+2004-02-20  Robert Dewar  <dewar@gnat.com>
+
+	* bld.adb, exp_util.adb, gprcmd.adb: Minor reformatting
+
+2004-02-20  Ed Schonberg  <schonberg@gnat.com>
+
+	* freeze.adb (Freeze_Record_Type): Generalize mechanism that generates
+	itype references for the constrained designated type of a component
+	whose base type is already frozen.
+
+2004-02-20  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* init.c (__gnat_error_handler [tru64]): Rewrite previous change to
+	avoid GCC warnings.
+
+2004-02-20  Sergey Rybin  <rybin@act-europe.fr>
+
+	* sem_ch12.adb (Analyze_Formal_Package): Create a new defining
+	identifier for a phantom package that rewrites the formal package
+	declaration with a box. The Add semantic decorations for the defining
+	identifier from the original node (that represents the formal package).
+
 2004-02-19  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* Make-lang.in (ada/stamp-sdefault): Use the top level

@@ -1578,7 +1578,8 @@ package body Sem_Ch12 is
 
    procedure Analyze_Formal_Package (N : Node_Id) is
       Loc              : constant Source_Ptr := Sloc (N);
-      Formal           : constant Entity_Id  := Defining_Identifier (N);
+      Pack_Id          : constant Entity_Id := Defining_Identifier (N);
+      Formal           : Entity_Id;
       Gen_Id           : constant Node_Id    := Name (N);
       Gen_Decl         : Node_Id;
       Gen_Unit         : Entity_Id;
@@ -1653,8 +1654,6 @@ package body Sem_Ch12 is
          --  and analyze it like a regular package, except that we treat the
          --  formals as additional visible components.
 
-         Set_Instance_Env (Gen_Unit, Formal);
-
          Gen_Decl := Unit_Declaration_Node (Gen_Unit);
 
          if In_Extended_Main_Source_Unit (N) then
@@ -1662,11 +1661,13 @@ package body Sem_Ch12 is
             Generate_Reference  (Gen_Unit, N);
          end if;
 
+         Formal := New_Copy (Pack_Id);
          New_N :=
            Copy_Generic_Node
              (Original_Node (Gen_Decl), Empty, Instantiating => True);
-         Set_Defining_Unit_Name (Specification (New_N), Formal);
          Rewrite (N, New_N);
+         Set_Defining_Unit_Name (Specification (New_N), Formal);
+         Set_Instance_Env (Gen_Unit, Formal);
 
          Enter_Name (Formal);
          Set_Ekind  (Formal, E_Generic_Package);
@@ -1728,6 +1729,11 @@ package body Sem_Ch12 is
          Set_Ekind (Formal, E_Package);
          Set_Generic_Parent (Specification (N), Gen_Unit);
          Set_Has_Completion (Formal, True);
+
+         Set_Ekind (Pack_Id, E_Package);
+         Set_Etype (Pack_Id, Standard_Void_Type);
+         Set_Scope (Pack_Id, Scope (Formal));
+         Set_Has_Completion (Pack_Id, True);
       end if;
    end Analyze_Formal_Package;
 

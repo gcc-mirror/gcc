@@ -1972,16 +1972,16 @@ package body Bld is
 
                      elsif Pkg = Snames.Name_Linker then
                         if Item_Name = Snames.Name_Linker_Options then
-                           --  Only add linker options if this is not the root
-                           --  project.
+
+                           --  Only add linker options if this is not the
+                           --  root project.
 
                            Put ("ifeq ($(");
                            Put (Project_Name);
                            Put (".root),False)");
                            New_Line;
 
-                           --  Add the linker options to FLDFLAGS, in reverse
-                           --  order.
+                           --  Add linker options to FLDFLAGS in reverse order
 
                            Put ("   FLDFLAGS:=$(shell gprcmd linkopts $(");
                            Put (Project_Name);
@@ -1994,10 +1994,10 @@ package body Bld is
                            Put ("endif");
                            New_Line;
 
-                        else
-                           --  Other attribute are of no interest; suppress
-                           --  their declarations.
+                        --  Other attributes are of no interest. Suppress
+                        --  their declarations.
 
+                        else
                            Put_Declaration := False;
                         end if;
                      end if;

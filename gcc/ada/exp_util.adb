@@ -3353,8 +3353,7 @@ package body Exp_Util is
             when N_Character_Literal    |
                  N_Integer_Literal      |
                  N_Real_Literal         |
-                 N_String_Literal
-              =>
+                 N_String_Literal       =>
                return True;
 
             --  We consider that anything else has side effects. This is a bit

@@ -454,19 +454,20 @@ begin
             Dir : constant String := Argument (2);
 
          begin
+            --  Loop to remove quotes that may have been added around arguments
+
             for J in 3 .. Argument_Count loop
-
-               --  Remove quotes that may have been added around each argument
-
                declare
                   Arg   : constant String := Argument (J);
                   First : Natural := Arg'First;
                   Last  : Natural := Arg'Last;
+
                begin
                   if Arg (First) = '"' and then Arg (Last) = '"' then
                      First := First + 1;
                      Last  := Last - 1;
                   end if;
+
                   if Is_Absolute_Path (Arg (First .. Last)) then
                      Extend (Format_Pathname (Arg (First .. Last), UNIX));
                   else
