@@ -1711,9 +1711,11 @@ typedef struct rs6000_args
         ? LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 4) \
         : ! (INTVAL (XEXP (X, 1)) & 3)))		\
   && ((MODE) != TImode					\
+      || (TARGET_32BIT					\
+	  && LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 4)) \
       || (TARGET_64BIT					\
-        && ! (INTVAL (XEXP (X, 1)) & 3)			\
-        && LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 8))))
+	  && ! (INTVAL (XEXP (X, 1)) & 3)		\
+	  && LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 8))))
 
 #define LEGITIMATE_INDEXED_ADDRESS_P(X)		\
  (GET_CODE (X) == PLUS				\
