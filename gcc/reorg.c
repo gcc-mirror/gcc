@@ -3972,6 +3972,17 @@ relax_delay_slots (first)
 
 	      if (invert_jump (delay_insn, label))
 		{
+		  int i;
+
+		  /* Must update the INSN_FROM_TARGET_P bits now that
+		     the branch is reversed, so that mark_target_live_regs
+		     will handle the delay slot insn correctly.  */
+		  for (i = 1; i < XVECLEN (PATTERN (insn), 0); i++)
+		    {
+		      rtx slot = XVECEXP (PATTERN (insn), 0, i);
+		      INSN_FROM_TARGET_P (slot) = ! INSN_FROM_TARGET_P (slot);
+		    }
+
 		  delete_insn (next);
 		  next = insn;
 		}
