@@ -164,7 +164,8 @@ format_lex (void)
 {
   format_token token;
   int negative_flag;
-  char c, delim;
+  int c;
+  char delim;
 
   if (saved_token != FMT_NONE)
     {
