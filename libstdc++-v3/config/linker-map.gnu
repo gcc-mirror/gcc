@@ -263,19 +263,6 @@ GLIBCXX_3.4.2 {
 
 GLIBCXX_3.4.3 {
  
-    _ZN9__gnu_cxx6__poolILb0EE13_M_initializeEv;
-    _ZN9__gnu_cxx6__poolILb1EE13_M_initializeEPFvPvE;
-    _ZN9__gnu_cxx6__poolILb1EE21_M_destroy_thread_keyEPv;
-    _ZN9__gnu_cxx6__poolILb1EE16_M_get_thread_idEv;
-    _ZN9__gnu_cxx6__poolILb[01]EE16_M_reserve_blockE[jm][jm];
-    _ZN9__gnu_cxx6__poolILb[01]EE16_M_reclaim_blockEPc[jm];
-    _ZN9__gnu_cxx6__poolILb[01]EE10_M_destroyEv;
-
-    _ZN9__gnu_cxx9free_list12_S_free_listE;
-    _ZN9__gnu_cxx9free_list12_S_bfl_mutexE;
-    _ZN9__gnu_cxx9free_list6_M_getE*;
-    _ZN9__gnu_cxx9free_list8_M_clearEv;
-
     # stub functions from libmath
     acosf;
     acosl;
@@ -297,6 +284,23 @@ GLIBCXX_3.4.3 {
     modfl;
 
 } GLIBCXX_3.4.2;
+
+GLIBCXX_3.4.4 {
+
+    _ZN9__gnu_cxx6__poolILb0EE13_M_initializeEv;
+    _ZN9__gnu_cxx6__poolILb1EE13_M_initializeEPFvPvE;
+    _ZN9__gnu_cxx6__poolILb1EE21_M_destroy_thread_keyEPv;
+    _ZN9__gnu_cxx6__poolILb1EE16_M_get_thread_idEv;
+    _ZN9__gnu_cxx6__poolILb[01]EE16_M_reserve_blockE[jm][jm];
+    _ZN9__gnu_cxx6__poolILb[01]EE16_M_reclaim_blockEPc[jm];
+    _ZN9__gnu_cxx6__poolILb[01]EE10_M_destroyEv;
+
+    _ZN9__gnu_cxx9free_list12_S_free_listE;
+    _ZN9__gnu_cxx9free_list12_S_bfl_mutexE;
+    _ZN9__gnu_cxx9free_list6_M_getE*;
+    _ZN9__gnu_cxx9free_list8_M_clearEv;
+
+} GLIBCXX_3.4.3;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {

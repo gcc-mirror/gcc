@@ -103,6 +103,14 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          include/vector \
                          include/bits \
                          include/ext \
+                         include/ext/algorithm \
+                         include/ext/functional \
+                         include/ext/hash_map \
+                         include/ext/hash_set \
+                         include/ext/memory \
+                         include/ext/numeric \
+                         include/ext/rope \
+                         include/ext/slist \
                          include/tr1/array \
                          include/tr1/tuple \
 			 include/i686-pc-linux-gnu/bits
