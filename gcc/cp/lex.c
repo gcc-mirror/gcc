@@ -4652,6 +4652,9 @@ handle_sysv_pragma ()
 	case ')':
 	  handle_pragma_token (")", NULL_TREE);
 	  break;
+	case ',':
+	  handle_pragma_token (",", NULL_TREE);
+	  break;
 	case '=':
 	  handle_pragma_token ("=", NULL_TREE);
 	  break;
