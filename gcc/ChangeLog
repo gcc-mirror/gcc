@@ -1,3 +1,8 @@
+2004-08-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* doc/install.texi: Document that libstdc++-v3 requires
+	now automake 1.9.1.
+
 2004-08-25  Caroline Tice  <ctice@apple.com>
 
 	* bb-reorder.c (partition_hot_cold_basic_blocks):  Add more details
