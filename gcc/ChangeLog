@@ -1,3 +1,19 @@
+Wed Nov 25 11:26:19 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* toplev.c (no_new_pseudos): Define.
+	(rest_of_compilation):  Set no_new_pseudos as needed.
+	* emit-rtl.c (gen_reg_rtx): Abort if we try to create a new pseudo
+	if no_new_pseudos is set.
+	* rtl.h (no_new_pseudos): Declare it.
+	* reload1.c (reload): Update comments.
+	* md.texi: Corresponding changes.
+
+Wed Nov 25 11:26:17 1998  Bernd Schmidt  <crux@pool.informatik.rwth-aachen.de>
+
+	* reload1.c (reg_used_in_insn): Renamed from reg_used_by_pseudo.
+	(choose_reload_regs): Rename it here as well.  When computing it,
+	also merge in used hardregs.
+
 1998-11-25 07:51 -0500  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
 	* gcc.c: Split out Objective-C specs to...
