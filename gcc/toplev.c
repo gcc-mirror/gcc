@@ -3071,35 +3071,48 @@ rest_of_compilation (decl)
 	{
 	  DECL_DEFER_OUTPUT (decl) = 1;
 
-	  /* If -Wreturn-type, we have to do a bit of compilation.  */
-	  if (! warn_return_type)
+	  /* If -Wreturn-type, we have to do a bit of compilation.
+	     However, if we just fall through we will call
+	     save_for_inline_copying() which results in excessive
+	     memory use.  Instead, we just want to call
+	     jump_optimize() to figure out whether or not we can fall
+	     off the end of the function; we do the minimum amount of
+	     work necessary to make that safe.  And, we set optimize
+	     to zero to keep jump_optimize from working too hard.  */
+	  if (warn_return_type)
 	    {
+	      int saved_optimize = optimize;
+	      optimize = 0;
+	      find_exception_handler_labels ();
+	      jump_optimize (get_insns(), 0, 0, 0);
+	      optimize = saved_optimize;
+	    }
+
 #ifdef DWARF_DEBUGGING_INFO
-	      /* Generate the DWARF info for the "abstract" instance
-		 of a function which we may later generate inlined and/or
-		 out-of-line instances of.  */
-	      if (write_symbols == DWARF_DEBUG)
-		{
-		  set_decl_abstract_flags (decl, 1);
-		  TIMEVAR (symout_time, dwarfout_file_scope_decl (decl, 0));
-		  set_decl_abstract_flags (decl, 0);
-		}
+	  /* Generate the DWARF info for the "abstract" instance
+	     of a function which we may later generate inlined and/or
+	     out-of-line instances of.  */
+	  if (write_symbols == DWARF_DEBUG)
+	    {
+	      set_decl_abstract_flags (decl, 1);
+	      TIMEVAR (symout_time, dwarfout_file_scope_decl (decl, 0));
+	      set_decl_abstract_flags (decl, 0);
+	    }
 #endif
 #ifdef DWARF2_DEBUGGING_INFO
-	      /* Generate the DWARF2 info for the "abstract" instance
-		 of a function which we may later generate inlined and/or
-		 out-of-line instances of.  */
-	      if (write_symbols == DWARF2_DEBUG)
-		{
-		  set_decl_abstract_flags (decl, 1);
-		  TIMEVAR (symout_time, dwarf2out_decl (decl));
-		  set_decl_abstract_flags (decl, 0);
-		}
-#endif
-	      TIMEVAR (integration_time, save_for_inline_nocopy (decl));
-	      RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlineable;
-	      goto exit_rest_of_compilation;
+	  /* Generate the DWARF2 info for the "abstract" instance
+	     of a function which we may later generate inlined and/or
+	     out-of-line instances of.  */
+	  if (write_symbols == DWARF2_DEBUG)
+	    {
+	      set_decl_abstract_flags (decl, 1);
+	      TIMEVAR (symout_time, dwarf2out_decl (decl));
+	      set_decl_abstract_flags (decl, 0);
 	    }
+#endif
+	  TIMEVAR (integration_time, save_for_inline_nocopy (decl));
+	  RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlinable;
+	  goto exit_rest_of_compilation;
 	}
 
       /* If we have to compile the function now, save its rtl and subdecls
