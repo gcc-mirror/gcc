@@ -1,15 +1,19 @@
 2002-04-18  Richard Henderson  <rth@redhat.com>
 
-        * ifcvt.c (find_cond_trap): Handle cases with no proper THEN or JOIN
-        blocks.  Handle multiple references to the TRAP block.  Handle
-        non-adjacent THEN and OTHER blocks.
+	* function.c: Revert patch for c/6358.
 
 2002-04-18  Richard Henderson  <rth@redhat.com>
 
-        * config/ia64/ia64.c (ia64_function_arg_pass_by_reference): Don't
-        crash with no type for by-mode libcalls.
+	* ifcvt.c (find_cond_trap): Handle cases with no proper THEN or JOIN
+	blocks.  Handle multiple references to the TRAP block.  Handle
+	non-adjacent THEN and OTHER blocks.
 
-        * config/ia64/ia64.md (conditional_trap): Fix predicate polarity.
+2002-04-18  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.c (ia64_function_arg_pass_by_reference): Don't
+	crash with no type for by-mode libcalls.
+
+	* config/ia64/ia64.md (conditional_trap): Fix predicate polarity.
 
 2002-04-18  Bob Wilson  <bob.wilson@acm.org>
 
