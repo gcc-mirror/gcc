@@ -9138,7 +9138,7 @@ cannot_modify_jumps_past_reload_p ()
 @deftypefn {Target Hook} int TARGET_BRANCH_TARGET_REGISTER_CLASS (void)
 This target hook returns a register class for which branch target register
 optimizations should be applied.  All registers in this class should be
-usable interchangably.  After reload, registers in this class will be
+usable interchangeably.  After reload, registers in this class will be
 re-allocated and loads will be hoisted out of loops and be subjected
 to inter-block scheduling.
 @end deftypefn

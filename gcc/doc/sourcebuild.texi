@@ -124,7 +124,7 @@ the files in these directories.
 @item config
 Configuration files for supported architectures and operating
 systems.  @xref{Back End, , Anatomy of a Target Back End}, for
-details of the files in thie directory.
+details of the files in this directory.
 
 @item doc
 Texinfo documentation for GCC, together with automatically generated

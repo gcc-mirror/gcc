@@ -2919,7 +2919,7 @@ On System V Release 4 systems this option requires the GNU assembler.
 @item -feliminate-unused-debug-symbols
 @opindex feliminate-unused-debug-symbols
 Produce debugging information in stabs format (if that is supported),
-for only symbols that are actualy used.
+for only symbols that are actually used.
 
 @item -gstabs+
 @opindex gstabs+
@@ -5533,8 +5533,8 @@ jim.d         -bar -boggle
 
 @item %@{S:X; T:Y; :D@}
 
-If @code{S} was given to GCC, substitues @code{X}; else if @code{T} was
-given to GCC, substitues @code{Y}; else substitutes @code{D}.  There can
+If @code{S} was given to GCC, substitutes @code{X}; else if @code{T} was
+given to GCC, substitutes @code{Y}; else substitutes @code{D}.  There can
 be as many clauses as you need.  This may be combined with @code{.}, 
 @code{!}, @code{|}, and @code{*} as needed.
 
@@ -8229,9 +8229,9 @@ This is the default choice for x86-64 compiler.
 
 @item pni
 Use all SSE extensions enabled by @option{-msse2} as well as the new
-SSE extensions in Prescott New Intrunctions. @option{-mpni} also
+SSE extensions in Prescott New Instructions. @option{-mpni} also
 enables 2 builtin functions, @code{__builtin_ia32_monitor} and
-@code{__builtin_ia32_mwait}, for new intrunctions @code{monitor} and
+@code{__builtin_ia32_mwait}, for new instructions @code{monitor} and
 @code{mwait}. 
 
 @item sse,387
@@ -10959,7 +10959,7 @@ multiplication operations.
 @opindex fwrapv
 This option instructs the compiler to assume that signed arithmetic
 overflow of addition, subtraction and multiplication wraps around
-using twos-complement representation.  This flag enables some optimzations
+using twos-complement representation.  This flag enables some optimizations
 and disables other.  This option is enabled by default for the Java
 front-end, as required by the Java language specification.
 
