@@ -779,8 +779,8 @@ reg_set_last_1 (x, pat)
 /* Return the last value to which REG was set prior to INSN.  If we can't
    find it easily, return 0.
 
-   We only return a REG or constant because it is too hard to check if a
-   MEM remains unchanged.  */
+   We only return a REG, SUBREG, or constant because it is too hard to
+   check if a MEM remains unchanged.  */
 
 rtx
 reg_set_last (x, insn)
@@ -818,7 +818,8 @@ reg_set_last (x, insn)
 	else if (reg_set_last_value)
 	  {
 	    if (CONSTANT_P (reg_set_last_value)
-		|| (GET_CODE (reg_set_last_value) == REG
+		|| ((GET_CODE (reg_set_last_value) == REG
+		     || GET_CODE (reg_set_last_value) == SUBREG)
 		    && ! reg_set_between_p (reg_set_last_value,
 					    NEXT_INSN (insn), orig_insn)))
 	      return reg_set_last_value;
