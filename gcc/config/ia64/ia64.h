@@ -1145,6 +1145,14 @@ enum reg_class
    in it.  */
 #define ARG_POINTER_REGNUM R_GR(0)
 
+/* Due to the way varargs and argument spilling happens, the argument
+   pointer is not 16-byte aligned like the stack pointer.  */
+#define INIT_EXPANDERS					\
+  do {							\
+    if (cfun && cfun->emit->regno_pointer_align)	\
+      REGNO_POINTER_ALIGN (ARG_POINTER_REGNUM) = 64;	\
+  } while (0)
+
 /* The register number for the return address register.  For IA-64, this
    is not actually a pointer as the name suggests, but that's a name that
    gen_rtx_REG already takes care to keep unique.  We modify

@@ -1,3 +1,8 @@
+2002-03-19  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.c: Revert 2002-03-01 patch.
+	* config/ia64/ia64.h (INIT_EXPANDERS): New.
+
 2002-03-19  Jim Blandy  <jimb@redhat.com>
 
 	* cppmacro.c (cpp_macro_definition): Emit a space after the macro
