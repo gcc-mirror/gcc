@@ -154,7 +154,7 @@ java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
       else if (len == 16)
 	{
 	  val = (char *) &chars;
-	  type = AF_INET16;
+	  type = AF_INET6;
 	}
 #endif /* HAVE_INET6 */
       else
