@@ -865,7 +865,6 @@ bc_emit_bytecode (bytecode)
      enum bytecode_opcode bytecode;
 {
   char byte;
-  int npushes = arityvec[(int) bytecode].noutputs - arityvec[(int) bytecode].ninputs;
   static int prev_lineno = -1;
 
   byte = bytecode;
@@ -931,8 +930,6 @@ bc_emit_instruction VPROTO((enum bytecode_opcode opcode, ...))
   /* Loop literals and emit as bytecode constants */
   for (nliteral = 0; nliteral < arityvec[instruction].nliterals; nliteral++)
     {
-      HOST_WIDE_INT literal;
-
       switch (arityvec[instruction].literals[nliteral])
 	{
 /* This conditional is a kludge, but it's necessary
