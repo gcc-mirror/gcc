@@ -23,6 +23,10 @@
    other reasons why the executable file might be covered by the GNU
    General Public License.  */
 
+#ifndef _POSIX_SOURCE
+# define _POSIX_SOURCE
+#endif
+
 #include <errno.h>
 #ifndef __set_errno
 # define __set_errno(Val) errno = (Val)

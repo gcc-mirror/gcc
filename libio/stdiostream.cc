@@ -28,8 +28,8 @@ the executable file might be covered by the GNU General Public License. */
 #pragma implementation
 #endif
 
-#include <stdiostream.h>
 #include "libioP.h"
+#include <stdiostream.h>
 
 // A stdiobuf is "tied" to a FILE object (as used by the stdio package).
 // Thus a stdiobuf is always synchronized with the corresponding FILE,

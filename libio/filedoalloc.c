@@ -42,9 +42,6 @@
 
 /* Modified for GNU iostream by Per Bothner 1991, 1992. */
 
-#ifndef _POSIX_SOURCE
-# define _POSIX_SOURCE
-#endif
 #include "libioP.h"
 #include <sys/types.h>
 #include <sys/stat.h>
