@@ -1,3 +1,8 @@
+2002-07-22  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gennews (files): Add proper files for the GCC 3.1 release series.
+	Simplify and reformat introductory wording.
+
 2002-07-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* enquire.c: Move from gcc.
