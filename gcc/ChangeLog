@@ -1,3 +1,8 @@
+2002-02-08  Andreas Jaeger  <aj@suse.de>
+
+	* config.gcc (x86_64-*-linux): Add t-linux64 makefile fragment.
+	* config/i386/t-linux64: New file.
+
 2002-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.c (c_expand_expr): Revert 2002-02-06 patch.
