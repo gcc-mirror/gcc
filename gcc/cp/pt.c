@@ -2424,11 +2424,12 @@ push_template_decl_real (decl, is_friend)
       else if (TREE_CODE (decl) == TYPE_DECL 
 	       && ANON_AGGRNAME_P (DECL_NAME (decl))) 
 	cp_error ("template class without a name");
-      else if (TREE_CODE (decl) == TYPE_DECL 
-	  && TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
-	cp_error ("template declaration of `%#T'", TREE_TYPE (decl));
-      else if (TREE_CODE (decl) == VAR_DECL
-	       && !CLASS_TYPE_P (CP_DECL_CONTEXT (decl)))
+      else if ((DECL_IMPLICIT_TYPEDEF_P (decl)
+		&& CLASS_TYPE_P (TREE_TYPE (decl)))
+	       || (TREE_CODE (decl) == VAR_DECL && ctx && CLASS_TYPE_P (ctx))
+	       || TREE_CODE (decl) == FUNCTION_DECL)
+	/* OK */;
+      else
 	cp_error ("template declaration of `%#D'", decl);
     }
 
@@ -2582,9 +2583,7 @@ push_template_decl_real (decl, is_friend)
 	  && TREE_CODE (TREE_TYPE (decl)) != ENUMERAL_TYPE)
 	DECL_NAME (decl) = classtype_mangled_name (TREE_TYPE (decl));
     }
-  else if (! DECL_LANG_SPECIFIC (decl))
-    cp_error ("template declaration of `%#D'", decl);
-  else
+  else if (DECL_LANG_SPECIFIC (decl))
     DECL_TEMPLATE_INFO (decl) = info;
 
   return DECL_TEMPLATE_RESULT (tmpl);
@@ -9166,10 +9165,11 @@ do_decl_instantiation (declspecs, declarator, storage)
 	 No program shall explicitly instantiate any template more
 	 than once.  
 
-	 We check DECL_INTERFACE_KNOWN so as not to complain when the
-	 first instantiation was `extern' and the second is not, and
-	 EXTERN_P for the opposite case.  */
-      if (DECL_INTERFACE_KNOWN (result) && !extern_p)
+	 We check DECL_INTERFACE_KNOWN so as not to complain when the first
+	 instantiation was `extern' and the second is not, and EXTERN_P for
+	 the opposite case.  If -frepo, chances are we already got marked
+	 as an explicit instantion because of the repo file.  */
+      if (DECL_INTERFACE_KNOWN (result) && !extern_p && !flag_use_repository)
 	cp_pedwarn ("duplicate explicit instantiation of `%#D'", result);
 
       /* If we've already instantiated the template, just return now.  */
@@ -9294,11 +9294,12 @@ do_type_instantiation (t, storage)
 	 No program shall explicitly instantiate any template more
 	 than once.  
 
-         If CLASSTYPE_INTERFACE_ONLY, then the first explicit
-	 instantiation was `extern', and if EXTERN_P then the second
-	 is.  Both cases are OK.  */
-      if (!CLASSTYPE_INTERFACE_ONLY (t) && !extern_p)
-	cp_error ("duplicate explicit instantiation of `%#T'", t);
+         If CLASSTYPE_INTERFACE_ONLY, then the first explicit instantiation
+	 was `extern'.  If EXTERN_P then the second is.  If -frepo, chances
+	 are we already got marked as an explicit instantion because of the
+	 repo file.  All these cases are OK.  */
+      if (!CLASSTYPE_INTERFACE_ONLY (t) && !extern_p && !flag_use_repository)
+	cp_pedwarn ("duplicate explicit instantiation of `%#T'", t);
       
       /* If we've already instantiated the template, just return now.  */
       if (!CLASSTYPE_INTERFACE_ONLY (t))

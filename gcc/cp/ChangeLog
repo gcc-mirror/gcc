@@ -1,3 +1,16 @@
+1999-08-19  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h: Declare flag_use_repository.
+	* pt.c (do_decl_instantiation): Don't complain about duplicate
+	instantiation with -frepo.
+	(do_type_instantiation): Likewise.
+
+	* pt.c (push_template_decl_real): Complain about everything
+	that isn't a valid template.
+
+	* decl2.c (import_export_decl): If -fnew-abi, class linkage doesn't
+	affect inlines.
+
 1999-08-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.def (PSEUDO_DTOR_EXPR): New tree code.
