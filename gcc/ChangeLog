@@ -1,3 +1,8 @@
+2002-12-12  Jim Wilson  <wilson@redhat.com>
+
+	* dbxout.c (dbxout_fptype_value): New.
+	(dbxout_type, case COMPLEX_TYPE): Call it.  Use 'R' instead of 'r'.
+
 2002-12-12  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-decl.c: Fix a comment typo.
