@@ -1,5 +1,5 @@
 /* C Compatible Compiler Preprocessor (CCCP)
-   Copyright (C) 1986, 87, 89, 92-95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92-96, 1997 Free Software Foundation, Inc.
    Written by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
 
@@ -191,13 +191,13 @@ my_bzero (b, length)
 # define VA_START(va_list, var) va_start (va_list, var)
 # define PRINTF_ALIST(msg) char *msg, ...
 # define PRINTF_DCL(msg)
-# define PRINTF_PROTO(ARGS, m, n) PROTO (ARGS) __attribute__ ((format (printf, m, n)))
+# define PRINTF_PROTO(ARGS, m, n) PROTO (ARGS) __attribute__ ((format (__printf__, m, n)))
 #else
 # include <varargs.h>
 # define VA_START(va_list, var) va_start (va_list)
 # define PRINTF_ALIST(msg) msg, va_alist
 # define PRINTF_DCL(msg) char *msg; va_dcl
-# define PRINTF_PROTO(ARGS, m, n) () __attribute__ ((format (printf, m, n)))
+# define PRINTF_PROTO(ARGS, m, n) () __attribute__ ((format (__printf__, m, n)))
 # define vfprintf(file, msg, args) \
     { \
       char *a0 = va_arg(args, char *); \
