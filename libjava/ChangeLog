@@ -1,3 +1,26 @@
+2004-05-05  Guilhem Lavaux <guilhem@kaffe.org>
+
+	* java/text/DecimalFormat.java
+	(MAXIMUM_INTEGER_DIGITS): New constant to keep the numeric value 309.
+	(applyPatternWithSymbols): Use MAXIMUM_INTEGER_DIGITS.
+	(parse): Fixed handling of exponentiation notation and grouping.
+
+2004-05-05  Guilhem Lavaux <guilhem@kaffe.org>
+
+	* java/text/DecimalFormat.java
+	(scanFix): Build attribute array. Fixed error reporting.
+	(applyPatternWithSymbols): Store attributes for the prefix and
+	suffix.
+	(formatInternal): New method. Changed the way the string is
+	computed. Implemented attributes. Cleant up rounding in
+	exponential notation.
+	(format): Use formatInternal.
+	(formatToCharacterIterator): New method.
+	(exponentRound, negativePrefixRanges, positivePrefixRanges,
+	negativePrefixAttrs, positivePrefixAttrs, negativeSuffixRanges,
+	positiveSuffixRanges, negativeSuffixAttrs, positiveSuffixAttrs):
+	New fields.
+
 2004-05-04  Dalibor Topic  <robilad@kaffe.org>
 
 	* java/security/interfaces/DSAKeyPairGenerator.java,
