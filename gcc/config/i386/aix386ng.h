@@ -47,7 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-Dps2 -Dunix -Asystem(aix)"
 
 #define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] \
-  "%{posix:-D_POSIX_SOURCE}%{!posix:-DAIX} -D_I386 -D_AIX -D_MBCS"
+  %{posix:-D_POSIX_SOURCE}%{!posix:-DAIX} -D_I386 -D_AIX -D_MBCS"
 
 /* special flags for the aix assembler to generate the short form for all
    qualifying forward reference */
