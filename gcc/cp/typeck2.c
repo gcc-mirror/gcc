@@ -235,9 +235,8 @@ complete_type_check_abstract (tree type)
 int
 abstract_virtuals_error (tree decl, tree type)
 {
-  tree u;
-  tree tu;
-
+  VEC (tree) *pure;
+  
   /* This function applies only to classes. Any other entity can never
      be abstract.  */
   if (!CLASS_TYPE_P (type))
@@ -275,15 +274,15 @@ abstract_virtuals_error (tree decl, tree type)
       return 0;
     }
 
-  if (!CLASSTYPE_PURE_VIRTUALS (type))
-    return 0;
-
   if (!TYPE_SIZE (type))
     /* TYPE is being defined, and during that time
        CLASSTYPE_PURE_VIRTUALS holds the inline friends.  */
     return 0;
 
-  u = CLASSTYPE_PURE_VIRTUALS (type);
+  pure = CLASSTYPE_PURE_VIRTUALS (type);
+  if (!pure)
+    return 0;
+
   if (decl)
     {
       if (TREE_CODE (decl) == RESULT_DECL)
@@ -316,15 +315,20 @@ abstract_virtuals_error (tree decl, tree type)
     error ("cannot allocate an object of abstract type `%T'", type);
 
   /* Only go through this once.  */
-  if (TREE_PURPOSE (u) == NULL_TREE)
+  if (VEC_length (tree, pure))
     {
-      TREE_PURPOSE (u) = error_mark_node;
-
+      unsigned ix;
+      tree fn;
+      
       inform ("%J  because the following virtual functions are pure "
 	      "within `%T':", TYPE_MAIN_DECL (type), type);
 
-      for (tu = u; tu; tu = TREE_CHAIN (tu))
-	inform ("%J\t%#D", TREE_VALUE (tu), TREE_VALUE (tu));
+      for (ix = 0; VEC_iterate (tree, pure, ix, fn); ix++)
+	inform ("%J\t%#D", fn, fn);
+      /* Now truncate the vector.  This leaves it non-null, so we know
+         there are pure virtuals, but empty so we don't list them out
+         again.  */
+      VEC_truncate (tree, pure, 0);
     }
   else
     inform ("%J  since type `%T' has pure virtual functions", 

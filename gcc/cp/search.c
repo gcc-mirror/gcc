@@ -1875,9 +1875,8 @@ dfs_get_pure_virtuals (tree binfo, void *data)
 	   virtuals;
 	   virtuals = TREE_CHAIN (virtuals))
 	if (DECL_PURE_VIRTUAL_P (BV_FN (virtuals)))
-	  CLASSTYPE_PURE_VIRTUALS (type) 
-	    = tree_cons (NULL_TREE, BV_FN (virtuals),
-			 CLASSTYPE_PURE_VIRTUALS (type));
+	  VEC_safe_push (tree, CLASSTYPE_PURE_VIRTUALS (type),
+			 BV_FN (virtuals));
     }
   
   BINFO_MARKED (binfo) = 1;
@@ -1892,7 +1891,7 @@ get_pure_virtuals (tree type)
 {
   /* Clear the CLASSTYPE_PURE_VIRTUALS list; whatever is already there
      is going to be overridden.  */
-  CLASSTYPE_PURE_VIRTUALS (type) = NULL_TREE;
+  CLASSTYPE_PURE_VIRTUALS (type) = NULL;
   /* Now, run through all the bases which are not primary bases, and
      collect the pure virtual functions.  We look at the vtable in
      each class to determine what pure virtual functions are present.
@@ -1901,9 +1900,6 @@ get_pure_virtuals (tree type)
      pure virtuals in the base class.  */
   dfs_walk (TYPE_BINFO (type), dfs_get_pure_virtuals, unmarkedp, type);
   dfs_walk (TYPE_BINFO (type), dfs_unmark, markedp, type);
-
-  /* Put the pure virtuals in dfs order.  */
-  CLASSTYPE_PURE_VIRTUALS (type) = nreverse (CLASSTYPE_PURE_VIRTUALS (type));
 }
 
 /* DEPTH-FIRST SEARCH ROUTINES.  */

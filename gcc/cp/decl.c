@@ -10673,8 +10673,8 @@ finish_method (tree decl)
      for String.cc in libg++.  */
   if (DECL_FRIEND_P (fndecl))
     {
-      CLASSTYPE_INLINE_FRIENDS (current_class_type)
-	= tree_cons (NULL_TREE, fndecl, CLASSTYPE_INLINE_FRIENDS (current_class_type));
+      VEC_safe_push (tree, CLASSTYPE_INLINE_FRIENDS (current_class_type),
+		     fndecl);
       decl = void_type_node;
     }
 
