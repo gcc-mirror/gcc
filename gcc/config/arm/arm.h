@@ -1581,12 +1581,14 @@ typedef struct
 }
 #endif
 
+#ifndef THUMB_FUNCTION_PROFILER
 #define THUMB_FUNCTION_PROFILER(STREAM, LABELNO)	\
 {							\
   fprintf (STREAM, "\tmov\tip, lr\n");			\
   fprintf (STREAM, "\tbl\tmcount\n");			\
   fprintf (STREAM, "\t.word\tLP%d\n", LABELNO);		\
 }
+#endif
 
 #define FUNCTION_PROFILER(STREAM, LABELNO)		\
   if (TARGET_ARM)					\
