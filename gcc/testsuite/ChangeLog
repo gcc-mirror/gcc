@@ -1,3 +1,8 @@
+2004-11-29  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR target/18336
+	* gcc.dg/20040813-1.c: Skip for mmix-*-*.
+
 2004-11-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18368
