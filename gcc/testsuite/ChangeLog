@@ -1,3 +1,7 @@
+2003-07-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/execute/20030715-1.c: New test.
+
 2003-07-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7053
