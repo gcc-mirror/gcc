@@ -476,6 +476,12 @@ dtors_section ()							\
     }									\
 }
 
+/* Switch into a generic section.
+   This is currently only used to support section attributes.  */
+
+#define ASM_OUTPUT_SECTION(FILE, NAME) \
+  fprintf (FILE, ".section\t%s,\"a\",@progbits\n", NAME)
+
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
