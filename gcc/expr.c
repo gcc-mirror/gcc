@@ -166,7 +166,8 @@ static int is_zeros_p		PARAMS ((tree));
 static int mostly_zeros_p	PARAMS ((tree));
 static void store_constructor_field PARAMS ((rtx, unsigned HOST_WIDE_INT,
 					     HOST_WIDE_INT, enum machine_mode,
-					     tree, tree, unsigned int, int));
+					     tree, tree, unsigned int, int,
+					     int));
 static void store_constructor	PARAMS ((tree, rtx, unsigned int, int,
 					 HOST_WIDE_INT));
 static rtx store_field		PARAMS ((rtx, HOST_WIDE_INT,
@@ -4175,6 +4176,7 @@ mostly_zeros_p (exp)
    TARGET, BITSIZE, BITPOS, MODE, EXP are as for store_field.
    TYPE is the type of the CONSTRUCTOR, not the element type.
    ALIGN and CLEARED are as for store_constructor.
+   ALIAS_SET is the alias set to use for any stores.
 
    This provides a recursive shortcut back to store_constructor when it isn't
    necessary to go through store_field.  This is so that we can pass through
@@ -4183,7 +4185,7 @@ mostly_zeros_p (exp)
 
 static void
 store_constructor_field (target, bitsize, bitpos,
-			 mode, exp, type, align, cleared)
+			 mode, exp, type, align, cleared, alias_set)
      rtx target;
      unsigned HOST_WIDE_INT bitsize;
      HOST_WIDE_INT bitpos;
@@ -4191,6 +4193,7 @@ store_constructor_field (target, bitsize, bitpos,
      tree exp, type;
      unsigned int align;
      int cleared;
+     int alias_set;
 {
   if (TREE_CODE (exp) == CONSTRUCTOR
       && bitpos % BITS_PER_UNIT == 0
@@ -4208,11 +4211,13 @@ store_constructor_field (target, bitsize, bitpos,
 			    ? BLKmode : VOIDmode,
 			    plus_constant (XEXP (target, 0),
 					   bitpos / BITS_PER_UNIT));
+
+      MEM_ALIAS_SET (target) = alias_set;
       store_constructor (exp, target, align, cleared, bitsize / BITS_PER_UNIT);
     }
   else
     store_field (target, bitsize, bitpos, mode, exp, VOIDmode, 0, align,
-		 int_size_in_bytes (type), 0);
+		 int_size_in_bytes (type), alias_set);
 }
 
 /* Store the value of constructor EXP into the rtx TARGET.
@@ -4411,7 +4416,10 @@ store_constructor (exp, target, align, cleared, size)
 	    }
 #endif
 	  store_constructor_field (to_rtx, bitsize, bitpos, mode,
-				   TREE_VALUE (elt), type, align, cleared);
+				   TREE_VALUE (elt), type, align, cleared,
+				   DECL_NONADDRESSABLE_P (field)
+				   ? MEM_ALIAS_SET (to_rtx)
+				   : get_alias_set (TREE_TYPE (field)));
 	}
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
@@ -4547,8 +4555,11 @@ store_constructor (exp, target, align, cleared, size)
 		  for (; lo <= hi; lo++)
 		    {
 		      bitpos = lo * tree_low_cst (TYPE_SIZE (elttype), 0);
-		      store_constructor_field (target, bitsize, bitpos, mode,
-					       value, type, align, cleared);
+		      store_constructor_field
+			(target, bitsize, bitpos, mode, value, type, align,
+			 cleared,
+			 TYPE_NONALIASED_COMPONENT (type)
+			 ? MEM_ALIAS_SET (target) : get_alias_set (elttype));
 		    }
 		}
 	      else
@@ -4636,7 +4647,11 @@ store_constructor (exp, target, align, cleared, size)
 		bitpos = (i * tree_low_cst (TYPE_SIZE (elttype), 1));
 
 	      store_constructor_field (target, bitsize, bitpos, mode, value,
-				       type, align, cleared);
+				       type, align, cleared,
+				       TYPE_NONALIASED_COMPONENT (type)
+				       ? MEM_ALIAS_SET (target) :
+				       get_alias_set (elttype));
+
 	    }
 	}
     }
