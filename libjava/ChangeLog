@@ -1,10 +1,17 @@
+2004-07-07  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* configure.host: Enable hash synchronization on Darwin.
+	* sysdep/powerpc/locks.h (compare_and_swap): Use '\n' instead of
+	';', since this is a comment on Darwin.
+	(compare_and_swap_release): Likewise.
+
 2004-07-06  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* java/net/URLStreamHandler.java (parseURL): Canonicalize
 	file portion of URL in addition to spec for file: protocol.
 
 2004-07-05  Anthony Green  <green@redhat.com>
-	
+
 	* java/io/File.java (toURI): Merge from Classpath.
 
 2004-07-05  Bryce McKinlay  <mckinlay@redhat.com>
@@ -13,7 +20,7 @@
 	before passing to URL constructor. Rethrow any MalformedURLException
 	as a RuntimeException. Catch MalformedURLException specifically, not
 	all exceptions.
-	
+
 2004-07-05  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* java/util/Locale.java (readObject): Intern strings read from object
@@ -30,7 +37,7 @@
 	* Makefile.in: Regenerated.
 
 2004-07-03  Mark Wielaard  <mark@klomp.org>
-            Anthony Green  <green@redhat.com>
+	    Anthony Green  <green@redhat.com>
 
 	* java/net/URL.java (getFile): Clarify return value doc.
 	(getPath): Return null if file is empty - not empty String.

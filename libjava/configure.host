@@ -233,7 +233,7 @@ EOF
 	esac
 	;;
   powerpc*-*-darwin*)
-	enable_hash_synchronization_default=no
+	enable_hash_synchronization_default=yes
 	slow_pthread_self=
 	can_unwind_signal=yes
 	;;
