@@ -3904,7 +3904,7 @@ rest_of_compilation (decl)
   if (optimize > 0 && flag_gcse)
     {
       if (gcse_dump)
-	open_dump_file (".gcse", IDENTIFIER_POINTER (DECL_NAME (decl)));
+	open_dump_file (".gcse", decl_printable_name (decl, 2));
 
       TIMEVAR (gcse_time, tem = gcse_main (insns, rtl_dump_file));
 
