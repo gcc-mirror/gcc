@@ -444,7 +444,7 @@ lex (pfile, skip_evaluation)
       return parse_charconst (pfile, tok_start, tok_end);
 
     case CPP_NAME:
-      if (!strcmp (tok_start, "defined"))
+      if (!strncmp (tok_start, "defined", 7))
 	return parse_defined (pfile);
 
       op.op = INT;

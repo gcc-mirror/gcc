@@ -219,9 +219,6 @@ extern unsigned char _cpp_IStable[256];
 #define CPP_PUTC_Q(PFILE, CH) (*(PFILE)->limit++ = (CH))
 /* Append character CH to PFILE's output buffer.  Make space if need be. */
 #define CPP_PUTC(PFILE, CH) (CPP_RESERVE (PFILE, 1), CPP_PUTC_Q (PFILE, CH))
-/* Make sure PFILE->limit is followed by '\0'. */
-#define CPP_NUL_TERMINATE_Q(PFILE) (*(PFILE)->limit = 0)
-#define CPP_NUL_TERMINATE(PFILE) (CPP_RESERVE(PFILE, 1), *(PFILE)->limit = 0)
 
 /* Advance the current line by one. */
 #define CPP_BUMP_BUFFER_LINE(PBUF) ((PBUF)->lineno++,\

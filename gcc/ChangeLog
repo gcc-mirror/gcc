@@ -1,3 +1,17 @@
+2000-04-17  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppexp.c (lex): Don't assume tokens are NUL terminated.
+	* cpplib.c (do_include, do_import, do_include_next,
+	read_line_number, detect_if_not_defined): Likewise.
+	* cpphash.c (collect_expansion): Likewise.
+	(special_symbol, _cpp_macroexpand): Check return from
+	cpp_file_buffer.
+	* cpphash.h (CPP_NUL_TERMINATE, CPP_NUL_TERMINATE_Q): Delete
+	macros.  Delete all uses.
+
+	* gcc.dg/cpp-mi.c: Add two more test cases.
+	* gcc.dg/cpp-mind.h, gcc.dg/cpp-mindp.h: New files.
+
 2000-04-17  Richard Henderson  <rth@cygnus.com>
 
 	* bb-reorder.c (fixup_reorder_chain): Don't look up new block again.

@@ -505,9 +505,6 @@ parse_include (pfile, name)
       return 0;
     }
 
-  CPP_NUL_TERMINATE (pfile);
-  CPP_ADJUST_WRITTEN (pfile, 1);
-
   if (_cpp_get_directive_token (pfile) != CPP_VSPACE)
     {
       cpp_error (pfile, "junk at end of `#%s'", name);
@@ -533,7 +530,8 @@ do_include (pfile)
   if (len == 0)
     return 0;
   token = alloca (len + 1);
-  strcpy (token, CPP_PWRITTEN (pfile));
+  memcpy (token, CPP_PWRITTEN (pfile), len);
+  token[len] = '\0';
   
   if (CPP_OPTION (pfile, dump_includes))
     pass_thru_directive (token, len, pfile, T_INCLUDE);
@@ -561,7 +559,8 @@ do_import (pfile)
   if (len == 0)
     return 0;
   token = alloca (len + 1);
-  strcpy (token, CPP_PWRITTEN (pfile));
+  memcpy (token, CPP_PWRITTEN (pfile), len);
+  token[len] = '\0';
   
   if (CPP_OPTION (pfile, dump_includes))
     pass_thru_directive (token, len, pfile, T_IMPORT);
@@ -582,7 +581,8 @@ do_include_next (pfile)
   if (len == 0)
     return 0;
   token = alloca (len + 1);
-  strcpy (token, CPP_PWRITTEN (pfile));
+  memcpy (token, CPP_PWRITTEN (pfile), len);
+  token[len] = '\0';
   
   if (CPP_OPTION (pfile, dump_includes))
     pass_thru_directive (token, len, pfile, T_INCLUDE_NEXT);
@@ -616,18 +616,20 @@ read_line_number (pfile, num)
   long save_written = CPP_WRITTEN (pfile);
   U_CHAR *p;
   enum cpp_ttype token = _cpp_get_directive_token (pfile);
-  CPP_SET_WRITTEN (pfile, save_written);
   p = pfile->token_buffer + save_written;
 
-  if (token == CPP_NUMBER && *p >= '1' && *p <= '4' && p[1] == '\0')
+  if (token == CPP_NUMBER && p + 1 == CPP_PWRITTEN (pfile)
+      && p[0] >= '1' && p[0] <= '4')
     {
       *num = p[0] - '0';
+      CPP_SET_WRITTEN (pfile, save_written);
       return 1;
     }
   else
     {
       if (token != CPP_VSPACE && token != CPP_EOF)
 	cpp_error (pfile, "invalid format `#line' command");
+      CPP_SET_WRITTEN (pfile, save_written);
       return 0;
     }
 }
@@ -654,6 +656,7 @@ do_line (pfile)
       goto bad_line_directive;
     }
 
+  CPP_PUTC (pfile, '\0');  /* not terminated for us */
   new_lineno = strtoul (pfile->token_buffer + old_written, &x, 10);
   if (x[0] != '\0')
     {
@@ -1066,71 +1069,72 @@ do_sccs (pfile)
    `#if ! defined SYMBOL', then SYMBOL is a possible controlling macro
    for inclusion of this file.  (See redundant_include_p in cppfiles.c
    for an explanation of controlling macros.)  If so, return a
-   malloc'd copy of SYMBOL.  Otherwise, return NULL.  */
+   malloced copy of SYMBOL.  Otherwise, return NULL.  */
 
 static U_CHAR *
 detect_if_not_defined (pfile)
      cpp_reader *pfile;
 {
   U_CHAR *control_macro = 0;
+  enum cpp_ttype token;
+  unsigned int base_offset;
+  unsigned int token_offset;
+  unsigned int need_rparen = 0;
+  unsigned int token_len;
 
-  if (pfile->only_seen_white == 2)
+  if (pfile->only_seen_white != 2)
+    return NULL;
+
+  /* Save state required for restore.  */
+  pfile->no_macro_expand++;
+  CPP_SET_MARK (pfile);
+  base_offset = CPP_WRITTEN (pfile);
+
+  /* Look for `!', */
+  if (_cpp_get_directive_token (pfile) != CPP_OTHER
+      || CPP_WRITTEN (pfile) != (size_t) base_offset + 1
+      || CPP_PWRITTEN (pfile)[-1] != '!')
+    goto restore;
+
+  /* ...then `defined', */
+  token_offset = CPP_WRITTEN (pfile);
+  token = _cpp_get_directive_token (pfile);
+  if (token != CPP_NAME)
+    goto restore;
+  if (strncmp (pfile->token_buffer + token_offset, "defined", 7))
+    goto restore;
+
+  /* ...then an optional '(' and the name, */
+  token_offset = CPP_WRITTEN (pfile);
+  token = _cpp_get_directive_token (pfile);
+  if (token == CPP_LPAREN)
     {
-      U_CHAR *ident;
-      enum cpp_ttype token;
-      int base_offset;
-      int token_offset;
-      int need_rparen = 0;
-
-      /* Save state required for restore.  */
-      pfile->no_macro_expand++;
-      CPP_SET_MARK (pfile);
-      base_offset = CPP_WRITTEN (pfile);
-
-      /* Look for `!', */
-      if (_cpp_get_directive_token (pfile) != CPP_OTHER
-	  || CPP_WRITTEN (pfile) != (size_t) base_offset + 1
-	  || CPP_PWRITTEN (pfile)[-1] != '!')
-	goto restore;
-
-      /* ...then `defined', */
       token_offset = CPP_WRITTEN (pfile);
+      need_rparen = 1;
       token = _cpp_get_directive_token (pfile);
-      if (token != CPP_NAME)
-	goto restore;
-      ident = pfile->token_buffer + token_offset;
-      CPP_NUL_TERMINATE (pfile);
-      if (strcmp (ident, "defined"))
-	goto restore;
-
-      /* ...then an optional '(' and the name, */
-      token_offset = CPP_WRITTEN (pfile);
-      token = _cpp_get_directive_token (pfile);
-      if (token == CPP_LPAREN)
-	{
-	  token_offset = CPP_WRITTEN (pfile);
-	  token = _cpp_get_directive_token (pfile);
-	  if (token != CPP_NAME)
-	    goto restore;
-	  need_rparen = 1;
-	}
-      else if (token != CPP_NAME)
-	goto restore;
-
-      ident = pfile->token_buffer + token_offset;
-      CPP_NUL_TERMINATE (pfile);
-
-      /* ...then the ')', if necessary, */
-      if ((!need_rparen || _cpp_get_directive_token (pfile) == CPP_RPAREN)
-	  /* ...and make sure there's nothing else on the line.  */
-	  && _cpp_get_directive_token (pfile) == CPP_VSPACE)
-	control_macro = (U_CHAR *) xstrdup (ident);
-
-    restore:
-      CPP_SET_WRITTEN (pfile, base_offset);
-      pfile->no_macro_expand--;
-      CPP_GOTO_MARK (pfile);
     }
+  if (token != CPP_NAME)
+    goto restore;
+
+  token_len = CPP_WRITTEN (pfile) - token_offset;
+
+  /* ...then the ')', if necessary, */
+  if (need_rparen && _cpp_get_directive_token (pfile) != CPP_RPAREN)
+    goto restore;
+
+  /* ...and make sure there's nothing else on the line.  */
+  if (_cpp_get_directive_token (pfile) != CPP_VSPACE)
+    goto restore;
+
+  /* We have a legitimate controlling macro for this header.  */
+  control_macro = (U_CHAR *) xmalloc (token_len + 1);
+  memcpy (control_macro, pfile->token_buffer + token_offset, token_len);
+  control_macro[token_len] = '\0';
+
+ restore:
+  CPP_SET_WRITTEN (pfile, base_offset);
+  pfile->no_macro_expand--;
+  CPP_GOTO_MARK (pfile);
 
   return control_macro;
 }
@@ -1218,8 +1222,7 @@ parse_ifdef (pfile, name)
   else if (token == CPP_NAME)
     {
       defined = cpp_defined (pfile, ident, len);
-      CPP_NUL_TERMINATE (pfile);
-      CPP_ADJUST_WRITTEN (pfile, 1);
+      CPP_PUTC (pfile, '\0');  /* so it can be copied with xstrdup */
     }
   else
     {
