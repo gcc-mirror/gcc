@@ -961,7 +961,7 @@ objc_check_decl (tree decl)
 
   if (TREE_CODE (type) != RECORD_TYPE)
     return;
-  if (TYPE_NAME (type) && (type = objc_is_class_name (TYPE_NAME (type))))
+  if (OBJC_TYPE_NAME (type) && (type = objc_is_class_name (OBJC_TYPE_NAME (type))))
     error ("statically allocated instance of Objective-C class `%s'",
 	   IDENTIFIER_POINTER (type));
 }
@@ -1366,7 +1366,7 @@ my_build_string (int len, const char *str)
    NXConstantString class object.  */
 
 tree
-build_objc_string_object (tree string)
+objc_build_string_object (tree string)
 {
   tree initlist, constructor, constant_string_class;
   int length;
@@ -2338,7 +2338,7 @@ add_class_reference (tree ident)
    reference variable.  */
 
 tree
-get_class_reference (tree ident)
+objc_get_class_reference (tree ident)
 {
   tree orig_ident;
 
@@ -2586,7 +2586,7 @@ lookup_interface (tree ident)
 /* Implement @defs (<classname>) within struct bodies.  */
 
 tree
-get_class_ivars_from_name (tree class_name)
+objc_get_class_ivars (tree class_name)
 {
   tree interface = lookup_interface (class_name);
   tree field, fields = NULL_TREE;
@@ -2884,7 +2884,7 @@ next_sjlj_build_catch_list (void)
 	  else
 	    {
 	      args = tree_cons (NULL, cur_try_context->caught_decl, NULL);
-	      t = get_class_reference (OBJC_TYPE_NAME (TREE_TYPE (type)));
+	      t = objc_get_class_reference (OBJC_TYPE_NAME (TREE_TYPE (type)));
 	      args = tree_cons (NULL, t, args);
 	      t = build_function_call (objc_exception_match_decl, args);
 	      cond = lang_hooks.truthvalue_conversion (t);
@@ -5309,7 +5309,7 @@ adjust_type_for_id_default (tree type)
      Out:	an instance of "keyword_decl".  */
 
 tree
-build_keyword_decl (tree key_name, tree arg_type, tree arg_name)
+objc_build_keyword_decl (tree key_name, tree arg_type, tree arg_name)
 {
   tree keyword_decl;
 
@@ -5503,7 +5503,7 @@ check_duplicates (hash hsh, int methods, int is_class)
 }
 
 /* If RECEIVER is a class reference, return the identifier node for
-   the referenced class.  RECEIVER is created by get_class_reference,
+   the referenced class.  RECEIVER is created by objc_get_class_reference,
    so we check the exact form created depending on which runtimes are
    used.  */
 
@@ -5579,7 +5579,7 @@ objc_message_selector (void)
    (*(<abstract_decl>(*)())_msgSuper)(receiver, selTransTbl[n], ...);  */
 
 tree
-build_message_expr (tree mess)
+objc_build_message_expr (tree mess)
 {
   tree receiver = TREE_PURPOSE (mess);
   tree sel_name;
@@ -5656,7 +5656,7 @@ lookup_method_in_hash_lists (tree sel_name, int is_class)
 }
 
 /* The 'finish_message_expr' routine is called from within
-   'build_message_expr' for non-template functions.  In the case of
+   'objc_build_message_expr' for non-template functions.  In the case of
    C++ template functions, it is called from 'build_expr_from_tree'
    (in decl2.c) after RECEIVER and METHOD_PARAMS have been expanded.  */
 
@@ -5950,7 +5950,7 @@ build_protocol_reference (tree p)
 /* This function is called by the parser when (and only when) a
    @protocol() expression is found, in order to compile it.  */
 tree
-build_protocol_expr (tree protoname)
+objc_build_protocol_expr (tree protoname)
 {
   tree expr;
   tree p = lookup_protocol (protoname);
@@ -6022,7 +6022,7 @@ build_protocol_expr (tree protoname)
    is found, in order to compile it.  It is only called by the parser
    and only to compile a @selector().  */
 tree
-build_selector_expr (tree selnamelist)
+objc_build_selector_expr (tree selnamelist)
 {
   tree selname;
 
@@ -6068,7 +6068,7 @@ build_selector_expr (tree selnamelist)
 }
 
 tree
-build_encode_expr (tree type)
+objc_build_encode_expr (tree type)
 {
   tree result;
   const char *string;
@@ -7898,7 +7898,7 @@ get_super_receiver (void)
 
 	  if (flag_next_runtime && !flag_zero_link)
 	    {
-	      super_class = get_class_reference (super_name);
+	      super_class = objc_get_class_reference (super_name);
 	      if (TREE_CODE (objc_method_context) == CLASS_METHOD_DECL)
 		/* If we are in a class method, we must retrieve the
 		   _metaclass_ for the current class, pointed at by
