@@ -1,3 +1,8 @@
+Thu Mar 11 21:25:59 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (strength_reduce): Don't do biv increment -> DEST_REG giv
+	conversion if we don't know the lifetime.
+
 Thu Mar 11 20:37:59 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload.1c (delete_address_reloads_1):  Check for reloads of

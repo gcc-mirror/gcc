@@ -4198,10 +4198,43 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		  VARRAY_GROW (may_not_optimize, nregs);
 		}
     
-	      validate_change (v->insn, &SET_DEST (set), dest_reg, 1);
-	      validate_change (next->insn, next->location, add_val, 1);
-	      if (! apply_change_group ())
+	      if (! validate_change (next->insn, next->location, add_val, 0))
 		{
+		  vp = &v->next_iv;
+		  continue;
+		}
+
+	      /* Here we can try to eliminate the increment by combining
+		 it into the uses.  */
+
+	      /* Set last_use_insn so that we can check against it.  */
+
+	      for (last_use_insn = v->insn, p = NEXT_INSN (v->insn);
+		   p != next->insn;
+		   p = next_insn_in_loop (p, scan_start, end, loop_top))
+		{
+		  rtx note;
+    
+		  if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
+		    continue;
+		  if (reg_mentioned_p (old_reg, PATTERN (p)))
+		    {
+		      last_use_insn = p;
+		    }
+		}
+
+	      /* If we can't get the LUIDs for the insns, we can't
+		 calculate the lifetime.  This is likely from unrolling
+		 of an inner loop, so there is little point in making this
+		 a DEST_REG giv anyways.  */
+	      if (INSN_UID (v->insn) >= max_uid_for_loop
+		  || INSN_UID (last_use_insn) >= max_uid_for_loop
+		  || ! validate_change (v->insn, &SET_DEST (set), dest_reg, 0))
+		{
+		  /* Change the increment at NEXT back to what it was.  */
+		  if (! validate_change (next->insn, next->location,
+		      next->add_val, 0))
+		    abort ();
 		  vp = &v->next_iv;
 		  continue;
 		}
