@@ -590,4 +590,16 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define DEFAULT_USE_CXA_ATEXIT 0
 #endif
 
+/* Determine whether extra constraint letter should be handled
+   via address reload (like 'o').  */
+#ifndef EXTRA_MEMORY_CONSTRAINT
+#define EXTRA_MEMORY_CONSTRAINT(C) 0
+#endif
+
+/* Determine whether extra constraint letter should be handled
+   as an address (like 'p').  */
+#ifndef EXTRA_ADDRESS_CONSTRAINT
+#define EXTRA_ADDRESS_CONSTRAINT(C) 0
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */

@@ -1007,7 +1007,8 @@ record_operand_costs (insn, op_costs, reg_pref)
       if (GET_CODE (recog_data.operand[i]) == MEM)
 	record_address_regs (XEXP (recog_data.operand[i], 0),
 			     MODE_BASE_REG_CLASS (modes[i]), frequency * 2);
-      else if (constraints[i][0] == 'p')
+      else if (constraints[i][0] == 'p'
+	       || EXTRA_ADDRESS_CONSTRAINT (constraints[i][0]))
 	record_address_regs (recog_data.operand[i],
 			     MODE_BASE_REG_CLASS (modes[i]), frequency * 2);
     }
@@ -1709,6 +1710,27 @@ record_reg_classes (n_alts, n_ops, ops, modes,
 #ifdef EXTRA_CONSTRAINT
 		else if (EXTRA_CONSTRAINT (op, c))
 		  win = 1;
+
+		if (EXTRA_MEMORY_CONSTRAINT (c))
+		  {
+		    /* Every MEM can be reloaded to fit.  */
+		    allows_mem[i] = 1;
+		    if (GET_CODE (op) == MEM)
+		      win = 1;
+		  }
+		if (EXTRA_ADDRESS_CONSTRAINT (op))
+		  {
+		    /* Every address can be reloaded to fit.  */
+		    allows_addr = 1;
+		    if (address_operand (op, GET_MODE (op)))
+		      win = 1;
+		    /* We know this operand is an address, so we want it to be
+		       allocated to a register that can be the base of an
+		       address, ie BASE_REG_CLASS.  */
+		    classes[i]
+		      = reg_class_subunion[(int) classes[i]]
+		        [(int) MODE_BASE_REG_CLASS (VOIDmode)];
+		  }
 #endif
 		break;
 	      }

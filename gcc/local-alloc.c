@@ -1342,7 +1342,8 @@ block_alloc (b)
 		  /* If the operand is an address, find a register in it.
 		     There may be more than one register, but we only try one
 		     of them.  */
-		  if (recog_data.constraints[i][0] == 'p')
+		  if (recog_data.constraints[i][0] == 'p'
+		      || EXTRA_ADDRESS_CONSTRAINT (recog_data.constraints[i][0]))
 		    while (GET_CODE (r1) == PLUS || GET_CODE (r1) == MULT)
 		      r1 = XEXP (r1, 0);
 
@@ -2472,7 +2473,8 @@ requires_inout (p)
 	break;
 
       default:
-	if (REG_CLASS_FROM_LETTER (c) == NO_REGS)
+	if (REG_CLASS_FROM_LETTER (c) == NO_REGS
+	    && !EXTRA_ADDRESS_CONSTRAINT (c))
 	  break;
 	/* FALLTHRU */
       case 'p':
