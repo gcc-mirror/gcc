@@ -96,11 +96,6 @@ public class GtkComponentPeer extends GtkGenericPeer
     throw new RuntimeException ();
   }
 
-  void initializeInsets ()
-  {
-    insets = new Insets (0, 0, 0, 0);
-  }
-
   native void connectJObject ();
   native void connectSignals ();
 
@@ -108,6 +103,7 @@ public class GtkComponentPeer extends GtkGenericPeer
   {
     super (awtComponent);
     this.awtComponent = awtComponent;
+    insets = new Insets (0, 0, 0, 0);
 
     /* temporary try/catch block until all peers use this creation method */
     try {
@@ -126,8 +122,6 @@ public class GtkComponentPeer extends GtkGenericPeer
 	setBackground (awtComponent.getBackground ());
       if (awtComponent.getFont() != null)
 	setFont(awtComponent.getFont());
-
-      initializeInsets ();
 
       setCursor (awtComponent.getCursor ());
       Rectangle bounds = awtComponent.getBounds ();

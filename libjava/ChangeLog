@@ -1,3 +1,33 @@
+2004-01-13  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java
+	(initializeInsets): Remove method.
+	(GtkComponentPeer): Initialize insets field.  Remove call to
+	initializeInsets.
+	* gnu/java/awt/peer/gtk/GtkDialogPeer.java (initializeInsets):
+	Remove method.
+	* gnu/java/awt/peer/gtk/GtkFramePeer.java (initializeInsets):
+	Remove method.
+	* gnu/java/awt/peer/gtk/GtkWindowPeer.java,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c:
+	(latestInsets): Remove field.
+	(native create): Add insets parameter.  Call
+	window_get_frame_extents.  Set the window's default size and
+	size request based on its frame extents.
+	(create): Initialize insets.
+	(postInsetsChangedEvent): New method.
+	(postConfigureEvent): Remove parameters top, left, bottom,
+	right.  Remove insets-related logic.
+	(connectJObject): Handle property-notify-event.
+	(window_get_frame_extents, request_frame_extents,
+	property_notify_predicate, window_property_changed_cb): New
+	static functions.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c
+	(pre_event_handler): Remove insets-related logic for configure
+	events.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c (gtkInit):
+	Update postConfigureEvent signature.
+
 2004-01-12  Fernando Nasser  <fnasser@redhat.com>
  
 	* gnu/java/awt/peer/gtk/TestAWT.java (DialogWindow): Add WindowAdapter

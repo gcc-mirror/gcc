@@ -43,7 +43,6 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Insets;
 import java.awt.MenuBar;
 import java.awt.Rectangle;
 import java.awt.event.PaintEvent;
@@ -69,21 +68,6 @@ public class GtkFramePeer extends GtkWindowPeer
   public GtkFramePeer (Frame frame)
   {
     super (frame);
-  }
-
-  void initializeInsets ()
-  {
-    // Unfortunately, X does not provide a clean way to calculate the
-    // dimensions of a frame's borders before it has been displayed.
-    // So we guess and then fix the dimensions upon receipt of the
-    // first configure event.
-    synchronized (latestInsets)
-      {
-	insets = new Insets (latestInsets.top,
-			     latestInsets.left,
-			     latestInsets.bottom,
-			     latestInsets.right);
-      }
   }
 
   void create ()

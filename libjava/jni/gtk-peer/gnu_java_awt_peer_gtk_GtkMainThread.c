@@ -168,7 +168,7 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit (JNIEnv *env, jclass clazz)
   postMouseEventID = (*env)->GetMethodID (env, gtkcomponentpeer, 
 					  "postMouseEvent", "(IJIIIIZ)V");
   postConfigureEventID = (*env)->GetMethodID (env, gtkwindowpeer, 
-					  "postConfigureEvent", "(IIIIIIII)V");
+					      "postConfigureEvent", "(IIII)V");
   postWindowEventID = (*env)->GetMethodID (env, gtkwindowpeer,
 					   "postWindowEvent",
 					   "(ILjava/awt/Window;I)V");
