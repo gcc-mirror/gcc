@@ -1095,7 +1095,7 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	  if (INTEGRAL_MODE_P (mode)
 	      && GET_CODE (op0) == NOT
 	      && trueop1 == const1_rtx)
-	    return gen_rtx_NEG (mode, XEXP (op0, 0));
+	    return simplify_gen_unary (NEG, mode, XEXP (op0, 0), mode);
 
 	  /* Handle both-operands-constant cases.  We can only add
 	     CONST_INTs to constants since the sum of relocatable symbols
@@ -1230,11 +1230,11 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	     But if the mode has signed zeros, and does not round towards
 	     -infinity, then 0 - 0 is 0, not -0.  */
 	  if (!HONOR_SIGNED_ZEROS (mode) && trueop0 == CONST0_RTX (mode))
-	    return gen_rtx_NEG (mode, op1);
+	    return simplify_gen_unary (NEG, mode, op1, mode);
 
 	  /* (-1 - a) is ~a.  */
 	  if (trueop0 == constm1_rtx)
-	    return gen_rtx_NOT (mode, op1);
+	    return simplify_gen_unary (NOT, mode, op1, mode);
 
 	  /* Subtracting 0 has no effect unless the mode has signed zeros
 	     and supports rounding towards -infinity.  In such a case,
@@ -1344,11 +1344,7 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 
 	case MULT:
 	  if (trueop1 == constm1_rtx)
-	    {
-	      tem = simplify_unary_operation (NEG, mode, op0, mode);
-
-	      return tem ? tem : gen_rtx_NEG (mode, op0);
-	    }
+	    return simplify_gen_unary (NEG, mode, op0, mode);
 
 	  /* Maybe simplify x * 0 to 0.  The reduction is not valid if
 	     x is NaN, since x * 0 is then also NaN.  Nor is it valid
@@ -1376,7 +1372,7 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	      && (width <= HOST_BITS_PER_WIDE_INT
 		  || val != HOST_BITS_PER_WIDE_INT - 1)
 	      && ! rtx_equal_function_value_matters)
-	    return gen_rtx_ASHIFT (mode, op0, GEN_INT (val));
+	    return simplify_gen_binary (ASHIFT, mode, op0, GEN_INT (val));
 
 	  /* x*2 is x+x and x*(-1) is -x */
 	  if (GET_CODE (trueop1) == CONST_DOUBLE
@@ -1387,10 +1383,10 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	      REAL_VALUE_FROM_CONST_DOUBLE (d, trueop1);
 
 	      if (REAL_VALUES_EQUAL (d, dconst2))
-		return gen_rtx_PLUS (mode, op0, copy_rtx (op0));
+		return simplify_gen_binary (PLUS, mode, op0, copy_rtx (op0));
 
 	      if (REAL_VALUES_EQUAL (d, dconstm1))
-		return gen_rtx_NEG (mode, op0);
+		return simplify_gen_unary (NEG, mode, op0, mode);
 	    }
 	  break;
 
@@ -1417,7 +1413,7 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	  if (GET_CODE (trueop1) == CONST_INT
 	      && ((INTVAL (trueop1) & GET_MODE_MASK (mode))
 		  == GET_MODE_MASK (mode)))
-	    return gen_rtx_NOT (mode, op0);
+	    return simplify_gen_unary (NOT, mode, op0, mode);
 	  if (trueop0 == trueop1 && ! side_effects_p (op0)
 	      && GET_MODE_CLASS (mode) != MODE_CC)
 	    return const0_rtx;
@@ -1446,7 +1442,7 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	     below).  */
 	  if (GET_CODE (trueop1) == CONST_INT
 	      && (arg1 = exact_log2 (INTVAL (trueop1))) > 0)
-	    return gen_rtx_LSHIFTRT (mode, op0, GEN_INT (arg1));
+	    return simplify_gen_binary (LSHIFTRT, mode, op0, GEN_INT (arg1));
 
 	  /* ... fall through ...  */
 
@@ -1487,8 +1483,8 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	      if (! REAL_VALUES_EQUAL (d, dconst0))
 		{
 		  REAL_ARITHMETIC (d, rtx_to_tree_code (DIV), dconst1, d);
-		  return gen_rtx_MULT (mode, op0,
-				       CONST_DOUBLE_FROM_REAL_VALUE (d, mode));
+		  tem = CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
+		  return simplify_gen_binary (MULT, mode, op0, tem);
 		}
 	    }
 	  break;
@@ -1497,7 +1493,8 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	  /* Handle modulus by power of two (mod with 1 handled below).  */
 	  if (GET_CODE (trueop1) == CONST_INT
 	      && exact_log2 (INTVAL (trueop1)) > 0)
-	    return gen_rtx_AND (mode, op0, GEN_INT (INTVAL (op1) - 1));
+	    return simplify_gen_binary (AND, mode, op0,
+					GEN_INT (INTVAL (op1) - 1));
 
 	  /* ... fall through ...  */
 

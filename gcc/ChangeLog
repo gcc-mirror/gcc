@@ -1,5 +1,12 @@
 2003-08-11  Roger Sayle  <roger@eyesopen.com>
 
+	* simplify-rtx.c (simplify_binary_operation): Replace calls to
+	gen_rtx_NEG and gen_rtx_NOT with calls to simplify_gen_unary,
+	and calls to gen_rtx_PLUS, gen_rtx_MULT, gen_rtx_LSHIFTRT,
+	gen_rtx_ASHIFT and gen_rtx_AND with calls to simplify_gen_binary.
+
+2003-08-11  Roger Sayle  <roger@eyesopen.com>
+
 	* expr.c (expand_expr): If an ABS_EXPR has a complex type, abort.
 	* c-typeck.c (build_unary_op): COMPLEX_TYPE is not a valid
 	typecode for an ABS_EXPR.
