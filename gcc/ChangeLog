@@ -1,3 +1,7 @@
+2002-02-06  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config.gcc: Add support for --enable-altivec.
+
 2002-01-06  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	* emit-rtl.c (gen_highpart): Add check for NULL_RTX.
