@@ -158,7 +158,7 @@ make_reorder_chain_1 (bb, prev)
  restart:
       RBI (prev)->next = bb;
 
-      if (rtl_dump_file && prev->index + 1 != bb->index)
+      if (rtl_dump_file && prev->next_bb != bb)
 	fprintf (rtl_dump_file, "Reordering block %d after %d\n",
 		 bb->index, prev->index);
     }
@@ -214,7 +214,7 @@ make_reorder_chain_1 (bb, prev)
   if (! next)
     {
       for (e = bb->succ; e ; e = e->succ_next)
-	if (e->dest->index == bb->index + 1)
+	if (e->dest == bb->next_bb)
 	  {
 	    if ((e->flags & EDGE_FALLTHRU)
 	        || (e->dest->succ

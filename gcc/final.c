@@ -984,8 +984,8 @@ compute_alignments ()
 
       if (!has_fallthru
 	  && (branch_frequency > BB_FREQ_MAX / 10
-	      || (bb->frequency > BASIC_BLOCK (i - 1)->frequency * 10
-		  && (BASIC_BLOCK (i - 1)->frequency
+	      || (bb->frequency > bb->prev_bb->frequency * 10
+		  && (bb->prev_bb->frequency
 		      <= ENTRY_BLOCK_PTR->frequency / 2))))
 	{
 	  log = JUMP_ALIGN (label);

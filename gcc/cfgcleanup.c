@@ -147,7 +147,7 @@ try_simplify_condjump (cbranch_block)
      unconditional jump.  */
   jump_block = cbranch_fallthru_edge->dest;
   if (jump_block->pred->pred_next
-      || jump_block->index == n_basic_blocks - 1
+      || jump_block->next_bb == EXIT_BLOCK_PTR
       || !FORWARDER_BLOCK_P (jump_block))
     return false;
   jump_dest_block = jump_block->succ->dest;
@@ -1615,7 +1615,7 @@ try_optimize_cfg (mode)
 	      /* Delete trivially dead basic blocks.  */
 	      while (b->pred == NULL)
 		{
-		  c = BASIC_BLOCK (b->index - 1);
+		  c = b->prev_bb;
 		  if (rtl_dump_file)
 		    fprintf (rtl_dump_file, "Deleting block %i.\n",
 			     b->index);
@@ -1669,7 +1669,7 @@ try_optimize_cfg (mode)
 			     "Deleting fallthru block %i.\n",
 			     b->index);
 
-		  c = BASIC_BLOCK (b->index ? b->index - 1 : 1);
+		  c = b->prev_bb == ENTRY_BLOCK_PTR ? b->next_bb : b->prev_bb;
 		  redirect_edge_succ_nodup (b->pred, b->succ->dest);
 		  flow_delete_block (b);
 		  changed = true;

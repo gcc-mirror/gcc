@@ -2349,7 +2349,7 @@ regno_uninitialized (regno)
 	      || FUNCTION_ARG_REGNO_P (regno))))
     return 0;
 
-  return REGNO_REG_SET_P (BASIC_BLOCK (0)->global_live_at_start, regno);
+  return REGNO_REG_SET_P (ENTRY_BLOCK_PTR->next_bb->global_live_at_start, regno);
 }
 
 /* 1 if register REGNO was alive at a place where `setjmp' was called
@@ -2364,7 +2364,7 @@ regno_clobbered_at_setjmp (regno)
     return 0;
 
   return ((REG_N_SETS (regno) > 1
-	   || REGNO_REG_SET_P (BASIC_BLOCK (0)->global_live_at_start, regno))
+	   || REGNO_REG_SET_P (ENTRY_BLOCK_PTR->next_bb->global_live_at_start, regno))
 	  && REGNO_REG_SET_P (regs_live_at_setjmp, regno));
 }
 
