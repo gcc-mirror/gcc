@@ -1,3 +1,13 @@
+Wed Sep 15 09:50:18 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* aclocal.m4 (AC_GCC_C_LONG_DOUBLE): New macro.
+
+	* configure.in (AC_GCC_C_LONG_DOUBLE): Call it.
+
+	* gansidecl.h (HAVE_LONG_DOUBLE): Define if gcc for stage2.
+
+	* ggc-simple.c (HAVE_LONG_DOUBLE): Test before using long double.
+
 Wed Sep 15 11:04:43 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* function.c (assign_parms): Delete arg SECOND_TIME.  Don't test it,

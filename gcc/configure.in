@@ -284,6 +284,7 @@ AC_CANONICAL_SYSTEM
 
 # Find the native compiler
 AC_PROG_CC
+AC_GCC_C_LONG_DOUBLE
 
 # If the native compiler is GCC, we can enable warnings even in stage1.  
 # That's useful for people building cross-compilers, or just running a
