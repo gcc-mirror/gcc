@@ -1759,6 +1759,20 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 		  && TREE_CODE (gnu_actual) != SAVE_EXPR)
 		gnu_actual = convert (get_unpadded_type (Etype (gnat_actual)),
 				      gnu_actual);
+
+	      /* If we have the constructed subtype of an aliased object
+		 with an unconstrained nominal subtype, the type of the
+		 actual includes the template, although it is formally
+		 constrained.  So we need to convert it back to the real
+		 constructed subtype to retrieve the constrained part
+		 and takes its address.  */
+	      if (TREE_CODE (TREE_TYPE (gnu_actual)) == RECORD_TYPE
+		  && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (gnu_actual))
+		  && TREE_CODE (gnu_actual) != SAVE_EXPR
+		  && Is_Constr_Subt_For_UN_Aliased (Etype (gnat_actual))
+		  && Is_Array_Type (Etype (gnat_actual)))
+		gnu_actual = convert (gnat_to_gnu_type (Etype (gnat_actual)),
+				      gnu_actual);
 	    }
 
 	  /* Otherwise, if we have a non-addressable COMPONENT_REF of a
