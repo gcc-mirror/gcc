@@ -1726,7 +1726,7 @@ do {									     \
 #define ASM_OUTPUT_LABELREF(STREAM, NAME)	\
 do {						\
   const char *name_ = NAME;			\
-  if (*name_ == '@' || *name == '%')		\
+  if (*name_ == '@' || *name_ == '%')		\
     name_ += 2;					\
   if (*name_ == '*')				\
     name_++;					\
