@@ -420,6 +420,7 @@ local_alloc ()
   free (qty_phys_copy_sugg);
   free (qty_phys_num_copy_sugg);
   free (qty_phys_sugg);
+  free (qty_phys_num_sugg);
   free (qty_birth);
   free (qty_death);
   free (qty_first_reg);

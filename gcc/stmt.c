@@ -106,6 +106,7 @@ typedef struct case_node *case_node_ptr;
 /* These are used by estimate_case_costs and balance_case_nodes.  */
 
 /* This must be a signed type, and non-ANSI compilers lack signed char.  */
+static short cost_table_[129];
 static short *cost_table;
 static int use_cost_table;
 
@@ -5694,7 +5695,7 @@ estimate_case_costs (node)
 
   if (cost_table == NULL)
     {
-      cost_table = ((short *) xcalloc (129, sizeof (short))) + 1;
+      cost_table = cost_table_ + 1;
 
       for (i = 0; i < 128; i++)
 	{

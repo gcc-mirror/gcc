@@ -3053,13 +3053,15 @@ compile_file (name)
 	asm_out_file = stdout;
       else
 	{
-	  int len = strlen (dump_base_name);
-	  register char *dumpname = (char *) xmalloc (len + 6);
-	  strcpy (dumpname, dump_base_name);
-	  strip_off_ending (dumpname, len);
-	  strcat (dumpname, ".s");
 	  if (asm_file_name == 0)
-	    asm_file_name = xstrdup (dumpname);
+	    {
+	      int len = strlen (dump_base_name);
+	      char *dumpname = (char *) xmalloc (len + 6);
+	      memcpy (dumpname, dump_base_name, len + 1);
+	      strip_off_ending (dumpname, len);
+	      strcat (dumpname, ".s");
+	      asm_file_name = dumpname;
+	    }
 	  if (!strcmp (asm_file_name, "-"))
 	    asm_out_file = stdout;
 	  else

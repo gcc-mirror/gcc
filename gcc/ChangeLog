@@ -1,3 +1,22 @@
+Thu Nov  4 16:44:53 1999  Richard Henderson  <rth@cygnus.com>
+
+	* bitmap.h (BITMAP_XFREE): New.
+	* flow.c (life_analysis): Use it.
+	(life_analysis_1): Free blocks.
+
+	* combine.c (undo_commit): New.
+	(try_combine): Use it.  Don't zap undobuf.undos.
+	(combine_instructions): Don't zap undobuf.undos; free the
+	undobuf.frees list.
+
+	* local-alloc.c (local_alloc): Free qty_phys_num_sugg.
+
+	* stmt.c (cost_table_): New.
+	(estimate_case_costs): Use it instead of xmalloc.
+
+	* toplev.c (compile_file): Reuse dumpname memory instead
+	of strdup'ing it.
+
 Thu Nov  4 16:36:44 1999  Richard Henderson  <rth@cygnus.com>
 
 	* reg-stack.c (convert_regs_1): Initialize target_stack->top
