@@ -1,3 +1,8 @@
+2003-03-30  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/String.java: Miscellaneous minor formatting changes
+	to match Classpath more closely.
+
 2003-03-29  Eric Blake  <ebb9@email.byu.edu>
 	    Tom Tromey  <tromey@redhat.com>
 
