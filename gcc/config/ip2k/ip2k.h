@@ -1821,11 +1821,6 @@ do {									\
 
    If the value of this macro is always zero, it need not be defined.
 
-   `DONT_REDUCE_ADDR'
-   Define this macro to inhibit strength reduction of memory
-   addresses.  (On some machines, such strength reduction seems to do
-   harm rather than good.)
-
    `MOVE_RATIO'
    The number of scalar move insns which should be generated instead
    of a string move insn or a library call.  Increasing the value

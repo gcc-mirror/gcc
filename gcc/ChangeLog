@@ -1,3 +1,12 @@
+2003-06-07  Andreas Jaeger  <aj@suse.de>
+
+	* doc/tm.texi (Costs): Remove DONT_REDUCE_ADDR documentation.
+
+	* config/avr/avr.h: Remove comment regarding DONT_REDUCE_ADDR.
+	* config/dsp16xx/dsp16xx.h: Likewise.
+	* config/i386/i386.h: Likewise.
+	* config/ip2k/ip2k.h: Likewise.
+
 2003-06-07  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in (OJBS, c-opts.o): Update.
@@ -129,7 +138,7 @@
 	* fold-const.c (fold <ABS_EXPR>):  Re-fold the result of folding
 	fabs(-x) into fabs(x).  Use tree_expr_nonnegative_p to determine
 	when the ABS_EXPR (fabs or abs) is not required.
-  	(tree_expr_nonnegative_p): Move the logic that sqrt and exp are
+	(tree_expr_nonnegative_p): Move the logic that sqrt and exp are
 	always nonnegative from fold to here.  Additionally, cabs and fabs
 	are always non-negative, and pow and atan are non-negative if
 	their first argument is non-negative.
@@ -247,7 +256,7 @@ Fri Jun  6 11:03:14 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-05-06  Richard Henderson  <rth@redhat.com>
 
-	* dwarf2out.c (loc_descriptor_from_tree): Return 0 for 
+	* dwarf2out.c (loc_descriptor_from_tree): Return 0 for
 	language-specific tree codes.
 
 2003-06-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
@@ -269,7 +278,7 @@ Thu Jun  5 18:32:46 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(stage[2-4]_build): Add POSTSTAGE1_FLAGS_TO_PASS.
 	(stageprofile_build, stageprofile_copy, stagefeedback_build,
 	stagefeedback_copy): New.
-	(restageprofile, restagefeedback, stageprofile-start, 
+	(restageprofile, restagefeedback, stageprofile-start,
 	stageprofile, stagefeedback-start): Likewise.
 
 2003-06-05  David Miller  <davem@redhat.com>
@@ -283,7 +292,7 @@ Thu Jun  5 18:32:46 CEST 2003  Jan Hubicka  <jh@suse.cz>
 Thu Jun  5 14:59:44 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (simplify_if_then_else): (IF_THEN_ELSE (NE REG 0) (0) (8))
-	is REG for nonzero_bits (REG) == 8.  
+	is REG for nonzero_bits (REG) == 8.
 
 Thu Jun  5 13:23:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
@@ -297,7 +306,7 @@ Thu Jun  5 13:23:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
         multilibs.  Remove m32rx specific version.
         (crtfini.o): Likewise.
         (EXTRA_MULTILIB_PARTS): Define.
-        
+
 2003-06-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/md.texi (Machine Constraints): Correct the meaning of

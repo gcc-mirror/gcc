@@ -2672,12 +2672,6 @@ do {							\
 
 /* #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) 0 */
 
-/* Define this macro to inhibit strength reduction of memory
-   addresses.  (On some machines, such strength reduction seems to do
-   harm rather than good.)  */
-
-/* #define DONT_REDUCE_ADDR */
-
 /* Define this macro if it is as good or better to call a constant
    function address than to call an address kept in a register.
 
