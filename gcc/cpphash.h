@@ -68,17 +68,6 @@ struct file_name_list
      Only used on MS-DOS and related platforms. */
   struct file_name_map *name_map;
 };
-#define ABSOLUTE_PATH ((struct file_name_list *)-1)
-
-/* The cmacro works like this: If it's NULL, the file is to be
-   included again.  If it's NEVER_REREAD, the file is never to be
-   included again.  Otherwise it is a macro hashnode, and the file is
-   to be included again if the macro is defined or not as specified by
-   DEFINED.  */
-#define NEVER_REREAD ((const cpp_hashnode *)-1)
-#define DO_NOT_REREAD(inc) \
-((inc)->cmacro && ((inc)->cmacro == NEVER_REREAD \
-		   || ((inc)->cmacro->type == NT_MACRO) == (inc)->defined))
 
 struct cpp_buffer
 {
@@ -168,10 +157,8 @@ extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 #define CPP_PRINT_DEPS(PFILE) CPP_OPTION (PFILE, print_deps)
 #define CPP_IN_SYSTEM_HEADER(PFILE) \
   (CPP_BUFFER (PFILE) && CPP_BUFFER (PFILE)->sysp)
-#define CPP_PEDANTIC(PF) \
-  CPP_OPTION (PF, pedantic)
-#define CPP_WTRADITIONAL(PF) \
-  CPP_OPTION (PF, warn_traditional)
+#define CPP_PEDANTIC(PF) CPP_OPTION (PF, pedantic)
+#define CPP_WTRADITIONAL(PF) CPP_OPTION (PF, warn_traditional)
 
 /* Hash step.  The hash calculation is duplicated in cpp_lookup and
    parse_name.  */

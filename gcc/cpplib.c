@@ -90,7 +90,7 @@ static int glue_header_name	PARAMS ((cpp_reader *, cpp_token *));
 static int  parse_include	PARAMS ((cpp_reader *, cpp_token *));
 static void push_conditional	PARAMS ((cpp_reader *, int, int,
 					 const cpp_hashnode *));
-static unsigned int read_flag	PARAMS ((cpp_reader *));
+static unsigned int read_flag	PARAMS ((cpp_reader *, unsigned int));
 static int  strtoul_for_line	PARAMS ((const U_CHAR *, unsigned int,
 					 unsigned long *));
 static void do_diagnostic	PARAMS ((cpp_reader *, enum error_type, int));
@@ -247,13 +247,13 @@ end_directive (pfile, skip_line)
 {
   cpp_buffer *buffer = pfile->buffer;
 
+  /* Restore pfile->skipping before skip_rest_of_line, so that e.g.
+     __VA_ARGS__ in the rest of the directive doesn't warn.  */
+  pfile->skipping = buffer->was_skipping;
+
   /* We don't skip for an assembler #.  */
   if (skip_line)
     skip_rest_of_line (pfile);
-
-  /* Restore pfile->skipping after skip_rest_of_line.  Otherwise the
-     lexer might not return!  */
-  pfile->skipping = buffer->was_skipping;
 
   /* Restore state.  */
   pfile->la_write = pfile->la_saved;
@@ -639,22 +639,26 @@ do_include_next (pfile)
     _cpp_execute_include (pfile, &header, 0, 1);
 }
 
-/* Subroutine of do_line.  Read possible flags after file name.  If it
-   is a number between 1 and 4, return it, otherwise return 0.  If
-   it's not the end of the directive complain.  */
+/* Subroutine of do_line.  Read possible flags after file name.  LAST
+   is the last flag seen; 0 if this is the first flag. Return the flag
+   if it is valid, 0 at the end of the directive. Otherwise complain.  */
 
 static unsigned int
-read_flag (pfile)
+read_flag (pfile, last)
      cpp_reader *pfile;
+     unsigned int last;
 {
   cpp_token token;
 
   _cpp_lex_token (pfile, &token);
   if (token.type == CPP_NUMBER && token.val.str.len == 1)
     {
-      unsigned int flag = token.val.str.text[0] - '1';
-      if (flag <= 3)
-	return flag + 1;
+      unsigned int flag = token.val.str.text[0] - '0';
+
+      if (flag > last && flag <= 4
+	  && (flag != 4 || last == 3)
+	  && (flag != 2 || last == 0))
+	return flag;
     }
 
   if (token.type != CPP_EOF)
@@ -733,31 +737,33 @@ do_line (pfile)
       _cpp_simplify_pathname (fname);
       buffer->nominal_fname = fname;
 
-      if (pfile->state.line_extension)
+      if (! pfile->state.line_extension)
+	check_eol (pfile);
+      else
 	{
-	  int flag, sysp = 0;
+	  int flag = 0, sysp = 0;
 
-	  flag = read_flag (pfile);
+	  flag = read_flag (pfile, flag);
 	  if (flag == 1)
 	    {
 	      reason = FC_ENTER;
-	      flag = read_flag (pfile);
+	      flag = read_flag (pfile, flag);
 	    }
 	  else if (flag == 2)
 	    {
 	      reason = FC_LEAVE;
-	      flag = read_flag (pfile);
+	      flag = read_flag (pfile, flag);
 	    }
 	  if (flag == 3)
 	    {
-	      flag = read_flag (pfile);
 	      sysp = 1;
+	      flag = read_flag (pfile, flag);
+	      if (flag == 4)
+		sysp = 2, read_flag (pfile, flag);
 	    }
 
-	  cpp_make_system_header (pfile, sysp, flag == 4);
+	  cpp_make_system_header (pfile, sysp, sysp == 2);
 	}
-
-      check_eol (pfile);
     }
   else if (token.type != CPP_EOF)
     {
