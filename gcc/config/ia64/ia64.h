@@ -2382,12 +2382,6 @@ do {									\
 #define HARD_REGNO_RENAME_OK(REGNO1,REGNO2) \
   ia64_hard_regno_rename_ok((REGNO1), (REGNO2))
 
-/* Define this macro if the compiler should use extended basic blocks
-   when renaming registers.  Define this macro if the target has predicate
-   registers.  */
-
-#define RENAME_EXTENDED_BLOCKS
-
 
 /* Miscellaneous Parameters.  */
 
