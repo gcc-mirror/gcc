@@ -27,10 +27,11 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 /* Hacked by Per Bothner <bothner@cygnus.com> February 1996. */
 
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "java-tree.h"
 #include "jcf.h"
-#include "system.h"
+#include "toplev.h"
 
 /* The DECL_MAP is a mapping from (index, type) to a decl node.
    If index < max_locals, it is the index of a local variable.

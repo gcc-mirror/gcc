@@ -1,3 +1,11 @@
+Mon Sep 14 10:14:47 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in: Add many missing dependencies.
+	* buffer.c, class.c, constants.c, decl.c: Use system.h and toplev.h
+	as appropriate.
+	* except.c, expr.c, jcf-io.c jcf-parse.c, jcf-write.c: Likewise.
+	* jvgenmain.c lang.c mangle.c typeck.c verify.c: Likewise.
+
 Thu Sep 10 10:33:31 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Make-lang.in (GCJ): Define before using.

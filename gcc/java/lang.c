@@ -24,12 +24,13 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Hacked by Per Bothner <bothner@cygnus.com> February 1996. */
 
-#include <stdio.h>
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "input.h"
 #include "java-tree.h"
 #include "jcf.h"
+#include "toplev.h"
 
 int compiling_from_source;
 

@@ -22,19 +22,14 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Written by Per Bothner <bothner@cygnus.com>, February 1996. */
 
-#include <stdio.h>
+#include "config.h"
+#include "system.h"
 
 #define ENABLE_UNZIP 1
 
 #include "jcf.h"
-#ifdef __STDC__
-#include <stdlib.h>
-#endif
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include <errno.h>
-#include <fcntl.h>
 
 /* DOS brain-damage */
 #ifndef O_BINARY
@@ -158,8 +153,8 @@ zipfile, zipmember),
 	  jcf->read_ptr = jcf->buffer;
 	  jcf->read_end = jcf->buffer_end;
 	  jcf->filbuf = jcf_unexpected_eof;
-	  jcf->filename = (char *) strdup (zipfile);
-	  jcf->classname = (char *) strdup (zipmember);
+	  jcf->filename = strdup (zipfile);
+	  jcf->classname = strdup (zipmember);
 	  jcf->zipd = (void *)zipd;
 	  if (lseek (zipf->z.fd, zipd->filestart, 0) < 0
 	      || read (zipf->z.fd, jcf->buffer, zipd->size) != zipd->size)

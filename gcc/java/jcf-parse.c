@@ -24,9 +24,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Written by Per Bothner <bothner@cygnus.com> */
 
-#include <stdio.h>
-#include <ctype.h>
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "obstack.h"
 #include "flags.h"
@@ -51,14 +50,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
     JCF_SKIP (JCF, LENGTH); } while (0)
 
 #include "jcf.h"
-#ifdef __STDC__
-/* For getenv */
-#include <stdlib.h>
-#endif
-
-#ifndef SEEK_SET
-#include <unistd.h>
-#endif
 
 extern struct obstack *saveable_obstack;
 extern struct obstack temporary_obstack;

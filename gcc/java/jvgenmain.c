@@ -24,9 +24,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Written by Per Bothner <bothner@cygnus.com> */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include "config.h"
+#include "system.h"
 #include "obstack.h"
 
 const char main_method_prefix[] = "main__";
