@@ -77,8 +77,11 @@ if [string match "*init_priority*" $lines] then {
         fail "conpr-3b.o"
     } else {
         # run it with objects both ways around!
-        dg-runtest "$srcdir/$subdir/conpr-3.C" "conpr-3a.o conpr-3b.o" ""
-        dg-runtest "$srcdir/$subdir/conpr-3.C" "conpr-3b.o conpr-3a.o" ""
+        # This doesn't work on solaris2 for reasons described in PR 6482.
+        if  { ![regexp ".*-solaris2.*" $target_triplet] } {
+            dg-runtest "$srcdir/$subdir/conpr-3.C" "conpr-3a.o conpr-3b.o" ""
+            dg-runtest "$srcdir/$subdir/conpr-3.C" "conpr-3b.o conpr-3a.o" ""
+        }
         file delete conpr-3a.o conpr-3b.o
     }
 }
