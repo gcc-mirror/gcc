@@ -558,6 +558,9 @@ get_memory_rtx (exp)
     return mem;
 
   set_mem_attributes (mem, exp, 0);
+
+  /* memcpy, memset and other builtin stringops can alias with anything. */
+  MEM_ALIAS_SET (mem) = 0;
   return mem;
 }
 
