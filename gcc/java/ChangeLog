@@ -1,4 +1,20 @@
-2000-04-19  Tom Tromey  &lt;tromey@cygnus.com&gt;
+2000-05-03  Andrew Haley  <aph@cygnus.com>
+
+	* expr.c (build_java_jsr): Use emit_jump, not expand_goto.
+
+	* javaop.h (WORD_TO_INT): New function.
+	(IMMEDIATE_s4): Use WORD_TO_INT.
+	* jcf.h (JPOOL_INT): Ditto.
+
+	* gjavah.c (decode_signature_piece): Don't treat `$' as namespace
+	separator.
+
+2000-05-02  Tom Tromey  <tromey@cygnus.com>
+
+	* expr.c (build_jni_stub): Cache the result of
+	_Jv_LookupJNIMethod.
+
+2000-04-19  Tom Tromey  <tromey@cygnus.com>
 
 	* class.c (add_method_1): Set both DECL_EXTERNAL and METHOD_NATIVE
 	on native function.

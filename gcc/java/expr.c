@@ -560,7 +560,7 @@ build_java_jsr (where, ret)
   tree ret_label = fold (build1 (ADDR_EXPR, return_address_type_node, ret));
   push_value (ret_label);
   flush_quick_stack ();
-  expand_goto (where);
+  emit_jump (label_rtx (where));
   expand_label (ret);
 }
 
