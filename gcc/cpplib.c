@@ -52,6 +52,20 @@ struct directive
   enum node_type type;		/* Code which describes which directive.  */
 };
 
+/* Stack of conditionals currently in progress
+   (including both successful and failing conditionals).  */
+
+struct if_stack
+{
+  struct if_stack *next;
+  int lineno;			/* line number where condition started */
+  int if_succeeded;		/* truth of last condition in this group */
+  const U_CHAR *control_macro;	/* macro name for #ifndef around entire file */
+  enum node_type type;		/* type of last directive seen in this group */
+};
+typedef struct if_stack IF_STACK;
+
+
 /* These functions are declared to return int instead of void since they
    are going to be placed in a table and some old compilers have trouble with
    pointers to functions returning void.  */
@@ -64,7 +78,7 @@ static int do_error PARAMS ((cpp_reader *, const struct directive *));
 static int do_pragma PARAMS ((cpp_reader *, const struct directive *));
 static int do_ident PARAMS ((cpp_reader *, const struct directive *));
 static int do_if PARAMS ((cpp_reader *, const struct directive *));
-static int do_xifdef PARAMS ((cpp_reader *, const struct directive *));
+static int do_ifdef PARAMS ((cpp_reader *, const struct directive *));
 static int do_else PARAMS ((cpp_reader *, const struct directive *));
 static int do_elif PARAMS ((cpp_reader *, const struct directive *));
 static int do_endif PARAMS ((cpp_reader *, const struct directive *));
@@ -78,7 +92,7 @@ static int do_warning PARAMS ((cpp_reader *, const struct directive *));
 /* Forward declarations.  */
 
 static void validate_else		PARAMS ((cpp_reader *, const char *));
-static HOST_WIDEST_INT eval_if_expr	PARAMS ((cpp_reader *));
+static int eval_if_expr			PARAMS ((cpp_reader *));
 static void conditional_skip		PARAMS ((cpp_reader *, int,
 						enum node_type, U_CHAR *));
 static void skip_if_group		PARAMS ((cpp_reader *));
@@ -118,10 +132,10 @@ static const struct directive directive_table[] = {
   {  6, do_define,   "define",       T_DEFINE },	/* 270554 */
   {  7, do_include,  "include",      T_INCLUDE },	/*  52262 */
   {  5, do_endif,    "endif",        T_ENDIF },		/*  45855 */
-  {  5, do_xifdef,   "ifdef",        T_IFDEF },		/*  22000 */
+  {  5, do_ifdef,   "ifdef",        T_IFDEF },		/*  22000 */
   {  2, do_if,       "if",           T_IF },		/*  18162 */
   {  4, do_else,     "else",         T_ELSE },		/*   9863 */
-  {  6, do_xifdef,   "ifndef",       T_IFNDEF },	/*   9675 */
+  {  6, do_ifdef,   "ifndef",       T_IFNDEF },	/*   9675 */
   {  5, do_undef,    "undef",        T_UNDEF },		/*   4837 */
   {  4, do_line,     "line",         T_LINE },		/*   2465 */
   {  4, do_elif,     "elif",         T_ELIF },		/*    610 */
@@ -529,7 +543,7 @@ handle_directive (pfile)
 	return 0;
 
       if (CPP_PEDANTIC (pfile)
-	  && ! CPP_PREPROCESSED (pfile)
+	  && ! CPP_OPTIONS (pfile)->preprocessed
 	  && ! CPP_BUFFER (pfile)->manual_pop)
 	cpp_pedwarn (pfile, "`#' followed by integer");
       do_line (pfile, NULL);
@@ -538,7 +552,7 @@ handle_directive (pfile)
 
   /* If we are rescanning preprocessed input, don't obey any directives
      other than # nnn.  */
-  if (CPP_PREPROCESSED (pfile))
+  if (CPP_OPTIONS (pfile)->preprocessed)
     return 0;
 
   /* Now find the directive name.  */
@@ -1842,16 +1856,8 @@ detect_if_not_defined (pfile)
 }
 
 /*
- * handle #if command by
- *   1) inserting special `defined' keyword into the hash table
- *	that gets turned into 0 or 1 by special_symbol (thus,
- *	if the luser has a symbol called `defined' already, it won't
- *      work inside the #if command)
- *   2) rescan the input into a temporary output buffer
- *   3) pass the output buffer to the yacc parser and collect a value
- *   4) clean up the mess left from steps 1 and 2.
- *   5) call conditional_skip to skip til the next #endif (etc.),
- *      or not, depending on the value from step 3.
+ * #if is straightforward; just call eval_if_expr, then conditional_skip.
+ * Also, check for a reinclude preventer of the form #if !defined (MACRO).
  */
 
 static int
@@ -1860,7 +1866,7 @@ do_if (pfile, keyword)
      const struct directive *keyword ATTRIBUTE_UNUSED;
 {
   U_CHAR *control_macro = detect_if_not_defined (pfile);
-  HOST_WIDEST_INT value = eval_if_expr (pfile);
+  int value = eval_if_expr (pfile);
   conditional_skip (pfile, value == 0, T_IF, control_macro);
   return 0;
 }
@@ -1895,7 +1901,7 @@ do_elif (pfile, keyword)
     skip_if_group (pfile);
   else
     {
-      HOST_WIDEST_INT value = eval_if_expr (pfile);
+      int value = eval_if_expr (pfile);
       if (value == 0)
 	skip_if_group (pfile);
       else
@@ -1907,16 +1913,15 @@ do_elif (pfile, keyword)
   return 0;
 }
 
-/*
- * evaluate a #if expression in BUF, of length LENGTH,
- * then parse the result as a C expression and return the value as an int.
+/* Thin wrapper around _cpp_parse_expr, which doesn't have access to
+ * skip_rest_of_line.  Also centralizes toggling parsing_if_directive.
  */
 
-static HOST_WIDEST_INT
+static int
 eval_if_expr (pfile)
      cpp_reader *pfile;
 {
-  HOST_WIDEST_INT value;
+  int value;
   long old_written = CPP_WRITTEN (pfile);
 
   pfile->parsing_if_directive++;
@@ -1936,7 +1941,7 @@ eval_if_expr (pfile)
  */
 
 static int
-do_xifdef (pfile, keyword)
+do_ifdef (pfile, keyword)
      cpp_reader *pfile;
      const struct directive *keyword;
 {
@@ -2578,7 +2583,8 @@ cpp_get_token (pfile)
 		break;
 	      if (!is_numchar(c) && c != '.'
 		  && ((c2 != 'e' && c2 != 'E'
-		       && ((c2 != 'p' && c2 != 'P') || CPP_C89 (pfile)))
+		       && ((c2 != 'p' && c2 != 'P')
+			   || CPP_OPTIONS (pfile)->c89))
 		      || (c != '+' && c != '-')))
 		break;
 	      FORWARD(1);

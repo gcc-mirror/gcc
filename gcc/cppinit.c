@@ -36,6 +36,17 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define GET_ENV_PATH_LIST(VAR,NAME)	do { (VAR) = getenv (NAME); } while (0)
 #endif
 
+/* Windows does not natively support inodes, and neither does MSDOS.
+   Cygwin's emulation can generate non-unique inodes, so don't use it.
+   VMS has non-numeric inodes. */
+#ifdef VMS
+#define INO_T_EQ(a, b) (!memcmp (&(a), &(b), sizeof (a)))
+#elif (defined _WIN32 && ! defined (_UWIN)) || defined __MSDOS__
+#define INO_T_EQ(a, b) 0
+#else
+#define INO_T_EQ(a, b) ((a) == (b))
+#endif
+
 #ifndef STANDARD_INCLUDE_DIR
 #define STANDARD_INCLUDE_DIR "/usr/include"
 #endif
@@ -97,47 +108,51 @@ struct default_include
 				   C++.  */
 };
 
+#ifndef STANDARD_INCLUDE_COMPONENT
+#define STANDARD_INCLUDE_COMPONENT 0
+#endif
+
+#ifdef CROSS_COMPILE
+#undef LOCAL_INCLUDE_DIR
+#undef SYSTEM_INCLUDE_DIR
+#undef STANDARD_INCLUDE_DIR
+#else
+#undef CROSS_INCLUDE_DIR
+#endif
+
 static const struct default_include include_defaults_array[]
 #ifdef INCLUDE_DEFAULTS
 = INCLUDE_DEFAULTS;
 #else
 = {
+#ifdef GPLUSPLUS_INCLUDE_DIR
     /* Pick up GNU C++ specific include files.  */
     { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1 },
-#ifdef CROSS_COMPILE
-    /* This is the dir for fixincludes.  Put it just before
-       the files that we fix.  */
-    { GCC_INCLUDE_DIR, "GCC", 0, 0 },
-    /* For cross-compilation, this dir name is generated
-       automatically in Makefile.in.  */
-    { CROSS_INCLUDE_DIR, "GCC", 0, 0 },
-#ifdef TOOL_INCLUDE_DIR
-    /* This is another place that the target system's headers might be.  */
-    { TOOL_INCLUDE_DIR, "BINUTILS", 0, 1 },
 #endif
-#else /* not CROSS_COMPILE */
 #ifdef LOCAL_INCLUDE_DIR
-    /* This should be /usr/local/include and should come before
-       the fixincludes-fixed header files.  */
+    /* /usr/local/include comes before the fixincluded header files.  */
     { LOCAL_INCLUDE_DIR, 0, 0, 1 },
 #endif
+#ifdef GCC_INCLUDE_DIR
+    /* This is the dir for fixincludes and for gcc's private headers.  */
+    { GCC_INCLUDE_DIR, "GCC", 0, 0 },
+#endif
+#ifdef CROSS_INCLUDE_DIR
+    /* One place the target system's headers might be.  */
+    { CROSS_INCLUDE_DIR, "GCC", 0, 0 },
+#endif
 #ifdef TOOL_INCLUDE_DIR
-    /* This is here ahead of GCC_INCLUDE_DIR because assert.h goes here.
-       Likewise, behind LOCAL_INCLUDE_DIR, where glibc puts its assert.h.  */
+    /* Another place the target system's headers might be.  */
     { TOOL_INCLUDE_DIR, "BINUTILS", 0, 1 },
 #endif
-    /* This is the dir for fixincludes.  Put it just before
-       the files that we fix.  */
-    { GCC_INCLUDE_DIR, "GCC", 0, 0 },
-    /* Some systems have an extra dir of include files.  */
 #ifdef SYSTEM_INCLUDE_DIR
+    /* Some systems have an extra dir of include files.  */
     { SYSTEM_INCLUDE_DIR, 0, 0, 0 },
 #endif
-#ifndef STANDARD_INCLUDE_COMPONENT
-#define STANDARD_INCLUDE_COMPONENT 0
-#endif
+#ifdef STANDARD_INCLUDE_DIR
+    /* /usr/include comes dead last.  */
     { STANDARD_INCLUDE_DIR, STANDARD_INCLUDE_COMPONENT, 0, 0 },
-#endif /* not CROSS_COMPILE */
+#endif
     { 0, 0, 0, 0 }
   };
 #endif /* no INCLUDE_DEFAULTS */
@@ -154,6 +169,24 @@ struct pending_option
   struct pending_option *next;
   char *arg;
   int undef;
+};
+
+/* The `pending' structure accumulates all the options that are not
+   actually processed until we hit cpp_start_read.  It consists of
+   several lists, one for each type of option.  We keep both head and
+   tail pointers for quick insertion. */
+struct cpp_pending
+{
+  struct pending_option *define_head, *define_tail;
+  struct pending_option *assert_head, *assert_tail;
+
+  struct file_name_list *quote_head, *quote_tail;
+  struct file_name_list *brack_head, *brack_tail;
+  struct file_name_list *systm_head, *systm_tail;
+  struct file_name_list *after_head, *after_tail;
+
+  struct pending_option *imacros_head, *imacros_tail;
+  struct pending_option *include_head, *include_tail;
 };
 
 #ifdef __STDC__
@@ -178,6 +211,8 @@ static void initialize_builtins		PARAMS ((cpp_reader *));
 static void append_include_chain	PARAMS ((cpp_reader *,
 						 struct cpp_pending *,
 						 char *, int, int));
+static void merge_include_chains	PARAMS ((struct cpp_options *));
+
 static void dump_special_to_buffer	PARAMS ((cpp_reader *, const char *));
 static void initialize_dependency_output PARAMS ((cpp_reader *));
 static void initialize_standard_includes PARAMS ((cpp_reader *));
@@ -341,6 +376,135 @@ append_include_chain (pfile, pend, dir, path, cxx_aware)
     }
 }
 
+/* Merge the four include chains together in the order quote, bracket,
+   system, after.  Remove duplicate dirs (as determined by
+   INO_T_EQ()).  The system_include and after_include chains are never
+   referred to again after this function; all access is through the
+   bracket_include path.
+
+   For the future: Check if the directory is empty (but
+   how?) and possibly preload the include hash. */
+
+static void
+merge_include_chains (opts)
+     struct cpp_options *opts;
+{
+  struct file_name_list *prev, *cur, *other;
+  struct file_name_list *quote, *brack, *systm, *after;
+  struct file_name_list *qtail, *btail, *stail, *atail;
+
+  qtail = opts->pending->quote_tail;
+  btail = opts->pending->brack_tail;
+  stail = opts->pending->systm_tail;
+  atail = opts->pending->after_tail;
+
+  quote = opts->pending->quote_head;
+  brack = opts->pending->brack_head;
+  systm = opts->pending->systm_head;
+  after = opts->pending->after_head;
+
+  /* Paste together bracket, system, and after include chains. */
+  if (stail)
+    stail->next = after;
+  else
+    systm = after;
+  if (btail)
+    btail->next = systm;
+  else
+    brack = systm;
+
+  /* This is a bit tricky.
+     First we drop dupes from the quote-include list.
+     Then we drop dupes from the bracket-include list.
+     Finally, if qtail and brack are the same directory,
+     we cut out qtail.
+
+     We can't just merge the lists and then uniquify them because
+     then we may lose directories from the <> search path that should
+     be there; consider -Ifoo -Ibar -I- -Ifoo -Iquux. It is however
+     safe to treat -Ibar -Ifoo -I- -Ifoo -Iquux as if written
+     -Ibar -I- -Ifoo -Iquux.
+
+     Note that this algorithm is quadratic in the number of -I switches,
+     which is acceptable since there aren't usually that many of them.  */
+
+  for (cur = quote, prev = NULL; cur; cur = cur->next)
+    {
+      for (other = quote; other != cur; other = other->next)
+        if (INO_T_EQ (cur->ino, other->ino)
+	    && cur->dev == other->dev)
+          {
+	    if (opts->verbose)
+	      fprintf (stderr, _("ignoring duplicate directory `%s'\n"),
+		       cur->name);
+
+	    prev->next = cur->next;
+	    free (cur->name);
+	    free (cur);
+	    cur = prev;
+	    break;
+	  }
+      prev = cur;
+    }
+  qtail = prev;
+
+  for (cur = brack; cur; cur = cur->next)
+    {
+      for (other = brack; other != cur; other = other->next)
+        if (INO_T_EQ (cur->ino, other->ino)
+	    && cur->dev == other->dev)
+          {
+	    if (opts->verbose)
+	      fprintf (stderr, _("ignoring duplicate directory `%s'\n"),
+		       cur->name);
+
+	    prev->next = cur->next;
+	    free (cur->name);
+	    free (cur);
+	    cur = prev;
+	    break;
+	  }
+      prev = cur;
+    }
+
+  if (quote)
+    {
+      if (INO_T_EQ (qtail->ino, brack->ino) && qtail->dev == brack->dev)
+        {
+	  if (quote == qtail)
+	    {
+	      if (opts->verbose)
+		fprintf (stderr, _("ignoring duplicate directory `%s'\n"),
+			 quote->name);
+
+	      free (quote->name);
+	      free (quote);
+	      quote = brack;
+	    }
+	  else
+	    {
+	      cur = quote;
+	      while (cur->next != qtail)
+		  cur = cur->next;
+	      cur->next = brack;
+	      if (opts->verbose)
+		fprintf (stderr, _("ignoring duplicate directory `%s'\n"),
+			 qtail->name);
+
+	      free (qtail->name);
+	      free (qtail);
+	    }
+	}
+      else
+	  qtail->next = brack;
+    }
+  else
+      quote = brack;
+
+  opts->quote_include = quote;
+  opts->bracket_include = brack;
+}
+
 
 /* Write out a #define command for the special named MACRO_NAME
    to PFILE's token_buffer.  */
@@ -417,13 +581,6 @@ cpp_cleanup (pfile)
 
   if (pfile->deps)
     deps_free (pfile->deps);
-
-  while (pfile->if_stack)
-    {
-      IF_STACK *temp = pfile->if_stack;
-      pfile->if_stack = temp->next;
-      free (temp);
-    }
 
   for (i = ALL_INCLUDE_HASHSIZE; --i >= 0; )
     {
@@ -723,7 +880,7 @@ cpp_start_read (pfile, fname)
   if (! opts->no_standard_includes)
     initialize_standard_includes (pfile);
 
-  _cpp_merge_include_chains (opts);
+  merge_include_chains (opts);
 
   /* With -v, print the list of dirs to search.  */
   if (opts->verbose)
@@ -844,9 +1001,10 @@ cpp_finish (pfile)
 {
   struct cpp_options *opts = CPP_OPTIONS (pfile);
 
-  if (CPP_PREV_BUFFER (CPP_BUFFER (pfile)) != NULL)
+  if (CPP_PREV_BUFFER (CPP_BUFFER (pfile)))
     cpp_ice (pfile, "buffers still stacked in cpp_finish");
-  cpp_pop_buffer (pfile);
+  while (CPP_BUFFER (pfile))
+    cpp_pop_buffer (pfile);
 
   /* Don't write the deps file if preprocessing has failed.  */
   if (opts->print_deps && pfile->errors == 0)

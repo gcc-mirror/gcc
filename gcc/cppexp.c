@@ -27,10 +27,7 @@ Written by Per Bothner 1994.  */
 #include "config.h"
 #include "system.h"
 #include "cpplib.h"
-
-#ifdef MULTIBYTE_CHARS
-#include <locale.h>
-#endif
+#include "cpphash.h"
 
 #ifndef CHAR_TYPE_SIZE
 #define CHAR_TYPE_SIZE BITS_PER_UNIT
@@ -453,7 +450,7 @@ lex (pfile, skip_evaluation)
       op.unsignedp = 0;
       op.value = 0;
 
-      if (CPP_WARN_UNDEF (pfile) && !skip_evaluation)
+      if (CPP_OPTIONS (pfile)->warn_undef && !skip_evaluation)
 	cpp_warning (pfile, "`%.*s' is not defined",
 		     (int) (tok_end - tok_start), tok_start);
       return op;
@@ -669,9 +666,9 @@ right_shift (pfile, a, unsignedp, b)
   ? (unsigned HOST_WIDEST_INT) v1 OP (unsigned HOST_WIDEST_INT) v2 : (v1 OP v2)
 
 /* Parse and evaluate a C expression, reading from PFILE.
-   Returns the value of the expression.  */
+   Returns the truth value of the expression.  */
 
-HOST_WIDEST_INT
+int
 _cpp_parse_expr (pfile)
      cpp_reader *pfile;
 {
@@ -1004,7 +1001,7 @@ _cpp_parse_expr (pfile)
 	    cpp_ice (pfile, "unbalanced stack in #if expression");
 	  if (stack != init_stack)
 	    free (stack);
-	  return top->value;
+	  return (top->value != 0);
 	}
       top++;
       

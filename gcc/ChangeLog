@@ -1,3 +1,38 @@
+2000-03-08  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* Makefile.in (LIBCPP_DEPS): New macro.
+	(cpplib.o, cpphash.o, cpperror.o, cppexp.o, cppfiles.o): Use
+	it to declare deps.
+	* cpperror.c: Include cpphash.h.
+	* cppexp.c: Include cpphash.h.  Remove MULTIBYTE_CHARS
+	dingleberry.
+	(lex): Don't use CPP_WARN_UNDEF.
+	(_cpp_parse_expr): Return an int, the truth value.
+	* cppfiles.c: Include cpphash.h.
+	(_cpp_merge_include_chains): Move to cppinit.c and make static.
+	* cppinit.c (include_defaults_array): Disentangle.
+	(cpp_cleanup): Don't free the if stack here.
+	(cpp_finish): Pop off all buffers, not just one.
+	* cpplib.c (eval_if_expr): Return int.
+	(do_xifdef): Rename do_ifdef.
+	(handle_directive): Don't use CPP_PREPROCESSED.	
+	(cpp_get_token): Don't use CPP_C89.
+	* fix-header.c: Don't use CPP_OPTIONS.
+
+	* cpplib.h: Move U_CHAR, enum node_type, struct
+	file_name_list, struct ihash, is_idchar, is_idstart,
+	is_numchar, is_numstart, is_hspace, is_space, CPP_BUF_PEEK,
+	CPP_BUF_GET, CPP_FORWARD, CPP_PUTS, CPP_PUTS_Q, CPP_PUTC,
+	CPP_PUTC_Q, CPP_NUL_TERMINATE, CPP_NUL_TERMINATE_Q,
+	CPP_BUMP_BUFFER_LINE, CPP_BUMP_LINE, CPP_PREV_BUFFER,
+	CPP_PRINT_DEPS, CPP_TRADITIONAL, CPP_PEDANTIC, and prototypes
+	of _cpp_simplify_pathname, _cpp_find_include_file,
+	_cpp_read_include_file, and _cpp_parse_expr to cpphash.h.
+	Move struct if_stack to cpplib.c.  Move struct cpp_pending to
+	cppinit.c.
+	Change all uses of U_CHAR to be unsigned char instead.
+	Delete CPP_WARN_UNDEF, CPP_C89, and CPP_PREPROCESSED.
+
 2000-03-08  Jason Merrill  <jason@casey.cygnus.com>
 
 	* dwarf2out.c (dw_fde_struct): Add 'nothrow'.
