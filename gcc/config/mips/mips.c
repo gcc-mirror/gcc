@@ -4283,8 +4283,11 @@ print_operand_address (file, addr)
    us are in the permanent obstack, so that they will be valid
    at the end of the compilation.
 
-   If we have -G 0, or the extern size is unknown, don't bother
-   emitting the .externs.  */
+   If we have -G 0, or the extern size is unknown, or the object is in
+   a user specified section that is not .sbss/.sdata, don't bother
+   emitting the .externs.  In the case of user specified sections this
+   behaviour is required as otherwise GAS will think the object lives in
+   .sbss/.sdata.  */
 
 int
 mips_output_external (file, decl, name)
@@ -4294,10 +4297,14 @@ mips_output_external (file, decl, name)
 {
   register struct extern_list *p;
   int len;
+  tree section_name;
 
   if (TARGET_GP_OPT
       && ((TREE_CODE (decl)) != FUNCTION_DECL)
-      && ((len = int_size_in_bytes (TREE_TYPE (decl))) > 0))
+      && ((len = int_size_in_bytes (TREE_TYPE (decl))) > 0)
+      && (((section_name = DECL_SECTION_NAME (decl)) == NULL)
+	  || strcmp (TREE_STRING_POINTER (section_name), ".sbss") == 0
+	  || strcmp (TREE_STRING_POINTER (section_name), ".sdata") == 0))
     {
       p = (struct extern_list *)permalloc ((long) sizeof (struct extern_list));
       p->next = extern_head;
