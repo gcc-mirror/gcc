@@ -1,3 +1,8 @@
+2003-02-04  Richard Henderson  <rth@redhat.com>
+
+	* longlong.h [alpha] (count_leading_zeros, count_trailing_zeros): Use
+	builtins instead of inline assembly.
+
 2003-02-04  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
  
 	PR c/9376
