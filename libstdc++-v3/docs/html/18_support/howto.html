@@ -284,6 +284,13 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
+<p>
+   This function will attempt to write to stderr.  If your application
+    closes stderr or redirects it to an inappropriate location,
+    <code>__verbose_terminate_handler</code> will behave in an
+    unspecified manner.
+</p>
+
 <hr />
 <h2><a name="5">Dynamic memory management</a></h2>
    <p>There are six flavors each of <code>new</code> and
