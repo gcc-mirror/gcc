@@ -5062,7 +5062,8 @@
    add\t%1, %2, %0
    sub\t%1, -%2, %0
    fpadd32s\t%1, %2, %0"
-  [(set_attr "type" "*,*,fga")])
+  [(set_attr "type" "*,*,fga")
+   (set_attr "fptype" "*,*,single")])
 
 (define_insn "*cmp_cc_plus"
   [(set (reg:CC_NOOV 100)
@@ -5218,7 +5219,8 @@
    sub\t%1, %2, %0
    add\t%1, -%2, %0
    fpsub32s\t%1, %2, %0"
-  [(set_attr "type" "*,*,fga")])
+  [(set_attr "type" "*,*,fga")
+   (set_attr "fptype" "*,*,single")])
 
 (define_insn "*cmp_minus_cc"
   [(set (reg:CC_NOOV 100)
@@ -8866,3 +8868,63 @@
   "TARGET_TLS && TARGET_ARCH64"
   "stx\t%0, [%1 + %2], %%tldo_add(%3)"
   [(set_attr "type" "store")])
+
+;; Vector instructions.
+
+(define_insn "addv2si3"
+  [(set (match_operand:V2SI 0 "register_operand" "=e")
+	(plus:V2SI (match_operand:V2SI 1 "register_operand" "%e")
+		   (match_operand:V2SI 2 "register_operand" "e")))]
+  "TARGET_VIS"
+  "fpadd32\t%1, %2, %0"
+  [(set_attr "type" "fga")
+   (set_attr "fptype" "double")])
+
+(define_insn "addv4hi3"
+  [(set (match_operand:V4HI 0 "register_operand" "=e")
+	 (plus:V4HI (match_operand:V4HI 1 "register_operand" "%e")
+		    (match_operand:V4HI 2 "register_operand" "e")))]
+  "TARGET_VIS"
+  "fpadd16\t%1, %2, %0"
+  [(set_attr "type" "fga")
+   (set_attr "fptype" "double")])
+
+;; fpadd32s is emitted by the addsi3 pattern.
+
+(define_insn "addv2hi3"
+  [(set (match_operand:V2HI 0 "register_operand" "=f")
+	(plus:V2HI (match_operand:V2HI 1 "register_operand" "%f")
+		   (match_operand:V2HI 2 "register_operand" "f")))]
+  "TARGET_VIS"
+  "fpadd16s\t%1, %2, %0"
+  [(set_attr "type" "fga")
+   (set_attr "fptype" "single")])
+
+(define_insn "subv2si3"
+  [(set (match_operand:V2SI 0 "register_operand" "=e")
+	(minus:V2SI (match_operand:V2SI 1 "register_operand" "e")
+		    (match_operand:V2SI 2 "register_operand" "e")))]
+  "TARGET_VIS"
+  "fpsub32\t%1, %2, %0"
+  [(set_attr "type" "fga")
+   (set_attr "fptype" "double")])
+
+(define_insn "subv4hi3"
+  [(set (match_operand:V4HI 0 "register_operand" "=e")
+	(minus:V4HI (match_operand:V4HI 1 "register_operand" "e")
+		    (match_operand:V4HI 2 "register_operand" "e")))]
+  "TARGET_VIS"
+  "fpsub16\t%1, %2, %0"
+  [(set_attr "type" "fga")
+   (set_attr "fptype" "double")])
+
+;; fpsub32s is emitted by the subsi3 pattern.
+
+(define_insn "subv2hi3"
+  [(set (match_operand:V2HI 0 "register_operand" "=f")
+	(minus:V2HI (match_operand:V2HI 1 "register_operand" "f")
+		    (match_operand:V2HI 2 "register_operand" "f")))]
+  "TARGET_VIS"
+  "fpsub16s\t%1, %2, %0"
+  [(set_attr "type" "fga")
+   (set_attr "fptype" "single")])
