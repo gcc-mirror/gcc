@@ -552,13 +552,11 @@ mark_goto_fixup (g)
 
 /* Clear out all parts of the state in F that can safely be discarded
    after the function has been compiled, to let garbage collection
-   reclaim the memory.  D is the declaration for the function just
-   compiled.  Its output may have been deferred.  */
+   reclaim the memory.  */
 
 void
-free_stmt_status (f, d)
+free_stmt_status (f)
      struct function *f;
-     tree d ATTRIBUTE_UNUSED;
 {
   /* We're about to free the function obstack.  If we hold pointers to
      things allocated there, then we'll try to mark them when we do

@@ -4469,7 +4469,7 @@ rest_of_compilation (decl)
   init_recog_no_volatile ();
 
   /* We're done with this function.  Free up memory if we can.  */
-  free_after_compilation (current_function, decl);
+  free_after_compilation (current_function);
 
   current_function = 0;
 

@@ -1672,9 +1672,9 @@ output_func_start_profiler ()
   current_function_decl = fndecl;
   DECL_INITIAL (fndecl) = error_mark_node;
   temporary_allocation ();
-  pushlevel (0);
   make_function_rtl (fndecl);
   init_function_start (fndecl, input_filename, lineno);
+  pushlevel (0);
   expand_function_start (fndecl, 0);
 
   /* Actually generate the code to call __bb_init_func. */

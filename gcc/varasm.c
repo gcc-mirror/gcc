@@ -3235,17 +3235,15 @@ mark_varasm_state (p)
 
 /* Clear out all parts of the state in F that can safely be discarded
    after the function has been compiled, to let garbage collection
-   reclaim the memory.  D is the declaration for the function just
-   compiled.  Its output may have been deferred.  */
+   reclaim the memory.  */
 
 void
-free_varasm_status (f, d)
+free_varasm_status (f)
      struct function *f;
-     tree d;
 {
   struct varasm_status *p;
 
-  if (DECL_DEFER_OUTPUT (d))
+  if (DECL_DEFER_OUTPUT (f->decl))
     return;
 
   p = f->varasm;

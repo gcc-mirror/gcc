@@ -1,3 +1,27 @@
+Thu Sep  9 09:40:58 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* function.h (free_after_compilation): Remove decl parameter.
+	(free_varasm_status0: Likewise.
+	(free_emit_status): Likewise.
+	(free_stmt_status): Likewise.
+	(free_after_compilation): Likewise.
+	(init_lang_status): New variable.
+	(free_lang_status): Likewise.
+	* emit-rtl.c (free_emit_status): Make decl parameter implicit.
+	* function.c (init_lang_status): New variable.
+	(free_lang_status): Likewise.
+	(push_function_context_to): Don't set function::decl here.
+	(free_after_copmilation): Make decl parameter implicit.  Call
+	free_lang_status if defined. 
+	(prepare_function_start): Call init_lang_status if defined.
+	(init_function_start): Set function::decl here.
+	* profile.c (output_func_start_profiler): Don't call pushdecl
+	until we've actually started the function.
+	* stmt.c (free_stmt_status): Make decl parameter implicit.
+	* toplev.c (rest_of_compilation): Don't pass decl to
+	free_after_compilation.
+	* varasm.c (free_varasm_status): Likewise.
+	
 Thu Sep  9 17:23:19 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* except.c (call_get_eh_context): Add root when allocating static
