@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---              Copyright (C) 2001-2004, Ada Core Technologies, Inc.        --
+--              Copyright (C) 2001-2005, Ada Core Technologies, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -147,11 +147,14 @@ package MLib.Tgt is
    --  into account. For example, on Linux, Foreign, Afiles Lib_Address and
    --  Relocatable are ignored.
 
-   function Library_Exists_For (Project : Project_Id) return Boolean;
+   function Library_Exists_For
+     (Project : Project_Id; In_Tree : Project_Tree_Ref) return Boolean;
    --  Return True if the library file for a library project already exists.
    --  This function can only be called for library projects.
 
-   function Library_File_Name_For (Project : Project_Id) return Name_Id;
+   function Library_File_Name_For
+     (Project : Project_Id;
+      In_Tree : Project_Tree_Ref) return Name_Id;
    --  Returns the file name of the library file of a library project.
    --  This function can only be called for library projects.
 

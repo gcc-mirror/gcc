@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004 Free Software Foundation, Inc.               --
+--          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,8 +56,13 @@ package Makeutl is
    --  been entered by a call to Prj.Ext.Add, so that in a project
    --  file, External ("name") will return "value".
 
-   function Linker_Options_Switches (Project  : Project_Id) return String_List;
-   --  Comment required ???
+   function Linker_Options_Switches
+     (Project  : Project_Id;
+      In_Tree  : Project_Tree_Ref) return String_List;
+   --  Collect the options specified in the Linker'Linker_Options attributes
+   --  of project Project, in project tree In_Tree, and in the projects that
+   --  it imports directly or indirectly, and returns the result.
+
 
    --  Package Mains is used to store the mains specified on the command line
    --  and to retrieve them when a project file is used, to verify that the

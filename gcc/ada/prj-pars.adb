@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2001-2004 Free Software Foundation, Inc.       --
+--             Copyright (C) 2001-2005 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,7 +28,6 @@ with Ada.Exceptions; use Ada.Exceptions;
 
 with Opt;
 with Output;   use Output;
-with Prj.Com;  use Prj.Com;
 with Prj.Err;  use Prj.Err;
 with Prj.Part;
 with Prj.Proc;
@@ -41,32 +40,40 @@ package body Prj.Pars is
    -----------
 
    procedure Parse
-     (Project           : out Project_Id;
+     (In_Tree           : Project_Tree_Ref;
+      Project           : out Project_Id;
       Project_File_Name : String;
       Packages_To_Check : String_List_Access := All_Packages)
    is
-      Project_Tree      : Project_Node_Id := Empty_Node;
+      Project_Node_Tree : constant Project_Node_Tree_Ref :=
+                            new Project_Node_Tree_Data;
+      Project_Node      : Project_Node_Id := Empty_Node;
       The_Project       : Project_Id      := No_Project;
       Success           : Boolean         := True;
 
    begin
+      Prj.Tree.Initialize (Project_Node_Tree);
+
       --  Parse the main project file into a tree
 
       Prj.Part.Parse
-        (Project                => Project_Tree,
+        (In_Tree                => Project_Node_Tree,
+         Project                => Project_Node,
          Project_File_Name      => Project_File_Name,
          Always_Errout_Finalize => False,
          Packages_To_Check      => Packages_To_Check);
 
       --  If there were no error, process the tree
 
-      if Project_Tree /= Empty_Node then
+      if Project_Node /= Empty_Node then
          Prj.Proc.Process
-           (Project           => The_Project,
-            Success           => Success,
-            From_Project_Node => Project_Tree,
-            Report_Error      => null,
-            Follow_Links      => Opt.Follow_Links);
+           (In_Tree                => In_Tree,
+            Project                => The_Project,
+            Success                => Success,
+            From_Project_Node      => Project_Node,
+            From_Project_Node_Tree => Project_Node_Tree,
+            Report_Error           => null,
+            Follow_Links           => Opt.Follow_Links);
          Prj.Err.Finalize;
 
          if not Success then

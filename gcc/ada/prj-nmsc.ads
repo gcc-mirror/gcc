@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2000-2004 Free Software Foundation, Inc.       --
+--             Copyright (C) 2000-2005 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,7 @@ private package Prj.Nmsc is
 
    procedure Check
      (Project      : Project_Id;
+      In_Tree      : Project_Tree_Ref;
       Report_Error : Put_Line_Access;
       Follow_Links : Boolean);
    --  Check the object directory and the source directories

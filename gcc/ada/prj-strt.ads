@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2001-2004 Free Software Foundation, Inc.       --
+--             Copyright (C) 2001-2005 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,9 @@ with Prj.Tree;  use Prj.Tree;
 
 private package Prj.Strt is
 
-   procedure Parse_String_Type_List (First_String : out Project_Node_Id);
+   procedure Parse_String_Type_List
+     (In_Tree      : Project_Node_Tree_Ref;
+      First_String : out Project_Node_Id);
    --  Get the list of literal strings that are allowed for a typed string.
    --  On entry, the current token is the first literal string following
    --  a left parenthesis in a string type declaration such as:
@@ -45,7 +47,9 @@ private package Prj.Strt is
    --      or after a comma
    --    - two literal strings in the list are equal
 
-   procedure Start_New_Case_Construction (String_Type : Project_Node_Id);
+   procedure Start_New_Case_Construction
+     (In_Tree     : Project_Node_Tree_Ref;
+      String_Type : Project_Node_Id);
    --  This procedure is called at the beginning of a case construction
    --  The parameter String_Type is the node for the string type
    --  of the case label variable.
@@ -65,7 +69,8 @@ private package Prj.Strt is
    --  not been specified.
 
    procedure Parse_Choice_List
-     (First_Choice : out Project_Node_Id);
+     (In_Tree      : Project_Node_Tree_Ref;
+      First_Choice : out Project_Node_Id);
    --  Get the label for a choice list.
    --  Report an error if
    --    - a case label is not a literal string
@@ -73,7 +78,8 @@ private package Prj.Strt is
    --    - the same case label is repeated in the same case construction
 
    procedure Parse_Expression
-     (Expression      : out Project_Node_Id;
+     (In_Tree         : Project_Node_Tree_Ref;
+      Expression      : out Project_Node_Id;
       Current_Project : Project_Node_Id;
       Current_Package : Project_Node_Id;
       Optional_Index  : Boolean);
@@ -85,7 +91,8 @@ private package Prj.Strt is
    --  been parsed.
 
    procedure Parse_Variable_Reference
-     (Variable        : out Project_Node_Id;
+     (In_Tree         : Project_Node_Tree_Ref;
+      Variable        : out Project_Node_Id;
       Current_Project : Project_Node_Id;
       Current_Package : Project_Node_Id);
    --  Parse a variable or attribute reference.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2001-2004 Free Software Foundation, Inc.       --
+--             Copyright (C) 2001-2005 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,11 +33,13 @@ with Prj.Tree;  use Prj.Tree;
 package Prj.Proc is
 
    procedure Process
-     (Project           : out Project_Id;
-      Success           : out Boolean;
-      From_Project_Node : Project_Node_Id;
-      Report_Error      : Put_Line_Access;
-      Follow_Links      : Boolean := True);
+     (In_Tree                : Project_Tree_Ref;
+      Project                : out Project_Id;
+      Success                : out Boolean;
+      From_Project_Node      : Project_Node_Id;
+      From_Project_Node_Tree : Project_Node_Tree_Ref;
+      Report_Error           : Put_Line_Access;
+      Follow_Links           : Boolean := True);
    --  Process a project file tree into project file data structures.
    --  If Report_Error is null, use the error reporting mechanism.
    --  Otherwise, report errors using Report_Error.

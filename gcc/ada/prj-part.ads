@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2000-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,8 @@ with Prj.Tree;  use Prj.Tree;
 package Prj.Part is
 
    procedure Parse
-     (Project                : out Project_Node_Id;
+     (In_Tree                : Project_Node_Tree_Ref;
+      Project                : out Project_Node_Id;
       Project_File_Name      : String;
       Always_Errout_Finalize : Boolean;
       Packages_To_Check      : String_List_Access := All_Packages;

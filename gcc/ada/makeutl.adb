@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004 Free Software Foundation, Inc.               --
+--          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -185,7 +185,8 @@ package body Makeutl is
    -----------------------------
 
    function Linker_Options_Switches
-     (Project  : Project_Id) return String_List
+     (Project  : Project_Id;
+      In_Tree  : Project_Tree_Ref) return String_List
    is
       procedure Recursive_Add_Linker_Options (Proj : Project_Id);
       --  The recursive routine used to add linker options
@@ -202,29 +203,33 @@ package body Makeutl is
 
       begin
          if Proj /= No_Project then
-            Data := Projects.Table (Proj);
+            Data := In_Tree.Projects.Table (Proj);
 
             if not Data.Seen then
-               Projects.Table (Proj).Seen := True;
+               In_Tree.Projects.Table (Proj).Seen := True;
                Imported := Data.Imported_Projects;
 
                while Imported /= Empty_Project_List loop
                   Recursive_Add_Linker_Options
-                    (Project_Lists.Table (Imported).Project);
-                  Imported := Project_Lists.Table (Imported).Next;
+                    (In_Tree.Project_Lists.Table
+                       (Imported).Project);
+                  Imported := In_Tree.Project_Lists.Table
+                                (Imported).Next;
                end loop;
 
                if Proj /= Project then
                   Linker_Package :=
                     Prj.Util.Value_Of
-                      (Name => Name_Linker,
-                       In_Packages => Data.Decl.Packages);
+                      (Name        => Name_Linker,
+                       In_Packages => Data.Decl.Packages,
+                       In_Tree     => In_Tree);
                   Options :=
                     Prj.Util.Value_Of
-                      (Name => Name_Ada,
-                       Index => 0,
+                      (Name                    => Name_Ada,
+                       Index                   => 0,
                        Attribute_Or_Array_Name => Name_Linker_Options,
-                       In_Package => Linker_Package);
+                       In_Package              => Linker_Package,
+                       In_Tree                 => In_Tree);
 
                   --  If attribute is present, add the project with
                   --  the attribute to table Linker_Opts.
@@ -244,8 +249,10 @@ package body Makeutl is
    begin
       Linker_Opts.Init;
 
-      for Index in 1 .. Projects.Last loop
-         Projects.Table (Index).Seen := False;
+      for Index in Project_Table.First ..
+                   Project_Table.Last (In_Tree.Projects)
+      loop
+         In_Tree.Projects.Table (Index).Seen := False;
       end loop;
 
       Recursive_Add_Linker_Options (Project);
@@ -262,15 +269,19 @@ package body Makeutl is
          begin
             --  If Dir_Path has not been computed for this project, do it now
 
-            if Projects.Table (Proj).Dir_Path = null then
-               Projects.Table (Proj).Dir_Path :=
+            if In_Tree.Projects.Table (Proj).Dir_Path = null then
+               In_Tree.Projects.Table (Proj).Dir_Path :=
                  new String'
-                   (Get_Name_String (Projects.Table (Proj). Directory));
+                   (Get_Name_String
+                        (In_Tree.Projects.Table
+                             (Proj). Directory));
             end if;
 
             while Options /= Nil_String loop
-               Option := String_Elements.Table (Options).Value;
-               Options := String_Elements.Table (Options).Next;
+               Option :=
+                 In_Tree.String_Elements.Table (Options).Value;
+               Options :=
+                 In_Tree.String_Elements.Table (Options).Next;
                Add_Linker_Option (Get_Name_String (Option));
 
                --  Object files and -L switches specified with
@@ -280,7 +291,8 @@ package body Makeutl is
                Test_If_Relative_Path
                  (Switch =>
                     Linker_Options_Buffer (Last_Linker_Option),
-                  Parent => Projects.Table (Proj).Dir_Path,
+                  Parent =>
+                    In_Tree.Projects.Table (Proj).Dir_Path,
                   Including_L_Switch => True);
             end loop;
          end;
@@ -326,7 +338,7 @@ package body Makeutl is
       procedure Delete is
       begin
          Names.Set_Last (0);
-         Reset;
+         Mains.Reset;
       end Delete;
 
       ---------------
