@@ -37,9 +37,7 @@ Boston, MA 02111-1307, USA.  */
 
 #if USE_CPPLIB
 #include "cpplib.h"
-extern cpp_reader  parse_in;
-extern cpp_options parse_options;
-static int cpp_initialized;
+extern cpp_reader parse_in;
 #endif
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
@@ -615,13 +613,6 @@ c_decode_option (argc, argv)
   int strings_processed;
   char *p = argv[0];
 #if USE_CPPLIB
-  if (! cpp_initialized)
-    {
-      cpp_reader_init (&parse_in);
-      parse_in.opts = &parse_options;
-      cpp_options_init (&parse_options);
-      cpp_initialized = 1;
-    }
   strings_processed = cpp_handle_option (&parse_in, argc, argv);
 #else
   strings_processed = 0;
