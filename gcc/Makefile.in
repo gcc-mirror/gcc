@@ -704,7 +704,8 @@ start.encap: native xgcc specs $(LIBGCC1) xlimits.h lang.start.encap
 rest.encap: stmp-headers $(LIBGCC) $(STMP_FIXPROTO) $(EXTRA_PARTS) lang.rest.encap
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
-native: config.status cpp $(LANGUAGES) $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
+native: config.status config.h cpp $(LANGUAGES) \
+	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
 
 # Define the names for selecting languages in LANGUAGES.
 C c: cc1
@@ -1206,7 +1207,7 @@ DRIVER_DEFINES = \
   -DDEFAULT_TARGET_VERSION=\"$(version)\" \
   -DDEFAULT_TARGET_MACHINE=\"$(target_alias)\" \
   -DTOOLDIR_BASE_PREFIX=\"$(exec_prefix)/\"
-gcc.o: gcc.c $(CONFIG_H) multilib.h config.status $(lang_specs_files)
+gcc.o: gcc.c $(CONFIG_H) multilib.h Makefile $(lang_specs_files)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   $(DRIVER_DEFINES) \
   -c `echo $(srcdir)/gcc.c | sed 's,^\./,,'`
