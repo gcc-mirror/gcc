@@ -38,6 +38,7 @@
 #include <stdbool.h>
 #include <signal.h>
 #include <ucontext.h>
+#include <mach/thread_status.h>
 
 typedef unsigned long reg_unit;
 
