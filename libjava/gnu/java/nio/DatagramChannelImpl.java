@@ -1,5 +1,5 @@
 /* DatagramChannelImpl.java -- 
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,10 +38,11 @@ exception statement from your version. */
 
 package gnu.java.nio;
 
+import gnu.java.net.PlainDatagramSocketImpl;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import gnu.java.net.PlainDatagramSocketImpl;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
@@ -256,6 +257,10 @@ public final class DatagramChannelImpl extends DatagramChannel
     if (!isOpen())
       throw new ClosedChannelException();
     
+    if (target instanceof InetSocketAddress
+	&& ((InetSocketAddress) target).isUnresolved())
+      throw new IOException("Target address not resolved");
+
     byte[] buffer;
     int offset = 0;
     int len = src.remaining();
