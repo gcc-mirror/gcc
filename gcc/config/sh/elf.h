@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_OUTPUT_DESTRUCTOR
 #undef ASM_DECLARE_FUNCTION_NAME
 #undef PREFERRED_DEBUGGING_TYPE
+#undef MAX_OFILE_ALIGNMENT
 
 /* Be ELF-like.  */
 #include "svr4.h"
