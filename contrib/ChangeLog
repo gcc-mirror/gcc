@@ -1,3 +1,7 @@
+2001-01-03  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* texi2pod.pl: Handle @option and @env.
+
 2001-01-03  Mike Stump  <mrs@wrs.com>
 
 	* snapshot: Update to account for java libraries.

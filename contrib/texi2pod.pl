@@ -251,7 +251,7 @@ sub postprocess
     # Formatting commands.
     s/\@(?:dfn|var|emph|cite|i)\{([^\}]*)\}/I<$1>/g;
     s/\@(?:code|kbd)\{([^\}]*)\}/C<$1>/g;
-    s/\@(?:samp|strong|key|b)\{([^\}]*)\}/B<$1>/g;
+    s/\@(?:samp|strong|key|option|env|b)\{([^\}]*)\}/B<$1>/g;
     s/\@sc\{([^\}]*)\}/\U$1/g;
     s/\@file\{([^\}]*)\}/F<$1>/g;
     s/\@w\{([^\}]*)\}/S<$1>/g;
