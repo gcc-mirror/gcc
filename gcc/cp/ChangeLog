@@ -1,5 +1,10 @@
 1999-05-24  Mark Mitchell  <mark@codesourcery.com>
 
+	* typeck.c (build_static_cast): Don't allow static_casts that cast
+	away constness.
+	(casts_away_constness_r): New function.
+	(casts_away_constness): Likewise.
+
 	* decl.c (lookup_tag): Remove code no longer needed after
 	name-lookup improvements.
 	* decl2.c (handle_class_head): Make error-recovery more robust.
