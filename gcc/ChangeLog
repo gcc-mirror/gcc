@@ -1,3 +1,13 @@
+Wed Feb 10 17:12:21 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* emit-rtl.c (operand_subword): Sign extend REAL_VALUE_TO_TARGET_SINGLE
+	result.
+	* final.c (split_double): Sign extend REAL_VALUE_TO_TARGET_DOUBLE
+	result.
+	* real.c (endian): Delete sign extension code.
+	* config/m32r/m32r.md (movsf_insn+1): REAL_VALUE_TO_TARGET_SINGLE call
+	replaced with operand_subword call.
+
 Wed Feb 10 15:16:39 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (cmov compound patterns): Delete.  Jump can now
