@@ -272,8 +272,7 @@ do {								\
 
 #define SUBTARGET_PROLOGUE						\
   if (profile_flag 							\
-      && strcmp (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)),\
-		 "main") == 0)						\
+      && MAIN_NAME_P (DECL_NAME (current_function_decl))		\
      {									\
       rtx xops[1];							\
       xops[0] = gen_rtx_MEM (FUNCTION_MODE,				\

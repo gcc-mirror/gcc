@@ -469,7 +469,7 @@ function_prologue (FILE *file, int size)
   interrupt_func_p = interrupt_function_p (current_function_decl);
   signal_func_p = signal_function_p (current_function_decl);
   leaf_func_p = leaf_function_p ();
-  main_p = ! strcmp ("main", current_function_name);
+  main_p = MAIN_NAME_P (DECL_NAME (current_function_decl));
   live_seq = sequent_regs_live ();
   minimize = (TARGET_CALL_PROLOGUES
 	      && !interrupt_func_p && !signal_func_p && live_seq);
@@ -604,7 +604,7 @@ function_epilogue (FILE *file, int size)
   interrupt_func_p = interrupt_function_p (current_function_decl);
   signal_func_p = signal_function_p (current_function_decl);
   leaf_func_p = leaf_function_p ();
-  main_p = ! strcmp ("main", current_function_name);
+  main_p = MAIN_NAME_P (DECL_NAME (current_function_decl));
   function_size = (INSN_ADDRESSES (INSN_UID (get_last_insn ()))
 		   - INSN_ADDRESSES (INSN_UID (get_insns ())));
   live_seq = sequent_regs_live ();
@@ -3643,7 +3643,7 @@ order_regs_for_local_alloc (void)
   int *order = (TARGET_ORDER_1 ? order_1 :
 		TARGET_ORDER_2 ? order_2 :
 		order_0);
-  for (i=0; i < sizeof (order_0) / sizeof (order_0[0]); ++i)
+  for (i=0; i < ARRAY_SIZE (order_0); ++i)
       reg_alloc_order[i] = order[i];
 }
 

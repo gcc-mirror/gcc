@@ -110,8 +110,7 @@ output_function_prologue(stream, size)
 
     /* if we are outputting code for main, 
        the switch FPU to right mode if TARGET_FPU */
-    if ( (strcmp ("main", current_function_name) == 0)
-	 && TARGET_FPU)
+    if (MAIN_NAME_P (DECL_NAME (current_function_decl)) && TARGET_FPU)
     {
 	fprintf(stream, "\t;/* switch cpu to double float, single integer */\n");
 	fprintf(stream, "\tsetd\n");

@@ -3430,7 +3430,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
   register tree tem;
 
   if (warn_main > 0 && TREE_CODE (decl) != FUNCTION_DECL
-      && !strcmp (IDENTIFIER_POINTER (DECL_NAME (decl)), "main"))
+      && MAIN_NAME_P (DECL_NAME (decl)))
     warning_with_decl (decl, "`%s' is usually a function");
 
   if (initialized)
@@ -4827,7 +4827,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	/* Record presence of `inline', if it is reasonable.  */
 	if (inlinep)
 	  {
-	    if (! strcmp (IDENTIFIER_POINTER (declarator), "main"))
+	    if (MAIN_NAME_P (declarator))
 	      warning ("cannot inline function `main'");
 	    else
 	      /* Assume that otherwise the function can be inlined.  */
@@ -5892,7 +5892,7 @@ start_function (declspecs, declarator, prefix_attributes, attributes)
   else if (warn_missing_prototypes
 	   && TREE_PUBLIC (decl1)
 	   && !(old_decl != 0 && TYPE_ARG_TYPES (TREE_TYPE (old_decl)) != 0)
-	   && strcmp ("main", IDENTIFIER_POINTER (DECL_NAME (decl1))))
+	   && ! MAIN_NAME_P (DECL_NAME (decl1)))
     warning_with_decl (decl1, "no previous prototype for `%s'");
   /* Optionally warn of any def with no previous prototype
      if the function has already been used.  */
@@ -5905,7 +5905,7 @@ start_function (declspecs, declarator, prefix_attributes, attributes)
   else if (warn_missing_declarations
 	   && TREE_PUBLIC (decl1)
 	   && old_decl == 0
-	   && strcmp ("main", IDENTIFIER_POINTER (DECL_NAME (decl1))))
+	   && ! MAIN_NAME_P (DECL_NAME (decl1)))
     warning_with_decl (decl1, "no previous declaration for `%s'");
   /* Optionally warn of any def with no previous declaration
      if the function has already been used.  */
@@ -5934,8 +5934,7 @@ start_function (declspecs, declarator, prefix_attributes, attributes)
     TREE_PUBLIC (decl1) = 0;
 
   /* Warn for unlikely, improbable, or stupid declarations of `main'.  */
-  if (warn_main > 0
-      && strcmp ("main", IDENTIFIER_POINTER (DECL_NAME (decl1))) == 0)
+  if (warn_main > 0 && MAIN_NAME_P (DECL_NAME (decl1)))
     {
       tree args;
       int argct = 0;
@@ -6461,7 +6460,7 @@ store_parm_decls ()
   /* If this function is `main', emit a call to `__main'
      to run global initializers, etc.  */
   if (DECL_NAME (fndecl)
-      && strcmp (IDENTIFIER_POINTER (DECL_NAME (fndecl)), "main") == 0
+      && MAIN_NAME_P (DECL_NAME (fndecl))
       && DECL_CONTEXT (fndecl) == NULL_TREE)
     expand_main_function ();
 }
@@ -6641,8 +6640,7 @@ finish_function (nested)
       setjmp_protect_args ();
     }
 
-  if (! strcmp (IDENTIFIER_POINTER (DECL_NAME (fndecl)), "main")
-      && flag_hosted)
+  if (MAIN_NAME_P (DECL_NAME (fndecl)) && flag_hosted)
     {
       if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (fndecl)))
 	  != integer_type_node)
