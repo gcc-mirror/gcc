@@ -39,10 +39,10 @@ correspond to three protected virtual member functions.
 The public member functions are:
 
 <p>
-<code>catalog open(const string&, const locale&) const</code>
+<code>catalog open(const string&amp;, const locale&amp;) const</code>
 
 <p>
-<code>string_type get(catalog, int, int, const string_type&) const</code>
+<code>string_type get(catalog, int, int, const string_type&amp;) const</code>
 
 <p>
 <code>void close(catalog) const</code>
@@ -51,7 +51,7 @@ The public member functions are:
 While the virtual functions are:
 
 <p>
-<code>catalog do_open(const string&, const locale&) const</code>
+<code>catalog do_open(const string&amp;, const locale&amp;) const</code>
 <BLOCKQUOTE>
 <I>
 -1- Returns: A value that may be passed to get() to retrieve a
@@ -63,7 +63,7 @@ catalog can be opened.
 </BLOCKQUOTE>
 
 <p>
-<code>string_type do_get(catalog, int, int, const string_type&) const</code>
+<code>string_type do_get(catalog, int, int, const string_type&amp;) const</code>
 <BLOCKQUOTE>
 <I>
 -3- Requires: A catalog cat obtained from open() and not yet closed. 
@@ -106,8 +106,8 @@ unfortunate.
 <p>
 The 'open' member function in particular seems to be oddly
 designed. The signature seems quite peculiar. Why specify a <code>const
-string& </code> argument, for instance, instead of just <code>const
-char*</code>? Or, why specify a <code>const locale&</code> argument that is
+string&amp; </code> argument, for instance, instead of just <code>const
+char*</code>? Or, why specify a <code>const locale&amp;</code> argument that is
 to be used in the 'get' member function? How, exactly, is this locale
 argument useful? What was the intent? It might make sense if a locale
 argument was associated with a given default message string in the
@@ -238,7 +238,7 @@ documentation. Here's an idea of what is required:
 	<code>locale loc_de("de_DE");</code>
 	<p>
 	<code>
-	use_facet<messages<char> >(loc_de).open("libstdc++", locale(), dir);
+	use_facet&lt;messages&lt;char&gt; &gt;(loc_de).open("libstdc++", locale(), dir);
 	</code>
 </ul>
 
@@ -251,23 +251,23 @@ documentation. Here's an idea of what is required:
 	<li> message converting, simple example using the GNU model.
 
 <pre>
-#include <iostream>
-#include <locale>
+#include &lt;iostream&gt;
+#include &lt;locale&gt;
 using namespace std;
 
 void test01()
 {
-  typedef messages<char>::catalog catalog;
+  typedef messages&lt;char&gt;::catalog catalog;
   const char* dir =
   "/mnt/egcs/build/i686-pc-linux-gnu/libstdc++-v3/po/share/locale";  
   const locale loc_de("de_DE");
-  const messages<char>& mssg_de = use_facet<messages<char> >(loc_de); 
+  const messages&lt;char&gt;&amp; mssg_de = use_facet&lt;messages&lt;char&gt; &gt;(loc_de); 
 
   catalog cat_de = mssg_de.open("libstdc++", loc_de, dir);
   string s01 = mssg_de.get(cat_de, 0, 0, "please");
   string s02 = mssg_de.get(cat_de, 0, 0, "thank you");
-  cout << "please in german:" << s01 << '\n';
-  cout << "thank you in german:" << s02 << '\n';
+  cout &lt;&lt; "please in german:" &lt;&lt; s01 &lt;&lt; '\n';
+  cout &lt;&lt; "thank you in german:" &lt;&lt; s02 &lt;&lt; '\n';
   mssg_de.close(cat_de);
 }
 </pre>
@@ -329,13 +329,13 @@ More information can be found in the following testcases:
 	<p>
 	<code>
         catalog 
-        open(const basic_string<char>& __s, const locale& __loc) const
+        open(const basic_string&lt;char&gt;&amp; __s, const locale&amp; __loc) const
 	</code>
 
 	<p>
 	<code>
 	catalog 
-	open(const basic_string<char>&, const locale&, const char*) const;
+	open(const basic_string&lt;char&gt;&amp;, const locale&amp;, const char*) const;
 	</code>
 
 	<p>
