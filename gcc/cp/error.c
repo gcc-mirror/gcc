@@ -352,7 +352,7 @@ dump_aggr_type (t, v, canonical_name)
   
   name = TYPE_NAME (canonical_name ? TYPE_MAIN_VARIANT (t) : t);
 
-  if (name && DECL_CONTEXT (name) && DECL_CONTEXT (name) != global_namespace)
+  if (name && CP_DECL_CONTEXT (name) != global_namespace)
     {
       /* FUNCTION_DECL or RECORD_TYPE */
       dump_decl (DECL_CONTEXT (name), 0);
@@ -728,7 +728,7 @@ dump_decl (t, v)
       break;
 
     case NAMESPACE_DECL:
-      if (DECL_CONTEXT (t) != global_namespace)
+      if (CP_DECL_CONTEXT (t) != global_namespace)
 	{
 	  dump_decl (DECL_CONTEXT (t), v);
 	  OB_PUTC2 (':',':');

@@ -1,5 +1,9 @@
 1998-08-30  Mark Mitchell  <mark@markmitchell.com>
 
+	* error.c (dump_decl): Use CP_DECL_CONTEXT, not DECL_CONTEXT, when
+	comparing with global_namespace.
+	(dump_aggr_type): Likewise.
+
 	* decl.c (grokfndecl): Issue error on declaration of friend
 	templates with explicit template arguments.
 
