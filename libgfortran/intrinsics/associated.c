@@ -23,8 +23,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define associated prefix(associated)
 
-enum { FALSE = 0, TRUE = 1 };
-
 
 GFC_LOGICAL_4
 associated (const gfc_array_void *pointer, const gfc_array_void *target)
@@ -32,19 +30,19 @@ associated (const gfc_array_void *pointer, const gfc_array_void *target)
   int n, rank;
 
   if (GFC_DESCRIPTOR_DATA (pointer) != GFC_DESCRIPTOR_DATA (target))
-    return FALSE;
+    return 0;
   if (GFC_DESCRIPTOR_DTYPE (pointer) != GFC_DESCRIPTOR_DTYPE (target))
-    return FALSE;
+    return 0;
 
   rank = GFC_DESCRIPTOR_RANK (pointer);
   for (n = 0; n < rank; n++)
     {
       if (pointer->dim[n].stride != target->dim[n].stride)
-        return FALSE;
+        return 0;
       if ((pointer->dim[n].ubound - pointer->dim[n].lbound)
           != (target->dim[n].ubound - target->dim[n].lbound))
-        return FALSE;
+        return 0;
     }
 
-  return  TRUE;
+  return 1;
 }
