@@ -611,11 +611,13 @@
   [(set_attr "type" "iaddlog")])
 
 (define_insn "iordi3"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ior:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ")
-		(match_operand:DI 2 "reg_or_8bit_operand" "rI")))]
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(ior:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ,rJ")
+		(match_operand:DI 2 "ior_operand" "rI,N")))]
   ""
-  "bis %r1,%2,%0"
+  "@
+   bis %r1,%2,%0
+   ornot %r1,%N2,%0"
   [(set_attr "type" "iaddlog")])
 
 (define_insn "one_cmpldi2"
