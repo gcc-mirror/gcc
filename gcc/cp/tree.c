@@ -215,6 +215,9 @@ build_cplus_new (type, init)
   tree slot;
   tree rval;
 
+  if (TREE_CODE (init) == TARGET_EXPR || init == error_mark_node)
+    return init;
+
   slot = build (VAR_DECL, type);
   layout_decl (slot, 0);
   rval = build (NEW_EXPR, type,

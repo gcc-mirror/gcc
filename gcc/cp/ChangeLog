@@ -1,3 +1,52 @@
+Wed Sep 11 22:38:13 1996  Gerald Baumgartner  <gb@cs.purdue.edu>
+
+	* call.c (build_method_call): When calling a signature
+	default implementation, as in other cases, let instance_ptr simply
+	be instance.
+
+Wed Sep 11 22:14:44 1996  Mike Stump  <mrs@cygnus.com>
+
+	* parse.y (simple_stmt): Cleanup and use do_poplevel ().
+
+Wed Sep 11 22:10:48 1996  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (expand_start_catch_block): Add a pushlevel so that -g
+ 	works on hppa and SPARC.
+
+Wed Sep 11 10:18:06 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* typeck.c (build_indirect_ref): Catch PTR being an error_mark_node.
+
+Mon Sep  9 19:51:14 1996  Gerald Baumgartner  <gb@cs.purdue.edu>
+
+	* call.c (build_over_call): Check first whether DECL_CONTEXT exists
+	before testing whether it's a signature.
+
+Sun Sep  8 16:06:57 1996  Gerald Baumgartner  <gb@cs.purdue.edu>
+
+	* call.c (build_new_method_call): Don't complain about signature
+	pointers and references not being an aggr type.
+	(build_this): If a signature pointer or reference was passed in,
+	just return it.
+	(build_new_method_call): If instance is a signature pointer, set
+	basetype to the signature type of instance.
+	* sig.c (build_signature_method_call): Deleted basetype and
+	instance parameters, they can be found as the DECL_CONTEXT of
+	function and as the first argument passed in.
+	* cp-tree.h: Changed declaration of build_signature_method_call.
+	* call.c (build_method_call): Deleted first two arguments in call
+	of build_signature_method_call.
+	(build_over_call): Added call to build_signature_method_call.
+
+Thu Sep  5 16:51:28 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (build_c_cast): Don't tack a non_lvalue_expr onto a
+ 	target_expr.
+
+Thu Sep  5 10:05:38 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* cvt.c (convert_to_reference): Use %#T, not %#D, for error.
+
 Wed Sep  4 17:16:09 1996  Bob Manson  <manson@charmed.cygnus.com>
 
 	* except.c (expand_start_try_stmts): Move to except.c in the backend.
@@ -7,6 +56,191 @@ Wed Sep  4 17:16:09 1996  Bob Manson  <manson@charmed.cygnus.com>
 	of directly manipulating lists.
 	(emit_base_init): Ditto.
 
+Wed Sep  4 12:14:36 1996  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (expand_exception_blocks): Always make sure USE and
+ 	CLOBBER insns that came at the end still do, the backend relies
+ 	upon this.
+
+Wed Sep  4 07:44:48 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_over_call): We can only use a TARGET_EXPR of the
+ 	right type.
+
+Tue Sep  3 19:26:05 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (convert_to_reference): Revert last change, don't complain
+ 	about temp without target decl.
+
+Tue Sep  3 10:22:56 1996  Mike Stump  <mrs@cygnus.com>
+
+	* decl.c (grokdeclarator): Don't core dump when void() is given.
+
+Tue Sep  3 02:38:56 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (copy_args_p): Don't crash.
+
+Fri Aug 30 14:26:57 1996  Mike Stump  <mrs@cygnus.com>
+
+	* pt.c (tsubst): And support template args inside the exception
+ 	specification.
+
+	* pt.c (tsubst): Add support for exception specifications in
+ 	template functions.
+
+Fri Aug 30 10:01:55 1996  Mike Stump  <mrs@cygnus.com>
+
+	* cp-tree.def (DECL_STMT): Eliminate the throw spec field, only 3
+ 	fields now.
+	* cp-tree.h (start_decl): Eliminate the throw spec parameter.
+	(start_function): Likewise.
+	(start_method): Likewise.
+	(grokfield): Likewise.
+	(make_call_declarator): Add throw spec parameter.
+	(set_quals_and_spec): Add routine.
+	* lex.c (set_quals_and_spec): Likewise.
+	* decl.h (grokdeclarator): Eliminate the throw spec parameter.
+	* decl.c (shadow_tag): Eliminate the throw spec parameter to
+ 	grokdeclarator.
+	(groktypename): Likewise.
+	(start_decl): Eliminate the throw spec parameter.  Eliminate the
+ 	throw spec parameter to grokdeclarator.  Eliminate the throw spec
+ 	field in DECL_STMT.
+	(cp_finish_decl): Eliminate the throw spec field in DECL_STMT.
+	(grokfndecl): Remove useless set of raises.
+	(grokdeclarator): Eliminate the throw spec parameter.  Eliminate
+ 	the throw spec parameter to start_decl.  Pull the throw spec out
+ 	of the call declarator.
+	(grokparms): Eliminate the throw spec parameter to grokdeclarator.
+	(start_function): Eliminate the throw spec parameter.  Eliminate
+ 	the throw spec parameter to grokdeclarator.
+	(start_method): Likewise.
+	* decl2.c (grokfield): Likewise.
+	(grokbitfield): Eliminate the throw spec parameter to grokdeclarator.
+	(grokoptypename): Likewise.
+	(finish_file): Eliminate the throw spec parameter to
+ 	start_function.  Add throw spec to make_call_declarator.
+	* except.c (init_exception_processing): Add throw spec to
+ 	make_call_declarator.  Eliminate the throw spec parameter to
+ 	start_decl.
+	(expand_start_catch_block): Eliminate the throw spec parameter to
+ 	grokdeclarator.
+	(expand_builtin_throw): Add throw spec to make_call_declarator.
+	Eliminate the throw spec parameter to start_function.
+	(start_anon_func): Likewise.
+	* lex.c (make_call_declarator): Add throw spec parameter.
+	(set_quals_and_spec): New routine.
+	(cons_up_default_function): Add throw spec to make_call_declarator.
+	Eliminate the throw spec parameter to grokfield.
+	* method.c (synthesize_method): Eliminate the throw spec parameter
+ 	to start_function.
+	* pt.c (process_template_parm): Eliminate the throw spec parameter
+ 	to grokdeclarator.
+	(tsubst): Add throw spec to make_call_declarator.
+	(tsubst_expr): Eliminate the throw spec parameter to start_decl.
+	(do_function_instantiation): Eliminate the throw spec parameter to
+ 	grokdeclarator.  Eliminate the throw spec parameter to
+ 	start_function.
+	* rtti.c (synthesize_tinfo_fn): Eliminate the throw spec parameter
+ 	to start_function.
+	* parse.y (datadef): Remove non-winning optimization.
+	(decl): Likewise.
+	(fndef): Remove ambiguous error productions uncovered by grammer
+ 	fixing.
+	(constructor_declarator): Add exception_specification_opt here.
+	(component_constructor_declarator): Likewise.
+	(direct_after_type_declarator): Likewise.
+	(complex_direct_notype_declarator): Likewise.
+	(direct_abstract_declarator): Likewise.
+	(fn.def1): Remove exception_specification_opt.
+	(fn.def2): Likewise.
+	(condition): Likewise.
+	(initdcl0): Likewise.
+	(initdcl): Likewise.
+	(notype_initdcl0): Likewise.
+	(nomods_initdcl0): Likewise.
+	(component_decl_1): Likewise.
+	(component_declarator): Likewise.
+	(after_type_component_declarator0): Likewise.
+	(after_type_component_declarator): Likewise.
+	(notype_component_declarator): Likewise.
+
+Wed Aug 28 01:40:30 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_over_call): Also use an INIT_EXPR when
+ 	initializing anything from an rvalue.
+
+	* call.c (build_over_call): Call stabilize_reference when building
+ 	an INIT_EXPR instead of calling the copy ctor.
+
+	* call.c (joust): Extend the previous change to all comparisons.
+
+	* decl2.c, method.c, lex.c: Use MAKE_DECL_ONE_ONLY and 
+	NO_LINKAGE_HEURISTICS.
+
+	* decl2.c (finish_file): Emit any statics that weren't already.
+
+	* typeck.c (build_static_cast): Implement.
+	* tree.c (build_cplus_new): Handle getting a TARGET_EXPR.
+	* decl.c (grokparms): Use can_convert_arg instead of
+ 	implicit_conversion directly.
+	(copy_args_p): New fn.
+	* cvt.c (convert_to_reference): Don't complain about temp with
+ 	static_cast.
+	(build_up_reference): Handle TARGET_EXPRs.
+	* call.c (build_over_call): Elide unnecessary temps.
+	(can_convert*): Use new overloading code.
+
+Tue Aug 27 13:12:21 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c: Move TYPE_PTR*_MACROS ...
+	* cp-tree.h: To here.
+	* typeck.c (build_reinterpret_cast): Implement.
+
+	* call.c (add_builtin_candidate): Use TYPE_PTROB_P instead of
+ 	ptr_complete_ob.
+	(joust): If we're comparing a function to a builtin and the worst
+	conversion for the builtin is worse than the worst conversion for the
+	function, take the function.
+
+	* typeck.c (build_const_cast): Implement.
+	(comp_ptr_ttypes_const): Like comp_ptr_ttypes, for const_cast.
+	(comp_ptr_ttypes_reinterpret): Like cpt, for reinterpret_cast.
+
+Tue Aug 27 13:14:58 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* rtti.c (build_dynamic_cast): Don't try to dereference exprtype
+ 	too early. Make sure we explode if exprtype turns out to be a
+ 	NULL_TREE when it shouldn't be.
+
+Tue Aug 27 10:56:21 1996  Mike Stump  <mrs@cygnus.com>
+
+	* cp-tree.h: New routine make_call_declarator.
+	* lex.c (make_call_declarator): Define it.
+	* except.c (init_exception_processing): Use it.
+	(expand_builtin_throw): Likewise.
+	(start_anon_func): Likewise.
+	* decl2.c (finish_file): Likewise.
+	* lex.c (cons_up_default_function): Likewise.
+	* parse.y: Likewise.
+	* pt.c (tsubst): Likewise.
+	
+Mon Aug 26 17:40:03 1996  Mike Stump  <mrs@cygnus.com>
+
+	* decl2.c (groktypefield): Remove unused code.
+
+Mon Aug 26 17:00:33 1996  Mike Stump  <mrs@cygnus.com>
+
+	* gxx.gperf: Change TYPE_QUAL into CV_QUALIFIER.
+	* parse.y: Likewise.  Change maybe_type_qual into maybe_cv_qualifier.
+	Change type_quals into cv_qualifiers.  Change nonempty_type_quals into
+	nonempty_cv_qualifiers.
+	* hash.h: Rebuild.
+	
+	* lex.c (make_pointer_declarator): Change type_quals into
+ 	cv_qualifiers.
+	(make_reference_declarator): Likewise.
+	
 Thu Aug 22 01:09:22 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (start_function): Only check interface_* for templates
@@ -121,10 +355,6 @@ Tue Aug 13 12:16:10 1996  Jason Merrill  <jason@yorick.cygnus.com>
 	(import_export_vtable): Use it.
 	(import_export_decl): Use it.
 	* method.c (make_thunk): Use it.
-
-Sat Aug 17 15:23:39 1996  Geoffrey Noer  <noer@cygnus.com>
-
-	* g++.c: Update test for win32 (&& ! cygwin32).
 
 Mon Aug 12 00:09:18 1996  Jason Merrill  <jason@yorick.cygnus.com>
 

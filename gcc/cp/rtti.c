@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "flags.h"
 #include "output.h"
+#include "assert.h"
 
 #undef NULL
 #define NULL 0
@@ -348,7 +349,7 @@ build_dynamic_cast (type, expr)
 {
   enum tree_code tc = TREE_CODE (type);
   tree exprtype = TREE_TYPE (expr);
-  enum tree_code ec = TREE_CODE (exprtype);
+  enum tree_code ec;
   tree dcast_fn;
 
   if (type == error_mark_node || expr == error_mark_node)
@@ -359,6 +360,9 @@ build_dynamic_cast (type, expr)
       tree t = build_min (DYNAMIC_CAST_EXPR, type, expr);
       return t;
     }
+
+  assert (exprtype != NULL_TREE);
+  ec = TREE_CODE (exprtype);
 
   switch (tc)
     {
@@ -977,7 +981,7 @@ synthesize_tinfo_fn (fndecl)
   DECL_ALIGN (tdecl) = TYPE_ALIGN (ptr_type_node);
   cp_finish_decl (tdecl, NULL_TREE, NULL_TREE, 0, 0);
 
-  start_function (NULL_TREE, fndecl, NULL_TREE, NULL_TREE, 1);
+  start_function (NULL_TREE, fndecl, NULL_TREE, 1);
   store_parm_decls ();
   clear_last_expr ();
   push_momentary ();

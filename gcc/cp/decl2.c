@@ -37,10 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #include "lex.h"
 #include "output.h"
 
-#ifndef SUPPORTS_ONE_ONLY
-#define SUPPORTS_ONE_ONLY 0
-#endif
-
 extern tree get_file_function_name ();
 extern tree cleanups_this_call;
 static void grok_function_init PROTO((tree, tree));
@@ -1339,8 +1335,8 @@ check_classfn (ctype, function)
    CHANGES TO CODE IN `start_method'.  */
 
 tree
-grokfield (declarator, declspecs, raises, init, asmspec_tree, attrlist)
-     tree declarator, declspecs, raises, init, asmspec_tree, attrlist;
+grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
+     tree declarator, declspecs, init, asmspec_tree, attrlist;
 {
   register tree value;
   char *asmspec = 0;
@@ -1376,8 +1372,7 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree, attrlist)
       && TREE_CHAIN (init) == NULL_TREE)
     init = NULL_TREE;
 
-  value = grokdeclarator (declarator, declspecs, FIELD, init != 0,
-			  raises, NULL_TREE);
+  value = grokdeclarator (declarator, declspecs, FIELD, init != 0, NULL_TREE);
   if (! value)
     return value; /* friend or constructor went bad.  */
 
@@ -1593,7 +1588,7 @@ grokbitfield (declarator, declspecs, width)
      tree declarator, declspecs, width;
 {
   register tree value = grokdeclarator (declarator, declspecs, BITFIELD,
-					0, NULL_TREE, NULL_TREE);
+					0, NULL_TREE);
 
   if (! value) return NULL_TREE; /* friends went bad.  */
 
@@ -1640,194 +1635,11 @@ grokbitfield (declarator, declspecs, width)
   return value;
 }
 
-#if 0
-/* Like GROKFIELD, except that the declarator has been
-   buried in DECLSPECS.  Find the declarator, and
-   return something that looks like it came from
-   GROKFIELD.  */
-
-tree
-groktypefield (declspecs, parmlist)
-     tree declspecs;
-     tree parmlist;
-{
-  tree spec = declspecs;
-  tree prev = NULL_TREE;
-
-  tree type_id = NULL_TREE;
-  tree quals = NULL_TREE;
-  tree lengths = NULL_TREE;
-  tree decl = NULL_TREE;
-
-  while (spec)
-    {
-      register tree id = TREE_VALUE (spec);
-
-      if (TREE_CODE (spec) != TREE_LIST)
-	/* Certain parse errors slip through.  For example,
-	   `int class ();' is not caught by the parser. Try
-	   weakly to recover here.  */
-	return NULL_TREE;
-
-      if (TREE_CODE (id) == TYPE_DECL
-	  || (TREE_CODE (id) == IDENTIFIER_NODE && TREE_TYPE (id)))
-	{
-	  /* We have a constructor/destructor or
-	     conversion operator.  Use it.  */
-	  if (prev)
-	    TREE_CHAIN (prev) = TREE_CHAIN (spec);
-	  else
-	    declspecs = TREE_CHAIN (spec);
-
-	  type_id = id;
-	  goto found;
-	}
-      prev = spec;
-      spec = TREE_CHAIN (spec);
-    }
-
-  /* Nope, we have a conversion operator to a scalar type or something
-     else, that includes things like constructor declarations for
-     templates.  */
-  spec = declspecs;
-  while (spec)
-    {
-      tree id = TREE_VALUE (spec);
-
-      if (TREE_CODE (id) == IDENTIFIER_NODE)
-	{
-	  if (id == ridpointers[(int)RID_INT]
-	      || id == ridpointers[(int)RID_DOUBLE]
-	      || id == ridpointers[(int)RID_FLOAT]
-	      || id == ridpointers[(int)RID_WCHAR])
-	    {
-	      if (type_id)
-		error ("extra `%s' ignored",
-		       IDENTIFIER_POINTER (id));
-	      else
-		type_id = id;
-	    }
-	  else if (id == ridpointers[(int)RID_LONG]
-		   || id == ridpointers[(int)RID_SHORT]
-		   || id == ridpointers[(int)RID_CHAR])
-	    {
-	      lengths = tree_cons (NULL_TREE, id, lengths);
-	    }
-	  else if (id == ridpointers[(int)RID_VOID])
-	    {
-	      if (type_id)
-		error ("spurious `void' type ignored");
-	      else
-		error ("conversion to `void' type invalid");
-	    }
-	  else if (id == ridpointers[(int)RID_AUTO]
-		   || id == ridpointers[(int)RID_REGISTER]
-		   || id == ridpointers[(int)RID_TYPEDEF]
-		   || id == ridpointers[(int)RID_CONST]
-		   || id == ridpointers[(int)RID_VOLATILE])
-	    {
-	      error ("type specifier `%s' used invalidly",
-		     IDENTIFIER_POINTER (id));
-	    }
-	  else if (id == ridpointers[(int)RID_FRIEND]
-		   || id == ridpointers[(int)RID_VIRTUAL]
-		   || id == ridpointers[(int)RID_INLINE]
-		   || id == ridpointers[(int)RID_UNSIGNED]
-		   || id == ridpointers[(int)RID_SIGNED]
-		   || id == ridpointers[(int)RID_STATIC]
-		   || id == ridpointers[(int)RID_EXTERN])
-	    {
-	      quals = tree_cons (NULL_TREE, id, quals);
-	    }
-	  else
-	    {
-	      /* Happens when we have a global typedef
-		 and a class-local member function with
-		 the same name.  */
-	      type_id = id;
-	      goto found;
-	    }
-	}
-      else if (TREE_CODE (id) == RECORD_TYPE)
-	{
-	  type_id = TYPE_NAME (id);
-	  if (TREE_CODE (type_id) == TYPE_DECL)
-	    type_id = DECL_NAME (type_id);
-	  if (type_id == NULL_TREE)
-	    error ("identifier for aggregate type conversion omitted");
-	}
-      else if (TREE_CODE_CLASS (TREE_CODE (id)) == 't')
-	error ("`operator' missing on conversion operator or tag missing from type");
-      else
-	my_friendly_abort (194);
-      spec = TREE_CHAIN (spec);
-    }
-
-  if (type_id)
-    declspecs = chainon (lengths, quals);
-  else if (lengths)
-    {
-      if (TREE_CHAIN (lengths))
-	error ("multiple length specifiers");
-      type_id = ridpointers[(int)RID_INT];
-      declspecs = chainon (lengths, quals);
-    }
-  else if (quals)
-    {
-      error ("no type given, defaulting to `operator int ...'");
-      type_id = ridpointers[(int)RID_INT];
-      declspecs = quals;
-    }
-  else
-    return NULL_TREE;
-
- found:
-  decl = grokdeclarator (build_parse_node (CALL_EXPR, type_id, parmlist, NULL_TREE),
-			 declspecs, FIELD, 0, NULL_TREE, NULL_TREE);
-  if (decl == NULL_TREE)
-    return NULL_TREE;
-
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_CHAIN (decl) != NULL_TREE)
-    {
-      /* Need a fresh node here so that we don't get circularity
-	 when we link these together.  */
-      decl = copy_node (decl);
-    }
-
-  if (decl == void_type_node
-      || (TREE_CODE (decl) == FUNCTION_DECL
-	  && TREE_CODE (TREE_TYPE (decl)) != METHOD_TYPE))
-    /* bunch of friends.  */
-    return decl;
-
-  if (DECL_IN_AGGR_P (decl))
-    {
-      cp_error ("`%D' already defined in the class ", decl);
-      return void_type_node;
-    }
-
-  cp_finish_decl (decl, NULL_TREE, NULL_TREE, 0, 0);
-
-  /* If this declaration is common to another declaration
-     complain about such redundancy, and return NULL_TREE
-     so that we don't build a circular list.  */
-  if (DECL_CHAIN (decl))
-    {
-      cp_error ("function `%D' declared twice in class %T", decl,
-		  DECL_CONTEXT (decl));
-      return NULL_TREE;
-    }
-  DECL_IN_AGGR_P (decl) = 1;
-  return decl;
-}
-#endif
-
 tree
 grokoptypename (declspecs, declarator)
      tree declspecs, declarator;
 {
-  tree t = grokdeclarator (declarator, declspecs, TYPENAME, 0,
-			   NULL_TREE, NULL_TREE);
+  tree t = grokdeclarator (declarator, declspecs, TYPENAME, 0, NULL_TREE);
   return build_typename_overload (t);
 }
 
@@ -2486,12 +2298,9 @@ comdat_linkage (decl)
 {
   TREE_PUBLIC (decl) = 0;
 
-#ifdef DECL_ONE_ONLY
-  if (SUPPORTS_ONE_ONLY)
-    {
-      DECL_ONE_ONLY (decl) = 1;
-      TREE_PUBLIC (decl) = 1;
-    }
+#ifdef MAKE_DECL_ONE_ONLY
+  MAKE_DECL_ONE_ONLY (decl);
+  TREE_PUBLIC (decl) = 1;
 #endif
 
   if (flag_weak)
@@ -2499,7 +2308,6 @@ comdat_linkage (decl)
       DECL_WEAK (decl) = 1;
       TREE_PUBLIC (decl) = 1;
     }
-
 }
 
 /* Set TREE_PUBLIC and/or DECL_EXTERN on the vtable DECL,
@@ -2585,8 +2393,8 @@ finish_prevtable_vardecl (prev, vars)
   tree ctype = DECL_CONTEXT (vars);
   import_export_template (ctype);
 
+#ifndef NO_LINKAGE_HEURISTICS
   if (CLASSTYPE_INTERFACE_UNKNOWN (ctype) && TYPE_VIRTUAL_P (ctype)
-      && ! (SUPPORTS_ONE_ONLY > 1)
       && ! CLASSTYPE_TEMPLATE_INSTANTIATION (ctype))
     {
       tree method;
@@ -2604,6 +2412,7 @@ finish_prevtable_vardecl (prev, vars)
 	    }
 	}
     }
+#endif
 
   import_export_vtable (vars, ctype, 1);
   return 1;
@@ -2785,9 +2594,8 @@ import_export_decl (decl)
 	    {
 	      /* Statically initialized vars are weak or comdat, if
                  supported.  */
-#ifdef DECL_ONE_ONLY
-	      if (SUPPORTS_ONE_ONLY)
-		DECL_ONE_ONLY (decl) = 1;
+#ifdef MAKE_DECL_ONE_ONLY
+	      MAKE_DECL_ONE_ONLY (decl);
 #endif
 	      if (flag_weak)
 		DECL_WEAK (decl) = 1;
@@ -2991,6 +2799,9 @@ finish_file ()
 	}
     }
 
+  for (vars = static_aggregates; vars; vars = TREE_CHAIN (vars))
+    if (! TREE_ASM_WRITTEN (TREE_VALUE (vars)))
+      rest_of_decl_compilation (TREE_VALUE (vars), 0, 1, 1);
   vars = static_aggregates;
 
   if (static_ctors || vars || exception_table_p ())
@@ -3017,9 +2828,9 @@ finish_file ()
 
   fnname = get_file_function_name ('D');
   start_function (void_list_node,
-		  build_parse_node (CALL_EXPR, fnname, void_list_node,
-				    NULL_TREE),
-		  NULL_TREE, NULL_TREE, 0);
+		  make_call_declarator (fnname, void_list_node, NULL_TREE,
+					NULL_TREE),
+		  NULL_TREE, 0);
   fnname = DECL_ASSEMBLER_NAME (current_function_decl);
   store_parm_decls ();
 
@@ -3083,9 +2894,9 @@ finish_file ()
     {
       fnname = get_file_function_name ('I');
       start_function (void_list_node,
-		      build_parse_node (CALL_EXPR, fnname,
-					void_list_node, NULL_TREE),
-		      NULL_TREE, NULL_TREE, 0);
+		      make_call_declarator (fnname, void_list_node, NULL_TREE,
+					    NULL_TREE),
+		      NULL_TREE, 0);
       fnname = DECL_ASSEMBLER_NAME (current_function_decl);
       store_parm_decls ();
 

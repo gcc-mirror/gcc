@@ -312,36 +312,36 @@ init_exception_processing ()
 
   declspecs = tree_cons (NULL_TREE, get_identifier ("void"), NULL_TREE);
   d = build_parse_node (INDIRECT_REF, get_identifier ("__eh_pc"));
-  d = start_decl (d, declspecs, 0, NULL_TREE);
+  d = start_decl (d, declspecs, 0);
   DECL_COMMON (d) = 1;
   cp_finish_decl (d, NULL_TREE, NULL_TREE, 1, 0);
   saved_pc = lookup_name (get_identifier ("__eh_pc"), 0);
 
   declspecs = tree_cons (NULL_TREE, get_identifier ("void"), NULL_TREE);
   d = build_parse_node (INDIRECT_REF, get_identifier ("__eh_type"));
-  d = start_decl (d, declspecs, 0, NULL_TREE);
+  d = start_decl (d, declspecs, 0);
   DECL_COMMON (d) = 1;
   cp_finish_decl (d, NULL_TREE, NULL_TREE, 1, 0);
   saved_throw_type = lookup_name (get_identifier ("__eh_type"), 0);
 
   declspecs = tree_cons (NULL_TREE, get_identifier ("void"), NULL_TREE);
   d = build_parse_node (INDIRECT_REF, get_identifier ("__eh_value"));
-  d = start_decl (d, declspecs, 0, NULL_TREE);
+  d = start_decl (d, declspecs, 0);
   DECL_COMMON (d) = 1;
   cp_finish_decl (d, NULL_TREE, NULL_TREE, 1, 0);
   saved_throw_value = lookup_name (get_identifier ("__eh_value"), 0);
 
   declspecs = tree_cons (NULL_TREE, get_identifier ("void"), NULL_TREE);
   d = build_parse_node (INDIRECT_REF, get_identifier ("__eh_cleanup"));
-  d = build_parse_node (CALL_EXPR, d, void_list_node, NULL_TREE);
-  d = start_decl (d, declspecs, 0, NULL_TREE);
+  d = make_call_declarator (d, void_list_node, NULL_TREE, NULL_TREE);
+  d = start_decl (d, declspecs, 0);
   DECL_COMMON (d) = 1;
   cp_finish_decl (d, NULL_TREE, NULL_TREE, 1, 0);
   saved_cleanup = lookup_name (get_identifier ("__eh_cleanup"), 0);
 
   declspecs = tree_cons (NULL_TREE, get_identifier ("bool"), NULL_TREE);
   d = get_identifier ("__eh_in_catch");
-  d = start_decl (d, declspecs, 0, NULL_TREE);
+  d = start_decl (d, declspecs, 0);
   DECL_COMMON (d) = 1;
   cp_finish_decl (d, NULL_TREE, NULL_TREE, 1, 0);
   saved_in_catch = lookup_name (get_identifier ("__eh_in_catch"), 0);
@@ -429,6 +429,7 @@ expand_start_catch_block (declspecs, declarator)
     return;
 
   /* Create a binding level for the parm.  */
+  pushlevel (0);
   expand_start_bindings (0);
 
   false_label_rtx = gen_label_rtx ();
@@ -440,8 +441,7 @@ expand_start_catch_block (declspecs, declarator)
       rtx call_rtx, return_value_rtx;
       tree init_type;
 
-      decl = grokdeclarator (declarator, declspecs, CATCHPARM, 1,
-			     NULL_TREE, NULL_TREE);
+      decl = grokdeclarator (declarator, declspecs, CATCHPARM, 1, NULL_TREE);
 
       if (decl == NULL_TREE)
 	{
@@ -545,8 +545,8 @@ void expand_end_catch_block ()
   expand_leftover_cleanups ();
 
   /* Cleanup the EH parameter.  */
-  decls = getdecls ();
-  expand_end_bindings (decls, decls != NULL_TREE, 0);
+  expand_end_bindings (getdecls (), kept_level_p (), 0);
+  poplevel (kept_level_p (), 1, 0);
       
   /* label we emit to jump to if this catch block didn't match.  */
   /* This the closing } in the `if (eq) {' of the documentation.  */
@@ -671,10 +671,11 @@ expand_builtin_throw ()
     return;
 
   params = void_list_node;
-  t = build_parse_node (CALL_EXPR, get_identifier ("__throw"), params, NULL_TREE);
+  t = make_call_declarator (get_identifier ("__throw"), params, NULL_TREE,
+			    NULL_TREE);
   start_function (decl_tree_cons (NULL_TREE, get_identifier ("static"),
 				  void_list_node),
-		  t, NULL_TREE, NULL_TREE, 0);
+		  t, NULL_TREE, 0);
   store_parm_decls ();
   pushlevel (0);
   clear_last_expr ();
@@ -868,7 +869,7 @@ void
 expand_exception_blocks ()
 {
   rtx funcend;
-  rtx insns;
+  rtx insn, insns;
   rtx eh_spec_insns = NULL_RTX;
 
   start_sequence ();
@@ -957,7 +958,14 @@ expand_exception_blocks ()
     store_after_parms (eh_spec_insns);
 #endif
 
-  emit_insns (insns);
+  insn = get_last_insn ();
+  while (GET_CODE (insn) == NOTE
+	 || (GET_CODE (insn) == INSN
+	     && (GET_CODE (PATTERN (insn)) == USE
+		 || GET_CODE (PATTERN (insn)) == CLOBBER)))
+    insn = PREV_INSN (insn);
+    
+  emit_insns_after (insns, insn);
 }
 
 tree
@@ -980,10 +988,11 @@ start_anon_func ()
   params = void_list_node;
   /* tcf stands for throw clean funciton.  */
   sprintf (name, "__tcf_%d", counter++);
-  t = build_parse_node (CALL_EXPR, get_identifier (name), params, NULL_TREE);
+  t = make_call_declarator (get_identifier (name), params, NULL_TREE,
+			    NULL_TREE);
   start_function (decl_tree_cons (NULL_TREE, get_identifier ("static"),
 				  void_list_node),
-		  t, NULL_TREE, NULL_TREE, 0);
+		  t, NULL_TREE, 0);
   store_parm_decls ();
   pushlevel (0);
   clear_last_expr ();

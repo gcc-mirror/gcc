@@ -1966,9 +1966,14 @@ build_indirect_ref (ptr, errorstring)
      tree ptr;
      char *errorstring;
 {
-  register tree pointer = (TREE_CODE (TREE_TYPE (ptr)) == REFERENCE_TYPE ?
-			   ptr : default_conversion (ptr));
-  register tree type = TREE_TYPE (pointer);
+  register tree pointer, type;
+
+  if (ptr == error_mark_node)
+    return error_mark_node;
+
+  pointer = (TREE_CODE (TREE_TYPE (ptr)) == REFERENCE_TYPE
+	     ? ptr : default_conversion (ptr));
+  type = TREE_TYPE (pointer);
 
   if (ptr == current_class_ptr)
     return current_class_ref;
@@ -5054,20 +5059,106 @@ tree
 build_static_cast (type, expr)
    tree type, expr;
 {
+  tree intype, binfo;
+  int ok;
+
+  if (type == error_mark_node || expr == error_mark_node)
+    return error_mark_node;
+
+  if (TREE_CODE (expr) == OFFSET_REF)
+    expr = resolve_offset_ref (expr);
+
   if (current_template_parms)
     {
       tree t = build_min (STATIC_CAST_EXPR, type, expr);
       return t;
     }
 
-  return build_c_cast (type, expr, 0);
+  /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
+     Strip such NOP_EXPRs if VALUE is being used in non-lvalue context.  */
+  if (TREE_CODE (type) != REFERENCE_TYPE
+      && TREE_CODE (expr) == NOP_EXPR
+      && TREE_TYPE (expr) == TREE_TYPE (TREE_OPERAND (expr, 0)))
+    expr = TREE_OPERAND (expr, 0);
+
+  if (TREE_CODE (type) == VOID_TYPE)
+    return build1 (CONVERT_EXPR, type, expr);
+
+  if (type_unknown_p (expr))
+    {
+      expr = instantiate_type (type, expr, 1);
+      if (expr == error_mark_node)
+	return error_mark_node;
+    }
+
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    return (convert_from_reference
+	    (convert_to_reference (type, expr, CONV_STATIC|CONV_IMPLICIT,
+				   LOOKUP_COMPLAIN, NULL_TREE)));
+
+  if (IS_AGGR_TYPE (type))
+    return build_cplus_new
+      (type, (build_method_call
+	      (NULL_TREE, ctor_identifier, build_tree_list (NULL_TREE, expr),
+	       TYPE_BINFO (type), LOOKUP_NORMAL)));
+
+  expr = decay_conversion (expr);
+  intype = TREE_TYPE (expr);
+
+  /* FIXME handle casting to array type.  */
+
+  ok = 0;
+  if (can_convert_arg (type, intype, expr))
+    ok = 1;
+  else if (TYPE_PTROB_P (type) && TYPE_PTROB_P (intype))
+    {
+      tree binfo;
+      if (IS_AGGR_TYPE (TREE_TYPE (type)) && IS_AGGR_TYPE (TREE_TYPE (intype))
+	  && (TYPE_READONLY (TREE_TYPE (type))
+	      >= TYPE_READONLY (TREE_TYPE (intype)))
+	  && (TYPE_VOLATILE (TREE_TYPE (type))
+	      >= TYPE_VOLATILE (TREE_TYPE (intype)))
+	  && (binfo = get_binfo (TREE_TYPE (intype), TREE_TYPE (type), 0))
+	  && ! TREE_VIA_VIRTUAL (binfo))
+	ok = 1;
+    }
+  else if (TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
+    {
+      if (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type))),
+		     TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (intype))), 1)
+	  && (TYPE_READONLY (TREE_TYPE (TREE_TYPE (type)))
+	      >= TYPE_READONLY (TREE_TYPE (TREE_TYPE (intype))))
+	  && (TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (type)))
+	      >= TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (intype))))
+	  && (binfo = get_binfo (TYPE_OFFSET_BASETYPE (intype),
+				 TYPE_OFFSET_BASETYPE (type), 0))
+	  && ! TREE_VIA_VIRTUAL (binfo))
+	ok = 1;
+    }
+  else if (TREE_CODE (intype) != BOOLEAN_TYPE
+	   && TREE_CODE (type) != ARRAY_TYPE
+	   && TREE_CODE (type) != FUNCTION_TYPE
+	   && can_convert (intype, type))
+    ok = 1;
+
+  if (ok)
+    return build_c_cast (type, expr, 0);
+
+  cp_error ("static_cast from `%T' to `%T'", intype, type);
+  return error_mark_node;
 }
 
 tree
 build_reinterpret_cast (type, expr)
    tree type, expr;
 {
-  tree intype = TREE_TYPE (expr);
+  tree intype;
+
+  if (type == error_mark_node || expr == error_mark_node)
+    return error_mark_node;
+
+  if (TREE_CODE (expr) == OFFSET_REF)
+    expr = resolve_offset_ref (expr);
 
   if (current_template_parms)
     {
@@ -5075,54 +5166,91 @@ build_reinterpret_cast (type, expr)
       return t;
     }
 
-  if (TYPE_PTRMEMFUNC_P (type))
-    if (TYPE_PTRMEMFUNC_P (intype))
-      return build1 (NOP_EXPR, type, expr);
+  if (TREE_CODE (type) != REFERENCE_TYPE)
+    {
+      expr = decay_conversion (expr);
 
-  if (TYPE_PTRMEMFUNC_P (type))
-    type = TYPE_PTRMEMFUNC_FN_TYPE (type);
-
-  if (TYPE_PTRMEMFUNC_P (intype))
-    intype = TYPE_PTRMEMFUNC_FN_TYPE (intype);
-
-  if (! POINTER_TYPE_P (type) && ! TREE_CODE (type) == INTEGER_TYPE)
-    {
-      cp_error ("reinterpret_cast cannot convert to type `%T'", type);
-      return error_mark_node;
-    }
-  if (! POINTER_TYPE_P (intype) && ! TREE_CODE (intype) == INTEGER_TYPE)
-    {
-      cp_error ("reinterpret_cast cannot convert from type `%T'", type);
-      return error_mark_node;
-    }
-  if (TREE_CODE (type) == INTEGER_TYPE && TREE_CODE (intype) != POINTER_TYPE)
-    {
-      cp_error ("reinterpret_cast cannot convert non-pointer type `%T' to `%T'",
-		intype, type);
-      return error_mark_node;
-    }
-  if (TREE_CODE (intype) == INTEGER_TYPE && TREE_CODE (type) != POINTER_TYPE)
-    {
-      cp_error ("reinterpret_cast cannot convert `%T' to non-pointer type `%T'",
-		intype, type);
-      return error_mark_node;
+      /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
+	 Strip such NOP_EXPRs if VALUE is being used in non-lvalue context.  */
+      if (TREE_CODE (expr) == NOP_EXPR
+	  && TREE_TYPE (expr) == TREE_TYPE (TREE_OPERAND (expr, 0)))
+	expr = TREE_OPERAND (expr, 0);
     }
 
-  if (TREE_CODE (type) == POINTER_TYPE && TREE_CODE (intype) == POINTER_TYPE)
-    expr = convert (ptr_type_node, expr);
+  if (type_unknown_p (expr))
+    {
+      expr = instantiate_type (type, expr, 1);
+      if (expr == error_mark_node)
+	return error_mark_node;
+    }
 
-  return build_c_cast (type, expr, 0);
+  intype = TREE_TYPE (expr);
+
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    {
+      if (! real_lvalue_p (expr))
+	{
+	  cp_error ("reinterpret_cast from `%T' rvalue to `%T'", intype, type);
+	  return error_mark_node;
+	}
+      expr = build_unary_op (ADDR_EXPR, expr, 0);
+      if (expr != error_mark_node)
+	expr = build_reinterpret_cast
+	  (build_pointer_type (TREE_TYPE (type)), expr);
+      if (expr != error_mark_node)
+	expr = build_indirect_ref (expr, 0);
+      return expr;
+    }
+  else if (comptypes (TYPE_MAIN_VARIANT (intype), TYPE_MAIN_VARIANT (type), 1))
+    return build_static_cast (type, expr);
+
+  if (TYPE_PTR_P (type) && (TREE_CODE (intype) == INTEGER_TYPE
+			    || TREE_CODE (intype) == ENUMERAL_TYPE))
+    /* OK */;
+  else if (TREE_CODE (type) == INTEGER_TYPE && TYPE_PTR_P (intype))
+    {
+      if (TYPE_PRECISION (type) < TYPE_PRECISION (intype))
+	cp_pedwarn ("reinterpret_cast from `%T' to `%T' loses precision",
+		    intype, type);
+    }
+  else if ((TYPE_PTRFN_P (type) && TYPE_PTRFN_P (intype))
+	   || (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype)))
+    {
+      if (TREE_READONLY_DECL_P (expr))
+	expr = decl_constant_value (expr);
+      return fold (build1 (NOP_EXPR, type, expr));
+    }
+  else if ((TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
+	   || (TYPE_PTROBV_P (type) && TYPE_PTROBV_P (intype)))
+    {
+      if (! comp_ptr_ttypes_reinterpret (TREE_TYPE (type), TREE_TYPE (intype)))
+	cp_pedwarn ("reinterpret_cast from `%T' to `%T' casts away const (or volatile)",
+		    intype, type);
+
+      if (TREE_READONLY_DECL_P (expr))
+	expr = decl_constant_value (expr);
+      return fold (build1 (NOP_EXPR, type, expr));
+    }
+  else
+    {
+      cp_error ("reinterpret_cast from `%T' to `%T'", intype, type);
+      return error_mark_node;
+    }
+      
+  return convert (type, expr);
 }
 
 tree
 build_const_cast (type, expr)
    tree type, expr;
 {
-  tree intype = TREE_TYPE (expr);
-  tree t1, t2;
+  tree intype;
 
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
+
+  if (TREE_CODE (expr) == OFFSET_REF)
+    expr = resolve_offset_ref (expr);
 
   if (current_template_parms)
     {
@@ -5130,63 +5258,48 @@ build_const_cast (type, expr)
       return t;
     }
 
-  if (TYPE_PTRMEMFUNC_P (type))
-    type = TYPE_PTRMEMFUNC_FN_TYPE (type);
-  if (TYPE_PTRMEMFUNC_P (intype))
-    intype = TYPE_PTRMEMFUNC_FN_TYPE (intype);
+  if (TREE_CODE (type) != REFERENCE_TYPE)
+    {
+      expr = decay_conversion (expr);
 
-  if (! POINTER_TYPE_P (type))
-    {
-      cp_error ("const_cast cannot convert to non-pointer type `%T'", type);
-      return error_mark_node;
-    }
-  if (TREE_CODE (type) == REFERENCE_TYPE && ! real_lvalue_p (expr))
-    {
-      cp_error ("const_cast cannot convert rvalue to type `%T'", type);
-      return error_mark_node;
-    }
-  if (TREE_CODE (type) == POINTER_TYPE && TREE_CODE (intype) != POINTER_TYPE)
-    {
-      cp_error ("const_cast cannot convert non-pointer type `%T' to type `%T'",
-		intype, type);
-      return error_mark_node;
+      /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
+	 Strip such NOP_EXPRs if VALUE is being used in non-lvalue context.  */
+      if (TREE_CODE (expr) == NOP_EXPR
+	  && TREE_TYPE (expr) == TREE_TYPE (TREE_OPERAND (expr, 0)))
+	expr = TREE_OPERAND (expr, 0);
     }
 
-  if (TREE_CODE (type) == REFERENCE_TYPE)
+  if (type_unknown_p (expr))
     {
-      t1 = TREE_TYPE (type);
-      t2 = intype;
-    }
-  else
-    {
-      t1 = TREE_TYPE (type);
-      t2 = TREE_TYPE (intype);
-
-      for (; TREE_CODE (t1) == POINTER_TYPE && TREE_CODE (t2) == POINTER_TYPE;
-	   t1 = TREE_TYPE (t1), t2 = TREE_TYPE (t2))
-	;
+      expr = instantiate_type (type, expr, 1);
+      if (expr == error_mark_node)
+	return error_mark_node;
     }
 
-  if (TREE_CODE (t1) == OFFSET_TYPE && TREE_CODE (t2) == OFFSET_TYPE)
+  intype = TREE_TYPE (expr);
+
+  if (comptypes (TYPE_MAIN_VARIANT (intype), TYPE_MAIN_VARIANT (type), 1))
+    return build_static_cast (type, expr);
+  else if (TREE_CODE (type) == REFERENCE_TYPE)
     {
-      if (TYPE_OFFSET_BASETYPE (t1) != TYPE_OFFSET_BASETYPE (t2))
+      if (! real_lvalue_p (expr))
 	{
-	  cp_error ("const_cast cannot convert between pointers to members of different types `%T' and `%T'",
-		    TYPE_OFFSET_BASETYPE (t2), TYPE_OFFSET_BASETYPE (t1));
+	  cp_error ("const_cast from `%T' rvalue to `%T'", intype, type);
 	  return error_mark_node;
 	}
-      t1 = TREE_TYPE (t1);
-      t2 = TREE_TYPE (t2);
-    }
 
-  if (TYPE_MAIN_VARIANT (t1) != TYPE_MAIN_VARIANT (t2))
-    {
-      cp_error ("const_cast cannot convert unrelated type `%T' to `%T'",
-		t2, t1);
-      return error_mark_node;
+      if (comp_ptr_ttypes_const (TREE_TYPE (type), intype))
+	return (convert_from_reference
+		(convert_to_reference (type, expr, CONV_CONST|CONV_IMPLICIT,
+				       LOOKUP_COMPLAIN, NULL_TREE)));
     }
+  else if (TREE_CODE (type) == POINTER_TYPE
+	   && TREE_CODE (intype) == POINTER_TYPE
+	   && comp_ptr_ttypes_const (TREE_TYPE (type), TREE_TYPE (intype)))
+    return convert (type, expr);
 
-  return build_c_cast (type, expr, 0);
+  cp_error ("const_cast from `%T' to `%T'", intype, type);
+  return error_mark_node;
 }
 
 /* Build an expression representing a cast to type TYPE of expression EXPR.
@@ -5348,15 +5461,9 @@ build_c_cast (type, expr, allow_nonconverting)
     }
 
     /* Always produce some operator for an explicit cast,
-       so we can tell (for -pedantic) that the cast is no lvalue.
-       Also, pedantically, don't let (void *) (FOO *) 0 be a null
-       pointer constant.  */
-  if (TREE_CODE (type) != REFERENCE_TYPE
-      && (value == expr
-	  || (pedantic
-	      && TREE_CODE (value) == INTEGER_CST
-	      && TREE_CODE (expr) == INTEGER_CST
-	      && TREE_CODE (TREE_TYPE (expr)) != INTEGER_TYPE)))
+       so we can tell (for -pedantic) that the cast is no lvalue.  */
+  if (TREE_CODE (type) != REFERENCE_TYPE && value == expr
+      && real_lvalue_p (value))
     value = non_lvalue (value);
 
   return value;
@@ -7261,7 +7368,8 @@ comp_ptr_ttypes_real (to, from, constp)
 	return 0;
 
       if (TREE_CODE (from) == OFFSET_TYPE
-	  && TYPE_OFFSET_BASETYPE (from) == TYPE_OFFSET_BASETYPE (to))
+	  && comptypes (TYPE_OFFSET_BASETYPE (from),
+			TYPE_OFFSET_BASETYPE (to), 1))
 	  continue;
 
       /* Const and volatile mean something different for function types,
@@ -7315,5 +7423,64 @@ ptr_reasonably_similar (to, from)
       if (TREE_CODE (to) != POINTER_TYPE)
 	return comptypes
 	  (TYPE_MAIN_VARIANT (to), TYPE_MAIN_VARIANT (from), -1);
+    }
+}
+
+/* Like comp_ptr_ttypes, for const_cast.  */
+
+int
+comp_ptr_ttypes_const (to, from)
+     tree to, from;
+{
+  for (; ; to = TREE_TYPE (to), from = TREE_TYPE (from))
+    {
+      if (TREE_CODE (to) != TREE_CODE (from))
+	return 0;
+
+      if (TREE_CODE (from) == OFFSET_TYPE
+	  && comptypes (TYPE_OFFSET_BASETYPE (from),
+			TYPE_OFFSET_BASETYPE (to), 1))
+	  continue;
+
+      if (TREE_CODE (to) != POINTER_TYPE)
+	return comptypes (TYPE_MAIN_VARIANT (to), TYPE_MAIN_VARIANT (from), 1);
+    }
+}
+
+/* Like comp_ptr_ttypes, for reinterpret_cast.  */
+
+int
+comp_ptr_ttypes_reinterpret (to, from)
+     tree to, from;
+{
+  int constp = 1;
+
+  for (; ; to = TREE_TYPE (to), from = TREE_TYPE (from))
+    {
+      if (TREE_CODE (from) == OFFSET_TYPE)
+	from = TREE_TYPE (from);
+      if (TREE_CODE (to) == OFFSET_TYPE)
+	to = TREE_TYPE (to);
+
+      if (TREE_CODE (to) != TREE_CODE (from))
+	return 1;
+
+      /* Const and volatile mean something different for function types,
+	 so the usual checks are not appropriate.  */
+      if (TREE_CODE (to) != FUNCTION_TYPE && TREE_CODE (to) != METHOD_TYPE)
+	{
+	  if (TYPE_READONLY (from) > TYPE_READONLY (to)
+	      || TYPE_VOLATILE (from) > TYPE_VOLATILE (to))
+	    return 0;
+
+	  if (! constp
+	      && (TYPE_READONLY (to) > TYPE_READONLY (from)
+		  || TYPE_VOLATILE (to) > TYPE_READONLY (from)))
+	    return 0;
+	  constp &= TYPE_READONLY (to);
+	}
+
+      if (TREE_CODE (to) != POINTER_TYPE)
+	return 1;
     }
 }

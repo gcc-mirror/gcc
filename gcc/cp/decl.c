@@ -5700,7 +5700,7 @@ shadow_tag (declspecs)
       if (TYPE_FIELDS (t))
 	{
 	  tree decl = grokdeclarator (NULL_TREE, declspecs, NORMAL, 0,
-				      NULL_TREE, NULL_TREE);
+				      NULL_TREE);
 	  finish_anon_union (decl);
 	}
     }
@@ -5739,7 +5739,7 @@ groktypename (typename)
     return typename;
   return grokdeclarator (TREE_VALUE (typename),
 			 TREE_PURPOSE (typename),
-			 TYPENAME, 0, NULL_TREE, NULL_TREE);
+			 TYPENAME, 0, NULL_TREE);
 }
 
 /* Decode a declarator in an ordinary declaration or data definition.
@@ -5764,10 +5764,9 @@ int debug_temp_inits = 1;
 void start_decl_1 ();
 
 tree
-start_decl (declarator, declspecs, initialized, raises)
+start_decl (declarator, declspecs, initialized)
      tree declarator, declspecs;
      int initialized;
-     tree raises;
 {
   register tree decl;
   register tree type, tem;
@@ -5788,7 +5787,7 @@ start_decl (declarator, declspecs, initialized, raises)
       used_extern_spec = 1;
     }
 
-  decl = grokdeclarator (declarator, declspecs, NORMAL, initialized, raises,
+  decl = grokdeclarator (declarator, declspecs, NORMAL, initialized,
 			 NULL_TREE);
   if (decl == NULL_TREE || decl == void_type_node)
     return NULL_TREE;
@@ -5923,7 +5922,7 @@ start_decl (declarator, declspecs, initialized, raises)
 	DECL_VINDEX (decl)
 	    = build_min_nt (DECL_STMT, copy_to_permanent (declarator),
 			    copy_to_permanent (declspecs),
-			    copy_to_permanent (raises), NULL_TREE);
+			    NULL_TREE);
     }
 
 
@@ -6249,7 +6248,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	{
 	  tree stmt = DECL_VINDEX (decl);
 	  DECL_VINDEX (decl) = NULL_TREE;
-	  TREE_OPERAND (stmt, 3) = copy_to_permanent (init);
+	  TREE_OPERAND (stmt, 2) = copy_to_permanent (init);
 	  add_tree (stmt);
 	}
 
@@ -7111,8 +7110,8 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
   if (raises)
     {
       type = build_exception_variant (type, raises);
-      raises = TYPE_RAISES_EXCEPTIONS (type);
     }
+
   decl = build_lang_decl (FUNCTION_DECL, declarator, type);
   /* propagate volatile out from type to decl */
   if (TYPE_VOLATILE (type))
@@ -7447,12 +7446,12 @@ build_ptrmemfunc_type (type)
 enum return_types { return_normal, return_ctor, return_dtor, return_conversion };
 
 tree
-grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrlist)
+grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
      tree declspecs;
      tree declarator;
      enum decl_context decl_context;
      int initialized;
-     tree raises, attrlist;
+     tree attrlist;
 {
   RID_BIT_TYPE specbits;
   int nclasses = 0;
@@ -7489,6 +7488,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
   tree ctor_return_type = NULL_TREE;
   enum overload_flags flags = NO_SPECIAL;
   tree quals = NULL_TREE;
+  tree raises = NULL_TREE;
 
   RIDBIT_RESET_ALL (specbits);
   if (decl_context == FUNCDEF)
@@ -7579,7 +7579,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 		*next = TREE_OPERAND (decl, 0);
 		init = TREE_OPERAND (decl, 1);
 
-		decl = start_decl (declarator, declspecs, 1, NULL_TREE);
+		decl = start_decl (declarator, declspecs, 1);
 		finish_decl (decl, init, NULL_TREE);
 		return 0;
 	      }
@@ -7587,6 +7587,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 	    if (decl_context == FIELD && ctype == NULL_TREE)
 	      ctype = current_class_type;
 	    if (ctype
+		&& TREE_OPERAND (decl, 0)
 		&& (TREE_CODE (TREE_OPERAND (decl, 0)) == TYPE_DECL
 		    && ((DECL_NAME (TREE_OPERAND (decl, 0))
 			 == constructor_name_full (ctype))
@@ -8528,6 +8529,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 
 	    /* Pick up type qualifiers which should be applied to `this'.  */
 	    quals = TREE_OPERAND (declarator, 2);
+
+	    /* Pick up the exception specifications.  */
+	    raises = TREE_TYPE (declarator);
 
 	    /* Say it's a definition only for the CALL_EXPR
 	       closest to the identifier.  */
@@ -9776,11 +9780,10 @@ grokparms (first_parm, funcdef_flag)
 
 	      if (decl != void_type_node)
 		{
-		  /* @@ May need to fetch out a `raises' here.  */
 		  decl = grokdeclarator (TREE_VALUE (decl),
 					 TREE_PURPOSE (decl),
 					 PARM, init != NULL_TREE,
-					 NULL_TREE, NULL_TREE);
+					 NULL_TREE);
 		  if (! decl)
 		    continue;
 		  type = TREE_TYPE (decl);
@@ -9878,7 +9881,7 @@ grokparms (first_parm, funcdef_flag)
 		      else
 			init = require_instantiated_type (type, init, integer_zero_node);
 		      if (! current_template_parms
-			  && ! implicit_conversion (type, TREE_TYPE (init), init, LOOKUP_NORMAL))
+			  && ! can_convert_arg (type, TREE_TYPE (init), init))
 			cp_pedwarn ("invalid type `%T' for default argument to `%#D'",
 				    TREE_TYPE (init), decl);
 		    }
@@ -9933,6 +9936,21 @@ grokparms (first_parm, funcdef_flag)
   return result;
 }
 
+int
+copy_args_p (d)
+     tree d;
+{
+  tree t = FUNCTION_ARG_CHAIN (d);
+  if (t && TREE_CODE (TREE_VALUE (t)) == REFERENCE_TYPE
+      && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (t)))
+	  == DECL_CLASS_CONTEXT (d))
+      && (TREE_CHAIN (t) == NULL_TREE
+	  || TREE_CHAIN (t) == void_list_node
+	  || TREE_PURPOSE (TREE_CHAIN (t))))
+    return 1;
+  return 0;
+}
+
 /* These memoizing functions keep track of special properties which
    a class may have.  `grok_ctor_properties' notices whether a class
    has a constructor of the form X(X&), and also complains
@@ -10880,8 +10898,8 @@ static int function_depth;
    @@ something we had previously.  */
 
 int
-start_function (declspecs, declarator, raises, attrs, pre_parsed_p)
-     tree declspecs, declarator, raises, attrs;
+start_function (declspecs, declarator, attrs, pre_parsed_p)
+     tree declspecs, declarator, attrs;
      int pre_parsed_p;
 {
   tree decl1;
@@ -10957,8 +10975,6 @@ start_function (declspecs, declarator, raises, attrs, pre_parsed_p)
 	    doing_friend = 1;
 	}
 
-      raises = TYPE_RAISES_EXCEPTIONS (fntype);
-
       /* In a fcn definition, arg types must be complete.  */
       require_complete_types_for_parms (DECL_ARGUMENTS (decl1));
 
@@ -10975,8 +10991,7 @@ start_function (declspecs, declarator, raises, attrs, pre_parsed_p)
     }
   else
     {
-      decl1 = grokdeclarator (declarator, declspecs, FUNCDEF, 1, raises,
-			      NULL_TREE);
+      decl1 = grokdeclarator (declarator, declspecs, FUNCDEF, 1, NULL_TREE);
       /* If the declarator is not suitable for a function definition,
 	 cause a syntax error.  */
       if (decl1 == NULL_TREE || TREE_CODE (decl1) != FUNCTION_DECL) return 0;
@@ -12109,10 +12124,10 @@ finish_function (lineno, call_poplevel, nested)
    CHANGES TO CODE IN `grokfield'.  */
 
 tree
-start_method (declspecs, declarator, raises)
-     tree declarator, declspecs, raises;
+start_method (declspecs, declarator)
+     tree declarator, declspecs;
 {
-  tree fndecl = grokdeclarator (declarator, declspecs, MEMFUNCDEF, 0, raises,
+  tree fndecl = grokdeclarator (declarator, declspecs, MEMFUNCDEF, 0,
 				NULL_TREE);
 
   /* Something too ugly to handle.  */

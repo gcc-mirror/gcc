@@ -919,17 +919,19 @@ save_this (instance)
 /* Build a signature member function call.  Looks up the signature table
    entry corresponding to FUNCTION.  Depending on the value of the CODE
    field, either call the function in PFN directly, or use OFFSET to
-   index INSTANCE's virtual function table.  */
+   index the object's virtual function table.  */
 
 tree
-build_signature_method_call (basetype, instance, function, parms)
-     tree basetype, instance, function, parms;
+build_signature_method_call (function, parms)
+     tree function, parms;
 {
+  tree instance = TREE_VALUE (parms);
   tree saved_instance = save_this (instance);	/* Create temp for `this'.  */
   tree object_ptr = build_optr_ref (saved_instance);
   tree new_object_ptr, new_parms;
   tree signature_tbl_ptr = build_sptr_ref (saved_instance);
   tree sig_field_name = DECL_NAME (DECL_MEMFUNC_POINTER_TO (function));
+  tree basetype = DECL_CONTEXT (function);
   tree basetype_path = TYPE_BINFO (basetype);
   tree tbl_entry = build_component_ref (build1 (INDIRECT_REF, basetype,
 						signature_tbl_ptr),
