@@ -118,8 +118,9 @@ Boston, MA 02111-1307, USA.  */
    ``desc'' field is set to compiler version number >= 315 (sic).  */
 #define DBX_OUTPUT_MAIN_SOURCE_FILENAME(STREAM,NAME) 			\
 do {									\
-  fprintf (STREAM, ".stabs \"%s\",%d,0,315,%s\n", (NAME), N_SO,		\
-	   &ltext_label_name[1]);					\
+  fprintf (STREAM, ".stabs ");						\
+  output_quoted_string (STREAM, NAME);					\
+  fprintf (STREAM, ",%d,0,315,%s\n", N_SO, &ltext_label_name[1]);	\
   text_section ();							\
   ASM_OUTPUT_INTERNAL_LABEL (STREAM, "Ltext", 0);			\
 } while (0)

@@ -1,3 +1,7 @@
+1999-02-24  Mike Stump  <mrs@wrs.com>
+
+	* arm/aout.h (DBX_OUTPUT_MAIN_SOURCE_FILENAME): Fix quoting.
+
 1999-03-24  Jim Blandy  <jimb@zwingli.cygnus.com>
 
 	* libgcc2.c (__CTOR_LIST__, __DTOR_LIST__): Initialize on all
