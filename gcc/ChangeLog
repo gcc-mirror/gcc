@@ -1,3 +1,12 @@
+2000-01-23  Richard Henderson  <rth@cygnus.com>
+
+	* i386.c (dbx_register_map, svr4_dbx_register_map): New.
+	* i386.h (DBX_REGISTER_NUMBER): Use them.
+	* i386/beos-elf.h, i386/freebsd-elf.h, i386/i386elf.h: Likewise.
+	* i386/linux.h, i386/osfrose.h, i386/ptx4-i.h: Likewise.
+	* i386/rtemself.h, i386/sco5.h, i386/sysv4.h: Likewise.
+	* i386/sequent.h: Kill incorrect comment.
+
 2000-01-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* ggc-page.c (struct page_entry): Make `context_depth' an

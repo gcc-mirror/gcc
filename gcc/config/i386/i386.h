@@ -2185,17 +2185,10 @@ number as al, and ax.
 
 /* How to renumber registers for dbx and gdb.  */
 
-/* {0,2,1,3,6,7,4,5,12,13,14,15,16,17}  */
-#define DBX_REGISTER_NUMBER(n) \
-((n) == 0 ? 0 : \
- (n) == 1 ? 2 : \
- (n) == 2 ? 1 : \
- (n) == 3 ? 3 : \
- (n) == 4 ? 6 : \
- (n) == 5 ? 7 : \
- (n) == 6 ? 4 : \
- (n) == 7 ? 5 : \
- (n) + 4)
+#define DBX_REGISTER_NUMBER(n)  dbx_register_map[n]
+
+extern int const dbx_register_map[FIRST_PSEUDO_REGISTER];
+extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 
 /* Before the prologue, RA is at 0(%esp).  */
 #define INCOMING_RETURN_ADDR_RTX \

@@ -64,10 +64,6 @@ Boston, MA 02111-1307, USA.  */
  * dbx order is ax, dx, cx, st(0), st(1), bx, si, di, st(2), st(3),
  * 		st(4), st(5), st(6), st(7), sp, bp  */
 
-/* ??? The right thing would be to change the ordering of the
-   registers to correspond to the conventions of this system,
-   and get rid of DBX_REGISTER_NUMBER.  */
-
 #undef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(n)		\
 ((n) < 3 ? (n) : (n) < 6 ? (n) + 2	\
