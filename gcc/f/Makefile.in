@@ -1,0 +1,562 @@
+# Makefile for GNU F77 compiler.
+#   Copyright (C) 1995-1997 Free Software Foundation, Inc.
+
+#This file is part of GNU Fortran.
+
+#GNU Fortran is free software; you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation; either version 2, or (at your option)
+#any later version.
+
+#GNU Fortran is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with GNU Fortran; see the file COPYING.  If not, write to
+#the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+#02111-1307, USA.
+
+# The makefile built from this file lives in the language subdirectory.
+# Its purpose is to provide support for:
+#
+# 1) recursion where necessary, and only then (building .o's), and
+# 2) building and debugging f771 from the language subdirectory, and
+# 3) nothing else.
+#
+# The parent makefile handles all other chores, with help from the
+# language makefile fragment, of course.
+#
+# The targets for external use are:
+# all, TAGS, ???mostlyclean, ???clean.
+
+# Suppress smart makes who think they know how to automake Yacc files
+.y.c:
+
+# Variables that exist for you to override.
+# See below for how to change them for certain systems.
+
+ALLOCA =
+
+# Various ways of specifying flags for compilations:
+# CFLAGS is for the user to override to, e.g., do a bootstrap with -O2.
+# BOOT_CFLAGS is the value of CFLAGS to pass
+# to the stage2 and stage3 compilations
+# XCFLAGS is used for most compilations but not when using the GCC just built.
+XCFLAGS =
+CFLAGS = -g
+BOOT_CFLAGS = -O $(CFLAGS)
+# These exists to be overridden by the x-* and t-* files, respectively.
+X_CFLAGS =
+T_CFLAGS =
+
+X_CPPFLAGS =
+T_CPPFLAGS =
+
+CC = cc
+HOST_CC = $(CC)
+BISON = bison
+BISONFLAGS =
+LEX = flex
+LEXFLAGS =
+AR = ar
+AR_FLAGS = rc
+SHELL = /bin/sh
+MAKEINFO = makeinfo
+TEXI2DVI = texi2dvi
+
+# Define this as & to perform parallel make on a Sequent.
+# Note that this has some bugs, and it seems currently necessary
+# to compile all the gen* files first by hand to avoid erroneous results.
+P =
+
+# This is used in the definition of SUBDIR_USE_ALLOCA.
+# ??? Perhaps it would be better if it just looked for *gcc*.
+OLDCC = cc
+
+# This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
+# It omits XCFLAGS, and specifies -B./.
+# It also specifies -B$(tooldir)/ to find as and ld for a cross compiler.
+GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS)
+
+# Tools to use when building a cross-compiler.
+# These are used because `configure' appends `cross-make'
+# to the makefile when making a cross-compiler.
+
+target= ... `configure' substitutes actual target name here.
+xmake_file= ... `configure' substitutes actual x- file name here.
+tmake_file= ... `configure' substitutes actual t- file name here.
+
+# Directory where gcc sources are (gcc/), from where we are.
+# Note that this should be overridden when building f771, which happens
+# at the top level, not in f.  Likewise for VPATH (if added).
+srcdir = .
+VPATH = .
+
+# Additional system libraries to link with.
+CLIB=
+
+# Change this to a null string if obstacks are installed in the
+# system library.
+OBSTACK=obstack.o
+
+# Choose the real default target.
+ALL=all
+
+# End of variables for you to override.
+
+# Definition of `none' is here so that new rules inserted by sed
+# do not specify the default target.
+none:
+	@echo ''
+	@echo 'Do not use this makefile to build anything other than the'
+	@echo 'g77 derived files via the "make g77-only" target.'
+	@echo 'Instead, use the documented procedures to build gcc itself,'
+	@echo 'which will build g77 as well when done properly.'
+	@echo ''
+	@exit 1
+
+# This rule is just a handy way to build the g77 derived files without
+# having the gcc source tree around.
+g77-only: force
+	if [ -f g77.texi ] ; then \
+	  (cd ..; $(MAKE) srcdir=. HOST_CC=cc HOST_CFLAGS=-g -f f/Make-lang.in f77.rebuilt); \
+	else \
+	  $(MAKE) srcdir=. HOST_CC=cc HOST_CFLAGS=-g -f f/Make-lang.in f77.rebuilt; \
+	fi
+
+all: all.indirect
+
+# This tells GNU Make version 3 not to put all variables in the environment.
+.NOEXPORT:
+
+# sed inserts variable overrides after the following line.
+####target overrides
+####host overrides
+####cross overrides
+####build overrides
+
+# Now figure out from those variables how to compile and link.
+
+all.indirect: f/Makefile f771
+
+# IN_GCC tells obstack.h that we are using gcc's <stddef.h> file.
+INTERNAL_CFLAGS = $(CROSS) -DIN_GCC
+
+# This is the variable actually used when we compile.
+ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS) -W -Wall
+
+# Likewise.
+ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
+
+# f771 is so big, need to tell linker on m68k-next-nextstep* to make enough
+# room for it.  On AIX, linking f771 overflows the linker TOC.  -bbigtoc is
+# appropriate for the linker on AIX 4.1 and above.
+F771_LDFLAGS = `case "${target}" in\
+ m68k-next-nextstep*) echo -segaddr __DATA 6000000;;\
+ *-*-aix[4-9]*) \`$(CC) --print-prog-name=ld\` -v 2>&1 | grep BFD >/dev/null || echo -Wl,-bbigtoc;; esac`
+
+# Even if ALLOCA is set, don't use it if compiling with GCC.
+
+SUBDIR_OBSTACK = `if [ x$(OBSTACK) != x ]; then echo $(OBSTACK); else true; fi`
+SUBDIR_USE_ALLOCA = `case "${CC}" in "${OLDCC}") if [ x$(ALLOCA) != x ]; then echo $(ALLOCA); else true; fi ;; esac`
+SUBDIR_MALLOC = `if [ x$(MALLOC) != x ]; then echo $(MALLOC); else true; fi`
+
+# How to link with both our special library facilities
+# and the system's installed libraries.
+LIBS = $(SUBDIR_OBSTACK) $(SUBDIR_USE_ALLOCA) $(SUBDIR_MALLOC) $(CLIB)
+
+# Specify the directories to be searched for header files.
+# Both . and srcdir are used, in that order,
+# so that tm.h and config.h will be found in the compilation
+# directory rather than in the source directory.
+INCLUDES = -If -I$(srcdir)/f -I. -I$(srcdir) -I$(srcdir)/config
+
+# Flags_to_pass to recursive makes.
+# Note that we don't need to distinguish the `_FOR_TARGET' cross tools
+# as AR and RANLIB are set appropriately by configure iff cross compiling.
+FLAGS_TO_PASS = \
+	"CROSS=$(CROSS)" \
+	"AR_FLAGS=$(AR_FLAGS)" \
+	"AR=$(AR)" \
+	"BISON=$(BISON)" \
+	"BISONFLAGS=$(BISONFLAGS)" \
+	"CC=$(CC)" \
+	"CFLAGS=$(CFLAGS)" \
+	"GCCFLAGS=$(GCCFLAGS)" \
+	"GCC_FOR_TARGET=$(GCC_FOR_TARGET)" \
+	"LDFLAGS=$(LDFLAGS)" \
+	"LEX=$(LEX)" \
+	"LEXFLAGS=$(LEXFLAGS)" \
+	"MAKEINFO=$(MAKEINFO)" \
+	"MAKEINFOFLAGS=$(MAKEINFOFLAGS)" \
+	"RANLIB=$(RANLIB)" \
+	"RANLIB_TEST=$(RANLIB_TEST)" \
+	"SHELL=$(SHELL)" \
+	"exec_prefix=$(exec_prefix)" \
+	"prefix=$(prefix)" \
+	"tooldir=$(tooldir)" \
+	"bindir=$(bindir)" \
+	"libsubdir=$(libsubdir)"
+
+.c.o:
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< -o $@
+
+# Lists of files for various purposes.
+
+# Language-specific object files for g77
+
+F77_OBJS = \
+ f/bad.o \
+ f/bit.o \
+ f/bld.o \
+ f/com.o \
+ f/data.o \
+ f/equiv.o \
+ f/expr.o \
+ f/global.o \
+ f/implic.o \
+ f/info.o \
+ f/intrin.o \
+ f/lab.o \
+ f/lex.o \
+ f/malloc.o \
+ f/name.o \
+ f/parse.o \
+ f/proj.o \
+ f/src.o \
+ f/st.o \
+ f/sta.o \
+ f/stb.o \
+ f/stc.o \
+ f/std.o \
+ f/ste.o \
+ f/storag.o \
+ f/stp.o \
+ f/str.o \
+ f/sts.o \
+ f/stt.o \
+ f/stu.o \
+ f/stv.o \
+ f/stw.o \
+ f/symbol.o \
+ f/target.o \
+ f/top.o \
+ f/type.o \
+ f/where.o \
+ f/zzz.o
+
+# Language-independent object files.
+OBJS = `cat stamp-objlist | sed -e "s:  : :g" -e "s: : f/:g"`
+OBJDEPS = stamp-objlist
+
+compiler: f771
+# This is now meant to be built in the top level directory, not `f':
+f771: $(P) f/Makefile $(F77_OBJS) $(OBJDEPS) $(LIBDEPS)
+	rm -f f771$(exeext)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(F771_LDFLAGS) -o $@ \
+	      $(F77_OBJS) $(OBJS) $(LIBS)
+
+# Check in case anyone expects to build in this directory:
+f/Makefile:
+	@if test ! -f f/Makefile ; \
+	then echo "Build f771 only at the top level." 2>&1; exit 1; \
+	else true; fi
+
+Makefile: $(srcdir)/f/Makefile.in $(srcdir)/configure
+
+native: f771
+
+# Compiling object files from source files.
+
+# Note that dependencies on obstack.h are not written
+# because that file is not part of GCC.
+
+# F77 language-specific files.
+
+# These macros expand to the corresponding g77-source .j files plus
+# the gcc-source files involved (each file itself, plus whatever
+# files on which it depends, but without including stuff resulting
+# from configuration, since we can't guess at that).  The files
+# that live in a distclean'd gcc source directory have "$(srcdir)/"
+# prefixes, while the others don't because they'll be created
+# only in the build directory.
+ASSERT_H = $(srcdir)/f/assert.j $(srcdir)/assert.h
+CONFIG_H = $(srcdir)/f/config.j config.h
+CONVERT_H = $(srcdir)/f/convert.j $(srcdir)/convert.h
+FLAGS_H = $(srcdir)/f/flags.j $(srcdir)/flags.h
+GLIMITS_H = $(srcdir)/f/glimits.j $(srcdir)/glimits.h
+HCONFIG_H = $(srcdir)/f/hconfig.j hconfig.h
+INPUT_H = $(srcdir)/f/input.j $(srcdir)/input.h
+RTL_H = $(srcdir)/f/rtl.j $(srcdir)/rtl.h $(srcdir)/rtl.def \
+	$(srcdir)/machmode.h $(srcdir)/machmode.def
+TCONFIG_H = $(srcdir)/f/tconfig.j tconfig.h
+TM_H = $(srcdir)/f/tm.j tm.h
+TREE_H = $(srcdir)/f/tree.j $(srcdir)/tree.h $(srcdir)/real.h \
+	$(srcdir)/tree.def $(srcdir)/machmode.h $(srcdir)/machmode.def
+
+#Build the first part of this list with the command line:
+#    cd gcc/; make deps-kinda -f f/Makefile.in
+#Note that this command uses the host C compiler;
+# use HOST_CC="./xgcc -B./" to use GCC in the build directory, for example.
+#Also note that this particular build file seems to want to use
+# substitions: $(CONFIG_H) for config.h; $(TREE_H) for tree.h; and
+# $(RTL_H) for rtl.h.  deps-kinda uses a sed script to do those
+# substitutions, plus others for elegance.
+
+f/bad.o: f/bad.c f/proj.h $(ASSERT_H) f/bad.h f/bad.def f/where.h $(GLIMITS_H) \
+  f/top.h f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/bld.h f/bld-op.def f/bit.h \
+  f/info.h f/info-b.def f/info-k.def f/info-w.def f/target.h f/lex.h f/type.h \
+  f/intrin.h f/intrin.def f/lab.h f/symbol.h f/symbol.def f/equiv.h f/storag.h \
+  f/global.h f/name.h
+f/bit.o: f/bit.c f/proj.h $(ASSERT_H) $(GLIMITS_H) f/bit.h f/malloc.h
+f/bld.o: f/bld.c f/proj.h $(ASSERT_H) f/bld.h f/bld-op.def f/bit.h f/malloc.h \
+  f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def f/info-w.def \
+  f/target.h f/bad.h f/bad.def f/where.h $(GLIMITS_H) f/top.h f/lex.h f/type.h \
+  f/lab.h f/storag.h f/symbol.h f/symbol.def f/equiv.h f/global.h f/name.h \
+  f/intrin.h f/intrin.def
+f/com.o: f/com.c $(CONFIG_H) $(FLAGS_H) $(RTL_H) $(TREE_H) $(CONVERT_H) f/proj.h \
+  $(ASSERT_H) f/com.h f/com-rt.def f/bld.h f/bld-op.def f/bit.h f/malloc.h \
+  f/info.h f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def \
+  f/where.h $(GLIMITS_H) f/top.h f/lex.h f/type.h f/intrin.h f/intrin.def f/lab.h \
+  f/symbol.h f/symbol.def f/equiv.h f/storag.h f/global.h f/name.h f/expr.h \
+  f/implic.h f/src.h f/st.h
+f/data.o: f/data.c f/proj.h $(ASSERT_H) f/data.h f/bld.h f/bld-op.def f/bit.h \
+  f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def \
+  f/info-w.def f/target.h f/bad.h f/bad.def f/where.h $(GLIMITS_H) f/top.h f/lex.h \
+  f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def f/equiv.h f/global.h \
+  f/name.h f/intrin.h f/intrin.def f/expr.h f/st.h
+f/equiv.o: f/equiv.c f/proj.h $(ASSERT_H) f/equiv.h f/bld.h f/bld-op.def f/bit.h \
+  f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def \
+  f/info-w.def f/target.h f/bad.h f/bad.def f/where.h $(GLIMITS_H) f/top.h f/lex.h \
+  f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def f/global.h f/name.h \
+  f/intrin.h f/intrin.def f/data.h
+f/expr.o: f/expr.c f/proj.h $(ASSERT_H) f/expr.h f/bld.h f/bld-op.def f/bit.h \
+  f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def \
+  f/info-w.def f/target.h f/bad.h f/bad.def f/where.h $(GLIMITS_H) f/top.h f/lex.h \
+  f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def f/equiv.h f/global.h \
+  f/name.h f/intrin.h f/intrin.def f/implic.h f/src.h f/st.h
+f/fini.o: f/fini.c f/proj.h $(ASSERT_H) f/malloc.h
+f/g77.o: f/g77.c $(CONFIG_H)
+f/global.o: f/global.c f/proj.h $(ASSERT_H) f/global.h f/lex.h f/top.h f/malloc.h \
+  f/where.h $(GLIMITS_H) f/name.h f/symbol.h f/symbol.def f/bad.h f/bad.def \
+  f/bld.h f/bld-op.def f/bit.h f/com.h f/com-rt.def $(TREE_H) f/info.h \
+  f/info-b.def f/info-k.def f/info-w.def f/target.h f/type.h f/lab.h f/storag.h \
+  f/intrin.h f/intrin.def f/equiv.h
+f/implic.o: f/implic.c f/proj.h $(ASSERT_H) f/implic.h f/info.h f/info-b.def \
+  f/info-k.def f/info-w.def f/target.h $(TREE_H) f/bad.h f/bad.def f/where.h \
+  $(GLIMITS_H) f/top.h f/malloc.h f/lex.h f/type.h f/symbol.h f/symbol.def f/bld.h \
+  f/bld-op.def f/bit.h f/com.h f/com-rt.def f/lab.h f/storag.h f/intrin.h \
+  f/intrin.def f/equiv.h f/global.h f/name.h f/src.h
+f/info.o: f/info.c f/proj.h $(ASSERT_H) f/info.h f/info-b.def f/info-k.def \
+  f/info-w.def f/target.h $(TREE_H) f/bad.h f/bad.def f/where.h $(GLIMITS_H) \
+  f/top.h f/malloc.h f/lex.h f/type.h
+f/intrin.o: f/intrin.c f/proj.h $(ASSERT_H) f/intrin.h f/intrin.def f/bld.h \
+  f/bld-op.def f/bit.h f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h \
+  f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def f/where.h \
+  $(GLIMITS_H) f/top.h f/lex.h f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def \
+  f/equiv.h f/global.h f/name.h f/src.h
+f/lab.o: f/lab.c f/proj.h $(ASSERT_H) f/lab.h f/com.h f/com-rt.def $(TREE_H) f/bld.h \
+  f/bld-op.def f/bit.h f/malloc.h f/info.h f/info-b.def f/info-k.def \
+  f/info-w.def f/target.h f/bad.h f/bad.def f/where.h $(GLIMITS_H) f/top.h f/lex.h \
+  f/type.h f/intrin.h f/intrin.def f/symbol.h f/symbol.def f/equiv.h f/storag.h \
+  f/global.h f/name.h
+f/lex.o: f/lex.c f/proj.h $(ASSERT_H) f/top.h f/malloc.h f/where.h $(GLIMITS_H) \
+  f/bad.h f/bad.def f/com.h f/com-rt.def $(TREE_H) f/bld.h f/bld-op.def f/bit.h \
+  f/info.h f/info-b.def f/info-k.def f/info-w.def f/target.h f/lex.h f/type.h \
+  f/intrin.h f/intrin.def f/lab.h f/symbol.h f/symbol.def f/equiv.h f/storag.h \
+  f/global.h f/name.h f/src.h $(CONFIG_H) $(FLAGS_H) $(INPUT_H)
+f/malloc.o: f/malloc.c f/proj.h $(ASSERT_H) f/malloc.h
+f/name.o: f/name.c f/proj.h $(ASSERT_H) f/bad.h f/bad.def f/where.h $(GLIMITS_H) \
+  f/top.h f/malloc.h f/name.h f/global.h f/lex.h f/symbol.h f/symbol.def f/bld.h \
+  f/bld-op.def f/bit.h f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def \
+  f/info-k.def f/info-w.def f/target.h f/type.h f/lab.h f/storag.h f/intrin.h \
+  f/intrin.def f/equiv.h f/src.h
+f/parse.o: f/parse.c f/proj.h $(ASSERT_H) f/top.h f/malloc.h f/where.h $(GLIMITS_H) \
+  f/com.h f/com-rt.def $(TREE_H) f/bld.h f/bld-op.def f/bit.h f/info.h \
+  f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def f/lex.h \
+  f/type.h f/intrin.h f/intrin.def f/lab.h f/symbol.h f/symbol.def f/equiv.h \
+  f/storag.h f/global.h f/name.h f/zzz.h $(FLAGS_H)
+f/proj.o: f/proj.c f/proj.h $(ASSERT_H) $(GLIMITS_H)
+f/src.o: f/src.c f/proj.h $(ASSERT_H) f/src.h f/bad.h f/bad.def f/where.h \
+  $(GLIMITS_H) f/top.h f/malloc.h
+f/st.o: f/st.c f/proj.h $(ASSERT_H) f/st.h f/bad.h f/bad.def f/where.h $(GLIMITS_H) \
+  f/top.h f/malloc.h f/lex.h f/symbol.h f/symbol.def f/bld.h f/bld-op.def f/bit.h \
+  f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def f/info-w.def \
+  f/target.h f/type.h f/lab.h f/storag.h f/intrin.h f/intrin.def f/equiv.h \
+  f/global.h f/name.h f/sta.h f/stamp-str f/stb.h f/expr.h f/stp.h f/stt.h f/stc.h \
+  f/std.h f/stv.h f/stw.h f/ste.h f/sts.h f/stu.h
+f/sta.o: f/sta.c f/proj.h $(ASSERT_H) f/sta.h f/bad.h f/bad.def f/where.h \
+  $(GLIMITS_H) f/top.h f/malloc.h f/lex.h f/stamp-str f/symbol.h f/symbol.def f/bld.h \
+  f/bld-op.def f/bit.h f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def \
+  f/info-k.def f/info-w.def f/target.h f/type.h f/lab.h f/storag.h f/intrin.h \
+  f/intrin.def f/equiv.h f/global.h f/name.h f/implic.h f/stb.h f/expr.h f/stp.h \
+  f/stt.h f/stc.h f/std.h f/stv.h f/stw.h
+f/stb.o: f/stb.c f/proj.h $(ASSERT_H) f/stb.h f/bad.h f/bad.def f/where.h \
+  $(GLIMITS_H) f/top.h f/malloc.h f/expr.h f/bld.h f/bld-op.def f/bit.h f/com.h \
+  f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def f/info-w.def \
+  f/target.h f/lex.h f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def \
+  f/equiv.h f/global.h f/name.h f/intrin.h f/intrin.def f/stp.h f/stt.h f/stamp-str \
+  f/src.h f/sta.h f/stc.h
+f/stc.o: f/stc.c f/proj.h $(ASSERT_H) f/stc.h f/bad.h f/bad.def f/where.h \
+  $(GLIMITS_H) f/top.h f/malloc.h f/bld.h f/bld-op.def f/bit.h f/com.h \
+  f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def f/info-w.def \
+  f/target.h f/lex.h f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def \
+  f/equiv.h f/global.h f/name.h f/intrin.h f/intrin.def f/expr.h f/stp.h f/stt.h \
+  f/stamp-str f/data.h f/implic.h f/src.h f/sta.h f/std.h f/stv.h f/stw.h
+f/std.o: f/std.c f/proj.h $(ASSERT_H) f/std.h f/bld.h f/bld-op.def f/bit.h \
+  f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def \
+  f/info-w.def f/target.h f/bad.h f/bad.def f/where.h $(GLIMITS_H) f/top.h f/lex.h \
+  f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def f/equiv.h f/global.h \
+  f/name.h f/intrin.h f/intrin.def f/stp.h f/stt.h f/stamp-str f/stv.h f/stw.h f/sta.h \
+  f/ste.h f/sts.h
+f/ste.o: f/ste.c $(CONFIG_H) $(RTL_H) f/proj.h $(ASSERT_H) f/ste.h f/bld.h \
+  f/bld-op.def f/bit.h f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h \
+  f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def f/where.h \
+  $(GLIMITS_H) f/top.h f/lex.h f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def \
+  f/equiv.h f/global.h f/name.h f/intrin.h f/intrin.def f/stp.h f/stt.h f/stamp-str \
+  f/sts.h f/stv.h f/stw.h f/sta.h
+f/storag.o: f/storag.c f/proj.h $(ASSERT_H) f/storag.h f/bld.h f/bld-op.def f/bit.h \
+  f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def \
+  f/info-w.def f/target.h f/bad.h f/bad.def f/where.h $(GLIMITS_H) f/top.h f/lex.h \
+  f/type.h f/lab.h f/symbol.h f/symbol.def f/equiv.h f/global.h f/name.h \
+  f/intrin.h f/intrin.def f/data.h
+f/stp.o: f/stp.c f/proj.h $(ASSERT_H) f/stp.h f/bld.h f/bld-op.def f/bit.h \
+  f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def \
+  f/info-w.def f/target.h f/bad.h f/bad.def f/where.h $(GLIMITS_H) f/top.h f/lex.h \
+  f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def f/equiv.h f/global.h \
+  f/name.h f/intrin.h f/intrin.def f/stt.h
+f/str.o: f/str.c f/proj.h $(ASSERT_H) f/src.h f/bad.h f/bad.def f/where.h \
+  $(GLIMITS_H) f/top.h f/malloc.h f/stamp-str f/lex.h
+f/sts.o: f/sts.c f/proj.h $(ASSERT_H) f/sts.h f/malloc.h f/com.h f/com-rt.def \
+  $(TREE_H) f/bld.h f/bld-op.def f/bit.h f/info.h f/info-b.def f/info-k.def \
+  f/info-w.def f/target.h f/bad.h f/bad.def f/where.h $(GLIMITS_H) f/top.h f/lex.h \
+  f/type.h f/intrin.h f/intrin.def f/lab.h f/symbol.h f/symbol.def f/equiv.h \
+  f/storag.h f/global.h f/name.h
+f/stt.o: f/stt.c f/proj.h $(ASSERT_H) f/stt.h f/top.h f/malloc.h f/where.h \
+  $(GLIMITS_H) f/bld.h f/bld-op.def f/bit.h f/com.h f/com-rt.def $(TREE_H) f/info.h \
+  f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def f/lex.h \
+  f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def f/equiv.h f/global.h \
+  f/name.h f/intrin.h f/intrin.def f/stp.h f/expr.h f/sta.h f/stamp-str
+f/stu.o: f/stu.c f/proj.h $(ASSERT_H) f/bld.h f/bld-op.def f/bit.h f/malloc.h \
+  f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def f/info-w.def \
+  f/target.h f/bad.h f/bad.def f/where.h $(GLIMITS_H) f/top.h f/lex.h f/type.h \
+  f/lab.h f/storag.h f/symbol.h f/symbol.def f/equiv.h f/global.h f/name.h \
+  f/intrin.h f/intrin.def f/implic.h f/stu.h f/sta.h f/stamp-str
+f/stv.o: f/stv.c f/proj.h $(ASSERT_H) f/stv.h f/lab.h f/com.h f/com-rt.def $(TREE_H) \
+  f/bld.h f/bld-op.def f/bit.h f/malloc.h f/info.h f/info-b.def f/info-k.def \
+  f/info-w.def f/target.h f/bad.h f/bad.def f/where.h $(GLIMITS_H) f/top.h f/lex.h \
+  f/type.h f/intrin.h f/intrin.def f/symbol.h f/symbol.def f/equiv.h f/storag.h \
+  f/global.h f/name.h
+f/stw.o: f/stw.c f/proj.h $(ASSERT_H) f/stw.h f/bld.h f/bld-op.def f/bit.h \
+  f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def \
+  f/info-w.def f/target.h f/bad.h f/bad.def f/where.h $(GLIMITS_H) f/top.h f/lex.h \
+  f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def f/equiv.h f/global.h \
+  f/name.h f/intrin.h f/intrin.def f/stv.h f/sta.h f/stamp-str
+f/symbol.o: f/symbol.c f/proj.h $(ASSERT_H) f/symbol.h f/symbol.def f/bad.h \
+  f/bad.def f/where.h $(GLIMITS_H) f/top.h f/malloc.h f/bld.h f/bld-op.def f/bit.h \
+  f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def f/info-w.def \
+  f/target.h f/lex.h f/type.h f/lab.h f/storag.h f/intrin.h f/intrin.def \
+  f/equiv.h f/global.h f/name.h f/src.h f/st.h
+f/target.o: f/target.c f/proj.h $(ASSERT_H) $(GLIMITS_H) f/target.h $(TREE_H) f/bad.h \
+  f/bad.def f/where.h f/top.h f/malloc.h f/info.h f/info-b.def f/info-k.def \
+  f/info-w.def f/type.h f/lex.h
+f/top.o: f/top.c f/proj.h $(ASSERT_H) f/top.h f/malloc.h f/where.h $(GLIMITS_H) \
+  f/bad.h f/bad.def f/bit.h f/bld.h f/bld-op.def f/com.h f/com-rt.def $(TREE_H) \
+  f/info.h f/info-b.def f/info-k.def f/info-w.def f/target.h f/lex.h f/type.h \
+  f/lab.h f/storag.h f/symbol.h f/symbol.def f/equiv.h f/global.h f/name.h \
+  f/intrin.h f/intrin.def f/data.h f/expr.h f/implic.h f/src.h f/st.h $(FLAGS_H)
+f/type.o: f/type.c f/proj.h $(ASSERT_H) f/type.h f/malloc.h
+f/where.o: f/where.c f/proj.h $(ASSERT_H) f/where.h $(GLIMITS_H) f/top.h f/malloc.h \
+  f/lex.h
+f/zzz.o: f/zzz.c f/proj.h $(ASSERT_H) f/zzz.h
+
+# The rest of this list (Fortran 77 language-specific files) is hand-generated.
+
+f/stamp-str: f/str-1t.h f/str-1t.j f/str-2t.h f/str-2t.j \
+ f/str-fo.h f/str-fo.j f/str-io.h f/str-io.j f/str-nq.h  f/str-nq.j \
+ f/str-op.h f/str-op.j f/str-ot.h f/str-ot.j
+	touch f/stamp-str
+
+f/str-1t.h f/str-1t.j: f/fini f/str-1t.fin
+	./f/fini `echo $(srcdir)/f/str-1t.fin | sed 's,^\./,,'` f/str-1t.j f/str-1t.h
+
+f/str-2t.h f/str-2t.j: f/fini f/str-2t.fin
+	./f/fini `echo $(srcdir)/f/str-2t.fin | sed 's,^\./,,'` f/str-2t.j f/str-2t.h
+
+f/str-fo.h f/str-fo.j: f/fini f/str-fo.fin
+	./f/fini `echo $(srcdir)/f/str-fo.fin | sed 's,^\./,,'` f/str-fo.j f/str-fo.h
+
+f/str-io.h f/str-io.j: f/fini f/str-io.fin
+	./f/fini `echo $(srcdir)/f/str-io.fin | sed 's,^\./,,'` f/str-io.j f/str-io.h
+
+f/str-nq.h f/str-nq.j: f/fini f/str-nq.fin
+	./f/fini `echo $(srcdir)/f/str-nq.fin | sed 's,^\./,,'` f/str-nq.j f/str-nq.h
+
+f/str-op.h f/str-op.j: f/fini f/str-op.fin
+	./f/fini `echo $(srcdir)/f/str-op.fin | sed 's,^\./,,'` f/str-op.j f/str-op.h
+
+f/str-ot.h f/str-ot.j: f/fini f/str-ot.fin
+	./f/fini `echo $(srcdir)/f/str-ot.fin | sed 's,^\./,,'` f/str-ot.j f/str-ot.h
+
+f/fini: f/fini.o f/proj-h.o
+	$(HOST_CC) $(HOST_CFLAGS) -W -Wall $(HOST_LDFLAGS) -o f/fini f/fini.o f/proj-h.o
+
+f/fini.o:
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
+	      `echo $(srcdir)/f/fini.c | sed 's,^\./,,'` -o $@
+
+f/proj-h.o: f/proj.o
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
+	      `echo $(srcdir)/f/proj.c | sed 's,^\./,,'` -o $@
+
+# Other than str-*.j, the *.j files are dummy #include files
+# that normally just #include the corresponding back-end *.h
+# files, but not if MAKING_DEPENDENCIES is #defined.  The str-*.j
+# files also are not actually included if MAKING_DEPENDENCIES
+# is #defined.  The point of all this is to come up with a clean
+# dependencies list whether working in a clean directory, such
+# that str-*.j and such do not exist, or in a directory full
+# of already-built files.  Any dependency on a str-*.j file
+# implies a dependency on str.h, so we key on that to replace
+# it with stamp-str, and dependencies on the other *.j files
+# are generally left alone (modulo special macros like RTL_H)
+# because we might not want to recompile all of g77 just
+# because a back-end file changes.  MG is usually "-MG" but
+# should be defined with "make MG= deps-kinda..." if using
+# a compiler that doesn't support -MG (gcc does as of 2.6) --
+# it prevents diagnostics when an #include file is missing,
+# as will be the case with proj.h in a clean directory.
+MG=-MG
+deps-kinda:
+	$(HOST_CC) -DMAKING_DEPENDENCIES -MM $(MG) -I -If f/*.c | \
+	  sed -e 's: \([.]/\)*f/assert[.]j: $$(ASSERT_H):g' \
+	      -e 's: \([.]/\)*f/config[.]j: $$(CONFIG_H):g' \
+	      -e 's: \([.]/\)*f/convert[.]j: $$(CONVERT_H):g' \
+	      -e 's: \([.]/\)*f/flags[.]j: $$(FLAGS_H):g' \
+	      -e 's: \([.]/\)*f/glimits[.]j: $$(GLIMITS_H):g' \
+	      -e 's: \([.]/\)*f/hconfig[.]j: $$(HCONFIG_H):g' \
+	      -e 's: \([.]/\)*f/input[.]j: $$(INPUT_H):g' \
+	      -e 's: \([.]/\)*f/rtl[.]j: $$(RTL_H):g' \
+	      -e 's: \([.]/\)*f/tconfig[.]j: $$(TCONFIG_H):g' \
+	      -e 's: \([.]/\)*f/tm[.]j: $$(TM_H):g' \
+	      -e 's: \([.]/\)*f/tree[.]j: $$(TREE_H):g' \
+	      -e 's: proj[.]h: f/proj.h:g' \
+	      -e 's: \([.]/\)*f/str[.]h: f/stamp-str:g' \
+	      -e 's%^\(.*\)[ ]*: %f/\1: %g'
+
+
+# These exist for maintenance purposes.
+
+# Update the tags table.
+TAGS: force
+	cd $(srcdir)/f ;			\
+	etags *.c *.h ;				\
+	echo 'l' | tr 'l' '\f' >> TAGS ;	\
+	echo 'parse.y,0' >> TAGS ; 		\
+	etags -a ../*.h ../*.c;
+
+.PHONY: none all all.indirect f77.rebuilt compiler native deps-kinda TAGS g77-only
+
+force:

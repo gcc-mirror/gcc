@@ -1,0 +1,7 @@
+1995-02-15
+
+This directory is the f/ subdirectory, which is designed to
+be a subdirectory in a gcc development tree, i.e. named gcc/f/.
+
+Please see gcc/README.g77 for information on the contents of this
+directory.

@@ -1,0 +1,84 @@
+#!/bin/sh
+# Make links named `lcircle10' for all TFM and GF/PK files, if no
+# lcircle10 files already exist.
+
+# Don't override definition of prefix and/or libdir if they are
+# already defined in the environment. 
+if test "z${prefix}" = "z" ; then
+  prefix=/usr/local
+else
+  # prefix may contain references to other variables, thanks to make.
+  eval prefix=\""${prefix}"\"
+fi
+
+if test "z${libdir}" = "z" ; then
+  libdir="${prefix}/lib/tex"
+else
+  # libdir may contain references to other variables, thanks to make.
+  eval libdir=\""${libdir}"\"
+fi
+
+texlibdir="${libdir}"
+texfontdir="${texlibdir}/fonts"
+
+# Directories for the different font formats, in case they're not all
+# stored in one place.
+textfmdir="${textfmdir-${texfontdir}}"
+texpkdir="${texpkdir-${texfontdir}}"
+texgfdir="${texgfdir-${texfontdir}}"
+
+test "z${TMPDIR}" = "z" && TMPDIR="/tmp"
+
+tempfile="${TMPDIR}/circ$$"
+tempfile2="${TMPDIR}/circ2$$"
+
+# EXIT SIGHUP SIGINT SIGQUIT SIGTERM
+#trap 'rm -f "${tempfile}" "${tempfile2}"' 0 1 2 3 15
+
+# Find all the fonts with names that include `circle'.
+(cd "${texfontdir}"; find . -name '*circle*' -print > "${tempfile}")
+
+# If they have lcircle10.tfm, assume everything is there, and quit.
+if grep 'lcircle10\.tfm' "${tempfile}" > /dev/null 2>&1 ; then
+  echo "Found lcircle10.tfm."
+  exit 0
+fi
+
+# No TFM file for lcircle.  Make a link to circle10.tfm if it exists,
+# and then make a link to the bitmap files.
+grep 'circle10\.tfm' "${tempfile}" > "${tempfile2}" \
+ || {
+  echo "I can't find any circle fonts in ${texfontdir}.
+If it isn't installed somewhere else, you need to get the Metafont sources
+from somewhere, e.g., labrea.stanford.edu:pub/tex/latex/circle10.mf, and
+run Metafont on them."
+  exit 1
+ }
+
+# We have circle10.tfm.  (If we have it more than once, take the first
+# one.)  Make the link.
+tempfile2_line1="`sed -ne '1p;q' \"${tempfile2}\"`"
+ln "${tempfile2_line1}" "${textfmdir}/lcircle10.tfm"
+echo "Linked to ${tempfile2_line1}."
+
+# Now make a link for the PK files, if any.
+(cd "${texpkdir}"
+ for f in `grep 'circle10.*pk' "${tempfile}"` ; do
+    set - `echo "$f" \
+            | sed -ne '/\//!s/^/.\//;s/\(.*\)\/\([^\/][^\/]*\)$/\1 \2/;p'`
+    ln "$f" "${1}/l${2}"
+    echo "Linked to $f."
+ done
+)
+
+# And finally for the GF files.
+(cd "${texgfdir}"
+ for f in `grep 'circle10.*gf' "${tempfile}"` ; do
+    set - `echo "$f" \
+            | sed -ne '/\//!s/^/.\//;s/\(.*\)\/\([^\/][^\/]*\)$/\1 \2/;p'`
+    ln "$f" "${1}/l${2}"
+    echo "Linked to $f."
+ done
+)
+
+# eof

@@ -1,0 +1,53 @@
+Tue Nov 26 12:34:12 1996  Stan Shebs  <shebs@andros.cygnus.com>
+
+	* g-mpw-make.sed: Fix some comments.
+
+Mon Sep 16 14:42:52 1996  Stan Shebs  <shebs@andros.cygnus.com>
+
+	* g-mpw-make.sed (HLDENV): Edit out all references.
+
+Thu Aug 15 19:49:23 1996  Stan Shebs  <shebs@andros.cygnus.com>
+
+	* true: New script, identical to mpw-true.
+	* g-mpw-make.sed: Add @DASH_C_FLAG@ and @SEGMENT_FLAG()@
+	to the editors for compile commands.
+
+Thu Aug  1 15:01:42 1996  Stan Shebs  <shebs@andros.cygnus.com>
+
+	* mpw-true, mpw-touch, null-command: New scripts.
+	* README: Describe usage in more detail.
+
+Tue Dec 12 14:51:51 1995  Stan Shebs  <shebs@andros.cygnus.com>
+
+	* g-mpw-make.sed: Don't edit out "version=" occurrences.
+
+Fri Dec  1 11:46:18 1995  Stan Shebs  <shebs@andros.cygnus.com>
+
+	* g-mpw-make.sed (bindir, libdir): Edit the positions of
+	pathname separators to work with other pathnames better.
+
+Tue Nov  7 15:08:07 1995  Stan Shebs  <shebs@andros.cygnus.com>
+
+	* g-mpw-make.sed: Add comment about Duplicate vs Catenate,
+	add additional pattern for editing link-compile commands.
+
+Tue Oct 24 14:28:51 1995  Stan Shebs  <shebs@andros.cygnus.com>
+
+	* g-mpw-make.sed: Add handling for *.tab.[hc] files.
+	(CHILL_FOR_TARGET, CHILL_LIB): Edit out tricky definitions
+	of these.
+
+Thu Sep 28 21:05:10 1995  Stan Shebs  <shebs@andros.cygnus.com>
+
+	* g-mpw-make.sed: New file, generic sed commands to translate
+	Unix makefiles into MPW makefile syntax.
+
+Fri Mar 17 11:51:20 1995  Stan Shebs  <shebs@andros.cygnus.com>
+
+	* README: Clarify instructions.
+	* fi: Remove.
+
+Wed Dec 21 15:45:53 1994  Stan Shebs  <shebs@andros.cygnus.com>
+
+	* MoveIfChange, README, fi, forward-include, open-brace,
+        tr-7to8-src: New files.

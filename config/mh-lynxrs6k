@@ -1,0 +1,8 @@
+# LynxOS running on the rs6000 doesn't have ranlib
+RANLIB = true
+
+# /bin/cc is less than useful for our purposes.  Always use GCC
+CC = /usr/cygnus/progressive/bin/gcc
+
+# /bin/sh is too buggy, so use /bin/bash instead.
+SHELL = /bin/bash

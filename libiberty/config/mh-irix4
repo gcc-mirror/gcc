@@ -1,0 +1,4 @@
+CC = cc -cckr
+RANLIB = true
+INSTALL = cp
+EXTRA_OFILES = alloca.o

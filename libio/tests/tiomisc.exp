@@ -1,0 +1,11 @@
+Test2: Bla bla bla 55 3.23
+Hello
+Line 2
+#include <fstream.h>
+line: Line one., count: 10
+line: 123456789, count: 10
+line: abcdefghi, count: 9
+line: jkl., count: 5
+reread_test: # #
+maybe deleted
+test_read_write_flush: the problem isn't showing itself.

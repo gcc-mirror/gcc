@@ -1,0 +1,71 @@
+#!/bin/sh
+# Auxiliary script to work around TeX 3.0 bug.      ---- tex3patch  ----
+# patches texinfo.tex in current directory, or in directory given as arg.
+
+ANYVERSION=no
+
+for arg in $1 $2
+do
+	case $arg in 
+		--dammit | -d ) ANYVERSION=yes ;;
+
+		* ) dir=$arg
+	esac
+done
+
+if [ -z "$dir" ]; then
+  dir='.'
+fi
+
+if [ \( 2 -lt $# \) -o \
+     \( ! -f $dir/texinfo.tex \)   ]; then
+  echo "To patch texinfo.tex for peaceful coexistence with Unix TeX 3.0,"
+  echo "run    $0"
+  echo "with no arguments in the same directory as texinfo.tex; or run"
+  echo "       $0 DIRECTORY"
+  echo "(where DIRECTORY is a path leading to texinfo.tex)."
+  exit
+fi
+
+if [ -z "$TMPDIR" ]; then
+  TMPDIR=/tmp
+fi
+
+echo "Checking for \`dummy.tfm'"
+
+( cd $TMPDIR; tex '\relax \batchmode \font\foo=dummy \bye' )
+
+grep -s '3.0' $TMPDIR/texput.log
+if [ 1 = "$?" -a "$ANYVERSION" != "yes" ]; then
+	echo "You probably do not need this patch,"
+        echo "since your TeX does not seem to be version 3.0."
+	echo "If you insist on applying the patch, run $0"
+	echo "again with the option \`--dammit'"
+	exit
+fi
+
+grep -s 'file not found' $TMPDIR/texput.log
+if [ 0 = $? ]; then
+	echo "This patch requires the dummy font metric file \`dummy.tfm',"
+	echo "which does not seem to be part of your TeX installation."
+	echo "Please get your TeX maintainer to install \`dummy.tfm',"
+	echo "then run this script again."
+	exit
+fi
+rm $TMPDIR/texput.log
+
+echo "Patching $dir/texinfo.tex"
+
+sed -e 's/%%*\\font\\nullfont/\\font\\nullfont/' \
+    $dir/texinfo.tex >$TMPDIR/texinfo.tex
+mv $dir/texinfo.tex $dir/texinfo.tex-distrib; mv $TMPDIR/texinfo.tex $dir
+
+if [ 0 = $? ]; then
+	echo "Patched $dir/texinfo.tex to avoid TeX 3.0 bug."
+	echo "The original version is saved as $dir/texinfo.tex-distrib."
+else
+	echo "Patch failed.  Sorry."
+fi
+----------------------------------------tex3patch ends
+
+

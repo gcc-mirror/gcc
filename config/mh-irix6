@@ -1,0 +1,7 @@
+# Makefile changes for SGI's running IRIX-6.x.
+SYSV = -DSYSV
+RANLIB = true
+# Specify the ABI, to ensure that all Irix 6 systems will behave the same.
+# Also, using -32 avoids bugs that exist in the n32/n64 support in some
+# versions of the SGI compiler.
+CC = cc -32

@@ -1,0 +1,155 @@
+# Makefile for GNU F77 compiler runtime, libc interface.
+# Copyright (C) 1995-1997 Free Software Foundation, Inc.
+#   Contributed by Dave Love (d.love@dl.ac.uk).
+#
+#This file is part of GNU Fortran libU77 library.
+#
+#This library is free software; you can redistribute it and/or modify
+#it under the terms of the GNU Library General Public License as
+#published by the Free Software Foundation; either version 2, or (at
+#your option) any later version.
+#
+#GNU Fortran is distributed in the hope that it will be useful, but
+#WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#Library General Public License for more details.
+#
+#You should have received a copy of the GNU General Public License
+#along with GNU Fortran; see the file COPYING.  If not, write to
+#Software Foundation, 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+SHELL = /bin/sh
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+#### Start of system configuration section. ####
+
+# The _FOR_TARGET things are appropriate for a cross-make, passed by the
+# superior makefile
+GCC_FOR_TARGET = @CC@
+CC = $(GCC_FOR_TARGET)
+CFLAGS = @CFLAGS@ $(GCC_FLAGS)
+CPPFLAGS = @CPPFLAGS@
+DEFS = @DEFS@
+CGFLAGS = -g0
+# f2c.h should already be installed in xgcc's include directory but add that
+# to -I anyhow in case not using xgcc.  fio.h is in libI77.  We need config.h
+# from `.'.
+ALL_CFLAGS = -I. -I$(srcdir) -I$(srcdir)/../libI77 -I../../../include $(CPPFLAGS) $(DEFS) $(CFLAGS)
+AR = @AR@
+AR_FLAGS = rc
+RANLIB = @RANLIB@
+RANLIB_TEST = @RANLIB_TEST@
+CROSS = @CROSS@
+G77DIR = ../../../
+
+.SUFFIXES:
+.SUFFIXES: .c .o
+
+.c.o:
+	$(CC) -c -DSkip_f2c_Undefs $(ALL_CFLAGS) $(CGFLAGS) $<
+
+OBJS =  VersionU.o gerror_.o perror_.o ierrno_.o itime_.o time_.o \
+	unlink_.o fnum_.o getpid_.o getuid_.o getgid_.o kill_.o rand_.o \
+	srand_.o irand_.o sleep_.o idate_.o ctime_.o etime_.o \
+	dtime_.o  isatty_.o ltime_.o fstat_.o stat_.o \
+	lstat_.o access_.o link_.o getlog_.o ttynam_.o getcwd_.o symlnk_.o \
+        vxttime_.o vxtidate_.o gmtime_.o fdate_.o secnds_.o \
+	bes.o dbes.o \
+	chdir_.o chmod_.o lnblnk_.o hostnm_.o rename_.o fgetc_.o fputc_.o \
+        umask_.o system_clock_.o date_.o second_.o flush1_.o mclock_.o \
+	alarm_.o
+SRCS =  Version.c gerror_.c perror_.c ierrno_.c itime_.c time_.c \
+	unlink_.c fnum_.c getpid_.c getuid_.c getgid_.c kill_.c rand_.c \
+	srand_.c irand_.c sleep_.c idate_.c ctime_.c etime_.c \
+	dtime_.c isatty_.c ltime_.c fstat_.c stat_.c \
+	lstat_.c access_.c link_.c getlog_.c ttynam_.c getcwd_.c symlnk_.c \
+        vxttime_.c vxtidate_.c gmtime_.c fdate_.c secnds_.c \
+	bes.c dbes.c \
+	chdir_.c chmod_.c lnblnk_.c hostnm_.c rename_.c fgetc_.c fputc_.c \
+	umask_.c system_clock_.c date_.c second_.c flush1_.c mclock_.c \
+	alarm_.c
+
+F2C_H = ../../../include/f2c.h
+
+all: $(OBJS)
+
+VersionU.o: Version.c
+	$(CC) -c $(CGFLAGS) -o $@ $(srcdir)/Version.c
+
+lint:
+	lint $(CFLAGS) $(SRCS)
+
+mostlyclean:
+	-rm -f $(OBJS)
+
+clean: mostlyclean
+	-rm -f config.log a.out
+
+distclean realclean maintainer-clean: clean
+	-rm -f config.h Makefile config.status config.cache stage? include
+
+$(OBJS): $(F2C_H) config.h
+
+check:
+	-$(G77DIR)g77 --driver=$(G77DIR)/xgcc -B$(G77DIR) -g $(srcdir)/u77-test.f $(lib) && ./a.out
+	rm -f a.out
+
+access_.o: access_.c
+ctime_.o: ctime_.c
+dtime_.o: dtime_.c
+etime_.o: etime_.c
+fnum_.o: fnum_.c $(srcdir)/../libI77/fio.h
+fstat_.o: fstat_.c
+gerror_.o: gerror_.c
+getcwd_.o: getcwd_.c
+getgid_.o: getgid_.c
+getlog_.o: getlog_.c
+getpid_.o: getpid_.c
+getuid_.o: getuid_.c
+idate_.o: idate_.c
+ierrno_.o: ierrno_.c
+irand_.o: irand_.c
+isatty_.o: isatty_.c $(srcdir)/../libI77/fio.h
+itime_.o: itime_.c
+kill_.o: kill_.c
+link_.o: link_.c
+loc_.o: loc_.c
+lstat_.o: lstat_.c
+ltime_.o: ltime_.c
+perror_.o: perror_.c
+qsort.o: qsort.c
+qsort_.o: qsort_.c
+rand_.o: rand_.c
+rename_.o: rename_.c
+second_.o: second_.c
+sleep_.o: sleep_.c
+srand_.o: srand_.c
+stat_.o: stat_.c
+symlnk_.o: symlnk_.c
+time_.o: time_.c
+ttynam_.o: ttynam_.c
+unlink_.o: unlink_.c
+wait_.o: wait_.c
+vxttime_.o: vxttime_.c
+vtxidate_.o: vxtidate_.c
+fdate_.o: fdate_.c
+gmtime_.o: gmtime_.c
+secnds_.o: secnds_.c
+bes.o: bes.c
+dbes.o: dbes.c
+lnblnk_.o: lnblnk_.c
+chmod_.o: chmod_.c
+chdir_.o: chdir_.c
+hostnm_.o: hostnm_.c
+rename_.o: rename_.c
+fputc_.o: fputc_.c
+fgetc_.o: fgetc_.c
+system_clock_.o: system_clock_.c
+umask_.o: umask_.c
+flush1_.o: flush1_.c
+mclock_.o: mclock_.c
+alarm_.o: alarm_.c
+
+.PHONY: mostlyclean clean distclean maintainer-clean lint check all

@@ -1,0 +1,85 @@
+# This file is a shell script fragment that supplies the information
+# necessary for a configure script to process the program in
+# this directory.  For more information, look at ../configure.
+
+configdirs="tests testsuite"
+srctrigger=sinst.cc
+srcname="ANSI C++ library"
+package_makefile_frag=Make.pack
+
+# per-host:
+
+# per-target:
+
+echo "# Warning: this fragment is automatically generated" > temp.mt
+frags=
+
+# If they didn't specify --enable-shared, don't generate shared libs.
+case "${enable_shared}" in
+  yes) shared=yes ;;
+  no) shared=no ;;
+  *libstdc++*) shared=yes ;;
+  *) shared=no ;;
+esac
+
+if [ "${shared}" = "yes" ]; then
+  case "${target}" in
+    hppa*-*-*)		frags=../../config/mh-papic ;;
+    i[3456]86-*-*)	frags=../../config/mh-x86pic ;;
+    *-*-*) 		frags=../../config/mh-${target_cpu}pic ;;
+  esac
+  case "${target}" in
+    *-dec-osf*)		frags="${frags} dec-osf.ml";;
+    *-*-hpux*)		frags="${frags} hpux.ml" ;;
+    *-*-irix[56]*)	frags="${frags} irix5.ml" ;;
+    *-*-linux*aout*)	;;
+    *-*-linux*)		frags="${frags} linux.ml" ;;
+    *-*-sysv4*)		frags="${frags} elf.ml" ;;
+    *-*-solaris*)	frags="${frags} sol2shm.ml" ;;
+    *-*-sunos4*)	frags="${frags} sunos4.ml" ;;
+    *-*-aix*)		frags="${frags} aix.ml" ;;
+  esac
+fi
+
+for frag in ${frags}; do
+  frag=${srcdir}/config/$frag
+  if [ -f ${frag} ]; then
+    echo "Appending ${frag} to target-mkfrag"
+    echo "# Following fragment copied from ${frag}" >> temp.mt
+    cat ${frag} >> temp.mt
+  fi
+done
+
+target_makefile_frag=target-mkfrag
+${moveifchange} temp.mt target-mkfrag
+
+LIBDIR=yes
+TO_TOPDIR=../
+ALL='libs'
+XCXXINCLUDES="-I${srcdir} -I${srcdir}/stl -I${TO_TOPDIR}libio -I${srcdir}/${TO_TOPDIR}libio"
+MOSTLYCLEAN='*.o pic stamp-picdir core so_locations $(MOSTLYCLEAN_JUNK)'
+CLEAN='$(CLEAN_JUNK)'
+EXTRA_DISTCLEAN='target-mkfrag'
+
+(. ${srcdir}/${TO_TOPDIR}libio/config.shared) >${package_makefile_frag}
+
+# post-target:
+
+# If cross-compiling, we install in $(tooldir).
+if [ -n "${with_cross_host}" ] ; then
+    rm -f Makefile.tem
+    sed \
+        -e 's|INSTALLDIR.*=.*$|INSTALLDIR = $(tooldir)/lib|' \
+        Makefile >Makefile.tem
+    mv -f Makefile.tem Makefile
+fi
+
+if [ "${srcdir}" = "." ] ; then
+  if [ "${with_target_subdir}" != "." ] ; then
+    . ${with_multisrctop}../../config-ml.in
+  else
+    . ${with_multisrctop}../config-ml.in
+  fi
+else
+  . ${srcdir}/../config-ml.in
+fi

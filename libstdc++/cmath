@@ -1,0 +1,76 @@
+// The -*- C++ -*- math functions header.
+// This file is part of the GNU ANSI C++ Library.
+
+#ifndef __CMATH__
+#define __CMATH__
+#include <_G_config.h>
+#include <math.h>
+
+#ifdef __GNUG__
+#pragma interface "cmath"
+#endif
+
+extern "C++" {
+#if 0
+float acos (float);
+float asin (float);
+float atan (float);
+float atan2(float, float);
+float ceil (float);
+float cos  (float);
+float cosh (float);
+float exp  (float);
+float fabs (float);
+float floor(float);
+float fmod (float, float);
+float frexp(float, int*);
+float modf (float, float*);
+float ldexp(float, int);
+float log  (float);
+float log10(float);
+float pow  (float, float);
+float pow  (float, int);
+float sin  (float);
+float sinh (float);
+float sqrt (float);
+float tan  (float);
+float tanh (float);
+#endif
+
+inline float  abs (float  x) { return fabs (x); }
+#if ! _G_MATH_H_INLINES /* hpux and SCO define this in math.h */
+inline double abs (double x) { return fabs (x); }
+#endif
+
+#if 0
+double pow(double, int);
+
+long double acos (long double);
+long double asin (long double);
+long double atan (long double);
+long double atan2(long double, long double);
+long double ceil (long double);
+long double cos  (long double);
+long double cosh (long double);
+long double exp  (long double);
+long double fabs (long double);
+long double floor(long double);
+long double frexp(long double, int*);
+long double fmod (long double, long double);
+long double frexp(long double, int*);
+long double log  (long double);
+long double log10(long double);
+long double modf (long double, long double*);
+long double pow  (long double, long double);
+long double pow  (long double, int);
+long double sin  (long double);
+long double sinh (long double);
+long double sqrt (long double);
+long double tan  (long double);
+long double tanh (long double);
+#endif
+inline long double abs (long double x) { return fabs (x); }
+
+} // extern "C++"
+
+#endif

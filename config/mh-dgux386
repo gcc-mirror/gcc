@@ -1,0 +1,22 @@
+# from mh-dgux
+HDEFINES=-DHOST_SYS=DGUX_SYS
+CC=gcc -Wall -ansi -D__using_DGUX
+RANLIB = true
+
+# from mh-sysv4
+# Define SYSV as -DSYSV if you are using a System V operating system.
+SYSV = -DSYSV -DSVR4
+RANLIB = true
+
+# C++ debugging is not yet supported under SVR4 (DWARF)
+CXXFLAGS=-O
+
+# The l flag generates a warning from the SVR4 archiver, remove it.
+AR_FLAGS = cr
+
+X11_EXTRA_LIBS = -lnsl
+
+# from angela
+# no debugging due to broken compiler, use BSD style timeofday
+CFLAGS=-O -D_BSD_TIMEOFDAY_FLAVOR
+

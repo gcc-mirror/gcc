@@ -1,0 +1,3 @@
+# Sun's C compiler needs the -J flag to be able to compile cp-parse.c
+# without overflowing the jump tables (-J says to use a 32 bit table)
+CC = cc -J

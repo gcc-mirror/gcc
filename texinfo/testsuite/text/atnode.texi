@@ -1,0 +1,21 @@
+@setfilename atnode
+
+@node Top
+@c @top Toity
+
+@menu
+* @@string::	A node with an at sign in its name
+* Joke::	A node without an at sign in its name
+@end menu
+
+@node @@string
+@chapter On the Nature of Strings
+
+They can be thick or thin.
+
+@node Joke
+@chapter Stop me if You've Heard this One
+
+These three strings (@pxref{@@string}), walked into a bar, and...
+
+@bye

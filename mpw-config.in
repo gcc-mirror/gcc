@@ -1,0 +1,113 @@
+# Configuration fragment for Cygnus source tree.
+
+# Check that we can find all the special tools that we will need.
+# The test for sed is semi-pointless, because it's already been invoked
+# by the calculation of target_cpu in the main configure script, but
+# the test will also show which one is being used.
+
+Set Exit 0
+Echo byacc is `Which byacc`
+Echo flex is `Which flex`
+Echo forward-include is `Which forward-include`
+Echo MoveIfChange is `Which MoveIfChange`
+Echo mpw-touch is `Which mpw-touch`
+Echo mpw-true is `Which mpw-true`
+Echo NewFolderRecursive is `Which NewFolderRecursive`
+Echo null-command is `Which null-command`
+Echo open-brace is `Which open-brace`
+Echo sed is `Which sed`
+Echo 'tr-7to8' is `Which tr-7to8`
+Echo true is `Which true`
+Set Exit 1
+
+Set host_libs "mmalloc libiberty opcodes bfd readline gash tcl tk tclX"
+
+Set host_tools "texinfo byacc flex bison binutils ld gas gcc gdb make patch \Option-d
+	    prms send-pr gprof gdbtest tgas etc expect dejagnu sim bash \Option-d
+	    m4 autoconf ispell grep diff rcs cvs fileutils shellutils time \Option-d
+	    textutils wdiff find emacs emacs19 uudecode hello tar gzip indent \Option-d
+	    recode release sed utils guile perl apache inet gawk"
+
+Set target_libs "newlib"
+
+Set target_tools "examples"
+
+# Configure the resource compiler if targeting Macs.
+If {target_os} =~ /macos/ || {target_os} =~ /mpw/
+	Set host_tools "{host_tools} grez"
+End If
+	
+Set configdirs "{host_libs} {host_tools} {target_libs} {target_tools}"
+Export configdirs
+
+# Make up a special include directory that tools will share.
+
+If "`Exists "{objdir}"extra-include`" == ""
+	NewFolder "{objdir}"extra-include
+End If
+
+Set edir "{objdir}extra-include:"
+
+forward-include "{srcdir}"include:mpw:sys:file.h "{edir}"'sys/file.h'
+forward-include "{srcdir}"include:mpw:sys:ioctl.h "{edir}"'sys/ioctl.h'
+forward-include "{srcdir}"include:mpw:sys:param.h "{edir}"'sys/param.h'
+forward-include "{srcdir}"include:mpw:sys:resource.h "{edir}"'sys/resource.h'
+forward-include "{srcdir}"include:mpw:sys:stat.h "{edir}"'sys/stat.h'
+forward-include "{srcdir}"include:mpw:sys:time.h "{edir}"'sys/time.h'
+forward-include "{srcdir}"include:mpw:sys:types.h "{edir}"'sys/types.h'
+
+forward-include "{srcroot}"include:aout:aout64.h "{edir}"'aout/aout64.h'
+forward-include "{srcroot}"include:aout:ar.h "{edir}"'aout/ar.h'
+forward-include "{srcroot}"include:aout:ranlib.h "{edir}"'aout/ranlib.h'
+forward-include "{srcroot}"include:aout:reloc.h "{edir}"'aout/reloc.h'
+forward-include "{srcroot}"include:aout:stab.def "{edir}"'aout/stab.def'
+forward-include "{srcroot}"include:aout:stab_gnu.h "{edir}"'aout/stab_gnu.h'
+
+If "`Exists "{srcroot}"include:aout:"{target_cpu}".h`" != ""
+	forward-include "{srcroot}"include:aout:"{target_cpu}".h "{edir}"'aout/'"{target_cpu}"'.h'
+End If
+
+forward-include "{srcroot}"include:coff:ecoff.h "{edir}"'coff/ecoff.h'
+forward-include "{srcroot}"include:coff:internal.h "{edir}"'coff/internal.h'
+forward-include "{srcroot}"include:coff:sym.h "{edir}"'coff/sym.h'
+forward-include "{srcroot}"include:coff:symconst.h "{edir}"'coff/symconst.h'
+
+If "`Exists "{srcroot}"include:coff:"{target_cpu}".h`" != ""
+	forward-include "{srcroot}"include:coff:"{target_cpu}".h "{edir}"'coff/'"{target_cpu}"'.h'
+End If
+If "{target_cpu}" =~ /powerpc/
+	forward-include "{srcroot}"include:coff:rs6000.h "{edir}"'coff/rs6000.h'
+End If
+
+forward-include "{srcroot}"include:elf:common.h "{edir}"'elf/common.h'
+forward-include "{srcroot}"include:elf:dwarf.h "{edir}"'elf/dwarf.h'
+forward-include "{srcroot}"include:elf:dwarf2.h "{edir}"'elf/dwarf2.h'
+forward-include "{srcroot}"include:elf:external.h "{edir}"'elf/external.h'
+forward-include "{srcroot}"include:elf:internal.h "{edir}"'elf/internal.h'
+
+# Believe it or not, GDB needs this for all targets.
+forward-include "{srcroot}"include:elf:mips.h "{edir}"'elf/mips.h'
+
+If "`Exists "{srcroot}"include:elf:"{target_cpu}".h`" != ""
+	forward-include "{srcroot}"include:elf:"{target_cpu}".h "{edir}"'elf/'"{target_cpu}"'.h'
+End If
+If "{target_cpu}" =~ /powerpc/
+	forward-include "{srcroot}"include:elf:ppc.h "{edir}"'elf/ppc.h'
+End If
+
+If "`Exists "{srcroot}"include:opcode:"{target_cpu}".h`" != ""
+	forward-include "{srcroot}"include:opcode:"{target_cpu}".h "{edir}"'opcode/'"{target_cpu}"'.h'
+End If
+If "{target_cpu}" =~ /powerpc/
+	forward-include "{srcroot}"include:opcode:ppc.h "{edir}"'opcode/ppc.h'
+End If
+
+# Add some bfd includes that get mentioned outside the bfd dir.
+	
+forward-include "{srcroot}"bfd:libcoff.h "{edir}"'bfd/libcoff.h'
+forward-include "{srcroot}"bfd:libecoff.h "{edir}"'bfd/libecoff.h'
+
+# Translate random files into MPW-only character set.
+
+tr-7to8 "{srcdir}"mpw-README > "{objdir}Read Me for MPW"
+tr-7to8 "{srcdir}"mpw-install > "{objdir}"Install

@@ -1,0 +1,11 @@
+# Host Makefile fragment for NEC MIPS SVR4.
+
+# The C compiler on NEC MIPS SVR4 needs bigger tables.
+CC = cc -ZXNd=5000 -ZXNg=1000
+
+# Define SYSV as -DSYSV if you are using a System V operating system.
+SYSV = -DSYSV -DSVR4
+RANLIB = true
+
+# NEC -lX11 needs some other libraries.
+X11_EXTRA_LIBS = -lsocket -lnsl

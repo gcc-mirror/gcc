@@ -1,0 +1,224 @@
+\input texinfo    @c -*-texinfo-*-
+@comment %**start of header
+@setfilename example.info
+@set VERSION 1.58
+@paragraphindent none
+@comment %**end of header
+
+@include simpledoc.texi
+
+@document {@makeinfo{}, Brian J. Fox,
+This file is an extract from the @cite{@texinfo{}} manual.@*
+It documents @makeinfo{}\, a program that converts @texinfo{} files into
+Info files.
+}
+
+@menu
+* What is @makeinfo{}?::
+* Controlling Paragraph Formats::
+* Command Line Options::
+* Pointer Validation::
+@end menu
+
+@section What is @makeinfo{}?
+
+@iftex
+This file documents the use of the @code{makeinfo} program, versions
+@value{VERSION} and later.  It is an extract from the @cite{TeXinfo} manual.
+@end iftex
+
+@makeinfo{} is a program for converting @dfn{@texinfo{}} files into
+@dfn{@Info{}} files.  @texinfo{} is a documentation system that uses a
+single source file to produce both on-line information and printed output.
+
+You can read the on-line information using @Info{}; type @code{info} to
+learn about @Info{}.
+@ifinfo
+@xref{Top, Texinfo, Overview of Texinfo, texinfo, Texinfo},
+@end ifinfo
+@iftex
+See the @cite{TeXinfo} manual,
+@end iftex
+to learn about the TeXinfo documentation system.
+
+@section Controlling Paragraph Formats
+
+In general, @makeinfo{} @dfn{fills} the paragraphs that it outputs
+to an @Info{} file.  Filling is the process of breaking and connecting
+lines so that lines are the same length as or shorter than the number
+specified as the fill column.  Lines are broken between words.  With
+@makeinfo{}, you can control:
+
+@itemize @bullet
+@item
+The width of each paragraph (the @dfn{fill-column}).
+@item
+The amount of indentation that the first line of 
+each paragraph receives (the @dfn{paragraph-indentation}).
+@end itemize
+
+@section Command Line Options
+
+The following command line options are available for @makeinfo{}.
+
+@need 100
+@table @code
+@item -D @var{var}
+Cause @var{var} to be defined.  This is equivalent to 
+@code{@@set @var{var}} in the Texinfo file.
+
+@need 150
+@item --error-limit @var{limit}
+Set the maximum number of errors that @makeinfo{} will report
+before exiting (on the assumption that continuing would be useless).
+The default number of errors that can be reported before
+@makeinfo{} gives up is 100.@refill
+
+@need 150
+@item --fill-column @var{width}
+Specify the maximum number of columns in a line; this is the right-hand
+edge of a line.  Paragraphs that are filled will be filled to this
+width.  The default value for @code{fill-column} is 72.
+
+@item --footnote-style @var{style}
+Set the footnote style to @var{style}, either @samp{end} for the end
+node style or @samp{separate} for the separate node style.  The value
+set by this option overrides the value set in a Texinfo file by an
+@code{@@footnotestyle} command.  When the footnote style is
+@samp{separate}, @makeinfo{} makes a new node containing the
+footnotes found in the current node.  When the footnote style is
+@samp{end}, @makeinfo{} places the footnote references at the end
+of the current node.
+
+@need 150
+@item -I @var{dir}
+Add @code{dir} to the directory search list for finding files that are
+included using the @code{@@include} command.  By default,
+@makeinfo{} searches only the current directory.
+
+@need 150
+@item --no-headers
+Do not include menus or node lines in the output.  This results in an
+@sc{ascii} file that you cannot read in Info since it does not contain
+the requisite nodes or menus; but you can print such a file in a
+single, typewriter-like font and produce acceptable output.
+
+@need 150
+@item --no-split
+Suppress the splitting stage of @makeinfo{}.  Normally, large
+output files (where the size is greater than 70k bytes) are split into
+smaller subfiles, each one approximately 50k bytes.  If you specify
+@samp{--no-split}, @makeinfo{} will not split up the output
+file.
+
+@need 100
+@item --no-pointer-validate
+@item --no-validate
+Suppress the pointer-validation phase of @makeinfo{}.  Normally,
+after a Texinfo file is processed, some consistency checks are made to
+ensure that cross references can be resolved, etc.
+@xref{Pointer Validation}.
+
+@need 150
+@item --no-warn
+Suppress the output of warning messages.  This does @emph{not}
+suppress the output of error messages, only warnings.  You might
+want this if the file you are creating has examples of Texinfo cross
+references within it, and the nodes that are referenced do not actually
+exist.
+
+@item --no-number-footnotes
+Supress automatic footnote numbering.  By default, @makeinfo{}
+numbers each footnote sequentially in a single node, resetting the
+current footnote number to 1 at the start of each node.
+
+@need 150
+@item --output @var{file}
+@itemx -o @var{file}
+Specify that the output should be directed to @var{file} and not to the
+file name specified in the @code{@@setfilename} command found in the Texinfo
+source.  @var{file} can be the special token @samp{-}, which specifies
+standard output.
+
+@need 150
+@item --paragraph-indent @var{indent}
+Set the paragraph indentation style to @var{indent}.  The value set by
+this option overrides the value set in a Texinfo file by an
+@code{@@paragraphindent} command.  The value of @var{indent} is
+interpreted as follows:
+
+@itemize @bullet
+@item
+If the value of @var{indent} is @samp{asis}, do not change the
+existing indentation at the starts of paragraphs.
+
+@item
+If the value of @var{indent} is zero, delete any existing
+indentation.
+
+@item
+If the value of @var{indent} is greater than zero, indent each
+paragraph by that number of spaces.
+@end itemize
+
+@need 100
+@item --reference-limit @var{limit}
+Set the value of the number of references to a node that
+@makeinfo{} will make without reporting a warning.  If a node has more
+than this number of references in it, @makeinfo{} will make the
+references but also report a warning.
+
+@need 150
+@item -U @var{var}
+Cause @var{var} to be undefined.  This is equivalent to 
+@code{@@clear @var{var}} in the Texinfo file.
+
+@need 100
+@item --verbose
+Cause @makeinfo{} to display messages saying what it is doing.
+Normally, @makeinfo{} only outputs messages if there are errors or
+warnings.
+
+@need 100
+@item --version
+Report the version number of this copy of @makeinfo{}.
+@end table
+
+@section Pointer Validation
+@cindex Pointer validation with @makeinfo{}
+@cindex Validation of pointers
+
+If you do not suppress pointer-validation (by using the
+@samp{--no-pointer-validation} option), @makeinfo{}
+will check the validity of the final Info file.  Mostly,
+this means ensuring that nodes you have referenced
+really exist.  Here is a complete list of what is
+checked:
+
+@enumerate
+@item
+If a `Next', `Previous', or `Up' node reference is a reference to a
+node in the current file and is not an external reference such as to
+@file{(dir)}, then the referenced node must exist.
+
+@item
+In every node, if the `Previous' node is different from the `Up' node, 
+then the `Previous' node must also be pointed to by a `Next' node.
+
+@item
+Every node except the `Top' node must have an `Up' pointer.
+
+@item
+The node referenced by an `Up' pointer must contain a reference to the
+current node in some manner other than through a `Next' reference.
+This includes menu entries and cross references.
+
+@item
+If the `Next' reference of a node is not the same as the `Next' reference
+of the `Up' reference, then the node referenced by the `Next' pointer
+must have a `Previous' pointer that points back to the current node.
+This rule allows the last node in a section to point to the first node
+of the next chapter.
+@end enumerate
+
+@bye

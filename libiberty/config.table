@@ -1,0 +1,69 @@
+case "${host}" in
+  rs6000-ibm-aix3.1 | rs6000-ibm-aix)
+                        frag=mh-aix
+			files=${xsrcdir}alloca-botch.h ;;
+  *-ibm-aix*)		files=${xsrcdir}alloca-botch.h ;;
+  arm-*-riscix*)	frag=mh-riscix ;;
+  m68k-apollo-bsd*)	frag=mh-a68bsd ;;
+  m68k-apollo-sysv*)	frag=mh-apollo68 ;;
+  i[3456]86-ncr-sysv4*)	frag=mh-ncr3000 ;;
+  *-*-cxux7*)		frag=mh-cxux7 ;;
+  *-*-cygwin32)		frag=mh-cygwin32 ;;
+  *-*-dgux*)		frag=mh-sysv ;;
+  hppa*-hp-bsd*)	frag=mh-hpbsd ;;
+  *-*-hpux*)		frag=mh-hpux ;;
+  *-*-hiux*)		frag=mh-hpux ;;
+  *-*-irix4*)		frag=mh-irix4 ;;
+  *-*-irix*)		frag=mh-sysv ;;
+  *-*-m88kbcs*)		frag=mh-sysv ;;
+  *-*-solaris2*)	frag=mh-sysv4 ;;
+  *-*-sysv4*)		frag=mh-sysv4 ;;
+  *-*-sysv*)		frag=mh-sysv ;;
+  *-*-go32)		frag=mh-go32 ;;
+  i[345]86-*-windows*)	frag=mh-windows ;;
+
+  *-*-vxworks5*)
+    # VxWorks 5 needs special action, because the usual
+    # autoconfiguration scheme does not work.
+    frag=mt-vxworks5
+    ;;
+esac
+
+# Try to handle funky case of solaris 2 -> sun 4.
+case "${host}" in
+  sparc-sun-sunos4.1.3)
+	if [ "${with_cross_host}" != "${host}" ] ; then
+	   frag=mt-sunos4
+	fi
+  ;;
+esac
+
+frags=$frag
+
+# If they didn't specify --enable-shared, don't generate shared libs.
+case "${enable_shared}" in
+  yes) shared=yes ;;
+  no) shared=no ;;
+  *) shared=yes ;;
+esac
+if [ "${shared}" = "yes" ]; then
+  case "${host}" in
+    hppa*-*-*)	   frags="${frags} ../../config/mh-papic" ;;
+    i[3456]86-*-*) frags="${frags} ../../config/mh-x86pic" ;;
+    *-*-*)	   frags="${frags} ../../config/mh-${host_cpu}pic" ;;
+  esac
+fi
+
+echo "# Warning: this fragment is automatically generated" > temp-frag
+
+for frag in ${frags}; do
+  frag=${srcdir}/${xsrcdir}config/$frag
+  if [ -f ${frag} ]; then
+    echo "Appending ${frag} to xhost-mkfrag"
+    echo "# Following fragment copied from ${frag}" >> temp-frag
+    cat ${frag} >> temp-frag
+  fi
+done
+
+frag=xhost-mkfrag
+${config_shell} ${moveifchange} temp-frag xhost-mkfrag

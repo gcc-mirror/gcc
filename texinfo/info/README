@@ -1,0 +1,37 @@
+The file NEWS contains information about what has changed since the last
+release.
+
+The file ../INSTALL contains instructions on how to install Info.
+
+
+Info 2.0 is a complete rewrite of the original standalone Info I wrote in
+1987, the first program I wrote for rms.  That program was something like
+my second Unix program ever, and my die-hard machine language coding habits
+tended to show through.  I found the original Info hard to read and
+maintain, and thus decided to write this one.
+
+The rewrite consists of about 12,000 lines of code written in about 12
+days.  I believe this version of Info to be in much better shape than the
+original Info, and the only reason it is in Beta test is because of its
+short life span.
+
+Info 2.0 is substantially different from its original standalone
+predecessor.  It appears almost identical to the GNU Emacs version, but has
+the advantages of smaller size, ease of portability, and a built in library
+which can be used in other programs (to get or display documentation from
+Info files, for example).
+
+I eagerly await responses to this newer version of Info; comments on its
+portability, ease of use and user interface, code quality, and general
+usefulness are all of interest to me, and I will appreciate any comments
+that you would care to make.
+
+A full listing of the commands available in Info can be gotten by typing
+`?' while within an Info window.  This produces a node in a window which
+can be viewed just like any Info node.
+
+Please send your comments, bug reports, and suggestions to
+
+	bug-texinfo@prep.ai.mit.edu
+
+--Brian Fox <bfox@ai.mit.edu>

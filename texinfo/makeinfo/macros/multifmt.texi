@@ -1,0 +1,41 @@
+@c  multiformat.texi: -*- Texinfo -*- \input texinfo.tex
+
+@c  Copyright (c) 1995 Universal Access, Inc
+@c  Author: Brian J. Fox (bfox@ua.com) Sun Apr  2 07:56:23 1995.
+@setfilename multiformat.info
+
+@include html.texi
+
+@ifset html
+@html
+@end ifset
+
+@node First Node, First Section, (dir), (dir)
+@chapter First Chapter
+Here is some text that belongs in the first chapter.  Nothing very
+exciting happens here, but this is enough text to span a couple of
+lines, and we feel that is important.
+@paragraph
+
+This is the second paragraph of the first chapter.  Note that the
+formatting commands in @code{HTML} seem to do the right thing, as do the
+commands when invoked in @code{Texinfo} mode and in @TeX{}.
+
+@node First Section, , First Node, First Node
+@isection First Section
+
+Here is some text in the first section of the first chapter.  We are
+trying very hard to examine the output here to see exactly how proper it
+is.  If I wasn't so tired, we could probably see it already.
+@paragraph
+
+Here is a list of items:
+@paragraph
+
+@itemize @bullet
+@item Here is the first item.
+@item Here is the second item.
+@end itemize
+
+@bye
+

@@ -1,0 +1,13 @@
+SUMMARY OF RECENT MAJOR CHANGES to LIBSTDC++.
+(Also check ../libio/NEWS.)
+
+*** Noteworthy changes in libstdc++ version 2.8.0:
+
+* The STL implementation in libstdc++ is now only slightly modified from
+  the HP distribution, thanks to improved template support in gcc 2.8.0.
+
+* The string representation class is now nested in the basic_string
+  template, since this is supported in the new gcc.
+
+* As a result of these and other changes, libstc++ 2.8.0 is not binary
+  compatible with previous releases of libstdc++.

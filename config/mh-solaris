@@ -1,0 +1,6 @@
+# Makefile changes for Suns running Solaris 2
+
+SYSV = -DSYSV
+RANLIB = true
+
+X11_EXTRA_LIBS = -lnsl -lsocket

@@ -1,0 +1,1 @@
+test_libio tstdiomisc.c "" "" tstdiomisc.exp ""

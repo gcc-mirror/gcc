@@ -1,0 +1,6 @@
+# The native linker only reports the first undefined symbol if linking with a
+# shared library.  So build using gcc and link statically (this requires 
+# gcc 2.6.0 or above).
+
+ERRORS_CC = gcc
+ERRORS_LDFLAGS = -static
