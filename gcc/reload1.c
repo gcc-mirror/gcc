@@ -4835,7 +4835,11 @@ choose_reload_regs (insn, avoid_return_reg)
 				 reload_earlyclobbers[i1]))
 			      break;
 
-			  if (i1 != n_earlyclobbers)
+			  if (i1 != n_earlyclobbers
+			      /* Don't really use the inherited spill reg
+				 if we need it wider than we've got it.  */
+			      || (GET_MODE_SIZE (reload_mode[r])
+				  > GET_MODE_SIZE (mode)))
 			    reload_override_in[r] = reg_last_reload_reg[regno];
 			  else
 			    {
