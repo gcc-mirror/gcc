@@ -21,7 +21,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_OPTS_H
 #define GCC_OPTS_H
 
-extern int handle_option (int argc, char **argv, int lang_mask);
+extern void handle_options (unsigned int argc, char **argv,
+			    unsigned int lang_mask);
 
 struct cl_option
 {
@@ -33,6 +34,7 @@ struct cl_option
 
 extern const struct cl_option cl_options[];
 extern const unsigned int cl_options_count;
+extern const char *const lang_names[];
 
 #define CL_JOINED		(1 << 24) /* If takes joined argument.  */
 #define CL_SEPARATE		(1 << 25) /* If takes a separate argument.  */
