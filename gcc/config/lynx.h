@@ -1,5 +1,5 @@
 /* Target independent definitions for LynxOS.
-   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -36,12 +36,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef LIB_SPEC
 #define LIB_SPEC "%{mthreads:-L/lib/thread/}  \
   %{msystem-v:-lc_v}  \
-  %{!msystem-v:%{mposix:-lc_p} -lc}"
+  %{!msystem-v:%{mposix:-lc_p} -lc -lm}"
 
 /* Set the appropriate names for the Lynx startfiles. */
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{p:pinit1.o%s}%{!p:%{msystem-v:vinit1.o%s}%{!msystem-v:init1.o%s}}"
+#define STARTFILE_SPEC "%{p:%{mthreads:thread/pinit1.o%s}%{!mthreads:pinit1.o%s}}%{!p:%{msystem-v:vinit1.o%s -e_start}%{!msystem-v:%{mthreads:thread/init1.o%s}%{!mthreads:init1.o%s}}}"
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC "%{p:_etext.o%s}%{!p:initn.o%s}"
@@ -114,10 +114,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef SUBTARGET_OVERRIDE_OPTIONS
 #define SUBTARGET_OVERRIDE_OPTIONS \
-{ if (TARGET_SYSTEM_V && profile_flag)			\
+do {								\
+  if (TARGET_SYSTEM_V && profile_flag)				\
     warning ("-msystem-v and -p are incompatible");		\
   if (TARGET_SYSTEM_V && TARGET_THREADS)			\
-    warning ("-msystem-v and -mthreads are incompatible"); }
+    warning ("-msystem-v and -mthreads are incompatible");	\
+} while (0)
 
 /* Define this so that C++ destructors will use atexit, since LynxOS
    calls exit after main returns.  */
@@ -171,3 +173,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef DO_GLOBAL_CTORS_BODY
 #undef DO_GLOBAL_DTORS_BODY
+
+/* LynxOS doesn't have mcount. */
+#undef FUNCTION_PROFILER
+#define FUNCTION_PROFILER(file, profile_label_no)
