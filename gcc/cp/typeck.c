@@ -3921,7 +3921,8 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	  resultcode = xresultcode;
 	}
 
-      if (short_compare && warn_sign_compare)
+      if ((short_compare || code == MIN_EXPR || code == MAX_EXPR)
+	  && warn_sign_compare)
 	{
 	  int op0_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op0));
 	  int op1_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op1));
