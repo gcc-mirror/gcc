@@ -3306,7 +3306,7 @@ while (0)
    For MIPS we make pointers are the smaller of longs and gp-registers. */
 
 #ifndef Pmode
-#define Pmode ((enum machine_mode)((TARGET_LONG64 && TARGET_64BIT) ? DImode : SImode))
+#define Pmode ((TARGET_LONG64 && TARGET_64BIT) ? DImode : SImode)
 #endif
 
 /* A function address in a call instruction
