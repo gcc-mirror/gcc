@@ -1,3 +1,17 @@
+2003-12-04  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/12653
+	* include/std/std_bitset.h (operator>>): Implement resolution
+	of DR 303 [WP]: use widen('0') and widen('1').
+	* docs/html/ext/howto.html: Add an entry for DR 303.
+
+	* include/std/std_bitset.h (operator>>): Implement the common
+	requirements of formatted input functions (27.6.1.2.1).
+
+	* include/std/std_bitset.h (operator>>): Set the failbit when
+	nothing was extracted and _Nb != 0.
+	* testsuite/23_containers/bitset/input/1.cc: New.
+
 2003-12-03  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/12791
