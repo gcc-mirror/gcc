@@ -1,3 +1,14 @@
+2002-09-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* expr.c (emit_group_load): Revise to allow splitting TCmode source
+	into DImode pieces.
+
+	* pa-64.h (LONG_DOUBLE_TYPE_SIZE): Define to 128.
+	* pa64-regs.h (CLASS_CANNOT_CHANGE_MODE_P): Inhibit changes from SImode
+	for floating-point register class.
+	* pa.c (function_arg): Fix handling of modes wider than one word for
+	TARGET_64BIT.
+
 Wed Sep  4 18:48:10 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* combine.c (make_compound_operation): Don't generate zero / sign
