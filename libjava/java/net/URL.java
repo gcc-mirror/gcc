@@ -99,7 +99,7 @@ import java.util.StringTokenizer;
   * Please note that a protocol handler must be a subclass of
   * URLStreamHandler.
   *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
+  * @author Aaron M. Renn <arenn@urbanophile.com>
   * @author Warren Levy <warrenl@cygnus.com>
   *
   * @see URLStreamHandler
@@ -720,7 +720,7 @@ public final class URL implements Serializable
   }
 
   private static synchronized URLStreamHandler
-    getURLStreamHandler(String protocol)
+    getURLStreamHandler (String protocol)
   {
     URLStreamHandler handler;
 

@@ -38,10 +38,16 @@ exception statement from your version. */
 
 package java.net;
 
-import java.net.*;
-import java.io.*;
-import java.util.jar.*;
-import java.util.zip.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.IOException;
+import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
 import java.util.Map;
 import java.util.Vector;
 import java.util.Hashtable;
@@ -52,8 +58,6 @@ import java.security.cert.Certificate;
  * @since 1.2
  * @date Aug 10, 1999.
  */
-
-
 public abstract class JarURLConnection extends URLConnection
 {
   // three different ways to say the same thing
