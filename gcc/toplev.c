@@ -249,6 +249,7 @@ int jump2_opt_dump = 0;
 #ifdef DELAY_SLOTS
 int dbr_sched_dump = 0;
 #endif
+int reorder_blocks_dump = 0;
 int flag_print_asm_name = 0;
 #ifdef STACK_REGS
 int stack_reg_dump = 0;
@@ -350,6 +351,10 @@ int flag_test_coverage = 0;
 /* Nonzero indicates that branch taken probabilities should be calculated.  */
 
 int flag_branch_probabilities = 0;
+
+/* Nonzero if basic blocks should be reordered. */
+
+int flag_reorder_blocks = 0;
 
 /* Nonzero for -pedantic switch: warn about anything
    that standard spec forbids.  */
@@ -936,6 +941,8 @@ lang_independent_options f_options[] =
    "Create data files needed by gcov" },
   {"branch-probabilities", &flag_branch_probabilities, 1,
    "Use profiling information for branch probabilities" },
+  {"reorder-blocks", &flag_reorder_blocks, 1,
+   "Reorder basic blocks to improve code placement" },
   {"fast-math", &flag_fast_math, 1,
    "Improve FP speed by violating ANSI & IEEE rules" },
   {"common", &flag_no_common, 0,
@@ -1329,6 +1336,7 @@ int flow2_time;
 int peephole2_time;
 int sched2_time;
 int dbr_sched_time;
+int reorder_blocks_time;
 int shorten_branch_time;
 int stack_reg_time;
 int final_time;
@@ -2022,6 +2030,7 @@ compile_file (name)
   peephole2_time = 0;
   sched2_time = 0;
   dbr_sched_time = 0;
+  reorder_blocks_time = 0;
   shorten_branch_time = 0;
   stack_reg_time = 0;
   final_time = 0;
@@ -2173,6 +2182,12 @@ compile_file (name)
 	clean_graph_dump_file (dump_base_name, ".16.sched2");
     }
 #endif
+  if (reorder_blocks_dump)
+    {
+      clean_dump_file (".bbro");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".bbro");
+    }
   if (jump2_opt_dump)
     {
       clean_dump_file (".17.jump2");
@@ -2555,6 +2570,8 @@ compile_file (name)
       if (sched2_dump)
 	finish_graph_dump_file (dump_base_name, ".16.sched2");
 #endif
+      if (reorder_blocks_dump)
+	finish_graph_dump_file (dump_base_name, ".bbro");
       if (jump2_opt_dump)
 	finish_graph_dump_file (dump_base_name, ".17.jump2");
 #ifdef MACHINE_DEPENDENT_REORG
@@ -2608,6 +2625,7 @@ compile_file (name)
 #ifdef DELAY_SLOTS
       print_time ("dbranch", dbr_sched_time);
 #endif
+      print_time ("bbro", reorder_blocks_time);
       print_time ("shorten-branch", shorten_branch_time);
 #ifdef STACK_REGS
       print_time ("stack-reg", stack_reg_time);
@@ -3485,6 +3503,21 @@ rest_of_compilation (decl)
     = optimize > 0 && only_leaf_regs_used () && leaf_function_p ();
 #endif
 
+  if (optimize > 0 && flag_reorder_blocks)
+    {
+      if (reorder_blocks_dump)
+	open_dump_file (".bbro", decl_printable_name (decl, 2));
+
+      TIMEVAR (reorder_blocks_time, reorder_basic_blocks ());
+
+      if (reorder_blocks_dump)
+	{
+	  close_dump_file (print_rtl_with_bb, insns);
+	  if (graph_dump_format != no_graph)
+	    print_rtl_graph_with_bb (dump_base_name, ".bbro", insns);
+	}
+    }    
+
   /* One more attempt to remove jumps to .+1 left by dead-store elimination. 
      Also do cross-jumping this time and delete no-op move insns.  */
 
@@ -3889,6 +3922,7 @@ decode_d_option (arg)
 #ifdef DELAY_SLOTS
 	dbr_sched_dump = 1;
 #endif
+	reorder_blocks_dump = 1;
 	flow_dump = 1;
 	flow2_dump = 1;
 	global_reg_dump = 1;
@@ -3917,6 +3951,9 @@ decode_d_option (arg)
 	break;
       case 'b':
 	branch_prob_dump = 1;
+	break;
+      case 'B':
+	reorder_blocks_dump = 1;
 	break;
       case 'c':
 	combine_dump = 1;
