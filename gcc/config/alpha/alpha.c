@@ -5962,10 +5962,10 @@ alpha_sa_size ()
       else
 	alpha_procedure_type = PT_NULL;
 
-      /* Don't reserve space for saving RA yet.  Do that later after we've
+      /* Don't reserve space for saving FP & RA yet.  Do that later after we've
 	 made the final decision on stack procedure vs register procedure.  */
       if (alpha_procedure_type == PT_STACK)
-	sa_size--;
+	sa_size -= 2;
 
       /* Decide whether to refer to objects off our PV via FP or PV.
 	 If we need FP for something else or if we receive a nonlocal
