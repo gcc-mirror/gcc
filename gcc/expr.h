@@ -317,11 +317,11 @@ extern rtx emit_store_flag_force (rtx, enum rtx_code, rtx, rtx,
 
 /* Given an insn and condition, return a canonical description of
    the test being made.  */
-extern rtx canonicalize_condition (rtx, rtx, int, rtx *, rtx);
+extern rtx canonicalize_condition (rtx, rtx, int, rtx *, rtx, int);
 
 /* Given a JUMP_INSN, return a canonical description of the test
    being made.  */
-extern rtx get_condition (rtx, rtx *);
+extern rtx get_condition (rtx, rtx *, int);
 
 /* Generate a conditional trap instruction.  */
 extern rtx gen_cond_trap (enum rtx_code, rtx, rtx, rtx);

@@ -1397,7 +1397,7 @@ noce_get_alt_condition (struct noce_if_info *if_info, rtx target,
     }
 
   cond = canonicalize_condition (if_info->jump, cond, reverse,
-				 earliest, target);
+				 earliest, target, false);
   if (! cond || ! reg_mentioned_p (target, cond))
     return NULL;
 
@@ -1671,7 +1671,8 @@ noce_get_condition (rtx jump, rtx *earliest)
   /* Otherwise, fall back on canonicalize_condition to do the dirty
      work of manipulating MODE_CC values and COMPARE rtx codes.  */
 
-  tmp = canonicalize_condition (jump, cond, reverse, earliest, NULL_RTX);
+  tmp = canonicalize_condition (jump, cond, reverse, earliest, NULL_RTX,
+				false);
   if (!tmp)
     return NULL_RTX;
 
@@ -1690,7 +1691,8 @@ noce_get_condition (rtx jump, rtx *earliest)
   tmp = XEXP (tmp, 0);
   if (!REG_P (tmp) || GET_MODE_CLASS (GET_MODE (tmp)) != MODE_INT)
     return NULL_RTX;
-  tmp = canonicalize_condition (jump, cond, reverse, earliest, tmp);
+  tmp = canonicalize_condition (jump, cond, reverse, earliest, tmp,
+				false);
   if (!tmp)
     return NULL_RTX;
 
