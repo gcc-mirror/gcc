@@ -383,10 +383,11 @@ extern int leaf_function;
 #define FINALIZE_PIC finalize_pic ()
 
 /* Sparc ABI says that quad-precision floats and all structures are returned
-   in memory.  */
+   in memory.  We go along regarding floats, but for structures
+   we follow GCC's normal policy.  Use -fpcc-struct-value
+   if you want to follow the ABI.  */
 #define RETURN_IN_MEMORY(TYPE)	\
-  (TREE_CODE (TYPE) == RECORD_TYPE || TREE_CODE (TYPE) == UNION_TYPE	\
-   || TYPE_MODE (TYPE) == TFmode)
+  (TYPE_MODE (TYPE) == TFmode)
 
 /* Functions which return large structures get the address
    to place the wanted value at offset 64 from the frame.
