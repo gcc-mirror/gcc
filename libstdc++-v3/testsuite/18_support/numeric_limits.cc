@@ -59,6 +59,31 @@ void test_extrema()
   VERIFY( extrema<T>::max == std::numeric_limits<T>::max() );
 }
 
+#ifdef __FreeBSD__
+// This specialization allows the extra precision unmentioned
+// in system headers yet supported by long double on FreeBSD to
+// not cause a gratuitous FAIL for the entire test.  Using this
+// technique to compare the residual against epsilon ensures that
+// any major breakage will still be detected (although obviously not
+// as tight as the exact equality check that would have been generated
+// by default).  This replacement test is allowable by the fact that
+// C++ limits should match the system provided limits for C even if
+// they were wrong verses the actual FP hardware.
+template<>
+void test_extrema<long double>()
+{
+  typedef long double T;
+  VERIFY( (extrema<T>::min - std::numeric_limits<T>::min())
+            < std::numeric_limits<T>::epsilon() );
+  VERIFY( (std::numeric_limits<T>::min() - extrema<T>::min)
+            < std::numeric_limits<T>::epsilon() );
+  VERIFY( (extrema<T>::max / std::numeric_limits<T>::max())
+            < (1 + std::numeric_limits<T>::epsilon()) );
+  VERIFY( (std::numeric_limits<T>::max() / extrema<T>::max)
+            < (1 + std::numeric_limits<T>::epsilon()) );
+}
+#endif
+
 #ifdef __CHAR_UNSIGNED__
 #define char_is_signed false
 #else
