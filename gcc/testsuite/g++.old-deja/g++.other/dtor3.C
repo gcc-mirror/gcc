@@ -31,8 +31,8 @@ struct S5
   ~S5(); 
 };
 
-S5::~S5(float) 
-{ // { dg-error "" } destructors may not have parameters
+S5::~S5(float)  // { dg-error "" } destructors may not have parameters
+{
 }
 
 
@@ -43,8 +43,8 @@ struct S6
 };
 
 template <class T>
-S6<T>::~S6(float)
-{ // { dg-error "" } destructors may not have parameters
+S6<T>::~S6(float)   // { dg-error "" } destructors may not have parameters
+{
 }
 
 

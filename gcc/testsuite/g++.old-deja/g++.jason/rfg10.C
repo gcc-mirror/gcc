@@ -6,5 +6,6 @@
 enum COLOR
 {
     red,
-    green = ULONG_MAX, blue
-};				// { dg-error "" } enum overflow
+    green = ULONG_MAX,
+    blue // { dg-error "overflow in enumeration" }
+};

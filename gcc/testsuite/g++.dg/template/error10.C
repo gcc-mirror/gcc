@@ -9,8 +9,8 @@
 template <class T>
 class A {};
 
-A<A<int>> blah;  // { dg-error "should be `> >' within" }
-A<int>> blah2; // { dg-error "spurious `>>'" }
+A<A<int>> blah;  // { dg-error "should be '> >' within" }
+A<int>> blah2; // { dg-error "spurious '>>'" }
 
 
 /*
@@ -66,5 +66,5 @@ struct K {};
 
 void KFunc(void);
 
-A<K<&KFunc>> k1;  // { dg-error "should be `> >' within" }
-K<&KFunc>> k2; // { dg-error "spurious `>>'" }
+A<K<&KFunc>> k1;  // { dg-error "should be '> >' within" }
+K<&KFunc>> k2; // { dg-error "spurious '>>'" }

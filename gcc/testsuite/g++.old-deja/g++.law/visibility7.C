@@ -15,10 +15,10 @@ class A {
     {}
   virtual ~A()
     {}
-  virtual void Number(int c)
-    { number = c; } // { dg-error "" } private
-  virtual int Number()
-    { return number; } // { dg-error "" } private
+  virtual void Number(int c) // { dg-error "inaccessible" }
+    { number = c; }
+  virtual int Number() // { dg-error "inaccessible" }
+    { return number; }
 };
 
 class B : private A {
@@ -53,9 +53,9 @@ class C {
   // and they should not be able to do so
   //
   virtual void setBValue(int i) 
-    { if (bobject) bobject->Number(i); }// { dg-error "" } .*
+    { if (bobject) bobject->Number(i); } // { dg-error "this context|accessible base" }
   virtual int getBValue()
-    { if (bobject) { return bobject->Number(); } return 0; }// { dg-error "" } .*
+    { if (bobject) { return bobject->Number(); } return 0; } // { dg-error "this context|accessible base" }
 };
 
 

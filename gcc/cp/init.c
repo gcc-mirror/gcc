@@ -315,9 +315,8 @@ perform_member_init (tree member, tree init)
   /* Effective C++ rule 12 requires that all data members be
      initialized.  */
   if (warn_ecpp && !explicit && TREE_CODE (type) != ARRAY_TYPE)
-    warning ("`%D' should be initialized in the member initialization "
-	     "list", 
-	     member);
+    warning ("%J%qD should be initialized in the member initialization "
+	     "list", current_function_decl, member);
 
   if (init == void_type_node)
     init = NULL_TREE;
@@ -363,16 +362,17 @@ perform_member_init (tree member, tree init)
 	    {
 	      init = build_default_init (type, /*nelts=*/NULL_TREE);
 	      if (TREE_CODE (type) == REFERENCE_TYPE)
-		warning
-		  ("default-initialization of `%#D', which has reference type",
-		   member);
+		warning ("%Jdefault-initialization of %q#D, "
+			 "which has reference type",
+			 current_function_decl, member);
 	    }
 	  /* member traversal: note it leaves init NULL */
 	  else if (TREE_CODE (type) == REFERENCE_TYPE)
-	    pedwarn ("uninitialized reference member `%D'", member);
+	    pedwarn ("%Juninitialized reference member %qD",
+		     current_function_decl, member);
 	  else if (CP_TYPE_CONST_P (type))
-	    pedwarn ("uninitialized member `%D' with `const' type `%T'",
-		     member, type);
+	    pedwarn ("%Juninitialized member %qD with %<const%> type %qT",
+		     current_function_decl, member, type);
 	}
       else if (TREE_CODE (init) == TREE_LIST)
 	/* There was an explicit member initialization.  Do some work
@@ -509,7 +509,8 @@ sort_mem_initializers (tree t, tree mem_inits)
 	  break;
 
       /* Issue a warning if the explicit initializer order does not
-	 match that which will actually occur.  */
+	 match that which will actually occur.
+         ??? Are all these on the correct lines?  */
       if (warn_reorder && !subobject_init)
 	{
 	  if (TREE_CODE (TREE_PURPOSE (next_subobject)) == FIELD_DECL)
@@ -522,7 +523,7 @@ sort_mem_initializers (tree t, tree mem_inits)
 	    cp_warning_at ("  `%#D'", subobject);
 	  else
 	    warning ("  base `%T'", subobject);
-	  warning ("  when initialized here");
+	  warning ("%J  when initialized here", current_function_decl);
 	}
 
       /* Look again, from the beginning of the list.  */
@@ -538,10 +539,11 @@ sort_mem_initializers (tree t, tree mem_inits)
       if (TREE_VALUE (subobject_init))
 	{
 	  if (TREE_CODE (subobject) == FIELD_DECL)
-	    error ("multiple initializations given for `%D'", subobject);
+	    error ("%Jmultiple initializations given for %qD",
+		   current_function_decl, subobject);
 	  else
-	    error ("multiple initializations given for base `%T'", 
-		   subobject);
+	    error ("%Jmultiple initializations given for base %qT", 
+		   current_function_decl, subobject);
 	}
 
       /* Record the initialization.  */
@@ -607,8 +609,8 @@ sort_mem_initializers (tree t, tree mem_inits)
 		  if (same_type_p (last_field_type, field_type))
 		    {
 		      if (TREE_CODE (field_type) == UNION_TYPE)
-			error ("initializations for multiple members of `%T'",
-				  last_field_type);
+			error ("%Jinitializations for multiple members of %qT",
+			       current_function_decl, last_field_type);
 		      done = 1;
 		      break;
 		    }
@@ -664,9 +666,9 @@ emit_mem_initializers (tree mem_inits)
       if (extra_warnings && !arguments 
 	  && DECL_COPY_CONSTRUCTOR_P (current_function_decl)
 	  && TYPE_NEEDS_CONSTRUCTING (BINFO_TYPE (subobject)))
-	warning ("base class `%#T' should be explicitly initialized in the "
+	warning ("%Jbase class `%#T' should be explicitly initialized in the "
 		 "copy constructor",
-		 BINFO_TYPE (subobject));
+		 current_function_decl, BINFO_TYPE (subobject));
 
       /* If an explicit -- but empty -- initializer list was present,
 	 treat it just like default initialization at this point.  */

@@ -14,8 +14,8 @@ int main()
 }
 
 template <>
-int f(int i) 
-{             // { dg-error "" } specialization of f<int>(int) after instantiation
+int f(int i)   // { dg-error "specialization\[^\n\]*after instantiation" }
+{
   return 1;
 }
 

@@ -512,25 +512,25 @@ class Y {
 public:
     Y() {}
     virtual const char *stringify() = 0;
-    virtual char *stringify2() const = 0; // { dg-error "" } 
+    virtual char *stringify2() const = 0; // { dg-error "overriding" } 
 };
 
 class X: public Y {
 public:
     X(): Y() {}
-    char *stringify();		// { dg-error "" } ok
-    const char *stringify2() const;  // { dg-error "" } ok
+    char *stringify();		// { dg-error "candidate" }
+    const char *stringify2() const;  // { dg-error "candidate|conflicting return type" }
 };
 
 char *
-X::stringify() const
-{ // { dg-error "" } ok
+X::stringify() const  // { dg-error "does not match" }
+{
     return "stringify";
 }
 
 const char *
-X::stringify2()
-{ // { dg-error "" } ok
+X::stringify2()   // { dg-error "does not match" }
+{
     return "stringify2";
 }
 

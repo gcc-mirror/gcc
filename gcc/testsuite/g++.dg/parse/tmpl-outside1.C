@@ -8,3 +8,4 @@ struct X
 };
 
 typedef X::template Y<0> y; // { dg-error "template" }
+// { dg-bogus "with no type" "" { xfail *-*-* } 10 }

@@ -22,8 +22,8 @@ public:
   Y();
 };
 
-X::X()
-{// { dg-error "" } .*
+X::X() // { dg-error "is private" }
+{
   std::cout << "X::X()" << std::endl;
 }
 
@@ -32,8 +32,8 @@ void X::f()
   std::cout << "X::f()" << std::endl;
 }
 
-Y::Y()
-{// { dg-error "" }  within this
+Y::Y() // { dg-error "within this context" }
+{
   std::cout << "Y::Y()" << std::endl;
 }
 

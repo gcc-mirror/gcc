@@ -11,13 +11,13 @@ public:
         operator int() const {return 2;}
 };
 
-bool operator==(const MyInt& a, const int& b)
-{                                               // { dg-error "" } candidate
+bool operator==(const MyInt& a, const int& b)   // { dg-error "" } candidate
+{
         return (int)a == b;
 }
 
-bool operator==(const MyInt& a, const MyInt& b)
-{                                               // { dg-error "" } candidate
+bool operator==(const MyInt& a, const MyInt& b) // { dg-error "" } candidate
+{
         return (int)a == (int)b;
 }
 

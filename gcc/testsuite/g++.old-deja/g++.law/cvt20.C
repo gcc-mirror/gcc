@@ -9,12 +9,12 @@
 
 // Compiles fine with Sun CC 2.1
 
-void f(char *& x)
-{// { dg-error "" } location of error
+void f(char *& x) // { dg-error "passing argument" }
+{
   x++;
 }
 
 int main()
 {
-  f ("foo");// { dg-error "" } init of non-const ref from char*
+  f ("foo"); // { dg-error "invalid initialization" }
 }

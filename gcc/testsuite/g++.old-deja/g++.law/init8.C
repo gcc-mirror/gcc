@@ -8,15 +8,15 @@
 
 
 const int ic = 1;
-void f(int& arg)
-{ // { dg-error "" } argument 1
+void f(int& arg)  // { dg-error "passing argument 1" }
+{
         if (arg) ;
 }
 const int& icr = ic;
 
 int main(void)
 {
-  f(icr);   // g++ does not give error here// { dg-error "" } .*
+  f(icr);   // { dg-error "invalid initialization" }
 
   return 0;
 }

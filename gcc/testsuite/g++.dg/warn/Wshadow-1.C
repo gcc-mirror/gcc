@@ -21,8 +21,8 @@ struct status			// { dg-bogus "shadowed declaration" }
 int decl1;			// { dg-warning "shadowed declaration" }
 int decl2;			// { dg-warning "shadowed declaration" }
 void foo (struct status &status,// { dg-bogus "shadows a global decl" }
-	  double decl1)
-{				// { dg-warning "shadows a global decl" }
+	  double decl1)		// { dg-warning "shadows a global decl" }
+{
 }
 
 void foo1 (int d)

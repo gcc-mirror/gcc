@@ -1,3 +1,73 @@
+2004-09-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* g++.dg/ext/complit1.C
+	* g++.dg/other/error2.C
+	* g++.dg/other/nontype-1.C
+	* g++.dg/parse/crash11.C
+	* g++.dg/parse/crash12.C
+	* g++.dg/parse/error15.C
+	* g++.dg/parse/error4.C
+	* g++.dg/parse/tmpl-outside1.C
+	* g++.dg/parse/too-many-tmpl-args1.C
+	* g++.dg/template/dependent-expr3.C
+	* g++.dg/template/error10.C
+	* g++.dg/template/instantiate1.C
+	* g++.dg/template/vtable2.C
+	* g++.dg/warn/Wshadow-1.C
+	* g++.dg/warn/weak1.C
+	* g++.old-deja/g++.brendan/crash16.C
+	* g++.old-deja/g++.brendan/crash18.C
+	* g++.old-deja/g++.brendan/crash48.C
+	* g++.old-deja/g++.brendan/crash49.C
+	* g++.old-deja/g++.brendan/crash55.C
+	* g++.old-deja/g++.brendan/crash56.C
+	* g++.old-deja/g++.brendan/crash8.C
+	* g++.old-deja/g++.brendan/enum11.C
+	* g++.old-deja/g++.brendan/enum8.C
+	* g++.old-deja/g++.brendan/enum9.C
+	* g++.old-deja/g++.brendan/friend3.C
+	* g++.old-deja/g++.brendan/misc14.C
+	* g++.old-deja/g++.bugs/900402_02.C
+	* g++.old-deja/g++.bugs/900404_03.C
+	* g++.old-deja/g++.bugs/900404_04.C
+	* g++.old-deja/g++.bugs/900428_03.C
+	* g++.old-deja/g++.jason/crash4.C
+	* g++.old-deja/g++.jason/overload21.C
+	* g++.old-deja/g++.jason/redecl1.C
+	* g++.old-deja/g++.jason/report.C
+	* g++.old-deja/g++.jason/rfg10.C
+	* g++.old-deja/g++.jason/template30.C
+	* g++.old-deja/g++.law/arm12.C
+	* g++.old-deja/g++.law/ctors5.C
+	* g++.old-deja/g++.law/cvt20.C
+	* g++.old-deja/g++.law/init10.C
+	* g++.old-deja/g++.law/init8.C
+	* g++.old-deja/g++.law/visibility17.C
+	* g++.old-deja/g++.law/visibility7.C
+	* g++.old-deja/g++.mike/net8.C
+	* g++.old-deja/g++.mike/p646.C
+	* g++.old-deja/g++.mike/p700.C
+	* g++.old-deja/g++.mike/p701.C
+	* g++.old-deja/g++.mike/p811.C
+	* g++.old-deja/g++.ns/template13.C
+	* g++.old-deja/g++.other/array3.C
+	* g++.old-deja/g++.other/crash25.C
+	* g++.old-deja/g++.other/dtor3.C
+	* g++.old-deja/g++.other/dtor4.C
+	* g++.old-deja/g++.other/main1.C
+	* g++.old-deja/g++.other/warn7.C
+	* g++.old-deja/g++.pt/crash11.C
+	* g++.old-deja/g++.pt/crash36.C
+	* g++.old-deja/g++.pt/spec22.C
+	* g++.old-deja/g++.pt/spec9.C
+	* g++.old-deja/g++.pt/ttp52.C
+	* g++.old-deja/g++.robertl/eb103.C
+	* g++.old-deja/g++.robertl/eb121.C
+	* g++.old-deja/g++.robertl/eb22.C
+	* g++.old-deja/g++.robertl/eb8.C:
+	Update locations and/or regexps of dg-error markers.
+	Remove markers for some bogus messages that are no longer issued.
+
 2004-09-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/builtins/strcpy-2.c: New test.
@@ -10,38 +80,38 @@
 
 2004-09-23  Dorit Naishlos <dorit@il.ibm.com>
 
-        * gcc.dg/vect/vect-27.c: Now vectorized on altivec.
-        * gcc.dg/vect/vect-29.c: Now vectorized on altivec.
-        * gcc.dg/vect/vect-48.c: Now vectorized on altivec.
-        * gcc.dg/vect/vect-56.c: Now vectorized on altivec.
-        * gcc.dg/vect/vect-72.c: New test for altivec and sse2.
-        * gcc.dg/vect/vect-77.c: Now vectorized on altivec.
+	* gcc.dg/vect/vect-27.c: Now vectorized on altivec.
+	* gcc.dg/vect/vect-29.c: Now vectorized on altivec.
+	* gcc.dg/vect/vect-48.c: Now vectorized on altivec.
+	* gcc.dg/vect/vect-56.c: Now vectorized on altivec.
+	* gcc.dg/vect/vect-72.c: New test for altivec and sse2.
+	* gcc.dg/vect/vect-77.c: Now vectorized on altivec.
 
-        * gcc.dg/vect/vect-27a.c: New test for altivec and mmx.
-        * gcc.dg/vect/vect-29a.c: New test for altivec and mmx.
-        * gcc.dg/vect/vect-48a.c: New test for altivec and mmx.
-        * gcc.dg/vect/vect-56a.c: New test for altivec and mmx.
-        * gcc.dg/vect/vect-72a.c: New test for altivec and mmx.
-        * gcc.dg/vect/vect-77a.c: New test for altivec and mmx.
+	* gcc.dg/vect/vect-27a.c: New test for altivec and mmx.
+	* gcc.dg/vect/vect-29a.c: New test for altivec and mmx.
+	* gcc.dg/vect/vect-48a.c: New test for altivec and mmx.
+	* gcc.dg/vect/vect-56a.c: New test for altivec and mmx.
+	* gcc.dg/vect/vect-72a.c: New test for altivec and mmx.
+	* gcc.dg/vect/vect-77a.c: New test for altivec and mmx.
 
-        * gcc.dg/vect/vect-13.c: Change to run test instead of compile.
+	* gcc.dg/vect/vect-13.c: Change to run test instead of compile.
 
-        * gcc.dg/vect/vect-44.c: Check additional cases.
-        * gcc.dg/vect/vect-48.c: Check additional cases.
+	* gcc.dg/vect/vect-44.c: Check additional cases.
+	* gcc.dg/vect/vect-48.c: Check additional cases.
 
-        * gcc.dg/vect/vect-26.c: Use sse2 instead of sse.
-        * gcc.dg/vect/vect-27.c: Use sse2 instead of sse.
-        * gcc.dg/vect/vect-28.c: Use sse2 instead of sse.
-        * gcc.dg/vect/vect-29.c: Use sse2 instead of sse.
-        * gcc.dg/vect/vect-4?.c: Use sse2 instead of sse.
-        * gcc.dg/vect/vect-75.c: Use sse2 instead of sse.
-        * gcc.dg/vect/vect-76.c: Use sse2 instead of sse.
-        * gcc.dg/vect/vect-77.c: Use sse2 instead of sse.
-        * gcc.dg/vect/vect-78.c: Use sse2 instead of sse.
+	* gcc.dg/vect/vect-26.c: Use sse2 instead of sse.
+	* gcc.dg/vect/vect-27.c: Use sse2 instead of sse.
+	* gcc.dg/vect/vect-28.c: Use sse2 instead of sse.
+	* gcc.dg/vect/vect-29.c: Use sse2 instead of sse.
+	* gcc.dg/vect/vect-4?.c: Use sse2 instead of sse.
+	* gcc.dg/vect/vect-75.c: Use sse2 instead of sse.
+	* gcc.dg/vect/vect-76.c: Use sse2 instead of sse.
+	* gcc.dg/vect/vect-77.c: Use sse2 instead of sse.
+	* gcc.dg/vect/vect-78.c: Use sse2 instead of sse.
 
-        * gcc.dg/vect/vect-5?.c: Use sse2 instead of sse. Add return 0.
-        * gcc.dg/vect/vect-60.c: Use sse2 instead of sse. Add return 0.
-        * gcc.dg/vect/vect-61.c: Use sse2 instead of sse. Add return 0.
+	* gcc.dg/vect/vect-5?.c: Use sse2 instead of sse. Add return 0.
+	* gcc.dg/vect/vect-60.c: Use sse2 instead of sse. Add return 0.
+	* gcc.dg/vect/vect-61.c: Use sse2 instead of sse. Add return 0.
 
 2004-09-23  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
@@ -93,7 +163,7 @@
 
 	PR c++/15049
 	* g++.dg/other/anon3.C: New.
-	
+
 2004-09-21  Roger Sayle  <roger@eyesopen.com>
 
 	PR c++/7503
@@ -115,7 +185,7 @@
 
 2004-09-20  Andrew Pinski  <pinskia@physics.uc.edu>
 
-	PR tree-opt/17558 
+	PR tree-opt/17558
 	* gcc.c-torture/compile/pr17558.c: New test.
 
 2004-09-20  Richard Sandiford  <rsandifo@redhat.com>
@@ -138,7 +208,7 @@
 2004-09-20  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15750
-	* gfortran.fortran-torture/execute/iolength_2.f90: New test.	
+	* gfortran.fortran-torture/execute/iolength_2.f90: New test.
 
 2004-09-20  Ira Rosen  <irar@il.ibm.com>
 
@@ -200,7 +270,7 @@
 2004-09-17  Devang Patel  <dpatel@apple.com>
 
 	* gcc.dg/20040813-1.c: New test.
-	
+
 2004-09-17  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/17273
@@ -225,7 +295,7 @@
 
 	PR c++/16002
 	* g++.dg/template/error18.C: New test.
-	
+
 	PR c++/16029
 	* g++.dg/warn/Wunused-8.C: New test.
 
@@ -320,7 +390,7 @@
 	* gcc.dg/declspec-12.c: New test.
 
 2004-09-14  Bud Davis  <bdavis9659@comcast.net>
-	
+
 	* gfortran.dg/pr17090.f90: Add directives to test.
 
 2004-09-14  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
@@ -331,7 +401,7 @@
 
 	PR c++/16162
 	* g++.dg/template/decl2.C: New test.
-	
+
 2004-09-13  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/17090
@@ -345,7 +415,7 @@
 
 	PR c++/16716
 	* g++.dg/parse/crash17.C: New test.
-	
+
 	PR c++/17327
 	* g++.dg/template/enum3.C: New test.
 

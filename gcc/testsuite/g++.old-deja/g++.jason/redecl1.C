@@ -3,11 +3,11 @@ class A
 {
 public:
     A (const A& ccref);
-    friend A const re (const A& v1); // { dg-error "" } 
+    friend A const re (const A& v1); // { dg-error "ambiguates" } 
 };
 
 A // const
-re (const A& ref)
-{				// { dg-error "" } mismatched decls
+re (const A& ref) // { dg-error "new declaration" }
+{
     return A (ref);
 }

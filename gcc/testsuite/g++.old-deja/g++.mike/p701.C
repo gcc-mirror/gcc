@@ -7,8 +7,8 @@ extern "C"
 }
 
 
-void Munge(int& x) 
-{				// { dg-error "" } referenced below
+void Munge(int& x) 	// { dg-error "passing argument 1" }
+{
    x = 2;
 }
 
@@ -24,7 +24,7 @@ class A
 void
 A::Safe() const 
 {
-   Munge(i);	// { dg-error "" } should not be able to modify a const object
+   Munge(i);	        // { dg-error "invalid initialization" }
 }
 
 int main()

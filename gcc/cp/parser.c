@@ -113,8 +113,6 @@ typedef struct cp_token_cache GTY(())
 
 static cp_lexer *cp_lexer_new_main
   (void);
-static cp_lexer *cp_lexer_new_from_token_array
-  (cp_token *, cp_token *);
 static cp_lexer *cp_lexer_new_from_tokens
   (cp_token_cache *tokens);
 static void cp_lexer_destroy
@@ -132,10 +130,6 @@ static void cp_lexer_grow_buffer
 static void cp_lexer_get_preprocessor_token
   (cp_lexer *, cp_token *);
 static inline cp_token *cp_lexer_peek_token
-  (cp_lexer *);
-static void cp_lexer_peek_token_emit_debug_info
-  (cp_lexer *, cp_token *);
-static void cp_lexer_skip_purged_tokens
   (cp_lexer *);
 static cp_token *cp_lexer_peek_nth_token
   (cp_lexer *, size_t);
@@ -159,8 +153,6 @@ static void cp_lexer_commit_tokens
   (cp_lexer *);
 static void cp_lexer_rollback_tokens
   (cp_lexer *);
-static inline void cp_lexer_set_source_position_from_token
-  (cp_lexer *, const cp_token *);
 #ifdef ENABLE_CHECKING
 static void cp_lexer_print_token
   (FILE *, cp_token *);
@@ -170,10 +162,17 @@ static void cp_lexer_start_debugging
   (cp_lexer *) ATTRIBUTE_UNUSED;
 static void cp_lexer_stop_debugging
   (cp_lexer *) ATTRIBUTE_UNUSED;
+static void cp_lexer_peek_token_emit_debug_info
+  (cp_lexer *, cp_token *);
 #else
-#define cp_lexer_debug_stream NULL
-#define cp_lexer_print_token(str, tok)
+/* If we define cp_lexer_debug_stream to NULL it will provoke warnings
+   about passing NULL to functions that require non-NULL arguments
+   (fputs, fprintf).  It will never be used, so all we need is a value
+   of the right type that's guaranteed not to be NULL.  */
+#define cp_lexer_debug_stream stdout
+#define cp_lexer_print_token(str, tok) (void) 0
 #define cp_lexer_debugging_p(lexer) 0
+#define cp_lexer_peek_token_emit_debug_info(lexer, tok) (void) 0
 #endif /* ENABLE_CHECKING */
 
 static cp_token_cache *cp_token_cache_new
@@ -269,16 +268,18 @@ cp_lexer_new_main (void)
      string constant concatenation.  */
   c_lex_return_raw_strings = false;
 
+  gcc_assert (lexer->next_token->type != CPP_PURGED);
   return lexer;
 }
 
 /* Create a new lexer whose token stream is primed with the tokens in
-   the range [FIRST, LAST).  When these tokens are exhausted, no new
-   tokens will be read.  */
+   CACHE.  When these tokens are exhausted, no new tokens will be read.  */
 
 static cp_lexer *
-cp_lexer_new_from_token_array (cp_token *first, cp_token *last)
+cp_lexer_new_from_tokens (cp_token_cache *cache)
 {
+  cp_token *first = cache->first;
+  cp_token *last = cache->last;
   cp_lexer *lexer = GGC_CNEW (cp_lexer);
   cp_token *eof;
 
@@ -305,16 +306,9 @@ cp_lexer_new_from_token_array (cp_token *first, cp_token *last)
   /* Initially we are not debugging.  */
   lexer->debugging_p = false;
 #endif
+
+  gcc_assert (lexer->next_token->type != CPP_PURGED);
   return lexer;
-}
-
-/* Create a new lexer whose token stream is primed with the tokens in
-   CACHE.  When these tokens are exhausted, no new tokens will be read.  */
-
-static cp_lexer *
-cp_lexer_new_from_tokens (cp_token_cache *cache)
-{
-  return cp_lexer_new_from_token_array (cache->first, cache->last);
 }
 
 /* Frees all resources associated with LEXER. */
@@ -337,24 +331,6 @@ cp_lexer_debugging_p (cp_lexer *lexer)
 }
 
 #endif /* ENABLE_CHECKING */
-
-/* Set the current source position from the information stored in
-   TOKEN.  */
-
-static inline void
-cp_lexer_set_source_position_from_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
-                                         const cp_token *token)
-{
-  /* Ideally, the source position information would not be a global
-     variable, but it is.  */
-
-  /* Update the line number and system header flag. */
-  if (token->type != CPP_EOF)
-    {
-      input_location = token->location;
-      in_system_header = token->in_system_header;
-    }
-}
 
 /* TOKEN points into the circular token buffer.  Return a pointer to
    the next token in the buffer.  */
@@ -487,28 +463,29 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
     token->keyword = RID_MAX;
 }
 
+/* Update the globals input_location and in_system_header from TOKEN.   */
+static inline void
+cp_lexer_set_source_position_from_token (cp_token *token)
+{
+  if (token->type != CPP_EOF)
+    {
+      input_location = token->location;
+      in_system_header = token->in_system_header;
+    }
+}
+
 /* Return a pointer to the next token in the token stream, but do not
    consume it.  */
 
 static inline cp_token *
 cp_lexer_peek_token (cp_lexer *lexer)
 {
-  cp_token *token;
-
-  /* Skip over purged tokens if necessary. */
-  if (lexer->next_token->type == CPP_PURGED)
-    cp_lexer_skip_purged_tokens (lexer);
-
-  token = lexer->next_token;
-
-  /* Provide debugging output.  */
   if (cp_lexer_debugging_p (lexer))
-    cp_lexer_peek_token_emit_debug_info (lexer, token);
-
-  cp_lexer_set_source_position_from_token (lexer, token);
-  return token;
+    cp_lexer_peek_token_emit_debug_info (lexer, lexer->next_token);
+  return lexer->next_token;
 }
 
+#ifdef ENABLE_CHECKING
 /* Emit debug output for cp_lexer_peek_token.  Split out into a
    separate function so that cp_lexer_peek_token can be small and
    inlinable. */
@@ -517,35 +494,23 @@ static void
 cp_lexer_peek_token_emit_debug_info (cp_lexer *lexer ATTRIBUTE_UNUSED,
 				     cp_token *token ATTRIBUTE_UNUSED)
 {
-  fprintf (cp_lexer_debug_stream, "cp_lexer: peeking at token: ");
+  fputs ("cp_lexer: peeking at token: ", cp_lexer_debug_stream);
   cp_lexer_print_token (cp_lexer_debug_stream, token);
-  fprintf (cp_lexer_debug_stream, "\n");
+  putc ('\n', cp_lexer_debug_stream);
 }
-
-/* Skip all tokens whose type is CPP_PURGED. */
-
-static void cp_lexer_skip_purged_tokens (cp_lexer *lexer)
-{
-  while (lexer->next_token->type == CPP_PURGED)
-    ++lexer->next_token;
-}
+#endif
 
 /* Return true if the next token has the indicated TYPE.  */
 
-static bool
+static inline bool
 cp_lexer_next_token_is (cp_lexer* lexer, enum cpp_ttype type)
 {
-  cp_token *token;
-
-  /* Peek at the next token.  */
-  token = cp_lexer_peek_token (lexer);
-  /* Check to see if it has the indicated TYPE.  */
-  return token->type == type;
+  return cp_lexer_peek_token (lexer)->type == type;
 }
 
 /* Return true if the next token does not have the indicated TYPE.  */
 
-static bool
+static inline bool
 cp_lexer_next_token_is_not (cp_lexer* lexer, enum cpp_ttype type)
 {
   return !cp_lexer_next_token_is (lexer, type);
@@ -553,7 +518,7 @@ cp_lexer_next_token_is_not (cp_lexer* lexer, enum cpp_ttype type)
 
 /* Return true if the next token is the indicated KEYWORD.  */
 
-static bool
+static inline bool
 cp_lexer_next_token_is_keyword (cp_lexer* lexer, enum rid keyword)
 {
   cp_token *token;
@@ -565,7 +530,10 @@ cp_lexer_next_token_is_keyword (cp_lexer* lexer, enum rid keyword)
 }
 
 /* Return a pointer to the Nth token in the token stream.  If N is 1,
-   then this is precisely equivalent to cp_lexer_peek_token.  */
+   then this is precisely equivalent to cp_lexer_peek_token (except
+   that it is not inline).  One would like to disallow that case, but
+   there is one case (cp_parser_nth_token_starts_template_id) where
+   the caller passes a variable for N and it might be 1.  */
 
 static cp_token *
 cp_lexer_peek_nth_token (cp_lexer* lexer, size_t n)
@@ -574,6 +542,10 @@ cp_lexer_peek_nth_token (cp_lexer* lexer, size_t n)
 
   /* N is 1-based, not zero-based.  */
   gcc_assert (n > 0);
+
+  if (cp_lexer_debugging_p (lexer))
+    fprintf (cp_lexer_debug_stream,
+	     "cp_lexer: peeking ahead %ld at token: ", (long)n);
 
   --n;
   token = lexer->next_token;
@@ -584,39 +556,43 @@ cp_lexer_peek_nth_token (cp_lexer* lexer, size_t n)
 	--n;
     }
 
-  return token;
-}
-
-/* Consume the next token.  The pointer returned is valid only until
-   another token is read.  Callers should preserve copy the token
-   explicitly if they will need its value for a longer period of
-   time.  */
-
-static cp_token *
-cp_lexer_consume_token (cp_lexer* lexer)
-{
-  cp_token *token;
-
-  /* Skip over purged tokens if necessary. */
-  if (lexer->next_token->type == CPP_PURGED)
-    cp_lexer_skip_purged_tokens (lexer);
-
-  token = lexer->next_token++;
-
-  /* Provide debugging output.  */
   if (cp_lexer_debugging_p (lexer))
     {
-      fprintf (cp_lexer_debug_stream, "cp_lexer: consuming token: ");
       cp_lexer_print_token (cp_lexer_debug_stream, token);
-      fprintf (cp_lexer_debug_stream, "\n");
+      putc ('\n', cp_lexer_debug_stream);
     }
 
   return token;
 }
 
-/* Permanently remove the next token from the token stream.  There
-   must be a valid next token already; this token never reads
-   additional tokens from the preprocessor.  */
+/* Return the next token, and advance the lexer's next_token pointer
+   to point to the next non-purged token.  */
+
+static cp_token *
+cp_lexer_consume_token (cp_lexer* lexer)
+{
+  cp_token *token = lexer->next_token;
+
+  do
+    ++lexer->next_token;
+  while (lexer->next_token->type == CPP_PURGED);
+
+  cp_lexer_set_source_position_from_token (token);
+
+  /* Provide debugging output.  */
+  if (cp_lexer_debugging_p (lexer))
+    {
+      fputs ("cp_lexer: consuming token: ", cp_lexer_debug_stream);
+      cp_lexer_print_token (cp_lexer_debug_stream, token);
+      putc ('\n', cp_lexer_debug_stream);
+    }
+
+  return token;
+}
+
+/* Permanently remove the next token from the token stream, and
+   advance the next_token pointer to refer to the next non-purged
+   token.  */
 
 static void
 cp_lexer_purge_token (cp_lexer *lexer)
@@ -626,6 +602,10 @@ cp_lexer_purge_token (cp_lexer *lexer)
   tok->location = UNKNOWN_LOCATION;
   tok->value = NULL_TREE;
   tok->keyword = RID_MAX;
+
+  do
+    ++lexer->next_token;
+  while (lexer->next_token->type == CPP_PURGED);
 }
 
 /* Permanently remove all tokens after TOK, up to, but not
@@ -661,7 +641,6 @@ cp_lexer_handle_pragma (cp_lexer *lexer)
   s.len = TREE_STRING_LENGTH (token->value);
   s.text = (const unsigned char *) TREE_STRING_POINTER (token->value);
 
-  cp_lexer_set_source_position_from_token (lexer, token);
   cpp_handle_deferred_pragma (parse_in, &s);
 
   /* Clearing token->value here means that we will get an ICE if we
@@ -1836,16 +1815,21 @@ cp_parser_is_keyword (cp_token* token, enum rid keyword)
   return token->keyword == keyword;
 }
 
-/* Issue the indicated error MESSAGE.  */
+/* If not parsing tentatively, issue a diagnostic of the form
+      FILE:LINE: MESSAGE before TOKEN
+   where TOKEN is the next token in the input stream.  MESSAGE
+   (specified by the caller) is usually of the form "expected
+   OTHER-TOKEN".  */
 
 static void
 cp_parser_error (cp_parser* parser, const char* message)
 {
-  /* Output the MESSAGE -- unless we're parsing tentatively.  */
   if (!cp_parser_simulate_error (parser))
     {
-      cp_token *token;
-      token = cp_lexer_peek_token (parser->lexer);
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
+      /* This diagnostic makes more sense if it is tagged to the line
+	 of the token we just peeked at.  */
+      cp_lexer_set_source_position_from_token (token);
       c_parse_error (message,
 		     /* Because c_parser_error does not understand
 			CPP_KEYWORD, keywords are treated like
@@ -2453,6 +2437,36 @@ cp_parser_new (void)
   return parser;
 }
 
+/* Create a cp_lexer structure which will emit the tokens in CACHE
+   and push it onto the parser's lexer stack.  This is used for delayed
+   parsing of in-class method bodies and default arguments, and should
+   not be confused with tentative parsing.  */
+static void
+cp_parser_push_lexer_for_tokens (cp_parser *parser, cp_token_cache *cache)
+{
+  cp_lexer *lexer = cp_lexer_new_from_tokens (cache);
+  lexer->next = parser->lexer;
+  parser->lexer = lexer;
+
+  /* Move the current source position to that of the first token in the
+     new lexer.  */
+  cp_lexer_set_source_position_from_token (lexer->next_token);
+}
+
+/* Pop the top lexer off the parser stack.  This is never used for the
+   "main" lexer, only for those pushed by cp_parser_push_lexer_for_tokens.  */
+static void
+cp_parser_pop_lexer (cp_parser *parser)
+{
+  cp_lexer *lexer = parser->lexer;
+  parser->lexer = lexer->next;
+  cp_lexer_destroy (lexer);
+
+  /* Put the current source position back where it was before this
+     lexer was pushed.  */
+  cp_lexer_set_source_position_from_token (parser->lexer->next_token);
+}
+
 /* Lexical conventions [gram.lex]  */
 
 /* Parse an identifier.  Returns an IDENTIFIER_NODE representing the
@@ -2502,14 +2516,16 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
 
   /* Try to avoid the overhead of creating and destroying an obstack
      for the common case of just one string.  */
-  if (!cp_parser_is_string_literal (cp_lexer_peek_nth_token (parser->lexer, 2)))
+  if (!cp_parser_is_string_literal
+      (cp_lexer_peek_nth_token (parser->lexer, 2)))
     {
+      cp_lexer_consume_token (parser->lexer);
+
       str.text = (const unsigned char *)TREE_STRING_POINTER (tok->value);
       str.len = TREE_STRING_LENGTH (tok->value);
       count = 1;
       if (tok->type == CPP_WSTRING)
 	wide = true;
-      cp_lexer_consume_token (parser->lexer);
 
       strs = &str;
     }
@@ -2520,6 +2536,7 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
 
       do
 	{
+	  cp_lexer_consume_token (parser->lexer);
 	  count++;
 	  str.text = (unsigned char *)TREE_STRING_POINTER (tok->value);
 	  str.len = TREE_STRING_LENGTH (tok->value);
@@ -2528,11 +2545,7 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
 
 	  obstack_grow (&str_ob, &str, sizeof (cpp_string));
 
-	  /* We do it this way so that, if we have to issue semantic
-	     errors on this string literal, the source position will
-	     be that of the first token of the string.  */
-	  tok = cp_lexer_peek_nth_token (parser->lexer, 2);
-	  cp_lexer_consume_token (parser->lexer);
+	  tok = cp_lexer_peek_token (parser->lexer);
 	}
       while (cp_parser_is_string_literal (tok));
 
@@ -6610,9 +6623,9 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
 	{
 	  /* A declaration consisting of a single semicolon is
 	     invalid.  Allow it unless we're being pedantic.  */
-	  if (pedantic && !in_system_header)
-	    pedwarn ("extra `;'");
 	  cp_lexer_consume_token (parser->lexer);
+	  if (pedantic && !in_system_header)
+	    pedwarn ("extra %<;%>");
 	  continue;
 	}
 
@@ -8344,7 +8357,7 @@ cp_parser_template_id (cp_parser *parser,
   /* If we find the sequence `[:' after a template-name, it's probably
      a digraph-typo for `< ::'. Substitute the tokens and check if we can
      parse correctly the argument list.  */
-  next_token = cp_lexer_peek_nth_token (parser->lexer, 1);
+  next_token = cp_lexer_peek_token (parser->lexer);
   next_token_2 = cp_lexer_peek_nth_token (parser->lexer, 2);
   if (next_token->type == CPP_OPEN_SQUARE
       && next_token->flags & DIGRAPH
@@ -9808,13 +9821,16 @@ cp_parser_enum_specifier (cp_parser* parser)
   else
     identifier = make_anon_name ();
 
-  cp_lexer_consume_token (parser->lexer);
-
   /* Issue an error message if type-definitions are forbidden here.  */
   cp_parser_check_type_definition (parser);
 
-  /* Create the new type.  */
+  /* Create the new type.  We do this before consuming the opening brace
+     so the enum will be recorded as being on the line of its tag (or the
+     'enum' keyword, if there is no tag).  */
   type = start_enum (identifier);
+
+  /* Consume the opening brace.  */
+  cp_lexer_consume_token (parser->lexer);
 
   /* If the next token is not '}', then there are some enumerators.  */
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_BRACE))
@@ -12880,8 +12896,9 @@ cp_parser_member_declaration (cp_parser* parser)
 	 name of the class.  */
       if (!decl_specifiers.any_specifiers_p)
 	{
-	  if (pedantic)
-	    pedwarn ("extra semicolon");
+	  cp_token *token = cp_lexer_peek_token (parser->lexer);
+	  if (pedantic && !token->in_system_header)
+	    pedwarn ("%Hextra %<;%>", &token->location);
 	}
       else
 	{
@@ -14979,25 +14996,37 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
     {
       if (!saved_greater_than_is_operator_p)
 	{
-	  /* If we're in a nested template argument list, the '>>' has to be
-	    a typo for '> >'. We emit the error message, but we continue
-	    parsing and we push a '>' as next token, so that the argument
-	    list will be parsed correctly..  */
-	  cp_token* token;
-	  error ("`>>' should be `> >' within a nested template argument list");
-	  token = cp_lexer_peek_token (parser->lexer);
+	  /* If we're in a nested template argument list, the '>>' has
+	    to be a typo for '> >'. We emit the error message, but we
+	    continue parsing and we push a '>' as next token, so that
+	    the argument list will be parsed correctly.  Note that the
+	    global source location is still on the token before the
+	    '>>', so we need to say explicitly where we want it.  */
+	  cp_token *token = cp_lexer_peek_token (parser->lexer);
+	  error ("%H%<>>%> should be %<> >%> "
+		 "within a nested template argument list",
+		 &token->location);
+
+	  /* ??? Proper recovery should terminate two levels of
+	     template argument list here.  */
 	  token->type = CPP_GREATER;
 	}
       else
 	{
-	  /* If this is not a nested template argument list, the '>>' is
-	    a typo for '>'. Emit an error message and continue.  */
-	  error ("spurious `>>', use `>' to terminate a template argument list");
+	  /* If this is not a nested template argument list, the '>>'
+	    is a typo for '>'. Emit an error message and continue.
+	    Same deal about the token location, but here we can get it
+	    right by consuming the '>>' before issuing the diagnostic.  */
 	  cp_lexer_consume_token (parser->lexer);
+	  error ("spurious %<>>%>, use %<>%> to terminate "
+		 "a template argument list");
 	}
     }
-  else if (!cp_parser_require (parser, CPP_GREATER, "`>'"))
-    error ("missing `>' to terminate the template argument list");
+  else if (!cp_lexer_next_token_is (parser->lexer, CPP_GREATER))
+    error ("missing %<>%> to terminate the template argument list");
+  else
+    /* It's what we want, a '>'; consume it.  */
+    cp_lexer_consume_token (parser->lexer);
   /* The `>' token might be a greater-than operator again now.  */
   parser->greater_than_is_operator_p
     = saved_greater_than_is_operator_p;
@@ -15016,8 +15045,6 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
 static void
 cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
 {
-  cp_lexer *saved_lexer;
-
   /* If this member is a template, get the underlying
      FUNCTION_DECL.  */
   if (DECL_FUNCTION_TEMPLATE_P (member_function))
@@ -15054,15 +15081,8 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
       if (function_scope)
 	push_function_context_to (function_scope);
 
-      /* Save away the current lexer.  */
-      saved_lexer = parser->lexer;
-      /* Make a new lexer to feed us the tokens saved for this function.  */
-      parser->lexer = cp_lexer_new_from_tokens (tokens);
-      parser->lexer->next = saved_lexer;
-
-      /* Set the current source position to be the location of the first
-	 token in the saved inline body.  */
-      cp_lexer_peek_token (parser->lexer);
+      /* Push the body of the function onto the lexer stack.  */
+      cp_parser_push_lexer_for_tokens (parser, tokens);
 
       /* Let the front end know that we going to be defining this
 	 function.  */
@@ -15076,8 +15096,7 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
       /* Leave the scope of the containing function.  */
       if (function_scope)
 	pop_function_context_from (function_scope);
-      /* Restore the lexer.  */
-      parser->lexer = saved_lexer;
+      cp_parser_pop_lexer (parser);
     }
 
   /* Remove any template parameters from the symbol table.  */
@@ -15117,10 +15136,8 @@ cp_parser_save_default_args (cp_parser* parser, tree decl)
 static void
 cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
 {
-  cp_lexer *saved_lexer;
-  cp_token_cache *tokens;
   bool saved_local_variables_forbidden_p;
-  tree parameters;
+  tree parm;
 
   /* While we're parsing the default args, we might (due to the
      statement expression extension) encounter more classes.  We want
@@ -15129,30 +15146,28 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
   parser->unparsed_functions_queues
     = tree_cons (NULL_TREE, NULL_TREE, parser->unparsed_functions_queues);
 
-  for (parameters = TYPE_ARG_TYPES (TREE_TYPE (fn));
-       parameters;
-       parameters = TREE_CHAIN (parameters))
+  /* Local variable names (and the `this' keyword) may not appear
+     in a default argument.  */
+  saved_local_variables_forbidden_p = parser->local_variables_forbidden_p;
+  parser->local_variables_forbidden_p = true;
+
+  for (parm = TYPE_ARG_TYPES (TREE_TYPE (fn));
+       parm;
+       parm = TREE_CHAIN (parm))
     {
-      if (!TREE_PURPOSE (parameters)
-	  || TREE_CODE (TREE_PURPOSE (parameters)) != DEFAULT_ARG)
+      cp_token_cache *tokens;
+
+      if (!TREE_PURPOSE (parm)
+	  || TREE_CODE (TREE_PURPOSE (parm)) != DEFAULT_ARG)
 	continue;
 
-       /* Save away the current lexer.  */
-      saved_lexer = parser->lexer;
-       /* Create a new one, using the tokens we have saved.  */
-      tokens =  DEFARG_TOKENS (TREE_PURPOSE (parameters));
-      parser->lexer = cp_lexer_new_from_tokens (tokens);
+       /* Push the saved tokens for the default argument onto the parser's
+	  lexer stack.  */
+      tokens = DEFARG_TOKENS (TREE_PURPOSE (parm));
+      cp_parser_push_lexer_for_tokens (parser, tokens);
 
-       /* Set the current source position to be the location of the
-     	  first token in the default argument.  */
-      cp_lexer_peek_token (parser->lexer);
-
-       /* Local variable names (and the `this' keyword) may not appear
-     	  in a default argument.  */
-      saved_local_variables_forbidden_p = parser->local_variables_forbidden_p;
-      parser->local_variables_forbidden_p = true;
-       /* Parse the assignment-expression.  */
-      TREE_PURPOSE (parameters) = cp_parser_assignment_expression (parser);
+      /* Parse the assignment-expression.  */
+      TREE_PURPOSE (parm) = cp_parser_assignment_expression (parser);
 
       /* If the token stream has not been completely used up, then
 	 there was extra junk after the end of the default
@@ -15160,10 +15175,12 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
       if (!cp_lexer_next_token_is (parser->lexer, CPP_EOF))
 	cp_parser_error (parser, "expected `,'");
 
-       /* Restore saved state.  */
-      parser->lexer = saved_lexer;
-      parser->local_variables_forbidden_p = saved_local_variables_forbidden_p;
+      /* Revert to the main lexer.  */
+      cp_parser_pop_lexer (parser);
     }
+
+  /* Restore the state of local_variables_forbidden_p.  */
+  parser->local_variables_forbidden_p = saved_local_variables_forbidden_p;
 
   /* Restore the queue.  */
   parser->unparsed_functions_queues

@@ -35,5 +35,3 @@ struct C
 };
 
 // { dg-bogus "" "bogus excess errors in declaration" { xfail *-*-* } 16 }
-// { dg-bogus "" "bogus excess errors in declaration" { xfail *-*-* } 24 }
-// { dg-bogus "" "bogus excess errors in declaration" { xfail *-*-* } 34 }

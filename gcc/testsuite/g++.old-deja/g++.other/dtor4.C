@@ -4,8 +4,8 @@ struct S1 {
   ~S1(); // { dg-error "" } candidate
 };
 
-S1::~S1() const
-{ // { dg-error "" } prototype does not match 
+S1::~S1() const // { dg-error "" } prototype does not match 
+{
 }
 
 
@@ -20,8 +20,8 @@ struct S3 {
 };
 
 template <class T>
-S3<T>::~S3() volatile
-{ // { dg-error "" } prototype does not match 
+S3<T>::~S3() volatile  // { dg-error "" } prototype does not match 
+{
 }
 
 
