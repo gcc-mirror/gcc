@@ -1,3 +1,8 @@
+2004-01-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/tm.texi: Replace RETURN_IN_MEMORY with
+	TARGET_RETURN_IN_MEMORY.
+
 2004-01-15  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.c (std_expand_builtin_va_arg): Align operand when needed.

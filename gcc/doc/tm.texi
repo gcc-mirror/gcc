@@ -3944,7 +3944,7 @@ is called the @dfn{structure value address}.
 This section describes how to control returning structure values in
 memory.
 
-@deftypefn {Target Hook} bool RETURN_IN_MEMORY (tree @var{type}, tree @var{fntype})
+@deftypefn {Target Hook} bool TARGET_RETURN_IN_MEMORY (tree @var{type}, tree @var{fntype})
 This target hook should return a nonzero value to say to return the
 function value in memory, just as large structures are always returned.
 Here @var{type} will be the data type of the value, and @var{fntype}
@@ -3968,7 +3968,8 @@ Define this macro to be 1 if all structure and union return values must be
 in memory.  Since this results in slower code, this should be defined
 only if needed for compatibility with other compilers or with an ABI@.
 If you define this macro to be 0, then the conventions used for structure
-and union return values are decided by the @code{RETURN_IN_MEMORY} macro.
+and union return values are decided by the @code{TARGET_RETURN_IN_MEMORY}
+target hook.
 
 If not defined, this defaults to the value 1.
 @end defmac
