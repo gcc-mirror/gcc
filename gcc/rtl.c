@@ -751,6 +751,9 @@ init_rtl ()
   for (i = 0; i < (int) MAX_MODE_CLASS; i++)
     min_class_size[i] = 1000;
 
+  byte_mode = VOIDmode;
+  word_mode = VOIDmode;
+
   for (mode = VOIDmode; (int) mode < (int) MAX_MACHINE_MODE;
        mode = (enum machine_mode) ((int) mode + 1))
     {
@@ -760,11 +763,13 @@ init_rtl ()
 	  min_class_size[(int) GET_MODE_CLASS (mode)] = GET_MODE_SIZE (mode);
 	}
       if (GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_MODE_BITSIZE (mode) == BITS_PER_UNIT)
+	  && GET_MODE_BITSIZE (mode) == BITS_PER_UNIT
+	  && byte_mode == VOIDmode)
 	byte_mode = mode;
 
       if (GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_MODE_BITSIZE (mode) == BITS_PER_WORD)
+	  && GET_MODE_BITSIZE (mode) == BITS_PER_WORD
+	  && word_mode == VOIDmode)
 	word_mode = mode;
     }
 }
