@@ -1,3 +1,11 @@
+2002-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/5770
+	* dwarf2out.c (rtl_for_decl_location): Return CONST_STRING for
+	STRING_CST initializer spanning the whole variable without
+	embedded zeros.
+	If expand_expr returned MEM, don't use it.
+
 2002-02-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* dwarf2out.c (gen_inlined_subroutine_die): If block is abstract,
