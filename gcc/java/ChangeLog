@@ -1,3 +1,7 @@
+2002-10-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* class.c (JAVA_TREEHASHHASH_H): Use htab_hash_pointer.
+
 2002-10-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* parse.y (merge_string_cste): Add parentheses around & within |.

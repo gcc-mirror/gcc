@@ -1,3 +1,7 @@
+2002-10-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decl.c (typename_hash): Use htab_hash_pointer.
+
 2002-10-10  Jim Wilson  <wilson@redhat.com>
 
 	* decl.c (duplicate_decls): Don't call decl_attributes.

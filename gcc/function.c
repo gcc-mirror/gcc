@@ -3281,7 +3281,7 @@ insns_for_mem_hash (k)
 {
   /* Use the address of the key for the hash value.  */
   struct insns_for_mem_entry *m = (struct insns_for_mem_entry *) k;
-  return (hashval_t) m->key;
+  return htab_hash_pointer (m->key);
 }
 
 /* Return nonzero if K1 and K2 (two REGs) are the same.  */

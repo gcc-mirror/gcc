@@ -2269,7 +2269,7 @@ static int java_treetreehash_compare PARAMS ((const void *, const void *));
 
 /* A hash table mapping trees to trees.  Used generally.  */
 
-#define JAVA_TREEHASHHASH_H(t) ((hashval_t) (t))
+#define JAVA_TREEHASHHASH_H(t) (htab_hash_pointer (t))
 
 static hashval_t
 java_treetreehash_hash (k_p)
