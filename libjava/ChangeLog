@@ -1,3 +1,9 @@
+2003-12-11  Michael Koch  <konqueror@gmx.de>
+
+	* javax/naming/event/EventDirContext.java: Jalopied.
+	(addNamingListener): Fixed typo in method name.
+	
+
 2003-12-11  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* gnu/java/nio/SocketChannelImpl.java
