@@ -109,7 +109,7 @@ case "${target}" in
     # Create a wrapper if necessary.
     (echo "#include <bits/libc-lock.h>" | ${CC-cc} -E -) >/dev/null 2>&1 ||
       {
-	echo "#include_next <libc-lock.h>" > libc-lock.h
+	echo " #include_next <libc-lock.h>" > libc-lock.h
 	echo 'asm (".weak _pthread_cleanup_pop_restore");' >> libc-lock.h
 	echo 'asm (".weak _pthread_cleanup_push_defer");' >> libc-lock.h
 

@@ -1,3 +1,7 @@
+2000-04-02  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* configure.in: Indent the # of #include_next one space.
+
 2000-03-29  Jason Merrill  <jason@casey.cygnus.com>
 
 	* configure.in: -linux-gnu*, not -linux-gnu.
