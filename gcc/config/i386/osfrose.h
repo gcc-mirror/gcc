@@ -94,6 +94,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Handle #pragma weak and #pragma pack.  */
 
 #define HANDLE_SYSV_PRAGMA
+#define HANDLE_PRAGMA_WEAK	TARGET_ELF
 
 /* Change default predefines.  */
 #undef	CPP_PREDEFINES
@@ -454,6 +455,18 @@ while (0)
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) \
   fprintf (FILE, "\t.long _GLOBAL_OFFSET_TABLE_+[.-%s%d]\n", LPREFIX, VALUE)
+
+/* Output a definition */
+#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)				\
+do									\
+{									\
+    fprintf ((FILE), "\t%s\t", SET_ASM_OP);				\
+    assemble_name (FILE, LABEL1);					\
+    fprintf (FILE, ",");						\
+    assemble_name (FILE, LABEL2);					\
+    fprintf (FILE, "\n");						\
+    }									\
+while (0)
 
 /* A C expression to output text to align the location counter in the
    way that is desirable at a point in the code that is reached only
