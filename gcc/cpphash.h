@@ -267,8 +267,6 @@ struct cpp_buffer
 
   struct cpp_buffer *prev;
 
-  const unsigned char *backup_to; /* Soon to die.  */
-
   /* Pointer into the include table; non-NULL if this is a file
      buffer.  Used for include_next and to record control macros.  */
   struct include_file *inc;
