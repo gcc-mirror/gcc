@@ -1,3 +1,12 @@
+2002-04-25  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-lang.c (LANG_HOOKS_SET_YYDEBUG): Remove.
+	* cp-tree.h (cxx_set_yydebug): Die.
+	* lex.c (YYDEBUG): Get from c-lex.h.
+	(cxx_set_yydebug): Remove.
+	* parse.y: Include c-lex.h.
+	(YYDEBUG): Get from c-lex.h.
+
 2002-04-24  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/6438.

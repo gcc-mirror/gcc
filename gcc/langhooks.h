@@ -213,8 +213,9 @@ struct lang_hooks
   /* Called at the end of compilation, as a finalizer.  */
   void (*finish) PARAMS ((void));
 
-  /* Parses the entire file.  */
-  void (*parse_file) PARAMS ((void));
+  /* Parses the entire file.  The argument is non-zero to cause bison
+     parsers to dump debugging information during parsing.  */
+  void (*parse_file) PARAMS ((int));
 
   /* Called immediately after parsing to clear the binding stack.  */
   void (*clear_binding_stack) PARAMS ((void));
@@ -326,11 +327,6 @@ struct lang_hooks
   /* Called by report_error_function to print out function name.  */
   void (*print_error_function) PARAMS ((struct diagnostic_context *,
 					const char *));
-
-  /* Set yydebug for bison-based parsers, when -dy is given on the
-     command line.  By default, if the parameter is non-zero, prints a
-     warning that the front end does not use such a parser.  */
-  void (*set_yydebug) PARAMS ((int));
 
   /* Pointers to machine-independent attribute tables, for front ends
      using attribs.c.  If one is NULL, it is ignored.  Respectively, a

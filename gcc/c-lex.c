@@ -58,9 +58,6 @@ static unsigned int src_lineno;
 static int header_time, body_time;
 static splay_tree file_info_tree;
 
-/* Cause the `yydebug' variable to be defined.  */
-#define YYDEBUG 1
-
 /* File used for outputting assembler code.  */
 extern FILE *asm_out_file;
 
@@ -149,8 +146,15 @@ init_c_lex (filename)
    the primary source file.  */
 
 void
-c_common_parse_file ()
+c_common_parse_file (set_yydebug)
+     int set_yydebug ATTRIBUTE_UNUSED;
 {
+#if YYDEBUG != 0
+  yydebug = set_yydebug;
+#else
+  warning ("YYDEBUG not defined");
+#endif
+
   (*debug_hooks->start_source_file) (lineno, input_filename);
   cpp_finish_options (parse_in);
 

@@ -21,6 +21,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_C_LEX_H
 #define GCC_C_LEX_H
 
+/* Cause the `yydebug' variable to be defined.  */
+#define YYDEBUG 1
+extern int yydebug;
+
 extern tree make_pointer_declarator PARAMS ((tree, tree));
 
 extern int c_lex PARAMS ((tree *));

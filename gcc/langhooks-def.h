@@ -41,6 +41,7 @@ extern HOST_WIDE_INT hook_get_alias_set_0	PARAMS ((tree));
 
 extern void lhd_do_nothing PARAMS ((void));
 extern void lhd_do_nothing_t PARAMS ((tree));
+extern void lhd_do_nothing_i PARAMS ((int));
 extern void lhd_do_nothing_f PARAMS ((struct function *));
 extern int lhd_decode_option PARAMS ((int, char **));
 extern HOST_WIDE_INT lhd_get_alias_set PARAMS ((tree));
@@ -52,7 +53,6 @@ extern int lhd_unsafe_for_reeval PARAMS ((tree));
 extern void lhd_clear_binding_stack PARAMS ((void));
 extern void lhd_print_tree_nothing PARAMS ((FILE *, tree, int));
 extern const char *lhd_decl_printable_name PARAMS ((tree, int));
-extern void lhd_set_yydebug PARAMS ((int));
 extern rtx lhd_expand_expr PARAMS ((tree, rtx, enum machine_mode, int));
 extern void lhd_print_error_function PARAMS ((struct diagnostic_context *,
 					      const char *));
@@ -82,7 +82,7 @@ tree lhd_tree_inlining_convert_parm_for_inlining PARAMS ((tree, tree, tree));
 #define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct lang_identifier)
 #define LANG_HOOKS_INIT			lhd_do_nothing
 #define LANG_HOOKS_FINISH		lhd_do_nothing
-#define LANG_HOOKS_PARSE_FILE		lhd_do_nothing
+#define LANG_HOOKS_PARSE_FILE		lhd_do_nothing_i
 #define LANG_HOOKS_CLEAR_BINDING_STACK	lhd_clear_binding_stack
 #define LANG_HOOKS_INIT_OPTIONS		lhd_do_nothing
 #define LANG_HOOKS_DECODE_OPTION	lhd_decode_option
@@ -108,7 +108,6 @@ tree lhd_tree_inlining_convert_parm_for_inlining PARAMS ((tree, tree, tree));
 #define LANG_HOOKS_PRINT_IDENTIFIER	lhd_print_tree_nothing
 #define LANG_HOOKS_PRINT_ERROR_FUNCTION lhd_print_error_function
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	lhd_decl_printable_name
-#define LANG_HOOKS_SET_YYDEBUG		lhd_set_yydebug
 
 #define LANG_HOOKS_FUNCTION_INIT	lhd_do_nothing_f
 #define LANG_HOOKS_FUNCTION_FREE	lhd_do_nothing_f
@@ -250,7 +249,6 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_PRINT_IDENTIFIER, \
   LANG_HOOKS_DECL_PRINTABLE_NAME, \
   LANG_HOOKS_PRINT_ERROR_FUNCTION, \
-  LANG_HOOKS_SET_YYDEBUG, \
   LANG_HOOKS_ATTRIBUTE_TABLE, \
   LANG_HOOKS_COMMON_ATTRIBUTE_TABLE, \
   LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE, \

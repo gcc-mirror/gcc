@@ -1,3 +1,25 @@
+2002-04-25  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-common.h (c_common_parse_file): Update.
+	* c-lang.c (LANG_HOOKS_SET_YYDEBUG): Remove.
+	* c-lex.c (YYDEBUG): Get from c-lex.h.
+	(c_common_parse_file): Update.
+	* c-lex.h (YYDEBUG, yydebug): New.
+	* c-parse.in (YYDEBUG): Get from c-lex.h.
+	(c_set_yydebug): Remove.
+	* c-tree.h (c_set_yydebug): Remove.
+	* langhooks-def.h (lhd_do_nothing_i): New.
+	(lhd_set_yydebug, LANG_HOOKS_SET_YYDEBUG): Remove.
+	(LANG_HOOKS_PARSE_FILE, LANG_HOOKS_INITIALIZER): Update.
+	* langhooks.c  (lhd_do_nothing_i): New.
+	(lhd_set_yydebug): Remove.
+	* langhooks.h (struct lang_hooks): Update.
+	* toplev.c (set_yydebug): New.
+	(compile_file): Update call to parse_file hook.
+	(decode_d_option): Update.
+objc:
+	* objc-lang.c (LANG_HOOKS_SET_YYDEBUG): Remove.
+
 Wed Apr 24 23:45:37 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* loop.c (load_mems): Don't change the interface of called functions.

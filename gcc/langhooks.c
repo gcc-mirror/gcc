@@ -47,6 +47,14 @@ lhd_do_nothing_t (t)
 {
 }
 
+/* Do nothing (int).  */
+
+void
+lhd_do_nothing_i (i)
+     int i ATTRIBUTE_UNUSED;
+{
+}
+
 /* Do nothing (function).  */
 
 void
@@ -138,16 +146,6 @@ lhd_warn_unused_global_decl (decl)
     return false;
 
   return true;
-}
-
-/* Called when -dy is given on the command line.  */
-
-void
-lhd_set_yydebug (value)
-     int value;
-{
-  if (value)
-    fprintf (stderr, "warning: no yacc/bison-generated output to debug!\n");
 }
 
 /* Set the DECL_ASSEMBLER_NAME for DECL.  */
