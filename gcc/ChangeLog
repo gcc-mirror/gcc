@@ -1,3 +1,8 @@
+Wed Jul  1 04:10:35 1998  Richard Henderson  <rth@cygnus.com>
+
+	* expr.c (expand_assignment, store_constructor, expand_expr): Use
+	convert_memory_address instead of convert_to_mode when possible.
+
 Wed Jul  1 03:48:00 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_initialize_trampoline): Take arguments describing
