@@ -1,3 +1,10 @@
+2004-06-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* include/bits/istream.tcc (getline): Make sure arguments passed
+	to min/max have the same type.
+	* include/bits/locale_facets.tcc (__verify_grouping): Likewise.
+	* include/bits/stl_deque.h (_Deque_base::_Deque_base): Likewise.
+
 2004-06-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/abi.html: Update links.

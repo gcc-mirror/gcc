@@ -598,7 +598,8 @@ namespace std
 		{
 		  streamsize __size = std::min(streamsize(__sb->egptr()
 							  - __sb->gptr()),
-					       __n - _M_gcount - 1);
+					       streamsize(__n - _M_gcount
+							  - 1));
 		  if (__size > 1)
 		    {
 		      const char_type* __p = traits_type::find(__sb->gptr(),

@@ -2448,7 +2448,7 @@ namespace std
 		    const string& __grouping_tmp)
   {
     const size_t __n = __grouping_tmp.size() - 1;
-    const size_t __min = std::min(__n, __grouping_size - 1);
+    const size_t __min = std::min(__n, size_t(__grouping_size - 1));
     size_t __i = __n;
     bool __test = true;
     
