@@ -1,3 +1,9 @@
+2004-06-18  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* tree-ssa.c (raise_value): Removed.
+	(get_eq_name, check_phi_redundancy): New functions.
+	(kill_redundant_phi_nodes): Use standard ssa minimalization algorithm.
+
 2004-06-18  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold) <UNORDERED_EXPR, ORDERED_EXPR, UNLT_EXPR,

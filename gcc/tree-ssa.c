@@ -831,41 +831,90 @@ replace_immediate_uses (tree var, tree repl)
     }
 }
 
-/* Raises value of phi node PHI by joining it with VAL.  Processes immediate
-   uses of PHI recursively.  */
+/* Gets the value VAR is equivalent to according to EQ_TO.  */
+
+static tree
+get_eq_name (tree *eq_to, tree var)
+{
+  unsigned ver;
+  tree val = var;
+
+  while (TREE_CODE (val) == SSA_NAME)
+    {
+      ver = SSA_NAME_VERSION (val);
+      if (!eq_to[ver])
+	break;
+
+      val = eq_to[ver];
+    }
+
+  while (TREE_CODE (var) == SSA_NAME)
+    {
+      ver = SSA_NAME_VERSION (var);
+      if (!eq_to[ver])
+	break;
+
+      var = eq_to[ver];
+      eq_to[ver] = val;
+    }
+
+  return val;
+}
+
+/* Checks whether phi node PHI is redundant and if it is, records the ssa name
+   its result is redundant to to EQ_TO array.  */
 
 static void
-raise_value (tree phi, tree val, tree *eq_to)
+check_phi_redundancy (tree phi, tree *eq_to)
 {
-  int i, n;
-  tree var = PHI_RESULT (phi), stmt;
-  int ver = SSA_NAME_VERSION (var);
+  tree val = NULL_TREE, def, res = PHI_RESULT (phi), stmt;
+  unsigned i, ver = SSA_NAME_VERSION (res), n;
   dataflow_t df;
 
-  if (eq_to[ver] == var)
+  /* It is unlikely that such large phi node would be redundant.  */
+  if (PHI_NUM_ARGS (phi) > 16)
     return;
 
-  if (eq_to[ver])
+  for (i = 0; i < (unsigned) PHI_NUM_ARGS (phi); i++)
     {
-      if (operand_equal_p (eq_to[ver], val, 0))
+      def = PHI_ARG_DEF (phi, i);
+
+      if (TREE_CODE (def) == SSA_NAME)
+	{
+	  def = get_eq_name (eq_to, def);
+	  if (def == res)
+	    continue;
+	}
+
+      if (val
+	  && !operand_equal_p (val, def, 0))
 	return;
 
-      eq_to[ver] = var;
+      val = def;
     }
-  else
-    eq_to[ver] = val;
 
-  df = get_immediate_uses (SSA_NAME_DEF_STMT (var));
+  /* At least one of the arguments should not be equal to the result, or
+     something strange is happening.  */
+  if (!val)
+    abort ();
+
+  if (get_eq_name (eq_to, res) == val)
+    return;
+
+  if (!may_propagate_copy (res, val))
+    return;
+
+  eq_to[ver] = val;
+
+  df = get_immediate_uses (SSA_NAME_DEF_STMT (res));
   n = num_immediate_uses (df);
 
   for (i = 0; i < n; i++)
     {
       stmt = immediate_use (df, i);
 
-      if (TREE_CODE (stmt) != PHI_NODE)
-	continue;
-
-      raise_value (stmt, eq_to[ver], eq_to);
+      if (TREE_CODE (stmt) == PHI_NODE)
+	check_phi_redundancy (stmt, eq_to);
     }
 }
 
@@ -890,26 +939,17 @@ static void
 kill_redundant_phi_nodes (void)
 {
   tree *eq_to;
-  unsigned i;
+  unsigned i, old_num_ssa_names;
   basic_block bb;
-  tree phi, t, stmt, var;
+  tree phi, var, repl, stmt;
 
-  /* The EQ_TO array holds the current value of the ssa name in the
-     lattice:
-
-          top
-         / | \
-     const   variables
-         \ | /
-        bottom
-
-     Bottom is represented by NULL and top by the variable itself.
-
-     Once the dataflow stabilizes, we know that the phi nodes we need to keep
-     are exactly those with top as their result. 
-
-     The remaining phi nodes have their uses replaced with their value
-     in the lattice and the phi node itself is removed.  */
+  /* The EQ_TO[VER] holds the value by that the ssa name VER should be
+     replaced.  If EQ_TO[VER] is ssa name and it is decided to replace it by
+     other value, it may be necessary to follow the chain till the final value.
+     We perform path shortening (replacing the entries of the EQ_TO array with
+     heads of these chains) whenever we access the field to prevent quadratic
+     complexity (probably would not occur in practice anyway, but let us play
+     it safe).  */
   eq_to = xcalloc (num_ssa_names, sizeof (tree));
 
   /* We have had cases where computing immediate uses takes a
@@ -918,69 +958,41 @@ kill_redundant_phi_nodes (void)
      a subset of all the SSA_NAMEs instead of computing it for
      all of the SSA_NAMEs.  */
   compute_immediate_uses (TDFA_USE_OPS | TDFA_USE_VOPS, NULL);
+  old_num_ssa_names = num_ssa_names;
 
   FOR_EACH_BB (bb)
     {
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
 	{
 	  var = PHI_RESULT (phi);
-
-	  /* If the destination of the PHI is associated with an
-	     abnormal edge, then we can not propagate this PHI away.  */
-	  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (var))
-	    {
-	      raise_value (phi, var, eq_to);
-	      continue;
-	    }
-
-	  for (i = 0; i < (unsigned) PHI_NUM_ARGS (phi); i++)
-	    {
-	      t = PHI_ARG_DEF (phi, i);
-
-	      if (TREE_CODE (t) != SSA_NAME)
-		{
-		  raise_value (phi, t, eq_to);
-		  continue;
-		}
-
-	      stmt = SSA_NAME_DEF_STMT (t);
-
-	      /* If any particular PHI argument is associated with
-		 an abnormal edge, then we know that we should not
-		 be propagating away this PHI.  Go ahead and raise
-		 the result of this PHI to the top of the lattice.  */
-	      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (t))
-		{
-		  raise_value (phi, var, eq_to);
-		  continue;
-		}
-	      
-	      /* If the defining statement for this argument is not a
-		 phi node then we need to recursively start the forward
-		 dataflow starting with PHI.  */
-	      if (TREE_CODE (stmt) != PHI_NODE)
-		{
-		  eq_to[SSA_NAME_VERSION (t)] = t;
-		  raise_value (phi, t, eq_to);
-		}
-	    }
+	  check_phi_redundancy (phi, eq_to);
 	}
     }
 
   /* Now propagate the values.  */
-  for (i = 0; i < num_ssa_names; i++)
-    if (eq_to[i]
-	&& eq_to[i] != ssa_name (i))
-      replace_immediate_uses (ssa_name (i), eq_to[i]);
+  for (i = 0; i < old_num_ssa_names; i++)
+    {
+      if (!ssa_name (i))
+	continue;
+
+      repl = get_eq_name (eq_to, ssa_name (i));
+      if (repl != ssa_name (i))
+	replace_immediate_uses (ssa_name (i), repl);
+    }
 
   /* And remove the dead phis.  */
-  for (i = 0; i < num_ssa_names; i++)
-    if (eq_to[i]
-	&& eq_to[i] != ssa_name (i))
-      {
-	stmt = SSA_NAME_DEF_STMT (ssa_name (i));
-	remove_phi_node (stmt, 0, bb_for_stmt (stmt));
-      }
+  for (i = 0; i < old_num_ssa_names; i++)
+    {
+      if (!ssa_name (i))
+	continue;
+
+      repl = get_eq_name (eq_to, ssa_name (i));
+      if (repl != ssa_name (i))
+	{
+	  stmt = SSA_NAME_DEF_STMT (ssa_name (i));
+	  remove_phi_node (stmt, NULL_TREE, bb_for_stmt (stmt));
+	}
+    }
 
   free_df ();
   free (eq_to);
