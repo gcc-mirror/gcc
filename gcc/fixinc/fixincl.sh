@@ -125,7 +125,12 @@ for INPUT in ${INPUTLIST} ; do
 
 cd ${ORIGDIR}
 
-cd ${INPUT} || continue
+# This originally used cd || continue, however, that does not work with the
+# Solaris2 /bin/sh.
+if [ ! -d ${INPUT} ]; then
+  continue
+fi
+cd ${INPUT}
 INPUT=`${PWDCMD}`
 
 #

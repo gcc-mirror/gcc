@@ -1,5 +1,9 @@
 Tue Mar  7 21:41:17 2000  Jeffrey A Law  (law@cygnus.com)
 
+	Wed Jan 19 20:39:17 2000  Jim Wilson  <wilson@cygnus.com>
+	* fixinc/inclhack.tpl: Test for directory before trying to cd into it.
+	* fixinc/fixincl.sh, fixinc/inclhack.sh: Regenerate.
+
 	Tue Oct 12 09:45:19 1999  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 	* config/rs6000/eabi-ctors.c (__do_global_ctors): Run through
 	__CTOR_LIST__ in opposite order, which is the correct order for sorted
