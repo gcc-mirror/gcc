@@ -3988,7 +3988,7 @@ thread_jumps (void)
       size--;
       bb = worklist[size];
 
-      /* BB is not longer in WORKLIST, so clear BB_VISITED.  */
+      /* BB is no longer in WORKLIST, so clear BB_VISITED.  */
       bb->flags &= ~BB_VISITED;
 
       if (thread_jumps_from_bb (bb))
