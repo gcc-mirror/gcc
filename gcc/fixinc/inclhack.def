@@ -935,6 +935,22 @@ fix = {
 };
 
 
+/* __private_extern__ doesn't exist in FSF GCC.  Even if it did,
+   why would you ever put it in a system header file?  */
+fix = {
+  hackname  = darwin_private_extern;
+  mach      = "*-*-darwin*";
+  files     = mach-o/dyld.h;
+  select    = "__private_extern__ [a-z_]+ _dyld_";
+  c_fix     = format;
+  c_fix_arg = "extern";
+  c_fix_arg = "__private_extern__";
+  test_text = "__private_extern__ int _dyld_func_lookup(\n"
+	      "const char *dyld_func_name,\n"
+	      "unsigned long *address);\n";
+};
+
+
 /*
  *  Fix <c_asm.h> on Digital UNIX V4.0:
  *  It contains a prototype for a DEC C internal asm() function,
