@@ -1,5 +1,18 @@
 2004-11-05  Joseph S. Myers  <joseph@codesourcery.com>
 
+	* doc/c-tree.texi, doc/cfg.texi, doc/contrib.texi, doc/cpp.texi,
+	doc/cppopts.texi, doc/extend.texi, doc/fragments.texi,
+	doc/frontends.texi, doc/gcov.texi, doc/hostconfig.texi,
+	doc/implement-c.texi, doc/install.texi, doc/invoke.texi,
+	doc/libgcc.texi, doc/md.texi, doc/passes.texi,
+	doc/portability.texi, doc/rtl.texi, doc/sourcebuild.texi,
+	doc/standards.texi, doc/tm.texi, doc/tree-ssa.texi,
+	doc/trouble.texi: Correct end-of-sentence markup and markup of
+	"etc.", "e.g." and "i.e.".  Use @code in various places where
+	appropriate.
+
+2004-11-05  Joseph S. Myers  <joseph@codesourcery.com>
+
 	* doc/c-tree.texi, doc/cfg.texi, doc/extend.texi, doc/gty.texi,
 	doc/install.texi, doc/invoke.texi, doc/md.texi, doc/passes.texi,
 	doc/rtl.texi, doc/tm.texi, doc/tree-ssa.texi: Remove trailing

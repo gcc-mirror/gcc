@@ -781,7 +781,7 @@ for that option, but it will not count as an undocumented option.  The
 actual option name is made by appending @samp{-m} to the specified name.
 Non-empty description strings should be marked with @code{N_(@dots{})} for
 @command{xgettext}.  Please do not mark empty strings because the empty
-string is reserved by GNU gettext. @code{gettext("")} returns the header entry
+string is reserved by GNU gettext.  @code{gettext("")} returns the header entry
 of the message catalog with meta information, not the empty string.
 
 In addition to the description for @option{--help},
@@ -814,7 +814,7 @@ Each subgrouping contains a string constant, that defines the option
 name, the address of a variable, a description string, and a value.
 Non-empty description strings should be marked with @code{N_(@dots{})}
 for @command{xgettext}.  Please do not mark empty strings because the
-empty string is reserved by GNU gettext. @code{gettext("")} returns the
+empty string is reserved by GNU gettext.  @code{gettext("")} returns the
 header entry of the message catalog with meta information, not the empty
 string.
 
@@ -980,7 +980,7 @@ target to perform any target specific initialization of the
 @code{struct function} structure.  It is intended that this would be
 used to initialize the @code{machine} of that structure.
 
-@code{struct machine_function} structures are expected to be freed by GC.
+@code{struct machine_function} structures are expected to be freed by GC@.
 Generally, any memory that they reference must be allocated by using
 @code{ggc_alloc}, including the structure itself.
 @end deftypevar
@@ -1538,12 +1538,12 @@ When a bit-field is inserted into a packed record, the whole size
 of the underlying type is used by one or more same-size adjacent
 bit-fields (that is, if its long:3, 32 bits is used in the record,
 and any additional adjacent long bit-fields are packed into the same
-chunk of 32 bits. However, if the size changes, a new field of that
-size is allocated). In an unpacked record, this is the same as using
+chunk of 32 bits.  However, if the size changes, a new field of that
+size is allocated).  In an unpacked record, this is the same as using
 alignment, but not equivalent when packing.
 
 If both MS bit-fields and @samp{__attribute__((packed))} are used,
-the latter will take precedence. If @samp{__attribute__((packed))} is
+the latter will take precedence.  If @samp{__attribute__((packed))} is
 used on a single field when MS bit-fields are in use, it will take
 precedence for that field, but the alignment of the rest of the structure
 may affect its placement.
@@ -1604,7 +1604,7 @@ target machine.  If you don't define this, the default is one word.
 
 @defmac ADA_LONG_TYPE_SIZE
 On some machines, the size used for the Ada equivalent of the type
-@code{long} by a native Ada compiler differs from that used by C.  In
+@code{long} by a native Ada compiler differs from that used by C@.  In
 that situation, define this macro to be a C expression to be used for
 the size of that type.  If you don't define this, the default is the
 value of @code{LONG_TYPE_SIZE}.
@@ -5560,7 +5560,7 @@ necessary.  Traditionally, the default costs are @code{COSTS_N_INSNS (5)}
 for multiplications, @code{COSTS_N_INSNS (7)} for division and modulus
 operations, and @code{COSTS_N_INSNS (1)} for all other operations.
 
-When optimizing for code size, i.e@. when @code{optimize_size} is
+When optimizing for code size, i.e.@: when @code{optimize_size} is
 nonzero, this target hook should be used to estimate the relative
 size cost of an expression, again relative to @code{COSTS_N_INSNS}.
 
@@ -5728,7 +5728,7 @@ This hook is executed by the scheduler after function level initializations.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_SCHED_FINISH_GLOBAL (FILE *@var{file}, int @var{verbose})
-This is the cleanup hook corresponding to TARGET_SCHED_INIT_GLOBAL.
+This is the cleanup hook corresponding to @code{TARGET_SCHED_INIT_GLOBAL}.
 @var{file} is either a null pointer, or a stdio stream to write any debug output to.
 @var{verbose} is the verbose level provided by @option{-fsched-verbose-@var{n}}.
 @end deftypefn
@@ -6911,7 +6911,7 @@ should be excluded; on many systems, the letter @samp{L} at the
 beginning of a label has this effect.  You should find out what
 convention your system uses, and follow it.
 
-The default version of this function utilizes ASM_GENERATE_INTERNAL_LABEL.
+The default version of this function utilizes @code{ASM_GENERATE_INTERNAL_LABEL}.
 @end deftypefn
 
 @defmac ASM_OUTPUT_DEBUG_LABEL (@var{stream}, @var{prefix}, @var{num})
@@ -7571,13 +7571,13 @@ the jump-table.
 @end defmac
 
 @deftypefn {Target Hook} void TARGET_ASM_EMIT_UNWIND_LABEL (@var{stream}, @var{decl}, @var{for_eh}, @var{empty})
-This target hook emits a label at the beginning of each FDE.  It
+This target hook emits a label at the beginning of each FDE@.  It
 should be defined on targets where FDEs need special labels, and it
 should write the appropriate label, for the FDE associated with the
 function declaration @var{decl}, to the stdio stream @var{stream}.
 The third argument, @var{for_eh}, is a boolean: true if this is for an
 exception table.  The fourth argument, @var{empty}, is a boolean:
-true if this is a placeholder label for an omitted FDE.
+true if this is a placeholder label for an omitted FDE@.
 
 The default is that FDEs are not given nonlocal labels.
 @end deftypefn
@@ -8031,7 +8031,7 @@ output an @code{N_FUN} entry for the function @var{decl}.
 @defmac DBX_OUTPUT_SOURCE_LINE (@var{stream}, @var{line}, @var{counter})
 A C statement to output DBX debugging information before code for line
 number @var{line} of the current source file to the stdio stream
-@var{stream}. @var{counter} is the number of time the macro was
+@var{stream}.  @var{counter} is the number of time the macro was
 invoked, including the current invocation; it is intended to generate
 unique labels in the assembly output.
 
@@ -8372,21 +8372,21 @@ be switched into prior to the execution of @var{insn}.
 
 @defmac MODE_AFTER (@var{mode}, @var{insn})
 If this macro is defined, it is evaluated for every @var{insn} during
-mode switching. It determines the mode that an insn results in (if
+mode switching.  It determines the mode that an insn results in (if
 different from the incoming mode).
 @end defmac
 
 @defmac MODE_ENTRY (@var{entity})
 If this macro is defined, it is evaluated for every @var{entity} that needs
-mode switching. It should evaluate to an integer, which is a mode that
-@var{entity} is assumed to be switched to at function entry. If @code{MODE_ENTRY}
+mode switching.  It should evaluate to an integer, which is a mode that
+@var{entity} is assumed to be switched to at function entry.  If @code{MODE_ENTRY}
 is defined then @code{MODE_EXIT} must be defined.
 @end defmac
 
 @defmac MODE_EXIT (@var{entity})
 If this macro is defined, it is evaluated for every @var{entity} that needs
-mode switching. It should evaluate to an integer, which is a mode that
-@var{entity} is assumed to be switched to at function exit. If @code{MODE_EXIT}
+mode switching.  It should evaluate to an integer, which is a mode that
+@var{entity} is assumed to be switched to at function exit.  If @code{MODE_EXIT}
 is defined then @code{MODE_ENTRY} must be defined.
 @end defmac
 
@@ -8522,7 +8522,7 @@ be preserved even if it does not appear that the register is used again
 later in the function.
 
 Another note: according to the MIPS spec, coprocessor 1 (if present) is
-the FPU.  One accesses COP1 registers through standard mips
+the FPU@.  One accesses COP1 registers through standard mips
 floating-point support; they are not included in this mechanism.
 
 There is one macro used in defining the MIPS coprocessor interface which
@@ -8582,7 +8582,7 @@ This hook returns the size of the cookie to use when allocating an array
 whose elements have the indicated @var{type}.  Assumes that it is already
 known that a cookie is needed.  The default is
 @code{max(sizeof (size_t), alignof(type))}, as defined in section 2.7 of the
-IA64/Generic C++ ABI.
+IA64/Generic C++ ABI@.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_CXX_COOKIE_HAS_SIZE (void)
@@ -9000,7 +9000,7 @@ Note that regardless of this macro the ``definedness'' of @code{clz}
 and @code{ctz} at zero do @emph{not} extend to the builtin functions
 visible to the user.  Thus one may be free to adjust the value at will
 to match the target expansion of these operations without fear of
-breaking the API.
+breaking the API@.
 @end defmac
 
 @defmac Pmode
@@ -9113,11 +9113,11 @@ When a bit-field is inserted into a packed record, the whole size
 of the underlying type is used by one or more same-size adjacent
 bit-fields (that is, if its long:3, 32 bits is used in the record,
 and any additional adjacent long bit-fields are packed into the same
-chunk of 32 bits. However, if the size changes, a new field of that
+chunk of 32 bits.  However, if the size changes, a new field of that
 size is allocated).
 
 If both MS bit-fields and @samp{__attribute__((packed))} are used,
-the latter will take precedence. If @samp{__attribute__((packed))} is
+the latter will take precedence.  If @samp{__attribute__((packed))} is
 used on a single field when MS bit-fields are in use, it will take
 precedence for that field, but the alignment of the rest of the structure
 may affect its placement.
@@ -9477,7 +9477,7 @@ that are different from @option{-I}.
 @deftypefn {Target Hook} bool TARGET_USE_LOCAL_THUNK_ALIAS_P (tree @var{fndecl})
 This target hook returns @code{true} if it is safe to use a local alias
 for a virtual function @var{fndecl} when constructing thunks,
-@code{false} otherwise. By default, the hook returns @code{true} for all
+@code{false} otherwise.  By default, the hook returns @code{true} for all
 functions, if a target supports aliases (i.e.@: defines
 @code{ASM_OUTPUT_DEF}), @code{false} otherwise,
 @end deftypefn

@@ -786,7 +786,7 @@ means exactly what
 would mean, if the machine-description reader accepted @samp{:P}
 mode suffixes.  Unfortunately, it cannot, because @code{Pmode} is an
 alias for some other mode, and might vary with machine-specific
-options. @xref{Misc}.
+options.  @xref{Misc}.
 @end defun
 
 @defun scratch_operand
@@ -1826,12 +1826,12 @@ System V Release 4 small data area reference
 @table @code
 @item q
 @samp{a}, @code{b}, @code{c}, or @code{d} register for the i386.
-For x86-64 it is equivalent to @samp{r} class. (for 8-bit instructions that
-do not use upper halves)
+For x86-64 it is equivalent to @samp{r} class (for 8-bit instructions that
+do not use upper halves).
 
 @item Q
-@samp{a}, @code{b}, @code{c}, or @code{d} register. (for 8-bit instructions,
-that do use upper halves)
+@samp{a}, @code{b}, @code{c}, or @code{d} register (for 8-bit instructions,
+that do use upper halves).
 
 @item R
 Legacy register---equivalent to @code{r} class in i386 mode.
@@ -2297,7 +2297,7 @@ Floating-point register on the SPARC-V8 architecture and
 lower floating-point register on the SPARC-V9 architecture.
 
 @item e
-Floating-point register. It is equivalent to @samp{f} on the
+Floating-point register.  It is equivalent to @samp{f} on the
 SPARC-V8 architecture and contains both lower and upper
 floating-point registers on the SPARC-V9 architecture.
 
@@ -2305,11 +2305,11 @@ floating-point registers on the SPARC-V9 architecture.
 Floating-point condition code register.
 
 @item d
-Lower floating-point register. It is only valid on the SPARC-V9
+Lower floating-point register.  It is only valid on the SPARC-V9
 architecture when the Visual Instruction Set is available.
 
 @item b
-Floating-point register. It is only valid on the SPARC-V9 architecture
+Floating-point register.  It is only valid on the SPARC-V9 architecture
 when the Visual Instruction Set is available.
 
 @item h
@@ -3061,7 +3061,7 @@ generating the instruction.
 
 @cindex @code{parity@var{m}2} instruction pattern
 @item @samp{parity@var{m}2}
-Store into operand 0 the parity of @var{x}, i.@:e. the number of 1-bits
+Store into operand 0 the parity of @var{x}, i.e.@: the number of 1-bits
 in @var{x} modulo 2.  @var{m} is the mode of operand 0; operand 1's mode
 is specified by the instruction pattern, and the compiler will convert
 the operand to that mode before generating the instruction.
@@ -4764,7 +4764,7 @@ having to ensure the two patterns' templates match.
 @findex include
 The @code{include} pattern tells the compiler tools where to
 look for patterns that are in files other than in the file
-@file{.md}. This is used only at build time and there is no preprocessing allowed.
+@file{.md}.  This is used only at build time and there is no preprocessing allowed.
 
 It looks like:
 
@@ -4783,7 +4783,7 @@ For example:
 @end smallexample
 
 Where @var{pathname} is a string that specifies the location of the file,
-specifies the include file to be in @file{gcc/config/target/filestuff}. The
+specifies the include file to be in @file{gcc/config/target/filestuff}.  The
 directory @file{gcc/config/target} is regarded as the default directory.
 
 

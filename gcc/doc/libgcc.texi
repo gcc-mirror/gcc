@@ -17,7 +17,7 @@ integer multiply and divide on some machines, and all floating-point
 operations on other machines.  @code{libgcc} also includes routines
 for exception handling, and a handful of miscellaneous operations.
 
-Some of these routines can be defined in mostly machine-independent C.
+Some of these routines can be defined in mostly machine-independent C@.
 Others must be hand-written in assembly language for each processor
 that needs them.
 
@@ -267,7 +267,7 @@ These functions return the quotient of @var{a} and @var{b}; that is,
 @deftypefnx {Runtime Function} {long double} __negtf2 (long double @var{a})
 @deftypefnx {Runtime Function} {long double} __negxf2 (long double @var{a})
 These functions return the negation of @var{a}.  They simply flip the
-sign bit, so they can produce negative zero and negative NaN.
+sign bit, so they can produce negative zero and negative NaN@.
 @end deftypefn
 
 @subsection Conversion functions
@@ -391,7 +391,7 @@ Under the hood, all of these routines are implemented as
 
 @noindent
 where @var{E} is a constant chosen to give the proper behavior for
-NaN.  Thus, the meaning of the return value is different for each set.
+NaN@.  Thus, the meaning of the return value is different for each set.
 Do not rely on this implementation; only the semantics documented
 below are guaranteed.
 

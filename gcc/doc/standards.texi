@@ -179,8 +179,8 @@ have additional useful information.
 
 @cindex treelang
 There is no standard for treelang, which is a sample language front end
-for GCC. Its only purpose is as a sample for people wishing to write a
-new language for GCC. The language is documented in
+for GCC@.  Its only purpose is as a sample for people wishing to write a
+new language for GCC@.  The language is documented in
 @file{gcc/treelang/treelang.texi} which can be turned into info or
 HTML format.
 

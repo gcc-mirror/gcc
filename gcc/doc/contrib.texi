@@ -94,7 +94,7 @@ Per Bothner for his direction via the steering committee and various
 improvements to the infrastructure for supporting new languages.  Chill
 front end implementation.  Initial implementations of
 cpplib, fix-header, config.guess, libio, and past C++ library (libg++)
-maintainer.  Dreaming up, designing and implementing much of GCJ.
+maintainer.  Dreaming up, designing and implementing much of GCJ@.
 
 @item
 Devon Bowen helped port GCC to the Tahoe.
@@ -118,7 +118,7 @@ Christian Bruel for improvements to local store elimination.
 Herman A.J. ten Brugge for various fixes.
 
 @item
-Joerg Brunsmann for Java compiler hacking and help with the GCJ FAQ.
+Joerg Brunsmann for Java compiler hacking and help with the GCJ FAQ@.
 
 @item
 Joe Buck for his direction via the steering committee.
@@ -146,7 +146,7 @@ Steve Chamberlain for support for the Renesas SH and H8 processors
 and the PicoJava processor, and for GCJ config fixes.
 
 @item
-Glenn Chambers for help with the GCJ FAQ.
+Glenn Chambers for help with the GCJ FAQ@.
 
 @item
 John-Marc Chandonia for various libgcj patches.
@@ -236,7 +236,7 @@ Richard Earnshaw for his ongoing work with the ARM@.
 David Edelsohn for his direction via the steering committee, ongoing work
 with the RS6000/PowerPC port, help cleaning up Haifa loop changes,
 doing the entire AIX port of libstdc++ with his bare hands, and for
-ensuring GCC properly keeps working on AIX.
+ensuring GCC properly keeps working on AIX@.
 
 @item
 Kevin Ediger for the floating point formatting of num_put::do_put in
@@ -279,7 +279,7 @@ feeding the gcc.gnu.org box and saving its users tons of spam.
 Fred Fish for BeOS support and Ada fixes.
 
 @item
-Ivan Fontes Garcia for the Portugese translation of the GCJ FAQ.
+Ivan Fontes Garcia for the Portugese translation of the GCJ FAQ@.
 
 @item
 Peter Gerwinski for various bug fixes and the Pascal front end.
@@ -490,7 +490,7 @@ Warren Levy for tremendous work on libgcj (Java Runtime Library) and
 random work on the Java front end.
 
 @item
-Alain Lichnewsky ported GCC to the MIPS CPU.
+Alain Lichnewsky ported GCC to the MIPS CPU@.
 
 @item
 Oskar Liljeblad for hacking on AWT and his many Java bug reports and
@@ -544,7 +544,7 @@ for Java test code.
 Bryce McKinlay for numerous GCJ and libgcj fixes and improvements.
 
 @item
-Adam Megacz for his work on the Microsoft Windows port of GCJ.
+Adam Megacz for his work on the Microsoft Windows port of GCJ@.
 
 @item
 Michael Meissner for LRS framework, ia32, m32r, v850, m88k, MIPS,
@@ -685,14 +685,14 @@ Ovidiu Predescu for his work on the Objective-C front end and runtime
 libraries.
 
 @item
-Jerry Quinn for major performance improvements in C++ formatted I/O.
+Jerry Quinn for major performance improvements in C++ formatted I/O@.
 
 @item
 Ken Raeburn for various improvements to checker, MIPS ports and various
 cleanups in the compiler.
 
 @item
-Rolf W. Rasmussen for hacking on AWT.
+Rolf W. Rasmussen for hacking on AWT@.
 
 @item
 David Reese of Sun Microsystems contributed to the Solaris on PowerPC
@@ -750,7 +750,7 @@ Roger Sayle for improvements to constant folding and GCC's RTL optimizers
 as well as for fixing numerous bugs.
 
 @item
-Bradley Schatz for his work on the GCJ FAQ.
+Bradley Schatz for his work on the GCJ FAQ@.
 
 @item
 Peter Schauer wrote the code to allow debugging to work on the Alpha.
@@ -794,7 +794,7 @@ folding and help with the original VAX & m68k ports.
 
 @item
 Kenny Simpson for prompting libstdc++ fixes due to defect reports from
-the LWG (thereby keeping GCC in line with updates from the ISO).
+the LWG (thereby keeping GCC in line with updates from the ISO)@.
 
 @item
 Franz Sirl for his ongoing work with making the PPC port stable
@@ -855,7 +855,7 @@ Ian Lance Taylor for his mips16 work, general configury hacking,
 fixincludes, etc.
 
 @item
-Holger Teutsch provided the support for the Clipper CPU.
+Holger Teutsch provided the support for the Clipper CPU@.
 
 @item
 Gary Thomas for his ongoing work to make the PPC work for GNU/Linux.
@@ -864,7 +864,7 @@ Gary Thomas for his ongoing work to make the PPC work for GNU/Linux.
 Philipp Thomas for random bug fixes throughout the compiler
 
 @item
-Jason Thorpe for thread support in libstdc++ on NetBSD.
+Jason Thorpe for thread support in libstdc++ on NetBSD@.
 
 @item
 Kresten Krab Thorup wrote the run time support for the Objective-C
@@ -938,7 +938,7 @@ Ulrich Weigand for work on the s390 port.
 Zack Weinberg for major work on cpplib and various other bug fixes.
 
 @item
-Matt Welsh for help with Linux Threads support in GCJ.
+Matt Welsh for help with Linux Threads support in GCJ@.
 
 @item
 Urban Widmark for help fixing java.io.

@@ -39,7 +39,7 @@ The part of a compiler that is specific to a particular language is
 called the ``front end''.  In addition to the front ends that are
 integrated components of GCC, there are several other front ends that
 are maintained separately.  These support languages such as Pascal,
-Mercury, and COBOL.  To use these, they must be built together with
+Mercury, and COBOL@.  To use these, they must be built together with
 GCC proper.
 
 @cindex C++

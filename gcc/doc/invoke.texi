@@ -989,7 +989,7 @@ line options for each tool.
 
 @item --version
 @opindex version
-Display the version number and copyrights of the invoked GCC.
+Display the version number and copyrights of the invoked GCC@.
 @end table
 
 @node Invoking G++
@@ -1239,9 +1239,9 @@ options for strict ISO C conformance) implies @option{-trigraphs}.
 @opindex no-integrated-cpp
 Performs a compilation in two passes: preprocessing and compiling.  This
 option allows a user supplied "cc1", "cc1plus", or "cc1obj" via the
-@option{-B} option. The user supplied compilation step can then add in
+@option{-B} option.  The user supplied compilation step can then add in
 an additional preprocessing step after normal preprocessing but before
-compiling. The default is to use the integrated cpp (internal cpp)
+compiling.  The default is to use the integrated cpp (internal cpp)
 
 The semantics of this option will change if "cc1", "cc1plus", and
 "cc1obj" are merged.
@@ -1330,7 +1330,7 @@ Here is a list of options that are @emph{only} for compiling C++ programs:
 
 @item -fabi-version=@var{n}
 @opindex fabi-version
-Use version @var{n} of the C++ ABI.  Version 2 is the version of the
+Use version @var{n} of the C++ ABI@.  Version 2 is the version of the
 C++ ABI that first appeared in G++ 3.4.  Version 1 is the version of
 the C++ ABI that first appeared in G++ 3.2.  Version 0 will always be
 the version that conforms most closely to the C++ ABI specification.
@@ -1509,13 +1509,13 @@ destructors, but will only work if your C library supports
 Causes all inlined methods to be marked with
 @code{__attribute__ ((visibility ("hidden")))} so that they do not
 appear in the export table of a DSO and do not require a PLT indirection
-when used within the DSO. Enabling this option can have a dramatic effect
+when used within the DSO@.  Enabling this option can have a dramatic effect
 on load and link times of a DSO as it massively reduces the size of the
-dynamic export table when the library makes heavy use of templates. While
+dynamic export table when the library makes heavy use of templates.  While
 it can cause bloating through duplication of code within each DSO where
 it is used, often the wastage is less than the considerable space occupied
 by a long symbol name in the export table which is typical when using
-templates and namespaces. For even more savings, combine with the
+templates and namespaces.  For even more savings, combine with the
 @option{-fvisibility=hidden} switch.
 
 @item -fno-weak
@@ -1547,7 +1547,7 @@ inlined by default.
 @item -Wabi @r{(C++ only)}
 @opindex Wabi
 Warn when G++ generates code that is probably not compatible with the
-vendor-neutral C++ ABI.  Although an effort has been made to warn about
+vendor-neutral C++ ABI@.  Although an effort has been made to warn about
 all such cases, there are probably some cases that are not warned about,
 even though G++ is generating incompatible code.  There may also be
 cases where warnings are emitted even though the code that is generated
@@ -2592,8 +2592,8 @@ the warnings were only enabled by the @option{-Wall} command line option.
 @opindex Wstrict-aliasing
 This option is only active when @option{-fstrict-aliasing} is active.
 It warns about code which might break the strict aliasing rules that the
-compiler is using for optimization. The warning does not catch all
-cases, but does attempt to catch the more common pitfalls. It is
+compiler is using for optimization.  The warning does not catch all
+cases, but does attempt to catch the more common pitfalls.  It is
 included in @option{-Wall}.
 
 @item -Wstrict-aliasing=2
@@ -3301,12 +3301,12 @@ Add code so that program flow @dfn{arcs} are instrumented.  During
 execution the program records how many times each branch and call is
 executed and how many times it is taken or returns.  When the compiled
 program exits it saves this data to a file called
-@file{@var{auxname}.gcda} for each source file. The data may be used for
+@file{@var{auxname}.gcda} for each source file.  The data may be used for
 profile-directed optimizations (@option{-fbranch-probabilities}), or for
-test coverage analysis (@option{-ftest-coverage}). Each object file's
+test coverage analysis (@option{-ftest-coverage}).  Each object file's
 @var{auxname} is generated from the name of the output file, if
 explicitly specified and it is not the final executable, otherwise it is
-the basename of the source file. In both cases any suffix is removed
+the basename of the source file.  In both cases any suffix is removed
 (e.g.@: @file{foo.gcda} for input file @file{dir/foo.c}, or
 @file{dir/foo.gcda} for output file specified as @option{-o dir/foo.o}).
 
@@ -3314,8 +3314,8 @@ the basename of the source file. In both cases any suffix is removed
 
 @item
 Compile the source files with @option{-fprofile-arcs} plus optimization
-and code generation options. For test coverage analysis, use the
-additional @option{-ftest-coverage} option. You do not need to profile
+and code generation options.  For test coverage analysis, use the
+additional @option{-ftest-coverage} option.  You do not need to profile
 every source file in a program.
 
 @item
@@ -3324,9 +3324,9 @@ Link your object files with @option{-lgcov} or @option{-fprofile-arcs}
 
 @item
 Run the program on a representative workload to generate the arc profile
-information. This may be repeated any number of times. You can run
+information.  This may be repeated any number of times.  You can run
 concurrent instances of your program, and provided that the file system
-supports locking, the data files will be correctly updated. Also
+supports locking, the data files will be correctly updated.  Also
 @code{fork} calls are detected and correctly handled (double counting
 will not happen).
 
@@ -3338,7 +3338,7 @@ Control Optimization}).
 
 @item
 For test coverage analysis, use @command{gcov} to produce human readable
-information from the @file{.gcno} and @file{.gcda} files. Refer to the
+information from the @file{.gcno} and @file{.gcda} files.  Refer to the
 @command{gcov} documentation for further information.
 
 @end itemize
@@ -3367,10 +3367,10 @@ working on improving it.
 @opindex ftest-coverage
 Produce a notes file that the @command{gcov} code-coverage utility
 (@pxref{Gcov,, @command{gcov}---a Test Coverage Program}) can use to
-show program coverage. Each source file's note file is called
-@file{@var{auxname}.gcno}. Refer to the @option{-fprofile-arcs} option
+show program coverage.  Each source file's note file is called
+@file{@var{auxname}.gcno}.  Refer to the @option{-fprofile-arcs} option
 above for a description of @var{auxname} and instructions on how to
-generate test coverage data. Coverage data will match the source files
+generate test coverage data.  Coverage data will match the source files
 more closely, if you do not optimize.
 
 @item -d@var{letters}
@@ -3681,7 +3681,7 @@ to the source file name.  If the @samp{-@var{options}} form is used,
 @opindex fdump-ipa
 Control the dumping at various stages of inter-procedural analysis
 language tree to a file.  The file name is generated by appending a switch
-specific suffix to the source file name. The following dumps are possible:
+specific suffix to the source file name.  The following dumps are possible:
 
 @table @samp
 @item all
@@ -3700,14 +3700,14 @@ Control the dumping at various stages of processing the intermediate
 language tree to a file.  The file name is generated by appending a switch
 specific suffix to the source file name.  If the @samp{-@var{options}}
 form is used, @var{options} is a list of @samp{-} separated options that
-control the details of the dump. Not all options are applicable to all
-dumps, those which are not meaningful will be ignored. The following
+control the details of the dump.  Not all options are applicable to all
+dumps, those which are not meaningful will be ignored.  The following
 options are available
 
 @table @samp
 @item address
 Print the address of each node.  Usually this is not meaningful as it
-changes according to the environment and source file. Its primary use
+changes according to the environment and source file.  Its primary use
 is for tying up a dump file with a debug environment.
 @item slim
 Inhibit dumping of members of a scope or body of a function merely
@@ -3761,7 +3761,7 @@ made by appending @file{.cfg} to the source file name.
 Dump the control flow graph of each function to a file in VCG format.  The
 file name is made by appending @file{.vcg} to the source file name.  Note
 that if the file contains more than one function, the generated file cannot
-be used directly by VCG.  You will need to cut and paste each function's
+be used directly by VCG@.  You will need to cut and paste each function's
 graph into its own separate file first.
 
 @item ch
@@ -3781,7 +3781,7 @@ appending @file{.alias} to the source file name.
 
 @item ccp
 @opindex fdump-tree-ccp
-Dump each function after CCP.  The file name is made by appending
+Dump each function after CCP@.  The file name is made by appending
 @file{.ccp} to the source file name.
 
 @item pre
@@ -3854,9 +3854,9 @@ Enable all the available tree dumps with the flags provided in this option.
 @opindex frandom-string
 This option provides a seed that GCC uses when it would otherwise use
 random numbers.  It is used to generate certain symbol names
-that have to be different in every compiled file. It is also used to
+that have to be different in every compiled file.  It is also used to
 place unique stamps in coverage data files and the object files that
-produce them. You can use the @option{-frandom-seed} option to produce
+produce them.  You can use the @option{-frandom-seed} option to produce
 reproducibly identical object files.
 
 The @var{string} should be different for every file you compile.
@@ -3905,8 +3905,8 @@ Both numbers are in seconds.
 
 @item -fvar-tracking
 @opindex fvar-tracking
-Run variable tracking pass. It computes where variables are stored at each
-position in code. Better debugging information is then generated
+Run variable tracking pass.  It computes where variables are stored at each
+position in code.  Better debugging information is then generated
 (if the debugging information format supports this information).
 
 It is enabled by default when compiling with optimization (@option{-Os},
@@ -4234,7 +4234,7 @@ release to an another.
 In C, emit @code{static} functions that are declared @code{inline}
 into the object file, even if the function has been inlined into all
 of its callers.  This switch does not affect functions using the
-@code{extern inline} extension in GNU C.  In C++, emit any and all
+@code{extern inline} extension in GNU C@.  In C++, emit any and all
 inline functions into the object file.
 
 @item -fkeep-static-consts
@@ -4438,7 +4438,7 @@ Enabled by default when gcse is enabled.
 @item -fgcse-after-reload
 @opindex fgcse-after-reload
 When @option{-fgcse-after-reload} is enabled, a redundant load elimination
-pass is performed after reload. The purpose of this pass is to cleanup
+pass is performed after reload.  The purpose of this pass is to cleanup
 redundant spilling.
 
 @item -floop-optimize
@@ -4456,7 +4456,7 @@ by separate flags.
 
 @item -fcrossjumping
 @opindex crossjumping
-Perform cross-jumping transformation. This transformation unifies equivalent code and save code size. The
+Perform cross-jumping transformation.  This transformation unifies equivalent code and save code size.  The
 resulting code may or may not perform better than without cross-jumping.
 
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
@@ -4650,7 +4650,7 @@ Perform loop optimizations on trees.  This flag is enabled by default
 at @option{-O} and higher.
 
 @item -ftree-loop-linear
-Perform linear loop transformations on tree. This flag can improve cache
+Perform linear loop transformations on tree.  This flag can improve cache
 performance and allow further loop optimizations to take place.
 
 @item -ftree-lim
@@ -4699,7 +4699,7 @@ Perform loop vectorization on trees.
 
 @item -ftracer
 @opindex ftracer
-Perform tail duplication to enlarge superblock size. This transformation
+Perform tail duplication to enlarge superblock size.  This transformation
 simplifies the control flow of the function allowing other optimizations to do
 better job.
 
@@ -4725,7 +4725,7 @@ long dependency chains, thus improving efficiency of the scheduling passes
 (for best results, @option{-fweb} should be used as well).
 
 Combination of @option{-fweb} and CSE is often sufficient to obtain the
-same effect. However in cases the loop body is more complicated than
+same effect.  However in cases the loop body is more complicated than
 a single basic block, this is not reliable.  It also does not work at all
 on some of the architectures due to restrictions in the CSE pass.
 
@@ -4797,7 +4797,7 @@ sections.
 @item -freorder-functions
 @opindex freorder-functions
 Reorder basic blocks in the compiled function in order to reduce number of
-taken branches and improve code locality. This is implemented by using special
+taken branches and improve code locality.  This is implemented by using special
 subsections @code{.text.hot} for most frequently executed functions and
 @code{.text.unlikely} for unlikely executed functions.  Reordering is done by
 the linker so object file format must support named sections and linker must
@@ -4948,12 +4948,12 @@ shall be used on the declaration.
 
 @item
 Static functions now can use non-standard passing conventions that
-may break @code{asm} statements calling functions directly. Again,
+may break @code{asm} statements calling functions directly.  Again,
 attribute @code{used} will prevent this behavior.
 @end itemize
 
 As a temporary workaround, @option{-fno-unit-at-a-time} can be used,
-but this scheme may not be supported by future releases of GCC.
+but this scheme may not be supported by future releases of GCC@.
 
 Enabled at levels @option{-O2}, @option{-O3}.
 
@@ -5211,7 +5211,7 @@ for testing, so we are interested to hear about miscompilations with
 
 @item -ftracer
 @opindex ftracer
-Perform tail duplication to enlarge superblock size. This transformation
+Perform tail duplication to enlarge superblock size.  This transformation
 simplifies the control flow of the function allowing other optimizations to do
 better job.
 
@@ -5531,12 +5531,12 @@ Maximum number of basic blocks on path that cse considers.  The default is 10.
 
 @item global-var-threshold
 
-Counts the number of function calls (N) and the number of
-call-clobbered variables (V).  If NxV is larger than this limit, a
+Counts the number of function calls (@var{n}) and the number of
+call-clobbered variables (@var{v}).  If @var{n}x@var{v} is larger than this limit, a
 single artificial variable will be created to represent all the
 call-clobbered variables at function call sites.  This artificial
 variable will then be made to alias every call-clobbered variable.
-(done as int * size_t on the host machine; beware overflow).
+(done as @code{int * size_t} on the host machine; beware overflow).
 
 @item max-aliased-vops
 
@@ -5554,8 +5554,8 @@ Tuning this may improve compilation speed; it has no effect on code
 generation.
 
 The default is 30% + 70% * (RAM/1GB) with an upper bound of 100% when
-RAM >= 1GB.  If @code{getrlimit} is available, the notion of "RAM" is
-the smallest of actual RAM and RLIMIT_DATA or RLIMIT_AS.  If
+RAM >= 1GB@.  If @code{getrlimit} is available, the notion of "RAM" is
+the smallest of actual RAM and @code{RLIMIT_DATA} or @code{RLIMIT_AS}.  If
 GCC is not able to calculate RAM on a particular platform, the lower
 bound of 30% is used.  Setting this parameter and
 @option{ggc-min-heapsize} to zero causes a full collection to occur at
@@ -6671,7 +6671,7 @@ architectures:
 @table @gcctabopt
 @item -mabi=@var{name}
 @opindex mabi
-Generate code for the specified ABI.  Permissible values are: @samp{apcs-gnu},
+Generate code for the specified ABI@.  Permissible values are: @samp{apcs-gnu},
 @samp{atpcs}, @samp{aapcs} and @samp{iwmmxt}.
 
 @item -mapcs-frame
@@ -7029,9 +7029,9 @@ Change only the low 8 bits of the stack pointer.
 
 @item -mint8
 @opindex mint8
-Assume int to be 8 bit integer. This affects the sizes of all types: A
+Assume int to be 8 bit integer.  This affects the sizes of all types: A
 char will be 1 byte, an int will be 1 byte, an long will be 2 bytes
-and long long will be 4 bytes. Please note that this option does not
+and long long will be 4 bytes.  Please note that this option does not
 comply to the C standards, but it will provide you with smaller code
 size.
 @end table
@@ -7049,7 +7049,7 @@ These options are defined specifically for the CRIS ports.
 @opindex mcpu
 Generate code for the specified architecture.  The choices for
 @var{architecture-type} are @samp{v3}, @samp{v8} and @samp{v10} for
-respectively ETRAX@w{ }4, ETRAX@w{ }100, and ETRAX@w{ }100@w{ }LX.
+respectively ETRAX@w{ }4, ETRAX@w{ }100, and ETRAX@w{ }100@w{ }LX@.
 Default is @samp{v0} except for cris-axis-linux-gnu, where the default is
 @samp{v10}.
 
@@ -7147,7 +7147,7 @@ or storage for local variable needs to be allocated.
 With @option{-fpic} and @option{-fPIC}, don't generate (do generate)
 instruction sequences that load addresses for functions from the PLT part
 of the GOT rather than (traditional on other architectures) calls to the
-PLT.  The default is @option{-mgotplt}.
+PLT@.  The default is @option{-mgotplt}.
 
 @item -maout
 @opindex maout
@@ -7241,9 +7241,9 @@ the name of the framework and header.h is found in the
 
 @item -gused
 @opindex -gused
-Emit debugging information for symbols that are used. For STABS
+Emit debugging information for symbols that are used.  For STABS
 debugging format, this enables @option{-feliminate-unused-debug-symbols}.
-This is by default ON.
+This is by default ON@.
 
 @item -gfull
 @opindex -gfull
@@ -7296,7 +7296,7 @@ See man ld(1) for more information.
 @item -bundle_loader @var{executable}
 @opindex bundle_loader
 This option specifies the @var{executable} that will be loading the build
-output file being linked. See man ld(1) for more information.
+output file being linked.  See man ld(1) for more information.
 
 @item -dynamiclib
 @opindex -dynamiclib
@@ -7654,7 +7654,7 @@ size of the small data area to 64KB, but allows the variables to be
 directly accessed via a single instruction.
 
 The default is @option{-mlarge-data}.  With this option the data area
-is limited to just below 2GB.  Programs that require more than 2GB of
+is limited to just below 2GB@.  Programs that require more than 2GB of
 data must use @code{malloc} or @code{mmap} to allocate the data in the
 heap instead of in the program's data segment.
 
@@ -8206,10 +8206,10 @@ this to work.
 
 @item -msio
 @opindex msio
-Generate the predefine, @code{_SIO}, for server IO.  The default is
+Generate the predefine, @code{_SIO}, for server IO@.  The default is
 @option{-mwsio}.  This generates the predefines, @code{__hp9000s700},
-@code{__hp9000s700__} and @code{_WSIO}, for workstation IO.  These
-options are available under HP-UX and HI-UX.
+@code{__hp9000s700__} and @code{_WSIO}, for workstation IO@.  These
+options are available under HP-UX and HI-UX@.
 
 @item -mgnu-ld
 @opindex gnu-ld
@@ -8309,7 +8309,7 @@ adding these link options.
 @item -threads
 @opindex threads
 Add support for multithreading with the @dfn{dce thread} library
-under HP-UX.  This option sets flags for both the preprocessor and
+under HP-UX@.  This option sets flags for both the preprocessor and
 linker.
 @end table
 
@@ -8331,15 +8331,15 @@ for the ABI and the set of available instructions.  The choices for
 @var{cpu-type} are:
 @table @emph
 @item i386
-Original Intel's i386 CPU.
+Original Intel's i386 CPU@.
 @item i486
-Intel's i486 CPU.  (No scheduling is implemented for this chip.)
+Intel's i486 CPU@.  (No scheduling is implemented for this chip.)
 @item i586, pentium
 Intel Pentium CPU with no MMX support.
 @item pentium-mmx
 Intel PentiumMMX CPU based on Pentium core with MMX instruction set support.
 @item i686, pentiumpro
-Intel PentiumPro CPU.
+Intel PentiumPro CPU@.
 @item pentium2
 Intel Pentium2 CPU based on PentiumPro core with MMX instruction set support.
 @item pentium3, pentium3m
@@ -8376,7 +8376,7 @@ set support.
 IDT Winchip2 CPU, dealt in same way as i486 with additional MMX and 3dNOW!
 instruction set support.
 @item c3
-Via C3 CPU with MMX and 3dNOW!  instruction set support.  (No scheduling is
+Via C3 CPU with MMX and 3dNOW! instruction set support.  (No scheduling is
 implemented for this chip.)
 @item c3-2
 Via C3-2 CPU with MMX and SSE instruction set support.  (No scheduling is
@@ -8421,7 +8421,7 @@ Use the standard 387 floating point coprocessor present majority of chips and
 emulated otherwise.  Code compiled with this option will run almost everywhere.
 The temporary results are computed in 80bit precision instead of precision
 specified by the type resulting in slightly different results compared to most
-of other chips. See @option{-ffloat-store} for more detailed description.
+of other chips.  See @option{-ffloat-store} for more detailed description.
 
 This is the default choice for i386 compiler.
 
@@ -8454,7 +8454,7 @@ functional units well resulting in instable performance.
 
 @item -masm=@var{dialect}
 @opindex masm=@var{dialect}
-Output asm instructions using selected @var{dialect}. Supported choices are
+Output asm instructions using selected @var{dialect}.  Supported choices are
 @samp{intel} or @samp{att} (the default one).
 
 @item -mieee-fp
@@ -8521,7 +8521,7 @@ without that switch.
 @itemx -m128bit-long-double
 @opindex m96bit-long-double
 @opindex m128bit-long-double
-These switches control the size of @code{long double} type. The i386
+These switches control the size of @code{long double} type.  The i386
 application binary interface specifies the size to be 96 bits,
 so @option{-m96bit-long-double} is the default in 32 bit mode.
 
@@ -9416,7 +9416,7 @@ Equivalent to @samp{-march=mips64}.
 @itemx -mno-mips16
 @opindex mips16
 @opindex mno-mips16
-Use (do not use) the MIPS16 ISA.
+Use (do not use) the MIPS16 ISA@.
 
 @item -mabi=32
 @itemx -mabi=o64
@@ -9451,7 +9451,7 @@ Generate (do not generate) SVR4-style position-independent code.
 Lift (do not lift) the usual restrictions on the size of the global
 offset table.
 
-GCC normally uses a single instruction to load values from the GOT.
+GCC normally uses a single instruction to load values from the GOT@.
 While this is relatively efficient, it will only work if the GOT
 is smaller than about 64k.  Anything larger will cause the linker
 to report an error such as:
@@ -9521,7 +9521,7 @@ support to be enabled.
 @itemx -mno-mips3d
 @opindex mips3d
 @opindex mno-mips3d
-Use (do not use) the MIPS-3D ASE.  @xref{MIPS-3D Built-in Functions}.
+Use (do not use) the MIPS-3D ASE@.  @xref{MIPS-3D Built-in Functions}.
 The option @option{-mips3d} implies @option{-mpaired-single}.
 
 @item -mint64
@@ -9607,7 +9607,7 @@ MIPS systems check for division by zero by generating either a
 conditional trap or a break instruction.  Using traps results in
 smaller code, but is only supported on MIPS II and later.  Also, some
 versions of the Linux kernel have a bug that prevents trap from
-generating the proper signal (SIGFPE).  Use @option{-mdivide-traps} to
+generating the proper signal (@code{SIGFPE}).  Use @option{-mdivide-traps} to
 allow conditional traps on architectures that support them and
 @option{-mdivide-breaks} to force the use of breaks.
 
@@ -9640,7 +9640,7 @@ This option has no effect on abicalls code.  The default is
 @opindex mmad
 @opindex mno-mad
 Enable (disable) use of the @code{mad}, @code{madu} and @code{mul}
-instructions, as provided by the R4650 ISA.
+instructions, as provided by the R4650 ISA@.
 
 @item -mfused-madd
 @itemx -mno-fused-madd
@@ -10115,11 +10115,11 @@ Do not pretend that branches are expensive.  This is the default.
 
 @item -msplit
 @opindex msplit
-Generate code for a system with split I&D.
+Generate code for a system with split I&D@.
 
 @item -mno-split
 @opindex mno-split
-Generate code for a system without split I&D.  This is the default.
+Generate code for a system without split I&D@.  This is the default.
 
 @item -munix-asm
 @opindex munix-asm
@@ -10307,7 +10307,7 @@ ABI@.
 
 @item -mabi=no-spe
 @opindex mabi=no-spe
-Disable Booke SPE ABI extensions for the current ABI.
+Disable Booke SPE ABI extensions for the current ABI@.
 
 @item -misel=@var{yes/no}
 @itemx -misel
@@ -10426,7 +10426,7 @@ On AIX, Darwin, and 64-bit PowerPC GNU/Linux, the option
 @option{-malign-natural} overrides the ABI-defined alignment of larger
 types, such as floating-point doubles, on their natural size-based boundary.
 The option @option{-malign-power} instructs GCC to follow the ABI-specified
-alignment rules.  GCC defaults to the standard alignment defined in the ABI.
+alignment rules.  GCC defaults to the standard alignment defined in the ABI@.
 
 @item -msoft-float
 @itemx -mhard-float
@@ -10574,7 +10574,7 @@ by the target during instruction scheduling.  The argument
 @item -minsert-sched-nops=@var{scheme}
 @opindex minsert-sched-nops
 This option controls which nop insertion scheme will be used during
-the second scheduling pass. The argument @var{scheme} takes one of the
+the second scheduling pass.  The argument @var{scheme} takes one of the
 following values:
 @var{no}: Don't insert nops.
 @var{pad}: Pad with nops any dispatch group which has vacant issue slots,
@@ -10637,7 +10637,7 @@ the current ABI@.
 
 @item -mabi=no-altivec
 @opindex mabi=no-altivec
-Disable AltiVec ABI extensions for the current ABI.
+Disable AltiVec ABI extensions for the current ABI@.
 
 @item -mprototype
 @itemx -mno-prototype
@@ -10843,11 +10843,11 @@ If one of the other options is present the backchain pointer is placed either
 on top of the stack frame  (@option{-mkernel-backchain}) or on
 the bottom (@option{-mbackchain}).
 Beside the different backchain location @option{-mkernel-backchain}
-also changes stack frame layout breaking the ABI. This option
+also changes stack frame layout breaking the ABI@.  This option
 is intended to be used for code which internally needs a backchain but has
 to get by with a limited stack size e.g.@: the linux kernel.
 Internal unwinding code not using DWARF-2 info has to be able to locate the
-return address of a function. That will be eased be the fact that
+return address of a function.  That will be eased be the fact that
 the return address of a function is placed two words below the backchain
 pointer.
 
@@ -10879,7 +10879,7 @@ targets default to @option{-m64}.
 When @option{-mzarch} is specified, generate code using the
 instructions available on z/Architecture.
 When @option{-mesa} is specified, generate code using the
-instructions available on ESA/390. Note that @option{-mesa} is
+instructions available on ESA/390.  Note that @option{-mesa} is
 not possible with @option{-m64}.
 When generating code compliant to the GNU/Linux for S/390 ABI,
 the default is @option{-mesa}.  When generating code compliant
@@ -10903,7 +10903,7 @@ The default is to not print debug information.
 @item -march=@var{cpu-type}
 @opindex march
 Generate code that will run on @var{cpu-type}, which is the name of a system
-representing a certain processor type. Possible values for
+representing a certain processor type.  Possible values for
 @var{cpu-type} are @samp{g5}, @samp{g6}, @samp{z900}, and @samp{z990}.
 When generating code using the instructions available on z/Architecture,
 the default is @option{-march=z900}.  Otherwise, the default is
@@ -10922,7 +10922,7 @@ The default is the value used for @option{-march}.
 @opindex mno-tpf-trace
 Generate code that adds (does not add) in TPF OS specific branches to trace
 routines in the operating system.  This option is off by default, even
-when compiling for the TPF OS.
+when compiling for the TPF OS@.
 
 @item -mfused-madd
 @itemx -mno-fused-madd
@@ -11251,9 +11251,9 @@ With @option{-mcpu=sparclite}, GCC generates code for the SPARClite variant of
 the SPARC architecture.  This adds the integer multiply, integer divide step
 and scan (@code{ffs}) instructions which exist in SPARClite but not in SPARC-V7.
 With @option{-mcpu=f930}, the compiler additionally optimizes it for the
-Fujitsu MB86930 chip, which is the original SPARClite, with no FPU.  With
+Fujitsu MB86930 chip, which is the original SPARClite, with no FPU@.  With
 @option{-mcpu=f934}, the compiler additionally optimizes it for the Fujitsu
-MB86934 chip, which is the more recent SPARClite with FPU.
+MB86934 chip, which is the more recent SPARClite with FPU@.
 
 With @option{-mcpu=sparclet}, GCC generates code for the SPARClet variant of
 the SPARC architecture.  This adds the integer multiply, multiply/accumulate,
@@ -11286,7 +11286,7 @@ that select a particular cpu implementation.  Those are @samp{cypress},
 @itemx -mno-v8plus
 @opindex mv8plus
 @opindex mno-v8plus
-With @option{-mv8plus}, GCC generates code for the SPARC-V8+ ABI.  The
+With @option{-mv8plus}, GCC generates code for the SPARC-V8+ ABI@.  The
 difference from the V8 ABI is that the global and out registers are
 considered 64-bit wide.  This is enabled by default on Solaris in 32-bit
 mode for all SPARC-V9 processors.
@@ -11305,7 +11305,7 @@ on SPARC-V9 processors in 64-bit environments:
 @table @gcctabopt
 @item -mlittle-endian
 @opindex mlittle-endian
-Generate code for a processor running in little-endian mode. It is only
+Generate code for a processor running in little-endian mode.  It is only
 available for a few configurations and most notably not on Solaris.
 
 @item -m32
@@ -11643,7 +11643,7 @@ this option is used.
 
 @item -mv850e
 @opindex mv850e
-Specify that the target processor is the V850E.  The preprocessor
+Specify that the target processor is the V850E@.  The preprocessor
 constant @samp{__v850e__} will be defined if this option is used.
 
 If neither @option{-mv850} nor @option{-mv850e} nor @option{-mv850e1}
@@ -11993,7 +11993,7 @@ position-independent.
 If supported for the target machine, emit position-independent code,
 suitable for dynamic linking and avoiding any limit on the size of the
 global offset table.  This option makes a difference on the m68k
-and the SPARC.
+and the SPARC@.
 
 Position-independent code requires special support, and therefore works
 only on certain machines.
@@ -12054,7 +12054,7 @@ three-way choice.
 @item -fpack-struct[=@var{n}]
 @opindex fpack-struct
 Without a value specified, pack all structure members together without
-holes. When a value is specified (which must be a small power of two), pack
+holes.  When a value is specified (which must be a small power of two), pack
 structure members according to this value, representing the maximum
 alignment (that is, objects with default alignment requirements larger than
 this will be output potentially unaligned at the next fitting location.
@@ -12189,7 +12189,7 @@ usage so the only other commonly used option will be @code{hidden}.
 The default if @option{-fvisibility} isn't specified is
 @code{default}, i.e., make every
 symbol public---this causes the same behavior as previous versions of
-GCC.
+GCC@.
 
 A good explanation of the benefits offered by ensuring ELF
 symbols have the correct visibility is given by ``How To Write
@@ -12197,18 +12197,18 @@ Shared Libraries'' by Ulrich Drepper (which can be found at
 @w{@uref{http://people.redhat.com/~drepper/}})---however a superior
 solution made possible by this option to marking things hidden when
 the default is public is to make the default hidden and mark things
-public. This is the norm with DLL's on Windows and with @option{-fvisibility=hidden}
+public.  This is the norm with DLL's on Windows and with @option{-fvisibility=hidden}
 and @code{__attribute__ ((visibility("default")))} instead of
 @code{__declspec(dllexport)} you get almost identical semantics with
-identical syntax. This is a great boon to those working with
+identical syntax.  This is a great boon to those working with
 cross-platform projects.
 
 For those adding visibility support to existing code, you may find
-@samp{#pragma GCC visibility} of use. This works by you enclosing
+@samp{#pragma GCC visibility} of use.  This works by you enclosing
 the declarations you wish to set visibility for with (for example)
 @samp{#pragma GCC visibility push(hidden)} and
-@samp{#pragma GCC visibility pop}. These can be nested up to sixteen
-times. Bear in mind that symbol visibility should be viewed @strong{as
+@samp{#pragma GCC visibility pop}.  These can be nested up to sixteen
+times.  Bear in mind that symbol visibility should be viewed @strong{as
 part of the API interface contract} and thus all new code should
 always specify visibility when it is not the default ie; declarations
 only for use within the local DSO should @strong{always} be marked explicitly

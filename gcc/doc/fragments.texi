@@ -186,7 +186,7 @@ Variables provided for host fragments to set include:
 @itemx X_CPPFLAGS
 These are extra flags to pass to the C compiler and preprocessor,
 respectively.  They are used both when building GCC, and when compiling
-things with the just-built GCC.
+things with the just-built GCC@.
 
 @item XCFLAGS
 These are extra flags to use when building the compiler.  They are not

@@ -128,7 +128,7 @@ Subdirectories for various languages.  Directories containing a file
 the subdirectories @file{cp} (for C++), @file{objc} (for Objective-C)
 and @file{objcp} (for Objective-C++) are documented in this manual
 (@pxref{Passes, , Passes and Files of the Compiler}); those for other
-languages are not. @xref{Front End, , Anatomy of a Language Front End},
+languages are not.  @xref{Front End, , Anatomy of a Language Front End},
 for details of the files in these directories.
 
 @item config
@@ -631,7 +631,7 @@ anything.
 @itemx distclean
 @itemx maintainer-clean
 The language parts of the standard GNU
-@samp{*clean} targets. @xref{Standard Targets, , Standard Targets for
+@samp{*clean} targets.  @xref{Standard Targets, , Standard Targets for
 Users, standards, GNU Coding Standards}, for details of the standard
 targets.  For GCC, @code{maintainer-clean} should delete
 all generated files in the source directory that are not checked into
@@ -713,7 +713,7 @@ everything from the single @file{gcc/Makefile} is preferred.
 If defined, a space-separated list of files that should be scanned by
 gengtype.c to generate the garbage collection tables and routines for
 this language.  This excludes the files that are common to all front
-ends. @xref{Type Information}.
+ends.  @xref{Type Information}.
 @item need_gmp
 If defined  to @samp{yes}, this frontend requires the GMP library.
 Enables configure tests for GMP, which set @code{GMPLIBS} and
@@ -911,18 +911,18 @@ testsuite, publicly available at
 These tests are integrated in the GCC testsuite in the
 @file{gcc/testsuite/ada/acats} directory, and
 enabled automatically when running @code{make check}, assuming
-the Ada language has been enabled when configuring GCC.
+the Ada language has been enabled when configuring GCC@.
 
 You can also run the Ada testsuite independently, using
 @code{make check-ada}, or run a subset of the tests by specifying which
-chapter to run, e.g:
+chapter to run, e.g.:
 
 @smallexample
 $ make check-ada CHAPTERS="c3 c9"
 @end smallexample
 
 The tests are organized by directory, each directory corresponding to
-a chapter of the Ada Reference Manual. So for example, c9 corresponds
+a chapter of the Ada Reference Manual.  So for example, c9 corresponds
 to chapter 9, which deals with tasking features of the language.
 
 There is also an extra chapter called @file{gcc} containing a template for

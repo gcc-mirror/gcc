@@ -73,7 +73,7 @@ and such a PCH file won't work.
 
 @deftypefn {Host Hook} size_t HOST_HOOKS_GT_PCH_ALLOC_GRANULARITY (void);
 This host hook returns the alignment required for allocating virtual
-memory. Usually this is the same as getpagesize, but on some hosts the
+memory.  Usually this is the same as getpagesize, but on some hosts the
 alignment for reserving memory differs from the pagesize for committing
 memory.
 @end deftypefn
@@ -159,7 +159,7 @@ define this macro if using the default will create an invalid file name.
 Define this macro to be a C statement (sans semicolon) that performs
 host-dependent removal of ordinary temp files in the compilation driver.
 
-If you do not define this macro, GCC will use the default version. You
+If you do not define this macro, GCC will use the default version.  You
 should define this macro if the default version does not reliably remove
 the temp file as, for example, on VMS which allows multiple versions
 of a file.

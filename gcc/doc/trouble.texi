@@ -205,7 +205,7 @@ the application linked with @file{libstdc++.a} must include the
 @option{-Wl,-brtl} flag on the link line.  G++ cannot impose this
 because this option may interfere with the semantics of the user
 program and users may not always use @samp{g++} to link his or her
-application. Applications are not required to use the
+application.  Applications are not required to use the
 @option{-Wl,-brtl} flag on the link line---the rest of the
 @file{libstdc++.a} library which is not dependent on the symbol
 merging semantics will continue to function correctly.
@@ -213,7 +213,7 @@ merging semantics will continue to function correctly.
 @item
 An application can interpose its own definition of functions for
 functions invoked by @file{libstdc++.a} with ``runtime-linking''
-enabled on AIX.  To accomplish this the application must be linked
+enabled on AIX@.  To accomplish this the application must be linked
 with ``runtime-linking'' option and the functions explicitly must be
 exported by the application (@option{-Wl,-brtl,-bE:exportfile}).
 
@@ -222,9 +222,9 @@ AIX on the RS/6000 provides support (NLS) for environments outside of
 the United States.  Compilers and assemblers use NLS to support
 locale-specific representations of various objects including
 floating-point numbers (@samp{.} vs @samp{,} for separating decimal
-fractions). There have been problems reported where the library linked
+fractions).  There have been problems reported where the library linked
 with GCC does not produce the same floating-point formats that the
-assembler accepts. If you have this problem, set the @env{LANG}
+assembler accepts.  If you have this problem, set the @env{LANG}
 environment variable to @samp{C} or @samp{En_US}.
 
 @item
@@ -770,7 +770,7 @@ called two-stage (or dependent) name lookup.  G++ implements it
 since version 3.4.
 
 Two-stage name lookup sometimes leads to situations with behavior
-different from non-template codes. The most common is probably this:
+different from non-template codes.  The most common is probably this:
 
 @smallexample
   template <typename T> struct Base @{
@@ -795,7 +795,7 @@ you need to defer lookup until instantiation time, at which the base
 class is known.  For this, you need to access @code{i} in a dependent
 context, by either using @code{this->i} (remember that @code{this} is of
 type @code{Derived<T>*}, so is obviously dependent), or using
-@code{Base<T>::i}. Alternatively, @code{Base<T>::i} might be brought
+@code{Base<T>::i}.  Alternatively, @code{Base<T>::i} might be brought
 into scope by a @code{using}-declaration.
 
 Another, similar example involves calling member functions of a base
