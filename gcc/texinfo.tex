@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.236 1998/06/04 15:21:05 karl Exp $
+% $Id: texinfo.tex,v 2.238 1998/06/06 21:23:59 karl Exp $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -25,12 +25,14 @@
 %
 % Please try the latest version of texinfo.tex before submitting bug
 % reports; you can get the latest version from:
-% /home/gd/gnu/doc/texinfo.tex on the GNU machines.
-% ftp://ftp.gnu.org/pub/gnu/texinfo.tex
-% (and all GNU mirrors, see ftp://ftp.gnu.org/pub/gnu/README.mirrors)
-% ftp://tug.org/tex/texinfo.tex
-% ftp://ctan.org/macros/texinfo/texinfo.tex
-% (and all CTAN mirrors, finger ctan@tug.org for a list).
+%   ftp://ftp.gnu.org/pub/gnu/texinfo.tex
+%   /home/gd/gnu/doc/texinfo.tex on the GNU machines.
+%   (and all GNU mirrors, see ftp://ftp.gnu.org/pub/gnu/README.mirrors)
+%   ftp://tug.org/tex/texinfo.tex
+%   ftp://ctan.org/macros/texinfo/texinfo.tex
+%   (and all CTAN mirrors, finger ctan@tug.org for a list).
+% The texinfo.tex in the texinfo distribution itself could well be out
+% of date, so if that's what you're using, please check.
 % 
 % Send bug reports to bug-texinfo@gnu.org.
 % Please include a precise test case in each bug report,
@@ -56,7 +58,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.236 $
+\deftexinfoversion$Revision: 2.238 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -143,15 +145,10 @@
 % Dimensions to add cropmarks at corners.
 % Added by P. A. MacKay, 12 Nov. 1986
 %
-\newdimen\cornerlong \newdimen\cornerthick
-\newdimen\topandbottommargin
-\newdimen\outerhsize \newdimen\outervsize
-\cornerlong=1pc\cornerthick=.3pt        % These set size of cropmarks
-\outerhsize=7in
-%\outervsize=9.5in
-% Alternative @smallbook page size is 9.25in
-\outervsize=9.25in
-\topandbottommargin=.75in
+\newdimen\outerhsize \newdimen\outervsize % set by the paper size routines
+\newdimen\cornerlong  \cornerlong=1pc
+\newdimen\cornerthick \cornerthick=.3pt
+\newdimen\topandbottommargin \topandbottommargin=.75in
 
 % Main output routine.
 \chardef\PAGE = 255
@@ -1103,14 +1100,25 @@ where each line of input produces a line of output.}
    \comment % Ignore the actual filename.
 }
 
+% Called from \setfilename.
+% 
+\def\openindices{%
+  \newindex{cp}%
+  \newcodeindex{fn}%
+  \newcodeindex{vr}%
+  \newcodeindex{tp}%
+  \newcodeindex{ky}%
+  \newcodeindex{pg}%
+}
+
 % @bye.
 \outer\def\bye{\pagealignmacro\tracingstats=1\ptexend}
 
-\message{fonts,}
 
+\message{fonts,}
 % Font-change commands.
 
-% Texinfo supports the sans serif font style, which plain TeX does not.
+% Texinfo sort of supports the sans serif font style, which plain TeX does not.
 % So we set up a \sf analogous to plain's \rm, etc.
 \newfam\sffam
 \def\sf{\fam=\sffam \tensf}
@@ -4532,14 +4540,11 @@ width0pt\relax} \fi
 % {.  If so it reads up to the closing }, if not, it reads the whole
 % line.  Whatever was read is then fed to the next control sequence
 % as an argument (by \parsebrace or \parsearg)
-\def\braceorline{\bgroup
-\catcode`\{=\other\catcode`\}=\other \futurelet\nxt\braceorlinexxx}
+\def\braceorline#1{\let\next=#1\futurelet\nchar\braceorlinexxx}
 \def\braceorlinexxx{%
-  \ifx\nxt\brace
-    \expandafter\parsebrace 
-  \else
-    \egroup \expandafter\parsearg 
-  \fi}
+  \ifx\nchar\bgroup\else
+    \expandafter\parsearg 
+  \fi \next}
 
 % We need {} to be \other inside these commands. [] are temporary
 % grouping symbols.
@@ -4562,13 +4567,6 @@ width0pt\relax} \fi
      \macname=[#1]%
   \fi]
 \gdef\getargsnospaces|#1{#2}#3|[\macname=[#1]\toks0=[#2]]
-
-% \parsebrace gets around the situation produced by \braceorline
-% (above) where the { has the wrong catcode because of \futurelet.
-% The \egroup matches a \bgroup in \braceorline.
-\gdef\parsebrace#1{#2}[\egroup\let\next=#1\next[#2]]
-
-\global\let\brace={ % used by \braceorline
 
 \endgroup
 
@@ -5012,36 +5010,18 @@ width0pt\relax} \fi
   \fi
 }
 
-% End of control word definitions.
 
+\message{paper sizes,}
+% And other related parameters.
 
-\message{and turning on texinfo input format.}
-
-\def\openindices{%
-   \newindex{cp}%
-   \newcodeindex{fn}%
-   \newcodeindex{vr}%
-   \newcodeindex{tp}%
-   \newcodeindex{ky}%
-   \newcodeindex{pg}%
-}
-
-% Set some numeric style parameters, for 8.5 x 11 format.
-
-\hsize = 6in
-\hoffset = .25in
 \newdimen\defaultparindent \defaultparindent = 15pt
-\parindent = \defaultparindent
-\parskip 3pt plus 2pt minus 1pt
-\setleading{13.2pt}
-\advance\topskip by 1.2cm
 
 \chapheadingskip = 15pt plus 4pt minus 2pt
 \secheadingskip = 12pt plus 3pt minus 2pt
 \subsecheadingskip = 9pt plus 2pt minus 2pt
 
 % Prevent underfull vbox error messages.
-\vbadness=10000
+\vbadness = 10000
 
 % Following George Bush, just get rid of widows and orphans.
 \widowpenalty=10000
@@ -5050,101 +5030,125 @@ width0pt\relax} \fi
 % Use TeX 3.0's \emergencystretch to help line breaking, but if we're
 % using an old version of TeX, don't do anything.  We want the amount of
 % stretch added to depend on the line length, hence the dependence on
-% \hsize.  This makes it come to about 9pt for the 8.5x11 format.
+% \hsize.  This makes it come to about 9pt for the 8.5x11 format.  We
+% call this whenever the paper size is set.
 %
-\ifx\emergencystretch\thisisundefined
-  % Allow us to assign to \emergencystretch anyway.
-  \def\emergencystretch{\dimen0}%
-\else
-  \emergencystretch = \hsize
-  \divide\emergencystretch by 45
-\fi
-
-% Use @smallbook to reset parameters for 7x9.5 format  (or else 7x9.25)
-\def\smallbook{
-  \global\chapheadingskip = 15pt plus 4pt minus 2pt
-  \global\secheadingskip = 12pt plus 3pt minus 2pt
-  \global\subsecheadingskip = 9pt plus 2pt minus 2pt
-  %
-  \global\lispnarrowing = 0.3in
-  \setleading{12pt}
-  \advance\topskip by -1cm
-  \global\parskip 2pt plus 1pt
-  \global\hsize = 5in
-  \global\vsize=7.5in
-  \global\tolerance=700
-  \global\hfuzz=1pt
-  \global\contentsrightmargin=0pt
-  \global\deftypemargin=0pt
-  \global\defbodyindent=.5cm
-  %
-  \global\pagewidth=\hsize
-  \global\pageheight=\vsize
-  %
-  \global\let\smalllisp=\smalllispx
-  \global\let\smallexample=\smalllispx
-  \global\def\Esmallexample{\Esmalllisp}
+\def\setemergencystretch{%
+  \ifx\emergencystretch\thisisundefined
+    % Allow us to assign to \emergencystretch anyway.
+    \def\emergencystretch{\dimen0}%
+  \else
+    \emergencystretch = \hsize
+    \divide\emergencystretch by 45
+  \fi
 }
+
+% Parameters in order: 1) textheight; 2) textwidth; 3) voffset;
+% 4) hoffset; 5) binding offset; 6) topskip.  Then whoever calls us can
+% set \parskip and call \setleading for \baselineskip.
+%
+\def\pagesizes#1#2#3#4#5#6{%
+  \voffset = #3\relax
+  \topskip = #6\relax
+  \splittopskip = \topskip
+  %
+  \vsize = #1\relax
+  \advance\vsize by \topskip
+  \outervsize = \vsize
+  \advance\outervsize by 0.6in
+  \pageheight = \vsize
+  %
+  \hsize = #2\relax
+  \outerhsize = \hsize
+  \advance\outerhsize by 0.5in
+  \pagewidth = \hsize
+  %
+  \normaloffset = #4\relax
+  \bindingoffset = #5\relax
+  %
+  \parindent = \defaultparindent
+  \setemergencystretch
+}
+
+% @letterpaper (the default).
+\def\letterpaper{{\globaldefs = 1
+  \parskip = 3pt plus 2pt minus 1pt
+  \setleading{13.2pt}%
+  %
+  % If page is nothing but text, make it come out even.
+  \pagesizes{46\baselineskip}{6in}{\voffset}{.25in}{\bindingoffset}{36pt}%
+}}
+
+% Use @smallbook to reset parameters for 7x9.5 (or so) format.
+\def\smallbook{{\globaldefs = 1
+  \parskip = 2pt plus 1pt
+  \setleading{12pt}%
+  %
+  \pagesizes{7.5in}{5.in}{\voffset}{.25in}{\bindingoffset}{16pt}%
+  %
+  \lispnarrowing = 0.3in
+  \tolerance = 700
+  \hfuzz = 1pt
+  \contentsrightmargin = 0pt
+  \deftypemargin = 0pt
+  \defbodyindent = .5cm
+  %
+  \let\smalllisp = \smalllispx
+  \let\smallexample = \smalllispx
+  \def\Esmallexample{\Esmalllisp}%
+}}
 
 % Use @afourpaper to print on European A4 paper.
-\def\afourpaper{
-\global\tolerance=700
-\global\hfuzz=1pt
-\setleading{12pt}
-\global\parskip 15pt plus 1pt
-
-\global\vsize= 53\baselineskip
-\advance\vsize by \topskip
-%\global\hsize=   5.85in     % A4 wide 10pt
-\global\hsize=  6.5in
-\global\outerhsize=\hsize
-\global\advance\outerhsize by 0.5in
-\global\outervsize=\vsize
-\global\advance\outervsize by 0.6in
-
-\global\pagewidth=\hsize
-\global\pageheight=\vsize
-}
-
-\bindingoffset=0pt
-\normaloffset=\hoffset
-\pagewidth=\hsize
-\pageheight=\vsize
-
-% Allow control of the text dimensions.  Parameters in order: textheight;
-% textwidth; voffset; hoffset; binding offset; topskip.
-% All require a dimension;
-% header is additional; added length extends the bottom of the page.
-
-\def\changepagesizes#1#2#3#4#5#6{
- \global\vsize= #1
- \global\topskip= #6
- \advance\vsize by \topskip
- \global\voffset= #3
- \global\hsize= #2
- \global\outerhsize=\hsize
- \global\advance\outerhsize by 0.5in
- \global\outervsize=\vsize
- \global\advance\outervsize by 0.6in
- \global\pagewidth=\hsize
- \global\pageheight=\vsize
- \global\normaloffset= #4
- \global\bindingoffset= #5}
+\def\afourpaper{{\globaldefs = 1
+  \setleading{12pt}%
+  \parskip = 3pt plus 2pt minus 1pt
+  %
+  \pagesizes{53\baselineskip}{6.5in}{\voffset}{.25in}{\bindingoffset}{44pt}%
+  %
+  \tolerance = 700
+  \hfuzz = 1pt
+}}
 
 % A specific text layout, 24x15cm overall, intended for A4 paper.  Top margin
 % 29mm, hence bottom margin 28mm, nominal side margin 3cm.
-\def\afourlatex
-        {\global\tolerance=700
-        \global\hfuzz=1pt
-        \setleading{12pt}
-        \global\parskip 15pt plus 1pt
-        \advance\baselineskip by 1.6pt
-        \changepagesizes{237mm}{150mm}{3.6mm}{3.6mm}{3mm}{7mm}
-        }
+\def\afourlatex{{\globaldefs = 1
+  \setleading{13.6pt}%
+  %
+  \afourpaper
+  \pagesizes{237mm}{150mm}{3.6mm}{3.6mm}{3mm}{7mm}%
+  %
+  \globaldefs = 0
+}}
 
 % Use @afourwide to print on European A4 paper in wide format.
-\def\afourwide{\afourpaper
-\changepagesizes{9.5in}{6.5in}{\hoffset}{\normaloffset}{\bindingoffset}{7mm}}
+\def\afourwide{%
+  \afourpaper
+  \pagesizes{9.5in}{6.5in}{\hoffset}{\normaloffset}{\bindingoffset}{7mm}%
+  %
+  \globaldefs = 0
+}
+
+% @custompaper TEXTHEIGHT[,TEXTWIDTH]
+% Perhaps we should allow setting the margins, \topskip, \parskip,
+% and/or leading, also. Or perhaps we should compute them somehow.
+% 
+\def\custompaper{\parsearg\custompaperxxx}
+\def\custompaperxxx#1{\custompaperyyy #1,\finish}
+\def\custompaperyyy#1,#2\finish{{%
+  \setbox0 = \hbox{\ignorespaces #2}\ifdim\wd0 > 0pt \hsize=#2\relax \fi
+  \globaldefs = 1
+  %
+  \parskip = 3pt plus 2pt minus 1pt
+  \setleading{13.2pt}%
+  %
+  \pagesizes{#1}{\hsize}{\voffset}{\normaloffset}{\bindingoffset}{44pt}%
+}}
+
+% Set default to letter.
+% 
+\letterpaper
+
+\message{and turning on texinfo input format.}
 
 % Define macros to output various characters with catcode for normal text.
 \catcode`\"=\other
