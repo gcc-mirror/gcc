@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -35,13 +35,12 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.net;
+
 
 /** Written using on-line Java Platform 1.2 API Specification.
   * Status:  Believed complete and correct.
   */
-
 /**
   * This interface defines one method which returns a <code>SocketImpl</code>
   * object.  This should not be needed by ordinary applications.
@@ -57,6 +56,4 @@ public interface SocketImplFactory
     * @return A <code>SocketImpl</code> object
     */
   SocketImpl createSocketImpl();
-
 } // interface SocketImplFactory
-

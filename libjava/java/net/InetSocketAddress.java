@@ -1,4 +1,4 @@
-/* InetSocketAddress.java -- 
+/* InetSocketAddress.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -37,21 +37,21 @@ exception statement from your version. */
 
 package java.net;
 
-/** 
+
+/**
  * InetSocketAddress instances represent socket addresses
  * in the java.nio package. They encapsulate a InetAddress and
  * a port number.
  *
  * @since 1.4
  */
-
 public class InetSocketAddress extends SocketAddress
 {
   /**
    * Compatible with JDK 1.4+
    */
   private static final long serialVersionUID = 5076001401234631237L;
-  
+
   /**
    * Name of host.
    */
@@ -66,10 +66,10 @@ public class InetSocketAddress extends SocketAddress
    * Port of host.
    */
   private int port;
-    
+
   /**
    * Constructs an InetSocketAddress instance.
-   * 
+   *
    * @param addr Address of the socket
    * @param port Port if the socket
    *
@@ -79,34 +79,33 @@ public class InetSocketAddress extends SocketAddress
     throws IllegalArgumentException
   {
     if (port < 0 || port > 65535)
-      throw new IllegalArgumentException ("Bad port number: " + port);
+      throw new IllegalArgumentException("Bad port number: " + port);
 
     if (addr == null)
       addr = InetAddress.ANY_IF;
-  
+
     this.addr = addr;
     this.port = port;
-    this.hostname = addr.getHostName ();
+    this.hostname = addr.getHostName();
   }
 
   /**
    * Constructs an InetSocketAddress instance.
-   * 
+   *
    * @param port Port if the socket
    *
    * @exception IllegalArgumentException If the port number is illegal
    */
-  public InetSocketAddress(int port)
-    throws IllegalArgumentException
+  public InetSocketAddress(int port) throws IllegalArgumentException
   {
-    this ((InetAddress) null, port);
+    this((InetAddress) null, port);
   }
 
   /**
    * Constructs an InetSocketAddress instance.
    *
-   * @param addr Address of the socket
-   * @param port Port if the socket
+   * @param hostname The hostname for the socket address
+   * @param port The port for the socket address
    *
    * @exception IllegalArgumentException If the port number is illegal
    */
@@ -114,49 +113,48 @@ public class InetSocketAddress extends SocketAddress
     throws IllegalArgumentException
   {
     if (hostname == null)
-      throw new IllegalArgumentException ("Null host name value");
-    
+      throw new IllegalArgumentException("Null host name value");
+
     if (port < 0 || port > 65535)
-      throw new IllegalArgumentException ("Bad port number: " + port);
+      throw new IllegalArgumentException("Bad port number: " + port);
 
     this.port = port;
     this.hostname = hostname;
 
     try
       {
-        this.addr = InetAddress.getByName(hostname);
+	this.addr = InetAddress.getByName(hostname);
       }
     catch (Exception e) // UnknownHostException, SecurityException
       {
-        this.addr = null;
+	this.addr = null;
       }
   }
- 
-  /** 
+
+  /**
    * Test if obj is a <code>InetSocketAddress</code> and
    * has the same address and port
    *
    * @param obj The obj to compare this address with.
    *
-   * @return True if obj is equal.   
+   * @return True if obj is equal.
    */
-  public final boolean equals (Object obj)
+  public final boolean equals(Object obj)
   {
     // InetSocketAddress objects are equal when addr and port are equal.
     // The hostname may differ.
-
     if (obj instanceof InetSocketAddress)
       {
-        InetSocketAddress sa = (InetSocketAddress) obj;
-	
-        if (addr == null && sa.addr != null)
-          return false;
-        else if (addr == null && sa.addr == null)
-          return hostname.equals (sa.hostname) && sa.port == port;
-        else
-          return addr.equals (sa.addr) && sa.port == port;
+	InetSocketAddress sa = (InetSocketAddress) obj;
+
+	if (addr == null && sa.addr != null)
+	  return false;
+	else if (addr == null && sa.addr == null)
+	  return hostname.equals(sa.hostname) && sa.port == port;
+	else
+	  return addr.equals(sa.addr) && sa.port == port;
       }
-    
+
     return false;
   }
 
@@ -190,7 +188,7 @@ public class InetSocketAddress extends SocketAddress
   {
     return port;
   }
-    
+
   /**
    * Returns the hashcode of the <code>InetSocketAddress</code>
    *
@@ -210,7 +208,7 @@ public class InetSocketAddress extends SocketAddress
   {
     return addr == null;
   }
-    
+
   /**
    * Returns the <code>InetSocketAddress</code> as string
    *

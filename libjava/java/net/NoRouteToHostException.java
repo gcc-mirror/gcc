@@ -35,8 +35,8 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.net;
+
 
 /**
   * This exception indicates that there is no TCP/IP route to the requested

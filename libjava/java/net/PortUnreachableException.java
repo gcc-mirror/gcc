@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package java.net;
 
+
 /**
  * This exception signals that an ICMP port unreachable datagram has been
  * received.
@@ -69,4 +70,3 @@ public class PortUnreachableException extends SocketException
     super(message);
   }
 } // class PortUnreachableException
-

@@ -1,5 +1,5 @@
 /* SocketOptions.java -- Implements options for sockets (duh!)
-   Copyright (C) 1998, 1999, 2000, 2001, 
+   Copyright (C) 1998, 1999, 2000, 2001,
                  2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -38,15 +38,15 @@ exception statement from your version. */
 
 package java.net;
 
+
 /**
  * Written using on-line Java Platform 1.2 API Specification.
  * Status:  Believed complete and correct.
  */
-
 /**
- * This interface is used by <code>SocketImpl</code> and 
+ * This interface is used by <code>SocketImpl</code> and
  * <code>DatagramSocketImpl</code> to implement options
- * on sockets.  
+ * on sockets.
  *
  * @since 1.2
  *
@@ -163,6 +163,4 @@ public interface SocketOptions
    * @exception SocketException If an error occurs
    */
   Object getOption(int optionId) throws SocketException;
-
 } // interface SocketOptions
-

@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -17,7 +17,7 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Classpath; see the file COPYING.  If not, write to the
 Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-02111-1307 USA. 
+02111-1307 USA.
 
 Linking this library statically or dynamically with other modules is
 making a combined work based on this library.  Thus, the terms and
@@ -36,13 +36,13 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.net;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.security.Permission;
+
 
 /*
  * Written using on-line Java Platform 1.2 API Specification, as well
@@ -51,12 +51,12 @@ import java.security.Permission;
  */
 
 /**
- * This class provides a common abstract implementation for those 
+ * This class provides a common abstract implementation for those
  * URL connection classes that will connect using the HTTP protocol.
  * In addition to the functionality provided by the URLConnection
  * class, it defines constants for HTTP return code values and
  * methods for setting the HTTP request method and determining whether
- * or not to follow redirects. 
+ * or not to follow redirects.
  *
  * @since 1.1
  *
@@ -73,27 +73,27 @@ public abstract class HttpURLConnection extends URLConnection
    * beware of using this value
    */
   static final int HTTP_CONTINUE = 100;
-  
+
   /**
    * Indicates the request succeeded.
    */
-  public static final int HTTP_OK		= 200;
+  public static final int HTTP_OK = 200;
 
   /**
    * The requested resource has been created.
    */
-  public static final int HTTP_CREATED		= 201;
+  public static final int HTTP_CREATED = 201;
 
   /**
    * The request has been accepted for processing but has not completed.
    * There is no guarantee that the requested action will actually ever
    * be completed succesfully, but everything is ok so far.
    */
-  public static final int HTTP_ACCEPTED 	= 202;
+  public static final int HTTP_ACCEPTED = 202;
 
   /**
    * The meta-information returned in the header is not the actual data
-   * from the original server, but may be from a local or other copy. 
+   * from the original server, but may be from a local or other copy.
    * Normally this still indicates a successful completion.
    */
   public static final int HTTP_NOT_AUTHORITATIVE = 203;
@@ -102,20 +102,19 @@ public abstract class HttpURLConnection extends URLConnection
    * The server performed the request, but there is no data to send
    * back.  This indicates that the user's display should not be changed.
    */
-  public static final int HTTP_NO_CONTENT	= 204;
+  public static final int HTTP_NO_CONTENT = 204;
 
   /**
    * The server performed the request, but there is no data to sent back,
    * however, the user's display should be "reset" to clear out any form
    * fields entered.
    */
-  public static final int HTTP_RESET		= 205;
+  public static final int HTTP_RESET = 205;
 
   /**
    * The server completed the partial GET request for the resource.
    */
-  public static final int HTTP_PARTIAL		= 206;
-
+  public static final int HTTP_PARTIAL = 206;
 
   /* HTTP Redirection Response Codes */
 
@@ -123,22 +122,22 @@ public abstract class HttpURLConnection extends URLConnection
    * There is a list of choices available for the requested resource.
    */
   public static final int HTTP_MULT_CHOICE = 300;
-  
+
   /**
    * The resource has been permanently moved to a new location.
    */
   public static final int HTTP_MOVED_PERM = 301;
-  
+
   /**
    * The resource requested has been temporarily moved to a new location.
    */
   public static final int HTTP_MOVED_TEMP = 302;
-  
+
   /**
    * The response to the request issued is available at another location.
    */
   public static final int HTTP_SEE_OTHER = 303;
-  
+
   /**
    * The document has not been modified since the criteria specified in
    * a conditional GET.
@@ -149,64 +148,63 @@ public abstract class HttpURLConnection extends URLConnection
    * The requested resource needs to be accessed through a proxy.
    */
   public static final int HTTP_USE_PROXY = 305;
-  
-  
+
   /* HTTP Client Error Response Codes */
 
   /**
    * The request was misformed or could not be understood.
    */
   public static final int HTTP_BAD_REQUEST = 400;
-  
+
   /**
    * The request made requires user authorization.  Try again with
    * a correct authentication header.
    */
   public static final int HTTP_UNAUTHORIZED = 401;
-  
+
   /**
    * Code reserved for future use - I hope way in the future.
    */
   public static final int HTTP_PAYMENT_REQUIRED = 402;
-  
+
   /**
    * There is no permission to access the requested resource.
    */
   public static final int HTTP_FORBIDDEN = 403;
-  
+
   /**
    * The requested resource was not found.
    */
   public static final int HTTP_NOT_FOUND = 404;
-  
+
   /**
    * The specified request method is not allowed for this resource.
    */
   public static final int HTTP_BAD_METHOD = 405;
-  
+
   /**
    * Based on the input headers sent, the resource returned in response
    * to the request would not be acceptable to the client.
    */
   public static final int HTTP_NOT_ACCEPTABLE = 406;
-  
+
   /**
    * The client must authenticate with a proxy prior to attempting this
    * request.
    */
   public static final int HTTP_PROXY_AUTH = 407;
-  
+
   /**
    * The request timed out.
    */
   public static final int HTTP_CLIENT_TIMEOUT = 408;
-  
+
   /**
    * There is a conflict between the current state of the resource and the
    * requested action.
    */
   public static final int HTTP_CONFLICT = 409;
-  
+
   /**
    * The requested resource is no longer available.  This ususally indicates
    * a permanent condition.
@@ -218,27 +216,26 @@ public abstract class HttpURLConnection extends URLConnection
    * supplied.
    */
   public static final int HTTP_LENGTH_REQUIRED = 411;
-  
+
   /**
    * A client specified pre-condition was not met on the server.
    */
   public static final int HTTP_PRECON_FAILED = 412;
-  
+
   /**
    * The request sent was too large for the server to handle.
    */
   public static final int HTTP_ENTITY_TOO_LARGE = 413;
-  
+
   /**
    * The name of the resource specified was too long.
    */
   public static final int HTTP_REQ_TOO_LONG = 414;
-  
+
   /**
    * The request is in a format not supported by the requested resource.
    */
   public static final int HTTP_UNSUPPORTED_TYPE = 415;
-
 
   /* HTTP Server Error Response Codes */
 
@@ -247,16 +244,16 @@ public abstract class HttpURLConnection extends URLConnection
    *
    * @deprecated
    */
-  public static final int HTTP_SERVER_ERROR    = 500;
+  public static final int HTTP_SERVER_ERROR = 500;
 
   /**
    * The server encountered an unexpected error (such as a CGI script crash)
    * that prevents the request from being fulfilled.
    */
-  public static final int HTTP_INTERNAL_ERROR   = 500;
+  public static final int HTTP_INTERNAL_ERROR = 500;
 
   /**
-   * The server does not support the requested functionality.  
+   * The server does not support the requested functionality.
    * @since 1.3
    */
   public static final int HTTP_NOT_IMPLEMENTED = 501;
@@ -294,8 +291,8 @@ public abstract class HttpURLConnection extends URLConnection
   /**
    * This is a list of valid request methods, separated by "|" characters.
    */
-  private static String valid_methods
-      = "|GET|POST|HEAD|OPTIONS|PUT|DELETE|TRACE|";
+  private static String valid_methods =
+    "|GET|POST|HEAD|OPTIONS|PUT|DELETE|TRACE|";
 
   // Instance Variables
 
@@ -312,7 +309,7 @@ public abstract class HttpURLConnection extends URLConnection
   /**
    * The response message string received from the server.
    */
-  protected String responseMessage = null;
+  protected String responseMessage;
 
   /**
    * If this instance should follow redirect requests.
@@ -324,7 +321,7 @@ public abstract class HttpURLConnection extends URLConnection
    * Used by <code>getResponseCode()</code> and
    * <code>getResponseMessage()</code>.
    */
-  private boolean gotResponseVals = false;
+  private boolean gotResponseVals;
 
   /**
    * Create an HttpURLConnection for the specified URL
@@ -335,16 +332,16 @@ public abstract class HttpURLConnection extends URLConnection
   {
     super(url);
   }
-  
-  /**   
+
+  /**
    * Closes the connection to the server.
    */
   public abstract void disconnect();
 
-  /** 
+  /**
    * Returns a boolean indicating whether or not this connection is going
    * through a proxy
-   * 
+   *
    * @return true if through a proxy, false otherwise
    */
   public abstract boolean usingProxy();
@@ -370,7 +367,7 @@ public abstract class HttpURLConnection extends URLConnection
   }
 
   /**
-   * Returns a boolean indicating whether or not HTTP redirects will 
+   * Returns a boolean indicating whether or not HTTP redirects will
    * automatically be followed or not.
    *
    * @return true if redirects will be followed, false otherwise
@@ -383,16 +380,20 @@ public abstract class HttpURLConnection extends URLConnection
   /**
    * Returns the value of this HttpURLConnection's instanceFollowRedirects
    * field
+   * 
+   * @return true if following redirects is enabled, false otherwise
    */
-  public boolean getInstanceFollowRedirects ()
+  public boolean getInstanceFollowRedirects()
   {
     return instanceFollowRedirects;
   }
 
   /**
    * Sets the value of this HttpURLConnection's instanceFollowRedirects field
+   *
+   * @param follow true to enable following redirects, false otherwise
    */
-  public void setInstanceFollowRedirects (boolean follow)
+  public void setInstanceFollowRedirects(boolean follow)
   {
     instanceFollowRedirects = follow;
   }
@@ -400,6 +401,8 @@ public abstract class HttpURLConnection extends URLConnection
   /**
    * Set the method for the URL request, one of:
    * GET POST HEAD OPTIONS PUT DELETE TRACE are legal
+   *
+   * @param method the method to use
    *
    * @exception ProtocolException If the method cannot be reset or if the
    * requested method isn't valid for HTTP
@@ -414,7 +417,6 @@ public abstract class HttpURLConnection extends URLConnection
       this.method = method;
     else
       throw new ProtocolException("Invalid HTTP request method: " + method);
-
   }
 
   /**
@@ -439,7 +441,7 @@ public abstract class HttpURLConnection extends URLConnection
    */
   public int getResponseCode() throws IOException
   {
-    if (!gotResponseVals)
+    if (! gotResponseVals)
       getResponseVals();
     return responseCode;
   }
@@ -455,7 +457,7 @@ public abstract class HttpURLConnection extends URLConnection
    */
   public String getResponseMessage() throws IOException
   {
-    if (!gotResponseVals)
+    if (! gotResponseVals)
       getResponseVals();
     return responseMessage;
   }
@@ -464,9 +466,9 @@ public abstract class HttpURLConnection extends URLConnection
   {
     // getHeaderField() will connect for us, but do it here first in
     // order to pick up IOExceptions.
-    if (!connected)
+    if (! connected)
       connect();
-      
+
     gotResponseVals = true;
 
     // If responseCode not yet explicitly set by subclass
@@ -474,7 +476,7 @@ public abstract class HttpURLConnection extends URLConnection
       {
 	// Response is the first header received from the connection.
 	String respField = getHeaderField(0);
-	
+
 	if (respField == null || ! respField.startsWith("HTTP/"))
 	  {
 	    // Set to default values on failure.
@@ -483,7 +485,8 @@ public abstract class HttpURLConnection extends URLConnection
 	    return;
 	  }
 
-	int firstSpc, nextSpc;
+	int firstSpc;
+	int nextSpc;
 	firstSpc = respField.indexOf(' ');
 	nextSpc = respField.indexOf(' ', firstSpc + 1);
 	responseMessage = respField.substring(nextSpc + 1);
@@ -505,6 +508,8 @@ public abstract class HttpURLConnection extends URLConnection
    * Returns a permission object representing the permission necessary to make
    * the connection represented by this object
    *
+   * @return the permission necessary for this connection
+   *
    * @exception IOException If an error occurs
    */
   public Permission getPermission() throws IOException
@@ -514,9 +519,9 @@ public abstract class HttpURLConnection extends URLConnection
     int port = url.getPort();
     if (port == -1)
       port = 80;
-    
+
     host = host + ":" + port;
-    
+
     return new SocketPermission(host, "connect");
   }
 
@@ -529,52 +534,56 @@ public abstract class HttpURLConnection extends URLConnection
    *
    * @return An <code>InputStream</code> for reading error data.
    */
-  public InputStream getErrorStream ()
+  public InputStream getErrorStream()
   {
-    if (!connected)
-      return(null);
-    
+    if (! connected)
+      return (null);
+
     int code;
-    try 
+    try
       {
 	code = getResponseCode();
       }
-    catch(IOException e)
+    catch (IOException e)
       {
 	code = -1;
       }
-    
+
     if (code == -1)
-      return(null);
-    
-    if (((code/100) != 4) || ((code/100) != 5))
-      return(null); 
-    
+      return (null);
+
+    if (((code / 100) != 4) || ((code / 100) != 5))
+      return (null);
+
     try
       {
 	PushbackInputStream pbis = new PushbackInputStream(getInputStream());
-	
+
 	int i = pbis.read();
 	if (i == -1)
-	  return(null);
-	
+	  return (null);
+
 	pbis.unread(i);
-	return(pbis);
+	return (pbis);
       }
-    catch(IOException e)
+    catch (IOException e)
       {
-	return(null);
+	return (null);
       }
   }
 
   /**
    * Returns the value of the named field parsed as date
+   *
+   * @param key the key of the header field
+   * @param value the default value if the header field is not present
+   *
+   * @return the value of the header field
    */
-  public long getHeaderFieldDate (String key, long value)
+  public long getHeaderFieldDate(String key, long value)
   {
     // FIXME: implement this correctly
     // http://www.w3.org/Protocols/HTTP-NG/ng-notes.txt
-    
-    return super.getHeaderFieldDate (key, value);
+    return super.getHeaderFieldDate(key, value);
   }
 }

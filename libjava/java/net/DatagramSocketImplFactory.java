@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -37,12 +37,12 @@ exception statement from your version. */
 
 package java.net;
 
+
 /** Written using on-line Java Platform 1.4 API Specification.
   * Status: Believed complete and correct.
   */
-
 /**
-  * This interface defines one method which returns a 
+  * This interface defines one method which returns a
   * <code>DatagramSocketImpl</code> object.
   * This should not be needed by ordinary applications.
   *
@@ -57,5 +57,4 @@ public interface DatagramSocketImplFactory
    * @return A DatagramSocketImpl object
    */
   DatagramSocketImpl createDatagramSocketImpl();
-
 } // interface DatagramSocketImplFactory

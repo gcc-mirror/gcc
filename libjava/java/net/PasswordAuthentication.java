@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package java.net;
 
+
 /**
   * This class serves a container for username/password pairs.
   *
@@ -50,7 +51,7 @@ public final class PasswordAuthentication
    */
 
   /**
-    * The username 
+    * The username
     */
   private String username;
 
@@ -66,7 +67,7 @@ public final class PasswordAuthentication
    */
 
   /**
-    * Creates a new <code>PasswordAuthentication</code> object from the 
+    * Creates a new <code>PasswordAuthentication</code> object from the
     * specified username and password.
     *
     * @param username The username for this object
@@ -91,9 +92,9 @@ public final class PasswordAuthentication
     */
   public String getUserName()
   {
-    return(username);
+    return (username);
   }
-   
+
   /**
     * Returns the password associated with this object
     *
@@ -101,8 +102,6 @@ public final class PasswordAuthentication
     */
   public char[] getPassword()
   {
-    return(password);
+    return (password);
   }
-
 } // class PasswordAuthentication
-
