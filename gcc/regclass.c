@@ -174,6 +174,10 @@ const char * reg_names[] = REGISTER_NAMES;
 
 enum machine_mode reg_raw_mode[FIRST_PSEUDO_REGISTER];
 
+/* 1 if class does contain register of given mode.  */
+
+static char contains_reg_of_mode [N_REG_CLASSES] [MAX_MACHINE_MODE];
+
 /* Maximum cost of moving from a register in one class to a register in
    another class.  Based on REGISTER_MOVE_COST.  */
 
@@ -288,7 +292,6 @@ init_reg_sets_1 ()
 {
   register unsigned int i, j;
   register unsigned int /* enum machine_mode */ m;
-  char contains_reg_of_mode [N_REG_CLASSES] [MAX_MACHINE_MODE];
   char allocatable_regs_of_mode [MAX_MACHINE_MODE];
 
   /* This macro allows the fixed or call-used registers
@@ -429,14 +432,15 @@ init_reg_sets_1 ()
   memset (allocatable_regs_of_mode, 0, sizeof (allocatable_regs_of_mode));
   for (m = 0; m < MAX_MACHINE_MODE; m++)
     for (i = 0; i < N_REG_CLASSES; i++)
-      for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
-	if (!fixed_regs [j] && TEST_HARD_REG_BIT (reg_class_contents[i], j)
-	    && HARD_REGNO_MODE_OK (j, m))
-	   {
-	     contains_reg_of_mode [i][m] = 1;
-	     allocatable_regs_of_mode [m] = 1;
-	     break;
-	   }
+      if (CLASS_MAX_NREGS (i, m) <= reg_class_size[i])
+	for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
+	  if (!fixed_regs [j] && TEST_HARD_REG_BIT (reg_class_contents[i], j)
+	      && HARD_REGNO_MODE_OK (j, m))
+	     {
+	       contains_reg_of_mode [i][m] = 1;
+	       allocatable_regs_of_mode [m] = 1;
+	       break;
+	     }
 
   /* Initialize the move cost table.  Find every subset of each class
      and take the maximum cost of moving any subset to any other.  */
@@ -860,6 +864,15 @@ dump_regclass (dump)
 	{
 	  fprintf (dump, "  Register %i costs:", i);
 	  for (class = 0; class < N_REG_CLASSES; class++)
+	    if (contains_reg_of_mode [class][PSEUDO_REGNO_MODE (i)]
+#ifdef FORBIDDEN_INC_DEC_CLASSES
+		&& (!in_inc_dec[i] || !forbidden_inc_dec_class[class])
+#endif
+#ifdef CLASS_CANNOT_CHANGE_MODE
+		&& (!REGNO_REG_SET_P (reg_changes_mode, i)
+		     || class_can_change_mode [class])
+#endif
+		)
 	    fprintf (dump, " %s:%i", reg_class_names[(int) class],
 		     costs[i].cost[class]);
 	  fprintf (dump, " MEM:%i\n", costs[i].mem_cost);
@@ -1224,8 +1237,7 @@ regclass (f, nregs, dump)
 	    {
 	      /* Ignore classes that are too small for this operand or
 		 invalid for a operand that was auto-incremented.  */
-	      if (CLASS_MAX_NREGS (class, PSEUDO_REGNO_MODE (i))
-		  > reg_class_size[class]
+	      if (!contains_reg_of_mode [class][PSEUDO_REGNO_MODE (i)]
 #ifdef FORBIDDEN_INC_DEC_CLASSES
 		  || (in_inc_dec[i] && forbidden_inc_dec_class[class])
 #endif
