@@ -1,3 +1,7 @@
+2004-09-30  Tom Tromey  <tromey@redhat.com>
+
+	* javax/crypto/MacSpi.java: Fixed typo.
+
 2004-09-30  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/InetAddress.java: Reformatted.
