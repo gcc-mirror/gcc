@@ -1,3 +1,10 @@
+2005-01-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/19258
+	* parser.c (cp_parser_late_parsing_default_args): Handle friend
+	defined in class.
+	* pt.c (push_access_scope, pop_access_scope): Likewise.
+
 2005-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/19263

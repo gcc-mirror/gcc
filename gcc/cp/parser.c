@@ -1,5 +1,6 @@
 /* C++ Parser.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004,
+   2005 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
    This file is part of GCC.
@@ -14843,10 +14844,12 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
       saved_local_variables_forbidden_p = parser->local_variables_forbidden_p;
       parser->local_variables_forbidden_p = true;
        /* Parse the assignment-expression.  */
-      if (DECL_CLASS_SCOPE_P (fn))
+      if (DECL_FRIEND_CONTEXT (fn))
+	push_nested_class (DECL_FRIEND_CONTEXT (fn));
+      else if (DECL_CLASS_SCOPE_P (fn))
 	push_nested_class (DECL_CONTEXT (fn));
       TREE_PURPOSE (parameters) = cp_parser_assignment_expression (parser);
-      if (DECL_CLASS_SCOPE_P (fn))
+      if (DECL_FRIEND_CONTEXT (fn) || DECL_CLASS_SCOPE_P (fn))
 	pop_nested_class ();
 
       /* If the token stream has not been completely used up, then

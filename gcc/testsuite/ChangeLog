@@ -1,3 +1,8 @@
+2005-01-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/19258
+	* g++.dg/lookup/friend6.C: New test.
+
 2005-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/15139

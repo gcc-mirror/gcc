@@ -1,6 +1,6 @@
 /* Handle parameterized types (templates) for GNU C++.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004  Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
    Rewritten by Jason Merrill (jason@cygnus.com).
 
@@ -180,7 +180,9 @@ push_access_scope (tree t)
 		      || TREE_CODE (t) == VAR_DECL,
 		      0);
 
-  if (DECL_CLASS_SCOPE_P (t))
+  if (DECL_FRIEND_CONTEXT (t))
+    push_nested_class (DECL_FRIEND_CONTEXT (t));
+  else if (DECL_CLASS_SCOPE_P (t))
     push_nested_class (DECL_CONTEXT (t));
   else
     push_to_top_level ();
@@ -205,7 +207,7 @@ pop_access_scope (tree t)
       saved_access_scope = TREE_CHAIN (saved_access_scope);
     }
 
-  if (DECL_CLASS_SCOPE_P (t))
+  if (DECL_FRIEND_CONTEXT (t) || DECL_CLASS_SCOPE_P (t))
     pop_nested_class ();
   else
     pop_from_top_level ();
