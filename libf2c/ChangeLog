@@ -1,3 +1,8 @@
+2001-11-16  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* Makefile.in: Add MAKEOVERRIDES= to suppress exporting
+	environment to (sub)shells.
+
 2001-11-13  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* Makefile.in: Change dependencies on stamp files
