@@ -1,3 +1,8 @@
+1999-05-17  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* cse.c (cse_insn): Copy SRC_CONST before putting it in the
+	REG_EQUAL note.
+
 1999-05-17  Mike Stump  <mrs@wrs.com>
 
 	* rs6000/vxppc.h (CPP_SPEC): Fix support for vararg functions.
