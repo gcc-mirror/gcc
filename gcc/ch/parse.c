@@ -332,11 +332,7 @@ require(token)
      enum terminal token;
 {
   if (PEEK_TOKEN() != token)
-    {
-      char buf[80];
-      sprintf (buf, "internal parser error - expected token %d", (int)token);
-      fatal(buf);
-    }
+    fatal ("internal parser error - expected token %d", (int)token);
   FORWARD_TOKEN();
 }
 
@@ -361,7 +357,7 @@ expect(token, message)
   if (PEEK_TOKEN() != token)
     {
       if (pass == 1)
-	error(message ? message : "syntax error");
+	error("%s", message ? message : "syntax error");
       return 0;
     }
   else

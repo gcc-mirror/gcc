@@ -155,7 +155,7 @@ valid_array_index_p (array, idx, error_message, is_varying_lhs)
     {
       if (tree_int_cst_equal (cond, boolean_false_node))
 	return idx;       /* condition met at compile time */
-      error (error_message); /* condition failed at compile time */
+      error ("%s", error_message); /* condition failed at compile time */
       return error_mark_node;
     }
   else if (range_checking)

@@ -2512,20 +2512,20 @@ build_chill_function_call (function, expr)
  
   if (valtail != 0 && TREE_VALUE (valtail) != void_type_node)
     {
-      const char *errstr = "too many arguments to procedure";
       if (name)
-	error ("%s `%s'", errstr, IDENTIFIER_POINTER (name));
+	error ("too many arguments to procedure `%s'",
+	       IDENTIFIER_POINTER (name));
       else
-	error (errstr);
+	error ("too many arguments to procedure");
       return error_mark_node;
     }
   else if (typetail != 0 && TREE_VALUE (typetail) != void_type_node)
     {
-      const char *errstr = "too few arguments to procedure";
       if (name)
-	error ("%s `%s'", errstr, IDENTIFIER_POINTER (name));
+	error ("too few arguments to procedure `%s'",
+	       IDENTIFIER_POINTER (name));
       else
-	error (errstr);
+	error ("too few arguments to procedure");
       return error_mark_node;
     }
   

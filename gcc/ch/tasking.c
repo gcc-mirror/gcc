@@ -69,18 +69,19 @@ tree tasking_list = NULL_TREE;
 #define TASK_INFO_STUFF_TYPE(NODE) TREE_VEC_ELT(NODE,4)
 
 /* name template for process argument type */
-static const char * struct_name = "__tmp_%s_arg_type";
+#define STRUCT_NAME "__tmp_%s_arg_type"
 
 /* name template for process arguments for debugging type */
-static const char * struct_debug_name = "__tmp_%s_debug_type";
+#define STRUCT_DEBUG_NAME "__tmp_%s_debug_type"
 
-#if 0
 /* name template for process argument variable */
-static const char * data_name = "__tmp_%s_arg_variable";
-#endif
+#define DATA_NAME  "__tmp_%s_arg_variable"
 
 /* name template for process wrapper */
-static const char * wrapper_name = "__tmp_%s_wrapper";
+#define WRAPPER_NAME "__tmp_%s_wrapper"
+
+/* name template for process code */
+#define SKELNAME "__tmp_%s_code"
 
 extern int ignoring;
 static tree void_ftype_void;
@@ -92,9 +93,9 @@ get_struct_type_name (name)
      tree name;
 {
   const char *idp = IDENTIFIER_POINTER (name);        /* process name */
-  char *tmpname = xmalloc (strlen (idp) + strlen (struct_name) + 1);
+  char *tmpname = xmalloc (strlen (idp) + sizeof (STRUCT_NAME));
 
-  sprintf (tmpname, struct_name, idp);
+  sprintf (tmpname, STRUCT_NAME, idp);
   return get_identifier (tmpname);
 }
 
@@ -103,9 +104,9 @@ get_struct_debug_type_name (name)
      tree name;
 {
   const char *idp = IDENTIFIER_POINTER (name);        /* process name */
-  char *tmpname = xmalloc (strlen (idp) + strlen (struct_debug_name) + 1);
+  char *tmpname = xmalloc (strlen (idp) + sizeof (STRUCT_DEBUG_NAME));
 
-  sprintf (tmpname, struct_debug_name, idp);
+  sprintf (tmpname, STRUCT_DEBUG_NAME, idp);
   return get_identifier (tmpname);
 }
 
@@ -114,12 +115,11 @@ tree
 get_tasking_code_name (name)
      tree name;
 {
-  const char *skelname = "__tmp_%s_code";
   const char *name_str = IDENTIFIER_POINTER (name);
-  char *tmpname  = (char *)alloca (IDENTIFIER_LENGTH (name) +
-				   strlen (skelname) + 1);
-
-  sprintf (tmpname, skelname, name_str);
+  char *tmpname  = (char *) alloca (IDENTIFIER_LENGTH (name) +
+				    sizeof (SKELNAME));
+  
+  sprintf (tmpname, SKELNAME, name_str);
   return get_identifier (tmpname);
 }
 
@@ -129,9 +129,9 @@ get_struct_variable_name (name)
      tree name;
 {
   const char *idp = IDENTIFIER_POINTER (name);        /* process name */
-  char *tmpname = xmalloc (strlen (idp) + strlen (data_name) + 1);
+  char *tmpname = xmalloc (strlen (idp) + sizeof (DATA_NAME));
 
-  sprintf (tmpname, data_name, idp);
+  sprintf (tmpname, DATA_NAME, idp);
   return get_identifier (tmpname);
 }
 #endif
@@ -141,9 +141,9 @@ get_process_wrapper_name (name)
     tree name;
 {
   const char *idp = IDENTIFIER_POINTER (name);
-  char *tmpname = xmalloc (strlen (idp) + strlen (wrapper_name) + 1);
+  char *tmpname = xmalloc (strlen (idp) + sizeof (WRAPPER_NAME));
     
-  sprintf (tmpname, wrapper_name, idp);
+  sprintf (tmpname, WRAPPER_NAME, idp);
   return get_identifier (tmpname);
 }
 
@@ -627,19 +627,19 @@ build_start_process (process_name, copynum,
   
       if (valtail != 0 && TREE_VALUE (valtail) != void_type_node)
 	{
-	  const char *errstr = "too many arguments to process";
 	  if (process_name)
-	    error ("%s `%s'", errstr, IDENTIFIER_POINTER (process_name));
+	    error ("too many arguments to process `%s'",
+		   IDENTIFIER_POINTER (process_name));
 	  else
-	    error (errstr);
+	    error ("too many arguments to process");
 	}
       else if (typetail != 0 && TREE_VALUE (typetail) != void_type_node)
 	{
-	  const char *errstr = "too few arguments to process";
 	  if (process_name)
-	    error ("%s `%s'", errstr, IDENTIFIER_POINTER (process_name));
+	    error ("too few arguments to process `%s'",
+		   IDENTIFIER_POINTER (process_name));
 	  else
-	    error (errstr);
+	    error ("too few arguments to process");
 	}
       else
       {
