@@ -6064,7 +6064,7 @@ gen_formal_types_die (function_or_method_type, context_die)
       if (formal_type == void_type_node)
 	break;
 
-      gen_type_die (formal_type, function_or_method_type, context_die);
+      gen_type_die (formal_type, context_die);
     }
 }
 
