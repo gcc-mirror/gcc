@@ -1,3 +1,10 @@
+Wed Mar 17 09:25:06 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * c-lex.c: Don't include setjmp.h.
+	(parse_float): New static function.
+	(pf_args): New struct.
+	(yylex): Use them in call to `do_float_handler'.
+
 1999-03-16  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* cexp.y (yyerror): Call verror to get a usefull error message.
