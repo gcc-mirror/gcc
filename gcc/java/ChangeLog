@@ -1,5 +1,8 @@
 1998-10-30  Tom Tromey  <tromey@cygnus.com>
 
+	* class.c (build_class_ref): Changed name of primitive classes to
+	start with `_Jv_'.
+
 	* class.c (make_class_data): Renamed fields: nmethods to
 	method_count, method_count to dtable_method_count.  Always set
 	`state' field to 0.
