@@ -3273,13 +3273,13 @@ changequote([,])dnl
 	sparc-*-rtemsaout*)
 		tmake_file="sparc/t-sparcbare t-rtems"
 		tm_file=sparc/rtems.h
+		;;
 	sparc-*-rtems*|sparc-*-rtemself*)
 		tm_file="sparc/rtemself.h"
 		tmake_file="sparc/t-elf t-rtems"
 		extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 		#float_format=i128
 		float_format=i64
-		;;
 		;;
 	sparcv9-*-solaris2*)
 		if test x$gnu_ld = xyes
