@@ -313,7 +313,7 @@ gen_indirect_dispatch_tables (tree type)
   const char *typename = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
   {  
     tree field = NULL;
-    char *buf = alloca (strlen (typename) + strlen ("_catch_classes_"));
+    char *buf = alloca (strlen (typename) + strlen ("_catch_classes_") + 1);
     tree catch_class_type = make_node (RECORD_TYPE);
 
     sprintf (buf, "_catch_classes_%s", typename);
@@ -335,7 +335,7 @@ gen_indirect_dispatch_tables (tree type)
   if (flag_indirect_dispatch)
     {
       {
-	char *buf = alloca (strlen (typename) + strlen ("_otable_syms_"));
+	char *buf = alloca (strlen (typename) + strlen ("_otable_syms_") + 1);
 
 	sprintf (buf, "_otable_%s", typename);
 	TYPE_OTABLE_DECL (type) = 
@@ -356,7 +356,7 @@ gen_indirect_dispatch_tables (tree type)
       }
 
       {
-	char *buf = alloca (strlen (typename) + strlen ("_atable_syms_"));
+	char *buf = alloca (strlen (typename) + strlen ("_atable_syms_") + 1);
 	tree decl;
 
 	sprintf (buf, "_atable_%s", typename);
