@@ -27,7 +27,7 @@ public final class CollationElementIterator
   {
     if (index == text.length())
       return NULLORDER;
-    return RuleBasedCollator.ceiNext(this);
+    return collator.ceiNext(this);
   }
 
   // This one returns int while the others return short.
@@ -55,12 +55,13 @@ public final class CollationElementIterator
   }
 
   // Non-public constructor.
-  CollationElementIterator (String text)
+  CollationElementIterator (String text, RuleBasedCollator collator)
   {
     this.text = text;
     this.index = 0;
     this.lookahead_set = false;
     this.lookahead = 0;
+    this.collator = collator;
   }
 
   // Text over which we iterate.
@@ -72,4 +73,7 @@ public final class CollationElementIterator
   // A piece of lookahead.
   boolean lookahead_set;
   int lookahead;
+
+  // The RuleBasedCollator which created this object.
+  RuleBasedCollator collator;
 }

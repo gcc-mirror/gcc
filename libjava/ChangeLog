@@ -1,3 +1,46 @@
+1999-04-29  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/StringBuffer.java (ensureCapacity): Don't resize
+	vector when shared.
+
+	* java/util/Locale.java (Locale(String,String)): Implement in
+	terms of 3-argument version; variant now defaults to empty
+	string.
+	(toString): Assume variant is not null.
+	(equals): Assume all strings are not null.
+	(Locale): Throw NullPointerException if any argument is null.
+
+	* java/util/ResourceBundle.java (getBundle): Don't try the base
+	name; now implicit in partialGetBundle call.
+	(trySomeGetBundle): Search for parent bundles and call setParent
+	as required.
+	(partialGetBundle): Added `langStop' argument.  Use
+	`Locale.toString' to compute bundleName.
+	(resource_cache): New static field.
+	(partialGetBundle): Cache the returned resource bundle.  Now
+	synchronized.
+
+	* gnu/gcj/text/LocaleData_en.java (contents): [collatorRule] Added
+	missing `<'.
+
+	* mauve-libgcj: Enable Collator and RuleBasedCollator.
+	* java/text/natCollator.cc (decomposeCharacter): `base' now
+	`const'.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Added
+	CollationElementIterator, CollationKey, Collator,
+	RuleBasedCollator.
+	(nat_source_files): Added natCollator.cc.
+	* java/text/RuleBasedCollator.java (ceiNext): No longer static.
+	(compare): Pass `this' to CollationElementIterator constructor.
+	(getCollationElementIterator): Likewise.
+	(ceiNext): Fix off-by-one error when finding initial substring.
+	(next): Correctly mask off bits when computing return value.
+	Fixed return values when one string is shorter than the other.
+	* java/text/CollationElementIterator.java (collator): New field.
+	(CollationElementIterator): Added collator argument.
+	(next): Call ceiNext on collator object.
+
 1999-04-26  Tom Tromey  <tromey@cygnus.com>
 
 	* natCollator.cc: New file.

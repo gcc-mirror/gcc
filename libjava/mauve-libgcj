@@ -22,8 +22,8 @@ java.text.StringCharacterIterator.iter
 # java.text.SimpleDateFormat.getAndSet2DigitYearStart
 !java.text.ACIAttribute
 !java.text.AttributedCharacterIterator
-!java.text.Collator
-!java.text.RuleBasedCollator
+java.text.Collator
+java.text.RuleBasedCollator
 !java.text.resources
 !java.text.DateFormat
 !java.util.zip

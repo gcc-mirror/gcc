@@ -43,7 +43,7 @@ public class RuleBasedCollator extends Collator
   }
 
   // A helper for CollationElementIterator.next().
-  static int ceiNext (CollationElementIterator cei)
+  int ceiNext (CollationElementIterator cei)
   {
     if (cei.lookahead_set)
       {
@@ -61,7 +61,7 @@ public class RuleBasedCollator extends Collator
     boolean found = false;
 
     int i;
-    for (i = save; i < max; ++i)
+    for (i = save + 1; i <= max; ++i)
       {
 	s = cei.text.substring(save, i);
 	if (prefixes.get(s) == null)
@@ -108,16 +108,15 @@ public class RuleBasedCollator extends Collator
 	switch (strength)
 	  {
 	  case PRIMARY:
-	    c |= CollationElementIterator.primaryOrder(os);
-	    /* Fall through.  */
-	  case SECONDARY:
-	    c |= CollationElementIterator.secondaryOrder(os);
-	    /* Fall through.  */
-	  case TERTIARY:
-	    c |= CollationElementIterator.tertiaryOrder(os);
+	    c = os & ~0xffff;
 	    break;
+	  case SECONDARY:
+	    c = os & ~0x00ff;
+	    break;
+	  case TERTIARY:
 	  case IDENTICAL:
 	    c = os;
+	    break;
 	  }
 	if (c != 0)
 	  return c;
@@ -128,8 +127,8 @@ public class RuleBasedCollator extends Collator
   {
     CollationElementIterator cs, ct;
 
-    cs = new CollationElementIterator (source);
-    ct = new CollationElementIterator (target);
+    cs = new CollationElementIterator (source, this);
+    ct = new CollationElementIterator (target, this);
 
     while (true)
       {
@@ -140,9 +139,15 @@ public class RuleBasedCollator extends Collator
 	    && ot == CollationElementIterator.NULLORDER)
 	  break;
 	else if (os == CollationElementIterator.NULLORDER)
-	  return 1;
+	  {
+	    // Source string is shorter, so return "less than".
+	    return -1;
+	  }
 	else if (ot == CollationElementIterator.NULLORDER)
-	  return -1;
+	  {
+	    // Target string is shorter, so return "greater than".
+	    return 1;
+	  }
 
 	if (os != ot)
 	  return os - ot;
@@ -168,7 +173,7 @@ public class RuleBasedCollator extends Collator
     int max = source.length();
     for (int i = 0; i < max; ++i)
       decomposeCharacter (source.charAt(i), expand);
-    return new CollationElementIterator (expand.toString());
+    return new CollationElementIterator (expand.toString(), this);
   }
 
   public CollationKey getCollationKey (String source)

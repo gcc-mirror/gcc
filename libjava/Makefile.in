@@ -398,6 +398,9 @@ java/security/NoSuchAlgorithmException.java \
 java/text/BreakIterator.java \
 java/text/CharacterIterator.java \
 java/text/ChoiceFormat.java \
+java/text/CollationElementIterator.java \
+java/text/CollationKey.java \
+java/text/Collator.java \
 java/text/DateFormat.java \
 java/text/DateFormatSymbols.java \
 java/text/DecimalFormat.java \
@@ -408,6 +411,7 @@ java/text/MessageFormat.java \
 java/text/NumberFormat.java \
 java/text/ParseException.java \
 java/text/ParsePosition.java \
+java/text/RuleBasedCollator.java \
 java/text/SimpleDateFormat.java	\
 java/text/StringCharacterIterator.java \
 java/util/BitSet.java \
@@ -466,19 +470,35 @@ c_source_files = \
   java/lang/k_cos.c       java/lang/s_sin.c
 
 
-nat_source_files = java/lang/natObject.cc java/lang/natClass.cc	\
-java/lang/natString.cc java/lang/natDouble.cc java/lang/natRuntime.cc \
-java/lang/natSystem.cc java/lang/natThread.cc java/io/natFile.cc \
-java/io/natFileDescriptor.cc java/util/natDate.cc \
-java/util/natGregorianCalendar.cc java/lang/natFirstThread.cc \
-java/lang/natCharacter.cc java/lang/natMath.cc java/lang/natFloat.cc \
-java/lang/reflect/natField.cc java/net/natInetAddress.cc \
-java/net/natPlainSocketImpl.cc java/lang/reflect/natMethod.cc \
-java/lang/reflect/natArray.cc gnu/gcj/convert/Unicode_to_JIS.cc \
-gnu/gcj/convert/natInput_EUCJIS.cc gnu/gcj/convert/natOutput_EUCJIS.cc \
-gnu/gcj/convert/natInput_SJIS.cc gnu/gcj/convert/natOutput_SJIS.cc \
+nat_source_files = \
 gnu/gcj/convert/JIS0208_to_Unicode.cc \
-gnu/gcj/convert/JIS0212_to_Unicode.cc
+gnu/gcj/convert/JIS0212_to_Unicode.cc \
+gnu/gcj/convert/Unicode_to_JIS.cc \
+gnu/gcj/convert/natInput_EUCJIS.cc \
+gnu/gcj/convert/natInput_SJIS.cc \
+gnu/gcj/convert/natOutput_EUCJIS.cc \
+gnu/gcj/convert/natOutput_SJIS.cc \
+java/io/natFile.cc \
+java/io/natFileDescriptor.cc \
+java/lang/natCharacter.cc \
+java/lang/natClass.cc \
+java/lang/natDouble.cc \
+java/lang/natFirstThread.cc \
+java/lang/natFloat.cc \
+java/lang/natMath.cc \
+java/lang/natObject.cc \
+java/lang/natRuntime.cc	\
+java/lang/natString.cc \
+java/lang/natSystem.cc \
+java/lang/natThread.cc \
+java/lang/reflect/natArray.cc \
+java/lang/reflect/natField.cc \
+java/lang/reflect/natMethod.cc \
+java/net/natInetAddress.cc \
+java/net/natPlainSocketImpl.cc \
+java/text/natCollator.cc \
+java/util/natDate.cc \
+java/util/natGregorianCalendar.cc
 
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
@@ -716,12 +736,15 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/security/MessageDigest.P \
 .deps/java/security/NoSuchAlgorithmException.P \
 .deps/java/text/BreakIterator.P .deps/java/text/CharacterIterator.P \
-.deps/java/text/ChoiceFormat.P .deps/java/text/DateFormat.P \
-.deps/java/text/DateFormatSymbols.P .deps/java/text/DecimalFormat.P \
-.deps/java/text/DecimalFormatSymbols.P .deps/java/text/FieldPosition.P \
-.deps/java/text/Format.P .deps/java/text/MessageFormat.P \
-.deps/java/text/NumberFormat.P .deps/java/text/ParseException.P \
-.deps/java/text/ParsePosition.P .deps/java/text/SimpleDateFormat.P \
+.deps/java/text/ChoiceFormat.P \
+.deps/java/text/CollationElementIterator.P \
+.deps/java/text/CollationKey.P .deps/java/text/Collator.P \
+.deps/java/text/DateFormat.P .deps/java/text/DateFormatSymbols.P \
+.deps/java/text/DecimalFormat.P .deps/java/text/DecimalFormatSymbols.P \
+.deps/java/text/FieldPosition.P .deps/java/text/Format.P \
+.deps/java/text/MessageFormat.P .deps/java/text/NumberFormat.P \
+.deps/java/text/ParseException.P .deps/java/text/ParsePosition.P \
+.deps/java/text/RuleBasedCollator.P .deps/java/text/SimpleDateFormat.P \
 .deps/java/text/StringCharacterIterator.P .deps/java/util/BitSet.P \
 .deps/java/util/Calendar.P \
 .deps/java/util/ConcurrentModificationException.P \

@@ -98,7 +98,13 @@ public final class StringBuffer implements Serializable
     {
       if (shared || minimumCapacity > value.length)
 	{
-	  minimumCapacity = Math.max(minimumCapacity, value.length*2+2);
+	  // We don't want to make a larger vector when `shared' is
+	  // set.  If we do, then setLength becomes very inefficient
+	  // when repeatedly reusing a StringBuffer in a loop.
+	  int max = (minimumCapacity > value.length
+		     ? value.length*2+2
+		     : value.length);
+	  minimumCapacity = Math.max(minimumCapacity, max);
 	  char[] nb = new char[minimumCapacity];
 	  System.arraycopy(value, 0, nb, 0, count);
 	  value = nb;

@@ -36,33 +36,34 @@ public final class Locale implements java.io.Serializable, Cloneable
 
   public Locale (String languageCode, String countryCode)
   {
-    language = languageCode.toLowerCase();
-    country = countryCode.toUpperCase();
-    hashcode = languageCode.hashCode() ^ countryCode.hashCode();
+    this (languageCode, countryCode, "");
   }
 
   public Locale (String languageCode, String countryCode,
 		 String variantCode)
   {
-    this (languageCode, countryCode);
-    variant = variantCode;
-    hashcode ^= variantCode.hashCode();
+    // We must explicitly check the arguments.
+    if (languageCode == null || countryCode == null
+	|| variantCode == null)
+      throw new NullPointerException ();
+    language = languageCode.toLowerCase();
+    country = countryCode.toUpperCase();
+    variant = variantCode.toUpperCase();
+    hashcode = (languageCode.hashCode()
+		^ countryCode.hashCode()
+		^ variantCode.hashCode());
   }
 
   public Object clone ()
-    {
-      return (Object) new Locale (language, country, variant);
-    }
+  {
+    return (Object) new Locale (language, country, variant);
+  }
 
   public boolean equals (Object obj)
     {
       if (! (obj instanceof Locale))
 	return false;
       Locale loc = (Locale) obj;
-      if ((language == null && loc.language != null)
-	  || (country == null && loc.country != null)
-	  || (variant == null && loc.variant != null))
-	return false;
       return (language.equals(loc.language)
 	      && country.equals(loc.country)
 	      && variant.equals(loc.variant));
@@ -115,7 +116,7 @@ public final class Locale implements java.io.Serializable, Cloneable
     result.append(language);
     result.append('_');
     result.append(country);
-    if (variant != null && variant.length() > 0)
+    if (variant.length() > 0)
       {
 	result.append('_');
 	result.append(variant);
