@@ -41,7 +41,7 @@ Boston, MA 02111-1307, USA.  */
    one or more in-edges to B to instead reach the destination of an
    out-edge from B while preserving any side effects in B.
 
-   ie, given A->B and B->C, change A->B to be A->C yet still preserve the
+   i.e., given A->B and B->C, change A->B to be A->C yet still preserve the
    side effects of executing B.
 
      1. Make a copy of B (including its outgoing edges and statements).  Call

@@ -1431,7 +1431,7 @@ dbxout_type (tree type, int full)
     {
     case VOID_TYPE:
     case LANG_TYPE:
-      /* For a void type, just define it as itself; ie, "5=5".
+      /* For a void type, just define it as itself; i.e., "5=5".
 	 This makes us consider it defined
 	 without saying what it is.  The debugger will make it
 	 a void type when the reference is seen, and nothing will

@@ -5169,7 +5169,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      }
 	    else
 	      /* Catch the case where a spec string contains something like
-		 '%{foo:%*}'.  ie there is no * in the pattern on the left
+		 '%{foo:%*}'.  i.e. there is no * in the pattern on the left
 		 hand side of the :.  */
 	      error ("spec failure: '%%*' has not been initialized by pattern match");
 	    break;

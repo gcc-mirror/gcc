@@ -2698,7 +2698,7 @@ memory_modified_1 (rtx x, rtx pat ATTRIBUTE_UNUSED, void *data)
 
 
 /* Return true when INSN possibly modify memory contents of MEM
-   (ie address can be modified).  */
+   (i.e. address can be modified).  */
 bool
 memory_modified_in_insn_p (rtx mem, rtx insn)
 {

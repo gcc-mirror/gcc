@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 
 struct dom_walk_data
 {
-  /* This is the direction of the dominator tree we want to walk.  ie,
+  /* This is the direction of the dominator tree we want to walk.  i.e.,
      if it is set to CDI_DOMINATORS, then we walk the dominator tree,
      if it is set to CDI_POST_DOMINATORS, then we walk the post
      dominator tree.  */

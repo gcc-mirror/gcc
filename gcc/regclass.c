@@ -1582,7 +1582,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		  win = address_operand (op, GET_MODE (op));
 		  /* We know this operand is an address, so we want it to be
 		     allocated to a register that can be the base of an
-		     address, ie BASE_REG_CLASS.  */
+		     address, i.e. BASE_REG_CLASS.  */
 		  classes[i]
 		    = reg_class_subunion[(int) classes[i]]
 		      [(int) MODE_BASE_REG_CLASS (VOIDmode)];
@@ -1696,7 +1696,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 			win = 1;
 		      /* We know this operand is an address, so we want it to
 			 be allocated to a register that can be the base of an
-			 address, ie BASE_REG_CLASS.  */
+			 address, i.e. BASE_REG_CLASS.  */
 		      classes[i]
 			= reg_class_subunion[(int) classes[i]]
 			  [(int) MODE_BASE_REG_CLASS (VOIDmode)];

@@ -75,7 +75,7 @@ Boston, MA 02111-1307, USA.  */
    variable, and that same variable occurs in the same operands cache, then 
    the new cache vector will also get the same SSA_NAME.
 
-  ie, if a stmt had a VUSE of 'a_5', and 'a' occurs in the new operand 
+  i.e., if a stmt had a VUSE of 'a_5', and 'a' occurs in the new operand 
   vector for VUSE, then the new vector will also be modified such that 
   it contains 'a_5' rather than 'a'.
 

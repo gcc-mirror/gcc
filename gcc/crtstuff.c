@@ -109,7 +109,7 @@ call_ ## FUNC (void)					\
    but not its definition.
 
    Making TARGET_WEAK_ATTRIBUTE conditional seems like a good solution until
-   one thinks about scaling to larger problems -- ie, the condition under
+   one thinks about scaling to larger problems -- i.e., the condition under
    which TARGET_WEAK_ATTRIBUTE is active will eventually get far too
    complicated.
 

@@ -52,7 +52,7 @@ Boston, MA 02111-1307, USA.  */
 
 
   [ Note this walker can also walk the post-dominator tree, which is
-    defined in a similar manner.  ie, block B1 is said to post-dominate
+    defined in a similar manner.  i.e., block B1 is said to post-dominate
     block B2 if all paths from B2 to the exit block must pass through
     B1.  ]
 

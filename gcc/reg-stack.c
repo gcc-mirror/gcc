@@ -105,7 +105,7 @@
 		asm ("foo" : "=t" (a) : "f" (b));
 
       This asm says that input B is not popped by the asm, and that
-      the asm pushes a result onto the reg-stack, ie, the stack is one
+      the asm pushes a result onto the reg-stack, i.e., the stack is one
       deeper after the asm than it was before.  But, it is possible that
       reload will think that it can use the same reg for both the input and
       the output, if input B dies in this insn.
@@ -2393,7 +2393,7 @@ subst_stack_regs (rtx insn, stack regstack)
 
    Insert any needed insns before or after INSN, as indicated by
    WHERE.  OLD is the original stack layout, and NEW is the desired
-   form.  OLD is updated to reflect the code emitted, ie, it will be
+   form.  OLD is updated to reflect the code emitted, i.e., it will be
    the same as NEW upon return.
 
    This function will not preserve block_end[].  But that information

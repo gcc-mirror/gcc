@@ -1,5 +1,14 @@
 2004-09-18  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* alias.c, crtstuff.c, dbxout.c, domwalk.c, domwalk.h, gcc.c,
+	gcse.c, global.c, lambda-code.c, loop.c, mips-tdump.c,
+	optabs.h, predict.c, reg-stack.c, regclass.c, sched-rgn.c,
+	tree-optimize.c, tree-ssa-dom.c, tree-ssa-forwprop.c,
+	tree-ssa-operands.c, tree-ssa-phiopt.c,
+	tree-ssa-threadupdate.c: Fix comment typos.
+
+2004-09-18  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/darwin-c.c, config/arc/arc.c, config/arc/arc.md,
 	config/arm/README-interworking, config/arm/arm-cores.def,
 	config/arm/arm.c, config/arm/arm.h, config/arm/pe.c,

@@ -170,7 +170,7 @@ struct opt_stats_d
    optimizations are not performed.
 
    Note carefully we do not propagate information through each statement
-   in the block.  ie, if we know variable X has a value defined of
+   in the block.  i.e., if we know variable X has a value defined of
    [0, 25] and we encounter Y = X + 1, we do not track a value range
    for Y (which would be [1, 26] if we cared).  Similarly we do not
    constrain values as we encounter narrowing typecasts, etc.  */
@@ -1988,7 +1988,7 @@ simplify_cond_and_lookup_avail_expr (tree stmt,
 
 	  /* We really want to avoid unnecessary computations of range
 	     info.  So all ranges are computed lazily; this avoids a
-	     lot of unnecessary work.  ie, we record the conditional,
+	     lot of unnecessary work.  i.e., we record the conditional,
 	     but do not process how it constrains the variable's 
 	     potential values until we know that processing the condition
 	     could be helpful.
@@ -3095,7 +3095,7 @@ get_eq_expr_value (tree if_stmt,
       tree op1 = TREE_OPERAND (cond, 1);
 
       /* Special case comparing booleans against a constant as we know
-	 the value of OP0 on both arms of the branch.  ie, we can record
+	 the value of OP0 on both arms of the branch.  i.e., we can record
 	 an equivalence for OP0 rather than COND.  */
       if ((TREE_CODE (cond) == EQ_EXPR || TREE_CODE (cond) == NE_EXPR)
 	  && TREE_CODE (op0) == SSA_NAME
