@@ -1,3 +1,12 @@
+1999-09-17  Gabriel Dos Reis  <gdr@codesourcery.com>
+	
+	* error.c: Reduce code duplication.
+	(dump_template_value): New function.
+	(dump_type_real): Use it.
+	(dump_decl): Likewise.
+	(dump_function_name): Likewise.
+	(dump_function_decl): Don't be too talkative about function return
+	type variety.
 
 1999-09-16  Jason Merrill  <jason@yorick.cygnus.com>
 
