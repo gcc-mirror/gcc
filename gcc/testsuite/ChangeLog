@@ -1,3 +1,7 @@
+2004-01-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/abi/vbase10.C: Use -mstructure-size-boundary=8 on ARM.
+
 2004-01-07  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/6024
