@@ -3491,6 +3491,79 @@ compare_tree_int (t, u)
   else
     return 1;
 }
+
+/* Generate a hash value for an expression.  This can be used iteratively
+   by passing a previous result as the "val" argument.
+
+   This function is intended to produce the same hash for expressions which
+   would compare equal using operand_equal_p.  */
+
+hashval_t
+iterative_hash_expr (tree t, hashval_t val)
+{
+  int i;
+  enum tree_code code;
+  char class;
+
+  if (t == NULL_TREE)
+    return iterative_hash_object (t, val);
+
+  code = TREE_CODE (t);
+  class = TREE_CODE_CLASS (code);
+
+  if (class == 'd')
+    {
+      /* Decls we can just compare by pointer.  */
+      val = iterative_hash_object (t, val);
+    }
+  else if (class == 'c')
+    {
+      /* Alas, constants aren't shared, so we can't rely on pointer
+	 identity.  */
+      if (code == INTEGER_CST)
+	{
+	  val = iterative_hash_object (TREE_INT_CST_LOW (t), val);
+	  val = iterative_hash_object (TREE_INT_CST_HIGH (t), val);
+	}
+      else if (code == REAL_CST)
+	val = iterative_hash (TREE_REAL_CST_PTR (t),
+			      sizeof (REAL_VALUE_TYPE), val);
+      else if (code == STRING_CST)
+	val = iterative_hash (TREE_STRING_POINTER (t),
+			      TREE_STRING_LENGTH (t), val);
+      else if (code == COMPLEX_CST)
+	{
+	  val = iterative_hash_expr (TREE_REALPART (t), val);
+	  val = iterative_hash_expr (TREE_IMAGPART (t), val);
+	}
+      else if (code == VECTOR_CST)
+	val = iterative_hash_expr (TREE_VECTOR_CST_ELTS (t), val);
+      else
+	abort ();
+    }
+  else if (IS_EXPR_CODE_CLASS (class) || class == 'r')
+    {
+      val = iterative_hash_object (code, val);
+
+      if (code == NOP_EXPR || code == CONVERT_EXPR
+	  || code == NON_LVALUE_EXPR)
+	val = iterative_hash_object (TREE_TYPE (t), val);
+  
+      for (i = first_rtl_op (code) - 1; i >= 0; --i)
+	val = iterative_hash_expr (TREE_OPERAND (t, i), val);
+    }
+  else if (code == TREE_LIST)
+    {
+      /* A list of expressions, for a CALL_EXPR or as the elements of a
+	 VECTOR_CST.  */
+      for (; t; t = TREE_CHAIN (t))
+	val = iterative_hash_expr (TREE_VALUE (t), val);
+    }
+  else
+    abort ();
+
+  return val;
+}
 
 /* Constructors for pointer, array and function types.
    (RECORD_TYPE, UNION_TYPE and ENUMERAL_TYPE nodes are
