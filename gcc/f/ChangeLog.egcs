@@ -1,3 +1,7 @@
+Mon Dec 15 17:35:35 1997  Richard Henderson  <rth@cygnus.com>
+
+	* com.c (ffecom_type_vardesc_): Vardesc.dims is a `ftnlen*'.
+
 Tue Dec  2 09:57:16 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Make-lang.in (f77.clean): Remove g77.c.
