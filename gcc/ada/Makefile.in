@@ -1843,6 +1843,8 @@ rts-zfp: force
 	-$(GNATMAKE) -Prts-zfp/zfp.gpr --GCC="../../../xgcc -B../../../"
 	$(RM) rts-zfp/adalib/*.o
 	$(CHMOD) a-wx rts-zfp/adalib/*.ali
+	$(AR) r rts-zfp/adalib/libgnat.a
+	$(CHMOD) a-wx rts-zfp/adalib/libgnat.a
 
 rts-none: force
 	$(MAKE) $(FLAGS_TO_PASS) prepare-rts \
@@ -1861,6 +1863,8 @@ rts-ravenscar: force
 	-$(GNATMAKE) -Prts-ravenscar/ravenscar.gpr \
 	   --GCC="../../../xgcc -B../../../"
 	$(CHMOD) a-wx rts-ravenscar/adalib/*.ali
+	$(AR) r rts-ravenscar/adalib/libgnat.a
+	$(CHMOD) a-wx rts-ravenscar/adalib/libgnat.a
 
 # Warning: this target assumes that LIBRARY_VERSION has been set correctly.
 gnatlib-shared-default:

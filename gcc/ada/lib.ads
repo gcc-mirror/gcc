@@ -587,7 +587,7 @@ package Lib is
    --  function returns True if the given generic unit entity E is for a
    --  generic unit that should be separately compiled, and false otherwise.
    --
-   --  Now GNAT can compile any generic unit including predefifined ones, but
+   --  Now GNAT can compile any generic unit including predefined ones, but
    --  because of the backward compatibility (to keep the ability to use old
    --  compiler versions to build GNAT) compiling library generics is an
    --  option. That is, now GNAT compiles a library generic as an ordinary

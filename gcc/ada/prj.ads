@@ -554,6 +554,10 @@ package Prj is
       --  The maximum depth of a project in the project graph.
       --  Depth of main project is 0.
 
+      Unkept_Comments : Boolean := False;
+      --  True if there are comments in the project sources that cannot
+      --  be kept in the project tree.
+
    end record;
 
    function Empty_Project return Project_Data;
@@ -609,10 +613,6 @@ package Prj is
    --  imports B, directly or indirectly, Action will be called for A before
    --  it is called for B. With_State may be used by Action to choose a
    --  behavior or to report some global result.
-
-   procedure Scan;
-   pragma Inline (Scan);
-   --  Scan a token. Change all operator symbols to literal strings.
 
 private
 

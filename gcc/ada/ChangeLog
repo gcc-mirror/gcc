@@ -1,3 +1,169 @@
+2003-12-08  Jerome Guitton  <guitton@act-europe.fr>
+
+	* 5ytiitho.adb, 5zthrini.adb, 5ztiitho.adb, i-vthrea.adb,
+	i-vthrea.ads, s-tpae65.adb, s-tpae65.ads: Cleanup: Remove a bunch of
+	obsolete files.
+
+	* Makefile.in: (rts-ravenscar): Generate an empty libgnat.a.
+	(rts-zfp): Ditto.
+
+2003-12-08  Robert Dewar  <dewar@gnat.com>
+
+	* 7sintman.adb: Minor reformatting
+
+	* bindgen.adb: Configurable_Run_Time mode no longer suppresses the
+	standard linker options to get standard libraries linked. We now plan
+	to provide dummy versions of these libraries to match the appropriate
+	configurable run-time (e.g. if a library is not needed at all, provide
+	a dummy empty library).
+
+	* targparm.ads: Configurable_Run_Time mode no longer affects linker
+	options (-L parameters and standard libraries). What we plan to do is
+	to provide dummy libraries where the libraries are not required.
+
+	* gnatbind.adb: Minor comment improvement
+
+2003-12-08  Javier Miranda  <miranda@gnat.com>
+
+	* exp_aggr.adb (Build_Record_Aggr_Code): Do not remove the expanded
+	aggregate in the parent. Otherwise constants with limited aggregates
+	are not supported. Add new formal to pass the component type (Ctype).
+	It is required to call the corresponding IP subprogram in case of
+	default initialized components.
+	(Gen_Assign): In case of default-initialized component, generate a
+	call to the IP subprogram associated with the component.
+	(Build_Record_Aggr_Code): Remove the aggregate from the parent in case
+	of aggregate with default initialized components.
+	(Has_Default_Init_Comps): Improve implementation to recursively check
+	all the present expressions.
+
+	* exp_ch3.ads, exp_ch3.adb (Build_Initialization_Call): Add new formal
+	to indicate that the initialization call corresponds to a
+	default-initialized component of an aggregate.
+	In case of default initialized aggregate with tasks this parameter is
+	used to generate a null string (this is just a workaround that must be
+	improved later). In case of discriminants, this parameter is used to
+	generate a selected component node that gives access to the discriminant
+	value.
+
+	* exp_ch9.ads, exp_ch9.adb (Build_Task_Allocate_Block_With_Stmts): New
+	subprogram, based on Build_Task_Allocate_Block, but adapted to expand
+	allocated aggregates with default-initialized components.
+
+	* par-ch4.adb (P_Aggregate_Or_Paren_Expr): Improve error message if
+	the box notation is used in positional aggregates.
+
+2003-12-08  Samuel Tardieu  <tardieu@act-europe.fr>
+
+	* lib.ads: Fix typo in comment
+
+2003-12-08  Vincent Celier  <celier@gnat.com>
+
+	* prj.adb (Project_Empty): New component Unkept_Comments
+	(Scan): Remove procedure; moved to Prj.Err.
+
+	* prj.ads (Project_Data): New Boolean component Unkept_Comments
+	(Scan): Remove procedure; moved to Prj.Err.
+
+	* prj-dect.adb: Manage comments for the different declarations.
+
+	* prj-part.adb (With_Record): New component Node
+	(Parse): New Boolean parameter Store_Comments, defaulted to False.
+	Set the scanner to return ends of line and comments as tokens, if
+	Store_Comments is True.
+	(Pre_Parse_Context_Clause): Create the N_With_Clause nodes so that
+	comments are associated with these nodes. Store the node IDs in the
+	With_Records.
+	(Post_Parse_Context_Clause): Use the N_With_Clause nodes stored in the
+	With_Records.
+	(Parse_Single_Project): Call Pre_Parse_Context_Clause before creating
+	the N_Project node. Call Tree.Save and Tree.Reset before scanning the
+	current project. Call Tree.Restore afterwards. Set the various nodes
+	for comment storage (Next_End, End_Of_Line, Previous_Line,
+	Previous_End).
+
+	* prj-part.ads (Parse): New Boolean parameter Store_Comments,
+	defaulted to False.
+
+	* prj-pp.adb (Write_String): New Boolean parameter Truncated, defaulted
+	to False. When Truncated is True, truncate the string, never go to the
+	next line.
+	(Write_End_Of_Line_Comment): New procedure
+	(Print): Process comments for nodes N_With_Clause,
+	N_Package_Declaration, N_String_Type_Declaration,
+	N_Attribute_Declaration, N_Typed_Variable_Declaration,
+	N_Variable_Declaration, N_Case_Construction, N_Case_Item.
+	Process nodes N_Comment.
+
+	* prj-tree.ads, prj-tree.adb (Default_Project_Node): If it is a node
+	without comments and there are some comments, set the flag
+	Unkept_Comments to True.
+	(Scan): If there are comments, set the flag Unkept_Comments to True and
+	clear the comments.
+	(Project_Node_Kind): Add enum values N_Comment_Zones, N_Comment
+	(Next_End_Nodes: New table
+	(Comment_Zones_Of): New function
+	(Scan): New procedure; moved from Prj. Accumulate comments in the
+	Comments table and set end of line comments, comments after, after end
+	and before end.
+	(Add_Comments): New procedure
+	(Save, Restore, Seset_State): New procedures
+	(There_Are_Unkept_Comments): New function
+	(Set_Previous_Line_Node, Set_Previous_End_Node): New procedures
+	(Set_End_Of_Line, Set_Next_End_Node, Remove_Next_End_Node): New
+	procedures.
+	(First_Comment_After, First_Comment_After_End): New functions
+	(First_Comment_Before, First_Comment_Before_End): New functions
+	(Next_Comment): New function
+	(End_Of_Line_Comment, Follows_Empty_Line,
+	Is_Followed_By_Empty_Line): New functions
+	(Set_First_Comment_After, Set_First_Comment_After_End): New procedures
+	(Set_First_Comment_Before, Set_First_Comment_Before_End): New procedures
+	(Set_Next_Comment): New procedure
+	(Default_Project_Node): Associate comment before if the node can store
+	comments.
+
+	* scans.ads (Token_Type): New enumeration value Tok_Comment
+	(Comment_Id): New global variable
+
+	* scng.ads, scng.adb (Comment_Is_Token): New Boolean global variable,
+	defaulted to False.
+	(Scan): Store position of start of comment. If comments are tokens, set
+	Comment_Id and set Token to Tok_Comment when scanning a comment.
+	(Set_Comment_As_Token): New procedure
+
+	* sinput-p.adb: Update Copyright notice
+	(Source_File_Is_Subunit): Call Prj.Err.Scanner.Scan instead of Prj.Scan
+	that no longer exists.
+
+2003-12-08  Javier Miranda  <miranda@gnat.com>
+
+	* sem_aggr.adb: Add dependence on Exp_Tss package
+	Correct typo in comment
+	(Resolve_Aggregate): In case of array aggregates set the estimated
+	type of the aggregate before calling resolve. This is needed to know
+	the name of the corresponding IP in case of limited array aggregates.
+	(Resolve_Array_Aggregate): Delay the resolution to the expansion phase
+	in case of default initialized array components.
+
+	* sem_ch12.adb (Analyze_Formal_Object_Declaration): Allow limited
+	types. Required to give support to limited aggregates in generic
+	formals.
+
+2003-12-08  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch3.adb (Check_Initialization): For legality purposes, an
+	inlined body functions like an instantiation.
+	(Decimal_Fixed_Point_Declaration): Do not set kind of first subtype
+	until bounds are analyzed, to diagnose premature use of type.
+
+	* sem_util.adb (Wrong_Type): Improve error message when the type of
+	the expression is used prematurely.
+
+2003-12-08  GNAT Script  <nobody@gnat.com>
+
+	* Make-lang.in: Makefile automatically updated
+
 2003-12-08  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* sinfo.h, einfo.h, nmake.ads, treeprs.ads: Removed, since they

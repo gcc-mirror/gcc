@@ -49,6 +49,9 @@ package body Scng is
    Special_Characters : array (Character) of Boolean := (others => False);
    --  For characters that are Special token, the value is True
 
+   Comment_Is_Token : Boolean := False;
+   --  True if comments are tokens
+
    End_Of_Line_Is_Token : Boolean := False;
    --  True if End_Of_Line is a token
 
@@ -228,6 +231,8 @@ package body Scng is
    ----------
 
    procedure Scan is
+
+      Start_Of_Comment : Source_Ptr;
 
       procedure Check_End_Of_Line;
       --  Called when end of line encountered. Checks that line is not
@@ -1394,6 +1399,7 @@ package body Scng is
             else -- Source (Scan_Ptr + 1) = '-' then
                if Style_Check then Style.Check_Comment; end if;
                Scan_Ptr := Scan_Ptr + 2;
+               Start_Of_Comment := Scan_Ptr;
 
                --  Loop to scan comment (this loop runs more than once only if
                --  a horizontal tab or other non-graphic character is scanned)
@@ -1449,9 +1455,18 @@ package body Scng is
 
                end loop;
 
-               --  Note that we do NOT execute a return here, instead we fall
-               --  through to reexecute the scan loop to look for a token.
+               --  Note that, except when comments are tokens, we do NOT
+               --  execute a return here, instead we fall through to reexecute
+               --  the scan loop to look for a token.
 
+               if Comment_Is_Token then
+                  Name_Len := Integer (Scan_Ptr - Start_Of_Comment);
+                  Name_Buffer (1 .. Name_Len) :=
+                    String (Source (Start_Of_Comment .. Scan_Ptr - 1));
+                  Comment_Id := Name_Find;
+                  Token := Tok_Comment;
+                  return;
+               end if;
             end if;
          end Minus_Case;
 
@@ -2066,6 +2081,14 @@ package body Scng is
             return;
          end if;
    end Scan;
+   --------------------------
+   -- Set_Comment_As_Token --
+   --------------------------
+
+   procedure Set_Comment_As_Token (Value : Boolean) is
+   begin
+      Comment_Is_Token := Value;
+   end Set_Comment_As_Token;
 
    ------------------------------
    -- Set_End_Of_Line_As_Token --

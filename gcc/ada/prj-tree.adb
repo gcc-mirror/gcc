@@ -24,17 +24,193 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Prj.Err;
+
 package body Prj.Tree is
 
+   Node_With_Comments : constant array (Project_Node_Kind) of Boolean :=
+     (N_Project                    => True,
+      N_With_Clause                => True,
+      N_Project_Declaration        => False,
+      N_Declarative_Item           => False,
+      N_Package_Declaration        => True,
+      N_String_Type_Declaration    => True,
+      N_Literal_String             => False,
+      N_Attribute_Declaration      => True,
+      N_Typed_Variable_Declaration => True,
+      N_Variable_Declaration       => True,
+      N_Expression                 => False,
+      N_Term                       => False,
+      N_Literal_String_List        => False,
+      N_Variable_Reference         => False,
+      N_External_Value             => False,
+      N_Attribute_Reference        => False,
+      N_Case_Construction          => True,
+      N_Case_Item                  => True,
+      N_Comment_Zones              => True,
+      N_Comment                    => True);
+   --  Indicates the kinds of node that may have associated comments
+
+   package Next_End_Nodes is new Table.Table
+     (Table_Component_Type => Project_Node_Id,
+      Table_Index_Type     => Natural,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 10,
+      Table_Increment      => 100,
+      Table_Name           => "Next_End_Nodes");
+   --  A stack of nodes to indicates to what node the next "end" is associated
+
    use Tree_Private_Part;
+
+   End_Of_Line_Node   : Project_Node_Id := Empty_Node;
+   --  The node an end of line comment may be associated with
+
+   Previous_Line_Node : Project_Node_Id := Empty_Node;
+   --  The node an immediately following comment may be associated with
+
+   Previous_End_Node  : Project_Node_Id := Empty_Node;
+   --  The node comments immediately following an "end" line may be
+   --  associated with.
+
+   Unkept_Comments    : Boolean := False;
+   --  Set to True when some comments may not be associated with any node
+
+   function Comment_Zones_Of
+     (Node : Project_Node_Id) return Project_Node_Id;
+   --  Returns the ID of the N_Comment_Zones node associated with node Node.
+   --  If there is not already an N_Comment_Zones node, create one and
+   --  associate it with node Node.
+
+   ------------------
+   -- Add_Comments --
+   ------------------
+
+   procedure Add_Comments (To : Project_Node_Id; Where : Comment_Location) is
+      Zone     : Project_Node_Id := Empty_Node;
+      Previous : Project_Node_Id := Empty_Node;
+
+   begin
+      pragma Assert
+        (To /= Empty_Node
+          and then
+         Project_Nodes.Table (To).Kind /= N_Comment);
+
+      Zone := Project_Nodes.Table (To).Comments;
+
+      if Zone = Empty_Node then
+
+         --  Create new N_Comment_Zones node
+
+         Project_Nodes.Increment_Last;
+         Project_Nodes.Table (Project_Nodes.Last) :=
+           (Kind             => N_Comment_Zones,
+            Expr_Kind        => Undefined,
+            Location         => No_Location,
+            Directory        => No_Name,
+            Variables        => Empty_Node,
+            Packages         => Empty_Node,
+            Pkg_Id           => Empty_Package,
+            Name             => No_Name,
+            Path_Name        => No_Name,
+            Value            => No_Name,
+            Field1           => Empty_Node,
+            Field2           => Empty_Node,
+            Field3           => Empty_Node,
+            Flag1            => False,
+            Flag2            => False,
+            Comments         => Empty_Node);
+
+         Zone := Project_Nodes.Last;
+         Project_Nodes.Table (To).Comments := Zone;
+      end if;
+
+      if Where = End_Of_Line then
+         Project_Nodes.Table (Zone).Value := Comments.Table (1).Value;
+
+      else
+         --  Get each comments in the Comments table and link them to node To
+
+         for J in 1 .. Comments.Last loop
+
+            --  Create new N_Comment node
+
+            if (Where = After or else Where = After_End) and then
+              Token /= Tok_EOF and then
+              Comments.Table (J).Follows_Empty_Line
+            then
+               Comments.Table (1 .. Comments.Last - J + 1) :=
+                 Comments.Table (J .. Comments.Last);
+               Comments.Set_Last (Comments.Last - J + 1);
+               return;
+            end if;
+
+            Project_Nodes.Increment_Last;
+            Project_Nodes.Table (Project_Nodes.Last) :=
+              (Kind             => N_Comment,
+               Expr_Kind        => Undefined,
+               Flag1            => Comments.Table (J).Follows_Empty_Line,
+               Flag2            =>
+                 Comments.Table (J).Is_Followed_By_Empty_Line,
+               Location         => No_Location,
+               Directory        => No_Name,
+               Variables        => Empty_Node,
+               Packages         => Empty_Node,
+               Pkg_Id           => Empty_Package,
+               Name             => No_Name,
+               Path_Name        => No_Name,
+               Value            => Comments.Table (J).Value,
+               Field1           => Empty_Node,
+               Field2           => Empty_Node,
+               Field3           => Empty_Node,
+               Comments         => Empty_Node);
+
+            --  If this is the first comment, put it in the right field of
+            --  the node Zone.
+
+            if Previous = Empty_Node then
+               case Where is
+                  when Before =>
+                     Project_Nodes.Table (Zone).Field1 := Project_Nodes.Last;
+
+                  when After =>
+                     Project_Nodes.Table (Zone).Field2 := Project_Nodes.Last;
+
+                  when Before_End =>
+                     Project_Nodes.Table (Zone).Field3 := Project_Nodes.Last;
+
+                  when After_End =>
+                     Project_Nodes.Table (Zone).Comments := Project_Nodes.Last;
+
+                  when End_Of_Line =>
+                     null;
+               end case;
+
+            else
+               --  When it is not the first, link it to the previous one
+
+               Project_Nodes.Table (Previous).Comments := Project_Nodes.Last;
+            end if;
+
+            --  This node becomes the previous one for the next comment, if
+            --  there is one.
+
+            Previous := Project_Nodes.Last;
+         end loop;
+      end if;
+
+      --  Empty the Comments table, so that there is no risk to link the same
+      --  comments to another node.
+
+      Comments.Set_Last (0);
+   end Add_Comments;
+
 
    --------------------------------
    -- Associative_Array_Index_Of --
    --------------------------------
 
    function Associative_Array_Index_Of
-     (Node : Project_Node_Id)
-      return Name_Id
+     (Node : Project_Node_Id) return Name_Id
    is
    begin
       pragma Assert
@@ -51,8 +227,7 @@ package body Prj.Tree is
    ----------------------------
 
    function Associative_Package_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -67,8 +242,7 @@ package body Prj.Tree is
    ----------------------------
 
    function Associative_Project_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -90,7 +264,7 @@ package body Prj.Tree is
             (Project_Nodes.Table (Node).Kind = N_Attribute_Declaration
                or else
              Project_Nodes.Table (Node).Kind = N_Attribute_Reference));
-      return Project_Nodes.Table (Node).Case_Insensitive;
+      return Project_Nodes.Table (Node).Flag1;
    end Case_Insensitive;
 
    --------------------------------
@@ -98,8 +272,7 @@ package body Prj.Tree is
    --------------------------------
 
    function Case_Variable_Reference_Of
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -109,13 +282,54 @@ package body Prj.Tree is
       return Project_Nodes.Table (Node).Field1;
    end Case_Variable_Reference_Of;
 
+   ----------------------
+   -- Comment_Zones_Of --
+   ----------------------
+
+   function Comment_Zones_Of
+     (Node : Project_Node_Id) return Project_Node_Id
+   is
+      Zone : Project_Node_Id;
+
+   begin
+      pragma Assert (Node /= Empty_Node);
+      Zone := Project_Nodes.Table (Node).Comments;
+
+      --  If there is not already an N_Comment_Zones associated, create a new
+      --  one and associate it with node Node.
+
+      if Zone = Empty_Node then
+         Project_Nodes.Increment_Last;
+         Zone := Project_Nodes.Last;
+         Project_Nodes.Table (Zone) :=
+        (Kind             => N_Comment_Zones,
+         Location         => No_Location,
+         Directory        => No_Name,
+         Expr_Kind        => Undefined,
+         Variables        => Empty_Node,
+         Packages         => Empty_Node,
+         Pkg_Id           => Empty_Package,
+         Name             => No_Name,
+         Path_Name        => No_Name,
+         Value            => No_Name,
+         Field1           => Empty_Node,
+         Field2           => Empty_Node,
+         Field3           => Empty_Node,
+         Flag1            => False,
+         Flag2            => False,
+         Comments         => Empty_Node);
+         Project_Nodes.Table (Node).Comments := Zone;
+      end if;
+
+      return Zone;
+   end Comment_Zones_Of;
+
    -----------------------
    -- Current_Item_Node --
    -----------------------
 
    function Current_Item_Node
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -130,8 +344,7 @@ package body Prj.Tree is
    ------------------
 
    function Current_Term
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -147,28 +360,118 @@ package body Prj.Tree is
 
    function Default_Project_Node
      (Of_Kind       : Project_Node_Kind;
-      And_Expr_Kind : Variable_Kind := Undefined)
-      return          Project_Node_Id
+      And_Expr_Kind : Variable_Kind := Undefined) return Project_Node_Id
    is
+      Result   : Project_Node_Id;
+      Zone     : Project_Node_Id;
+      Previous : Project_Node_Id;
+
    begin
+      --  Create new node with specified kind and expression kind
+
       Project_Nodes.Increment_Last;
       Project_Nodes.Table (Project_Nodes.Last) :=
-           (Kind             => Of_Kind,
-            Location         => No_Location,
-            Directory        => No_Name,
-            Expr_Kind        => And_Expr_Kind,
-            Variables        => Empty_Node,
-            Packages         => Empty_Node,
-            Pkg_Id           => Empty_Package,
-            Name             => No_Name,
-            Path_Name        => No_Name,
-            Value            => No_Name,
-            Field1           => Empty_Node,
-            Field2           => Empty_Node,
-            Field3           => Empty_Node,
-            Case_Insensitive => False,
-            Extending_All    => False);
-      return Project_Nodes.Last;
+        (Kind             => Of_Kind,
+         Location         => No_Location,
+         Directory        => No_Name,
+         Expr_Kind        => And_Expr_Kind,
+         Variables        => Empty_Node,
+         Packages         => Empty_Node,
+         Pkg_Id           => Empty_Package,
+         Name             => No_Name,
+         Path_Name        => No_Name,
+         Value            => No_Name,
+         Field1           => Empty_Node,
+         Field2           => Empty_Node,
+         Field3           => Empty_Node,
+         Flag1            => False,
+         Flag2            => False,
+         Comments         => Empty_Node);
+
+      --  Save the new node for the returned value
+
+      Result := Project_Nodes.Last;
+
+      if Comments.Last > 0 then
+
+         --  If this is not a node with comments, then set the flag
+
+         if not Node_With_Comments (Of_Kind) then
+            Unkept_Comments := True;
+
+         elsif Of_Kind /= N_Comment and then Of_Kind /= N_Comment_Zones then
+
+            Project_Nodes.Increment_Last;
+            Project_Nodes.Table (Project_Nodes.Last) :=
+              (Kind             => N_Comment_Zones,
+               Expr_Kind        => Undefined,
+               Location         => No_Location,
+               Directory        => No_Name,
+               Variables        => Empty_Node,
+               Packages         => Empty_Node,
+               Pkg_Id           => Empty_Package,
+               Name             => No_Name,
+               Path_Name        => No_Name,
+               Value            => No_Name,
+               Field1           => Empty_Node,
+               Field2           => Empty_Node,
+               Field3           => Empty_Node,
+               Flag1            => False,
+               Flag2            => False,
+               Comments         => Empty_Node);
+
+            Zone := Project_Nodes.Last;
+            Project_Nodes.Table (Result).Comments := Zone;
+            Previous := Empty_Node;
+
+            for J in 1 .. Comments.Last loop
+
+               --  Create a new N_Comment node
+
+               Project_Nodes.Increment_Last;
+               Project_Nodes.Table (Project_Nodes.Last) :=
+                 (Kind             => N_Comment,
+                  Expr_Kind        => Undefined,
+                  Flag1            => Comments.Table (J).Follows_Empty_Line,
+                  Flag2            =>
+                    Comments.Table (J).Is_Followed_By_Empty_Line,
+                  Location         => No_Location,
+                  Directory        => No_Name,
+                  Variables        => Empty_Node,
+                  Packages         => Empty_Node,
+                  Pkg_Id           => Empty_Package,
+                  Name             => No_Name,
+                  Path_Name        => No_Name,
+                  Value            => Comments.Table (J).Value,
+                  Field1           => Empty_Node,
+                  Field2           => Empty_Node,
+                  Field3           => Empty_Node,
+                  Comments         => Empty_Node);
+
+               --  Link it to the N_Comment_Zones node, if it is the first,
+               --  otherwise to the previous one.
+
+               if Previous = Empty_Node then
+                  Project_Nodes.Table (Zone).Field1 := Project_Nodes.Last;
+
+               else
+                  Project_Nodes.Table (Previous).Comments :=
+                    Project_Nodes.Last;
+               end if;
+
+               --  This new node will be the previous one for the next
+               --  N_Comment node, if there is one.
+
+               Previous := Project_Nodes.Last;
+            end loop;
+
+            --  Empty the Comments table after all comments have been processed
+
+            Comments.Set_Last (0);
+         end if;
+      end if;
+
+      return Result;
    end Default_Project_Node;
 
    ------------------
@@ -183,6 +486,24 @@ package body Prj.Tree is
             Project_Nodes.Table (Node).Kind = N_Project);
       return Project_Nodes.Table (Node).Directory;
    end Directory_Of;
+
+   -------------------------
+   -- End_Of_Line_Comment --
+   -------------------------
+
+   function End_Of_Line_Comment (Node : Project_Node_Id) return Name_Id is
+      Zone : Project_Node_Id := Empty_Node;
+
+   begin
+      pragma Assert (Node /= Empty_Node);
+      Zone := Project_Nodes.Table (Node).Comments;
+
+      if Zone = Empty_Node then
+         return No_Name;
+      else
+         return Project_Nodes.Table (Zone).Value;
+      end if;
+   end End_Of_Line_Comment;
 
    ------------------------
    -- Expression_Kind_Of --
@@ -219,8 +540,7 @@ package body Prj.Tree is
    -------------------
 
    function Expression_Of
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -240,8 +560,7 @@ package body Prj.Tree is
    -------------------------
 
    function Extended_Project_Of
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -256,8 +575,7 @@ package body Prj.Tree is
    ------------------------------
 
    function Extended_Project_Path_Of
-     (Node : Project_Node_Id)
-      return Name_Id
+     (Node : Project_Node_Id) return Name_Id
    is
    begin
       pragma Assert
@@ -271,8 +589,7 @@ package body Prj.Tree is
    -- Extending_Project_Of --
    --------------------------
    function Extending_Project_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -287,8 +604,7 @@ package body Prj.Tree is
    ---------------------------
 
    function External_Reference_Of
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -319,8 +635,7 @@ package body Prj.Tree is
    ------------------------
 
    function First_Case_Item_Of
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -346,13 +661,96 @@ package body Prj.Tree is
       return Project_Nodes.Table (Node).Field1;
    end First_Choice_Of;
 
+   -------------------------
+   -- First_Comment_After --
+   -------------------------
+
+   function First_Comment_After
+     (Node : Project_Node_Id) return Project_Node_Id
+   is
+      Zone : Project_Node_Id := Empty_Node;
+   begin
+      pragma Assert (Node /= Empty_Node);
+      Zone := Project_Nodes.Table (Node).Comments;
+
+      if Zone = Empty_Node then
+         return Empty_Node;
+
+      else
+         return Project_Nodes.Table (Zone).Field2;
+      end if;
+   end First_Comment_After;
+
+   -----------------------------
+   -- First_Comment_After_End --
+   -----------------------------
+
+   function First_Comment_After_End
+     (Node : Project_Node_Id)
+      return Project_Node_Id
+   is
+      Zone : Project_Node_Id := Empty_Node;
+
+   begin
+      pragma Assert (Node /= Empty_Node);
+      Zone := Project_Nodes.Table (Node).Comments;
+
+      if Zone = Empty_Node then
+         return Empty_Node;
+
+      else
+         return Project_Nodes.Table (Zone).Comments;
+      end if;
+   end First_Comment_After_End;
+
+   --------------------------
+   -- First_Comment_Before --
+   --------------------------
+
+   function First_Comment_Before
+     (Node : Project_Node_Id) return Project_Node_Id
+   is
+      Zone : Project_Node_Id := Empty_Node;
+
+   begin
+      pragma Assert (Node /= Empty_Node);
+      Zone := Project_Nodes.Table (Node).Comments;
+
+      if Zone = Empty_Node then
+         return Empty_Node;
+
+      else
+         return Project_Nodes.Table (Zone).Field1;
+      end if;
+   end First_Comment_Before;
+
+   ------------------------------
+   -- First_Comment_Before_End --
+   ------------------------------
+
+   function First_Comment_Before_End
+     (Node : Project_Node_Id) return Project_Node_Id
+   is
+      Zone : Project_Node_Id := Empty_Node;
+
+   begin
+      pragma Assert (Node /= Empty_Node);
+      Zone := Project_Nodes.Table (Node).Comments;
+
+      if Zone = Empty_Node then
+         return Empty_Node;
+
+      else
+         return Project_Nodes.Table (Zone).Field3;
+      end if;
+   end First_Comment_Before_End;
+
    -------------------------------
    -- First_Declarative_Item_Of --
    -------------------------------
 
    function First_Declarative_Item_Of
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -376,8 +774,7 @@ package body Prj.Tree is
    ------------------------------
 
    function First_Expression_In_List
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -392,8 +789,7 @@ package body Prj.Tree is
    --------------------------
 
    function First_Literal_String
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -408,8 +804,7 @@ package body Prj.Tree is
    ----------------------
 
    function First_Package_Of
-     (Node : Project_Node_Id)
-      return Package_Declaration_Id
+     (Node : Project_Node_Id) return Package_Declaration_Id
    is
    begin
       pragma Assert
@@ -424,8 +819,7 @@ package body Prj.Tree is
    --------------------------
 
    function First_String_Type_Of
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -440,8 +834,7 @@ package body Prj.Tree is
    ----------------
 
    function First_Term
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -456,8 +849,7 @@ package body Prj.Tree is
    -----------------------
 
    function First_Variable_Of
-     (Node : Project_Node_Id)
-      return Variable_Node_Id
+     (Node : Project_Node_Id) return Variable_Node_Id
    is
    begin
       pragma Assert
@@ -475,8 +867,7 @@ package body Prj.Tree is
    --------------------------
 
    function First_With_Clause_Of
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -485,6 +876,53 @@ package body Prj.Tree is
             Project_Nodes.Table (Node).Kind = N_Project);
       return Project_Nodes.Table (Node).Field1;
    end First_With_Clause_Of;
+
+   ------------------------
+   -- Follows_Empty_Line --
+   ------------------------
+
+   function Follows_Empty_Line (Node : Project_Node_Id) return Boolean is
+   begin
+      pragma Assert
+        (Node /= Empty_Node
+         and then
+         Project_Nodes.Table (Node).Kind = N_Comment);
+      return Project_Nodes.Table (Node).Flag1;
+   end Follows_Empty_Line;
+
+   ----------
+   -- Hash --
+   ----------
+
+   function Hash (N : Project_Node_Id) return Header_Num is
+   begin
+      return Header_Num (N mod Project_Node_Id (Header_Num'Last));
+   end Hash;
+
+   ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize is
+   begin
+      Project_Nodes.Set_Last (Empty_Node);
+      Projects_Htable.Reset;
+   end Initialize;
+
+   -------------------------------
+   -- Is_Followed_By_Empty_Line --
+   -------------------------------
+
+   function Is_Followed_By_Empty_Line
+     (Node : Project_Node_Id) return Boolean
+   is
+   begin
+      pragma Assert
+        (Node /= Empty_Node
+          and then
+            Project_Nodes.Table (Node).Kind = N_Comment);
+      return Project_Nodes.Table (Node).Flag2;
+   end Is_Followed_By_Empty_Line;
 
    ----------------------
    -- Is_Extending_All --
@@ -496,17 +934,8 @@ package body Prj.Tree is
         (Node /= Empty_Node
           and then
             Project_Nodes.Table (Node).Kind = N_Project);
-      return Project_Nodes.Table (Node).Extending_All;
+      return Project_Nodes.Table (Node).Flag2;
    end Is_Extending_All;
-
-   ----------
-   -- Hash --
-   ----------
-
-   function Hash (N : Project_Node_Id) return Header_Num is
-   begin
-      return Header_Num (N mod Project_Node_Id (Header_Num'Last));
-   end Hash;
 
    -------------------------------------
    -- Imported_Or_Extended_Project_Of --
@@ -514,8 +943,7 @@ package body Prj.Tree is
 
    function Imported_Or_Extended_Project_Of
      (Project   : Project_Node_Id;
-      With_Name : Name_Id)
-      return      Project_Node_Id
+      With_Name : Name_Id) return Project_Node_Id
    is
       With_Clause : Project_Node_Id := First_With_Clause_Of (Project);
       Result      : Project_Node_Id := Empty_Node;
@@ -547,16 +975,6 @@ package body Prj.Tree is
 
       return Result;
    end Imported_Or_Extended_Project_Of;
-
-   ----------------
-   -- Initialize --
-   ----------------
-
-   procedure Initialize is
-   begin
-      Project_Nodes.Set_Last (Empty_Node);
-      Projects_Htable.Reset;
-   end Initialize;
 
    -------------
    -- Kind_Of --
@@ -593,8 +1011,7 @@ package body Prj.Tree is
    --------------------
 
    function Next_Case_Item
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -604,13 +1021,25 @@ package body Prj.Tree is
       return Project_Nodes.Table (Node).Field3;
    end Next_Case_Item;
 
+   ------------------
+   -- Next_Comment --
+   ------------------
+
+   function Next_Comment (Node : Project_Node_Id) return Project_Node_Id is
+   begin
+      pragma Assert
+        (Node /= Empty_Node
+          and then
+            Project_Nodes.Table (Node).Kind = N_Comment);
+      return Project_Nodes.Table (Node).Comments;
+   end Next_Comment;
+
    ---------------------------
    -- Next_Declarative_Item --
    ---------------------------
 
    function Next_Declarative_Item
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -625,8 +1054,7 @@ package body Prj.Tree is
    -----------------------------
 
    function Next_Expression_In_List
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -657,8 +1085,7 @@ package body Prj.Tree is
    -----------------------------
 
    function Next_Package_In_Project
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -689,8 +1116,7 @@ package body Prj.Tree is
    ---------------
 
    function Next_Term
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -724,8 +1150,7 @@ package body Prj.Tree is
    -------------------------
 
    function Next_With_Clause_Of
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -740,8 +1165,7 @@ package body Prj.Tree is
    ---------------------------------
 
    function Non_Limited_Project_Node_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -750,6 +1174,7 @@ package body Prj.Tree is
            (Project_Nodes.Table (Node).Kind = N_With_Clause));
       return Project_Nodes.Table (Node).Field3;
    end Non_Limited_Project_Node_Of;
+
    -------------------
    -- Package_Id_Of --
    -------------------
@@ -768,8 +1193,7 @@ package body Prj.Tree is
    ---------------------
 
    function Package_Node_Of
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -801,8 +1225,7 @@ package body Prj.Tree is
    ----------------------------
 
    function Project_Declaration_Of
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -812,13 +1235,25 @@ package body Prj.Tree is
       return Project_Nodes.Table (Node).Field2;
    end Project_Declaration_Of;
 
+   -------------------------------------------
+   -- Project_File_Includes_Unkept_Comments --
+   -------------------------------------------
+
+   function Project_File_Includes_Unkept_Comments
+     (Node : Project_Node_Id) return Boolean
+   is
+      Declaration : constant Project_Node_Id :=
+        Project_Declaration_Of (Node);
+   begin
+      return Project_Nodes.Table (Declaration).Flag1;
+   end Project_File_Includes_Unkept_Comments;
+
    ---------------------
    -- Project_Node_Of --
    ---------------------
 
    function Project_Node_Of
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -837,8 +1272,7 @@ package body Prj.Tree is
    -----------------------------------
 
    function Project_Of_Renamed_Package_Of
-     (Node : Project_Node_Id)
-      return Project_Node_Id
+     (Node : Project_Node_Id) return Project_Node_Id
    is
    begin
       pragma Assert
@@ -847,6 +1281,181 @@ package body Prj.Tree is
             Project_Nodes.Table (Node).Kind = N_Package_Declaration);
       return Project_Nodes.Table (Node).Field1;
    end Project_Of_Renamed_Package_Of;
+
+   --------------------------
+   -- Remove_Next_End_Node --
+   --------------------------
+
+   procedure Remove_Next_End_Node is
+   begin
+      Next_End_Nodes.Decrement_Last;
+   end Remove_Next_End_Node;
+
+   -----------------
+   -- Reset_State --
+   -----------------
+
+   procedure Reset_State is
+   begin
+      End_Of_Line_Node   := Empty_Node;
+      Previous_Line_Node := Empty_Node;
+      Previous_End_Node  := Empty_Node;
+      Unkept_Comments    := False;
+      Comments.Set_Last (0);
+   end Reset_State;
+
+   -------------
+   -- Restore --
+   -------------
+
+   procedure Restore (S : in Comment_State) is
+   begin
+      End_Of_Line_Node   := S.End_Of_Line_Node;
+      Previous_Line_Node := S.Previous_Line_Node;
+      Previous_End_Node  := S.Previous_End_Node;
+      Next_End_Nodes.Set_Last (0);
+      Unkept_Comments    := S.Unkept_Comments;
+
+      Comments.Set_Last (0);
+
+      for J in S.Comments'Range loop
+         Comments.Increment_Last;
+         Comments.Table (Comments.Last) := S.Comments (J);
+      end loop;
+   end Restore;
+
+   ----------
+   -- Save --
+   ----------
+
+   procedure Save (S : out Comment_State) is
+      Cmts : Comments_Ptr := new Comment_Array (1 .. Comments.Last);
+   begin
+      for J in 1 .. Comments.Last loop
+         Cmts (J) := Comments.Table (J);
+      end loop;
+
+      S :=
+        (End_Of_Line_Node   => End_Of_Line_Node,
+         Previous_Line_Node => Previous_Line_Node,
+         Previous_End_Node  => Previous_End_Node,
+         Unkept_Comments    => Unkept_Comments,
+         Comments           => Cmts);
+   end Save;
+
+   ----------
+   -- Scan --
+   ----------
+
+   procedure Scan is
+      Empty_Line : Boolean := False;
+   begin
+      --  If there are comments, then they will not be kept. Set the flag and
+      --  clear the comments.
+
+      if Comments.Last > 0 then
+         Unkept_Comments := True;
+         Comments.Set_Last (0);
+      end if;
+
+      --  Loop until a token other that End_Of_Line or Comment is found
+
+      loop
+         Prj.Err.Scanner.Scan;
+
+         case Token is
+            when Tok_End_Of_Line =>
+               if Prev_Token = Tok_End_Of_Line then
+                  Empty_Line := True;
+
+                  if Comments.Last > 0 then
+                     Comments.Table (Comments.Last).Is_Followed_By_Empty_Line
+                     := True;
+                  end if;
+               end if;
+
+            when Tok_Comment =>
+               --  If this is a line comment, add it to the comment table
+
+               if Prev_Token = Tok_End_Of_Line
+                 or else Prev_Token = No_Token
+               then
+                  Comments.Increment_Last;
+                  Comments.Table (Comments.Last) :=
+                    (Value                     => Comment_Id,
+                     Follows_Empty_Line        => Empty_Line,
+                     Is_Followed_By_Empty_Line => False);
+
+               --  Otherwise, it is an end of line comment. If there is
+               --  an end of line node specified, associate the comment with
+               --  this node.
+
+               elsif End_Of_Line_Node /= Empty_Node then
+                  declare
+                     Zones : constant Project_Node_Id :=
+                       Comment_Zones_Of (End_Of_Line_Node);
+                  begin
+                     Project_Nodes.Table (Zones).Value := Comment_Id;
+                  end;
+
+               --  Otherwise, this end of line node cannot be kept
+
+               else
+                  Unkept_Comments := True;
+                  Comments.Set_Last (0);
+               end if;
+
+               Empty_Line := False;
+
+            when others =>
+               --  If there are comments, where the first comment is not
+               --  following an empty line, put the initial uninterrupted
+               --  comment zone with the node of the preceding line (either
+               --  a Previous_Line or a Previous_End node), if any.
+
+               if Comments.Last > 0 and then
+                 not Comments.Table (1).Follows_Empty_Line then
+                  if Previous_Line_Node /= Empty_Node then
+                     Add_Comments
+                       (To => Previous_Line_Node, Where => After);
+
+                  elsif Previous_End_Node /= Empty_Node then
+                     Add_Comments
+                       (To => Previous_End_Node, Where => After_End);
+                  end if;
+               end if;
+
+               --  If there are still comments and the token is "end", then
+               --  put these comments with the Next_End node, if any;
+               --  otherwise, these comments cannot be kept. Always clear
+               --  the comments.
+
+               if Comments.Last > 0 and then Token = Tok_End then
+                  if Next_End_Nodes.Last > 0 then
+                     Add_Comments
+                       (To => Next_End_Nodes.Table (Next_End_Nodes.Last),
+                        Where => Before_End);
+
+                  else
+                     Unkept_Comments := True;
+                  end if;
+
+                  Comments.Set_Last (0);
+               end if;
+
+               --  Reset the End_Of_Line, Previous_Line and Previous_End nodes
+               --  so that they are not used again.
+
+               End_Of_Line_Node   := Empty_Node;
+               Previous_Line_Node := Empty_Node;
+               Previous_End_Node  := Empty_Node;
+
+               --  And return
+
+               exit;
+         end case;
+      end loop;
+   end Scan;
 
    ------------------------------------
    -- Set_Associative_Array_Index_Of --
@@ -913,7 +1522,7 @@ package body Prj.Tree is
            (Project_Nodes.Table (Node).Kind = N_Attribute_Declaration
                or else
             Project_Nodes.Table (Node).Kind = N_Attribute_Reference));
-      Project_Nodes.Table (Node).Case_Insensitive := To;
+      Project_Nodes.Table (Node).Flag1 := To;
    end Set_Case_Insensitive;
 
    ------------------------------------
@@ -979,6 +1588,15 @@ package body Prj.Tree is
             Project_Nodes.Table (Node).Kind = N_Project);
       Project_Nodes.Table (Node).Directory := To;
    end Set_Directory_Of;
+
+   ---------------------
+   -- Set_End_Of_Line --
+   ---------------------
+
+   procedure Set_End_Of_Line (To : Project_Node_Id) is
+   begin
+      End_Of_Line_Node := To;
+   end Set_End_Of_Line;
 
    ----------------------------
    -- Set_Expression_Kind_Of --
@@ -1096,6 +1714,63 @@ package body Prj.Tree is
       Project_Nodes.Table (Node).Field1 := To;
    end Set_First_Choice_Of;
 
+   -----------------------------
+   -- Set_First_Comment_After --
+   -----------------------------
+
+   procedure Set_First_Comment_After
+     (Node : Project_Node_Id;
+      To   : Project_Node_Id)
+   is
+      Zone : constant Project_Node_Id :=
+                Comment_Zones_Of (Node);
+   begin
+      Project_Nodes.Table (Zone).Field2 := To;
+   end Set_First_Comment_After;
+
+   ---------------------------------
+   -- Set_First_Comment_After_End --
+   ---------------------------------
+
+   procedure Set_First_Comment_After_End
+     (Node : Project_Node_Id;
+      To   : Project_Node_Id)
+   is
+      Zone : constant Project_Node_Id :=
+                Comment_Zones_Of (Node);
+   begin
+      Project_Nodes.Table (Zone).Comments := To;
+   end Set_First_Comment_After_End;
+
+   ------------------------------
+   -- Set_First_Comment_Before --
+   ------------------------------
+
+   procedure Set_First_Comment_Before
+     (Node : Project_Node_Id;
+      To   : Project_Node_Id)
+
+   is
+      Zone : constant Project_Node_Id :=
+                Comment_Zones_Of (Node);
+   begin
+      Project_Nodes.Table (Zone).Field1 := To;
+   end Set_First_Comment_Before;
+
+   ----------------------------------
+   -- Set_First_Comment_Before_End --
+   ----------------------------------
+
+   procedure Set_First_Comment_Before_End
+     (Node : Project_Node_Id;
+      To   : Project_Node_Id)
+   is
+      Zone : constant Project_Node_Id :=
+                Comment_Zones_Of (Node);
+   begin
+      Project_Nodes.Table (Zone).Field2 := To;
+   end Set_First_Comment_Before_End;
+
    ------------------------
    -- Set_Next_Case_Item --
    ------------------------
@@ -1111,6 +1786,22 @@ package body Prj.Tree is
             Project_Nodes.Table (Node).Kind = N_Case_Item);
       Project_Nodes.Table (Node).Field3 := To;
    end Set_Next_Case_Item;
+
+   ----------------------
+   -- Set_Next_Comment --
+   ----------------------
+
+   procedure Set_Next_Comment
+     (Node : Project_Node_Id;
+      To   : Project_Node_Id)
+   is
+   begin
+      pragma Assert
+        (Node /= Empty_Node
+          and then
+            Project_Nodes.Table (Node).Kind = N_Comment);
+      Project_Nodes.Table (Node).Comments := To;
+   end Set_Next_Comment;
 
    -----------------------------------
    -- Set_First_Declarative_Item_Of --
@@ -1261,7 +1952,7 @@ package body Prj.Tree is
         (Node /= Empty_Node
           and then
             Project_Nodes.Table (Node).Kind = N_Project);
-      Project_Nodes.Table (Node).Extending_All := True;
+      Project_Nodes.Table (Node).Flag2 := True;
    end Set_Is_Extending_All;
 
    -----------------
@@ -1366,6 +2057,16 @@ package body Prj.Tree is
             Project_Nodes.Table (Node).Kind = N_Declarative_Item);
       Project_Nodes.Table (Node).Field2 := To;
    end Set_Next_Declarative_Item;
+
+   -----------------------
+   -- Set_Next_End_Node --
+   -----------------------
+
+   procedure Set_Next_End_Node (To : Project_Node_Id) is
+   begin
+      Next_End_Nodes.Increment_Last;
+      Next_End_Nodes.Table (Next_End_Nodes.Last) := To;
+   end Set_Next_End_Node;
 
    ---------------------------------
    -- Set_Next_Expression_In_List --
@@ -1533,6 +2234,23 @@ package body Prj.Tree is
       Project_Nodes.Table (Node).Path_Name := To;
    end Set_Path_Name_Of;
 
+   ---------------------------
+   -- Set_Previous_End_Node --
+   ---------------------------
+   procedure Set_Previous_End_Node (To : Project_Node_Id) is
+   begin
+      Previous_End_Node := To;
+   end Set_Previous_End_Node;
+
+   ----------------------------
+   -- Set_Previous_Line_Node --
+   ----------------------------
+
+   procedure Set_Previous_Line_Node (To : Project_Node_Id) is
+   begin
+      Previous_Line_Node := To;
+   end Set_Previous_Line_Node;
+
    --------------------------------
    -- Set_Project_Declaration_Of --
    --------------------------------
@@ -1548,6 +2266,20 @@ package body Prj.Tree is
            Project_Nodes.Table (Node).Kind = N_Project);
       Project_Nodes.Table (Node).Field2 := To;
    end Set_Project_Declaration_Of;
+
+   -----------------------------------------------
+   -- Set_Project_File_Includes_Unkept_Comments --
+   -----------------------------------------------
+
+   procedure Set_Project_File_Includes_Unkept_Comments
+     (Node : Project_Node_Id;
+      To   : Boolean)
+   is
+      Declaration : constant Project_Node_Id :=
+        Project_Declaration_Of (Node);
+   begin
+      Project_Nodes.Table (Declaration).Flag1 := To;
+   end Set_Project_File_Includes_Unkept_Comments;
 
    -------------------------
    -- Set_Project_Node_Of --
@@ -1631,6 +2363,8 @@ package body Prj.Tree is
           and then
             (Project_Nodes.Table (Node).Kind = N_With_Clause
                or else
+             Project_Nodes.Table (Node).Kind = N_Comment
+               or else
              Project_Nodes.Table (Node).Kind = N_Literal_String));
       Project_Nodes.Table (Node).Value := To;
    end Set_String_Value_Of;
@@ -1639,8 +2373,9 @@ package body Prj.Tree is
    -- String_Type_Of --
    --------------------
 
-   function String_Type_Of  (Node : Project_Node_Id)
-                            return Project_Node_Id is
+   function String_Type_Of
+     (Node : Project_Node_Id) return Project_Node_Id
+   is
    begin
       pragma Assert
         (Node /= Empty_Node
@@ -1667,6 +2402,8 @@ package body Prj.Tree is
           and then
            (Project_Nodes.Table (Node).Kind = N_With_Clause
               or else
+            Project_Nodes.Table (Node).Kind = N_Comment
+               or else
             Project_Nodes.Table (Node).Kind = N_Literal_String));
       return Project_Nodes.Table (Node).Value;
    end String_Value_Of;
@@ -1677,8 +2414,7 @@ package body Prj.Tree is
 
    function Value_Is_Valid
      (For_Typed_Variable : Project_Node_Id;
-      Value              : Name_Id)
-      return               Boolean
+      Value              : Name_Id) return Boolean
    is
    begin
       pragma Assert
@@ -1705,5 +2441,15 @@ package body Prj.Tree is
       end;
 
    end Value_Is_Valid;
+
+   -------------------------------
+   -- There_Are_Unkept_Comments --
+   -------------------------------
+
+   function There_Are_Unkept_Comments return Boolean is
+   begin
+      return Unkept_Comments;
+   end There_Are_Unkept_Comments;
+
 
 end Prj.Tree;

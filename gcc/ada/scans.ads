@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -187,15 +187,21 @@ package Scans is
 
       Tok_Dot_Dot,         -- ..           Sterm, Chtok
 
-      --  The following three entries are used only when scanning
-      --  project files.
+      --  The following three entries are used only when scanning project
+      --  files.
 
       Tok_Project,
       Tok_Extends,
       Tok_External,
+      Tok_Comment,
 
-      --  The following two entries are used by the preprocessor
+      --  The following entry is used by the preprocessor and when scanning
+      --  project files.
+
       Tok_End_Of_Line,
+
+      --  The following entry is used by the preprocessor
+
       Tok_Special,
 
       No_Token);
@@ -403,6 +409,10 @@ package Scans is
 
    Special_Character : Character;
    --  Valid only when Token = Tok_Special
+
+   Comment_Id : Name_Id := No_Name;
+   --  Valid only when Token = Tok_Comment. Store the string that follows
+   --  the two '-' of a comment.
 
    --------------------------------------------------------
    -- Procedures for Saving and Restoring the Scan State --

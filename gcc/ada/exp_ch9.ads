@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -163,6 +163,15 @@ package Exp_Ch9 is
    --  for the initialization call, constructed by the caller, which uses
    --  the Master_Id of the access type as the _Master parameter, and _Chain
    --  (defined above) as the _Chain parameter.
+
+   procedure Build_Task_Allocate_Block_With_Init_Stmts
+     (Actions    : List_Id;
+      N          : Node_Id;
+      Init_Stmts : List_Id);
+   --  Ada0Y (AI-287): Similar to previous routine, but used to expand alloca-
+   --  ted aggregates with default initialized components. Init_Stmts contains
+   --  the list of statements required to initialize the allocated aggregate.
+   --  It replaces the call to Init (Args) done by Build_Task_Allocate_Block.
 
    function Concurrent_Ref (N : Node_Id) return Node_Id;
    --  Given the name of a concurrent object (task or protected object), or

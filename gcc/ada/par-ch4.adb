@@ -1167,6 +1167,20 @@ package body Ch4 is
             end if;
          end if;
 
+         --  Ada0Y (AI-287): The box notation is allowed only with named
+         --  notation because positional notation might be error prone. For
+         --  example, in "(X, <>, Y, <>)", there is no type associated with
+         --  the boxes, so you might not be leaving out the components you
+         --  thought you were leaving out.
+
+         if Extensions_Allowed and then Token = Tok_Box then
+            Error_Msg_SC ("(Ada 0Y) box notation only allowed with "
+                          & "named notation");
+            Scan; --  past BOX
+            Aggregate_Node := New_Node (N_Aggregate, Lparen_Sloc);
+            return Aggregate_Node;
+         end if;
+
          Expr_Node := P_Expression_Or_Range_Attribute;
 
          --  Extension aggregate case
@@ -1390,9 +1404,13 @@ package body Ch4 is
       TF_Arrow;
 
       if Token = Tok_Box then
+
+         --  Ada0Y (AI-287): The box notation is used to indicate the default
+         --  initialization of limited aggregate components
+
          if not Extensions_Allowed then
             Error_Msg_SP
-              ("Limited aggregates are an Ada0X extension");
+              ("(Ada 0Y) limited aggregates are an Ada0X extension");
 
             if OpenVMS then
                Error_Msg_SP

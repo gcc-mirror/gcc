@@ -1774,22 +1774,18 @@ package body Bindgen is
          end if;
       end loop;
 
-      --  Add a "-Ldir" for each directory in the object path. We skip this
-      --  in Configurable_Run_Time mode, where we want more precise control
-      --  of exactly what goes into the resulting object file
+      --  Add a "-Ldir" for each directory in the object path
 
-      if not Configurable_Run_Time_Mode then
-         for J in 1 .. Nb_Dir_In_Obj_Search_Path loop
-            declare
-               Dir : constant String_Ptr := Dir_In_Obj_Search_Path (J);
-            begin
-               Name_Len := 0;
-               Add_Str_To_Name_Buffer ("-L");
-               Add_Str_To_Name_Buffer (Dir.all);
-               Write_Linker_Option;
-            end;
-         end loop;
-      end if;
+      for J in 1 .. Nb_Dir_In_Obj_Search_Path loop
+         declare
+            Dir : constant String_Ptr := Dir_In_Obj_Search_Path (J);
+         begin
+            Name_Len := 0;
+            Add_Str_To_Name_Buffer ("-L");
+            Add_Str_To_Name_Buffer (Dir.all);
+            Write_Linker_Option;
+         end;
+      end loop;
 
       --  Sort linker options
 
@@ -1845,7 +1841,7 @@ package body Bindgen is
       --  files. The reason for this decision is that libraries referenced
       --  by internal routines may reference these standard library entries.
 
-      if not (Configurable_Run_Time_Mode or else Opt.No_Stdlib) then
+      if not Opt.No_Stdlib then
          Name_Len := 0;
 
          if Opt.Shared_Libgnat then

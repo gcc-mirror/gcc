@@ -123,7 +123,8 @@ package body Prj is
       Seen                           => False,
       Flag1                          => False,
       Flag2                          => False,
-      Depth                          => 0);
+      Depth                          => 0,
+      Unkept_Comments                => False);
 
    -------------------
    -- Add_To_Buffer --
@@ -386,15 +387,6 @@ package body Prj is
         and then Left.Current_Body_Suffix = Right.Current_Body_Suffix
         and then Left.Separate_Suffix = Right.Separate_Suffix;
    end Same_Naming_Scheme;
-
-   ----------
-   -- Scan --
-   ----------
-
-   procedure Scan is
-   begin
-      Scanner.Scan;
-   end Scan;
 
    --------------------------
    -- Standard_Naming_Data --

@@ -125,6 +125,7 @@ package body Prj.Dect is
    begin
       Attribute := Default_Project_Node (Of_Kind => N_Attribute_Declaration);
       Set_Location_Of (Attribute, To => Token_Ptr);
+      Set_Previous_Line_Node (Attribute);
 
       --  Scan past "for"
 
@@ -467,6 +468,9 @@ package body Prj.Dect is
       if Current_Attribute = Empty_Attribute then
          Attribute := Empty_Node;
       end if;
+
+      Set_End_Of_Line (Attribute);
+      Set_Previous_Line_Node (Attribute);
    end Parse_Attribute_Declaration;
 
    -----------------------------
@@ -535,6 +539,9 @@ package body Prj.Dect is
       Expect (Tok_Is, "IS");
 
       if Token = Tok_Is then
+         Set_End_Of_Line (Case_Construction);
+         Set_Previous_Line_Node (Case_Construction);
+         Set_Next_End_Node (Case_Construction);
 
          --  Scan past "is"
 
@@ -571,6 +578,8 @@ package body Prj.Dect is
             Scan;
 
             Expect (Tok_Arrow, "`=>`");
+            Set_End_Of_Line (Current_Item);
+            Set_Previous_Line_Node (Current_Item);
 
             --  Empty_Node in Field1 of a Case_Item indicates
             --  the "when others =>" branch.
@@ -596,6 +605,8 @@ package body Prj.Dect is
             Set_First_Choice_Of (Current_Item, To => First_Choice);
 
             Expect (Tok_Arrow, "`=>`");
+            Set_End_Of_Line (Current_Item);
+            Set_Previous_Line_Node (Current_Item);
 
             Parse_Declarative_Items
               (Declarations    => First_Declarative_Item,
@@ -613,6 +624,7 @@ package body Prj.Dect is
       End_Case_Construction;
 
       Expect (Tok_End, "`END CASE`");
+      Remove_Next_End_Node;
 
       if Token = Tok_End then
 
@@ -629,6 +641,7 @@ package body Prj.Dect is
       Scan;
 
       Expect (Tok_Semicolon, "`;`");
+      Set_Previous_End_Node (Case_Construction);
 
    end Parse_Case_Construction;
 
@@ -673,6 +686,9 @@ package body Prj.Dect is
                   Current_Project => Current_Project,
                   Current_Package => Current_Package);
 
+               Set_End_Of_Line (Current_Declaration);
+               Set_Previous_Line_Node (Current_Declaration);
+
             when Tok_For =>
 
                Parse_Attribute_Declaration
@@ -680,6 +696,9 @@ package body Prj.Dect is
                   First_Attribute => First_Attribute,
                   Current_Project => Current_Project,
                   Current_Package => Current_Package);
+
+               Set_End_Of_Line (Current_Declaration);
+               Set_Previous_Line_Node (Current_Declaration);
 
             when Tok_Package =>
 
@@ -692,6 +711,8 @@ package body Prj.Dect is
                Parse_Package_Declaration
                  (Package_Declaration => Current_Declaration,
                   Current_Project     => Current_Project);
+
+               Set_Previous_End_Node (Current_Declaration);
 
             when Tok_Type =>
 
@@ -706,6 +727,9 @@ package body Prj.Dect is
                  (String_Type     => Current_Declaration,
                   Current_Project => Current_Project);
 
+               Set_End_Of_Line (Current_Declaration);
+               Set_Previous_Line_Node (Current_Declaration);
+
             when Tok_Case =>
 
                --  Case construction
@@ -715,6 +739,8 @@ package body Prj.Dect is
                   First_Attribute   => First_Attribute,
                   Current_Project   => Current_Project,
                   Current_Package   => Current_Package);
+
+               Set_Previous_End_Node (Current_Declaration);
 
             when others =>
                exit;
@@ -928,8 +954,13 @@ package body Prj.Dect is
          end if;
 
          Expect (Tok_Semicolon, "`;`");
+         Set_End_Of_Line (Package_Declaration);
+         Set_Previous_Line_Node (Package_Declaration);
 
       elsif Token = Tok_Is then
+         Set_End_Of_Line (Package_Declaration);
+         Set_Previous_Line_Node (Package_Declaration);
+         Set_Next_End_Node (Package_Declaration);
 
          Parse_Declarative_Items
            (Declarations    => First_Declarative_Item,
@@ -970,6 +1001,7 @@ package body Prj.Dect is
          end if;
 
          Expect (Tok_Semicolon, "`;`");
+         Remove_Next_End_Node;
 
       else
          Error_Msg ("expected IS or RENAMES", Token_Ptr);
