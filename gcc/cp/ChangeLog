@@ -1,5 +1,9 @@
 2003-03-24  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/9898, PR c++/383, DR 322
+	* pt.c (maybe_adjust_types_for_deduction) [DEDUCE_CONV]: Look
+	through reference types on both PARM and ARG.
+
 	PR c++/10199
 	* call.c (build_method_call): Deal with LOOKUP_EXPR.
 	* semantics.c (finish_object_call_expr): Use build_method_call

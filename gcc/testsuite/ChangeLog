@@ -5,6 +5,9 @@
 
 2003-03-24  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/9898, c++/383
+	* g++.dg/template/conv6.C: New test.
+
 	PR c++/10199
 	* g++.dg/lookup/template1.C: New test.
 
