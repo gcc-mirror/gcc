@@ -1,3 +1,7 @@
+2003-03-23  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.c-torture/compile/20030323-1.c: New test case.
+
 2003-03-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.dg/20030321-1.c: New test.

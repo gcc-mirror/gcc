@@ -5505,6 +5505,7 @@ expand_end_case_type (orig_index, orig_type)
       else if (CASE_USE_BIT_TESTS
 	       && ! TREE_CONSTANT (index_expr)
 	       && compare_tree_int (range, GET_MODE_BITSIZE (word_mode)) < 0
+	       && compare_tree_int (range, 0) > 0
 	       && lshift_cheap_p ()
 	       && ((uniq == 1 && count >= 3)
 		   || (uniq == 2 && count >= 5)
