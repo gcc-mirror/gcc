@@ -913,6 +913,11 @@ namespace std
     polar(const _Tp& __rho, const _Tp& __theta)
     { return complex<_Tp>(__rho * cos(__theta), __rho * sin(__theta)); }
 
+  template<typename _Tp>
+    inline complex<_Tp>
+    conj(const complex<_Tp>& __z)
+    { return complex<_Tp>(__z.real(), -__z.imag()); }
+  
 //    // We use here a few more specializations.
 //    template<>
 //      inline complex<float>
