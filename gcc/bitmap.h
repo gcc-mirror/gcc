@@ -85,8 +85,8 @@ extern void bitmap_set_bit PROTO((bitmap, int));
 extern int bitmap_bit_p PROTO((bitmap, int));
 
 /* Debug functions to print a bitmap linked list.  */
-extern void bitmap_debug PROTO((bitmap));
-extern void bitmap_debug_file PROTO((FILE *, bitmap));
+extern void debug_bitmap PROTO((bitmap));
+extern void debug_bitmap_file PROTO((FILE *, bitmap));
 
 /* Print a bitmap */
 extern void bitmap_print PROTO((FILE *, bitmap, const char *, const char *));
