@@ -1,3 +1,9 @@
+2002-06-14  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.md (jump): Emit jump insn.
+	(call_pcrel): Get pattern of the result of gen_call_site.
+	(call_value_pcrel, sibcall_pcrel, GOTaddr2picreg): Likewise.
+
 2002-06-14  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpphash.h (struct cpp_buffer): Remove saved_line_base.
