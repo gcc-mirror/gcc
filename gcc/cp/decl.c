@@ -7951,17 +7951,15 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
      DECL_STMT is expanded.  */
   defer_p = DECL_FUNCTION_SCOPE_P (decl) || DECL_VIRTUAL_P (decl);
 
-  /* We try to defer namespace-scope static constants and template
-     instantiations so that they are not emitted into the object file
-     unnecessarily.  */
-  if ((!DECL_VIRTUAL_P (decl)
-       && TREE_READONLY (decl)
-       && DECL_INITIAL (decl) != NULL_TREE
-       && DECL_INITIAL (decl) != error_mark_node
-       && ! EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl))
-       && toplev
-       && !TREE_PUBLIC (decl))
-      || DECL_COMDAT (decl))
+  /* We try to defer namespace-scope static constants so that they are
+     not emitted into the object file unnecessarily.  */
+  if (!DECL_VIRTUAL_P (decl)
+      && TREE_READONLY (decl)
+      && DECL_INITIAL (decl) != NULL_TREE
+      && DECL_INITIAL (decl) != error_mark_node
+      && ! EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl))
+      && toplev
+      && !TREE_PUBLIC (decl))
     {
       /* Fool with the linkage of static consts according to #pragma
 	 interface.  */
@@ -7973,6 +7971,9 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
 
       defer_p = 1;
     }
+  /* Likewise for template instantiations.  */
+  else if (DECL_COMDAT (decl))
+    defer_p = 1;
 
   /* If we're deferring the variable, we only need to make RTL if
      there's an ASMSPEC.  Otherwise, we'll lazily create it later when
