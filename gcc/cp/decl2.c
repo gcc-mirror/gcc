@@ -1336,7 +1336,7 @@ acceptable_java_type (type)
 {
   if (TREE_CODE (type) == VOID_TYPE || TYPE_FOR_JAVA (type))
     return 1;
-  if (TREE_CODE (type) == POINTER_TYPE)
+  if (TREE_CODE (type) == POINTER_TYPE || TREE_CODE (type) == REFERENCE_TYPE)
     {
       type = TREE_TYPE (type);
       if (TREE_CODE (type) == RECORD_TYPE)
