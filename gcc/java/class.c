@@ -780,8 +780,10 @@ set_constant_value (field, constant)
       if (TREE_TYPE (constant) != TREE_TYPE (field)
 	  && ! (TREE_TYPE (constant) == int_type_node
 		&& INTEGRAL_TYPE_P (TREE_TYPE (field))
-		&& TYPE_PRECISION (TREE_TYPE (field)) <= 32))
-	warning ("ConstantValue attribute of field '%s' has wrong type",
+		&& TYPE_PRECISION (TREE_TYPE (field)) <= 32)
+	  && ! (TREE_TYPE (constant) == utf8const_ptr_type
+		&& TREE_TYPE (field) == string_ptr_type_node))
+	error ("ConstantValue attribute of field '%s' has wrong type",
 	       IDENTIFIER_POINTER (DECL_NAME (field)));
       if (FIELD_FINAL (field))
 	DECL_FIELD_FINAL_IUD (field) = 1;

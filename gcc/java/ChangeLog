@@ -1,3 +1,8 @@
+2001-08-31  Per Bothner  <per@bothner.com>
+
+	* class.c (set_constant_value):  When not emiting class files, then a
+	String ConstantValue is a utf8const_ptr_type.
+
 2001-08-30  Per Bothner  <per@bothner.com>
 
 	* jcf-write.c (generate_classfile):  Check that field is primitive
