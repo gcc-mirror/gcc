@@ -1,3 +1,11 @@
+2004-09-17  Paolo Carlini  <pcarlini@suse.de>
+	    Andrea Arcangeli  <andrea@suse.de>
+
+	* config/io/basic_file_stdio.cc (__basic_file<>::close)): Don't
+	call unnecessarily sync, that is fflush: the library, since 3.4.0
+	does not use buffered fread/fwrite.
+	* include/bits/fstream.tcc (basic_filebuf<>::overflow): Likewise.
+
 2004-09-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/cpu/arm/cxxabi_tweaks.h (__cxa_cdtor_return_type):
