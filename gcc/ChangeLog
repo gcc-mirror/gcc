@@ -1,4 +1,17 @@
+2004-02-27  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	PR optimization/7871
+	* flow.c (mark_set_1): Don't add LOG_LINKS for global registers
+	from or to call insns.	
+
+2004-02-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/7871
+	* flow.c (propagate_one_insn): Interpret calls as setting global
+	registers, not merely clobbering them.
+
 2004-02-27  Dale Johannesen  <dalej@apple.com>
+
 	* config/darwin.c (machopic_output_possible_stub_label):  Remove.
 	config/darwin-protos.h:  Ditto.
 	config/darwin.h:  Remove call to it.
