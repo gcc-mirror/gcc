@@ -1306,7 +1306,7 @@ mostlyclean:
 # Delete sorted indices we don't actually use.
 	-rm -f gcc.vrs gcc.kys gcc.tps gcc.pgs gcc.fns
 # Delete core dumps.
-	-rm -f core
+	-rm -f core config/core
 
 # Delete all files made by compilation
 # that don't exist in the distribution.
@@ -1331,6 +1331,7 @@ extraclean: distclean
 	-rm -rf =* #* *~* config/=* config/#* config/*~*
 	-rm -f patch* *.orig *.rej config/patch* config/*.orig config/*.rej
 	-rm -f *.dvi *.oaux *.d *.Z *.tar *.xtar *diff
+	-rm -f *lose config/*lose
 	-rm -f *.s *.s[0-9] *.i install1.texi config/ChangeLog
 
 # Get rid of every file that's generated from some other file.
