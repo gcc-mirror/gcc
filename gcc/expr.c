@@ -11081,7 +11081,7 @@ do_store_flag (exp, target, mode, only_cheap)
     }
 
   /* If this failed, we have to do this with set/compare/jump/set code.  */
-  if (target == 0 || GET_CODE (target) != REG
+  if (GET_CODE (target) != REG
       || reg_mentioned_p (target, op0) || reg_mentioned_p (target, op1))
     target = gen_reg_rtx (GET_MODE (target));
 
