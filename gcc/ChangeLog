@@ -1,3 +1,8 @@
+2002-03-22  Lars Brinkhoff  <lars@nocrew.org>
+
+	* config/i386/i386.c, config/i386/i386.md: Change all occurences
+	of GEN_INT (trunc_int_for_mode (...)) to gen_int_mode (...).
+
 2002-03-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	* flow.c (calculate_global_regs_live): Clear aux fields of
