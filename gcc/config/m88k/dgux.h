@@ -4,6 +4,7 @@
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Enhanced by Michael Meissner (meissner@osf.org)
    Version 2 port by Tom Wood (twood@pets.sps.mot.com)
+   Currently maintained by (gcc@dg-rtp.dg.com)
 
 This file is part of GNU CC.
 
@@ -30,7 +31,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   (TARGET_SVR4 ? DWARF_DEBUG : SDB_DEBUG)
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.6 $"
+#define VERSION_INFO2   "$Revision: 1.12 $"
 #endif
 #ifndef NO_BUGS
 #define AS_BUG_IMMEDIATE_LABEL
@@ -62,7 +63,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef	TARGET_DEFAULT
 #define TARGET_DEFAULT	(MASK_CHECK_ZERO_DIV	 | \
 			 MASK_OCS_DEBUG_INFO	 | \
-			 MASK_OCS_FRAME_POSITION)
+			 MASK_OCS_FRAME_POSITION | \
+			 MASK_SVR4)
 #undef	CPU_DEFAULT
 #define CPU_DEFAULT MASK_88000
 
@@ -88,7 +90,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef	ASM_SPEC
 #define ASM_SPEC "\
 %{V} %{v:%{!V:-V}} %{pipe:%{!.s: - }\
-%{msvr4:%{mversion-03.00:-KV3}%{!mversion-03.00:%{mversion-*:-KV%*}}}}\
+%{!msvr3:%{mversion-03.00:-KV3}%{!mversion-03.00:%{mversion-*:-KV%*}}}}\
 %{!mlegend:%{mstandard:-Wc,off}}\
 %{mlegend:-Wc,-fix-bb,-h\"gcc-" VERSION_INFO2 "\",-s\"%i\"\
 %{traditional:,-lc}%{!traditional:,-lansi-c}\
@@ -102,15 +104,16 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef	STARTFILE_SPEC
 
 /* Linker and library spec's.
+   -msvr4 is the default if -msvr3 is not specified.
    -static, -shared, -symbolic, -h* and -z* access AT&T V.4 link options.
-   -svr4 instructs gcc to place /usr/lib/values-X[cat].o on link the line.
-   The absense of -msvr4 indicates linking done in a COFF environment and
-   adds the link script to the link line.  In all environments, the first
-   and last objects are crtbegin.o and crtend.o.
-   When the -G link option is used (-shared and -symbolic) a final link is
-   not being done.  */
+   -svr4 instructs gcc to place /usr/lib/values-X[cat].o on the link line.
+   -msvr3 indicates linking done in a COFF environment and the link
+   script is added to the link line.  In all environments, the first
+   and last objects are crtbegin.o (or bcscrtbegin.o) and crtend.o.
+   When the -G link option is used (-shared and -symbolic) a final
+   link is not being done.  */
 #undef	LIB_SPEC
-#define LIB_SPEC "%{msvr4:%{!shared:-lstaticdgc}} %{!shared:%{!symbolic:-lc}} crtend.o%s"
+#define LIB_SPEC "%{!msvr3:%{!shared:-lstaticdgc}} %{!shared:%{!symbolic:-lc}} crtend.o%s"
 #undef	LINK_SPEC
 #define LINK_SPEC "%{z*} %{h*} %{V} %{v:%{!V:-V}} \
 		   %{static:-dn -Bstatic} \
@@ -120,7 +123,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef	STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared:%{!symbolic:%{pg:gcrt0.o%s} \
 			 %{!pg:%{p:/lib/mcrt0.o}%{!p:/lib/crt0.o}} \
-			 %{!msvr4:m88kdgux.ld%s} crtbegin.o%s \
+			 %{msvr3:m88kdgux.ld%s bcscrtbegin.o%s} \
+			 %{!msvr3:crtbegin.o%s} \
 			 %{svr4:%{ansi:/lib/values-Xc.o} \
 			  %{!ansi:%{traditional:/lib/values-Xt.o} \
 			   %{!traditional:/usr/lib/values-Xa.o}}}}}"
@@ -170,6 +174,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Override svr4.h and m88k.h except when compiling crtstuff.c.  These must
    be constant strings when compiling crtstuff.c.  Otherwise, respect the
    -mversion-STRING option used.  */
+#undef INIT_SECTION_PREAMBLE
+#undef INIT_SECTION_ASM_OP
+#undef FINI_SECTION_ASM_OP
+#undef CTORS_SECTION_ASM_OP
+#undef DTORS_SECTION_ASM_OP
+
 #if !defined (CRT_BEGIN) && !defined (CRT_END)
 #undef	INIT_SECTION_ASM_OP
 #define INIT_SECTION_ASM_OP (TARGET_SVR4			\
@@ -183,6 +193,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define DTORS_SECTION_ASM_OP (TARGET_SVR4			\
 			      ? "section\t .dtors,\"aw\""	\
 			      : "section\t .dtors,\"d\"")
+#else
+/* These must be constant strings for crtstuff.c.  
+   An elf and bcs crtbegin.o are needed since bcs does not  
+   increment the stack pointer in the init section as elf does */
+#ifndef BCS
+#define INIT_SECTION_PREAMBLE asm ("\taddu\tr31,r31,0x20")  
+#endif
+#define INIT_SECTION_ASM_OP	"section\t .init,\"x\""
+#define FINI_SECTION_ASM_OP	"section\t .fini,\"x\""
+#define CTORS_SECTION_ASM_OP	"section\t .ctors,\"d\""
+#define DTORS_SECTION_ASM_OP	"section\t .dtors,\"d\""
 #endif /* crtstuff.c */
 
 /* The lists of global object constructors and global destructors are always
