@@ -1,5 +1,17 @@
 2003-01-15  Scott Gilbertson  <scottg@mantatest.com>
 
+	* gnu/gcj/xlib/natGC.cc (fillPolygon): New method.
+	* gnu/gcj/xlib/GC.java (fillPolygon): Declare.
+	* gnu/awt/xlib/XGraphics.java (fillPolygon): Added translateX and
+	translateY arguments.  Implement.
+	* gnu/awt/j2d/IntegerGraphicsState.java (fillPolygon): Pass
+	down translation arguments.
+	(drawPolyline, drawPolygon): Fix incorrect tests.
+	* gnu/awt/j2d/DirectRasterGraphics.java (fillPolygon): Added
+	translateX and translateY arguments.
+
+2003-01-15  Scott Gilbertson  <scottg@mantatest.com>
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (xlib_includes): New macro.
 	(INCLUDES): Use it.
