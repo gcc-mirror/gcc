@@ -31,20 +31,20 @@ template<typename T>
       struct rebind 
       { typedef clear_alloc<T1> other; };
 
-    virtual void clear()
+    virtual void clear() throw()
     { }
 
-    clear_alloc()
+    clear_alloc() throw()
     { }
     
-    clear_alloc(clear_alloc const& _wa)
+    clear_alloc(clear_alloc const& _wa) throw()
     { }
     
     template<typename T1>
-      clear_alloc(clear_alloc<T1> const& _wa)
+      clear_alloc(clear_alloc<T1> const& _wa) throw()
       { }
 
-    virtual ~clear_alloc()
+    virtual ~clear_alloc() throw()
     { this->clear(); }
 
     T* allocate(typename new_allocator<T>::size_type n, const void *hint = 0)
