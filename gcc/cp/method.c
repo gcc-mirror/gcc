@@ -497,7 +497,6 @@ static void
 do_build_copy_constructor (tree fndecl)
 {
   tree parm = FUNCTION_FIRST_USER_PARM (fndecl);
-  tree t;
 
   parm = convert_from_reference (parm);
 
@@ -507,7 +506,7 @@ do_build_copy_constructor (tree fndecl)
        if *this is a base subobject.  */;
   else if (TYPE_HAS_TRIVIAL_INIT_REF (current_class_type))
     {
-      t = build2 (INIT_EXPR, void_type_node, current_class_ref, parm);
+      tree t = build2 (INIT_EXPR, void_type_node, current_class_ref, parm);
       finish_expr_stmt (t);
     }
   else
@@ -551,22 +550,20 @@ do_build_copy_constructor (tree fndecl)
 
       for (; fields; fields = TREE_CHAIN (fields))
 	{
-	  tree init;
+	  tree init = parm;
 	  tree field = fields;
 	  tree expr_type;
 
 	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
 
-	  init = parm;
+	  expr_type = TREE_TYPE (field);
 	  if (DECL_NAME (field))
 	    {
 	      if (VFIELD_NAME_P (DECL_NAME (field)))
 		continue;
 	    }
-	  else if ((t = TREE_TYPE (field)) != NULL_TREE
-		   && ANON_AGGR_TYPE_P (t)
-		   && TYPE_FIELDS (t) != NULL_TREE)
+	  else if (ANON_AGGR_TYPE_P (expr_type) && TYPE_FIELDS (expr_type))
 	    /* Just use the field; anonymous types can't have
 	       nontrivial copy ctors or assignment ops.  */;
 	  else
@@ -577,14 +574,19 @@ do_build_copy_constructor (tree fndecl)
 	     the field is "T", then the type will usually be "const
 	     T".  (There are no cv-qualified variants of reference
 	     types.)  */
-	  expr_type = TREE_TYPE (field);
 	  if (TREE_CODE (expr_type) != REFERENCE_TYPE)
-	    expr_type = cp_build_qualified_type (expr_type, cvquals);
+	    {
+	      int quals = cvquals;
+	      
+	      if (DECL_MUTABLE_P (field))
+		quals &= ~TYPE_QUAL_CONST;
+	      expr_type = cp_build_qualified_type (expr_type, quals);
+	    }
+	  
 	  init = build3 (COMPONENT_REF, expr_type, init, field, NULL_TREE);
 	  init = build_tree_list (NULL_TREE, init);
 
-	  member_init_list
-	    = tree_cons (field, init, member_init_list);
+	  member_init_list = tree_cons (field, init, member_init_list);
 	}
       finish_mem_initializers (member_init_list);
     }
@@ -639,52 +641,57 @@ do_build_assign_ref (tree fndecl)
 	   fields; 
 	   fields = TREE_CHAIN (fields))
 	{
-	  tree comp, init, t;
+	  tree comp = current_class_ref;
+	  tree init = parm;
 	  tree field = fields;
+	  tree expr_type;
+	  int quals;
 
 	  if (TREE_CODE (field) != FIELD_DECL || DECL_ARTIFICIAL (field))
 	    continue;
 
-	  if (CP_TYPE_CONST_P (TREE_TYPE (field)))
+	  expr_type = TREE_TYPE (field);
+	  
+	  if (CP_TYPE_CONST_P (expr_type))
 	    {
               error ("non-static const member %q#D, can't use default "
                      "assignment operator", field);
 	      continue;
 	    }
-	  else if (TREE_CODE (TREE_TYPE (field)) == REFERENCE_TYPE)
+	  else if (TREE_CODE (expr_type) == REFERENCE_TYPE)
 	    {
 	      error ("non-static reference member %q#D, can't use "
                      "default assignment operator", field);
 	      continue;
 	    }
 
-	  comp = current_class_ref;
-	  init = parm;
-
 	  if (DECL_NAME (field))
 	    {
 	      if (VFIELD_NAME_P (DECL_NAME (field)))
 		continue;
 	    }
-	  else if ((t = TREE_TYPE (field)) != NULL_TREE
-		   && ANON_AGGR_TYPE_P (t)
-		   && TYPE_FIELDS (t) != NULL_TREE)
+	  else if (ANON_AGGR_TYPE_P (expr_type)
+		   && TYPE_FIELDS (expr_type) != NULL_TREE)
 	    /* Just use the field; anonymous types can't have
 	       nontrivial copy ctors or assignment ops.  */;
 	  else
 	    continue;
 
-	  comp = build3 (COMPONENT_REF, TREE_TYPE (field), comp, field,
-			 NULL_TREE);
-	  init = build3 (COMPONENT_REF,
-			 cp_build_qualified_type (TREE_TYPE (field), cvquals),
-			 init, field, NULL_TREE);
+	  comp = build3 (COMPONENT_REF, expr_type, comp, field, NULL_TREE);
+	  
+	  /* Compute the type of init->field  */
+	  quals = cvquals;
+	  if (DECL_MUTABLE_P (field))
+	    quals &= ~TYPE_QUAL_CONST;
+	  expr_type = cp_build_qualified_type (expr_type, quals);
+	  
+	  init = build3 (COMPONENT_REF, expr_type, init, field, NULL_TREE);
 
 	  if (DECL_NAME (field))
-	    finish_expr_stmt (build_modify_expr (comp, NOP_EXPR, init));
+	    init = build_modify_expr (comp, NOP_EXPR, init);
 	  else
-	    finish_expr_stmt (build2 (MODIFY_EXPR, TREE_TYPE (comp), comp,
-				      init));
+	    init = build2 (MODIFY_EXPR, TREE_TYPE (comp), comp, init);
+	  finish_expr_stmt (init);
 	}
     }
   finish_return_stmt (current_class_ref);

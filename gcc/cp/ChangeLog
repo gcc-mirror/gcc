@@ -1,7 +1,15 @@
+2004-12-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/18975
+	* method.c (do_build_copy_constructor): Refactor. Don't const
+	qualify a mutable field.
+	(do_build_assign_ref): Likewise.
+
 2004-12-20  Matt Austern <austern@apple.com>
 
 	PR c++/19044
-	* decl.c (make_rtl_for_nonlocal_decl): Use set_builtin_user_assembler_name
+	* decl.c (make_rtl_for_nonlocal_decl): Use
+	set_builtin_user_assembler_name.
 	
 2004-12-19  Mark Mitchell  <mark@codesourcery.com>
 

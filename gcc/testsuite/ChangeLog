@@ -1,3 +1,8 @@
+2004-12-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/18975
+	* g++.dg/other/synth1.C: New.
+
 2004-12-21  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR c/18963
