@@ -230,7 +230,6 @@ PARSE_H = $(srcdir)/parse.h
 PARSE_C = $(srcdir)/parse.c
 PARSE_SCAN_C = $(srcdir)/parse-scan.c
 
-$(PARSE_H): $(PARSE_C)
 $(PARSE_C):  $(srcdir)/parse.y $(srcdir)/lex.c $(PARSE_H) $(srcdir)/lex.h
 	$(BISON) -t -v $(BISONFLAGS) $(JAVABISONFLAGS) -o $(PARSE_C) \
 	  $(srcdir)/parse.y
