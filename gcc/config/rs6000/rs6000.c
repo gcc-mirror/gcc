@@ -675,6 +675,12 @@ easy_fp_constant (op, mode)
   if (flag_pic && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS))
     return 0;
 
+#ifdef TARGET_RELOCATABLE
+  /* Similarly if we are using -mrelocatable, consider all constants to be hard */
+  if (TARGET_RELOCATABLE)
+    return 0;
+#endif
+
   if (mode == DFmode)
     {
       long k[2];
@@ -742,22 +748,6 @@ offsettable_addr_operand (op, mode)
 {
   return offsettable_address_p (reload_completed | reload_in_progress,
 				mode, op);
-}
-
-/* Return 1 if the operand is either a floating-point register, a pseudo
-   register, or memory.  */
-
-int
-fp_reg_or_mem_operand (op, mode)
-     register rtx op;
-     enum machine_mode mode;
-{
-  return (memory_operand (op, mode)
-	  || volatile_mem_operand (op, mode)
-	  || (register_operand (op, mode)
-	      && (GET_CODE (op) != REG
-		  || REGNO (op) >= FIRST_PSEUDO_REGISTER
-		  || FP_REGNO_P (REGNO (op)))));
 }
 
 /* Return 1 if the operand is either an easy FP constant (see above) or
