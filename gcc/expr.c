@@ -8064,14 +8064,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
     case MODIFY_EXPR:
       {
-	/* If lhs is complex, expand calls in rhs before computing it.
-	   That's so we don't compute a pointer and save it over a
-	   call.  If lhs is simple, compute it first so we can give it
-	   as a target if the rhs is just a call.  This avoids an
-	   extra temp and copy and that prevents a partial-subsumption
-	   which makes bad code.  Actually we could treat
-	   component_ref's of vars like vars.  */
-
 	tree lhs = TREE_OPERAND (exp, 0);
 	tree rhs = TREE_OPERAND (exp, 1);
 
