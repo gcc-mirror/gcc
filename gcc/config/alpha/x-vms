@@ -9,6 +9,7 @@ decc.exe : vms-cc.o
 	$(CC) -o $@ vms-cc.o ../libiberty/libiberty.a
 
 EXTRA_PROGRAMS=ld.exe decc.exe
+USE_COLLECT2=
 
 # These extra parts can only be compiled on a VMS host and are only needed
 # on a VMS target.

@@ -1,3 +1,13 @@
+Mon Dec 10 06:09:57 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* config.gcc (alpha*-dec-vms*): Change to alpha*-dec-*vms*
+	(exeext, target_alias, prefix, local_prefix): Define.
+	* config/alpha/x-vms (USE_COLLECT2): Make empty.
+	* config/alpha/xm-vms.h (INCLUDE_DEFAULTS): Use Unix style
+	file specifications. Remove ".".
+	(GCC_INCLUDE_DIR): Remove redefinition (redundant).
+	* fixinc/mkfixinc.sh (alpha*-dec-vms*):  Change to alpha*-dec-*vms*
+
 2001-12-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* Makefile.in (.po.gmo): Use POSIXLY_CORRECT argument ordering.
