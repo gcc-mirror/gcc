@@ -1078,7 +1078,7 @@ DEFUN(main, (argc, argv),
 	fprintf (stderr, "Processing %s\n", classname);
       if (! output_file)
 	jcf_dependency_reset ();
-      classfile_name = find_class (classname, strlen (classname), &jcf, 1);
+      classfile_name = find_class (classname, strlen (classname), &jcf, 0);
       if (classfile_name == NULL)
 	{
 	  fprintf (stderr, "%s: no such class\n", classname);
