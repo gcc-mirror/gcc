@@ -1,5 +1,7 @@
 Thu Apr 23 09:32:58 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* error.c (dump_type_real): Declare canonical_name.
+
 	* typeck.c (comp_target_types): Fix PMFs.
 
 Wed Apr 22 13:24:48 1998  Mark Mitchell  <mmitchell@usa.net>

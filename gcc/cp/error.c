@@ -140,6 +140,7 @@ static void
 dump_type_real (t, v, canonical_name)
      tree t;
      int v;			/* verbose? */
+     int canonical_name;
 {
   if (t == NULL_TREE)
     return;
