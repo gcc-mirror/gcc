@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000 , 2002 Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2002 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -70,6 +70,15 @@ _Jv_accept (int fd, struct sockaddr *addr, socklen_t *addrlen)
 #undef accept
 #endif
 
+// A wrapper for recv so we don't have to do configure tests.
+template <typename T_fd, typename T_buf, typename T_len, typename T_flags>
+static inline int
+_Jv_recv (int (*recv_func) (T_fd s, T_buf buf, T_len len, T_flags flags),
+	  int s, void *buf, size_t len, int flags)
+{
+  return recv_func ((T_fd) s, (T_buf) buf, (T_len) len, (T_flags) flags);
+}
+
 #include <gcj/cni.h>
 #include <gcj/javaprims.h>
 #include <java/io/IOException.h>
@@ -88,8 +97,7 @@ _Jv_accept (int fd, struct sockaddr *addr, socklen_t *addrlen)
 #include <java/lang/Thread.h>
 #include <java/lang/NullPointerException.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
-
-#define BooleanClass java::lang::Boolean::class$
+#include <java/lang/IllegalArgumentException.h>
 
 #ifdef DISABLE_JAVA_NET
 
@@ -497,7 +505,7 @@ java::net::PlainSocketImpl::read(jbyteArray buffer, jint offset, jint count)
       }
   }
   // Read the socket.
-  int r = ::recv (fnum, bytes, count, 0);
+  int r = _Jv_recv (::recv, fnum, (void *) bytes, count, 0);
   if (r == 0)
     return -1;
   if (java::lang::Thread::interrupted())
@@ -584,7 +592,7 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
   int val;
   socklen_t val_len = sizeof (val);
 
-  if (_Jv_IsInstanceOf (value, &BooleanClass))
+  if (_Jv_IsInstanceOf (value, &java::lang::Boolean::class$))
     {
       java::lang::Boolean *boolobj = 
         static_cast<java::lang::Boolean *> (value);
@@ -598,11 +606,15 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
 	    val = 0;
         }
     }
-  else  // assume value is an Integer
+  else if (_Jv_IsInstanceOf (value, &java::lang::Integer::class$))
     {
       java::lang::Integer *intobj = 
         static_cast<java::lang::Integer *> (value);          
       val = (int) intobj->intValue();
+    }
+  else
+    {
+      throw new java::lang::IllegalArgumentException (JvNewStringLatin1 ("`value' must be Boolean or Integer"));
     }
 
   switch (optID) 
