@@ -67,7 +67,7 @@ DEF_MACHMODE (HImode, "HI", MODE_INT, 2, 2, SImode)
 /* Pointers on some machines use this type to distinguish them from ints.
    Useful if a pointer is 4 bytes but has some bits that are not significant,
    so it is really not quite as wide as an integer.  */
-DEF_MACHMODE (PSImode, "PSI", MODE_PARTIAL_INT, 4, 4, VOIDmode)
+DEF_MACHMODE (PSImode, "PSI", MODE_PARTIAL_INT, 4, 4, PDImode)
 DEF_MACHMODE (SImode, "SI", MODE_INT, 4, 4, DImode)
 DEF_MACHMODE (PDImode, "PDI", MODE_PARTIAL_INT, 8, 8, VOIDmode)
 DEF_MACHMODE (DImode, "DI", MODE_INT, 8, 8, TImode)
