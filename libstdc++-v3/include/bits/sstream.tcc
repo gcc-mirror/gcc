@@ -47,24 +47,29 @@ namespace std
     pbackfail(int_type __c)
     {
       int_type __ret = traits_type::eof();
-      const bool __testeof = traits_type::eq_int_type(__c, __ret);
-
       if (this->eback() < this->gptr())
 	{
-	  const bool __testeq = traits_type::eq(traits_type::to_char_type(__c),
-						this->gptr()[-1]);
-	  this->gbump(-1);
-
 	  // Try to put back __c into input sequence in one of three ways.
 	  // Order these tests done in is unspecified by the standard.
-	  if (!__testeof && __testeq)
-	    __ret = __c;
-	  else if (__testeof)
-	    __ret = traits_type::not_eof(__c);
+	  const bool __testeof = traits_type::eq_int_type(__c, __ret);
+	  if (!__testeof)
+	    {
+	      const bool __testeq = traits_type::eq(traits_type::
+						    to_char_type(__c),
+						    this->gptr()[-1]);	  
+	      const bool __testout = this->_M_mode & ios_base::out;
+	      if (__testeq || __testout)
+		{
+		  this->gbump(-1);
+		  if (!__testeq)
+		    *this->gptr() = traits_type::to_char_type(__c);
+		  __ret = __c;
+		}
+	    }
 	  else
 	    {
-	      *this->gptr() = traits_type::to_char_type(__c);
-	      __ret = __c;
+	      this->gbump(-1);
+	      __ret = traits_type::not_eof(__c);
 	    }
 	}
       return __ret;
