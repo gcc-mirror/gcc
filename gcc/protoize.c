@@ -1,5 +1,5 @@
 /* Protoize program - Original version by Ron Guilmette (rfg@segfault.us.com).
-   Copyright (C) 1989, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -117,7 +117,11 @@ extern char *version_string;
 
 #define my_access(file,flag)	access((char *)file, flag)
 #define my_stat(file,pkt)	stat((char *)file, pkt)
+#ifdef __MINGW32__
+#define my_link(file1, file2)	-1
+#else
 #define my_link(file1, file2)	link((char *)file1, (char *)file2)
+#endif
 #define my_unlink(file)		unlink((char *)file)
 #define my_open(file, mode, flag)	open((char *)file, mode, flag)
 #define my_chmod(file, mode)	chmod((char *)file, mode)
@@ -199,9 +203,6 @@ extern int atoi ();
 extern int puts ();
 extern int fputs ();
 extern int fputc ();
-#if !defined(_WIN32)
-extern int link ();
-#endif
 extern int unlink ();
 extern int access ();
 
