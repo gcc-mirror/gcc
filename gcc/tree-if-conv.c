@@ -281,7 +281,7 @@ tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
   else_clause = TREE_OPERAND (stmt, 2);
 
   /* Create temp. for condition.  */
-  if (!is_gimple_reg (c))
+  if (!is_gimple_condexpr (c))
     {
       tree new_stmt;
       new_stmt = ifc_temp_var (TREE_TYPE (c), unshare_expr (c));
@@ -292,14 +292,22 @@ tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
   /* Add new condition into destination's predicate list.  */
   if (then_clause)
     /* if 'c' is true then then_clause is reached.  */
-    new_cond = add_to_dst_predicate_list (loop, then_clause, cond, c, bsi);
+    new_cond = add_to_dst_predicate_list (loop, then_clause, cond, 
+					  unshare_expr (c), bsi);
 
   if (else_clause)
     {
+      tree c2;
+      if (!is_gimple_reg(c) && is_gimple_condexpr (c))
+	{
+	  tree new_stmt;
+	  new_stmt = ifc_temp_var (TREE_TYPE (c), unshare_expr (c));
+	  bsi_insert_before (bsi, new_stmt, BSI_SAME_STMT);
+	  c = TREE_OPERAND (new_stmt, 0);
+	}
+
       /* if 'c' is false then else_clause is reached.  */
-      tree c2 = build1 (TRUTH_NOT_EXPR,
-			boolean_type_node,
-			unshare_expr (c));
+      c2 = invert_truthvalue (unshare_expr (c));
       add_to_dst_predicate_list (loop, else_clause, cond, c2, bsi);
     }
 
@@ -310,11 +318,6 @@ tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
     {
       bsi_remove (bsi);
       cond = NULL_TREE;
-    }
-  else if (new_cond != NULL_TREE)
-    {
-      TREE_OPERAND (stmt, 0) = new_cond;
-      modify_stmt (stmt);
     }
   return;
 }
@@ -916,6 +919,18 @@ combine_blocks (struct loop *loop)
       /* Remove basic block.  */
       remove_bb_from_loops (bb);
       expunge_block (bb);
+    }
+
+  /* Now if possible, merge loop header and block with exit edge.
+     This reduces number of basic blocks to 2. Auto vectorizer addresses
+     loops with two nodes only.  FIXME: Use cleanup_tree_cfg().  */
+  if (exit_bb != loop->latch && empty_block_p (loop->latch))
+    {
+      if (can_merge_blocks_p (loop->header, exit_bb))
+	{
+	  remove_bb_from_loops (exit_bb);
+	  merge_blocks (loop->header, exit_bb);
+	}
     }
 }
 
