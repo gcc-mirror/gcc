@@ -1,3 +1,8 @@
+2003-12-04  Christopher Saunders  <ctsa@u.washington.edu>
+
+	PR libstdc++/13290
+	* include/bits/stl_algo.h (generate_n): Fix typo.
+
 2003-12-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/basic_ios.h (basic_ios::setstate): Revert.
