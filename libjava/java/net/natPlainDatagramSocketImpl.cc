@@ -98,7 +98,7 @@ java::net::PlainDatagramSocketImpl::create ()
 
 void
 java::net::PlainDatagramSocketImpl::bind (jint lport,
-  java::net::InetAddress *host)
+					  java::net::InetAddress *host)
 {
   // FIXME: prob. need to do a setsockopt with SO_BROADCAST to allow multicast.
   union SockAddr u;
@@ -317,7 +317,7 @@ java::net::PlainDatagramSocketImpl::getTimeToLive ()
 
 void
 java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *inetaddr,
-  jboolean join)
+					      jboolean join)
 {
   union McastReq u;
   jbyteArray haddress = inetaddr->address;
@@ -367,7 +367,7 @@ java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *inetaddr,
 
 void
 java::net::PlainDatagramSocketImpl::setOption (jint optID,
-  java::lang::Object *value)
+					       java::lang::Object *value)
 {
   int val;
   socklen_t val_len = sizeof (val);
