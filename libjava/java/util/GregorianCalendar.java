@@ -405,7 +405,7 @@ public class GregorianCalendar extends Calendar
 
     TimeZone zone = getTimeZone();
     int rawOffset = isSet[ZONE_OFFSET]
-      ? fields[ZONE_OFFSET] : getTimeZone().getRawOffset();
+      ? fields[ZONE_OFFSET] : zone.getRawOffset();
 
     int dayOfYear = daysOfYear[0] + daysOfYear[1];
     int month = (dayOfYear * 5 + 3) / (31 + 30 + 31 + 30 + 31);

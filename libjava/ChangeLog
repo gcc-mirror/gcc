@@ -1,3 +1,8 @@
+2001-05-15  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/GregorianCalendar.java (computeTime): Only call
+	getTimeZone() once.
+
 2001-05-14  Tom Tromey  <tromey@redhat.com>
 
 	* java/text/SimpleDateFormat.java (parse): Clear DST_OFFSET and
