@@ -865,6 +865,9 @@ rs6000_override_options (const char *default_cpu)
 
   if (TARGET_E500)
     {
+      if (TARGET_ALTIVEC)
+      error ("AltiVec and E500 instructions cannot coexist");
+
       /* The e500 does not have string instructions, and we set
 	 MASK_STRING above when optimizing for size.  */
       if ((target_flags & MASK_STRING) != 0)
@@ -8097,7 +8100,6 @@ branch_positive_comparison_operator (rtx op, enum machine_mode mode)
 
   code = GET_CODE (op);
   return (code == EQ || code == LT || code == GT
-	  || (TARGET_E500 && TARGET_HARD_FLOAT && !TARGET_FPRS && code == NE)
 	  || code == LTU || code == GTU
 	  || code == UNORDERED);
 }
@@ -8525,26 +8527,13 @@ ccr_bit (rtx op, int scc_p)
      allowed.  */
   if (scc_p && code != EQ && code != GT && code != LT && code != UNORDERED
       && code != GTU && code != LTU)
-    {
-#if ! ENABLE_CHECKING
-      if (TARGET_E500)
-	inform ("your function will be miscompiled");
-      else
-#endif
-      abort ();
-    }
+    abort ();
   
   switch (code)
     {
     case NE:
-      if (TARGET_E500 && !TARGET_FPRS
-	  && TARGET_HARD_FLOAT && cc_mode == CCFPmode)
-	return base_bit + 1;
       return scc_p ? base_bit + 3 : base_bit + 2;
     case EQ:
-      if (TARGET_E500 && !TARGET_FPRS
-	  && TARGET_HARD_FLOAT && cc_mode == CCFPmode)
-	return base_bit + 1;
       return base_bit + 2;
     case GT:  case GTU:  case UNLE:
       return base_bit + 1;
@@ -8763,6 +8752,26 @@ print_operand (FILE *file, rtx x, int code)
 
       /* %c is output_addr_const if a CONSTANT_ADDRESS_P, otherwise
 	 output_operand.  */
+
+    case 'c':
+      /* X is a CR register.  Print the number of the GT bit of the CR.  */
+      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
+       output_operand_lossage ("invalid %%E value");
+      else
+       fprintf (file, "%d", 4 * (REGNO (x) - CR0_REGNO) + 1);
+      return;
+
+    case 'D':
+      /* Like 'J' but get to the GT bit.  */
+      if (GET_CODE (x) != REG)
+       abort ();
+
+      /* Bit 1 is GT bit.  */
+      i = 4 * (REGNO (x) - CR0_REGNO) + 1;
+
+      /* If we want bit 31, write a shift count of zero, not 32.  */
+      fprintf (file, "%d", i == 31 ? 0 : i + 1);
+      return;
 
     case 'E':
       /* X is a CR register.  Print the number of the EQ bit of the CR */
@@ -9550,36 +9559,26 @@ rs6000_generate_compare (enum rtx_code code)
     {
       rtx cmp, or1, or2, or_result, compare_result2;
 
+      /* Note: The E500 comparison instructions set the GT bit (x +
+        1), on success.  This explains the mess.  */
+
       switch (code)
 	{
-	case EQ:
-	case UNEQ:
-	case NE:
-	case LTGT:
+       case EQ: case UNEQ: case NE: case LTGT:
 	  cmp = flag_finite_math_only
 	    ? gen_tstsfeq_gpr (compare_result, rs6000_compare_op0,
 			       rs6000_compare_op1)
 	    : gen_cmpsfeq_gpr (compare_result, rs6000_compare_op0,
 			       rs6000_compare_op1);
 	  break;
-	case GT:
-	case GTU:
-	case UNGT:
-	case UNGE:
-	case GE:
-	case GEU:
+       case GT: case GTU: case UNGT: case UNGE: case GE: case GEU:
 	  cmp = flag_finite_math_only
 	    ? gen_tstsfgt_gpr (compare_result, rs6000_compare_op0,
 			       rs6000_compare_op1)
 	    : gen_cmpsfgt_gpr (compare_result, rs6000_compare_op0,
 			       rs6000_compare_op1);
 	  break;
-	case LT:
-	case LTU:
-	case UNLT:
-	case UNLE:
-	case LE:
-	case LEU:
+       case LT: case LTU: case UNLT: case UNLE: case LE: case LEU:
 	  cmp = flag_finite_math_only
 	    ? gen_tstsflt_gpr (compare_result, rs6000_compare_op0,
 			       rs6000_compare_op1)
@@ -9593,8 +9592,6 @@ rs6000_generate_compare (enum rtx_code code)
       /* Synthesize LE and GE from LT/GT || EQ.  */
       if (code == LE || code == GE || code == LEU || code == GEU)
 	{
-	  /* Synthesize GE/LE frome GT/LT || EQ.  */
-
 	  emit_insn (cmp);
 
 	  switch (code)
@@ -9619,23 +9616,8 @@ rs6000_generate_compare (enum rtx_code code)
 			       rs6000_compare_op1);
 	  emit_insn (cmp);
 
-	  /* The MC8540 FP compare instructions set the CR bits
-	     differently than other PPC compare instructions.  For
-	     that matter, there is no generic test instruction, but a
-	     testgt, testlt, and testeq.  For a true condition, bit 2
-	     is set (x1xx) in the CR.  Following the traditional CR
-	     values:
-
-	     LT    GT    EQ    OV
-	     bit3  bit2  bit1  bit0
-
-	     ... bit 2 would be a GT CR alias, so later on we
-	     look in the GT bits for the branch instructions.
-	     However, we must be careful to emit correct RTL in
-	     the meantime, so optimizations don't get confused.  */
-
-	  or1 = gen_rtx (NE, SImode, compare_result, const0_rtx);
-	  or2 = gen_rtx (NE, SImode, compare_result2, const0_rtx);
+	  or1 = gen_rtx_GT (SImode, compare_result, const0_rtx);
+	  or2 = gen_rtx_GT (SImode, compare_result2, const0_rtx);
 
 	  /* OR them together.  */
 	  cmp = gen_rtx_SET (VOIDmode, or_result,
@@ -9647,16 +9629,10 @@ rs6000_generate_compare (enum rtx_code code)
 	}
       else
 	{
-	  /* We only care about 1 bit (x1xx), so map everything to NE to
-	     maintain rtl sanity.  We'll get to the right bit (x1xx) at
-	     code output time.  */
 	  if (code == NE || code == LTGT)
-	    /* Do the inverse here because we have no cmpne
-	       instruction.  We use the cmpeq instruction and expect
-	       to get a 0 instead.  */
-	    code = EQ;
-	  else
 	    code = NE;
+         else
+           code = EQ;
 	}
 
       emit_insn (cmp);
@@ -9720,6 +9696,24 @@ rs6000_emit_sCOND (enum rtx_code code, rtx result)
 
   condition_rtx = rs6000_generate_compare (code);
   cond_code = GET_CODE (condition_rtx);
+
+  if (TARGET_E500 && rs6000_compare_fp_p
+      && !TARGET_FPRS && TARGET_HARD_FLOAT)
+    {
+      rtx t;
+
+      PUT_MODE (condition_rtx, SImode);
+      t = XEXP (condition_rtx, 0);
+
+      if (cond_code != NE && cond_code != EQ)
+       abort ();
+
+      if (cond_code == NE)
+       emit_insn (gen_e500_flip_gt_bit (t, t));
+
+      emit_insn (gen_move_from_CR_gt_bit (result, t));
+      return;
+    }
 
   if (cond_code == NE
       || cond_code == GE || cond_code == LE
@@ -9817,9 +9811,9 @@ output_cbranch (rtx op, const char *label, int reversed, rtx insn)
 	 to the GT bit.  */
       if (code == EQ)
 	/* Opposite of GT.  */
-	code = UNLE;
-      else if (code == NE)
 	code = GT;
+      else if (code == NE)
+       code = UNLE;
       else
 	abort ();
     }
@@ -9899,6 +9893,25 @@ output_cbranch (rtx op, const char *label, int reversed, rtx insn)
   return string;
 }
 
+/* Return the string to flip the GT bit on a CR.  */
+char *
+output_e500_flip_gt_bit (rtx dst, rtx src)
+{
+  static char string[64];
+  int a, b;
+
+  if (GET_CODE (dst) != REG || ! CR_REGNO_P (REGNO (dst))
+      || GET_CODE (src) != REG || ! CR_REGNO_P (REGNO (src)))
+    abort ();
+
+  /* GT bit.  */
+  a = 4 * (REGNO (dst) - CR0_REGNO) + 1;
+  b = 4 * (REGNO (src) - CR0_REGNO) + 1;
+
+  sprintf (string, "crnot %d,%d", a, b);
+  return string;
+}
+
 /* Emit a conditional move: move TRUE_COND to DEST if OP of the
    operands of the last comparison is nonzero/true, FALSE_COND if it
    is zero/false.  Return 0 if the hardware has no such operation.  */
@@ -9933,6 +9946,9 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
 	return rs6000_emit_int_cmove (dest, op, true_cond, false_cond);
       return 0;
     }
+  else if (TARGET_E500 && TARGET_HARD_FLOAT && !TARGET_FPRS
+	   && GET_MODE_CLASS (compare_mode) == MODE_FLOAT)
+    return 0;
 
   /* Eliminate half of the comparisons by switching operands, this
      makes the remaining code simpler.  */
