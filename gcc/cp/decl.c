@@ -3326,6 +3326,13 @@ duplicate_decls (newdecl, olddecl)
       DECL_NONCONVERTING_P (newdecl) = DECL_NONCONVERTING_P (olddecl);
       DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
       olddecl_friend = DECL_FRIEND_P (olddecl);
+
+      /* Only functions have DECL_BEFRIENDING_CLASSES.  */
+      if (TREE_CODE (newdecl) == FUNCTION_DECL
+	  || DECL_FUNCTION_TEMPLATE_P (newdecl))
+	DECL_BEFRIENDING_CLASSES (newdecl)
+	  = chainon (DECL_BEFRIENDING_CLASSES (newdecl),
+		     DECL_BEFRIENDING_CLASSES (olddecl));
     }
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
@@ -6668,7 +6675,6 @@ fixup_anonymous_union (t)
   TYPE_HAS_INIT_REF (t) = 0;
   TYPE_HAS_CONST_INIT_REF (t) = 0;
   TYPE_HAS_ASSIGN_REF (t) = 0;
-  TYPE_HAS_ASSIGNMENT (t) = 0;
   TYPE_HAS_CONST_ASSIGN_REF (t) = 0;
 
   /* Splice the implicitly generated functions out of the TYPE_METHODS
@@ -11804,7 +11810,7 @@ grok_op_properties (decl, virtualp, friendp)
       if (name == ansi_opname[(int) MODIFY_EXPR]
 	  && !(DECL_TEMPLATE_INSTANTIATION (decl)
 	       && is_member_template (DECL_TI_TEMPLATE (decl))))
-	TYPE_HAS_ASSIGNMENT (current_class_type) = 1;
+	;
       else if (name == ansi_opname[(int) CALL_EXPR])
 	TYPE_OVERLOADS_CALL_EXPR (current_class_type) = 1;
       else if (name == ansi_opname[(int) ARRAY_REF])

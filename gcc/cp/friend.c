@@ -61,9 +61,9 @@ is_friend (type, supplicant)
 
       for (; list ; list = TREE_CHAIN (list))
 	{
-	  if (name == TREE_PURPOSE (list))
+	  if (name == FRIEND_NAME (list))
 	    {
-	      tree friends = TREE_VALUE (list);
+	      tree friends = FRIEND_DECLS (list);
 	      for (; friends ; friends = TREE_CHAIN (friends))
 		{
 		  if (same_type_p (ctype, TREE_PURPOSE (friends)))
@@ -148,11 +148,13 @@ add_friend (type, decl)
   tree list = DECL_FRIENDLIST (typedecl);
   tree name = DECL_NAME (decl);
 
+  type = TREE_TYPE (typedecl);
+
   while (list)
     {
-      if (name == TREE_PURPOSE (list))
+      if (name == FRIEND_NAME (list))
 	{
-	  tree friends = TREE_VALUE (list);
+	  tree friends = FRIEND_DECLS (list);
 	  for (; friends ; friends = TREE_CHAIN (friends))
 	    {
 	      if (decl == TREE_VALUE (friends))
@@ -170,21 +172,13 @@ add_friend (type, decl)
 	}
       list = TREE_CHAIN (list);
     }
+
   DECL_FRIENDLIST (typedecl)
     = tree_cons (DECL_NAME (decl), build_tree_list (error_mark_node, decl),
 		 DECL_FRIENDLIST (typedecl));
-  if (DECL_NAME (decl) == ansi_opname[(int) MODIFY_EXPR])
-    {
-      tree parmtypes = TYPE_ARG_TYPES (TREE_TYPE (decl));
-      TYPE_HAS_ASSIGNMENT (TREE_TYPE (typedecl)) = 1;
-      if (parmtypes && TREE_CHAIN (parmtypes))
-	{
-	  tree parmtype = TREE_VALUE (TREE_CHAIN (parmtypes));
-	  if (TREE_CODE (parmtype) == REFERENCE_TYPE
-	      && TREE_TYPE (parmtypes) == TREE_TYPE (typedecl))
-	    TYPE_HAS_ASSIGN_REF (TREE_TYPE (typedecl)) = 1;
-	}
-    }
+  DECL_BEFRIENDING_CLASSES (decl) 
+    = tree_cons (NULL_TREE, type,
+		 DECL_BEFRIENDING_CLASSES (decl));
 }
 
 /* Declare that every member function NAME in FRIEND_TYPE
@@ -199,9 +193,9 @@ add_friends (type, name, friend_type)
 
   while (list)
     {
-      if (name == TREE_PURPOSE (list))
+      if (name == FRIEND_NAME (list))
 	{
-	  tree friends = TREE_VALUE (list);
+	  tree friends = FRIEND_DECLS (list);
 	  while (friends && TREE_PURPOSE (friends) != friend_type)
 	    friends = TREE_CHAIN (friends);
 	  if (friends)
@@ -226,13 +220,6 @@ add_friends (type, name, friend_type)
     = tree_cons (name,
 		 build_tree_list (friend_type, NULL_TREE),
 		 DECL_FRIENDLIST (typedecl));
-  if (! strncmp (IDENTIFIER_POINTER (name),
-		 IDENTIFIER_POINTER (ansi_opname[(int) MODIFY_EXPR]),
-		 strlen (IDENTIFIER_POINTER (ansi_opname[(int) MODIFY_EXPR]))))
-    {
-      TYPE_HAS_ASSIGNMENT (TREE_TYPE (typedecl)) = 1;
-      sorry ("declaring \"friend operator =\" will not find \"operator = (X&)\" if it exists");
-    }
 }
 
 /* Make FRIEND_TYPE a friend class to TYPE.  If FRIEND_TYPE has already
@@ -309,6 +296,11 @@ make_friend_class (type, friend_type)
     {
       CLASSTYPE_FRIEND_CLASSES (type)
 	= tree_cons (NULL_TREE, friend_type, CLASSTYPE_FRIEND_CLASSES (type));
+      if (is_template_friend)
+	friend_type = TREE_TYPE (friend_type);
+      CLASSTYPE_BEFRIENDING_CLASSES (friend_type)
+	= tree_cons (NULL_TREE, type, 
+		     CLASSTYPE_BEFRIENDING_CLASSES (friend_type)); 
     }
 }
 

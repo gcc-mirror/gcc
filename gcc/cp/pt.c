@@ -4783,7 +4783,6 @@ instantiate_class_template (type)
 
   TYPE_HAS_CONSTRUCTOR (type) = TYPE_HAS_CONSTRUCTOR (pattern);
   TYPE_HAS_DESTRUCTOR (type) = TYPE_HAS_DESTRUCTOR (pattern);
-  TYPE_HAS_ASSIGNMENT (type) = TYPE_HAS_ASSIGNMENT (pattern);
   TYPE_OVERLOADS_CALL_EXPR (type) = TYPE_OVERLOADS_CALL_EXPR (pattern);
   TYPE_OVERLOADS_ARRAY_REF (type) = TYPE_OVERLOADS_ARRAY_REF (pattern);
   TYPE_OVERLOADS_ARROW (type) = TYPE_OVERLOADS_ARROW (pattern);
@@ -6682,7 +6681,7 @@ tsubst_copy (t, args, complain, in_decl)
     case THROW_EXPR:
     case TYPEID_EXPR:
       return build1
-	(code, NULL_TREE,
+	(code, tsubst (TREE_TYPE (t), args, complain, in_decl),
 	 tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl));
 
     case PLUS_EXPR:

@@ -147,6 +147,8 @@ static tree access_in_type PROTO ((tree, tree));
 static tree dfs_canonical_queue PROTO ((tree, void *));
 static tree dfs_assert_unmarked_p PROTO ((tree, void *));
 static void assert_canonical_unmarked PROTO ((tree));
+static int protected_accessible_p PROTO ((tree, tree, tree, tree));
+static int friend_accessible_p PROTO ((tree, tree, tree, tree));
 
 /* Allocate a level of searching.  */
 
@@ -846,6 +848,116 @@ dfs_accessible_p (binfo, data)
   return NULL_TREE;
 }
 
+/* Returns non-zero if it is OK to access DECL when named in TYPE
+   through an object indiated by BINFO in the context of DERIVED.  */
+
+static int
+protected_accessible_p (type, decl, derived, binfo)
+     tree type;
+     tree decl;
+     tree derived;
+     tree binfo;
+{
+  tree access;
+
+  /* We're checking this clause from [class.access.base]
+
+       m as a member of N is protected, and the reference occurs in a
+       member or friend of class N, or in a member or friend of a
+       class P derived from N, where m as a member of P is private or
+       protected.  
+
+    If DERIVED isn't derived from TYPE, then it certainly does not
+    apply.  */
+  if (!DERIVED_FROM_P (type, derived))
+    return 0;
+
+  access = access_in_type (derived, decl);
+  if (same_type_p (derived, type))
+    {
+      if (access != access_private_node)
+	return 0;
+    }
+  else if (access != access_private_node
+	   && access != access_protected_node)
+    return 0;
+  
+  /* [class.protected]
+
+     When a friend or a member function of a derived class references
+     a protected nonstatic member of a base class, an access check
+     applies in addition to those described earlier in clause
+     _class.access_.4) Except when forming a pointer to member
+     (_expr.unary.op_), the access must be through a pointer to,
+     reference to, or object of the derived class itself (or any class
+     derived from that class) (_expr.ref_).  If the access is to form
+     a pointer to member, the nested-name-specifier shall name the
+     derived class (or any class derived from that class).  */
+  if (DECL_NONSTATIC_MEMBER_P (decl))
+    {
+      /* We can tell through what the reference is occurring by
+	 chasing BINFO up to the root.  */
+      tree t = binfo;
+      while (BINFO_INHERITANCE_CHAIN (t))
+	t = BINFO_INHERITANCE_CHAIN (t);
+      
+      if (!DERIVED_FROM_P (derived, BINFO_TYPE (t)))
+	return 0;
+    }
+
+  return 1;
+}
+
+/* Returns non-zero if SCOPE is a friend of a type which would be able
+   to acces DECL, named in TYPE, through the object indicated by
+   BINFO.  */
+
+static int
+friend_accessible_p (scope, type, decl, binfo)
+     tree scope;
+     tree type;
+     tree decl;
+     tree binfo;
+{
+  tree befriending_classes;
+  tree t;
+
+  if (!scope)
+    return 0;
+
+  if (TREE_CODE (scope) == FUNCTION_DECL
+      || DECL_FUNCTION_TEMPLATE_P (scope))
+    befriending_classes = DECL_BEFRIENDING_CLASSES (scope);
+  else if (TYPE_P (scope))
+    befriending_classes = CLASSTYPE_BEFRIENDING_CLASSES (scope);
+  else
+    return 0;
+
+  for (t = befriending_classes; t; t = TREE_CHAIN (t))
+    if (protected_accessible_p (type, decl, TREE_VALUE (t), binfo))
+      return 1;
+
+  if (TREE_CODE (scope) == FUNCTION_DECL
+      || DECL_FUNCTION_TEMPLATE_P (scope))
+    {
+      /* Perhaps this SCOPE is a member of a class which is a 
+	 friend.  */ 
+      if (friend_accessible_p (DECL_CLASS_CONTEXT (scope), type,
+			       decl, binfo))
+	return 1;
+
+      /* Or an instantiation of something which is a friend.  */
+      if (DECL_TEMPLATE_INFO (scope))
+	return friend_accessible_p (DECL_TI_TEMPLATE (scope),
+				    type, decl, binfo);
+    }
+  else if (CLASSTYPE_TEMPLATE_INFO (scope))
+    return friend_accessible_p (CLASSTYPE_TI_TEMPLATE (scope),
+				type, decl, binfo);
+
+  return 0;
+}
+   
 /* DECL is a declaration from a base class of TYPE, which was the
    classs used to name DECL.  Return non-zero if, in the current
    context, DECL is accessible.  If TYPE is actually a BINFO node,
@@ -858,7 +970,6 @@ accessible_p (type, decl)
      tree decl;
      
 {
-  tree scope;
   tree binfo;
   tree t;
 
@@ -909,48 +1020,16 @@ accessible_p (type, decl)
   /* Figure out where the reference is occurring.  Check to see if
      DECL is private or protected in this scope, since that will
      determine whether protected access in TYPE allowed.  */
-  if (current_class_type
-      && DERIVED_FROM_P (type, current_class_type))
-    {
-      tree access = access_in_type (current_class_type, decl);
-      if (same_type_p (current_class_type, type)
-	  && access == access_private_node)
-	protected_ok = 1;
-      else if (access && (access == access_private_node
-			  || access == access_protected_node))
-	protected_ok = 1;
-    }
+  if (current_class_type)
+    protected_ok 
+      = protected_accessible_p (type, decl, current_class_type,
+				binfo);
 
-  /* Now, loop through the classes of which SCOPE is a friend.  */
-  if (!protected_ok && scope)
-    {
-      /* FIXME: Implement this.  Right now, we have no way of knowing
-	        which classes befriend a particular function or class.  */
-    }
+  /* Now, loop through the classes of which we are a friend.  */
+  if (!protected_ok)
+    protected_ok = friend_accessible_p (current_scope (),
+					type, decl, binfo);
 
-  /* [class.protected]
-
-     When a friend or a member function of a derived class references
-     a protected nonstatic member of a base class, an access check
-     applies in addition to those described earlier in clause
-     _class.access_.4) Except when forming a pointer to member
-     (_expr.unary.op_), the access must be through a pointer to,
-     reference to, or object of the derived class itself (or any class
-     derived from that class) (_expr.ref_).  If the access is to form
-     a pointer to member, the nested-name-specifier shall name the
-     derived class (or any class derived from that class).  */
-  if (protected_ok && DECL_NONSTATIC_MEMBER_P (decl))
-    {
-      /* We can tell through what the reference is occurring by
-	 chasing BINFO up to the root.  */
-      t = binfo;
-      while (BINFO_INHERITANCE_CHAIN (t))
-	t = BINFO_INHERITANCE_CHAIN (t);
-      
-      if (!DERIVED_FROM_P (current_class_type, BINFO_TYPE (t)))
-	protected_ok = 0;
-    }
-  
   /* Standardize on the same that will access_in_type will use.  We
      don't need to know what path was chosen from this point onwards.  */ 
   binfo = TYPE_BINFO (type);
