@@ -1,5 +1,5 @@
 /* SocketOptions.java -- Implements options for sockets (duh!)
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -60,6 +60,11 @@ public interface SocketOptions
 /*
  * Static Variables
  */
+
+/**
+ * Option id for the SO_KEEPALIVE value
+ */
+static final int SO_KEEPALIVE = 0x8;
 
 /**
   * Option id for the SO_LINGER value

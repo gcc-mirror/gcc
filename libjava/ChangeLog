@@ -1,3 +1,34 @@
+2002-08-29  Tom Tromey  <tromey@redhat.com>
+
+	* java/net/JarURLConnection.java (getCertificates): New method
+	from Classpath.
+	* java/net/URLClassLoader.java (URLClassLoader): Extends
+	SecureClassLoader.
+	(definePackage): New method from Classpath.
+	(getPermissions): Likewise.
+	(newInstance): Likewise.
+	(findClass): Construct CodeSource for new class (from Classpath).
+	* java/net/SocketImpl.java (shutdownInput, shutdownOutput): New
+	methods.
+	* java/net/URL.java (getUserInfo): New method.
+	(set(String,String,int,String,String,String,String,String)): New
+	method.
+	* java/net/PlainSocketImpl.java (_Jv_SO_KEEPALIVE_): Define.
+	(shutdownInput, shutdownOutput): Declare.
+	* java/net/PlainDatagramSocketImpl.java (_Jv_SO_KEEPALIVE_):
+	Define.
+	* java/net/natPlainSocketImpl.cc (setOption): Handle keepalive.
+	(getOption): Likewise.
+	(shutdownInput): New method.
+	(shutdownOutput): Likewise.
+	* java/net/natPlainDatagramSocketImpl.cc (setOption): Handle
+	keepalive.
+	(getOption): Likewise.
+	* java/net/SocketOptions.java (SO_KEEPALIVE): New constant.
+	* java/net/Socket.java (setKeepAlive): New method.
+	(getKeepAlive): Likewise.
+	(shutdownInput, shutdownOutput): New methods.
+
 2002-08-29  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/DatagramPacket.java: updated to JDK 1.4 API

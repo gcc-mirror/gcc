@@ -524,6 +524,10 @@ java::net::PlainDatagramSocketImpl::setOption (jint optID,
         throw new java::net::SocketException (
           JvNewStringUTF ("SO_LINGER not valid for UDP"));
         return;
+      case _Jv_SO_KEEPALIVE_ :
+        throw new java::net::SocketException (
+          JvNewStringUTF ("SO_KEEPALIVE not valid for UDP"));
+        return;
       case _Jv_SO_SNDBUF_ :
       case _Jv_SO_RCVBUF_ :
 #if defined(SO_SNDBUF) && defined(SO_RCVBUF)
@@ -613,11 +617,14 @@ java::net::PlainDatagramSocketImpl::getOption (jint optID)
         throw new java::net::SocketException (
           JvNewStringUTF ("TCP_NODELAY not valid for UDP"));
         break;
-
       case _Jv_SO_LINGER_ :
         throw new java::net::SocketException (
           JvNewStringUTF ("SO_LINGER not valid for UDP"));
         break;    
+      case _Jv_SO_KEEPALIVE_ :
+        throw new java::net::SocketException (
+          JvNewStringUTF ("SO_KEEPALIVE not valid for UDP"));
+        break;
       case _Jv_SO_RCVBUF_ :
       case _Jv_SO_SNDBUF_ :
 #if defined(SO_SNDBUF) && defined(SO_RCVBUF)

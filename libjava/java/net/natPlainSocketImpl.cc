@@ -222,6 +222,20 @@ java::net::PlainSocketImpl::close(void)
     JvNewStringLatin1 ("SocketImpl.close: unimplemented"));
 }
 
+void
+java::net::PlainSocketImpl::shutdownInput (void)
+{
+  throw new SocketException (
+    JvNewStringLatin1 ("SocketImpl.shutdownInput: unimplemented"));
+}
+
+void
+java::net::PlainSocketImpl::shutdownOutput (void)
+{
+  throw new SocketException (
+    JvNewStringLatin1 ("SocketImpl.shutdownOutput: unimplemented"));
+}
+
 #else /* DISABLE_JAVA_NET */
 
 union SockAddr
@@ -722,12 +736,18 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
 #ifdef TCP_NODELAY
         if (::setsockopt (fnum, IPPROTO_TCP, TCP_NODELAY, (char *) &val,
 	    val_len) != 0)
-	  goto error;    
+	  goto error;
 #else
         throw new java::lang::InternalError (
           JvNewStringUTF ("TCP_NODELAY not supported"));
 #endif /* TCP_NODELAY */
         return;
+
+      case _Jv_SO_KEEPALIVE_ :
+        if (::setsockopt (fnum, SOL_SOCKET, SO_KEEPALIVE, (char *) &val,
+	    val_len) != 0)
+	  goto error;
+
       case _Jv_SO_LINGER_ :
 #ifdef SO_LINGER
         struct linger l_val;
@@ -816,6 +836,14 @@ java::net::PlainSocketImpl::getOption (jint optID)
           JvNewStringUTF ("SO_LINGER not supported"));
 #endif
         break;    
+
+      case _Jv_SO_KEEPALIVE_ :
+        if (::getsockopt (fnum, SOL_SOCKET, SO_KEEPALIVE, (char *) &val,
+	    &val_len) != 0)
+          goto error;
+        else
+	  return new java::lang::Boolean (val != 0);
+
       case _Jv_SO_RCVBUF_ :
       case _Jv_SO_SNDBUF_ :
 #if defined(SO_SNDBUF) && defined(SO_RCVBUF)
@@ -874,6 +902,20 @@ java::net::PlainSocketImpl::getOption (jint optID)
  error:
   char* strerr = strerror (errno);
   throw new java::net::SocketException (JvNewStringUTF (strerr));
+}
+
+void
+java::net::PlainSocketImpl::shutdownInput (void)
+{
+  if (::shutdown (fnum, 0))
+    throw new SocketException (JvNewStringUTF (strerror (errno)));
+}
+
+void
+java::net::PlainSocketImpl::shutdownOutput (void)
+{
+  if (::shutdown (fnum, 1))
+    throw new SocketException (JvNewStringUTF (strerror (errno)));
 }
 
 #endif /* DISABLE_JAVA_NET */

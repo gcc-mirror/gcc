@@ -1,6 +1,6 @@
 // PlainDatagramSocketImpl.java - Implementation of DatagramSocketImpl.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -33,7 +33,8 @@ class PlainDatagramSocketImpl extends DatagramSocketImpl
                    _Jv_SO_LINGER_ = SocketOptions.SO_LINGER,
                    _Jv_SO_TIMEOUT_ = SocketOptions.SO_TIMEOUT,
                    _Jv_SO_SNDBUF_ = SocketOptions.SO_SNDBUF,
-                   _Jv_SO_RCVBUF_ = SocketOptions.SO_RCVBUF;
+                   _Jv_SO_RCVBUF_ = SocketOptions.SO_RCVBUF,
+                   _Jv_SO_KEEPALIVE_ = SocketOptions.SO_KEEPALIVE;
 
   int fnum = -1;
 
