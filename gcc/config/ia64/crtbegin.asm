@@ -27,6 +27,7 @@ __DTOR_LIST__:
 	data8	-1
 
 .section .IA_64.unwind
+	.align	8
 __EH_FRAME_BEGIN__:
 
 .section .sdata

@@ -1,3 +1,7 @@
+2000-07-31  Anthony Green  <green@redhat.com>
+
+	* config/ia64/crtbegin.asm (__EH_FRAME_BEGIN__): Align correctly.
+
 2000-07-31  Jason McMullan  <jmcmullan@linuxcare.com>
 
 	* builtins.c (expand_builtin_apply): Don't defer pop during
