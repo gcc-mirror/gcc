@@ -149,6 +149,8 @@ extern int target_flags;
 
 #define TARGET_DEFAULT  (0)
 
+#define PRESERVE_DEATH_INFO_REGNO_P(regno) (TARGET_RELAX || optimize)
+
 #define OVERRIDE_OPTIONS 					\
 do {								\
   sh_cpu = CPU_SH0;						\
