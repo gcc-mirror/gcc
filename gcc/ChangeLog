@@ -1,3 +1,8 @@
+Tue Jul  7 08:41:27 1998  Richard Henderson  (rth@cygnus.com)
+
+	* print-rtl.c (print_rtx): Only print fp values when REAL_VALUE_TYPE
+	is a double.
+
 Tue Jul 7 00:31:58 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.

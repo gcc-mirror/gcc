@@ -269,7 +269,7 @@ print_rtx (in_rtx)
 	abort ();
       }
 
-#if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
+#if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT && LONG_DOUBLE_TYPE_SIZE == 64
   if (GET_CODE (in_rtx) == CONST_DOUBLE && FLOAT_MODE_P (GET_MODE (in_rtx)))
     {
       double val;
