@@ -1,3 +1,15 @@
+2001-01-09  David O'Brien  <obrien@BSDi.com>
+
+	* config.gcc (*-*-gnu*, i[34567]86-*-elf*, i[34567]86-*-linux*libc1,
+	i[34567]86-*-linux*, i[34567]86-*-moss*): Specify needed platform specific
+	files in tm_file.
+	* config/i386/gnu.h: Don't include required platform specific .h files,
+	tm.h will do it instead.
+	* config/i386/i386elf.h: Likewise.
+	* config/i386/linux.h: Likewise.
+	* config/i386/moss.h: Likewise.
+	* config/mips/gnu.h: Likewise.
+
 2001-01-09  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* config.gcc (powerpc-*-beos*): Include ${tm_file} and rs6000/aix.h.

@@ -1,11 +1,5 @@
 /* Configuration for an i386 running GNU with ELF as the target machine.  */
 
-/* This does it mostly for us.  */
-#include <i386/linux.h>
-
-/* Get machine-independent configuration parameters for the GNU system.  */
-#include <gnu.h>
-
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 GNU)");
 
