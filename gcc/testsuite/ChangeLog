@@ -1,3 +1,11 @@
+Mon Feb  9 02:08:47 1998  H.J. Lu  (hjl@gnu.org)
+
+        * lib/old-dejagnu.exp (old-dejagnu): Added the
+        "execution test - XFAIL *-*-*" handling in the spirit of
+        "excess errors test -". Changed the "execution test fails"
+        handling to be like "excess errors test fails".
+        * Update various tests accordingly.
+
 Sun Jan 18 01:33:59 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/c-torture.exp: Look for .x files instead of .cexp files.
