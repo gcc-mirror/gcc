@@ -7497,6 +7497,13 @@ If this macro is defined to anything, the DWARF 2 unwinder will be used
 instead of inline unwinders and @code{__unwind_function} in the non-@code{setjmp} case.
 @end defmac
 
+@defmac MUST_USE_SJLJ_EXCEPTIONS
+This macro need only be defined if @code{DWARF2_UNWIND_INFO} is
+runtime-variable.  In that case, @file{except.h} cannot correctly
+determine the corresponding definition of
+@code{MUST_USE_SJLJ_EXCEPTIONS}, so the target must provide it directly.
+@end defmac
+
 @defmac DWARF_CIE_DATA_ALIGNMENT
 This macro need only be defined if the target might save registers in the
 function prologue at an offset to the stack pointer that is not aligned to
