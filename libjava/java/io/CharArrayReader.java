@@ -228,7 +228,7 @@ public class CharArrayReader extends Reader
 
 	/* Don't need to check pos value, arraycopy will check it. */
 	if (off < 0 || len < 0 || off + len > b.length)
-	  throw new ArrayIndexOutOfBoundsException();
+	  throw new IndexOutOfBoundsException();
 
 	if (pos >= count)
 	  return -1;

@@ -1,3 +1,16 @@
+2003-12-28  Guilhem Lavaux <guilhem@kaffe.org>
+
+	* java/io/LineNumberReader.java
+	(mark): Improved error checking.
+	(read): Likewise.
+	(skip): Likewise. Skip is now really eating the specified number of
+	characters.
+	* java/io/CharArrayReader.java (read): It should throw
+	IndexOutOfBoundsException and not ArrayIndexOutOfBoundsException (see
+	mauve).
+	* java/io/BufferedReader.java (readLine): Make readLine() really block
+	until either EOF is reached or a true error happens.
+
 2003-12-27  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/net/protocol/http/Connection.java
