@@ -1252,7 +1252,7 @@ case " $skipdirs " in
    # If we're using a pre-built compiler (which is the case for
    # Canadian crosses or when gcc isn't being built), don't discard
    # standard headers.
-   if test "${build}" = "${host}" && test ! -d ${topsrcdir}/gcc; then
+   if test "${build}" = "${host}" && test -d ${topsrcdir}/gcc; then
      FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -nostdinc'
    fi
 
