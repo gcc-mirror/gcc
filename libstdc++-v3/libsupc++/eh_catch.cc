@@ -70,15 +70,14 @@ __cxxabiv1::__cxa_begin_catch (void *exc_obj_in) throw()
     }
 
   int count = header->handlerCount;
+  // Count is less than zero if this exception was rethrown from an
+  // immediately enclosing region.
   if (count < 0)
-    // This exception was rethrown from an immediately enclosing region.
     count = -count + 1;
   else
-    {
-      count += 1;
-      globals->uncaughtExceptions -= 1;
-    }
+    count += 1;
   header->handlerCount = count;
+  globals->uncaughtExceptions -= 1;
 
   if (header != prev)
     {
