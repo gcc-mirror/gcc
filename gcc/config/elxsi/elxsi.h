@@ -79,7 +79,6 @@ extern int target_flags;
    if using 16-bit ints on a 68000, this would still be 32.
    But on a machine with 16-bit registers, this would be 16.  */
 #define BITS_PER_WORD 64
-#define Rmode DImode
 
 #define INT_TYPE_SIZE 32
 
@@ -105,6 +104,9 @@ extern int target_flags;
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY 32
+
+/* Boundary (in *bits*) on which stack pointer should be aligned.  */
+#define STACK_BOUNDARY 32
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 8

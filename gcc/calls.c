@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #define FUNCTION_OK_FOR_SIBCALL(DECL) 1
 #endif
 
-#if !defined PREFERRED_STACK_BOUNDARY && defined STACK_BOUNDARY
+#if !defined PREFERRED_STACK_BOUNDARY
 #define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
 #endif
 
@@ -988,7 +988,7 @@ restore_fixed_argument_area (save_area, argblock, high_to_save, low_to_save)
     move_by_pieces (stack_area, validize_mem (save_area),
 		    high_to_save - low_to_save + 1, PARM_BOUNDARY);
 }
-#endif
+#endif /* REG_PARM_STACK_SPACE */
 
 /* If any elements in ARGS refer to parameters that are to be passed in
    registers, but not in memory, and whose alignment does not permit a
@@ -1368,10 +1368,8 @@ compute_argument_block_size (reg_parm_stack_space, args_size,
   /* For accumulate outgoing args mode we don't need to align, since the frame
      will be already aligned.  Align to STACK_BOUNDARY in order to prevent
      backends from generating missaligned frame sizes.  */
-#ifdef STACK_BOUNDARY
   if (ACCUMULATE_OUTGOING_ARGS && preferred_stack_boundary > STACK_BOUNDARY)
     preferred_stack_boundary = STACK_BOUNDARY;
-#endif
 
   /* Compute the actual size of the argument block required.  The variable
      and constant sizes must be combined, the size may have to be rounded,
@@ -1382,7 +1380,6 @@ compute_argument_block_size (reg_parm_stack_space, args_size,
       args_size->var = ARGS_SIZE_TREE (*args_size);
       args_size->constant = 0;
 
-#ifdef PREFERRED_STACK_BOUNDARY
       preferred_stack_boundary /= BITS_PER_UNIT;
       if (preferred_stack_boundary > 1)
 	{
@@ -1393,7 +1390,6 @@ compute_argument_block_size (reg_parm_stack_space, args_size,
 	    abort ();
 	  args_size->var = round_up (args_size->var, preferred_stack_boundary);
 	}
-#endif
 
       if (reg_parm_stack_space > 0)
 	{
@@ -1412,7 +1408,6 @@ compute_argument_block_size (reg_parm_stack_space, args_size,
     }
   else
     {
-#ifdef PREFERRED_STACK_BOUNDARY
       preferred_stack_boundary /= BITS_PER_UNIT;
       if (preferred_stack_boundary < 1)
 	preferred_stack_boundary = 1;
@@ -1422,7 +1417,6 @@ compute_argument_block_size (reg_parm_stack_space, args_size,
 			      / preferred_stack_boundary
 			      * preferred_stack_boundary)
 			     - stack_pointer_delta);
-#endif
 
       args_size->constant = MAX (args_size->constant,
 				 reg_parm_stack_space);
@@ -2296,11 +2290,7 @@ expand_call (exp, target, ignore)
     }
 
   /* Figure out the amount to which the stack should be aligned.  */
-#ifdef PREFERRED_STACK_BOUNDARY
   preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
-#else
-  preferred_stack_boundary = STACK_BOUNDARY;
-#endif
 
   /* Operand 0 is a pointer-to-function; get the type of the function.  */
   funtype = TREE_TYPE (TREE_OPERAND (exp, 0));
@@ -2905,7 +2895,6 @@ expand_call (exp, target, ignore)
 
       compute_argument_addresses (args, argblock, num_actuals);
 
-#ifdef PREFERRED_STACK_BOUNDARY
       /* If we push args individually in reverse order, perform stack alignment
 	 before the first push (the last arg).  */
       if (PUSH_ARGS_REVERSED && argblock == 0
@@ -2931,12 +2920,6 @@ expand_call (exp, target, ignore)
       /* Now that the stack is properly aligned, pops can't safely
 	 be deferred during the evaluation of the arguments.  */
       NO_DEFER_POP;
-#endif
-
-      /* Don't try to defer pops if preallocating, not even from the first arg,
-	 since ARGBLOCK probably refers to the SP.  */
-      if (argblock)
-	NO_DEFER_POP;
 
       funexp = rtx_for_function_call (fndecl, exp);
 
@@ -3008,13 +2991,11 @@ expand_call (exp, target, ignore)
 		sibcall_failure = 1;
 	    }
 
-#ifdef PREFERRED_STACK_BOUNDARY
       /* If we pushed args in forward order, perform stack alignment
 	 after pushing the last arg.  */
       if (!PUSH_ARGS_REVERSED && argblock == 0)
 	anti_adjust_stack (GEN_INT (adjusted_args_size.constant
 				    - unadjusted_args_size));
-#endif
 
       /* If register arguments require space on the stack and stack space
 	 was not preallocated, allocate stack space here for arguments
@@ -3074,11 +3055,9 @@ expand_call (exp, target, ignore)
       /* All arguments and registers used for the call must be set up by
 	 now!  */
 
-#ifdef PREFERRED_STACK_BOUNDARY
       /* Stack must be properly aligned now.  */
       if (pass && stack_pointer_delta % preferred_unit_stack_boundary)
 	abort ();
-#endif
 
       /* Generate the actual call instruction.  */
       emit_call_1 (funexp, fndecl, funtype, unadjusted_args_size,
@@ -3558,12 +3537,10 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
     }
   fun = orgfun;
 
-#ifdef PREFERRED_STACK_BOUNDARY
   /* Ensure current function's preferred stack boundary is at least
      what we need.  */
   if (cfun->preferred_stack_boundary < PREFERRED_STACK_BOUNDARY)
     cfun->preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
-#endif
 
   /* If this kind of value comes back in memory,
      decide where in memory it should come back.  */
@@ -3772,14 +3749,12 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
   assemble_external_libcall (fun);
 
   original_args_size = args_size;
-#ifdef PREFERRED_STACK_BOUNDARY
   args_size.constant = (((args_size.constant
 			  + stack_pointer_delta
 			  + STACK_BYTES - 1)
 			  / STACK_BYTES
 			  * STACK_BYTES)
 			 - stack_pointer_delta);
-#endif
 
   args_size.constant = MAX (args_size.constant,
 			    reg_parm_stack_space);
@@ -3848,13 +3823,11 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	argblock = push_block (GEN_INT (args_size.constant), 0, 0);
     }
 
-#ifdef PREFERRED_STACK_BOUNDARY
   /* If we push args individually in reverse order, perform stack alignment
      before the first push (the last arg).  */
   if (argblock == 0 && PUSH_ARGS_REVERSED)
     anti_adjust_stack (GEN_INT (args_size.constant
 				- original_args_size.constant));
-#endif
 
   if (PUSH_ARGS_REVERSED)
     {
@@ -4000,13 +3973,11 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	}
     }
 
-#ifdef PREFERRED_STACK_BOUNDARY
   /* If we pushed args in forward order, perform stack alignment
      after pushing the last arg.  */
   if (argblock == 0 && !PUSH_ARGS_REVERSED)
     anti_adjust_stack (GEN_INT (args_size.constant
 				- original_args_size.constant));
-#endif
 
   if (PUSH_ARGS_REVERSED)
     argnum = nargs - 1;
@@ -4064,11 +4035,9 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
   valreg = (mem_value == 0 && outmode != VOIDmode
 	    ? hard_libcall_value (outmode) : NULL_RTX);
 
-#ifdef PREFERRED_STACK_BOUNDARY
   /* Stack must be properly aligned now.  */
   if (stack_pointer_delta & (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT - 1))
     abort ();
-#endif
 
   before_call = get_last_insn ();
 

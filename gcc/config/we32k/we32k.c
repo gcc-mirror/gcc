@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "regs.h"
 #include "tree.h"
+#include "expr.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"

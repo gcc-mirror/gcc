@@ -439,8 +439,8 @@ expand_movstr (operands)
 
       /* Advance to next piece. */
       size = GET_MODE_SIZE (mode);
-      src = adj_offsettable_operand (src, size);
-      dest = adj_offsettable_operand (dest, size);
+      src = adjust_address (src, mode, size);
+      dest = adjust_address (dest, mode, size);
       len -= size;
     }
 

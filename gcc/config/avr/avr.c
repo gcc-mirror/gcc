@@ -816,7 +816,6 @@ avr_output_function_epilogue (file, size)
    machine for a memory operand of mode MODE.  */
 
 int
-int
 legitimate_address_p (mode, x, strict)
      enum machine_mode mode;
      rtx x;

@@ -260,13 +260,7 @@ do {  \
 
 /* Define the .bss section for ASM_OUTPUT_LOCAL to use. */
 
-#ifndef CTORS_SECTION_FUNCTION
 #define EXTRA_SECTIONS in_readonly_data
-#define CTORS_SECTION_FUNCTION
-#define DTORS_SECTION_FUNCTION
-#else
-#define EXTRA_SECTIONS in_readonly_data, in_ctors, in_dtors
-#endif
 
 /* FIXME: HPUX ld generates incorrect GOT entries for "T" fixups
    which reference data within the $TEXT$ space (for example constant
@@ -293,9 +287,7 @@ readonly_data ()							\
 	fprintf (asm_out_file, "%s\n", READONLY_DATA_ASM_OP);		\
       in_section = in_readonly_data;					\
     }									\
-}									\
-CTORS_SECTION_FUNCTION							\
-DTORS_SECTION_FUNCTION
+}
 
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.

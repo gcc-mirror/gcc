@@ -1548,7 +1548,7 @@ extern int m32r_sched_odd_word_p;
    `in_text' and `in_data'.  You need not define this macro
    on a system with no other sections (that GCC needs to use).  */
 #undef  EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_sdata, in_sbss, in_const, in_ctors, in_dtors
+#define EXTRA_SECTIONS in_sdata, in_sbss, in_const
 
 /* One or more functions to be defined in "varasm.c".  These
    functions should do jobs analogous to those of `text_section' and
@@ -1557,8 +1557,6 @@ extern int m32r_sched_odd_word_p;
 #undef  EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS	\
   CONST_SECTION_FUNCTION	\
-  CTORS_SECTION_FUNCTION	\
-  DTORS_SECTION_FUNCTION	\
   SDATA_SECTION_FUNCTION	\
   SBSS_SECTION_FUNCTION
 

@@ -26,6 +26,10 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "function.h"
 #include "output.h"
+#include "tree.h"
+#include "expr.h"
+#include "regs.h"
+#include "flags.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
@@ -129,7 +133,7 @@ elxsi_output_function_epilogue (file, size)
     {
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
 	if (regs_ever_live[regno] && !call_used_regs[regno])
-	  fprintf (file, "\tld.64\t.r%d,[.sp]%d\n", regno, (cnt + =8) - 12);
+	  fprintf (file, "\tld.64\t.r%d,[.sp]%d\n", regno, (cnt += 8) - 12);
 
       fprintf (file, "\texit\t%d\n", size + cnt);
     }

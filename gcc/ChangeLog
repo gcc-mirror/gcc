@@ -1,3 +1,39 @@
+2001-08-10  Zack Weinberg  <zackw@stanford.edu>
+
+	* calls.c, function.c: Always define PREFERRED_STACK_BOUNDARY
+	if not already defined.  Remove all #ifdefs on STACK_BOUNDARY;
+	this macro is now required.
+
+	* cselib.c (cselib_process_insn), flow.c (propagate_block),
+	loop.c (find_and_verify_loops), reload.c (reload): Check
+	for rtx code of CALL_INSN, not CALL, when deciding if we
+	need to check for REG_SETJMP note.
+
+	* gcse.c (compute_hash_table, compute_store_table): Update
+	the #ifdef NON_SAVING_SETJMP code to the new REG_SETJMP
+	logic.
+
+	* config/avr/avr.c: Fix typo.
+	* config/convex/convex.c (expand_movstr): Use adjust_address.
+	* config/dsp16xx/dsp16xx.c: Define dsp16xx_compare_gen
+	variable.
+	* config/dsp16xx/dsp16xx.md: Correct calls to replace_equiv_address.
+	* config/elxsi/elxsi.c: Include tree.h, expr.h, regs.h, and flags.h.
+	Fix typo.
+	* config/elxsi/elxsi.h: Don't define Rmode (typo for Pmode?)
+	Do define STACK_BOUNDARY.
+	* config/i370/i370.c: Include expr.h.
+	* config/i860/sysv3.h, config/i860/sysv4.h, config/m32r/m32r.h,
+	config/pa/som.h, config/v850/v850.h: Take in_ctors and
+	in_dtors out of EXTRA_SECTIONS; take CTORS_SECTION_FUNCTION
+	and DTORS_SECTION_FUNCTION out of EXTRA_SECTION_FUNCTIONS.
+	* config/m88k/m88k.c: Include c-tree.h after expr.h.
+	* config/pdp11/pdp11.c: Include expr.h and toplev.h.
+	* config/romp/romp.c: Include expr.h after tree.h.
+	Include toplev.h.
+	(output_fpop): Use xmalloc, not oballoc.
+	* config/we32k/we32k.c: Include expr.h.
+
 2001-08-10  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.h: Fix formatting.
@@ -41,7 +77,7 @@
 
 2001-08-09  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
-	* stmt.c (expand_null_return_1): Remove code to generate simple returns 
+	* stmt.c (expand_null_return_1): Remove code to generate simple returns
 	and "use_goto" argument.
 	(expand_null_return, expand_value_return): Update all callers.
 	* function.c (expand_function_end): Remove code to generate simple
@@ -161,7 +197,7 @@
 	(ASM_OUTPUT_CONSTRUCTOR, ASM_OUTPUT_DESTRUCTOR): Remove.
 	(TARGET_ASM_CONSTRUCTOR, TARGET_ASM_DESTRUCTOR): New.
 	* config/c4x/c4x.c: Move include of tree.h.
-	* config/clipper/clipper.c (clix_asm_out_constructor): New.	
+	* config/clipper/clipper.c (clix_asm_out_constructor): New.
 	(clix_asm_out_destructor): New.
 	* config/clipper/clix.h (ASM_OUTPUT_CONSTRUCTOR): Remove.
 	(ASM_OUTPUT_DESTRUCTOR): Remove.

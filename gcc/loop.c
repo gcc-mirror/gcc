@@ -2532,7 +2532,7 @@ find_and_verify_loops (f, loops)
 	    break;
 	  }
 
-      if (GET_CODE (insn) == CALL
+      if (GET_CODE (insn) == CALL_INSN
 	  && find_reg_note (insn, REG_SETJMP, NULL))
 	{
 	  /* In this case, we must invalidate our current loop and any

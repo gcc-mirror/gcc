@@ -1131,8 +1131,8 @@
   operands[5] = addr0;
   operands[6] = addr1;
 
-  operands[0] = replace_equiv_address (operands[0], VOIDmode, addr0);
-  operands[1] = replace_equiv_address (operands[1], VOIDmode, addr1);
+  operands[0] = replace_equiv_address (operands[0], addr0);
+  operands[1] = replace_equiv_address (operands[1], addr1);
 }")
 
 (define_insn ""
