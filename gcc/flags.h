@@ -254,9 +254,13 @@ extern int flag_no_peephole;
 
 extern int flag_volatile;
 
-/* Nonzero means treat all global and extern variables as global.  */
+/* Nonzero means treat all global and extern variables as volatile.  */
 
 extern int flag_volatile_global;
+
+/* Nonzero means treat all static variables as volatile.  */
+
+extern int flag_volatile_static;
 
 /* Nonzero allows GCC to violate some IEEE or ANSI rules regarding math
    operations in the interest of optimization.  For example it allows
