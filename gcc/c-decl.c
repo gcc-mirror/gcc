@@ -4748,7 +4748,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       && TREE_OVERFLOW (TYPE_SIZE (type)))
     {
       error ("size of array `%s' is too large", name);
-      /* If we proceed with the array type as it is, we'll eventully
+      /* If we proceed with the array type as it is, we'll eventually
 	 crash in tree_low_cst().  */
       type = error_mark_node;
     }
@@ -7109,7 +7109,7 @@ mark_c_function_context (f)
   mark_binding_level (&p->binding_level);
 }
 
-/* Copy the DECL_LANG_SEPECIFIC data associated with NODE.  */
+/* Copy the DECL_LANG_SPECIFIC data associated with NODE.  */
 
 void
 copy_lang_decl (decl)

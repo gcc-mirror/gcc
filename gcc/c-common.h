@@ -459,7 +459,7 @@ extern int warn_long_long;
 
 /* Return the qualifiers that apply to this type.  In C++, that means
    descending through array types.  Note that this macro evaluates its
-   arguments mor than once.  */
+   arguments more than once.  */
 #define C_TYPE_QUALS(TYPE)				\
   (TYPE_QUALS ((TREE_CODE (TYPE) == ARRAY_TYPE		\
 		&& c_language == clk_cplusplus)		\
@@ -557,7 +557,7 @@ extern tree strip_array_types                   PARAMS ((tree));
 
 /* IF_STMT accessors. These give access to the condition of the if
    statement, the then block of the if statement, and the else block
-   of the if stsatement if it exists.  */
+   of the if statement if it exists.  */
 #define IF_COND(NODE)           TREE_OPERAND (IF_STMT_CHECK (NODE), 0)
 #define THEN_CLAUSE(NODE)       TREE_OPERAND (IF_STMT_CHECK (NODE), 1)
 #define ELSE_CLAUSE(NODE)       TREE_OPERAND (IF_STMT_CHECK (NODE), 2)
@@ -605,8 +605,8 @@ extern tree strip_array_types                   PARAMS ((tree));
 #define GOTO_DESTINATION(NODE)  TREE_OPERAND (GOTO_STMT_CHECK (NODE), 0)
 
 /* COMPOUND_STMT accessor. This gives access to the TREE_LIST of
-   statements assocated with a compound statement. The result is the
-   first statement in the list. Succeeding nodes can be acccessed by
+   statements associated with a compound statement. The result is the
+   first statement in the list. Succeeding nodes can be accessed by
    calling TREE_CHAIN on a node in the list.  */
 #define COMPOUND_BODY(NODE)     TREE_OPERAND (COMPOUND_STMT_CHECK (NODE), 0)
 
@@ -823,7 +823,7 @@ extern int c_unsafe_for_reeval			PARAMS ((tree));
 enum tree_dump_index
 {
   TDI_all,			/* dump the whole translation unit */
-  TDI_class,			/* dump class heirarchy */
+  TDI_class,			/* dump class hierarchy */
   TDI_original,			/* dump each function before optimizing it */
   TDI_optimized,		/* dump each function after optimizing it */
   TDI_inlined,			/* dump each function after inlining

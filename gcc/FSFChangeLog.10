@@ -3880,7 +3880,7 @@ Wed Dec  6 06:58:23 1995  Richard Earnshaw (rearnsha@armltd.co.uk)
 	using prog_mode attribute.
 	(function units "write_buf", "write_blockage"): Model the write buffer
 	as two function units, so that conflicts are avoided more often.
-	(funcion unit "core"): New function unit, so that elapsed cycles can
+	(function unit "core"): New function unit, so that elapsed cycles can
 	be more accurately determined.
 	(all anonymous patterns): Add names.
 	(mulsidi3, umulsidi3): New patterns available with fast multiply

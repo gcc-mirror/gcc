@@ -2629,7 +2629,7 @@ reachable_next_level (region, type_thrown, info)
 					 region->u.allowed.type_list,
 					 info->types_allowed);
 	    
-      /* If we have definitive information about the type heirarchy,
+      /* If we have definitive information about the type hierarchy,
 	 then we can tell if the thrown type will pass through the
 	 filter.  */
       if (type_thrown && lang_eh_type_covers)

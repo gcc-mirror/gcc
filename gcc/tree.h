@@ -1556,7 +1556,7 @@ struct tree_type
    be a RETURN_INIT, CTOR_INITIALIZER, or TRY_BLOCK.  */
 #define DECL_SAVED_TREE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.saved_tree)
 
-/* List of FUNCION_DECLs inlined into this function's body.  */
+/* List of FUNCTION_DECLs inlined into this function's body.  */
 #define DECL_INLINED_FNS(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.inlined_fns)
 
 /* Nonzero in a FUNCTION_DECL means this is a built-in function

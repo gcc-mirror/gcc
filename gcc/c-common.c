@@ -157,12 +157,12 @@ cpp_reader *parse_in;		/* Declared in c-lex.h.  */
 
 	tree void_list_node;
 
-  The lazily created VAR_DECLS for __FUNCTION__, __PRETTY_FUNCTION__,
+  The lazily created VAR_DECLs for __FUNCTION__, __PRETTY_FUNCTION__,
   and __func__. (C doesn't generate __FUNCTION__ and__PRETTY_FUNCTION__
   VAR_DECLS, but C++ does.)
 
 	tree function_name_decl_node;
-	tree pretty_function_name_declnode;
+	tree pretty_function_name_decl_node;
 	tree c99_function_name_decl_node;
 
   Stack of nested function name VAR_DECLs.
@@ -924,7 +924,7 @@ warn_for_collisions (list)
     }
 }
 
-/* Return nonzero if X is a tree that can be verified by the sequence poitn
+/* Return nonzero if X is a tree that can be verified by the sequence point
    warnings.  */
 static int
 warning_candidate_p (x)
@@ -2201,7 +2201,7 @@ c_common_get_alias_set (t)
 
 	 Technically, this approach is actually more conservative that
 	 it needs to be.  In particular, `const int *' and `int *'
-	 chould be in different alias sets, according to the C and C++
+	 should be in different alias sets, according to the C and C++
 	 standard, since their types are not the same, and so,
 	 technically, an `int **' and `const int **' cannot point at
 	 the same thing.
