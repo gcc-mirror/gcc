@@ -1,3 +1,7 @@
+2004-02-19  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcc.c-torture/compile/complex-1.c: New.
+
 2004-02-19  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14181
