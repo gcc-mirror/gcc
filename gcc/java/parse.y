@@ -13002,10 +13002,11 @@ patch_assignment (node, wfl_op1, wfl_op2)
             build (COMPOUND_EXPR, void_type_node, bound_check, check);
 
           /* Re-assemble the augmented array access. */
-          lvalue = build (COMPOUND_EXPR, lhs_type, new_compound, lvalue);
+          lvalue = build (COMPOUND_EXPR, TREE_TYPE (lvalue),
+			  new_compound, lvalue);
         }
       else
-        lvalue = build (COMPOUND_EXPR, lhs_type, check, lvalue);
+        lvalue = build (COMPOUND_EXPR, TREE_TYPE (lvalue), check, lvalue);
     }
 
   /* Final locals can be used as case values in switch
@@ -13028,9 +13029,8 @@ patch_assignment (node, wfl_op1, wfl_op2)
 }
 
 /* Check that type SOURCE can be cast into type DEST. If the cast
-   can't occur at all, return 0 otherwise 1. This function is used to
-   produce accurate error messages on the reasons why an assignment
-   failed. */
+   can't occur at all, return NULL; otherwise, return a possibly
+   modified rhs.  */
 
 static tree
 try_reference_assignconv (lhs_type, rhs)
