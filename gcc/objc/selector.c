@@ -51,7 +51,7 @@ void __objc_init_selector_tables()
 /* This routine is given a class and records all of the methods in its class
    structure in the record table.  */
 void
-__objc_register_selectors_from_class (Class_t class)
+__objc_register_selectors_from_class (Class* class)
 {
   MethodList_t method_list;
 

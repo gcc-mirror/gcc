@@ -33,7 +33,7 @@ static cache_ptr __objc_class_hash = 0;
 /* This is a hook which is called by objc_get_class and 
    objc_lookup_class if the runtime is not able to find the class.
    This may e.g. try to load in the class using dynamic loading */
-Class_t (*_objc_lookup_class)(const char* name) = 0;
+Class* (*_objc_lookup_class)(const char* name) = 0;
 
 
 /* True when class links has been resolved */     
@@ -59,9 +59,9 @@ void __objc_init_class_tables()
 /* This function adds a class to the class hash table, and assigns the 
    class a number, unless it's already known */
 void
-__objc_add_class_to_hash(Class_t class)
+__objc_add_class_to_hash(Class* class)
 {
-  Class_t h_class;
+  Class* h_class;
 
   /* make sure the table is there */
   assert(__objc_class_hash);
@@ -88,9 +88,9 @@ __objc_add_class_to_hash(Class_t class)
 /* Get the class object for the class named NAME.  If NAME does not
    identify a known class, the hook _objc_lookup_class is called.  If
    this fails, nil is returned */
-Class_t objc_lookup_class (const char* name)
+Class* objc_lookup_class (const char* name)
 {
-  Class_t class;
+  Class* class;
 
   /* Make sure the class hash table exists.  */
   assert (__objc_class_hash);
@@ -109,10 +109,10 @@ Class_t objc_lookup_class (const char* name)
 /* Get the class object for the class named NAME.  If NAME does not
    identify a known class, the hook _objc_lookup_class is called.  If
    this fails,  an error message is issued and the system aborts */
-Class_t
+Class*
 objc_get_class (const char *name)
 {
-  Class_t class;
+  Class* class;
 
   /* Make sure the class hash table exists.  */
   assert (__objc_class_hash);
@@ -139,7 +139,7 @@ objc_get_class (const char *name)
 void __objc_resolve_class_links()
 {
   node_ptr node;
-  Class_t object_class = objc_get_class ("Object");
+  Class* object_class = objc_get_class ("Object");
 
   assert(object_class);
 
@@ -147,7 +147,7 @@ void __objc_resolve_class_links()
   for (node = hash_next (__objc_class_hash, NULL); node;
        node = hash_next (__objc_class_hash, node))
     {
-      Class_t class1 = node->value;
+      Class* class1 = node->value;
 
       /* Make sure we have what we think we have.  */
       assert (CLS_ISCLASS(class1));
@@ -163,7 +163,7 @@ void __objc_resolve_class_links()
               
           if(class1->super_class)
             {   
-              Class_t a_super_class 
+              Class* a_super_class 
                 = objc_get_class ((char *) class1->super_class);
               
               assert (a_super_class);
@@ -198,8 +198,8 @@ void __objc_resolve_class_links()
   for (node = hash_next (__objc_class_hash, NULL); node;
        node = hash_next (__objc_class_hash, node))
     {
-      Class_t class1 = node->value;
-      Class_t sub_class;
+      Class* class1 = node->value;
+      Class* sub_class;
       for (sub_class = class1->subclass_list; sub_class;
            sub_class = sub_class->sibling_class)
         {
@@ -223,12 +223,12 @@ I implement posing by hiding SUPER_CLASS, creating new class and meta class
    structures -- except the impostor itself. The only dramatic effect on the
    application is that subclasses of SUPER_CLASS cannot do a [ ....
    super_class ] and expect their real super class. */
-Class_t
-class_pose_as (Class_t impostor, Class_t super_class)
+Class*
+class_pose_as (Class* impostor, Class* super_class)
 {
-  Class_t new_class = (Class_t) calloc (1, sizeof (Class));
-  MetaClass_t new_meta_class =
-    (MetaClass_t) __objc_xmalloc(sizeof (MetaClass));
+  Class* new_class = (Class*) calloc (1, sizeof (Class));
+  MetaClass* new_meta_class =
+    (MetaClass*) __objc_xmalloc(sizeof (MetaClass));
   char *new_name = (char *)__objc_xmalloc ((size_t)strlen ((char*)super_class->name) + 12);
 
   /* We must know the state of the hierachy.  Do initial setup if needed */
@@ -278,8 +278,8 @@ class_pose_as (Class_t impostor, Class_t super_class)
      complex, since we have both super_class link, and subclass_list for the
      involved classes. */
   {
-    Class_t *classpp;
-    MetaClass_t *metaclasspp;
+    Class* *classpp;
+    MetaClass* *metaclasspp;
 
     /* Remove impostor from subclass list of super_class */
     for (classpp = &(super_class->subclass_list);
@@ -350,7 +350,7 @@ class_pose_as (Class_t impostor, Class_t super_class)
   __objc_add_class_to_hash (new_class);
 
   /* Now update dispatch tables for new_class and it's subclasses */
-  __objc_update_dispatch_table_for_class ((Class_t) new_meta_class);
+  __objc_update_dispatch_table_for_class ((Class*) new_meta_class);
   __objc_update_dispatch_table_for_class (new_class);
 
   return new_class;
@@ -360,13 +360,13 @@ class_pose_as (Class_t impostor, Class_t super_class)
 __objc_class_hash_tables_size ()
 {
   node_ptr node;
-  Class_t class1;
+  Class* class1;
   int total = 0;
 
   for (node = hash_next (__objc_class_hash, NULL); node;
        node = hash_next (__objc_class_hash, node))
     {
-      Class_t class1 = node->value;
+      Class* class1 = node->value;
       total += (class1->cache->mask)*sizeof(struct objc_bucket);
       total += sizeof(struct objc_cache);
     }

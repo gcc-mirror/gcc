@@ -26,16 +26,16 @@ You should have received a copy of the GNU General Public License along with
 
 #include "runtime.h"		/* the kitchen sink */
 
-id __objc_object_alloc(Class_t);
+id __objc_object_alloc(Class*);
 id __objc_object_dispose(id);
 id __objc_object_copy(id);
 
-id (*_objc_object_alloc)(Class_t) = __objc_object_alloc;
+id (*_objc_object_alloc)(Class*) = __objc_object_alloc;
 id (*_objc_object_dispose)(id)    = __objc_object_dispose;
 id (*_objc_object_copy)(id)       = __objc_object_copy;
 
 id
-class_create_instance(Class_t class)
+class_create_instance(Class* class)
 {
   id res = (*_objc_object_alloc)(class);
   res->class_pointer = class;
@@ -54,7 +54,7 @@ object_dispose(id object)
   return (*_objc_object_dispose)(object);
 }
 
-id __objc_object_alloc(Class_t class)
+id __objc_object_alloc(Class* class)
 {
   return (id)__objc_xmalloc(class->instance_size);
 }

@@ -27,6 +27,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "objc/Protocol.h"
 #include "objc/objc-api.h"
 
+#include "gstdarg.h"
+extern void (*_objc_error)(id object, const char *format, va_list);
+
 extern int errno;
 
 #define MAX_CLASS_NAME_LEN 256
@@ -78,17 +81,17 @@ extern int errno;
   return [self copy];
 }
 
-- (Class_t)class
+- (Class*)class
 {
   return object_get_class(self);
 }
 
-- (Class_t)superClass
+- (Class*)superClass
 {
   return object_get_super_class(self);
 }
 
-- (MetaClass_t)metaClass
+- (MetaClass*)metaClass
 {
   return object_get_meta_class(self);
 }
@@ -128,9 +131,9 @@ extern int errno;
   return object_is_instance(self);
 }
 
-- (BOOL)isKindOf:(Class_t)aClassObject
+- (BOOL)isKindOf:(Class*)aClassObject
 {
-  Class_t class;
+  Class* class;
 
   for (class = self->isa; class!=Nil; class = class_get_super_class(class))
     if (class==aClassObject)
@@ -138,14 +141,14 @@ extern int errno;
   return NO;
 }
 
-- (BOOL)isMemberOf:(Class_t)aClassObject
+- (BOOL)isMemberOf:(Class*)aClassObject
 {
   return self->isa==aClassObject;
 }
 
 - (BOOL)isKindOfClassNamed:(const char *)aClassName
 {
-  Class_t class;
+  Class* class;
 
   if (aClassName!=NULL)
     for (class = self->isa; class!=Nil; class = class_get_super_class(class))
@@ -252,19 +255,19 @@ extern int errno;
   return objc_msg_sendv(self, aSel, method_get_argsize(0), argFrame);
 }
 
-+ poseAs:(Class_t)aClassObject
++ poseAs:(Class*)aClassObject
 {
   return class_pose_as(self, aClassObject);
 }
 
-- (Class_t)transmuteClassTo:(Class_t)aClassObject
+- (Class*)transmuteClassTo:(Class*)aClassObject
 {
   if (object_is_instance(self))
     if (class_is_class(aClassObject))
       if (class_get_instance_size(aClassObject)==class_get_instance_size(isa))
         if ([self isKindOf:aClassObject])
           {
-            Class_t old_isa = isa;
+            Class* old_isa = isa;
             isa = aClassObject;
             return old_isa;
           }

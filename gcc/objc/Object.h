@@ -26,7 +26,35 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef __object_INCLUDE_GNU
 #define __object_INCLUDE_GNU
 
-#include "objc/objc.h"
+#ifndef __objc_INCLUDE_GNU
+
+/* This is the minimal set of definitions, which may be sufficient 
+   for simple programs not interacting heavily with the runtime */
+
+typedef char  BOOL;
+#define YES   (BOOL)1
+#define NO    (BOOL)0
+
+typedef void* SEL;
+
+typedef struct objc_object {
+  struct objc_class*  class_pointer;
+} *id;
+
+typedef id (*IMP)(id, SEL, ...); 
+
+typedef struct objc_class Class;
+typedef struct objc_class MetaClass;
+
+#define nil (id)0                               /* id of Nil instance */
+#define Nil (Class*)0                          /* id of Nil class */
+typedef char *STR;                              /* String alias */
+
+@class Protocol;
+typedef struct objc_typed_stream TypedStream;
+typedef void* arglist_t;
+
+#endif /* not __objc_INCLUDE_GNU */
 
 /*
  * All classes are derived from Object.  As such,
@@ -34,7 +62,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  */
 @interface Object
 {
-    Class_t	isa;	/* A pointer to the instance's class structure */
+    Class*	isa;	/* A pointer to the instance's class structure */
 }
 
         /* Initializing classes and instances */
@@ -51,9 +79,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 - deepCopy;
 
         /* Identifying classes */
-- (Class_t)class;
-- (Class_t)superClass;
-- (MetaClass_t)metaClass;
+- (Class*)class;
+- (Class*)superClass;
+- (MetaClass*)metaClass;
 - (const char *)name;
 
         /* Identifying and comparing objects */
@@ -67,8 +95,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 - (BOOL)isInstance;
 
         /* Testing inheritance relationships */
-- (BOOL)isKindOf:(Class_t)aClassObject;
-- (BOOL)isMemberOf:(Class_t)aClassObject;
+- (BOOL)isKindOf:(Class*)aClassObject;
+- (BOOL)isMemberOf:(Class*)aClassObject;
 - (BOOL)isKindOfClassNamed:(const char *)aClassName;
 - (BOOL)isMemberOfClassNamed:(const char *)aClassName;
 
@@ -95,8 +123,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 - performv:(SEL)aSel :(arglist_t)argFrame;
 
         /* Posing */
-+ poseAs:(Class_t)aClassObject;
-- (Class_t)transmuteClassTo:(Class_t)aClassObject;
++ poseAs:(Class*)aClassObject;
+- (Class*)transmuteClassTo:(Class*)aClassObject;
 
         /* Enforcing intentions */
 - subclassResponsibility:(SEL)aSel;

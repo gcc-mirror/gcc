@@ -28,11 +28,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "objc/objc.h"
 #include "objc/hash.h"
-#include <memory.h>
+#include <stdio.h>
 
 static const ARGSIZE = 96;		/* for `method_get_argsize()' */
-
-extern void (*_objc_error)(id object, const char *format, va_list args);
 
 /*
 ** This is a hook which is called by objc_lookup_class and
@@ -40,23 +38,23 @@ extern void (*_objc_error)(id object, const char *format, va_list args);
 ** This may e.g. try to load in the class using dynamic loading.
 ** The function is guaranteed to be passed a non-NULL name string.
 */
-extern Class_t (*_objc_lookup_class)(const char *name);
+extern Class* (*_objc_lookup_class)(const char *name);
 
-extern id (*_objc_object_alloc)(Class_t class);
+extern id (*_objc_object_alloc)(Class* class);
 
 extern id (*_objc_object_copy)(id object);
 
 extern id (*_objc_object_dispose)(id object);
 
-Method_t class_get_class_method(MetaClass_t class, SEL aSel);
+Method_t class_get_class_method(MetaClass* class, SEL aSel);
 
-Method_t class_get_instance_method(Class_t class, SEL aSel);
+Method_t class_get_instance_method(Class* class, SEL aSel);
 
-Class_t class_pose_as(Class_t impostor, Class_t superclass);
+Class* class_pose_as(Class* impostor, Class* superclass);
 
-Class_t objc_get_class(const char *name);
+Class* objc_get_class(const char *name);
 
-Class_t objc_lookup_class(const char *name);
+Class* objc_lookup_class(const char *name);
 
 const char *sel_get_name(SEL selector);
 
@@ -67,7 +65,7 @@ SEL sel_register_name(const char *name);
 BOOL sel_is_mapped (SEL aSel);
 
 extern inline id
-class_create_instance(Class_t class)
+class_create_instance(Class* class)
 {
   id new = nil;
   if (CLS_ISCLASS(class))
@@ -80,50 +78,50 @@ class_create_instance(Class_t class)
 }
 
 static inline const char *
-class_get_class_name(Class_t class)
+class_get_class_name(Class* class)
 {
   return CLS_ISCLASS(class)?class->name:((class==Nil)?"Nil":0);
 }
 
 static inline long
-class_get_instance_size(Class_t class)
+class_get_instance_size(Class* class)
 {
   return CLS_ISCLASS(class)?class->instance_size:0;
 }
 
-static inline MetaClass_t
-class_get_meta_class(Class_t class)
+static inline MetaClass*
+class_get_meta_class(Class* class)
 {
   return CLS_ISCLASS(class)?class->class_pointer:Nil;
 }
 
-static inline Class_t
-class_get_super_class(Class_t class)
+static inline Class*
+class_get_super_class(Class* class)
 {
   return CLS_ISCLASS(class)?class->super_class:Nil;
 }
 
 static inline int
-class_get_version(Class_t class)
+class_get_version(Class* class)
 {
   return CLS_ISCLASS(class)?class->version:-1;
 }
 
 static inline BOOL
-class_is_class(Class_t class)
+class_is_class(Class* class)
 {
   return CLS_ISCLASS(class);
 }
 
 static inline BOOL
-class_is_meta_class(Class_t class)
+class_is_meta_class(Class* class)
 {
   return CLS_ISMETA(class);
 }
 
 
 static inline void
-class_set_version(Class_t class, long version)
+class_set_version(Class* class, long version)
 {
   if (CLS_ISCLASS(class))
     class->version = version;
@@ -141,7 +139,7 @@ method_get_imp(Method_t method)
   return (method!=METHOD_NULL)?method->method_imp:(IMP)0;
 }
 
-IMP get_imp (Class_t class, SEL sel);
+IMP get_imp (Class* class, SEL sel);
 
 extern inline id
 object_copy(id object)
@@ -174,14 +172,14 @@ object_dispose(id object)
   return nil;
 }
 
-static inline Class_t
+static inline Class*
 object_get_class(id object)
 {
   return ((object!=nil)
 	  ? (CLS_ISCLASS(object->class_pointer)
 	     ? object->class_pointer
 	     : (CLS_ISMETA(object->class_pointer)
-		? (Class_t)object
+		? (Class*)object
 		: Nil))
 	  : Nil);
 }
@@ -191,11 +189,11 @@ object_get_class_name(id object)
 {
   return ((object!=nil)?(CLS_ISCLASS(object->class_pointer)
                          ?object->class_pointer->name
-                         :((Class_t)object)->name)
+                         :((Class*)object)->name)
                        :"Nil");
 }
 
-static inline MetaClass_t
+static inline MetaClass*
 object_get_meta_class(id object)
 {
   return ((object!=nil)?(CLS_ISCLASS(object->class_pointer)
@@ -206,14 +204,14 @@ object_get_meta_class(id object)
                        :Nil);
 }
 
-static inline Class_t
+static inline Class*
 object_get_super_class
 (id object)
 {
   return ((object!=nil)?(CLS_ISCLASS(object->class_pointer)
                          ?object->class_pointer->super_class
                          :(CLS_ISMETA(object->class_pointer)
-                           ?((Class_t)object)->super_class
+                           ?((Class*)object)->super_class
                            :Nil))
                        :Nil);
 }
@@ -221,7 +219,7 @@ object_get_super_class
 static inline BOOL
 object_is_class(id object)
 {
-  return CLS_ISCLASS((Class_t)object);
+  return CLS_ISCLASS((Class*)object);
 }
 
 static inline BOOL
@@ -233,7 +231,7 @@ object_is_instance(id object)
 static inline BOOL
 object_is_meta_class(id object)
 {
-  return CLS_ISMETA((Class_t)object);
+  return CLS_ISMETA((Class*)object);
 }
 
 

@@ -29,7 +29,6 @@
 .SUFFIXES: .m
 
 OPTIMIZE= -O
-CFLAGS = $(GCC_CFLAGS) 
 
 VPATH = $(srcdir)/objc
 
@@ -41,11 +40,11 @@ SUBDIR_INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/config
 
 .c.o:
 	$(GCC_FOR_TARGET) $(OPTIMIZE) \
-		-c $(CFLAGS) $(SUBDIR_INCLUDES) $<
+		-c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $<
 
 .m.o:
 	$(GCC_FOR_TARGET) $(OPTIMIZE)  -fgnu-runtime \
-		-c $(CFLAGS) $(SUBDIR_INCLUDES) $<
+		-c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $<
 
 # If we were not invoked from the parent dir,
 # invoke make in the parent dir and have reinvoke this makefile.
@@ -76,11 +75,11 @@ copy-headers: $(OBJC_H)
 	done
 
 sendmsg.o: sendmsg.c fflags
-	$(GCC_FOR_TARGET) `cat fflags` -c $(CFLAGS) $(SUBDIR_INCLUDES) $(srcdir)/objc/sendmsg.c
+	$(GCC_FOR_TARGET) `cat fflags` -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $(srcdir)/objc/sendmsg.c
 
 ## Next to are for heuristics on forwarding mechanism... 
 _forward: _forward.c
-	-$(GCC_FOR_TARGET) -c $(CFLAGS) $(SUBDIR_INCLUDES) $(srcdir)/objc/_forward.c
+	-$(GCC_FOR_TARGET) -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $(srcdir)/objc/_forward.c
 	-$(GCC_FOR_TARGET) ./_forward.o -o _forward
 	if [ \! -f ./_forward ]; then touch ./_forward; fi	
 
