@@ -18,7 +18,7 @@ int expect (int flags, type_info const &info)
       dynamic_cast <__pbase_type_info const *> (&info);
   if (!ptr)
     return 0;
-  if (ptr->quals != flags)
+  if (ptr->qualifier_flags != flags)
     return 0;
   return 1;
 }
