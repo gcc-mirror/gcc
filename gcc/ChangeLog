@@ -1,3 +1,8 @@
+Tue Jul 27 03:15:33 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* expr.c (expand_expr, case PLUS_EXPR): Get the mode from the 
+	tree for op1, not the rtl.
+
 Tue Jul 27 00:18:34 1999  Richard Henderson  <rth@cygnus.com>
 
 	* m88k.c (m88k_builtin_saveregs): Break out the constructor code
