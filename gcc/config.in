@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
+/* config.in.  Generated automatically from configure.in by autoheader.  */
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
@@ -531,9 +531,6 @@
 
 /* Define if your assembler and linker support unaligned PC relative relocs against hidden symbols. */
 #undef HAVE_AS_SPARC_UA_PCREL_HIDDEN
-
-/* Define if the assembler supports 64bit sparc. */
-#undef AS_SPARC64_FLAG
 
 /* Define if your assembler supports offsetable %lo(). */
 #undef HAVE_AS_OFFSETABLE_LO10
