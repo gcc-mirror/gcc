@@ -116,3 +116,6 @@ DEF_PREDICTOR (PRED_NEGATIVE_RETURN, "negative return", HITRATE (96), 0)
 
 /* Branch ending with return; is probably not taken */
 DEF_PREDICTOR (PRED_NULL_RETURN, "null return", HITRATE (90), 0)
+
+/* Branches to a mudflap bounds check are extremely unlikely.  */
+DEF_PREDICTOR (PRED_MUDFLAP, "mudflap check", HITRATE (99), 0)

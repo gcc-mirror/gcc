@@ -1,3 +1,54 @@
+2004-06-19  Jan Hubicka  <jh@suse.cz>
+	    Steven Bosscher  <stevenb@suse.de>
+
+	CFG transparent RTL expansion:
+	* Makefile.in (cfgexpand.o): New object file.
+	(builtins.o): Add dependency on basic-block.h
+	* builtins.c: Include basic-block.h
+	(entry_of_function): New function.
+	(expand_builtin_apply_args, expand_builtin_saveargs): Use it.
+	* cfgexpand.c: New file.
+	* expr.c (execute_expand, pass_expand): Kill.
+	* pass.c (rest_of_compilation): Do not build CFG unless called from
+	coverage code.
+	* tree-cfg.c (delete_tree_cfg): Rename to..
+	(delete_tree_cfg_annotations): ... this one; Do not remove the CFG itself.
+	* tree-flow.h (delete_tree_cfg_annotations): Declare.
+	(dleete_tree_cfg): Kill.
+	* tree-optimize.c (execute_rebuild_bind, pass_rebuild_bind): Kill.
+	(execute_del_cfg): Rename to...
+	(execute_free_datastructures): This one...
+	(pass_del_cfg): Rename to...
+	(pass_free_datastructures): ... this one; Do not kill PROP_cfg.
+	(init_tree_optimization_passes): Make cfg build and profiling to happen
+	unconditionally.
+
+2004-06-19  Steven Bosscher  <stevenb@suse.de>
+
+	* tree-mudflap.c (mf_decl_cache_locals): Skip labels before
+	inserting the cache variables.
+
+	* tree-mudflap.c: Include headers to make basic_block available.
+	Move functions around such that related functions are near each
+	other.  Add prototypes for all static functions.  Add comments
+	briefly explaining what IR the mudflap1 and mudflap2 work on and
+	what they do.
+	(mudflap_function_decls): Rename to execute_mudflap_function_decls.
+	(mudflap_function_ops): Rename to execute_mudflap_function_ops.
+	(pass_mudflap_1, pass_mudflap_2): Update.
+	(mf_decl_cache_locals): Make it work on the CFG instead of the saved
+	function tree.
+	(mf_build_check_statement_for): Make it work on the CFG.
+	(mf_xform_derefs_1): Likewise.  Cleanup code style.
+	(mf_xform_derefs): Likewise.
+
+2004-06-19  Jan Hubicka  <jh@suse.cz>
+
+	* tree-cfg.c (label_to_block): Invent the label destination for
+	undefined labels.
+	(cleanup_dead_labels): Update table in the case label_to_block added
+	new label.
+
 2004-06-18  Richard Henderson  <rth@redhat.com>
 
 	PR c++/16036 

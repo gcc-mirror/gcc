@@ -45,6 +45,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm_p.h"
 #include "target.h"
 #include "langhooks.h"
+#include "basic-block.h"
 
 #define CALLED_AS_BUILT_IN(NODE) \
    (!strncmp (IDENTIFIER_POINTER (DECL_NAME (NODE)), "__builtin_", 10))
@@ -1206,6 +1207,13 @@ expand_builtin_apply_args_1 (void)
   return copy_addr_to_reg (XEXP (registers, 0));
 }
 
+/* Return RTX to emit after when we want to emit code on the entry of function.  */
+static rtx
+entry_of_function (void)
+{
+  return (n_basic_blocks ? BB_HEAD (ENTRY_BLOCK_PTR->next_bb) : get_insns ());
+}
+
 /* __builtin_apply_args returns block of memory allocated on
    the stack into which is stored the arg pointer, structure
    value address, static chain, and all the registers that might
@@ -1239,7 +1247,7 @@ expand_builtin_apply_args (void)
        chain current, so the code is placed at the start of the
        function.  */
     push_topmost_sequence ();
-    emit_insn_before (seq, NEXT_INSN (get_insns ()));
+    emit_insn_before (seq, NEXT_INSN (entry_of_function ()));
     pop_topmost_sequence ();
     return temp;
   }
@@ -4010,7 +4018,7 @@ expand_builtin_saveregs (void)
      is inside a start_sequence, make the outer-level insn chain current, so
      the code is placed at the start of the function.  */
   push_topmost_sequence ();
-  emit_insn_after (seq, get_insns ());
+  emit_insn_after (seq, entry_of_function ());
   pop_topmost_sequence ();
 
   return val;

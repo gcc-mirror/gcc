@@ -84,33 +84,6 @@ static struct tree_opt_pass pass_gimple =
   TODO_dump_func			/* todo_flags_finish */
 };
 
-/* Pass: replace the outermost BIND_EXPR.  We removed all of them while
-   optimizing, but the tree->rtl expander requires it.  */
-
-static void
-execute_rebuild_bind (void)
-{
-  DECL_SAVED_TREE (current_function_decl)
-    = build (BIND_EXPR, void_type_node, NULL_TREE,
-	     DECL_SAVED_TREE (current_function_decl), NULL_TREE);
-}
-
-static struct tree_opt_pass pass_rebuild_bind = 
-{
-  NULL,					/* name */
-  NULL,					/* gate */
-  execute_rebuild_bind,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  0,					/* tv_id */
-  0,					/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
-};
-
 /* Gate: execute, or not, all of the non-trivial optimizations.  */
 
 static bool
@@ -141,9 +114,8 @@ static struct tree_opt_pass pass_all_optimizations =
    passes.  */
 
 static void
-execute_del_cfg (void)
+execute_free_datastructures (void)
 {
-  basic_block bb;
   tree *chain;
 
   /* ??? This isn't the right place for this.  Worse, it got computed
@@ -160,27 +132,23 @@ execute_del_cfg (void)
   /* Re-chain the statements from the blocks.  */
   chain = &DECL_SAVED_TREE (current_function_decl);
   *chain = alloc_stmt_list ();
-  FOR_EACH_BB (bb)
-    {
-      append_to_statement_list_force (bb->stmt_list, chain);
-    }
 
-  /* And get rid of the cfg.  */
-  delete_tree_cfg ();
+  /* And get rid of annotations we no longer need.  */
+  delete_tree_cfg_annotations ();
 }
 
-static struct tree_opt_pass pass_del_cfg =
+static struct tree_opt_pass pass_free_datastructures =
 {
   NULL,					/* name */
   NULL,					/* gate */
-  execute_del_cfg,			/* execute */
+  execute_free_datastructures,			/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
   0,					/* tv_id */
   PROP_cfg,				/* properties_required */
   0,					/* properties_provided */
-  PROP_cfg,				/* properties_destroyed */
+  0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   0					/* todo_flags_finish */
 };
@@ -283,16 +251,16 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_mudflap_1);
   NEXT_PASS (pass_lower_cf);
   NEXT_PASS (pass_lower_eh);
+  NEXT_PASS (pass_build_cfg);
+  NEXT_PASS (pass_tree_profile);
   NEXT_PASS (pass_all_optimizations);
   NEXT_PASS (pass_mudflap_2);
-  NEXT_PASS (pass_rebuild_bind);
+  NEXT_PASS (pass_free_datastructures);
   NEXT_PASS (pass_expand);
   NEXT_PASS (pass_rest_of_compilation);
   *p = NULL;
 
   p = &pass_all_optimizations.sub;
-  NEXT_PASS (pass_build_cfg);
-  NEXT_PASS (pass_tree_profile);
   NEXT_PASS (pass_referenced_vars);
   NEXT_PASS (pass_build_pta);
   NEXT_PASS (pass_build_ssa);
@@ -335,7 +303,6 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_del_ssa);
   NEXT_PASS (pass_nrv);
   NEXT_PASS (pass_remove_useless_vars);
-  NEXT_PASS (pass_del_cfg);
   *p = NULL;
 
 #undef NEXT_PASS

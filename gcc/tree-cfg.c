@@ -619,7 +619,21 @@ make_switch_expr_edges (basic_block bb)
 basic_block
 label_to_block (tree dest)
 {
-  return VARRAY_BB (label_to_block_map, LABEL_DECL_UID (dest));
+  int uid = LABEL_DECL_UID (dest);
+
+  /* We would die hard when faced by undefined label.  Emit label to
+     very first basic block.  This will hopefully make even the dataflow
+     and undefined variable warnings quite right.  */
+  if ((errorcount || sorrycount) && uid < 0)
+    {
+      block_stmt_iterator bsi = bsi_start (BASIC_BLOCK (0));
+      tree stmt;
+
+      stmt = build1 (LABEL_EXPR, void_type_node, dest);
+      bsi_insert_before (&bsi, stmt, BSI_NEW_STMT);
+      uid = LABEL_DECL_UID (dest);
+    }
+  return VARRAY_BB (label_to_block_map, uid);
 }
 
 
@@ -756,6 +770,18 @@ update_eh_label (struct eh_region *region)
     }
 }
 
+/* Given LABEL return the first label in the same basic block.  */
+static tree
+main_block_label (tree label)
+{
+  basic_block bb = label_to_block (label);
+
+  /* label_to_block possibly inserted undefined label into the chain.  */
+  if (!label_for_bb[bb->index])
+    label_for_bb[bb->index] = label;
+  return label_for_bb[bb->index];
+}
+
 /* Cleanup redundant labels.  This is a three-steo process:
      1) Find the leading label for each block.
      2) Redirect all references to labels to the leading labels.
@@ -815,15 +841,14 @@ cleanup_dead_labels (void)
 	case COND_EXPR:
 	  {
 	    tree true_branch, false_branch;
-	    basic_block true_bb, false_bb;
 
 	    true_branch = COND_EXPR_THEN (stmt);
 	    false_branch = COND_EXPR_ELSE (stmt);
-	    true_bb = label_to_block (GOTO_DESTINATION (true_branch));
-	    false_bb = label_to_block (GOTO_DESTINATION (false_branch));
 
-	    GOTO_DESTINATION (true_branch) = label_for_bb[true_bb->index];
-	    GOTO_DESTINATION (false_branch) = label_for_bb[false_bb->index];
+	    GOTO_DESTINATION (true_branch)
+	      = main_block_label (GOTO_DESTINATION (true_branch));
+	    GOTO_DESTINATION (false_branch)
+	      = main_block_label (GOTO_DESTINATION (false_branch));
 
 	    break;
 	  }
@@ -836,12 +861,8 @@ cleanup_dead_labels (void)
   
 	    /* Replace all destination labels.  */
 	    for (i = 0; i < n; ++i)
-	      {
-		tree label = CASE_LABEL (TREE_VEC_ELT (vec, i));
-
-		CASE_LABEL (TREE_VEC_ELT (vec, i)) =
-		  label_for_bb[label_to_block (label)->index];
-	      }
+	      CASE_LABEL (TREE_VEC_ELT (vec, i))
+		= main_block_label (CASE_LABEL (TREE_VEC_ELT (vec, i)));
   
 	    break;
 	  }
@@ -849,13 +870,12 @@ cleanup_dead_labels (void)
 	/* We have to handle GOTO_EXPRs until they're removed, and we don't
 	   remove them until after we've created the CFG edges.  */
 	case GOTO_EXPR:
-	  {
-	    tree label = GOTO_DESTINATION (stmt);
-	    if (! computed_goto_p (stmt))
-	      GOTO_DESTINATION (stmt) =
-		label_for_bb[label_to_block (label)->index];
-	    break;
-	  }
+          if (! computed_goto_p (stmt))
+	    {
+	      GOTO_DESTINATION (stmt)
+		= main_block_label (GOTO_DESTINATION (stmt));
+	      break;
+	    }
 
 	default:
 	  break;
@@ -2636,19 +2656,19 @@ disband_implicit_edges (void)
     }
 }
 
-
-/* Remove all the blocks and edges that make up the flowgraph.  */
+/* Remove block annotations and other datastructures.  */
 
 void
-delete_tree_cfg (void)
+delete_tree_cfg_annotations (void)
 {
+  basic_block bb;
   if (n_basic_blocks > 0)
     free_blocks_annotations ();
 
-  free_basic_block_vars ();
-  basic_block_info = NULL;
   label_to_block_map = NULL;
   free_rbi_pool ();
+  FOR_EACH_BB (bb)
+    bb->rbi = NULL;
 }
 
 
