@@ -1552,7 +1552,7 @@ c_sizeof (type)
   tree size;
 
   if (processing_template_decl)
-    return build_min (SIZEOF_EXPR, sizetype, type);
+    return build_min_nt (SIZEOF_EXPR, type);
 
   if (code == FUNCTION_TYPE)
     {
@@ -1614,7 +1614,7 @@ expr_sizeof (e)
      tree e;
 {
   if (processing_template_decl)
-    return build_min (SIZEOF_EXPR, sizetype, e);
+    return build_min_nt (SIZEOF_EXPR, e);
 
   if (TREE_CODE (e) == COMPONENT_REF
       && DECL_C_BIT_FIELD (TREE_OPERAND (e, 1)))
