@@ -35,7 +35,6 @@ Boston, MA 02111-1307, USA.  */
 #include "defaults.h"
 
 #ifdef DWARF2_UNWIND_INFO
-#include "gansidecl.h"
 #include "dwarf2.h"
 #include "frame.h"
 #include <stddef.h>

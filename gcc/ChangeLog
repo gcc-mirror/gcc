@@ -1,3 +1,10 @@
+Sun Sep 28 01:05:16 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* frame.c: Remove last change.
+	* dwarf2.h: Remove last change.
+	* tree.h: Add declarations of DWARF2 unwind info support
+	functions.
+
 Sat Sep 27 11:02:38 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* c-decl.c (init_decl_processing): Add __builtin_dwarf_reg_size.
