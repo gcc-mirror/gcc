@@ -1,3 +1,12 @@
+2002-11-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acconfig.h (HAVE_DRAND48): Add.
+	(HAVE_GETPAGESIZE): Add.
+	(HAVE_SETENV): Add.	
+	(HAVE_SIGSETJMP): Add.		
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	
 2002-11-13  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* config/os/hpux/os_defines.h (_GLIBCPP_INST_ATOMICITY_LOCK): Define

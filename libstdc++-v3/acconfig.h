@@ -13,9 +13,6 @@
 // Define if GCC supports weak symbols.
 #undef _GLIBCPP_SUPPORTS_WEAK
 
-// Define if gthr-default.h exists (meaning that threading support is enabled).
-#undef HAVE_GTHR_DEFAULT
-
 // Include I/O support for 'long long' and 'unsigned long long'.
 #undef _GLIBCPP_USE_LONG_LONG
 
@@ -37,13 +34,13 @@
 // Define to use concept checking code from the boost libraries.
 #undef _GLIBCPP_CONCEPT_CHECKS
 
-// Define if you have the atan2f function.
+// Define if the atan2f function exists.
 #undef _GLIBCPP_HAVE_ATAN2F 
 
-// Define if you have the atan2l function.
+// Define if the atan2l function exists.
 #undef _GLIBCPP_HAVE_ATAN2L
 
-// Define if you have the copysignf function.
+// Define if the copysignf function exists.
 #undef _GLIBCPP_HAVE_COPYSIGNF
 
 // Define to use symbol versioning in the shared library.
@@ -59,6 +56,21 @@
 #else
   #define _GLIBCPP_ASM_SYMVER(cur, old, version)
 #endif
+
+// Define if gthr-default.h exists (meaning that threading support is enabled).
+#undef HAVE_GTHR_DEFAULT
+
+// Define if drand48 exists.
+#undef HAVE_DRAND48
+
+// Define if getpagesize exists.
+#undef HAVE_GETPAGESIZE
+
+// Define if setenv exists.
+#undef HAVE_SETENV
+
+// Define if sigsetjmp exists.
+#undef HAVE_SIGSETJMP
 
 // Define if mbstate_t exists in wchar.h.
 #undef HAVE_MBSTATE_T

@@ -837,7 +837,7 @@ test "$ac_cv_mingw32" = yes && MINGW32=yes
 
     
 
-  for ac_prog in mawk gawk nawk awk
+  for ac_prog in gawk mawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -1465,7 +1465,7 @@ else
   if { (eval echo configure:1466: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
     for file in conftest.*; do
       case $file in
-      *.$ac_ext | *.c | *.o | *.obj) ;;
+      *.c | *.o | *.obj) ;;
       *) ac_cv_exeext=`echo $file | sed -e s/conftest//` ;;
       esac
     done
@@ -22594,7 +22594,7 @@ else
 fi
 rm -f conftest*
 
-  for ac_hdr in unistd.h
+  for ac_hdr in stdlib.h unistd.h sys/stat.h sys/types.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
@@ -22726,11 +22726,24 @@ else
 #include <fcntl.h>
 #include <sys/mman.h>
 
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+
+#if HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+
+#if HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+
 /* This mess was copied from the GNU getpagesize.h.  */
 #ifndef HAVE_GETPAGESIZE
-# ifdef HAVE_UNISTD_H
-#  include <unistd.h>
-# endif
 
 /* Assume that all systems that can run configure have sys/param.h.  */
 # ifndef HAVE_SYS_PARAM_H
@@ -22838,7 +22851,7 @@ main()
 }
 
 EOF
-if { (eval echo configure:22842: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:22855: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   ac_cv_func_mmap_fixed_mapped=yes
 else
@@ -22869,17 +22882,17 @@ fi
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-echo "configure:22873: checking for $ac_hdr" >&5
+echo "configure:22886: checking for $ac_hdr" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 22878 "configure"
+#line 22891 "configure"
 #include "confdefs.h"
 #include <$ac_hdr>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:22883: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:22896: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -22912,7 +22925,7 @@ done
     # Can't do these in a loop, else the resulting syntax is wrong.
     
   cat > conftest.$ac_ext <<EOF
-#line 22916 "configure"
+#line 22929 "configure"
 #include "confdefs.h"
 #include <unistd.h>
                   #include <sys/time.h>
@@ -22922,7 +22935,7 @@ int main() {
  int f = RLIMIT_DATA ; 
 ; return 0; }
 EOF
-if { (eval echo configure:22926: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:22939: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_mresult=1
 else
@@ -22939,7 +22952,7 @@ EOF
 
     
   cat > conftest.$ac_ext <<EOF
-#line 22943 "configure"
+#line 22956 "configure"
 #include "confdefs.h"
 #include <unistd.h>
                   #include <sys/time.h>
@@ -22949,7 +22962,7 @@ int main() {
  int f = RLIMIT_RSS ; 
 ; return 0; }
 EOF
-if { (eval echo configure:22953: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:22966: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_mresult=1
 else
@@ -22966,7 +22979,7 @@ EOF
 
     
   cat > conftest.$ac_ext <<EOF
-#line 22970 "configure"
+#line 22983 "configure"
 #include "confdefs.h"
 #include <unistd.h>
                   #include <sys/time.h>
@@ -22976,7 +22989,7 @@ int main() {
  int f = RLIMIT_VMEM ; 
 ; return 0; }
 EOF
-if { (eval echo configure:22980: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:22993: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_mresult=1
 else
@@ -22993,7 +23006,7 @@ EOF
 
     
   cat > conftest.$ac_ext <<EOF
-#line 22997 "configure"
+#line 23010 "configure"
 #include "confdefs.h"
 #include <unistd.h>
                   #include <sys/time.h>
@@ -23003,7 +23016,7 @@ int main() {
  int f = RLIMIT_AS ; 
 ; return 0; }
 EOF
-if { (eval echo configure:23007: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:23020: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_mresult=1
 else
@@ -23025,7 +23038,7 @@ EOF
 else
   
       cat > conftest.$ac_ext <<EOF
-#line 23029 "configure"
+#line 23042 "configure"
 #include "confdefs.h"
 #include <unistd.h>
                   #include <sys/time.h>
@@ -23035,7 +23048,7 @@ int main() {
  struct rlimit r; setrlimit(0, &r);
 ; return 0; }
 EOF
-if { (eval echo configure:23039: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:23052: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_setrlimit=yes
 else
@@ -23051,7 +23064,7 @@ fi
   fi
 
   echo $ac_n "checking for testsuite memory limit support""... $ac_c" 1>&6
-echo "configure:23055: checking for testsuite memory limit support" >&5
+echo "configure:23068: checking for testsuite memory limit support" >&5
   if test $setrlimit_have_headers = yes && test $ac_setrlimit = yes; then
     ac_mem_limits=yes
     cat >> confdefs.h <<\EOF
@@ -23067,7 +23080,7 @@ EOF
   # Look for setenv, so that extended locale tests can be performed.
   
   echo $ac_n "checking for setenv declaration""... $ac_c" 1>&6
-echo "configure:23071: checking for setenv declaration" >&5
+echo "configure:23084: checking for setenv declaration" >&5
   if test x${glibcpp_cv_func_setenv_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_setenv_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -23082,14 +23095,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 23086 "configure"
+#line 23099 "configure"
 #include "confdefs.h"
 #include <stdlib.h>
 int main() {
  setenv(0, 0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:23093: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:23106: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_setenv_use=yes
 else
@@ -23115,12 +23128,12 @@ fi
     for ac_func in setenv
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:23119: checking for $ac_func" >&5
+echo "configure:23132: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 23124 "configure"
+#line 23137 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -23143,7 +23156,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:23147: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:23160: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -23214,18 +23227,18 @@ fi
 # Check to see if libgcc_s exists, indicating that shared libgcc is possible.
 if test $enable_symvers != no; then
   echo $ac_n "checking for shared libgcc""... $ac_c" 1>&6
-echo "configure:23218: checking for shared libgcc" >&5
+echo "configure:23231: checking for shared libgcc" >&5
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS=' -lgcc_s'
   cat > conftest.$ac_ext <<EOF
-#line 23222 "configure"
+#line 23235 "configure"
 #include "confdefs.h"
 
 int main() {
 return 0
 ; return 0; }
 EOF
-if { (eval echo configure:23229: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:23242: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   glibcpp_shared_libgcc=yes
 else
@@ -23260,14 +23273,14 @@ if test $enable_symvers = yes ; then
       echo 'FOO { global: f[a-z]o; local: *; };' > conftest.map
       
       cat > conftest.$ac_ext <<EOF
-#line 23264 "configure"
+#line 23277 "configure"
 #include "confdefs.h"
 int foo;
 int main() {
 
 ; return 0; }
 EOF
-if { (eval echo configure:23271: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:23284: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   enable_symvers=gnu
 else
@@ -23313,7 +23326,7 @@ else
   GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE=
 fi
 echo $ac_n "checking versioning on shared library symbols""... $ac_c" 1>&6
-echo "configure:23317: checking versioning on shared library symbols" >&5
+echo "configure:23330: checking versioning on shared library symbols" >&5
 echo "$ac_t""$enable_symvers" 1>&6
 
 
@@ -23400,7 +23413,7 @@ glibcpp_prefixdir=${prefix}
 
 # Process the option --with-gxx-include-dir=<path to include-files directory>
 echo $ac_n "checking for --with-gxx-include-dir""... $ac_c" 1>&6
-echo "configure:23404: checking for --with-gxx-include-dir" >&5
+echo "configure:23417: checking for --with-gxx-include-dir" >&5
 # Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
 if test "${with_gxx_include_dir+set}" = set; then
   withval="$with_gxx_include_dir"
@@ -23424,7 +23437,7 @@ echo "$ac_t""$gxx_include_dir" 1>&6
 
 # Process the option "--enable-version-specific-runtime-libs"
 echo $ac_n "checking for --enable-version-specific-runtime-libs""... $ac_c" 1>&6
-echo "configure:23428: checking for --enable-version-specific-runtime-libs" >&5
+echo "configure:23441: checking for --enable-version-specific-runtime-libs" >&5
 # Check whether --enable-version-specific-runtime-libs or --disable-version-specific-runtime-libs was given.
 if test "${enable_version_specific_runtime_libs+set}" = set; then
   enableval="$enable_version_specific_runtime_libs"
@@ -23470,7 +23483,7 @@ if test x"$glibcpp_toolexecdir" = x"no"; then
 fi
 
 echo $ac_n "checking for install location""... $ac_c" 1>&6
-echo "configure:23474: checking for install location" >&5
+echo "configure:23487: checking for install location" >&5
 echo "$ac_t""$gxx_include_dir" 1>&6
 
 
