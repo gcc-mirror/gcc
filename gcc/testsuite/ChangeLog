@@ -1,3 +1,8 @@
+2004-10-07  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.fortran-torture/execute/intrinsic_mvbits.f90, 
+	gfortran.dg/ishft.f90: Add more tests.
+
 2004-10-07  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* g++.dg/ext/asm6.C: Remove extraneous semicolon.

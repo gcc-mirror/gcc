@@ -235,7 +235,7 @@ match_integer_constant (gfc_expr ** result, int signflag)
 static match
 match_boz_constant (gfc_expr ** result)
 {
-  int radix, delim, length, x_hex;
+  int radix, delim, length, x_hex, kind;
   locus old_loc;
   char *buffer;
   gfc_expr *e;
@@ -272,6 +272,12 @@ match_boz_constant (gfc_expr ** result)
   if (delim != '\'' && delim != '\"')
     goto backup;
 
+  if (x_hex && pedantic
+      && (gfc_notify_std (GFC_STD_GNU, "Extension: Hexadecimal "
+			  "constant at %C uses non-standard syntax.")
+	  == FAILURE))
+      return MATCH_ERROR;
+
   old_loc = gfc_current_locus;
 
   length = match_digits (0, radix, NULL);
@@ -293,25 +299,25 @@ match_boz_constant (gfc_expr ** result)
   memset (buffer, '\0', length + 1);
 
   match_digits (0, radix, buffer);
-  gfc_next_char ();
+  gfc_next_char ();  /* Eat delimiter.  */
 
-  e = gfc_convert_integer (buffer, gfc_default_integer_kind, radix,
-			   &gfc_current_locus);
+  kind = get_kind ();
+  if (kind == -1)
+    return MATCH_ERROR;
+  if (kind == -2)
+    kind = gfc_default_integer_kind;
+  else if (pedantic 
+	   && (gfc_notify_std (GFC_STD_GNU, "Extension: Kind parameter "
+			       "suffix to boz literal constant at %C.")
+	       == FAILURE))
+    return MATCH_ERROR;
+
+  e = gfc_convert_integer (buffer, kind, radix, &gfc_current_locus);
 
   if (gfc_range_check (e) != ARITH_OK)
     {
-      gfc_error ("Integer too big for default integer kind at %C");
+      gfc_error ("Integer too big for integer kind %i at %C", kind);
 
-      gfc_free_expr (e);
-      return MATCH_ERROR;
-    }
-
-  if (x_hex
-      && pedantic
-      && (gfc_notify_std (GFC_STD_GNU, "Extension: Hexadecimal "
-			  "constant at %C uses non-standard syntax.")
-	  == FAILURE))
-    {
       gfc_free_expr (e);
       return MATCH_ERROR;
     }
