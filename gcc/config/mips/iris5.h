@@ -24,16 +24,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "mips/iris4.h"
 
-/* Specify size_t, ptrdiff_t, and wchar_t types.  */
-#undef	SIZE_TYPE
-#undef	PTRDIFF_TYPE
+/* Specify wchar_t types.  */
 #undef	WCHAR_TYPE
 #undef	WCHAR_TYPE_SIZE
+#undef	MAX_WCHAR_TYPE_SIZE
 
-#define SIZE_TYPE	"unsigned int"
-#define PTRDIFF_TYPE	"int"
 #define WCHAR_TYPE	"long int"
 #define WCHAR_TYPE_SIZE	LONG_TYPE_SIZE
+#define MAX_WCHAR_TYPE_SIZE	MAX_LONG_TYPE_SIZE
 
 /* ??? _MIPS_SIM and _MIPS_SZPTR should eventually depend on options when
    options for them exist.  */
