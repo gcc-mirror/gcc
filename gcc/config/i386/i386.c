@@ -4860,9 +4860,11 @@ reg_mentioned_in_mem (reg, rtl)
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'E')
-	for (j = XVECLEN (rtl, i) - 1; j >= 0; j--)
-	  if (reg_mentioned_in_mem (reg, XVECEXP (rtl, i, j)))
-	    return 1;
+	{
+	  for (j = XVECLEN (rtl, i) - 1; j >= 0; j--)
+	    if (reg_mentioned_in_mem (reg, XVECEXP (rtl, i, j)))
+	      return 1;
+	}
 
       else if (fmt[i] == 'e' && reg_mentioned_in_mem (reg, XEXP (rtl, i)))
 	return 1;
