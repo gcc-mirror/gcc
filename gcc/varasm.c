@@ -962,7 +962,7 @@ make_decl_rtl (tree decl)
 #ifdef REGISTER_PREFIX
     if (strlen (REGISTER_PREFIX) != 0)
       {
-	reg_number = decode_reg_name (name)
+	reg_number = decode_reg_name (name);
 	if (reg_number >= 0 || reg_number == -3)
 	  error ("%Jregister name given for non-register variable %qD", decl, decl);
       }
