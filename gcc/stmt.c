@@ -2703,6 +2703,7 @@ expand_return (retval)
       tree expr;
 
       do_jump (TREE_OPERAND (retval_rhs, 0), label, NULL_RTX);
+      start_cleanup_deferral ();
       expr = build (MODIFY_EXPR, TREE_TYPE (TREE_TYPE (current_function_decl)),
 		    DECL_RESULT (current_function_decl),
 		    TREE_OPERAND (retval_rhs, 1));
@@ -2715,6 +2716,7 @@ expand_return (retval)
 		    TREE_OPERAND (retval_rhs, 2));
       TREE_SIDE_EFFECTS (expr) = 1;
       expand_return (expr);
+      end_cleanup_deferral ();
       return;
     }
 
