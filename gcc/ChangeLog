@@ -1,5 +1,14 @@
 2000-11-30  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	Thu Jul  6 18:30:36 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+	* reload.c (push_reload): When seeing if can reuse a register,
+	check extra registers against widest of INMODE and OUTMODE.
+
+	1999-11-29  Bernd Schmidt  <bernds@redhat.co.uk>
+	* reload.c (push_reload): When looking for a register to put into
+	reg_rtx, make sure all hard regs in a multi-reg register are in the
+	right class and nonfixed.
+
 	1999-11-29  Joern Rennecke  <amylaar@redhat.co.uk>
 	* reload1.c (reloads_conflict): Reverse test comparing operand
 	numbers when testing for conflict between output/outaddr reloads.
