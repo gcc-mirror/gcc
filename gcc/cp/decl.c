@@ -12757,11 +12757,6 @@ xref_tag (enum tag_types tag_code, tree name, tree attributes,
 
 	  ref = make_aggr_type (code);
 	  TYPE_CONTEXT (ref) = context;
-
-#ifdef NONNESTED_CLASSES
-	  /* Class types don't nest the way enums do.  */
-	  class_binding_level = (struct cp_binding_level *)0;
-#endif
 	  pushtag (name, ref, globalize);
 	  class_binding_level = old_b;
 	}
