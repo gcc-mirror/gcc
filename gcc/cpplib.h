@@ -240,8 +240,8 @@ struct cpp_options
   const char *deps_file;
 
   /* Search paths for include files.  */
-  struct file_name_list *quote_include;	 /* First dir to search for "file" */
-  struct file_name_list *bracket_include;/* First dir to search for <file> */
+  struct search_path *quote_include;	/* "" */
+  struct search_path *bracket_include;  /* <> */
 
   /* Map between header names and file names, used only on DOS where
      file names are limited in length.  */

@@ -68,7 +68,7 @@ struct include_file
 {
   const char *name;		/* actual path name of file */
   const cpp_hashnode *cmacro;	/* macro, if any, preventing reinclusion.  */
-  const struct file_name_list *foundhere;
+  const struct search_path *foundhere;
 				/* location in search path where file was
 				   found, for #include_next and sysp.  */
   const unsigned char *buffer;	/* pointer to cached file contents */
@@ -94,12 +94,12 @@ static struct file_name_map *read_name_map
 				PARAMS ((cpp_reader *, const char *));
 static char *read_filename_string PARAMS ((int, FILE *));
 static char *remap_filename 	PARAMS ((cpp_reader *, char *,
-					 struct file_name_list *));
-static struct file_name_list *actual_directory
-				PARAMS ((cpp_reader *, const char *));
+					 struct search_path *));
+static struct search_path *search_from PARAMS ((cpp_reader *,
+						struct include_file *));
 static struct include_file *find_include_file
 				PARAMS ((cpp_reader *, const char *,
-					 struct file_name_list *));
+					 struct search_path *));
 static struct include_file *open_file PARAMS ((cpp_reader *, const char *));
 static void read_include_file	PARAMS ((cpp_reader *, struct include_file *));
 static void stack_include_file	PARAMS ((cpp_reader *, struct include_file *));
@@ -296,11 +296,7 @@ stack_include_file (pfile, inc)
   fp->inc = inc;
   fp->inc->refcnt++;
   fp->sysp = sysp;
-
-  /* The ->actual_dir field is only used when ignore_srcdir is not in effect;
-     see do_include */
-  if (!CPP_OPTION (pfile, ignore_srcdir))
-    fp->actual_dir = actual_directory (pfile, inc->name);
+  fp->search_from = search_from (pfile, inc);
 
   /* Initialise controlling macro state.  */
   pfile->mi_state = MI_OUTSIDE;
@@ -461,7 +457,7 @@ cpp_included (pfile, fname)
      cpp_reader *pfile;
      const char *fname;
 {
-  struct file_name_list *path;
+  struct search_path *path;
   char *name;
   splay_tree_node nd;
 
@@ -477,9 +473,9 @@ cpp_included (pfile, fname)
 			  + 2 + INCLUDE_LEN_FUDGE);
   for (path = CPP_OPTION (pfile, quote_include); path; path = path->next)
     {
-      memcpy (name, path->name, path->nlen);
-      name[path->nlen] = '/';
-      strcpy (&name[path->nlen+1], fname);
+      memcpy (name, path->name, path->len);
+      name[path->len] = '/';
+      strcpy (&name[path->len + 1], fname);
       _cpp_simplify_pathname (name);
       if (CPP_OPTION (pfile, remap))
 	name = remap_filename (pfile, name, path);
@@ -499,9 +495,9 @@ static struct include_file *
 find_include_file (pfile, fname, search_start)
      cpp_reader *pfile;
      const char *fname;
-     struct file_name_list *search_start;
+     struct search_path *search_start;
 {
-  struct file_name_list *path;
+  struct search_path *path;
   char *name;
   struct include_file *file;
 
@@ -513,9 +509,9 @@ find_include_file (pfile, fname, search_start)
 			  + 2 + INCLUDE_LEN_FUDGE);
   for (path = search_start; path; path = path->next)
     {
-      memcpy (name, path->name, path->nlen);
-      name[path->nlen] = '/';
-      strcpy (&name[path->nlen+1], fname);
+      memcpy (name, path->name, path->len);
+      name[path->len] = '/';
+      strcpy (&name[path->len + 1], fname);
       _cpp_simplify_pathname (name);
       if (CPP_OPTION (pfile, remap))
 	name = remap_filename (pfile, name, path);
@@ -527,6 +523,7 @@ find_include_file (pfile, fname, search_start)
 	  return file;
 	}
     }
+
   return 0;
 }
 
@@ -587,7 +584,7 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
      int no_reinclude;
      int include_next;
 {
-  struct file_name_list *search_start = 0;
+  struct search_path *search_start = 0;
   unsigned int len = header->val.str.len;
   unsigned int angle_brackets = header->type == CPP_HEADER_NAME;
   struct include_file *inc;
@@ -637,10 +634,8 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
     {
       if (angle_brackets)
 	search_start = CPP_OPTION (pfile, bracket_include);
-      else if (CPP_OPTION (pfile, ignore_srcdir))
-	search_start = CPP_OPTION (pfile, quote_include);
       else
-	search_start = CPP_BUFFER (pfile)->actual_dir;
+	search_start = pfile->buffer->search_from;
 
       if (!search_start)
 	{
@@ -685,17 +680,18 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
       else
 	{
 	  char *p;
-	  struct file_name_list *ptr;
+	  struct search_path *ptr;
 	  int len;
 
 	  /* If requested as a system header, assume it belongs in
-	     the first system header directory. */
+	     the first system header directory.  */
 	  if (CPP_OPTION (pfile, bracket_include))
 	    ptr = CPP_OPTION (pfile, bracket_include);
 	  else
 	    ptr = CPP_OPTION (pfile, quote_include);
 
-	  len = strlen (ptr->name);
+	  /* FIXME: ptr can be null, no?  */
+	  len = ptr->len;
 	  p = (char *) alloca (len + strlen (fname) + 2);
 	  if (len)
 	    {
@@ -728,15 +724,13 @@ _cpp_compare_file_date (pfile, f)
 {
   unsigned int len = f->val.str.len;
   char *fname;
-  struct file_name_list *search_start;
+  struct search_path *search_start;
   struct include_file *inc;
 
   if (f->type == CPP_HEADER_NAME)
     search_start = CPP_OPTION (pfile, bracket_include);
   else if (CPP_OPTION (pfile, ignore_srcdir))
-    search_start = CPP_OPTION (pfile, quote_include);
-  else
-    search_start = CPP_BUFFER (pfile)->actual_dir;
+    search_start = pfile->buffer->search_from;
 
   fname = alloca (len + 1);
   memcpy (fname, f->val.str.text, len);
@@ -802,6 +796,47 @@ _cpp_pop_file_buffer (pfile, buf)
   inc->refcnt--;
   if (inc->refcnt == 0 && DO_NOT_REREAD (inc))
     purge_cache (inc);
+}
+
+/* Returns the first place in the include chain to start searching for
+   "" includes.  This involves stripping away the basename of the
+   current file, unless -I- was specified.  */
+static struct search_path *
+search_from (pfile, inc)
+     cpp_reader *pfile;
+     struct include_file *inc;
+{
+  cpp_buffer *buffer = pfile->buffer;
+  unsigned int dlen;
+
+  /* Ignore the current file's directory if -I- was given.  */
+  if (CPP_OPTION (pfile, ignore_srcdir))
+    return CPP_OPTION (pfile, quote_include);
+
+  dlen = basename (inc->name) - inc->name;
+  if (dlen)
+    {
+      /* We don't guarantee NAME is null-terminated.  This saves
+	 allocating and freeing memory, and duplicating it when faking
+	 buffers in cpp_push_buffer.  Drop a trailing '/'.  */
+      buffer->dir.name = inc->name;
+      if (dlen > 1)
+	dlen--;
+    }
+  else
+    {
+      buffer->dir.name = ".";
+      dlen = 1;
+    }
+
+  if (dlen > pfile->max_include_len)
+    pfile->max_include_len = dlen;
+
+  buffer->dir.len = dlen;
+  buffer->dir.next = CPP_OPTION (pfile, quote_include);
+  buffer->dir.sysp = buffer->sysp;
+
+  return &buffer->dir;
 }
 
 /* The file_name_map structure holds a mapping of file names for a
@@ -950,20 +985,26 @@ static char *
 remap_filename (pfile, name, loc)
      cpp_reader *pfile;
      char *name;
-     struct file_name_list *loc;
+     struct search_path *loc;
 {
   struct file_name_map *map;
   const char *from, *p;
-  char *dir;
+  char *dir, *dname;
+
+  /* Get a null-terminated path.  */
+  dname = alloca (loc->len + 1);
+  memcpy (dname, loc->name, loc->len);
+  dname[loc->len] = '\0';
 
   if (! loc->name_map)
     {
-      loc->name_map = read_name_map (pfile, loc->name ? loc->name : ".");
+      loc->name_map = read_name_map (pfile, dname);
       if (! loc->name_map)
 	return name;
     }
   
-  from = name + strlen (loc->name) + 1;
+  /* FIXME: this doesn't look right - NAME has been simplified.  */
+  from = name + loc->len + 1;
   
   for (map = loc->name_map; map; map = map->map_next)
     if (!strcmp (map->map_from, from))
@@ -991,65 +1032,6 @@ remap_filename (pfile, name, loc)
       return map->map_to;
 
   return name;
-}
-
-/* Given a path FNAME, extract the directory component and place it
-   onto the actual_dirs list.  Return a pointer to the allocated
-   file_name_list structure.  These structures are used to implement
-   current-directory "" include searching. */
-
-static struct file_name_list *
-actual_directory (pfile, fname)
-     cpp_reader *pfile;
-     const char *fname;
-{
-  char *last_slash, *dir;
-  size_t dlen;
-  struct file_name_list *x;
-  
-  dir = xstrdup (fname);
-  last_slash = strrchr (dir, '/');
-  if (last_slash)
-    {
-      if (last_slash == dir)
-        {
-	  dlen = 1;
-	  last_slash[1] = '\0';
-	}
-      else
-	{
-	  dlen = last_slash - dir;
-	  *last_slash = '\0';
-	}
-    }
-  else
-    {
-      free (dir);
-      dir = xstrdup (".");
-      dlen = 1;
-    }
-
-  if (dlen > pfile->max_include_len)
-    pfile->max_include_len = dlen;
-
-  for (x = pfile->actual_dirs; x; x = x->alloc)
-    if (!strcmp (x->name, dir))
-      {
-	free (dir);
-	return x;
-      }
-
-  /* Not found, make a new one. */
-  x = (struct file_name_list *) xmalloc (sizeof (struct file_name_list));
-  x->name = dir;
-  x->nlen = dlen;
-  x->next = CPP_OPTION (pfile, quote_include);
-  x->alloc = pfile->actual_dirs;
-  x->sysp = pfile->buffer->sysp;
-  x->name_map = NULL;
-
-  pfile->actual_dirs = x;
-  return x;
 }
 
 /* Simplify a path name in place, deleting redundant components.  This

@@ -1,3 +1,24 @@
+2001-03-02  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppfiles.c (struct include_file): Update.
+        (stack_include_file): Use search_from.
+        (cpp_included, find_include_file): Update.
+        (cpp_execute_include): Update.  ptr->name may not be
+        null terminated.  Use the new search_from member variable
+        of cpp_buffer.
+        (_cpp_compare_file_date): Similarly.
+        (search_from): New function, similiar to actual_directory.
+        (actual_directory): Delete.
+        (remap_filename): Update.  loc->name may not be null terminated.
+        (struct file_name_list): Rename search_path.  Update.
+        * cpphash.h (struct cpp_buffer): Delete actual_dir.  New members
+        search_from and dir.
+        (struct cpp_reader): Remove actual_dirs.
+        * cppinit.c (struct cpp_pending): Update for renamed objects.
+        (append_include_chain, remove_dup_dir, remove_dup_dirs,
+        merge_include_chains, cpp_destroy, cpp_start_read): Similarly.
+        * cpplib.h (struct cpp_options): Similarly.
+
 2001-03-01  Zack Weinberg  <zackw@stanford.edu>
 
 	* config/xm-lynx.h, config/xm-std32.h, config/a29k/xm-a29k.h,
