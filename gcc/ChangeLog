@@ -4,6 +4,9 @@ Sat May 23 23:35:14 1998  Jeffrey A Law  (law@cygnus.com)
 
 1998-05-23  Manfred Hollstein  <manfred@s-direktnet.de>
 
+	* Makefile.in (all.cross): Swap $(LIBGCC) and $(STMP_FIXPROTO).
+	(rest.encap): Likewise.
+
 	* toplev.h (tree_node): Provide global declaration to avoid
 	`limited scope' warnings.
 

@@ -806,14 +806,14 @@ all.internal: start.encap rest.encap
 # This is what to compile if making a cross-compiler.
 # Note that we can compile enquire using the cross-compiler just built,
 # although we can't run it on this machine.
-all.cross: native gcc-cross specs stmp-headers $(LIBGCC) $(STMP_FIXPROTO) \
+all.cross: native gcc-cross specs stmp-headers $(STMP_FIXPROTO) $(LIBGCC) \
 	$(LIBGCC1_TEST) $(EXTRA_PARTS) lang.all.cross
 # This is what to compile if making gcc with a cross-compiler.
 all.build: native xgcc$(exeext) $(EXTRA_PARTS) lang.all.build
 # This is what must be made before installing GCC and converting libraries.
 start.encap: native xgcc$(exeext) specs $(LIBGCC1) xlimits.h lang.start.encap
 # These can't be made until after GCC can run.
-rest.encap: stmp-headers $(LIBGCC) $(STMP_FIXPROTO) $(EXTRA_PARTS) lang.rest.encap
+rest.encap: stmp-headers $(STMP_FIXPROTO) $(LIBGCC) $(EXTRA_PARTS) lang.rest.encap
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
 native: config.status auto-host.h cpp$(exeext) $(LANGUAGES) \
