@@ -1,6 +1,6 @@
 ## Makefile for the include subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001 Free Software Foundation, Inc.
+## Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -224,6 +224,14 @@ target_headers = \
 	${target_srcdir}/os_defines.h \
 	${glibcpp_srcdir}/@ATOMICITY_INC_SRCDIR@/atomicity.h \
 	${glibcpp_srcdir}/@CPU_LIMITS_INC_SRCDIR@/cpu_limits.h 
+# These extra_target_headers files are all built with ad hoc naming rules.
+extra_target_headers = \
+	${target_builddir}/basic_file_model.h \
+	${target_builddir}/c++config.h \
+	${target_builddir}/c++io.h \
+	${target_builddir}/c++locale.h \
+	${target_builddir}/messages_members.h \
+	${target_builddir}/codecvt_specializations.h
 
 thread_builddir = ./${target_alias}/bits
 thread_headers = \
@@ -244,35 +252,35 @@ stamp-std: ${std_headers}
 	@if [ ! -d "${std_builddir}" ]; then \
 	  mkdir -p ${std_builddir} ;\
 	fi ;\
-	(cd ${std_builddir} && @LN_S@ $? .) ;\
+	(cd ${std_builddir} && @LN_S@ $? . || true) ;\
 	echo `date` > stamp-std 
 
 stamp-bits: ${bits_headers}
 	@if [ ! -d "${bits_builddir}" ]; then \
 	  mkdir -p ${bits_builddir} ;\
 	fi ;\
-	(cd ${bits_builddir} && @LN_S@ $? .) ;\
+	(cd ${bits_builddir} && @LN_S@ $? . || true) ;\
 	echo `date` > stamp-bits
 
 stamp-c_base: ${c_base_headers}
 	@if [ ! -d "${c_base_builddir}" ]; then \
 	  mkdir -p ${c_base_builddir} ;\
 	fi ;\
-	(cd ${c_base_builddir} && @LN_S@ $? .) ;\
+	(cd ${c_base_builddir} && @LN_S@ $? . || true) ;\
 	echo `date` > stamp-c_base
 
 stamp-backward: ${backward_headers}
 	@if [ ! -d "${backward_builddir}" ]; then \
 	  mkdir -p ${backward_builddir} ;\
 	fi ;\
-	(cd ${backward_builddir} && @LN_S@ $? .) ;\
+	(cd ${backward_builddir} && @LN_S@ $? . || true) ;\
 	echo `date` > stamp-backward
 
 stamp-ext: ${ext_headers}
 	@if [ ! -d "${ext_builddir}" ]; then \
 	  mkdir -p ${ext_builddir} ;\
 	fi ;\
-	(cd ${ext_builddir} && @LN_S@ $? .) ;\
+	(cd ${ext_builddir} && @LN_S@ $? . || true) ;\
 	echo `date` > stamp-ext
 
 # This target is special.  The timestamp on a directory gets modified
@@ -290,12 +298,12 @@ stamp-${target_alias}:
 stamp-target: ${target_headers} ${target_builddir}
 	@cd ${target_builddir} ;\
 	if [ ! -f stamp-target ]; then \
-	  @LN_S@ ${target_headers} . ;\
-	  @LN_S@ ${glibcpp_srcdir}/@BASIC_FILE_H@ basic_file_model.h ;\
-	  @LN_S@ ${glibcpp_srcdir}/@CSTDIO_H@ c++io.h ;\
-	  @LN_S@ ${glibcpp_srcdir}/@CLOCALE_H@ c++locale.h ;\
-	  @LN_S@ ${glibcpp_srcdir}/@CMESSAGES_H@ messages_members.h ;\
-	  @LN_S@ ${glibcpp_srcdir}/@CCODECVT_H@ codecvt_specializations.h ;\
+	  @LN_S@ ${target_headers} . || true ;\
+	  @LN_S@ ${glibcpp_srcdir}/@BASIC_FILE_H@ basic_file_model.h || true ;\
+	  @LN_S@ ${glibcpp_srcdir}/@CSTDIO_H@ c++io.h || true ;\
+	  @LN_S@ ${glibcpp_srcdir}/@CLOCALE_H@ c++locale.h || true ;\
+	  @LN_S@ ${glibcpp_srcdir}/@CMESSAGES_H@ messages_members.h || true ;\
+	  @LN_S@ ${glibcpp_srcdir}/@CCODECVT_H@ codecvt_specializations.h || true ;\
 	  echo `date` > stamp-target; \
 	fi
 
@@ -335,18 +343,38 @@ ${thread_builddir}/gthr-default.h:
 	    -e 's/\(${uppercase}*WEAK\)/_GLIBCPP_\1/g' \
 	    < ${toplevel_srcdir}/gcc/${glibcpp_thread_h} > $@
 
-# One big happy istallation:  just copy everything from the build to the
-# install tree (except for the build stamps).
+# For robustness sake (in light of junk files or in-source
+# configuration), copy from the build or source tree to the install
+# tree using only the human-maintained file lists and directory
+# components.  Yes, with minor differences, this is sheer duplication
+# of the staging rules above using $(INSTALL_DATA) instead of LN_S and
+# `$(INSTALL) -d' instead of `mkdir -p'.  In particular,
+# extra_target_headers are taken out of the build tree staging area;
+# the rest are taken from the original source tree.
 gxx_include_dir = @gxx_include_dir@
 install-data-local:
-	for file in `find . ! -name stamp-\* ! -name Makefile -print`; do \
-	installFile=${gxx_include_dir}/$${file} ;\
-	if [ -d $${file} ]; then \
-	  $(INSTALL) -d $${installFile} ;\
-	else \
-	  $(INSTALL_DATA) $${file} $${installFile} ;\
-	fi ;\
-	done
+	$(INSTALL) -d ${gxx_include_dir}
+	$(INSTALL) -d ${gxx_include_dir}/${bits_builddir}
+	for file in ${bits_headers}; do \
+	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${bits_builddir}; done
+	$(INSTALL) -d ${gxx_include_dir}/${backward_builddir}
+	for file in ${backward_headers}; do \
+	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${backward_builddir}; done
+	$(INSTALL) -d ${gxx_include_dir}/${ext_builddir}
+	for file in ${ext_headers}; do \
+	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${ext_builddir}; done
+	$(INSTALL) -d ${gxx_include_dir}/${c_base_builddir}
+	for file in ${c_base_headers}; do \
+	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${c_base_builddir}; done
+	$(INSTALL) -d ${gxx_include_dir}/${std_builddir}
+	for file in ${std_headers}; do \
+	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${std_builddir}; done
+	$(INSTALL) -d ${gxx_include_dir}/${target_builddir}
+	for file in ${target_headers} ${extra_target_headers}; do \
+	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${target_builddir}; done
+	$(INSTALL) -d ${gxx_include_dir}/${thread_builddir}
+	for file in ${thread_headers}; do \
+	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${thread_builddir}; done
 
 # By adding these files here, automake will remove them for 'make clean'
 #CLEANFILES = ${allstamps}
