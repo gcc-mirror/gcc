@@ -1,3 +1,8 @@
+2004-09-11  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.c-torture/execute/991118-1.x: Delete, PR 16437 is fixed.
+	* gcc.c-torture/execute/bf64-1.x: Remove XFAIL on x86-64.
+
 2004-09-11  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.target/frv: New directory of FR-V-specific tests.
