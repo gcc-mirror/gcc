@@ -1134,7 +1134,7 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
    appropriate for passing a pointer to that type.  */
 /* All arguments greater than 8 bytes are passed this way.  */
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) \
-  ((TYPE) && int_size_in_bytes (TYPE) > 8)
+  ((TYPE) && m32r_pass_by_reference (TYPE))
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
@@ -1210,8 +1210,7 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
    to return the function value in memory, just as large structures are
    always returned.  Here TYPE will be a C expression of type `tree',
    representing the data type of the value.  */
-#define RETURN_IN_MEMORY(TYPE) \
-(int_size_in_bytes (TYPE) > 8)
+#define RETURN_IN_MEMORY(TYPE) m32r_pass_by_reference (TYPE)
 
 /* Tell GCC to use RETURN_IN_MEMORY.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0

@@ -1,3 +1,12 @@
+2003-06-13  Doug Evans  <dje@sebabeach.org>
+	    Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
+
+	* config/m32r/m32r-protos.h (m32r_pass_by_reference): Declare.
+	* config/m32r/m32r.c (m32r_pass_by_reference): New fn.
+	(m32r_va_arg): Use it.
+	* config/m32r/m32r.h (FUNCTION_ARG_PASS_BY_REFERENCE): Ditto.
+	(RETURN_IN_MEMORY): Ditto.
+
 2003-06-13  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* c-typeck.c: Remove #if 0 clauses.
