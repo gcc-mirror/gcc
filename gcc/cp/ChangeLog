@@ -1,5 +1,8 @@
 2002-02-13  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (builtin_function): Set TREE_THIS_VOLATILE on return fns.
+	(finish_function): Don't warn if current_function_returns_null.
+
 	* typeck2.c (digest_init): Do handle values of vector type.
 
 	* typeck2.c (digest_init, process_init_constructor): Treat vectors
