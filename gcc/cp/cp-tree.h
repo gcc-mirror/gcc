@@ -4102,7 +4102,7 @@ extern tree finish_parenthesized_expr           (tree);
 extern tree finish_non_static_data_member       (tree, tree, tree);
 extern tree begin_stmt_expr                     (void);
 extern tree finish_stmt_expr_expr 		(tree);
-extern tree finish_stmt_expr                    (tree);
+extern tree finish_stmt_expr                    (tree, bool);
 extern tree perform_koenig_lookup               (tree, tree);
 extern tree finish_call_expr                    (tree, tree, bool);
 extern tree finish_increment_expr               (tree, enum tree_code);

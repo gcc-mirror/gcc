@@ -85,9 +85,7 @@ finish_init_stmts (bool is_global, tree stmt_expr, tree compound_stmt)
 {  
   finish_compound_stmt (compound_stmt);
   
-  stmt_expr = finish_stmt_expr (stmt_expr);
-  STMT_EXPR_NO_SCOPE (stmt_expr) = true;
-  TREE_USED (stmt_expr) = 1;
+  stmt_expr = finish_stmt_expr (stmt_expr, true);
 
   my_friendly_assert (!building_stmt_tree () == is_global, 20030726);
   
@@ -2478,7 +2476,7 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
     base = cp_convert (ptype, decay_conversion (base));
 
   /* The code we are generating looks like:
-
+     ({
        T* t1 = (T*) base;
        T* rval = t1;
        ptrdiff_t iterator = maxindex;
@@ -2490,7 +2488,8 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
        } catch (...) {
          ... destroy elements that were constructed ...
        }
-       return rval;
+       rval;
+     })
        
      We can omit the try and catch blocks if we know that the
      initialization will never throw an exception, or if the array
@@ -2662,18 +2661,22 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
 
       finish_compound_stmt (try_body);
       finish_cleanup_try_block (try_block);
-      e = build_vec_delete_1 (rval, m,
-			      type,
-			      sfk_base_destructor,
+      e = build_vec_delete_1 (rval, m, type, sfk_base_destructor,
 			      /*use_global_delete=*/0);
       finish_cleanup (e, try_block);
     }
 
-  /* The value of the array initialization is the address of the
-     first element in the array.  */
-  finish_expr_stmt (rval);
+  /* The value of the array initialization is the array itself, RVAL
+     is a pointer to the first element.  */
+  finish_stmt_expr_expr (rval);
 
   stmt_expr = finish_init_stmts (is_global, stmt_expr, compound_stmt);
+
+  /* Now convert make the result have the correct type. */
+  atype = build_pointer_type (atype);
+  stmt_expr = build1 (NOP_EXPR, atype, stmt_expr);
+  stmt_expr = build_indirect_ref (stmt_expr, NULL);
+  
   current_stmt_tree ()->stmts_are_full_exprs_p = destroy_temps;
   return stmt_expr;
 }

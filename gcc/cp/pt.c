@@ -7343,7 +7343,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  
 	  tsubst_expr (STMT_EXPR_STMT (t), args,
 		       complain | tf_stmt_expr_cmpd, in_decl);
-	  return finish_stmt_expr (stmt_expr);
+	  return finish_stmt_expr (stmt_expr, false);
 	}
       
       return t;

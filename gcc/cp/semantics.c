@@ -1405,7 +1405,7 @@ begin_stmt_expr (void)
   last_expr_type = NULL_TREE;
   
   keep_next_level (1);
-  
+
   return last_tree; 
 }
 
@@ -1469,13 +1469,12 @@ finish_stmt_expr_expr (tree expr)
   return result;
 }
 
-/* Finish a statement-expression.  RTL_EXPR should be the value
-   returned by the previous begin_stmt_expr; EXPR is the
-   statement-expression.  Returns an expression representing the
-   statement-expression.  */
+/* Finish a statement-expression.  EXPR should be the value returned
+   by the previous begin_stmt_expr.  Returns an expression
+   representing the statement-expression.  */
 
 tree 
-finish_stmt_expr (tree rtl_expr)
+finish_stmt_expr (tree rtl_expr, bool has_no_scope)
 {
   tree result;
   tree result_stmt = last_expr_type;
@@ -1496,6 +1495,7 @@ finish_stmt_expr (tree rtl_expr)
   
   result = build_min (STMT_EXPR, type, last_tree);
   TREE_SIDE_EFFECTS (result) = 1;
+  STMT_EXPR_NO_SCOPE (result) = has_no_scope;
   
   last_expr_type = NULL_TREE;
   
