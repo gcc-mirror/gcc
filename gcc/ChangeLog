@@ -1,3 +1,8 @@
+2005-01-18  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* tree-inline.c (estimate_num_insns_1): Added cases for
+	ALIGN_INDIRECT_REF, MISALIGNED_INDIRECT_REF, and REALIGN_LOAD_EXPR.
+
 2005-01-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/19296

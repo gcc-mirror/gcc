@@ -1190,6 +1190,8 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case COMPONENT_REF:
     case BIT_FIELD_REF:
     case INDIRECT_REF:
+    case ALIGN_INDIRECT_REF:
+    case MISALIGNED_INDIRECT_REF:
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
     case OBJ_TYPE_REF:
@@ -1321,6 +1323,8 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case SWITCH_EXPR:
 
     case ASM_EXPR:
+
+    case REALIGN_LOAD_EXPR:
 
     case RESX_EXPR:
       *count += 1;
