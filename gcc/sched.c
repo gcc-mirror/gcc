@@ -342,11 +342,9 @@ static int new_sometimes_live		PROTO((struct sometimes *, int, int));
 static void finish_sometimes_live	PROTO((struct sometimes *, int));
 static rtx reemit_notes			PROTO((rtx, rtx));
 static void schedule_block		PROTO((int, FILE *));
-static rtx regno_use_in			PROTO((int, rtx));
 static void split_hard_reg_notes	PROTO((rtx, rtx, rtx));
 static void new_insn_dead_notes		PROTO((rtx, rtx, rtx, rtx));
 static void update_n_sets		PROTO((rtx, int));
-static void update_flow_info		PROTO((rtx, rtx, rtx, rtx));
 
 /* Main entry point of this file.  */
 void schedule_insns	PROTO((FILE *));
@@ -3533,39 +3531,6 @@ ret:
   return;
 }
 
-/* Subroutine of split_hard_reg_notes.  Searches X for any reference to
-   REGNO, returning the rtx of the reference found if any.  Otherwise,
-   returns 0.  */
-
-static rtx
-regno_use_in (regno, x)
-     int regno;
-     rtx x;
-{
-  register char *fmt;
-  int i, j;
-  rtx tem;
-
-  if (GET_CODE (x) == REG && REGNO (x) == regno)
-    return x;
-
-  fmt = GET_RTX_FORMAT (GET_CODE (x));
-  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	{
-	  if ((tem = regno_use_in (regno, XEXP (x, i))))
-	    return tem;
-	}
-      else if (fmt[i] == 'E')
-	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  if ((tem = regno_use_in (regno , XVECEXP (x, i, j))))
-	    return tem;
-    }
-
-  return 0;
-}
-
 /* Subroutine of update_flow_info.  Determines whether any new REG_NOTEs are
    needed for the hard register mentioned in the note.  This can happen
    if the reference to the hard register in the original insn was split into
@@ -3760,7 +3725,7 @@ update_n_sets (x, inc)
    the insns from FIRST to LAST inclusive that were created by splitting
    ORIG_INSN.  NOTES are the original REG_NOTES.  */
 
-static void
+void
 update_flow_info (notes, first, last, orig_insn)
      rtx notes;
      rtx first, last;
@@ -4366,78 +4331,7 @@ schedule_insns (dump_file)
 
       note_list = 0;
 
-      for (insn = BLOCK_HEAD (b); ; insn = next)
-	{
-	  rtx prev;
-	  rtx set;
-
-	  /* Can't use `next_real_insn' because that
-	     might go across CODE_LABELS and short-out basic blocks.  */
-	  next = NEXT_INSN (insn);
-	  if (GET_CODE (insn) != INSN)
-	    {
-	      if (insn == BLOCK_END (b))
-		break;
-
-	      continue;
-	    }
-
-	  /* Don't split no-op move insns.  These should silently disappear
-	     later in final.  Splitting such insns would break the code
-	     that handles REG_NO_CONFLICT blocks.  */
-	  set = single_set (insn);
-	  if (set && rtx_equal_p (SET_SRC (set), SET_DEST (set)))
-	    {
-	      if (insn == BLOCK_END (b))
-		break;
-
-	      /* Nops get in the way while scheduling, so delete them now if
-		 register allocation has already been done.  It is too risky
-		 to try to do this before register allocation, and there are
-		 unlikely to be very many nops then anyways.  */
-	      if (reload_completed)
-		{
-		  PUT_CODE (insn, NOTE);
-		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		  NOTE_SOURCE_FILE (insn) = 0;
-		}
-
-	      continue;
-	    }
-
-	  /* Split insns here to get max fine-grain parallelism.  */
-	  prev = PREV_INSN (insn);
-	  /* It is probably not worthwhile to try to split again in the
-	     second pass.  However, if flag_schedule_insns is not set,
-	     the first and only (if any) scheduling pass is after reload.  */
-	  if (reload_completed == 0 || ! flag_schedule_insns)
-	    {
-	      rtx last, first = PREV_INSN (insn);
-	      rtx notes = REG_NOTES (insn);
-
-	      last = try_split (PATTERN (insn), insn, 1);
-	      if (last != insn)
-		{
-		  /* try_split returns the NOTE that INSN became.  */
-		  first = NEXT_INSN (first);
-		  update_flow_info (notes, first, last, insn);
-
-		  PUT_CODE (insn, NOTE);
-		  NOTE_SOURCE_FILE (insn) = 0;
-		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		  if (insn == BLOCK_HEAD (b))
-		    BLOCK_HEAD (b) = first;
-		  if (insn == BLOCK_END (b))
-		    {
-		      BLOCK_END (b) = last;
-		      break;
-		    }
-		}
-	    }
-
-	  if (insn == BLOCK_END (b))
-	    break;
-	}
+      split_block_insns (b, reload_completed == 0 || ! flag_schedule_insns);
 
       schedule_block (b, dump_file);
 

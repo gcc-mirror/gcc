@@ -448,11 +448,9 @@ static void attach_deaths_insn PROTO ((rtx));
 static int new_sometimes_live PROTO ((struct sometimes *, int, int));
 static void finish_sometimes_live PROTO ((struct sometimes *, int));
 static int schedule_block PROTO ((int, int));
-static rtx regno_use_in PROTO ((int, rtx));
 static void split_hard_reg_notes PROTO ((rtx, rtx, rtx));
 static void new_insn_dead_notes PROTO ((rtx, rtx, rtx, rtx));
 static void update_n_sets PROTO ((rtx, int));
-static void update_flow_info PROTO ((rtx, rtx, rtx, rtx));
 static char *safe_concat PROTO ((char *, char *, char *));
 static int insn_issue_delay PROTO ((rtx));
 static int birthing_insn_p PROTO ((rtx));
@@ -765,7 +763,6 @@ static rtx group_leader PROTO ((rtx));
 static int set_priorities PROTO ((int));
 static void init_rtx_vector PROTO ((rtx **, rtx *, int, int));
 static void schedule_region PROTO ((int));
-static void split_block_insns PROTO ((int));
 
 #endif /* INSN_SCHEDULING */
 
@@ -7699,39 +7696,6 @@ schedule_region (rgn)
   FREE_REG_SET (reg_pending_sets);
 }
 
-/* Subroutine of split_hard_reg_notes.  Searches X for any reference to
-   REGNO, returning the rtx of the reference found if any.  Otherwise,
-   returns 0.  */
-
-static rtx
-regno_use_in (regno, x)
-     int regno;
-     rtx x;
-{
-  register char *fmt;
-  int i, j;
-  rtx tem;
-
-  if (GET_CODE (x) == REG && REGNO (x) == regno)
-    return x;
-
-  fmt = GET_RTX_FORMAT (GET_CODE (x));
-  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	{
-	  if ((tem = regno_use_in (regno, XEXP (x, i))))
-	    return tem;
-	}
-      else if (fmt[i] == 'E')
-	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  if ((tem = regno_use_in (regno, XVECEXP (x, i, j))))
-	    return tem;
-    }
-
-  return 0;
-}
-
 /* Subroutine of update_flow_info.  Determines whether any new REG_NOTEs are
    needed for the hard register mentioned in the note.  This can happen
    if the reference to the hard register in the original insn was split into
@@ -7918,7 +7882,7 @@ update_n_sets (x, inc)
    the insns from FIRST to LAST inclusive that were created by splitting
    ORIG_INSN.  NOTES are the original REG_NOTES.  */
 
-static void
+void
 update_flow_info (notes, first, last, orig_insn)
      rtx notes;
      rtx first, last;
@@ -8409,79 +8373,6 @@ update_flow_info (notes, first, last, orig_insn)
   }
 }
 
-/* Do the splitting of insns in the block b.  */
-
-static void
-split_block_insns (b)
-     int b;
-{
-  rtx insn, next;
-
-  for (insn = BLOCK_HEAD (b);; insn = next)
-    {
-      rtx set, last, first, notes;
-
-      /* Can't use `next_real_insn' because that
-         might go across CODE_LABELS and short-out basic blocks.  */
-      next = NEXT_INSN (insn);
-      if (GET_CODE (insn) != INSN)
-	{
-	  if (insn == BLOCK_END (b))
-	    break;
-
-	  continue;
-	}
-
-      /* Don't split no-op move insns.  These should silently disappear
-         later in final.  Splitting such insns would break the code
-         that handles REG_NO_CONFLICT blocks.  */
-      set = single_set (insn);
-      if (set && rtx_equal_p (SET_SRC (set), SET_DEST (set)))
-	{
-	  if (insn == BLOCK_END (b))
-	    break;
-
-	  /* Nops get in the way while scheduling, so delete them now if
-	     register allocation has already been done.  It is too risky
-	     to try to do this before register allocation, and there are
-	     unlikely to be very many nops then anyways.  */
-	  if (reload_completed)
-	    {
-	      PUT_CODE (insn, NOTE);
-	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	      NOTE_SOURCE_FILE (insn) = 0;
-	    }
-
-	  continue;
-	}
-
-      /* Split insns here to get max fine-grain parallelism.  */
-      first = PREV_INSN (insn);
-      notes = REG_NOTES (insn);
-      last = try_split (PATTERN (insn), insn, 1);
-      if (last != insn)
-	{
-	  /* try_split returns the NOTE that INSN became.  */
-	  first = NEXT_INSN (first);
-	  update_flow_info (notes, first, last, insn);
-
-	  PUT_CODE (insn, NOTE);
-	  NOTE_SOURCE_FILE (insn) = 0;
-	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	  if (insn == BLOCK_HEAD (b))
-	    BLOCK_HEAD (b) = first;
-	  if (insn == BLOCK_END (b))
-	    {
-	      BLOCK_END (b) = last;
-	      break;
-	    }
-	}
-
-      if (insn == BLOCK_END (b))
-	break;
-    }
-}
-
 /* The one entry point in this file.  DUMP_FILE is the dump file for
    this pass.  */
 
@@ -8535,7 +8426,7 @@ schedule_insns (dump_file)
 
   /* do the splitting first for all blocks */
   for (b = 0; b < n_basic_blocks; b++)
-    split_block_insns (b);
+    split_block_insns (b, 1);
 
   max_uid = (get_max_uid () + 1);
 
