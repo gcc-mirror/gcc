@@ -7777,7 +7777,7 @@ clear_log_links (insns)
 
   for (b = 0; b < n_basic_blocks; b++)
     {
-      basic_block bb = BASIC_BLOCK (i);
+      basic_block bb = BASIC_BLOCK (b);
 
       bb->global_live_at_start = NULL;
       bb->global_live_at_end = NULL;

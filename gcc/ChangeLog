@@ -1,3 +1,7 @@
+2000-07-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* flow.c (clear_log_links): Fix typo.
+
 Mon Jul 31 22:19:24 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* loop.c (check_dbra_loop): Make change from July 17, 2000 work
