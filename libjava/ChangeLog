@@ -1,3 +1,7 @@
+2000-10-05  Tom Tromey  <tromey@cygnus.com>
+
+	* gnu/gcj/convert/natIconv.cc (init): Terminate buffer.
+
 2000-10-02  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* prims.cc (_Jv_argv, _Jv_argc): New fields.
