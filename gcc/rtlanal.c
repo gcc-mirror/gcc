@@ -2421,11 +2421,11 @@ for_each_rtx (x, f, data)
 {
   int result;
   int length;
-  const char* format;
+  const char *format;
   int i;
 
   /* Call F on X.  */
-  result = (*f)(x, data);
+  result = (*f) (x, data);
   if (result == -1)
     /* Do not traverse sub-expressions.  */
     return 0;
