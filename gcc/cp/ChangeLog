@@ -1,3 +1,13 @@
+2003-07-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (enum cp_lvalue_kind): Add clk_packed.
+	* tree.c (lvalue_p_1): Set it.
+	* class.c (check_field): Don't allow non-packed non-POD fields to
+	be packed.
+	* call.c (reference_binding): Need a temporary for all bitfield
+	and packed fields.
+	(convert_like_real): Check it is ok to make a temporary here.
+
 2003-07-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (hack_identifier): Remove.

@@ -1054,10 +1054,10 @@ reference_binding (tree rto, tree rfrom, tree expr, int flags)
 	 lvalue.  */
       conv = build1 (IDENTITY_CONV, from, expr);
       conv = direct_reference_binding (rto, conv);
-      if ((lvalue_p & clk_bitfield) != 0 
-	  && CP_TYPE_CONST_NON_VOLATILE_P (to))
+      if ((lvalue_p & clk_bitfield) != 0
+	  || ((lvalue_p & clk_packed) != 0 && !TYPE_PACKED (to)))
 	/* For the purposes of overload resolution, we ignore the fact
-	   this expression is a bitfield. (In particular,
+	   this expression is a bitfield or packed field. (In particular,
 	   [over.ics.ref] says specifically that a function with a
 	   non-const reference parameter is viable even if the
 	   argument is a bitfield.)
@@ -1068,6 +1068,7 @@ reference_binding (tree rto, tree rfrom, tree expr, int flags)
 	   a temporary, so we just issue an error when the conversion
 	   actually occurs.  */
 	NEED_TEMPORARY_P (conv) = 1;
+					
       return conv;
     }
   else if (CLASS_TYPE_P (from) && !(flags & LOOKUP_NO_CONVERSION))
@@ -4172,6 +4173,23 @@ convert_like_real (tree convs, tree expr, tree fn, int argnum, int inner,
 	if (NEED_TEMPORARY_P (convs) || !non_cast_lvalue_p (expr))
 	  {
 	    tree type = TREE_TYPE (TREE_OPERAND (convs, 0));
+
+	    if (!CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (ref_type)))
+	      {
+		/* If the reference is volatile or non-const, we
+		   cannot create a temporary.  */
+		cp_lvalue_kind lvalue = real_lvalue_p (expr);
+		
+		if (lvalue & clk_bitfield)
+		  error ("cannot bind bitfield `%E' to `%T'",
+			 expr, ref_type);
+		else if (lvalue & clk_packed)
+		  error ("cannot bind packed field `%E' to `%T'",
+			 expr, ref_type);
+		else
+		  my_friendly_assert (0, 20030715);
+		return error_mark_node;
+	      }
 	    expr = build_target_expr_with_type (expr, type);
 	  }
 

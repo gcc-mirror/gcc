@@ -100,11 +100,12 @@ lvalue_p_1 (tree ref,
       op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 0),
 				    treat_class_rvalues_as_lvalues,
 				    allow_cast_as_lvalue);
-      if (op1_lvalue_kind 
-	  /* The "field" can be a FUNCTION_DECL or an OVERLOAD in some
-	     situations.  */
-	  && TREE_CODE (TREE_OPERAND (ref, 1)) == FIELD_DECL
-	  && DECL_C_BIT_FIELD (TREE_OPERAND (ref, 1)))
+      if (!op1_lvalue_kind 
+	  /* The "field" can be a FUNCTION_DECL or an OVERLOAD in some	
+  	     situations.  */
+ 	  || TREE_CODE (TREE_OPERAND (ref, 1)) != FIELD_DECL)
+ 	;
+      else if (DECL_C_BIT_FIELD (TREE_OPERAND (ref, 1)))
 	{
 	  /* Clear the ordinary bit.  If this object was a class
 	     rvalue we want to preserve that information.  */
@@ -112,6 +113,9 @@ lvalue_p_1 (tree ref,
 	  /* The lvalue is for a btifield.  */
 	  op1_lvalue_kind |= clk_bitfield;
 	}
+      else if (DECL_PACKED (TREE_OPERAND (ref, 1)))
+	op1_lvalue_kind |= clk_packed;
+      
       return op1_lvalue_kind;
 
     case STRING_CST:
