@@ -1,3 +1,7 @@
+1999-12-08  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* loop.c (insert_loop_mem): Don't hoist volatile mems out of loops.
+
 1999-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.c (ultra_cmove_results_ready_p,
