@@ -1,3 +1,16 @@
+2003-06-22  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (expand_builtin_mathfn_2): Use tree_cons to build
+	up the stabilized argument list, not build_tree_list.
+	(expand_builtin_strcpy): Construct new argument list manually
+	instead of using chainon to modify the original argument list.
+	(expand_builtin_stpcpy): Construct new argument list manually
+	instead of using copy_list and chainon.
+	(expand_builtin_sprintf): New function.  Optimize calls to
+	sprintf when the format is "%s" or doesn't contain a '%'.
+	(expand_builtin): Expand BUILT_IN_SPRINTF using the new function
+	expand_builtin_sprintf.
+
 2003-06-22  Andreas Schwab  <schwab@suse.de>
 
 	* function.c (set_insn_locators): Mark as unused.
