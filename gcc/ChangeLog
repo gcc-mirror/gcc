@@ -1,3 +1,7 @@
+Mon Nov 23 09:40:41 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.h (LEGITIMIZE_ADDRESS): Add missing "goto WIN".
+
 Mon Nov  9 23:29:39 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.md (floatunssidf2_internal splitter): Use base register

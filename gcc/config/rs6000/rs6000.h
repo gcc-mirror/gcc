@@ -1946,6 +1946,7 @@ typedef struct rs6000_args
       rtx reg = gen_reg_rtx (Pmode);					\
       emit_insn (gen_elf_high (reg, (X)));				\
       (X) = gen_rtx_LO_SUM (Pmode, reg, (X));				\
+      goto WIN;								\
     }									\
 }
 
