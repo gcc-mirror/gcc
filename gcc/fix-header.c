@@ -176,7 +176,7 @@ int lbrac_line, rbrac_line;
 char **required_functions;
 int required_unseen_count;
 
-int 
+void 
 write_lbrac ()
 {
   
@@ -374,6 +374,7 @@ read_scan_file (scan_file)
     }
 }
 
+void
 write_rbrac ()
 {
   struct fn_decl *fn;
