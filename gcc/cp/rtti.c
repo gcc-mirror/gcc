@@ -439,7 +439,7 @@ build_dynamic_cast (type, expr)
 	goto fail;
       if (TREE_CODE (TREE_TYPE (exprtype)) != RECORD_TYPE)
 	goto fail;
-      if (TYPE_SIZE (TREE_TYPE (exprtype)) == NULL_TREE)
+      if (TYPE_SIZE (complete_type (TREE_TYPE (exprtype))) == NULL_TREE)
 	goto fail;
       if (TREE_READONLY (TREE_TYPE (exprtype))
 	  && ! TYPE_READONLY (TREE_TYPE (type)))
@@ -450,7 +450,7 @@ build_dynamic_cast (type, expr)
     case REFERENCE_TYPE:
       if (TREE_CODE (TREE_TYPE (type)) != RECORD_TYPE)
 	goto fail;
-      if (TYPE_SIZE (TREE_TYPE (type)) == NULL_TREE)
+      if (TYPE_SIZE (complete_type (TREE_TYPE (type))) == NULL_TREE)
 	goto fail;
       break;
       /* else fall through */
@@ -475,7 +475,7 @@ build_dynamic_cast (type, expr)
 	goto fail;
       if (TREE_CODE (TREE_TYPE (exprtype)) != RECORD_TYPE)
 	goto fail;
-      if (TYPE_SIZE (TREE_TYPE (exprtype)) == NULL_TREE)
+      if (TYPE_SIZE (complete_type (TREE_TYPE (exprtype))) == NULL_TREE)
 	goto fail;
       if (TREE_READONLY (TREE_TYPE (exprtype))
 	  && ! TYPE_READONLY (TREE_TYPE (type)))

@@ -4677,6 +4677,7 @@ init_decl_processing ()
      around compiler bugs.  */
   signal (SIGSEGV, signal_catch);
 
+#ifndef __CYGWIN32__
   /* We will also catch aborts in the back-end through signal_catch and
      give the user a chance to see where the error might be, and to defeat
      aborts in the back-end when there have been errors previously in their
@@ -4693,6 +4694,13 @@ init_decl_processing ()
 #ifdef SIGBUS
   signal (SIGBUS, signal_catch);
 #endif
+#else /* ndef __CYGWIN32__ */
+  /* Cygwin32 cannot handle catching signals other than
+     SIGABRT yet.  We hope this will cease to be the case soon. */
+#ifdef SIGABRT
+  signal (SIGABRT, signal_catch);
+#endif
+#endif /* ndef __CYGWIN32__ */
 
   gcc_obstack_init (&decl_obstack);
 
@@ -7189,8 +7197,12 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
 	    }
 	  if (tmp && DECL_ARTIFICIAL (tmp))
 	    cp_error ("definition of implicitly-declared `%D'", tmp);
-	  if (tmp && duplicate_decls (decl, tmp))
-	    return tmp;
+	  if (tmp)
+	    {
+	      if (!duplicate_decls (decl, tmp))
+		my_friendly_abort (892);
+	      return tmp;
+	    }
 	}
 
       if (ctype == NULL_TREE || check)

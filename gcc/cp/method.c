@@ -1646,9 +1646,8 @@ hack_identifier (value, name)
 		}
 	    }
 	}
-      return value;
     }
-  if (TREE_CODE (value) == TREE_LIST && TREE_NONLOCAL_FLAG (value))
+  else if (TREE_CODE (value) == TREE_LIST && TREE_NONLOCAL_FLAG (value))
     {
       if (type == 0)
 	{

@@ -1529,12 +1529,26 @@ mapcar (t, func)
     case PREINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
     case POSTINCREMENT_EXPR:
-    case CALL_EXPR:
     case ARRAY_REF:
     case SCOPE_REF:
       t = copy_node (t);
       TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
       TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
+      return t;
+
+    case CALL_EXPR:
+      t = copy_node (t);
+      TREE_TYPE (t) = mapcar (TREE_TYPE (t), func);
+      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
+      TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
+
+      /* tree.def says that operand two is RTL, but
+	 build_call_declarator puts trees in there.  */
+      if (TREE_OPERAND (t, 2)
+	  && TREE_CODE (TREE_OPERAND (t, 2)) == TREE_LIST)
+	TREE_OPERAND (t, 2) = mapcar (TREE_OPERAND (t, 2), func);
+      else
+	TREE_OPERAND (t, 2) = NULL_TREE;
       return t;
 
     case CONVERT_EXPR:
