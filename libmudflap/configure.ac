@@ -24,7 +24,7 @@ AC_EXEEXT
 
 AM_ENABLE_MULTILIB(, ..)
 
-target_alias=${target_alias-$target}
+target_alias=${target_alias-$host_alias}
 AC_SUBST(target_alias)
 
 AC_CONFIG_HEADERS(config.h)

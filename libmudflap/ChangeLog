@@ -1,3 +1,9 @@
+2004-11-01  Andreas Schwab  <schwab@suse.de>
+
+	* configure.ac: (target_alias): Default to $host_alias, not
+	$target.
+	* configure: Regenerated.
+
 2004-10-28  Frank Ch. Eigler  <fche@redhat.com>
 
 	* testsuite/libmudflap.c/fail35-,pass53-,pass54-frag.c: New tests.

@@ -1901,7 +1901,7 @@ fi
           ac_config_commands="$ac_config_commands default-1"
 
 
-target_alias=${target_alias-$target}
+target_alias=${target_alias-$host_alias}
 
 
           ac_config_headers="$ac_config_headers config.h"
