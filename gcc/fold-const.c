@@ -7185,6 +7185,27 @@ fold (tree expr)
 	return non_lvalue (fold_convert (type, arg0));
       if (operand_equal_p (arg0, arg1, 0))
 	return non_lvalue (fold_convert (type, arg0));
+
+      /* ~X | X is -1.  */
+      if (TREE_CODE (arg0) == BIT_NOT_EXPR
+	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
+	{
+	  t1 = build_int_2 (-1, -1);
+	  TREE_TYPE (t1) = type;
+	  force_fit_type (t1, 0);
+	  return omit_one_operand (type, t1, arg1);
+	}
+
+      /* X | ~X is -1.  */
+      if (TREE_CODE (arg1) == BIT_NOT_EXPR
+	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
+	{
+	  t1 = build_int_2 (-1, -1);
+	  TREE_TYPE (t1) = type;
+	  force_fit_type (t1, 0);
+	  return omit_one_operand (type, t1, arg0);
+	}
+
       t1 = distribute_bit_expr (code, type, arg0, arg1);
       if (t1 != NULL_TREE)
 	return t1;
@@ -7216,6 +7237,26 @@ fold (tree expr)
       if (operand_equal_p (arg0, arg1, 0))
 	return omit_one_operand (type, integer_zero_node, arg0);
 
+      /* ~X ^ X is -1.  */
+      if (TREE_CODE (arg0) == BIT_NOT_EXPR
+	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
+	{
+	  t1 = build_int_2 (-1, -1);
+	  TREE_TYPE (t1) = type;
+	  force_fit_type (t1, 0);
+	  return omit_one_operand (type, t1, arg1);
+	}
+
+      /* X ^ ~X is -1.  */
+      if (TREE_CODE (arg1) == BIT_NOT_EXPR
+	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
+	{
+	  t1 = build_int_2 (-1, -1);
+	  TREE_TYPE (t1) = type;
+	  force_fit_type (t1, 0);
+	  return omit_one_operand (type, t1, arg0);
+	}
+
       /* If we are XORing two BIT_AND_EXPR's, both of which are and'ing
          with a constant, and the two constants have no bits in common,
 	 we should treat this as a BIT_IOR_EXPR since this may produce more
@@ -7243,6 +7284,17 @@ fold (tree expr)
 	return omit_one_operand (type, arg1, arg0);
       if (operand_equal_p (arg0, arg1, 0))
 	return non_lvalue (fold_convert (type, arg0));
+
+      /* ~X & X is always zero.  */
+      if (TREE_CODE (arg0) == BIT_NOT_EXPR
+	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
+	return omit_one_operand (type, integer_zero_node, arg1);
+
+      /* X & ~X is always zero.  */
+      if (TREE_CODE (arg1) == BIT_NOT_EXPR
+	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
+	return omit_one_operand (type, integer_zero_node, arg0);
+
       t1 = distribute_bit_expr (code, type, arg0, arg1);
       if (t1 != NULL_TREE)
 	return t1;
@@ -7625,6 +7677,15 @@ fold (tree expr)
       if (integer_zerop (arg0))
 	return omit_one_operand (type, arg0, arg1);
 
+      /* !X && X is always false.  */
+      if (TREE_CODE (arg0) == TRUTH_NOT_EXPR
+	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
+	return omit_one_operand (type, integer_zero_node, arg1);
+      /* X && !X is always false.  */
+      if (TREE_CODE (arg1) == TRUTH_NOT_EXPR
+	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
+	return omit_one_operand (type, integer_zero_node, arg0);
+
     truth_andor:
       /* We only do these simplifications if we are optimizing.  */
       if (!optimize)
@@ -7712,22 +7773,39 @@ fold (tree expr)
 	 TRUTH_OR_EXPR.  */
       if (TREE_CODE (arg0) == INTEGER_CST && ! integer_zerop (arg0))
 	return omit_one_operand (type, arg0, arg1);
+
+      /* !X || X is always true.  */
+      if (TREE_CODE (arg0) == TRUTH_NOT_EXPR
+	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
+	return omit_one_operand (type, integer_one_node, arg1);
+      /* X || !X is always true.  */
+      if (TREE_CODE (arg1) == TRUTH_NOT_EXPR
+	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
+	return omit_one_operand (type, integer_one_node, arg0);
+
       goto truth_andor;
 
     case TRUTH_XOR_EXPR:
-      /* If either arg is constant zero, drop it.  */
-      if (integer_zerop (arg0))
-	return non_lvalue (fold_convert (type, arg1));
+      /* If the second arg is constant zero, drop it.  */
       if (integer_zerop (arg1))
 	return non_lvalue (fold_convert (type, arg0));
-      /* If either arg is constant true, this is a logical inversion.  */
-      if (integer_onep (arg0))
-	return non_lvalue (fold_convert (type, invert_truthvalue (arg1)));
+      /* If the second arg is constant true, this is a logical inversion.  */
       if (integer_onep (arg1))
 	return non_lvalue (fold_convert (type, invert_truthvalue (arg0)));
       /* Identical arguments cancel to zero.  */
       if (operand_equal_p (arg0, arg1, 0))
 	return omit_one_operand (type, integer_zero_node, arg0);
+
+      /* !X ^ X is always true.  */
+      if (TREE_CODE (arg0) == TRUTH_NOT_EXPR
+	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
+	return omit_one_operand (type, integer_one_node, arg1);
+
+      /* X ^ !X is always true.  */
+      if (TREE_CODE (arg1) == TRUTH_NOT_EXPR
+	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
+	return omit_one_operand (type, integer_one_node, arg0);
+
       return t;
 
     case EQ_EXPR:
