@@ -33,8 +33,13 @@ failure.  If you use @code{xatexit} to register functions, you must use
 #define size_t unsigned long
 #endif
 
+#if VMS
+#include <stdlib.h>
+#include <unixlib.h>
+#else
 /* For systems with larger pointers than ints, this must be declared.  */
 PTR malloc PARAMS ((size_t));
+#endif
 
 static void xatexit_cleanup PARAMS ((void));
 
