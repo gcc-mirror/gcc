@@ -1,5 +1,6 @@
 // Build don't link: 
 // Special g++ Options:  -Wall -Weffc++
+// excess errors test - XFAIL - *-*-*
 
 //1 g++/12952 un-named variables in a catch block
 //Wall or Wunused should not give warnings here
