@@ -1,3 +1,7 @@
+2003-03-11  Steven Bosscher  <s.bosscher@student.tudelft.nl>
+
+	* gcc.dg/return-type-3.c: New test.
+
 2003-03-11  D.Venkatasubramanian  <dvenkat@noida.hcltech.com>
 
 	* gcc.misc-tests/bprob.exp: Disable test cases for h8300-*-* as
