@@ -1792,7 +1792,7 @@ noce_process_if_block (test_bb, then_bb, else_bb, join_bb)
   if (orig_x != x)
     {
       start_sequence ();
-      noce_emit_move_insn (orig_x, x);
+      noce_emit_move_insn (copy_rtx (orig_x), x);
       insn_b = gen_sequence ();
       end_sequence ();
 
