@@ -1,3 +1,15 @@
+2003-02-10  Roger Sayle  <roger@eyesopen.com>
+
+	* mips-tfile.c (init_file): Add missing initializers in the
+	"#ifdef __alpha" case.
+	(file_offset, max_file_offset): Declare as unsigned long.
+	(write_varray): Cast to "unsigned long" in comparisons against
+	either file_offset or max_file_offset.
+	(write_object): Likewise.
+	(read_seek): Likewise.
+	(copy_object): Likewise. Declare "ifd" as int to match its use
+	in add_ext_symbol, and avoid signed/unsigned conditional warning.
+
 2003-02-10  Nick Clifton  <nickc@redhat.com>
             Aldy Hernandez  <aldyh@redhat.com>
 
