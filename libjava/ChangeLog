@@ -1,3 +1,8 @@
+2004-09-03  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* configure.ac (enable-gc-debug): Update help for new syntax.
+	* configure: Regenerate.
+
 2004-09-03  David Daney  <ddaney@avtrex.com>
 
 	* include/mips-signal.h: Update copyright.
