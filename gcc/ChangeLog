@@ -1,3 +1,14 @@
+2004-06-28  Neil Booth  <neil@duron.akihabara.co.uk>
+
+	PR preprocessor/16192
+	PR preprocessor/15913
+	PR preprocessor/15572
+	* cppexp.c (_cpp_parse_expr): Handle remaining cases where an
+	expression is missing.
+	* cppinit.c (post_options): Traditional cpp doesn't do // comments.
+	* doc/cpp.texi: Don't document what we do for ill-formed expressions.
+	* doc/cppopts.texi: Clarify processing of command-line defines.
+
 2004-06-28  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/16176
