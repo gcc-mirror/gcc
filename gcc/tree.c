@@ -5355,6 +5355,7 @@ build_common_tree_nodes_2 (int short_double)
   ptr_type_node = build_pointer_type (void_type_node);
   const_ptr_type_node
     = build_pointer_type (build_type_variant (void_type_node, 1, 0));
+  fileptr_type_node = ptr_type_node;
 
   float_type_node = make_node (REAL_TYPE);
   TYPE_PRECISION (float_type_node) = FLOAT_TYPE_SIZE;

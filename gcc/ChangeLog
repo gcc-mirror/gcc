@@ -1,3 +1,28 @@
+2004-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/14791
+	* tree.h (enum tree_index): Add TI_FILEPTR_TYPE.
+	(fileptr_type_node): Define.
+	* tree.c (build_common_tree_nodes_2): Initialize
+	fileptr_type_node to ptr_type_node.
+	* c-common.c (c_common_nodes_and_builtins): For C++, make
+	fileptr_type_node a distinct type copy.
+	* builtin-types.def (BT_FILEPTR, BT_FN_INT_CONST_STRING_FILEPTR,
+	BT_FN_INT_INT_FILEPTR, BT_FN_INT_FILEPTR_CONST_STRING_VALIST_ARG,
+	BT_FN_SIZE_CONST_PTR_SIZE_SIZE_FILEPTR,
+	BT_FN_INT_FILEPTR_CONST_STRING_VAR): Add.
+	(BT_FN_INT_CONST_STRING_PTR, BT_FN_INT_INT_PTR,
+	BT_FN_SIZE_CONST_PTR_SIZE_SIZE_PTR, BT_FN_INT_PTR_CONST_STRING_VAR,
+	BT_FN_INT_PTR_CONST_STRING_VALIST_ARG): Remove.
+	* builtins.def (BUILT_IN_FPRINTF, BUILT_IN_FPRINTF_UNLOCKED,
+	BUILT_IN_FPUTC, BUILT_IN_FPUTC_UNLOCKED, BUILT_IN_FPUTS,
+	BUILT_IN_FPUTS_UNLOCKED, BUILT_IN_FSCANF, BUILT_IN_FWRITE,
+	BUILT_IN_FWRITE_UNLOCKED, BUILT_IN_VFPRINTF, BUILT_IN_VFSCANF): Use
+	the above *FILEPTR* types instead of *PTR*.
+
+	* decl.c (duplicate_decls): Handle fileptr_type_node arguments
+	specially.
+
 2004-06-09  Daniel Berlin <dberlin@dberlin.org>
 
 	* tree-ssa.c (verify_ssa): Verify that vdefs/makes_aliased_stores 
@@ -12,9 +37,9 @@
 
 2004-06-09  Richard Henderson  <rth@redhat.com>
  
-        PR middle-end/15228
-        * function.c (assign_parms): Always set_mem_align with the computed
-        FUNCTION_ARG_BOUNDARY.  Don't clear stack_parm if !STRICT_ALIGNMENT.
+	PR middle-end/15228
+	* function.c (assign_parms): Always set_mem_align with the computed
+	FUNCTION_ARG_BOUNDARY.  Don't clear stack_parm if !STRICT_ALIGNMENT.
 
 2004-06-09  Richard Henderson  <rth@redhat.com>
 
