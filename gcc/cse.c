@@ -6773,6 +6773,18 @@ cse_insn (insn, in_libcall_block)
 	  if (code != REG && ! exp_equiv_p (p->exp, p->exp, 1, 0))
 	    continue;
 
+	  /* Also skip paradoxical subregs, unless that's what we're
+	     looking for.  */
+	  if (code == SUBREG
+	      && (GET_MODE_SIZE (GET_MODE (p->exp))
+		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (p->exp))))
+	      && ! (src != 0
+		    && GET_CODE (src) == SUBREG
+		    && GET_MODE (src) == GET_MODE (p->exp)
+		    && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))
+			< GET_MODE_SIZE (GET_MODE (SUBREG_REG (p->exp))))))
+	    continue;
+
           if (src && GET_CODE (src) == code && rtx_equal_p (src, p->exp))
 	    src = 0;
           else if (src_folded && GET_CODE (src_folded) == code
@@ -6846,6 +6858,25 @@ cse_insn (insn, in_libcall_block)
           while (elt && GET_CODE (elt->exp) != REG
 	         && ! exp_equiv_p (elt->exp, elt->exp, 1, 0))
 	    elt = elt->next_same_value;	     
+
+	  /* A paradoxical subreg would be bad here: it'll be the right
+	     size, but later may be adjusted so that the upper bits aren't
+	     what we want.  So reject it.  */
+	  if (elt != 0
+	      && GET_CODE (elt->exp) == SUBREG
+	      && (GET_MODE_SIZE (GET_MODE (elt->exp))
+		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (elt->exp))))
+	      /* It is okay, though, if the rtx we're trying to match
+		 will ignore any of the bits we can't predict.  */
+	      && ! (src != 0
+		    && GET_CODE (src) == SUBREG
+		    && GET_MODE (src) == GET_MODE (elt->exp)
+		    && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))
+			< GET_MODE_SIZE (GET_MODE (SUBREG_REG (elt->exp))))))
+	    {
+	      elt = elt->next_same_value;
+	      continue;
+	    }
 	      
           if (elt) src_elt_cost = elt->cost;
 
