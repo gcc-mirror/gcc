@@ -281,6 +281,6 @@ java/jcf-io.o: java/jcf-io.c $(CONFIG_H) system.h $(JAVA_TREE_H)
 # jcf-path.o needs a -D.
 java/jcf-path.o: java/jcf-path.c $(CONFIG_H) system.h java/jcf.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  -DLIBGCJ_ZIP_FILE='"$(libgcj_zip)"' \
+	  -DLIBGCJ_ZIP_FILE='"$(prefix)/share/libgcj.zip"' \
 	  $(srcdir)/java/jcf-path.c $(OUTPUT_OPTION)
 
