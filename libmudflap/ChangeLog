@@ -1,3 +1,11 @@
+2004-07-09  Frank Ch. Eigler  <fche@redhat.com>
+
+	Test case for g++/15861
+	* testsuite/libmudflap.c++/ctors-[12].cxx: New test case halves.
+	* testsuite/libmudflap.c++/ctors.exp: Driver.
+	* testsuite/libmudflap.c++/c++frags.exp: Elide redundant default.
+	Look only for *frag* test cases.
+
 2004-07-08  Frank Ch. Eigler  <fche@redhat.com>
 
 	ANSI C conversion, libmudflap specialization, recursion limiting.
