@@ -280,6 +280,33 @@ done
 
 cd ${INPUT}
 
+# Install the proper definition of size_t in header files that it comes from.
+for file in sys/types.h sys/stdtypes.h;
+do
+  if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+    cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+    chmod +w ${LIB}/$file 2>/dev/null
+    chmod a+r ${LIB}/$file 2>/dev/null
+  fi
+
+  if [ -r ${LIB}/$file ]; then
+    echo Fixing $file comment
+    # Extract the definition of SIZE_TYPE, if any.
+    # (This file must be called something.c).
+    echo "#include \"tm.h\"
+gobblegobble SIZE_TYPE" > types.c
+    foo=`cc -E -I. -I$SRCDIR -I$SRCDIR/config types.c | grep gobblegobble | sed -e "s/gobblegobble[ 	]*//"`
+    rm -f types.c
+    # Default to our preferred type.
+    if [ $foo = SIZE_TYPE ]; then foo="unsigned long int"; else true; fi
+    sed -e "s/typedef[ 	a-z_]*[ 	]size_t/typedef $foo size_t/" ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+      rm ${LIB}/$file
+    fi
+  fi
+done
+
 # Fix one other error in this file: a mismatched quote not inside a C comment.
 file=sundev/vuid_event.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
