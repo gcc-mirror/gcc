@@ -1,3 +1,7 @@
+2002-03-11  Kazu Hirata  <kazu@hxi.com>
+
+	* gcc.c-torture/execute/20020307-1.c: Use long.
+
 2002-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR optimization/5844
