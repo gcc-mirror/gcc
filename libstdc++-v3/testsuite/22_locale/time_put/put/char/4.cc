@@ -51,15 +51,22 @@ void test04()
   oss.str(empty); // "%d.%m.%Y"
   iterator_type os_it27 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x');
   string result27 = oss.str(); // "04.04.1971"
+  VERIFY( result27 == "04.04.1971" );
+
   oss.str(empty); // "%T"
   iterator_type os_it28 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X');
   string result28 = oss.str(); // "12:00:00"
+  VERIFY( result28 == "12:00:00" );
+
   oss.str(empty);
   iterator_type os_it37 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x', 'E');
   string result37 = oss.str(); // "04.04.1971"
+  VERIFY( result37 == "04.04.1971" );
+
   oss.str(empty);
   iterator_type os_it38 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X', 'E');
   string result38 = oss.str(); // "12:00:00"
+  VERIFY( result38 == "12:00:00" );
 }
 
 int main()
