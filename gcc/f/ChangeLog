@@ -1,3 +1,7 @@
+Fri Jan 12 17:21:33 2001  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77spec.c (lang_specific_driver): Update copyright year to 2001.
+
 Wed Jan 10 14:39:45 2001  Mark Mitchell  <mark@codesourcery.com>
 
 	* com.c (ffecom_init_zero_):  Remove last argument in call to
