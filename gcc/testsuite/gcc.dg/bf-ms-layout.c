@@ -5,7 +5,7 @@
    posted to GCC-patches
    http://gcc.gnu.org/ml/gcc-patches/2000-08/msg00577.html */ 
 
-/* { dg-do run { target *-*-interix* } } */
+/* { dg-do run { target *-*-interix* *-*-mingw* *-*-cygwin* } } */
 /* { dg-options "-mms-bitfields -D_TEST_MS_LAYOUT" } */
 
 #include <stddef.h>
