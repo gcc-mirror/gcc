@@ -112,11 +112,13 @@ Tue Aug 22 20:34:52 2000  Kaz Kojima <kkojima@rr.iij4u.or.jp>
         * Makefile.in (OBJS): Add dependence.o.
         * dependence.c: New file.
         
-2000-08-22  Alexandre Oliva  <aoliva@redhat.com>
+2000-08-22  Alexandre Oliva  <aoliva@redhat.com>, John David Anglin  <dave.anglin@nrc.ca>
 
 	* calls.c (check_sibcall_argument_overlap_1): Adjust for
 	ARGS_GROW_DOWNWARD.
 	(check_sibcall_argument_overlap): Likewise.
+
+2000-08-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	* invoke.texi (SH Options): Document -m4-nofpu,
 	-m4-single-only, -m4-single, -m4, -mbigtable, -mfmovd,
