@@ -85,6 +85,7 @@ AC_PROVIDE([AC_PROG_CXX])
 glibcpp_CXX=$CXX
 AC_CHECK_PROGS(glibcpp_CXX, $CCC c++ g++ gcc CC cxx cc++, gcc)
 AC_SUBST(glibcpp_CXX)
+CXX=$glibcpp_CXX
 test -z "$glibcpp_CXX" && AC_MSG_ERROR([no acceptable c++ found in \$PATH])
 
 AC_PROG_CXX_GNU
@@ -1354,12 +1355,15 @@ AC_DEFUN(GLIBCPP_ENABLE_C99, [dnl
   AC_TRY_COMPILE([#include <math.h>],[isnan(0.0);],, [ac_c99_math=no])
   AC_TRY_COMPILE([#include <math.h>],[isnormal(0.0);],, [ac_c99_math=no])
   AC_TRY_COMPILE([#include <math.h>],[signbit(0.0);],, [ac_c99_math=no])
-  AC_TRY_COMPILE([#include <math.h>],[isgreater(0,0);],, [ac_c99_math=no])
-  AC_TRY_COMPILE([#include <math.h>],[isgreaterequal(0,0);],, [ac_c99_math=no])
-  AC_TRY_COMPILE([#include <math.h>],[isless(0,0);],, [ac_c99_math=no])
-  AC_TRY_COMPILE([#include <math.h>],[islessequal(0,0);],, [ac_c99_math=no])
-  AC_TRY_COMPILE([#include <math.h>],[islessgreater(0,0);],, [ac_c99_math=no])
-  AC_TRY_COMPILE([#include <math.h>],[isunordered(0,0);],, [ac_c99_math=no])
+  AC_TRY_COMPILE([#include <math.h>],[isgreater(0.0,0.0);],, [ac_c99_math=no])
+  AC_TRY_COMPILE([#include <math.h>],
+                 [isgreaterequal(0.0,0.0);], , [ac_c99_math=no])
+  AC_TRY_COMPILE([#include <math.h>],[isless(0.0,0.0);],, [ac_c99_math=no])
+  AC_TRY_COMPILE([#include <math.h>],[islessequal(0.0,0.0);],,[ac_c99_math=no])
+  AC_TRY_COMPILE([#include <math.h>],
+	         [islessgreater(0.0,0.0);], , [ac_c99_math=no])
+  AC_TRY_COMPILE([#include <math.h>],
+	         [isunordered(0.0,0.0);], , [ac_c99_math=no])
 
   # Check for the existence in <stdlib.h> of lldiv_t, et. al.
   AC_CHECK_FUNC(strtoll,,ac_c99_stdlib=no)
