@@ -1223,7 +1223,6 @@ lookup_field (xbasetype, name, protect, want_type)
     {
       type = xbasetype;
       basetype_path = TYPE_BINFO (type);
-      BINFO_VIA_PUBLIC (basetype_path) = 1;
       BINFO_INHERITANCE_CHAIN (basetype_path) = NULL_TREE;
     }
   else
@@ -1852,7 +1851,6 @@ lookup_fnfields (basetype_path, name, complain)
     {
       basetype_chain = CLASSTYPE_BINFO_AS_LIST (type);
       TREE_VIA_PUBLIC (basetype_chain) = 1;
-      BINFO_VIA_PUBLIC (basetype_path) = 1;
       BINFO_INHERITANCE_CHAIN (basetype_path) = NULL_TREE;
     }
   else
@@ -2018,7 +2016,6 @@ lookup_member (xbasetype, name, protect, want_type)
   else if (IS_AGGR_TYPE_CODE (TREE_CODE (xbasetype)))
     {
       basetype_path = TYPE_BINFO (xbasetype);
-      BINFO_VIA_PUBLIC (basetype_path) = 1;
       BINFO_INHERITANCE_CHAIN (basetype_path) = NULL_TREE;
     }
   else
@@ -2652,6 +2649,10 @@ static int marked_new_vtablep (binfo) tree binfo;
 { return BINFO_NEW_VTABLE_MARKED (binfo); }
 static int unmarked_new_vtablep (binfo) tree binfo;
 { return BINFO_NEW_VTABLE_MARKED (binfo) == 0; }
+static int marked_pushdecls_p (binfo) tree binfo;
+{ return BINFO_PUSHDECLS_MARKED (binfo); }
+static int unmarked_pushdecls_p (binfo) tree binfo;
+{ return BINFO_PUSHDECLS_MARKED (binfo) == 0; }
 
 #if 0
 static int dfs_search_slot_nonempty_p (binfo) tree binfo;
@@ -3611,7 +3612,10 @@ dfs_pushdecls (binfo)
 	  methods++;
 	}
     }
-  SET_BINFO_MARKED (binfo);
+
+  /* We can't just use BINFO_MARKED because envelope_add_decl uses
+     DERIVED_FROM_P, which calls get_base_distance.  */
+  SET_BINFO_PUSHDECLS_MARKED (binfo);
 }
 
 /* Consolidate unique (by name) member functions.  */
@@ -3653,7 +3657,7 @@ dfs_compress_decls (binfo)
 	    }
 	}
     }
-  CLEAR_BINFO_MARKED (binfo);
+  CLEAR_BINFO_PUSHDECLS_MARKED (binfo);
 }
 
 /* When entering the scope of a class, we cache all of the
@@ -3671,11 +3675,11 @@ push_class_decls (type)
   search_stack = push_search_level (search_stack, &search_obstack);
 
   /* Push class fields into CLASS_VALUE scope, and mark.  */
-  dfs_walk (TYPE_BINFO (type), dfs_pushdecls, unmarkedp);
+  dfs_walk (TYPE_BINFO (type), dfs_pushdecls, unmarked_pushdecls_p);
 
   /* Compress fields which have only a single entry
      by a given name, and unmark.  */
-  dfs_walk (TYPE_BINFO (type), dfs_compress_decls, markedp);
+  dfs_walk (TYPE_BINFO (type), dfs_compress_decls, marked_pushdecls_p);
 
   /* Open up all the closed envelopes and push the contained decls into
      class scope.  */

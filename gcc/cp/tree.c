@@ -584,7 +584,10 @@ propagate_binfo_offsets (binfo, offset)
       tree base_binfo = TREE_VEC_ELT (binfos, i);
 
       if (TREE_VIA_VIRTUAL (base_binfo))
-	i += 1;
+	{
+	  i += 1;
+	  unshare_base_binfos (base_binfo);
+	}	  
       else
 	{
 	  int j;
@@ -639,16 +642,16 @@ unshare_base_binfos (base_binfo)
 	   j >= 0; j--)
 	{
 	  tree base_base_binfo = TREE_VEC_ELT (base_binfos, j);
-	  if (! TREE_VIA_VIRTUAL (base_base_binfo))
-	    TREE_VEC_ELT (base_binfos, j)
-	      = make_binfo (BINFO_OFFSET (base_base_binfo),
-			    base_base_binfo,
-			    BINFO_VTABLE (base_base_binfo),
-			    BINFO_VIRTUALS (base_base_binfo),
-			    chain);
+	  TREE_VEC_ELT (base_binfos, j)
+	    = make_binfo (BINFO_OFFSET (base_base_binfo),
+			  base_base_binfo,
+			  BINFO_VTABLE (base_base_binfo),
+			  BINFO_VIRTUALS (base_base_binfo),
+			  chain);
 	  chain = TREE_VEC_ELT (base_binfos, j);
 	  TREE_VIA_PUBLIC (chain) = TREE_VIA_PUBLIC (base_base_binfo);
 	  TREE_VIA_PROTECTED (chain) = TREE_VIA_PROTECTED (base_base_binfo);
+	  TREE_VIA_VIRTUAL (chain) = TREE_VIA_VIRTUAL (base_base_binfo);
 	  BINFO_INHERITANCE_CHAIN (chain) = base_binfo;
 	}
 
@@ -754,14 +757,16 @@ layout_basetypes (rec, max)
       tree field = TYPE_FIELDS (rec);
 
       if (TREE_VIA_VIRTUAL (base_binfo))
-	continue;
-
-      my_friendly_assert (TREE_TYPE (field) == basetype, 23897);
-      BINFO_OFFSET (base_binfo)
-	= size_int (CEIL (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field)),
-			  BITS_PER_UNIT));
-      unshare_base_binfos (base_binfo);
-      TYPE_FIELDS (rec) = TREE_CHAIN (field);
+	unshare_base_binfos (base_binfo);
+      else
+	{
+	  my_friendly_assert (TREE_TYPE (field) == basetype, 23897);
+	  BINFO_OFFSET (base_binfo)
+	    = size_int (CEIL (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field)),
+			      BITS_PER_UNIT));
+	  unshare_base_binfos (base_binfo);
+	  TYPE_FIELDS (rec) = TREE_CHAIN (field);
+	}
     }
 
   for (vbase_types = CLASSTYPE_VBASECLASSES (rec); vbase_types;
