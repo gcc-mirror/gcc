@@ -32,11 +32,11 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #if defined (WITH_THREAD_posix) || defined (WITH_THREAD_pthreads)
 #define THREAD_NAME "-lpthread"
 #elif defined (WITH_THREAD_qt)
-#define THREAD_NAME "-lqthreads"
+#define THREAD_NAME "-lgcjcoop"
 #endif
 
 #if defined (WITH_GC_boehm)
-#define GC_NAME "-lgc"
+#define GC_NAME "-lgcjgc"
 #endif
 
 /* This bit is set if we saw a `-xfoo' language specification.  */
@@ -45,7 +45,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #define MATHLIB		(1<<2)
 /* This bit is set if they did `-lc'.  */
 #define WITHLIBC	(1<<3)
-/* This bit is set if they did `-lgc'.  */
+/* This bit is set if they did `-lgcjgc'.  */
 #define GCLIB		(1<<4)
 /* This bit is set if they did `-lpthread' (or added some other thread
    library).  */
@@ -148,7 +148,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   /* "-lc" if it appears on the command line.  */
   char *saw_libc = 0;
 
-  /* "-lgc" if it appears on the command line.  */
+  /* "-lgcjgc" if it appears on the command line.  */
   char *saw_gc = 0;
 
   /* Saw `-l' option for the thread library.  */
@@ -453,7 +453,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 	  saw_libc = argv[i];
 	}
 
-      /* And -ljava must come before -lgc.  */
+      /* And -ljava must come before -lgcjgc.  */
       if (!saw_gc && (args[i] & GCLIB) && library)
 	{
 	  --j;
