@@ -200,7 +200,7 @@ define_builtin (val, name, class, type, fallback_p)
 {
   tree decl;
 
-  if (! name)
+  if (! name || ! type)
     return;
 
   if (strncmp (name, "__builtin_", strlen ("__builtin_")) != 0)
