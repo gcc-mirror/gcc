@@ -442,7 +442,7 @@ static struct compiler default_compilers[] =
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d}\
         -undef -D__GNUC__=2 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs} \
-        %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
+        %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*}\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
@@ -462,7 +462,7 @@ static struct compiler default_compilers[] =
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d}\
         -undef -D__GNUC__=2 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
-        %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
+        %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*}\
         %i %W{o*}}\
@@ -474,7 +474,7 @@ static struct compiler default_compilers[] =
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d}\
         -undef -D__OBJC__ -D__GNUC__=2 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
-        %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
+        %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*}\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
@@ -497,7 +497,7 @@ static struct compiler default_compilers[] =
 	 %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} \
         -undef -D__GNUC__=2 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
-        %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
+        %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*}\
         %i %W{o*}"},
@@ -510,7 +510,7 @@ static struct compiler default_compilers[] =
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} \
 	-undef -D__GNUC__=2 -D__GNUG__=2 -D__cplusplus \
 	%{ansi:-trigraphs -$ -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
-        %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
+        %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional} %{trigraphs}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*}\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
@@ -555,7 +555,7 @@ static struct compiler default_compilers[] =
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{trigraphs} \
         -undef -$ %{!undef:%p %P} -D__ASSEMBLER__ \
-        %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
+        %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*}\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.s}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
