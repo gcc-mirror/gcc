@@ -3294,9 +3294,11 @@ mark_addressable (exp)
       {
       case COMPONENT_REF:
 	if (DECL_C_BIT_FIELD (TREE_OPERAND (x, 1)))
-	  error ("cannot take address of bitfield `%s'",
-		 IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (x, 1))));
-	return 0;
+	  {
+	    error ("cannot take address of bitfield `%s'",
+		   IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (x, 1))));
+	    return 0;
+	  }
 
 	/* ... fall through ... */
 
