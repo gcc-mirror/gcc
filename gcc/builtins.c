@@ -1789,6 +1789,10 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
 
   /* Make a suitable register to place result in.  */
   mode = TYPE_MODE (TREE_TYPE (exp));
+
+  /* Before working hard, check whether the instruction is available.  */
+  if (builtin_optab->handlers[(int) mode].insn_code == CODE_FOR_nothing)
+    return 0;
   target = gen_reg_rtx (mode);
 
   if (! flag_errno_math || ! HONOR_NANS (mode))
@@ -1874,6 +1878,11 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
 
   /* Make a suitable register to place result in.  */
   mode = TYPE_MODE (TREE_TYPE (exp));
+
+  /* Before working hard, check whether the instruction is available.  */
+  if (builtin_optab->handlers[(int) mode].insn_code == CODE_FOR_nothing)
+    return 0;
+
   target = gen_reg_rtx (mode);
 
   if (! flag_errno_math || ! HONOR_NANS (mode))

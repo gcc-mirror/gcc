@@ -1,3 +1,8 @@
+Sun Jun 29 23:06:32 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* builtins.c (expand_builtin_mathfn, expand_builtin_mathfn_2): Avoid
+	busy work when builtin is not supported by the backend.
+
 2003-06-29  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* loop.c (count_one_set): Fix detection of registers set in more
