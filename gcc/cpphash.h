@@ -53,3 +53,10 @@ extern HASHNODE *install PARAMS ((U_CHAR *, int, enum node_type,
 				  const char *, int));
 extern int hashf PARAMS ((const U_CHAR *, int, int));
 extern void delete_macro PARAMS ((HASHNODE *));
+
+extern MACRODEF create_definition PARAMS ((U_CHAR *, U_CHAR *,
+					   cpp_reader *, int));
+extern int compare_defs		  PARAMS ((cpp_reader *, DEFINITION *,
+					   DEFINITION *));
+extern void macroexpand		  PARAMS ((cpp_reader *, HASHNODE *));
+extern void cpp_hash_cleanup	  PARAMS ((cpp_reader *));

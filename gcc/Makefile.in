@@ -1970,23 +1970,23 @@ cppmain$(exeext): cppmain.o libcpp.a $(LIBDEPS)
 
 cppmain.o: cppmain.c $(CONFIG_H) cpplib.h intl.h machmode.h system.h
 
-cpplib.o: cpplib.c $(CONFIG_H) cpplib.h intl.h machmode.h system.h cpphash.h \
-		prefix.h output.h Makefile
+cppulp.o:  cppulp.c  $(CONFIG_H) system.h output.h
+cpplib.o:  cpplib.c  $(CONFIG_H) cpplib.h intl.h machmode.h system.h cpphash.h
+cpphash.o: cpphash.c $(CONFIG_H) cpplib.h intl.h machmode.h system.h cpphash.h
+cppalloc.o: cppalloc.c $(CONFIG_H) cpplib.h intl.h machmode.h system.h
+cpperror.o: cpperror.c $(CONFIG_H) cpplib.h intl.h machmode.h system.h
+cppexp.o:   cppexp.c   $(CONFIG_H) cpplib.h intl.h machmode.h system.h
+cppfiles.o: cppfiles.c $(CONFIG_H) cpplib.h intl.h machmode.h system.h
+
+cppinit.o:  cppalloc.c $(CONFIG_H) cpplib.h intl.h machmode.h system.h \
+		cpphash.h prefix.h output.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
 	  -DCROSS_INCLUDE_DIR=\"$(gcc_tooldir)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
-	  -c `echo $(srcdir)/cpplib.c | sed 's,^\./,,'`
-
-cppulp.o: cppulp.c $(CONFIG_H) system.h output.h
-cpphash.o: cpphash.c $(CONFIG_H) cpplib.h intl.h machmode.h system.h cpphash.h
-cppalloc.o: cppalloc.c $(CONFIG_H) cpplib.h intl.h machmode.h system.h
-cpperror.o: cpperror.c $(CONFIG_H) cpplib.h intl.h machmode.h system.h
-cppexp.o:   cppexp.c   $(CONFIG_H) cpplib.h intl.h machmode.h system.h
-cppfiles.o: cppfiles.c $(CONFIG_H) cpplib.h intl.h machmode.h system.h
-cppinit.o:  cppalloc.c $(CONFIG_H) cpplib.h intl.h machmode.h system.h
+	  -c `echo $(srcdir)/cppinit.c | sed 's,^\./,,'`
 
 # Note for the stamp targets, we run the program `true' instead of
 # having an empty command (nothing following the semicolon).
