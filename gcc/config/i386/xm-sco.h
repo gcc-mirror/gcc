@@ -20,3 +20,6 @@
 #define ONLY_INT_FIELDS 1
 #define CODE_FIELD_BUG 1
 #endif
+
+/* SCO lacks sys_siglist.  */
+#define NO_SYS_SIGLIST
