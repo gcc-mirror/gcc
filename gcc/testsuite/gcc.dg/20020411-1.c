@@ -5,6 +5,8 @@
 /* { dg-options "-O2" } */
 /* { dg-options "-O2 -march=i686" { target i?86-*-* } } */
 
+#if __INT_MAX__ > 32767
+
 typedef struct
 {
   unsigned a : 16;
@@ -48,3 +50,5 @@ baz (unsigned int x, unsigned char y)
     foo (&t, 1);
   bar (&t);
 }
+
+#endif /* __INT_MAX__ */

@@ -1,3 +1,7 @@
+2002-10-06  D.Venkatasubramanian <dvenkat@noida.hcltech.com>
+
+	* gcc.dg/20020411-1.c: Disable for 16-bit "int".
+
 2002-10-06  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.dg/cpp/c++98-pedantic.C: Moved to g++.dg/cpp.
