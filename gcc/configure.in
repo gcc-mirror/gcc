@@ -1368,6 +1368,9 @@ then
 	    | powerpc*-*-*,powerpc64*-*-*)
 		CROSS="$CROSS -DNATIVE_CROSS" ;;
 	esac
+elif test "x$TARGET_SYSTEM_ROOT" != x; then
+        # This is just $(TARGET_SYSTEM_ROOT)$(NATIVE_SYSTEM_HEADER_DIR)
+        SYSTEM_HEADER_DIR='$(CROSS_SYSTEM_HEADER_DIR)'
 fi
 
 # If this is a cross-compiler that does not
@@ -1405,8 +1408,10 @@ then
     BUILD_CC='$(CC_FOR_BUILD)'
     BUILD_CFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS_FOR_BUILD) $(XCFLAGS)'
 
-    STMP_FIXINC=
-    STMP_FIXPROTO=
+    if test "x$TARGET_SYSTEM_ROOT" = x; then
+	STMP_FIXINC=
+	STMP_FIXPROTO=
+    fi
 fi
 
 # Expand extra_headers to include complete path.

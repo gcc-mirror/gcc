@@ -2490,8 +2490,9 @@ fixinc.sh: $(FIXINCSRCDIR)/mkfixinc.sh $(FIXINCSRCDIR)/fixincl.c \
 	$(FIXINCSRCDIR)/server.h $(FIXINCSRCDIR)/inclhack.def specs.ready
 	(MAKE="$(MAKE)"; srcdir=`cd $(srcdir)/fixinc && ${PWD}` ; \
 	CC="$(BUILD_CC)"; CFLAGS="$(BUILD_CFLAGS)"; LDFLAGS="$(BUILD_LDFLAGS)"; \
-	WARN_CFLAGS="$(WARN_CFLAGS)"; \
-	export MAKE srcdir CC CFLAGS LDFLAGS WARN_CFLAGS; cd ./fixinc && \
+	WARN_CFLAGS="$(WARN_CFLAGS)"; LIBERTY=`pwd`/"$(BUILD_LIBIBERTY)"; \
+	export MAKE srcdir CC CFLAGS LDFLAGS WARN_CFLAGS LIBERTY; \
+	cd ./fixinc && \
 	$(SHELL) $${srcdir}/mkfixinc.sh $(build_canonical) $(target))
 
 .PHONY: install-gcc-tooldir
