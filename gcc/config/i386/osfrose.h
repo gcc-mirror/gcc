@@ -126,6 +126,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define WCHAR_TYPE	"unsigned int"
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
 
+/* Temporarily turn off long double being 96 bits.  */
+#undef LONG_DOUBLE_TYPE_SIZE
+
 /* Tell final.c we don't need a label passed to mcount.  */
 #define NO_PROFILE_DATA
 
