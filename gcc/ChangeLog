@@ -1,3 +1,12 @@
+2003-07-07  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/10979
+	* config/i386/i386.md (atan2df3, atan2sf3, atan2xf3, atan2tf3):
+	Changed to define_expand patterns that copy operand[1] to prevent
+	it from being clobbered before emitting an atan2?f3_1 insn.
+	(atan2df3_1, atan2sf3_1, atan2xf_1, atan2tf3_1): New define_insn
+	patterns that actually specify the behaviour of x87's FPATAN.
+
 2003-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_output_mi_thunk): Remove bogus
