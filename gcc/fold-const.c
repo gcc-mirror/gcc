@@ -43,7 +43,7 @@ Boston, MA 02111-1307, USA.  */
    forces the value to fit the type.  It returns an overflow indicator.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include <setjmp.h>
 #include "flags.h"
 #include "tree.h"
@@ -356,13 +356,13 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
 
   if (count >= HOST_BITS_PER_WIDE_INT)
     {
-      *hv = (unsigned HOST_WIDE_INT) l1 << count - HOST_BITS_PER_WIDE_INT;
+      *hv = (unsigned HOST_WIDE_INT) l1 << (count - HOST_BITS_PER_WIDE_INT);
       *lv = 0;
     }
   else
     {
       *hv = (((unsigned HOST_WIDE_INT) h1 << count)
-	     | ((unsigned HOST_WIDE_INT) l1 >> HOST_BITS_PER_WIDE_INT - count - 1 >> 1));
+	     | ((unsigned HOST_WIDE_INT) l1 >> (HOST_BITS_PER_WIDE_INT - count - 1) >> 1));
       *lv = (unsigned HOST_WIDE_INT) l1 << count;
     }
 }
@@ -392,14 +392,14 @@ rshift_double (l1, h1, count, prec, lv, hv, arith)
   if (count >= HOST_BITS_PER_WIDE_INT)
     {
       *hv = signmask;
-      *lv = ((signmask << 2 * HOST_BITS_PER_WIDE_INT - count - 1 << 1)
-	     | ((unsigned HOST_WIDE_INT) h1 >> count - HOST_BITS_PER_WIDE_INT));
+      *lv = ((signmask << (2 * HOST_BITS_PER_WIDE_INT - count - 1) << 1)
+	     | ((unsigned HOST_WIDE_INT) h1 >> (count - HOST_BITS_PER_WIDE_INT)));
     }
   else
     {
       *lv = (((unsigned HOST_WIDE_INT) l1 >> count)
-	     | ((unsigned HOST_WIDE_INT) h1 << HOST_BITS_PER_WIDE_INT - count - 1 << 1));
-      *hv = ((signmask << HOST_BITS_PER_WIDE_INT - count)
+	     | ((unsigned HOST_WIDE_INT) h1 << (HOST_BITS_PER_WIDE_INT - count - 1) << 1));
+      *hv = ((signmask << (HOST_BITS_PER_WIDE_INT - count))
 	     | ((unsigned HOST_WIDE_INT) h1 >> count));
     }
 }
@@ -1429,6 +1429,7 @@ const_binop (code, arg1, arg2, notrunc)
 tree
 size_int_wide (number, high, bit_p)
      unsigned HOST_WIDE_INT number, high;
+     int bit_p;
 {
   register tree t;
   /* Type-size nodes already made for small sizes.  */
