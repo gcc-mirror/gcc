@@ -438,9 +438,7 @@ extern int target_flags;
 /* Make sure everything's fine if we *don't* have a given processor.
    This assumes that putting a register in fixed_regs will keep the
    compiler's mitts completely off it.  We don't bother to zero it out
-   of register classes.  If neither TARGET_FPA or TARGET_68881 is set,
-   the compiler won't touch since no instructions that use these
-   registers will be valid.  */
+   of register classes.  */
 
 #ifdef SUPPORT_SUN_FPA
 
@@ -448,14 +446,14 @@ extern int target_flags;
 { 						\
   int i; 					\
   HARD_REG_SET x; 				\
-  if (!TARGET_FPA)				\
+  if (! TARGET_FPA)				\
     { 						\
       COPY_HARD_REG_SET (x, reg_class_contents[(int)FPA_REGS]); \
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ ) \
        if (TEST_HARD_REG_BIT (x, i)) 		\
 	fixed_regs[i] = call_used_regs[i] = 1; 	\
     } 						\
-  if (TARGET_FPA)				\
+  if (! TARGET_68881)				\
     { 						\
       COPY_HARD_REG_SET (x, reg_class_contents[(int)FP_REGS]); \
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ ) \
@@ -469,6 +467,15 @@ extern int target_flags;
 #else
 #define CONDITIONAL_REGISTER_USAGE \
 { 						\
+  int i; 					\
+  HARD_REG_SET x; 				\
+  if (! TARGET_68881)				\
+    { 						\
+      COPY_HARD_REG_SET (x, reg_class_contents[(int)FP_REGS]); \
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ ) \
+       if (TEST_HARD_REG_BIT (x, i)) 		\
+	fixed_regs[i] = call_used_regs[i] = 1; 	\
+    } 						\
   if (flag_pic)					\
     fixed_regs[PIC_OFFSET_TABLE_REGNUM]		\
       = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;\
@@ -492,14 +499,12 @@ extern int target_flags;
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On the 68000, the cpu registers can hold any mode but the 68881 registers
-   can hold only SFmode or DFmode.  The 68881 registers can't hold anything
-   if 68881 use is disabled.  */
+   can hold only SFmode or DFmode.  */
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   (((REGNO) < 16					\
     && !((REGNO) < 8 && (REGNO) + GET_MODE_SIZE (MODE) / 4 > 8))	\
    || ((REGNO) >= 16 && (REGNO) < 24				        \
-       && TARGET_68881                                  \
        && (GET_MODE_CLASS (MODE) == MODE_FLOAT		\
 	   || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)		\
        && GET_MODE_UNIT_SIZE (MODE) <= 12))
@@ -508,8 +513,7 @@ extern int target_flags;
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On the 68000, the cpu registers can hold any mode but the 68881 registers
-   can hold only SFmode or DFmode.  And the 68881 registers can't hold anything
-   if 68881 use is disabled.  However, the Sun FPA register can
+   can hold only SFmode or DFmode.  However, the Sun FPA register can
    (apparently) hold whatever you feel like putting in them.
    If using the fpa, don't put a double in d7/a0.  */
 
@@ -517,7 +521,12 @@ extern int target_flags;
    be enabled regardless of whether TARGET_FPA is specified.  It isn't clear
    what the other d/a register checks are for.  Every check using REGNO
    actually needs to use a range, e.g. 24>=X<56 not <56.  There is probably
-   no one using this code anymore.  */
+   no one using this code anymore.  
+   This code used to be used to suppress register usage for the 68881 by
+   saying that the 68881 registers couldn't hold values of any mode if there
+   was no 68881.  This was wrong, because reload (etc.) will still try
+   to save and restore call-saved registers during, for instance, non-local
+   goto.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
 (((REGNO) < 16								\
   && !(TARGET_FPA							\
@@ -525,10 +534,9 @@ extern int target_flags;
        && GET_MODE_UNIT_SIZE ((MODE)) > 4				\
        && (REGNO) < 8 && (REGNO) + GET_MODE_SIZE ((MODE)) / 4 > 8	\
        && (REGNO) % (GET_MODE_UNIT_SIZE ((MODE)) / 4) != 0))		\
- || ((REGNO) < 24							\
-     ? (TARGET_68881							\
-	&& (GET_MODE_CLASS (MODE) == MODE_FLOAT				\
-	    || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)		\
+ || ((REGNO) >= 16 && (REGNO) < 24					\
+     ? ((GET_MODE_CLASS (MODE) == MODE_FLOAT				\
+	 || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)		\
 	&& GET_MODE_UNIT_SIZE (MODE) <= 12)				\
      : ((REGNO) < 56 ? TARGET_FPA && GET_MODE_UNIT_SIZE (MODE) <= 8 : 0)))
 
