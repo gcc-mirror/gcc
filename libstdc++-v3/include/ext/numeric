@@ -1,6 +1,6 @@
 // Numeric extensions -*- C++ -*-
 
-// Copyright (C) 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -79,22 +79,25 @@ namespace __gnu_cxx
     {
       if (__n == 0)
 	return identity_element(__monoid_op);
-      else {
-	while ((__n & 1) == 0) {
-	  __n >>= 1;
-	  __x = __monoid_op(__x, __x);
-	}
+      else
+	{
+	  while ((__n & 1) == 0)
+	    {
+	      __n >>= 1;
+	      __x = __monoid_op(__x, __x);
+	    }
 
-	_Tp __result = __x;
-	__n >>= 1;
-	while (__n != 0) {
-	  __x = __monoid_op(__x, __x);
-	  if ((__n & 1) != 0)
-	    __result = __monoid_op(__result, __x);
+	  _Tp __result = __x;
 	  __n >>= 1;
+	  while (__n != 0)
+	    {
+	      __x = __monoid_op(__x, __x);
+	      if ((__n & 1) != 0)
+		__result = __monoid_op(__result, __x);
+	      __n >>= 1;
+	    }
+	  return __result;
 	}
-	return __result;
-      }
     }
 
   template<typename _Tp, typename _Integer>
