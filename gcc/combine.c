@@ -537,7 +537,7 @@ combine_instructions (f, nregs)
       next = 0;
 
       /* If INSN starts a new basic block, update our basic block number.  */
-      if (this_basic_block < n_basic_blocks + 1
+      if (this_basic_block + 1 < n_basic_blocks
 	  && basic_block_head[this_basic_block + 1] == insn)
 	this_basic_block++;
 
