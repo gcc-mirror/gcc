@@ -6480,6 +6480,21 @@ move\\t%0,%z4\\n\\
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=d,d")
 	(if_then_else:SI
+	 (match_operator 4 "equality_op"
+			 [(match_operand:DI 1 "register_operand" "d,d")
+			  (const_int 0)])
+	 (match_operand:SI 2 "reg_or_0_operand" "dJ,0")
+	 (match_operand:SI 3 "reg_or_0_operand" "0,dJ")))]
+  "mips_isa >= 4"
+  "@
+    mov%B4\\t%0,%z2,%1
+    mov%b4\\t%0,%z3,%1"
+  [(set_attr "type" "move")
+   (set_attr "mode" "SI")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=d,d")
+	(if_then_else:SI
 	 (match_operator 3 "equality_op" [(reg:CC_FP 67) (const_int 0)])
 	 (match_operand:SI 1 "reg_or_0_operand" "dJ,0")
 	 (match_operand:SI 2 "reg_or_0_operand" "0,dJ")))]
@@ -6489,6 +6504,21 @@ move\\t%0,%z4\\n\\
     mov%t3\\t%0,%z2,$fcc0"
   [(set_attr "type" "move")
    (set_attr "mode" "SI")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=d,d")
+	(if_then_else:DI
+	 (match_operator 4 "equality_op"
+			 [(match_operand:SI 1 "register_operand" "d,d")
+			  (const_int 0)])
+	 (match_operand:DI 2 "reg_or_0_operand" "dJ,0")
+	 (match_operand:DI 3 "reg_or_0_operand" "0,dJ")))]
+  "mips_isa >= 4"
+  "@
+    mov%B4\\t%0,%z2,%1
+    mov%b4\\t%0,%z3,%1"
+  [(set_attr "type" "move")
+   (set_attr "mode" "DI")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=d,d")
@@ -6661,13 +6691,8 @@ move\\t%0,%z4\\n\\
       operands[4] = gen_rtx (REG, CC_FPmode, FPSW_REGNUM);
     }
 
-  if (mode == DImode)
-    operands[5] = gen_rtx (move_code, VOIDmode,
-			   gen_lowpart (SImode, operands[4]),
-			   CONST0_RTX (SImode));
-  else
-    operands[5] = gen_rtx (move_code, VOIDmode, operands[4],
-			   CONST0_RTX (SImode));
+  operands[5] = gen_rtx (move_code, VOIDmode, operands[4],
+			 CONST0_RTX (SImode));
 }")
 
 ;; ??? Need movdicc, movsfcc, and movdfcc patterns.  They should be
