@@ -108,6 +108,12 @@ namespace std {
 	// streambufs having control of the allocation and
 	// re-allocation of the internal string object, _M_string.
 	_M_buf_size = _M_string.size();
+
+	// NB: Start ostringstream buffers at 1024 bytes. This is an
+	// experimental value (pronounced "arbitrary" in some of the
+	// hipper english-speaking countries), and can be changed to
+	// suite particular needs.
+	_M_buf_size_opt = 512;
 	_M_mode = __mode;
 	if (_M_mode & ios_base::ate)
 	  _M_really_sync(0, _M_buf_size); 

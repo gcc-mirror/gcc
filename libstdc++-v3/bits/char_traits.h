@@ -137,7 +137,7 @@ namespace std {
       eof() { return static_cast<int_type>(-1); }
 
       static int_type 
-      eos() { return int_type(); }
+      __eos() { return char_type(); }
 
       static int_type 
       not_eof(const int_type& __c)
@@ -211,7 +211,7 @@ namespace std {
       eof() { return static_cast<int_type>(EOF); }
 
       static int_type 
-      eos() { return '\0'; }
+      __eos() { return char_type(); }
 
       static int_type 
       not_eof(const int_type& __c)
@@ -282,7 +282,7 @@ namespace std {
       eof() { return static_cast<int_type>(WEOF); }
 
       static int_type 
-      eos() { return int_type(); }
+      __eos() { return char_type(); }
 
       static int_type 
       not_eof(const int_type& __c)

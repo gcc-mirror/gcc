@@ -40,7 +40,7 @@ namespace std {
     {
       // XXX MT 
       if (_M_ok && __os.tie())
-	  __os.tie()->flush();  
+	__os.tie()->flush();  
     }
   
   template<typename _CharT, typename _Traits>

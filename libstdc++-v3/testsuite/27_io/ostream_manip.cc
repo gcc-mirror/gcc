@@ -1,6 +1,6 @@
 // 1999-07-22 bkoz
 
-// Copyright (C) 1994, 1999 Free Software Foundation, Inc.
+// Copyright (C) 1994, 1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,7 +20,7 @@
 
 // 27.6.2.7 standard basic_ostream manipulators
 
-#include <istream>
+#include <ostream>
 #include <sstream>
 #include <stdexcept>
 #ifdef DEBUG_ASSERT
@@ -74,6 +74,45 @@ bool test01(void)
   oss02.flush();
   str05 = oss02.str();
   test &= str05.size() == 2;
+
+#ifdef DEBUG_ASSERT
+  assert(test);
+#endif
+  return test;
+}
+
+
+// based vaguely on this:
+// http://sourceware.cygnus.com/ml/libstdc++/2000-q2/msg00109.html
+bool test02()
+{
+  using namespace std;
+  typedef ostringstream::int_type int_type;
+
+  bool test = true;
+  ostringstream osst_01;
+  const string str_00("herbie_hancock");
+  int_type len1 = str_00.size();
+  osst_01 << str_00;
+  test &= osst_01.str().size() == len1;
+
+  osst_01 << ends;
+
+  const string str_01("speak like a child");
+  int_type len2 = str_01.size();
+  osst_01 << str_01;
+  int_type len3 = osst_01.str().size();
+  test &= len1 < len3;
+  test &= len3 == len1 + len2 + 1;
+
+  osst_01 << ends;
+
+  const string str_02("+ inventions and dimensions");
+  int_type len4 = str_02.size();
+  osst_01 << str_02;
+  int_type len5 = osst_01.str().size();
+  test &= len3 < len5;
+  test &= len5 == len3 + len4 + 1;
 
 #ifdef DEBUG_ASSERT
   assert(test);

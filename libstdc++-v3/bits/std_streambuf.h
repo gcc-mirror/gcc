@@ -191,6 +191,7 @@ namespace std {
       {
 	_M_buf_unified = false;
 	_M_buf_size = 0;
+	_M_buf_size_opt = 0;
 	_M_mode = ios_base::openmode(0);
 	_M_fctype_buf = NULL;
 	_M_locale_set = false;
