@@ -742,11 +742,15 @@ make_decl_rtl (decl, asmspec, top_level)
 	      name = obstack_copy0 (saveable_obstack, label, strlen (label));
 	      var_labelno++;
 
+#if 0
+	      /* ??? This results in incorrect stabs debug info for static
+		 local variables.  */
 	      /* We've changed the name by which this entity is
 		 known.  In order that we can generate 
 		 correct references to it, we update its
 		 DECL_ASSEMBLER_NAME.  */
 	      DECL_ASSEMBLER_NAME (decl) = get_identifier (name);
+#endif
 	    }
 
 	  if (name == 0)
