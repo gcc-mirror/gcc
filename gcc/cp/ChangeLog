@@ -1,3 +1,8 @@
+2004-10-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17929
+	* decl2.c (finish_anon_union): Robustify.
+
 2004-10-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (get_dynamic_cast_base_type): Rename to ...
