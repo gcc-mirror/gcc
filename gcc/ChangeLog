@@ -1,3 +1,7 @@
+Sun Oct 24 20:52:40 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* i386.md (mulsi3): Tweak to work with SCO OSR5 COFF assembler.
+
 Sun Oct 24 21:02:46 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i386.md (*lea_0): Collapse addsi_0, addsi_lea_[123] into
