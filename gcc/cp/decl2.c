@@ -3206,10 +3206,13 @@ start_static_initialization_or_destruction (decl, initp)
 	  my_friendly_assert (initp, 20000629);
 	  guard_cond = get_guard_cond (guard);
 	}
-      /* Under the old ABI, e do initializations only if the GUARD is
-	 zero, i.e., if we are the first to initialize the variable.
-	 We do destructions only if the GUARD is one, i.e., if we are
-	 the last to destroy the variable.  */
+      /* If we don't have __cxa_atexit, then we will be running
+	 destructors from .fini sections, or their equivalents.  So,
+	 we need to know how many times we've tried to initialize this
+	 object.  We do initializations only if the GUARD is zero,
+	 i.e., if we are the first to initialize the variable.  We do
+	 destructions only if the GUARD is one, i.e., if we are the
+	 last to destroy the variable.  */
       else if (initp)
 	guard_cond 
 	  = cp_build_binary_op (EQ_EXPR,
@@ -3230,9 +3233,9 @@ start_static_initialization_or_destruction (decl, initp)
 
   finish_if_stmt_cond (cond, guard_if_stmt);
 
-  /* Under the new ABI, we have not already set the GUARD, so we must
-     do so now.  */
-  if (guard && initp)
+  /* If we're using __cxa_atexit, we have not already set the GUARD,
+     so we must do so now.  */
+  if (guard && initp && flag_use_cxa_atexit)
     finish_expr_stmt (set_guard (guard));
 
   return guard_if_stmt;
