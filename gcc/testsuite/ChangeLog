@@ -1,3 +1,9 @@
+2003-06-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/11039
+	* g++.dg/warn/implicit-typename2.C: New test.
+	* g++.dg/warn/implicit-typename3.C: New test.
+
 2003-06-07  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/other/offsetof3.C: Use size_t.
