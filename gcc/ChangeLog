@@ -1,3 +1,7 @@
+2001-03-12  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppinternals.texi: Update for file handling.
+
 2001-03-12  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* emit-rtl.c (remove_unnecessary_notes): Reverse Richard Kenner's
