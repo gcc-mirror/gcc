@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for MIPS
-   Copyright (C) 1989, 90, 91, 93-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90, 91, 93-97, 1998 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
    64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -6559,9 +6559,10 @@ mips_expand_prologue ()
 	  else if (TARGET_64BIT)
 	    insn = emit_insn (gen_movdi (hard_frame_pointer_rtx, stack_pointer_rtx));
 	  else
-	    insn= emit_insn (gen_movsi (hard_frame_pointer_rtx, stack_pointer_rtx));
+	    insn = emit_insn (gen_movsi (hard_frame_pointer_rtx, stack_pointer_rtx));
 
-	  RTX_FRAME_RELATED_P (insn) = 1;
+	  if (insn)
+	    RTX_FRAME_RELATED_P (insn) = 1;
 	}
 
       if (TARGET_ABICALLS && mips_abi != ABI_32)
@@ -6749,7 +6750,7 @@ mips_expand_epilogue ()
 		   & (1L << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))))
 	emit_insn (gen_blockage ());
 
-      save_restore_insns (FALSE, tmp_rtx, tsize, (FILE *)0);
+      save_restore_insns (FALSE, tmp_rtx, orig_tsize, (FILE *)0);
 
       /* In mips16 mode with a large frame, we adjust the stack
          pointer before restoring the registers.  In this case, we
@@ -6759,10 +6760,10 @@ mips_expand_epilogue ()
 	abort ();
 
       emit_insn (gen_blockage ());
-      if (TARGET_LONG64)
+      if (TARGET_LONG64 && tsize != 0)
 	emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
 			       tsize_rtx));
-      else
+      else if (tsize != 0)
 	emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
 			       tsize_rtx));
     }
