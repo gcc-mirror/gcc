@@ -1073,10 +1073,8 @@ kill_value_one_regno (unsigned int regno, struct value_data *vd)
    whose values overlap.  */
 
 static void
-kill_value_regno (regno, nregs, vd)
-     unsigned int regno;
-     unsigned int nregs;
-     struct value_data *vd;
+kill_value_regno (unsigned int regno, unsigned int nregs,
+		  struct value_data *vd)
 {
   unsigned int j;
 

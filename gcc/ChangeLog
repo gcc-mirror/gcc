@@ -1,3 +1,7 @@
+2004-08-20  Andrew Pinski  <apinski@apple.com>
+
+	* regrename.c (kill_value_regno): ANSIfy.
+
 2004-08-20  Dale Johannesen  <dalej@apple.com>
 
         * config/rs6000/rs6000.c (rs6000_rtx_costs): Improve DIV/MOD.
