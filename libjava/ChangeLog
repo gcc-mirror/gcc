@@ -1,5 +1,16 @@
 2001-10-19  Mark Wielaard  <mark@klomp.org>
 
+	* java/lang/Double.java: More Classpath merging
+	(isInfinite): Don't use doubleToLongBits
+	(isNaN (Object)): return v != v
+	(initIDs): make native
+	* java/lang/Float.java: Ditto
+	(isInfinite): Don't use floatToIntBits
+	(isNaN (Object)): return v != v
+	* java/lang/natDouble.cc: add empty initIDs()
+
+2001-10-19  Mark Wielaard  <mark@klomp.org>
+
 	* javax/naming/BinaryRefAddr.java: New file
 	* javax/naming/InitialContext.java: Compile fix
 	* javax/naming/InvalidNameException.java: Add comments

@@ -186,3 +186,9 @@ java::lang::Double::parseDouble(jstring str)
     }
   throw new NumberFormatException;
 }
+
+void
+java::lang::Double::initIDs()
+{
+  // Not used in libgcj
+}

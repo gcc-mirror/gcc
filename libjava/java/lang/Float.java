@@ -215,6 +215,14 @@ public final class Float extends Number implements Comparable
    * <code>instanceof</code> <code>Float</code>, and represents
    * the same primitive <code>float</code> value return 
    * <code>true</code>.  Otherwise <code>false</code> is returned.
+   * <p>
+   * Note that there are two differences between <code>==</code> and
+   * <code>equals()</code>. <code>0.0f == -0.0f</code> returns <code>true</code>
+   * but <code>new Float(0.0f).equals(new Float(-0.0f))</code> returns
+   * <code>false</code>. And <code>Float.NaN == Float.NaN</code> returns
+   * <code>false</code>, but
+   * <code>new Float(Float.NaN).equals(new Float(Float.NaN))</code> returns
+   * <code>true</code>.
    *
    * @param obj the object to compare to
    * @return whether the objects are semantically equal.
@@ -364,11 +372,9 @@ public final class Float extends Number implements Comparable
    */
   public static boolean isNaN (float v)
   {
-    int bits = floatToIntBits (v);
-    int e = bits & 0x7f800000;
-    int f = bits & 0x007fffff;
-
-    return e == 0x7f800000 && f != 0;
+    // This works since NaN != NaN is the only reflexive inequality
+    // comparison which returns true.
+    return v != v;
   }
 
   /**
@@ -393,10 +399,7 @@ public final class Float extends Number implements Comparable
    */
   public static boolean isInfinite (float v)
   {
-    int bits = floatToIntBits (v);
-    int f = bits & 0x7fffffff;
-
-    return f == 0x7f800000;
+    return (v == POSITIVE_INFINITY || v == NEGATIVE_INFINITY);
   }
 
   /**
