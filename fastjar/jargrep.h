@@ -1,5 +1,6 @@
 /*
   jargrep.h - header file for jargrep utility
+  Copyright (C) 2002 Free Software Foundation
   Copyright (C) 2000 Cory Hollingsworth
 
   This program is free software; you can redistribute it and/or
@@ -17,9 +18,6 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-/*$Id: jargrep.h,v 1.3 2000/09/13 14:02:02 cory Exp $
-*/
-
 #define JG_PRINT_BYTEOFFSET		0x00000001
 #define JG_PRINT_COUNT			0x00000002
 #define JG_IGNORE_CASE			0x00000004
@@ -27,5 +25,3 @@
 #define JG_SUPRESS_ERROR		0x00000010
 #define JG_INVERT				0x00000020
 #define JG_WORD_EXPRESSIONS		0x00000040
-
-#define GVERSION "jargrep version 0.1 (09/12/2000)"
