@@ -49,6 +49,7 @@ find . -type f -print | sort > ../files_$last_date
 cp ../.brik_$last_date ./.brik
 cd ..
 rm -rf gcc/{libio,libstdc++,libstdc++-v3,libf2c,libchill,libobjc}
+rm -rf gcc/{boehm-gc,fastjar,libffi,libjava,zlib}
 rm -rf gcc/gcc/{testsuite,f,objc,cp,java,ch}
 mv gcc gcc-$last_date
 
@@ -61,6 +62,7 @@ find . -type f -print  | sort > ../files_$date
 cp ../.brik_$date ./.brik
 cd ..
 rm -rf gcc/{libio,libstdc++,libstdc++-v3,libf2c,libchill,libobjc}
+rm -rf gcc/{boehm-gc,fastjar,libffi,libjava,zlib}
 rm -rf gcc/gcc/{testsuite,f,objc,cp,java,ch}
 mv gcc gcc-$date
 
@@ -102,6 +104,11 @@ diff  -Nrc3p gcc-$last_date/gcc/objc gcc-$date/gcc/objc > gcc-objc-$last_date-$d
 diff  -Nrc3p gcc-$last_date/libobjc gcc-$date/libobjc >> gcc-objc-$last_date-$date.diff
 
 diff  -Nrc3p gcc-$last_date/gcc/java gcc-$date/gcc/java > gcc-java-$last_date-$date.diff
+diff  -Nrc3p gcc-$last_date/boehm-gc gcc-$date/boehm-gc >> gcc-java-$last_date-$date.diff
+diff  -Nrc3p gcc-$last_date/fastjar gcc-$date/fastjar >> gcc-java-$last_date-$date.diff
+diff  -Nrc3p gcc-$last_date/libffi gcc-$date/libffi >> gcc-java-$last_date-$date.diff
+diff  -Nrc3p gcc-$last_date/libjava gcc-$date/libjava >> gcc-java-$last_date-$date.diff
+diff  -Nrc3p gcc-$last_date/zlib gcc-$date/zlib >> gcc-java-$last_date-$date.diff
 
 diff  -Nrc3p gcc-$last_date/gcc/ch gcc-$date/gcc/ch > gcc-chill-$last_date-$date.diff
 diff  -Nrc3p gcc-$last_date/libchill gcc-$date/libchill >> gcc-chill-$last_date-$date.diff
@@ -138,7 +145,7 @@ diff  -Nrc3p gcc-$last_date gcc-$date >> $STATEDIR/CHECKME
 tar cf - gcc-$date/.brik gcc-$date/gcc/f gcc-$date/libf2c | gzip --best > gcc-g77-$date.tar.gz
 tar cf - gcc-$date/.brik gcc-$date/gcc/testsuite/g77.f-torture | gzip --best > gcc-g77-testsuite-$date.tar.gz
 tar cf - gcc-$date/.brik gcc-$date/gcc/objc gcc-$date/libobjc | gzip --best > gcc-objc-$date.tar.gz
-tar cf - gcc-$date/.brik gcc-$date/gcc/java | gzip --best > gcc-java-$date.tar.gz
+tar cf - gcc-$date/.brik gcc-$date/gcc/java gcc-$date/{boehm-gc,fastjar,libffi,libjava,zlib} | gzip --best > gcc-java-$date.tar.gz
 tar cf - gcc-$date/.brik gcc-$date/gcc/ch gcc-$date/libchill | gzip --best > gcc-chill-$date.tar.gz
 tar cf - gcc-$date/.brik gcc-$date/gcc/cp gcc-$date/{libio,libstdc++,libstdc++-v3} | gzip --best > gcc-g++-$date.tar.gz
 tar cf - gcc-$date/.brik gcc-$date/gcc/testsuite/g++.old-deja | gzip --best > gcc-g++-tests-$date.tar.gz

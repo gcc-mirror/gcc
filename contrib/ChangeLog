@@ -1,3 +1,7 @@
+2001-01-03  Mike Stump  <mrs@wrs.com>
+
+	* snapshot: Update to account for java libraries.
+
 2000-12-28  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* test_summary: Export filesuffix, not fileprefix.
