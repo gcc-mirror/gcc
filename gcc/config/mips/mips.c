@@ -154,9 +154,6 @@ struct extern_list {
   int size;			/* size in bytes */
 } *extern_head = 0;
 
-/* Name of the current function.  */
-char *current_function_name;
-
 /* Name of the file containing the current function.  */
 char *current_function_file = "";
 
