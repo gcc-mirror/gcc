@@ -1,3 +1,11 @@
+2002-08-22  Zack Weinberg  <zack@codesourcery.com>
+
+	* ggc-page.c: Avoid division in ggc_set_mark.
+	(DIV_MULT, DIV_SHIFT, OFFSET_TO_BIT, inverse_table,
+	compute_inverse): New.
+	(ggc_set_mark, ggc_marked_p): Use OFFSET_TO_BIT.
+	(init_ggc): Initialize inverse_table.
+
 2002-08-22  Tom Tromey  <tromey@redhat.com>
 
 	* doc/install.texi (Configuration): Document --datadir.
@@ -46,7 +54,7 @@
 	* config/rs6000/rs6000.c: Ditto.
 	* config/stormy16/stormy16.h: Ditto.
 	* doc/md.texi: Ditto.
-	
+
 2002-08-21  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* cppinit.c (remove_dup_nonsys_dirs): Fix warning and return value.
@@ -59,11 +67,11 @@
 	errors.
 
 2002-08-21  Andrew Pinski <pinskia@physics.uc.edu>
-            Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+	    Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* doc/tm.texi (TARGET_ASM_GLOBALIZE_LABEL): Move '@end deftypefn'
 	to the actual end.  Add '@end table' and '@table @code'.
-	
+
 2002-08-20  Geoffrey Keating  <geoffk@redhat.com>
 
 	* doc/tm.texi (Label Output): Add missing '@end deftypefn'.
@@ -157,7 +165,7 @@
 
 2002-08-20  Devang Patel  <dpatel@apple.com>
 	* tree.c (get_qualified_type): Add TYPE_CONTEXT check.
-	
+
 2002-08-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* arc.c (output_shift): Use stdio instead of asm_fprintf.
@@ -205,7 +213,7 @@
 	(mips_use_dfa_pipeline_interface): Use.
 
 2002-08-15  Eric Christopher  <echristo@redhat.com>
-            Richard Sandiford <rsandifo@redhat.com>
+	    Richard Sandiford <rsandifo@redhat.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
 	    Graham Stott    <grahams@redhat.com>
 	    Michael Meissner  <meissner@redhat.com>
@@ -249,8 +257,8 @@
 	quote and bracket include chains when they duplicate equivalent system
 	directories.
 	* doc/cpp.texi (-I): Update.
-        * doc/cppopts.texi (-I): Update.
-        * doc/install.texi (--with-local-prefix): Further document usage of
+	* doc/cppopts.texi (-I): Update.
+	* doc/install.texi (--with-local-prefix): Further document usage of
 	this option.
 	* doc/invoke.texi (-I): Update.
 
@@ -558,7 +566,7 @@
 
 2002-08-14  Dale Johannesen  <dalej@apple.com>
 
-        * explow.c (emit_stack_restore):  Emit memory clobbers
+	* explow.c (emit_stack_restore):  Emit memory clobbers
 	preceding the stack pop, to prevent the scheduler from
 	moving refs to variable arrays below this pop.
 	* reload1.c (reload):  Preserve these clobbers for sched2.
@@ -794,7 +802,7 @@ Tue Aug 13 17:40:25 2002  J"orn Rennecke <joern.rennecke@superh.com>
 2002-08-13  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.md: Call CC_STATUS_INIT in all peepnoles
-        which can change CC0.
+	which can change CC0.
 
 Tue Aug 13 14:49:20 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
@@ -1357,10 +1365,10 @@ Sat Aug 10 19:59:43 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-08-06  Aldy Hernandez  <aldyh@redhat.com>
 
-        * c-decl.c (duplicate_decls): Error out for incompatible TLS
-        declarations.
+	* c-decl.c (duplicate_decls): Error out for incompatible TLS
+	declarations.
 
-        * testsuite/gcc.dg/tls/diag-3.c: New.
+	* testsuite/gcc.dg/tls/diag-3.c: New.
 
 2002-08-06  Jason Merrill  <jason@redhat.com>
 
@@ -1369,7 +1377,7 @@ Sat Aug 10 19:59:43 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-08-06  Dale Johannesen  <dalej@apple.com>
 	* c-common.c (fname_decl): Use line number 0 for
-        __func__, to avoid confusing debuggers.
+	__func__, to avoid confusing debuggers.
 
 2002-08-06  Nathan Sidwell  <nathan@codesourcery.com>
 
