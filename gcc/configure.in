@@ -319,6 +319,11 @@ AC_ARG_WITH(dwarf2,
 dwarf2="$with_dwarf2",
 dwarf2=no)
 
+AC_ARG_ENABLE(shared,
+[  --disable-shared       don't provide a shared libgcc.],
+[], [enable_shared=yes])
+AC_SUBST(enable_shared)
+
 # Determine the host, build, and target systems
 AC_CANONICAL_SYSTEM
 
@@ -812,7 +817,8 @@ changequote([,])dnl
 			extra_passes="mips-tfile mips-tdump"
 		fi
 		use_collect2=yes
-		tmake_file="alpha/t-alpha alpha/t-ieee"
+		tmake_file="alpha/t-alpha alpha/t-ieee alpha/t-osf"
+		xmake_file=alpha/x-osf
 		case $machine in
 		  *-*-osf1*)
 		    tm_file="${tm_file} alpha/osf.h alpha/osf12.h alpha/osf2or3.h"
@@ -824,12 +830,14 @@ changequote([,])dnl
 		    ;;
 		  *-*-osf4*)
 		    tm_file="${tm_file} alpha/osf.h"
+		    tmake_file="$tmake_file alpha/t-osf4"
 		    # Some versions of OSF4 (specifically X4.0-9 296.7) have
 		    # a broken tar, so we use cpio instead.
 		    install_headers_dir=install-headers-cpio
 		    ;;
 		  *-*-osf5*)
 		    tm_file="${tm_file} alpha/osf.h alpha/osf5.h"
+		    tmake_file="$tmake_file alpha/t-osf4"
 		    ;;
 		esac
 		case $machine in

@@ -969,6 +969,9 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) xgcc$(exeext)
 	DPBIT_FUNCS='$(DPBIT_FUNCS)' \
 	MULTILIBS=`$(GCC_FOR_TARGET) --print-multi-lib` \
 	EXTRA_MULTILIB_PARTS='$(EXTRA_MULTILIB_PARTS)' \
+	SHLIB_LINK='$(SHLIB_LINK)' \
+	SHLIB_LIBS='$(SHLIB_LIBS)' \
+	SHLIB_MULTILIB='$(SHLIB_MULTILIB)' \
 	  $(SHELL) mklibgcc > tmp-libgcc.mk
 	mv tmp-libgcc.mk libgcc.mk
 
@@ -976,7 +979,7 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) xgcc$(exeext)
 LIBGCC_DEPS = $(GCC_PASSES) $(LANGUAGES) stmp-int-hdrs $(STMP_FIXPROTO) \
 	libgcc.mk $(srcdir)/libgcc1.c $(srcdir)/libgcc2.c $(CONFIG_H) \
 	$(MACHMODE_H) longlong.h frame.h gbl-ctors.h config.status \
-	stmp-int-hdrs tsystem.h $(FPBIT) $(DPBIT) $(LIB2ADD)
+	stmp-int-hdrs tsystem.h $(FPBIT) $(DPBIT) $(LIB2ADD) $(EXTRA_PARTS)
 
 libgcc.a: $(LIBGCC_DEPS)
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
