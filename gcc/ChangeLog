@@ -1,3 +1,7 @@
+2000-07-30  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/libgcc.S: (divqf3): Improve accuracy.
+
 2000-07-27  Mark Mitchell  <mark@codesourcery.com>
 
 	Put phi nodes after NOTE_INSN_BASIC_BLOCK.

@@ -133,24 +133,29 @@ ___divqf3:
 	mpyf	r1, r0		; r0 = r[2] * (2.0 - r[2] * v) = r[3]
 ; End of 3rd iteration
 
-	or	080h, r0	; add 1 lsb to result. needed when complemeting
-				; 1.0 / 2.0
-	rnd	r0
+	rnd	r0		; Minimize error in x[3]'s LSBs
 
 ; Use modified last iteration
 ; r[4] = (r[3] * (1.0 - (v * r[3]))) + r[3]
 	mpyf3	r0, r3, r1	; r1 = r[3] * v
 	subrf	1.0, r1		; r1 = 1.0 - r[3] * v
 	mpyf	r0, r1		; r1 = r[3] * (1.0 - r[3] * v)
+	addf	r1, r0		; r0 = r[3] * (1.0 - r[3] * v) + r[3] = r[4]
+
+        rnd     r0              ; Minimize error in x[4]'s LSBs
 
 	bud	ar1		; Delayed branch
-	addf	r1, r0		; r0 = r[3] * (1.0 - r[3] * v) + r[3] = r[4]
-	.if .REGPARM == 0
-	mpyf	*-ar0(1), r0	; Multiply by the dividend
-	.else
-	mpyf	r2, r0		; Multiply by the dividend
-	.endif
-	rnd	r0
+
+        .if .REGPARM == 0
+        ldfu    *-ar0(1), r2    ; Dividend in mem has only 24 bits significance
+        .else
+        rnd     r2              ; Minimize error in reg dividend's LSBs
+				; since this may have 32 bit significance
+        .endif
+
+        mpyf    r2, r0          ; Multiply by the dividend
+        rnd     r0              ; Round result to 32 bits
+
 	; Branch occurs here
 #endif
 
