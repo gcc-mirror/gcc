@@ -1,3 +1,5 @@
+// { dg-do run { xfail { powerpc*-*-linux* && broken_cplxf_arg } } }
+
 // Copyright (C) 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free

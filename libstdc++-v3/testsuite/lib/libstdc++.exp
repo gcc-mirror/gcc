@@ -47,6 +47,7 @@ load_lib dg.exp
 load_lib libgloss.exp
 # compiler routines, then ours
 load_gcc_lib target-supports.exp
+load_gcc_lib target-supports-dg.exp
 load_lib prune.exp
 load_lib dg-options.exp
 load_gcc_lib target-libpath.exp
