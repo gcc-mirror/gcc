@@ -1,3 +1,8 @@
+2004-01-25  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* configure.ac: Add m4_pattern_allow(LIBOBJS).
+	* configure: Regenerate.
+
 2004-01-22  DJ Delorie  <dj@redhat.com>
 
 	* Makefile.in: Convert to ./ throughout.  Rebuild dependencies
