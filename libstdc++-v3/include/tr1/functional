@@ -661,6 +661,34 @@ namespace tr1
 
   /**
    *  @if maint
+   *  Maps member pointers into instances of _Mem_fn but leaves all
+   *  other function objects untouched. Used by tr1::bind(). The
+   *  primary template handles the non--member-pointer case.
+   *  @endif
+   */
+  template<typename _Tp>
+    struct _Maybe_wrap_member_pointer
+    {
+      typedef _Tp type;
+      static const _Tp& __do_wrap(const _Tp& __x) { return __x; }
+    };
+
+  /**
+   *  @if maint
+   *  Maps member pointers into instances of _Mem_fn but leaves all
+   *  other function objects untouched. Used by tr1::bind(). This
+   *  partial specialization handles the member pointer case.
+   *  @endif
+   */
+  template<typename _Tp, typename _Class>
+    struct _Maybe_wrap_member_pointer<_Tp _Class::*>
+    {
+      typedef _Mem_fn<_Tp _Class::*> type;
+      static type __do_wrap(_Tp _Class::* __pm) { return type(__pm); }
+    };
+
+  /**
+   *  @if maint
    *  Type of the function object returned from bind().
    *  @endif
    */

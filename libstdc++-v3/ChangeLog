@@ -1,3 +1,12 @@
+2005-04-01  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* include/tr1/functional (_Maybe_wrap_member_pointer): Wrap up
+	member pointers in _Mem_fn but let other function objects pass
+	through unchanged.
+	* include/tr1/functional_iterator (bind): Reduce number of bind()
+	overloads to two to eliminate ambiguities. Use
+	_Maybe_wrap_member_pointer to handle member pointers gracefully.
+	
 2005-04-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/Makefile.am (noinst_PROGRAMS): Remove.
