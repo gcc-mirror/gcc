@@ -561,12 +561,16 @@ constrain_asm_operands (n_operands, operands, operand_constraints,
 	      case '=':
 	      case '+':
 	      case '?':
-	      case '#':
 	      case '&':
 	      case '!':
 	      case '*':
 	      case '%':
 		/* Ignore these. */
+		break;
+
+	      case '#':
+		/* Ignore rest of this alternative. */
+		while (*p && *p != ',') p++;
 		break;
 
 	      case '0':
