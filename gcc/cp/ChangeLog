@@ -1,3 +1,32 @@
+2003-07-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/11050
+	* parser.c (cp_parser_expression_list): Rename to ...
+	(cp_parser_parenthesized_expression_list): ... here. Add attribute
+	parameter, parse the surounding parentheses.
+	(cp_parser_skip_to_closing_parenthesis): Add recover and or_comma
+	parameters. Return int.
+	(cp_parser_skip_to_closing_parenthesis or comma): Remove.
+	(cp_parser_postfix_expression): Adjust function call parsing.
+	(cp_parser_new_placement): Adjust.
+	(cp_parser_new_initializer): Likewise.
+	(cp_parser_cast_expression): Likewise.
+	(cp_parser_selection_statement): Likewise.
+	(cp_parser_mem_initializer): Likewise.
+	(cp_parser_asm_definition): Likewise.
+	(cp_parser_init_declarator): Likewise.
+	(cp_parser_declarator): Make
+	cdtor_or_conv_p an int ptr.
+	(cp_parser_direct_declarator): Likewise. Check for a parameter
+	list on cdtors & conv functions.
+	(cp_parser_initializer): Adjust.
+	(cp_parser_member_declaration): Adjust.
+	(cp_parser_attribute_list): Move code into
+	cp_parser_parens_expression_list.
+	(cp_parser_functional_cast): Adjust.
+	* pt.c (type_dependent_expression_p): Erroneous expressions are
+	non-dependent.
+
 2003-07-11  Geoffrey Keating  <geoffk@apple.com>
 
 	* decl.c (cp_finish_decl): Handle 'used' attribute.
