@@ -6716,21 +6716,17 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
   lab_over = create_artificial_label ();
   addr = create_tmp_var (ptr_type_node, "addr");
 
-  t = build_int_2 (max_reg, 0);
-  TREE_TYPE (t) = TREE_TYPE (reg);
+  t = fold_convert (TREE_TYPE (reg), size_int (max_reg));
   t = build2 (GT_EXPR, boolean_type_node, reg, t);
   u = build1 (GOTO_EXPR, void_type_node, lab_false);
   t = build3 (COND_EXPR, void_type_node, t, u, NULL_TREE);
   gimplify_and_add (t, pre_p);
 
-  if (sav_ofs)
-    t = build2 (PLUS_EXPR, ptr_type_node, sav, build_int_2 (sav_ofs, 0));
-  else
-    t = sav;
-
-  u = build2 (MULT_EXPR, long_integer_type_node,
-	      reg, build_int_2 (sav_scale, 0));
-  t = build2 (PLUS_EXPR, ptr_type_node, t, u);
+  t = build2 (PLUS_EXPR, ptr_type_node, sav, 
+	      fold_convert (ptr_type_node, size_int (sav_ofs)));
+  u = build2 (MULT_EXPR, TREE_TYPE (reg), reg, 
+	      fold_convert (TREE_TYPE (reg), size_int (sav_scale)));
+  t = build2 (PLUS_EXPR, ptr_type_node, t, fold_convert (ptr_type_node, u));
 
   t = build2 (MODIFY_EXPR, void_type_node, addr, t);
   gimplify_and_add (t, pre_p);
@@ -6746,16 +6742,17 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
 
   t = ovf;
   if (size < UNITS_PER_WORD)
-    t = build2 (PLUS_EXPR, TREE_TYPE (t), t, 
-		build_int_2 (UNITS_PER_WORD - size, 0));
+    t = build2 (PLUS_EXPR, ptr_type_node, t, 
+		fold_convert (ptr_type_node, size_int (UNITS_PER_WORD - size)));
 
   gimplify_expr (&t, pre_p, NULL, is_gimple_val, fb_rvalue);
 
   u = build2 (MODIFY_EXPR, void_type_node, addr, t);
   gimplify_and_add (u, pre_p);
 
-  t = build2 (PLUS_EXPR, TREE_TYPE (t), t, build_int_2 (size, 0));
-  t = build2 (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
+  t = build2 (PLUS_EXPR, ptr_type_node, t, 
+	      fold_convert (ptr_type_node, size_int (size)));
+  t = build2 (MODIFY_EXPR, ptr_type_node, ovf, t);
   gimplify_and_add (t, pre_p);
 
   t = build1 (LABEL_EXPR, void_type_node, lab_over);
@@ -6765,7 +6762,7 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
   /* Increment register save count.  */
 
   u = build2 (PREINCREMENT_EXPR, TREE_TYPE (reg), reg,
-	      build_int_2 (n_reg, 0));
+	      fold_convert (TREE_TYPE (reg), size_int (n_reg)));
   gimplify_and_add (u, pre_p);
 
   if (indirect_p)
