@@ -901,6 +901,11 @@ truthvalue_conversion (expr)
 			      fold (build1 (NOP_EXPR,
 					    TREE_TYPE (TREE_OPERAND (expr, 0)),
 					    TREE_OPERAND (expr, 1))), 1);
+
+    case MODIFY_EXPR:
+      if (warn_parentheses && C_EXP_ORIGINAL_CODE (expr) == MODIFY_EXPR)
+	warning ("suggest parentheses around assignment used as truth value");
+      break;
     }
 
   return build_binary_op (NE_EXPR, expr, integer_zero_node, 1);
