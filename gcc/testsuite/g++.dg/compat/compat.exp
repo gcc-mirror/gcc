@@ -43,11 +43,13 @@ proc compat-fix-library-path { } {
     global ld_library_path
 
     # See comments in lib/g++.exp for why this is needed.
-    setenv  LD_LIBRARY_PATH     $ld_library_path
-    setenv  SHLIB_PATH          $ld_library_path
-    setenv  LD_LIBRARYN32_PATH  $ld_library_path
-    setenv  LD_LIBRARY64_PATH   $ld_library_path
-    setenv  DYLD_LIBRARY_PATH   $ld_library_path
+    if {![is_remote target]} {
+	# See comments in lib/g++.exp for why this is needed.
+	setenv  LD_LIBRARY_PATH     $ld_library_path
+	setenv  SHLIB_PATH          $ld_library_path
+	setenv  LD_LIBRARYN32_PATH  $ld_library_path
+	setenv  LD_LIBRARY64_PATH   $ld_library_path
+    }
 }
 
 #

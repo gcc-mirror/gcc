@@ -172,11 +172,14 @@ proc g++_link_flags { paths } {
     # unix.exp -- but that's not an option since it's part of DejaGNU
     # proper, so we do it here.  We really only need to do 
     # this on IRIX, but it shouldn't hurt to do it anywhere else.
-    setenv  LD_LIBRARY_PATH     $ld_library_path
-    setenv  SHLIB_PATH          $ld_library_path
-    setenv  LD_LIBRARYN32_PATH  $ld_library_path
-    setenv  LD_LIBRARY64_PATH   $ld_library_path
-    setenv  DYLD_LIBRARY_PATH   $ld_library_path
+    # Doing this does cause trouble when testing cross-compilers.
+    if {![is_remote target]} {
+	setenv  LD_LIBRARY_PATH     $ld_library_path
+	setenv  SHLIB_PATH          $ld_library_path
+	setenv  LD_LIBRARYN32_PATH  $ld_library_path
+	setenv  LD_LIBRARY64_PATH   $ld_library_path
+	setenv  DYLD_LIBRARY_PATH   $ld_library_path
+    }
 
     return "$flags"
 }
