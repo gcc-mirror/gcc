@@ -1,3 +1,7 @@
+Fri Mar  8 21:08:52 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* recog.c (peephole2_optimize): Re-distribute EH edges.
+
 2002-03-08  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* expr.c (expand_expr): Use unsave lang hook.

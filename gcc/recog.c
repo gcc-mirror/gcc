@@ -3054,6 +3054,7 @@ peephole2_optimize (dump_file)
 	    {
 	      rtx try;
 	      int match_len;
+	      rtx note;
 
 	      /* Record this insn.  */
 	      if (--peep2_current < 0)
@@ -3105,7 +3106,6 @@ peephole2_optimize (dump_file)
 			   note = XEXP (note, 1))
 			switch (REG_NOTE_KIND (note))
 			  {
-			  case REG_EH_REGION:
 			  case REG_NORETURN:
 			  case REG_SETJMP:
 			  case REG_ALWAYS_RETURN:
@@ -3138,6 +3138,27 @@ peephole2_optimize (dump_file)
 		  /* Replace the old sequence with the new.  */
 		  try = emit_insn_after (try, peep2_insn_data[i].insn);
 		  delete_insn_chain (insn, peep2_insn_data[i].insn);
+
+		  /* Re-insert the EH_REGION notes.  */
+		  if (try == bb->end
+		      && (note = find_reg_note (peep2_insn_data[i].insn, 
+						REG_EH_REGION, NULL_RTX)))
+		    {
+		      rtx x;
+		      for (x = NEXT_INSN (peep2_insn_data[i].insn);
+			   x != NEXT_INSN (try); x = NEXT_INSN (x))
+			if (GET_CODE (x) == CALL_INSN
+			    || (flag_non_call_exceptions
+				&& may_trap_p (PATTERN (x))))
+			  REG_NOTES (x)
+			    = gen_rtx_EXPR_LIST (REG_EH_REGION,
+						 XEXP (note, 0),
+						 REG_NOTES (x));
+		    }
+		  /* Converting possibly trapping insn to non-trapping is
+		     possible.  Zap dummy outgoing edges.  */
+		  if (try == bb->end)
+		    purge_dead_edges (bb);
 
 #ifdef HAVE_conditional_execution
 		  /* With conditional execution, we cannot back up the
