@@ -4201,6 +4201,11 @@ expand_anon_union_decl (decl, cleanup, decl_elts)
       tree cleanup_elt = TREE_PURPOSE (t);
       enum machine_mode mode = TYPE_MODE (TREE_TYPE (decl_elt));
 
+      /* If any of the elements are addressable, so is the entire
+	 union.  */
+      if (TREE_USED (decl_elt))
+	TREE_USED (decl) = 1;
+
       /* Propagate the union's alignment to the elements.  */
       DECL_ALIGN (decl_elt) = DECL_ALIGN (decl);
       DECL_USER_ALIGN (decl_elt) = DECL_USER_ALIGN (decl);
