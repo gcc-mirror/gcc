@@ -52,6 +52,16 @@ Mon Jul  6 22:14:31 1998  Richard Henderson  (rth@cygnus.com)
 Mon Jul  6 22:09:32 1998  Ian Lance Taylor  <ian@cygnus.com>
 			  Jeff Law	    <law@cygnus.com>
 
+
+	* i386/cygwin32.h: Add some declaration of external functions.
+ 	(ASM_DECLARE_FUNCTION_NAME): Define.
+	(ASM_OUTPUT_EXTERNAL, ASM_OUTPUT_EXTERNAL_LIBCALL): Define.
+	(ASM_FILE_END): Define.
+	* i386/winnt.c (i386_pe_declare_function_type): New function.
+	(struct extern_list, extern_head): Define.
+	(i386_pe_record_external_function): New function.
+	(i386_pe_asm_file_end): New function.
+
 	* cpplib.c (cpp_options_init): Initialize cplusplus_comments to 1,
 	matching July 18, 1995 change to cccp.c.  If -traditional then
 	disable cplusplus_comments.
