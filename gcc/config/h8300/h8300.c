@@ -3195,13 +3195,7 @@ h8300_handle_eightbit_data_attribute (node, name, args, flags, no_add_attrs)
 
   if (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
     {
-      if (DECL_INITIAL (decl) == NULL_TREE)
-	{
-	  warning ("only initialized variables can be placed into the 8-bit area");
-	  *no_add_attrs = true;
-	}
-      else
-	DECL_SECTION_NAME (decl) = build_string (7, ".eight");
+      DECL_SECTION_NAME (decl) = build_string (7, ".eight");
     }
   else
     {
@@ -3226,13 +3220,7 @@ h8300_handle_tiny_data_attribute (node, name, args, flags, no_add_attrs)
 
   if (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
     {
-      if (DECL_INITIAL (decl) == NULL_TREE)
-	{
-	  warning ("only initialized variables can be placed into the 8-bit area");
-	  *no_add_attrs = true;
-	}
-      else
-	DECL_SECTION_NAME (decl) = build_string (6, ".tiny");
+      DECL_SECTION_NAME (decl) = build_string (6, ".tiny");
     }
   else
     {
