@@ -764,6 +764,7 @@ INTEGRATE_H = integrate.h varray.h
 LOOP_H = loop.h varray.h basic-block.h
 GCC_H = gcc.h version.h
 GGC_H = ggc.h varray.h
+TIMEVAR_H = timevar.h timevar.def
 #
 # Language makefile fragments.
 
@@ -1470,10 +1471,10 @@ ggc-common.o: ggc-common.c $(CONFIG_H) $(RTL_H) $(TREE_H) \
 	flags.h $(GGC_H) varray.h hash.h
 
 ggc-simple.o: ggc-simple.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h \
-	$(GGC_H) varray.h timevar.h
+	$(GGC_H) varray.h $(TIMEVAR_H)
 
 ggc-page.o: ggc-page.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h toplev.h \
-	$(GGC_H) varray.h timevar.h
+	$(GGC_H) varray.h $(TIMEVAR_H)
 
 ggc-none.o: ggc-none.c $(CONFIG_H) $(RTL_H) $(GGC_H)
 
@@ -1505,7 +1506,7 @@ toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) function.h \
    flags.h input.h insn-attr.h xcoffout.h defaults.h output.h \
    insn-codes.h insn-config.h intl.h $(RECOG_H) Makefile toplev.h dwarfout.h \
    dwarf2out.h sdbout.h dbxout.h $(EXPR_H) $(BASIC_BLOCK_H) graph.h loop.h \
-   except.h regs.h timevar.h $(lang_options_files)
+   except.h regs.h $(TIMEVAR_H) $(lang_options_files)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(MAYBE_USE_COLLECT2) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
 	  -c `echo $(srcdir)/toplev.c | sed 's,^\./,,'`
@@ -1658,13 +1659,10 @@ lists.o: lists.c $(CONFIG_H) system.h toplev.h $(RTL_H) $(GGC_H)
 bb-reorder.o : bb-reorder.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h \
    $(RECOG_H) insn-flags.h function.h except.h $(EXPR_H)
-timevar.o : timevar.c $(CONFIG_H) system.h timevar.h timevar.def flags.h
-timevar.h : timevar.def
-
+timevar.o : timevar.c $(CONFIG_H) system.h $(TIMEVAR_H) flags.h
 regrename.o : regrename.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h \
    $(RECOG_H) function.h resource.h
-
 $(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) $(GGC_H) \
    $(RTL_H) $(REGS_H) hard-reg-set.h real.h insn-config.h conditions.h \
    insn-flags.h output.h insn-attr.h insn-codes.h system.h toplev.h function.h
