@@ -1,3 +1,8 @@
+2003-11-21  Jan Hubicka  <jh@suse.cz>
+
+	* parser.c (cp_parser_postfix_expression): Initialize 's' to
+	NULL_TREE.
+
 2003-11-20  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* Make-lang.in (c++.extraclean): Delete.
