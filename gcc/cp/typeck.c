@@ -57,7 +57,6 @@ static tree common_base_type PARAMS ((tree, tree));
 static tree lookup_anon_field PARAMS ((tree, tree));
 static tree pointer_diff PARAMS ((tree, tree, tree));
 static tree build_component_addr PARAMS ((tree, tree));
-static tree qualify_type PARAMS ((tree, tree));
 static tree qualify_type_recursive PARAMS ((tree, tree));
 static tree get_delta_difference PARAMS ((tree, tree, int));
 static int comp_cv_target_types PARAMS ((tree, tree, int));
@@ -194,18 +193,6 @@ type_unknown_p (exp)
 	  || TREE_TYPE (exp) == unknown_type_node
 	  || (TREE_CODE (TREE_TYPE (exp)) == OFFSET_TYPE
 	      && TREE_TYPE (TREE_TYPE (exp)) == unknown_type_node));
-}
-
-/* Return a variant of TYPE which has all the type qualifiers of LIKE
-   as well as those of TYPE.  */
-
-static tree
-qualify_type (type, like)
-     tree type, like;
-{
-  /* @@ Must do member pointers here.  */
-  return cp_build_qualified_type (type, (CP_TYPE_QUALS (type) 
-					 | CP_TYPE_QUALS (like)));
 }
 
 /* Return a pointer or pointer to member type similar to T1, with a
@@ -473,17 +460,34 @@ composite_pointer_type (t1, t2, arg1, arg2, location)
   if (TYPE_PTRMEMFUNC_P (t2))
     t2 = TYPE_PTRMEMFUNC_FN_TYPE (t2);
   
+  /* We have:
+
+       [expr.rel]
+
+       If one of the operands has type "pointer to cv1 void*", then
+       the other has type "pointer to cv2T", and the composite pointer
+       type is "pointer to cv12 void", where cv12 is the union of cv1
+       and cv2.
+
+    If either type is a pointer to void, make sure it is T1.  */
+  if (VOID_TYPE_P (TREE_TYPE (t2)))
+    {
+      tree t;
+      t = t1;
+      t1 = t2;
+      t2 = t;
+    }
+  /* Now, if T1 is a pointer to void, merge the qualifiers.  */
   if (VOID_TYPE_P (TREE_TYPE (t1)))
     {
       if (pedantic && TYPE_PTRFN_P (t2))
 	pedwarn ("ISO C++ forbids %s between pointer of type `void *' and pointer-to-function", location);
-      result_type = qualify_type (t1, t2);
-    }
-  else if (VOID_TYPE_P (TREE_TYPE (t2)))
-    {
-      if (pedantic && TYPE_PTRFN_P (t1))
-	pedwarn ("ISO C++ forbids %s between pointer of type `void *' and pointer-to-function", location);
-      result_type = qualify_type (t2, t1);
+      t1 = TREE_TYPE (t1);
+      t2 = TREE_TYPE (t2);
+      result_type = cp_build_qualified_type (void_type_node,
+					     (CP_TYPE_QUALS (t1)
+					      | CP_TYPE_QUALS (t2)));
+      result_type = build_pointer_type (result_type);
     }
   else
     {
