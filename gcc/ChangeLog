@@ -1,3 +1,8 @@
+2002-02-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* dwarf2out.c (stack_adjust_offset): Add support for POST_INC,
+	POST_DEC, and POST_MODIFY.
+
 2002-02-28  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/invoke.texi, doc/standards.texi: Link to
