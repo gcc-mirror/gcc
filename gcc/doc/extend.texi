@@ -4167,8 +4167,8 @@ typedef int v4si __attribute__ ((mode(V4SI)));
 The base type @code{int} is effectively ignored by the compiler, the
 actual properties of the new type @code{v4si} are defined by the
 @code{__attribute__}.  It defines the machine mode to be used; for vector
-types these have the form @code{VnB}; @code{n} should be the number of
-elements in the vector, and @code{B} should be the base mode of the
+types these have the form @code{V@var{n}@var{B}}; @var{n} should be the
+number of elements in the vector, and @var{B} should be the base mode of the
 individual elements.  The following can be used as base modes:
 
 @table @code

@@ -7623,11 +7623,11 @@ may want to reduce the preferred alignment to
 These switches enable or disable the use of built-in functions that allow
 direct access to the MMX, SSE and 3Dnow extensions of the instruction set.
 
-The following machine modes are available for use with MMX builtins
+The following machine modes are available for use with MMX built-in functions
 (@pxref{Vector Extensions}): @code{V2SI} for a vector of two 32 bit integers,
 @code{V4HI} for a vector of four 16 bit integers, and @code{V8QI} for a
-vector of eight 8 bit integers.  Some of the builtins operate on MMX
-registers as a whole 64 bit entity, these use @code{DI} as their mode.
+vector of eight 8 bit integers.  Some of the built-in functions operate on
+MMX registers as a whole 64 bit entity, these use @code{DI} as their mode.
 
 If 3Dnow extensions are enabled, @code{V2SF} is used as a mode for a vector
 of two 32 bit floating point values.
@@ -7638,7 +7638,7 @@ integers, these use @code{V4SI}.  Finally, some instructions operate on an
 entire vector register, interpreting it as a 128 bit integer, these use mode
 @code{TI}.
 
-The following builtins are made available by @option{-mmmx}:
+The following built-in functions are made available by @option{-mmmx}:
 @table @code
 @item v8qi __builtin_ia32_paddb (v8qi, v8qi)
 Generates the @code{paddb} machine instruction.
@@ -7720,7 +7720,7 @@ Generates the @code{packuswb} machine instruction.
 
 @end table
 
-The following builtins are made available either with @option{-msse}, or
+The following built-in functions are made available either with @option{-msse}, or
 with a combination of @option{-m3dnow} and @option{-march=athlon}.
 @table @code
 
@@ -7764,7 +7764,7 @@ a value of 1, it generates @code{prefetcht0}; for a value of 2, it generates
 
 @end table
 
-The following builtins are available when @option{-msse} is used.
+The following built-in functions are available when @option{-msse} is used.
 
 @table @code
 @item int __buitlin_ia32_comieq (v4sf, v4sf)
