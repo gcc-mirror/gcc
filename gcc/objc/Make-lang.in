@@ -82,7 +82,7 @@ $(srcdir)/objc/objc-parse.y: $(srcdir)/c-parse.in
 	sed -e "/^ifc$$/,/^end ifc$$/d" \
 	  -e "/^ifobjc$$/d" -e "/^end ifobjc$$/d" \
 	  $(srcdir)/c-parse.in >>tmp-objc-prs.y
-	$(srcdir)/move-if-change tmp-objc-prs.y $(srcdir)/objc/objc-parse.y
+	$(SHELL) $(srcdir)/move-if-change tmp-objc-prs.y $(srcdir)/objc/objc-parse.y
 
 objc-act.o : $(srcdir)/objc/objc-act.c \
    $(CONFIG_H) $(TREE_H) $(RTL_H) system.h \
