@@ -1376,8 +1376,8 @@ stmp-fixinc: $(srcdir)/$(FIXINCLUDES) gsyslimits.h
 	chmod a+r include/syslimits.h
 	touch stmp-fixinc
 
-# copy objc header files
-objc-headers: force
+# copy objc header files into build directory
+objc-headers:
 	if [ -d objc ]; then true; else mkdir objc; fi
 	thisdir1=`pwd`; \
 	srcdir1=`cd $(srcdir); pwd`; \
@@ -1386,7 +1386,7 @@ objc-headers: force
 	srcdir=$${srcdir1} tooldir=$(tooldir) AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
 	GCC_FOR_TARGET="$${thisdir1}/xgcc -B$${thisdir1}/" \
 	GCC_CFLAGS="$(GCC_CFLAGS)" incinstalldir=$${thisdir1}/include
-  
+	touch objc-headers
 
 # Remake the info files.
 
