@@ -66,15 +66,10 @@ enum {
   _sch_iscppsp  = _sch_isvsp|_sch_isnvsp	/* isspace + \0 */
 };
 
-/* This code fundamentally assumes that a byte is 8 bits.  Test this
-   at compile time.  */
-
-extern int a_byte_isnt_eight_bits[(unsigned char)256 == 0 ? 1 : -1];
-
 /* Character classification.  */
 extern const unsigned short _sch_istable[256];
 
-#define _sch_test(c, bit) (_sch_istable[(int)(unsigned char)(c)] & (bit))
+#define _sch_test(c, bit) (_sch_istable[(c) & 0xff] & (bit))
 
 #define ISALPHA(c)  _sch_test(c, _sch_isalpha)
 #define ISALNUM(c)  _sch_test(c, _sch_isalnum)
@@ -98,8 +93,8 @@ extern const unsigned short _sch_istable[256];
 /* Character transformation.  */
 extern const unsigned char  _sch_toupper[256];
 extern const unsigned char  _sch_tolower[256];
-#define TOUPPER(c) _sch_toupper[(int)(unsigned char)(c)]
-#define TOLOWER(c) _sch_tolower[(int)(unsigned char)(c)]
+#define TOUPPER(c) _sch_toupper[(c) & 0xff]
+#define TOLOWER(c) _sch_tolower[(c) & 0xff]
 
 #endif /* no ctype.h */
 #endif /* SAFE_CTYPE_H */

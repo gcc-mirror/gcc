@@ -1,3 +1,8 @@
+2000-12-16  Herman A.J. ten Brugge  <Haj.Ten.Brugge@net.HCC.nl>
+
+	* safe-ctype.h: Make code work on all targets and not just on
+	targets where a char is 8 bits.
+
 2000-12-07  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* safe-ctype.h: New file.
