@@ -34,7 +34,7 @@ Boston, MA 02111-1307, USA.  */
 
    If the attribute `alternative', or a random C expression is present,
    `constrain_operands' is called.  If either of these cases of a reference to
-   an operand is found, `insn_extract' is called.
+   an operand is found, `extract_insn' is called.
 
    The special attribute `length' is also recognized.  For this operand, 
    expressions involving the address of an operand or the current insn,
@@ -5063,14 +5063,14 @@ write_attr_case (attr, av, write_case_lines, prefix, suffix, indent,
   if (must_extract)
     {
       write_indent (indent + 2);
-      printf ("insn_extract (insn);\n");
+      printf ("extract_insn (insn);\n");
     }
 
   if (must_constrain)
     {
 #ifdef REGISTER_CONSTRAINTS
       write_indent (indent + 2);
-      printf ("if (! constrain_operands (INSN_CODE (insn), reload_completed))\n");
+      printf ("if (! constrain_operands (reload_completed))\n");
       write_indent (indent + 2);
       printf ("  fatal_insn_not_found (insn);\n");
 #endif

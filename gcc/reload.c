@@ -2383,8 +2383,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   register int insn_code_number;
   register int i, j;
   int noperands;
-  /* These are the constraints for the insn.  We don't change them.  */
-  char *constraints1[MAX_RECOG_OPERANDS];
   /* These start out as the constraints for the insn
      and they are chewed up as we consider alternatives.  */
   char *constraints[MAX_RECOG_OPERANDS];
@@ -2487,8 +2485,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   bcopy ((char *) recog_operand_mode, (char *) operand_mode,
 	 noperands * sizeof (enum machine_mode));
   bcopy ((char *) recog_constraints, (char *) constraints,
-	 noperands * sizeof (char *));
-  bcopy ((char *) constraints, (char *) constraints1,
 	 noperands * sizeof (char *));
 
   commutative = -1;
@@ -3360,7 +3356,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		   || modified[j] != RELOAD_WRITE)
 		  && j != i
 		  /* Ignore things like match_operator operands.  */
-		  && *constraints1[j] != 0
+		  && *recog_constraints[j] != 0
 		  /* Don't count an input operand that is constrained to match
 		     the early clobber operand.  */
 		  && ! (this_alternative_matches[j] == i
@@ -3477,7 +3473,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	  pref_or_nothing[commutative] = pref_or_nothing[commutative + 1];
 	  pref_or_nothing[commutative + 1] = t;
 
-	  bcopy ((char *) constraints1, (char *) constraints,
+	  bcopy ((char *) recog_constraints, (char *) constraints,
 		 noperands * sizeof (char *));
 	  goto try_swapped;
 	}
@@ -3594,7 +3590,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	  = find_reloads_toplev (force_const_mem (operand_mode[i],
 						  recog_operand[i]),
 				 i, address_type[i], ind_levels, 0, insn);
-	if (alternative_allows_memconst (constraints1[i],
+	if (alternative_allows_memconst (recog_constraints[i],
 					 goal_alternative_number))
 	  goal_alternative_win[i] = 1;
       }

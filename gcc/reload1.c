@@ -4207,8 +4207,7 @@ reload_as_needed (live_known)
 		for (p = NEXT_INSN (prev); p != next; p = NEXT_INSN (p))
 		  if (p != insn && GET_RTX_CLASS (GET_CODE (p)) == 'i'
 		      && (recog_memoized (p) < 0
-			  || (insn_extract (p),
-			      ! constrain_operands (INSN_CODE (p), 1))))
+			  || (extract_insn (p), ! constrain_operands (1))))
 		    {
 		      error_for_asm (insn,
 				     "`asm' operand requires impossible reload");
@@ -7670,7 +7669,7 @@ gen_reload (out, in, opnum, type)
 
 	 It might be better not to actually emit the insn unless it is valid,
 	 but we need to pass the insn as an operand to `recog' and
-	 `insn_extract' and it is simpler to emit and then delete the insn if
+	 `extract_insn' and it is simpler to emit and then delete the insn if
 	 not valid than to dummy things up.  */
 
       rtx op0, op1, tem, insn;
@@ -7698,11 +7697,11 @@ gen_reload (out, in, opnum, type)
 
       if (code >= 0)
 	{
-	  insn_extract (insn);
+	  extract_insn (insn);
 	  /* We want constrain operands to treat this insn strictly in
 	     its validity determination, i.e., the way it would after reload
 	     has completed.  */
-	  if (constrain_operands (code, 1))
+	  if (constrain_operands (1))
 	    return insn;
 	}
 
@@ -7740,11 +7739,11 @@ gen_reload (out, in, opnum, type)
 
       if (code >= 0)
 	{
-	  insn_extract (insn);
+	  extract_insn (insn);
 	  /* We want constrain operands to treat this insn strictly in
 	     its validity determination, i.e., the way it would after reload
 	     has completed.  */
-	  if (constrain_operands (code, 1))
+	  if (constrain_operands (1))
 	    {
 	      /* Add a REG_EQUIV note so that find_equiv_reg can find it.  */
 	      REG_NOTES (insn)
@@ -8181,8 +8180,8 @@ inc_for_reload (reloadreg, in, value, inc_amount)
       code = recog_memoized (add_insn);
       if (code >= 0)
 	{
-	  insn_extract (add_insn);
-	  if (constrain_operands (code, 1))
+	  extract_insn (add_insn);
+	  if (constrain_operands (1))
 	    {
 	      /* If this is a pre-increment and we have incremented the value
 		 where it lives, copy the incremented value to RELOADREG to
@@ -9005,7 +9004,6 @@ reload_cse_simplify_operands (insn)
      rtx insn;
 {
 #ifdef REGISTER_CONSTRAINTS
-  int insn_code_number, n_operands, n_alternatives;
   int i,j;
 
   char *constraints[MAX_RECOG_OPERANDS];
@@ -9023,41 +9021,33 @@ reload_cse_simplify_operands (insn)
   int *alternative_order;
   rtx reg = gen_rtx_REG (VOIDmode, -1);
   
-  /* Find out some information about this insn.  */
-  insn_code_number = recog_memoized (insn);
-  /* We don't modify asm instructions.  */
-  if (insn_code_number < 0)
-    return 0;
+  extract_insn (insn);
 
-  n_operands = insn_n_operands[insn_code_number];
-  n_alternatives = insn_n_alternatives[insn_code_number];
-  
-  if (n_alternatives == 0 || n_operands == 0)
+  if (recog_n_alternatives == 0 || recog_n_operands == 0)
     return 0;
-  insn_extract (insn);
 
   /* Figure out which alternative currently matches.  */
-  if (! constrain_operands (insn_code_number, 1))
+  if (! constrain_operands (1))
     fatal_insn_not_found (insn);
 
-  alternative_reject = (int *) alloca (n_alternatives * sizeof (int));
-  alternative_nregs = (int *) alloca (n_alternatives * sizeof (int));
-  alternative_order = (int *) alloca (n_alternatives * sizeof (int));
-  bzero ((char *)alternative_reject, n_alternatives * sizeof (int));
-  bzero ((char *)alternative_nregs, n_alternatives * sizeof (int));
+  alternative_reject = (int *) alloca (recog_n_alternatives * sizeof (int));
+  alternative_nregs = (int *) alloca (recog_n_alternatives * sizeof (int));
+  alternative_order = (int *) alloca (recog_n_alternatives * sizeof (int));
+  bzero ((char *)alternative_reject, recog_n_alternatives * sizeof (int));
+  bzero ((char *)alternative_nregs, recog_n_alternatives * sizeof (int));
 
-  for (i = 0; i < n_operands; i++)
+  for (i = 0; i < recog_n_operands; i++)
     {
       enum machine_mode mode;
       int regno;
       char *p;
 
-      op_alt_regno[i] = (int *) alloca (n_alternatives * sizeof (int));
-      for (j = 0; j < n_alternatives; j++)
+      op_alt_regno[i] = (int *) alloca (recog_n_alternatives * sizeof (int));
+      for (j = 0; j < recog_n_alternatives; j++)
 	op_alt_regno[i][j] = -1;
 
-      p = constraints[i] = insn_operand_constraint[insn_code_number][i];
-      mode = insn_operand_mode[insn_code_number][i];
+      p = constraints[i] = recog_constraints[i];
+      mode = recog_operand_mode[i];
 
       /* Add the reject values for each alternative given by the constraints
 	 for this operand.  */
@@ -9152,21 +9142,21 @@ reload_cse_simplify_operands (insn)
 
   /* Record all alternatives which are better or equal to the currently
      matching one in the alternative_order array.  */
-  for (i = j = 0; i < n_alternatives; i++)
+  for (i = j = 0; i < recog_n_alternatives; i++)
     if (alternative_reject[i] <= alternative_reject[which_alternative])
       alternative_order[j++] = i;
-  n_alternatives = j;
+  recog_n_alternatives = j;
 
   /* Sort it.  Given a small number of alternatives, a dumb algorithm
      won't hurt too much.  */
-  for (i = 0; i < n_alternatives - 1; i++)
+  for (i = 0; i < recog_n_alternatives - 1; i++)
     {
       int best = i;
       int best_reject = alternative_reject[alternative_order[i]];
       int best_nregs = alternative_nregs[alternative_order[i]];
       int tmp;
 
-      for (j = i + 1; j < n_alternatives; j++)
+      for (j = i + 1; j < recog_n_alternatives; j++)
 	{
 	  int this_reject = alternative_reject[alternative_order[j]];
 	  int this_nregs = alternative_nregs[alternative_order[j]];
@@ -9192,9 +9182,9 @@ reload_cse_simplify_operands (insn)
   /* Pop back to the real obstacks while changing the insn.  */
   pop_obstacks ();
 
-  for (i = 0; i < n_operands; i++)
+  for (i = 0; i < recog_n_operands; i++)
     {
-      enum machine_mode mode = insn_operand_mode[insn_code_number][i];
+      enum machine_mode mode = recog_operand_mode[i];
       if (op_alt_regno[i][j] == -1)
 	continue;
 
@@ -9202,10 +9192,10 @@ reload_cse_simplify_operands (insn)
 		       gen_rtx_REG (mode, op_alt_regno[i][j]), 1);
     }
 
-  for (i = insn_n_dups[insn_code_number] - 1; i >= 0; i--)
+  for (i = recog_n_dups - 1; i >= 0; i--)
     {
       int op = recog_dup_num[i];
-      enum machine_mode mode = insn_operand_mode[insn_code_number][op];
+      enum machine_mode mode = recog_operand_mode[op];
 
       if (op_alt_regno[op][j] == -1)
 	continue;

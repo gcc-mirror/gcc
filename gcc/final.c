@@ -2843,11 +2843,11 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	   since `reload' should have changed them so that they do.  */
 
 	insn_code_number = recog_memoized (insn);
-	insn_extract (insn);
+	extract_insn (insn);
 	cleanup_subreg_operands (insn);
 
 #ifdef REGISTER_CONSTRAINTS
-	if (! constrain_operands (insn_code_number, 1))
+	if (! constrain_operands (1))
 	  fatal_insn_not_found (insn);
 #endif
 
@@ -2855,8 +2855,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	   it is output.  */
 
 #ifdef FINAL_PRESCAN_INSN
-	FINAL_PRESCAN_INSN (insn, recog_operand,
-			    insn_n_operands[insn_code_number]);
+	FINAL_PRESCAN_INSN (insn, recog_operand, recog_n_operands);
 #endif
 
 #ifdef HAVE_cc0
@@ -3047,8 +3046,8 @@ cleanup_subreg_operands (insn)
      since `reload' should have changed them so that they do.  */
 
   insn_code_number = recog_memoized (insn);
-  insn_extract (insn);
-  for (i = 0; i < insn_n_operands[insn_code_number]; i++)
+  extract_insn (insn);
+  for (i = 0; i < recog_n_operands; i++)
     {
       if (GET_CODE (recog_operand[i]) == SUBREG)
         recog_operand[i] = alter_subreg (recog_operand[i]);
@@ -3057,7 +3056,7 @@ cleanup_subreg_operands (insn)
        recog_operand[i] = walk_alter_subreg (recog_operand[i]);
     }
 
-  for (i = 0; i < insn_n_dups[insn_code_number]; i++)
+  for (i = 0; i < recog_n_dups; i++)
     {
       if (GET_CODE (*recog_dup_loc[i]) == SUBREG)
         *recog_dup_loc[i] = alter_subreg (*recog_dup_loc[i]);
