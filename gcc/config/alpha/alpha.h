@@ -731,14 +731,6 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 	   (CUM) + 16 + (TARGET_FPREGS		\
 			 && GET_MODE_CLASS (MODE) == MODE_FLOAT) * 32) : 0)
 
-/* This indicates that an argument is to be passed with an invisible reference
-   (i.e., a pointer to the object is passed).
-
-   On the Alpha, we do this if it must be passed on the stack.  */
-
-#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)	\
-  (MUST_PASS_IN_STACK (MODE, TYPE))
-
 /* Specify the padding direction of arguments.
 
    On the Alpha, we must pad upwards in order to be able to pass args in
