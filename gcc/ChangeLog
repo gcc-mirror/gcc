@@ -1,3 +1,8 @@
+Sat Feb  6 11:04:08 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* unroll.c (find_splittable_givs): After express_from, call replace_rtx
+	to convert dest_reg to new_reg.
+
 Sat Feb  6 10:31:35 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* reload1.c (reload_combine_note_store): Be more careful with
