@@ -109,19 +109,6 @@ text_section ()
     }
 }
 
-/* Tell assembler to switch to read-only data section.  This is normally
-   the text section.  */
-
-void
-readonly_data_section ()
-{
-#ifdef READONLY_DATA_SECTION
-  READONLY_DATA_SECTION ();
-#else
-  text_section ();
-#endif
-}
-
 /* Tell assembler to switch to data section.  */
 
 void
@@ -142,6 +129,19 @@ data_section ()
 
       in_section = in_data;
     }
+}
+
+/* Tell assembler to switch to read-only data section.  This is normally
+   the text section.  */
+
+void
+readonly_data_section ()
+{
+#ifdef READONLY_DATA_SECTION
+  READONLY_DATA_SECTION ();  /* Note this can call data_section.  */
+#else
+  text_section ();
+#endif
 }
 
 /* Determine if we're in the text section. */
