@@ -628,7 +628,7 @@ get_exception_filter (struct function *fun)
   rtx filter = fun->eh->filter;
   if (fun == cfun && ! filter)
     {
-      filter = gen_reg_rtx (word_mode);
+      filter = gen_reg_rtx (targetm.eh_return_filter_mode ());
       fun->eh->filter = filter;
     }
   return filter;
@@ -1528,7 +1528,8 @@ build_post_landing_pads (void)
 			emit_cmp_and_jump_insns
 			  (cfun->eh->filter,
 			   GEN_INT (tree_low_cst (TREE_VALUE (flt_node), 0)),
-			   EQ, NULL_RTX, word_mode, 0, c->label);
+			   EQ, NULL_RTX, 
+			   targetm.eh_return_filter_mode (), 0, c->label);
 
 			tp_node = TREE_CHAIN (tp_node);
 			flt_node = TREE_CHAIN (flt_node);
@@ -1560,7 +1561,8 @@ build_post_landing_pads (void)
 
 	  emit_cmp_and_jump_insns (cfun->eh->filter,
 				   GEN_INT (region->u.allowed.filter),
-				   EQ, NULL_RTX, word_mode, 0, region->label);
+				   EQ, NULL_RTX, 
+				   targetm.eh_return_filter_mode (), 0, region->label);
 
 	  /* We delay the generation of the _Unwind_Resume until we generate
 	     landing pads.  We emit a marker here so as to get good control
@@ -1738,7 +1740,8 @@ dw2_build_landing_pads (void)
       emit_move_insn (cfun->eh->exc_ptr,
 		      gen_rtx_REG (ptr_mode, EH_RETURN_DATA_REGNO (0)));
       emit_move_insn (cfun->eh->filter,
-		      gen_rtx_REG (word_mode, EH_RETURN_DATA_REGNO (1)));
+		      gen_rtx_REG (targetm.eh_return_filter_mode (), 
+				   EH_RETURN_DATA_REGNO (1)));
 
       seq = get_insns ();
       end_sequence ();

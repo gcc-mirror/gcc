@@ -276,6 +276,9 @@ struct gcc_target
     bool (* is_costly_dependence) (rtx, rtx, rtx, int, int);
   } sched;
 
+  /* Return machine mode for filter value. */
+  enum machine_mode (* eh_return_filter_mode) (void);
+
   /* Given two decls, merge their attributes and return the result.  */
   tree (* merge_decl_attributes) (tree, tree);
 

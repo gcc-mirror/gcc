@@ -268,6 +268,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    TARGET_SCHED_DFA_NEW_CYCLE,					\
    TARGET_SCHED_IS_COSTLY_DEPENDENCE}
 
+/* In except.c */
+#define TARGET_EH_RETURN_FILTER_MODE  default_eh_return_filter_mode;
+
 /* In tree.c.  */
 #define TARGET_MERGE_DECL_ATTRIBUTES merge_decl_attributes
 #define TARGET_MERGE_TYPE_ATTRIBUTES merge_type_attributes
@@ -436,6 +439,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 {						\
   TARGET_ASM_OUT,				\
   TARGET_SCHED,					\
+  TARGET_EH_RETURN_FILTER_MODE,			\
   TARGET_MERGE_DECL_ATTRIBUTES,			\
   TARGET_MERGE_TYPE_ATTRIBUTES,			\
   TARGET_ATTRIBUTE_TABLE,			\

@@ -1,3 +1,13 @@
+2004-08-16  Fariborz Jahanian <fjahanian@apple.com>
+
+	* except.c (get_exception_filter, build_post_landing_pads,
+	dw2_build_landing_pads): Use target-specific mode for 'filter'.
+	* target-def.h (TARGET_EH_RETURN_FILTER_MODE): macro defined and used.
+	* target.h (eh_return_filter_mode): New field added.
+	* targhooks.c (default_eh_return_filter_mode): Defined.
+	* targhooks.h (default_eh_return_filter_mode): Declared.
+	* config/rs6000/rs6000.c (rs6000_eh_return_filter_mode): Defined.
+
 2004-08-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.ac: Replace _GCC_TOPLEV_NONCANONICAL_TARGET with

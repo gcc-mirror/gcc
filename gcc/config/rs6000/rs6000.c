@@ -748,6 +748,8 @@ static tree rs6000_build_builtin_va_list (void);
 static tree rs6000_gimplify_va_arg (tree, tree, tree *, tree *);
 static bool rs6000_must_pass_in_stack (enum machine_mode, tree);
 
+static enum machine_mode rs6000_eh_return_filter_mode (void);
+
 /* Hash table stuff for keeping track of TOC entries.  */
 
 struct toc_hash_struct GTY(())
@@ -963,6 +965,9 @@ static const char alt_reg_names[][8] =
 
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR rs6000_gimplify_va_arg
+
+#undef TARGET_EH_RETURN_FILTER_MODE
+#define TARGET_EH_RETURN_FILTER_MODE rs6000_eh_return_filter_mode
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -17169,6 +17174,13 @@ rs6000_dbx_register_number (unsigned int regno)
     return regno;
 
   abort ();
+}
+
+/* target hook eh_return_filter_mode */
+static enum machine_mode 
+rs6000_eh_return_filter_mode (void)
+{
+  return TARGET_32BIT ? SImode : word_mode;
 }
 
 #include "gt-rs6000.h"
