@@ -1,3 +1,8 @@
+2002-06-24  Alan Modra  <amodra@bigpond.net.au>
+
+	* libiberty.h (basename): Don't declare if HAVE_DECL_BASENAME.
+	* getopt.h (getopt): Don't declare if HAVE_DECL_GETOPT.
+
 2002-06-06  DJ Delorie  <dj@redhat.com>
 
 	* hashtab.h (htab): Rearrange new members for backward
