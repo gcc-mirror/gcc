@@ -144,21 +144,20 @@ public class BigInteger extends Number implements Comparable
 
   public BigInteger(int numBits, Random rnd)
   {
+    this(1, randBytes(numBits, rnd));
+  }
+
+  private static byte[] randBytes(int numBits, Random rnd)
+  {
     if (numBits < 0)
       throw new IllegalArgumentException();
 
-    // Result is always positive so tack on an extra zero word, it will be
-    // canonicalized out later if necessary.
-    int nwords = numBits / 32 + 2;
-    words = new int[nwords];
-    words[--nwords] = 0;
-    words[--nwords] = rnd.nextInt() >>> (numBits % 32);
-    while (--nwords >= 0)
-      words[nwords] = rnd.nextInt();
-
-    BigInteger result = make(words, words.length);
-    this.ival = result.ival;
-    this.words = result.words;
+    int extra = numBits % 8;
+    byte[] b = new byte[numBits / 8 + (extra > 0 ? 1 : 0)];
+    rnd.nextBytes(b);
+    if (extra > 0)
+      b[0] &= ~((~0) << (8 - extra));
+    return b;
   }
 
   public BigInteger(int bitLength, int certainty, Random rnd)
