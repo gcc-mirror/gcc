@@ -1428,11 +1428,16 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 	      }
 	    else
 	      {
+#ifdef ASM_OUTPUT_ALIGNED_DECL_COMMON
+		ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, decl, name, size,
+						   DECL_ALIGN (decl));
+#else
 #ifdef ASM_OUTPUT_ALIGNED_COMMON
 		ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, name, size,
 					   DECL_ALIGN (decl));
 #else
 		ASM_OUTPUT_COMMON (asm_out_file, name, size, rounded);
+#endif
 #endif
 	      }
 	}
@@ -1472,11 +1477,16 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 	      }
 	    else
 	      {
+#ifdef ASM_OUTPUT_ALIGNED_DECL_LOCAL
+		ASM_OUTPUT_ALIGNED_DECL_LOCAL (asm_out_file, decl, name, size,
+						  DECL_ALIGN (decl));
+#else
 #ifdef ASM_OUTPUT_ALIGNED_LOCAL
 		ASM_OUTPUT_ALIGNED_LOCAL (asm_out_file, name, size,
 					  DECL_ALIGN (decl));
 #else
 		ASM_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
+#endif
 #endif
 	      }
 	}
@@ -1878,10 +1888,15 @@ assemble_static_space (size)
     }
   else
     {
+#ifdef ASM_OUTPUT_ALIGNED_DECL_LOCAL
+      ASM_OUTPUT_ALIGNED_DECL_LOCAL (asm_out_file, NULL_TREE, name, size,
+				  BIGGEST_ALIGNMENT);
+#else
 #ifdef ASM_OUTPUT_ALIGNED_LOCAL
       ASM_OUTPUT_ALIGNED_LOCAL (asm_out_file, name, size, BIGGEST_ALIGNMENT);
 #else
       ASM_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
+#endif
 #endif
     }
   return x;
