@@ -466,30 +466,61 @@
   [(set_attr "type" "sse")
    (set_attr "mode" "SF")])
 
+;; ??? For !flag_finite_math_only, the representation with SMIN/SMAX
+;; isn't really correct, as those rtl operators aren't defined when 
+;; applied to NaNs.  Hopefully the optimizers won't get too smart on us.
+
 (define_expand "smaxv4sf3"
   [(set (match_operand:V4SF 0 "register_operand" "")
 	(smax:V4SF (match_operand:V4SF 1 "nonimmediate_operand" "")
 		   (match_operand:V4SF 2 "nonimmediate_operand" "")))]
   "TARGET_SSE"
-  "ix86_fixup_binary_operands_no_copy (SMAX, V4SFmode, operands);")
+{
+  if (!flag_finite_math_only)
+    operands[1] = force_reg (V4SFmode, operands[1]);
+  ix86_fixup_binary_operands_no_copy (SMAX, V4SFmode, operands);
+})
 
-(define_insn "*smaxv4sf3"
+(define_insn "*smaxv4sf3_finite"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(smax:V4SF (match_operand:V4SF 1 "nonimmediate_operand" "%0")
 		   (match_operand:V4SF 2 "nonimmediate_operand" "xm")))]
-  "TARGET_SSE && ix86_binary_operator_ok (SMAX, V4SFmode, operands)"
+  "TARGET_SSE && flag_finite_math_only
+   && ix86_binary_operator_ok (SMAX, V4SFmode, operands)"
   "maxps\t{%2, %0|%0, %2}"
   [(set_attr "type" "sse")
    (set_attr "mode" "V4SF")])
 
-(define_insn "sse_vmsmaxv4sf3"
+(define_insn "*smaxv4sf3"
+  [(set (match_operand:V4SF 0 "register_operand" "=x")
+	(smax:V4SF (match_operand:V4SF 1 "register_operand" "0")
+		   (match_operand:V4SF 2 "nonimmediate_operand" "xm")))]
+  "TARGET_SSE"
+  "maxps\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sse")
+   (set_attr "mode" "V4SF")])
+
+(define_insn "*sse_vmsmaxv4sf3_finite"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(vec_merge:V4SF
 	 (smax:V4SF (match_operand:V4SF 1 "nonimmediate_operand" "%0")
 		    (match_operand:V4SF 2 "nonimmediate_operand" "xm"))
 	 (match_dup 1)
 	 (const_int 1)))]
-  "TARGET_SSE && ix86_binary_operator_ok (SMAX, V4SFmode, operands)"
+  "TARGET_SSE && flag_finite_math_only
+   && ix86_binary_operator_ok (SMAX, V4SFmode, operands)"
+  "maxss\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sse")
+   (set_attr "mode" "SF")])
+
+(define_insn "sse_vmsmaxv4sf3"
+  [(set (match_operand:V4SF 0 "register_operand" "=x")
+	(vec_merge:V4SF
+	 (smax:V4SF (match_operand:V4SF 1 "register_operand" "0")
+		    (match_operand:V4SF 2 "nonimmediate_operand" "xm"))
+	 (match_dup 1)
+	 (const_int 1)))]
+  "TARGET_SSE"
   "maxss\t{%2, %0|%0, %2}"
   [(set_attr "type" "sse")
    (set_attr "mode" "SF")])
@@ -499,25 +530,52 @@
 	(smin:V4SF (match_operand:V4SF 1 "nonimmediate_operand" "")
 		   (match_operand:V4SF 2 "nonimmediate_operand" "")))]
   "TARGET_SSE"
-  "ix86_fixup_binary_operands_no_copy (SMIN, V4SFmode, operands);")
+{
+  if (!flag_finite_math_only)
+    operands[1] = force_reg (V4SFmode, operands[1]);
+  ix86_fixup_binary_operands_no_copy (SMIN, V4SFmode, operands);
+})
 
-(define_insn "*sminv4sf3"
+(define_insn "*sminv4sf3_finite"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(smin:V4SF (match_operand:V4SF 1 "nonimmediate_operand" "%0")
 		   (match_operand:V4SF 2 "nonimmediate_operand" "xm")))]
-  "TARGET_SSE && ix86_binary_operator_ok (SMIN, V4SFmode, operands)"
+  "TARGET_SSE && flag_finite_math_only
+   && ix86_binary_operator_ok (SMIN, V4SFmode, operands)"
   "minps\t{%2, %0|%0, %2}"
   [(set_attr "type" "sse")
    (set_attr "mode" "V4SF")])
 
-(define_insn "sse_vmsminv4sf3"
+(define_insn "*sminv4sf3"
+  [(set (match_operand:V4SF 0 "register_operand" "=x")
+	(smin:V4SF (match_operand:V4SF 1 "register_operand" "0")
+		   (match_operand:V4SF 2 "nonimmediate_operand" "xm")))]
+  "TARGET_SSE"
+  "minps\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sse")
+   (set_attr "mode" "V4SF")])
+
+(define_insn "*sse_vmsminv4sf3_finite"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(vec_merge:V4SF
 	 (smin:V4SF (match_operand:V4SF 1 "nonimmediate_operand" "%0")
 		    (match_operand:V4SF 2 "nonimmediate_operand" "xm"))
 	 (match_dup 1)
 	 (const_int 1)))]
-  "TARGET_SSE && ix86_binary_operator_ok (SMIN, V4SFmode, operands)"
+  "TARGET_SSE && flag_finite_math_only
+   && ix86_binary_operator_ok (SMIN, V4SFmode, operands)"
+  "minss\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sse")
+   (set_attr "mode" "SF")])
+
+(define_insn "sse_vmsminv4sf3"
+  [(set (match_operand:V4SF 0 "register_operand" "=x")
+	(vec_merge:V4SF
+	 (smin:V4SF (match_operand:V4SF 1 "register_operand" "0")
+		    (match_operand:V4SF 2 "nonimmediate_operand" "xm"))
+	 (match_dup 1)
+	 (const_int 1)))]
+  "TARGET_SSE"
   "minss\t{%2, %0|%0, %2}"
   [(set_attr "type" "sse")
    (set_attr "mode" "SF")])
@@ -1321,30 +1379,61 @@
   [(set_attr "type" "sse")
    (set_attr "mode" "SF")])
 
+;; ??? For !flag_finite_math_only, the representation with SMIN/SMAX
+;; isn't really correct, as those rtl operators aren't defined when 
+;; applied to NaNs.  Hopefully the optimizers won't get too smart on us.
+
 (define_expand "smaxv2df3"
   [(set (match_operand:V2DF 0 "register_operand" "")
 	(smax:V2DF (match_operand:V2DF 1 "nonimmediate_operand" "")
 		   (match_operand:V2DF 2 "nonimmediate_operand" "")))]
   "TARGET_SSE2"
-  "ix86_fixup_binary_operands_no_copy (SMAX, V2DFmode, operands);")
+{
+  if (!flag_finite_math_only)
+    operands[1] = force_reg (V2DFmode, operands[1]);
+  ix86_fixup_binary_operands_no_copy (SMAX, V2DFmode, operands);
+})
 
-(define_insn "*smaxv2df3"
+(define_insn "*smaxv2df3_finite"
   [(set (match_operand:V2DF 0 "register_operand" "=x")
 	(smax:V2DF (match_operand:V2DF 1 "nonimmediate_operand" "%0")
 		   (match_operand:V2DF 2 "nonimmediate_operand" "xm")))]
-  "TARGET_SSE2 && ix86_binary_operator_ok (SMAX, V2DFmode, operands)"
+  "TARGET_SSE2 && flag_finite_math_only
+   && ix86_binary_operator_ok (SMAX, V2DFmode, operands)"
   "maxpd\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseadd")
    (set_attr "mode" "V2DF")])
 
-(define_insn "sse2_vmsmaxv2df3"
+(define_insn "*smaxv2df3"
+  [(set (match_operand:V2DF 0 "register_operand" "=x")
+	(smax:V2DF (match_operand:V2DF 1 "register_operand" "0")
+		   (match_operand:V2DF 2 "nonimmediate_operand" "xm")))]
+  "TARGET_SSE2"
+  "maxpd\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sseadd")
+   (set_attr "mode" "V2DF")])
+
+(define_insn "*sse2_vmsmaxv2df3_finite"
   [(set (match_operand:V2DF 0 "register_operand" "=x")
 	(vec_merge:V2DF
 	  (smax:V2DF (match_operand:V2DF 1 "nonimmediate_operand" "%0")
 		     (match_operand:V2DF 2 "nonimmediate_operand" "xm"))
 	  (match_dup 1)
 	  (const_int 1)))]
-  "TARGET_SSE2 && ix86_binary_operator_ok (SMAX, V2DFmode, operands)"
+  "TARGET_SSE2 && flag_finite_math_only
+   && ix86_binary_operator_ok (SMAX, V2DFmode, operands)"
+  "maxsd\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sseadd")
+   (set_attr "mode" "DF")])
+
+(define_insn "sse2_vmsmaxv2df3"
+  [(set (match_operand:V2DF 0 "register_operand" "=x")
+	(vec_merge:V2DF
+	  (smax:V2DF (match_operand:V2DF 1 "register_operand" "0")
+		     (match_operand:V2DF 2 "nonimmediate_operand" "xm"))
+	  (match_dup 1)
+	  (const_int 1)))]
+  "TARGET_SSE2"
   "maxsd\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseadd")
    (set_attr "mode" "DF")])
@@ -1354,25 +1443,52 @@
 	(smin:V2DF (match_operand:V2DF 1 "nonimmediate_operand" "")
 		   (match_operand:V2DF 2 "nonimmediate_operand" "")))]
   "TARGET_SSE2"
-  "ix86_fixup_binary_operands_no_copy (SMIN, V2DFmode, operands);")
+{
+  if (!flag_finite_math_only)
+    operands[1] = force_reg (V2DFmode, operands[1]);
+  ix86_fixup_binary_operands_no_copy (SMIN, V2DFmode, operands);
+})
 
-(define_insn "*sminv2df3"
+(define_insn "*sminv2df3_finite"
   [(set (match_operand:V2DF 0 "register_operand" "=x")
 	(smin:V2DF (match_operand:V2DF 1 "nonimmediate_operand" "%0")
 		   (match_operand:V2DF 2 "nonimmediate_operand" "xm")))]
-  "TARGET_SSE2 && ix86_binary_operator_ok (SMIN, V2DFmode, operands)"
+  "TARGET_SSE2 && flag_finite_math_only
+   && ix86_binary_operator_ok (SMIN, V2DFmode, operands)"
   "minpd\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseadd")
    (set_attr "mode" "V2DF")])
 
-(define_insn "sse2_vmsminv2df3"
+(define_insn "*sminv2df3"
+  [(set (match_operand:V2DF 0 "register_operand" "=x")
+	(smin:V2DF (match_operand:V2DF 1 "register_operand" "0")
+		   (match_operand:V2DF 2 "nonimmediate_operand" "xm")))]
+  "TARGET_SSE2"
+  "minpd\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sseadd")
+   (set_attr "mode" "V2DF")])
+
+(define_insn "*sse2_vmsminv2df3_finite"
   [(set (match_operand:V2DF 0 "register_operand" "=x")
 	(vec_merge:V2DF
 	  (smin:V2DF (match_operand:V2DF 1 "nonimmediate_operand" "%0")
 		     (match_operand:V2DF 2 "nonimmediate_operand" "xm"))
 	  (match_dup 1)
 	  (const_int 1)))]
-  "TARGET_SSE2 && ix86_binary_operator_ok (SMIN, V2DFmode, operands)"
+  "TARGET_SSE2 && flag_finite_math_only
+   && ix86_binary_operator_ok (SMIN, V2DFmode, operands)"
+  "minsd\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sseadd")
+   (set_attr "mode" "DF")])
+
+(define_insn "sse2_vmsminv2df3"
+  [(set (match_operand:V2DF 0 "register_operand" "=x")
+	(vec_merge:V2DF
+	  (smin:V2DF (match_operand:V2DF 1 "register_operand" "0")
+		     (match_operand:V2DF 2 "nonimmediate_operand" "xm"))
+	  (match_dup 1)
+	  (const_int 1)))]
+  "TARGET_SSE2"
   "minsd\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseadd")
    (set_attr "mode" "DF")])
