@@ -2248,7 +2248,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
+			       copy_to_mode_reg (SImode, GEN_INT (0)),
 			       GEN_INT (0x7)));
     }
   if (TARGET_CHECK_RANGE_DIV)
@@ -2298,7 +2298,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
+			       copy_to_mode_reg (DImode, GEN_INT (0)),
 			       GEN_INT (0x7)));
     }
   if (TARGET_CHECK_RANGE_DIV)
@@ -2348,7 +2348,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
+			       copy_to_mode_reg (SImode, GEN_INT (0)),
 			       GEN_INT (0x7)));
     }
   
@@ -2389,7 +2389,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
+			       copy_to_mode_reg (DImode, GEN_INT (0)),
 			       GEN_INT (0x7)));
     }
   
@@ -2414,7 +2414,7 @@
 
 (define_expand "div_trap"
   [(trap_if (eq (match_operand 0 "register_operand" "d")
-		(match_operand 1 "true_reg_or_0_operand" "dJ"))
+		(match_operand 1 "reg_or_0_operand" "dJ"))
             (match_operand 2 "immediate_operand" ""))]
   ""
   "
@@ -2428,7 +2428,7 @@
 
 (define_insn "div_trap_normal"
   [(trap_if (eq (match_operand 0 "register_operand" "d")
-		(match_operand 1 "true_reg_or_0_operand" "dJ"))
+		(match_operand 1 "reg_or_0_operand" "dJ"))
             (match_operand 2 "immediate_operand" ""))]
   "!TARGET_MIPS16"
   "*
@@ -2471,7 +2471,7 @@
 
 (define_insn "div_trap_mips16"
   [(trap_if (eq (match_operand 0 "register_operand" "d")
-		(match_operand 1 "true_reg_or_0_operand" "dJ"))
+		(match_operand 1 "reg_or_0_operand" "dJ"))
             (match_operand 2 "immediate_operand" ""))
    (clobber (reg:SI 24))]
   "TARGET_MIPS16"
@@ -2490,16 +2490,15 @@
       have_dep_anti = 1;
   if (! have_dep_anti)
     {
-      /* No branch delay slots on mips16. */ 
       if (GET_CODE (operands[1]) == CONST_INT)
-        return \"%(bnez\\t%0,1f\\n\\tbreak\\t%2\\n1:%)\";
+        return \"%(bnez\\t%0,1f\\n\\tnop\\n\\tbreak\\t%2\\n1:%)\";
       else
-        return \"%(bne\\t%0,%1,1f\\n\\tbreak\\t%2\\n1:%)\";
+        return \"%(bne\\t%0,%1,1f\\n\\tnop\\n\\tbreak\\t%2\\n1:%)\";
     }
   return \"\";
 }"
   [(set_attr "type" "unknown")
-   (set_attr "length" "3")])
+   (set_attr "length" "4")])
 
 (define_expand "divsi3"
   [(set (match_operand:SI 0 "register_operand" "=l")
@@ -2516,7 +2515,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
+			       copy_to_mode_reg (SImode, GEN_INT (0)),
 			       GEN_INT (0x7)));
     }
   if (TARGET_CHECK_RANGE_DIV)
@@ -2559,7 +2558,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
+			       copy_to_mode_reg (DImode, GEN_INT (0)),
 			       GEN_INT (0x7)));
     }
   if (TARGET_CHECK_RANGE_DIV)
@@ -2602,7 +2601,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
+			       copy_to_mode_reg (SImode, GEN_INT (0)),
 			       GEN_INT (0x7)));
     }
   if (TARGET_CHECK_RANGE_DIV)
@@ -2645,7 +2644,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
+			       copy_to_mode_reg (DImode, GEN_INT (0)),
 			       GEN_INT (0x7)));
     }
   if (TARGET_CHECK_RANGE_DIV)
@@ -2688,7 +2687,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
+			       copy_to_mode_reg (SImode, GEN_INT (0)),
 			       GEN_INT (0x7)));
     }
   
@@ -2722,7 +2721,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
+			       copy_to_mode_reg (DImode, GEN_INT (0)),
 			       GEN_INT (0x7)));
     }
   
@@ -2756,7 +2755,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
+			       copy_to_mode_reg (SImode, GEN_INT (0)),
 			       GEN_INT (0x7)));
     }
   
@@ -2790,7 +2789,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
+			       copy_to_mode_reg (DImode, GEN_INT (0)),
 			       GEN_INT (0x7)));
     }
   
