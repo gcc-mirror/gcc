@@ -2670,6 +2670,17 @@ init_emit ()
   regno_reg_rtx[VIRTUAL_STACK_VARS_REGNUM] = virtual_stack_vars_rtx;
   regno_reg_rtx[VIRTUAL_STACK_DYNAMIC_REGNUM] = virtual_stack_dynamic_rtx;
   regno_reg_rtx[VIRTUAL_OUTGOING_ARGS_REGNUM] = virtual_outgoing_args_rtx;
+
+  /* Indicate that the virtual registers and stack locations are
+     all pointers.  */
+  REGNO_POINTER_FLAG (STACK_POINTER_REGNUM) = 1;
+  REGNO_POINTER_FLAG (FRAME_POINTER_REGNUM) = 1;
+  REGNO_POINTER_FLAG (ARG_POINTER_REGNUM) = 1;
+
+  REGNO_POINTER_FLAG (VIRTUAL_INCOMING_ARGS_REGNUM) = 1;
+  REGNO_POINTER_FLAG (VIRTUAL_STACK_VARS_REGNUM) = 1;
+  REGNO_POINTER_FLAG (VIRTUAL_STACK_DYNAMIC_REGNUM) = 1;
+  REGNO_POINTER_FLAG (VIRTUAL_OUTGOING_ARGS_REGNUM) = 1;
 }
 
 /* Create some permanent unique rtl objects shared between all functions.
