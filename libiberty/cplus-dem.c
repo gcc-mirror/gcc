@@ -1,6 +1,6 @@
 /* Demangler for GNU C++
    Copyright 1989, 1991, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000 Free Software Foundation, Inc.
+   2000, 2001 Free Software Foundation, Inc.
    Written by James Clark (jjc@jclark.uucp)
    Rewritten by Fred Fish (fnf@cygnus.com) for ARM and Lucid demangling
    Modified by Satish Pai (pai@apollo.hp.com) for HP demangling
@@ -920,6 +920,13 @@ cplus_demangle (mangled, options)
       ret = cplus_demangle_v3 (mangled);
       if (ret || GNU_V3_DEMANGLING)
 	return ret;
+    }
+
+  if (JAVA_DEMANGLING)
+    {
+      ret = java_demangle_v3 (mangled);
+      if (ret)
+        return ret;
     }
 
   if (GNAT_DEMANGLING)
@@ -4950,7 +4957,6 @@ static struct option long_options[] = {
   {"strip-underscores", no_argument, 0, '_'},
   {"format", required_argument, 0, 's'},
   {"help", no_argument, 0, 'h'},
-  {"java", no_argument, 0, 'j'},
   {"no-strip-underscores", no_argument, 0, 'n'},
   {"version", no_argument, 0, 'v'},
   {0, no_argument, 0, 0}
@@ -5044,12 +5050,13 @@ main (argc, argv)
   char *result;
   int c;
   const char *valid_symbols;
+  enum demangling_styles style;
 
   program_name = argv[0];
 
   strip_underscore = prepends_underscore;
 
-  while ((c = getopt_long (argc, argv, "_ns:j", long_options, (int *) 0)) != EOF)
+  while ((c = getopt_long (argc, argv, "_ns:", long_options, (int *) 0)) != EOF)
     {
       switch (c)
 	{
@@ -5067,13 +5074,8 @@ main (argc, argv)
 	case '_':
 	  strip_underscore = 1;
 	  break;
-	case 'j':
-	  flags |= DMGL_JAVA;
-	  break;
 	case 's':
 	  {
-	    enum demangling_styles style;
-
 	    style = cplus_demangle_name_to_style (optarg);
 	    if (style == unknown_demangling)
 	      {
@@ -5146,7 +5148,7 @@ main (argc, argv)
 		skip_first = i;
 
 	      mbuffer[i] = 0;
-
+	      flags |= style;
 	      result = cplus_demangle (mbuffer + skip_first, flags);
 	      if (result)
 		{

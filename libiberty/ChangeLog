@@ -1,3 +1,25 @@
+2001-01-31  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	Add support for Java demangling under the v3 ABI:
+	* cp-demangle.c (NAMESPACE_SEPARATOR): New define.
+	(struct demangling_def): Add `style' field.
+	(demangling_new): New parameter `style'. Set it in demangling_t.
+	(demangle_prefix): Use NAMESPACE_SEPARATOR.
+	(demangle_type_ptr): Don't emit pointer symbol if doing Java output.
+	(cp_demangle): New parameter `style'. Pass it to demangling_new().
+	(main): Call cp_demangle with extra parameter.
+	(java_demangle_v3): New function.
+	(java_builtin_type_names): New. Table of primitive type names used
+	for Java demangling.
+	(demangle_builtin_type): Look up in java_builtin_type_names if doing
+	Java output.
+	* cplus-dem.c (cplus_demangle): Use java_demangle_v3 to do Java 
+	demangling.
+	(long_options): Remove obsolete `java' option.
+	(main): Remove explicit handling of `java' option. Instead, pass style
+	parameter in cplus_demangle flags as gdb does.
+	* testsuite/demangle.expected: Add some Java test cases.
+
 2001-01-29  Phil Edwards  <pme@sources.redhat.com>
 
 	* COPYING.LIB:  Update to LGPL 2.1 from the FSF.

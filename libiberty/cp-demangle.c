@@ -1,5 +1,5 @@
 /* Demangler for IA64 / g++ V3 ABI.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    Written by Alex Samuel <samuel@codesourcery.com>. 
 
    This file is part of GNU CC.
@@ -67,6 +67,9 @@
 /* The prefix prepended by GCC to an identifier represnting the
    anonymous namespace.  */
 #define ANONYMOUS_NAMESPACE_PREFIX "_GLOBAL_"
+
+/* Character(s) to use for namespace separation in demangled output */
+#define NAMESPACE_SEPARATOR (dm->style == DMGL_JAVA ? "." : "::")
 
 /* If flag_verbose is zero, some simplifications will be made to the
    output to make it easier to read and supress details that are
@@ -166,6 +169,9 @@ struct demangling_def
 
   /* The most recently demangled source-name.  */
   dyn_string_t last_source_name;
+  
+  /* Language style to use for demangled output. */
+  int style;
 };
 
 typedef struct demangling_def *demangling_t;
@@ -240,7 +246,7 @@ static void template_arg_list_print
 static template_arg_list_t current_template_arg_list
   PARAMS ((demangling_t));
 static demangling_t demangling_new
-  PARAMS ((const char *));
+  PARAMS ((const char *, int));
 static void demangling_delete 
   PARAMS ((demangling_t));
 
@@ -783,8 +789,9 @@ current_template_arg_list (dm)
    Returns NULL if allocation fails.  */
 
 static demangling_t
-demangling_new (name)
+demangling_new (name, style)
      const char *name;
+     int style;
 {
   demangling_t dm;
   dm = (demangling_t) malloc (sizeof (struct demangling_def));
@@ -807,6 +814,7 @@ demangling_new (name)
       dyn_string_delete (dm->last_source_name);
       return NULL;
     }
+  dm->style = style;
 
   return dm;
 }
@@ -918,7 +926,7 @@ static status_t demangle_local_name
 static status_t demangle_discriminator 
   PARAMS ((demangling_t, int));
 static status_t cp_demangle
-  PARAMS ((const char *, dyn_string_t));
+  PARAMS ((const char *, dyn_string_t, int));
 #ifdef IN_LIBGCC2
 static status_t cp_demangle_type
   PARAMS ((const char*, dyn_string_t));
@@ -1222,7 +1230,7 @@ demangle_prefix (dm, encode_return_type)
 	{
 	  /* We have another level of scope qualification.  */
 	  if (nested)
-	    RETURN_IF_ERROR (result_add (dm, "::"));
+	    RETURN_IF_ERROR (result_add (dm, NAMESPACE_SEPARATOR));
 	  else
 	    nested = 1;
 
@@ -2093,8 +2101,10 @@ demangle_type_ptr (dm, insert_pos, substitution_start)
       RETURN_IF_ERROR (demangle_type_ptr (dm, insert_pos, 
 					  substitution_start));
       /* Insert an asterisk where we're told to; it doesn't
-	 necessarily go at the end.  */
-      RETURN_IF_ERROR (result_insert_char (dm, *insert_pos, '*'));
+	 necessarily go at the end.  If we're doing Java style output, 
+	 there is no pointer symbol.  */
+      if (dm->style != DMGL_JAVA)
+	RETURN_IF_ERROR (result_insert_char (dm, *insert_pos, '*'));
       /* The next (outermost) pointer or reference character should go
 	 after this one.  */
       ++(*insert_pos);
@@ -2469,6 +2479,39 @@ static const char *const builtin_type_names[26] =
   "..."                       /* z */
 };
 
+/* Java source names of builtin types.  Types that arn't valid in Java
+   are also included here - we don't fail if someone attempts to demangle a 
+   C++ symbol in Java style. */
+static const char *const java_builtin_type_names[26] = 
+{
+  "signed char",                /* a */
+  "boolean", /* C++ "bool" */   /* b */
+  "byte", /* C++ "char" */      /* c */
+  "double",                     /* d */
+  "long double",                /* e */
+  "float",                      /* f */
+  "__float128",                 /* g */
+  "unsigned char",              /* h */
+  "int",                        /* i */
+  "unsigned",                   /* j */
+  NULL,                         /* k */
+  "long",                       /* l */
+  "unsigned long",              /* m */
+  "__int128",                   /* n */
+  "unsigned __int128",          /* o */
+  NULL,                         /* p */
+  NULL,                         /* q */
+  NULL,                         /* r */
+  "short",                      /* s */
+  "unsigned short",             /* t */
+  NULL,                         /* u */
+  "void",                       /* v */
+  "char", /* C++ "wchar_t" */   /* w */
+  "long", /* C++ "long long" */ /* x */
+  "unsigned long long",         /* y */
+  "..."                         /* z */
+};
+
 /* Demangles and emits a <builtin-type>.  
 
     <builtin-type> ::= v  # void
@@ -2511,7 +2554,12 @@ demangle_builtin_type (dm)
     }
   else if (code >= 'a' && code <= 'z')
     {
-      const char *type_name = builtin_type_names[code - 'a'];
+      const char *type_name;
+      /* Java uses different names for some built-in types. */
+      if (dm->style == DMGL_JAVA)
+        type_name = java_builtin_type_names[code - 'a'];
+      else
+        type_name = builtin_type_names[code - 'a'];
       if (type_name == NULL)
 	return "Unrecognized <builtin-type> code.";
 
@@ -3395,16 +3443,17 @@ demangle_discriminator (dm, suppress_first)
    an error message, and the contents of RESULT are unchanged.  */
 
 static status_t
-cp_demangle (name, result)
+cp_demangle (name, result, style)
      const char *name;
      dyn_string_t result;
+     int style;
 {
   status_t status;
   int length = strlen (name);
 
   if (length > 2 && name[0] == '_' && name[1] == 'Z')
     {
-      demangling_t dm = demangling_new (name);
+      demangling_t dm = demangling_new (name, style);
       if (dm == NULL)
 	return STATUS_ALLOCATION_FAILED;
 
@@ -3551,7 +3600,7 @@ __cxa_demangle (mangled_name, output_buffer, length, status)
   if (mangled_name[0] == '_' && mangled_name[1] == 'Z')
     /* MANGLED_NAME apprears to be a function or variable name.
        Demangle it accordingly.  */
-    result = cp_demangle (mangled_name, &demangled_name);
+    result = cp_demangle (mangled_name, &demangled_name, 0);
   else
     /* Try to demangled MANGLED_NAME as the name of a type.  */
     result = cp_demangle_type (mangled_name, &demangled_name);
@@ -3610,7 +3659,7 @@ cplus_demangle_v3 (mangled)
   /* Create a dyn_string to hold the demangled name.  */
   demangled = dyn_string_new (0);
   /* Attempt the demangling.  */
-  status = cp_demangle ((char *) mangled, demangled);
+  status = cp_demangle ((char *) mangled, demangled, 0);
 
   if (STATUS_NO_ERROR (status))
     /* Demangling succeeded.  */
@@ -3632,6 +3681,110 @@ cplus_demangle_v3 (mangled)
       dyn_string_delete (demangled);
       return NULL;
     }
+}
+
+/* Demangle a Java symbol.  Java uses a subset of the V3 ABI C++ mangling 
+   conventions, but the output formatting is a little different.
+   This instructs the C++ demangler not to emit pointer characters ("*"), and 
+   to use Java's namespace separator symbol ("." instead of "::").  It then 
+   does an additional pass over the demangled output to replace instances 
+   of JArray<TYPE> with TYPE[].  */
+
+char *
+java_demangle_v3 (mangled)
+     const char* mangled;
+{
+  dyn_string_t demangled;
+  char *next;
+  char *end;
+  int len;
+  status_t status;
+  int nesting = 0;
+  char *cplus_demangled;
+  char *return_value;
+    
+  /* Create a dyn_string to hold the demangled name.  */
+  demangled = dyn_string_new (0);
+
+  /* Attempt the demangling.  */
+  status = cp_demangle ((char *) mangled, demangled, DMGL_JAVA);
+
+  if (STATUS_NO_ERROR (status))
+    /* Demangling succeeded.  */
+    {
+      /* Grab the demangled result from the dyn_string. */
+      cplus_demangled = dyn_string_release (demangled);
+    }
+  else if (status == STATUS_ALLOCATION_FAILED)
+    {
+      fprintf (stderr, "Memory allocation failed.\n");
+      abort ();
+    }
+  else
+    /* Demangling failed.  */
+    {
+      dyn_string_delete (demangled);
+      return NULL;
+    }
+  
+  len = strlen (cplus_demangled);
+  next = cplus_demangled;
+  end = next + len;
+  demangled = NULL;
+
+  /* Replace occurances of JArray<TYPE> with TYPE[]. */
+  while (next < end)
+    {
+      char *open_str = strstr (next, "JArray<");
+      char *close_str = NULL;
+      if (nesting > 0)
+	close_str = strchr (next, '>');
+    
+      if (open_str != NULL && (close_str == NULL || close_str > open_str))
+        {
+	  ++nesting;
+	  
+	  if (!demangled)
+	    demangled = dyn_string_new(len);
+
+          /* Copy prepending symbols, if any. */
+	  if (open_str > next)
+	    {
+	      open_str[0] = 0;
+	      dyn_string_append_cstr (demangled, next);
+	    }	  
+	  next = open_str + 7;
+	}
+      else if (close_str != NULL)
+        {
+	  --nesting;
+	  
+          /* Copy prepending type symbol, if any. Squash any spurious 
+	     whitespace. */
+	  if (close_str > next && next[0] != ' ')
+	    {
+	      close_str[0] = 0;
+	      dyn_string_append_cstr (demangled, next);
+	    }
+	  dyn_string_append_cstr (demangled, "[]");	  
+	  next = close_str + 1;
+	}
+      else
+        {
+	  /* There are no more arrays. Copy the rest of the symbol, or
+	     simply return the original symbol if no changes were made. */
+	  if (next == cplus_demangled)
+	    return cplus_demangled;
+
+          dyn_string_append_cstr (demangled, next);
+	  next = end;
+	}
+    }
+
+  free (cplus_demangled);
+  
+  return_value = dyn_string_release (demangled);
+  return return_value;
 }
 
 #endif /* IN_LIBGCC2 */
@@ -3771,7 +3924,7 @@ main (argc, argv)
 	    }
 
 	  /* Attempt to demangle the name.  */
-	  status = cp_demangle (dyn_string_buf (mangled), demangled);
+	  status = cp_demangle (dyn_string_buf (mangled), demangled, 0);
 
 	  /* If the demangling succeeded, great!  Print out the
 	     demangled version.  */
@@ -3810,7 +3963,7 @@ main (argc, argv)
       for (i = optind; i < argc; ++i)
 	{
 	  /* Attempt to demangle.  */
-	  status = cp_demangle (argv[i], result);
+	  status = cp_demangle (argv[i], result, 0);
 
 	  /* If it worked, print the demangled name.  */
 	  if (STATUS_NO_ERROR (status))
@@ -3818,7 +3971,7 @@ main (argc, argv)
 	  /* Abort on allocaiton failures.  */
 	  else if (status == STATUS_ALLOCATION_FAILED)
 	    {
-	      fprintf (stderr, "Memory allocaiton failed.\n");
+	      fprintf (stderr, "Memory allocation failed.\n");
 	      abort ();
 	    }
 	  /* If not, print the error message to stderr instead.  */
