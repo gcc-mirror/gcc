@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -127,18 +127,18 @@ here = @here@
 libgcj_basedir = @libgcj_basedir@
 mkinstalldirs = @mkinstalldirs@
 tool_include_dir = @tool_include_dir@
+toolexecdir = @toolexecdir@
+toolexeclibdir = @toolexeclibdir@
+toolexecmainlibdir = @toolexecmainlibdir@
 
 AUTOMAKE_OPTIONS = foreign
 @TESTSUBDIR_TRUE@SUBDIRS = @TESTSUBDIR_TRUE@$(DIRLTDL) testsuite gcj include
 @TESTSUBDIR_FALSE@SUBDIRS = @TESTSUBDIR_FALSE@$(DIRLTDL) gcj include
-@USE_LIBDIR_TRUE@toolexeclibdir = @USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
 @XLIB_AWT_TRUE@cond_x_ltlibrary = @XLIB_AWT_TRUE@libgcjx.la
 @XLIB_AWT_FALSE@cond_x_ltlibrary = 
 
 toolexeclib_LTLIBRARIES = libgcj.la $(cond_x_ltlibrary)
-toolexeclib_DATA = libgcj.spec
+toolexecmainlib_DATA = libgcj.spec
 
 jardir = $(datadir)/java
 jar_DATA = libgcj-@gcc_version@.jar
@@ -1729,11 +1729,12 @@ COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CF
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
-DATA =  $(jar_DATA) $(toolexeclib_DATA)
+DATA =  $(jar_DATA) $(toolexecmainlib_DATA)
 
 DIST_COMMON =  README COPYING ChangeLog Makefile.am Makefile.in NEWS \
-THANKS acinclude.m4 aclocal.m4 configure configure.in \
-libgcj-test.spec.in libgcj.spec.in
+THANKS acconfig.h acinclude.m4 aclocal.m4 configure configure.in \
+gcj/libgcj-config.h.in gcj/stamp-h2.in include/config.h.in \
+include/stamp-h1.in libgcj-test.spec.in libgcj.spec.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -2719,6 +2720,53 @@ config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
 $(srcdir)/configure: @MAINTAINER_MODE_TRUE@$(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
+
+include/config.h: include/stamp-h1
+	@if test ! -f $@; then \
+		rm -f include/stamp-h1; \
+		$(MAKE) include/stamp-h1; \
+	else :; fi
+include/stamp-h1: $(srcdir)/include/config.h.in $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES= CONFIG_HEADERS=include/config.h \
+	     $(SHELL) ./config.status
+	@echo timestamp > include/stamp-h1 2> /dev/null
+$(srcdir)/include/config.h.in: @MAINTAINER_MODE_TRUE@$(srcdir)/include/stamp-h1.in
+	@if test ! -f $@; then \
+		rm -f $(srcdir)/include/stamp-h1.in; \
+		$(MAKE) $(srcdir)/include/stamp-h1.in; \
+	else :; fi
+$(srcdir)/include/stamp-h1.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) acconfig.h
+	cd $(top_srcdir) && $(AUTOHEADER)
+	@echo timestamp > $(srcdir)/include/stamp-h1.in 2> /dev/null
+
+gcj/libgcj-config.h: gcj/stamp-h2
+	@if test ! -f $@; then \
+		rm -f gcj/stamp-h2; \
+		$(MAKE) gcj/stamp-h2; \
+	else :; fi
+gcj/stamp-h2: $(srcdir)/gcj/libgcj-config.h.in $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES= CONFIG_HEADERS=gcj/libgcj-config.h \
+	     $(SHELL) ./config.status
+	@echo timestamp > gcj/stamp-h2 2> /dev/null
+$(srcdir)/gcj/libgcj-config.h.in: @MAINTAINER_MODE_TRUE@$(srcdir)/gcj/stamp-h2.in
+	@if test ! -f $@; then \
+		rm -f $(srcdir)/gcj/stamp-h2.in; \
+		$(MAKE) $(srcdir)/gcj/stamp-h2.in; \
+	else :; fi
+$(srcdir)/gcj/stamp-h2.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) acconfig.h
+	cd $(top_srcdir) && $(AUTOHEADER)
+	@echo timestamp > $(srcdir)/gcj/stamp-h2.in 2> /dev/null
+
+mostlyclean-hdr:
+
+clean-hdr:
+
+distclean-hdr:
+	-rm -f include/config.h gcj/libgcj-config.h
+
+maintainer-clean-hdr:
 libgcj.spec: $(top_builddir)/config.status libgcj.spec.in
 	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 libgcj-test.spec: $(top_builddir)/config.status libgcj-test.spec.in
@@ -2885,23 +2933,23 @@ uninstall-jarDATA:
 	  rm -f $(DESTDIR)$(jardir)/$$p; \
 	done
 
-install-toolexeclibDATA: $(toolexeclib_DATA)
+install-toolexecmainlibDATA: $(toolexecmainlib_DATA)
 	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(toolexeclibdir)
-	@list='$(toolexeclib_DATA)'; for p in $$list; do \
+	$(mkinstalldirs) $(DESTDIR)$(toolexecmainlibdir)
+	@list='$(toolexecmainlib_DATA)'; for p in $$list; do \
 	  if test -f $(srcdir)/$$p; then \
-	    echo " $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(toolexeclibdir)/$$p"; \
-	    $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(toolexeclibdir)/$$p; \
+	    echo " $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(toolexecmainlibdir)/$$p"; \
+	    $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(toolexecmainlibdir)/$$p; \
 	  else if test -f $$p; then \
-	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(toolexeclibdir)/$$p"; \
-	    $(INSTALL_DATA) $$p $(DESTDIR)$(toolexeclibdir)/$$p; \
+	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(toolexecmainlibdir)/$$p"; \
+	    $(INSTALL_DATA) $$p $(DESTDIR)$(toolexecmainlibdir)/$$p; \
 	  fi; fi; \
 	done
 
-uninstall-toolexeclibDATA:
+uninstall-toolexecmainlibDATA:
 	@$(NORMAL_UNINSTALL)
-	list='$(toolexeclib_DATA)'; for p in $$list; do \
-	  rm -f $(DESTDIR)$(toolexeclibdir)/$$p; \
+	list='$(toolexecmainlib_DATA)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(toolexecmainlibdir)/$$p; \
 	done
 
 # This directory's subdirectories are mostly independent; you can cd
@@ -2940,7 +2988,7 @@ maintainer-clean-recursive:
 	dot_seen=no; \
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \
-	  test "$$subdir" != "." || dot_seen=yes; \
+	  test "$$subdir" = "." && dot_seen=yes; \
 	done; \
 	test "$$dot_seen" = "no" && rev=". $$rev"; \
 	target=`echo $@ | sed s/-recursive//`; \
@@ -3116,7 +3164,7 @@ check: check-recursive
 installcheck-am:
 installcheck: installcheck-recursive
 install-exec-am: install-toolexeclibLTLIBRARIES install-binPROGRAMS \
-		install-binSCRIPTS install-toolexeclibDATA
+		install-binSCRIPTS install-toolexecmainlibDATA
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
 install-exec: install-exec-recursive
@@ -3129,7 +3177,7 @@ install-am: all-am
 install: install-recursive
 uninstall-am: uninstall-toolexeclibLTLIBRARIES uninstall-binPROGRAMS \
 		uninstall-binSCRIPTS uninstall-jarDATA \
-		uninstall-toolexeclibDATA
+		uninstall-toolexecmainlibDATA
 uninstall: uninstall-recursive
 all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(SCRIPTS) $(DATA)
 all-redirect: all-recursive
@@ -3139,7 +3187,7 @@ installdirs: installdirs-recursive
 installdirs-am:
 	$(mkinstalldirs)  $(DESTDIR)$(toolexeclibdir) $(DESTDIR)$(bindir) \
 		$(DESTDIR)$(bindir) $(DESTDIR)$(jardir) \
-		$(DESTDIR)$(toolexeclibdir)
+		$(DESTDIR)$(toolexecmainlibdir)
 
 
 mostlyclean-generic:
@@ -3153,29 +3201,32 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-toolexeclibLTLIBRARIES mostlyclean-compile \
-		mostlyclean-libtool mostlyclean-binPROGRAMS \
-		mostlyclean-noinstPROGRAMS mostlyclean-tags \
-		mostlyclean-depend mostlyclean-generic
+mostlyclean-am:  mostlyclean-hdr mostlyclean-toolexeclibLTLIBRARIES \
+		mostlyclean-compile mostlyclean-libtool \
+		mostlyclean-binPROGRAMS mostlyclean-noinstPROGRAMS \
+		mostlyclean-tags mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-recursive
 
-clean-am:  clean-toolexeclibLTLIBRARIES clean-compile clean-libtool \
-		clean-binPROGRAMS clean-noinstPROGRAMS clean-tags \
-		clean-depend clean-generic mostlyclean-am clean-local
+clean-am:  clean-hdr clean-toolexeclibLTLIBRARIES clean-compile \
+		clean-libtool clean-binPROGRAMS clean-noinstPROGRAMS \
+		clean-tags clean-depend clean-generic mostlyclean-am \
+		clean-local
 
 clean: clean-recursive
 
-distclean-am:  distclean-toolexeclibLTLIBRARIES distclean-compile \
-		distclean-libtool distclean-binPROGRAMS \
-		distclean-noinstPROGRAMS distclean-tags \
-		distclean-depend distclean-generic clean-am
+distclean-am:  distclean-hdr distclean-toolexeclibLTLIBRARIES \
+		distclean-compile distclean-libtool \
+		distclean-binPROGRAMS distclean-noinstPROGRAMS \
+		distclean-tags distclean-depend distclean-generic \
+		clean-am
 	-rm -f libtool
 
 distclean: distclean-recursive
 	-rm -f config.status
 
-maintainer-clean-am:  maintainer-clean-toolexeclibLTLIBRARIES \
+maintainer-clean-am:  maintainer-clean-hdr \
+		maintainer-clean-toolexeclibLTLIBRARIES \
 		maintainer-clean-compile maintainer-clean-libtool \
 		maintainer-clean-binPROGRAMS \
 		maintainer-clean-noinstPROGRAMS maintainer-clean-tags \
@@ -3187,9 +3238,9 @@ maintainer-clean-am:  maintainer-clean-toolexeclibLTLIBRARIES \
 maintainer-clean: maintainer-clean-recursive
 	-rm -f config.status
 
-.PHONY: mostlyclean-toolexeclibLTLIBRARIES \
-distclean-toolexeclibLTLIBRARIES clean-toolexeclibLTLIBRARIES \
-maintainer-clean-toolexeclibLTLIBRARIES \
+.PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
+mostlyclean-toolexeclibLTLIBRARIES distclean-toolexeclibLTLIBRARIES \
+clean-toolexeclibLTLIBRARIES maintainer-clean-toolexeclibLTLIBRARIES \
 uninstall-toolexeclibLTLIBRARIES install-toolexeclibLTLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile mostlyclean-libtool distclean-libtool \
@@ -3198,12 +3249,12 @@ distclean-binPROGRAMS clean-binPROGRAMS maintainer-clean-binPROGRAMS \
 uninstall-binPROGRAMS install-binPROGRAMS mostlyclean-noinstPROGRAMS \
 distclean-noinstPROGRAMS clean-noinstPROGRAMS \
 maintainer-clean-noinstPROGRAMS uninstall-binSCRIPTS install-binSCRIPTS \
-uninstall-jarDATA install-jarDATA uninstall-toolexeclibDATA \
-install-toolexeclibDATA install-data-recursive uninstall-data-recursive \
-install-exec-recursive uninstall-exec-recursive installdirs-recursive \
-uninstalldirs-recursive all-recursive check-recursive \
-installcheck-recursive info-recursive dvi-recursive \
-mostlyclean-recursive distclean-recursive clean-recursive \
+uninstall-jarDATA install-jarDATA uninstall-toolexecmainlibDATA \
+install-toolexecmainlibDATA install-data-recursive \
+uninstall-data-recursive install-exec-recursive \
+uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
+all-recursive check-recursive installcheck-recursive info-recursive \
+dvi-recursive mostlyclean-recursive distclean-recursive clean-recursive \
 maintainer-clean-recursive tags tags-recursive mostlyclean-tags \
 distclean-tags clean-tags maintainer-clean-tags distdir \
 mostlyclean-depend distclean-depend clean-depend \

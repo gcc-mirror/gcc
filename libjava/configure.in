@@ -771,9 +771,21 @@ AC_SUBST(EXCEPTIONSPEC)
 AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
 AM_CONDITIONAL(NULL_TARGET, test "$NULL_TARGET" = yes)
 AM_CONDITIONAL(NATIVE, test "$NATIVE" = yes || test "$NULL_TARGET" = yes)
-AM_CONDITIONAL(USE_LIBDIR, test -z "$with_cross_host")
 AM_CONDITIONAL(NEEDS_DATA_START, test "$NEEDS_DATA_START" = yes && test "$NATIVE" = yes)
 AC_SUBST(GCC_UNWIND_INCLUDE)
+
+if test -n "$with_cross_host" &&
+   test x"$with_cross_host" != x"no"; then
+  toolexecdir='$(exec_prefix)/$(target_alias)'
+  toolexecmainlibdir='$(toolexecdir)/lib'
+else
+  toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
+  toolexecmainlibdir='$(libdir)'
+fi
+toolexeclibdir=$toolexecmainlibdir/`$CC -print-multi-os-directory`
+AC_SUBST(toolexecdir)
+AC_SUBST(toolexecmainlibdir)
+AC_SUBST(toolexeclibdir)
 
 AC_SUBST(AM_RUNTESTFLAGS)
 
