@@ -314,10 +314,22 @@ setup_save_areas (pchanged)
     for (j = MOVE_MAX / UNITS_PER_WORD; j > 0; j--)
       {
 	int ok = 1;
+	int do_save;
 
 	/* If no mode exists for this size, try another.  Also break out
 	   if we have already saved this hard register.  */
 	if (regno_save_mode[i][j] == VOIDmode || regno_save_mem[i][1] != 0)
+	  continue;
+
+	/* See if any register in this group has been saved.  */
+	do_save = 1;
+	for (k = 0; k < j; k++)
+	  if (regno_save_mem[i + k][1])
+	    {
+	      do_save = 0;
+	      break;
+	    }
+	if (! do_save)
 	  continue;
 
 	for (k = 0; k < j; k++)
