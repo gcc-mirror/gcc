@@ -1,3 +1,8 @@
+2005-02-20  Rutger Ovidius  <ovidr@users.sourceforge.net>
+
+	PR libgcj/19728:
+	* gnu/java/security/provider/Gnu.java (Gnu): Add SHA-160 alias.
+
 2005-02-20  Dalibor Topic  <robilad@kaffe.org>
 
 	* libraries/javalib/gnu/regexp/RE.java,

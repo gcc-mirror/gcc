@@ -1,5 +1,5 @@
 /* Gnu.java --- Gnu provider main class
-   Copyright (C) 1999, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -129,6 +129,7 @@ public final class Gnu extends Provider
         // Format "Alias", "Actual Name"
         put("Alg.Alias.MessageDigest.SHA1", "SHA");
         put("Alg.Alias.MessageDigest.SHA-1", "SHA");
+        put("Alg.Alias.MessageDigest.SHA-160", "SHA");
 
         // Algorithm Parameters
         put("AlgorithmParameters.DSA",
