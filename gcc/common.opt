@@ -551,14 +551,6 @@ fnon-call-exceptions
 Common Report Var(flag_non_call_exceptions)
 Support synchronous non-call exceptions
 
-fold-unroll-loops
-Common Report Var(flag_old_unroll_loops)
-Perform loop unrolling when iteration count is known
-
-fold-unroll-all-loops
-Common Report Var(flag_old_unroll_all_loops)
-Perform loop unrolling for all loops
-
 fomit-frame-pointer
 Common Report Var(flag_omit_frame_pointer)
 When possible do not generate stack frames

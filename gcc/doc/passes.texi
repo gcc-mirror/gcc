@@ -540,11 +540,8 @@ are in @file{lcm.c}.
 
 @item Loop optimization
 
-This pass moves constant expressions out of loops,
-and optionally does strength-reduction and loop unrolling as well.
-Its source files are @file{loop.c} and @file{unroll.c}, plus the header
-@file{loop.h} used for communication between them.  Loop unrolling uses
-some functions in @file{integrate.c} and the header @file{integrate.h}.
+This pass moves constant expressions out of loops, and optionally does
+strength-reduction as well.  The pass is located in @file{loop.c}.
 Loop dependency analysis routines are contained in @file{dependence.c}.
 This pass is seriously out-of-date and is supposed to be replaced by
 a new one described below in near future.
