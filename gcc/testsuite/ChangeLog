@@ -1,3 +1,7 @@
+2004-09-11  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.target/frv: New directory of FR-V-specific tests.
+
 2004-09-10  James E Wilson  <wilson@specifixinc.com>
 
 	* gcc.dg/convert-vec-1.c: New test.
