@@ -313,14 +313,32 @@ dump_prediction (FILE *file, enum br_predictor predictor, int probability,
   fprintf (file, "\n");
 }
 
+/* We can not predict the probabilities of ougtoing edges of bb.  Set them
+   evenly and hope for the best.  */
+static void
+set_even_probabilities (basic_block bb)
+{
+  int nedges = 0;
+  edge e;
+
+  for (e = bb->succ; e; e = e->succ_next)
+    if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
+      nedges ++;
+  for (e = bb->succ; e; e = e->succ_next)
+    if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
+      e->probability = (REG_BR_PROB_BASE + nedges / 2) / nedges;
+    else
+      e->probability = 0;
+}
+
 /* Combine all REG_BR_PRED notes into single probability and attach REG_BR_PROB
    note if not already present.  Remove now useless REG_BR_PRED notes.  */
 
 static void
 combine_predictions_for_insn (rtx insn, basic_block bb)
 {
-  rtx prob_note = find_reg_note (insn, REG_BR_PROB, 0);
-  rtx *pnote = &REG_NOTES (insn);
+  rtx prob_note;
+  rtx *pnote;
   rtx note;
   int best_probability = PROB_EVEN;
   int best_predictor = END_PREDICTORS;
@@ -329,6 +347,14 @@ combine_predictions_for_insn (rtx insn, basic_block bb)
   bool first_match = false;
   bool found = false;
 
+  if (!can_predict_insn_p (insn))
+    {
+      set_even_probabilities (bb);
+      return;
+    }
+
+  prob_note = find_reg_note (insn, REG_BR_PROB, 0);
+  pnote = &REG_NOTES (insn);
   if (dump_file)
     fprintf (dump_file, "Predictions for insn %i bb %i\n", INSN_UID (insn),
 	     bb->index);
@@ -446,11 +472,8 @@ combine_predictions_for_bb (FILE *file, basic_block bb)
      this later.  */
   if (nedges != 2)
     {
-      for (e = bb->succ; e; e = e->succ_next)
-	if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
-	  e->probability = (REG_BR_PROB_BASE + nedges / 2) / nedges;
-	else
-	  e->probability = 0;
+      if (!bb->count)
+	set_even_probabilities (bb);
       bb_ann (bb)->predictions = NULL;
       if (file)
 	fprintf (file, "%i edges in bb %i predicted to even probabilities\n",
@@ -521,8 +544,11 @@ combine_predictions_for_bb (FILE *file, basic_block bb)
     }
   bb_ann (bb)->predictions = NULL;
 
-  first->probability = combined_probability;
-  second->probability = REG_BR_PROB_BASE - combined_probability;
+  if (!bb->count)
+    {
+      first->probability = combined_probability;
+      second->probability = REG_BR_PROB_BASE - combined_probability;
+    }
 }
 
 /* Predict edge probabilities by exploiting loop structure.
@@ -615,6 +641,105 @@ predict_loops (struct loops *loops_info, bool simpleloops)
     }
 }
 
+/* Attempt to predict probabilities of BB outgoing edges using local
+   properties.  */
+static void
+bb_estimate_probability_locally (basic_block bb)
+{
+  rtx last_insn = BB_END (bb);
+  rtx cond;
+
+  if (! can_predict_insn_p (last_insn))
+    return;
+  cond = get_condition (last_insn, NULL, false, false);
+  if (! cond)
+    return;
+
+  /* Try "pointer heuristic."
+     A comparison ptr == 0 is predicted as false.
+     Similarly, a comparison ptr1 == ptr2 is predicted as false.  */
+  if (COMPARISON_P (cond)
+      && ((REG_P (XEXP (cond, 0)) && REG_POINTER (XEXP (cond, 0)))
+	  || (REG_P (XEXP (cond, 1)) && REG_POINTER (XEXP (cond, 1)))))
+    {
+      if (GET_CODE (cond) == EQ)
+	predict_insn_def (last_insn, PRED_POINTER, NOT_TAKEN);
+      else if (GET_CODE (cond) == NE)
+	predict_insn_def (last_insn, PRED_POINTER, TAKEN);
+    }
+  else
+
+  /* Try "opcode heuristic."
+     EQ tests are usually false and NE tests are usually true. Also,
+     most quantities are positive, so we can make the appropriate guesses
+     about signed comparisons against zero.  */
+    switch (GET_CODE (cond))
+      {
+      case CONST_INT:
+	/* Unconditional branch.  */
+	predict_insn_def (last_insn, PRED_UNCONDITIONAL,
+			  cond == const0_rtx ? NOT_TAKEN : TAKEN);
+	break;
+
+      case EQ:
+      case UNEQ:
+	/* Floating point comparisons appears to behave in a very
+	   unpredictable way because of special role of = tests in
+	   FP code.  */
+	if (FLOAT_MODE_P (GET_MODE (XEXP (cond, 0))))
+	  ;
+	/* Comparisons with 0 are often used for booleans and there is
+	   nothing useful to predict about them.  */
+	else if (XEXP (cond, 1) == const0_rtx
+		 || XEXP (cond, 0) == const0_rtx)
+	  ;
+	else
+	  predict_insn_def (last_insn, PRED_OPCODE_NONEQUAL, NOT_TAKEN);
+	break;
+
+      case NE:
+      case LTGT:
+	/* Floating point comparisons appears to behave in a very
+	   unpredictable way because of special role of = tests in
+	   FP code.  */
+	if (FLOAT_MODE_P (GET_MODE (XEXP (cond, 0))))
+	  ;
+	/* Comparisons with 0 are often used for booleans and there is
+	   nothing useful to predict about them.  */
+	else if (XEXP (cond, 1) == const0_rtx
+		 || XEXP (cond, 0) == const0_rtx)
+	  ;
+	else
+	  predict_insn_def (last_insn, PRED_OPCODE_NONEQUAL, TAKEN);
+	break;
+
+      case ORDERED:
+	predict_insn_def (last_insn, PRED_FPOPCODE, TAKEN);
+	break;
+
+      case UNORDERED:
+	predict_insn_def (last_insn, PRED_FPOPCODE, NOT_TAKEN);
+	break;
+
+      case LE:
+      case LT:
+	if (XEXP (cond, 1) == const0_rtx || XEXP (cond, 1) == const1_rtx
+	    || XEXP (cond, 1) == constm1_rtx)
+	  predict_insn_def (last_insn, PRED_OPCODE_POSITIVE, NOT_TAKEN);
+	break;
+
+      case GE:
+      case GT:
+	if (XEXP (cond, 1) == const0_rtx || XEXP (cond, 1) == const1_rtx
+	    || XEXP (cond, 1) == constm1_rtx)
+	  predict_insn_def (last_insn, PRED_OPCODE_POSITIVE, TAKEN);
+	break;
+
+      default:
+	break;
+      }
+}
+
 /* Statically estimate the probability that a branch will be taken and produce
    estimated profile.  When profile feedback is present never executed portions
    of function gets estimated.  */
@@ -636,7 +761,6 @@ estimate_probability (struct loops *loops_info)
   FOR_EACH_BB (bb)
     {
       rtx last_insn = BB_END (bb);
-      rtx cond;
       edge e;
 
       if (! can_predict_insn_p (last_insn))
@@ -680,94 +804,7 @@ estimate_probability (struct loops *loops_info)
 		  }
 	    }
 	}
-
-      cond = get_condition (last_insn, NULL, false, false);
-      if (! cond)
-	continue;
-
-      /* Try "pointer heuristic."
-	 A comparison ptr == 0 is predicted as false.
-	 Similarly, a comparison ptr1 == ptr2 is predicted as false.  */
-      if (COMPARISON_P (cond)
-	  && ((REG_P (XEXP (cond, 0)) && REG_POINTER (XEXP (cond, 0)))
-	      || (REG_P (XEXP (cond, 1)) && REG_POINTER (XEXP (cond, 1)))))
-	{
-	  if (GET_CODE (cond) == EQ)
-	    predict_insn_def (last_insn, PRED_POINTER, NOT_TAKEN);
-	  else if (GET_CODE (cond) == NE)
-	    predict_insn_def (last_insn, PRED_POINTER, TAKEN);
-	}
-      else
-
-      /* Try "opcode heuristic."
-	 EQ tests are usually false and NE tests are usually true. Also,
-	 most quantities are positive, so we can make the appropriate guesses
-	 about signed comparisons against zero.  */
-	switch (GET_CODE (cond))
-	  {
-	  case CONST_INT:
-	    /* Unconditional branch.  */
-	    predict_insn_def (last_insn, PRED_UNCONDITIONAL,
-			      cond == const0_rtx ? NOT_TAKEN : TAKEN);
-	    break;
-
-	  case EQ:
-	  case UNEQ:
-	    /* Floating point comparisons appears to behave in a very
-	       unpredictable way because of special role of = tests in
-	       FP code.  */
-	    if (FLOAT_MODE_P (GET_MODE (XEXP (cond, 0))))
-	      ;
-	    /* Comparisons with 0 are often used for booleans and there is
-	       nothing useful to predict about them.  */
-	    else if (XEXP (cond, 1) == const0_rtx
-		     || XEXP (cond, 0) == const0_rtx)
-	      ;
-	    else
-	      predict_insn_def (last_insn, PRED_OPCODE_NONEQUAL, NOT_TAKEN);
-	    break;
-
-	  case NE:
-	  case LTGT:
-	    /* Floating point comparisons appears to behave in a very
-	       unpredictable way because of special role of = tests in
-	       FP code.  */
-	    if (FLOAT_MODE_P (GET_MODE (XEXP (cond, 0))))
-	      ;
-	    /* Comparisons with 0 are often used for booleans and there is
-	       nothing useful to predict about them.  */
-	    else if (XEXP (cond, 1) == const0_rtx
-		     || XEXP (cond, 0) == const0_rtx)
-	      ;
-	    else
-	      predict_insn_def (last_insn, PRED_OPCODE_NONEQUAL, TAKEN);
-	    break;
-
-	  case ORDERED:
-	    predict_insn_def (last_insn, PRED_FPOPCODE, TAKEN);
-	    break;
-
-	  case UNORDERED:
-	    predict_insn_def (last_insn, PRED_FPOPCODE, NOT_TAKEN);
-	    break;
-
-	  case LE:
-	  case LT:
-	    if (XEXP (cond, 1) == const0_rtx || XEXP (cond, 1) == const1_rtx
-		|| XEXP (cond, 1) == constm1_rtx)
-	      predict_insn_def (last_insn, PRED_OPCODE_POSITIVE, NOT_TAKEN);
-	    break;
-
-	  case GE:
-	  case GT:
-	    if (XEXP (cond, 1) == const0_rtx || XEXP (cond, 1) == const1_rtx
-		|| XEXP (cond, 1) == constm1_rtx)
-	      predict_insn_def (last_insn, PRED_OPCODE_POSITIVE, TAKEN);
-	    break;
-
-	  default:
-	    break;
-	  }
+      bb_estimate_probability_locally (bb);
     }
 
   /* Attach the combined probability to each conditional jump.  */
@@ -807,6 +844,14 @@ estimate_probability (struct loops *loops_info)
   free_dominance_info (CDI_POST_DOMINATORS);
   if (profile_status == PROFILE_ABSENT)
     profile_status = PROFILE_GUESSED;
+}
+
+/* Set edge->probability for each succestor edge of BB.  */
+void
+guess_outgoing_edge_probabilities (basic_block bb)
+{
+  bb_estimate_probability_locally (bb);
+  combine_predictions_for_insn (BB_END (bb), bb);
 }
 
 

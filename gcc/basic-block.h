@@ -622,6 +622,7 @@ extern bool rtl_predicted_by_p (basic_block, enum br_predictor);
 extern void tree_predict_edge (edge, enum br_predictor, int);
 extern void rtl_predict_edge (edge, enum br_predictor, int);
 extern void predict_edge_def (edge, enum br_predictor, enum prediction);
+extern void guess_outgoing_edge_probabilities (basic_block);
 
 /* In flow.c */
 extern void init_flow (void);
