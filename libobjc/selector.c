@@ -148,6 +148,8 @@ void __objc_register_instance_methods_to_class (Class class)
       new_list->method_next = class->class_pointer->methods;
       class->class_pointer->methods = new_list;
     }
+  else
+    objc_free(new_list);
 
     __objc_update_dispatch_table_for_class (class->class_pointer);
 }

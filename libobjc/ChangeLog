@@ -1,3 +1,9 @@
+2004-01-14  Adam Fedor  <fedor@gnu.org>
+
+	PR libobjc/12155
+	* selector.c (__objc_register_instance_methods_to_class): Free
+	new_list if not used.
+
 2004-01-09  Andrew Ruder  <aeruder@ksu.edu>
 
 	PR libobjc/11904
