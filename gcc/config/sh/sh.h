@@ -1776,7 +1776,7 @@ struct sh_args {
   (((COOKIE) >> CALL_COOKIE_INT_REG_SHIFT (REG)) & ((REG) < 4 ? 7 : 15))
     long call_cookie;
 
-  /* This is set to non-zero when the call in question must use the Renesas ABI,
+  /* This is set to nonzero when the call in question must use the Renesas ABI,
      even without the -mrenesas option.  */
     int renesas_abi;
 };

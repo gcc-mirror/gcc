@@ -330,7 +330,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
    : (C) == 'L' ? (unsigned) (VALUE) < 0x10000	\
    : 0)
 
-/* Return non-zero if the given VALUE is acceptable for the
+/* Return nonzero if the given VALUE is acceptable for the
    constraint letter C.  For the i860, constraint letter 'G'
    permits only a floating-point zero value.  */
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  	\
@@ -344,7 +344,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
 
    If we are trying to put an integer constant into some register, prefer an
    integer register to an FP register.  If we are trying to put a 
-   non-zero floating-point constant into some register, use an integer
+   nonzero floating-point constant into some register, use an integer
    register if the constant is SFmode and GENERAL_REGS is one of our options.
    Otherwise, put the constant into memory.
 

@@ -61,7 +61,7 @@ const char *i860_reg_prefix = I860_REG_PREFIX;
 
 rtx i860_compare_op0, i860_compare_op1;
 
-/* Return non-zero if this pattern, can be evaluated safely, even if it
+/* Return nonzero if this pattern, can be evaluated safely, even if it
    was not asked for.  */
 int
 safe_insn_src_p (rtx op, enum machine_mode mode)
@@ -187,7 +187,7 @@ reg_clobbered_p (rtx reg, rtx in)
   return 0;
 }
 
-/* Return non-zero if OP can be written to without screwing up
+/* Return nonzero if OP can be written to without screwing up
    GCC's model of what's going on.  It is assumed that this operand
    appears in the dest position of a SET insn in a conditional
    branch's delay slot.  AFTER is the label to start looking from.  */
@@ -256,7 +256,7 @@ operand_clobbered_before_used_after (rtx op, rtx after)
 }
 
 
-/* Return non-zero only if OP is a register of mode MODE,
+/* Return nonzero only if OP is a register of mode MODE,
    or const0_rtx.  */
 int
 reg_or_0_operand (rtx op, enum machine_mode mode)
