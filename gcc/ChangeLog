@@ -1,3 +1,7 @@
+Tue Jul  3 22:33:15 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* explow.c (plus_constant_wide): Reinitialize Y for restart.
+
 2001-07-03  Stan Shebs  <shebs@apple.com>
 
 	* darwin.h (SECTION_FUNCTION): Remove WAS_TEXT argument, remove
