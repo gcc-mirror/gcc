@@ -1491,7 +1491,7 @@ expand_start_catch (rtime)
   int eh_region_entry = find_func_region (insn_region_num);
 
   /* If we've already issued this label, pick a new one */
-  if (catchstack.top->entry->label_used == 0)
+  if (catchstack.top->entry->label_used)
     handler_label = gen_exception_label ();
   else
     catchstack.top->entry->label_used = 1;

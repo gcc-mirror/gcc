@@ -1,3 +1,8 @@
+Tue May 19 11:51:00 EDT 1998  Andrew MacLeod  (amacleod@cygnus.com)
+
+	* except.c (expand_start_catch): Correct logic for when to
+	generate a new handler label, and when to use the old one.
+
 Tue May 19 11:08:52 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (print-rtl.o): Depend on bitmap.h.
