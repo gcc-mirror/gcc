@@ -1,3 +1,8 @@
+Sat Jun  5 17:04:16 1999  Craig Burley  <craig@jcb-sc.com>
+
+	From Dave Love to egcs-patches on 20 May 1999 17:38:38 +0100:
+	* invoke.texi: Clarify text vis-a-vis Intel CPUs.
+
 Sat Jun  5 12:11:24 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* mips.h (mips_output_conditional_branch): New function.
