@@ -1,3 +1,9 @@
+2003-01-16  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (movti_string): Remove clobber.
+	* config/rs6000/rs6000.c (rs6000_emit_move, TImode): Explicitly
+	generate PARALLEL with clobber for TARGET_POWER.
+
 2003-01-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ra-colorize.c (colorize_one_web): Initialize variable.
