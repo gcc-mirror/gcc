@@ -1,6 +1,6 @@
 // 2001-06-14  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,6 +21,7 @@
 // 20.4.1.1 allocator members
 
 #include <memory>
+#include <stdexcept>
 #include <cstdlib>
 #include <testsuite_hooks.h>
 
@@ -42,7 +43,7 @@ void operator delete(void *v) throw()
   return std::free(v);
 }
 
-int main(void)
+void test01()
 {
   bool test = true;
   std::allocator<gnu> obj;
@@ -55,6 +56,34 @@ int main(void)
 
   obj.deallocate(pobj, 256);
   VERIFY( check_delete );
+}
 
+// libstdc++/8230
+void test02()
+{
+  bool test = true;
+  try 
+    {
+      std::allocator<int> alloc;
+      const std::allocator<int>::size_type n = alloc.max_size();
+      int* p = alloc.allocate(n + 1);
+      p[n] = 2002;
+    } 
+  catch(const std::bad_alloc& e) 
+    {
+      // Allowed.
+      test = true;
+    }
+  catch(...) 
+    {
+      test = false;
+    }
+  VERIFY( test );
+}
+
+int main()
+{
+  test01();
+  test02();
   return 0;
 }
