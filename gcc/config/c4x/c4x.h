@@ -1157,6 +1157,10 @@ extern struct rtx_def *c4x_function_arg();
 #define DEFAULT_PCC_STRUCT_RETURN	0
 #define STRUCT_VALUE_REGNUM		AR0_REGNO	/* AR0 */
 
+/* Varargs handling.  */
+
+#define EXPAND_BUILTIN_VA_ARG(valist, type) \
+  c4x_va_arg (valist, type)
 
 /* Function Entry and Exit  */
 

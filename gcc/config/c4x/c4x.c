@@ -572,6 +572,21 @@ c4x_function_arg (cum, mode, type, named)
     return NULL_RTX;
 }
 
+/* C[34]x arguments grow in weird ways (downwards) that the standard
+   varargs stuff can't handle. */
+
+rtx
+c4x_va_arg (valist, type)
+     tree valist, type;
+{
+  tree t;
+
+  t = build (PREDECREMENT_EXPR, TREE_TYPE (valist), valist,
+	     build_int_2 (int_size_in_bytes (type), 0));
+  TREE_SIDE_EFFECTS (t) = 1;
+
+  return expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
+}
 
 static int
 c4x_isr_reg_used_p (regno)
