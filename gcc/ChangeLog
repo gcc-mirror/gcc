@@ -1,3 +1,9 @@
+Sun Mar 22 06:57:04 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expmed.c (extract_bit_field): Don't confuse SUBREG_WORD with
+	endian adjustment in SUBREG case.
+	Don't abort if can't make SUBREG needed for extv/extzv.
+
 Sat Mar 21 08:02:17 1998  Richard Gorton  <gorton@amt.tay1.dec.com>
 
         * alpha.md (zero_extendqi[hsd]i2): Use "and", not "zapnot".
