@@ -19,8 +19,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define DECSTATION
 
+#ifndef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D__ANSI_COMPAT \
--DMIPSEL -DR3000 -DSYSTYPE_BSD -Dbsd4_2 -Dhost_mips -Dmips -Dultrix -Dunix"
+-DMIPSEL -DR3000 -DSYSTYPE_BSD -D_SYSTYPE_BSD -Dbsd4_2 -Dhost_mips -Dmips -Dultrix -Dunix"
+#endif
 
 #define ASM_SPEC "\
 %{!mgas: \
