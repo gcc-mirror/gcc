@@ -1,3 +1,15 @@
+2003-03-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	* fpa.md: New file.  Move all patterns relating to FPA co-processor
+	to here...
+	* arm.md: ... from here.
+	(cirrus.md, fpa.md): Include at end of description.
+	(divsf3, divdf3, modsf3, movdf3, sqrtsf2, sqrtdf2): New expands.
+	(pic_load_addr_based): Remove register constraint from expander.
+	(seq, sne, sgt, sle, slt, sge, sgeu, sleu, sgtu, sltu, sunordered)
+	(sordered, sungt, sunle, sunge, sunlt): Likewise.
+	(eh_epilogue, tablejump): Likewise.
+
 2003-03-09  David Edelsohn  <edelsohn@gnu.org>
 	    Mostafa Hagog
 
