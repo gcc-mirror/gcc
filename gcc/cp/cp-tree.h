@@ -3340,7 +3340,6 @@ extern tree shorten_compare                     PARAMS ((tree *, tree *, tree *,
 extern tree truthvalue_conversion               PARAMS ((tree));
 extern tree type_for_mode                       PARAMS ((enum machine_mode, int));
 extern tree type_for_size                       PARAMS ((unsigned, int));
-extern int c_get_alias_set                      PARAMS ((tree));
 
 /* in decl{2}.c */
 /* A node that is a list (length 1) of error_mark_nodes.  */
