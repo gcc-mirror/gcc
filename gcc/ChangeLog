@@ -1,3 +1,12 @@
+2003-06-13  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	* config/i386/bsd.h: Remove ASM_FILE_START.
+	* config/i386/djgpp.h: Likewise.
+	* config/i386/gas.h (ASM_FILE_START): Output .file before .intel_syntax. 
+
+	* config/i386/djgpp.h: Move included unix.h, bsd.h, gas.h to ...
+	* config.gcc (i[34567]86-pc-msdosdjgpp): ... here.
+
 2003-06-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR bootstrap/10835
