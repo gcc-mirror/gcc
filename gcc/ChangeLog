@@ -1,3 +1,7 @@
+2005-04-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-inline.c: Fix a typo.
+
 2005-04-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* configure.ac (enable-checking): Explicitly set all variables for
