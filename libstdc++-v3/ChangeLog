@@ -1,3 +1,12 @@
+2001-12-28  Paolo Carlini  <pcarlini@unitus.it>
+            Nathan Myers  <ncm@cantrip.org>
+
+	* include/bits/basic_string.h (insert(__pos, __s, __n)):
+	Optimize by avoiding temporaries and working in-place when possible.
+	(insert(__pos1, __str)): Call insert(__pos1, __str, __pos2, __n).
+	(insert(__pos1, __str, __pos2, __n)): Call insert(__pos, __s, __n).
+	* testsuite/21_strings/insert.cc (test02): New testcases.
+
 2001-12-27  Phil Edwards  <pme@gcc.gnu.org>
 
 	* testsuite/testsuite_hooks.h (gnu_counting_struct):  Add.

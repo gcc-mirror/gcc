@@ -187,9 +187,67 @@ int test01(void)
   return test;
 }
 
+// Once more
+//   string& insert(size_type __p, const char* s, size_type n);
+//   string& insert(size_type __p, const char* s);
+// but now s points inside the _Rep
+int test02(void)
+{
+  bool test = true;
+
+  std::string str01;
+  const char* title = "Everything was beautiful, and nothing hurt";
+  // Increasing size: str01 is reallocated every time.
+  str01 = title;
+  str01.insert(0, str01.c_str() + str01.size() - 4, 4);
+  VERIFY( str01 == "hurtEverything was beautiful, and nothing hurt" );
+  str01 = title;
+  str01.insert(0, str01.c_str(), 5);
+  VERIFY( str01 == "EveryEverything was beautiful, and nothing hurt" );
+  str01 = title;
+  str01.insert(10, str01.c_str() + 4, 6);
+  VERIFY( str01 == "Everythingything was beautiful, and nothing hurt" );
+  str01 = title;
+  str01.insert(15, str01.c_str(), 10);
+  VERIFY( str01 == "Everything was Everythingbeautiful, and nothing hurt" );
+  str01 = title;
+  str01.insert(15, str01.c_str() + 11, 13);
+  VERIFY( str01 == "Everything was was beautifulbeautiful, and nothing hurt" );
+  str01 = title;
+  str01.insert(0, str01.c_str());
+  VERIFY( str01 == "Everything was beautiful, and nothing hurt"
+	  "Everything was beautiful, and nothing hurt");
+  // Again: no reallocations.
+  str01 = title;
+  str01.insert(0, str01.c_str() + str01.size() - 4, 4);
+  VERIFY( str01 == "hurtEverything was beautiful, and nothing hurt" );
+  str01 = title;
+  str01.insert(0, str01.c_str(), 5);
+  VERIFY( str01 == "EveryEverything was beautiful, and nothing hurt" );
+  str01 = title;
+  str01.insert(10, str01.c_str() + 4, 6);
+  VERIFY( str01 == "Everythingything was beautiful, and nothing hurt" );
+  str01 = title;
+  str01.insert(15, str01.c_str(), 10);
+  VERIFY( str01 == "Everything was Everythingbeautiful, and nothing hurt" );
+  str01 = title;
+  str01.insert(15, str01.c_str() + 11, 13);
+  VERIFY( str01 == "Everything was was beautifulbeautiful, and nothing hurt" );
+  str01 = title;
+  str01.insert(0, str01.c_str());
+  VERIFY( str01 == "Everything was beautiful, and nothing hurt"
+	  "Everything was beautiful, and nothing hurt");
+
+#ifdef DEBUG_ASSERT
+  assert(test);
+#endif
+  return test;
+}
+
 int main()
 { 
   __set_testsuite_memlimit();
   test01();
+  test02();
   return 0;
 }
