@@ -7265,7 +7265,7 @@ tsubst_qualified_id (tree qualified_id, tree args,
 	{
 	  if (complain & tf_error)
 	    {
-	      error ("dependent-name`%E' is parsed as a non-type, but "
+	      error ("dependent-name `%E' is parsed as a non-type, but "
 		     "instantiation yields a type", qualified_id);
 	      inform ("say `typename %E' if a type is meant", qualified_id);
 	    }
