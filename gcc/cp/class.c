@@ -5325,19 +5325,22 @@ instantiate_type (lhstype, rhs, complain)
 
 	if (r != error_mark_node && TYPE_PTRMEMFUNC_P (lhstype))
 	  {
-	    tree t = TYPE_PTRMEMFUNC_OBJECT_TYPE (lhstype);
-	    tree fn = TREE_VALUE (field);
-	    if (TREE_CODE (fn) == OVERLOAD)
-	      fn = OVL_FUNCTION (fn);
-	    if (TREE_CODE (fn) == FUNCTION_DECL)
+	    if (complain)
 	      {
-		cp_error ("object-dependent reference `%E' can only be used in a call",
-			  DECL_NAME (fn));
-		cp_error ("  to form a pointer to member function, say `&%T::%E'",
-			  t, DECL_NAME (fn));
+	        tree t = TYPE_PTRMEMFUNC_OBJECT_TYPE (lhstype);
+	        tree fn = TREE_VALUE (field);
+	        if (TREE_CODE (fn) == OVERLOAD)
+	          fn = OVL_FUNCTION (fn);
+	        if (TREE_CODE (fn) == FUNCTION_DECL)
+	          {
+		    cp_error ("object-dependent reference `%E' can only be used in a call",
+		    	      DECL_NAME (fn));
+  	    	    cp_error ("  to form a pointer to member function, say `&%T::%E'",
+		    	      t, DECL_NAME (fn));
+    	          }
+	        else
+	          cp_error ("object-dependent reference can only be used in a call");
 	      }
-	    else
-	      cp_error ("object-dependent reference can only be used in a call");
 	    return error_mark_node;
 	  }
 	
