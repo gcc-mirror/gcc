@@ -549,7 +549,9 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	}
       else
 	{
-	  if (TYPE_METHODS (TREE_TYPE (node)))
+	  if ((TREE_CODE (TREE_TYPE (node)) == RECORD_TYPE
+	       || TREE_CODE (TREE_TYPE (node)) == UNION_TYPE)
+	      && TYPE_METHODS (TREE_TYPE (node)))
 	    {
 	      /* The type is a c++ class: all structures have at least
 		 4 methods.  */

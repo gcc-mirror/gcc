@@ -1,3 +1,8 @@
+2004-06-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree-pretty-print.c (dump_generic_node, case TYPE_DECL):
+	Don't look at TYPE_METHODS unless RECORD_TYPE or UNION_TYPE.
+
 2004-06-24  Andrew Pinski  <apinski@apple.com>
 
 	* objc-act.c (build_objc_method_call): Save the lookup_object
