@@ -175,7 +175,7 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config -I$(srcdir)
 #
 JAVA_OBJS = parse.o class.o decl.o expr.o constants.o lang.o typeck.o \
   except.o verify.o zextract.o jcf-io.o jcf-parse.o mangle.o jcf-write.o \
-  buffer.o jcf-depend.o jcf-path.o
+  buffer.o check-init.o jcf-depend.o jcf-path.o
 
 JAVA_OBJS_LITE = parse-scan.o jv-scan.o
 

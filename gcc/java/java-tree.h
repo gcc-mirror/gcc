@@ -520,6 +520,7 @@ extern tree decode_newarray_type PROTO ((int));
 extern tree lookup_field PROTO ((tree*, tree));
 extern int is_array_type_p PROTO ((tree));
 extern HOST_WIDE_INT java_array_type_length PROTO ((tree));
+extern int read_class PROTO ((tree));
 extern void load_class PROTO ((tree, int));
 
 extern tree lookup_name PROTO ((tree));
@@ -833,6 +834,9 @@ extern tree *type_map;
 #define FINALLY_EXPR_LABEL(NODE) TREE_OPERAND ((NODE), 0)
 #define FINALLY_EXPR_BLOCK(NODE) TREE_OPERAND ((NODE), 1)
 
+#define BLOCK_EXPR_DECLS(NODE)  BLOCK_VARS(NODE)
+#define BLOCK_EXPR_BODY(NODE)   BLOCK_SUBBLOCKS(NODE)
+
 /* Using a CATCH_EXPR node */
 #define CATCH_EXPR_GET_EXPR(NODE, V) (V ? LABELED_BLOCK_BODY (NODE) : (NODE))
 
@@ -841,11 +845,12 @@ extern tree *type_map;
   (inherits_from_p ((TYPE), runtime_exception_type_node)	\
    || inherits_from_p ((TYPE), error_exception_type_node))
 
+extern int java_error_count;					\
+
 /* Make the current function where this macro is invoked report error
    messages and and return, if any */
 #define java_parse_abort_on_error()					\
   {									\
-     extern int java_error_count;					\
-     if (java_error_count)						\
+     if (java_error_count > save_error_count)				\
        return;								\
    }
