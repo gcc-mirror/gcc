@@ -72,7 +72,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
    there are no such switches except those implemented by GCC itself.  */
 
 #define WORD_SWITCH_TAKES_ARG(STR)			\
- (!strcmp (STR, "include") || !strcmp (STR, "imacros"))
+ (!strcmp (STR, "include") || !strcmp (STR, "imacros")	\
+  || !strcmp (STR, "aux-info"))
 
 /* You should redefine CPP_PREDEFINES in any file which includes this one.
    The definition should be appropriate for the type of target system
@@ -249,6 +250,8 @@ do {				 				\
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
 
+#define MULTIBYTE_CHARS
+
 #undef ASM_BYTE_OP
 #define ASM_BYTE_OP	"\t.byte"
 
@@ -303,12 +306,12 @@ do {									\
    the linker seems to want the alignment of data objects
    to depend on their types.  We do exactly that here.  */
 
-#define BSS_ASM_OP	"\t.bss"
+#define BSS_ASM_OP	".bss"
 
 #undef ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
 do {									\
-  fprintf ((FILE), "%s\t%s,%u,%u\n",					\
+  fprintf ((FILE), "\t%s\t%s,%u,%u\n",					\
 	   BSS_ASM_OP, (NAME), (SIZE), (ALIGN) / BITS_PER_UNIT);	\
 } while (0)
 
@@ -316,7 +319,7 @@ do {									\
    specific value in some section.  This is the same for all known svr4
    assemblers.  */
 
-#define INT_ASM_OP		"\t.long\t"
+#define INT_ASM_OP		".long"
 
 /* This is the pseudo-op used to generate a contiguous sequence of byte
    values from a double-quoted string WITHOUT HAVING A TERMINATING NUL
@@ -335,9 +338,9 @@ do {									\
 
 #define USE_CONST_SECTION	1
 
-#define CONST_SECTION_ASM_OP	"\t.section\t.rodata"
-#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"a\",@progbits\n"
-#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"a\",@progbits\n"
+#define CONST_SECTION_ASM_OP	".section\t.rodata"
+#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"a\",@progbits"
+#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"a\",@progbits"
 
 /* On svr4, we *do* have support for the .init section, and we can put
    stuff in there to be executed before `main'.  We let crtstuff.c and
@@ -345,7 +348,7 @@ do {									\
    says how to change sections to the .init section.  This is the same
    for all know svr4 assemblers.  */
 
-#define INIT_SECTION_ASM_OP	"\t.section\t.init"
+#define INIT_SECTION_ASM_OP	".section\t.init"
 
 /* A default list of other sections which we might be "in" at any given
    time.  For targets that use additional sections (e.g. .tdesc) you
@@ -409,7 +412,7 @@ dtors_section ()							\
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
   do {									\
     ctors_section ();							\
-    fprintf (FILE, "%s\t ", INT_ASM_OP);				\
+    fprintf (FILE, "\t%s\t ", INT_ASM_OP);				\
     assemble_name (FILE, NAME);						\
     fprintf (FILE, "\n");						\
   } while (0)
@@ -419,7 +422,7 @@ dtors_section ()							\
 #define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
   do {									\
     dtors_section ();                   				\
-    fprintf (FILE, "%s\t ", INT_ASM_OP);				\
+    fprintf (FILE, "\t%s\t ", INT_ASM_OP);				\
     assemble_name (FILE, NAME);              				\
     fprintf (FILE, "\n");						\
   } while (0)
@@ -465,8 +468,8 @@ dtors_section ()							\
    different pseudo-op names for these, they may be overridden in the
    file which includes this one.  */
 
-#define TYPE_ASM_OP	"\t.type"
-#define SIZE_ASM_OP	"\t.size"
+#define TYPE_ASM_OP	".type"
+#define SIZE_ASM_OP	".size"
 
 /* The following macro defines the format used to output the second
    operand of the .type assembler directive.  Different svr4 assemblers
@@ -484,7 +487,7 @@ dtors_section ()							\
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   do {									\
-    fprintf (FILE, "%s\t ", TYPE_ASM_OP);				\
+    fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);				\
     assemble_name (FILE, NAME);						\
     putc (',', FILE);							\
     fprintf (FILE, TYPE_OPERAND_FMT, "function");			\
@@ -496,14 +499,14 @@ dtors_section ()							\
 
 #define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)			\
   do {									\
-    fprintf (FILE, "%s\t ", TYPE_ASM_OP);				\
+    fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);				\
     assemble_name (FILE, NAME);						\
     putc (',', FILE);							\
     fprintf (FILE, TYPE_OPERAND_FMT, "object");				\
     putc ('\n', FILE);							\
     if (!flag_inhibit_size_directive)					\
       {									\
-	fprintf (FILE, "%s\t ", SIZE_ASM_OP);				\
+	fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);				\
 	assemble_name (FILE, NAME);					\
 	fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (decl)));	\
       }									\
@@ -521,7 +524,7 @@ dtors_section ()							\
 	labelno++;							\
 	ASM_GENERATE_INTERNAL_LABEL (label, "Lfe", labelno);		\
 	ASM_OUTPUT_INTERNAL_LABEL (FILE, "Lfe", labelno);		\
-	fprintf (FILE, "%s\t ", SIZE_ASM_OP);				\
+	fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);				\
 	assemble_name (FILE, (FNAME));					\
         fprintf (FILE, ",");						\
 	assemble_name (FILE, label);					\

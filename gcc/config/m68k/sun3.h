@@ -43,14 +43,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* -m68881 is the default */
 #define CPP_SPEC \
 "%{!msoft-float:%{mfpa:-D__HAVE_FPA__ }%{!mfpa:-D__HAVE_68881__ }}\
-%{!ansi:%{m68000:-Dmc68010}%{mc68000:-Dmc68010}%{!mc68000:%{!m68000:-Dmc68020}}}"
-
-#else
-#if TARGET_DEFAULT & 0100
-
-/* -mfpa is the default */
-#define CPP_SPEC \
-"%{!msoft-float:%{m68881:-D__HAVE_68881__ }%{!m68881:-D__HAVE_FPA__ }}\
+%{m68000:-D__mc68010__}%{mc68000:-D__mc68010__}%{!mc68000:%{!m68000:-D__mc68020__}}} \
 %{!ansi:%{m68000:-Dmc68010}%{mc68000:-Dmc68010}%{!mc68000:%{!m68000:-Dmc68020}}}"
 
 #else
@@ -58,9 +51,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* -msoft-float is the default */
 #define CPP_SPEC \
 "%{m68881:-D__HAVE_68881__ }%{mfpa:-D__HAVE_FPA__ }\
+%{m68000:-D__mc68010__}%{mc68000:-D__mc68010__}%{!mc68000:%{!m68000:-D__mc68020__}}} \
 %{!ansi:%{m68000:-Dmc68010}%{mc68000:-Dmc68010}%{!mc68000:%{!m68000:-Dmc68020}}}"
 
-#endif
 #endif
 
 /* Prevent error on `-sun3' and `-target sun3' options.  */
@@ -81,7 +74,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define WORD_SWITCH_TAKES_ARG(STR)				\
  (!strcmp (STR, "Tdata") || !strcmp (STR, "include")		\
   || !strcmp (STR, "imacros") || !strcmp (STR, "target")	\
-  || !strcmp (STR, "assert"))
+  || !strcmp (STR, "assert") || !strcmp (STR, "aux-info"))
 
 /* -m68000 requires special flags to the assembler.  */
 
@@ -167,6 +160,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Allow folding division by zero.  */
 #define REAL_INFINITY
 
+/* Generate calls to memcpy, memcmp and memset.  */
+#define TARGET_MEM_FUNCTIONS
+
 /* This is how to output an assembler line defining a `double' constant.  */
 
 #undef ASM_OUTPUT_DOUBLE
@@ -174,7 +170,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   {									\
     if (REAL_VALUE_ISINF (VALUE))					\
       fprintf (FILE, "\t.double 0r%s99e999\n", (VALUE) > 0 ? "" : "-");	\
-    else if (isnan (VALUE))						\
+    else if (REAL_VALUE_ISNAN (VALUE))					\
       {									\
 	union { double d; long l[2];} t;				\
 	t.d = (VALUE);							\
@@ -191,7 +187,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   {									\
     if (REAL_VALUE_ISINF (VALUE))					\
       fprintf (FILE, "\t.single 0r%s99e999\n", (VALUE) > 0 ? "" : "-");	\
-    else if (isnan (VALUE))						\
+    else if (REAL_VALUE_ISNAN (VALUE))					\
       {									\
 	union { float f; long l;} t;					\
 	t.f = (VALUE);							\
