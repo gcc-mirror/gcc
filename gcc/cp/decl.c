@@ -10779,9 +10779,6 @@ grokdeclarator (tree declarator,
 
 	    declarator = TREE_OPERAND (declarator, 0);
 
-	    /* FIXME: This is where default args should be fully
-	       processed.  */
-
 	    arg_types = grokparms (inner_parms);
 
 	    if (declarator && flags == DTOR_FLAG)
@@ -11536,30 +11533,24 @@ grokdeclarator (tree declarator,
 	    /* Friends are treated specially.  */
 	    if (ctype == current_class_type)
 	      warning ("member functions are implicitly friends of their class");
- 	    else
- 	      {
- 		tree t = NULL_TREE;
- 		if (decl && DECL_NAME (decl))
- 		  {
- 		    if (template_class_depth (current_class_type) == 0)
- 		      {
- 			decl
- 			  = check_explicit_specialization
- 			  (declarator, decl,
- 			   template_count, 2 * (funcdef_flag != 0) + 4);
- 			if (decl == error_mark_node)
- 			  return error_mark_node;
- 		      }
-		    
- 		    t = do_friend (ctype, declarator, decl,
- 				   last_function_parms, *attrlist,
-				   flags, quals, funcdef_flag);
- 		  }
- 		if (t && funcdef_flag)
- 		  return t;
-  
- 		return void_type_node;
- 	      }
+ 	    else if (decl && DECL_NAME (decl))
+	      {
+		if (template_class_depth (current_class_type) == 0)
+		  {
+		    decl = check_explicit_specialization
+		      (declarator, decl, template_count,
+		       2 * (funcdef_flag != 0) + 4);
+		    if (decl == error_mark_node)
+		      return error_mark_node;
+		  }
+		
+		decl = do_friend (ctype, declarator, decl,
+				  last_function_parms, *attrlist,
+				  flags, quals, funcdef_flag);
+		return decl;
+	      }
+	    else
+	      return void_type_node;
 	  }
 
 	/* Structure field.  It may not be a function, except for C++ */
