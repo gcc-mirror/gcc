@@ -1,3 +1,8 @@
+2002-09-07  Scott Snyder  <snyder@fnal.gov>
+
+	PR target/7374
+	* config/alpha/alpha.md (abstf2): Fix typo: 'neg' for 'abs'.
+
 2002-09-07  Roger Sayle  <roger@eyesopen.com>
 
 	* basic-block.h (struct loop): Remove unused cont_dominator field.
