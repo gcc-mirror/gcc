@@ -1,3 +1,8 @@
+2000-04-05  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (decl_hash): Prototype removed.
+	(decl_compare): Likewise.
+
 2000-04-05  Tom Tromey  <tromey@cygnus.com>
 
 	* parse.h (THIS_MODIFIER_ONLY): Changed meaning of `v' parameter.
