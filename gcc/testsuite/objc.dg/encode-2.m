@@ -39,7 +39,7 @@ typedef struct { float x, y; } XXPoint;
 typedef struct { float width, height; } XXSize;
 typedef struct _XXRect { XXPoint origin; XXSize size; } XXRect;
 -(id)setRect:(XXRect)r withInt:(int)i;
--(void) char:(char)c float:(float)f double:(double)d long:(long)l;
+-(void) char:(signed char)c float:(float)f double:(double)d long:(long)l;
 @end
 
 XXRect my_rect;
@@ -57,7 +57,7 @@ unsigned offs1, offs2, offs3, offs4, offs5, offs6, offs7;
   CHECK_IF(offs == offs1); 
   return nil; 
 }
--(void) char:(char)c float:(float)f double:(double)d long:(long)l {
+-(void) char:(signed char)c float:(float)f double:(double)d long:(long)l {
   unsigned offs = sizeof(self);
   CHECK_IF(offs == offs3);
   offs += sizeof(_cmd);
