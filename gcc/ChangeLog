@@ -1,3 +1,9 @@
+Fri Oct 29 06:32:44 1999  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* flow.c (propagate_block): When the last reference to a label
+ 	before an ADDR_VEC is deleted because the reference is a dead
+ 	store, delete the ADDR_VEC.
+
 Thu Oct 28 12:28:50 1999  Richard Henderson  <rth@cygnus.com>
 
 	* resource.c (find_free_register): Don't use the frame pointer
