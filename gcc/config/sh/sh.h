@@ -1633,7 +1633,7 @@ extern enum reg_class reg_class_from_letter[];
    tested here has to be kept in sync with the one in explow.c:promote_mode.  */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)					\
-  gen_rtx (REG,								\
+  gen_rtx_REG (								\
 	   ((GET_MODE_CLASS (TYPE_MODE (VALTYPE)) == MODE_INT		\
 	     && GET_MODE_SIZE (TYPE_MODE (VALTYPE)) < UNITS_PER_WORD	\
 	     && (TREE_CODE (VALTYPE) == INTEGER_TYPE			\
@@ -2561,9 +2561,9 @@ struct sh_args {
 	 prevalent.  */							\
       if (GET_MODE_SIZE (MODE) + offset - offset_base <= 64)		\
 	{								\
-	  sum = gen_rtx (PLUS, Pmode, XEXP (X, 0),			\
+	  sum = gen_rtx_PLUS (Pmode, XEXP (X, 0),			\
 			 GEN_INT (offset_base));			\
-	  X = gen_rtx (PLUS, Pmode, sum, GEN_INT (offset - offset_base));\
+	  X = gen_rtx_PLUS (Pmode, sum, GEN_INT (offset - offset_base));\
 	  push_reload (sum, NULL_RTX, &XEXP (X, 0), NULL,		\
 		       BASE_REG_CLASS, Pmode, VOIDmode, 0, 0, (OPNUM),	\
 		       (TYPE));						\
