@@ -1,3 +1,9 @@
+2003-03-23  Glen Nakamura <glen@imodulo.com>
+
+	PR c/8224
+	* fold-const.c (extract_muldiv_1): Don't pass through type conversions
+	when signedness changes for division or modulus.
+
 2003-03-24  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/sysv4.h (ASM_OUTPUT_ALIGNED_BSS): Remove unnecessary
