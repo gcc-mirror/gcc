@@ -44,6 +44,9 @@ test01()
     aux.assign(aux, i + 1, string::npos);
   VERIFY(aux.c_str()[9] == 'B');
   VERIFY(aux == "/Hanalei Bay/Kauai/Hawaii");
+
+  aux.assign(10, 0);
+  VERIFY(aux.length() == 10);
 }
 
 int main()

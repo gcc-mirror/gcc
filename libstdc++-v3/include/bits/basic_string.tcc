@@ -621,6 +621,22 @@ namespace std
       // else nothing (in particular, avoid calling _M_mutate() unnecessarily.)
     }
 
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    basic_string<_CharT, _Traits, _Alloc>&
+    basic_string<_CharT, _Traits, _Alloc>::
+    _M_replace_aux(iterator __i1, iterator __i2, size_type __n2, _CharT __c)
+    {
+      size_type __n1 = __i2 - __i1;
+      size_type __off1 = __i1 - _M_ibegin();
+      if (max_size() - (this->size() - __n1) <= __n2)
+	__throw_length_error("basic_string::replace");
+      _M_mutate (__off1, __n1, __n2);
+      // Invalidated __i1, __i2
+      if (__n2)
+	traits_type::assign(_M_data() + __off1, __n2, __c);
+      return *this;
+    }
+
   // This is the general replace helper, which currently gets instantiated both
   // for input iterators and reverse iterators. It buffers internally and then
   // calls _M_replace_safe.
@@ -760,22 +776,6 @@ namespace std
       return __str;
     }
 
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>&
-    basic_string<_CharT, _Traits, _Alloc>::
-    replace(iterator __i1, iterator __i2, size_type __n2, _CharT __c)
-    {
-      const size_type __n1 = __i2 - __i1;
-      const size_type __off1 = __i1 - _M_ibegin();
-      if (max_size() - (this->size() - __n1) <= __n2)
-	__throw_length_error("basic_string::replace");
-      _M_mutate (__off1, __n1, __n2);
-      // Invalidated __i1, __i2
-      if (__n2)
-	traits_type::assign(_M_data() + __off1, __n2, __c);
-      return *this;
-    }
-  
   template<typename _CharT, typename _Traits, typename _Alloc>
     typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::

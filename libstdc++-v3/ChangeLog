@@ -1,3 +1,15 @@
+2003-06-20  Doug Gregor <dgregor@apple.com>
+
+	* include/bits/basic_string.h (basic_string::replace): Dispatch 
+	_InputIterator version based on _Is_integer.
+	* include/bits/basic_string.tcc (basic_string::replace):
+	Renamed replace(iterator, iterator, size_type, _CharT) to
+	_M_replace_aux.
+	* testsuite/21_strings/basic_string/assign/char/1.cc (test01):
+	Test basic_string::assign(_InputIterator, _InputIterator),
+	which calls basic_string::replace(iterator, iterator,
+	_Input_iterator, _InputIterator).
+
 2003-06-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/testsuite_performance.h (resource_counter): Don't use
