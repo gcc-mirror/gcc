@@ -1,3 +1,8 @@
+2000-09-26  Michael Hayes  <mhayes@cygnus.com>
+
+	* flow.c (flow_loop_pre_header_scan): Punt if loop enters
+	from entry block.
+
 2000-09-25  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/ia64.h (INDEX_REG_CLASS): Define to GENERAL_REGS.
