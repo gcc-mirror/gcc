@@ -2532,6 +2532,7 @@ extern tree pedantic_non_lvalue		PARAMS ((tree));
 
 extern tree convert			PARAMS ((tree, tree));
 extern unsigned int expr_align		PARAMS ((tree));
+extern tree expr_last			PARAMS ((tree));
 extern tree size_in_bytes		PARAMS ((tree));
 extern HOST_WIDE_INT int_size_in_bytes	PARAMS ((tree));
 extern tree bit_position		PARAMS ((tree));

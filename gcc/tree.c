@@ -1123,6 +1123,18 @@ tree_cons (purpose, value, chain)
   return node;
 }
 
+/* Return the last expression in a sequence of COMPOUND_EXPRs.  */
+
+tree
+expr_last (expr)
+     tree expr;
+{
+  if (expr == NULL_TREE)
+    return expr;
+  while (TREE_CODE (expr) == COMPOUND_EXPR)
+    expr = TREE_OPERAND (expr, 1);
+  return expr;
+}
 
 /* Return the size nominally occupied by an object of type TYPE
    when it resides in memory.  The value is measured in units of bytes,
