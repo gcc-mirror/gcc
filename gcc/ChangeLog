@@ -1,3 +1,7 @@
+2002-05-23  Hans Boehm  <Hans_Boehm@hp.com>
+	* config/ia64/linux.h (IA64_GATE_AREA_END): Adjust for 64K
+	pages.
+
 2002-05-23  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	PR preprocessor/6517
