@@ -195,8 +195,16 @@ I. What is an ABI? What's covered? What's not?
   gcc-3.1.x tools, will meet the requirements above.
 
 - What configure options impact symbol versioning?
-  There is only one: --enable-symvers. For more information see:
+
+  It turns out that most of the configure options that change default
+  behavior will impact the mangled names of exported symbols, and thus
+  impact versioning and compatibility.
+
+  For more information on configure options, including ABI impacts, see:
   http://gcc.gnu.org/onlinedocs/libstdc++/configopts.html
+
+  There is one flag that explicitly deals with symbol versioning:
+  --enable-symvers. 
 
   In particular, libstdc++-v3/acinclude.m4 has a macro called
   GLIBCPP_ENABLE_SYMVERS that defaults to yes (or the argument passed
@@ -281,22 +289,28 @@ III. Versioning
 
 IV. Testing ABI changes
 
-Currently, there are formal tests for changes in the libstdc++ ABI,
-and in addition informal testing procedures. Work to develop these
-tests is ongoing.
+Testing for GNU C++ ABI changes is composed of two distinct areas:
+testing the C++ compiler (g++) for compiler changes, and testing the
+C++ library (libstdc++) for library changes.
 
-There is a formal method for checking the compiler parts of the C++
-ABI, donated by Intel. More information can be obtained
+Testing the C++ compiler ABI can be done various ways.
+
+One. 
+Intel ABI checker. More information can be obtained
 <a href="http://developer.intel.com/software/products/opensource/">here.</a>
 
-Also, it seems as if some members of the open source community are
-working on C++ ABI testers for the compiler. It is yet unspecified if
-these tools will be freely available, and able to be included in a GNU
-project. Please contact Mark Mitchell (mark@codesoucery.com) for more
-details, and current status.
+Two.
+The second is yet unreleased, but has been announced on the gcc
+mailing list. It is yet unspecified if these tools will be freely
+available, and able to be included in a GNU project. Please contact
+Mark Mitchell (mark@codesourcery.com) for more details, and current
+status.
 
+Three.
+Involves using the vlad.consistency test framework. This has also been
+discussed on the gcc mailing lists.
 
-To test the library, there are two methods:
+Testing the C++ library ABI can also be done various ways.
 
 One. 
 (Brendan Kehoe, Jeff Law suggestion to run 'make check-c++' two ways, 
@@ -310,11 +324,12 @@ Two.
 Use the 'make check-abi' rule in the libstdc++-v3 Makefile. 
 
 This is a proactive check the library ABI. Currently, exported symbol
-names are checked against a last known good baseline. Currently, this
-baseline is keyed off of 3.2.0 binaries, as this was the last time the
-.so number was incremented. In addition, all exported names are
-demangled, and the exported objects are checked to make sure they are
-the same size as the same object in the baseline.
+names that are either weak or defined are checked against a last known
+good baseline. Currently, this baseline is keyed off of 3.2.0
+binaries, as this was the last time the .so number was incremented. In
+addition, all exported names are demangled, and the exported objects
+are checked to make sure they are the same size as the same object in
+the baseline.
 
 In the future, more tests should be added. In particular, vtable
 information, offsets of data members in class objects, and other
@@ -329,7 +344,8 @@ Another approach might be to use the -fdump-class-hierarchy flag to
 get information.
 (See g++/7470 on how this was used to find bugs.)
 
-Perhaps there are other Library ABI checkers. If so, please notify us.
+Perhaps there are other C++ ABI checkers. If so, please notify
+us. We'd like to know about them!
 
 
 V. Issues not directly addressed, and possible suggestions
@@ -340,7 +356,7 @@ V. Issues not directly addressed, and possible suggestions
 
   --enable-version-specific-runtime-libs
 
-  - Alexandre Olva proposal to have extended name attributes, modify ld
+  - Alexandre Oliva proposal to have extended name attributes, modify ld
  
   - directory-level versioning
 

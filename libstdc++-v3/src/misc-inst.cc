@@ -67,4 +67,19 @@ namespace std
     basic_istream<wchar_t>& 
     getline(basic_istream<wchar_t>&, wstring&);
 #endif
+
+#if 1
+  // XXX
+  // 2002-05-24 These are no longer needed and should eventually be deleted.
+  template 
+    string* 
+    __uninitialized_fill_n_aux<string*, size_t, string>
+    (string*, size_t, string const &, __false_type);
+
+  template 
+    string* 
+    __uninitialized_copy_aux<vector<string>::const_iterator, string *>
+    (vector<string>::const_iterator, vector<string>::const_iterator, 
+     string*, __false_type);
+#endif
 } // namespace std
