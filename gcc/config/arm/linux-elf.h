@@ -49,13 +49,26 @@ Boston, MA 02111-1307, USA.  */
 
 #define LIBGCC_SPEC "%{msoft-float:-lfloat} -lgcc"
 
-/* Add the compiler's crtend, and the library's crtn.  */
-#define ENDFILE_SPEC "%{!shared:crtend.o%s} %{shared:crtendS.o%s} \
-   %{pg:gcrtn.o%s}%{!pg:crtn.o%s}"
+/* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
+   the GNU/Linux magical crtbegin.o file (see crtstuff.c) which
+   provides part of the support for getting C++ file-scope static
+   object constructed before entering `main'. */
+   
+#define STARTFILE_SPEC \
+  "%{!shared: \
+     %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} \
+		       %{!p:%{profile:gcrt1.o%s} \
+			 %{!profile:crt1.o%s}}}} \
+   crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
 
-#define STARTFILE_SPEC "%{!shared:crt1.o%s} \
-   crti.o%s \
-   %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+/* Provide a ENDFILE_SPEC appropriate for GNU/Linux.  Here we tack on
+   the GNU/Linux magical crtend.o file (see crtstuff.c) which
+   provides part of the support for getting C++ file-scope static
+   object constructed before entering `main', followed by a normal
+   GNU/Linux "finalizer" file, `crtn.o'.  */
+
+#define ENDFILE_SPEC \
+  "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
 
 #define LINK_SPEC "%{h*} %{version:-v} \
    %{b} %{Wl,*:%*} \
@@ -218,9 +231,16 @@ const_section ()							\
        fputc ('\n', FILE); } while (0)
 
 /* Make DWARF2 an option, but keep DBX as the default for now.
-   Use -gdwarf2 to turn on DWARF2.  */
+   Use -gdwarf-2 to turn on DWARF2.  */
 #define DWARF2_DEBUGGING_INFO
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+
+/* Make LBRAC and RBRAC addresses relative to the start of the
+   function.  The native Solaris stabs debugging format works this
+   way, gdb expects it, and it reduces the number of relocation
+   entries.  */
+
+#define DBX_BLOCKS_FUNCTION_RELATIVE 1
 
 #include "arm/elf.h"
 #include "arm/linux-gas.h"
