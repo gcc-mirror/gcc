@@ -113,6 +113,10 @@ extern int target_flags;
 #define MASK_5200	2048
 #define TARGET_5200 (target_flags & MASK_5200)
 
+/* Compile for a CPU32 */
+	/* A 68020 without bitfields is a good heuristic for a CPU32 */
+#define TARGET_CPU32	(TARGET_68020 && !TARGET_BITFIELD)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
