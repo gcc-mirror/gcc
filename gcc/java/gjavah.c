@@ -124,6 +124,7 @@ static int field_pass;
 
 #define HANDLE_CONSTANTVALUE(VALUEINDEX) current_field_value = (VALUEINDEX)
 
+static int method_access = 0;
 #define HANDLE_METHOD(ACCESS_FLAGS, NAME, SIGNATURE, ATTRIBUTE_COUNT) \
   if (out) { decompiled = 0; \
       print_method_info (out, jcf, NAME, SIGNATURE, ACCESS_FLAGS); \
@@ -398,6 +399,7 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
   int length, is_init = 0;
   char *override = NULL;
 
+  method_access = flags;
   if (JPOOL_TAG (jcf, name_index) != CONSTANT_Utf8)
     fprintf (stream, "<not a UTF8 constant>");
   str = JPOOL_UTF_DATA (jcf, name_index);
@@ -465,12 +467,20 @@ decompile_method (out, jcf, code_len)
   int index;
   uint16 name_and_type, name;
 
+  /* If the method is synchronized, don't touch it.  */
+  if ((method_access & ACC_SYNCHRONIZED))
+    return;
+
   if (code_len == 5
       && codes[0] == OPCODE_aload_0
       && codes[1] == OPCODE_getfield
-      && codes[4] == OPCODE_areturn)
+      && (codes[4] == OPCODE_areturn
+	  || codes[4] == OPCODE_dreturn
+	  || codes[4] == OPCODE_freturn
+	  || codes[4] == OPCODE_ireturn
+	  || codes[4] == OPCODE_lreturn))
     {
-      /* Found something useful to decompile.  */
+      /* Found code like `return FIELD'.  */
       fputs (" { return ", out);
       index = (codes[2] << 8) | codes[3];
       /* FIXME: ensure that tag is CONSTANT_Fieldref.  */
@@ -480,6 +490,20 @@ decompile_method (out, jcf, code_len)
       name = JPOOL_USHORT1 (jcf, name_and_type);
       print_name (out, jcf, name);
       fputs ("; }", out);
+      decompiled = 1;
+    }
+  else if (code_len == 2
+	   && codes[0] == OPCODE_aload_0
+	   && codes[1] == OPCODE_areturn)
+    {
+      /* Found `return this'.  */
+      fputs (" { return this; }", out);
+      decompiled = 1;
+    }
+  else if (code_len == 1 && codes[0] == OPCODE_return)
+    {
+      /* Found plain `return'.  */
+      fputs (" { }", out);
       decompiled = 1;
     }
 }

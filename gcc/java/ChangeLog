@@ -1,5 +1,13 @@
 1998-12-13  Tom Tromey  <tromey@cygnus.com>
 
+	* gjavah.c (decompile_method): Handle all types of `return'
+	opcode.  Decompile `return this' and `return'.
+	(method_access): New global.
+	(print_method_info): Set it.
+	(decompile_method): Don't decompile a synchronized method.
+
+1998-12-13  Tom Tromey  <tromey@cygnus.com>
+
 	* jcf-reader.c (jcf_parse_one_method): Recognize
 	HANDLE_END_METHOD.
 	* gjavah.c (HANDLE_END_METHOD): New macro.
