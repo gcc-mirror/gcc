@@ -5365,7 +5365,7 @@ make_compound_operation (x, in_code)
 	{
 	  new = make_compound_operation (XEXP (SUBREG_REG (XEXP (x, 0)), 0),
 					 next_code);
-	  new = make_extraction (GET_MODE (SUBREG_REG (XEXP (x, 0))), new, 0,
+	  new = make_extraction (mode, new, 0,
 				 XEXP (SUBREG_REG (XEXP (x, 0)), 1), i, 1,
 				 0, in_code == COMPARE);
 	}
