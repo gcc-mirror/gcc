@@ -1,3 +1,20 @@
+2004-01-22  Arnaud Vandyck  <arnaud.vandyck@ulg.ac.be>
+            Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/table/DefaultTableCellRenderer.java
+	(DefaultTableCellRenderer): Added javadoc for the class and for
+	the constructor, Border instance, create an EmptyBorder.
+	(UIResource): Removed the comment at the end of the class
+	(setForeground): New method.
+	(setBackground): New method.
+	(updateUI): New method.
+	(getTableCellRendererComponent): Rewritten with the help of
+	dvholten and Stephane Meslin-Weber.
+	(validate): New method.
+	(repaint): New method.
+	(firePropertyChange): New method.
+	(setValue): New method.
+
 2004-01-22  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c

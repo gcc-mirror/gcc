@@ -1,5 +1,5 @@
 /* DefaultTableCellRenderer.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,22 +35,26 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package javax.swing.table;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Rectangle;
 import java.io.Serializable;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 
 /**
- * STUBBED
+ * Class to display every cells.
  */
 public class DefaultTableCellRenderer extends JLabel
   implements TableCellRenderer, Serializable
 {
   static final long serialVersionUID = 7878911414715528324L;
+
+  protected static Border noFocusBorder;
 
   public static class UIResource extends DefaultTableCellRenderer
     implements javax.swing.plaf.UIResource
@@ -58,17 +62,149 @@ public class DefaultTableCellRenderer extends JLabel
     public UIResource()
     {
     }
-  } // class UIResource
-
-  public DefaultTableCellRenderer()
-  {
   }
 
+  /**
+   * Creates a default table cell renderer with an empty border.
+   */
+  public DefaultTableCellRenderer()
+  {
+    super();
+    this.noFocusBorder = new EmptyBorder(0, 0, 0, 0);
+  }
+
+  /**
+   * Assign the unselected-foreground.
+   *
+   * @param c the color to assign
+   */
+  public void setForeground(Color c)
+  {
+    super.setForeground(c);
+  }
+
+  /**
+   * Assign the unselected-background.
+   *
+   * @param c the color to assign
+   */
+  public void setBackground(Color c)
+  {
+    super.setBackground(c);
+  }
+
+  /**
+   * Look and feel has changed.
+   *
+   * <p>Replaces the current UI object with the  latest version from
+   * the UIManager.</p>
+   */
+  public void updateUI()
+  {
+    super.updateUI();
+  }
+
+  /**
+   * Get the string value of the object and pass it to setText().
+   *
+   * @param table the JTable
+   * @param value the value of the object
+   * @param isSelected is the cell selected?
+   * @param hasFocus has the cell the focus?
+   * @param row the row to render
+   * @param column the cell to render
+   * 
+   * @return this component (the default table cell renderer)
+   */
   public Component getTableCellRendererComponent(JTable table, Object value,
                                                  boolean isSelected,
                                                  boolean hasFocus,
                                                  int row, int column)
   {
-    return null;
+    if (value!=null)
+      super.setText(value.toString());
+    
+    return this;
   }
-} // class DefaultTableCellRenderer
+
+  /**
+   * Overriden for performance.
+   *
+   * <p>This method needs to be overridden in a subclass to actually
+   * do something.</p>
+   *
+   * @return always true
+   */
+  public boolean isOpaque()
+  {
+    return true;
+  }
+
+  /**
+   * Overriden for performance.
+   *
+   * <p>This method needs to be overridden in a subclass to actually
+   * do something.</p>
+   */
+  public void validate()
+  {
+    // Does nothing.
+  }
+
+  /**
+   * Overriden for performance.
+   *
+   * <p>This method needs to be overridden in a subclass to actually
+   * do something.</p>
+   */
+  public void repaint(long tm, int x, int y, int width, int height)
+  {
+    // Does nothing.
+  }
+
+  /**
+   * Overriden for performance.
+   *
+   * <p>This method needs to be overridden in a subclass to actually
+   * do something.</p>
+   */
+  public void repaint(Rectangle r)
+  {
+    // Does nothing.
+  }
+
+  /**
+   * Overriden for performance.
+   *
+   * <p>This method needs to be overridden in a subclass to actually
+   * do something.</p>
+   */
+  public void firePropertyChange(String propertyName, Object oldValue,
+                                 Object newValue)
+  {
+    // Does nothing.
+  }
+
+  /**
+   * Overriden for performance.
+   *
+   * <p>This method needs to be overridden in a subclass to actually
+   * do something.</p>
+   */
+  public void firePropertyChange(String propertyName, boolean oldValue,
+		                 boolean newValue)
+  {
+    // Does nothing.
+  }
+
+  /**
+   * Sets the String for this cell.
+   * 
+   * @param value the string value for this cell; if value is null it
+   * sets the text value to an empty string
+   */
+  protected void setValue(Object value)
+  {
+    super.setText((value!=null) ? value.toString() : "");
+  }
+}
