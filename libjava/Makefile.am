@@ -847,6 +847,7 @@ java/lang/UnsatisfiedLinkError.java \
 java/lang/UnsupportedOperationException.java \
 java/lang/VerifyError.java \
 java/lang/VirtualMachineError.java \
+java/lang/VMClassLoader.java \
 java/lang/Void.java \
 java/io/BufferedInputStream.java \
 java/io/BufferedOutputStream.java \
