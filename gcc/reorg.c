@@ -2808,7 +2808,8 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
       dest = SET_DEST (pat), src = SET_SRC (pat);
       if ((GET_CODE (src) == PLUS || GET_CODE (src) == MINUS)
 	  && rtx_equal_p (XEXP (src, 0), dest)
-	  && ! reg_overlap_mentioned_p (dest, XEXP (src, 1)))
+	  && ! reg_overlap_mentioned_p (dest, XEXP (src, 1))
+	  && ! side_effects_p (pat))
 	{
 	  rtx other = XEXP (src, 1);
 	  rtx new_arith;
