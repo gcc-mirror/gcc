@@ -1123,16 +1123,29 @@ gen_split_move_double (operands)
   rtx src  = operands[1];
   rtx val;
 
+  /* We might have (SUBREG (MEM)) here, so just get rid of the
+     subregs to make this code simpler.  It is safe to call
+     alter_subreg any time after reload.  */
+  if (GET_CODE (dest) == SUBREG)
+    dest = alter_subreg (dest);
+  if (GET_CODE (src) == SUBREG)
+    src = alter_subreg (src);
+
   start_sequence ();
-  if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG)
+  if (GET_CODE (dest) == REG)
     {
+      int dregno = REGNO (dest);
+
       /* reg = reg */
-      if (GET_CODE (src) == REG || GET_CODE (src) == SUBREG)
+      if (GET_CODE (src) == REG)
 	{
+	  int sregno = REGNO (src);
+
+	  int reverse = (dregno == sregno + 1);
+
 	  /* We normally copy the low-numbered register first.  However, if
 	     the first register operand 0 is the same as the second register of
 	     operand 1, we must copy in the opposite order.  */
-	  int reverse = (REGNO (operands[0]) == REGNO (operands[1]) + 1);
 	  emit_insn (gen_rtx_SET (VOIDmode,
 				  operand_subword (dest, reverse, TRUE, mode),
 				  operand_subword (src,  reverse, TRUE, mode)));
@@ -1162,8 +1175,7 @@ gen_split_move_double (operands)
 	  /* If the high-address word is used in the address, we must load it
 	     last.  Otherwise, load it first.  */
 	  rtx addr = XEXP (src, 0);
-	  int reverse = (refers_to_regno_p (REGNO (dest), REGNO (dest)+1,
-					    addr, 0) != 0);
+	  int reverse = (refers_to_regno_p (dregno, dregno+1, addr, 0) != 0);
 
 	  /* We used to optimize loads from single registers as
 
@@ -1205,8 +1217,7 @@ gen_split_move_double (operands)
 	st r1,r3; st r2,+r3; addi r3,-4
 
      which saves 2 bytes and doesn't force longword alignment.  */
-  else if (GET_CODE (dest) == MEM
-	   && (GET_CODE (src) == REG || GET_CODE (src) == SUBREG))
+  else if (GET_CODE (dest) == MEM && GET_CODE (src) == REG)
     {
       rtx addr = XEXP (dest, 0);
 
