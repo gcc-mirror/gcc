@@ -53,11 +53,6 @@ case $machine in
 		fixincludes=fixinc.ptx
 		;;
 
-	i[34567]86-*-sco3.2v5* | \
-	i[34567]86-*-sco3.2v4*)
-		fixincludes=fixinc.sco
-		;;
-
 	alpha*-dec-vms* | \
 	arm-semi-aout | armel-semi-aout | \
 	arm-semi-aof | armel-semi-aof | \
