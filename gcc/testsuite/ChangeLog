@@ -1,6 +1,10 @@
+Fri Aug 21 23:59:18 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/compile/980821-1.c: New test.
+
 Fri Aug 21 03:14:04 1998  Jeffrey A Law  (law@cygnus.com)
 
-	* gcc.c-torture/980526-2.c: Disable for targets with 16bit ints.
+	* gcc.c-torture/execute/980526-2.c: Disable for targets with 16bit ints.
 
 1998-08-19  Mark Mitchell  <mark@markmitchell.com>
 
