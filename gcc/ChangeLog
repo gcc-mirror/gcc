@@ -1,5 +1,36 @@
 Thu Apr 16 22:41:02 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* loop.c (regs_patch_p): Add prototype.
+	(add_label_notes, count_nonfixed_reads): Likewise.
+	(find_single_use_in_loop): Likewise.
+	(express_from): Surround prototype with #ifdef.
+	(giv_sort): Similarly.
+
+	* jump.c (mark_modified_reg): Add prototype.
+
+	* haifa-sched.c (is_prisky): Add prototype.
+	(queue_to_ready): Likewise.
+
+	* genextract.c (gen_insn): Add prototype.
+
+	* genemit.c (max_operand_1): Add prototype.
+	(max_operand_vec, print_code, gen_exp, gen_insn): Likewise.
+	(gen_expand, gen_explit, output_add_clobbers): Likewise.
+	(output_init_mov_optab): Likewise.
+
+	* genattrtab.c (attr_hash_add_rtx): Add prototype.
+	(attr_hash_add_string, write_length_unit_log): Likewise.
+
+	* genattr.c (init_range): Add prototype.
+
+	* combine.c (sets_function_arg_p): Add prototype.
+
+	* expr.c (store_constructor_field): Add prototype.
+	(get_memory_usage_from_modifier): Likewise
+
+	* expmed.c (synth_mult): Add prototype.
+	(choose_multiplier, invert_mod2n): Likewise.
+
 	* except.c (push_eh_entry): Add prototype.
 	(pop_eh_entry, enqueue_eh_entry, dequeu_eh_entry): Likewise.
 	(call_get_eh_context, start_dynamic_cleanup): Likewise.
