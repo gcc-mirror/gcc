@@ -398,7 +398,7 @@ maintainer-clean-subdir: config.h
 	@subdirs='$(SUBDIRS)'; \
 	target=`echo $@ | sed -e 's/-subdir//'`; \
 	for dir in $$subdirs ; do \
-	  cd $$dir && $(MAKE) $$target; \
+	  cd $$dir && $(MAKE) $(FLAGS_TO_PASS) $$target; \
 	done
 
 $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS): stamp-picdir
