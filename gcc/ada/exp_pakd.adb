@@ -791,6 +791,12 @@ package body Exp_Pakd is
 
          Set_Has_Delayed_Freeze (PAT, False);
          Set_Has_Delayed_Freeze (Etype (PAT), False);
+
+         --  If we did allocate a freeze node, then clear out the reference
+         --  since it is obsolete (should we delete the freeze node???)
+
+         Set_Freeze_Node (PAT, Empty);
+         Set_Freeze_Node (Etype (PAT), Empty);
       end Install_PAT;
 
       -----------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,7 @@
 
 with Err_Vars; use Err_Vars;
 with Namet;    use Namet;
-with Opt;
+with Opt;      use Opt;
 with Osint;    use Osint;
 with Output;   use Output;
 with Prj.Com;  use Prj.Com;
@@ -167,6 +167,7 @@ package body Prj.Part is
 
    procedure Parse_Single_Project
      (Project       : out Project_Node_Id;
+      Extends_All   : out Boolean;
       Path_Name     : String;
       Extended      : Boolean;
       From_Extended : Extension_Origin);
@@ -431,6 +432,7 @@ package body Prj.Part is
       Store_Comments         : Boolean := False)
    is
       Current_Directory : constant String := Get_Current_Dir;
+      Dummy : Boolean;
 
    begin
       --  Save the Packages_To_Check in Prj, so that it is visible from
@@ -467,6 +469,7 @@ package body Prj.Part is
 
          Parse_Single_Project
            (Project       => Project,
+            Extends_All   => Dummy,
             Path_Name     => Path_Name,
             Extended      => False,
             From_Extended => None);
@@ -678,6 +681,7 @@ package body Prj.Part is
 
       Current_With : With_Record;
       Limited_With : Boolean := False;
+      Extends_All  : Boolean := False;
 
    begin
       Imported_Projects := Empty_Node;
@@ -775,9 +779,13 @@ package body Prj.Part is
                if Withed_Project = Empty_Node then
                   Parse_Single_Project
                     (Project       => Withed_Project,
+                     Extends_All   => Extends_All,
                      Path_Name     => Imported_Path_Name,
                      Extended      => False,
                      From_Extended => From_Extended);
+
+               else
+                  Extends_All := Is_Extending_All (Withed_Project);
                end if;
 
                if Withed_Project = Empty_Node then
@@ -805,6 +813,10 @@ package body Prj.Part is
                   Name_Len := Imported_Path_Name'Length;
                   Name_Buffer (1 .. Name_Len) := Imported_Path_Name;
                   Set_Path_Name_Of (Current_Project, Name_Find);
+
+                  if Extends_All then
+                     Set_Is_Extending_All (Current_Project);
+                  end if;
                end if;
             end if;
          end;
@@ -817,6 +829,7 @@ package body Prj.Part is
 
    procedure Parse_Single_Project
      (Project       : out Project_Node_Id;
+      Extends_All   : out Boolean;
       Path_Name     : String;
       Extended      : Boolean;
       From_Extended : Extension_Origin)
@@ -843,6 +856,8 @@ package body Prj.Part is
       Project_Comment_State : Tree.Comment_State;
 
    begin
+      Extends_All := False;
+
       declare
          Normed : String := Normalize_Pathname (Path_Name);
       begin
@@ -908,6 +923,8 @@ package body Prj.Part is
                end if;
 
             elsif A_Project_Name_And_Node.Extended then
+               Extends_All := Is_Extending_All (A_Project_Name_And_Node.Node);
+
                --  If the imported project is an extended project A, and we are
                --  in an extended project, replace A with the ultimate project
                --  extending A.
@@ -1136,13 +1153,14 @@ package body Prj.Part is
 
          --  Make sure that gnatmake will use mapping files
 
-         Opt.Create_Mapping_File := True;
+         Create_Mapping_File := True;
 
          --  We are extending another project
 
          Scan; -- scan past EXTENDS
 
          if Token = Tok_All then
+            Extends_All := True;
             Set_Is_Extending_All (Project);
             Scan; --  scan past ALL
          end if;
@@ -1196,6 +1214,7 @@ package body Prj.Part is
 
                      Parse_Single_Project
                        (Project       => Extended_Project,
+                        Extends_All   => Extends_All,
                         Path_Name     => Extended_Project_Path_Name,
                         Extended      => True,
                         From_Extended => From_Extended);
@@ -1226,14 +1245,15 @@ package body Prj.Part is
             With_Clause_Loop :
             while With_Clause /= Empty_Node loop
                Imported := Project_Node_Of (With_Clause);
-               With_Clause := Next_With_Clause_Of (With_Clause);
 
-               if Is_Extending_All (Imported) then
+               if Is_Extending_All (With_Clause) then
                   Error_Msg_Name_1 := Name_Of (Imported);
                   Error_Msg ("cannot import extending-all project {",
                              Token_Ptr);
                   exit With_Clause_Loop;
                end if;
+
+               With_Clause := Next_With_Clause_Of (With_Clause);
             end loop With_Clause_Loop;
          end;
       end if;

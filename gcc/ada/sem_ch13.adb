@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -265,8 +265,14 @@ package body Sem_Ch13 is
          U_Ent := Ent;
 
       elsif Ekind (Ent) = E_Incomplete_Type then
+
+         --  The attribute applies to the full view, set the entity
+         --  of the attribute definition accordingly.
+
          Ent := Underlying_Type (Ent);
          U_Ent := Ent;
+         Set_Entity (Nam, Ent);
+
       else
          U_Ent := Underlying_Type (Ent);
       end if;
@@ -3035,8 +3041,7 @@ package body Sem_Ch13 is
 
    function Minimum_Size
      (T      : Entity_Id;
-      Biased : Boolean := False)
-      return   Nat
+      Biased : Boolean := False) return Nat
    is
       Lo     : Uint    := No_Uint;
       Hi     : Uint    := No_Uint;
@@ -3253,7 +3258,7 @@ package body Sem_Ch13 is
       -- Build_Spec --
       ----------------
 
-      function  Build_Spec return Node_Id is
+      function Build_Spec return Node_Id is
       begin
          Subp_Id := Make_Defining_Identifier (Loc, Sname);
 
@@ -3327,7 +3332,7 @@ package body Sem_Ch13 is
       -- Build_Spec --
       ----------------
 
-      function  Build_Spec return Node_Id is
+      function Build_Spec return Node_Id is
       begin
          Subp_Id := Make_Defining_Identifier (Loc, Sname);
 
@@ -3394,9 +3399,8 @@ package body Sem_Ch13 is
    ------------------------
 
    function Rep_Item_Too_Early
-     (T     : Entity_Id;
-      N     : Node_Id)
-      return  Boolean
+     (T : Entity_Id;
+      N : Node_Id) return Boolean
    is
    begin
       --  Cannot apply rep items that are not operational items
@@ -3446,8 +3450,7 @@ package body Sem_Ch13 is
    function Rep_Item_Too_Late
      (T     : Entity_Id;
       N     : Node_Id;
-      FOnly : Boolean := False)
-      return  Boolean
+      FOnly : Boolean := False) return Boolean
    is
       S           : Entity_Id;
       Parent_Type : Entity_Id;

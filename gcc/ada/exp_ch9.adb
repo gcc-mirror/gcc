@@ -1198,7 +1198,8 @@ package body Exp_Ch9 is
       Loc  : constant Source_Ptr := Sloc (E);
       P    : Node_Id;
       Decl : Node_Id;
-      S    : Entity_Id := Scope (E);
+      S    : Entity_Id;
+
    begin
       --  Ada0Y (AI-287): Do not set/get the has_master_entity reminder in
       --  internal scopes. Required for nested limited aggregates.
@@ -1213,12 +1214,13 @@ package body Exp_Ch9 is
          then
             return;
          end if;
+
       else
+         --  Ada0Y (AI-287): Similar to the previous case but skipping
+         --  internal scopes. If we are not inside an internal scope this
+         --  code is equivalent to the previous code.
 
-         --  Ada0Y (AI-287): Similar to the Ãprevious casebut skipping internal
-         --  scopes. If we are not inside an internal scope this code is
-         --  equivalent to the previous code.
-
+         S := Scope (E);
          while Is_Internal (S) loop
             S := Scope (S);
          end loop;
@@ -1228,7 +1230,6 @@ package body Exp_Ch9 is
          then
             return;
          end if;
-
       end if;
 
       --  Otherwise first build the master entity

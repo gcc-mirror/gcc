@@ -82,6 +82,7 @@ static struct incomplete
   Entity_Id full_type;
 } *defer_incomplete_list = 0;
 
+static void copy_alias_set (tree, tree);
 static tree substitution_list (Entity_Id, Entity_Id, tree, int);
 static int allocatable_size_p (tree, int);
 static struct attrib *build_attr_list (Entity_Id);
@@ -1605,13 +1606,18 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    tem = build_array_type (tem, gnu_index_types[index]);
 	    TYPE_MULTI_ARRAY_P (tem) = (index > 0);
 
-	    /* ??? For now, we say that any component of aggregate type is
-	       addressable because the front end may take 'Reference of it.
-	       But we have to make it addressable if it must be passed by
-	       reference or it that is the default.  */
+	    /* If the type below this an multi-array type, then this
+	       does not not have aliased components.
+
+	       ??? Otherwise, for now, we say that any component of aggregate
+	       type is addressable because the front end may take 'Reference
+	       of it. But we have to make it addressable if it must be passed
+	       by reference or it that is the default.  */
 	    TYPE_NONALIASED_COMPONENT (tem)
-	      = (! Has_Aliased_Components (gnat_entity)
-		 && ! AGGREGATE_TYPE_P (TREE_TYPE (tem)));
+	      = ((TREE_CODE (TREE_TYPE (tem)) == ARRAY_TYPE
+		  && TYPE_MULTI_ARRAY_P (TREE_TYPE (tem))) ? 1
+		 : (! Has_Aliased_Components (gnat_entity)
+		    && ! AGGREGATE_TYPE_P (TREE_TYPE (tem))));
 	  }
 
 	/* If an alignment is specified, use it if valid.  But ignore it for
@@ -1923,13 +1929,18 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    {
 	      gnu_type = build_array_type (gnu_type, gnu_index_type[index]);
 	      TYPE_MULTI_ARRAY_P (gnu_type) = (index > 0);
-	      /* ??? For now, we say that any component of aggregate type is
-		 addressable because the front end may take 'Reference.
-		 But we have to make it addressable if it must be passed by
-		 reference or it that is the default.  */
+	    /* If the type below this an multi-array type, then this
+	       does not not have aliased components.
+
+	       ??? Otherwise, for now, we say that any component of aggregate
+	       type is addressable because the front end may take 'Reference
+	       of it. But we have to make it addressable if it must be passed
+	       by reference or it that is the default.  */
 	      TYPE_NONALIASED_COMPONENT (gnu_type)
-		= (! Has_Aliased_Components (gnat_entity)
-		   && ! AGGREGATE_TYPE_P (TREE_TYPE (gnu_type)));
+	      = ((TREE_CODE (TREE_TYPE (gnu_type)) == ARRAY_TYPE
+		  && TYPE_MULTI_ARRAY_P (TREE_TYPE (gnu_type))) ? 1
+		 : (! Has_Aliased_Components (gnat_entity)
+		    && ! AGGREGATE_TYPE_P (TREE_TYPE (gnu_type))));
 	    }
 
 	  /* If we are at file level and this is a multi-dimensional array, we
@@ -2010,8 +2021,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	  /* Set our alias set to that of our base type.  This gives all
 	     array subtypes the same alias set.  */
-	  TYPE_ALIAS_SET (gnu_type) = get_alias_set (gnu_base_type);
-	  record_component_aliases (gnu_type);
+	  copy_alias_set (gnu_type, gnu_base_type);
 	}
 
       /* If this is a packed type, make this type the same as the packed
@@ -2408,11 +2418,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	if (Etype (gnat_entity) != gnat_entity
 	    && ! (Is_Private_Type (Etype (gnat_entity))
 		  && Full_View (Etype (gnat_entity)) == gnat_entity))
-	  {
-	    TYPE_ALIAS_SET (gnu_type)
-	      = get_alias_set (gnat_to_gnu_type (Etype (gnat_entity)));
-	    record_component_aliases (gnu_type);
-	  }
+	  copy_alias_set (gnu_type, gnat_to_gnu_type (Etype (gnat_entity)));
 
 	/* Fill in locations of fields.  */
 	annotate_rep (gnat_entity, gnu_type);
@@ -2644,8 +2650,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      TYPE_SIZE (gnu_type) = TYPE_SIZE (gnu_base_type);
 	      TYPE_SIZE_UNIT (gnu_type) = TYPE_SIZE_UNIT (gnu_base_type);
 	      SET_TYPE_ADA_SIZE (gnu_type, TYPE_ADA_SIZE (gnu_base_type));
-	      TYPE_ALIAS_SET (gnu_type) = get_alias_set (gnu_base_type);
-	      record_component_aliases (gnu_type);
+	      copy_alias_set (gnu_type, gnu_base_type);
 
 	      if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_type)))
 		for (gnu_temp = gnu_subst_list;
@@ -4144,6 +4149,30 @@ mark_out_of_scope (Entity_Id gnat_entity)
     }
 }
 
+/* Set the alias set of GNU_NEW_TYPE to be that of GNU_OLD_TYPE.  If this
+   is a multi-dimensional array type, do this recursively.  */
+
+static void
+copy_alias_set (tree gnu_new_type, tree gnu_old_type)
+{
+  if (TREE_CODE (gnu_new_type) == ARRAY_TYPE
+      && TREE_CODE (TREE_TYPE (gnu_new_type)) == ARRAY_TYPE
+      && TYPE_MULTI_ARRAY_P (TREE_TYPE (gnu_new_type)))
+    {
+      /* We need to be careful here in case GNU_OLD_TYPE is an unconstrained
+	 array.  In that case, it doesn't have the same shape as GNU_NEW_TYPE,
+	 so we need to go down to what does.  */
+      if (TREE_CODE (gnu_old_type) == UNCONSTRAINED_ARRAY_TYPE)
+	gnu_old_type
+	  = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_old_type))));
+
+      copy_alias_set (TREE_TYPE (gnu_new_type), TREE_TYPE (gnu_old_type));
+    }
+
+  TYPE_ALIAS_SET (gnu_new_type) = get_alias_set (gnu_old_type);
+  record_component_aliases (gnu_new_type);
+}
+
 /* Return a TREE_LIST describing the substitutions needed to reflect
    discriminant substitutions from GNAT_SUBTYPE to GNAT_TYPE and add
    them to GNU_LIST.  If GNAT_TYPE is not specified, use the base type
@@ -4543,7 +4572,7 @@ make_aligning_type (tree type, int align, tree size)
 		  bitsize_int (align));
   TYPE_SIZE_UNIT (record_type)
     = size_binop (PLUS_EXPR, size, size_int (align / BITS_PER_UNIT));
-  TYPE_ALIAS_SET (record_type) = get_alias_set (type);
+  copy_alias_set (record_type, type);
   return record_type;
 }
 
@@ -4610,7 +4639,7 @@ make_packable_type (tree type)
     }
 
   finish_record_type (new_type, nreverse (field_list), 1, 1);
-  TYPE_ALIAS_SET (new_type) = get_alias_set (type);
+  copy_alias_set (new_type, type);
   return TYPE_MODE (new_type) == BLKmode ? type : new_type;
 }
 

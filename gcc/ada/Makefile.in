@@ -1451,7 +1451,7 @@ RAVEN_OBJS = \
 ADA_INCLUDE_SRCS =\
  ada.ads calendar.ads directio.ads gnat.ads interfac.ads ioexcept.ads \
  machcode.ads text_io.ads unchconv.ads unchdeal.ads \
- sequenio.ads system.ads Makefile.adalib Makefile.prolog Makefile.generic \
+ sequenio.ads system.ads Makefile.prolog Makefile.generic \
  memtrack.adb \
  a-*.adb a-*.ads g-*.ad? i-*.ad? \
  s-[a-o]*.adb s-[p-z]*.adb \
@@ -1706,13 +1706,13 @@ install-gnatlib: ../stamp-gnatlib
 #     for shared libraries on some targets, e.g. on HP-UX where the x
 #     permission is required.
 	for file in gnat gnarl; do \
-	   if [ -f rts/lib$$file$(hyphen)$(LIBRARY_VERSION)$(soext) ]; then \
-	      $(INSTALL) rts/lib$$file$(hyphen)$(LIBRARY_VERSION)$(soext) \
+	   if [ -f rts/lib$${file}$(hyphen)$(LIBRARY_VERSION)$(soext) ]; then \
+	      $(INSTALL) rts/lib$${file}$(hyphen)$(LIBRARY_VERSION)$(soext) \
 			 $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
 	   fi; \
-	   if [ -f rts/lib$$file$(soext) ]; then \
-	      $(LN_S) lib$$file$(hyphen)$(LIBRARY_VERSION)$(soext) \
-	      $(DESTDIR)$(ADA_RTL_OBJ_DIR)/lib$$file$(soext); \
+	   if [ -f rts/lib$${file}$(soext) ]; then \
+	      $(LN_S) lib$${file}$(hyphen)$(LIBRARY_VERSION)$(soext) \
+	      $(DESTDIR)$(ADA_RTL_OBJ_DIR)/lib$${file}$(soext); \
 	   fi; \
 	done
 # This copy must be done preserving the date on the original file.

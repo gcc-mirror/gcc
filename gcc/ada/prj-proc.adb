@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -817,8 +817,9 @@ package body Prj.Proc is
       From_Project_Node : Project_Node_Id;
       Report_Error      : Put_Line_Access)
    is
-      Obj_Dir   : Name_Id;
-      Extending : Project_Id;
+      Obj_Dir    : Name_Id;
+      Extending  : Project_Id;
+      Extending2 : Project_Id;
 
    begin
       Error_Report := Report_Error;
@@ -861,7 +862,7 @@ package body Prj.Proc is
       end if;
 
       --  Check that no extended project shares its object directory with
-      --  another project.
+      --  another extended project or with its extending project(s).
 
       if Project /= No_Project then
          for Extended in 1 .. Projects.Last loop
@@ -870,44 +871,94 @@ package body Prj.Proc is
             if Extending /= No_Project then
                Obj_Dir := Projects.Table (Extended).Object_Directory;
 
-               for Prj in 1 .. Projects.Last loop
-                  if Prj /= Extended
-                    and then Projects.Table (Prj).Sources_Present
-                    and then Projects.Table (Prj).Object_Directory = Obj_Dir
+               --  Check that a project being extended does not share its
+               --  object directory with any project that extends it, directly
+               --  or indirectly, including a virtual extending project.
+
+               --  Start with the project directly extending it
+
+               Extending2 := Extending;
+
+               while Extending2 /= No_Project loop
+                  if Projects.Table (Extending2).Sources_Present
+                    and then
+                      Projects.Table (Extending2).Object_Directory = Obj_Dir
                   then
-                     if Projects.Table (Extending).Virtual then
+                     if Projects.Table (Extending2).Virtual then
                         Error_Msg_Name_1 := Projects.Table (Extended).Name;
 
                         if Error_Report = null then
                            Error_Msg
-                             ("project % cannot be extended by " &
-                              "a virtual project",
-                              Projects.Table (Extending).Location);
+                             ("project % cannot be extended by a virtual " &
+                              "project with the same object directory",
+                              Projects.Table (Extended).Location);
 
                         else
                            Error_Report
                              ("project """ &
                               Get_Name_String (Error_Msg_Name_1) &
-                              """ cannot be extended by a virtual project",
+                              """ cannot be extended by a virtual " &
+                              "project with the same object directory",
                               Project);
                         end if;
 
                      else
-                        Error_Msg_Name_1 := Projects.Table (Extending).Name;
+                        Error_Msg_Name_1 :=
+                          Projects.Table (Extending2).Name;
                         Error_Msg_Name_2 := Projects.Table (Extended).Name;
 
                         if Error_Report = null then
-                           Error_Msg ("project % cannot extend project %",
-                                      Projects.Table (Extending).Location);
+                           Error_Msg
+                             ("project % cannot extend project %",
+                              Projects.Table (Extending2).Location);
+                           Error_Msg
+                             ("\they share the same object directory",
+                              Projects.Table (Extending2).Location);
 
                         else
                            Error_Report
                              ("project """ &
                               Get_Name_String (Error_Msg_Name_1) &
                               """ cannot extend project """ &
-                              Get_Name_String (Error_Msg_Name_2) & '"',
+                              Get_Name_String (Error_Msg_Name_2) & """",
+                              Project);
+                           Error_Report
+                             ("they share the same object directory",
                               Project);
                         end if;
+                     end if;
+                  end if;
+
+                  --  Continue with the next extending project, if any
+
+                  Extending2 := Projects.Table (Extending2).Extended_By;
+               end loop;
+
+               --  Check that two projects being extended do not share their
+               --  project directories.
+
+               for Prj in Extended + 1 .. Projects.Last loop
+                  Extending2 := Projects.Table (Prj).Extended_By;
+
+                  if Extending2 /= No_Project
+                    and then Projects.Table (Prj).Sources_Present
+                    and then Projects.Table (Prj).Object_Directory = Obj_Dir
+                    and then not Projects.Table (Extending).Virtual
+                  then
+                     Error_Msg_Name_1 := Projects.Table (Extending).Name;
+                     Error_Msg_Name_2 := Projects.Table (Extended).Name;
+
+                     if Error_Report = null then
+                        Error_Msg ("project % cannot extend project %",
+                                   Projects.Table (Extending).Location);
+
+                     else
+                        Error_Report
+                          ("project """ &
+                           Get_Name_String (Error_Msg_Name_1) &
+                           """ cannot extend project """ &
+                           Get_Name_String (Error_Msg_Name_2) & '"',
+                           Project);
                      end if;
 
                      Error_Msg_Name_1 := Projects.Table (Extended).Name;
@@ -924,7 +975,21 @@ package body Prj.Proc is
                           ("project """ &
                              Get_Name_String (Error_Msg_Name_1) &
                              """ has the same object directory as project """ &
-                             Get_Name_String (Error_Msg_Name_2) & '"',
+                             Get_Name_String (Error_Msg_Name_2) & """,",
+                           Project);
+                     end if;
+
+                     Error_Msg_Name_1 := Projects.Table (Extending2).Name;
+
+                     if Error_Report = null then
+                        Error_Msg
+                          ("\which is extended by project %",
+                           Projects.Table (Extending).Location);
+
+                     else
+                        Error_Report
+                          ("which is extended by project """ &
+                           Get_Name_String (Error_Msg_Name_1) & '"',
                            Project);
                      end if;
 
