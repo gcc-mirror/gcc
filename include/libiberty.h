@@ -85,25 +85,29 @@ extern char *basename ();
 
 extern const char *lbasename PARAMS ((const char *));
 
-/* Concatenate an arbitrary number of strings, up to (char *) NULL.
-   Allocates memory using xmalloc.  */
+/* Concatenate an arbitrary number of strings.  You must pass NULL as
+   the last argument of this function, to terminate the list of
+   strings.  Allocates memory using xmalloc.  */
 
 extern char *concat PARAMS ((const char *, ...)) ATTRIBUTE_MALLOC;
 
 /* Determine the length of concatenating an arbitrary number of
-   strings, up to (char *) NULL.  */
+   strings.  You must pass NULL as the last argument of this function,
+   to terminate the list of strings.  */
 
 extern unsigned long concat_length PARAMS ((const char *, ...));
 
 /* Concatenate an arbitrary number of strings into a SUPPLIED area of
-   memory, up to (char *) NULL.  The supplied memory is assumed to be
-   large enough.  */
+   memory.  You must pass NULL as the last argument of this function,
+   to terminate the list of strings.  The supplied memory is assumed
+   to be large enough.  */
 
 extern char *concat_copy PARAMS ((char *, const char *, ...));
 
 /* Concatenate an arbitrary number of strings into a GLOBAL area of
-   memory, up to (char *) NULL.  The supplied memory is assumed to be
-   large enough.  */
+   memory.  You must pass NULL as the last argument of this function,
+   to terminate the list of strings.  The supplied memory is assumed
+   to be large enough.  */
 
 extern char *concat_copy2 PARAMS ((const char *, ...));
 
@@ -111,8 +115,10 @@ extern char *concat_copy2 PARAMS ((const char *, ...));
 
 extern char *libiberty_concat_ptr;
 
-/* Concatenate an arbitrary number of strings, up to (char *) NULL.
-   Allocates memory using alloca.  Arguments are evaluated twice!.  */
+/* Concatenate an arbitrary number of strings.  You must pass NULL as
+   the last argument of this function, to terminate the list of
+   strings.  Allocates memory using alloca.  The arguments are
+   evaluated twice!  */
 #define ACONCAT(ACONCAT_PARAMS) \
   (libiberty_concat_ptr = alloca (concat_length ACONCAT_PARAMS + 1), \
    concat_copy2 ACONCAT_PARAMS)
