@@ -1,8 +1,8 @@
-Thu Jun 29 14:53:15 1995  Mike Stump  <mrs@cygnus.com>
+Thu Jun 29 09:35:05 1995  Mike Stump  <mrs@cygnus.com>
 
 	* decl.c (BOOL_TYPE_SIZE): Fix broken SLOW_BYTE_ACCESS check.
 
-Wed Jun 28 16:53:36 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+Mon Jun 26 13:38:06 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 	* expr.c (cplus_expand_expr): Don't mess with temp slots.
 
