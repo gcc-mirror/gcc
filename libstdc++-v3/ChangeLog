@@ -1,3 +1,24 @@
+2000-06-26  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	Update to SGI STL 3.3
+	* bits/stl_algo.h: Update.
+	* ext/ropeimpl.h: Update.
+	* bits/std_memory.h: Update.
+	* bits/std_bitset.h: Update.
+
+	* src/Makefile.am (headers): Add new files.
+	* src/Makefile.in: Regenerate.
+	* bits/concept_checks.h: New file.
+	* bits/container_concepts.h: New file.
+	* bits/sequence_concepts.h: New file.
+	* src/stl-inst.cc (std): Add instantiation for __sink_unused_warning.
+	
+2000-06-27  H.J. Lu  <hjl@gnu.org>
+            Loren J. Rittle  <ljrittle@acm.org>
+
+        * mkcheck.in: Add support to print standard flags needed to
+        test g++ in build tree.  Enhance command line error checking.
+
 2000-06-27  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* docs/install.html:  Fix minor typo as reported.
@@ -19,8 +40,8 @@
 	  copying them to $TEST_DIR.
 
         * testsuite/27_io/ostream_inserter_arith.cc: Renamed
-          __TEST_NUMPUT_VERBOSE to TEST_NUMPUT_VERBOSE.
-        Define TEST_NUMPUT_VERBOSE only if DEBUG_ASSERT.
+	  __TEST_NUMPUT_VERBOSE to TEST_NUMPUT_VERBOSE.  Define
+	  TEST_NUMPUT_VERBOSE only if DEBUG_ASSERT.
 	
 2000-06-23  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 

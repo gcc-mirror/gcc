@@ -8,28 +8,31 @@
 # shared linkage.
 
 # Invocation 
-# mkcheck [01] (path to build) (path to src) (path to install)
-
-if [ $# != 3 ] && [ $# != 4 ]; then
-    echo 'Usage: mkcheck 0 (path to build) (path to src)'
-    echo '       mkcheck 1 (path to build) (path to src) (path to install)'
-    exit 1
-fi
-echo "running mkcheck"
+# mkcheck [012] (path to build) (path to src) (path to install)
 
 #
 # 1: variables
 #
-# WHICH determines if you are testing the installed binary and headers, or
-# the build binary and headers.
+# WHICH determines if you are
+# (0) testing the build binary and headers, or
+# (1) testing the installed binary and headers, or
+# (2) testing under dejagnu (just print the standard flags needed).
 WHICH=$1
-if [ $WHICH != "1" ]; then
-  WHICH=0
+if [ "$WHICH"x = 0x ] && [ $# -eq 3 ]; then
+  echo "running mkcheck"
   echo "$0: testing the build directory"
-elif [ $WHICH -eq 1 ]; then
+elif [ "$WHICH"x = 1x ] && [ $# -eq 4 ]; then
+  echo "running mkcheck"
   echo "$0: testing the install directory $4"
+elif [ "$WHICH"x = 2x ] && [ $# -eq 3 ]; then
+  true
+else
+  echo 'Usage: mkcheck 0 (path to build) (path to src)'
+  echo '       mkcheck 1 (path to build) (path to src) (path to install)'
+  echo '       mkcheck 2 (path to build) (path to src)'
+  exit 1;
 fi
-
+  
 BUILD_DIR=$2
 if [ ! -d "$BUILD_DIR" ]; then
   echo "build directory $BUILD_DIR not found, exiting."
@@ -55,6 +58,11 @@ if [ $WHICH != "1" ]; then
   INC_PATH="@CSHADOWFLAGS@ -I$BUILD_DIR -I$BUILD_DIR/libio -I$SRC_DIR/@ctype_include_dir@ -I$SRC_DIR/@cpu_include_dir@  -I$SRC_DIR/std -I$SRC_DIR -I$SRC_DIR/libio"
 elif [ $WHICH -eq 1 ]; then
   INC_PATH=""
+fi
+
+if [ $WHICH -eq 2 ]; then
+  echo $INC_PATH -I$SRC_DIR/backward -I$SRC_DIR/ext
+  exit 0;
 fi
 
 #LIB_PATH == where to find the build library binaries.
