@@ -1,3 +1,13 @@
+Thu Jun 11 14:50:02 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* regmove.c (regmove_optimize): If we can't replace the
+	destination in an insn that sets the source, generate an explicit
+	move of the source to the destination.
+	(copy_src_to_dest): New function.
+	(toplevel): Include basic-block.h
+
+	* Makefile.in (regmove.o): Add basic-block.h dependencies.
+
 Thu Jun 11 10:30:09 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* toplev.c (lang_options): Add missing options (nostdinc, idirafter).
