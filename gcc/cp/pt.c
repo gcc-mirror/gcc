@@ -5856,7 +5856,7 @@ tsubst_decl (t, args, type, in_decl)
 	{
 	  /* For a template type parameter, we don't have to do
 	     anything special.  */
-	  r= TYPE_NAME (type);
+	  r = TYPE_NAME (type);
 	  break;
 	}
 
