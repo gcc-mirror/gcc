@@ -3984,7 +3984,7 @@ reload_as_needed (live_known)
 					    REGNO (rld[i].reg_rtx))
 		      /* Make sure it is the inc/dec pseudo, and not
 			 some other (e.g. output operand) pseudo.  */
-		      && (reg_reloaded_contents[REGNO (rld[i].reg_rtx)]
+		      && ((unsigned) reg_reloaded_contents[REGNO (rld[i].reg_rtx)]
 			  == REGNO (XEXP (in_reg, 0))))
 
 		    {
@@ -4051,7 +4051,7 @@ reload_as_needed (live_known)
 						 REGNO (rld[i].reg_rtx))
 			   /* Make sure it is the inc/dec pseudo, and not
 			      some other (e.g. output operand) pseudo.  */
-			   && (reg_reloaded_contents[REGNO (rld[i].reg_rtx)]
+			   && ((unsigned) reg_reloaded_contents[REGNO (rld[i].reg_rtx)]
 			       == REGNO (XEXP (in_reg, 0))))
 		    {
 		      SET_HARD_REG_BIT (reg_is_output_reload,
@@ -6260,7 +6260,7 @@ emit_input_reload_insns (chain, rl, old, j)
 	 or memory.  */
 
       if (oldequiv != 0
-	  && ((REGNO_REG_CLASS (regno) != rl->class
+	  && (((enum reg_class) REGNO_REG_CLASS (regno) != rl->class
 	       && (REGISTER_MOVE_COST (mode, REGNO_REG_CLASS (regno),
 				       rl->class)
 		   >= MEMORY_MOVE_COST (mode, rl->class, 1)))

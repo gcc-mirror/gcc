@@ -733,7 +733,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
 	abort ();
       p->slot = assign_stack_local (mode,
 				    (mode == BLKmode
-				     ? CEIL_ROUND (size, align / BITS_PER_UNIT)
+				     ? CEIL_ROUND (size, (int) align / BITS_PER_UNIT)
 				     : size),
 				    align);
 

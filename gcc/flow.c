@@ -1005,7 +1005,7 @@ mark_regs_live_at_end (set)
   /* Many architectures have a GP register even without flag_pic.
      Assume the pic register is not in use, or will be handled by
      other means, if it is not fixed.  */
-  if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM
+  if ((unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM
       && fixed_regs[PIC_OFFSET_TABLE_REGNUM])
     SET_REGNO_REG_SET (set, PIC_OFFSET_TABLE_REGNUM);
 #endif
@@ -1234,7 +1234,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 
 	  /* Any constant, or pseudo with constant equivalences, may
 	     require reloading from memory using the pic register.  */
-	  if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM
+	  if ((unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM
 	      && fixed_regs[PIC_OFFSET_TABLE_REGNUM])
 	    SET_REGNO_REG_SET (new_live_at_end, PIC_OFFSET_TABLE_REGNUM);
 	}

@@ -4841,7 +4841,7 @@ layout_virtual_bases (record_layout_info rli, splay_tree offsets)
 #ifdef STRUCTURE_SIZE_BOUNDARY
       /* Packed structures don't need to have minimum size.  */
       if (! TYPE_PACKED (t))
-	TYPE_ALIGN (t) = MAX (TYPE_ALIGN (t), STRUCTURE_SIZE_BOUNDARY);
+	TYPE_ALIGN (t) = MAX (TYPE_ALIGN (t), (unsigned) STRUCTURE_SIZE_BOUNDARY);
 #endif
       rli->offset = TYPE_SIZE_UNIT (t);
       rli->bitpos = bitsize_zero_node;

@@ -1526,7 +1526,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       if (i >= 0)
         {
 	  /* Clobbering the PIC register is an error */
-	  if ((unsigned) i == PIC_OFFSET_TABLE_REGNUM)
+	  if (i == (int) PIC_OFFSET_TABLE_REGNUM)
 	    {
 	      error ("PIC register `%s' clobbered in `asm'", regname);
 	      return;
