@@ -1,3 +1,8 @@
+2002-11-05  Graham Stott  <graham.stott@btinternet.com>
+	PR ada/8358
+	* trans.c (gnu_pending_elaboration_lists): New GC root.
+	(build_unit_elab): Use.. 
+
 2002-10-30   Geert Bosch <bosch@gnat.com>
 	PR ada/6558
 	* misc.c : Include optabs.h
