@@ -40,9 +40,9 @@ SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
 	$(LN_S) @shlib_base_name@.so @shlib_base_name@.so.0
 # $(slibdir) double quoted to protect it from expansion while building
 # libgcc.mk.  We want this delayed until actual install time.
-SHLIB_INSTALL = $(INSTALL_DATA) @shlib_base_name@.so $$(slibdir)/@shlib_base_name@.so.0; \
-	rm -f $$(slibdir)/@shlib_base_name@.so; \
-	$(LN_S) @shlib_base_name@.so.0 $$(slibdir)/@shlib_base_name@.so; \
-	chmod +x $$(slibdir)/@shlib_base_name@.so
+SHLIB_INSTALL = $(INSTALL_DATA) @shlib_base_name@.so $$(DESTDIR)$$(slibdir)/@shlib_base_name@.so.0; \
+	rm -f $$(DESTDIR)$$(slibdir)/@shlib_base_name@.so; \
+	$(LN_S) @shlib_base_name@.so.0 $$(DESTDIR)$$(slibdir)/@shlib_base_name@.so; \
+	chmod +x $$(DESTDIR)$$(slibdir)/@shlib_base_name@.so
 
 SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk

@@ -1,3 +1,31 @@
+2003-01-26  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
+
+	* Makefile.in (ORDINARY_FLAGS_TO_PASS): Also pass DESTDIR.
+	(install-cpp, installdirs, install-common)
+	(install-driver, install-info, install-man)
+	(install-headers, install-include-dir, install-headers-tar)
+	(install-headers-cpio, install-headers-cp, install-mkheaders)
+	(install-collect2, uninstall): Prepend $(DESTDIR) to
+	destination paths in all (un)installation commands.
+	(install-driver): Rewrite $(LN) commands to support DESTDIR
+	with "ln" as well as with "ln -s".
+	(installdirs): Simply use mkinstalldirs.
+	(install-libgcc, install-multilib): Also pass DESTDIR.
+	* mklibgcc.in: Prepend $(DESTDIR) to $(libsubdir) in the
+	installation destination variable ldir.
+	* config/alpha/t-osf4 (SHLIB_INSTALL): Prepend $$(DESTDIR)
+	to $$(slibdir) in the installation commands.
+	* config/arm/t-netbsd (SHLIB_INSTALL): Likewise.
+	* config/ia64/t-hpux (SHLIB_INSTALL): Likewise.
+	* config/mips/t-iris5-6 (SHLIB_INSTALL): Likewise.
+	* config/pa/t-hpux-shlib (SHLIB_INSTALL): Likewise.
+	* config/rs6000/t-aix43 (SHLIB_INSTALL): Likewise.
+	* config/rs6000/t-aix52 (SHLIB_INSTALL): Likewise.
+	* config/t-slibgcc-elf-ver (SHLIB_INSTALL): Likewise.
+	* config/t-slibgcc-sld (SHLIB_INSTALL): Likewise.
+	* config/arc/t-arc (install-multilib-arc): Prepend $(DESTDIR) to
+	$(libsubdir) in the installation commands.
+
 2003-01-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* fp-bit.h: Define macros for TFmode floating-point constants

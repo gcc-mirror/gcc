@@ -13,7 +13,7 @@ SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared  -nodefaultlibs \
 # $(slibdir) double quoted to protect it from expansion while building
 # libgcc.mk.  We want this delayed until actual install time.
 SHLIB_INSTALL = $(INSTALL_DATA) -m 555 $(SHLIB_NAME) \
-	$$(slibdir)/$(SHLIB_SONAME); \
-        rm -f $$(slibdir)/$(SHLIB_NAME); \
-        $(LN_S) $(SHLIB_SONAME) $$(slibdir)/$(SHLIB_NAME)
+	$$(DESTDIR)$$(slibdir)/$(SHLIB_SONAME); \
+        rm -f $$(DESTDIR)$$(slibdir)/$(SHLIB_NAME); \
+        $(LN_S) $(SHLIB_SONAME) $$(DESTDIR)$$(slibdir)/$(SHLIB_NAME)
 

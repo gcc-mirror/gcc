@@ -62,10 +62,10 @@ stmp-multilib-arc: stmp-multilib
 install-multilib-arc: install-multilib
 	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
 	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
-	  rm -f $(libsubdir)/$${dir}/crtinit.o; \
-	  $(INSTALL_DATA) $${dir}/crtinit.o $(libsubdir)/$${dir}/crtinit.o; \
-	  chmod a-x $(libsubdir)/$${dir}/crtinit.o; \
-	  rm -f $(libsubdir)/$${dir}/crtfini.o; \
-	  $(INSTALL_DATA) $${dir}/crtfini.o $(libsubdir)/$${dir}/crtfini.o; \
-	  chmod a-x $(libsubdir)/$${dir}/crtfini.o; \
+	  rm -f $(DESTDIR)$(libsubdir)/$${dir}/crtinit.o; \
+	  $(INSTALL_DATA) $${dir}/crtinit.o $(DESTDIR)$(libsubdir)/$${dir}/crtinit.o; \
+	  chmod a-x $(DESTDIR)$(libsubdir)/$${dir}/crtinit.o; \
+	  rm -f $(DESTDIR)$(libsubdir)/$${dir}/crtfini.o; \
+	  $(INSTALL_DATA) $${dir}/crtfini.o $(DESTDIR)$(libsubdir)/$${dir}/crtfini.o; \
+	  chmod a-x $(DESTDIR)$(libsubdir)/$${dir}/crtfini.o; \
 	done
