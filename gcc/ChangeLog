@@ -1,5 +1,16 @@
 2003-12-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR other/7956
+	* genmultilib: New variable disable_multilib.  Set it to 'yes'
+	if enable_multilib was set to 'no'.  Emit DISABLE_MULTILIB
+	if disable_multilib was set to 'yes'.
+	* gcc.c: Include multilib.h before tm.h.
+	* config/sparc/sol2-bi.h (LINK_ARCH_SPEC): Emit an error
+	message for multiarch options if DISABLE_MULTILIB is set.
+	* config/sparc/sol2-gld-bi.h (LINK_ARCH_SPEC): Likewise.
+
+2003-12-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR c/12085
 	* c-typeck.c (build_function_call): Issue a warning if a
 	function is called through an incompatible prototype and
