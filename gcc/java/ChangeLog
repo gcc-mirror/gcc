@@ -1,3 +1,19 @@
+2004-05-10  Andrew Haley  <aph@redhat.com>
+
+	* parse.y (create_class): Set TYPE_VFIELD.
+	* decl.c (java_init_decl_processing): Likewise.
+
+	* expr.c (build_invokevirtual): Remove DECL_VINDEX offset adjustment.
+	* class.c (make_method_value): Replace DECL_VINDEX with call to
+	get_method_index().
+	(get_dispatch_vector): Likewise.
+	(layout_class_method): Likewise.
+	Replace set of DECL_VINDEX with call to set_method_index().
+	(set_method_index): New function.
+	(get_method_index): New function.
+	* java-tree.h (set_method_index): New function decl.
+	(get_method_index): New function decl.
+
 2004-05-10  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* parse.y (check_pkg_class_access): Add new argument
