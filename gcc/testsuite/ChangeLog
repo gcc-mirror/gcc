@@ -1,3 +1,8 @@
+2002-02-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.old-deja/g++.abi/ptrmem.C: Lowest bit is significant on SH5.
+	* g++.old-deja/g++.jason/thunk3.C: XFAIL on sh64-*-*.
+
 2002-02-08  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/compile/labels-3.c: New.
