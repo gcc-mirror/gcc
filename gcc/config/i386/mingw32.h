@@ -1,6 +1,7 @@
 /* Operating system specific defines to be used when targeting GCC for
    hosting on Windows32, using GNU tools and the Windows32 API Library.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -91,7 +92,7 @@ Boston, MA 02111-1307, USA.  */
 /* Include in the mingw32 libraries with libgcc */
 #undef LIBGCC_SPEC
 #define LIBGCC_SPEC \
-  "%{mthreads:-lmingwthrd} -lmingw32 -lgcc -lmoldname -lmsvcrt"
+  "%{mthreads:-lmingwthrd} -lmingw32 -lgcc -lmoldname -lmingwex -lmsvcrt"
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{shared|mdll:dllcrt2%O%s} \
