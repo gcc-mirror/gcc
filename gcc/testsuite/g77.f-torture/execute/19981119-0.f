@@ -29,9 +29,10 @@ C vvvv    CRASH HERE   vvvvv
       program bug
       integer N
       double precision a(-10:10,-10:10)
+      data a/441*1d0/
       N=10
       call sub(N,a)
-      stop
+      if (a(-N,N) .ne. 0d0) call abort
       end
 * 
 * C --- PROGRAM END -------
