@@ -9139,24 +9139,20 @@ arm_hard_regno_mode_ok (regno, mode)
     return (NUM_REGS (mode) < 2) || (regno < LAST_LO_REGNUM);
 
   if (regno <= LAST_ARM_REGNUM)
-    /* If the register is a general purpose ARM register we allow
-       it only if it not a special register (SP, LR, PC) and only
-       if there will be enough (non-special) registers to hold the
-       entire value.  */
-    {
-      /* As a special exception we allow an SImode value to be
-	 "assigned" to the stack pointer.  This is not intended
-	 to actually allow a value to be stored in the SP, but so
-	 that the stack pointer can be referenced from C code like
-	 this:
-	 
-	   register char * stack_ptr asm ("sp");
+    /* We allow an SImode or smaller value to be stored in any
+       general purpose register.  This does not mean, for example
+       that GCC will choose to store a variable in the stack pointer
+       since it is a fixed register.  But it is important to allow
+       access to these special registers, so that they can be
+       referenced from C code via the asm assembler alias, eg:
 
-	 This expression is actually used in newlib...  */
-      if (mode == SImode && regno == SP_REGNUM)
-	return 1;
-      return regno < (SP_REGNUM - (unsigned) NUM_REGS (mode));
-    }
+          register char * stack_ptr asm ("sp");
+
+       For any mode requiring more than one register to hold the
+       value we restrict the choice so that r13, r14, and r15
+       cannot be part of the register set.  */
+    return (NUM_REGS (mode) <= 1)
+      || (regno < (SP_REGNUM - (unsigned) NUM_REGS (mode)));
 
   if (   regno == FRAME_POINTER_REGNUM
       || regno == ARG_POINTER_REGNUM)

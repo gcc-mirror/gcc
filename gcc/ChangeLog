@@ -1,3 +1,8 @@
+2002-01-25  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/arm.c (arm_hard_regno_mode_ok): Allow any general
+	purpose register to hold an SImode (or smaller) value.
+
 2002-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* unwind-dw2-fde-glibc.c: If inhibit_libc, use __register_frame*
