@@ -2902,13 +2902,58 @@ make_range (exp, pin_p, plow, phigh)
 	      || (high != 0 && ! int_fits_type_p (high, type)))
 	    break;
 
-	  if (low != 0)
-	    low = convert (type, low);
+	  n_low = low, n_high = high;
 
-	  if (high != 0)
-	    high = convert (type, high);
+	  if (n_low != 0)
+	    n_low = convert (type, n_low);
+
+	  if (n_high != 0)
+	    n_high = convert (type, n_high);
+
+	  /* If we're converting from an unsigned to a signed type,
+	     we will be doing the comparison as unsigned.  The tests above
+	     have already verified that LOW and HIGH are both positive.
+
+	     So we have to make sure that the original unsigned value will
+	     be interpreted as positive.  */
+	  if (TREE_UNSIGNED (type) && ! TREE_UNSIGNED (TREE_TYPE (exp)))
+	    {
+	      tree equiv_type = type_for_mode (TYPE_MODE (type), 1);
+	      tree high_positive
+		= fold (build (RSHIFT_EXPR, type,
+			       convert (type,
+					TYPE_MAX_VALUE (equiv_type)),
+			       convert (type, integer_one_node)));
+			
+	      /* If the low bound is specified, "and" the range with the
+		 range for which the original unsigned value will be
+		 positive.  */
+	      if (low != 0)
+		{
+		  if (! merge_ranges (&n_in_p, &n_low, &n_high,
+				      1, n_low, n_high,
+				      1, convert (type, integer_zero_node),
+				      high_positive))
+		    break;
+
+		  in_p = (n_in_p == in_p);
+		}
+	      else
+		{
+		  /* Otherwise, "or" the range with the range of the input
+		     that will be interpreted as negative.  */
+		  if (! merge_ranges (&n_in_p, &n_low, &n_high,
+				      0, n_low, n_high,
+				      1, convert (type, integer_zero_node),
+				      high_positive))
+		    break;
+
+		  in_p = (in_p != n_in_p);
+		}
+	    }
 
 	  exp = arg0;
+	  low = n_low, high = n_high;
 	  continue;
 
 	default:
