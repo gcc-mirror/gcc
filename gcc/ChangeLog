@@ -1,3 +1,7 @@
+Tue Jan 27 22:14:48 1998  Todd Vierling <tv@pobox.com>
+
+	* fixincludes: Tweak fix for struct exception in math.h
+
 Tue Jan 27 17:21:09 1998  Gavin Koch  (gavin@cygnus.com)
 
 	* mips/mips.c (mips_expand_prologue,mips_expand_epilogue):
