@@ -57,6 +57,36 @@ public final class VMClassLoader extends java.net.URLClassLoader
 	    /* Ignore this path element */
 	  }
       }
+
+    // Add the contents of the extensions directories.  
+    st = new StringTokenizer (System.getProperty ("java.ext.dirs"),
+			      System.getProperty ("path.separator", ":"));
+    while (st.hasMoreElements ())
+      {
+	String dirname = st.nextToken ();
+	try
+	  {
+	    File dir = new File (dirname);
+	    if (! dirname.endsWith (File.separator))
+		dirname = dirname + File.separator;
+	    String files[] 
+	      = dir.list (new FilenameFilter ()
+		          { 
+			    public boolean accept (File dir, String name)
+			    {
+			      return (name.endsWith (".jar") 
+				      || name.endsWith (".zip"));
+			    }
+		          });
+	    for (int i = files.length - 1; i >= 0; i--)
+	      addURL(new URL("file", "", -1, dirname + files[i]));
+	  }
+	catch (Exception x)
+	  {
+	    // Just ignore any badness.  
+	  }
+      }
+
     // Add core:/ to the end of the java.class.path so any resources
     // compiled into this executable may be found.
     try
