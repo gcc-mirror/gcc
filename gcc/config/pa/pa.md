@@ -3899,7 +3899,9 @@
 		 (match_operand:DF 3 "register_operand" "f")))
    (set (match_operand:DF 4 "register_operand" "=&f")
 	(mult:DF (match_dup 1) (match_dup 2)))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "(! TARGET_SOFT_FLOAT && TARGET_PA_20
+    && ! (reg_overlap_mentioned_p (operands[4], operands[1])
+          || reg_overlap_mentioned_p (operands[4], operands[2])))"
   "#"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "8")])
@@ -3926,7 +3928,9 @@
 		 (match_operand:SF 3 "register_operand" "f")))
    (set (match_operand:SF 4 "register_operand" "=&f")
 	(mult:SF (match_dup 1) (match_dup 2)))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "(! TARGET_SOFT_FLOAT && TARGET_PA_20
+    && ! (reg_overlap_mentioned_p (operands[4], operands[1])
+          || reg_overlap_mentioned_p (operands[4], operands[2])))"
   "#"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "8")])
@@ -3972,7 +3976,9 @@
 			 (match_operand:DF 2 "register_operand" "f"))))
    (set (match_operand:DF 3 "register_operand" "=&f")
 	(mult:DF (match_dup 1) (match_dup 2)))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "(! TARGET_SOFT_FLOAT && TARGET_PA_20
+    && ! (reg_overlap_mentioned_p (operands[3], operands[1])
+          || reg_overlap_mentioned_p (operands[3], operands[2])))"
   "#"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "8")])
@@ -3994,7 +4000,9 @@
 			 (match_operand:SF 2 "register_operand" "f"))))
    (set (match_operand:SF 3 "register_operand" "=&f")
 	(mult:SF (match_dup 1) (match_dup 2)))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "(! TARGET_SOFT_FLOAT && TARGET_PA_20
+    && ! (reg_overlap_mentioned_p (operands[3], operands[1])
+          || reg_overlap_mentioned_p (operands[3], operands[2])))"
   "#"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "8")])
@@ -4038,7 +4046,9 @@
 		 (match_operand:DF 3 "register_operand" "f")))
    (set (match_operand:DF 4 "register_operand" "=&f")
 	(mult:DF (match_dup 1) (match_dup 2)))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "(! TARGET_SOFT_FLOAT && TARGET_PA_20
+    && ! (reg_overlap_mentioned_p (operands[4], operands[1])
+          || reg_overlap_mentioned_p (operands[4], operands[2])))"
   "#"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "8")])
@@ -4063,7 +4073,9 @@
 		 (match_operand:SF 3 "register_operand" "f")))
    (set (match_operand:SF 4 "register_operand" "=&f")
 	(mult:SF (match_dup 1) (match_dup 2)))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "(! TARGET_SOFT_FLOAT && TARGET_PA_20
+    && ! (reg_overlap_mentioned_p (operands[4], operands[1])
+          || reg_overlap_mentioned_p (operands[4], operands[2])))"
   "#"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "8")])
@@ -4088,7 +4100,9 @@
 			   (match_operand:DF 2 "register_operand" "f"))))
    (set (match_operand:DF 4 "register_operand" "=&f")
 	(mult:DF (match_dup 1) (match_dup 2)))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "(! TARGET_SOFT_FLOAT && TARGET_PA_20
+    && ! (reg_overlap_mentioned_p (operands[4], operands[1])
+          || reg_overlap_mentioned_p (operands[4], operands[2])))"
   "#"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "8")])
@@ -4113,7 +4127,9 @@
 			   (match_operand:SF 2 "register_operand" "f"))))
    (set (match_operand:SF 4 "register_operand" "=&f")
 	(mult:SF (match_dup 1) (match_dup 2)))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "(! TARGET_SOFT_FLOAT && TARGET_PA_20
+    && ! (reg_overlap_mentioned_p (operands[4], operands[1])
+          || reg_overlap_mentioned_p (operands[4], operands[2])))"
   "#"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "8")])
@@ -4135,7 +4151,8 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(neg:DF (abs:DF (match_operand:DF 1 "register_operand" "f"))))
    (set (match_operand:DF 2 "register_operand" "=&f") (abs:DF (match_dup 1)))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "(! TARGET_SOFT_FLOAT && TARGET_PA_20
+    && ! reg_overlap_mentioned_p (operands[2], operands[1]))"
   "#"
   [(set_attr "type" "fpalu")
    (set_attr "length" "8")])
@@ -4153,7 +4170,8 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(neg:SF (abs:SF (match_operand:SF 1 "register_operand" "f"))))
    (set (match_operand:SF 2 "register_operand" "=&f") (abs:SF (match_dup 1)))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "(! TARGET_SOFT_FLOAT && TARGET_PA_20
+    && ! reg_overlap_mentioned_p (operands[2], operands[1]))"
   "#"
   [(set_attr "type" "fpalu")
    (set_attr "length" "8")])
@@ -4241,7 +4259,8 @@
    (set (match_operand:SI 4 "register_operand" "=&r")
 	(ashift:SI (match_dup 2)
 		   (match_operand:SI 5 "const_int_operand" "i")))]
-  "INTVAL (operands[5]) == exact_log2 (INTVAL (operands[3]))"
+  "(INTVAL (operands[5]) == exact_log2 (INTVAL (operands[3]))
+    && ! (reg_overlap_mentioned_p (operands[4], operands[2])))"
   "#"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
