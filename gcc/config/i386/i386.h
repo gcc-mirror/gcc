@@ -2400,6 +2400,8 @@ do { long l;						\
 
 #define PREDICATE_CODES							\
   {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},			\
+  {"aligned_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,	\
+		       LABEL_REF, SUBREG, REG, MEM}},			\
   {"pic_symbolic_operand", {CONST}},					\
   {"call_insn_operand", {MEM}},						\
   {"expander_call_insn_operand", {MEM}},				\

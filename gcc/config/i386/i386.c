@@ -678,57 +678,6 @@ optimization_options (level, size)
 #endif
 }
 
-/* Return nonzero if the rtx is known aligned.  */
-/* ??? Unused.  */
-
-int
-ix86_aligned_p (op)
-     rtx op;
-{
-  struct ix86_address parts;
-
-  /* Registers and immediate operands are always "aligned". */
-  if (GET_CODE (op) != MEM)
-    return 1;
-
-  /* Don't even try to do any aligned optimizations with volatiles. */
-  if (MEM_VOLATILE_P (op))
-    return 0;
-
-  op = XEXP (op, 0);
-
-  /* Pushes and pops are only valid on the stack pointer.  */
-  if (GET_CODE (op) == PRE_DEC
-      || GET_CODE (op) == POST_INC)
-    return 1;
-
-  /* Decode the address.  */
-  if (! ix86_decompose_address (op, &parts))
-    abort ();
-
-  /* Look for some component that isn't known to be aligned.  */
-  if (parts.index)
-    {
-      if (parts.scale < 4
-	  && REGNO_POINTER_ALIGN (REGNO (parts.index)) < 4)
-	return 0;
-    }
-  if (parts.base)
-    {
-      if (REGNO_POINTER_ALIGN (REGNO (parts.index)) < 4)
-	return 0;
-    }
-  if (parts.disp)
-    {
-      if (GET_CODE (parts.disp) != CONST_INT
-	  || (INTVAL (parts.disp) & 3) != 0)
-	return 0;
-    }
-
-  /* Didn't find one -- this must be an aligned address.  */
-  return 1;
-}
-
 /* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine specific
    attribute for DECL.  The attributes in ATTRIBUTES have previously been
    assigned to DECL.  */
@@ -1421,6 +1370,60 @@ long_memory_operand (op, mode)
     return 0;
 
   return memory_address_length (op) != 0;
+}
+
+/* Return nonzero if the rtx is known aligned.  */
+
+int
+aligned_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  struct ix86_address parts;
+
+  if (!general_operand (op, mode))
+    return 0;
+
+  /* Registers and immediate operands are always "aligned". */
+  if (GET_CODE (op) != MEM)
+    return 1;
+
+  /* Don't even try to do any aligned optimizations with volatiles. */
+  if (MEM_VOLATILE_P (op))
+    return 0;
+
+  op = XEXP (op, 0);
+
+  /* Pushes and pops are only valid on the stack pointer.  */
+  if (GET_CODE (op) == PRE_DEC
+      || GET_CODE (op) == POST_INC)
+    return 1;
+
+  /* Decode the address.  */
+  if (! ix86_decompose_address (op, &parts))
+    abort ();
+
+  /* Look for some component that isn't known to be aligned.  */
+  if (parts.index)
+    {
+      if (parts.scale < 4
+	  && REGNO_POINTER_ALIGN (REGNO (parts.index)) < 4)
+	return 0;
+    }
+  if (parts.base)
+    {
+      if (REGNO_POINTER_ALIGN (REGNO (parts.base)) < 4)
+	return 0;
+    }
+  if (parts.disp)
+    {
+      if (GET_CODE (parts.disp) != CONST_INT
+	  || (INTVAL (parts.disp) & 3) != 0)
+	return 0;
+    }
+
+  /* Didn't find one -- this must be an aligned address.  */
+  return 1;
 }
 
 /* Return true if the constant is something that can be loaded with
