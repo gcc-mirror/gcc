@@ -130,6 +130,11 @@ function_cannot_inline_p (fndecl)
   if (current_function_returns_pcc_struct)
     return "inline functions not supported for this return value type";
 
+  /* We can't inline functions that return BLKmode structures in registers.  */
+  if (TYPE_MODE (TREE_TYPE (TREE_TYPE (fndecl))) == BLKmode
+      && ! aggregate_value_p (TREE_TYPE (TREE_TYPE (fndecl))))
+    return "inline functions not supported for this return value type";
+
   /* We can't inline functions that return structures of varying size.  */
   if (int_size_in_bytes (TREE_TYPE (TREE_TYPE (fndecl))) < 0)
     return "function with varying-size return value cannot be inline";
