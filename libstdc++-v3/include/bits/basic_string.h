@@ -1435,24 +1435,11 @@ namespace std
 
       basic_string&
       _M_replace_aux(size_type __pos1, size_type __n1, size_type __n2,
-		     _CharT __c)
-      {
-	_M_check_length(__n1, __n2, "basic_string::_M_replace_aux");
-	_M_mutate(__pos1, __n1, __n2);
-	if (__n2)
-	  _M_assign(_M_data() + __pos1, __n2, __c);
-	return *this;
-      }
+		     _CharT __c);
 
       basic_string&
       _M_replace_safe(size_type __pos1, size_type __n1, const _CharT* __s,
-		      size_type __n2)
-      {
-	_M_mutate(__pos1, __n1, __n2);
-	if (__n2)
-	  _M_copy(_M_data() + __pos1, __s, __n2);
-	return *this;
-      }
+		      size_type __n2);
 
       // _S_construct_aux is used to implement the 21.3.1 para 15 which
       // requires special behaviour if _InIter is an integral type
