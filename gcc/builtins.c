@@ -169,7 +169,7 @@ static tree fold_builtin_strchr (tree, tree);
 static tree fold_builtin_memcmp (tree);
 static tree fold_builtin_strcmp (tree);
 static tree fold_builtin_strncmp (tree);
-static tree fold_builtin_signbit (tree);
+static tree fold_builtin_signbit (tree, tree);
 static tree fold_builtin_copysign (tree, tree, tree);
 static tree fold_builtin_isascii (tree);
 static tree fold_builtin_toascii (tree);
@@ -7557,10 +7557,8 @@ fold_builtin_strncmp (tree arglist)
    NULL_TREE if no simplification can be made.  */
 
 static tree
-fold_builtin_signbit (tree exp)
+fold_builtin_signbit (tree fndecl, tree arglist)
 {
-  tree fndecl = get_callee_fndecl (exp);
-  tree arglist = TREE_OPERAND (exp, 1);
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
   tree arg, temp;
 
@@ -8248,7 +8246,7 @@ fold_builtin_1 (tree exp, bool ignore)
     case BUILT_IN_SIGNBIT:
     case BUILT_IN_SIGNBITF:
     case BUILT_IN_SIGNBITL:
-      return fold_builtin_signbit (exp);
+      return fold_builtin_signbit (fndecl, arglist);
 
     case BUILT_IN_ISASCII:
       return fold_builtin_isascii (arglist);

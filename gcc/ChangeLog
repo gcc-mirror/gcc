@@ -4,6 +4,10 @@
 	of CALL_EXPR.
 	(fold_builtin_1): Update a call to fold_builtin_bitop.
 
+	* builtins.c (fold_builtin_signbit): Take decomposed arguments
+	of CALL_EXPR.
+	(fold_builtin_1): Update a call to fold_builtin_signbit.
+
 2005-03-17  Dorit Naishlos  <dorit@il.ibm.com>
 
 	PR tree-optimization/20474
