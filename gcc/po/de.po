@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.0-b20041128\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2004-11-27 19:39+0000\n"
-"PO-Revision-Date: 2004-12-17 22:04+0100\n"
+"PO-Revision-Date: 2004-12-20 15:53+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -3013,79 +3013,70 @@ msgid "decrement of pointer to unknown structure"
 msgstr "Verminderung eines Zeigers auf unbekannte Struktur"
 
 #: c-typeck.c:2723
-#, fuzzy, c-format
+#, c-format
 msgid "assignment of read-only member %qs"
-msgstr "%s des schreibgeschützten Elementes »%s«"
+msgstr "Zuweisung des schreibgeschützten Elementes %qs"
 
 #: c-typeck.c:2724
-#, fuzzy, c-format
+#, c-format
 msgid "increment of read-only member %qs"
-msgstr "%s des schreibgeschützten Elementes »%s«"
+msgstr "Erhöhung des schreibgeschützten Elementes %qs"
 
 #: c-typeck.c:2725
-#, fuzzy, c-format
+#, c-format
 msgid "decrement of read-only member %qs"
-msgstr "%s des schreibgeschützten Elementes »%s«"
+msgstr "Verringerung des schreibgeschützten Elementes %qs"
 
 #: c-typeck.c:2729
-#, fuzzy, c-format
+#, c-format
 msgid "assignment of read-only variable %qs"
-msgstr "%s der schreibgeschützten Variable »%s«"
+msgstr "Zuweisung der schreibgeschützten Variable %qs"
 
 #: c-typeck.c:2730
-#, fuzzy, c-format
+#, c-format
 msgid "increment of read-only variable %qs"
-msgstr "%s der schreibgeschützten Variable »%s«"
+msgstr "Erhöhung der schreibgeschützten Variable %qs"
 
 #: c-typeck.c:2731
-#, fuzzy, c-format
+#, c-format
 msgid "decrement of read-only variable %qs"
-msgstr "%s der schreibgeschützten Variable »%s«"
+msgstr "Verringerung der schreibgeschützten Variable %qs"
 
 #: c-typeck.c:2734
-#, fuzzy
 msgid "assignment of read-only location"
-msgstr "%s der schreibgeschützten Speicherstelle"
+msgstr "Zuweisung der schreibgeschützten Speicherstelle"
 
 #: c-typeck.c:2735
-#, fuzzy
 msgid "increment of read-only location"
-msgstr "%s der schreibgeschützten Speicherstelle"
+msgstr "Erhöhung der schreibgeschützten Speicherstelle"
 
 #: c-typeck.c:2736
-#, fuzzy
 msgid "decrement of read-only location"
-msgstr "%s der schreibgeschützten Speicherstelle"
+msgstr "Verringerung der schreibgeschützten Speicherstelle"
 
 #: c-typeck.c:2755
-#, fuzzy
 msgid "cannot take address of bit-field %qD"
-msgstr "die Adresse des Bit-Feldes »%s« kann nicht ermittelt werden"
+msgstr "die Adresse des Bit-Feldes %qD kann nicht ermittelt werden"
 
 #: c-typeck.c:2783
-#, fuzzy
 msgid "global register variable %qD used in nested function"
-msgstr "globale Register-Variable »%s« in verschachtelter Funktion verwendet"
+msgstr "globale Register-Variable %qD in verschachtelter Funktion verwendet"
 
 #: c-typeck.c:2786
-#, fuzzy
 msgid "register variable %qD used in nested function"
-msgstr "Register-Variable »%s« in verschachtelter Funktion verwendet"
+msgstr "Register-Variable %qD in verschachtelter Funktion verwendet"
 
 #: c-typeck.c:2791
-#, fuzzy
 msgid "address of global register variable %qD requested"
-msgstr "Adresse der globalen Variable »%s« angefordert"
+msgstr "Adresse der globalen Variable %qD angefordert"
 
 #: c-typeck.c:2793
-#, fuzzy
 msgid "address of register variable %qD requested"
-msgstr "Adresse der Register-Variablen »%s« angefordert"
+msgstr "Adresse der Register-Variablen %qD angefordert"
 
 #: c-typeck.c:2841
-#, fuzzy
 msgid "non-lvalue array in conditional expression"
-msgstr "Typ passt nicht in bedingtem Ausdruck"
+msgstr "Nicht-L-Wert-Feld in bedingtem Ausdruck"
 
 #: c-typeck.c:2885
 msgid "signed and unsigned type in conditional expression"
@@ -3096,9 +3087,8 @@ msgid "ISO C forbids conditional expr with only one void side"
 msgstr "ISO-C verbietet bedingten Ausdruck mit nur einer void-Seite"
 
 #: c-typeck.c:2908 c-typeck.c:2916
-#, fuzzy
 msgid "ISO C forbids conditional expr between %<void *%> and function pointer"
-msgstr "ISO-C verbietet bedingten Ausdruck zwischen »void *« und Funktionszeiger"
+msgstr "ISO-C verbietet bedingten Ausdruck zwischen %<void *%> und Funktionszeiger"
 
 #: c-typeck.c:2923
 msgid "pointer type mismatch in conditional expression"
@@ -3156,7 +3146,7 @@ msgstr "Typkonvertierung von Zeiger auf Ganzzahl anderer Breite"
 
 #: c-typeck.c:3151
 msgid "cast from function call of type %qT to non-matching type %qT"
-msgstr ""
+msgstr "Typumwandlung von Funktionsaufruf des Typs %qT in unpassenden Typen %qT"
 
 #: c-typeck.c:3159
 msgid "cast to pointer from integer of different size"
@@ -3171,9 +3161,8 @@ msgid "dereferencing type-punned pointer will break strict-aliasing rules"
 msgstr "Dereferenzierung eines Type-Pun-Zeigers verletzt strict-aliasing-Regeln"
 
 #: c-typeck.c:3181
-#, fuzzy
 msgid "dereferencing type-punned pointer might break strict-aliasing rules"
-msgstr "Dereferenzierung eines Type-Pun-Zeigers verletzt strict-aliasing-Regeln"
+msgstr "Dereferenzierung eines Type-Pun-Zeigers könnte strict-aliasing-Regeln verletzen"
 
 #: c-typeck.c:3193
 msgid "ISO C forbids conversion of function pointer to object pointer type"
@@ -3185,111 +3174,95 @@ msgstr "ISO-C verbietet Konvertierung von Objektzeigertypen in Funktionszeigerty
 
 #: c-typeck.c:3457
 msgid "cannot pass rvalue to reference parameter"
-msgstr "kann R-Wert nicht an Referenzparameter übergeben"
+msgstr "R-Wert kann nicht an Referenzparameter übergeben werden"
 
 #: c-typeck.c:3566 c-typeck.c:3675
-#, fuzzy, c-format
+#, c-format
 msgid "passing argument %d of %qE makes qualified function pointer from unqualified"
-msgstr "%s erzeugt aus unqualifiziertem einen qualifizierten Funktionszeiger"
+msgstr "Übergabe des Arguments %d von %qE erzeugt aus unqualifiziertem einen qualifizierten Funktionszeiger"
 
 #: c-typeck.c:3569 c-typeck.c:3678
-#, fuzzy
 msgid "assignment makes qualified function pointer from unqualified"
-msgstr "%s erzeugt aus unqualifiziertem einen qualifizierten Funktionszeiger"
+msgstr "Zuweisung erzeugt aus unqualifiziertem einen qualifizierten Funktionszeiger"
 
 #: c-typeck.c:3572 c-typeck.c:3680
-#, fuzzy
 msgid "initialization makes qualified function pointer from unqualified"
-msgstr "%s erzeugt aus unqualifiziertem einen qualifizierten Funktionszeiger"
+msgstr "Initialisierung erzeugt aus unqualifiziertem einen qualifizierten Funktionszeiger"
 
 #: c-typeck.c:3575 c-typeck.c:3682
-#, fuzzy
 msgid "return makes qualified function pointer from unqualified"
-msgstr "%s erzeugt aus unqualifiziertem einen qualifizierten Funktionszeiger"
+msgstr "return erzeugt aus unqualifiziertem einen qualifizierten Funktionszeiger"
 
 #: c-typeck.c:3579 c-typeck.c:3643
-#, fuzzy, c-format
+#, c-format
 msgid "passing argument %d of %qE discards qualifiers from pointer target type"
-msgstr "Umwandlung von »%T« in »%T« entfernt Kennzeichner von Zeiger-Ziel-Typ"
+msgstr "Übergabe des Arguments %d von %qE entfernt Kennzeichner von Zeiger-Ziel-Typ"
 
 #: c-typeck.c:3581 c-typeck.c:3645
-#, fuzzy
 msgid "assignment discards qualifiers from pointer target type"
-msgstr "Typkonvertierung streicht Qualifizierer von Zeiger-Zieltyp"
+msgstr "Zuweisung streicht Qualifizierer von Zeiger-Zieltyp"
 
 #: c-typeck.c:3583 c-typeck.c:3647
-#, fuzzy
 msgid "initialization discards qualifiers from pointer target type"
-msgstr "Typkonvertierung streicht Qualifizierer von Zeiger-Zieltyp"
+msgstr "Initialisierung streicht Qualifizierer von Zeiger-Zieltyp"
 
 #: c-typeck.c:3585 c-typeck.c:3649
-#, fuzzy
 msgid "return discards qualifiers from pointer target type"
-msgstr "Typkonvertierung streicht Qualifizierer von Zeiger-Zieltyp"
+msgstr "return streicht Qualifizierer von Zeiger-Zieltyp"
 
 #: c-typeck.c:3590
 msgid "ISO C prohibits argument conversion to union type"
 msgstr "ISO-C verbietet Argumentkonvertierung in union-Typ"
 
 #: c-typeck.c:3628
-#, fuzzy
 msgid "ISO C forbids passing argument %d of %qE between function pointer and %<void *%>"
-msgstr "ISO-C verbietet %s zwischen Funktionszeiger und »void *«"
+msgstr "ISO-C verbietet Übergabe des Arguments %d von %qE zwischen Funktionszeiger und %<void *%>"
 
 #: c-typeck.c:3631
-#, fuzzy
 msgid "ISO C forbids assignment between function pointer and %<void *%>"
-msgstr "ISO-C verbietet %s zwischen Funktionszeiger und »void *«"
+msgstr "ISO-C verbietet Zuweisung zwischen Funktionszeiger und %<void *%>"
 
 #: c-typeck.c:3633
-#, fuzzy
 msgid "ISO C forbids initialization between function pointer and %<void *%>"
-msgstr "ISO-C verbietet %s zwischen Funktionszeiger und »void *«"
+msgstr "ISO-C verbietet Initialisierung zwischen Funktionszeiger und %<void *%>"
 
 #: c-typeck.c:3635
-#, fuzzy
 msgid "ISO C forbids return between function pointer and %<void *%>"
-msgstr "ISO-C verbietet %s zwischen Funktionszeiger und »void *«"
+msgstr "ISO-C verbietet return zwischen Funktionszeiger und %<void *%>"
 
 #: c-typeck.c:3658
-#, fuzzy, c-format
+#, c-format
 msgid "pointer targets in passing argument %d of %qE differ in signedness"
-msgstr "Zeigerziele in %s unterscheiden sich im Vorzeichenbesitz"
+msgstr "Zeigerziele bei Übergabe des Arguments %d von %qE unterscheiden sich im Vorzeichenbesitz"
 
 #: c-typeck.c:3660
-#, fuzzy
 msgid "pointer targets in assignment differ in signedness"
-msgstr "Zeigerziele in %s unterscheiden sich im Vorzeichenbesitz"
+msgstr "Zeigerziele in Zuweisung unterscheiden sich im Vorzeichenbesitz"
 
 #: c-typeck.c:3662
-#, fuzzy
 msgid "pointer targets in initialization differ in signedness"
-msgstr "Zeigerziele in %s unterscheiden sich im Vorzeichenbesitz"
+msgstr "Zeigerziele in Initialisierung unterscheiden sich im Vorzeichenbesitz"
 
 #: c-typeck.c:3664
-#, fuzzy
 msgid "pointer targets in return differ in signedness"
-msgstr "Zeigerziele in %s unterscheiden sich im Vorzeichenbesitz"
+msgstr "Zeigerziele in return unterscheiden sich im Vorzeichenbesitz"
 
 #: c-typeck.c:3687
-#, fuzzy, c-format
+#, c-format
 msgid "passing argument %d of %qE from incompatible pointer type"
-msgstr "%s von inkompatiblem Zeigertyp"
+msgstr "Übergabe des Arguments %d von %qE von inkompatiblem Zeigertyp"
 
 #: c-typeck.c:3689
-#, fuzzy
 msgid "assignment from incompatible pointer type"
-msgstr "%s von inkompatiblem Zeigertyp"
+msgstr "Zuweisung von inkompatiblem Zeigertyp"
 
 #: c-typeck.c:3690
-#, fuzzy
 msgid "initialization from incompatible pointer type"
-msgstr "%s von inkompatiblem Zeigertyp"
+msgstr "Initialisierung von inkompatiblem Zeigertyp"
 
 #: c-typeck.c:3692
-#, fuzzy
 msgid "return from incompatible pointer type"
-msgstr "%s von inkompatiblem Zeigertyp"
+msgstr "return von inkompatiblem Zeigertyp"
 
 #. ??? This should not be an error when inlining calls to
 #. unprototyped functions.
@@ -3298,66 +3271,57 @@ msgid "invalid use of non-lvalue array"
 msgstr "ungültige Verwendung eines Nicht-L-Wert-Feldes"
 
 #: c-typeck.c:3713
-#, fuzzy, c-format
+#, c-format
 msgid "passing argument %d of %qE makes pointer from integer without a cast"
-msgstr "%s erzeugt Zeiger von Ganzzahl ohne Typkonvertierung"
+msgstr "Übergabe des Arguments %d von %qE erzeugt Zeiger von Ganzzahl ohne Typkonvertierung"
 
 #: c-typeck.c:3715
-#, fuzzy
 msgid "assignment makes pointer from integer without a cast"
-msgstr "%s erzeugt Zeiger von Ganzzahl ohne Typkonvertierung"
+msgstr "Zuweisung erzeugt Zeiger von Ganzzahl ohne Typkonvertierung"
 
 #: c-typeck.c:3717
-#, fuzzy
 msgid "initialization makes pointer from integer without a cast"
-msgstr "%s erzeugt Zeiger von Ganzzahl ohne Typkonvertierung"
+msgstr "Initialisierung erzeugt Zeiger von Ganzzahl ohne Typkonvertierung"
 
 #: c-typeck.c:3719
-#, fuzzy
 msgid "return makes pointer from integer without a cast"
-msgstr "%s erzeugt Zeiger von Ganzzahl ohne Typkonvertierung"
+msgstr "return erzeugt Zeiger von Ganzzahl ohne Typkonvertierung"
 
 #: c-typeck.c:3726
-#, fuzzy, c-format
+#, c-format
 msgid "passing argument %d of %qE makes integer from pointer without a cast"
-msgstr "%s erzeugt Ganzzahl von Zeiger ohne Typkonvertierung"
+msgstr "Übergabe des Arguments %d von %qE  erzeugt Ganzzahl von Zeiger ohne Typkonvertierung"
 
 #: c-typeck.c:3728
-#, fuzzy
 msgid "assignment makes integer from pointer without a cast"
-msgstr "%s erzeugt Ganzzahl von Zeiger ohne Typkonvertierung"
+msgstr "Zuweisung erzeugt Ganzzahl von Zeiger ohne Typkonvertierung"
 
 #: c-typeck.c:3730
-#, fuzzy
 msgid "initialization makes integer from pointer without a cast"
-msgstr "%s erzeugt Ganzzahl von Zeiger ohne Typkonvertierung"
+msgstr "Initialisierung erzeugt Ganzzahl von Zeiger ohne Typkonvertierung"
 
 #: c-typeck.c:3732
-#, fuzzy
 msgid "return makes integer from pointer without a cast"
-msgstr "%s erzeugt Ganzzahl von Zeiger ohne Typkonvertierung"
+msgstr "return erzeugt Ganzzahl von Zeiger ohne Typkonvertierung"
 
 #. ??? This should not be an error when inlining calls to
 #. unprototyped functions.
 #: c-typeck.c:3745
-#, fuzzy, c-format
+#, c-format
 msgid "incompatible type for argument %d of %qE"
-msgstr "inkompatibler Typ für Argument %d von »%s«"
+msgstr "inkompatibler Typ für Argument %d von %qE"
 
 #: c-typeck.c:3748
-#, fuzzy
 msgid "incompatible types in assignment"
-msgstr "inkompatible Typen in %s"
+msgstr "inkompatible Typen in Zuweisung"
 
 #: c-typeck.c:3751
-#, fuzzy
 msgid "incompatible types in initialization"
-msgstr "inkompatible Typen in %s"
+msgstr "inkompatible Typen in Initialisierung"
 
 #: c-typeck.c:3754
-#, fuzzy
 msgid "incompatible types in return"
-msgstr "inkompatible Typen in %s"
+msgstr "inkompatible Typen in return"
 
 #: c-typeck.c:3835
 msgid "traditional C rejects automatic aggregate initialization"
@@ -3374,32 +3338,29 @@ msgid "%s"
 msgstr "%s"
 
 #: c-typeck.c:4003 c-typeck.c:4018 c-typeck.c:4033
-#, fuzzy, c-format
+#, c-format
 msgid "(near initialization for %qs)"
-msgstr "(nahe der Initialisierung für »%s«)"
+msgstr "(nahe der Initialisierung für %qs)"
 
 #: c-typeck.c:4047
-#, fuzzy
 msgid "array initialized from parenthesized string constant"
-msgstr "char-Feld mit wide-Zeichenkette initialisiert"
+msgstr "Feld mit geklammerter Zeichenkettenkonstante initialisiert"
 
 #: c-typeck.c:4111 cp/typeck2.c:702
 msgid "char-array initialized from wide string"
 msgstr "char-Feld mit wide-Zeichenkette initialisiert"
 
 #: c-typeck.c:4116
-#, fuzzy
 msgid "wchar_t-array initialized from non-wide string"
-msgstr "char-Feld mit wide-Zeichenkette initialisiert"
+msgstr "wchar_t-Feld mit Nicht-wide-Zeichenkette initialisiert"
 
 #: c-typeck.c:4134 cp/typeck2.c:724
 msgid "initializer-string for array of chars is too long"
 msgstr "Initialisierungs-Zeichenkette für char-Feld ist zu lang"
 
 #: c-typeck.c:4140
-#, fuzzy
 msgid "array of inappropriate type initialized from string constant"
-msgstr "char-Feld mit wide-Zeichenkette initialisiert"
+msgstr "Feld unpassenden Typs mit Zeichenkettenkonstante initialisiert"
 
 #: c-typeck.c:4210
 msgid "array initialized from non-constant array expression"
@@ -3462,9 +3423,8 @@ msgid "field name not in record or union initializer"
 msgstr "Feldname nicht in Datensatz- oder union-Initialisierung"
 
 #: c-typeck.c:5104
-#, fuzzy
 msgid "array index in initializer not of integer type"
-msgstr "Feldindex in Initialisierung überschreitet Feldgrenzen"
+msgstr "Feldindex in Initialisierung hat nicht Ganzzahltyp"
 
 #: c-typeck.c:5124 c-typeck.c:5126
 msgid "nonconstant array index in initializer"
@@ -3483,9 +3443,9 @@ msgid "array index range in initializer exceeds array bounds"
 msgstr "Feldindexbereich in Initialisierung überschreitet Feldgrenzen"
 
 #: c-typeck.c:5193
-#, fuzzy, c-format
+#, c-format
 msgid "unknown field %qs specified in initializer"
-msgstr "unbekanntes Feld »%s« in Initialisierung angegeben"
+msgstr "unbekanntes Feld %qs in Initialisierung angegeben"
 
 #: c-typeck.c:5229 c-typeck.c:5250 c-typeck.c:5716
 msgid "initialized field with side-effects overwritten"
@@ -3524,24 +3484,20 @@ msgid "excess elements in scalar initializer"
 msgstr "Elementüberschreitung in Skalar-Initialisierung"
 
 #: c-typeck.c:6362
-#, fuzzy
 msgid "ISO C forbids %<goto *expr;%>"
-msgstr "ISO-C verbietet »goto *expr;«"
+msgstr "ISO-C verbietet %<goto *expr;%>"
 
 #: c-typeck.c:6376 cp/typeck.c:6160
-#, fuzzy
 msgid "function declared %<noreturn%> has a %<return%> statement"
-msgstr "als »noreturn« deklarierte Funktion hat »return«-Anweisung"
+msgstr "als %<noreturn%> deklarierte Funktion hat %<return%>-Anweisung"
 
 #: c-typeck.c:6383
-#, fuzzy
 msgid "%<return%> with no value, in function returning non-void"
-msgstr "»return« ohne Wert in nicht void zurückgebender Funktion"
+msgstr "%<return%> ohne Wert in nicht-void zurückgebender Funktion"
 
 #: c-typeck.c:6390
-#, fuzzy
 msgid "%<return%> with a value, in function returning void"
-msgstr "»return« mit Wert in void zurückgebender Funktion"
+msgstr "%<return%> mit Wert in void zurückgebender Funktion"
 
 #: c-typeck.c:6447
 msgid "function returns address of local variable"
@@ -3552,32 +3508,28 @@ msgid "switch quantity not an integer"
 msgstr "switch-Größe keine Ganzzahl"
 
 #: c-typeck.c:6518
-#, fuzzy
 msgid "%<long%> switch expression not converted to %<int%> in ISO C"
-msgstr "»long« switch-Ausdruck nicht nach »int« konvertiert in ISO C"
+msgstr "%<long%> switch-Ausdruck nicht nach »int« konvertiert in ISO C"
 
 #: c-typeck.c:6555 cp/parser.c:5942
 msgid "case label not within a switch statement"
 msgstr "case-Marke nicht innerhalb einer switch-Anweisung"
 
 #: c-typeck.c:6557
-#, fuzzy
 msgid "%<default%> label not within a switch statement"
-msgstr "»default«-Marke nicht innerhalb einer switch-Anweisung"
+msgstr "%<default%>-Marke nicht innerhalb einer switch-Anweisung"
 
 #: c-typeck.c:6621
-#, fuzzy
 msgid "%Hsuggest explicit braces to avoid ambiguous %<else%>"
-msgstr "%Hes wird empfohlen, explizite geschweifte Klammern zu setzen, um mehrdeutiges »else« zu vermeiden"
+msgstr "%Hes wird empfohlen, explizite geschweifte Klammern zu setzen, um mehrdeutiges %<else%> zu vermeiden"
 
 #: c-typeck.c:6631
 msgid "%Hempty body in an if-statement"
 msgstr "%Hleerer Körper in einer if-Anweisung"
 
 #: c-typeck.c:6639
-#, fuzzy
 msgid "%Hempty body in an else-statement"
-msgstr "leerer Körper in einer else-Anweisung"
+msgstr "%Hleerer Körper in einer else-Anweisung"
 
 #: c-typeck.c:6730 cp/parser.c:6445
 msgid "continue statement not within a loop"
@@ -3593,7 +3545,7 @@ msgstr "Ausdrucksanweisung hat unvollständigen Typ"
 
 #: c-typeck.c:7099 c-typeck.c:7138
 msgid "division by zero"
-msgstr "Teilung durch Null"
+msgstr "Division durch Null"
 
 #: c-typeck.c:7183 cp/typeck.c:2971
 msgid "right shift count is negative"
@@ -3616,9 +3568,8 @@ msgid "comparing floating point with == or != is unsafe"
 msgstr "Vergleich von Gleitkomma mit == oder != ist unsicher"
 
 #: c-typeck.c:7255 c-typeck.c:7262
-#, fuzzy
 msgid "ISO C forbids comparison of %<void *%> with function pointer"
-msgstr "ISO-C verbietet Vergleich von »void *« mit Funktionszeiger"
+msgstr "ISO-C verbietet Vergleich von %<void *%> mit Funktionszeiger"
 
 #: c-typeck.c:7266 c-typeck.c:7312
 msgid "comparison of distinct pointer types lacks a cast"
@@ -3707,9 +3658,9 @@ msgid "basic block %d pred edge is corrupted"
 msgstr "Vorgänger des Basis-Blocks %d ist beschädigt"
 
 #: cfghooks.c:185
-#, fuzzy, c-format
+#, c-format
 msgid "its dest_idx should be %d, not %d"
-msgstr "Herrscher über %d sollte %d sein, nicht %d"
+msgstr "sein dest_idx sollte %d sein, nicht %d"
 
 #: cfghooks.c:214
 #, c-format
@@ -3721,94 +3672,94 @@ msgid "verify_flow_info failed"
 msgstr "verify_flow_info gescheitert"
 
 #: cfghooks.c:289
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support redirect_edge_and_branch."
-msgstr "%s unterstützt nicht %%n$-Operandennummerformate"
+msgstr "%s unterstützt nicht redirect_edge_and_branch."
 
 #: cfghooks.c:307
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support redirect_edge_and_branch_force."
-msgstr "%s unterstützt nicht %%n$-Operandennummerformate"
+msgstr "%s unterstützt nicht redirect_edge_and_branch_force."
 
 #: cfghooks.c:325
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support split_block."
-msgstr "%s unterstützt nicht %s"
+msgstr "%s unterstützt nicht split_block."
 
 #: cfghooks.c:361
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support move_block_after."
-msgstr "%s unterstützt nicht %s"
+msgstr "%s unterstützt nicht move_block_after."
 
 #: cfghooks.c:374
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support delete_basic_block."
-msgstr "%s unterstützt nicht %s"
+msgstr "%s unterstützt nicht delete_basic_block."
 
 #: cfghooks.c:406
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support split_edge."
-msgstr "%s unterstützt nicht %s"
+msgstr "%s unterstützt nicht split_edge."
 
 #: cfghooks.c:467
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support create_basic_block."
-msgstr "%s unterstützt nicht %s"
+msgstr "%s unterstützt nicht create_basic_block."
 
 #: cfghooks.c:495
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support can_merge_blocks_p."
-msgstr "%s unterstützt nicht %s"
+msgstr "%s unterstützt nicht can_merge_blocks_p."
 
 #: cfghooks.c:506
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support predict_edge."
-msgstr "%s unterstützt nicht %s"
+msgstr "%s unterstützt nicht predict_edge."
 
 #: cfghooks.c:515
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support predicted_by_p."
-msgstr "%s unterstützt nicht %s"
+msgstr "%s unterstützt nicht predicted_by_p."
 
 #: cfghooks.c:529
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support merge_blocks."
-msgstr "%s unterstützt nicht %s"
+msgstr "%s unterstützt nicht merge_blocks."
 
 #: cfghooks.c:575
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support make_forwarder_block."
-msgstr "%s unterstützt nicht %s"
+msgstr "%s unterstützt nicht make_forwarder_block."
 
 #: cfghooks.c:680
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support can_duplicate_block_p."
-msgstr "unterstützt nicht multilib"
+msgstr "%s unterstützt nicht can_duplicate_block_p."
 
 #: cfghooks.c:707
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support duplicate_block."
-msgstr "%s unterstützt nicht %s"
+msgstr "%s unterstützt nicht duplicate_block."
 
 #: cfghooks.c:773
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support block_ends_with_call_p"
-msgstr "%s unterstützt nicht %s"
+msgstr "%s unterstützt nicht block_ends_with_call_p"
 
 #: cfghooks.c:784
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support block_ends_with_condjump_p"
-msgstr "%s unterstützt nicht %s"
+msgstr "%s unterstützt nicht block_ends_with_condjump_p"
 
 #: cfghooks.c:802
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support flow_call_edges_add"
-msgstr "%s unterstützt nicht %s"
+msgstr "%s unterstützt nicht flow_call_edges_add"
 
 #: cfgloop.c:1304
 #, c-format
 msgid "Size of loop %d should be %d, not %d."
-msgstr "Größe der Schleife %d sollte %d sein, nicht %d"
+msgstr "Größe der Schleife %d sollte %d sein, nicht %d."
 
 #: cfgloop.c:1321
 #, c-format
@@ -3868,22 +3819,22 @@ msgstr "Kante von %d nach %d sollte nicht als irreduzibel markiert werden."
 #: cfgloop.c:1456
 #, c-format
 msgid "Wrong single exit %d->%d recorded for loop %d."
-msgstr ""
+msgstr "Falscher einzelner Ausgang %d->%d für Schleife %d aufgezeichnet."
 
 #: cfgloop.c:1460
 #, c-format
 msgid "Right exit is %d->%d."
-msgstr ""
+msgstr "Richtiger Ausgang ist %d->%d."
 
 #: cfgloop.c:1477
 #, c-format
 msgid "Single exit not recorded for loop %d."
-msgstr ""
+msgstr "Einzelner Ausgang nicht aufgezeichnet für Schleife %d."
 
 #: cfgloop.c:1484
 #, c-format
 msgid "Loop %d should not have single exit (%d -> %d)."
-msgstr ""
+msgstr "Schleife %d sollte nicht einzelnen Ausgang (%d -> %d) haben."
 
 #: cfgrtl.c:1940
 #, c-format
@@ -3907,7 +3858,7 @@ msgstr "verify_flow_info: REG_BR_PROB passt nicht zu cfg %wi %i"
 #: cfgrtl.c:2005
 #, c-format
 msgid "Fallthru edge crosses section boundary (bb %i)"
-msgstr ""
+msgstr "Fall-Through-Kante erreicht Abschnittsgrenze (bb %i)"
 
 #: cfgrtl.c:2030
 #, c-format
@@ -3937,7 +3888,7 @@ msgstr "Ruf-Kanten für Nicht-Aufruf-Befehl im bb %i"
 #: cfgrtl.c:2068
 #, c-format
 msgid "Abnormal edges for no purpose in bb %i"
-msgstr "Abnormale Kanten ohne Grund in bb %i"
+msgstr "Abnormale Kanten ohne Zweck in bb %i"
 
 #: cfgrtl.c:2080
 #, c-format
@@ -4026,30 +3977,28 @@ msgstr "%D nach Referenzierung in Assemblierung umbenannt"
 
 #: cgraphunit.c:502
 msgid "Shared call_expr:"
-msgstr ""
+msgstr "Gemeinsam genutztes call_expr:"
 
 #: cgraphunit.c:508
-#, fuzzy
 msgid "Edge points to wrong declaration:"
-msgstr "mehrere Typen in einer Deklaration"
+msgstr "Kante zeigt auf falsche Deklaration:"
 
 #: cgraphunit.c:517
 msgid "Missing callgraph edge for call expr:"
-msgstr ""
+msgstr "Fehlende Aufrufgraph-Kante für call_expr:"
 
 #: cgraphunit.c:543
 #, c-format
 msgid "Aux field set for edge %s->%s"
-msgstr ""
+msgstr "Aux-Feld für Kante %s->%s gesetzt"
 
 #: cgraphunit.c:555
-#, fuzzy
 msgid "Inlined_to pointer is wrong"
-msgstr "Abschnittszeiger fehlt"
+msgstr "Inlined_to-Zeiger ist falsch"
 
 #: cgraphunit.c:560
 msgid "Multiple inline callers"
-msgstr ""
+msgstr "Mehrere Inline-Aufrufer"
 
 #: cgraphunit.c:567
 msgid "Inlined_to pointer set for noninline callers"
