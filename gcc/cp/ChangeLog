@@ -1,3 +1,9 @@
+2004-07-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/16276
+	* rtti.c (emit_tinfo_decl): Turn off DECL_ONE_ONLY if typeinfo
+	is not public.
+
 2004-07-01  Release Manager
 
 	* GCC 3.4.1 released.

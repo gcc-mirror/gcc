@@ -1454,7 +1454,11 @@ emit_tinfo_decl (tree decl)
   DECL_EXTERNAL (decl) = 0;
   TREE_PUBLIC (decl) = !non_public;
   if (non_public)
-    DECL_COMDAT (decl) = 0;
+    {
+      DECL_COMDAT (decl) = 0;
+      if (SUPPORTS_ONE_ONLY)
+	DECL_ONE_ONLY (decl) = 0;
+    }
 
   DECL_INITIAL (decl) = var_init;
   mark_used (decl);
