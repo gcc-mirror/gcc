@@ -1,3 +1,23 @@
+2004-01-19  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (aligned_memory_operand): Check MEM_ALIGN,
+	don't check memory mode.
+	(unaligned_memory_operand): Likewise.
+	(reload_inqi, reload_inhi, reload_outqi, reload_outhi): Don't
+	abort for op0 not MEM.
+
+	* config/alpha/alpha.c (alpha_expand_mov_nobwx): If the destination
+	is not a reg, copy to a scratch first.
+	(aligned_loadqi, aligned_loadhi, unaligned_loadqi, unaligned_loadhi,
+	unaligned_loadqi_le, unaligned_loadqi_be, unaligned_loadhi_le,
+	unaligned_loadhi_be): Expect op0 in DImode; don't SUBREG.
+	(reload_inqi, reload_inhi): Fix mode of op0.
+	(reload_inqi_help, reload_inhi_help, reload_outqi_help,
+	reload_outhi_help): Likewise.  Use define_insn_and_split.
+
+	* config/alpha/alpha.md (call peepholes): Check for REG_NORETURN
+	as well as $29 dead.
+
 2004-01-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sol2.h (ASM_DECLARE_OBJECT_NAME): New.  Emit
