@@ -1,6 +1,6 @@
 /* CollationElementIterator.java -- Walks through collation elements
+   Copyright (C) 1998, 1999, 2001, 2002, 2003  Free Software Foundation
 
-/* Copyright (C) 1999, 2001  Free Software Foundation
 This file is part of GNU Classpath.
 
 GNU Classpath is free software; you can redistribute it and/or modify
@@ -60,7 +60,7 @@ public final class CollationElementIterator
    * This is a constant value that is returned to indicate that the end of 
    * the string was encountered.
    */
-  public static final int NULLORDER = 0xffffffff;
+  public static final int NULLORDER = -1;
 
   /**
    * This is the RuleBasedCollator this object was created from.
@@ -92,6 +92,7 @@ public final class CollationElementIterator
   {
     if (index == text.length())
       return NULLORDER;
+
     return collator.ceiNext(this);
   }
 
