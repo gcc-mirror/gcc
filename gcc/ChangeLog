@@ -1,3 +1,92 @@
+2002-01-03  Graham Stott  <grahams@redhat.com>
+
+	* rtl.h: Update copyright date.
+	(RTL_CHECK1): Wrap long line.
+	(RTL_CHECK2): Likewise.
+	(RTL_CHECKC1): Wrap long line and whitespace.
+	(RTL_CHECKC2): Likewise.
+	(XWINT): Whitespace.
+	(XINT): Likewise.
+	(XSTR): Likewise.
+	(XEXP): Likewise.
+	(XVEC): Likewise.
+	(XMODE): Likewise.
+	(XBITMAP): Likewise.
+	(XTREE): Likewise.
+	(XBBDEF): Likewise.
+	(XTMPL): Likewise.
+	(X0WINT): Likewise.
+	(X0INT):Likewise.
+	(X0UINT): Likewise.
+	(X0STR): Likewise.
+	(X0EXP): Likewise.
+	(X0VEC): Likewise.
+	(X0MODE): Likewise.
+	(X0BITMAP): Likewise.
+	(X0TREE): Likewise.
+	(X0BBDEF): Likewise.
+	(X0ADVFLAGS): Likewise.
+	(X0CSELIB): Likewise.
+	(X0MEMATTR): Likewise.
+	(XCWINT): Likewise.
+	(XCINT): Likewise.
+	(XCUINT): Likewise.
+	(XCSTR): Likewise.
+	(XCEXP): Likewise.
+	(XCVEC): Likewise.
+	(XCMODE): Likewise.
+	(XCBITMAP): Likewise.
+	(XCTREE): Likewise.
+	(XCBBDEF): Likewise.
+	(XCADVFLAGS): Likewise.
+	(XCCSELIB): Likewise.
+	(XC2EXP): Likewise.
+	(INSN_UID): Likewise.
+	(PREV_INSN): Likewise.
+	(PATTERN): Likewise.
+	(INSN_CODE): Likewise.
+	(PUT_REG_NOTE_KIND): Likewise.
+	(CODE_LABEL_NUMBER): Likewise.
+	(NOTE_SOURCE_FILE): Likewise.
+	(NOTE_BLOCK): Likewise.
+	(NOTE_EH_HANDLER): Likewise.
+	(NOTE_RANGE_INFO): Likewise.
+	(NOTE_LIVE_INFO): Likewise.
+	(NOTE_BASIC_BLOCK): Likewise.
+	(NOTE_EXPECTED_VALUE): Likewise.
+	(NOTE_LINE_NUMBER): Likewise.
+	(LABEL_NAME): Likewise.
+	(LABEL_NUSES): Likewise.
+	(LABEL_ALTERNATE_NAME): Likewise.
+	(ADDRESSOF_DECL): Likewise.
+	(JUMP_LABEL): Likewise.
+	(LABEL_NEXTREF): Likewise.
+	(REGNO): Likewise.
+	(ORIGINAL_REGNO: Likewise.
+	(HARD_REGISTER_NUM_P): Add parenthesis.
+	(SUBREG_REG): Whitespace.
+	(SUBREG_BYTE): Likewise.
+	(ASM_OPERANDS_TEMPLATE): Remove parenthesis.
+	(ASM_OPERANDS_OUTPUT_CONSTRAINT): Likewise.
+	(ASM_OPERANDS_OUTPUT_IDX): Likewise.
+	(ASM_OPERANDS_INPUT_VEC): Likewise.
+	(ASM_OPERANDS_INPUT_CONSTRAINT_VEC): Likewise.
+	(ASM_OPERANDS_INPUT): Likewise.
+	(ASM_OPERANDS_INPUT_LENGTH): Likewise.
+	(ASM_OPERANDS_INPUT_CONSTRAINT_EXP): Likewise.
+	(ASM_OPERANDS_INPUT_CONSTRAINT): Likewise.
+	(ASM_OPERANDS_INPUT_MODE): Likewise.
+	(ASM_OPERANDS_SOURCE_FILE): Likewise.
+	(ASM_OPERANDS_SOURCE_LINE): Likewise.
+	(MEM_SET_IN_STRUCT_P): Minor reformat.
+	(TRAP_CONDITION): Whitespace.
+	(TRAP_CODE): Likewise.
+	(COND_EXEC_TEST): Likewise.
+	(COND_EXEC_CODE): Likewise.
+	(FIND_REG_INC_NOTE): Uppercase macro args and add parenthesis.
+	(PHI_NODE_P): Add parenthesis.
+	(plus_constant): Whitespace and add parenthesis.
+
 2002-01-03  Kazu Hirata  <kazu@hxi.com>
 
 	* config/avr/avr.c: Fix comment typos.
