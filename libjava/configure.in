@@ -432,6 +432,7 @@ case "$THREADS" in
     ;;
 esac
 
+THREADCXXFLAGS=
 THREADLDFLAGS=
 THREADLIBS=
 THREADINCS=
@@ -465,6 +466,12 @@ changequote([,])
 	# -lpthread.
 	THREADLDFLAGS=-pthread
 	THREADSPEC=-lc_r
+	;;
+     alpha*-dec-osf*)
+	THREADCXXFLAGS=-pthread
+	# boehm-gc needs some functions from librt, so link that too.
+	THREADLIBS='-lpthread -lrt'
+	THREADSPEC='-lpthread -lrt'
 	;;
      *)
 	THREADLIBS=-lpthread
@@ -503,6 +510,7 @@ AC_SUBST(THREADDEPS)
 AC_SUBST(THREADOBJS)
 AC_SUBST(THREADSPEC)
 AC_SUBST(THREADLDFLAGS)
+AC_SUBST(THREADCXXFLAGS)
 
 if test -d sysdep; then true; else mkdir sysdep; fi
 AC_LINK_FILES(sysdep/$sysdeps_dir/locks.h, sysdep/locks.h)
