@@ -1,30 +1,54 @@
-#define TP_BSIZE 64
+#include <stdlib.h>
 
-char	buf[2*TP_BSIZE];
-char	(*nextblock)[TP_BSIZE] = (char (*)[TP_BSIZE]) buf;
+struct {
+    long sqlcode;
+} sqlca;
 
-union u_test {
-	char dummy[TP_BSIZE];
-	struct s_test {
-		int a;
-		int b;
-		int c;
-	} s_test;
-};
 
-main(int argc, char **argv)
+struct data_record {
+    int dummy;
+    int a[100];
+} *data_ptr, data_tmp;
+
+
+int
+num_records()
 {
-	int i;
-	char dp[TP_BSIZE];
+    return 1;
+}
 
-	for (i = 0; i < 2*TP_BSIZE; i++)
-		buf[i] = '.';
-	for (i = 0; i < TP_BSIZE; i++)
-		dp[i] = 'a';
 
-	*(union u_test *)(*(nextblock)++) = *(union u_test *)dp;
+void
+fetch()
+{
+    static int fetch_count;
 
-	for (i = 0; i < 2*TP_BSIZE; i++)
-		printf("%c%s", buf[i], (i % 64) == 63 ? "\n" : "");
-	exit(0);
+    memset(&data_tmp, 0x55, sizeof(data_tmp));
+    sqlca.sqlcode = (++fetch_count > 1 ? 100 : 0);
+}
+
+
+void
+load_data() {
+    struct data_record *p;
+    int num = num_records();
+
+    data_ptr = malloc(num * sizeof(struct data_record));
+    memset(data_ptr, 0xaa, num * sizeof(struct data_record));
+
+    fetch();
+    p = data_ptr;
+    while (sqlca.sqlcode == 0) {
+        *p++ = data_tmp;
+        fetch();
+    }
+}
+
+
+main()
+{
+    load_data();
+    if (data_ptr[0].dummy != 0x55555555)
+      abort ();
+    exit (0);
 }
