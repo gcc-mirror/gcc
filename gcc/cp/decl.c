@@ -8209,6 +8209,7 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 	     necessary zero-initialization has already been performed.  */
 	  if (TREE_STATIC (decl) && !DECL_INITIAL (decl))
 	    DECL_INITIAL (decl) = build_zero_init (TREE_TYPE (decl),
+						   /*nelts=*/NULL_TREE,
 						   /*static_storage_p=*/true);
 	  /* Remember that the initialization for this variable has
 	     taken place.  */

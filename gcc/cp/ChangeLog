@@ -1,3 +1,15 @@
+2003-02-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9879
+	* cp-tree.h (build_zero_init): Add parameter.
+	* decl.c (cp_finish_decl): Adjust call.
+	* init.c (build_zero_init): Add nelts parameter.  Adjust recursive
+	calls.
+	(build_default_init): Add nelts parameter.  Adjust calls to
+	build_zero_init.
+	(build_new_1): Adjust call to build_default_init.
+	* typeck2.c (process_init_constructor): Adjust call to build_zero_init.
+	
 2003-02-26  Devang Patel  <dpatel@apple.com>
 
 	* decl.c (finish_enum): Merge two 'for' loops. Copy value node if required.
