@@ -21,6 +21,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "machmode.h"
 
 #undef FFS  /* Some systems predefine this symbol; don't let it interfere.  */
+#undef FLOAT /* Likewise.  */
 
 /* Register Transfer Language EXPRESSIONS CODES */
 
@@ -540,6 +541,7 @@ extern rtx copy_most_rtx ();
 extern rtx replace_rtx ();
 extern rtvec gen_rtvec ();
 extern rtvec gen_rtvec_v ();
+extern rtx read_rtx ();
 extern rtx gen_reg_rtx ();
 extern rtx gen_label_rtx ();
 extern rtx gen_inline_header_rtx ();
@@ -651,8 +653,10 @@ extern rtx constm1_rtx;
 extern rtx const_true_rtx;
 extern rtx fconst0_rtx;
 extern rtx fconst1_rtx;
+extern rtx fconst2_rtx;
 extern rtx dconst0_rtx;
 extern rtx dconst1_rtx;
+extern rtx dconst2_rtx;
 
 /* Returns a constant 0 rtx in mode MODE.  */
 
