@@ -302,8 +302,8 @@ struct processor_costs k6_cost = {
   1,					/* number of parallel prefetches */
   2,					/* cost of FADD and FSUB insns.  */
   2,					/* cost of FMUL instruction.  */
-  2,					/* cost of FDIV instruction.  */
-  56,					/* cost of FABS instruction.  */
+  56,					/* cost of FDIV instruction.  */
+  2,					/* cost of FABS instruction.  */
   2,					/* cost of FCHS instruction.  */
   56,					/* cost of FSQRT instruction.  */
 };
