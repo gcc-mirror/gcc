@@ -1,3 +1,11 @@
+2001-02-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	* lcm.c (compute_earliest): Let EXIT_BLOCK be handled as a regular
+	basic block.
+	(optimize_mode_switching) [NORMAL_MODE]: Set up EXIT_BLOCK as a
+	regular basic block, and arrange for all edges into it to switch
+	to normal mode.
+
 2001-02-11  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* Makefile.in (distclean): Do not remove .gdbinit.

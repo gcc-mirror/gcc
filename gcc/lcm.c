@@ -205,7 +205,11 @@ compute_earliest (edge_list, n_exprs, antin, antout, avout, kill, earliest)
 	sbitmap_copy (earliest[x], antin[succ->index]);
       else
         {
-	  if (succ == EXIT_BLOCK_PTR)
+	  /* We refer to the EXIT_BLOCK index, instead of testing for
+	     EXIT_BLOCK_PTR, so that EXIT_BLOCK_PTR's index can be
+	     changed so as to pretend it's a regular block, so that
+	     its antin can be taken into account.  */
+	  if (succ->index == EXIT_BLOCK)
 	    sbitmap_zero (earliest[x]);
 	  else
 	    {
@@ -1019,6 +1023,11 @@ optimize_mode_switching (file)
   int n_entities;
   int max_num_modes = 0;
 
+#ifdef NORMAL_MODE
+  /* Increment n_basic_blocks before allocating bb_info.  */
+  n_basic_blocks++;
+#endif
+
   for (e = N_ENTITIES - 1, n_entities = 0; e >= 0; e--)
     if (OPTIMIZE_MODE_SWITCHING (e))
       {
@@ -1030,8 +1039,26 @@ optimize_mode_switching (file)
 	  max_num_modes = num_modes[e];
       }
 
+#ifdef NORMAL_MODE
+  /* Decrement it back in case we return below.  */
+  n_basic_blocks--;
+#endif
+
   if (! n_entities)
     return 0;
+
+#ifdef NORMAL_MODE
+  /* We're going to pretend the EXIT_BLOCK is a regular basic block,
+     so that switching back to normal mode when entering the
+     EXIT_BLOCK isn't optimized away.  We do this by incrementing the
+     basic block count, growing the VARRAY of basic_block_info and
+     appending the EXIT_BLOCK_PTR to it.  */
+  n_basic_blocks++;
+  if (VARRAY_SIZE (basic_block_info) < n_basic_blocks)
+    VARRAY_GROW (basic_block_info, n_basic_blocks);
+  BASIC_BLOCK (n_basic_blocks - 1) = EXIT_BLOCK_PTR;
+  EXIT_BLOCK_PTR->index = n_basic_blocks - 1;
+#endif
 
   /* Create the bitmap vectors.  */
 
@@ -1087,29 +1114,6 @@ optimize_mode_switching (file)
 		}
 	    }
 
-	  /* If this is a predecessor of the exit block, and we must 
-	     force a mode on exit, make note of that.  */
-#ifdef NORMAL_MODE
-	  if (NORMAL_MODE (e) != no_mode && last_mode != NORMAL_MODE (e))
-	    for (eg = BASIC_BLOCK (bb)->succ; eg; eg = eg->succ_next)
-	      if (eg->dest == EXIT_BLOCK_PTR)
-		{
-		  rtx insn = BLOCK_END (bb);
-
-		  /* Find the last insn before a USE and/or JUMP.  */
-		  while ((GET_CODE (insn) == INSN 
-			      && GET_CODE (PATTERN (insn)) == USE)
-			  || GET_CODE (insn) == JUMP_INSN)
-		    insn = PREV_INSN (insn);
-		  if (insn != BLOCK_END (bb) && NEXT_INSN (insn))
-		    insn = NEXT_INSN (insn);
-		  last_mode = NORMAL_MODE (e);
-		  add_seginfo (info + bb, 
-		      new_seginfo (last_mode, insn, bb, live_now));
-		  RESET_BIT (transp[bb], j);
-		} 
-#endif
-
 	  info[bb].computing = last_mode;
 	  /* Check for blocks without ANY mode requirements.  */
 	  if (last_mode == no_mode)
@@ -1149,6 +1153,9 @@ optimize_mode_switching (file)
 		    info[bb].seginfo->mode = no_mode;
 		  }
 	      }
+
+	    bb = n_basic_blocks - 1;
+	    info[bb].seginfo->mode = mode;
 	  }
       }
 #endif /* NORMAL_MODE */
@@ -1223,14 +1230,27 @@ optimize_mode_switching (file)
 	      mode_set = gen_sequence ();
 	      end_sequence ();
 
-	      /* If this is an abnormal edge, we'll insert at the end of the
-		 previous block.  */
+	      /* If this is an abnormal edge, we'll insert at the end
+		 of the previous block.  */
 	      if (eg->flags & EDGE_ABNORMAL)
 		{
 		  if (GET_CODE (src_bb->end) == JUMP_INSN)
 		    emit_insn_before (mode_set, src_bb->end);
-		  else
+		  /* It doesn't make sense to switch to normal mode
+		     after a CALL_INSN, so we're going to abort if we
+		     find one.  The cases in which a CALL_INSN may
+		     have an abnormal edge are sibcalls and EH edges.
+		     In the case of sibcalls, the dest basic-block is
+		     the EXIT_BLOCK, that runs in normal mode; it is
+		     assumed that a sibcall insn requires normal mode
+		     itself, so no mode switch would be required after
+		     the call (it wouldn't make sense, anyway).  In
+		     the case of EH edges, EH entry points also start
+		     in normal mode, so a similar reasoning applies.  */
+		  else if (GET_CODE (src_bb->end) == INSN)
 		    src_bb->end = emit_insn_after (mode_set, src_bb->end);
+		  else
+		    abort ();
 		  bb_info[j][src_bb->index].computing = mode;
 		  RESET_BIT (transp[src_bb->index], j);
 		}
@@ -1253,10 +1273,56 @@ optimize_mode_switching (file)
       free_edge_list (edge_list);
     }
 
+#ifdef NORMAL_MODE
+  /* Restore the special status of EXIT_BLOCK.  */
+  n_basic_blocks--;
+  VARRAY_POP (basic_block_info);
+  EXIT_BLOCK_PTR->index = EXIT_BLOCK;
+#endif
+  
   /* Now output the remaining mode sets in all the segments.  */
   for (j = n_entities - 1; j >= 0; j--)
     {
       int no_mode = num_modes[entity_map[j]];
+
+#ifdef NORMAL_MODE
+      if (bb_info[j][n_basic_blocks].seginfo->mode != no_mode)
+	{
+	  edge eg;
+	  struct seginfo *ptr = bb_info[j][n_basic_blocks].seginfo;
+
+	  for (eg = EXIT_BLOCK_PTR->pred; eg; eg = eg->pred_next)
+	    {
+	      rtx mode_set;
+
+	      if (bb_info[j][eg->src->index].computing == ptr->mode)
+		continue;
+
+	      start_sequence ();
+	      EMIT_MODE_SET (entity_map[j], ptr->mode, ptr->regs_live);
+	      mode_set = gen_sequence ();
+	      end_sequence ();
+
+	      /* If this is an abnormal edge, we'll insert at the end of the
+		 previous block.  */
+	      if (eg->flags & EDGE_ABNORMAL)
+		{
+		  if (GET_CODE (eg->src->end) == JUMP_INSN)
+		    emit_insn_before (mode_set, eg->src->end);
+		  else if (GET_CODE (eg->src->end) == INSN)
+		    eg->src->end = emit_insn_after (mode_set, eg->src->end);
+		  else
+		    abort ();
+		}
+	      else
+		{
+		  need_commit = 1;
+		  insert_insn_on_edge (mode_set, eg);
+		}
+	    }
+	  
+	}
+#endif
 
       for (bb = n_basic_blocks - 1; bb >= 0; bb--)
 	{
