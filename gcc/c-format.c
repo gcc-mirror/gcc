@@ -1500,6 +1500,7 @@ check_format_info_recurse (status, res, info, format_tree, params, arg_num)
      int arg_num;
 {
   int format_length;
+  HOST_WIDE_INT offset;
   const char *format_chars;
   tree array_size = 0;
   tree array_init;
@@ -1589,6 +1590,35 @@ check_format_info_recurse (status, res, info, format_tree, params, arg_num)
       return;
     }
 
+  offset = 0;
+  if (TREE_CODE (format_tree) == PLUS_EXPR)
+    {
+      tree arg0, arg1;
+
+      arg0 = TREE_OPERAND (format_tree, 0);
+      arg1 = TREE_OPERAND (format_tree, 1);
+      STRIP_NOPS (arg0);
+      STRIP_NOPS (arg1);
+      if (TREE_CODE (arg1) == INTEGER_CST)
+	format_tree = arg0;
+      else if (TREE_CODE (arg0) == INTEGER_CST)
+	{
+	  format_tree = arg1;
+	  arg1 = arg0;
+	}
+      else
+	{
+	  res->number_non_literal++;
+	  return;
+	}
+      if (!host_integerp (arg1, 1))
+	{
+	  res->number_non_literal++;
+	  return;
+	}
+
+      offset = TREE_INT_CST_LOW (arg1);
+    }
   if (TREE_CODE (format_tree) != ADDR_EXPR)
     {
       res->number_non_literal++;
@@ -1631,6 +1661,16 @@ check_format_info_recurse (status, res, info, format_tree, params, arg_num)
 	      && format_length > array_size_value)
 	    format_length = array_size_value;
 	}
+    }
+  if (offset)
+    {
+      if (offset >= format_length)
+	{
+	  res->number_non_literal++;
+	  return;
+	}
+      format_chars += offset;
+      format_length -= offset;
     }
   if (format_length < 1)
     {
