@@ -69,8 +69,6 @@ print_location (pfile, pos)
       else
 	fprintf (stderr, "%s:%u:%u:", map->to_file, line, col);
 
-      if (buffer->type == BUF_PRAGMA)
-	fprintf (stderr, "_Pragma:");
       fputc (' ', stderr);
     }
 }

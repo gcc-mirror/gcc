@@ -317,7 +317,8 @@ stack_include_file (pfile, inc)
     inc->include_count++;
 
   /* Push a buffer.  */
-  fp = cpp_push_buffer (pfile, inc->buffer, inc->st.st_size, BUF_FILE, 0);
+  fp = cpp_push_buffer (pfile, inc->buffer, inc->st.st_size,
+			/* from_stage3 */ CPP_OPTION (pfile, preprocessed), 0);
   fp->inc = inc;
   fp->inc->refcnt++;
 
@@ -720,14 +721,12 @@ _cpp_read_file (pfile, fname)
 }
 
 /* Do appropriate cleanup when a file buffer is popped off the input
-   stack.  */
+   stack.  Push the next -include file, if any remain.  */
 void
-_cpp_pop_file_buffer (pfile, buf)
+_cpp_pop_file_buffer (pfile, inc)
      cpp_reader *pfile;
-     cpp_buffer *buf;
+     struct include_file *inc;
 {
-  struct include_file *inc = buf->inc;
-
   /* Record the inclusion-preventing macro, which could be NULL
      meaning no controlling macro.  */
   if (pfile->mi_valid && inc->cmacro == NULL)
@@ -739,6 +738,16 @@ _cpp_pop_file_buffer (pfile, buf)
   inc->refcnt--;
   if (inc->refcnt == 0 && DO_NOT_REREAD (inc))
     purge_cache (inc);
+
+  /* Don't generate a callback for popping the main file.  */
+  if (pfile->buffer)
+    {
+      _cpp_do_file_change (pfile, LC_LEAVE, 0, 0, 0);
+
+      /* Finally, push the next -included file, if any.  */
+      if (!pfile->buffer->prev)
+	_cpp_push_next_buffer (pfile);
+    }
 }
 
 /* Returns the first place in the include chain to start searching for
@@ -772,8 +781,7 @@ search_from (pfile, type)
       if (dlen)
 	{
 	  /* We don't guarantee NAME is null-terminated.  This saves
-	     allocating and freeing memory, and duplicating it when faking
-	     buffers in cpp_push_buffer.  Drop a trailing '/'.  */
+	     allocating and freeing memory.  Drop a trailing '/'.  */
 	  buffer->dir.name = buffer->inc->name;
 	  if (dlen > 1)
 	    dlen--;

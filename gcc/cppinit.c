@@ -1546,15 +1546,7 @@ cpp_handle_option (pfile, argc, argv)
 
 	      if (arg[1] == '\0')
 		{
-		  struct pending_option *o1, *o2;
-
-		  o1 = pend->directive_head;
-		  while (o1)
-		    {
-		      o2 = o1->next;
-		      free (o1);
-		      o1 = o2;
-		    }
+		  free_chain (pend->directive_head);
 		  pend->directive_head = NULL;
 		  pend->directive_tail = NULL;
 		}

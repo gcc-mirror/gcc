@@ -81,8 +81,8 @@ const struct token_spelling token_spellings [N_TTYPES] = {TTYPE_TABLE };
 #define TOKEN_NAME(token) (token_spellings[(token)->type].name)
 
 static cppchar_t handle_newline PARAMS ((cpp_reader *, cppchar_t));
-static cppchar_t skip_escaped_newlines PARAMS ((cpp_buffer *, cppchar_t));
-static cppchar_t get_effective_char PARAMS ((cpp_buffer *));
+static cppchar_t skip_escaped_newlines PARAMS ((cpp_reader *, cppchar_t));
+static cppchar_t get_effective_char PARAMS ((cpp_reader *));
 
 static int skip_block_comment PARAMS ((cpp_reader *));
 static int skip_line_comment PARAMS ((cpp_reader *));
@@ -95,7 +95,7 @@ static void parse_string PARAMS ((cpp_reader *, cpp_token *, cppchar_t));
 static void unterminated PARAMS ((cpp_reader *, int));
 static int trigraph_ok PARAMS ((cpp_reader *, cppchar_t));
 static void save_comment PARAMS ((cpp_reader *, cpp_token *, const U_CHAR *));
-static void lex_percent PARAMS ((cpp_buffer *, cpp_token *));
+static void lex_percent PARAMS ((cpp_reader *, cpp_token *));
 static void lex_dot PARAMS ((cpp_reader *, cpp_token *));
 static int name_p PARAMS ((cpp_reader *, const cpp_string *));
 static int maybe_read_ucs PARAMS ((cpp_reader *, const unsigned char **,
@@ -205,10 +205,12 @@ trigraph_ok (pfile, from_char)
    been placed in buffer->read_ahead.  This routine performs
    preprocessing stages 1 and 2 of the ISO C standard.  */
 static cppchar_t
-skip_escaped_newlines (buffer, next)
-     cpp_buffer *buffer;
+skip_escaped_newlines (pfile, next)
+     cpp_reader *pfile;
      cppchar_t next;
 {
+  cpp_buffer *buffer = pfile->buffer;
+
   /* Only do this if we apply stages 1 and 2.  */
   if (!buffer->from_stage3)
     {
@@ -233,7 +235,7 @@ skip_escaped_newlines (buffer, next)
 
 	      next1 = *buffer->cur++;
 	      if (!_cpp_trigraph_map[next1]
-		  || !trigraph_ok (buffer->pfile, next1))
+		  || !trigraph_ok (pfile, next1))
 		{
 		  RESTORE_STATE ();
 		  break;
@@ -263,13 +265,12 @@ skip_escaped_newlines (buffer, next)
 	      break;
 	    }
 
-	  if (space && !buffer->pfile->state.lexing_comment)
-	    cpp_warning (buffer->pfile,
-			 "backslash and newline separated by space");
+	  if (space && !pfile->state.lexing_comment)
+	    cpp_warning (pfile, "backslash and newline separated by space");
 
-	  next = handle_newline (buffer->pfile, next1);
+	  next = handle_newline (pfile, next1);
 	  if (next == EOF)
-	    cpp_pedwarn (buffer->pfile, "backslash-newline at end of file");
+	    cpp_pedwarn (pfile, "backslash-newline at end of file");
 	}
       while (next == '\\' || next == '?');
     }
@@ -282,9 +283,10 @@ skip_escaped_newlines (buffer, next)
    an arbitrary string of escaped newlines.  The common case of no
    trigraphs or escaped newlines falls through quickly.  */
 static cppchar_t
-get_effective_char (buffer)
-     cpp_buffer *buffer;
+get_effective_char (pfile)
+     cpp_reader *pfile;
 {
+  cpp_buffer *buffer = pfile->buffer;
   cppchar_t next = EOF;
 
   if (buffer->cur < buffer->rlimit)
@@ -296,7 +298,7 @@ get_effective_char (buffer)
 	 UCNs, which, depending upon lexer state, we will handle in
 	 the future.  */
       if (next == '?' || next == '\\')
-	next = skip_escaped_newlines (buffer, next);
+	next = skip_escaped_newlines (pfile, next);
     }
 
   buffer->read_ahead = next;
@@ -322,7 +324,7 @@ skip_block_comment (pfile)
       /* FIXME: For speed, create a new character class of characters
 	 of interest inside block comments.  */
       if (c == '?' || c == '\\')
-	c = skip_escaped_newlines (buffer, c);
+	c = skip_escaped_newlines (pfile, c);
 
       /* People like decorating comments with '*', so check for '/'
 	 instead for efficiency.  */
@@ -383,7 +385,7 @@ skip_line_comment (pfile)
 
       c = *buffer->cur++;
       if (c == '?' || c == '\\')
-	c = skip_escaped_newlines (buffer, c);
+	c = skip_escaped_newlines (pfile, c);
     }
   while (!is_vspace (c));
 
@@ -502,7 +504,7 @@ parse_identifier (pfile, c)
       /* Potential escaped newline?  */
       if (c != '?' && c != '\\')
 	break;
-      c = skip_escaped_newlines (buffer, c);
+      c = skip_escaped_newlines (pfile, c);
     }
   while (is_idchar (c));
 
@@ -584,7 +586,7 @@ parse_number (pfile, number, c, leading_period)
       /* Potential escaped newline?  */
       if (c != '?' && c != '\\')
 	break;
-      c = skip_escaped_newlines (buffer, c);
+      c = skip_escaped_newlines (pfile, c);
     }
   while (is_numchar (c) || c == '.' || VALID_SIGN (c, dest[-1]));
 
@@ -680,7 +682,7 @@ parse_string (pfile, token, terminator)
 
       /* Handle trigraphs, escaped newlines etc.  */
       if (c == '?' || c == '\\')
-	c = skip_escaped_newlines (buffer, c);
+	c = skip_escaped_newlines (pfile, c);
 
       if (c == terminator && unescaped_terminator_p (pfile, dest))
 	{
@@ -764,16 +766,17 @@ save_comment (pfile, token, from)
 /* Subroutine of lex_token to handle '%'.  A little tricky, since we
    want to avoid stepping back when lexing %:%X.  */
 static void
-lex_percent (buffer, result)
-     cpp_buffer *buffer;
+lex_percent (pfile, result)
+     cpp_reader *pfile;
      cpp_token *result;
 {
+  cpp_buffer *buffer= pfile->buffer;
   cppchar_t c;
 
   result->type = CPP_MOD;
   /* Parsing %:%X could leave an extra character.  */
   if (buffer->extra_char == EOF)
-    c = get_effective_char (buffer);
+    c = get_effective_char (pfile);
   else
     {
       c = buffer->read_ahead = buffer->extra_char;
@@ -782,15 +785,15 @@ lex_percent (buffer, result)
 
   if (c == '=')
     ACCEPT_CHAR (CPP_MOD_EQ);
-  else if (CPP_OPTION (buffer->pfile, digraphs))
+  else if (CPP_OPTION (pfile, digraphs))
     {
       if (c == ':')
 	{
 	  result->flags |= DIGRAPH;
 	  ACCEPT_CHAR (CPP_HASH);
-	  if (get_effective_char (buffer) == '%')
+	  if (get_effective_char (pfile) == '%')
 	    {
-	      buffer->extra_char = get_effective_char (buffer);
+	      buffer->extra_char = get_effective_char (pfile);
 	      if (buffer->extra_char == ':')
 		{
 		  buffer->extra_char = EOF;
@@ -822,7 +825,7 @@ lex_dot (pfile, result)
 
   /* Parsing ..X could leave an extra character.  */
   if (buffer->extra_char == EOF)
-    c = get_effective_char (buffer);
+    c = get_effective_char (pfile);
   else
     {
       c = buffer->read_ahead = buffer->extra_char;
@@ -840,7 +843,7 @@ lex_dot (pfile, result)
       result->type = CPP_DOT;
       if (c == '.')
 	{
-	  buffer->extra_char = get_effective_char (buffer);
+	  buffer->extra_char = get_effective_char (pfile);
 	  if (buffer->extra_char == '.')
 	    {
 	      buffer->extra_char = EOF;
@@ -914,9 +917,6 @@ _cpp_lex_token (pfile, result)
 	      unsigned char stop = buffer->return_at_eof;
 
 	      _cpp_pop_buffer (pfile);
-	      /* Push the next -included file, if any.  */
-	      if (!pfile->buffer->prev)
-		_cpp_push_next_buffer (pfile);
 	      if (!stop)
 		goto next_token;
 	    }
@@ -963,7 +963,7 @@ _cpp_lex_token (pfile, result)
       {
 	unsigned int line = pfile->line;
 
-	c = skip_escaped_newlines (buffer, c);
+	c = skip_escaped_newlines (pfile, c);
 	if (line != pfile->line)
 	  /* We had at least one escaped newline of some sort, and the
 	     next character is in buffer->read_ahead.  Update the
@@ -1034,7 +1034,7 @@ _cpp_lex_token (pfile, result)
       /* A potential block or line comment.  */
       comment_start = buffer->cur;
       result->type = CPP_DIV;
-      c = get_effective_char (buffer);
+      c = get_effective_char (pfile);
       if (c == '=')
 	ACCEPT_CHAR (CPP_DIV_EQ);
       if (c != '/' && c != '*')
@@ -1091,19 +1091,19 @@ _cpp_lex_token (pfile, result)
 	}
 
       result->type = CPP_LESS;
-      c = get_effective_char (buffer);
+      c = get_effective_char (pfile);
       if (c == '=')
 	ACCEPT_CHAR (CPP_LESS_EQ);
       else if (c == '<')
 	{
 	  ACCEPT_CHAR (CPP_LSHIFT);
-	  if (get_effective_char (buffer) == '=')
+	  if (get_effective_char (pfile) == '=')
 	    ACCEPT_CHAR (CPP_LSHIFT_EQ);
 	}
       else if (c == '?' && CPP_OPTION (pfile, cplusplus))
 	{
 	  ACCEPT_CHAR (CPP_MIN);
-	  if (get_effective_char (buffer) == '=')
+	  if (get_effective_char (pfile) == '=')
 	    ACCEPT_CHAR (CPP_MIN_EQ);
 	}
       else if (c == ':' && CPP_OPTION (pfile, digraphs))
@@ -1120,25 +1120,25 @@ _cpp_lex_token (pfile, result)
 
     case '>':
       result->type = CPP_GREATER;
-      c = get_effective_char (buffer);
+      c = get_effective_char (pfile);
       if (c == '=')
 	ACCEPT_CHAR (CPP_GREATER_EQ);
       else if (c == '>')
 	{
 	  ACCEPT_CHAR (CPP_RSHIFT);
-	  if (get_effective_char (buffer) == '=')
+	  if (get_effective_char (pfile) == '=')
 	    ACCEPT_CHAR (CPP_RSHIFT_EQ);
 	}
       else if (c == '?' && CPP_OPTION (pfile, cplusplus))
 	{
 	  ACCEPT_CHAR (CPP_MAX);
-	  if (get_effective_char (buffer) == '=')
+	  if (get_effective_char (pfile) == '=')
 	    ACCEPT_CHAR (CPP_MAX_EQ);
 	}
       break;
 
     case '%':
-      lex_percent (buffer, result);
+      lex_percent (pfile, result);
       if (result->type == CPP_HASH)
 	goto do_hash;
       break;
@@ -1149,7 +1149,7 @@ _cpp_lex_token (pfile, result)
 
     case '+':
       result->type = CPP_PLUS;
-      c = get_effective_char (buffer);
+      c = get_effective_char (pfile);
       if (c == '=')
 	ACCEPT_CHAR (CPP_PLUS_EQ);
       else if (c == '+')
@@ -1158,12 +1158,12 @@ _cpp_lex_token (pfile, result)
 
     case '-':
       result->type = CPP_MINUS;
-      c = get_effective_char (buffer);
+      c = get_effective_char (pfile);
       if (c == '>')
 	{
 	  ACCEPT_CHAR (CPP_DEREF);
 	  if (CPP_OPTION (pfile, cplusplus)
-	      && get_effective_char (buffer) == '*')
+	      && get_effective_char (pfile) == '*')
 	    ACCEPT_CHAR (CPP_DEREF_STAR);
 	}
       else if (c == '=')
@@ -1174,25 +1174,25 @@ _cpp_lex_token (pfile, result)
 
     case '*':
       result->type = CPP_MULT;
-      if (get_effective_char (buffer) == '=')
+      if (get_effective_char (pfile) == '=')
 	ACCEPT_CHAR (CPP_MULT_EQ);
       break;
 
     case '=':
       result->type = CPP_EQ;
-      if (get_effective_char (buffer) == '=')
+      if (get_effective_char (pfile) == '=')
 	ACCEPT_CHAR (CPP_EQ_EQ);
       break;
 
     case '!':
       result->type = CPP_NOT;
-      if (get_effective_char (buffer) == '=')
+      if (get_effective_char (pfile) == '=')
 	ACCEPT_CHAR (CPP_NOT_EQ);
       break;
 
     case '&':
       result->type = CPP_AND;
-      c = get_effective_char (buffer);
+      c = get_effective_char (pfile);
       if (c == '=')
 	ACCEPT_CHAR (CPP_AND_EQ);
       else if (c == '&')
@@ -1207,7 +1207,7 @@ _cpp_lex_token (pfile, result)
 	  buffer->extra_char = EOF;
 	}
       else
-	c = get_effective_char (buffer);
+	c = get_effective_char (pfile);
 
       if (c == '#')
 	{
@@ -1247,7 +1247,7 @@ _cpp_lex_token (pfile, result)
 
     case '|':
       result->type = CPP_OR;
-      c = get_effective_char (buffer);
+      c = get_effective_char (pfile);
       if (c == '=')
 	ACCEPT_CHAR (CPP_OR_EQ);
       else if (c == '|')
@@ -1256,13 +1256,13 @@ _cpp_lex_token (pfile, result)
 
     case '^':
       result->type = CPP_XOR;
-      if (get_effective_char (buffer) == '=')
+      if (get_effective_char (pfile) == '=')
 	ACCEPT_CHAR (CPP_XOR_EQ);
       break;
 
     case ':':
       result->type = CPP_COLON;
-      c = get_effective_char (buffer);
+      c = get_effective_char (pfile);
       if (c == ':' && CPP_OPTION (pfile, cplusplus))
 	ACCEPT_CHAR (CPP_SCOPE);
       else if (c == '>' && CPP_OPTION (pfile, digraphs))

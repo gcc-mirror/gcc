@@ -83,7 +83,6 @@ static void check_eol		PARAMS ((cpp_reader *));
 static void start_directive	PARAMS ((cpp_reader *));
 static void end_directive	PARAMS ((cpp_reader *, int));
 static void run_directive	PARAMS ((cpp_reader *, int,
-					 enum cpp_buffer_type,
 					 const char *, size_t));
 static int glue_header_name	PARAMS ((cpp_reader *, cpp_token *));
 static int  parse_include	PARAMS ((cpp_reader *, cpp_token *));
@@ -394,16 +393,14 @@ _cpp_handle_directive (pfile, indented)
 /* Directive handler wrapper used by the command line option
    processor.  */
 static void
-run_directive (pfile, dir_no, type, buf, count)
+run_directive (pfile, dir_no, buf, count)
      cpp_reader *pfile;
      int dir_no;
-     enum cpp_buffer_type type;
      const char *buf;
      size_t count;
 {
-  cpp_buffer *buffer;
-
-  buffer = cpp_push_buffer (pfile, (const U_CHAR *) buf, count, type, 1);
+  cpp_push_buffer (pfile, (const U_CHAR *) buf, count,
+		   /* from_stage3 */ true, 1);
   start_directive (pfile);
   pfile->state.prevent_expansion++;
   pfile->directive = &dtable[dir_no];
@@ -1160,7 +1157,7 @@ _cpp_do__Pragma (pfile)
   else
     {
       buffer = destringize (&string.val.str, &len);
-      run_directive (pfile, T_PRAGMA, BUF_PRAGMA, (char *) buffer, len);
+      run_directive (pfile, T_PRAGMA, (char *) buffer, len);
       free ((PTR) buffer);
       pfile->lexer_pos = orig_pos;
       pfile->line = pfile->lexer_pos.line;
@@ -1627,7 +1624,7 @@ cpp_define (pfile, str)
       buf[count++] = '1';
     }
 
-  run_directive (pfile, T_DEFINE, BUF_CL_OPTION, buf, count);
+  run_directive (pfile, T_DEFINE, buf, count);
 }
 
 /* Slight variant of the above for use by initialize_builtins.  */
@@ -1636,7 +1633,7 @@ _cpp_define_builtin (pfile, str)
      cpp_reader *pfile;
      const char *str;
 {
-  run_directive (pfile, T_DEFINE, BUF_BUILTIN, str, strlen (str));
+  run_directive (pfile, T_DEFINE, str, strlen (str));
 }
 
 /* Process MACRO as if it appeared as the body of an #undef.  */
@@ -1645,7 +1642,7 @@ cpp_undef (pfile, macro)
      cpp_reader *pfile;
      const char *macro;
 {
-  run_directive (pfile, T_UNDEF, BUF_CL_OPTION, macro, strlen (macro));
+  run_directive (pfile, T_UNDEF, macro, strlen (macro));
 }
 
 /* Process the string STR as if it appeared as the body of a #assert.  */
@@ -1688,7 +1685,7 @@ handle_assertion (pfile, str, type)
       str = buf;
     }
 
-  run_directive (pfile, type, BUF_CL_OPTION, str, count);
+  run_directive (pfile, type, str, count);
 }
 
 /* The number of errors for a given reader.  */
@@ -1736,11 +1733,11 @@ cpp_set_callbacks (pfile, cb)
    doesn't fail.  It does not generate a file change call back; that
    is the responsibility of the caller.  */
 cpp_buffer *
-cpp_push_buffer (pfile, buffer, len, type, return_at_eof)
+cpp_push_buffer (pfile, buffer, len, from_stage3, return_at_eof)
      cpp_reader *pfile;
      const U_CHAR *buffer;
      size_t len;
-     enum cpp_buffer_type type;
+     int from_stage3;
      int return_at_eof;
 {
   cpp_buffer *new = xobnew (&pfile->buffer_ob, cpp_buffer);
@@ -1754,14 +1751,8 @@ cpp_push_buffer (pfile, buffer, len, type, return_at_eof)
   /* No read ahead or extra char initially.  */
   new->read_ahead = EOF;
   new->extra_char = EOF;
-
-  /* Preprocessed files, builtins, _Pragma and command line
-     options don't do trigraph and escaped newline processing.  */
-  new->from_stage3 = type != BUF_FILE || CPP_OPTION (pfile, preprocessed);
-
-  new->type = type;
+  new->from_stage3 = from_stage3;
   new->prev = pfile->buffer;
-  new->pfile = pfile;
   new->return_at_eof = return_at_eof;
 
   pfile->buffer = new;
@@ -1785,26 +1776,20 @@ _cpp_pop_buffer (pfile)
     cpp_error_with_line (pfile, ifs->pos.line, ifs->pos.col,
 			 "unterminated #%s", dtable[ifs->type].name);
 
-  /* Update the reader's buffer before _cpp_do_file_change.  */
-  pfile->buffer = buffer->prev;
-
-  if (buffer->type == BUF_FILE)
-    {
-      /* Callbacks are not generated for popping the main file.  */
-      if (buffer->prev)
-	_cpp_do_file_change (pfile, LC_LEAVE, 0, 0, 0);
-
-      _cpp_pop_file_buffer (pfile, buffer);
-    }
-
-  obstack_free (&pfile->buffer_ob, buffer);
-
   /* The output line can fall out of sync if we missed the final
      newline from the previous buffer, for example because of an
      unterminated comment.  Similarly, skipping needs to be cleared in
      case of a missing #endif.  */
   pfile->lexer_pos.output_line = pfile->line;
   pfile->state.skipping = 0;
+
+  /* Update the reader's buffer before _cpp_do_file_change.  */
+  pfile->buffer = buffer->prev;
+
+  if (buffer->inc)
+    _cpp_pop_file_buffer (pfile, buffer->inc);
+
+  obstack_free (&pfile->buffer_ob, buffer);
 }
 
 void
