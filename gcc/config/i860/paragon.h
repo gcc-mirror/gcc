@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
     {"xr", -1, "Do not generate code which uses the FPU"},      \
     {"noieee", -1, "Do not generate code which uses the FPU"},	\
     {"nx", 2, NULL},                  \
-    { "", TARGET_DEFAULT}}
+    { "", TARGET_DEFAULT, NULL}}
  
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT 1

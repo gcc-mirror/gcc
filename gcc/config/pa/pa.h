@@ -171,7 +171,7 @@ extern int target_flags;
    {"big-switch", MASK_BIG_SWITCH, "Generate code for huge switch statements"},	\
    {"no-big-switch", -MASK_BIG_SWITCH, "Do not generate code for huge switch statements"},	\
    {"linker-opt", 0, "Enable linker optimizations"},		\
-   { "", TARGET_DEFAULT | TARGET_CPU_DEFAULT}}
+   { "", TARGET_DEFAULT | TARGET_CPU_DEFAULT, NULL}}
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_GAS | MASK_JUMP_IN_DELAY)

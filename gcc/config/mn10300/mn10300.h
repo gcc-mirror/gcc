@@ -49,7 +49,7 @@ extern int target_flags;
 #define TARGET_SWITCHES  \
   {{ "mult-bug",	0x1,  "Work around hardware multiply bug"},	\
    { "no-mult-bug", 	-0x1, "Do not work around hardware multiply bug"},\
-   { "", TARGET_DEFAULT}}
+   { "", TARGET_DEFAULT, NULL}}
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT 0x1

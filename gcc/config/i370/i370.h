@@ -76,7 +76,7 @@ extern int current_function_outgoing_args_size;
 #define TARGET_SWITCHES							\
 { { "char-instructions", 1, "Generate char instructions"},		\
   { "no-char-instructions", -1, "Do not generate char instructions"},	\
-  { "", TARGET_DEFAULT} }
+  { "", TARGET_DEFAULT, NULL} }
 
 /* To use IBM supplied macro function prologue and epilogue, define the
    following to 1.  Should only be needed if IBM changes the definition

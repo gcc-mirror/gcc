@@ -49,7 +49,7 @@ extern int target_flags;
 #define TARGET_SWITCHES  \
   { {"unix", 1, "Generate code the unix assembler can handle"},  \
     {"embos", -1, "Generate code an embedded assembler can handle"},  \
-    { "", TARGET_DEFAULT}}
+    { "", TARGET_DEFAULT, NULL}}
 
 /* Default target_flags if no switches specified.  */
 
