@@ -1,3 +1,12 @@
+2000-12-10  Robert Lipe <robertlipe@usa.net>
+
+	* jargrep.c (jargrep): Added null statement after case.
+
+2000-12-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* Makefile: Removed.
+	* Makefile.in: Rebuilt with `-i' and `--enable-foreign'.
+
 Tue Nov 16 15:11:36 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* Makefile.am: New file.
