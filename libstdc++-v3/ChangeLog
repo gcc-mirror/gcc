@@ -1,5 +1,10 @@
 2001-09-25  Phil Edwards  <pme@gcc.gnu.org>
 
+	* testsuite/21_strings/c_strings.cc (test01, test02):  Increase
+	`carray' size.
+
+2001-09-25  Phil Edwards  <pme@gcc.gnu.org>
+
 	* docs/html/20_util/howto.html:  Add anchor name.
 	* docs/html/23_containers/howto.html:  Line wrapping, another link.
 	* docs/html/25_algorithms/howto.html:  Another note.
