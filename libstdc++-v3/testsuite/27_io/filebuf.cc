@@ -337,7 +337,7 @@ bool test03() {
   strmsz_1 = fb_03.in_avail();
   c2 = fb_03.sungetc(); // delete the 'a'
   strmsz_2 = fb_03.in_avail();
-  test &= c2 == 'v';
+  test &= c2 == 'v'; //  test &= c2 != traits_type::eof();
   test &= strmsz_1 + 1 == strmsz_2;
   //test for _in_cur == _in_beg
   for (int i = 50; i < 32 + 29; ++i)

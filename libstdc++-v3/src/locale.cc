@@ -338,44 +338,44 @@ namespace std {
 	  // (constructor for (*the_classic_locale) adds a third)
 	    
 	  // collate category
-	  _S_classic->_M_init_facet(new std::collate<char>);
+	  _S_classic->_M_facet_init(new std::collate<char>);
 	  
 	  // ctype category
-	  _S_classic->_M_init_facet(new std::ctype<char>);
-	  _S_classic->_M_init_facet(new codecvt<char, char, mbstate_t>);
+	  _S_classic->_M_facet_init(new std::ctype<char>);
+	  _S_classic->_M_facet_init(new codecvt<char, char, mbstate_t>);
 
 	  // monetary category
-	  _S_classic->_M_init_facet(new moneypunct<char, false>);
-	  _S_classic->_M_init_facet(new moneypunct<char,true >);
-	  _S_classic->_M_init_facet(new money_get<char>);
-	  _S_classic->_M_init_facet(new money_put<char>);
+	  _S_classic->_M_facet_init(new moneypunct<char, false>);
+	  _S_classic->_M_facet_init(new moneypunct<char,true >);
+	  _S_classic->_M_facet_init(new money_get<char>);
+	  _S_classic->_M_facet_init(new money_put<char>);
 	  
 	  // numeric category
-	  _S_classic->_M_init_facet(new numpunct<char>);
-	  _S_classic->_M_init_facet(new num_get<char>);
-	  _S_classic->_M_init_facet(new num_put<char>);
+	  _S_classic->_M_facet_init(new numpunct<char>);
+	  _S_classic->_M_facet_init(new num_get<char>);
+	  _S_classic->_M_facet_init(new num_put<char>);
 	  
 	  // time category
-	  _S_classic->_M_init_facet(new time_get<char>);
-	  _S_classic->_M_init_facet(new time_put<char>);
+	  _S_classic->_M_facet_init(new time_get<char>);
+	  _S_classic->_M_facet_init(new time_put<char>);
 	  
 	  // messages category
-	  _S_classic->_M_init_facet(new std::messages<char>);
+	  _S_classic->_M_facet_init(new std::messages<char>);
 
 #ifdef  _GLIBCPP_USE_WCHAR_T
-	  _S_classic->_M_init_facet(new std::collate<wchar_t>);
-	  _S_classic->_M_init_facet(new std::ctype<wchar_t>);
-	  _S_classic->_M_init_facet(new codecvt<wchar_t, char, mbstate_t>);
-	  _S_classic->_M_init_facet(new moneypunct<wchar_t, false>);
-	  _S_classic->_M_init_facet(new moneypunct<wchar_t,true >);
-	  _S_classic->_M_init_facet(new money_get<wchar_t>);
-	  _S_classic->_M_init_facet(new money_put<wchar_t>);
-	  _S_classic->_M_init_facet(new numpunct<wchar_t>);
-	  _S_classic->_M_init_facet(new num_get<wchar_t>);
-	  _S_classic->_M_init_facet(new num_put<wchar_t>);
-	  _S_classic->_M_init_facet(new time_get<wchar_t>);
-	  _S_classic->_M_init_facet(new time_put<wchar_t>);
-	  _S_classic->_M_init_facet(new std::messages<wchar_t>);
+	  _S_classic->_M_facet_init(new std::collate<wchar_t>);
+	  _S_classic->_M_facet_init(new std::ctype<wchar_t>);
+	  _S_classic->_M_facet_init(new codecvt<wchar_t, char, mbstate_t>);
+	  _S_classic->_M_facet_init(new moneypunct<wchar_t, false>);
+	  _S_classic->_M_facet_init(new moneypunct<wchar_t,true >);
+	  _S_classic->_M_facet_init(new money_get<wchar_t>);
+	  _S_classic->_M_facet_init(new money_put<wchar_t>);
+	  _S_classic->_M_facet_init(new numpunct<wchar_t>);
+	  _S_classic->_M_facet_init(new num_get<wchar_t>);
+	  _S_classic->_M_facet_init(new num_put<wchar_t>);
+	  _S_classic->_M_facet_init(new time_get<wchar_t>);
+	  _S_classic->_M_facet_init(new time_put<wchar_t>);
+	  _S_classic->_M_facet_init(new std::messages<wchar_t>);
 #endif	  
 
 	  // finesse static init order hassles

@@ -221,11 +221,11 @@ namespace std {
       // Data Members (public):
       // NB: This is an unsigned type, and thus represents the maximum
       // size that the allocator can hold.
-      static const size_type npos = static_cast<size_type>(-1);
+      static const size_type 	npos = static_cast<size_type>(-1);
 
     private:
       // Data Members (private):
-      mutable _Alloc_hider _M_dataplus;
+      mutable _Alloc_hider 	_M_dataplus;
 
       // The following storage is init'd to 0 by the linker, resulting
       // (carefully) in an empty string with one reference.

@@ -98,11 +98,11 @@ namespace std {
       // for an internal buffer.
       // get == input == read
       // put == output == write
-      char_type* 		_M_in_cur;	// Current read area. 
       char_type* 		_M_in_beg;  	// Start of get area. 
+      char_type* 		_M_in_cur;	// Current read area. 
       char_type* 		_M_in_end;	// End of get area. 
-      char_type* 		_M_out_cur;  	// Current put area. 
       char_type* 		_M_out_beg; 	// Start of put area. 
+      char_type* 		_M_out_cur;  	// Current put area. 
       char_type* 		_M_out_end;  	// End of put area. 
 
       // Place to stash in || out || in | out settings for current streambuf.
@@ -116,6 +116,61 @@ namespace std {
 
       // Cached use_facet<ctype>, which is based on the current locale info.
       const __ctype_type*	_M_buf_fctype;      
+
+      // Necessary bits for putback buffer management. Only used in
+      // the basic_filebuf class, as necessary for the standard
+      // requirements. The only basic_streambuf member function that
+      // needs access to these data members is in_avail...
+      // NB: pbacks of over one character are not currently supported.
+      int_type    		_M_pback_size; 
+      char_type*		_M_pback; 
+      char_type*		_M_pback_cur_save;
+      char_type*		_M_pback_end_save;
+      bool			_M_pback_init; 
+
+      // Initializes pback buffers, and moves normal buffers to safety.
+      // Assumptions:
+      // _M_in_cur has already been moved back
+      void
+      _M_pback_create()
+      {
+	if (!_M_pback_init)
+	  {
+	    int_type __dist = _M_in_end - _M_in_cur;
+	    int_type __len = min(_M_pback_size, __dist);
+	    traits_type::copy(_M_pback, _M_in_cur, __len);
+	    _M_pback_cur_save = _M_in_cur;
+	    _M_pback_end_save = _M_in_end;
+	    this->setg(_M_pback, _M_pback, _M_pback + __len);
+	    _M_pback_init = true;
+	  }
+      }
+
+      // Deactivates pback buffer contents, and restores normal buffer.
+      // Assumptions:
+      // The pback buffer has only moved forward.
+      void
+      _M_pback_destroy()
+      {
+	if (_M_pback_init)
+	  {
+	    // Length _M_in_cur moved in the pback buffer.
+	    int_type __off_cur = _M_in_cur - _M_pback;
+	    
+	    // For in | out buffers, the end can be pushed back...
+	    int_type __off_end = 0;
+	    int_type __pback_len = _M_in_end - _M_pback;
+	    int_type __save_len = _M_pback_end_save - _M_buf;
+	    if (__pback_len > __save_len)
+	      __off_end = __pback_len - __save_len;
+
+	    this->setg(_M_buf, _M_pback_cur_save + __off_cur, 
+		       _M_pback_end_save + __off_end);
+	    _M_pback_cur_save = NULL;
+	    _M_pback_end_save = NULL;
+	    _M_pback_init = false;
+	  }
+      }
 
       // Correctly sets the _M_out_cur pointer, and bumps the
       // appropriate _M_*_end pointers as well. Necessary for the
@@ -195,6 +250,7 @@ namespace std {
 	_M_mode = ios_base::openmode(0);
 	_M_buf_fctype = NULL;
 	_M_buf_locale_init = false;
+
       }
 
       // Locales:
@@ -240,7 +296,16 @@ namespace std {
       { 
 	streamsize __retval;
 	if (_M_in_cur && _M_in_cur < _M_in_end)
-	  __retval = this->egptr() - this->gptr();
+	  {
+	    if (_M_pback_init)
+	      {
+		int_type __save_len =  _M_pback_end_save - _M_pback_cur_save;
+		int_type __pback_len = _M_in_cur - _M_pback;
+		__retval = __save_len - __pback_len;
+	      }
+	    else
+	      __retval = this->egptr() - this->gptr();
+	  }
 	else
 	  __retval = this->showmanyc();
 	return __retval;
@@ -289,13 +354,12 @@ namespace std {
     protected:
       basic_streambuf()
       : _M_buf(NULL), _M_buf_size(0), 
-	_M_buf_size_opt(static_cast<int_type>(BUFSIZ * sizeof(char_type))),
-	_M_buf_unified(false), _M_in_cur(0), _M_in_beg(0), _M_in_end(0), 
-	_M_out_cur(0), _M_out_beg(0), _M_out_end(0), 
-	_M_mode(ios_base::openmode(0)), _M_buf_locale(locale()), 
-	_M_buf_locale_init(false) 
-
-      { _M_buf_fctype =  &use_facet<__ctype_type>(this->getloc()); }
+      _M_buf_size_opt(static_cast<int_type>(BUFSIZ)), _M_buf_unified(false), 
+      _M_in_beg(0), _M_in_cur(0), _M_in_end(0), _M_out_beg(0), _M_out_cur(0), 
+      _M_out_end(0), _M_mode(ios_base::openmode(0)), _M_buf_locale(locale()), 
+      _M_buf_locale_init(false), _M_pback_size(1), _M_pback(NULL), 
+      _M_pback_cur_save(NULL), _M_pback_end_save(NULL), _M_pback_init(false)
+      { _M_buf_fctype = &use_facet<__ctype_type>(this->getloc()); }
 
       // Get area:
       char_type* 

@@ -39,7 +39,7 @@ namespace std
   template<typename _CharT, typename _Traits>
     void
     basic_filebuf<_CharT, _Traits>::
-    _M_init_filebuf(void)
+    _M_filebuf_init()
     {
       _M_buf_unified = true; // Tie input to output for basic_filebuf.
       _M_buf_size = _M_buf_size_opt;
@@ -48,6 +48,30 @@ namespace std
       }
       catch(...) {
 	delete _M_file;
+	throw;
+      }
+     }
+
+  template<typename _CharT, typename _Traits>
+    void
+    basic_filebuf<_CharT, _Traits>::
+    _M_allocate_buffers()
+    {
+      // Allocate internal buffer.
+      try {
+	_M_buf = new char_type[_M_buf_size];
+      }
+      catch(...) {
+	delete [] _M_buf;
+	throw;
+      }
+      
+      // Allocate pback buffer.
+      try {
+	_M_pback = new char_type[_M_pback_size];
+      }
+      catch(...) {
+	delete [] _M_pback;
 	throw;
       }
     }
@@ -66,23 +90,17 @@ namespace std
     _M_last_overflowed(false)
     {
       _M_fcvt = &use_facet<__codecvt_type>(this->getloc());
-      _M_init_filebuf();
+      _M_filebuf_init();
       _M_file->sys_open(__fd, __mode);
       if (this->is_open() && _M_buf_size)
 	{
+	  _M_allocate_buffers();
 	  _M_mode = __mode;
+
 	  // XXX So that istream::getc() will only need to get 1 char,
 	  // as opposed to BUF_SIZE.
 	  if (__fd == 0)
 	    _M_buf_size = 1;
-
-	  try {
-	    _M_buf = new char_type[_M_buf_size];
-	  }
-	  catch(...) {
-	    delete [] _M_buf;
-	    throw;
-	  }
 
 	  this->_M_set_indeterminate();
 	}
@@ -96,19 +114,12 @@ namespace std
       __filebuf_type *__retval = NULL;
       if (!this->is_open())
 	{
-	  _M_init_filebuf();
+	  _M_filebuf_init();
 	  _M_file->open(__s, __mode);
 	  if (this->is_open() && _M_buf_size)
 	    {
+	      _M_allocate_buffers();
 	      _M_mode = __mode;
-
-	      try {
-		_M_buf = new char_type[_M_buf_size];
-	      }
-	      catch(...) {
-		delete [] _M_buf;
-		throw;
-	      }
 	      
 	      // For time being, set both (in/out) sets  of pointers.
 	      _M_set_indeterminate();
@@ -132,7 +143,10 @@ namespace std
 	  bool __testput = _M_out_cur && _M_out_beg < _M_out_end;
 	  if (__testput)
 	    _M_really_overflow(traits_type::eof());
-	  
+
+	  // NB: Do this here so that re-opened filebufs will be cool...
+	  _M_pback_destroy();
+
 #if 0
 	  // XXX not done
 	  if (_M_last_overflowed)
@@ -142,18 +156,23 @@ namespace std
 	    }
 #endif
 
-	  if (_M_file)
-	    {
-	      delete _M_file;
-	      _M_file = NULL;
-	      _M_mode = ios_base::openmode(0);
-	      if (_M_buf_size)
-		delete [] _M_buf;
-	      _M_buf = NULL;
-	      this->setg(NULL, NULL, NULL);
-	      this->setp(NULL, NULL);
-	      __retval = this;
-	    }
+	  _M_mode = ios_base::openmode(0);
+	  if (_M_buf_size)
+	    delete [] _M_buf;
+	  _M_buf = NULL;
+	  delete [] _M_pback;
+	  _M_pback = NULL;
+	  this->setg(NULL, NULL, NULL);
+	  this->setp(NULL, NULL);
+	  __retval = this;
+	}
+
+      // Can actually allocate this file as part of an open and never
+      // have it be opened.....
+      if (_M_file)
+	{
+	  delete _M_file;
+	  _M_file = NULL;
 	}
       _M_last_overflowed = false;	
       return __retval;
@@ -173,7 +192,7 @@ namespace std
 	  if (_M_in_cur >= _M_in_end)
 	    __testeof = this->underflow() == traits_type::eof();
 	  if (!__testeof)
-	    __retval = (_M_in_end - _M_in_cur) / sizeof(char_type);
+	    __retval = _M_in_end - _M_in_cur;
 	}
       _M_last_overflowed = false;	
       return __retval;
@@ -185,13 +204,24 @@ namespace std
     underflow()
     {
       int_type __retval = traits_type::eof();
-      bool __testget = _M_in_cur && _M_in_beg < _M_in_cur;
-      bool __testinit = _M_is_indeterminate();
-      bool __testout = _M_mode & ios_base::out;
       bool __testin = _M_mode & ios_base::in;
       
       if (__testin)
 	{
+	  // Check for pback madness, and if so swich back to the
+	  // normal buffers and jet outta here before expensive
+	  // fileops happen...
+	  if (_M_pback_init)
+	    {
+	      _M_pback_destroy();
+	      if (_M_in_cur < _M_in_end)
+		return traits_type::to_int_type(*_M_in_cur);
+	    }
+
+	  bool __testget = _M_in_cur && _M_in_beg < _M_in_cur;
+	  bool __testinit = _M_is_indeterminate();
+	  bool __testout = _M_mode & ios_base::out;
+
 	  // Sync internal and external buffers.
 	  // NB: __testget -> __testput as _M_buf_unified here.
 	  if (__testget)
@@ -260,56 +290,63 @@ namespace std
     pbackfail(int_type __i)
     {
       int_type __retval = traits_type::eof();
-      char_type __c = traits_type::to_char_type(__i);
-      bool __testeof = traits_type::eq_int_type(__i, traits_type::eof());
-      bool __testout = _M_mode & ios_base::out;
       bool __testin = _M_mode & ios_base::in;
 
       if (__testin)
 	{
-	  if (!_M_is_indeterminate())	  
+	  bool __testpb = _M_in_beg < _M_in_cur;
+	  char_type __c = traits_type::to_char_type(__i);
+	  bool __testeof = traits_type::eq_int_type(__i, __retval);
+
+	  if (__testpb)
 	    {
-	      bool __testpb = _M_in_beg < _M_in_cur;
+	      bool __testout = _M_mode & ios_base::out;
 	      bool __testeq = traits_type::eq(__c, this->gptr()[-1]);
 
 	      // Try to put back __c into input sequence in one of three ways.
 	      // Order these tests done in is unspecified by the standard.
-	      if (!__testeof && __testpb && __testeq)
+	      if (!__testeof && __testeq)
 		{
 		  --_M_in_cur;
 		  if (__testout)
 		    --_M_out_cur;
 		  __retval = __i;
 		}
-	      else if (!__testeof && __testpb && __testout)
-		{
-		  --_M_in_cur;
-		  if (__testout)
-		    --_M_out_cur;
-		  *_M_in_cur = __c;
-		  __retval = __i;
-		}
-	      else if (__testeof && __testpb)
+	      else if (__testeof)
 		{
 		  --_M_in_cur;
 		  if (__testout)
 		    --_M_out_cur;
 		  __retval = traits_type::not_eof(__i);
 		}
+	      else if (!__testeof)
+		{
+		  --_M_in_cur;
+		  if (__testout)
+		    --_M_out_cur;
+		  _M_pback_create();
+		  *_M_in_cur = __c; 
+		  __retval = __i;
+		}
 	    }
 	  else
-	    {
-	      // Need to make a putback position available.
+	    {	 
+ 	      // At the beginning of the buffer, need to make a
+	      // putback position available.
 	      this->seekoff(-1, ios_base::cur);
 	      this->underflow();
-	      if (!__testeof)
-		{
-		  *_M_in_cur = __c;
-		  __retval = __c;
-		}
-	      else
-		__retval = traits_type::not_eof(__i);
-	    }
+ 	      if (!__testeof)
+ 		{
+		  if (!traits_type::eq(__c, *_M_in_cur))
+		    {
+		      _M_pback_create();
+		      *_M_in_cur = __c;
+		    }
+ 		  __retval = __i;
+ 		}
+ 	      else
+ 		__retval = traits_type::not_eof(__i);
+ 	    }
 	}
       _M_last_overflowed = false;	
       return __retval;
@@ -355,7 +392,7 @@ namespace std
 	  // stack. Convert internal buffer plus __c (ie,
 	  // "pending sequence") to temporary conversion buffer.
 	  int __plen = _M_out_end - _M_out_beg;
-	  char_type __pbuf[__plen + sizeof(char_type)];	      
+	  char_type __pbuf[__plen + 1];	      
 	  traits_type::copy(__pbuf, this->pbase(), __plen);
 	  if (!__testeof)
 	    {
@@ -411,6 +448,9 @@ namespace std
       
       if (__testopen && !__testfail && (__testin || __testout))
 	{
+	  // Ditch any pback buffers to avoid confusion.
+	  _M_pback_destroy();
+
 	  if (__way != ios_base::cur || __off != 0)
 	    { 
 	      off_type __computed_off = __width * __off;
@@ -464,68 +504,7 @@ namespace std
     void 
     basic_filebuf<_CharT, _Traits>::
     _M_output_unshift()
-    {
-#if 0
-      // XXX Not complete, or correct.
-      int __width = _M_fcvt->encoding();
-      
-      if (__width < 0)
-	{
-	  // Part one: call codecvt::unshift
-	  int __unsft_len = 0;
-	  char_type __unsft_buf[_M_buf_size];
-	    char_type* __unsft_cur; // XXX Set to external buf.
-	    _M_state_beg = _M_state_cur;
-	    __res_type __r = _M_fcvt->unshift(_M_state_cur, 
-					      __unsft_buf,
-					      __unsft_buf + _M_buf_size,
-					      __unsft_cur);
-	    
-	    // Note, for char_type == char, wchar_t unshift
-	    // should store no charachers.
-	    if (__r == codecvt_base::ok || __r == codecvt_base::noconv)
-	      __unsft_len = __unsft_cur - __unsft_buf;
-	    
-	    // "Output the resulting sequence."
-	    if (__unsft_len)
-	      {
-		int __plen = _M_out_cur - _M_out_beg;
-		int __rlen = __plen  + __unsft_len;
-		char_type __rbuf[__rlen];
-		char_type* __rend;
-		traits_type::copy(__rbuf, this->pbase(), __plen);
-		traits_type::copy(__rbuf + __plen, __unsft_buf, 
-				  __unsft_len);
-
-		char __conv_buf[__rlen];
-		char* __conv_end;
-		
-		_M_state_beg = _M_state_cur; // XXX Needed?
-		__r = _M_fcvt->out(_M_state_cur, 
-				  __rbuf, __rbuf + __rlen,
-				  const_cast<const char_type*&>(__rend),
-				  __conv_buf, 
-				  __conv_buf + __rlen,
-				  __conv_end);
-		
-		if (__r != codecvt_base::error)
-		  {
-		    streamsize __r = _M_file->xsputn(__conv_buf, __rlen);
-		    if (__r == __rlen)
-		      {
-			_M_out_cur = _M_out_beg;
-			if (_M_mode & ios_base::in)
-			  _M_in_cur = _M_out_cur;
-		      }
-		    else
-		      {
-			// XXX Throw "wig out and die exception?"
-		      }
-		  }
-	      }
-	  }
-#endif
-    }
+    { }
 
   template<typename _CharT, typename _Traits>
     void

@@ -64,13 +64,13 @@ namespace std {
       explicit 
       basic_stringbuf(ios_base::openmode __mode = ios_base::in | ios_base::out)
       : __streambuf_type(), _M_string()
-      { _M_init_stringbuf(__mode); }
+      { _M_stringbuf_init(__mode); }
 
       explicit 
       basic_stringbuf(const __string_type& __str,
 		      ios_base::openmode __mode = ios_base::in | ios_base::out)
       : __streambuf_type(), _M_string(__str)
-      { _M_init_stringbuf(__mode); }
+      { _M_stringbuf_init(__mode); }
 
       // Get and set:
       __string_type 
@@ -95,13 +95,13 @@ namespace std {
       str(const __string_type& __s)
       {
 	_M_string = __s;
-	_M_init_stringbuf(_M_mode);
+	_M_stringbuf_init(_M_mode);
       }
 
     protected:
       // Common initialization code for both ctors goes here.
       void
-      _M_init_stringbuf(ios_base::openmode __mode)
+      _M_stringbuf_init(ios_base::openmode __mode)
       {
 	// _M_buf_size is a convenient alias for "what the streambuf
 	// thinks the allocated size of the string really is." This is
