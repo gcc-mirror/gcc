@@ -1,5 +1,10 @@
 2004-01-27  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/13884
+	* include/bits/sstream.tcc: Guard use of extern template.
+	
+2004-01-27  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/basic_string.tcc
 	(basic_string(const basic_string&, size_type, size_type),
 	basic_string(const basic_string&, size_type, size_type,
