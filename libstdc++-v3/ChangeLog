@@ -1,3 +1,8 @@
+2004-06-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/debug/formatter.h (__gnu_debug::_Error_formatter):
+	Remove copy constructor and assignment operator.
+	
 2004-06-23  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/16154
