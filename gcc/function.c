@@ -3507,6 +3507,137 @@ round_trampoline_addr (tramp)
   return tramp;
 }
 
+/* The functions identify_blocks and reorder_blocks provide a way to
+   reorder the tree of BLOCK nodes, for optimizers that reshuffle or
+   duplicate portions of the RTL code.  Call identify_blocks before
+   changing the RTL, and call reorder_blocks after.  */
+
+static int all_blocks ();
+static tree blocks_nreverse ();
+
+/* Put all this function's BLOCK nodes into a vector, and return it.
+   Also store in each NOTE for the beginning or end of a block
+   the index of that block in the vector.
+   The arguments are TOP_BLOCK, the top-level block of the function,
+   and INSNS, the insn chain of the function.  */
+
+tree *
+identify_blocks (top_block, insns)
+     tree top_block;
+     rtx insns;
+{
+  int n_blocks = all_blocks (top_block, 0);
+  tree *block_vector = (tree *) alloca (n_blocks * sizeof (tree));
+  int *block_stack = (int *) alloca (n_blocks * sizeof (int));
+  int depth = 0;
+  int next_block_number = 0;
+  int current_block_number = 0;
+  rtx insn;
+
+  all_blocks (top_block, block_vector);
+
+  for (insn = insns; insn; insn = NEXT_INSN (insn))
+    if (GET_CODE (insn) == NOTE)
+      {
+	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
+	  {
+	    block_stack[depth++] = current_block_number;
+	    current_block_number = next_block_number;
+	    SET_NOTE_BLOCK_NUMBER (insn, next_block_number++);
+	  }
+	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
+	  {
+	    current_block_number = block_stack[--depth];
+	    SET_NOTE_BLOCK_NUMBER (insn, current_block_number);
+	  }
+      }
+
+  return block_vector;
+}
+
+/* Given BLOCK_VECTOR which was returned by identify_blocks,
+   and a revised instruction chain, rebuild the tree structure
+   of BLOCK nodes to correspond to the new order of RTL.
+   Returns the current top-level block.  */
+
+tree
+reorder_blocks (block_vector, insns)
+     tree *block_vector;
+     rtx insns;
+{
+  tree current_block = block_vector[0];
+  rtx insn;
+
+  for (insn = insns; insn; insn = NEXT_INSN (insn))
+    if (GET_CODE (insn) == NOTE)
+      {
+	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
+	  {
+	    tree block = block_vector[NOTE_BLOCK_NUMBER (insn)];
+	    /* If we have seen this block before, copy it.  */
+	    if (TREE_ASM_WRITTEN (block))
+	      block = copy_node (block);
+	    else
+	      BLOCK_SUBBLOCKS (block) = 0;
+	    TREE_ASM_WRITTEN (block) = 1;
+	    BLOCK_SUPERCONTEXT (block) = current_block; 
+	    BLOCK_CHAIN (block) = BLOCK_SUBBLOCKS (current_block);
+	    BLOCK_SUBBLOCKS (current_block) = block;
+	    current_block = block;
+	    SET_NOTE_BLOCK_NUMBER (insn, 0);
+	  }
+	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
+	  {
+	    BLOCK_SUBBLOCKS (current_block)
+	      = blocks_nreverse (BLOCK_SUBBLOCKS (current_block));
+	    current_block = BLOCK_SUPERCONTEXT (current_block);
+	    SET_NOTE_BLOCK_NUMBER (insn, 0);
+	  }
+      }
+
+  return current_block;
+}
+
+/* Reverse the order of elements in the chain T of blocks,
+   and return the new head of the chain (old last element).  */
+
+static tree
+blocks_nreverse (t)
+     tree t;
+{
+  register tree prev = 0, decl, next;
+  for (decl = t; decl; decl = next)
+    {
+      next = BLOCK_CHAIN (decl);
+      BLOCK_CHAIN (decl) = prev;
+      prev = decl;
+    }
+  return prev;
+}
+
+/* Count the subblocks of BLOCK, and list them all into the vector VECTOR.
+   Also clear TREE_ASM_WRITTEN in all blocks.  */
+
+static int
+all_blocks (block, vector)
+     tree block;
+     tree *vector;
+{
+  int n_blocks = 1;
+  tree subblocks; 
+
+  TREE_ASM_WRITTEN (block) = 0;
+  /* Record this block.  */
+  vector[n_blocks++] = block;
+
+  /* Record the subblocks, and their subblocks.  */
+  for (subblocks = BLOCK_SUBBLOCKS (block);
+       subblocks; subblocks = BLOCK_CHAIN (subblocks))
+    n_blocks += all_blocks (subblocks, vector + n_blocks);
+
+  return n_blocks;
+}
+
 /* Generate RTL for the start of the function SUBR (a FUNCTION_DECL tree node)
    and initialize static variables for generating RTL for the statements
    of the function.  */
