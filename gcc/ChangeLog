@@ -1,5 +1,15 @@
 2001-03-28  Richard Henderson  <rth@redhat.com>
 
+	* config/sparc/sparc.c (eligible_for_epilogue_delay): False if
+	current_function_calls_eh_return.
+	(output_function_epilogue): Handle eh_return.
+	* config/sparc/sparc.h (DOESNT_NEED_UNWINDER): Remove.
+	(EH_RETURN_DATA_REGNO): New.
+	(EH_RETURN_STACKADJ_RTX): New.
+	(EH_RETURN_HANDLER_RTX): New.
+	* config/sparc/sparc.md (call/short branch peepholes): Check
+	can_throw_internal instead of in_same_eh_region.
+
 	* config/rs6000/rs6000.c (rs6000_stack_info): Allocate space
 	for eh_return data registers.
 	(rs6000_emit_prologue): Save eh_return data registers.

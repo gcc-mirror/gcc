@@ -2377,6 +2377,11 @@ eligible_for_epilogue_delay (trial, slot)
   if (num_gfregs)
     return 0;
 
+  /* If the function uses __builtin_eh_return, the eh_return machinery
+     occupies the delay slot.  */
+  if (current_function_calls_eh_return)
+    return 0;
+
   /* In the case of a true leaf function, anything can go into the delay slot.
      A delay slot only exists however if the frame size is zero, otherwise
      we will put an insn to adjust the stack after the return.  */
@@ -3594,8 +3599,17 @@ output_function_epilogue (file, size, leaf_function)
 
       if (! leaf_function)
 	{
+	  if (current_function_calls_eh_return)
+	    {
+	      if (current_function_epilogue_delay_list)
+		abort ();
+	      if (SKIP_CALLERS_UNIMP_P)
+		abort ();
+
+	      fputs ("\trestore\n\tretl\n\tadd\t%sp, %g1, %sp\n", file);
+	    }
 	  /* If we wound up with things in our delay slot, flush them here.  */
-	  if (current_function_epilogue_delay_list)
+	  else if (current_function_epilogue_delay_list)
 	    {
 	      rtx delay = PATTERN (XEXP (current_function_epilogue_delay_list, 0));
 
@@ -3635,6 +3649,8 @@ output_function_epilogue (file, size, leaf_function)
 	  else
 	    fprintf (file, "\t%s\n\trestore\n", ret);
 	}
+      else if (current_function_calls_eh_return)
+	abort ();
       /* All of the following cases are for leaf functions.  */
       else if (current_function_epilogue_delay_list)
 	{
