@@ -880,9 +880,10 @@ static const char *inline_forbidden_reason;
 
 static tree
 inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
-		    void *fn)
+		      void *fnp)
 {
   tree node = *nodep;
+  tree fn = (tree) fnp;
   tree t;
 
   switch (TREE_CODE (node))
