@@ -5,6 +5,12 @@ Sun Oct 26 10:06:11 1997  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 Sun Oct 26 09:21:40 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* alias.c (find_base_value): Handle PRE_INC, PRE_DEC, POST_INC,
+	and POS_DEC.
+	(find_base_term): Likewise.
+
+	* alias.c (true_dependence): Fix typo.
+
 	* toplev.c (flag_rerun_loop_opt): New variable.
 	(f_options): Handle -frerun-loop-opt.
 	(rest_of_compilation): If -frerun-loop-opt, then run the loop
