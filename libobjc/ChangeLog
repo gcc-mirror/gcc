@@ -1,3 +1,8 @@
+2001-06-08  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	* THREADS: Explain that when we compile libobjc inside GCC, we
+	always use thr-objc.c as a backend, which uses GCC's thread code.
+
 2001-06-06  Richard Frith-Macdonald  <rrfm@gnu.org>
 
 	* init.c (__objc_send_message_in_list): When setting a new entry

@@ -102,30 +102,33 @@ high degree of portability across platforms.
 
 The backend is composed of a file with the necessary code to map the ObjC
 thread and mutex to a platform specific implementation.  For example, the
-file thr-solaris.c contains the implementation for Solaris.  When you 
-configure GCC, it attempts to pick an appropriate backend file for the
-target platform; however, you can override this choice by assign the
-OBJC_THREAD_FILE make variable to the basename of the backend file.  This
-is especially useful on platforms which have multiple thread libraries.
-For example:
+file thr-solaris.c contains the implementation for Solaris.
 
-	make OBJC_THREAD_FILE=thr-posix
-
-would indicate that the generic posix backend file, thr-posix.c, should be
-compiled with the ObjC runtime library.  If your platform does not support
-threads then you should specify the OBJC_THREAD_FILE=thr-single backend file
-to compile the ObjC runtime library without thread or mutex support; note
-that programs which rely upon the ObjC thread and mutex functions will
-compile and link correctly but attempting to create a thread or mutex will
-result in an error.
-
+If you are compiling libobjc as part of GCC, the thr-objc.c backend is
+always used; this backend uses GCC's gthread code.  The thread system
+is automatically configured when GCC is configured.  Important: make
+sure you configure GCC using `--enable-threads' if you want threads !
+  
+If you want to compile libobjc standalone, then you would need to
+modify the configure.in and makefiles for it; and you need to pick an
+appropriate backend file for the target platform; you make this choice
+by assigning the OBJC_THREAD_FILE make variable to the basename of the
+backend file.  For example, OBJC_THREAD_FILE=thr-posix would indicate
+that the generic posix backend file, thr-posix.c, should be compiled
+with the ObjC runtime library.  If your platform does not support
+threads then you should specify the OBJC_THREAD_FILE=thr-single
+backend file to compile the ObjC runtime library without thread or
+mutex support; note that programs which rely upon the ObjC thread and
+mutex functions will compile and link correctly but attempting to
+create a thread or mutex will result in an error.
+  
 It is questionable whether it is really necessary to have both a
 frontend and backend function for all available functionality.  On the
 one hand, it provides a clear, consistent differentiation between what
 is public and what is private with the downside of having the overhead
-of multiple functions calls.  For example, the function to have a thread
-yield the processor is objc_thread_yield; in the current implementation
-this produces a function call set:
+of multiple functions calls.  For example, the function to have a
+thread yield the processor is objc_thread_yield; in the current
+implementation this produces a function call set:
 
 objc_thread_yield()  ->  __objc_thread_yield()  ->  system yield function
 
