@@ -1,5 +1,11 @@
 2003-09-22  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/InetAddress.java:
+	Moves around some code, reformats and adds documentation.
+	No functional changes.
+
+2003-09-22  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/JarURLConnection.java
 	(JarURLConnection): Modifed code to match classpath more, fixed comment.
 	(getCertificates): Made it more error prone.
