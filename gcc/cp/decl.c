@@ -2532,7 +2532,8 @@ duplicate_decls (newdecl, olddecl)
 	       t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2), i++)
 	    if (TREE_PURPOSE (t1) && TREE_PURPOSE (t2))
 	      {
-		if (simple_cst_equal (TREE_PURPOSE (t1), TREE_PURPOSE (t2)))
+		if (1 == simple_cst_equal (TREE_PURPOSE (t1),
+					   TREE_PURPOSE (t2)))
 		  {
 		    if (pedantic)
 		      {
