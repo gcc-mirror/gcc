@@ -2475,15 +2475,15 @@ c_make_fname_decl (tree id, int type_dep)
 
 tree
 builtin_function (const char *name, tree type, int function_code,
-		  enum built_in_class class, const char *library_name,
+		  enum built_in_class cl, const char *library_name,
 		  tree attrs)
 {
   tree id = get_identifier (name);
   tree decl = build_decl (FUNCTION_DECL, id, type);
   TREE_PUBLIC (decl) = 1;
   DECL_EXTERNAL (decl) = 1;
-  DECL_LANG_SPECIFIC (decl) = ggc_alloc_cleared (sizeof (struct lang_decl));
-  DECL_BUILT_IN_CLASS (decl) = class;
+  DECL_LANG_SPECIFIC (decl) = GGC_CNEW (struct lang_decl);
+  DECL_BUILT_IN_CLASS (decl) = cl;
   DECL_FUNCTION_CODE (decl) = function_code;
   if (library_name)
     SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));

@@ -45,7 +45,7 @@ struct real_value GTY(())
   /* Use the same underlying type for all bit-fields, so as to make
      sure they're packed together, otherwise REAL_VALUE_TYPE_SIZE will
      be miscomputed.  */
-  unsigned int /* ENUM_BITFIELD (real_value_class) */ class : 2;
+  unsigned int /* ENUM_BITFIELD (real_value_class) */ cl : 2;
   unsigned int sign : 1;
   unsigned int signalling : 1;
   unsigned int canonical : 1;

@@ -1196,7 +1196,7 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
 {
   struct tlist *tmp_before, *tmp_nosp, *tmp_list2, *tmp_list3;
   enum tree_code code;
-  char class;
+  char cl;
 
   /* X may be NULL if it is the operand of an empty statement expression
      ({ }).  */
@@ -1205,7 +1205,7 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
 
  restart:
   code = TREE_CODE (x);
-  class = TREE_CODE_CLASS (code);
+  cl = TREE_CODE_CLASS (code);
 
   if (warning_candidate_p (x))
     {
@@ -1349,7 +1349,7 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
       break;
     }
 
-  if (class == '1')
+  if (cl == '1')
     {
       if (first_rtl_op (code) == 0)
 	return;
@@ -1358,7 +1358,7 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
       goto restart;
     }
 
-  switch (class)
+  switch (cl)
     {
     case 'r':
     case '<':
@@ -2460,9 +2460,12 @@ c_common_truthvalue_conversion (tree expr)
   return build_binary_op (NE_EXPR, expr, integer_zero_node, 1);
 }
 
-static tree builtin_function_2 (const char *, const char *, tree, tree,
-				int, enum built_in_class, int, int,
-				tree);
+static tree builtin_function_2 (const char *builtin_name, const char *name,
+				tree builtin_type, tree type,
+				enum built_in_function function_code,
+				enum built_in_class cl, int library_name_p,
+				bool nonansi_p,
+				tree attrs);
 
 /* Make a variant type in the proper way for C/C++, propagating qualifiers
    down to the element type of an array.  */
@@ -3269,10 +3272,10 @@ builtin_function_disabled_p (const char *name)
    BUILTIN_TYPE is the type of the __builtin_-prefixed function;
    TYPE is the type of the function with the ordinary name.  These
    may differ if the ordinary name is declared with a looser type to avoid
-   conflicts with headers.  FUNCTION_CODE and CLASS are as for
+   conflicts with headers.  FUNCTION_CODE and CL are as for
    builtin_function.  If LIBRARY_NAME_P is nonzero, NAME is passed as
    the LIBRARY_NAME parameter to builtin_function when declaring BUILTIN_NAME.
-   If NONANSI_P is nonzero, the name NAME is treated as a non-ANSI name;
+   If NONANSI_P is true, the name NAME is treated as a non-ANSI name;
    ATTRS is the tree list representing the builtin's function attributes.
    Returns the declaration of BUILTIN_NAME, if any, otherwise
    the declaration of NAME.  Does not declare NAME if flag_no_builtin,
@@ -3280,21 +3283,22 @@ builtin_function_disabled_p (const char *name)
 
 static tree
 builtin_function_2 (const char *builtin_name, const char *name,
-		    tree builtin_type, tree type, int function_code,
-		    enum built_in_class class, int library_name_p,
-		    int nonansi_p, tree attrs)
+		    tree builtin_type, tree type,
+		    enum built_in_function function_code,
+		    enum built_in_class cl, int library_name_p,
+		    bool nonansi_p, tree attrs)
 {
   tree bdecl = NULL_TREE;
   tree decl = NULL_TREE;
 
   if (builtin_name != 0)
     bdecl = lang_hooks.builtin_function (builtin_name, builtin_type,
-					 function_code, class,
+					 function_code, cl,
 					 library_name_p ? name : NULL, attrs);
 
   if (name != 0 && !flag_no_builtin && !builtin_function_disabled_p (name)
       && !(nonansi_p && flag_no_nonansi_builtin))
-    decl = lang_hooks.builtin_function (name, type, function_code, class,
+    decl = lang_hooks.builtin_function (name, type, function_code, cl,
 					NULL, attrs);
 
   return (bdecl != 0 ? bdecl : decl);

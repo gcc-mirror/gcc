@@ -667,7 +667,7 @@ check_asm_stack_operands (rtx insn)
   for (i = 0; i < n_outputs; i++)
     if (STACK_REG_P (recog_data.operand[i]))
       {
-	if (reg_class_size[(int) recog_op_alt[i][alt].class] != 1)
+	if (reg_class_size[(int) recog_op_alt[i][alt].cl] != 1)
 	  {
 	    error_for_asm (insn, "output constraint %d must specify a single register", i);
 	    malformed_asm = 1;
@@ -2147,9 +2147,9 @@ subst_asm_stack_regs (rtx insn, stack regstack)
 
   for (i = n_outputs; i < n_outputs + n_inputs; i++)
     if (STACK_REG_P (recog_data.operand[i])
-	&& reg_class_subset_p (recog_op_alt[i][alt].class,
+	&& reg_class_subset_p (recog_op_alt[i][alt].cl,
 			       FLOAT_REGS)
-	&& recog_op_alt[i][alt].class != FLOAT_REGS)
+	&& recog_op_alt[i][alt].cl != FLOAT_REGS)
       {
 	/* If an operand needs to be in a particular reg in
 	   FLOAT_REGS, the constraint was either 't' or 'u'.  Since
