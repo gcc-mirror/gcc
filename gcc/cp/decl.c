@@ -2558,29 +2558,23 @@ duplicate_decls (newdecl, olddecl)
   extern struct obstack permanent_obstack;
   unsigned olddecl_uid = DECL_UID (olddecl);
   int olddecl_friend = 0, types_match = 0;
-  int new_defines_function;
+  int new_defines_function = 0;
 
   if (newdecl == olddecl)
     return 1;
 
-  if (TREE_CODE_CLASS (TREE_CODE (olddecl)) == 'd')
-    DECL_MACHINE_ATTRIBUTES (newdecl)
-      = merge_machine_decl_attributes (olddecl, newdecl);
-
   types_match = decls_match (newdecl, olddecl);
-
-  if (TREE_CODE (olddecl) != TREE_LIST)
-    olddecl_friend = DECL_LANG_SPECIFIC (olddecl) && DECL_FRIEND_P (olddecl);
 
   /* If either the type of the new decl or the type of the old decl is an
      error_mark_node, then that implies that we have already issued an
      error (earlier) for some bogus type specification, and in that case,
      it is rather pointless to harass the user with yet more error message
-     about the same declaration, so well just pretent the types match here.  */
+     about the same declaration, so just pretend the types match here.  */
   if (TREE_TYPE (newdecl) == error_mark_node
       || TREE_TYPE (olddecl) == error_mark_node)
     types_match = 1;
-
+ 
+  /* Check for redeclaration and other discrepancies. */
   if (TREE_CODE (olddecl) == FUNCTION_DECL
       && DECL_ARTIFICIAL (olddecl)
       && (DECL_BUILT_IN (olddecl) || DECL_BUILT_IN_NONANSI (olddecl)))
@@ -2834,6 +2828,21 @@ duplicate_decls (newdecl, olddecl)
       DECL_ABSTRACT_VIRTUAL_P (newdecl) |= DECL_ABSTRACT_VIRTUAL_P (olddecl);
       DECL_VIRTUAL_P (newdecl) |= DECL_VIRTUAL_P (olddecl);
       DECL_NEEDS_FINAL_OVERRIDER_P (newdecl) |= DECL_NEEDS_FINAL_OVERRIDER_P (olddecl);
+      new_defines_function = DECL_INITIAL (newdecl) != NULL_TREE;
+      
+      /* Optionally warn about more than one declaration for the same
+         name, but don't warn about a function declaration followed by a
+         definition.  */
+      if (warn_redundant_decls && ! DECL_ARTIFICIAL (olddecl)
+	  && !(new_defines_function && DECL_INITIAL (olddecl) == NULL_TREE)
+	  /* Don't warn about extern decl followed by definition. */
+	  && !(DECL_EXTERNAL (olddecl) && ! DECL_EXTERNAL (newdecl))
+	  /* Don't warn about friends, let add_friend take care of it. */
+	  && ! DECL_FRIEND_P (newdecl))
+	{
+	  cp_warning ("redundant redeclaration of `%D' in same scope", newdecl);
+	  cp_warning_at ("previous declaration of `%D'", olddecl);
+	}
     }
 
   /* Deal with C++: must preserve virtual function table size.  */
@@ -2851,26 +2860,10 @@ duplicate_decls (newdecl, olddecl)
 	}
     }
 
-  /* Special handling ensues if new decl is a function definition.  */
-  new_defines_function = (TREE_CODE (newdecl) == FUNCTION_DECL
-			  && DECL_INITIAL (newdecl) != NULL_TREE);
-
-  /* Optionally warn about more than one declaration for the same name,
-     but don't warn about a function declaration followed by a definition.  */
-  if (warn_redundant_decls
-      && ! DECL_ARTIFICIAL (olddecl)
-      && !(new_defines_function && DECL_INITIAL (olddecl) == NULL_TREE)
-      /* Don't warn about extern decl followed by (tentative) definition.  */
-      && !(DECL_EXTERNAL (olddecl) && ! DECL_EXTERNAL (newdecl))
-      /* Don't warn about friends, let add_friend take care of it. */
-      && (TREE_CODE (newdecl) == FUNCTION_DECL && ! DECL_FRIEND_P (newdecl)))
-    {
-      cp_warning ("redundant redeclaration of `%D' in same scope", newdecl);
-      cp_warning_at ("previous declaration of `%D'", olddecl);
-    }
-
   /* Copy all the DECL_... slots specified in the new decl
      except for any that we copy here from the old type.  */
+  DECL_MACHINE_ATTRIBUTES (newdecl) 
+    = merge_machine_decl_attributes (olddecl, newdecl);
 
   if (TREE_CODE (newdecl) == TEMPLATE_DECL)
     {
@@ -2883,9 +2876,12 @@ duplicate_decls (newdecl, olddecl)
 	  DECL_TEMPLATE_PARMS (olddecl) = DECL_TEMPLATE_PARMS (newdecl);
 	  DECL_TEMPLATE_INFO (olddecl) = DECL_TEMPLATE_INFO (newdecl);
 	}
+      DECL_TEMPLATE_SPECIALIZATIONS (newdecl)
+	= DECL_TEMPLATE_SPECIALIZATIONS (olddecl);
+ 
       return 1;
     }
-
+    
   if (types_match)
     {
       /* Automatically handles default parameters.  */
@@ -2996,12 +2992,23 @@ duplicate_decls (newdecl, olddecl)
   TREE_STATIC (olddecl) = TREE_STATIC (newdecl) |= TREE_STATIC (olddecl);
   if (! DECL_EXTERNAL (olddecl))
     DECL_EXTERNAL (newdecl) = 0;
-
-  if (DECL_LANG_SPECIFIC (newdecl))
+  
+  if (DECL_LANG_SPECIFIC (newdecl) && DECL_LANG_SPECIFIC (olddecl))
     {
       DECL_INTERFACE_KNOWN (newdecl) |= DECL_INTERFACE_KNOWN (olddecl);
       DECL_NOT_REALLY_EXTERN (newdecl) |= DECL_NOT_REALLY_EXTERN (olddecl);
       DECL_COMDAT (newdecl) |= DECL_COMDAT (olddecl);
+      /* Don't really know how much of the language-specific
+	 values we should copy from old to new.  */
+      DECL_IN_AGGR_P (newdecl) = DECL_IN_AGGR_P (olddecl);
+      DECL_ACCESS (newdecl) = DECL_ACCESS (olddecl);
+      DECL_NONCONVERTING_P (newdecl) = DECL_NONCONVERTING_P (olddecl);
+      if (DECL_TEMPLATE_INFO (newdecl) == NULL_TREE)
+	{
+	  DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
+	  DECL_USE_TEMPLATE (newdecl) = DECL_USE_TEMPLATE (olddecl);
+	}
+      olddecl_friend = DECL_FRIEND_P (olddecl);
     }
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
@@ -3086,31 +3093,11 @@ duplicate_decls (newdecl, olddecl)
       NAMESPACE_LEVEL (newdecl) = NAMESPACE_LEVEL (olddecl);
     }
 
-  if (TREE_CODE (newdecl) == TEMPLATE_DECL)
-    {
-      DECL_TEMPLATE_SPECIALIZATIONS (newdecl)
-	= DECL_TEMPLATE_SPECIALIZATIONS (olddecl);
-    }
-
   /* Now preserve various other info from the definition.  */
   TREE_ADDRESSABLE (newdecl) = TREE_ADDRESSABLE (olddecl);
   TREE_ASM_WRITTEN (newdecl) = TREE_ASM_WRITTEN (olddecl);
   DECL_COMMON (newdecl) = DECL_COMMON (olddecl);
   DECL_ASSEMBLER_NAME (newdecl) = DECL_ASSEMBLER_NAME (olddecl);
-
-  /* Don't really know how much of the language-specific
-     values we should copy from old to new.  */
-  if (DECL_LANG_SPECIFIC (olddecl))
-    {
-      DECL_IN_AGGR_P (newdecl) = DECL_IN_AGGR_P (olddecl);
-      DECL_ACCESS (newdecl) = DECL_ACCESS (olddecl);
-      DECL_NONCONVERTING_P (newdecl) = DECL_NONCONVERTING_P (olddecl);
-      if (DECL_TEMPLATE_INFO (newdecl) == NULL_TREE)
-	{
-	  DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
-	  DECL_USE_TEMPLATE (newdecl) = DECL_USE_TEMPLATE (olddecl);
-	}
-    }
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
