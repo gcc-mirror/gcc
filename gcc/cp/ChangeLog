@@ -1,5 +1,25 @@
 2000-10-19  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (subobject_offset_fn): New type.
+	(dfs_record_base_offsets): Remove.
+	(record_base_offsets): Likewise.
+	(dfs_search_base_offsets): Likewise.
+	(record_subobject_offset): New function.
+	(check_subobject_offset): Likewise.
+	(walk_subobject_offsets): Likewise.
+	(record_subobject_offsets): Likewise.
+	(layout_conflict_p): Reimplement.
+	(layout_nonempty_base_or_field): Correct handling of type
+	conflicts during layout.
+	(layout_empty_base): Likewise.
+	(build_base_field): Adjust to handle new representation of empty
+	base offset table.
+	(build_base_fields): Likewise.
+	(layout_virtual_bases): Likewise.
+	(splay_tree_compare_integer_csts): New function.
+	(layout_class_type): Use a splay_tree, rather than a varray, to
+	represent the offsets of empty bases.
+	
 	* cp-tree.h (DECL_ANTICIPATED): Don't require a FUNCTION_DECL.
 	* decl.c (select_decl): Don't return declarations that are
 	DECL_ANTICIPATED.
