@@ -162,11 +162,11 @@ toc_section ()								\
 /* Use the TOC section for TOC entries.  */
 
 #undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE, X)		\
-{ if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (X))	\
-    toc_section ();				\
-  else						\
-    const_section ();				\
+#define SELECT_RTX_SECTION(MODE, X)			\
+{ if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (X, MODE))	\
+    toc_section ();					\
+  else							\
+    const_section ();					\
 }
 
 /* How to renumber registers for dbx and gdb.  */
