@@ -3706,7 +3706,12 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
    CALL_DEST is the routine we are calling.
 
    RETURN_POINTER is the register which will hold the return address.
-   %r2 for most calls, %r31 for millicode calls.  */
+   %r2 for most calls, %r31 for millicode calls. 
+
+   When TARGET_LONG_CALLS is true, output_call is only called for
+   millicode calls.  In addition, no delay slots are available when
+   TARGET_LONG_CALLS is true.  */
+
 char *
 output_call (insn, call_dest, return_pointer)
   rtx insn;
@@ -3725,7 +3730,14 @@ output_call (insn, call_dest, return_pointer)
     {
       xoperands[0] = call_dest;
       xoperands[1] = return_pointer;
-      output_asm_insn ("bl %0,%r1%#", xoperands);
+      if (TARGET_LONG_CALLS)
+	{
+	  output_asm_insn ("ldil L%%%0,%%r29", xoperands);
+	  output_asm_insn ("ldo R%%%0(%%r29),%%r29", xoperands);
+	  output_asm_insn ("blr 0,%r1\n\tbv,n 0(%%r29)\n\tnop", xoperands);
+	}
+      else
+	output_asm_insn ("bl %0,%r1%#", xoperands);
       return "";
     }
 

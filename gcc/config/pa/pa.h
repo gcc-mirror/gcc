@@ -64,7 +64,9 @@ extern int target_flags;
 
 /* Emit code which follows the new portable runtime calling conventions
    HP wants everyone to use for ELF objects.  If at all possible you want
-   to avoid this since it's a performance loss for non-prototyped code.  */
+   to avoid this since it's a performance loss for non-prototyped code.
+
+   Note TARGET_PORTABLE_RUNTIME also implies TARGET_LONG_CALLS.  */
 
 #define TARGET_PORTABLE_RUNTIME (target_flags & 64)
 
@@ -93,8 +95,8 @@ extern int target_flags;
    {"no-long-calls", -16},	\
    {"disable-indexing", 32},	\
    {"no-disable-indexing", -32},\
-   {"portable-runtime", 64},	\
-   {"no-portable-runtime", -64},\
+   {"portable-runtime", 64+16},\
+   {"no-portable-runtime", -(64+16)},\
    {"gas", 128},		\
    {"no-gas", -128},		\
    { "", TARGET_DEFAULT}}
