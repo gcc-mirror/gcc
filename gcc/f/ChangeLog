@@ -1,3 +1,8 @@
+2001-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* top.c (ffe_decode_option): Disallow lang-independent processing
+	for -ffixed-form.
+
 2001-07-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* g77.texi: Use gpl.texi and funding.texi.  Remove Look and Feel

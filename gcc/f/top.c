@@ -225,7 +225,10 @@ ffe_decode_option (argc, argv)
       else if (strcmp (&opt[2], "no-free-form") == 0)
 	ffe_set_is_free_form (FALSE);
       else if (strcmp (&opt[2], "fixed-form") == 0)
-	ffe_set_is_free_form (FALSE);
+	{
+	  ffe_set_is_free_form (FALSE);
+	  return -1;
+	}
       else if (strcmp (&opt[2], "no-fixed-form") == 0)
 	ffe_set_is_free_form (TRUE);
       else if (strcmp (&opt[2], "pedantic") == 0)
