@@ -1,3 +1,10 @@
+2003-09-19  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/12232
+	* pt.c (instantiate_class_template): Increment
+	processing_template_decl around the tsubst of a template member
+	function.
+
 2003-09-19  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* decl.c (cxx_scope_descriptor): Fix thinko.
