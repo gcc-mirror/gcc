@@ -1,3 +1,8 @@
+2000-05-04 Mark Elbrecht <snowball3@bigfoot.com>
+
+	* gcc.c (free_split_directories): Correct typo in explanation
+	of make_relative_prefix.
+
 2000-05-04  Geoff Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/rs6000.h (PREDICATE_CODES): Add floating-point

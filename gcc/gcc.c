@@ -2102,7 +2102,7 @@ free_split_directories (dirs)
 
    For example, if BIN_PREFIX is /alpha/beta/gamma/gcc/delta, PREFIX is
    /alpha/beta/gamma/omega/, and PROGNAME is /red/green/blue/gcc, then this
-   function will return /reg/green/blue/../omega.
+   function will return /red/green/blue/../omega.
 
    If no relative prefix can be found, return NULL.  */
 
