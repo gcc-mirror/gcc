@@ -1,4 +1,9 @@
 2003-04-15  J"orn Rennecke <joern.rennecke@superh.com>
+
+	PR target/9594:
+	* sh.c (barrier_align): Also recognize stuff_delay_slot as
+	an indicator that a barrier was created by branch splitting.
+
 	merge from mainline:
 
 	2003-03-05  J"orn Rennecke <joern.rennecke@superh.com>
