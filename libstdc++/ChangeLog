@@ -1,3 +1,8 @@
+1998-07-06  Ulrich Drepper  <drepper@cygnus.com>
+
+	* std/bastring.h (class basic_string): Correct iterator return
+	values in insert member functions.
+
 1998-07-02  Ulrich Drepper  <drepper@cygnus.com>
 
 	* std/bastring.h (class basic_string): Return correct iterators in
