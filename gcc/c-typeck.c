@@ -781,6 +781,12 @@ c_alignof (type)
   if (code == VOID_TYPE || code == ERROR_MARK)
     return size_one_node;
 
+  if (TYPE_SIZE (type) == 0)
+    {
+      error ("__alignof__ applied to an incomplete type");
+      return size_zero_node;
+    }
+
   return size_int (TYPE_ALIGN (type) / BITS_PER_UNIT);
 }
 

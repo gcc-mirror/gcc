@@ -1,3 +1,8 @@
+2000-03-14  Stan Shebs  <shebs@apple.com>
+
+	* c-typeck.c (c_alignof): Error on incomplete types.
+	* extend.texi (Alignment): Document this.
+
 2000-03-13  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppfiles.c: Include mkdeps.h.

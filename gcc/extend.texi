@@ -1879,6 +1879,8 @@ the value of @code{__alignof__ (foo1.y)} is probably 2 or 4, the same as
 @code{__alignof__ (int)}, even though the data type of @code{foo1.y}
 does not itself demand any alignment.@refill
 
+It is an error to ask for the alignment of an incomplete type.
+
 A related feature which lets you specify the alignment of an object is
 @code{__attribute__ ((aligned (@var{alignment})))}; see the following
 section.
