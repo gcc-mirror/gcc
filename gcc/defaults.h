@@ -297,6 +297,15 @@ do {								\
 #define PIC_OFFSET_TABLE_REGNUM INVALID_REGNUM
 #endif
 
+/* Type used by GCOV counters.  Use 64bit data type if target supports
+   it.  */
+#if LONG_TYPE_SIZE >= 64
+#define GCOV_TYPE_SIZE LONG_TYPE_SIZE
+#else
+#define GCOV_TYPE_SIZE LONG_LONG_TYPE_SIZE
+#endif
+
+
 /* By default, the preprocessor should be invoked the same way in C++
    as in C.  */
 #ifndef CPLUSPLUS_CPP_SPEC

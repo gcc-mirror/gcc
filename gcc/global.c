@@ -94,8 +94,11 @@ struct allocno
   /* Number of calls crossed by each allocno.  */
   int calls_crossed;
 
-  /* Number of refs (weighted) to each allocno.  */
+  /* Number of refs to each allocno.  */
   int n_refs;
+
+  /* Frequency of uses of each allocno.  */
+  int freq;
 
   /* Guess at live length of each allocno.
      This is actually the max of the live lengths of the regs.  */
@@ -215,10 +218,13 @@ static HARD_REG_SET no_global_alloc_regs;
 
 static HARD_REG_SET regs_used_so_far;
 
-/* Number of refs (weighted) to each hard reg, as used by local alloc.
+/* Number of refs to each hard reg, as used by local alloc.
    It is zero for a reg that contains global pseudos or is explicitly used.  */
 
 static int local_reg_n_refs[FIRST_PSEUDO_REGISTER];
+
+/* Frequency of uses of given hard reg.  */
+static int local_reg_freq[FIRST_PSEUDO_REGISTER];
 
 /* Guess at live length of each hard reg, as used by local alloc.
    This is actually the sum of the live lengths of the specific regs.  */
@@ -447,6 +453,7 @@ global_alloc (file)
 	allocno[num].size = PSEUDO_REGNO_SIZE (i);
 	allocno[num].calls_crossed += REG_N_CALLS_CROSSED (i);
 	allocno[num].n_refs += REG_N_REFS (i);
+	allocno[num].freq += REG_FREQ (i);
 	if (allocno[num].live_length < REG_LIVE_LENGTH (i))
 	  allocno[num].live_length = REG_LIVE_LENGTH (i);
       }
@@ -456,6 +463,7 @@ global_alloc (file)
      override it.  */
   memset ((char *) local_reg_live_length, 0, sizeof local_reg_live_length);
   memset ((char *) local_reg_n_refs, 0, sizeof local_reg_n_refs);
+  memset ((char *) local_reg_freq, 0, sizeof local_reg_freq);
   for (i = FIRST_PSEUDO_REGISTER; i < (size_t) max_regno; i++)
     if (reg_renumber[i] >= 0)
       {
@@ -466,6 +474,7 @@ global_alloc (file)
 	for (j = regno; j < endregno; j++)
 	  {
 	    local_reg_n_refs[j] += REG_N_REFS (i);
+	    local_reg_freq[j] += REG_FREQ (i);
 	    local_reg_live_length[j] += REG_LIVE_LENGTH (i);
 	  }
       }
@@ -473,7 +482,7 @@ global_alloc (file)
   /* We can't override local-alloc for a reg used not just by local-alloc.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (regs_ever_live[i])
-      local_reg_n_refs[i] = 0;
+      local_reg_n_refs[i] = 0, local_reg_freq[i] = 0;
 	
   allocno_row_words = (max_allocno + INT_BITS - 1) / INT_BITS;
 
@@ -605,11 +614,11 @@ allocno_compare (v1p, v2p)
      times a register can occur in one insn (surely less than 100).
      Multiplying this by 10000 can't overflow.  */
   register int pri1
-    = (((double) (floor_log2 (allocno[v1].n_refs) * allocno[v1].n_refs)
+    = (((double) (floor_log2 (allocno[v1].n_refs) * allocno[v1].freq)
 	/ allocno[v1].live_length)
        * 10000 * allocno[v1].size);
   register int pri2
-    = (((double) (floor_log2 (allocno[v2].n_refs) * allocno[v2].n_refs)
+    = (((double) (floor_log2 (allocno[v2].n_refs) * allocno[v2].freq)
 	/ allocno[v2].live_length)
        * 10000 * allocno[v2].size);
   if (pri2 - pri1)
@@ -1204,9 +1213,9 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
 		 variables so as to avoid excess precision problems that occur
 		 on a i386-unknown-sysv4.2 (unixware) host.  */
 		 
-	      double tmp1 = ((double) local_reg_n_refs[regno]
+	      double tmp1 = ((double) local_reg_freq[regno]
 			    / local_reg_live_length[regno]);
-	      double tmp2 = ((double) allocno[num].n_refs
+	      double tmp2 = ((double) allocno[num].freq
 			     / allocno[num].live_length);
 
 	      if (tmp1 < tmp2)
@@ -1256,6 +1265,7 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
 	  SET_HARD_REG_BIT (regs_used_so_far, j);
 	  /* This is no longer a reg used just by local regs.  */
 	  local_reg_n_refs[j] = 0;
+	  local_reg_freq[j] = 0;
 	}
       /* For each other pseudo-reg conflicting with this one,
 	 mark it as conflicting with the hard regs this one occupies.  */

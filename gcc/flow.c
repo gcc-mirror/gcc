@@ -4856,8 +4856,8 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 		  /* Count (weighted) references, stores, etc.  This counts a
 		     register twice if it is modified, but that is correct.  */
 		  REG_N_SETS (i) += 1;
-		  REG_N_REFS (i) += (optimize_size ? 1
-				     : pbi->bb->loop_depth + 1);
+		  REG_N_REFS (i) += 1;
+		  REG_FREQ (i) += (optimize_size ? 1 : pbi->bb->loop_depth + 1);
 
 	          /* The insns where a reg is live are normally counted
 		     elsewhere, but we want the count to include the insn
@@ -5524,7 +5524,7 @@ attempt_auto_inc (pbi, inc, insn, mem, incr, incr_reg)
       /* Count an extra reference to the reg.  When a reg is
 	 incremented, spilling it is worse, so we want to make
 	 that less likely.  */
-      REG_N_REFS (regno) += (optimize_size ? 1 : pbi->bb->loop_depth + 1);
+      REG_FREQ (regno) += (optimize_size ? 1 : pbi->bb->loop_depth + 1);
 
       /* Count the increment as a setting of the register,
 	 even though it isn't a SET in rtl.  */
@@ -5689,8 +5689,9 @@ mark_used_reg (pbi, reg, cond, insn)
 	    REG_BASIC_BLOCK (regno_first) = REG_BLOCK_GLOBAL;
 
 	  /* Count (weighted) number of uses of each reg.  */
-	  REG_N_REFS (regno_first)
+	  REG_FREQ (regno_first)
 	    += (optimize_size ? 1 : pbi->bb->loop_depth + 1);
+	  REG_N_REFS (regno_first)++;
 	}
     }
 
@@ -6111,8 +6112,7 @@ try_pre_increment_1 (pbi, insn)
 	 so we want to make that less likely.  */
       if (regno >= FIRST_PSEUDO_REGISTER)
 	{
-	  REG_N_REFS (regno) += (optimize_size ? 1
-				 : pbi->bb->loop_depth + 1);
+	  REG_FREQ (regno) += (optimize_size ? 1 : pbi->bb->loop_depth + 1);
 	  REG_N_SETS (regno)++;
 	}
 
@@ -6359,9 +6359,10 @@ dump_flow_info (file)
       register basic_block bb = BASIC_BLOCK (i);
       register edge e;
 
-      fprintf (file, "\nBasic block %d: first insn %d, last %d, loop_depth %d, count %d, freq %d.\n",
-	       i, INSN_UID (bb->head), INSN_UID (bb->end), bb->loop_depth,
-	       bb->count, bb->frequency);
+      fprintf (file, "\nBasic block %d: first insn %d, last %d, loop_depth %d, count ",
+	       i, INSN_UID (bb->head), INSN_UID (bb->end), bb->loop_depth);
+      fprintf (file, HOST_WIDEST_INT_PRINT_DEC, (HOST_WIDEST_INT) bb->count);
+      fprintf (file, ", freq %i.\n", bb->frequency);
 
       fprintf (file, "Predecessors: ");
       for (e = bb->pred; e; e = e->pred_next)
@@ -6405,7 +6406,10 @@ dump_edge_info (file, e, do_succ)
     fprintf (file, " %d", side->index);
 
   if (e->count)
-    fprintf (file, " count:%d", e->count);
+    {
+      fprintf (file, " count:");
+      fprintf (file, HOST_WIDEST_INT_PRINT_DEC, (HOST_WIDEST_INT) e->count);
+    }
 
   if (e->flags)
     {
@@ -6445,8 +6449,9 @@ dump_bb (bb, outf)
   rtx last;
   edge e;
 
-  fprintf (outf, ";; Basic block %d, loop depth %d, count %d",
+  fprintf (outf, ";; Basic block %d, loop depth %d, count ",
 	   bb->index, bb->loop_depth, bb->count);
+  fprintf (outf, HOST_WIDEST_INT_PRINT_DEC, (HOST_WIDEST_INT) bb->count);
   putc ('\n', outf);
 
   fputs (";; Predecessors: ", outf);

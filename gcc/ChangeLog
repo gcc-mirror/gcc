@@ -1,3 +1,55 @@
+Fri Jun 22 19:11:28 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* regs.h (struct reg_info_def): Add freq field.
+	(REG_N_REFS): Update comment.
+	(REG_FREQ): New.
+	* regclass.c (scan_one_insn): Update REG_FREQ.
+	* flow.c (mark_set_1): Update REG_FREQ, make REG_N_SETS unweighted.
+	(attempt_auto_inc): Likewise.
+	(mark_used_reg): Likewise.
+	(try_pre_increment_1): Likewise.
+	* local-alloc.c (struct qty): Add freq field.
+	(alloc_qty): Set freq.
+	(update_equiv_regs): Set REG_FREQ.
+	(QTY_CMP_PRI): Use freq.
+	(combine_regs): Update qty->freq.
+	* global.c (struct allocno): Update comment for n_refs;
+	add freq field.
+	(local_reg_freq): New array.
+	(global_alloc): Update freq field;
+	allocate and initialize local_reg_freq.
+	(allocno_compare): Use freq field.
+	(find_reg): Likewise.
+	* reload1.c (count_pseudo): Use freq isntead of n_refs.
+	(count_spilled_pseudo): Likewise.
+
+	* tm.texi (GCOV_TYPE_SIZE): Document.
+	* basic-block.h (gcov_type): Define.
+	(struct edge_def): Use gcov_type for count field.
+	(struct basic_block_def): Likewise.
+	* defaults.h (GCOV_TYPE_SIZE): Define.
+	* final.c (end_final): Use GCOV_TYPE_SIZE.
+	* flow.c (dump_edge_info, dump_flow_info, dump_bb): Print count fields
+	using HOST_WIDEST_INT_PRINT_DEC.
+	* gcov-io.h (__fetch_gcov_type, __store_gcov_type, __read_gcov_type,
+	__write_gcov_type): New.
+	(store_long): Remove.
+	* gcov.c (gcov_type): Set default.
+	(struct adj_list): Use gcov_type for arc_count.
+	(bb_info): Use gcov_type for succ_count, pred_count and exec_count.
+	(create_program_flow_graph): Read arc_count properly.
+	(solve_program_flow_graph): 'total' is gcov_type.
+	(output_data): Line_counts is gcov_type, print it properly.
+	* libgcc2.c (struct bb): Counts is gcov_type.
+	(__bb_exit_func): Use __read_gcov_type and __write_gcov_type.
+	* profile.c (LONG_TYPE_SIZE, LONG_LONG_TYPE_SIZE): Set default.
+	(GCOV_TYPE_SIZE): Define.
+	(struct bb_info): succ_count and pred_count is gcov_type.
+	(compute_branch_probabilities): Use __read_gcov_type,
+	print read edges to the dump file.
+	(total): Is gcov_type.
+	(gen_edge_profiler): Use GCOV_TYPE_SIZE.
+
 2001-06-14  Andrew Haley  <aph@cambridge.redhat.com>
 
 	* optabs.c (emit_libcall_block): When using non-call exceptions,
