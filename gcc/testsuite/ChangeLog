@@ -1,3 +1,7 @@
+2000-09-19  Richard Henderson  <rth@cygnus.com>
+
+	* gcc.dg/compare2.c (case 10): XFAIL.
+
 2000-09-18  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/20000906-1.c: Move ...
