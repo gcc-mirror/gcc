@@ -1,5 +1,10 @@
 2003-03-29  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
+	* doc/contrib.texi: Add Eric Botcazou and Roger Sayle.
+	Uniformly use bugfix instead of bug fix. 
+
+2003-03-29  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+	
 	PR doc/895
 	* ONEWS: Remove those items that already appear in the EGCS
 	release notes on our web pages.
