@@ -263,10 +263,10 @@ static tree round_down		PROTO((tree, int));
 static rtx round_trampoline_addr PROTO((rtx));
 static tree blocks_nreverse	PROTO((tree));
 static int all_blocks		PROTO((tree, tree *));
-#if defined (HAVE_prologue) || defined (HAVE_epilogue)
-static int *record_insns	PROTO((rtx));
+/* We always define `record_insns' even if its not used so that we
+   can always export `prologue_epilogue_contains'.  */
+static int *record_insns	PROTO((rtx)) ATTRIBUTE_UNUSED;
 static int contains		PROTO((rtx, int *));
-#endif /* HAVE_prologue || HAVE_epilogue */
 static void put_addressof_into_stack PROTO((rtx, struct hash_table *));
 static void purge_addressof_1	PROTO((rtx *, rtx, int, int, 
 				       struct hash_table *));
@@ -6424,7 +6424,6 @@ expand_function_end (filename, line, end_bindings)
 /* Create an array that records the INSN_UIDs of INSNS (either a sequence
    or a single insn).  */
 
-#if defined (HAVE_prologue) || defined (HAVE_epilogue)
 static int *
 record_insns (insns)
      rtx insns;
@@ -6486,7 +6485,6 @@ prologue_epilogue_contains (insn)
     return 1;
   return 0;
 }
-#endif /* HAVE_prologue || HAVE_epilogue */
 
 /* Generate the prologue and epilogue RTL if the machine supports it.  Thread
    this into place with notes indicating where the prologue ends and where
