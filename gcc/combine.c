@@ -4032,10 +4032,7 @@ simplify_if_then_else (x)
      C2 = C1 * STORE_FLAG_VALUE. Similarly if OP has an outer ZERO_EXTEND or
      SIGN_EXTEND as long as Z is already extended (so we don't destroy it).
      We can do this kind of thing in some cases when STORE_FLAG_VALUE is
-     neither of the above, but it isn't worth checking for.
-
-     Similarly, (if_then_else COND Z 0) can be replaced by 
-     (mult COND (mult Z STORE_FLAG_VALUE)).  */
+     neither of the above, but it isn't worth checking for.  */
 
   if (comparison_p && mode != VOIDmode && ! side_effects_p (x))
     {
@@ -4046,11 +4043,6 @@ simplify_if_then_else (x)
       enum rtx_code op, extend_op = NIL;
       enum machine_mode m = mode;
       rtx z = 0, c1;
-
-      if (f == const0_rtx)
-	return gen_binary (MULT, mode, gen_binary (true_code, mode, cond_op0,
-						   cond_op1),
-			   gen_binary (MULT, mode, t, const_true_rtx));
 
       if ((GET_CODE (t) == PLUS || GET_CODE (t) == MINUS
 	   || GET_CODE (t) == IOR || GET_CODE (t) == XOR
