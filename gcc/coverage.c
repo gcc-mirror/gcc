@@ -182,6 +182,9 @@ read_counts_file (void)
       return;
     }
 
+  /* Read and discard the stamp. */
+  gcov_read_unsigned ();
+  
   counts_hash = htab_create (10,
 			     htab_counts_entry_hash, htab_counts_entry_eq,
 			     htab_counts_entry_del);
@@ -445,6 +448,7 @@ coverage_begin_output (void)
 	    {
 	      gcov_write_unsigned (GCOV_GRAPH_MAGIC);
 	      gcov_write_unsigned (GCOV_VERSION);
+	      gcov_write_unsigned (local_tick);
 	    }
 	  bbg_file_opened = 1;
 	}
@@ -708,6 +712,14 @@ build_gcov_info (void)
   fields = field;
   value = tree_cons (field, null_pointer_node, value);
 
+  /* stamp */
+  field = build_decl (FIELD_DECL, NULL_TREE, unsigned_intSI_type_node);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+  value = tree_cons (field, convert (unsigned_intSI_type_node,
+				     build_int_2 (local_tick, 0)),
+		     value);
+
   /* Filename */
   string_type = build_pointer_type (build_qualified_type (char_type_node,
 						    TYPE_QUAL_CONST));
@@ -905,13 +917,9 @@ coverage_finish (void)
 
       if (error)
 	unlink (bbg_file_name);
-#if SELF_COVERAGE
-      /* If the compiler is instrumented, we should not
-         unconditionally remove the counts file, because we might be
-         recompiling ourselves. The .da files are all removed during
-         copying the stage1 files.  */
-      if (error)
-#endif
+      if (!local_tick)
+	/* Only remove the da file, if we cannot stamp it. If we can
+	   stamp it, libgcov will DTRT.  */
 	unlink (da_file_name);
     }
 }

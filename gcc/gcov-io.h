@@ -52,11 +52,17 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    The basic format of the files is
 
-   	file : int32:magic int32:version record*
+   	file : int32:magic int32:version int32:stamp record*
 
    The magic ident is different for the bbg and the counter files.
    The version is the same for both files and is derived from gcc's
-   version number.  Although the ident and version are formally 32 bit
+   version number. The stamp value is used to synchronize bbg and
+   counter files and to synchronize merging within a counter file. It
+   need not be an absolute time stamp, merely a ticker that increments
+   fast enough and cycles slow enough to distinguish different
+   compile/run/compile cycles.
+   
+   Although the ident and version are formally 32 bit
    numbers, they are derived from 4 character ASCII strings.  The
    version number consists of the single character major version
    number, a two character minor version number (leading zero for
@@ -370,8 +376,9 @@ struct gcov_info
   gcov_unsigned_t version;	/* expected version number */
   struct gcov_info *next;	/* link to next, used by libgcc */
 
+  gcov_unsigned_t stamp;	/* uniquifying time stamp */
   const char *filename;		/* output file name */
-
+  
   unsigned n_functions;		/* number of functions */
   const struct gcov_fn_info *functions; /* table of functions */
 
@@ -453,6 +460,7 @@ GCOV_LINKAGE void gcov_write_counter (gcov_type);
 GCOV_LINKAGE void gcov_write_tag_length (gcov_unsigned_t, gcov_unsigned_t);
 GCOV_LINKAGE void gcov_write_summary (gcov_unsigned_t /*tag*/,
 				      const struct gcov_summary *);
+static void gcov_truncate (void);
 static void gcov_rewrite (void);
 GCOV_LINKAGE void gcov_seek (gcov_position_t /*position*/);
 #else
@@ -524,6 +532,12 @@ gcov_rewrite (void)
   gcov_var.start = 0;
   gcov_var.offset = 0;
   fseek (gcov_var.file, 0L, SEEK_SET);
+}
+
+static inline void
+gcov_truncate (void)
+{
+  ftruncate (fileno (gcov_var.file), 0L);
 }
 #endif
 

@@ -167,8 +167,10 @@ gcov_exit (void)
       gcov_unsigned_t tag, length;
       gcov_position_t summary_pos = 0;
 
-      /* Totals for this object file.  */
       memset (&this_object, 0, sizeof (this_object));
+      memset (&object, 0, sizeof (object));
+      
+      /* Totals for this object file.  */
       for (t_ix = c_ix = 0,
 	     ci_ptr = gi_ptr->counts, cs_ptr = this_object.ctrs;
 	   t_ix != GCOV_COUNTERS_SUMMABLE; t_ix++, cs_ptr++)
@@ -222,6 +224,15 @@ gcov_exit (void)
 	    {
 	      gcov_version_mismatch (gi_ptr, length);
 	      goto read_fatal;
+	    }
+
+	  length = gcov_read_unsigned ();
+	  if (length != gi_ptr->stamp)
+	    {
+	      /* Read from a different compilation. Overwrite the
+		 file.  */
+	      gcov_truncate ();
+	      goto rewrite;
 	    }
 	  
 	  /* Merge execution counts for each function.  */
@@ -298,8 +309,6 @@ gcov_exit (void)
 	rewrite:;
 	  gcov_rewrite ();
 	}
-      else
-	memset (&object, 0, sizeof (object));
       if (!summary_pos)
 	memset (&program, 0, sizeof (program));
 
@@ -355,6 +364,7 @@ gcov_exit (void)
       
       /* Write out the data.  */
       gcov_write_tag_length (GCOV_DATA_MAGIC, GCOV_VERSION);
+      gcov_write_unsigned (gi_ptr->stamp);
       
       /* Write execution counts for each function.  */
       for (f_ix = gi_ptr->n_functions, fi_ptr = gi_ptr->functions; f_ix--;
