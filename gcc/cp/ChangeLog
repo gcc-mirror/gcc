@@ -1,3 +1,11 @@
+Thu Mar 26 11:16:30 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokdeclarator): Remove const and volatile from type after
+	setting constp and volatilep.
+
+	* class.c (finish_struct_1): Don't warn about bool bitfield larger
+	than one bit.
+
 Thu Mar 26 10:25:52 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* pt.c (convert_nontype_argument): STRIP_NOPS where appropriate.
