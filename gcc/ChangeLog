@@ -1,5 +1,11 @@
 2002-04-16  Richard Henderson  <rth@redhat.com>
 
+	PR c++/6320
+	* except.c (remove_eh_handler): Insert inner regions at beginning
+	of sibling chain.  Refactor expressions.
+
+2002-04-16  Richard Henderson  <rth@redhat.com>
+
 	* config/sparc/sol2-bi.h (AS_SPARC64_FLAG): New.
 	* config/sparc/sol2-gas-bi.h: New file.
 	* config.gcc (sparc*-solaris): Add it as needed.
