@@ -80,11 +80,12 @@ finalize_nrv_r (tree *tp, int *walk_subtrees, void *data)
   /* No need to walk into types.  */
   if (TYPE_P (*tp))
     *walk_subtrees = 0;
-  /* If this is a RETURN_EXPR, then set the expression being returned
-     to RESULT.  */
+
+  /* If this is a RETURN_EXPR, set the expression being returned to RESULT.  */
   else if (TREE_CODE (*tp) == RETURN_EXPR)
     TREE_OPERAND (*tp, 0) = dp->result;
-  /* Replace all occurrences of VAR with RESULT.  */
+
+  /* Othewise replace all occurrences of VAR with RESULT.  */
   else if (*tp == dp->var)
     *tp = dp->result;
 
