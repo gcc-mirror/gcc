@@ -1,4 +1,4 @@
-/* -*- Mode: C -*-  $Id: inclhack.def,v 1.1 1998/03/20 16:19:41 korbb Exp $  */
+/* -*- Mode: C -*-  $Id: inclhack.def,v 1.6 1998/09/22 07:22:00 korbb Exp $  */
 
 autogen definitions inclhack;
 
@@ -991,9 +991,12 @@ fix = {
 /*
  *  Remove the double-slash comments
  *  They *must* be removed so it will not create nested comments!!
+ *  However, they will *not* be removed if '++' is in any part of
+ *  their file name.
  */
 fix = {
     hackname = no_double_slash;
+    test     = '-z "`echo ${f}|grep ++`"';
     select = '//[^*]';
     sed    = '/\/\/[^*]/' "s|//\\(.*\\)$|/* \\1 */|";
 };
