@@ -6262,12 +6262,8 @@ expand_expr (exp, target, tmode, modifier)
 	  }
 
 	temp = gen_rtx_MEM (mode, op0);
-	/* If address was computed by addition,
-	   mark this as an element of an aggregate.  */
-	if (TREE_CODE (exp1) == PLUS_EXPR
-	    || (TREE_CODE (exp1) == SAVE_EXPR
-		&& TREE_CODE (TREE_OPERAND (exp1, 0)) == PLUS_EXPR)
-	    || AGGREGATE_TYPE_P (TREE_TYPE (exp))
+
+	if (AGGREGATE_TYPE_P (TREE_TYPE (exp))
 	    || (TREE_CODE (exp1) == ADDR_EXPR
 		&& (exp2 = TREE_OPERAND (exp1, 0))
 		&& AGGREGATE_TYPE_P (TREE_TYPE (exp2))))

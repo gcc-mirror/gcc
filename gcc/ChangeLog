@@ -1,3 +1,8 @@
+2000-10-27  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* expr.c (expand_expr, case INDIRECT_REF): If the address is a
+	PLUS, that does not prove the object is in a structure.
+
 2000-08-25  David Edelsohn  <edelsohn@gnu.org>
 
 	* collect2.c (use_import_list): Always return 0 (disable).
