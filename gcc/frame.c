@@ -60,7 +60,7 @@ typedef unsigned int  uaddr __attribute__ ((mode (pointer)));
 typedef          int  saddr __attribute__ ((mode (pointer)));
 typedef unsigned char ubyte;
 
-/* The first few fields of a CIE.  The CIE_id field is 0xffffffff for a CIE,
+/* The first few fields of a CIE.  The CIE_id field is 0 for a CIE,
    to distinguish it from a valid FDE.  FDEs are aligned to an addressing
    unit boundary, but the fields within are unaligned.  */
 
@@ -563,7 +563,7 @@ __register_frame_table (void *begin)
   __register_frame_info_table (begin, ob);
 }
 
-/* Called from crtend.o to deregister the unwind info for an object.  */
+/* Called from crtbegin.o to deregister the unwind info for an object.  */
 
 void *
 __deregister_frame_info (void *begin)
