@@ -1,3 +1,9 @@
+2004-12-08  Richard Guenther <richard.guenther@uni-tuebingen.de>
+
+	* doc/invoke.texi: Adjust default values for
+	large-function-growth and inline-unit-growth to match
+	params.def.  Clarify used algorithm.
+
 2004-12-07  David Mosberger  <davidm@hpl.hp.com>
 
         PR target/18443
