@@ -137,7 +137,7 @@ pdp11_output_function_prologue (stream, size)
     {
       fprintf (stream, "\t/*abuse empty parameter slot for locals!*/\n");
       if (size > 2)
-	fprintf(stream, "\tsub $0%o, sp\n", size - 2);
+	fprintf(stream, "\tsub $%#o, sp\n", size - 2);
 
     }
 }
@@ -178,7 +178,7 @@ pdp11_output_function_prologue (stream, size)
 
     /* make frame */
     if (fsize)							
-	fprintf (stream, "\tsub $0%o, sp\n", fsize);			
+	fprintf (stream, "\tsub $%#o, sp\n", fsize);			
 
     /* save CPU registers  */
     for (regno = 0; regno < 8; regno++)				
@@ -280,7 +280,7 @@ pdp11_output_function_epilogue (stream, size)
 	/* change fp -> r5 due to the compile error on libgcc2.c */
 	for (i =7 ; i >= 0 ; i--)					
 	    if (regs_ever_live[i] && ! call_used_regs[i])		
-		fprintf(stream, "\tmov 0%o(r5), %s\n",(-fsize-2*j--)&0xffff, reg_names[i]);
+		fprintf(stream, "\tmov %#o(r5), %s\n",(-fsize-2*j--)&0xffff, reg_names[i]);
 
 	/* get ACs */						
 	via_ac = FIRST_PSEUDO_REGISTER -1;
@@ -298,7 +298,7 @@ pdp11_output_function_epilogue (stream, size)
 		&& regs_ever_live[i]
 		&& ! call_used_regs[i])
 	    {
-		fprintf(stream, "\tldd 0%o(r5), %s\n", (-fsize-k)&0xffff, reg_names[i]);
+		fprintf(stream, "\tldd %#o(r5), %s\n", (-fsize-k)&0xffff, reg_names[i]);
 		k -= 8;
 	    }
 	    
@@ -309,7 +309,7 @@ pdp11_output_function_epilogue (stream, size)
 		if (! LOAD_FPU_REG_P(via_ac))
 		    abort();
 		    
-		fprintf(stream, "\tldd 0%o(r5), %s\n", (-fsize-k)&0xffff, reg_names[via_ac]);
+		fprintf(stream, "\tldd %#o(r5), %s\n", (-fsize-k)&0xffff, reg_names[via_ac]);
 		fprintf(stream, "\tstd %s, %s\n", reg_names[via_ac], reg_names[i]);
 		k -= 8;
 	    }
@@ -351,7 +351,7 @@ pdp11_output_function_epilogue (stream, size)
 		fprintf(stream, "\tmov (sp)+, %s\n", reg_names[i]);	
 								
 	if (fsize)						
-	    fprintf((stream), "\tadd $0%o, sp\n", (fsize)&0xffff);      		
+	    fprintf((stream), "\tadd $%#o, sp\n", (fsize)&0xffff);      		
     }			
 					
     fprintf (stream, "\trts pc\n");					
@@ -818,7 +818,7 @@ output_ascii (file, p, size)
       register int c = p[i];
       if (c < 0)
 	c += 256;
-      fprintf (file, "0%o", c);
+      fprintf (file, "%#o", c);
       if (i < size - 1)
 	putc (',', file);
     }
@@ -1549,7 +1549,7 @@ output_addr_const_pdp11 (file, x)
     case CONST_INT:
       /* Should we check for constants which are too big?  Maybe cutting
 	 them off to 16 bits is OK?  */
-      fprintf (file, "0%ho", (unsigned short) INTVAL (x));
+      fprintf (file, "%#ho", (unsigned short) INTVAL (x));
       break;
 
     case CONST:
@@ -1565,7 +1565,7 @@ output_addr_const_pdp11 (file, x)
 	  if (CONST_DOUBLE_HIGH (x))
 	    abort (); /* Should we just silently drop the high part?  */
 	  else
-	    fprintf (file, "0%ho", (unsigned short) CONST_DOUBLE_LOW (x));
+	    fprintf (file, "%#ho", (unsigned short) CONST_DOUBLE_LOW (x));
 	}
       else
 	/* We can't handle floating point constants;

@@ -1,3 +1,13 @@
+2002-10-12  Naohiko Shimizu  <pshimizu@fa2.so-net.ne.jp>
+
+	* pdp11.h (ASM_OUTPUT_SKIP): Add preceding 0 for octal constant.
+	(ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL): Likewise.
+	* pdp11.c (pdp11_output_function_prologue): 0%o -> %#o.
+	(pdp11_output_function_epilogue, output_ascii): Likewise.
+	(output_addr_const_pdp11): Likewise.
+	* pdp11.md (movdi): Use offsetable memory for floating store.
+	(lshrsi3, negsi2): Delete irrelevant comment.
+
 2002-10-11  Geoffrey Keating  <geoffk@apple.com>
 
 	* cse.c (mention_regs): Set SUBREG_TICKED to the register number,
