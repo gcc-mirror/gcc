@@ -2692,7 +2692,8 @@ dbxout_function (decl)
   DBX_OUTPUT_FUNCTION_END (asmfile, decl);
 #endif
 #ifdef ASM_OUTPUT_SECTION_NAME
-  if (flag_function_sections && use_gnu_debug_info_extensions)
+  if (use_gnu_debug_info_extensions
+      && DECL_SECTION_NAME (decl) != NULL)
     dbxout_function_end ();
 #endif
 }
