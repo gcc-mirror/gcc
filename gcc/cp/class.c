@@ -328,7 +328,6 @@ build_base_path (enum tree_code code,
 			 build_pointer_type (ptrdiff_type_node),
 			 v_offset);
       v_offset = build_indirect_ref (v_offset, NULL);
-      TREE_CONSTANT (v_offset) = 1;
 
       offset = convert_to_integer (ptrdiff_type_node,
 				   size_diffop (offset, 
@@ -455,7 +454,6 @@ build_vtbl_ref_1 (tree instance, tree idx)
   assemble_external (vtbl);
 
   aref = build_array_ref (vtbl, idx);
-  TREE_CONSTANT (aref) |= TREE_CONSTANT (vtbl) && TREE_CONSTANT (idx);
 
   return aref;
 }
