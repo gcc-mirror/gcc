@@ -1307,11 +1307,11 @@ base_alias_check (x, y, x_mode, y_mode)
 	return 1;
       if (GET_CODE (x) == AND
 	  && (GET_CODE (XEXP (x, 1)) != CONST_INT
-	      || GET_MODE_UNIT_SIZE (y_mode) < -INTVAL (XEXP (x, 1))))
+	      || (int) GET_MODE_UNIT_SIZE (y_mode) < -INTVAL (XEXP (x, 1))))
 	return 1;
       if (GET_CODE (y) == AND
 	  && (GET_CODE (XEXP (y, 1)) != CONST_INT
-	      || GET_MODE_UNIT_SIZE (x_mode) < -INTVAL (XEXP (y, 1))))
+	      || (int) GET_MODE_UNIT_SIZE (x_mode) < -INTVAL (XEXP (y, 1))))
 	return 1;
       /* Differing symbols never alias.  */
       return 0;
