@@ -4,10 +4,11 @@
 #include <stdlib.h>
 #include <objc/NXConstStr.h>
 
-int main(int argc, void **args)
+#define STRING "this is a string"
+
+int main (int argc, void **args)
 {
-  if (strcmp ([@"this " @"is " @"a " @"string" cString],
-              "this " "is " "a " "string"))
+  if (strcmp ([@STRING cString], STRING))
     abort ();
   return 0;
 }

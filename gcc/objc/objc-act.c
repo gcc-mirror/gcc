@@ -1474,12 +1474,13 @@ objc_add_static_instance (constructor, class_decl)
   DECL_COMMON (decl) = 1;
   TREE_STATIC (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
+  DECL_INITIAL (decl) = constructor;
+
+  /* We may be writing something else just now.
+     Postpone till end of input.  */
+  DECL_DEFER_OUTPUT (decl) = 1;
   pushdecl_top_level (decl);
   rest_of_decl_compilation (decl, 0, 1, 0);
-
-  /* Do this here so it gets output later instead of possibly
-     inside something else we are writing.  */
-  DECL_INITIAL (decl) = constructor;
 
   /* Add the DECL to the head of this CLASS' list.  */
   TREE_PURPOSE (*chain) = tree_cons (NULL_TREE, decl, TREE_PURPOSE (*chain));

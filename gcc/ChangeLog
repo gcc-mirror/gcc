@@ -1,5 +1,11 @@
 2001-03-06  Zack Weinberg  <zackw@stanford.edu>
 
+	* objc/objc-act.c (objc_add_static_instance): Set DECL_INITIAL
+	and DECL_DEFER_OUTPUT on the decl we create, before calling
+	rest_of_decl_compilation.
+
+2001-03-06  Zack Weinberg  <zackw@stanford.edu>
+
 	* aclocal.m4 (AM_GNU_GETTEXT): Don't AC_REQUIRE
 	AC_FUNC_ALLOCA.
 	* configure, config.in: Regenerate.
@@ -101,8 +107,8 @@
 
 	from 2000-09-06  Zack Weinberg  <zack@wolery.cumb.org>
 	* c-parse.gperf, c-gperf.h: Delete.
-	(c-gperf.h was accidently re-added to the CVS repo in the rev 1.16 commit
-	by tromey)
+	(c-gperf.h was accidently re-added to the CVS repo in the rev
+	1.16 commit by tromey)
 
 2001-03-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
