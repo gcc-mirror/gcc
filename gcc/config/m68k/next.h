@@ -99,7 +99,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   do {									\
     long hex;								\
     REAL_VALUE_TO_TARGET_SINGLE (VALUE, hex);				\
-    fprintf (FILE, "#0b%x", hex);					\
+    fprintf (FILE, "#0%c%x", (CODE) == 'f' ? 'b' : 'x', hex);		\
   } while (0)
 #else
 #define ASM_OUTPUT_FLOAT_OPERAND(CODE,FILE,VALUE)			\
