@@ -1569,7 +1569,9 @@ yylex ()
 	       || (ISALNUM (c) && c != 'l' && c != 'L'
 		   && c != 'u' && c != 'U'
 		   && c != 'i' && c != 'I' && c != 'j' && c != 'J'
-		   && (floatflag == NOT_FLOAT || ((c != 'f') && (c != 'F')))))
+		   && (floatflag == NOT_FLOAT
+		       || ((base != 16) && (c != 'f') && (c != 'F'))
+		       || base == 16)))   
 	  {
 	    if (c == '.')
 	      {
