@@ -1,3 +1,20 @@
+2004-08-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16338
+	* cp-tree.h (DECL_INTEGRAL_CONSTANT_VAR_P): New macro.
+	* call.c (null_ptr_cst_p): Handle variables with constant
+	initializers.
+	* pt.c (convert_nontype_argument): Use
+	DECL_INTEGRAL_CONSTANT_VAR_P.
+	* semantics.c (finish_id_expression): Likewise.
+
+	PR c++~/16489
+	* decl.c (duplicate_decls): Reject duplicate namespace
+	declarations.
+
+	PR c++/16810
+	* typeck.c (build_ptrmemfunc): Loosen assertion.
+
 2004-08-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* call.c (z_candidate::template_decl): Rename from template.
