@@ -197,10 +197,13 @@ extern "Java"
       class Thread;
       class ThreadDeath;
       class ThreadGroup;
+      class ThreadLocal;
+      class ThreadLocal$Value;
       class Throwable;
       class UnknownError;
       class UnsatisfiedLinkError;
       class UnsupportedOperationException;
+      class VMClassLoader;
       class VerifyError;
       class VirtualMachineError;
       class Void;

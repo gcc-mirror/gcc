@@ -1,100 +1,177 @@
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Boolean.java -- object wrapper for boolean
+   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
 
-   This file is part of libgcj.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
  
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
+
+
 package java.lang;
 
 import java.io.Serializable;
- 
+
 /**
- * @author Warren Levy <warrenl@cygnus.com>
- * @date September 3, 1998.  
- */
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct.
- */
- 
-public final class Boolean extends Object implements Serializable
+ * Instances of class <code>Boolean</code> represent primitive 
+ * <code>boolean</code> values.
+ *
+ * @author Paul Fisher
+ * @since JDK1.0
+ */ 
+public final class Boolean implements Serializable
 {
-  public static final Boolean FALSE = new Boolean(false);
-  public static final Boolean TRUE = new Boolean(true);
-
-  // This initialization is seemingly circular, but it is accepted
-  // by javac, and is handled specially by gcc.
-  public static final Class TYPE = boolean.class;
-
-  /* The boolean value of the instance. */
-  private boolean value;
-
-  private static final long serialVersionUID = -3665804199014368530L;
-
-  public Boolean(boolean boolVal)
-  {
-    value = boolVal;
-  }
-
-  public Boolean(String strVal)
-  {
-    value = (strVal == null ? false : strVal.equalsIgnoreCase("true"));
-  }
-
-  public boolean booleanValue()
-  {
-    return value;
-  }
-
-  public boolean equals(Object obj)
-  {
-    /* Don't need to compare obj to null as instanceof will do this. */
-    if (obj instanceof Boolean)
-      return value == ((Boolean) obj).value;
-    return false;
-  }
-
-  public static boolean getBoolean(String property)
-  {
-    /* TBD: If a security manager exists and it doesn't permit accessing
-     * the property, it will throw an exception.  Should we catch it?
+    static final long serialVersionUID = -3665804199014368530L;
+    
+    /**
+     * This field is a <code>Boolean</code> object representing the
+     * primitive value <code>true</code>. This instance is returned
+     * by the static <code>valueOf()</code> methods if they return
+     * a <code>Boolean</code> representing <code>true</code>.
      */
-    try
-      {
-	String val = System.getProperty(property);
-	return val == null ? false : val.equalsIgnoreCase("true");
-      }
-    catch (SecurityException e)
-      {
-        return false;
-      }
-  }
-
-  public int hashCode()
-  {
-    /* These values are from the Java Lang. Spec. (Sec 20.4.7).
-     * TBD: They could be made private static final fields but they're only
-     * used here (and shouldn't be used anywhere else), though it might be
-     * useful to grep on something like JAVA_HASH_* values for us as
-     * developers.
+    public static final Boolean TRUE  = new Boolean(true);
+    
+    /**
+     * This field is a <code>Boolean</code> object representing the 
+     * primitive value <code>false</code>. This instance is returned
+     * by the static <code>valueOf()</code> methods if they return
+     * a <code>Boolean</code> representing <code>false</code>.
      */
-    return value ? 1231 : 1237;
-  }
+     public static final Boolean FALSE = new Boolean(false);
 
-  public String toString()
-  {
-    return value ? "true" : "false";
-  }
+    /**
+     * The primitive type <code>boolean</code> is represented by this 
+     * <code>Class</code> object.
+     */
+    public static final Class TYPE = VMClassLoader.getPrimitiveClass("boolean");
+    
+    /**
+     * The immutable value of this Boolean.
+     */
+    private final boolean value;
+    
+    /**
+     * Create a <code>Boolean</code> object representing the value of the 
+     * argument <code>value</code>. In general the use of the static
+     * method <code>valueof(boolean)</code> is more efficient since it will
+     * not create a new object.
+     *
+     * @param value the primitive value of this <code>Boolean</code>
+     */    
+    public Boolean(boolean value) {
+	this.value = value;
+    }
+    
+    /**
+     * Creates a <code>Boolean</code> object representing the primitive 
+     * <code>true</code> if and only if <code>s</code> matches 
+     * the string "true" ignoring case, otherwise the object will represent 
+     * the primitive <code>false</code>. In general the use of the static
+     * method <code>valueof(String)</code> is more efficient since it will
+     * not create a new object.
+     *
+     * @param s the <code>String</code> representation of <code>true</code>
+     *   or false
+     */
+    public Boolean(String s) {
+	value = "true".equalsIgnoreCase(s);
+    }
 
-  public static Boolean valueOf(String str)
-  {
-    if (str == null)
-      return FALSE;
-    else
-      /* This returns a Boolean (big B), not a boolean (little b). */
-      return str.equalsIgnoreCase("true") ? TRUE : FALSE;
-  }
+    /**
+     * Return the primitive <code>boolean</code> value of this 
+     * <code>Boolean</code> object.
+     */
+    public boolean booleanValue() {
+	return value;
+    }
+
+    /**
+     * Returns the Boolean <code>TRUE</code> if the given boolean is
+     * <code>true</code>, otherwise it will return the Boolean
+     * <code>FALSE</code>.
+     *
+     * @since 1.4
+     */
+    public static Boolean valueOf(boolean b) {
+    	return b ? TRUE : FALSE;
+    }
+
+    /**
+     * Returns the Boolean <code>TRUE</code> if and only if the given
+     * String is equal, ignoring case, to the the String "true", otherwise
+     * it will return the Boolean <code>FALSE</code>.
+     */
+    public static Boolean valueOf(String s) {
+    	return "true".equalsIgnoreCase(s) ? TRUE : FALSE;
+    }
+
+    /**
+     * Returns the integer <code>1231</code> if this object represents 
+     * the primitive <code>true</code> and the integer <code>1237</code>
+     * otherwise.
+     */    
+    public int hashCode() {
+	return (value) ? 1231 : 1237;
+    }
+
+    /**
+     * If the <code>obj</code> is an instance of <code>Boolean</code> and
+     * has the same primitive value as this object then <code>true</code>
+     * is returned.  In all other cases, including if the <code>obj</code>
+     * is <code>null</code>, <code>false</code> is returned.
+     *
+     * @param obj possibly an instance of any <code>Class</code>
+     * @return <code>false</code> is <code>obj</code> is an instance of
+     *   <code>Boolean</code> and has the same primitive value as this 
+     *   object.
+     */    
+    public boolean equals(Object obj) {
+	return (obj instanceof Boolean && value == ((Boolean)obj).value);
+    }
+
+    /**
+     * If the value of the system property <code>name</code> matches
+     * "true" ignoring case then the function returns <code>true</code>.
+     */
+    public static boolean getBoolean(String name) {
+	String val = System.getProperty(name);
+	return ("true".equalsIgnoreCase(val));
+    }
+    
+    /**
+     * Returns "true" if the value of the give boolean is <code>true</code> and
+     * returns "false" if the value of the given boolean is <code>false</code>.
+     *
+     * @since 1.4
+     */
+    public static String toString(boolean b)
+    {
+	return b ? "true" : "false";
+    }
+
+    /**
+     * Returns "true" if the value of this object is <code>true</code> and
+     * returns "false" if the value of this object is <code>false</code>.
+     */
+    public String toString()
+    {
+	return (value) ? "true" : "false";
+    }   
 }
