@@ -1,3 +1,8 @@
+2003-08-05  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (expand_builtin): When not optimizing, call the library
+	function for all builtins that have library functions (except alloca).
+
 2003-08-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	* c.opt: Introduce -fworking-directory.
