@@ -255,7 +255,7 @@ case $machine in
 	;;
 esac	
 
-# Common parts for GNU/Linux, GNU/Hurd and OpenBSD systems.
+# Common parts for GNU/Linux, GNU/Hurd, OpenBSD and FreeBSD systems.
 case $machine in
 *-*-linux*)
 	xm_defines="POSIX"
@@ -295,6 +295,62 @@ case $machine in
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 		tmake_file="${tmake_file} t-openbsd-thread"
+	fi
+	;;
+*-*-freebsd[12] | *-*-freebsd[12].* | *-*-freebsd*aout*)
+	# This is the place-holder for the generic a.out configuration
+	# of FreeBSD.  No actual configuration resides here since
+	# there was only ever a bare-bones ix86 configuration for
+	# a.out and it exists solely in the machine-specific section.
+	# This place-holder must exist to avoid dropping into
+	# the generic ELF configuration of FreeBSD (i.e. it must be
+	# ordered before that section).
+	;;
+*-*-freebsd*)
+	# This is the generic ELF configuration of FreeBSD.  Later
+	# machine-specific sections may refine and add to this
+	# configuration.
+	#
+	# Due to tm_file entry ordering issues that vary between cpu
+	# architectures, we only define fbsd_tm_file to allow the
+	# machine-specific section to dictate the final order of all
+	# entries of tm_file with the minor exception that components
+	# of the tm_file set here will always be of the form:
+	#
+	# freebsd<version_number>.h [freebsd-<conf_option>.h ...] freebsd.h
+	#
+	# The machine-specific section should not tamper with this
+	# ordering but may order all other entries of tm_file as it
+	# pleases around the provided core setting.
+	gas=yes
+	gnu_ld=yes
+	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
+	case $machine in
+	*-*-freebsd3 | *-*-freebsd[3].*) fbsd_tm_file="freebsd3.h";;
+	*-*-freebsd4 | *-*-freebsd[4].*) fbsd_tm_file="freebsd4.h";;
+	*-*-freebsd5 | *-*-freebsd[5].*) fbsd_tm_file="freebsd5.h";;
+	*-*-freebsd6 | *-*-freebsd[6].*) fbsd_tm_file="freebsd6.h";;
+	*) echo 'Please update *-*-freebsd* in gcc/config.gcc'; exit 1;;
+	esac
+	tmake_file=t-freebsd
+	xm_defines=POSIX
+	case x${enable_threads} in
+	xno) fbsd_tm_file="${fbsd_tm_file} freebsd-nthr.h";;
+	x | xyes | xpthreads | xposix)
+		thread_file='posix'
+		tmake_file="${tmake_file} t-freebsd-thread"
+		;;
+	*) echo 'Unknown thread configuration for FreeBSD'; exit 1;;
+	esac
+	fbsd_tm_file="${fbsd_tm_file} freebsd.h"
+	if test x${thread_file} = xposix; then
+	  if test x${enable_libgcj} = xyes; then
+	    echo 'FreeBSD does not currently handle --enable-threads (now'
+	    echo 'the default to match system compiler) and --enable-libgcj.'
+	    echo 'Please explicitly configure with --disable-threads or'
+	    echo '--disable-libgcj'
+	    exit 1
+	  fi
 	fi
 	;;
 esac
@@ -395,19 +451,10 @@ alpha*-*-linux*)
 	fi
 	;;
 alpha*-*-freebsd*)
-	tm_file="${tm_file} freebsd.h alpha/elf.h alpha/freebsd.h"
+	tm_file="${tm_file} ${fbsd_tm_file} alpha/elf.h alpha/freebsd.h"
 	target_cpu_default="MASK_GAS"
-	tmake_file="t-freebsd alpha/t-crtbe alpha/t-alpha alpha/t-ieee"
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 	xmake_file=none
-	gas=yes gnu_ld=yes
-	stabs=yes
-	case x${enable_threads} in
-	xyes | xpthreads | xposix)
-		thread_file='posix'
-		tmake_file="${tmake_file} t-freebsd-thread"
-		;;
-	esac
+	tmake_file="${tmake_file} alpha/t-crtbe alpha/t-alpha alpha/t-ieee"
 	;;
 alpha*-*-netbsd*)
 	tm_file="${tm_file} alpha/elf.h alpha/netbsd.h alpha/netbsd-elf.h"
@@ -1087,18 +1134,7 @@ i[34567]86-*-freebsd[12] | i[34567]86-*-freebsd[12].* | i[34567]86-*-freebsd*aou
 	tmake_file=t-freebsd
 	;;
 i[34567]86-*-freebsd*)
-	tm_file="i386/i386.h i386/att.h svr4.h freebsd.h i386/freebsd.h i386/perform.h"
-	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-	tmake_file=t-freebsd
-	gas=yes
-	gnu_ld=yes
-	stabs=yes
-	case x${enable_threads} in
-	xyes | xpthreads | xposix)
-		thread_file='posix'
-		tmake_file="${tmake_file} t-freebsd-thread"
-		;;
-	esac
+	tm_file="${tm_file} i386/att.h svr4.h ${fbsd_tm_file} i386/freebsd.h i386/perform.h"
 	;;
 i[34567]86-*-netbsd*)
 	tm_file=i386/netbsd.h

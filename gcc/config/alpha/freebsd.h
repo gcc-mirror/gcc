@@ -19,10 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
-#undef  CPP_PREDEFINES
-#define CPP_PREDEFINES \
-  "-D__ELF__ -Dunix -D__FreeBSD__ -Asystem(unix) -Asystem(bsd) -Asystem(FreeBSD)"
-
 /* Provide a CPP_SPEC appropriate for FreeBSD/alpha.  Besides the dealing with
    the GCC option `-posix', and PIC issues as on all FreeBSD platforms, we must
    deal with the Alpha's FP issues.  */

@@ -1,4 +1,42 @@
 2001-05-30  Loren J. Rittle  <ljrittle@acm.org>
+	    David O'Brien  <obrien@freebsd.org>
+
+	FreeBSD system configuration merged from mainline.
+
+	* config.gcc (the unlabeled system switch statement): Add
+	generic configuration section to handle *-*-freebsd*.  Also,
+	to match the system compiler, default to threading support (it
+	may be disabled with the standard --disable-threads
+	configuration-time switch).  Report bad configuration.
+	(i[34567]86-*-freebsd* in machine-specific section): Use it.
+	(alpha*-*-freebsd* in machine-specific section): Likewise.
+
+	* config/freebsd.h (LIB_SPEC): Key the exact setting to
+	configure-time options and target version of FreeBSD.  Set-up
+	to match architectural change in threading support.  Correctly
+	report when -pthread option is not supported by configure-time
+	options.
+	(FBSD_CPP_PREDEFINES): Move from architecture-specific files
+	and extend to encode target version number in run-time setting
+	of __FreeBSD__ macro to match the system compiler.  Use #endif/#if pair
+	instead of #elif (which is OK for this case but not in general).
+	(CPP_PREDEFINES): Likewise.
+	(PREFERRED_DEBUGGING_TYPE): Change to DWARF2_DEBUG.
+
+	* config/alpha/freebsd.h (CPP_PREDEFINES): Moved to common freebsd.h.
+	* config/i386/freebsd.h (CPP_PREDEFINES): Likewise.
+
+	* config/freebsd3.h: New file to expose FBSD_MAJOR macro (3).
+	* config/freebsd4.h: New file to expose FBSD_MAJOR macro (4).
+	* config/freebsd5.h: New file to expose FBSD_MAJOR macro (5).
+	* config/freebsd6.h: New file to expose FBSD_MAJOR macro (6).
+	* config/freebsd-nthr.h: New file to expose FBSD_NO_THREADS macro.
+
+	* config/t-freebsd (TARGET_LIBGCC2_CFLAGS): Add -fPIC.
+	* config/t-freebsd-thread (TARGET_LIBGCC2_CFLAGS): Add
+	-pthread instead setting macro.
+
+2001-05-30  Loren J. Rittle  <ljrittle@acm.org>
 	    John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* gthr-posix.h (__gthread_active_ptr): Cast function pointer

@@ -77,10 +77,6 @@ Boston, MA 02111-1307, USA.  */
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
     
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -D__ELF__ -D__FreeBSD__\
- -Asystem=unix -Asystem=bsd -Asystem=FreeBSD"
-
 /* Provide a STARTFILE_SPEC appropriate for FreeBSD.  Here we add
    the magical crtbegin.o file (see crtstuff.c) which provides part 
 	of the support for getting C++ file-scope static object constructed 
