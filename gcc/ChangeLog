@@ -1,3 +1,8 @@
+2005-02-23  Michael Beach  <michaelb@ieee.org>
+
+	PR target/20159
+	* config/sparc/t-elf (startup files): Assemble with CPP.
+
 2005-02-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	* genpreds.c (mark_mode_tests): Handle non-VOIDmode match_operands.
