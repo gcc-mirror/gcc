@@ -1,3 +1,7 @@
+2005-03-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.old-deja/g++.warn/compare1.C: Fix typo.
+
 2005-03-24  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++.dg/ext/visibility/pragma-override1.C: Mark as requiring
