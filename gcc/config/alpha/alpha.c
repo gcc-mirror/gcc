@@ -38,6 +38,9 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "tree.h"
 
+/* Specify which cpu to schedule for. */
+ enum processor_type alpha_cpu;
+
 /* Specify how accurate floating-point traps need to be.  */
 
 enum alpha_trap_precision alpha_tp;
@@ -51,6 +54,7 @@ enum alpha_fp_rounding_mode alpha_fprm;
 enum alpha_fp_trap_mode alpha_fptm;
 
 /* Strings decoded into the above options.  */
+char *alpha_cpu_string;		/* -mcpu=ev[4|5] */
 char *alpha_tp_string;		/* -mtrap-precision=[p|s|i] */
 char *alpha_fprm_string;	/* -mfp-rounding-mode=[n|m|c|d] */
 char *alpha_fptm_string;	/* -mfp-trap-mode=[n|u|su|sui] */
@@ -93,6 +97,18 @@ static void add_long_const	PROTO((FILE *, HOST_WIDE_INT, int, int, int));
 void
 override_options ()
 {
+  alpha_cpu = TARGET_CPU_DEFAULT;
+  if (alpha_cpu_string)
+    {
+      if (alpha_cpu_string[0] == 'e'
+	  && alpha_cpu_string[1] == 'v'
+	  && (alpha_cpu_string[2] == '4' || alpha_cpu_string[2] == '5'))
+	alpha_cpu = alpha_cpu_string[2] == '4' ? PROCESSOR_EV4 : PROCESSOR_EV5;
+      else
+	error ("bad value (%s) for -mcpu switch",
+	       alpha_cpu_string);
+    }
+
   alpha_tp = ALPHA_TP_PROG;
   alpha_fprm = ALPHA_FPRM_NORM;
   alpha_fptm = ALPHA_FPTM_N;
@@ -1047,6 +1063,29 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
   if (REG_NOTE_KIND (link) != 0)
     return 0;
 
+  /* EV5 costs are as given in alpha.md; exceptions are given here. */
+  if (alpha_cpu == PROCESSOR_EV5)
+    {
+      /* And the lord DEC sayeth:  "A special bypass provides an effective
+	 latency of 0 cycles for an ICMP or ILOG insn producing the test
+	 operand of an IBR or CMOV insn." */
+      if (recog_memoized (dep_insn) >= 0
+	  && (get_attr_type (dep_insn) == TYPE_ICMP
+	      || get_attr_type (dep_insn) == TYPE_ILOG)
+	  && recog_memoized (insn) >= 0
+	  && (get_attr_type (insn) == TYPE_IBR
+	      || (get_attr_type (insn) == TYPE_CMOV
+		  && !((set = single_set (dep_insn)) != 0
+		       && GET_CODE (PATTERN (insn)) == SET
+		       && GET_CODE (SET_SRC (PATTERN (insn))) == IF_THEN_ELSE
+		       && (rtx_equal_p (SET_DEST (set),
+					XEXP (SET_SRC (PATTERN (insn)), 1))
+			   || rtx_equal_p (SET_DEST (set),
+					   XEXP (SET_SRC (PATTERN (insn)), 2)))))))
+	return 1;
+      return cost;
+    } 
+
   /* If INSN is a store insn and DEP_INSN is setting the data being stored,
      we can sometimes lower the cost.  */
 
@@ -1076,7 +1115,8 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
      for the address in loads and stores.  */
 
   if (recog_memoized (dep_insn) >= 0
-      && get_attr_type (dep_insn) == TYPE_IADDLOG)
+      && (get_attr_type (dep_insn) == TYPE_IADD
+	  || get_attr_type (dep_insn) == TYPE_ILOG))
     switch (get_attr_type (insn))
       {
       case TYPE_LD:
