@@ -1,3 +1,22 @@
+2003-10-20  Benjamin Kosnik  <bkoz@redhat.com>
+ 
+	PR libstdc++/10081
+	* testsuite_hooks.h: Add pod_type, ctype and numpunct specializations.
+	* testsuite_hooks.cc: Same.
+	* 22_locale/numpunct/members/pod/1.cc: Edit.
+	* 22_locale/numpunct/members/pod/2.cc: Same.
+	* 27_io/basic_istream/sentry/char/3983-fstream.cc: Move ...
+	* 27_io/basic_istream/sentry/char/3983-sstream.cc: Move ...
+	* 27_io/basic_istream/extractors_arithmetic/pod/3983-1.cc: Here.
+	* 27_io/basic_istream/extractors_character/pod/3983-2.cc: Here.
+	* 27_io/basic_istream/extractors_other/pod/3983-3.cc: Here.
+	* 27_io/basic_ostream/sentry/char/3983-fstream.cc: Remove.
+	* 27_io/basic_ostream/sentry/char/3983-sstream.cc: Remove.
+	* 27_io/basic_istream/sentry/pod/1.cc: New.
+	* 27_io/basic_ostream/sentry/pod/1.cc: New.
+	* 21_strings/basic_string/inserters_extractors/pod/10081-in.cc: New.
+	* 21_strings/basic_string/inserters_extractors/pod/10081-out.cc: New.
+
 2003-10-20  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/cpu/mips/atomicity.h (__atomic_add): Use _ABIO32 instead
