@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "recog.h"
 #include "expr.h"
+#include "reload.h"
 #include "toplev.h"
 #include "basic-block.h"
 #include "integrate.h"
@@ -1189,15 +1190,21 @@ s390_expand_plus_operand (target, src, scratch_in)
   if (GET_CODE (src) != PLUS || GET_MODE (src) != Pmode)
     abort ();
 
-  sum1 = XEXP (src, 0);
-  sum2 = XEXP (src, 1);
+  /* Check if any of the two operands is already scheduled
+     for replacement by reload.  This can happen e.g. when
+     float registers occur in an address.  */
+  sum1 = find_replacement (&XEXP (src, 0));
+  sum2 = find_replacement (&XEXP (src, 1));
 
   /* If one of the two operands is equal to the target,
-     make it the first one.  */
-  if (rtx_equal_p (target, sum2))
+     make it the first one.  If one is a constant, make
+     it the second one.  */
+  if (rtx_equal_p (target, sum2)
+      || GET_CODE (sum1) == CONST_INT)
     {
-      sum2 = XEXP (src, 0);
-      sum1 = XEXP (src, 1);
+      rtx tem = sum2;
+      sum2 = sum1;
+      sum1 = tem;
     }
 
   /* If the first operand is not an address register,
@@ -1210,8 +1217,11 @@ s390_expand_plus_operand (target, src, scratch_in)
 
   /* Likewise for the second operand.  However, take
      care not to clobber the target if we already used
-     it for the first operand.  Use the scratch instead.  */
-  if (true_regnum (sum2) < 1 || true_regnum (sum2) > 15)
+     it for the first operand.  Use the scratch instead.
+     Also, allow an immediate offset if it is in range.  */
+  if ((true_regnum (sum2) < 1 || true_regnum (sum2) > 15)
+      && !(GET_CODE (sum2) == CONST_INT
+           && INTVAL (sum2) >= 0 && INTVAL (sum2) < 4096))
     {
       if (!rtx_equal_p (target, sum1))
         {

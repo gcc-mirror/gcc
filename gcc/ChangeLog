@@ -1,3 +1,10 @@
+2002-04-17  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR optimization/6305
+	* config/s390/s390.c (s390_expand_plus_operand): Use find_replacement
+	to make sure previous reloads are taken into account.  Generate
+	better code if one operand is an in-range immediate constant.
+
 2002-04-16  Andrew Haley  <aph@cambridge.redhat.com>
 
 	* doc/install.texi (Building): libgcj requires GNU make.
