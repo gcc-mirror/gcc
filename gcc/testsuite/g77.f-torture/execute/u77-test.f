@@ -226,9 +226,11 @@ C     the better to test with, my dear!  (-- burley)
         call doabort
       end if
       write (6,*) '  with stat array ', statb
-      if (statb(5).ne.getuid () .or. statb(6).ne.getgid() .or. statb(4)
-     +     .ne. 1) then
-        write (6,*) '*** FSTAT uid, gid or nlink is wrong'
+      if (statb(6) .ne. getgid ()) then
+        write (6,*) 'Note: FSTAT gid wrong (happens on some systems).'
+      end if
+      if (statb(5) .ne. getuid () .or. statb(4) .ne. 1) then
+        write (6,*) '*** FSTAT uid or nlink is wrong'
         call doabort
       end if
       do i=1,13
