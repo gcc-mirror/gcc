@@ -654,6 +654,8 @@ char *lang_options[] =
   "-fno-ansi-overloading",
   "-fcadillac",
   "-fno-cadillac",
+  "-fcheck-new",
+  "-fno-check-new",
   "-fconserve-space",
   "-fno-conserve-space",
   "-fdefault-inline",
