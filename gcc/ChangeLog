@@ -1,3 +1,7 @@
+2003-01-30  Loren James Rittle  <ljrittle@acm.org>
+
+	* objc/Make-lang.in (objc-parse.y): Find c-parse.in in $(srcdir).
+
 2003-01-30  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/fp-bit.h (__make_dp): Declare if TMODES.
@@ -4345,7 +4349,7 @@ Thu Dec 19 23:44:09 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* alloc-pool.c: New file.
 	* alloc-pool.h: New file.
 
-2002-12-18  Loren James Rittle  <rittle@labs.mot.com>
+2002-12-18  Loren James Rittle  <ljrittle@acm.org>
 
 	* gcc.c (validate_switches): Robustify against skipping past '\0'.
 
