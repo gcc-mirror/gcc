@@ -45,45 +45,42 @@ final class ByteBufferImpl extends ByteBuffer
 {
   private boolean readOnly;
 
-  ByteBufferImpl (int capacity)
-  {
-    this (new byte [capacity], 0, capacity, capacity, 0, -1, false);
-  }
-  
   ByteBufferImpl (byte[] buffer, int offset, int capacity, int limit, int position, int mark, boolean readOnly)
   {
-    super (buffer, offset, capacity, limit, position, mark);
+    super (capacity, limit, position, mark);
+    this.backing_buffer = buffer;
+    this.array_offset = offset;
     this.readOnly = readOnly;
   }
   
   public CharBuffer asCharBuffer ()
   {
-    return new CharViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly (), order());
+    return new CharViewBufferImpl (this, remaining() >> 1);
   }
 
   public ShortBuffer asShortBuffer ()
   {
-    return new ShortViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly (), order());
+    return new ShortViewBufferImpl (this, remaining() >> 1);
   }
 
   public IntBuffer asIntBuffer ()
   {
-    return new IntViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly (), order());
+    return new IntViewBufferImpl (this, remaining() >> 2);
   }
 
   public LongBuffer asLongBuffer ()
   {
-    return new LongViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly (), order());
+    return new LongViewBufferImpl (this, remaining() >> 3);
   }
 
   public FloatBuffer asFloatBuffer ()
   {
-    return new FloatViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly (), order());
+    return new FloatViewBufferImpl (this, remaining() >> 2);
   }
 
   public DoubleBuffer asDoubleBuffer ()
   {
-    return new DoubleViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly (), order());
+    return new DoubleViewBufferImpl (this, remaining() >> 3);
   }
 
   public boolean isReadOnly ()
@@ -106,6 +103,13 @@ final class ByteBufferImpl extends ByteBuffer
     return new ByteBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, true);
   }
   
+  void shiftDown (int dst_offset, int src_offset, int count)
+  {
+    System.arraycopy(backing_buffer, array_offset + src_offset,
+		     backing_buffer, array_offset + dst_offset,
+		     count);
+  }
+
   public ByteBuffer compact ()
   {
     int pos = position();
@@ -129,7 +133,7 @@ final class ByteBufferImpl extends ByteBuffer
    */
   final public byte get ()
   {
-    byte result = backing_buffer [position ()];
+    byte result = backing_buffer [position () + array_offset];
     position (position () + 1);
     return result;
   }
@@ -144,9 +148,10 @@ final class ByteBufferImpl extends ByteBuffer
   {
     if (readOnly)
       throw new ReadOnlyBufferException ();
-	  	    
-    backing_buffer [position ()] = value;
-    position (position () + 1);
+
+    int pos = position();
+    backing_buffer [pos + array_offset] = value;
+    position (pos + 1);
     return this;
   }
   
@@ -159,7 +164,7 @@ final class ByteBufferImpl extends ByteBuffer
    */
   final public byte get (int index)
   {
-    return backing_buffer [index];
+    return backing_buffer [index + array_offset];
   }
   
   /**
@@ -175,7 +180,7 @@ final class ByteBufferImpl extends ByteBuffer
     if (readOnly)
       throw new ReadOnlyBufferException ();
     	    
-    backing_buffer [index] = value;
+    backing_buffer [index + array_offset] = value;
     return this;
   }
   
