@@ -1,3 +1,7 @@
+2000-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* rtlanal.c (may_trap_p): Check operand modes of COMPARE.
+
 2000-10-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* PROBLEMS: Remove.

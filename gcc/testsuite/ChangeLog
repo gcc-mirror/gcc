@@ -1,3 +1,7 @@
+2000-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20001013-1.c: New test.
+
 2000-10-15  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/c90-printf-2.c, gcc.dg/c90-scanf-2.c: Determine the type
