@@ -35,10 +35,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "buffer.h"
 #include "toplev.h"
 
-#ifndef DIR_SEPARATOR
-#define DIR_SEPARATOR '/'
-#endif
-
 extern struct obstack temporary_obstack;
 
 /* Base directory in which `.class' files should be written.

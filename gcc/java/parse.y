@@ -66,10 +66,6 @@ definitions and other extensions.  */
 #include "except.h"
 #include "defaults.h"
 
-#ifndef DIR_SEPARATOR
-#define DIR_SEPARATOR '/'
-#endif
-
 /* Local function prototypes */
 static char *java_accstring_lookup PROTO ((int));
 static void  classitf_redefinition_error PROTO ((const char *,tree, tree, tree));
