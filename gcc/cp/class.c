@@ -5430,7 +5430,7 @@ finish_struct (t, attributes)
   if (processing_template_decl)
     {
       finish_struct_methods (t);
-      TYPE_SIZE (t) = integer_zero_node;
+      TYPE_SIZE (t) = bitsize_zero_node;
     }
   else
     finish_struct_1 (t);
