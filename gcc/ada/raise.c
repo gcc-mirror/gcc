@@ -58,9 +58,7 @@ typedef char bool;
 /*  We have not yet figured out how to import this directly */
 
 void
-_gnat_builtin_longjmp (ptr, flag)
-     void *ptr;
-     int flag ATTRIBUTE_UNUSED;
+_gnat_builtin_longjmp (void *ptr, int flag ATTRIBUTE_UNUSED)
 {
    __builtin_longjmp (ptr, 1);
 }
@@ -72,7 +70,7 @@ _gnat_builtin_longjmp (ptr, flag)
    performs any system dependent cleanup required.  */
 
 void
-__gnat_unhandled_terminate ()
+__gnat_unhandled_terminate (void)
 {
   /* Special termination handling for VMS */
 
@@ -108,10 +106,10 @@ typedef struct _Unwind_Context _Unwind_Context;
 typedef struct _Unwind_Exception _Unwind_Exception;
 
 _Unwind_Reason_Code
-__gnat_Unwind_RaiseException PARAMS ((_Unwind_Exception *));
+__gnat_Unwind_RaiseException (_Unwind_Exception *);
 
 _Unwind_Reason_Code
-__gnat_Unwind_ForcedUnwind PARAMS ((_Unwind_Exception *, void *, void *));
+__gnat_Unwind_ForcedUnwind (_Unwind_Exception *, void *, void *);
 
 
 #ifdef IN_RTS   /* For eh personality routine */
@@ -540,9 +538,7 @@ typedef struct
 } region_descriptor;
 
 static void
-db_region_for (region, uw_context)
-     region_descriptor *region;
-     _Unwind_Context *uw_context;
+db_region_for (region_descriptor *region, _Unwind_Context *uw_context)
 {
   _Unwind_Ptr ip = _Unwind_GetIP (uw_context) - 1;
 
@@ -563,9 +559,7 @@ db_region_for (region, uw_context)
    ttype table.  */
 
 static const _Unwind_Ptr
-get_ttype_entry_for (region, filter)
-     region_descriptor *region;
-     long filter;
+get_ttype_entry_for (region_descriptor *region, long filter)
 {
   _Unwind_Ptr ttype_entry;
 
@@ -580,9 +574,8 @@ get_ttype_entry_for (region, filter)
 /* Fill out the REGION descriptor for the provided UW_CONTEXT.  */
 
 static void
-get_region_description_for (uw_context, region)
-     _Unwind_Context *uw_context;
-     region_descriptor *region;
+get_region_description_for (_Unwind_Context *uw_context,
+                            region_descriptor *region)
 {
   const unsigned char * p;
   _Unwind_Word tmp;
@@ -674,9 +667,7 @@ typedef struct
 
 
 static void
-db_action_for (action, uw_context)
-     action_descriptor *action;
-     _Unwind_Context *uw_context;
+db_action_for (action_descriptor *action, _Unwind_Context *uw_context)
 {
   _Unwind_Ptr ip = _Unwind_GetIP (uw_context) - 1;
 
@@ -725,10 +716,9 @@ db_action_for (action, uw_context)
 #define __builtin_eh_return_data_regno(x) x
 
 static void
-get_call_site_action_for (uw_context, region, action)
-     _Unwind_Context *uw_context;
-     region_descriptor *region;
-     action_descriptor *action;
+get_call_site_action_for (_Unwind_Context *uw_context,
+                          region_descriptor *region,
+                          action_descriptor *action)
 {
   _Unwind_Ptr call_site
     = _Unwind_GetIP (uw_context) - 1;
@@ -786,10 +776,9 @@ get_call_site_action_for (uw_context, region, action)
 /* ! __USING_SJLJ_EXCEPTIONS__ */
 
 static void
-get_call_site_action_for (uw_context, region, action)
-     _Unwind_Context *uw_context;
-     region_descriptor *region;
-     action_descriptor *action;
+get_call_site_action_for (_Unwind_Context *uw_context,
+                          region_descriptor *region,
+                          action_descriptor *action)
 {
   _Unwind_Ptr ip
     = _Unwind_GetIP (uw_context) - 1;
@@ -861,11 +850,10 @@ get_call_site_action_for (uw_context, region, action)
    UW_CONTEXT in REGION.  */
 
 static void
-get_action_description_for (uw_context, uw_exception, region, action)
-     _Unwind_Context *uw_context;
-     _Unwind_Exception *uw_exception;
-     region_descriptor *region;
-     action_descriptor *action;
+get_action_description_for (_Unwind_Context *uw_context,
+                            _Unwind_Exception *uw_exception,
+                            region_descriptor *regionr,
+                            action_descriptor *actionr)
 {
   _GNAT_Exception * gnat_exception = (_GNAT_Exception *) uw_exception;
 
@@ -950,11 +938,10 @@ get_action_description_for (uw_context, uw_exception, region, action)
    occured.  */
 
 static void
-setup_to_install (uw_context, uw_exception, uw_landing_pad, uw_filter)
-     _Unwind_Context *uw_context;
-     _Unwind_Exception *uw_exception;
-     int uw_filter;
-     _Unwind_Ptr uw_landing_pad;
+setup_to_install (_Unwind_Context *uw_context,
+                  _Unwind_Exception *uw_exception,
+                  int uw_filter,
+                  _Unwind_Ptr uw_landing_pad)
 {
 #ifndef EH_RETURN_DATA_REGNO
   /* We should not be called if the appropriate underlying support is not
@@ -981,20 +968,18 @@ setup_to_install (uw_context, uw_exception, uw_landing_pad, uw_filter)
 /* The following is defined from a-except.adb. Its purpose is to enable
    automatic backtraces upon exception raise, as provided through the
    GNAT.Traceback facilities.  */
-extern void __gnat_notify_handled_exception PARAMS ((void));
-extern void __gnat_notify_unhandled_exception PARAMS ((void));
+extern void __gnat_notify_handled_exception (void);
+extern void __gnat_notify_unhandled_exception (void);
 
 /* Below is the eh personality routine per se. We currently assume that only
    GNU-Ada exceptions are met.  */
 
 _Unwind_Reason_Code
-__gnat_eh_personality (uw_version, uw_phases,
-		       uw_exception_class, uw_exception, uw_context)
-     int uw_version;
-     _Unwind_Action uw_phases;
-     _Unwind_Exception_Class uw_exception_class;
-     _Unwind_Exception *uw_exception;
-     _Unwind_Context *uw_context;
+__gnat_eh_personality (int uw_version,
+                       _Unwind_Action uw_phases,
+                       _Unwind_Exception_Class uw_exception_class,
+                       _Unwind_Exception *uw_exception,
+                       _Unwind_Context *uw_context)
 {
   _GNAT_Exception * gnat_exception = (_GNAT_Exception *) uw_exception;
 
@@ -1075,8 +1060,7 @@ __gnat_eh_personality (uw_version, uw_phases,
 #undef _Unwind_RaiseException
 
 _Unwind_Reason_Code
-__gnat_Unwind_RaiseException (e)
-     _Unwind_Exception *e;
+__gnat_Unwind_RaiseException (_Unwind_Exception *e)
 {
   return _Unwind_SjLj_RaiseException (e);
 }
@@ -1085,10 +1069,9 @@ __gnat_Unwind_RaiseException (e)
 #undef _Unwind_ForcedUnwind
 
 _Unwind_Reason_Code
-__gnat_Unwind_ForcedUnwind (e, handler, argument)
-     _Unwind_Exception *e;
-     void * handler;
-     void * argument;
+__gnat_Unwind_ForcedUnwind (_Unwind_Exception *e,
+                            void * handler,
+                            void * argument)
 {
   return _Unwind_SjLj_ForcedUnwind (e, handler, argument);
 }
@@ -1097,17 +1080,15 @@ __gnat_Unwind_ForcedUnwind (e, handler, argument)
 #else /* __USING_SJLJ_EXCEPTIONS__ */
 
 _Unwind_Reason_Code
-__gnat_Unwind_RaiseException (e)
-     _Unwind_Exception *e;
+__gnat_Unwind_RaiseException (_Unwind_Exception *e)
 {
   return _Unwind_RaiseException (e);
 }
 
 _Unwind_Reason_Code
-__gnat_Unwind_ForcedUnwind (e, handler, argument)
-     _Unwind_Exception *e;
-     void * handler;
-     void * argument;
+__gnat_Unwind_ForcedUnwind (_Unwind_Exception *e,
+                            void * handler,
+                            void * argument)
 {
   return _Unwind_ForcedUnwind (e, handler, argument);
 }
@@ -1127,18 +1108,16 @@ __gnat_Unwind_ForcedUnwind (e, handler, argument)
    functions never to be called.  */
 
 _Unwind_Reason_Code
-__gnat_Unwind_RaiseException (e)
-     _Unwind_Exception *e ATTRIBUTE_UNUSED;
+__gnat_Unwind_RaiseException (_Unwind_Exception *e ATTRIBUTE_UNUSED)
 {
   abort ();
 }
 
 
 _Unwind_Reason_Code
-__gnat_Unwind_ForcedUnwind (e, handler, argument)
-     _Unwind_Exception *e ATTRIBUTE_UNUSED;
-     void * handler ATTRIBUTE_UNUSED;
-     void * argument ATTRIBUTE_UNUSED;
+__gnat_Unwind_ForcedUnwind (_Unwind_Exception *e ATTRIBUTE_UNUSED,
+                            void * handler ATTRIBUTE_UNUSED,
+                            void * argument ATTRIBUTE_UNUSED)
 {
   abort ();
 }

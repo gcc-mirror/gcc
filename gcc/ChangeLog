@@ -1,3 +1,7 @@
+2003-10-30 Kelley Cook <kcook@gcc.gnu.org>
+
+	* value-prof.c, web.c: Update to C90.
+
 2003-10-30  Eric Christopher  <echristo@redhat.com>
 
 	* function.c (purge_addressof_1): Add case for REG_RETVAL
@@ -16,7 +20,8 @@
 	* real.c (encode_ieee_extended): Initialize whole array.
 	* reg-stack.c (move_for_stack_reg0: Use always XFmode.
 	* i386-modes.def: Change definitions of TFmode and XFmode.
-	* i386.c (classify_argument): Rename TFmodes to XFmodes; add new TFmode code.
+	* i386.c (classify_argument): Rename TFmodes to XFmodes; add new TFmode
+	code.
 	(construct_container): Allow constructing of TFmode integer containers.
 	(ix86_return_in_memory):  XFmode is not returned in memory.
 	(init_ext_80387_constants): Always use XFmode.

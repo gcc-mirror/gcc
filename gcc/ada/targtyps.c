@@ -69,86 +69,86 @@
    to determine the sizes that are used for various C types. */
 
 Pos
-get_target_bits_per_unit ()
+get_target_bits_per_unit (void)
 {
   return BITS_PER_UNIT;
 }
 
 Pos
-get_target_bits_per_word ()
+get_target_bits_per_word (void)
 {
   return BITS_PER_WORD;
 }
 
 Pos
-get_target_char_size ()
+get_target_char_size (void)
 {
   return CHAR_TYPE_SIZE;
 }
 
 Pos
-get_target_wchar_t_size ()
+get_target_wchar_t_size (void)
 {
   /* We never want wide chacters less than "short" in Ada.  */
   return MAX (SHORT_TYPE_SIZE, WCHAR_TYPE_SIZE);
 }
 
 Pos
-get_target_short_size ()
+get_target_short_size (void)
 {
   return SHORT_TYPE_SIZE;
 }
 
 Pos
-get_target_int_size ()
+get_target_int_size (void)
 {
   return INT_TYPE_SIZE;
 }
 
 Pos
-get_target_long_size ()
+get_target_long_size (void)
 {
   return ADA_LONG_TYPE_SIZE;
 }
 
 Pos
-get_target_long_long_size ()
+get_target_long_long_size (void)
 {
   return LONG_LONG_TYPE_SIZE;
 }
 
 Pos
-get_target_float_size ()
+get_target_float_size (void)
 {
   return FLOAT_TYPE_SIZE;
 }
 
 Pos
-get_target_double_size ()
+get_target_double_size (void)
 {
   return DOUBLE_TYPE_SIZE;
 }
 
 Pos
-get_target_long_double_size ()
+get_target_long_double_size (void)
 {
   return WIDEST_HARDWARE_FP_SIZE;
 }
 
 Pos
-get_target_pointer_size ()
+get_target_pointer_size (void)
 {
   return POINTER_SIZE;
 }
 
 Pos
-get_target_maximum_alignment ()
+get_target_maximum_alignment (void)
 {
   return BIGGEST_ALIGNMENT / BITS_PER_UNIT;
 }
 
 Boolean
-get_target_no_dollar_in_label ()
+get_target_no_dollar_in_label (void)
 {
 #ifdef NO_DOLLAR_IN_LABEL
   return 1;
@@ -162,31 +162,31 @@ get_target_no_dollar_in_label ()
 #endif
 
 Nat
-get_float_words_be ()
+get_float_words_be (void)
 {
   return FLOAT_WORDS_BIG_ENDIAN;
 }
 
 Nat
-get_words_be ()
+get_words_be (void)
 {
   return WORDS_BIG_ENDIAN;
 }
 
 Nat
-get_bytes_be ()
+get_bytes_be (void)
 {
   return BYTES_BIG_ENDIAN;
 }
 
 Nat
-get_bits_be ()
+get_bits_be (void)
 {
   return BITS_BIG_ENDIAN;
 }
 
 Nat
-get_strict_alignment ()
+get_strict_alignment (void)
 {
   return STRICT_ALIGNMENT;
 }

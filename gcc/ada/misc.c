@@ -359,7 +359,7 @@ gnat_tree_size (enum tree_code code)
 /* Perform all the initialization steps that are language-specific.  */
 
 static bool
-gnat_init ()
+gnat_init (void)
 {
   /* Performs whatever initialization steps needed by the language-dependent
      lexical analyzer.  */
@@ -396,7 +396,7 @@ gnat_finish_incomplete_decl (tree dont_care ATTRIBUTE_UNUSED)
    objects.  */
 
 void
-gnat_compute_largest_alignment ()
+gnat_compute_largest_alignment (void)
 {
   enum machine_mode mode;
 
@@ -413,7 +413,7 @@ gnat_compute_largest_alignment ()
    various language dependent hooks.  */
 
 void
-gnat_init_gcc_eh ()
+gnat_init_gcc_eh (void)
 {
   /* We shouldn't do anything if the No_Exceptions_Handler pragma is set,
      though. This could for instance lead to the emission of tables with

@@ -94,7 +94,7 @@ __gnat_duration_to_timeval (long sec, long usec, struct timeval *t)
    what time_t is on the target.  */
 
 long
-gnat_time ()
+gnat_time (void)
 {
   return time (0);
 }

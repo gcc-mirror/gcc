@@ -43,28 +43,28 @@
 /* Function wrappers are needed to access the values from Ada which are
    defined as C macros.  */
 
-FILE *c_stdin         PARAMS ((void));
-FILE *c_stdout        PARAMS ((void));
-FILE *c_stderr        PARAMS ((void));
-int seek_set_function PARAMS ((void));
-int seek_end_function PARAMS ((void));
-void *null_function   PARAMS ((void));
-int c_fileno          PARAMS ((FILE *));
+FILE *c_stdin (void);
+FILE *c_stdout (void);
+FILE *c_stderr (void);
+int seek_set_function (void);
+int seek_end_function (void);
+void *null_function (void);
+int c_fileno (FILE *);
 
 FILE *
-c_stdin () 
+c_stdin (void) 
 { 
   return stdin; 
 }
 
 FILE *
-c_stdout () 
+c_stdout (void) 
 { 
   return stdout;
 }
 
 FILE *
-c_stderr () 
+c_stderr (void) 
 { 
   return stderr;
 }
@@ -76,25 +76,24 @@ c_stderr ()
 #endif
 
 int   
-seek_set_function ()  
+seek_set_function (void)  
 { 
   return SEEK_SET; 
 }
 
 int   
-seek_end_function ()  
+seek_end_function (void)  
 { 
   return SEEK_END; 
 }
 
-void *null_function ()  
+void *null_function (void)  
 { 
   return NULL;     
 }
 
 int 
-c_fileno (s) 
-     FILE *s;
+c_fileno (FILE *s) 
 { 
   return fileno (s); 
 }

@@ -44,13 +44,12 @@
 #include "ada-tree.h"
 #include "gigi.h"
 
-static tree find_common_type		PARAMS ((tree, tree));
-static int contains_save_expr_p		PARAMS ((tree));
-static tree contains_null_expr		PARAMS ((tree));
-static tree compare_arrays		PARAMS ((tree, tree, tree));
-static tree nonbinary_modular_operation	PARAMS ((enum tree_code, tree,
-						tree, tree));
-static tree build_simple_component_ref	PARAMS ((tree, tree, tree, int));
+static tree find_common_type (tree, tree);
+static int contains_save_expr_p (tree);
+static tree contains_null_expr (tree);
+static tree compare_arrays (tree, tree, tree);
+static tree nonbinary_modular_operation (enum tree_code, tree, tree, tree);
+static tree build_simple_component_ref (tree, tree, tree, int);
 
 /* Prepare expr to be an argument of a TRUTH_NOT_EXPR or other logical
    operation.
@@ -68,8 +67,7 @@ static tree build_simple_component_ref	PARAMS ((tree, tree, tree, int));
    the only possible operands will be things of Boolean type.  */
 
 tree
-gnat_truthvalue_conversion (expr)
-     tree expr;
+gnat_truthvalue_conversion (tree expr)
 {
   tree type = TREE_TYPE (expr);
 
@@ -106,8 +104,7 @@ gnat_truthvalue_conversion (expr)
 /* Return the base type of TYPE.  */
 
 tree
-get_base_type (type)
-     tree type;
+get_base_type (tree type)
 {
   if (TREE_CODE (type) == RECORD_TYPE
       && TYPE_LEFT_JUSTIFIED_MODULAR_P (type))
@@ -123,8 +120,7 @@ get_base_type (type)
 
 /* Likewise, but only return types known to the Ada source.  */
 tree
-get_ada_base_type (type)
-     tree type;
+get_ada_base_type (tree type)
 {
   while (TREE_TYPE (type) != 0
 	 && (TREE_CODE (type) == INTEGER_TYPE
@@ -140,8 +136,7 @@ get_ada_base_type (type)
    in bits.  If we don't know anything about the alignment, return 0.  */
 
 unsigned int
-known_alignment (exp)
-     tree exp;
+known_alignment (tree exp)
 {
   unsigned int this_alignment;
   unsigned int lhs, rhs;
@@ -221,8 +216,7 @@ known_alignment (exp)
    Otherwise return zero.  */
 
 static tree
-find_common_type (t1, t2)
-     tree t1, t2;
+find_common_type (tree t1, tree t2)
 {
   /* If either type is non-BLKmode, use it.  Note that we know that we will
      not have any alignment problems since if we did the non-BLKmode
@@ -251,8 +245,7 @@ find_common_type (t1, t2)
    of some very general solution.  */
 
 static int
-contains_save_expr_p (exp)
-     tree exp;
+contains_save_expr_p (tree exp)
 {
   switch (TREE_CODE (exp))
     {
@@ -283,8 +276,7 @@ contains_save_expr_p (exp)
    that are known to raise Constraint_Error.  */
 
 static tree
-contains_null_expr (exp)
-     tree exp;
+contains_null_expr (tree exp)
 {
   tree tem;
 
@@ -339,9 +331,7 @@ contains_null_expr (exp)
    length tests in as efficient a manner as possible.  */
 
 static tree
-compare_arrays (result_type, a1, a2)
-     tree a1, a2;
-     tree result_type;
+compare_arrays (tree result_type, tree a1, tree a2)
 {
   tree t1 = TREE_TYPE (a1);
   tree t2 = TREE_TYPE (a2);
@@ -501,10 +491,10 @@ compare_arrays (result_type, a1, a2)
    modulus.  */
 
 static tree
-nonbinary_modular_operation (op_code, type, lhs, rhs)
-     enum tree_code op_code;
-     tree type;
-     tree lhs, rhs;
+nonbinary_modular_operation (enum tree_code op_code, 
+                             tree type,
+                             tree lhs,
+                             tree rhs)
 {
   tree modulus = TYPE_MODULUS (type);
   unsigned int needed_precision = tree_floor_log2 (modulus) + 1;
@@ -601,11 +591,10 @@ nonbinary_modular_operation (op_code, type, lhs, rhs)
    have to do here is validate the work done by SEM and handle subtypes.  */
 
 tree
-build_binary_op (op_code, result_type, left_operand, right_operand)
-     enum tree_code op_code;
-     tree result_type;
-     tree left_operand;
-     tree right_operand;
+build_binary_op (enum tree_code op_code, 
+                 tree result_type, 
+                 tree left_operand,
+                 tree right_operand)
 {
   tree left_type  = TREE_TYPE (left_operand);
   tree right_type = TREE_TYPE (right_operand);
@@ -1094,10 +1083,7 @@ build_binary_op (op_code, result_type, left_operand, right_operand)
 /* Similar, but for unary operations.  */
 
 tree
-build_unary_op (op_code, result_type, operand)
-     enum tree_code op_code;
-     tree result_type;
-     tree operand;
+build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 {
   tree type = TREE_TYPE (operand);
   tree base_type = get_base_type (type);
@@ -1415,11 +1401,10 @@ build_unary_op (op_code, result_type, operand)
 /* Similar, but for COND_EXPR.  */
 
 tree
-build_cond_expr (result_type, condition_operand, true_operand, false_operand)
-     tree result_type;
-     tree condition_operand;
-     tree true_operand;
-     tree false_operand;
+build_cond_expr (tree result_type,
+                 tree condition_operand,
+                 tree true_operand,
+                 tree false_operand)
 {
   tree result;
   int addr_p = 0;
@@ -1470,9 +1455,7 @@ build_cond_expr (result_type, condition_operand, true_operand, false_operand)
    the CALL_EXPR.  */
 
 tree
-build_call_1_expr (fundecl, arg)
-     tree fundecl;
-     tree arg;
+build_call_1_expr (tree fundecl, tree arg)
 {
   tree call = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fundecl)),
 		     build_unary_op (ADDR_EXPR, NULL_TREE, fundecl),
@@ -1488,9 +1471,7 @@ build_call_1_expr (fundecl, arg)
    the CALL_EXPR.  */
 
 tree
-build_call_2_expr (fundecl, arg1, arg2)
-     tree fundecl;
-     tree arg1, arg2;
+build_call_2_expr (tree fundecl, tree arg1, tree arg2)
 {
   tree call = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fundecl)),
 		     build_unary_op (ADDR_EXPR, NULL_TREE, fundecl),
@@ -1507,8 +1488,7 @@ build_call_2_expr (fundecl, arg1, arg2)
 /* Likewise to call FUNDECL with no arguments.  */
 
 tree
-build_call_0_expr (fundecl)
-     tree fundecl;
+build_call_0_expr (tree fundecl)
 {
   tree call = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fundecl)),
 		     build_unary_op (ADDR_EXPR, NULL_TREE, fundecl),
@@ -1523,8 +1503,7 @@ build_call_0_expr (fundecl)
    name, if requested.  MSG says which exception function to call.  */
 
 tree
-build_call_raise (msg)
-     int msg;
+build_call_raise (int msg)
 {
   tree fndecl = gnat_raise_decls[msg];
   const char *str = discard_file_names ? "" : ref_filename;
@@ -1545,9 +1524,7 @@ build_call_raise (msg)
 /* Return a CONSTRUCTOR of TYPE whose list is LIST.  */
 
 tree
-gnat_build_constructor (type, list)
-     tree type;
-     tree list;
+gnat_build_constructor (tree type, tree list)
 {
   tree elmt;
   int allconstant = (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST);
@@ -1616,11 +1593,10 @@ gnat_build_constructor (type, list)
    actual record and know how to look for fields in variant parts.  */
 
 static tree
-build_simple_component_ref (record_variable, component, field, no_fold_p)
-     tree record_variable;
-     tree component;
-     tree field;
-     int no_fold_p;
+build_simple_component_ref (tree record_variable,
+                            tree component,
+                            tree field,
+                            int no_fold_p)
 {
   tree record_type = TYPE_MAIN_VARIANT (TREE_TYPE (record_variable));
   tree ref;
@@ -1707,11 +1683,10 @@ build_simple_component_ref (record_variable, component, field, no_fold_p)
    reference could not be found.  */
 
 tree
-build_component_ref (record_variable, component, field, no_fold_p)
-     tree record_variable;
-     tree component;
-     tree field;
-     int no_fold_p;
+build_component_ref (tree record_variable,
+                     tree component,
+                     tree field,
+                     int no_fold_p)
 {
   tree ref = build_simple_component_ref (record_variable, component, field,
 					 no_fold_p);
@@ -1741,14 +1716,12 @@ build_component_ref (record_variable, component, field, no_fold_p)
    object dynamically on the stack frame.  */
 
 tree
-build_call_alloc_dealloc
-  (gnu_obj, gnu_size, align, gnat_proc, gnat_pool, gnat_node)
-     tree gnu_obj;
-     tree gnu_size;
-     int align;
-     Entity_Id gnat_proc;
-     Entity_Id gnat_pool;
-     Node_Id gnat_node;
+build_call_alloc_dealloc (tree gnu_obj,
+                          tree gnu_size,
+                          int align,
+                          Entity_Id gnat_proc,
+                          Entity_Id gnat_pool,
+                          Node_Id gnat_node)
 {
   tree gnu_align = size_int (align / BITS_PER_UNIT);
 
@@ -1865,13 +1838,12 @@ build_call_alloc_dealloc
    the storage pool to use.  */
 
 tree
-build_allocator (type, init, result_type, gnat_proc, gnat_pool, gnat_node)
-     tree type;
-     tree init;
-     tree result_type;
-     Entity_Id gnat_proc;
-     Entity_Id gnat_pool;
-     Node_Id gnat_node;
+build_allocator (tree type,
+                 tree init,
+                 tree result_type,
+                 Entity_Id gnat_proc,
+                 Entity_Id gnat_pool,
+                 Node_Id gnat_node)
 {
   tree size = TYPE_SIZE_UNIT (type);
   tree result;
@@ -2030,9 +2002,7 @@ build_allocator (type, init, result_type, gnat_proc, gnat_pool, gnat_node)
    GNAT_FORMAL is how we find the descriptor record.  */
 
 tree
-fill_vms_descriptor (expr, gnat_formal)
-     tree expr;
-     Entity_Id gnat_formal;
+fill_vms_descriptor (tree expr, Entity_Id gnat_formal)
 {
   tree record_type = TREE_TYPE (TREE_TYPE (get_gnu_tree (gnat_formal)));
   tree field;
@@ -2059,8 +2029,7 @@ fill_vms_descriptor (expr, gnat_formal)
    should not be allocated in a register.  Returns true if successful.  */
 
 bool
-gnat_mark_addressable (expr_node)
-     tree expr_node;
+gnat_mark_addressable (tree expr_node)
 {
   while (1)
     switch (TREE_CODE (expr_node))

@@ -76,29 +76,25 @@
 #endif
 
 int
-__gnat_feof (stream)
-     FILE *stream;
+__gnat_feof (FILE *stream)
 {
   return (feof (stream));
 }
 
 int
-__gnat_ferror (stream)
-     FILE *stream;
+__gnat_ferror (FILE *stream)
 {
    return (ferror (stream));
 }
 
 int
-__gnat_fileno (stream)
-     FILE *stream;
+__gnat_fileno (FILE *stream)
 {
    return (fileno (stream));
 }
 
 int
-__gnat_is_regular_file_fd (fd)
-     int fd;
+__gnat_is_regular_file_fd (int fd)
 {
   int ret;
   struct stat statbuf;

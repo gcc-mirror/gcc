@@ -144,22 +144,21 @@ struct language_function GTY(())
   int unused;
 };
 
-static tree merge_sizes			PARAMS ((tree, tree, tree, int, int));
-static tree compute_related_constant	PARAMS ((tree, tree));
-static tree split_plus			PARAMS ((tree, tree *));
-static int value_zerop			PARAMS ((tree));
-static tree float_type_for_size		PARAMS ((int, enum machine_mode));
-static tree convert_to_fat_pointer	PARAMS ((tree, tree));
-static tree convert_to_thin_pointer	PARAMS ((tree, tree));
-static tree make_descriptor_field	PARAMS ((const char *,tree, tree,
-						 tree));
-static int value_factor_p		PARAMS ((tree, int));
-static int potential_alignment_gap	PARAMS ((tree, tree, tree));
+static tree merge_sizes (tree, tree, tree, int, int);
+static tree compute_related_constant (tree, tree);
+static tree split_plus (tree, tree *);
+static int value_zerop (tree);
+static tree float_type_for_size (int, enum machine_mode);
+static tree convert_to_fat_pointer (tree, tree);
+static tree convert_to_thin_pointer (tree, tree);
+static tree make_descriptor_field (const char *,tree, tree, tree);
+static int value_factor_p (tree, int);
+static int potential_alignment_gap (tree, tree, tree);
 
 /* Initialize the association of GNAT nodes to GCC trees.  */
 
 void
-init_gnat_to_gnu ()
+init_gnat_to_gnu (void)
 {
   associate_gnat_to_gnu
     = (tree *) ggc_alloc_cleared (max_gnat_nodes * sizeof (tree));
@@ -174,10 +173,7 @@ init_gnat_to_gnu ()
    If GNU_DECL is zero, a previous association is to be reset.  */
 
 void
-save_gnu_tree (gnat_entity, gnu_decl, no_check)
-     Entity_Id gnat_entity;
-     tree gnu_decl;
-     int no_check;
+save_gnu_tree (Entity_Id gnat_entity, tree gnu_decl, int no_check)
 {
   /* Check that GNAT_ENTITY is not already defined and that it is being set
      to something which is a decl.  Raise gigi 401 if not.  Usually, this
@@ -199,8 +195,7 @@ save_gnu_tree (gnat_entity, gnu_decl, no_check)
    be elaborated only once, GNAT_ENTITY is really not an entity.  */
 
 tree
-get_gnu_tree (gnat_entity)
-     Entity_Id gnat_entity;
+get_gnu_tree (Entity_Id gnat_entity)
 {
   if (! associate_gnat_to_gnu[gnat_entity - First_Node_Id])
     gigi_abort (402);
@@ -211,8 +206,7 @@ get_gnu_tree (gnat_entity)
 /* Return nonzero if a GCC tree has been associated with GNAT_ENTITY.  */
 
 int
-present_gnu_tree (gnat_entity)
-     Entity_Id gnat_entity;
+present_gnu_tree (Entity_Id gnat_entity)
 {
   return (associate_gnat_to_gnu[gnat_entity - First_Node_Id] != NULL_TREE);
 }
@@ -221,7 +215,7 @@ present_gnu_tree (gnat_entity)
 /* Return non-zero if we are currently in the global binding level.  */
 
 int
-global_bindings_p ()
+global_bindings_p (void)
 {
   return (force_global != 0 || current_binding_level == global_binding_level
 	  ? -1 : 0);
@@ -231,7 +225,7 @@ global_bindings_p ()
    is in reverse order (it has to be so for back-end compatibility).  */
 
 tree
-getdecls ()
+getdecls (void)
 {
   return current_binding_level->names;
 }
@@ -239,7 +233,7 @@ getdecls ()
 /* Nonzero if the current level needs to have a BLOCK made.  */
 
 int
-kept_level_p ()
+kept_level_p (void)
 {
   return (current_binding_level->names != 0);
 }
@@ -248,8 +242,7 @@ kept_level_p ()
    specified for back-end compatibility.  */
 
 void
-pushlevel (ignore)
-     int ignore ATTRIBUTE_UNUSED;
+pushlevel (int ignore ATTRIBUTE_UNUSED)
 {
   struct binding_level *newlevel = NULL;
 
@@ -287,10 +280,7 @@ pushlevel (ignore)
    them into the BLOCK.  */
 
 tree
-poplevel (keep, reverse, functionbody)
-     int keep;
-     int reverse;
-     int functionbody;
+poplevel (int keep, int reverse, int functionbody)
 {
   /* Points to a GCC BLOCK tree node. This is the BLOCK node construted for the
      binding level that we are about to exit and which is returned by this
@@ -396,8 +386,7 @@ poplevel (keep, reverse, functionbody)
    to handle the BLOCK node inside the BIND_EXPR.  */
 
 void
-insert_block (block)
-     tree block;
+insert_block (tree block)
 {
   TREE_USED (block) = 1;
   current_binding_level->blocks
@@ -408,8 +397,7 @@ insert_block (block)
    (the one we are currently in).  */
 
 void
-set_block (block)
-     tree block;
+set_block (tree block)
 {
   current_binding_level->this_block = block;
   current_binding_level->names = chainon (current_binding_level->names,
@@ -422,8 +410,7 @@ set_block (block)
    Returns the ..._DECL node. */
 
 tree
-pushdecl (decl)
-     tree decl;
+pushdecl (tree decl)
 {
   struct binding_level *b;
 
@@ -478,7 +465,7 @@ pushdecl (decl)
    front end has been run.  */
 
 void
-gnat_init_decl_processing ()
+gnat_init_decl_processing (void)
 {
   input_line = 0;
 
@@ -516,8 +503,7 @@ gnat_init_decl_processing ()
    in the gcc back-end and initialize the global binding level.  */
 
 void
-init_gigi_decls (long_long_float_type, exception_type)
-     tree long_long_float_type, exception_type;
+init_gigi_decls (tree long_long_float_type, tree exception_type)
 {
   tree endlink, decl;
   unsigned int i;
@@ -708,11 +694,10 @@ init_gigi_decls (long_long_float_type, exception_type)
    on this type; it will be done later. */
 
 void
-finish_record_type (record_type, fieldlist, has_rep, defer_debug)
-     tree record_type;
-     tree fieldlist;
-     int has_rep;
-     int defer_debug;
+finish_record_type (tree record_type,
+                    tree fieldlist,
+                    int has_rep,
+                    int defer_debug)
 {
   enum tree_code code = TREE_CODE (record_type);
   tree ada_size = bitsize_zero_node;
@@ -1030,11 +1015,11 @@ finish_record_type (record_type, fieldlist, has_rep, defer_debug)
    We return an expression for the size.  */
 
 static tree
-merge_sizes (last_size, first_bit, size, special, has_rep)
-     tree last_size;
-     tree first_bit, size;
-     int special;
-     int has_rep;
+merge_sizes (tree last_size,
+             tree first_bit,
+             tree size,
+             int special,
+             int has_rep)
 {
   tree type = TREE_TYPE (last_size);
   tree new;
@@ -1070,8 +1055,7 @@ merge_sizes (last_size, first_bit, size, special, has_rep)
    related by the addition of a constant.  Return that constant if so.  */
 
 static tree
-compute_related_constant (op0, op1)
-     tree op0, op1;
+compute_related_constant (tree op0, tree op1)
 {
   tree op0_var, op1_var;
   tree op0_con = split_plus (op0, &op0_var);
@@ -1092,9 +1076,7 @@ compute_related_constant (op0, op1)
    bitsizetype.  */
 
 static tree
-split_plus (in, pvar)
-     tree in;
-     tree *pvar;
+split_plus (tree in, tree *pvar)
 {
   /* Strip NOPS in order to ease the tree traversal and maximize the
      potential for constant or plus/minus discovery. We need to be careful
@@ -1137,12 +1119,12 @@ split_plus (in, pvar)
    depressed stack pointer.  */
 
 tree
-create_subprog_type (return_type, param_decl_list, cico_list,
-		     returns_unconstrained, returns_by_ref, returns_with_dsp)
-     tree return_type;
-     tree param_decl_list;
-     tree cico_list;
-     int returns_unconstrained, returns_by_ref, returns_with_dsp;
+create_subprog_type (tree return_type,
+                     tree param_decl_list,
+                     tree cico_list,
+                     int returns_unconstrained,
+                     int returns_by_ref,
+                     int returns_with_dsp)
 {
   /* A chain of TREE_LIST nodes whose TREE_VALUEs are the data type nodes of
      the subprogram formal parameters. This list is generated by traversing the
@@ -1186,8 +1168,7 @@ create_subprog_type (return_type, param_decl_list, cico_list,
 /* Return a copy of TYPE but safe to modify in any way.  */
 
 tree
-copy_type (type)
-     tree type;
+copy_type (tree type)
 {
   tree new = copy_node (type);
 
@@ -1207,9 +1188,7 @@ copy_type (type)
    TYPE_INDEX_TYPE is INDEX.  */
 
 tree
-create_index_type (min, max, index)
-     tree min, max;
-     tree index;
+create_index_type (tree min, tree max, tree index)
 {
   /* First build a type for the desired range.  */
   tree type = build_index_2_type (min, max);
@@ -1235,12 +1214,11 @@ create_index_type (min, max, index)
    information about this type.  */
 
 tree
-create_type_decl (type_name, type, attr_list, artificial_p, debug_info_p)
-     tree type_name;
-     tree type;
-     struct attrib *attr_list;
-     int artificial_p;
-     int debug_info_p;
+create_type_decl (tree type_name,
+                  tree type,
+                  struct attrib *attr_list,
+                  int artificial_p,
+                  int debug_info_p)
 {
   tree type_decl = build_decl (TYPE_DECL, type_name, type);
   enum tree_code code = TREE_CODE (type);
@@ -1282,17 +1260,15 @@ create_type_decl (type_name, type, attr_list, artificial_p, debug_info_p)
    it indicates whether to always allocate storage to the variable.   */
 
 tree
-create_var_decl (var_name, asm_name, type, var_init, const_flag, public_flag,
-		 extern_flag, static_flag, attr_list)
-     tree var_name;
-     tree asm_name;
-     tree type;
-     tree var_init;
-     int const_flag;
-     int public_flag;
-     int extern_flag;
-     int static_flag;
-     struct attrib *attr_list;
+create_var_decl (tree var_name,
+                 tree asm_name,
+                 tree type,
+                 tree var_init,
+                 int const_flag,
+                 int public_flag,
+                 int extern_flag,
+                 int static_flag,
+                 struct attrib *attr_list)
 {
   int init_const
     = (var_init == 0
@@ -1397,14 +1373,13 @@ create_var_decl (var_name, asm_name, type, var_init, const_flag, public_flag,
    the address of this field for aliasing purposes.  */
 
 tree
-create_field_decl (field_name, field_type, record_type, packed, size, pos,
-		   addressable)
-     tree field_name;
-     tree field_type;
-     tree record_type;
-     int packed;
-     tree size, pos;
-     int addressable;
+create_field_decl (tree field_name,
+                   tree field_type,
+                   tree record_type,
+                   int packed,
+                   tree size,
+                   tree pos,
+                   int addressable)
 {
   tree field_decl = build_decl (FIELD_DECL, field_name, field_type);
 
@@ -1515,8 +1490,7 @@ create_field_decl (field_name, field_type, record_type, packed, size, pos,
    effects, has the value of zero.  */
 
 static int
-value_zerop (exp)
-     tree exp;
+value_zerop (tree exp)
 {
   if (TREE_CODE (exp) == COMPOUND_EXPR)
     return value_zerop (TREE_OPERAND (exp, 1));
@@ -1530,10 +1504,7 @@ value_zerop (exp)
    parameter). */
 
 tree
-create_param_decl (param_name, param_type, readonly)
-     tree param_name;
-     tree param_type;
-     int readonly;
+create_param_decl (tree param_name, tree param_type, int readonly)
 {
   tree param_decl = build_decl (PARM_DECL, param_name, param_type);
 
@@ -1570,9 +1541,7 @@ create_param_decl (param_name, param_type, readonly)
 /* Given a DECL and ATTR_LIST, process the listed attributes.  */
 
 void
-process_attributes (decl, attr_list)
-     tree decl;
-     struct attrib *attr_list;
+process_attributes (tree decl, struct attrib *attr_list)
 {
   for (; attr_list; attr_list = attr_list->next)
     switch (attr_list->type)
@@ -1613,9 +1582,7 @@ process_attributes (decl, attr_list)
 /* Add some pending elaborations on the list.  */
 
 void
-add_pending_elaborations (var_decl, var_init)
-     tree var_decl;
-     tree var_init;
+add_pending_elaborations (tree var_decl, tree var_init)
 {
   if (var_init != 0)
     Check_Elaboration_Code_Allowed (error_gnat_node);
@@ -1627,7 +1594,7 @@ add_pending_elaborations (var_decl, var_init)
 /* Obtain any pending elaborations and clear the old list.  */
 
 tree
-get_pending_elaborations ()
+get_pending_elaborations (void)
 {
   /* Each thing added to the list went on the end; we want it on the
      beginning.  */
@@ -1641,9 +1608,7 @@ get_pending_elaborations ()
    of 2. */
 
 static int
-value_factor_p (value, factor)
-     tree value;
-     int  factor;
+value_factor_p (tree value, int factor)
 {
   if (host_integerp (value, 1))
     return tree_low_cst (value, 1) % factor == 0;
@@ -1662,10 +1627,7 @@ value_factor_p (value, factor)
    position of CURR_FIELD. It is ignored if null. */
 
 static int
-potential_alignment_gap (prev_field, curr_field, offset)
-     tree prev_field;
-     tree curr_field;
-     tree offset;
+potential_alignment_gap (tree prev_field, tree curr_field, tree offset)
 {
   /* If this is the first field of the record, there cannot be any gap */
   if (!prev_field)
@@ -1707,7 +1669,7 @@ potential_alignment_gap (prev_field, curr_field, offset)
 /* Return nonzero if there are pending elaborations.  */
 
 int
-pending_elaborations_p ()
+pending_elaborations_p (void)
 {
   return TREE_CHAIN (pending_elaborations) != 0;
 }
@@ -1716,7 +1678,7 @@ pending_elaborations_p ()
    one.  */
 
 void
-push_pending_elaborations ()
+push_pending_elaborations (void)
 {
   struct e_stack *p = (struct e_stack *) ggc_alloc (sizeof (struct e_stack));
 
@@ -1729,7 +1691,7 @@ push_pending_elaborations ()
 /* Pop the stack of pending elaborations.  */
 
 void
-pop_pending_elaborations ()
+pop_pending_elaborations (void)
 {
   struct e_stack *p = elist_stack;
 
@@ -1741,7 +1703,7 @@ pop_pending_elaborations ()
    elaborations after that point.  */
 
 tree
-get_elaboration_location ()
+get_elaboration_location (void)
 {
   return tree_last (pending_elaborations);
 }
@@ -1750,8 +1712,7 @@ get_elaboration_location ()
    list.  */
 
 void
-insert_elaboration_list (elab)
-     tree elab;
+insert_elaboration_list (tree elab)
 {
   tree next = TREE_CHAIN (elab);
 
@@ -1766,8 +1727,7 @@ insert_elaboration_list (elab)
 /* Returns a LABEL_DECL node for LABEL_NAME.  */
 
 tree
-create_label_decl (label_name)
-     tree label_name;
+create_label_decl (tree label_name)
 {
   tree label_decl = build_decl (LABEL_DECL, label_name, void_type_node);
 
@@ -1787,16 +1747,14 @@ create_label_decl (label_name)
    appropriate fields in the FUNCTION_DECL.  */
 
 tree
-create_subprog_decl (subprog_name, asm_name, subprog_type, param_decl_list,
-		     inline_flag, public_flag, extern_flag, attr_list)
-     tree subprog_name;
-     tree asm_name;
-     tree subprog_type;
-     tree param_decl_list;
-     int inline_flag;
-     int public_flag;
-     int extern_flag;
-     struct attrib *attr_list;
+create_subprog_decl (tree subprog_name,
+                     tree asm_name,
+                     tree subprog_type,
+                     tree param_decl_list,
+                     int inline_flag,
+                     int public_flag,
+                     int extern_flag,
+                     struct attrib *attr_list)
 {
   tree return_type  = TREE_TYPE (subprog_type);
   tree subprog_decl = build_decl (FUNCTION_DECL, subprog_name, subprog_type);
@@ -1842,8 +1800,7 @@ static int function_nesting_depth;
    appearing in the subprogram.  */
 
 void
-begin_subprog_body (subprog_decl)
-     tree subprog_decl;
+begin_subprog_body (tree subprog_decl)
 {
   tree param_decl_list;
   tree param_decl;
@@ -1905,7 +1862,7 @@ begin_subprog_body (subprog_decl)
    to assembler language output.  */
 
 void
-end_subprog_body ()
+end_subprog_body (void)
 {
   tree decl;
   tree cico_list;
@@ -1979,13 +1936,12 @@ end_subprog_body ()
    ATTRS is nonzero, use that for the function attribute list.  */
 
 tree
-builtin_function (name, type, function_code, class, library_name, attrs)
-     const char *name;
-     tree type;
-     int function_code;
-     enum built_in_class class;
-     const char *library_name;
-     tree attrs;
+builtin_function (const char *name,
+                  tree type,
+                  int function_code,
+                  enum built_in_class class,
+                  const char *library_name,
+                  tree attrs)
 {
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
 
@@ -2007,9 +1963,7 @@ builtin_function (name, type, function_code, class, library_name, attrs)
    it is a signed type.  */
 
 tree
-gnat_type_for_size (precision, unsignedp)
-     unsigned precision;
-     int unsignedp;
+gnat_type_for_size (unsigned precision, int unsignedp)
 {
   tree t;
   char type_name[20];
@@ -2038,9 +1992,7 @@ gnat_type_for_size (precision, unsignedp)
 /* Likewise for floating-point types.  */
 
 static tree
-float_type_for_size (precision, mode)
-     int precision;
-     enum machine_mode mode;
+float_type_for_size (int precision, enum machine_mode mode)
 {
   tree t;
   char type_name[20];
@@ -2068,9 +2020,7 @@ float_type_for_size (precision, mode)
    an unsigned type; otherwise a signed type is returned.  */
 
 tree
-gnat_type_for_mode (mode, unsignedp)
-     enum machine_mode mode;
-     int unsignedp;
+gnat_type_for_mode (enum machine_mode mode, int unsignedp)
 {
   if (GET_MODE_CLASS (mode) == MODE_FLOAT)
     return float_type_for_size (GET_MODE_BITSIZE (mode), mode);
@@ -2081,8 +2031,7 @@ gnat_type_for_mode (mode, unsignedp)
 /* Return the unsigned version of a TYPE_NODE, a scalar type.  */
 
 tree
-gnat_unsigned_type (type_node)
-     tree type_node;
+gnat_unsigned_type (tree type_node)
 {
   tree type = gnat_type_for_size (TYPE_PRECISION (type_node), 1);
 
@@ -2105,8 +2054,7 @@ gnat_unsigned_type (type_node)
 /* Return the signed version of a TYPE_NODE, a scalar type.  */
 
 tree
-gnat_signed_type (type_node)
-     tree type_node;
+gnat_signed_type (tree type_node)
 {
   tree type = gnat_type_for_size (TYPE_PRECISION (type_node), 0);
 
@@ -2130,9 +2078,7 @@ gnat_signed_type (type_node)
    UNSIGNEDP.  */
 
 tree
-gnat_signed_or_unsigned_type (unsignedp, type)
-     int unsignedp;
-     tree type;
+gnat_signed_or_unsigned_type (int unsignedp, tree type)
 {
   if (! INTEGRAL_TYPE_P (type) || TREE_UNSIGNED (type) == unsignedp)
     return type;
@@ -2145,9 +2091,7 @@ gnat_signed_or_unsigned_type (unsignedp, type)
    minimum (if ! MAX_P) possible value of the discriminant.  */
 
 tree
-max_size (exp, max_p)
-     tree exp;
-     int max_p;
+max_size (tree exp, int max_p)
 {
   enum tree_code code = TREE_CODE (exp);
   tree type = TREE_TYPE (exp);
@@ -2246,10 +2190,7 @@ max_size (exp, max_p)
    Return a constructor for the template.  */
 
 tree
-build_template (template_type, array_type, expr)
-     tree template_type;
-     tree array_type;
-     tree expr;
+build_template (tree template_type, tree array_type, tree expr)
 {
   tree template_elts = NULL_TREE;
   tree bound_list = NULL_TREE;
@@ -2318,10 +2259,7 @@ build_template (template_type, array_type, expr)
    an object of that type and also for the name.  */
 
 tree
-build_vms_descriptor (type, mech, gnat_entity)
-     tree type;
-     Mechanism_Type mech;
-     Entity_Id gnat_entity;
+build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
 {
   tree record_type = make_node (RECORD_TYPE);
   tree field_list = 0;
@@ -2606,11 +2544,7 @@ build_vms_descriptor (type, mech, gnat_entity)
 /* Utility routine for above code to make a field.  */
 
 static tree
-make_descriptor_field (name, type, rec_type, initial)
-     const char *name;
-     tree type;
-     tree rec_type;
-     tree initial;
+make_descriptor_field (const char *name, tree type, tree rec_type, tree initial)
 {
   tree field
     = create_field_decl (get_identifier (name), type, rec_type, 0, 0, 0, 0);
@@ -2627,10 +2561,7 @@ make_descriptor_field (name, type, rec_type, initial)
    as the name of the record.  */
 
 tree
-build_unc_object_type (template_type, object_type, name)
-     tree template_type;
-     tree object_type;
-     tree name;
+build_unc_object_type (tree template_type, tree object_type, tree name)
 {
   tree type = make_node (RECORD_TYPE);
   tree template_field = create_field_decl (get_identifier ("BOUNDS"),
@@ -2653,9 +2584,7 @@ build_unc_object_type (template_type, object_type, name)
    if NEW is an UNCONSTRAINED_ARRAY_TYPE.  */
 
 void
-update_pointer_to (old_type, new_type)
-     tree old_type;
-     tree new_type;
+update_pointer_to (tree old_type, tree new_type)
 {
   tree ptr = TYPE_POINTER_TO (old_type);
   tree ref = TYPE_REFERENCE_TO (old_type);
@@ -2792,9 +2721,7 @@ update_pointer_to (old_type, new_type)
    pointer.  This involves making or finding a template.  */
 
 static tree
-convert_to_fat_pointer (type, expr)
-     tree type;
-     tree expr;
+convert_to_fat_pointer (tree type, tree expr)
 {
   tree template_type = TREE_TYPE (TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (type))));
   tree template, template_addr;
@@ -2861,9 +2788,7 @@ convert_to_fat_pointer (type, expr)
    is not already a fat pointer.  */
 
 static tree
-convert_to_thin_pointer (type, expr)
-     tree type;
-     tree expr;
+convert_to_thin_pointer (tree type, tree expr)
 {
   if (! TYPE_FAT_POINTER_P (TREE_TYPE (expr)))
     expr
@@ -2886,8 +2811,7 @@ convert_to_thin_pointer (type, expr)
    not permitted by the language being compiled.  */
 
 tree
-convert (type, expr)
-     tree type, expr;
+convert (tree type, tree expr)
 {
   enum tree_code code = TREE_CODE (type);
   tree etype = TREE_TYPE (expr);
@@ -3229,9 +3153,7 @@ convert (type, expr)
    the address is not bit-aligned.  */
 
 tree
-remove_conversions (exp, true_address)
-     tree exp;
-     int true_address;
+remove_conversions (tree exp, int true_address)
 {
   switch (TREE_CODE (exp))
     {
@@ -3264,8 +3186,7 @@ remove_conversions (exp, true_address)
    likewise return an expression pointing to the underlying array.  */
 
 tree
-maybe_unconstrained_array (exp)
-     tree exp;
+maybe_unconstrained_array (tree exp)
 {
   enum tree_code code = TREE_CODE (exp);
   tree new;
@@ -3327,10 +3248,7 @@ maybe_unconstrained_array (exp)
    If NOTRUNC_P is set, truncation operations should be suppressed.  */
 
 tree
-unchecked_convert (type, expr, notrunc_p)
-     tree type;
-     tree expr;
-     int notrunc_p;
+unchecked_convert (tree type, tree expr, int notrunc_p)
 {
   tree etype = TREE_TYPE (expr);
 

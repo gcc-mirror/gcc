@@ -71,28 +71,28 @@ extern struct Exception_Data tasking_error;
 extern struct Exception_Data _abort_signal;
 
 #define Lock_Task system__soft_links__lock_task
-extern void (*Lock_Task) PARAMS ((void));
+extern void (*Lock_Task) (void);
 
 #define Unlock_Task system__soft_links__unlock_task
-extern void (*Unlock_Task) PARAMS ((void));
+extern void (*Unlock_Task) (void);
 
 #define Get_Machine_State_Addr \
                       system__soft_links__get_machine_state_addr
-extern struct Machine_State *(*Get_Machine_State_Addr) PARAMS ((void));
+extern struct Machine_State *(*Get_Machine_State_Addr) (void);
 
 #define Check_Abort_Status     \
                       system__soft_links__check_abort_status
-extern int    (*Check_Abort_Status) PARAMS ((void));
+extern int    (*Check_Abort_Status) (void);
 
 #define Raise_From_Signal_Handler \
                       ada__exceptions__raise_from_signal_handler
-extern void   Raise_From_Signal_Handler PARAMS ((struct Exception_Data *,
-						const char *));
+extern void   Raise_From_Signal_Handler (struct Exception_Data *, const char *);
 
 #define Propagate_Signal_Exception \
                       __gnat_propagate_sig_exc
-extern void   Propagate_Signal_Exception
-	PARAMS ((struct Machine_State *, struct Exception_Data *, const char *));
+extern void   Propagate_Signal_Exception (struct Machine_State *, 
+                                          struct Exception_Data *,
+                                          const char *);
 
 /* Copies of global values computed by the binder */
 int   __gl_main_priority            = -1;
@@ -134,8 +134,7 @@ char __gnat_get_interrupt_state (int);
        's'   Interrupt_State pragma set state to System */
 
 char
-__gnat_get_interrupt_state (intrup)
-     int intrup;
+__gnat_get_interrupt_state (int intrup)
 {
   if (intrup >= __gl_num_interrupt_states)
     return 'n';
@@ -156,30 +155,18 @@ __gnat_get_interrupt_state (intrup)
    boundaries like this are not handled correctly in all systems.  */
 
 void
-__gnat_set_globals (main_priority,
-                    time_slice_val,
-                    wc_encoding,
-                    locking_policy,
-		    queuing_policy,
-		    task_dispatching_policy,
-		    restrictions,
-                    interrupt_states,
-                    num_interrupt_states,
-		    unreserve_all_interrupts,
-		    exception_tracebacks,
-		    zero_cost_exceptions)
-     int main_priority;
-     int time_slice_val;
-     char wc_encoding;
-     char locking_policy;
-     char queuing_policy;
-     char task_dispatching_policy;
-     char *restrictions;
-     char *interrupt_states;
-     int num_interrupt_states;
-     int unreserve_all_interrupts;
-     int exception_tracebacks;
-     int zero_cost_exceptions;
+__gnat_set_globals (int main_priority,
+                    int time_slice_val,
+                    char wc_encoding,
+                    char locking_policy,
+                    char queuing_policy,
+                    char task_dispatching_policy,
+                    char *restrictions,
+                    char *interrupt_states,
+                    int num_interrupt_states,
+                    int unreserve_all_interrupts,
+                    int exception_tracebacks,
+                    int zero_cost_exceptions)
 {
   static int already_called = 0;
 
@@ -288,22 +275,20 @@ __gnat_set_globals (main_priority,
 
 #ifndef _AIXVERSION_430
 
-extern int nanosleep PARAMS ((struct timestruc_t *, struct timestruc_t *));
+extern int nanosleep (struct timestruc_t *, struct timestruc_t *);
 
 int
-nanosleep (Rqtp, Rmtp)
-     struct timestruc_t *Rqtp, *Rmtp;
+nanosleep (struct timestruc_t *Rqtp, struct timestruc_t *Rmtp)
 {
   return nsleep (Rqtp, Rmtp);
 }
 
 #endif /* _AIXVERSION_430 */
 
-static void __gnat_error_handler PARAMS ((int));
+static void __gnat_error_handler (int);
 
 static void
-__gnat_error_handler (sig)
-     int sig;
+__gnat_error_handler (int sig)
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -335,7 +320,7 @@ __gnat_error_handler (sig)
 }
 
 void
-__gnat_install_handler ()
+__gnat_install_handler (void)
 {
   struct sigaction act;
 
@@ -363,7 +348,7 @@ __gnat_install_handler ()
 }
 
 void
-__gnat_initialize ()
+__gnat_initialize (void)
 {
 }
 
@@ -380,20 +365,16 @@ __gnat_initialize ()
 #include <signal.h>
 #include <sys/siginfo.h>
 
-static void __gnat_error_handler PARAMS ((int, siginfo_t *,
-					  struct sigcontext *));
-extern char *__gnat_get_code_loc PARAMS ((struct sigcontext *));
-extern void __gnat_enter_handler PARAMS ((struct sigcontext *, char *));
-extern size_t __gnat_machine_state_length PARAMS ((void));
+static void __gnat_error_handler (int, siginfo_t *, struct sigcontext *);
+extern char *__gnat_get_code_loc (struct sigcontext *);
+extern void __gnat_enter_handler (struct sigcontext *, char *);
+extern size_t __gnat_machine_state_length (void);
 
-extern long exc_lookup_gp PARAMS ((char *));
-extern void exc_resume PARAMS ((struct sigcontext *));
+extern long exc_lookup_gp (char *);
+extern void exc_resume (struct sigcontext *);
 
 static void
-__gnat_error_handler (sig, sip, context)
-     int sig;
-     siginfo_t *sip;
-     struct sigcontext *context;
+__gnat_error_handler (int sig, siginfo_t *sip, struct sigcontext *context)
 {
   struct Exception_Data *exception;
   static int recurse = 0;
@@ -463,7 +444,7 @@ __gnat_error_handler (sig, sip, context)
 }
 
 void
-__gnat_install_handler ()
+__gnat_install_handler (void)
 {
   struct sigaction act;
 
@@ -471,7 +452,7 @@ __gnat_install_handler ()
      exceptions. Make sure that the handler isn't interrupted by another
      signal that might cause a scheduling event! */
 
-  act.sa_handler = (void (*) PARAMS ((int))) __gnat_error_handler;
+  act.sa_handler = (void (*) (int)) __gnat_error_handler;
   act.sa_flags = SA_ONSTACK | SA_RESTART | SA_NODEFER | SA_SIGINFO;
   sigemptyset (&act.sa_mask);
 
@@ -491,7 +472,7 @@ __gnat_install_handler ()
 }
 
 void
-__gnat_initialize ()
+__gnat_initialize (void)
 {
 }
 
@@ -500,16 +481,13 @@ __gnat_initialize ()
 #define SC_GP 29
 
 char *
-__gnat_get_code_loc (context)
-     struct sigcontext *context;
+__gnat_get_code_loc (struct sigcontext *context)
 {
   return (char *) context->sc_pc;
 }
 
 void
-__gnat_enter_handler (context, pc)
-     struct sigcontext *context;
-     char *pc;
+__gnat_enter_handler ( struct sigcontext *context, char *pc)
 {
   context->sc_pc = (long) pc;
   context->sc_regs[SC_GP] = exc_lookup_gp (pc);
@@ -517,7 +495,7 @@ __gnat_enter_handler (context, pc)
 }
 
 size_t
-__gnat_machine_state_length ()
+__gnat_machine_state_length (void)
 {
   return sizeof (struct sigcontext);
 }
@@ -530,11 +508,10 @@ __gnat_machine_state_length ()
 
 #include <signal.h>
 
-static void __gnat_error_handler PARAMS ((int));
+static void __gnat_error_handler (int);
 
 static void
-__gnat_error_handler (sig)
-     int sig;
+__gnat_error_handler (int sig)
 {
   struct Exception_Data *exception;
   char *msg;
@@ -566,7 +543,7 @@ __gnat_error_handler (sig)
 }
 
 void
-__gnat_install_handler ()
+__gnat_install_handler (void)
 {
   struct sigaction act;
 
@@ -609,7 +586,7 @@ __gnat_install_handler ()
 }
 
 void
-__gnat_initialize ()
+__gnat_initialize (void)
 {
 }
 
@@ -639,11 +616,10 @@ struct Machine_State
   unsigned long edi;
 };
 
-static void __gnat_error_handler PARAMS ((int));
+static void __gnat_error_handler (int);
 
 static void
-__gnat_error_handler (sig)
-     int sig;
+__gnat_error_handler (int sig)
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -731,7 +707,7 @@ __gnat_error_handler (sig)
 }
 
 void
-__gnat_install_handler ()
+__gnat_install_handler (void)
 {
   struct sigaction act;
 
@@ -759,7 +735,7 @@ __gnat_install_handler ()
 }
 
 void
-__gnat_initialize ()
+__gnat_initialize (void)
 {
 }
 
@@ -770,13 +746,12 @@ __gnat_initialize ()
 #elif defined (__MINGW32__)
 #include <windows.h>
 
-static LONG WINAPI __gnat_error_handler PARAMS ((PEXCEPTION_POINTERS));
+static LONG WINAPI __gnat_error_handler (PEXCEPTION_POINTERS);
 
 /* __gnat_initialize (mingw32).  */
 
 static LONG WINAPI
-__gnat_error_handler (info)
-     PEXCEPTION_POINTERS info;
+__gnat_error_handler (PEXCEPTION_POINTERS info)
 {
   static int recurse;
   struct Exception_Data *exception;
@@ -891,14 +866,14 @@ __gnat_error_handler (info)
 }
 
 void
-__gnat_install_handler ()
+__gnat_install_handler (void)
 {
   SetUnhandledExceptionFilter (__gnat_error_handler);
   __gnat_handler_installed = 1;
 }
 
 void
-__gnat_initialize ()
+__gnat_initialize (void)
 {
 
    /* Initialize floating-point coprocessor. This call is needed because
@@ -921,11 +896,10 @@ __gnat_initialize ()
 
 #include <signal.h>
 
-static void __gnat_error_handler PARAMS ((int));
+static void __gnat_error_handler (int);
 
 static void
-__gnat_error_handler (sig)
-     int sig;
+__gnat_error_handler (int sig)
 {
   struct Exception_Data *exception;
   char *msg;
@@ -956,7 +930,7 @@ __gnat_error_handler (sig)
 }
 
 void
-__gnat_install_handler ()
+__gnat_install_handler (void)
 {
   struct sigaction act;
 
@@ -982,7 +956,7 @@ __gnat_install_handler ()
 }
 
 void
-__gnat_initialize ()
+__gnat_initialize (void)
 {
    __gnat_init_float ();
 }
@@ -994,7 +968,7 @@ __gnat_initialize ()
 #elif defined (__Lynx__)
 
 void
-__gnat_initialize ()
+__gnat_initialize (void)
 {
    __gnat_init_float ();
 }
@@ -1004,7 +978,7 @@ __gnat_initialize ()
 /*********************************/
 
 void
-__gnat_install_handler ()
+__gnat_install_handler (void)
 {
   __gnat_handler_installed = 1;
 }
@@ -1016,7 +990,7 @@ __gnat_install_handler ()
 #elif defined (__EMX__) /* OS/2 dependent initialization */
 
 void
-__gnat_initialize ()
+__gnat_initialize (void)
 {
 }
 
@@ -1025,7 +999,7 @@ __gnat_initialize ()
 /*********************************/
 
 void
-__gnat_install_handler ()
+__gnat_install_handler (void)
 {
   __gnat_handler_installed = 1;
 }
@@ -1052,13 +1026,10 @@ struct Machine_State
   sigcontext_t context;
 };
 
-static void __gnat_error_handler PARAMS ((int, int, sigcontext_t *));
+static void __gnat_error_handler (int, int, sigcontext_t *);
 
 static void
-__gnat_error_handler (sig, code, sc)
-     int sig;
-     int code;
-     sigcontext_t *sc;
+__gnat_error_handler (int sig, int code, sigcontext_t *sc)
 {
   struct Machine_State  *mstate;
   struct Exception_Data *exception;
@@ -1138,7 +1109,7 @@ __gnat_error_handler (sig, code, sc)
 }
 
 void
-__gnat_install_handler ()
+__gnat_install_handler (void)
 {
   struct sigaction act;
 
@@ -1169,7 +1140,7 @@ __gnat_install_handler ()
 }
 
 void
-__gnat_initialize ()
+__gnat_initialize (void)
 {
 }
 
@@ -1182,12 +1153,10 @@ __gnat_initialize ()
 #include <signal.h>
 #include <siginfo.h>
 
-static void __gnat_error_handler PARAMS ((int, siginfo_t *));
+static void __gnat_error_handler (int, siginfo_t *);
 
 static void
-__gnat_error_handler (sig, sip)
-     int sig;
-     siginfo_t *sip;
+__gnat_error_handler (int sig, siginfo_t *sip)
 {
   struct Exception_Data *exception;
   static int recurse = 0;
@@ -1253,7 +1222,7 @@ __gnat_error_handler (sig, sip)
 }
 
 void
-__gnat_install_handler ()
+__gnat_install_handler (void)
 {
   struct sigaction act;
 
@@ -1279,7 +1248,7 @@ __gnat_install_handler ()
 }
 
 void
-__gnat_initialize ()
+__gnat_initialize (void)
 {
 }
 
@@ -1291,7 +1260,7 @@ __gnat_initialize ()
 
 /* The prehandler actually gets control first on a condition. It swaps the
    stack pointer and calls the handler (__gnat_error_handler). */
-extern long __gnat_error_prehandler ();
+extern long __gnat_error_prehandler (void);
 
 extern char *__gnat_error_prehandler_stack;   /* Alternate signal stack */
 
@@ -1329,12 +1298,10 @@ extern struct Exception_Data *Coded_Exception (int);
 
 struct descriptor_s {unsigned short len, mbz; char *adr; };
 
-long __gnat_error_handler PARAMS ((int *, void *));
+long __gnat_error_handler (int *, void *);
 
 long
-__gnat_error_handler (sigargs, mechargs)
-     int *sigargs;
-     void *mechargs;
+__gnat_error_handler (int *sigargs, void *mechargs)
 {
   struct Exception_Data *exception = 0;
   char *msg = "";
@@ -1470,7 +1437,7 @@ __gnat_error_handler (sigargs, mechargs)
 }
 
 void
-__gnat_install_handler ()
+__gnat_install_handler (void)
 {
   long prvhnd;
   char *c;
@@ -1485,7 +1452,7 @@ __gnat_install_handler ()
 }
 
 void
-__gnat_initialize()
+__gnat_initialize(void)
 {
 }
 
@@ -1508,10 +1475,10 @@ static void __gnat_error_handler (int, int, struct sigcontext *);
 /* getpid is used by s-parint.adb, but is not defined by VxWorks, except
    on Alpha VxWorks */
 
-extern long getpid PARAMS ((void));
+extern long getpid (void);
 
 long
-getpid ()
+getpid (void)
 {
   return taskIdSelf ();
 }
@@ -1519,17 +1486,13 @@ getpid ()
 
 /* This is needed by the GNAT run time to handle Vxworks interrupts */
 int
-__gnat_inum_to_ivec (num)
-     int num;
+__gnat_inum_to_ivec (int num)
 {
   return INUM_TO_IVEC (num);
 }
 
 static void
-__gnat_error_handler (sig, code, sc)
-     int sig;
-     int code;
-     struct sigcontext *sc;
+__gnat_error_handler (int sig, int code, struct sigcontext *sc)
 {
   struct Exception_Data *exception;
   sigset_t mask;
@@ -1576,7 +1539,7 @@ __gnat_error_handler (sig, code, sc)
 }
 
 void
-__gnat_install_handler ()
+__gnat_install_handler (void)
 {
   struct sigaction act;
 
@@ -1601,7 +1564,7 @@ __gnat_install_handler ()
 #define HAVE_GNAT_INIT_FLOAT
 
 void
-__gnat_init_float ()
+__gnat_init_float (void)
 {
   /* Disable overflow/underflow exceptions on the PPC processor, this is needed
      to get correct Ada semantic.  */
@@ -1631,7 +1594,7 @@ __gnat_init_float ()
 }
 
 void
-__gnat_initialize ()
+__gnat_initialize (void)
 {
   __gnat_init_float ();
 
@@ -1661,8 +1624,7 @@ __gnat_initialize ()
 #include <unistd.h>
 
 static void
-__gnat_error_handler (sig)
-  int sig;
+__gnat_error_handler (int sig)
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -1694,7 +1656,7 @@ __gnat_error_handler (sig)
 }
 
 void
-__gnat_install_handler()
+__gnat_install_handler(void)
 {
   struct sigaction act;
 
@@ -1714,7 +1676,7 @@ __gnat_install_handler()
 }
 
 void
-__gnat_initialize ()
+__gnat_initialize (void)
 {
   __gnat_install_handler ();
   __gnat_init_float ();
@@ -1726,12 +1688,12 @@ __gnat_initialize ()
 
 #elif defined(__rtems__)
 
-extern void __gnat_install_handler ();
+extern void __gnat_install_handler (void);
 
 /* For RTEMS, each bsp will provide a custom __gnat_install_handler (). */
 
 void
-__gnat_initialize ()
+__gnat_initialize (void)
 {
    __gnat_install_handler ();
 }
@@ -1742,12 +1704,12 @@ __gnat_initialize ()
 
 #elif defined(__rtems__)
 
-extern void __gnat_install_handler ();
+extern void __gnat_install_handler (void);
 
 /* For RTEMS, each bsp will provide a custom __gnat_install_handler (). */
 
 void
-__gnat_initialize ()
+__gnat_initialize (void)
 {
    __gnat_install_handler ();
 }
@@ -1762,7 +1724,7 @@ __gnat_initialize ()
 /***************************************/
 
 void
-__gnat_initialize ()
+__gnat_initialize (void)
 {
 }
 
@@ -1771,7 +1733,7 @@ __gnat_initialize ()
 /********************************************/
 
 void
-__gnat_install_handler ()
+__gnat_install_handler (void)
 {
   __gnat_handler_installed = 1;
 }
@@ -1792,7 +1754,7 @@ __gnat_install_handler ()
 #define HAVE_GNAT_INIT_FLOAT
 
 void
-__gnat_init_float ()
+__gnat_init_float (void)
 {
 #if defined (__i386__) || defined (i386)
 
@@ -1809,7 +1771,7 @@ __gnat_init_float ()
 
 /* All targets without a specific __gnat_init_float will use an empty one */
 void
-__gnat_init_float ()
+__gnat_init_float (void)
 {
 }
 #endif

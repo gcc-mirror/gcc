@@ -314,7 +314,7 @@ find_values_to_profile (unsigned *n_values, struct histogram_value **values)
    we would have to be very careful here.  */
 
 bool
-value_profile_transformations ()
+value_profile_transformations (void)
 {
   rtx insn, next;
   int changed = false;

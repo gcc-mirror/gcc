@@ -72,7 +72,7 @@ __gnat_kill (int pid, int sig)
 }
 
 int
-__gnat_expect_fork ()
+__gnat_expect_fork (void)
 {
   return 0;
 }
@@ -159,7 +159,7 @@ __gnat_pipe (int *fd)
 }
 
 int
-__gnat_expect_fork ()
+__gnat_expect_fork (void)
 {
   return -1;
 }
@@ -299,7 +299,7 @@ __gnat_pipe (int *fd)
 }
 
 int
-__gnat_expect_fork ()
+__gnat_expect_fork (void)
 {
   return fork ();
 }
@@ -406,7 +406,7 @@ __gnat_pipe (int *fd)
 }
 
 int
-__gnat_expect_fork ()
+__gnat_expect_fork (void)
 {
   return -1;
 }

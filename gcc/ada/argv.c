@@ -71,28 +71,25 @@ const char **gnat_envp = (const char **) 0;
 #endif
 
 int
-__gnat_arg_count ()
+__gnat_arg_count (void)
 {
   return gnat_argc;
 }
 
 int
-__gnat_len_arg (arg_num)
-   int arg_num;
+__gnat_len_arg (int arg_num)
 {
   return strlen (gnat_argv[arg_num]);
 }
 
 void
-__gnat_fill_arg (a, i)
-   char *a;
-   int i;
+__gnat_fill_arg ( char *a, int i)
 {
   strncpy (a, gnat_argv[i], strlen(gnat_argv[i]));
 }
 
 int
-__gnat_env_count ()
+__gnat_env_count (void)
 {
   int i;
 
@@ -102,16 +99,13 @@ __gnat_env_count ()
 }
 
 int
-__gnat_len_env (env_num)
-   int env_num;
+__gnat_len_env (int env_num)
 {
   return strlen (gnat_envp[env_num]);
 }
 
 void
-__gnat_fill_env (a, i)
-   char *a;
-   int i;
+__gnat_fill_env (char *a, int i)
 {
   strncpy (a, gnat_envp[i], strlen (gnat_envp[i]));
 }

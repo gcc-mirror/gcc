@@ -132,7 +132,7 @@ __gnat_install_int_handler (void (*proc) (void))
 }
 
 void
-__gnat_uninstall_int_handler ()
+__gnat_uninstall_int_handler (void)
 {
   if (sigint_intercepted != NULL)
     SetConsoleCtrlHandler (__gnat_int_handler, FALSE);
@@ -150,7 +150,7 @@ __gnat_install_int_handler (void (*proc) (void) __attribute__ ((unused)))
 }
 
 void
-__gnat_uninstall_int_handler ()
+__gnat_uninstall_int_handler (void)
 {
 }
 #endif
