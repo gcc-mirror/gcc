@@ -4211,7 +4211,7 @@ output_float_compare (insn, operands)
           && REGNO (operands[i]) != FIRST_STACK_REG 
           && (!stack_top_dies || REGNO (operands[i]) != FIRST_STACK_REG + 1))
         {
-          rtx xexp[i];
+          rtx xexp[2];
           xexp[0] = gen_rtx_REG (DFmode,
 				 REGNO (operands[i]) - (stack_top_dies != 0));
           output_asm_insn (AS1 (fstp, %y0), xexp);

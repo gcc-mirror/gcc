@@ -1,3 +1,7 @@
+Wed May 19 02:47:11 1999  Jan Hubicka  (hubicka@freesoft.cz)
+
+	* i386.c (output_float_compare): Avoid GNU-C extensions.
+
 Wed May 19 00:50:24 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump version to gcc-2.95 prerelease.
