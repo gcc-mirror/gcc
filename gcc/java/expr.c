@@ -1748,13 +1748,16 @@ build_known_method_ref (tree method, tree method_type ATTRIBUTE_UNUSED,
 
 	 SELF_TYPE->methods[METHOD_INDEX].ncode
 
-	 This is guaranteed to work (assuming SELF_TYPE has
-	 been initialized), since if the method is not compiled yet,
-	 its ncode points to a trampoline that forces compilation. */
+      */
 
       int method_index = 0;
-      tree meth;
-      tree ref = build_class_ref (self_type);
+      tree meth, ref;
+
+      /* The method might actually be declared in some superclass, so
+	 we have to use its class context, not the caller's notion of
+	 where the method is.  */
+      self_type = DECL_CONTEXT (method);
+      ref = build_class_ref (self_type);
       ref = build1 (INDIRECT_REF, class_type_node, ref);
       if (ncode_ident == NULL_TREE)
 	ncode_ident = get_identifier ("ncode");
