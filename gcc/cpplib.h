@@ -406,6 +406,9 @@ struct cpp_callbacks
   void (*undef) PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
   void (*ident) PARAMS ((cpp_reader *, unsigned int, const cpp_string *));
   void (*def_pragma) PARAMS ((cpp_reader *, unsigned int));
+  /* Called when the client has a chance to properly register
+     built-ins with cpp_define() and cpp_assert().  */
+  void (*register_builtins) PARAMS ((cpp_reader *));
 };
 
 #define CPP_FATAL_LIMIT 1000
@@ -557,6 +560,8 @@ extern cppchar_t
 cpp_interpret_charconst PARAMS ((cpp_reader *, const cpp_token *,
 				 int, unsigned int *, int *));
 
+/* Used to register builtins during the register_builtins callback.
+   The text is the same as the command line argument.  */
 extern void cpp_define PARAMS ((cpp_reader *, const char *));
 extern void cpp_assert PARAMS ((cpp_reader *, const char *));
 extern void cpp_undef  PARAMS ((cpp_reader *, const char *));

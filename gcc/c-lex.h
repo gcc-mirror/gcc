@@ -34,5 +34,9 @@ extern int indent_level;
 
 struct cpp_reader;
 extern struct cpp_reader* parse_in;
+/* Copied from cpplib.h to avoid target code having to pull in all of
+   cpplib.h.  */
+extern void cpp_define PARAMS ((struct cpp_reader *, const char *));
+extern void cpp_assert PARAMS ((struct cpp_reader *, const char *));
 
 #endif /* ! GCC_C_LEX_H */

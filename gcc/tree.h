@@ -2261,6 +2261,8 @@ extern void default_set_default_type_attributes PARAMS ((tree));
 extern void default_insert_attributes PARAMS ((tree, tree *));
 extern bool default_function_attribute_inlinable_p PARAMS ((tree));
 extern bool default_ms_bitfield_layout_p PARAMS ((tree));
+struct cpp_reader;
+extern void default_register_cpp_builtins PARAMS ((struct cpp_reader *));
 
 /* Split a list of declspecs and attributes into two.  */
 
