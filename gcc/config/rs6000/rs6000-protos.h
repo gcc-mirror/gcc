@@ -147,8 +147,6 @@ extern struct rtx_def *rs6000_float_const PARAMS ((const char *,
 extern int direct_return PARAMS ((void));
 extern int get_issue_rate PARAMS ((void));
 extern union tree_node *rs6000_build_va_list PARAMS ((void));
-extern void rs6000_save_machine_status PARAMS ((struct function *));
-extern void rs6000_restore_machine_status PARAMS ((struct function *));
 extern void rs6000_init_expanders PARAMS ((void));
 extern int first_reg_to_save PARAMS ((void));
 extern int first_fp_reg_to_save PARAMS ((void));

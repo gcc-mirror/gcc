@@ -89,9 +89,6 @@ const char *rs6000_sdata_name = (char *)0;
 int fixuplabelno = 0;
 #endif
 
-/* Whether a System V.4 varargs area was created.  */
-int rs6000_sysv_varargs_p;
-
 /* ABI enumeration available for subtarget to use.  */
 enum rs6000_abi rs6000_current_abi;
 
@@ -2221,7 +2218,7 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
       /* Indicate to allocate space on the stack for varargs save area.  */
       /* ??? Does this really have to be located at a magic spot on the
 	 stack, or can we allocate this with assign_stack_local instead.  */
-      rs6000_sysv_varargs_p = 1;
+      cfun->machine->sysv_varargs_p = 1;
       if (! no_rtl)
 	save_area = plus_constant (virtual_stack_vars_rtx,
 				   - RS6000_VARARGS_SIZE);
@@ -2231,7 +2228,7 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
   else
     {
       save_area = virtual_incoming_args_rtx;
-      rs6000_sysv_varargs_p = 0;
+      cfun->machine->sysv_varargs_p = 0;
 
       first_reg_offset = cum->words;
       if (MUST_PASS_IN_STACK (mode, type))
@@ -3620,50 +3617,39 @@ rs6000_got_register (value)
   return pic_offset_table_rtx;
 }
 
-/* Define the structure for the machine field in struct function.  */
-struct machine_function
-{
-  int sysv_varargs_p;
-};
-
 /* Functions to save and restore sysv_varargs_p.
    These will be called, via pointer variables,
    from push_function_context and pop_function_context.  */
 
-void
-rs6000_save_machine_status (p)
+static void
+rs6000_init_machine_status (p)
      struct function *p;
 {
-  struct machine_function *machine =
-    (struct machine_function *) xmalloc (sizeof (struct machine_function));
+  p->machine = (machine_function *) xmalloc (sizeof (machine_function));
 
-  p->machine = machine;
-  machine->sysv_varargs_p = rs6000_sysv_varargs_p;
+  p->machine->sysv_varargs_p = 0;
 }
 
-void
-rs6000_restore_machine_status (p)
+static void
+rs6000_free_machine_status (p)
      struct function *p;
 {
-  struct machine_function *machine = p->machine;
+  if (p->machine == NULL)
+    return;
 
-  rs6000_sysv_varargs_p = machine->sysv_varargs_p;
-
-  free (machine);
-  p->machine = (struct machine_function *)0;
+  free (p->machine);
+  p->machine = NULL;
 }
+
 
 /* Do anything needed before RTL is emitted for each function.  */
 
 void
 rs6000_init_expanders ()
 {
-  /* Reset varargs */
-  rs6000_sysv_varargs_p = 0;
-
   /* Arrange to save and restore machine status around nested functions.  */
-  save_machine_status = rs6000_save_machine_status;
-  restore_machine_status = rs6000_restore_machine_status;
+  init_machine_status = rs6000_init_machine_status;
+  free_machine_status = rs6000_free_machine_status;
 }
 
 
