@@ -1,3 +1,8 @@
+2005-01-13  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/freebsd-spec.h:  Make KSE pthread lib logic the default.
+
+
 2005-01-13  Richard Henderson  <rth@redhat.com>
 
 	PR target/19009
