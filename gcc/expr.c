@@ -2004,12 +2004,17 @@ emit_group_load (dst, orig_src, ssize)
 	}
       else if (GET_CODE (src) == CONCAT)
 	{
-	  if (bytepos == 0
-	      && bytelen == GET_MODE_SIZE (GET_MODE (XEXP (src, 0))))
-	    tmps[i] = XEXP (src, 0);
-	  else if (bytepos == (HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (XEXP (src, 0)))
-		   && bytelen == GET_MODE_SIZE (GET_MODE (XEXP (src, 1))))
-	    tmps[i] = XEXP (src, 1);
+	  if ((bytepos == 0
+	       && bytelen == GET_MODE_SIZE (GET_MODE (XEXP (src, 0))))
+	      || (bytepos == (HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (XEXP (src, 0)))
+		  && bytelen == GET_MODE_SIZE (GET_MODE (XEXP (src, 1)))))
+	    {
+	      tmps[i] = XEXP (src, bytepos != 0);
+	      if (! CONSTANT_P (tmps[i])
+		  && (GET_CODE (tmps[i]) != REG || GET_MODE (tmps[i]) != mode))
+		tmps[i] = extract_bit_field (tmps[i], bytelen * BITS_PER_UNIT,
+					     0, 1, NULL_RTX, mode, mode, ssize);
+	    }
 	  else if (bytepos == 0)
 	    {
 	      rtx mem = assign_stack_temp (GET_MODE (src),
