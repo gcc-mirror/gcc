@@ -535,16 +535,22 @@ public abstract class ClassLoader
 	  {
 	    markClassErrorState0 (clazz);
 
-	    if (x instanceof Error)
-	      throw (Error)x;
+	    LinkageError e;
+	    if (x instanceof LinkageError)
+	      e = (LinkageError)x;
+	    else if (x instanceof ClassNotFoundException)
+	      {
+		e = new NoClassDefFoundError("while resolving class: "
+					     + clazz.getName());
+		e.initCause (x);
+	      }
 	    else
 	      {
-		InternalError e
-		  = new InternalError ("unexpected exception during linking: "
-				       + clazz.getName());
+		e = new LinkageError ("unexpected exception during linking: "
+				      + clazz.getName());
 		e.initCause (x);
-		throw e;
 	      }
+	    throw e;
 	  }
       }
   }
