@@ -1384,6 +1384,23 @@ gfc_show_code_node (int level, gfc_code * c)
 }
 
 
+/* Show and equivalence chain.  */
+
+static void
+gfc_show_equiv (gfc_equiv *eq)
+{
+  show_indent ();
+  gfc_status ("Equivalence: ");
+  while (eq)
+    {
+      gfc_show_expr (eq->expr);
+      eq = eq->eq;
+      if (eq)
+	gfc_status (", ");
+    }
+}
+
+    
 /* Show a freakin' whole namespace.  */
 
 void
@@ -1392,6 +1409,7 @@ gfc_show_namespace (gfc_namespace * ns)
   gfc_interface *intr;
   gfc_namespace *save;
   gfc_intrinsic_op op;
+  gfc_equiv *eq;
   int i;
 
   save = gfc_current_ns;
@@ -1450,6 +1468,9 @@ gfc_show_namespace (gfc_namespace * ns)
 	  gfc_traverse_user_op (ns, show_uop);
 	}
     }
+  
+  for (eq = ns->equiv; eq; eq = eq->next)
+    gfc_show_equiv (eq);
 
   gfc_status_char ('\n');
   gfc_status_char ('\n');
