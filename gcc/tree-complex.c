@@ -105,6 +105,40 @@ expand_complex_addition (block_stmt_iterator *bsi, tree inner_type,
   update_complex_assignment (bsi, rr, ri);
 }
 
+/* Expand a complex multiplication or division to a libcall to the c99
+   compliant routines.  */
+
+static void
+expand_complex_libcall (block_stmt_iterator *bsi, tree ar, tree ai,
+			tree br, tree bi, enum tree_code code)
+{
+  enum machine_mode mode;
+  enum built_in_function bcode;
+  tree args, fn, stmt, type;
+
+  args = tree_cons (NULL, bi, NULL);
+  args = tree_cons (NULL, br, args);
+  args = tree_cons (NULL, ai, args);
+  args = tree_cons (NULL, ar, args);
+
+  stmt = bsi_stmt (*bsi);
+  type = TREE_TYPE (TREE_OPERAND (stmt, 1));
+
+  mode = TYPE_MODE (type);
+  gcc_assert (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT);
+  if (code == MULT_EXPR)
+    bcode = BUILT_IN_COMPLEX_MUL_MIN + mode - MIN_MODE_COMPLEX_FLOAT;
+  else if (code == RDIV_EXPR)
+    bcode = BUILT_IN_COMPLEX_DIV_MIN + mode - MIN_MODE_COMPLEX_FLOAT;
+  else
+    gcc_unreachable ();
+  fn = built_in_decls[bcode];
+
+  TREE_OPERAND (stmt, 1)
+    = build3 (CALL_EXPR, type, build_fold_addr_expr (fn), args, NULL);
+  modify_stmt (stmt);
+}
+
 /* Expand complex multiplication to scalars:
 	a * b = (ar*br - ai*bi) + i(ar*bi + br*ai)
 */
@@ -114,6 +148,12 @@ expand_complex_multiplication (block_stmt_iterator *bsi, tree inner_type,
 			       tree ar, tree ai, tree br, tree bi)
 {
   tree t1, t2, t3, t4, rr, ri;
+
+  if (flag_complex_method == 2 && SCALAR_FLOAT_TYPE_P (inner_type))
+    {
+      expand_complex_libcall (bsi, ar, ai, br, bi, MULT_EXPR);
+      return;
+    }
 
   t1 = gimplify_build2 (bsi, MULT_EXPR, inner_type, ar, br);
   t2 = gimplify_build2 (bsi, MULT_EXPR, inner_type, ai, bi);
@@ -311,18 +351,27 @@ expand_complex_division (block_stmt_iterator *bsi, tree inner_type,
 			 tree ar, tree ai, tree br, tree bi,
 			 enum tree_code code)
 {
-  switch (flag_complex_divide_method)
+  switch (flag_complex_method)
     {
     case 0:
       /* straightforward implementation of complex divide acceptable.  */
       expand_complex_div_straight (bsi, inner_type, ar, ai, br, bi, code);
       break;
+
+    case 2:
+      if (SCALAR_FLOAT_TYPE_P (inner_type))
+	{
+	  expand_complex_libcall (bsi, ar, ai, br, bi, code);
+	  return;
+	}
+      /* FALLTHRU */
+
     case 1:
       /* wide ranges of inputs must work for complex divide.  */
       expand_complex_div_wide (bsi, inner_type, ar, ai, br, bi, code);
       break;
+
     default:
-      /* C99-like requirements for complex divide (not yet implemented).  */
       gcc_unreachable ();
     }
 }

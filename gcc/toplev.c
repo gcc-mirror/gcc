@@ -267,9 +267,9 @@ int flag_pcc_struct_return = DEFAULT_PCC_STRUCT_RETURN;
 
 /* 0 means straightforward implementation of complex divide acceptable.
    1 means wide ranges of inputs must work for complex divide.
-   2 means C99-like requirements for complex divide (not yet implemented).  */
+   2 means C99-like requirements for complex multiply and divide.  */
 
-int flag_complex_divide_method = 0;
+int flag_complex_method = 0;
 
 /* Nonzero means that we don't want inlining by virtue of -fno-inline,
    not just because the tree inliner turned us off.  */

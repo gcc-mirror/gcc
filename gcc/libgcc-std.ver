@@ -241,4 +241,14 @@ GCC_4.0.0 {
   __powidf2
   __powixf2
   __powitf2
+
+  # c99 compliant complex arithmetic
+  __divsc3
+  __divdc3
+  __divxc3
+  __divtc3
+  __mulsc3
+  __muldc3
+  __mulxc3
+  __multc3
 }
