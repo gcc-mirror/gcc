@@ -1,3 +1,8 @@
+Wed Aug 25 17:56:59 1999  Richard Henderson  <rth@cygnus.com>
+
+	* optabs.c (emit_cmp_and_jump_insns): Be more thorough in
+	canonization.
+
 Wed Aug 25 15:35:55 1999  Richard Henderson  <rth@cygnus.com>
 
 	* m88k.h (VERSION_INFO2): Kill.
