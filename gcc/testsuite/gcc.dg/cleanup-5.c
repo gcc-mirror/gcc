@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target i?86-*-linux* x86_64-*-linux* ia64-*-linux* alpha*-*-linux* powerpc*-*-linux* s390*-*-linux* sparc*-*-linux* mips*-*-linux* } } */
 /* { dg-options "-fexceptions" } */
 /* Verify that cleanups work with exception handling.  */
 

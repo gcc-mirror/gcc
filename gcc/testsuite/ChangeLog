@@ -1,3 +1,10 @@
+2004-02-02  Zack Weinberg  <zack@codesourcery.com>
+
+	* g++.dg/eh/forced1.C, g++.dg/eh/forced2.C, g++.dg/eh/forced3.C
+	* g++.dg/eh/forced4.C: XFAIL ia64-hp-hpux11.*.
+	* g++.dg/eh/ia64-1.C: Test branch regs only #ifdef __LP64__.
+	* gcc.dg/cleanup-5.c: Run only on Linux targets.
+
 2004-02-02  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	DR206
@@ -22,7 +29,7 @@
 2004-02-02  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/13957
-	* g++.dg/template/non-type-template-argument-1.C, 
+	* g++.dg/template/non-type-template-argument-1.C,
 	g++.dg/template/qualified-id1.C: Update dg-error marks.
 	* g++.dg/template/nontype6.C: New test.
 
@@ -67,7 +74,7 @@
 
 	* objc.dg/proto-qual-1.m (ROUND, aligned_sizeof): New.
 	(scan_initial, main): Use aligned_sizeof instead of sizeof.
-	
+
 2004-01-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13791
