@@ -1760,8 +1760,7 @@ typedef struct rs6000_args
   rs6000_va_start (valist, nextarg)
 
 /* Implement `va_arg'.  */
-#define EXPAND_BUILTIN_VA_ARG(valist, type) \
-  rs6000_va_arg (valist, type)
+#define EXPAND_BUILTIN_VA_ARG(valist, type) (abort (), NULL_RTX)
 
 #define PAD_VARARGS_DOWN \
    (FUNCTION_ARG_PADDING (TYPE_MODE (type), type) == downward)

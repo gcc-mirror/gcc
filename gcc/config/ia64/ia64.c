@@ -3958,41 +3958,6 @@ ia64_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 
 /* Implement va_arg.  */
 
-rtx
-ia64_va_arg (tree valist, tree type)
-{
-  tree t;
-
-  /* Variable sized types are passed by reference.  */
-  if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
-    {
-      rtx addr = force_reg (ptr_mode,
-	    std_expand_builtin_va_arg (valist, build_pointer_type (type)));
-#ifdef POINTERS_EXTEND_UNSIGNED
-      addr = convert_memory_address (Pmode, addr);
-#endif
-      return gen_rtx_MEM (ptr_mode, addr);
-    }
-
-  /* Aggregate arguments with alignment larger than 8 bytes start at
-     the next even boundary.  Integer and floating point arguments
-     do so if they are larger than 8 bytes, whether or not they are
-     also aligned larger than 8 bytes.  */
-  if ((TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == INTEGER_TYPE)
-      ? int_size_in_bytes (type) > 8 : TYPE_ALIGN (type) > 8 * BITS_PER_UNIT)
-    {
-      t = build (PLUS_EXPR, TREE_TYPE (valist), valist,
-		 build_int_2 (2 * UNITS_PER_WORD - 1, 0));
-      t = build (BIT_AND_EXPR, TREE_TYPE (t), t,
-		 build_int_2 (-2 * UNITS_PER_WORD, -1));
-      t = build (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
-      TREE_SIDE_EFFECTS (t) = 1;
-      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-    }
-
-  return std_expand_builtin_va_arg (valist, type);
-}
-
 static tree
 ia64_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 {

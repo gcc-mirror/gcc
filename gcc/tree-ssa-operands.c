@@ -821,7 +821,11 @@ get_stmt_operands (tree stmt)
       if (TREE_CODE (TREE_OPERAND (stmt, 0)) == ARRAY_REF 
           || TREE_CODE (TREE_OPERAND (stmt, 0)) == COMPONENT_REF
 	  || TREE_CODE (TREE_OPERAND (stmt, 0)) == REALPART_EXPR
-	  || TREE_CODE (TREE_OPERAND (stmt, 0)) == IMAGPART_EXPR)
+	  || TREE_CODE (TREE_OPERAND (stmt, 0)) == IMAGPART_EXPR
+	  /* Use a V_MAY_DEF if the RHS might throw, as the LHS won't be
+	     modified in that case.  FIXME we should represent somehow
+	     that it is killed on the fallthrough path.  */
+	  || tree_could_throw_p (TREE_OPERAND (stmt, 1)))
         get_expr_operands (stmt, &TREE_OPERAND (stmt, 0), opf_is_def, 
 	                   &prev_vops);
       else

@@ -1716,24 +1716,16 @@ tree_could_throw_p (tree t)
     return false;
   if (TREE_CODE (t) == MODIFY_EXPR)
     {
-      tree sub = TREE_OPERAND (t, 1);
-      if (TREE_CODE (sub) == CALL_EXPR)
-	t = sub;
-      else
-	{
-	  if (flag_non_call_exceptions)
-	    {
-	      if (tree_could_trap_p (sub))
-		return true;
-	      return tree_could_trap_p (TREE_OPERAND (t, 0));
-	    }
-	  return false;
-	}
+      if (flag_non_call_exceptions
+	  && tree_could_trap_p (TREE_OPERAND (t, 0)))
+	return true;
+      t = TREE_OPERAND (t, 1);
     }
 
   if (TREE_CODE (t) == CALL_EXPR)
     return (call_expr_flags (t) & ECF_NOTHROW) == 0;
-
+  if (flag_non_call_exceptions)
+    return tree_could_trap_p (t);
   return false;
 }
 

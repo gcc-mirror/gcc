@@ -1804,8 +1804,7 @@ do {									\
   sparc_va_start (valist, nextarg)
 
 /* Implement `va_arg'.  */
-#define EXPAND_BUILTIN_VA_ARG(valist, type) \
-  sparc_va_arg (valist, type)
+#define EXPAND_BUILTIN_VA_ARG(valist, type) (abort (), NULL_RTX)
 
 /* Generate RTL to flush the register windows so as to make arbitrary frames
    available.  */

@@ -1790,8 +1790,7 @@ typedef struct ix86_args {
   ix86_va_start (VALIST, NEXTARG)
 
 /* Implement `va_arg'.  */
-#define EXPAND_BUILTIN_VA_ARG(VALIST, TYPE) \
-  ix86_va_arg ((VALIST), (TYPE))
+#define EXPAND_BUILTIN_VA_ARG(VALIST, TYPE) (abort (), NULL_RTX)
 
 #define TARGET_ASM_FILE_END ix86_file_end
 #define NEED_INDICATE_EXEC_STACK 0
