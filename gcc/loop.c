@@ -204,6 +204,9 @@ struct movable
   short savings;		/* Number of insns we can move for this reg,
 				   including other movables that force this
 				   or match this one.  */
+  ENUM_BITFIELD(machine_mode) savemode : 8;   /* Nonzero means it is a mode for 
+				   a low part that we should avoid changing when
+				   clearing the rest of the reg.  */
   unsigned int cond : 1;	/* 1 if only conditionally movable */
   unsigned int force : 1;	/* 1 means MUST move this insn */
   unsigned int global : 1;	/* 1 means reg is live outside this loop */
@@ -220,9 +223,9 @@ struct movable
   unsigned int move_insn_first:1;/* Same as above, if this is necessary for the
 				    first insn of a consecutive sets group.  */
   unsigned int is_equiv : 1;	/* 1 means a REG_EQUIV is present on INSN.  */
-  enum machine_mode savemode;   /* Nonzero means it is a mode for a low part
-				   that we should avoid changing when clearing
-				   the rest of the reg.  */
+  unsigned int insert_temp : 1;  /* 1 means we copy to a new pseudo and replace
+				    the original insn with a copy from that
+				    pseudo, rather than deleting it. */
   struct movable *match;	/* First entry for same value */
   struct movable *forces;	/* An insn that must be moved if this is */
   struct movable *next;
@@ -765,6 +768,7 @@ scan_loop (loop, flags)
 	      int tem1 = 0;
 	      int tem2 = 0;
 	      int move_insn = 0;
+	      int insert_temp = 0;
 	      rtx src = SET_SRC (set);
 	      rtx dependencies = 0;
 
@@ -808,34 +812,45 @@ scan_loop (loop, flags)
 		    }
 		}
 
+	      if (/* The register is used in basic blocks other
+		      than the one where it is set (meaning that
+		      something after this point in the loop might
+		      depend on its value before the set).  */
+		   ! reg_in_basic_block_p (p, SET_DEST (set))
+		   /* And the set is not guaranteed to be executed once
+		      the loop starts, or the value before the set is
+		      needed before the set occurs...
+
+		      ??? Note we have quadratic behavior here, mitigated
+		      by the fact that the previous test will often fail for
+		      large loops.  Rather than re-scanning the entire loop
+		      each time for register usage, we should build tables
+		      of the register usage and use them here instead.  */
+		   && (maybe_never
+		       || loop_reg_used_before_p (loop, set, p)))
+		/* It is unsafe to move the set.  However, it may be OK to
+		   move the source into a new psuedo, and subsitute a 
+		   reg-to-reg copy for the original insn.
+
+		   This code used to consider it OK to move a set of a variable
+		   which was not created by the user and not used in an exit
+		   test.
+		   That behavior is incorrect and was removed.  */
+		insert_temp = 1;
+
 	      /* Don't try to optimize a register that was made
 		 by loop-optimization for an inner loop.
 		 We don't know its life-span, so we can't compute
 		 the benefit.  */
 	      if (REGNO (SET_DEST (set)) >= max_reg_before_loop)
 		;
-	      else if (/* The register is used in basic blocks other
-			  than the one where it is set (meaning that
-			  something after this point in the loop might
-			  depend on its value before the set).  */
-		       ! reg_in_basic_block_p (p, SET_DEST (set))
-		       /* And the set is not guaranteed to be executed once
-			  the loop starts, or the value before the set is
-			  needed before the set occurs...
-
-			  ??? Note we have quadratic behavior here, mitigated
-			  by the fact that the previous test will often fail for
-			  large loops.  Rather than re-scanning the entire loop
-			  each time for register usage, we should build tables
-			  of the register usage and use them here instead.  */
-		       && (maybe_never
-			   || loop_reg_used_before_p (loop, set, p)))
-		/* It is unsafe to move the set.
-
-		   This code used to consider it OK to move a set of a variable
-		   which was not created by the user and not used in an exit
-		   test.
-		   That behavior is incorrect and was removed.  */
+	      /* Don't move the source and add a reg-to-reg copy with -Os
+		 (this certainly increases size) or if the source is
+		 already a reg (the motion will gain nothing). */
+	      else if (insert_temp 
+		       && (optimize_size || GET_CODE (SET_SRC (set)) == REG
+			   || (CONSTANT_P (SET_SRC (set))
+			       && LEGITIMATE_CONSTANT_P (SET_SRC (set)))))
 		;
 	      else if ((tem = loop_invariant_p (loop, src))
 		       && (dependencies == 0
@@ -926,6 +941,7 @@ scan_loop (loop, flags)
 		  m->partial = 0;
 		  m->move_insn = move_insn;
 		  m->move_insn_first = 0;
+		  m->insert_temp = insert_temp;
 		  m->is_equiv = (find_reg_note (p, REG_EQUIV, NULL_RTX) != 0);
 		  m->savemode = VOIDmode;
 		  m->regno = regno;
@@ -1010,6 +1026,7 @@ scan_loop (loop, flags)
 		      m->forces = 0;
 		      m->move_insn = 0;
 		      m->move_insn_first = 0;
+		      m->insert_temp = insert_temp;
 		      m->partial = 1;
 		      /* If the insn may not be executed on some cycles,
 			 we can't clear the whole reg; clear just high part.
@@ -1465,6 +1482,7 @@ combine_movables (movables, regs)
   for (m = movables->head; m; m = m->next)
     if (m->match == 0 && regs->array[m->regno].n_times_set == 1
 	&& m->regno >= FIRST_PSEUDO_REGISTER
+	&& !m->insert_temp
 	&& !m->partial)
       {
 	struct movable *m1;
@@ -1477,6 +1495,7 @@ combine_movables (movables, regs)
 	   one match any later ones.  So start this loop at m->next.  */
 	for (m1 = m->next; m1; m1 = m1->next)
 	  if (m != m1 && m1->match == 0
+	      && !m1->insert_temp
 	      && regs->array[m1->regno].n_times_set == 1
 	      && m1->regno >= FIRST_PSEUDO_REGISTER
 	      /* A reg used outside the loop mustn't be eliminated.  */
@@ -1880,6 +1899,10 @@ move_movables (loop, movables, threshold, insn_count)
 	      int count;
 	      struct movable *m1;
 	      rtx first = NULL_RTX;
+	      rtx newreg = NULL_RTX;
+
+	      if (m->insert_temp)
+		newreg = gen_reg_rtx (GET_MODE (m->set_dest));
 
 	      /* Now move the insns that set the reg.  */
 
@@ -1950,10 +1973,22 @@ move_movables (loop, movables, threshold, insn_count)
 			 insn stream.  */
 		      while (p && GET_CODE (p) == NOTE)
 			p = NEXT_INSN (temp) = NEXT_INSN (p);
+
+		      if (m->insert_temp)
+			{
+			  /* Replace the original insn with a move from
+			     our newly created temp. */
+			  start_sequence ();
+    			  emit_move_insn (m->set_dest, newreg);
+			  seq = get_insns ();
+			  end_sequence ();
+			  emit_insn_before (seq, p);
+			}
 		    }
 
 		  start_sequence ();
-		  emit_move_insn (m->set_dest, m->set_src);
+		  emit_move_insn (m->insert_temp ? newreg : m->set_dest, 
+			          m->set_src);
 		  seq = get_insns ();
 		  end_sequence ();
 
@@ -2123,6 +2158,16 @@ move_movables (loop, movables, threshold, insn_count)
 			    set_unique_reg_note (i1, m->is_equiv ? REG_EQUIV
 						     : REG_EQUAL, m->set_src);
 			}
+		      else if (m->insert_temp)
+			{
+			  rtx *reg_map2 = (rtx *) xcalloc (REGNO (newreg), 
+				sizeof(rtx));
+			  reg_map2 [m->regno] = newreg;
+
+			  i1 = loop_insn_hoist (loop, copy_rtx (PATTERN (p)));
+			  replace_regs (i1, reg_map2, REGNO (newreg), 1);
+			  free (reg_map2);
+	    		}
 		      else
 			i1 = loop_insn_hoist (loop, PATTERN (p));
 
@@ -2171,40 +2216,55 @@ move_movables (loop, movables, threshold, insn_count)
 			 insn stream.  */
 		      while (p && GET_CODE (p) == NOTE)
 			p = NEXT_INSN (temp) = NEXT_INSN (p);
+
+		      if (m->insert_temp)
+			{
+			  rtx seq;
+			  /* Replace the original insn with a move from
+			     our newly created temp. */
+			  start_sequence ();
+    			  emit_move_insn (m->set_dest, newreg);
+			  seq = get_insns ();
+			  end_sequence ();
+			  emit_insn_before (seq, p);
+			}
 		    }
 
 		  /* The more regs we move, the less we like moving them.  */
 		  threshold -= 3;
 		}
 
-	      /* Any other movable that loads the same register
-		 MUST be moved.  */
-	      already_moved[regno] = 1;
-
-	      /* This reg has been moved out of one loop.  */
-	      regs->array[regno].moved_once = 1;
-
-	      /* The reg set here is now invariant.  */
-	      if (! m->partial)
-		{
-		  int i;
-		  for (i = 0; i < LOOP_REGNO_NREGS (regno, m->set_dest); i++)
-		    regs->array[regno+i].set_in_loop = 0;
-		}
-
 	      m->done = 1;
 
-	      /* Change the length-of-life info for the register
-		 to say it lives at least the full length of this loop.
-		 This will help guide optimizations in outer loops.  */
+	      if (!m->insert_temp)
+		{
+		  /* Any other movable that loads the same register
+		     MUST be moved.  */
+		  already_moved[regno] = 1;
 
-	      if (REGNO_FIRST_LUID (regno) > INSN_LUID (loop_start))
-		/* This is the old insn before all the moved insns.
-		   We can't use the moved insn because it is out of range
-		   in uid_luid.  Only the old insns have luids.  */
-		REGNO_FIRST_UID (regno) = INSN_UID (loop_start);
-	      if (REGNO_LAST_LUID (regno) < INSN_LUID (loop_end))
-		REGNO_LAST_UID (regno) = INSN_UID (loop_end);
+		  /* This reg has been moved out of one loop.  */
+		  regs->array[regno].moved_once = 1;
+
+		  /* The reg set here is now invariant.  */
+		  if (! m->partial)
+		    {
+		      int i;
+		      for (i = 0; i < LOOP_REGNO_NREGS (regno, m->set_dest); i++)
+			regs->array[regno+i].set_in_loop = 0;
+		    }
+
+		  /* Change the length-of-life info for the register
+		     to say it lives at least the full length of this loop.
+		     This will help guide optimizations in outer loops.  */
+
+		  if (REGNO_FIRST_LUID (regno) > INSN_LUID (loop_start))
+		    /* This is the old insn before all the moved insns.
+		       We can't use the moved insn because it is out of range
+		       in uid_luid.  Only the old insns have luids.  */
+		    REGNO_FIRST_UID (regno) = INSN_UID (loop_start);
+		  if (REGNO_LAST_LUID (regno) < INSN_LUID (loop_end))
+		    REGNO_LAST_UID (regno) = INSN_UID (loop_end);
+		}
 
 	      /* Combine with this moved insn any other matching movables.  */
 
