@@ -3214,9 +3214,11 @@ do {									\
 {"cc_arithop", {AND, IOR, XOR}},						    \
 {"cc_arithopn", {AND, IOR}},							    \
 {"arith_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT}},			    \
+{"arith_add_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT}},		    \
 {"arith11_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT}},			    \
 {"arith10_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT}},			    \
 {"arith_double_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT, CONST_DOUBLE}},   \
+{"arith_double_add_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT, CONST_DOUBLE}},\
 {"arith11_double_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT, CONST_DOUBLE}}, \
 {"arith10_double_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT, CONST_DOUBLE}}, \
 {"small_int", {CONST_INT, CONSTANT_P_RTX}},					    \
@@ -3262,7 +3264,11 @@ extern int arith10_operand ();
 extern int arith11_double_operand ();
 extern int arith11_operand ();
 extern int arith_double_operand ();
+extern int arith_double_4096_operand ();
+extern int arith_double_add_operand ();
 extern int arith_operand ();
+extern int arith_4096_operand ();
+extern int arith_add_operand ();
 extern int call_operand_address ();
 extern int input_operand ();
 extern int zero_operand ();

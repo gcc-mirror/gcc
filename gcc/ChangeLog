@@ -1,3 +1,12 @@
+Tue Aug 25 05:48:18 1998  Jakub Jelinek  <jj@sunsite.ms.mff.cuni.cz>
+
+	* config/sparc/sparc.c (arith_4096_operand, arith_add_operand,
+	arith_double_4096_operand, arith_double_add_operand): New
+	predicates.
+	* config/sparc/sparc.h (PREDICATE_CODES): Add them, declare them.
+	* config/sparc/sparc.md (adddi3, addsi3, subdi3, subsi3): Use
+	them to transform add/sub 4096 into add/sub -4096.
+
 Mon Aug 24 23:31:03 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* loop.c (scan_loop): Allocate some slop to handle pseudos

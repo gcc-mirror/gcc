@@ -4534,7 +4534,7 @@
 (define_expand "adddi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI (match_operand:DI 1 "arith_double_operand" "%r")
-		 (match_operand:DI 2 "arith_double_operand" "rHI")))]
+		 (match_operand:DI 2 "arith_double_add_operand" "rHI")))]
   ""
   "
 {
@@ -4546,6 +4546,13 @@
 						 operands[2])),
 			  gen_rtx_CLOBBER (VOIDmode,
 				   gen_rtx_REG (CCmode, SPARC_ICC_REG)))));
+      DONE;
+    }
+  if (arith_double_4096_operand(operands[2], DImode))
+    {
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			      gen_rtx_MINUS (DImode, operands[1],
+					     GEN_INT(-4096))));
       DONE;
     }
 }")
@@ -4749,7 +4756,23 @@
   [(set_attr "type" "binary")
    (set_attr "length" "1")])
 
-(define_insn "addsi3"
+(define_expand "addsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r,d")
+	(plus:SI (match_operand:SI 1 "arith_operand" "%r,d")
+		 (match_operand:SI 2 "arith_add_operand" "rI,d")))]
+  ""
+  "
+{
+  if (arith_4096_operand(operands[2], DImode))
+    {
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			      gen_rtx_MINUS (SImode, operands[1],
+					     GEN_INT(-4096))));
+      DONE;
+    }
+}")
+
+(define_insn "*addsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,d")
 	(plus:SI (match_operand:SI 1 "arith_operand" "%r,d")
 		 (match_operand:SI 2 "arith_operand" "rI,d")))]
@@ -4807,7 +4830,7 @@
 (define_expand "subdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(minus:DI (match_operand:DI 1 "register_operand" "r")
-		  (match_operand:DI 2 "arith_double_operand" "rHI")))]
+		  (match_operand:DI 2 "arith_double_add_operand" "rHI")))]
   ""
   "
 {
@@ -4819,6 +4842,13 @@
 						  operands[2])),
 			  gen_rtx_CLOBBER (VOIDmode,
 				   gen_rtx_REG (CCmode, SPARC_ICC_REG)))));
+      DONE;
+    }
+  if (arith_double_4096_operand(operands[2], DImode))
+    {
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			      gen_rtx_PLUS (DImode, operands[1],
+					    GEN_INT(-4096))));
       DONE;
     }
 }")
@@ -4925,7 +4955,23 @@
   [(set_attr "type" "binary")
    (set_attr "length" "1")])
 
-(define_insn "subsi3"
+(define_expand "subsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r,d")
+	(minus:SI (match_operand:SI 1 "register_operand" "r,d")
+		  (match_operand:SI 2 "arith_add_operand" "rI,d")))]
+  ""
+  "
+{
+  if (arith_4096_operand(operands[2], DImode))
+    {
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			      gen_rtx_PLUS (SImode, operands[1],
+					    GEN_INT(-4096))));
+      DONE;
+    }
+}")
+
+(define_insn "*subsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,d")
 	(minus:SI (match_operand:SI 1 "register_operand" "r,d")
 		  (match_operand:SI 2 "arith_operand" "rI,d")))]
