@@ -1699,21 +1699,24 @@ accumulate_line_counts (src)
 			{
 			  block_t *root = block->u.span.root;
 			  block_t *dst_root = dst->u.span.root;
-			  
+
 			  /* Join spanning trees */
-			  if (root->u.span.siblings && !dst_root->u.span.root)
+			  if (root->u.span.siblings
+			      && !dst_root->u.span.siblings)
 			    {
 			      root = dst->u.span.root;
 			      dst_root = block->u.span.root;
 			    }
 			  
-			  dst->u.span.root = root;
-			  root->u.span.siblings += 1 + dst->u.span.siblings;
-			  if (dst->u.span.siblings)
+			  dst_root->u.span.root = root;
+			  root->u.span.siblings
+			    += 1 + dst_root->u.span.siblings;
+			  
+			  if (dst_root->u.span.siblings)
 			    {
 			      block_t *dst_sib;
 			      
-			      dst->u.span.siblings = 0;
+			      dst_root->u.span.siblings = 0;
 			      for (dst_sib = line->u.blocks; dst_sib;
 				   dst_sib = dst_sib->chain)
 				if (dst_sib->u.span.root == dst_root)
