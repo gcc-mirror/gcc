@@ -42,9 +42,9 @@ Boston, MA 02111-1307, USA.  */
 
 #define CPP_PREDEFINES "-D__sh__ -Acpu(sh) -Amachine(sh)"
 
-#define ASM_SPEC  "%{ml:-little}"
+#define ASM_SPEC  "%{ml:-little} %{mrelax:-relax}"
 
-#define LINK_SPEC "%{ml:-m shl}"
+#define LINK_SPEC "%{ml:-m shl} %{mrelax:-relax}"
 
 /* We can not debug without a frame pointer.  */
 /* #define CAN_DEBUG_WITHOUT_FP */
@@ -71,6 +71,7 @@ extern int target_flags;
 #define SH3_BIT	       	(1<<10)
 #define SPACE_BIT 	(1<<13)
 #define BIGTABLE_BIT  	(1<<14)
+#define RELAX_BIT	(1<<15)
 #define HITACHI_BIT     (1<<22)
 #define PADSTRUCT_BIT  (1<<28)
 #define LITTLE_ENDIAN_BIT (1<<29)
@@ -101,6 +102,10 @@ extern int target_flags;
 /* Nonzero to use long jump tables.  */
 #define TARGET_BIGTABLE     (target_flags & BIGTABLE_BIT)
 
+/* Nonzero to generate pseudo-ops needed by the assembler and linker
+   to do function call relaxing.  */
+#define TARGET_RELAX (target_flags & RELAX_BIT)
+
 /* Nonzero if using Hitachi's calling convention.  */
 #define TARGET_HITACHI 		(target_flags & HITACHI_BIT)
 
@@ -127,6 +132,7 @@ extern int target_flags;
   {"isize", 	ISIZE_BIT},			\
   {"l",		LITTLE_ENDIAN_BIT},  		\
   {"padstruct", PADSTRUCT_BIT},    		\
+  {"relax",	RELAX_BIT},			\
   {"space", 	SPACE_BIT},			\
   {"",   	TARGET_DEFAULT} 		\
 }
