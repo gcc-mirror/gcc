@@ -1,3 +1,7 @@
+Wed May 19 02:50:53 1999  Arvind Sankar <arvinds@mit.edu>
+
+	* gxxint.texi: Fix typo.
+
 1999-05-19  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (find_scoped_type, resolve_scope_to_name): Lose.
