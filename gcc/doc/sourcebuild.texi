@@ -561,8 +561,7 @@ FIXME: what is this target for?
 @item install-common
 Install everything that is part of the front end, apart from the
 compiler executables listed in @code{compilers} in
-@file{config-lang.in} that are installed in @file{@var{libsubdir}} by
-the main @file{Makefile}.
+@file{config-lang.in}.
 @item install-info
 Install info documentation for the front end, if it is present in the
 source directory.  (It may not be present if a suitable version of
@@ -650,8 +649,8 @@ If defined to @samp{yes}, this front end is built in stage 1 of the
 bootstrap.  This is only relevant to front ends written in their own
 languages.
 @item compilers
-If defined, a space-separated list of compiler executables that should
-be installed in @file{@var{libsubdir}}.  The names here will each end
+If defined, a space-separated list of compiler executables that will
+be run by the driver.  The names here will each end
 with @samp{\$(exeext)}.
 @item stagestuff
 If defined, a space-separated list of files that should be moved to

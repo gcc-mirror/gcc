@@ -540,8 +540,8 @@ beneath a user's home directory tree, some shells will not expand
 @var{dirname} correctly if it contains the @samp{~} metacharacter; use
 @env{$HOME} instead.
 
-These additional options control where certain parts of the distribution
-are installed.  Normally you should not need to use these options.
+The following standard @command{autoconf} options are supported.  Normally you
+should not need to use these options.
 @table @code
 @item --exec-prefix=@var{dirname}
 Specify the toplevel installation directory for architecture-dependent
@@ -554,7 +554,11 @@ Specify the installation directory for the executables called by users
 
 @item --libdir=@var{dirname}
 Specify the installation directory for object code libraries and
-internal parts of GCC@.  The default is @file{@var{exec-prefix}/lib}.
+internal data files of GCC@.  The default is @file{@var{exec-prefix}/lib}.
+
+@item --libexecdir=@var{dirname}
+Specify the installation directory for internal executables of GCC@.
+  The default is @file{@var{exec-prefix}/libexec}.
 
 @item --with-slibdir=@var{dirname}
 Specify the installation directory for the shared libgcc library.  The
@@ -759,13 +763,14 @@ than the one found by the standard rules to find an assembler, which
 are:
 @itemize @bullet
 @item
-Check the
-@file{@var{exec_prefix}/lib/gcc-lib/@var{target}/@var{version}}
-directory, where @var{exec_prefix} defaults to @var{prefix} which
-defaults to @file{/usr/local} unless overridden by the
-@option{--prefix=@var{pathname}} switch described above. @var{target} is the
-target system triple, such as @samp{sparc-sun-solaris2.7}, and
-@var{version} denotes the GCC version, such as 3.0.
+Check the @file{@var{libexec}/gcc/@var{target}/@var{version}}
+directory, where @var{libexec} defaults to
+@file{@var{exec-prefix}/libexec} and @var{exec-prefix} defaults to
+@var{prefix} which defaults to @file{/usr/local} unless overridden by
+the @option{--prefix=@var{pathname}} switch described
+above. @var{target} is the target system triple, such as
+@samp{sparc-sun-solaris2.7}, and @var{version} denotes the GCC
+version, such as 3.0.
 @item
 Check operating system specific directories (e.g.@: @file{/usr/ccs/bin} on
 Sun Solaris 2).
@@ -952,9 +957,9 @@ to do so.
 @item --enable-version-specific-runtime-libs
 Specify
 that runtime libraries should be installed in the compiler specific
-subdirectory (@file{@var{libsubdir}}) rather than the usual places.  In
-addition, @samp{libstdc++}'s include files will be installed in
-@file{@var{libsubdir}/include/g++} unless you overruled it by using
+subdirectory (@file{@var{libdir}/gcc}) rather than the usual places.  In
+addition, @samp{libstdc++}'s include files will be installed into
+@file{@var{libdir}} unless you overruled it by using
 @option{--with-gxx-include-dir=@var{dirname}}.  Using this option is
 particularly useful if you intend to use several versions of GCC in
 parallel. This is currently supported by @samp{libf2c} and
@@ -1599,15 +1604,17 @@ We strongly recommend to install into a target directory where there is
 no previous version of GCC present.
 
 That step completes the installation of GCC; user level binaries can
-be found in @file{@var{prefix}/bin} where @var{prefix} is the value you
-specified with the @option{--prefix} to configure (or @file{/usr/local}
-by default).  (If you specified @option{--bindir}, that directory will
-be used instead; otherwise, if you specified @option{--exec-prefix},
-@file{@var{exec-prefix}/bin} will be used.)  Headers for the C++ and
-Java libraries are installed in @file{@var{prefix}/include}; libraries
-in @file{@var{libdir}} (normally @file{@var{prefix}/lib}); internal
-parts of the compiler in @file{@var{libdir}/gcc-lib}; documentation in
-info format in @file{@var{infodir}} (normally @file{@var{prefix}/info}).
+be found in @file{@var{prefix}/bin} where @var{prefix} is the value
+you specified with the @option{--prefix} to configure (or
+@file{/usr/local} by default).  (If you specified @option{--bindir},
+that directory will be used instead; otherwise, if you specified
+@option{--exec-prefix}, @file{@var{exec-prefix}/bin} will be used.)
+Headers for the C++ and Java libraries are installed in
+@file{@var{prefix}/include}; libraries in @file{@var{libdir}}
+(normally @file{@var{prefix}/lib}); internal parts of the compiler in
+@file{@var{libdir}/gcc} and @file{@var{libexecdir}/gcc}; documentation
+in info format in @file{@var{infodir}} (normally
+@file{@var{prefix}/info}).
 
 When installing cross-compilers, GCC's executables
 are not only installed into @file{@var{bindir}}, that
@@ -3213,7 +3220,7 @@ back it out.
 @item
 Copy the original, unpatched Solaris 7
 @command{/usr/ccs/bin/as} into
-@command{/usr/local/lib/gcc-lib/sparc-sun-solaris2.7/3.1/as},
+@command{/usr/local/libexec/gcc/sparc-sun-solaris2.7/3.4/as},
 adjusting the latter name to fit your local conventions and software
 version numbers.
 

@@ -439,12 +439,6 @@ a @option{-B} prefix into a @option{-L} linker option if the prefix
 indicates an absolute file name.
 @end defmac
 
-@defmac STANDARD_EXEC_PREFIX
-Define this macro as a C string constant if you wish to override the
-standard choice of @file{/usr/local/lib/gcc-lib/} as the default prefix to
-try when searching for the executable files of the compiler.
-@end defmac
-
 @defmac MD_EXEC_PREFIX
 If defined, this macro is an additional prefix to try after
 @code{STANDARD_EXEC_PREFIX}.  @code{MD_EXEC_PREFIX} is not searched

@@ -1,3 +1,19 @@
+2003-08-01  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/sourcebuild.texi (Front End Directory): Don't make references
+	to libsubdir, it's not part of the interface to frontends.
+	* doc/install.texi (Configuration): Help users read faster by saying
+	that GCC's configure options are the standard autoconf ones.
+	Mention --libdir.  Update the default rules for finding the
+	assembler.  Don't use libsubdir since we haven't said what it means.
+	(Specific): In the Solaris 7 notes, update the place to put the
+	assembler.
+	* doc/invoke.texi: Update lib/gcc-lib to lib/gcc.
+	* doc/cpp.texi (Search Path): Actually, the search path
+	depends on libdir, which can relocate with cpp.
+	* doc/tm.texi (Driver): Don't document STANDARD_EXEC_PREFIX, it's
+	now a private interface between the Makefile and the driver.
+
 2003-08-01  Richard Henderson  <rth@redhat.com>
 
 	* system.h: Poison ASM_SIMPLIFY_DWARF_ADDR.
