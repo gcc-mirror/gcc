@@ -70,7 +70,7 @@
 
 /* The macro _VA_LIST_ is the same thing used by this file in Ultrix.  */
 /* But in 4.3bsd-net2, _VA_LIST_ has another meaning.  So ignore it.  */
-#if !defined (_VA_LIST_) || defined (_ANSI_H)
+#if !defined (_VA_LIST_) || defined (_ANSI_H_)
 /* The macro _VA_LIST is used in SCO Unix 3.2.  */
 #ifndef _VA_LIST
 #ifndef _VA_LIST_
@@ -81,7 +81,7 @@
 #define va_list __va___list
 typedef char * __va___list;
 #endif /* _VA_LIST */
-#endif /* !defined (_VA_LIST_) || defined (_ANSI_H) */
+#endif /* !defined (_VA_LIST_) || defined (_ANSI_H_) */
 
 /*  In 4.3bsd-net2, it is said we must #undef this.
     I hope this successfully identifies that system.
