@@ -2418,6 +2418,7 @@ extern void revert_static_member_fn             PROTO((tree*, tree*, tree*));
 extern void cat_namespace_levels                PROTO((void));
 
 /* in decl2.c */
+extern int check_java_method			PROTO((tree, tree));
 extern int flag_assume_nonnull_objects;
 extern int lang_decode_option			PROTO((int, char **));
 extern tree grok_method_quals			PROTO((tree, tree, tree));
