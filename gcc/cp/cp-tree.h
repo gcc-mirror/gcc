@@ -2733,7 +2733,7 @@ extern tree build_static_name			PROTO((tree, tree));
 extern tree build_decl_overload			PROTO((tree, tree, int));
 extern tree build_decl_overload_real            PROTO((tree, tree, tree, tree,
 						       tree, int)); 
-extern tree set_mangled_name_for_decl           PROTO((tree));
+extern void set_mangled_name_for_decl           PROTO((tree));
 extern tree build_typename_overload		PROTO((tree));
 extern tree build_overload_with_type		PROTO((tree, tree));
 extern tree build_destructor_name		PROTO((tree));

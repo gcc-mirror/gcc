@@ -1,3 +1,16 @@
+1998-08-03  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (set_mangled_name_for_decl): Change return type to void.
+
+	* decl.c (lookup_name_real): A namespace-level decl takes priority
+	over implicit typename.  Avoid doing the same lookup twice.
+
+	* search.c (dependent_base_p): New fn.
+	(dfs_pushdecls, dfs_compress_decls): Use it.
+
+	* typeck.c (get_member_function_from_ptrfunc): Don't try to handle 
+	virtual functions if the type doesn't have any.
+
 1998-08-03  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl2.c (grokfield): Don't mangle the name of a TYPE_DECL if it
