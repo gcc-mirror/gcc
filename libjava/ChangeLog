@@ -1,5 +1,12 @@
 2004-11-16  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/geom/doc-files/Area-1.png,
+	java/awt/geom/doc-files/Ellipse-1.png,
+	java/awt/geom/doc-files/GeneralPath-1.png:
+	New files.
+
+2004-11-16  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/Currency.java (cache): Fix modifier order.
 
 2004-11-16  Michael Koch  <konqueror@gmx.de>
