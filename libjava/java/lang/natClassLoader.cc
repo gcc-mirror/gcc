@@ -110,6 +110,16 @@ _Jv_RegisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
   loader->loadedClasses->put(klass->name->toString(), klass);
 }
 
+// If we found an error while defining an interpreted class, we must
+// go back and unregister it.
+void
+_Jv_UnregisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
+{
+  if (! loader)
+    loader = java::lang::ClassLoader::getSystemClassLoader();
+  loader->loadedClasses->remove(klass->name->toString());
+}
+
 // This function is called many times during startup, before main() is
 // run.  At that point in time we know for certain we are running 
 // single-threaded, so we don't need to lock when adding classes to the 
