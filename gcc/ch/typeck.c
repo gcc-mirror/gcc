@@ -2782,8 +2782,7 @@ apply_chill_array_layout (array_type)
 	    stepsize_specified = 1;
 
 	  if (stepsize != natural_length)
-	    sorry ("Stepsize in STEP must be the natural width of "
-		   "the array element mode");
+	    sorry ("Stepsize in STEP must be the natural width of the array element mode");
 	}
     }
 
@@ -2876,8 +2875,7 @@ apply_chill_array_layout (array_type)
 	    }
 	  if (! length_error && length != natural_length)
 	    {
-	      sorry ("The length specified on POS within STEP must be "
-		     "the natural length of the array element type");
+	      sorry ("The length specified on POS within STEP must be the natural length of the array element type");
 	    }
 	}
     }
@@ -3175,8 +3173,7 @@ apply_chill_field_layout (decl, next_struct_offset)
 	    }
 	  if (length != natural_length && ! pos_error)
 	    {
-	      sorry ("The length specified on POS must be the natural length "
-		     "of the field type");
+	      sorry ("The length specified on POS must be the natural length of the field type");
 	      length = natural_length;
 	    }
 	}
