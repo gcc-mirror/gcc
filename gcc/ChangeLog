@@ -1,3 +1,7 @@
+Mon May 11 09:14:41 1998  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in (alpha-*-linux-gnu): Undo lossage from gcc2 merge.
+
 Mon May 11 08:24:18 1998  Richard Henderson <rth@cygnus.com>
 
 	* alpha.h (PRINT_OPERAND_PUNCT_VALID_P): Add '`'.
