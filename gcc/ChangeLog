@@ -1,3 +1,9 @@
+2003-02-14  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
+
+	PR optimization/7702
+	* reload1.c (reload_cse_simplify_set): Honor
+	CANNOT_CHANGE_MODE_CLASS.
+
 2003-02-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mn10300/mn10300.c (mn10300_wide_const_load_uses_clr): New
@@ -22,23 +28,23 @@
 
 2003-02-13  Adam Nemet  <anemet@lnxw.com>
 
-        PR opt/2391 
-        * combine.c: Fix spelling in comment.
-        (cached_nonzero_bits): New function.
-        (cached_num_sign_bit_copies): New function.
+	PR opt/2391 
+	* combine.c: Fix spelling in comment.
+	(cached_nonzero_bits): New function.
+	(cached_num_sign_bit_copies): New function.
 	(nonzero_bits_with_known): New macro.
 	(num_sign_bit_copies_with_known): New macro.
-        (nonzero_bits1): Rename from nonzero_bits.  Add three new
+	(nonzero_bits1): Rename from nonzero_bits.  Add three new
 	arguments.  Change calls from nonzero_bits to
 	nonzero_bits_with_known.
-        (num_sign_bit_copies1): Rename from num_sign_bit_copies.  Add
+	(num_sign_bit_copies1): Rename from num_sign_bit_copies.  Add
 	three new arguments.  Change calls from num_sign_bit_copies to
 	num_sign_bit_copies_with_known.
-        (nonzero_bits): New macro.
-        (num_sign_bit_copies): New macro.
-        (update_table_tick): Don't traverse identical subexpression more
+	(nonzero_bits): New macro.
+	(num_sign_bit_copies): New macro.
+	(update_table_tick): Don't traverse identical subexpression more
 	than once.
-        (get_last_value_validate): Likewise.
+	(get_last_value_validate): Likewise.
 
 2003-02-13  Zack Weinberg  <zack@codesourcery.com>
 
