@@ -7,7 +7,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 configure options</TITLE>
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: configopts.html,v 1.5 2001/01/30 09:18:50 bkoz Exp $ -->
+<!-- $Id: configopts.html,v 1.6 2001/02/07 00:03:20 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -66,7 +66,7 @@ options</A></H1>
         I/O package (from
         <A HREF="http://sources.redhat.com/glibc/">glibc</A>, the
         GNU C library), or 'stdio' to use a generic &quot;C&quot;
-	abstraction.  The default is 'stdio'.
+        abstraction.  The default is 'stdio'.
      </P>
 
  <DT><TT>--enable-clocale  </TT>
@@ -81,7 +81,7 @@ options</A></H1>
         HREF="http://sources.redhat.com/glibc/">glibc</A>, the GNU C
         library), or 'generic' to use a generic &quot;C&quot;
         abstraction which consists of &quot;C&quot; locale info.
-	The default is 'generic'.
+        The default is 'generic'.
      </P>
 
  <DT><TT>--enable-long-long  </TT>
@@ -98,10 +98,9 @@ options</A></H1>
 
  <DT><TT>--enable-cheaders=OPTION  </TT>
  <DD><P>This allows the user to define what kind of C headers are
-	used.  Options are: c, c_std, and c_shadow. These correspond
-	to the source directory's include/c, include/c_std, and
-	include/c_shadow directories.
- 	The default is c_std.
+        used.  Options are: c, c_std, and c_shadow. These correspond
+        to the source directory's include/c, include/c_std, and
+        include/c_shadow directories.  The default is c_std.
      </P>
 
  <DT><TT>--enable-threads  </TT>
@@ -151,25 +150,24 @@ options</A></H1>
         flags to the compiler to use when building libstdc++.  FLAGS
         is a quoted string of options, like
         <PRE>
-  --enable-cxx-flags='-fsquangle -fvtable-gc -ansi'</PRE>
+  --enable-cxx-flags='-fvtable-gc -fomit-frame-pointer -ansi'</PRE>
         Note that the flags don't necessarily have to all be -f flags,
         as shown, but usually those are the ones that will make sense
         for experimentation and configure-time overriding.
      </P>
      <P>The advantage of --enable-cxx-flags over setting CXXFLAGS in
-        the 'make' environment is that, if libgcc is automatically
+        the 'make' environment is that, if files are automatically
         rebuilt, the same flags will be used when compiling those files
         as well, so that everything matches.
      </P>
      <P>Fun flags to try might include combinations of
         <PRE>
   -fstrict-aliasing
-  -fnew-abi
-  -fnew-exceptions
+  -fno-exceptions
   -ffunction-sections
   -fvtable-gc</PRE>
-        and -fno- forms of the same.  Tell us (the mailing list) if
-        you discover more!
+        and opposite forms (-fno-) of the same.  Tell us (the mailing
+        list) if you discover more!
      </P>
 
  <DT><TT>--enable-c-mbchar  </TT>[default]
@@ -178,7 +176,7 @@ options</A></H1>
         changing rapidly, and can cause problems on new platforms.
         Disabling wide character specializations is useful for initial
         porting steps, but builds only a subset of what is required by
-        ISO. Default is on, but the <TT>--enable-c_stdio=stdio </TT>
+        ISO.  Default is on, but the <TT>--enable-cstdio=stdio </TT>
         option currently turns it off.
      </P>
 </DL>
@@ -192,7 +190,7 @@ options</A></H1>
 
 <HR>
 <P CLASS="fineprint"><EM>
-$Id: configopts.html,v 1.5 2001/01/30 09:18:50 bkoz Exp $
+$Id: configopts.html,v 1.6 2001/02/07 00:03:20 pme Exp $
 </EM></P>
 
 

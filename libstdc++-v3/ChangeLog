@@ -1,3 +1,9 @@
+2001-02-15  Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/html/configopts.html:  Minor updates and typo fixes.
+	* docs/html/faq/index.html:  Updates of the "not really bugs" list.
+	* docs/html/faq/index.txt:  Regenerated.
+
 2001-02-15  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* testsuite/lib/libstdc++.exp: Lift, temporarily, out of

@@ -9,7 +9,7 @@
   ** Locations of "the most recent snapshot is the Nth" text are 
   ** answers 1_1, 1_4, 4_1, 5_6.
 -->
-<!-- $Id: index.html,v 1.1 2000/12/10 04:04:56 pme Exp $ -->
+<!-- $Id: index.html,v 1.2 2001/01/23 17:02:27 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -62,8 +62,14 @@ http://gcc.gnu.org/onlinedocs/libstdc++/faq/</A>.</P>
          <LI><A HREF="#4_2">Bugs in gcc/g++ (not libstdc++-v3)</A>
          <LI><A HREF="#4_3">Bugs in the C++ language/lib specification</A>
          <LI><A HREF="#4_4">Things in libstdc++ that look like bugs</A>
-         <BR><A HREF="#4_4_interface">The g++-3 headers are
-                                      <STRONG>not ours</STRONG></A>
+	   <UL>
+             <LI><A HREF="#4_4_Weff">-Weffc++ complains too much</A>
+             <LI><A HREF="#4_4_rel_ops">&quot;ambiguous overloads&quot;
+	                         after including an old-style header</A>
+             <LI><A HREF="#4_4_interface">The g++-3 headers are
+                                 <STRONG>not ours</STRONG></A>
+             <LI><A HREF="#4_4_glibc">compilation errors from streambuf.h</A>
+	   </UL>
          <LI><A HREF="#4_5">Aw, that's easy to fix!</A>
       </OL>
 
@@ -489,44 +495,66 @@ to the list</A>, Nathan Myers announced that he has started a list of
    <H2><A NAME="4_4">4.4 Things in libstdc++ that look like bugs</A></H2>
       <P>There are things which are not bugs in the compiler (4.2) nor
          the language specification (4.3), but aren't really bugs in
-         libstdc++, either.  Really!
+         libstdc++, either.  Really!  Please do not report these as bugs.
       </P>
-      <P>The biggest of these is the quadzillions of warnings about the
-         library headers emitted when <TT>-Weffc++</TT> is used.  Making
-         libstdc++ &quot;-Weffc++-clean&quot; is not a goal of the project,
-         for a few reasons.  Mainly, that option tries to enforce
-         object-oriented programming, while the Standard Library isn't
-         necessarily trying to be OO.  There are multiple solutions
-         under discussion.
-      </P>
-      <P>Another is the <TT>rel_ops</TT> namespace and the template
-         comparison operator functions contained therein.  If they become
-	 visible in the same namespace as other comparison functions
-	 (e.g., '<TT>using</TT>' them and the &lt;iterator&gt; header),
-	 then you will suddenly be faced with huge numbers of ambiguity
-	 errors.  This was discussed on the -v3 list; Nathan Myers
-	 <A HREF="http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html">sums
-	 things up here</A>.
-      </P>
-      <H3><A NAME="4_4_interface">The g++-3 headers are
-                                      <EM>not ours</EM></A></H3>
-      <P>If you have found an extremely broken header file which is
-         causing problems for you, look carefully before submitting a
-         &quot;high&quot; priority bug report (which you probably shouldn't
-         do anyhow; see the last paragraph of the page describing
+      <A NAME="4_4_Weff">
+        <P>The biggest of these is the quadzillions of warnings about the
+           library headers emitted when <TT>-Weffc++</TT> is used.  Making
+           libstdc++ &quot;-Weffc++-clean&quot; is not a goal of the project,
+           for a few reasons.  Mainly, that option tries to enforce
+           object-oriented programming, while the Standard Library isn't
+           necessarily trying to be OO.  There are multiple solutions
+           under discussion.
+        </P>
+      </A>
+      <A NAME="4_4_rel_ops">
+        <P>Another is the <TT>rel_ops</TT> namespace and the template
+           comparison operator functions contained therein.  If they become
+  	   visible in the same namespace as other comparison functions
+  	   (e.g., '<TT>using</TT>' them and the &lt;iterator&gt; header),
+  	   then you will suddenly be faced with huge numbers of ambiguity
+  	   errors.  This was discussed on the -v3 list; Nathan Myers
+  	   <A HREF="http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html">sums
+  	   things up here</A>.
+        </P>
+      </A>
+      <A NAME="4_4_interface"><H3>The g++-3 headers are
+                                      <EM>not ours</EM></H3>
+        <P>If you have found an extremely broken header file which is
+           causing problems for you, look carefully before submitting a
+           &quot;high&quot; priority bug report (which you probably shouldn't
+           do anyhow; see the last paragraph of the page describing
          <A HREF="http://gcc.gnu.org/gnatswrite.html">the GCC bug database</A>).
-      </P>
-      <P>If the headers are in <CODE>${prefix}/include/g++-3</CODE>, then
-         you are using the old libstdc++-v2 library, which is nonstandard
-         and unmaintained.  Do not report problems with -v2 to the -v3
-         mailing list.
-      </P>
-      <P>Currently our header files are installed in
-         <CODE>${prefix}/include/g++-v3</CODE> (see the 'v'?).  This may
-         change with the next release of GCC, as it may be too confusing,
-         but <A HREF="http://gcc.gnu.org/ml/gcc/2000-10/msg00732.html">the
-         question has not yet been decided</A>.
-      </P>
+        </P>
+        <P>If the headers are in <CODE>${prefix}/include/g++-3</CODE>, then
+           you are using the old libstdc++-v2 library, which is nonstandard
+           and unmaintained.  Do not report problems with -v2 to the -v3
+           mailing list.
+        </P>
+        <P>Currently our header files are installed in
+           <CODE>${prefix}/include/g++-v3</CODE> (see the 'v'?).  This may
+           change with the next release of GCC, as it may be too confusing,
+           but <A HREF="http://gcc.gnu.org/ml/gcc/2000-10/msg00732.html">the
+           question has not yet been decided</A>.
+        </P>
+      </A>
+      <A NAME="4_4_glibc">
+        <P>If you're on a GNU/Linux system and have just upgraded to
+	   glibc 2.2, but are still using gcc 2.95.2, then you should have
+	   read the glibc FAQ, specifically 2.34:
+   <PRE>
+2.34.   When compiling C++ programs, I get a compilation error in streambuf.h.
+
+{BH} You are using g++ 2.95.2? After upgrading to glibc 2.2, you need to
+apply a patch to the include files in /usr/include/g++, because the fpos_t
+type has changed in glibc 2.2.  The patch is at
+http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
+   </PRE>
+	   Note that 2.95.x shipped with the
+	   <A HREF="#4_4_interface">old v2 library</A> which is no longer
+	   maintained.
+        </P>
+      </A>
 
 <HR>
    <H2><A NAME="4_5">4.5 Aw, that's easy to fix!</A></H2>
@@ -534,8 +562,8 @@ to the list</A>, Nathan Myers announced that he has started a list of
          a working fix, then send it in!  The main GCC site has a page
          on <A HREF="http://gcc.gnu.org/contribute.html">submitting
          patches</A> that covers the procedure, but for libstdc++ you
-         should of course send the patch to our mailing list, not the
-         GCC mailing list.  The libstdc++
+         should also send the patch to our mailing list in addition to
+	 the GCC patches mailing list.  The libstdc++
          <A HREF="../17_intro/contribute.html">contributors' page</A>
          also talks about how to submit patches.
       </P>
@@ -678,7 +706,7 @@ HREF="http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html">speculation</A>.
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@gcc.gnu.org">Gabriel Dos Reis</A>.
-<BR> $Id: index.html,v 1.1 2000/12/10 04:04:56 pme Exp $
+<BR> $Id: index.html,v 1.2 2001/01/23 17:02:27 pme Exp $
 </EM></P>
 
 
