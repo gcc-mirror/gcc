@@ -77,10 +77,6 @@ enum internal_test {
 #define SINGLE_WORD_MODE_P(MODE) \
   ((MODE) != BLKmode && GET_MODE_SIZE (MODE) <= UNITS_PER_WORD)
 
-/* True if the given SYMBOL_REF is for an internally-generated symbol.  */
-#define INTERNAL_SYMBOL_P(SYM) \
-  (XSTR (SYM, 0)[0] == '*' && XSTR (SYM, 0)[1] == LOCAL_LABEL_PREFIX[0])
-
 /* True if X is an unspec wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
   (GET_CODE (X) == UNSPEC					\
@@ -823,23 +819,44 @@ mips_classify_symbol (rtx x)
       return SYMBOL_GENERAL;
     }
 
-  if (INTERNAL_SYMBOL_P (x))
-    {
-      /* The symbol is a local label.  For TARGET_MIPS16, SYMBOL_REF_FLAG
-	 will be set if the symbol refers to a string in the current
-	 function's constant pool.  */
-      if (TARGET_MIPS16 && SYMBOL_REF_FLAG (x))
-	return SYMBOL_CONSTANT_POOL;
-
-      if (TARGET_ABICALLS)
-	return SYMBOL_GOT_LOCAL;
-    }
-
   if (SYMBOL_REF_SMALL_P (x))
     return SYMBOL_SMALL_DATA;
 
+  /* When generating mips16 code, SYMBOL_REF_FLAG indicates a string
+     in the current function's constant pool.  */
+  if (TARGET_MIPS16 && SYMBOL_REF_FLAG (x))
+    return SYMBOL_CONSTANT_POOL;
+
   if (TARGET_ABICALLS)
-    return (SYMBOL_REF_FLAG (x) ? SYMBOL_GOT_LOCAL : SYMBOL_GOT_GLOBAL);
+    {
+      if (SYMBOL_REF_DECL (x) == 0)
+	return SYMBOL_REF_LOCAL_P (x) ? SYMBOL_GOT_LOCAL : SYMBOL_GOT_GLOBAL;
+
+      /* There are three cases to consider:
+
+            - o32 PIC (either with or without explicit relocs)
+            - n32/n64 PIC without explicit relocs
+            - n32/n64 PIC with explicit relocs
+
+         In the first case, both local and global accesses will use an
+         R_MIPS_GOT16 relocation.  We must correctly predict which of
+         the two semantics (local or global) the assembler and linker
+         will apply.  The choice doesn't depend on the symbol's
+         visibility, so we deliberately ignore decl_visibility and
+         binds_local_p here.
+
+         In the second case, the assembler will not use R_MIPS_GOT16
+         relocations, but it chooses between local and global accesses
+         in the same way as for o32 PIC.
+
+         In the third case we have more freedom since both forms of
+         access will work for any kind of symbol.  However, there seems
+         little point in doing things differently.  */
+      if (DECL_P (SYMBOL_REF_DECL (x)) && TREE_PUBLIC (SYMBOL_REF_DECL (x)))
+	return SYMBOL_GOT_GLOBAL;
+
+      return SYMBOL_GOT_LOCAL;
+    }
 
   return SYMBOL_GENERAL;
 }
@@ -1073,27 +1090,28 @@ mips_symbol_insns (enum mips_symbol_type type)
       return 2;
 
     case SYMBOL_GOT_LOCAL:
-      /* For o32 and o64, the sequence is:
-
-	     lw	      $at,%got(symbol)
-	     nop
-
-	 and the final address is $at + %lo(symbol).  A load/add
-	 sequence is also needed for n32 and n64.  Some versions
-	 of GAS insert a nop in the n32/n64 sequences too so, for
-	 simplicity, use the worst case of 3 instructions.  */
-      return 3;
-
     case SYMBOL_GOT_GLOBAL:
-      /* When using a small GOT, we just fetch the address using
-	 a gp-relative load.   For a big GOT, we need a sequence
-	 such as:
+      /* Unless -funit-at-a-time is in effect, we can't be sure whether
+	 the local/global classification is accurate.  See override_options
+	 for details.
 
-	      lui     $at,%got_hi(symbol)
-	      daddu   $at,$at,$gp
+	 The worst cases are:
 
-	 and the final address is $at + %got_lo(symbol).  */
-      return (TARGET_XGOT ? 3 : 1);
+	 (1) For local symbols when generating o32 or o64 code.  The assembler
+	     will use:
+
+		 lw	      $at,%got(symbol)
+		 nop
+
+	     ...and the final address will be $at + %lo(symbol).
+
+	 (2) For global symbols when -mxgot.  The assembler will use:
+
+	         lui     $at,%got_hi(symbol)
+	         (d)addu $at,$at,$gp
+
+	     ...and the final address will be $at + %got_lo(symbol).  */
+      return 3;
 
     case SYMBOL_GOTOFF_PAGE:
     case SYMBOL_GOTOFF_GLOBAL:
@@ -2078,7 +2096,6 @@ m16_usym8_4 (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   if (GET_CODE (op) == SYMBOL_REF
       && SYMBOL_REF_FLAG (op)
       && cfun->machine->insns_len > 0
-      && INTERNAL_SYMBOL_P (op)
       && (cfun->machine->insns_len + get_pool_size () + mips_string_length
 	  < 4 * 0x100))
     {
@@ -2101,7 +2118,6 @@ m16_usym5_4 (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   if (GET_CODE (op) == SYMBOL_REF
       && SYMBOL_REF_FLAG (op)
       && cfun->machine->insns_len > 0
-      && INTERNAL_SYMBOL_P (op)
       && (cfun->machine->insns_len + get_pool_size () + mips_string_length
 	  < 4 * 0x20))
     {
@@ -4785,6 +4801,28 @@ override_options (void)
       && (target_flags_explicit & MASK_EXPLICIT_RELOCS) == 0)
     target_flags &= ~MASK_EXPLICIT_RELOCS;
 
+  /* Make -mabicalls -fno-unit-at-a-time imply -mno-explicit-relocs
+     unless the user says otherwise.
+
+     There are two problems here:
+
+       (1) The value of an R_MIPS_GOT16 relocation depends on whether
+	   the symbol is local or global.  We therefore need to know
+	   a symbol's binding before refering to it using %got().
+
+       (2) R_MIPS_CALL16 can only be applied to global symbols.
+
+     When not using -funit-at-a-time, a symbol's binding may change
+     after it has been used.  For example, the C++ front-end will
+     initially assume that the typeinfo for an incomplete type will be
+     comdat, on the basis that the type could be completed later in the
+     file.  But if the type never is completed, the typeinfo will become
+     local instead.  */
+  if (!flag_unit_at_a_time
+      && TARGET_ABICALLS
+      && (target_flags_explicit & MASK_EXPLICIT_RELOCS) == 0)
+    target_flags &= ~MASK_EXPLICIT_RELOCS;
+
   /* -mrnames says to use the MIPS software convention for register
      names instead of the hardware names (ie, $a0 instead of $4).
      We do this by switching the names in mips_reg_names, which the
@@ -7052,10 +7090,7 @@ mips_in_small_data_p (tree decl)
    constants which are put in the .text section.  We also record the
    total length of all such strings; this total is used to decide
    whether we need to split the constant table, and need not be
-   precisely correct.
-
-   When generating -mabicalls code, SYMBOL_REF_FLAG is set if we
-   should treat the symbol as SYMBOL_GOT_LOCAL.  */
+   precisely correct.  */
 
 static void
 mips_encode_section_info (tree decl, rtx rtl, int first)
@@ -7102,35 +7137,6 @@ mips_encode_section_info (tree decl, rtx rtl, int first)
         SYMBOL_REF_FLAG (symbol) = 0;
       else if (TREE_CODE (decl) == STRING_CST
                && ! flag_writable_strings)
-        SYMBOL_REF_FLAG (symbol) = 0;
-      else
-        SYMBOL_REF_FLAG (symbol) = 1;
-    }
-
-  else if (TARGET_ABICALLS)
-    {
-      /* Mark the symbol if we should treat it as SYMBOL_GOT_LOCAL.
-         There are three cases to consider:
-
-            - o32 PIC (either with or without explicit relocs)
-            - n32/n64 PIC without explicit relocs
-            - n32/n64 PIC with explicit relocs
-
-         In the first case, both local and global accesses will use an
-         R_MIPS_GOT16 relocation.  We must correctly predict which of
-         the two semantics (local or global) the assembler and linker
-         will apply.  The choice doesn't depend on the symbol's
-         visibility, so we deliberately ignore decl_visibility and
-         binds_local_p here.
-
-         In the second case, the assembler will not use R_MIPS_GOT16
-         relocations, but it chooses between local and global accesses
-         in the same way as for o32 PIC.
-
-         In the third case we have more freedom since both forms of
-         access will work for any kind of symbol.  However, there seems
-         little point in doing things differently.  */
-      if (DECL_P (decl) && TREE_PUBLIC (decl))
         SYMBOL_REF_FLAG (symbol) = 0;
       else
         SYMBOL_REF_FLAG (symbol) = 1;
