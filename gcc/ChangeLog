@@ -1,3 +1,11 @@
+2001-02-13  Richard Henderson  <rth@redhat.com>
+
+	* sparc.md (cmp_cc_arith_op_set): Don't use match_dup on the
+	entire operator; replicate that and match_dup the operands.
+	(cmp_ccx_arith_op_set): Likewise.
+	(cmp_cc_arith_op_not_set): Likewise.
+	(cmp_ccx_arith_op_not_set): Likewise.
+
 2001-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.c (constant_fits_type_p): New function.
