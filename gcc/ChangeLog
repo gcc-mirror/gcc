@@ -1,3 +1,10 @@
+2002-06-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mips.c (coprocessor_operand, coprocessor2_operand,
+	symbolic_operand): Move prototypes from here...
+	* mips-protos.h (coprocessor_operand, coprocessor2_operand,
+	symbolic_operand): ...to here.
+
 Wed Jun 26 16:32:57 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* config/sh/crt1.asm: remove _stack label definition
