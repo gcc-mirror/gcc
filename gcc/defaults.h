@@ -325,5 +325,16 @@ do {								\
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)  DW_EH_PE_absptr
 #endif
 
+/* By default, the C++ compiler will use the lowest bit of the pointer
+   to function to indicate a pointer-to-member-function points to a
+   virtual member function.  However, if FUNCTION_BOUNDARY indicates
+   function addresses aren't always even, the lowest bit of the delta
+   field will be used.  */
+#ifndef TARGET_PTRMEMFUNC_VBIT_LOCATION
+#define TARGET_PTRMEMFUNC_VBIT_LOCATION \
+  (FUNCTION_BOUNDARY >= 2 * BITS_PER_UNIT \
+   ? ptrmemfunc_vbit_in_pfn : ptrmemfunc_vbit_in_delta)
+#endif
+
 #endif  /* GCC_DEFAULTS_H */
 

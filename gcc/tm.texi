@@ -1451,6 +1451,45 @@ label.
 On certain machines, it is important to have a separate label for each
 selector because this enables the linker to eliminate duplicate selectors.
 
+@findex TARGET_PTRMEMFUNC_VBIT_LOCATION
+@item TARGET_PTRMEMFUNC_VBIT_LOCATION
+The C++ compiler represents a pointer-to-member-function with a struct
+that looks like:
+
+@example
+  struct @{
+    union @{
+      void (*fn)();
+      ptrdiff_t vtable_index;
+    @};
+    ptrdiff_t delta;
+  @};
+@end example
+
+@noindent
+The C++ compiler must use one bit to indicate whether the function that
+will be called through a pointer-to-member-function is virtual.
+Normally, we assume that the low-order bit of a function pointer must
+always be zero.  Then, by ensuring that the vtable_index is odd, we can
+distinguish which variant of the union is in use.  But, on some
+platforms function pointers can be odd, and so this doesn't work.  In
+that case, we use the low-order bit of the @code{delta} field, and shift
+the remainder of the @code{delta} field to the left.
+
+GCC will automatically make the right selection about where to store
+this bit using the @code{FUNCTION_BOUNDARY} setting for your platform.
+However, some platforms such as ARM/Thumb have @code{FUNCTION_BOUNDARY}
+set such that functions always start at even addresses, but the lowest
+bit of pointers to functions indicate whether the function at that
+address is in ARM or Thumb mode.  If this is the case of your
+architecture, you should define this macro to
+@code{ptrmemfunc_vbit_in_delta}.
+
+In general, you should not have to define this macro.  On architectures
+in which function addresses are always even, according to
+@code{FUNCTION_BOUNDARY}, GCC will automatically define this macro to
+@code{ptrmemfunc_vbit_in_pfn}.
+
 @findex TARGET_BELL
 @item TARGET_BELL
 A C constant expression for the integer value for escape sequence
