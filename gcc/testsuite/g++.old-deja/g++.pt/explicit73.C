@@ -12,4 +12,4 @@ namespace N {
 
 using namespace N;
 
-template <> class foo<void>; // ERROR - invalid specialization - XFAIL *-*-*
+template <> class foo<void>; // ERROR - invalid specialization
