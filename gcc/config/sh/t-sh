@@ -3,15 +3,6 @@ LIB1ASMFUNCS = _ashiftrt _ashiftrt_n _ashiftlt _lshiftrt _movstr \
   _movstr_i4 _mulsi3 _sdivsi3 _sdivsi3_i4 _udivsi3 _udivsi3_i4 _set_fpscr \
   $(LIB1ASMFUNCS_CACHE)
 
-LIB2FUNCS_EXTRA=embed-bb.c
-
-embed-bb.c: $(srcdir)/libgcc2.c
-	echo '#ifdef inhibit_libc' > $@
-	echo '#define L_bb' >> $@
-	echo '#undef inhibit_libc' >> $@
-	cat $< >> $@
-	echo '#endif' >> $@
-
 # We want fine grained libraries, so use the new code to build the
 # floating point emulation libraries.
 FPBIT = fp-bit.c
