@@ -1,3 +1,8 @@
+1998-10-16  Mark Mitchell  <mark@markmitchell.com>
+
+	* pt.c (for_each_template_parm): Don't examine uninstantiated
+	default arguments.
+
 1998-10-16  Dave Brolley  <brolley@cygnus.com>
 
         * lex.c (real_yylex): Fix unaligned access of wchar_t.
