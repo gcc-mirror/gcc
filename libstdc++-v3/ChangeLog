@@ -1,3 +1,8 @@
+2003-02-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.in (libtool_VERSION): To 5:3:0.
+	* configure: Regenerated.
+	
 2003-02-05  Release Manager
 
 	* GCC 3.2.2 Released.
