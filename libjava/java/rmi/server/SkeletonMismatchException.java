@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* SkeletonMismatchException.java -- thrown when stub class versions mismatch
+  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,13 +39,30 @@ package java.rmi.server;
 
 import java.rmi.RemoteException;
 
-public class SkeletonMismatchException
-	extends RemoteException {
+/**
+ * Thrown if a call is received that does not match a Skeleton. Note that
+ * Skeletons are no longer required.
+ *
+ * @author unknown
+ * @since 1.1
+ * @deprecated no replacement. Skeletons are no longer required.
+ * @status updated to 1.4
+ */
+public class SkeletonMismatchException extends RemoteException
+{
+  /**
+   * Compatible with JDK 1.1.
+   */
+  private static final long serialVersionUID = -7780460454818859281l;
 
-public static final long serialVersionUID = -7780460454818859281l;
-
-public SkeletonMismatchException(String s) {
-	super(s);
-}
-
+  /**
+   * Create an exception with the specified message.
+   *
+   * @param s the message
+   * @deprecated no longer needed
+   */
+  public SkeletonMismatchException(String s)
+  {
+    super(s);
+  }
 }

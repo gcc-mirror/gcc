@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* SkeletonNotFoundException.java -- thrown if a Skeleton is not found
+   Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,15 +39,42 @@ package java.rmi.server;
 
 import java.rmi.RemoteException;
 
-public class SkeletonNotFoundException
-	extends RemoteException {
+/**
+ * Thrown if a Skeleton corresponding to the remote object is not found.
+ * Note that Skeletons are no longer required.
+ *
+ * @author unknown
+ * @since 1.1
+ * @deprecated no replacement. Skeletons are no longer required.
+ * @status updated to 1.4
+ */
+public class SkeletonNotFoundException extends RemoteException
+{
+  /**
+   * Compatible with JDK 1.1.
+   */
+  private static final long serialVersionUID = -7860299673822761231L;
 
-public SkeletonNotFoundException(String s) {
-	super(s);
-}
+  /**
+   * Create an exception with the specified message.
+   *
+   * @param s the message
+   * @deprecated no longer needed
+   */
+  public SkeletonNotFoundException(String s)
+  {
+    super(s);
+  }
 
-public SkeletonNotFoundException(String s, Exception e) {
-	super(s, e);
-}
-
+  /**
+   * Create an exception with the specified message and cause.
+   *
+   * @param s the message
+   * @param e the cause
+   * @deprecated no longer needed
+   */
+  public SkeletonNotFoundException(String s, Exception e)
+  {
+    super(s, e);
+  }
 }

@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* ActivateFailedException.java -- thrown when activation fails
+   Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,15 +39,38 @@ package java.rmi.activation;
 
 import java.rmi.RemoteException;
 
-public class ActivateFailedException
-	extends RemoteException {
+/**
+ * Thrown when activation fails on a remote call to an activatable object.
+ *
+ * @author unknown
+ * @since 1.2
+ * @status updated to 1.4
+ */
+public class ActivateFailedException extends RemoteException
+{
+  /**
+   * Compatible with JDK 1.2+.
+   */
+  private static final long serialVersionUID = 4863550261346652506L;
 
-public ActivateFailedException(String s) {
-	super(s);
-}
+  /**
+   * Create an exception with a message.
+   *
+   * @param s the message
+   */
+  public ActivateFailedException(String s)
+  {
+    super(s);
+  }
 
-public ActivateFailedException(String s, Exception ex) {
-	super(s, ex);
-}
-
+  /**
+   * Create an exception with a message and a cause.
+   *
+   * @param s the message
+   * @param ex the cause
+   */
+  public ActivateFailedException(String s, Exception ex)
+  {
+    super(s, ex);
+  }
 }
