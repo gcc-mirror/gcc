@@ -13,9 +13,10 @@
 #define M_EF 2.7182818284590452353602874713526624977572470936999595749669676277241F
 #define M_EL 2.7182818284590452353602874713526624977572470936999595749669676277241L
 /* Precision for comparison tests.  */
-#define PREC  0.0000001
+#define PREC  (sizeof (float) < sizeof (double) ? 0.0000001 : PRECF)
 #define PRECF 0.0001F
-#define PRECL 0.0000000000001L
+#define PRECL (sizeof (float) < sizeof (long double)	\
+	       ? 0.0000000000001L : PRECF)
 #define PROTOTYPE(FN) extern double FN(double); extern float FN##f(float); \
   extern long double FN##l(long double);
 #define PROTOTYPE2(FN) extern double FN(double, double); \

@@ -1,3 +1,10 @@
+2004-03-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.dg/torture/builtin-explog-1.c (PREC): Make it the same
+	as PRECF if sizeof (float) > sizeof (double).
+	(PRECL): Make it the same as PRECF if
+	sizeof (float) > sizeof (long double).
+
 2004-03-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/builtins-config.h: Use underscore macro style for __sun
