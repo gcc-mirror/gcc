@@ -62,6 +62,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "recog.h"
 #include "sched-int.h"
 
+#ifdef INSN_SCHEDULING
 /* Some accessor macros for h_i_d members only used within this file.  */
 #define INSN_REF_COUNT(INSN)	(h_i_d[INSN_UID (INSN)].ref_count)
 #define FED_BY_SPEC_LOAD(insn)	(h_i_d[INSN_UID (insn)].fed_by_spec_load)
@@ -2255,9 +2256,10 @@ rgn_print_insn (insn, aligned)
     sprintf (tmp, "b%3d: i%4d", INSN_BB (insn), INSN_UID (insn));
   else
     {
-      sprintf (tmp, "%d", INSN_UID (insn));
       if (current_nr_blocks > 1 && INSN_BB (insn) != target_bb)
-	sprintf (tmp, "/b%d ", INSN_BB (insn));
+	sprintf (tmp, "%d/b%d", INSN_UID (insn), INSN_BB (insn));
+      else
+	sprintf (tmp, "%d", INSN_UID (insn));
     }
   return tmp;
 }
@@ -3114,3 +3116,4 @@ schedule_insns (dump_file)
 
   free (deaths_in_region);
 }
+#endif

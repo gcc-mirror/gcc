@@ -1,3 +1,9 @@
+2000-12-05  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* sched-vis.c: Guard with #ifdef INSN_SCHEDULING.
+	* sched-rgn.c: Likewise.
+	(rgn_print_insn): Fix output.
+
 2000-12-05  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/Makefile.*: make these more consistent
