@@ -503,30 +503,30 @@ public class Window extends Container
   {
     if (windowListener != null)
       {
-	switch (evt.getID())
-	  {
-	  case WindowEvent.WINDOW_ACTIVATED:
-	    windowListener.windowActivated(evt);
-	    break;
-	  case WindowEvent.WINDOW_CLOSED:
-	    windowListener.windowClosed(evt);
-	    break;
-	  case WindowEvent.WINDOW_CLOSING:
-	    windowListener.windowClosing(evt);
-	    break;
-	  case WindowEvent.WINDOW_DEACTIVATED:
-	    windowListener.windowDeactivated(evt);
-	    break;
-	  case WindowEvent.WINDOW_DEICONIFIED:
-	    windowListener.windowDeiconified(evt);
-	    break;
-	  case WindowEvent.WINDOW_ICONIFIED:
-	    windowListener.windowIconified(evt);
-	    break;
-	  case WindowEvent.WINDOW_OPENED:
-	    windowListener.windowOpened(evt);
-	    break;
-	  }
+        switch (evt.getID())
+          {
+          case WindowEvent.WINDOW_ACTIVATED:
+            windowListener.windowActivated(evt);
+            break;
+          case WindowEvent.WINDOW_CLOSED:
+            windowListener.windowClosed(evt);
+            break;
+          case WindowEvent.WINDOW_CLOSING:
+            windowListener.windowClosing(evt);
+            break;
+          case WindowEvent.WINDOW_DEACTIVATED:
+            windowListener.windowDeactivated(evt);
+            break;
+          case WindowEvent.WINDOW_DEICONIFIED:
+            windowListener.windowDeiconified(evt);
+            break;
+          case WindowEvent.WINDOW_ICONIFIED:
+            windowListener.windowIconified(evt);
+            break;
+          case WindowEvent.WINDOW_OPENED:
+            windowListener.windowOpened(evt);
+            break;
+          }
       }
   }
 

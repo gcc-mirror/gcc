@@ -39,26 +39,63 @@ exception statement from your version. */
 package java.awt;
 
 /**
- * STUB CLASS ONLY
+ * @since 1.4
  */
 public abstract class FocusTraversalPolicy
 {
+  /**
+   * Creates a <code>FocusTraversalPolicy</code> object.
+   */
   public FocusTraversalPolicy()
   {
+    // Do nothing in here.
   }
 
+  /**
+   * Returns the Component that should receive the focus after a Component.
+   *
+   * @exception IllegalArgumentException If root or current is null,
+   * or if root is not a focus cycle root of current.
+   */
   public abstract Component getComponentAfter(Container root,
                                               Component current);
 
+  /**
+   * Returns the Component that should receive the focus before a Component.
+   *
+   * @exception IllegalArgumentException If root or current is null,
+   * or if root is not a focus cycle root of current.
+   */
   public abstract Component getComponentBefore(Container root,
                                                Component current);
 
+  /**
+   * Returns the first Component in the traversal cycle.
+   *
+   * @exception IllegalArgumentException If root is null.
+   */
   public abstract Component getFirstComponent(Container root);
 
+  /**
+   * Returns the last Component in the traversal cycle.
+   *
+   * @exception IllegalArgumentException If root is null.
+   */
   public abstract Component getLastComponent(Container root);
 
+  /**
+   * Returns the default Component to focus.
+   *
+   * @exception IllegalArgumentException If root is null.
+   */
   public abstract Component getDefaultComponent(Container root);
 
+  /**
+   * Returns the Component that should receive the focus when a Window is made
+   * visible for the first time.
+   *
+   * @exception IllegalArgumentException If window is null.
+   */
   public Component getInitialComponent(Window window)
   {
     return getDefaultComponent(window);

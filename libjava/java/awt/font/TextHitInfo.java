@@ -39,76 +39,87 @@ package java.awt.font;
 
 /**
  * @author John Leuner <jewel@debian.org>
- *
- *
  */
-
-public final class TextHitInfo {
-
+public final class TextHitInfo
+{
+  private int charIndex;
+  private boolean leadingEdge;
+  
+  TextHitInfo (int charIndex, boolean leadingEdge)
+  {
+    this.charIndex = charIndex;
+    this.leadingEdge = leadingEdge;
+  }
+  
   public int getCharIndex()
   {
-    return -1;
+    return charIndex;
   }
 
   public boolean isLeadingEdge()
   {
-    return false;
+    return leadingEdge;
   }
 
   public int getInsertionIndex()
   {
-    return -1;
+    return (leadingEdge ? charIndex : charIndex + 1);
   }
 
   public int hashCode()
   {
-    return getCharIndex();
+    return charIndex;
   }
 
   public boolean equals(Object obj)
   {
     if(obj instanceof TextHitInfo)
       return this.equals((TextHitInfo) obj);
+    
     return false;
   }
 
   public boolean equals(TextHitInfo hitInfo)
   {
-    return (getCharIndex() == hitInfo.getCharIndex()) && (isLeadingEdge() == hitInfo.isLeadingEdge());
+    return (charIndex == hitInfo.getCharIndex ())
+            && (leadingEdge == hitInfo.isLeadingEdge ());
   }
 
   public static TextHitInfo leading(int charIndex)
   {
-    return new TextHitInfo();
+    return new TextHitInfo (charIndex, true);
   }
 
   public static TextHitInfo trailing(int charIndex)
   {
-    return new TextHitInfo();
+    return new TextHitInfo (charIndex, false);
   }
 
   public static TextHitInfo beforeOffset(int offset)
   {
-    return new TextHitInfo();
+    return new TextHitInfo (offset, false);
   }
 
   public static TextHitInfo afterOffset(int offset)
   {
-    return new TextHitInfo();
+    return new TextHitInfo (offset, true);
   }
 
   public TextHitInfo getOtherHit()
   {
-    return new TextHitInfo();
+    return (leadingEdge ? trailing (charIndex - 1) : leading (charIndex + 1));
   }
 
   public TextHitInfo getOffsetHit(int offset)
   {
-    return new TextHitInfo();
+    return new TextHitInfo (charIndex + offset, leadingEdge);
   }
 
   public String toString()
   {
-    return "";
+    return "TextHitInfo["
+            + charIndex
+            + (leadingEdge ? "L" : "T" )
+            + "]";
   }
 }
