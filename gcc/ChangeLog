@@ -1,5 +1,7 @@
 Sun Feb 18 09:30:09 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* diagnostic.c (_fatal_insn): Decrement errorcount.
+
 	* invoke.texi (-I): Add note avoiding use for system header files.
 
 	* rtl.h (add_clobbers): Remove duplicate declaration.

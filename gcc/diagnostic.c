@@ -1486,6 +1486,11 @@ _fatal_insn (msgid, insn, file, line, function)
      const char *function;
 {
   error ("%s", msgid);
+
+  /* The above incremented error_count, but isn't an error that we want to
+     count, so reset it here.  */
+  errorcount--;
+
   debug_rtx (insn);
   fancy_abort (file, line, function);
 }
