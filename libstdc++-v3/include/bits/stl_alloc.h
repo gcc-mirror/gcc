@@ -898,9 +898,11 @@ namespace std
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.
   // NB: This syntax is a GNU extension.
+#if _GLIBCPP_EXTERN_TEMPLATE
   extern template class allocator<char>;
   extern template class allocator<wchar_t>;
   extern template class __pool_alloc<true,0>;
+#endif
 } // namespace std
 
 #endif
