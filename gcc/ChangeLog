@@ -1,3 +1,9 @@
+2004-08-31  Jeff Law  <law@redhat.com>
+
+	* gcse.c (remove_reachable_equiv_notes): Scan loops where
+	the store expression is killed for REG_EQUAL/REG_EQUIV notes
+	that need to be removed.
+
 2004-08-30  Mark Mitchell  <mark@codesourcery.com>
 
 	Revert:

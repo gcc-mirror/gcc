@@ -7777,9 +7777,14 @@ remove_reachable_equiv_notes (basic_block bb, struct ls_expr *smexpr)
 	}
       bb = act->dest;
       
+      /* We used to continue the loop without scanning this block if the
+	 store expression was killed in this block.  That is wrong as
+	 we could have had a REG_EQUAL note with the store expression
+	 appear in the block before the insn which killed the store
+	 expression and that REG_EQUAL note needs to be removed as it
+	 is invalid.  */
       if (bb == EXIT_BLOCK_PTR
-	  || TEST_BIT (visited, bb->index)
-	  || TEST_BIT (ae_kill[bb->index], smexpr->index))
+	  || TEST_BIT (visited, bb->index))
 	{
 	  act = act->succ_next;
 	  continue;
