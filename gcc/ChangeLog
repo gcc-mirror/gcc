@@ -1,3 +1,7 @@
+Wed Oct  8 08:57:20 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Tue Oct  7 16:27:34 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* aclocal.m4: Substitute INSTALL.
