@@ -2261,14 +2261,14 @@ namespace std
 	  // Who came up with these rules, anyway? Jeeze.
           const locale& __loc = __io._M_getloc();
 	  const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
-	  const _CharT __minus = __ctype.widen('-');
-	  const _CharT __plus = __ctype.widen('+');
-	  const bool __testsign = _Traits::eq(__olds[0], __minus)
-	                          || _Traits::eq(__olds[0], __plus);
 
-	  const bool __testhex = _Traits::eq(__ctype.widen('0'), __olds[0])
-	                         && (_Traits::eq(__ctype.widen('x'), __olds[1])
-				     || _Traits::eq(__ctype.widen('X'), __olds[1]));
+	  const bool __testsign = _Traits::eq(__ctype.widen('-'), __olds[0])
+	                          || _Traits::eq(__ctype.widen('+'), __olds[0]);
+	  const bool __testhex = (_Traits::eq(__ctype.widen('0'), __olds[0])
+				  && __oldlen > 1
+				  && (_Traits::eq(__ctype.widen('x'), __olds[1])
+				      || _Traits::eq(__ctype.widen('X'),
+						     __olds[1])));
 	  if (__testhex)
 	    {
 	      __news[0] = __olds[0];
@@ -2292,24 +2292,24 @@ namespace std
   bool
   __verify_grouping(const char* __grouping, size_t __grouping_size,
 		    const string& __grouping_tmp)
-    {
-      const size_t __n = __grouping_tmp.size() - 1;
-      const size_t __min = std::min(__n, __grouping_size - 1);
-      size_t __i = __n;
-      bool __test = true;
-
-      // Parsed number groupings have to match the
-      // numpunct::grouping string exactly, starting at the
-      // right-most point of the parsed sequence of elements ...
-      for (size_t __j = 0; __j < __min && __test; --__i, ++__j)
-	__test = __grouping_tmp[__i] == __grouping[__j];
-      for (; __i && __test; --__i)
-	__test = __grouping_tmp[__i] == __grouping[__min];
-      // ... but the last parsed grouping can be <= numpunct
-      // grouping.
-      __test &= __grouping_tmp[0] <= __grouping[__min];
-      return __test;
-    }
+  {
+    const size_t __n = __grouping_tmp.size() - 1;
+    const size_t __min = std::min(__n, __grouping_size - 1);
+    size_t __i = __n;
+    bool __test = true;
+    
+    // Parsed number groupings have to match the
+    // numpunct::grouping string exactly, starting at the
+    // right-most point of the parsed sequence of elements ...
+    for (size_t __j = 0; __j < __min && __test; --__i, ++__j)
+      __test = __grouping_tmp[__i] == __grouping[__j];
+    for (; __i && __test; --__i)
+      __test = __grouping_tmp[__i] == __grouping[__min];
+    // ... but the last parsed grouping can be <= numpunct
+    // grouping.
+    __test &= __grouping_tmp[0] <= __grouping[__min];
+    return __test;
+  }
 
   template<typename _CharT>
     _CharT*
