@@ -1,3 +1,8 @@
+2001-12-11  Richard Henderson  <rth@redhat.com>
+
+	* objc/objc-act.c (build_string_class_template): New.
+	(build_objc_string_object): Call it.
+
 2001-12-11  Steve Ellcey  <sje@cup.hp.com>
 
 	* doc/tm.texi (FUNCTION_ARG_REG_LITTLE_ENDIAN): New.
