@@ -1,5 +1,20 @@
 2003-06-08  Andreas Jaeger  <aj@suse.de>
 
+	* std.c: Remove #if 0'ed functions.
+
+	* sta.c: Remove usage of HARD_F90, FFESTR_F90 and FFESTR_VXT.
+	* stb.c: Likewise.
+	* stb.h: Likewise.
+	* stc.c: Likewise.
+	* stc.h: Likewise.
+	* std.c: Likewise.
+	* std.h: Likewise.
+	* ste.c: Likewise.
+	* ste.h: Likewise.
+
+	* str.h (FFESTR_F90): Remove macro.
+	(FFESTR_VXT): Remove macro.
+
 	* bld.c: Remove usage of FFETARGET_okCHARACTER2,
 	FFETARGET_okCHARACTER3, FFETARGET_okCHARACTER4,
 	FFETARGET_okCHARACTER5, FFETARGET_okCHARACTER6,

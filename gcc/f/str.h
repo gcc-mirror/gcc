@@ -1,5 +1,5 @@
 /* str.h -- Private #include File (module.h template V1.0)
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -29,11 +29,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #ifndef GCC_F_STR_H
 #define GCC_F_STR_H
-
-/* Simple definitions and enumerations. */
-
-#define FFESTR_F90 0		/* Unsupported F90 stuff. */
-#define FFESTR_VXT 0		/* Unsupported VXT stuff. */
 
 /* Typedefs. */
 
