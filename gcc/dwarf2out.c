@@ -609,6 +609,9 @@ expand_builtin_init_dwarf_reg_sizes (address)
       int offset = DWARF_FRAME_REGNUM (i) * GET_MODE_SIZE (mode);
       int size = GET_MODE_SIZE (reg_raw_mode[i]);
 
+      if (offset < 0)
+	continue;
+
       emit_move_insn (change_address (mem, mode,
 				      plus_constant (addr, offset)),
 		      GEN_INT (size));
