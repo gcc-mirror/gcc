@@ -1,3 +1,8 @@
+Wed May  8 13:12:11 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* cse.c (dead_libcall_p): Update counts.
+	(delete_trivially_dead_insns): Update call of dead_libcall_p.
+
 Wed May  8 11:08:50 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfglayout.c (function_tail_eff_head): Rename to ...
