@@ -1905,9 +1905,6 @@ abort(); \
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),    \
   sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
  
-/* Allow #sccs in preprocessor.  */
-#define SCCS_DIRECTIVE
-
  /* Implicit library calls should use memcpy, not bcopy, etc.  */
 #define TARGET_MEM_FUNCTIONS
  

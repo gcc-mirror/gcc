@@ -68,9 +68,6 @@ do {								\
 #undef  IDENT_ASM_OP
 #define IDENT_ASM_OP "\t.ident\t"
 
-/* Allow #sccs in preprocessor.  */
-#define SCCS_DIRECTIVE
-
 /* Output #ident as a .ident.  */
 #undef  ASM_OUTPUT_IDENT
 #define ASM_OUTPUT_IDENT(FILE, NAME) \

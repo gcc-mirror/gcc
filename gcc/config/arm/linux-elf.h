@@ -99,9 +99,6 @@ Boston, MA 02111-1307, USA.  */
 	builtin_assert ("system=posix");	\
     } while (0)
 
-/* Allow #sccs in preprocessor.  */
-#define SCCS_DIRECTIVE
-
 /* This is how we tell the assembler that two symbols have the same value.  */
 #define ASM_OUTPUT_DEF(FILE, NAME1, NAME2) \
   do					   \

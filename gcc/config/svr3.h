@@ -113,10 +113,6 @@ Boston, MA 02111-1307, USA.
 #define LINK_SPEC "%{T*} %{z:-lm}"
 #endif
 
-/* Allow #sccs in preprocessor.  */
-
-#define SCCS_DIRECTIVE
-
 /* Output #ident as a .ident.  */
 
 #undef  ASM_OUTPUT_IDENT

@@ -128,11 +128,6 @@ Boston, MA 02111-1307, USA.  */
     fprintf ((STREAM), "void __fini() {\n\t%s();\n}\n", (FUNC));	\
   } while (0)
 
-/* Allow #sccs in preprocessor.  */
-
-#undef SCCS_DIRECTIVE
-#define SCCS_DIRECTIVE
-
 #undef TARGET_HAS_F_SETLKW
 #define TARGET_HAS_F_SETLKW
 

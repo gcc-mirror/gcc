@@ -1,3 +1,18 @@
+2002-07-17  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cpplib.c (do_sccs): Handle #sccs on all systems.
+	* system.h (SCCS_DIRECTIVE): Poison.
+	* config/darwin.h, config/freebsd.h, config/netbsd.h,
+	config/ptx4.h, config/svr3.h, config/svr4.h, config/alpha/elf.h,
+	config/arm/linux-elf.h, config/c4x/c4x.h, config/d30v/d30v.h,
+	config/i370/i370.h, config/i386/gas.h, config/i386/sco5.h,
+	config/i960/i960.h, config/m68hc11/m68hc11.h, config/m68k/3b1.h,
+	config/m68k/3b1g.h, config/m68k/crds.h, config/m68k/mot3300.h,
+	config/m68k/pbb.h, config/m88k/m88k.h, config/mips/mips.h,
+	config/sparc/pbd.h, config/stormy16/stormy16.h, config/vax/vaxv.h:
+	Remove all references to SCCS_DIRECTIVE.
+	* doc/cpp.texi, doc/tm.texi: Update.
+
 Wed Jul 17 19:23:32 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* regrename.c (maybe_mode_change): New function.

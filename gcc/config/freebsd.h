@@ -67,10 +67,6 @@ Boston, MA 02111-1307, USA.  */
 #undef  NO_IMPLICIT_EXTERN_C
 #define NO_IMPLICIT_EXTERN_C	1
 
-/* Allow #sccs in preprocessor.  */
-#undef  SCCS_DIRECTIVE
-#define SCCS_DIRECTIVE	1
-
 /* Make gcc agree with FreeBSD's standard headers (<machine/ansi.h>, etc...)  */
 
 #undef  WCHAR_TYPE

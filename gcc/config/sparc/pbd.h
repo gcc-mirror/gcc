@@ -59,10 +59,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define ENDFILE_SPEC "crtn.o%s"
 
-/* cpp has to support a #sccs directive for the /usr/include files */
-
-#define SCCS_DIRECTIVE
-
 /* LINK_SPEC is needed only for SunOS 4.  */
 
 #undef LINK_SPEC

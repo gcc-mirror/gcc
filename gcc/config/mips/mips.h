@@ -4350,9 +4350,6 @@ do {									\
 #define ASM_OUTPUT_ASCII(STREAM, STRING, LEN)				\
   mips_output_ascii (STREAM, STRING, LEN)
 
-/* Handle certain cpp directives used in header files on sysV.  */
-#define SCCS_DIRECTIVE
-
 /* Output #ident as a in the read-only data section.  */
 #undef  ASM_OUTPUT_IDENT
 #define ASM_OUTPUT_IDENT(FILE, STRING)					\

@@ -180,10 +180,6 @@ Boston, MA 02111-1307, USA.
 			%{!ansi:values-Xa.o%s} \
  			crtbegin.o%s"
 
-/* Allow #sccs in preprocessor.  */
-
-#define SCCS_DIRECTIVE
-
 /* Don't use bcopy, which doesn't handle overlaps before DYNIX/ptx 4.6. */
 
 #undef HAVE_BCOPY

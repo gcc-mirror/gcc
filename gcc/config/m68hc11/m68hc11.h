@@ -1706,9 +1706,6 @@ do {                                                                    \
    purposes) so give the MEM rtx a byte's mode.  */
 #define FUNCTION_MODE		QImode
 
-/* define SCCS_DIRECTIVE if SCCS directives should be ignored */
-#define SCCS_DIRECTIVE		1
-
 /* Allow $ in identifiers */
 #define DOLLARS_IN_IDENTIFIERS	1
 

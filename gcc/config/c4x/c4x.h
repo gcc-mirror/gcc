@@ -1793,10 +1793,6 @@ do {						\
 #define DOUBLE_TYPE_SIZE	32
 #define LONG_DOUBLE_TYPE_SIZE	64 /* Actually only 40.  */
 
-/* Allow #sccs in preprocessor.  */
-
-#define SCCS_DIRECTIVE
-
 /* Output #ident as a .ident.  */
 
 #define ASM_OUTPUT_IDENT(FILE, NAME) \

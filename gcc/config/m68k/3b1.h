@@ -50,10 +50,6 @@ Boston, MA 02111-1307, USA.  */
   "%{!shlib:%{pg:mcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}\
    %{shlib:crt0s.o%s shlib.ifile%s} "
 
-/* cpp has to support a #sccs directive for the /usr/include files */
-
-#define SCCS_DIRECTIVE
-
 /* Make output for SDB.  */
 
 #define SDB_DEBUGGING_INFO

@@ -4286,12 +4286,6 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
    should be used on RISC machines.  */
 /* #define INTEGRATE_THRESHOLD(DECL) */
 
-/* Define this if the preprocessor should ignore `#sccs' directives and print
-   no error message.
-
-   Defined in svr4.h.  */
-/* #define SCCS_DIRECTIVE */
-
 /* Define this macro if the system header files support C++ as well as C.  This
    macro inhibits the usual method of using system header files in C++, which
    is to pretend that the file's contents are enclosed in `extern "C" {...}'.  */

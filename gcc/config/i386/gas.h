@@ -45,10 +45,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define SDB_DEBUGGING_INFO
 
-/* Allow #sccs in preprocessor.  */
-
-#define SCCS_DIRECTIVE
-
 /* Output #ident as a .ident.  */
 
 #define ASM_OUTPUT_IDENT(FILE, NAME) fprintf (FILE, "\t.ident \"%s\"\n", NAME);
