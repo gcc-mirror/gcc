@@ -1,6 +1,9 @@
 /* { dg-do run { target sparc*-*-* } } */
 /* { dg-options "-O2 -fpic" } */
 
+extern void abort (void);
+extern void exit (int);
+
 void foo (char *x, const char *y, ...)
 {
 }

@@ -1,6 +1,9 @@
 /* { dg-do run { target sparc*-*-* } } */
 /* { dg-options "-O2 -mcpu=ultrasparc -mvis" } */
 
+extern void abort (void);
+extern void exit (int);
+
 int foo(double a, int b, int c, double *d, int h)
 {
   int f, g;

@@ -10,5 +10,5 @@ main ()
   return 0;
 }
 
-/* { dg-final { scan-assembler ".stabs*100,0,2" } } */
+/* { dg-final { scan-assembler ".stabs.*100,0,2" } } */
 
