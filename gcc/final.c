@@ -815,6 +815,9 @@ shorten_branches (first)
 	      something_changed = 1;
 	    }
 	}
+      /* For a non-optimizing compile, do only a single pass.  */
+      if (!optimize)
+	break;
     }
 #endif /* HAVE_ATTR_length */
 }
