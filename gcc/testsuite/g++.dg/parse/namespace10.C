@@ -1,4 +1,4 @@
-// PR c++/16489
+// PR c++/16529
 
 namespace m {} // { dg-error "" }
 
