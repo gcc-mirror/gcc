@@ -1,0 +1,26 @@
+#
+# Host is an i370 running OpenEdition
+#
+
+# Use GCC alloca
+
+ALLOCA = alloca.o
+
+# Don't bother fixing up header files, they're wierd
+
+STMP_FIXPROTO =
+
+# Set up to make using c89
+
+X_CFLAGS=-D_ALL_SOURCE
+CC=c89
+
+# Explicitly use libiberty
+
+CLIB=-liberty
+LDFLAGS=-L../libiberty
+
+# TAR Options
+
+TAROUTOPTS=xpf
+

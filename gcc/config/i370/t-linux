@@ -1,0 +1,4 @@
+# config/i370/t-linux: this file defines Makefile overrides when building 
+# for a Linux target.  Thes definitions are in addition to config/t-linux.
+# pretty busted at the moment
+CROSS_LIBGCC1 =
