@@ -50,7 +50,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define WORD_SWITCH_TAKES_ARG(STR)				\
  (!strcmp (STR, "Tdata") || !strcmp (STR, "include")		\
   || !strcmp (STR, "imacros") || !strcmp (STR, "target")	\
-  || !strcmp (STR, "assert"))
+  || !strcmp (STR, "assert") || !strcmp (STR, "aux-info"))
 
 /* Specify what to link with.  */
 
