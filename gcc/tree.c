@@ -4212,6 +4212,9 @@ decl_type_context (decl)
 
   while (context)
     {
+      if (TREE_CODE (context) == NAMESPACE_DECL)
+        return NULL_TREE;
+
       if (TREE_CODE (context) == RECORD_TYPE
 	  || TREE_CODE (context) == UNION_TYPE
 	  || TREE_CODE (context) == QUAL_UNION_TYPE)
