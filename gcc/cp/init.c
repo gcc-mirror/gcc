@@ -852,8 +852,11 @@ expand_cleanup_for_base (binfo, flag)
     return;
 
   /* Call the destructor.  */
-  expr = (build_scoped_method_call
-	  (current_class_ref, binfo, base_dtor_identifier, NULL_TREE));
+  expr = build_special_member_call (current_class_ref, 
+				    base_dtor_identifier,
+				    NULL_TREE,
+				    binfo,
+				    LOOKUP_NORMAL | LOOKUP_NONVIRTUAL);
   if (flag)
     expr = fold (build (COND_EXPR, void_type_node,
 			c_common_truthvalue_conversion (flag),
@@ -1282,7 +1285,7 @@ expand_default_init (binfo, true_exp, exp, init, flags)
   else
     ctor_name = base_ctor_identifier;
 
-  rval = build_method_call (exp, ctor_name, parms, binfo, flags);
+  rval = build_special_member_call (exp, ctor_name, parms, binfo, flags);
   if (TREE_SIDE_EFFECTS (rval))
     {
       if (building_stmt_tree ())
@@ -1451,15 +1454,16 @@ build_member_call (type, name, parmlist)
 	  TREE_OPERAND (name, 0) = method_name;
 	}
       my_friendly_assert (is_overloaded_fn (method_name), 980519);
-      return build_x_function_call (name, parmlist, current_class_ref);
+      return finish_call_expr (name, parmlist, /*disallow_virtual=*/true);
     }
 
   if (DECL_P (name))
     name = DECL_NAME (name);
 
   if (TREE_CODE (type) == NAMESPACE_DECL)
-    return build_x_function_call (lookup_namespace_name (type, name),
-				  parmlist, current_class_ref);
+    return finish_call_expr (lookup_namespace_name (type, name),
+			     parmlist,
+			     /*disallow_virtual=*/true);
 
   if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
     {
@@ -1486,10 +1490,9 @@ build_member_call (type, name, parmlist)
     {
       tree ns = lookup_name (type, 0);
       if (ns && TREE_CODE (ns) == NAMESPACE_DECL)
-	{
-	  return build_x_function_call (build_offset_ref (type, name),
-					parmlist, current_class_ref);
-	}
+	return finish_call_expr (lookup_namespace_name (ns, name),
+				 parmlist,
+				 /*disallow_virtual=*/true);
     }
 
   if (type == NULL_TREE || ! is_aggr_type (type, 1))
@@ -2326,7 +2329,8 @@ build_new_1 (exp)
 		       args));
       else
 	alloc_call = build_method_call (build_dummy_object (true_type),
-					fnname, args, NULL_TREE,
+					fnname, args, 
+					TYPE_BINFO (true_type),
 					LOOKUP_NORMAL);
     }
 
@@ -2415,10 +2419,10 @@ build_new_1 (exp)
       if (has_array)
 	init_expr = build_vec_init (init_expr, init, 0);
       else if (TYPE_NEEDS_CONSTRUCTING (type))
-	init_expr = build_method_call (init_expr, 
-				       complete_ctor_identifier,
-				       init, TYPE_BINFO (true_type),
-				       LOOKUP_NORMAL);
+	init_expr = build_special_member_call (init_expr, 
+					       complete_ctor_identifier,
+					       init, TYPE_BINFO (true_type),
+					       LOOKUP_NORMAL);
       else
 	{
 	  /* We are processing something like `new int (10)', which
@@ -3090,7 +3094,8 @@ build_dtor_call (exp, dtor_kind, flags)
     default:
       abort ();
     }
-  return build_method_call (exp, name, NULL_TREE, NULL_TREE, flags);
+  return build_method_call (exp, name, NULL_TREE, 
+			    TYPE_BINFO (TREE_TYPE (exp)), flags);
 }
 
 /* Generate a call to a destructor. TYPE is the type to cast ADDR to.
@@ -3282,9 +3287,12 @@ push_base_cleanups ()
 
 	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (base_type))
 	    {
-	      expr = build_scoped_method_call (current_class_ref, vbase,
-					       base_dtor_identifier,
-					       NULL_TREE);
+	      expr = build_special_member_call (current_class_ref, 
+						base_dtor_identifier,
+						NULL_TREE,
+						vbase,
+						(LOOKUP_NORMAL 
+						 | LOOKUP_NONVIRTUAL));
 	      expr = build (COND_EXPR, void_type_node, cond,
 			    expr, void_zero_node);
 	      finish_decl_cleanup (NULL_TREE, expr);
@@ -3303,10 +3311,10 @@ push_base_cleanups ()
 	  || TREE_VIA_VIRTUAL (base_binfo))
 	continue;
 
-      expr = build_scoped_method_call (current_class_ref, base_binfo,
-				       base_dtor_identifier,
-				       NULL_TREE);
-
+      expr = build_special_member_call (current_class_ref, 
+					base_dtor_identifier,
+					NULL_TREE, base_binfo, 
+					LOOKUP_NORMAL | LOOKUP_NONVIRTUAL);
       finish_decl_cleanup (NULL_TREE, expr);
     }
 

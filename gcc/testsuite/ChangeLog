@@ -1,4 +1,11 @@
-2002-07-26  Neil Booth  <neil@daikokuya.co.uk>
+2002-07-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/inherit/operator1.C: New test.
+	* g++.dg/lookup/disamb1.C: Fix typo in comment.
+	* g++.dg/other/error1.C: Change expected error message.
+	* g++.dg/template/conv4.C: Likewise.
+	
+2002-07-26  Neil Booth  <neil@daikokuya.cop.uk>
 
 	* gcc.dg/cpp/trad/Wunused.c, gcc.dg/cpp/Wunused.c: Add test
 	for documented behaviour.

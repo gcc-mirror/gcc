@@ -1,3 +1,65 @@
+2002-07-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (build_field_call): Do not look up the field by name.
+	(build_method_call): Simplify.
+	(struct z_candidate): Add access_path and conversion_path.  Remove
+	basetype_path.
+	(convert_class_to_reference): Adjust use of
+	add_function_candidate.
+	(add_candidate): Add conversion_path argument.
+	(add_function_candidate): Use it.
+	(add_conv_dndidate): Likewise.
+	(build_builtin_candidate): Likewise.
+	(add_template_candidate_real): Add conversion_path argument.
+	(add_template_conv_candidate): Likewise.
+	(add_template_candidate): Likewise.
+	(build_user_type_conversion_1): Use it.
+	(build_new_function_call): Remove name lookup code.  Adjust use of
+	add_template_candidate and add_function_candidate.
+	(build_new_op): Likewise.
+	(convert_like_real): Use build_special_member_call.
+	(build_over_call): Use cand->conversion_path.
+	(build_special_member_call): New method.
+	(build_new_method_call): Remove name lookup code.
+	* cp-tree.def (OFFSET_REF): Update documentation.
+	(TEMPLATE_ID_EXPR): Likewise.
+	* cp-tree.h (BASELINK_ACCESS_BINFO): New macro.
+	(BASELINK_OPTYPE): Likewise.
+	(build_new_method_call): Adjust prototype.
+	(build_special_member_call): New method.
+	(build_baselink): New method.
+	(build_offset_ref_call_from_tree): Likewise.
+	(build_call_from_tree): Likewise.
+	(finish_qualified_call_expr): Remove.
+	(finish_call_expr): Adjust prototype.
+	(build_x_function_call): Remove.
+	* cvt.c (ocp_convert): Use build_special_member_call.
+	* decl2.c (reparse_absdcl_as_expr): Use finish_call_expr.
+	(build_expr_from_tree): Adjust handling for TEMPLATE_ID_EXPR and
+	CALL_EXPR.
+	(build_offset_ref_call_from_tree): New function.
+	(build_call_from_tree): Likewise.
+	* init.c (expand_cleanup): Use build_special_member_call.
+	(expand_default_init): Likewise.
+	(build_member_call): Use finish_call_expr.
+	(build_new_1): Use build_special_member_call.
+	(push_base_cleanups): Likewise.
+	* method.c (do_build_assign_ref): Likewise.
+	* parse.y (template_id): Do not pass a COMPONENT_REF to
+	lookup_template_function.
+	(primary): Use parse_finish_call_epxr, not finish_call_expr.
+	(parse_finish_call_expr): New function.
+	* pt.c (lookup_template_function): Add assertions.
+	* search.c (lookup_base): Allow T to be a binfo.
+	(build_baselink): New function.
+	(lookup_member): Use it.
+	* semantics.c (finish_call_expr): Do not do name lookup.
+	(finish_object_call_expr): Remove #if 0'd code.
+	(finish_qualified_call_expr): Remove.
+	* typeck.c (build_x_function_call): Remove.
+	(build_static_case): Use build_special_member_call.
+	* typeck2.c (build_functional_cast): Likewise.
+	
 2002-07-30  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* lang-specs.h: Remove __GXX_ABI_VERSION, moved to gcc.c.

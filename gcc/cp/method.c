@@ -623,28 +623,34 @@ do_build_assign_ref (fndecl)
     }
   else
     {
-      tree fields = TYPE_FIELDS (current_class_type);
-      int n_bases = CLASSTYPE_N_BASECLASSES (current_class_type);
-      tree binfos = TYPE_BINFO_BASETYPES (current_class_type);
+      tree fields;
       int cvquals = cp_type_quals (TREE_TYPE (parm));
       int i;
 
-      for (i = 0; i < n_bases; ++i)
+      /* Assign to each of thedirect base classes.  */
+      for (i = 0; i < CLASSTYPE_N_BASECLASSES (current_class_type); ++i)
 	{
-	  /* We must deal with the binfo's directly as a direct base
-	     might be inaccessible due to ambiguity.  */
-	  tree binfo = TREE_VEC_ELT (binfos, i);
-	  tree src = build_base_path (PLUS_EXPR, parm, binfo, 1);
-	  tree dst = build_base_path (PLUS_EXPR, current_class_ref, binfo, 1);
+	  tree binfo;
+	  tree converted_parm;
 
-	  tree expr = build_method_call (dst,
-					 ansi_assopname (NOP_EXPR),
-					 build_tree_list (NULL_TREE, src),
-					 binfo,
-					 LOOKUP_NORMAL | LOOKUP_NONVIRTUAL);
-	  finish_expr_stmt (expr);
+	  binfo = BINFO_BASETYPE (TYPE_BINFO (current_class_type), i);
+	  /* We must convert PARM directly to the base class
+	     explicitly since the base class may be ambiguous.  */
+	  converted_parm = build_base_path (PLUS_EXPR, parm, binfo, 1);
+	  /* Call the base class assignment operator.  */
+	  finish_expr_stmt 
+	    (build_special_member_call (current_class_ref, 
+					ansi_assopname (NOP_EXPR),
+					build_tree_list (NULL_TREE, 
+							 converted_parm),
+					binfo,
+					LOOKUP_NORMAL | LOOKUP_NONVIRTUAL));
 	}
-      for (; fields; fields = TREE_CHAIN (fields))
+
+      /* Assign to each of the non-static data members.  */
+      for (fields = TYPE_FIELDS (current_class_type); 
+	   fields; 
+	   fields = TREE_CHAIN (fields))
 	{
 	  tree comp, init, t;
 	  tree field = fields;

@@ -131,6 +131,7 @@ static tree parse_xref_tag (tree, tree, int);
 static tree parse_handle_class_head (tree, tree, tree, int, int *);
 static void parse_decl_instantiation (tree, tree, tree);
 static int parse_begin_function_definition (tree, tree);
+static tree parse_finish_call_expr (tree, tree, int);
 
 /* Cons up an empty parameter list.  */
 static inline tree
@@ -1534,9 +1535,19 @@ do_id:
 
 template_id:
           PFUNCNAME '<' do_id template_arg_list_opt template_close_bracket
-                { $$ = lookup_template_function ($3, $4); }
+                { 
+		  tree template_name = $3;
+		  if (TREE_CODE (template_name) == COMPONENT_REF)
+		    template_name = TREE_OPERAND (template_name, 1);
+		  $$ = lookup_template_function (template_name, $4); 
+		}
         | operator_name '<' do_id template_arg_list_opt template_close_bracket
-                { $$ = lookup_template_function ($3, $4); }
+                { 
+		  tree template_name = $3;
+		  if (TREE_CODE (template_name) == COMPONENT_REF)
+		    template_name = TREE_OPERAND (template_name, 1);
+		  $$ = lookup_template_function (template_name, $4); 
+		}
 	;
 
 object_template_id:
@@ -1637,13 +1648,13 @@ primary:
            We could store lastiddecl in $1 to avoid another lookup,
            but that would result in many additional reduce/reduce conflicts. */
         | notype_unqualified_id '(' nonnull_exprlist ')'
-               { $$ = finish_call_expr ($1, $3, 1); }
+               { $$ = parse_finish_call_expr ($1, $3, 1); }
         | notype_unqualified_id LEFT_RIGHT
-               { $$ = finish_call_expr ($1, NULL_TREE, 1); }
+               { $$ = parse_finish_call_expr ($1, NULL_TREE, 1); }
 	| primary '(' nonnull_exprlist ')'
-               { $$ = finish_call_expr ($1, $3, 0); }
+               { $$ = parse_finish_call_expr ($1, $3, 0); }
 	| primary LEFT_RIGHT
-               { $$ = finish_call_expr ($1, NULL_TREE, 0); }
+               { $$ = parse_finish_call_expr ($1, NULL_TREE, 0); }
 	| VA_ARG '(' expr_no_commas ',' type_id ')'
 		{ $$ = build_x_va_arg ($3, groktypename ($5.t));
 		  check_for_new_type ("__builtin_va_arg", $5); }
@@ -1705,9 +1716,9 @@ primary:
 	| overqualified_id  %prec HYPERUNARY
 		{ $$ = build_offset_ref (OP0 ($$), OP1 ($$)); }
 	| overqualified_id '(' nonnull_exprlist ')'
-                { $$ = finish_qualified_call_expr ($1, $3); }
+                { $$ = parse_finish_call_expr ($1, $3, 0); }
 	| overqualified_id LEFT_RIGHT
-		{ $$ = finish_qualified_call_expr ($1, NULL_TREE); }
+		{ $$ = parse_finish_call_expr ($1, NULL_TREE, 0); }
         | object object_template_id %prec UNARY
                 {
 		  $$ = build_x_component_ref ($$, $2, NULL_TREE);
@@ -4097,6 +4108,148 @@ parse_begin_function_definition (tree specs_attrs, tree declarator)
   
   split_specs_attrs (specs_attrs, &specs, &attrs);
   return begin_function_definition (specs, attrs, declarator);
+}
+
+/* Like finish_call_expr, but the name for FN has not yet been
+   resolved.  */
+
+static tree
+parse_finish_call_expr (tree fn, tree args, int koenig)
+{
+  bool disallow_virtual;
+  tree template_args;
+  tree template_id;
+  tree f;
+
+  if (TREE_CODE (fn) == OFFSET_REF)
+    return build_offset_ref_call_from_tree (fn, args);
+
+  if (TREE_CODE (fn) == SCOPE_REF)
+    {
+      tree scope;
+      tree name;
+
+      scope = TREE_OPERAND (fn, 0);
+      name = TREE_OPERAND (fn, 1);
+
+      if (scope == error_mark_node || name == error_mark_node)
+	return error_mark_node;
+      if (!processing_template_decl)
+	{
+	  if (TREE_CODE (scope) == NAMESPACE_DECL)
+	    fn = lookup_namespace_name (scope, name);
+	  else
+	    {
+	      if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+		{
+		  template_id = name;
+		  template_args = TREE_OPERAND (name, 1);
+		  name = TREE_OPERAND (name, 0);
+		}
+	      else 
+		template_id = NULL_TREE;
+
+	      if (TREE_CODE (name) == OVERLOAD)
+		name = DECL_NAME (get_first_fn (name));
+	      fn = lookup_member (scope, name, /*protect=*/1, 
+				  /*prefer_type=*/0);
+	      if (BASELINK_P (fn) && template_id)
+		BASELINK_FUNCTIONS (fn) = build_nt (TEMPLATE_ID_EXPR,
+						    BASELINK_FUNCTIONS (fn),
+						    template_args);
+	      if (BASELINK_P (fn) 
+		  && current_class_type 
+		  && DERIVED_FROM_P (scope, current_class_type))
+		{
+		  scope = lookup_base (current_class_type, scope,
+				       ba_ignore | ba_quiet, NULL);
+		  if (scope)
+		    {
+		      BASELINK_ACCESS_BINFO (fn) = scope;
+		      BASELINK_BINFO (fn) 
+			= lookup_base (scope,
+				       BINFO_TYPE (BASELINK_BINFO (fn)),
+				       ba_ignore | ba_quiet,
+				       NULL);
+		    }
+		}
+	    }
+	}
+      disallow_virtual = true;
+    }
+  else
+    disallow_virtual = false;
+
+  if (koenig && TREE_CODE (fn) == IDENTIFIER_NODE)
+    {
+      /* Do the Koenig lookup.  */
+      fn = do_identifier (fn, 2, args);
+      /* If name lookup didn't find any matching declarations, we've
+	 got an unbound identifier.  */
+      if (TREE_CODE (fn) == IDENTIFIER_NODE)
+	{
+	  /* For some reason, do_identifier does not resolve
+	     conversion operator names if the only matches would be
+	     template conversion operators.  So, we do it here.  */
+	  if (IDENTIFIER_TYPENAME_P (fn) && current_class_type)
+	    {
+	      f = lookup_member (current_class_type, fn,
+				 /*protect=*/1, /*want_type=*/0);
+	      if (f)
+		return finish_call_expr (f, args,
+					 /*disallow_virtual=*/false);
+	    }
+	  /* If the name still could not be resolved, then the program
+	     is ill-formed.  */
+	  if (TREE_CODE (fn) == IDENTIFIER_NODE)
+	    {
+	      unqualified_name_lookup_error (fn);
+	      return error_mark_node;
+	    }
+	}
+      else if (TREE_CODE (fn) == FUNCTION_DECL
+	       || DECL_FUNCTION_TEMPLATE_P (fn)
+	       || TREE_CODE (fn) == OVERLOAD)
+	{
+	  tree scope = DECL_CONTEXT (get_first_fn (fn));
+	  if (scope && TYPE_P (scope))
+	    {
+	      tree access_scope;
+
+	      if (DERIVED_FROM_P (scope, current_class_type)
+		  && current_class_ref)
+		return finish_object_call_expr (fn,
+						current_class_ref,
+						args);
+
+	      access_scope = current_class_type;
+	      while (!DERIVED_FROM_P (scope, access_scope))
+		{
+		  access_scope = TYPE_CONTEXT (access_scope);
+		  while (DECL_P (access_scope))
+		    access_scope = DECL_CONTEXT (access_scope);
+		}
+	      
+	      fn = build_baselink (NULL_TREE,
+				   TYPE_BINFO (access_scope),
+				   fn,
+				   /*optype=*/NULL_TREE);
+	    }
+	}
+    }
+
+  if (TREE_CODE (fn) == COMPONENT_REF)
+    /* If the parser sees `(x->y)(bar)' we get here because the
+       parentheses confuse the parser.  Treat this like 
+       `x->y(bar)'.  */
+    return finish_object_call_expr (TREE_OPERAND (fn, 1),
+				    TREE_OPERAND (fn, 0),
+				    args);
+
+  if (processing_template_decl)
+    return build_nt (CALL_EXPR, fn, args, NULL_TREE);
+
+  return build_call_from_tree (fn, args, disallow_virtual);
 }
 
 #include "gt-cp-parse.h"

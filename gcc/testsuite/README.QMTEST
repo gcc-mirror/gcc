@@ -113,11 +113,12 @@ Here are some more advanced usage instructions:
 1. To run a particular set of tests (rather than all of the tests),
    use the make variable "QMTEST_GPP_TESTS".  For example, 
 
-     make QMTEST_GPP_TESTS="gpp.dg" qmtest-g++
+     make QMTEST_GPP_TESTS="g++.dg" qmtest-g++
 
    will run only the tests in the g++.dg subdirectory, and:
 
-     make QMTEST_GPP_TESTS="gpp.dg.special.conpr1 gpp.old-deja.other.access2"
+     make QMTEST_GPP_TESTS="g++.dg/special/conpr1.C \
+                            g++.old-deja/g++.other/access2.C"
           qmtest-g++
 
    will run only the two tests indicated.

@@ -3814,9 +3814,9 @@ add_pending_template (d)
 }
 
 
-/* Return a TEMPLATE_ID_EXPR corresponding to the indicated FNS (which
-   may be either a _DECL or an overloaded function or an
-   IDENTIFIER_NODE), and ARGLIST.  */
+/* Return a TEMPLATE_ID_EXPR corresponding to the indicated FNS and
+   ARGLIST.  Valid choices for FNS are given in the cp-tree.def
+   documentation for TEMPLATE_ID_EXPR.  */
 
 tree
 lookup_template_function (fns, arglist)
@@ -3824,20 +3824,26 @@ lookup_template_function (fns, arglist)
 {
   tree type;
 
+  if (fns == error_mark_node || arglist == error_mark_node)
+    return error_mark_node;
+
   if (fns == NULL_TREE)
     {
       error ("non-template used as template");
       return error_mark_node;
     }
 
+  my_friendly_assert (TREE_CODE (fns) == TEMPLATE_DECL
+		      || TREE_CODE (fns) == OVERLOAD
+		      || TREE_CODE (fns) == IDENTIFIER_NODE
+		      || TREE_CODE (fns) == LOOKUP_EXPR,
+		      20020730);
+
   type = TREE_TYPE (fns);
   if (TREE_CODE (fns) == OVERLOAD || !type)
     type = unknown_type_node;
-
-  if (processing_template_decl)
-    return build_min (TEMPLATE_ID_EXPR, type, fns, arglist);  
-  else
-    return build (TEMPLATE_ID_EXPR, type, fns, arglist);
+  
+  return build (TEMPLATE_ID_EXPR, type, fns, arglist);
 }
 
 /* Within the scope of a template class S<T>, the name S gets bound
@@ -8012,8 +8018,7 @@ type_unification_real (tparms, targs, xparms, xargs, subr,
   my_friendly_assert (TREE_CODE (tparms) == TREE_VEC, 289);
   my_friendly_assert (xparms == NULL_TREE 
 		      || TREE_CODE (xparms) == TREE_LIST, 290);
-  /* ARGS could be NULL (via a call from parse.y to
-     build_x_function_call).  */
+  /* ARGS could be NULL.  */
   if (xargs)
     my_friendly_assert (TREE_CODE (xargs) == TREE_LIST, 291);
   my_friendly_assert (ntparms > 0, 292);
