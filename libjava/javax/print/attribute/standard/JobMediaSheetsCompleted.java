@@ -83,7 +83,7 @@ public final class JobMediaSheetsCompleted extends IntegerSyntax
    *
    * @return the class <code>JobMediaSheetsCompleted</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return JobMediaSheetsCompleted.class;
   }
@@ -93,7 +93,7 @@ public final class JobMediaSheetsCompleted extends IntegerSyntax
    *
    * @return the string "job-media-sheets-completed"
    */
-  public final String getName()
+  public String getName()
   {
     return "job-media-sheets-completed";
   }

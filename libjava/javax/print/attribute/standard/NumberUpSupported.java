@@ -78,7 +78,7 @@ public final class NumberUpSupported extends SetOfIntegerSyntax
    *
    * @return the class <code>NumberUpSupported</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return NumberUpSupported.class;
   }
@@ -88,7 +88,7 @@ public final class NumberUpSupported extends SetOfIntegerSyntax
    *
    * @return the name
    */
-  public final String getName()
+  public String getName()
   {
     return "number-up-supported";
   }

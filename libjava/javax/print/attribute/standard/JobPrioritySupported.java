@@ -84,7 +84,7 @@ public final class JobPrioritySupported extends IntegerSyntax
    *
    * @return the class <code>JobPrioritySupported</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return JobPrioritySupported.class;
   }
@@ -94,7 +94,7 @@ public final class JobPrioritySupported extends IntegerSyntax
    *
    * @return the string "job-priority-supported"
    */
-  public final String getName()
+  public String getName()
   {
     return "job-priority-supported";
   }

@@ -85,7 +85,7 @@ public final class JobPriority extends IntegerSyntax
    *
    * @return the class <code>JobPriority</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return JobPriority.class;
   }
@@ -95,7 +95,7 @@ public final class JobPriority extends IntegerSyntax
    *
    * @return the string "job-priority"
    */
-  public final String getName()
+  public String getName()
   {
     return "job-priority";
   }

@@ -84,7 +84,7 @@ public final class JobKOctets extends IntegerSyntax
    *
    * @return the class <code>JobKOctets</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return JobKOctets.class;
   }
@@ -94,7 +94,7 @@ public final class JobKOctets extends IntegerSyntax
    *
    * @return the string "job-k-octets"
    */
-  public final String getName()
+  public String getName()
   {
     return "job-k-octets";
   }

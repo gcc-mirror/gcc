@@ -71,7 +71,7 @@ public class JobState extends EnumSyntax
    *
    * @return the class <code>JobState</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return JobState.class;
   }
@@ -81,7 +81,7 @@ public class JobState extends EnumSyntax
    *
    * @return the name
    */
-  public final String getName()
+  public String getName()
   {
     return "job-state";
   }

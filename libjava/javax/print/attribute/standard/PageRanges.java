@@ -80,7 +80,7 @@ public final class PageRanges extends SetOfIntegerSyntax
    *
    * @return the class <code>PageRanges</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return PageRanges.class;
   }
@@ -90,7 +90,7 @@ public final class PageRanges extends SetOfIntegerSyntax
    *
    * @return the name
    */
-  public final String getName()
+  public String getName()
   {
     return "page-ranges";
   }

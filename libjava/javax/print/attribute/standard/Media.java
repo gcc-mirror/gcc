@@ -64,7 +64,7 @@ public abstract class Media extends EnumSyntax
    *
    * @return the class <code>Media</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return Media.class;
   }
@@ -74,7 +74,7 @@ public abstract class Media extends EnumSyntax
    *
    * @return the name
    */
-  public final String getName()
+  public String getName()
   {
     return "media";
   }
