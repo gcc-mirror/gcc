@@ -3229,6 +3229,52 @@ perform_base_cleanups ()
   int i, n_baseclasses;
   tree member;
   tree expr;
+  tree member_destructions = NULL;
+
+  for (member = TYPE_FIELDS (current_class_type); member;
+       member = TREE_CHAIN (member))
+    {
+      if (TREE_CODE (member) != FIELD_DECL)
+	continue;
+      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (member)))
+	{
+	  tree this_member = (build_component_ref
+			      (current_class_ref, member,
+			       NULL_TREE, 0));
+	  tree this_type = TREE_TYPE (member);
+	  expr = build_delete (this_type, this_member,
+			       sfk_complete_destructor,
+			       LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR|LOOKUP_NORMAL,
+			       0);
+	  if (!member_destructions)
+	    member_destructions = expr;
+	  else
+	    member_destructions = build (COMPOUND_EXPR, 
+					 TREE_TYPE (member_destructions),
+					 expr,
+					 member_destructions);
+	}
+    }
+  if (member_destructions)
+    finish_expr_stmt (member_destructions);
+
+  binfos = BINFO_BASETYPES (TYPE_BINFO (current_class_type));
+  n_baseclasses = CLASSTYPE_N_BASECLASSES (current_class_type);
+
+  /* Take care of the remaining baseclasses.  */
+  for (i = 0; i < n_baseclasses; i++)
+    {
+      tree base_binfo = TREE_VEC_ELT (binfos, i);
+      if (TYPE_HAS_TRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo))
+	  || TREE_VIA_VIRTUAL (base_binfo))
+	continue;
+
+      expr = build_scoped_method_call (current_class_ref, base_binfo,
+				       base_dtor_identifier,
+				       NULL_TREE);
+
+      finish_expr_stmt (expr);
+    }
 
   /* Run destructors for all virtual baseclasses.  */
   if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
@@ -3269,43 +3315,6 @@ perform_base_cleanups ()
 			    expr, void_zero_node);
 	      finish_expr_stmt (expr);
 	    }
-	}
-    }
-
-  binfos = BINFO_BASETYPES (TYPE_BINFO (current_class_type));
-  n_baseclasses = CLASSTYPE_N_BASECLASSES (current_class_type);
-
-  /* Take care of the remaining baseclasses.  */
-  for (i = 0; i < n_baseclasses; i++)
-    {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
-      if (TYPE_HAS_TRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo))
-	  || TREE_VIA_VIRTUAL (base_binfo))
-	continue;
-
-      expr = build_scoped_method_call (current_class_ref, base_binfo,
-				       base_dtor_identifier,
-				       NULL_TREE);
-
-      finish_expr_stmt (expr);
-    }
-
-  for (member = TYPE_FIELDS (current_class_type); member;
-       member = TREE_CHAIN (member))
-    {
-      if (TREE_CODE (member) != FIELD_DECL)
-	continue;
-      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (member)))
-	{
-	  tree this_member = (build_component_ref
-			      (current_class_ref, DECL_NAME (member),
-			       NULL_TREE, 0));
-	  tree this_type = TREE_TYPE (member);
-	  expr = build_delete (this_type, this_member,
-			       sfk_complete_destructor,
-			       LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR|LOOKUP_NORMAL,
-			       0);
-	  finish_expr_stmt (expr);
 	}
     }
 }
