@@ -4265,21 +4265,25 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		  error ("size of array `%s' has non-integer type", name);
 		  size = integer_one_node;
 		}
+
 	      if (pedantic && integer_zerop (size))
 		pedwarn ("ANSI C forbids zero-size array `%s'", name);
+
 	      if (TREE_CODE (size) == INTEGER_CST)
 		{
 		  constant_expression_warning (size);
-		  if (INT_CST_LT (size, integer_zero_node))
+		  if (tree_int_cst_sgn (size) < 0)
 		    {
 		      error ("size of array `%s' is negative", name);
 		      size = integer_one_node;
 		    }
-		  itype = build_index_type (size_binop (MINUS_EXPR, size,
-							size_one_node));
 		}
 	      else
 		{
+		  /* Make sure the array size remains visibly nonconstant
+		     even if it is (eg) a const variable with known value.  */
+		  size_varies = 1;
+
 		  if (pedantic)
 		    {
 		      if (TREE_CONSTANT (size))
@@ -4287,14 +4291,16 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		      else
 			pedwarn ("ANSI C forbids variable-size array `%s'", name);
 		    }
-		  itype = build_binary_op (MINUS_EXPR, size, integer_one_node,
-					   1);
-		  /* Make sure the array size remains visibly nonconstant
-		     even if it is (eg) a const variable with known value.  */
-		  size_varies = 1;
-		  itype = variable_size (itype);
-		  itype = build_index_type (itype);
 		}
+
+	      /* Convert size to sizetype, so that if it is a variable
+		 the computations will be done in the proper mode.  */
+	      itype = fold (build (MINUS_EXPR, sizetype,
+				   convert (sizetype, size), size_one_node));
+
+	      if (size_varies)
+		itype = variable_size (itype);
+	      itype = build_index_type (itype);
 	    }
 
 #if 0 /* This had bad results for pointers to arrays, as in
