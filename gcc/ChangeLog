@@ -1,5 +1,37 @@
 2002-02-04  Richard Henderson  <rth@redhat.com>
 
+	* combine.c (force_to_mode): Remove STACK_BIAS code.
+	(nonzero_bits): Likewise.  Replace sp/fp special case with
+	REGNO_POINTER_ALIGN.
+
+	* config/sparc/sparc.h (FRAME_POINTER_REGNUM): Change to SFP.
+	(HARD_FRAME_POINTER_REGNUM): New.
+	(FIRST_PSEUDO_REGISTER, REG_CLASS_CONTENTS): Update.
+	(FIXED_REGS, CALL_USED_REGS): Update.
+	(REG_ALLOC_ORDER, REGISTER_NAMES): Update.
+	(CONDITIONAL_REGISTER_USAGE): Update for HFP.
+	(HARD_REGNO_NREGS): Update for SFP.
+	(STACK_POINTER_OFFSET): Include bias here ...
+	(FIRST_PARM_OFFSET): ... not here.
+	(STACK_BIAS): Remove.
+	(INIT_EXPANDERS): New.
+	(STARTING_FRAME_OFFSET): Do not include bias.
+	(ELIMINABLE_REGS, CAN_ELIMINATE, INITIAL_ELIMINATION_OFFSET): New.
+	(REGNO_OK_FOR_INDEX_P, REGNO_OK_FOR_BASE_P): Update for SFP.
+	(REG_OK_FOR_INDEX_P, REG_OK_FOR_BASE_P): Likewise.
+	* config/sparc/aout.h (DBX_REGISTER_NUMBER): Update for HFP.
+	* config/sparc/litecoff.h, config/sparc/sol2.h: Likewise.
+	* config/sparc/sparc.c (mem_min_alignment): Update for HFP.
+	(sparc_nonflat_function_prologue, epilogue_renumber): Likewise.
+	(MUST_SAVE_REGISTER): Likewise.
+	(sparc_flat_function_prologue): Likewise.
+	(sparc_flat_function_epilogue): Likewise.
+	(HARD_FRAME_POINTER_MASK): Rename from FRAME_POINTER_MASK.
+	(sparc_init_modes): SFP is GENERAL_REGS.
+	(sparc_builtin_saveregs): SFP does not have bias applied.
+
+2002-02-04  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/alpha.c (current_function_is_thunk): Don't check
 	current_function_is_thunk.
 	(alpha_sa_mask): Distinguish between current_function_is_thunk

@@ -6753,33 +6753,12 @@ force_to_mode (x, mode, mask, reg, just_select)
 	  smask |= (HOST_WIDE_INT) -1 << width;
 
 	if (GET_CODE (XEXP (x, 1)) == CONST_INT
-	    && exact_log2 (- smask) >= 0)
-	  {
-#ifdef STACK_BIAS
-	    if (STACK_BIAS
-	        && (XEXP (x, 0) == stack_pointer_rtx
-	            || XEXP (x, 0) == frame_pointer_rtx))
-	      {
-		int sp_alignment = STACK_BOUNDARY / BITS_PER_UNIT;
-		unsigned HOST_WIDE_INT sp_mask = GET_MODE_MASK (mode);
-
-		sp_mask &= ~(sp_alignment - 1);
-		if ((sp_mask & ~smask) == 0
-		    && ((INTVAL (XEXP (x, 1)) - STACK_BIAS) & ~smask) != 0)
-		  return force_to_mode (plus_constant (XEXP (x, 0),
-						       ((INTVAL (XEXP (x, 1)) -
-							 STACK_BIAS) & smask)
-						       + STACK_BIAS),
-					mode, smask, reg, next_select);
-	      }
-#endif
-	    if ((nonzero_bits (XEXP (x, 0), mode) & ~smask) == 0
-		&& (INTVAL (XEXP (x, 1)) & ~smask) != 0)
-	      return force_to_mode (plus_constant (XEXP (x, 0),
-						   (INTVAL (XEXP (x, 1))
-						    & smask)),
-				    mode, smask, reg, next_select);
-	  }
+	    && exact_log2 (- smask) >= 0
+	    && (nonzero_bits (XEXP (x, 0), mode) & ~smask) == 0
+	    && (INTVAL (XEXP (x, 1)) & ~smask) != 0)
+	  return force_to_mode (plus_constant (XEXP (x, 0),
+					       (INTVAL (XEXP (x, 1)) & smask)),
+				mode, smask, reg, next_select);
       }
 
       /* ... fall through ...  */
@@ -7916,40 +7895,23 @@ nonzero_bits (x, mode)
 	nonzero &= GET_MODE_MASK (ptr_mode);
 #endif
 
-#ifdef STACK_BOUNDARY
-      /* If this is the stack pointer, we may know something about its
-	 alignment.  If PUSH_ROUNDING is defined, it is possible for the
-	 stack to be momentarily aligned only to that amount, so we pick
-	 the least alignment.  */
+      /* Include declared information about alignment of pointers.  */
 
-      /* We can't check for arg_pointer_rtx here, because it is not
-	 guaranteed to have as much alignment as the stack pointer.
-	 In particular, in the Irix6 n64 ABI, the stack has 128 bit
-	 alignment but the argument pointer has only 64 bit alignment.  */
-
-      if ((x == frame_pointer_rtx
-	   || x == stack_pointer_rtx
-	   || x == hard_frame_pointer_rtx
-	   || (REGNO (x) >= FIRST_VIRTUAL_REGISTER
-	       && REGNO (x) <= LAST_VIRTUAL_REGISTER))
-#ifdef STACK_BIAS
-	  && !STACK_BIAS
-#endif
-	      )
+      if (REG_POINTER (x) && REGNO_POINTER_ALIGN (REGNO (x)))
 	{
-	  int sp_alignment = STACK_BOUNDARY / BITS_PER_UNIT;
+	  unsigned HOST_WIDE_INT alignment
+	    = REGNO_POINTER_ALIGN (REGNO (x)) / BITS_PER_UNIT;
 
 #ifdef PUSH_ROUNDING
-	  if (REGNO (x) == STACK_POINTER_REGNUM && PUSH_ARGS)
-	    sp_alignment = MIN (PUSH_ROUNDING (1), sp_alignment);
+	  /* If PUSH_ROUNDING is defined, it is possible for the
+	     stack to be momentarily aligned only to that amount,
+	     so we pick the least alignment.  */
+	  if (x == stack_pointer_rtx && PUSH_ARGS)
+	    alignment = MIN (PUSH_ROUNDING (1), alignment);
 #endif
 
-	  /* We must return here, otherwise we may get a worse result from
-	     one of the choices below.  There is nothing useful below as
-	     far as the stack pointer is concerned.  */
-	  return nonzero &= ~(sp_alignment - 1);
+	  nonzero &= ~(alignment - 1);
 	}
-#endif
 
       /* If X is a register whose nonzero bits value is current, use it.
 	 Otherwise, if X is a register whose value we can find, use that
@@ -7964,7 +7926,7 @@ nonzero_bits (x, mode)
 		  && ! REGNO_REG_SET_P (BASIC_BLOCK (0)->global_live_at_start,
 					REGNO (x))))
 	  && INSN_CUID (reg_last_set[REGNO (x)]) < subst_low_cuid)
-	return reg_last_set_nonzero_bits[REGNO (x)];
+	return reg_last_set_nonzero_bits[REGNO (x)] & nonzero;
 
       tem = get_last_value (x);
 
@@ -7990,7 +7952,7 @@ nonzero_bits (x, mode)
 			   | ((HOST_WIDE_INT) (-1)
 			      << GET_MODE_BITSIZE (GET_MODE (x))));
 #endif
-	  return nonzero_bits (tem, mode);
+	  return nonzero_bits (tem, mode) & nonzero;
 	}
       else if (nonzero_sign_valid && reg_nonzero_bits[REGNO (x)])
 	{
@@ -8128,22 +8090,6 @@ nonzero_bits (x, mode)
 	switch (code)
 	  {
 	  case PLUS:
-#ifdef STACK_BIAS
-	    if (STACK_BIAS
-		&& (XEXP (x, 0) == stack_pointer_rtx
-		    || XEXP (x, 0) == frame_pointer_rtx)
-		&& GET_CODE (XEXP (x, 1)) == CONST_INT)
-	      {
-		int sp_alignment = STACK_BOUNDARY / BITS_PER_UNIT;
-
-		nz0 = (GET_MODE_MASK (mode) & ~(sp_alignment - 1));
-		nz1 = INTVAL (XEXP (x, 1)) - STACK_BIAS;
-		width0 = floor_log2 (nz0) + 1;
-		width1 = floor_log2 (nz1) + 1;
-		low0 = floor_log2 (nz0 & -nz0);
-		low1 = floor_log2 (nz1 & -nz1);
-	      }
-#endif
 	    result_width = MAX (width0, width1) + 1;
 	    result_low = MIN (low0, low1);
 	    break;

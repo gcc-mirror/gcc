@@ -88,7 +88,7 @@ do {									\
    pointer is really %i7.  */
 
 #define DBX_REGISTER_NUMBER(REGNO) \
-  (TARGET_FLAT && REGNO == FRAME_POINTER_REGNUM ? 31 : REGNO)
+  (TARGET_FLAT && (REGNO) == HARD_FRAME_POINTER_REGNUM ? 31 : REGNO)
 
 /* This is how to output a note to DBX telling it the line number
    to which the following sequence of instructions corresponds.

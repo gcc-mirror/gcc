@@ -83,7 +83,7 @@ Boston, MA 02111-1307, USA.  */
 #undef DBX_REGISTER_NUMBER
 /* Same as sparc.h */
 #define DBX_REGISTER_NUMBER(REGNO) \
-  (TARGET_FLAT && REGNO == FRAME_POINTER_REGNUM ? 31 : REGNO)
+  (TARGET_FLAT && (REGNO) == HARD_FRAME_POINTER_REGNUM ? 31 : REGNO)
 
 /* We use stabs-in-elf for debugging, because that is what the native
    toolchain uses.  */

@@ -83,10 +83,9 @@ static rtx leaf_label;
 
 #ifdef LEAF_REGISTERS
 
-/* Vector to say how input registers are mapped to output
-   registers.  FRAME_POINTER_REGNUM cannot be remapped by
-   this function to eliminate it.  You must use -fomit-frame-pointer
-   to get that.  */
+/* Vector to say how input registers are mapped to output registers.
+   HARD_FRAME_POINTER_REGNUM cannot be remapped by this function to
+   eliminate it.  You must use -fomit-frame-pointer to get that.  */
 const char leaf_reg_remap[] =
 { 0, 1, 2, 3, 4, 5, 6, 7,
   -1, -1, -1, -1, -1, -1, 14, -1,
@@ -2988,8 +2987,7 @@ mem_min_alignment (mem, desired)
     {
       int regno = REGNO (base);
 
-      if (regno != FRAME_POINTER_REGNUM
-	  && regno != STACK_POINTER_REGNUM)
+      if (regno != HARD_FRAME_POINTER_REGNUM && regno != STACK_POINTER_REGNUM)
 	{
 	  /* Check if the compiler has recorded some information
 	     about the alignment of the base REG.  If reload has
@@ -3206,7 +3204,7 @@ sparc_init_modes ()
     {
       if (i < 16 && TARGET_V8PLUS)
 	sparc_regno_reg_class[i] = I64_REGS;
-      else if (i < 32)
+      else if (i < 32 || i == FRAME_POINTER_REGNUM)
 	sparc_regno_reg_class[i] = GENERAL_REGS;
       else if (i < 64)
 	sparc_regno_reg_class[i] = FP_REGS;
@@ -3554,7 +3552,7 @@ sparc_nonflat_function_prologue (file, size, leaf_function)
 
       /* The canonical frame address refers to the top of the frame.  */
       dwarf2out_def_cfa (label, (leaf_function ? STACK_POINTER_REGNUM
-				 : FRAME_POINTER_REGNUM),
+				 : HARD_FRAME_POINTER_REGNUM),
 			 frame_base_offset);
 
       if (! leaf_function)
@@ -4862,7 +4860,7 @@ sparc_builtin_saveregs ()
     emit_move_insn (gen_rtx_MEM (word_mode,
 				 gen_rtx_PLUS (Pmode,
 					       frame_pointer_rtx,
-					       GEN_INT (STACK_POINTER_OFFSET
+					       GEN_INT (FIRST_PARM_OFFSET (0)
 							+ (UNITS_PER_WORD
 							   * regno)))),
 		    gen_rtx_REG (word_mode,
@@ -4870,7 +4868,7 @@ sparc_builtin_saveregs ()
 
   address = gen_rtx_PLUS (Pmode,
 			  frame_pointer_rtx,
-			  GEN_INT (STACK_POINTER_OFFSET
+			  GEN_INT (FIRST_PARM_OFFSET (0)
 				   + UNITS_PER_WORD * first_reg));
 
   return address;
@@ -5483,7 +5481,7 @@ epilogue_renumber (where, test)
 	 are in the return delayed slot.  */
     case PLUS:
       if (GET_CODE (XEXP (*where, 0)) == REG
-	  && REGNO (XEXP (*where, 0)) == FRAME_POINTER_REGNUM
+	  && REGNO (XEXP (*where, 0)) == HARD_FRAME_POINTER_REGNUM
 	  && (GET_CODE (XEXP (*where, 1)) != CONST_INT
 	      || INTVAL (XEXP (*where, 1)) < SPARC_STACK_BIAS))
 	return 1;
@@ -5492,7 +5490,7 @@ epilogue_renumber (where, test)
     case MEM:
       if (SPARC_STACK_BIAS
 	  && GET_CODE (XEXP (*where, 0)) == REG
-	  && REGNO (XEXP (*where, 0)) == FRAME_POINTER_REGNUM)
+	  && REGNO (XEXP (*where, 0)) == HARD_FRAME_POINTER_REGNUM)
 	return 1;
       break;
 
@@ -6437,12 +6435,12 @@ struct sparc_frame_info zero_frame_info;
 /* Tell prologue and epilogue if register REGNO should be saved / restored.  */
 
 #define RETURN_ADDR_REGNUM 15
-#define FRAME_POINTER_MASK (1 << (FRAME_POINTER_REGNUM))
+#define HARD_FRAME_POINTER_MASK (1 << (HARD_FRAME_POINTER_REGNUM))
 #define RETURN_ADDR_MASK (1 << (RETURN_ADDR_REGNUM))
 
 #define MUST_SAVE_REGISTER(regno) \
- ((regs_ever_live[regno] && !call_used_regs[regno])		\
-  || (regno == FRAME_POINTER_REGNUM && frame_pointer_needed)	\
+ ((regs_ever_live[regno] && !call_used_regs[regno])			\
+  || (regno == HARD_FRAME_POINTER_REGNUM && frame_pointer_needed)	\
   || (regno == RETURN_ADDR_REGNUM && regs_ever_live[RETURN_ADDR_REGNUM]))
 
 /* Return the bytes needed to compute the frame pointer from the current
@@ -6715,7 +6713,7 @@ sparc_flat_function_prologue (file, size)
   if (size > 0)
     {
       unsigned int reg_offset = current_frame_info.reg_offset;
-      const char *const fp_str = reg_names[FRAME_POINTER_REGNUM];
+      const char *const fp_str = reg_names[HARD_FRAME_POINTER_REGNUM];
       static const char *const t1_str = "%g1";
 
       /* Things get a little tricky if local variables take up more than ~4096
@@ -6736,7 +6734,7 @@ sparc_flat_function_prologue (file, size)
 	    {
 	      fprintf (file, "\tadd\t%s, %d, %s\n",
 		       sp_str, (int) -size, sp_str);
-	      if (gmask & FRAME_POINTER_MASK)
+	      if (gmask & HARD_FRAME_POINTER_MASK)
 		{
 		  fprintf (file, "\tst\t%s, [%s+%d]\n",
 			   fp_str, sp_str, reg_offset);
@@ -6751,7 +6749,7 @@ sparc_flat_function_prologue (file, size)
 	      fprintf (file, HOST_WIDE_INT_PRINT_DEC, size);
 	      fprintf (file, ", %s\n\tsub\t%s, %s, %s\n",
 		       t1_str, sp_str, t1_str, sp_str);
-	      if (gmask & FRAME_POINTER_MASK)
+	      if (gmask & HARD_FRAME_POINTER_MASK)
 		{
 		  fprintf (file, "\tst\t%s, [%s+%d]\n",
 			   fp_str, sp_str, reg_offset);
@@ -6763,11 +6761,11 @@ sparc_flat_function_prologue (file, size)
 	  if (dwarf2out_do_frame ())
 	    {
 	      char *l = dwarf2out_cfi_label ();
-	      if (gmask & FRAME_POINTER_MASK)
+	      if (gmask & HARD_FRAME_POINTER_MASK)
 		{
-		  dwarf2out_reg_save (l, FRAME_POINTER_REGNUM,
+		  dwarf2out_reg_save (l, HARD_FRAME_POINTER_REGNUM,
 				      reg_offset - 4 - size);
-		  dwarf2out_def_cfa (l, FRAME_POINTER_REGNUM, 0);
+		  dwarf2out_def_cfa (l, HARD_FRAME_POINTER_REGNUM, 0);
 		}
 	      else
 		dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, size);
@@ -6781,7 +6779,7 @@ sparc_flat_function_prologue (file, size)
 	      reg_offset += 4;
 	    }
 	  sparc_flat_save_restore (file, sp_str, reg_offset,
-				   gmask & ~(FRAME_POINTER_MASK | RETURN_ADDR_MASK),
+				   gmask & ~(HARD_FRAME_POINTER_MASK | RETURN_ADDR_MASK),
 				   current_frame_info.fmask,
 				   "st", "std", -size);
 	}
@@ -6798,7 +6796,7 @@ sparc_flat_function_prologue (file, size)
 	    {
 	      fprintf (file, "\tadd\t%s, %d, %s\n",
 		       sp_str, (int) -size1, sp_str);
-	      if (gmask & FRAME_POINTER_MASK)
+	      if (gmask & HARD_FRAME_POINTER_MASK)
 		{
 		  fprintf (file, "\tst\t%s, [%s+%d]\n\tsub\t%s, %d, %s\t%s# set up frame pointer\n",
 			   fp_str, sp_str, (int) offset, sp_str, (int) -size1,
@@ -6812,7 +6810,7 @@ sparc_flat_function_prologue (file, size)
 	      fprintf (file, HOST_WIDE_INT_PRINT_DEC, size1);
 	      fprintf (file, ", %s\n\tsub\t%s, %s, %s\n",
 		       t1_str, sp_str, t1_str, sp_str);
-	      if (gmask & FRAME_POINTER_MASK)
+	      if (gmask & HARD_FRAME_POINTER_MASK)
 		{
 		  fprintf (file, "\tst\t%s, [%s+%d]\n\tadd\t%s, %s, %s\t%s# set up frame pointer\n",
 			   fp_str, sp_str, (int) offset, sp_str, t1_str,
@@ -6823,11 +6821,11 @@ sparc_flat_function_prologue (file, size)
 	  if (dwarf2out_do_frame ())
 	    {
 	      char *l = dwarf2out_cfi_label ();
-	      if (gmask & FRAME_POINTER_MASK)
+	      if (gmask & HARD_FRAME_POINTER_MASK)
 		{
-		  dwarf2out_reg_save (l, FRAME_POINTER_REGNUM,
+		  dwarf2out_reg_save (l, HARD_FRAME_POINTER_REGNUM,
 				      offset - 4 - size1);
-		  dwarf2out_def_cfa (l, FRAME_POINTER_REGNUM, 0);
+		  dwarf2out_def_cfa (l, HARD_FRAME_POINTER_REGNUM, 0);
 		}
 	      else
 		dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, size1);
@@ -6843,7 +6841,7 @@ sparc_flat_function_prologue (file, size)
 	      offset += 4;
 	    }
 	  sparc_flat_save_restore (file, sp_str, offset,
-				   gmask & ~(FRAME_POINTER_MASK | RETURN_ADDR_MASK),
+				   gmask & ~(HARD_FRAME_POINTER_MASK | RETURN_ADDR_MASK),
 				   current_frame_info.fmask,
 				   "st", "std", -size1);
 	  fprintf (file, "\tset\t");
@@ -6851,7 +6849,7 @@ sparc_flat_function_prologue (file, size)
 	  fprintf (file, ", %s\n\tsub\t%s, %s, %s\n",
 		   t1_str, sp_str, t1_str, sp_str);
 	  if (dwarf2out_do_frame ())
-	    if (! (gmask & FRAME_POINTER_MASK))
+	    if (! (gmask & HARD_FRAME_POINTER_MASK))
 	      dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, size);
 	}
     }
@@ -6900,7 +6898,7 @@ sparc_flat_function_epilogue (file, size)
       unsigned HOST_WIDE_INT reg_offset = current_frame_info.reg_offset;
       unsigned HOST_WIDE_INT size1;
       const char *const sp_str = reg_names[STACK_POINTER_REGNUM];
-      const char *const fp_str = reg_names[FRAME_POINTER_REGNUM];
+      const char *const fp_str = reg_names[HARD_FRAME_POINTER_REGNUM];
       static const char *const t1_str = "%g1";
 
       /* In the reload sequence, we don't need to fill the load delay
@@ -6946,7 +6944,7 @@ sparc_flat_function_epilogue (file, size)
 
       /* We must restore the frame pointer and return address reg first
 	 because they are treated specially by the prologue output code.  */
-      if (current_frame_info.gmask & FRAME_POINTER_MASK)
+      if (current_frame_info.gmask & HARD_FRAME_POINTER_MASK)
 	{
 	  fprintf (file, "\tld\t[%s+%d], %s\n",
 		   sp_str, (int) reg_offset, fp_str);
@@ -6961,7 +6959,7 @@ sparc_flat_function_epilogue (file, size)
 
       /* Restore any remaining saved registers.  */
       sparc_flat_save_restore (file, sp_str, reg_offset,
-			       current_frame_info.gmask & ~(FRAME_POINTER_MASK | RETURN_ADDR_MASK),
+			       current_frame_info.gmask & ~(HARD_FRAME_POINTER_MASK | RETURN_ADDR_MASK),
 			       current_frame_info.fmask,
 			       "ld", "ldd", 0);
 
