@@ -1,5 +1,5 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1513,12 +1513,12 @@ fold_convert (t, arg1)
 	     if ARG1 is a too-large unsigned value and T is signed.
 	     But don't indicate an overflow if converting a pointer.  */
 	  TREE_OVERFLOW (t)
-	    = (TREE_OVERFLOW (arg1)
-	       || (force_fit_type (t,
-				  (TREE_INT_CST_HIGH (arg1) < 0
-				   & (TREE_UNSIGNED (type)
-				     < TREE_UNSIGNED (TREE_TYPE (arg1)))))
-		   && TREE_CODE (TREE_TYPE (arg1)) != POINTER_TYPE));
+	    = ((force_fit_type (t,
+				(TREE_INT_CST_HIGH (arg1) < 0
+				 & (TREE_UNSIGNED (type)
+				    < TREE_UNSIGNED (TREE_TYPE (arg1)))))
+		&& TREE_CODE (TREE_TYPE (arg1)) != POINTER_TYPE)
+	       || TREE_OVERFLOW (arg1));
 	  TREE_CONSTANT_OVERFLOW (t)
 	    = TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg1);
 	}
