@@ -1,3 +1,7 @@
+2002-10-29   Geert Bosch <bosch@gnat.com>
+        PR ada/6558
+	* Make-lang.in (gnatbind): Depend on CONFIG_H
+
 2002-10-29  Geert bosch  <bosch@gnat.com>
         PR ada/6558
         * misc.c: Unrevert misc.c (1.13)

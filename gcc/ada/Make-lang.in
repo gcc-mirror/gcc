@@ -205,7 +205,7 @@ gnat1$(exeext): $(TARGET_ADA_SRCS) $(GNAT1_OBJS) $(ADA_BACKEND) $(LIBDEPS)
 		$(SYSLIBS)
 	$(RM) stamp-gnatlib2 stamp-tools
 
-gnatbind$(exeext): ada/b_gnatb.o $(GNATBIND_OBJS)
+gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ ada/b_gnatb.o $(GNATBIND_OBJS) \
 	     $(LIBIBERTY) $(LIBS) $(SYSLIBS)
 
