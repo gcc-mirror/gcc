@@ -1,3 +1,7 @@
+2000-02-25  John Wehle  (john@feith.com)
+
+	* rtlanal.c (find_last_value): Allow NULL_RTX for valid_to.
+
 2000-02-25  Anthony Green  <green@cygnus.com>
 
 	* toplev.c (rest_of_compilation): Rebuild jump labels if
