@@ -307,6 +307,10 @@ use_return_insn ()
     if (regs_ever_live[regno])
       return 0;
 
+  /* If a function is naked, don't use the "return" insn.  */
+  if (arm_naked_function_p (current_function_decl))
+    return 0;
+
   return 1;
 }
 
@@ -2335,6 +2339,45 @@ const_pool_offset (symbol)
 {
   return get_pool_offset (symbol) - get_pool_size () - get_prologue_size ();
 }
+
+/* Return nonzero if ATTR is a valid attribute for DECL.
+   ATTRIBUTES are any existing attributes and ARGS are the arguments
+   supplied with ATTR.
+
+   Supported attributes:
+
+   naked: don't output any prologue or epilogue code, the user is assumed
+   to do the right thing.  */
+
+int
+arm_valid_machine_decl_attribute (decl, attributes, attr, args)
+     tree decl;
+     tree attributes;
+     tree attr;
+     tree args;
+{
+  if (args != NULL_TREE)
+    return 0;
+
+  if (is_attribute_p ("naked", attr))
+    return TREE_CODE (decl) == FUNCTION_DECL;
+  return 0;
+}
+
+/* Return non-zero if FUNC is a naked function.  */
+
+static int
+arm_naked_function_p (func)
+     tree func;
+{
+  tree a;
+
+  if (TREE_CODE (func) != FUNCTION_DECL)
+    abort ();
+
+  a = lookup_attribute ("naked", DECL_MACHINE_ATTRIBUTES (func));
+  return a != NULL_TREE;
+}
 
 /* Routines for use in generating RTL */
 
@@ -4283,7 +4326,10 @@ output_func_prologue (f, frame_size)
 
   if (arm_ccfsm_state || arm_target_insn)
     abort ();					/* Sanity check */
-  
+
+  if (arm_naked_function_p (current_function_decl))
+    return;
+
   return_used_this_function = 0;
   lr_save_eliminated = 0;
   
@@ -4353,6 +4399,10 @@ output_func_epilogue (f, frame_size)
         }
       goto epilogue_done;
     }
+
+  /* Naked functions don't have epilogues.  */
+  if (arm_naked_function_p (current_function_decl))
+    goto epilogue_done;
 
   /* A volatile function should never return.  Call abort.  */
   if (volatile_func)
@@ -4499,6 +4549,10 @@ arm_expand_prologue ()
   int store_arg_regs = 0;
   int volatile_func = (optimize > 0
 		       && TREE_THIS_VOLATILE (current_function_decl));
+
+  /* Naked functions don't have prologues.  */
+  if (arm_naked_function_p (current_function_decl))
+    return;
 
   if (current_function_anonymous_args && current_function_pretend_args_size)
     store_arg_regs = 1;
