@@ -1,3 +1,10 @@
+2003-11-14  Arnaud Charlet  <charlet@act-europe.fr>
+
+	PR ada/13035
+	* ada/acats/run_acats, run_all.sh: Fix syntax error.
+	No longer use a wrapper for gcc, since this does not work under
+	Windows.
+
 2003-11-14  Giovanni Bajo  <giovannibajo@libero.it>
 
         PR c++/2094

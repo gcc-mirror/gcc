@@ -7,17 +7,14 @@ fi
 
 # Set up environment to use the Ada compiler from the object tree
 
-host_gnatmake=`type gnatmake | awk '{print $3}`
-host_gcc=`type gcc | awk '{print $3}`
+host_gnatmake=`type gnatmake | awk '{print $3}'`
 ROOT=`${PWDCMD-pwd}`
 BASE=`cd $ROOT/../../..; ${PWDCMD-pwd}`
 PATH=$BASE:$ROOT:$PATH
 ADA_INCLUDE_PATH=$BASE/ada/rts
 ADA_OBJECTS_PATH=$ADA_INCLUDE_PATH
-export PATH ADA_INCLUDE_PATH ADA_OBJECTS_PATH
-
-echo '#!/bin/sh' > gcc
-echo exec $BASE/xgcc -B$BASE/ '"$@"' >> gcc
+GCC="$BASE/xgcc -B$BASE/"
+export PATH ADA_INCLUDE_PATH ADA_OBJECTS_PATH GCC
 
 echo '#!/bin/sh' > host_gnatmake
 echo PATH=`dirname $host_gnatmake`:'$PATH' >> host_gnatmake
@@ -25,11 +22,6 @@ echo unset ADA_INCLUDE_PATH ADA_OBJECTS_PATH GCC_EXEC_PREFIX >> host_gnatmake
 echo export PATH >> host_gnatmake
 echo exec $host_gnatmake '"$@"' >> host_gnatmake
 
-echo '#!/bin/sh' > host_gcc
-echo PATH=`dirname $host_gcc`:'$PATH' >> host_gcc
-echo export PATH >> host_gcc
-echo exec $host_gcc '"$@"' >> host_gcc
-
-chmod +x gcc host_gnatmake host_gcc
+chmod +x host_gnatmake
 
 exec $testdir/run_all.sh "$@"

@@ -48,11 +48,11 @@ if [ "$dir" = "$testdir" ]; then
 fi
 
 target_gnatmake () {
-  gnatmake $gnatflags $gccflags $* -largs $EXTERNAL_OBJECTS
+  gnatmake --GCC="$GCC" $gnatflags $gccflags $* -largs $EXTERNAL_OBJECTS --GCC="$GCC"
 }
 
 target_gcc () {
-  gcc $gccflags $*
+  $GCC $gccflags $*
 }
 
 clean_dir () {
@@ -66,10 +66,10 @@ rm -f $dir/acats.sum $dir/acats.log
 
 display "		=== acats configuration ==="
 
-display `type gcc`
-display `gcc -v 2>&1`
-display host=`host_gcc -dumpmachine`
-display target=`gcc -dumpmachine`
+display target gcc is $GCC
+display `$GCC -v 2>&1`
+display host=`gcc -dumpmachine`
+display target=`$GCC -dumpmachine`
 display `type gnatmake`
 gnatls -v >> $dir/acats.log
 display ""
@@ -114,7 +114,7 @@ if [ $? -ne 0 ]; then
 fi
 ./macrosub > macrosub.out 2>&1
 
-host_gcc -c cd300051.c
+gcc -c cd300051.c
 host_gnatmake -q -gnatws widechr.adb
 if [ $? -ne 0 ]; then
    display "**** Failed to compile widechr"
