@@ -1,3 +1,10 @@
+2001-07-02  Loren J. Rittle  <ljrittle@acm.org>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_THREADS): Protect variable from shell
+	expansion (thanks to Alexandre Oliva).
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2001-07-02  Benjamin Kosnik  <bkoz@redhat.com>
 	
 	* src/locale.cc (locale::locale(const char*)): Make sure global
@@ -10,6 +17,13 @@
 	for it here.
 	(test02): Add test.
 	* libsupc++/eh_alloc.cc: Use climits, not limits.h.
+
+2001-07-02  Loren J. Rittle  <ljrittle@acm.org>
+
+	libstdc++/3284
+	* acinclude.m4 (GLIBCPP_ENABLE_THREADS): Portability enhancement.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
 	
 2001-07-02  Loren J. Rittle  <ljrittle@acm.org>
 
