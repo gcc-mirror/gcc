@@ -3086,7 +3086,6 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 		  return item;
 	      }
 
-	    ltkt = FFEINFO_kindtypeINTEGER1;
 	    rtkt = FFEINFO_kindtypeINTEGER1;
 	    switch (ffeinfo_basictype (ffebld_info (left)))
 	      {
@@ -3101,33 +3100,49 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 		    rtkt = FFEINFO_kindtypeINTEGER4;
 		  }
 		else
-		  code = FFECOM_gfrtPOW_II;
+		  {
+		    code = FFECOM_gfrtPOW_II;
+		    ltkt = FFEINFO_kindtypeINTEGER1;
+		  }
 		break;
 
 	      case FFEINFO_basictypeREAL:
 		if (ffeinfo_kindtype (ffebld_info (left))
 		    == FFEINFO_kindtypeREAL1)
-		  code = FFECOM_gfrtPOW_RI;
+		  {
+		    code = FFECOM_gfrtPOW_RI;
+		    ltkt = FFEINFO_kindtypeREAL1;
+		  }
 		else
-		  code = FFECOM_gfrtPOW_DI;
+		  {
+		    code = FFECOM_gfrtPOW_DI;
+		    ltkt = FFEINFO_kindtypeREAL2;
+		  }
 		break;
 
 	      case FFEINFO_basictypeCOMPLEX:
 		if (ffeinfo_kindtype (ffebld_info (left))
 		    == FFEINFO_kindtypeREAL1)
-		  code = FFECOM_gfrtPOW_CI;	/* Overlapping result okay. */
+		  {
+		    code = FFECOM_gfrtPOW_CI;	/* Overlapping result okay. */
+		    ltkt = FFEINFO_kindtypeREAL1;
+		  }
 		else
-		  code = FFECOM_gfrtPOW_ZI;	/* Overlapping result okay. */
+		  {
+		    code = FFECOM_gfrtPOW_ZI;	/* Overlapping result okay. */
+		    ltkt = FFEINFO_kindtypeREAL2;
+		  }
 		break;
 
 	      default:
 		assert ("bad pow_*i" == NULL);
 		code = FFECOM_gfrtPOW_CI;	/* Overlapping result okay. */
+		ltkt = FFEINFO_kindtypeREAL1;
 		break;
 	      }
 	    if (ffeinfo_kindtype (ffebld_info (left)) != ltkt)
 	      left = ffeexpr_convert (left, NULL, NULL,
-				      FFEINFO_basictypeINTEGER,
+				      ffeinfo_basictype (ffebld_info (left)),
 				      ltkt, 0,
 				      FFETARGET_charactersizeNONE,
 				      FFEEXPR_contextLET);
