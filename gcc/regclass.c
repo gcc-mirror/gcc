@@ -988,15 +988,15 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	      if (GET_CODE (op) != REG || REGNO (op) < FIRST_PSEUDO_REGISTER)
 		{
 		  /* If this matches the other operand, we have no added
-		     cost.  */
+		     cost and we win.  */
 		  if (rtx_equal_p (ops[j], op))
-		    ;
+		    win = 1;
 
 		  /* If we can put the other operand into a register, add to
 		     the cost of this alternative the cost to copy this
 		     operand to the register used for the other operand.  */
 
-		  if (classes[j] != NO_REGS)
+		  else if (classes[j] != NO_REGS)
 		    alt_cost += copy_cost (op, mode, classes[j], 1), win = 1;
 		}
 	      else if (GET_CODE (ops[j]) != REG
