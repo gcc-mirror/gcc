@@ -10845,6 +10845,8 @@ cp_parser_parameter_declaration (parser, greater_than_is_operator_p)
 					   /*abstract_p=*/true,
 					   /*ctor_dtor_or_conv_p=*/NULL);
       parser->default_arg_ok_p = saved_default_arg_ok_p;
+      /* After the declarator, allow more attributes.  */
+      attributes = chainon (attributes, cp_parser_attributes_opt (parser));
     }
 
   /* The restriction on definining new types applies only to the type
