@@ -3076,16 +3076,16 @@ fi
       # Don't use gettext.
       USE_NLS=no
 
-      CLOCALE_H=config/locale/c_locale_generic.h
-      CLOCALE_CC=config/locale/c_locale_generic.cc
-      CCODECVT_H=config/locale/codecvt_specializations_generic.h
-      CCOLLATE_CC=config/locale/collate_members_generic.cc
-      CCTYPE_CC=config/locale/ctype_members_generic.cc
-      CMESSAGES_H=config/locale/messages_members_generic.h
-      CMESSAGES_CC=config/locale/messages_members_generic.cc
-      CMONEY_CC=config/locale/moneypunct_members_generic.cc
-      CNUMERIC_CC=config/locale/numpunct_members_generic.cc
-      CTIME_CC=config/locale/time_members_generic.cc
+      CLOCALE_H=config/locale/generic/c_locale.h
+      CLOCALE_CC=config/locale/generic/c_locale.cc
+      CCODECVT_H=config/locale/generic/codecvt_specializations.h
+      CCOLLATE_CC=config/locale/generic/collate_members.cc
+      CCTYPE_CC=config/locale/generic/ctype_members.cc
+      CMESSAGES_H=config/locale/generic/messages_members.h
+      CMESSAGES_CC=config/locale/generic/messages_members.cc
+      CMONEY_CC=config/locale/generic/monetary_members.cc
+      CNUMERIC_CC=config/locale/generic/numeric_members.cc
+      CTIME_CC=config/locale/generic/time_members.cc
       ;;
     xgnu)
       echo "$ac_t""gnu" 1>&6
@@ -3106,16 +3106,16 @@ fi
       
       
 
-      CLOCALE_H=config/locale/c_locale_gnu.h
-      CLOCALE_CC=config/locale/c_locale_gnu.cc
-      CCODECVT_H=config/locale/codecvt_specializations_ieee_1003.1-200x.h
-      CCOLLATE_CC=config/locale/collate_members_gnu.cc
-      CCTYPE_CC=config/locale/ctype_members_gnu.cc
-      CMESSAGES_H=config/locale/messages_members_gnu.h
-      CMESSAGES_CC=config/locale/messages_members_gnu.cc
-      CMONEY_CC=config/locale/moneypunct_members_gnu.cc
-      CNUMERIC_CC=config/locale/numpunct_members_gnu.cc
-      CTIME_CC=config/locale/time_members_gnu.cc
+      CLOCALE_H=config/locale/gnu/c_locale.h
+      CLOCALE_CC=config/locale/gnu/c_locale.cc
+      CCODECVT_H=config/locale/ieee_1003.1-2001/codecvt_specializations.h
+      CCOLLATE_CC=config/locale/gnu/collate_members.cc
+      CCTYPE_CC=config/locale/gnu/ctype_members.cc
+      CMESSAGES_H=config/locale/gnu/messages_members.h
+      CMESSAGES_CC=config/locale/gnu/messages_members.cc
+      CMONEY_CC=config/locale/gnu/monetary_members.cc
+      CNUMERIC_CC=config/locale/gnu/numeric_members.cc
+      CTIME_CC=config/locale/gnu/time_members.cc
       ;;
     xieee_1003.1)
       echo "$ac_t""generic" 1>&6
@@ -3123,16 +3123,16 @@ fi
       # Don't use gettext.
       USE_NLS=no
 
-      CLOCALE_H=config/locale/c_locale_ieee_1003.1-200x.h
-      CLOCALE_CC=config/locale/c_locale_ieee_1003.1-200x.cc
-      CCODECVT_H=config/locale/codecvt_specializations_ieee_1003.1-200x.h
-      CCOLLATE_CC=config/locale/collate_members_generic.cc
-      CCTYPE_CC=config/locale/ctype_members_generic.cc
-      CMESSAGES_H=config/locale/messages_members_ieee_1003.1-200x.h
-      CMESSAGES_CC=config/locale/messages_members_ieee_1003.1-200x.cc
-      CMONEY_CC=config/locale/moneypunct_members_generic.cc
-      CNUMERIC_CC=config/locale/numpunct_members_generic.cc
-      CTIME_CC=config/locale/time_members_generic.cc
+      CLOCALE_H=config/locale/ieee_1003.1-2001/c_locale.h
+      CLOCALE_CC=config/locale/ieee_1003.1-2001/c_locale.cc
+      CCODECVT_H=config/locale/ieee_1003.1-2001/codecvt_specializations.h
+      CCOLLATE_CC=config/locale/generic/collate_members.cc
+      CCTYPE_CC=config/locale/generic/ctype_members.cc
+      CMESSAGES_H=config/locale/ieee_1003.1-2001/messages_members.h
+      CMESSAGES_CC=config/locale/ieee_1003.1-2001/messages_members.cc
+      CMONEY_CC=config/locale/generic/monetary_members.cc
+      CNUMERIC_CC=config/locale/generic/numeric_members.cc
+      CTIME_CC=config/locale/generic/time_members.cc
       ;;
     *)
       echo "$enable_clocale is an unknown locale package" 1>&2
@@ -19362,14 +19362,14 @@ if test $enable_symvers = yes ; then
       echo 'FOO { global: f[a-z]o; local: *; };' > conftest.map
       
       cat > conftest.$ac_ext <<EOF
-#line 19344 "configure"
+#line 19366 "configure"
 #include "confdefs.h"
 int foo;
 int main() {
 
 ; return 0; }
 EOF
-if { (eval echo configure:19351: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:19373: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   enable_symvers=gnu
 else
@@ -19411,7 +19411,7 @@ else
   GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE=
 fi
 echo $ac_n "checking versioning on shared library symbols""... $ac_c" 1>&6
-echo "configure:19383: checking versioning on shared library symbols" >&5
+echo "configure:19415: checking versioning on shared library symbols" >&5
 echo "$ac_t""$enable_symvers" 1>&6
 
 
@@ -19501,13 +19501,13 @@ glibcpp_toolexeclibdir=no
 glibcpp_prefixdir=${prefix}
 
 echo $ac_n "checking for interface version number""... $ac_c" 1>&6
-echo "configure:19473: checking for interface version number" >&5
+echo "configure:19505: checking for interface version number" >&5
 libstdcxx_interface=$INTERFACE
 echo "$ac_t""$libstdcxx_interface" 1>&6
 
 # Process the option --with-gxx-include-dir=<path to include-files directory>
 echo $ac_n "checking for --with-gxx-include-dir""... $ac_c" 1>&6
-echo "configure:19479: checking for --with-gxx-include-dir" >&5
+echo "configure:19511: checking for --with-gxx-include-dir" >&5
 # Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
 if test "${with_gxx_include_dir+set}" = set; then
   withval="$with_gxx_include_dir"
@@ -19531,7 +19531,7 @@ echo "$ac_t""$gxx_include_dir" 1>&6
 
 # Process the option "--enable-version-specific-runtime-libs"
 echo $ac_n "checking for --enable-version-specific-runtime-libs""... $ac_c" 1>&6
-echo "configure:19503: checking for --enable-version-specific-runtime-libs" >&5
+echo "configure:19535: checking for --enable-version-specific-runtime-libs" >&5
 # Check whether --enable-version-specific-runtime-libs or --disable-version-specific-runtime-libs was given.
 if test "${enable_version_specific_runtime_libs+set}" = set; then
   enableval="$enable_version_specific_runtime_libs"
@@ -19578,7 +19578,7 @@ if test x"$glibcpp_toolexecdir" = x"no"; then
 fi
 
 echo $ac_n "checking for install location""... $ac_c" 1>&6
-echo "configure:19550: checking for install location" >&5
+echo "configure:19582: checking for install location" >&5
 echo "$ac_t""$gxx_include_dir" 1>&6
 
 
@@ -20088,7 +20088,7 @@ EOF
 
 cat >> $CONFIG_STATUS <<EOF
 ac_sources="$BASIC_FILE_CC $CLOCALE_CC $CCOLLATE_CC $CCTYPE_CC $CMESSAGES_CC $CMONEY_CC $CNUMERIC_CC $CTIME_CC $LINKER_MAP"
-ac_dests="src/basic_file.cc src/c++locale.cc src/collate.cc src/ctype.cc src/messages.cc src/moneypunct.cc src/numpunct.cc src/time.cc src/linker.map"
+ac_dests="src/basic_file.cc src/c++locale.cc src/collate.cc src/ctype.cc src/messages.cc src/monetary.cc src/numeric.cc src/time.cc src/linker.map"
 EOF
 
 cat >> $CONFIG_STATUS <<\EOF

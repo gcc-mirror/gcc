@@ -191,7 +191,7 @@ sources = \
 	cmath.cc bitset.cc \
 	functexcept.cc stdexcept.cc vterminate.cc \
 	c++locale.cc locale.cc localename.cc codecvt.cc \
-	collate.cc ctype.cc messages.cc moneypunct.cc numpunct.cc time.cc \
+	collate.cc ctype.cc messages.cc monetary.cc numeric.cc time.cc \
 	concept-inst.cc locale-inst.cc misc-inst.cc stl-inst.cc \
 	string-inst.cc wstring-inst.cc valarray-inst.cc  ext-inst.cc
 
@@ -271,7 +271,7 @@ LIBS = @LIBS@
 libstdc___la_OBJECTS =  globals.lo limits.lo basic_file.lo complex_io.lo \
 ios.lo strstream.lo cmath.lo bitset.lo functexcept.lo stdexcept.lo \
 vterminate.lo c++locale.lo locale.lo localename.lo codecvt.lo \
-collate.lo ctype.lo messages.lo moneypunct.lo numpunct.lo time.lo \
+collate.lo ctype.lo messages.lo monetary.lo numeric.lo time.lo \
 concept-inst.lo locale-inst.lo misc-inst.lo stl-inst.lo string-inst.lo \
 wstring-inst.lo valarray-inst.lo ext-inst.lo
 CXXFLAGS = @CXXFLAGS@

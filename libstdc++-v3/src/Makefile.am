@@ -66,7 +66,7 @@ sources = \
 	cmath.cc bitset.cc \
 	functexcept.cc stdexcept.cc vterminate.cc \
 	c++locale.cc locale.cc localename.cc codecvt.cc \
-	collate.cc ctype.cc messages.cc moneypunct.cc numpunct.cc time.cc \
+	collate.cc ctype.cc messages.cc monetary.cc numeric.cc time.cc \
 	concept-inst.cc locale-inst.cc misc-inst.cc stl-inst.cc \
 	string-inst.cc wstring-inst.cc valarray-inst.cc  ext-inst.cc
 
