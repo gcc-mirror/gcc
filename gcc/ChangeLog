@@ -1,5 +1,8 @@
 2004-11-28  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree-nested.c (check_for_nested_with_variably_modified): New.
+	(create_nesting_tree): Call it.
+
 	* tree-ssa-alias.c (compute_points_to_and_addr_escapes): Remove
 	special code for assigning to non-pointer.
 	(is_escape_site): If RHS is a conversion between pointer and integer

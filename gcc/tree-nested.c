@@ -612,8 +612,49 @@ walk_all_functions (walk_tree_fn callback, struct nesting_info *root)
     }
   while (root);
 }
-
 
+/* We have to check for a fairly pathalogical case.  The operands of function
+   nested function are to be interpreted in the context of the enclosing
+   function.  So if any are variably-sized, they will get remapped when the
+   enclosing function is inlined.  But that remapping would also have to be
+   done in the types of the PARM_DECLs of the nested function, meaning the
+   argument types of that function will disagree with the arguments in the
+   calls to that function.  So we'd either have to make a copy of the nested
+   function corresponding to each time the enclosing function was inlined or
+   add a VIEW_CONVERT_EXPR to each such operand for each call to the nested
+   function.  The former is not practical.  The latter would still require
+   detecting this case to know when to add the conversions.  So, for now at
+   least, we don't inline such an enclosing function.
+
+   We have to do that check recursively, so here return indicating whether
+   FNDECL has such a nested function.  ORIG_FN is the function we were
+   trying to inline to use for checking whether any argument is variably
+   modified by anything in it.
+
+   It would be better to do this in tree-inline.c so that we could give
+   the appropriate warning for why a function can't be inlined, but that's
+   too late since the nesting structure has already been flattened and
+   adding a flag just to record this fact seems a waste of a flag.  */
+
+static bool
+check_for_nested_with_variably_modified (tree fndecl, tree orig_fndecl)
+{
+  struct cgraph_node *cgn = cgraph_node (fndecl);
+  tree arg;
+
+  for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
+    {
+      for (arg = DECL_ARGUMENTS (cgn->decl); arg; arg = TREE_CHAIN (arg))
+	if (variably_modified_type_p (TREE_TYPE (arg), 0), orig_fndecl)
+	  return true;
+
+      if (check_for_nested_with_variably_modified (cgn->decl, orig_fndecl))
+	return true;
+    }
+
+  return false;
+}
+
 /* Construct our local datastructure describing the function nesting
    tree rooted by CGN.  */
 
@@ -631,6 +672,11 @@ create_nesting_tree (struct cgraph_node *cgn)
       sub->next = info->inner;
       info->inner = sub;
     }
+
+  /* See discussion at check_for_nested_with_variably_modified for a
+     discussion of why this has to be here.  */
+  if (check_for_nested_with_variably_modified (info->context, info->context))
+    DECL_UNINLINABLE (info->context) = true;
 
   return info;
 }
