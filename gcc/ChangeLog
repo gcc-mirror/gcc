@@ -1,3 +1,7 @@
+Fri Apr 17 13:32:20 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* stmt.c (mark_seen_cases): Make static and add prototype.
+
 Fri Apr 17 11:21:43 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * frame.c: Include stdlib.h and unistd.h to possibly get various
