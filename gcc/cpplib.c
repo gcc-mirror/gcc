@@ -2874,11 +2874,6 @@ macroexpand (pfile, hp)
 		  while (p1 != l1 && is_space[*p1]) p1++;
 		  while (p1 != l1 && is_idchar[*p1])
 		    xbuf[totlen++] = *p1++;
-		  /* Delete any no-reexpansion marker that follows
-		     an identifier at the beginning of the argument
-		     if the argument is concatenated with what precedes it.  */
-		  if (p1[0] == '@' && p1[1] == '-')
-		    p1 += 2;
 		}
 	      if (ap->raw_after)
 		{
@@ -2887,20 +2882,37 @@ macroexpand (pfile, hp)
 		  while (p1 != l1)
 		    {
 		      if (is_space[l1[-1]]) l1--;
+		      else if (l1[-1] == '@')
+		        {
+			  U_CHAR *p2 = l1 - 1;
+			  /* If whitespace is preceded by an odd number
+			     of `@' signs, the last `@' was a whitespace
+			     marker; drop it too. */
+			  while (p2 != p1 && p2[-1] == '@') p2--;
+			  if ((l1 - 1 - p2) & 1)
+			    l1--;
+			  break;
+			}
 		      else if (l1[-1] == '-')
 			{
 			  U_CHAR *p2 = l1 - 1;
-			  /* If a `-' is preceded by an odd number of newlines then it
-			     and the last newline are a no-reexpansion marker.  */
-			  while (p2 != p1 && p2[-1] == '\n') p2--;
-			  if ((l1 - 1 - p2) & 1) {
+			  /* If a `-' is preceded by an odd number of
+			     `@' signs then it and the last `@' are
+			     a no-reexpansion marker.  */
+			  while (p2 != p1 && p2[-1] == '@') p2--;
+			  if ((l1 - 1 - p2) & 1)
 			    l1 -= 2;
-			  }
-			  else break;
+			  else
+			    break;
 			}
 		      else break;
 		    }
 		}
+
+	      /* Delete any no-reexpansion marker that precedes
+		 an identifier at the beginning of the argument. */
+	      if (p1[0] == '@' && p1[1] == '-')
+		p1 += 2;
 
 	      bcopy (p1, xbuf + totlen, l1 - p1);
 	      totlen += l1 - p1;

@@ -6,6 +6,11 @@ Wed Sep 30 19:33:07 1998  Jeffrey A Law  (law@cygnus.com)
 
 Wed Sep 30 19:13:20 1998 Zack Weinberg  <zack@rabi.phys.columbia.edu>  
 
+	* cpplib.c (macroexpand): If arg->raw_before or
+	arg->raw_after, remove any no-reexpansion escape at the
+	beginning of the pasted token.  Correct handling of whitespace
+	markers and no-reexpand markers at the end if arg->raw_after.
+
 	* toplev.c (documented_lang_options): Recognize -include,
 	-imacros, -iwithprefix, -iwithprefixbefore.
 	* cpplib.c (cpp_start_read): Process -imacros and -include
