@@ -238,9 +238,9 @@ sexpr y;
 
 #ifdef GC_GCJ_SUPPORT
 
-#include "gc_mark.h"
-#include "dbg_mlc.h"
-#include "include/gc_gcj.h"
+#include "private/dbg_mlc.h"
+#include "private/gc_pmark.h"
+#include "gc_gcj.h"
 
 /* The following struct emulates the vtable in gcj.	*/
 /* This assumes the default value of MARK_DESCR_OFFSET. */
@@ -253,12 +253,12 @@ struct fake_vtable gcj_class_struct1 = { 0, sizeof(struct SEXPR)
 					    + sizeof(struct fake_vtable *) };
 			/* length based descriptor.	*/
 struct fake_vtable gcj_class_struct2 =
-				{ 0, (3l << (CPP_WORDSZ - 3)) | DS_BITMAP};
+				{ 0, (3l << (CPP_WORDSZ - 3)) | GC_DS_BITMAP};
 			/* Bitmap based descriptor.	*/
 
 struct GC_ms_entry * fake_gcj_mark_proc(word * addr,
-				        struct ms_entry *mark_stack_ptr,
-				        struct ms_entry *mark_stack_limit,
+				        struct GC_ms_entry *mark_stack_ptr,
+				        struct GC_ms_entry *mark_stack_limit,
 				        word env   )
 {
     sexpr x;
@@ -273,7 +273,7 @@ struct GC_ms_entry * fake_gcj_mark_proc(word * addr,
 	PUSH_CONTENTS((ptr_t)(x -> sexpr_cdr), mark_stack_ptr,
 			      mark_stack_limit, &(x -> sexpr_cdr), exit1);
     }
-    if ((ptr_t)(x -> sexpr_car) > GC_least_plausible_heap_addr) {
+    if ((ptr_t)(x -> sexpr_car) > (ptr_t) GC_least_plausible_heap_addr) {
 	PUSH_CONTENTS((ptr_t)(x -> sexpr_car), mark_stack_ptr,
 			      mark_stack_limit, &(x -> sexpr_car), exit2);
     }

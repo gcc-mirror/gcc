@@ -29,7 +29,7 @@ libgcjgc_la_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
 dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c irix_threads.c \
 linux_threads.c malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
 obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
-solaris_pthreads.c solaris_threads.c specific.c stubborn.c typd_mlc.c`
+solaris_pthreads.c solaris_threads.c specific.c stubborn.c typd_mlc.c
 
 # Include THREADLIBS here to ensure that the correct versions of
 # linuxthread semaphore functions get linked:
@@ -46,7 +46,11 @@ AM_CXXFLAGS = @BOEHM_GC_CFLAGS@
 AM_CFLAGS = @BOEHM_GC_CFLAGS@
 
 check_PROGRAMS = gctest
-gctest_SOURCES = test.c
+# The following hack produces a warning from automake, but we need it in order 
+# to build a file from a subdirectory. FIXME.
+test.o:	tests/test.c
+	$(COMPILE) -c $<
+gctest_OBJECTS = test.o
 gctest_LDADD = ./libgcjgc.la $(THREADLIBS) $(EXTRA_TEST_LIBS)
 gctest_LDFLAGS = -shared-libgcc
 TESTS_ENVIRONMENT = LD_LIBRARY_PATH=../../$(MULTIBUILDTOP)gcc

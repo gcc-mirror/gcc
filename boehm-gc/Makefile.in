@@ -112,7 +112,7 @@ libgcjgc_la_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
 dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c irix_threads.c \
 linux_threads.c malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
 obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
-solaris_pthreads.c solaris_threads.c specific.c stubborn.c typd_mlc.c`
+solaris_pthreads.c solaris_threads.c specific.c stubborn.c typd_mlc.c
 
 
 # Include THREADLIBS here to ensure that the correct versions of
@@ -132,7 +132,8 @@ AM_CXXFLAGS = @BOEHM_GC_CFLAGS@
 AM_CFLAGS = @BOEHM_GC_CFLAGS@
 
 check_PROGRAMS = gctest
-gctest_SOURCES = test.c
+
+gctest_OBJECTS = test.o
 gctest_LDADD = ./libgcjgc.la $(THREADLIBS) $(EXTRA_TEST_LIBS)
 gctest_LDFLAGS = -shared-libgcc
 TESTS_ENVIRONMENT = LD_LIBRARY_PATH=../../$(MULTIBUILDTOP)gcc
@@ -206,23 +207,22 @@ dbg_mlc.lo dyn_load.lo finalize.lo gc_dlopen.lo gcj_mlc.lo headers.lo \
 irix_threads.lo linux_threads.lo malloc.lo mallocx.lo mark.lo \
 mark_rts.lo misc.lo new_hblk.lo obj_map.lo os_dep.lo pcr_interface.lo \
 ptr_chck.lo real_malloc.lo reclaim.lo solaris_pthreads.lo \
-solaris_threads.lo specific.lo stubborn.lo
+solaris_threads.lo specific.lo stubborn.lo typd_mlc.lo
 check_PROGRAMS =  gctest$(EXEEXT)
-gctest_OBJECTS =  test.$(OBJEXT)
 gctest_DEPENDENCIES =  ./libgcjgc.la
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
-DIST_COMMON =  README ChangeLog Makefile.am Makefile.in acinclude.m4 \
-aclocal.m4 configure configure.in
+DIST_COMMON =  ChangeLog Makefile.am Makefile.in acinclude.m4 aclocal.m4 \
+configure configure.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = $(libgcjgc_la_SOURCES) $(EXTRA_libgcjgc_la_SOURCES) $(gctest_SOURCES)
-OBJECTS = $(libgcjgc_la_OBJECTS) $(gctest_OBJECTS)
+SOURCES = $(libgcjgc_la_SOURCES) $(EXTRA_libgcjgc_la_SOURCES)
+OBJECTS = $(libgcjgc_la_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -511,6 +511,9 @@ install-am install uninstall-am uninstall all-redirect all-am all \
 installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
+
+test.o:	tests/test.c
+	$(COMPILE) -c $<
 $(all_objs) : include/private/gcconfig.h include/private/gc_priv.h \
 include/private/gc_hdrs.h include/gc.h include/gc_gcj.h include/gc_mark.h
 
