@@ -1223,7 +1223,11 @@ while(0)
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.  */
+   CXT is an RTX for the static chain value for the function.
+
+   We generate a two-instructions program at address TRAMP :
+	movea.l &CXT,%a0
+	jmp FNADDR					*/
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
