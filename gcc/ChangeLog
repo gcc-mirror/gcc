@@ -1,3 +1,7 @@
+Tue Mar  2 00:09:18 1999  Marc Espie <espie@cvs.openbsd.org>
+
+	* extend.texi: Reference __extension__ in the index.
+
 Mon Mar  1 19:09:32 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* Makefile.in (CROSS_FLOAT_H): Delete.
