@@ -445,11 +445,15 @@ named_section (decl, name, reloc)
   flags = (* targetm.section_type_flags) (decl, name, reloc);
 
   /* Sanity check user variables for flag changes.  Non-user
-     section flag changes will abort in named_section_flags.  */
+     section flag changes will abort in named_section_flags.
+     However, don't complain if SECTION_OVERRIDE is set.
+     We trust that the setter knows that it is safe to ignore
+     the default flags for this decl.  */
   if (decl && ! set_named_section_flags (name, flags))
     {
-      error_with_decl (decl, "%s causes a section type conflict");
       flags = get_named_section_flags (name);
+      if ((flags & SECTION_OVERRIDE) == 0)
+	error_with_decl (decl, "%s causes a section type conflict");
     }
 
   named_section_flags (name, flags);

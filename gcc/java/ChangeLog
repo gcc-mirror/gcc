@@ -1,3 +1,8 @@
+2002-02-04  Anthony Green  <green@redhat.com>
+
+	* class.c (build_utf8_ref): Put UTF-8 constants into merged
+	sections if available.
+
 2002-02-04  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* parse.y (java_expand_classes): Fix typo in static field loop.
