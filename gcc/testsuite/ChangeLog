@@ -1,3 +1,7 @@
+2004-08-09  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.dg/wchar_t-2.c: Fix typo.
+
 2004-08-09  Falk Hueffner  <falk@debian.org>
 
 	PR tree-optimization/12517
