@@ -1424,6 +1424,9 @@ dump_expr (t, flags)
      tree t;
      int flags;
 {
+   if (t == 0)
+      return;
+   
   switch (TREE_CODE (t))
     {
     case VAR_DECL:
