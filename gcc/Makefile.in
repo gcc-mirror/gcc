@@ -2305,8 +2305,8 @@ INSTALL: $(srcdir)/install1.texi $(srcdir)/install.texi
 # We remove as much from the language subdirectories as we can
 # (less duplicated code).
 
-
-mostlyclean: intl.mostlyclean lang.mostlyclean
+INTL_MOSTLYCLEAN = intl.mostlyclean
+mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 	-rm -f $(STAGESTUFF)
 # Delete the temporary source copies for cross compilation.
 	-rm -f $(HOST_PREFIX_1)rtl.c $(HOST_PREFIX_1)rtlanal.c
@@ -2345,7 +2345,8 @@ mostlyclean: intl.mostlyclean lang.mostlyclean
 
 # Delete all files made by compilation
 # that don't exist in the distribution.
-clean: mostlyclean intl.clean lang.clean
+INTL_CLEAN = intl.clean
+clean: mostlyclean $(INTL_CLEAN) lang.clean
 # It may not be quite desirable to delete unprotoize.c here,
 # but the spec for `make clean' requires it.
 # Using unprotoize.c is not quite right in the first place,
@@ -2406,13 +2407,14 @@ extraclean: distclean lang.extraclean
 
 # Get rid of every file that's generated from some other file, except for `configure'.
 # Most of these files ARE PRESENT in the GCC distribution.
-# We define INTL_DISTCLEAN to be empty in the submake, so that
-# we don't descend into intl after its makefile has been removed.
+# We define INTL_DISTCLEAN, INTL_CLEAN & INTL_MOSTLYCLEAN to be empty in the
+# submake, so that we don't descend into intl after its makefile has been
+# removed.
 maintainer-clean:
 	@echo 'This command is intended for maintainers to use; it'
 	@echo 'deletes files that may need special tools to rebuild.'
-	$(MAKE) INTL_DISTCLEAN= distclean \
-		intl.maintainer-clean lang.maintainer-clean
+	$(MAKE) INTL_DISTCLEAN= INTL_CLEAN= INTL_MOSTLYCLEAN= \
+		intl.maintainer-clean lang.maintainer-clean distclean
 	-rm -f c-parse.y c-gperf.h
 	-rm -f c-parse.c c-parse.h c-parse.output
 	-rm -f cexp.c cexp.output TAGS
