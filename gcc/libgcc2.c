@@ -1496,7 +1496,7 @@ __enable_execute_stack (void *addr __attribute__((__unused__)))
 
 #if defined(WINNT) && ! defined(__CYGWIN__) && ! defined (_UWIN)
 
-long
+int
 getpagesize (void)
 {
 #ifdef _ALPHA_
