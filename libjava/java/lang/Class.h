@@ -14,7 +14,6 @@ details.  */
 
 #pragma interface
 
-#include <stddef.h>
 #include <java/lang/Object.h>
 #include <java/lang/String.h>
 #include <java/net/URL.h>
@@ -54,6 +53,7 @@ enum
 struct _Jv_Field;
 struct _Jv_VTable;
 union _Jv_word;
+struct _Jv_ArrayVTable;
 
 struct _Jv_Constants
 {
@@ -217,34 +217,16 @@ public:
 
   // This constructor is used to create Class object for the primitive
   // types. See prims.cc.
-  Class (jobject cname, jbyte sig, jint len, jobject array_vtable)
-  {    
-    using namespace java::lang::reflect;
-    _Jv_Utf8Const *_Jv_makeUtf8Const (char *s, int len);
-
+  Class ()
+  {
     // C++ ctors set the vtbl pointer to point at an offset inside the vtable
     // object. That doesn't work for Java, so this hack adjusts it back.
     ((_Jv_Self *)this)->vtable_ptr -= 2 * sizeof (void *);
-    
-    // We must initialize every field of the class.  We do this in the
-    // same order they are declared in Class.h, except for fields that
-    // are initialized to NULL.
-    name = _Jv_makeUtf8Const ((char *) cname, -1);
-    accflags = Modifier::PUBLIC | Modifier::FINAL | Modifier::ABSTRACT;
-    method_count = sig;
-    size_in_bytes = len;
-    vtable = JV_PRIMITIVE_VTABLE;
-    state = JV_STATE_DONE;
-    depth = -1;
-    if (method_count != 'V')
-      _Jv_NewArrayClass (this, NULL, (_Jv_VTable *) array_vtable);
   }
 
   static java::lang::Class class$;
 
 private:   
-
-  Class ();
 
   void checkMemberAccess (jint flags);
 
@@ -310,6 +292,9 @@ private:
 				 _Jv_VTable *array_vtable = 0);
   friend jclass _Jv_NewClass (_Jv_Utf8Const *name, jclass superclass,
 			      java::lang::ClassLoader *loader);
+
+  // in prims.cc
+  friend void _Jv_InitPrimClass (jclass, char *, char, int, _Jv_ArrayVTable *);
 
   friend void _Jv_PrepareCompiledClass (jclass);
   friend void _Jv_PrepareConstantTimeTables (jclass);
