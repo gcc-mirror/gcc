@@ -750,7 +750,6 @@ for machine in $build $host $target; do
 		;;
 	i[[3456]]86-*-freebsdelf*)
 		tm_file="i386/i386.h i386/att.h linux.h i386/freebsd-elf.h i386/perform.h"
-		xm_file=i386/xm-freebsd.h
 		# On FreeBSD, the headers are already ok, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=i386/t-freebsd
@@ -760,7 +759,6 @@ for machine in $build $host $target; do
 		;;
 	i[[3456]]86-*-freebsd*)
 		tm_file=i386/freebsd.h
-		xm_file=i386/xm-freebsd.h
 		# On FreeBSD, the headers are already ok, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=i386/t-freebsd
