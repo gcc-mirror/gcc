@@ -3714,7 +3714,7 @@ resolve_symbol (gfc_symbol * sym)
   if (sym->ts.type == BT_UNKNOWN)
     {
       if (sym->attr.flavor == FL_VARIABLE || sym->attr.flavor == FL_PARAMETER)
-	gfc_set_default_type (sym, 0, NULL);
+	gfc_set_default_type (sym, 1, NULL);
 
       if (sym->attr.flavor == FL_PROCEDURE && sym->attr.function)
 	{

@@ -3189,13 +3189,6 @@ write_symbol (int n, gfc_symbol * sym)
   if (sym->attr.flavor == FL_UNKNOWN || sym->attr.flavor == FL_LABEL)
     gfc_internal_error ("write_symbol(): bad module symbol '%s'", sym->name);
 
-
-  if (sym->attr.flavor == FL_VARIABLE && sym->ts.type == BT_UNKNOWN)
-    /* TODO: this is a workaround for some of the problems in PR15481,
-       and fixes the dependent bug PR13372. In an ideal frontend, this
-       should never happen.  */
-    return;
-
   mio_integer (&n);
   mio_internal_string (sym->name);
 
@@ -3317,12 +3310,6 @@ write_symtree (gfc_symtree * st)
   if (!check_access (sym->attr.access, sym->ns->default_access)
       || (sym->attr.flavor == FL_PROCEDURE && sym->attr.generic
 	  && !sym->attr.subroutine && !sym->attr.function))
-    return;
-
-  if (sym->attr.flavor == FL_VARIABLE && sym->ts.type == BT_UNKNOWN)
-    /* TODO: this is a workaround for some of the problems in PR15481,
-       and fixes the dependent bug PR13372. In an ideal frontend, this
-       should never happen.  */
     return;
 
   if (check_unique_name (st->name))

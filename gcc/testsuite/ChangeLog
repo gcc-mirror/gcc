@@ -1,4 +1,12 @@
-2004-07-10  David Billinghurst (David.Billinghurst@riotinto.com)
+2004-07-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/15481
+ 	PR fortran/13372
+ 	PR fortran/13575
+ 	PR fortran/15978
+	* gfortran.fortran-torture/compile/implicit_2.f90: New test.
+	
+2004-07-09  David Billinghurst (David.Billinghurst@riotinto.com)
 
 	* lib/gfortran-dg.exp (gfortran-dg-test):  Adapt regular
 	expression to match gfortran warning/error messages
