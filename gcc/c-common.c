@@ -5558,9 +5558,11 @@ c_common_nodes_and_builtins ()
   builtin_function_2 (NULL_PTR, "alloca", NULL_TREE, ptr_ftype_sizetype,
 		      BUILT_IN_ALLOCA, BUILT_IN_NORMAL, 0, 1, 0);
 #endif
-  /* Declare _exit just to mark it as non-returning.  */
+  /* Declare _exit and _Exit just to mark them as non-returning.  */
   builtin_function_2 (NULL_PTR, "_exit", NULL_TREE, void_ftype_int,
 		      0, NOT_BUILT_IN, 0, 1, 1);
+  builtin_function_2 (NULL_PTR, "_Exit", NULL_TREE, void_ftype_int,
+		      0, NOT_BUILT_IN, 0, !flag_isoc99, 1);
 
   builtin_function_2 ("__builtin_index", "index",
 		      string_ftype_cstring_int, string_ftype_cstring_int,

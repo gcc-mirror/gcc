@@ -1,3 +1,8 @@
+2001-01-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (c_common_nodes_and_builtins): Add _Exit builtin.
+	* extend.texi: Document _Exit builtin.
+
 2001-01-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * (initialize, initialize_builtins,
