@@ -1,3 +1,8 @@
+2000-05-06  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libgcj.zip): Don't pass -L to javac.
+
 2000-05-05  Tom Tromey  <tromey@cygnus.com>
 
 	Fix for PR libgcj/220:

@@ -1708,7 +1708,7 @@ $(built_java_source_files:.java=.class): $(built_java_source_files)
 libgcj.zip: $(java_source_files) $(cond_awt_java_source_files)
 	$(MAKE) $(built_java_source_files:.java=.class)
 	javac="$(JAVAC)"; cd $(srcdir); \
-	  $$javac -L$(here) $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) \
+	  $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) \
 	    $(subst $(srcdir)/,,$?)
 	-@rm -f libgcj.zip
 	$(ZIP) -r libgcj java gnu -n .class -i '*.class' -i '*/'
