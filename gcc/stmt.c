@@ -332,6 +332,8 @@ struct nesting
 /* Chain of all pending binding contours.  */
 struct nesting *block_stack;
 
+/* If any new stacks are added here, add them to POPSTACKS too.  */
+
 /* Chain of all pending binding contours that restore stack levels
    or have cleanups.  */
 struct nesting *stack_block_stack;
@@ -360,17 +362,31 @@ int nesting_depth;
 #define ALLOC_NESTING() \
  (struct nesting *) obstack_alloc (&stmt_obstack, sizeof (struct nesting))
 
-/* Pop one of the sub-stacks, such as `loop_stack' or `cond_stack';
-   and pop off `nesting_stack' down to the same level.  */
+/* Pop the nesting stack element by element until we pop off
+   the element which is at the top of STACK.
+   Update all the other stacks, popping off elements from them
+   as we pop them from nesting_stack.  */
 
 #define POPSTACK(STACK)					\
-do { int initial_depth = nesting_stack->depth;		\
-     do { struct nesting *this = STACK;			\
-	  STACK = this->next;				\
+do { struct nesting *target = STACK;			\
+     struct nesting *this;				\
+     do { this = nesting_stack;				\
+	  if (loop_stack == this)			\
+	    loop_stack = loop_stack->next;		\
+	  if (cond_stack == this)			\
+	    cond_stack = cond_stack->next;		\
+	  if (block_stack == this)			\
+	    block_stack = block_stack->next;		\
+	  if (stack_block_stack == this)		\
+	    stack_block_stack = stack_block_stack->next; \
+	  if (case_stack == this)			\
+	    case_stack = case_stack->next;		\
+	  if (except_stack == this)			\
+	    except_stack = except_stack->next;		\
+	  nesting_depth = nesting_stack->depth - 1;	\
 	  nesting_stack = this->all;			\
-	  nesting_depth = this->depth;			\
 	  obstack_free (&stmt_obstack, this); }		\
-     while (nesting_depth > initial_depth); } while (0)
+     while (this != target); } while (0)
 
 /* In some cases it is impossible to generate code for a forward goto
    until the label definition is seen.  This happens when it may be necessary
