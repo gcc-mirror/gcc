@@ -1,6 +1,6 @@
 // natClass.cc - Implementation of java.lang.Class native methods.
 
-/* Copyright (C) 1998, 1999  Cygnus Solutions
+/* Copyright (C) 1998, 1999, 2000  Cygnus Solutions
 
    This file is part of libgcj.
 
@@ -38,6 +38,7 @@ details.  */
 #include <java/lang/NullPointerException.h>
 #include <java/lang/System.h>
 #include <java/lang/SecurityManager.h>
+#include <java/lang/StringBuffer.h>
 
 #include <java-cpool.h>
 
@@ -55,6 +56,8 @@ extern java::lang::Class ClassClass;
 extern java::lang::Class MethodClass;
 #define FieldClass _CL_Q44java4lang7reflect5Field
 extern java::lang::Class FieldClass;
+#define ConstructorClass _CL_Q44java4lang7reflect11Constructor
+extern java::lang::Class ConstructorClass;
 
 // Some constants we use to look up the class initializer.
 static _Jv_Utf8Const *void_signature = _Jv_makeUtf8Const ("()V", 3);
@@ -96,27 +99,95 @@ java::lang::Class::forName (jstring className)
 }
 
 java::lang::reflect::Constructor *
-java::lang::Class::getConstructor (JArray<jclass> *)
+java::lang::Class::getConstructor (JArray<jclass> *param_types)
 {
-  JvFail ("java::lang::Class::getConstructor not implemented");
+  jstring partial_sig = getSignature (param_types);
+  jint hash = partial_sig->hashCode ();
+
+  int i = isPrimitive () ? 0 : method_count;
+  while (--i >= 0)
+    {
+      // FIXME: access checks.
+      if (_Jv_equalUtf8Consts (methods[i].name, init_name)
+	  && _Jv_equal (methods[i].signature, partial_sig, hash))
+	{
+	  // Found it.  For getConstructor, the constructor must be
+	  // public.
+	  using namespace java::lang::reflect;
+	  if (Modifier::isPublic(methods[i].accflags))
+	    break;
+	  Constructor *cons = new Constructor ();
+	  cons->offset = (char *) (&methods[i]) - (char *) methods;
+	  cons->declaringClass = this;
+	  return cons;
+	}
+    }
+  JvThrow (new java::lang::NoSuchMethodException);
 }
 
 JArray<java::lang::reflect::Constructor *> *
-java::lang::Class::getConstructors (void)
+java::lang::Class::_getConstructors (jboolean declared)
 {
-  JvFail ("java::lang::Class::getConstructors not implemented");
+  // FIXME: this method needs access checks.
+
+  int numConstructors = 0;
+  int max = isPrimitive () ? 0 : method_count;
+  int i;
+  for (i = max; --i >= 0; )
+    {
+      _Jv_Method *method = &methods[i];
+      if (method->name == NULL
+	  && ! _Jv_equalUtf8Consts (method->name, init_name))
+	continue;
+      if (declared
+	  && ! java::lang::reflect::Modifier::isPublic(method->accflags))
+	continue;
+      numConstructors++;
+    }
+  JArray<java::lang::reflect::Constructor *> *result
+    = (JArray<java::lang::reflect::Constructor *> *)
+    JvNewObjectArray (numConstructors, &ConstructorClass, NULL);
+  java::lang::reflect::Constructor** cptr = elements (result);
+  for (i = 0;  i < max;  i++)
+    {
+      _Jv_Method *method = &methods[i];
+      if (method->name == NULL
+	  && ! _Jv_equalUtf8Consts (method->name, init_name))
+	continue;
+      if (declared
+	  && ! java::lang::reflect::Modifier::isPublic(method->accflags))
+	continue;
+      java::lang::reflect::Constructor *cons
+	= new java::lang::reflect::Constructor ();
+      cons->offset = (char *) method - (char *) methods;
+      cons->declaringClass = this;
+      *cptr++ = cons;
+    }
+  return result;
 }
 
 java::lang::reflect::Constructor *
-java::lang::Class::getDeclaredConstructor (JArray<jclass> *)
+java::lang::Class::getDeclaredConstructor (JArray<jclass> *param_types)
 {
-  JvFail ("java::lang::Class::getDeclaredConstructor not implemented");
-}
+  jstring partial_sig = getSignature (param_types);
+  jint hash = partial_sig->hashCode ();
 
-JArray<java::lang::reflect::Constructor *> *
-java::lang::Class::getDeclaredConstructors (void)
-{
-  JvFail ("java::lang::Class::getDeclaredConstructors not implemented");
+  int i = isPrimitive () ? 0 : method_count;
+  while (--i >= 0)
+    {
+      // FIXME: access checks.
+      if (_Jv_equalUtf8Consts (methods[i].name, init_name)
+	  && _Jv_equal (methods[i].signature, partial_sig, hash))
+	{
+	  // Found it.
+	  using namespace java::lang::reflect;
+	  Constructor *cons = new Constructor ();
+	  cons->offset = (char *) (&methods[i]) - (char *) methods;
+	  cons->declaringClass = this;
+	  return cons;
+	}
+    }
+  JvThrow (new java::lang::NoSuchMethodException);
 }
 
 java::lang::reflect::Field *
@@ -187,18 +258,67 @@ java::lang::Class::getDeclaredFields (void)
   return result;
 }
 
-java::lang::reflect::Method *
-java::lang::Class::getDeclaredMethod (jstring, JArray<jclass> *)
+void
+java::lang::Class::getSignature (java::lang::StringBuffer *buffer)
 {
-  JvFail ("java::lang::Class::getDeclaredMethod not implemented");
+  if (isPrimitive())
+    buffer->append((jchar) method_count);
+  else
+    {
+      jstring name = getName();
+      if (name->charAt(0) != '[')
+	buffer->append((jchar) 'L');
+      buffer->append(name);
+      if (name->charAt(0) != '[')
+	buffer->append((jchar) ';');
+    }
+}
+
+// This doesn't have to be native.  It is an implementation detail
+// only called from the C++ code, though, so maybe this is clearer.
+jstring
+java::lang::Class::getSignature (JArray<jclass> *param_types)
+{
+  java::lang::StringBuffer *buf = new java::lang::StringBuffer ();
+  buf->append((jchar) '(');
+  jclass *v = elements (param_types);
+  for (int i = 0; i < param_types->length; ++i)
+    v[i]->getSignature(buf);
+  buf->append((jchar) ')');
+  return buf->toString();
+}
+
+java::lang::reflect::Method *
+java::lang::Class::getDeclaredMethod (jstring name,
+				      JArray<jclass> *param_types)
+{
+  jstring partial_sig = getSignature (param_types);
+  jint p_len = partial_sig->length();
+  _Jv_Utf8Const *utf_name = _Jv_makeUtf8Const (name);
+  int i = isPrimitive () ? 0 : method_count;
+  while (--i >= 0)
+    {
+      // FIXME: access checks.
+      if (_Jv_equalUtf8Consts (methods[i].name, utf_name)
+	  && _Jv_equaln (methods[i].signature, partial_sig, p_len))
+	{
+	  // Found it.
+	  using namespace java::lang::reflect;
+	  Method *rmethod = new Method ();
+	  rmethod->offset = (char*) (&methods[i]) - (char*) methods;
+	  rmethod->declaringClass = this;
+	}
+    }
+  JvThrow (new java::lang::NoSuchMethodException);
 }
 
 JArray<java::lang::reflect::Method *> *
 java::lang::Class::getDeclaredMethods (void)
 {
   int numMethods = 0;
+  int max = isPrimitive () ? 0 : method_count;
   int i;
-  for (i = method_count;  --i >= 0; )
+  for (i = max; --i >= 0; )
     {
       _Jv_Method *method = &methods[i];
       if (method->name == NULL
@@ -211,15 +331,16 @@ java::lang::Class::getDeclaredMethods (void)
     = (JArray<java::lang::reflect::Method *> *)
     JvNewObjectArray (numMethods, &MethodClass, NULL);
   java::lang::reflect::Method** mptr = elements (result);
-  for (i = 0;  i < method_count;  i++)
+  for (i = 0;  i < max;  i++)
     {
       _Jv_Method *method = &methods[i];
       if (method->name == NULL
 	  || _Jv_equalUtf8Consts (method->name, clinit_name)
 	  || _Jv_equalUtf8Consts (method->name, init_name))
 	continue;
-      java::lang::reflect::Method* rmethod = new java::lang::reflect::Method ();
-      rmethod->offset = (char*) mptr - (char*) elements (result);
+      java::lang::reflect::Method* rmethod
+	= new java::lang::reflect::Method ();
+      rmethod->offset = (char*) method - (char*) methods;
       rmethod->declaringClass = this;
       *mptr++ = rmethod;
     }
@@ -258,10 +379,58 @@ java::lang::Class::getDeclaringClass (void)
   return NULL;			// Placate compiler.
 }
 
+jint
+java::lang::Class::_getFields (JArray<java::lang::reflect::Field *> *result,
+			       jint offset)
+{
+  int count = 0;
+  for (int i = 0;  i < field_count;  i++)
+    {
+      _Jv_Field *field = &fields[i];
+      if (! (field->getModifiers() & java::lang::reflect::Modifier::PUBLIC))
+	continue;
+      ++count;
+
+      if (result != NULL)
+	{
+	  java::lang::reflect::Field *rfield
+	    = new java::lang::reflect::Field ();
+	  rfield->offset = (char *) field - (char *) fields;
+	  rfield->declaringClass = this;
+	  rfield->name = _Jv_NewStringUtf8Const (field->name);
+	  (elements (result))[offset + i] = rfield;
+	}
+    }
+  jclass superclass = getSuperclass();
+  if (superclass != NULL)
+    {
+      int s_count = superclass->_getFields (result, offset);
+      count += s_count;
+      offset += s_count;
+    }
+  for (int i = 0; i < interface_count; ++i)
+    {
+      int f_count = interfaces[i]->_getFields (result, offset);
+      count += f_count;
+      offset += f_count;
+    }
+  return count;
+}
+
 JArray<java::lang::reflect::Field *> *
 java::lang::Class::getFields (void)
 {
-  JvFail ("java::lang::Class::getFields not implemented");
+  using namespace java::lang::reflect;
+
+  int count = _getFields (NULL, 0);
+
+  JArray<java::lang::reflect::Field *> *result
+    = ((JArray<java::lang::reflect::Field *> *)
+       JvNewObjectArray (count, &FieldClass, NULL));
+
+  _getFields (result, 0);
+
+  return result;
 }
 
 JArray<jclass> *
@@ -275,9 +444,30 @@ java::lang::Class::getInterfaces (void)
 }
 
 java::lang::reflect::Method *
-java::lang::Class::getMethod (jstring, JArray<jclass> *)
+java::lang::Class::getMethod (jstring name, JArray<jclass> *param_types)
 {
-  JvFail ("java::lang::Class::getMethod not implemented");
+  jstring partial_sig = getSignature (param_types);
+  jint p_len = partial_sig->length();
+  _Jv_Utf8Const *utf_name = _Jv_makeUtf8Const (name);
+  for (Class *klass = this; klass; klass = klass->getSuperclass())
+    {
+      int i = klass->isPrimitive () ? 0 : klass->method_count;
+      while (--i >= 0)
+	{
+	  // FIXME: access checks.
+	  if (_Jv_equalUtf8Consts (klass->methods[i].name, utf_name)
+	      && _Jv_equaln (klass->methods[i].signature, partial_sig, p_len))
+	    {
+	      // Found it.
+	      using namespace java::lang::reflect;
+	      Method *rmethod = new Method ();
+	      rmethod->offset = (char*) (&klass->methods[i]) - (char*) methods;
+	      rmethod->declaringClass = klass;
+	      return rmethod;
+	    }
+	}
+    }
+  JvThrow (new java::lang::NoSuchMethodException);
 }
 
 JArray<java::lang::reflect::Method *> *
@@ -494,6 +684,8 @@ java::lang::Class::initializeClass (void)
 // Some class-related convenience functions.
 //
 
+// Find a method declared in the class.  If it is not declared locally
+// (or if it is inherited), return NULL.
 _Jv_Method *
 _Jv_GetMethodLocal (jclass klass, _Jv_Utf8Const *name,
 		    _Jv_Utf8Const *signature)
@@ -504,6 +696,21 @@ _Jv_GetMethodLocal (jclass klass, _Jv_Utf8Const *name,
 	  && _Jv_equalUtf8Consts (signature, klass->methods[i].signature))
 	return &klass->methods[i];
     }
+  return NULL;
+}
+
+_Jv_Method *
+_Jv_LookupDeclaredMethod (jclass klass, _Jv_Utf8Const *name,
+			_Jv_Utf8Const *signature)
+{
+  for (; klass; klass = klass->getSuperclass())
+    {
+      _Jv_Method *meth = _Jv_GetMethodLocal (klass, name, signature);
+
+      if (meth)
+	return meth;
+    }
+
   return NULL;
 }
 
@@ -553,16 +760,6 @@ void *
 _Jv_LookupInterfaceMethod (jclass klass, _Jv_Utf8Const *name,
 			   _Jv_Utf8Const *signature)
 {
-  // FIXME: can't do this until we have a working class loader.
-  // This probably isn't the right thing to do anyway, since we can't
-  // call a method of a class until the class is linked.  But this
-  // captures the general idea.
-  // klass->getClassLoader()->resolveClass(klass);
-  // 
-  // KKT: This is unnessecary, exactly for the reason you present: 
-  // _Jv_LookupInterfaceMethod is only called on object instances, and
-  // such have already been initialized (which includes resolving).
-
   void *ncode = _Jv_FindMethodInCache (klass, name, signature);
   if (ncode != 0)
     return ncode;

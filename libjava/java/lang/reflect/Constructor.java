@@ -28,12 +28,12 @@ public final class Constructor extends AccessibleObject implements Member
       if (! (obj instanceof Constructor))
 	return false;
       Constructor c = (Constructor) obj;
-      return decl_class == c.decl_class && index == c.index;
+      return declaringClass == c.declaringClass && offset == c.offset;
     }
 
   public Class getDeclaringClass ()
     {
-      return decl_class;
+      return declaringClass;
     }
 
   public Class[] getExceptionTypes ()
@@ -41,40 +41,39 @@ public final class Constructor extends AccessibleObject implements Member
       return (Class[]) exception_types.clone();
     }
 
-  public int getModifiers ()
-    {
-      return modifiers;
-    }
+  public native int getModifiers ();
 
   public String getName ()
-    {
-      return decl_class.getName();
-    }
+  {
+    return declaringClass.getName();
+  }
 
   public Class[] getParameterTypes ()
     {
+      if (parameter_types == null)
+	getType ();
       return (Class[]) parameter_types.clone();
     }
 
   public int hashCode ()
     {
       // FIXME.
-      return getName().hashCode();
+      return getName().hashCode() + declaringClass.getName().hashCode();
     }
 
-  // FIXME: this must be native.  Should share implementation with
-  // Method.invoke.
-  public Object newInstance (Object[] args)
+  // Update cached values from method descriptor in class.
+  private native void getType ();
+
+  public native Object newInstance (Object[] args)
     throws InstantiationException, IllegalAccessException,
-           IllegalArgumentException, InvocationTargetException
-    {
-      return null;
-    }
+           IllegalArgumentException, InvocationTargetException;
 
   public String toString ()
     {
+      if (parameter_types == null)
+	getType ();
       StringBuffer b = new StringBuffer ();
-      b.append(Modifier.toString(modifiers));
+      b.append(Modifier.toString(getModifiers()));
       b.append(" ");
       b.append(getName());
       b.append("(");
@@ -88,19 +87,19 @@ public final class Constructor extends AccessibleObject implements Member
       return b.toString();
     }
 
-  // Can't create these.  FIXME.
+  // Can't create these.
   private Constructor ()
     {
     }
 
   // Declaring class.
-  private Class decl_class;
+  private Class declaringClass;
+
   // Exception types.
   private Class[] exception_types;
-  // Modifiers.
-  private int modifiers;
   // Parameter types.
   private Class[] parameter_types;
-  // Index of this method in declaring class' method table.
-  private int index;
+
+  // Offset in bytes from the start of declaringClass's methods array.
+  private int offset;
 }

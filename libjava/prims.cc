@@ -16,8 +16,6 @@ details.  */
 #include <string.h>
 #include <signal.h>
 
-#pragma implementation "gcj/array.h"
-
 #include <gcj/cni.h>
 #include <jvm.h>
 #include <java-signal.h>
@@ -133,6 +131,26 @@ _Jv_equal (Utf8Const* a, jstring str, jint hash)
   register unsigned char* ptr = (unsigned char*) a->data;
   register unsigned char* limit = ptr + a->length;
   for (;; i++, sptr++)
+    {
+      int ch = UTF8_GET (ptr, limit);
+      if (i == len)
+	return ch < 0;
+      if (ch != *sptr)
+	return false;
+    }
+  return true;
+}
+
+/* Like _Jv_equal, but stop after N characters.  */
+jboolean
+_Jv_equaln (Utf8Const *a, jstring str, jint n)
+{
+  jint len = str->length();
+  jint i = 0;
+  jchar *sptr = _Jv_GetStringChars (str);
+  register unsigned char* ptr = (unsigned char*) a->data;
+  register unsigned char* limit = ptr + a->length;
+  for (; n-- > 0; i++, sptr++)
     {
       int ch = UTF8_GET (ptr, limit);
       if (i == len)

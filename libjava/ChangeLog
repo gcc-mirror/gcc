@@ -1,3 +1,82 @@
+2000-01-04  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/reflect/natConstructor.cc (newInstance): Pass
+	declaring class as return_type argument to
+	_Jv_CallNonvirtualMethodA.
+	* java/lang/reflect/natMethod.cc (_Jv_CallNonvirtualMethodA): In
+	constructor case, create object and use it as `this' argument.
+	* java/lang/Class.h (_getConstructors): Declare.
+	(_getFields): Declare.
+	* java/lang/Class.java (getConstructors): Wrote.
+	(_getConstructors): New native method.
+	(getDeclaredConstructors): Wrote.
+	(_getFields): Declare new native method.
+	* java/lang/natClass.cc (_Jv_LookupInterfaceMethod): Removed
+	incorrect comment.
+	(getMethod): Work correctly when class is primitive.
+	(getDeclaredMethods): Likewise.  Compute offset using `method',
+	not `mptr'.
+	(getDeclaredMethod): Likewise.
+	(getConstructor): Wrote.
+	(ConstructorClass): New define.
+	(getDeclaredConstructor): Wrote.
+	(_getConstructors): New method.
+	(_getFields): New method.
+	(getFields): Wrote.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (AM_CXXFLAGS): Added -D_GNU_SOURCE.
+
+	* prims.cc: Remove `#pragma implementation'.
+	* gcj/array.h: Remove `#pragma interface'.
+
+	* prims.cc (_Jv_equaln): New function.
+	* java/lang/Class.java (getSignature): Declare.
+	* resolve.cc (_Jv_LookupDeclaredMethod): Moved to natClass.cc.
+	* java/lang/natClass.cc (_Jv_LookupDeclaredMethod): Moved from
+	resolve.cc.
+	(getSignature): New method.
+	(getDeclaredMethod): Wrote.
+	(getMethod): Wrote.
+	Include StringBuffer.h.
+	* java/lang/Class.h (Class): Added _Jv_FromReflectedConstructor
+	as a friend.  Unconditionally declare _Jv_LookupDeclaredMethod as
+	a friend.
+	(getSignature): Declare.
+	* include/jvm.h (_Jv_GetTypesFromSignature): Declare.
+	(_Jv_equaln): Declare.
+	(_Jv_CallNonvirtualMethodA): Declare.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_source_files): Added natConstructor.cc.
+	(java/lang/reflect/Constructor.h): New target.
+	* java/lang/reflect/natConstructor.cc: New file.
+	* java/lang/reflect/Constructor.java (newInstance): Now native.
+	(declaringClass): Renamed from decl_class.
+	(offset): Renamed from index.
+	(getType): New native method.
+	(getModifiers): Now native.
+	(getParameterTypes): Call getType if required.
+	(hashCode): Include hash code from declaring class.
+	(modifiers): Removed.
+	(toString): Call getType if required.
+	* gcj/method.h (_Jv_FromReflectedConstructor): New function.
+	* java/lang/reflect/natMethod.cc (hack_call): New method.
+	Removed `#if 0' around FFI code.
+	Include <gnu/gcj/RawData.h>.
+	(invoke): Use _Jv_CallNonvirtualMethodA.  Throw
+	IllegalArgumentException when argument object and class disagree.
+	(_Jv_GetTypesFromSignature): New function.
+	(getType): Use it.
+	(ObjectClass): New define.
+	(_Jv_CallNonvirtualMethodA): New function.
+	* java/lang/reflect/Method.java (hack_trampoline): New method.
+	(hack_call): New native method.
+
+1999-12-21  Per Bothner  <per@bothner.com>
+
+	* java/lang/natClass.cc (getDeclaredMethods): Correctly compute
+	offset in new Method.
+
 1999-12-22  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/natObject.cc (notify): Throw message with

@@ -53,6 +53,7 @@ _Jv_Utf8Const *_Jv_makeUtf8Const (char *s, int len);
 _Jv_Utf8Const *_Jv_makeUtf8Const (jstring string);
 extern jboolean _Jv_equalUtf8Consts (_Jv_Utf8Const *, _Jv_Utf8Const *);
 extern jboolean _Jv_equal (_Jv_Utf8Const *, jstring, jint);
+extern jboolean _Jv_equaln (_Jv_Utf8Const *, jstring, jint);
 
 #define StringClass _CL_Q34java4lang6String
 extern java::lang::Class StringClass;
@@ -161,6 +162,13 @@ extern jclass _Jv_FindClass (_Jv_Utf8Const *name,
 			     java::lang::ClassLoader *loader);
 extern jclass _Jv_FindClassFromSignature (char *,
 					  java::lang::ClassLoader *loader);
+extern void _Jv_GetTypesFromSignature (jmethodID method,
+				       jclass declaringClass,
+				       JArray<jclass> **arg_types_out,
+				       jclass *return_type_out);
+extern jobject _Jv_CallNonvirtualMethodA (jobject, jclass,
+					  jmethodID, jboolean,
+					  JArray<jclass> *, jobjectArray);
 
 extern jobject _Jv_NewMultiArray (jclass, jint ndims, jint* dims)
   __attribute__((__malloc__));

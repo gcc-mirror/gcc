@@ -10,6 +10,8 @@ details.  */
  
 package java.lang.reflect;
 
+import gnu.gcj.RawData;
+
 /**
  * @author Tom Tromey <tromey@cygnus.com>
  * @date December 12, 1998
@@ -17,7 +19,7 @@ package java.lang.reflect;
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Incomplete: invoke() needs to be finished.
+ * Status:  Complete, but not correct: access checks aren't done.
  */
 
 public final class Method extends AccessibleObject implements Member
@@ -65,6 +67,30 @@ public final class Method extends AccessibleObject implements Member
       // FIXME.
       return name.hashCode() + declaringClass.getName().hashCode();
     }
+
+  // This is used to perform an actual method call via ffi.
+  private static final native void hack_call (RawData cif,
+					      RawData method,
+					      RawData ret_value,
+					      RawData values);
+
+  // Perform an ffi call while capturing exceptions.  We have to do
+  // this because we can't catch Java exceptions from C++.
+  static final Throwable hack_trampoline (RawData cif,
+					  RawData method,
+					  RawData ret_value,
+					  RawData values)
+  {
+    try
+      {
+	hack_call (cif, method, ret_value, values);
+      }
+    catch (Throwable x)
+      {
+	return x;
+      }
+    return null;
+  }
 
   public native Object invoke (Object obj, Object[] args)
     throws IllegalAccessException, IllegalArgumentException,

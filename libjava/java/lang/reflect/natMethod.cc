@@ -1,6 +1,6 @@
 // natMethod.cc - Native code for Method class.
 
-/* Copyright (C) 1998, 1999  Cygnus Solutions
+/* Copyright (C) 1998, 1999, 2000  Cygnus Solutions
 
    This file is part of libgcj.
 
@@ -8,14 +8,13 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
-// This is about 90% done.  Search for FIXME to see what remains.
-
 #include <config.h>
 
 #include <gcj/cni.h>
 #include <jvm.h>
 
 #include <java/lang/reflect/Method.h>
+#include <java/lang/reflect/Constructor.h>
 #include <java/lang/reflect/InvocationTargetException.h>
 #include <java/lang/reflect/Modifier.h>
 
@@ -32,13 +31,14 @@ details.  */
 #include <java/lang/NullPointerException.h>
 #include <java/lang/Class.h>
 #include <gcj/method.h>
+#include <gnu/gcj/RawData.h>
 
+#define ObjectClass _CL_Q34java4lang6Object
+extern java::lang::Class ObjectClass;
 #define ClassClass _CL_Q34java4lang5Class
 extern java::lang::Class ClassClass;
 
 #include <stdlib.h>
-
-#if 0
 
 #include <ffi.h>
 
@@ -145,146 +145,45 @@ get_ffi_type (jclass klass)
   return r;
 }
 
-// FIXME: the body of this method should be a separate function so
-// that Constructor can use it too.
-jobject
-java::lang::reflect::Method::invoke (jobject obj,
-				     jobjectArray args)
+// Actually perform an FFI call.
+void
+java::lang::reflect::Method::hack_call (gnu::gcj::RawData *rcif,
+					gnu::gcj::RawData *rmethod,
+					gnu::gcj::RawData *rret_value,
+					gnu::gcj::RawData *rvalues)
 {
-  // FIXME: we need to be a friend of Class here.
-  _Jv_Method *meth = decl_class->methods[index];
-  if (! java::lang::reflect::Modifier::isStatic(modifiers))
+  ffi_cif *cif = (ffi_cif *) rcif;
+  void (*method) (...) = (void (*) (...)) rmethod;
+  void *ret_value = (void *) rret_value;
+  void **values = (void **) rvalues;
+
+  ffi_call (cif, method, ret_value, values);
+}
+
+jobject
+java::lang::reflect::Method::invoke (jobject obj, jobjectArray args)
+{
+  if (parameter_types == NULL)
+    getType ();
+
+  jmethodID meth = _Jv_FromReflectedMethod (this);
+  if (! java::lang::reflect::Modifier::isStatic(meth->accflags))
     {
       jclass k = obj ? obj->getClass() : NULL;
-      if (! obj || ! decl_class->isAssignableFrom(k))
+      if (! obj)
 	JvThrow (new java::lang::NullPointerException);
+      if (! declaringClass->isAssignableFrom(k))
+	JvThrow (new java::lang::IllegalArgumentException);
       // FIXME: access checks.
-      meth = _Jv_LookupMethod (k, meth->name, meth->signature);
+
+      // Find the possibly overloaded method based on the runtime type
+      // of the object.
+      meth = _Jv_LookupDeclaredMethod (k, meth->name, meth->signature);
     }
 
-  // FIXME: access checks.
-
-  if (parameter_types->length != args->length)
-    JvThrow (new java::lang::IllegalArgumentException);
-
-  ffi_type *rtype = get_ffi_type (return_type);
-  ffi_type **argtypes = (ffi_type **) alloca (parameter_types->length
-					      * sizeof (ffi_type *));
-
-  jobject *paramelts = elements (parameter_types);
-  jobject *argelts = elements (args);
-
-  int size = 0;
-  for (int i = 0; i < parameter_types->length; ++i)
-    {
-      jclass k = argelts[i] ? argelts[i]->getClass() : NULL;
-      argtypes[i] = get_ffi_type (k);
-      if (paramelts[i]->isPrimitive())
-	{
-	  if (! argelts[i]
-	      || ! k->isPrimitive ()
-	      || ! can_widen (k, paramelts[i]))
-	    JvThrow (new java::lang::IllegalArgumentException);
-	  size += paramelts[i]->size();
-	}
-      else
-	{
-	  if (argelts[i] && ! paramelts[i]->isAssignableFrom (k))
-	    JvThrow (new java::lang::IllegalArgumentException);
-	  size += sizeof (jobject);
-	}
-    }
-
-  ffi_cif cif;
-  if (ffi_prep_cif (&cif, FFI_DEFAULT_ABI, parameter_types->length,
-		    rtype, argtypes) != FFI_OK)
-    {
-      // FIXME: throw some kind of VirtualMachineError here.
-    }
-
-  char *values = (char *) alloca (size);
-  char *p = values;
-
-#define COPY(Where, What, Type) \
-  do { \
-    Type val = (What); \
-    memcpy ((Where), &val, sizeof (Type)); \
-    Where += sizeof (Type); \
-  } while (0)
-
-  for (int i = 0; i < parameter_types->length; ++i)
-    {
-      java::lang::Number *num = (java::lang::Number *) paramelts[i];
-      if (paramelts[i] == JvPrimClass (byte))
-	COPY (p, num->byteValue(), jbyte);
-      else if (paramelts[i] == JvPrimClass (short))
-	COPY (p, num->shortValue(), jshort);
-      else if (paramelts[i] == JvPrimClass (int))
-	COPY (p, num->intValue(), jint);
-      else if (paramelts[i] == JvPrimClass (long))
-	COPY (p, num->longValue(), jlong);
-      else if (paramelts[i] == JvPrimClass (float))
-	COPY (p, num->floatValue(), jfloat);
-      else if (paramelts[i] == JvPrimClass (double))
-	COPY (p, num->doubleValue(), jdouble);
-      else if (paramelts[i] == JvPrimClass (boolean))
-	COPY (p, ((java::lang::Boolean *) argelts[i])->booleanValue(), jboolean);
-      else if (paramelts[i] == JvPrimClass (char))
-	COPY (p, ((java::lang::Character *) argelts[i])->charValue(), jchar);
-      else
-	{
-	  JvAssert (! paramelts[i]->isPrimitive());
-	  COPY (p, argelts[i], jobject);
-	}
-    }
-
-  // FIXME: exception handling.
-  java::lang::Throwable *ex;
-  jdouble ret_value;		// Largest possible value.  Hopefully
-				// it is aligned!
-  ex = TRAMP_CALL (ffi_call (&cif, meth->ncode, &ret_value, (void *) values));
-
-  if (ex)
-    JvThrow (new InvocationTargetException (ex));
-
-  jobject r;
-#define VAL(Wrapper, Type)  (new Wrapper (* (Type *) &ret_value))
-  if (return_type == JvPrimClass (byte))
-    r = VAL (java::lang::Byte, jbyte);
-  else if (return_type == JvPrimClass (short))
-    r = VAL (java::lang::Short, jshort);
-  else if (return_type == JvPrimClass (int))
-    r = VAL (java::lang::Integer, jint);
-  else if (return_type == JvPrimClass (long))
-    r = VAL (java::lang::Long, jlong);
-  else if (return_type == JvPrimClass (float))
-    r = VAL (java::lang::Float, jfloat);
-  else if (return_type == JvPrimClass (double))
-    r = VAL (java::lang::Double, jdouble);
-  else if (return_type == JvPrimClass (boolean))
-    r = VAL (java::lang::Boolean, jboolean);
-  else if (return_type == JvPrimClass (char))
-    r = VAL (java::lang::Character, jchar);
-  else if (return_type == JvPrimClass (void))
-    r = NULL;
-  else
-    {
-      JvAssert (! return_type->isPrimitive());
-      r = VAL (java::lang::Object, jobject);
-    }
-
-  return r;
+  return _Jv_CallNonvirtualMethodA (obj, return_type, meth, false,
+				    parameter_types, args);
 }
-
-#else /* 0 */
-
-jobject
-java::lang::reflect::Method::invoke (jobject, jobjectArray)
-{
-  JvFail ("not enabled yet");
-}
-
-#endif /* 0 */
 
 jint
 java::lang::reflect::Method::getModifiers ()
@@ -305,7 +204,20 @@ java::lang::reflect::Method::getName ()
 void
 java::lang::reflect::Method::getType ()
 {
-  _Jv_Utf8Const* sig = _Jv_FromReflectedMethod (this)->signature;
+  _Jv_GetTypesFromSignature (_Jv_FromReflectedMethod (this),
+			     declaringClass,
+			     &parameter_types,
+			     &return_type);
+}
+
+void
+_Jv_GetTypesFromSignature (jmethodID method,
+			   jclass declaringClass,
+			   JArray<jclass> **arg_types_out,
+			   jclass *return_type_out)
+{
+
+  _Jv_Utf8Const* sig = method->signature;
   java::lang::ClassLoader *loader = declaringClass->getClassLoader();
   char *ptr = sig->data;
   int numArgs = 0;
@@ -355,7 +267,7 @@ java::lang::reflect::Method::getType ()
 	default:
 	  return;
 	case ')':
-	  argPtr = &return_type;
+	  argPtr = return_type_out;
 	  continue;
 	case '(':
 	  continue;
@@ -381,7 +293,187 @@ java::lang::reflect::Method::getType ()
       // FIXME: 2'nd argument should be "current loader"
       while (--num_arrays >= 0)
 	type = _Jv_FindArrayClass (type, 0);
-      *argPtr++ = type;
+      // ARGPTR can be NULL if we are processing the return value of a
+      // call from Constructor.
+      if (argPtr)
+	*argPtr++ = type;
     }
-  parameter_types = args;
+  *arg_types_out = args;
+}
+
+// This is a very rough analog of the JNI CallNonvirtual<type>MethodA
+// functions.  It handles both Methods and Constructors, and it can
+// handle any return type.  In the Constructor case, the `obj'
+// argument is unused and should be NULL; also, the `return_type' is
+// the class that the constructor will construct.
+jobject
+_Jv_CallNonvirtualMethodA (jobject obj,
+			   jclass return_type,
+			   jmethodID meth,
+			   jboolean is_constructor,
+			   JArray<jclass> *parameter_types,
+			   jobjectArray args)
+{
+  JvAssert (! is_constructor || ! obj);
+  JvAssert (! is_constructor || ! return_type);
+
+  // FIXME: access checks.
+
+  if (parameter_types->length != args->length)
+    JvThrow (new java::lang::IllegalArgumentException);
+
+  // See whether call needs an object as the first argument.  A
+  // constructor does need a `this' argument, but it is one we create.
+  jboolean needs_this = false;
+  if (is_constructor
+      || ! java::lang::reflect::Modifier::isStatic(meth->accflags))
+    needs_this = true;
+
+  int param_count = parameter_types->length;
+  if (needs_this)
+    ++param_count;
+
+  ffi_type *rtype = get_ffi_type (return_type);
+  ffi_type **argtypes = (ffi_type **) alloca (param_count
+					      * sizeof (ffi_type *));
+
+  jclass *paramelts = elements (parameter_types);
+  jobject *argelts = elements (args);
+
+  // FIXME: at some point the compiler is going to add extra arguments
+  // to some functions.  In particular we are going to do this for
+  // handling access checks in reflection.  We must add these hidden
+  // arguments here.
+
+  // Special case for the `this' argument of a constructor.  Note that
+  // the JDK 1.2 docs specify that the new object must be allocated
+  // before argument conversions are done.
+  if (is_constructor)
+    {
+      // FIXME: must special-case String, arrays, maybe others here.
+      obj = JvAllocObject (return_type);
+    }
+
+  int i = 0;
+  int size = 0;
+  if (needs_this)
+    {
+      // The `NULL' type is `Object'.
+      argtypes[i++] = get_ffi_type (NULL);
+      size += sizeof (jobject);
+    }
+
+  for (; i < param_count; ++i)
+    {
+      jclass k = argelts[i] ? argelts[i]->getClass() : NULL;
+      argtypes[i] = get_ffi_type (k);
+      if (paramelts[i]->isPrimitive())
+	{
+	  if (! argelts[i]
+	      || ! k->isPrimitive ()
+	      || ! can_widen (k, paramelts[i]))
+	    JvThrow (new java::lang::IllegalArgumentException);
+	  size += paramelts[i]->size();
+	}
+      else
+	{
+	  if (argelts[i] && ! paramelts[i]->isAssignableFrom (k))
+	    JvThrow (new java::lang::IllegalArgumentException);
+	  size += sizeof (jobject);
+	}
+    }
+
+  ffi_cif cif;
+  if (ffi_prep_cif (&cif, FFI_DEFAULT_ABI, param_count,
+		    rtype, argtypes) != FFI_OK)
+    {
+      // FIXME: throw some kind of VirtualMachineError here.
+    }
+
+  char *values = (char *) alloca (size);
+  char *p = values;
+
+#define COPY(Where, What, Type) \
+  do { \
+    Type val = (What); \
+    memcpy ((Where), &val, sizeof (Type)); \
+    Where += sizeof (Type); \
+  } while (0)
+
+  i = 0;
+  if (needs_this)
+    {
+      COPY (p, obj, jobject);
+      ++i;
+    }
+
+  for (; i < param_count; ++i)
+    {
+      java::lang::Number *num = (java::lang::Number *) paramelts[i];
+      if (paramelts[i] == JvPrimClass (byte))
+	COPY (p, num->byteValue(), jbyte);
+      else if (paramelts[i] == JvPrimClass (short))
+	COPY (p, num->shortValue(), jshort);
+      else if (paramelts[i] == JvPrimClass (int))
+	COPY (p, num->intValue(), jint);
+      else if (paramelts[i] == JvPrimClass (long))
+	COPY (p, num->longValue(), jlong);
+      else if (paramelts[i] == JvPrimClass (float))
+	COPY (p, num->floatValue(), jfloat);
+      else if (paramelts[i] == JvPrimClass (double))
+	COPY (p, num->doubleValue(), jdouble);
+      else if (paramelts[i] == JvPrimClass (boolean))
+	COPY (p, ((java::lang::Boolean *) argelts[i])->booleanValue(),
+	      jboolean);
+      else if (paramelts[i] == JvPrimClass (char))
+	COPY (p, ((java::lang::Character *) argelts[i])->charValue(), jchar);
+      else
+	{
+	  JvAssert (! paramelts[i]->isPrimitive());
+	  COPY (p, argelts[i], jobject);
+	}
+    }
+
+  // FIXME: initialize class here.
+
+  // Largest possible value.  Hopefully it is aligned!
+  jdouble ret_value;
+  java::lang::Throwable *ex;
+  using namespace java::lang;
+  using namespace java::lang::reflect;
+  ex = Method::hack_trampoline ((gnu::gcj::RawData *) &cif,
+				(gnu::gcj::RawData *) meth->ncode,
+				(gnu::gcj::RawData *) &ret_value,
+				(gnu::gcj::RawData *) values);
+
+  if (ex)
+    JvThrow (new InvocationTargetException (ex));
+
+  jobject r;
+#define VAL(Wrapper, Type)  (new Wrapper (* (Type *) &ret_value))
+  if (return_type == JvPrimClass (byte))
+    r = VAL (java::lang::Byte, jbyte);
+  else if (return_type == JvPrimClass (short))
+    r = VAL (java::lang::Short, jshort);
+  else if (return_type == JvPrimClass (int))
+    r = VAL (java::lang::Integer, jint);
+  else if (return_type == JvPrimClass (long))
+    r = VAL (java::lang::Long, jlong);
+  else if (return_type == JvPrimClass (float))
+    r = VAL (java::lang::Float, jfloat);
+  else if (return_type == JvPrimClass (double))
+    r = VAL (java::lang::Double, jdouble);
+  else if (return_type == JvPrimClass (boolean))
+    r = VAL (java::lang::Boolean, jboolean);
+  else if (return_type == JvPrimClass (char))
+    r = VAL (java::lang::Character, jchar);
+  else if (return_type == JvPrimClass (void))
+    r = NULL;
+  else
+    {
+      JvAssert (return_type == NULL || ! return_type->isPrimitive());
+      r = * (Object **) &ret_value;
+    }
+
+  return r;
 }

@@ -1,6 +1,6 @@
 // Class.h - Header file for java.lang.Class.  -*- c++ -*-
 
-/* Copyright (C) 1998, 1999  Cygnus Solutions
+/* Copyright (C) 1998, 1999, 2000  Cygnus Solutions
 
    This file is part of libgcj.
 
@@ -94,12 +94,16 @@ public:
 
   java::lang::reflect::Field *getField (jstring);
 private:
+  jint _getFields (JArray<java::lang::reflect::Field *> *result, jint offset);
+  JArray<java::lang::reflect::Constructor *> *_getConstructors (jboolean);
   java::lang::reflect::Field *getField (jstring, jint);
 public:
   JArray<java::lang::reflect::Field *> *getFields (void);
 
   JArray<jclass> *getInterfaces (void);
 
+  void getSignature (java::lang::StringBuffer *buffer);
+  static jstring getSignature (JArray<jclass> *);
   java::lang::reflect::Method *getMethod (jstring, JArray<jclass> *);
   JArray<java::lang::reflect::Method *> *getMethods (void);
 
@@ -156,6 +160,8 @@ private:
   // Friend functions implemented in natClass.cc.
   friend _Jv_Method *_Jv_GetMethodLocal (jclass klass, _Jv_Utf8Const *name,
 					 _Jv_Utf8Const *signature);
+  friend _Jv_Method* _Jv_LookupDeclaredMethod (jclass, _Jv_Utf8Const *, 
+					       _Jv_Utf8Const*);
   friend void _Jv_InitClass (jclass klass);
 
   friend jfieldID JvGetFirstInstanceField (jclass);
@@ -166,6 +172,7 @@ private:
   friend jobject _Jv_JNI_ToReflectedField (_Jv_JNIEnv *, jclass, jfieldID);
   friend jfieldID _Jv_FromReflectedField (java::lang::reflect::Field *);
   friend jmethodID _Jv_FromReflectedMethod (java::lang::reflect::Method *);
+  friend jmethodID _Jv_FromReflectedConstructor (java::lang::reflect::Constructor *);
 
   friend class _Jv_PrimClass;
 
@@ -190,8 +197,6 @@ private:
 #ifdef INTERPRETER
   friend jboolean _Jv_IsInterpretedClass (jclass);
   friend void _Jv_InitField (jobject, jclass, _Jv_Field*);
-  friend _Jv_Method* _Jv_LookupDeclaredMethod (jclass, _Jv_Utf8Const *, 
-					       _Jv_Utf8Const*);
   friend int _Jv_DetermineVTableIndex (jclass, _Jv_Utf8Const *, 
 				       _Jv_Utf8Const*);
   friend void _Jv_InitField (jobject, jclass, int);
