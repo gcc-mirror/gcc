@@ -1,5 +1,5 @@
 /* InstantiationException.java -- exception thrown when trying to instantiate
-   interfaces and abstract classes using the newInstance method of class Class.
+   interfaces and abstract classes using Class.newInstance.
    Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
