@@ -675,6 +675,18 @@ case "${target}" in
 	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
     fi
     ;;
+  xscale-*-elf)
+    noconfigdirs="$noconfigdirs target-libgloss target-libffi"
+    if [ x${is_cross_compiler} != xno ] ; then
+	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
+    fi
+    ;;
+  xscale-*-coff)
+    noconfigdirs="$noconfigdirs target-libgloss target-libffi"
+    if [ x${is_cross_compiler} != xno ] ; then
+	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
+    fi
+    ;;
   thumb-*-pe)
     noconfigdirs="$noconfigdirs target-libgloss target-libffi"
     ;;
