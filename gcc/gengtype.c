@@ -23,7 +23,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <ctype.h>
 #include "gengtype.h"
 
+/* Nonzero iff an error has occurred.  */
 static int hit_error = 0;
+
+/* Report an error at POS, printing MSG.  */
+
 void
 error_at_line VPARAMS ((struct fileloc *pos, const char *msg, ...))
 {
@@ -39,15 +43,21 @@ error_at_line VPARAMS ((struct fileloc *pos, const char *msg, ...))
   VA_CLOSE (ap);
 }
 
+/* The one and only TYPE_STRING.  */
+
 struct type string_type = {
   TYPE_STRING, NULL, NULL, GC_USED
   UNION_INIT_ZERO
 }; 
 
+/* Lists of various things.  */
+
 static pair_p typedefs;
 static type_p structures;
 static type_p param_structs;
 static pair_p variables;
+
+/* Define S as a typedef to T at POS.  */
 
 void
 do_typedef (s, t, pos)
@@ -76,6 +86,8 @@ do_typedef (s, t, pos)
   typedefs = p;
 }
 
+/* Return the type previously defined for S.  Use POS to report errors.   */
+
 type_p
 resolve_typedef (s, pos)
      const char *s;
@@ -88,6 +100,9 @@ resolve_typedef (s, pos)
   error_at_line (pos, "unidentified type `%s'", s);
   return create_scalar_type ("char", 4);
 }
+
+/* Create a new structure with tag NAME (or a union iff ISUNION is nonzero),
+   at POS with fields FIELDS and options O.  */
 
 void
 new_structure (name, isunion, pos, fields, o)
@@ -163,6 +178,10 @@ new_structure (name, isunion, pos, fields, o)
     s->u.s.lang_struct->u.s.bitmap |= bitmap;
 }
 
+/* Return the previously-defined structure with tag NAME (or a union
+   iff ISUNION is nonzero), or a new empty structure or union if none
+   was defined previously.  */
+
 type_p
 find_structure (name, isunion)
      const char *name;
@@ -184,6 +203,8 @@ find_structure (name, isunion)
   return s;
 }
 
+/* Return a scalar type with name NAME.  */
+
 type_p
 create_scalar_type (name, name_len)
      const char *name;
@@ -194,6 +215,8 @@ create_scalar_type (name, name_len)
   r->u.sc = xmemdup (name, name_len, name_len + 1);
   return r;
 }
+
+/* Return a pointer to T.  */
 
 type_p
 create_pointer (t)
@@ -209,6 +232,8 @@ create_pointer (t)
   return t->pointer_to;
 }
 
+/* Return an array of length LEN.  */
+
 type_p
 create_array (t, len)
      type_p t;
@@ -222,6 +247,15 @@ create_array (t, len)
   v->u.a.len = len;
   return v;
 }
+
+/* Perform any special processing on a type T, about to become the type
+   of a field.  Return the appropriate type for the field.
+   At present:
+   - Converts pointer-to-char, with no length parameter, to TYPE_STRING;
+   - Similarly for arrays of pointer-to-char;
+   - Converts structures for which a parameter is provided to
+   TYPE_PARAM_STRUCT.
+*/   
 
 type_p
 adjust_field_type (t, opt)
@@ -269,6 +303,9 @@ adjust_field_type (t, opt)
   return t;
 }
 
+/* Add a variable named S of type T with options O defined at POS,
+   to `variables'.  */
+
 void
 note_variable (s, t, o, pos)
      const char *s;
@@ -285,6 +322,10 @@ note_variable (s, t, o, pos)
   n->next = variables;
   variables = n;
 }
+
+/* Create a union for YYSTYPE, as yacc would do it, given a fieldlist FIELDS
+   and information about the correspondance between token types and fields
+   in TYPEINFO.  POS is used for error messages.  */
 
 void
 note_yacc_type (o, fields, typeinfo, pos)
@@ -350,6 +391,8 @@ static void process_gc_options PARAMS ((options_p, enum gc_used_enum, int *));
 static void set_gc_used_type PARAMS ((type_p, enum gc_used_enum));
 static void set_gc_used PARAMS ((pair_p));
 
+/* Handle OPT for set_gc_used_type.  */
+
 static void
 process_gc_options (opt, level, maybe_undef)
      options_p opt;
@@ -363,6 +406,8 @@ process_gc_options (opt, level, maybe_undef)
     else if (strcmp (o->name, "maybe_undef") == 0)
       *maybe_undef = 1;
 }
+
+/* Set the gc_used field of T to LEVEL, and handle the types it references.  */
 
 static void
 set_gc_used_type (t, level)
@@ -420,6 +465,8 @@ set_gc_used_type (t, level)
     }
 }
 
+/* Set the gc_used fileds of all the types pointed to by VARIABLES.  */
+
 static void
 set_gc_used (variables)
      pair_p variables;
@@ -442,7 +489,13 @@ struct filemap {
   FILE *output;
 };
 
+/* The list of output files.  */
+
 static filemap_p files;
+
+/* The output header file that is included into pretty much every
+   source file.  */
+
 FILE * header_file;
 
 enum {
@@ -458,6 +511,8 @@ FILE *base_files[NUM_BASE_FILES];
 
 static FILE * create_file PARAMS ((const char *));
 static const char * get_file_basename PARAMS ((const char *));
+
+/* Create and return a FILE* for a new header file to be called NAME.  */
 
 static FILE *
 create_file (name)
@@ -500,6 +555,8 @@ create_file (name)
   return f;
 }
 
+/* Open the global header file and the language-specific header files.  */
+
 static void
 open_base_files (void)
 {
@@ -525,6 +582,8 @@ open_base_files (void)
 
 #define startswith(len, c, s)  \
   ((size_t)(len) >= strlen (s) && memcmp (c, s, strlen (s)) == 0)
+
+/* Determine the pathname to F relative to $(srcdir).  */
 
 static const char *
 get_file_basename (f)
@@ -553,6 +612,14 @@ get_file_basename (f)
 
   return basename;
 }
+
+/* Return a bitmap which has bit `1 << BASE_FILE_<lang>' set iff
+   INPUT_FILE is used by <lang>.  
+
+   This function should be written to assume that a file _is_ used
+   if the situation is unclear.  If it wrongly assumes a file _is_ used,
+   a linker error will result.  If it wrongly assumes a file _is not_ used,
+   some GC roots may be missed, which is a much harder-to-debug problem.  */
 
 unsigned
 get_base_file_bitmap (input_file)
@@ -583,6 +650,10 @@ get_base_file_bitmap (input_file)
     return (1 << NUM_BASE_FILES) - 1;
   abort ();
 }
+
+/* An output file, suitable for definitions, that can see declarations
+   made in INPUT_FILE and is linked into every language that uses
+   INPUT_FILE.  */
 
 FILE *
 get_output_file_with_visibility (input_file)
@@ -681,6 +752,10 @@ get_output_file_with_visibility (input_file)
   return fm->output;
 }
 
+/* The name of an output file, suitable for definitions, that can see
+   declarations made in INPUT_FILE and is linked into every language
+   that uses INPUT_FILE.  */
+
 const char *
 get_output_file_name (input_file)
      const char *input_file;
@@ -693,6 +768,9 @@ get_output_file_name (input_file)
   (void) get_output_file_with_visibility (input_file);
   return get_output_file_name (input_file);
 }
+
+/* Close all output files and copy them to their final destinations,
+   but don't unnecessarily change modification times.  */
 
 static void
 close_output_files PARAMS ((void))
@@ -786,6 +864,10 @@ static void write_gc_roots PARAMS ((pair_p));
 
 static int gc_counter;
 
+/* Print PARAM to OF processing escapes.  VAL references the current object,
+   PREV_VAL the object containing the current object, ONAME is the name
+   of the option and LINE is used to print error messages.  */
+
 static void
 output_escaped_param (of, param, val, prev_val, oname, line)
      FILE *of;
@@ -810,6 +892,13 @@ output_escaped_param (of, param, val, prev_val, oname, line)
       error_at_line (line, "`%s' option contains bad escape %c%c",
 		     oname, '%', *p);
 }
+
+/* Write out code to OF which marks the fields of S.  VAL references
+   the current object, PREV_VAL the object containing the current
+   object, OPTS is a list of options to apply, INDENT is the current
+   indentation level, LINE is used to print error messages, BITMAP
+   indicates which languages to print the structure for, and PARAM is
+   the current parameter (from an enclosing param_is option).  */
 
 static void
 write_gc_structure_fields (of, s, val, prev_val, opts, indent, line, bitmap,
@@ -1195,6 +1284,9 @@ write_gc_structure_fields (of, s, val, prev_val, opts, indent, line, bitmap,
     }
 }
 
+/* Write out a marker routine for S.  PARAM is the parameter from an
+   enclosing PARAM_IS option.  */
+
 static void
 write_gc_marker_routine_for_structure (s, param)
      type_p s;
@@ -1228,7 +1320,8 @@ write_gc_marker_routine_for_structure (s, param)
   
   fputs ("}\n", f);
 }
-     
+
+/* Write out marker routines for STRUCTURES and PARAM_STRUCTS.  */
 
 static void
 write_gc_types (structures, param_structs)
@@ -1333,6 +1426,8 @@ write_gc_types (structures, param_structs)
       }
 }
 
+/* Mangle FN and print it to F.  */
+
 static void
 put_mangled_filename (f, fn)
      FILE *f;
@@ -1345,6 +1440,10 @@ put_mangled_filename (f, fn)
     else
       fputc ('_', f);
 }
+
+/* Finish off the currently-created root tables in FLP.  PFX, TNAME,
+   LASTNAME, and NAME are all strings to insert in various places in
+   the resulting code.  */
 
 static void
 finish_root_table (flp, pfx, lastname, tname, name)
@@ -1417,6 +1516,11 @@ finish_root_table (flp, pfx, lastname, tname, name)
 	}
   }
 }
+
+/* Write out to F the table entry and any marker routines needed to
+   mark NAME as TYPE.  The original variable is V, at LINE.
+   HAS_LENGTH is nonzero iff V was a variable-length array.  IF_MARKED
+   is nonzero iff we are building the root table for hash table caches.  */
 
 static void
 write_gc_root (f, v, type, name, has_length, line, if_marked)
@@ -1572,6 +1676,8 @@ write_gc_root (f, v, type, name, has_length, line, if_marked)
 		     name);
     }
 }
+
+/* Output a table describing the locations and types of VARIABLES.  */
 
 static void
 write_gc_roots (variables)

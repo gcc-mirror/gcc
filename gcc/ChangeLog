@@ -1,3 +1,7 @@
+2002-06-06  Geoffrey Keating  <geoffk@redhat.com>
+
+	* gengtype.c: Add comments before all the routines.
+
 2002-06-07  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config.gcc (sh5*-*-netbsd*): Remove sh/t-netbsd-sh5-32
