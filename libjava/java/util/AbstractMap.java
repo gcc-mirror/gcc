@@ -466,6 +466,11 @@ public abstract class AbstractMap implements Map
           return AbstractMap.this.size();
         }
 
+        public boolean contains(Object value)
+        {
+          return containsValue(value);
+        }
+
         public Iterator iterator()
         {
           return new Iterator()
@@ -527,8 +532,9 @@ public abstract class AbstractMap implements Map
    * @author Jon Zeppieri
    * @author Eric Blake <ebb9@email.byu.edu>
    */
+  // XXX - FIXME Use fully qualified implements as gcj 3.1 workaround.
   static class BasicMapEntry implements Map.Entry
-  {	// XXX - FIXME Use fully qualified implements as gcj 3.1 workaround.
+  {
     /**
      * The key. Package visible for direct manipulation.
      */
@@ -553,16 +559,14 @@ public abstract class AbstractMap implements Map
     /**
      * Compares the specified object with this entry. Returns true only if
      * the object is a mapping of identical key and value. In other words,
-     * this must be:
-     * 
-<pre>(o instanceof Map.Entry) &&
-(getKey() == null ? ((HashMap) o).getKey() == null
-                  : getKey().equals(((HashMap) o).getKey())) &&
-(getValue() == null ? ((HashMap) o).getValue() == null
-                    : getValue().equals(((HashMap) o).getValue()))</pre>
+     * this must be:<br>
+     * <pre>(o instanceof Map.Entry)
+     *       && (getKey() == null ? ((HashMap) o).getKey() == null
+     *           : getKey().equals(((HashMap) o).getKey()))
+     *       && (getValue() == null ? ((HashMap) o).getValue() == null
+     *           : getValue().equals(((HashMap) o).getValue()))</pre>
      *
      * @param o the object to compare
-     *
      * @return <code>true</code> if it is equal
      */
     public final boolean equals(Object o)
@@ -605,10 +609,9 @@ public abstract class AbstractMap implements Map
     /**
      * Returns the hash code of the entry.  This is defined as the exclusive-or
      * of the hashcodes of the key and value (using 0 for null). In other
-     * words, this must be:
-     * 
-<pre>(getKey() == null ? 0 : getKey().hashCode())
-^ (getValue() == null ? 0 : getValue().hashCode())</pre>
+     * words, this must be:<br>
+     * <pre>(getKey() == null ? 0 : getKey().hashCode())
+     *       ^ (getValue() == null ? 0 : getValue().hashCode())</pre>
      *
      * @return the hash code
      */

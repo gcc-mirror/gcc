@@ -70,7 +70,7 @@ public interface ObjectStreamConstants
   final static byte TC_PROXYCLASSDESC = (byte)125;  //0x7D
 
   final static byte TC_BASE = TC_NULL;
-  final static byte TC_MAX = TC_EXCEPTION;
+  final static byte TC_MAX = TC_PROXYCLASSDESC;
 
   final static int baseWireHandle = 0x7e0000;
 
