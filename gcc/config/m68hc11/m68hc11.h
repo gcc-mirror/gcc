@@ -65,7 +65,8 @@ Note:
 "%{mshort:-D__HAVE_SHORT_INT__ -D__INT__=16 -D__INT_MAX__=32767}\
  %{!mshort:-D__INT__=32 -D__INT_MAX__=2147483647}\
  %{m68hc12:-Dmc6812 -DMC6812 -Dmc68hc12}\
- %{!m68hc12:-Dmc6811 -DMC6811 -Dmc68hc11}"
+ %{!m68hc12:-Dmc6811 -DMC6811 -Dmc68hc11}\
+ %{fshort-double:-D__HAVE_SHORT_DOUBLE__}"
 #endif
 
 #undef STARTFILE_SPEC
