@@ -641,7 +641,7 @@ static rtx equiv_constant	PROTO((rtx));
 static void record_jump_equiv	PROTO((rtx, int));
 static void record_jump_cond	PROTO((enum rtx_code, enum machine_mode,
 				       rtx, rtx, int));
-static void cse_insn		PROTO((rtx, int));
+static void cse_insn		PROTO((rtx, rtx));
 static int note_mem_written	PROTO((rtx));
 static void invalidate_from_clobbers PROTO((rtx));
 static rtx cse_process_notes	PROTO((rtx, rtx));
@@ -6144,9 +6144,9 @@ struct set
 };
 
 static void
-cse_insn (insn, in_libcall_block)
+cse_insn (insn, libcall_insn)
      rtx insn;
-     int in_libcall_block;
+     rtx libcall_insn;
 {
   register rtx x = PATTERN (insn);
   register int i;
@@ -6839,7 +6839,7 @@ cse_insn (insn, in_libcall_block)
          the current contents will be tested and will always be valid.  */
       while (1)
         {
-          rtx trial;
+          rtx trial, old_src;
 
           /* Skip invalid entries.  */
           while (elt && GET_CODE (elt->exp) != REG
@@ -6905,6 +6905,10 @@ cse_insn (insn, in_libcall_block)
 	     insert the substitution here and we will delete and re-emit
 	     the insn later.  */
 
+	  /* Keep track of the original SET_SRC so that we can fix notes
+	     on libcall instructions.  */
+ 	  old_src = SET_SRC (sets[i].rtl);
+
 	  if (n_sets == 1 && dest == pc_rtx
 	      && (trial == pc_rtx
 		  || (GET_CODE (trial) == LABEL_REF
@@ -6929,6 +6933,13 @@ cse_insn (insn, in_libcall_block)
 	  /* Look for a substitution that makes a valid insn.  */
           else if (validate_change (insn, &SET_SRC (sets[i].rtl), trial, 0))
 	    {
+	      /* If we just made a substitution inside a libcall, then we
+		 need to make the same substitution in any notes attached
+		 to the RETVAL insn.  */
+	      if (libcall_insn)
+		replace_rtx (REG_NOTES (libcall_insn), old_src, 
+			     canon_reg (SET_SRC (sets[i].rtl), insn));
+
 	      /* The result of apply_change_group can be ignored; see
 		 canon_reg.  */
 
@@ -7422,7 +7433,7 @@ cse_insn (insn, in_libcall_block)
 	       since we might delete the libcall.  Things should have been set
 	       up so we won't want to reuse such a value, but we play it safe
 	       here.  */
-	    || in_libcall_block
+	    || libcall_insn
 	    /* If we didn't put a REG_EQUAL value or a source into the hash
 	       table, there is no point is recording DEST.  */
 	    || sets[i].src_elt == 0
@@ -8509,7 +8520,7 @@ cse_basic_block (from, to, next_branch, around_loop)
 {
   register rtx insn;
   int to_usage = 0;
-  int in_libcall_block = 0;
+  rtx libcall_insn = NULL_RTX;
   int num_insns = 0;
 
   /* Each of these arrays is undefined before max_reg, so only allocate
@@ -8599,6 +8610,8 @@ cse_basic_block (from, to, next_branch, around_loop)
 
       if (GET_RTX_CLASS (code) == 'i')
 	{
+	  rtx p;
+
 	  /* Process notes first so we have all notes in canonical forms when
 	     looking for duplicate operations.  */
 
@@ -8611,12 +8624,12 @@ cse_basic_block (from, to, next_branch, around_loop)
 	     its destination is the result of the block and hence should be
 	     recorded.  */
 
-	  if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
-	    in_libcall_block = 1;
+	  if (p = find_reg_note (insn, REG_LIBCALL, NULL_RTX))
+	    libcall_insn = XEXP (p, 0);
 	  else if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
-	    in_libcall_block = 0;
+	    libcall_insn = NULL_RTX;
 
-	  cse_insn (insn, in_libcall_block);
+	  cse_insn (insn, libcall_insn);
 	}
 
       /* If INSN is now an unconditional jump, skip to the end of our
