@@ -7747,7 +7747,8 @@ epilogue_done:
 	continue;
 
       start_sequence ();
-      seq = gen_sibcall_epilogue ();
+      emit_insn (gen_sibcall_epilogue ());
+      seq = get_insns ();
       end_sequence ();
 
       /* Retain a map of the epilogue insns.  Used in life analysis to

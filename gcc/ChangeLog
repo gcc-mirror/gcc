@@ -1,3 +1,8 @@
+2002-06-17  Richard Earnshaw  (rearnsha@arm.com)
+
+	* function.c (epilogue_done): Correctly build a sequence of insns for
+	a sibcall epilogue.
+
 2002-06-17  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/fr30/fr30.h (CUMULATIVE_ARGS): Replace typedef with
