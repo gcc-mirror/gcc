@@ -2584,18 +2584,18 @@ to such programs, to wrap around
 (change from a larger value to a smaller one)
 as of the Year 10000.
 
-@xref{FDate Intrinsic (subroutine)} for an equivalent routine.
+@xref{FDate Intrinsic (subroutine)}, for an equivalent routine.
 ")
 
 DEFDOC (IBCLR, "Clear a bit.", "\
 Returns the value of @var{@1@} with bit @var{@2@} cleared (set to
 zero).
-@xref{BTest Intrinsic} for information on bit positions.
+@xref{BTest Intrinsic}, for information on bit positions.
 ")
 
 DEFDOC (IBSET, "Set a bit.", "\
 Returns the value of @var{@1@} with bit @var{@2@} set (to one).
-@xref{BTest Intrinsic} for information on bit positions.
+@xref{BTest Intrinsic}, for information on bit positions.
 ")
 
 DEFDOC (IBITS, "Extract a bit subfield of a variable.", "\
