@@ -1,3 +1,20 @@
+2004-01-01  Jan Hubicka  <jh@suse.cz>
+
+	* expmed.c (store_bit_field, extract_bit_field): Use new named patterns
+	* expr.c (store_constructor): Use vec_init pattern.
+	* genopinit.c (optabs): Initailize vec_set/vec_extract/vec_init.
+	* optabs.h (optab_index): ADD OTI_vec_set/OTI_vec_extract/OTI_vec_init
+	(vec_set_optab, vec_extract_optab, vec_init_optab): New.
+	* i386.md (vec_setv2df, vec_extractv2df, vec_setv4sf, vec_extractv4sf):
+	New patterns.
+	(sse2_unpc?pd): Fix pattern.
+	(sse2_movlpd): Kill.
+	(sse2_movsd): Deal with movlpd too.
+	* i386.c (ix86_expand_builtin): Use sse2_movsd instead of sse2_movlpd.
+	(ix86_expand_vector_init): New.
+	* emmintrin.h (__mm_set_pd, __mm_set_ps): Use vector extensions.
+	* md.texi (vec_set, vec_extract): Document
+
 2003-12-31  Jan Hubicka  <jh@suse.cz>
 
 	PR opt/13473

@@ -217,6 +217,7 @@ extern int x86_field_alignment (tree, int);
 extern rtx ix86_tls_get_addr (void);
 extern bool ix86_must_pass_in_stack (enum machine_mode mode, tree);
 
+extern void ix86_expand_vector_init (rtx, rtx);
 /* In winnt.c  */
 extern int i386_pe_dllexport_name_p (const char *);
 extern int i386_pe_dllimport_name_p (const char *);

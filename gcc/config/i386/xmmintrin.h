@@ -42,7 +42,6 @@ typedef int __m128 __attribute__ ((__mode__(__V4SF__)));
 
 /* Internal data types for implementing the intrinsics.  */
 typedef int __v4sf __attribute__ ((__mode__(__V4SF__)));
-typedef int __v4si __attribute__ ((__mode__(__V4SI__)));
 
 /* Create a selector for use with the SHUFPS instruction.  */
 #define _MM_SHUFFLE(fp3,fp2,fp1,fp0) \
@@ -890,19 +889,9 @@ _mm_set_ps1 (float __F)
 
 /* Create the vector [Z Y X W].  */
 static __inline __m128
-_mm_set_ps (float __Z, float __Y, float __X, float __W)
+_mm_set_ps (const float __Z, const float __Y, const float __X, const float __W)
 {
-  union {
-    float __a[4];
-    __m128 __v;
-  } __u;
-
-  __u.__a[0] = __W;
-  __u.__a[1] = __X;
-  __u.__a[2] = __Y;
-  __u.__a[3] = __Z;
-
-  return __u.__v;
+  return (__v4sf) {__W, __X, __Y, __Z};
 }
 
 /* Create the vector [W X Y Z].  */

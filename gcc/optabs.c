@@ -5271,6 +5271,9 @@ init_optabs (void)
   cstore_optab = init_optab (UNKNOWN);
   push_optab = init_optab (UNKNOWN);
 
+  vec_extract_optab = init_optab (UNKNOWN);
+  vec_set_optab = init_optab (UNKNOWN);
+  vec_init_optab = init_optab (UNKNOWN);
   /* Conversions.  */
   sext_optab = init_convert_optab (SIGN_EXTEND);
   zext_optab = init_convert_optab (ZERO_EXTEND);
