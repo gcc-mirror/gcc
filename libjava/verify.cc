@@ -1,6 +1,6 @@
 // verify.cc - verify bytecode
 
-/* Copyright (C) 2001, 2002, 2003, 2004  Free Software Foundation
+/* Copyright (C) 2001, 2002, 2003, 2004, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -749,6 +749,20 @@ private:
 	}
 
       return klass->compatible(k.klass, verifier);
+    }
+
+    bool equals (const type &other, _Jv_BytecodeVerifier *vfy)
+    {
+      // Only works for reference types.
+      if (key != reference_type
+	  || key != uninitialized_reference_type
+	  || other.key != reference_type
+	  || other.key != uninitialized_reference_type)
+	return false;
+      // Only for single-valued types.
+      if (klass->ref_next || other.klass->ref_next)
+	return false;
+      return klass->equals (other.klass, vfy);
     }
 
     bool isvoid () const
@@ -1963,7 +1977,9 @@ private:
   }
 
   // Return field's type, compute class' type if requested.
-  type check_field_constant (int index, type *class_type = NULL)
+  // If PUTFIELD is true, use the special 'putfield' semantics.
+  type check_field_constant (int index, type *class_type = NULL,
+			     bool putfield = false)
   {
     _Jv_Utf8Const *name, *field_type;
     type ct = handle_field_or_method (index,
@@ -1971,9 +1987,25 @@ private:
 				      &name, &field_type);
     if (class_type)
       *class_type = ct;
+    type result;
     if (field_type->first() == '[' || field_type->first() == 'L')
-      return type (field_type, this);
-    return get_type_val_for_signature (field_type->first());
+      result = type (field_type, this);
+    else
+      result = get_type_val_for_signature (field_type->first());
+
+    // We have an obscure special case here: we can use `putfield' on
+    // a field declared in this class, even if `this' has not yet been
+    // initialized.
+    if (putfield
+	&& ! current_state->this_type.isinitialized ()
+	&& current_state->this_type.pc == type::SELF
+	&& current_state->this_type.equals (ct, this)
+	// We don't look at the signature, figuring that if it is
+	// wrong we will fail during linking.  FIXME?
+	&& _Jv_Linker::has_field_p (current_class, name))
+      class_type->set_uninitialized (type::SELF, this);
+
+    return result;
   }
 
   type check_method_constant (int index, bool is_interface,
@@ -2783,15 +2815,8 @@ private:
 	  case op_putfield:
 	    {
 	      type klass;
-	      type field = check_field_constant (get_ushort (), &klass);
+	      type field = check_field_constant (get_ushort (), &klass, true);
 	      pop_type (field);
-
-	      // We have an obscure special case here: we can use
-	      // `putfield' on a field declared in this class, even if
-	      // `this' has not yet been initialized.
-	      if (! current_state->this_type.isinitialized ()
-		  && current_state->this_type.pc == type::SELF)
-		klass.set_uninitialized (type::SELF, this);
 	      pop_type (klass);
 	    }
 	    break;
