@@ -14,9 +14,6 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  
 
-# Please email any bugs, comments, and/or additions to this file to:
-# bug-gcc@prep.ai.mit.edu
-
 # This file used to be gcc.c-torture/special/special.exp, which
 # was written by Rob Savoye. (rob@cygnus.com)
 # All the other tests driven by that file have since been moved elsewhere.

@@ -1,3 +1,22 @@
+2001-02-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* config/default.exp, gcc.dg/cpp/cpp.exp, gcc.dg/dg.exp,
+	gcc.dg/noncompile/noncompile.exp, gcc.dg/format/format.exp,
+	g++.dg/dg.exp, g++.old-deja/old-deja.exp,
+	g77.f-torture/execute/execute.exp,
+	g77.f-torture/noncompile/noncompile.exp,
+	gcc.c-torture/execute/execute.exp,
+	gcc.c-torture/execute/memcheck/memcheck.exp,
+	gcc.misc-tests/acker1.exp, gcc.misc-tests/dg-test.exp,
+	gcc.misc-tests/dhry.exp, gcc.misc-tests/gcov.exp,
+	gcc.misc-tests/linkage.exp, gcc.misc-tests/matrix1.exp,
+	gcc.misc-tests/mg.exp, gcc.misc-tests/msgs.exp,
+	gcc.misc-tests/sieve.exp, gcc.misc-tests/sort2.exp,
+	lib/g++-dg.exp, lib/g++.exp, lib/g77.exp, lib/gcc-dg.exp,
+	lib/gcc.exp, lib/mike-g++.exp, lib/mike-gcc.exp,
+	lib/old-dejagnu.exp, lib/scanasm.exp, objc/execute/execute.exp:
+	Remove bug reporting instructions with ancient email addresses.
+
 2001-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20010202-1.c: New test.
