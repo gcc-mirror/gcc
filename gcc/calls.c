@@ -2581,6 +2581,7 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
   rtx fun;
   int inc;
   int count;
+  struct args_size alignment_pad;
   rtx argblock = 0;
   CUMULATIVE_ARGS args_so_far;
   struct arg { rtx value; enum machine_mode mode; rtx reg; int partial;
@@ -3643,7 +3644,6 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
   highest_outgoing_arg_in_use = initial_highest_arg_in_use;
   stack_usage_map = initial_stack_usage_map;
 #endif
-  struct args_size alignment_pad;
 
   return value;
 }

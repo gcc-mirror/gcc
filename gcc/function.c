@@ -5008,14 +5008,16 @@ pad_to_arg_alignment (offset_ptr, boundary, alignment_pad)
             alignment_pad->var = size_binop (MINUS_EXPR, offset_ptr->var, save_var);
 	}
       else
-	offset_ptr->constant =
+        {
+	  offset_ptr->constant =
 #ifdef ARGS_GROW_DOWNWARD
-	  FLOOR_ROUND (offset_ptr->constant, boundary_in_bytes);
+	    FLOOR_ROUND (offset_ptr->constant, boundary_in_bytes);
 #else
-	  CEIL_ROUND (offset_ptr->constant, boundary_in_bytes);
+	    CEIL_ROUND (offset_ptr->constant, boundary_in_bytes);
 #endif
-        if (boundary > PARM_BOUNDARY)
-          alignment_pad->constant = offset_ptr->constant - save_constant;
+          if (boundary > PARM_BOUNDARY)
+            alignment_pad->constant = offset_ptr->constant - save_constant;
+        }
     }
 }
 
