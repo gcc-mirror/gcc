@@ -3476,8 +3476,8 @@ final_prescan_insn (insn, opvec, noperands)
 	      || (GET_CODE (pattern) == SET
 		  && (GET_CODE (SET_SRC (pattern)) == CALL
 		      || get_attr_type (insn) == TYPE_SFUNC)))
-	    fprintf (asm_out_file, "\t.uses L%d\n",
-		     CODE_LABEL_NUMBER (XEXP (note, 0)));
+	    asm_fprintf (asm_out_file, "\t.uses %LL%d\n",
+			 CODE_LABEL_NUMBER (XEXP (note, 0)));
 	  else if (GET_CODE (pattern) == SET)
 	    ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
 				       CODE_LABEL_NUMBER (XEXP (note, 0)));
