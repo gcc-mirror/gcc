@@ -4301,8 +4301,8 @@ read_seek (size, offset, str)
 	  if (sys_read != difference)
 	    fatal ("Wanted to read %d bytes from %s, system returned %d",
 		   size,
-		   sys_read,
-		   obj_in_name);
+		   obj_in_name,
+		   sys_read);
 	}
       else if (fseek (obj_in_stream, offset, SEEK_SET) < 0)
 	pfatal_with_name (obj_in_name);
@@ -4315,8 +4315,8 @@ read_seek (size, offset, str)
   if (sys_read != size)
     fatal ("Wanted to read %d bytes from %s, system returned %d",
 	   size,
-	   sys_read,
-	   obj_in_name);
+	   obj_in_name,
+	   sys_read);
 
   file_offset = offset + size;
 
