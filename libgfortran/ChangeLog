@@ -1,3 +1,8 @@
+2004-05-13  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/15294
+	* io/intrinsic/string_intrinsics.c(adjustr): rework logic.
+
 2004-05-06  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 	    Steven Bosscher  <stevenb@suse.de>
 
