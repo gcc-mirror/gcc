@@ -230,6 +230,7 @@ extern const int x86_arch_always_fancy_math_387, x86_shift1;
 extern const int x86_sse_partial_reg_dependency, x86_sse_partial_regs;
 extern const int x86_sse_typeless_stores, x86_sse_load0_by_pxor;
 extern const int x86_use_ffreep, x86_sse_partial_regs_for_cvtsd2ss;
+extern const int x86_inter_unit_moves;
 extern int x86_prefetch_sse;
 
 #define TARGET_USE_LEAVE (x86_use_leave & CPUMASK)
@@ -282,6 +283,7 @@ extern int x86_prefetch_sse;
 #define TARGET_SHIFT1 (x86_shift1 & CPUMASK)
 #define TARGET_USE_FFREEP (x86_use_ffreep & CPUMASK)
 #define TARGET_REP_MOVL_OPTIMAL (x86_rep_movl_optimal & CPUMASK)
+#define TARGET_INTER_UNIT_MOVES (x86_inter_unit_moves & CPUMASK)
 
 #define TARGET_STACK_PROBE (target_flags & MASK_STACK_PROBE)
 
