@@ -2890,12 +2890,13 @@ release_jcf_state (struct jcf_partial *state)
 /* Get the access flags (modifiers) of a class (TYPE_DECL) to be used in the
    access_flags field of the class file header.  */
 
-static int get_classfile_modifiers (tree class)
+static int
+get_classfile_modifiers (tree class)
 {
   /* These are the flags which are valid class file modifiers. 
      See JVMS2 S4.1.  */
-  int valid_toplevel_class_flags = ACC_PUBLIC | ACC_FINAL | ACC_SUPER | 
-				   ACC_INTERFACE | ACC_ABSTRACT;
+  int valid_toplevel_class_flags = (ACC_PUBLIC | ACC_FINAL | ACC_SUPER | 
+				    ACC_INTERFACE | ACC_ABSTRACT);
   int flags = get_access_flags (class);
 
   /* ACC_SUPER should always be set, except for interfaces.  */

@@ -1,3 +1,7 @@
+2004-06-28  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* jcf-write.c (get_classfile_modifiers): Formatting fixes.
+
 2004-06-27  Ranjit Mathew  <rmathew@hotmail.com>
 
 	Formatting fixes.
