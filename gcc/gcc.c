@@ -205,6 +205,7 @@ or with constant text in a single argument.
 	concatenation of constant strings on the end, as in `%g.s'.
 	%g also has the same effect of %d.
  %u	like %g, but make the temporary file name unique.
+ %U	returns the last file name generated with %u.
  %d	marks the argument containing or following the %d as a
 	temporary file name, so that that file will be deleted if CC exits
 	successfully.  Unlike %g, this contributes no text to the argument.
@@ -2494,16 +2495,19 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	  case 'g':
 	  case 'u':
+	  case 'U':
 	    if (save_temps_flag)
 	      obstack_grow (&obstack, input_basename, basename_length);
 	    else
 	      {
 		obstack_grow (&obstack, temp_filename, temp_filename_length);
-		if (c == 'u')
+		if (c == 'u' || c == 'U')
 		  {
 		    static int unique;
 		    char buff[9];
-		    sprintf (buff, "%d", ++unique);
+		    if (c == 'u')
+		      unique++;
+		    sprintf (buff, "%d", unique);
 		    obstack_grow (&obstack, buff, strlen (buff));
 		  }
 		delete_this_arg = 1;
