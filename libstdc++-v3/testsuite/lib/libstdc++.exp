@@ -79,7 +79,7 @@ proc v3-copy-files {srcfiles} {
 proc libstdc++_init { testfile } {
     global env
     global srcdir blddir objdir tool_root_dir
-    global cxx cxxflags
+    global cxx
     global includes
     global gluefile wrap_flags
     global ld_library_path
@@ -137,17 +137,17 @@ proc libstdc++_init { testfile } {
     append ld_library_path ":${gccdir}"
     set compiler ${gccdir}/g++
     if { [is_remote host] == 0 && [which $compiler] != 0 } {
-      foreach i "[exec $compiler --print-multi-lib]" {
-        set mldir ""
-        regexp -- "\[a-z0-9=/\.-\]*;" $i mldir
-        set mldir [string trimright $mldir "\;@"]
-        if { "$mldir" == "." } {
-          continue
-        }
-        if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.so.*]] >= 1 } {
-          append ld_library_path ":${gccdir}/${mldir}"
-        }
-      }
+	foreach i "[exec [which $compiler] --print-multi-lib]" {
+	    set mldir ""
+	    regexp -- "\[a-z0-9=/\.-\]*;" $i mldir
+	    set mldir [string trimright $mldir "\;@"]
+	    if { "$mldir" == "." } {
+		continue
+	    }
+	    if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.so.*]] >= 1 } {
+		append ld_library_path ":${gccdir}/${mldir}"
+	    }
+	}
     }
     append ld_library_path ":${blddir}/src/.libs"
 
@@ -165,17 +165,14 @@ proc libstdc++_init { testfile } {
             return "untested"
         }
       set cxx [transform "g++"]
-      set cxxflags "-ggdb3"
       set includes "-I./"
     } else {
         # If we find a testsuite_flags file, we're testing in the build dir.
         if { [file exists $flags_file] } {
             set cxx [exec sh $flags_file --build-cxx]
-            set cxxflags [exec sh $flags_file --cxxflags]
             set includes [exec sh $flags_file --build-includes]
         } else {
             set cxx [transform "g++"]
-            set cxxflags "-ggdb3"
             set includes "-I${srcdir}"
         }
     }
@@ -249,7 +246,7 @@ proc v3_target_compile { source dest type options } {
     global cxx
     global cxxflags
     global includes
-    global blddir
+    global objdir
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
         lappend options "libs=${gluefile}"
@@ -266,37 +263,56 @@ proc v3_target_compile { source dest type options } {
 
     # Picks up the freshly-built testsuite library corresponding to the
     # multilib under test.
-    lappend options "ldflags=-L${blddir}/testsuite"
+    lappend options "ldflags=-L${objdir}"
     lappend options "libs=-lv3test"
 
     return [target_compile $source $dest $type $options]
 }
 
 
+# This is the equivalent of the Tcl 8.4 "lsearch -all -inline" except
+# slower
+proc lsearch_all_inline {listData pattern} {
+    set result [list]
+    foreach item $listData {
+        if {[string match $pattern $item]} {
+            lappend result $item
+        }
+    }
+    return $result
+}
+
+# This is the equivalent of the Tcl 8.4 "lsearch -all -inline -not"
+# except slower
+proc lsearch_all_inline_not {listData pattern} {
+    set result [list]
+    foreach item $listData {
+        if {! [string match $pattern $item]} {
+            lappend result $item
+        }
+    }
+    return $result
+}
+
 # Called once, from libstdc++/normal.exp.
 proc v3-list-tests { filename } {
-    global srcdir
-    global blddir
+    global srcdir tests_to_ignore
 
-    set tests_file "${blddir}/testsuite/${filename}"
-    set sfiles ""
-
-    verbose -log "In v3-list-tests"
-    verbose -log "blddir = ${blddir}"
-    verbose -log "tests_file = $tests_file"
-
-    # If there is a testsuite_file, use it. 
-    if { [file exists $tests_file] } {
-        set f [open $tests_file]
-        while { ! [eof $f] } {
-            set t [gets $f]
-            if { [string length "$t"] != 0 } {
-                lappend sfiles  ${srcdir}/${t}
-            }
-        } 
-        close $f
+    set sfiles [lsort [ find $srcdir "*.cc"] ]
+    set sfiles [ lsearch_all_inline $sfiles "$srcdir/*/*.cc" ]
+    foreach pattern $tests_to_ignore {
+	set sfiles [ lsearch_all_inline_not $sfiles $pattern ]
+    }
+    if { $filename == "testsuite_files" } {
+	set sfiles [ lsearch_all_inline_not $sfiles *_xin* ]
+	set sfiles [ lsearch_all_inline_not $sfiles *performance* ]
+    } elseif { $filename == "testsuite_files_interactive" } {
+	set sfiles [ lsearch_all_inline $sfiles *_xin* ]
+    } elseif { $filename == "testsuite_files_performance" } {
+	set sfiles [ lsearch_all_inline $sfiles *performance* ]
     } else {
-        verbose "cannot open $tests_file"
+        verbose "cannot compute list of tests named $filename"
+	set sfiles [list]
     }
     return $sfiles
 }
