@@ -266,7 +266,7 @@ c4x_output_ascii (stream, ptr, len)
      int len;
 {
   char sbuf[C4X_ASCII_LIMIT + 1];
-  int s, first, onlys;
+  int s, l, special, first, onlys;
 
   if (len)
     {
@@ -274,17 +274,18 @@ c4x_output_ascii (stream, ptr, len)
       first = 1;
     }
 
-  for (s = 0; len > 0; --len, ++ptr)
+  for (s = l = 0; len > 0; --len, ++ptr)
     {
       onlys = 0;
 
       /* Escape " and \ with a \".  */
-      if (*ptr == '\"' || *ptr == '\\')
-	sbuf[s++] = '\\';
+      special = *ptr == '\"' || *ptr == '\\';
 
       /* If printable - add to buff.  */
-      if (*ptr >= 0x20 && *ptr < 0x7f)
+      if ((! TARGET_TI || ! special) && *ptr >= 0x20 && *ptr < 0x7f)
 	{
+	  if (special)
+	    sbuf[s++] = '\\';
 	  sbuf[s++] = *ptr;
 	  if (s < C4X_ASCII_LIMIT - 1)
 	    continue;
@@ -295,10 +296,21 @@ c4x_output_ascii (stream, ptr, len)
 	  if (first)
 	    first = 0;
 	  else
-	    fputc (',', stream);
+	    {
+	      fputc (',', stream);
+	      l++;
+	    }
 
 	  sbuf[s] = 0;
 	  fprintf (stream, "\"%s\"", sbuf);
+	  l += s + 2;
+	  if (TARGET_TI && l >= 80 && len > 1)
+	    {
+	      fprintf (stream, "\n\t.byte\t");
+	      first = 1;
+	      l = 0;
+	    }
+	
 	  s = 0;
 	}
       if (onlys)
@@ -307,9 +319,19 @@ c4x_output_ascii (stream, ptr, len)
       if (first)
 	first = 0;
       else
-	fputc (',', stream);
+	{
+	  fputc (',', stream);
+	  l++;
+	}
 
       fprintf (stream, "%d", *ptr);
+      l += 3;
+      if (TARGET_TI && l >= 80 && len > 1)
+	{
+	  fprintf (stream, "\n\t.byte\t");
+	  first = 1;
+	  l = 0;
+	}
     }
   if (s)
     {
@@ -761,7 +783,9 @@ c4x_function_prologue (file, size)
 	    {
 	      fprintf (file, "\tpush\t%s\n", reg_names[regno]);
 	      if (IS_EXT_REGNO (regno))	/* Save 32MSB of R0--R11.  */
-		fprintf (file, "\tpushf\t%s\n", float_reg_names[regno]);
+		fprintf (file, "\tpushf\t%s\n",
+			 TARGET_TI ? reg_names[regno]
+				   : float_reg_names[regno]);
 	    }
 	}
       /* We need to clear the repeat mode flag if the ISR is
@@ -840,7 +864,9 @@ c4x_function_prologue (file, size)
 		  /* R6 and R7 are saved as floating point.  */
 		  if (TARGET_PRESERVE_FLOAT)
 		    fprintf (file, "\tpush\t%s\n", reg_names[regno]);
-		  fprintf (file, "\tpushf\t%s\n", float_reg_names[regno]);
+		  fprintf (file, "\tpushf\t%s\n",
+			   TARGET_TI ? reg_names[regno]
+				     : float_reg_names[regno]);
 		}
 	      else if ((! dont_push_ar3) || (regno != AR3_REGNO))
 		{
@@ -894,7 +920,9 @@ c4x_function_epilogue (file, size)
 	  if (! c4x_isr_reg_used_p (regno))
 	    continue;
 	  if (IS_EXT_REGNO (regno))
-	    fprintf (file, "\tpopf\t%s\n", float_reg_names[regno]);
+	    fprintf (file, "\tpopf\t%s\n",
+		     TARGET_TI ? reg_names[regno]
+			       : float_reg_names[regno]);
 	  fprintf (file, "\tpop\t%s\n", reg_names[regno]);
 	}
       if (size)
@@ -991,7 +1019,9 @@ c4x_function_epilogue (file, size)
 	      /* R6 and R7 are saved as floating point.  */
 	      if ((regno == R6_REGNO) || (regno == R7_REGNO))
 		{
-		  fprintf (file, "\tpopf\t%s\n", float_reg_names[regno]);
+		  fprintf (file, "\tpopf\t%s\n",
+		           TARGET_TI ? reg_names[regno]
+			             : float_reg_names[regno]);
 		  if (TARGET_PRESERVE_FLOAT)
 		    {
 	              restore_count--;
@@ -1745,7 +1775,7 @@ c4x_print_operand (file, op, letter)
   switch (letter)
     {
     case 'A':			/* Direct address.  */
-      if (code == CONST_INT || code == SYMBOL_REF)
+      if (code == CONST_INT || code == SYMBOL_REF || code == CONST)
 	asm_fprintf (file, "@");
       break;
 
@@ -1779,7 +1809,7 @@ c4x_print_operand (file, op, letter)
 	  op1 = XEXP (XEXP (op, 0), 1);
           if (GET_CODE(op1) == CONST_INT || GET_CODE(op1) == SYMBOL_REF)
 	    {
-	      asm_fprintf (file, "\t%s\t", TARGET_C3X ? "ldp" : "ldpk");
+	      asm_fprintf (file, "\t%s\t@", TARGET_C3X ? "ldp" : "ldpk");
 	      output_address (XEXP (adj_offsettable_operand (op, 1), 0));
 	      asm_fprintf (file, "\n");
 	    }
@@ -1792,7 +1822,7 @@ c4x_print_operand (file, op, letter)
 	  && (GET_CODE (XEXP (op, 0)) == CONST
 	      || GET_CODE (XEXP (op, 0)) == SYMBOL_REF))
 	{
-	  asm_fprintf (file, "%s\t", TARGET_C3X ? "ldp" : "ldpk");
+	  asm_fprintf (file, "%s\t@", TARGET_C3X ? "ldp" : "ldpk");
           output_address (XEXP (op, 0));
 	  asm_fprintf (file, "\n\t");
 	}
@@ -1824,7 +1854,8 @@ c4x_print_operand (file, op, letter)
   switch (code)
     {
     case REG:
-      if (GET_MODE_CLASS (GET_MODE (op)) == MODE_FLOAT)
+      if (GET_MODE_CLASS (GET_MODE (op)) == MODE_FLOAT
+	  && ! TARGET_TI)
 	fprintf (file, "%s", float_reg_names[REGNO (op)]);
       else
 	fprintf (file, "%s", reg_names[REGNO (op)]);

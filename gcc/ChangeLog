@@ -1,4 +1,15 @@
-2000-01-27 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+2000-01-29 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+        * c4x.c (c4x_output_ascii): Restrict line length of output when TI
+	syntax is used.
+	(c4x_function_prologue): Use regnames intead of float_reg_names when
+	TI syntax is used.
+	(c4x_function_epilogue): Likewise.
+	(c4x_print_operand): Likewise.
+	* c4x.h (HOST_WIDE_INT_PRINT_HEX): Redefine.
+	* c4x.md (set_high): Disable for TARGET_TI.
+
+2000-01-29 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* c4x.h (PREFERRED_RELOAD_CLASS): Change to restrict the reloading
 	of framepointer + constant to ADDR_REGS class.
