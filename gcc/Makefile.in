@@ -46,7 +46,9 @@ ALLOCA_FINISH = true
 # BOOT_CFLAGS is the value of CFLAGS to pass
 # to the stage2 and stage3 compilations
 # XCFLAGS is used for most compilations but not when using the GCC just built.
+# TCFLAGS is used for compilations with the GCC just built.
 XCFLAGS =
+TCFLAGS =
 CFLAGS = -g
 BOOT_CFLAGS = -O $(CFLAGS)
 # These exists to be overridden by the x-* and t-* files, respectively.
@@ -127,7 +129,7 @@ GCC_FOR_TARGET = ./xgcc -B./
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
 # It omits XCFLAGS, and specifies -B./.
 # It also specifies -I./include to find, e.g., stddef.h.
-GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) -I./include
+GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) -I./include $(TCFLAGS)
 
 # Special flags for compiling enquire.
 # We disable optimization to make floating point more reliable.
@@ -246,7 +248,7 @@ LIBGCC2 = libgcc2.a
 # -g1 causes output of debug info only for file-scope entities.
 # we use this here because that should be enough, and also
 # so that -g1 will be tested.
-LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) $(TARGET_LIBGCC2_CFLAGS) -g1 -DIN_LIBGCC2
+LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) $(TARGET_LIBGCC2_CFLAGS) -g1 -DIN_LIBGCC2 -D__GCC_FLOAT_NOT_NEEDED
 
 # Additional options to use when compiling libgcc2.a.
 # Some targets override this to -Iinclude
@@ -664,7 +666,7 @@ rest.cross: $(LIBGCC) gfloat.h specs
 libgcc1-test: libgcc1-test.o native $(GCC_PARTS)
 	@echo "Testing libgcc1.  Ignore linker warning messages."
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) libgcc1-test.o -o libgcc1-test \
-	  -nostartfiles -nostdlib `$(GCC_FOR_TARGET) --print-libgcc-file-name`
+	  -nostartfiles `$(GCC_FOR_TARGET) --print-libgcc-file-name`
 libgcc1-test.o: libgcc1-test.c native xgcc
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) -c $(srcdir)/libgcc1-test.c
 
@@ -714,7 +716,9 @@ float.h-nat: enquire
 # ??? This isn't used anymore.  Should we create config/float-unkn.h
 # and make that the default float_format in configure?
 float.h-cross:
-	echo "#error float.h values not known for cross-compiler" > t-float.h-cross
+	echo "#ifndef	__GCC_FLOAT_NOT_NEEDED" > t-float.h-cross
+	echo "#error float.h values not known for cross-compiler" >> t-float.h-cross
+	echo "#endif" >> t-float.h-cross
 	mv t-float.h-cross float.h-cross
 
 # Used to compile enquire with standard cc, but have forgotten why.
