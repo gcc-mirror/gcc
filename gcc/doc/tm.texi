@@ -2402,6 +2402,13 @@ the selection of a base register in a mode dependent manner.  If
 @code{BASE_REG_CLASS}.
 @end defmac
 
+@defmac MODE_BASE_REG_REG_CLASS (@var{mode})
+A C expression whose value is the register class to which a valid
+base register must belong in order to be used in a base plus index
+register address.  You should define this macro if base plus index
+addresses have different requirements than other base register uses.
+@end defmac
+
 @defmac INDEX_REG_CLASS
 A macro whose definition is the name of the class to which a valid
 index register must belong.  An index register is one used in an
@@ -2453,6 +2460,15 @@ that expression may examine the mode of the memory reference in
 reference affects whether a register may be used as a base register.  If
 you define this macro, the compiler will use it instead of
 @code{REGNO_OK_FOR_BASE_P}.
+@end defmac
+
+@defmac REGNO_MODE_OK_FOR_REG_BASE_P (@var{num}, @var{mode})
+A C expression which is nonzero if register number @var{num} is suitable for
+use as a base register in base plus index operand addresses, accessing
+memory in mode @var{mode}.  It may be either a suitable hard register or a
+pseudo register that has been allocated such a hard register.  You should
+define this macro if base plus index addresses have different requirements
+than other base register uses.
 @end defmac
 
 @defmac REGNO_OK_FOR_INDEX_P (@var{num})
@@ -5001,6 +5017,15 @@ that expression may examine the mode of the memory reference in
 reference affects whether a register may be used as a base register.  If
 you define this macro, the compiler will use it instead of
 @code{REG_OK_FOR_BASE_P}.
+@end defmac
+
+@defmac REG_MODE_OK_FOR_REG_BASE_P (@var{x}, @var{mode})
+A C expression which is nonzero if @var{x} (assumed to be a @code{reg} RTX)
+is suitable for use as a base register in base plus index operand addresses,
+accessing memory in mode @var{mode}.  It may be either a suitable hard
+register or a pseudo register that has been allocated such a hard register. 
+You should define this macro if base plus index addresses have different
+requirements than other base register uses.
 @end defmac
 
 @defmac REG_OK_FOR_INDEX_P (@var{x})
