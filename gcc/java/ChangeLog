@@ -1,3 +1,9 @@
+2002-03-07  Jeff Sturm  <jsturm@one-point.com>
+
+	* java/Make-lang.in (JAVA_TARGET_INSTALL_NAME): Define.
+	(java.install-common): Link native driver to
+	JAVA_TARGET_INSTALL_NAME.
+
 2002-03-05  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* builtins.c(cos_builtin): method_return_type ATTRIBUTE_UNUSED
