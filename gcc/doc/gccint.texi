@@ -165,7 +165,7 @@ Additional tutorial information is linked to from
 * RTL::             The intermediate representation that most passes work on.
 * Machine Desc::    How to write machine description instruction patterns.
 * Target Macros::   How to write the machine description C macros and functions.
-* Config::          Writing the @file{xm-@var{machine}.h} file.
+* Host Config::     Writing the @file{xm-@var{machine}.h} file.
 * Fragments::       Writing the @file{t-@var{target}} and @file{x-@var{host}} files.
 * Collect2::        How @code{collect2} works; how it finds @code{ld}.
 * Header Dirs::     Understanding the standard header file directories.

@@ -7,26 +7,36 @@
 @chapter Makefile Fragments
 @cindex makefile fragment
 
-When you configure GCC using the @file{configure} script,
-it will construct the file @file{Makefile} from
-the template file @file{Makefile.in}.  When it does this, it will
-incorporate makefile fragment files from the @file{config} directory,
-named @file{t-@var{target}} and @file{x-@var{host}}.  If these files do
-not exist, it means nothing needs to be added for a given target or
-host.
+When you configure GCC using the @file{configure} script, it will
+construct the file @file{Makefile} from the template file
+@file{Makefile.in}.  When it does this, it can incorporate makefile
+fragments from the @file{config} directory.  These are used to set
+Makefile parameters that are not amenable to being calculated by
+autoconf.  The list of fragments to incorporate is set by
+@file{config.gcc}; @xref{System Config}.
+
+Fragments are named either @file{t-@var{target}} or @file{x-@var{host}},
+depending on whether they are relevant to configuring GCC to produce
+code for a particular target, or to configuring GCC to run on a
+particular host.  Here @var{target} and @var{host} are mnemonics
+which usually have some relationship to the canonical system name, but
+no formal connection.
+
+If these files do not exist, it means nothing needs to be added for a
+given target or host.  Most targets need a few @file{t-@var{target}}
+fragments, but needing @file{x-@var{host}} fragments is rare.
 
 @menu
-* Target Fragment:: Writing the @file{t-@var{target}} file.
-* Host Fragment::   Writing the @file{x-@var{host}} file.
+* Target Fragment:: Writing @file{t-@var{target}} files.
+* Host Fragment::   Writing @file{x-@var{host}} files.
 @end menu
 
 @node Target Fragment
-@section The Target Makefile Fragment
+@section Target Makefile Fragments
 @cindex target makefile fragment
 @cindex @file{t-@var{target}}
 
-The target makefile fragment, @file{t-@var{target}}, defines special
-target dependent variables and targets used in the @file{Makefile}:
+Target makefile fragments can set these Makefile variables.
 
 @table @code
 @findex LIBGCC2_CFLAGS
@@ -141,19 +151,40 @@ of options to be used for all builds.
 @end table
 
 @node Host Fragment
-@section The Host Makefile Fragment
+@section Host Makefile Fragments
 @cindex host makefile fragment
 @cindex @file{x-@var{host}}
 
-The host makefile fragment, @file{x-@var{host}}, defines special host
-dependent variables and targets used in the @file{Makefile}:
+The use of @file{x-@var{host}} fragments is discouraged.  You should do
+so only if there is no other mechanism to get the behavior desired.
+Host fragments should never forcibly override variables set by the
+configure script, as they may have been adjusted by the user.
+
+Variables provided for host fragments to set include:
 
 @table @code
-@findex CC
-@item CC
-The compiler to use when building the first stage.
 
-@findex INSTALL
-@item INSTALL
-The install program to use.
+@item X_CFLAGS
+@itemx X_CPPFLAGS
+These are extra flags to pass to the C compiler and preprocessor,
+respectively.  They are used both when building GCC, and when compiling
+things with the just-built GCC.
+
+@item XCFLAGS
+These are extra flags to use when building the compiler.  They are not
+used when compiling @file{libgcc.a}.  However, they @emph{are} used when
+recompiling the compiler with itself in later stages of a bootstrap.
+
+@item BOOT_LDFLAGS
+Flags to be passed to the linker when recompiling the compiler with
+itself in later stages of a bootstrap.  You might need to use this if,
+for instance, one of the front ends needs more text space than the
+linker provides by default.
+
+@item EXTRA_PROGRAMS
+A list of additional programs required to use the compiler on this host,
+which should be compiled with GCC and installed alongside the front
+ends.  If you set this variable, you must also provide rules to build
+the extra programs.
+
 @end table

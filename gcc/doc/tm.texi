@@ -1313,7 +1313,7 @@ need to define this macro when the format is IEEE@.
 
 @findex VAX_FLOAT_FORMAT
 @item VAX_FLOAT_FORMAT
-This code indicates the peculiar format used on the VAX.
+This code indicates the ``D float'' format used on the VAX@.
 
 @findex IBM_FLOAT_FORMAT
 @item IBM_FLOAT_FORMAT
@@ -1328,14 +1328,14 @@ This code indicates the format used on the TMS320C3x/C4x.
 This code indicates any other format.
 @end table
 
-The value of this macro is compared with @code{HOST_FLOAT_FORMAT}
-(@pxref{Config}) to determine whether the target machine has the same
-format as the host machine.  If any other formats are actually in use on
-supported machines, new codes should be defined for them.
+The value of this macro is compared with @code{HOST_FLOAT_FORMAT}, which
+is defined by the @command{configure} script, to determine whether the
+target machine has the same format as the host machine.  If any other
+formats are actually in use on supported machines, new codes should be
+defined for them.
 
 The ordering of the component words of floating point values stored in
-memory is controlled by @code{FLOAT_WORDS_BIG_ENDIAN} for the target
-machine and @code{HOST_FLOAT_WORDS_BIG_ENDIAN} for the host.
+memory is controlled by @code{FLOAT_WORDS_BIG_ENDIAN}.
 
 @end table
 
@@ -8599,5 +8599,26 @@ it might decide to use another register anyways.
 You may use @code{current_function_leaf_function} in the definition of the
 macro, functions that use @code{REG_N_SETS}, to determine if the hard
 register in question will not be clobbered.
+
+@findex TARGET_OBJECT_SUFFIX
+@item TARGET_OBJECT_SUFFIX
+Define this macro to be a C string representing the suffix for object
+files on your target machine.  If you do not define this macro, GCC will
+use @samp{.o} as the suffix for object files.
+
+@findex TARGET_EXECUTABLE_SUFFIX
+@item TARGET_EXECUTABLE_SUFFIX
+Define this macro to be a C string representing the suffix to be
+automatically added to executable files on your target machine.  If you
+do not define this macro, GCC will use the null string as the suffix for
+executable files.
+
+@findex COLLECT_EXPORT_LIST
+@item COLLECT_EXPORT_LIST
+If defined, @code{collect2} will scan the individual object files
+specified on its command line and create an export list for the linker.
+Define this macro for systems like AIX, where the linker discards
+object files that are not referenced from @code{main} and uses export
+lists.
 
 @end table

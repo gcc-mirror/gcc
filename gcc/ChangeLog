@@ -1,3 +1,12 @@
+2002-01-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* doc/fragments.texi, doc/hostconfig.texi: Update to reflect
+	current (lack of) need for host configuration by hand.
+
+	* doc/gccint.texi, doc/rtl.texi, doc/tm.texi: Adjust cross
+	references.  Documentation of some target macros moved from
+	hostconfig.texi to tm.texi.
+
 2002-01-23  Will Cohen  <wcohen@redhat.com>
 
 	* config/arm/arm.h (THUMB_FUNCTION_PROFILER): Define if not currently
