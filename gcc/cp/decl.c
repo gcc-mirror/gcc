@@ -8037,7 +8037,8 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
     {
       tree context = in_namespace ? in_namespace : current_namespace;
       decl = build_decl (VAR_DECL, declarator, complete_type (type));
-      if (context != global_namespace && namespace_bindings_p ())
+      if (context != global_namespace && namespace_bindings_p ()
+	  && current_lang_name != lang_name_c)
 	DECL_ASSEMBLER_NAME (decl) =  build_static_name (context,
 							 declarator);
     }

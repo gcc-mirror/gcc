@@ -1,3 +1,13 @@
+1998-07-17  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (primary): Use notype_unqualified_id instead of IDENTIFIER
+	in Koenig lookup support rules.
+	* semantics.c (finish_call_expr): Handle the new cases.
+
+	* typeck.c (build_x_function_call): Handle overloaded methods.
+
+	* decl.c (grokvardecl): Don't call build_static_name for extern "C".
+
 1998-07-16  Mark Mitchell  <mark@markmitchell.com>
 
 	* semantics.c (finish_object_call_expr): Revert previous change.

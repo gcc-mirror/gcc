@@ -2436,6 +2436,8 @@ build_x_function_call (function, params, decl)
       my_friendly_assert (TREE_CODE (function) == TREE_LIST, 999);
       my_friendly_assert (TREE_CHAIN (function) == NULL_TREE, 999);
       function = TREE_VALUE (function);
+      if (TREE_CODE (function) == OVERLOAD)
+	function = OVL_FUNCTION (function);
       my_friendly_assert (TREE_CODE (function) == FUNCTION_DECL, 999);
       function = DECL_NAME (function);
       return build_method_call (decl, function, params,

@@ -844,7 +844,12 @@ finish_call_expr (fn, args, koenig)
   tree result;
 
   if (koenig)
-    fn = do_identifier (fn, 0, args);
+    {
+      if (TREE_CODE (fn) == BIT_NOT_EXPR)
+	fn = build_x_unary_op (BIT_NOT_EXPR, TREE_OPERAND (fn, 0));
+      else if (TREE_CODE (fn) != TEMPLATE_ID_EXPR)
+	fn = do_identifier (fn, 0, args);
+    }
   result = build_x_function_call (fn, args, current_class_ref);
 
   if (TREE_CODE (result) == CALL_EXPR
