@@ -1193,7 +1193,7 @@ output_function_profiler (file, labelno)
      set it to zero.  */
 
   if (current_function_args_size != 0)
-    fprintf (file, "\tmov	g14,r3\n\tmov	0,g14");
+    fprintf (file, "\tmov	g14,r3\n\tmov	0,g14\n");
 
   /* Load location address into g0 and call mcount.  */
 
@@ -1202,7 +1202,7 @@ output_function_profiler (file, labelno)
   /* If this function uses the arg pointer, restore it.  */
 
   if (current_function_args_size != 0)
-    fprintf (file, "\tmov	r3,g14");
+    fprintf (file, "\tmov	r3,g14\n");
 
   /* Restore parameter registers.  */
 
