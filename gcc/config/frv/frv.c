@@ -3481,8 +3481,7 @@ gen_inlined_tls_plt (rtx addr)
     }
 
   retval = gen_reg_rtx (Pmode);
-  emit_insn (gen_tls_indirect_call (retval, addr, dest, gen_reg_rtx (Pmode),
-				    picreg));
+  emit_insn (gen_tls_indirect_call (retval, addr, dest, picreg));
   return retval;
 }
 

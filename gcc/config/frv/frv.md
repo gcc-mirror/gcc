@@ -8203,25 +8203,42 @@
   [(set_attr "length" "4")
    (set_attr "type" "load_or_call")])
 
-;; Reads GR8 and GR9.
-;; Clobbers GR8.
-;; Modifies GR9.
-(define_insn "tls_indirect_call"
-  [(set (match_operand:SI 0 "register_operand" "=D09")
+;; We have to expand this like a libcall (it sort of actually is)
+;; because otherwise sched may move, for example, an insn that sets up
+;; GR8 for a subsequence call before the *tls_indirect_call insn, and
+;; then reload won't be able to fix things up.
+(define_expand "tls_indirect_call"
+  [(set (reg:DI GR8_REG)
+	(match_operand:DI 2 "register_operand" ""))
+   (parallel
+    [(set (reg:SI GR9_REG)
+	  (unspec:SI
+	   [(match_operand:SI 1 "symbolic_operand" "")
+	   (reg:DI GR8_REG)]
+	   UNSPEC_TLS_INDIRECT_CALL))
+    (clobber (reg:SI GR8_REG))
+    (clobber (reg:SI LRREG))
+    (use (match_operand:SI 3 "register_operand" ""))])
+   (set (match_operand:SI 0 "register_operand" "")
+	(reg:SI GR9_REG))]
+  "HAVE_AS_TLS")
+
+(define_insn "*tls_indirect_call"
+  [(set (reg:SI GR9_REG)
 	(unspec:SI
-	 [(match_operand:SI 1 "symbolic_operand" "")
-	  (match_operand:DI 2 "register_operand" "D89")]
+	 [(match_operand:SI 0 "symbolic_operand" "")
+	  (reg:DI GR8_REG)]
 	 UNSPEC_TLS_INDIRECT_CALL))
-   (clobber (match_operand:SI 3 "register_operand" "=D08"))
+   (clobber (reg:SI GR8_REG))
    (clobber (reg:SI LRREG))
    ;; If there was a way to represent the fact that we don't need GR9
    ;; or GR15 to be set before this instruction (it could be in
    ;; parallel), we could use it here.  This change wouldn't apply to
    ;; call_gettlsoff, thought, since the linker may turn the latter
    ;; into ldi @(gr15,offset),gr9.
-   (use (match_operand:SI 4 "register_operand" "D15"))]
+   (use (match_operand:SI 1 "register_operand" "D15"))]
   "HAVE_AS_TLS"
-  "calll #gettlsoff(%a1)@(%2,gr0)"
+  "calll #gettlsoff(%a0)@(gr8,gr0)"
   [(set_attr "length" "4")
    (set_attr "type" "jumpl")])
 
