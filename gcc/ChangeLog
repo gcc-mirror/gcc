@@ -1,5 +1,10 @@
 2002-10-24  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.c (round_frame_size): Replace 8 with
+	BITS_PER_UNIT.
+
+2002-10-24  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.h (EIGHTBIT_CONSTANT_ADDRESS_P): Make it
 	64-bit safe.
 	(TINY_CONSTANT_ADDRESS_P): Likewise.
