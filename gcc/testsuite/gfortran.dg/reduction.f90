@@ -9,6 +9,7 @@ program reduction_mask
   integer, parameter :: res(4*9) = (/ 3, 3, 3, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, &
        1, 1, 1, 1, 1, 6, 6, 6, 2, 2, 2, 2, 2, 2, 6, 6, 6, 3, 3, 3, 3, 3, 3 /)
   integer :: val(4*9)
+  complex :: cval(2*9), cin(3)
   
   equal = (/ .true., .true., .false. /)
   
@@ -55,4 +56,30 @@ program reduction_mask
   val(36) = sum((/ 1, 2, 3 /), mask=equal, dim=1)
   
   if (any (val /= res)) call abort
+
+  ! Tests for complex arguments. These were broken by the original fix.
+
+  cin = cmplx((/1,2,3/))
+
+  cval(1) = product(cin)
+  cval(2) = product(cin, 1)
+  cval(3) = product(cin, dim=1)
+  cval(4) = product(cin, equal)
+  cval(5) = product(cin, mask=equal)
+  cval(6) = product(cin, 1, equal)
+  cval(7) = product(cin, 1, mask=equal)
+  cval(8) = product(cin, dim=1, mask=equal)
+  cval(9) = product(cin, mask=equal, dim=1)
+       
+  cval(10) = sum(cin)
+  cval(11) = sum(cin, 1)
+  cval(12) = sum(cin, dim=1)
+  cval(13) = sum(cin, equal)
+  cval(14) = sum(cin, mask=equal)
+  cval(15) = sum(cin, 1, equal)
+  cval(16) = sum(cin, 1, mask=equal)
+  cval(17) = sum(cin, dim=1, mask=equal)
+  cval(18) = sum(cin, mask=equal, dim=1)
+
+  if (any (cval /= cmplx(res(19:36)))) call abort
 end program reduction_mask

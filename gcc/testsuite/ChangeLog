@@ -1,3 +1,7 @@
+2004-08-22  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.dg/reduction.f90: Add checks with complex arguments.
+
 2004-08-21  Bud Davis  <bdavis9659@comcast.net>
 
 	PR 16908
