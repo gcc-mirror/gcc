@@ -1,3 +1,8 @@
+2004-09-24  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/17624
+	* g++.dg/opt/pr17624.C: New test.
+
 2004-09-24  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/6980
