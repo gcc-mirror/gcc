@@ -84,4 +84,8 @@ namespace std
 typedef long int __padding_type;
 #endif
 
+/* We need explicit instantiation of the atomicity lock on 32-bit HPUX.  */
+#ifndef __LP64__
+#define _GLIBCPP_INST_ATOMICITY_LOCK 1
+#endif
 #endif
