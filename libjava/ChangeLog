@@ -1,3 +1,10 @@
+2001-01-26  Tom Tromey  <tromey@redhat.com>
+
+	* jni.cc (_Jv_JNI_GetAnyMethodID): Rewrite signature from external
+	to internal representation.
+	(_Jv_JNI_GetAnyFieldID): Likewise.  Also, only use
+	_Jv_FindClassFromSignature.
+
 2001-01-26  Warren Levy  <warrenl@redhat.com>
 
 	* java/lang/natSystem.cc (getSystemTimeZone): Only use tm_gmtoff

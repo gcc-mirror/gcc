@@ -1,6 +1,6 @@
 // jni.cc - JNI implementation, including the jump table.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -593,7 +593,13 @@ _Jv_JNI_GetAnyMethodID (JNIEnv *env, jclass clazz,
       _Jv_InitClass (clazz);
 
       _Jv_Utf8Const *name_u = _Jv_makeUtf8Const ((char *) name, -1);
-      _Jv_Utf8Const *sig_u = _Jv_makeUtf8Const ((char *) sig, -1);
+
+      // FIXME: assume that SIG isn't too long.
+      int len = strlen (sig);
+      char s[len + 1];
+      for (int i = 0; i <= len; ++i)
+	s[i] = (sig[i] == '/') ? '.' : sig[i];
+      _Jv_Utf8Const *sig_u = _Jv_makeUtf8Const ((char *) s, -1);
 
       JvAssert (! clazz->isPrimitive());
 
@@ -1053,14 +1059,12 @@ _Jv_JNI_GetAnyFieldID (JNIEnv *env, jclass clazz,
 
       _Jv_Utf8Const *a_name = _Jv_makeUtf8Const ((char *) name, -1);
 
-      jclass field_class = NULL;
-      if (sig[0] == '[')
-	field_class = _Jv_FindClassFromSignature ((char *) sig, NULL);
-      else
-	{
-	  _Jv_Utf8Const *sig_u = _Jv_makeUtf8Const ((char *) sig, -1);
-	  field_class = _Jv_FindClass (sig_u, NULL);
-	}
+      // FIXME: assume that SIG isn't too long.
+      int len = strlen (sig);
+      char s[len + 1];
+      for (int i = 0; i <= len; ++i)
+	s[i] = (sig[i] == '/') ? '.' : sig[i];
+      jclass field_class = _Jv_FindClassFromSignature ((char *) s, NULL);
 
       // FIXME: what if field_class == NULL?
 
