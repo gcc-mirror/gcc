@@ -1,3 +1,8 @@
+Thu Aug 13 00:13:55 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* execute/ieee/ieee.exp: Pass -ffloat-store to compiler for
+	ieee tests.
+
 Thu Jun 18 15:12:30 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* execute/980618-{1,2}.c: New tests that showed up m32r bugs.
