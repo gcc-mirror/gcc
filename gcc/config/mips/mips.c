@@ -3417,10 +3417,7 @@ output_block_move (insn, operands, num_regs, move_type)
   /* ??? Detect a bug in GCC, where it can give us a register
      the same as one of the addressing registers and reduce
      the number of registers available.  */
-  for (i = 4;
-       i < last_operand
-       && safe_regs < (int)(sizeof(xoperands) / sizeof(xoperands[0]));
-       i++)
+  for (i = 4; i < last_operand && safe_regs < (int) ARRAY_SIZE (xoperands); i++)
     if (! reg_mentioned_p (operands[i], operands[0])
 	&& ! reg_mentioned_p (operands[i], operands[1]))
       xoperands[safe_regs++] = operands[i];
@@ -3515,8 +3512,8 @@ output_block_move (insn, operands, num_regs, move_type)
 	}
     }
 
-  if (num_regs > (int)(sizeof (load_store) / sizeof (load_store[0])))
-    num_regs = sizeof (load_store) / sizeof (load_store[0]);
+  if (num_regs > (int) ARRAY_SIZE (load_store))
+    num_regs = ARRAY_SIZE (load_store);
 
   else if (num_regs < 1)
     abort_with_insn (insn,

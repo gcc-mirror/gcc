@@ -706,7 +706,7 @@ apply_fix( p_fixd, filname )
 #define _FT_(n,p) { n, p },
   static fix_entry_t fix_table[] = { FIXUP_TABLE { NULL, NULL }};
 #undef _FT_
-#define FIX_TABLE_CT ((sizeof(fix_table)/sizeof(fix_table[0]))-1)
+#define FIX_TABLE_CT (ARRAY_SIZE (fix_table)-1)
 
   tCC* fixname = p_fixd->patch_args[0];
   char* buf;

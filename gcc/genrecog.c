@@ -213,7 +213,7 @@ static struct pred_table
 				LABEL_REF, SUBREG, REG, MEM}}
 };
 
-#define NUM_KNOWN_PREDS (sizeof preds / sizeof preds[0])
+#define NUM_KNOWN_PREDS ARRAY_SIZE (preds)
 
 static const char * special_mode_pred_table[] = {
 #ifdef SPECIAL_MODE_PREDICATES
@@ -222,8 +222,7 @@ static const char * special_mode_pred_table[] = {
   "pmode_register_operand"
 };
 
-#define NUM_SPECIAL_MODE_PREDS \
-  (sizeof (special_mode_pred_table) / sizeof (special_mode_pred_table[0]))
+#define NUM_SPECIAL_MODE_PREDS ARRAY_SIZE (special_mode_pred_table)
 
 static struct decision *new_decision
   PARAMS ((const char *, struct decision_head *));

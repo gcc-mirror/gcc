@@ -2491,7 +2491,7 @@ make_length_attrs ()
   length_attr->is_special = 1;
 
   /* Make each new attribute, in turn.  */
-  for (i = 0; i < sizeof new_names / sizeof new_names[0]; i++)
+  for (i = 0; i < ARRAY_SIZE (new_names); i++)
     {
       make_internal_attr (new_names[i],
 			  substitute_address (length_attr->default_val->value,

@@ -1657,7 +1657,7 @@ set_sizetype (type)
   TYPE_NAME (bitsizetype) = get_identifier ("bit_size_type");
 
   /* Show is a sizetype, is a main type, and has no pointers to it.  */
-  for (i = 0; i < sizeof sizetype_tab / sizeof sizetype_tab[0]; i++)
+  for (i = 0; i < ARRAY_SIZE (sizetype_tab); i++)
     {
       TYPE_IS_SIZETYPE (sizetype_tab[i]) = 1;
       TYPE_MAIN_VARIANT (sizetype_tab[i]) = sizetype_tab[i];

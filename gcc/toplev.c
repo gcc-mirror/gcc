@@ -1119,8 +1119,6 @@ lang_independent_options f_options[] =
   "Convert floating point constant to single precision constant"}
 };
 
-#define NUM_ELEM(a)  (sizeof (a) / sizeof ((a)[0]))
-
 /* Table of language-specific options.  */
 
 static struct lang_opt
@@ -3730,7 +3728,7 @@ display_help ()
   printf (_("  -fmessage-length=<number> Limits diagnostics messages lengths to <number> characters per line.  0 suppresses line-wrapping\n"));
   printf (_("  -fdiagnostics-show-location=[once | never] Indicates how often source location information should be emitted, as prefix, at the beginning of diagnostics when line-wrapping\n"));
 
-  for (i = NUM_ELEM (f_options); i--;)
+  for (i = ARRAY_SIZE (f_options); i--;)
     {
       const char *description = f_options[i].description;
 
@@ -3746,7 +3744,7 @@ display_help ()
   printf (_("  -w                      Suppress warnings\n"));
   printf (_("  -W                      Enable extra warnings\n"));
 
-  for (i = NUM_ELEM (W_options); i--;)
+  for (i = ARRAY_SIZE (W_options); i--;)
     {
       const char *description = W_options[i].description;
 
@@ -3770,7 +3768,7 @@ display_help ()
   -G <number>             Put global and static data smaller than <number>\n\
                           bytes into a special section (on some targets)\n"));
 
-  for (i = NUM_ELEM (debug_args); i--;)
+  for (i = ARRAY_SIZE (debug_args); i--;)
     {
       if (debug_args[i].description != NULL)
 	printf ("  -g%-21s %s\n",
@@ -3798,11 +3796,11 @@ display_help ()
      that the description string is in fact the name of a language, whose
      language specific options are to follow.  */
 
-  if (NUM_ELEM (documented_lang_options) > 1)
+  if (ARRAY_SIZE (documented_lang_options) > 1)
     {
       printf (_("\nLanguage specific options:\n"));
 
-      for (i = 0; i < NUM_ELEM (documented_lang_options); i++)
+      for (i = 0; i < ARRAY_SIZE (documented_lang_options); i++)
 	{
 	  const char *description = documented_lang_options[i].description;
 	  const char *option      = documented_lang_options[i].option;
@@ -3837,9 +3835,9 @@ display_help ()
     printf (_("\nThere are undocumented %s specific options as well.\n"),
 	    lang);
 
-  if (NUM_ELEM (target_switches) > 1
+  if (ARRAY_SIZE (target_switches) > 1
 #ifdef TARGET_OPTIONS
-      || NUM_ELEM (target_options) > 1
+      || ARRAY_SIZE (target_options) > 1
 #endif
       )
     {
@@ -3849,7 +3847,7 @@ display_help ()
 
       printf (_("\nTarget specific options:\n"));
 
-      for (i = NUM_ELEM (target_switches); i--;)
+      for (i = ARRAY_SIZE (target_switches); i--;)
 	{
 	  const char *option      = target_switches[i].name;
 	  const char *description = target_switches[i].description;
@@ -3868,7 +3866,7 @@ display_help ()
 	}
 
 #ifdef TARGET_OPTIONS
-      for (i = NUM_ELEM (target_options); i--;)
+      for (i = ARRAY_SIZE (target_options); i--;)
 	{
 	  const char *option      = target_options[i].prefix;
 	  const char *description = target_options[i].description;
@@ -3960,7 +3958,7 @@ decode_f_option (arg)
   const char *option_value = NULL;
 
   /* Search for the option in the table of binary f options.  */
-  for (j = sizeof (f_options) / sizeof (f_options[0]); j--;)
+  for (j = ARRAY_SIZE (f_options); j--;)
     {
       if (!strcmp (arg, f_options[j].string))
 	{
@@ -4059,7 +4057,7 @@ decode_W_option (arg)
 
   /* Search for the option in the table of binary W options.  */
 
-  for (j = sizeof (W_options) / sizeof (W_options[0]); j--;)
+  for (j = ARRAY_SIZE (W_options); j--;)
     {
       if (!strcmp (arg, W_options[j].string))
 	{
@@ -4622,7 +4620,7 @@ main (argc, argv)
 	     possibility here.  If we do find a match, then if extra_warnings
 	     is set we generate a warning message, otherwise we will just
 	     ignore the option.  */
-	  for (j = 0; j < NUM_ELEM (documented_lang_options); j++)
+	  for (j = 0; j < ARRAY_SIZE (documented_lang_options); j++)
 	    {
 	      option = documented_lang_options[j].option;
 
@@ -4632,7 +4630,7 @@ main (argc, argv)
 		break;
 	    }
 
-	  if (j != NUM_ELEM (documented_lang_options))
+	  if (j != ARRAY_SIZE (documented_lang_options))
 	    {
 	      if (extra_warnings)
 		{
@@ -4798,7 +4796,7 @@ set_target_switch (name)
   register size_t j;
   int valid_target_option = 0;
 
-  for (j = 0; j < sizeof target_switches / sizeof target_switches[0]; j++)
+  for (j = 0; j < ARRAY_SIZE (target_switches); j++)
     if (!strcmp (target_switches[j].name, name))
       {
 	if (target_switches[j].value < 0)
@@ -4810,7 +4808,7 @@ set_target_switch (name)
 
 #ifdef TARGET_OPTIONS
   if (!valid_target_option)
-    for (j = 0; j < sizeof target_options / sizeof target_options[0]; j++)
+    for (j = 0; j < ARRAY_SIZE (target_options); j++)
       {
 	int len = strlen (target_options[j].prefix);
 	if (!strncmp (target_options[j].prefix, name, len))
@@ -4925,14 +4923,14 @@ print_switch_values (file, pos, max, indent, sep, term)
   pos = print_single_switch (file, 0, max, indent, *indent ? " " : "", term,
 			     _("options enabled: "), "");
 
-  for (j = 0; j < sizeof f_options / sizeof f_options[0]; j++)
+  for (j = 0; j < ARRAY_SIZE (f_options); j++)
     if (*f_options[j].variable == f_options[j].on_value)
       pos = print_single_switch (file, pos, max, indent, sep, term,
 				 "-f", f_options[j].string);
 
   /* Print target specific options.  */
 
-  for (j = 0; j < sizeof target_switches / sizeof target_switches[0]; j++)
+  for (j = 0; j < ARRAY_SIZE (target_switches); j++)
     if (target_switches[j].name[0] != '\0'
 	&& target_switches[j].value > 0
 	&& ((target_switches[j].value & target_flags)
@@ -4943,7 +4941,7 @@ print_switch_values (file, pos, max, indent, sep, term)
       }
 
 #ifdef TARGET_OPTIONS
-  for (j = 0; j < sizeof target_options / sizeof target_options[0]; j++)
+  for (j = 0; j < ARRAY_SIZE (target_options); j++)
     if (*target_options[j].variable != NULL)
       {
 	char prefix[256];

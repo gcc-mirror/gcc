@@ -880,7 +880,7 @@ translate_options (argcp, argvp)
 	{
 	  size_t j;
 	  /* Find a mapping that applies to this option.  */
-	  for (j = 0; j < sizeof (option_map) / sizeof (option_map[0]); j++)
+	  for (j = 0; j < ARRAY_SIZE (option_map); j++)
 	    {
 	      size_t optlen = strlen (option_map[j].name);
 	      size_t arglen = strlen (argv[i]);
@@ -897,9 +897,7 @@ translate_options (argcp, argvp)
 		  if (arglen < optlen)
 		    {
 		      size_t k;
-		      for (k = j + 1;
-			   k < sizeof (option_map) / sizeof (option_map[0]);
-			   k++)
+		      for (k = j + 1; k < ARRAY_SIZE (option_map); k++)
 			if (strlen (option_map[k].name) >= arglen
 			    && !strncmp (argv[i], option_map[k].name, arglen))
 			  {
@@ -907,7 +905,7 @@ translate_options (argcp, argvp)
 			    break;
 			  }
 
-		      if (k != sizeof (option_map) / sizeof (option_map[0]))
+		      if (k != ARRAY_SIZE (option_map))
 			break;
 		    }
 
@@ -1130,10 +1128,9 @@ init_spec ()
 
 #ifdef EXTRA_SPECS
   extra_specs = (struct spec_list *)
-    xcalloc (sizeof(struct spec_list),
-	     (sizeof(extra_specs_1)/sizeof(extra_specs_1[0])));
+    xcalloc (sizeof (struct spec_list), ARRAY_SIZE (extra_specs_1));
   
-  for (i = (sizeof(extra_specs_1) / sizeof(extra_specs_1[0])) - 1; i >= 0; i--)
+  for (i = ARRAY_SIZE (extra_specs_1) - 1; i >= 0; i--)
     {
       sl = &extra_specs[i];
       sl->name = extra_specs_1[i].name;
@@ -1145,7 +1142,7 @@ init_spec ()
     }
 #endif
 
-  for (i = (sizeof (static_specs) / sizeof (static_specs[0])) - 1; i >= 0; i--)
+  for (i = ARRAY_SIZE (static_specs) - 1; i >= 0; i--)
     {
       sl = &static_specs[i];
       sl->next = next;
@@ -1174,8 +1171,7 @@ set_spec (name, spec)
   if (!specs)
     {
       struct spec_list *next = (struct spec_list *)0;
-      for (i = (sizeof (static_specs) / sizeof (static_specs[0])) - 1;
-	   i >= 0; i--)
+      for (i = ARRAY_SIZE (static_specs) - 1; i >= 0; i--)
 	{
 	  sl = &static_specs[i];
 	  sl->next = next;
@@ -5170,9 +5166,7 @@ main (argc, argv)
     multilib_exclusions = obstack_finish (&multilib_obstack);
     
     need_space = FALSE;
-    for (i = 0;
-	 i < sizeof (multilib_defaults_raw) / sizeof (multilib_defaults_raw[0]);
-	 i++)
+    for (i = 0; i < ARRAY_SIZE (multilib_defaults_raw); i++)
       {
 	if (need_space)
 	  obstack_1grow (&multilib_obstack, ' ');

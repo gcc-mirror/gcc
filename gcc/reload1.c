@@ -343,7 +343,7 @@ static struct elim_table_1
   {{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}};
 #endif
 
-#define NUM_ELIMINABLE_REGS (sizeof reg_eliminate_1/sizeof reg_eliminate_1[0])
+#define NUM_ELIMINABLE_REGS ARRAY_SIZE (reg_eliminate_1)
 
 /* Record the number of pending eliminations that have an offset not equal
    to their initial offset.  If non-zero, we use a new copy of each

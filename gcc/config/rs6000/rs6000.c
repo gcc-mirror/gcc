@@ -293,7 +293,7 @@ rs6000_override_options (default_cpu)
   rs6000_select[0].string = default_cpu;
   rs6000_cpu = TARGET_POWERPC64 ? PROCESSOR_DEFAULT64 : PROCESSOR_DEFAULT;
 
-  for (i = 0; i < sizeof (rs6000_select) / sizeof (rs6000_select[0]); i++)
+  for (i = 0; i < ARRAY_SIZE (rs6000_select); i++)
     {
       ptr = &rs6000_select[i];
       if (ptr->string != (char *)0 && ptr->string[0] != '\0')
@@ -433,7 +433,7 @@ rs6000_file_start (file, default_cpu)
       sprintf (buffer, "\n%s rs6000/powerpc options:", ASM_COMMENT_START);
       rs6000_select[0].string = default_cpu;
 
-      for (i = 0; i < sizeof (rs6000_select) / sizeof (rs6000_select[0]); i++)
+      for (i = 0; i < ARRAY_SIZE (rs6000_select); i++)
 	{
 	  ptr = &rs6000_select[i];
 	  if (ptr->string != (char *)0 && ptr->string[0] != '\0')

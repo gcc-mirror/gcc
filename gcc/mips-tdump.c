@@ -1033,7 +1033,7 @@ print_symbol (sym_ptr, number, strbase, aux_base, ifd, fdp)
 
   if (MIPS_IS_STAB(sym_ptr))
     {
-      register int i = sizeof(stab_names) / sizeof(stab_names[0]);
+      register int i = ARRAY_SIZE (stab_names);
       const char *stab_name = "stab";
       short code = MIPS_UNMARK_STAB(sym_ptr->index);
       while (--i >= 0)

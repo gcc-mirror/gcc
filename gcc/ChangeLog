@@ -1,5 +1,49 @@
 2000-08-24  Greg McGary  <greg@mcgary.org>
 
+	* optabs.c (init_optabs): Initialize fixtab, fixtrunctab, floattab,
+	and extendtab within their proper array boundaries.
+	* emit-rtl.c (init_emit_once): Pass `const_tiny_rtx' with bounds
+	for the entire array.
+
+	* config/arm/arm.c (arm_override_options): Use ARRAY_SIZE.
+	* config/alpha/alpha.c (alpha_lookup_xfloating_lib_func): Likewise.
+	* config/avr/avr.c (order_regs_for_local_alloc): Likewise.
+	* config/fr30/fr30.c (fr30_print_operand): Likewise.
+	* config/i386/dgux.c (output_options): Likewise.
+	* config/i386/dgux.h (ASM_FILE_START): Likewise.
+	* config/m88k/m88k.c (output_options): Likewise.
+	* config/m88k/m88k.h (ASM_FILE_START): Likewise.
+	* config/mcore/mcore.c (mcore_output_inline_const_forced,
+	layout_mcore_frame, handle_structs_in_regs): Likewise.
+	* config/mips/mips.c (output_block_move): Likewise.
+	* config/rs6000/rs6000.c (rs6000_override_options,
+	rs6000_file_start): Likewise.
+	* config/sparc/sparc.c (sparc_add_gc_roots): Likewise.
+	* fixinc/fixfixes.c (FIX_TABLE_CT): Likewise.
+	* fixinc/fixtests.c (TEST_TABLE_CT): Likewise.
+	* builtins.c (expand_builtin_setjmp): Likewise.
+	* expr.c (safe_from_p): Likewise.
+	* flow.c (life_analysis): Likewise.
+	* fold-const.c (size_int_type_wide): Likewise.
+	* gcc.c (translate_options, init_spec, set_spec, main): Likewise.
+	* genattrtab.c (make_length_attrs): Likewise.
+	* genopinit.c (gen_insn): Likewise.
+	* genrecog.c (NUM_KNOWN_PREDS, NUM_SPECIAL_MODE_PREDS): Likewise.
+	* global.c (global_alloc): Likewise.
+	* local-alloc.c (find_free_reg): Likewise.
+	* mips-tdump.c (print_symbol): Likewise.
+	* mips-tfile.c (parse_def, parse_input): Likewise.
+	* reload1.c (NUM_ELIMINABLE_REGS): Likewise.
+	* stmt.c (expand_nl_goto_receiver): Likewise.
+	* stor-layout.c (set_sizetype): Likewise.
+	* varasm.c (decode_reg_name): Likewise.
+	* toplev.c (decode_f_option, decode_W_option,
+	set_target_switch, print_switch_values): Likewise.
+	(NUM_ELEM): Remove macro.
+	(display_help, main): s/NUM_ELEM/ARRAY_SIZE/
+
+2000-08-24  Greg McGary  <greg@mcgary.org>
+
 	* tree.h (enum tree_index): New member `TI_MAIN_IDENTIFIER'.
 	(MAIN_NAME_P, main_identifier_node): New macros.
 	* c-common.c (c_common_nodes_and_builtins): Init main_identifier_node.

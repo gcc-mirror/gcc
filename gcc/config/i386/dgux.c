@@ -1,5 +1,5 @@
 /* Subroutines for GNU compiler for Intel 80x86 running DG/ux
-   Copyright (C) 1993, 1995, 1997, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1997, 1999, 2000 Free Software Foundation, Inc.
    Currently maintained by (gcc@dg-rtp.dg.com)
 
 This file is part of GNU CC.
@@ -90,7 +90,7 @@ output_options (file, f_options, f_len, W_options, W_len,
       pos = output_option (file, sep, "-W", W_options[j].string,
 			   indent, pos, max);
 
-  for (j = 0; j < sizeof m_options / sizeof m_options[0]; j++)
+  for (j = 0; j < ARRAY_SIZE (m_options); j++)
     if (m_options[j].name[0] != '\0'
 	&& m_options[j].value > 0
 	&& ((m_options[j].value & target_flags)

@@ -2624,7 +2624,7 @@ life_analysis (f, file, flags)
   CLEAR_HARD_REG_SET (elim_reg_set);
 
 #ifdef ELIMINABLE_REGS
-  for (i = 0; i < (int) (sizeof eliminables / sizeof eliminables[0]); i++)
+  for (i = 0; i < (int) ARRAY_SIZE (eliminables); i++)
     SET_HARD_REG_BIT (elim_reg_set, eliminables[i].from);
 #else
   SET_HARD_REG_BIT (elim_reg_set, FRAME_POINTER_REGNUM);

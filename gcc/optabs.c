@@ -4484,34 +4484,29 @@ mark_optab (arg)
 void
 init_optabs ()
 {
-  int i;
-#ifdef FIXUNS_TRUNC_LIKE_FIX_TRUNC
-  int j;
-#endif
-
-  enum insn_code *p;
+  unsigned int i, j, k;
 
   /* Start by initializing all tables to contain CODE_FOR_nothing.  */
 
-  for (p = fixtab[0][0];
-       p < fixtab[0][0] + sizeof fixtab / sizeof (fixtab[0][0][0]); 
-       p++)
-    *p = CODE_FOR_nothing;
+  for (i = 0; i < ARRAY_SIZE (fixtab); i++)
+    for (j = 0; j < ARRAY_SIZE (fixtab[0]); j++)
+      for (k = 0; k < ARRAY_SIZE (fixtab[0][0]); k++)
+	fixtab[i][j][k] = CODE_FOR_nothing;
 
-  for (p = fixtrunctab[0][0];
-       p < fixtrunctab[0][0] + sizeof fixtrunctab / sizeof (fixtrunctab[0][0][0]); 
-       p++)
-    *p = CODE_FOR_nothing;
+  for (i = 0; i < ARRAY_SIZE (fixtrunctab); i++)
+    for (j = 0; j < ARRAY_SIZE (fixtrunctab[0]); j++)
+      for (k = 0; k < ARRAY_SIZE (fixtrunctab[0][0]); k++)
+	fixtrunctab[i][j][k] = CODE_FOR_nothing;
 
-  for (p = floattab[0][0];
-       p < floattab[0][0] + sizeof floattab / sizeof (floattab[0][0][0]); 
-       p++)
-    *p = CODE_FOR_nothing;
+  for (i = 0; i < ARRAY_SIZE (floattab); i++)
+    for (j = 0; j < ARRAY_SIZE (floattab[0]); j++)
+      for (k = 0; k < ARRAY_SIZE (floattab[0][0]); k++)
+	floattab[i][j][k] = CODE_FOR_nothing;
 
-  for (p = extendtab[0][0];
-       p < extendtab[0][0] + sizeof extendtab / sizeof extendtab[0][0][0];
-       p++)
-    *p = CODE_FOR_nothing;
+  for (i = 0; i < ARRAY_SIZE (extendtab); i++)
+    for (j = 0; j < ARRAY_SIZE (extendtab[0]); j++)
+      for (k = 0; k < ARRAY_SIZE (extendtab[0][0]); k++)
+	extendtab[i][j][k] = CODE_FOR_nothing;
 
   for (i = 0; i < NUM_RTX_CODE; i++)
     setcc_gen_code[i] = CODE_FOR_nothing;

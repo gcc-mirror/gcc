@@ -1988,7 +1988,7 @@ alpha_lookup_xfloating_lib_func (code)
     };
 
   const struct xfloating_op *ops;
-  const long n = sizeof(osf_xfloating_ops) / sizeof(osf_xfloating_ops[0]);
+  const long n = ARRAY_SIZE (osf_xfloating_ops);
   long i;
 
   /* How irritating.  Nothing to key off for the table.  Hardcode

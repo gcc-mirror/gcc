@@ -1818,9 +1818,9 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define ASM_FILE_START(FILE) \
   output_file_start (FILE, \
 	(struct m88k_lang_independent_options *) f_options, \
-	sizeof f_options / sizeof f_options[0], \
+	ARRAY_SIZE (f_options), \
 	(struct m88k_lang_independent_options *) W_options, \
-	sizeof W_options / sizeof W_options[0])
+	ARRAY_SIZE (W_options))
 
 #undef	ASM_FILE_END
 

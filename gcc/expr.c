@@ -5404,7 +5404,7 @@ safe_from_p (x, exp, top_p)
       int rtn;
 
       save_expr_count = 0;
-      save_expr_size = sizeof (save_expr_trees) / sizeof (save_expr_trees[0]);
+      save_expr_size = ARRAY_SIZE (save_expr_trees);
       save_expr_rewritten = &save_expr_trees[0];
 
       rtn = safe_from_p (x, exp, 1);
