@@ -606,7 +606,7 @@ extern int target_flags;
     {"stack-bias", MASK_STACK_BIAS,			"Use stack bias" }, \
     {"no-stack-bias", -MASK_STACK_BIAS,			"Do not use stack bias" }, \
     SUBTARGET_SWITCHES			\
-    { "", TARGET_DEFAULT}}
+    { "", TARGET_DEFAULT, ""}}
 
 /* MASK_APP_REGS must always be the default because that's what
    FIXED_REGISTERS is set to and -ffixed- is processed before
