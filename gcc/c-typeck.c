@@ -5480,9 +5480,7 @@ check_init_type_bitfields (type)
       for (tail = TYPE_FIELDS (type); tail;
 	   tail = TREE_CHAIN (tail))
 	{
-	  if (DECL_C_BIT_FIELD (tail)
-	      /* This catches cases like `int foo : 8;'.  */
-	      || DECL_MODE (tail) != TYPE_MODE (TREE_TYPE (tail)))
+	  if (DECL_C_BIT_FIELD (tail))
 	    {
 	      constructor_incremental = 0;
 	      break;
@@ -5490,6 +5488,17 @@ check_init_type_bitfields (type)
 
 	  check_init_type_bitfields (TREE_TYPE (tail));
 	}
+    }
+
+  else if (TREE_CODE (type) == UNION_TYPE)
+    {
+      tree tail = TYPE_FIELDS (type);
+      if (tail && DECL_C_BIT_FIELD (tail))
+	/* We also use the nonincremental algorithm for initiliazation
+	   of unions whose first member is a bitfield, becuase the
+	   incremental algorithm has no code for dealing with
+	   bitfields. */
+	constructor_incremental = 0;
     }
 
   else if (TREE_CODE (type) == ARRAY_TYPE)

@@ -1,3 +1,13 @@
+Mon Feb  9 18:57:45 1999  Vladimir N. Makarov  <vmakarov@cygnus.com>
+
+	* c-typeck.c (check_init_type_bitfields): Use nonincremental
+	initialization of unions whose first member is a bitfield.
+        Remove unnecessary code for checking the declaration mode
+        after DECL_C_BIT_FIELD.
+
+	* varasm.c (output_constructor): Additional comment about the
+ 	constructor of bitfield union initialization.
+
 Tue Feb  9 11:55:04 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (*movhi_stik): New pattern.
