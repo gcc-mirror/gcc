@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -9,16 +9,29 @@ details.  */
 package javax.naming;
 
 import java.lang.Exception;
+import java.util.Hashtable;
  
-public class ReferralException extends NamingException
+/**
+ * @author Warren Levy <warrenl@redhat.com>
+ * @date June 14, 2001
+ */
+
+public abstract class ReferralException extends NamingException
 {
-  public ReferralException ()
+  protected ReferralException ()
   {
     super ();
   }
 
-  public ReferralException (String msg)
+  protected ReferralException (String msg)
   {
     super (msg);
   }
+
+  public abstract Object getReferralInfo();
+  public abstract Context getReferralContext() throws NamingException;
+  public abstract Context getReferralContext(Hashtable env)
+    throws NamingException;
+  public abstract boolean skipReferral();
+  public abstract void retryReferral();
 }

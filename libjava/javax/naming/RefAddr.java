@@ -60,9 +60,9 @@ public abstract class RefAddr implements Serializable
    */
   protected RefAddr(String addrType)
   {
-  	if (addrType == null)
-  	  throw new NullPointerException("addrType cannot be null");
-  	  
+    if (addrType == null)
+      throw new NullPointerException("addrType cannot be null");
+
     this.addrType = addrType;
   }
   
@@ -87,20 +87,20 @@ public abstract class RefAddr implements Serializable
    *         is the same as this addrType and the content is equals to the
    *         content of this object.
    */
-  public boolean equal(Object o)
+  public boolean equals (Object o)
   {
     if (o instanceof RefAddr)
       {
         RefAddr refAddr = (RefAddr) o;
         if (this.getType().equals(refAddr.getType()))
-        {
-          Object c1 = this.getContent();
-          Object c2 = refAddr.getContent();
-	  if (c1 == null)
-	    return c2 == null;
-	  else
-	    return c1.equals(c2);
-        }
+	  {
+	    Object c1 = this.getContent();
+	    Object c2 = refAddr.getContent();
+	    if (c1 == null)
+	      return c2 == null;
+	    else
+	      return c1.equals(c2);
+	  }
       }
     return false;
   }

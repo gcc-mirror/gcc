@@ -86,17 +86,17 @@ public class BinaryRefAddr extends RefAddr
    *         the addrType is the same as this addrType and the bytes of the
    *         content are the same.
    */
-  public boolean equal(Object o)
+  public boolean equals (Object o)
   {
     if (o instanceof BinaryRefAddr)
       {
         BinaryRefAddr refAddr = (BinaryRefAddr) o;
         if (this.getType().equals(refAddr.getType()))
-        {
-          byte[] c1 = (byte[]) this.getContent();
-          byte[] c2 = (byte[]) refAddr.getContent();
-	  return Arrays.equals(c1, c2);
-        }
+	  {
+	    byte[] c1 = (byte[]) this.getContent();
+	    byte[] c2 = (byte[]) refAddr.getContent();
+	    return Arrays.equals(c1, c2);
+	  }
       }
     return false;
   }

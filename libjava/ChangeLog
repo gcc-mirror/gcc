@@ -1,4 +1,167 @@
 2001-10-24  Tom Tromey  <tromey@redhat.com>
+            Warren Levy  <warrenl@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (javax_source_files): New macro.
+	(ordinary_java_source_files): Added javax_source_files.
+	(libgcj.jar): Search javax for class files.
+	* javax/naming/LinkException.java (toString): Wrote.
+	(toString(boolean)): Likewise.
+	* javax/naming/ldap/InitialLdapContext.java: New file.
+	* javax/naming/directory/InitialDirContext.java: Wrote.
+	* javax/naming/spi/NamingManager.java (getPlusPath): Now has
+	package-private protection.
+	(getURLContext): Likewise.
+	(NamingManager): Likewise.
+	* javax/naming/spi/DirectoryManager.java: New file.
+	* javax/naming/directory/BasicAttributes.java: New file.
+	* javax/naming/directory/BasicAttribute.java: New file.
+	* javax/naming/spi/ResolveResult.java
+	(ResolveResult(Object,String)): Wrote.
+	(appendRemainingName): Uncommented body.
+	(appendRemainingComponent): Likewise.
+	* javax/naming/ldap/ControlFactory.java: New file.
+	* javax/naming/directory/AttributeModificationException.java
+	(toString): Wrote.
+	* javax/naming/spi/NamingManager.java (NamingManager): New
+	constructor.
+	(setInitialContextFactoryBuilder): Wrote.
+	(getInitialContext): Look in system properties for class name as
+	well.  Use Class.forName().
+	(getURLContext): Wrote.
+	(ofb): New field.
+	(setObjectFactoryBuilder): Wrote.
+	(getObjectInstance): Wrote.
+	(getContinuationContext): Wrote.
+	(getPlusPath): New private method.
+	(getStateToBind): Wrote.
+	* javax/naming/CannotProceedException.java: Added missing methods &
+	fields.
+	* javax/naming/LinkException.java: Added missing methods & fields.
+	* javax/naming/ReferralException.java (ReferralException): Made
+	constructor protected per spec.
+	Added missing abstract methods.
+	* javax/naming/directory/Attribute.java: Updated copyright.
+	* javax/naming/directory/AttributeModificationException.java: Ditto.
+	* javax/naming/directory/Attributes.java: Ditto.
+	* javax/naming/directory/DirContext.java: Ditto.
+	* javax/naming/spi/NamingManager.java: Ditto.
+	* javax/naming/spi/ResolveResult.java: Added comment.
+	* javax/naming/directory/Attribute.java: Added missing interface
+	methods.
+	* javax/naming/directory/AttributeModificationException.java:
+	Added missing methods & fields.
+	* javax/naming/directory/directory/Attributes.java: Added missing
+	interface methods.
+	* javax/naming/directory/SearchControls.java: Maded serialized fields
+	private.
+	* javax/naming/event/NamingEvent.java: Added comment.
+	* javax/naming/event/NamingExceptionEvent.java: Maded serialized field
+	private.
+	* javax/naming/ldap/UnsolicitedNotificationEvent.java: Maded
+	serialized field private.
+	* javax/naming/spi/NamingManager.java: Added missing field and stubbed
+	missing methods.
+	* javax/naming/directory/DirContext.java: Added missing interface
+	fields & methods.
+	* javax/naming/directory/InitialDirContext.java: Stubbed missing
+	methods.
+	* javax/naming/directory/ModificationItem.java: New class.
+	* javax/naming/directory/SearchResult.java: New class.
+	* javax/naming/directory/SearchControls.java: New class.
+	* javax/naming/event/EventContext.java: New class.
+	* javax/naming/event/EventDirContext.java: New class.
+	* javax/naming/event/NamespaceChangeListener.java: New class.
+	* javax/naming/event/NamingEvent.java: New class.
+	* javax/naming/event/NamingExceptionEvent.java: New class.
+	* javax/naming/event/NamingListener.java: New class.
+	* javax/naming/event/ObjectChangeListener.java: New class.
+	* javax/naming/ldap/Control.java: New class.
+	* javax/naming/ldap/ExtendedRequest.java: New class.
+	* javax/naming/ldap/ExtendedResponse.java: New class.
+	* javax/naming/ldap/HasControls.java: New class.
+	* javax/naming/ldap/LdapContext.java: New class.
+	* javax/naming/ldap/LdapReferralException.java: New class.
+	* javax/naming/ldap/UnsolicitedNotification.java: New class.
+	* javax/naming/ldap/UnsolicitedNotificationEvent.java: New class.
+	* javax/naming/ldap/UnsolicitedNotificationListener.java: New class.
+	* javax/naming/spi/DirObjectFactory.java: New class.
+	* javax/naming/spi/DirStateFactory.java: New class.
+	* javax/naming/spi/ObjectFactoryBuilder.java: New class.
+	* javax/naming/spi/ResolveResult.java: New class.
+	* javax/naming/spi/Resolver.java: New class.
+	* javax/naming/spi/StateFactory.java: New class.
+	* javax/naming/spi/ObjectFactory.java: Made an interface per spec.
+	* java/rmi/RemoteException.java: New class.
+	* javax/transaction/HeuristicCommitException.java: New class.
+	* javax/transaction/HeuristicMixedException.java: New class.
+	* javax/transaction/HeuristicRollbackException.java: New class.
+	* javax/transaction/NotSupportedException.java: New class.
+	* javax/transaction/RollbackException.java: New class.
+	* javax/transaction/Status.java: New class.
+	* javax/transaction/Synchronization.java: New class.
+	* javax/transaction/SystemException.java: New class.
+	* javax/transaction/Transaction.java: New class.
+	* javax/transaction/TransactionManager.java: New class.
+	* javax/transaction/UserTransaction.java: New class.
+	* javax/transaction/xa/XAException.java: Added public static fields.
+	* javax/transaction/xa/XAResource.java: New class.
+	* javax/transaction/xa/Xid.java: New class.
+	* javax/naming/CompoundName.java (CompoundName(String)): Reverse
+	elements if required.  Handle case where quote is at end of
+	string.
+	* javax/naming/CompoundName.java (CompoundName(String)): Handle
+	text left at end of parsing.
+	(toString): Handle empty element at beginning.
+	* javax/naming/CompositeName.java (toString): Handle empty element
+	at beginning.
+	(CompositeName(String)): Handle text left at end of parsing.
+	Correctly compute boundary condition for quoting.
+	* javax/naming/CompoundName.java: New file.
+	* javax/naming/CompositeName.java: New file.
+	* javax/naming/Binding.java: New file.
+	* javax/naming/LinkRef.java: New file.
+	* javax/naming/NameClassPair.java: New file.
+	* javax/naming/Reference.java (addrs, classFactory,
+	classFactoryLocation): New fields.
+	(className): Now protected.
+	(Reference): New constructors.
+	(add): Now public.  Implemented.
+	(get(String)): Likewise.
+	(add(int,RefAddr)): New method.
+	(clear): Likewise.
+	(clone): Likewise.
+	(equals): Likewise.
+	(get(int)): Likewise.
+	(getAll): Likewise.
+	(getFactoryClassLocation): Likewise.
+	(getFactoryClassName): Likewise.
+	(hashCode): Likewise.
+	(remove): Likewise.
+	(size): Likewise.
+	(toString): Likewise.
+	* javax/transaction/xa/XAException.java: New file.
+	* javax/transaction/TransactionRolledbackException.java: New file.
+	* javax/transaction/TransactionRequiredException.java: New file.
+	* javax/transaction/InvalidTransactionException.java: New file.
+	* javax/naming/directory/SchemaViolationException.java: Use
+	correct package.  Import NamingException.
+	* javax/naming/directory/NoSuchAttributeException.java,
+	javax/naming/directory/InvalidSearchFilterException.java,
+	javax/naming/directory/InvalidSearchControlsException.java,
+	javax/naming/directory/InvalidAttributesException.java,
+	javax/naming/directory/InvalidAttributeValueException.java,
+	javax/naming/directory/InvalidAttributeIdentifierException.java,
+	javax/naming/directory/AttributeModificationException.java,
+	javax/naming/directory/AttributeInUseException.java: Likewise.
+	* javax/naming/directory/InitialDirContext.java (getAttributes):
+	Stub implementation.
+	* javax/naming/RefAddr.java (RefAddr): Reindented.
+	(equals): Renamed and reindented.
+	* javax/naming/BinaryRefAddr.java (equals): Renamed and
+	reindented.
+
+2001-10-24  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/reflect/Field.java: Made many methods private.
 
