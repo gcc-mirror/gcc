@@ -178,14 +178,14 @@ tree_code_get_type (int type_num)
    LINENO in file FILENAME.  */
 
 void
-tree_code_if_start (tree exp, const char* filename, int lineno)
+tree_code_if_start (tree exp, location_t loc)
 {
   tree cond_exp;
   cond_exp = build (NE_EXPR,
                  TREE_TYPE (exp),
                  exp,
                  build1 (CONVERT_EXPR, TREE_TYPE (exp), integer_zero_node));
-  emit_line_note (filename, lineno); /* Output the line number information.  */
+  emit_line_note (loc.file, loc.line); /* Output the line number information.  */
   expand_start_cond (cond_exp, /* Exit-able if nonzero.  */ 0);
 }
 
@@ -193,9 +193,9 @@ tree_code_if_start (tree exp, const char* filename, int lineno)
    at line LINENO in file FILENAME.  */
 
 void
-tree_code_if_else (const char* filename, int lineno)
+tree_code_if_else (location_t loc)
 {
-  emit_line_note (filename, lineno); /* Output the line number information.  */
+  emit_line_note (loc.file, loc.line); /* Output the line number information.  */
   expand_start_else ();
 }
 
@@ -203,9 +203,9 @@ tree_code_if_else (const char* filename, int lineno)
    at line LINENO in file FILENAME.  */
 
 void
-tree_code_if_end (const char* filename, int lineno)
+tree_code_if_end (location_t loc)
 {
-  emit_line_note (filename, lineno); /* Output the line number information.  */
+  emit_line_note (loc.file, loc.line); /* Output the line number information.  */
   expand_end_cond ();
 }
 
@@ -215,11 +215,10 @@ tree_code_if_end (const char* filename, int lineno)
 
 tree
 tree_code_create_function_prototype (unsigned char* chars,
-                                    unsigned int storage_class,
-                                    unsigned int ret_type,
-                                    struct prod_token_parm_item* parms,
-                                    const char* filename,
-                                    int lineno)
+				     unsigned int storage_class,
+				     unsigned int ret_type,
+				     struct prod_token_parm_item* parms,
+				     location_t loc)
 {
 
   tree id;
@@ -251,13 +250,7 @@ tree_code_create_function_prototype (unsigned char* chars,
   fn_decl = build_decl (FUNCTION_DECL, id, fn_type);
 
   DECL_CONTEXT (fn_decl) = NULL_TREE; /* Nested functions not supported here.  */
-  DECL_SOURCE_FILE (fn_decl) = filename;
- /*  if (lineno > 1000000)
-    ; */ /* Probably the line # is rubbish because someone forgot to set
-    the line number - and unfortunately impossible line #s are used as
-    magic flags at various times. The longest known function for
-    example is about 550,000 lines (it was written in COBOL).  */
-  DECL_SOURCE_LINE (fn_decl) = lineno;
+  DECL_SOURCE_LOCATION (fn_decl) = loc;
 
   TREE_USED (fn_decl) = 1;
 
@@ -303,9 +296,8 @@ tree_code_create_function_prototype (unsigned char* chars,
     parameter details are in the lists PARMS. Returns nothing.  */
 void
 tree_code_create_function_initial (tree prev_saved,
-                                  const char* filename,
-                                  int lineno,
-                                  struct prod_token_parm_item* parms)
+				   location_t loc,
+				   struct prod_token_parm_item* parms)
 {
   tree fn_decl;
   tree param_decl;
@@ -331,15 +323,14 @@ tree_code_create_function_initial (tree prev_saved,
   current_function_decl = fn_decl;
   DECL_INITIAL (fn_decl) = error_mark_node;
 
-  DECL_SOURCE_FILE (fn_decl) = filename;
-  DECL_SOURCE_LINE (fn_decl) = lineno;
+  DECL_SOURCE_LOCATION (fn_decl) = loc;
 
   /* Prepare creation of rtl for a new function.  */
 
   resultdecl = DECL_RESULT (fn_decl) = build_decl (RESULT_DECL, NULL_TREE, TREE_TYPE (TREE_TYPE (fn_decl)));
   DECL_CONTEXT (DECL_RESULT (fn_decl)) = fn_decl;
-  DECL_SOURCE_FILE (resultdecl) = filename;
-  DECL_SOURCE_LINE (resultdecl) = lineno;
+  DECL_SOURCE_LOCATION (resultdecl) = loc;
+
   /* Work out the size. ??? is this needed.  */
   layout_decl (DECL_RESULT (fn_decl), 0);
 
@@ -358,8 +349,7 @@ tree_code_create_function_initial (tree prev_saved,
       if (!fn_decl)
         abort ();
       DECL_CONTEXT (parm_decl) = fn_decl;
-      DECL_SOURCE_FILE (parm_decl) = filename;
-      DECL_SOURCE_LINE (parm_decl) = lineno;
+      DECL_SOURCE_LOCATION (parm_decl) = loc;
       parm_list = chainon (parm_decl, parm_list);
     }
 
@@ -388,7 +378,7 @@ tree_code_create_function_initial (tree prev_saved,
   make_decl_rtl (fn_decl, NULL);
 
   /* Use filename/lineno from above.  */
-  init_function_start (fn_decl, filename, lineno);
+  init_function_start (fn_decl, loc.file, loc.line);
 
   /* Create rtl for startup code of function, such as saving registers.  */
 
@@ -434,20 +424,19 @@ tree_code_create_function_initial (tree prev_saved,
 
   expand_start_bindings (0);
 
-  emit_line_note (filename, lineno); /* Output the line number information.  */
+  emit_line_note (loc.file, loc.line); /* Output the line number information.  */
 }
 
 /* Wrapup a function contained in file FILENAME, ending at line LINENO.  */
 void
-tree_code_create_function_wrapup (const char* filename,
-                                 int lineno)
+tree_code_create_function_wrapup (location_t loc)
 {
   tree block;
   tree fn_decl;
 
   fn_decl = current_function_decl;
 
-  emit_line_note (filename, lineno); /* Output the line number information.  */
+  emit_line_note (loc.file, loc.line); /* Output the line number information.  */
 
   /* Get completely built level from debugger symbol table.  */
 
@@ -459,7 +448,7 @@ tree_code_create_function_wrapup (const char* filename,
 
   /* Emit rtl for end of function.  */
 
-  expand_function_end (filename, lineno, 0);
+  expand_function_end (loc.file, loc.line, 0);
 
   /* Pop the level.  */
 
@@ -493,12 +482,11 @@ tree_code_create_function_wrapup (const char* filename,
 
 tree
 tree_code_create_variable (unsigned int storage_class,
-                               unsigned char* chars,
-                               unsigned int length,
-                               unsigned int expression_type,
-                               tree init,
-                               const char* filename,
-                               int lineno)
+			   unsigned char* chars,
+			   unsigned int length,
+			   unsigned int expression_type,
+			   tree init,
+			   location_t loc)
 {
   tree var_type;
   tree var_id;
@@ -530,8 +518,7 @@ tree_code_create_variable (unsigned int storage_class,
 
   DECL_CONTEXT (var_decl) = current_function_decl;
 
-  DECL_SOURCE_FILE (var_decl) = filename;
-  DECL_SOURCE_LINE (var_decl) = lineno;
+  DECL_SOURCE_LOCATION (var_decl) = loc;
 
   /* Set the storage mode and whether only visible in the same file.  */
   switch (storage_class)
@@ -612,10 +599,10 @@ tree_code_generate_return (tree type, tree exp)
 
 void
 tree_code_output_expression_statement (tree code,
-                                       const char* filename, int lineno)
+                                       location_t loc)
 {
   /* Output the line number information.  */
-  emit_line_note (filename, lineno);
+  emit_line_note (loc.file, loc.line);
   TREE_USED (code) = 1;
   TREE_SIDE_EFFECTS (code) = 1;
   expand_expr_stmt (code);

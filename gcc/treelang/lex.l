@@ -51,7 +51,6 @@ extern int option_lexer_trace;
 int yylex (void);
 void update_yylval (int a); 
 
-static int next_tree_lineno=1;
 static int next_tree_charno=1;
  
 static void update_lineno_charno (void);
@@ -75,7 +74,7 @@ static void dump_lex_value (int lexret);
  { 
    /* Should really allocate only what we need. lll;.  */
    yylval = my_malloc (sizeof (struct prod_token_parm_item));
-   ((struct prod_token_parm_item *)yylval)->tp.tok.lineno = next_tree_lineno;
+   ((struct prod_token_parm_item *)yylval)->tp.tok.location = input_location;
    ((struct prod_token_parm_item *)yylval)->tp.tok.charno = next_tree_charno;
  }
 
@@ -213,9 +212,10 @@ static void dump_lex_value (int lexret);
   
 [^\n]  {
   update_lineno_charno ();
-  fprintf (stderr, "%s:%i:%i: Unrecognized character %c\n", in_fname, 
-           ((struct prod_token_parm_item *)yylval)->tp.tok.lineno, 
-           ((struct prod_token_parm_item *)yylval)->tp.tok.charno, yytext[0]);
+  fprintf (stderr, "%s:%i:%i: Unrecognized character %c\n",
+	   ((struct prod_token_parm_item *)yylval)->tp.tok.location.file, 
+           ((struct prod_token_parm_item *)yylval)->tp.tok.location.line, 
+	   ((struct prod_token_parm_item *)yylval)->tp.tok.charno, yytext[0]);
   errorcount++;
 }
 
@@ -231,13 +231,13 @@ update_lineno_charno (void)
    /* Update the values we send to caller in case we sometimes don't
       tell them about all the 'tokens' eg comments etc.  */
    int yyl;
-   ((struct prod_token_parm_item *)yylval)->tp.tok.lineno = next_tree_lineno;
+   ((struct prod_token_parm_item *)yylval)->tp.tok.location = input_location;
    ((struct prod_token_parm_item *)yylval)->tp.tok.charno = next_tree_charno;
    for ( yyl = 0; yyl < yyleng; ++yyl ) 
       {
          if ( yytext[yyl] == '\n' ) 
             {
-               ++next_tree_lineno;
+	      ++input_line;
                next_tree_charno = 1;
             } 
          else 
@@ -269,7 +269,7 @@ dump_lex_value (int lexret)
 {
   int ix;
   fprintf (stderr, " %d l:%d c:%d ln:%d text=", lexret,
-         ((struct prod_token_parm_item *) yylval)->tp.tok.lineno,
+         ((struct prod_token_parm_item *) yylval)->tp.tok.location.line,
          ((struct prod_token_parm_item *) yylval)->tp.tok.charno,
          ((struct prod_token_parm_item *) yylval)->tp.tok.length);
   for (ix = 0; ix < yyleng; ix++) 

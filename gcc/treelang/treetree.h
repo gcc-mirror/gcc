@@ -39,27 +39,26 @@ void tree_ggc_storage_always_used  (void *m);
 tree tree_code_get_expression (unsigned int exp_type, tree type, tree op1, tree op2, tree op3);
 tree tree_code_get_numeric_type (unsigned int size1, unsigned int sign1);
 void tree_code_create_function_initial (tree prev_saved,
-                                       const char* filename, int lineno,
-                                       struct prod_token_parm_item* parms);
-void tree_code_create_function_wrapup (const char* filename, int lineno);
+					location_t loc,
+					struct prod_token_parm_item* parms);
+void tree_code_create_function_wrapup (location_t loc);
 tree tree_code_create_function_prototype (unsigned char* chars,
-                                         unsigned int storage_class,
-                                         unsigned int ret_type,
-                                         struct prod_token_parm_item* parms,                                 
-                                         const char* filename,
-                                         int lineno);
+					  unsigned int storage_class,
+					  unsigned int ret_type,
+					  struct prod_token_parm_item* parms,                                 
+                                         location_t loc);
 tree tree_code_create_variable (unsigned int storage_class,
-                               unsigned char* chars,
-                               unsigned int length,
-                               unsigned int expression_type,
-                               tree init,
-                               const char* filename,
-                               int lineno);
-void tree_code_output_expression_statement (tree code, const char* filename, int lineno);
+				unsigned char* chars,
+				unsigned int length,
+				unsigned int expression_type,
+				tree init,
+				location_t loc);
+void tree_code_output_expression_statement (tree code,
+					    location_t loc);
 tree get_type_for_numeric_type (unsigned int numeric_type);
-void tree_code_if_start (tree exp, const char* filename, int lineno);
-void tree_code_if_else (const char* filename, int lineno);
-void tree_code_if_end (const char* filename, int lineno);
+void tree_code_if_start (tree exp, location_t loc);
+void tree_code_if_else (location_t loc);
+void tree_code_if_end (location_t loc);
 tree tree_code_get_type (int type_num);
 void treelang_init_decl_processing (void);
 void treelang_finish (void);

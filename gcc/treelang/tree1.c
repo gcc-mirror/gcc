@@ -78,8 +78,6 @@ unsigned int option_lexer_trace = 0;
 
 /* Local variables.  */
 
-const char *in_fname;	/* Input file name.  */
-
 /* This is 1 if we have output the version string.  */
 
 static int version_done = 0;
@@ -187,9 +185,7 @@ treelang_decode_option (num_options_left, first_option_left)
 bool
 treelang_init ()
 {
-  in_fname = main_input_filename;
-
-  /* Set up the declarations needed for this front end.  */
+  input_filename = main_input_filename;
   input_line = 0;
 
   /* Init decls etc.  */
@@ -198,7 +194,7 @@ treelang_init ()
 
   /* This error will not happen from GCC as it will always create a
      fake input file.  */
-  if (!in_fname || in_fname[0] == ' ' || !in_fname[0]) 
+  if (!input_filename || input_filename[0] == ' ' || !input_filename[0]) 
     {
       if (!version_done)
         {
@@ -209,10 +205,10 @@ treelang_init ()
       return false;
     }
 
-  yyin = fopen (in_fname, "r");
+  yyin = fopen (input_filename, "r");
   if (!yyin)
     {
-      fprintf (stderr, "Unable to open input file %s\n", in_fname);
+      fprintf (stderr, "Unable to open input file %s\n", input_filename);
       exit (1);
     }
 
@@ -279,13 +275,16 @@ lookup_tree_name (struct prod_token_parm_item *prod)
       if (memcmp (tok->tp.tok.chars, this_tok->tp.tok.chars, this_tok->tp.tok.length))
         continue;
       if (option_parser_trace)
-        fprintf (stderr, "Found symbol %s (%i:%i) as %i \n", tok->tp.tok.chars, 
-                tok->tp.tok.lineno, tok->tp.tok.charno, NUMERIC_TYPE (this));
+        fprintf (stderr, "Found symbol %s (%i:%i) as %i \n",
+		 tok->tp.tok.chars, 
+		 tok->tp.tok.location.line, tok->tp.tok.charno,
+		 NUMERIC_TYPE (this));
       return this;
     }
   if (option_parser_trace)
-    fprintf (stderr, "Not found symbol %s (%i:%i) as %i \n", tok->tp.tok.chars, 
-            tok->tp.tok.lineno, tok->tp.tok.charno, tok->type);
+    fprintf (stderr, "Not found symbol %s (%i:%i) as %i \n",
+	     tok->tp.tok.chars, 
+	     tok->tp.tok.location.line, tok->tp.tok.charno, tok->type);
   return NULL;
 }
 
@@ -299,7 +298,8 @@ insert_tree_name (struct prod_token_parm_item *prod)
   sanity_check (prod);
   if (lookup_tree_name (prod))
     {
-      fprintf (stderr, "%s:%i:%i duplicate name %s\n", in_fname, tok->tp.tok.lineno, 
+      fprintf (stderr, "%s:%i:%i duplicate name %s\n",
+	       tok->tp.tok.location.file, tok->tp.tok.location.line, 
                tok->tp.tok.charno, tok->tp.tok.chars);
       errorcount++;
       return 1;
