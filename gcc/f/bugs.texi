@@ -25,21 +25,6 @@ configure, port, build, and install @code{g77},
 @ref{Problems Installing}.
 
 @itemize @bullet
-@cindex Alpha
-@cindex -O2
-@item
-@code{g77}'s version of @code{gcc}, and probably @code{g77}
-itself, cannot be reliably used with the @samp{-O2} option
-(or higher) on Digital Semiconductor Alpha AXP machines.
-The problem is most immediately noticed in differences
-discovered by @kbd{make compare} following a bootstrap
-build using @samp{-O2}.
-It also manifests itself as a failure to compile
-@samp{DATA} statements such as @samp{DATA R/7./} correctly;
-in this case, @samp{R} might be initialized to @samp{4.0}.
-
-Until this bug is fixed, use only @samp{-O1} or no optimization.
-
 @item
 Something about @code{g77}'s straightforward handling of
 label references and definitions sometimes prevents the GBE
@@ -226,19 +211,4 @@ problem by not using the back end's support for @code{COMPLEX}.
 The new option @samp{-fno-emulate-complex} avoids the work-around,
 reverting to using the same ``broken'' mechanism as that used
 by versions of @code{g77} prior to 0.5.20.
-
-@cindex ELF support
-@cindex support, ELF
-@cindex -fPIC option
-@cindex options, -fPIC
-@item
-There seem to be some problems with passing constants, and perhaps
-general expressions (other than simple variables/arrays), to procedures
-when compiling on some systems (such as i386) with @samp{-fPIC}, as in
-when compiling for ELF targets.
-The symptom is that the assembler complains about invalid opcodes.
-This bug is in the gcc back end,
-and it apparently occurs only when
-compiling sufficiently complicated functions @emph{without} the
-@samp{-O} option.
 @end itemize

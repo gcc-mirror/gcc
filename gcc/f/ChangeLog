@@ -1,5 +1,7 @@
 Mon Mar 23 11:58:43 1998  Craig Burley  <burley@gnu.org>
 
+	* bugs.texi: Various updates.
+
 	* com.c (ffecom_tree_canonize_ptr_): Fix up spacing a bit.
 
 Mon Mar 16 21:20:35 1998  Craig Burley  <burley@gnu.org>
