@@ -1,3 +1,7 @@
+2003-06-03  Alan Modra  <amodra@bigpond.net.au>
+
+	* dwarf2out.c (DEBUG_STR_SECTION_FLAGS): Heed flag_merge_constants.
+
 2003-06-03  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config.gcc (default_use_cxa_atexit): New variable, defaults to no.
