@@ -1,3 +1,7 @@
+2002-06-18  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.c-torture/execute/20020615-1.c: Correct bug-description.
+
 2002-06-15  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.c-torture/execute/20020615-1.c: New test.
