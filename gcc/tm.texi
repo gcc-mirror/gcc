@@ -4731,7 +4731,9 @@ moves.  This can cause significantly more instructions to be produced.
 Therefore, do not set this macro non-zero if unaligned accesses only add a
 cycle or two to the time for a memory access.
 
-If the value of this macro is always zero, it need not be defined.
+If the value of this macro is always zero, it need not be defined.  If
+this macro is defined, it should produce a non-zero value when
+@code{STRICT_ALIGNMENT} is non-zero.
 
 @findex DONT_REDUCE_ADDR
 @item DONT_REDUCE_ADDR
