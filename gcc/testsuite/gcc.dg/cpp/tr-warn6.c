@@ -13,7 +13,7 @@
 #define foo7(AA, hello, world, EEE) sdf "A B hello C,world,DhelloE F" fds EEE /* { dg-warning "macro argument \"hello\" would be stringified" "traditional stringification" } */
 
 /* Catch the second warning from the above line.  */
-/* { dg-warning "macro argument \"world\" would be stringified" "traditional stringification" { target *-*-* } 13 } */
+/* { dg-warning "macro argument \"world\" would be stringified" "traditional stringification second warning" { target *-*-* } 13 } */
 
 # 19 "sys-header.h" 3
 /* We are in system headers now, no -Wtraditional warnings should issue.  */

@@ -1,3 +1,12 @@
+2005-03-13  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/anon-struct-6.c, gcc.dg/array-8.c,
+	gcc.dg/cpp/19940712-1.c, gcc.dg/cpp/19951025-1.c,
+	gcc.dg/cpp/tr-warn6.c, gcc.dg/deprecated.c, gcc.dg/init-bad-1.c,
+	gcc.dg/init-bad-2.c, gcc.dg/init-bad-3.c, gcc.dg/m-un-2.c,
+	gcc.dg/parm-mismatch-1.c, gcc.dg/redecl-1.c: Ensure uniqueness of
+	test assertion names.
+
 2003-03-13  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/16907

@@ -16,7 +16,7 @@ struct vtable mtable = {
   malloc,
   free
 }; /* { dg-warning "missing initializer" "warning regression" { target *-*-* } {18} } */
-   /* { dg-warning "initialization for 'mtable._realloc'" "warning regression" { target *-*-* } {18} } */
+   /* { dg-warning "initialization for 'mtable._realloc'" "warning regression 2" { target *-*-* } {18} } */
 
 /* With designated initializers, we assume you meant to leave out the
    initialization of any blank fields.  */
