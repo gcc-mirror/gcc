@@ -2374,9 +2374,12 @@ new_spill_reg (i, class, max_needs, max_nongroups, global, dumpfile)
     abort ();	/* Caller failed to find any register.  */
 
   if (fixed_regs[regno] || TEST_HARD_REG_BIT (forbidden_regs, regno))
-    fatal ("fixed or forbidden register was spilled.\n\
+    {
+      static char *reg_class_names[] = REG_CLASS_NAMES;
+      fatal ("fixed or forbidden register %d (%s) was spilled for class %s.\n\
 This may be due to a compiler bug or to impossible asm\n\
-statements or clauses.");
+statements or clauses.", regno, reg_names[regno], reg_class_names[class]);
+    }
 
   /* Make reg REGNO an additional reload reg.  */
 
