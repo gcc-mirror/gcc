@@ -1456,7 +1456,8 @@ enum reg_class
 
 #define LIMIT_RELOAD_CLASS(MODE, CLASS) 			\
   ((MODE) == QImode && !TARGET_64BIT				\
-   && ((CLASS) == ALL_REGS || (CLASS) == GENERAL_REGS) 		\
+   && ((CLASS) == ALL_REGS || (CLASS) == GENERAL_REGS		\
+       || (CLASS) == LEGACY_REGS || (CLASS) == INDEX_REGS)	\
    ? Q_REGS : (CLASS))
 
 /* Given an rtx X being reloaded into a reg required to be
@@ -1485,7 +1486,8 @@ enum reg_class
    pseudo.  */
 
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, OUT)			\
-  ((CLASS) == GENERAL_REGS && !TARGET_64BIT && (MODE) == QImode		\
+  (((CLASS) == GENERAL_REGS || (CLASS) == LEGACY_REGS			\
+    || (CLASS) == INDEX_REGS) && !TARGET_64BIT && (MODE) == QImode	\
    ? Q_REGS : NO_REGS)
 
 /* Return the maximum number of consecutive registers
