@@ -2777,6 +2777,36 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# rpc/xdr.h on SunOS needs prototypes for its XDR->xdr_ops function pointers.
+file=rpc/xdr.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo "Checking for needed C++ prototype in $file"
+  sed -e 's/^\(.*\)\*\(x_.*\)();\(.*\)/\
+#ifdef __cplusplus\
+\1*\2(...);\3\
+#else\
+\1*\2();\3\
+#endif/g' \
+     $LIB/$file > ${LIB}/${file}.sed
+
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  else
+    # Find any include directives that use "file".
+    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+	dir=`echo $file | sed -e s'|/[^/]*$||'`
+	required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+    done
+  fi
+fi
+
 # This loop does not appear to do anything, because it uses file
 # rather than $file when setting target.  It also appears to be
 # unnecessary, since the main loop processes symbolic links.
