@@ -37,10 +37,14 @@
 
 #ifdef __STDC__
 #  define PTR void *
-#  define NULL (void *) 0
+#  ifndef NULL
+#    define NULL (void *) 0
+#  endif
 #else
 #  define PTR char *
-#  define NULL 0
+#  ifndef NULL
+#    define NULL (void *) 0
+#  endif
 #endif
 
 #endif

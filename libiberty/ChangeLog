@@ -2,6 +2,10 @@ Wed Jan 13 14:16:36 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* xstrdup.c (xstrdup): Switch from strcpy to memcpy for speed.
 
+1998-12-30  Michael Meissner  <meissner@cygnus.com>
+
+	* random.c (NULL): Don't redefine NULL if it is already defined.
+
 Tue Dec 22 09:43:35 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* argv.c (buildargv): Cast the result of alloca in assignment.
