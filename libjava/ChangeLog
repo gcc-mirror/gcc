@@ -1,3 +1,10 @@
+1999-11-01  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/io/PrintStream (PrintStream): Fix illegal usage of "this" 
+	  before "super".
+	* java/io/OutputStreamWriter (OutputStreamWriter): ditto.
+	* java/io/InputStreamReader (InputStreamReader): ditto.
+
 1999-10-22  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.
