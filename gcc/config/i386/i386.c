@@ -3976,7 +3976,7 @@ ix86_compute_frame_layout (frame)
   frame->nregs = ix86_nsaved_regs ();
   total_size = size;
 
-  /* Skip return value and save base pointer.  */
+  /* Skip return address and saved base pointer.  */
   offset = frame_pointer_needed ? UNITS_PER_WORD * 2 : UNITS_PER_WORD;
 
   frame->hard_frame_pointer_offset = offset;
