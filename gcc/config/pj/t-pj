@@ -1,0 +1,9 @@
+CROSS_LIBGCC1 = libgcc1-asm.a
+LIB1ASMSRC = pj/lib1funcs.S
+LIB1ASMFUNCS = vhelper pjucmpdi2
+LIB2FUNCS_EXTRA =
+
+# For svr4 we build crtbegin.o and crtend.o which serve to add begin and
+# end labels to the .ctors and .dtors section when we link using gcc.
+
+EXTRA_PARTS=crtbegin.o crtend.o

@@ -513,6 +513,9 @@ changequote([,])dnl
 	mips*-*-*)
 		cpu_type=mips
 		;;
+ 	pj*-*-*)
+ 		cpu_type=pj
+ 		;;
 	powerpc*-*-*)
 		cpu_type=rs6000
 		;;
@@ -2911,6 +2914,16 @@ changequote([,])dnl
 #		xmake_file=pyr/x-pyr
 #		use_collect2=yes
 #		;;
+
+  	pj*-linux*)
+		tm_file="svr4.h pj/linux.h ${tm_file}"
+ 		;;
+  	pj-*)
+ 		;;
+  	pjl-*)
+		tm_file="svr4.h pj/pjl.h ${tm_file}"
+ 		;;
+
 	romp-*-aos*)
 		use_collect2=yes
 		;;
