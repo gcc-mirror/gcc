@@ -1,6 +1,6 @@
-2002-06-03  Marc Espie <espie@openbsd.org>
+2002-06-03  Marc Espie  <espie@openbsd.org>
 
-	* config/cpu/m68k/bits/atomicity.h(__exchange_and_add):  Fix inline     
+	* config/cpu/m68k/bits/atomicity.h(__exchange_and_add): Fix inline
 	assembly for old assemblers.
 
 2002-06-03  Phil Edwards  <pme@gcc.gnu.org>
@@ -34,9 +34,9 @@
 	* include/bits/stl_bvector.h:  Use UL suffix for unsigned longs.
 	* testsuite/23_containers/vector_bool.cc (test02):  New test.
 
-2002-05-30	Marc Espie <espie@openbsd.org>
-	* configure.in:  Always check for sys/types.h
-	* configure:  Regenerate.
+2002-05-30  Marc Espie  <espie@openbsd.org>
+	* configure.in: Always check for sys/types.h
+	* configure: Regenerate.
 
 2002-05-28  Nick Clifton  <nickc@cambridge.redhat.com>
 
