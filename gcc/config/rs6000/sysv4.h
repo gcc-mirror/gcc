@@ -1019,7 +1019,8 @@ do {									\
 #undef	TARGET_VERSION
 #define	TARGET_VERSION fprintf (stderr, " (PowerPC System V.4)");
 
-#define	CPP_PREDEFINES \
+#undef	CPP_PREDEFINES
+#define CPP_PREDEFINES \
   "-DPPC -Dunix -D__svr4__ -Asystem=unix -Asystem=svr4 -Acpu=powerpc -Amachine=powerpc"
 
 /* Pass various options to the assembler.  */
