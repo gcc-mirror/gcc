@@ -179,10 +179,16 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 /* These are for target os support and cannot be changed at runtime.  */
 #define TARGET_ABI_WINDOWS_NT 0
 #define TARGET_ABI_OPEN_VMS 0
-#define TARGET_ABI_OSF (!TARGET_ABI_WINDOWS_NT && !TARGET_ABI_OPEN_VMS)
+#define TARGET_ABI_UNICOSMK 0
+#define TARGET_ABI_OSF (!TARGET_ABI_WINDOWS_NT	\
+			&& !TARGET_ABI_OPEN_VMS	\
+			&& !TARGET_ABI_UNICOSMK)
 
 #ifndef TARGET_AS_CAN_SUBTRACT_LABELS
 #define TARGET_AS_CAN_SUBTRACT_LABELS TARGET_GAS
+#endif
+#ifndef TARGET_AS_SLASH_BEFORE_SUFFIX
+#define TARGET_AS_SLASH_BEFORE_SUFFIX TARGET_GAS
 #endif
 #ifndef TARGET_CAN_FAULT_IN_PROLOGUE
 #define TARGET_CAN_FAULT_IN_PROLOGUE 0
@@ -792,7 +798,9 @@ enum reg_class { NO_REGS, PV_REG, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    `R' is a SYMBOL_REF that has SYMBOL_REF_FLAG set or is the current
    function.
 
-   'S' is a 6-bit constant (valid for a shift insn).  */
+   'S' is a 6-bit constant (valid for a shift insn).  
+
+   'U' is a symbolic operand.  */
 
 #define EXTRA_CONSTRAINT(OP, C)				\
   ((C) == 'Q' ? normal_memory_operand (OP, VOIDmode)			\
@@ -800,6 +808,8 @@ enum reg_class { NO_REGS, PV_REG, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    : (C) == 'S' ? (GET_CODE (OP) == CONST_INT				\
 		   && (unsigned HOST_WIDE_INT) INTVAL (OP) < 64)	\
    : (C) == 'T' ? GET_CODE (OP) == HIGH					\
+   : (TARGET_ABI_UNICOSMK && (C) == 'U')				\
+		? symbolic_operand (OP, VOIDmode)			\
    : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
@@ -2174,7 +2184,8 @@ do {									\
   {"hard_int_register_operand", {SUBREG, REG}},				\
   {"reg_not_elim_operand", {SUBREG, REG}},				\
   {"reg_no_subreg_operand", {REG}},					\
-  {"addition_operation", {PLUS}},
+  {"addition_operation", {PLUS}},					\
+  {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},
 
 /* Define the `__builtin_va_list' type for the ABI.  */
 #define BUILD_VA_LIST_TYPE(VALIST) \

@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 143 fixup descriptions.
+ * This file contains 144 fixup descriptions.
  *
  * See README for more information.
  *
@@ -1954,7 +1954,7 @@ tSCC zHpux10_Cpp_Pow_InlineName[] =
  *  File name selection pattern
  */
 tSCC zHpux10_Cpp_Pow_InlineList[] =
-  "|math.h|";
+  "|fixinc-test-limits.h|math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -5107,6 +5107,43 @@ static const char* apzUndefine_NullPatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Unicosmk_Restrict fix
+ */
+tSCC zUnicosmk_RestrictName[] =
+     "unicosmk_restrict";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zUnicosmk_RestrictList[] =
+  "|stdio.h|stdlib.h|wchar.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzUnicosmk_RestrictMachs[] = {
+        "*-*-unicosmk*",
+        (const char*)NULL };
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zUnicosmk_RestrictSelect0[] =
+       "(\\*[ \t]*)restrict([ \t]+)";
+
+#define    UNICOSMK_RESTRICT_TEST_CT  1
+static tTestDesc aUnicosmk_RestrictTests[] = {
+  { TT_EGREP,    zUnicosmk_RestrictSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Unicosmk_Restrict
+ */
+static const char* apzUnicosmk_RestrictPatch[] = {
+    "format",
+    "%1__restrict__%2",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of Uw7_Byteorder_Fix fix
  */
 tSCC zUw7_Byteorder_FixName[] =
@@ -5577,9 +5614,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          150
+#define REGEX_COUNT          151
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            143
+#define FIX_COUNT            144
 
 /*
  *  Enumerate the fixes
@@ -5717,6 +5754,7 @@ typedef enum {
     ULTRIX_STATIC_FIXIDX,
     ULTRIX_STRINGS_FIXIDX,
     UNDEFINE_NULL_FIXIDX,
+    UNICOSMK_RESTRICT_FIXIDX,
     UW7_BYTEORDER_FIX_FIXIDX,
     VA_I960_MACRO_FIXIDX,
     VOID_NULL_FIXIDX,
@@ -6390,6 +6428,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzUndefine_NullMachs,
      UNDEFINE_NULL_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aUndefine_NullTests,   apzUndefine_NullPatch, 0 },
+
+  {  zUnicosmk_RestrictName,    zUnicosmk_RestrictList,
+     apzUnicosmk_RestrictMachs,
+     UNICOSMK_RESTRICT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aUnicosmk_RestrictTests,   apzUnicosmk_RestrictPatch, 0 },
 
   {  zUw7_Byteorder_FixName,    zUw7_Byteorder_FixList,
      apzUw7_Byteorder_FixMachs,

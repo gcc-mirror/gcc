@@ -3102,6 +3102,23 @@ fix = {
     test_text = "#define NULL 0UL\r\n#define NULL\t((void*)0)\n";
 };
 
+/*
+ * On Cray Unicos/Mk some standard headers use the C99 keyword "restrict"
+ * which must be replaced by __restrict__ for GCC.
+ */
+fix = {
+    hackname = unicosmk_restrict;
+    files    = stdio.h;
+    files    = stdlib.h;
+    files    = wchar.h;
+    mach     = "*-*-unicosmk*";
+    select   = "(\\*[ \t]*)restrict([ \t]+)";
+
+    c_fix     = format;
+    c_fix_arg = "%1__restrict__%2";
+
+    test_text = "void f (char * restrict x);";
+};
 
 /*
  * If arpa/inet.h prototypes are incompatible with the ones we just
