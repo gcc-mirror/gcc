@@ -27,6 +27,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "expr.h"
 #include "insn-config.h"
 #include "recog.h"
+#include <ctype.h>
 
 /* Each optab contains info on how this target machine
    can perform a particular operation
