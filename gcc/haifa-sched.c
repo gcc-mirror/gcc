@@ -6089,11 +6089,11 @@ print_value (buf, x, verbose)
 	strcpy (t, "fr");
       else
 	strcpy (t, "r");
-      sprintf (buf, "%s%d", t, !! XEXP (x, 0));
+      sprintf (buf, "%s%d", t, REGNO (x));
       break;
     case SUBREG:
       print_value (t, XEXP (x, 0), verbose);
-      sprintf (buf, "%s#%d", t, !! XEXP (x, 1));
+      sprintf (buf, "%s#%d", t, SUBREG_WORD (x));
       break;
     case SCRATCH:
       sprintf (buf, "scratch");
