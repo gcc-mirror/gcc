@@ -1,5 +1,19 @@
 2001-08-20  Diego Novillo  <dnovillo@redhat.com>
 
+	* basic-block.h (basic_block): Add new field 'flags'.
+	(BB_REACHABLE): Define.
+	(expunge_block): Declare.
+	* flow.c (ENTRY_BLOCK_PTR): Initialize field 'flags'.
+	(EXIT_BLOCK_PTR): Ditto.
+	(expunge_block): Remove static declaration.
+	(cleanup_cfg): Clear bb->aux on every basic block.
+	(find_unreachable_blocks): Set BB_REACHABLE bit in bb->flags when
+	computing reachability.
+	(delete_unreachable_blocks): Delete block b if b->flags has
+	BB_REACHABLE unset.
+
+2001-08-20  Diego Novillo  <dnovillo@redhat.com>
+
 	* doc/invoke.texi: Replace references to -fdump-tree with -fdump-ast.
 
 2001-08-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>

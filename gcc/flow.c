@@ -208,7 +208,8 @@ struct basic_block_def entry_exit_blocks[2]
     ENTRY_BLOCK,		/* index */
     0,				/* loop_depth */
     0,				/* count */
-    0				/* frequency */
+    0,				/* frequency */
+    0				/* flags */
   },
   {
     NULL,			/* head */
@@ -225,7 +226,8 @@ struct basic_block_def entry_exit_blocks[2]
     EXIT_BLOCK,			/* index */
     0,				/* loop_depth */
     0,				/* count */
-    0				/* frequency */
+    0,				/* frequency */
+    0				/* flags */
   }
 };
 
@@ -383,7 +385,6 @@ static void commit_one_edge_insertion	PARAMS ((edge));
 
 static void delete_unreachable_blocks	PARAMS ((void));
 static int can_delete_note_p		PARAMS ((rtx));
-static void expunge_block		PARAMS ((basic_block));
 static int can_delete_label_p		PARAMS ((rtx));
 static int tail_recursion_label_p	PARAMS ((rtx));
 static int merge_blocks_move_predecessor_nojumps PARAMS ((basic_block,
@@ -1030,6 +1031,8 @@ void
 cleanup_cfg (mode)
      int mode;
 {
+  int i;
+
   timevar_push (TV_CLEANUP_CFG);
   delete_unreachable_blocks ();
   if (try_optimize_cfg (mode))
@@ -1040,6 +1043,10 @@ cleanup_cfg (mode)
   free_EXPR_LIST_list (&label_value_list);
   free_EXPR_LIST_list (&tail_recursion_label_list);
   timevar_pop (TV_CLEANUP_CFG);
+
+  /* Clear bb->aux on all basic blocks.  */
+  for (i = 0; i < n_basic_blocks; ++i)
+    BASIC_BLOCK (i)->aux = NULL;
 }
 
 /* Create a new basic block consisting of the instructions between
@@ -2643,8 +2650,9 @@ flow_call_edges_add (blocks)
   return blocks_split;
 }
 
-/* Find unreachable blocks.  An unreachable block will have NULL in
-   block->aux, a non-NULL value indicates the block is reachable.  */
+/* Find unreachable blocks.  An unreachable block will have 0 in
+   the reachable bit in block->flags.  A non-zero value indicates the
+   block is reachable.  */
 
 void
 find_unreachable_blocks ()
@@ -2656,10 +2664,10 @@ find_unreachable_blocks ()
   n = n_basic_blocks;
   tos = worklist = (basic_block *) xmalloc (sizeof (basic_block) * n);
 
-  /* Use basic_block->aux as a marker.  Clear them all.  */
+  /* Clear all the reachability flags.  */
 
   for (i = 0; i < n; ++i)
-    BASIC_BLOCK (i)->aux = NULL;
+    BASIC_BLOCK (i)->flags &= ~BB_REACHABLE;
 
   /* Add our starting points to the worklist.  Almost always there will
      be only one.  It isn't inconcievable that we might one day directly
@@ -2669,8 +2677,8 @@ find_unreachable_blocks ()
     {
       *tos++ = e->dest;
 
-      /* Mark the block with a handy non-null value.  */
-      e->dest->aux = e;
+      /* Mark the block reachable.  */
+      e->dest->flags |= BB_REACHABLE;
     }
 
   /* Iterate: find everything reachable from what we've already seen.  */
@@ -2680,10 +2688,10 @@ find_unreachable_blocks ()
       basic_block b = *--tos;
 
       for (e = b->succ; e; e = e->succ_next)
-	if (!e->dest->aux)
+	if (!(e->dest->flags & BB_REACHABLE))
 	  {
 	    *tos++ = e->dest;
-	    e->dest->aux = e;
+	    e->dest->flags |= BB_REACHABLE;
 	  }
     }
 
@@ -2706,10 +2714,7 @@ delete_unreachable_blocks ()
     {
       basic_block b = BASIC_BLOCK (i);
 
-      if (b->aux != NULL)
-	/* This block was found.  Tidy up the mark.  */
-	b->aux = NULL;
-      else
+      if (!(b->flags & BB_REACHABLE))
 	flow_delete_block (b);
     }
 
@@ -2845,7 +2850,7 @@ flow_delete_block (b)
 
 /* Remove block B from the basic block array and compact behind it.  */
 
-static void
+void
 expunge_block (b)
      basic_block b;
 {
