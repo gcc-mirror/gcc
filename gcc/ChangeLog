@@ -20,6 +20,9 @@ Fri Feb 25 19:49:08 2000  Jeffrey A Law  (law@cygnus.com)
 
 Fri Feb 25 19:22:44 2000  Graham Stott <grahams@rcp.co.uk>
 
+	* resource.c (mark_referenced_resources): Changed use SET_DEST (...)
+	to XEXP (..., 0) on RTL nodes which are not SET or CLOBBER.
+
 	* i386.md (define_expand "clrstrsi"): Fix typo.
 
 Fri Feb 25 18:49:39 2000  "K. Richard Pixley" <rich@microunity.com>
