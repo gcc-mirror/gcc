@@ -47,13 +47,6 @@ extern int target_flags;
 
 #define TARGET_DISABLE_FPREGS (target_flags & 2)
 
-/* Force gcc to only use instructions which are safe when compiling kernels.
-   Specifically, avoid using add instructions with dp (r27) as an argument.
-   Use addil instructions instead.  Doing so avoids a nasty bug in the 
-   HPUX linker.  When HP fixes their linker take this option out.  */
-
-#define TARGET_KERNEL (target_flags & 4)
-
 /* Allow unconditional jumps in the delay slots of call instructions.  */
 #define TARGET_JUMP_IN_DELAY (target_flags & 8)
 
@@ -93,8 +86,6 @@ extern int target_flags;
    {"pa-risc-1-1", 1},		\
    {"disable-fpregs", 2},	\
    {"no-disable-fpregs", 2},	\
-   {"kernel", 4},		\
-   {"no-kernel", -4},		\
    {"jump-in-delay", 8},	\
    {"no-jump-in-delay", -8},	\
    {"long-calls", 16},		\
