@@ -362,20 +362,18 @@ if [ x"${host}" = x"${target}" ] ; then
 	# that are in the 'cross only' list
 	skipdirs="${skipdirs} ${cross_only}"
 	is_cross_compiler=no
-	# Default to --enable-multilib.  See similar code below.
-	if [ x${enable_multilib} = xno ]; then
-	  target_subdir=.
-	else
-	  target_subdir=${target_alias}
-	fi
 else
 	# similarly, don't build the targets in the 'native only' 
 	# list when building a cross compiler
 	skipdirs="${skipdirs} ${native_only}"
 	is_cross_compiler=yes
-	target_subdir=${target_alias}
 fi	
 
+# We always want to use the same name for this directory, so that dejagnu
+# can reliably find it.
+target_subdir=${target_alias}
+  
+target_subdir=${target_alias}
 if [ ! -d ${target_subdir} ] ; then
   if mkdir ${target_subdir} ; then true
   else
