@@ -1,3 +1,12 @@
+2004-11-05  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.in (mostlyclean): Add fixinc.sh.
+	(clean): Add mkheaders.
+	(distclean): New.
+	(dvi): New.
+	(info): New.
+	(installcheck): New.
+
 2004-11-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in (mostlyclean, distclean): New targets.
