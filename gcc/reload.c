@@ -3994,17 +3994,82 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
      actually fail are extremely rare, so it turns out to be better to fix
      the problem here by not generating cases that choose_reload_regs will
      fail for.  */
-   
+  /* There is a similar problem with RELAOD_FOR_INPUT_ADDRESS /
+     RELOAD_FOR_OUTPUT_ADDRESS when there is more than one of a kind for
+     a single operand.
+     We can reduce the register pressure by exploiting that a
+     RELOAD_FOR_X_ADDR_ADDR that precedes all RELOAD_FOR_X_ADDRESS reloads
+     does not conflict with any of them.  */
   {
-    int op_addr_reloads = 0;
-    for (i = 0; i < n_reloads; i++)
-      if (reload_when_needed[i] == RELOAD_FOR_OPERAND_ADDRESS)
-	op_addr_reloads++;
+    int first_op_addr_num = -2;
+    int first_inpaddr_num[MAX_RECOG_OPERANDS];
+    int first_outpaddr_num[MAX_RECOG_OPERANDS];
+    int need_change= 0;
+    /* We use last_op_addr_reload and the contents of the above arrays
+       first as flags - -2 means no instance encountered, -1 means exactly
+       one instance encountered.
+       If more than one instance has been encountered, we store the reload
+       number of the first reload of the kind in question; reload numbers
+       are known to be non-negative.  */
+    for (i = 0; i < noperands; i++)
+      first_inpaddr_num[i] = first_outpaddr_num[i] = -2;
+    for (i = n_reloads - 1; i >= 0; i--)
+      {
+	switch (reload_when_needed[i])
+	  {
+	  case RELOAD_FOR_OPERAND_ADDRESS:
+	    if (! ++first_op_addr_num)
+	      {
+		first_op_addr_num= i;
+		need_change = 1;
+	      }
+	    break;
+	  case RELOAD_FOR_INPUT_ADDRESS:
+	    if (! ++first_inpaddr_num[reload_opnum[i]])
+	      {
+		first_inpaddr_num[reload_opnum[i]] = i;
+		need_change = 1;
+	      }
+	    break;
+	  case RELOAD_FOR_OUTPUT_ADDRESS:
+	    if (! ++first_outpaddr_num[reload_opnum[i]])
+	      {
+		first_outpaddr_num[reload_opnum[i]] = i;
+		need_change = 1;
+	      }
+	    break;
+	  default:
+	    break;
+	  }
+      }
 
-    if (op_addr_reloads > 1)
-      for (i = 0; i < n_reloads; i++)
-	if (reload_when_needed[i] == RELOAD_FOR_OPADDR_ADDR)
-	  reload_when_needed[i] = RELOAD_FOR_OPERAND_ADDRESS;
+    if (need_change)
+      {
+	for (i = 0; i < n_reloads; i++)
+	  {
+	    int first_num, type;
+
+	    switch (reload_when_needed[i])
+	      {
+	      case RELOAD_FOR_OPADDR_ADDR:
+		first_num = first_op_addr_num;
+		type = RELOAD_FOR_OPERAND_ADDRESS;
+		break;
+	      case RELOAD_FOR_INPADDR_ADDRESS:
+		first_num = first_inpaddr_num[reload_opnum[i]];
+		type = RELOAD_FOR_INPUT_ADDRESS;
+		break;
+	      case RELOAD_FOR_OUTADDR_ADDRESS:
+		first_num = first_outpaddr_num[reload_opnum[i]];
+		type = RELOAD_FOR_OUTPUT_ADDRESS;
+		break;
+	      default:
+		continue;
+	      }
+	    if (i > first_num)
+	      reload_when_needed[i] = type;
+	  }
+      }
   }
 
   /* See if we have any reloads that are now allowed to be merged

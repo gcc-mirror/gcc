@@ -1,3 +1,11 @@
+Wed Jul  1 21:17:36 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload.c (find_reloads): If there are multiple
+	RELOAD_FOR_INPUT_ADDRESS / RELOAD_FOR_OUTPUT_ADDRESS reloads for
+	one operand, change RELOAD_FOR_INPADDR_ADDRESS /
+	RELOAD_FOR_OUTADDR_ADDRESS for all but the first
+	RELOAD_FOR_INPUT_ADDRESS / RELOAD_FOR_OUTPUT_ADDRESS reloads.
+
 Wed Jul  1 17:23:23 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* regmove.c (fixup_match_2): Check that P has RTX_CLASS 'i' before
