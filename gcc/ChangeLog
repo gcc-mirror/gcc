@@ -1,3 +1,18 @@
+2004-02-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-parse.in (maybe_type_qual): Delete.
+	(maybe_volatile, simple_asm_expr, asmdef, asm_stmt)
+	(asm_argument): New grammar rules.
+	(extdef_1): Use asmdef.
+	(maybeasm): Move down with other asm rules; use simple_asm_expr.
+	(xexpr): Move up with other expression rules.
+	(stmt): Use asm_stmt.
+
+	* c-typeck.c (build_asm_expr): New function - body mostly
+	pulled from build_asm_stmt.
+	(build_asm_stmt): Just handle tacking on the volatile qualifier.
+	* c-tree.h (build_asm_expr, build_asm_stmt): Update prototypes.
+
 2004-02-12  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR bootstrap/13617
@@ -197,7 +212,7 @@
 
 2004-02-10  Matt Kraai  <kraai@alumni.cmu.edu>
 
-        * doc/install.texi: Remove extra cd.
+	* doc/install.texi: Remove extra cd.
 
 2004-02-10  Ziemowit Laski  <zlaski@apple.com>
 
@@ -383,7 +398,7 @@
 	* config/m68k/linux.h, config/m68k/m68k.c: Remove traling whitespace.
 
 2004-02-08  Andreas Schwab  <schwab@suse.de>
-            Bernardo Innocenti  <bernie@develer.com>
+	    Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/m68k.h (REGISTER_NAMES): Prefix each name with
 	REGISTER_PREFIX.

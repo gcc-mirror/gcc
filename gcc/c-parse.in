@@ -200,9 +200,9 @@ do {									\
 %type <ttype> typespec_reserved_nonattr typespec_reserved_attr
 %type <ttype> typespec_nonreserved_nonattr
 
-%type <ttype> scspec SCSPEC STATIC TYPESPEC TYPE_QUAL maybe_type_qual
-%type <ttype> initdecls notype_initdecls initdcl notype_initdcl
-%type <ttype> init maybeasm
+%type <ttype> scspec SCSPEC STATIC TYPESPEC TYPE_QUAL maybe_volatile
+%type <ttype> initdecls notype_initdecls initdcl notype_initdcl init
+%type <ttype> simple_asm_expr maybeasm asmdef asm_stmt asm_argument
 %type <ttype> asm_operands nonnull_asm_operands asm_operand asm_clobbers
 %type <ttype> maybe_attribute attributes attribute attribute_list attrib
 %type <ttype> any_word
@@ -375,19 +375,12 @@ extdef:
 extdef_1:
 	fndef
 	| datadef
+	| asmdef
+	| extension extdef
+		{ RESTORE_EXT_FLAGS ($1); }
 @@ifobjc
 	| objcdef
 @@end_ifobjc
-	| ASM_KEYWORD '(' expr ')' ';'
-		{ STRIP_NOPS ($3);
-		  if ((TREE_CODE ($3) == ADDR_EXPR
-		       && TREE_CODE (TREE_OPERAND ($3, 0)) == STRING_CST)
-		      || TREE_CODE ($3) == STRING_CST)
-		    assemble_asm ($3);
-		  else
-		    error ("argument of `asm' is not a constant string"); }
-	| extension extdef
-		{ RESTORE_EXT_FLAGS ($1); }
 	;
 
 datadef:
@@ -1392,13 +1385,6 @@ notype_initdecls:
 	| notype_initdecls ',' maybe_resetattrs notype_initdcl
 	;
 
-maybeasm:
-	  /* empty */
-		{ $$ = NULL_TREE; }
-	| ASM_KEYWORD '(' STRING ')'
-		{ $$ = $3; }
-	;
-
 initdcl:
 	  declarator maybeasm maybe_attribute '='
 		{ $<ttype>$ = start_decl ($1, current_declspecs, 1,
@@ -2346,6 +2332,12 @@ for_init_stmt:
 		{ check_for_loop_decls (); }
 	;
 
+xexpr:
+	/* empty */
+		{ $$ = NULL_TREE; }
+	| expr
+	;
+
 /* Parse a single real statement, not including any labels.  */
 stmt:
 	  compstmt
@@ -2381,23 +2373,7 @@ stmt:
 	| RETURN expr ';'
                 { stmt_count++;
 		  $$ = c_expand_return ($2); }
-	| ASM_KEYWORD maybe_type_qual '(' expr ')' ';'
-		{ stmt_count++;
-		  $$ = simple_asm_stmt ($4); }
-	/* This is the case with just output operands.  */
-	| ASM_KEYWORD maybe_type_qual '(' expr ':' asm_operands ')' ';'
-		{ stmt_count++;
-		  $$ = build_asm_stmt ($2, $4, $6, NULL_TREE, NULL_TREE); }
-	/* This is the case with input operands as well.  */
-	| ASM_KEYWORD maybe_type_qual '(' expr ':' asm_operands ':'
-	  asm_operands ')' ';'
-		{ stmt_count++;
-		  $$ = build_asm_stmt ($2, $4, $6, $8, NULL_TREE); }
-	/* This is the case with clobbered registers as well.  */
-	| ASM_KEYWORD maybe_type_qual '(' expr ':' asm_operands ':'
-	  asm_operands ':' asm_clobbers ')' ';'
-		{ stmt_count++;
-		  $$ = build_asm_stmt ($2, $4, $6, $8, $10); }
+	| asm_stmt
 	| GOTO identifier ';'
 		{ tree decl;
 		  stmt_count++;
@@ -2499,19 +2475,65 @@ label:	  CASE expr_no_commas ':'
 		}
 	;
 
-/* Either a type-qualifier or nothing.  First thing in an `asm' statement.  */
+/* Asm expressions and statements */
 
-maybe_type_qual:
-	/* empty */
-		{ $$ = NULL_TREE; }
-	| TYPE_QUAL
-		{ }
+/* simple_asm_expr is used in restricted contexts, where a full
+   expression with inputs and outputs does not make sense.  */
+simple_asm_expr:
+	ASM_KEYWORD '(' STRING ')'
+		{ $$ = $3; }
 	;
 
-xexpr:
-	/* empty */
+/* maybeasm: used for assembly names for declarations */
+maybeasm:
+	  /* empty */
 		{ $$ = NULL_TREE; }
-	| expr
+	| simple_asm_expr
+	;
+
+/* asmdef: asm() outside a function body.  */
+asmdef:
+	simple_asm_expr ';'
+		{ assemble_asm ($1); }
+	;
+
+/* Full-blown asm statement with inputs, outputs, clobbers, and
+   volatile tag allowed.  */
+asm_stmt:
+	ASM_KEYWORD maybe_volatile '(' asm_argument ')' ';'
+		{ stmt_count++;
+		  $$ = build_asm_stmt ($2, $4); }
+	;
+
+asm_argument:
+	/* no operands */
+	STRING
+		{ $$ = build_asm_expr ($1, 0, 0, 0, true); }
+	/* output operands */
+	| STRING ':' asm_operands
+		{ $$ = build_asm_expr ($1, $3, 0, 0, false); }
+	/* output and input operands */
+	| STRING ':' asm_operands ':' asm_operands
+		{ $$ = build_asm_expr ($1, $3, $5, 0, false); }
+	/* output and input operands and clobbers */
+	| STRING ':' asm_operands ':' asm_operands ':' asm_clobbers
+		{ $$ = build_asm_expr ($1, $3, $5, $7, false); }
+	;
+
+/* Either 'volatile' or nothing.  First thing in an `asm' statement.  */
+
+maybe_volatile:
+	/* empty */
+		{ $$ = 0; }
+	| TYPE_QUAL
+		{ if ($1 != ridpointers[RID_VOLATILE])
+		    {
+		      warning ("%E qualifier ignored on asm", $1);
+		      $$ = 0;
+		    }
+		  else
+		    $$ = $1;
+		}
 	;
 
 /* These are the operands other than the first string and colon
