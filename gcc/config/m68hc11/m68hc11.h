@@ -214,10 +214,6 @@ extern const char *m68hc11_soft_reg_count;
 
 #define OVERRIDE_OPTIONS	m68hc11_override_options ();
 
-/* Define this to change the optimizations performed by default.  */
-#define OPTIMIZATION_OPTIONS(LEVEL, SIZE) \
-m68hc11_optimization_options(LEVEL, SIZE)
-
 
 /* Define cost parameters for a given processor variant.  */
 struct processor_costs {

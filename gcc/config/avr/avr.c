@@ -258,16 +258,6 @@ avr_override_options ()
 }
 
 
-void
-avr_optimization_options (level, size)
-     int level ATTRIBUTE_UNUSED;
-     int size;
-{
-  if (size)
-    flag_reorder_blocks = 0;
-}
-
-
 /* Initialize TMP_REG_RTX and ZERO_REG_RTX */
 void
 avr_init_once ()
