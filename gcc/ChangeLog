@@ -1,3 +1,9 @@
+2004-01-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c: Update copyright.
+	* config/sparc/sparc.h: Likewise.
+	* config/sparc/sparc.md: Likewise.
+
 2004-01-29  Roger Sayle  <roger@eyesopen.com>
 
 	PR java/13824

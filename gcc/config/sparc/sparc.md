@@ -1,8 +1,8 @@
 ;; Machine description for SPARC chip for GNU C compiler
 ;;  Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-;;  1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+;;  1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 ;;  Contributed by Michael Tiemann (tiemann@cygnus.com)
-;;  64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
+;;  64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
 ;;  at Cygnus Support.
 
 ;; This file is part of GNU CC.
