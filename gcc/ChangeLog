@@ -1,5 +1,10 @@
 Mon Sep 20 05:41:36 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* flow.c (merge_blocks_move_predecessor_nojumps): New function.
+	(merge-blocks_move_successor_nojumps): Likewise.
+	(merge_blocks): Allow merging of some blocks, even if it requires
+	physical movement of the blocks, but not if it requires new jumps.
+
 	* bitmap.c (debug_bitmap_file): Renmaed from bitmap_debug_file.
 	Callers and prototype changed.
 	* bitmap.h: Fix debug_bitmap and debug_bitmap_file prototypes.

@@ -1847,6 +1847,95 @@ can_delete_label_p (label)
   return 1;
 }
 
+/* Blocks A and B are to be merged into a single block.  A has no incoming
+   fallthru edge, so it can be moved before B without adding or modifying
+   any jumps (aside from the jump from A to B).  */
+
+static int
+merge_blocks_move_predecessor_nojumps (e, a, b)
+     edge e;
+     basic_block a, b;
+{
+  rtx start, end, insertpoint, barrier;
+
+  start = a->head;
+  end = a->end;
+  insertpoint = PREV_INSN (b->head);
+
+  /* We want to delete the BARRIER after the end of the insns we are
+     going to move.  If we don't find a BARRIER, then do nothing.  This
+     can happen in some cases if we have labels we can not delete. 
+
+     Similarly, do nothing if we can not delete the label at the start
+     of the target block.  */
+  barrier = next_nonnote_insn (end);
+  if (GET_CODE (barrier) != BARRIER
+      || (GET_CODE (b->head) == CODE_LABEL
+	  && ! can_delete_label_p (b->head)))
+    return 0;
+  else
+    flow_delete_insn (barrier);
+
+  /* Move block and loop notes out of the chain so that we do not
+     disturb their order.
+
+     ??? A better solution would be to squeeze out all the non-nested notes
+     and adjust the block trees appropriately.   Even better would be to have
+     a tighter connection between block trees and rtl so that this is not
+     necessary.  */
+  start = squeeze_notes (start, end);
+
+  /* Scramble the insn chain.  */
+  reorder_insns (start, end, insertpoint);
+
+  /* Now blocks A and B are contiguous.  Merge them.  */
+  merge_blocks_nomove (a, b);
+  return 1;
+}
+
+/* Blocks A and B are to be merged into a single block.  B has no outgoing
+   fallthru edge, so it can be moved after A without adding or modifying
+   any jumps (aside from the jump from A to B).  */
+
+static int
+merge_blocks_move_successor_nojumps (e, a, b)
+     edge e;
+     basic_block a, b;
+{
+  rtx start, end, insertpoint, barrier;
+
+  start = b->head;
+  end = b->end;
+  insertpoint = a->end;
+
+  /* We want to delete the BARRIER before the start of the insns we are
+     going to move.  If we don't find a BARRIER, then do nothing.  This
+     can happen in some cases if we have labels we can not delete.  */
+  barrier = prev_nonnote_insn (start);
+  if (GET_CODE (barrier) != BARRIER
+      || (GET_CODE (b->head) == CODE_LABEL
+	  && ! can_delete_label_p (b->head)))
+    return 0;
+  else
+    flow_delete_insn (barrier);
+
+  /* Move block and loop notes out of the chain so that we do not
+     disturb their order.
+
+     ??? A better solution would be to squeeze out all the non-nested notes
+     and adjust the block trees appropriately.   Even better would be to have
+     a tighter connection between block trees and rtl so that this is not
+     necessary.  */
+  start = squeeze_notes (start, end);
+
+  /* Scramble the insn chain.  */
+  reorder_insns (start, end, insertpoint);
+
+  /* Now blocks A and B are contiguous.  Merge them.  */
+  merge_blocks_nomove (a, b);
+  return 1;
+}
+
 /* Blocks A and B are to be merged into a single block.  The insns
    are already contiguous, hence `nomove'.  */
 
@@ -1946,19 +2035,58 @@ merge_blocks (e, b, c)
   /* If B has a fallthru edge to C, no need to move anything.  */
   if (!(e->flags & EDGE_FALLTHRU))
     {
+      edge tmp_edge;
+      int c_has_outgoing_fallthru;
+      int b_has_incoming_fallthru;
+
       /* ??? From here on out we must make sure to not munge nesting
-	 of exception regions and lexical blocks.  Need to think about
-	 these cases before this gets implemented.  */
-      return 0;
+	 of exception regions and lexical blocks.
 
-      /* If C has an outgoing fallthru, and B does not have an incoming
-	 fallthru, move B before C.  The later clause is somewhat arbitrary,
-	 but avoids modifying blocks other than the two we've been given.  */
+	 A few notes on the subject:
 
-      /* Otherwise, move C after B.  If C had a fallthru, which doesn't
-	 happen to be the physical successor to B, insert an unconditional
-	 branch.  If C already ended with a conditional branch, the new
-	 jump must go in a new basic block D.  */
+	  Not only do we have to be careful not to lose the nesting of
+	  exception regions or lexical blocks, we also have to be careful
+	  about merging blocks which are in different EH regions.
+
+	  A call that throws may end a block.  The insn to copy the return
+	  value from its hard reg into a pseudo could end up in a
+	  different block than the call.  Moving either block might cause
+	  problems for SMALL_REGISTER_CLASS machines.
+
+	  A throw/catch edge (or any abnormal edge) should be rarely
+	  executed and we may want to treat blocks which have two out
+	  edges, one normal, one abnormal as only having one edge for
+	  block merging purposes.
+
+	  For now we avoid the EH issues by not allowing any physical
+	  block movement when exception handling is enabled.  */
+      if (flag_exceptions)
+	return 0;
+
+      for (tmp_edge = c->succ; tmp_edge ; tmp_edge = tmp_edge->succ_next)
+	if (tmp_edge->flags & EDGE_FALLTHRU)
+	  break;
+      c_has_outgoing_fallthru = (tmp_edge != NULL);
+
+      for (tmp_edge = b->pred; tmp_edge ; tmp_edge = tmp_edge->pred_next)
+	if (tmp_edge->flags & EDGE_FALLTHRU)
+	  break;
+      b_has_incoming_fallthru = (tmp_edge != NULL);
+
+      /* If B does not have an incoming fallthru, then it can be moved
+	 immediately before C without introducing or modifying jumps.
+
+	 Else if C does not have an outgoing fallthru, then it can be moved
+	 immediately after B without introducing or modifying jumps.
+
+	 Else move C after B, which will likely require insertion of a
+	 new jump.  ??? Not implemented yet.  */
+      if (! b_has_incoming_fallthru)
+	return merge_blocks_move_predecessor_nojumps (e, b, c);
+      else if (! c_has_outgoing_fallthru)
+	return merge_blocks_move_successor_nojumps (e, b, c);
+      else
+	return 0;
     }
 
   /* If a label still appears somewhere and we cannot delete the label,
