@@ -1696,8 +1696,11 @@ generate_bytecode_insns (exp, target, state)
       /* Stack, if ARRAY_REF:  ..., [result, ] array, index, oldvalue. */
       /* Stack, if COMPONENT_REF:  ..., [result, ] objectref, oldvalue. */
       /* Stack, otherwise:  ..., [result, ] oldvalue. */
-      push_int_const (value, state); /* FIXME - assumes int! */
-      NOTE_PUSH (1);
+      if (size == 1)
+	push_int_const (value, state);
+      else
+	push_long_const (value, value >= 0 ? 0 : -1, state);
+      NOTE_PUSH (size);
       emit_binop (OPCODE_iadd + adjust_typed_op (type, 3), type, state);
       if (target != IGNORE_TARGET && ! post_op)
 	emit_dup (size, offset, state);
@@ -1950,7 +1953,10 @@ generate_bytecode_insns (exp, target, state)
 	    tree catch_clause = TREE_OPERAND (clause, 0);
 	    tree exception_decl = BLOCK_EXPR_DECLS (catch_clause);
 	    struct jcf_handler *handler = alloc_handler (start_label, end_label, state);
-	    handler->type = TREE_TYPE (TREE_TYPE (exception_decl));
+	    if (exception_decl == NULL_TREE)
+	      handler->type = NULL_TREE;
+	    else
+	      handler->type = TREE_TYPE (TREE_TYPE (exception_decl));
 	    generate_bytecode_insns (catch_clause, IGNORE_TARGET, state);
 	    if (CAN_COMPLETE_NORMALLY (catch_clause))
 	      emit_goto (finished_label, state);
@@ -2051,6 +2057,22 @@ generate_bytecode_insns (exp, target, state)
 	    RESERVE (3);
 	    OP1 (OPCODE_anewarray);
 	    OP2 (index);
+	    break;
+	  }
+	else if (f == soft_monitorenter_node
+		 || f == soft_monitorexit_node
+		 || f == throw_node)
+	  {
+	    if (f == soft_monitorenter_node)
+	      op = OPCODE_monitorenter;
+	    else if (f == soft_monitorexit_node)
+	      op = OPCODE_monitorexit;
+	    else
+	      op = OPCODE_athrow;
+	    generate_bytecode_insns (TREE_VALUE (x), STACK_TARGET, state);
+	    RESERVE (1);
+	    OP1 (op);
+	    NOTE_POP (1);
 	    break;
 	  }
 	else if (exp == soft_exceptioninfo_call_node)
