@@ -81,7 +81,8 @@ case $basic_machine in
 	# Recognize the basic CPU types with without company name.
 	# Some are omitted here because they have special meanings below.
 	tahoe | i[34]86 | i860 | m68k | m68000 | m88k | ns32k | arm | pyramid \
-		| tron | a29k | 580 | i960 | h8300 | hppa1.0 | hppa1.1 | we32k)
+		| tron | a29k | 580 | i960 | h8300 | hppa1.0 | hppa1.1 \
+		| alpha | we32k)
 		basic_machine=$basic_machine-unknown
 		;;
 	# Recognize the basic CPU types with with company name.
@@ -89,7 +90,7 @@ case $basic_machine in
 	      | sparc-* | ns32k-* | fx80-* | arm-* | c[123]* \
 	      | mips-* | pyramid-* | tron-* | a29k-* | romp-* | rs6000-* \
 	      | none-* | 580-* | cray2-* | h8300-* | i960-* | xmp-* | ymp-* \
-	      | hppa1.0-* | hppa1.1-* | we32k-*)
+	      | hppa1.0-* | hppa1.1-* | alpha-* | we32k-*)
 		;;
 	# Recognize the various machine names and aliases which stand
 	# for a CPU type and a company and sometimes even an OS.
