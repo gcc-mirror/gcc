@@ -1,3 +1,7 @@
+Mon Nov 23 16:46:10 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	*  configure.in: Use AC_PREREQ(2.12.1).
+
 Thu May 14 14:43:10 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* targetdoc/arm-interwork.texi: Document dlltool support of
