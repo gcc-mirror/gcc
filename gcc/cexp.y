@@ -347,6 +347,7 @@ parse_number (olen)
   register int base = 10;
   register int len = olen;
   register int overflow = 0;
+  register int digit, largest_digit = 0;
   int spec_long = 0;
 
   for (c = 0; c < len; c++)
@@ -370,19 +371,14 @@ parse_number (olen)
 
   for (; len > 0; len--) {
     c = *p++;
-    if (c >= 'A' && c <= 'Z') c += 'a' - 'A';
 
-    if (c >= '0' && c <= '9') {
-      overflow |= ULONG_MAX_over_base < n;
-      nd = n * base + c - '0';
-      overflow |= nd < n;
-      n = nd;
-    } else if (base == 16 && c >= 'a' && c <= 'f') {
-      overflow |= ULONG_MAX_over_base < n;
-      nd = n * 16 + c - 'a' + 10;
-      overflow |= nd < n;
-      n = nd;
-    } else {
+    if (c >= '0' && c <= '9')
+      digit = c - '0';
+    else if (base == 16 && c >= 'a' && c <= 'f')
+      digit = c - 'a' + 10;
+    else if (base == 16 && c >= 'A' && c <= 'F')
+      digit = c - 'A' + 10;
+    else {
       /* `l' means long, and `u' means unsigned.  */
       while (1) {
 	if (c == 'l' || c == 'L')
@@ -407,12 +403,20 @@ parse_number (olen)
       /* Don't look for any more digits after the suffixes.  */
       break;
     }
+    if (largest_digit < digit)
+      largest_digit = digit;
+    nd = n * base + digit;
+    overflow |= ULONG_MAX_over_base < n | nd < n;
+    n = nd;
   }
 
   if (len != 0) {
     yyerror ("Invalid number in #if expression");
     return ERROR;
   }
+
+  if (base <= largest_digit)
+    warning ("integer constant contains digits beyond the radix");
 
   if (overflow)
     warning ("integer constant out of range");
