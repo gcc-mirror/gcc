@@ -320,7 +320,6 @@ cb_line_change (pfile, token, parsing_args)
     return;
 
   maybe_print_line (print.map, token->line);
-  print.printed = 1;
   print.prev = 0;
   print.source = 0;
 
@@ -329,12 +328,16 @@ cb_line_change (pfile, token, parsing_args)
      will provide a space if PREV_WHITE.  Don't bother trying to
      reconstruct tabs; we can't get it right in general, and nothing
      ought to care.  Some things do care; the fault lies with them.  */
-  if (token->col > 2)
+  if (!CPP_OPTION (pfile, traditional))
     {
-      unsigned int spaces = token->col - 2;
+      print.printed = 1;
+      if (token->col > 2)
+	{
+	  unsigned int spaces = token->col - 2;
 
-      while (spaces--)
-	putc (' ', print.outf);
+	  while (spaces--)
+	    putc (' ', print.outf);
+	}
     }
 }
 

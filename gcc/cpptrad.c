@@ -65,7 +65,8 @@ struct fun_macro
 
 /* Lexing state.  It is mostly used to prevent macro expansion.  */
 enum ls {ls_none = 0,		/* Normal state.  */
-	 ls_fun_macro,		/* When looking for '('.  */
+	 ls_fun_open,		/* When looking for '('.  */
+	 ls_fun_close,		/* When looking for ')'.  */
 	 ls_defined,		/* After defined.  */
 	 ls_defined_close,	/* Looking for ')' of defined().  */
 	 ls_hash,		/* After # in preprocessor conditional.  */
@@ -262,7 +263,7 @@ skip_whitespace (pfile, cur, skip_comments)
       if (is_nvspace (c) && c)
 	continue;
 
-      if (!c && cur != RLIMIT (pfile->context))
+      if (!c && cur - 1 != RLIMIT (pfile->context))
 	continue;
 
       if (*cur == '/' && skip_comments)
@@ -409,8 +410,6 @@ maybe_start_funlike (pfile, node, start, macro)
   macro->node = node;
   macro->offset = start - pfile->out.base;
   macro->argc = 0;
-
-  pfile->state.parsing_args = 1;
 }
 
 /* Save the OFFSET of the start of the next argument to MACRO.  */
@@ -485,19 +484,17 @@ scan_out_logical_line (pfile, macro)
 	  cur--;
 	  if (!pfile->buffer->from_stage3)
 	    cpp_error (pfile, DL_PEDWARN, "no newline at end of file");
-	  if (pfile->state.parsing_args == 2)
-	    cpp_error (pfile, DL_ERROR,
-		       "unterminated argument list invoking macro \"%s\"",
-		       NODE_NAME (fmacro.node));
 	  pfile->line++;
 	  goto done;
 
 	case '\r': case '\n':
 	  cur = handle_newline (pfile, cur - 1);
-	  if (pfile->state.parsing_args == 2 && !pfile->state.in_directive)
+	  if ((lex_state == ls_fun_open || lex_state == ls_fun_close)
+	      && !pfile->state.in_directive)
 	    {
 	      /* Newlines in arguments become a space.  */
-	      out[-1] = ' ';
+	      if (lex_state == ls_fun_close)
+		out[-1] = ' ';
 	      continue;
 	    }
 	  goto done;
@@ -578,14 +575,17 @@ scan_out_logical_line (pfile, macro)
 
 	      if (node->type == NT_MACRO
 		  /* Should we expand for ls_answer?  */
-		  && lex_state == ls_none
+		  && (lex_state == ls_none || lex_state == ls_fun_open)
 		  && !pfile->state.prevent_expansion
 		  && !recursive_macro (pfile, node))
 		{
-		  if (node->value.macro->fun_like)
+		  /* Macros invalidate MI optimization.  */
+		  pfile->mi_valid = false;
+		  if (! (node->flags & NODE_BUILTIN)
+		      && node->value.macro->fun_like)
 		    {
 		      maybe_start_funlike (pfile, node, out_start, &fmacro);
-		      lex_state = ls_fun_macro;
+		      lex_state = ls_fun_open;
 		      continue;
 		    }
 		  else
@@ -594,6 +594,7 @@ scan_out_logical_line (pfile, macro)
 			 output, and push its replacement text.  */
 		      pfile->out.cur = out_start;
 		      push_replacement_text (pfile, node);
+		      lex_state = ls_none;
 		      goto new_context;
 		    }
 		}
@@ -622,10 +623,9 @@ scan_out_logical_line (pfile, macro)
 	  if (quote == 0)
 	    {
 	      paren_depth++;
-	      if (lex_state == ls_fun_macro)
+	      if (lex_state == ls_fun_open)
 		{
-		  lex_state = ls_none;
-		  pfile->state.parsing_args = 2;
+		  lex_state = ls_fun_close;
 		  paren_depth = 1;
 		  out = pfile->out.base + fmacro.offset;
 		  fmacro.args[0] = fmacro.offset;
@@ -638,7 +638,7 @@ scan_out_logical_line (pfile, macro)
 	  break;
 
 	case ',':
-	  if (quote == 0 && pfile->state.parsing_args == 2 && paren_depth == 1)
+	  if (quote == 0 && lex_state == ls_fun_close && paren_depth == 1)
 	    save_argument (&fmacro, out - pfile->out.base);
 	  break;
 
@@ -646,11 +646,11 @@ scan_out_logical_line (pfile, macro)
 	  if (quote == 0)
 	    {
 	      paren_depth--;
-	      if (pfile->state.parsing_args == 2 && paren_depth == 0)
+	      if (lex_state == ls_fun_close && paren_depth == 0)
 		{
 		  cpp_macro *m = fmacro.node->value.macro;
 
-		  pfile->state.parsing_args = 0;
+		  lex_state = ls_none;
 		  save_argument (&fmacro, out - pfile->out.base);
 
 		  /* A single zero-length argument is no argument.  */
@@ -701,12 +701,9 @@ scan_out_logical_line (pfile, macro)
 
       /* Some of these transitions of state are syntax errors.  The
 	 ISO preprocessor will issue errors later.  */
-      if (lex_state == ls_fun_macro)
-	{
-	  /* Missing '('.  */
-	  lex_state = ls_none;
-	  pfile->state.parsing_args = 0;
-	}
+      if (lex_state == ls_fun_open)
+	/* Missing '('.  */
+	lex_state = ls_none;
       else if (lex_state == ls_hash
 	       || lex_state == ls_predicate
 	       || lex_state == ls_defined)
@@ -722,11 +719,10 @@ scan_out_logical_line (pfile, macro)
   if (fmacro.buff)
     _cpp_release_buff (pfile, fmacro.buff);
 
-  if (pfile->state.parsing_args == 2)
+  if (lex_state == ls_fun_close)
     cpp_error (pfile, DL_ERROR,
 	       "unterminated argument list invoking macro \"%s\"",
 	       NODE_NAME (fmacro.node));
-  pfile->state.parsing_args = 0;
 }
 
 /* Push a context holding the replacement text of the macro NODE on
@@ -737,9 +733,22 @@ push_replacement_text (pfile, node)
      cpp_reader *pfile;
      cpp_hashnode *node;
 {
-  cpp_macro *macro = node->value.macro;
+  size_t len;
+  const uchar *text;
 
-  _cpp_push_text_context (pfile, node, macro->exp.text, macro->count);
+  if (node->flags & NODE_BUILTIN)
+    {
+      text = _cpp_builtin_macro_text (pfile, node);
+      len = ustrlen (text);
+    }
+  else
+    {
+      cpp_macro *macro = node->value.macro;
+      text = macro->exp.text;
+      len = macro->count;
+    }
+
+  _cpp_push_text_context (pfile, node, text, len);
 }
 
 /* Returns TRUE if traditional macro recursion is detected.  */
@@ -782,6 +791,71 @@ recursive_macro (pfile, node)
 	       NODE_NAME (node));
 
   return recursing;
+}
+
+/* Return the length of the replacement text of a function-like or
+   object-like non-builtin macro.  */
+size_t
+_cpp_replacement_text_len (macro)
+     const cpp_macro *macro;
+{
+  size_t len;
+
+  if (macro->fun_like)
+    {
+      const uchar *exp;
+
+      for (exp = macro->exp.text;;)
+	{
+	  struct block *b = (struct block *) exp;
+
+	  len += b->text_len;
+	  if (b->arg_index == 0)
+	    break;
+	  len += NODE_LEN (macro->params[b->arg_index - 1]);
+	  exp += BLOCK_LEN (b->text_len);
+	}
+    }
+  else
+    len = macro->count;
+  
+  return len;
+}
+
+/* Copy the replacement text of MACRO to DEST, which must be of
+   sufficient size.  It is not NUL-terminated.  The next character is
+   returned.  */
+uchar *
+_cpp_copy_replacement_text (macro, dest)
+     const cpp_macro *macro;
+     uchar *dest;
+{
+  if (macro->fun_like)
+    {
+      const uchar *exp;
+
+      for (exp = macro->exp.text;;)
+	{
+	  struct block *b = (struct block *) exp;
+	  cpp_hashnode *param;
+
+	  memcpy (dest, b->text, b->text_len);
+	  dest += b->text_len;
+	  if (b->arg_index == 0)
+	    break;
+	  param = macro->params[b->arg_index - 1];
+	  memcpy (dest, NODE_NAME (param), NODE_LEN (param));
+	  dest += NODE_LEN (param);
+	  exp += BLOCK_LEN (b->text_len);
+	}
+    }
+  else
+    {
+      memcpy (dest, macro->exp.text, macro->count);
+      dest += macro->count;
+    }
+
+  return dest;
 }
 
 /* Push a context holding the replacement text of the macro NODE on

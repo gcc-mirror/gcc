@@ -1,3 +1,25 @@
+2002-06-19  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cpphash.h (struct cpp_reader): Make date and time strings.
+	(_cpp_builtin_macro_text, _cpp_copy_replacement_text,
+	_cpp_replacement_text_len): New.
+	* cppinit.c (cpp_create_reader): Update.
+	(init_builtins): Register appropriate builtins for -traditional-cpp.
+	* cppmacro.c (new_number_token): Remove.
+	(_cpp_builtin_macro_text): New.
+	(builtin_macro): Use it.
+	(cpp_macro_definition): Update to handle traditional macros.
+	* cppmain.c (cb_line_change): Don't do column positioning for
+	traditional output.
+	* cpptrad.c (enum ls): Rename ls_fun_macro to ls_fun_open.  New
+	state ls_fun_close.
+	(skip_whitespace): Fix.
+	(maybe_start_funlike): Don't set state.parsing_args.
+	(scan_out_logical_line): Remove duplicate error.  Use lex_state
+	rather than state.parsing_args.
+	(push_replacement_text): Handle builtins.
+	(_cpp_replacement_text_len, _cpp_copy_replacement_text): New.
+
 2002-06-18  Hans-Peter Nilsson  <hp@axis.com>
             Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
