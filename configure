@@ -89,7 +89,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.40 $"
+version="$Revision: 1.40.6.1 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -597,10 +597,6 @@ if test "${srcdir}" = "." ; then
 	echo "builddir=${builddir}" > s-buildd
 	echo "defaulttarget=$t" >> s-buildd
 	cd ${builddir}
-echo host $host_alias
-echo target $target_alias
-echo t $t
-sleep 20
 	exec ${config_shell} ../configure $arguments
 fi
 

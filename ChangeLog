@@ -1,5 +1,9 @@
 2002-06-18  Phil Edwards  <pme@gcc.gnu.org>
 
+	* configure:  Remove garbage from previous commit.
+
+2002-06-18  Phil Edwards  <pme@gcc.gnu.org>
+
 	* configure:  For in-source builds, make a subdir and re-exec there.
 	* Makefile:  New file.  Pass targets through to build directory.
 	* .cvsignore:  No longer ignore "Makefile".
