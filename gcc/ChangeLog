@@ -1,3 +1,9 @@
+2004-01-30  Jan Hubicka  <jh@suse.cz>
+
+	* reload.c (secondary_memlocs_elim_used): New static variable.
+	(get_secondary_mem): Update it.
+	(find_reloads): Use it.
+
 2004-01-30  Steven Bosscher <s.bosscher@student.tudelft.nl>
 
 	* toplev.c: Fix broken checkin of 2003-12-30, again.
