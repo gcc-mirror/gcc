@@ -1,5 +1,9 @@
 2001-08-13  David Edelsohn  <edelsohn@gnu.org>
 
+	* config/rs6000/rs6000.c: Include optabs.h.
+
+2001-08-13  David Edelsohn  <edelsohn@gnu.org>
+
 	* config/rs6000/eabi.asm: Define 64-bit versions of FPR
 	save/restore routines.
 	* ginclude/ppc-asm.h: Define 64-bit FUNC_* macros.
