@@ -1,3 +1,8 @@
+Thu Oct 22 19:58:43 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* splay-tree.c (splay_tree_foreach_helper): Make definition static
+	to match prototype.
+
 1998-10-21  Mark Mitchell  <mark@markmitchell.com>
 
 	* splay-tree.c: New file.
