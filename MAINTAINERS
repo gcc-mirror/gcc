@@ -83,6 +83,7 @@ c++ runtime libs	Benjamin Kosnik		bkoz@redhat.com
 *synthetic multiply	Torbjorn Granlund	tege@swox.com
 *c-torture		Torbjorn Granlund	tege@swox.com
 *f-torture		Kate Hedstrom		kate@ahab.rutgers.edu
+darwin			Stan Shebs		shebs@apple.com
 sco5, unixware, sco udk	Robert Lipe		robertlipe@usa.net
 fixincludes		Bruce Korb		bkorb@gnu.org
 gcse.c 			Jeff Law		law@redhat.com
