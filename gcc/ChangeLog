@@ -1,5 +1,20 @@
 2002-12-20  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300-protos.h: Add prototypes for
+	incdec_operand and eqne_operator.
+	* config/h8300/h8300.c (incdec_operand): New.
+	(eqne_operator): Likewise.
+	* config/h8300/h8300.h (CONST_OK_FOR_M): Likewise.
+	(CONST_OK_FOR_O): Likewise.
+	(CONST_OK_FOR_LETTER_P): Use CONST_OK_FOR_M and
+	CONST_OK_FOR_O.
+	* config/h8300/h8300.md (UNSPEC_INCDEC): New.
+	(addhi3_incdec): New.
+	(addsi3_incdec): Likewise.
+	(two peepholes): Likewise.
+
+2002-12-20  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.c (dosize): Remove warnings.
 	(print_operand): Likewise.
 
