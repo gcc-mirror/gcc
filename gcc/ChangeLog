@@ -1,3 +1,14 @@
+Thu Feb  3 15:08:13 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (movstrsi, clrstrsi): Support variable sized copies, align
+	destination when needed.
+	(strmovsi, strsetsi): New expander.
+	(strmovsi_1, strsetsi_1): New pattern.
+	* i386.h (MASK_NO_ALIGN_STROP, MASK_INLINE_ALL_STROP,
+	TARGET_ALIGN_STRINGOPS, TARGET_INLINE_ALL_STRINGOPS): New macros.
+	(TARGET_SWITCHES) Add align-stringops and inline-all-stringops.
+	* invoke.texi (align-stringops, inline-all-stringops): Document.
+
 Wed Feb  2 23:04:47 2000   Krister Walfridsson <cato@df.lth.se>
 
 	* i386/netbsd.h (INT_ASM_OP): Define.
