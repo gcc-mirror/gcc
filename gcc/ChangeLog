@@ -1,3 +1,18 @@
+2003-06-20  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-decl.c (store_parm_decls): Make saved_warn_shadow boolean.
+	* common.opt: Add remaining -W options and -g.
+	* diagnostic.c (warnings_are_errors): Remove.
+	* flags.h: Make most warning flags boolean.
+	* opts.c (common_handle_option): Handle remaining -W options, and -g.
+	Move many warning flags from toplev.c, making them boolean.
+	* toplev.c: Remove many warning flags.
+	(decode_W_option): Remove.
+	(decode_g_option): Make extern.  Error on unknown switch.
+	(lang_independent_W_options): Use warn_dummy.
+	(independent_decode_option): Just handle -f switches now.
+	* toplev.h (decode_g_option): New.
+
 2003-06-20  Aldy Hernandez  <aldyh@redhat.com>
 	
 	PR/11092

@@ -46,10 +46,79 @@ Common
 W
 Common RejectNegative
 
+Waggregate-return
+Common
+
+Wcast-align
+Common
+
+Wdeprecated-declarations
+Common
+
+Wdisabled-optimization
+Common
+
+Werror
+Common
+
 Wextra
 Common
 
+Winline
+Common
+
+Wlarger-than-
+Common RejectNegative Joined UInteger
+
+Wmissing-noreturn
+Common
+
+Wpacked
+Common
+
+Wpadded
+Common
+
+Wshadow
+Common
+
+Wstrict-aliasing
+Common
+
+Wswitch
+Common
+
+Wswitch-default
+Common
+
+Wswitch-enum
+Common
+
+Wsystem-headers
+Common
+
+Wuninitialized
+Common
+
+Wunreachable-code
+Common
+
 Wunused
+Common
+
+Wunused-function
+Common
+
+Wunused-label
+Common
+
+Wunused-parameter
+Common
+
+Wunused-value
+Common
+
+Wunused-variable
 Common
 
 aux-info
@@ -69,6 +138,9 @@ Common Joined
 
 dumpbase
 Common Separate
+
+g
+Common JoinedOrMissing
 
 m
 Common Joined

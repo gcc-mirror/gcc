@@ -5719,10 +5719,10 @@ store_parm_decls (void)
   /* Nonzero if this definition is written with a prototype.  */
   int prototype = 0;
 
-  int saved_warn_shadow = warn_shadow;
+  bool saved_warn_shadow = warn_shadow;
 
   /* Don't re-emit shadow warnings.  */
-  warn_shadow = 0;
+  warn_shadow = false;
 
   if (specparms != 0 && TREE_CODE (specparms) != TREE_LIST)
     {

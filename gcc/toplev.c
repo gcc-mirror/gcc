@@ -118,8 +118,6 @@ static void setup_core_dumping (void);
 static void compile_file (void);
 
 static int decode_f_option (const char *);
-static int decode_W_option (const char *);
-static int decode_g_option (const char *);
 static unsigned int independent_decode_option (char **);
 
 static int print_single_switch (FILE *, int, int, const char *,
@@ -1492,156 +1490,61 @@ target_options[] = TARGET_OPTIONS;
 
 /* Options controlling warnings.  */
 
-/* Don't print warning messages.  -w.  */
-
-int inhibit_warnings = 0;
-
-/* Don't suppress warnings from system headers.  -Wsystem-headers.  */
-
-int warn_system_headers = 0;
-
-/* Print various extra warnings.  -W/-Wextra.  */
-
-int extra_warnings = 0;
-
-/* Treat warnings as errors.  -Werror.  */
-
-int warnings_are_errors = 0;
-
-/* Nonzero to warn about unused variables, functions et.al.  */
-
-int warn_unused_function;
-int warn_unused_label;
-int warn_unused_parameter;
-int warn_unused_variable;
-int warn_unused_value;
-
-/* Nonzero to warn about code which is never reached.  */
-
-int warn_notreached;
-
-/* Nonzero to warn about variables used before they are initialized.  */
-
-int warn_uninitialized;
-
-/* Nonzero means warn about all declarations which shadow others.  */
-
-int warn_shadow;
-
-/* Warn if a switch on an enum, that does not have a default case,
-   fails to have a case for every enum value.  */
-
-int warn_switch;
-
-/* Warn if a switch does not have a default case.  */
-
-int warn_switch_default;
-
-/* Warn if a switch on an enum fails to have a case for every enum
-   value (regardless of the presence or otherwise of a default case).  */
-
-int warn_switch_enum;
-
 /* Nonzero means warn about function definitions that default the return type
    or that use a null return and have a return-type other than void.  */
 
 int warn_return_type;
 
-/* Nonzero means warn about pointer casts that increase the required
-   alignment of the target type (and might therefore lead to a crash
-   due to a misaligned access).  */
-
-int warn_cast_align;
-
-/* Nonzero means warn about any objects definitions whose size is larger
-   than N bytes.  Also want about function definitions whose returned
-   values are larger than N bytes. The value N is in `larger_than_size'.  */
-
-int warn_larger_than;
-HOST_WIDE_INT larger_than_size;
-
-/* Nonzero means warn if inline function is too large.  */
-
-int warn_inline;
-
-/* Warn if a function returns an aggregate,
-   since there are often incompatible calling conventions for doing this.  */
-
-int warn_aggregate_return;
-
-/* Warn if packed attribute on struct is unnecessary and inefficient.  */
-
-int warn_packed;
-
-/* Warn when gcc pads a structure to an alignment boundary.  */
-
-int warn_padded;
-
-/* Warn when an optimization pass is disabled.  */
-
-int warn_disabled_optimization;
-
-/* Warn about functions which might be candidates for attribute noreturn.  */
-
-int warn_missing_noreturn;
-
-/* Nonzero means warn about uses of __attribute__((deprecated))
-   declarations.  */
-
-int warn_deprecated_decl = 1;
-
-/* Nonzero means warn about constructs which might not be
-   strict-aliasing safe.  */
-
-int warn_strict_aliasing;
+/* Used for the -W options array temporarily.  */
+static int warn_dummy;
 
 /* Like f_options, but for -W.  */
 
 static const lang_independent_options W_options[] =
 {
-  {"unused-function", &warn_unused_function, 1,
+  {"unused-function", &warn_dummy, 1,
    N_("Warn when a function is unused") },
-  {"unused-label", &warn_unused_label, 1,
+  {"unused-label", &warn_dummy, 1,
    N_("Warn when a label is unused") },
-  {"unused-parameter", &warn_unused_parameter, 1,
+  {"unused-parameter", &warn_dummy, 1,
    N_("Warn when a function parameter is unused") },
-  {"unused-variable", &warn_unused_variable, 1,
+  {"unused-variable", &warn_dummy, 1,
    N_("Warn when a variable is unused") },
-  {"unused-value", &warn_unused_value, 1,
+  {"unused-value", &warn_dummy, 1,
    N_("Warn when an expression value is unused") },
-  {"system-headers", &warn_system_headers, 1,
+  {"system-headers", &warn_dummy, 1,
    N_("Do not suppress warnings from system headers") },
-  {"error", &warnings_are_errors, 1,
+  {"error", &warn_dummy, 1,
    N_("Treat all warnings as errors") },
-  {"shadow", &warn_shadow, 1,
+  {"shadow", &warn_dummy, 1,
    N_("Warn when one local variable shadows another") },
-  {"switch", &warn_switch, 1,
+  {"switch", &warn_dummy, 1,
    N_("Warn about enumerated switches, with no default, missing a case") },
-  {"switch-default", &warn_switch_default, 1,
+  {"switch-default", &warn_dummy, 1,
    N_("Warn about enumerated switches missing a default case") },
-  {"switch-enum", &warn_switch_enum, 1,
+  {"switch-enum", &warn_dummy, 1,
    N_("Warn about all enumerated switches missing a specific case") },
-  {"aggregate-return", &warn_aggregate_return, 1,
+  {"aggregate-return", &warn_dummy, 1,
    N_("Warn about returning structures, unions or arrays") },
-  {"cast-align", &warn_cast_align, 1,
+  {"cast-align", &warn_dummy, 1,
    N_("Warn about pointer casts which increase alignment") },
-  {"unreachable-code", &warn_notreached, 1,
+  {"unreachable-code", &warn_dummy, 1,
    N_("Warn about code that will never be executed") },
-  {"uninitialized", &warn_uninitialized, 1,
+  {"uninitialized", &warn_dummy, 1,
    N_("Warn about uninitialized automatic variables") },
-  {"inline", &warn_inline, 1,
+  {"inline", &warn_dummy, 1,
    N_("Warn when an inlined function cannot be inlined") },
-  {"packed", &warn_packed, 1,
+  {"packed", &warn_dummy, 1,
    N_("Warn when the packed attribute has no effect on struct layout") },
-  {"padded", &warn_padded, 1,
+  {"padded", &warn_dummy, 1,
    N_("Warn when padding is required to align struct members") },
-  {"disabled-optimization", &warn_disabled_optimization, 1,
+  {"disabled-optimization", &warn_dummy, 1,
    N_("Warn when an optimization pass is disabled") },
-  {"deprecated-declarations", &warn_deprecated_decl, 1,
+  {"deprecated-declarations", &warn_dummy, 1,
    N_("Warn about uses of __attribute__((deprecated)) declarations") },
-  {"missing-noreturn", &warn_missing_noreturn, 1,
+  {"missing-noreturn", &warn_dummy, 1,
    N_("Warn about functions which might be candidates for attribute noreturn") },
-  {"strict-aliasing", &warn_strict_aliasing, 1,
+  {"strict-aliasing", &warn_dummy, 1,
    N_ ("Warn about code which might break the strict aliasing rules") }
 };
 
@@ -4397,48 +4300,6 @@ decode_f_option (const char *arg)
   return 1;
 }
 
-/* Parse a -W... command line switch.  ARG is the value after the -W.
-   It is safe to access 'ARG - 2' to generate the full switch name.
-   Return the number of strings consumed.  */
-
-static int
-decode_W_option (const char *arg)
-{
-  const char *option_value = NULL;
-  int j;
-
-  /* Search for the option in the table of binary W options.  */
-
-  for (j = ARRAY_SIZE (W_options); j--;)
-    {
-      if (!strcmp (arg, W_options[j].string))
-	{
-	  *W_options[j].variable = W_options[j].on_value;
-	  return 1;
-	}
-
-      if (arg[0] == 'n' && arg[1] == 'o' && arg[2] == '-'
-	  && ! strcmp (arg + 3, W_options[j].string))
-	{
-	  *W_options[j].variable = ! W_options[j].on_value;
-	  return 1;
-	}
-    }
-
-  if ((option_value = skip_leading_substring (arg, "id-clash-")))
-    warning ("-Wid-clash-LEN is no longer supported");
-  else if ((option_value = skip_leading_substring (arg, "larger-than-")))
-    {
-      larger_than_size = read_integral_parameter (option_value, arg - 2, -1);
-
-      warn_larger_than = larger_than_size != -1;
-    }
-  else
-    return 0;
-
-  return 1;
-}
-
 /* Indexed by enum debug_info_type.  */
 const char *const debug_type_names[] =
 {
@@ -4449,7 +4310,7 @@ const char *const debug_type_names[] =
    It is safe to access 'ARG - 2' to generate the full switch name.
    Return the number of strings consumed.  */
 
-static int
+void
 decode_g_option (const char *arg)
 {
   static unsigned level = 0;
@@ -4560,9 +4421,7 @@ ignoring option `%s' due to invalid debug level specification",
     }
 
   if (! da->arg)
-    return 0;
-
-  return 1;
+    warning ("`-g%s': unknown or unsupported -g option", arg);
 }
 
 /* Decode the first argument in the argv as a language-independent option.
@@ -4578,20 +4437,10 @@ independent_decode_option (char **argv)
 
   arg++;
 
-  switch (*arg)
-    {
-    default:
-      return 0;
+  if (*arg == 'f')
+    return decode_f_option (arg + 1);
 
-    case 'f':
-      return decode_f_option (arg + 1);
-
-    case 'g':
-      return decode_g_option (arg + 1);
-
-    case 'W':
-      return decode_W_option (arg + 1);
-    }
+  return 0;
 }
 
 /* Decode -m switches.  */

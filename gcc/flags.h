@@ -77,16 +77,20 @@ extern int mem_report;
 
 /* Don't print warning messages.  -w.  */
 
-extern int inhibit_warnings;
+extern bool inhibit_warnings;
 
 /* Don't suppress warnings from system headers.  -Wsystem-headers.  */
 
-extern int warn_system_headers;
+extern bool warn_system_headers;
 
 /* Do print extra warnings (such as for uninitialized variables).
    -W/-Wextra.  */
 
-extern int extra_warnings;
+extern bool extra_warnings;
+
+/* If -Werror.  */
+
+extern bool warnings_are_errors;
 
 /* Nonzero to warn about unused variables, functions et.al.  Use
    set_Wunused() to update the -Wunused-* flags that correspond to the
@@ -94,19 +98,19 @@ extern int extra_warnings;
 
 extern void set_Wunused PARAMS ((int setting));
 
-extern int warn_unused_function;
-extern int warn_unused_label;
-extern int warn_unused_parameter;
-extern int warn_unused_variable;
-extern int warn_unused_value;
+extern bool warn_unused_function;
+extern bool warn_unused_label;
+extern bool warn_unused_parameter;
+extern bool warn_unused_variable;
+extern bool warn_unused_value;
 
 /* Nonzero to warn about code which is never reached.  */
 
-extern int warn_notreached;
+extern bool warn_notreached;
 
 /* Nonzero means warn if inline function is too large.  */
 
-extern int warn_inline;
+extern bool warn_inline;
 
 /* Nonzero to warn about variables used before they are initialized.  */
 
@@ -114,21 +118,21 @@ extern int warn_uninitialized;
 
 /* Nonzero means warn about all declarations which shadow others.  */
 
-extern int warn_shadow;
+extern bool warn_shadow;
 
 /* Warn if a switch on an enum, that does not have a default case,
    fails to have a case for every enum value.  */
 
-extern int warn_switch;
+extern bool warn_switch;
 
 /* Warn if a switch does not have a default case.  */
 
-extern int warn_switch_default;
+extern bool warn_switch_default;
 
 /* Warn if a switch on an enum fails to have a case for every enum
    value (regardless of the presence or otherwise of a default case).  */
 
-extern int warn_switch_enum;
+extern bool warn_switch_enum;
 
 /* Nonzero means warn about function definitions that default the return type
    or that use a null return and have a return-type other than void.  */
@@ -137,47 +141,47 @@ extern int warn_return_type;
 
 /* Warn about functions which might be candidates for attribute noreturn.  */
 
-extern int warn_missing_noreturn;
+extern bool warn_missing_noreturn;
 
 /* Nonzero means warn about pointer casts that increase the required
    alignment of the target type (and might therefore lead to a crash
    due to a misaligned access).  */
 
-extern int warn_cast_align;
+extern bool warn_cast_align;
 
 /* Nonzero means warn about any objects definitions whose size is larger
    than N bytes.  Also want about function definitions whose returned
    values are larger than N bytes. The value N is in `larger_than_size'.  */
 
-extern int warn_larger_than;
+extern bool warn_larger_than;
 extern HOST_WIDE_INT larger_than_size;
 
 /* Warn if a function returns an aggregate,
    since there are often incompatible calling conventions for doing this.  */
 
-extern int warn_aggregate_return;
+extern bool warn_aggregate_return;
 
 /* Warn if packed attribute on struct is unnecessary and inefficient.  */
 
-extern int warn_packed;
+extern bool warn_packed;
 
 /* Warn when gcc pads a structure to an alignment boundary.  */
 
-extern int warn_padded;
+extern bool warn_padded;
 
 /* Warn when an optimization pass is disabled.  */
 
-extern int warn_disabled_optimization;
+extern bool warn_disabled_optimization;
 
 /* Nonzero means warn about uses of __attribute__((deprecated)) 
    declarations.  */
 
-extern int warn_deprecated_decl;
+extern bool warn_deprecated_decl;
 
 /* Nonzero means warn about constructs which might not be strict
    aliasing safe.  */
 
-extern int warn_strict_aliasing;
+extern bool warn_strict_aliasing;
 
 /* Nonzero if generating code to do profiling.  */
 
