@@ -2027,6 +2027,9 @@ literal_section ()						\
 #define ASM_OPEN_PAREN "("
 #define ASM_CLOSE_PAREN ")"
 
+/* Define the way to start comments.  */
+#define ASM_COMMENT_START "#"
+
 /* Define results of standard character escape sequences.  */
 #define TARGET_BELL 007
 #define TARGET_BS 010
