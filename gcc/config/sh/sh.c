@@ -4192,8 +4192,8 @@ fp_arith_reg_operand (op, mode)
       else
 	return 1;
 
-      return (regno != T_REG && regno != PR_REG && regno > 15
-	      && regno != MACH_REG && regno != MACL_REG);
+      return (regno >= FIRST_PSEUDO_REGISTER
+	      || (regno >= FIRST_FP_REG && regno <= LAST_FP_REG));
     }
   return 0;
 }
@@ -4208,7 +4208,21 @@ fp_extended_operand (op, mode)
       op = XEXP (op, 0);
       mode = GET_MODE (op);
     }
-  return fp_arith_reg_operand (op, mode);
+  if (register_operand (op, mode))
+    {
+      int regno;
+
+      if (GET_CODE (op) == REG)
+	regno = REGNO (op);
+      else if (GET_CODE (op) == SUBREG && GET_CODE (SUBREG_REG (op)) == REG)
+	regno = REGNO (SUBREG_REG (op));
+      else
+	return 1;
+
+      return (regno != T_REG && regno != PR_REG && regno > 15
+	      && regno != MACH_REG && regno != MACL_REG);
+    }
+  return 0;
 }
 
 /* Returns 1 if OP is a valid source operand for an arithmetic insn.  */

@@ -3870,16 +3870,16 @@
   [(set_attr "type" "fp")])
 
 (define_expand "subsf3"
-  [(match_operand:SF 0 "arith_reg_operand" "")
-   (match_operand:SF 1 "arith_reg_operand" "")
-   (match_operand:SF 2 "arith_reg_operand" "")]
+  [(match_operand:SF 0 "fp_arith_reg_operand" "")
+   (match_operand:SF 1 "fp_arith_reg_operand" "")
+   (match_operand:SF 2 "fp_arith_reg_operand" "")]
   "TARGET_SH3E"
   "{ expand_sf_binop (&gen_subsf3_i, operands); DONE; }")
 
 (define_insn "subsf3_i"
-  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
-	(minus:SF (match_operand:SF 1 "arith_reg_operand" "0")
-		 (match_operand:SF 2 "arith_reg_operand" "f")))
+  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
+	(minus:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")
+		 (match_operand:SF 2 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
   "TARGET_SH3E"
   "fsub	%2,%0"
