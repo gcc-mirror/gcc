@@ -4641,15 +4641,6 @@ output_cbranch (op, label, reversed, annul, noop, insn)
   const char *branch;
   int labeloff, spaces = 8;
 
-  /* ??? !v9: FP branches cannot be preceded by another floating point insn.
-     Because there is currently no concept of pre-delay slots, we can fix
-     this only by always emitting a nop before a floating point branch.  */
-
-  if ((mode == CCFPmode || mode == CCFPEmode) && ! TARGET_V9)
-    strcpy (string, "nop\n\t");
-  else
-    string[0] = '\0';
-
   if (reversed)
     {
       /* Reversal of FP compares takes care -- an ordered compare
@@ -4662,98 +4653,112 @@ output_cbranch (op, label, reversed, annul, noop, insn)
 
   /* Start by writing the branch condition.  */
   if (mode == CCFPmode || mode == CCFPEmode)
-    switch (code)
-      {
-      case NE:
-	branch = "fbne";
-	break;
-      case EQ:
-	branch = "fbe";
-	break;
-      case GE:
-	branch = "fbge";
-	break;
-      case GT:
-	branch = "fbg";
-	break;
-      case LE:
-	branch = "fble";
-	break;
-      case LT:
-	branch = "fbl";
-	break;
-      case UNORDERED:
-	branch = "fbu";
-	break;
-      case ORDERED:
-	branch = "fbo";
-	break;
-      case UNGT:
-	branch = "fbug";
-	break;
-      case UNLT:
-	branch = "fbul";
-	break;
-      case UNEQ:
-	branch = "fbue";
-	break;
-      case UNGE:
-	branch = "fbuge";
-	break;
-      case UNLE:
-	branch = "fbule";
-	break;
-      case LTGT:
-	branch = "fblg";
-	break;
+    {
+      switch (code)
+	{
+	case NE:
+	  branch = "fbne";
+	  break;
+	case EQ:
+	  branch = "fbe";
+	  break;
+	case GE:
+	  branch = "fbge";
+	  break;
+	case GT:
+	  branch = "fbg";
+	  break;
+	case LE:
+	  branch = "fble";
+	  break;
+	case LT:
+	  branch = "fbl";
+	  break;
+	case UNORDERED:
+	  branch = "fbu";
+	  break;
+	case ORDERED:
+	  branch = "fbo";
+	  break;
+	case UNGT:
+	  branch = "fbug";
+	  break;
+	case UNLT:
+	  branch = "fbul";
+	  break;
+	case UNEQ:
+	  branch = "fbue";
+	  break;
+	case UNGE:
+	  branch = "fbuge";
+	  break;
+	case UNLE:
+	  branch = "fbule";
+	  break;
+	case LTGT:
+	  branch = "fblg";
+	  break;
 
-      default:
-	abort ();
-      }
+	default:
+	  abort ();
+	}
+
+      /* ??? !v9: FP branches cannot be preceded by another floating point
+	 insn.  Because there is currently no concept of pre-delay slots,
+	 we can fix this only by always emitting a nop before a floating
+	 point branch.  */
+
+      string[0] = '\0';
+      if (! TARGET_V9)
+	strcpy (string, "nop\n\t");
+      strcat (string, branch);
+    }
   else
-    switch (code)
-      {
-      case NE:
-	branch = "bne";
-	break;
-      case EQ:
-	branch = "be";
-	break;
-      case GE:
-	if (mode == CC_NOOVmode)
-	  branch = "bpos";
-	else
-	  branch = "bge";
-	break;
-      case GT:
-	branch = "bg";
-	break;
-      case LE:
-	branch = "ble";
-	break;
-      case LT:
-	if (mode == CC_NOOVmode)
-	  branch = "bneg";
-	else
-	  branch = "bl";
-	break;
-      case GEU:
-	branch = "bgeu";
-	break;
-      case GTU:
-	branch = "bgu";
-	break;
-      case LEU:
-	branch = "bleu";
-	break;
-      case LTU:
-	branch = "blu";
-	break;
+    {
+      switch (code)
+	{
+	case NE:
+	  branch = "bne";
+	  break;
+	case EQ:
+	  branch = "be";
+	  break;
+	case GE:
+	  if (mode == CC_NOOVmode)
+	    branch = "bpos";
+	  else
+	    branch = "bge";
+	  break;
+	case GT:
+	  branch = "bg";
+	  break;
+	case LE:
+	  branch = "ble";
+	  break;
+	case LT:
+	  if (mode == CC_NOOVmode)
+	    branch = "bneg";
+	  else
+	    branch = "bl";
+	  break;
+	case GEU:
+	  branch = "bgeu";
+	  break;
+	case GTU:
+	  branch = "bgu";
+	  break;
+	case LEU:
+	  branch = "bleu";
+	  break;
+	case LTU:
+	  branch = "blu";
+	  break;
 
-      default:
-	abort ();
-      }
-  strcpy (string, branch);
+	default:
+	  abort ();
+	}
+      strcpy (string, branch);
+    }
   spaces -= strlen (branch);
 
   /* Now add the annulling, the label, and a possible noop.  */
