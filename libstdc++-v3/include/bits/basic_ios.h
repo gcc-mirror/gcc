@@ -35,14 +35,13 @@
 #include <bits/sbuf_iter.h>
 #include <bits/locale_facets.h>
 
-namespace std {
-
+namespace std 
+{
   // 27.4.5  Template class basic_ios
   template<typename _CharT, typename _Traits>
     class basic_ios : public ios_base
     {
     public:
-
       // Types:
       typedef _CharT 				char_type;
       typedef typename _Traits::int_type 	int_type;
@@ -51,11 +50,10 @@ namespace std {
       typedef _Traits 				traits_type;
 
       // Non-standard Types:
-      typedef ctype<_CharT>           		__ctype_type;
-      // From ostream
-      typedef ostreambuf_iterator<_CharT>		__ostreambuf_iter;
+      typedef ctype<_CharT>           			__ctype_type;
+      typedef ostreambuf_iterator<_CharT, _Traits>      __ostreambuf_iter;
       typedef num_put<_CharT, __ostreambuf_iter>        __numput_type;
-      typedef istreambuf_iterator<_CharT>		__istreambuf_iter;
+      typedef istreambuf_iterator<_CharT, _Traits>	__istreambuf_iter;
       typedef num_get<_CharT, __istreambuf_iter>        __numget_type;
       
       // Data members:
@@ -76,18 +74,9 @@ namespace std {
       const __numget_type* 		_M_fnumget;
 
     public:
-
       inline const __ctype_type*	
       _M_get_fctype_ios(void)
       { return _M_ios_fctype; }
-
-      inline const __numget_type* 
-      _M_get_fnumget(void)
-      { return _M_fnumget; }
-
-      inline const __numput_type* 
-      _M_get_fnumput(void)
-      { return _M_fnumput; }
 
       operator void*() const 
       { return this->fail() ? 0 : const_cast<basic_ios*>(this); }
@@ -202,8 +191,21 @@ namespace std {
 
       void 
       init(basic_streambuf<_CharT, _Traits>* __sb);
+
+      bool
+      _M_check_facet(const locale::facet* __f)
+      {
+	bool __ret = false;
+	if (__f)
+	  __ret = true;
+	else
+	  __throw_bad_cast();
+	return __ret;
+      }
+
+      void
+      _M_cache_facets(const locale& __loc);
     };
-  
 } // namespace std
 
 #ifdef _GLIBCPP_NO_TEMPLATE_EXPORT

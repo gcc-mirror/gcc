@@ -88,11 +88,58 @@ testall()
   return 0;
 }
 
+// libstdc++/2970
+void test01()
+{
+  using namespace std;
+  bool test = true;
+  
+  complex<float> cf01(-1.1, -333.2);
+  stringstream ss;
+  ss << cf01;
+  string str = ss.str();
+  VERIFY( str == "(-1.1,-333.2)" );
+}
+
+// libstdc++/2985
+struct gnu_char_traits : public std::char_traits<char>
+{ };
+
+typedef std::basic_ostringstream<char, gnu_char_traits> gnu_sstream;
+
+void test02()
+{
+  bool test = true;
+
+  // Construct locale with specialized facets.
+  typedef gnu_sstream::__numput_type numput_type;
+  typedef gnu_sstream::__numget_type numget_type;
+  std::locale loc_c = std::locale::classic();
+  std::locale loc_1(loc_c, new numput_type);
+  std::locale loc_2(loc_1, new numget_type);
+  VERIFY( std::has_facet<numput_type>(loc_2) );
+  VERIFY( std::has_facet<numget_type>(loc_2) );
+
+  gnu_sstream sstr;
+  std::basic_ios<char, gnu_char_traits>* pios = &sstr;
+  sstr.imbue(loc_2);
+
+
+  std::complex<double> x(3, 4);
+  sstr << x; 
+  VERIFY( sstr.str() == "(3,4)" );
+}
+
 int
 main()
 {
   testall<float>();
   testall<double>();
   testall<long double>();
+
+  test01();
+  test02();
+
   return 0;
 }
+
