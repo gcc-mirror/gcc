@@ -669,7 +669,7 @@ extern int rtx_equal_function_value_matters;
 
 /* Dump the expressions in the equivalence class indicated by CLASSP.
    This function is used only for debugging.  */
-void
+static void
 dump_class (classp)
      struct table_elt *classp;
 {

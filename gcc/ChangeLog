@@ -1,3 +1,8 @@
+Thu Feb 25 12:09:04 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cse.c (dump_class): Make the function definition static to match
+ 	the prototype.
+
 Wed Feb 24 17:47:28 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* dbxout.c (gstab.h): Use if CROSS_COMPILE.
