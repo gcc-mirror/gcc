@@ -1,3 +1,8 @@
+2002-12-31  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/profopt.exp: Change the name of a global variable to avoid
+	possible clashes with other test suites.
+
 2002-12-31  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/inherit/covariant8.C: New test.
