@@ -1,5 +1,9 @@
 2004-11-17  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/Timer.java (DEFAULT_SIZE): Made static.
+
+2004-11-17  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/InetAddress.java (getCanonicalHostName):
 	Support IPv6 addresses.
 

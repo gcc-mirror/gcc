@@ -74,7 +74,7 @@ public class Timer
   private static final class TaskQueue
   {
     /** Default size of this queue */
-    private final int DEFAULT_SIZE = 32;
+    private static final int DEFAULT_SIZE = 32;
 
     /** Whether to return null when there is nothing in the queue */
     private boolean nullOnEmpty;
