@@ -1,3 +1,12 @@
+2003-09-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12163
+	* call.c (perform_direct_initialization): Correct logic for
+	direct-initialization of a class type.
+
+	PR c++/12146
+	* pt.c (lookup_template_function): Robustify.
+
 2003-09-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11922

@@ -5951,7 +5951,8 @@ perform_implicit_conversion (tree type, tree expr)
 
 /* Convert EXPR to TYPE (as a direct-initialization) if that is
    permitted.  If the conversion is valid, the converted expression is
-   returned.  Otherwise, NULL_TREE is returned.  */
+   returned.  Otherwise, NULL_TREE is returned, except in the case
+   that TYPE is a class type; in that case, an error is issued.  */
 
 tree
 perform_direct_initialization_if_possible (tree type, tree expr)
@@ -5960,6 +5961,19 @@ perform_direct_initialization_if_possible (tree type, tree expr)
   
   if (type == error_mark_node || error_operand_p (expr))
     return error_mark_node;
+  /* [dcl.init]
+
+     If the destination type is a (possibly cv-qualified) class type:
+
+     -- If the initialization is direct-initialization ...,
+     constructors are considered. ... If no constructor applies, or
+     the overload resolution is ambiguous, the initialization is
+     ill-formed.  */
+  if (CLASS_TYPE_P (type))
+    return build_special_member_call (NULL_TREE, complete_ctor_identifier,
+				      build_tree_list (NULL_TREE, expr),
+				      TYPE_BINFO (type),
+				      LOOKUP_NORMAL);
   conv = implicit_conversion (type, TREE_TYPE (expr), expr,
 			      LOOKUP_NORMAL);
   if (!conv || ICS_BAD_FLAG (conv))

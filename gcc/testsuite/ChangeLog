@@ -1,3 +1,11 @@
+2003-09-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12163
+	* g++.dg/expr/static_cast4.C: New test.
+
+	PR c++/12146
+	* g++.dg/template/crash9.C: New test.
+
 2003-09-05  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* g++.old-deja/g++.ext/pretty2.C: Update for change 
