@@ -1,3 +1,7 @@
+2001-12-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* sparc/linux.h (STARTFILE_SPEC): Fix typo in last change.
+
 2001-12-17  Tom Rix  <trix@redhat.com>
 
 	* config/rs6000/rs6000.c (expand_block_move): Fix limits on max size 

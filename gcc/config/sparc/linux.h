@@ -50,6 +50,7 @@ Boston, MA 02111-1307, USA.  */
      %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}}\
    crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
 #else
+#define STARTFILE_SPEC \
   "%{!shared: \
      %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}}\
    crti.o%s %{static:crtbeginT.o%s}\
