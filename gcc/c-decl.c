@@ -3432,6 +3432,10 @@ finish_decl (decl, init, asmspec_tree)
   if (TREE_CODE (decl) == VAR_DECL)
     {
       if (DECL_SIZE (decl) == 0
+	  && TYPE_SIZE (TREE_TYPE (decl)) != 0)
+	layout_decl (decl, 0);
+
+      if (DECL_SIZE (decl) == 0
 	  && (TREE_STATIC (decl)
 	      ?
 		/* A static variable with an incomplete type
