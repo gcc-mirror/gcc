@@ -9147,7 +9147,6 @@ reload_cse_move2add (first)
 
 	      if (GET_CODE (src) == CONST_INT && reg_base_reg[regno] < 0)
 		{
-		  int success = 0;
 		  rtx new_src =
 		    GEN_INT (trunc_int_for_mode (INTVAL (src)
 						 - reg_offset[regno],
@@ -9159,11 +9158,11 @@ reload_cse_move2add (first)
 		     value flag.  jump2 already knows how to get rid of
 		     no-op moves.  */
 		  if (new_src == const0_rtx)
-		    success = validate_change (insn, &SET_SRC (pat), reg, 0);
+		    validate_change (insn, &SET_SRC (pat), reg, 0);
 		  else if (rtx_cost (new_src, PLUS) < rtx_cost (src, SET)
 			   && have_add2_insn (reg, new_src))
-		    success = validate_change (insn, &PATTERN (insn),
-					       gen_add2_insn (reg, new_src), 0);
+		    validate_change (insn, &PATTERN (insn),
+				     gen_add2_insn (reg, new_src), 0);
 		  else
 		    {
 		      enum machine_mode narrow_mode;
@@ -9187,9 +9186,8 @@ reload_cse_move2add (first)
 					     gen_rtx_STRICT_LOW_PART (VOIDmode,
 								      narrow_reg),
 					     narrow_src);
-			      success = validate_change (insn, &PATTERN (insn),
-							 new_set, 0);
-			      if (success)
+			      if (validate_change (insn, &PATTERN (insn),
+						   new_set, 0))
 				break;
 			    }
 			}

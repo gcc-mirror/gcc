@@ -1,3 +1,7 @@
+2003-03-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* reload1.c (reload_cse_move2add): Remove variable success.
+
 2003-03-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ggc-common.c (ggc_rlimit_bound): Cast RLIM_INFINITY to avoid
