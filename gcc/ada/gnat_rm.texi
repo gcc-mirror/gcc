@@ -8,7 +8,7 @@
 @c                                                                            o
 @c                              G N A T _ RM                                  o
 @c                                                                            o
-@c              Copyright (C) 1995-2004 Free Software Foundation              o
+@c              Copyright (C) 1995-2005 Free Software Foundation              o
 @c                                                                            o
 @c                                                                            o
 @c  GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).    o
@@ -5156,24 +5156,18 @@ representation item for a given entity if each non-static expression in
 the representation item is a name that statically denotes a constant
 declared before the entity.
 @end cartouche
-Followed.  GNAT does not support non-static expressions in representation
-clauses unless they are constants declared before the entity.  For
-example:
+Followed.  In fact, GNAT goes beyond the recommended level of support
+by allowing nonstatic expressions in some representation clauses even
+without the need to declare constants initialized with the values of
+such expressions.
+For example:
 
 @smallexample @c ada
-X : Some_Type;
-for X'Address use To_address (16#2000#);
+  X : Integer;
+  Y : Float;
+  for Y'Address use X'Address;>>
 @end smallexample
 
-@noindent
-will be rejected, since the To_Address expression is non-static.  Instead
-write:
-
-@smallexample @c ada
-X_Address : constant Address : = To_Address (16#2000#);
-X         : Some_Type;
-for X'Address use X_Address;
-@end smallexample
 
 @sp 1
 @cartouche
