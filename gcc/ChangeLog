@@ -1,5 +1,7 @@
 2005-05-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* c-semantics.c (emit_local_var): Remove code for DECL_INITIAL.
+
 	PR target/15720
 	* config/darwin.c (machopic_indirect_call_target): Copy
 	the SYMBOL_REF_DECL from the original RTX for the new
