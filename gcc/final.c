@@ -1869,12 +1869,29 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  }
 
 	/* Make same adjustments to instructions that examine the
-	   condition codes without jumping (if this machine has them).  */
+	   condition codes without jumping and instructions that
+	   handle conditional moves (if this machine has either one).  */
 
 	if (cc_status.flags != 0
 	    && GET_CODE (body) == SET)
 	  {
-	    switch (GET_CODE (SET_SRC (body)))
+	    rtx cond_rtx, then_rtx, else_rtx;
+	    
+	    if (GET_CODE (insn) != JUMP_INSN
+		&& GET_CODE (SET_SRC (body)) == IF_THEN_ELSE)
+	      {
+		cond_rtx = XEXP (SET_SRC (body), 0);
+		then_rtx = XEXP (SET_SRC (body), 1);
+		else_rtx = XEXP (SET_SRC (body), 2);
+	      }
+	    else
+	      {
+		cond_rtx = SET_SRC (body);
+		then_rtx = const_true_rtx;
+		else_rtx = const0_rtx;
+	      }
+	    
+	    switch (GET_CODE (cond_rtx))
 	      {
 	      case GTU:
 	      case GT:
@@ -1888,18 +1905,26 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	      case NE:
 		{
 		  register int result;
-		  if (XEXP (SET_SRC (body), 0) != cc0_rtx)
+		  if (XEXP (cond_rtx, 0) != cc0_rtx)
 		    break;
-		  result = alter_cond (SET_SRC (body));
+		  result = alter_cond (cond_rtx);
 		  if (result == 1)
-		    validate_change (insn, &SET_SRC (body), const_true_rtx, 0);
+		    validate_change (insn, &SET_SRC (body), then_rtx, 0);
 		  else if (result == -1)
-		    validate_change (insn, &SET_SRC (body), const0_rtx, 0);
+		    validate_change (insn, &SET_SRC (body), else_rtx, 0);
 		  else if (result == 2)
 		    INSN_CODE (insn) = -1;
+		  if (SET_DEST (body) == SET_SRC (body))
+		    {
+		      PUT_CODE (insn, NOTE);
+		      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+		      NOTE_SOURCE_FILE (insn) = 0;
+		      break;
+		    }
 		}
 	      }
 	  }
+
 #endif
 
 	/* Do machine-specific peephole optimizations if desired.  */
