@@ -10,7 +10,7 @@ extern double f__cabs(double, double);
 void z_log(doublecomplex *r, doublecomplex *z)
 #endif
 {
-	double zi = z->i;
-	r->i = atan2(zi, z->r);
-	r->r = log( f__cabs( z->r, zi ) );
+	double zi = z->i, zr = z->r;
+	r->i = atan2(zi, zr);
+	r->r = log( f__cabs( zr, zi ) );
 	}

@@ -672,9 +672,36 @@ matters under -g).
   fc: add -U option; recognize .so files.
 
 Sat Feb 13 10:18:27 EST 1999
- libf2c: endfile.c, lread.c, signal1.h0: minor tweaks to make some
+  libf2c: endfile.c, lread.c, signal1.h0: minor tweaks to make some
 (C++) compilers happier; f77_aloc.c: make exit_() visible to C++
 compilers.  Version strings not changed.
+
+Thu Mar 11 23:14:02 EST 1999
+  Modify f2c (exec.c, expr.c) to diagnose incorrect mixing of types
+when (f2c extended) intrinsic functions are involved, as in
+(not(17) .and. 4).  Catching this in the first executable statement
+is a bit tricky, as some checking must be postponed until all statement
+function declarations have been parsed.  Thus there is a chance of
+today's changes introducing bugs under (let us hope) unusual conditions.
+
+Sun Mar 28 13:17:44 EST 1999
+  lex.c: tweak to get the file name right in error messages caused
+by statements just after a # nnn "filename" line emitted by the C
+preprocessor.  (The trouble is that the line following the # nnn line
+must be read to see if it is a continuation of the stuff that preceded
+the # nnn line.)  When # nnn "filename" lines appear among the lines
+for a Fortran statement, the filename reported in an error message for
+the statement should now be the file that was current when the first
+line of the statement was read.
+
+Sun May  2 22:38:25 EDT 1999
+  libf77, libi77, libf2c.zip: make getenv_() more portable (call
+getenv() rather than knowing about char **environ); adjust some
+complex intrinsics to work with overlapping arguments (caused by
+illegal use of equivalence); open.c: get "external" versus "internal"
+right in the error message if a file cannot be opened; err.c: cast a
+pointer difference to (int) for %d; rdfmt.c: omit fixed-length buffer
+that could be overwritten by formats Inn or Lnn with nn > 83.
 
 Current timestamps of files in "all from f2c/src", sorted by time,
 appear below (mm/dd/year hh:mm:ss).  To bring your source up to date,
@@ -682,10 +709,12 @@ obtain source files with a timestamp later than the time shown in your
 version.c.  Note that the time shown in the current version.c is the
 timestamp of the source module that immediately follows version.c below:
 
- 2/10/1999  22:07:05  version.c
- 2/10/1999  22:06:59  lex.c
+ 3/28/1999  13:16:27  xsum0.out
+ 3/26/1999  23:18:20  version.c
+ 3/26/1999  23:18:11  lex.c
+ 3/11/1999  16:44:17  expr.c
+ 3/11/1999  16:42:42  exec.c
  2/10/1999  17:43:01  defs.h
- 9/13/1998  22:23:35  xsum0.out
  9/13/1998  22:18:21  format.c
  9/08/1998  10:16:51  f2c.1
  9/08/1998  10:16:48  f2c.1t
@@ -705,21 +734,19 @@ timestamp of the source module that immediately follows version.c below:
 12/04/1996  13:07:53  gram.exec
 10/01/1996  14:36:18  init.c
 10/01/1996  14:36:17  data.c
- 9/17/1996  17:29:44  expr.c
  9/12/1996  12:12:46  equiv.c
  8/26/1996   9:41:13  sysdep.c
  7/09/1996  10:40:45  names.c
  7/04/1996   9:55:45  sysdep.h
  7/04/1996   9:55:43  put.c
  7/04/1996   9:55:41  pread.c
- 7/04/1996   9:55:40  p1output.c
  7/04/1996   9:55:40  parse_args.c
+ 7/04/1996   9:55:40  p1output.c
  7/04/1996   9:55:37  misc.c
- 7/04/1996   9:55:36  mem.c
  7/04/1996   9:55:36  memset.c
+ 7/04/1996   9:55:36  mem.c
  7/04/1996   9:55:35  main.c
  7/04/1996   9:55:33  io.c
- 7/04/1996   9:55:30  exec.c
  7/04/1996   9:55:29  error.c
  7/04/1996   9:55:27  cds.c
  7/03/1996  15:47:49  xsum.c

@@ -1,4 +1,4 @@
-static char junk[] = "\n@(#) LIBI77 VERSION pjw,dmg-mods 19980907\n";
+static char junk[] = "\n@(#) LIBI77 VERSION pjw,dmg-mods 19990502\n";
 
 /*
 */
@@ -295,6 +295,11 @@ wrtfmt.c:
 		 input for integer data. */
 /* 7 Sept. 1998: move e_wdfe from sfe.c to dfe.c, where it was originally.
 		 Why did it ever move to sfe.c? */
+/* 2 May 1999:	 open.c: set f__external (to get "external" versus "internal"
+		 right in the error message if we cannot open the file).
+		 err.c: cast a pointer difference to (int) for %d.
+		 rdfmt.c: omit fixed-length buffer that could be overwritten
+		 by formats Inn or Lnn with nn > 83. */
 
 
 

@@ -9,9 +9,9 @@ VOID z_exp(r, z) doublecomplex *r, *z;
 void z_exp(doublecomplex *r, doublecomplex *z)
 #endif
 {
-double expx;
+	double expx, zi = z->i;
 
-expx = exp(z->r);
-r->r = expx * cos(z->i);
-r->i = expx * sin(z->i);
-}
+	expx = exp(z->r);
+	r->r = expx * cos(zi);
+	r->i = expx * sin(zi);
+	}

@@ -2980,3 +2980,30 @@ Sat Feb 13 10:18:27 EST 1999
  libf2c: endfile.c, lread.c, signal1.h0: minor tweaks to make some
 (C++) compilers happier; f77_aloc.c: make exit_() visible to C++
 compilers.  Version strings not changed.
+
+Thu Mar 11 23:14:02 EST 1999
+  Modify f2c (exec.c, expr.c) to diagnose incorrect mixing of types
+when (f2c extended) intrinsic functions are involved, as in
+(not(17) .and. 4).  Catching this in the first executable statement
+is a bit tricky, as some checking must be postponed until all statement
+function declarations have been parsed.  Thus there is a chance of
+today's changes introducing bugs under (let us hope) unusual conditions.
+
+Sun Mar 28 13:17:44 EST 1999
+  lex.c: tweak to get the file name right in error messages caused
+by statements just after a # nnn "filename" line emitted by the C
+preprocessor.  (The trouble is that the line following the # nnn line
+must be read to see if it is a continuation of the stuff that preceded
+the # nnn line.)  When # nnn "filename" lines appear among the lines
+for a Fortran statement, the filename reported in an error message for
+the statement should now be the file that was current when the first
+line of the statement was read.
+
+Sun May  2 22:38:25 EDT 1999
+  libf77, libi77, libf2c.zip: make getenv_() more portable (call
+getenv() rather than knowing about char **environ); adjust some
+complex intrinsics to work with overlapping arguments (caused by
+illegal use of equivalence); open.c: get "external" versus "internal"
+right in the error message if a file cannot be opened; err.c: cast a
+pointer difference to (int) for %d; rdfmt.c: omit fixed-length buffer
+that could be overwritten by formats Inn or Lnn with nn > 83.

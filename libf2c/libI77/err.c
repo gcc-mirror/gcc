@@ -163,7 +163,8 @@ f__fatal(int n, char *s)
 	dead = 1;
 	if (f__init & 1) {
 		if (f__curunit) {
-			fprintf(stderr,"apparent state: unit %d ",f__curunit-f__units);
+			fprintf(stderr,"apparent state: unit %d ",
+				(int)(f__curunit-f__units));
 			fprintf(stderr, f__curunit->ufnm ? "named %s\n" : "(unnamed)\n",
 				f__curunit->ufnm);
 			}
