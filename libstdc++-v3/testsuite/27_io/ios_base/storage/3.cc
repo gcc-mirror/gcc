@@ -24,7 +24,7 @@
 // XXX bug(s) in libc malloc for very large allocations.  However
 // XXX -lmalloc seems to work.
 // See http://gcc.gnu.org/ml/gcc/2002-05/msg01012.html
-// { dg-options "-lmalloc" { target mips*-*-irix6* } }
+// { dg-options "-D_GLIBCXX_ASSERT -lmalloc" { target mips*-*-irix6* } }
 
 #include <sstream>
 #include <iostream>

@@ -19,7 +19,7 @@
 // USA.
 
 // We need to be pedantic about reallocations for this testcase to be correct.
-// { dg-options "-D_GLIBCXX_DEBUG_PEDANTIC" }
+// { dg-options "-D_GLIBCXX_ASSERT -D_GLIBCXX_DEBUG_PEDANTIC" }
 
 #ifndef _GLIBCXX_DEBUG_PEDANTIC
 #  define _GLIBCXX_DEBUG_PEDANTIC 1

@@ -1,5 +1,24 @@
 2003-12-22  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/18_support/numeric_limits.cc: Add _GLIBCXX_ASSERT to
+	dg-options in testcases that use VERIFY.	
+	* testsuite/23_containers/vector/invalidation/1.cc: Same.
+	* testsuite/23_containers/vector/invalidation/2.cc: Same.
+	* testsuite/23_containers/vector/invalidation/3.cc: Same.
+	* testsuite/23_containers/vector/invalidation/4.cc: Same.
+	* testsuite/23_containers/vector/resize/1.cc: Same.
+	* testsuite/26_numerics/complex_value.cc: Same.
+	* testsuite/27_io/ios_base/storage/1.cc: Same.
+	* testsuite/27_io/ios_base/storage/2.cc: Same.
+	* testsuite/27_io/ios_base/storage/3.cc: Same.
+	* testsuite/27_io/manipulators/standard/char/2.cc: Same.
+	* testsuite/backward/11460.cc: Same.
+	* testsuite/backward/strstream_members.cc: Same.
+
+	* include/ext/hash_set (class hash_multiset): Fix typo.
+
+2003-12-22  Benjamin Kosnik  <bkoz@redhat.com>	
+
 	* testsuite/27_io/objects/char/5.cc: Don't use stdc++.h.gch.
 	* testsuite/27_io/objects/wchar_t/5.cc: Same.
 	* docs/html/test.html: Add docs for constructing test files that

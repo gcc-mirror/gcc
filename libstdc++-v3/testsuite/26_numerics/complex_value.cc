@@ -1,4 +1,4 @@
-// { dg-options "-O0" }
+// { dg-options "-D_GLIBCXX_ASSERT -O0" }
 // 2000-11-20
 // Benjamin Kosnik bkoz@redhat.com
 
