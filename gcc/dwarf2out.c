@@ -8611,11 +8611,21 @@ add_const_value_attribute (die, rtl)
 
 }
 
+/* Returns RTL for DECL indicating the location the debugger should
+   use to find the value of DECL at runtime.  Returns NULL_RTX if
+   there is no such location, or if a satisfactory location could not
+   be determined.  */
+
 static rtx
 rtl_for_decl_location (decl)
      tree decl;
 {
   register rtx rtl;
+
+  /* This function should not be called with an abstract declaration,
+     since such things have no location.  */
+  if (DECL_ABSTRACT (decl))
+    abort ();
 
   /* Here we have to decide where we are going to say the parameter "lives"
      (as far as the debugger is concerned).  We only have a couple of
@@ -8978,6 +8988,16 @@ add_bound_info (subrange_die, bound_attr, bound)
 
 	dw_die_ref ctx, decl_die;
 	dw_loc_descr_ref loc;
+
+	/* If the CURRENT_FUNCTION_DECL is abstract, then we cannot
+	   compute the array bound based on the location of the BOUND,
+	   since the BOUND does not really exist.  Therefore, we
+	   simply omit the bound information.  
+
+	   Ideally, we would do better, and express the computation in
+	   some other way.  */
+	if (DECL_ABSTRACT (current_function_decl))
+	  break;
 
 	loc = loc_descriptor_from_tree (bound, 0);
 	if (loc == NULL)

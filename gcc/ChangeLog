@@ -1,3 +1,10 @@
+2001-04-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* dwarf2out.c (rtl_for_decl_location): Add comments.  Abort
+	if the decl is abstract.
+	(add_bound_info): Don't try to get the location of an abstract
+	declaration.
+	
 2001-04-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* loop.c (loop_delete_insns): Add prototype.
