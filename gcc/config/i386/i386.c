@@ -11889,7 +11889,7 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
       return copy_to_mode_reg (SImode, target);
 
     case IX86_BUILTIN_PREFETCH:
-      icode = CODE_FOR_prefetch;
+      icode = CODE_FOR_prefetch_sse;
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
       op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
