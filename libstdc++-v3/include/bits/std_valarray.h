@@ -120,7 +120,8 @@ namespace std
       	operator= (const _Expr<_Dom,_Tp>&);
 
       // _lib.valarray.access_ element access:
-      _Tp                 operator[](size_t) const;
+      // XXX: LWG to be resolved.
+      const _Tp&                 operator[](size_t) const;
       _Tp&                operator[](size_t);		
       // _lib.valarray.sub_ subset operations:
       _Expr<_SClos<_ValArray,_Tp>, _Tp> operator[](slice) const;
@@ -236,7 +237,7 @@ namespace std
 
   
   template<typename _Tp>
-  inline _Tp
+  inline const _Tp&
   valarray<_Tp>::operator[] (size_t __i) const
   { return _M_data[__i]; }
 
