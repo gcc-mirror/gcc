@@ -18,7 +18,7 @@
 : : : .. . 0 0 .
 
 It relies on the fact that even when preprocessing C we bother to separate
-the colons of C++'s :: operator.  If we confine this behaviour to C++
+the colons of C++'s :: operator.  If we confine this behavior to C++
 in future, this test needs to change.  */
 
 :: :g: :f(): :f(^): tricky

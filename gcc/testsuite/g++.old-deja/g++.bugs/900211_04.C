@@ -1,7 +1,7 @@
 // g++ 1.36.1 bug 900211_04
 
 // g++ fails to flag as errors attempts to compare pointer values against
-// (non-zero) integer values;
+// (nonzero) integer values;
 
 // Since implicit conversions of pointer to integers (or vise versa) are
 // illegal, these comparisons are also illegal.

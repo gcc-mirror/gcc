@@ -1,3 +1,40 @@
+2002-09-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog: follow spelling conventions.
+	* g++.old-deja/g++.abi/ptrmem.C: Likewise.
+	* g++.old-deja/g++.bugs/900210_05.C: Likewise.
+	* g++.old-deja/g++.bugs/900211_04.C: Likewise.
+	* g++.old-deja/g++.bugs/900321_02.C: Likewise.
+	* g++.old-deja/g++.bugs/900404_02.C: Likewise.
+	* g++.old-deja/g++.bugs/900520_06.C: Likewise.
+	* g++.old-deja/g++.law/global-init1.C: Likewise.
+	* g++.old-deja/g++.other/delete4.C: Likewise.
+	* g++.old-deja/g++.other/inline21.C: Likewise.
+	* g++.old-deja/g++.other/singleton.C: Likewise.
+	* g77.dg/strlen0.f: Likewise.
+	* g77.f-torture/compile/20010519-1.f: Likewise.
+	* g77.f-torture/compile/980310-4.f: Likewise.
+	* gcc.c-torture/compile/20000605-1.c: Likewise.
+	* gcc.c-torture/execute/20020225-1.c: Likewise.
+	* gcc.dg/c90-hexfloat-2.c: Likewise.
+	* gcc.dg/c99-bool-1.c: Likewise.
+	* gcc.dg/c99-hexfloat-2.c: Likewise.
+	* gcc.dg/dll-2.c: Likewise.
+	* gcc.dg/wtr-union-init-1.c: Likewise.
+	* gcc.dg/wtr-union-init-2.c: Likewise.
+	* gcc.dg/wtr-union-init-3.c: Likewise.
+	* gcc.dg/cpp/avoidpaste1.c: Likewise.
+	* gcc.dg/cpp/defined.c: Likewise.
+	* gcc.dg/cpp/macsyntx.c: Likewise.
+	* gcc.dg/cpp/paste2.c: Likewise.
+	* gcc.dg/cpp/trad/defined.c: Likewise.
+	* gcc.dg/format/c90-printf-1.c: Likewise.
+	* gcc.dg/format/c90-scanf-1.c: Likewise.
+	* gcc.dg/format/c99-printf-1.c: Likewise.
+	* gcc.dg/format/c99-scanf-1.c: Likewise.
+	* gcc.misc-tests/gcov-8.c: Likewise.
+	* lib/profopt.exp: Likewise.
+
 2002-09-15  Krister Walfridsson  <cato@df.lth.se>
 
 	* lib/old-dejagnu.exp (old-dejagnu) Improve test for ICE.
@@ -310,7 +347,7 @@ Tue Aug 27 22:23:22 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 2002-07-26  Neil Booth  <neil@daikokuya.cop.uk>
 
 	* gcc.dg/cpp/trad/Wunused.c, gcc.dg/cpp/Wunused.c: Add test
-	for documented behaviour.
+	for documented behavior.
 
 2002-07-25  Roger Sayle  <roger@eyesopen.com>
 
@@ -2741,7 +2778,7 @@ Wed Jan  9 14:03:20 2002  Jeffrey A Law  (law@redhat.com)
 
 2001-12-28  Jakub Jelinek  <jakub@redhat.com>
 
-	* gcc.dg/gnu89-init-1.c: Adjust for the new behaviour, add some
+	* gcc.dg/gnu89-init-1.c: Adjust for the new behavior, add some
 	additional tests.
 
 2001-12-27  Roger Sayle <roger@eyesopen.com>

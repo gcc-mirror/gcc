@@ -9,7 +9,7 @@
 // the class type when a parameter of the class type is passed as an
 // actual parameter.
 
-// This causes the following program to exit with a non-zero exit status.
+// This causes the following program to exit with a nonzero exit status.
 
 // cfront 2.0 passes this test.
 

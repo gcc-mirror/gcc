@@ -54,7 +54,7 @@ main (void)
     abort ();
   if (a != 1 || b != 0 || c != 1)
     abort ();
-  /* Casts to _Bool have a specified behaviour.  */
+  /* Casts to _Bool have a specified behavior.  */
   if ((int)(_Bool)2 != 1)
     abort ();
   if ((int)(_Bool)0.2 != 1)

@@ -29,7 +29,7 @@
 #error Z is not defined
 #endif
 
-/* The behaviour of "defined" when it comes from a macro expansion is
+/* The behavior of "defined" when it comes from a macro expansion is
    now documented.  */
 #if is_Z_defined
 #error Macro expanding into defined operator test 1
@@ -61,7 +61,7 @@
 #error Z is not defined
 #endif
 
-/* The behaviour of "defined" when it comes from a macro expansion is
+/* The behavior of "defined" when it comes from a macro expansion is
    now documented.  */
 #if is_Z_defined
 #error Macro expanding into defined operator test 1

@@ -37,7 +37,7 @@ struct S
 };
 
 // Because S does not have a VPTR, it will not be a primary base of T,
-// and will therefore end up at a non-zero offset.
+// and will therefore end up at a nonzero offset.
 
 struct T : public S 
 {

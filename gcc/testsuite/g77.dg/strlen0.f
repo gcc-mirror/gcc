@@ -28,7 +28,7 @@ C     written for null values of str1 and/or str2.
 C
 C     This code compiles and runs without error on
 C       SunOS 4.1.3 f77 (-C option)
-C       SUNWspro SparcCompiler 4.2 f77 (-C option)
+C       SUNWspro SPARCcompiler 4.2 f77 (-C option)
 C       (and with proposed patches, gcc-2.9.2 -fbounds-check except for test 6,
 C        which is a genuine, deliberate error - comment out to make further
 C        tests)

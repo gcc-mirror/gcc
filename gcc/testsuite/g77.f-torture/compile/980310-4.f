@@ -121,7 +121,7 @@ c                             difficulty involved.
 c                         = 2 the occurrence of roundoff error is
 c                             detected, which prevents the requested
 c                             tolerance from being achieved.
-c                         = 3 extremely bad integrand behaviour occurs
+c                         = 3 extremely bad integrand behavior occurs
 c                             at some points of the integration
 c                             interval.
 c                         = 6 the input is invalid, because
@@ -303,7 +303,7 @@ c           equals limit.
 c
         if(last.eq.limit) ier = 1
 c
-c           set error flag in the case of bad integrand behaviour
+c           set error flag in the case of bad integrand behavior
 c           at a point of the integration range.
 c
         if(dmax1(dabs(a1),dabs(b2)).le.(0.1d+01+0.1d+03*

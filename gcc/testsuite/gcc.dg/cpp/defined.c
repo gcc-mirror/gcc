@@ -2,7 +2,7 @@
 
 /* { dg-do preprocess } */
 
-/* Tests behaviour of the defined operator.  */
+/* Tests behavior of the defined operator.  */
 
 /*  Source: Neil Booth, 29 Oct 2000, Zack Weinberg 11 Dec 2000.  */
 
@@ -19,7 +19,7 @@
 #error Z is not defined
 #endif
 
-/* The behaviour of "defined" when it comes from a macro expansion is
+/* The behavior of "defined" when it comes from a macro expansion is
    now documented.  */
 #if is_Z_defined
 #error Macro expanding into defined operator test 1
@@ -51,7 +51,7 @@
 #error Z is not defined
 #endif
 
-/* The behaviour of "defined" when it comes from a macro expansion is
+/* The behavior of "defined" when it comes from a macro expansion is
    now documented.  */
 #if is_Z_defined
 #error Macro expanding into defined operator test 1

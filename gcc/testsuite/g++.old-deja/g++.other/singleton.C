@@ -4,7 +4,7 @@
 // egcs fails to see that there is a public static accessor function.
 // 2. the program crashes, because apparently the static variable s in
 // singleton::instance() is considered constructed although the ctor
-// exited via an exception. (crash changed to non-zero return here)
+// exited via an exception. (crash changed to nonzero return here)
 
 class singleton {
 public:

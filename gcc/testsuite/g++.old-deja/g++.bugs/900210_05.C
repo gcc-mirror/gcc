@@ -12,8 +12,8 @@
 // options come to mind.)
 
 // The use of errors rather than warnings is important because errors
-// usually result in non-zero exit status codes for language processors
-// and these non-zero exit stati can be automatically checked during
+// usually result in nonzero exit status codes for language processors
+// and these nonzero exit stati can be automatically checked during
 // normal execution of a Makefile.
 
 // cfront 2.0 provides the +p option which causes errors to be generated for

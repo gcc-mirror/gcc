@@ -1,6 +1,6 @@
 /* Test for printf formats.  Formats using C90 features, including cases
    where C90 specifies some aspect of the format to be ignored or where
-   the behaviour is undefined.
+   the behavior is undefined.
 */
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
 /* { dg-do compile } */
@@ -203,14 +203,14 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   printf ("%p%p%p%p", s, ss, us, css);
   /* %s allows any character type.  */
   printf ("%s%s%s%s", s, ss, us, css);
-  /* Warning for void * arguments for %s is GCC's historical behaviour,
+  /* Warning for void * arguments for %s is GCC's historical behavior,
      and seems useful to keep, even if some standard versions might be
      read to permit it.
   */
   printf ("%s", p); /* { dg-warning "format" "bad argument types" } */
-  /* The historical behaviour is to allow signed / unsigned types
+  /* The historical behavior is to allow signed / unsigned types
      interchangably as arguments.  For values representable in both types,
-     such usage may be correct.  For now preserve the behaviour of GCC
+     such usage may be correct.  For now preserve the behavior of GCC
      in such cases.
   */
   printf ("%d", u);

@@ -18,7 +18,7 @@ struct Container {
 };
 
 
-// TEST FOR CORRECT BEHAVIOUR
+// TEST FOR CORRECT BEHAVIOR
 
 int myArray[3];
 int * intp = myArray;

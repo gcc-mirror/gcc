@@ -1,5 +1,5 @@
 /* This testcase failed at -O2 on powerpc64 due to andsi3 writing
-   non-zero bits to the high 32 bits of a 64 bit register.  */
+   nonzero bits to the high 32 bits of a 64 bit register.  */
 
 extern void abort (void);
 extern void exit (int);

@@ -20,5 +20,5 @@ main (void)
   if (strcmp (s, "0x1p+( 0x1p+)"))
     abort ();
   else
-    return 0; /* Correct C90 behaviour.  */
+    return 0; /* Correct C90 behavior.  */
 }

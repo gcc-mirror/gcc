@@ -1,6 +1,6 @@
 /* Copyright (C) 2000 Free Software Foundation */
 
-/* make sure we don't get confused by various flavours of void */
+/* make sure we don't get confused by various flavors of void */
 
 /* Origin:  Jakub Jelinek  <jakub@redhat.com>
  *          Joel Sherrill <joel.sherrill@OARcorp.com>

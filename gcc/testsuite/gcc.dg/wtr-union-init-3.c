@@ -40,7 +40,7 @@ struct baz2
 void
 testfunc ()
 {
-  /* Note we only warn for non-zero initializers.  Xfail on substructures. */
+  /* Note we only warn for nonzero initializers.  Xfail on substructures. */
   static union foo f1 = {{0,0}}; /* { dg-bogus "traditional C rejects initialization of unions" "initialization of unions" { xfail *-*-* } } */
   static union foo f2 = {{1,1}}; /* { dg-warning "traditional C rejects initialization of unions" "initialization of unions" } */
 
