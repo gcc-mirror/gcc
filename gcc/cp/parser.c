@@ -4031,6 +4031,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	    parser->scope = NULL_TREE;
 	    parser->qualifying_scope = NULL_TREE;
 	    parser->object_scope = NULL_TREE;
+	    idk = CP_PARSER_ID_KIND_NONE;
 	    /* Enter the scope corresponding to the type of the object
 	       given by the POSTFIX_EXPRESSION.  */
 	    if (!dependent_p 
@@ -4095,6 +4096,12 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
                    Even though "t" is dependent, "X::f" is not and has 
 		   except that for a BASELINK there is no need to
 		   include scope information.  */
+
+		/* But we do need to remember that there was an explicit
+		   scope for virtual function calls.  */
+		if (parser->scope)
+		  idk = CP_PARSER_ID_KIND_QUALIFIED;
+
 		if (name != error_mark_node 
 		    && !BASELINK_P (name)
 		    && parser->scope)
@@ -4125,7 +4132,6 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	       object on the left-hand side of the `.' or `->'
 	       operator.  */
 	    parser->context->object_type = NULL_TREE;
-	    idk = CP_PARSER_ID_KIND_NONE;
 	  }
 	  break;
 
