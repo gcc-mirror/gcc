@@ -1766,7 +1766,7 @@ try_optimize_cfg (int mode)
 			   /* If the jump insn has side effects,
 			      we can't kill the edge.  */
 			   && (GET_CODE (BB_END (b)) != JUMP_INSN
-			       || (flow2_completed
+			       || (reload_completed
 				   ? simplejump_p (BB_END (b))
 				   : onlyjump_p (BB_END (b))))
 			   && (next = merge_blocks_move (s, b, c, mode)))
