@@ -1,3 +1,7 @@
+2001-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20011219-1.c: New test.
+
 2001-12-19  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* gcc.dg/special/ecos.exp:  wkali-1.c unsupported if

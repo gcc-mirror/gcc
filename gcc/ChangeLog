@@ -1,3 +1,8 @@
+2001-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* combine.c (distribute_notes): Avoid adding REG_LABEL notes
+	to JUMP_INSNs with JUMP_LABEL.
+
 2001-12-19  Aldy Hernandez  <aldyh@redhat.com>
 
         * doc/install.texi: Add documentation for --enable-altivec.
