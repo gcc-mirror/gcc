@@ -1,3 +1,10 @@
+Sat Apr  3 23:46:13 1999  David Edelsohn  <edelsohn@gnu.org>
+	
+	* rs6000.md (addsi3, iorsi3, xorsi3, adddi3, iordi3, xordi3,
+	movsi_got, movsi, movsf): Use no_new_pseudos.
+	* rs6000.c (rs6000_got_register): Likewise.
+	(offsettable_mem_opereand): Use || not |.
+
 Sat Apr  3 22:02:56 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* acconfig.h (ENABLE_CHECKING): Remove redundant #undef.
