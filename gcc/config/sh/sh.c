@@ -382,11 +382,15 @@ from_compare (operands, code)
 {
   if (code != EQ && code != NE)
     {
+      enum machine_mode mode = GET_MODE (sh_compare_op0);
+      if (mode == VOIDmode)
+	mode = GET_MODE (sh_compare_op1);
+
       /* Force args into regs, since we can't use constants here.  */
-      sh_compare_op0 = force_reg (SImode, sh_compare_op0);
+      sh_compare_op0 = force_reg (mode, sh_compare_op0);
       if (sh_compare_op1 != const0_rtx
 	  || code == GTU  || code == GEU || code == LTU || code == LEU)
-	sh_compare_op1 = force_reg (SImode, sh_compare_op1);
+	sh_compare_op1 = force_reg (mode, sh_compare_op1);
     }
   operands[1] = sh_compare_op0;
   operands[2] = sh_compare_op1;
