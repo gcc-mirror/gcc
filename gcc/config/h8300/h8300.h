@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler. 
    Hitachi H8/300 version generating coff 
-   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -151,7 +151,7 @@ extern int target_flags;
 
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD		(TARGET_H8300H ? 4 : 2)
-#define MAX_UNITS_PER_WORD	4
+#define MIN_UNITS_PER_WORD	2
 
 /* Width in bits of a pointer.
    See also the macro `Pmode' defined below.  */

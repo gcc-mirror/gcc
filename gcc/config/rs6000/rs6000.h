@@ -309,7 +309,7 @@ extern char *rs6000_cpu_string;
 
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD (TARGET_POWERPC64 ? 8 : 4)
-#define MAX_UNITS_PER_WORD 8
+#define MIN_UNITS_PER_WORD 4
 #define UNITS_PER_FP_WORD 8
 
 /* Type used for ptrdiff_t, as a string used in a declaration.  */
