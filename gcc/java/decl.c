@@ -543,7 +543,7 @@ init_decl_processing ()
   TYPE_identifier_node = get_identifier ("TYPE");
   init_identifier_node = get_identifier ("<init>");
   clinit_identifier_node = get_identifier ("<clinit>");
-  finit_identifier_node = get_identifier ("<finit>");
+  finit_identifier_node = get_identifier ("$finit$");
   void_signature_node = get_identifier ("()V");
   length_identifier_node = get_identifier ("length");
   this_identifier_node = get_identifier ("this");
