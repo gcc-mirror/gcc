@@ -1,3 +1,13 @@
+2003-09-25  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	* cgraph.c (dump_cgraph):  Don't output newline before dump.  Add in
+	"local" to the callgraph dump.  Output "after inlining" earlier.
+	* cgraphunit.c: Fix dumpfile whitespace and commonize headers of the
+	callgraph dumps.  Correct misspellings.
+	(cgraph_decide_inlining):  Output number of insns before inlining.
+	Output the calling function into which a function is inlined.
+	(cgraph_decide_small_functions): Format dump file like always_inline.
+
 2003-09-25  Loren James Rittle  <ljrittle@acm.org>
 
 	* config/i386/i386.h (ix86_return_in_memory): Add prototype.

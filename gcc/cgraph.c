@@ -350,13 +350,15 @@ dump_cgraph (FILE *f)
 {
   struct cgraph_node *node;
 
-  fprintf (f, "\nCallgraph:\n\n");
+  fprintf (f, "callgraph:\n\n");
   for (node = cgraph_nodes; node; node = node->next)
     {
       struct cgraph_edge *edge;
-      fprintf (f, "%s", cgraph_node_name (node));
+      fprintf (f, "%s:", cgraph_node_name (node));
       if (node->local.self_insns)
         fprintf (f, " %i insns", node->local.self_insns);
+      if (node->global.insns && node->global.insns != node->local.self_insns)
+	fprintf (f, " (%i after inlining)", node->global.insns);
       if (node->origin)
 	fprintf (f, " nested in: %s", cgraph_node_name (node->origin));
       if (node->needed)
@@ -366,12 +368,12 @@ dump_cgraph (FILE *f)
       if (DECL_SAVED_TREE (node->decl))
 	fprintf (f, " tree");
 
+      if (node->local.local)
+	fprintf (f, " local");
       if (node->local.disregard_inline_limits)
 	fprintf (f, " always_inline");
       else if (node->local.inlinable)
 	fprintf (f, " inlinable");
-      if (node->global.insns && node->global.insns != node->local.self_insns)
-	fprintf (f, " %i insns after inlining", node->global.insns);
       if (node->global.cloned_times > 1)
 	fprintf (f, " cloned %ix", node->global.cloned_times);
 

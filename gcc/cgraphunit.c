@@ -112,7 +112,7 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
   if (!DECL_INLINE (decl)
       || (!node->local.disregard_inline_limits
 	  /* When declared inline, defer even the uninlinable functions.
-	     This allows them to be elliminated when unused.  */
+	     This allows them to be eliminated when unused.  */
 	  && !DECL_DECLARED_INLINE_P (decl) 
 	  && (node->local.inlinable || !cgraph_default_inline_p (node))))
     return true;
@@ -354,7 +354,7 @@ cgraph_finalize_compilation_unit (void)
   timevar_push (TV_CGRAPH);
   if (cgraph_dump_file)
     {
-      fprintf (cgraph_dump_file, "\nInitial entry points:");
+      fprintf (cgraph_dump_file, "Initial entry points:");
       for (node = cgraph_nodes; node; node = node->next)
 	if (node->needed && DECL_SAVED_TREE (node->decl))
 	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
@@ -395,11 +395,11 @@ cgraph_finalize_compilation_unit (void)
 
   if (cgraph_dump_file)
     {
-      fprintf (cgraph_dump_file, "\nUnit entry points:");
+      fprintf (cgraph_dump_file, "Unit entry points:");
       for (node = cgraph_nodes; node; node = node->next)
 	if (node->needed && DECL_SAVED_TREE (node->decl))
 	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
-      fprintf (cgraph_dump_file, "\n");
+      fprintf (cgraph_dump_file, "\n\nInitial ");
       dump_cgraph (cgraph_dump_file);
     }
 
@@ -418,7 +418,10 @@ cgraph_finalize_compilation_unit (void)
 	}
     }
   if (cgraph_dump_file)
-    fprintf (cgraph_dump_file, "\n");
+    {
+      fprintf (cgraph_dump_file, "\n\nReclaimed ");
+      dump_cgraph (cgraph_dump_file);
+    }
   ggc_collect ();
   timevar_pop (TV_CGRAPH);
 }
@@ -657,7 +660,7 @@ cgraph_inlined_into (struct cgraph_node *node, struct cgraph_node **array)
 
   if (cgraph_dump_file)
     {
-      fprintf (cgraph_dump_file, "Found inline predecesors of %s:",
+      fprintf (cgraph_dump_file, " Found inline predecesors of %s:",
 	       cgraph_node_name (node));
       for (i = 0; i < nfound; i++)
 	{
@@ -754,7 +757,7 @@ cgraph_inlined_callees (struct cgraph_node *node, struct cgraph_node **array)
 
   if (cgraph_dump_file)
     {
-      fprintf (cgraph_dump_file, "Found inline successors of %s:",
+      fprintf (cgraph_dump_file, " Found inline successors of %s:",
 	       cgraph_node_name (node));
       for (i = 0; i < nfound; i++)
 	{
@@ -775,7 +778,7 @@ static int
 cgraph_estimate_size_after_inlining (int times, struct cgraph_node *to,
 				     struct cgraph_node *what)
 {
-  return (what->global.insns - INSNS_PER_CALL) *times + to->global.insns;
+  return (what->global.insns - INSNS_PER_CALL) * times + to->global.insns;
 }
 
 /* Estimate the growth caused by inlining NODE into all callees.  */
@@ -919,7 +922,7 @@ cgraph_check_inline_limits (struct cgraph_node *to, struct cgraph_node *what,
   return true;
 }
 
-/* Return true when function N is small enought to be inlined.  */
+/* Return true when function N is small enough to be inlined.  */
 
 static bool
 cgraph_default_inline_p (struct cgraph_node *n)
@@ -973,7 +976,7 @@ cgraph_decide_inlining_of_small_functions (struct cgraph_node **inlined,
     }
 
   if (cgraph_dump_file)
-    fprintf (cgraph_dump_file, "\n\nDeciding on inlining: ");
+    fprintf (cgraph_dump_file, "\nDeciding on smaller functions:\n");
   while ((node = fibheap_extract_min (heap)) && overall_insns <= max_insns)
     {
       struct cgraph_edge *e;
@@ -981,13 +984,15 @@ cgraph_decide_inlining_of_small_functions (struct cgraph_node **inlined,
 
       heap_node[node->uid] = NULL;
       if (cgraph_dump_file)
-	fprintf (cgraph_dump_file, "Considering %s %i insns, growth %i.\n",
+	fprintf (cgraph_dump_file, 
+		 "\nConsidering %s with %i insns\n"
+		 " Estimated growth is %+i insns.\n",
 		 cgraph_node_name (node), node->global.insns,
 		 cgraph_estimate_growth (node));
       if (!cgraph_default_inline_p (node))
 	{
 	  if (cgraph_dump_file)
-	    fprintf (cgraph_dump_file, "Function too large.\n");
+	    fprintf (cgraph_dump_file, " Function too large.\n");
 	  continue;
 	}
       ninlined_callees = cgraph_inlined_callees (node, inlined_callees);
@@ -1002,7 +1007,7 @@ cgraph_decide_inlining_of_small_functions (struct cgraph_node **inlined,
 		for (i = 0; i < ninlined; i++)
 		  inlined[i]->output = 0, node->aux = 0;
 		if (cgraph_dump_file)
-		  fprintf (cgraph_dump_file, "Not inlining into %s\n",
+		  fprintf (cgraph_dump_file, " Not inlining into %s.\n",
 			   cgraph_node_name (e->caller));
 		continue;
 	      }
@@ -1021,9 +1026,15 @@ cgraph_decide_inlining_of_small_functions (struct cgraph_node **inlined,
 		  fibheap_replace_key (heap, heap_node[inlined[i]->uid],
 				       cgraph_estimate_growth (inlined[i]));
 	      }
+	if (cgraph_dump_file)
+	  fprintf (cgraph_dump_file, 
+		   " Inlined into %s which now has %i insns.\n",
+		   cgraph_node_name (e->caller),
+		   e->caller->global.insns);
+
 	  }
 
-      /* Similarly all functions called by function we just inlined
+      /* Similarly all functions called by the function we just inlined
          are now called more times; update keys.  */
 
       for (e = node->callees; e; e = e->next_callee)
@@ -1043,14 +1054,12 @@ cgraph_decide_inlining_of_small_functions (struct cgraph_node **inlined,
 	  inlined_callees[i]->output = 0, node->aux = 0;
 	}
       if (cgraph_dump_file)
-	fprintf (cgraph_dump_file,
-		 "Created %i clones, Num insns:%i (%+i), %.2f%%.\n\n",
-		 node->global.cloned_times - 1,
-		 overall_insns, overall_insns - old_insns,
-		 overall_insns * 100.0 / initial_insns);
+	fprintf (cgraph_dump_file, 
+		 " Inlined %i times for a net change of %+i insns.\n",
+		 node->global.cloned_times, overall_insns - old_insns);
     }
   if (cgraph_dump_file && !fibheap_empty (heap))
-    fprintf (cgraph_dump_file, "inline-unit-growth limit reached.\n");
+    fprintf (cgraph_dump_file, "\nReached the inline-unit-growth limit.\n");
   fibheap_delete (heap);
   free (heap_node);
 }
@@ -1071,6 +1080,7 @@ cgraph_decide_inlining (void)
     xcalloc (cgraph_n_nodes, sizeof (struct cgraph_node *));
   int ninlined;
   int ninlined_callees;
+  int old_insns;
   int i, y;
 
   for (node = cgraph_nodes; node; node = node->next)
@@ -1079,14 +1089,19 @@ cgraph_decide_inlining (void)
 
   nnodes = cgraph_postorder (order);
 
+  if (cgraph_dump_file)
+    fprintf (cgraph_dump_file,
+	     "\nDeciding on inlining.  Starting with %i insns.\n",
+	     initial_insns);
+
   for (node = cgraph_nodes; node; node = node->next)
     node->aux = 0;
 
   if (cgraph_dump_file)
-    fprintf (cgraph_dump_file, "\n\nDeciding on always_inline functions:\n");
+    fprintf (cgraph_dump_file, "\nInlining always_inline functions:\n");
 
   /* In the first pass mark all always_inline edges.  Do this with a priority
-     so no our decisions makes this impossible.  */
+     so none of our later choices will make this impossible.  */
   for (i = nnodes - 1; i >= 0; i--)
     {
       struct cgraph_edge *e;
@@ -1100,11 +1115,12 @@ cgraph_decide_inlining (void)
 	continue;
       if (cgraph_dump_file)
 	fprintf (cgraph_dump_file,
-		 "Considering %s %i insns (always inline)\n",
-		 cgraph_node_name (node), node->global.insns);
+		 "\nConsidering %s %i insns (always inline)\n",
+		 cgraph_node_name (e->callee), e->callee->global.insns);
       ninlined = cgraph_inlined_into (order[i], inlined);
       for (; e; e = e->next_callee)
 	{
+	  old_insns = overall_insns;
 	  if (e->inline_call || !e->callee->local.disregard_inline_limits)
 	    continue;
 	  if (e->callee->output || e->callee == node)
@@ -1116,9 +1132,15 @@ cgraph_decide_inlining (void)
 	  for (y = 0; y < ninlined_callees; y++)
 	    inlined_callees[y]->output = 0, node->aux = 0;
 	  if (cgraph_dump_file)
-	    fprintf (cgraph_dump_file, "Inlined %i times. Now %i insns\n\n",
-		     node->global.cloned_times, overall_insns);
+	    fprintf (cgraph_dump_file, 
+		     " Inlined into %s which now has %i insns.\n",
+		     cgraph_node_name (node->callees->caller),
+	             node->callees->caller->global.insns);
 	}
+	if (cgraph_dump_file && node->global.cloned_times > 0)
+	  fprintf (cgraph_dump_file, 
+		   " Inlined %i times for a net change of %+i insns.\n",
+		   node->global.cloned_times, overall_insns - old_insns);
       for (y = 0; y < ninlined; y++)
 	inlined[y]->output = 0, node->aux = 0;
     }
@@ -1126,7 +1148,7 @@ cgraph_decide_inlining (void)
   cgraph_decide_inlining_of_small_functions (inlined, inlined_callees);
 
   if (cgraph_dump_file)
-    fprintf (cgraph_dump_file, "\n\nFunctions to inline once:\n");
+    fprintf (cgraph_dump_file, "\nDeciding on functions called once:\n");
 
   /* And finally decide what functions are called once.  */
 
@@ -1151,9 +1173,13 @@ cgraph_decide_inlining (void)
 	    {
 	      if (cgraph_dump_file)
 		fprintf (cgraph_dump_file,
-			 "Considering %s %i insns (called once)\n",
-			 cgraph_node_name (node), node->global.insns);
+			 "\nConsidering %s %i insns.\n"
+			 " Called once from %s %i insns.\n",
+			 cgraph_node_name (node), node->global.insns,
+			 cgraph_node_name (node->callers->caller),
+			 node->callers->caller->global.insns);
 	      ninlined = cgraph_inlined_into (node->callers->caller, inlined);
+	      old_insns = overall_insns;
 	      if (cgraph_check_inline_limits
 		  (node->callers->caller, node, inlined, ninlined))
 		{
@@ -1165,8 +1191,19 @@ cgraph_decide_inlining (void)
 		  for (y = 0; y < ninlined_callees; y++)
 		    inlined_callees[y]->output = 0, node->aux = 0;
 		  if (cgraph_dump_file)
-		    fprintf (cgraph_dump_file, "Inlined. Now %i insns\n\n", overall_insns);
+		    fprintf (cgraph_dump_file,
+			     " Inlined into %s which now has %i insns"
+			     " for a net change of %+i insns.\n",
+			     cgraph_node_name (node->callers->caller),
+			     node->callers->caller->global.insns,
+			     overall_insns - old_insns);
 		}
+	      else
+                {
+		  if (cgraph_dump_file)
+		    fprintf (cgraph_dump_file,
+	                     " Inline limit reached, not inlined.\n");
+	        }
 	      for (y = 0; y < ninlined; y++)
 		inlined[y]->output = 0, node->aux = 0;
 	    }
@@ -1175,7 +1212,8 @@ cgraph_decide_inlining (void)
 
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file,
-	     "\nInlined %i calls, elliminated %i functions, %i insns turned to %i insns.\n",
+	     "\nInlined %i calls, eliminated %i functions, "
+	     "%i insns turned to %i insns.\n\n",
 	     ncalls_inlined, nfunctions_inlined, initial_insns,
 	     overall_insns);
   free (order);
@@ -1250,7 +1288,7 @@ cgraph_mark_local_functions (void)
   struct cgraph_node *node;
 
   if (cgraph_dump_file)
-    fprintf (cgraph_dump_file, "Marking local functions:");
+    fprintf (cgraph_dump_file, "\nMarking local functions:");
 
   /* Figure out functions we want to assemble.  */
   for (node = cgraph_nodes; node; node = node->next)
@@ -1262,7 +1300,7 @@ cgraph_mark_local_functions (void)
 	fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
     }
   if (cgraph_dump_file)
-    fprintf (cgraph_dump_file, "\n");
+    fprintf (cgraph_dump_file, "\n\n");
 }
 
 /* Perform simple optimizations based on callgraph.  */
@@ -1275,30 +1313,30 @@ cgraph_optimize (void)
   timevar_push (TV_CGRAPHOPT);
   if (!quiet_flag)
     fprintf (stderr, "Performing intraprocedural optimizations\n");
+
+  cgraph_mark_local_functions ();
   if (cgraph_dump_file)
     {
-      fprintf (cgraph_dump_file, "Initial callgraph:");
+      fprintf (cgraph_dump_file, "Marked ");
       dump_cgraph (cgraph_dump_file);
     }
-  cgraph_mark_local_functions ();
 
   cgraph_decide_inlining ();
-
   cgraph_global_info_ready = true;
   if (cgraph_dump_file)
     {
-      fprintf (cgraph_dump_file, "Optimized callgraph:");
+      fprintf (cgraph_dump_file, "Optimized ");
       dump_cgraph (cgraph_dump_file);
     }
   timevar_pop (TV_CGRAPHOPT);
-  if (!quiet_flag)
-    fprintf (stderr, "Assembling functions:");
 
   /* Output everything.  */
+  if (!quiet_flag)
+    fprintf (stderr, "Assembling functions:\n");
   cgraph_expand_all_functions ();
   if (cgraph_dump_file)
     {
-      fprintf (cgraph_dump_file, "Final callgraph:");
+      fprintf (cgraph_dump_file, "\nFinal ");
       dump_cgraph (cgraph_dump_file);
     }
 }
