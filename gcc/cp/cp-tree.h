@@ -3133,7 +3133,6 @@ extern varray_type local_classes;
 
 #define VPTR_NAME "$v"
 #define THROW_NAME "$eh_throw"
-#define DESTRUCTOR_DECL_PREFIX "_$_"
 #define AUTO_VTABLE_NAME "__vtbl$me__"
 #define AUTO_TEMP_NAME "_$tmp_"
 #define AUTO_TEMP_FORMAT "_$tmp_%d"
@@ -3153,7 +3152,6 @@ extern varray_type local_classes;
 
 #define VPTR_NAME ".v"
 #define THROW_NAME ".eh_throw"
-#define DESTRUCTOR_DECL_PREFIX "_._"
 #define AUTO_VTABLE_NAME "__vtbl.me__"
 #define AUTO_TEMP_NAME "_.tmp_"
 #define AUTO_TEMP_FORMAT "_.tmp_%d"
@@ -3172,10 +3170,6 @@ extern varray_type local_classes;
 #define VPTR_NAME_P(ID_NODE) \
   (!strncmp (IDENTIFIER_POINTER (ID_NODE), VPTR_NAME, sizeof (VPTR_NAME) - 1))
 #define THROW_NAME "__eh_throw"
-#define DESTRUCTOR_DECL_PREFIX "__destr_"
-#define DESTRUCTOR_NAME_P(ID_NODE) \
-  (!strncmp (IDENTIFIER_POINTER (ID_NODE), DESTRUCTOR_DECL_PREFIX, \
-	     sizeof (DESTRUCTOR_DECL_PREFIX) - 1))
 #define IN_CHARGE_NAME "__in_chrg"
 #define AUTO_VTABLE_NAME "__vtbl_me__"
 #define AUTO_TEMP_NAME "__tmp_"
@@ -3202,16 +3196,11 @@ extern varray_type local_classes;
   (!strncmp (IDENTIFIER_POINTER (ID_NODE), ANON_AGGRNAME_PREFIX, \
 	     sizeof (ANON_AGGRNAME_PREFIX) - 1))
 #define ANON_AGGRNAME_FORMAT "__anon_%d"
-#define ANON_PARMNAME_FORMAT "__%d"
-#define ANON_PARMNAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[0] == '_' \
-				  && IDENTIFIER_POINTER (ID_NODE)[1] == '_' \
-				  && IDENTIFIER_POINTER (ID_NODE)[2] <= '9')
 
 #endif	/* NO_DOT_IN_LABEL */
 #endif	/* NO_DOLLAR_IN_LABEL */
 
 #define THIS_NAME "this"
-#define DESTRUCTOR_NAME_FORMAT "~%s"
 #define FILE_FUNCTION_PREFIX_LEN 9
 #define CTOR_NAME "__ct"
 #define DTOR_NAME "__dt"
@@ -3224,14 +3213,10 @@ extern varray_type local_classes;
 
 #define EXCEPTION_CLEANUP_NAME	"exception cleanup"
 
-#define THIS_NAME_P(ID_NODE) (strcmp(IDENTIFIER_POINTER (ID_NODE), "this") == 0)
-
 #if !defined(NO_DOLLAR_IN_LABEL) || !defined(NO_DOT_IN_LABEL)
 
 #define VPTR_NAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[0] == JOINER \
 			      && IDENTIFIER_POINTER (ID_NODE)[1] == 'v')
-#define DESTRUCTOR_NAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[1] == JOINER \
-                                    && IDENTIFIER_POINTER (ID_NODE)[2] == '_')
 
 #define VTABLE_NAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[1] == 'v' \
   && IDENTIFIER_POINTER (ID_NODE)[2] == 't' \
@@ -3245,9 +3230,6 @@ extern varray_type local_classes;
    not be harmful if it does.  */
 #define ANON_AGGRNAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[0] == JOINER \
 				  && IDENTIFIER_POINTER (ID_NODE)[1] == '_')
-#define ANON_PARMNAME_FORMAT "_%d"
-#define ANON_PARMNAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[0] == '_' \
-				  && IDENTIFIER_POINTER (ID_NODE)[1] <= '9')
 #endif /* !defined(NO_DOLLAR_IN_LABEL) || !defined(NO_DOT_IN_LABEL) */
 
 /* Returns non-zero iff NODE is a declaration for the global function

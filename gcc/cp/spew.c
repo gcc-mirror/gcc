@@ -237,13 +237,10 @@ read_process_identifier (pyylval)
      the user's namespace, but is if '$' or double underscores are.  */
 
 #if !defined(JOINER) || JOINER == '$'
-  if (THIS_NAME_P (id)
-      || VPTR_NAME_P (id)
-      || DESTRUCTOR_NAME_P (id)
+  if (VPTR_NAME_P (id)
       || VTABLE_NAME_P (id)
       || TEMP_NAME_P (id)
-      || ANON_AGGRNAME_P (id)
-      || ANON_PARMNAME_P (id))
+      || ANON_AGGRNAME_P (id))
      warning (
 "identifier name `%s' conflicts with GNU C++ internal naming strategy",
 	      IDENTIFIER_POINTER (id));
