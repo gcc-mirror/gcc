@@ -49,21 +49,19 @@ const char digit_vector[] = {
 
 static struct obstack string_stack;
 
-/* This is the hash entry associated with each string.  It lives in
-   the hash table; only the string lives in the obstack.  Note that
-   the string is not necessarily NUL terminated.  */
+/* Each hashnode is just a pointer to a TREE_IDENTIFIER.  */
+typedef struct tree_identifier *sp_hashnode;
 
-struct str_header
-{
-  const char *ptr;
-  tree data;	/* for get_identifier */
-  unsigned int len;
-};
+#define SP_EMPTY(NODE) ((NODE) == NULL)
+#define SP_LEN(NODE) ((NODE)->length)
+#define SP_TREE(NODE) ((tree) NODE)
+#define SP_STR(NODE) ((NODE)->pointer)
+#define SP_VALID(NODE) (TREE_CODE (SP_TREE (NODE)) == IDENTIFIER_NODE)
 
 /* This is the hash table structure.  There's only one.  */
 struct str_hash
 {
-  struct str_header *entries;
+  sp_hashnode *entries;
   size_t nslots;	/* total slots in the entries array */
   size_t nelements;	/* number of live elements */
 
@@ -77,24 +75,17 @@ static struct str_hash string_hash = { 0, INITIAL_HASHSIZE, 0, 0, 0 };
 
 enum insert_option { INSERT, NO_INSERT };
 
-static struct str_header *alloc_string PARAMS ((const char *, size_t,
-						enum insert_option));
+static sp_hashnode alloc_ident PARAMS ((const char *, size_t,
+					enum insert_option));
 static inline unsigned int calc_hash PARAMS ((const unsigned char *, size_t));
 static void mark_string_hash PARAMS ((void *));
-static struct str_header *expand_string_table PARAMS ((struct str_header *));
+static void expand_string_table PARAMS ((void));
 
 /* Convenience macro for iterating over the hash table.  E is set to
    each live entry in turn.  */
-#define FORALL_STRINGS(E) \
-for (E = string_hash.entries; E < string_hash.entries+string_hash.nslots; E++) \
-  if (E->ptr != NULL)
-    /* block here */
-
-/* Likewise, but tests ->data instead of ->ptr (for cases where we only
-   care about entries with ->data set)  */
 #define FORALL_IDS(E) \
 for (E = string_hash.entries; E < string_hash.entries+string_hash.nslots; E++) \
-  if (E->data != NULL)
+  if (!SP_EMPTY (*E) && SP_VALID (*E))
 
 /* 0 while creating built-in identifiers.  */
 static int do_identifier_warnings;
@@ -109,8 +100,8 @@ init_stringpool ()
   /* Strings need no alignment.  */
   obstack_alignment_mask (&string_stack) = 0;
 
-  string_hash.entries = (struct str_header *)
-    xcalloc (string_hash.nslots, sizeof (struct str_header));
+  string_hash.entries = (sp_hashnode *)
+    xcalloc (string_hash.nslots, sizeof (sp_hashnode));
 }
 
 /* Enable warnings on similar identifiers (if requested).
@@ -150,13 +141,13 @@ calc_hash (str, len)
 #undef HASHSTEP
 }
 
-/* Internal primitive: returns the header structure for the string of
-   length LENGTH, containing CONTENTS.  If that string already exists
-   in the table, returns the existing entry.  If the string hasn't
-   been seen before and the last argument is INSERT, inserts and returns
-   a new entry. Otherwise returns NULL.  */
-static struct str_header *
-alloc_string (contents, length, insert)
+/* Internal primitive: returns the header structure for the identifier
+   of length LENGTH, containing CONTENTS.  If that identifier already
+   exists in the table, returns the existing entry.  If the identifier
+   hasn't been seen before and the last argument is INSERT, inserts
+   and returns a new entry. Otherwise returns NULL.  */
+static sp_hashnode
+alloc_ident (contents, length, insert)
      const char *contents;
      size_t length;
      enum insert_option insert;
@@ -165,8 +156,7 @@ alloc_string (contents, length, insert)
   unsigned int hash2;
   unsigned int index;
   size_t sizemask;
-  struct str_header *entry;
-  struct str_header *entries = string_hash.entries;
+  sp_hashnode entry;
 
   sizemask = string_hash.nslots - 1;
   index = hash & sizemask;
@@ -178,13 +168,13 @@ alloc_string (contents, length, insert)
 
   for (;;)
     {
-      entry = entries + index;
+      entry = string_hash.entries[index];
 
-      if (entry->ptr == NULL)
+      if (SP_EMPTY (entry))
 	break;
 
-      if (entry->len == length
-	  && !memcmp (entry->ptr, contents, length))
+      if ((size_t) SP_LEN (entry) == length
+	  && !memcmp (SP_STR (entry), contents, length))
 	return entry;
 
       index = (index + hash2) & sizemask;
@@ -194,50 +184,47 @@ alloc_string (contents, length, insert)
   if (insert == NO_INSERT)
     return NULL;
 
-  obstack_grow0 (&string_stack, contents, length);
-  entry->ptr = (const char *) obstack_finish (&string_stack);
-  entry->len = length;
-  entry->data = NULL;
+  entry = (sp_hashnode) make_node (IDENTIFIER_NODE);
+  string_hash.entries[index] = entry;
+  SP_STR (entry) = ggc_alloc_string (contents, length);
+  SP_LEN (entry) = length;
+  /* This is not yet an identifier.  */
+  TREE_SET_CODE (entry, ERROR_MARK);
 
-  if (++string_hash.nelements * 4 < string_hash.nslots * 3)
-    return entry;
+  if (++string_hash.nelements * 4 >= string_hash.nslots * 3)
+    /* Must expand the string table.  */
+    expand_string_table ();
 
-  /* Must expand the string table.  */
-  return expand_string_table (entry);
+  return entry;
 }
 
-/* Subroutine of alloc_string which doubles the size of the hash table
+/* Subroutine of alloc_ident which doubles the size of the hash table
    and rehashes all the strings into the new table.  Returns the entry
    in the new table corresponding to ENTRY.  */
-static struct str_header *
-expand_string_table (entry)
-     struct str_header *entry;
+static void
+expand_string_table ()
 {
-  struct str_header *nentries;
-  struct str_header *e, *nentry = NULL;
+  sp_hashnode *nentries;
+  sp_hashnode *e;
   size_t size, sizemask;
 
   size = string_hash.nslots * 2;
-  nentries = (struct str_header *) xcalloc (size, sizeof (struct str_header));
+  nentries = (sp_hashnode *) xcalloc (size, sizeof (sp_hashnode));
   sizemask = size - 1;
 
-  FORALL_STRINGS (e)
+  FORALL_IDS (e)
     {
       unsigned int index, hash, hash2;
 
-      hash = calc_hash ((const unsigned char *) e->ptr, e->len);
+      hash = calc_hash ((const unsigned char *) SP_STR (*e), SP_LEN (*e));
       hash2 = ((hash * 17) & sizemask) | 1;
       index = hash & sizemask;
 
       for (;;)
 	{
-	  if (nentries[index].ptr == NULL)
+	  if (SP_EMPTY (nentries[index]))
 	    {
-	      nentries[index].ptr = e->ptr;
-	      nentries[index].len = e->len;
-	      nentries[index].data = e->data;
-	      if (e == entry)
-		nentry = nentries + index;
+	      nentries[index] = *e;
 	      break;
 	    }
 
@@ -248,7 +235,6 @@ expand_string_table (entry)
   free (string_hash.entries);
   string_hash.entries = nentries;
   string_hash.nslots = size;
-  return nentry;
 }
 
 /* Allocate and return a string constant of length LENGTH, containing
@@ -262,8 +248,6 @@ ggc_alloc_string (contents, length)
      const char *contents;
      int length;
 {
-  struct str_header *str;
-
   if (length == -1)
     length = strlen (contents);
 
@@ -272,8 +256,8 @@ ggc_alloc_string (contents, length)
   if (length == 1 && contents[0] >= '0' && contents[0] <= '9')
     return digit_string (contents[0] - '0');
 
-  str = alloc_string (contents, length, INSERT);
-  return str->ptr;
+  obstack_grow0 (&string_stack, contents, length);
+  return obstack_finish (&string_stack);
 }
 
 /* Return an IDENTIFIER_NODE whose name is TEXT (a null-terminated string).
@@ -283,43 +267,36 @@ tree
 get_identifier (text)
      const char *text;
 {
-  tree idp;
-  struct str_header *str;
+  sp_hashnode node;
   size_t length = strlen (text);
 
-  str = alloc_string (text, length, INSERT);
-  idp = str->data;
-  if (idp == NULL)
+  node = alloc_ident (text, length, INSERT);
+  if (!SP_VALID (node))
     {
-      if (TREE_CODE_LENGTH (IDENTIFIER_NODE) < 0)
-	abort ();	/* set_identifier_size hasn't been called.  */
-
       /* If this identifier is longer than the clash-warning length,
 	 do a brute force search of the entire table for clashes.  */
       if (warn_id_clash && do_identifier_warnings && length >= (size_t) id_clash_len)
 	{
-	  struct str_header *e;
+	  sp_hashnode *e;
 	  FORALL_IDS (e)
 	    {
-	      if (e->len >= (size_t)id_clash_len
-		  && !strncmp (e->ptr, text, id_clash_len))
+	      if (SP_LEN (*e) >= id_clash_len
+		  && !strncmp (SP_STR (*e), text, id_clash_len))
 		{
 		  warning ("\"%s\" and \"%s\" identical in first %d characters",
-			   text, e->ptr, id_clash_len);
+			   text, SP_STR (*e), id_clash_len);
 		  break;
 		}
 	    }
 	}
 
-      idp = make_node (IDENTIFIER_NODE);
-      IDENTIFIER_LENGTH (idp) = length;
-      IDENTIFIER_POINTER (idp) = str->ptr;
+      TREE_SET_CODE (node, IDENTIFIER_NODE);
 #ifdef GATHER_STATISTICS
       id_string_size += length;
 #endif
-      str->data = idp;
     }
-  return idp;
+
+  return SP_TREE (node);
 }
 
 /* If an identifier with the name TEXT (a null-terminated string) has
@@ -330,33 +307,14 @@ tree
 maybe_get_identifier (text)
      const char *text;
 {
-  struct str_header *str;
+  sp_hashnode node;
   size_t length = strlen (text);
 
-  str = alloc_string (text, length, NO_INSERT);
-  if (str)
-    return str->data;  /* N.B. str->data might be null here, if the
-			  string has been used but not as an identifier.  */
+  node = alloc_ident (text, length, NO_INSERT);
+  if (!SP_EMPTY (node) && SP_VALID (node))
+    return SP_TREE (node);
+
   return NULL_TREE;
-}
-
-/* Look up an identifier with the name TEXT, replace its identifier
-   node with NODE, and return the old identifier node.  This is used
-   by languages which need to enable and disable keywords based on
-   context; e.g. see remember_protocol_qualifiers in objc/objc-act.c.  */
-tree
-set_identifier (text, node)
-     const char *text;
-     tree node;
-{
-  struct str_header *str;
-  tree old;
-  size_t length = strlen (text);
-
-  str = alloc_string (text, length, INSERT);
-  old = str->data;	/* might be null */
-  str->data = node;
-  return old;
 }
 
 /* Report some basic statistics about the string pool.  */
@@ -367,7 +325,7 @@ stringpool_statistics ()
   size_t nelts, nids, overhead, headers;
   size_t total_bytes, longest, sum_of_squares;
   double exp_len, exp_len2, exp2_len;
-  struct str_header *e;
+  sp_hashnode *e;
 #define SCALE(x) ((unsigned long) ((x) < 1024*10 \
 		  ? (x) \
 		  : ((x) < 1024*1024*10 \
@@ -376,21 +334,21 @@ stringpool_statistics ()
 #define LABEL(x) ((x) < 1024*10 ? ' ' : ((x) < 1024*1024*10 ? 'k' : 'M'))
 
   total_bytes = longest = sum_of_squares = nids = 0;
-  FORALL_STRINGS (e)
+  FORALL_IDS (e)
     {
-      size_t n = e->len;
+      size_t n = SP_LEN (*e);
 
       total_bytes += n;
       sum_of_squares += n*n;
       if (n > longest)
 	longest = n;
-      if (e->data)
+      if (SP_VALID (*e))
 	nids++;
     }
       
   nelts = string_hash.nelements;
   overhead = obstack_memory_used (&string_stack) - total_bytes;
-  headers = string_hash.nslots * sizeof (struct str_header);
+  headers = string_hash.nslots * sizeof (sp_hashnode);
 
   fprintf (stderr,
 "\nString pool\n\
@@ -429,10 +387,10 @@ static void
 mark_string_hash (arg)
      void *arg ATTRIBUTE_UNUSED;
 {
-  struct str_header *h;
+  sp_hashnode *h;
 
   FORALL_IDS (h)
     {
-      ggc_mark_tree (h->data);
+      ggc_mark_tree (SP_TREE (*h));
     }
 }

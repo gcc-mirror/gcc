@@ -188,7 +188,7 @@ struct tree_common
        TREE_OVERFLOW in
            INTEGER_CST, REAL_CST, COMPLEX_CST
        TREE_PUBLIC in
-           VAR_DECL or FUNCTION_DECL
+           VAR_DECL or FUNCTION_DECL or IDENTIFIER_NODE
        TREE_VIA_PUBLIC in
            TREE_LIST or TREE_VEC
        EXPR_WFL_EMIT_LINE_NOTE in
@@ -261,7 +261,8 @@ struct tree_common
    bounded_flag:
 
        TREE_BOUNDED in
-	   expressions, VAR_DECL, PARM_DECL, FIELD_DECL, FUNCTION_DECL
+	   expressions, VAR_DECL, PARM_DECL, FIELD_DECL, FUNCTION_DECL,
+	   IDENTIFIER_NODE
        TYPE_BOUNDED in
 	   ..._TYPE
 */
@@ -517,7 +518,7 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
 
 /* In a VAR_DECL or FUNCTION_DECL,
    nonzero means name is to be accessible from outside this module.
-   In an identifier node, nonzero means an external declaration
+   In an IDENTIFIER_NODE, nonzero means an external declaration
    accessible from outside this module was previously seen
    for this name in an inner scope.  */
 #define TREE_PUBLIC(NODE) ((NODE)->common.public_flag)
@@ -1951,13 +1952,6 @@ extern tree get_identifier		PARAMS ((const char *));
    NULL_TREE.  */
 
 extern tree maybe_get_identifier	PARAMS ((const char *));
-
-/* Look up an identifier with the name TEXT, replace its identifier
-   node with NODE, and return the old identifier node.  This is used
-   by languages which need to enable and disable keywords based on
-   context; e.g. see remember_protocol_qualifiers in objc/objc-act.c.  */
-
-extern tree set_identifier		PARAMS ((const char *, tree));
 
 /* Construct various types of nodes.  */
 
