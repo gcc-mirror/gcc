@@ -927,7 +927,9 @@ static bool ix86_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 #if defined (DO_GLOBAL_CTORS_BODY) && defined (HAS_INIT_SECTION)
 static void ix86_svr3_asm_out_constructor (rtx, int);
 #endif
-static void i386_solaris_elf_named_section (const char *, unsigned int, tree);
+/* This function is only used on Solaris.  */
+static void i386_solaris_elf_named_section (const char *, unsigned int, tree)
+  ATTRIBUTE_UNUSED;
 
 /* Register class used for passing given 64bit part of the argument.
    These represent classes as documented by the PS ABI, with the exception
