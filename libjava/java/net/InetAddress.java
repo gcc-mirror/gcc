@@ -22,10 +22,10 @@ package java.net;
  * Status:  Believed complete and correct.
  */
 
-public final class InetAddress
+public final class InetAddress implements java.io.Serializable
 {
-  String hostname;
   byte[] address;
+  String hostname;
 
   InetAddress (byte[] address, String hostname)
   {

@@ -19,6 +19,10 @@ package java.io;
 
 public class OptionalDataException extends ObjectStreamException
 {
+  // FIXME: Need to set these fields per the doc in a constructor.
+  public boolean eof;
+  public int length;
+
   public OptionalDataException()
   {
     super();

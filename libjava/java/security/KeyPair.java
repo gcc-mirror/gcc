@@ -17,7 +17,7 @@ package java.security;
  * Status:  Believed complete and correct.
  */
  
-public class KeyPair /* FIXME: implements serializable */
+public class KeyPair implements java.io.Serializable
 {
   public KeyPair (PublicKey publicKey, PrivateKey privateKey)
   {

@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -20,6 +20,9 @@ package java.lang;
  
 public class ClassNotFoundException extends Exception
 {
+  // TODO12:
+  // Throwable ex;
+
   public ClassNotFoundException()
   {
     super();
@@ -28,6 +31,7 @@ public class ClassNotFoundException extends Exception
   // TODO12:
   // public ClassNotFoundException(String msg, Throwable ex)
   // {
+  //   FIXME: Set 'ex' here.
   // }
 
   public ClassNotFoundException(String msg)

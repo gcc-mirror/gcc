@@ -1,6 +1,6 @@
 /* WriteAbortedException.java -- An exception occured while writing a 
    serialization stream
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,7 +47,7 @@ public class WriteAbortedException extends ObjectStreamException
   * The detailed exception that caused this exception to be thrown
   */
 public Exception detail;
-private String message;
+private transient String message;
 
 /*************************************************************************/
 

@@ -1,5 +1,5 @@
 /* java.beans.beancontext.BeanContextServiceRevokedEvent
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,7 @@ public class BeanContextServiceRevokedEvent extends BeanContextEvent {
 	 * available.
 	 */
 	protected Class serviceClass;
-	private boolean revokeNow;
+	private boolean invalidateRefs;
 
 	/**
 	 * Create a new service revoked event.
@@ -55,7 +55,7 @@ public class BeanContextServiceRevokedEvent extends BeanContextEvent {
 	public BeanContextServiceRevokedEvent(BeanContextServices services, Class serviceClass, boolean revokeNow) {
 		super(services);
 		this.serviceClass = serviceClass;
-		this.revokeNow = revokeNow;
+		invalidateRefs = revokeNow;
 	}
 
 	/**
@@ -94,6 +94,6 @@ public class BeanContextServiceRevokedEvent extends BeanContextEvent {
 	 *         usable.
 	 */
 	public boolean isCurrentServiceInvalidNow() {
-		return revokeNow;
+		return invalidateRefs;
 	}
 }

@@ -84,14 +84,14 @@ public class ChoiceFormat extends NumberFormat
 	  ++index;
 	}
 
-      strings = new String[stringVec.size()];
-      stringVec.copyInto(strings);
+      choiceFormats = new String[stringVec.size()];
+      stringVec.copyInto(choiceFormats);
 
-      limits = new double[limitVec.size()];
-      for (int i = 0; i < limits.length; ++i)
+      choiceLimits = new double[limitVec.size()];
+      for (int i = 0; i < choiceLimits.length; ++i)
 	{
 	  Double d = (Double) limitVec.elementAt(i);
-	  limits[i] = d.doubleValue();
+	  choiceLimits[i] = d.doubleValue();
 	}
     }
 
@@ -101,15 +101,15 @@ public class ChoiceFormat extends NumberFormat
       applyPattern (newPattern);
     }
 
-  public ChoiceFormat (double[] limits, String[] strings)
+  public ChoiceFormat (double[] choiceLimits, String[] choiceFormats)
     {
       super ();
-      setChoices (limits, strings);
+      setChoices (choiceLimits, choiceFormats);
     }
 
   public Object clone ()
     {
-      return new ChoiceFormat (limits, strings);
+      return new ChoiceFormat (choiceLimits, choiceFormats);
     }
 
   public boolean equals (Object obj)
@@ -117,12 +117,12 @@ public class ChoiceFormat extends NumberFormat
       if (! (obj instanceof ChoiceFormat))
 	return false;
       ChoiceFormat cf = (ChoiceFormat) obj;
-      if (limits.length != cf.limits.length)
+      if (choiceLimits.length != cf.choiceLimits.length)
 	return false;
-      for (int i = limits.length - 1; i >= 0; --i)
+      for (int i = choiceLimits.length - 1; i >= 0; --i)
 	{
-	  if (limits[i] != cf.limits[i]
-	      || !strings[i].equals(cf.strings[i]))
+	  if (choiceLimits[i] != cf.choiceLimits[i]
+	      || !choiceFormats[i].equals(cf.choiceFormats[i]))
 	    return false;
 	}
       return true;
@@ -137,42 +137,42 @@ public class ChoiceFormat extends NumberFormat
   public StringBuffer format (double num, StringBuffer appendBuf,
 			      FieldPosition pos)
     {
-      if (limits.length == 0)
+      if (choiceLimits.length == 0)
 	return appendBuf;
 
       int index =  0;
-      if (! Double.isNaN(num) && num >= limits[0])
+      if (! Double.isNaN(num) && num >= choiceLimits[0])
 	{
-	  for (; index < limits.length - 1; ++index)
+	  for (; index < choiceLimits.length - 1; ++index)
 	    {
-	      if (limits[index] <= num
-		  && index != limits.length - 2
-		  && num < limits[index + 1])
+	      if (choiceLimits[index] <= num
+		  && index != choiceLimits.length - 2
+		  && num < choiceLimits[index + 1])
 		break;
 	    }
 	}
 
-      return appendBuf.append(strings[index]);
+      return appendBuf.append(choiceFormats[index]);
     }
 
   public Object[] getFormats ()
     {
-      return (Object[]) strings.clone();
+      return (Object[]) choiceFormats.clone();
     }
 
   public double[] getLimits ()
     {
-      return (double[]) limits.clone();
+      return (double[]) choiceLimits.clone();
     }
 
   public int hashCode ()
     {
       int hash = 0;
-      for (int i = 0; i < limits.length; ++i)
+      for (int i = 0; i < choiceLimits.length; ++i)
 	{
-	  long v = Double.doubleToLongBits(limits[i]);
+	  long v = Double.doubleToLongBits(choiceLimits[i]);
 	  hash ^= (v ^ (v >>> 32));
-	  hash ^= strings[i].hashCode();
+	  hash ^= choiceFormats[i].hashCode();
 	}
       return hash;
     }
@@ -238,12 +238,12 @@ public class ChoiceFormat extends NumberFormat
   public Number parse (String sourceStr, ParsePosition pos)
     {
       int index = pos.getIndex();
-      for (int i = 0; i < limits.length; ++i)
+      for (int i = 0; i < choiceLimits.length; ++i)
 	{
-	  if (sourceStr.startsWith(strings[i], index))
+	  if (sourceStr.startsWith(choiceFormats[i], index))
 	    {
-	      pos.setIndex(index + strings[i].length());
-	      return new Double (limits[i]);
+	      pos.setIndex(index + choiceFormats[i].length());
+	      return new Double (choiceLimits[i]);
 	    }
 	}
       pos.setErrorIndex(index);
@@ -255,12 +255,14 @@ public class ChoiceFormat extends NumberFormat
       return nextDouble (d, false);
     }
 
-  public void setChoices (double[] limits, String[] strings)
+  public void setChoices (double[] choiceLimits, String[] choiceFormats)
     {
-      if (limits.length != strings.length)
+      if (choiceLimits == null || choiceFormats == null)
+	throw new NullPointerException ();
+      if (choiceLimits.length != choiceFormats.length)
 	throw new IllegalArgumentException ();
-      this.strings = (String[]) strings.clone();
-      this.limits = (double[]) limits.clone();
+      this.choiceFormats = (String[]) choiceFormats.clone();
+      this.choiceLimits = (double[]) choiceLimits.clone();
     }
 
   private final void quoteString (StringBuffer dest, String text)
@@ -288,18 +290,18 @@ public class ChoiceFormat extends NumberFormat
   public String toPattern ()
     {
       StringBuffer result = new StringBuffer ();
-      for (int i = 0; i < limits.length; ++i)
+      for (int i = 0; i < choiceLimits.length; ++i)
 	{
-	  result.append(limits[i]);
+	  result.append(choiceLimits[i]);
 	  result.append('#');
-	  quoteString (result, strings[i]);
+	  quoteString (result, choiceFormats[i]);
 	}
       return result.toString();
     }
 
   // Formats and limits.
-  private String[] strings;
-  private double[] limits;
+  private String[] choiceFormats;
+  private double[] choiceLimits;
 
   // Number of mantissa bits in double.
   private static final int mantissaBits = 52;
