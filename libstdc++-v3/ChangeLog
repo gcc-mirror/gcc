@@ -1,3 +1,9 @@
+2003-08-07  Bernardo Innocenti  <bernie@develer.com>
+
+	PR libstdc++/11784
+	* libstdc++-v3/config/cpu/m68k/atomicity.h (__exchange_and_add):
+	Replace variants with new BSET-based version.
+	
 2003-08-04  Release Manager
 
 	* GCC 3.3.1 Released.
