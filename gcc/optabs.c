@@ -259,9 +259,9 @@ add_equal_note (seq, target, code, op0, op1)
 	return 0;
 
   if (GET_RTX_CLASS (code) == '1')
-    note = gen_rtx (code, GET_MODE (target), op0);
+    note = gen_rtx (code, GET_MODE (target), copy_rtx (op0));
   else
-    note = gen_rtx (code, GET_MODE (target), op0, op1);
+    note = gen_rtx (code, GET_MODE (target), copy_rtx (op0), copy_rtx (op1));
 
   REG_NOTES (XVECEXP (seq, 0, XVECLEN (seq, 0) - 1))
     = gen_rtx (EXPR_LIST, REG_EQUAL, note,
@@ -560,7 +560,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       end_sequence ();
 
       if (binoptab->code != UNKNOWN)
-	equiv_value = gen_rtx (binoptab->code, mode, op0, op1);
+	equiv_value
+	  = gen_rtx (binoptab->code, mode, copy_rtx (op0), copy_rtx (op1));
       else
 	equiv_value = 0;
 
@@ -667,7 +668,9 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  
 	  temp = emit_move_insn (target, target);
 	  REG_NOTES (temp) = gen_rtx (EXPR_LIST, REG_EQUAL,
-				      gen_rtx (binoptab->code, mode, xop0, xop1),
+				      gen_rtx (binoptab->code, mode,
+					       copy_rtx (xop0),
+					       copy_rtx (xop1)),
 				      REG_NOTES (temp));
 	  return target;
 	}
@@ -840,7 +843,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
 	      temp = emit_move_insn (product, product);
 	      REG_NOTES (temp) = gen_rtx (EXPR_LIST, REG_EQUAL,
-					  gen_rtx (MULT, mode, op0, op1),
+					  gen_rtx (MULT, mode, copy_rtx (op0),
+						   copy_rtx (op1)),
 					  REG_NOTES (temp));
 
 	      return product;
@@ -1090,7 +1094,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       end_sequence ();
 
       if (binoptab->code != UNKNOWN)
-	equiv_value = gen_rtx (binoptab->code, mode, op0, op1);
+	equiv_value
+	  = gen_rtx (binoptab->code, mode, copy_rtx (op0), copy_rtx (op1));
       else
 	equiv_value = 0;
 	  
@@ -1567,7 +1572,7 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
       end_sequence ();
 
       emit_no_conflict_block (insns, target, op0, NULL_RTX,
-			      gen_rtx (unoptab->code, mode, op0));
+			      gen_rtx (unoptab->code, mode, copy_rtx (op0)));
       return target;
     }
 
@@ -1611,7 +1616,7 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
       end_sequence ();
 
       emit_no_conflict_block (seq, target, op0, 0,
-			      gen_rtx (unoptab->code, mode, op0));
+			      gen_rtx (unoptab->code, mode, copy_rtx (op0)));
       return target;
     }
 
@@ -2127,7 +2132,8 @@ emit_libcall_block (insns, target, result, equiv)
     }
 
   last = emit_move_insn (target, result);
-  REG_NOTES (last) = gen_rtx (EXPR_LIST, REG_EQUAL, equiv, REG_NOTES (last));
+  REG_NOTES (last) = gen_rtx (EXPR_LIST,
+			      REG_EQUAL, copy_rtx (equiv), REG_NOTES (last));
 
   if (prev == 0)
     first = get_insns ();
@@ -3081,7 +3087,8 @@ expand_fix (to, from, unsignedp)
 	  insn = emit_move_insn (to, to);
 	  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUAL,
 				      gen_rtx (UNSIGNED_FIX, GET_MODE (to),
-					       from), REG_NOTES (insn));
+					       copy_rtx (from)),
+				      REG_NOTES (insn));
 
 	  return;
 	}
