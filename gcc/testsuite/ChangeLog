@@ -1,3 +1,7 @@
+2004-11-30  Ben Elliston  <bje@au.ibm.com>
+
+	* g++.old-deja/g++.other/decl5.C: Remove remaining XFAILs.
+
 2004-11-29  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/18479
