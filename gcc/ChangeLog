@@ -1,5 +1,8 @@
 Sun Mar 29 00:42:21 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* objc/sendmsg.c (__objc_block_forward): Add braces for return
+	value if INVISIBLE_STRUCT_RETURN.
+
 	* pa.c (arith_double_operand): Fix parens.
 
 	* haifa-sched.c (print_pattern): Correct arg to sprintf.
