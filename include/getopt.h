@@ -112,7 +112,9 @@ struct option
    errors, only prototype getopt for the GNU C library.  */
 extern int getopt (int argc, char *const *argv, const char *shortopts);
 #else
+#ifndef __cplusplus
 extern int getopt ();
+#endif /* __cplusplus */
 #endif
 #endif /* !HAVE_DECL_GETOPT */
 
