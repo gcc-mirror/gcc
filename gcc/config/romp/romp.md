@@ -557,7 +557,10 @@
    && ! (GET_CODE (operands[0]) == REG
          && REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER)
    && ! (GET_CODE (operands[1]) == REG
-         && REGNO (operands[1]) >= FIRST_PSEUDO_REGISTER)"
+         && REGNO (operands[1]) >= FIRST_PSEUDO_REGISTER)
+   && ! (GET_CODE (operands[0]) == REG && GET_CODE (operands[1]) == REG
+	 && ! reload_completed
+	 && reg_overlap_mentioned_p (operands[0], operands[1]))"
  [(parallel [(set (match_dup 2) (match_dup 3))
 	     (clobber (match_dup 7))])
   (parallel [(set (match_dup 4) (match_dup 5))
@@ -872,7 +875,10 @@
    && GET_CODE (operands[1]) != CONST_DOUBLE
    && (GET_CODE (operands[0]) != REG || REGNO (operands[0]) < 15)
    && (GET_CODE (operands[1]) != REG || REGNO (operands[1]) < 15)
-   && (GET_CODE (operands[0]) == REG || GET_CODE (operands[1]) == REG)"
+   && (GET_CODE (operands[0]) == REG || GET_CODE (operands[1]) == REG)
+   && ! (GET_CODE (operands[0]) == REG && GET_CODE (operands[1]) == REG
+	 && ! reload_completed
+	 && reg_overlap_mentioned_p (operands[0], operands[1]))"
   [(set (match_dup 2) (match_dup 3))
    (set (match_dup 4) (match_dup 5))]
   "
