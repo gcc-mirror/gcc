@@ -51,7 +51,6 @@ unsigned int maximum_field_alignment;
 unsigned int set_alignment = 0;
 
 static void finalize_record_size	PARAMS ((record_layout_info));
-static void compute_record_mode		PARAMS ((tree));
 static void finalize_type_size		PARAMS ((tree));
 static void place_union_field		PARAMS ((record_layout_info, tree));
 
@@ -890,13 +889,10 @@ finalize_record_size (rli)
 {
   tree unpadded_size, unpadded_size_unit;
 
-  /* Next move any full bytes of bits into the byte size.  */
-  rli->offset
-    = size_binop (PLUS_EXPR, rli->offset,
-		  convert (sizetype,
-			   size_binop (TRUNC_DIV_EXPR, rli->bitpos,
-				       bitsize_unit_node)));
-  rli->bitpos = size_binop (TRUNC_MOD_EXPR, rli->bitpos, bitsize_unit_node);
+  /* Now we want just byte and bit offsets, so set the offset alignment
+     to be a byte and then normalize.  */
+  rli->offset_align = BITS_PER_UNIT;
+  normalize_rli (rli);
 
   /* Determine the desired alignment.  */
 #ifdef ROUND_TYPE_ALIGN
@@ -906,16 +902,14 @@ finalize_record_size (rli)
   TYPE_ALIGN (rli->t) = MAX (TYPE_ALIGN (rli->t), rli->record_align);
 #endif
 
-  unpadded_size
-    = size_binop (PLUS_EXPR, rli->bitpos,
-		  size_binop (MULT_EXPR, convert (bitsizetype, rli->offset),
-			      bitsize_unit_node));
-
-  unpadded_size_unit
-    = size_binop (PLUS_EXPR, rli->offset,
-		  convert (sizetype, 
-			   size_binop (CEIL_DIV_EXPR, rli->bitpos,
-				       bitsize_unit_node)));
+  /* Compute the size so far.  Be sure to allow for extra bits in the
+     size in bytes.  We have guaranteed above that it will be no more
+     than a single byte.  */
+  unpadded_size = rli_size_so_far (rli);
+  unpadded_size_unit = rli_size_unit_so_far (rli);
+  if (! integer_zerop (rli->bitpos))
+    unpadded_size_unit
+      = size_binop (PLUS_EXPR, unpadded_size_unit, size_one_node);
 
   /* Record the un-rounded size in the binfo node.  But first we check
      the size of TYPE_BINFO to make sure that BINFO_SIZE is available.  */
@@ -993,7 +987,7 @@ finalize_record_size (rli)
 
 /* Compute the TYPE_MODE for the TYPE (which is a RECORD_TYPE).  */
 
-static void
+void
 compute_record_mode (type)
      tree type;
 {

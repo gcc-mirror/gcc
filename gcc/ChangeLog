@@ -1,3 +1,10 @@
+Tue Apr 25 07:33:12 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* stor-layout.c (finalize_record_size): Simplify to use existing
+	functions.
+	(compute_record_mode): No longer static.
+	* tree.h (compute_record_mode): New declaration.
+
 2000-04-25  Neil Booth  <NeilB@earthling.net>
 
 	* Revert my patch below until cause of build failures
@@ -7,8 +14,6 @@
 
 	* combine.c (combine_instructions): Add missing argument
 	to try_combine.
-
-2000-04-25  Richard Henderson  <rth@cygnus.com>
 
 	* toplev.c (rest_of_compilation): Delay sibcall optimization
 	until after emit_eh_context.
