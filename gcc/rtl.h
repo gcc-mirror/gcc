@@ -1602,7 +1602,8 @@ extern rtx avoid_constant_pool_reference (rtx);
 extern rtx gen_mem_addressof (rtx, tree, int);
 
 /* In regclass.c  */
-extern enum machine_mode choose_hard_reg_mode (unsigned int, unsigned int);
+extern enum machine_mode choose_hard_reg_mode (unsigned int, unsigned int,
+					       bool);
 
 /* In emit-rtl.c  */
 extern rtx set_unique_reg_note (rtx, enum reg_note, rtx);

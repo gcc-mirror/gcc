@@ -1,3 +1,11 @@
+2003-07-11  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* regclass.c (choose_hard_reg_mode): Add third argument.
+	Changed all callers.
+	* rtl.h (choose_hard_reg_mode): Update declaration.
+	* dwarf2out.c (expand_builtin_init_dwarf_reg_sizes):
+	Take HARD_REGNO_CALL_PART_CLOBBERED into account.
+
 2003-07-11  Geoffrey Keating  <geoffk@apple.com>
 
 	* c-decl.c (finish_decl): Handle 'used' here...

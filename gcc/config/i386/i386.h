@@ -1135,7 +1135,7 @@ do {									\
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE)			\
   (CC_REGNO_P (REGNO) ? VOIDmode					\
    : (MODE) == VOIDmode && (NREGS) != 1 ? VOIDmode			\
-   : (MODE) == VOIDmode ? choose_hard_reg_mode ((REGNO), (NREGS))	\
+   : (MODE) == VOIDmode ? choose_hard_reg_mode ((REGNO), (NREGS), false)\
    : (MODE) == HImode && !TARGET_PARTIAL_REG_STALL ? SImode		\
    : (MODE) == QImode && (REGNO) >= 4 && !TARGET_64BIT ? SImode 	\
    : (MODE))

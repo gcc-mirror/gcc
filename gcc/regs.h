@@ -210,7 +210,7 @@ extern int caller_save_needed;
 /* Select a register mode required for caller save of hard regno REGNO.  */
 #ifndef HARD_REGNO_CALLER_SAVE_MODE
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE) \
-  choose_hard_reg_mode (REGNO, NREGS)
+  choose_hard_reg_mode (REGNO, NREGS, false)
 #endif
 
 /* Registers that get partially clobbered by a call in a given mode.

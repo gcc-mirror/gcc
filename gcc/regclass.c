@@ -553,7 +553,7 @@ init_reg_modes (void)
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-      reg_raw_mode[i] = choose_hard_reg_mode (i, 1);
+      reg_raw_mode[i] = choose_hard_reg_mode (i, 1, false);
 
       /* If we couldn't find a valid mode, just use the previous mode.
          ??? One situation in which we need to do this is on the mips where
@@ -653,11 +653,12 @@ memory_move_secondary_cost (enum machine_mode mode, enum reg_class class, int in
 #endif
 
 /* Return a machine mode that is legitimate for hard reg REGNO and large
-   enough to save nregs.  If we can't find one, return VOIDmode.  */
+   enough to save nregs.  If we can't find one, return VOIDmode.
+   If CALL_SAVED is true, only consider modes that are call saved.  */
 
 enum machine_mode
 choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
-		      unsigned int nregs)
+		      unsigned int nregs, bool call_saved)
 {
   unsigned int /* enum machine_mode */ m;
   enum machine_mode found_mode = VOIDmode, mode;
@@ -670,7 +671,8 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     if ((unsigned) HARD_REGNO_NREGS (regno, mode) == nregs
-	&& HARD_REGNO_MODE_OK (regno, mode))
+	&& HARD_REGNO_MODE_OK (regno, mode)
+	&& (! call_saved || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode)))
       found_mode = mode;
 
   if (found_mode != VOIDmode)
@@ -680,7 +682,8 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     if ((unsigned) HARD_REGNO_NREGS (regno, mode) == nregs
-	&& HARD_REGNO_MODE_OK (regno, mode))
+	&& HARD_REGNO_MODE_OK (regno, mode)
+	&& (! call_saved || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode)))
       found_mode = mode;
 
   if (found_mode != VOIDmode)
@@ -690,7 +693,8 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     if ((unsigned) HARD_REGNO_NREGS (regno, mode) == nregs
-	&& HARD_REGNO_MODE_OK (regno, mode))
+	&& HARD_REGNO_MODE_OK (regno, mode)
+	&& (! call_saved || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode)))
       found_mode = mode;
 
   if (found_mode != VOIDmode)
@@ -700,7 +704,8 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     if ((unsigned) HARD_REGNO_NREGS (regno, mode) == nregs
-	&& HARD_REGNO_MODE_OK (regno, mode))
+	&& HARD_REGNO_MODE_OK (regno, mode)
+	&& (! call_saved || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode)))
       found_mode = mode;
 
   if (found_mode != VOIDmode)
@@ -711,7 +716,8 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
     {
       mode = (enum machine_mode) m;
       if ((unsigned) HARD_REGNO_NREGS (regno, mode) == nregs
-	  && HARD_REGNO_MODE_OK (regno, mode))
+	  && HARD_REGNO_MODE_OK (regno, mode)
+	  && (! call_saved || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode)))
 	return mode;
     }
 
