@@ -43,6 +43,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #ifdef _POSIX_SOURCE
 
+/* Convex ships /tmp as a separate file system - thus it
+   usually has more free space than /usr/tmp */
+
+#define P_tmpdir	"/tmp/"
+
 /* Un-hide names hidden in Posix include files.  */
 
 #define S_IFMT _S_IFMT
