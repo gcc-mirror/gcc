@@ -2405,6 +2405,9 @@ commit_one_edge_insertion (e)
       if (GET_CODE (bb->end) == JUMP_INSN)
 	{
 	  before = bb->end;
+	  while (GET_CODE (PREV_INSN (before)) == NOTE
+		 && NOTE_LINE_NUMBER (PREV_INSN (before)) == NOTE_INSN_LOOP_BEG)
+	    before = PREV_INSN (before);
 	}
       else
 	{
