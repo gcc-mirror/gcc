@@ -115,7 +115,9 @@ GLIBCPP_3.4 {
 
     # virtual function thunks
     _ZThn8_NS*;
+    _ZThn16_NS*;
     _ZTv0_n12_NS*;
+    _ZTv0_n24_NS*;
 
     # std::__convert_to_v
     _ZSt14__convert_to_v*;

@@ -1,3 +1,8 @@
+2003-06-15  Richard Henderson  <rth@redhat.com>
+
+	* config/linker-map.gnu: Export virtual function thunks for
+	64-bit systems too.
+
 2003-06-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/abi/i686-pc-linux-gnu: To..
