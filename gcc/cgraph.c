@@ -35,15 +35,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "varray.h"
 #include "output.h"
 
-/* The known declarations must not get garbage collected.  Callgraph
-   datastructures should not get saved via PCH code since this would
-   make it difficult to extend into intra-module optimizer later.  So
-   we store only the references into the array to prevent gabrage
-   collector from deleting live data.  */
-static GTY(()) varray_type known_decls;
 
 /* Hash table used to convert declarations into nodes.  */
-static htab_t cgraph_hash = 0;
+static GTY((param_is (struct cgraph_node))) htab_t cgraph_hash;
 
 /* The linked list of cgraph nodes.  */
 struct cgraph_node *cgraph_nodes;
@@ -58,13 +52,16 @@ int cgraph_n_nodes;
 bool cgraph_global_info_ready = false;
 
 /* Hash table used to convert declarations into nodes.  */
-static htab_t cgraph_varpool_hash = 0;
+static GTY((param_is (struct cgraph_varpool_node))) htab_t cgraph_varpool_hash;
 
 /* Queue of cgraph nodes scheduled to be lowered and output.  */
 struct cgraph_varpool_node *cgraph_varpool_nodes_queue;
 
 /* Number of nodes in existence.  */
 int cgraph_varpool_n_nodes;
+
+/* The linked list of cgraph varpool nodes.  */
+static GTY(())  struct cgraph_varpool_node *cgraph_varpool_nodes;
 
 static struct cgraph_edge *create_edge PARAMS ((struct cgraph_node *,
 						struct cgraph_node *));
@@ -78,9 +75,9 @@ static hashval_t
 hash_node (p)
      const void *p;
 {
-  return (hashval_t)
-    htab_hash_pointer (DECL_ASSEMBLER_NAME
-		       (((struct cgraph_node *) p)->decl));
+  return ((hashval_t)
+	  IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME
+				 (((struct cgraph_node *) p)->decl)));
 }
 
 /* Returns nonzero if P1 and P2 are equal.  */
@@ -106,21 +103,15 @@ cgraph_node (decl)
     abort ();
 
   if (!cgraph_hash)
-    {
-      cgraph_hash = htab_create (10, hash_node, eq_node, NULL);
-      if (!known_decls)
-        VARRAY_TREE_INIT (known_decls, 32, "known_decls");
-    }
+    cgraph_hash = htab_create_ggc (10, hash_node, eq_node, NULL);
 
-  slot =
-    (struct cgraph_node **) htab_find_slot_with_hash (cgraph_hash,
-						      DECL_ASSEMBLER_NAME (decl),
-						      htab_hash_pointer
-						      (DECL_ASSEMBLER_NAME
-						       (decl)), 1);
+  slot = (struct cgraph_node **)
+    htab_find_slot_with_hash (cgraph_hash, DECL_ASSEMBLER_NAME (decl),
+			      IDENTIFIER_HASH_VALUE
+			        (DECL_ASSEMBLER_NAME (decl)), 1);
   if (*slot)
     return *slot;
-  node = xcalloc (sizeof (*node), 1);
+  node = ggc_alloc_cleared (sizeof (*node));
   node->decl = decl;
   node->next = cgraph_nodes;
   if (cgraph_nodes)
@@ -135,7 +126,6 @@ cgraph_node (decl)
       node->next_nested = node->origin->nested;
       node->origin->nested = node;
     }
-  VARRAY_PUSH_TREE (known_decls, decl);
   return node;
 }
 
@@ -152,9 +142,9 @@ cgraph_node_for_identifier (id)
   if (!cgraph_hash)
     return NULL;
 
-  slot =
-    (struct cgraph_node **) htab_find_slot_with_hash (cgraph_hash, id,
-						      htab_hash_pointer (id), 0);
+  slot = (struct cgraph_node **)
+    htab_find_slot_with_hash (cgraph_hash, id,
+		    	      IDENTIFIER_HASH_VALUE (id), 0);
   if (!slot)
     return NULL;
   return *slot;
@@ -166,7 +156,7 @@ static struct cgraph_edge *
 create_edge (caller, callee)
      struct cgraph_node *caller, *callee;
 {
-  struct cgraph_edge *edge = xmalloc (sizeof (struct cgraph_edge));
+  struct cgraph_edge *edge = ggc_alloc (sizeof (struct cgraph_edge));
 
   edge->caller = caller;
   edge->callee = callee;
@@ -368,9 +358,9 @@ dump_cgraph (f)
 static hashval_t
 cgraph_varpool_hash_node (const PTR p)
 {
-  return (hashval_t)
-    htab_hash_pointer (DECL_ASSEMBLER_NAME
-		       (((struct cgraph_varpool_node *) p)->decl));
+  return ((hashval_t)
+	  IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME
+				 (((struct cgraph_varpool_node *) p)->decl)));
 }
 
 /* Returns nonzero if P1 and P2 are equal.  */
@@ -393,25 +383,21 @@ cgraph_varpool_node (tree decl)
     abort ();
 
   if (!cgraph_varpool_hash)
-    {
-      cgraph_varpool_hash = htab_create (10, cgraph_varpool_hash_node, eq_cgraph_varpool_node, NULL);
-      if (!known_decls)
-        VARRAY_TREE_INIT (known_decls, 32, "known_decls");
-    }
+    cgraph_varpool_hash = htab_create_ggc (10, cgraph_varpool_hash_node,
+				           eq_cgraph_varpool_node, NULL);
 
-  slot =
-    (struct cgraph_varpool_node **) htab_find_slot_with_hash (cgraph_varpool_hash,
-						      DECL_ASSEMBLER_NAME (decl),
-						      htab_hash_pointer
-						      (DECL_ASSEMBLER_NAME
-						       (decl)), 1);
+
+  slot = (struct cgraph_varpool_node **)
+    htab_find_slot_with_hash (cgraph_varpool_hash, DECL_ASSEMBLER_NAME (decl),
+			      IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME (decl)),
+			      1);
   if (*slot)
     return *slot;
-  node = xcalloc (sizeof (*node), 1);
+  node = ggc_alloc_cleared (sizeof (*node));
   node->decl = decl;
   cgraph_varpool_n_nodes++;
+  cgraph_varpool_nodes = node;
   *slot = node;
-  VARRAY_PUSH_TREE (known_decls, decl);
   return node;
 }
 
@@ -427,9 +413,9 @@ cgraph_varpool_node_for_identifier (tree id)
   if (!cgraph_varpool_hash)
     return NULL;
 
-  slot =
-    (struct cgraph_varpool_node **) htab_find_slot_with_hash (cgraph_varpool_hash, id,
-						      htab_hash_pointer (id), 0);
+  slot = (struct cgraph_varpool_node **)
+    htab_find_slot_with_hash (cgraph_varpool_hash, id,
+			      IDENTIFIER_HASH_VALUE (id), 0);
   if (!slot)
     return NULL;
   return *slot;
