@@ -1,4 +1,4 @@
-/* Output routines for GCC for Hitachi / SuperH SH.
+/* Output routines for GCC for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1997, 1997, 1998, 1999, 2000, 2001, 2002,
    2003 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
@@ -6047,7 +6047,7 @@ initial_elimination_offset (from, to)
   abort ();
 }
 
-/* Handle machine specific pragmas to be semi-compatible with Hitachi
+/* Handle machine specific pragmas to be semi-compatible with Renesas
    compiler.  */
 
 void

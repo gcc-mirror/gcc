@@ -25,7 +25,7 @@ along with this program; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-!! libgcc routines for the Hitachi / SuperH SH CPUs.
+!! libgcc routines for the Renesas / SuperH SH CPUs.
 !! Contributed by Steve Chamberlain.
 !! sac@cygnus.com
 
@@ -998,7 +998,7 @@ hiset:	sts	macl,r0		! r0 = bb*dd
 #endif /* ! __SH5__ */
 #ifdef L_sdivsi3_i4
 	.title "SH DIVIDE"
-!! 4 byte integer Divide code for the Hitachi SH
+!! 4 byte integer Divide code for the Renesas SH
 #ifdef __SH4__
 !! args in r4 and r5, result in fpul, clobber dr0, dr2
 
@@ -1306,7 +1306,7 @@ div0:	rts
 #ifdef L_udivsi3_i4
 
 	.title "SH DIVIDE"
-!! 4 byte integer Divide code for the Hitachi SH
+!! 4 byte integer Divide code for the Renesas SH
 #ifdef __SH4__
 !! args in r4 and r5, result in fpul, clobber r0, r1, r4, r5, dr0, dr2, dr4,
 !! and t bit
