@@ -2312,12 +2312,14 @@ store_expr (exp, target, suggest_reg)
       OK_DEFER_POP;
       return target;
     }
-  else if (suggest_reg && GET_CODE (target) == MEM
+  else if (suggest_reg && GET_CODE (target) == MEM && ! MEM_VOLATILE_P (target)
 	   && GET_MODE (target) != BLKmode)
     /* If target is in memory and caller wants value in a register instead,
        arrange that.  Pass TARGET as target for expand_expr so that,
        if EXP is another assignment, SUGGEST_REG will be nonzero for it.
-       We know expand_expr will not use the target in that case.  */
+       We know expand_expr will not use the target in that case.
+       Don't do this if TARGET is volatile because we are supposed
+       to write it and then read it.  */
     {
       temp = expand_expr (exp, cse_not_expected ? NULL_RTX : target,
 			  GET_MODE (target), 0);
@@ -2332,6 +2334,9 @@ store_expr (exp, target, suggest_reg)
        So copy the value through a temporary and use that temp
        as the result.  */
     {
+      /* ??? There may be a bug here in the case of a target
+	 that is volatile, but I' too sleepy today to write anything
+	 to handle it.  */
       if (GET_MODE (target) != BLKmode && GET_MODE (target) != VOIDmode)
 	{
 	  /* Expand EXP into a new pseudo.  */
@@ -2357,10 +2362,12 @@ store_expr (exp, target, suggest_reg)
     {
       temp = expand_expr (exp, target, GET_MODE (target), 0);
       /* DO return TARGET if it's a specified hardware register.
-	 expand_return relies on this.  */
+	 expand_return relies on this.
+	 DO return TARGET if it's a volatile mem ref; ANSI requires this.  */
       if (!(target && GET_CODE (target) == REG
 	    && REGNO (target) < FIRST_PSEUDO_REGISTER)
-	  && CONSTANT_P (temp))
+	  && CONSTANT_P (temp)
+	  && !(GET_CODE (target) == MEM && MEM_VOLATILE_P (target)))
 	dont_return_target = 1;
     }
 
