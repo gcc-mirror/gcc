@@ -980,7 +980,7 @@ __builtin_new (sz)
 }
 #endif
 
-#ifdef L_builtin_New
+#ifdef L_caps_New
 typedef void (*vfp)(void);
 
 extern void *__builtin_new (size_t);
