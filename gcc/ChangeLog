@@ -1,3 +1,11 @@
+Tue Nov 24 20:24:59 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* configure.in (m68020-*-elf*, m68k-*-elf*): New targets.
+	* configure: Rebuild.
+	* config/elfos.h: New file.
+	* config/m68k/m68020-elf.h, config/m68k/m68kelf.h,
+	config/m68k/t-m68kelf: New file.
+	
 Tue Nov 24 13:40:06 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (HOST_AR): Define.
