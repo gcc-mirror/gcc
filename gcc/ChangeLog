@@ -1,3 +1,8 @@
+2004-04-27  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin.h (STARTFILE_SPEC): Use %s to find crt2.o.
+	* config/darwin-crt2.c: Only have contents on __ppc__.
+
 2004-04-27  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (call_insn_operand): Check
