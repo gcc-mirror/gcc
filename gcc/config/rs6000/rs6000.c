@@ -2900,15 +2900,15 @@ output_prolog (file, size)
   char *store_reg;
   char *load_reg;
 
-  if (TARGET_64BIT)
-    {
-      store_reg = "\tstd %s,%d(%s)";
-      load_reg = "\tlld %s,%d(%s)";
-    }
-  else
+  if (TARGET_32BIT)
     {
       store_reg = "\t{st|stw} %s,%d(%s)\n";
       load_reg = "\t{l|lwz} %s,%d(%s)\n";
+    }
+  else
+    {
+      store_reg = "\tstd %s,%d(%s)\n";
+      load_reg = "\tlld %s,%d(%s)\n";
     }
 
   if (TARGET_DEBUG_STACK)
@@ -3009,7 +3009,7 @@ output_prolog (file, size)
     {
       if (info->total_size < 32767)
 	asm_fprintf (file,
-		     (TARGET_64BIT) ? "\tstdu %s,%d(%s)\n" : "\t{stu|stwu} %s,%d(%s)\n",
+		     (TARGET_32BIT) ? "\t{stu|stwu} %s,%d(%s)\n" : "\tstdu %s,%d(%s)\n",
 		     reg_names[1], - info->total_size, reg_names[1]);
       else
 	{
@@ -3018,7 +3018,7 @@ output_prolog (file, size)
 		       reg_names[0], (neg_size >> 16) & 0xffff,
 		       reg_names[0], reg_names[0], neg_size & 0xffff);
 	  asm_fprintf (file,
-		       (TARGET_64BIT) ? "\tstdux %s,%s,%s\n" : "\t{stux|stwux} %s,%s,%s\n",
+		       (TARGET_32BIT) ? "\t{stux|stwux} %s,%s,%s\n" : "\tstdux %s,%s,%s\n",
 		       reg_names[1], reg_names[1], reg_names[0]);
 	}
     }
@@ -3093,7 +3093,7 @@ output_prolog (file, size)
 	  ASM_OUTPUT_INTERNAL_LABEL (file, "LCF", rs6000_pic_labelno);
 	  fprintf (file, "\tmflr %s\n", reg_names[30]);
 
-	  asm_fprintf (file, TARGET_64BIT ? "\tld" : "\t{l|lwz}");
+	  asm_fprintf (file, TARGET_32BIT ? "\t{l|lwz}" : "\tld");
 	  fprintf (file, " %s,(", reg_names[0]);
 	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCL", rs6000_pic_labelno);
 	  assemble_name (file, buf);
@@ -3112,7 +3112,7 @@ output_prolog (file, size)
 	  {
 	  case ABI_V4:
 	  case ABI_AIX_NODESC:
-	    if (!TARGET_64BIT)
+	    if (TARGET_32BIT)
 	      {
 		ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
 		asm_fprintf (file, "\t{cau|addis} %s,%s,", reg_names[30], reg_names[0]);
@@ -3161,7 +3161,7 @@ output_epilog (file, size)
      int size;
 {
   rs6000_stack_t *info = rs6000_stack_info ();
-  char *load_reg = (TARGET_64BIT) ? "\tld %s,%d(%s)" : "\t{l|lwz} %s,%d(%s)\n";
+  char *load_reg = (TARGET_32BIT) ? "\t{l|lwz} %s,%d(%s)\n" : "\tld %s,%d(%s)\n";
   rtx insn = get_last_insn ();
   int i;
 
@@ -3206,7 +3206,7 @@ output_epilog (file, size)
 	{
 	  int regno    = info->first_gp_reg_save;
 	  int loc      = info->gp_save_offset;
-	  int reg_size = (TARGET_64BIT) ? 8 : 4;
+	  int reg_size = (TARGET_32BIT) ? 4 : 8;
 
 	  for ( ; regno < 32; regno++, loc += reg_size)
 	    asm_fprintf (file, load_reg, reg_names[regno], loc, reg_names[1]);
@@ -3887,7 +3887,7 @@ rs6000_trampoline_template (file)
        the address of the function, the second word is the TOC pointer (r2),
        and the third word is the static chain value.  */
     case ABI_AIX:
-      fprintf (file, "\t.long %s\n", (TARGET_64BIT) ? "0,0,0,0,0,0" : "0,0,0");
+      fprintf (file, "\t.long %s\n", (TARGET_32BIT) ? "0,0,0" : "0,0,0,0,0,0");
       break;
 
 
@@ -3898,20 +3898,7 @@ rs6000_trampoline_template (file)
       if (STATIC_CHAIN_REGNUM == 0 || !TARGET_NEW_MNEMONICS)
 	abort ();
 
-      if (TARGET_64BIT)
-	{
-	  fprintf (file, "\tmflr %s\n", r0);		/* offset  0 */
-	  fprintf (file, "\tbl .LTRAMP1\n");		/* offset  4 */
-	  fprintf (file, "\t.long 0,0,0,0\n");		/* offset  8 */
-	  fprintf (file, ".LTRAMP1:\n");
-	  fprintf (file, "\tmflr %s\n", sc);		/* offset 28 */
-	  fprintf (file, "\tmtlr %s\n", r0);		/* offset 32 */
-	  fprintf (file, "\tld %s,0(%s)\n", r0, sc);	/* offset 36 */
-	  fprintf (file, "\tld %s,8(%s)\n", sc, sc);	/* offset 40 */
-	  fprintf (file, "\tmtctr %s\n", r0);		/* offset 44 */
-	  fprintf (file, "\tbctr\n");			/* offset 48 */
-	}
-      else
+      if (TARGET_32BIT)
 	{
 	  fprintf (file, "\tmflr %s\n", r0);		/* offset  0 */
 	  fprintf (file, "\tbl .LTRAMP1\n");		/* offset  4 */
@@ -3923,6 +3910,19 @@ rs6000_trampoline_template (file)
 	  fprintf (file, "\tlwz %s,4(%s)\n", sc, sc);	/* offset 32 */
 	  fprintf (file, "\tmtctr %s\n", r0);		/* offset 36 */
 	  fprintf (file, "\tbctr\n");			/* offset 40 */
+	}
+      else
+	{
+	  fprintf (file, "\tmflr %s\n", r0);		/* offset  0 */
+	  fprintf (file, "\tbl .LTRAMP1\n");		/* offset  4 */
+	  fprintf (file, "\t.long 0,0,0,0\n");		/* offset  8 */
+	  fprintf (file, ".LTRAMP1:\n");
+	  fprintf (file, "\tmflr %s\n", sc);		/* offset 28 */
+	  fprintf (file, "\tmtlr %s\n", r0);		/* offset 32 */
+	  fprintf (file, "\tld %s,0(%s)\n", r0, sc);	/* offset 36 */
+	  fprintf (file, "\tld %s,8(%s)\n", sc, sc);	/* offset 40 */
+	  fprintf (file, "\tmtctr %s\n", r0);		/* offset 44 */
+	  fprintf (file, "\tbctr\n");			/* offset 48 */
 	}
       break;
 
@@ -3964,12 +3964,12 @@ rs6000_trampoline_size ()
       abort ();
 
     case ABI_AIX:
-      ret = (TARGET_64BIT) ? 24 : 12;
+      ret = (TARGET_32BIT) ? 12 : 24;
       break;
 
     case ABI_V4:
     case ABI_AIX_NODESC:
-      ret = (TARGET_64BIT ? 48 : 40);
+      ret = (TARGET_32BIT ? 40 : 48);
       break;
 
     case ABI_NT:
