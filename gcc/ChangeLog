@@ -1,3 +1,83 @@
+2004-06-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	RTL prologue/epilogue for SPARC
+	* config/sparc/sparc-protos.h (sparc_emitting_epilogue): Delete.
+	(sparc_skip_caller_unimp): Likewise.
+	(load_pic_register): Likewise.
+	(leaf_return_peephole_ok): Likewise.
+	(compute_frame_size): Rename into sparc_compute_frame_size.
+	(sparc_expand_prologue): New prototype.
+	(sparc_expand_epilogue): Likewise.
+	(output_return): Likewise.
+	(eligible_for_epilogue_delay): Rename into eligible_for_return_delay.
+	* config/sparc/sparc.h (INITIAL_ELIMINATION_OFFSET): Adjust call to
+	compute_frame_size.  Move comment up.
+	(DELAY_SLOTS_FOR_EPILOGUE): Delete.
+	(ELIGIBLE_FOR_EPILOGUE_DELAY): Likewise.
+	(EPILOGUE_USES): Return true for %g1 if the function uses EH return.
+	* config/sparc/sparc.md (UNSPECV_SAVEW): New constant.
+	(type attribute): Add 'return' and 'savew'.
+	(eligible_for_return_delay): New attribute.
+	(return): New delay_slot.
+	(sibcall_epilogue): Call sparc_expand_epilogue.
+	(prologue): Likewise.  Move up.
+	(save_register_window): New expander.
+	(save_register_windowsi): New pattern.
+	(save_register_windowdi): Likewise.
+	(epilogue): New expander.
+	(return_internal): New pattern.
+	(Return peepholes): Delete.
+	* config/sparc/sparc.c (SIBCALL_SLOT_EMPTY_P): New macro.
+	(sparc_emitting_epilogue): Delete.
+	(sparc_skip_caller_unimp): Likewise.
+	(sparc_sr_alias_set): New global variable.
+	(frame_base_name): Delete.
+	(frame_base_reg): New global variable.
+	(sparc_override_options): Get new alias set for save/restore.
+	(leaf_return_peephole_ok): Delete.
+	(eligible_for_epilogue_delay): Rename into eligible_for_return_delay.
+	Factor out code into eligible_for_restore_insn_delay.
+	(eligible_for_restore_insn_delay): New function extraced from above.
+	Use IN_UNCOND_BRANCH_DELAY_TRUE instead of IN_BRANCH_DELAY_TRUE.
+	(eligible_for_sibcall_delay): Use SIBCALL_SLOT_EMPTY_P.
+	Factor out code into eligible_for_restore_insn_delay.
+	(load_pic_register): Make static.  Remove check.
+	(save_regs): Delete.
+	(restore_regs): Likewise.
+	(compute_frame_size): Rename into sparc_compute_frame_size.
+	Rename leaf_function into leaf_function_p.
+	(build_big_number): Delete.
+	(save_or_restore_regs): New function.
+	(emit_save_regs): Likewise.
+	(emit_restore_regs): Likewise.
+	(emit_stack_pointer_increment ): Likewise.
+	(emit_stack_pointer_decrement): Likewise.
+	(sparc_expand_prologue): Likewise.
+	(sparc_function_prologue): Rename into sparc_asm_function_prologue.
+	Remove all code to emit instructions.
+	(sparc_expand_epilogue): New function.
+	(sparc_function_epilogue): Rename into sparc_asm_function_epilogue.
+	Remove all code to emit instructions.
+	(output_restore): New function.
+	(output_return): Likewise.
+	(output_sibcall): Factor out code into output_restore.
+	(print_operand): Adjust for frame_base_reg.
+	* target.h (struct gcc_target): New field 'late_rtl_prologue_epilogue'.
+	* target-def.h (TARGET_LATE_RTL_PROLOGUE_EPILOGUE): New define.
+	(TARGET_INITIALIZER): Add it.
+	* passes.c (rest_of_compilation): Set the conditional predicate
+	'current_function_uses_only_leaf_regs' before sched2.  If target
+	has 'late_rtl_prologue_epilogue', emit RTL prologue/epilogue right
+	before sched2.
+	* reorg.c (return_insn_p): New predicate.
+	(find_end_label): Use it.
+	(relax_delay_slots): Do not thread an unconditional jump that points
+	to the end return label.
+	* doc/tm.texi (Registers) <Leaf Functions>: Clarify the validity
+	domain of 'current_function_uses_only_leaf_regs'.
+	(Stack and Calling) <Function Entry>: Document new target hook
+	TARGET_LATE_RTL_PROLOGUE_EPILOGUE.
+
 2004-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* simplify-rtx.c (simplify_binary_operation): Simplify

@@ -1511,16 +1511,15 @@ extern char leaf_reg_remap[];
 #define CAN_ELIMINATE(FROM, TO) \
   ((TO) == HARD_FRAME_POINTER_REGNUM || !FRAME_POINTER_REQUIRED)
 
-#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
-  do {								\
-    (OFFSET) = 0;						\
-    if ((TO) == STACK_POINTER_REGNUM)				\
-      /* Note, we always pretend that this is a leaf function	\
-	 because if it's not, there's no point in trying to	\
-	 eliminate the frame pointer.  If it is a leaf		\
-	 function, we guessed right!  */			\
-      (OFFSET) = compute_frame_size (get_frame_size (), 1);	\
-    (OFFSET) += SPARC_STACK_BIAS;				\
+/* We always pretend that this is a leaf function because if it's not,
+   there's no point in trying to eliminate the frame pointer.  If it
+   is a leaf function, we guessed right!  */
+#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) 			\
+  do {									\
+    (OFFSET) = 0;							\
+    if ((TO) == STACK_POINTER_REGNUM)					\
+      (OFFSET) = sparc_compute_frame_size (get_frame_size (), 1);	\
+    (OFFSET) += SPARC_STACK_BIAS;					\
   } while (0)
 
 /* Keep the stack pointer constant throughout the function.
@@ -1775,13 +1774,9 @@ do {									\
  (get_frame_size () != 0	\
   || current_function_calls_alloca || current_function_outgoing_args_size)
 
-#define DELAY_SLOTS_FOR_EPILOGUE 1
-
-#define ELIGIBLE_FOR_EPILOGUE_DELAY(trial, slots_filled) \
-  eligible_for_epilogue_delay (trial, slots_filled)
-
 /* Define registers used by the epilogue and return instruction.  */
-#define EPILOGUE_USES(REGNO) (REGNO == 31)
+#define EPILOGUE_USES(REGNO) ((REGNO) == 31 \
+  || (current_function_calls_eh_return && (REGNO) == 1))
 
 /* Length in units of the trampoline for entering a nested function.  */
 
@@ -2581,7 +2576,6 @@ do {									\
 {"fcc_reg_operand", {REG}},						\
 {"fcc0_reg_operand", {REG}},						\
 {"icc_or_fcc_reg_operand", {REG}},					\
-{"restore_operand", {REG}},						\
 {"call_operand", {MEM}},						\
 {"call_operand_address", {SYMBOL_REF, LABEL_REF, CONST, CONST_DOUBLE,	\
 	ADDRESSOF, SUBREG, REG, PLUS, LO_SUM, CONST_INT}},		\

@@ -521,6 +521,11 @@ struct gcc_target
   /* True if #pragma extern_prefix is to be supported.  */
   bool handle_pragma_extern_prefix;
 
+  /* True if the RTL prologue and epilogue should be expanded after all
+     passes that modify the instructions (and not merely reorder them)
+     have been run.  */
+  bool late_rtl_prologue_epilogue;
+
   /* Leave the boolean fields at the end.  */
 };
 
