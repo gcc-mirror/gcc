@@ -1,3 +1,9 @@
+2002-03-23  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.h (RETURN_IN_MEMORY):  Cast to HOST_WIDE_INT
+	not HOST_WIDEST_INT.
+	(RS6000_ARG_SIZE): Remove unsigned cast of int_size_in_bytes.
+
 2002-03-23  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR java/5489
