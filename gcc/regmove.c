@@ -1794,7 +1794,10 @@ regmove_profitable_p ()
 	    break;
 
 	  if (find_matches (pat, &match) >= 0)
-	    return 1;
+	    {
+	      obfree (free_point);
+	      return 1;
+	    }
 
 	  break;
 	}
