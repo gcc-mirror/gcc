@@ -3689,7 +3689,7 @@ alpha_initialize_trampoline (tramp, fnaddr, cxt, fnofs, cxtofs, jmpofs)
    and the rest are pushed.  */
 
 rtx
-function_arg(cum, mode, type, named)
+function_arg (cum, mode, type, named)
      CUMULATIVE_ARGS cum;
      enum machine_mode mode;
      tree type;
