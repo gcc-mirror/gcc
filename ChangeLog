@@ -102,6 +102,8 @@ Fri Jul 24 17:01:42 1998  Ian Lance Taylor  <ian@cygnus.com>
 
 	* config.sub: Merge with FSF.
 
+	* config.guess: Merge with FSF.
+
 Sat Jul 18 14:32:43 CDT 1998  Robert Lipe  <robertl@dgii.com>
 
 	* config.guess: (*-pc-sco3.2v5) Add detection for Pentium II.
