@@ -1,3 +1,12 @@
+Tue Mar 24 16:12:01 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* tree.c (mapcar): When dealing with a DECL, use it's constant
+	value, if any.
+	* pt.c (lookup_template_class): Don't mangle the names of template
+	classes whose arguments are unknown.
+
+	* pt.c (tsubst_expr): Handle GOTO_STMT correctly.
+
 Tue Mar 24 12:21:55 1998  Benjamin Kosnik  <bkoz@lisa.cygnus.com>
 
 	* decl.c (init_decl_processing): Set TYPE_PRECISON for bools to 1.
