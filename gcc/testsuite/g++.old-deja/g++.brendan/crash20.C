@@ -1,6 +1,7 @@
 // Build don't link: 
 // GROUPS passed old-abort
-#include <Complex.h>
+#include <complex>
+typedef complex<double> Complex;
 
 Complex ComputeVVself()
 {
