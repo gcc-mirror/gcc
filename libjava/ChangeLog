@@ -1,3 +1,14 @@
+2004-11-06  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/java/nio/charset/ISO_8859_1.java (Decoder): Now
+	package-private.
+	(Encoder): Likewise.
+	* gnu/java/nio/charset/UTF_8.java (Decoder): Now package-private.
+	(Encoder): Likewise.
+	* gnu/java/nio/charset/US_ASCII.java (Decoder): Now
+	package-private.
+	(Encoder): Likewise.
+
 2004-11-06  Mark Wielaard  <mark@klomp.org>
 
 	* Makefile.am: Add new javax.imageio files.
