@@ -50,6 +50,9 @@ language front ends, and test suites.  @xref{gcc Directory, , The
 @item include
 Headers for the @code{libiberty} library.
 
+@item libada
+The Ada runtime library.
+
 @item libf2c
 The Fortran runtime library.
 
