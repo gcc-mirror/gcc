@@ -34,6 +34,7 @@
    <li><a href="#7">More on binary I/O</a></li>
    <li><a href="#8">Pathetic performance?  Ditch C.</a></li>
    <li><a href="#9">Threads and I/O</a></li>
+   <li><a href="#10">Which header?</a></li>
 </ul>
 
 <hr />
@@ -556,6 +557,138 @@
    <p>Don't forget that other cstdio implemenations are possible.  You could
       easily write one to perform your own forms of locking, to solve your
       &quot;interesting&quot; problems.
+   </p>
+
+<hr />
+<h2><a name="10">Which header?</a></h2>
+   <p>To minimize the time you have to wait on the compiler, it's good to
+      only include the headers you really need.  Many people simply include
+      &lt;iostream&gt; when they don't need to -- and that can <em>penalize
+      your runtime as well.</em>  Here are some tips on which header to use
+      for which situations, starting with the simplest.
+   </p>
+   <p><strong>&lt;iosfwd&gt;</strong> should be included whenever you simply
+      need the <em>name</em> of an I/O-related class, such as
+      &quot;ofstream&quot; or &quot;basic_streambuf&quot;.  Like the name
+      implies, these are forward declarations.  (A word to all you fellow
+      old school programmers:  trying to forward declare classes like
+      &quot;class istream;&quot; won't work.  Look in the iosfwd header if
+      you'd like to know why.)  For example,
+   </p>
+   <pre>
+    #include &lt;iosfwd&gt;
+
+    class MyClass
+    {
+        ....
+        std::ifstream   input_file;
+    };
+
+    extern std::ostream&amp; operator&lt;&lt; (std::ostream&amp;, MyClass&amp;);
+   </pre>
+   <p><strong>&lt;ios&gt;</strong> declares the base classes for the entire
+      I/O stream hierarchy, std::ios_base and std::basic_ios&lt;charT&gt;, the
+      counting types std::streamoff and std::streamsize, the file
+      positioning type std::fpos, and the various manipulators like
+      std::hex, std::fixed, std::noshowbase, and so forth.
+   </p>
+   <p>The ios_base class is what holds the format flags, the state flags,
+      and the functions which change them (setf(), width(), precision(),
+      etc).  You can also store extra data and register callback functions
+      through ios_base, but that has been historically underused.  Anything
+      which doesn't depend on the type of characters stored is consolidated
+      here.
+   </p>
+   <p>The template class basic_ios is the highest template class in the
+      hierarchy; it is the first one depending on the character type, and
+      holds all general state associated with that type:  the pointer to the
+      polymorphic stream buffer, the facet information, etc.
+   </p>
+   <p><strong>&lt;streambuf&gt;</strong> declares the template class
+      basic_streambuf, and two standard instantiations, streambuf and
+      wstreambuf.  If you need to work with the vastly useful and capable
+      stream buffer classes, e.g., to create a new form of storage
+      transport, this header is the one to include.
+   </p>
+   <p><strong>&lt;istream&gt;</strong>/<strong>&lt;ostream&gt;</strong> are
+      the headers to include when you are using the &gt;&gt;/&lt;&lt;
+      interface, or any of the other abstract stream formatting functions.
+      For example,
+   </p>
+   <pre>
+    #include &lt;istream&gt;
+
+    std::ostream&amp; operator&lt;&lt; (std::ostream&amp; os, MyClass&amp; c)
+    {
+       return os &lt;&lt; c.data1() &lt;&lt; c.data2();
+    }
+   </pre>
+   <p>The std::istream and std::ostream classes are the abstract parents of
+      the various concrete implementations.  If you are only using the
+      interfaces, then you only need to use the appropriate interface header.
+   </p>
+   <p><strong>&lt;iomanip&gt;</strong> provides &quot;extractors and inserters
+      that alter information maintained by class ios_base and its dervied
+      classes,&quot; such as std::setprecision and std::setw.  If you need
+      to write expressions like <code>os &lt;&lt; setw(3);</code> or
+      <code>is &gt;&gt; setbase(8);</code>, you must include &lt;iomanip&gt;.
+   </p>
+   <p><strong>&lt;sstream&gt;</strong>/<strong>&lt;fstream&gt;</strong>
+      declare the six stringstream and fstream classes.  As they are the
+      standard concrete descendants of istream and ostream, you will already
+      know about them.
+   </p>
+   <p>Finally, <strong>&lt;iostream&gt;</strong> provides the eight standard
+      global objects (cin, cout, etc).  To do this correctly, this header
+      also provides the contents of the &lt;istream&gt; and &lt;ostream&gt;
+      headers, but nothing else.  The contents of this header look like
+   </p>
+   <pre>
+    #include &lt;ostream&gt;
+    #include &lt;istream&gt;
+
+    namespace std
+    {
+        extern istream cin;
+        extern ostream cout;
+        ....
+
+        // this is explained below
+        <strong>static ios_base::Init __foo;</strong>    // not its real name
+    }
+   </pre>
+   <p>Now, the runtime penalty mentioned previously:  the global objects
+      must be initialized before any of your own code uses them; this is
+      guaranteed by the standard.  Like any other global object, they must
+      be initialized once and only once.  This is typically done with a
+      construct like the one above, and the nested class ios_base::Init is 
+      specified in the standard for just this reason.
+   </p>
+   <p>How does it work?  Because the header is included before any of your
+      code, the <strong>__foo</strong> object is constructed before any of
+      your objects.  (Global objects are built in the order in which they
+      are declared, and destroyed in reverse order.)  The first time the
+      constructor runs, the eight stream objects are set up.
+   </p>
+   <p>The <code>static</code> keyword means that each object file compiled
+      from a source file containing &lt;iostream&gt; will have its own
+      private copy of <strong>__foo</strong>.  There is no specified order
+      of construction across object files (it's one of those pesky NP
+      problems that make life so interesting), so one copy in each object
+      file means that the stream objects are guaranteed to be set up before
+      any of your code which uses them could run, thereby meeting the
+      requirements of the standard.
+   </p>
+   <p>The penalty, of course, is that after the first copy of
+      <strong>__foo</strong> is constructed, all the others are just wasted
+      processor time.  The time spent is merely for an increment-and-test
+      inside a function call, but over several dozen or hundreds of object
+      files, that time can add up.  (It's not in a tight loop, either.)
+   </p>
+   <p>The lesson?  Only include &lt;iostream&gt; when you need to use one of
+      the standard objects in that source file; you'll pay less startup
+      time.  Only include the header files you need to in general; your
+      compile times will go down when there's less parsing work to do.
    </p>
 
 
