@@ -3120,18 +3120,31 @@ output_simode_bld (bild, operands)
      int bild;
      rtx operands[];
 {
-  /* Clear the destination register.  */
-  if (TARGET_H8300H || TARGET_H8300S)
-    output_asm_insn ("sub.l\t%S0,%S0", operands);
-  else
-    output_asm_insn ("sub.w\t%e0,%e0\n\tsub.w\t%f0,%f0", operands);
+  if (TARGET_H8300)
+    {
+      /* Clear the destination register.  */
+      output_asm_insn ("sub.w\t%e0,%e0\n\tsub.w\t%f0,%f0", operands);
 
-  /* Now output the bit load or bit inverse load, and store it in
-     the destination.  */
-  if (bild)
-    output_asm_insn ("bild\t%Z2,%Y1\n\tbst\t#0,%w0", operands);
+      /* Now output the bit load or bit inverse load, and store it in
+	 the destination.  */
+      if (bild)
+	output_asm_insn ("bild\t%Z2,%Y1", operands);
+      else
+	output_asm_insn ("bld\t%Z2,%Y1", operands);
+
+      output_asm_insn ("bst\t#0,%w0", operands);
+    }
   else
-    output_asm_insn ("bld\t%Z2,%Y1\n\tbst\t#0,%w0", operands);
+    {
+      /* Output the bit load or bit inverse load.  */
+      if (bild)
+	output_asm_insn ("bild\t%Z2,%Y1", operands);
+      else
+	output_asm_insn ("bld\t%Z2,%Y1", operands);
+
+      /* Clear the destination register and perform the bit store.  */
+      output_asm_insn ("xor.l\t%S0,%S0\n\tbst\t#0,%w0", operands);
+    }
 
   /* All done.  */
   return "";

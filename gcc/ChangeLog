@@ -1,5 +1,12 @@
 2002-02-23  Kazu Hirata  <kazu@hxi.com>
 
+	* config/h8300/h8300.c (output_simode_bld): Handle H8/300 and
+	H8/300[HS] separately.
+	* config/h8300/h8300.md: Remove the early clobber constraint
+	from bit field patterns.
+
+2002-02-23  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/h8300.md (mulqihi3): Tighten predicates to
 	register_operand.
 	(mulhisi3): Likewise.
