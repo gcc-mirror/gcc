@@ -48,6 +48,9 @@ Boston, MA 02111-1307, USA.  */
     %{!sim:%{pg:gcrt0.o%s}\
      %{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}}}"
 
+/* Override cris.h define.  */
+#undef ENDFILE_SPEC
+
 /* Which library to get.  The only difference from the default is to get
    libsc.a if -sim is given to the driver.  Repeat -lc -lsysX
    {X=sim,linux}, because libsysX needs (at least) errno from libc, and
