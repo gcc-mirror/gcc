@@ -323,7 +323,7 @@ parse_output_constraint (const char **constraint_p, int operand_num,
   *is_inout = (*p == '+');
 
   /* Canonicalize the output constraint so that it begins with `='.  */
-  if (p != constraint || is_inout)
+  if (p != constraint || *is_inout)
     {
       char *buf;
       size_t c_len = strlen (constraint);
