@@ -207,6 +207,7 @@ decl_attributes (decl, attributes)
      tree decl, attributes;
 {
   tree a;
+
   for (a = attributes; a; a = TREE_CHAIN (a))
     if (TREE_VALUE (a) == get_identifier ("packed"))
       {
@@ -252,6 +253,32 @@ decl_attributes (decl, attributes)
 	    }
 	if (i == NUM_MACHINE_MODES)
 	  error ("unknown machine mode `%s'", specified_name);
+      }
+    else if (TREE_VALUE (a) != 0
+	     && TREE_CODE (TREE_VALUE (a)) == TREE_LIST
+	     && TREE_PURPOSE (TREE_VALUE (a)) == get_identifier ("section"))
+      {
+#ifdef ASM_OUTPUT_SECTION_NAME
+	if (TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
+	  {
+	    if (TREE_CODE (decl) == VAR_DECL && current_function_decl != NULL_TREE)
+	      error ("section attribute cannot be specified for local variables");
+	    /* The decl may have already been given a section attribute from
+	       a previous declaration.  Ensure they match.  */
+	    else if (DECL_SECTION_NAME (decl) != NULL_TREE
+		     && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
+				TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (a)))) != 0)
+	      error_with_decl (decl,
+			       "section of `%s' conflicts with previous declaration");
+	    else
+	      DECL_SECTION_NAME (decl) = TREE_VALUE (TREE_VALUE (a));
+	  }
+	else
+	  error_with_decl (decl,
+			   "section attribute not allowed for `%s'");
+#else
+	error_with_decl (decl, "section attributes are not supported for this target");
+#endif
       }
     else if (TREE_VALUE (a) != 0
 	     && TREE_CODE (TREE_VALUE (a)) == TREE_LIST
