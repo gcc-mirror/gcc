@@ -17,6 +17,10 @@ AC_ARG_WITH(cross-host,
 
 GLIBCPP_CONFIGURE(.)
 AC_LIBTOOL_DLOPEN
+GLIBCPP_CHECK_GNU_MAKE
+  if test "x$_cv_gnu_make_command" = "x"; then
+    AC_MSG_ERROR([GNU Make not found.  Please install it or correct your path.])
+  fi
 AM_PROG_LIBTOOL
 AM_CONFIG_HEADER(config.h)
 
@@ -126,21 +130,6 @@ AM_CONDITIONAL(USE_LIBDIR, test -z "$with_cross_host")
 AC_LC_MESSAGES
 
 
-# Sanity checking & User-visible messages.
-# Checks down here, otherwise they get scrolled off before
-# the user will notice.
-if test "$enable_namespaces" = "yes" && test "$enable_libgcc_rebuild" = "no"
-then
-  AC_MSG_WARN([libgcc.a will not match mangled symbols unless it is rebuilt])
-fi
-if test "$enable_namespaces" = "no" && test "$enable_libgcc_rebuild" != "no"
-then
-  # Other things besides namespaces can make this true as well, but none
-  # of them are done automatically... yet
-  AC_MSG_WARN([no point in rebuilding libgcc.a if namespaces aren't used])
-fi
-
-
 if test "${multilib}" = "yes"; then
   multilib_arg="--enable-multilib"
 else
@@ -180,3 +169,39 @@ AC_OUTPUT_COMMANDS([$srcdir/mkc++config $blddir $srcdir])
 
 # Generate bits/std_limits.h and src/limitsMEMBERS.cc
 AC_OUTPUT_COMMANDS([$srcdir/mknumeric_limits $blddir $srcdir $xcompiling])
+
+
+# Sanity checking & User-visible messages.
+# Checks down here, otherwise they get scrolled off before
+# the user will notice.
+if test "$enable_namespaces" = "yes" && test "$enable_libgcc_rebuild" = "no"
+then
+  AC_MSG_WARN([libgcc.a will not match mangled symbols unless it is rebuilt])
+fi
+if test "$enable_namespaces" = "no" && test "$enable_libgcc_rebuild" != "no"
+then
+  # Other things besides namespaces can make this true as well, but none
+  # of them are done automatically... yet
+  AC_MSG_WARN([no point in rebuilding libgcc.a if namespaces aren't used])
+fi
+
+# Trying to get more people to read documentation.  Possibly remove check
+# and warn all the time.
+if test ! -f .sanity_warned; then
+  touch .sanity_warned
+  # There is no "informational" AC_MSG_ macro, so these are going to be
+  # printed even when --quiet/--silent is given.
+  echo ''
+  echo 'Please make certain that you read the installation information here:'
+  echo "  faster => ${srcdir}/docs/install.html"
+  echo '  slower => <URL:http://sources.redhat.com/libstdc++/install.html>'
+  echo ''
+  echo 'and the configuration information here:'
+  echo "  faster => ${srcdir}/docs/configopts.html"
+  echo '  slower => <URL:http://sources.redhat.com/libstdc++/configopts.html>'
+  echo ''
+  echo 'before proceeding with "make".'
+  echo ''
+fi
+
+
