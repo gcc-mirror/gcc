@@ -175,11 +175,20 @@ do { ASM_OUTPUT_ALIGN ((FILE), Pmode == SImode ? 2 : 3);		\
 #define CTORS_SECTION_ASM_OP    ".section\t\".ctors\",#alloc,#execinstr"
 #define DTORS_SECTION_ASM_OP    ".section\t\".dtors\",#alloc,#execinstr"
 
-/* Assemble generic sections.
-   This is currently only used to support section attributes.  */
+/* A C statement to output something to the assembler file to switch to section
+   NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
+   NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
+   define this macro in such cases.  */
 
-#define ASM_OUTPUT_SECTION_NAME(FILE, NAME) \
-   fprintf (FILE, ".section\t\"%s\",#alloc\n", NAME)
+#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
+do {									\
+  if (TREE_CODE (DECL) == FUNCTION_DECL)				\
+    fprintf (FILE, ".section\t\"%s\",#alloc,#execinstr\n", (NAME));	\
+  else if (TREE_READONLY (DECL))					\
+    fprintf (FILE, ".section\t\"%s\",#alloc\n", (NAME));		\
+  else									\
+    fprintf (FILE, ".section\t\"%s\",#alloc,#write\n", (NAME));		\
+} while (0)
 
 /* If the host and target formats match, output the floats as hex.  */
 #if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT

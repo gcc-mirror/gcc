@@ -1022,14 +1022,9 @@ dtors_section() 						\
     }								\
 }								\
 
-#if 0
-#define ASM_OUTPUT_CONSTRUCTOR(FILE, NAME) \
-  do { named_section(".init"); fprintf(FILE,"\t.word\t%s\n", NAME); } while (0)
-#else
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
   do { ctors_section();				\
        fprintf(FILE, "\t%s\t_%s\n", ASM_WORD_OP, NAME); } while (0)
-#endif
 
 #define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)	\
   do { dtors_section();				\
@@ -1079,11 +1074,13 @@ dtors_section() 						\
 #define SDB_DEBUGGING_INFO
 #define SDB_DELIM	"\n"
 
-/* Assemble generic sections.
-   This is currently only used to support section attributes.  */
+/* A C statement to output something to the assembler file to switch to section
+   NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
+   NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
+   define this macro in such cases.  */
 
-#define ASM_OUTPUT_SECTION_NAME(FILE, NAME) \
-   fprintf (FILE, ".section\t%s\n", NAME)
+#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
+  fprintf (FILE, "\t.section %s\n", NAME)
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
