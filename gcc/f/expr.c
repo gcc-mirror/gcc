@@ -12257,8 +12257,7 @@ again:				/* :::::::::::::::::::: */
 	default:
 	  break;
 	}
-      error = ((expr == NULL) && ffe_is_pedantic ())
-	|| ((expr != NULL) && (ffeinfo_rank (info) != 0));
+      error = (expr != NULL) && (ffeinfo_rank (info) != 0);
       break;
 
     case FFEEXPR_contextACTUALARG_:
@@ -18305,80 +18304,95 @@ ffeexpr_token_arguments_ (ffelexToken ft, ffebld expr, ffelexToken t)
   procedure = ffeexpr_stack_->exprstack;
   info = ffebld_info (procedure->u.operand);
 
-  if (ffeinfo_where (info) == FFEINFO_whereCONSTANT)
-    {				/* Statement function (or subroutine, if
-				   there was such a thing). */
-      if ((expr == NULL)
-	  && ((ffe_is_pedantic ()
-	       && (ffeexpr_stack_->expr != NULL))
-	      || (ffelex_token_type (t) == FFELEX_typeCOMMA)))
+  /* Is there an expression to add?  If the expression is nil,
+     it might still be an argument.  It is if:
+
+       -  The current token is comma, or
+
+       -  The -fugly-comma flag was specified *and* the procedure
+          being invoked is external.
+
+     Otherwise, if neither of the above is the case, just
+     ignore this (nil) expression.  */
+
+  if ((expr != NULL)
+      || (ffelex_token_type (t) == FFELEX_typeCOMMA)
+      || (ffe_is_ugly_comma ()
+	  && (ffeinfo_where (info) == FFEINFO_whereGLOBAL)))
+    {
+      /* This expression, even if nil, is apparently intended as an argument.  */
+
+      /* Internal procedure (CONTAINS, or statement function)?  */
+
+      if (ffeinfo_where (info) == FFEINFO_whereCONSTANT)
 	{
-	  if (ffebad_start (FFEBAD_NULL_ARGUMENT))
+	  if ((expr == NULL)
+	      && ffebad_start (FFEBAD_NULL_ARGUMENT))
 	    {
 	      ffebad_here (0, ffelex_token_where_line (ffeexpr_stack_->tokens[0]),
-		     ffelex_token_where_column (ffeexpr_stack_->tokens[0]));
+			   ffelex_token_where_column (ffeexpr_stack_->tokens[0]));
 	      ffebad_here (1, ffelex_token_where_line (t),
 			   ffelex_token_where_column (t));
 	      ffebad_finish ();
 	    }
-	  if (ffeexpr_stack_->next_dummy != NULL)
-	    {			/* Don't bother if we're going to complain
-				   later! */
-	      expr = ffebld_new_conter
-		(ffebld_constant_new_integerdefault_val (0));
-	      ffebld_set_info (expr, ffeinfo_new_any ());
-	    }
-	}
 
-      if (expr == NULL)
-	;
-      else
-	{
-	  if (ffeexpr_stack_->next_dummy == NULL)
-	    {			/* Report later which was the first extra
-				   argument. */
-	      if (ffeexpr_stack_->tokens[1] == NULL)
-		{
-		  ffeexpr_stack_->tokens[1] = ffelex_token_use (ft);
-		  ffeexpr_stack_->num_args = 0;
-		}
-	      ++ffeexpr_stack_->num_args;	/* Count # of extra
-						   arguments. */
-	    }
+	  if (expr == NULL)
+	    ;
 	  else
 	    {
-	      if (ffeinfo_rank (ffebld_info (expr)) != 0)
-		{
-		  if (ffebad_start (FFEBAD_ARRAY_AS_SFARG))
+	      if (ffeexpr_stack_->next_dummy == NULL)
+		{			/* Report later which was the first extra argument. */
+		  if (ffeexpr_stack_->tokens[1] == NULL)
 		    {
-		      ffebad_here (0,
-			ffelex_token_where_line (ffeexpr_stack_->tokens[0]),
-		      ffelex_token_where_column (ffeexpr_stack_->tokens[0]));
-		      ffebad_here (1, ffelex_token_where_line (ft),
-				   ffelex_token_where_column (ft));
-		      ffebad_string (ffesymbol_text (ffesymbol_sfdummyparent
-						 (ffebld_symter (ffebld_head
-					   (ffeexpr_stack_->next_dummy)))));
-		      ffebad_finish ();
+		      ffeexpr_stack_->tokens[1] = ffelex_token_use (ft);
+		      ffeexpr_stack_->num_args = 0;
 		    }
+		  ++ffeexpr_stack_->num_args;	/* Count # of extra arguments. */
 		}
 	      else
 		{
-		  expr = ffeexpr_convert_expr (expr, ft,
-				   ffebld_head (ffeexpr_stack_->next_dummy),
-					       ffeexpr_stack_->tokens[0],
-					       FFEEXPR_contextLET);
-		  ffebld_append_item (&ffeexpr_stack_->bottom, expr);
+		  if ((ffeinfo_rank (ffebld_info (expr)) != 0)
+		      && ffebad_start (FFEBAD_ARRAY_AS_SFARG))
+		    {
+		      ffebad_here (0,
+				   ffelex_token_where_line (ffeexpr_stack_->tokens[0]),
+				   ffelex_token_where_column (ffeexpr_stack_->tokens[0]));
+		      ffebad_here (1, ffelex_token_where_line (ft),
+				   ffelex_token_where_column (ft));
+		      ffebad_string (ffesymbol_text (ffesymbol_sfdummyparent
+						     (ffebld_symter (ffebld_head
+								     (ffeexpr_stack_->next_dummy)))));
+		      ffebad_finish ();
+		    }
+		  else
+		    {
+		      expr = ffeexpr_convert_expr (expr, ft,
+						   ffebld_head (ffeexpr_stack_->next_dummy),
+						   ffeexpr_stack_->tokens[0],
+						   FFEEXPR_contextLET);
+		      ffebld_append_item (&ffeexpr_stack_->bottom, expr);
+		    }
+		  --ffeexpr_stack_->num_args;	/* Count down # of args. */
+		  ffeexpr_stack_->next_dummy
+		    = ffebld_trail (ffeexpr_stack_->next_dummy);
 		}
-	      --ffeexpr_stack_->num_args;	/* Count down # of args. */
-	      ffeexpr_stack_->next_dummy
-		= ffebld_trail (ffeexpr_stack_->next_dummy);
 	    }
 	}
+      else
+	{
+	  if ((expr == NULL)
+	      && ffe_is_pedantic ()
+	      && ffebad_start (FFEBAD_NULL_ARGUMENT_W))
+	    {
+	      ffebad_here (0, ffelex_token_where_line (ffeexpr_stack_->tokens[0]),
+			   ffelex_token_where_column (ffeexpr_stack_->tokens[0]));
+	      ffebad_here (1, ffelex_token_where_line (t),
+			   ffelex_token_where_column (t));
+	      ffebad_finish ();
+	    }
+	  ffebld_append_item (&ffeexpr_stack_->bottom, expr);
+	}
     }
-  else if ((expr != NULL) || ffe_is_ugly_comma ()
-	   || (ffelex_token_type (t) == FFELEX_typeCOMMA))
-    ffebld_append_item (&ffeexpr_stack_->bottom, expr);
 
   switch (ffelex_token_type (t))
     {

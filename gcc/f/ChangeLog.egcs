@@ -1,3 +1,15 @@
+Fri Jan  9 19:09:07 1998  Craig Burley  <burley@gnu.org>
+
+	Fix -fpedantic combined with `F()' invocation,
+	also -fugly-comma combined with `IARGC()' invocation:
+	* bad.def (FFEBAD_NULL_ARGUMENT_W): New diagnostic.
+	* expr.c (ffeexpr_finished_): Don't reject null expressions
+	in the argument-expression context -- let outer context
+	handle that.
+	(ffeexpr_token_arguments_): Warn about null expressions
+	here if -fpedantic (as appropriate).
+	Obey -fugly-comma for only external-procedure invocations.
+
 Tue Feb  3 20:13:05 1998  Richard Henderson  <rth@cygnus.com>
 
 	* config-lang.in: Remove references to runtime/.

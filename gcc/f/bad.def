@@ -539,6 +539,8 @@ FFEBAD_MSGS2 (FFEBAD_TOO_MANY_DIMS, FATAL,
 "Too many dimensions at %0")
 FFEBAD_MSGS1 (FFEBAD_NULL_ARGUMENT, FATAL,
 "Null argument at %0 for statement function reference at %1")
+FFEBAD_MSGS1 (FFEBAD_NULL_ARGUMENT_W, WARN,
+"Null argument at %0 for procedure invocation at %1")
 FFEBAD_MSGS1 (FFEBAD_TOO_FEW_ARGUMENTS, FATAL,
 "%A too few arguments (starting with dummy argument `%B') as of %0 for statement function reference at %1")
 FFEBAD_MSGS1 (FFEBAD_TOO_MANY_ARGUMENTS, FATAL,
