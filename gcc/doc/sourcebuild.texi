@@ -1084,7 +1084,7 @@ Commands to check line counts are processed by default.
 Commands to check branch percentages and call return percentages are
 processed if the @command{run-gcov} command has arguments @code{branches}
 or @code{calls}, respectively.  For example, the following specifies
-checking both, as well as passing @code{-b} to @command{gcov}:
+checking both, as well as passing @option{-b} to @command{gcov}:
 
 @smallexample
 @{ dg-final @{ run-gcov branches calls @{ -b sourcefile @} @} @}
@@ -1216,10 +1216,10 @@ where @var{tsti} and @var{alti} are lists of options, with @var{tsti}
 used by the compiler under test and @var{alti} used by the alternate
 compiler.  For example, with
 @code{[list [list @{-g -O0@} @{-O3@}] [list @{-fpic@} @{-fPIC -O2@}]]},
-the test is first built with @code{-g -O0} by the compiler under
-test and with @code{-O3} by the alternate compiler.  The test is
-built a second time using @code{-fpic} by the compiler under test
-and @code{-fPIC -O2} by the alternate compiler.
+the test is first built with @option{-g -O0} by the compiler under
+test and with @option{-O3} by the alternate compiler.  The test is
+built a second time using @option{-fpic} by the compiler under test
+and @option{-fPIC -O2} by the alternate compiler.
 
 An alternate compiler is specified by defining an environment
 variable to be the full pathname of an installed compiler; for C

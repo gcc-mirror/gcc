@@ -111,7 +111,7 @@ future GCC releases, but it is possible that we will encounter problems
 that make this difficult.  Such problems could include different
 interpretations of the C++ ABI by different vendors, bugs in the ABI, or
 bugs in the implementation of the ABI in different compilers.
-GCC's @code{-Wabi} switch warns when G++ generates code that is
+GCC's @option{-Wabi} switch warns when G++ generates code that is
 probably not compatible with the C++ ABI@.
 
 The C++ library used with a C++ compiler includes the Standard C++

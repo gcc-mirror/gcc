@@ -998,11 +998,11 @@ compiler will consequently produce the following error message:
 @end smallexample
 
 To make the code valid either use @code{this->f()}, or
-@code{Base<T>::f()}.  Using the @code{-fpermissive} flag will also let
+@code{Base<T>::f()}.  Using the @option{-fpermissive} flag will also let
 the compiler accept the code, by marking all function calls for which no
 declaration is visible at the time of definition of the template for
 later lookup at instantiation time, as if it were a dependent call.
-We do not recommend using @code{-fpermissive} to work around invalid
+We do not recommend using @option{-fpermissive} to work around invalid
 code, and it will also only catch cases where functions in base classes
 are called, not where variables in base classes are used (as in the
 example above).

@@ -154,8 +154,8 @@ are valid.  Replacement options may not be the @code{--opt} style, they
 must be the @code{-opt} style.  It is the intention of this macro to
 provide a mechanism for substitution that affects the multilibs chosen,
 such as one option that enables many options, some of which select
-multilibs.  Example nonsensical definition, where @code{-malt-abi},
-@code{-EB}, and @code{-mspoo} cause different multilibs to be chosen:
+multilibs.  Example nonsensical definition, where @option{-malt-abi},
+@option{-EB}, and @option{-mspoo} cause different multilibs to be chosen:
 
 @smallexample
 #define TARGET_OPTION_TRANSLATE_TABLE \
@@ -298,8 +298,8 @@ passes the string @option{-lgcc} to the linker.
 By default, if @code{ENABLE_SHARED_LIBGCC} is defined, the
 @code{LIBGCC_SPEC} is not directly used by the driver program but is
 instead modified to refer to different versions of @file{libgcc.a}
-depending on the values of the command line flags @code{-static},
-@code{-shared}, @code{-static-libgcc}, and @code{-shared-libgcc}.  On
+depending on the values of the command line flags @option{-static},
+@option{-shared}, @option{-static-libgcc}, and @option{-shared-libgcc}.  On
 targets where these modifications are inappropriate, define
 @code{REAL_LIBGCC_SPEC} instead.  @code{REAL_LIBGCC_SPEC} tells the
 driver how to place a reference to @file{libgcc} on the link command

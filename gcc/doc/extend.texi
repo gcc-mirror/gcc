@@ -2903,7 +2903,7 @@ The @code{shared} attribute is only available on Microsoft Windows@.
 @cindex @code{tls_model} attribute
 The @code{tls_model} attribute sets thread-local storage model
 (@pxref{Thread-Local}) of a particular @code{__thread} variable,
-overriding @code{-ftls-model=} command line switch on a per-variable
+overriding @option{-ftls-model=} command line switch on a per-variable
 basis.
 The @var{tls_model} argument should be one of @code{global-dynamic},
 @code{local-dynamic}, @code{initial-exec} or @code{local-exec}.

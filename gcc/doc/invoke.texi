@@ -1502,7 +1502,7 @@ it can cause bloating through duplication of code within each DSO where
 it is used, often the wastage is less than the considerable space occupied
 by a long symbol name in the export table which is typical when using
 templates and namespaces. For even more savings, combine with the
-@code{-fvisibility=hidden} switch.
+@option{-fvisibility=hidden} switch.
 
 @item -fno-weak
 @opindex fno-weak
@@ -1982,7 +1982,7 @@ If a class is declared to implement a protocol, a warning is issued for
 every method in the protocol that is not implemented by the class.  The
 default behavior is to issue a warning for every method not explicitly
 implemented in the class, even if a method implementation is inherited
-from the superclass.  If you use the @code{-Wno-protocol} option, then
+from the superclass.  If you use the @option{-Wno-protocol} option, then
 methods inherited from the superclass are considered to be implemented,
 and no warning is issued for them.
 
@@ -1996,7 +1996,7 @@ expression, and a corresponding method for that selector has been found
 during compilation.  Because these checks scan the method table only at
 the end of compilation, these warnings are not produced if the final
 stage of compilation is not reached, for example because an error is
-found during compilation, or because the @code{-fsyntax-only} option is
+found during compilation, or because the @option{-fsyntax-only} option is
 being used.
 
 @item -Wundeclared-selector
@@ -2008,7 +2008,7 @@ method with that name has been declared before the
 @code{@@interface} or @code{@@protocol} declaration, or implicitly in
 an @code{@@implementation} section.  This option always performs its
 checks as soon as a @code{@@selector(@dots{})} expression is found,
-while @code{-Wselector} only performs its checks in the final stage of
+while @option{-Wselector} only performs its checks in the final stage of
 compilation.  This also enforces the coding style convention
 that methods and selectors must be declared before being used.
 
@@ -4572,8 +4572,8 @@ size of superblocks using tracer pass.  See @option{-ftracer} for details on
 trace formation.
 
 This mode should produce faster but significantly longer programs.  Also
-without @code{-fbranch-probabilities} the traces constructed may not match the
-reality and hurt the performance.  This only makes
+without @option{-fbranch-probabilities} the traces constructed may not
+match the reality and hurt the performance.  This only makes
 sense when scheduling after register allocation, i.e.@: with
 @option{-fschedule-insns2} or at @option{-O2} or higher.
 
@@ -4597,36 +4597,36 @@ Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -ftree-pre
 Perform Partial Redundancy Elimination (PRE) on trees.  This flag is
-enabled by default at -O and higher.
+enabled by default at @option{-O} and higher.
 
 @item -ftree-fre
 Perform Full Redundancy Elimination (FRE) on trees.  The difference
 between FRE and PRE is that FRE only considers expressions
 that are computed on all paths leading to the redundant computation.
 This analysis faster than PRE, though it exposes fewer redundancies.
-This flag is enabled by default at -O and higher.
+This flag is enabled by default at @option{-O} and higher.
 
 @item -ftree-ccp
 Perform sparse conditional constant propagation (CCP) on trees.  This flag
-is enabled by default at -O and higher.
+is enabled by default at @option{-O} and higher.
 
 @item -ftree-dce
 Perform dead code elimination (DCE) on trees.  This flag is enabled by
-default at -O and higher.
+default at @option{-O} and higher.
 
 @item -ftree-dominator-opts
 Perform dead code elimination (DCE) on trees.  This flag is enabled by
-default at -O and higher.
+default at @option{-O} and higher.
 
 @item -ftree-ch
 Perform loop header copying on trees.  This is beneficial since it increases
 effectiveness of code motion optimizations.  It also saves one jump.  This flag
-is enabled by default at -O and higher.  It is not enabled for -Os, since it
-usually increases code size.
+is enabled by default at @option{-O} and higher.  It is not enabled
+for @option{-Os}, since it usually increases code size.
 
 @item -ftree-loop-optimize
-Perform loop optimizations on trees.  This flag is enabled by default at -O
-and higher.
+Perform loop optimizations on trees.  This flag is enabled by default
+at @option{-O} and higher.
 
 @item -ftree-loop-linear
 Perform linear loop transformations on tree. This flag can improve cache 
@@ -4653,25 +4653,25 @@ variable merging and induction variable elimination) on trees.
 @item -ftree-sra
 Perform scalar replacement of aggregates.  This pass replaces structure
 references with scalars to prevent committing structures to memory too
-early.  This flag is enabled by default at -O and higher.
+early.  This flag is enabled by default at @option{-O} and higher.
 
 @item -ftree-copyrename
 Perform copy renaming on trees.  This pass attempts to rename compiler
 temporaries to other variables at copy locations, usually resulting in
 variable names which more closely resemble the original variables.  This flag
-is enabled by default at -O and higher.
+is enabled by default at @option{-O} and higher.
 
 @item -ftree-ter
 Perform temporary expression replacement during the SSA->normal phase.  Single
 use/single def temporaries are replaced at their use location with their
 defining expression.  This results in non-GIMPLE code, but gives the expanders
 much more complex trees to work on resulting in better RTL generation.  This is
-enabled by default at -O and higher.
+enabled by default at @option{-O} and higher.
 
 @item -ftree-lrs
 Perform live range splitting during the SSA->normal phase.  Distinct live
 ranges of a variable are split into unique variables, allowing for better
-optimization later.  This is enabled by default at -O and higher.
+optimization later.  This is enabled by default at @option{-O} and higher.
 
 @item -ftree-vectorize
 Perform loop vectorization on trees.
@@ -4966,7 +4966,7 @@ Disabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 Enable options usually used for instrumenting application to produce
 profile useful for later recompilation with profile feedback based
-optimization.  You must use @code{-fprofile-generate} both when
+optimization.  You must use @option{-fprofile-generate} both when
 compiling and when linking your program.
 
 The following options are enabled: @code{-fprofile-arcs}, @code{-fprofile-values}, @code{-fvpt}.
@@ -8011,7 +8011,7 @@ Generate code for the H8S@.
 @item -mn
 @opindex mn
 Generate code for the H8S and H8/300H in the normal mode.  This switch
-must be used either with -mh or -ms.
+must be used either with @option{-mh} or @option{-ms}.
 
 @item -ms2600
 @opindex ms2600
@@ -9105,7 +9105,8 @@ the system.
 @item -msep-data
 Generate code that allows the data segment to be located in a different
 area of memory from the text segment.  This allows for execute in place in
-an environment without virtual memory management.  This option implies -fPIC.
+an environment without virtual memory management.  This option implies
+@option{-fPIC}.
 
 @item -mno-sep-data
 Generate code that assumes that the data segment follows the text segment.
@@ -9114,7 +9115,7 @@ This is the default.
 @item -mid-shared-library
 Generate code that supports shared libraries via the library ID method.
 This allows for execute in place and shared libraries in an environment
-without virtual memory management.  This option implies -fPIC.
+without virtual memory management.  This option implies @option{-fPIC}.
 
 @item -mno-id-shared-library
 Generate code that doesn't assume ID based shared libraries are being used.

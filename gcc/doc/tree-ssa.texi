@@ -152,7 +152,7 @@ a definition of @code{LANG_HOOKS_GIMPLIFY_EXPR}, call
 @code{tree_rest_of_compilation} to compile and output the function.
 
 You can tell the compiler to dump a C-like representation of the GIMPLE
-form with the flag @code{-fdump-tree-gimple}.
+form with the flag @option{-fdump-tree-gimple}.
 
 @node Temporaries
 @subsection Temporaries
