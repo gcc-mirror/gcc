@@ -1,3 +1,8 @@
+2003-12-15  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++.old-deja/g++.pt/vaarg3.C: Don't expect an error for passing
+	a non-POD type as the last named parameter of a varargs function.
+
 2003-12-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13243
