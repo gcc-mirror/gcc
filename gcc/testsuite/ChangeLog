@@ -1,3 +1,8 @@
+2004-06-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/15962
+	* gfortran.fortran-torture/execute/select_1.f90: New test.
+
 2004-06-15  Paul Brook  <paul@codesourcery.com>
 
 	* gcc.dg/arm-mmx-1.c: Use asm to clobber registers.

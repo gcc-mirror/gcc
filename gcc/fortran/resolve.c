@@ -2586,13 +2586,6 @@ validate_case_label_expr (gfc_expr * e, gfc_expr * case_expr)
 
   if (e == NULL) return SUCCESS;
 
-  if (e->expr_type != EXPR_CONSTANT)
-    {
-      gfc_error ("Expression in CASE statement at %L must be a constant",
-		 &e->where);
-      return FAILURE;
-    }
-
   if (e->ts.type != case_ts.type)
     {
       gfc_error ("Expression in CASE statement at %L must be of type %s",

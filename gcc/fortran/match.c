@@ -3102,7 +3102,7 @@ match_case_selector (gfc_case ** cp)
 
   if (gfc_match_char (':') == MATCH_YES)
     {
-      m = gfc_match_expr (&c->high);
+      m = gfc_match_init_expr (&c->high);
       if (m == MATCH_NO)
 	goto need_expr;
       if (m == MATCH_ERROR)
@@ -3111,7 +3111,7 @@ match_case_selector (gfc_case ** cp)
 
   else
     {
-      m = gfc_match_expr (&c->low);
+      m = gfc_match_init_expr (&c->low);
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_NO)
@@ -3123,7 +3123,7 @@ match_case_selector (gfc_case ** cp)
 	c->high = c->low;
       else
 	{
-	  m = gfc_match_expr (&c->high);
+	  m = gfc_match_init_expr (&c->high);
 	  if (m == MATCH_ERROR)
 	    goto cleanup;
 	  /* MATCH_NO is fine.  It's OK if nothing is there!  */
@@ -3134,7 +3134,7 @@ match_case_selector (gfc_case ** cp)
   return MATCH_YES;
 
 need_expr:
-  gfc_error ("Expected expression in CASE at %C");
+  gfc_error ("Expected initialization expression in CASE at %C");
 
 cleanup:
   free_case (c);
