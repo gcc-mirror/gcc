@@ -85,7 +85,7 @@ namespace std
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      for ( ; __first != __last; ++__first)
+      for (; __first != __last; ++__first)
 	__init = __init + *__first;
       return __init;
     }
@@ -112,7 +112,7 @@ namespace std
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      for ( ; __first != __last; ++__first)
+      for (; __first != __last; ++__first)
 	__init = __binary_op(__init, *__first);
       return __init;
     }
@@ -141,7 +141,7 @@ namespace std
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
       __glibcxx_requires_valid_range(__first1, __last1);
 
-      for ( ; __first1 != __last1; ++__first1, ++__first2)
+      for (; __first1 != __last1; ++__first1, ++__first2)
 	__init = __init + (*__first1 * *__first2);
       return __init;
     }
@@ -175,7 +175,7 @@ namespace std
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
       __glibcxx_requires_valid_range(__first1, __last1);
 
-      for ( ; __first1 != __last1; ++__first1, ++__first2)
+      for (; __first1 != __last1; ++__first1, ++__first2)
 	__init = __binary_op1(__init, __binary_op2(*__first1, *__first2));
       return __init;
     }
@@ -203,16 +203,19 @@ namespace std
 
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator, _ValueType>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+				                         _ValueType>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      if (__first == __last) return __result;
+      if (__first == __last)
+	return __result;
       *__result = *__first;
       _ValueType __value = *__first;
-      while (++__first != __last) {
-	__value = __value + *__first;
-	*++__result = __value;
-      }
+      while (++__first != __last)
+	{
+	  __value = __value + *__first;
+	  *++__result = __value;
+	}
       return ++__result;
     }
 
@@ -230,7 +233,8 @@ namespace std
    *  @param  result  Output to write sums to.
    *  @return  Iterator pointing just beyond the values written to result.
    */
-  template<typename _InputIterator, typename _OutputIterator, typename _BinaryOperation>
+  template<typename _InputIterator, typename _OutputIterator,
+	   typename _BinaryOperation>
     _OutputIterator
     partial_sum(_InputIterator __first, _InputIterator __last,
 		_OutputIterator __result, _BinaryOperation __binary_op)
@@ -239,16 +243,19 @@ namespace std
 
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator, _ValueType>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+				                         _ValueType>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      if (__first == __last) return __result;
+      if (__first == __last)
+	return __result;
       *__result = *__first;
       _ValueType __value = *__first;
-      while (++__first != __last) {
-	__value = __binary_op(__value, *__first);
-	*++__result = __value;
-      }
+      while (++__first != __last)
+	{
+	  __value = __binary_op(__value, *__first);
+	  *++__result = __value;
+	}
       return ++__result;
     }
 
@@ -272,17 +279,20 @@ namespace std
 
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator, _ValueType>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+				                         _ValueType>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      if (__first == __last) return __result;
+      if (__first == __last)
+	return __result;
       *__result = *__first;
       _ValueType __value = *__first;
-      while (++__first != __last) {
-	_ValueType __tmp = *__first;
-	*++__result = __tmp - __value;
-	__value = __tmp;
-      }
+      while (++__first != __last)
+	{
+	  _ValueType __tmp = *__first;
+	  *++__result = __tmp - __value;
+	  __value = __tmp;
+	}
       return ++__result;
     }
 
@@ -298,7 +308,8 @@ namespace std
    *  @param  result  Output to write sums to.
    *  @return  Iterator pointing just beyond the values written to result.
    */
-  template<typename _InputIterator, typename _OutputIterator, typename _BinaryOperation>
+  template<typename _InputIterator, typename _OutputIterator,
+	   typename _BinaryOperation>
     _OutputIterator
     adjacent_difference(_InputIterator __first, _InputIterator __last,
 			_OutputIterator __result, _BinaryOperation __binary_op)
@@ -307,17 +318,20 @@ namespace std
 
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator, _ValueType>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+				                         _ValueType>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      if (__first == __last) return __result;
+      if (__first == __last)
+	return __result;
       *__result = *__first;
       _ValueType __value = *__first;
-      while (++__first != __last) {
-	_ValueType __tmp = *__first;
-	*++__result = __binary_op(__tmp, __value);
-	__value = __tmp;
-      }
+      while (++__first != __last)
+	{
+	  _ValueType __tmp = *__first;
+	  *++__result = __binary_op(__tmp, __value);
+	  __value = __tmp;
+	}
       return ++__result;
     }
 
