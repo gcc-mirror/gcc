@@ -6596,6 +6596,13 @@ define @code{INCOMING_RETURN_ADDR_RTX} and either set
 prologue, or call @code{dwarf2out_def_cfa} and @code{dwarf2out_reg_save}
 as appropriate from @code{FUNCTION_PROLOGUE} if you don't.
 
+@findex DWARF2_FRAME_INFO
+@item DWARF2_FRAME_INFO
+Define this macro to a nonzero value if GNU CC should always output
+Dwarf 2 frame information.  If @code{DWARF2_UNWIND_INFO}
+(@pxref{Exception Region Output} is nonzero, GNU CC will output this
+information not matter how you define @code{DWARF2_FRAME_INFO}.
+
 @findex LINKER_DOES_NOT_WORK_WITH_DWARF2
 @item LINKER_DOES_NOT_WORK_WITH_DWARF2
 Define this macro if the linker does not work with Dwarf version 2.
