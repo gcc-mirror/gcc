@@ -5626,9 +5626,10 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode, unsignedp, type,
       /* If the field isn't aligned enough to store as an ordinary memref,
 	 store it as a bit field.  */
       || (mode != BLKmode
-	  && ((SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (target))
-	       && (MEM_ALIGN (target) < GET_MODE_ALIGNMENT (mode)))
-	      || bitpos % GET_MODE_ALIGNMENT (mode)))
+	  && ((((MEM_ALIGN (target) < GET_MODE_ALIGNMENT (mode))
+		|| bitpos % GET_MODE_ALIGNMENT (mode))
+	       && SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (target)))
+	      || (bitpos % BITS_PER_UNIT != 0)))	      
       /* If the RHS and field are a constant size and the size of the
 	 RHS isn't the same size as the bitfield, we must use bitfield
 	 operations.  */
@@ -7571,9 +7572,10 @@ expand_expr (exp, target, tmode, modifier)
 	    /* If the field isn't aligned enough to fetch as a memref,
 	       fetch it as a bit field.  */
 	    || (mode1 != BLKmode
-		&& ((TYPE_ALIGN (TREE_TYPE (tem)) < GET_MODE_ALIGNMENT (mode)
+		&& (((TYPE_ALIGN (TREE_TYPE (tem)) < GET_MODE_ALIGNMENT (mode)
+		      || (bitpos % GET_MODE_ALIGNMENT (mode) != 0))
 		     && SLOW_UNALIGNED_ACCESS (mode1, MEM_ALIGN (op0)))
-		    || (bitpos % GET_MODE_ALIGNMENT (mode) != 0)))
+		    || (bitpos % BITS_PER_UNIT != 0)))
 	    /* If the type and the field are a constant size and the
 	       size of the type isn't the same size as the bitfield,
 	       we must use bitfield operations.  */

@@ -1,3 +1,10 @@
+2003-05-05  Olivier Hainque  <hainque@act-europe.fr>
+
+        * expr.c (expand_expr, case BIT_FIELD_REF): Refine the test forcing
+        usage of bitfield instructions for mode1 != BLKmode, only ignoring
+        SLOW_UNALIGNED_ACCESS if the field is not byte aligned. 
+        (store_field): Likewise.
+
 2003-05-05  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c (rs6000_expand_binop_builtin): Add
