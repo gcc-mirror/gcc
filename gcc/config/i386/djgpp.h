@@ -20,6 +20,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "dbxcoff.h"
 
+/* Support generation of DWARF2 debugging info.  */
+#define DWARF2_DEBUGGING_INFO
+
 /* Don't assume anything about the header files. */
 #define NO_IMPLICIT_EXTERN_C
 
@@ -75,6 +78,18 @@ Boston, MA 02111-1307, USA.  */
 #undef TEXT_SECTION_ASM_OP
 #define TEXT_SECTION_ASM_OP "\t.section .text"
 
+/* How to output an unaligned integer.  */
+#undef UNALIGNED_INT_ASM_OP
+#define UNALIGNED_INT_ASM_OP "\t.long\t"
+
+/* How to output an unaligned double length integer.  */
+#undef UNALIGNED_DOUBLE_INT_ASM_OP
+#define UNALIGNED_DOUBLE_INT_ASM_OP "\t.quad\t"
+
+/* How to output an unaligned half length intenger.  */
+#undef UNALIGNED_SHORT_ASM_OP
+#define UNALIGNED_SHORT_ASM_OP "\t.short\t"
+
 /* Tell GCC where our standard include directory is.  */
 #undef STANDARD_INCLUDE_DIR
 #define STANDARD_INCLUDE_DIR "/dev/env/DJDIR/include/"
@@ -88,7 +103,7 @@ Boston, MA 02111-1307, USA.  */
         (((NAME)[0] >= 'A') && ((NAME)[0] <= 'z') && ((NAME)[1] == ':')))
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-DGO32 -DDJGPP=2 -D__MSDOS__ -Asystem=msdos"
+#define CPP_PREDEFINES "-D__MSDOS__ -Asystem=msdos"
 
 /* Include <sys/version.h> so __DJGPP__ and __DJGPP_MINOR__ are defined.  */
 #undef CPP_SPEC
