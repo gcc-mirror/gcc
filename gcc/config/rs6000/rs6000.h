@@ -742,8 +742,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 /* True if register is an integer register.  */
 #define INT_REGNO_P(N) ((N) <= 31 || (N) == ARG_POINTER_REGNUM)
 
-/* True if register is the temporary memory location used for int/float
-   conversion.  */
+/* True if register is the XER register.  */
 #define XER_REGNO_P(N) ((N) == XER_REGNO)
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
@@ -930,14 +929,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    So make a class for registers valid as base registers.
 
    Also, cr0 is the only condition code register that can be used in
-   arithmetic insns, so make a separate class for it.
-
-   There is a special 'register' (76), which is not a register, but a
-   placeholder for memory allocated to convert between floating point and
-   integral types.  This works around a problem where if we allocate memory
-   with allocate_stack_{local,temp} and the function is an inline function, the
-   memory allocated will clobber memory in the caller.  So we use a special
-   register, and if that is used, we allocate stack space for it.  */
+   arithmetic insns, so make a separate class for it.  */
 
 enum reg_class
 {
@@ -1013,17 +1005,17 @@ enum reg_class
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-#define REGNO_REG_CLASS(REGNO)		\
- ((REGNO) == 0 ? GENERAL_REGS		\
-  : (REGNO) < 32 ? BASE_REGS		\
-  : FP_REGNO_P (REGNO) ? FLOAT_REGS	\
-  : (REGNO) == 68 ? CR0_REGS		\
-  : CR_REGNO_P (REGNO) ? CR_REGS	\
-  : (REGNO) == 64 ? MQ_REGS		\
-  : (REGNO) == 65 ? LINK_REGS		\
-  : (REGNO) == 66 ? CTR_REGS		\
-  : (REGNO) == 67 ? BASE_REGS		\
-  : (REGNO) == 76 ? XER_REGS		\
+#define REGNO_REG_CLASS(REGNO)			\
+ ((REGNO) == 0 ? GENERAL_REGS			\
+  : (REGNO) < 32 ? BASE_REGS			\
+  : FP_REGNO_P (REGNO) ? FLOAT_REGS		\
+  : (REGNO) == CR0_REGNO ? CR0_REGS		\
+  : CR_REGNO_P (REGNO) ? CR_REGS		\
+  : (REGNO) == MQ_REGNO ? MQ_REGS		\
+  : (REGNO) == LINK_REGISTER_REGNUM ? LINK_REGS	\
+  : (REGNO) == COUNT_REGISTER_REGNUM ? CTR_REGS	\
+  : (REGNO) == ARG_POINTER_REGNUM ? BASE_REGS	\
+  : (REGNO) == XER_REGNO ? XER_REGS		\
   : NO_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
