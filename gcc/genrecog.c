@@ -525,12 +525,25 @@ validate_pattern (pattern, insn, set_dest)
 	    && pred_name[0] != '\0'
 	    && allows_non_const
 	    && ! special_mode_pred
-	    && strstr (c_test, "operands") != NULL
+	    && strstr (c_test, "operands") == NULL
 	    && GET_CODE (insn) == DEFINE_INSN)
 	  {
 	    message_with_line (pattern_lineno,
 			       "warning: operand %d missing mode?",
 			       XINT (pattern, 0));
+	  }
+
+	/* A MATCH_OPERAND that is a SET should have an output reload.  */
+	if (set_dest
+	    && code == MATCH_OPERAND
+	    && XSTR (pattern, 2)[0] != '\0'
+	    && XSTR (pattern, 2)[0] != '='
+	    && XSTR (pattern, 2)[0] != '+')
+	  {
+	    message_with_line (pattern_lineno,
+			       "operand %d missing output reload", 
+			       XINT (pattern, 0));
+	    error_count++;
 	  }
 
 	return;
