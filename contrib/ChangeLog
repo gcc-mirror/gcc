@@ -1,3 +1,7 @@
+2001-05-28  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* contrib/test_summary (files): Sort before evaluating.
+
 2001-05-23  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_update (UPDATE_OPTIONS): Add -d to the default settings.
