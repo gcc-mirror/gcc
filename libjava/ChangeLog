@@ -1,3 +1,9 @@
+2003-12-03  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* gnu/java/nio/natSelectorImplPosix.cc
+	(implSelect): A timeout of 0 means an infinite
+	timeout.
+
 2003-12-02  Fernando Nasser  <fnasser@redhat.com>
  
 	* gnu/java/awt/peer/gtk/GtkListPeer.java (handleEvent): Fix generation
