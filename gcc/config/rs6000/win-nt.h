@@ -199,11 +199,6 @@ do {									\
       assemble_name (FILE, NAME);					\
       fprintf (FILE, "\n");						\
     }									\
-  assemble_name (FILE, NAME);						\
-  fprintf (FILE, ":\n");						\
-  fprintf (FILE, "\t.ualong ..");					\
-  assemble_name (FILE, NAME);						\
-  fprintf (FILE, ",.toc\n");						\
 									\
   fprintf (FILE, "\n#\tFunction: '..");					\
   assemble_name (FILE, NAME);						\
@@ -246,6 +241,11 @@ do {									\
   fprintf (FILE, ".b\n\n");						\
   fprintf (FILE, "#\tSwitch to the relocation section\n");		\
   fprintf (FILE, "\t.reldata\n");					\
+  assemble_name (FILE, NAME);						\
+  fprintf (FILE, ":\n");						\
+  fprintf (FILE, "\t.ualong ..");					\
+  assemble_name (FILE, NAME);						\
+  fprintf (FILE, ",.toc\n");						\
 									\
   if (lookup_attribute ("dllexport",					\
 			TYPE_ATTRIBUTES (TREE_TYPE (DECL))))		\
