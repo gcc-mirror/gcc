@@ -397,7 +397,7 @@ add_dependence (insn, elem, dep_type)
       {
 	/* If this is a more restrictive type of dependence than the existing
 	   one, then change the existing dependence to this type.  */
-	if (dep_type < REG_NOTE_KIND (link))
+	if ((int) dep_type < (int) REG_NOTE_KIND (link))
 	  PUT_REG_NOTE_KIND (link, dep_type);
 	return;
       }
