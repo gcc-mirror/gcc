@@ -1181,17 +1181,12 @@ expand_default_init (binfo, true_exp, exp, init, flags)
 	   to run a new constructor; and catching an exception, where we
 	   have already built up the constructor call so we could wrap it
 	   in an exception region.  */;
-      else if (TREE_CODE (init) == CONSTRUCTOR)
+      else if (TREE_CODE (init) == CONSTRUCTOR 
+	       && TREE_HAS_CONSTRUCTOR (init))
 	{
-	  if (!TYPE_HAS_CONSTRUCTOR (type))
-	    /* A brace-enclosed initializer has whatever type is
-	       required.  There's no need to convert it.  */
-	    ;
-	  else
-	    init = ocp_convert (type, 
-				TREE_VALUE (CONSTRUCTOR_ELTS (init)),
-				CONV_IMPLICIT | CONV_FORCE_TEMP, 
-				flags);
+	  /* A brace-enclosed initializer for an aggregate.  */
+	  my_friendly_assert (CP_AGGREGATE_TYPE_P (type), 20021016);
+	  init = digest_init (type, init, (tree *)NULL);
 	}
       else
 	init = ocp_convert (type, init, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);

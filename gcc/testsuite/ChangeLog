@@ -1,3 +1,7 @@
+2002-10-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/init/array8.C: New test.
+
 2002-10-17  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/special/mips-abi.exp: New test.
