@@ -1536,5 +1536,5 @@ extern char *output_cmp ();
 extern char *output_condjump ();
 extern char *output_call ();
 extern void gen_ap_for_call ();
-extern void check_float_value ();
+extern int check_float_value ();
 extern void asm_declare_function_name ();
