@@ -1,3 +1,9 @@
+1999-09-21  Nick Clifton  <nickc@cygnus.com>
+
+	* config.sub: Add fr30 target.
+	* configure.in: Add fr30 target.
+	* MAINTAINERS: Add fr30 maintainer.
+
 Tue Sep  7 23:33:57 1999  Linas Vepstas  <linas@linas.org>
 
 	* config.guess: Add OS/390 match pattern.
