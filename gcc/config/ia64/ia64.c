@@ -6713,15 +6713,16 @@ void
 ia64_reorg (insns)
      rtx insns;
 {
-  /* If optimizing, we'll have split before scheduling.  */
-  if (optimize == 0)
-    split_all_insns_noflow ();
-
   /* We are freeing block_for_insn in the toplev to keep compatibility
      with old MDEP_REORGS that are not CFG based.  Recompute it now.  */
   compute_bb_for_insn (get_max_uid ());
-  /* update_life_info_in_dirty_blocks should be enought here.  */
-  life_analysis (insns, NULL, PROP_DEATH_NOTES);
+
+  /* If optimizing, we'll have split before scheduling.  */
+  if (optimize == 0)
+    split_all_insns (0);
+
+  update_life_info_in_dirty_blocks (UPDATE_LIFE_GLOBAL_RM_NOTES,
+				    PROP_DEATH_NOTES);
 
   if (ia64_flag_schedule_insns2)
     {

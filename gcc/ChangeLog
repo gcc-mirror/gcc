@@ -1,5 +1,10 @@
 2002-05-16  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.c (ia64_reorg): Rebuild bb_for_insn before
+	splitting.  Use split_all_insns; update_life_info_in_dirty_blocks.
+
+2002-05-16  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/unicosmk.h (TARGET_OS_CPP_BUILTINS): Fix typo.
 
 	* config/ia64/ia64.c (saveable_obstack): Do not declare.
@@ -64,7 +69,7 @@ config:
 	Default-define here.
 	(builtin_define_with_value): Can now wrap the expansion in
 	quotation marks if such is wanted.
-	(cb_register_builtins): Update calls to	builtin_define_with_value.  
+	(cb_register_builtins): Update calls to	builtin_define_with_value.
 	Define __REGISTER_PREFIX__, __USER_LABEL_PREFIX__, and __VERSION__
 	here.
 	(c_common_init): Set options->stdc_0_in_system_headers.
@@ -89,7 +94,7 @@ config:
 	stdc_0_in_system_headers) too to decide the value of __STDC__.
 
 	* tradcpp.c (user_label_prefix): Kill.
-	(main): Remove code handling -f(no-)leading-underscore.	
+	(main): Remove code handling -f(no-)leading-underscore.
 	(initialize_builtins): Don't define __REGISTER_PREFIX__
 	or __USER_LABEL_PREFIX__.
 	(install_value): Wrap compound statement in dummy loop so the
