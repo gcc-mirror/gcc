@@ -1,5 +1,6 @@
-/* UnknownError.java 
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+/* UnknownError.java -- thrown when the VM cannot provide more information
+   about a catastrophic error
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -38,37 +39,34 @@ exception statement from your version. */
 
 package java.lang;
 
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct. 
- */
-
 /**
- * An <code>UnknownError</code> is thrown when a serious but unknown 
+ * An <code>UnknownError</code> is thrown when a serious but unknown
  * problem has occurred in the Java Virtual Machine.
  *
- * @since JDK 1.0
- * 
  * @author Brian Jones
+ * @status updated to 1.4
  */
 public class UnknownError extends VirtualMachineError
 {
-  static final long serialVersionUID = 2524784860676771849L;
+  /**
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = 2524784860676771849L;
 
   /**
    * Create an error without a message.
    */
   public UnknownError()
-    {
-      super();
-    }
+  {
+  }
 
   /**
    * Create an error with a message.
+   *
+   * @param s the message
    */
   public UnknownError(String s)
-    {
-      super(s);
-    }
+  {
+    super(s);
+  }
 }

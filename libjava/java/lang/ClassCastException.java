@@ -1,6 +1,5 @@
-/* ClassCastException.java -- exception thrown when incorrectly trying to 
-   cast an object to a subclass it does not belong to.
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+/* ClassCastException.java -- exception thrown on bad cast
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -8,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,45 +38,39 @@ exception statement from your version. */
 
 package java.lang;
 
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct.
- */
-
 /**
- * Exceptions may be thrown by one part of a Java program and caught
- * by another in order to deal with exceptional conditions.  In this case
- * when incorrectly trying to cast an object to a subclass it does not 
- * belong to.  The following code generates a <code>ClassCastException</code>.
+ * Thrown when an attempt is made to cast an object which is not of the
+ * appropriate runtime type. For example:<br>
  * <pre>
  * Object o = new Vector();
- * String s = (String)o;
+ * String s = (String) o;
  * </pre>
- *
- * @since JDK 1.0
  *
  * @author Brian Jones
  * @author Warren Levy <warrenl@cygnus.com>
- * @date September 18, 1998.
+ * @status updated to 1.4
  */
 public class ClassCastException extends RuntimeException
 {
-  static final long serialVersionUID = -9223365651070458532L;
+  /**
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = -9223365651070458532L;
 
   /**
    * Create an exception without a message.
    */
   public ClassCastException()
-    {
-      super();
-    }
+  {
+  }
 
   /**
    * Create an exception with a message.
+   *
+   * @param s the message
    */
   public ClassCastException(String s)
-    {
-      super(s);
-    }
+  {
+    super(s);
+  }
 }

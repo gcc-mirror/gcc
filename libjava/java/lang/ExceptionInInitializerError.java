@@ -1,5 +1,6 @@
-/* ExceptionInInitializerError.java 
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+/* ExceptionInInitializerError.java -- thrown when class initialization fails
+   with an uncaught exception
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -38,118 +39,85 @@ exception statement from your version. */
 
 package java.lang;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
-
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct.
- */
-
 /**
- * An <code>ExceptionInInitializerError</code> is thrown when an 
- * unexpected exception has occurred in a static initializer or the
- * initializer for a static variable.
+ * An <code>ExceptionInInitializerError</code> is thrown when an uncaught
+ * exception has occurred in a static initializer or the initializer for a
+ * static variable. In general, this wraps only RuntimeExceptions, since the
+ * compiler does not allow a checked exception to be uncaught in an
+ * initializer. This exception only occurs during reflection, when a class
+ * is initialized as part of another action.
  *
- * @since JDK 1.1
- * 
  * @author Brian Jones
  * @author Tom Tromey <tromey@cygnus.com>
- * @date October 1, 1998 
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @since 1.1
+ * @status updated to 1.4
  */
 public class ExceptionInInitializerError extends LinkageError
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
   static final long serialVersionUID = 1521711792217232256L;
 
-  private Throwable exception = null;
+  /**
+   * The cause of this exception (duplicates the one stored in Throwable).
+   *
+   * @serial the exception cause
+   */
+  private final Throwable exception;
 
   /**
-   * Create an error without a message.
+   * Create an error without a message. The cause is initialized as null.
    */
   public ExceptionInInitializerError()
-    {
-      super();
-    }
+  {
+    this((String) null);
+  }
 
   /**
-   * Create an error with a message.
+   * Create an error with a message. The cause is initialized as null.
+   *
+   * @param s the message
    */
   public ExceptionInInitializerError(String s)
-    {
-      super(s);
-    }
+  {
+    super(s);
+    exception = null;
+  }
 
   /**
    * Creates an error an saves a reference to the <code>Throwable</code>
-   * object.
+   * object. The message string is null.
    *
    * @param t the exception thrown
    */
   public ExceptionInInitializerError(Throwable t)
-    {
-      super(t.toString());
-      exception = t;
-    }
+  {
+    super(null);
+    initCause(t);
+    exception = t;
+  }
 
-  /** 
-   * Return the exception that caused this error to be created.
-   * @return the stored <code>Throwable</code> object or <code>null</code>
-   * if this <code>ExceptionInInitializerError</code> has no stored
-   * <code>Throwable</code> object.
+  /**
+   * Return the exception that caused this error to be created. This is a
+   * legacy method; the preferred choice now is {@link Throwable#getCause()}.
+   *
+   * @return the cause, or null if unknown
    */
   public Throwable getException()
-    {
-      return exception;
-    }
+  {
+    return exception;
+  }
 
   /**
-   * Print a stack trace of the exception that occurred.
+   * Return the exception that cause this error to be created.
+   *
+   * @return the cause, or null if unknown
+   * @since 1.4
    */
-  public void printStackTrace()
-    {
-      if (exception == null)
-	{
-	  super.printStackTrace();
-	}
-      else
-	{
-	  System.err.print(this.getClass() + ": ");
-	  exception.printStackTrace();
-	}
-    }
-
-  /**
-   * Print a stack trace of the exception that occurred to 
-   * the specified <code>PrintStream</code>.
-   */
-  public void printStackTrace(PrintStream ps)
-    {
-      if (exception == null)
-	{
-	  super.printStackTrace(ps);
-	}
-      else
-	{
-	  ps.print(this.getClass() + ": ");
-	  exception.printStackTrace(ps);
-	}
-    }
-
-  /**
-   * Print a stack trace of the exception that occurred to 
-   * the specified <code>PrintWriter</code>.
-   */
-  public void printStackTrace(PrintWriter pw)
-    {
-      if (exception == null)
-	{
-	  super.printStackTrace(pw);
-	}
-      else
-	{
-	  pw.print(this.getClass() + ": ");
-	  exception.printStackTrace(pw);
-	}
-    }
+  public Throwable getCause()
+  {
+    return exception;
+  }
 }

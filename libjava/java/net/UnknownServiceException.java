@@ -1,5 +1,5 @@
 /* UnknownServiceException.java -- A service error occurred
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -37,52 +37,39 @@ exception statement from your version. */
 
 package java.net;
 
+import java.io.IOException;
+
 /**
- * Written using on-line Java Platform 1.2 API Specification, as well
- * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
- * Status:  Believed complete and correct.
+ * Contrary to what you might think, this does not indicate that the
+ * TCP/IP service name specified was invalid.  Instead it indicates that
+ * the MIME type returned from a URL could not be determined or that an
+ * attempt was made to write to a read-only URL.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Warren Levy <warrenl@cygnus.com>
+ * @status updated to 1.4
  */
-
-/**
-  * Contrary to what you might think, this does not indicate that the
-  * TCP/IP service name specified was invalid.  Instead it indicates that
-  * the MIME type returned from a URL could not be determined or that an
-  * attempt was made to write to a read-only URL.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Warren Levy <warrenl@cygnus.com>
-  * @date March 5, 1999.
-  */
-public class UnknownServiceException extends java.io.IOException
+public class UnknownServiceException extends IOException
 {
+  /**
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = -4169033248853639508L;
 
-/*
- * Constructors
- */
+  /**
+   * Create a new instance without a descriptive error message.
+   */
+  public UnknownServiceException()
+  {
+  }
 
-/**
-  * Initializes a new instance of <code>UnknownServiceException</code>
-  * without a descriptive error message.
-  */
-public
-UnknownServiceException()
-{
-  super();
-}
-
-/*************************************************************************/
-
-/**
-  * Initializes a new instance of <code>UnknownServiceException</code>
-  * without a descriptive error message.
-  *
-  * @param message A message describing the error that occurred.
-  */
-public
-UnknownServiceException(String message)
-{
-  super(message);
-}
-
+  /**
+   * Create a new instance with a descriptive error message.
+   *
+   * @param message a message describing the error that occurred
+   */
+  public UnknownServiceException(String message)
+  {
+    super(message);
+  }
 } // class UnknownServiceException
-

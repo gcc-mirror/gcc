@@ -1,5 +1,5 @@
-/* Process.java - Represent spawned system process.
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+/* Process.java - Represent spawned system process
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -41,71 +41,83 @@ package java.lang;
 import java.io.OutputStream;
 import java.io.InputStream;
 
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- */
-
 /**
  * An instance of a subclass of <code>Process</code> is created by the
  * <code>Runtime.exec</code> methods.  Methods in <code>Process</code>
- * provide a means to send input to a process, obtain the output from a 
- * subprocess, destroy a subprocess, obtain the exit value from a 
+ * provide a means to send input to a process, obtain the output from a
+ * subprocess, destroy a subprocess, obtain the exit value from a
  * subprocess, and wait for a subprocess to complete.
- * 
- * @since JDK 1.0
- * 
+ *
+ * <p>This is dependent on the platform, and some processes (like native
+ * windowing processes, 16-bit processes in Windows, or shell scripts) may
+ * be limited in functionality. Because some platforms have limited buffers
+ * between processes, you may need to provide input and read output to prevent
+ * the process from blocking, or even deadlocking.
+ *
+ * <p>Even if all references to this object disapper, the process continues
+ * to execute to completion. There are no guarantees that the
+ * subprocess execute asynchronously or concurrently with the process which
+ * owns this object.
+ *
  * @author Brian Jones
  * @author Tom Tromey <tromey@cygnus.com>
+ * @see Runtime#exec(String[], String[], File)
+ * @since 1.0
+ * @status updated to 1.4
  */
 public abstract class Process
 {
   /**
    * Empty constructor does nothing.
    */
-  public Process() { }
+  public Process()
+  {
+  }
 
   /**
-   * Obtain the output stream of the subprocess.  It may help to 
-   * associate this stream as the redirected STDIN file descriptor of
-   * the subprocess.
+   * Obtain the output stream that sends data to the subprocess. This is
+   * the STDIN of the subprocess. When implementing, you should probably
+   * use a buffered stream.
+   *
+   * @return the output stream that pipes to the process input
    */
   public abstract OutputStream getOutputStream();
 
   /**
-   * Obtain the input stream of the subprocess.  It may help to 
-   * associate this stream as the redirected STDOUT file descriptor of
-   * the subprocess.
+   * Obtain the input stream that receives data from the subprocess. This is
+   * the STDOUT of the subprocess. When implementing, you should probably
+   * use a buffered stream.
+   *
+   * @return the input stream that pipes data from the process output
    */
   public abstract InputStream getInputStream();
 
   /**
-   * Obtain the error input stream of the subprocess.  It may help to 
-   * associate this stream as the redirected STDERR file descriptor of
-   * the subprocess.
+   * Obtain the input stream that receives data from the subprocess. This is
+   * the STDERR of the subprocess. When implementing, you should probably
+   * use a buffered stream.
+   *
+   * @return the input stream that pipes data from the process error output
    */
   public abstract InputStream getErrorStream();
 
   /**
    * The thread calling <code>waitFor</code> will block until the subprocess
-   * has terminated.  If the process has already terminated then the method
+   * has terminated. If the process has already terminated then the method
    * immediately returns with the exit value of the subprocess.
-   * 
-   * @returns the exit value of the subprocess.  A return of <code>0</code> 
-   * denotes normal process termination by convention.
    *
-   * @throws InterruptedException is thrown if another thread interrupts 
-   * the waiting thread.  The waiting thread stops waiting.
+   * @return the subprocess exit value; 0 conventionally denotes success
+   * @throws InterruptedException if another thread interrups the blocked one
    */
-  public abstract int waitFor()
-    throws InterruptedException;
+  public abstract int waitFor() throws InterruptedException;
 
   /**
    * When a process terminates there is associated with that termination
-   * an exit value for the process to indicate why it terminated.  A return
+   * an exit value for the process to indicate why it terminated. A return
    * of <code>0</code> denotes normal process termination by convention.
    *
-   * @returns the exit value of the subprocess.
-   * @throws IllegalThreadStateException is thrown if the subprocess 
-   * represented by the subclass of this class has not yet terminated.
+   * @return the exit value of the subprocess
+   * @throws IllegalThreadStateException if the subprocess has not terminated
    */
   public abstract int exitValue();
 
@@ -113,5 +125,4 @@ public abstract class Process
    * Kills the subprocess and all of its children forcibly.
    */
   public abstract void destroy();
-
-}
+} // class Process

@@ -1,5 +1,5 @@
-/* java.lang.ThreadLocal
-   Copyright (C) 2000 Free Software Foundation, Inc.
+/* ThreadLocal -- a variable with a unique value per thread
+   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -46,131 +46,117 @@ import java.util.WeakHashMap;
  * (through the <code>get()</code> and <code>set()</code> methods)
  * only affects the state of the object as seen by the currently
  * executing Thread.
- * <p>
- * The first time a ThreadLocal object is accessed on a particular
- * Thread (and no state is associated with that Thread yet)
- * the state for that Thread is set by executing the method
- * <code>initialValue()</code>.
- * <p>
- * An example how you can use this:
+ *
+ * <p>The first time a ThreadLocal object is accessed on a particular
+ * Thread, the state for that Thread's copy of the local variable is set by
+ * executing the method <code>initialValue()</code>.
+ *
+ * <p>An example how you can use this:
  * <pre>
- * class Connection {
- *     private static ThreadLocal owner = new ThreadLocal() {
- *        public Object initialValue() {
- *            return("nobody");
- *        }
+ * class Connection
+ * {
+ *   private static ThreadLocal owner = new ThreadLocal()
+ *     {
+ *       public Object initialValue()
+ *       {
+ *         return("nobody");
+ *       }
  *     };
  * ...
  * }
- * </pre>
+ * </pre></br>
+ *
  * Now all instances of connection can see who the owner of the currently
  * executing Thread is by calling <code>owner.get()</code>. By default any
  * Thread would be associated with 'nobody'. But the Connection object could
  * offer a method that changes the owner associated with the Thread on
  * which the method was called by calling <code>owner.put("somebody")</code>.
  * (Such an owner changing method should then be guarded by security checks.)
- * <p>
- * When a Thread is garbage collected all references to values of
+ *
+ * <p>When a Thread is garbage collected all references to values of
  * the ThreadLocal objects associated with that Thread are removed.
  *
+ * @author Mark Wielaard <mark@klomp.org>
+ * @author Eric Blake <ebb9@email.byu.edu>
  * @since 1.2
- * @author Mark Wielaard (mark@klomp.org)
+ * @status updated to 1.4
  */
-public class ThreadLocal {
+public class ThreadLocal
+{
+  /**
+   * Placeholder to distinguish between uninitialized and null set by the
+   * user. Do not expose this to the public. Package visible for use by
+   * InheritableThreadLocal
+   */
+  static final Object NULL = new Object();
+
+  /**
+   * The stored value. Package visible for use by InheritableThreadLocal. */
+  Object value;
 	
-	/**
-	 * Trivial container to wrap the stored values.
-	 * Needed to see if the value is null or not yet set.
-	 * If it is not yet set we must call intialValue() once.
-	 * Package local so InheritableThreadLocal can see it.
-	 */
-	final static class Value {
-		final Object value;
-		
-		Value(Object value) {
-			this.value = value;
-		}
-		
-		Object getValue() {
-			return value;
-		}
-	}
+  /**
+   * Maps Threads to values. Uses a WeakHashMap so if a Thread is garbage
+   * collected the reference to the Value will disappear. A null value means
+   * uninitialized, while NULL means a user-specified null. Only the
+   * <code>set(Thread, Object)</code> and <code>get(Thread)</code> methods
+   * access it. Package visible for use by InheritableThreadLocal.
+   */
+  final Map valueMap = new WeakHashMap();
 	
-	/**
-	 * Maps Threads to Values. Uses a WeakHashMap so if a Thread is garbage
-	 * collected the reference to the Value will disappear. Only the
-	 * <code>set(Thread, Value)</code> and <code>get(Thread)</code> methods
-	 * access it. Since this can happen from multiple Threads simultaniously
-	 * those methods are synchronized.
-	 */
-	private final Map valueMap = new WeakHashMap();
-	
-	/**
-	 * Creates a ThreadLocal object without associating any value to it
-	 * yet.
-	 */
-	public ThreadLocal() {
-	}
-	
-	/**
-	 * Gets the value associated with the ThreadLocal object for the
-	 * currently executing Thread. If there is no value is associated
-	 * with this Thread yet then the valued returned by the
-	 * <code>initialValue()</code> method is assosiated with this Thread
-	 * and returned.
-	 */
-	public Object get() {
-		Thread currentThread = Thread.currentThread();
-		Value v = get(currentThread);
-		if (v == null) {
-			v = new Value(initialValue());
-			set(currentThread, v);
-		}
-		return v.getValue();
-	}
-	
-	/**
-	 * Gets the Value of this ThreadLocal for a particular Thread.
-	 * It is synchronized so the <code>set(Thread, Value)</code> method cannot
-	 * simultaniously modify the </code>valueMap</code> from another thread.
-	 * Package local so InheritableThreadLocal can access it when a new child
-	 * Thread inherits values from its parent Thread.
-	 */
-	synchronized final Value get(Thread thread) {
-		return (Value)valueMap.get(thread);
-	}
-	
-	/**
-	 * Sets the value associated with the ThreadLocal object for the
-	 * currently executing Thread. This overrides any existing value
-	 * associated with the current Thread and does not call the
-	 * <code>initialValue()</code> method, even if this is the first
-	 * time this Thread accesses this ThreadLocal.
-	 */
-	public void set(Object value) {
-		Thread currentThread = Thread.currentThread();
-		Value v = new Value(value);
-		set(currentThread, v);
-	}
-	
-	/**
-	 * Sets the Value for this ThreadLocal for a particular Thread.
-	 * It is synchronized so the <code>get(Thread)</code> method cannot
-	 * simultaniously read the </code>valueMap</code> from another thread.
-	 * Package local so InheritableThreadLocal can access it when a new child
-	 * Thread inherits values from its parent Thread.
-	 */
-	synchronized final void set(Thread thread, Value value) {
-		valueMap.put(thread, value);
-	}
-	
-	/**
-	 * Called when <code>get()</code> is called and no state is associated
-	 * with the currently executing Thread yet.
-	 * <p>
-	 * The default implementation returns <code>null</code>.
-	 */
-	protected Object initialValue() {
-		return null;
-	}
+  /**
+   * Creates a ThreadLocal object without associating any value to it yet.
+   */
+  public ThreadLocal()
+  {
+  }
+
+  /**
+   * Called once per thread on the first invocation of get(), if set() was
+   * not already called. The default implementation returns <code>null</code>.
+   * Often, this method is overridden to create the appropriate initial object
+   * for the current thread's view of the ThreadLocal.
+   *
+   * @return the initial value of the variable in this thread
+   */
+  protected Object initialValue()
+  {
+    return null;
+  }
+
+  /**
+   * Gets the value associated with the ThreadLocal object for the currently
+   * executing Thread. If this is the first time the current thread has called
+   * get(), and it has not already called set(), the value is obtained by
+   * <code>initialValue()</code>.
+   *
+   * @return the value of the variable in this thread
+   */
+  public Object get()
+  {
+    Thread currentThread = Thread.currentThread();
+    // Note that we don't have to synchronize, as only this thread will
+    // ever modify the returned value.
+    Object value = valueMap.get(currentThread);
+    if (value == null)
+      {
+        value = initialValue();
+        valueMap.put(currentThread, value == null ? NULL : value);
+      }
+    return value == NULL ? null : value;
+  }
+
+  /**
+   * Sets the value associated with the ThreadLocal object for the currently
+   * executing Thread. This overrides any existing value associated with the
+   * current Thread and prevents <code>initialValue()</code> from being
+   * called if this is the first access to this ThreadLocal in this Thread.
+   *
+   * @param value the value to set this thread's view of the variable to
+   */
+  public void set(Object value)
+  {
+    // Note that we don't have to synchronize, as only this thread will
+    // ever modify the returned value.
+    valueMap.put(Thread.currentThread(), value == null ? NULL : value);
+  }
 }
