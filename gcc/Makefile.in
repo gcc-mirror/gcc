@@ -2027,6 +2027,7 @@ LIBCPP_OBJS =	cpplib.o cpphash.o cpperror.o cppexp.o cppfiles.o \
 # one is strictly for the host.
 #
 libcpp.a: $(LIBCPP_OBJS)
+	-rm -rf libcpp.a
 	$(AR) $(AR_FLAGS) libcpp.a $(LIBCPP_OBJS)
 	if $(RANLIB_TEST) ; then $(RANLIB) libcpp.a ; else true ; fi
 
