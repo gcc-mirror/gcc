@@ -38,6 +38,8 @@ bool test01()
 {
   bool test = true;
 
+#if 0
+
 #ifdef and
   test = false;
 #endif
@@ -80,6 +82,8 @@ bool test01()
 
 #ifdef xor_eq
   test = false;
+#endif
+
 #endif
 
 #ifdef DEBUG_ASSERT

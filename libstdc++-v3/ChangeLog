@@ -5,13 +5,24 @@
 	* src/valarray-inst.cc (__valarray_product): Remove explicit
 	instantiation. 
 
+2000-07-21  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+        * src/stl-inst.cc: Change __sink_unused_warning to unsigned int
+        for alpha.
+
+        * testsuite/26_numerics/complex_inserters_extractors.cc (testall):
+        Change return type to void.
+        * testsuite/25_algorithms/lower_bound.cc: Add return values.
+	* testsuite/17_intro/header_ciso646.cc: Modify.
+        * bits/locale_facets.h: Add return values for the generic cases.
+
 2000-07-21  H.J. Lu  (hjl@gnu.org)
 
-	        * acinclude.m4: Include <features.h> for glibc testing.
-	        * aclocal.m4: Likewise.
+        * acinclude.m4: Include <features.h> for glibc testing.
+        * aclocal.m4: Likewise.
 
-	        * configure: Rebuild.
-	
+        * configure: Rebuild.
+
 2000-07-20  H.J. Lu  (hjl@gnu.org)
 
         * acinclude.m4: Change "#pragma system_header" to
