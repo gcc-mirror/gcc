@@ -1,3 +1,7 @@
+2005-01-06  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/rs6000-ldouble-2.c: New.
+
 2005-01-06  Mark Mitchell  <mark@codesourcery.com>
 
         PR c++/19244
