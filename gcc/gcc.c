@@ -34,7 +34,6 @@ compilation is specified by a string called a "spec".  */
 #include "config.h"
 #include "system.h"
 #include <signal.h>
-#include <sys/stat.h>
 
 #include "obstack.h"
 

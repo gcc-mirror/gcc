@@ -2,7 +2,6 @@
 
 #include "config.h"
 #include "system.h"
-#include <sys/stat.h>
 
 /* Virtually every UN*X system now in common use (except for pre-4.3-tahoe
    BSD systems) now provides getcwd as called for by POSIX.  Allow for

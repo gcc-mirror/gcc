@@ -23,7 +23,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define __GCC_CPPLIB__
 
 #include <sys/types.h>
-#include <sys/stat.h>
 
 #ifdef __cplusplus
 extern "C" {
