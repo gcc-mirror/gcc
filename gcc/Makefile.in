@@ -2119,7 +2119,7 @@ install-multilib: stmp-multilib install-dir
 	done
 
 # Install the objc run time library.
-install-libobjc: libobjc.a install-dir
+install-libobjc: install-dir
 	-if [ -f libobjc.a ] ; then \
 	  rm -f $(libsubdir)/libobjc.a; \
 	  $(INSTALL_DATA) libobjc.a $(libsubdir)/libobjc.a; \
