@@ -4398,6 +4398,8 @@ mips_expand_prologue ()
 
 /* Do any necessary cleanup after a function to restore stack, frame, and regs. */
 
+#define RA_MASK ((long) 0x80000000)	/* 1 << 31 */
+
 void
 function_epilogue (file, size)
      FILE *file;
@@ -4505,7 +4507,7 @@ function_epilogue (file, size)
 
       save_restore_insns (FALSE, tmp_rtx, tsize, file);
 
-      load_only_r31 = (current_frame_info.mask == (1 << 31)
+      load_only_r31 = (current_frame_info.mask == RA_MASK
 		       && current_frame_info.fmask == 0);
 
       if (noreorder)
@@ -4597,7 +4599,7 @@ function_epilogue (file, size)
 	       "%-20s fp=%c leaf=%c alloca=%c setjmp=%c stack=%4ld arg=%3ld reg=%2d/%d delay=%3d/%3dL %3d/%3dJ refs=%3d/%3d/%3d",
 	       name,
 	       (frame_pointer_needed) ? 'y' : 'n',
-	       ((current_frame_info.mask & (1 << 31)) != 0) ? 'n' : 'y',
+	       ((current_frame_info.mask & RA_MASK) != 0) ? 'n' : 'y',
 	       (current_function_calls_alloca) ? 'y' : 'n',
 	       (current_function_calls_setjmp) ? 'y' : 'n',
 	       (long)current_frame_info.total_size,
@@ -4689,7 +4691,7 @@ mips_epilogue_delay_slots ()
   if (current_frame_info.total_size == 0)
     return 1;
 
-  if (current_frame_info.mask == (1 << 31) && current_frame_info.fmask == 0)
+  if (current_frame_info.mask == RA_MASK && current_frame_info.fmask == 0)
     return 1;
 
   return 0;
