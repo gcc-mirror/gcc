@@ -92,7 +92,7 @@ scan_string ()
 	  int previous_point_index = point - buffer;
 
 	  buffer_size = (!buffer_size ? 32 : buffer_size * 2);
-	  if (buffer)
+	  if (!buffer)
 	    buffer = xmalloc (buffer_size);
 	  else
 	    buffer = xrealloc (buffer, buffer_size);
