@@ -3063,7 +3063,7 @@ print_operand (file, x, code)
       {
 	int value = (INT_LOWPART (x) >> 16) & 0xffff;
 
-	/* Solaris assembler doesn't like lis 0,0x80000 */
+	/* Solaris assembler doesn't like lis 0,0x8000 */
 	if (DEFAULT_ABI == ABI_SOLARIS && (value & 0x8000) != 0)
 	  fprintf (file, "%d", value | (~0 << 16));
 	else
@@ -3122,8 +3122,7 @@ print_operand (file, x, code)
       /* If constant, low-order 16 bits of constant, signed.  Otherwise, write
 	 normally.  */
       if (INT_P (x))
-	fprintf (file, "%d",
-		 (INT_LOWPART (x) & 0xffff) - 2 * (INT_LOWPART (x) & 0x8000));
+	fprintf (file, "%d", ((INT_LOWPART (x) & 0xffff) ^ 0x8000) - 0x8000);
       else
 	print_operand (file, x, 0);
       return;
@@ -3915,7 +3914,7 @@ rs6000_output_load_toc_table (file, reg)
 		   reg_names[reg], reg_names[0], reg_names[reg]);
       rs6000_pic_labelno++;
     }
-  else if (!TARGET_64BIT)
+  else if (! TARGET_64BIT)
     {
       ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
       asm_fprintf (file, "\t{liu|lis} %s,", reg_names[reg]);
@@ -3959,7 +3958,7 @@ rs6000_allocate_stack_space (file, size, copy_r12)
 	  if (copy_r12)
 	    fprintf (file, "\tmr %s,%s\n", reg_names[12], reg_names[1]);
 
-	  asm_fprintf (file, "\t{liu|lis} %s,%d\n\t{oril|ori} %s,%s,%d\n",
+	  asm_fprintf (file, "\t{liu|lis} %s,0x%x\n\t{oril|ori} %s,%s,%d\n",
 		       reg_names[0], (neg_size >> 16) & 0xffff,
 		       reg_names[0], reg_names[0], neg_size & 0xffff);
 	  asm_fprintf (file,
@@ -3975,7 +3974,7 @@ rs6000_allocate_stack_space (file, size, copy_r12)
 		 reg_names[1], neg_size, reg_names[1]);
       else
 	{
-	  asm_fprintf (file, "\t{liu|lis} %s,%d\n\t{oril|ori} %s,%s,%d\n",
+	  asm_fprintf (file, "\t{liu|lis} %s,0x%x\n\t{oril|ori} %s,%s,%d\n",
 		       reg_names[0], (neg_size >> 16) & 0xffff,
 		       reg_names[0], reg_names[0], neg_size & 0xffff);
 	  asm_fprintf (file, "\t{cax|add} %s,%s,%s\n", reg_names[1],
@@ -4211,7 +4210,7 @@ output_prolog (file, size)
 	    {
 	      int neg_size = info->main_save_offset - info->total_size;
 	      loc = 0;
-	      asm_fprintf (file, "\t{liu|lis} %s,%d\n\t{oril|ori} %s,%s,%d\n",
+	      asm_fprintf (file, "\t{liu|lis} %s,0x%x\n\t{oril|ori} %s,%s,%d\n",
 			   reg_names[0], (neg_size >> 16) & 0xffff,
 			   reg_names[0], reg_names[0], neg_size & 0xffff);
 

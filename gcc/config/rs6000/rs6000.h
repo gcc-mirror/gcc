@@ -1087,10 +1087,10 @@ enum reg_class
    C is the letter, and VALUE is a constant value.
    Return 1 if VALUE is in the range specified by C.
 
-   `I' is signed 16-bit constants
+   `I' is a signed 16-bit constant
    `J' is a constant with only the high-order 16 bits non-zero
    `K' is a constant with only the low-order 16 bits non-zero
-   `L' is a constant that can be placed into a mask operand
+   `L' is a signed 16-bit constant shifted left 16 bits
    `M' is a constant that is greater than 31
    `N' is a constant that is an exact power of two
    `O' is the constant zero
@@ -1100,11 +1100,12 @@ enum reg_class
    ( (C) == 'I' ? (unsigned HOST_WIDE_INT) ((VALUE) + 0x8000) < 0x10000	\
    : (C) == 'J' ? ((VALUE) & (~ (HOST_WIDE_INT) 0xffff0000)) == 0	\
    : (C) == 'K' ? ((VALUE) & (~ (HOST_WIDE_INT) 0xffff)) == 0		\
-   : (C) == 'L' ? mask_constant (VALUE)					\
+   : (C) == 'L' ? (((VALUE) & 0xffff) == 0				\
+		   && ((VALUE) >> 31 == -1 || (VALUE) >> 31 == 0))	\
    : (C) == 'M' ? (VALUE) > 31						\
    : (C) == 'N' ? exact_log2 (VALUE) >= 0				\
    : (C) == 'O' ? (VALUE) == 0						\
-   : (C) == 'P' ? (unsigned HOST_WIDE_INT) ((- (VALUE)) + 0x8000) < 0x1000 \
+   : (C) == 'P' ? (unsigned HOST_WIDE_INT) ((- (VALUE)) + 0x8000) < 0x10000 \
    : 0)
 
 /* Similar, but for floating constants, and defining letters G and H.
@@ -1126,12 +1127,14 @@ enum reg_class
    'Q' means that is a memory operand that is just an offset from a reg.
    'R' is for AIX TOC entries.
    'S' is a constant that can be placed into a 64-bit mask operand
+   'T' is a consatnt that can be placed into a 32-bit mask operand
    'U' is for V.4 small data references.  */
 
 #define EXTRA_CONSTRAINT(OP, C)						\
   ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG	\
    : (C) == 'R' ? LEGITIMATE_CONSTANT_POOL_ADDRESS_P (OP)		\
    : (C) == 'S' ? mask64_operand (OP, VOIDmode)				\
+   : (C) == 'T' ? mask_operand (OP, VOIDmode)				\
    : (C) == 'U' ? ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) \
 		   && small_data_operand (OP, GET_MODE (OP)))		\
    : 0)
