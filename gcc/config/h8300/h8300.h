@@ -879,11 +879,6 @@ struct rtx_def *function_arg();
    Do not define this if the table should contain absolute addresses. */
 /*#define CASE_VECTOR_PC_RELATIVE 1 */
 
-/* Define this if the case instruction drops through after the table
-   when the index is out of range.  Don't define it if the case insn
-   jumps to the default label instead.  */
-#define CASE_DROPS_THROUGH
-
 /* Specify the tree operation to be used to convert reals to integers.  */
 #define IMPLICIT_FIX_EXPR FIX_ROUND_EXPR
 

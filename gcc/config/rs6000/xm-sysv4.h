@@ -30,9 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #define HOST_BITS_PER_SHORT 16
 #define HOST_BITS_PER_INT 32
 #define HOST_BITS_PER_LONG 32
-#if 0
 #define HOST_BITS_PER_LONGLONG 64
-#endif
 
 /* Doubles are stored in memory with the high order word first.  This
    matters when cross-compiling.  */
