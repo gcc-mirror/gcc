@@ -1001,6 +1001,35 @@ ggc_set_mark (p)
   return 0;
 }
 
+/* Return 1 if P has been marked, zero otherwise. 
+   P must have been allocated by the GC allocator; it mustn't point to
+   static objects, stack variables, or memory allocated with malloc.  */
+
+int
+ggc_marked_p (p)
+     const void *p;
+{
+  page_entry *entry;
+  unsigned bit, word;
+  unsigned long mask;
+
+  /* Look up the page on which the object is alloced.  If the object
+     wasn't allocated by the collector, we'll probably die.  */
+  entry = lookup_page_table_entry (p);
+#ifdef ENABLE_CHECKING
+  if (entry == NULL)
+    abort ();
+#endif
+
+  /* Calculate the index of the object on the page; this is its bit
+     position in the in_use_p bitmap.  */
+  bit = (((const char *) p) - entry->page) / OBJECT_SIZE (entry->order);
+  word = bit / HOST_BITS_PER_LONG;
+  mask = (unsigned long) 1 << (bit % HOST_BITS_PER_LONG);
+  
+  return entry->in_use_p[word] & mask;
+}
+
 /* Return the size of the gc-able object P.  */
 
 size_t

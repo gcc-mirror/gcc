@@ -228,6 +228,23 @@ ggc_set_mark (p)
   return 0;
 }
 
+/* Return 1 if P has been marked, zero otherwise.  */
+
+int
+ggc_marked_p (p)
+     const void *p;
+{
+  struct ggc_mem *x;
+
+  x = (struct ggc_mem *) ((const char *)p - offsetof (struct ggc_mem, u));
+#ifdef GGC_ALWAYS_VERIFY
+  if (! tree_lookup (x))
+    abort ();
+#endif
+
+   return x->mark;
+}
+
 /* Return the size of the gc-able object P.  */
 
 size_t

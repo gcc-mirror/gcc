@@ -158,12 +158,12 @@ htab_t type_hash_table;
 static void build_real_from_int_cst_1 PARAMS ((PTR));
 static void set_type_quals PARAMS ((tree, int));
 static void append_random_chars PARAMS ((char *));
-static void mark_type_hash PARAMS ((void *));
 static int type_hash_eq PARAMS ((const void*, const void*));
 static unsigned int type_hash_hash PARAMS ((const void*));
 static void print_type_hash_statistics PARAMS((void));
-static int mark_hash_entry PARAMS((void **, void *));
 static void finish_vector_type PARAMS((tree));
+static int type_hash_marked_p PARAMS ((const void *));
+static void type_hash_mark PARAMS ((const void *));
 static int mark_tree_hashtable_entry PARAMS((void **, void *));
 
 /* If non-null, these are language-specific helper functions for
@@ -225,7 +225,8 @@ init_obstacks ()
   /* Initialize the hash table of types.  */
   type_hash_table = htab_create (TYPE_HASH_INITIAL_SIZE, type_hash_hash,
 				 type_hash_eq, 0);
-  ggc_add_root (&type_hash_table, 1, sizeof type_hash_table, mark_type_hash);
+  ggc_add_deletable_htab (type_hash_table, type_hash_marked_p,
+			  type_hash_mark);
   ggc_add_tree_root (global_trees, TI_MAX);
   ggc_add_tree_root (integer_types, itk_none);
 
@@ -3186,7 +3187,7 @@ type_hash_add (hashcode, type)
   struct type_hash *h;
   void **loc;
 
-  h = (struct type_hash *) permalloc (sizeof (struct type_hash));
+  h = (struct type_hash *) ggc_alloc (sizeof (struct type_hash));
   h->hash = hashcode;
   h->type = type;
   loc = htab_find_slot_with_hash (type_hash_table, h, hashcode, INSERT);
@@ -3217,6 +3218,8 @@ type_hash_canon (hashcode, type)
   if (debug_no_type_hash)
     return type;
 
+  /* See if the type is in the hash table already.  If so, return it.
+     Otherwise, add the type.  */
   t1 = type_hash_lookup (hashcode, type);
   if (t1 != 0)
     {
@@ -3226,37 +3229,29 @@ type_hash_canon (hashcode, type)
 #endif
       return t1;
     }
-
-  /* If this is a permanent type, record it for later reuse.  */
-  type_hash_add (hashcode, type);
-
-  return type;
+  else
+    {
+      type_hash_add (hashcode, type);
+      return type;
+    }
 }
 
-/* Callback function for htab_traverse.  */
+/* See if the data pointed to by the type hash table is marked.  */
 
 static int
-mark_hash_entry (entry, param)
-     void **entry;
-     void *param ATTRIBUTE_UNUSED;
+type_hash_marked_p (p)
+     const void *p;
 {
-  struct type_hash *p = *(struct type_hash **) entry;
-
-  ggc_mark_tree (p->type);
-
-  /* Continue scan.  */
-  return 1;
+  return ggc_marked_p (((struct type_hash *) p)->type);
 }
 
-/* Mark ARG (which is really a htab_t *) for GC.  */
+/* Mark the entry in the type hash table the type it points to is marked. */
 
 static void
-mark_type_hash (arg)
-     void *arg;
+type_hash_mark (p)
+     const void *p;
 {
-  htab_t t = *(htab_t *) arg;
-
-  htab_traverse (t, mark_hash_entry, 0);
+  ggc_mark (p);
 }
 
 /* Mark the hashtable slot pointed to by ENTRY (which is really a
