@@ -422,7 +422,8 @@ run_directive (pfile, dir_no, type, buf, count)
 
   start_directive (pfile);
   pfile->state.prevent_expansion++;
-  (void) (*dtable[dir_no].handler) (pfile);
+  pfile->directive = &dtable[dir_no];
+  (void) (*pfile->directive->handler) (pfile);
   pfile->state.prevent_expansion--;
   check_eol (pfile);
   end_directive (pfile, 1);
