@@ -1,3 +1,9 @@
+2002-03-07  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* genextract.c (walk_rtx): Recurse into MATCH_PAR_DUP.
+	genoutput.c (scan_operands): Recurse into MATCH_PAR_DUP
+	and MATCH_OP_DUP.
+
 2002-03-07  Aldy Hernandez  <aldyh@redhat.com>
 
         * doc/invoke.texi: Add documentation for -mabi=no-altivec.
