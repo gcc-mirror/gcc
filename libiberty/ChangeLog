@@ -1,3 +1,14 @@
+Mon Nov  2 10:22:01 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* pexecute.c: Check HAVE_CONFIG_H, not IN_GCC, when determining
+ 	whether to include config.h.  Possibly include unistd.h in the
+ 	!IN_GCC case.  Define VFORK_STRING as a printable function call
+ 	for error messages (either "vfork" or "fork".)  If HAVE_VFORK_H is
+ 	defined, include vfork.h.  If VMS is defined, define vfork()
+ 	appropriately.  Remove vfork check on USG, we're using autoconf.
+  	(pexecute): Set `errmsg_fmt' to VFORK_STRING instead of checking
+ 	locally what string to use.
+
 1998-10-26  Mark Mitchell  <mark@markmitchell.com>
 
 	* splay-tree.c: Tweak include directives to make sure declarations of

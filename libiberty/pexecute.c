@@ -23,14 +23,32 @@ Boston, MA 02111-1307, USA.  */
 /* This file lives in at least two places: libiberty and gcc.
    Don't change one without the other.  */
 
-#ifdef IN_GCC
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
+#ifdef IN_GCC
 #include "system.h"
 #else
 #include <stdio.h>
 #include <errno.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 #define ISSPACE (x) isspace(x)
 #endif
+
+#ifdef vfork /* Autoconf may define this to fork for us. */
+# define VFORK_STRING "fork"
+#else
+# define VFORK_STRING "vfork"
+#endif
+#ifdef HAVE_VFORK_H
+#include <vfork.h>
+#endif
+#ifdef VMS
+#define vfork() (decc$$alloc_vfork_blocks() >= 0 ? \
+               lib$get_current_invo_context(decc$$get_vfork_jmpbuf()) : -1)
+#endif /* VMS */
 
 #ifdef IN_GCC
 #include "gansidecl.h"
@@ -628,15 +646,6 @@ pfinish ()
 #if ! defined (__MSDOS__) && ! defined (OS2) && ! defined (MPW) \
     && ! defined (_WIN32)
 
-#ifdef VMS
-#define vfork() (decc$$alloc_vfork_blocks() >= 0 ? \
-               lib$get_current_invo_context(decc$$get_vfork_jmpbuf()) : -1)
-#else
-#ifdef USG
-#define vfork fork
-#endif
-#endif
-
 extern int execv ();
 extern int execvp ();
 #ifdef IN_GCC
@@ -703,11 +712,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
     {
     case -1:
       {
-#ifdef vfork
-	*errmsg_fmt = "fork";
-#else
-	*errmsg_fmt = "vfork";
-#endif
+	*errmsg_fmt = VFORK_STRING;
 	*errmsg_arg = NULL;
 	return -1;
       }
