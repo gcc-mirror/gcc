@@ -1,3 +1,13 @@
+2002-02-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/ios.cc (ios_base::~ios_base): Tweak.
+	(ios_base::_M_call_callbacks): Deal with null __p.
+	(ios_base::ios_base): Set _M_callbacks.
+	* include/bits/basic_ios.tcc (basic_ios::init): Adjust comment.
+	* testsuite/27_io/ios_init.cc (test02): Fix.
+	
+	* mkcheck.in (static_fail): Failed links go to output file.
+
 2002-02-25  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/faq/index.html:  Update.

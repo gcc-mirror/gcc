@@ -148,12 +148,12 @@ namespace std
       // requirements after basic_ios::init() has been called. As part
       // of this, fill() must return widen(' '), which needs an imbued
       // ctype facet of char_type to return without throwing an
-      // exception. This is not a required facet, so streams with
-      // char_type != [char, wchar_t] will not have it by
-      // default. However, because fill()'s signature is const, this
-      // data member cannot be lazily initialized.  Thus, thoughts of
-      // using a non-const helper function in ostream inserters is
-      // really besides the point.
+      // exception. Unfortunately, ctype<char_type> is not necessarily a
+      // required facet, so streams with char_type != [char, wchar_t]
+      // will not have it by default. However, because fill()'s
+      // signature is const, this data member cannot be lazily
+      // initialized.  Thus, thoughts of using a non-const helper
+      // function in ostream inserters is really besides the point.
       _M_fill = this->widen(' ');
 
       _M_exception = goodbit;
