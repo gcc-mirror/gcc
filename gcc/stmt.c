@@ -553,7 +553,8 @@ emit_nop ()
       last_insn = get_last_insn ();
       if (!optimize
 	  && (GET_CODE (last_insn) == CODE_LABEL
-	      || prev_real_insn (last_insn) == 0))
+	      || (GET_CODE (last_insn) == NOTE
+		  && prev_real_insn (last_insn) == 0)))
 	emit_insn (gen_nop ());
     }
 }
