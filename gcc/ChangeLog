@@ -1,3 +1,7 @@
+2002-09-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fr30.c (fr30_print_operand): Fix bug in output of CONST_DOUBLE.
+
 2002-09-08  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2.h (DW_OP_call_ref): Rename from DW_OP_calli.
