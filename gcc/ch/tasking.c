@@ -3310,7 +3310,7 @@ tasking_init ()
 	  build_tree_list (NULL_TREE, void_type_node)));
 
   builtin_function ("__whoami", ins_ftype_void,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
 
   build_tasking_message_type ();
    
@@ -3325,22 +3325,22 @@ tasking_init ()
 
   builtin_function ((ignore_case || ! special_UC) ? "copy_number" : "COPY_NUMBER",
 		    chill_predefined_function_type,
-		    BUILT_IN_COPY_NUMBER, NULL_PTR);
+		    BUILT_IN_COPY_NUMBER, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "gen_code" : "GEN_CODE",
 		    chill_predefined_function_type,
-		    BUILT_IN_GEN_CODE, NULL_PTR);
+		    BUILT_IN_GEN_CODE, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "gen_inst" : "GEN_INST",
 		    chill_predefined_function_type,
-		    BUILT_IN_GEN_INST, NULL_PTR);
+		    BUILT_IN_GEN_INST, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "gen_ptype" : "GEN_PTYPE",
 		    chill_predefined_function_type,
-		    BUILT_IN_GEN_PTYPE, NULL_PTR);
+		    BUILT_IN_GEN_PTYPE, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "proc_type" : "PROC_TYPE",
 		    chill_predefined_function_type,
-		    BUILT_IN_PROC_TYPE, NULL_PTR);
+		    BUILT_IN_PROC_TYPE, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "queue_length" : "QUEUE_LENGTH",
 		    chill_predefined_function_type,
-		    BUILT_IN_QUEUE_LENGTH, NULL_PTR);
+		    BUILT_IN_QUEUE_LENGTH, BUILT_IN_NORMAL, NULL_PTR);
 
   int_ftype_ptr_int_ptr_ptr_int_ptr_int_ptr_ptr_int
      = build_function_type (integer_type_node,
@@ -3409,23 +3409,23 @@ tasking_init ()
                    endlink)));
 
   builtin_function ("__delay_event", int_ftype_ptr_int_ptr_int_ptr_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__queue_length", int_ftype_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__register_tasking", void_ftype_ptr,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__send_signal", void_ftype_ptr_ins_int_int_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__send_buffer", int_ftype_ptr_ptr_int_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__start_process", void_ftype_int_int_int_ptr_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
-  builtin_function ("__stop_process", void_ftype_void, NOT_BUILT_IN,
+		    0, NOT_BUILT_IN, NULL_PTR);
+  builtin_function ("__stop_process", void_ftype_void, 0, NOT_BUILT_IN,
 		    NULL_PTR);
   builtin_function ("__wait_buffer", int_ftype_ptr_int_ptr_ptr_int_ptr_int_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__wait_signal_timed", int_ftype_ptr_int_ptr_ptr_int_ptr_int_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
 
   infinite_buffer_event_length_node = build_int_2 (-1, 0);
   TREE_TYPE (infinite_buffer_event_length_node) = long_integer_type_node;

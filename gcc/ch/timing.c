@@ -175,21 +175,21 @@ timing_init ()
                 endlink)))));
 
   builtin_function ("_abstime", long_ftype_int_int_int_int_int_int_int_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__check_cycle", void_ftype_ptr_durt_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__convert_duration_rtstime", void_ftype_durt_ptr,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__define_timeout", ptr_ftype_durt_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("_inttime", void_ftype_abstime_ptr,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__remaintime", int_ftype_ptr_durt_ptr,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__rtstime", void_ftype_ptr,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__wait_until", int_ftype_abst_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
 }
 
 #if 0

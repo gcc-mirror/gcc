@@ -1939,14 +1939,14 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	      if (! different_binding_level)
 		{
 		  TREE_TYPE (olddecl) = TREE_TYPE (newdecl);
-		  DECL_BUILT_IN (olddecl) = 0;
+		  DECL_BUILT_IN_CLASS (olddecl) = NOT_BUILT_IN;
 		}
 	    }
 	  else
 	    {
 	      /* If redeclaring a builtin function, and not a definition,
 		 it stays built in.  */
-	      DECL_BUILT_IN (newdecl) = 1;
+	      DECL_BUILT_IN_CLASS (newdecl) = DECL_BUILT_IN_CLASS (olddecl);
 	      DECL_FUNCTION_CODE (newdecl) = DECL_FUNCTION_CODE (olddecl);
 	    }
 	}
@@ -2333,7 +2333,7 @@ pushdecl (x)
 		  /* Inner extern decl is built-in if global one is.  */
 		  if (DECL_BUILT_IN (oldglobal))
 		    {
-		      DECL_BUILT_IN (x) = DECL_BUILT_IN (oldglobal);
+		      DECL_BUILT_IN_CLASS (x) = DECL_BUILT_IN_CLASS (oldglobal);
 		      DECL_FUNCTION_CODE (x) = DECL_FUNCTION_CODE (oldglobal);
 		    }
 		  /* Keep the arg types from a file-scope fcn defn.  */
@@ -3044,23 +3044,24 @@ init_decl_processing ()
 
   builtin_function ("__builtin_aggregate_incoming_address",
 		    build_function_type (ptr_type_node, NULL_TREE),
-		    BUILT_IN_AGGREGATE_INCOMING_ADDRESS, NULL_PTR);
+		    BUILT_IN_AGGREGATE_INCOMING_ADDRESS,
+		    BUILT_IN_NORMAL, NULL_PTR);
 
   /* Hooks for the DWARF 2 __throw routine.  */
   builtin_function ("__builtin_unwind_init",
 		    build_function_type (void_type_node, endlink),
-		    BUILT_IN_UNWIND_INIT, NULL_PTR);
+		    BUILT_IN_UNWIND_INIT, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_dwarf_cfa", ptr_ftype_void,
-		    BUILT_IN_DWARF_CFA, NULL_PTR);
+		    BUILT_IN_DWARF_CFA, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_dwarf_fp_regnum",
 		    build_function_type (unsigned_type_node, endlink),
-		    BUILT_IN_DWARF_FP_REGNUM, NULL_PTR);
+		    BUILT_IN_DWARF_FP_REGNUM, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_dwarf_reg_size", int_ftype_int,
-		    BUILT_IN_DWARF_REG_SIZE, NULL_PTR);		    
+		    BUILT_IN_DWARF_REG_SIZE, BUILT_IN_NORMAL, NULL_PTR);		    
   builtin_function ("__builtin_frob_return_addr", ptr_ftype_ptr,
-		    BUILT_IN_FROB_RETURN_ADDR, NULL_PTR);
+		    BUILT_IN_FROB_RETURN_ADDR, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_extract_return_addr", ptr_ftype_ptr,
-		    BUILT_IN_EXTRACT_RETURN_ADDR, NULL_PTR);
+		    BUILT_IN_EXTRACT_RETURN_ADDR, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function
     ("__builtin_eh_return",
      build_function_type (void_type_node,
@@ -3070,7 +3071,7 @@ init_decl_processing ()
 					        tree_cons (NULL_TREE,
 							   ptr_type_node,
 							   endlink)))),
-     BUILT_IN_EH_RETURN, NULL_PTR);
+     BUILT_IN_EH_RETURN, BUILT_IN_NORMAL, NULL_PTR);
 
   pedantic_lvalues = pedantic;
 
@@ -3111,10 +3112,11 @@ init_decl_processing ()
    the name to be called if we can't opencode the function.  */
 
 tree
-builtin_function (name, type, function_code, library_name)
+builtin_function (name, type, function_code, class, library_name)
      const char *name;
      tree type;
-     enum built_in_function function_code;
+     int function_code;
+     enum built_in_class class;
      const char *library_name;
 {
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
@@ -3129,11 +3131,9 @@ builtin_function (name, type, function_code, library_name)
     DECL_ASSEMBLER_NAME (decl) = get_identifier (library_name);
   make_decl_rtl (decl, NULL_PTR, 1);
   pushdecl (decl);
-  if (function_code != NOT_BUILT_IN)
-    {
-      DECL_BUILT_IN (decl) = 1;
-      DECL_FUNCTION_CODE (decl) = function_code;
-    }
+  DECL_BUILT_IN_CLASS (decl) = class;
+  DECL_FUNCTION_CODE (decl) = function_code;
+
   /* Warn if a function in the namespace for users
      is used without an occasion to consider it declared.  */
   if (name[0] != '_' || name[1] != '_')
@@ -3567,7 +3567,7 @@ finish_decl (decl, init, asmspec_tree)
      name.  */
   if (TREE_CODE (decl) == FUNCTION_DECL && asmspec)
       {
-	DECL_BUILT_IN (decl) = 0;
+	DECL_BUILT_IN_CLASS (decl) = NOT_BUILT_IN;
 	DECL_RTL (decl) = 0;
 	DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
       }

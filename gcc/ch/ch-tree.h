@@ -664,7 +664,6 @@ extern void nonvalue_begin_loop_scope           PROTO((void));
 extern void nonvalue_end_loop_scope             PROTO((void));
 
 extern tree build_enumerator                    PROTO((tree, tree));
-extern tree builtin_function                    PROTO((const char *, tree, enum built_in_function function_, const char *));
 extern tree c_build_type_variant                PROTO((tree, int, int));
 extern int  c_decode_option                     PROTO((int, char **));
 extern void c_mark_varargs                      PROTO((void));

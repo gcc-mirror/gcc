@@ -3539,7 +3539,7 @@ duplicate_decls (newdecl, olddecl)
 	     it stays built in.  */
 	  if (DECL_BUILT_IN (olddecl))
 	    {
-	      DECL_BUILT_IN (newdecl) = 1;
+	      DECL_BUILT_IN_CLASS (newdecl) = DECL_BUILT_IN_CLASS (olddecl);
 	      DECL_FUNCTION_CODE (newdecl) = DECL_FUNCTION_CODE (olddecl);
 	      /* If we're keeping the built-in definition, keep the rtl,
 		 regardless of declaration matches.  */
@@ -6467,19 +6467,17 @@ define_function (name, type, pfn, library_name)
    See tree.h for its possible values.  */
 
 tree
-builtin_function (name, type, code, libname)
+builtin_function (name, type, code, class, libname)
      const char *name;
      tree type;
-     enum built_in_function code;
+     int code;
+     enum built_in_class class;
      const char *libname;
 {
   tree decl = define_function (name, type, (void (*) PROTO((tree)))pushdecl,
 			       libname);
-  if (code != NOT_BUILT_IN)
-    {
-      DECL_BUILT_IN (decl) = 1;
-      DECL_FUNCTION_CODE (decl) = code;
-    }
+  DECL_BUILT_IN_CLASS (decl) = class;
+  DECL_FUNCTION_CODE (decl) = code;
   return decl;
 }
 

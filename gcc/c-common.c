@@ -3581,70 +3581,74 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 							    endlink))));
 
   builtin_function ("__builtin_constant_p", default_function_type,
-		    BUILT_IN_CONSTANT_P, NULL_PTR);
+		    BUILT_IN_CONSTANT_P, BUILT_IN_NORMAL, NULL_PTR);
 
   builtin_function ("__builtin_return_address", ptr_ftype_unsigned,
-		    BUILT_IN_RETURN_ADDRESS, NULL_PTR);
+		    BUILT_IN_RETURN_ADDRESS, BUILT_IN_NORMAL, NULL_PTR);
 
   builtin_function ("__builtin_frame_address", ptr_ftype_unsigned,
-		    BUILT_IN_FRAME_ADDRESS, NULL_PTR);
+		    BUILT_IN_FRAME_ADDRESS, BUILT_IN_NORMAL, NULL_PTR);
 
   builtin_function ("__builtin_alloca", ptr_ftype_sizetype,
-		    BUILT_IN_ALLOCA, "alloca");
-  builtin_function ("__builtin_ffs", int_ftype_int, BUILT_IN_FFS, NULL_PTR);
+		    BUILT_IN_ALLOCA, BUILT_IN_NORMAL, "alloca");
+  builtin_function ("__builtin_ffs", int_ftype_int, BUILT_IN_FFS,
+		    BUILT_IN_NORMAL, NULL_PTR);
   /* Define alloca, ffs as builtins.
      Declare _exit just to mark it as volatile.  */
   if (! no_builtins && ! no_nonansi_builtins)
     {
       temp = builtin_function ("alloca", ptr_ftype_sizetype,
-			       BUILT_IN_ALLOCA, NULL_PTR);
+			       BUILT_IN_ALLOCA, BUILT_IN_NORMAL, NULL_PTR);
       /* Suppress error if redefined as a non-function.  */
       DECL_BUILT_IN_NONANSI (temp) = 1;
-      temp = builtin_function ("ffs", int_ftype_int, BUILT_IN_FFS, NULL_PTR);
+      temp = builtin_function ("ffs", int_ftype_int, BUILT_IN_FFS,
+			       BUILT_IN_NORMAL, NULL_PTR);
       /* Suppress error if redefined as a non-function.  */
       DECL_BUILT_IN_NONANSI (temp) = 1;
       temp = builtin_function ("_exit", void_ftype_int,
-			       NOT_BUILT_IN, NULL_PTR);
+			       0, NOT_BUILT_IN, NULL_PTR);
       TREE_THIS_VOLATILE (temp) = 1;
       TREE_SIDE_EFFECTS (temp) = 1;
       /* Suppress error if redefined as a non-function.  */
       DECL_BUILT_IN_NONANSI (temp) = 1;
     }
 
-  builtin_function ("__builtin_abs", int_ftype_int, BUILT_IN_ABS, NULL_PTR);
+  builtin_function ("__builtin_abs", int_ftype_int, BUILT_IN_ABS,
+		    BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_fabsf", float_ftype_float, BUILT_IN_FABS,
-		    NULL_PTR);
+		    BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_fabs", double_ftype_double, BUILT_IN_FABS,
-		    NULL_PTR);
+		    BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_fabsl", ldouble_ftype_ldouble, BUILT_IN_FABS,
-		    NULL_PTR);
+		    BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_labs", long_ftype_long, BUILT_IN_LABS,
-		    NULL_PTR);
+		    BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_saveregs", ptr_ftype, BUILT_IN_SAVEREGS,
-		    NULL_PTR);
+		    BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_classify_type", default_function_type,
-		    BUILT_IN_CLASSIFY_TYPE, NULL_PTR);
+		    BUILT_IN_CLASSIFY_TYPE, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_next_arg", ptr_ftype, BUILT_IN_NEXT_ARG,
-		    NULL_PTR);
+		    BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_args_info", int_ftype_int, BUILT_IN_ARGS_INFO,
-		    NULL_PTR);
+		    BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_setjmp",
 		    build_function_type (integer_type_node,
 					 tree_cons (NULL_TREE, ptr_type_node,
 						    endlink)),
-		    BUILT_IN_SETJMP, NULL_PTR);
+		    BUILT_IN_SETJMP, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_longjmp",
 		    build_function_type (void_type_node,
 					 tree_cons (NULL_TREE, ptr_type_node,
 						    tree_cons (NULL_TREE,
 							       integer_type_node,
 							       endlink))),
-		    BUILT_IN_LONGJMP, NULL_PTR);
-  builtin_function ("__builtin_trap", void_ftype, BUILT_IN_TRAP, NULL_PTR);
+		    BUILT_IN_LONGJMP, BUILT_IN_NORMAL, NULL_PTR);
+  builtin_function ("__builtin_trap", void_ftype, BUILT_IN_TRAP,
+		    BUILT_IN_NORMAL, NULL_PTR);
 
   /* Untyped call and return.  */
   builtin_function ("__builtin_apply_args", ptr_ftype,
-		    BUILT_IN_APPLY_ARGS, NULL_PTR);
+		    BUILT_IN_APPLY_ARGS, BUILT_IN_NORMAL, NULL_PTR);
 
   temp = tree_cons (NULL_TREE,
 		    build_pointer_type (build_function_type (void_type_node,
@@ -3656,9 +3660,9 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 					  endlink)));
   builtin_function ("__builtin_apply",
 		    build_function_type (ptr_type_node, temp),
-		    BUILT_IN_APPLY, NULL_PTR);
+		    BUILT_IN_APPLY, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_return", void_ftype_ptr,
-		    BUILT_IN_RETURN, NULL_PTR);
+		    BUILT_IN_RETURN, BUILT_IN_NORMAL, NULL_PTR);
 
   /* Support for varargs.h and stdarg.h.  */
   builtin_function ("__builtin_varargs_start",
@@ -3666,21 +3670,21 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 					 tree_cons (NULL_TREE,
 						    va_list_ptr_type_node,
 						    endlink)),
-		    BUILT_IN_VARARGS_START, NULL_PTR);
+		    BUILT_IN_VARARGS_START, BUILT_IN_NORMAL, NULL_PTR);
 
   builtin_function ("__builtin_stdarg_start",
 		    build_function_type (void_type_node,
 					 tree_cons (NULL_TREE,
 						    va_list_ptr_type_node,
 						    NULL_TREE)),
-		    BUILT_IN_STDARG_START, NULL_PTR);
+		    BUILT_IN_STDARG_START, BUILT_IN_NORMAL, NULL_PTR);
 
   builtin_function ("__builtin_va_end",
 		    build_function_type (void_type_node,
 					 tree_cons (NULL_TREE,
 						    va_list_arg_type_node,
 						    endlink)),
-		    BUILT_IN_VA_END, NULL_PTR);
+		    BUILT_IN_VA_END, BUILT_IN_NORMAL, NULL_PTR);
 
   builtin_function ("__builtin_va_copy",
 		    build_function_type (void_type_node,
@@ -3689,72 +3693,87 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 						    tree_cons (NULL_TREE,
 						      va_list_arg_type_node,
 						      endlink))),
-		    BUILT_IN_VA_COPY, NULL_PTR);
+		    BUILT_IN_VA_COPY, BUILT_IN_NORMAL, NULL_PTR);
 
   /* Currently under experimentation.  */
   builtin_function ("__builtin_memcpy", memcpy_ftype, BUILT_IN_MEMCPY,
-		    "memcpy");
+		    BUILT_IN_NORMAL, "memcpy");
   builtin_function ("__builtin_memcmp", int_ftype_cptr_cptr_sizet,
-		    BUILT_IN_MEMCMP, "memcmp");
+		    BUILT_IN_MEMCMP, BUILT_IN_NORMAL, "memcmp");
   builtin_function ("__builtin_memset", memset_ftype, BUILT_IN_MEMSET,
-		    "memset");
+		    BUILT_IN_NORMAL, "memset");
   builtin_function ("__builtin_strcmp", int_ftype_string_string,
-		    BUILT_IN_STRCMP, "strcmp");
+		    BUILT_IN_STRCMP, BUILT_IN_NORMAL, "strcmp");
   builtin_function ("__builtin_strcpy", string_ftype_ptr_ptr,
-		    BUILT_IN_STRCPY, "strcpy");
+		    BUILT_IN_STRCPY, BUILT_IN_NORMAL, "strcpy");
   builtin_function ("__builtin_strlen", strlen_ftype,
-		    BUILT_IN_STRLEN, "strlen");
+		    BUILT_IN_STRLEN, BUILT_IN_NORMAL, "strlen");
   builtin_function ("__builtin_sqrtf", float_ftype_float, 
-		    BUILT_IN_FSQRT, "sqrtf");
+		    BUILT_IN_FSQRT, BUILT_IN_NORMAL, "sqrtf");
   builtin_function ("__builtin_fsqrt", double_ftype_double,
-		    BUILT_IN_FSQRT, "sqrt");
+		    BUILT_IN_FSQRT, BUILT_IN_NORMAL, "sqrt");
   builtin_function ("__builtin_sqrtl", ldouble_ftype_ldouble,
-		    BUILT_IN_FSQRT, "sqrtl");
+		    BUILT_IN_FSQRT, BUILT_IN_NORMAL, "sqrtl");
   builtin_function ("__builtin_sinf", float_ftype_float, 
-		    BUILT_IN_SIN, "sinf");
+		    BUILT_IN_SIN, BUILT_IN_NORMAL, "sinf");
   builtin_function ("__builtin_sin", double_ftype_double, 
-		    BUILT_IN_SIN, "sin");
+		    BUILT_IN_SIN, BUILT_IN_NORMAL, "sin");
   builtin_function ("__builtin_sinl", ldouble_ftype_ldouble, 
-		    BUILT_IN_SIN, "sinl");
+		    BUILT_IN_SIN, BUILT_IN_NORMAL, "sinl");
   builtin_function ("__builtin_cosf", float_ftype_float, 
-		    BUILT_IN_COS, "cosf");
+		    BUILT_IN_COS, BUILT_IN_NORMAL, "cosf");
   builtin_function ("__builtin_cos", double_ftype_double, 
-		    BUILT_IN_COS, "cos");
+		    BUILT_IN_COS, BUILT_IN_NORMAL, "cos");
   builtin_function ("__builtin_cosl", ldouble_ftype_ldouble, 
-		    BUILT_IN_COS, "cosl");
+		    BUILT_IN_COS, BUILT_IN_NORMAL, "cosl");
 
   if (! no_builtins)
     {
-      builtin_function ("abs", int_ftype_int, BUILT_IN_ABS, NULL_PTR);
-      builtin_function ("fabsf", float_ftype_float, BUILT_IN_FABS, NULL_PTR);
-      builtin_function ("fabs", double_ftype_double, BUILT_IN_FABS, NULL_PTR);
+      builtin_function ("abs", int_ftype_int, BUILT_IN_ABS,
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("fabsf", float_ftype_float, BUILT_IN_FABS,
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("fabs", double_ftype_double, BUILT_IN_FABS,
+			BUILT_IN_NORMAL, NULL_PTR);
       builtin_function ("fabsl", ldouble_ftype_ldouble, BUILT_IN_FABS,
-			NULL_PTR);
-      builtin_function ("labs", long_ftype_long, BUILT_IN_LABS, NULL_PTR);
-      builtin_function ("memcpy", memcpy_ftype, BUILT_IN_MEMCPY, NULL_PTR);
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("labs", long_ftype_long, BUILT_IN_LABS,
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("memcpy", memcpy_ftype, BUILT_IN_MEMCPY,
+			BUILT_IN_NORMAL, NULL_PTR);
       builtin_function ("memcmp", int_ftype_cptr_cptr_sizet, BUILT_IN_MEMCMP,
-			NULL_PTR);
-      builtin_function ("memset", memset_ftype, BUILT_IN_MEMSET, NULL_PTR);
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("memset", memset_ftype, BUILT_IN_MEMSET,
+			BUILT_IN_NORMAL, NULL_PTR);
       builtin_function ("strcmp", int_ftype_string_string, BUILT_IN_STRCMP,
-			NULL_PTR);
+			BUILT_IN_NORMAL, NULL_PTR);
       builtin_function ("strcpy", string_ftype_ptr_ptr, BUILT_IN_STRCPY,
-			NULL_PTR);
-      builtin_function ("strlen", strlen_ftype, BUILT_IN_STRLEN, NULL_PTR);
-      builtin_function ("sqrtf", float_ftype_float, BUILT_IN_FSQRT, NULL_PTR);
-      builtin_function ("sqrt", double_ftype_double, BUILT_IN_FSQRT, NULL_PTR);
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("strlen", strlen_ftype, BUILT_IN_STRLEN,
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("sqrtf", float_ftype_float, BUILT_IN_FSQRT,
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("sqrt", double_ftype_double, BUILT_IN_FSQRT,
+			BUILT_IN_NORMAL, NULL_PTR);
       builtin_function ("sqrtl", ldouble_ftype_ldouble, BUILT_IN_FSQRT,
-			NULL_PTR);
-      builtin_function ("sinf", float_ftype_float, BUILT_IN_SIN, NULL_PTR);
-      builtin_function ("sin", double_ftype_double, BUILT_IN_SIN, NULL_PTR);
-      builtin_function ("sinl", ldouble_ftype_ldouble, BUILT_IN_SIN, NULL_PTR);
-      builtin_function ("cosf", float_ftype_float, BUILT_IN_COS, NULL_PTR);
-      builtin_function ("cos", double_ftype_double, BUILT_IN_COS, NULL_PTR);
-      builtin_function ("cosl", ldouble_ftype_ldouble, BUILT_IN_COS, NULL_PTR);
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("sinf", float_ftype_float, BUILT_IN_SIN,
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("sin", double_ftype_double, BUILT_IN_SIN,
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("sinl", ldouble_ftype_ldouble, BUILT_IN_SIN,
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("cosf", float_ftype_float, BUILT_IN_COS,
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("cos", double_ftype_double, BUILT_IN_COS,
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("cosl", ldouble_ftype_ldouble, BUILT_IN_COS,
+			BUILT_IN_NORMAL, NULL_PTR);
 
       /* Declare these functions volatile
 	 to avoid spurious "control drops through" warnings.  */
       temp = builtin_function ("abort", cplus_mode ? void_ftype : void_ftype_any,
-			       NOT_BUILT_IN, NULL_PTR);
+			       0, NOT_BUILT_IN, NULL_PTR);
       TREE_THIS_VOLATILE (temp) = 1;
       TREE_SIDE_EFFECTS (temp) = 1;
 
@@ -3765,7 +3784,7 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 #endif
       temp = builtin_function ("exit",
 			       cplus_mode ? void_ftype_int : void_ftype_any,
-			       NOT_BUILT_IN, NULL_PTR);
+			       0, NOT_BUILT_IN, NULL_PTR);
       TREE_THIS_VOLATILE (temp) = 1;
       TREE_SIDE_EFFECTS (temp) = 1;
 
@@ -3779,20 +3798,22 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 #if 0
   /* Support for these has not been written in either expand_builtin
      or build_function_call.  */
-  builtin_function ("__builtin_div", default_ftype, BUILT_IN_DIV, NULL_PTR);
-  builtin_function ("__builtin_ldiv", default_ftype, BUILT_IN_LDIV, NULL_PTR);
+  builtin_function ("__builtin_div", default_ftype, BUILT_IN_DIV,
+		    BUILT_IN_NORMAL, NULL_PTR);
+  builtin_function ("__builtin_ldiv", default_ftype, BUILT_IN_LDIV,
+		    BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_ffloor", double_ftype_double, BUILT_IN_FFLOOR,
-		    NULL_PTR);
+		    BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_fceil", double_ftype_double, BUILT_IN_FCEIL,
-		    NULL_PTR);
+		    BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_fmod", double_ftype_double_double,
-		    BUILT_IN_FMOD, NULL_PTR);
+		    BUILT_IN_FMOD, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_frem", double_ftype_double_double,
-		    BUILT_IN_FREM, NULL_PTR);
+		    BUILT_IN_FREM, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_getexp", double_ftype_double, BUILT_IN_GETEXP,
-		    NULL_PTR);
+		    BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_getman", double_ftype_double, BUILT_IN_GETMAN,
-		    NULL_PTR);
+		    BUILT_IN_NORMAL, NULL_PTR);
 #endif
 
   /* ??? Perhaps there's a better place to do this.  But it is related

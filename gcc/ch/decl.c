@@ -3898,48 +3898,48 @@ init_decl_processing ()
 /* These are compiler-internal function calls, not intended
    to be directly called by user code */
   builtin_function ("__allocate", ptr_ftype_luns_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("_allocate_global_memory", void_ftype_refptr_int_ptr_int, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("_allocate_memory", void_ftype_refptr_int_ptr_int, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__andpowerset", bool_ftype_ptr_ptr_ptr_luns, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__bitsetpowerset", void_ftype_ptr_int_int_int_int, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__cardpowerset", long_ftype_ptr_luns, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__cause_ex1", void_ftype_cptr_cptr_int, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__concatstring", ptr_ftype_ptr_ptr_int_ptr_int, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__continue", void_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__diffpowerset", void_ftype_ptr_ptr_ptr_luns, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__eqpowerset", bool_ftype_ptr_ptr_luns, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__ffsetclrpowerset", find_bit_ftype,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__flsetclrpowerset", find_bit_ftype,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__flsetpowerset", int_ftype_ptr_luns_long_ptr_int, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__ffsetpowerset", int_ftype_ptr_luns_long_ptr_int, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__inbitstring", bool_ftype_luns_ptr_luns_long_ptr_int, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__inpowerset", bool_ftype_luns_ptr_luns_long, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__lepowerset", bool_ftype_ptr_ptr_luns, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__ltpowerset", bool_ftype_ptr_ptr_luns, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   /* Currently under experimentation.  */
   builtin_function ("memmove", memcpy_ftype,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("memcmp", memcmp_ftype,
-                    NOT_BUILT_IN, NULL_PTR);
+                    0, NOT_BUILT_IN, NULL_PTR);
 
   /* this comes from c-decl.c (init_decl_processing) */
   builtin_function ("__builtin_alloca",
@@ -3947,40 +3947,40 @@ init_decl_processing ()
 					 tree_cons (NULL_TREE,
 						    sizetype,
 						    endlink)),
-		    BUILT_IN_ALLOCA, "alloca");
+		    BUILT_IN_ALLOCA, BUILT_IN_NORMAL, "alloca");
 
   builtin_function ("memset", ptr_ftype_ptr_int_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__notpowerset", bool_ftype_ptr_ptr_luns, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__orpowerset", bool_ftype_ptr_ptr_ptr_luns, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__psslice", void_ftype_ptr_int_ptr_int_int_int, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__pscpy", void_ftype_ptr_luns_luns_cptr_luns_luns_luns,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("_return_memory", void_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__setbitpowerset", void_ftype_ptr_luns_long_long_bool_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__terminate", void_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__unhandled_ex", void_ftype_cptr_cptr_int, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__xorpowerset", bool_ftype_ptr_ptr_ptr_luns, 
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
 
   /* declare floating point functions */
-  builtin_function ("__sin", double_ftype_double, NOT_BUILT_IN, "sin");
-  builtin_function ("__cos", double_ftype_double, NOT_BUILT_IN, "cos");
-  builtin_function ("__tan", double_ftype_double, NOT_BUILT_IN, "tan");
-  builtin_function ("__asin", double_ftype_double, NOT_BUILT_IN, "asin");
-  builtin_function ("__acos", double_ftype_double, NOT_BUILT_IN, "acos");
-  builtin_function ("__atan", double_ftype_double, NOT_BUILT_IN, "atan");
-  builtin_function ("__exp", double_ftype_double, NOT_BUILT_IN, "exp");
-  builtin_function ("__log", double_ftype_double, NOT_BUILT_IN, "log");
-  builtin_function ("__log10", double_ftype_double, NOT_BUILT_IN, "log10");
-  builtin_function ("__sqrt", double_ftype_double, NOT_BUILT_IN, "sqrt");
+  builtin_function ("__sin", double_ftype_double, 0, NOT_BUILT_IN, "sin");
+  builtin_function ("__cos", double_ftype_double, 0, NOT_BUILT_IN, "cos");
+  builtin_function ("__tan", double_ftype_double, 0, NOT_BUILT_IN, "tan");
+  builtin_function ("__asin", double_ftype_double, 0, NOT_BUILT_IN, "asin");
+  builtin_function ("__acos", double_ftype_double, 0, NOT_BUILT_IN, "acos");
+  builtin_function ("__atan", double_ftype_double, 0, NOT_BUILT_IN, "atan");
+  builtin_function ("__exp", double_ftype_double, 0, NOT_BUILT_IN, "exp");
+  builtin_function ("__log", double_ftype_double, 0, NOT_BUILT_IN, "log");
+  builtin_function ("__log10", double_ftype_double, 0, NOT_BUILT_IN, "log10");
+  builtin_function ("__sqrt", double_ftype_double, 0, NOT_BUILT_IN, "sqrt");
 
   tasking_init ();
   timing_init ();
@@ -3991,114 +3991,114 @@ init_decl_processing ()
      the same names.  Note the lack of a leading underscore. */
   builtin_function ((ignore_case || ! special_UC) ?  "abs" : "ABS",
 		    chill_predefined_function_type,
-		    BUILT_IN_CH_ABS, NULL_PTR);
+		    BUILT_IN_CH_ABS, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "abstime" : "ABSTIME",
 		    chill_predefined_function_type,
-		    BUILT_IN_ABSTIME, NULL_PTR);
+		    BUILT_IN_ABSTIME, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "allocate" : "ALLOCATE",
 		    chill_predefined_function_type,
-		    BUILT_IN_ALLOCATE, NULL_PTR);
+		    BUILT_IN_ALLOCATE, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ?  "allocate_memory" : "ALLOCATE_MEMORY",
 		    chill_predefined_function_type,
-		    BUILT_IN_ALLOCATE_MEMORY, NULL_PTR);
+		    BUILT_IN_ALLOCATE_MEMORY, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ?  "addr" : "ADDR",
 		    chill_predefined_function_type,
-		    BUILT_IN_ADDR, NULL_PTR);
+		    BUILT_IN_ADDR, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ?  "allocate_global_memory" : "ALLOCATE_GLOBAL_MEMORY",
 		    chill_predefined_function_type,
-		    BUILT_IN_ALLOCATE_GLOBAL_MEMORY, NULL_PTR);
+		    BUILT_IN_ALLOCATE_GLOBAL_MEMORY, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "arccos" : "ARCCOS",
 		    chill_predefined_function_type,
-		    BUILT_IN_ARCCOS, NULL_PTR);
+		    BUILT_IN_ARCCOS, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "arcsin" : "ARCSIN",
 		    chill_predefined_function_type,
-		    BUILT_IN_ARCSIN, NULL_PTR);
+		    BUILT_IN_ARCSIN, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "arctan" : "ARCTAN",
 		    chill_predefined_function_type,
-		    BUILT_IN_ARCTAN, NULL_PTR);
+		    BUILT_IN_ARCTAN, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ?  "card" : "CARD",
 		    chill_predefined_function_type,
-		    BUILT_IN_CARD, NULL_PTR);
+		    BUILT_IN_CARD, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "cos" : "COS",
 		    chill_predefined_function_type,
-		    BUILT_IN_CH_COS, NULL_PTR);
+		    BUILT_IN_CH_COS, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "days" : "DAYS",
 		    chill_predefined_function_type,
-		    BUILT_IN_DAYS, NULL_PTR);
+		    BUILT_IN_DAYS, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "descr" : "DESCR",
 		    chill_predefined_function_type,
-		    BUILT_IN_DESCR, NULL_PTR);
+		    BUILT_IN_DESCR, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "getstack" : "GETSTACK",
 		    chill_predefined_function_type,
-		    BUILT_IN_GETSTACK, NULL_PTR);
+		    BUILT_IN_GETSTACK, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "exp" : "EXP",
 		    chill_predefined_function_type,
-		    BUILT_IN_EXP, NULL_PTR);
+		    BUILT_IN_EXP, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "hours" : "HOURS",
 		    chill_predefined_function_type,
-		    BUILT_IN_HOURS, NULL_PTR);
+		    BUILT_IN_HOURS, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "inttime" : "INTTIME",
 		    chill_predefined_function_type,
-		    BUILT_IN_INTTIME, NULL_PTR);
+		    BUILT_IN_INTTIME, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ?  "length" : "LENGTH",
 		    chill_predefined_function_type,
-		    BUILT_IN_LENGTH, NULL_PTR);
+		    BUILT_IN_LENGTH, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "log" : "LOG",
 		    chill_predefined_function_type,
-		    BUILT_IN_LOG, NULL_PTR);
+		    BUILT_IN_LOG, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ?  "lower" : "LOWER",
 		    chill_predefined_function_type,
-		    BUILT_IN_LOWER, NULL_PTR);
+		    BUILT_IN_LOWER, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "ln" : "LN",
 		    chill_predefined_function_type,
-		    BUILT_IN_LN, NULL_PTR);
+		    BUILT_IN_LN, BUILT_IN_NORMAL, NULL_PTR);
   /* Note: these are *not* the C integer MAX and MIN.  They're
      for powerset arguments. */
   builtin_function ((ignore_case || ! special_UC) ?  "max" : "MAX",
 		    chill_predefined_function_type,
-		    BUILT_IN_MAX, NULL_PTR);
+		    BUILT_IN_MAX, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "millisecs" : "MILLISECS",
 		    chill_predefined_function_type,
-		    BUILT_IN_MILLISECS, NULL_PTR);
+		    BUILT_IN_MILLISECS, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ?  "min" : "MIN",
 		    chill_predefined_function_type,
-		    BUILT_IN_MIN, NULL_PTR);
+		    BUILT_IN_MIN, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "minutes" : "MINUTES",
 		    chill_predefined_function_type,
-		    BUILT_IN_MINUTES, NULL_PTR);
+		    BUILT_IN_MINUTES, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ?  "num" : "NUM",
 		    chill_predefined_function_type,
-		    BUILT_IN_NUM, NULL_PTR);
+		    BUILT_IN_NUM, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ?  "pred" : "PRED",
 		    chill_predefined_function_type,
-		    BUILT_IN_PRED, NULL_PTR);
+		    BUILT_IN_PRED, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ?  "return_memory" : "RETURN_MEMORY",
 		    chill_predefined_function_type,
-		    BUILT_IN_RETURN_MEMORY, NULL_PTR);
+		    BUILT_IN_RETURN_MEMORY, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "secs" : "SECS",
 		    chill_predefined_function_type,
-		    BUILT_IN_SECS, NULL_PTR);
+		    BUILT_IN_SECS, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "sin" : "SIN",
 		    chill_predefined_function_type,
-		    BUILT_IN_CH_SIN, NULL_PTR);
+		    BUILT_IN_CH_SIN, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ?  "size" : "SIZE",
 		    chill_predefined_function_type,
-		    BUILT_IN_SIZE, NULL_PTR);
+		    BUILT_IN_SIZE, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "sqrt" : "SQRT",
 		    chill_predefined_function_type,
-		    BUILT_IN_SQRT, NULL_PTR);
+		    BUILT_IN_SQRT, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ?  "succ" : "SUCC",
 		    chill_predefined_function_type,
-		    BUILT_IN_SUCC, NULL_PTR);
+		    BUILT_IN_SUCC, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "tan" : "TAN",
 		    chill_predefined_function_type,
-		    BUILT_IN_TAN, NULL_PTR);
+		    BUILT_IN_TAN, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "terminate" : "TERMINATE",
 		    chill_predefined_function_type,
-		    BUILT_IN_TERMINATE, NULL_PTR);
+		    BUILT_IN_TERMINATE, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ?  "upper" : "UPPER",
 		    chill_predefined_function_type,
-		    BUILT_IN_UPPER, NULL_PTR);
+		    BUILT_IN_UPPER, BUILT_IN_NORMAL, NULL_PTR);
 
   build_chill_descr_type ();
   build_chill_inttime_type ();
@@ -4119,10 +4119,11 @@ init_decl_processing ()
    the name to be called if we can't opencode the function.  */
 
 tree
-builtin_function (name, type, function_code, library_name)
+builtin_function (name, type, function_code, class, library_name)
      const char *name;
      tree type;
-     enum built_in_function function_code;
+     int function_code;
+     enum built_in_class class;
      const char *library_name;
 {
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
@@ -4137,11 +4138,8 @@ builtin_function (name, type, function_code, library_name)
     DECL_ASSEMBLER_NAME (decl) = get_identifier (library_name);
   make_decl_rtl (decl, NULL_PTR, 1);
   pushdecl (decl);
-  if (function_code != NOT_BUILT_IN)
-    {
-      DECL_BUILT_IN (decl) = 1;
-      DECL_SET_FUNCTION_CODE (decl, function_code);
-    }
+  DECL_BUILT_IN_CLASS (decl) = class;
+  DECL_FUNCTION_CODE (decl) = function_code;
 
   return decl;
 }

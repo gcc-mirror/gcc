@@ -1,3 +1,11 @@
+Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* decl.c (duplicate_decls): Use DECL_BUILT_IN_CLASS rather than
+	DECL_BUILT_IN.
+	(builtin_function): New arg CLASS.  Arg CODE now of type int.  All
+	callers changed.
+	Set the builtin's DECL_BUILT_IN_CLASS.
+
 1999-09-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (pushdecl): Don't make local declarations of extern

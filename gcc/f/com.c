@@ -466,9 +466,6 @@ static tree ffecom_convert_widen_ (tree type, tree expr);
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree bison_rule_compstmt_ (void);
 static void bison_rule_pushlevel_ (void);
-static tree builtin_function (const char *name, tree type,
-			      enum built_in_function function_code,
-			      const char *library_name);
 static void delete_block (tree block);
 static int duplicate_decls (tree newdecl, tree olddecl);
 static void finish_decl (tree decl, tree init, bool is_top_level);
@@ -12176,23 +12173,23 @@ ffecom_init_0 ()
     = build_function_type (void_type_node, NULL_TREE);
 
   builtin_function ("__builtin_sqrtf", float_ftype_float,
-		    BUILT_IN_FSQRT, "sqrtf");
+		    BUILT_IN_FSQRT, BUILT_IN_NORMAL, "sqrtf");
   builtin_function ("__builtin_fsqrt", double_ftype_double,
-		    BUILT_IN_FSQRT, "sqrt");
+		    BUILT_IN_FSQRT, BUILT_IN_NORMAL, "sqrt");
   builtin_function ("__builtin_sqrtl", ldouble_ftype_ldouble,
-		    BUILT_IN_FSQRT, "sqrtl");
+		    BUILT_IN_FSQRT, BUILT_IN_NORMAL, "sqrtl");
   builtin_function ("__builtin_sinf", float_ftype_float,
-		    BUILT_IN_SIN, "sinf");
+		    BUILT_IN_SIN, BUILT_IN_NORMAL, "sinf");
   builtin_function ("__builtin_sin", double_ftype_double,
-		    BUILT_IN_SIN, "sin");
+		    BUILT_IN_SIN, BUILT_IN_NORMAL, "sin");
   builtin_function ("__builtin_sinl", ldouble_ftype_ldouble,
-		    BUILT_IN_SIN, "sinl");
+		    BUILT_IN_SIN, BUILT_IN_NORMAL, "sinl");
   builtin_function ("__builtin_cosf", float_ftype_float,
-		    BUILT_IN_COS, "cosf");
+		    BUILT_IN_COS, BUILT_IN_NORMAL, "cosf");
   builtin_function ("__builtin_cos", double_ftype_double,
-		    BUILT_IN_COS, "cos");
+		    BUILT_IN_COS, BUILT_IN_NORMAL, "cos");
   builtin_function ("__builtin_cosl", ldouble_ftype_ldouble,
-		    BUILT_IN_COS, "cosl");
+		    BUILT_IN_COS, BUILT_IN_NORMAL, "cosl");
 
 #if BUILT_FOR_270
   pedantic_lvalues = FALSE;
@@ -13758,9 +13755,9 @@ bison_rule_compstmt_ ()
    If LIBRARY_NAME is nonzero, use that for DECL_ASSEMBLER_NAME,
    the name to be called if we can't opencode the function.  */
 
-static tree
-builtin_function (const char *name, tree type,
-		  enum built_in_function function_code,
+tree
+builtin_function (const char *name, tree type, int function_code,
+		  enum built_in_class class,
 		  const char *library_name)
 {
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
@@ -13770,11 +13767,8 @@ builtin_function (const char *name, tree type,
     DECL_ASSEMBLER_NAME (decl) = get_identifier (library_name);
   make_decl_rtl (decl, NULL_PTR, 1);
   pushdecl (decl);
-  if (function_code != NOT_BUILT_IN)
-    {
-      DECL_BUILT_IN (decl) = 1;
-      DECL_FUNCTION_CODE (decl) = function_code;
-    }
+  DECL_BUILT_IN_CLASS (decl) = class;
+  DECL_FUNCTION_CODE (decl) = function_code;
 
   return decl;
 }
@@ -14025,7 +14019,7 @@ duplicate_decls (tree newdecl, tree olddecl)
       && (!types_match || new_is_definition))
     {
       TREE_TYPE (olddecl) = TREE_TYPE (newdecl);
-      DECL_BUILT_IN (olddecl) = 0;
+      DECL_BUILT_IN_CLASS (olddecl) = NOT_BUILT_IN;
     }
 
   /* If redeclaring a builtin function, and not a definition,
@@ -14035,7 +14029,7 @@ duplicate_decls (tree newdecl, tree olddecl)
     {
       if (DECL_BUILT_IN (olddecl))
 	{
-	  DECL_BUILT_IN (newdecl) = 1;
+	  DECL_BUILT_IN_CLASS (newdecl) = DECL_BUILT_IN_CLASS (olddecl);
 	  DECL_FUNCTION_CODE (newdecl) = DECL_FUNCTION_CODE (olddecl);
 	}
       else
