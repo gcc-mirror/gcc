@@ -1,3 +1,7 @@
+2003-01-24  Andreas Schwab  <schwab@suse.de>
+
+	* config/linker-map.gnu: Fix for size_t variance.
+
 2003-01-23  Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/9322
