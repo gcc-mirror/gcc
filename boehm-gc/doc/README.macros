@@ -51,7 +51,18 @@ _DLL		Defined by Visual C++ if dynamic libraries are being built
 		__declspec(dllexport) needs to be added to declarations
 		to support the case in which the collector is in a dll.
 
-GC_DLL		User-settable macro that forces the effect of _DLL.
+GC_DLL		User-settable macro that forces the effect of _DLL.  Set
+		by gc.h if _DLL is defined and GC_NOT_DLL is undefined.
+		This is the macro that is tested internally to determine
+		whether the GC is in its own dynamic library.  May need
+		to be set by clients before including gc.h.  Note that
+		inside the GC implementation it indicates that the
+		collector is in its own dynamic library, should export
+		its symbols, etc.  But in clients it indicates that the
+		GC resides in a different DLL, its entry points should
+		be referenced accordingly, and precautions may need to
+		be taken to properly deal with statically allocated 
+		variables in the main program.  Used only for MS Windows.
 
 GC_NOT_DLL	User-settable macro that overrides _DLL, e.g. if dynamic
 		libraries are used, but the collector is in a static library.

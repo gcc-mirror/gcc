@@ -307,6 +307,7 @@ static void add_back_edges(ptr_t p, word n_words, word gc_descr)
     }
   while (currentp < (word *)(p + gc_descr)) {
     word current = *currentp++;
+    FIXUP_POINTER(current);
     if (current >= (word)GC_least_plausible_heap_addr && 
 	current <= (word)GC_greatest_plausible_heap_addr) {
        ptr_t target = GC_base((GC_PTR)current);

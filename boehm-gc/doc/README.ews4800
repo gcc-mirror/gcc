@@ -73,3 +73,9 @@ GC on EWS4800
 --
 Hironori SAKAMOTO <hsaka@mth.biglobe.ne.jp>
 
+
+When using the new "configure; make" build process, please
+run configure with the --disable-shared option.  "Make check" does not
+yet pass with dynamic libraries.  Ther reasons for that are not yet
+understood.  (HB, paraphrasing message from Hironori SAKAMOTO.)
+
