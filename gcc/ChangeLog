@@ -1,3 +1,8 @@
+Tue Feb  9 10:46:42 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (c4x_address_cost): Return cost of 1 for
+	REG+REG addressing if strength reduction enabled.
+
 Tue Feb  9 10:10:31 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/t-c4x  (LIBGCC2_CFLAGS): Delete.
