@@ -3684,12 +3684,12 @@ expand_assignment (to, from, want_value, suggest_reg)
 	  if (GET_CODE (to_rtx) != MEM)
 	    abort ();
 
-	  if (GET_MODE (offset_rtx) != ptr_mode)
-	    offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
-
 #ifdef POINTERS_EXTEND_UNSIGNED
 	  if (GET_MODE (offset_rtx) != Pmode)
 	    offset_rtx = convert_memory_address (Pmode, offset_rtx);
+#else
+	  if (GET_MODE (offset_rtx) != ptr_mode)
+	    offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
 #endif
 
 	  /* A constant address in TO_RTX can have VOIDmode, we must not try
@@ -4181,7 +4181,7 @@ store_expr (exp, target, want_value)
 		}
 	      else
 		{
-		  size = expand_binop (ptr_mode, sub_optab, size,
+		  size = expand_binop (TYPE_MODE (sizetype), sub_optab, size,
 				       copy_size_rtx, NULL_RTX, 0,
 				       OPTAB_LIB_WIDEN);
 
@@ -4490,12 +4490,12 @@ store_constructor (exp, target, cleared, size)
 	      if (GET_CODE (to_rtx) != MEM)
 		abort ();
 
-	      if (GET_MODE (offset_rtx) != ptr_mode)
-		offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
-
 #ifdef POINTERS_EXTEND_UNSIGNED
 	      if (GET_MODE (offset_rtx) != Pmode)
 		offset_rtx = convert_memory_address (Pmode, offset_rtx);
+#else
+	      if (GET_MODE (offset_rtx) != ptr_mode)
+		offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
 #endif
 
 	      to_rtx = offset_address (to_rtx, offset_rtx,
@@ -6915,12 +6915,12 @@ expand_expr (exp, target, tmode, modifier)
 	    if (GET_CODE (op0) != MEM)
 	      abort ();
 
-	    if (GET_MODE (offset_rtx) != ptr_mode)
-	      offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
-
 #ifdef POINTERS_EXTEND_UNSIGNED
 	    if (GET_MODE (offset_rtx) != Pmode)
 	      offset_rtx = convert_memory_address (Pmode, offset_rtx);
+#else
+	    if (GET_MODE (offset_rtx) != ptr_mode)
+	      offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
 #endif
 
 	    /* A constant address in OP0 can have VOIDmode, we must not try

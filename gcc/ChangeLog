@@ -1,5 +1,10 @@
 Fri Apr 12 08:06:54 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (expand_assigment): Remove duplicate conversions #ifdef
+	POINTERS_EXTEND_UNSIGNED.
+	(store_constructor, expand_expr, case COMPONENT_REF): Likewise.
+	(store_expr): Use TYPE_MODE (sizetype), not ptr_mode.
+
 	* emit-rtl.c (widen_memory_access): Don't do anything if MEMOFFSET
 	not specified.
 
