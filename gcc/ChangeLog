@@ -1,3 +1,10 @@
+2003-09-03  David O'Brien  <obrien@FreeBSD.org>
+
+	optimization/11980
+	* config/i386/freebsd.h (SIZE_TYPE): Support TARGET_64BIT.
+	(PTRDIFF_TYPE): Likewise.
+	(WCHAR_TYPE_SIZE): Likewise.
+
 2003-09-03  DJ Delorie  <dj@redhat.com>
 
 	* targhooks.c: New file.
