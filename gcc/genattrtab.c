@@ -97,7 +97,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "gvarargs.h"
 #include "hconfig.h"
 #include "rtl.h"
-#include "obstack.h"
 #include "insn-config.h"	/* For REGISTER_CONSTRAINTS */
 #include <stdio.h>
 
@@ -107,6 +106,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <sys/resource.h>
 #endif
 #endif
+
+/* We must include obstack.h after <sys/time.h>, to avoid lossage with
+   /usr/include/sys/stdtypes.h on Sun OS 4.x.  */
+#include "obstack.h"
 
 static struct obstack obstack, obstack1, obstack2;
 struct obstack *rtl_obstack = &obstack;
