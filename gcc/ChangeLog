@@ -1,3 +1,7 @@
+Tue Jun 30 18:32:49 1998  Geert Bosch  <bosch@gnat.com>
+
+	* alpha/vxworks.h (LINK_SPEC): Add -taso -T 0.
+
 Tue Jun 30 09:39:32 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* expr.c (expand_builtin_{set,long}jmp): If STACK_SAVEAREA_MODE
