@@ -1171,38 +1171,36 @@ _cpp_lex_token (pfile, result)
 
       result->type = CPP_HASH;
     do_hash:
-      if (bol)
+      if (!bol)
+	break;
+      /* 6.10.3 paragraph 11: If there are sequences of preprocessing
+	 tokens within the list of arguments that would otherwise act
+	 as preprocessing directives, the behavior is undefined.
+
+	 This implementation will report a hard error, terminate the
+	 macro invocation, and proceed to process the directive.  */
+      if (pfile->state.parsing_args)
 	{
-	  if (pfile->state.parsing_args)
-	    {
-	      /* 6.10.3 paragraph 11: If there are sequences of
-		 preprocessing tokens within the list of arguments that
-		 would otherwise act as preprocessing directives, the
-		 behavior is undefined.
+	  if (pfile->state.parsing_args == 2)
+	    cpp_error (pfile,
+		       "directives may not be used inside a macro argument");
 
-		 This implementation will report a hard error, terminate
-		 the macro invocation, and proceed to process the
-		 directive.  */
-	      cpp_error (pfile,
-			 "directives may not be used inside a macro argument");
+	  /* Put a '#' in lookahead, return CPP_EOF for parse_arg.  */
+	  buffer->extra_char = buffer->read_ahead;
+	  buffer->read_ahead = '#';
+	  pfile->state.next_bol = 1;
+	  result->type = CPP_EOF;
 
-	      /* Put a '#' in lookahead, return CPP_EOF for parse_arg.  */
-	      buffer->extra_char = buffer->read_ahead;
-	      buffer->read_ahead = '#';
-	      pfile->state.next_bol = 1;
-	      result->type = CPP_EOF;
-
-	      /* Get whitespace right - newline_in_args sets it.  */
-	      if (pfile->lexer_pos.col == 1)
-		result->flags &= ~(PREV_WHITE | AVOID_LPASTE);
-	    }
-	  else
-	    {
-	      /* This is the hash introducing a directive.  */
-	      if (_cpp_handle_directive (pfile, result->flags & PREV_WHITE))
-		goto done_directive; /* bol still 1.  */
-	      /* This is in fact an assembler #.  */
-	    }
+	  /* Get whitespace right - newline_in_args sets it.  */
+	  if (pfile->lexer_pos.col == 1)
+	    result->flags &= ~(PREV_WHITE | AVOID_LPASTE);
+	}
+      else
+	{
+	  /* This is the hash introducing a directive.  */
+	  if (_cpp_handle_directive (pfile, result->flags & PREV_WHITE))
+	    goto done_directive; /* bol still 1.  */
+	  /* This is in fact an assembler #.  */
 	}
       break;
 

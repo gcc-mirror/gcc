@@ -602,6 +602,7 @@ funlike_invocation_p (pfile, node, list)
   cpp_start_lookahead (pfile);
   cpp_get_token (pfile, &maybe_paren);
   cpp_stop_lookahead (pfile, maybe_paren.type == CPP_OPEN_PAREN);
+  pfile->state.parsing_args = 2;
 
   if (maybe_paren.type == CPP_OPEN_PAREN)
     args = parse_args (pfile, node);
@@ -615,11 +616,12 @@ funlike_invocation_p (pfile, node, list)
   pfile->state.prevent_expansion--;
   pfile->state.parsing_args = 0;
 
+  /* Reset the position in case of failure.  If success, the macro's
+     expansion appears where the name would have.  */
+  pfile->lexer_pos = macro_pos;
+
   if (args)
     {
-      /* The macro's expansion appears where the name would have.  */
-      pfile->lexer_pos = macro_pos;
-
       if (node->value.macro->paramc > 0)
 	{
 	  /* Don't save tokens during pre-expansion.  */
