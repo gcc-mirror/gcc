@@ -3310,7 +3310,7 @@ function_arg_pass_by_reference (cum, mode, type, named)
 
       return 1;
     }
-  return type && int_size_in_bytes (type) <= 0;
+  return type && int_size_in_bytes (type) < 0;
 }
 
 /* Perform any needed actions needed for a function that is receiving a
@@ -3551,7 +3551,7 @@ rs6000_va_arg (valist, type)
   if (DEFAULT_ABI != ABI_V4)
     {
       /* Variable sized types are passed by reference.  */
-      if (int_size_in_bytes (type) <= 0)
+      if (int_size_in_bytes (type) < 0)
 	{
 	  u = build_pointer_type (type);
 

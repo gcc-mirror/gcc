@@ -1,3 +1,9 @@
+2003-09-23  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/rs6000.c (function_arg_pass_by_reference): Don't
+	pass zero-size arrays by reference.
+	(rs6000_va_arg): Likewise.
+
 2003-09-22	Joel Sherrill <joel@oarcorp.com>
 
 	* combine.c, config/mips/t-elf, config/c4x/rtems.h: Revert patches
