@@ -4181,7 +4181,9 @@ get_unwidened (op, for_type)
 
   if (TREE_CODE (op) == COMPONENT_REF
       /* Since type_for_size always gives an integer type.  */
-      && TREE_CODE (type) != REAL_TYPE)
+      && TREE_CODE (type) != REAL_TYPE
+      /* Don't crash if field not layed out yet.  */
+      && DECL_SIZE (TREE_OPERAND (op, 1)) != 0)
     {
       unsigned innerprec = TREE_INT_CST_LOW (DECL_SIZE (TREE_OPERAND (op, 1)));
       type = type_for_size (innerprec, TREE_UNSIGNED (TREE_OPERAND (op, 1)));
