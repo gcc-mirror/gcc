@@ -1,3 +1,7 @@
+2004-02-24  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (build_exception_variant): Use check_qualified_type.
+
 2004-02-23  Zack Weinberg  <zack@codesourcery.com>
 	    Kazu Hirata  <kazu@cs.umass.edu>
 
