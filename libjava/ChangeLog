@@ -1,3 +1,13 @@
+2003-05-09  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_source_files): Removed old files.
+	* gnu/java/nio/natDoubleBufferImpl.cc: Removed.
+	* gnu/java/nio/natFloatBufferImpl.cc: Removed.
+	* gnu/java/nio/natIntBufferImpl.cc: Removed.
+	* gnu/java/nio/natLongBufferImpl.cc: Removed.
+	* gnu/java/nio/natShortBufferImpl.cc: Removed.
+
 2003-05-09  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/ByteBufferImpl.java

@@ -2557,14 +2557,9 @@ gnu/gcj/runtime/natStringBuffer.cc \
 gnu/gcj/runtime/natVMClassLoader.cc \
 gnu/java/nio/natByteBufferImpl.cc \
 gnu/java/nio/natCharBufferImpl.cc \
-gnu/java/nio/natDoubleBufferImpl.cc \
 gnu/java/nio/natFileChannelImpl.cc \
-gnu/java/nio/natFloatBufferImpl.cc \
-gnu/java/nio/natIntBufferImpl.cc \
-gnu/java/nio/natLongBufferImpl.cc \
 gnu/java/nio/natMappedByteFileBuffer.cc \
 gnu/java/nio/natSelectorImpl.cc \
-gnu/java/nio/natShortBufferImpl.cc \
 gnu/java/nio/natSocketChannelImpl.cc \
 java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
