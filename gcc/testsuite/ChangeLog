@@ -1,5 +1,7 @@
 2003-01-01  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* g++.dg/lookup/scope-operator1.C: New test.
+
 	* g++.dg/parse/operator1.C: New test.
 
 2003-01-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
