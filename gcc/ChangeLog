@@ -1,3 +1,8 @@
+2004-04-21  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/rs6000/rs6000 (print_operand) ['z']:
+	Change ifdef of TARGET_MACHO to if TARGET_MACHO.
+
 2004-04-21 Daniel Jacobowitz  <drow@mvista.com>
 
 	* config.gcc: Support --with-arch=iwmmxt for ARM.
