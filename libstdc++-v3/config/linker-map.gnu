@@ -55,7 +55,7 @@ GLIBCXX_3.4 {
       std::__num_base::_S_format_int*;
       std::__num_base::_S_atoms_in;
       std::__num_base::_S_atoms_out;
-      std::__numpunct_cache*;
+      std::__numpunct_cache*
     };
 
     # Names not in an 'extern' block are mangled names.

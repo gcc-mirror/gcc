@@ -1,3 +1,15 @@
+2003-07-11  Phil Edwards  <pme@gcc.gnu.org>
+
+	* acinclude.m4 (GLIBCC_ENABLE_SYMVERS):  Tweak comments.  Add
+	warning messages if the environment cannot support symbol versioning.
+	(port_specific_symbol_file):  It's plural, add an 's' on the end.
+	* configure.host:  Likewise.
+	* src/Makefile.am:  Likewise.
+	* config/linker-map.gnu:  Remove one semicolon, heh.
+	* scripts/extract_symvers:  Don't assume useful 'export' syntax.
+	Set LANG as well as LC_ALL for possibly-broken sort(1)s.
+	* aclocal.m4, configure, src/Makefile.in:  Regenerated.
+
 2003-07-09  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.tcc: Use function object for

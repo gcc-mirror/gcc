@@ -2271,12 +2271,12 @@ if test $enable_symvers != no; then
   AC_MSG_RESULT($glibcxx_shared_libgcc)
 fi
 
-# For GNU ld, we need at least this version.  It's 2.14 in the same format
-# as the tested-for version.  See GLIBCXX_CHECK_LINKER_FEATURES for more.
+# For GNU ld, we need at least this version.  The format is described in
+# GLIBCXX_CHECK_LINKER_FEATURES above.
 glibcxx_min_gnu_ld_version=21400
 
-# Check to see if unspecified "yes" value can win, given results
-# above.
+# Check to see if unspecified "yes" value can win, given results above.
+# Change "yes" into either "no" or a style name.
 if test $enable_symvers = yes ; then
   if test $with_gnu_ld = yes &&
      test $glibcxx_shared_libgcc = yes ;
@@ -2285,10 +2285,19 @@ if test $enable_symvers = yes ; then
       enable_symvers=gnu
     else
       # The right tools, the right setup, but too old.  Fallbacks?
+      AC_MSG_WARN(=== Linker version $glibcxx_gnu_ld_version is too old for)
+      AC_MSG_WARN(=== full symbol versioning support in this release of GCC.)
+      AC_MSG_WARN(=== You would need to upgrade your binutils to version)
+      AC_MSG_WARN(=== $glibcxx_min_gnu_ld_version or later and rebuild GCC.)
+      AC_MSG_WARN([=== Symbol versioning will be disabled.])
       enable_symvers=no
     fi
   else
     # just fail for now
+    AC_MSG_WARN([=== You have requested some kind of symbol versioning, but])
+    AC_MSG_WARN([=== either you are not using a supported linker, or you are])
+    AC_MSG_WARN([=== not building a shared libgcc_s (which is required).])
+    AC_MSG_WARN([=== Symbol versioning will be disabled.])
     enable_symvers=no
   fi
 fi
@@ -2305,7 +2314,7 @@ case $enable_symvers in
 esac
 
 AC_SUBST(SYMVER_MAP)
-AC_SUBST(port_specific_symbol_file)
+AC_SUBST(port_specific_symbol_files)
 AM_CONDITIONAL(GLIBCXX_BUILD_VERSIONED_SHLIB, test $enable_symvers != no)
 AC_MSG_CHECKING([versioning on shared library symbols])
 AC_MSG_RESULT($enable_symvers)
