@@ -1,5 +1,9 @@
 2001-04-26  Nathan Sidwell <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.other/lex1.C: New test.
+
+2001-04-26  Nathan Sidwell <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.pt/mangle2.C: New test.
 
 2001-04-25  Jakub Jelinek  <jakub@redhat.com>
