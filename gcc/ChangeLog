@@ -1,3 +1,9 @@
+2004-09-21  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/17126
+	* tree-optimize.c (update_inlined_to_pointers): Fix the recursion.
+	(tree_rest_of_compilation): Cleanup.
+
 2004-09-20  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_select_rtx_section): Remove.
