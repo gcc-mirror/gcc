@@ -263,12 +263,12 @@ fi
 
 done
 
-if [ x${INSTALL_ASSERT_H} != x ] ;
+if [ x${INSTALL_ASSERT_H} != x ]
 then
   cd ${ORIG_DIR}
-  rm -f include/assert.h;
-  cp $(srcdir)/assert.h include/assert.h;
-  chmod a+r include/assert.h;
+  rm -f include/assert.h
+  cp ${srcdir}/assert.h include/assert.h || exit 1
+  chmod a+r include/assert.h
 fi
 
 exit 0
