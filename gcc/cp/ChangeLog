@@ -1,5 +1,9 @@
 2002-04-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/4934
+	* error.c (dump_expr) [CONVERT_EXPR]: Make sure TREE_TYPE (t) is
+	set before checking it.
+
 	PR c++/525
 	* init.c (build_member_call): Use build_scoped_ref.
 	(resolve_offset_ref): Likewise.
