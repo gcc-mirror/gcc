@@ -4536,6 +4536,9 @@ make_extraction (mode, inner, pos, pos_rtx, len,
      int unsignedp;
      int in_dest, in_compare;
 {
+  /* This mode describes the size of the storage area
+     to fetch the overall value from.  Within that, we
+     ignore the POS lowest bits, etc.  */
   enum machine_mode is_mode = GET_MODE (inner);
   enum machine_mode inner_mode;
   enum machine_mode wanted_mem_mode = byte_mode;
@@ -4547,11 +4550,21 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 
   /* Get some information about INNER and get the innermost object.  */
   if (GET_CODE (inner) == USE)
+    /* (use:SI (mem:QI foo)) stands for (mem:SI foo).  */
     /* We don't need to adjust the position because we set up the USE
        to pretend that it was a full-word object.  */
     spans_byte = 1, inner = XEXP (inner, 0);
   else if (GET_CODE (inner) == SUBREG && subreg_lowpart_p (inner))
-    inner = SUBREG_REG (inner);
+    {
+      /* If going from (subreg:SI (mem:QI ...)) to (mem:QI ...),
+	 consider just the QI as the memory to extract from.
+	 The subreg adds or removes high bits; its mode is
+	 irrelevant to the meaning of this extraction,
+	 since POS and LEN count from the lsb.  */
+      if (GET_CODE (SUBREG_REG (inner)) == MEM)
+	is_mode = GET_MODE (SUBREG_REG (inner));
+      inner = SUBREG_REG (inner);
+    }
 
   inner_mode = GET_MODE (inner);
 
@@ -4589,8 +4602,6 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 		  || (! mode_dependent_address_p (XEXP (inner, 0))
 		      && ! MEM_VOLATILE_P (inner))))))
     {
-      int offset = pos / BITS_PER_UNIT;
-	  
       /* If INNER is a MEM, make a new MEM that encompasses just the desired
 	 field.  If the original and current mode are the same, we need not
 	 adjust the offset.  Otherwise, we do if bytes big endian.  
@@ -4600,11 +4611,12 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 
       if (GET_CODE (inner) == MEM)
 	{
-#if BYTES_BIG_ENDIAN
-	  if (inner_mode != tmode)
-	    offset = (GET_MODE_SIZE (inner_mode)
-		      - GET_MODE_SIZE (tmode) - offset);
-#endif
+	  int offset;
+	  /* POS counts from lsb, but make OFFSET count in memory order.  */
+	  if (BYTES_BIG_ENDIAN)
+	    offset = (GET_MODE_BITSIZE (is_mode) - len - pos) / BITS_PER_UNIT;
+	  else
+	    offset = pos / BITS_PER_UNIT;
 
 	  new = gen_rtx (MEM, tmode, plus_constant (XEXP (inner, 0), offset));
 	  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (inner);
