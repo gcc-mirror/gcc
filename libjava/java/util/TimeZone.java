@@ -1,5 +1,5 @@
 /* java.util.TimeZone
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package java.util;
 import java.text.DateFormatSymbols;
+import gnu.classpath.Configuration;
 
 /**
  * This class represents a time zone offset and handles daylight savings.
@@ -753,15 +754,31 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
   /* Look up default timezone */
   static
   {
-    // System.loadLibrary("javautil");
-
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+	System.loadLibrary("javautil");
+      }
     String tzid = System.getProperty("user.timezone");
+
+    if (tzid == null)
+      tzid = getDefaultTimeZoneId();
 
     if (tzid == null)
       tzid = "GMT";
 
     defaultZone = getTimeZone(tzid);
   }
+
+  /* This method returns us a time zone id string which is in the
+     form <standard zone name><GMT offset><daylight time zone name>.
+     The GMT offset is in seconds, except where it is evenly divisible
+     by 3600, then it is in hours.  If the zone does not observe
+     daylight time, then the daylight zone name is omitted.  Examples:
+     in Chicago, the timezone would be CST6CDT.  In Indianapolis 
+     (which does not have Daylight Savings Time) the string would
+     be EST5
+   */
+  private static native String getDefaultTimeZoneId();
 
   /**
    * Gets the time zone offset, for current date, modified in case of 
