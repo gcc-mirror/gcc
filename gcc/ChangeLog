@@ -1,3 +1,10 @@
+2001-05-05  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppfiles.c (struct include_file): New member err_no.
+	(find_or_create_entry): Set it.
+	(open_file): Don't set fds to -2.  Instead, use err_no to
+	remember previous errors, if any.
+
 2001-05-05  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.c (m68hc11_gen_movhi): Optimize moves
