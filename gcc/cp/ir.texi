@@ -31,7 +31,7 @@
 This manual documents the internal representation used by G++ to represent
 C++ source programs.
 
-Copyright (c) 1999 Free Software Foundation, Inc.
+Copyright (c) 1999, 2000 Free Software Foundation, Inc.
 @end ifinfo
 
 @c ---------------------------------------------------------------------
@@ -43,7 +43,7 @@ Copyright (c) 1999 Free Software Foundation, Inc.
 @author CodeSourcery, LLC <info@@codesourcery.com>
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1999 Free Software Foundation, Inc.
+Copyright @copyright{} 1999, 2000 Free Software Foundation, Inc.
 @end titlepage
 
 @c ---------------------------------------------------------------------
@@ -1654,6 +1654,9 @@ be another expression, or it may be a declaration.
 As an extension, G++ allows users to take the address of a label.  In
 this case, the operand of the @code{ADDR_EXPR} will be a
 @code{LABEL_DECL}.  The type of such an expression is @code{void*}.
+
+If the object addressed is not an lvalue, a temporary is created, and
+the address of the temporary is used.
 
 @item INDIRECT_REF 
 These nodes are used to represent the object pointed to by a pointer.
