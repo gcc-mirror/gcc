@@ -5,6 +5,9 @@
 /* Define if printf supports "%p".  */
 #undef HAVE_PRINTF_PTR
 
+/* Define if you want to always select the new-abi for g++.  */
+#undef ENABLE_NEW_GXX_ABI
+
 /* Define if you want more run-time sanity checks.  This one gets a grab
    bag of miscellaneous but relatively cheap checks.  */
 #undef ENABLE_CHECKING

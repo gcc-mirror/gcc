@@ -1,3 +1,7 @@
+2000-01-14  Nathan Sidwell  <sidwell@codesourcery.com>
+
+	* config.in: Rebuilt for 2000-01-13 change to acconfig.h.
+
 2000-01-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* pdp11-protos.h: New file.
