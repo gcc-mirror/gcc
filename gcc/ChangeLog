@@ -1,3 +1,7 @@
+Wed Sep 15 17:53:16 1999  Richard Henderson  <rth@cygnus.com>
+
+	* c-lex.c (yylex): Initialize warn.
+
 Wed Sep 15 18:35:38 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (emit_move_sequence): Properly set the mode of the scratch
