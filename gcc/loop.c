@@ -4418,46 +4418,16 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
  		}
 	    }
 
-	  /* Check each insn between the first and last use of the giv,
-	     and fail if any of them are branches that jump to a named label
-	     outside this range, but still inside the loop.  This catches
-	     cases of spaghetti code where the execution order of insns
-	     is not linear, and hence the above test fails.  For example,
-	     in the following code, j is not replaceable:
-	     for (i = 0; i < 100; )	 {
-	     L0:	j = 4*i; goto L1;
-	     L2:	k = j;	 goto L3;
-	     L1:	i++;	 goto L2;
-	     L3:	;	 }
-	     printf ("k = %d\n", k); }
-	     This test is conservative, but this test succeeds rarely enough
-	     that it isn't a problem.  See also check_final_value below.  */
-
+	  /* If there are any backwards branches that go from after the
+	     biv update to before it, then this giv is not replaceable.  */
 	  if (v->replaceable)
-	    for (p = insn;
-		 INSN_UID (p) >= max_uid_for_loop
-		 || INSN_LUID (p) < uid_luid[regno_last_uid[REGNO (dest_reg)]];
-		 p = NEXT_INSN (p))
-	      {
-		if (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p)
-		    && LABEL_NAME (JUMP_LABEL (p))
-		    && ((INSN_LUID (JUMP_LABEL (p)) > INSN_LUID (loop_start)
-			 && (INSN_LUID (JUMP_LABEL (p))
-			     < uid_luid[regno_first_uid[REGNO (dest_reg)]]))
-			|| (INSN_LUID (JUMP_LABEL (p)) < INSN_LUID (loop_end)
-			    && (INSN_LUID (JUMP_LABEL (p))
-				> uid_luid[regno_last_uid[REGNO (dest_reg)]]))))
-		  {
-		    v->replaceable = 0;
-		    v->not_replaceable = 1;
-
-		    if (loop_dump_stream)
-		      fprintf (loop_dump_stream,
-			       "Found branch outside giv lifetime.\n");
-
-		    break;
-		  }
-	      }
+	    for (b = bl->biv; b; b = b->next_iv)
+	      if (back_branch_in_range_p (b->insn, loop_start, loop_end))
+		{
+		  v->replaceable = 0;
+		  v->not_replaceable = 1;
+		  break;
+		}
 	}
       else
 	{
