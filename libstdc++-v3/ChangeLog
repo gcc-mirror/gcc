@@ -1,3 +1,7 @@
+2004-08-20  Matthias Klose  <doko@debian.org>
+
+	* config/abi/s390-linux-gnu/baseline_symbols.txt: New.
+
 2004-08-20  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/c_std/cmath.tcc (__cmath_power): Suppress assignment
