@@ -279,20 +279,26 @@ static rtx last_mem_set;
 static HARD_REG_SET elim_reg_set;
 
 /* Forward declarations */
-static void find_basic_blocks ();
-static void life_analysis ();
-static void mark_label_ref ();
-void allocate_for_life_analysis (); /* Used also in stupid_life_analysis */
-static void init_regset_vector ();
-static void propagate_block ();
-static void mark_set_regs ();
-static void mark_used_regs ();
-static int insn_dead_p ();
-static int libcall_dead_p ();
-static int try_pre_increment ();
-static int try_pre_increment_1 ();
-static rtx find_use_as_address ();
-void dump_flow_info ();
+static void find_basic_blocks		PROTO((rtx, rtx));
+static int uses_reg_or_mem		PROTO((rtx));
+static void mark_label_ref		PROTO((rtx, rtx, int));
+static void life_analysis		PROTO((rtx, int));
+void allocate_for_life_analysis		PROTO((void));
+static void init_regset_vector		PROTO((regset *, regset, int, int));
+static void propagate_block		PROTO((regset, rtx, rtx, int, 
+					       regset, int));
+static int insn_dead_p			PROTO((rtx, regset, int));
+static int libcall_dead_p		PROTO((rtx, regset, rtx, rtx));
+static void mark_set_regs		PROTO((regset, regset, rtx,
+					       rtx, regset));
+static void mark_set_1			PROTO((regset, regset, rtx,
+					       rtx, regset));
+static void find_auto_inc		PROTO((regset, rtx, rtx));
+static void mark_used_regs		PROTO((regset, regset, rtx, int, rtx));
+static int try_pre_increment_1		PROTO((rtx));
+static int try_pre_increment		PROTO((rtx, rtx, HOST_WIDE_INT));
+static rtx find_use_as_address		PROTO((rtx, rtx, HOST_WIDE_INT));
+void dump_flow_info			PROTO((FILE *));
 
 /* Find basic blocks of the current function and perform data flow analysis.
    F is the first insn of the function and NREGS the number of register numbers
@@ -403,6 +409,9 @@ find_basic_blocks (f, nonlocal_label_list)
   /* List of label_refs to all labels whose addresses are taken
      and used as data.  */
   rtx label_value_list = 0;
+  rtx x, note;
+  enum rtx_code prev_code, code;
+  int depth;
 
   block_live_static = block_live;
   bzero (block_live, n_basic_blocks);
@@ -412,105 +421,97 @@ find_basic_blocks (f, nonlocal_label_list)
   if (n_basic_blocks > 0)
     block_live[0] = 1;
 
-  /* Initialize the ref chain of each label to 0.  */
-  /* Record where all the blocks start and end and their depth in loops.  */
-  /* For each insn, record the block it is in.  */
-  /* Also mark as reachable any blocks headed by labels that
-     must not be deleted.  */
+  /* Initialize the ref chain of each label to 0.  Record where all the
+     blocks start and end and their depth in loops.  For each insn, record
+     the block it is in.   Also mark as reachable any blocks headed by labels
+     that must not be deleted.  */
 
-  {
-    register RTX_CODE prev_code = JUMP_INSN;
-    register RTX_CODE code;
-    int depth = 1;
+  for (insn = f, i = -1, prev_code = JUMP_INSN, depth = 1;
+       insn; insn = NEXT_INSN (insn))
+    {
+      code = GET_CODE (insn);
+      if (code == NOTE)
+	{
+	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
+	    depth++;
+	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
+	    depth--;
+	}
 
-    for (insn = f, i = -1; insn; insn = NEXT_INSN (insn))
-      {
-	code = GET_CODE (insn);
-	if (code == NOTE)
-	  {
-	    if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
-	      depth++;
-	    else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
-	      depth--;
-	  }
-	/* A basic block starts at label, or after something that can jump.  */
-	else if (code == CODE_LABEL
-		 || (GET_RTX_CLASS (code) == 'i'
-		     && (prev_code == JUMP_INSN
-			 || (prev_code == CALL_INSN
-			     && nonlocal_label_list != 0
-			     /* Ignore if CLOBBER since we consider this
-				part of the CALL.  See below.  */
-			     && ! (code == INSN
-				   && GET_CODE (PATTERN (insn)) == CLOBBER))
-			 || prev_code == BARRIER)))
-	  {
-	    basic_block_head[++i] = insn;
-	    basic_block_end[i] = insn;
-	    basic_block_loop_depth[i] = depth;
-	    if (code == CODE_LABEL)
-	      {
+      /* A basic block starts at label, or after something that can jump.  */
+      else if (code == CODE_LABEL
+	       || (GET_RTX_CLASS (code) == 'i'
+		   && (prev_code == JUMP_INSN
+		       || (prev_code == CALL_INSN
+			   && nonlocal_label_list != 0
+			   /* Ignore if CLOBBER since we consider this
+			      part of the CALL.  See below.  */
+			   && ! (code == INSN
+				 && GET_CODE (PATTERN (insn)) == CLOBBER))
+		       || prev_code == BARRIER)))
+	{
+	  basic_block_head[++i] = insn;
+	  basic_block_end[i] = insn;
+	  basic_block_loop_depth[i] = depth;
+
+	  if (code == CODE_LABEL)
+	    {
 		LABEL_REFS (insn) = insn;
 		/* Any label that cannot be deleted
 		   is considered to start a reachable block.  */
 		if (LABEL_PRESERVE_P (insn))
 		  block_live[i] = 1;
 	      }
-	  }
-	else if (GET_RTX_CLASS (code) == 'i')
-	  {
-	    basic_block_end[i] = insn;
-	    basic_block_loop_depth[i] = depth;
-	  }
+	}
 
-	/* Make a list of all labels referred to other than by jumps.  */
-	if (code == INSN || code == CALL_INSN)
-	  {
-	    rtx note = find_reg_note (insn, REG_LABEL, NULL_RTX);
-	    if (note != 0)
+      else if (GET_RTX_CLASS (code) == 'i')
+	{
+	  basic_block_end[i] = insn;
+	  basic_block_loop_depth[i] = depth;
+
+	  /* Make a list of all labels referred to other than by jumps.  */
+	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+	    if (REG_NOTE_KIND (note) == REG_LABEL)
 	      label_value_list = gen_rtx (EXPR_LIST, VOIDmode, XEXP (note, 0),
 					  label_value_list);
 	  }
 
-	BLOCK_NUM (insn) = i;
+      BLOCK_NUM (insn) = i;
 
-	/* Don't separate a CALL_INSN from following CLOBBER insns.  This is
-	   a kludge that will go away when each CALL_INSN records its
-	   USE and CLOBBERs.  */
+      /* Don't separate a CALL_INSN from following CLOBBER insns.  This is a
+	 kludge that will go away when each CALL_INSN records its USE and
+	 CLOBBERs.  */
 
-	if (code != NOTE
-	    && ! (prev_code == CALL_INSN && code == INSN
-		  && GET_CODE (PATTERN (insn)) == CLOBBER))
-	  prev_code = code;
-      }
-    if (i + 1 != n_basic_blocks)
-      abort ();
-  }
+      if (code != NOTE
+	  && ! (prev_code == CALL_INSN && code == INSN
+		&& GET_CODE (PATTERN (insn)) == CLOBBER))
+	prev_code = code;
+    }
+
+  if (i + 1 != n_basic_blocks)
+    abort ();
 
   /* Don't delete the labels (in this function)
      that are referenced by non-jump instructions.  */
-  {
-    register rtx x;
-    for (x = label_value_list; x; x = XEXP (x, 1))
-      if (! LABEL_REF_NONLOCAL_P (x))
-	block_live[BLOCK_NUM (XEXP (x, 0))] = 1;
-  }
+
+  for (x = label_value_list; x; x = XEXP (x, 1))
+    if (! LABEL_REF_NONLOCAL_P (x))
+      block_live[BLOCK_NUM (XEXP (x, 0))] = 1;
+
+  for (x = forced_labels; x; x = XEXP (x, 1))
+    if (! LABEL_REF_NONLOCAL_P (x))
+      block_live[BLOCK_NUM (XEXP (x, 0))] = 1;
 
   /* Record which basic blocks control can drop in to.  */
 
-  {
-    register int i;
-    for (i = 0; i < n_basic_blocks; i++)
-      {
-	register rtx insn = PREV_INSN (basic_block_head[i]);
-	/* TEMP1 is used to avoid a bug in Sequent's compiler.  */
-	register int temp1;
-	while (insn && GET_CODE (insn) == NOTE)
-	  insn = PREV_INSN (insn);
-	temp1 = insn && GET_CODE (insn) != BARRIER;
-	basic_block_drops_in[i] = temp1;
-      }
-  }
+  for (i = 0; i < n_basic_blocks; i++)
+    {
+      for (insn = PREV_INSN (basic_block_head[i]);
+	   insn && GET_CODE (insn) == NOTE; insn = PREV_INSN (insn))
+	;
+
+      basic_block_drops_in[i] = insn && GET_CODE (insn) != BARRIER;
+    }
 
   /* Now find which basic blocks can actually be reached
      and put all jump insns' LABEL_REFS onto the ref-chains
@@ -520,25 +521,53 @@ find_basic_blocks (f, nonlocal_label_list)
     {
       int something_marked = 1;
 
-      /* Find all indirect jump insns and mark them as possibly jumping
-	 to all the labels whose addresses are explicitly used.
-	 This is because, when there are computed gotos,
-	 we can't tell which labels they jump to, of all the possibilities.  */
+      /* Find all indirect jump insns and mark them as possibly jumping to all
+	 the labels whose addresses are explicitly used.  This is because,
+	 when there are computed gotos, we can't tell which labels they jump
+	 to, of all the possibilities.
+
+	 Tablejumps and casesi insns are OK and we can recognize them by
+	 a (use (label_ref)).  */
 
       for (insn = f; insn; insn = NEXT_INSN (insn))
-	if (GET_CODE (insn) == JUMP_INSN
-	    && GET_CODE (PATTERN (insn)) == SET
-	    && SET_DEST (PATTERN (insn)) == pc_rtx
-	    && (GET_CODE (SET_SRC (PATTERN (insn))) == REG
-		|| GET_CODE (SET_SRC (PATTERN (insn))) == MEM))
+	if (GET_CODE (insn) == JUMP_INSN)
 	  {
-	    rtx x;
-	    for (x = label_value_list; x; x = XEXP (x, 1))
-	      mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
+	    rtx pat = PATTERN (insn);
+	    int computed_jump = 0;
+
+	    if (GET_CODE (pat) == PARALLEL)
+	      {
+		int len = XVECLEN (pat, 0);
+		int has_use_labelref = 0;
+
+		for (i = len - 1; i >= 0; i--)
+		  if (GET_CODE (XVECEXP (pat, 0, i)) == USE
+		      && (GET_CODE (XEXP (XVECEXP (pat, 0, i), 0))
+			  == LABEL_REF))
+		    has_use_labelref = 1;
+
+		if (! has_use_labelref)
+		  for (i = len - 1; i >= 0; i--)
+		    if (GET_CODE (XVECEXP (pat, 0, i)) == SET
+			&& SET_DEST (XVECEXP (pat, 0, i)) == pc_rtx
+			&& uses_reg_or_mem (SET_SRC (XVECEXP (pat, 0, i))))
+		      computed_jump = 1;
+	      }
+	    else if (GET_CODE (pat) == SET
+		     && SET_DEST (pat) == pc_rtx
+		     && uses_reg_or_mem (SET_SRC (pat)))
+	      computed_jump = 1;
+		    
+	    if (computed_jump)
+	      {
+		for (x = label_value_list; x; x = XEXP (x, 1))
+		  mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
+				  insn, 0);
+
+		for (x = forced_labels; x; x = XEXP (x, 1))
+		  mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
 			      insn, 0);
-	    for (x = forced_labels; x; x = XEXP (x, 1))
-	      mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
-			      insn, 0);
+	      }
 	  }
 
       /* Find all call insns and mark them as possibly jumping
@@ -547,13 +576,13 @@ find_basic_blocks (f, nonlocal_label_list)
       for (insn = f; insn; insn = NEXT_INSN (insn))
 	if (GET_CODE (insn) == CALL_INSN)
 	  {
-	    rtx x;
 	    for (x = nonlocal_label_list; x; x = XEXP (x, 1))
 	      /* Don't try marking labels that
 		 were deleted as unreferenced.  */
 	      if (GET_CODE (XEXP (x, 0)) == CODE_LABEL)
 		mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
 				insn, 0);
+
 	    /* ??? This could be made smarter:
 	       in some cases it's possible to tell that certain
 	       calls will not do a nonlocal goto.
@@ -652,6 +681,38 @@ find_basic_blocks (f, nonlocal_label_list)
 	      }
 	  }
     }
+}
+
+/* Return 1 if X contain a REG or MEM that is not in the constant pool.  */
+
+static int
+uses_reg_or_mem (x)
+     rtx x;
+{
+  enum rtx_code code = GET_CODE (x);
+  int i, j;
+  char *fmt;
+
+  if (code == REG
+      || (code == MEM
+	  && ! (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
+		&& CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))))
+    return 1;
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e'
+	  && uses_reg_or_mem (XEXP (x, i)))
+	return 1;
+
+      if (fmt[i] == 'E')
+	for (j = 0; j < XVECLEN (x, i); j++)
+	  if (uses_reg_or_mem (XVECEXP (x, i, j)))
+	    return 1;
+    }
+
+  return 0;
 }
 
 /* Check expression X for label references;
@@ -1169,7 +1230,7 @@ init_regset_vector (vector, space, nelts, bytes_per_elt)
       p += bytes_per_elt / sizeof (*p);
     }
 }
-
+
 /* Compute the registers live at the beginning of a basic block
    from those live at the end.
 
@@ -1727,8 +1788,6 @@ regno_clobbered_at_setjmp (regno)
    in propagate_block.  In this case, various info about register
    usage is stored, LOG_LINKS fields of insns are set up.  */
 
-static void mark_set_1 ();
-
 static void
 mark_set_regs (needed, dead, x, insn, significant)
      regset needed;
@@ -1968,7 +2027,7 @@ find_auto_inc (needed, x, insn)
      rtx insn;
 {
   rtx addr = XEXP (x, 0);
-  int offset = 0;
+  HOST_WIDE_INT offset = 0;
   rtx set;
 
   /* Here we detect use of an index register which might be good for
@@ -2144,8 +2203,8 @@ mark_used_regs (needed, live, x, final, insn)
      regset needed;
      regset live;
      rtx x;
-     rtx insn;
      int final;
+     rtx insn;
 {
   register RTX_CODE code;
   register int regno;
@@ -2577,7 +2636,7 @@ static rtx
 find_use_as_address (x, reg, plusconst)
      register rtx x;
      rtx reg;
-     int plusconst;
+     HOST_WIDE_INT plusconst;
 {
   enum rtx_code code = GET_CODE (x);
   char *fmt = GET_RTX_FORMAT (code);
