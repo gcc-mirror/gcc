@@ -282,7 +282,7 @@ create_artificial_label (void)
   return lab;
 }
 
-/* Create a new temporary name with PREFIX.  Returns an indentifier.  */
+/* Create a new temporary name with PREFIX.  Returns an identifier.  */
 
 static GTY(()) unsigned int tmp_var_id_num;
 
@@ -797,7 +797,7 @@ voidify_wrapper_expr (tree wrapper)
 }
 
 /* Prepare calls to builtins to SAVE and RESTORE the stack as well as
-   temporary through that they comunicate.  */
+   a temporary through which they communicate.  */
 
 static void
 build_stack_save_restore (tree *save, tree *restore)
@@ -1310,7 +1310,7 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	/* ??? This bit ought not be needed.  For any element not present
 	   in the initializer, we should simply set them to zero.  Except
 	   we'd need to *find* the elements that are not present, and that
-	   requires trickery to avoid quadratic compile-time behaviour in
+	   requires trickery to avoid quadratic compile-time behavior in
 	   large cases or excessive memory use in small cases.  */
 	else
 	  {
@@ -2600,7 +2600,7 @@ gimplify_compound_expr (tree *expr_p, tree *pre_p, bool want_value)
 }
 
 /* Gimplifies a statement list.  These may be created either by an
-   enlightend front-end, or by shortcut_cond_expr.  */
+   enlightened front-end, or by shortcut_cond_expr.  */
 
 static enum gimplify_status
 gimplify_statement_list (tree *expr_p)

@@ -1187,7 +1187,7 @@ remove_unreachable_regions (rtx insns)
 
 	    case ERT_MUST_NOT_THROW:
 	      /* MUST_NOT_THROW regions are implementable solely in the
-		 runtime, but their existance continues to affect calls
+		 runtime, but their existence continues to affect calls
 		 within that region.  Never delete them here.  */
 	      kill_it = false;
 	      break;

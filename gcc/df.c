@@ -55,7 +55,7 @@ Here's an example of using the dataflow routines.
 
 df_init simply creates a poor man's object (df) that needs to be
 passed to all the dataflow routines.  df_finish destroys this
-object and frees up any allocated memory.   DF_ALL says to analyse
+object and frees up any allocated memory.   DF_ALL says to analyze
 everything.
 
 df_analyze performs the following:

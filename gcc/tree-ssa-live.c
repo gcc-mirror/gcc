@@ -838,7 +838,7 @@ tpa_delete (tpa_p tpa)
 }
 
 
-/* This function will remove any tree entires from TPA which have only a single
+/* This function will remove any tree entries from TPA which have only a single
    element.  This will help keep the size of the conflict graph down.  The 
    function returns the number of remaining tree lists.  */
 
@@ -1419,7 +1419,7 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
       /* Anything which is still live at this point interferes.  
 	 In order to implement this efficiently, only conflicts between
 	 partitions which have the same TPA root need be added.
-	 TPA roots which have been seen are tracked in 'tpa_nodes'.  A non-zero
+	 TPA roots which have been seen are tracked in 'tpa_nodes'.  A nonzero
 	 entry points to an index into 'partition_link', which then indexes 
 	 into itself forming a linked list of partitions sharing a tpa root 
 	 which have been seen as live up to this point.  Since partitions start

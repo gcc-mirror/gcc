@@ -51,10 +51,10 @@ struct ddg_node
   /* The insn represented by the node.  */
   rtx insn;
 
-  /* A note preceeding INSN (or INSN itself), such that all insns linked
+  /* A note preceding INSN (or INSN itself), such that all insns linked
      from FIRST_NOTE until INSN (inclusive of both) are moved together
      when reordering the insns.  This takes care of notes that should
-     continue to preceed INSN.  */
+     continue to precede INSN.  */
   rtx first_note;
 
   /* Incoming and outgoing dependency edges.  */

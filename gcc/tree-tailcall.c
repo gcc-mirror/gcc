@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks.h"
 
 /* The file implements the tail recursion elimination.  It is also used to
-   analyse the tail calls in general, passing the results to the rtl level
+   analyze the tail calls in general, passing the results to the rtl level
    where they are used for sibcall optimization.
 
    In addition to the standard tail recursion elimination, we handle the most
@@ -80,7 +80,7 @@ Boston, MA 02111-1307, USA.  */
       We rewrite this to a gimple equivalent of return m_acc * x + a_acc.
       
    2) return f (...), where f is the current function, is rewritten in a
-      clasical tail-recursion elimination way, into assignment of arguments
+      classical tail-recursion elimination way, into assignment of arguments
       and jump to the start of the function.  Values of the accumulators
       are unchanged.
 	       
@@ -574,7 +574,7 @@ adjust_accumulator_values (block_stmt_iterator bsi, tree m, tree a, edge back)
     }
 }
 
-/* Adjust value of the return at the end of BB accodring to M and A
+/* Adjust value of the return at the end of BB according to M and A
    accumulators.  */
 
 static void

@@ -1596,7 +1596,7 @@ process_delayed_rename (struct expr_info *ei, tree use, tree real_occ)
 /* For the uninitiated, the algorithm is a modified SSA renaming
    algorithm (working on expressions rather than variables) .  We
    attempt to determine which expression occurrences have the same
-   ESSA version (we call it class, for equivalence/redunancy class,
+   ESSA version (we call it class, for equivalence/redundancy class,
    which is what the papers call it.  Open64 calls it e-version), and
    which occurrences are actually operands for an EPHI (since this has
    to be discovered from the program). 
@@ -2149,7 +2149,7 @@ insert_one_operand (struct expr_info *ei, tree ephi, int opnd_indx,
 
 /* First step of finalization.  Determine which expressions are being
    saved and which are being deleted.
-   This is done as a simple dominator based availabilty calculation,
+   This is done as a simple dominator based availability calculation,
    using the e-versions/redundancy classes.  */
 
 static bool

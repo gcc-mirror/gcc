@@ -3313,7 +3313,7 @@ expand_call (tree exp, rtx target, int ignore)
 	break;
     }
 
-  /* If tail call production suceeded, we need to remove REG_EQUIV notes on
+  /* If tail call production succeeded, we need to remove REG_EQUIV notes on
      arguments too, as argument area is now clobbered by the call.  */
   if (tail_call_insns)
     {

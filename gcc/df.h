@@ -229,7 +229,7 @@ struct df_map
 #define DF_INSN_USES(DF, INSN) ((DF)->insns[INSN_UID (INSN)].uses)
 
 
-/* Functions to build and analyse dataflow information.  */
+/* Functions to build and analyze dataflow information.  */
 
 extern struct df *df_init (void);
 

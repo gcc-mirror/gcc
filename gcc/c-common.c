@@ -4215,7 +4215,7 @@ finish_label_address_expr (tree label)
 
 /* Hook used by expand_expr to expand language-specific tree codes.  */
 /* The only things that should go here are bits needed to expand 
-   constant initalizers.  Everything else should be handled by the
+   constant initializers.  Everything else should be handled by the
    gimplification routines.  */
 
 rtx

@@ -80,7 +80,7 @@ mark_mem_use_1 (rtx *x, void *data)
   for_each_rtx (x, mark_mem_use, data);
 }
 
-/* Returns non-zero if INSN reads from memory.  */
+/* Returns nonzero if INSN reads from memory.  */
 static bool
 mem_read_insn_p (rtx insn)
 {
@@ -96,7 +96,7 @@ mark_mem_store (rtx loc, rtx setter ATTRIBUTE_UNUSED, void *data ATTRIBUTE_UNUSE
     mem_ref_p = true;
 }
 
-/* Returns non-zero if INSN writes to memory.  */
+/* Returns nonzero if INSN writes to memory.  */
 static bool
 mem_write_insn_p (rtx insn)
 {
@@ -105,7 +105,7 @@ mem_write_insn_p (rtx insn)
   return mem_ref_p;
 }
 
-/* Returns non-zero if X has access to memory.  */
+/* Returns nonzero if X has access to memory.  */
 static bool
 rtx_mem_access_p (rtx x)
 {
@@ -138,7 +138,7 @@ rtx_mem_access_p (rtx x)
   return false;
 }
 
-/* Returns non-zero if INSN reads to or writes from memory.  */
+/* Returns nonzero if INSN reads to or writes from memory.  */
 static bool
 mem_access_insn_p (rtx insn)
 {
@@ -383,7 +383,7 @@ build_intra_loop_deps (ddg_ptr g)
   get_block_head_tail (g->bb->index, &head, &tail);
   sched_analyze (&tmp_deps, head, tail);
 
-  /* Build intra-loop data dependecies using the schedular dependecy
+  /* Build intra-loop data dependecies using the scheduler dependecy
      analysis.  */
   for (i = 0; i < g->num_nodes; i++)
     {
@@ -980,7 +980,7 @@ find_nodes_on_paths (sbitmap result, ddg_ptr g, sbitmap from, sbitmap to)
 /* Updates the counts of U_NODE's successors (that belong to NODES) to be
    at-least as large as the count of U_NODE plus the latency between them.
    Sets a bit in TMP for each successor whose count was changed (increased).
-   Returns non-zero if any count was changed.  */
+   Returns nonzero if any count was changed.  */
 static int
 update_dist_to_successors (ddg_node_ptr u_node, sbitmap nodes, sbitmap tmp)
 {
