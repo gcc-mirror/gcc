@@ -1,3 +1,21 @@
+2000-05-18  Neil Booth  <NeilB@earthling.net>
+
+	* cppinit.c (cpp_reader_init): Initialise col_adjust and
+	default tab stop size.
+	(no_num, OPT_ftabstop): New.
+	(handle_option): Handle "ftabstop=" command-line option.
+	(print_help): Document it.
+	* cpplex.c (COLUMN): Remove.
+	(handle_newline): Reset col_adjust.
+	(skip_whitespace): Update col_adjust as tabs encountered.
+	(_cpp_lex_line): Update to use col_adjust.  Call
+	skip_whitespace for all whitespace.
+	* cpplib.h (struct cpp_options): New member tabstop.
+	(struct cpp_reader): New member col_adjust.
+	(CPP_BUF_COL): Update.
+	(CPP_BUF_COLUMN): New.
+	* cpp.texi: Document "-ftabstop=" command line option.
+
 Wed May 17 18:19:41 2000  Philippe De Muyter  <phdm@macqel.be>
 
 	* configure.in (NO_MINUS_C_MINUS_O): Macro made availabe for AC_OUTPUT

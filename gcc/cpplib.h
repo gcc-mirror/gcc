@@ -302,6 +302,9 @@ struct cpp_options
   const char *in_fname;
   const char *out_fname;
 
+  /* Characters between tab stops.  */
+  unsigned int tabstop;
+
   /* Pending options - -D, -U, -A, -I, -ixxx. */
   struct cpp_pending *pending;
 
@@ -510,6 +513,9 @@ struct cpp_reader
   struct if_stack *if_stack;
   const unsigned char *potential_control_macro;
 
+  /* Token column position adjustment owing to tabs in whitespace.  */
+  unsigned int col_adjust;
+
   /* Buffer of -M output.  */
   struct deps *deps;
 
@@ -586,7 +592,8 @@ struct cpp_printer
 #define CPP_OPTION(PFILE, OPTION) ((PFILE)->opts.OPTION)
 #define CPP_BUFFER(PFILE) ((PFILE)->buffer)
 #define CPP_BUF_LINE(BUF) ((BUF)->lineno)
-#define CPP_BUF_COL(BUF) ((BUF)->cur - (BUF)->line_base)
+#define CPP_BUF_COLUMN(BUF, CUR) ((CUR) - (BUF)->line_base + pfile->col_adjust)
+#define CPP_BUF_COL(BUF) CPP_BUF_COLUMN(BUF, (BUF)->cur)
 
 /* Name under which this program was invoked.  */
 extern const char *progname;

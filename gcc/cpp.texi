@@ -3155,6 +3155,13 @@ Because of the clash with @samp{-l}, you must use the awkward syntax
 above.  In a future release, this option will be replaced by
 @samp{-flint} or @samp{-Wlint}; we are not sure which yet.
 
+@item -ftabstop=NUMBER
+@findex -ftabstop
+Indicates the distance between tabstops.  This helps the preprocessor
+report correct column numbers in warnings or errors, even if tabs appear
+on the line.  Values less than 1 or greater than 100 are ignored.  The
+default is 8.
+
 @item -$
 @findex -$
 Forbid the use of @samp{$} in identifiers.  The C standard does not

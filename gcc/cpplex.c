@@ -96,7 +96,6 @@ typedef unsigned int (* speller) PARAMS ((unsigned char *, cpp_toklist *,
       (name).text = (list)->namebuf + (list)->name_used;} while (0)
 
 #define IS_DIRECTIVE(list) (TOK_TYPE (list, 0) == CPP_HASH)
-#define COLUMN(cur) ((cur) - buffer->line_base)
 
 /* Maybe put these in the ISTABLE eventually.  */
 #define IS_HSPACE(c) ((c) == ' ' || (c) == '\t')
@@ -109,6 +108,7 @@ typedef unsigned int (* speller) PARAMS ((unsigned char *, cpp_toklist *,
   if ((cur) < (limit) && *(cur) == '\r' + '\n' - c) \
     (cur)++; \
   CPP_BUMP_LINE_CUR (pfile, (cur)); \
+  pfile->col_adjust = 0; \
   } while (0)
 
 #define IMMED_TOKEN() (!(cur_token->flags & PREV_WHITESPACE))
@@ -2506,7 +2506,9 @@ skip_line_comment2 (pfile)
   return multiline;
 }
 
-/* Skips whitespace, stopping at next non-whitespace character.  */
+/* Skips whitespace, stopping at next non-whitespace character.
+   Adjusts pfile->col_adjust to account for tabs.  This enables tokens
+   to be assigned the correct column.  */
 static void
 skip_whitespace (pfile, in_directive)
      cpp_reader *pfile;
@@ -2520,6 +2522,12 @@ skip_whitespace (pfile, in_directive)
     {
       unsigned char c = *cur++;
 
+      if (c == '\t')
+	{
+	  unsigned int col = CPP_BUF_COLUMN (buffer, cur - 1);
+	  pfile->col_adjust += (CPP_OPTION (pfile, tabstop) - 1
+				- col % CPP_OPTION(pfile, tabstop));
+	}
       if (IS_HSPACE(c))		/* FIXME: Fix ISTABLE.  */
 	continue;
       if (!is_space(c) || IS_NEWLINE (c)) /* Main loop handles newlines.  */
@@ -2847,6 +2855,7 @@ _cpp_lex_line (pfile, list)
   register const unsigned char *cur = buffer->cur;
   unsigned char flags = 0;
 
+  pfile->col_adjust = 0;
  expanded:
   token_limit = list->tokens + list->tokens_cap;
   cur_token = list->tokens + list->tokens_used;
@@ -2855,17 +2864,16 @@ _cpp_lex_line (pfile, list)
     {
       unsigned char c = *cur++;
 
-      /* Optimize whitespace skipping, in particular the case of a
-	 single whitespace character, as every other token is probably
-	 whitespace. (' ' '\t' '\v' '\f' '\0').  */
+      /* Optimize whitespace skipping, as most tokens are probably
+	 separated by whitespace. (' ' '\t' '\v' '\f' '\0').  */
+
       if (is_hspace ((unsigned int) c))
 	{
-	  if (c == '\0' || (cur < buffer->rlimit && is_hspace (*cur)))
-	    {
-	      buffer->cur = cur - (c == '\0');	/* Get the null warning.  */
-	      skip_whitespace (pfile, IS_DIRECTIVE (list));
-	      cur = buffer->cur;
-	    }
+	  /* Step back to get the null warning and tab correction.  */
+	  buffer->cur = cur - 1;
+	  skip_whitespace (pfile, IS_DIRECTIVE (list));
+	  cur = buffer->cur;
+
 	  flags = PREV_WHITESPACE;
 	  if (cur == buffer->rlimit)
 	    break;
@@ -2873,7 +2881,7 @@ _cpp_lex_line (pfile, list)
 	}
 
       /* Initialize current token.  Its type is set in the switch.  */
-      cur_token->col = COLUMN (cur);
+      cur_token->col = CPP_BUF_COLUMN (buffer, cur);
       cur_token->flags = flags;
       flags = 0;
 
@@ -2947,7 +2955,7 @@ _cpp_lex_line (pfile, list)
 	    }
 
 	do_parse_string:
-	  /* Here c is one of ' " > or ).  */
+	  /* Here c is one of ' " or >.  */
 	  INIT_NAME (list, cur_token->val.name);
 	  buffer->cur = cur;
 	  parse_string2 (pfile, list, &cur_token->val.name, c);
