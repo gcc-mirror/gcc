@@ -2027,7 +2027,7 @@ output_function_profiler (file, labelno)
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
 
 int
-ppc_adjust_cost (insn, link, dep_insn, cost)
+rs6000_adjust_cost (insn, link, dep_insn, cost)
      rtx insn;
      rtx link;
      rtx dep_insn;
