@@ -26,6 +26,11 @@ __CTOR_END__:
 __DTOR_END__:
 	data8	0
 
+.section .jcr,"aw","progbits"
+	.align 8
+__JCR_END__:
+	data8	0
+
 /*
  * Fragment of the ELF _init routine that invokes our dtor cleanup.
  *
@@ -63,15 +68,18 @@ __do_global_ctors_aux:
 		for (loc0 = __CTOR_END__-1; *p != -1; --p)
 		  (*p) ();
 	*/
-	{ .mii
+	{ .mlx
 	  alloc loc4 = ar.pfs, 0, 5, 0, 0
-	  addl loc0 = @ltoff(__CTOR_END__# - 8), gp
-	  mov loc1 = b0
+	  movl loc0 = @gprel(__CTOR_END__# - 8)
 	  ;;
 	}
 	{ .mmi
-	  ld8 loc0 = [loc0]
+	  add loc0 = loc0, gp
+	  mov loc1 = b0
 	  ;;
+	}
+	{
+	  .mmi
 	  ld8 loc3 = [loc0], -8
 	  mov loc2 = gp
 	  ;;
