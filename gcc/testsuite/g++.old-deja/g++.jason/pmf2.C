@@ -9,5 +9,5 @@ struct A {
 void g (void (A::*)());
 
 void h () {
-  g (A::f);			// ERROR - failed conversion to method pointer XFAIL *-*-*
+  g (A::f);			// ERROR - failed conversion to method pointer
 }
