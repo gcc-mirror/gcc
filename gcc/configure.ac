@@ -289,15 +289,15 @@ AC_C_INLINE
 gcc_AC_C_LONG_LONG
 
 # sizeof(char) is 1 by definition.
-AC_COMPILE_CHECK_SIZEOF(void *)
-AC_COMPILE_CHECK_SIZEOF(short)
-AC_COMPILE_CHECK_SIZEOF(int)
-AC_COMPILE_CHECK_SIZEOF(long)
+AC_CHECK_SIZEOF(void *)
+AC_CHECK_SIZEOF(short)
+AC_CHECK_SIZEOF(int)
+AC_CHECK_SIZEOF(long)
 if test $ac_cv_c_long_long = yes; then
-  AC_COMPILE_CHECK_SIZEOF(long long)
+  AC_CHECK_SIZEOF(long long)
 fi
 if test $ac_cv_c___int64 = yes; then
-  AC_COMPILE_CHECK_SIZEOF(__int64)
+  AC_CHECK_SIZEOF(__int64)
 fi
 
 # ---------------------

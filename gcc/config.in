@@ -543,22 +543,22 @@
 /* Define to PREFIX/include if cpp should also search that directory. */
 #undef PREFIX_INCLUDE_DIR
 
-/* The number of bytes in type int */
+/* The size of a `int', as computed by sizeof. */
 #undef SIZEOF_INT
 
-/* The number of bytes in type long */
+/* The size of a `long', as computed by sizeof. */
 #undef SIZEOF_LONG
 
-/* The number of bytes in type long long */
+/* The size of a `long long', as computed by sizeof. */
 #undef SIZEOF_LONG_LONG
 
-/* The number of bytes in type short */
+/* The size of a `short', as computed by sizeof. */
 #undef SIZEOF_SHORT
 
-/* The number of bytes in type void * */
+/* The size of a `void *', as computed by sizeof. */
 #undef SIZEOF_VOID_P
 
-/* The number of bytes in type __int64 */
+/* The size of a `__int64', as computed by sizeof. */
 #undef SIZEOF___INT64
 
 /* Define to 1 if you have the ANSI C header files. */
