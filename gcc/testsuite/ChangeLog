@@ -1,3 +1,7 @@
+Tue Sep 12 18:32:07 2000  J"orn Rennecke <amylaar@redhat.co.uk>
+
+	* gcc.c-torture/compile/981006-1.x: No -fpic for sh-coff / sh-hms.
+
 2000-09-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/wtr-union-init-2.c, gcc.dg/wtr-union-init-3.c: New tests.
