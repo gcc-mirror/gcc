@@ -114,6 +114,7 @@ static bool reorder_operands_p (tree, tree);
 static bool tree_swap_operands_p (tree, tree, bool);
 
 static tree fold_negate_const (tree, tree);
+static tree fold_abs_const (tree, tree);
 
 /* The following constants represent a bit based encoding of GCC's
    comparison operators.  This encoding simplifies transformations
@@ -5820,42 +5821,9 @@ fold (tree expr)
       return t;
 
     case ABS_EXPR:
-      if (wins)
-	{
-	  if (TREE_CODE (arg0) == INTEGER_CST)
-	    {
-	      /* If the value is unsigned, then the absolute value is
-		 the same as the ordinary value.  */
-	      if (TREE_UNSIGNED (type))
-		return arg0;
-	      /* Similarly, if the value is non-negative.  */
-	      else if (INT_CST_LT (integer_minus_one_node, arg0))
-		return arg0;
-	      /* If the value is negative, then the absolute value is
-		 its negation.  */
-	      else
-		{
-		  unsigned HOST_WIDE_INT low;
-		  HOST_WIDE_INT high;
-		  int overflow = neg_double (TREE_INT_CST_LOW (arg0),
-					     TREE_INT_CST_HIGH (arg0),
-					     &low, &high);
-		  t = build_int_2 (low, high);
-		  TREE_TYPE (t) = type;
-		  TREE_OVERFLOW (t)
-		    = (TREE_OVERFLOW (arg0)
-		       | force_fit_type (t, overflow));
-		  TREE_CONSTANT_OVERFLOW (t)
-		    = TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg0);
-		}
-	    }
-	  else if (TREE_CODE (arg0) == REAL_CST)
-	    {
-	      if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (arg0)))
-		t = build_real (type,
-				REAL_VALUE_NEGATE (TREE_REAL_CST (arg0)));
-	    }
-	}
+      if (wins
+	  && (TREE_CODE (arg0) == INTEGER_CST || TREE_CODE (arg0) == REAL_CST))
+	return fold_abs_const (arg0, type);
       else if (TREE_CODE (arg0) == NEGATE_EXPR)
 	return fold (build1 (ABS_EXPR, type, TREE_OPERAND (arg0, 0)));
       /* Convert fabs((double)float) into (double)fabsf(float).  */
@@ -9065,6 +9033,59 @@ fold_negate_const (tree arg0, tree type)
     }
   else if (TREE_CODE (arg0) == REAL_CST)
     t = build_real (type, REAL_VALUE_NEGATE (TREE_REAL_CST (arg0)));
+#ifdef ENABLE_CHECKING
+  else
+    abort ();
+#endif
+    
+  return t;
+}
+
+/* Return the tree for abs (ARG0) when ARG0 is known to be either
+   an integer constant or real constant.
+
+   TYPE is the type of the result.  */
+
+static tree
+fold_abs_const (tree arg0, tree type)
+{
+  tree t = NULL_TREE;
+
+  if (TREE_CODE (arg0) == INTEGER_CST)
+    {
+      /* If the value is unsigned, then the absolute value is
+	 the same as the ordinary value.  */
+      if (TREE_UNSIGNED (type))
+	return arg0;
+      /* Similarly, if the value is non-negative.  */
+      else if (INT_CST_LT (integer_minus_one_node, arg0))
+	return arg0;
+      /* If the value is negative, then the absolute value is
+	 its negation.  */
+      else
+	{
+	  unsigned HOST_WIDE_INT low;
+	  HOST_WIDE_INT high;
+	  int overflow = neg_double (TREE_INT_CST_LOW (arg0),
+				     TREE_INT_CST_HIGH (arg0),
+				     &low, &high);
+	  t = build_int_2 (low, high);
+	  TREE_TYPE (t) = type;
+	  TREE_OVERFLOW (t)
+	    = (TREE_OVERFLOW (arg0)
+	       | force_fit_type (t, overflow));
+	  TREE_CONSTANT_OVERFLOW (t)
+	    = TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg0);
+	  return t;
+	}
+    }
+  else if (TREE_CODE (arg0) == REAL_CST)
+    {
+      if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (arg0)))
+	return build_real (type, REAL_VALUE_NEGATE (TREE_REAL_CST (arg0)));
+      else
+	return arg0;
+    }
 #ifdef ENABLE_CHECKING
   else
     abort ();

@@ -1,3 +1,9 @@
+2004-03-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* fold-const.c (fold) <ABS_EXPR>: Move the handling of constants
+	...
+	(fold_abs_const): ... here.
+
 2004-03-19  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.h (TYPE_ARRAY_MAX_SIZE): Use type.maxval directly.
