@@ -2337,10 +2337,10 @@ truth_value_p (enum tree_code code)
    executed between the evaluation of its "operands" (which may often
    be evaluated in arbitrary order).  Hence if the operands themselves
    don't side-effect, the VAR_DECLs, PARM_DECLs etc... must hold the
-   same value in each operand/subexpression.  Hence a zero value for
-   ONLY_CONST assumes isochronic (or instantaneous) tree equivalence.
-   If comparing arbitrary expression trees, such as from different
-   statements, ONLY_CONST must usually be nonzero.
+   same value in each operand/subexpression.  Hence leaving OEP_ONLY_CONST
+   unset means assuming isochronic (or instantaneous) tree equivalence.
+   Unless comparing arbitrary expression trees, such as from different
+   statements, this flag can usually be left unset.
 
    If OEP_PURE_SAME is set, then pure functions with identical arguments
    are considered the same.  It is used when the caller has other ways
