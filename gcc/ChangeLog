@@ -1,3 +1,15 @@
+2001-06-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* print-rtl.c (xspaces): Remove.
+	(print_rtx): Use printf field-width, rather than xpsaces, to
+	indent.
+	* toplev.c (main): Disable sibling-call optimization if we are
+	handling exceptions.
+	
+2001-06-05  Bernd Schmidt  <bernds@redhat.com>
+
+	* reload1.c (reload): Delete all USEs generated during reload.
+
 Tue Jun  5 21:08:39 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config.gcc (i?86-*-solaris2*): Enable shared libgcc.
