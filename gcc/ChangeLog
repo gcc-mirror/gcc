@@ -1,3 +1,8 @@
+2001-05-06  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-typeck.c (internal_build_compound_expr): Check for
+	array to pointer conversion just once.
+
 2001-05-05  Richard Henderson  <rth@redhat.com>
 
 	* integrate.c (copy_insn_list): Substitute NOTE_EXPECTED_VALUE.
