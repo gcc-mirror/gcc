@@ -9099,7 +9099,8 @@ void
 clear_pending_stack_adjust ()
 {
 #ifdef EXIT_IGNORE_STACK
-  if (! flag_omit_frame_pointer && EXIT_IGNORE_STACK
+  if (optimize > 0
+      && ! flag_omit_frame_pointer && EXIT_IGNORE_STACK
       && ! (DECL_INLINE (current_function_decl) && ! flag_no_inline)
       && ! flag_inline_functions)
     pending_stack_adjust = 0;
