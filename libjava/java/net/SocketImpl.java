@@ -287,7 +287,10 @@ public abstract class SocketImpl implements SocketOptions
    *
    * @exception IOException if an error occurs
    */
-  protected abstract void shutdownInput () throws IOException;
+  protected void shutdownInput () throws IOException
+  {
+    throw new IOException ("Not implemented in this socket class");
+  }
 
   /**
    * Shut down the output side of this socket.  Subsequent writes will
@@ -295,5 +298,8 @@ public abstract class SocketImpl implements SocketOptions
    *
    * @exception IOException if an error occurs
    */
-  protected abstract void shutdownOutput () throws IOException;
+  protected void shutdownOutput () throws IOException
+  {
+    throw new IOException ("Not implemented in this socket class");
+  }
 }

@@ -1,5 +1,15 @@
 2003-06-24  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/SocketImpl.java
+	(shutdownInput): Made it non-abstract method throwing an exception
+	like in SUNs JRE.
+	(shutdownOutput): Likewise.
+	* java/net/SocketInputStream.java,
+	java/net/SocketOutputStream.java:
+	New files from classpath.
+
+2003-06-24  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/Font.java,
 	java/awt/Window.java,
 	java/awt/color/ColorSpace.java,
