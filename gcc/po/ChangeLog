@@ -1,3 +1,7 @@
+2000-11-25  Philipp Thomas  <pthomas@suse.de>
+	* sv.po: New swedish translation file.
+	* en_GB.po: Removed.
+
 2000-11-20  Stan Shebs  <shebs@apple.com>
 
 	* POTFILES.in: Add config/rs6000/xm-darwin.h.
