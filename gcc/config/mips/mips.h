@@ -402,7 +402,7 @@ while (0)
 	\n mips-tfile %{v*: -v} \
 		%{K: -I %b.o~} \
 		%{!K: %{save-temps: -I %b.o~}} \
-		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %u.o} \
+		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
 		%{.s:%i} %{!.s:%g.s}}}"
 #endif
 
@@ -473,7 +473,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 23]"
+#define MIPS_VERSION "[AL 1.1, MM 24]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
@@ -651,8 +651,12 @@ do {							\
 #define SDB_GENERATE_FAKE(BUFFER, NUMBER) \
   sprintf ((BUFFER), ".%dfake", (NUMBER));
 
-/* Correct the offset of automatic variables and arguments
-   if the frame pointer has been eliminated.  */
+/* Correct the offset of automatic variables and arguments.  Note that
+   the MIPS debug format wants all automatic variables and arguments
+   to be in terms of the virtual frame pointer (stack pointer before
+   any adjustment in the function), while the MIPS 3.0 linker wants
+   the frame pointer to be the stack pointer after the initial
+   adjustment.  */
 
 #define DEBUGGER_AUTO_OFFSET(X)		mips_debugger_offset (X, 0)
 #define DEBUGGER_ARG_OFFSET(OFFSET, X)	mips_debugger_offset (X, OFFSET)
@@ -1196,7 +1200,7 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 #define FRAME_POINTER_REQUIRED (current_function_calls_alloca)
 
 /* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM FRAME_POINTER_REGNUM
+#define ARG_POINTER_REGNUM GP_REG_FIRST
 
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM (GP_REG_FIRST + 2)
@@ -1485,13 +1489,30 @@ extern enum reg_class mips_char_to_class[];
    is at the high-address end of the local variables;
    that is, each additional local variable allocated
    goes at a more negative offset in the frame.  */
-#define FRAME_GROWS_DOWNWARD
+/* #define FRAME_GROWS_DOWNWARD */
 
 /* Offset within stack frame to start allocating local variables at.
    If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
    first local allocated.  Otherwise, it is the offset to the BEGINNING
    of the first local allocated.  */
-#define STARTING_FRAME_OFFSET (-8)
+#define STARTING_FRAME_OFFSET current_function_outgoing_args_size
+
+/* Offset from the stack pointer register to an item dynamically
+   allocated on the stack, e.g., by `alloca'.
+
+   The default value for this macro is `STACK_POINTER_OFFSET' plus the
+   length of the outgoing arguments.  The default is correct for most
+   machines.  See `function.c' for details.
+
+   The MIPS 3.0 linker does not like functions that dynamically
+   allocate the stack and have 0 for STACK_DYNAMIC_OFFSET, since it
+   looks like we are trying to create a second frame pointer to the
+   function, so allocate some stack space to make it happy.  */
+
+#define STACK_DYNAMIC_OFFSET(FUNDECL)					\
+  ((current_function_outgoing_args_size == 0 && current_function_calls_alloca) \
+	? 4*UNITS_PER_WORD						\
+	: current_function_outgoing_args_size)
 
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
@@ -1522,8 +1543,69 @@ extern struct mips_frame_info current_frame_info;
    as of the start of the function body.  This depends on the layout
    of the fixed parts of the stack frame and on how registers are saved.  */
 
-#define INITIAL_FRAME_POINTER_OFFSET(VAR)				\
- ((VAR) = compute_frame_size (get_frame_size ()))
+/* #define INITIAL_FRAME_POINTER_OFFSET(VAR)				\
+    ((VAR) = compute_frame_size (get_frame_size ())) */
+
+/* If defined, this macro specifies a table of register pairs used to
+   eliminate unneeded registers that point into the stack frame.  If
+   it is not defined, the only elimination attempted by the compiler
+   is to replace references to the frame pointer with references to
+   the stack pointer.
+
+   The definition of this macro is a list of structure
+   initializations, each of which specifies an original and
+   replacement register.
+
+   On some machines, the position of the argument pointer is not
+   known until the compilation is completed.  In such a case, a
+   separate hard register must be used for the argument pointer. 
+   This register can be eliminated by replacing it with either the
+   frame pointer or the argument pointer, depending on whether or not
+   the frame pointer has been eliminated.
+
+   In this case, you might specify:
+        #define ELIMINABLE_REGS  \
+        {{ARG_POINTER_REGNUM, STACK_POINTER_REGNUM}, \
+         {ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM}, \
+         {FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}}
+
+   Note that the elimination of the argument pointer with the stack
+   pointer is specified first since that is the preferred elimination.  */
+
+#define ELIMINABLE_REGS							\
+{{ ARG_POINTER_REGNUM,   STACK_POINTER_REGNUM},				\
+ { ARG_POINTER_REGNUM,   FRAME_POINTER_REGNUM},				\
+ { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}}
+
+
+/* A C expression that returns non-zero if the compiler is allowed to
+   try to replace register number FROM-REG with register number
+   TO-REG.  This macro need only be defined if `ELIMINABLE_REGS' is
+   defined, and will usually be the constant 1, since most of the
+   cases preventing register elimination are things that the compiler
+   already knows about.  */
+
+#define CAN_ELIMINATE(FROM, TO)						\
+  (!frame_pointer_needed						\
+   || ((FROM) == ARG_POINTER_REGNUM && (TO) == FRAME_POINTER_REGNUM))
+
+/* This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It
+   specifies the initial difference between the specified pair of
+   registers.  This macro must be defined if `ELIMINABLE_REGS' is
+   defined.  */
+
+#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			 \
+{  compute_frame_size (get_frame_size ());				 \
+  if ((FROM) == FRAME_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)	 \
+    (OFFSET) = 0;							 \
+  else if ((FROM) == ARG_POINTER_REGNUM && (TO) == FRAME_POINTER_REGNUM) \
+    (OFFSET) = current_frame_info.total_size;				 \
+  else if ((FROM) == ARG_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM) \
+    (OFFSET) = current_frame_info.total_size;				 \
+  else									 \
+    abort ();								 \
+}
+
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
@@ -1780,18 +1862,19 @@ typedef struct mips_args {
   (get_attr_dslot (INSN) == DSLOT_NO					\
    && get_attr_length (INSN) == 1					\
    && ! reg_mentioned_p (stack_pointer_rtx, PATTERN (INSN))		\
-   && ! reg_mentioned_p (frame_pointer_rtx, PATTERN (INSN)))
+   && ! reg_mentioned_p (frame_pointer_rtx, PATTERN (INSN))		\
+   && ! reg_mentioned_p (arg_pointer_rtx, PATTERN (INSN)))
 
 /* Tell prologue and epilogue if register REGNO should be saved / restored.  */
 
 #define MUST_SAVE_REGISTER(regno) \
  ((regs_ever_live[regno] && !call_used_regs[regno])		\
   || (regno == FRAME_POINTER_REGNUM && frame_pointer_needed)	\
-  || (regno == 31 && regs_ever_live[31]))
+  || (regno == (GP_REG_FIRST + 31) && regs_ever_live[GP_REG_FIRST + 31]))
 
 /* ALIGN FRAMES on double word boundaries */
 
-#define MIPS_STACK_ALIGN(LOC) (((LOC)+7) & 0xfffffff8)
+#define MIPS_STACK_ALIGN(LOC) (((LOC)+7) & ~7)
 
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
@@ -2918,8 +3001,7 @@ while (0)
 	$Lb[0-9]+	Begin blocks for MIPS debug support
 	$Lc[0-9]+	Label for use in s<xx> operation.
 	$Le[0-9]+	End blocks for MIPS debug support
-	$Lp\..+		Half-pic labels.
-	$Ls[0-9]+	FP-SP difference if -fomit-frame-pointer  */
+	$Lp\..+		Half-pic labels. */
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.
