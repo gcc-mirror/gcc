@@ -3,6 +3,11 @@ Sun Oct 10 13:28:48 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	* loop.c (find_and_verify_loops): When looking for a BARRIER, don't
 	use one before a jump table.
 
+	* rtl.def (ADDRESS): Change documentation to match reality.
+	* md.texi: Don't document it.
+	* gmicro.md (load address pattern): Use 'p' constraint, delete use
+	of ADDRESS rtx.
+
 Sun Oct 10 02:41:41 1999  Richard Henderson  <rth@cygnus.com>
 
 	* genrecog.c (add_to_sequence): Move allow_const_int test outside

@@ -289,10 +289,7 @@ DEF_RTL_EXPR(DEFINE_ASM_ATTRIBUTES, "define_asm_attributes", "V", 'x' )
    `emit_insn' takes the SEQUENCE apart and makes separate insns.  */
 DEF_RTL_EXPR(SEQUENCE, "sequence", "E", 'x')
 
-/* Refers to the address of its argument.
-   This appears only in machine descriptions, indicating that
-   any expression that would be acceptable as the operand of MEM
-   should be matched.  */
+/* Refers to the address of its argument.  This is only used in alias.c.  */
 DEF_RTL_EXPR(ADDRESS, "address", "e", 'm')
 
 /* ----------------------------------------------------------------------

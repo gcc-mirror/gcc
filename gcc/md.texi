@@ -420,29 +420,6 @@ The machine mode @var{m} of @code{match_insn2} works like that of
 predicate function, and that function is solely responsible for
 deciding whether the expression to be matched ``has'' that mode.
 
-@findex address
-@item (address (match_operand:@var{m} @var{n} "address_operand" ""))
-This complex of expressions is a placeholder for an operand number
-@var{n} in a ``load address'' instruction: an operand which specifies
-a memory location in the usual way, but for which the actual operand
-value used is the address of the location, not the contents of the
-location.
-
-@code{address} expressions never appear in RTL code, only in machine
-descriptions.  And they are used only in machine descriptions that do
-not use the operand constraint feature.  When operand constraints are
-in use, the letter @samp{p} in the constraint serves this purpose.
-
-@var{m} is the machine mode of the @emph{memory location being
-addressed}, not the machine mode of the address itself.  That mode is
-always the same on a given target machine (it is @code{Pmode}, which
-normally is @code{SImode}), so there is no point in mentioning it;
-thus, no machine mode is written in the @code{address} expression.  If
-some day support is added for machines in which addresses of different
-kinds of objects appear differently or are used differently (such as
-the PDP-10), different formats would perhaps need different machine
-modes and these modes might be written in the @code{address}
-expression.
 @end table
 
 @node Output Template

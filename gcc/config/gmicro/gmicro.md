@@ -2624,7 +2624,7 @@
 /* mova.[whq] 89.08.11 for test M.Yuhara */
 ;(define_insn ""
 ;  [(set (match_operand:SI 0 "general_operand" "=rm")
-;	(address (match_operand:SI 1 "address_operand" "p")))]
+;	(match_operand:SI 1 "address_operand" "p"))]
 ;  ""
 ;  "*
 ;{
@@ -2645,7 +2645,7 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=rm")
-	(address (match_operand:HI 1 "address_operand" "")))]
+	(match_operand:HI 1 "address_operand" "p"))]
   ""
   "*
 {
