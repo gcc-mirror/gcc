@@ -21,8 +21,6 @@
 
 AC_INIT(libF77/Version.c)
 
-AC_REVISION(1.12)
-
 dnl Checks for programs.
 # For g77 we'll set CC to point at the built gcc, but this will get it into
 # the makefiles
@@ -50,12 +48,12 @@ the G77 runtime system.  If necessary, install gcc now with \`LANGUAGES=c',
 then the target library, then build with \`LANGUAGES=f77'.])])
 
 # We have to firkle with the info in hconfig.h to figure out suitable types
-# (via com.h).  proj.h and com.h are in $srcdir/.., config.h which they need
-# is in ../.. and the config files are in $srcdir/../../config.
+# (via com.h).  proj.h and com.h are in gcc/f/, config.h which they need
+# is in gcc/ and the config files are in gcc/config/.
 AC_MSG_CHECKING(f2c integer type)
 late_ac_cpp=$ac_cpp
-ac_cpp="$late_ac_cpp -I../../gcc/f  -I../../gcc -I../../gcc/config"
-if test "$subdir" != . ; then
+ac_cpp="$late_ac_cpp -I../../gcc/f -I../../gcc -I../../gcc/config"
+if test "$srcdir" != . ; then
   ac_cpp="$ac_cpp -I$srcdir/../gcc/f -I$srcdir/../gcc -I$srcdir/../gcc/config"
 fi
 AC_CACHE_VAL(g77_cv_sys_f2cinteger,
@@ -101,8 +99,8 @@ AC_SUBST(F2C_INTEGER)
 
 AC_MSG_CHECKING(f2c long int type)
 late_ac_cpp=$ac_cpp
-ac_cpp="$late_ac_cpp -I../../gcc/f  -I../../gcc -I../../gcc/config"
-if test "$subdir" != . ; then
+ac_cpp="$late_ac_cpp -I../../gcc/f -I../../gcc -I../../gcc/config"
+if test "$srcdir" != . ; then
   ac_cpp="$ac_cpp -I$srcdir/../gcc/f -I$srcdir/../gcc -I$srcdir/../gcc/config"
 fi
 AC_CACHE_VAL(g77_cv_sys_f2clongint,
