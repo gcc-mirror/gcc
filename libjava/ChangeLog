@@ -1,3 +1,9 @@
+2004-10-04  Loren J. Rittle  <ljrittle@acm.org>
+
+	* configure.ac (*-*-freebsd[[1234]]*): Refine error message
+	emission rule.
+	* configure: Rebuilt.
+
 2004-09-30  Tom Tromey  <tromey@redhat.com>
 
 	* java/text/MessageFormat.java (Field): Constructor now
