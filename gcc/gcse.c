@@ -1,6 +1,6 @@
 /* Global common subexpression elimination/Partial redundancy elimination
    and global constant/copy propagation for GNU compiler.
-   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -4824,7 +4824,7 @@ pre_gcse ()
   /* Compute a mapping from expression number (`bitmap_index') to
      hash table entry.  */
 
-  index_map = xcalloc (n_exprs, sizeof (struct expr *));
+  index_map = (struct expr **) xcalloc (n_exprs, sizeof (struct expr *));
   for (i = 0; i < expr_hash_table_size; i++)
     {
       struct expr *expr;
@@ -5468,7 +5468,7 @@ hoist_code ()
   /* Compute a mapping from expression number (`bitmap_index') to
      hash table entry.  */
 
-  index_map = xcalloc (n_exprs, sizeof (struct expr *));
+  index_map = (struct expr **) xcalloc (n_exprs, sizeof (struct expr *));
   for (i = 0; i < expr_hash_table_size; i++)
     {
       struct expr *expr;

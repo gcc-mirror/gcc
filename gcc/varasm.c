@@ -3408,7 +3408,7 @@ decode_rtx_const (mode, x, value)
       case SYMBOL_REF:
 	/* Use the string's address, not the SYMBOL_REF's address,
 	   for the sake of addresses of library routines.  */
-	value->un.addr.base = XSTR (value->un.addr.base, 0);
+	value->un.addr.base = (rtx) XSTR (value->un.addr.base, 0);
 	break;
 
       case LABEL_REF:

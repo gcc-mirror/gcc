@@ -1,5 +1,5 @@
 /* C Compatible Compiler Preprocessor (CCCP)
-   Copyright (C) 1986, 87, 89, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92-99, 2000 Free Software Foundation, Inc.
    Written by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
 
@@ -2274,7 +2274,7 @@ index0 (s, c, n)
   for (;;) {
     const char *q = index (p, c);
     if (q)
-      return q;
+      return (const U_CHAR *) q;
     else {
       size_t l = strlen (p);
       if (l == n)

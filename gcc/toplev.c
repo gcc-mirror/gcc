@@ -4533,7 +4533,7 @@ main (argc, argv)
   /* Initialize the garbage-collector.  */
   init_ggc ();
   ggc_add_root (&input_file_stack, 1, sizeof input_file_stack,
-		&mark_file_stack);
+		mark_file_stack);
   ggc_add_rtx_root (&stack_limit_rtx, 1);
 
   /* Perform language-specific options intialization.  */
