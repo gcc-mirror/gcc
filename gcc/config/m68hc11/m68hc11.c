@@ -4803,7 +4803,7 @@ m68hc11_reorg (first)
 
   /* Force a split of all splitable insn.  This is necessary for the
      Z register replacement mechanism because we end up with basic insns.  */
-  split_all_insns (0);
+  split_all_insns_noflow ();
   split_done = 1;
 
   z_replacement_completed = 1;
@@ -4850,7 +4850,7 @@ m68hc11_reorg (first)
      split after Z register replacement.  This gives more opportunities
      for peephole (in particular for consecutives xgdx/xgdy).  */
   if (optimize > 0)
-    split_all_insns (0);
+    split_all_insns_noflow ();
 
   /* Once insns are split after the z_replacement_completed == 2,
      we must not re-run the life_analysis.  The xgdx/xgdy patterns

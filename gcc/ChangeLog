@@ -1,3 +1,13 @@
+Tue Jul 24 20:32:44 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* recog.c (split_all_insns_noflow): New.
+	* rtl.h (split_all_insns_noflow): Declare.
+	* ia64.c (ia64_reorg): Use split_all_insns_noflow.
+	* m68hc11.c (m68hc11_reorg): Likewise.
+	* sh.c (machine_dependent_reorg): Likewise.
+	* toplev.c (rest_of_compilation): Likewise for last split_all_insns
+	call.
+
 2001-07-18  Andrew Haley  <aph@cambridge.redhat.com>
 
         * config/sh/sh.md (ashlsi3_std splitter): Split only after reload.

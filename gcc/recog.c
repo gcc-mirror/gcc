@@ -2777,6 +2777,22 @@ split_all_insns (upd_life)
 
   sbitmap_free (blocks);
 }
+
+/* Same as split_all_insns, but do not expect CFG to be available. 
+   Used by machine depedent reorg passes.  */
+
+void
+split_all_insns_noflow ()
+{
+  rtx next, insn;
+
+  for (insn = get_insns (); insn; insn = next)
+    {
+      next = NEXT_INSN (insn);
+      split_insn (insn);
+    }
+  return;
+}
 
 #ifdef HAVE_peephole2
 struct peep2_insn_data

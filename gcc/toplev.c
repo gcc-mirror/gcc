@@ -3459,7 +3459,9 @@ rest_of_compilation (decl)
   timevar_push (TV_FLOW2);
   open_dump_file (DFI_flow2, decl);
 
-  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+#ifdef ENABLE_CHECKING
+  verify_flow_info ();
+#endif
 
   /* If optimizing, then go ahead and split insns now.  */
   if (optimize > 0)
@@ -3472,6 +3474,8 @@ rest_of_compilation (decl)
      it and the rest of the code and also allows delayed branch
      scheduling to operate in the epilogue.  */
   thread_prologue_and_epilogue_insns (insns);
+
+  compute_bb_for_insn (get_max_uid ());
 
   if (optimize)
     {
@@ -3624,7 +3628,7 @@ rest_of_compilation (decl)
 
 #if defined (HAVE_ATTR_length) && !defined (STACK_REGS)
   timevar_push (TV_SHORTEN_BRANCH);
-  split_all_insns (0);
+  split_all_insns_noflow ();
   timevar_pop (TV_SHORTEN_BRANCH);
 #endif
 

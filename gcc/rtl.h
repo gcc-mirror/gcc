@@ -1462,6 +1462,7 @@ extern enum reg_class reg_alternate_class PARAMS ((int));
 extern rtx get_first_nonparm_insn	PARAMS ((void));
 
 extern void split_all_insns		PARAMS ((int));
+extern void split_all_insns_noflow	PARAMS ((void));
 
 #define MAX_SAVED_CONST_INT 64
 extern rtx const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];

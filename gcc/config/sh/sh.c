@@ -3027,7 +3027,7 @@ machine_dependent_reorg (first)
      optimizing, they'll have already been split.  Otherwise, make
      sure we don't split them too late.  */
   if (! optimize)
-    split_all_insns (0);
+    split_all_insns_noflow ();
 
   /* If relaxing, generate pseudo-ops to associate function calls with
      the symbols they call.  It does no harm to not generate these
