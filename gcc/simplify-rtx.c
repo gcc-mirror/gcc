@@ -1812,9 +1812,6 @@ simplify_relational_operation (code, mode, op0, op1)
 
       /* If WIDTH is nonzero and smaller than HOST_BITS_PER_WIDE_INT,
 	 we have to sign or zero-extend the values.  */
-      if (width != 0 && width <= HOST_BITS_PER_WIDE_INT)
-	h0u = h1u = 0, h0s = HWI_SIGN_EXTEND (l0s), h1s = HWI_SIGN_EXTEND (l1s);
-
       if (width != 0 && width < HOST_BITS_PER_WIDE_INT)
 	{
 	  l0u &= ((HOST_WIDE_INT) 1 << width) - 1;
@@ -1826,6 +1823,8 @@ simplify_relational_operation (code, mode, op0, op1)
 	  if (l1s & ((HOST_WIDE_INT) 1 << (width - 1)))
 	    l1s |= ((HOST_WIDE_INT) (-1) << width);
 	}
+      if (width != 0 && width <= HOST_BITS_PER_WIDE_INT)
+	h0u = h1u = 0, h0s = HWI_SIGN_EXTEND (l0s), h1s = HWI_SIGN_EXTEND (l1s);
 
       equal = (h0u == h1u && l0u == l1u);
       op0lt = (h0s < h1s || (h0s == h1s && l0u < l1u));
