@@ -320,6 +320,7 @@ prepare_scc_operands (code)
 {
   rtx t_reg = gen_rtx (REG, SImode, T_REG);
   enum rtx_code oldcode = code;
+  enum machine_mode mode;
 
   /* First need a compare insn.  */
   switch (code)
@@ -347,11 +348,15 @@ prepare_scc_operands (code)
       sh_compare_op1 = tmp;
     }
 
-  sh_compare_op0 = force_reg (SImode, sh_compare_op0);
+  mode = GET_MODE (sh_compare_op0);
+  if (mode == VOIDmode)
+    mode = GET_MODE (sh_compare_op1);
+
+  sh_compare_op0 = force_reg (mode, sh_compare_op0);
   if (code != EQ && code != NE
       && (sh_compare_op1 != const0_rtx
 	  || code == GTU  || code == GEU || code == LTU || code == LEU))
-    sh_compare_op1 = force_reg (SImode, sh_compare_op1);
+    sh_compare_op1 = force_reg (mode, sh_compare_op1);
 
   emit_insn (gen_rtx (SET, VOIDmode, t_reg,
 		      gen_rtx (code, SImode, sh_compare_op0,
