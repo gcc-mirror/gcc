@@ -77,6 +77,7 @@ static int    m32r_issue_rate	   PARAMS ((void));
 static void m32r_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT));
 static void m32r_encode_section_info PARAMS ((tree, int));
 static const char *m32r_strip_name_encoding PARAMS ((const char *));
+static void init_idents PARAMS ((void));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -271,7 +272,7 @@ static tree large_ident1;
 static tree large_ident2;
 
 static void
-init_idents PARAMS ((void))
+init_idents ()
 {
   if (small_ident1 == 0)
     {

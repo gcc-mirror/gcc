@@ -2322,7 +2322,7 @@ xtensa_return_addr (count, frame)
    argument word N for N >= 6. */
 
 tree
-xtensa_build_va_list (void)
+xtensa_build_va_list ()
 {
   tree f_stk, f_reg, f_ndx, record, type_decl;
 

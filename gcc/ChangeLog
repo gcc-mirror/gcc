@@ -1,3 +1,15 @@
+2002-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* arc.c (arc_init): Don't use ISO C style function definitions.
+	* arm.c (count_insns_for_constant, thumb_far_jump_used_p,
+	arm_get_strip_length, arm_strip_name_encoding): Likewise.
+	* avr.h (progmem_section): Likewise.
+	* h8300.c h8300_asm_insn_count): Likewise.
+	* m32r.c (init_idents): Likewise.
+	* s390.c (s390_split_branches, s390_chunkify_pool): Likewise.
+	* sh.c (sh_cfun_interrupt_handler_p): Likewise.
+	* xtensa.c (xtensa_build_va_list): Likewise.
+
 2002-08-11  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-common.h (enum c_language_kind): Emphasize that clk_c is 0.
