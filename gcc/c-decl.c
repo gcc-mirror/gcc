@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2615,11 +2615,10 @@ init_decl_processing ()
      Traditionally, use a signed type.
      Note that stddef.h uses `unsigned long',
      and this must agree, even of long and int are the same size.  */
-  if (flag_traditional)
-    sizetype = long_integer_type_node;
-  else
-    sizetype
-      = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (SIZE_TYPE)));
+  sizetype
+    = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (SIZE_TYPE)));
+  if (flag_traditional && TREE_UNSIGNED (sizetype))
+    sizetype = signed_type (sizetype);
 
   ptrdiff_type_node
     = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (PTRDIFF_TYPE)));
