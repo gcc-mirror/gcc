@@ -3,6 +3,11 @@ Tue Apr  6 23:15:52 1999  Jeffrey A Law  (law@cygnus.com)
 	* Makefile.in (TREE_H): Add tree-check.h.
 	(RTL_H): Add genrtl.h.
 
+Tue Apr  6 15:15:51 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * parse.y (patch_assignment): Added ArrayStoreException runtime
+        check.
+
 1999-04-06  Per Bothner  <bothner@cygnus.com>
 
 	* expr.c (pop_type_0):  New function.
