@@ -1,3 +1,12 @@
+2002-02-08  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (expand_expr): Mind EXPAND_INITIALIZER for truncation also.
+	* final.c (output_addr_const): Accept and discard SUBREG.
+	* varasm.c (decode_addr_const): Don't abort on unknown expressions --
+	mark them unknown instead.
+	(simplify_subtraction): Handle RTX_UNKNOWN.
+	(initializer_constant_valid_p): Strip NOP_EXPRs that narrow the mode.
+
 2002-02-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/invoke.texi (RS/6000 and PowerPC Options): Fix typo.

@@ -2382,7 +2382,7 @@ decode_addr_const (exp, value)
   value->offset = offset;
 }
 
-enum kind { RTX_DOUBLE, RTX_INT, RTX_UNSPEC };
+enum kind { RTX_UNKNOWN, RTX_DOUBLE, RTX_INT, RTX_UNSPEC };
 struct rtx_const
 {
   ENUM_BITFIELD(kind) kind : 16;
@@ -3610,7 +3610,8 @@ decode_rtx_const (mode, x, value)
       break;
 
     default:
-      abort ();
+      value->kind = RTX_UNKNOWN;
+      break;
     }
 
   if (value->kind == RTX_INT && value->un.addr.base != 0
@@ -3630,7 +3631,7 @@ decode_rtx_const (mode, x, value)
 	}
     }
 
-  if (value->kind != RTX_DOUBLE && value->un.addr.base != 0)
+  if (value->kind > RTX_DOUBLE && value->un.addr.base != 0)
     switch (GET_CODE (value->un.addr.base))
       {
       case SYMBOL_REF:
@@ -3660,9 +3661,11 @@ simplify_subtraction (x)
   decode_rtx_const (GET_MODE (x), XEXP (x, 0), &val0);
   decode_rtx_const (GET_MODE (x), XEXP (x, 1), &val1);
 
-  if (val0.kind != RTX_DOUBLE && val0.kind == val1.kind
+  if (val0.kind > RTX_DOUBLE
+      && val0.kind == val1.kind
       && val0.un.addr.base == val1.un.addr.base)
     return GEN_INT (val0.un.addr.offset - val1.un.addr.offset);
+
   return x;
 }
 
@@ -4370,8 +4373,37 @@ initializer_constant_valid_p (value, endtype)
 	  tree op0, op1;
 	  op0 = TREE_OPERAND (value, 0);
 	  op1 = TREE_OPERAND (value, 1);
-	  STRIP_NOPS (op0);
-	  STRIP_NOPS (op1);
+
+	  /* Like STRIP_NOPS except allow the operand mode to widen.
+	     This works around a feature of fold that simplfies
+	     (int)(p1 - p2) to ((int)p1 - (int)p2) under the theory
+	     that the narrower operation is cheaper.  */
+
+	  while (TREE_CODE (op0) == NOP_EXPR
+		 || TREE_CODE (op0) == CONVERT_EXPR
+		 || TREE_CODE (op0) == NON_LVALUE_EXPR)
+	    {
+	      tree inner = TREE_OPERAND (op0, 0);
+	      if (inner == error_mark_node
+	          || ! INTEGRAL_MODE_P (TYPE_MODE (TREE_TYPE (inner)))
+		  || (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op0)))
+		      > GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (inner)))))
+		break;
+	      op0 = inner;
+	    }
+
+	  while (TREE_CODE (op1) == NOP_EXPR
+		 || TREE_CODE (op1) == CONVERT_EXPR
+		 || TREE_CODE (op1) == NON_LVALUE_EXPR)
+	    {
+	      tree inner = TREE_OPERAND (op1, 0);
+	      if (inner == error_mark_node
+	          || ! INTEGRAL_MODE_P (TYPE_MODE (TREE_TYPE (inner)))
+		  || (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op1)))
+		      > GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (inner)))))
+		break;
+	      op1 = inner;
+	    }
 
 	  if (TREE_CODE (op0) == ADDR_EXPR
 	      && TREE_CODE (TREE_OPERAND (op0, 0)) == LABEL_DECL

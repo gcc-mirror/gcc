@@ -7274,15 +7274,24 @@ expand_expr (exp, target, tmode, modifier)
 	  return op0;
 	}
 
-      op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, mode, 0);
+      op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, mode, modifier);
       if (GET_MODE (op0) == mode)
 	return op0;
 
       /* If OP0 is a constant, just convert it into the proper mode.  */
       if (CONSTANT_P (op0))
-	return
-	  convert_modes (mode, TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))),
-			 op0, TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))));
+	{
+	  tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
+	  enum machine_mode inner_mode = TYPE_MODE (inner_type);
+
+          if (modifier == EXPAND_INITIALIZER)
+	    return simplify_gen_subreg (mode, op0, inner_mode,
+					subreg_lowpart_offset (mode,
+							       inner_mode));
+	  else
+	    return convert_modes (mode, inner_mode, op0,
+				  TREE_UNSIGNED (inner_type));
+	}
 
       if (modifier == EXPAND_INITIALIZER)
 	return gen_rtx_fmt_e (unsignedp ? ZERO_EXTEND : SIGN_EXTEND, mode, op0);

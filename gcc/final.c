@@ -3461,6 +3461,7 @@ output_addr_const (file, x)
 
     case ZERO_EXTEND:
     case SIGN_EXTEND:
+    case SUBREG:
       output_addr_const (file, XEXP (x, 0));
       break;
 
