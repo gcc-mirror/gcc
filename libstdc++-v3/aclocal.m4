@@ -1,4 +1,4 @@
-# generated automatically by aclocal 1.7.8 -*- Autoconf -*-
+# generated automatically by aclocal 1.7.7 -*- Autoconf -*-
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
 # Free Software Foundation, Inc.
@@ -1004,7 +1004,7 @@ AC_DEFUN(GLIBCXX_ENABLE_CLOCALE, [
   # Default to "generic".
   if test $enable_clocale_flag = auto; then
     case x${target_os} in
-      xlinux* | xgnu*)
+      xlinux* | xgnu* | xkfreebsd*-gnu | xknetbsd*-gnu)
         AC_EGREP_CPP([_GLIBCXX_ok], [
         #include <features.h>
         #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2)
@@ -2004,7 +2004,7 @@ AC_DEFUN([AM_AUTOMAKE_VERSION],[am__api_version="1.7"])
 # Call AM_AUTOMAKE_VERSION so it can be traced.
 # This function is AC_REQUIREd by AC_INIT_AUTOMAKE.
 AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION],
-	 [AM_AUTOMAKE_VERSION([1.7.8])])
+	 [AM_AUTOMAKE_VERSION([1.7.7])])
 
 # Helper functions for option handling.                    -*- Autoconf -*-
 
