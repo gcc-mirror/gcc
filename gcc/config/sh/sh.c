@@ -897,7 +897,7 @@ ok_shift_value (p)
 	  return 1;
 	default:
 	  if (TARGET_FASTCODE)
-	    return 1;
+	    return INTVAL(p) >= 0;
 	}
     }
   return 0;
