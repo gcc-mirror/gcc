@@ -1,3 +1,7 @@
+2003-07-08  Chris Demetriou  <cgd@broadcom.com>
+
+	* Makefile.in (install-po): Cope with empty CATALOGS.
+
 2003-07-08  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/elf64.h (TARGET_ASM_UNIQUE_SECTION): Delete.

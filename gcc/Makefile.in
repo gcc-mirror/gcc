@@ -3973,7 +3973,7 @@ update-po: $(CATALOGS:.gmo=.pox)
 # with the distribution.
 install-po:
 	$(SHELL) $(srcdir)/mkinstalldirs $(DESTDIR)$(datadir)
-	for cat in $(CATALOGS); do \
+	cats="$(CATALOGS)"; for cat in $$cats; do \
 	  lang=`basename $$cat | sed 's/\.gmo$$//'`; \
 	  if [ -f $$cat ]; then :; \
 	  elif [ -f $(srcdir)/$$cat ]; then cat=$(srcdir)/$$cat; \
