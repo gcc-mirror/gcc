@@ -1,3 +1,8 @@
+2004-01-30  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/13683
+	* g++.dg/template/sizeof6.C: New test.
+
 2004-01-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/fwritable-strings-1.c: New test.
