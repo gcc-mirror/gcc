@@ -21,6 +21,16 @@ details.  */
 
 #ifdef HAVE_ICONV
 #include <iconv.h>
+
+template<typename T>
+static inline size_t
+iconv_adapter (size_t (*iconv_f) (iconv_t, T, size_t *, char **, size_t *),
+	       iconv_t handle, char **inbuf, size_t *inavail,
+	       char **outbuf, size_t *outavail)
+{
+  return (*iconv_f) (handle, (T) inbuf, inavail, outbuf, outavail);
+}
+
 #endif
 
 void
@@ -69,12 +79,12 @@ gnu::gcj::convert::Input_iconv::read (jcharArray outbuffer,
   size_t outavail = count;
   size_t old_out = outavail;
 
-  const char *inbuf = (const char *) &bytes[inpos];
+  char *inbuf = (char *) &bytes[inpos];
   char *outbuf = (char *) &out[outpos];
 
-  size_t r = iconv ((iconv_t) handle,
-		    &inbuf, &inavail,
-		    &outbuf, &outavail);
+  size_t r = iconv_adapter (iconv, (iconv_t) handle,
+			    &inbuf, &inavail,
+			    &outbuf, &outavail);
   // FIXME: what if R==-1?
 
   inpos += old_in - inavail;
@@ -132,12 +142,12 @@ gnu::gcj::convert::Output_iconv::write (jcharArray inbuffer,
   size_t outavail = buf->length - count;
   size_t old_out = outavail;
 
-  const char *inbuf = (const char *) &chars[inpos];
+  char *inbuf = (char *) &chars[inpos];
   char *outbuf = (char *) &out[count];
 
-  size_t r = iconv ((iconv_t) handle,
-		    &inbuf, &inavail,
-		    &outbuf, &outavail);
+  size_t r = iconv_adapter (iconv, (iconv_t) handle,
+			    &inbuf, &inavail,
+			    &outbuf, &outavail);
   // FIXME: what if R==-1?
 
   count += old_out - outavail;
