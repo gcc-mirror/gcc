@@ -1,3 +1,15 @@
+2000-04-08  Neil Booth  <NeilB@earthling.net>
+
+	* cppexp.c (parse_charconst): Null does not end character
+	constants.
+	* cppinit.c (ISTABLE): Null character handled as whitespace.
+	* cpplex.c (null_warning):  new function.
+	(skip_string): Emit warning if nulls encountered.
+	(_cpp_skip_hspace): Emit warning if nulls encountered.
+	(_cpp_lex_token): Emit warning if nulls encountered.  Drop
+	them.
+	* cpp.texi: Update.
+
 2000-04-07  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (loop_depth): Remove.

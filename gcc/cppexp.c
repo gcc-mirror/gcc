@@ -274,7 +274,7 @@ parse_charconst (pfile, start, end)
   while (ptr < end)
     {
       c = *ptr++;
-      if (c == '\'' || c == '\0')
+      if (c == '\'')
 	break;
       else if (c == '\\')
 	{
