@@ -318,7 +318,6 @@ static tree decl_class_context 		PARAMS ((tree));
 static void output_unsigned_leb128	PARAMS ((unsigned long));
 static void output_signed_leb128	PARAMS ((long));
 #endif
-static inline int is_body_block		PARAMS ((tree));
 static int fundamental_type_code	PARAMS ((tree));
 static tree root_type_1			PARAMS ((tree, int));
 static tree root_type			PARAMS ((tree));
@@ -1281,37 +1280,6 @@ output_signed_leb128 (value)
 #endif
 
 /**************** utility functions for attribute functions ******************/
-
-/* Given a pointer to a BLOCK node return non-zero if (and only if) the
-   node in question represents the outermost pair of curly braces (i.e.
-   the "body block") of a function or method.
-
-   For any BLOCK node representing a "body block" of a function or method,
-   the BLOCK_SUPERCONTEXT of the node will point to another BLOCK node
-   which represents the outermost (function) scope for the function or
-   method (i.e. the one which includes the formal parameters).  The
-   BLOCK_SUPERCONTEXT of *that* node in turn will point to the relevant
-   FUNCTION_DECL node.
-*/
-
-static inline int
-is_body_block (stmt)
-     register tree stmt;
-{
-  if (TREE_CODE (stmt) == BLOCK)
-    {
-      register tree parent = BLOCK_SUPERCONTEXT (stmt);
-
-      if (TREE_CODE (parent) == BLOCK)
-	{
-	  register tree grandparent = BLOCK_SUPERCONTEXT (parent);
-
-	  if (TREE_CODE (grandparent) == FUNCTION_DECL)
-	    return 1;
-	}
-    }
-  return 0;
-}
 
 /* Given a pointer to a tree node for some type, return a Dwarf fundamental
    type code for the given type.

@@ -2178,6 +2178,8 @@ extern void expand_end_bindings			PARAMS ((tree, int, int));
 extern void warn_about_unused_variables         PARAMS ((tree));
 extern void start_cleanup_deferral		PARAMS ((void));
 extern void end_cleanup_deferral		PARAMS ((void));
+extern int is_body_block			PARAMS ((tree));
+
 extern void mark_block_as_eh_region		PARAMS ((void));
 extern void mark_block_as_not_eh_region		PARAMS ((void));
 extern int is_eh_region				PARAMS ((void));
