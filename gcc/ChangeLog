@@ -1,3 +1,8 @@
+2004-09-29  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/7425
+	* c-decl.c (merge_decls): Merge TREE_DEPRECATED.
+
 2004-09-29  Eric Christopher  <echristo@redhat.com>
 
 	* fold-const.c (tree_swap_operands_p): Remove duplicated code.

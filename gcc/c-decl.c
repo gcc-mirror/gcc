@@ -1586,6 +1586,10 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	make_var_volatile (newdecl);
     }
 
+  /* Merge deprecatedness.  */
+  if (TREE_DEPRECATED (newdecl))
+    TREE_DEPRECATED (olddecl) = 1;
+
   /* Keep source location of definition rather than declaration.  */
   if (DECL_INITIAL (newdecl) == 0 && DECL_INITIAL (olddecl) != 0)
     DECL_SOURCE_LOCATION (newdecl) = DECL_SOURCE_LOCATION (olddecl);

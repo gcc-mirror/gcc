@@ -1722,6 +1722,10 @@ duplicate_decls (tree newdecl, tree olddecl)
       if (TREE_NOTHROW (newdecl))
 	TREE_NOTHROW (olddecl) = 1;
 
+      /* Merge deprecatedness.  */
+      if (TREE_DEPRECATED (newdecl))
+	TREE_DEPRECATED (olddecl) = 1;
+
       /* Merge the initialization information.  */
       if (DECL_INITIAL (newdecl) == NULL_TREE
 	  && DECL_INITIAL (olddecl) != NULL_TREE)
