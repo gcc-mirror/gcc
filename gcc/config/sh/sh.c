@@ -43,6 +43,9 @@ int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 #define MSW (TARGET_LITTLE_ENDIAN ? 1 : 0)
 #define LSW (TARGET_LITTLE_ENDIAN ? 0 : 1)
 
+/* Set to 1 by expand_prologue() when the function is an interrupt handler.  */
+int current_function_interrupt;
+
 /* ??? The pragma interrupt support will not work for SH3.  */
 /* This is set by #pragma interrupt and #pragma trapa, and causes gcc to
    output code for the next function appropriate for an interrupt handler.  */
@@ -4008,6 +4011,11 @@ sh_expand_prologue ()
   int d, i;
   int live_regs_mask2;
   int save_flags = target_flags;
+
+  current_function_interrupt
+    = lookup_attribute ("interrupt_handler",
+			DECL_MACHINE_ATTRIBUTES (current_function_decl))
+    != NULL_TREE;
 
   /* We have pretend args if we had an object sent partially in registers
      and partially on the stack, e.g. a large structure.  */
