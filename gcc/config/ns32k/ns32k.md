@@ -6,7 +6,7 @@
 ;;   I.e., one cannot say "cmpd _p,@_x"
 ;; Implement unsigned multiplication??
 
-;;- Machine descrption for GNU compiler
+;;- Machine description for GNU compiler
 ;;- ns32000 Version
 ;;   Copyright (C) 1988 Free Software Foundation, Inc.
 ;;   Contributed by Michael Tiemann (tiemann@mcc.com)
@@ -242,7 +242,12 @@
 	return \"movf %1,tos\;movd tos,%0\";
       return \"movf %1,%0\";
     }
-#if 0
+#if 0 /* Someone suggested this for the Sequent.  Is it needed?  */
+  else if (GET_CODE (operands[1]) == CONST_DOUBLE)
+    return \"movf %1,%0\";
+#endif
+/* There was a #if 0 around this, but that was erroneous
+   for anything bug GAS syntax -- rms.  */
 #ifndef GAS_SYNTAX
   /* GAS understands floating constants in ordinary movd instructions
      but other assemblers might object.  */
@@ -257,7 +262,6 @@
       operands[1] = gen_rtx (CONST_INT, VOIDmode, convrt.i[0]);
       return \"movd %1,%0\";
     }
-#endif
 #endif
   else return \"movd %1,%0\";
 }")
@@ -2213,6 +2217,7 @@
     {
       rtx temp = XEXP (operands[1], 0);
       if (CONSTANT_ADDRESS_P (temp))
+	{
 #ifdef GAS_SYNTAX
 	  operands[1] = temp;
 	  return \"bsr %1\";
