@@ -1,3 +1,8 @@
+2004-01-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/avr/avr.h: Remove target-independent comments about
+	target macros.
+
 2004-01-28  Daniel Berlin  <dberlin@dberlin.org>
 	
 	* timevar.c (timevar_print): Mention when checking is enabled.
