@@ -547,7 +547,7 @@ find_operand (rtx pattern, int n, rtx stop)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 
@@ -598,7 +598,7 @@ find_matching_operand (rtx pattern, int n)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 
@@ -851,7 +851,7 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 }
@@ -1050,18 +1050,18 @@ add_to_sequence (rtx pattern, struct decision_head *last, const char *position,
     {
       if (fmt[i] == 'i')
 	{
-	  if (i == 0)
+	  gcc_assert (i < 2);
+	  
+	  if (!i)
 	    {
 	      test = new_decision_test (DT_elt_zero_int, &place);
 	      test->u.intval = XINT (pattern, i);
 	    }
-	  else if (i == 1)
+	  else
 	    {
 	      test = new_decision_test (DT_elt_one_int, &place);
 	      test->u.intval = XINT (pattern, i);
 	    }
-	  else
-	    abort ();
 	}
       else if (fmt[i] == 'w')
 	{
@@ -1071,16 +1071,14 @@ add_to_sequence (rtx pattern, struct decision_head *last, const char *position,
 	    = ((int) XWINT (pattern, i) == XWINT (pattern, i))
 	      ? DT_elt_zero_wide_safe : DT_elt_zero_wide;
 
-	  if (i != 0)
-	    abort ();
+	  gcc_assert (!i);
 
 	  test = new_decision_test (type, &place);
 	  test->u.intval = XWINT (pattern, i);
 	}
       else if (fmt[i] == 'E')
 	{
-	  if (i != 0)
-	    abort ();
+	  gcc_assert (!i);
 
 	  test = new_decision_test (DT_veclen, &place);
 	  test->u.veclen = XVECLEN (pattern, i);
@@ -1117,7 +1115,7 @@ add_to_sequence (rtx pattern, struct decision_head *last, const char *position,
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 
@@ -1139,8 +1137,7 @@ add_to_sequence (rtx pattern, struct decision_head *last, const char *position,
     }
 
   /* If we didn't insert any tests or accept nodes, hork.  */
-  if (this->tests == NULL)
-    abort ();
+  gcc_assert (this->tests);
 
  ret:
   free (subpos);
@@ -1311,8 +1308,7 @@ maybe_both_true (struct decision *d1, struct decision *d2,
   cmp = strcmp (d1->position, d2->position);
   if (cmp != 0)
     {
-      if (toplevel)
-	abort ();
+      gcc_assert (!toplevel);
 
       /* If the d2->position was lexically lower, swap.  */
       if (cmp > 0)
@@ -1390,7 +1386,7 @@ nodes_identical_1 (struct decision_test *d1, struct decision_test *d2)
       return 1;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -1492,8 +1488,7 @@ merge_trees (struct decision_head *oldh, struct decision_head *addh)
     }
 
   /* Trying to merge bits at different positions isn't possible.  */
-  if (strcmp (oldh->first->position, addh->first->position))
-    abort ();
+  gcc_assert (!strcmp (oldh->first->position, addh->first->position));
 
   for (add = addh->first; add ; add = next)
     {
@@ -1989,7 +1984,7 @@ write_switch (struct decision *start, int depth)
 	  printf ("(int) XWINT (x%d, 0)", depth);
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       printf (")\n%s    {\n", indent);
 
@@ -2022,7 +2017,7 @@ write_switch (struct decision *start, int depth)
 	      print_host_wide_int (p->tests->u.intval);
 	      break;
 	    default:
-	      abort ();
+	      gcc_unreachable ();
 	    }
 	  printf (":\n%s      goto L%d;\n", indent, p->success.first->number);
 	  p->success.first->need_label = 1;
@@ -2102,21 +2097,13 @@ write_cond (struct decision_test *p, int depth,
       break;
 
     case DT_accept_insn:
-      switch (subroutine_type)
-	{
-	case RECOG:
-	  if (p->u.insn.num_clobbers_to_add == 0)
-	    abort ();
-	  printf ("pnum_clobbers != NULL");
-	  break;
-
-	default:
-	  abort ();
-	}
+      gcc_assert (subroutine_type == RECOG);
+      gcc_assert (p->u.insn.num_clobbers_to_add);
+      printf ("pnum_clobbers != NULL");
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -2151,14 +2138,12 @@ write_action (struct decision *p, struct decision_test *test,
       if (test->next)
 	{
 	  test = test->next;
-	  if (test->type != DT_accept_insn)
-	    abort ();
+	  gcc_assert (test->type == DT_accept_insn);
 	}
     }
 
   /* Sanity check that we're now at the end of the list of tests.  */
-  if (test->next)
-    abort ();
+  gcc_assert (!test->next);
 
   if (test->type == DT_accept_insn)
     {
@@ -2196,7 +2181,7 @@ write_action (struct decision *p, struct decision_test *test,
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   else
@@ -2231,7 +2216,7 @@ is_unconditional (struct decision_test *t, enum routine_type subroutine_type)
 	case PEEPHOLE2:
 	  return -1;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 
@@ -2527,8 +2512,7 @@ make_insn_sequence (rtx insn, enum routine_type type)
   char c_test_pos[2];
 
   /* We should never see an insn whose C test is false at compile time.  */
-  if (truth == 0)
-    abort ();
+  gcc_assert (truth);
 
   record_insn_name (next_insn_code, (type == RECOG ? XSTR (insn, 0) : NULL));
 
@@ -2874,7 +2858,7 @@ debug_decision_2 (struct decision_test *test)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 

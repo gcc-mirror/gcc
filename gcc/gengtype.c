@@ -24,7 +24,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm.h"
 #include "gengtype.h"
 #include "gtyp-gen.h"
-#undef abort
+#include "errors.h"
 
 /* Nonzero iff an error has occurred.  */
 static int hit_error = 0;
@@ -1128,7 +1128,7 @@ get_file_basename (const char *f)
         {
           basename -= l2 + 1;
           if ((basename - f - 1) != srcdir_len)
-            abort (); /* Match is wrong - should be preceded by $srcdir.  */
+	    fatal ("filename `%s' should be preceded by $srcdir", f);
           break;
         }
     }
@@ -1442,7 +1442,7 @@ output_mangled_typename (outf_p of, type_p t)
       }
       break;
     case TYPE_ARRAY:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -1608,7 +1608,7 @@ walk_type (type_p t, struct walk_type_data *d)
 	if (maybe_undef_p
 	    && t->u.p->u.s.line.file == NULL)
 	  {
-	    oprintf (d->of, "%*sif (%s) abort();\n", d->indent, "", d->val);
+	    oprintf (d->of, "%*sgcc_assert (!%s);\n", d->indent, "", d->val);
 	    break;
 	  }
 
@@ -1844,7 +1844,7 @@ walk_type (type_p t, struct walk_type_data *d)
 	    d->used_length = false;
 
 	    if (union_p && use_param_p && d->param == NULL)
-	      oprintf (d->of, "%*sabort();\n", d->indent, "");
+	      oprintf (d->of, "%*sgcc_unreachable ();\n", d->indent, "");
 	    else
 	      walk_type (f->type, d);
 
@@ -1900,7 +1900,7 @@ walk_type (type_p t, struct walk_type_data *d)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -1957,7 +1957,7 @@ write_types_process_field (type_p f, const struct walk_type_data *d)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -2227,7 +2227,7 @@ write_types_local_process_field (type_p f, const struct walk_type_data *d)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 

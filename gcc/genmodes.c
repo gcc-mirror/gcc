@@ -364,7 +364,7 @@ complete_mode (struct mode_data *m)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* If not already specified, the mode alignment defaults to the largest

@@ -259,38 +259,47 @@ add_mode_tests (struct pred_data *p)
   for (;;)
     {
       rtx subexp = *pos;
-      if (GET_CODE (subexp) == IOR)
-	{
-	  if (NO_MODE_TEST (XEXP (subexp, 0))
-	      && NO_MODE_TEST (XEXP (subexp, 1)))
-	    break;
-	  else if (NO_MODE_TEST (XEXP (subexp, 0)))
-	    pos = &XEXP (subexp, 0);
-	  else if (NO_MODE_TEST (XEXP (subexp, 1)))
-	    pos = &XEXP (subexp, 1);
-	  else
-	    abort ();
-	}
-      else if (GET_CODE (subexp) == IF_THEN_ELSE)
-	{
-	  if (NO_MODE_TEST (XEXP (subexp, 0))
-	      && NO_MODE_TEST (XEXP (subexp, 1))
-	      && NO_MODE_TEST (XEXP (subexp, 2)))
-	    break;
-	  else if (NO_MODE_TEST (XEXP (subexp, 0))
-		   && NO_MODE_TEST (XEXP (subexp, 1)))
-	    /* Must put it on the dependent clause, not the controlling
-	       expression, or we change the meaning of the test. */
-	    pos = &XEXP (subexp, 1);
-	  else if (NO_MODE_TEST (XEXP (subexp, 2)))
-	    pos = &XEXP (subexp, 2);
-	  else
-	    abort ();
-	}
-      else
-	break;
-    }
 
+      switch (GET_CODE (subexp))
+	{
+	case IOR:
+	  {
+	    int test0 = NO_MODE_TEST (XEXP (subexp, 0));
+	    int test1 = NO_MODE_TEST (XEXP (subexp, 1));
+	    
+	    gcc_assert (test0 || test1);
+	    
+	    if (test0 && test1)
+	      goto break_loop;
+	    pos = test0 ? &XEXP (subexp, 0) : &XEXP (subexp, 1);
+	  }
+	  break;
+	  
+	case IF_THEN_ELSE:
+	  {
+	    int test0 = NO_MODE_TEST (XEXP (subexp, 0));
+	    int test1 = NO_MODE_TEST (XEXP (subexp, 1));
+	    int test2 = NO_MODE_TEST (XEXP (subexp, 2));
+	    
+	    gcc_assert ((test0 && test1) || test2);
+	    
+	    if (test0 && test1 && test2)
+	      goto break_loop;
+	    if (test0 && test1)
+	      /* Must put it on the dependent clause, not the
+	      	 controlling expression, or we change the meaning of
+	      	 the test. */
+	      pos = &XEXP (subexp, 1);
+	    else
+	      pos = &XEXP (subexp, 2);
+	  }
+	  break;
+	  
+	default:
+	  goto break_loop;
+	}
+    }
+ break_loop:
   XEXP (and_exp, 0) = *pos;
   *pos = and_exp;
 }

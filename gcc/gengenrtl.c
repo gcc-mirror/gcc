@@ -84,7 +84,7 @@ type_from_format (int c)
     case 'B':
       return "struct basic_block_def *";  /* basic block - typedef not available */
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -120,7 +120,7 @@ accessor_from_format (int c)
       return "XBBDEF";
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 

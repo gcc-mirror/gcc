@@ -392,7 +392,7 @@ is_predicable (struct queue_elem *elem)
 	  return 0;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 
@@ -559,7 +559,7 @@ collect_insn_data (rtx pattern, int *palt, int *pmax)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 }
@@ -645,7 +645,7 @@ alter_predicate_for_insn (rtx pattern, int alt, int max_op, int lineno)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 
@@ -1119,8 +1119,7 @@ maybe_eval_c_test (const char *expr)
 
   dummy.expr = expr;
   test = (const struct c_test *)htab_find (condition_table, &dummy);
-  if (!test)
-    abort ();
+  gcc_assert (test);
 
   return test->value;
 }

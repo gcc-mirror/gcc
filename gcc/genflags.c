@@ -102,10 +102,8 @@ gen_macro (const char *name, int real, int expect)
 {
   int i;
 
-  if (real > expect)
-    abort ();
-  if (real == 0)
-    abort ();
+  gcc_assert (real <= expect);
+  gcc_assert (real);
 
   /* #define GEN_CALL(A, B, C, D) gen_call((A), (B)) */
   fputs ("#define GEN_", stdout);
