@@ -1,3 +1,12 @@
+Tue Sep 17 13:59:45 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	* objc.dg/comp-types-1.m: New test.
+	* objc.dg/comp-types-2.m: New test.
+	* objc.dg/comp-types-3.m: New test.
+	* objc.dg/comp-types-4.m: New test.
+	* objc.dg/comp-types-5.m: New test.
+	* objc.dg/comp-types-6.m: New test.	
+
 2002-09-17  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* gcc.c-torture/execute/strct-stdarg-1.x: Remove file.
