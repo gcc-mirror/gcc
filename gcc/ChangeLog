@@ -1,5 +1,28 @@
 1999-12-04  Mark Mitchell  <mark@codesourcery.com>
 
+	* tree.def (EXPR_WITH_FILE_LOCATION): Fix comment formatting.
+	* tree.h (EXPR_WFL_FILENAME): Define in terms of
+	EXPR_WFL_FILENAME_NODE.
+	(EXPR_WFL_FILENAME_NODE): Use the second operand slot rather than
+	the TREE_CHAIN.
+	* print-tree.c (print_note): Print TREE_PRIVATE and
+	TREE_PROTECTED.
+	
+	* dwarf2out.c (add_abstract_origin_attribute): Don't abort when
+	the original die cannot be found.
+
+	* varray.h (varray_head_tag): Add elements_used.
+	(VARRAY_PUSH): New macro.
+	(VARRAY_POP): Likewise.
+	(VARRAY_TOP): Likewise.
+	Add variants of VARRAY_PUSH and VARRAY_POP for all varray element
+	types. 
+	* varray.c (varray_init): Initialize elements_used.
+	* Makefile.in (BASIC_BLOCK_H): Add varray.h.
+	(INTEGRATE_H): New variable.
+	(integrate.o): Depend on INTEGRATE_H.
+	(unroll.o): Likewise.
+	
 	* function.h (insert_block_after_note): Declare.
 	* function.c (insert_block_after_note): Split out from ...
 	(retrofit_block): ... here.

@@ -750,8 +750,9 @@ struct tree_vec
 
 /* In a EXPR_WITH_FILE_LOCATION node.  */
 #define EXPR_WFL_NODE(NODE) TREE_OPERAND((NODE), 0)
-#define EXPR_WFL_FILENAME(NODE) (IDENTIFIER_POINTER ((NODE)->common.chain))
-#define EXPR_WFL_FILENAME_NODE(NODE) ((NODE)->common.chain)
+#define EXPR_WFL_FILENAME(NODE) \
+  (IDENTIFIER_POINTER (EXPR_WFL_FILENAME_NODE ((NODE))))
+#define EXPR_WFL_FILENAME_NODE(NODE) TREE_OPERAND((NODE), 1)
 #define EXPR_WFL_LINENO(NODE) (EXPR_CHECK (NODE)->exp.complexity >> 12)
 #define EXPR_WFL_COLNO(NODE) (EXPR_CHECK (NODE)->exp.complexity & 0xfff)
 #define EXPR_WFL_LINECOL(NODE) (EXPR_CHECK (NODE)->exp.complexity)

@@ -304,6 +304,10 @@ print_node (file, prefix, node, indent)
     fputs (" permanent", file);
   if (TREE_PUBLIC (node))
     fputs (" public", file);
+  if (TREE_PRIVATE (node))
+    fputs (" private", file);
+  if (TREE_PROTECTED (node))
+    fputs (" protected", file);
   if (TREE_STATIC (node))
     fputs (" static", file);
   if (TREE_LANG_FLAG_0 (node))
