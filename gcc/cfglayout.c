@@ -1,5 +1,5 @@
 /* Basic block reordering routines for the GNU compiler.
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -42,25 +42,23 @@ extern struct obstack flow_obstack;
 /* Holds the interesting trailing notes for the function.  */
 rtx cfg_layout_function_footer;
 
-static rtx skip_insns_after_block	PARAMS ((basic_block));
-static void record_effective_endpoints	PARAMS ((void));
-static rtx label_for_bb			PARAMS ((basic_block));
-static void fixup_reorder_chain		PARAMS ((void));
+static rtx skip_insns_after_block (basic_block);
+static void record_effective_endpoints (void);
+static rtx label_for_bb (basic_block);
+static void fixup_reorder_chain (void);
 
-static void set_block_levels		PARAMS ((tree, int));
-static void change_scope		PARAMS ((rtx, tree, tree));
+static void set_block_levels (tree, int);
+static void change_scope (rtx, tree, tree);
 
-void verify_insn_chain			PARAMS ((void));
-static void cleanup_unconditional_jumps	PARAMS ((struct loops *));
-static void fixup_fallthru_exit_predecessor PARAMS ((void));
-static rtx duplicate_insn_chain PARAMS ((rtx, rtx));
-static void break_superblocks PARAMS ((void));
-static tree insn_scope PARAMS ((rtx));
+void verify_insn_chain (void);
+static void cleanup_unconditional_jumps (struct loops *);
+static void fixup_fallthru_exit_predecessor (void);
+static rtx duplicate_insn_chain (rtx, rtx);
+static void break_superblocks (void);
+static tree insn_scope (rtx);
 
 rtx
-unlink_insn_chain (first, last)
-     rtx first;
-     rtx last;
+unlink_insn_chain (rtx first, rtx last)
 {
   rtx prevfirst = PREV_INSN (first);
   rtx nextlast = NEXT_INSN (last);
@@ -83,8 +81,7 @@ unlink_insn_chain (first, last)
    we return the last one. Otherwise, we return the end of BB.  */
 
 static rtx
-skip_insns_after_block (bb)
-     basic_block bb;
+skip_insns_after_block (basic_block bb)
 {
   rtx insn, last_insn, next_head, prev;
 
@@ -171,8 +168,7 @@ skip_insns_after_block (bb)
 /* Locate or create a label for a given basic block.  */
 
 static rtx
-label_for_bb (bb)
-     basic_block bb;
+label_for_bb (basic_block bb)
 {
   rtx label = bb->head;
 
@@ -191,7 +187,7 @@ label_for_bb (bb)
    block, as defined by skip_insns_after_block above.  */
 
 static void
-record_effective_endpoints ()
+record_effective_endpoints (void)
 {
   rtx next_insn = get_insns ();
   basic_block bb;
@@ -235,7 +231,7 @@ int epilogue_locator;
    INSN_LOCATORs.  */
 
 void
-insn_locators_initialize ()
+insn_locators_initialize (void)
 {
   tree block = NULL;
   tree last_block = NULL;
@@ -325,9 +321,7 @@ insn_locators_initialize ()
    found in the block tree.  */
 
 static void
-set_block_levels (block, level)
-     tree block;
-     int level;
+set_block_levels (tree block, int level)
 {
   while (block)
     {
@@ -339,8 +333,7 @@ set_block_levels (block, level)
 
 /* Return sope resulting from combination of S1 and S2.  */
 tree
-choose_inner_scope (s1, s2)
-     tree s1, s2;
+choose_inner_scope (tree s1, tree s2)
 {
    if (!s1)
      return s2;
@@ -354,9 +347,7 @@ choose_inner_scope (s1, s2)
 /* Emit lexical block notes needed to change scope from S1 to S2.  */
 
 static void
-change_scope (orig_insn, s1, s2)
-     rtx orig_insn;
-     tree s1, s2;
+change_scope (rtx orig_insn, tree s1, tree s2)
 {
   rtx insn = orig_insn;
   tree com = NULL_TREE;
@@ -400,8 +391,7 @@ change_scope (orig_insn, s1, s2)
 
 /* Return lexical scope block insn belong to.  */
 static tree
-insn_scope (insn)
-   rtx insn;
+insn_scope (rtx insn)
 {
   int max = VARRAY_ACTIVE_SIZE (block_locators_locs);
   int min = 0;
@@ -429,8 +419,7 @@ insn_scope (insn)
 
 /* Return line number of the statement that produced this insn.  */
 int
-insn_line (insn)
-   rtx insn;
+insn_line (rtx insn)
 {
   int max = VARRAY_ACTIVE_SIZE (line_locators_locs);
   int min = 0;
@@ -458,8 +447,7 @@ insn_line (insn)
 
 /* Return source file of the statement that produced this insn.  */
 const char *
-insn_file (insn)
-   rtx insn;
+insn_file (rtx insn)
 {
   int max = VARRAY_ACTIVE_SIZE (file_locators_locs);
   int min = 0;
@@ -489,7 +477,7 @@ insn_file (insn)
    on the scope tree and the newly reordered instructions.  */
 
 void
-reemit_insn_block_notes ()
+reemit_insn_block_notes (void)
 {
   tree cur_block = DECL_INITIAL (cfun->decl);
   rtx insn, note;
@@ -512,7 +500,7 @@ reemit_insn_block_notes ()
 	  this_block = NULL;
 	  for (i = 0; i < XVECLEN (body, 0); i++)
 	    this_block = choose_inner_scope (this_block,
-			    		 insn_scope (XVECEXP (body, 0, i)));
+					 insn_scope (XVECEXP (body, 0, i)));
 	}
       if (! this_block)
 	continue;
@@ -535,7 +523,7 @@ reemit_insn_block_notes ()
 /* Given a reorder chain, rearrange the code to match.  */
 
 static void
-fixup_reorder_chain ()
+fixup_reorder_chain (void)
 {
   basic_block bb, prev_bb;
   int index;
@@ -623,7 +611,7 @@ fixup_reorder_chain ()
 
 	      /* The degenerated case of conditional jump jumping to the next
 		 instruction can happen on target having jumps with side
-		 effects.  
+		 effects.
 
 		 Create temporarily the duplicated edge representing branch.
 		 It will get unidentified by force_nonfallthru_and_redirect
@@ -776,7 +764,7 @@ fixup_reorder_chain ()
    3. Check that get_last_insn () returns the actual end of chain.  */
 
 void
-verify_insn_chain ()
+verify_insn_chain (void)
 {
   rtx x, prevx, nextx;
   int insn_cnt1, insn_cnt2;
@@ -807,8 +795,7 @@ verify_insn_chain ()
    dominators.  */
 
 static void
-cleanup_unconditional_jumps (loops)
-     struct loops *loops;
+cleanup_unconditional_jumps (struct loops *loops)
 {
   basic_block bb;
 
@@ -885,7 +872,7 @@ cleanup_unconditional_jumps (loops)
 /* The block falling through to exit must be the last one in the
    reordered chain.  Ensure that this condition is met.  */
 static void
-fixup_fallthru_exit_predecessor ()
+fixup_fallthru_exit_predecessor (void)
 {
   edge e;
   basic_block bb = NULL;
@@ -913,8 +900,7 @@ fixup_fallthru_exit_predecessor ()
 /* Return true in case it is possible to duplicate the basic block BB.  */
 
 bool
-cfg_layout_can_duplicate_bb_p (bb)
-     basic_block bb;
+cfg_layout_can_duplicate_bb_p (basic_block bb)
 {
   edge s;
 
@@ -951,8 +937,7 @@ cfg_layout_can_duplicate_bb_p (bb)
 }
 
 static rtx
-duplicate_insn_chain (from, to)
-     rtx from, to;
+duplicate_insn_chain (rtx from, rtx to)
 {
   rtx insn, last;
 
@@ -1047,9 +1032,7 @@ duplicate_insn_chain (from, to)
 /* Create a duplicate of the basic block BB and redirect edge E into it.  */
 
 basic_block
-cfg_layout_duplicate_bb (bb, e)
-     basic_block bb;
-     edge e;
+cfg_layout_duplicate_bb (basic_block bb, edge e)
 {
   rtx insn;
   edge s, n;
@@ -1141,8 +1124,7 @@ cfg_layout_duplicate_bb (bb, e)
    CFG layout changes.  It keeps LOOPS up-to-date if not null.  */
 
 void
-cfg_layout_initialize (loops)
-     struct loops *loops;
+cfg_layout_initialize (struct loops *loops)
 {
   /* Our algorithm depends on fact that there are now dead jumptables
      around the code.  */
@@ -1156,7 +1138,7 @@ cfg_layout_initialize (loops)
 
 /* Splits superblocks.  */
 static void
-break_superblocks ()
+break_superblocks (void)
 {
   sbitmap superblocks;
   int i, need;
@@ -1187,7 +1169,7 @@ break_superblocks ()
    compensation code, rebuild scope forest.  */
 
 void
-cfg_layout_finalize ()
+cfg_layout_finalize (void)
 {
 #ifdef ENABLE_CHECKING
   verify_flow_info ();

@@ -1,5 +1,5 @@
 /* Basic block reordering routines for the GNU compiler.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -37,9 +37,9 @@ typedef struct reorder_block_def
 
 extern rtx cfg_layout_function_footer;
 
-extern void cfg_layout_initialize	PARAMS ((struct loops *));
-extern void cfg_layout_finalize		PARAMS ((void));
-extern bool cfg_layout_can_duplicate_bb_p PARAMS ((basic_block));
-extern basic_block cfg_layout_duplicate_bb PARAMS ((basic_block, edge));
-extern void insn_locators_initialize	PARAMS ((void));
-extern void reemit_insn_block_notes	PARAMS ((void));
+extern void cfg_layout_initialize (struct loops *);
+extern void cfg_layout_finalize (void);
+extern bool cfg_layout_can_duplicate_bb_p (basic_block);
+extern basic_block cfg_layout_duplicate_bb (basic_block, edge);
+extern void insn_locators_initialize (void);
+extern void reemit_insn_block_notes (void);

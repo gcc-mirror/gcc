@@ -1,6 +1,6 @@
 /* Save and restore call-clobbered registers which are live across a call.
    Copyright (C) 1989, 1992, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -51,13 +51,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    register because it is live we first try to save in multi-register modes.
    If that is not possible the save is done one register at a time.  */
 
-static enum machine_mode 
+static enum machine_mode
   regno_save_mode[FIRST_PSEUDO_REGISTER][MAX_MOVE_MAX / MIN_UNITS_PER_WORD + 1];
 
 /* For each hard register, a place on the stack where it can be saved,
    if needed.  */
 
-static rtx 
+static rtx
   regno_save_mem[FIRST_PSEUDO_REGISTER][MAX_MOVE_MAX / MIN_UNITS_PER_WORD + 1];
 
 /* We will only make a register eligible for caller-save if it can be
@@ -68,7 +68,7 @@ static rtx
 
 static int
   reg_save_code[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
-static int 
+static int
   reg_restore_code[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
 
 /* Set of hard regs currently residing in save area (during insn scan).  */
@@ -88,29 +88,28 @@ static HARD_REG_SET referenced_regs;
 static HARD_REG_SET this_insn_sets;
 
 
-static void mark_set_regs		PARAMS ((rtx, rtx, void *));
-static void mark_referenced_regs	PARAMS ((rtx));
-static int insert_save			PARAMS ((struct insn_chain *, int, int,
-						 HARD_REG_SET *,
-						 enum machine_mode *));
-static int insert_restore		PARAMS ((struct insn_chain *, int, int,
-						 int, enum machine_mode *));
-static struct insn_chain *insert_one_insn PARAMS ((struct insn_chain *, int,
-						   int, rtx));
-static void add_stored_regs		PARAMS ((rtx, rtx, void *));
+static void mark_set_regs (rtx, rtx, void *);
+static void mark_referenced_regs (rtx);
+static int insert_save (struct insn_chain *, int, int, HARD_REG_SET *,
+			enum machine_mode *);
+static int insert_restore (struct insn_chain *, int, int, int,
+			   enum machine_mode *);
+static struct insn_chain *insert_one_insn (struct insn_chain *, int, int,
+					   rtx);
+static void add_stored_regs (rtx, rtx, void *);
 
 /* Initialize for caller-save.
 
    Look at all the hard registers that are used by a call and for which
    regclass.c has not already excluded from being used across a call.
 
-   Ensure that we can find a mode to save the register and that there is a 
+   Ensure that we can find a mode to save the register and that there is a
    simple insn to save and restore the register.  This latter check avoids
    problems that would occur if we tried to save the MQ register of some
    machines directly into memory.  */
 
 void
-init_caller_save ()
+init_caller_save (void)
 {
   rtx addr_reg;
   int offset;
@@ -184,7 +183,7 @@ init_caller_save ()
     address = addr_reg;
 
   /* Next we try to form an insn to save and restore the register.  We
-     see if such an insn is recognized and meets its constraints. 
+     see if such an insn is recognized and meets its constraints.
 
      To avoid lots of unnecessary RTL allocation, we construct all the RTL
      once, then modify the memory and register operands in-place.  */
@@ -256,7 +255,7 @@ init_caller_save ()
 /* Initialize save areas by showing that we haven't allocated any yet.  */
 
 void
-init_save_areas ()
+init_save_areas (void)
 {
   int i, j;
 
@@ -274,17 +273,17 @@ init_save_areas ()
    Future work:
 
      In the fallback case we should iterate backwards across all possible
-     modes for the save, choosing the largest available one instead of 
+     modes for the save, choosing the largest available one instead of
      falling back to the smallest mode immediately.  (eg TF -> DF -> SF).
 
      We do not try to use "move multiple" instructions that exist
-     on some machines (such as the 68k moveml).  It could be a win to try 
+     on some machines (such as the 68k moveml).  It could be a win to try
      and use them when possible.  The hard part is doing it in a way that is
-     machine independent since they might be saving non-consecutive 
+     machine independent since they might be saving non-consecutive
      registers. (imagine caller-saving d0,d1,a0,a1 on the 68k) */
 
 void
-setup_save_areas ()
+setup_save_areas (void)
 {
   int i, j, k;
   unsigned int r;
@@ -300,7 +299,7 @@ setup_save_areas ()
     if (reg_renumber[i] >= 0 && REG_N_CALLS_CROSSED (i) > 0)
       {
 	unsigned int regno = reg_renumber[i];
-	unsigned int endregno 
+	unsigned int endregno
 	  = regno + HARD_REGNO_NREGS (regno, GET_MODE (regno_reg_rtx[i]));
 
 	for (r = regno; r < endregno; r++)
@@ -367,7 +366,7 @@ setup_save_areas ()
 /* Find the places where hard regs are live across calls and save them.  */
 
 void
-save_call_clobbered_regs ()
+save_call_clobbered_regs (void)
 {
   struct insn_chain *chain, *next;
   enum machine_mode save_mode [FIRST_PSEUDO_REGISTER];
@@ -488,7 +487,7 @@ save_call_clobbered_regs ()
 		regno += insert_restore (chain, GET_CODE (insn) == JUMP_INSN,
 					 regno, MOVE_MAX_WORDS, save_mode);
 	}
-    }  
+    }
 }
 
 /* Here from note_stores when an insn stores a value in a register.
@@ -496,10 +495,8 @@ save_call_clobbered_regs ()
    been assigned hard regs have had their register number changed already,
    so we can ignore pseudos.  */
 static void
-mark_set_regs (reg, setter, data)
-     rtx reg;
-     rtx setter ATTRIBUTE_UNUSED;
-     void *data ATTRIBUTE_UNUSED;
+mark_set_regs (rtx reg, rtx setter ATTRIBUTE_UNUSED,
+	       void *data ATTRIBUTE_UNUSED)
 {
   int regno, endregno, i;
   enum machine_mode mode = GET_MODE (reg);
@@ -529,10 +526,7 @@ mark_set_regs (reg, setter, data)
    been assigned hard regs have had their register number changed already,
    so we can ignore pseudos.  */
 static void
-add_stored_regs (reg, setter, data)
-     rtx reg;
-     rtx setter;
-     void *data;
+add_stored_regs (rtx reg, rtx setter, void *data)
 {
   int regno, endregno, i;
   enum machine_mode mode = GET_MODE (reg);
@@ -562,8 +556,7 @@ add_stored_regs (reg, setter, data)
 
 /* Walk X and record all referenced registers in REFERENCED_REGS.  */
 static void
-mark_referenced_regs (x)
-     rtx x;
+mark_referenced_regs (rtx x)
 {
   enum rtx_code code = GET_CODE (x);
   const char *fmt;
@@ -639,12 +632,8 @@ mark_referenced_regs (x)
    Return the extra number of registers saved.  */
 
 static int
-insert_restore (chain, before_p, regno, maxrestore, save_mode)
-     struct insn_chain *chain;
-     int before_p;
-     int regno;
-     int maxrestore;
-     enum machine_mode *save_mode;
+insert_restore (struct insn_chain *chain, int before_p, int regno,
+		int maxrestore, enum machine_mode *save_mode)
 {
   int i, k;
   rtx pat = NULL_RTX;
@@ -695,7 +684,7 @@ insert_restore (chain, before_p, regno, maxrestore, save_mode)
       && numregs == (unsigned int) HARD_REGNO_NREGS (regno, save_mode [regno]))
     mem = adjust_address (mem, save_mode[regno], 0);
   pat = gen_rtx_SET (VOIDmode,
-		     gen_rtx_REG (GET_MODE (mem), 
+		     gen_rtx_REG (GET_MODE (mem),
 				  regno), mem);
   code = reg_restore_code[regno][GET_MODE (mem)];
   new = insert_one_insn (chain, before_p, code, pat);
@@ -715,12 +704,8 @@ insert_restore (chain, before_p, regno, maxrestore, save_mode)
 /* Like insert_restore above, but save registers instead.  */
 
 static int
-insert_save (chain, before_p, regno, to_save, save_mode)
-     struct insn_chain *chain;
-     int before_p;
-     int regno;
-     HARD_REG_SET *to_save;
-     enum machine_mode *save_mode;
+insert_save (struct insn_chain *chain, int before_p, int regno,
+	     HARD_REG_SET (*to_save), enum machine_mode *save_mode)
 {
   int i;
   unsigned int k;
@@ -742,7 +727,7 @@ insert_save (chain, before_p, regno, to_save, save_mode)
 
   /* Get the pattern to emit and update our status.
 
-     See if we can save several registers with a single instruction.  
+     See if we can save several registers with a single instruction.
      Work backwards to the single register case.  */
   for (i = MOVE_MAX_WORDS; i > 0; i--)
     {
@@ -790,15 +775,11 @@ insert_save (chain, before_p, regno, to_save, save_mode)
 
 /* Emit a new caller-save insn and set the code.  */
 static struct insn_chain *
-insert_one_insn (chain, before_p, code, pat)
-     struct insn_chain *chain;
-     int before_p;
-     int code;
-     rtx pat;
+insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
 {
   rtx insn = chain->insn;
   struct insn_chain *new;
-  
+
 #ifdef HAVE_cc0
   /* If INSN references CC0, put our insns in front of the insn that sets
      CC0.  This is always safe, since the only way we could be passed an

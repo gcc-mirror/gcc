@@ -1,6 +1,6 @@
 /* Control flow graph manipulation code for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -138,13 +138,13 @@ struct basic_block_def entry_exit_blocks[2]
   }
 };
 
-void debug_flow_info			PARAMS ((void));
-static void free_edge			PARAMS ((edge));
+void debug_flow_info (void);
+static void free_edge (edge);
 
 /* Called once at initialization time.  */
 
 void
-init_flow ()
+init_flow (void)
 {
   static int initialized;
 
@@ -163,7 +163,7 @@ init_flow ()
       obstack_free (&flow_obstack, flow_firstobj);
       flow_firstobj = (char *) obstack_alloc (&flow_obstack, 0);
     }
-  bb_pool = create_alloc_pool ("Basic block pool", 
+  bb_pool = create_alloc_pool ("Basic block pool",
 			       sizeof (struct basic_block_def), 100);
   edge_pool = create_alloc_pool ("Edge pool",
 			       sizeof (struct edge_def), 100);
@@ -173,8 +173,7 @@ init_flow ()
    without actually unlinking it from the pred/succ lists.  */
 
 static void
-free_edge (e)
-     edge e;
+free_edge (edge e)
 {
   n_edges--;
   pool_free (edge_pool, e);
@@ -183,7 +182,7 @@ free_edge (e)
 /* Free the memory associated with the edge structures.  */
 
 void
-clear_edges ()
+clear_edges (void)
 {
   basic_block bb;
   edge e;
@@ -223,7 +222,7 @@ clear_edges ()
 /* Allocate memory for basic_block.  */
 
 basic_block
-alloc_block ()
+alloc_block (void)
 {
   basic_block bb;
   bb = pool_alloc (bb_pool);
@@ -233,8 +232,7 @@ alloc_block ()
 
 /* Link block B to chain after AFTER.  */
 void
-link_block (b, after)
-     basic_block b, after;
+link_block (basic_block b, basic_block after)
 {
   b->next_bb = after->next_bb;
   b->prev_bb = after;
@@ -244,8 +242,7 @@ link_block (b, after)
 
 /* Unlink block B from chain.  */
 void
-unlink_block (b)
-     basic_block b;
+unlink_block (basic_block b)
 {
   b->next_bb->prev_bb = b->prev_bb;
   b->prev_bb->next_bb = b->next_bb;
@@ -253,11 +250,11 @@ unlink_block (b)
 
 /* Sequentially order blocks and compact the arrays.  */
 void
-compact_blocks ()
+compact_blocks (void)
 {
   int i;
   basic_block bb;
- 
+
   i = 0;
   FOR_EACH_BB (bb)
     {
@@ -275,8 +272,7 @@ compact_blocks ()
 /* Remove block B from the basic block array.  */
 
 void
-expunge_block (b)
-     basic_block b;
+expunge_block (basic_block b)
 {
   unlink_block (b);
   BASIC_BLOCK (b->index) = NULL;
@@ -289,9 +285,7 @@ expunge_block (b)
    possibly already exist.  */
 
 edge
-unchecked_make_edge (src, dst, flags)
-     basic_block src, dst;
-     int flags;
+unchecked_make_edge (basic_block src, basic_block dst, int flags)
 {
   edge e;
   e = pool_alloc (edge_pool);
@@ -314,10 +308,7 @@ unchecked_make_edge (src, dst, flags)
    edge cache CACHE.  Return the new edge, NULL if already exist.  */
 
 edge
-cached_make_edge (edge_cache, src, dst, flags)
-     sbitmap *edge_cache;
-     basic_block src, dst;
-     int flags;
+cached_make_edge (sbitmap *edge_cache, basic_block src, basic_block dst, int flags)
 {
   int use_edge_cache;
   edge e;
@@ -349,7 +340,7 @@ cached_make_edge (edge_cache, src, dst, flags)
 	  }
       break;
     }
-  
+
   e = unchecked_make_edge (src, dst, flags);
 
   if (use_edge_cache)
@@ -362,9 +353,7 @@ cached_make_edge (edge_cache, src, dst, flags)
    created edge or NULL if already exist.  */
 
 edge
-make_edge (src, dest, flags)
-     basic_block src, dest;
-     int flags;
+make_edge (basic_block src, basic_block dest, int flags)
 {
   return cached_make_edge (NULL, src, dest, flags);
 }
@@ -373,9 +362,7 @@ make_edge (src, dest, flags)
    that it is the single edge leaving SRC.  */
 
 edge
-make_single_succ_edge (src, dest, flags)
-     basic_block src, dest;
-     int flags;
+make_single_succ_edge (basic_block src, basic_block dest, int flags)
 {
   edge e = make_edge (src, dest, flags);
 
@@ -387,8 +374,7 @@ make_single_succ_edge (src, dest, flags)
 /* This function will remove an edge from the flow graph.  */
 
 void
-remove_edge (e)
-     edge e;
+remove_edge (edge e)
 {
   edge last_pred = NULL;
   edge last_succ = NULL;
@@ -423,9 +409,7 @@ remove_edge (e)
 /* Redirect an edge's successor from one block to another.  */
 
 void
-redirect_edge_succ (e, new_succ)
-     edge e;
-     basic_block new_succ;
+redirect_edge_succ (edge e, basic_block new_succ)
 {
   edge *pe;
 
@@ -443,9 +427,7 @@ redirect_edge_succ (e, new_succ)
 /* Like previous but avoid possible duplicate edge.  */
 
 edge
-redirect_edge_succ_nodup (e, new_succ)
-     edge e;
-     basic_block new_succ;
+redirect_edge_succ_nodup (edge e, basic_block new_succ)
 {
   edge s;
 
@@ -473,9 +455,7 @@ redirect_edge_succ_nodup (e, new_succ)
 /* Redirect an edge's predecessor from one block to another.  */
 
 void
-redirect_edge_pred (e, new_pred)
-     edge e;
-     basic_block new_pred;
+redirect_edge_pred (edge e, basic_block new_pred)
 {
   edge *pe;
 
@@ -492,7 +472,7 @@ redirect_edge_pred (e, new_pred)
 }
 
 void
-clear_bb_flags ()
+clear_bb_flags (void)
 {
   basic_block bb;
 
@@ -501,8 +481,7 @@ clear_bb_flags ()
 }
 
 void
-dump_flow_info (file)
-     FILE *file;
+dump_flow_info (FILE *file)
 {
   int i;
   int max_regno = max_reg_num ();
@@ -625,16 +604,13 @@ dump_flow_info (file)
 }
 
 void
-debug_flow_info ()
+debug_flow_info (void)
 {
   dump_flow_info (stderr);
 }
 
 void
-dump_edge_info (file, e, do_succ)
-     FILE *file;
-     edge e;
-     int do_succ;
+dump_edge_info (FILE *file, edge e, int do_succ)
 {
   basic_block side = (do_succ ? e->dest : e->src);
 
@@ -693,9 +669,7 @@ static void *first_edge_aux_obj = 0;
    be first initialized by alloc_aux_for_blocks.  */
 
 inline void
-alloc_aux_for_block (bb, size)
-     basic_block bb;
-     int size;
+alloc_aux_for_block (basic_block bb, int size)
 {
   /* Verify that aux field is clear.  */
   if (bb->aux || !first_block_aux_obj)
@@ -708,8 +682,7 @@ alloc_aux_for_block (bb, size)
    alloc_aux_for_block for each basic block.  */
 
 void
-alloc_aux_for_blocks (size)
-     int size;
+alloc_aux_for_blocks (int size)
 {
   static int initialized;
 
@@ -735,7 +708,7 @@ alloc_aux_for_blocks (size)
 /* Clear AUX pointers of all blocks.  */
 
 void
-clear_aux_for_blocks ()
+clear_aux_for_blocks (void)
 {
   basic_block bb;
 
@@ -747,7 +720,7 @@ clear_aux_for_blocks ()
    of all blocks.  */
 
 void
-free_aux_for_blocks ()
+free_aux_for_blocks (void)
 {
   if (!first_block_aux_obj)
     abort ();
@@ -761,9 +734,7 @@ free_aux_for_blocks ()
    be first initialized by alloc_aux_for_edges.  */
 
 inline void
-alloc_aux_for_edge (e, size)
-     edge e;
-     int size;
+alloc_aux_for_edge (edge e, int size)
 {
   /* Verify that aux field is clear.  */
   if (e->aux || !first_edge_aux_obj)
@@ -776,8 +747,7 @@ alloc_aux_for_edge (e, size)
    alloc_aux_for_edge for each basic edge.  */
 
 void
-alloc_aux_for_edges (size)
-     int size;
+alloc_aux_for_edges (int size)
 {
   static int initialized;
 
@@ -809,7 +779,7 @@ alloc_aux_for_edges (size)
 /* Clear AUX pointers of all edges.  */
 
 void
-clear_aux_for_edges ()
+clear_aux_for_edges (void)
 {
   basic_block bb;
   edge e;
@@ -825,7 +795,7 @@ clear_aux_for_edges ()
    of all edges.  */
 
 void
-free_aux_for_edges ()
+free_aux_for_edges (void)
 {
   if (!first_edge_aux_obj)
     abort ();
@@ -835,12 +805,12 @@ free_aux_for_edges ()
   clear_aux_for_edges ();
 }
 
-/* Verify the CFG consistency.  
-  
+/* Verify the CFG consistency.
+
    Currently it does following checks edge and basic block list correctness
    and calls into IL dependent checking then.  */
 void
-verify_flow_info ()
+verify_flow_info (void)
 {
   size_t *edge_checksum;
   int num_bb_notes, err = 0;
@@ -984,9 +954,7 @@ verify_flow_info ()
 /* Print out one basic block with live information at start and end.  */
 
 void
-dump_bb (bb, outf)
-     basic_block bb;
-     FILE *outf;
+dump_bb (basic_block bb, FILE *outf)
 {
   edge e;
 
@@ -1004,15 +972,13 @@ dump_bb (bb, outf)
 }
 
 void
-debug_bb (bb)
-     basic_block bb;
+debug_bb (basic_block bb)
 {
   dump_bb (bb, stderr);
 }
 
 basic_block
-debug_bb_n (n)
-     int n;
+debug_bb_n (int n)
 {
   basic_block bb = BASIC_BLOCK (n);
   dump_bb (bb, stderr);

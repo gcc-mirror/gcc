@@ -1,3 +1,20 @@
+2003-06-22  Andreas Jaeger  <aj@suse.de>
+
+	* caller-save.c: Convert to ISO C90.
+	* calls.c: Likewise.
+	* cfg.c: Likewise.
+	* cfganal.c: Likewise.
+	* cfgbuild.c: Likewise.
+	* cfgcleanup.c: Likewise.
+	* cfghooks.c: Likewise.
+	* cfglayout.c: Likewise.
+	* cfglayout.h: Likewise.
+	* cfgloop.c: Likewise.
+	* cfgloop.h: Likewise.
+	* cfgloopanal.c: Likewise.
+	* cfgloopmainip.c: Likewise.
+	* cfgrtl.c: Likewise.
+
 2003-06-22  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (BIGGEST_ALIGNMENT): Use TARGET_REALLY_IWMMXT for selecting

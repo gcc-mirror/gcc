@@ -1,6 +1,6 @@
 /* Control flow graph manipulation code for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -69,32 +69,31 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 rtx label_value_list;
 rtx tail_recursion_label_list;
 
-static int can_delete_note_p		PARAMS ((rtx));
-static int can_delete_label_p		PARAMS ((rtx));
-static void commit_one_edge_insertion	PARAMS ((edge, int));
-static bool try_redirect_by_replacing_jump PARAMS ((edge, basic_block));
-static rtx last_loop_beg_note		PARAMS ((rtx));
-static bool back_edge_of_syntactic_loop_p PARAMS ((basic_block, basic_block));
-basic_block force_nonfallthru_and_redirect PARAMS ((edge, basic_block));
-static basic_block rtl_split_edge	PARAMS ((edge));
-static int rtl_verify_flow_info		PARAMS ((void));
-static edge cfg_layout_split_block	PARAMS ((basic_block, void *));
-static bool cfg_layout_redirect_edge_and_branch	PARAMS ((edge, basic_block));
-static basic_block cfg_layout_redirect_edge_and_branch_force PARAMS ((edge, basic_block));
-static void cfg_layout_delete_block	PARAMS ((basic_block));
-static void rtl_delete_block		PARAMS ((basic_block));
-static basic_block rtl_redirect_edge_and_branch_force PARAMS ((edge, basic_block));
-static bool rtl_redirect_edge_and_branch PARAMS ((edge, basic_block));
-static edge rtl_split_block		PARAMS ((basic_block, void *));
-static void rtl_dump_bb			PARAMS ((basic_block, FILE *));
-static int rtl_verify_flow_info_1	PARAMS ((void));
+static int can_delete_note_p (rtx);
+static int can_delete_label_p (rtx);
+static void commit_one_edge_insertion (edge, int);
+static bool try_redirect_by_replacing_jump (edge, basic_block);
+static rtx last_loop_beg_note (rtx);
+static bool back_edge_of_syntactic_loop_p (basic_block, basic_block);
+basic_block force_nonfallthru_and_redirect (edge, basic_block);
+static basic_block rtl_split_edge (edge);
+static int rtl_verify_flow_info (void);
+static edge cfg_layout_split_block (basic_block, void *);
+static bool cfg_layout_redirect_edge_and_branch (edge, basic_block);
+static basic_block cfg_layout_redirect_edge_and_branch_force (edge, basic_block);
+static void cfg_layout_delete_block (basic_block);
+static void rtl_delete_block (basic_block);
+static basic_block rtl_redirect_edge_and_branch_force (edge, basic_block);
+static bool rtl_redirect_edge_and_branch (edge, basic_block);
+static edge rtl_split_block (basic_block, void *);
+static void rtl_dump_bb (basic_block, FILE *);
+static int rtl_verify_flow_info_1 (void);
 
 /* Return true if NOTE is not one of the ones that must be kept paired,
    so that we may simply delete it.  */
 
 static int
-can_delete_note_p (note)
-     rtx note;
+can_delete_note_p (rtx note)
 {
   return (NOTE_LINE_NUMBER (note) == NOTE_INSN_DELETED
 	  || NOTE_LINE_NUMBER (note) == NOTE_INSN_BASIC_BLOCK
@@ -104,8 +103,7 @@ can_delete_note_p (note)
 /* True if a given label can be deleted.  */
 
 static int
-can_delete_label_p (label)
-     rtx label;
+can_delete_label_p (rtx label)
 {
   return (!LABEL_PRESERVE_P (label)
 	  /* User declared labels must be preserved.  */
@@ -117,8 +115,7 @@ can_delete_label_p (label)
 /* Delete INSN by patching it out.  Return the next insn.  */
 
 rtx
-delete_insn (insn)
-     rtx insn;
+delete_insn (rtx insn)
 {
   rtx next = NEXT_INSN (insn);
   rtx note;
@@ -189,8 +186,7 @@ delete_insn (insn)
 
 /* Like delete_insn but also purge dead edges from BB.  */
 rtx
-delete_insn_and_edges (insn)
-     rtx insn;
+delete_insn_and_edges (rtx insn)
 {
   rtx x;
   bool purge = false;
@@ -209,8 +205,7 @@ delete_insn_and_edges (insn)
    that must be paired.  */
 
 void
-delete_insn_chain (start, finish)
-     rtx start, finish;
+delete_insn_chain (rtx start, rtx finish)
 {
   rtx next;
 
@@ -233,8 +228,7 @@ delete_insn_chain (start, finish)
 
 /* Like delete_insn but also purge dead edges from BB.  */
 void
-delete_insn_chain_and_edges (first, last)
-     rtx first, last;
+delete_insn_chain_and_edges (rtx first, rtx last)
 {
   bool purge = false;
 
@@ -256,9 +250,7 @@ delete_insn_chain_and_edges (first, last)
    AFTER is the basic block we should be put after.  */
 
 basic_block
-create_basic_block_structure (head, end, bb_note, after)
-     rtx head, end, bb_note;
-     basic_block after;
+create_basic_block_structure (rtx head, rtx end, rtx bb_note, basic_block after)
 {
   basic_block bb;
 
@@ -333,9 +325,7 @@ create_basic_block_structure (head, end, bb_note, after)
    create basic block at the end of INSN chain.  */
 
 basic_block
-create_basic_block (head, end, after)
-     rtx head, end;
-     basic_block after;
+create_basic_block (rtx head, rtx end, basic_block after)
 {
   basic_block bb;
 
@@ -358,8 +348,7 @@ create_basic_block (head, end, after)
    to post-process the stream to remove empty blocks, loops, ranges, etc.  */
 
 static void
-rtl_delete_block (b)
-     basic_block b;
+rtl_delete_block (basic_block b)
 {
   rtx insn, end, tmp;
 
@@ -420,7 +409,7 @@ rtl_delete_block (b)
 /* Records the basic block struct in BLOCK_FOR_INSN for every insn.  */
 
 void
-compute_bb_for_insn ()
+compute_bb_for_insn (void)
 {
   basic_block bb;
 
@@ -441,7 +430,7 @@ compute_bb_for_insn ()
 /* Release the basic_block_for_insn array.  */
 
 void
-free_bb_for_insn ()
+free_bb_for_insn (void)
 {
   rtx insn;
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
@@ -452,8 +441,7 @@ free_bb_for_insn ()
 /* Update insns block within BB.  */
 
 void
-update_bb_for_insn (bb)
-     basic_block bb;
+update_bb_for_insn (basic_block bb)
 {
   rtx insn;
 
@@ -472,9 +460,7 @@ update_bb_for_insn (bb)
    one has a number one greater than the block split.  */
 
 static edge
-rtl_split_block (bb, insnp)
-     basic_block bb;
-     void *insnp;
+rtl_split_block (basic_block bb, void *insnp)
 {
   basic_block new_bb;
   edge new_edge;
@@ -533,8 +519,7 @@ rtl_split_block (bb, insnp)
    are already contiguous, hence `nomove'.  */
 
 void
-merge_blocks_nomove (a, b)
-     basic_block a, b;
+merge_blocks_nomove (basic_block a, basic_block b)
 {
   rtx b_head = b->head, b_end = b->end, a_end = a->end;
   rtx del_first = NULL_RTX, del_last = NULL_RTX;
@@ -641,8 +626,7 @@ merge_blocks_nomove (a, b)
    exist.  */
 
 rtx
-block_label (block)
-     basic_block block;
+block_label (basic_block block)
 {
   if (block == EXIT_BLOCK_PTR)
     return NULL_RTX;
@@ -661,9 +645,7 @@ block_label (block)
    return values are equivalent to redirect_edge_and_branch.  */
 
 static bool
-try_redirect_by_replacing_jump (e, target)
-     edge e;
-     basic_block target;
+try_redirect_by_replacing_jump (edge e, basic_block target)
 {
   basic_block src = e->src;
   rtx insn = src->end, kill_from;
@@ -785,8 +767,7 @@ try_redirect_by_replacing_jump (e, target)
    test.  */
 
 static rtx
-last_loop_beg_note (insn)
-     rtx insn;
+last_loop_beg_note (rtx insn)
 {
   rtx last = insn;
 
@@ -810,9 +791,7 @@ last_loop_beg_note (insn)
    stream.  */
 
 static bool
-rtl_redirect_edge_and_branch (e, target)
-     edge e;
-     basic_block target;
+rtl_redirect_edge_and_branch (edge e, basic_block target)
 {
   rtx tmp;
   rtx old_label = e->dest->head;
@@ -911,9 +890,7 @@ rtl_redirect_edge_and_branch (e, target)
    Used by redirect_edge_and_branch_force.  */
 
 basic_block
-force_nonfallthru_and_redirect (e, target)
-     edge e;
-     basic_block target;
+force_nonfallthru_and_redirect (edge e, basic_block target)
 {
   basic_block jump_block, new_bb = NULL, src = e->src;
   rtx note;
@@ -956,7 +933,7 @@ force_nonfallthru_and_redirect (e, target)
       /* Irritating special case - fallthru edge to the same block as abnormal
 	 edge.
 	 We can't redirect abnormal edge, but we still can split the fallthru
-	 one and create separate abnormal edge to original destination. 
+	 one and create separate abnormal edge to original destination.
 	 This allows bb-reorder to make such edge non-fallthru.  */
       if (e->dest != target)
 	abort ();
@@ -1064,8 +1041,7 @@ force_nonfallthru_and_redirect (e, target)
    Return newly created BB or NULL if none.  */
 
 basic_block
-force_nonfallthru (e)
-     edge e;
+force_nonfallthru (edge e)
 {
   return force_nonfallthru_and_redirect (e, e->dest);
 }
@@ -1075,9 +1051,7 @@ force_nonfallthru (e)
    Abort if conversion is impossible.  */
 
 static basic_block
-rtl_redirect_edge_and_branch_force (e, target)
-     edge e;
-     basic_block target;
+rtl_redirect_edge_and_branch_force (edge e, basic_block target)
 {
   if (redirect_edge_and_branch (e, target)
       || e->dest == target)
@@ -1092,9 +1066,7 @@ rtl_redirect_edge_and_branch_force (e, target)
    fact true, delete the jump and barriers that are in the way.  */
 
 void
-tidy_fallthru_edge (e, b, c)
-     edge e;
-     basic_block b, c;
+tidy_fallthru_edge (edge e, basic_block b, basic_block c)
 {
   rtx q;
 
@@ -1149,7 +1121,7 @@ tidy_fallthru_edge (e, b, c)
    is how find_basic_blocks created them.  */
 
 void
-tidy_fallthru_edges ()
+tidy_fallthru_edges (void)
 {
   basic_block b, c;
 
@@ -1189,8 +1161,7 @@ tidy_fallthru_edges ()
    is back edge of syntactic loop.  */
 
 static bool
-back_edge_of_syntactic_loop_p (bb1, bb2)
-	basic_block bb1, bb2;
+back_edge_of_syntactic_loop_p (basic_block bb1, basic_block bb2)
 {
   rtx insn;
   int count = 0;
@@ -1228,8 +1199,7 @@ back_edge_of_syntactic_loop_p (bb1, bb2)
    block with multiple predecessors is not handled optimally.  */
 
 basic_block
-rtl_split_edge (edge_in)
-     edge edge_in;
+rtl_split_edge (edge edge_in)
 {
   basic_block bb;
   rtx before;
@@ -1317,9 +1287,7 @@ rtl_split_edge (edge_in)
    CFG until commit_edge_insertions is called.  */
 
 void
-insert_insn_on_edge (pattern, e)
-     rtx pattern;
-     edge e;
+insert_insn_on_edge (rtx pattern, edge e)
 {
   /* We cannot insert instructions on an abnormal critical edge.
      It will be easier to find the culprit if we die now.  */
@@ -1340,9 +1308,7 @@ insert_insn_on_edge (pattern, e)
 /* Update the CFG for the instructions queued on edge E.  */
 
 static void
-commit_one_edge_insertion (e, watch_calls)
-     edge e;
-     int watch_calls;
+commit_one_edge_insertion (edge e, int watch_calls)
 {
   rtx before = NULL_RTX, after = NULL_RTX, insns, tmp, last;
   basic_block bb = NULL;
@@ -1467,7 +1433,7 @@ commit_one_edge_insertion (e, watch_calls)
 /* Update the CFG for all queued instructions.  */
 
 void
-commit_edge_insertions ()
+commit_edge_insertions (void)
 {
   basic_block bb;
   sbitmap blocks;
@@ -1515,7 +1481,7 @@ commit_edge_insertions ()
    code on edges between call and storing its return value.  */
 
 void
-commit_edge_insertions_watch_calls ()
+commit_edge_insertions_watch_calls (void)
 {
   basic_block bb;
   sbitmap blocks;
@@ -1562,9 +1528,7 @@ commit_edge_insertions_watch_calls ()
 /* Print out one basic block with live information at start and end.  */
 
 static void
-rtl_dump_bb (bb, outf)
-     basic_block bb;
-     FILE *outf;
+rtl_dump_bb (basic_block bb, FILE *outf)
 {
   rtx insn;
   rtx last;
@@ -1586,9 +1550,7 @@ rtl_dump_bb (bb, outf)
    basic block.  */
 
 void
-print_rtl_with_bb (outf, rtx_first)
-     FILE *outf;
-     rtx rtx_first;
+print_rtl_with_bb (FILE *outf, rtx rtx_first)
 {
   rtx tmp_rtx;
 
@@ -1674,8 +1636,7 @@ print_rtl_with_bb (outf, rtx_first)
 }
 
 void
-update_br_prob_note (bb)
-     basic_block bb;
+update_br_prob_note (basic_block bb)
 {
   rtx note;
   if (GET_CODE (bb->end) != JUMP_INSN)
@@ -1701,7 +1662,7 @@ update_br_prob_note (bb)
    In future it can be extended check a lot of other stuff as well
    (reachability of basic blocks, life information, etc. etc.).  */
 static int
-rtl_verify_flow_info_1 ()
+rtl_verify_flow_info_1 (void)
 {
   const int max_uid = get_max_uid ();
   rtx last_head = get_last_insn ();
@@ -1920,7 +1881,7 @@ rtl_verify_flow_info_1 ()
    - check that all returns are followed by barriers
    - check that all fallthru edge points to the adjacent blocks.  */
 static int
-rtl_verify_flow_info ()
+rtl_verify_flow_info (void)
 {
   basic_block bb;
   int err = rtl_verify_flow_info_1 ();
@@ -2044,8 +2005,7 @@ rtl_verify_flow_info ()
    Return true if any edges are eliminated.  */
 
 bool
-purge_dead_edges (bb)
-     basic_block bb;
+purge_dead_edges (basic_block bb)
 {
   edge e, next;
   rtx insn = bb->end, note;
@@ -2227,8 +2187,7 @@ purge_dead_edges (bb)
    true if some edge has been eliminated.  */
 
 bool
-purge_all_dead_edges (update_life_p)
-     int update_life_p;
+purge_all_dead_edges (int update_life_p)
 {
   int purged = false;
   sbitmap blocks = 0;
@@ -2261,9 +2220,7 @@ purge_all_dead_edges (update_life_p)
 
 /* Same as split_block but update cfg_layout structures.  */
 static edge
-cfg_layout_split_block (bb, insnp)
-     basic_block bb;
-     void *insnp;
+cfg_layout_split_block (basic_block bb, void *insnp)
 {
   rtx insn = insnp;
 
@@ -2278,9 +2235,7 @@ cfg_layout_split_block (bb, insnp)
 
 /* Redirect Edge to DEST.  */
 static bool
-cfg_layout_redirect_edge_and_branch (e, dest)
-     edge e;
-     basic_block dest;
+cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
 {
   basic_block src = e->src;
   basic_block old_next_bb = src->next_bb;
@@ -2332,9 +2287,7 @@ cfg_layout_redirect_edge_and_branch (e, dest)
 
 /* Simple wrapper as we always can redirect fallthru edges.  */
 static basic_block
-cfg_layout_redirect_edge_and_branch_force (e, dest)
-     edge e;
-     basic_block dest;
+cfg_layout_redirect_edge_and_branch_force (edge e, basic_block dest)
 {
   if (!cfg_layout_redirect_edge_and_branch (e, dest))
     abort ();
@@ -2343,8 +2296,7 @@ cfg_layout_redirect_edge_and_branch_force (e, dest)
 
 /* Same as flow_delete_block but update cfg_layout structures.  */
 static void
-cfg_layout_delete_block (bb)
-     basic_block bb;
+cfg_layout_delete_block (basic_block bb)
 {
   rtx insn, next, prev = PREV_INSN (bb->head), *to, remaints;
 
@@ -2384,11 +2336,11 @@ cfg_layout_delete_block (bb)
 
   if (prev)
     prev = NEXT_INSN (prev);
-  else 
+  else
     prev = get_insns ();
   if (next)
     next = PREV_INSN (next);
-  else 
+  else
     next = get_last_insn ();
 
   if (next && NEXT_INSN (next) != prev)
