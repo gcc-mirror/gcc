@@ -1,3 +1,8 @@
+2004-11-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* config/locale/ieee_1003.1-2001/codecvt_specializations.h
+	(do_out, do_unshift, do_in): Remove redundant typedef.
+
 2004-11-23  Chris Jefferson  <chris@bubblescope.net>
 
 	* testsuite/testsuite_iterators.h: New.
