@@ -1,3 +1,9 @@
+2000-03-01  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.c (collect_expansion): Trim trailing white space
+	from macro definitions, but don't go past the last insertion
+	point.
+
 Wed Mar  1 12:14:31 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (mulqi3): New pattern.

@@ -487,6 +487,12 @@ collect_expansion (pfile, arglist)
   else if (last_token == PASTE)
     cpp_error (pfile, "`##' at end of macro definition");
 
+  /* Trim trailing white space from definition.  */
+  here = CPP_WRITTEN (pfile);
+  while (here > last && is_hspace (pfile->token_buffer [here-1]))
+    here--;
+  CPP_SET_WRITTEN (pfile, here);
+  
   CPP_NUL_TERMINATE (pfile);
   len = CPP_WRITTEN (pfile) - start + 1;
   exp = xmalloc (len + 4); /* space for no-concat markers at either end */
