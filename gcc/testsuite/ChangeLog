@@ -1,3 +1,7 @@
+1998-12-06  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* gcc.dg/ultrasp1.c: New test.
+
 Sun Dec  6 00:40:12 1998  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/981206.c: New test.
