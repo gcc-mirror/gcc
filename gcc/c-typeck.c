@@ -2071,6 +2071,8 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
     case BIT_XOR_EXPR:
       if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	shorten = -1;
+      else if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
+	common = 1;
       break;
 
     case TRUNC_MOD_EXPR:
@@ -2778,7 +2780,12 @@ build_unary_op (code, xarg, flag)
       break;
 
     case BIT_NOT_EXPR:
-      if (typecode == COMPLEX_TYPE)
+      if (typecode == INTEGER_TYPE || typecode == VECTOR_TYPE)
+	{
+	  if (!noconvert)
+	    arg = default_conversion (arg);
+	}
+      else if (typecode == COMPLEX_TYPE)
 	{
 	  code = CONJ_EXPR;
 	  if (pedantic)
@@ -2786,13 +2793,11 @@ build_unary_op (code, xarg, flag)
 	  if (!noconvert)
 	    arg = default_conversion (arg);
 	}
-      else if (typecode != INTEGER_TYPE)
+      else
 	{
 	  error ("wrong type argument to bit-complement");
 	  return error_mark_node;
 	}
-      else if (!noconvert)
-	arg = default_conversion (arg);
       break;
 
     case ABS_EXPR:

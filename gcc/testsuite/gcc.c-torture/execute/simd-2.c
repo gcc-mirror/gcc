@@ -44,10 +44,29 @@ main ()
 
   verify (res.i[0], res.i[1], res.i[2], res.i[3], 15, 7, 7, 6);
 
+  k = i & j;
+  res.v = k;
+
+  verify (res.i[0], res.i[1], res.i[2], res.i[3], 2, 4, 20, 8);
+
+  k = i | j;
+  res.v = k;
+
+  verify (res.i[0], res.i[1], res.i[2], res.i[3], 158, 109, 150, 222);
+
+  k = i ^ j;
+  res.v = k;
+
+  verify (res.i[0], res.i[1], res.i[2], res.i[3], 156, 105, 130, 214);
+
   k = -i;
   res.v = k;
   verify (res.i[0], res.i[1], res.i[2], res.i[3],
 	  -150, -100, -150, -200);
+
+  k = ~i;
+  res.v = k;
+  verify (res.i[0], res.i[1], res.i[2], res.i[3], -151, -101, -151, -201);
 
   exit (0);
 }

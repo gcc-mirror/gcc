@@ -991,7 +991,7 @@ gen_lowpart_common (mode, x)
 	return gen_rtx_fmt_e (GET_CODE (x), mode, XEXP (x, 0));
     }
   else if (GET_CODE (x) == SUBREG || GET_CODE (x) == REG
-	   || GET_CODE (x) == CONCAT)
+	   || GET_CODE (x) == CONCAT || GET_CODE (x) == CONST_VECTOR)
     return simplify_gen_subreg (mode, x, GET_MODE (x), offset);
   /* If X is a CONST_INT or a CONST_DOUBLE, extract the appropriate bits
      from the low-order part of the constant.  */

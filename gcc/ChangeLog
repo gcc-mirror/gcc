@@ -1,3 +1,30 @@
+Wed Jul  3 10:24:16 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* optabs.c (expand_vector_binop): Don't store using a SUBREG smaller
+	than UNITS_PER_WORD, unless this is little endian and the first unit
+	in this word.  Let extract_bit_field decide how to load an element.
+	Force arguments to matching mode.
+	(expand_vector_unop): Likewise.
+
+	* simplify-rtx.c (simplify_subreg): Don't assume that all vectors
+	consist of word_mode elements.
+	* c-typeck.c (build_binary_op): Allow vector types for BIT_AND_EXPR,
+	BIT_ANDTC_EXPR, BIT_IOR_EXPR and BIT_XOR_EXPR.
+	(build_unary_op): Allow vector types for BIT_NOT_EPR.
+	* emit-rtl.c (gen_lowpart_common): Use simplify_gen_subreg for
+	CONST_VECTOR.
+	* optabs.c (expand_vector_binop): Try to perform operation in
+	smaller vector modes with same inner size.  Add handling of AND, IOR
+	and XOR.  Reject expansion to inner-mode sized scalars when using
+	OPTAB_DIRECT.  Use simplify_gen_subreg on constants.
+	(expand_vector_unop): Try to perform operation in smaller vector
+	modes with same inner size.  Add handling of one's complement.
+	When there is no vector negate operation, try a vector subtract
+	operation.  Use simplify_gen_subreg on constants.
+	* simplify-rtx.c (simplify_subreg): Add capability to convert vector
+	constants into smaller vectors with same inner mode, and to
+	integer CONST_DOUBLEs.
+
 2002-07-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-parse.in (parsing_iso_function_signature): New variable.
