@@ -1,3 +1,7 @@
+2003-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/eh/ia64-1.C: New test.
+
 2003-12-12  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/13037
