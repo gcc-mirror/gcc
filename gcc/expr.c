@@ -3681,8 +3681,19 @@ expand_expr (exp, target, tmode, modifier)
 	  return CONST0_RTX (mode);
 	}
 
-    case FUNCTION_DECL:
     case VAR_DECL:
+      /* If a static var's type was incomplete when the decl was written,
+	 but the type is complete now, lay out the decl now.  */
+      if (DECL_SIZE (exp) == 0 && TYPE_SIZE (TREE_TYPE (exp)) != 0
+	  && (TREE_STATIC (exp) || DECL_EXTERNAL (exp)))
+	{
+	  push_obstacks_nochange ();
+	  end_temporary_allocation ();
+	  layout_decl (exp, 0);
+	  PUT_MODE (DECL_RTL (exp), DECL_MODE (exp));
+	  pop_obstacks ();
+	}
+    case FUNCTION_DECL:
     case RESULT_DECL:
       if (DECL_RTL (exp) == 0)
 	abort ();
