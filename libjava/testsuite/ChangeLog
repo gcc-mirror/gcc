@@ -1,3 +1,9 @@
+2002-03-12  Tom Tromey  <tromey@redhat.com>
+
+	Test for PR java/5848:
+	* libjava.compile/PR5848.xfail: New file.
+	* libjava.compile/PR5848.java: New file.
+
 2002-03-12  Eric Blake  <ebb9@email.byu.edu>
 
 	* libjava.compile/PR5913.java: Expand test.
