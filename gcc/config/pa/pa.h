@@ -1615,6 +1615,64 @@ extern struct rtx_def *hppa_builtin_saveregs ();
 	   && GET_CODE (XEXP (X, 1)) == UNSPEC)		\
     goto ADDR;						\
 }
+
+/* Look for machine dependent ways to make the invalid address AD a
+   valid address.
+
+   For the PA, transform:
+
+        memory(X + <large int>)
+
+   into:
+
+        if (<large int> & mask) >= 16
+          Y = (<large int> & ~mask) + mask + 1  Round up.
+        else
+          Y = (<large int> & ~mask)             Round down.
+        Z = X + Y
+        memory (Z + (<large int> - Y));
+
+   This makes reload inheritance and reload_cse work better since Z
+   can be reused.
+
+   There may be more opportunities to improve code with this hook.  */
+#define LEGITIMIZE_RELOAD_ADDRESS(AD, MODE, OPNUM, TYPE, IND, WIN) 	\
+do { 									\
+  int offset, newoffset, mask;						\
+  mask = GET_MODE_CLASS (MODE) == MODE_FLOAT ? 0x1f : 0x3fff;		\
+									\
+  if (GET_CODE (AD) == PLUS						\
+      && GET_CODE (XEXP (AD, 0)) == REG					\
+      && GET_CODE (XEXP (AD, 1)) == CONST_INT)				\
+    {									\
+      offset = INTVAL (XEXP ((AD), 1));					\
+									\
+      /* Choose rounding direction.  Round up if we are >= halfway.  */	\
+      if ((offset & mask) >= ((mask + 1) / 2))				\
+	newoffset = (offset & ~mask) + mask + 1;			\
+      else								\
+	newoffset = offset & ~mask;					\
+									\
+      if (newoffset != 0						\
+	  && VAL_14_BITS_P (newoffset))					\
+	{								\
+	  rtx temp;							\
+									\
+	  /* Unshare the sum as well.  */				\
+	  AD = copy_rtx (AD);						\
+	  temp = gen_rtx_PLUS (Pmode, XEXP (AD, 0),			\
+			       GEN_INT (newoffset));			\
+	  AD = gen_rtx_PLUS (Pmode, temp, GEN_INT (offset - newoffset));\
+	  push_reload (XEXP (AD, 0), 0, &XEXP (AD, 0), 0,		\
+			     BASE_REG_CLASS, Pmode, VOIDmode, 0, 0,	\
+			     (OPNUM), (TYPE));				\
+	  goto WIN;							\
+	}								\
+    }									\
+} while (0)
+
+
+
 
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.
