@@ -1,3 +1,22 @@
+2004-04-09  Jan Beulich  <jbeulich@novell.com>
+
+	* config/i386/i386.c (classify_argument): Treat V1xx modes the same as
+	their base modes. CTImode, TCmode, and XCmode must be passed in memory.
+	TFmode (__float128) must be is an SSE/SSEUP pair. V2SImode, V4HImode,
+	and V8QI are class SSE. All sufficiently small remaining vector modes
+	must be passed in one or two integer registers.
+	(ix86_libcall_value): TFmode must be returned in xmm0, XCmode must be
+	returned in memory.
+	(bdesc_2arg, ix86_init_mmx_sse_builtins): __builtin_ia32_pmuludq and
+	__builtin_ia32_pmuludq128 have non-uniform argument and return types
+	and must thus be handled explicitly.
+	* config/i386/i386.md (*movdi_1_rex64): Add cases for moving between
+	MMX and XMM regs.
+	(movv8qi_internal, movv4hi_internal, movv2si_internal,
+	movv2sf_internal): Permit moving between MMX and XMM registers (since
+	MMX areguments and return values are passed in XMM registers).
+	(sse2_umulsidi3): Correct type and mode.
+
 2004-04-09  Richard Henderson  <rth@redhat.com>
 
 	* tree-cfg.c (dump_cfg_stats): Fix 64-bit format mismatch errors.
