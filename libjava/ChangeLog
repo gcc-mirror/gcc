@@ -1,3 +1,8 @@
+2002-03-23  Tom Tromey  <tromey@redhat.com>
+
+	* include/name-finder.h (_Jv_name_finder::myclose): New method.
+	* name-finder.cc (_Jv_name_finder): Initialize file descriptors.
+
 2002-03-23  Michael Smith  <msmith@spinnakernet.com>
 
 	* java/util/GregorianCalendar.java (minimums, maximums): Correct
