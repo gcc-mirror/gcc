@@ -2143,6 +2143,10 @@ extern void mark_seen_cases		PROTO ((tree, unsigned char *,
 						long, int));
 extern void check_for_full_enumeration_handling PROTO ((tree));
 extern void declare_nonlocal_label	PROTO ((tree));
+#ifdef BUFSIZ
+extern void lang_print_xnode 		PROTO ((FILE *, tree, int));
+#endif
+
 
 /* If KIND=='I', return a suitable global initializer (constructor) name.
    If KIND=='D', return a suitable global clean-up (destructor) name.  */
