@@ -1663,8 +1663,13 @@ do {							\
   fprintf (FILE, "%s%s", USER_LABEL_PREFIX, real_name);	\
 } while (0)           
 
-/* For the m32r if -Os, don't force line number label to begin
-   at the beginning of the word.  */
+/* If -Os, don't force line number labels to begin at the beginning of
+   the word; we still want the assembler to try to put things in parallel,
+   should that be possible.
+   For m32r/d, instructions are never in parallel (other than with a nop)
+   and the simulator and stub both handle a breakpoint in the middle of
+   a word so don't ever force line number labels to begin at the beginning
+   of a word.  */
 
 #undef	ASM_OUTPUT_SOURCE_LINE
 #define ASM_OUTPUT_SOURCE_LINE(file, line)				\
@@ -1676,7 +1681,9 @@ do									\
     assemble_name (file,						\
 		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));\
     fprintf (file,							\
-	     (optimize_size) ? "\n\t.debugsym .LM%d\n" : "\n.LM%d:\n",	\
+	     (optimize_size || TARGET_M32R)				\
+	     ? "\n\t.debugsym .LM%d\n"					\
+	     : "\n.LM%d:\n",						\
 	     sym_lineno);						\
     sym_lineno += 1;							\
   }									\
