@@ -1,3 +1,8 @@
+2002-06-29  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+        * c4x.h: (TARGET_CPU_CPP_BUILTINS): Check flag_inline_functions and
+	flag_inline_trees to enable inlining.
+
 2002-06-28  Phil Edwards  <pme@gcc.gnu.org>
 
 	* configure.in (gcc_gxx_include_dir):  Change to match versioned
