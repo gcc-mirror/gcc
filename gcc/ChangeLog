@@ -1,3 +1,10 @@
+Fri Feb 19 01:45:06 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (strength_reduce): For derived givs, replace the
+	giv this was derived from with its new_reg.
+	(recombine_givs): Don't set new_reg for derived giv.
+	And don't print it, print SUM instead.
+
 Thu Feb 18 15:52:49 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* m68kelf.h (ASM_RETURN_CASE_JUMP): Add 5200 support.
