@@ -154,6 +154,8 @@ rs6000_override_options ()
 
   int ptt_size = sizeof (processor_target_table) / sizeof (struct ptt);
 
+  int multiple = TARGET_MULTIPLE;	/* save current -mmultiple/-mno-multiple status */
+
   profile_block_flag = 0;
 
   /* Identify the processor type */
@@ -177,6 +179,11 @@ rs6000_override_options ()
 	  rs6000_cpu = PROCESSOR_DEFAULT;
 	}
     }
+
+  /* If -mmultiple or -mno-multiple was explicitly used, don't
+     override with the processor default */
+  if (TARGET_MULTIPLE_SET)
+    target_flags = (target_flags & ~MASK_MULTIPLE) | multiple;
 }
 
 /* Return non-zero if this function is known to have a null epilogue.  */

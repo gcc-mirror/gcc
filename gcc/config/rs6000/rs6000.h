@@ -155,6 +155,7 @@ extern int target_flags;
 
 /* Enable load/store multiple, even on powerpc */
 #define	MASK_MULTIPLE		0x1000
+#define	MASK_MULTIPLE_SET	0x2000
 
 #define TARGET_POWER			(target_flags & MASK_POWER)
 #define TARGET_POWER2			(target_flags & MASK_POWER2)
@@ -169,6 +170,7 @@ extern int target_flags;
 #define TARGET_64BIT			(target_flags & MASK_64BIT)
 #define TARGET_SOFT_FLOAT		(target_flags & MASK_SOFT_FLOAT)
 #define	TARGET_MULTIPLE			(target_flags & MASK_MULTIPLE)
+#define	TARGET_MULTIPLE_SET		(target_flags & MASK_MULTIPLE_SET)
 
 #define TARGET_HARD_FLOAT		(! TARGET_SOFT_FLOAT)
 
@@ -210,8 +212,9 @@ extern int target_flags;
   {"no-minimal-toc",	- MASK_MINIMAL_TOC},			\
   {"hard-float",	- MASK_SOFT_FLOAT},			\
   {"soft-float",	MASK_SOFT_FLOAT},			\
-  {"multiple",		MASK_MULTIPLE},				\
+  {"multiple",		MASK_MULTIPLE | MASK_MULTIPLE_SET},	\
   {"no-multiple",	- MASK_MULTIPLE},			\
+  {"no-multiple",	MASK_MULTIPLE_SET},			\
   SUBTARGET_SWITCHES						\
   {"",			TARGET_DEFAULT}}
 
