@@ -871,102 +871,6 @@ function_arg_partial_nregs (cum, mode, type, named)
   return 0;
 }
 
-/* Output an insn to pop an value from the 387 top-of-stack to 386
-   register DEST. The 387 register stack is popped if DIES is true.  If
-   the mode of DEST is an integer mode, a `fist' integer store is done,
-   otherwise a `fst' float store is done. */
-
-void
-output_to_reg (dest, dies, scratch_mem)
-     rtx dest;
-     int dies;
-     rtx scratch_mem;
-{
-  rtx xops[4];
-  int size = GET_MODE_SIZE (GET_MODE (dest));
-
-  if (! scratch_mem)
-    xops[0] = AT_SP (Pmode);
-  else
-    xops[0] = scratch_mem;
-
-  xops[1] = stack_pointer_rtx;
-  xops[2] = GEN_INT (size);
-  xops[3] = dest;
-
-  if (! scratch_mem)
-    output_asm_insn (AS2 (sub%L1,%2,%1), xops);
-
-  if (GET_MODE_CLASS (GET_MODE (dest)) == MODE_INT)
-    {
-      if (dies)
-	output_asm_insn (AS1 (fistp%z3,%y0), xops);
-      else if (GET_MODE (xops[3]) == DImode && ! dies)
-	{
-	  /* There is no DImode version of this without a stack pop, so
-	     we must emulate it.  It doesn't matter much what the second
-	     instruction is, because the value being pushed on the FP stack
-	     is not used except for the following stack popping store.
-	     This case can only happen without optimization, so it doesn't
-	     matter that it is inefficient.  */
-	  output_asm_insn (AS1 (fistp%z3,%0), xops);
-	  output_asm_insn (AS1 (fild%z3,%0), xops);
-	}
-      else
-	output_asm_insn (AS1 (fist%z3,%y0), xops);
-    }
-
-  else if (GET_MODE_CLASS (GET_MODE (dest)) == MODE_FLOAT)
-    {
-      if (dies)
-	output_asm_insn (AS1 (fstp%z3,%y0), xops);
-      else
-	{
-	  if (GET_MODE (dest) == XFmode)
-	    {
-	      output_asm_insn (AS1 (fstp%z3,%y0), xops);
-	      output_asm_insn (AS1 (fld%z3,%y0), xops);
-	    }
-	  else
-	    output_asm_insn (AS1 (fst%z3,%y0), xops);
-	}
-    }
-
-  else
-    abort ();
-
-  if (! scratch_mem)
-    output_asm_insn (AS1 (pop%L0,%0), &dest);
-  else
-    output_asm_insn (AS2 (mov%L0,%0,%3), xops);
-
-
-  if (size > UNITS_PER_WORD)
-    {
-      dest = gen_rtx_REG (SImode, REGNO (dest) + 1);
-      if (! scratch_mem)
-	output_asm_insn (AS1 (pop%L0,%0), &dest);
-      else
-	{
-	  xops[0] = adj_offsettable_operand (xops[0], 4);
-	  xops[3] = dest;
-	  output_asm_insn (AS2 (mov%L0,%0,%3), xops);
-	}
-
-      if (size > 2 * UNITS_PER_WORD)
-	{
-	  dest = gen_rtx_REG (SImode, REGNO (dest) + 1);
-	  if (! scratch_mem)
-	    output_asm_insn (AS1 (pop%L0,%0), &dest);
-	  else
-	    {
-	      xops[0] = adj_offsettable_operand (xops[0], 4);
-	      output_asm_insn (AS2 (mov%L0,%0,%3), xops);
-	    }
-	}
-    }
-}
-
 char *
 singlemove_string (operands)
      rtx *operands;
@@ -4087,10 +3991,10 @@ output_387_binary_op (insn, operands)
 }
 
 /* Output code for INSN to convert a float to a signed int.  OPERANDS
-   are the insn operands.  The output may be SFmode or DFmode and the
-   input operand may be SImode or DImode.  As a special case, make sure
-   that the 387 stack top dies if the output mode is DImode, because the
-   hardware requires this.  */
+   are the insn operands.  The input may be SFmode, DFmode, or XFmode
+   and the output operand may be SImode or DImode.  As a special case,
+   make sure that the 387 stack top dies if the output mode is DImode,
+   because the hardware requires this.  */
 
 char *
 output_fix_trunc (insn, operands)
@@ -4103,38 +4007,36 @@ output_fix_trunc (insn, operands)
   if (! STACK_TOP_P (operands[1]))
     abort ();
 
-  xops[0] = GEN_INT (12);
-  xops[1] = operands[4];
+  if (GET_MODE (operands[0]) == DImode && ! stack_top_dies)
+    abort ();
+
+  xops[0] = GEN_INT (0x0c00);
+  xops[1] = operands[5];
 
   output_asm_insn (AS1 (fnstc%W2,%2), operands);
-  output_asm_insn (AS2 (mov%L2,%2,%4), operands);
-  output_asm_insn (AS2 (mov%B1,%0,%h1), xops);
-  output_asm_insn (AS2 (mov%L4,%4,%3), operands);
+  output_asm_insn (AS2 (mov%W5,%2,%w5), operands);
+  output_asm_insn (AS2 (or%W1,%0,%w1), xops);
+  output_asm_insn (AS2 (mov%W3,%w5,%3), operands);
   output_asm_insn (AS1 (fldc%W3,%3), operands);
 
-  if (NON_STACK_REG_P (operands[0]))
-    output_to_reg (operands[0], stack_top_dies, operands[3]);
+  xops[0] = NON_STACK_REG_P (operands[0]) ? operands[4] : operands[0];
 
-  else if (GET_CODE (operands[0]) == MEM)
-    {
-      if (stack_top_dies)
-	output_asm_insn (AS1 (fistp%z0,%0), operands);
-      else if (GET_MODE (operands[0]) == DImode && ! stack_top_dies)
-	{
-	  /* There is no DImode version of this without a stack pop, so
-	     we must emulate it.  It doesn't matter much what the second
-	     instruction is, because the value being pushed on the FP stack
-	     is not used except for the following stack popping store.
-	     This case can only happen without optimization, so it doesn't
-	     matter that it is inefficient.  */
-	  output_asm_insn (AS1 (fistp%z0,%0), operands);
-	  output_asm_insn (AS1 (fild%z0,%0), operands);
-	}
-      else
-	output_asm_insn (AS1 (fist%z0,%0), operands);
-    }
+  if (stack_top_dies)
+    output_asm_insn (AS1 (fistp%z0,%y0), xops);
   else
-    abort ();
+    output_asm_insn (AS1 (fist%z0,%y0), xops);
+
+  if (NON_STACK_REG_P (operands[0]))
+    {
+      if (GET_MODE (operands[0]) == SImode)
+	output_asm_insn (AS2 (mov%L0,%4,%0), operands);
+      else
+	{
+	  xops[0] = operands[0];
+	  xops[1] = operands[4];
+	  output_asm_insn (output_move_double (xops), xops);
+	}
+    }
 
   return AS1 (fldc%W2,%2);
 }

@@ -2713,7 +2713,6 @@ extern void function_arg_advance ();
 extern struct rtx_def *function_arg ();
 extern int function_arg_partial_nregs ();
 extern char *output_strlen_unroll ();
-extern void output_to_reg ();
 extern char *singlemove_string ();
 extern char *output_move_double ();
 extern char *output_move_pushmem ();

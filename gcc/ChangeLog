@@ -1,3 +1,22 @@
+Sun Apr 25 14:38:10 EDT 1999  John Wehle  (john@feith.com)
+
+	* stupid.c (stupid_mark_refs): Generate a REG_UNUSED note
+	for a register which is clobbered even if the register
+	was used by an earlier instruction.
+
+	* i386.md (fix_truncsfdi2, fix_truncdfdi2,
+	fix_truncxfdi2): Don't bother with the gen_reg_RTX.
+	(fix_truncsfsi2, fix_truncsfdi2, fix_truncdfsi2,
+	fix_truncdfdi2, fix_truncxfsi2, fix_truncxfdi2): Update
+	operand constraints and modes.
+	* i386.c (output_fix_trunc): Use HImode register to avoid
+	memory stalls.  Call output_move_double instead of output_to_reg.
+	(output_to_reg): Remove.
+	* i386.h: Likewise.
+
+	* i386.md (negsf2, negdf2, negxf2): Set the type
+	attribute to fpop.
+
 Sat Apr 24 23:15:57 1999  Donn Terry (donn@interix.com)
 
 	* alpha.md (call_value_nt): Correct subscripts.

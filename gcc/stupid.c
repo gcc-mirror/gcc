@@ -682,16 +682,18 @@ stupid_mark_refs (x, chain)
 	      if (last_setjmp_suid < reg_where_dead[regno])
 		regs_crosses_setjmp[regno] = 1;
 
-	      /* If this register is only used in this insn and is only
-		 set, mark it unused.  We have to do this even when not 
-		 optimizing so that MD patterns which count on this
-		 behavior (e.g., it not causing an output reload on
-		 an insn setting CC) will operate correctly.  */
+	      /* If this register is clobbered or it is only used in
+		 this insn and is only set, mark it unused.  We have
+		 to do this even when not optimizing so that MD patterns
+		 which count on this behavior (e.g., it not causing an
+		 output reload on an insn setting CC) will operate
+		 correctly.  */
 	      if (GET_CODE (SET_DEST (x)) == REG
-		  && REGNO_FIRST_UID (regno) == INSN_UID (insn)
-		  && REGNO_LAST_UID (regno) == INSN_UID (insn)
-		  && (code == CLOBBER || ! reg_mentioned_p (SET_DEST (x),
-							    SET_SRC (x))))
+		  && (code == CLOBBER
+		      || (REGNO_FIRST_UID (regno) == INSN_UID (insn)
+			  && REGNO_LAST_UID (regno) == INSN_UID (insn)
+			  && ! reg_mentioned_p (SET_DEST (x),
+						SET_SRC (x)))))
 		REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_UNUSED,
 						      SET_DEST (x),
 						      REG_NOTES (insn));
