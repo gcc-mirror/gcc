@@ -1,3 +1,8 @@
+2002-02-17  Philipp Thomas  <pthomas@suse.de>
+
+	* config/cris/cris.h: Undefine STARTFILE_SPEC and
+	ENDFILE_SPEC before (re)defining them.
+
 2002-02-17  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c: Fix formatting.
