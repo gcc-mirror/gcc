@@ -3854,6 +3854,14 @@ update_flow_info (notes, first, last, orig_insn)
 	  break;
 
 	case REG_WAS_0:
+	  /* If the insn that set the register to 0 was deleted, this
+	     note cannot be relied on any longer.  The destination might
+	     even have been moved to memory.
+             This was observed for SH4 with execute/920501-6.c compilation,
+	     -O2 -fomit-frame-pointer -finline-functions .  */
+	  if (GET_CODE (XEXP (note, 0)) == NOTE
+	      || INSN_DELETED_P (XEXP (note, 0)))
+	    break;
 	  /* This note applies to the dest of the original insn.  Find the
 	     first new insn that now has the same dest, and move the note
 	     there.  */

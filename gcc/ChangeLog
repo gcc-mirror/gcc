@@ -1,3 +1,9 @@
+Fri Feb 13 20:36:05 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sched.c (update_flow_info, REG_WAS_0): Ignore if setting insn
+	was deleted.
+	* haifa-sched.c (update_flow_info, REG_WAS_0): Likewise.
+
 Fri Feb 13 12:18:40 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* genextract.c (main): Fix typo.
