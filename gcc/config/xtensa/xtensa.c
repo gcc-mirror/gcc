@@ -2241,8 +2241,9 @@ xtensa_reorg (first)
 	continue;
 
       pat = PATTERN (insn);
-      if (GET_CODE (pat) == UNSPEC_VOLATILE
-	  && (XINT (pat, 1) == UNSPECV_SET_FP))
+      if (GET_CODE (pat) == SET
+	  && GET_CODE (SET_SRC (pat)) == UNSPEC_VOLATILE
+	  && (XINT (SET_SRC (pat), 1) == UNSPECV_SET_FP))
 	{
 	  set_frame_ptr_insn = insn;
 	  break;
