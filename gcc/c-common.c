@@ -874,7 +874,7 @@ check_format_info (info, params)
   /* We can only check the format if it's a string constant.  */
   while (TREE_CODE (format_tree) == NOP_EXPR)
     format_tree = TREE_OPERAND (format_tree, 0); /* strip coercion */
-  if (format_tree == null_pointer_node)
+  if (integer_zerop (format_tree))
     {
       warning ("null format string");
       return;
