@@ -7833,13 +7833,22 @@ simplify_and_const_int (x, mode, varop, constop)
   int i;
 
   /* Simplify VAROP knowing that we will be only looking at some of the
-     bits in it.  */
+     bits in it.
+
+     Note by passing in CONSTOP, we guarantee that the bits not set in
+     CONSTOP are not significant and will never be examined.  We must
+     ensure that is the case by explicitly masking out those bits
+     before returning.  */
   varop = force_to_mode (varop, mode, constop, NULL_RTX, 0);
 
-  /* If VAROP is a CLOBBER, we will fail so return it; if it is a
-     CONST_INT, we are done.  */
-  if (GET_CODE (varop) == CLOBBER || GET_CODE (varop) == CONST_INT)
+  /* If VAROP is a CLOBBER, we will fail so return it.  */
+  if (GET_CODE (varop) == CLOBBER)
     return varop;
+
+  /* If VAROP is a CONST_INT, then we need to apply the mask in CONSTOP
+     to VAROP and return the new constant.  */
+  if (GET_CODE (varop) == CONST_INT)
+    return GEN_INT (trunc_int_for_mode (INTVAL (varop) & constop, mode));
 
   /* See what bits may be nonzero in VAROP.  Unlike the general case of
      a call to nonzero_bits, here we don't care about bits outside
