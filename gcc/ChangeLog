@@ -1,3 +1,10 @@
+2002-03-12  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md (reload_insi, reload_indi): Change mode of
+	scratch register to DImode / TImode.
+	config/s390/s390.c (s390_expand_plus_operand): Make sure scratch
+	register used does not overlap the target.
+
 2002-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (debug.o): Depend on debug.h.
@@ -75,8 +82,6 @@
 	C++ alias analysis improvement.
 	* alias.c (record_component_aliases): Record aliases for base 
 	classes too.
-
-2002-03-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.h (REG_ALLOC_ORDER): Add missing register.
 
