@@ -48,6 +48,14 @@
 #include "expr.h"
 
 
+/* Random guesstimation given names.  */
+#define PROB_NEVER		(0)
+#define PROB_VERY_UNLIKELY	(REG_BR_PROB_BASE / 10 - 1)
+#define PROB_UNLIKELY		(REG_BR_PROB_BASE * 4 / 10 - 1)
+#define PROB_EVEN		(REG_BR_PROB_BASE / 2)
+#define PROB_LIKELY		(REG_BR_PROB_BASE - PROB_UNLIKELY)
+#define PROB_VERY_LIKELY	(REG_BR_PROB_BASE - PROB_VERY_UNLIKELY)
+#define PROB_ALWAYS		(REG_BR_PROB_BASE)
 
 /* Statically estimate the probability that a branch will be taken.
    ??? In the next revision there will be a number of other predictors added
@@ -89,7 +97,7 @@ estimate_probability (loops_info)
 		  if (! find_reg_note (last_insn, REG_BR_PROB, 0))
 		    REG_NOTES (last_insn)
 		      = gen_rtx_EXPR_LIST (REG_BR_PROB,
-					   GEN_INT (REG_BR_PROB_BASE),
+					   GEN_INT (PROB_VERY_LIKELY),
 					   REG_NOTES (last_insn));
 		}
 	}
@@ -124,9 +132,9 @@ estimate_probability (loops_info)
 	if (e->dest->succ == NULL)
 	  {
 	    if (e->flags & EDGE_FALLTHRU)
-	      prob = REG_BR_PROB_BASE;
+	      prob = PROB_ALWAYS;
 	    else
-	      prob = 0;
+	      prob = PROB_NEVER;
 	    goto emitnote;
 	  }
 
@@ -142,7 +150,7 @@ estimate_probability (loops_info)
 		  || (GET_CODE (XEXP (cond, 1)) == REG
 		      && REGNO_POINTER_FLAG (REGNO (XEXP (cond, 1))))))
 	    {
-	      prob = REG_BR_PROB_BASE / 10;
+	      prob = PROB_UNLIKELY;
 	      goto emitnote;
 	    }
 	  break;
@@ -153,7 +161,7 @@ estimate_probability (loops_info)
 		  || (GET_CODE (XEXP (cond, 1)) == REG
 		      && REGNO_POINTER_FLAG (REGNO (XEXP (cond, 1))))))
 	    {
-	      prob = REG_BR_PROB_BASE - (REG_BR_PROB_BASE / 10);
+	      prob = PROB_LIKELY;
 	      goto emitnote;
 	    }
 	  break;
@@ -170,20 +178,20 @@ estimate_probability (loops_info)
 	{
 	case CONST_INT:
 	  /* Unconditional branch.  */
-	  prob = (cond == const0_rtx ? 0 : REG_BR_PROB_BASE);
+	  prob = (cond == const0_rtx ? PROB_NEVER : PROB_ALWAYS);
 	  goto emitnote;
 
 	case EQ:
-	  prob = REG_BR_PROB_BASE / 10;
+	  prob = PROB_UNLIKELY;
 	  goto emitnote;
 	case NE:
-	  prob = REG_BR_PROB_BASE - (REG_BR_PROB_BASE / 10);
+	  prob = PROB_LIKELY;
 	  goto emitnote;
 	case LE:
 	case LT:
 	  if (XEXP (cond, 1) == const0_rtx)
 	    {
-	      prob = REG_BR_PROB_BASE / 10;
+	      prob = PROB_UNLIKELY;
 	      goto emitnote;
 	    }
 	  break;
@@ -193,7 +201,7 @@ estimate_probability (loops_info)
 	      || (GET_CODE (XEXP (cond, 1)) == CONST_INT
 		  && INTVAL (XEXP (cond, 1)) == -1))
 	    {
-	      prob = REG_BR_PROB_BASE - (REG_BR_PROB_BASE / 10);
+	      prob = PROB_LIKELY;
 	      goto emitnote;
 	    }
 	  break;
@@ -203,7 +211,7 @@ estimate_probability (loops_info)
 	}
 
       /* If we havn't chosen something by now, predict 50-50.  */
-      prob = REG_BR_PROB_BASE / 2;
+      prob = PROB_EVEN;
 
     emitnote:
       REG_NOTES (last_insn)
@@ -280,8 +288,10 @@ expected_value_to_br_prob ()
 
       /* Turn the condition into a scaled branch probability.  */
       if (cond == const1_rtx)
-	cond = GEN_INT (REG_BR_PROB_BASE);
-      else if (cond != const0_rtx)
+	cond = GEN_INT (PROB_VERY_LIKELY);
+      else if (cond == const0_rtx)
+	cond = GEN_INT (PROB_VERY_UNLIKELY);
+      else
 	abort ();
       REG_NOTES (insn) = alloc_EXPR_LIST (REG_BR_PROB, cond, REG_NOTES (insn));
     }
