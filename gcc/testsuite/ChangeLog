@@ -1,3 +1,8 @@
+2002-07-17  Eric Botcazou  <ebotcazou@multimania.com>
+
+	* gcc.c-torture/execute/loop-2e.x: Let the testcase
+	XFAIL for all x86 processors.
+
 2002-07-17  Ian Dall  <ian@sibyl.beware.dropbear.id.au>
 
 	* gcc.c-torture/execute/20010122-1.x: Do not test with
