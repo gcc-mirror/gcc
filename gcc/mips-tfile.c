@@ -2,8 +2,8 @@
    contain debugging information specified by the GNU compiler
    in the form of comments (the mips assembler does not support
    assembly access to debug information).
-   Copyright (C) 1991, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994, 1995, 1997, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@cygnus.com).
    
 This file is part of GNU CC.
@@ -662,9 +662,8 @@ main ()
 #else				/* MIPS_DEBUGGING defined */
 
 /* The local and global symbols have a field index, so undo any defines
-   of index -> strchr and rindex -> strrchr.  */
+   of index -> strchr.  */
 
-#undef rindex
 #undef index
 
 #include <signal.h>
