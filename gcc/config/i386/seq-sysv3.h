@@ -1,4 +1,4 @@
-#include "sysv3.h"
+#include "i386/sysv3.h"
 
 /* Sequent Symmetry SVr3 doesn't have crtn.o; crt1.o doesn't work
    but crt0.o does.  */
@@ -12,3 +12,15 @@
 
 #undef LIB_SPEC
 #define LIB_SPEC "%{posix:-lcposix} %{shlib:-lc_s} -lc crtend.o%s"
+
+#undef CPP_SPEC
+#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} -D_SEQUENT_"
+
+/* Although the .init section is used, it is not automatically invoked.
+   This because the _start() function in /lib/crt0.o never calls anything
+   from the .init section */
+#define INVOKE__main
+
+/* Use atexit for static destructors, instead of defining
+   our own exit function.  */
+#define HAVE_ATEXIT
