@@ -1,5 +1,9 @@
 2005-02-18  Anthony Green  <green@redhat.com>
 
+	* NEWS: Draft of libgcj NEWS for 4.0.
+
+2005-02-18  Anthony Green  <green@redhat.com>
+
 	* java/lang/natRuntime.cc (insertSystemProperties): Normalize x86
 	architecture names to "i386" for compatibility reasons.  Win32
 	still uses "x86".

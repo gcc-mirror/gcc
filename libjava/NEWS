@@ -1,3 +1,211 @@
+*** Changes in GCC 4.0:
+
+* Character encoders and decoders have been added for: iso-8859-6
+(arabic), iso-8859-7 (greek), iso-8859-8 (hebrew), iso-8859-9
+(latin-5), iso-8859-13, iso-8859-15 (latin-9), cp1047 (ebcdic),
+ebcdic-xml-us,ascii, windows-1250, windows-1252, UTF-16BE (Big Endian),
+UTF-16LE (Little Endian), UTF-32BE (Big Endian), UTF-32LE (Little
+Endian).
+
+* Lots of Calendar bug fixes.
+
+* The http url protocol handler has been replaced with a full HTTP/1.1
+version from GNU inetlib.
+
+* A new ftp url protocol handler has been added also from GNU inetlib.
+
+* java.beans has been updated to 1.4 including support for XMLEncoder
+and XMLDecoder.
+
+* Added implementations of javax.xml (JAXP 1.3), org.xml.sax (SAX2)
+and org.w3c.dom (DOM Level 3) interfaces. It is possible to switch
+between different implementations AElfred2, GNU DOM, GNU XSL, libxmlj
+SAX, libxmlj DOM and libxmlj XSL by setting different system
+properties.  Also provided is a preliminary XPath 1.0
+implementation. The libxmlj versions are build around libxml2 and
+libxslt and have to be enabled during build time by the --enable-xmlj
+configure flag. The current support is equal to the last released GNU
+JAXP 1.3 release. These packages will be maintained as part of the GNU
+Classpath core classes in the future. For more information,
+conformance results and documentation on selecting different
+implementations see doc/README.jaxp.
+
+* Much fuller collection documentation.
+
+* libgcj can now load service providers that are described via
+META-INF/services/* resources in extension JARs. This is useful for
+implementing the various APIs that are supposed to be extensible via
+custom plugins. For details, please see the documentation of
+gnu.classpath.ServiceFactory.
+
+* GNU Classpath's JAR implementation now has preliminary support for
+signed entries, for so called "signed JAR" file support. Signed JAR
+files are one of the key security features of managed runtimes, and
+allows code to run privileged given unforgeable proofs of identity.
+
+* A much improved version of X.509 certificates has been added,
+including a robust certificate path checking algorithm. Also included
+is an implementation of the RSA signature scheme.
+
+* New javax.crypto, javax.crypto.interfaces, javax.crypto.spec,
+javax.net, javax.net.ssl, javax.security.auth,
+javax.security.auth.callback, javax.security.auth.login,
+javax.security.auth.x500, javax.security.sasl and org.ietf.jgss
+packages are now officially part of GNU Classpath. Extra crypto
+algorithms can be obtained from the GNU Crypto project, a full TLS
+implementation is provided by the Jessie project.
+http://www.gnu.org/software/gnu-crypto/ 
+http://www.nongnu.org/jessie/
+
+* java.security.AccessController has been implemented.
+
+* The default java.lang.SecurityManager now uses AccessController.
+
+* Lookahead support for regular expressions.
+
+* java.util.regexp implementation through gnu.regexp wrappers.
+
+* Serialization object stream fixes for multiple ClassLoader scenarios.
+
+* java.net.URL now uses application classloader to load
+URLStreamHandlers and reuses URLStreamHandlers when URL is reset (but
+protocol isn't changed).
+
+* java.io.File.deleteOnExit() implementation.
+
+* java.io is now implemented by delegating most tasks directly to
+java.nio.
+
+* Reworked/Optimized implementations of java.nio.Buffer and subclasses.
+
+* BufferedReader speed improvements.
+
+* Multiple java.net.InetAdress fixes and java.rmi fixes.
+
+* ServerSocket.accept() now restarts listening when system call
+interrupted.
+
+* java.net.URI implementation.
+
+* New javax.print, javax.print.attribute[.standard] and
+javax.print.event packages and classes.
+
+* java.text multiple new features and bug fixes (only 2 out of the
+1000+ java.text Mauve tests now fail).
+
+* java.text attributed iterators support.
+
+* Improved useabilty of java.text implementation for several
+applications.
+
+* More AWT accessible support.
+
+* AWT gtk+ peers component layout, dialog placement, keyboard focus
+handling and text positioning have been improved.
+
+* ImageIO interfaces are more complete.
+
+* JList, JTable and JTree have been hugely improved.
+
+* java.awt.Robot support with GdkRobot in the gtk+ awt peers. Needs
+XTest Extension (libXtst) XServer support.
+
+* Full java.awt.color implementation, with all standard ICC profiles,
+except for PhotoYCC color space.
+
+* java.awt.image support updated to 1.4.
+
+* Big-endian (PowerPC) fixes for native awt GTK+ peers.
+
+* Better AWT focus management fro GTK+ peers.
+
+* Much faster and better fonts support (for both gdk Graphics and cairo
+Graphics2D)
+
+* AWT Choice fixes for hidden components.
+
+* More javax.imageio support.
+
+* Better AWT Help MenuBar support.
+
+* Swing TabbedPane, ColorChooser and ComboBox improvements.
+
+* Start of JTree functionality.
+
+* javax.swing.Spring and SpringLayout support.
+
+* Added pluggable look and feel support for BasicTextFieldUI and
+BasicToolBarSeparatorUI.
+
+* java.swing.text support for (Default and Layered) Highlighter,
+FieldView, PlainView, TabExpander and TabableView added.
+
+* Start of JTable and JTree implementation.
+
+* Internal Swing frames work.
+
+* JMenu and JPopupMenu work.
+
+* New gtk+ AWT FileDialog peer now based on gtk+2.4 or higher.
+
+* java.awt.image LookupTables and kernel support.
+
+* Improved java.awt.image.BufferedImage support.
+
+* AWT 1.0 event model support.
+
+* Frame.setIconImage() support.
+
+* AWT GDKGraphics scaling.
+
+* New configure flag --enable-gtk-cairo to build Graphics2D
+implementation build on cairo and pangoft2. Enabled at runtime by
+defining the system property gnu.java.awt.peer.gtk.Graphics=Graphics2D.
+
+* javax.swing.JSpinner implemented.
+
+* java.awt.geom completed. Area, Arc2D, Ellipse2D and Line2D
+implemented.
+
+* JColorChooser, JComboBox and JTextField implemented, including
+example uses in GNU Classpath Examples swing Demo.
+
+* Better (non-black) default AWT System colors.
+
+* AWT lists use GTK treeviews.
+
+* Proper AWT focus management has been implemented.
+
+* Swing menus and scrollpanes are beginning to work.
+
+* Swing splitpanes, dialogs and internal frames were added.
+
+* Swing repainting / double buffering was redone.
+
+* Font management and Pango DPI conversion fixes.
+
+* A lot of AWT imaging and event bugs have been picked out.
+
+* More of javax.swing.text has been implemented.
+
+* javax.swing.Timer has been reimplemented.
+
+* The gnu.java.awt.EmbeddedWindow class has been improved, and now
+supports embedding AWT windows in other top-level X windows. This
+functionality is required by gcjwebplugin.
+
+* New javax.imageio, javax.imageio.event and javax.imageio.spi packages
+and classes.
+
+* Working implementation of javax.swing.undo.
+
+* java.awt.geom.CubicCurve2D/QuadCurve2D: Can now solve cubic and
+quadratic equations; implementation adapted from the GNU Scientific
+Library.
+
+* Lots of java.awt and gtk+ peer improvements. Also more Swing work.
+Start of EmbeddedWindow support.
+
 *** Changes in GCC 3.4:
 
 * Compiling a .jar file will now cause non-.class entries to be automatically 
