@@ -1,4 +1,4 @@
-// Copyright (C) 2003
+// Copyright (C) 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -25,14 +25,13 @@
 
 // { dg-do compile }
 
-namespace test 
+namespace std
 {
-  using namespace std;
   using __gnu_test::pod_char;
   typedef short type_t;
   template class fpos<type_t>;
   template class fpos<pod_char>;
-} // test
+} // std
 
 // more surf!!!
 

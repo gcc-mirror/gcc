@@ -1,6 +1,6 @@
 // 1999-01-17 bkoz test functionality of basic_filebuf for char_type == char
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -30,9 +30,8 @@
 // test05
 // libstdc++/1886
 // should be able to instantiate basic_filebuf for non-standard types.
-namespace test 
+namespace std
 {
-  using namespace std;
   using __gnu_test::pod_char;
   typedef short type_t;
   template class basic_filebuf<type_t, char_traits<type_t> >;

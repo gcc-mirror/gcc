@@ -1,6 +1,6 @@
 // 2002-07-24 Benjamin Kosnik
 
-// Copyright (C) 2002 Free Software Foundation
+// Copyright (C) 2002, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,7 +28,7 @@ void test01()
 {
   void* pc = new char;
   void* pa = new char[10];
-  void* tmp;
+  void* tmp = NULL;
   operator delete(pc, tmp);
   operator delete[](pa, tmp);
 }
