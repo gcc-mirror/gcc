@@ -1,3 +1,7 @@
+2002-04-23  Tom Tromey  <tromey@redhat.com>
+
+	* gcc.c: Added --resource.  For PR java/6314.
+
 2002-04-23  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/freebsd.h(OBJECT_FORMAT_ELF): Define.
