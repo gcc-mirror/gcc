@@ -276,6 +276,7 @@ m68hc11_override_options ()
       m68hc11_sp_correction = 0;
       m68hc11_tmp_regs_class = TMP_REGS;
       target_flags &= ~MASK_M6811;
+      target_flags |= MASK_NO_DIRECT_MODE;
       if (m68hc11_soft_reg_count == 0)
 	m68hc11_soft_reg_count = "2";
     }
@@ -924,6 +925,42 @@ reg_or_some_mem_operand (operand, mode)
     }
 
   return register_operand (operand, mode);
+}
+
+int
+m68hc11_symbolic_p (operand, mode)
+     rtx operand;
+     enum machine_mode mode;
+{
+  if (GET_CODE (operand) == MEM)
+    {
+      rtx op = XEXP (operand, 0);
+
+      if (symbolic_memory_operand (op, mode))
+	return 1;
+    }
+  return 0;
+}
+
+int
+m68hc11_indirect_p (operand, mode)
+     rtx operand;
+     enum machine_mode mode;
+{
+  if (GET_CODE (operand) == MEM)
+    {
+      rtx op = XEXP (operand, 0);
+
+      if (symbolic_memory_operand (op, mode))
+	return 0;
+
+      if (reload_in_progress)
+        return 1;
+
+      operand = XEXP (operand, 0);
+      return register_indirect_p (operand, mode, reload_completed);
+    }
+  return 0;
 }
 
 int
@@ -1950,8 +1987,9 @@ m68hc11_gen_highpart (mode, x)
     {
       int pos;
 
-      /* For 68HC12, avoid the '*' for direct addressing mode.  */
-      pos = TARGET_M6812 ? 1 : 0;
+      /* Avoid the '*' for direct addressing mode when this
+         addressing mode is disabled.  */
+      pos = TARGET_NO_DIRECT_MODE ? 1 : 0;
       return gen_rtx (MEM, QImode,
 		      gen_rtx (SYMBOL_REF, Pmode,
 			       &reg_names[REGNO (x)][pos]));
@@ -2079,7 +2117,7 @@ asm_print_register (file, regno)
 {
   const char *name = reg_names[regno];
 
-  if (TARGET_M6812 && name[0] == '*')
+  if (TARGET_NO_DIRECT_MODE && name[0] == '*')
     name++;
 
   asm_fprintf (file, "%s", name);
