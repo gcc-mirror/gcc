@@ -1,3 +1,7 @@
+2001-08-08  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* global.c (retry_global_alloc): Avoid shadowing allocno.
+
 2001-08-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* except.c (remove_fixup_regions): Fix typo.
