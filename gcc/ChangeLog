@@ -1,3 +1,12 @@
+2004-04-28  Josef Zlomek  <zlomekj@suse.cz>
+
+	* var-tracking.c (variable_different_p): Add a parameter
+	compare_current_location, compare current location of variable parts
+	if it is true.
+	(dataflow_set_different_1): Pass compare_current_location == false.
+	(dataflow_set_different_2): Pass compare_current_location == false.
+	(emit_notes_for_differences_1): Pass compare_current_location == true.
+
 2004-04-28  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("casesi"): Mark jump table access as
