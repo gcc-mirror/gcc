@@ -1,3 +1,8 @@
+2004-07-07  Nick Clifton  <nickc@redhat.com>
+
+	* config/fr30/fr30.c (fr30_setup_incoming_varargs): Change
+	arguments to match TARGET_SETUP_INCOMING_VARARGS prototype. 
+
 2004-07-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* vec.h: Fix the example use.
