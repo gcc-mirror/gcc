@@ -1,3 +1,16 @@
+2001-06-07  Tom Tromey  <tromey@redhat.com>
+
+	For PR bootstrap/3075:
+	* configure, aclocal.m4, Makefile.am: Rebuilt.
+	* configure.in: Pass `--with-auxdir' to subdir configure.  Don't
+	call AC_CONFIG_AUX_DIR or AC_CANONICAL_SYSTEM.  Look for unwind.h
+	relative to libgcj_basedir.
+	* acinclude.m4 ((LIBGCJ_CONFIGURE): Call AC_CONFIG_AUX_DIR and
+	AC_CANONICAL_SYSTEM here.
+	* Makefile.am (CONFIG_STATUS_DEPENDENCIES): Use srcdir, not
+	libgcj_basedir.
+	($(extra_headers)): New target.
+
 2001-06-05  Martin Kahlert  <martin.kahlert@infineon.com>
 	    Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
