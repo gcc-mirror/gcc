@@ -20,7 +20,7 @@ public:
         void myf(int);
 };
 
-void inh::myf(int i) { // ERROR - inaccessible
+void inh::myf(int i) {
         a = i;
 }
 
