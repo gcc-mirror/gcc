@@ -10480,7 +10480,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	       are error_mark_node, for example.  */
 	    decl = NULL_TREE;
 	  }
-	else if (in_namespace)
+	else if (in_namespace && !friendp)
 	  {
 	    /* Something like struct S { int N::j; };  */
 	    cp_error ("invalid use of `::'");

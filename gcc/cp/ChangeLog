@@ -1,3 +1,8 @@
+1998-11-08  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* decl.c (grokdeclarator): Allow namespace-scoped members if they
+	are friends.
+
 1998-11-08  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (tsubst_decl): Don't mess with the global value of an 
