@@ -56,18 +56,18 @@ import gnu.gcj.convert.*;
  * Here is a list of standard encoding names that may be available:
  * <p>
  * <ul>
- * <li>8859_1 (ISO-8859-1/Latin-1)
- * <li>8859_2 (ISO-8859-2/Latin-2)
- * <li>8859_3 (ISO-8859-3/Latin-3)
- * <li>8859_4 (ISO-8859-4/Latin-4)
- * <li>8859_5 (ISO-8859-5/Latin-5)
- * <li>8859_6 (ISO-8859-6/Latin-6)
- * <li>8859_7 (ISO-8859-7/Latin-7)
- * <li>8859_8 (ISO-8859-8/Latin-8)
- * <li>8859_9 (ISO-8859-9/Latin-9)
- * <li>ASCII (7-bit ASCII)
- * <li>UTF8 (UCS Transformation Format-8)
- * <li>More later
+ * <li>8859_1 (ISO-8859-1/Latin-1)</li>
+ * <li>8859_2 (ISO-8859-2/Latin-2)</li>
+ * <li>8859_3 (ISO-8859-3/Latin-3)</li>
+ * <li>8859_4 (ISO-8859-4/Latin-4)</li>
+ * <li>8859_5 (ISO-8859-5/Latin-5)</li>
+ * <li>8859_6 (ISO-8859-6/Latin-6)</li>
+ * <li>8859_7 (ISO-8859-7/Latin-7)</li>
+ * <li>8859_8 (ISO-8859-8/Latin-8)</li>
+ * <li>8859_9 (ISO-8859-9/Latin-9)</li>
+ * <li>ASCII (7-bit ASCII)</li>
+ * <li>UTF8 (UCS Transformation Format-8)</li>
+ * <li>More later</li>
  * </ul>
  * <p>
  * It is recommended that applications do not use 
@@ -170,7 +170,7 @@ public class InputStreamReader extends Reader
    * by this object.  If the stream has been closed, this method is allowed
    * to return <code>null</code>.
    *
-   * @param The current encoding name
+   * @return The current encoding name
    */
   public String getEncoding()
   {
@@ -296,5 +296,4 @@ public class InputStreamReader extends Reader
 	  return count;
       }
   }
-} // class InputStreamReader
-
+}

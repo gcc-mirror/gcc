@@ -256,7 +256,7 @@ public class PipedReader extends Reader
     * @param offset The index into the buffer at which to start writing.
     * @param len The maximum number of chars to read.
     *
-    * @exception IOException If <code>close()/code> was called on this Piped
+    * @exception IOException If <code>close()</code> was called on this Piped
     *                        Reader.
     */  
   public int read(char[] buf, int offset, int len)

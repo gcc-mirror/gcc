@@ -44,18 +44,17 @@ package java.io;
  */
 
 /**
-  * This class accumulates chars written in a buffer instead of immediately
-  * writing the data to the underlying output sink. The chars are instead
-  * as one large block when the buffer is filled, or when the stream is
-  * closed or explicitly flushed. This mode operation can provide a more
-  * efficient mechanism for writing versus doing numerous small unbuffered
-  * writes.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Tom Tromey <tromey@cygnus.com>
-  * @date September 25, 1998 
-  */
-
+ * This class accumulates chars written in a buffer instead of immediately
+ * writing the data to the underlying output sink. The chars are instead
+ * as one large block when the buffer is filled, or when the stream is
+ * closed or explicitly flushed. This mode operation can provide a more
+ * efficient mechanism for writing versus doing numerous small unbuffered
+ * writes.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Tom Tromey (tromey@cygnus.com)
+ * @date September 25, 1998 
+ */
 public class BufferedWriter extends Writer
 {
   /**
@@ -90,6 +89,8 @@ public class BufferedWriter extends Writer
    * This method flushes any remaining buffered chars then closes the 
    * underlying output stream.  Any further attempts to write to this stream
    * may throw an exception
+   *
+   * @exception IOException If an error occurs.
    */
   public void close () throws IOException
   {
@@ -138,7 +139,7 @@ public class BufferedWriter extends Writer
    * is filled as a result of this write request, it will be flushed to the
    * underlying output stream.
    *
-   * @param b The char of data to be written, passed as an int
+   * @param oneChar The char of data to be written, passed as an int
    *
    * @exception IOException If an error occurs
    */

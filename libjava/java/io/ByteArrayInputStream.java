@@ -83,7 +83,7 @@ public class ByteArrayInputStream extends InputStream
    * bytes supplied to the reader.  Please use caution in changing the 
    * contents of the buffer while this stream is open.
    *
-   * @param buf The byte array buffer this stream will read from.
+   * @param buffer The byte array buffer this stream will read from.
    */
   public ByteArrayInputStream(byte[] buffer)
   {
@@ -105,7 +105,7 @@ public class ByteArrayInputStream extends InputStream
    * bytes supplied to the reader.  Please use caution in changing the 
    * contents of the buffer while this stream is open.
    *
-   * @param buf The byte array buffer this stream will read from.
+   * @param buffer The byte array buffer this stream will read from.
    * @param offset The index into the buffer to start reading bytes from
    * @param length The number of bytes to read from the buffer
    */
@@ -146,12 +146,12 @@ public class ByteArrayInputStream extends InputStream
    * position 0 in the stream.  This is in constrast to some other
    * stream types where there is no default mark position.
    *
-   * @param readlimit The number of bytes this stream must remember.
+   * @param readLimit The number of bytes this stream must remember.
    * This parameter is ignored.
    */
-  public synchronized void mark(int readAheadLimit)
+  public synchronized void mark(int readLimit)
   {
-    // readAheadLimit is ignored per Java Class Lib. book, p.220.
+    // readLimit is ignored per Java Class Lib. book, p.220.
     mark = pos;
   }
 
@@ -197,19 +197,19 @@ public class ByteArrayInputStream extends InputStream
    * <p>
    * This method does not block.
    *
-   * @param buf The array into which the bytes read should be stored.
+   * @param buffer The array into which the bytes read should be stored.
    * @param offset The offset into the array to start storing bytes
-   * @param len The requested number of bytes to read
+   * @param length The requested number of bytes to read
    *
    * @return The actual number of bytes read, or -1 if end of stream.
    */
-  public synchronized int read(byte[] b, int off, int len)
+  public synchronized int read(byte[] buffer, int offset, int length)
   {
     if (pos >= count)
       return -1;
 
-    int numBytes = Math.min(count - pos, len);
-    System.arraycopy(buf, pos, b, off, numBytes);
+    int numBytes = Math.min(count - pos, length);
+    System.arraycopy(buf, pos, buffer, offset, numBytes);
     pos += numBytes;
     return numBytes;
   }
@@ -234,17 +234,17 @@ public class ByteArrayInputStream extends InputStream
    * position the stream at the end of the buffer.  The actual number
    * of bytes skipped is returned.
    *
-   * @param num_bytes The requested number of bytes to skip
+   * @param num The requested number of bytes to skip
    *
    * @return The actual number of bytes skipped.
    */
-  public synchronized long skip(long n)
+  public synchronized long skip(long num)
   {
     // Even though the var numBytes is a long, in reality it can never
     // be larger than an int since the result of subtracting 2 positive
     // ints will always fit in an int.  Since we have to return a long
     // anyway, numBytes might as well just be a long.
-    long numBytes = Math.min((long) (count - pos), n < 0 ? 0L : n);
+    long numBytes = Math.min((long) (count - pos), num < 0 ? 0L : num);
     pos += numBytes;
     return numBytes;
   }

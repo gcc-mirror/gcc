@@ -75,8 +75,8 @@ public abstract class Writer
    * This method initializes a <code>Writer</code> that will synchronize
    * on the specified <code>Object</code>.
    *
-   * @param obj The <code>Object</code> to use for synchronizing critical
-   *            sections
+   * @param lock The <code>Object</code> to use for synchronizing critical
+   *             sections
    */
   protected Writer(Object lock)
   {
@@ -157,7 +157,7 @@ public abstract class Writer
    *
    * @param str The <code>String</code> whose chars are to be written.
    *
-   * @param IOException If an error occurs
+   * @exception IOException If an error occurs
    */
   public void write(String str) throws IOException
   {

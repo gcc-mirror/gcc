@@ -266,33 +266,34 @@ public class PushbackReader extends FilterReader
    * of the chars requested, the remaining chars are read from the 
    * underlying stream.
    *
-   * @param buf The array into which the chars read should be stored
+   * @param buffer The array into which the chars read should be stored
    * @param offset The offset into the array to start storing chars
-   * @param len The requested number of chars to read
+   * @param length The requested number of chars to read
    *
    * @return The actual number of chars read, or -1 if end of stream.
    *
    * @exception IOException If an error occurs.
    */
-  public synchronized int read(char[] b, int offset, int len) throws IOException
+  public synchronized int read(char[] buffer, int offset, int length)
+    throws IOException
   {
     synchronized (lock)
       {
 	if (buf == null)
           throw new IOException("stream closed");
 
-	if (offset < 0 || len < 0 || offset + len > b.length)
+	if (offset < 0 || length < 0 || offset + length > buffer.length)
           throw new ArrayIndexOutOfBoundsException();
 
-	int numBytes = Math.min(buf.length - pos, len);
+	int numBytes = Math.min(buf.length - pos, length);
 	if (numBytes > 0)
 	  {
-	    System.arraycopy (buf, pos, b, offset, numBytes);
+	    System.arraycopy (buf, pos, buffer, offset, numBytes);
 	    pos += numBytes;
 	    return numBytes;
 	  }
 
-	return super.read(b, offset, len);
+	return super.read(buffer, offset, length);
       }
   }
 
@@ -353,30 +354,30 @@ public class PushbackReader extends FilterReader
    * If the pushback buffer cannot hold all of the requested chars, an
    * exception is thrown.
    *
-   * @param buf The char array to be pushed back
+   * @param buffer The char array to be pushed back
    * @param offset The index into the array where the chars to be push start
-   * @param len The number of chars to be pushed.
+   * @param length The number of chars to be pushed.
    *
    * @exception IOException If the pushback buffer is full
    */
-  public synchronized void unread(char[] b, int offset, int len)
+  public synchronized void unread(char[] buffer, int offset, int length)
     throws IOException
   {
     synchronized (lock)
       {
 	if (buf == null)
           throw new IOException("stream closed");
-	if (pos < len)
+	if (pos < length)
 	  throw new IOException("Pushback buffer is full");
 
 	// Note the order that these chars are being added is the opposite
 	// of what would be done if they were added to the buffer one at a time.
 	// See the Java Class Libraries book p. 1397.
-	System.arraycopy(b, offset, buf, pos - len, len);
+	System.arraycopy(buffer, offset, buf, pos - length, length);
 
 	// Don't put this into the arraycopy above, an exception might be thrown
 	// and in that case we don't want to modify pos.
-	pos -= len;
+	pos -= length;
       }
   }
 }

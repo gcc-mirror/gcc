@@ -48,9 +48,9 @@ import java.security.BasicPermission;
   * There are currently two allowable permission names for this class:
   * <ul>
   * <li><code>enableSubclassImplementation</code> - Allows a subclass to
-  * override the default serialization behavior of objects.
+  * override the default serialization behavior of objects.</li>
   * <li><code>enableSubstitution</code> - Allows substitution of one object
-  * for another during serialization or deserialization.
+  * for another during serialization or deserialization.</li>
   * </ul>
   *
   * @see java.security.BasicPermission

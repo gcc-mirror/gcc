@@ -360,7 +360,7 @@ public interface DataInput
    * patterns which indicate a two byte character encoding, then they would be
    * converted to a Java <code>char</code> like so:
    * <p>
-   * <code>(char)(((byte1 & 0x1F) << 6) + (byte2 & 0x3F))</code>
+   * <code>(char)(((byte1 &amp; 0x1F) &lt;&lt; 6) + (byte2 &amp; 0x3F))</code>
    * <p>
    * If the first byte has a 1110 as its high order bits, then the
    * character consists of three bytes.  The bits that make up the character
@@ -375,19 +375,19 @@ public interface DataInput
    * then they would be converted to a Java <code>char</code> like so:
    *
    * <code>
-   * (char)(((byte1 & 0x0F) << 12) + ((byte2 & 0x3F) + (byte3 & 0x3F))
+   * (char)(((byte1 &amp; 0x0F) &lt;&lt; 12) + ((byte2 &amp; 0x3F) + (byte3 &amp; 0x3F))
    * </code>
    *
    * Note that all characters are encoded in the method that requires the
    * fewest number of bytes with the exception of the character with the
-   * value of <code>\<llll>u0000</code> which is encoded as two bytes.  
+   * value of <code>\&lt;llll&gt;u0000</code> which is encoded as two bytes.  
    * This is a modification of the UTF standard used to prevent C language 
    * style <code>NUL</code> values from appearing in the byte stream.
    * <p>
    * This method can read data that was written by an object implementing the
    * <code>writeUTF()</code> method in <code>DataOutput</code>.
    * 
-   * @returns The <code>String</code> read
+   * @return The <code>String</code> read
    *
    * @exception EOFException If end of file is reached before reading the 
    * String
