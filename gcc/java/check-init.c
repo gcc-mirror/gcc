@@ -475,7 +475,8 @@ check_init (exp, before)
 	struct alternatives alt;
 	BEGIN_ALTERNATIVES (before, alt);
 	alt.block = exp;
-	check_init (LABELED_BLOCK_BODY (exp), before);
+	if (LABELED_BLOCK_BODY (exp))
+	  check_init (LABELED_BLOCK_BODY (exp), before);
 	done_alternative (before, &alt);
 	END_ALTERNATIVES (before, alt);
 	return;

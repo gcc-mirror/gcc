@@ -173,16 +173,6 @@ lang_decode_option (argc, argv)
     }
 #undef ARG
 
-#define XARG "-fxref="
-  if (strncmp (p, XARG, sizeof (XARG) - 1) == 0)
-    {
-      if (!(flag_emit_xref = xref_flag_value (p + sizeof (XARG) - 1)))
-	error ("Unkown xref format `%s'", p + sizeof (XARG) - 1);
-      else
-	return 1;
-    }
-#undef XARG
-
   if (p[0] == '-' && p[1] == 'f')
     {
       /* Some kind of -f option.
