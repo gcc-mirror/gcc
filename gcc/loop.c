@@ -10400,6 +10400,8 @@ try_swap_copy_prop (loop, replacement, regno)
     }
 }
 
+/* Worker function for find_mem_in_note, called via for_each_rtx.  */
+
 static int
 find_mem_in_note_1 (x, data)
      rtx *x;
@@ -10413,6 +10415,8 @@ find_mem_in_note_1 (x, data)
     }
   return 0;
 }
+
+/* Returns the first MEM found in NOTE by depth-first search.  */
 
 static rtx
 find_mem_in_note (note)
