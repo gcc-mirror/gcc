@@ -1,3 +1,8 @@
+2002-04-29  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config.gcc: Revert i386 changes inadvertently brought in
+	from mainline along with 2002-04-04's change.
+
 2002-04-28  David S. Miller  <davem@redhat.com>
 
 	PR target/6496
