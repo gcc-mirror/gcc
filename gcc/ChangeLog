@@ -1,5 +1,11 @@
 2002-12-26  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300-protos.h: Fix comment typos.
+	Update copyright.
+	* config/h8300/h8300.c: Fix comment typos.
+
+2002-12-26  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.h (IDENT_ASM_OP): End with a tab.
 
 2002-12-26  Kazu Hirata  <kazu@cs.umass.edu>
