@@ -4905,6 +4905,15 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
 	   && GET_CODE (XEXP (ad, 0)) == PLUS
 	   && GET_CODE (XEXP (XEXP (ad, 0), 0)) == REG
 	   && REGNO (XEXP (XEXP (ad, 0), 0)) < FIRST_PSEUDO_REGISTER
+	   && (REG_MODE_OK_FOR_BASE_P (XEXP (XEXP (ad, 0), 0), mode)
+	       || XEXP (XEXP (ad, 0), 0) == frame_pointer_rtx
+#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+	       || XEXP (XEXP (ad, 0), 0) == hard_frame_pointer_rtx
+#endif
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	       || XEXP (XEXP (ad, 0), 0) == arg_pointer_rtx
+#endif
+	       || XEXP (XEXP (ad, 0), 0) == stack_pointer_rtx)
 	   && ! maybe_memory_address_p (mode, ad, &XEXP (XEXP (ad, 0), 1)))
     {
       *loc = ad = gen_rtx_PLUS (GET_MODE (ad),
@@ -4924,6 +4933,15 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
 	   && GET_CODE (XEXP (ad, 0)) == PLUS
 	   && GET_CODE (XEXP (XEXP (ad, 0), 1)) == REG
 	   && REGNO (XEXP (XEXP (ad, 0), 1)) < FIRST_PSEUDO_REGISTER
+	   && (REG_MODE_OK_FOR_BASE_P (XEXP (XEXP (ad, 0), 1), mode)
+	       || XEXP (XEXP (ad, 0), 1) == frame_pointer_rtx
+#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+	       || XEXP (XEXP (ad, 0), 1) == hard_frame_pointer_rtx
+#endif
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	       || XEXP (XEXP (ad, 0), 1) == arg_pointer_rtx
+#endif
+	       || XEXP (XEXP (ad, 0), 1) == stack_pointer_rtx)
 	   && ! maybe_memory_address_p (mode, ad, &XEXP (XEXP (ad, 0), 0)))
     {
       *loc = ad = gen_rtx_PLUS (GET_MODE (ad),
