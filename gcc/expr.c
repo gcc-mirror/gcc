@@ -8799,7 +8799,7 @@ vector_mode_valid_p (enum machine_mode mode)
 
   /* If we have support for the inner mode, we can safely emulate it.
      We may not have V2DI, but me can emulate with a pair of DIs.  */
-  return mov_optab->handlers[innermode].insn_code != CODE_FOR_nothing;
+  return targetm.scalar_mode_supported_p (innermode);
 }
 
 /* Return a CONST_VECTOR rtx for a VECTOR_CST tree.  */

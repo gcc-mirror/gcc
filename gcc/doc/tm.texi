@@ -3878,6 +3878,18 @@ arguments to @code{va_arg}; the latter two are as in
 @code{gimplify.c:gimplify_expr}.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_SCALAR_MODE_SUPPORTED_P (enum machine_mode @var{mode})
+Define this to return nonzero if the port is prepared to handle
+insns involving scalar mode @var{mode}.  For a scalar mode to be
+considered supported, all the basic arithmetic and comparisons
+must work.
+
+The default version of this hook returns true for any mode
+required to handle the basic C types (as defined by the port).
+Included here are the double-word arithmetic supported by the
+code in @file{optabs.c}.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_VECTOR_MODE_SUPPORTED_P (enum machine_mode @var{mode})
 Define this to return nonzero if the port is prepared to handle
 insns involving vector mode @var{mode}.  At the very least, it
