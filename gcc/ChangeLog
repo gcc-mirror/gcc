@@ -1,3 +1,8 @@
+2000-05-15  Richard Henderson  <rth@cygnus.com>
+
+	* varasm.c (output_constant_pool): Abort instead of converting
+	(improperly) deleted labels to zero.
+
 2000-05-16  Neil Booth  <NeilB@earthling.net>
 
 	* cpplex.c (parse_string2): Update comment.

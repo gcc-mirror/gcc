@@ -3781,6 +3781,8 @@ output_constant_pool (fnname, fndecl)
 
   for (pool = first_pool; pool; pool = pool->next)
     {
+      rtx tmp;
+
       x = pool->constant;
 
       if (! pool->mark)
@@ -3791,14 +3793,34 @@ output_constant_pool (fnname, fndecl)
 	 is eliminated by optimization.  If so, write a constant of zero
 	 instead.  Note that this can also happen by turning the
 	 CODE_LABEL into a NOTE.  */
-      if (((GET_CODE (x) == LABEL_REF
-	    && (INSN_DELETED_P (XEXP (x, 0))
-		|| GET_CODE (XEXP (x, 0)) == NOTE)))
-	  || (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == PLUS
-	      && GET_CODE (XEXP (XEXP (x, 0), 0)) == LABEL_REF
-	      && (INSN_DELETED_P (XEXP (XEXP (XEXP (x, 0), 0), 0))
-		  || GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == NOTE)))
-	x = const0_rtx;
+      /* ??? This seems completely and utterly wrong.  Certainly it's
+	 not true for NOTE_INSN_DELETED_LABEL, but I disbelieve proper
+	 functioning even with INSN_DELETED_P and friends.  */
+
+      tmp = x;
+      switch (GET_CODE (x))
+	{
+	case CONST:
+	  if (GET_CODE (XEXP (x, 0)) != PLUS
+	      || GET_CODE (XEXP (XEXP (x, 0), 0)) != LABEL_REF)
+	    break;
+	  tmp = XEXP (XEXP (x, 0), 0);
+	  /* FALLTHRU */
+
+	case LABEL_REF:
+	  tmp = XEXP (x, 0);
+	  if (INSN_DELETED_P (tmp)
+	      || (GET_CODE (tmp) == NOTE
+		  && NOTE_LINE_NUMBER (tmp) == NOTE_INSN_DELETED))
+	    {
+	      abort ();
+	      x = const0_rtx;
+	    }
+	  break;
+	  
+	default:
+	  break;
+	}
 
       /* First switch to correct section.  */
 #ifdef SELECT_RTX_SECTION
