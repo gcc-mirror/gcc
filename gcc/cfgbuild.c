@@ -482,12 +482,10 @@ find_basic_blocks_1 (rtx f)
 
 
 /* Find basic blocks of the current function.
-   F is the first insn of the function and NREGS the number of register
-   numbers in use.  */
+   F is the first insn of the function.  */
 
 void
-find_basic_blocks (rtx f, int nregs ATTRIBUTE_UNUSED,
-		   FILE *file ATTRIBUTE_UNUSED)
+find_basic_blocks (rtx f)
 {
   basic_block bb;
 

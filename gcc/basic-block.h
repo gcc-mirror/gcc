@@ -779,7 +779,7 @@ extern void alloc_aux_for_edge (edge, int);
 extern void alloc_aux_for_edges (int);
 extern void clear_aux_for_edges (void);
 extern void free_aux_for_edges (void);
-extern void find_basic_blocks (rtx, int, FILE *);
+extern void find_basic_blocks (rtx);
 extern bool cleanup_cfg (int);
 extern bool delete_unreachable_blocks (void);
 extern bool merge_seq_blocks (void);

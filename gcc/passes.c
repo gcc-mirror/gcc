@@ -1105,7 +1105,7 @@ rest_of_handle_loop_optimize (void)
 
   /* Loop can create trivially dead instructions.  */
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
-  find_basic_blocks (get_insns (), max_reg_num (), dump_file);
+  find_basic_blocks (get_insns ());
   close_dump_file (DFI_loop, print_rtl, get_insns ());
   timevar_pop (TV_LOOP);
 
