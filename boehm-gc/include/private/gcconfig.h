@@ -39,6 +39,13 @@
 # endif
 
 /* Determine the machine type: */
+# if defined(__XSCALE__)
+#    define ARM32
+#    if !defined(LINUX)
+#      define NOSYS
+#      define mach_type_known
+#    endif
+# endif
 # if defined(sun) && defined(mc68000)
 #    define M68K
 #    define SUNOS4
@@ -1494,6 +1501,15 @@
 #   ifdef MSWINCE
 #     define OS_TYPE "MSWINCE"
 #     define DATAEND /* not needed */
+#   endif
+#   ifdef NOSYS
+      /* __data_start is usually defined in the target linker script.  */
+      extern int __data_start;
+#     define DATASTART (ptr_t)(&__data_start)
+#     define USE_GENERIC_PUSH_REGS
+      /* __stack_base__ is set in newlib/libc/sys/arm/crt0.S  */
+      extern void *__stack_base__;
+#     define STACKBOTTOM ((ptr_t) (__stack_base__))
 #   endif
 #endif
 

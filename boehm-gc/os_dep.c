@@ -333,7 +333,8 @@ void GC_enable_signals(void)
 
 #  if !defined(PCR) && !defined(AMIGA) && !defined(MSWIN32) \
       && !defined(MSWINCE) \
-      && !defined(MACOS) && !defined(DJGPP) && !defined(DOS4GW)
+      && !defined(MACOS) && !defined(DJGPP) && !defined(DOS4GW) \
+      && !defined(NOSYS) && !defined(ECOS)
 
 #   if defined(sigmask) && !defined(UTS4) && !defined(HURD)
 	/* Use the traditional BSD interface */
@@ -516,7 +517,7 @@ ptr_t GC_get_stack_base()
 #   undef GC_AMIGA_SB
 # endif /* AMIGA */
 
-# if defined(NEED_FIND_LIMIT) || (defined(UNIX_LIKE) && !defined(ECOS))
+# if defined(NEED_FIND_LIMIT) || defined(UNIX_LIKE)
 
 #   ifdef __STDC__
 	typedef void (*handler)(int);
@@ -540,8 +541,7 @@ ptr_t GC_get_stack_base()
       handler h;
 #   endif
     {
-# ifndef ECOS
-#	if defined(SUNOS5SIGS) || defined(IRIX5)  \
+#     if defined(SUNOS5SIGS) || defined(IRIX5)  \
         || defined(OSF1) || defined(HURD)
 	  struct sigaction	act;
 
@@ -579,7 +579,6 @@ ptr_t GC_get_stack_base()
 	    old_bus_handler = signal(SIGBUS, h);
 #	  endif
 #	endif
-# endif /* ECOS */
     }
 # endif /* NEED_FIND_LIMIT || UNIX_LIKE */
 
@@ -602,21 +601,19 @@ ptr_t GC_get_stack_base()
     
     void GC_reset_fault_handler()
     {
-# ifndef ECOS
-#       if defined(SUNOS5SIGS) || defined(IRIX5) \
-	   || defined(OSF1) || defined(HURD)
-	  (void) sigaction(SIGSEGV, &old_segv_act, 0);
-#	  if defined(IRIX5) && defined(_sigargs) /* Irix 5.x, not 6.x */ \
-	     || defined(HPUX) || defined(HURD)
-	      (void) sigaction(SIGBUS, &old_bus_act, 0);
-#	  endif
-#       else
-  	  (void) signal(SIGSEGV, old_segv_handler);
-#	  ifdef SIGBUS
-	    (void) signal(SIGBUS, old_bus_handler);
-#	  endif
-#       endif
-# endif /* ECOS */
+#     if defined(SUNOS5SIGS) || defined(IRIX5) \
+	 || defined(OSF1) || defined(HURD)
+	(void) sigaction(SIGSEGV, &old_segv_act, 0);
+#	if defined(IRIX5) && defined(_sigargs) /* Irix 5.x, not 6.x */ \
+	   || defined(HPUX) || defined(HURD)
+	    (void) sigaction(SIGBUS, &old_bus_act, 0);
+#	endif
+#      else
+	(void) signal(SIGSEGV, old_segv_handler);
+#	ifdef SIGBUS
+	  (void) signal(SIGBUS, old_bus_handler);
+#	endif
+#     endif
     }
 
     /* Return the first nonaddressible location > p (up) or 	*/
@@ -625,39 +622,41 @@ ptr_t GC_get_stack_base()
     ptr_t p;
     GC_bool up;
     {
-# ifndef ECOS
-        static VOLATILE ptr_t result;
-    		/* Needs to be static, since otherwise it may not be	*/
-    		/* preserved across the longjmp.  Can safely be 	*/
-    		/* static since it's only called once, with the		*/
-    		/* allocation lock held.				*/
+      static VOLATILE ptr_t result;
+  		/* Needs to be static, since otherwise it may not be	*/
+  		/* preserved across the longjmp.  Can safely be 	*/
+  		/* static since it's only called once, with the		*/
+  		/* allocation lock held.				*/
 
 
-	GC_setup_temporary_fault_handler();
-	if (setjmp(GC_jmp_buf) == 0) {
-	    result = (ptr_t)(((word)(p))
-			      & ~(MIN_PAGE_SIZE-1));
-	    for (;;) {
- 	        if (up) {
-		    result += MIN_PAGE_SIZE;
- 	        } else {
-		    result -= MIN_PAGE_SIZE;
- 	        }
-		GC_noop1((word)(*result));
-	    }
-	}
-	GC_reset_fault_handler();
- 	if (!up) {
+      GC_setup_temporary_fault_handler();
+      if (setjmp(GC_jmp_buf) == 0) {
+	result = (ptr_t)(((word)(p))
+			 & ~(MIN_PAGE_SIZE-1));
+	for (;;) {
+	  if (up) {
 	    result += MIN_PAGE_SIZE;
- 	}
-	return(result);
-# else /* ECOS */
-	abort();
-# endif /* ECOS */
+	  } else {
+	    result -= MIN_PAGE_SIZE;
+	  }
+	  GC_noop1((word)(*result));
+	}
+      }
+      GC_reset_fault_handler();
+      if (!up) {
+	result += MIN_PAGE_SIZE;
+      }
+      return(result);
     }
 # endif
 
-# ifndef ECOS
+# if defined(ECOS) || defined(NOSYS)
+ptr_t GC_get_stack_base()
+{
+  return STACKBOTTOM;
+}
+
+#else
 
 #ifdef LINUX_STACKBOTTOM
 
@@ -761,7 +760,7 @@ ptr_t GC_get_stack_base()
 #endif /* FREEBSD_STACKBOTTOM */
 
 #if !defined(BEOS) && !defined(AMIGA) && !defined(MSWIN32) \
-    && !defined(MSWINCE) && !defined(OS2) && !defined(ECOS)
+    && !defined(MSWINCE) && !defined(OS2)
 
 ptr_t GC_get_stack_base()
 {
@@ -815,7 +814,7 @@ ptr_t GC_get_stack_base()
     	return(result);
 #   endif /* STACKBOTTOM */
 }
-# endif /* ECOS */
+# endif /* NOSYS ECOS */
 
 # endif /* ! AMIGA, !OS 2, ! MS Windows, !BEOS */
 
