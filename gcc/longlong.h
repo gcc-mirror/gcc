@@ -890,6 +890,18 @@
     (q) = (USItype) __q1 * __ll_B | __q0;				\
     (r) = __r0;								\
   } while (0)
+
+/* If the processor has no udiv_qrnnd but sdiv_qrnnd, go through
+   __udiv_using_sdiv (defined in libgcc or elsewhere).  */
+#if !defined (udiv_qrnnd) && defined (sdiv_qrnnd)
+#define udiv_qrnnd(q, r, nh, nl, d) \
+  do {									\
+    USItype __r;							\
+    (q) = __udiv_using_sdiv (&__r, nh, nl, d);				\
+    (r) = __r;								\
+  } while (0)
+#endif
+
 /* If udiv_qrnnd was not defined for this processor, use __udiv_qrnnd_c.  */
 #if !defined (udiv_qrnnd)
 #define UDIV_NEEDS_NORMALIZATION 1
