@@ -3,8 +3,9 @@
 
 SHLIB_EXT = .so
 SHLIB_SOLINK = @shlib_base_name@.so
-SHLIB_SONAME = @shlib_so_name@.so.1
-SHLIB_NAME = @shlib_dir@@shlib_so_name@.so.1
+SHLIB_SOVERSION = 1
+SHLIB_SONAME = @shlib_so_name@.so.$(SHLIB_SOVERSION)
+SHLIB_NAME = @shlib_dir@@shlib_so_name@.so.$(SHLIB_SOVERSION)
 SHLIB_MAP = @shlib_map_file@
 SHLIB_OBJS = @shlib_objs@
 SHLIB_SLIBDIR_QUAL = @shlib_slibdir_qual@
