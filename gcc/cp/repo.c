@@ -49,6 +49,7 @@ extern struct obstack permanent_obstack;
 #define IDENTIFIER_REPO_USED(NODE)   (TREE_LANG_FLAG_3 (NODE))
 #define IDENTIFIER_REPO_CHOSEN(NODE) (TREE_LANG_FLAG_4 (NODE))
 
+#if 0
 /* Record the flags used to compile this translation unit.  */
 
 void
@@ -82,8 +83,9 @@ void
 repo_class_defined (t)
      tree t;
 {}
+#endif
 
-tree
+static tree
 repo_get_id (t)
      tree t;
 {
@@ -120,7 +122,7 @@ repo_template_used (t)
   else if (TREE_CODE_CLASS (TREE_CODE (t)) == 'd')
     {
       if (IDENTIFIER_REPO_CHOSEN (id))
-	mark_function_instantiated (t, 0);
+	mark_decl_instantiated (t, 0);
     }
   else
     my_friendly_abort (1);
@@ -132,9 +134,10 @@ repo_template_used (t)
     }
 }
 
+#if 0
 /* Note that the vtable for a class has been used, and offer to emit it.  */
 
-void
+static void
 repo_vtable_used (t)
      tree t;
 {
@@ -172,6 +175,7 @@ repo_tinfo_used (ti)
      tree ti;
 {
 }
+#endif
 
 void
 repo_template_instantiated (t, extern_p)
@@ -246,7 +250,7 @@ static void
 open_repo_file (filename)
      char *filename;
 {
-  register char *p, *q;
+  register char *p;
   char *s = get_base_filename (filename);
 
   if (s == NULL)

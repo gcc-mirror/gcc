@@ -47,12 +47,11 @@ Boston, MA 02111-1307, USA.  */
 #ifndef errno
 extern int errno;		/* needed for VAX.  */
 #endif
-extern jmp_buf toplevel;
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern struct obstack *expression_obstack, permanent_obstack;
+extern struct obstack permanent_obstack;
 extern struct obstack *current_obstack, *saveable_obstack;
 
 extern double atof ();
@@ -68,20 +67,11 @@ extern char *get_directive_line ();	/* In c-common.c */
 
 extern char *index ();
 extern char *rindex ();
-
-void extract_interface_info ();
 void yyerror ();
 
 /* This obstack is needed to hold text.  It is not safe to use
    TOKEN_BUFFER because `check_newline' calls `yylex'.  */
 struct obstack inline_text_obstack;
-static char *inline_text_firstobj;
-
-/* This obstack is used to hold information about methods to be
-   synthesized.  It should go away when synthesized methods are handled
-   properly (i.e. only when needed).  */
-struct obstack synth_obstack;
-static char *synth_firstobj;
 
 int end_of_file;
 
@@ -136,16 +126,8 @@ static tree get_time_identifier ();
 static tree filename_times;
 static tree this_filename_time;
 
-/* For implementing #pragma unit.  */
-tree current_unit_name;
-tree current_unit_language;
-
 /* Array for holding counts of the numbers of tokens seen.  */
 extern int *token_count;
-
-/* Textual definition used for default functions.  */
-static void default_copy_constructor_body ();
-static void default_assign_ref_body ();
 
 /* Return something to represent absolute declarators containing a *.
    TARGET is the absolute declarator that the * contains.
@@ -399,6 +381,8 @@ reinit_lang_specific ()
   reinit_search_statistics ();
 }
 
+int *init_parse ();
+
 void
 init_lex ()
 {
@@ -571,9 +555,6 @@ init_lex ()
   init_method ();
   init_error ();
   gcc_obstack_init (&inline_text_obstack);
-  inline_text_firstobj = (char *) obstack_alloc (&inline_text_obstack, 0);
-  gcc_obstack_init (&synth_obstack);
-  synth_firstobj = (char *) obstack_alloc (&synth_obstack, 0);
 
   /* Start it at 0, because check_newline is called at the very beginning
      and will increment it to 1.  */
@@ -877,7 +858,10 @@ yyprint (file, yychar, yylval)
     }
 }
 
+#if defined(GATHER_STATISTICS) && defined(REDUCE_LENGTH)
 static int *reduce_count;
+#endif
+
 int *token_count;
 
 #if 0
@@ -1037,8 +1021,7 @@ extract_interface_info ()
     fileinfo = get_time_identifier (input_filename);
   fileinfo = IDENTIFIER_CLASS_VALUE (fileinfo);
   interface_only = TREE_INT_CST_LOW (fileinfo);
-  if (!processing_template_defn || flag_external_templates)
-    interface_unknown = TREE_INT_CST_HIGH (fileinfo);
+  interface_unknown = TREE_INT_CST_HIGH (fileinfo);
 }
 
 /* Return nonzero if S is not considered part of an
@@ -1118,6 +1101,7 @@ void
 do_pending_inlines ()
 {
   struct pending_inline *t;
+  tree context;
 
   /* Oops, we're still dealing with the last batch.  */
   if (yychar == PRE_PARSED_FUNCTION_DECL)
@@ -1144,10 +1128,9 @@ do_pending_inlines ()
     return;
 	    
   /* Now start processing the first inline function.  */
-  my_friendly_assert ((t->parm_vec == NULL_TREE) == (t->bindings == NULL_TREE),
-		      226);
-  if (t->parm_vec)
-    push_template_decls (t->parm_vec, t->bindings, 0);
+  context = decl_function_context (t->fndecl);
+  if (context)
+    push_cp_function_context (context);
   if (t->len > 0)
     {
       feed_input (t->buf, t->len, t->can_free ? &inline_text_obstack : 0);
@@ -1169,13 +1152,6 @@ do_pending_inlines ()
   /* Pass back a handle on the rest of the inline functions, so that they
      can be processed later.  */
   yylval.ttype = build_tree_list ((tree) t, t->fndecl);
-#if 0
-  if (flag_default_inline && t->fndecl
-      /* If we're working from a template, don't change
-	 the `inline' state.  */
-      && t->parm_vec == NULL_TREE)
-    DECL_INLINE (t->fndecl) = 1;
-#endif
   DECL_PENDING_INLINE_INFO (t->fndecl) = 0;
 }
 
@@ -1189,11 +1165,11 @@ void
 process_next_inline (t)
      tree t;
 {
+  tree context;
   struct pending_inline *i = (struct pending_inline *) TREE_PURPOSE (t);
-  my_friendly_assert ((i->parm_vec == NULL_TREE) == (i->bindings == NULL_TREE),
-		      227);
-  if (i->parm_vec)
-    pop_template_decls (i->parm_vec, i->bindings, 0);
+  context = decl_function_context (i->fndecl);
+  if (context)
+    pop_cp_function_context (context);
   i = i->next;
   if (yychar == YYEMPTY)
     yychar = yylex ();
@@ -1215,22 +1191,14 @@ process_next_inline (t)
   to_be_restored = 0;
   if (i && i->fndecl != NULL_TREE)
     {
-      my_friendly_assert ((i->parm_vec == NULL_TREE) == (i->bindings == NULL_TREE),
-			  228);
-      if (i->parm_vec)
-	push_template_decls (i->parm_vec, i->bindings, 0);
+      context = decl_function_context (i->fndecl);
+      if (context)
+	push_cp_function_context (context);
       feed_input (i->buf, i->len, i->can_free ? &inline_text_obstack : 0);
       lineno = i->lineno;
       input_filename = i->filename;
       yychar = PRE_PARSED_FUNCTION_DECL;
       yylval.ttype = build_tree_list ((tree) i, i->fndecl);
-#if 0
-      if (flag_default_inline
-	  /* If we're working from a template, don't change
-	     the `inline' state.  */
-	  && i->parm_vec == NULL_TREE)
-	DECL_INLINE (i->fndecl) = 1;
-#endif
       DECL_PENDING_INLINE_INFO (i->fndecl) = 0;
     }
   if (i)
@@ -1388,99 +1356,19 @@ yyungetc (ch, rescan)
 /* This function stores away the text for an inline function that should
    be processed later.  It decides how much later, and may need to move
    the info between obstacks; therefore, the caller should not refer to
-   the T parameter after calling this function.
-
-   This function also stores the list of template-parameter bindings that
-   will be needed for expanding the template, if any.  */
+   the T parameter after calling this function.  */
 
 static void
 store_pending_inline (decl, t)
      tree decl;
      struct pending_inline *t;
 {
-  extern int processing_template_defn;
-  int delay_to_eof = 0;
-  struct pending_inline **inlines;
-
   t->fndecl = decl;
-  /* Default: compile right away, and no extra bindings are needed.  */
-  t->parm_vec = t->bindings = 0;
-  if (processing_template_defn)
-    {
-      tree type = current_class_type;
-      /* Assumption: In this (possibly) nested class sequence, only
-	 one name will have template parms.  */
-      while (type && TREE_CODE_CLASS (TREE_CODE (type)) == 't')
-	{
-	  tree decl = TYPE_NAME (type);
-	  tree tmpl = IDENTIFIER_TEMPLATE (DECL_NAME (decl));
-	  if (tmpl)
-	    {
-	      t->parm_vec = DECL_TEMPLATE_INFO (TREE_PURPOSE (tmpl))->parm_vec;
-	      t->bindings = TREE_VALUE (tmpl);
-	    }
-	  type = DECL_CONTEXT (decl);
-	}
-      if (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE
-	  || TREE_CODE (TREE_TYPE (decl)) == FUNCTION_TYPE)
-	{
-	  if (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
-	    my_friendly_assert (TYPE_MAX_VALUE (TREE_TYPE (decl)) == current_class_type,
-				233);
-
-	  /* Inline functions can be compiled immediately.  Other functions
-	     will be output separately, so if we're in interface-only mode,
-	     punt them now, or output them now if we're doing implementations
-	     and we know no overrides will exist.  Otherwise, we delay until
-	     end-of-file, to see if the definition is really required.  */
-	  if (DECL_THIS_INLINE (decl))
-	    /* delay_to_eof == 0 */;
-	  else if (current_class_type && !interface_unknown)
-	    {
-	      if (interface_only)
-		{
-#if 0
-		  print_node_brief (stderr, "\ndiscarding text for ", decl, 0);
-#endif
-		  if (t->can_free)
-		    obstack_free (&inline_text_obstack, t->buf);
-		  DECL_PENDING_INLINE_INFO (decl) = 0;
-		  return;
-		}
-	    }
-	  /* Don't delay the processing of virtual functions.  */
-	  else if (DECL_VINDEX (decl) == NULL_TREE)
-	    delay_to_eof = 1;
-	}
-      else
-	my_friendly_abort (58);
-    }
-
-  if (delay_to_eof)
-    {
-      extern struct pending_inline *pending_template_expansions;
-
-      if (t->can_free)
-	{
-	  char *free_to = t->buf;
-	  t->buf = (char *) obstack_copy (&permanent_obstack, t->buf,
-					  t->len + 1);
-	  t = (struct pending_inline *) obstack_copy (&permanent_obstack, 
-						      (char *)t, sizeof (*t));
-	  obstack_free (&inline_text_obstack, free_to);
-	}
-      inlines = &pending_template_expansions;
-      t->can_free = 0;
-    }
-  else
-    {
-      inlines = &pending_inlines;
-      DECL_PENDING_INLINE_INFO (decl) = t;
-    }
+  DECL_PENDING_INLINE_INFO (decl) = t;
 
   /* Because we use obstacks, we must process these in precise order.  */
-  t->next = *inlines;
-  *inlines = t;
+  t->next = pending_inlines;
+  pending_inlines = t;
 }
 
 void reinit_parse_for_block ();
@@ -1494,7 +1382,7 @@ reinit_parse_for_method (yychar, decl)
   int starting_lineno = lineno;
   char *starting_filename = input_filename;
 
-  reinit_parse_for_block (yychar, &inline_text_obstack, 0);
+  reinit_parse_for_block (yychar, &inline_text_obstack);
 
   len = obstack_object_size (&inline_text_obstack);
   current_base_init_list = NULL_TREE;
@@ -1523,24 +1411,22 @@ reinit_parse_for_method (yychar, decl)
       t->len = len;
       t->can_free = 1;
       t->deja_vu = 0;
+#if 0
       if (interface_unknown && processing_template_defn && flag_external_templates && ! DECL_IN_SYSTEM_HEADER (decl))
 	warn_if_unknown_interface (decl);
+#endif
       t->interface = (interface_unknown ? 1 : (interface_only ? 0 : 2));
       store_pending_inline (decl, t);
     }
 }
 
-/* Consume a block -- actually, a method or template definition beginning
-   with `:' or `{' -- and save it away on the specified obstack.
+/* Consume a block -- actually, a method beginning
+   with `:' or `{' -- and save it away on the specified obstack.  */
 
-   Argument IS_TEMPLATE indicates which set of error messages should be
-   output if something goes wrong.  This should really be cleaned up somehow,
-   without loss of clarity.  */
 void
-reinit_parse_for_block (pyychar, obstackp, is_template)
+reinit_parse_for_block (pyychar, obstackp)
      int pyychar;
      struct obstack *obstackp;
-     int is_template;
 {
   register int c = 0;
   int blev = 1;
@@ -1560,13 +1446,13 @@ reinit_parse_for_block (pyychar, obstackp, is_template)
       look_for_lbrac = 1;
       blev = 0;
     }
-  else if (pyychar == RETURN && !is_template)
+  else if (pyychar == RETURN)
     {
       obstack_grow (obstackp, "return", 6);
       look_for_lbrac = 1;
       blev = 0;
     }
-  else if (pyychar == TRY && !is_template)
+  else if (pyychar == TRY)
     {
       obstack_grow (obstackp, "try", 3);
       look_for_lbrac = 1;
@@ -1574,9 +1460,7 @@ reinit_parse_for_block (pyychar, obstackp, is_template)
     }
   else
     {
-      yyerror (is_template
-	       ? "parse error in template specification"
-	       : "parse error in method specification");
+      yyerror ("parse error in method specification");
       obstack_1grow (obstackp, '{');
     }
 
@@ -1673,9 +1557,7 @@ reinit_parse_for_block (pyychar, obstackp, is_template)
 	    {
 	      if (look_for_lbrac)
 		{
-		  error (is_template
-			 ? "template body missing"
-			 : "function body for constructor missing");
+		  error ("function body for constructor missing");
 		  obstack_1grow (obstackp, '{');
 		  obstack_1grow (obstackp, '}');
 		  len += 2;
@@ -1721,13 +1603,10 @@ cons_up_default_function (type, full_name, kind)
      int kind;
 {
   extern tree void_list_node;
-  char *func_buf = NULL;
-  int func_len = 0;
   tree declspecs = NULL_TREE;
   tree fn, args;
   tree argtype;
   int retref = 0;
-  int complex = 0;
   tree name = constructor_name (full_name);
 
   switch (kind)
@@ -1744,7 +1623,6 @@ cons_up_default_function (type, full_name, kind)
     case 2:
       /* Default constructor.  */
       args = void_list_node;
-      complex = TYPE_NEEDS_CONSTRUCTING (type);
       break;
 
     case 3:
@@ -1758,7 +1636,6 @@ cons_up_default_function (type, full_name, kind)
 			build_tree_list (hash_tree_chain (argtype, NULL_TREE),
 					 get_identifier ("_ctor_arg")),
 			void_list_node);
-      complex = TYPE_HAS_COMPLEX_INIT_REF (type);
       break;
 
     case 5:
@@ -1775,7 +1652,6 @@ cons_up_default_function (type, full_name, kind)
 			build_tree_list (hash_tree_chain (argtype, NULL_TREE),
 					 get_identifier ("_ctor_arg")),
 			void_list_node);
-      complex = TYPE_HAS_COMPLEX_ASSIGN_REF (type);
       break;
 
     default:
@@ -1799,11 +1675,13 @@ cons_up_default_function (type, full_name, kind)
   if (fn == void_type_node)
     return fn;
 
+#if 0
   if (processing_template_defn)
     {
       SET_DECL_IMPLICIT_INSTANTIATION (fn);
       repo_template_used (fn);
     }
+#endif
 
   if (CLASSTYPE_INTERFACE_KNOWN (type))
     {
@@ -1814,27 +1692,7 @@ cons_up_default_function (type, full_name, kind)
   else
     DECL_NOT_REALLY_EXTERN (fn) = 1;
 
-#if 0
-  /* When on-the-fly synthesis works properly, remove the second and third
-     conditions here.  */
-  if (flag_keep_inline_functions
-#if 0
-      || ! flag_no_inline
-      || complex
-#endif
-      || ! DECL_EXTERNAL (fn))
-    {
-      struct pending_inline *t;
-      t = (struct pending_inline *)
-	obstack_alloc (&synth_obstack, sizeof (struct pending_inline));
-      t->lineno = -kind;
-      t->can_free = 0;
-      t->interface = (interface_unknown ? 1 : (interface_only ? 0 : 2));
-      store_pending_inline (fn, t);
-    }
-  else
-#endif
-    mark_inline_for_output (fn);
+  mark_inline_for_output (fn);
 
 #ifdef DEBUG_DEFAULT_FUNCTIONS
   { char *fn_type = NULL;
@@ -2090,8 +1948,6 @@ check_newline ()
 		      error ("invalid #pragma unit");
 		      goto skipline;
 		    }
-		  current_unit_name = get_identifier (TREE_STRING_POINTER (yylval.ttype));
-		  current_unit_language = current_lang_name;
 		  if (nextchar < 0)
 		    nextchar = getch ();
 		  c = nextchar;
@@ -2810,9 +2666,11 @@ int
 identifier_type (decl)
      tree decl;
 {
-  if (TREE_CODE (decl) == TEMPLATE_DECL
-      && DECL_TEMPLATE_IS_CLASS (decl))
-    return PTYPENAME;
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    {
+      if (TREE_CODE (DECL_RESULT (decl)) == TYPE_DECL)
+	return PTYPENAME;
+    }
   if (TREE_CODE (decl) == NAMESPACE_DECL)
     return NSNAME;
   if (TREE_CODE (decl) != TYPE_DECL)
@@ -2841,22 +2699,24 @@ see_typename ()
 }
 
 tree
-do_identifier (token)
+do_identifier (token, parsing)
      register tree token;
+     int parsing;
 {
-  register tree id = lastiddecl;
+  register tree id;
 
-  if (IDENTIFIER_OPNAME_P (token))
+  if (! parsing || IDENTIFIER_OPNAME_P (token))
     id = lookup_name (token, 0);
+  else
+    id = lastiddecl;
 
-  if (yychar == YYEMPTY)
+  if (parsing && yychar == YYEMPTY)
     yychar = yylex ();
   /* Scope class declarations before global
      declarations.  */
   if (id == IDENTIFIER_GLOBAL_VALUE (token)
       && current_class_type != 0
-      && TYPE_SIZE (current_class_type) == 0
-      && TREE_CODE (current_class_type) != UNINSTANTIATED_P_TYPE)
+      && TYPE_SIZE (current_class_type) == 0)
     {
       /* Could be from one of the base classes.  */
       tree field = lookup_field (current_class_type, token, 1, 0);
@@ -2898,13 +2758,15 @@ do_identifier (token)
 	    return id;
 	}
 
-      if (IDENTIFIER_OPNAME_P (token))
+      if (current_template_parms)
+	return build_min_nt (LOOKUP_EXPR, token, NULL_TREE);
+      else if (IDENTIFIER_OPNAME_P (token))
 	{
 	  if (token != ansi_opname[ERROR_MARK])
 	    cp_error ("operator %O not defined", token);
 	  id = error_mark_node;
 	}
-      else if (yychar == '(' || yychar == LEFT_RIGHT)
+      else if (parsing && (yychar == '(' || yychar == LEFT_RIGHT))
 	{
 	  id = implicitly_declare (token);
 	}
@@ -2986,10 +2848,88 @@ do_identifier (token)
 	    cp_error ("enum `%D' is private", id);
 	  /* protected is OK, since it's an enum of `this'.  */
 	}
-      id = DECL_INITIAL (id);
+      if (! current_template_parms
+	  || (DECL_INITIAL (id)
+	      && TREE_CODE (DECL_INITIAL (id)) == TEMPLATE_CONST_PARM))
+	id = DECL_INITIAL (id);
     }
   else
-    id = hack_identifier (id, token, yychar);
+    id = hack_identifier (id, token);
+
+  if (current_template_parms)
+    {
+      if (is_overloaded_fn (id))
+	{
+	  tree t = build_min (LOOKUP_EXPR, unknown_type_node,
+			      token, get_first_fn (id));
+	  if (id != IDENTIFIER_GLOBAL_VALUE (token))
+	    TREE_OPERAND (t, 1) = error_mark_node;
+	  id = t;
+	}
+      else if (! TREE_PERMANENT (id) || TREE_CODE (id) == PARM_DECL
+	       || TREE_CODE (id) == USING_DECL)
+	id = build_min (LOOKUP_EXPR, TREE_TYPE (id), token, error_mark_node);
+      /* else just use the decl */
+    }
+      
+  return id;
+}
+
+tree
+do_scoped_id (token, parsing)
+     tree token;
+     int parsing;
+{
+  tree id = IDENTIFIER_GLOBAL_VALUE (token);
+  if (parsing && yychar == YYEMPTY)
+    yychar = yylex ();
+  if (! id)
+    {
+      if (current_template_parms)
+	{
+	  id = build_min_nt (LOOKUP_EXPR, token, NULL_TREE);
+	  LOOKUP_EXPR_GLOBAL (id) = 1;
+	  return id;
+	}
+      if (parsing && yychar == '(' || yychar == LEFT_RIGHT)
+	id = implicitly_declare (token);
+      else
+	{
+	  if (IDENTIFIER_GLOBAL_VALUE (token) != error_mark_node)
+	    error ("undeclared variable `%s' (first use here)",
+		   IDENTIFIER_POINTER (token));
+	  id = error_mark_node;
+	  /* Prevent repeated error messages.  */
+	  IDENTIFIER_GLOBAL_VALUE (token) = error_mark_node;
+	}
+    }
+  else
+    {
+      if (TREE_CODE (id) == ADDR_EXPR)
+	mark_used (TREE_OPERAND (id, 0));
+      else if (TREE_CODE (id) != TREE_LIST)
+	mark_used (id);
+    }
+  if (TREE_CODE (id) == CONST_DECL && ! current_template_parms)
+    {
+      /* XXX CHS - should we set TREE_USED of the constant? */
+      id = DECL_INITIAL (id);
+      /* This is to prevent an enum whose value is 0
+	 from being considered a null pointer constant.  */
+      id = build1 (NOP_EXPR, TREE_TYPE (id), id);
+      TREE_CONSTANT (id) = 1;
+    }
+
+  if (current_template_parms)
+    {
+      if (is_overloaded_fn (id))
+	{
+	  id = build_min (LOOKUP_EXPR, unknown_type_node,
+			  token, get_first_fn (id));
+	  LOOKUP_EXPR_GLOBAL (id) = 1;
+	}
+      /* else just use the decl */
+    }
   return id;
 }
 
@@ -3091,9 +3031,6 @@ real_yylex ()
 	value = END_OF_SAVED_INPUT;
       else if (linemode)
 	value = END_OF_LINE;
-      else if (do_pending_expansions ())
-	/* this will set yychar for us */
-	return yychar;
       else
 	value = ENDFILE;
       break;
@@ -4141,12 +4078,20 @@ real_yylex ()
 	      len = p - token_buffer - 1;
 	    }
 #endif
+	    if (current_template_parms)
+	      push_obstacks (&permanent_obstack, &permanent_obstack);
 	    yylval.ttype = build_string ((len + 1) * WCHAR_BYTES, widep);
+	    if (current_template_parms)
+	      pop_obstacks ();
 	    TREE_TYPE (yylval.ttype) = wchar_array_type_node;
 	  }
 	else
 	  {
+	    if (current_template_parms)
+	      push_obstacks (&permanent_obstack, &permanent_obstack);
 	    yylval.ttype = build_string (p - token_buffer, token_buffer + 1);
+	    if (current_template_parms)
+	      pop_obstacks ();
 	    TREE_TYPE (yylval.ttype) = char_array_type_node;
 	  }
 
@@ -4363,15 +4308,10 @@ is_rid (t)
   return !!is_reserved_word (IDENTIFIER_POINTER (t), IDENTIFIER_LENGTH (t));
 }
 
-typedef enum
-{
-  d_kind, t_kind, s_kind, r_kind, e_kind, c_kind,
-  id_kind, op_id_kind, perm_list_kind, temp_list_kind,
-  vec_kind, x_kind, lang_decl, lang_type, all_kinds
-} tree_node_kind;
+#ifdef GATHER_STATISTICS
 extern int tree_node_counts[];
 extern int tree_node_sizes[];
-extern char *tree_node_kind_names[];
+#endif
 
 /* Place to save freed lang_decls which were allocated on the
    permanent_obstack.  @@ Not currently used.  */
@@ -4489,6 +4429,9 @@ copy_lang_decl (node)
 {
   int size;
   int *pi;
+
+  if (! DECL_LANG_SPECIFIC (node))
+    return;
 
   if (TREE_CODE (node) == FIELD_DECL)
     size = sizeof (struct lang_decl_flags);

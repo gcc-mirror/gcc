@@ -468,8 +468,8 @@ initializer_constant_valid_p (value, endtype)
       return 0;
 
     case PLUS_EXPR:
-      if (TREE_CODE (endtype) == INTEGER_TYPE
-	  && TYPE_PRECISION (endtype) < POINTER_SIZE)
+      if ((TREE_CODE (endtype) == INTEGER_TYPE)
+	  && (TYPE_PRECISION (endtype) < POINTER_SIZE))
 	return 0;
       {
 	tree valid0 = initializer_constant_valid_p (TREE_OPERAND (value, 0),
@@ -485,8 +485,8 @@ initializer_constant_valid_p (value, endtype)
       }
 
     case MINUS_EXPR:
-      if (TREE_CODE (endtype) == INTEGER_TYPE
-	  && TYPE_PRECISION (endtype) < POINTER_SIZE)
+      if ((TREE_CODE (endtype) == INTEGER_TYPE)
+	  && (TYPE_PRECISION (endtype) < POINTER_SIZE))
 	return 0;
       {
 	tree valid0 = initializer_constant_valid_p (TREE_OPERAND (value, 0),
@@ -1287,6 +1287,9 @@ build_x_arrow (datum)
   if (type == error_mark_node)
     return error_mark_node;
 
+  if (current_template_parms)
+    return build_min_nt (ARROW_EXPR, rval);
+
   if (TREE_CODE (rval) == OFFSET_REF)
     {
       rval = resolve_offset_ref (datum);
@@ -1299,7 +1302,7 @@ build_x_arrow (datum)
       type = TREE_TYPE (rval);
     }
 
-  if (IS_AGGR_TYPE (type) && TYPE_OVERLOADS_ARROW (type))
+  if (IS_AGGR_TYPE (type) && TYPE_OVERLOADS_ARROW (complete_type (type)))
     {
       while ((rval = build_opfncall (COMPONENT_REF, LOOKUP_NORMAL, rval, NULL_TREE, NULL_TREE)))
 	{
@@ -1358,6 +1361,9 @@ build_m_component_ref (datum, component)
   tree objtype = TREE_TYPE (datum);
   tree rettype;
   tree binfo;
+
+  if (current_template_parms)
+    return build_min_nt (DOTSTAR_EXPR, datum, component);
 
   if (TYPE_PTRMEMFUNC_P (TREE_TYPE (component)))
     {
@@ -1445,6 +1451,9 @@ build_functional_cast (exp, parms)
   else
     type = exp;
 
+  if (current_template_parms)
+    return build_min (CAST_EXPR, type, parms);
+
   if (IS_SIGNATURE (type))
     {
       error ("signature type not allowed in cast or constructor expression");
@@ -1480,7 +1489,7 @@ build_functional_cast (exp, parms)
 	name = DECL_NESTED_TYPENAME (name);
     }
 
-  if (TYPE_SIZE (type) == NULL_TREE)
+  if (TYPE_SIZE (complete_type (type)) == NULL_TREE)
     {
       cp_error ("type `%T' is not yet defined", type);
       return error_mark_node;
@@ -1495,7 +1504,7 @@ build_functional_cast (exp, parms)
   if (expr_as_ctor == error_mark_node)
     return error_mark_node;
 
-  return build_cplus_new (type, expr_as_ctor, 1);
+  return build_cplus_new (type, expr_as_ctor);
 }
 
 /* Return the character string for the name that encodes the

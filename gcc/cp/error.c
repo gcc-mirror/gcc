@@ -212,11 +212,6 @@ dump_type (t, v)
       OB_PUTID (TYPE_IDENTIFIER (t));
       break;
 
-    case UNINSTANTIATED_P_TYPE:
-      OB_PUTID (DECL_NAME (UPT_TEMPLATE (t)));
-      OB_PUTS ("<...>");
-      break;
-
       /* This is not always necessary for pointers and such, but doing this
 	 reduces code size.  */
     case ARRAY_TYPE:
@@ -228,6 +223,13 @@ dump_type (t, v)
     case METHOD_TYPE:
       dump_type_prefix (t, v);
       dump_type_suffix (t, v);
+      break;
+
+    case TYPENAME_TYPE:
+      OB_PUTS ("typename ");
+      dump_type (TYPE_CONTEXT (t), 0);
+      OB_PUTS ("::");
+      OB_PUTID (TYPE_IDENTIFIER (t));
       break;
 
     default:
@@ -422,10 +424,10 @@ dump_type_prefix (t, v)
     case TREE_LIST:
     case TYPE_DECL:
     case TREE_VEC:
-    case UNINSTANTIATED_P_TYPE:
     case UNION_TYPE:
     case UNKNOWN_TYPE:
     case VOID_TYPE:
+    case TYPENAME_TYPE:
       dump_type (t, v);
       break;
       
@@ -494,10 +496,10 @@ dump_type_suffix (t, v)
     case TREE_LIST:
     case TYPE_DECL:
     case TREE_VEC:
-    case UNINSTANTIATED_P_TYPE:
     case UNION_TYPE:
     case UNKNOWN_TYPE:
     case VOID_TYPE:
+    case TYPENAME_TYPE:
       break;
 
     default:
@@ -711,11 +713,8 @@ dump_decl (t, v)
 	  OB_UNPUT (2);
 	OB_PUTC2 ('>', ' ');
 
-	if (DECL_TEMPLATE_IS_CLASS (t))
-	  {
-	    OB_PUTS ("class ");
-	    OB_PUTID (DECL_NAME (t));
-	  }
+	if (TREE_CODE (DECL_TEMPLATE_RESULT (t)) == TYPE_DECL)
+	  dump_type (TREE_TYPE (t), v);
 	else switch (NEXT_CODE (t))
 	  {
 	  case METHOD_TYPE:
@@ -734,7 +733,8 @@ dump_decl (t, v)
       break;
 
     case CONST_DECL:
-      if (NEXT_CODE (t) == ENUMERAL_TYPE)
+      if (NEXT_CODE (t) == ENUMERAL_TYPE
+	  || TREE_CODE (DECL_INITIAL (t)) == TEMPLATE_CONST_PARM)
 	goto general;
       else
 	dump_expr (DECL_INITIAL (t), 0);
@@ -1262,6 +1262,27 @@ dump_expr (t, nop)
 	break;
       }
 
+    case TEMPLATE_CONST_PARM:
+      {
+	tree r = TREE_VEC_ELT (TREE_VALUE (current_template_parms),
+			       TEMPLATE_CONST_IDX (t));
+	dump_decl (TREE_VALUE (r), -1);
+	break;
+      }
+
+    case IDENTIFIER_NODE:
+      OB_PUTID (t);
+      break;
+
+    case SCOPE_REF:
+      dump_type (TREE_OPERAND (t, 0), 0);
+      OB_PUTS ("::");
+      dump_expr (TREE_OPERAND (t, 1), 0);
+      break;
+
+    case CAST_EXPR:
+      break;			/* XXX */
+
     case TREE_LIST:
       if (TREE_VALUE (t) && TREE_CODE (TREE_VALUE (t)) == FUNCTION_DECL)
 	{
@@ -1312,8 +1333,8 @@ dump_unary_op (opstring, t, nop)
 }
 
 char *
-fndecl_as_string (cname, fndecl, print_ret_type_p)
-     tree cname, fndecl;
+fndecl_as_string (fndecl, print_ret_type_p)
+     tree fndecl;
      int print_ret_type_p;
 {
   return decl_as_string (fndecl, print_ret_type_p);
@@ -1389,12 +1410,7 @@ cp_line_of (t)
     t = TREE_TYPE (t);
 
   if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
-    {
-      if (IS_AGGR_TYPE (t))
-	line = CLASSTYPE_SOURCE_LINE (t);
-      else
-	line = DECL_SOURCE_LINE (TYPE_NAME (t));
-    }
+    line = DECL_SOURCE_LINE (TYPE_NAME (t));
   else
     line = DECL_SOURCE_LINE (t);
 

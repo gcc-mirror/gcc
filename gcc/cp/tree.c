@@ -26,6 +26,11 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "flags.h"
 #include "rtl.h"
+#ifdef __STDC__
+#include <stdarg.h>
+#else
+#include <varargs.h>
+#endif
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
@@ -202,10 +207,9 @@ lvalue_or_else (ref, string)
    and return it so that it can be processed by language-independent
    and language-specific expression expanders.  */
 tree
-build_cplus_new (type, init, with_cleanup_p)
+build_cplus_new (type, init)
      tree type;
      tree init;
-     int with_cleanup_p;
 {
   tree slot;
   tree rval;
@@ -234,7 +238,7 @@ break_out_cleanups (exp)
 
   if (TREE_CODE (tmp) == CALL_EXPR
       && TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (tmp)))
-    return build_cplus_new (TREE_TYPE (tmp), tmp, 1);
+    return build_cplus_new (TREE_TYPE (tmp), tmp);
 
   while (TREE_CODE (tmp) == NOP_EXPR
 	 || TREE_CODE (tmp) == CONVERT_EXPR
@@ -245,7 +249,7 @@ break_out_cleanups (exp)
 	{
 	  TREE_OPERAND (tmp, 0)
 	    = build_cplus_new (TREE_TYPE (TREE_OPERAND (tmp, 0)),
-			       TREE_OPERAND (tmp, 0), 1);
+			       TREE_OPERAND (tmp, 0));
 	  break;
 	}
       else
@@ -412,7 +416,14 @@ build_cplus_array_type (elt_type, index_type)
       saveable_obstack = &permanent_obstack;
     }
 
-  t = build_array_type (elt_type, index_type);
+  if (current_template_parms)
+    {
+      t = make_node (ARRAY_TYPE);
+      TREE_TYPE (t) = elt_type;
+      TYPE_DOMAIN (t) = index_type;
+    }
+  else
+    t = build_array_type (elt_type, index_type);
 
   /* Push these needs up so that initialization takes place
      more easily.  */
@@ -568,7 +579,6 @@ layout_vbasetypes (rec, max)
   register unsigned const_size = 0;
   register tree var_size = 0;
   int nonvirtual_const_size;
-  tree nonvirtual_var_size;
 
   CLASSTYPE_VBASECLASSES (rec) = vbase_types;
 
@@ -578,7 +588,6 @@ layout_vbasetypes (rec, max)
     var_size = TYPE_SIZE (rec);
 
   nonvirtual_const_size = const_size;
-  nonvirtual_var_size = var_size;
 
   while (vbase_types)
     {
@@ -1403,10 +1412,7 @@ build_exception_variant (type, raises)
      tree type;
      tree raises;
 {
-  int i;
   tree v = TYPE_MAIN_VARIANT (type);
-  tree t, t2, cname;
-  tree *a = (tree *)alloca ((list_length (raises)+1) * sizeof (tree));
   int constp = TYPE_READONLY (type);
   int volatilep = TYPE_VOLATILE (type);
 
@@ -1435,6 +1441,7 @@ build_exception_variant (type, raises)
       raises = copy_list (raises);
       pop_obstacks ();
     }
+
   TYPE_RAISES_EXCEPTIONS (v) = raises;
   return v;
 }
@@ -1449,7 +1456,6 @@ mapcar (t, func)
      tree t;
      tree (*func)();
 {
-  enum tree_code code;
   tree tmp;
 
   if (t == NULL_TREE)
@@ -1458,7 +1464,7 @@ mapcar (t, func)
   if (tmp = func (t), tmp != NULL_TREE)
     return tmp;
 
-  switch (code = TREE_CODE (t))
+  switch (TREE_CODE (t))
     {
     case ERROR_MARK:
       return error_mark_node;
@@ -1552,6 +1558,8 @@ mapcar (t, func)
     case POSTDECREMENT_EXPR:
     case POSTINCREMENT_EXPR:
     case CALL_EXPR:
+    case ARRAY_REF:
+    case SCOPE_REF:
       t = copy_node (t);
       TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
       TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
@@ -1646,15 +1654,24 @@ copy_to_permanent (t)
   return t;
 }
 
+#ifdef GATHER_STATISTICS
+extern int depth_reached;
+#endif
+
 void
 print_lang_statistics ()
 {
-  extern struct obstack maybepermanent_obstack;
+  extern struct obstack maybepermanent_obstack, decl_obstack;
   print_obstack_statistics ("class_obstack", &class_obstack);
+  print_obstack_statistics ("decl_obstack", &decl_obstack);
   print_obstack_statistics ("permanent_obstack", &permanent_obstack);
   print_obstack_statistics ("maybepermanent_obstack", &maybepermanent_obstack);
   print_search_statistics ();
   print_class_statistics ();
+#ifdef GATHER_STATISTICS
+  fprintf (stderr, "maximum template instantiation depth reached: %d\n",
+	   depth_reached);
+#endif
 }
 
 /* This is used by the `assert' macro.  It is provided in libgcc.a,
@@ -1720,7 +1737,7 @@ bot_manip (t)
     return t;
   else if (TREE_CODE (t) == TARGET_EXPR)
     return build_cplus_new (TREE_TYPE (t),
-			    break_out_target_exprs (TREE_OPERAND (t, 1)), 0);
+			    break_out_target_exprs (TREE_OPERAND (t, 1)));
   return NULL_TREE;
 }
   
@@ -1818,4 +1835,152 @@ cp_expand_decl_cleanup (decl, cleanup)
      tree decl, cleanup;
 {
   return expand_decl_cleanup (decl, unsave_expr (cleanup));
+}
+
+/* Obstack used for allocating nodes in template function and variable
+   definitions.  */
+
+extern struct obstack *expression_obstack;
+
+/* Similar to `build_nt', except we build
+   on the permanent_obstack, regardless.  */
+
+tree
+build_min_nt VPROTO((enum tree_code code, ...))
+{
+#ifndef __STDC__
+  enum tree_code code;
+#endif
+  register struct obstack *ambient_obstack = expression_obstack;
+  va_list p;
+  register tree t;
+  register int length;
+  register int i;
+
+  VA_START (p, code);
+
+#ifndef __STDC__
+  code = va_arg (p, enum tree_code);
+#endif
+
+  expression_obstack = &permanent_obstack;
+
+  t = make_node (code);
+  length = tree_code_length[(int) code];
+  TREE_COMPLEXITY (t) = lineno;
+
+  for (i = 0; i < length; i++)
+    {
+      tree x = va_arg (p, tree);
+      TREE_OPERAND (t, i) = copy_to_permanent (x);
+    }
+
+  va_end (p);
+  expression_obstack = ambient_obstack;
+  return t;
+}
+
+/* Similar to `build', except we build
+   on the permanent_obstack, regardless.  */
+
+tree
+build_min VPROTO((enum tree_code code, tree tt, ...))
+{
+#ifndef __STDC__
+  enum tree_code code;
+  tree tt;
+#endif
+  register struct obstack *ambient_obstack = expression_obstack;
+  va_list p;
+  register tree t;
+  register int length;
+  register int i;
+
+  VA_START (p, tt);
+
+#ifndef __STDC__
+  code = va_arg (p, enum tree_code);
+  tt = va_arg (p, tree);
+#endif
+
+  expression_obstack = &permanent_obstack;
+
+  t = make_node (code);
+  length = tree_code_length[(int) code];
+  TREE_TYPE (t) = tt;
+  TREE_COMPLEXITY (t) = lineno;
+
+  for (i = 0; i < length; i++)
+    {
+      tree x = va_arg (p, tree);
+      TREE_OPERAND (t, i) = copy_to_permanent (x);
+    }
+
+  va_end (p);
+  expression_obstack = ambient_obstack;
+  return t;
+}
+
+/* Same as `tree_cons' but make a permanent object.  */
+
+tree
+min_tree_cons (purpose, value, chain)
+     tree purpose, value, chain;
+{
+  register tree node;
+  register struct obstack *ambient_obstack = current_obstack;
+  current_obstack = &permanent_obstack;
+
+  node = tree_cons (purpose, value, chain);
+  current_obstack = ambient_obstack;
+  return node;
+}
+
+tree
+get_type_decl (t)
+     tree t;
+{
+  if (TREE_CODE (t) == IDENTIFIER_NODE)
+    return identifier_typedecl_value (t);
+  if (TREE_CODE (t) == TYPE_DECL)
+    return t;
+  if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
+    return TYPE_STUB_DECL (t);
+  
+  my_friendly_abort (42);
+}
+
+int
+can_free (obstack, t)
+     struct obstack *obstack;
+     tree t;
+{
+  int size;
+
+  if (TREE_CODE (t) == TREE_VEC)
+    size = (TREE_VEC_LENGTH (t)-1) * sizeof (tree) + sizeof (struct tree_vec);
+  else
+    my_friendly_abort (42);
+
+#define ROUND(x) ((x + obstack_alignment_mask (obstack)) \
+		  & ~ obstack_alignment_mask (obstack))
+  if ((char *)t + ROUND (size) == obstack_next_free (obstack))
+    return 1;
+#undef ROUND
+
+  return 0;
+}
+
+/* Return first vector element whose BINFO_TYPE is ELEM.
+   Return 0 if ELEM is not in VEC.  */
+
+tree
+vec_binfo_member (elem, vec)
+     tree elem, vec;
+{
+  int i;
+  for (i = 0; i < TREE_VEC_LENGTH (vec); ++i)
+    if (elem == BINFO_TYPE (TREE_VEC_ELT (vec, i)))
+      return TREE_VEC_ELT (vec, i);
+  return NULL_TREE;
 }

@@ -346,10 +346,7 @@ build_overload_nested_name (decl)
       OB_PUTCP (label);
     }
   else				/* TYPE_DECL */
-    {
-      tree name = DECL_NAME (decl);
-      build_overload_identifier (name);
-    }
+    build_overload_identifier (decl);
 }
 
 /* Encoding for an INTEGER_CST value. */
@@ -357,6 +354,27 @@ static void
 build_overload_int (value)
      tree value;
 {
+  if (TREE_CODE (value) == TEMPLATE_CONST_PARM)
+    {
+      OB_PUTC ('Y');
+      if (TEMPLATE_CONST_IDX (value) > 9)
+	OB_PUTC ('_');
+      icat (TEMPLATE_CONST_IDX (value)); 
+      if (TEMPLATE_CONST_IDX (value) > 9)
+	OB_PUTC ('_');
+      return;
+    }
+  else if (uses_template_parms (value))
+    /* We don't ever want this output, but it's inconvenient not to
+       be able to build the string.  This should cause assembler
+       errors we'll notice.  */
+    {
+      static int n;
+      sprintf (digit_buffer, " *%d", n++);
+      OB_PUTCP (digit_buffer);
+      return;
+    }
+
   my_friendly_assert (TREE_CODE (value) == INTEGER_CST, 243);
   if (TYPE_PRECISION (value) == 2 * HOST_BITS_PER_WIDE_INT)
     {
@@ -544,11 +562,14 @@ static void
 build_overload_identifier (name)
      tree name;
 {
-  if (IDENTIFIER_TEMPLATE (name))
+  if (TREE_CODE (name) == TYPE_DECL
+      && IS_AGGR_TYPE (TREE_TYPE (name))
+      && CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (name))
+      && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (TREE_TYPE (name))))
     {
       tree template, parmlist, arglist, tname;
       int i, nparms;
-      template = IDENTIFIER_TEMPLATE (name);
+      template = CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (name));
       arglist = TREE_VALUE (template);
       template = TREE_PURPOSE (template);
       tname = DECL_NAME (template);
@@ -580,6 +601,8 @@ build_overload_identifier (name)
     }
   else
     {
+      if (TREE_CODE (name) == TYPE_DECL)
+	name = DECL_NAME (name);
       if (numeric_output_need_bar)
 	{
 	  OB_PUTC ('_');
@@ -873,8 +896,8 @@ build_overload_name (parmtypes, begin, end)
 		numeric_output_need_bar = 0;
 		build_overload_nested_name (TYPE_MAIN_DECL (parmtype));
 	      }
-	    else
-	      build_overload_identifier (name);
+	    else	      
+	      build_overload_identifier (TYPE_MAIN_DECL (parmtype));
 	    break;
 	  }
 
@@ -884,8 +907,15 @@ build_overload_name (parmtypes, begin, end)
 	  break;
 
 	case TEMPLATE_TYPE_PARM:
-	case TEMPLATE_CONST_PARM:
-        case UNINSTANTIATED_P_TYPE:
+	  OB_PUTC ('X');
+	  if (TEMPLATE_TYPE_IDX (parmtype) > 9)
+	    OB_PUTC ('_');
+	  icat (TEMPLATE_TYPE_IDX (parmtype)); 
+	  if (TEMPLATE_TYPE_IDX (parmtype) > 9)
+	    OB_PUTC ('_');
+	  break;
+	    
+	case TYPENAME_TYPE:
 	  /* We don't ever want this output, but it's inconvenient not to
 	     be able to build the string.  This should cause assembler
 	     errors we'll notice.  */
@@ -1468,7 +1498,6 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
 
    NAME is $1 from the bison rule. It is an IDENTIFIER_NODE.
    VALUE is $$ from the bison rule. It is the value returned by lookup_name ($1)
-   yychar is the pending input character (suitably encoded :-).
 
    As a last ditch, try to look up the name as a label and return that
    address.
@@ -1478,11 +1507,10 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
    compiler faster).  */
 
 tree
-hack_identifier (value, name, yychar)
+hack_identifier (value, name)
      tree value, name;
-     int yychar;
 {
-  tree type;
+  tree type, context;
 
   if (TREE_CODE (value) == ERROR_MARK)
     {
@@ -1562,6 +1590,20 @@ hack_identifier (value, name, yychar)
   else
     mark_used (value);
 
+  if (pedantic
+      && (TREE_CODE (value) == VAR_DECL || TREE_CODE (value) == PARM_DECL))
+    {
+      tree context = decl_function_context (value);
+      if (context != NULL_TREE && context != current_function_decl
+	  && ! TREE_STATIC (value))
+	{
+	  cp_pedwarn ("use of %s from containing function",
+		      (TREE_CODE (value) == VAR_DECL
+		       ? "`auto' variable" : "parameter"));
+	  cp_pedwarn_at ("  `%#D' declared here", value);
+	}
+    }
+
   if (TREE_CODE_CLASS (TREE_CODE (value)) == 'd' && DECL_NONLOCAL (value))
     {
       if (DECL_LANG_SPECIFIC (value)
@@ -1605,7 +1647,7 @@ hack_identifier (value, name, yychar)
       return value;
     }
 
-  if (TREE_CODE (type) == REFERENCE_TYPE)
+  if (TREE_CODE (type) == REFERENCE_TYPE && ! current_template_parms)
     {
       my_friendly_assert (TREE_CODE (value) == VAR_DECL
 			  || TREE_CODE (value) == PARM_DECL
@@ -2216,9 +2258,6 @@ do_build_assign_ref (fndecl)
   c_expand_return (C_C_D);
   pop_momentary ();
 }
-
-void push_cp_function_context ();
-void pop_cp_function_context ();
 
 void
 synthesize_method (fndecl)

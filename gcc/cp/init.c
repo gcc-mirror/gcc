@@ -52,8 +52,6 @@ void expand_member_init ();
 void expand_aggr_init ();
 
 static void expand_aggr_init_1 ();
-static void expand_recursive_init_1 ();
-static void expand_recursive_init ();
 static void expand_virtual_init PROTO((tree, tree));
 tree expand_vec_init ();
 
@@ -70,7 +68,7 @@ static tree minus_one;
 /* Set up local variable for this file.  MUST BE CALLED AFTER
    INIT_DECL_PROCESSING.  */
 
-tree BI_header_type, BI_header_size;
+static tree BI_header_type, BI_header_size;
 
 void init_init_processing ()
 {
@@ -257,9 +255,8 @@ static tree
 sort_member_init (t)
      tree t;
 {
-  tree x, member, name, field, init;
+  tree x, member, name, field;
   tree init_list = NULL_TREE;
-  tree fields_to_unmark = NULL_TREE;
   int last_pos = 0;
   tree last_field;
 
@@ -281,6 +278,8 @@ sort_member_init (t)
 	  name = TREE_PURPOSE (x);
 
 #if 0
+	  /* This happens in templates, since the IDENTIFIER is replaced
+             with the COMPONENT_REF in tsubst_expr.  */
 	  field = (TREE_CODE (name) == COMPONENT_REF
 		   ? TREE_OPERAND (name, 1) : IDENTIFIER_CLASS_VALUE (name));
 #else
@@ -520,9 +519,7 @@ emit_base_init (t, immediately)
      tree t;
      int immediately;
 {
-  extern tree in_charge_identifier;
-
-  tree member, x;
+  tree member;
   tree mem_init_list;
   tree rbase_init_list, vbase_init_list;
   tree t_binfo = TYPE_BINFO (t);
@@ -571,7 +568,6 @@ emit_base_init (t, immediately)
   /* Now, perform initialization of non-virtual base classes.  */
   for (i = 0; i < n_baseclasses; i++)
     {
-      tree base = current_class_decl;
       tree base_binfo = TREE_VEC_ELT (binfos, i);
       tree init = void_list_node;
 
@@ -653,10 +649,15 @@ emit_base_init (t, immediately)
 	  init = TREE_VALUE (mem_init_list);
 	  from_init_list = 1;
 
+#if 0
+	  if (TREE_CODE (name) == COMPONENT_REF)
+	    name = DECL_NAME (TREE_OPERAND (name, 1));
+#else
 	  /* Also see if it's ever a COMPONENT_REF here.  If it is, we
 	     need to do `expand_assignment (name, init, 0, 0);' and
 	     a continue.  */
 	  my_friendly_assert (TREE_CODE (name) != COMPONENT_REF, 349);
+#endif
 	}
       else
 	{
@@ -993,7 +994,7 @@ expand_member_init (exp, name, init)
 	  else
 	    {
 	      if (basetype != type
-		  && ! binfo_member (basetype, TYPE_BINFO (type))
+		  && ! vec_binfo_member (basetype, TYPE_BINFO_BASETYPES (type))
 		  && ! binfo_member (basetype, CLASSTYPE_VBASECLASSES (type)))
 		{
 		  if (IDENTIFIER_CLASS_VALUE (name))
@@ -1783,6 +1784,9 @@ build_offset_ref (type, name)
   tree basetypes = NULL_TREE;
   int dtor = 0;
 
+  if (current_template_parms)
+    return build_min_nt (SCOPE_REF, type, name);
+
   /* Handle namespace names fully here.  */
   if (TREE_CODE (type) == IDENTIFIER_NODE
       && get_aggr_from_typedef (type, 0) == 0)
@@ -1813,7 +1817,10 @@ build_offset_ref (type, name)
 
   if (TYPE_SIZE (type) == 0)
     {
-      t = IDENTIFIER_CLASS_VALUE (name);
+      if (type == current_class_type)
+	t = IDENTIFIER_CLASS_VALUE (name);
+      else
+	t = NULL_TREE;
       if (t == 0)
 	{
 	  cp_error ("incomplete type `%T' does not have member `%D'", type,
@@ -2190,12 +2197,12 @@ is_friend (type, supplicant)
 	  if (name == TREE_PURPOSE (list))
 	    {
 	      tree friends = TREE_VALUE (list);
-	      name = DECL_ASSEMBLER_NAME (supplicant);
 	      for (; friends ; friends = TREE_CHAIN (friends))
 		{
 		  if (ctype == TREE_PURPOSE (friends))
 		    return 1;
-		  if (name == DECL_ASSEMBLER_NAME (TREE_VALUE (friends)))
+		  if (comptypes (TREE_TYPE (supplicant),
+				 TREE_TYPE (TREE_VALUE (friends)), 1))
 		    return 1;
 		}
 	      break;
@@ -2401,10 +2408,11 @@ make_friend_class (type, friend_type)
    QUALS say what special qualifies should apply to the object
    pointed to by `this'.  */
 tree
-do_friend (ctype, declarator, decl, parmdecls, flags, quals)
+do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
      tree ctype, declarator, decl, parmdecls;
      enum overload_flags flags;
      tree quals;
+     int funcdef_flag;
 {
   /* Every decl that gets here is a friend of something.  */
   DECL_FRIEND_P (decl) = 1;
@@ -2424,7 +2432,7 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals)
 	  /* This will set up DECL_ARGUMENTS for us.  */
 	  grokclassfn (ctype, cname, decl, flags, quals);
 	  if (TYPE_SIZE (ctype) != 0)
-	    check_classfn (ctype, cname, decl);
+	    check_classfn (ctype, decl);
 
 	  if (TREE_TYPE (decl) != error_mark_node)
 	    {
@@ -2492,7 +2500,8 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals)
 	= build_decl_overload (declarator, TYPE_ARG_TYPES (TREE_TYPE (decl)),
 			       TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE);
       DECL_ARGUMENTS (decl) = parmdecls;
-      DECL_CLASS_CONTEXT (decl) = current_class_type;
+      if (funcdef_flag)
+	DECL_CLASS_CONTEXT (decl) = current_class_type;
 
       /* We can call pushdecl here, because the TREE_CHAIN of this
 	 FUNCTION_DECL is not needed for other purposes.  */
@@ -2639,6 +2648,11 @@ build_new (placement, decl, init, use_global_new)
 	    {
 	      if (this_nelts == NULL_TREE)
 		error ("new of array type fails to specify size");
+	      else if (current_template_parms)
+		{
+		  nelts = this_nelts;
+		  absdcl = TREE_OPERAND (absdcl, 0);
+		}
 	      else
 		{
 		  this_nelts = save_expr (convert (sizetype, this_nelts));
@@ -2704,6 +2718,21 @@ build_new (placement, decl, init, use_global_new)
       decl = TYPE_NAME (type);
     }
 
+  if (current_template_parms)
+    {
+      tree t;
+      if (has_array)
+	t = min_tree_cons (min_tree_cons (NULL_TREE, type, NULL_TREE),
+			   build_min_nt (ARRAY_REF, NULL_TREE, nelts),
+			   NULL_TREE);
+      else
+	t = type;
+	
+      rval = build_min_nt (NEW_EXPR, placement, t, init);
+      NEW_EXPR_USE_GLOBAL (rval) = use_global_new;
+      return rval;
+    }
+
   /* ``A reference cannot be created by the new operator.  A reference
      is not an object (8.2.2, 8.4.3), so a pointer to it could not be
      returned by new.'' ARM 5.3.3 */
@@ -2740,6 +2769,13 @@ build_new (placement, decl, init, use_global_new)
       nelts = build_binary_op (MULT_EXPR, nelts, this_nelts, 1);
       true_type = TREE_TYPE (true_type);
     }
+
+  if (TYPE_SIZE (complete_type (true_type)) == 0)
+    {
+      incomplete_type_error (0, true_type);
+      return error_mark_node;
+    }
+
   if (has_array)
     size = fold (build_binary_op (MULT_EXPR, size_in_bytes (true_type),
 				  nelts, 1));
@@ -2749,12 +2785,6 @@ build_new (placement, decl, init, use_global_new)
   if (true_type == void_type_node)
     {
       error ("invalid type `void' for new");
-      return error_mark_node;
-    }
-
-  if (TYPE_SIZE (true_type) == 0)
-    {
-      incomplete_type_error (0, true_type);
       return error_mark_node;
     }
 
@@ -3473,7 +3503,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
   if (TREE_CODE (type) == POINTER_TYPE)
     {
       type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
-      if (TYPE_SIZE (type) == 0)
+      if (TYPE_SIZE (complete_type (type)) == 0)
 	{
 	  incomplete_type_error (0, type);
 	  return error_mark_node;
@@ -3505,7 +3535,6 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	  return error_mark_node;
 	}
       return build_vec_delete (addr, array_type_nelts (type),
-			       c_sizeof_nowarn (TREE_TYPE (type)),
 			       auto_delete, integer_two_node,
 			       use_global_delete);
     }
@@ -3718,12 +3747,6 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	       || (TREE_VIA_VIRTUAL (base_binfo) == 0
 		   && ! TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (base_binfo))))
 	{
-	  tree virtual_size;
-
-	  /* This is probably wrong. It should be the size of the virtual
-	     object being deleted.  */
-	  virtual_size = c_sizeof_nowarn (type);
-
 	  cond = build (COND_EXPR, void_type_node,
 			build (BIT_AND_EXPR, integer_type_node, auto_delete, integer_one_node),
 			build_builtin_call (void_type_node, BID,
@@ -3834,9 +3857,9 @@ build_vbase_delete (type, decl)
    confirm the size, and trap if the numbers differ; not clear that it'd
    be worth bothering.)  */
 tree
-build_vec_delete (base, maxindex, elt_size, auto_delete_vec, auto_delete,
+build_vec_delete (base, maxindex, auto_delete_vec, auto_delete,
 		  use_global_delete)
-     tree base, maxindex, elt_size;
+     tree base, maxindex;
      tree auto_delete_vec, auto_delete;
      int use_global_delete;
 {

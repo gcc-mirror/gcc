@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 extern tree get_file_function_name ();
 extern tree cleanups_this_call;
 static void grok_function_init ();
+void import_export_decl ();
 extern int current_class_depth;
 
 /* A list of virtual function tables we must make sure to write out.  */
@@ -66,6 +67,10 @@ static int global_temp_name_counter;
 /* Flag used when debugging spew.c */
 
 extern int spew_debug;
+
+/* Nonzero if we're done parsing and into end-of-file activities.  */
+
+int at_eof;
 
 /* Functions called along with real static constructors and destructors.  */
 
@@ -1043,6 +1048,10 @@ grok_array_decl (array_expr, index_exp)
 
   if (type == error_mark_node || index_exp == error_mark_node)
     return error_mark_node;
+  if (current_template_parms)
+    return build_min (ARRAY_REF, type ? TREE_TYPE (type) : NULL_TREE,
+		      array_expr, index_exp);
+
   if (type == NULL_TREE)
     {
       /* Something has gone very wrong.  Assume we are mistakenly reducing
@@ -1057,7 +1066,7 @@ grok_array_decl (array_expr, index_exp)
 
   /* If they have an `operator[]', use that.  */
   if (TYPE_LANG_SPECIFIC (type)
-      && TYPE_OVERLOADS_ARRAY_REF (type))
+      && TYPE_OVERLOADS_ARRAY_REF (complete_type (type)))
     return build_opfncall (ARRAY_REF, LOOKUP_NORMAL,
 			   array_expr, index_exp, NULL_TREE);
 
@@ -1108,14 +1117,24 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
      tree exp, size;
      int doing_vec, use_global_delete;
 {
-  tree t = stabilize_reference (convert_from_reference (exp));
-  tree type = TREE_TYPE (t);
-  enum tree_code code = TREE_CODE (type);
+  tree t;
+  tree type;
+  enum tree_code code;
   /* For a regular vector delete (aka, no size argument) we will pass
      this down as a NULL_TREE into build_vec_delete.  */
   tree maxindex = NULL_TREE;
-  /* This is used for deleting arrays.  */
-  tree elt_size;
+
+  if (current_template_parms)
+    {
+      t = build_min (DELETE_EXPR, void_type_node, exp, size);
+      DELETE_EXPR_USE_GLOBAL (t) = use_global_delete;
+      DELETE_EXPR_USE_VEC (t) = doing_vec;
+      return t;
+    }
+
+  t = stabilize_reference (convert_from_reference (exp));
+  type = TREE_TYPE (t);
+  code = TREE_CODE (type);
 
   switch (doing_vec)
     {
@@ -1125,7 +1144,6 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
 	pedwarn ("anachronistic use of array size in vector delete");
       /* Fall through.  */
     case 1:
-      elt_size = c_sizeof (type);
       break;
     default:
       if (code != POINTER_TYPE)
@@ -1174,7 +1192,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
 #endif
 
   if (doing_vec)
-    return build_vec_delete (t, maxindex, elt_size, integer_one_node,
+    return build_vec_delete (t, maxindex, integer_one_node,
 			     integer_two_node, use_global_delete);
   else
     {
@@ -1200,12 +1218,12 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
    CNAME is the same here as it is for grokclassfn above.  */
 
 tree
-check_classfn (ctype, cname, function)
-     tree ctype, cname, function;
+check_classfn (ctype, function)
+     tree ctype, function;
 {
   tree fn_name = DECL_NAME (function);
   tree fndecl;
-  tree method_vec = CLASSTYPE_METHOD_VEC (ctype);
+  tree method_vec = CLASSTYPE_METHOD_VEC (complete_type (ctype));
   tree *methods = 0;
   tree *end = 0;
 
@@ -1229,8 +1247,8 @@ check_classfn (ctype, cname, function)
 		  if (DECL_ASSEMBLER_NAME (function) == DECL_ASSEMBLER_NAME (fndecl))
 		    return fndecl;
 #if 0
-		  /* This should work, but causes libg++ to fail
-		     make check-tFix. */
+		  /* This doesn't work for static member functions that are
+                     pretending to be methods. */
 		  /* We have to do more extensive argument checking here, as
 		     the name may have been changed by asm("new_name"). */
 		  if (decls_match (function, fndecl))
@@ -1250,12 +1268,7 @@ check_classfn (ctype, cname, function)
 		      if (comptypes (TREE_TYPE (TREE_TYPE (function)),
 				     TREE_TYPE (TREE_TYPE (fndecl)), 1)
 			  && compparms (p1, p2, 3))
-			{
-			  if (DECL_STATIC_FUNCTION_P (fndecl)
-			      && TREE_CODE (TREE_TYPE (function)) == METHOD_TYPE)
-			    revert_static_member_fn (&function, NULL, NULL);
-			  return fndecl;
-			}
+			return fndecl;
 		    }
 #endif
 		  fndecl = DECL_CHAIN (fndecl);
@@ -1333,7 +1346,9 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree, attrlist)
       && TREE_CODE (declarator) == SCOPE_REF)
     {
       /* Access declaration */
-      if (TREE_COMPLEXITY (declarator) == current_class_depth)
+      if (! IS_AGGR_TYPE_CODE (TREE_CODE (TREE_OPERAND (declarator, 0))))
+	;
+      else if (TREE_COMPLEXITY (declarator) == current_class_depth)
 	pop_nested_class (1);
       return do_class_using_decl (declarator);
     }
@@ -1437,6 +1452,8 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree, attrlist)
 	       because `decl_const_value' would mis-interpret it
 	       as only meaning that this VAR_DECL is defined.  */
 	    init = build1 (NOP_EXPR, TREE_TYPE (value), init);
+	  else if (current_template_parms)
+	    ;
 	  else if (! TREE_CONSTANT (init))
 	    {
 	      /* We can allow references to things that are effectively
@@ -1455,6 +1472,10 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree, attrlist)
 
   /* The corresponding pop_obstacks is in cp_finish_decl.  */
   push_obstacks_nochange ();
+
+  if (current_template_parms && ! current_function_decl
+      && (TREE_CODE (value) == VAR_DECL || TREE_CODE (value) == FUNCTION_DECL))
+    push_template_decl (value);
 
   if (attrlist)
     cplus_decl_attributes (value, TREE_PURPOSE (attrlist),
@@ -1476,7 +1497,8 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree, attrlist)
 	      DECL_ASSEMBLER_NAME (value)
 		= build_static_name (current_class_type, DECL_NAME (value));
 	    }
-	  pending_statics = perm_tree_cons (NULL_TREE, value, pending_statics);
+	  if (! current_template_parms)
+	    pending_statics = perm_tree_cons (NULL_TREE, value, pending_statics);
 
 	  /* Static consts need not be initialized in the class definition.  */
 	  if (init != NULL_TREE && TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (value)))
@@ -1495,6 +1517,8 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree, attrlist)
 	}
       DECL_INITIAL (value) = init;
       DECL_IN_AGGR_P (value) = 1;
+      DECL_CONTEXT (value) = current_class_type;
+      DECL_CLASS_CONTEXT (value) = current_class_type;
 
       cp_finish_decl (value, init, asmspec_tree, 1, flags);
       pushdecl_class_level (value);
@@ -1600,26 +1624,9 @@ grokbitfield (declarator, declspecs, width)
 
   if (width != error_mark_node)
     {
-      /* Avoid the non_lvalue wrapper added by fold for PLUS_EXPRs.  */
-      STRIP_NOPS (width);
-
-      /* detect invalid field size.  */
-      if (TREE_CODE (width) == CONST_DECL)
-	width = DECL_INITIAL (width);
-      else if (TREE_READONLY_DECL_P (width))
-	width = decl_constant_value (width);
-      if (TREE_CODE (width) != INTEGER_CST)
-	{
-	  cp_error ("structure field `%D' width not an integer constant",
-		      value);
-	  DECL_INITIAL (value) = NULL_TREE;
-	}
-      else
-	{
-	  constant_expression_warning (width);
-	  DECL_INITIAL (value) = width;
-	  DECL_BIT_FIELD (value) = 1;
-	}
+      constant_expression_warning (width);
+      DECL_INITIAL (value) = width;
+      DECL_BIT_FIELD (value) = 1;
     }
 
   DECL_IN_AGGR_P (value) = 1;
@@ -1963,9 +1970,7 @@ tree
 constructor_name_full (thing)
      tree thing;
 {
-  if (TREE_CODE (thing) == UNINSTANTIATED_P_TYPE)
-    return DECL_NAME (UPT_TEMPLATE (thing));
-  else if (TREE_CODE (thing) == TEMPLATE_TYPE_PARM)
+  if (TREE_CODE (thing) == TEMPLATE_TYPE_PARM)
     thing = TYPE_NAME (thing);
   else if (IS_AGGR_TYPE_CODE (TREE_CODE (thing)))
     {
@@ -1976,7 +1981,7 @@ constructor_name_full (thing)
     }
   if (TREE_CODE (thing) == TYPE_DECL
       || (TREE_CODE (thing) == TEMPLATE_DECL
-	  && DECL_TEMPLATE_IS_CLASS (thing)))
+	  && TREE_CODE (DECL_TEMPLATE_RESULT (thing)) == TYPE_DECL))
     thing = DECL_NAME (thing);
   my_friendly_assert (TREE_CODE (thing) == IDENTIFIER_NODE, 197);
   return thing;
@@ -1996,8 +2001,7 @@ constructor_name (thing)
   t = IDENTIFIER_TEMPLATE (thing);
   if (!t)
     return thing;
-  t = TREE_PURPOSE (t);
-  return DECL_NAME (t);
+  return t;
 }
 
 /* Cache the value of this class's main virtual function table pointer
@@ -2010,7 +2014,14 @@ setup_vtbl_ptr ()
 
   if (base_init_expr == 0
       && DECL_CONSTRUCTOR_P (current_function_decl))
-    emit_base_init (current_class_type, 0);
+    {
+      if (current_template_parms)
+	add_tree (build_min_nt
+		  (CTOR_INITIALIZER,
+		   current_member_init_list, current_base_init_list));
+      else
+	emit_base_init (current_class_type, 0);
+    }
 }
 
 /* Record the existence of an addressable inline function.  */
@@ -2431,7 +2442,7 @@ mark_vtable_entries (decl)
       TREE_ADDRESSABLE (fn) = 1;
       if (DECL_LANG_SPECIFIC (fn) && DECL_ABSTRACT_VIRTUAL_P (fn))
 	TREE_OPERAND (fnaddr, 0) = fn = abort_fndecl;
-      assemble_external (fn);
+      mark_used (fn);
     }
 }
 
@@ -2701,10 +2712,10 @@ walk_sigtables (typedecl_fn, vardecl_fn)
 }
 
 /* Determines the proper settings of TREE_PUBLIC and DECL_EXTERNAL for an
-   inline function at end-of-file.  */
+   inline function or template instantiation at end-of-file.  */
 
 void
-import_export_inline (decl)
+import_export_decl (decl)
      tree decl;
 {
   if (DECL_INTERFACE_KNOWN (decl))
@@ -2712,12 +2723,17 @@ import_export_inline (decl)
 
   if (DECL_TEMPLATE_INSTANTIATION (decl))
     {
+      DECL_NOT_REALLY_EXTERN (decl) = 1;
       if (DECL_IMPLICIT_INSTANTIATION (decl) && flag_implicit_templates)
 	{
-	  if (flag_weak)
-	    DECL_WEAK (decl) = 1;
-	  else
-	    TREE_PUBLIC (decl) = 0;
+	  /* For now, leave vars public so multiple defs will break.  */
+	  if (TREE_CODE (decl) == FUNCTION_DECL)
+	    {
+	      if (flag_weak)
+		DECL_WEAK (decl) = 1;
+	      else
+		TREE_PUBLIC (decl) = 0;
+	    }
 	}
       else
 	DECL_NOT_REALLY_EXTERN (decl) = 0;
@@ -2767,6 +2783,7 @@ build_cleanup (decl)
 }
 
 extern int parse_time, varconst_time;
+extern tree pending_templates;
 
 #define TIMEVAR(VAR, BODY)    \
 do { int otime = get_run_time (); BODY; VAR += get_run_time () - otime; } while (0)
@@ -2785,6 +2802,8 @@ finish_file ()
   tree fnname;
   tree vars;
   int needs_cleaning = 0, needs_messing_up = 0;
+
+  at_eof = 1;
 
   if (flag_detailed_statistics)
     dump_tree_statistics ();
@@ -3027,10 +3046,21 @@ finish_file ()
   while (pending_statics)
     {
       tree decl = TREE_VALUE (pending_statics);
+
+      if (DECL_TEMPLATE_INSTANTIATION (decl)
+	  && ! DECL_IN_AGGR_P (decl))
+	{
+	  import_export_decl (decl);
+	  DECL_EXTERNAL (decl) = ! DECL_NOT_REALLY_EXTERN (decl);
+	}
+
       if (TREE_USED (decl) == 1
 	  || TREE_READONLY (decl) == 0
 	  || DECL_INITIAL (decl) == 0)
-	rest_of_decl_compilation (decl, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), 1, 1);
+	{
+	  DECL_DEFER_OUTPUT (decl) = 0;
+	  rest_of_decl_compilation (decl, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), 1, 1);
+	}
       pending_statics = TREE_CHAIN (pending_statics);
     }
 
@@ -3043,10 +3073,15 @@ finish_file ()
   if (flag_handle_signatures)
     walk_sigtables ((void (*)())0, finish_sigtable_vardecl);
 
+  for (fnname = pending_templates; fnname; fnname = TREE_CHAIN (fnname))
+    {
+      tree decl = TREE_VALUE (fnname);
+      instantiate_decl (decl);
+    }
   for (fnname = saved_inlines; fnname; fnname = TREE_CHAIN (fnname))
     {
       tree decl = TREE_VALUE (fnname);
-      import_export_inline (decl);
+      import_export_decl (decl);
       if (DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl)
 	  && TREE_PUBLIC (decl) && ! DECL_WEAK (decl)
 	  && DECL_NOT_REALLY_EXTERN (decl))
@@ -3229,47 +3264,222 @@ reparse_absdcl_as_casts (decl, expr)
   return expr;
 }
 
-/* Recursive helper function for reparse_decl_as_expr.  It may be a good
-   idea to reimplement this using an explicit stack, rather than recursion. */
-static tree
-reparse_decl_as_expr1 (decl)
-     tree decl;
+/* Given plain tree nodes for an expression, build up the full semantics. */
+
+tree
+build_expr_from_tree (t)
+     tree t;
 {
-  switch (TREE_CODE (decl))
+  if (t == NULL_TREE || t == error_mark_node)
+    return t;
+
+  switch (TREE_CODE (t))
     {
     case IDENTIFIER_NODE:
-      return do_identifier (decl);
+      return do_identifier (t, 0);
+
+    case LOOKUP_EXPR:
+      if (LOOKUP_EXPR_GLOBAL (t))
+	return do_scoped_id (TREE_OPERAND (t, 0), 0);
+      else
+	return do_identifier (TREE_OPERAND (t, 0), 0);
+
     case INDIRECT_REF:
       return build_x_indirect_ref
-	(reparse_decl_as_expr1 (TREE_OPERAND (decl, 0)), "unary *");
-    case ADDR_EXPR:
-      return build_x_unary_op (ADDR_EXPR,
-			       reparse_decl_as_expr1 (TREE_OPERAND (decl, 0)));
+	(build_expr_from_tree (TREE_OPERAND (t, 0)), "unary *");
+
+    case CAST_EXPR:
+      return build_functional_cast
+	(TREE_TYPE (t), build_expr_from_tree (TREE_OPERAND (t, 0)));
+
+    case REINTERPRET_CAST_EXPR:
+      return build_reinterpret_cast
+	(TREE_TYPE (t), build_expr_from_tree (TREE_OPERAND (t, 0)));
+
+    case PREDECREMENT_EXPR:
+    case PREINCREMENT_EXPR:
+    case POSTDECREMENT_EXPR:
+    case POSTINCREMENT_EXPR:
+    case NEGATE_EXPR:
     case BIT_NOT_EXPR:
-      return build_x_unary_op (BIT_NOT_EXPR,
-			       reparse_decl_as_expr1 (TREE_OPERAND (decl, 0)));
+    case ABS_EXPR:
+    case TRUTH_NOT_EXPR:
+    case ADDR_EXPR:
+    case CONVERT_EXPR:      /* Unary + */
+      return build_x_unary_op (TREE_CODE (t),
+			       build_expr_from_tree (TREE_OPERAND (t, 0)));
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+    case TRUNC_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+    case BIT_AND_EXPR:
+    case BIT_ANDTC_EXPR:
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+    case TRUNC_MOD_EXPR:
+    case FLOOR_MOD_EXPR:
+    case TRUTH_ANDIF_EXPR:
+    case TRUTH_ORIF_EXPR:
+    case TRUTH_AND_EXPR:
+    case TRUTH_OR_EXPR:
+    case RSHIFT_EXPR:
+    case LSHIFT_EXPR:
+    case RROTATE_EXPR:
+    case LROTATE_EXPR:
+    case EQ_EXPR:
+    case NE_EXPR:
+    case MAX_EXPR:
+    case MIN_EXPR:
+    case LE_EXPR:
+    case GE_EXPR:
+    case LT_EXPR:
+    case GT_EXPR:
+    case MEMBER_REF:
+      return build_x_binary_op
+	(TREE_CODE (t), 
+	 build_expr_from_tree (TREE_OPERAND (t, 0)),
+	 build_expr_from_tree (TREE_OPERAND (t, 1)));
+
+    case DOTSTAR_EXPR:
+      return build_m_component_ref
+	(build_expr_from_tree (TREE_OPERAND (t, 0)),
+	 build_expr_from_tree (TREE_OPERAND (t, 1)));
+
     case SCOPE_REF:
-      return build_offset_ref (TREE_OPERAND (decl, 0), TREE_OPERAND (decl, 1));
+      return build_offset_ref (TREE_OPERAND (t, 0), TREE_OPERAND (t, 1));
+
     case ARRAY_REF:
-      return grok_array_decl (reparse_decl_as_expr1 (TREE_OPERAND (decl, 0)),
-			      TREE_OPERAND (decl, 1));
+      if (TREE_OPERAND (t, 0) == NULL_TREE)
+	/* new-type-id */
+	return build_parse_node (ARRAY_REF, NULL_TREE,
+				 build_expr_from_tree (TREE_OPERAND (t, 1)));
+      return grok_array_decl (build_expr_from_tree (TREE_OPERAND (t, 0)),
+			      build_expr_from_tree (TREE_OPERAND (t, 1)));
+
+    case SIZEOF_EXPR:
+      {
+	tree r = build_expr_from_tree (TREE_OPERAND (t, 0));
+	if (TREE_CODE_CLASS (TREE_CODE (r)) != 't')
+	  r = TREE_TYPE (r);
+	return c_sizeof (r);
+      }
+
+    case MODOP_EXPR:
+      return build_x_modify_expr
+	(build_expr_from_tree (TREE_OPERAND (t, 0)),
+	 TREE_CODE (TREE_OPERAND (t, 1)),
+	 build_expr_from_tree (TREE_OPERAND (t, 2)));
+
+    case ARROW_EXPR:
+      return build_x_arrow
+	(build_expr_from_tree (TREE_OPERAND (t, 0)));
+
+    case NEW_EXPR:
+      return build_new
+	(build_expr_from_tree (TREE_OPERAND (t, 0)),
+	 build_expr_from_tree (TREE_OPERAND (t, 1)),
+	 build_expr_from_tree (TREE_OPERAND (t, 2)),
+	 NEW_EXPR_USE_GLOBAL (t));
+
+    case DELETE_EXPR:
+      return delete_sanity
+	(build_expr_from_tree (TREE_OPERAND (t, 0)),
+	 build_expr_from_tree (TREE_OPERAND (t, 1)),
+	 DELETE_EXPR_USE_VEC (t), DELETE_EXPR_USE_GLOBAL (t));
+
+    case COMPOUND_EXPR:
+      if (TREE_OPERAND (t, 1) == NULL_TREE)
+	return build_x_compound_expr
+	  (build_expr_from_tree (TREE_OPERAND (t, 0)));
+      else
+	my_friendly_abort (42);
+
+    case METHOD_CALL_EXPR:
+      if (TREE_CODE (TREE_OPERAND (t, 0)) == SCOPE_REF)
+	{
+	  tree ref = TREE_OPERAND (t, 0);
+	  return build_scoped_method_call
+	    (build_expr_from_tree (TREE_OPERAND (t, 1)),
+	     build_expr_from_tree (TREE_OPERAND (ref, 0)),
+	     TREE_OPERAND (ref, 1),
+	     build_expr_from_tree (TREE_OPERAND (t, 2)));
+	}
+      return build_method_call
+	(build_expr_from_tree (TREE_OPERAND (t, 1)),
+	 TREE_OPERAND (t, 0),
+	 build_expr_from_tree (TREE_OPERAND (t, 2)),
+	 NULL_TREE, LOOKUP_NORMAL);
+
+    case CALL_EXPR:
+      if (TREE_CODE (TREE_OPERAND (t, 0)) == SCOPE_REF)
+	{
+	  tree ref = TREE_OPERAND (t, 0);
+	  return build_member_call
+	    (build_expr_from_tree (TREE_OPERAND (ref, 0)),
+	     TREE_OPERAND (ref, 1),
+	     build_expr_from_tree (TREE_OPERAND (t, 1)));
+	}
+      else
+	{
+	  tree name = TREE_OPERAND (t, 0);
+	  if (! really_overloaded_fn (name))
+	    name = build_expr_from_tree (name);
+	  return build_x_function_call
+	    (name, build_expr_from_tree (TREE_OPERAND (t, 1)),
+	     current_class_decl);
+	}
+
+    case COND_EXPR:
+      return build_x_conditional_expr
+	(build_expr_from_tree (TREE_OPERAND (t, 0)),
+	 build_expr_from_tree (TREE_OPERAND (t, 1)),
+	 build_expr_from_tree (TREE_OPERAND (t, 2)));
+
+    case TREE_LIST:
+      {
+	tree purpose, value, chain;
+
+	if (t == void_list_node)
+	  return t;
+
+	purpose = TREE_PURPOSE (t);
+	if (purpose)
+	  purpose = build_expr_from_tree (purpose);
+	value = TREE_VALUE (t);
+	if (value)
+	  value = build_expr_from_tree (value);
+	chain = TREE_CHAIN (t);
+	if (chain && chain != void_type_node)
+	  chain = build_expr_from_tree (chain);
+	return tree_cons (purpose, value, chain);
+      }
+
+    case COMPONENT_REF:
+      return build_component_ref
+	(build_expr_from_tree (TREE_OPERAND (t, 0)),
+	 TREE_OPERAND (t, 1), NULL_TREE, 1);
+
     default:
-      my_friendly_abort (5);
-      return NULL_TREE;
+      return t;
     }
 }
 
 /* This is something of the form `int (*a)++' that has turned out to be an
    expr.  It was only converted into parse nodes, so we need to go through
    and build up the semantics.  Most of the work is done by
-   reparse_decl_as_expr1, above.
+   build_expr_from_tree, above.
 
    In the above example, TYPE is `int' and DECL is `*a'.  */
 tree
 reparse_decl_as_expr (type, decl)
      tree type, decl;
 {
-  decl = reparse_decl_as_expr1 (decl);
+  decl = build_expr_from_tree (decl);
   if (type)
     return build_functional_cast (type, build_tree_list (NULL_TREE, decl));
   else
@@ -3319,20 +3529,13 @@ check_cp_case_value (value)
   if (value == NULL_TREE)
     return value;
 
-  /* build_c_cast puts on a NOP_EXPR to make a non-lvalue.
-     Strip such NOP_EXPRs.  */
-  if (TREE_CODE (value) == NOP_EXPR
-      && TREE_TYPE (value) == TREE_TYPE (TREE_OPERAND (value, 0)))
-    value = TREE_OPERAND (value, 0);
+  /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
+  STRIP_TYPE_NOPS (value);
 
   if (TREE_READONLY_DECL_P (value))
     {
       value = decl_constant_value (value);
-      /* build_c_cast puts on a NOP_EXPR to make a non-lvalue.
-	 Strip such NOP_EXPRs.  */
-      if (TREE_CODE (value) == NOP_EXPR
-	  && TREE_TYPE (value) == TREE_TYPE (TREE_OPERAND (value, 0)))
-	value = TREE_OPERAND (value, 0);
+      STRIP_TYPE_NOPS (value);
     }
   value = fold (value);
 
@@ -3431,7 +3634,7 @@ do_class_using_decl (decl)
       return NULL_TREE;
     }
 
-  value = build_lang_field_decl (USING_DECL, name, unknown_type_node);
+  value = build_lang_field_decl (USING_DECL, name, void_type_node);
   DECL_INITIAL (value) = TREE_OPERAND (decl, 0);
   return value;
 }
@@ -3466,5 +3669,9 @@ mark_used (decl)
      tree decl;
 {
   TREE_USED (decl) = 1;
+  if (current_template_parms)
+    return;
   assemble_external (decl);
+  if (DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl))
+    instantiate_decl (decl);
 }
