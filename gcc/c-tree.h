@@ -163,6 +163,11 @@ extern tree build_objc_string			PROTO((int, char *));
 extern void gen_aux_info_record                 PROTO((tree, int, int, int));
 
 /* in c-common.c */
+extern void declare_function_name               PROTO((void));
+extern void decl_attributes                     PROTO((tree, tree));
+extern void init_function_format_info		PROTO((void));
+extern void record_function_format		PROTO((tree, tree, int, int, int));
+extern void check_function_format		PROTO((tree, tree, tree));
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error                     PROTO((enum tree_code));
@@ -172,8 +177,6 @@ extern tree check_case_value                    PROTO((tree));
 /* Concatenate a list of STRING_CST nodes into one STRING_CST.  */
 extern tree combine_strings                     PROTO((tree));
 extern void constant_expression_warning         PROTO((tree));
-extern void decl_attributes                     PROTO((tree, tree));
-extern void declare_function_name               PROTO((void));
 extern tree convert_and_check			PROTO((tree, tree));
 extern void overflow_warning			PROTO((tree));
 extern void unsigned_conversion_warning		PROTO((tree, tree));
