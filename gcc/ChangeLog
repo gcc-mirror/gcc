@@ -1,3 +1,13 @@
+2003-10-05  Richard Henderson  <rth@redhat.com>
+
+	* tree-inline.c (remap_type): New.
+	(remap_decl): Use it.  Remap DECL_SIZE*.
+	(copy_body_r): Use it.
+	(walk_tree): Walk TREE_TYPE too.
+	(copy_tree_r): Don't walk subtrees of types.
+	* tree.c (variably_modified_type_p): Restructure.  Consider integer
+	types with non-const bounds variably modified.
+
 2003-10-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/invoke.texi: Fix typos.
