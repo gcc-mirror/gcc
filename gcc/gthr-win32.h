@@ -88,7 +88,7 @@ static DWORD	__gthread_objc_data_tls = (DWORD) -1;
 int
 __gthread_objc_init_thread_system (void)
 {
-  /* Initialize the thread storage key */
+  /* Initialize the thread storage key.  */
   if ((__gthread_objc_data_tls = TlsAlloc ()) != (DWORD) -1)
     return 0;
   else

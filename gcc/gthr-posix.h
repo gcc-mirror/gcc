@@ -143,7 +143,7 @@ __gthread_objc_init_thread_system (void)
 {
   if (__gthread_active_p ())
     {
-      /* Initialize the thread storage key */
+      /* Initialize the thread storage key.  */
       if (pthread_key_create (&_objc_thread_storage, NULL) == 0)
 	{
 	  /* The normal default detach state for threads is

@@ -165,7 +165,7 @@ val_expr_pair_expr_eq (const void *p1, const void *p2)
 }
 
 
-/* Set the value handle for expression E to value V */
+/* Set the value handle for expression E to value V.  */
    
 static void
 set_value_handle (tree e, tree v)
