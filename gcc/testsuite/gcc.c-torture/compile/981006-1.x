@@ -6,6 +6,7 @@ if { [istarget rs6000-*-aix*]
      || [istarget fr30-*-*]
      || [istarget sh-*-hms]
      || [istarget sh-*-coff]
+     || [istarget h8300*-*-*]
 } {
     set options "-Wuninitialized -Werror"
 } else {
