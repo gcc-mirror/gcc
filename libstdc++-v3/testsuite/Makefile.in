@@ -111,6 +111,7 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 WARN_FLAGS = @WARN_FLAGS@
 WERROR = @WERROR@
+baseline_file = @baseline_file@
 check_msgfmt = @check_msgfmt@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
@@ -148,16 +149,23 @@ RUNTEST = `if [ -f @glibcpp_srcdir@/../dejagnu/runtest ] ; then \
 AM_RUNTESTFLAGS = 
 RUNTESTFLAGS = 
 
-CXX = @glibcpp_CXX@ 
-# Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
+CXX_fake = @glibcpp_CXX@ 
+CXX = `echo $(CXX_fake) | sed 's/xgcc/g++/g'`
+CXXLINK = \
+	$(LIBTOOL) --tag=CXX --mode=link $(CXX) \
+	$(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
+
+
 INCLUDES = \
 	-nostdinc++ \
 	@GLIBCPP_INCLUDES@ @LIBSUPCXX_INCLUDES@ @TOPLEVEL_INCLUDES@ 
 
 
 noinst_LIBRARIES = libv3test.a
-
 libv3test_a_SOURCES = testsuite_hooks.cc
+
+noinst_PROGRAMS = abi_check
+abi_check_SOURCES = abi_check.cc
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -170,11 +178,17 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libv3test_a_LIBADD = 
 libv3test_a_OBJECTS =  testsuite_hooks.$(OBJEXT)
+noinst_PROGRAMS =  abi_check$(EXEEXT)
+PROGRAMS =  $(noinst_PROGRAMS)
+
+abi_check_OBJECTS =  abi_check.$(OBJEXT)
+abi_check_LDADD = $(LDADD)
+abi_check_DEPENDENCIES = 
+abi_check_LDFLAGS = 
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
-CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
 DIST_COMMON =  README Makefile.am Makefile.in
 
 
@@ -182,8 +196,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = $(libv3test_a_SOURCES)
-OBJECTS = $(libv3test_a_OBJECTS)
+SOURCES = $(libv3test_a_SOURCES) $(abi_check_SOURCES)
+OBJECTS = $(libv3test_a_OBJECTS) $(abi_check_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -253,6 +267,19 @@ libv3test.a: $(libv3test_a_OBJECTS) $(libv3test_a_DEPENDENCIES)
 	-rm -f libv3test.a
 	$(AR) cru libv3test.a $(libv3test_a_OBJECTS) $(libv3test_a_LIBADD)
 	$(RANLIB) libv3test.a
+
+mostlyclean-noinstPROGRAMS:
+
+clean-noinstPROGRAMS:
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
+
+distclean-noinstPROGRAMS:
+
+maintainer-clean-noinstPROGRAMS:
+
+abi_check$(EXEEXT): $(abi_check_OBJECTS) $(abi_check_DEPENDENCIES)
+	@rm -f abi_check$(EXEEXT)
+	$(CXXLINK) $(abi_check_LDFLAGS) $(abi_check_OBJECTS) $(abi_check_LDADD) $(LIBS)
 .cc.o:
 	$(CXXCOMPILE) -c $<
 .cc.obj:
@@ -360,7 +387,7 @@ install-am: all-am
 install: install-am
 uninstall-am:
 uninstall: uninstall-am
-all-am: Makefile $(LIBRARIES)
+all-am: Makefile $(LIBRARIES) $(PROGRAMS)
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
@@ -377,27 +404,28 @@ distclean-generic:
 
 maintainer-clean-generic:
 mostlyclean-am:  mostlyclean-noinstLIBRARIES mostlyclean-compile \
-		mostlyclean-libtool mostlyclean-tags \
-		mostlyclean-generic
+		mostlyclean-libtool mostlyclean-noinstPROGRAMS \
+		mostlyclean-tags mostlyclean-generic
 
 mostlyclean: mostlyclean-am
 
-clean-am:  clean-noinstLIBRARIES clean-compile clean-libtool clean-tags \
-		clean-generic mostlyclean-am
+clean-am:  clean-noinstLIBRARIES clean-compile clean-libtool \
+		clean-noinstPROGRAMS clean-tags clean-generic \
+		mostlyclean-am
 
 clean: clean-am
 
 distclean-am:  distclean-noinstLIBRARIES distclean-compile \
-		distclean-libtool distclean-tags distclean-generic \
-		clean-am
+		distclean-libtool distclean-noinstPROGRAMS \
+		distclean-tags distclean-generic clean-am
 	-rm -f libtool
 
 distclean: distclean-am
 
 maintainer-clean-am:  maintainer-clean-noinstLIBRARIES \
 		maintainer-clean-compile maintainer-clean-libtool \
-		maintainer-clean-tags maintainer-clean-generic \
-		distclean-am
+		maintainer-clean-noinstPROGRAMS maintainer-clean-tags \
+		maintainer-clean-generic distclean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
@@ -407,14 +435,15 @@ maintainer-clean: maintainer-clean-am
 clean-noinstLIBRARIES maintainer-clean-noinstLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile mostlyclean-libtool distclean-libtool \
-clean-libtool maintainer-clean-libtool tags mostlyclean-tags \
-distclean-tags clean-tags maintainer-clean-tags distdir check-DEJAGNU \
-info-am info dvi-am dvi check check-am installcheck-am installcheck \
-install-info-am install-info install-exec-am install-exec \
-install-data-am install-data install-am install uninstall-am uninstall \
-all-redirect all-am all installdirs mostlyclean-generic \
-distclean-generic clean-generic maintainer-clean-generic clean \
-mostlyclean distclean maintainer-clean
+clean-libtool maintainer-clean-libtool mostlyclean-noinstPROGRAMS \
+distclean-noinstPROGRAMS clean-noinstPROGRAMS \
+maintainer-clean-noinstPROGRAMS tags mostlyclean-tags distclean-tags \
+clean-tags maintainer-clean-tags distdir check-DEJAGNU info-am info \
+dvi-am dvi check check-am installcheck-am installcheck install-info-am \
+install-info install-exec-am install-exec install-data-am install-data \
+install-am install uninstall-am uninstall all-redirect all-am all \
+installdirs mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
