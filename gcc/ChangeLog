@@ -1,3 +1,14 @@
+2000-01-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpperror.c (cpp_file_line_for_message): If 'line' is zero,
+	just print "<command line>".  If 'filename' is null or an
+	empty string, print "<stdin>" for the filename.
+	* cpplib.c (do_define): Don't print the 'location of the
+	previous definition' message if we're still parsing the
+	command line.
+	(cpp_pedwarn_with_file_and_line): Always call
+	cpp_file_line_for_message.
+
 2000-01-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* flow.c (mark_regs_live_at_end): Fix typo.

@@ -84,7 +84,11 @@ cpp_file_line_for_message (pfile, filename, line, column)
      const char *filename;
      int line, column;
 {
-  if (column > 0)
+  if (filename == 0 || *filename == '\0')
+    filename = "<stdin>";
+  if (line == 0)
+    fputs (_("<command line>: "), stderr);
+  else if (column > 0)
     fprintf (stderr, "%s:%d:%d: ", filename, line, column);
   else
     fprintf (stderr, "%s:%d: ", filename, line);
