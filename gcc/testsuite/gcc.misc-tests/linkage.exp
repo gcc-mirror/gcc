@@ -36,6 +36,12 @@ if [isnative] then {
 		set native_cflags "-n32"
 	    }
 	}
+	if  [istarget "sparc-sun-solaris2*"] {
+	    set file_string [exec file "linkage-x.o"]
+	    if [ string match "*64*" $file_string ] {
+		set native_cflags "-xarch=v9"
+	    }
+	}
 
 	catch { exec rm -f linkage-y.o }
 	send_log "cc -c $native_cflags $srcdir/$subdir/linkage-y.c >&/dev/null\n"
