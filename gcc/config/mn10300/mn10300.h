@@ -678,9 +678,17 @@ struct cum_arg {int nbytes; };
 	    && GET_CODE (XEXP (XEXP (OP, 0), 1)) == CONST_INT	\
 	    && INT_8_BITS (INTVAL (XEXP (XEXP (OP, 0), 1))))))
 	 
+#define OK_FOR_T(OP) \
+   (GET_CODE (OP) == MEM					\
+    && GET_MODE (OP) == QImode					\
+    && (GET_CODE (XEXP (OP, 0)) == REG				\
+	&& REG_OK_FOR_BIT_BASE_P (XEXP (OP, 0))			\
+	&& XEXP (OP, 0) != stack_pointer_rtx))
+
 #define EXTRA_CONSTRAINT(OP, C) \
  ((C) == 'R' ? OK_FOR_R (OP) \
   : (C) == 'S' ? GET_CODE (OP) == SYMBOL_REF \
+  : (C) == 'T' ? OK_FOR_T (OP) \
   : 0)
 
 /* Maximum number of registers that can appear in a valid memory address.  */
