@@ -22,6 +22,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    instead $xm_file should be CPU/xm-gnu.h, which should include both
    CPU/xm-CPU.h and this file xm-gnu.h.  */
    
+/* GNU has strerror.  */
+#define HAVE_STRERROR
 
 /* Get a definition of O_RDONLY; some of the GCC files don't include this
    properly and will define it themselves to be zero. */
