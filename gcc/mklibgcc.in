@@ -394,7 +394,7 @@ done
 echo ''
 echo 'libgcc-stage-start:'
 echo '	for dir in '"${dirs}"'; do \'
-echo '	  if [ -d $(stage)/$$dir ]; then true; else mkdir $(stage)/$$dir; fi; \'
+echo '	  if [ -d $(stage)/$$dir ]; then true; else '$mkinstalldirs' $(stage)/$$dir; fi; \'
 echo '	done'
 echo '	-for dir in '"${dirs}"'; do \'
 echo '	  mv $$dir/*'"${objext}"' $(stage)/$$dir; \'
@@ -465,7 +465,7 @@ for ml in $MULTILIBS; do
   flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
   if [ $dir != . ]; then
     ldir='$(DESTDIR)$(libsubdir)'/$dir
-    echo "	if [ -d $ldir ]; then true; else mkdir $ldir; chmod a+rx $ldir; fi;"
+    echo "	if [ -d $ldir ]; then true; else $mkinstalldirs $ldir; chmod a+rx $ldir; fi;"
   else
     ldir='$(DESTDIR)$(libsubdir)'
   fi
