@@ -1,3 +1,27 @@
+2000-03-22  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.compile/iface.java: New file.
+	* libjava.compile/static_3.java: New file.
+	* libjava.compile/static_2.java: New file.
+	* libjava.compile/static_1.xfail: New file.
+	* libjava.compile/static_1.java: New file.
+	* libjava.compile/redef6.xfail: New file.
+	* libjava.compile/redef6.java: New file.
+	* libjava.compile/redef5.xfail: New file.
+	* libjava.compile/redef5.java: New file.
+	* libjava.compile/redef4.xfail: New file.
+	* libjava.compile/redef4.java: New file.
+	* libjava.compile/redef3.xfail: New file.
+	* libjava.compile/redef3.java: New file.
+	* libjava.compile/redef2.xfail: New file.
+	* libjava.compile/redef2.java: New file.
+	* libjava.compile/redef1.xfail: New file.
+	* libjava.compile/redef1.java: New file.
+	* libjava.compile/not_a_redef.java: New file.
+	* libjava.compile/inner_1.java: New file.
+	* libjava.compile/static_init.xfail: New file.
+	* libjava.compile/static_init.java: New file.
+
 2000-03-21  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Test case for PR libgcj/179:
