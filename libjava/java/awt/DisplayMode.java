@@ -1,5 +1,5 @@
 /* DisplayMode.java -- a description of display mode configurations
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -140,16 +140,16 @@ public final class DisplayMode
    * Test for equality. This returns true for two modes with identical
    * parameters.
    *
-   * @param o the object to compare to
+   * @param dm The display mode to compare to
+   *
    * @return true if it is equal
    */
-  public boolean equals(Object o)
+  public boolean equals (DisplayMode dm)
   {
-    if (! (o instanceof DisplayMode))
-      return false;
-    DisplayMode m = (DisplayMode) o;
-    return width == m.width && height == m.height && bitDepth == m.bitDepth
-      && refreshRate == m.refreshRate;
+    return (width == dm.width
+	    && height == dm.height
+	    && bitDepth == dm.bitDepth
+	    && refreshRate == dm.refreshRate);
   }
 
   /**
