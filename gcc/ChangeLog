@@ -1,3 +1,8 @@
+2002-03-30  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/linux.h (HANDLE_PRAGMA_PACK_PUSH_POP): Define.
+	* config/sparc/linux64.h (HANDLE_PRAGMA_PACK_PUSH_POP): Likewise.
+
 2002-03-30  Roger Sayle <roger@eyesopen.com>
             Richard Henderson  <rth@redhat.com>
 
