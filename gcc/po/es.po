@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.3-b20021230\n"
 "POT-Creation-Date: 2002-12-30 18:56+0000\n"
-"PO-Revision-Date: 2003-01-07 21:02-0600\n"
+"PO-Revision-Date: 2003-04-12 00:03-0600\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@itam.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -169,7 +169,7 @@ msgstr "la longitud de la cadena `%d' es mayor que la longitud `%d' que se requi
 
 #: c-common.c:1242
 msgid "concatenation of string literals with __FUNCTION__ is deprecated"
-msgstr "la concatenación de literales de cadena con __FUNCTION__ está deprecado"
+msgstr "la concatenación de literales de cadena con __FUNCTION__ es obsoleta"
 
 #: c-common.c:1338
 msgid "overflow in constant expression"
@@ -1280,7 +1280,7 @@ msgstr "estructura"
 #: c-decl.c:5089
 #, c-format
 msgid "%s has no %s"
-msgstr "%s no tiene `%s'"
+msgstr "%s no tiene %s"
 
 #: c-decl.c:5090
 msgid "struct"
@@ -1903,7 +1903,7 @@ msgstr "precisión vacía en el formato %s"
 #: c-format.c:1856
 #, c-format
 msgid "%s does not support the `%s' %s length modifier"
-msgstr "%s no tiene soporte para el modificador de longitud %s `%s'"
+msgstr "%1$s no tiene soporte para el modificador de longitud %3$s `%2$s'"
 
 #: c-format.c:1906
 msgid "conversion lacks type at end of format"
@@ -1922,12 +1922,12 @@ msgstr "se desconoce el carácter de tipo de conversión 0x%x en el formato"
 #: c-format.c:1927
 #, c-format
 msgid "%s does not support the `%%%c' %s format"
-msgstr "%s no tiene soporte para el formato `%%%c' %s"
+msgstr "%1$s no tiene soporte para el formato %3$s `%%%2$c'"
 
 #: c-format.c:1943
 #, c-format
 msgid "%s used with `%%%c' %s format"
-msgstr "se usó %s con el formato `%%%c' %s"
+msgstr "se usó %1$s con el formato %3$s `%%%2$c'"
 
 #: c-format.c:1952
 #, c-format
@@ -1937,12 +1937,12 @@ msgstr "%s no tiene soporte para %s"
 #: c-format.c:1961
 #, c-format
 msgid "%s does not support %s with the `%%%c' %s format"
-msgstr "%s no tiene soporte para %s con el formato `%%%c' %s"
+msgstr "%1$s no tiene soporte para %2$s con el formato %4$s `%%%3$c'"
 
 #: c-format.c:1994
 #, c-format
 msgid "%s ignored with %s and `%%%c' %s format"
-msgstr "se ignora %s con %s y el formato `%%%c' %s"
+msgstr "se ignora %1$s con %2$s y el formato %4$s `%%%3$c'"
 
 #: c-format.c:1998
 #, c-format
@@ -1952,7 +1952,7 @@ msgstr "se ignora %s con %s en el formato %s"
 #: c-format.c:2004
 #, c-format
 msgid "use of %s and %s together with `%%%c' %s format"
-msgstr "uso de %s y %s junto con el formato `%%%c' %s"
+msgstr "uso de %1$s y %2$s junto con el formato %4$s `%%%3$c'"
 
 #: c-format.c:2008
 #, c-format
@@ -1983,7 +1983,7 @@ msgstr "uso del modificador de longitud `%s' con el carácter de tipo `%c'"
 #: c-format.c:2080
 #, c-format
 msgid "%s does not support the `%%%s%c' %s format"
-msgstr "%s no tiene soporte para el formato `%%%s%c' %s"
+msgstr "%1$s no tiene soporte para el formato %4$s `%%%2$s%3$c'"
 
 #: c-format.c:2095
 msgid "operand number specified with suppressed assignment"
@@ -2138,7 +2138,7 @@ msgstr "la opción \"%s\" ya no tiene soporte"
 #: c-opts.c:1030
 #, c-format
 msgid "switch \"%s\" is deprecated, please see documentation for details"
-msgstr "la opción \"%s\" está deprecada, por favor vea la documentación para más detalles"
+msgstr "la opción \"%s\" es obsoleta, por favor vea la documentación para más detalles"
 
 #: c-opts.c:1143
 msgid "-fhandle-exceptions has been renamed to -fexceptions (and is now on by default)"
@@ -2469,7 +2469,7 @@ msgstr "ISO C prohibe declaraciones de miembros con no miembros"
 
 #: c-parse.y:1913 objc-parse.y:1985
 msgid "deprecated use of label at end of compound statement"
-msgstr "uso deprecado de la etiqueta al final de la declaración compuesta"
+msgstr "uso obsoleto de la etiqueta al final de la declaración compuesta"
 
 #: c-parse.y:1930 objc-parse.y:2002
 msgid "ISO C89 forbids mixed declarations and code"
@@ -2672,7 +2672,7 @@ msgstr "(las acciones adjuntas de declaraciones case previas requieren destructo
 #: c-semantics.c:725 c-typeck.c:6893 cp/semantics.c:897
 #, c-format
 msgid "%s qualifier ignored on asm"
-msgstr "calificador %s ignorado en asm"
+msgstr "se ignora el calificador %s en asm"
 
 #: c-typeck.c:123
 #, c-format
@@ -3172,7 +3172,7 @@ msgstr "conversión a apuntador desde un entero de tamaño diferente"
 
 #: c-typeck.c:3772
 msgid "type-punning to incomplete type might break strict-aliasing rules"
-msgstr "el castigo de tipo a tipo incompleto podría romper las reglas de alias estricto"
+msgstr "el castigo de tipo a tipo incompleto puede romper las reglas de alias estricto"
 
 #: c-typeck.c:3776
 msgid "dereferencing type-punned pointer will break strict-aliasing rules"
@@ -3226,12 +3226,12 @@ msgstr "%s de tipo de apuntador incompatible"
 #: c-typeck.c:4248
 #, c-format
 msgid "%s makes pointer from integer without a cast"
-msgstr "%s crea un apuntador desde un entero sin una conversión"
+msgstr "%s se crea un apuntador desde un entero sin una conversión"
 
 #: c-typeck.c:4256
 #, c-format
 msgid "%s makes integer from pointer without a cast"
-msgstr "%s crea un entero desde un apuntador sin una conversión"
+msgstr "%s se crea un entero desde un apuntador sin una conversión"
 
 #: c-typeck.c:4270 c-typeck.c:4273
 #, c-format
@@ -3252,24 +3252,24 @@ msgstr "tipos incompatibles en %s"
 #: c-typeck.c:4339
 #, c-format
 msgid "passing arg of `%s'"
-msgstr "pasando el argumento `%s'"
+msgstr "al pasar un argumento de `%s'"
 
 #. Function name unknown (call through ptr).
 #: c-typeck.c:4349
 msgid "passing arg of pointer to function"
-msgstr "pasando el argumento de apuntador a la función"
+msgstr "al pasar un argumento de apuntador a la función"
 
 #. Function name is known; supply it.
 #: c-typeck.c:4357
 #, c-format
 msgid "passing arg %d of `%s'"
-msgstr "pasando el argumento %d de `%s'"
+msgstr "al pasar el argumento %d de `%s'"
 
 #. Function name unknown (call through ptr); just give arg number.
 #: c-typeck.c:4367
 #, c-format
 msgid "passing arg %d of pointer to function"
-msgstr "pasando el argumento %d del apuntador a la función"
+msgstr "al pasar el argumento %d del apuntador a la función"
 
 #: c-typeck.c:4433
 msgid "initializer for static variable is not constant"
@@ -4443,7 +4443,7 @@ msgstr "caracter(es) nulo(s) ignorados"
 #: cpplex.c:402
 #, c-format
 msgid "%s in preprocessing directive"
-msgstr "%s en directiva de preprocesamiento"
+msgstr "%s en la directiva de preprocesamiento"
 
 #: cpplex.c:475
 #, c-format
@@ -4880,7 +4880,7 @@ msgstr "'##' no puede aparece en o al final de una expansión de macro"
 #: cppmacro.c:1599
 #, c-format
 msgid "\"%s\" redefined"
-msgstr "\"%s\" redefinido"
+msgstr "se redefinió \"%s\""
 
 #: cppmacro.c:1604
 msgid "this is the location of the previous definition"
@@ -5003,21 +5003,21 @@ msgstr ":\n"
 #: diagnostic.c:1431 diagnostic.c:1448
 #, c-format
 msgid "`%s' is deprecated (declared at %s:%d)"
-msgstr "`%s' está deprecado (declarado en %s:%d)"
+msgstr "`%s' es obsoleto (declarado en %s:%d)"
 
 #: diagnostic.c:1451
 #, c-format
 msgid "`%s' is deprecated"
-msgstr "`%s' está deprecado"
+msgstr "`%s' es obsoleto"
 
 #: diagnostic.c:1454
 #, c-format
 msgid "type is deprecated (declared at %s:%d)"
-msgstr "el tipo está deprecado (declarado en %s:%d)"
+msgstr "el tipo es obsoleto (declarado en %s:%d)"
 
 #: diagnostic.c:1457
 msgid "type is deprecated"
-msgstr "el tipo está deprecado"
+msgstr "el tipo es obsoleto"
 
 #: dominance.c:728
 #, c-format
@@ -5036,7 +5036,7 @@ msgstr "regno interno fastidiado: `%s' tiene regno = %d\n"
 
 #: dwarfout.c:6181
 msgid "support for the DWARF1 debugging format is deprecated"
-msgstr "el soporte para el formato de depuración DWARF1 está deprecado"
+msgstr "el soporte para el formato de depuración DWARF1 es obsoleto"
 
 #: dwarfout.c:6278
 msgid "can't get current directory"
@@ -5145,7 +5145,7 @@ msgstr "expresión inválida como operando"
 
 #: flow.c:352
 msgid "function might be possible candidate for attribute `noreturn'"
-msgstr "la función sería un posible candidato para el atributo `noreturn'"
+msgstr "la función puede ser un posible candidato para el atributo `noreturn'"
 
 #: flow.c:357
 msgid "`noreturn' function does return"
@@ -5185,17 +5185,17 @@ msgstr "el tamaño de la variable `%s' es demasiado grande"
 #: function.c:5470
 #, c-format
 msgid "`%s' might be used uninitialized in this function"
-msgstr "`%s' se debería usar sin inicializar en esta función"
+msgstr "puede ser que se utilice `%s' sin inicializar en esta función"
 
 #: function.c:5477
 #, c-format
 msgid "variable `%s' might be clobbered by `longjmp' or `vfork'"
-msgstr "la variable `%s' podría ser sobreescrita por `longjmp' o `vfork'"
+msgstr "la variable `%s' puede ser sobreescrita por `longjmp' o `vfork'"
 
 #: function.c:5496
 #, c-format
 msgid "argument `%s' might be clobbered by `longjmp' or `vfork'"
-msgstr "el argumento `%s' podría ser sobreescrito por `longjmp' o `vfork'"
+msgstr "el argumento `%s' puede ser sobreescrito por `longjmp' o `vfork'"
 
 #: function.c:6363
 msgid "function returns an aggregate"
@@ -5814,7 +5814,7 @@ msgstr "No hay código ejecutable asociado al fichero %s.\n"
 #: gcov.c:1186
 #, c-format
 msgid "%s of %d lines executed in %s %s\n"
-msgstr "%s de %d líneas ejecutadas en %s %s\n"
+msgstr "se ejecutaron %s de %d líneas en %s %s\n"
 
 #: gcov.c:1191
 #, c-format
@@ -5824,12 +5824,12 @@ msgstr "No hay líneas ejecutables en %s %s\n"
 #: gcov.c:1198
 #, c-format
 msgid "%s of %d branches executed in %s %s\n"
-msgstr "%s de %d ramificaciones ejecutadas en %s %s\n"
+msgstr "se ejecutaron %s de %d ramificaciones en %s %s\n"
 
 #: gcov.c:1203
 #, c-format
 msgid "%s of %d branches taken at least once in %s %s\n"
-msgstr "%s de %d ramificaciones visitadas al menos una vez en %s %s\n"
+msgstr "se visitaron %s de %d ramificaciones al menos una vez en %s %s\n"
 
 #: gcov.c:1209
 #, c-format
@@ -5839,7 +5839,7 @@ msgstr "No hay ramificaciones en %s %s\n"
 #: gcov.c:1211
 #, c-format
 msgid "%s of %d calls executed in %s %s\n"
-msgstr "%s de %d llamadas ejecutadas en %s %s\n"
+msgstr "se ejecutaron %s de %d llamadas en %s %s\n"
 
 #: gcov.c:1216
 #, c-format
@@ -7496,7 +7496,7 @@ msgstr "Asumir el ambiente normal de ejecución C"
 
 #: toplev.c:1233
 msgid "Assume that standard libraries & main might not exist"
-msgstr "Asumir que podrían no existir las bibliotecas estándard y main"
+msgstr "Asumir que pueden no existir las bibliotecas estándard y main"
 
 #: toplev.c:1236
 msgid "Allow different types as args of ? operator"
@@ -7528,7 +7528,7 @@ msgstr "Avisar por funciones de conversión a tipos incompatibles"
 
 #: toplev.c:1259
 msgid "Warn about functions which might be candidates for format attributes"
-msgstr "Avisar por funciones que podrían ser candidatas para atributos de formato"
+msgstr "Avisar por funciones que pueden ser candidatas para atributos de formato"
 
 #: toplev.c:1262
 msgid "Warn about casts which discard qualifiers"
@@ -7736,11 +7736,11 @@ msgstr "Avisar cuando se desactivó un paso de optimización"
 
 #: toplev.c:1546
 msgid "Warn about uses of __attribute__((deprecated)) declarations"
-msgstr "Avisar sobre usos de declaraciones __attribute__((deprecated))"
+msgstr "Avisar sobre usos de declaraciones __attribute__((obsoleto))"
 
 #: toplev.c:1548
 msgid "Warn about functions which might be candidates for attribute noreturn"
-msgstr "Avisar sobre funciones que podrían ser candidatas para el atributo noreturn"
+msgstr "Avisar sobre funciones que pueden ser candidatas para el atributo noreturn"
 
 #: toplev.c:1550
 msgid "Warn about code which might break the strict aliasing rules"
@@ -14111,7 +14111,7 @@ msgstr "el objeto `%E' de tipo incompleto `%T' no se accesará en %s"
 #: cp/cvt.c:922
 #, c-format
 msgid "%s cannot resolve address of overloaded function"
-msgstr "%s no puede resolver la dirección de la función sobrecargada"
+msgstr "%s no se puede resolver la dirección de la función sobrecargada"
 
 #. Only warn when there is no &.
 #: cp/cvt.c:927
@@ -17116,7 +17116,7 @@ msgstr "ISO C++ prohibe %s entre apuntadores de tipo `void *' y apuntadores a fu
 
 #: cp/typeck.c:545
 msgid "%s between distinct pointer types `%T' and `%T' lacks a cast"
-msgstr "%s de diferentes tipos de apuntador `%T' y `%T' carece de una conversión"
+msgstr "%s entre diferentes tipos de apuntador `%T' y `%T' carece de una conversión"
 
 #: cp/typeck.c:1438
 msgid "ISO C++ prohibits conversion from `%#T' to `(...)'"
@@ -17146,7 +17146,7 @@ msgstr "uso inválido de matriz no-lvaluada"
 
 #: cp/typeck.c:1761
 msgid "deprecated conversion from string constant to `%T'"
-msgstr "conversión deprecada de una constante de cadena a `%T'"
+msgstr "conversión obsoleta de una constante de cadena a `%T'"
 
 #: cp/typeck.c:1892 cp/typeck.c:2115
 msgid "request for member `%D' in `%E', which is of non-class type `%T'"
@@ -17752,7 +17752,7 @@ msgstr "llamada a una función la cual arroja el tipo incompleto `%#T'"
 #: cp/cp-tree.h:3846
 #, c-format
 msgid "%s is deprecated, please see the documentation for details"
-msgstr "%s está deprecado, por favor vea la documentación para más detalles"
+msgstr "%s es obsoleto, por favor vea la documentación para más detalles"
 
 #: cp/lang-options.h:29
 msgid "Do not obey access control semantics"
@@ -17912,7 +17912,7 @@ msgstr "No avisar cuando las funciones friend sin plantillas son declaradas dent
 
 #: cp/lang-options.h:159
 msgid "Don't announce deprecation of compiler features"
-msgstr "No anunciar características deprecadas del compilador"
+msgstr "No anunciar características obsoletas del compilador"
 
 #: f/bad.c:387
 msgid "note:"
@@ -17979,7 +17979,7 @@ msgid ""
 " ASSIGN statement might fail"
 msgstr ""
 "configuration: char * guarda %d bits, pero INTEGER sólo %d --\n"
-" la declaración ASSIGN podría fallar"
+" la declaración ASSIGN puede fallar"
 
 #: f/com.c:13609
 msgid "In statement function"
@@ -20059,7 +20059,7 @@ msgstr "Establecer la ruta de clases"
 
 #: java/lang-options.h:42
 msgid "Set class path (deprecated: use --classpath instead)"
-msgstr "Establecer la ruta de clases (deprecado: utilice en su lugar --classpath)"
+msgstr "Establecer la ruta de clases (obsoleto: utilice en su lugar --classpath)"
 
 #: java/lang-options.h:44
 msgid "Choose class whose main method should be used"
@@ -20083,7 +20083,7 @@ msgstr "Avisar si se especifican modificadores cuando no son necesarios"
 
 #: java/lang-options.h:54
 msgid "Warn if deprecated empty statements are found"
-msgstr "Avisar si se encuentran declaraciones vacías deprecadas"
+msgstr "Avisar si se encuentran declaraciones vacías obsoletas"
 
 #: java/lang-options.h:56
 msgid "Warn if .class files are out of date"
@@ -20555,7 +20555,7 @@ msgid "-fPIC not valid with -mcoff"
 msgstr "-fPIC no es válido con -mcoff"
 
 #~ msgid "-traditional is deprecated and may be removed"
-#~ msgstr "-traditional está deprecado y será eliminado"
+#~ msgstr "-traditional es obsoleto y será eliminado"
 
 #~ msgid "unknown C standard `%s'"
 #~ msgstr "no se conoce el estándard de C `%s'"
@@ -20756,7 +20756,7 @@ msgstr "-fPIC no es válido con -mcoff"
 #~ msgstr "posible inicio de la cadena literal sin terminar"
 
 #~ msgid "multi-line string literals are deprecated"
-#~ msgstr "las literales de cadena en múltiples líneas están deprecadas"
+#~ msgstr "las literales de cadena en múltiples líneas son obsoletas"
 
 #~ msgid "\"%s\" cannot be used as a macro name"
 #~ msgstr "no se puede usar \"%s\" como un nombre de macro"
@@ -23974,7 +23974,7 @@ msgstr "-fPIC no es válido con -mcoff"
 #~ msgstr "argumento de tipo erróneo para %s"
 
 #~ msgid "deprecated initialization of zero-length array"
-#~ msgstr "inicialización deprecada de una matriz de longitud cero"
+#~ msgstr "inicialización obsoleta de una matriz de longitud cero"
 
 #~ msgid "initialization of zero-length array before end of structure"
 #~ msgstr "inicialización de una matriz de longitud cero antes del fin de la estructura"

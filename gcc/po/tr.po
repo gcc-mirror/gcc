@@ -1,12 +1,12 @@
 # Turkish translations for gcc messages.
-# Copyright (C) 2002 Free Software Foundation, Inc.
-# Nilgün Belma Bugüner <nilgun@superonline.com>, 2001, 2002.
+# Copyright (C) 2003 Free Software Foundation, Inc.
+# Nilgün Belma Bugüner <nilgun@superonline.com>, 2001, 2002, 2003.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 3.2.1\n"
+"Project-Id-Version: gcc 3.3-b20021230\n"
 "POT-Creation-Date: 2002-12-30 18:56+0000\n"
-"PO-Revision-Date: 2002-12-03 00:54+0300\n"
+"PO-Revision-Date: 2003-02-17 10:05+0200\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@superonline.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -155,9 +155,8 @@ msgid "built-in function `%s' not currently supported"
 msgstr "yerleşik işlev `%s' şu an desteklenmiyor"
 
 #: builtins.c:4147
-#, fuzzy
 msgid "target format does not support infinity"
-msgstr "hedef MİB beraber çalışmayı desteklemiyor"
+msgstr "hedef biçem sonsuzu desteklemiyor"
 
 #: c-common.c:1163
 #, c-format
@@ -170,9 +169,8 @@ msgid "string length `%d' is greater than the length `%d' ISO C%d compilers are 
 msgstr "dizge uzunluğu `%1$d' ISO C%3$d derleyiclerin desteklediği uzunluk %2$d den büyük"
 
 #: c-common.c:1242
-#, fuzzy
 msgid "concatenation of string literals with __FUNCTION__ is deprecated"
-msgstr "__FUNCTION__ ile dizge sabitlerin birleştirilmesi özelliği yakında kullanımdan kaldırılacak."
+msgstr "__FUNCTION__ ile dizge sabitlerin birleştirilmesi özelliği eski kullanım."
 
 #: c-common.c:1338
 msgid "overflow in constant expression"
@@ -278,19 +276,18 @@ msgid "invalid use of `restrict'"
 msgstr "`restrict' kullanımı geçersiz"
 
 #: c-common.c:3059
-#, fuzzy
 msgid "invalid application of `sizeof' to a function type"
-msgstr "ISO C++ işlev türe `sizeof' uygulanmasına izin vermez"
+msgstr "bir işlev türüne geçersiz `sizeof' uygulaması "
 
 #: c-common.c:3069
-#, fuzzy, c-format
+#, c-format
 msgid "invalid application of `%s' to a void type"
-msgstr "gerçeklenmemiş tür üzerindeki işlem geçersiz"
+msgstr "bir void türe geçersiz `%s' uygulaması"
 
 #: c-common.c:3075
-#, fuzzy, c-format
+#, c-format
 msgid "invalid application of `%s' to an incomplete type"
-msgstr "__alignof__ bir tamamlanmamış türe uygulanmış"
+msgstr "bir tamalanmamış türe geçersiz `%s' uygulaması"
 
 #: c-common.c:3116
 msgid "`__alignof' applied to a bit-field"
@@ -312,9 +309,9 @@ msgid "too many arguments to function `%s'"
 msgstr "`%s' işlevi için argümanlar çok fazla"
 
 #: c-common.c:3790
-#, fuzzy, c-format
+#, c-format
 msgid "non-floating-point argument to function `%s'"
-msgstr "`%s' işlevi için argümanlar çok fazla"
+msgstr "`%s' işlevine kayan noktalı olmayan argüman"
 
 #: c-common.c:4059
 msgid "pointers are not permitted as case values"
@@ -380,9 +377,9 @@ msgid "no data type for mode `%s'"
 msgstr "'%s' kipi için bir veri türü yok"
 
 #: c-common.c:5641 c-common.c:6242
-#, fuzzy, c-format
+#, c-format
 msgid "unable to emulate '%s'"
-msgstr "'%s' dosyası açılamıyor"
+msgstr "'%s' öykünümü yapılamıyor"
 
 #: c-common.c:5677
 msgid "section attribute cannot be specified for local variables"
@@ -429,22 +426,20 @@ msgid "alias arg not a string"
 msgstr "rumuz argümanı bir dizge değil"
 
 #: c-common.c:5885
-#, fuzzy
 msgid "visibility arg not a string"
-msgstr "rumuz argümanı bir dizge değil"
+msgstr "görünürlük argümanı bir dizge değil"
 
 #: c-common.c:5894
 msgid "visibility arg must be one of \"default\", \"hidden\", \"protected\" or \"internal\""
-msgstr ""
+msgstr "görünürlük \"default\", \"hidden\", \"protected\" veya \"internal\" değerlerinden biri olmalıdır"
 
 #: c-common.c:5928
-#, fuzzy
 msgid "tls_model arg not a string"
-msgstr "rumuz argümanı bir dizge değil"
+msgstr "tls_model argümanı bir dizge değil"
 
 #: c-common.c:5937
 msgid "tls_model arg must be one of \"local-exec\", \"initial-exec\", \"local-dynamic\" or \"global-dynamic\""
-msgstr ""
+msgstr "tls_model \"local-exec\", \"initial-exec\", \"local-dynamic\" veya \"global-dynamic\" değerlerinden biri olmalı"
 
 #: c-common.c:5962 c-common.c:6018
 #, c-format
@@ -471,29 +466,28 @@ msgid "no vector mode with the size and type specified could be found"
 msgstr "belirtilen tür ve boyutta vektör kipi yok"
 
 #: c-common.c:6329
-#, fuzzy
 msgid "nonnull attribute without arguments on a non-prototype"
-msgstr "argümanların sayısı prototiple uyumsuz"
+msgstr "bir prototip olmayanda argümansız null olmayan özellik"
 
 #: c-common.c:6344
-#, fuzzy, c-format
+#, c-format
 msgid "nonnull argument has invalid operand number (arg %lu)"
-msgstr "biçem dizgesi geçersiz sayıda terim içeriyor"
+msgstr "null olmayan argüman geçersiz sayıda terim içeriyor (%lu. argüman)"
 
 #: c-common.c:6363
 #, c-format
 msgid "nonnull argument with out-of-range operand number (arg %lu, operand %lu)"
-msgstr ""
+msgstr "null olmayan argüman kapsamdışı sayıda terim içeriyor (%lu. argüman, %lu. terim)"
 
 #: c-common.c:6371
 #, c-format
 msgid "nonnull argument references non-pointer operand (arg %lu, operand %lu)"
-msgstr ""
+msgstr "null olmayan argüman gösterge olmayan terime başvuruyor (%lu. argüman, %lu. terim)"
 
 #: c-common.c:6457
 #, c-format
 msgid "null argument where non-null required (arg %lu)"
-msgstr ""
+msgstr "null olamayan gerekiren yerde null argüman (%lu. argüman)"
 
 #: c-convert.c:80 c-typeck.c:988 c-typeck.c:4045 cp/typeck.c:1617
 #: cp/typeck.c:5855
@@ -605,14 +599,14 @@ msgid "an argument type that has a default promotion can't match an empty parame
 msgstr "Bir öntanımlı yükseltme içeren bir argüman türü, bir boş parametre isim listesi bildirimi ile eşleşemez"
 
 #: c-decl.c:1146
-#, fuzzy, c-format
+#, c-format
 msgid "thread-local declaration of `%s' follows non thread-local declaration"
-msgstr "`%s' için 'static' bildirimi statik olmayan izliyor"
+msgstr "`%s' thread-local bildirimini thread-local olmayan bildirimi izliyor"
 
 #: c-decl.c:1153
-#, fuzzy, c-format
+#, c-format
 msgid "non thread-local declaration of `%s' follows thread-local declaration"
-msgstr "`%s' için 'static' olmayan bildirimi statik izliyor"
+msgstr "`%s' thread-local olmayan bildirimini thread-local bildirimi izliyor"
 
 #: c-decl.c:1164 c-decl.c:1187
 #, c-format
@@ -801,14 +795,12 @@ msgid "empty declaration"
 msgstr "boş bildirim"
 
 #: c-decl.c:2718
-#, fuzzy
 msgid "ISO C90 does not support `static' or type qualifiers in parameter array declarators"
-msgstr "ISO C89, parametre dizisi bildirimlerinde `static' ve tür niteleyicileri desteklemez"
+msgstr "ISO C90, parametre dizisi bildirimlerinde `static' ve tür niteleyicileri desteklemez"
 
 #: c-decl.c:2720
-#, fuzzy
 msgid "ISO C90 does not support `[*]' array declarators"
-msgstr "ISO C89 dizi bildirimlerinde `[*]' desteklemez"
+msgstr "ISO C90 dizi bildirimlerinde `[*]' desteklemez"
 
 #: c-decl.c:2723
 msgid "GCC does not yet properly implement `[*]' array declarators"
@@ -824,9 +816,9 @@ msgid "`%s' is usually a function"
 msgstr "`%s' çogu kez bir işlevdir"
 
 #: c-decl.c:2825
-#, fuzzy, c-format
+#, c-format
 msgid "typedef `%s' is initialized (use __typeof__ instead)"
-msgstr "typedef `%s' ilkdeğerli"
+msgstr "typedef `%s' ilkdeğerli (yerine __typeof__ kullanın)"
 
 #: c-decl.c:2831
 #, c-format
@@ -903,9 +895,8 @@ msgid "`long long long' is too long for GCC"
 msgstr "`long long long' GCC için çok uzun"
 
 #: c-decl.c:3540
-#, fuzzy
 msgid "ISO C90 does not support `long long'"
-msgstr "ISO C89 `long long'u desteklemez"
+msgstr "ISO C90 `long long'u desteklemez"
 
 #: c-decl.c:3549 c-decl.c:3552 cp/decl.c:10438
 #, c-format
@@ -914,11 +905,11 @@ msgstr "`%s' yinelenmiş"
 
 #: c-decl.c:3562 cp/decl.c:10445
 msgid "`__thread' before `extern'"
-msgstr ""
+msgstr "`extern' öncesinde `__thread'"
 
 #: c-decl.c:3564 cp/decl.c:10447
 msgid "`__thread' before `static'"
-msgstr ""
+msgstr "`static' öncesinde `__thread'"
 
 #: c-decl.c:3572 cp/decl.c:10474
 #, c-format
@@ -975,9 +966,8 @@ msgid "complex invalid for `%s'"
 msgstr "`%s' için karmaşık geçersizlik"
 
 #: c-decl.c:3748
-#, fuzzy
 msgid "ISO C90 does not support complex types"
-msgstr "ISO C89 karmaşık türleri desteklemez"
+msgstr "ISO C90 karmaşık türleri desteklemez"
 
 #: c-decl.c:3760
 msgid "ISO C does not support plain `complex' meaning `double complex'"
@@ -1017,9 +1007,8 @@ msgid "function definition declared `typedef'"
 msgstr "işlev tanımı `typedef' olarak bildirildi"
 
 #: c-decl.c:3841
-#, fuzzy
 msgid "function definition declared `__thread'"
-msgstr "işlev tanımı `typedef' olarak bildirildi"
+msgstr "işlev tanımı `__thread' olarak bildirildi"
 
 #: c-decl.c:3854
 #, c-format
@@ -1056,9 +1045,9 @@ msgid "nested function `%s' declared `extern'"
 msgstr "yuvalanmış işlev `%s' `extern' olarak bildirilmiş"
 
 #: c-decl.c:3891 cp/decl.c:10872
-#, fuzzy, c-format
+#, c-format
 msgid "function-scope `%s' implicitly auto and declared `__thread'"
-msgstr "işlev `%s' `mutable' olarak bildirilemez"
+msgstr "`%s' işevinin etki alanı dolaylı olarak auto ve `__thread' bildirimli"
 
 #. Only the innermost declarator (making a parameter be of
 #. array type which is converted to pointer type)
@@ -1078,9 +1067,8 @@ msgid "declaration of `%s' as array of functions"
 msgstr "`%s' işlevler dizisi olarak bildirilmiş"
 
 #: c-decl.c:3985 c-decl.c:5250
-#, fuzzy
 msgid "invalid use of structure with flexible array member"
-msgstr "esnek dizi üyesinin kullanımı geçersiz"
+msgstr "esnek dizi üyeli yapı kullanımı geçersiz"
 
 #: c-decl.c:4004
 #, c-format
@@ -1098,14 +1086,14 @@ msgid "size of array `%s' is negative"
 msgstr "`%s' dizisinin boyutu negatif"
 
 #: c-decl.c:4029
-#, fuzzy, c-format
+#, c-format
 msgid "ISO C90 forbids array `%s' whose size can't be evaluated"
-msgstr "ISO C89 değerlendirilemeyen boyutlu `%s' dizisini yasaklar"
+msgstr "ISO C90 değerlendirilemeyen boyutlu `%s' dizisini yasaklar"
 
 #: c-decl.c:4032
-#, fuzzy, c-format
+#, c-format
 msgid "ISO C90 forbids variable-size array `%s'"
-msgstr "ISO C89 değişken boyutlu `%s' dizisini yasaklar"
+msgstr "ISO C90 değişken boyutlu `%s' dizisini yasaklar"
 
 #: c-decl.c:4062 c-decl.c:4272 cp/decl.c:11450
 #, c-format
@@ -1113,9 +1101,8 @@ msgid "size of array `%s' is too large"
 msgstr "`%s' dizisinin boyutu çok büyük"
 
 #: c-decl.c:4075
-#, fuzzy
 msgid "ISO C90 does not support flexible array members"
-msgstr "ISO C89 esnek dizi üyelerini desteklemez"
+msgstr "ISO C90 esnek dizi üyelerini desteklemez"
 
 #: c-decl.c:4085
 msgid "array type has incomplete element type"
@@ -1195,9 +1182,8 @@ msgstr "değişken `%s' `inline' bildirilmiş"
 #. A mere warning is sure to result in improper semantics
 #. at runtime.  Don't bother to allow this to compile.
 #: c-decl.c:4605 cp/decl.c:9511
-#, fuzzy
 msgid "thread-local storage not supported for this target"
-msgstr "bu hedefte -fdata-sections desteklenmiyor"
+msgstr "bu hedefte thread-local saklama desteklenmiyor"
 
 #: c-decl.c:4660 c-decl.c:5746
 msgid "function declaration isn't a prototype"
@@ -1862,9 +1848,9 @@ msgid "unused arguments in $-style format"
 msgstr "$ tarzı biçemde kullanılmamış argümanlar"
 
 #: c-format.c:1357
-#, fuzzy, c-format
+#, c-format
 msgid "zero-length %s format string"
-msgstr "sıfır uzunluklu biçem dizgesi"
+msgstr "sıfır uzunluklu %s biçem dizgesi"
 
 #: c-format.c:1361
 msgid "format is a wide character string"
@@ -2091,69 +2077,69 @@ msgstr "programda serseri '\\%o'"
 
 #: c-lex.c:850
 msgid "this decimal constant is unsigned only in ISO C90"
-msgstr ""
+msgstr "bu ondalık sabit sadece ISO C90'da unsigned'dır"
 
 #: c-lex.c:853
 msgid "this decimal constant would be unsigned in ISO C90"
-msgstr ""
+msgstr "bu ondalık sabit sadece ISO C90'da unsigned olmalıydı"
 
 #: c-lex.c:869
-#, fuzzy, c-format
+#, c-format
 msgid "integer constant is too large for \"%s\" type"
-msgstr "tamsayı sabit unsigned olarak oldukça büyük"
+msgstr "tamsayı sabit \"%s\" olarak oldukça büyük"
 
 #: c-lex.c:937
-#, fuzzy, c-format
+#, c-format
 msgid "floating constant exceeds range of \"%s\""
-msgstr "gerçel sayı '%s' kapsamını aşıyor"
+msgstr "gerçel sayı \"%s\" kapsamını aşıyor"
 
 #: c-lex.c:973 cpplex.c:330 cpplex.c:668 cpplex.c:1942
 msgid "ignoring invalid multibyte character"
 msgstr "geçersiz çok baytlı karakter yoksayılıyor"
 
 #: c-opts.c:353
-#, fuzzy, c-format
+#, c-format
 msgid "missing argument to \"-%s\""
-msgstr "`%s' seçeneğinin argümanı eksik"
+msgstr "\"-%s\" seçeneğinin argümanı eksik"
 
 #: c-opts.c:357
-#, fuzzy, c-format
+#, c-format
 msgid "no class name specified with \"-%s\""
-msgstr "çıktı dosyasının ismi iki kere belirtilmiş"
+msgstr "\"-%s ile sınıf ismi belirtilmemiş"
 
 #: c-opts.c:364
-#, fuzzy, c-format
+#, c-format
 msgid "missing filename after \"-%s\""
-msgstr "alan ismi eksik"
+msgstr "\"-%s\" den sonra dosyaismi yok"
 
 #: c-opts.c:369
-#, fuzzy, c-format
+#, c-format
 msgid "missing target after \"-%s\""
-msgstr "%i. bloktan sonraki sınır eksik"
+msgstr "\"-%s\" den sonra hedef eksik"
 
 #: c-opts.c:503
 #, c-format
 msgid "options array incorrectly sorted: %s is before %s"
-msgstr ""
+msgstr "seçenekler dizisi yanlış sıralı: %s, %s den önce"
 
 #: c-opts.c:548
-#, fuzzy, c-format
+#, c-format
 msgid "too many filenames given.  Type %s --help for usage"
-msgstr "dosya sayısı çok fazla. Kullanım bilgileri için %s --help yazınız"
+msgstr "çok fazla dosyaismi verildi. Kullanım bilgileri için %s --help yazınız"
 
 #: c-opts.c:934
 msgid "-Wno-strict-prototypes is not supported in C++"
 msgstr "C++ da -Wno-strict-prototypes desteklenmiyor"
 
 #: c-opts.c:1014
-#, fuzzy, c-format
+#, c-format
 msgid "switch \"%s\" is no longer supported"
-msgstr "-f%s artık desteklenmiyor"
+msgstr "switch \"%s\" artık desteklenmiyor"
 
 #: c-opts.c:1030
-#, fuzzy, c-format
+#, c-format
 msgid "switch \"%s\" is deprecated, please see documentation for details"
-msgstr "%s artık kullanılmıyor, lütfen ayrıntılar için belgelere bakınız"
+msgstr "switch \"%s\" eski kullanım, lütfen ayrıntılar için belgelere bakınız"
 
 #: c-opts.c:1143
 msgid "-fhandle-exceptions has been renamed to -fexceptions (and is now on by default)"
@@ -2172,9 +2158,8 @@ msgid "-Wformat-extra-args ignored without -Wformat"
 msgstr "-Wformat-extra-args  -Wformat'sız yoksayıldı"
 
 #: c-opts.c:1381
-#, fuzzy
 msgid "-Wformat-zero-length ignored without -Wformat"
-msgstr "-Wformat-extra-args  -Wformat'sız yoksayıldı"
+msgstr "-Wformat-zero-length  -Wformat'sız yoksayıldı"
 
 #: c-opts.c:1383
 msgid "-Wformat-nonliteral ignored without -Wformat"
@@ -2189,34 +2174,33 @@ msgid "-Wmissing-format-attribute ignored without -Wformat"
 msgstr "-Wmissing-format-attribute  -Wformat'sız yoksayıldı"
 
 #: c-opts.c:1409
-#, fuzzy, c-format
+#, c-format
 msgid "opening output file %s"
-msgstr "çıktı dosyası `%s' açılamıyor"
+msgstr "çıktı dosyası `%s' açılıyor"
 
 #: c-opts.c:1464
-#, fuzzy, c-format
+#, c-format
 msgid "opening dependency file %s"
-msgstr "dinamik bağımlılıklar.\n"
+msgstr "bağımlılık dosyası %s açılıyor"
 
 #: c-opts.c:1474
-#, fuzzy, c-format
+#, c-format
 msgid "closing dependency file %s"
-msgstr "özellik dosyası %s bulunamadı\n"
+msgstr "bağımlılık dosyası %s kapatılıyor"
 
 #: c-opts.c:1477
-#, fuzzy, c-format
+#, c-format
 msgid "when writing output to %s"
-msgstr "%s e yazarken hata"
+msgstr "çıktı %s e yazılırken"
 
 #: c-opts.c:1557
-#, fuzzy
 msgid "to generate dependencies you must specify either -M or -MM"
-msgstr "ek olarak ya -M ya da -MM belirtmelisiniz"
+msgstr "bağımlılıkları üretmek için ya -M ya da -MM belirtmelisiniz"
 
 #: c-opts.c:1704
-#, fuzzy, c-format
+#, c-format
 msgid "\"-%s\" is valid for %s but not for %s"
-msgstr "(%s için geçerli ama o dil seçilmedi)"
+msgstr "\"-%s\" %s için geçersiz ama %s için değil"
 
 #. To keep the lines from getting too long for some compilers, limit
 #. to about 500 characters (6 lines) per chunk.
@@ -2258,7 +2242,6 @@ msgstr ""
 "  -o DOSYA                Çıktı DOSYAya yazılır\n"
 
 #: c-opts.c:1732
-#, fuzzy
 msgid ""
 "  -trigraphs                Support ISO C trigraphs\n"
 "  -std=<std name>           Specify the conformance standard; one of:\n"
@@ -2268,44 +2251,36 @@ msgid ""
 "  -W[no-]trigraphs          Warn if trigraphs are encountered\n"
 "  -W[no-]comment{s}         Warn if one comment starts inside another\n"
 msgstr ""
+"  -trigraphs              ISO C üçlü harfleri desteklenir\n"
 "  -std=<std ismi>         Aşağıdaki uyum standartlarından biri belirtilir:\n"
 "                            gnu89, gnu99, c89, c99, iso9899:1990,\n"
-"                            iso9899:199409, iso9899:1999\n"
-"  -+                      C++ tarzı özelliklerin ayrıştırılabilmesini sağlar\n"
+"                            iso9899:199409, iso9899:1999, c++98\n"
 "  -w                      Uyarı iletileri engellenir\n"
-"  -Wtrigraphs             Üçlü harfler saptandığında uyarı verilir\n"
-"  -Wno-trigraphs          Üçlü harfler hakkında uyarı verilmez\n"
-"  -Wcomment{s}            İç içe açıklamalar için uyarı verilir\n"
+"  -W[no-]trigraphs        Üçlü harfler hakkında uyarı verilir[verilmez}\n"
+"  -W[no-]comment{s}       İç içe açıklamalar için uyarı verilir[verilmez]\n"
 
 #: c-opts.c:1741
-#, fuzzy
 msgid ""
 "  -W[no-]traditional        Warn about features not present in traditional C\n"
 "  -W[no-]undef              Warn if an undefined macro is used by #if\n"
 "  -W[no-]import             Warn about the use of the #import directive\n"
 msgstr ""
-"  -Wno-comment{s}         Açıklamalar hakkında uyarı verilmez\n"
-"  -Wtraditional           Geleneksel C'de bulunmayan özellikler için uyarır\n"
-"  -Wno-traditional        Geleneksel C hakkında uyarı verilmez\n"
-"  -Wundef                 undef'li bir makro #if ile atanmışsa uyarır\n"
-"  -Wno-undef              undef'li makrolar hakkında uyarı verilmez\n"
-"  -Wimport                #import yönergesi kullanımı hakkında uyarır\n"
+"  -W[no-]traditional      Geleneksel C'de bulunmayan özellikler için\n"
+"                          uyarır[uyarmaz]\n"
+"  -W[no-]undef            undef'li bir makro #if ile atanmışsa uyarır[uyarmaz]\n"
+"  -W[no-]import           #import yönergesi kullanımı hakkında uyarır[uyarmaz]\n"
 
 #: c-opts.c:1746
-#, fuzzy
 msgid ""
 "  -W[no-]error              Treat all warnings as errors\n"
 "  -W[no-]system-headers     Do not suppress warnings from system headers\n"
 "  -W[no-]all                Enable most preprocessor warnings\n"
 msgstr ""
-"  -Wno-import             #import kullanımı hakkıda uyarı verilmez\n"
-"  -Werror                 Tüm uyarılar hata olarak değerlendirilir\n"
-"  -Wno-error              Uyarılar hata olarak değerlendirilmez\n"
-"  -Wsystem-headers        Sistem başlık dosyalarından kaynaklanan uyarılar\n"
-"                          verilir\n"
-"  -Wno-system-headers     Sistem başlık dosyalarından kaynaklanan uyarılar\n"
-"                          engellenir\n"
-"  -Wall                   Tüm önişlemci uyarıları verilir\n"
+"  -W[no-]error            Tüm uyarılar hata olarak değerlendirilir\n"
+"                          [değerlendirilmez}\n"
+"  -W[no-]system-headers   Sistem başlık dosyalarından kaynaklanan uyarılar\n"
+"                          verilir[verilmez]\n"
+"  -W[no-]all              Tüm önişlemci uyarıları verilir[verilmez]\n"
 
 #: c-opts.c:1751
 msgid ""
@@ -2367,7 +2342,6 @@ msgstr ""
 "  -dI                     Çıktıda #include yönergeleri içerilir\n"
 
 #: c-opts.c:1780
-#, fuzzy
 msgid ""
 "  -f[no-]preprocessed       Treat the input file as already preprocessed\n"
 "  -ftabstop=<number>        Distance between tab stops for column reporting\n"
@@ -2375,13 +2349,11 @@ msgid ""
 "  -remap                    Remap file names when including files\n"
 "  --help                    Display this information\n"
 msgstr ""
-"  -fpreprocessed          Girdi dosyası önişlenmiş olarak değerlendirilir\n"
-"  -ftabstop=SAYI          Sütunlu raporlamada sekme uzunluğu\n"
+"  -f[no-]preprocessed     Girdi dosyası önişlenmiş olarak değerlendirilir\n"
+"                          [değerlendirilmez]  -ftabstop=SAYI          Sütunlu raporlamada sekme uzunluğu\n"
 "  -P                      #line yönergeleri üretilmez\n"
-"  -$                      Tanımlayıcılarda '$' kullanımı engellenir\n"
 "  -remap                  Dosyalar içerilirken dosya adları yeniden eşlenir\n"
-"  --version               Sürüm bilgileri gösterilir\n"
-"  -h ya da --help         Bu yardım iletisi gösterilir\n"
+"   --help                 Bu yardım iletisi gösterilir\n"
 
 #. Like YYERROR but do call yyerror.
 #: c-parse.y:55 parse.y:48 objc-parse.y:56
@@ -2414,7 +2386,7 @@ msgstr "ISO C işlevler dışında tek başına `;'e izin vermez"
 
 #: c-parse.y:449 cppexp.c:1312
 msgid "traditional C rejects the unary plus operator"
-msgstr "geleneksel C tekil artı işlemimini dışlar"
+msgstr "geleneksel C tekil artı işlecini dışlar"
 
 #: c-parse.y:496 objc-parse.y:519
 msgid "`sizeof' applied to a bit-field"
@@ -2437,9 +2409,8 @@ msgid "first argument to __builtin_choose_expr not a constant"
 msgstr "__builtin_choose_expr işlevine aktarılan ilk argüman bir sabit değil"
 
 #: c-parse.y:721 objc-parse.y:768
-#, fuzzy
 msgid "traditional C rejects ISO C style function definitions"
-msgstr "geleneksel C dizgelerin birleştirilmesine izin vermez"
+msgstr "geleneksel C, ISO C tarzı işlev tanımlarına izin vermez"
 
 #: c-parse.y:985 c-parse.y:991 c-parse.y:997 c-parse.y:1003 c-parse.y:1024
 #: c-parse.y:1030 c-parse.y:1036 c-parse.y:1042 c-parse.y:1075 c-parse.y:1081
@@ -2788,9 +2759,8 @@ msgid "ISO C forbids subscripting `register' array"
 msgstr "ISO C `register' dizisi altindislemesine izin vermez"
 
 #: c-typeck.c:1305
-#, fuzzy
 msgid "ISO C90 forbids subscripting non-lvalue array"
-msgstr "ISO C sol tarafsız dizi alt indislemesine izin vermez"
+msgstr "ISO C90 sol tarafsız dizi alt indislemesine izin vermez"
 
 #: c-typeck.c:1338
 msgid "subscript has type `char'"
@@ -2839,52 +2809,52 @@ msgstr "%d biçimsel parametre türü tamamlanmayan türde"
 #: c-typeck.c:1624
 #, c-format
 msgid "%s as integer rather than floating due to prototype"
-msgstr "%s prototipten dolayı bir gerçel sayıdan çok bir tamsayı"
+msgstr "%sması prototipten dolayı bir gerçel sayıdan çok bir tamsayı"
 
 #: c-typeck.c:1627
 #, c-format
 msgid "%s as integer rather than complex due to prototype"
-msgstr "%s prototipten dolayı bir karmaşık sayıdan çok bir tamsayı"
+msgstr "%sması prototipten dolayı bir karmaşık sayıdan çok bir tamsayı"
 
 #: c-typeck.c:1630
 #, c-format
 msgid "%s as complex rather than floating due to prototype"
-msgstr "%s prototipten dolayı bir gerçel sayıdan çok bir karmaşık sayı"
+msgstr "%sması prototipten dolayı bir gerçel sayıdan çok bir karmaşık sayı"
 
 #: c-typeck.c:1633
 #, c-format
 msgid "%s as floating rather than integer due to prototype"
-msgstr "%s prototipten dolayı bir tamsayıdan çok bir gerçel sayı"
+msgstr "%sması prototipten dolayı bir tamsayıdan çok bir gerçel sayı"
 
 #: c-typeck.c:1636
 #, c-format
 msgid "%s as complex rather than integer due to prototype"
-msgstr "%s prototipten dolayı bir tamsayıdan çok bir karmaşık sayı"
+msgstr "%sması prototipten dolayı bir tamsayıdan çok bir karmaşık sayı"
 
 #: c-typeck.c:1639
 #, c-format
 msgid "%s as floating rather than complex due to prototype"
-msgstr "%s prototipten dolayı bir karmaşık sayıdan çok bir gerçel sayı"
+msgstr "%sması prototipten dolayı bir karmaşık sayıdan çok bir gerçel sayı"
 
 #: c-typeck.c:1649
 #, c-format
 msgid "%s as `float' rather than `double' due to prototype"
-msgstr "%s prototipten dolayı bir «double»dan çok bir «float»"
+msgstr "%sması prototipten dolayı bir «double»dan çok bir «float»"
 
 #: c-typeck.c:1667
 #, c-format
 msgid "%s with different width due to prototype"
-msgstr "prototipten dolayı farklı genişlikle %s"
+msgstr "prototipten dolayı farklı genişlikle %sması"
 
 #: c-typeck.c:1701
 #, c-format
 msgid "%s as unsigned due to prototype"
-msgstr "%s prototipten dolayı unsigned"
+msgstr "%sması prototipten dolayı unsigned"
 
 #: c-typeck.c:1703
 #, c-format
 msgid "%s as signed due to prototype"
-msgstr "%s prototipten dolayı signed"
+msgstr "%sması prototipten dolayı signed"
 
 #: c-typeck.c:1737 cp/typeck.c:2935
 msgid "too few arguments to function"
@@ -3060,7 +3030,7 @@ msgstr "ISO C çevirim ifadesi adresine izin vermez"
 
 #: c-typeck.c:3025
 msgid "invalid lvalue in unary `&'"
-msgstr "tekil `&' için geçersiz sol taraf"
+msgstr "tekil `&' için geçersiz soldeğer"
 
 #: c-typeck.c:3057
 #, c-format
@@ -3207,11 +3177,11 @@ msgstr "farklı türdeki tamsayıdan göstergeye çevirim"
 
 #: c-typeck.c:3772
 msgid "type-punning to incomplete type might break strict-aliasing rules"
-msgstr ""
+msgstr "içi boş türle tür tanımı yapmak adlandırma kurallarının katılığı ile bağdaşmaz"
 
 #: c-typeck.c:3776
 msgid "dereferencing type-punned pointer will break strict-aliasing rules"
-msgstr ""
+msgstr "türü tanımlanmış göstergenin başvurusuz olması adlandırma kurallarının değişmezliğini bozacak"
 
 #. Now we have handled acceptable kinds of LHS that are not truly lvalues.
 #. Reject anything strange now.
@@ -3226,19 +3196,18 @@ msgid "assignment"
 msgstr "atama"
 
 #: c-typeck.c:4056
-#, fuzzy
 msgid "cannot pass rvalue to reference parameter"
-msgstr "new bir referans türe uygulanamaz"
+msgstr "sağdeğer, başvuru parametresine aktarılamaz"
 
 #: c-typeck.c:4160 c-typeck.c:4227
 #, c-format
 msgid "%s makes qualified function pointer from unqualified"
-msgstr "%s nitelemeyenden niteleyen işlev göstergesi yapıyor"
+msgstr "%sması nitelemeyenden niteleyen işlev göstergesi yapıyor"
 
 #: c-typeck.c:4164 c-typeck.c:4207
 #, c-format
 msgid "%s discards qualifiers from pointer target type"
-msgstr "%s gösterge hedef türündeki niteleyicileri iptal ediyor"
+msgstr "%sması gösterge hedef türündeki niteleyicileri iptal ediyor"
 
 #: c-typeck.c:4170
 msgid "ISO C prohibits argument conversion to union type"
@@ -3247,27 +3216,27 @@ msgstr "ISO C union türe argüman dönüşümünü yasaklar"
 #: c-typeck.c:4199
 #, c-format
 msgid "ISO C forbids %s between function pointer and `void *'"
-msgstr "ISO C de işlev göstergesi ile `void *' arasındaki %s için izin verilmez"
+msgstr "ISO C de işlev göstergesi ile `void *' arasında %smasına izin vermez"
 
 #: c-typeck.c:4216
 #, c-format
 msgid "pointer targets in %s differ in signedness"
-msgstr "%s gösterge hedefleri farklı signed'lıkta"
+msgstr "gösterge hedefleri %sırken farklı signed'lıkta"
 
 #: c-typeck.c:4232
 #, c-format
 msgid "%s from incompatible pointer type"
-msgstr "uyumsuz gösterge türünden %s"
+msgstr "uyumsuz gösterge türünden %sması"
 
 #: c-typeck.c:4248
 #, c-format
 msgid "%s makes pointer from integer without a cast"
-msgstr "%s bir çevirim olmaksızın tamsayıdan gösterge yapıyor"
+msgstr "%sırken bir çevirim olmaksızın tamsayıdan gösterge yapılıyor"
 
 #: c-typeck.c:4256
 #, c-format
 msgid "%s makes integer from pointer without a cast"
-msgstr "%s bir çevirim olmaksızın göstergeden tamsayı yapıyor"
+msgstr "%s bir çevirim olmaksızın göstergeden tamsayı yapılıyor"
 
 #: c-typeck.c:4270 c-typeck.c:4273
 #, c-format
@@ -3286,27 +3255,26 @@ msgstr "%s içinde uyumsuz türler"
 
 #. Function name is known; supply it.
 #: c-typeck.c:4339
-#, fuzzy, c-format
+#, c-format
 msgid "passing arg of `%s'"
-msgstr "`%2$s' işlevinin %1$d. argümanı aktarılıyor"
+msgstr "`%s' argümanı aktarıl"
 
 #. Function name unknown (call through ptr).
 #: c-typeck.c:4349
-#, fuzzy
 msgid "passing arg of pointer to function"
-msgstr "işlev göstergesinin %d. argümanı aktarılıyor"
+msgstr "işlev göstergesinin %d. argümanı aktarıl"
 
 #. Function name is known; supply it.
 #: c-typeck.c:4357
 #, c-format
 msgid "passing arg %d of `%s'"
-msgstr "`%2$s' işlevinin %1$d. argümanı aktarılıyor"
+msgstr "`%2$s' işlevinin %1$d. argümanı aktarıl"
 
 #. Function name unknown (call through ptr); just give arg number.
 #: c-typeck.c:4367
 #, c-format
 msgid "passing arg %d of pointer to function"
-msgstr "işlev göstergesinin %d. argümanı aktarılıyor"
+msgstr "işlev göstergesinin %d. argümanı aktarıl"
 
 #: c-typeck.c:4433
 msgid "initializer for static variable is not constant"
@@ -3544,47 +3512,47 @@ msgstr "değişken boyutu hem yığın hem de yazmaç içine aktarılmış"
 #: cfgloop.c:1106
 #, c-format
 msgid "Size of loop %d should be %d, not %d."
-msgstr ""
+msgstr "%d. döngünün boyutu %d olmalı, %d değil."
 
 #: cfgloop.c:1125
 #, c-format
 msgid "Bb %d do not belong to loop %d."
-msgstr ""
+msgstr "Bb %d %d. döngünün üyesi değil."
 
 #: cfgloop.c:1143
 #, c-format
 msgid "Loop %d's header does not have exactly 2 entries."
-msgstr ""
+msgstr "%d. döngünün başlığının 2 girdisi olmalı."
 
 #: cfgloop.c:1151
 #, c-format
 msgid "Loop %d's latch does not have exactly 1 successor."
-msgstr ""
+msgstr "%d. döngünün saklayıcısının 1 ardılı olmalı."
 
 #: cfgloop.c:1156
 #, c-format
 msgid "Loop %d's latch does not have header as successor."
-msgstr ""
+msgstr "%d. döngünün saklayıcısının ardıl olarak başlığı yok."
 
 #: cfgloop.c:1161
 #, c-format
 msgid "Loop %d's latch does not belong directly to it."
-msgstr ""
+msgstr "%d. döngünün saklayıcısı doğrudan kendisinin üyesi değil."
 
 #: cfgloop.c:1167
 #, c-format
 msgid "Loop %d's header does not belong directly to it."
-msgstr ""
+msgstr "%d. döngünün başlığı doğrudan kendisinin üyesi değil."
 
 #: cfgrtl.c:1704
 #, c-format
 msgid "bb %d on wrong place"
-msgstr ""
+msgstr "bb %d yanlış yerde"
 
 #: cfgrtl.c:1710
 #, c-format
 msgid "prev_bb of %d should be %d, not %d"
-msgstr ""
+msgstr "%d'nin prev_bb'si %d olmalıydı, %d değil"
 
 #: cfgrtl.c:1730
 #, c-format
@@ -3602,19 +3570,19 @@ msgid "head insn %d for block %d not found in the insn stream"
 msgstr "%2$d. bloğun ilk komutu %1$d komut akışı içinde yok."
 
 #: cfgrtl.c:1778
-#, fuzzy, c-format
+#, c-format
 msgid "verify_flow_info: REG_BR_PROB does not match cfg %i %i"
-msgstr "verify_flow_info: ardcıl %i->%i yanlış"
+msgstr "verify_flow_info:  REG_BR_PROB ile cfg %i %i eşleşmiyor"
 
 #: cfgrtl.c:1785
-#, fuzzy, c-format
+#, c-format
 msgid "verify_flow_info: Wrong count of block %i %i"
-msgstr "verify_flow_info: ardcıl %i->%i yanlış"
+msgstr "verify_flow_info: blok %i %i sayısı yanlış"
 
 #: cfgrtl.c:1791
-#, fuzzy, c-format
+#, c-format
 msgid "verify_flow_info: Wrong frequency of block %i %i"
-msgstr "verify_flow_info: ardcıl %i->%i yanlış"
+msgstr "verify_flow_info: block %i %i sıklığı yanlış"
 
 #: cfgrtl.c:1799
 #, c-format
@@ -3622,14 +3590,14 @@ msgid "verify_flow_info: Duplicate edge %i->%i"
 msgstr "verify_flow_info: yinelenmiş kenar %i->%i"
 
 #: cfgrtl.c:1805
-#, fuzzy, c-format
+#, c-format
 msgid "verify_flow_info: Wrong probability of edge %i->%i %i"
-msgstr "verify_flow_info: yinelenmiş kenar %i->%i"
+msgstr "verify_flow_info: yinelenmiş kenar %i->%i %i olasılığı yanlış"
 
 #: cfgrtl.c:1811
-#, fuzzy, c-format
+#, c-format
 msgid "verify_flow_info: Wrong count of edge %i->%i %i"
-msgstr "verify_flow_info: yinelenmiş kenar %i->%i"
+msgstr "verify_flow_info: kenar %i->%i %i sayısı yanlış"
 
 #: cfgrtl.c:1841
 #, c-format
@@ -3653,37 +3621,37 @@ msgstr "verify_flow_info: %d. temel bloğun ardıl kenarı bozuk"
 #: cfgrtl.c:1881
 #, c-format
 msgid "Missing REG_EH_REGION note in the end of bb %i"
-msgstr ""
+msgstr "bb %i'nin sonunda REG_EH_REGION bilgisi eksik"
 
 #: cfgrtl.c:1889
 #, c-format
 msgid "Too many outgoing branch edges from bb %i"
-msgstr ""
+msgstr "bb %i'den çıkan dal kenarı çok fazla"
 
 #: cfgrtl.c:1894
 #, c-format
 msgid "Fallthru edge after unconditional jump %i"
-msgstr ""
+msgstr "koşulsuz jump %i den sonra ardcıl kenar"
 
 #: cfgrtl.c:1899
 #, c-format
 msgid "Wrong amount of branch edges after unconditional jump %i"
-msgstr ""
+msgstr "Koşulsuz jump %i den sonraki dal kenarlarının miktarı yanlış"
 
 #: cfgrtl.c:1905
-#, fuzzy, c-format
+#, c-format
 msgid "Wrong amount of branch edges after conditional jump %i"
-msgstr "Dallanmalar koşullu çalıştırmaya tercih edilir"
+msgstr "koşullu jump %i den sonraki dal kenarlarını miktarı yanlış"
 
 #: cfgrtl.c:1910
 #, c-format
 msgid "Call edges for non-call insn in bb %i"
-msgstr ""
+msgstr "bb %i içindeki çağrı olmayan komut için çağrı kenarları"
 
 #: cfgrtl.c:1919
 #, c-format
 msgid "Abnormal edges for no purpose in bb %i"
-msgstr ""
+msgstr "bb %i içinde normaldışı amaçsız kenar sayısı "
 
 #: cfgrtl.c:1934
 #, c-format
@@ -4141,9 +4109,8 @@ msgid "internal error: "
 msgstr "iç hata: "
 
 #: cpperror.c:189
-#, fuzzy
 msgid "stdout"
-msgstr "yapı"
+msgstr "stdÇ"
 
 #: cpperror.c:191 gcc.c:6444
 #, c-format
@@ -4151,58 +4118,52 @@ msgid "%s: %s"
 msgstr "%s: %s"
 
 #: cppexp.c:199
-#, fuzzy
 msgid "too many decimal points in number"
-msgstr "kayan sabitteki ondalık nokta sayısı çok fazla"
+msgstr "sayı içindeki ondalık nokta sayısı çok fazla"
 
 #: cppexp.c:219
-#, fuzzy, c-format
+#, c-format
 msgid "invalid digit \"%c\" in octal constant"
-msgstr "denetim dizgesindeki rakam geçersiz"
+msgstr "sekizlik sabit içindeki \"%c\" geçersiz"
 
 #: cppexp.c:225
-#, fuzzy
 msgid "use of C99 hexadecimal floating constant"
-msgstr "onaltılık gerçel sayı sabit üs içermiyor"
+msgstr "C99 onaltılık gerçel sayı sabit kullanımı"
 
 #: cppexp.c:234
-#, fuzzy
 msgid "exponent has no digits"
-msgstr "gerçel sayı sabitin üssü rakam içermiyor"
+msgstr "üs rakam içermiyor"
 
 #: cppexp.c:241
-#, fuzzy
 msgid "hexadecimal floating constants require an exponent"
-msgstr "onaltılık gerçel sayı sabit üs içermiyor"
+msgstr "onaltılık gerçel sayı sabit bir üs içermeli"
 
 #: cppexp.c:247
-#, fuzzy, c-format
+#, c-format
 msgid "invalid suffix \"%.*s\" on floating constant"
-msgstr "gerçel sayı sabitin soneki geçersiz"
+msgstr "gerçel sayı sabitin soneki olarak \"%.*s\" geçersiz"
 
 #: cppexp.c:257 cppexp.c:282
-#, fuzzy, c-format
+#, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
-msgstr "geleneksel C 'f' sonekini kullanmaz"
+msgstr "geleneksel C \"%.*s\" sonekini kullanmaz"
 
 #: cppexp.c:268
-#, fuzzy, c-format
+#, c-format
 msgid "invalid suffix \"%.*s\" on integer constant"
-msgstr "tamsayı sabitte sonek '%.*s' geçersiz"
+msgstr "tamsayı sabitte sonek \"%.*s\" geçersiz"
 
 #: cppexp.c:289
-#, fuzzy
 msgid "use of C99 long long integer constant"
-msgstr "ISO C89 long long tamsayı sabitleri yasaklar"
+msgstr "C99 long long tamsayı sabit kullanımı"
 
 #: cppexp.c:295
 msgid "imaginary constants are a GCC extension"
-msgstr ""
+msgstr "sanal sabitler bir GCC genişletmesidir"
 
 #: cppexp.c:383
-#, fuzzy
 msgid "integer constant is too large for its type"
-msgstr "tamsayı sabit unsigned olarak oldukça büyük"
+msgstr "tamsayı sabit, türü için oldukça büyük"
 
 #: cppexp.c:395
 msgid "integer constant is so large that it is unsigned"
@@ -4214,7 +4175,7 @@ msgstr "\"defined\" dan sonra ')' eksik"
 
 #: cppexp.c:489
 msgid "operator \"defined\" requires an identifier"
-msgstr "\"defined\" işlemimi bir tanımlayıcı gerektirir"
+msgstr "\"defined\" işleci bir tanımlayıcı gerektirir"
 
 #: cppexp.c:497
 #, c-format
@@ -4226,14 +4187,12 @@ msgid "this use of \"defined\" may not be portable"
 msgstr "\"defined\" bu kullanımıyla uyarlanabilir olmayabilir"
 
 #: cppexp.c:545
-#, fuzzy
 msgid "floating constant in preprocessor expression"
-msgstr "önişlemci ifadesinde tamsayı taşması"
+msgstr "önişlemci ifadesinde gerçel sayı taşması"
 
 #: cppexp.c:551
-#, fuzzy
 msgid "imaginary number in preprocessor expression"
-msgstr "önişlemci ifadesinde tamsayı taşması"
+msgstr "önişlemci ifadesinde sanal sayı"
 
 #: cppexp.c:596
 #, c-format
@@ -4246,9 +4205,9 @@ msgid "\"%s\" is not defined"
 msgstr "\"%s\" tanımlı değil"
 
 #: cppexp.c:737 cppexp.c:772
-#, fuzzy, c-format
+#, c-format
 msgid "missing binary operator before token \"%s\""
-msgstr "`%s' den önce iki terimli işlemimi eksik"
+msgstr "\"%s\" den önce iki terimli işleç eksik"
 
 #: cppexp.c:756
 #, c-format
@@ -4261,9 +4220,9 @@ msgid "invalid character '\\%03o' in #if"
 msgstr "#if içinde '\\%03o' karakteri geçersiz"
 
 #: cppexp.c:763
-#, fuzzy, c-format
+#, c-format
 msgid "token \"%s\" is not valid in preprocessor expressions"
-msgstr "#if ifadelerinde \"%s\" geçersizdir"
+msgstr "önişlemci ifadelerinde \"%s\" geçersizdir"
 
 #: cppexp.c:782
 msgid "void expression between '(' and ')'"
@@ -4276,30 +4235,28 @@ msgstr "#if ifadesiz"
 #: cppexp.c:787
 #, c-format
 msgid "operator '%s' has no right operand"
-msgstr "`%s' işlemiminin sağ tarafı yok"
+msgstr "`%s' işlecinin sağ tarafı yok"
 
 #: cppexp.c:813
-#, fuzzy
 msgid " ':' without preceding '?'"
-msgstr "sözdizimi hatası ':' den önce '?' yok"
+msgstr " ':' den önce '?' yok"
 
 #: cppexp.c:840
 msgid "unbalanced stack in #if"
 msgstr "#if ifadesinde karşılıksız yığın"
 
 #: cppexp.c:862
-#, fuzzy, c-format
+#, c-format
 msgid "impossible operator '%u'"
-msgstr "işlemimi '%s' imkansız"
+msgstr "işleç '%u' imkansız"
 
 #: cppexp.c:954
 msgid "missing ')' in expression"
 msgstr "ifadede ')' eksik"
 
 #: cppexp.c:975
-#, fuzzy
 msgid "'?' without following ':'"
-msgstr "sözdizimi hatası '?' dan sonra ':' yok"
+msgstr "'?' dan sonra ':' yok"
 
 #: cppexp.c:985
 msgid "integer overflow in preprocessor expression"
@@ -4312,12 +4269,12 @@ msgstr "ifadede '(' eksik"
 #: cppexp.c:1026
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
-msgstr ""
+msgstr "\"%s\"in soldaki terimi yükseltgenirken işaret değiştiriyor"
 
 #: cppexp.c:1031
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
-msgstr ""
+msgstr "\"%s\"in sağdaki terimi yükseltgenirken işaret değiştiriyor"
 
 #: cppexp.c:1414
 msgid "comma operator in operand of #if"
@@ -4371,44 +4328,42 @@ msgid "ignoring duplicate directory \"%s\"\n"
 msgstr "tekrar belirtilen \"%s\" dizini yoksayılıyor\n"
 
 #: cppinit.c:325
-#, fuzzy
 msgid "  as it is a non-system directory that duplicates a system directory\n"
-msgstr "belirtilmş olması gereken bir sistem dizini olmayan dizin olarak değiştiriliyor"
+msgstr "  tekrarlayan bir sistem dizini olmayan dizin olarak değiştiriliyor\n"
 
 #: cppinit.c:891
-#, fuzzy
 msgid "cppchar_t must be an unsigned type"
-msgstr "dayanak bir tanımlayıcı olmalı"
+msgstr "cppchar_t bir usigned tür olmalı"
 
 #: cppinit.c:895
 #, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
-msgstr ""
+msgstr "önişlemci aritmetiği %lu bitlik maksimum genişliğe sahip; hedef için %lu bit gerekiyor"
 
 #: cppinit.c:901
 msgid "CPP arithmetic must be at least as precise as a target int"
-msgstr ""
+msgstr "CPP aritmetiği en azından bir hedef int kadar genişlikte olmalı "
 
 #: cppinit.c:904
 msgid "target char is less than 8 bits wide"
-msgstr ""
+msgstr "hedef char 8bitlik genişlikten küçük"
 
 #: cppinit.c:908
 msgid "target wchar_t is narrower than target char"
-msgstr ""
+msgstr "hedef wchar_t hedef char'dan daha dar"
 
 #: cppinit.c:912
 msgid "target int is narrower than target char"
-msgstr ""
+msgstr "hedef int hedef char'dan daha dar"
 
 #: cppinit.c:916
 msgid "CPP half-integer narrower than CPP character"
-msgstr ""
+msgstr "CPP half-integer'ı CPP character'dan daha dar"
 
 #: cppinit.c:920
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
-msgstr ""
+msgstr "Bu konaktaki CPP %lu bitten büyük karakter sabitleriyle çalışamaz, hedef ise %lu bit gerektiriyor"
 
 #: cppinit.c:972
 msgid "#include \"...\" search starts here:\n"
@@ -4503,9 +4458,8 @@ msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__  sadece argümanlarının sayısı değişebilen bir C99 makrosunun genişleme alanında görünebilir"
 
 #: cpplex.c:555
-#, fuzzy
 msgid "'$' character(s) in identifier or number"
-msgstr "tanımlayıcı içinde '$' karakter(ler)i"
+msgstr "belirteç ya da sayı içinde '$' karakter(ler)i"
 
 #: cpplex.c:698
 #, c-format
@@ -4525,9 +4479,8 @@ msgid "unterminated comment"
 msgstr "sonlandırılmamış açıklama"
 
 #: cpplex.c:1103
-#, fuzzy
 msgid "C++ style comments are not allowed in ISO C90"
-msgstr "C++ tarzı açıklamalara ISO C89'da izin verilmez"
+msgstr "C++ tarzı açıklamalara ISO C90'da izin verilmez"
 
 #: cpplex.c:1105
 msgid "(this will be reported only once per input file)"
@@ -4548,9 +4501,9 @@ msgid "unspellable token %s"
 msgstr "dizgecik %s okunabilir değil"
 
 #: cpplex.c:1695
-#, fuzzy, c-format
+#, c-format
 msgid "the meaning of '\\%c' is different in traditional C"
-msgstr "`\\%c'nin anlamı -traditional ile değişir"
+msgstr "`\\%c'nin anlamı geleneksel C'de farklıdır"
 
 #: cpplex.c:1701
 msgid "incomplete universal-character-name"
@@ -4570,9 +4523,8 @@ msgid "universal-character-name out of range"
 msgstr "evrensel karakter ismi kapsam dışı"
 
 #: cpplex.c:1791
-#, fuzzy
 msgid "the meaning of '\\a' is different in traditional C"
-msgstr "`\\a'nın anlamı -traditional ile değişir"
+msgstr "`\\a'nın anlamı geleneksel C'de farklıdır"
 
 #: cpplex.c:1798
 #, c-format
@@ -4580,9 +4532,8 @@ msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr "ISO standardı olmayan önceleme dizgesi, '\\%c'"
 
 #: cpplex.c:1809
-#, fuzzy
 msgid "the meaning of '\\x' is different in traditional C"
-msgstr "'\\x'in anlamı -traditional ile değişir"
+msgstr "'\\x'in anlamı geleneksel C'de farklıdır"
 
 #: cpplex.c:1828 f/lex.c:585
 msgid "\\x used with no following hex digits"
@@ -4607,18 +4558,16 @@ msgid "unknown escape sequence: '\\%03o'"
 msgstr "bilinmeyen önceleme dizgesi: '\\%03o'"
 
 #: cpplex.c:1882
-#, fuzzy
 msgid "escape sequence out of range for its type"
-msgstr "önceleme dizgesi karakter için kapsam dışı"
+msgstr "önceleme dizgesi türü için kapsam dışı"
 
 #: cpplex.c:1973
 msgid "empty character constant"
 msgstr "karakter sabit boş"
 
 #: cpplex.c:1983
-#, fuzzy
 msgid "character constant too long for its type"
-msgstr "karakter sabit çok uzun"
+msgstr "karakter sabiti türü için çok uzun"
 
 #: cpplex.c:1986
 msgid "multi-character character constant"
@@ -4650,7 +4599,7 @@ msgstr "geleneksel C'den #%s in saklanması için bir girintili # kullanılmış
 
 #: cpplib.c:358
 msgid "embedding a directive within macro arguments is not portable"
-msgstr ""
+msgstr "bir yönergenin makro argümanlarla gömülmesi uyarlanabilir değil"
 
 #: cpplib.c:378
 msgid "style of line directive is a GCC extension"
@@ -4668,7 +4617,7 @@ msgstr "\"defined\" makro ismi olarak kullanılamaz"
 #: cpplib.c:505
 #, c-format
 msgid "\"%s\" cannot be used as a macro name as it is an operator in C++"
-msgstr "\"%s\" C++'da bir işlemimi olduğundan makro ismi olarak kullanılamaz"
+msgstr "\"%s\" C++'da bir işleç olduğundan makro ismi olarak kullanılamaz"
 
 #: cpplib.c:508
 #, c-format
@@ -4843,9 +4792,9 @@ msgid "unterminated #%s"
 msgstr "sonlandırılmamış #%s"
 
 #: cppmacro.c:94
-#, fuzzy, c-format
+#, c-format
 msgid "macro \"%s\" is not used"
-msgstr "\"%s\" tanımlı değil"
+msgstr "makro \"%s\" kullanılmamış"
 
 #: cppmacro.c:139 cppmacro.c:294
 #, c-format
@@ -4853,9 +4802,8 @@ msgid "invalid built-in macro \"%s\""
 msgstr "geçersiz yerleşik makro \"%s\""
 
 #: cppmacro.c:234
-#, fuzzy
 msgid "could not determine date and time"
-msgstr "bağımlılık izlemesi için hedef isim saptanamıyor"
+msgstr "tarih ve saat saptanamadı"
 
 #: cppmacro.c:407
 msgid "invalid string literal, ignoring final '\\'"
@@ -4942,9 +4890,9 @@ msgid "this is the location of the previous definition"
 msgstr "bu önceki tanımlamanın yeri"
 
 #: cppmacro.c:1655
-#, fuzzy, c-format
+#, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
-msgstr "makro argümanı \"%s\" gelenekel C'de dizgelem olmalıydı"
+msgstr "makro argümanı \"%s\" gelenekel C'de dizgelenmiş olmalıydı"
 
 #: cppmacro.c:1680
 #, c-format
@@ -4961,9 +4909,9 @@ msgid "too many input files"
 msgstr "girdi dosyası sayısı çok fazla"
 
 #: cpptrad.c:841
-#, fuzzy, c-format
+#, c-format
 msgid "detected recursion whilst expanding macro \"%s\""
-msgstr "sonlandırılmamış argüman listesi çağıran makro \"%s\""
+msgstr "makro \"%s\" genişletilirken iç içelik saptandı"
 
 #: cse.c:7187
 #, c-format
@@ -5033,9 +4981,9 @@ msgid "Internal compiler error: Error reporting routines re-entered.\n"
 msgstr "Derleyici iç hatası: Hata raporlama yordamları tekrar girildi.\n"
 
 #: diagnostic.c:1362
-#, fuzzy, c-format
+#, c-format
 msgid "in %s, at %s:%d"
-msgstr "%2$s dosyasının %3$d. satırındaki %1$s işlevinde programdan çıkış"
+msgstr "%2$s dosyasının %3$d. satırındaki %1$s işlevinde"
 
 #: diagnostic.c:1383
 #, c-format
@@ -5060,26 +5008,26 @@ msgstr ". satırında:\n"
 #: diagnostic.c:1431 diagnostic.c:1448
 #, c-format
 msgid "`%s' is deprecated (declared at %s:%d)"
-msgstr "`%s' yakında kaldırılacak (%s:%d. satırında bildirilmiş)"
+msgstr "`%s' eski kullanım (%s:%d. satırında bildirilmiş)"
 
 #: diagnostic.c:1451
 #, c-format
 msgid "`%s' is deprecated"
-msgstr "`%s' yakında kaldırılacak"
+msgstr "`%s' eski kullanım"
 
 #: diagnostic.c:1454
 #, c-format
 msgid "type is deprecated (declared at %s:%d)"
-msgstr "tür yakında kaldırılacak (%s:%d. satırında bildirilmiş)"
+msgstr "tür eski kullanım (%s:%d. satırında bildirilmiş)"
 
 #: diagnostic.c:1457
 msgid "type is deprecated"
-msgstr "tür yakında kaldırılacak"
+msgstr "tür eski kullanım"
 
 #: dominance.c:728
 #, c-format
 msgid "dominator of %d should be %d, not %d"
-msgstr ""
+msgstr "%d nin önceli %d olmalı, %d değil"
 
 #: dwarf2out.c:3124
 #, c-format
@@ -5087,13 +5035,13 @@ msgid "DW_LOC_OP %s not implemented\n"
 msgstr "DW_LOC_OP %s daha yazılmadı\n"
 
 #: dwarfout.c:2066
-#, fuzzy, c-format
+#, c-format
 msgid "internal regno botch: `%s' has regno = %d\n"
-msgstr "iç yazmaç numarası beceriksizce: regno = %d\n"
+msgstr "iç yazmaç numarası beceriksizce: `%s' regno = %d içeriyor\n"
 
 #: dwarfout.c:6181
 msgid "support for the DWARF1 debugging format is deprecated"
-msgstr ""
+msgstr "DWARF1 hata ayıklama biçemi artık desteklenmeyecek"
 
 #: dwarfout.c:6278
 msgid "can't get current directory"
@@ -5324,7 +5272,7 @@ msgstr "ismi değişecek specs %s özelliği yok"
 #: gcc.c:1974
 #, c-format
 msgid "%s: attempt to rename spec '%s' to already defined spec '%s'"
-msgstr ""
+msgstr "%s: '%s' belirtiminin ismi zaten '%s' belirtiminde kullanılmış"
 
 #: gcc.c:1979
 #, c-format
@@ -5448,13 +5396,14 @@ msgstr ""
 "                           arasındaki eşleşmeleri gösterir\n"
 
 #: gcc.c:2918
-#, fuzzy
 msgid "  -print-multi-os-directory Display the relative path to OS libraries\n"
-msgstr "  -print-multi-directory   libgcc sürümünün kök dizinini gösterir\n"
+msgstr "  -print-multi-os-directory   İS kitaplıklarının göreli dosya yolunu gösterir\n"
 
 #: gcc.c:2919
 msgid "  -Wa,<options>            Pass comma-separated <options> on to the assembler\n"
-msgstr "  -Wa,<seçenekler>         Virgül ayraçlı <seçenekler> listesini çeviriciye gönderir\n"
+msgstr ""
+"  -Wa,<seçenekler>         Virgül ayraçlı <seçenekler> listesini çeviriciye\n"
+"                           gönderir\n"
 
 #: gcc.c:2920
 msgid "  -Wp,<options>            Pass comma-separated <options> on to the preprocessor\n"
@@ -5555,14 +5504,14 @@ msgstr ""
 "\n"
 
 #: gcc.c:3079
-#, fuzzy, c-format
+#, c-format
 msgid "`-%c' option must have argument"
-msgstr "-param seçeneğinde argüman eksik"
+msgstr "`-%c' seçeneğinde argüman eksik"
 
 #: gcc.c:3101
 #, c-format
 msgid "couldn't run `%s': %s"
-msgstr ""
+msgstr "`%s' çalıştırılamadı: %s"
 
 #. translate_options () has turned --version into -fversion.
 #: gcc.c:3278
@@ -5603,7 +5552,7 @@ msgstr "`-specs=' için argüman belirtilmemiş"
 #: gcc.c:3452
 #, c-format
 msgid "`-%c' must come at the start of the command line"
-msgstr ""
+msgstr "`-%c' komut satırının başında olmalı"
 
 #: gcc.c:3461
 msgid "argument to `-B' is missing"
@@ -5655,7 +5604,7 @@ msgstr "özellik aksaması: '%%*' kalıp eşleştirerek ilklendirilemedi"
 #: gcc.c:4980
 #, c-format
 msgid "warning: use of obsolete %%[ operator in specs"
-msgstr "Uyarı: spec'lerde %%[ işlemimi artık kullanılmıyor"
+msgstr "Uyarı: spec'lerde %%[ işleci artık kullanılmıyor"
 
 #: gcc.c:4998
 #, c-format
@@ -5668,29 +5617,27 @@ msgid "spec failure: unrecognized spec option '%c'"
 msgstr "Özellik aksaması: özellik seçeneği '%c' anlaşılamadı"
 
 #: gcc.c:5204
-#, fuzzy, c-format
+#, c-format
 msgid "unknown spec function `%s'"
-msgstr "`%s' işlevinde:"
+msgstr "bilinmeyen `%s' spec işlevi"
 
 #: gcc.c:5223
-#, fuzzy, c-format
+#, c-format
 msgid "error in args to spec function `%s'"
-msgstr "`%s' işlevi için argümanlar çok fazla"
+msgstr "`%s' spec işlevi için argümanlar hatalı"
 
 #: gcc.c:5272
-#, fuzzy
 msgid "malformed spec function name"
-msgstr "çevirim tür olarak işlev belirtiyor"
+msgstr "bozuk spec işlevi ismi"
 
 #. )
 #: gcc.c:5275
-#, fuzzy
 msgid "no arguments for spec function"
-msgstr "işlev için çok az argüman belirtildi"
+msgstr "spec işlevi için argüman belirtilmedi"
 
 #: gcc.c:5294
 msgid "malformed spec function arguments"
-msgstr ""
+msgstr "belirtim işlevi argümanları bozuk"
 
 #: gcc.c:5402
 msgid "mismatched braces in specs"
@@ -5824,13 +5771,14 @@ msgid "  -f, --function-summaries        Output summaries for each function\n"
 msgstr "  -f, --function-summaries        Her işlev için özet çıktılar\n"
 
 #: gcov.c:349
-#, fuzzy
 msgid "  -o, --object-directory DIR|FILE Search for object files in DIR or called FILE\n"
-msgstr "  -o, --object-directory DİZİN    Nesne dosyaları DİZİNde aranır\n"
+msgstr ""
+"  -o, --object-directory DZN|DSY  Nesne dosyaları DZN dizininde ya da DSY\n"
+"                                   dosyasında belirtilen yerlerde aranır\n"
 
 #: gcov.c:350
 msgid "  -p, --preserve-paths            Preserve all pathname components\n"
-msgstr ""
+msgstr "  -p, --preserve-paths            Tüm dosya yolu elemanları saklanır\n"
 
 #: gcov.c:351
 #, c-format
@@ -5877,39 +5825,39 @@ msgid "No executable code associated with file %s.\n"
 msgstr "%s dosyası ile ilişkilendirilecek kod yok.\n"
 
 #: gcov.c:1186
-#, fuzzy, c-format
+#, c-format
 msgid "%s of %d lines executed in %s %s\n"
-msgstr "%3$s dosyasındaki %2$d satırın %%%1$6.2f satırı çalıştırıldı\n"
+msgstr "%3$s dosyasındaki %2$d satırın %1$s satırı çalıştırıldı %4$s\n"
 
 #: gcov.c:1191
-#, fuzzy, c-format
+#, c-format
 msgid "No executable lines in %s %s\n"
-msgstr "%s dosyasında çalıştırılacak kaynak satırı yok\n"
+msgstr "%s dosyasında çalıştırılacak satır yok %s\n"
 
 #: gcov.c:1198
-#, fuzzy, c-format
+#, c-format
 msgid "%s of %d branches executed in %s %s\n"
-msgstr "%3$s dosyasındaki %2$d daldan %%%1$6.2f dal çalıştırıldı\n"
+msgstr "%3$s dosyasındaki %2$d daldan %1$s dal çalıştırıldı %4$s\n"
 
 #: gcov.c:1203
-#, fuzzy, c-format
+#, c-format
 msgid "%s of %d branches taken at least once in %s %s\n"
-msgstr "%3$s dosyasındaki %2$d daldan %%%1$6.2f dal en az bir kere alındı\n"
+msgstr "%3$s dosyasındaki %2$d daldan %1$s dal en az bir kere alındı %4$s\n"
 
 #: gcov.c:1209
-#, fuzzy, c-format
+#, c-format
 msgid "No branches in %s %s\n"
-msgstr "%s dosyasında dal yok\n"
+msgstr "%s dosyasında dal yok %s\n"
 
 #: gcov.c:1211
-#, fuzzy, c-format
+#, c-format
 msgid "%s of %d calls executed in %s %s\n"
-msgstr "%3$s dosyasındaki %2$d çağrıdan %%%1$6.2f çağrı çalıştırıldı\n"
+msgstr "%3$s dosyasındaki %2$d çağrıdan %1$s çağrı çalıştırıldı %4$s\n"
 
 #: gcov.c:1216
-#, fuzzy, c-format
+#, c-format
 msgid "No calls in %s %s\n"
-msgstr "%s dosyasında çağrı yok\n"
+msgstr "%s dosyasında çağrı yok %s\n"
 
 #: gcov.c:1351
 #, c-format
@@ -5924,17 +5872,17 @@ msgstr "blok_num = %ld, blok_sayısı = %d\n"
 #: gcov.c:1367
 #, c-format
 msgid "ERROR: unexpected line number %ld\n"
-msgstr ""
+msgstr "HATA: satır numarası %ld beklenmiyordu\n"
 
 #: gcov.c:1383
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR: too many basic blocks in function %s\n"
-msgstr "HATA: .bb dosyası %s içinde temel blok sayısı çok fazla\n"
+msgstr "HATA: işlev %s içinde temel blok sayısı çok fazla\n"
 
 #: gcov.c:1398
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR: out of range line number in function %s\n"
-msgstr "%s işlevinin çalıştırılabilir kaynak satırı yok\n"
+msgstr "%s işlevindeki satır numarası kapsamdışı\n"
 
 #: gcov.c:1470
 #, c-format
@@ -5942,9 +5890,9 @@ msgid "Could not open source file %s.\n"
 msgstr "%s kaynak dosyası açılamadı.\n"
 
 #: gcov.c:1480
-#, fuzzy, c-format
+#, c-format
 msgid "Warning: source file %s is newer than %s\n"
-msgstr "mevcut dosya %s den daha eski"
+msgstr "Uyarı: kaynak dosya %s  %s den daha yeni\n"
 
 #: gcov.c:1510
 #, c-format
@@ -5952,24 +5900,24 @@ msgid "Unexpected EOF while reading source file %s.\n"
 msgstr "%s kaynak dosyası okunurken anlaşılmayan dosya sonu.\n"
 
 #: gcov.c:1532
-#, fuzzy, c-format
+#, c-format
 msgid "call   %2d never executed\n"
-msgstr "%d. çağrı hiç çalıştırılmadı\n"
+msgstr "çağrı   %2d hiç çalıştırılmadı\n"
 
 #: gcov.c:1535
-#, fuzzy, c-format
+#, c-format
 msgid "call   %2d returns %s\n"
-msgstr "%d. çağrı dönüş sayısı = %s\n"
+msgstr "çağrı   %2d %s döndürüyor\n"
 
 #: gcov.c:1543
-#, fuzzy, c-format
+#, c-format
 msgid "branch %2d never executed\n"
-msgstr "%d. dal hiç çalıştırılmadı\n"
+msgstr "%2d. dal hiç çalıştırılmadı\n"
 
 #: gcov.c:1546
-#, fuzzy, c-format
+#, c-format
 msgid "branch %2d taken %s\n"
-msgstr "%d. dal alınma sayısı = %s\n"
+msgstr "%2d. dal alınma sayısı = %s\n"
 
 #: gcov.c:1610
 #, c-format
@@ -5977,9 +5925,9 @@ msgid "Creating %s.\n"
 msgstr "%s oluşturuluyor.\n"
 
 #: gcov.c:1613
-#, fuzzy, c-format
+#, c-format
 msgid "Error writing output file %s.\n"
-msgstr "%s e yazarken hata"
+msgstr "çıktı dosyası %s yazılırken hata.\n"
 
 #: gcov.c:1618
 #, c-format
@@ -6001,237 +5949,233 @@ msgstr "Genel ortak alt ifade elemesi iptal edildi: %d temel blok ve %d yazmaç"
 #: genautomata.c:1490
 #, c-format
 msgid "Name `%s' contains quotes"
-msgstr ""
+msgstr "`%s' ismi tırnak içeriyor"
 
 #: genautomata.c:1621
-#, fuzzy, c-format
+#, c-format
 msgid "invalid string `%s' in define_cpu_unit"
-msgstr "koşul içindeki `%c' işareti geçersiz"
+msgstr "define_cpu_unit içindeki `%s' dizgesi geçersiz"
 
 #: genautomata.c:1650
 #, c-format
 msgid "invalid string `%s' in define_query_cpu_unit"
-msgstr ""
+msgstr "define_query_cpu_unit içindeki `%s' dizgesi geçersiz"
 
 #: genautomata.c:1682 genautomata.c:1685
-#, fuzzy, c-format
+#, c-format
 msgid "invalid string `%s' in define_bypass"
-msgstr "atanmamış tür `%s %s'; kullanımı geçersiz"
+msgstr "define_bypass içindeki `%s' dizgesi geçersiz"
 
 #: genautomata.c:1720
-#, fuzzy, c-format
+#, c-format
 msgid "invalid first string `%s' in exclusion_set"
-msgstr "koşul içindeki `%c' işareti geçersiz"
+msgstr "exclusion_set içindeki ilk `%s' dizgesi geçersiz"
 
 #: genautomata.c:1724
-#, fuzzy, c-format
+#, c-format
 msgid "invalid second string `%s' in exclusion_set"
-msgstr "koşul içindeki `%c' işareti geçersiz"
+msgstr "exclusion_set içindeki ikinci `%s' dizgesi geçersiz"
 
 #: genautomata.c:1760
 #, c-format
 msgid "invalid first string `%s' in presence_set"
-msgstr ""
+msgstr "presence_set içindeki ilk `%s' dizgesi geçersiz"
 
 #: genautomata.c:1764
-#, fuzzy, c-format
+#, c-format
 msgid "invalid second string `%s' in presence_set"
-msgstr "geçersiz denetim dizgesi"
+msgstr "presence_set içindeki ikinci `%s' dizgesi geçersiz"
 
 #: genautomata.c:1800
 #, c-format
 msgid "invalid first string `%s' in absence_set"
-msgstr ""
+msgstr "absence_set içindeki ilk `%s' dizgesi geçersiz"
 
 #: genautomata.c:1804
 #, c-format
 msgid "invalid second string `%s' in absence_set"
-msgstr ""
+msgstr "absence_set içindeki ikinci `%s' dizgesi geçersiz"
 
 #: genautomata.c:1837
 #, c-format
 msgid "invalid string `%s' in define_automaton"
-msgstr ""
+msgstr "define_automaton içindeki `%s' dizgesi geçersiz"
 
 #: genautomata.c:1868
-#, fuzzy, c-format
+#, c-format
 msgid "invalid option `%s' in automata_option"
-msgstr "koşul içindeki `%c' işareti geçersiz"
+msgstr "automata_option içindeki `%s' dizgesi geçersiz"
 
 #: genautomata.c:1890
 #, c-format
 msgid "garbage after ) in reservation `%s'"
-msgstr ""
+msgstr "rezervasyon `%s' içindeki ) den sonrası bozuk"
 
 #: genautomata.c:1921 genautomata.c:1954 genautomata.c:1981
-#, fuzzy, c-format
+#, c-format
 msgid "invalid `%s' in reservation `%s'"
-msgstr "`%D'in"
+msgstr "`%s' ilerde kullanılmak üzere ayrılırken içindeki `%s' dizgesi geçersiz"
 
 #: genautomata.c:1932
 #, c-format
 msgid "repetition `%s' <= 1 in reservation `%s'"
-msgstr ""
+msgstr "rezervasyon `%s' içindeki `%s' tekrar sayısı <=1"
 
 #: genautomata.c:2425
-#, fuzzy, c-format
+#, c-format
 msgid "unit `%s' in exclusion is not declared"
-msgstr "`%s' bildirilmedi"
+msgstr "dışlama içindeki birim `%s' bildirilmemiş"
 
 #: genautomata.c:2427
 #, c-format
 msgid "`%s' in exclusion is not unit"
-msgstr ""
+msgstr "dışlama içindeki `%s' birim değil"
 
 #: genautomata.c:2465
-#, fuzzy, c-format
+#, c-format
 msgid "unit `%s' excludes itself"
-msgstr "`%s' in uzunluğu türünü aşıyor"
+msgstr "birim `%s' kendini dışlıyor"
 
 #: genautomata.c:2473
 #, c-format
 msgid "units `%s' and `%s' in exclusion set belong to different automata"
-msgstr ""
+msgstr "dışlama kümesindeki `%s' ve `%s' birimleri farklı automata'ların üyesi"
 
 #: genautomata.c:2603 genautomata.c:2609
 #, c-format
 msgid "unit `%s' excludes and requires presence of `%s'"
-msgstr ""
+msgstr "birim `%s' dışlanıyor ve `%s'in varlığını gerektiriyor"
 
 #: genautomata.c:2623 genautomata.c:2629
 #, c-format
 msgid "unit `%s' requires absence and presence of `%s'"
-msgstr ""
+msgstr "birim `%s', `%s'in varlığını ve yokluğunu gerektirir"
 
 #: genautomata.c:2692 genautomata.c:2695
-#, fuzzy, c-format
+#, c-format
 msgid "repeated declaration of automaton `%s'"
-msgstr "sınıf yöntemi `%s' birden fazla bildirilmiş"
+msgstr "automaton `%s' birden fazla bildirilmiş"
 
 #: genautomata.c:2711
 #, c-format
 msgid "define_insn_reservation `%s' has negative latency time"
-msgstr ""
+msgstr "define_insn_reservation `%s' negatif gecikme süresine sahip"
 
 #: genautomata.c:2717
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is already used as insn reservation name"
-msgstr "`%D' zaten bu bağlamda bildirilmiş"
+msgstr "`%s' zaten komut rezervasyon ismi olarak kullanılmış"
 
 #: genautomata.c:2723
 #, c-format
 msgid "define_bypass `%s - %s' has negative latency time"
-msgstr ""
+msgstr "define_bypass `%s - %s' negatif gecikme süresine sahip"
 
 #: genautomata.c:2737
-#, fuzzy, c-format
+#, c-format
 msgid "automaton `%s' is not declared"
-msgstr "`%s' bildirilmedi"
+msgstr "automaton `%s' bildirilmedi"
 
 #: genautomata.c:2747
 #, c-format
 msgid "define_unit `%s' without automaton when one defined"
-msgstr ""
+msgstr "tek atamada automaton'suz define_unit `%s'"
 
 #: genautomata.c:2753
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is declared as cpu unit"
-msgstr "`%s' alanı bir işlev olarak bildirilmiş"
+msgstr "`%s' cpu birimi olarak bildirilmiş"
 
 #: genautomata.c:2762
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is declared as cpu reservation"
-msgstr "`%D' bir kardeş olarak bildirilmiş"
+msgstr "`%s' işlemci rezervasyonu olarak bildirilmiş"
 
 #: genautomata.c:2772
-#, fuzzy, c-format
+#, c-format
 msgid "repeated declaration of unit `%s'"
-msgstr "`%s'in yeniden bildirimi"
+msgstr "birim `%s'in bildirimi tekrarlanmış"
 
 #: genautomata.c:2775
-#, fuzzy, c-format
+#, c-format
 msgid "repeated declaration of reservation `%s'"
-msgstr "sınıf yöntemi `%s' birden fazla bildirilmiş"
+msgstr "rezervasyon `%s' birden fazla bildirilmiş"
 
 #: genautomata.c:2790 genautomata.c:2793
-#, fuzzy, c-format
+#, c-format
 msgid "there is no insn reservation `%s'"
-msgstr "`%F'in önceki bildiriminden"
+msgstr "komut rezervasyonu `%s' yok"
 
 #: genautomata.c:2810 genautomata.c:2815
-#, fuzzy, c-format
+#, c-format
 msgid "the same bypass `%s - %s' is already defined"
-msgstr "#pragma %s %s  zaten kayıtlı"
+msgstr "aynı bypass `%s - %s'  zaten tanımlı"
 
 #: genautomata.c:2820
-#, fuzzy, c-format
+#, c-format
 msgid "bypass `%s - %s' is already defined"
-msgstr "#pragma %s %s  zaten kayıtlı"
+msgstr "bypass `%s - %s'  zaten tanımlı"
 
 #: genautomata.c:2925 genautomata.c:2927
-#, fuzzy, c-format
+#, c-format
 msgid "automaton `%s' is not used"
-msgstr "`%s' kipi bir kip değil"
+msgstr "automaton `%s' kullanılmamış"
 
 #: genautomata.c:2950
-#, fuzzy, c-format
+#, c-format
 msgid "undeclared unit or reservation `%s'"
-msgstr "bildirilmemiş tanımlayıcı `%s'"
+msgstr "bildirilmemiş birim ya da rezervasyon `%s'"
 
 #: genautomata.c:3028 genautomata.c:3030
-#, fuzzy, c-format
+#, c-format
 msgid "unit `%s' is not used"
-msgstr "`%s' atanmış ama kullanılmamış"
+msgstr "birim `%s' kullanılmamış"
 
 #: genautomata.c:3035 genautomata.c:3037
-#, fuzzy, c-format
+#, c-format
 msgid "reservation `%s' is not used"
-msgstr "`%s' zayıf bildirimi desteklenmiyor"
+msgstr "rezervasyon `%s' kullanılmamış"
 
 #: genautomata.c:3134
-#, fuzzy, c-format
+#, c-format
 msgid "cycle in definition of reservation `%s'"
-msgstr "`union %s' tekrar tanımlanmış"
+msgstr "rezervasyon `%s'in tanımında döngü"
 
 #: genautomata.c:5333
 #, c-format
 msgid "Units `%s' and `%s' should be in the same automaton"
-msgstr ""
+msgstr "`%s' ve `%s' aynı automaton içinde olmalıydı"
 
 #: genautomata.c:9441
-#, fuzzy
 msgid "-split has no argument."
-msgstr "argüman yok"
+msgstr "-split argümansız."
 
 #: genautomata.c:9442
-#, fuzzy
 msgid "option `-split' has not been implemented yet\n"
-msgstr "ayrımlama henüz programlanmadı."
+msgstr "`-split' seçeneği henüz programlanmadı\n"
 
 #: genautomata.c:9486 genautomata.c:9491
 #, c-format
 msgid "Automaton `%s': Insn `%s' will never be issued"
-msgstr ""
+msgstr "Automaton `%s': Komut `%s' hiç kullanılmayacak"
 
 #: genautomata.c:9498 genautomata.c:9501
 #, c-format
 msgid "Insn `%s' will never be issued"
-msgstr ""
+msgstr "Komut `%s' hiç kullanılmayacak"
 
 #: genautomata.c:9649
-#, fuzzy
 msgid "Errors in DFA description"
-msgstr "henüz bir açıklama yok"
+msgstr "DFA açıklamasında hatalar var"
 
 #: genautomata.c:9732
-#, fuzzy, c-format
+#, c-format
 msgid "Error in writing DFA description file %s"
-msgstr "%s e yazarken hata"
+msgstr "DFA açıklama dosyası %s yazılırken hata"
 
 #: genconditions.c:196
-#, fuzzy
 msgid "No input file name."
-msgstr "girdi dosyası yok"
+msgstr "Girdi dosyası yok."
 
 #: graph.c:420 profile.c:1204 profile.c:1211 toplev.c:1836 toplev.c:5121
 #: f/com.c:14138 java/jcf-parse.c:913 java/jcf-parse.c:1059 java/lex.c:1767
@@ -6346,12 +6290,11 @@ msgstr "geçersiz parametre `%s'"
 #: profile.c:397
 #, c-format
 msgid "Profile does not match flowgraph of function %s (out of date?)"
-msgstr ""
+msgstr "Profil %s işlevinin akış grafiği ile uyumsuz (güncel olmayabilir mi?)"
 
 #: profile.c:400
-#, fuzzy
 msgid ".da file corrupted"
-msgstr ".da dosyasının içeriği atılmadı"
+msgstr ".da dosyası bozulmuş"
 
 #: profile.c:634
 #, c-format
@@ -6681,7 +6624,7 @@ msgstr "%s: girdi dosyası isimlerinin soneki .c olmalıdır: %s\n"
 
 #: ra.c:750
 msgid "Didn't find a coloring.\n"
-msgstr ""
+msgstr "Bir renklendirme yok.\n"
 
 #: reg-stack.c:673
 #, c-format
@@ -6851,9 +6794,9 @@ msgid "RTL check: access of elt %d of vector with last elt %d in %s, at %s:%d"
 msgstr "RTL denetimi: %4$s:%5$d: %3$s işlevindeki son %2$d öğe ile vektörün %1$d. öğesinin erişimi"
 
 #: rtl.c:646
-#, fuzzy, c-format
+#, c-format
 msgid "RTL flag check: %s used with unexpected rtx code `%s' in %s, at %s:%d"
-msgstr "RTL denetimi: %4$s:%5$d: %3$s içindeki kod için `%1$s' umulurken `%2$s' var"
+msgstr "RTL seçenek denetimi: %4$s:%5$d: `%1$s' %3$s içinde umulmayan rtx kodu `%2$s' ile kullanılmış"
 
 #: stmt.c:753
 #, c-format
@@ -6902,9 +6845,9 @@ msgid "invalid punctuation `%c' in constraint"
 msgstr "koşul içindeki `%c' işareti geçersiz"
 
 #: stmt.c:1429
-#, fuzzy, c-format
+#, c-format
 msgid "asm-specifier for variable `%s' conflicts with asm clobber list"
-msgstr "`%s' için tür niteleyicileri önceki bildirimle çelişiyor"
+msgstr "`%s' değişkeni için asm belirtimi, asm taşırma listesi ile çelişiyor"
 
 #: stmt.c:1519
 #, c-format
@@ -6930,14 +6873,12 @@ msgid "asm operand %d probably doesn't match constraints"
 msgstr "asm terimi %d belki şartlara uymaz"
 
 #: stmt.c:1858
-#, fuzzy
 msgid "asm clobber conflict with output operand"
-msgstr "asm bildirimi önceki isim değişikliği ile çelişiyor"
+msgstr "asm taşırıcı çıkış terimi ile çelişiyor"
 
 #: stmt.c:1863
-#, fuzzy
 msgid "asm clobber conflict with input operand"
-msgstr "asm bildirimi önceki isim değişikliği ile çelişiyor"
+msgstr "asm taşırıcı giriş terimi ile çelişiyor"
 
 #: stmt.c:1898
 msgid "too many alternatives in `asm'"
@@ -6982,9 +6923,8 @@ msgid "case value `%ld' not in enumerated type `%s'"
 msgstr "case değeri `%ld' sembolik sabit grubu `%s' içinde değil"
 
 #: stmt.c:5270
-#, fuzzy
 msgid "switch missing default case"
-msgstr "bu, ilk öntanımlı etiket"
+msgstr "switch içinde default eksik"
 
 #: stor-layout.c:178
 msgid "type size can't be explicitly evaluated"
@@ -7159,7 +7099,7 @@ msgstr "Kardeş ve kuyruk özyinelemeli çağrılar eniyilenir"
 
 #: toplev.c:997
 msgid "Perform superblock formation via tail duplication"
-msgstr ""
+msgstr "Kuyruk tekrarı üzerinden süperblok oluşumu uygulanır"
 
 #: toplev.c:999
 msgid "When running CSE, follow jumps to their targets"
@@ -7191,7 +7131,7 @@ msgstr "Yineleme sayısı bilindiğinde ters döngüleme uygulanır"
 
 #: toplev.c:1011
 msgid "Perform loop unrolling for all loops"
-msgstr "Tüm döngülere ters döngüleme uygular"
+msgstr "Tüm döngülere ters döngüleme uygulanır"
 
 #: toplev.c:1013
 msgid "Generate prefetch instructions, if available, for arrays in loops"
@@ -7237,7 +7177,7 @@ msgstr "Yazmaçlarda tutulan işlev adreslerine izin verilir"
 
 #: toplev.c:1029
 msgid "Integrate simple functions into their callers"
-msgstr "Basit işlevleri onları çağıranların içine gömer"
+msgstr "Basit işlevler onları çağıranların içine gömülür"
 
 #: toplev.c:1031
 msgid "Generate code for funcs even if they are fully inlined"
@@ -7287,7 +7227,7 @@ msgstr ""
 
 #: toplev.c:1049
 msgid "Perform the global common subexpression elimination"
-msgstr "Genel ortak alt ifade elemesi uygular"
+msgstr "Genel ortak alt ifade elemesi uygulanır"
 
 #: toplev.c:1051
 msgid "Perform enhanced load motion during global subexpression elimination"
@@ -7302,23 +7242,24 @@ msgstr ""
 "                          uygulanır"
 
 #: toplev.c:1055
-#, fuzzy
 msgid "Perform the loop optimizations"
-msgstr "Kuyruk çağrı eniyilemesi uygulanır"
+msgstr "Döngü eniyilemesi uygulanır"
 
 #: toplev.c:1057
-#, fuzzy
 msgid "Perform cross-jumping optimization"
-msgstr "Atlama kanallaması eniyilemesi uygulanır"
+msgstr "Çapraz atlama eniyilemesi uygulanır"
 
 #: toplev.c:1059
 msgid "Perform conversion of conditional jumps to branchless equivalents"
 msgstr ""
+"Dallanmasız karşılıklara koşullu atlama dönüşümü\n"
+"                          uygulanır"
 
 #: toplev.c:1061
-#, fuzzy
 msgid "Perform conversion of conditional jumps to conditional execution"
-msgstr "Koşullu çalışmaya geçiş için eşik değerini değiştirir"
+msgstr ""
+"Koşullu çalıştırmaya koşullu atlama dönüşümü\n"
+"                          uygulanır"
 
 #: toplev.c:1063
 msgid "Run CSE pass after loop optimizations"
@@ -7401,9 +7342,8 @@ msgstr ""
 "                          kullanılır"
 
 #: toplev.c:1100
-#, fuzzy
 msgid "Enable basic program profiling code"
-msgstr "Dal bağlantı kodunu yerleştirir"
+msgstr "Temel program profil çıkarma kodu etkinleştirilir"
 
 #: toplev.c:1102
 msgid "Reorder basic blocks to improve code placement"
@@ -7412,10 +7352,9 @@ msgstr ""
 "                          yeniden sıralar"
 
 #: toplev.c:1104
-#, fuzzy
 msgid "Reorder functions to improve code placement"
 msgstr ""
-"Kod yerleşimini iyileştirecek temel blokları\n"
+"Kod yerleşimini iyileştirecek işlevleri\n"
 "                          yeniden sıralar"
 
 #: toplev.c:1106
@@ -7529,9 +7468,8 @@ msgid "Instrument function entry/exit with profiling calls"
 msgstr "İşlevlere giriş ve çıkışta kullanım çağrıları üretir"
 
 #: toplev.c:1154
-#, fuzzy
 msgid "Put zero initialized data in the bss section"
-msgstr "İlklendirilmemiş global'ler ortak bölüme konmaz"
+msgstr "bss bölümüne sıfır ilklendirmeli veri yerleştirilir"
 
 #: toplev.c:1156
 msgid "Enable SSA optimizations"
@@ -7561,7 +7499,7 @@ msgstr ""
 
 #: toplev.c:1168
 msgid "Assume no NaNs or +-Infs are generated"
-msgstr ""
+msgstr "NaNların ya da +-Inflerin üretilmediği varsayılır"
 
 #: toplev.c:1170
 msgid "Enables guessing of branch probabilities"
@@ -7586,13 +7524,14 @@ msgstr ""
 #: toplev.c:1178
 msgid "Disable optimizations observable by IEEE signaling NaNs"
 msgstr ""
+"IEEE sinyalleme NaNları tarafından farkedilebilen\n"
+"                          eniyilemeler iptal edilir"
 
 #: toplev.c:1180
-#, fuzzy
 msgid "Generate code to check bounds before indexing arrays"
 msgstr ""
-"Başvuru bozan gösterge ve dizilerden önce denetim\n"
-"                          sınırlarına kod üretilir"
+"Diziler indislenmeden önce denetim sınırlarına kod\n"
+"                          üretilir"
 
 #: toplev.c:1182
 msgid "Convert floating point constant to single precision constant"
@@ -7617,14 +7556,12 @@ msgid "Trap for signed overflow in addition / subtraction / multiplication"
 msgstr "Toplama, çıkartma, çarpmada signed taşması yakalanır"
 
 #: toplev.c:1190
-#, fuzzy
 msgid "Use graph coloring register allocation."
-msgstr "Yazmaç tahsisinden önce komutları yeniden zamanlar"
+msgstr "Diyagram renklendiren yazmaç tahsisi kullanılır"
 
 #: toplev.c:1207
-#, fuzzy
 msgid "Compile just for ISO C90"
-msgstr "Sadece ISO C89 için derleme yapılır"
+msgstr "Sadece ISO C90 için derleme yapılır"
 
 #: toplev.c:1209
 msgid "Determine language standard"
@@ -7663,7 +7600,7 @@ msgstr ""
 #: toplev.c:1236
 msgid "Allow different types as args of ? operator"
 msgstr ""
-"? işlemiminin argümanları olarak farklı türlere\n"
+"? işlecinin argümanları olarak farklı türlere\n"
 "                          izin verilir"
 
 #: toplev.c:1239
@@ -7717,9 +7654,8 @@ msgid "Warn about possibly confusing type conversions"
 msgstr "Tür dönüşümlerinin olası karışıklığı hakkında uyarır"
 
 #: toplev.c:1278
-#, fuzzy
 msgid "Do not warn about compile-time integer division by zero"
-msgstr "Sıfırla tamsayı bölme taşması yakalanmaz"
+msgstr "Derleme anı sıfırla tamsayı bölme taşması için uyarmaz"
 
 #: toplev.c:1280
 msgid "Warn about testing equality of floating point numbers"
@@ -7810,9 +7746,8 @@ msgid "Warn about multiple declarations of the same object"
 msgstr "Aynı nesne birden fazla bildirilmişse uyarır"
 
 #: toplev.c:1340
-#, fuzzy
 msgid "Warn whenever a function's return-type defaults to int"
-msgstr "dönen tür `int'e öntanımlı"
+msgstr "bir işlevin dönen türü `int'e öntanımlılığında uyarır"
 
 #: toplev.c:1343
 msgid "Warn about possible violations of sequence point rules"
@@ -7829,9 +7764,8 @@ msgid "Warn about non-prototyped function decls"
 msgstr "Prototipsiz işlev bildirimlerinde uyarır"
 
 #: toplev.c:1352
-#, fuzzy
 msgid "Warn about constructs whose meanings change in ISO C"
-msgstr "ISO C de anlamı değişen kurucular hakkında uyarır"
+msgstr "ISO C'de anlamı değişen kurucular hakkında uyarır"
 
 #: toplev.c:1355
 msgid "Warn when trigraphs are encountered"
@@ -7878,25 +7812,20 @@ msgid "Warn when one local variable shadows another"
 msgstr "Bir yerel değişken bir diğerini gölgeliyorsa uyarır"
 
 #: toplev.c:1524
-#, fuzzy
 msgid "Warn about enumerated switches, with no default, missing a case"
 msgstr ""
-"Bir switch case'de bir sembolik sabit grubu üyesinin\n"
-"                          bulunamadığı durumlarda uyarır"
+"Numaralı switch'lerde case eksikse veya\n"
+"                          default yoksa uyarır"
 
 #: toplev.c:1526
-#, fuzzy
 msgid "Warn about enumerated switches missing a default case"
-msgstr ""
-"Bir switch case'de bir sembolik sabit grubu üyesinin\n"
-"                          bulunamadığı durumlarda uyarır"
+msgstr "Numaralı switch'lerde default yoksa uyarır"
 
 #: toplev.c:1528
-#, fuzzy
 msgid "Warn about all enumerated switches missing a specific case"
 msgstr ""
-"Bir switch case'de bir sembolik sabit grubu üyesinin\n"
-"                          bulunamadığı durumlarda uyarır"
+"Tüm numaralı switch'lerde belli bir case eksikse\n"
+"                          uyarır"
 
 #: toplev.c:1530
 msgid "Warn about returning structures, unions or arrays"
@@ -7945,11 +7874,10 @@ msgstr ""
 "                          hakkında uyarı verilir"
 
 #: toplev.c:1550
-#, fuzzy
 msgid "Warn about code which might break the strict aliasing rules"
 msgstr ""
-"Biçem öznitelikleri için aday olabilecek işlevler\n"
-"                          hakkında uyarır"
+"Adlandırma kurallarının değişmezliğini bozabilen\n"
+"                          kod varsa uyarır"
 
 #: toplev.c:1627 toplev.c:4513 config/rs6000/rs6000.c:676
 #, c-format
@@ -8011,6 +7939,9 @@ msgstr ""
 #: toplev.c:3689
 msgid "  -ftls-model=[global-dynamic | local-dynamic | initial-exec | local-exec] Indicates the default thread-local storage code generation model\n"
 msgstr ""
+"  -ftls-model=[global-dynamic | local-dynamic | initial-exec | local-exec]\n"
+"                          Öntanımlı thread-local saklatım kodu üretim\n"
+"                          modeli belirtilir\n"
 
 #: toplev.c:3700
 msgid "  -O[number]              Set optimization level to [number]\n"
@@ -8150,9 +8081,9 @@ msgid "unrecognized gcc debugging option: %c"
 msgstr "tanınmayan gcc hata ayıklama seçeneği: %c"
 
 #: toplev.c:3979
-#, fuzzy, c-format
+#, c-format
 msgid "`%s': unknown tls-model option"
-msgstr "`%s': -g seçeneği bilinmiyor ya da desteklenmiyor"
+msgstr "`%s': bilinmeyen tls-model seçeneği"
 
 #: toplev.c:4006
 #, c-format
@@ -8328,9 +8259,9 @@ msgid "tree check: expected class '%c', have '%c' (%s) in %s, at %s:%d"
 msgstr "Ağaç denetimi: %5$s:%6$d: %4$s işlevinde sınıf '%1$c' umulurken, '%2$c' (%3$s) var"
 
 #: tree.c:4637
-#, fuzzy, c-format
+#, c-format
 msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
-msgstr "RTL denetimi: %4$s:%5$d: %3$s işlevindeki son %2$d öğe ile vektörün %1$d. öğesinin erişimi"
+msgstr "ağaç denetimi: %4$s:%5$d: %3$s işlevindeki %2$d öğeli vektörün %1$d. öğesine erişildi"
 
 #: varasm.c:455 config/i386/winnt.c:546
 #, c-format
@@ -8377,7 +8308,7 @@ msgstr "%s hizalaması en büyük nesne dosyası hizalamasından daha büyük. %
 
 #: varasm.c:1584
 msgid "thread-local COMMON data not implemented"
-msgstr ""
+msgstr "thread-local COMMON verisi henüz yazılmadı"
 
 #: varasm.c:1608
 #, c-format
@@ -8430,9 +8361,8 @@ msgid "alias definitions not supported in this configuration; ignored"
 msgstr "takma ad tanımlamaları bu yapılandırmada desteklenmiyor; yoksayıldı"
 
 #: varasm.c:4670
-#, fuzzy
 msgid "visibility attribute not supported in this configuration; ignored"
-msgstr "takma ad tanımlamaları bu yapılandırmada desteklenmiyor; yoksayıldı"
+msgstr "görünürlük bu yapılandırmada desteklenmiyor; yoksayıldı"
 
 #: varray.c:134
 #, c-format
@@ -8446,34 +8376,33 @@ msgid "no sclass for %s stab (0x%x)\n"
 msgstr "%s stab (0x%x) için sclass yok\n"
 
 #: pretty-print.h:97
-#, fuzzy, c-format
+#, c-format
 msgid "#`%s' not supported by %s#"
-msgstr "`%s', %s tarafından desteklenmiyor"
+msgstr "#`%s', %s# tarafından desteklenmiyor"
 
 #: params.def:53
-#, fuzzy
 msgid "The maximum number of instructions in a single function eliglible for inlining"
 msgstr ""
 "Özümleme için seçilebilir bir işlevde en\n"
 "                                      çok asm komutu sayısı"
 
 #: params.def:74
-#, fuzzy
 msgid "The maximuem number of instructions by repeated inlining before gcc starts to throttle inlining"
 msgstr ""
-"Özümleme için seçilebilir bir işlevde en\n"
-"                                      çok asm komutu sayısı"
+"GCC özümlemeyi kısmaya başlamadan önce\n"
+"                                      tekrarlanan özümlemeye göre en çok asm\n"
+"                                      komutu sayısı"
 
 #: params.def:87
 msgid "The slope of the linear funtion throttling inlining after the recursive inlining limit has been reached is given by the negative reciprocal value of this parameter"
-msgstr ""
+msgstr "Döngüsel içerilme limitine ulaştıktan sonra içerilmeyi frenleyen lineer işlevin eğimi, bu parametrenin negatif ters çarpanıdır"
 
 #: params.def:100
-#, fuzzy
 msgid "The number of instructions in a single functions still eligible to inlining after a lot recursive inlining"
 msgstr ""
-"Özümleme için seçilebilir bir işlevde en\n"
-"                                      çok asm komutu sayısı"
+"Bir miktar ardışık özümlemeden sonraki\n"
+"                                      özümlemede hala seçilebilir olan tek\n"
+"                                      bir işlev içindeki asm komutu sayısı"
 
 #: params.def:111
 msgid "The maximum number of instructions to consider to fill a delay slot"
@@ -8507,51 +8436,82 @@ msgstr ""
 "                                       yapılacak en çok geçiş sayısı"
 
 #: params.def:151
-#, fuzzy
 msgid "The maximum number of instructions to consider to unroll in a loop"
 msgstr ""
-"Bir gecikme yuvasını dolduracağı\n"
+"Bir döngü içinde çevrime sokulmayacağı\n"
 "                                      varsayılan en fazla komut sayısı"
 
 #: params.def:156
 msgid "Select fraction of the maximal count of repetitions of basic block in program given basic block needs to have to be considered hot"
 msgstr ""
+"Temel bloğun sıcak olarak düşünülmesi\n"
+"                                      gereğine göre yazılımda temel bloğun\n"
+"                                      maksimum tekrar sayısının kesrini seçer"
 
 #: params.def:161
 msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot"
 msgstr ""
+"Temel bloğun sıcak olarak düşünülmesi\n"
+"                                      gereğine göre yazılımda temel bloğun\n"
+"                                      maksimum icra sıklığının kesrini seçer"
 
 #: params.def:166
 msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is available"
 msgstr ""
+"İşlevin izlenme oluşumu ile kapsanacak,\n"
+"                                      işlenme frekansı ile çarpılmış yüzdesi.\n"
+"                                      Profil geribeslemesi mevcut olduğu \n"
+"                                      zaman kullanılır"
 
 #: params.def:171
 msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is not available"
 msgstr ""
+"İşlevin izlenme oluşumu ile kapsanacak,\n"
+"                                      işlenme frekansı ile çarpılmış \n"
+"                                      yüzdesi. Profil geribeslemesi mümkün\n"
+"                                      olmadığında kullanılır"
 
 #: params.def:176
 msgid "Maximal code growth caused by tail duplication (in percents)"
 msgstr ""
+"Kuyruk tekrarı tarafından oluşturulan en\n"
+"                                      yüksek kod büyümesi (yüzde olarak)"
 
 #: params.def:180
 msgid "Stop reverse growth if the reverse probability of best edge is less than this threshold (in percents)"
 msgstr ""
+"En iyi kenar tersine olasılığı bu eşik\n"
+"                                      değerden (yüzde olarak) küçükse\n"
+"                                      geriye doğru büyüme durdurulur"
 
 #: params.def:185
 msgid "Stop forward growth if the probability of best edge is less than this threshold (in percents). Used when profile feedback is available"
 msgstr ""
+"En iyi kenar olasılığı bu eşik\n"
+"                                      değerden (yüzde olarak) küçükse\n"
+"                                      ileriye doğru büyüme durdurulur.\n"
+"                                      Profil geribeslemesi mümkünse kullanılır"
 
 #: params.def:190
 msgid "Stop forward growth if the probability of best edge is less than this threshold (in percents). Used when profile feedback is not available"
 msgstr ""
+"En iyi kenar olasılığı bu eşik değerden\n"
+"                                       yüzde olarak) küçükse ileriye doğru\n"
+"                                       büyüme durdurulur. Profil \n"
+"                                       geribeslemesi mümkün değilse kullanılır"
 
 #: params.def:204
 msgid "Minimum heap expansion to trigger garbage collection, as a percentage of the total size of the heap."
 msgstr ""
+"Üst bellek çöp temizliğini başlatmak için\n"
+"                                      gereken minimum artış, üst bellek\n"
+"                                      boyutunun yüzdesi olarak"
 
 #: params.def:210
 msgid "Minimum heap size before we start collecting garbage, in kilobytes."
 msgstr ""
+"Çöp toplamaya başlanmadan önceki kilobayt\n"
+"                                      cinsinden en küçük üst bellek boyutu"
 
 #: config/darwin-c.c:75
 msgid "too many #pragma options align=reset"
@@ -8619,9 +8579,9 @@ msgid "bad value `%s' for -mfp-trap-mode switch"
 msgstr "-mfp-trap-mode seçeneği için `%s' değeri hatalı"
 
 #: config/alpha/alpha.c:435
-#, fuzzy, c-format
+#, c-format
 msgid "bad value `%s' for -mtls-size switch"
-msgstr "-mcpu seçeneği için `%s' değeri hatalı"
+msgstr "-mtls-size seçeneği için `%s' değeri hatalı"
 
 #: config/alpha/alpha.c:454 config/alpha/alpha.c:466
 #, c-format
@@ -8729,9 +8689,8 @@ msgid "invalid %%E value"
 msgstr "%%E değeri geçersiz"
 
 #: config/alpha/alpha.c:5883 config/alpha/alpha.c:5933
-#, fuzzy
 msgid "unknown relocation unspec"
-msgstr "bilinmeyen set constructor türü"
+msgstr "bilinmeyen yerdeğişim belirtilmemiş"
 
 #: config/alpha/alpha.c:5892 config/romp/romp.c:981
 #: config/rs6000/rs6000.c:8015
@@ -8741,7 +8700,7 @@ msgstr "%%xn değeri geçersiz"
 
 #: config/alpha/alpha.c:6615 config/alpha/alpha.c:6618
 msgid "bad builtin fcode"
-msgstr ""
+msgstr "hatalı yerleşik fcode"
 
 #. Macro to define tables used to set the flags.
 #. This is a list in braces of pairs in braces,
@@ -8830,7 +8789,7 @@ msgstr "Küçük veri alanlarına 32 bitlik yer değiştirmeler üretilir"
 
 #: config/alpha/alpha.h:314
 msgid "Emit rdval instead of rduniq for thread pointer"
-msgstr ""
+msgstr "kanal göstergesi için rduniq yerine rdval üretir"
 
 #. For -mcpu=
 #. For -mtune=
@@ -8865,7 +8824,7 @@ msgstr "Beklenen bellek gecikmesini ayarlar"
 
 #: config/alpha/alpha.h:355 config/ia64/ia64.h:221
 msgid "Specify bit size of immediate TLS offsets"
-msgstr ""
+msgstr "Dolaysız TLS konumlarının bit genişliği belirtilir"
 
 #: config/arc/arc.c:135
 #, c-format
@@ -9176,14 +9135,13 @@ msgid "only initialized variables can be placed into program memory area"
 msgstr "program bellek alanına sadece ilklendirilmiş değişkenler yerleştirilebilir"
 
 #: config/avr/avr.c:4866
-#, fuzzy
 msgid "only uninitialized variables can be placed in the .noinit section"
-msgstr "program bellek alanına sadece ilklendirilmiş değişkenler yerleştirilebilir"
+msgstr ".noinit alanına sadece ilklendirilmiş değişkenler yerleştirilebilir"
 
 #: config/avr/avr.c:4881
-#, fuzzy, c-format
+#, c-format
 msgid "MCU `%s' supported for assembler only"
-msgstr "MCU `%s' desteklenmiyor"
+msgstr "MCU `%s' sadece sembolik çevirici için desteklenir"
 
 #: config/avr/avr.h:78
 msgid "Assume int to be 8 bit integer"
@@ -9208,6 +9166,8 @@ msgstr "Tablejump komutları üretilmez"
 #: config/avr/avr.h:88
 msgid "Use rjmp/rcall (limited range) on >8K devices"
 msgstr ""
+">8k aygıtlarda rjmp/rcall (sınırlı aralık)\n"
+"                                      kullanılır"
 
 #: config/avr/avr.h:91
 msgid "Output instruction sizes to the asm file"
@@ -9950,7 +9910,7 @@ msgstr "ybase adreslemedeki yazmaç geçersiz"
 
 #: config/dsp16xx/dsp16xx.c:2099
 msgid "invalid shift operator in emit_1600_core_shift"
-msgstr "emit_1600_core_shift içindeki kaydırma işlemimi geçersiz"
+msgstr "emit_1600_core_shift içindeki kaydırma işleci geçersiz"
 
 #: config/dsp16xx/dsp16xx.c:2428
 msgid "invalid mode for gen_tst_reg"
@@ -10113,154 +10073,135 @@ msgstr "Küçük adres alanı varsayılır"
 #: config/frv/frv.c:410 config/frv/frv.c:428
 #, c-format
 msgid "Unknown cpu: -mcpu=%s"
-msgstr ""
+msgstr "Bilinmeyen işlemci: -mcpu=%s"
 
 #: config/frv/frv.c:451
 msgid "-fpic and -gdwarf are incompatible (-fpic and -g/-gdwarf-2 are fine)"
-msgstr ""
+msgstr "-fpic ve -gdwarf uyumsuz (-fpic ve -g/-gdwarf-2 uyumlu)"
 
 #: config/frv/frv.c:2520
-#, fuzzy
 msgid "Bad insn to frv_print_operand_address:"
-msgstr "d30v_print_operand_address için hatalı komut:"
+msgstr "frv_print_operand_address için hatalı komut:"
 
 #: config/frv/frv.c:2533
-#, fuzzy
 msgid "Bad register to frv_print_operand_memory_reference_reg:"
-msgstr "d30v_print_operand_memory_reference için hatalı komut:"
+msgstr "frv_print_operand_memory_reference_reg için hatalı komut:"
 
 #: config/frv/frv.c:2574 config/frv/frv.c:2584 config/frv/frv.c:2593
 #: config/frv/frv.c:2621 config/frv/frv.c:2633 config/frv/frv.c:2637
-#, fuzzy
 msgid "Bad insn to frv_print_operand_memory_reference:"
-msgstr "d30v_print_operand_memory_reference için hatalı komut:"
+msgstr "frv_print_operand_memory_reference için hatalı komut:"
 
 #: config/frv/frv.c:2779
-#, fuzzy
 msgid "Bad insn in frv_print_operand, bad const_double"
-msgstr "d30v_print_operand, 0 case içinde hatalı komut:"
+msgstr "frvv_print_operand içinde hatalı komut, const_double hatalı"
 
 #: config/frv/frv.c:2824
-#, fuzzy
 msgid "Bad insn to frv_print_operand, 'C' modifier:"
-msgstr "print_operand, 'B' değiştirici için hatalı komut:"
+msgstr "frv_print_operand, 'C' değiştirici için hatalı komut:"
 
 #: config/frv/frv.c:2847
-#, fuzzy
 msgid "Bad insn to frv_print_operand, 'c' modifier:"
-msgstr "print_operand, 'B' değiştirici için hatalı komut:"
+msgstr "frv_print_operand, 'c' değiştirici için hatalı komut:"
 
 #: config/frv/frv.c:2872
-#, fuzzy
 msgid "Bad insn to frv_print_operand, 'e' modifier:"
-msgstr "print_operand, 'B' değiştirici için hatalı komut:"
+msgstr "frv_print_operand, 'e' değiştirici için hatalı komut:"
 
 #: config/frv/frv.c:2880
-#, fuzzy
 msgid "Bad insn to frv_print_operand, 'F' modifier:"
-msgstr "print_operand, 'B' değiştirici için hatalı komut:"
+msgstr "frv_print_operand, 'F' değiştirici için hatalı komut:"
 
 #: config/frv/frv.c:2896
-#, fuzzy
 msgid "Bad insn to frv_print_operand, 'f' modifier:"
-msgstr "d30v_print_operand, 'f' değiştirici için hatalı komut:"
+msgstr "frv_print_operand, 'f' değiştirici için hatalı komut:"
 
 #: config/frv/frv.c:2949
-#, fuzzy
 msgid "Bad insn to frv_print_operand, 'L' modifier:"
-msgstr "print_operand, 'B' değiştirici için hatalı komut:"
+msgstr "frv_print_operand, 'L' değiştirici için hatalı komut:"
 
 #: config/frv/frv.c:2962
-#, fuzzy
 msgid "Bad insn to frv_print_operand, 'M/N' modifier:"
-msgstr "d30v_print_operand, 'M' değiştirici için hatalı komut:"
+msgstr "frv_print_operand, 'M/N' değiştirici için hatalı komut:"
 
 #: config/frv/frv.c:2983
-#, fuzzy
 msgid "Bad insn to frv_print_operand, 'O' modifier:"
-msgstr "print_operand, 'B' değiştirici için hatalı komut:"
+msgstr "frv_print_operand, 'O' değiştirici için hatalı komut:"
 
 #: config/frv/frv.c:3001
-#, fuzzy
 msgid "Bad insn to frv_print_operand, P modifier:"
-msgstr "print_operand, 'B' değiştirici için hatalı komut:"
+msgstr "frv_print_operand, P değiştirici için hatalı komut:"
 
 #: config/frv/frv.c:3021
-#, fuzzy
 msgid "Bad insn in frv_print_operand, z case"
-msgstr "d30v_print_operand, 0 case içinde hatalı komut:"
+msgstr "frv_print_operand, z case içinde hatalı komut"
 
 #: config/frv/frv.c:3049
-#, fuzzy
 msgid "Bad insn in frv_print_operand, 0 case"
-msgstr "d30v_print_operand, 0 case içinde hatalı komut:"
+msgstr "frv_print_operand, 0 case içinde hatalı komut"
 
 #: config/frv/frv.c:3054
-#, fuzzy
 msgid "frv_print_operand: unknown code"
-msgstr "fr30_print_operand: bilinmeyen kod"
+msgstr "frv_print_operand: bilinmeyen kod"
 
 #: config/frv/frv.c:5737
-#, fuzzy
 msgid "Bad output_move_single operand"
-msgstr "output_move_single:"
+msgstr "output_move_single terimi hatalı"
 
 #: config/frv/frv.c:5866
 msgid "Bad output_move_double operand"
-msgstr ""
+msgstr "output_move_double terimi hatalı"
 
 #: config/frv/frv.c:6010
-#, fuzzy
 msgid "Bad output_condmove_single operand"
-msgstr "output_move_single:"
+msgstr "output_condmove_single terimi hatalı"
 
 #: config/frv/frv.c:8315
 msgid "frv_registers_update"
-msgstr ""
+msgstr "frv_registers_update"
 
 #: config/frv/frv.c:8475
 msgid "frv_registers_used_p"
-msgstr ""
+msgstr "frv_registers_used_p"
 
 #: config/frv/frv.c:8604
 msgid "frv_registers_set_p"
-msgstr ""
+msgstr "frv_registers_set_p"
 
 #: config/frv/frv.c:9171
-#, fuzzy
 msgid "accumulator is not a constant integer"
-msgstr "`asm' argümanı bir sabit dizge değil"
+msgstr "toplayıcı bir tamsayı sabit değil"
 
 #: config/frv/frv.c:9176
 msgid "accumulator number is out of bounds"
-msgstr ""
+msgstr "toplayıcı sayısı kapsamdışı"
 
 #: config/frv/frv.c:9187
-#, fuzzy, c-format
+#, c-format
 msgid "inappropriate accumulator for `%s'"
-msgstr "`%s' için önce bildirim yok"
+msgstr "`%s' için ilgisiz toplayıcı"
 
 #: config/frv/frv.c:9253
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' expects a constant argument"
-msgstr "`%s' özniteliği bir tamsayı sabit argüman gerektirir"
+msgstr "`%s' bir tamsayı sabit argüman olarak beklenir"
 
 #: config/frv/frv.c:9258
-#, fuzzy, c-format
+#, c-format
 msgid "constant argument out of range for `%s'"
-msgstr "görevlendirme kodu %ld `%s' için aralık dışında"
+msgstr "sabit argüman `%s' için kapsamdışı"
 
 #: config/frv/frv.c:9638
 msgid "media functions are not available unless -mmedia is used"
-msgstr ""
+msgstr "ortam işlevleri -mmedia kullanılmadıkça geçersizdir"
 
 #: config/frv/frv.c:9650
 msgid "this media function is only available on the fr500"
-msgstr ""
+msgstr "bu ortam işlevi sadece fr500 üzerinde kullanılabilir"
 
 #: config/frv/frv.c:9678
 msgid "this media function is only available on the fr400"
-msgstr ""
+msgstr "bu ortam işlevi sadece fr400 üzerinde kullanılabilir"
 
 #. This macro is a C statement to print on `stderr' a string describing the
 #. particular machine description choice.  Every machine description should
@@ -10273,16 +10214,15 @@ msgstr ""
 #. #endif
 #: config/frv/frv.h:512
 msgid " (frv)"
-msgstr ""
+msgstr " (frv)"
 
 #: config/h8300/h8300.c:314
 msgid "-ms2600 is used without -ms"
 msgstr "-ms2600, -ms olmaksızın kullanılmış"
 
 #: config/h8300/h8300.c:320
-#, fuzzy
 msgid "-mn is used without -mh or -ms"
-msgstr "-ms2600, -ms olmaksızın kullanılmış"
+msgstr "-mn, -mh veya -ms olmaksızın kullanılmış"
 
 #. Macro to define tables used to set the flags.
 #. This is a list in braces of pairs in braces,
@@ -10290,24 +10230,20 @@ msgstr "-ms2600, -ms olmaksızın kullanılmış"
 #. where VALUE is the bits to set or minus the bits to clear.
 #. An empty string NAME is used to identify the default VALUE.
 #: config/h8300/h8300.h:150
-#, fuzzy
 msgid "Generate H8S code"
-msgstr "H8/S kodu üretilir"
+msgstr "H8S kodu üretilir"
 
 #: config/h8300/h8300.h:151
-#, fuzzy
 msgid "Do not generate H8S code"
-msgstr "H8/S kodu üretilmez"
+msgstr "H8S kodu üretilmez"
 
 #: config/h8300/h8300.h:152
-#, fuzzy
 msgid "Generate H8S/2600 code"
-msgstr "H8/S2600 kodu üretilir"
+msgstr "H8S/2600 kodu üretilir"
 
 #: config/h8300/h8300.h:153
-#, fuzzy
 msgid "Do not generate H8S/2600 code"
-msgstr "H8/S2600 kodu üretilmez"
+msgstr "H8S/2600 kodu üretilmez"
 
 #: config/h8300/h8300.h:154
 msgid "Make integers 32 bits wide"
@@ -10334,9 +10270,8 @@ msgid "Generate H8/300H code"
 msgstr "H8/300H kodu üretilir"
 
 #: config/h8300/h8300.h:165
-#, fuzzy
 msgid "Enable the normal mode"
-msgstr "uyumsuz kayıt kipi"
+msgstr "Normal kip etkinleştirilir"
 
 #: config/h8300/h8300.h:166
 msgid "Do not generate H8/300H code"
@@ -10450,9 +10385,9 @@ msgid "-mbranch-cost=%d is not between 0 and 5"
 msgstr "-mbranch-cost=%d 0 ile 5 arasında değil"
 
 #: config/i386/i386.c:1235
-#, fuzzy, c-format
+#, c-format
 msgid "bad value (%s) for -mtls-dialect= switch"
-msgstr "-msdata seçeneğinin değeri (%s) hatalı"
+msgstr "-mtls-dialect= seçeneğinin değeri (%s) hatalı"
 
 #: config/i386/i386.c:1256
 msgid "-malign-double makes no sense in the 64bit mode"
@@ -10507,9 +10442,8 @@ msgid "invalid operand code `%c'"
 msgstr "terim kodu `%c' geçersiz"
 
 #: config/i386/i386.c:6861
-#, fuzzy
 msgid "invalid constraints for operand"
-msgstr "geçersiz %%c terimi"
+msgstr "kısıtlar terim için geçersiz"
 
 #: config/i386/i386.c:11027
 msgid "unknown insn mode"
@@ -10523,12 +10457,11 @@ msgstr "seçici bir şimdiki değer olmalı"
 #. @@@ better error message
 #: config/i386/i386.c:13280 config/i386/i386.c:13314
 msgid "mask must be an immediate"
-msgstr "maske bir şimdiki değer olmalı"
+msgstr "mask bir dolaysız değer olmalı"
 
 #: config/i386/i386.c:13346
-#, fuzzy
 msgid "shift must be an immediate"
-msgstr "maske bir şimdiki değer olmalı"
+msgstr "shift bir dolaysız değer olmalı"
 
 #: config/i386/winnt.c:105
 #, c-format
@@ -10820,9 +10753,8 @@ msgid "Use given assembler dialect"
 msgstr "Verilen çevirici aksanı kullanılır"
 
 #: config/i386/i386.h:436
-#, fuzzy
 msgid "Use given thread-local storage dialect"
-msgstr "Verilen çevirici aksanı kullanılır"
+msgstr "Verilen thread-local saklama aksanı kullanılır"
 
 #: config/i386/sco5.h:700
 msgid "Generate ELF output"
@@ -11017,9 +10949,8 @@ msgid "Do not enable linker relaxation"
 msgstr "Bağlayıcı gevşemesini etkinleştirir"
 
 #: config/ia64/ia64-c.c:50
-#, fuzzy
 msgid "malformed #pragma builtin"
-msgstr "'#pragma ghs' bölümü bozuk"
+msgstr "'#pragma builtin' bozuk"
 
 #: config/ia64/ia64.c:3879
 msgid "ia64_print_operand: unknown code"
@@ -11035,19 +10966,17 @@ msgid "%s-%s is an empty range"
 msgstr "%s-%s aralığı boş"
 
 #: config/ia64/ia64.c:4215
-#, fuzzy
 msgid "cannot optimize floating point division for both latency and throughput"
-msgstr "Bölme hem iş geçişi hem de gecikme için eniyilenemez"
+msgstr "Kayan noktalı bölme hem iş geçişi hem de gecikme için eniyilenemez"
 
 #: config/ia64/ia64.c:4221
-#, fuzzy
 msgid "cannot optimize integer division for both latency and throughput"
-msgstr "Bölme hem iş geçişi hem de gecikme için eniyilenemez"
+msgstr "Tamsayı bölme hem iş geçişi hem de gecikme için eniyilenemez"
 
 #: config/ia64/ia64.c:4233
-#, fuzzy, c-format
+#, c-format
 msgid "bad value (%s) for -mtls-size= switch"
-msgstr "-mtune= seçeneğinin değeri (%s) hatalı"
+msgstr "-mtls-size= seçeneğinin değeri (%s) hatalı"
 
 #. This macro defines names of command options to set and clear bits in
 #. `target_flags'.  Its definition is an initializer with a subgrouping for
@@ -11113,32 +11042,20 @@ msgid "Generate self-relocatable code"
 msgstr "Kendiliğinden konum değiştirebilen kod üretilir"
 
 #: config/ia64/ia64.h:180
-#, fuzzy
 msgid "Generate inline floating point division, optimize for latency"
-msgstr ""
-"Özümleme bölümü üretir, gizlenmesi için en\n"
-"                         elverişli şartları oluşturur"
+msgstr "Satıriçi kayan noktalı bölme üretir, geciktirme için eniyilenir"
 
 #: config/ia64/ia64.h:182
-#, fuzzy
 msgid "Generate inline floating point division, optimize for throughput"
-msgstr ""
-"Özümleme bölümü üretir, içselleştirilmesi için en\n"
-"                         elverişli şartları oluşturur"
+msgstr "Satıriçi kayan noktalı bölme üretir, iş geçişi için eniyilenir"
 
 #: config/ia64/ia64.h:184
-#, fuzzy
 msgid "Generate inline integer division, optimize for latency"
-msgstr ""
-"Özümleme bölümü üretir, gizlenmesi için en\n"
-"                         elverişli şartları oluşturur"
+msgstr "Satıriçi tamsayı bölme üretir, geciktirme için eniyilenir"
 
 #: config/ia64/ia64.h:186
-#, fuzzy
 msgid "Generate inline integer division, optimize for throughput"
-msgstr ""
-"Özümleme bölümü üretir, içselleştirilmesi için en\n"
-"                         elverişli şartları oluşturur"
+msgstr "Satıriçi tamsayı bölme üretir, iş geçişi için eniyilenir"
 
 #: config/ia64/ia64.h:188
 msgid "Enable Dwarf 2 line debug info via GNU as"
@@ -11153,14 +11070,12 @@ msgid "Specify range of registers to make fixed"
 msgstr "Belirlemek için yazmaç aralığı belirtilir"
 
 #: config/ip2k/ip2k.c:1082
-#, fuzzy
 msgid "bad operand"
-msgstr "hatalı ASM terimi"
+msgstr "hatalı terim"
 
 #: config/ip2k/ip2k.c:3184
-#, fuzzy
 msgid "Only initialized variables can be placed into program memory area."
-msgstr "program bellek alanına sadece ilklendirilmiş değişkenler yerleştirilebilir"
+msgstr "Program bellek alanına sadece ilklendirilmiş değişkenler yerleştirilebilir."
 
 #: config/m32r/m32r.c:139
 #, c-format
@@ -11316,22 +11231,19 @@ msgstr "Otomatik önce/sonra eksiltme arttırmaya izin verilmez"
 
 #: config/m68hc11/m68hc11.h:168
 msgid "Min/max instructions allowed"
-msgstr ""
+msgstr "Min/max komutlarına izin verilir"
 
 #: config/m68hc11/m68hc11.h:170
-#, fuzzy
 msgid "Min/max instructions not allowed"
-msgstr "ret işlemi gerçeklenmedi"
+msgstr "Min/max komutlarına izin verilmez"
 
 #: config/m68hc11/m68hc11.h:172
-#, fuzzy
 msgid "Use call and rtc for function calls and returns"
-msgstr "Değer döndürmeyen işlev değer döndürürse çıkış için çağrı üretilir"
+msgstr "İşlev çağrıları ve dönüşleri için call ve rtc kullanılır"
 
 #: config/m68hc11/m68hc11.h:174
-#, fuzzy
 msgid "Use jsr and rts for function calls and returns"
-msgstr "İşlev önbilgisi için koçan kullanır"
+msgstr "İşlev çağrıları ve dönüşleri için jsr ve rts kullanılır"
 
 #: config/m68hc11/m68hc11.h:176
 msgid "Do not use direct addressing mode for soft registers"
@@ -11668,7 +11580,7 @@ msgstr "-mabi= seçeneğinin değeri (%s) hatalı"
 #: config/mips/mips.c:5142
 #, c-format
 msgid "-mips%d conflicts with the other architecture options, which specify a MIPS%d processor"
-msgstr ""
+msgstr "-mips%d  mimarinin diğer seçenekleri tarafından bir MIPS%d işlemci belirtildiğinden çelişki yaratıyor"
 
 #: config/mips/mips.c:5149
 #, c-format
@@ -11676,32 +11588,30 @@ msgid "bad value (%s) for -mips switch"
 msgstr "-mips seçeneğinin değeri (%s) hatalı"
 
 #: config/mips/mips.c:5164
-#, fuzzy, c-format
+#, c-format
 msgid "-march=%s is not compatible with the selected ABI"
-msgstr "case seçici case etiketi ile uyumsuz"
+msgstr "-march=%s seçilen ABI ile uyumsuz"
 
 #: config/mips/mips.c:5176
 msgid "-mgp64 used with a 32-bit processor"
-msgstr ""
+msgstr "-mgp64 bir 32-bit işlemci ile kullanılmış"
 
 #: config/mips/mips.c:5178
-#, fuzzy
 msgid "-mgp32 used with a 64-bit ABI"
-msgstr "64-bit ABI kullanılır"
+msgstr "-mgp32 bir 64-bit ABI ile kullanılmış"
 
 #: config/mips/mips.c:5180
-#, fuzzy
 msgid "-mgp64 used with a 32-bit ABI"
-msgstr "32-bit ABI kullanılır"
+msgstr "-mgp64 bir 32-bit ABI ile kullanılmış"
 
 #: config/mips/mips.c:5198 config/mips/mips.c:5200 config/mips/mips.c:5202
-#, fuzzy, c-format
+#, c-format
 msgid "unsupported combination: %s"
-msgstr "desteklenmeyen değer dönüşümü"
+msgstr "desteklenmeyen birleşim: %s"
 
 #: config/mips/mips.c:5272
 msgid "generation of Branch Likely instructions enabled, but not supported by architecture"
-msgstr ""
+msgstr "Branch Likely komutlarının üretimi etkinleştirildi ama mimari desteklemiyor"
 
 #: config/mips/mips.c:5283
 msgid "-G is incompatible with PIC code which is the default"
@@ -11798,14 +11708,13 @@ msgid "can not handle inconsistent calls to `%s'"
 msgstr "çelişkili `%s' çağrıları elde edilemez"
 
 #: config/mips/mips.c:10444
-#, fuzzy
 msgid "the cpu name must be lower case"
-msgstr "Sembol isimleri küçük harflerle yazılmıştır"
+msgstr "işlemci ismi küçük harflerle yazılmalıdır"
 
 #: config/mips/mips.c:10466
-#, fuzzy, c-format
+#, c-format
 msgid "bad value (%s) for %s"
-msgstr "%s seçeneği için değer (%s) hatalı"
+msgstr "%2$s için değer (%1$s) hatalı"
 
 #. Target CPU builtins.
 #. We do this here because __mips is defined below		 and so we can't use builtin_define_std.
@@ -12014,11 +11923,11 @@ msgstr "Tamsayı bölme taşması yakalanmaz"
 
 #: config/mips/mips.h:628
 msgid "Use Branch Likely instructions, overriding default for arch"
-msgstr ""
+msgstr "Öntanımlı mimariye rağmen Branch Likely komutları kullanılır"
 
 #: config/mips/mips.h:630
 msgid "Don't use Branch Likely instructions, overriding default for arch"
-msgstr ""
+msgstr "Öntanımlı mimariye rağmen Branch Likely komutları kullanılmaz"
 
 #: config/mips/mips.h:744 config/pa/pa.h:296
 msgid "Specify CPU for scheduling purposes"
@@ -12029,9 +11938,8 @@ msgid "Specify CPU for code generation purposes"
 msgstr "Kod üretim amacıyla MİB belirtilir"
 
 #: config/mips/mips.h:748
-#, fuzzy
 msgid "Specify an ABI"
-msgstr "Kullanılacak ABI belirtilir"
+msgstr "Bir ABI belirtilir"
 
 #: config/mips/mips.h:750
 msgid "Specify a Standard MIPS ISA"
@@ -12223,14 +12131,12 @@ msgid "Do not use addresses that allocate global registers"
 msgstr "Genel yazmaçları tahsis eden adresler kullanılmaz"
 
 #: config/mmix/mmix.h:229
-#, fuzzy
 msgid "Generate a single exit point for each function"
-msgstr "Değer döndürmeyen işlev değer döndürürse çıkış için çağrı üretilir"
+msgstr "Her işlev için tek çıkış noktası üretilir"
 
 #: config/mmix/mmix.h:231
-#, fuzzy
 msgid "Do not generate a single exit point for each function"
-msgstr "multm komutları üretilmez"
+msgstr "Her işlev için tek çıkış noktası üretilmez"
 
 #: config/mn10300/mn10300.h:59
 msgid "Work around hardware multiply bug"
@@ -12321,13 +12227,13 @@ msgid "No \"Small register classes\" kludge"
 msgstr "\"Küçük yazmaç sınıfları\" uydurması yok"
 
 #: config/pa/pa.c:246
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "unknown -mschedule= option (%s).\n"
 "Valid options are 700, 7100, 7100LC, 7200, 7300, and 8000\n"
 msgstr ""
 "bilinmeyen -mschedule= seçeneği (%s).\n"
-"Geçerli seçenekler: 700, 7100, 7100LC, 7200, ve 8000\n"
+"Geçerli seçenekler: 700, 7100, 7100LC, 7200, 7300 ve 8000\n"
 
 #: config/pa/pa.c:271
 #, c-format
@@ -12356,15 +12262,13 @@ msgstr "-g seçeneği iptal edildi"
 
 #: config/pa/pa-hiux.h:75 config/pa/pa-hpux.h:80 config/pa/pa-hpux7.h:81
 #: config/pa/pa64-hpux.h:25
-#, fuzzy
 msgid "Generate cpp defines for server IO"
-msgstr "Verilen MİB için kodu üretir"
+msgstr "Sunucu GÇ için cpp tanımları üretilir"
 
 #: config/pa/pa-hiux.h:76 config/pa/pa-hpux.h:81 config/pa/pa-hpux7.h:82
 #: config/pa/pa64-hpux.h:27
-#, fuzzy
 msgid "Generate cpp defines for workstation IO"
-msgstr "Kod bir 11/40 için üretilir"
+msgstr "İstemci GÇ için cpp tanımları üretilir"
 
 #. Macro to define tables used to set the flags.  This is a
 #. list in braces of target switches with each switch being
@@ -12373,133 +12277,116 @@ msgstr "Kod bir 11/40 için üretilir"
 #. identify the default VALUE.  Do not mark empty strings for
 #. translation.
 #: config/pa/pa.h:218 config/pa/pa.h:224
-#, fuzzy
 msgid "Generate PA1.1 code"
-msgstr "\bCA kodu üretilir"
+msgstr "PA1.1 kodu üretilir"
 
 #: config/pa/pa.h:220 config/pa/pa.h:222
-#, fuzzy
 msgid "Generate PA1.0 code"
-msgstr "\bCA kodu üretilir"
+msgstr "PA1.0 kodu üretilir"
 
 #: config/pa/pa.h:226
 msgid "Generate PA2.0 code (requires binutils 2.10 or later)"
-msgstr ""
+msgstr "PA2.0 kodu üretilir (binutils 2.10 veya üstü gerekir)"
 
 #: config/pa/pa.h:228
-#, fuzzy
 msgid "Disable FP regs"
-msgstr "Hata ayıklama kapatılır"
+msgstr "FP yazmaçları kapatılır"
 
 #: config/pa/pa.h:230
-#, fuzzy
 msgid "Do not disable FP regs"
-msgstr "fp yazmaçları kullanılmaz"
+msgstr "FP yazmaçları kapatılmaz"
 
 #: config/pa/pa.h:232
 msgid "Disable space regs"
-msgstr ""
+msgstr "space yazmaçları kapatılır"
 
 #: config/pa/pa.h:234
-#, fuzzy
 msgid "Do not disable space regs"
-msgstr "fp yazmaçları kullanılmaz"
+msgstr "space yazmaçları kapatılmaz"
 
 #: config/pa/pa.h:236
 msgid "Put jumps in call delay slots"
-msgstr ""
+msgstr "jump'lar çağrı geciktirme yuvalarına konur"
 
 #: config/pa/pa.h:238
 msgid "Do not put jumps in call delay slots"
-msgstr ""
+msgstr "jump'lar çağrı geciktirme yuvalarına konmaz"
 
 #: config/pa/pa.h:240
-#, fuzzy
 msgid "Disable indexed addressing"
-msgstr "geçersiz adresleme kipi"
+msgstr "İndisli adresleme kapatılır"
 
 #: config/pa/pa.h:242
-#, fuzzy
 msgid "Do not disable indexed addressing"
-msgstr "Karmaşık adresleme kipleri kullanılmaz"
+msgstr "İndisli adresleme kapatılmaz"
 
 #: config/pa/pa.h:244
-#, fuzzy
 msgid "Use portable calling conventions"
-msgstr "Normal çağrı uzlaşımı kullanılır"
+msgstr "Uyarlanabilir çağrı uzlaşımı kullanılır"
 
 #: config/pa/pa.h:246
-#, fuzzy
 msgid "Do not use portable calling conventions"
-msgstr "Normal çağrı uzlaşımı kullanılır"
+msgstr "Uyarlanabilir çağrı uzlaşımı kullanılmaz"
 
 #: config/pa/pa.h:248
 msgid "Assume code will be assembled by GAS"
-msgstr ""
+msgstr "Kodun makina koduna GAS tarafından çevrileceği varsayılır"
 
 #: config/pa/pa.h:250
 msgid "Do not assume code will be assembled by GAS"
-msgstr ""
+msgstr "Kodun makina koduna GAS tarafından çevrilmeyeceği varsayılır"
 
 #: config/pa/pa.h:254
-#, fuzzy
 msgid "Do not use software floating point"
-msgstr "Donanım kayan nokta aritmetiği kullanılmaz"
+msgstr "Yazılım kayan nokta aritmetiği kullanılmaz"
 
 #: config/pa/pa.h:256
 msgid "Emit long load/store sequences"
-msgstr ""
+msgstr "Uzun yükleme/saklama çoklu komutları üretilir"
 
 #: config/pa/pa.h:258
-#, fuzzy
 msgid "Do not emit long load/store sequences"
-msgstr "Yükleme/saklama çoklu komutları üretilmez"
+msgstr "Uzun yükleme/saklama çoklu komutları üretilmez"
 
 #: config/pa/pa.h:260
-#, fuzzy
 msgid "Generate fast indirect calls"
-msgstr "Dolaylı çağrılar kullanılmaz"
+msgstr "Hızlı dolaylı çağrılar üretilir"
 
 #: config/pa/pa.h:262
-#, fuzzy
 msgid "Do not generate fast indirect calls"
-msgstr ".size yönergeleri üretilmez"
+msgstr "Hızlı dolaylı çağrılar üretilmez"
 
 #: config/pa/pa.h:264
-#, fuzzy
 msgid "Generate code for huge switch statements"
-msgstr "Kod yukarı bellek bölgesi için üretilir"
+msgstr "huge switch deyimleri için kod üretilir"
 
 #: config/pa/pa.h:266
-#, fuzzy
 msgid "Do not generate code for huge switch statements"
-msgstr "Yakın bellek çağrıları için kodu üretilmez"
+msgstr "huge switch deyimleri için kod üretilmez"
 
 #: config/pa/pa.h:268
-#, fuzzy
 msgid "Always generate long calls"
-msgstr "Yakın bellek çağrıları için kodu üretilmez"
+msgstr "long çağrıları daima üretilir"
 
 #: config/pa/pa.h:270
 msgid "Generate long calls only when needed"
-msgstr ""
+msgstr "Sadece gerektiği zaman long çağrıları üretilir"
 
 #: config/pa/pa.h:272
-#, fuzzy
 msgid "Enable linker optimizations"
-msgstr "SSA eniyilemesi etkinleştirilir"
+msgstr "İlintileyici eniyilemesi etkinleştirilir"
 
 #: config/pa/pa.h:298
 msgid "Specify architecture for code generation.  Values are 1.0, 1.1, and 2.0.  2.0 requires gas snapshot 19990413 or later."
-msgstr ""
+msgstr "Kod üretimi için mimari belirtilir. Değerler 1.0, 1.1 ve 2.0 dır. gas snapshot 19990413 ve sonrası için 2.0 gerekir."
 
 #: config/pa/pa64-hpux.h:29
 msgid "Assume code will be linked by GNU ld"
-msgstr ""
+msgstr "Kodun GNU ld tarafından ilintileneceği varsayılır"
 
 #: config/pa/pa64-hpux.h:31
 msgid "Assume code will be linked by HP ld"
-msgstr ""
+msgstr "Kodun HP ld tarafından ilintileneceği varsayılır"
 
 #: config/pdp11/pdp11.h:57
 msgid "Do not use hardware floating point"
@@ -12627,33 +12514,28 @@ msgstr "-mfp-arg-in-fp-regs ile varargs olamaz"
 #. whether or not new function declarations receive a longcall
 #. attribute by default.
 #: config/rs6000/rs6000-c.c:44
-#, fuzzy
 msgid "ignoring malformed #pragma longcall"
-msgstr "#pragma %s yoksayılıyor"
+msgstr "bozuk #pragma longcall yoksayılıyor"
 
 #: config/rs6000/rs6000-c.c:58
-#, fuzzy
 msgid "missing open paren"
-msgstr "Code özniteliği eksik"
+msgstr "açparantez eksik"
 
 #: config/rs6000/rs6000-c.c:60
-#, fuzzy
 msgid "missing number"
-msgstr "İsim eksik"
+msgstr "sayı eksik"
 
 #: config/rs6000/rs6000-c.c:62
-#, fuzzy
 msgid "missing close paren"
-msgstr "Sınıf ismi yok"
+msgstr "kapaparantez eksik"
 
 #: config/rs6000/rs6000-c.c:65
 msgid "number must be 0 or 1"
-msgstr ""
+msgstr "sayı 0 ya da 1 olmalı"
 
 #: config/rs6000/rs6000-c.c:68
-#, fuzzy
 msgid "junk at end of #pragma longcall"
-msgstr "'#pragma map' sonunda karışıklık"
+msgstr "'#pragma longcall' sonunda karışıklık"
 
 #: config/rs6000/rs6000.c:588
 msgid "-mmultiple is not supported on little endian systems"
@@ -12671,7 +12553,7 @@ msgstr "-mdebug-%s seçeneği bilinmiyor"
 #: config/rs6000/rs6000.c:631
 #, c-format
 msgid "unknown -mtraceback arg `%s'; expecting `full', `partial' or `none'"
-msgstr ""
+msgstr "-mtraceback ile verilen `%s' bilinmiyor; `full', `partial' ya da `none' olabilir"
 
 #: config/rs6000/rs6000.c:642
 #, c-format
@@ -12679,14 +12561,14 @@ msgid "Unknown switch -mlong-double-%s"
 msgstr "-mlong-double-%s seçeneği bilinmiyor"
 
 #: config/rs6000/rs6000.c:734
-#, fuzzy, c-format
+#, c-format
 msgid "unknown -misel= option specified: '%s'"
-msgstr "bilinmeyen ABI belirtilmiş: '%s'"
+msgstr "bilinmeyen -misel= seçeneği belirtilmiş: '%s'"
 
 #: config/rs6000/rs6000.c:749
-#, fuzzy, c-format
+#, c-format
 msgid "unknown -mvrsave= option specified: '%s'"
-msgstr "bilinmeyen ABI belirtilmiş: '%s'"
+msgstr "bilinmeyen -mvrsave= seçeneği belirtilmiş: '%s'"
 
 #: config/rs6000/rs6000.c:768
 #, c-format
@@ -12694,14 +12576,12 @@ msgid "unknown ABI specified: '%s'"
 msgstr "bilinmeyen ABI belirtilmiş: '%s'"
 
 #: config/rs6000/rs6000.c:4169
-#, fuzzy
 msgid "argument 1 must be a 5-bit signed literal"
-msgstr "`%s' için 3. argüman 2 bitlik bir değer olmalı"
+msgstr "1. argüman 5 bitlik bir işaretli sabit olmalı"
 
 #: config/rs6000/rs6000.c:4276 config/rs6000/rs6000.c:4866
-#, fuzzy
 msgid "argument 2 must be a 5-bit unsigned literal"
-msgstr "`%s' için 3. argüman 2 bitlik bir değer olmalı"
+msgstr "2. argüman 5 bitlik bir işaretsiz sabit olmalı"
 
 #: config/rs6000/rs6000.c:4319
 msgid "argument 1 of __builtin_altivec_predicate must be a constant"
@@ -12712,29 +12592,25 @@ msgid "argument 1 of __builtin_altivec_predicate is out of range"
 msgstr "`__builtin_altivec_predicate'in 1. argümanı kapsamdışı"
 
 #: config/rs6000/rs6000.c:4452
-#, fuzzy
 msgid "argument 3 must be a 4-bit unsigned literal"
-msgstr "`%s' için 3. argüman 2 bitlik bir değer olmalı"
+msgstr "3. argüman 4 bitlik bir işaretsiz sabit olmalı"
 
 #: config/rs6000/rs6000.c:4629
-#, fuzzy, c-format
+#, c-format
 msgid "argument to `%s' must be a 2-bit unsigned literal"
-msgstr "`%s' için 3. argüman 2 bitlik bir değer olmalı"
+msgstr "`%s' için argüman 2 bitlik bir işaretsiz sabit olmalı"
 
 #: config/rs6000/rs6000.c:4745
-#, fuzzy
 msgid "argument to dss must be a 2-bit unsigned literal"
-msgstr "`%s' için 3. argüman 2 bitlik bir değer olmalı"
+msgstr "dss argümanı 2 bitlik işaretsiz bir sabit olmalı"
 
 #: config/rs6000/rs6000.c:4976
-#, fuzzy
 msgid "argument 1 of __builtin_spe_predicate must be a constant"
-msgstr "`__builtin_altivec_predicate'in 1. argümanı bir sabit olmalı"
+msgstr "__builtin_spe_predicate'in 1. argümanı bir sabit olmalı"
 
 #: config/rs6000/rs6000.c:5049
-#, fuzzy
 msgid "argument 1 of __builtin_spe_predicate is out of range"
-msgstr "`__builtin_altivec_predicate'in 1. argümanı kapsamdışı"
+msgstr "__builtin_spe_predicate'in 1. argümanı kapsamdışı"
 
 #: config/rs6000/rs6000.c:7474
 #, c-format
@@ -12788,7 +12664,7 @@ msgstr "%%v değeri geçersiz"
 
 #: config/rs6000/rs6000.c:12180
 msgid "no profiling of 64-bit code for this ABI"
-msgstr ""
+msgstr "bu ABI için 64 bitlik profilleme kodu yok"
 
 #: config/rs6000/aix.h:160 config/rs6000/beos.h:32
 msgid "Always pass floating-point arguments in memory"
@@ -12964,7 +12840,7 @@ msgstr "Hata ayıklamalı çıktıyı etkinleştir"
 
 #: config/rs6000/rs6000.h:396
 msgid "Select full, part, or no traceback table"
-msgstr ""
+msgstr "Ya full, part seçilir ya da hiçbir traceback tablosu seçilmez"
 
 #: config/rs6000/rs6000.h:397
 msgid "Specify ABI to use"
@@ -12976,16 +12852,15 @@ msgstr "long double için boyut belirtilir (64 ya da 128 bit)"
 
 #: config/rs6000/rs6000.h:401
 msgid "Specify yes/no if isel instructions should be generated"
-msgstr ""
+msgstr "isel komutlarının üretilmesi gerekiyorsa yes/no belirtilir"
 
 #: config/rs6000/rs6000.h:403
 msgid "Specify yes/no if VRSAVE instructions should be generated for AltiVec"
-msgstr ""
+msgstr "VRSAVE komutlarının AltiVec için üretilmesi gerekiyorsa yes/no belirtilir"
 
 #: config/rs6000/rs6000.h:405
-#, fuzzy
 msgid "Avoid all range limits on call instructions"
-msgstr "Eşzamanlı komutlar kapatılır"
+msgstr "Çağrı komutlarında tüm kapsam sınırları engellenir"
 
 #. Definitions for __builtin_return_address and __builtin_frame_address.
 #. __builtin_return_address (0) should give link register (65), enable
@@ -13094,7 +12969,7 @@ msgstr "ELF seçenekleri başlığı içindeki PPC_EMB bitini 1 yapar"
 
 #: config/rs6000/sysv4.h:154
 msgid "Use the WindISS simulator"
-msgstr ""
+msgstr "WindISS benzeticisi kullanılır"
 
 #. Sometimes certain combinations of command options do not make sense
 #. on a particular target machine.  You can define a macro
@@ -13217,7 +13092,7 @@ msgstr "__builtin_saveregs bu alt hedef tarafından desteklenmiyor"
 
 #: config/sh/sh.c:5684
 msgid "attribute interrupt_handler is not compatible with -m5-compact"
-msgstr ""
+msgstr "özellik kesme yakalayıcı -m5-compact ile uyumlu değil"
 
 #. The sp_switch attribute only has meaning for interrupt functions.
 #: config/sh/sh.c:5710 config/sh/sh.c:5749
@@ -13383,9 +13258,8 @@ msgid "Optimize for Cypress processors"
 msgstr "Cypress işlemciler için eniyileme yapılır"
 
 #: config/sparc/sparc.h:563
-#, fuzzy
 msgid "Optimize for SPARCLite processors"
-msgstr "SparcLite işlemciler için eniyileme yapılır"
+msgstr "SPARCLite işlemciler için eniyileme yapılır"
 
 #: config/sparc/sparc.h:565
 msgid "Optimize for F930 processors"
@@ -13396,14 +13270,12 @@ msgid "Optimize for F934 processors"
 msgstr "F934 işlemciler için eniyileme yapılır"
 
 #: config/sparc/sparc.h:569
-#, fuzzy
 msgid "Use V8 SPARC ISA"
-msgstr "V8 Sparc ISA kullanılır"
+msgstr "V8 SPARC ISA kullanılır"
 
 #: config/sparc/sparc.h:571
-#, fuzzy
 msgid "Optimize for SuperSPARC processors"
-msgstr "SuperSparc işlemciler için eniyileme yapılır"
+msgstr "SuperSPARC işlemciler için eniyileme yapılır"
 
 #. End of deprecated options.
 #: config/sparc/sparc.h:574
@@ -13449,9 +13321,8 @@ msgstr ""
 "                          eniyilemez"
 
 #: config/sparc/sparc.h:637
-#, fuzzy
 msgid "Use given SPARC code model"
-msgstr "Belirtilen Sparc kod modeli kullanılır"
+msgstr "Belirtilen SPARC kod modeli kullanılır"
 
 #: config/stormy16/stormy16.c:1192
 msgid "cannot use va_start in interrupt function"
@@ -13578,24 +13449,24 @@ msgid "bogus JARL construction: %d\n"
 msgstr "taklit JARL oluşturma: %d\n"
 
 #: config/v850/v850.c:3026
-#, fuzzy, c-format
+#, c-format
 msgid "Bogus DISPOSE construction: %d\n"
-msgstr "Taklit JR oluşturma: %d\n"
+msgstr "Taklit DISPOSE oluşturma: %d\n"
 
 #: config/v850/v850.c:3048
 #, c-format
 msgid "Too much stack space to dispose of: %d"
-msgstr ""
+msgstr "DİSPOSE'sinin yığıt alanı çok fazla: %d"
 
 #: config/v850/v850.c:3224
-#, fuzzy, c-format
+#, c-format
 msgid "Bogus PREPEARE construction: %d\n"
-msgstr "taklit JARL oluşturma: %d\n"
+msgstr "Taklit PREPEARE oluşturma: %d\n"
 
 #: config/v850/v850.c:3246
-#, fuzzy, c-format
+#, c-format
 msgid "Too much stack space to prepare: %d"
-msgstr "Yığın alanı kaldırma miktarı hatalı: %d"
+msgstr "PREPARE için yığıt alanı çok fazla: %d"
 
 #. Macro to define tables used to set the flags.
 #. This is a list in braces of pairs in braces,
@@ -13631,30 +13502,25 @@ msgid "Compile for the v850 processor"
 msgstr "v850 işlemcisi için derleme yapılır"
 
 #: config/v850/v850.h:175
-#, fuzzy
 msgid "Compile for v850e processor"
-msgstr "v850 işlemcisi için derleme yapılır"
+msgstr "v850e işlemcisi için derleme yapılır"
 
 #. Make sure that the other bits are cleared.
 #: config/v850/v850.h:177
-#, fuzzy
 msgid "Enable the use of the short load instructions"
-msgstr "DB komutunun kullanımı etkinleştirilir"
+msgstr "short yükleme komutlarının kullanımı etkinleştirilir"
 
 #: config/v850/v850.h:180
-#, fuzzy
 msgid "Do not use the callt instruction"
-msgstr "Bölme komutu kullanılmaz"
+msgstr "callt komutu kullanılmaz"
 
 #: config/v850/v850.h:187
-#, fuzzy
 msgid "Do not use registers r2 and r5"
-msgstr "sb yazmacı kullanılmaz"
+msgstr "r2 ve r5 yazmaçları kullanılmaz"
 
 #: config/v850/v850.h:189
-#, fuzzy
 msgid "Enfore strict alignment"
-msgstr "Yığın hiizalaması ayarlanmaz"
+msgstr "Katı hizalamaya zorlar"
 
 #: config/v850/v850.h:192
 msgid "Use 4 byte entries in switch tables"
@@ -13698,9 +13564,8 @@ msgid "address offset not a constant"
 msgstr "adres değeri bir sabit değil"
 
 #: config/xtensa/xtensa.c:2809
-#, fuzzy
 msgid "only uninitialized variables can be placed in a .bss section"
-msgstr "program bellek alanına sadece ilklendirilmiş değişkenler yerleştirilebilir"
+msgstr "sadece ilklendirilmemiş değişkenler .bss bölümüne yerleştirilebilir"
 
 #: config/xtensa/xtensa.h:114
 msgid "Use the Xtensa code density option"
@@ -13861,9 +13726,8 @@ msgid "request for member `%D' in `%E', which is of non-aggregate type `%T'"
 msgstr "bir nesne alarak oluşmayan `%3$T' türündeki `%2$E'nin üyesi `%D' için istek"
 
 #: cp/call.c:557
-#, fuzzy
 msgid "request for member `%D' is ambiguous"
-msgstr "`%D' kullanımı belirsiz"
+msgstr "üye `%D' için istek belirsiz"
 
 #: cp/call.c:2446
 msgid "%s %D(%T, %T, %T) <built-in>"
@@ -13890,14 +13754,12 @@ msgid "conversion from `%T' to `%T' is ambiguous"
 msgstr "`%T' den `%T' ye dönüşüm belirsiz"
 
 #: cp/call.c:2690
-#, fuzzy
 msgid "incomplete type '%T' cannot be used to name a scope"
-msgstr "içi boş `%T' türündeki nesne, %s içinde erişimli olmayacak"
+msgstr "içi boş `%T' türü bir yorum alanı içinde isim olarak kullanılamaz"
 
 #: cp/call.c:2706 cp/typeck.c:2176 cp/typeck.c:2205
-#, fuzzy
 msgid "'%D' has no member named '%E'"
-msgstr "%s'in `%s' isimli bir üyesi yok"
+msgstr "%D' `%E' isimli üyeye sahip değil"
 
 #: cp/call.c:2812
 msgid "no matching function for call to `%D(%A)'"
@@ -13928,19 +13790,19 @@ msgstr "%s (`%T ? %T : %T' üç terimlisi için)"
 
 #: cp/call.c:2970
 msgid "%s for `%T %s' operator"
-msgstr "%s (`%T %s' işlemimi için)"
+msgstr "%s (`%T %s' işleci için)"
 
 #: cp/call.c:2973
 msgid "%s for `%T [%T]' operator"
-msgstr "%s (`%T [%T]' işlemimi için)"
+msgstr "%s (`%T [%T]' işleci için)"
 
 #: cp/call.c:2978
 msgid "%s for `%T %s %T' operator"
-msgstr "%s (`%T %s %T' işlemimi için)"
+msgstr "%s (`%T %s %T' işleci için)"
 
 #: cp/call.c:2981
 msgid "%s for `%s %T' operator"
-msgstr "%s (`%s %T' işlemimi için)"
+msgstr "%s (`%s %T' işleci için)"
 
 #: cp/call.c:3071
 msgid "ISO C++ forbids omitting the middle term of a ?: expression"
@@ -13969,7 +13831,7 @@ msgstr "`%D' kullanmadan önce bildirilmiş olmalı"
 
 #: cp/call.c:3604
 msgid "no `%D(int)' declared for postfix `%s', trying prefix operator instead"
-msgstr "sonek `%s' için `%D(int)' bildirimi yok, yerine önek işlemimi deneniyor"
+msgstr "sonek `%s' için `%D(int)' bildirimi yok, yerine önek işleci deneniyor"
 
 #: cp/call.c:3651
 msgid "using synthesized `%#D' for copy assignment"
@@ -14023,9 +13885,8 @@ msgstr "  geçici olarak `%D'nin sonucundan ilklendiriliyor"
 #. here and do a bitwise copy, but now cp_expr_size will abort if we
 #. try to do that.
 #: cp/call.c:4215
-#, fuzzy
 msgid "cannot pass objects of non-POD type `%#T' through `...'; call will abort at runtime"
-msgstr "POD olmayan `%#T' türünün nesneleri `...' üzerinden aktarılamaz"
+msgstr "POD olmayan `%#T' türünün nesneleri `...' üzerinden aktarılamaz; çalışma anında çağrı çıkış yaptıracak"
 
 #. Undefined behavior [expr.call] 5.2.2/7.
 #: cp/call.c:4242
@@ -14041,9 +13902,8 @@ msgid "could not find class$ field in java interface type `%T'"
 msgstr "`%T' türündeki java arabiriminde class$ alanı bulunamadı"
 
 #: cp/call.c:4831
-#, fuzzy
 msgid "call to non-function `%D'"
-msgstr "sanal sınıf olmayan işlev `%s'"
+msgstr "işlev olmayan `%D' ye çağrı"
 
 #: cp/call.c:4937
 msgid "no matching function for call to `%T::%D(%A)%#V'"
@@ -14201,7 +14061,7 @@ msgstr "anonim union içinde protected üye `%#D'"
 
 #: cp/class.c:2834
 msgid "vtable layout for class `%T' may not be ABI-compliant and may change in a future version of GCC due to implicit virtual destructor"
-msgstr ""
+msgstr "sınıf `%T' için vtable yerleşimi ABI-uyumlu olamaz ve bu GCC'nin gelecek sürümünde değişebilir"
 
 #: cp/class.c:2898
 msgid "bit-field `%#D' with non-integral type"
@@ -14237,7 +14097,7 @@ msgstr "union içinde yıkıcılı üye `%#D' olamaz"
 
 #: cp/class.c:3034
 msgid "member `%#D' with copy assignment operator not allowed in union"
-msgstr "union içinde kopya atama işlemimli üye `%#D' olamaz"
+msgstr "union içinde kopya atama işleçli üye `%#D' olamaz"
 
 #: cp/class.c:3061
 msgid "multiple fields in union `%T' initialized"
@@ -14294,11 +14154,11 @@ msgstr "  ama `operator=(const %T&)' ye değiştirilmiyor"
 
 #: cp/class.c:3775
 msgid "offset of empty base `%T' may not be ABI-compliant and maychange in a future version of GCC"
-msgstr ""
+msgstr "boş taban `%T' nin göreli konumu ABI-uyumlu olamaz ve bu GCC'nin gelecek sürümünde değişebilir"
 
 #: cp/class.c:3883
 msgid "class `%T' will be considered nearly empty in a future version of GCC"
-msgstr ""
+msgstr "sınıf `%T' GCC'nin gelecek sürümünde kısmen boş sayılacak"
 
 #: cp/class.c:3973
 msgid "initializer specified for non-virtual method `%D'"
@@ -14306,7 +14166,7 @@ msgstr "sanal olmayan yöntem `%D' için ilklendirici belirtilmiş"
 
 #: cp/class.c:4709
 msgid "offset of virtual base `%T' is not ABI-compliant and may change in a future version of GCC"
-msgstr ""
+msgstr "sanal taban `%T' nin göreli konumu ABI-uyumlu değil ve bu GCC'nin gelecek sürümünde değişebilir"
 
 #: cp/class.c:4809
 msgid "direct base `%T' inaccessible in `%T' due to ambiguity"
@@ -14318,19 +14178,19 @@ msgstr "sanal taban `%T' belirsizlikten dolayı `%T' içinde erişilebilir deği
 
 #: cp/class.c:4978
 msgid "size assigned to `%T' may not be ABI-compliant and may change in a future version of GCC"
-msgstr ""
+msgstr "`%T' ye atanan boyut ABI-uyumlu olmamalı ve bu GCC'nin gelecek sürümünde değişebilir"
 
 #: cp/class.c:5011
 msgid "offset of `%D' is not ABI-compliant and may change in a future version of GCC"
-msgstr ""
+msgstr "`%D' nin göreli konumu ABI-uyumlu değil ve bu GCC'nin gelecek sürümünde değişebilir"
 
 #: cp/class.c:5020
 msgid "`%D' contains empty classes which may cause base classes to be placed at different locations in a future version of GCC"
-msgstr ""
+msgstr "`%D' GCC'nin gelecek sürümünde taban sınıfların farklı yere konmasına sebep olabilecek boş sınıfları içeriyor"
 
 #: cp/class.c:5079
 msgid "layout of classes derived from empty class `%T' may change in a future version of GCC"
-msgstr ""
+msgstr "sınıfların yerleşimi GCC'nin gelecek sürümünde değişebilecek olan boş sınıf `%T' den türetilmiş"
 
 #: cp/class.c:5320
 msgid "`%#T' has virtual functions but non-virtual destructor"
@@ -14412,7 +14272,6 @@ msgid "cannot convert `%E' from type `%T' to type `%T'"
 msgstr "`%E' `%T' den `%T' ye çevrilemiyor"
 
 #: cp/cvt.c:262
-#, fuzzy
 msgid "invalid conversion from '%T' to '%T'"
 msgstr "`%T' den `%T' ye dönüşüm geçersiz"
 
@@ -14786,9 +14645,8 @@ msgid "  (use `typename %T::%D' if that's what you meant)"
 msgstr " (eğer bu anlamda kullandıysanız `typename %T::%D' kullanın)"
 
 #: cp/decl.c:6003
-#, fuzzy
 msgid "name lookup of `%D' changed"
-msgstr "`%s' içi isim görünümü değişti"
+msgstr "`%D' isim araması değişti"
 
 #: cp/decl.c:6005
 msgid "  matches this `%D' under ISO standard rules"
@@ -14799,9 +14657,8 @@ msgid "  matches this `%D' under old rules"
 msgstr "  bu `%D' eski kurallar altında eşleşiyor"
 
 #: cp/decl.c:6021 cp/decl.c:6028
-#, fuzzy
 msgid "name lookup of `%D' changed for new ISO `for' scoping"
-msgstr "yeni ISO `for' kapsamında `%s' isim araması değişti"
+msgstr "yeni ISO `for' yorum alanında `%D' isim araması değişti"
 
 #: cp/decl.c:6023
 msgid "  cannot use obsolete binding at `%D' because it has a destructor"
@@ -14829,7 +14686,7 @@ msgstr "yıkıcılı üye %#D' anonim kümeleme içinde kullanılamaz"
 
 #: cp/decl.c:7048
 msgid "member %#D' with copy assignment operator not allowed in anonymous aggregate"
-msgstr "kopya atama işlemimli üye %#D' anonim kümeleme içinde kullanılamaz"
+msgstr "kopya atama işleçli üye %#D' anonim kümeleme içinde kullanılamaz"
 
 #: cp/decl.c:7086
 msgid "redeclaration of C++ built-in type `%T'"
@@ -14864,9 +14721,8 @@ msgid "`%D' can only be specified for objects and functions"
 msgstr "`%D' sadece işlevler ve nesneler için belirtilebilir"
 
 #: cp/decl.c:7312 cp/decl2.c:927
-#, fuzzy
 msgid "typedef `%D' is initialized (use __typeof__ instead)"
-msgstr "typedef `%D' ilklendirilmiş"
+msgstr "typedef `%D' ilklendirilmiş (yerine  __typeof__  kullanın)"
 
 #: cp/decl.c:7317
 msgid "function `%#D' is initialized like a variable"
@@ -14952,19 +14808,16 @@ msgid "uninitialized const `%D'"
 msgstr "ilklendirilmemiş sabit `%D'"
 
 #: cp/decl.c:7836
-#, fuzzy
 msgid "brace-enclosed initializer used to initialize `%T'"
-msgstr "variant alan `%s' için bir ilklendirici yok"
+msgstr "`%T' ilklendirmesinde ilklendirici {} içinde kullanılmış"
 
 #: cp/decl.c:7900
-#, fuzzy
 msgid "initializer for `%T' must be brace-enclosed"
-msgstr "taban sınıfı olmayan `%T' için isimsiz ilklendirici"
+msgstr "`%T' ilklendiricisi {} içinde olmalı"
 
 #: cp/decl.c:7964
-#, fuzzy
 msgid "too many initializers for `%T'"
-msgstr "`%#T'"
+msgstr "`%T' için ilklendirici sayısı çok fazla"
 
 #: cp/decl.c:8000
 msgid "variable-sized object `%D' may not be initialized"
@@ -14999,14 +14852,12 @@ msgid "shadowing previous type declaration of `%#D'"
 msgstr "`%#D'in önceki gölgeleyen tür bildirimi"
 
 #: cp/decl.c:8455
-#, fuzzy
 msgid "`%D' cannot be thread-local because it has non-POD type `%T'"
-msgstr "`%E', `%T' türünde olduğundan bir üye göstergesi plarak kullanılamaz"
+msgstr "`%D' thread-local olamaz çünkü POD olmayan %T' türünde"
 
 #: cp/decl.c:8470
-#, fuzzy
 msgid "`%D' is thread-local and so cannot be dynamically initialized"
-msgstr "union `%T' isimli üyeler yokken ilklendirilemez"
+msgstr "`%D' thread-local olduğundan dinamik olarak ilklendirilemez"
 
 #: cp/decl.c:8864 cp/init.c:547
 msgid "multiple initializations given for `%D'"
@@ -15188,7 +15039,7 @@ msgstr "yıkıcı için dönen değer tür özelliği geçersiz"
 
 #: cp/decl.c:9882
 msgid "operator `%T' declared to return `%T'"
-msgstr "işlemimi `%T' dönüş `%T' ye bildirimli"
+msgstr "işleç `%T' dönüş `%T' ye bildirimli"
 
 #: cp/decl.c:9884
 msgid "return type specified for `operator %T'"
@@ -15203,9 +15054,8 @@ msgid "destructor `%T' must match class name `%T'"
 msgstr "yıkıcı `%T' sınıf ismi `%T' ile eşleşmeli"
 
 #: cp/decl.c:10100
-#, fuzzy
 msgid "variable declaration is not allowed here"
-msgstr "spec modülünde ilklendirme yapılamaz"
+msgstr "değişken birdirimine burada izin verilmez"
 
 #: cp/decl.c:10127
 msgid "invalid declarator"
@@ -15234,9 +15084,9 @@ msgstr "  ihtimal ki bir kurucu için `%T' istiyorsunuz"
 #. std::allocator alloc;
 #. Handle that gracefully.
 #: cp/decl.c:10303
-#, fuzzy, c-format
+#, c-format
 msgid "invalid use of template-name '%E' in a declarator"
-msgstr "birincil şablon bildiriminde şablon kimliği `%D' kullanımı geçersiz"
+msgstr "bir bildirim içinde şablon ismi `%E' kullanımı geçersiz"
 
 #: cp/decl.c:10323
 msgid "declaration of `%D' as non-function"
@@ -15367,14 +15217,12 @@ msgid "destructors may not have parameters"
 msgstr "yıkıcılar parametre almaz"
 
 #: cp/decl.c:11175 cp/decl.c:11182
-#, fuzzy
 msgid "cannot declare reference to `%#T'"
-msgstr "referanslara referans bildirilemez"
+msgstr "`%#T' ye referans bildirilemez"
 
 #: cp/decl.c:11176
-#, fuzzy
 msgid "cannot declare pointer to `%#T'"
-msgstr "`%#T' üyeye gösterge bildirilemez"
+msgstr "`%#T' ye gösterge bildirilemez"
 
 #: cp/decl.c:11181
 msgid "cannot declare pointer to `%#T' member"
@@ -15394,7 +15242,7 @@ msgstr "üye `%T::%s' `%T' içinde bildirilemez"
 
 #: cp/decl.c:11460
 msgid "data member may not have variably modified type `%T'"
-msgstr ""
+msgstr "veri üyesi değişkene göre değişen `%T' türünde olamaz"
 
 #. [dcl.fct.spec] The explicit specifier shall only be used in
 #. declarations of constructors within a class definition.
@@ -15456,9 +15304,8 @@ msgid "template parameters cannot be friends"
 msgstr "şablon parametreleri kardeşler olamaz"
 
 #: cp/decl.c:11666
-#, fuzzy
 msgid "friend declaration requires class-key, i.e. `friend class %T::%D'"
-msgstr "kardeş bildirimi sınıf anahtarı gerektirir, `friend class %T::%T' gibi"
+msgstr "kardeş bildirimi sınıf anahtarı gerektirir, `friend class %T::%D' gibi"
 
 #: cp/decl.c:11670
 msgid "friend declaration requires class-key, i.e. `friend %#T'"
@@ -15565,9 +15412,9 @@ msgid "storage class `register' invalid for function `%s'"
 msgstr "saklama sınıfı `register' `%s' işlevi için geçersiz"
 
 #: cp/decl.c:12052
-#, fuzzy, c-format
+#, c-format
 msgid "storage class `__thread' invalid for function `%s'"
-msgstr "saklama sınıfı `auto' `%s' işlevi için geçersiz"
+msgstr "saklama sınıfı `__thread' `%s' işlevi için geçersiz"
 
 #: cp/decl.c:12063
 #, c-format
@@ -15672,12 +15519,12 @@ msgstr "`%D' bir sınıf argümanına sahip olmalı ya da enum türünde olmalı
 #: cp/decl.c:12821
 #, c-format
 msgid "conversion to %s%s will never use a type conversion operator"
-msgstr "%s%s e dönüşüm asla bir tür dönüşüm işlemimi kullanmayacak"
+msgstr "%s%s e dönüşüm asla bir tür dönüşüm işleci kullanmayacak"
 
 #. 13.4.0.3
 #: cp/decl.c:12828
 msgid "ISO C++ prohibits overloading operator ?:"
-msgstr "ISO C++ işlemimi ?: nın aşırı yüklenmesini yasaklar"
+msgstr "ISO C++ işleci ?: nın aşırı yüklenmesini yasaklar"
 
 #: cp/decl.c:12878
 msgid "postfix `%D' must take `int' as its argument"
@@ -15988,9 +15835,8 @@ msgid "too many initialization functions required"
 msgstr "çok fazla ilklendirme işlevi gerekli"
 
 #: cp/decl2.c:2966
-#, fuzzy
 msgid "inline function `%D' used but never defined"
-msgstr "`%s' tanımlanmadan kullanılmış"
+msgstr "özümlenen işlev `%D' tanımlanmadan kullanılmış"
 
 #: cp/decl2.c:3086
 msgid "use of old-style cast"
@@ -16102,9 +15948,8 @@ msgid "`%T' is not a class or union type"
 msgstr "`%T' bir sınıf ya da birleşik yapı değil"
 
 #: cp/decl2.c:4862
-#, fuzzy
 msgid "template argument is required for `%T'"
-msgstr "%d şablon parametresi alındı (`%#T' için)"
+msgstr "şablon argüman `%#T' için gereklidir"
 
 #: cp/error.c:35
 #, c-format
@@ -16124,7 +15969,7 @@ msgstr "(%2$s için statik %1$s)"
 #: cp/error.c:1482
 #, c-format
 msgid "\\x%x"
-msgstr ""
+msgstr "\\x%x"
 
 #: cp/error.c:2430
 #, c-format
@@ -16270,29 +16115,24 @@ msgid "initializer list treated as compound expression"
 msgstr "ilklendirici listesi bileşik ifade olarak ele alınıyor"
 
 #: cp/init.c:523
-#, fuzzy
 msgid "`%D' will be initialized after"
-msgstr "üye `%D' ilklendirilmemiş referanstır"
+msgstr "`%D' sonradan ilklendirilmiş olacak"
 
 #: cp/init.c:526
-#, fuzzy
 msgid "base `%T' will be initialized after"
-msgstr "taban sınıf `%T' zaten ilklendirilmiş"
+msgstr "taban sınıf `%T' sonradan ilklendirilmiş olacak"
 
 #: cp/init.c:529
-#, fuzzy
 msgid "  `%#D'"
-msgstr "  ve `%#D'  için üye ilklendiriciler"
+msgstr "  `%#D'"
 
 #: cp/init.c:531
-#, fuzzy
 msgid "  base `%T'"
-msgstr "  ve `%#T' için taban ilklendiriciler"
+msgstr "  taban `%T'"
 
 #: cp/init.c:549
-#, fuzzy
 msgid "multiple initializations given for base `%T'"
-msgstr "`%D' için çoklu ilklendiriciler belirtilmiş"
+msgstr "taban `%T' için çoklu ilklendiriciler belirtilmiş"
 
 #: cp/init.c:616
 msgid "initializations for multiple members of `%T'"
@@ -16382,9 +16222,8 @@ msgid "`%D' is not a member of type `%T'"
 msgstr "`%D' `%T' türünde bir üye değil"
 
 #: cp/init.c:1688
-#, fuzzy
 msgid "invalid pointer to bit-field `%D'"
-msgstr "bit alanı `%D' göstergesi kuraldışı"
+msgstr "bit alanı `%D' göstergesi geçersiz"
 
 #: cp/init.c:1727
 msgid "object missing in use of pointer-to-member construct"
@@ -16546,7 +16385,7 @@ msgstr "çapraz derlemede gerçek değerli şablon parametreleri"
 
 #: cp/mangle.c:2325
 msgid "the mangled name of `%D' will change in a future version of GCC"
-msgstr ""
+msgstr "`D' nin anlamlandırılmış ismi GCC'nin gelecek sürümünde değişecek"
 
 #: cp/method.c:154
 msgid "invalid use of member `%D' in static member function"
@@ -16579,11 +16418,11 @@ msgstr "`...' kullanan `%#D' için genel thunk kodu başarısız"
 
 #: cp/method.c:694
 msgid "non-static const member `%#D', can't use default assignment operator"
-msgstr "statik olmayan sabit üye `%#D', öntanımlı atama işlemimi kullanamaz"
+msgstr "statik olmayan sabit üye `%#D', öntanımlı atama işleci kullanamaz"
 
 #: cp/method.c:699
 msgid "non-static reference member `%#D', can't use default assignment operator"
-msgstr "statik olmayan referans üyesi `%#D', öntanımlı atama işlemimi kullanamaz"
+msgstr "statik olmayan referans üyesi `%#D', öntanımlı atama işleci kullanamaz"
 
 #: parse.y:261
 msgid "`%s' tag used in naming `%#T'"
@@ -16642,9 +16481,8 @@ msgstr "`%T' bir geçerli ifade değil"
 #. This was previously allowed as an extension, but
 #. was removed in G++ 3.3.
 #: parse.y:1358
-#, fuzzy
 msgid "initialization of new expression with `='"
-msgstr "ISO C++ da `=' ile yeni ifade ilklendirmesine izin verilmez"
+msgstr "`=' ile new ifadesinin ilklendirilmesi"
 
 #: parse.y:1384
 msgid "ISO C++ forbids compound literals"
@@ -17048,9 +16886,8 @@ msgid "template-argument `%T' uses local type `%T'"
 msgstr "şablon argümanı `%T' yerel tür `%T' kullanıyor"
 
 #: cp/pt.c:3472
-#, fuzzy
 msgid "template-argument `%T' is a variably modified type"
-msgstr "şablon argümanı `%T' anonim tür kullanıyor"
+msgstr "şablon argümanı `%T' değişkene göre değişen türde"
 
 #: cp/pt.c:3507
 msgid "could not convert template argument `%E' to `%T'"
@@ -17370,9 +17207,8 @@ msgid "invalid definition of qualified type `%T'"
 msgstr "nitelikli tür `%T' tanımı geçersiz"
 
 #: cp/semantics.c:2051
-#, fuzzy
 msgid "invalid base-class specification"
-msgstr "%0 da uzunluk özelliği geçersiz"
+msgstr "ana sınıf belirtimi geçersiz"
 
 #: cp/semantics.c:2060
 msgid "base class `%T' has cv qualifiers"
@@ -17392,9 +17228,8 @@ msgid "parse error at end of saved function text"
 msgstr "kayıtlı işlev metninin sonunda ayrıştırma hatası"
 
 #: cp/spew.c:1090 cp/spew.c:1178
-#, fuzzy
 msgid "%Hend of file read inside definition"
-msgstr "alan tanımında STEP kullanılamaz"
+msgstr "%Hdosya sonu tanım içinde okundu"
 
 #: cp/spew.c:1121
 msgid "parse error in method specification"
@@ -17405,9 +17240,8 @@ msgid "function body for constructor missing"
 msgstr "kurucu için işlev gövdesi yok"
 
 #: cp/spew.c:1258
-#, fuzzy
 msgid "%Hend of file read inside default argument"
-msgstr "`%D' öntanımlı argümanlara sahip olamaz"
+msgstr "%Hdosya sonu öntanımlı argüman içinde okundu"
 
 #: cp/spew.c:1415
 msgid "circular dependency in default args of `%#D'"
@@ -17484,9 +17318,9 @@ msgid "`%s' attribute is not supported on this platform"
 msgstr "bu hedefte `%s' özniteliği desteklenmiyor"
 
 #: cp/tree.c:2659
-#, fuzzy, c-format
+#, c-format
 msgid "lang_* check: failed in %s, at %s:%d"
-msgstr "Ağaç denetimi: %4$s:%5$d: %3$s işlevinde '%1$s' umulurken, '%2$s' var"
+msgstr "lang_* denetimi: %2$s:%3$d: %1$s içinde başarısız"
 
 #: cp/typeck.c:524
 #, c-format
@@ -17502,14 +17336,14 @@ msgid "ISO C++ prohibits conversion from `%#T' to `(...)'"
 msgstr "ISO C++ `%#T' den `(...)' ya dönüşümü yasaklar"
 
 #: cp/typeck.c:1516
-#, fuzzy, c-format
+#, c-format
 msgid "invalid application of `%s' to a member function"
-msgstr "üye olmayan işlevde `this' kullanımı geçersiz"
+msgstr "üye olmayan işleve `%s' uygulanması geçersiz"
 
 #: cp/typeck.c:1522
-#, fuzzy, c-format
+#, c-format
 msgid "invalid application of `%s' to non-static member"
-msgstr "üyeye göstergede `%s' kullanımı geçersiz"
+msgstr "statik olmayab üyeye `%s' uygulanması geçersiz"
 
 #: cp/typeck.c:1540
 msgid "sizeof applied to a bit-field"
@@ -17521,35 +17355,31 @@ msgstr "ISO C++ bir işlev türü ifadesine `sizeof' uygulanmasına izin vermez"
 
 #: cp/typeck.c:1655
 msgid "invalid use of non-lvalue array"
-msgstr "sol tarafsız dizi kullanımı geçersiz"
+msgstr "soldeğersiz dizi kullanımı geçersiz"
 
 #: cp/typeck.c:1761
 msgid "deprecated conversion from string constant to `%T'"
 msgstr "dizge sabitten `%T' ye modası geçmiş dönüşüm"
 
 #: cp/typeck.c:1892 cp/typeck.c:2115
-#, fuzzy
 msgid "request for member `%D' in `%E', which is of non-class type `%T'"
-msgstr "bir nesne alarak oluşmayan `%3$T' türündeki `%2$E'nin üyesi `%D' için istek"
+msgstr "sınıf olmayan `%T' türündeki `%E'nin üyesi `%D' için istek"
 
 #: cp/typeck.c:1918
-#, fuzzy
 msgid "`%D' is not a member of `%T'"
-msgstr "`%D' `%T' türünde bir üye değil"
+msgstr "`%D' `%T' nin bir üyesi değil"
 
 #: cp/typeck.c:1958 cp/typeck.c:1979
-#, fuzzy
 msgid "invalid access to non-static data member `%D' of NULL object"
-msgstr "geçersiz static olmayan alan `%D' kullanımı"
+msgstr "NULL nesnenin static olmayan `%D' veri üyesine erişimi geçersiz"
 
 #: cp/typeck.c:1960 cp/typeck.c:1981
 msgid "(perhaps the `offsetof' macro was used incorrectly)"
-msgstr ""
+msgstr "(belki `offsetof' makrosu yanlış kullanıldı)"
 
 #: cp/typeck.c:2161
-#, fuzzy
 msgid "`%D::%D' is not a member of `%T'"
-msgstr "`%D' `%T' türünde bir üye değil"
+msgstr "`%D::%D', `%T' nin bir üyesi değil"
 
 #: cp/typeck.c:2187
 msgid "destructor specifier `%T::~%T' must have matching names"
@@ -17560,9 +17390,8 @@ msgid "type `%T' has no destructor"
 msgstr "tür `%T' yıkıcıya sahip değil"
 
 #: cp/typeck.c:2232
-#, fuzzy
 msgid "`%D' is not a member template function"
-msgstr "`%D' bir işlev değil,"
+msgstr "`%D' bir üye şablon işlevi değil"
 
 #. A pointer to incomplete type (other than cv void) can be
 #. dereferenced [expr.unary.op]/1
@@ -17588,9 +17417,9 @@ msgid "subscripting array declared `register'"
 msgstr "`register' olarak bildirilmiş dizi indislemesi"
 
 #: cp/typeck.c:2558
-#, fuzzy, c-format
+#, c-format
 msgid "object missing in use of `%E'"
-msgstr "`%E' içinde nesne eksik"
+msgstr "`%E' kullanımı içinde nesne eksik"
 
 #: cp/typeck.c:2663
 msgid "ISO C++ forbids calling `::main' from within program"
@@ -17699,12 +17528,12 @@ msgstr "gösterge aritmetiğinde tamamlanmamış türe gösterge kullanımı ge�
 #: cp/typeck.c:3823
 #, c-format
 msgid "invalid use of '%E' to form a pointer-to-member-function.  Use a qualified-id."
-msgstr ""
+msgstr "'%E' kullanımı üye işleve göstrge biçiminde geçersiz. Bir nitelikli kimlik kullanın."
 
 #: cp/typeck.c:3829
 #, c-format
 msgid "parenthesis around '%E' cannot be used to form a pointer-to-member-function"
-msgstr ""
+msgstr "parantez içene alınmış '%E' üye işleve gösterge biçiminde kullanılamaz"
 
 #: cp/typeck.c:3852
 msgid "taking address of temporary"
@@ -18123,14 +17952,12 @@ msgid "ISO C++ forbids defining types within %s"
 msgstr "ISO C++ %s ile türlerin tanımlanmasına izin vermez"
 
 #: cp/typeck2.c:1399
-#, fuzzy
 msgid "call to function `%D' which throws incomplete type `%#T'"
-msgstr "içi boş tür `%T' ye bir gösterge %s yapılamaz"
+msgstr "içi boş tür `%#T' yakalanırken `%D' işlevine çağrı"
 
 #: cp/typeck2.c:1402
-#, fuzzy
 msgid "call to function which throws incomplete type `%#T'"
-msgstr "içi boş tür `%T' ye bir gösterge %s yapılamaz"
+msgstr "içi boş tür `%#T' yakalanırken işleve çağrı"
 
 #. XXX Not i18n clean.
 #: cp/cp-tree.h:3846
@@ -18413,12 +18240,12 @@ msgstr "%0 da, INCLUDE iç içeliği çok derin"
 #: f/expr.c:9614
 #, no-c-format
 msgid "Two arithmetic operators in a row at %0 and %1 -- use parentheses"
-msgstr "%0 ve %1 de tek satırda iki aritmetik işlemimi -- parantez kullanın"
+msgstr "%0 ve %1 de tek satırda iki aritmetik işleci -- parantez kullanın"
 
 #: f/expr.c:9664
 #, no-c-format
 msgid "Operator at %0 has lower precedence than that at %1 -- use parentheses"
-msgstr "%0 daki işlemimi %1 dekinden daha düşük önceliğe sahip -- parantez kullanın"
+msgstr "%0 daki işleç %1 dekinden daha düşük önceliğe sahip -- parantez kullanın"
 
 #: f/expr.c:10525
 #, no-c-format
@@ -18584,7 +18411,7 @@ msgstr "%0 da ayarlanabilir yerel sembol `%A'"
 
 #: f/target.c:2550
 msgid "data initializer on host with different endianness"
-msgstr "farklı kıymetli bayt sıralamalı makina üzerinde veri ilklendirmesi"
+msgstr "farklı kıymetli bayt sıralamalı konak üzerinde veri ilklendirmesi"
 
 #: f/top.c:237
 #, c-format
@@ -18975,7 +18802,7 @@ msgstr "%0 daki dizgecik (%1 deki ifade ya da alt ifadede) geçersiz"
 #: f/bad.def:48
 #, no-c-format
 msgid "Missing operand for operator at %1 at end of expression at %0"
-msgstr "%1 deki işlemimi için %0 daki ifadenin sonunda terim eksik"
+msgstr "%1 deki işleç için %0 daki ifadenin sonunda terim eksik"
 
 #: f/bad.def:51
 #, no-c-format
@@ -19070,7 +18897,7 @@ msgstr "%0 daki üstel gerçel sayı için %1 de değer eksik"
 #: f/bad.def:135
 #, no-c-format
 msgid "Expected binary operator between expressions at %0 and at %1"
-msgstr "%0 ve %1 deki ifadeler arasında iki terimli işlemimi umuluyor"
+msgstr "%0 ve %1 deki ifadeler arasında iki terimli işleci umuluyor"
 
 #: f/bad.def:253
 #, no-c-format
@@ -19130,12 +18957,12 @@ msgstr "%0 daki sonlandırıcı öncesinde sahte virgül"
 #: f/bad.def:436
 #, no-c-format
 msgid "At %0, specify OPERATOR instead of ASSIGNMENT for INTERFACE statement not specifying the assignment operator (=)"
-msgstr "%0 da, INTERFACE deyimi için ASSIGNMENT yerine atama işlemimi (=) olmayan OPERATOR belirtilmesi"
+msgstr "%0 da, INTERFACE deyimi için ASSIGNMENT yerine atama işleci (=) olmayan OPERATOR belirtilmesi"
 
 #: f/bad.def:439
 #, no-c-format
 msgid "At %0, specify ASSIGNMENT instead of OPERATOR for INTERFACE statement specifying the assignment operator (=)"
-msgstr "%0 da, INTERFACE deyimi için ASSIGNMENT yerine atama işlemimi (=) olan OPERATOR belirtilmesi"
+msgstr "%0 da, INTERFACE deyimi için ASSIGNMENT yerine atama işleci (=) olan OPERATOR belirtilmesi"
 
 #: f/bad.def:452
 #, no-c-format
@@ -19235,7 +19062,7 @@ msgstr "%0 daki END deyiminde eksik olan `%A' anahtar sözcüğü %1 tarafından
 #: f/bad.def:509
 #, no-c-format
 msgid "MODULE PROCEDURE statement at %0 disallowed because INTERFACE at %1 specifies no generic name, operator, or assignment"
-msgstr "%1 daki INTERFACE bir genel isim, işlemimi ya da atama belirtmediğinden %0 daki MODULE PROCEDURE deyimi iptal edildi"
+msgstr "%1 daki INTERFACE bir genel isim, işleç ya da atama belirtmediğinden %0 daki MODULE PROCEDURE deyimi iptal edildi"
 
 #: f/bad.def:512
 #, no-c-format
@@ -19420,7 +19247,7 @@ msgstr "%1 için alt dizge referans içinde %0 da ':' eksik"
 #: f/bad.def:650
 #, no-c-format
 msgid "Invalid use at %0 of substring operator on %1"
-msgstr "%1 üstünde altdizge işlemiminin %0 da kullanımı geçersiz"
+msgstr "%1 üstünde altdizge işlecinin %0 da kullanımı geçersiz"
 
 #: f/bad.def:653
 #, no-c-format
@@ -20145,9 +19972,8 @@ msgid "`%s' is not a valid class name"
 msgstr "\"%s\" geçerli bir sınıf ismi değil"
 
 #: java/jvspec.c:435
-#, fuzzy
 msgid "--resource requires -o"
-msgstr "-R, -o gerektirir"
+msgstr "--resource, -o gerektirir"
 
 #: java/jvspec.c:442
 msgid "warning: already-compiled .class files ignored with -C"
@@ -20458,7 +20284,7 @@ msgstr "%s için uygun bir case yok"
 #: ../../gcc-3cvs/gcc/java/parse.y:13240
 #, c-format
 msgid "unregistered operator %s"
-msgstr "%s işlemimi tanınmıyor"
+msgstr "%s işleci tanınmıyor"
 
 #: java/typeck.c:553
 msgid "junk at end of signature string"
@@ -20470,7 +20296,7 @@ msgstr "exception_table içindeki pc hatalı"
 
 #: java/verify.c:485
 msgid "exception handler inside code that is being protected"
-msgstr ""
+msgstr "hata değişkeni korunmuş kodun içinde"
 
 #: java/verify.c:1395
 #, c-format
@@ -20602,9 +20428,9 @@ msgid "cannot find reference tag for class `%s'"
 msgstr "sınıf `%s' için referans etiketi bulunamıyor"
 
 #: objc/objc-act.c:2050
-#, fuzzy, c-format
+#, c-format
 msgid "creating selector for non existant method %s"
-msgstr "yöntem `%s' için olası seçici çelişiyor"
+msgstr "omayan yöntem %s için ayraç oluşturuyor"
 
 #: objc/objc-act.c:2364
 #, c-format
@@ -20633,7 +20459,7 @@ msgstr "çelişkili gerçekleme değişkeni özelliği"
 
 #: objc/objc-act.c:4580
 msgid "can not use an object as parameter to a method\n"
-msgstr ""
+msgstr "bir nesne bir yöntemde parametre olarak kullanılamaz\n"
 
 #: objc/objc-act.c:4780
 #, c-format
@@ -20678,9 +20504,9 @@ msgid "cannot find method"
 msgstr "yöntem bulunamıyor"
 
 #: objc/objc-act.c:5399
-#, fuzzy, c-format
+#, c-format
 msgid "undeclared selector `%s'"
-msgstr "bildirilmemiş tanımlayıcı `%s'"
+msgstr "bildirilmemiş ayraç `%s'"
 
 #. Historically, a class method that produced objects (factory
 #. method) would assign `self' to the instance that it
@@ -20828,60 +20654,55 @@ msgstr "Sabit dizgeler için sınıf ismi belirtilir"
 #. treelang.
 #: treelang/lang-options.h:26
 msgid "(debug) trace parsing process"
-msgstr ""
+msgstr "(hata ayıklama) trace parsing process"
 
 #: treelang/lang-options.h:27
 msgid "(debug) trace lexical analysis"
-msgstr ""
+msgstr "(hata ayıklama) trace lexical analysis"
 
 #: config/darwin.h:212
 msgid "-current_version only allowed with -dynamiclib"
-msgstr ""
+msgstr "-current_version sadece -dynamiclib ile kullanılabilir"
 
 #: config/darwin.h:215
 msgid "-install_name only allowed with -dynamiclib"
-msgstr ""
+msgstr "-install_name sadece -dynamiclib ile kullanılabilir"
 
 #: config/darwin.h:220
-#, fuzzy
 msgid "-bundle not allowed with -dynamiclib"
-msgstr "-mlong-double-64 ile -m64 birarada izin verilmez"
+msgstr "-bundle ile -dynamiclib birarada izin verilmez"
 
 #: config/darwin.h:221
-#, fuzzy
 msgid "-bundle_loader not allowed with -dynamiclib"
-msgstr "-mlong-double-64 ile -m64 birarada izin verilmez"
+msgstr "-bundle_loader ile -dynamiclib birarada izin verilmez"
 
 #: config/darwin.h:222
-#, fuzzy
 msgid "-client_name not allowed with -dynamiclib"
-msgstr "-mlong-double-64 ile -m64 birarada izin verilmez"
+msgstr "-client_name ile -dynamiclib birarada izin verilmez"
 
 #: config/darwin.h:225
 msgid "-force_cpusubtype_ALL not allowed with -dynamiclib"
-msgstr ""
+msgstr "-force_cpusubtype_ALL ile -dynamiclib birarada izin verilmez"
 
 #: config/darwin.h:226
 msgid "-force_flat_namespace not allowed with -dynamiclib"
-msgstr ""
+msgstr "-force_flat_namespace ile -dynamiclib birarada izin verilmez"
 
 #: config/darwin.h:228
 msgid "-keep_private_externs not allowed with -dynamiclib"
-msgstr ""
+msgstr "-keep_private_externs ile -dynamiclib birarada izin verilmez"
 
 #: config/darwin.h:229
-#, fuzzy
 msgid "-private_bundle not allowed with -dynamiclib"
-msgstr "-mlong-double-64 ile -m64 birarada izin verilmez"
+msgstr "-private_bundle ile -dynamiclib birarada izin verilmez"
 
 #: f/lang-specs.h:38 gcc.c:689
 msgid "GNU C does not support -C without using -E"
 msgstr "GNU C -E kulanılmaksızın -C desteklemiyor"
 
 #: f/lang-specs.h:39 gcc.c:690
-#, fuzzy
 msgid "GNU C does not support -CC without using -E"
-msgstr "GNU C -E kulanılmaksızın -C desteklemiyor"
+msgstr "GNU C -E kulanılmaksızın -CC desteklemiyor"
 
 #: config/sparc/sol2-bi.h:168 config/sparc/sol2-bi.h:178
 #: config/sparc/linux64.h:197 config/sparc/linux64.h:208
@@ -20912,7 +20733,7 @@ msgstr "-pg ve -fomit-frame-pointer uyumsuz"
 
 #: config/rs6000/darwin.h:62
 msgid " conflicting code gen style switches are used"
-msgstr ""
+msgstr " çelişen code gen tarzı switch'ler kullanılmış"
 
 #: config/i386/cygwin.h:115
 msgid "mno-cygwin and mno-win32 are not compatible"
@@ -20943,14 +20764,12 @@ msgid "-femit-class-file should used along with -fsyntax-only"
 msgstr "-femit-class-file -fsyntax-only ile birlikte kullanılmalı"
 
 #: treelang/lang-specs.h:52
-#, fuzzy
 msgid "-pg or -p and -fomit-frame-pointer are incompatible"
-msgstr "-pg ve -fomit-frame-pointer uyumsuz"
+msgstr "-pg veya -p ve -fomit-frame-pointer uyumsuz"
 
 #: config/vax/netbsd-elf.h:42
-#, fuzzy
 msgid "The -shared option is not currently supported for VAX ELF."
-msgstr "yerleşik işlev `%s' şu an desteklenmiyor"
+msgstr "-shared seçeneği VAX ELF için şu an desteklenmiyor."
 
 #: config/mcore/mcore.h:60
 msgid "choose either big or little endian, not both"

@@ -1,6 +1,6 @@
 # Danish version of GCC strings.
-# Copyright (C) 2002 Free Software Foundation, Inc.
-# Ole Laursen <olau@hardworking.dk>, 2001, 02.
+# Copyright (C) 2002, 03 Free Software Foundation, Inc.
+# Ole Laursen <olau@hardworking.dk>, 2001, 02, 03.
 #
 # Konventioner:
 #
@@ -126,9 +126,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 3.2.1\n"
+"Project-Id-Version: gcc 3.3-b20021230\n"
 "POT-Creation-Date: 2002-12-30 18:56+0000\n"
-"PO-Revision-Date: 2002-11-24 17:04+0100\n"
+"PO-Revision-Date: 2003-02-22 10:59+0100\n"
 "Last-Translator: Ole Laursen <olau@hardworking.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
 "MIME-Version: 1.0\n"
@@ -276,9 +276,8 @@ msgid "built-in function `%s' not currently supported"
 msgstr "den indbyggede funktion '%s' understøttes i øjeblikket ikke"
 
 #: builtins.c:4147
-#, fuzzy
 msgid "target format does not support infinity"
-msgstr "målprocessoren understøtter ikke interarbejde"
+msgstr "målprocessoren understøtter ikke uendelig"
 
 #: c-common.c:1163
 #, c-format
@@ -291,9 +290,8 @@ msgid "string length `%d' is greater than the length `%d' ISO C%d compilers are 
 msgstr "strenglængden '%d' er større end den længde på '%d' som ISO C%d-oversættere er pålagt at understøtte"
 
 #: c-common.c:1242
-#, fuzzy
 msgid "concatenation of string literals with __FUNCTION__ is deprecated"
-msgstr "sammensætning af strengkonstanter med __FUNCTION__ er forældet; denne facilitet vil blive fjernet engang i fremtiden"
+msgstr "sammensætning af strengkonstanter med __FUNCTION__ er forældet"
 
 #: c-common.c:1338
 msgid "overflow in constant expression"
@@ -399,19 +397,18 @@ msgid "invalid use of `restrict'"
 msgstr "ugyldig brug af 'restrict'"
 
 #: c-common.c:3059
-#, fuzzy
 msgid "invalid application of `sizeof' to a function type"
-msgstr "ISO C++ forbyder anvendelse af 'sizeof' på en funktionstype"
+msgstr "ugyldig anvendelse af 'sizeof' på en funktionstype"
 
 #: c-common.c:3069
-#, fuzzy, c-format
+#, c-format
 msgid "invalid application of `%s' to a void type"
-msgstr "ugyldig operation på uudskiftet type"
+msgstr "ugyldig anvendelse af '%s' på en void-type"
 
 #: c-common.c:3075
-#, fuzzy, c-format
+#, c-format
 msgid "invalid application of `%s' to an incomplete type"
-msgstr "__alignof__ benyttet på en ufuldstændig type"
+msgstr "ugyldig anvendelse af '%s' på en ufuldstændig type"
 
 #: c-common.c:3116
 msgid "`__alignof' applied to a bit-field"
@@ -433,9 +430,9 @@ msgid "too many arguments to function `%s'"
 msgstr "for mange parametre til funktionen '%s'"
 
 #: c-common.c:3790
-#, fuzzy, c-format
+#, c-format
 msgid "non-floating-point argument to function `%s'"
-msgstr "for mange parametre til funktionen '%s'"
+msgstr "parameter der ikke er et kommatal, til funktionen '%s'"
 
 #: c-common.c:4059
 msgid "pointers are not permitted as case values"
@@ -501,9 +498,9 @@ msgid "no data type for mode `%s'"
 msgstr "ingen datatype til tilstanden '%s'"
 
 #: c-common.c:5641 c-common.c:6242
-#, fuzzy, c-format
+#, c-format
 msgid "unable to emulate '%s'"
-msgstr "kunne ikke åbne filen '%s'"
+msgstr "kunne ikke emulere '%s'"
 
 #: c-common.c:5677
 msgid "section attribute cannot be specified for local variables"
@@ -550,22 +547,20 @@ msgid "alias arg not a string"
 msgstr "aliasparameter er ikke en streng"
 
 #: c-common.c:5885
-#, fuzzy
 msgid "visibility arg not a string"
-msgstr "aliasparameter er ikke en streng"
+msgstr "synlighedsparameter er ikke en streng"
 
 #: c-common.c:5894
 msgid "visibility arg must be one of \"default\", \"hidden\", \"protected\" or \"internal\""
-msgstr ""
+msgstr "synlighedsparameter skal være en af \"default\", \"hidden\", \"protected\" eller \"internal\""
 
 #: c-common.c:5928
-#, fuzzy
 msgid "tls_model arg not a string"
-msgstr "aliasparameter er ikke en streng"
+msgstr "tls_model-parameter er ikke en streng"
 
 #: c-common.c:5937
 msgid "tls_model arg must be one of \"local-exec\", \"initial-exec\", \"local-dynamic\" or \"global-dynamic\""
-msgstr ""
+msgstr "tls_model-parameter skal være en af \"local-exec\", \"initial-exec\", \"local-dynamic\" eller \"global-dynamic\""
 
 #: c-common.c:5962 c-common.c:6018
 #, c-format
@@ -592,29 +587,28 @@ msgid "no vector mode with the size and type specified could be found"
 msgstr "ingen vektortilstand med den angivne størrelse og typen kunne findes"
 
 #: c-common.c:6329
-#, fuzzy
 msgid "nonnull attribute without arguments on a non-prototype"
-msgstr "antallet af parametre passer ikke til prototypen"
+msgstr "ikke-nul egenskab uden parametre til en ikke-prototype"
 
 #: c-common.c:6344
-#, fuzzy, c-format
+#, c-format
 msgid "nonnull argument has invalid operand number (arg %lu)"
-msgstr "formateringsstrengen har et ugyldigt operandtal"
+msgstr "ikke-nul parameter har ugyldig operandnummer (parameter %lu)"
 
 #: c-common.c:6363
 #, c-format
 msgid "nonnull argument with out-of-range operand number (arg %lu, operand %lu)"
-msgstr ""
+msgstr "ikke-nul parameter med operandnummer uden for det gyldig interval (parameter %lu, operand %lu)"
 
 #: c-common.c:6371
 #, c-format
 msgid "nonnull argument references non-pointer operand (arg %lu, operand %lu)"
-msgstr ""
+msgstr "ikke-nul parameter refererer til ikke-henvisningsoperand (parameter %lu, operand %lu)"
 
 #: c-common.c:6457
 #, c-format
 msgid "null argument where non-null required (arg %lu)"
-msgstr ""
+msgstr "nulparameter hvor ikke-nul er påkrævet (parameter %lu)"
 
 #: c-convert.c:80 c-typeck.c:988 c-typeck.c:4045 cp/typeck.c:1617
 #: cp/typeck.c:5855
@@ -726,16 +720,15 @@ msgstr "en parameterliste med '...' passer ikke til en erklæring med en tom para
 msgid "an argument type that has a default promotion can't match an empty parameter name list declaration"
 msgstr "en parametertype med automatisk forfremmelse passer ikke til en erklæring med en tom parameterliste"
 
-# anden 'declaration' er underforstået i engelsk original
 #: c-decl.c:1146
-#, fuzzy, c-format
+#, c-format
 msgid "thread-local declaration of `%s' follows non thread-local declaration"
-msgstr "static-erklæring af '%s' følger erklæring uden static"
+msgstr "trådlokal erklæring af '%s' følger ikke-trådlokal erklæring"
 
 #: c-decl.c:1153
-#, fuzzy, c-format
+#, c-format
 msgid "non thread-local declaration of `%s' follows thread-local declaration"
-msgstr "erklæring uden static af '%s' følger static-erklæring"
+msgstr "ikke-trådlokal erklæring af '%s' følger trådlokal erklæring"
 
 #: c-decl.c:1164 c-decl.c:1187
 #, c-format
@@ -925,14 +918,12 @@ msgid "empty declaration"
 msgstr "tom erklæring"
 
 #: c-decl.c:2718
-#, fuzzy
 msgid "ISO C90 does not support `static' or type qualifiers in parameter array declarators"
-msgstr "ISO C89 understøtter ikke 'static' eller typemodifikationer i parametertabelerklæringer"
+msgstr "ISO C90 understøtter ikke 'static' eller typemodifikationer i parametertabelerklæringer"
 
 #: c-decl.c:2720
-#, fuzzy
 msgid "ISO C90 does not support `[*]' array declarators"
-msgstr "ISO C89 understøtter ikke '[*]' tabelerklæringer"
+msgstr "ISO C90 understøtter ikke '[*]' tabelerklæringer"
 
 #: c-decl.c:2723
 msgid "GCC does not yet properly implement `[*]' array declarators"
@@ -949,9 +940,9 @@ msgstr "'%s' er sædvanligvis en funktion"
 
 # init dækker over værditildeling her - samme for de næste mange
 #: c-decl.c:2825
-#, fuzzy, c-format
+#, c-format
 msgid "typedef `%s' is initialized (use __typeof__ instead)"
-msgstr "typedef '%s' bliver tildelt en værdi"
+msgstr "typedef '%s' bliver tildelt en værdi (benyt __typeof__ i stedet)"
 
 #: c-decl.c:2831
 #, c-format
@@ -1028,9 +1019,8 @@ msgid "`long long long' is too long for GCC"
 msgstr "'long long long' er for langt for GCC"
 
 #: c-decl.c:3540
-#, fuzzy
 msgid "ISO C90 does not support `long long'"
-msgstr "ISO C89 understøtter ikke 'long long'"
+msgstr "ISO C90 understøtter ikke 'long long'"
 
 #: c-decl.c:3549 c-decl.c:3552 cp/decl.c:10438
 #, c-format
@@ -1039,11 +1029,11 @@ msgstr "'%s' optræder mere end én gang"
 
 #: c-decl.c:3562 cp/decl.c:10445
 msgid "`__thread' before `extern'"
-msgstr ""
+msgstr "'__thread' før 'extern'"
 
 #: c-decl.c:3564 cp/decl.c:10447
 msgid "`__thread' before `static'"
-msgstr ""
+msgstr "'__thread' før 'static'"
 
 #: c-decl.c:3572 cp/decl.c:10474
 #, c-format
@@ -1100,9 +1090,8 @@ msgid "complex invalid for `%s'"
 msgstr "complex ugyldig for '%s'"
 
 #: c-decl.c:3748
-#, fuzzy
 msgid "ISO C90 does not support complex types"
-msgstr "ISO C89 understøtter ikke komplekse typer"
+msgstr "ISO C90 understøtter ikke komplekse typer"
 
 #: c-decl.c:3760
 msgid "ISO C does not support plain `complex' meaning `double complex'"
@@ -1142,9 +1131,8 @@ msgid "function definition declared `typedef'"
 msgstr "'typedef' er påhæftet funktionsdefinitionen"
 
 #: c-decl.c:3841
-#, fuzzy
 msgid "function definition declared `__thread'"
-msgstr "'typedef' er påhæftet funktionsdefinitionen"
+msgstr "'__thread' er påhæftet funktionsdefinitionen"
 
 #: c-decl.c:3854
 #, c-format
@@ -1181,9 +1169,9 @@ msgid "nested function `%s' declared `extern'"
 msgstr "indlejret funktion '%s' er erklæret 'extern'"
 
 #: c-decl.c:3891 cp/decl.c:10872
-#, fuzzy, c-format
+#, c-format
 msgid "function-scope `%s' implicitly auto and declared `__thread'"
-msgstr "funktionen '%s' kan ikke erklæres 'mutable'"
+msgstr "'%s' i funktionsvirkefelt underforstået auto og erklæret '__thread'"
 
 #. Only the innermost declarator (making a parameter be of
 #. array type which is converted to pointer type)
@@ -1203,9 +1191,8 @@ msgid "declaration of `%s' as array of functions"
 msgstr "'%s' erklæret som en tabel af funktioner"
 
 #: c-decl.c:3985 c-decl.c:5250
-#, fuzzy
 msgid "invalid use of structure with flexible array member"
-msgstr "ugyldig brug af fleksibelt tabelmedlem"
+msgstr "ugyldig brug af struktur med fleksibelt tabelmedlem"
 
 #: c-decl.c:4004
 #, c-format
@@ -1223,14 +1210,14 @@ msgid "size of array `%s' is negative"
 msgstr "størrelsen af tabellen '%s' er negativ"
 
 #: c-decl.c:4029
-#, fuzzy, c-format
+#, c-format
 msgid "ISO C90 forbids array `%s' whose size can't be evaluated"
-msgstr "ISO C89 forbyder tabellen '%s' hvis størrelse ikke kan bestemmes"
+msgstr "ISO C90 forbyder tabellen '%s' hvis størrelse ikke kan bestemmes"
 
 #: c-decl.c:4032
-#, fuzzy, c-format
+#, c-format
 msgid "ISO C90 forbids variable-size array `%s'"
-msgstr "ISO C89 forbyder tabellen '%s' med variabel størrelse"
+msgstr "ISO C90 forbyder tabellen '%s' med variabel størrelse"
 
 #: c-decl.c:4062 c-decl.c:4272 cp/decl.c:11450
 #, c-format
@@ -1238,9 +1225,8 @@ msgid "size of array `%s' is too large"
 msgstr "størrelsen af tabellen '%s' er for stor"
 
 #: c-decl.c:4075
-#, fuzzy
 msgid "ISO C90 does not support flexible array members"
-msgstr "ISO C89 understøtter ikke fleksible tabelmedlemmer"
+msgstr "ISO C90 understøtter ikke fleksible tabelmedlemmer"
 
 #: c-decl.c:4085
 msgid "array type has incomplete element type"
@@ -1321,9 +1307,8 @@ msgstr "variablen '%s' er erklæret 'inline'"
 #. A mere warning is sure to result in improper semantics
 #. at runtime.  Don't bother to allow this to compile.
 #: c-decl.c:4605 cp/decl.c:9511
-#, fuzzy
 msgid "thread-local storage not supported for this target"
-msgstr "-fdata-sections understøttes ikke på målarkitekturen"
+msgstr "trådlokal lagring understøttes ikke på målarkitekturen"
 
 #: c-decl.c:4660 c-decl.c:5746
 msgid "function declaration isn't a prototype"
@@ -1993,9 +1978,9 @@ msgid "unused arguments in $-style format"
 msgstr "ubenyttede parametre i formatering med $"
 
 #: c-format.c:1357
-#, fuzzy, c-format
+#, c-format
 msgid "zero-length %s format string"
-msgstr "formateringsstreng med længden nul"
+msgstr "formateringsstreng %s med længden nul"
 
 #: c-format.c:1361
 msgid "format is a wide character string"
@@ -2222,69 +2207,69 @@ msgstr "vildfaren '\\%o' i program"
 
 #: c-lex.c:850
 msgid "this decimal constant is unsigned only in ISO C90"
-msgstr ""
+msgstr "denne kommatalskonstant er kun unsigned i ISO C90"
 
 #: c-lex.c:853
 msgid "this decimal constant would be unsigned in ISO C90"
-msgstr ""
+msgstr "denne kommatalskonstant ville være unsigned i ISO C90"
 
 #: c-lex.c:869
-#, fuzzy, c-format
+#, c-format
 msgid "integer constant is too large for \"%s\" type"
-msgstr "heltalskonstanten er så stor at den er unsigned"
+msgstr "heltalskonstanten er for stor til typen '%s'"
 
 #: c-lex.c:937
-#, fuzzy, c-format
+#, c-format
 msgid "floating constant exceeds range of \"%s\""
-msgstr "kommatal overskrider intervallet for '%s'"
+msgstr "kommatalskonstant overskrider intervallet for '%s'"
 
 #: c-lex.c:973 cpplex.c:330 cpplex.c:668 cpplex.c:1942
 msgid "ignoring invalid multibyte character"
 msgstr "ignorerer ugyldigt flerbyte-tegn"
 
 #: c-opts.c:353
-#, fuzzy, c-format
+#, c-format
 msgid "missing argument to \"-%s\""
-msgstr "der mangler en parameter til tilvalget '%s'"
+msgstr "der mangler en parameter til tilvalget '-%s'"
 
 #: c-opts.c:357
-#, fuzzy, c-format
+#, c-format
 msgid "no class name specified with \"-%s\""
-msgstr "uddatafilnavnet er angivet to gange"
+msgstr "intet klassenavn angivet med '-%s'"
 
 #: c-opts.c:364
-#, fuzzy, c-format
+#, c-format
 msgid "missing filename after \"-%s\""
-msgstr "et filnavn mangler efter %s"
+msgstr "et filnavn mangler efter '-%s'"
 
 #: c-opts.c:369
-#, fuzzy, c-format
+#, c-format
 msgid "missing target after \"-%s\""
-msgstr "manglende barriere efter blok %i"
+msgstr "et mål mangler efter '-%s'"
 
 #: c-opts.c:503
 #, c-format
 msgid "options array incorrectly sorted: %s is before %s"
-msgstr ""
+msgstr "tilvalgstabel sorteret forkert: %s er før %s"
 
 #: c-opts.c:548
-#, fuzzy, c-format
+#, c-format
 msgid "too many filenames given.  Type %s --help for usage"
-msgstr "for mange filnavne - vejledning i brug kan fås med '%s --help'"
+msgstr "for mange filnavne angivet - vejledning i brug kan fås med '%s --help'"
 
 #: c-opts.c:934
 msgid "-Wno-strict-prototypes is not supported in C++"
 msgstr "-Wno-strict-prototypes er ikke understøttet i C++"
 
 #: c-opts.c:1014
-#, fuzzy, c-format
+#, c-format
 msgid "switch \"%s\" is no longer supported"
-msgstr "-f%s understøttes ikke længere"
+msgstr "tilvalget '%s' understøttes ikke længere"
 
 #: c-opts.c:1030
-#, fuzzy, c-format
+#, c-format
 msgid "switch \"%s\" is deprecated, please see documentation for details"
-msgstr "%s er forældet, se venligst dokumentationen for detaljer"
+msgstr "tilvalget '%s' er forældet, se venligst dokumentationen for detaljer"
 
 #: c-opts.c:1143
 msgid "-fhandle-exceptions has been renamed to -fexceptions (and is now on by default)"
@@ -2303,9 +2288,8 @@ msgid "-Wformat-extra-args ignored without -Wformat"
 msgstr "-Wformat-extra-args ignoreret uden -Wformat"
 
 #: c-opts.c:1381
-#, fuzzy
 msgid "-Wformat-zero-length ignored without -Wformat"
-msgstr "-Wformat-extra-args ignoreret uden -Wformat"
+msgstr "-Wformat-zero-length ignoreret uden -Wformat"
 
 #: c-opts.c:1383
 msgid "-Wformat-nonliteral ignored without -Wformat"
@@ -2320,34 +2304,33 @@ msgid "-Wmissing-format-attribute ignored without -Wformat"
 msgstr "-Wmissing-format-attribute ignoreret uden -Wformat"
 
 #: c-opts.c:1409
-#, fuzzy, c-format
+#, c-format
 msgid "opening output file %s"
-msgstr "kan ikke åbne uddatafilen '%s'"
+msgstr "åbner uddatafilen %s"
 
 #: c-opts.c:1464
-#, fuzzy, c-format
+#, c-format
 msgid "opening dependency file %s"
-msgstr "dynamiske afhængigheder.\n"
+msgstr "åbner afhængighedsfilen %s"
 
 #: c-opts.c:1474
-#, fuzzy, c-format
+#, c-format
 msgid "closing dependency file %s"
-msgstr "kunne ikke finde specifikationsfilen %s\n"
+msgstr "lukker afhængighedsfilen %s"
 
 #: c-opts.c:1477
-#, fuzzy, c-format
+#, c-format
 msgid "when writing output to %s"
-msgstr "fejl ved skrivning til %s"
+msgstr "ved skrivning af uddata til %s"
 
 #: c-opts.c:1557
-#, fuzzy
 msgid "to generate dependencies you must specify either -M or -MM"
-msgstr "du skal tillige angive enten -M eller -MM"
+msgstr "for at generere afhængigheder skal du angive enten -M eller -MM"
 
 #: c-opts.c:1704
-#, fuzzy, c-format
+#, c-format
 msgid "\"-%s\" is valid for %s but not for %s"
-msgstr "(det er gyldigt for %s, men ikke for det valgte sprog)"
+msgstr "'-%s' er gyldigt for %s, men ikke for %s"
 
 # den fulde tekst til disse bidder findes også senere
 #. To keep the lines from getting too long for some compilers, limit
@@ -2389,7 +2372,6 @@ msgstr ""
 "  -o <fil>                  Send uddata til <fil>\n"
 
 #: c-opts.c:1732
-#, fuzzy
 msgid ""
 "  -trigraphs                Support ISO C trigraphs\n"
 "  -std=<std name>           Specify the conformance standard; one of:\n"
@@ -2399,42 +2381,33 @@ msgid ""
 "  -W[no-]trigraphs          Warn if trigraphs are encountered\n"
 "  -W[no-]comment{s}         Warn if one comment starts inside another\n"
 msgstr ""
+"  -trigraphs                Understøt ISO C trigrafer\n"
 "  -std=<standardnavn>       Angiv at koden retter sig efter en af standarderne:\n"
 "                             gnu89, gnu99, c89, c99, iso9899:1990,\n"
-"                             iso9899:199409, iso9899:1999\n"
-"  -+                        Tillad fortolkning af faciliteter i C++-stil\n"
+"                             iso9899:199409, iso9899:1999, c++98\n"
 "  -w                        Blokér advarselsmeddelelser\n"
-"  -Wtrigraphs               Advar hvis der optræder trigrafer\n"
 "  -Wno-trigraphs            Advar ikke om trigrafer\n"
 "  -Wcomment{s}              Advar hvis en kommentar begynder inden i en anden\n"
 
 #: c-opts.c:1741
-#, fuzzy
 msgid ""
 "  -W[no-]traditional        Warn about features not present in traditional C\n"
 "  -W[no-]undef              Warn if an undefined macro is used by #if\n"
 "  -W[no-]import             Warn about the use of the #import directive\n"
 msgstr ""
-"  -Wno-comment{s}           Advar ikke om kommentarer\n"
-"  -Wtraditional             Advar om utilgængelige faciliteter i traditionel C\n"
-"  -Wno-traditional          Advar ikke om omdannelse til streng\n"
-"  -Wundef                   Advar hvis en ikkedefineret makro bruges med #if\n"
-"  -Wno-undef                Advar ikke om test på makroer der ikke er definerede\n"
-"  -Wimport                  Advar om brug af #import\n"
+"  -W[no-]traditional        Advar om utilgængelige faciliteter i traditionel C\n"
+"  -W[no-]undef              Advar hvis en ikkedefineret makro bruges med #if\n"
+"  -W[no-]import             Advar om brug af #import-direktivet\n"
 
 #: c-opts.c:1746
-#, fuzzy
 msgid ""
 "  -W[no-]error              Treat all warnings as errors\n"
 "  -W[no-]system-headers     Do not suppress warnings from system headers\n"
 "  -W[no-]all                Enable most preprocessor warnings\n"
 msgstr ""
-"  -Wno-import               Advar ikke om brug af #import\n"
-"  -Werror                   Behandl alle advarsler som fejl\n"
-"  -Wno-error                Behandl ikke alle advarsler som fejl\n"
-"  -Wsystem-headers          Undertryk ikke advarsler fra systeminkluderingsfiler\n"
-"  -Wno-system-headers       Undertryk advarsler fra systeminkluderingsfiler\n"
-"  -Wall                     Slå alle præprocessoradvarsler til\n"
+"  -W[no-]error              Behandl alle advarsler som fejl\n"
+"  -W[no-]system-headers     Undertryk ikke advarsler fra systeminkluderingsfiler\n"
+"  -W[no-]all                Slå alle præprocessoradvarsler til\n"
 
 #: c-opts.c:1751
 msgid ""
@@ -2496,7 +2469,6 @@ msgstr ""
 "  -dI                       Inkludér #include-anvisninger i uddata\n"
 
 #: c-opts.c:1780
-#, fuzzy
 msgid ""
 "  -f[no-]preprocessed       Treat the input file as already preprocessed\n"
 "  -ftabstop=<number>        Distance between tab stops for column reporting\n"
@@ -2504,13 +2476,11 @@ msgid ""
 "  -remap                    Remap file names when including files\n"
 "  --help                    Display this information\n"
 msgstr ""
-"  -fpreprocessed            Behandl inddatafilen som allerede præprocesseret\n"
+"  -f[no-]preprocessed       Behandl inddatafilen som allerede præprocesseret\n"
 "  -ftabstop=<tal>           Afstand mellem tabulatorstop i kolonnerapportering\n"
 "  -P                        Generér ikke #line-angivelser\n"
-"  -$                        Tillad ikke '$' i kaldenavne\n"
 "  -remap                    Omdan filnavne ved filinkludering\n"
-"  --version                 Udskriv versionsinformation\n"
-"  -h eller --help           Vis denne vejledning\n"
+"  --help                    Vis denne vejledning\n"
 
 #. Like YYERROR but do call yyerror.
 #: c-parse.y:55 parse.y:48 objc-parse.y:56
@@ -2566,9 +2536,8 @@ msgid "first argument to __builtin_choose_expr not a constant"
 msgstr "første parameter til '__builtin_choose_expr' skal være en konstant"
 
 #: c-parse.y:721 objc-parse.y:768
-#, fuzzy
 msgid "traditional C rejects ISO C style function definitions"
-msgstr "traditionel C tillader ikke strengsammensætning"
+msgstr "traditionel C tillader ikke ISO C-functionsdefinitioner"
 
 #: c-parse.y:985 c-parse.y:991 c-parse.y:997 c-parse.y:1003 c-parse.y:1024
 #: c-parse.y:1030 c-parse.y:1036 c-parse.y:1042 c-parse.y:1075 c-parse.y:1081
@@ -2918,9 +2887,8 @@ msgid "ISO C forbids subscripting `register' array"
 msgstr "ISO C forbyder opslag i 'register'-tabel"
 
 #: c-typeck.c:1305
-#, fuzzy
 msgid "ISO C90 forbids subscripting non-lvalue array"
-msgstr "ISO C89 forbyder opslag i tabel der ikke er venstreværdi"
+msgstr "ISO C90 forbyder opslag i tabel der ikke er venstreværdi"
 
 #: c-typeck.c:1338
 msgid "subscript has type `char'"
@@ -3341,11 +3309,11 @@ msgstr "typeomtvingelse fra heltal til henvisning af en anden størrelse"
 
 #: c-typeck.c:3772
 msgid "type-punning to incomplete type might break strict-aliasing rules"
-msgstr ""
+msgstr "typeomtvingning af ufuldstændig type bryder muligvis strenge aliasregler"
 
 #: c-typeck.c:3776
 msgid "dereferencing type-punned pointer will break strict-aliasing rules"
-msgstr ""
+msgstr "følgning af en typeomtvunget henvisning vil bryde strenge aliasregler"
 
 #. Now we have handled acceptable kinds of LHS that are not truly lvalues.
 #. Reject anything strange now.
@@ -3360,9 +3328,8 @@ msgid "assignment"
 msgstr "tildeling"
 
 #: c-typeck.c:4056
-#, fuzzy
 msgid "cannot pass rvalue to reference parameter"
-msgstr "new kan ikke bruges på en referencetype"
+msgstr "kan ikke videregive højreværdi til referenceparameter"
 
 #: c-typeck.c:4160 c-typeck.c:4227
 #, c-format
@@ -3420,15 +3387,14 @@ msgstr "uforenelige typer i %s"
 
 #. Function name is known; supply it.
 #: c-typeck.c:4339
-#, fuzzy, c-format
+#, c-format
 msgid "passing arg of `%s'"
-msgstr "videregiver den %d. parameter til '%s'"
+msgstr "videregiver parameter til '%s'"
 
 #. Function name unknown (call through ptr).
 #: c-typeck.c:4349
-#, fuzzy
 msgid "passing arg of pointer to function"
-msgstr "videregiver den %d. parameter af henvisning til funktion"
+msgstr "videregiver parameter af henvisning til funktion"
 
 #. Function name is known; supply it.
 #: c-typeck.c:4357
@@ -3682,47 +3648,47 @@ msgstr "variabelstørrelse bliver viderebragt delvis i stak og i register"
 #: cfgloop.c:1106
 #, c-format
 msgid "Size of loop %d should be %d, not %d."
-msgstr ""
+msgstr "Størrelsen af løkke %d burde være %d, ikke %d."
 
 #: cfgloop.c:1125
 #, c-format
 msgid "Bb %d do not belong to loop %d."
-msgstr ""
+msgstr "Basisblok %d hører ikke til løkke %d."
 
 #: cfgloop.c:1143
 #, c-format
 msgid "Loop %d's header does not have exactly 2 entries."
-msgstr ""
+msgstr "Løkke %d's hoved har ikke præcis 2 elementer."
 
 #: cfgloop.c:1151
 #, c-format
 msgid "Loop %d's latch does not have exactly 1 successor."
-msgstr ""
+msgstr "Løkke %d's ende har ikke præcis 1 efterfølger."
 
 #: cfgloop.c:1156
 #, c-format
 msgid "Loop %d's latch does not have header as successor."
-msgstr ""
+msgstr "Løkke %d's ende har ikke hoved som efterfølger."
 
 #: cfgloop.c:1161
 #, c-format
 msgid "Loop %d's latch does not belong directly to it."
-msgstr ""
+msgstr "Løkke %d's ende tilhører ikke direkte løkken."
 
 #: cfgloop.c:1167
 #, c-format
 msgid "Loop %d's header does not belong directly to it."
-msgstr ""
+msgstr "Løkke %d's hoved tilhører ikke direkte løkken."
 
 #: cfgrtl.c:1704
 #, c-format
 msgid "bb %d on wrong place"
-msgstr ""
+msgstr "basisblok %d ved et forkerte sted"
 
 #: cfgrtl.c:1710
 #, c-format
 msgid "prev_bb of %d should be %d, not %d"
-msgstr ""
+msgstr "prev_bb for %d bør være %d, ikke %d"
 
 #: cfgrtl.c:1730
 #, c-format
@@ -3740,19 +3706,19 @@ msgid "head insn %d for block %d not found in the insn stream"
 msgstr "hovedinstruktion %d for blok %d ikke fundet i instruktionsstrømmen"
 
 #: cfgrtl.c:1778
-#, fuzzy, c-format
+#, c-format
 msgid "verify_flow_info: REG_BR_PROB does not match cfg %i %i"
-msgstr "verify_flow_info: Ukorrekt fald-gennem %i->%i"
+msgstr "verify_flow_info: REG_BR_PROB passer ikke til konf. %i %i"
 
 #: cfgrtl.c:1785
-#, fuzzy, c-format
+#, c-format
 msgid "verify_flow_info: Wrong count of block %i %i"
-msgstr "verify_flow_info: Ukorrekt fald-gennem %i->%i"
+msgstr "verify_flow_info: Ukorrekt antal af blok %i %i"
 
 #: cfgrtl.c:1791
-#, fuzzy, c-format
+#, c-format
 msgid "verify_flow_info: Wrong frequency of block %i %i"
-msgstr "verify_flow_info: Ukorrekt fald-gennem %i->%i"
+msgstr "verify_flow_info: Ukorrekt frekvens af blok %i %i"
 
 #: cfgrtl.c:1799
 #, c-format
@@ -3760,14 +3726,14 @@ msgid "verify_flow_info: Duplicate edge %i->%i"
 msgstr "verify_flow_info: Dobbelt kant %i->%i"
 
 #: cfgrtl.c:1805
-#, fuzzy, c-format
+#, c-format
 msgid "verify_flow_info: Wrong probability of edge %i->%i %i"
-msgstr "verify_flow_info: Dobbelt kant %i->%i"
+msgstr "verify_flow_info: Ukorrekt sandsynlighed for kant %i->%i %i"
 
 #: cfgrtl.c:1811
-#, fuzzy, c-format
+#, c-format
 msgid "verify_flow_info: Wrong count of edge %i->%i %i"
-msgstr "verify_flow_info: Dobbelt kant %i->%i"
+msgstr "verify_flow_info: Ukorrekt antal for kant %i->%i %i"
 
 #: cfgrtl.c:1841
 #, c-format
@@ -3791,37 +3757,37 @@ msgstr "verify_flow_info: Efterfølgende kant til basisblok %d er ødelagt"
 #: cfgrtl.c:1881
 #, c-format
 msgid "Missing REG_EH_REGION note in the end of bb %i"
-msgstr ""
+msgstr "Mangler REG_EH_REGION-note i slutningen af basisblok %i"
 
 #: cfgrtl.c:1889
 #, c-format
 msgid "Too many outgoing branch edges from bb %i"
-msgstr ""
+msgstr "For mange udgående forgreningskanter fra basisblok %i"
 
 #: cfgrtl.c:1894
 #, c-format
 msgid "Fallthru edge after unconditional jump %i"
-msgstr ""
+msgstr "Fald gennem-kant efter ubetinget spring %i"
 
 #: cfgrtl.c:1899
 #, c-format
 msgid "Wrong amount of branch edges after unconditional jump %i"
-msgstr ""
+msgstr "Forkert antal forgreningskanter efter ubetinget spring %i"
 
 #: cfgrtl.c:1905
-#, fuzzy, c-format
+#, c-format
 msgid "Wrong amount of branch edges after conditional jump %i"
-msgstr "Foretræk forgrening frem for betinget udførelse"
+msgstr "Forkert antal forgreningskanter efter betinget spring %i"
 
 #: cfgrtl.c:1910
 #, c-format
 msgid "Call edges for non-call insn in bb %i"
-msgstr ""
+msgstr "Kaldekanter for ikke-kaldsinstruktion i basisblok %i"
 
 #: cfgrtl.c:1919
 #, c-format
 msgid "Abnormal edges for no purpose in bb %i"
-msgstr ""
+msgstr "Unormale kanter uden noget formål i basisblok %i"
 
 #: cfgrtl.c:1934
 #, c-format
@@ -3914,12 +3880,12 @@ msgstr "collect2 version %s"
 #: collect2.c:1365
 #, c-format
 msgid "%d constructor(s) found\n"
-msgstr "%d konstrueringsfunktion(er) fundet\n"
+msgstr "%d konstruktionsfunktion(er) fundet\n"
 
 #: collect2.c:1366
 #, c-format
 msgid "%d destructor(s)  found\n"
-msgstr "%d destrueringsfunktion(er) fundet\n"
+msgstr "%d destruktionsfunktion(er) fundet\n"
 
 #: collect2.c:1367
 #, c-format
@@ -4279,9 +4245,8 @@ msgid "internal error: "
 msgstr "intern fejl: "
 
 #: cpperror.c:189
-#, fuzzy
 msgid "stdout"
-msgstr "struct"
+msgstr "std-ud"
 
 #: cpperror.c:191 gcc.c:6444
 #, c-format
@@ -4289,58 +4254,52 @@ msgid "%s: %s"
 msgstr "%s: %s"
 
 #: cppexp.c:199
-#, fuzzy
 msgid "too many decimal points in number"
-msgstr "for mange decimalkommaer i heltalskonstant"
+msgstr "for mange decimalkommaer i tal"
 
 #: cppexp.c:219
-#, fuzzy, c-format
+#, c-format
 msgid "invalid digit \"%c\" in octal constant"
-msgstr "ugyldig endelse i heltalskonstant"
+msgstr "ugyldig ciffer \"%c\" i oktal konstant"
 
 #: cppexp.c:225
-#, fuzzy
 msgid "use of C99 hexadecimal floating constant"
-msgstr "hexadecimal kommatalskonstant har ingen eksponent"
+msgstr "brug af C99 hexadecimal kommatalskonstant"
 
 #: cppexp.c:234
-#, fuzzy
 msgid "exponent has no digits"
-msgstr "der er ingen cifre i kommatallets eksponent"
+msgstr "der er ingen cifre i eksponent"
 
 #: cppexp.c:241
-#, fuzzy
 msgid "hexadecimal floating constants require an exponent"
-msgstr "hexadecimal kommatalskonstant har ingen eksponent"
+msgstr "hexadecimal kommatalskonstant skal have en eksponent"
 
 #: cppexp.c:247
-#, fuzzy, c-format
+#, c-format
 msgid "invalid suffix \"%.*s\" on floating constant"
-msgstr "ugyldig endelse i kommatalskonstant"
+msgstr "ugyldig endelse \"%.*s\" i kommatalskonstant"
 
 #: cppexp.c:257 cppexp.c:282
-#, fuzzy, c-format
+#, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
-msgstr "traditionel C tillader ikke 'f'-endelsen"
+msgstr "traditionel C tillader ikke endelsen \"%.*s\""
 
 #: cppexp.c:268
-#, fuzzy, c-format
+#, c-format
 msgid "invalid suffix \"%.*s\" on integer constant"
-msgstr "ugyldig endelse '%.*s' i heltalskonstant"
+msgstr "ugyldig endelse \"%.*s\" i heltalskonstant"
 
 #: cppexp.c:289
-#, fuzzy
 msgid "use of C99 long long integer constant"
-msgstr "ISO C89 forbyder 'long long'-heltalskonstanter"
+msgstr "ISO C99 forbyder 'long long'-heltalskonstanter"
 
 #: cppexp.c:295
 msgid "imaginary constants are a GCC extension"
-msgstr ""
+msgstr "imaginære konstanter er en GCC-udvidelse"
 
 #: cppexp.c:383
-#, fuzzy
 msgid "integer constant is too large for its type"
-msgstr "heltalskonstanten er så stor at den er unsigned"
+msgstr "heltalskonstanten er for stor for dens type"
 
 #: cppexp.c:395
 msgid "integer constant is so large that it is unsigned"
@@ -4364,14 +4323,12 @@ msgid "this use of \"defined\" may not be portable"
 msgstr "denne brug af \"defined\" er muligvis ikke portabel"
 
 #: cppexp.c:545
-#, fuzzy
 msgid "floating constant in preprocessor expression"
-msgstr "heltallet løber over i præprocessorudtrykket"
+msgstr "kommatalskonstant i præprocessorudtryk"
 
 #: cppexp.c:551
-#, fuzzy
 msgid "imaginary number in preprocessor expression"
-msgstr "heltallet løber over i præprocessorudtrykket"
+msgstr "imaginært tal i præprocessorudtryk"
 
 #: cppexp.c:596
 #, c-format
@@ -4384,9 +4341,9 @@ msgid "\"%s\" is not defined"
 msgstr "\"%s\" er ikke defineret"
 
 #: cppexp.c:737 cppexp.c:772
-#, fuzzy, c-format
+#, c-format
 msgid "missing binary operator before token \"%s\""
-msgstr "manglende binær operator før '%s'"
+msgstr "manglende binær operator før symbolet \"%s\""
 
 #: cppexp.c:756
 #, c-format
@@ -4399,9 +4356,9 @@ msgid "invalid character '\\%03o' in #if"
 msgstr "ugyldigt tegn '\\%03o' i #if"
 
 #: cppexp.c:763
-#, fuzzy, c-format
+#, c-format
 msgid "token \"%s\" is not valid in preprocessor expressions"
-msgstr "\"%s\" er ikke gyldig i #if-udtryk"
+msgstr "symbolet \"%s\" er ikke gyldigt præprocessorudtryk"
 
 #: cppexp.c:782
 msgid "void expression between '(' and ')'"
@@ -4417,27 +4374,25 @@ msgid "operator '%s' has no right operand"
 msgstr "operatoren '%s' har ikke nogen højre operand"
 
 #: cppexp.c:813
-#, fuzzy
 msgid " ':' without preceding '?'"
-msgstr "syntaksfejl - ':' uden forudgående '?'"
+msgstr " ':' uden forudgående '?'"
 
 #: cppexp.c:840
 msgid "unbalanced stack in #if"
 msgstr "uafbalanceret stak i #if"
 
 #: cppexp.c:862
-#, fuzzy, c-format
+#, c-format
 msgid "impossible operator '%u'"
-msgstr "umuligi operator '%s'"
+msgstr "umulig operator '%u'"
 
 #: cppexp.c:954
 msgid "missing ')' in expression"
 msgstr "manglende ')' i udtryk"
 
 #: cppexp.c:975
-#, fuzzy
 msgid "'?' without following ':'"
-msgstr "syntaksfejl - '?' uden efterfølgende ':'"
+msgstr "'?' uden efterfølgende ':'"
 
 #: cppexp.c:985
 msgid "integer overflow in preprocessor expression"
@@ -4450,12 +4405,12 @@ msgstr "manglende '(' i udtryk"
 #: cppexp.c:1026
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
-msgstr ""
+msgstr "den venstre operand til \"%s\" ændrer fortegn ved forfremmelse"
 
 #: cppexp.c:1031
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
-msgstr ""
+msgstr "den højre operand til \"%s\" ændrer fortegn ved forfremmelse"
 
 #: cppexp.c:1414
 msgid "comma operator in operand of #if"
@@ -4509,44 +4464,42 @@ msgid "ignoring duplicate directory \"%s\"\n"
 msgstr "ignorerer mere end én angivelse af kataloget \"%s\"\n"
 
 #: cppinit.c:325
-#, fuzzy
 msgid "  as it is a non-system directory that duplicates a system directory\n"
-msgstr "  da det allerede er blevet angivet som et ikke-system-katalog"
+msgstr "  da det er et ikke-systemkatalog som dublerer et systemkatalog\n"
 
 #: cppinit.c:891
-#, fuzzy
 msgid "cppchar_t must be an unsigned type"
-msgstr "udsagn skal være et kaldenavn"
+msgstr "cppchar_t skal være en unsigned type"
 
 #: cppinit.c:895
 #, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
-msgstr ""
+msgstr "præprocessorberegning har en maksimal præcision på %lu bit; målarkitektur kræver %lu bit"
 
 #: cppinit.c:901
 msgid "CPP arithmetic must be at least as precise as a target int"
-msgstr ""
+msgstr "CPP-beregning skal være mindst lige så præcis som en målarkitekturs int"
 
 #: cppinit.c:904
 msgid "target char is less than 8 bits wide"
-msgstr ""
+msgstr "målarkitekturs char er mindre end 8 bit bred"
 
 #: cppinit.c:908
 msgid "target wchar_t is narrower than target char"
-msgstr ""
+msgstr "målarkitekturs wchar_t er mindre end målarkitekturs char"
 
 #: cppinit.c:912
 msgid "target int is narrower than target char"
-msgstr ""
+msgstr "målarkitekturs int er mindre end målarkitekturs char"
 
 #: cppinit.c:916
 msgid "CPP half-integer narrower than CPP character"
-msgstr ""
+msgstr "CPP-halvheltal er mindre end CPP-tegn"
 
 #: cppinit.c:920
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
-msgstr ""
+msgstr "CPP på denne vært kan ikke håndtere bredtegnkonstanter over %lu bit, men målarkitekturen kræver %lu bit"
 
 #: cppinit.c:972
 msgid "#include \"...\" search starts here:\n"
@@ -4641,9 +4594,8 @@ msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ kan kun optræde i udfoldelsen af en C99-makro med vilkårligt antal parametre"
 
 #: cpplex.c:555
-#, fuzzy
 msgid "'$' character(s) in identifier or number"
-msgstr "'$'-tegn i kaldenavn"
+msgstr "'$'-tegn i kaldenavn eller tal"
 
 #: cpplex.c:698
 #, c-format
@@ -4663,9 +4615,8 @@ msgid "unterminated comment"
 msgstr "uafsluttet kommentar"
 
 #: cpplex.c:1103
-#, fuzzy
 msgid "C++ style comments are not allowed in ISO C90"
-msgstr "kommentarer i C++-stil er ikke tilladt i ISO C89"
+msgstr "kommentarer i C++-stil er ikke tilladt i ISO C90"
 
 #: cpplex.c:1105
 msgid "(this will be reported only once per input file)"
@@ -4686,9 +4637,9 @@ msgid "unspellable token %s"
 msgstr "symbol %s kan ikke staves"
 
 #: cpplex.c:1695
-#, fuzzy, c-format
+#, c-format
 msgid "the meaning of '\\%c' is different in traditional C"
-msgstr "betydningen af '\\%c' skifter med -traditional"
+msgstr "betydningen af '\\%c' er anderledes i traditionel C"
 
 #: cpplex.c:1701
 msgid "incomplete universal-character-name"
@@ -4708,9 +4659,8 @@ msgid "universal-character-name out of range"
 msgstr "universelt tegnnavn uden for det gyldige interval"
 
 #: cpplex.c:1791
-#, fuzzy
 msgid "the meaning of '\\a' is different in traditional C"
-msgstr "betydningen af '\\a' skifter med -traditional"
+msgstr "betydningen af '\\a' er anderledes i traditionel C"
 
 #: cpplex.c:1798
 #, c-format
@@ -4718,9 +4668,8 @@ msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr "undvigesekvensen '\\%c' er ikke ISO-standard"
 
 #: cpplex.c:1809
-#, fuzzy
 msgid "the meaning of '\\x' is different in traditional C"
-msgstr "betydningen af '\\x' skifter med -traditional"
+msgstr "betydningen af '\\x' er anderledes i traditionel C"
 
 #: cpplex.c:1828 f/lex.c:585
 msgid "\\x used with no following hex digits"
@@ -4745,18 +4694,16 @@ msgid "unknown escape sequence: '\\%03o'"
 msgstr "ukendt undvigesekvensen '\\%03o'"
 
 #: cpplex.c:1882
-#, fuzzy
 msgid "escape sequence out of range for its type"
-msgstr "undvigesekvensen er uden for det gyldig interval for tegn"
+msgstr "undvigesekvensen er uden for det gyldig interval for dens type"
 
 #: cpplex.c:1973
 msgid "empty character constant"
 msgstr "tom tegnkonstant"
 
 #: cpplex.c:1983
-#, fuzzy
 msgid "character constant too long for its type"
-msgstr "tegnkonstanten er for lang"
+msgstr "tegnkonstanten er for lang for dens type"
 
 #: cpplex.c:1986
 msgid "multi-character character constant"
@@ -4788,7 +4735,7 @@ msgstr "foreslår at skjule #%s fra traditionel C vha. indrykket '#'"
 
 #: cpplib.c:358
 msgid "embedding a directive within macro arguments is not portable"
-msgstr ""
+msgstr "indlejring af et direktiv inden i makroparametre er ikke portabelt"
 
 #: cpplib.c:378
 msgid "style of line directive is a GCC extension"
@@ -4981,9 +4928,9 @@ msgid "unterminated #%s"
 msgstr "uafsluttet #%s"
 
 #: cppmacro.c:94
-#, fuzzy, c-format
+#, c-format
 msgid "macro \"%s\" is not used"
-msgstr "\"%s\" er ikke defineret"
+msgstr "makroen \"%s\" bliver ikke brugt"
 
 #: cppmacro.c:139 cppmacro.c:294
 #, c-format
@@ -4991,9 +4938,8 @@ msgid "invalid built-in macro \"%s\""
 msgstr "ugyldig indbygget makro \"%s\""
 
 #: cppmacro.c:234
-#, fuzzy
 msgid "could not determine date and time"
-msgstr "kunne ikke bestemme målnavn for afhængighedsfølgning"
+msgstr "kunne ikke bestemme dato og tid"
 
 #: cppmacro.c:407
 msgid "invalid string literal, ignoring final '\\'"
@@ -5080,9 +5026,9 @@ msgid "this is the location of the previous definition"
 msgstr "den foregående definition er her"
 
 #: cppmacro.c:1655
-#, fuzzy, c-format
+#, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
-msgstr "makroparameteren \"%s\" ville blive gjort til en streng med -traditional"
+msgstr "makroparameteren \"%s\" ville blive gjort til en streng i traditionel C"
 
 #: cppmacro.c:1680
 #, c-format
@@ -5099,9 +5045,9 @@ msgid "too many input files"
 msgstr "for mange inddatafiler"
 
 #: cpptrad.c:841
-#, fuzzy, c-format
+#, c-format
 msgid "detected recursion whilst expanding macro \"%s\""
-msgstr "uafsluttet parameterliste ved kald af makroen \"%s\""
+msgstr "opdagede rekursion ved udfoldelse af makroen \"%s\""
 
 #: cse.c:7187
 #, c-format
@@ -5171,16 +5117,16 @@ msgid "Internal compiler error: Error reporting routines re-entered.\n"
 msgstr "Intern oversætterfejl: fejlrapporteringsrutiner blev kaldt igen.\n"
 
 #: diagnostic.c:1362
-#, fuzzy, c-format
+#, c-format
 msgid "in %s, at %s:%d"
-msgstr "afbrudt i %s ved %s:%d"
+msgstr "i %s, ved %s:%d"
 
 #: diagnostic.c:1383
 #, c-format
 msgid "In file included from %s:%d"
 msgstr "I filen inkluderet af %s:%d"
 
-# kommer til at stå neden unden ovenstående, derfor "af"
+# kommer til at stå neden under ovenstående, derfor "af"
 #: diagnostic.c:1386
 #, c-format
 msgid ""
@@ -5216,7 +5162,7 @@ msgstr "type er forældet"
 #: dominance.c:728
 #, c-format
 msgid "dominator of %d should be %d, not %d"
-msgstr ""
+msgstr "dominator for %d burde være %d, ikke %d"
 
 #: dwarf2out.c:3124
 #, c-format
@@ -5224,13 +5170,13 @@ msgid "DW_LOC_OP %s not implemented\n"
 msgstr "DW_LOC_OP %s understøttes ikke\n"
 
 #: dwarfout.c:2066
-#, fuzzy, c-format
+#, c-format
 msgid "internal regno botch: `%s' has regno = %d\n"
-msgstr "internt regno-problem: regno = %d\n"
+msgstr "internt reg.nr.-problem: '%s' har reg.nr. = %d\n"
 
 #: dwarfout.c:6181
 msgid "support for the DWARF1 debugging format is deprecated"
-msgstr ""
+msgstr "understøttelse for DWARF1-fejlanalyseringsformatet er forældet"
 
 #: dwarfout.c:6278
 msgid "can't get current directory"
@@ -5463,7 +5409,7 @@ msgstr "%s-specifikation i specifikationer kunne ikke findes til omdøbelse"
 #: gcc.c:1974
 #, c-format
 msgid "%s: attempt to rename spec '%s' to already defined spec '%s'"
-msgstr ""
+msgstr "%s: forsøg på at omdøbe specifikation '%s' til allerede defineret specifikation '%s'"
 
 #: gcc.c:1979
 #, c-format
@@ -5587,9 +5533,8 @@ msgstr ""
 "                           flere bibliotekssøgekataloger\n"
 
 #: gcc.c:2918
-#, fuzzy
 msgid "  -print-multi-os-directory Display the relative path to OS libraries\n"
-msgstr "  -print-multi-directory   Vis rodkataloget for versioner af libgcc\n"
+msgstr "  -print-multi-os-directory Vis den relative sti for OS-biblioteker\n"
 
 #: gcc.c:2919
 msgid "  -Wa,<options>            Pass comma-separated <options> on to the assembler\n"
@@ -5692,14 +5637,14 @@ msgstr ""
 " '-W<bogstav>' bruges.\n"
 
 #: gcc.c:3079
-#, fuzzy, c-format
+#, c-format
 msgid "`-%c' option must have argument"
-msgstr "'-param'-tilvalg mangler parameter"
+msgstr "tilvalget '-%c' skal have en parameter"
 
 #: gcc.c:3101
 #, c-format
 msgid "couldn't run `%s': %s"
-msgstr ""
+msgstr "kunne ikke køre '%s': %s"
 
 #. translate_options () has turned --version into -fversion.
 #: gcc.c:3278
@@ -5739,7 +5684,7 @@ msgstr "der mangler en parameter til '-specs='"
 #: gcc.c:3452
 #, c-format
 msgid "`-%c' must come at the start of the command line"
-msgstr ""
+msgstr "'-%c' skal være i begyndelsen af kommandolinjen"
 
 #: gcc.c:3461
 msgid "argument to `-B' is missing"
@@ -5804,29 +5749,27 @@ msgid "spec failure: unrecognized spec option '%c'"
 msgstr "specifikationsfejl: ukendt specifikationstilvalg '%c'"
 
 #: gcc.c:5204
-#, fuzzy, c-format
+#, c-format
 msgid "unknown spec function `%s'"
-msgstr "I funktionen '%s':"
+msgstr "ukendt specifikationsfunktion '%s'"
 
 #: gcc.c:5223
-#, fuzzy, c-format
+#, c-format
 msgid "error in args to spec function `%s'"
-msgstr "for mange parametre til funktionen '%s'"
+msgstr "fejl i parametre til specifikationsfunktion '%s'"
 
 #: gcc.c:5272
-#, fuzzy
 msgid "malformed spec function name"
-msgstr "typetildelingen angiver en funktionstype"
+msgstr "forkert udformet specifikationsfunktionsnavn"
 
 #. )
 #: gcc.c:5275
-#, fuzzy
 msgid "no arguments for spec function"
-msgstr "for få parametre til funktionen"
+msgstr "ingen parametre til specifikationsfunktion"
 
 #: gcc.c:5294
 msgid "malformed spec function arguments"
-msgstr ""
+msgstr "forkert udformede specifikationsfunktionsparametre"
 
 #: gcc.c:5402
 msgid "mismatched braces in specs"
@@ -5956,13 +5899,12 @@ msgid "  -f, --function-summaries        Output summaries for each function\n"
 msgstr "  -f, --function-summaries        Udskriv sammendrag for hver funktion\n"
 
 #: gcov.c:349
-#, fuzzy
 msgid "  -o, --object-directory DIR|FILE Search for object files in DIR or called FILE\n"
-msgstr "  -o, --object-directory OBJKAT   Søg efter objektfiler i OBJKAT\n"
+msgstr "  -o, --object-directory KAT|FIL  Søg efter objektfiler i KAT eller kaldt FIL\n"
 
 #: gcov.c:350
 msgid "  -p, --preserve-paths            Preserve all pathname components\n"
-msgstr ""
+msgstr "  -p, --preserve-paths            Bevar alle stinavnskomponenter\n"
 
 #: gcov.c:351
 #, c-format
@@ -6009,39 +5951,39 @@ msgid "No executable code associated with file %s.\n"
 msgstr "Ingen kørbar kode associeret med filen %s.\n"
 
 #: gcov.c:1186
-#, fuzzy, c-format
+#, c-format
 msgid "%s of %d lines executed in %s %s\n"
-msgstr "%6.2f%% af %d kildekodelinjer udført i filen %s\n"
+msgstr "%s af %d linjer udført i %s %s\n"
 
 #: gcov.c:1191
-#, fuzzy, c-format
+#, c-format
 msgid "No executable lines in %s %s\n"
-msgstr "Ingen kørbare kildekodelinjer i filen %s\n"
+msgstr "Ingen kørbare linjer i %s %s\n"
 
 #: gcov.c:1198
-#, fuzzy, c-format
+#, c-format
 msgid "%s of %d branches executed in %s %s\n"
-msgstr "%6.2f%% af %d forgreninger udført i filen %s\n"
+msgstr "%s af %d forgreninger udført i %s %s\n"
 
 #: gcov.c:1203
-#, fuzzy, c-format
+#, c-format
 msgid "%s of %d branches taken at least once in %s %s\n"
-msgstr "%6.2f%% af %d forgreninger valgt mindst én gang i filen %s\n"
+msgstr "%s af %d forgreninger valgt mindst én gang i %s %s\n"
 
 #: gcov.c:1209
-#, fuzzy, c-format
+#, c-format
 msgid "No branches in %s %s\n"
-msgstr "Ingen forgreninger i filen %s\n"
+msgstr "Ingen forgreninger i %s %s\n"
 
 #: gcov.c:1211
-#, fuzzy, c-format
+#, c-format
 msgid "%s of %d calls executed in %s %s\n"
-msgstr "%6.2f%% af %d kald udført i filen %s\n"
+msgstr "%s af %d kald udført i %s %s\n"
 
 #: gcov.c:1216
-#, fuzzy, c-format
+#, c-format
 msgid "No calls in %s %s\n"
-msgstr "Ingen kald i filen %s\n"
+msgstr "Ingen kald i %s %s\n"
 
 #: gcov.c:1351
 #, c-format
@@ -6056,17 +5998,17 @@ msgstr "block_num = %ld, num_blocks = %d\n"
 #: gcov.c:1367
 #, c-format
 msgid "ERROR: unexpected line number %ld\n"
-msgstr ""
+msgstr "Fejl: uventet linjenummer %ld\n"
 
 #: gcov.c:1383
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR: too many basic blocks in function %s\n"
-msgstr "Fejl: for mange basisblokke i .bb-filen %s\n"
+msgstr "Fejl: for mange basisblokke i funktionen %s\n"
 
 #: gcov.c:1398
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR: out of range line number in function %s\n"
-msgstr "Ingen kørbare kildekodelinjer i funktionen %s\n"
+msgstr "Fejl: linjenummer uden for det gyldige interval i funktionen %s\n"
 
 #: gcov.c:1470
 #, c-format
@@ -6074,9 +6016,9 @@ msgid "Could not open source file %s.\n"
 msgstr "Kunne ikke åbne kildefilen %s.\n"
 
 #: gcov.c:1480
-#, fuzzy, c-format
+#, c-format
 msgid "Warning: source file %s is newer than %s\n"
-msgstr "aktuel fil er ældre end %s"
+msgstr "Advarsel: kildefil %s er nyere end %s\n"
 
 #: gcov.c:1510
 #, c-format
@@ -6084,24 +6026,24 @@ msgid "Unexpected EOF while reading source file %s.\n"
 msgstr "Stødt på slutningen af kildefilen %s tidligere end forventet.\n"
 
 #: gcov.c:1532
-#, fuzzy, c-format
+#, c-format
 msgid "call   %2d never executed\n"
-msgstr "kald %d aldrig udført\n"
+msgstr "kald %2d aldrig udført\n"
 
 #: gcov.c:1535
-#, fuzzy, c-format
+#, c-format
 msgid "call   %2d returns %s\n"
-msgstr "kald %d returnerer = %s\n"
+msgstr "kald %2d returnerer %s\n"
 
 #: gcov.c:1543
-#, fuzzy, c-format
+#, c-format
 msgid "branch %2d never executed\n"
-msgstr "forgrening %d aldrig udført\n"
+msgstr "forgrening %2d aldrig udført\n"
 
 #: gcov.c:1546
-#, fuzzy, c-format
+#, c-format
 msgid "branch %2d taken %s\n"
-msgstr "forgrening %d valgt = %s\n"
+msgstr "forgrening %2d valgt %s\n"
 
 #: gcov.c:1610
 #, c-format
@@ -6109,9 +6051,9 @@ msgid "Creating %s.\n"
 msgstr "Opretter %s.\n"
 
 #: gcov.c:1613
-#, fuzzy, c-format
+#, c-format
 msgid "Error writing output file %s.\n"
-msgstr "fejl ved skrivning til %s"
+msgstr "Fejl ved skrivning af uddatafilen %s.\n"
 
 #: gcov.c:1618
 #, c-format
@@ -6131,237 +6073,233 @@ msgstr "GCSE deaktiveret: %d basisblokke og %d registre"
 #: genautomata.c:1490
 #, c-format
 msgid "Name `%s' contains quotes"
-msgstr ""
+msgstr "Navnet '%s' indeholder citationstegn"
 
 #: genautomata.c:1621
-#, fuzzy, c-format
+#, c-format
 msgid "invalid string `%s' in define_cpu_unit"
-msgstr "ugyldig punktuering '%c' i begrænsning"
+msgstr "ugyldig streng '%s' i define_cpu_unit"
 
 #: genautomata.c:1650
 #, c-format
 msgid "invalid string `%s' in define_query_cpu_unit"
-msgstr ""
+msgstr "ugyldig streng '%s' i define_query_cpu_unit"
 
 #: genautomata.c:1682 genautomata.c:1685
-#, fuzzy, c-format
+#, c-format
 msgid "invalid string `%s' in define_bypass"
-msgstr "ugyldig brug af en type '%s %s' der ikke er defineret"
+msgstr "ugyldig streng '%s' i define_bypass"
 
 #: genautomata.c:1720
-#, fuzzy, c-format
+#, c-format
 msgid "invalid first string `%s' in exclusion_set"
-msgstr "ugyldig punktuering '%c' i begrænsning"
+msgstr "ugyldig første streng '%s' i exclusion_set"
 
 #: genautomata.c:1724
-#, fuzzy, c-format
+#, c-format
 msgid "invalid second string `%s' in exclusion_set"
-msgstr "ugyldig punktuering '%c' i begrænsning"
+msgstr "ugyldig anden streng '%s' i exclusion_set"
 
 #: genautomata.c:1760
 #, c-format
 msgid "invalid first string `%s' in presence_set"
-msgstr ""
+msgstr "ugyldig første streng '%s' i presence_set"
 
 #: genautomata.c:1764
 #, c-format
 msgid "invalid second string `%s' in presence_set"
-msgstr ""
+msgstr "ugyldig anden streng '%s' i presence_set"
 
 #: genautomata.c:1800
 #, c-format
 msgid "invalid first string `%s' in absence_set"
-msgstr ""
+msgstr "ugyldig første streng '%s' i absence_set"
 
 #: genautomata.c:1804
 #, c-format
 msgid "invalid second string `%s' in absence_set"
-msgstr ""
+msgstr "ugyldig anden streng '%s' i absence_set"
 
 #: genautomata.c:1837
 #, c-format
 msgid "invalid string `%s' in define_automaton"
-msgstr ""
+msgstr "ugyldig streng '%s' i define_automaton"
 
 #: genautomata.c:1868
-#, fuzzy, c-format
+#, c-format
 msgid "invalid option `%s' in automata_option"
-msgstr "ugyldig punktuering '%c' i begrænsning"
+msgstr "ugyldigt tilvalg '%s' i automata_option"
 
 #: genautomata.c:1890
-#, fuzzy, c-format
+#, c-format
 msgid "garbage after ) in reservation `%s'"
-msgstr "ragelse i slutningen af #%s"
+msgstr "ragelse efter ) i reservering '%s'"
 
 #: genautomata.c:1921 genautomata.c:1954 genautomata.c:1981
-#, fuzzy, c-format
+#, c-format
 msgid "invalid `%s' in reservation `%s'"
-msgstr "ugyldig omerklæring af '%D'"
+msgstr "ugyldig '%s' i reservering '%s'"
 
 #: genautomata.c:1932
 #, c-format
 msgid "repetition `%s' <= 1 in reservation `%s'"
-msgstr ""
+msgstr "gentagelse '%s' <= 1 i reservering '%s'"
 
 #: genautomata.c:2425
 #, c-format
 msgid "unit `%s' in exclusion is not declared"
-msgstr ""
+msgstr "enhed '%s' i ekskludering er ikke erklæret"
 
 #: genautomata.c:2427
 #, c-format
 msgid "`%s' in exclusion is not unit"
-msgstr ""
+msgstr "'%s' i ekskludering er ikke enhed"
 
 #: genautomata.c:2465
-#, fuzzy, c-format
+#, c-format
 msgid "unit `%s' excludes itself"
-msgstr "bredden af '%s' overstiger typen"
+msgstr "enheden '%s' ekskluderer sig selv"
 
 #: genautomata.c:2473
 #, c-format
 msgid "units `%s' and `%s' in exclusion set belong to different automata"
-msgstr ""
+msgstr "enhederne '%s' og '%s' i ekskluderingsmængde tilhører forskellige automater"
 
 #: genautomata.c:2603 genautomata.c:2609
 #, c-format
 msgid "unit `%s' excludes and requires presence of `%s'"
-msgstr ""
+msgstr "enheden '%s' ekskluderer og kræver tilstedeværelse af '%s'"
 
 #: genautomata.c:2623 genautomata.c:2629
 #, c-format
 msgid "unit `%s' requires absence and presence of `%s'"
-msgstr ""
+msgstr "enheden '%s' kræver tilstedeværelse og fravær af '%s'"
 
 #: genautomata.c:2692 genautomata.c:2695
-#, fuzzy, c-format
+#, c-format
 msgid "repeated declaration of automaton `%s'"
-msgstr "mere end én erklæring af klassemetoden '%s'"
+msgstr "gentaget erklæring af automaten '%s'"
 
 #: genautomata.c:2711
 #, c-format
 msgid "define_insn_reservation `%s' has negative latency time"
-msgstr ""
+msgstr "define_insn_reservation '%s' har negativ ventetid"
 
 #: genautomata.c:2717
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is already used as insn reservation name"
-msgstr "'%D' er allerede erklæret i dette navnerum"
+msgstr "`%s' bliver allerede benyttet som instruktionsreserveringsnavn"
 
 #: genautomata.c:2723
 #, c-format
 msgid "define_bypass `%s - %s' has negative latency time"
-msgstr ""
+msgstr "define_bypass '%s - %s' har negativ ventetid"
 
 #: genautomata.c:2737
-#, fuzzy, c-format
+#, c-format
 msgid "automaton `%s' is not declared"
-msgstr "'%D' ikke erklæret"
+msgstr "automaten '%s' er ikke erklæret"
 
 #: genautomata.c:2747
 #, c-format
 msgid "define_unit `%s' without automaton when one defined"
-msgstr ""
+msgstr "define_unit '%s' uden automat når en er defineret"
 
 #: genautomata.c:2753
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is declared as cpu unit"
-msgstr "feltet '%s' er erklæret som en funktion"
+msgstr "'%s' er erklæret som CPU-enhed"
 
 #: genautomata.c:2762
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is declared as cpu reservation"
-msgstr "'%D' er erklæret som en ven"
+msgstr "'%s' er erklæret som CPU-reservering"
 
 #: genautomata.c:2772
-#, fuzzy, c-format
+#, c-format
 msgid "repeated declaration of unit `%s'"
-msgstr "omerklæring af '%s'"
+msgstr "gentaget erklæring af enheden '%s'"
 
 #: genautomata.c:2775
-#, fuzzy, c-format
+#, c-format
 msgid "repeated declaration of reservation `%s'"
-msgstr "mere end én erklæring af klassemetoden '%s'"
+msgstr "gentaget erklæring af reserveringen '%s'"
 
 #: genautomata.c:2790 genautomata.c:2793
-#, fuzzy, c-format
+#, c-format
 msgid "there is no insn reservation `%s'"
-msgstr "end tidligere erklæring '%F'"
+msgstr "der er ingen instruktionsreservering '%s'"
 
 #: genautomata.c:2810 genautomata.c:2815
-#, fuzzy, c-format
+#, c-format
 msgid "the same bypass `%s - %s' is already defined"
-msgstr "#pragma %s %s er allerede registreret"
+msgstr "den samme videreledning '%s - %s' er allerede defineret"
 
 #: genautomata.c:2820
-#, fuzzy, c-format
+#, c-format
 msgid "bypass `%s - %s' is already defined"
-msgstr "#pragma %s %s er allerede registreret"
+msgstr "videreledning '%s - %s' er allerede defineret"
 
 #: genautomata.c:2925 genautomata.c:2927
 #, c-format
 msgid "automaton `%s' is not used"
-msgstr ""
+msgstr "automat '%s' bliver ikke benyttet"
 
 #: genautomata.c:2950
 #, c-format
 msgid "undeclared unit or reservation `%s'"
-msgstr ""
+msgstr "ikke-erklæret enhed eller reservering '%s'"
 
 #: genautomata.c:3028 genautomata.c:3030
-#, fuzzy, c-format
+#, c-format
 msgid "unit `%s' is not used"
-msgstr "'%s' defineret, men aldrig brugt"
+msgstr "enhed '%s' bliver ikke benyttet"
 
 #: genautomata.c:3035 genautomata.c:3037
-#, fuzzy, c-format
+#, c-format
 msgid "reservation `%s' is not used"
-msgstr "svag erklæring af '%s' ikke understøttet"
+msgstr "reservering '%s' bliver ikke benyttet"
 
 #: genautomata.c:3134
-#, fuzzy, c-format
+#, c-format
 msgid "cycle in definition of reservation `%s'"
-msgstr "omdefinering af 'union %s'"
+msgstr "cyklus i definering af reservering '%s'"
 
 #: genautomata.c:5333
 #, c-format
 msgid "Units `%s' and `%s' should be in the same automaton"
-msgstr ""
+msgstr "Enhederne '%s' og '%s' skal være i den samme automat"
 
 #: genautomata.c:9441
-#, fuzzy
 msgid "-split has no argument."
-msgstr "#%s uden parametre"
+msgstr "-split uden parametre"
 
 #: genautomata.c:9442
-#, fuzzy
 msgid "option `-split' has not been implemented yet\n"
-msgstr "profilering understøttes ikke endnu"
+msgstr "tilvalget '-split' understøttes ikke endnu\n"
 
 #: genautomata.c:9486 genautomata.c:9491
 #, c-format
 msgid "Automaton `%s': Insn `%s' will never be issued"
-msgstr ""
+msgstr "Automat '%s': instruktion '%s' vil aldrig blive udført"
 
 #: genautomata.c:9498 genautomata.c:9501
 #, c-format
 msgid "Insn `%s' will never be issued"
-msgstr ""
+msgstr "Instruktion '%s' vil aldrig blive udført"
 
 #: genautomata.c:9649
-#, fuzzy
 msgid "Errors in DFA description"
-msgstr "ingen beskrivelse endnu"
+msgstr "Fejl i DFA-beskrivelse"
 
 #: genautomata.c:9732
-#, fuzzy, c-format
+#, c-format
 msgid "Error in writing DFA description file %s"
-msgstr "fejl ved skrivning til %s"
+msgstr "Fejl ved skrivning af DFA-beskrivelsesfil %s"
 
 #: genconditions.c:196
-#, fuzzy
 msgid "No input file name."
-msgstr "ingen inddatafiler"
+msgstr "Intet inddatafilnavn."
 
 #: graph.c:420 profile.c:1204 profile.c:1211 toplev.c:1836 toplev.c:5121
 #: f/com.c:14138 java/jcf-parse.c:913 java/jcf-parse.c:1059 java/lex.c:1767
@@ -6381,7 +6319,7 @@ msgstr "funktion kan ikke indbygges"
 
 #: integrate.c:176
 msgid "varargs function cannot be inline"
-msgstr "funktioner med variable parameterlister kan ikke indbygges"
+msgstr "funktion med variabel parameterliste kan ikke indbygges"
 
 #: integrate.c:179
 msgid "function using alloca cannot be inline"
@@ -6389,7 +6327,7 @@ msgstr "funktion der bruger alloca, kan ikke indbygges"
 
 #: integrate.c:182
 msgid "function using setjmp cannot be inline"
-msgstr "funktioner der bruger setjmp, kan ikke indbygges"
+msgstr "funktion der bruger setjmp, kan ikke indbygges"
 
 #: integrate.c:185
 msgid "function uses __builtin_eh_return"
@@ -6397,11 +6335,11 @@ msgstr "funktionen bruger __builtin_eh_return"
 
 #: integrate.c:188
 msgid "function with nested functions cannot be inline"
-msgstr "funktioner med indlejrede funktioner kan ikke indbygges"
+msgstr "funktion med indlejrede funktioner kan ikke indbygges"
 
 #: integrate.c:192
 msgid "function with label addresses used in initializers cannot inline"
-msgstr "funktioner hvor etiketadresser benyttes i klargøringer, kan ikke indbygges"
+msgstr "funktion hvor etiketadresser benyttes i klargøringer, kan ikke indbygges"
 
 #: integrate.c:199 integrate.c:243
 msgid "function too large to be inline"
@@ -6474,12 +6412,11 @@ msgstr "ugyldig parameter '%s'"
 #: profile.c:397
 #, c-format
 msgid "Profile does not match flowgraph of function %s (out of date?)"
-msgstr ""
+msgstr "Profil passer ikke til flowgraph af funktionen %s (forældet?)"
 
 #: profile.c:400
-#, fuzzy
 msgid ".da file corrupted"
-msgstr "indholdet af .da-filen ikke udtømt"
+msgstr ".da-fil ødelagt"
 
 # 'prob' står for sandsynlighed
 #: profile.c:634
@@ -6810,7 +6747,7 @@ msgstr "%s: inddatafilnavn skal have '.c'-endelser: %s\n"
 
 #: ra.c:750
 msgid "Didn't find a coloring.\n"
-msgstr ""
+msgstr "Kunne ikke finde en farvning.\n"
 
 #: reg-stack.c:673
 #, c-format
@@ -6952,37 +6889,37 @@ msgstr "instruktion tilfredsstiller ikke sine begrænsninger:"
 #: rtl.c:558
 #, c-format
 msgid "RTL check: access of elt %d of `%s' with last elt %d in %s, at %s:%d"
-msgstr "RTL-tjek: tilgang til udtrykstræ %d fra '%s' med sidste udtrykstræ %d i %s, ved %s:%d"
+msgstr "RTL-kontrol: tilgang til udtrykstræ %d fra '%s' med sidste udtrykstræ %d i %s, ved %s:%d"
 
 #: rtl.c:573
 #, c-format
 msgid "RTL check: expected elt %d type '%c', have '%c' (rtx %s) in %s, at %s:%d"
-msgstr "RTL-tjek: forventede udtrykstræ %d type '%c', har '%c' (registeroverførselsudtryk %s) i %s, ved %s:%d"
+msgstr "RTL-kontrol: forventede udtrykstræ %d type '%c', har '%c' (registeroverførselsudtryk %s) i %s, ved %s:%d"
 
 #: rtl.c:589
 #, c-format
 msgid "RTL check: expected elt %d type '%c' or '%c', have '%c' (rtx %s) in %s, at %s:%d"
-msgstr "RTL-tjek: forventede udtrykstræ %d type '%c' eller '%c', har '%c' (registeroverførselsudtryk %s) i %s, ved %s:%d"
+msgstr "RTL-kontrol: forventede udtrykstræ %d type '%c' eller '%c', har '%c' (registeroverførselsudtryk %s) i %s, ved %s:%d"
 
 #: rtl.c:602
 #, c-format
 msgid "RTL check: expected code `%s', have `%s' in %s, at %s:%d"
-msgstr "RTL-tjek: forventede koden '%s', har '%s' i %s, ved %s:%d"
+msgstr "RTL-kontrol: forventede koden '%s', har '%s' i %s, ved %s:%d"
 
 #: rtl.c:616
 #, c-format
 msgid "RTL check: expected code `%s' or `%s', have `%s' in %s, at %s:%d"
-msgstr "RTL-tjek: forventede koden '%s' eller '%s', har '%s' i %s, ved %s:%d"
+msgstr "RTL-kontrol: forventede koden '%s' eller '%s', har '%s' i %s, ved %s:%d"
 
 #: rtl.c:631
 #, c-format
 msgid "RTL check: access of elt %d of vector with last elt %d in %s, at %s:%d"
-msgstr "RTL-tjek: tilgang til udtrykstræ %d af vektor hvis sidste udtrykstræ er %d i %s, ved %s:%d"
+msgstr "RTL-kontrol: tilgang til udtrykstræ %d af vektor hvis sidste udtrykstræ er %d i %s, ved %s:%d"
 
 #: rtl.c:646
-#, fuzzy, c-format
+#, c-format
 msgid "RTL flag check: %s used with unexpected rtx code `%s' in %s, at %s:%d"
-msgstr "RTL-tjek: forventede koden '%s', har '%s' i %s, ved %s:%d"
+msgstr "RTL-flagskontrol: %s benyttet med uventet rtx-kode '%s' i %s, ved %s:%d"
 
 #: stmt.c:753
 #, c-format
@@ -7031,9 +6968,9 @@ msgid "invalid punctuation `%c' in constraint"
 msgstr "ugyldig punktuering '%c' i begrænsning"
 
 #: stmt.c:1429
-#, fuzzy, c-format
+#, c-format
 msgid "asm-specifier for variable `%s' conflicts with asm clobber list"
-msgstr "typemodifikationer for '%s' strider mod tidligere erklæring"
+msgstr "asm-anvisning for variablen '%s' strider mod asm-overskrivelsesliste"
 
 #: stmt.c:1519
 #, c-format
@@ -7059,14 +6996,12 @@ msgid "asm operand %d probably doesn't match constraints"
 msgstr "'asm'-operand %d passer sandsynligvis ikke til begrænsninger"
 
 #: stmt.c:1858
-#, fuzzy
 msgid "asm clobber conflict with output operand"
-msgstr "asm-erklæring er i konflikt med tidligere omdøbelse"
+msgstr "asm-overskrivelse er i modstrid med uddataoperander"
 
 #: stmt.c:1863
-#, fuzzy
 msgid "asm clobber conflict with input operand"
-msgstr "asm-erklæring er i konflikt med tidligere omdøbelse"
+msgstr "asm-overskrivelse er i modstrid med inddataoperander"
 
 #: stmt.c:1898
 msgid "too many alternatives in `asm'"
@@ -7111,9 +7046,8 @@ msgid "case value `%ld' not in enumerated type `%s'"
 msgstr "case-værdien '%ld' eksisterer ikke i enum-typen '%s'"
 
 #: stmt.c:5270
-#, fuzzy
 msgid "switch missing default case"
-msgstr "dette er den første default-etiket"
+msgstr "switch-konstruktion mangler default"
 
 #: stor-layout.c:178
 msgid "type size can't be explicitly evaluated"
@@ -7281,7 +7215,7 @@ msgstr "Optimér søskende- og halerekursive kald"
 
 #: toplev.c:997
 msgid "Perform superblock formation via tail duplication"
-msgstr ""
+msgstr "Udfør superbloksformering vha. haleduplikering"
 
 # RETMIG: hvad er CSE?
 #: toplev.c:999
@@ -7397,23 +7331,20 @@ msgid "Perform store motion after global subexpression elimination"
 msgstr "Udfør lagringsbevægelse efter eliminering af fælles underudtryk"
 
 #: toplev.c:1055
-#, fuzzy
 msgid "Perform the loop optimizations"
-msgstr "Udfør halekaldsoptimering"
+msgstr "Udfør løkkeoptimeringerne"
 
 #: toplev.c:1057
-#, fuzzy
 msgid "Perform cross-jumping optimization"
-msgstr "Udfør springtrådningsoptimeringer"
+msgstr "Udfør krydsspringsoptimering"
 
 #: toplev.c:1059
 msgid "Perform conversion of conditional jumps to branchless equivalents"
-msgstr ""
+msgstr "Udfør konvertering af betingede spring til forgreningsløse ækvivalenter"
 
 #: toplev.c:1061
-#, fuzzy
 msgid "Perform conversion of conditional jumps to conditional execution"
-msgstr "Skift tærsklen for konvertering til betinget udførelse"
+msgstr "Udfør konvertering af betingede spring til betinget udførsel"
 
 #: toplev.c:1063
 msgid "Run CSE pass after loop optimizations"
@@ -7489,18 +7420,16 @@ msgid "Use profiling information for branch probabilities"
 msgstr "Benyt profileringsoplysninger til forgreningssandsynligheder"
 
 #: toplev.c:1100
-#, fuzzy
 msgid "Enable basic program profiling code"
-msgstr "Indsæt buebaseret programprofileringskode"
+msgstr "Aktivér basal programprofileringskode"
 
 #: toplev.c:1102
 msgid "Reorder basic blocks to improve code placement"
 msgstr "Omordn basisblokke for at forbedre kodeplacering"
 
 #: toplev.c:1104
-#, fuzzy
 msgid "Reorder functions to improve code placement"
-msgstr "Omordn basisblokke for at forbedre kodeplacering"
+msgstr "Omordn funktioner for at forbedre kodeplacering"
 
 #: toplev.c:1106
 msgid "Do the register renaming optimization pass"
@@ -7599,9 +7528,8 @@ msgid "Instrument function entry/exit with profiling calls"
 msgstr "Instrumentér funktionsindgange/-afslutninger med profileringskald"
 
 #: toplev.c:1154
-#, fuzzy
 msgid "Put zero initialized data in the bss section"
-msgstr "Anbring ikke uklargjorte globale variabler i den fælles sektion"
+msgstr "Anbring nul-klargjorte data i bss-sektionen"
 
 #: toplev.c:1156
 msgid "Enable SSA optimizations"
@@ -7629,7 +7557,7 @@ msgstr "Aktivér en RTL-kikhulsfase før sched2"
 
 #: toplev.c:1168
 msgid "Assume no NaNs or +-Infs are generated"
-msgstr ""
+msgstr "Antag at ingen NaN eller +-Inf bliver genereret"
 
 #: toplev.c:1170
 msgid "Enables guessing of branch probabilities"
@@ -7649,12 +7577,11 @@ msgstr "Tillad matematikoptimeringer der kan overtræde IEEE- eller ANSI-standard
 
 #: toplev.c:1178
 msgid "Disable optimizations observable by IEEE signaling NaNs"
-msgstr ""
+msgstr "Deaktivér optimeringer som kan opdages ved IEEE-signalerende NaN'er"
 
 #: toplev.c:1180
-#, fuzzy
 msgid "Generate code to check bounds before indexing arrays"
-msgstr "Generér kode for at kontrollere grænserne før henvisninger og tabeller følges"
+msgstr "Generér kode til at kontrollere grænserne før tabeller indekseres"
 
 #: toplev.c:1182
 msgid "Convert floating point constant to single precision constant"
@@ -7673,14 +7600,12 @@ msgid "Trap for signed overflow in addition / subtraction / multiplication"
 msgstr "Opsæt fælde for overløb med fortegn i addition/subtraktion/multiplikation"
 
 #: toplev.c:1190
-#, fuzzy
 msgid "Use graph coloring register allocation."
-msgstr "Omplanlæg instruktioner før registerallokering"
+msgstr "Allokér registre vha. graffarvning"
 
 #: toplev.c:1207
-#, fuzzy
 msgid "Compile just for ISO C90"
-msgstr "Oversæt kun til ISO C89"
+msgstr "Oversæt kun til ISO C90"
 
 #: toplev.c:1209
 msgid "Determine language standard"
@@ -7763,9 +7688,8 @@ msgid "Warn about possibly confusing type conversions"
 msgstr "Advar om typekonverteringer der kan være forvirrende"
 
 #: toplev.c:1278
-#, fuzzy
 msgid "Do not warn about compile-time integer division by zero"
-msgstr "Forårsag ikke undtagelse ved heltalsdivision med nul"
+msgstr "Advar ikke om heltalsdivision på oversættelsestidspunktet med nul"
 
 #: toplev.c:1280
 msgid "Warn about testing equality of floating point numbers"
@@ -7844,9 +7768,8 @@ msgid "Warn about multiple declarations of the same object"
 msgstr "Advar om flere erklæring af det samme objekt"
 
 #: toplev.c:1340
-#, fuzzy
 msgid "Warn whenever a function's return-type defaults to int"
-msgstr "returtypen antages at være 'int'"
+msgstr "Advar når en funktions returtype antages at være int"
 
 #: toplev.c:1343
 msgid "Warn about possible violations of sequence point rules"
@@ -7861,9 +7784,8 @@ msgid "Warn about non-prototyped function decls"
 msgstr "Advar om funktionserklæringer uden prototype"
 
 #: toplev.c:1352
-#, fuzzy
 msgid "Warn about constructs whose meanings change in ISO C"
-msgstr "Advar om konstruktioner hvis mening skifter i ISO C"
+msgstr "Advar om konstruktioner hvis betydning er ændret i ISO C"
 
 #: toplev.c:1355
 msgid "Warn when trigraphs are encountered"
@@ -7910,19 +7832,16 @@ msgid "Warn when one local variable shadows another"
 msgstr "Advar når en lokal variabel skygger for en anden"
 
 #: toplev.c:1524
-#, fuzzy
 msgid "Warn about enumerated switches, with no default, missing a case"
-msgstr "Advar om nummererede switch-sætninger som mangler et bestemt tilfælde"
+msgstr "Advar om switch-sætninger over enum-typer som mangler et tilfælde og ikke har default"
 
 #: toplev.c:1526
-#, fuzzy
 msgid "Warn about enumerated switches missing a default case"
-msgstr "Advar om nummererede switch-sætninger som mangler et bestemt tilfælde"
+msgstr "Advar om switch-sætninger over enum-typer som mangler default"
 
 #: toplev.c:1528
-#, fuzzy
 msgid "Warn about all enumerated switches missing a specific case"
-msgstr "Advar om nummererede switch-sætninger som mangler et bestemt tilfælde"
+msgstr "Advar om alle switch-sætninger over enum-typer som mangler et bestemt tilfælde"
 
 #: toplev.c:1530
 msgid "Warn about returning structures, unions or arrays"
@@ -7965,9 +7884,8 @@ msgid "Warn about functions which might be candidates for attribute noreturn"
 msgstr "Advar om funktioner som kan være kandidater til egenskaben noreturn"
 
 #: toplev.c:1550
-#, fuzzy
 msgid "Warn about code which might break the strict aliasing rules"
-msgstr "Advar om funktioner som kan være kandidater til formateringsegenskaber"
+msgstr "Advar om kode som kan bryde strenge aliasregler"
 
 #: toplev.c:1627 toplev.c:4513 config/rs6000/rs6000.c:676
 #, c-format
@@ -8020,7 +7938,7 @@ msgstr "  -fdiagnostics-show-location=[once | every-line] Indikerer hvor ofte ki
 
 #: toplev.c:3689
 msgid "  -ftls-model=[global-dynamic | local-dynamic | initial-exec | local-exec] Indicates the default thread-local storage code generation model\n"
-msgstr ""
+msgstr "  -ftls-model=[global-dynamic | local-dynamic | initial-exec | local-exec] Indikerer den forvalgte tråd-lokale lagringsmodel for kodegenerering\n"
 
 #: toplev.c:3700
 msgid "  -O[number]              Set optimization level to [number]\n"
@@ -8159,9 +8077,9 @@ msgid "unrecognized gcc debugging option: %c"
 msgstr "ukendt GCC-fejlfindingstilvalg: %c"
 
 #: toplev.c:3979
-#, fuzzy, c-format
+#, c-format
 msgid "`%s': unknown tls-model option"
-msgstr "'%s': ukendt eller ikke-understøttet '-g'-tilvalg"
+msgstr "'%s': ukendt tls-model-tilvalg"
 
 #: toplev.c:4006
 #, c-format
@@ -8329,17 +8247,17 @@ msgstr "ugyldig startværdi til bitstreng"
 #: tree.c:4603
 #, c-format
 msgid "tree check: expected %s, have %s in %s, at %s:%d"
-msgstr "træ-tjek: forventede %s, har %s i %s, ved %s:%d"
+msgstr "træ-kontrol: forventede %s, har %s i %s, ved %s:%d"
 
 #: tree.c:4620
 #, c-format
 msgid "tree check: expected class '%c', have '%c' (%s) in %s, at %s:%d"
-msgstr "træ-tjek: forventede klasse '%c', har '%c' (%s) i %s, ved %s:%d"
+msgstr "træ-kontrol: forventede klasse '%c', har '%c' (%s) i %s, ved %s:%d"
 
 #: tree.c:4637
-#, fuzzy, c-format
+#, c-format
 msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
-msgstr "RTL-tjek: tilgang til udtrykstræ %d af vektor hvis sidste udtrykstræ er %d i %s, ved %s:%d"
+msgstr "RTL-kontrol: tilgik udtrykstræ %d af tree_vec med %d udtrykstræer i %s, ved %s:%d"
 
 #: varasm.c:455 config/i386/winnt.c:546
 #, c-format
@@ -8386,7 +8304,7 @@ msgstr "justering af '%s' er større end den maksimale objektfilsjustering - brug
 
 #: varasm.c:1584
 msgid "thread-local COMMON data not implemented"
-msgstr ""
+msgstr "tråd-lokal COMMON-data er ikke implementeret"
 
 #: varasm.c:1608
 #, c-format
@@ -8439,9 +8357,8 @@ msgid "alias definitions not supported in this configuration; ignored"
 msgstr "aliasdefinitioner er ikke understøttet i denne konfiguration; ignoreret"
 
 #: varasm.c:4670
-#, fuzzy
 msgid "visibility attribute not supported in this configuration; ignored"
-msgstr "aliasdefinitioner er ikke understøttet i denne konfiguration; ignoreret"
+msgstr "synlighedsegenskab er ikke understøttet i denne konfiguration; ignoreret"
 
 #: varray.c:134
 #, c-format
@@ -8455,28 +8372,25 @@ msgid "no sclass for %s stab (0x%x)\n"
 msgstr "ingen sclass for %s stab (0x%x)\n"
 
 #: pretty-print.h:97
-#, fuzzy, c-format
+#, c-format
 msgid "#`%s' not supported by %s#"
-msgstr "'%s' ikke understøttet %s"
+msgstr "#'%s' ikke understøttet af %s#"
 
 #: params.def:53
-#, fuzzy
 msgid "The maximum number of instructions in a single function eliglible for inlining"
-msgstr "Det maksimale antal instruktioner i en funktion der indbygges"
+msgstr "Det maksimale antal instruktioner i en enkelt funktion der indbygges"
 
 #: params.def:74
-#, fuzzy
 msgid "The maximuem number of instructions by repeated inlining before gcc starts to throttle inlining"
-msgstr "Det maksimale antal instruktioner i en funktion der indbygges"
+msgstr "Det maksimale antal instruktioner ved gentagen indbygning før GCC holder op med at indbygge"
 
 #: params.def:87
 msgid "The slope of the linear funtion throttling inlining after the recursive inlining limit has been reached is given by the negative reciprocal value of this parameter"
-msgstr ""
+msgstr "Hældningen af den lineære funktion der dæmper indbygning efter at den rekursive indbygningsgrænse er nået er givet ved den negative, reciprokke værdi af denne parameter"
 
 #: params.def:100
-#, fuzzy
 msgid "The number of instructions in a single functions still eligible to inlining after a lot recursive inlining"
-msgstr "Det maksimale antal instruktioner i en funktion der indbygges"
+msgstr "Antallet af instruktioner i en enkelt funktion der stadig indbygges efter megen rekursiv indbygning"
 
 #: params.def:111
 msgid "The maximum number of instructions to consider to fill a delay slot"
@@ -8499,49 +8413,48 @@ msgid "The maximum number of passes to make when doing GCSE"
 msgstr "Det maksimale antal faser der skal gennemgås ved udførsel af GCSE"
 
 #: params.def:151
-#, fuzzy
 msgid "The maximum number of instructions to consider to unroll in a loop"
-msgstr "Det maksimale antal instruktioner det overvejes at udfylde ventepladser med"
+msgstr "Det maksimale antal instruktioner der overvejes at udrulle i en løkke"
 
 #: params.def:156
 msgid "Select fraction of the maximal count of repetitions of basic block in program given basic block needs to have to be considered hot"
-msgstr ""
+msgstr "Vælg den andel af det maksimale antal gentagelser af basisblokke i et program en given basisblok skal have for at blive betragtet som \"varm\""
 
 #: params.def:161
 msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot"
-msgstr ""
+msgstr "Vælg den andel af den maksimale frekvens af udførsler af basisblokke i et program en given basisblok skal have for at blive betragtet som \"varm\""
 
 #: params.def:166
 msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is available"
-msgstr ""
+msgstr "Den procendel af funktioner vægtet efter udførselsfrekvens som skal dækkes af sporingsformering; benyttes når profileringsfeedback er tilgængeligt"
 
 #: params.def:171
 msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is not available"
-msgstr ""
+msgstr "Den procendel af funktioner vægtet efter udførselsfrekvens som skal dækkes af sporingsformering; benyttes når profileringsfeedback ikke er tilgængeligt"
 
 #: params.def:176
 msgid "Maximal code growth caused by tail duplication (in percents)"
-msgstr ""
+msgstr "Maksimal kodevækst forårsaget af haleduplikering (i procent)"
 
 #: params.def:180
 msgid "Stop reverse growth if the reverse probability of best edge is less than this threshold (in percents)"
-msgstr ""
+msgstr "Stop omvendt vækst hvis den omvendte sandsynlighed for den bedste kant er mindre end denne tærskel (i procent)"
 
 #: params.def:185
 msgid "Stop forward growth if the probability of best edge is less than this threshold (in percents). Used when profile feedback is available"
-msgstr ""
+msgstr "Stop fremadrettet vækst hvis sandsynligheden for den bedste kant er mindre end denne tærskel (i procent); benyttes når profileringsfeedback er tilgængeligt"
 
 #: params.def:190
 msgid "Stop forward growth if the probability of best edge is less than this threshold (in percents). Used when profile feedback is not available"
-msgstr ""
+msgstr "Stop fremadrettet vækst hvis sandsynligheden for den bedste kant er mindre end denne tærskel (i procent); benyttes når profileringsfeedback ikke er tilgængeligt"
 
 #: params.def:204
 msgid "Minimum heap expansion to trigger garbage collection, as a percentage of the total size of the heap."
-msgstr ""
+msgstr "Minimal heap-udvidelse for at udløse garbage collection, som en procentdel af den totale heap"
 
 #: params.def:210
 msgid "Minimum heap size before we start collecting garbage, in kilobytes."
-msgstr ""
+msgstr "Minimal heap-størrelse før garbage collection startes, i kilobyte."
 
 #: config/darwin-c.c:75
 msgid "too many #pragma options align=reset"
@@ -8609,9 +8522,9 @@ msgid "bad value `%s' for -mfp-trap-mode switch"
 msgstr "ugyldig værdi '%s' til tilvalget -mfp-trap-mode"
 
 #: config/alpha/alpha.c:435
-#, fuzzy, c-format
+#, c-format
 msgid "bad value `%s' for -mtls-size switch"
-msgstr "ugyldig værdi '%s' til tilvalget -mcpu"
+msgstr "ugyldig værdi '%s' til tilvalget -mtls-size"
 
 #: config/alpha/alpha.c:454 config/alpha/alpha.c:466
 #, c-format
@@ -8719,9 +8632,8 @@ msgid "invalid %%E value"
 msgstr "ugyldig %%E-værdi"
 
 #: config/alpha/alpha.c:5883 config/alpha/alpha.c:5933
-#, fuzzy
 msgid "unknown relocation unspec"
-msgstr "ukendt mængdekonstruktionstype"
+msgstr "ukendt relokaliserings-unspec"
 
 #: config/alpha/alpha.c:5892 config/romp/romp.c:981
 #: config/rs6000/rs6000.c:8015
@@ -8731,7 +8643,7 @@ msgstr "ugyldig %%xn-kode"
 
 #: config/alpha/alpha.c:6615 config/alpha/alpha.c:6618
 msgid "bad builtin fcode"
-msgstr ""
+msgstr "ugyldig indbygget fcode"
 
 #. Macro to define tables used to set the flags.
 #. This is a list in braces of pairs in braces,
@@ -8820,7 +8732,7 @@ msgstr "Udsend 32-bit relokalisering til det lille dataområde"
 
 #: config/alpha/alpha.h:314
 msgid "Emit rdval instead of rduniq for thread pointer"
-msgstr ""
+msgstr "Udsend rdval i stedet for rduniq for trådhenvisning"
 
 #. For -mcpu=
 #. For -mtune=
@@ -8855,7 +8767,7 @@ msgstr "Justér den forventede hukommelsesventetid"
 
 #: config/alpha/alpha.h:355 config/ia64/ia64.h:221
 msgid "Specify bit size of immediate TLS offsets"
-msgstr ""
+msgstr "Angiv bitstørrelse for umiddelbar TLS-afsæt"
 
 #: config/arc/arc.c:135
 #, c-format
@@ -9166,14 +9078,13 @@ msgid "only initialized variables can be placed into program memory area"
 msgstr "kun variabler med startværdi kan placeres i programhukommelsesområdet"
 
 #: config/avr/avr.c:4866
-#, fuzzy
 msgid "only uninitialized variables can be placed in the .noinit section"
-msgstr "kun variabler med startværdi kan placeres i programhukommelsesområdet"
+msgstr "kun variabler uden startværdi kan placeres i .noinit-sektionen"
 
 #: config/avr/avr.c:4881
-#, fuzzy, c-format
+#, c-format
 msgid "MCU `%s' supported for assembler only"
-msgstr "MCU '%s' ikke understøttet"
+msgstr "MCU '%s' understøttes kun for maskinkode"
 
 #: config/avr/avr.h:78
 msgid "Assume int to be 8 bit integer"
@@ -9197,7 +9108,7 @@ msgstr "Generér ikke tabelspringsinstruktioner"
 
 #: config/avr/avr.h:88
 msgid "Use rjmp/rcall (limited range) on >8K devices"
-msgstr ""
+msgstr "Benyt rjmp/rcall (begrænset omfang) på >8K-enheder"
 
 #: config/avr/avr.h:91
 msgid "Output instruction sizes to the asm file"
@@ -10099,154 +10010,135 @@ msgstr "Antag lille adresserum"
 #: config/frv/frv.c:410 config/frv/frv.c:428
 #, c-format
 msgid "Unknown cpu: -mcpu=%s"
-msgstr ""
+msgstr "Ukendt processor: -mcpu=%s"
 
 #: config/frv/frv.c:451
 msgid "-fpic and -gdwarf are incompatible (-fpic and -g/-gdwarf-2 are fine)"
-msgstr ""
+msgstr "-fpic og -gdwarf er indbyrdes uforenelige (-fpic og -g/-gdwarf-2 er i orden)"
 
 #: config/frv/frv.c:2520
-#, fuzzy
 msgid "Bad insn to frv_print_operand_address:"
-msgstr "ugyldig instruktion til d30v_print_operand_address:"
+msgstr "Ugyldig instruktion til frv_print_operand_address:"
 
 #: config/frv/frv.c:2533
-#, fuzzy
 msgid "Bad register to frv_print_operand_memory_reference_reg:"
-msgstr "ugyldig instruktion til d30v_print_operand_memory_reference:"
+msgstr "Ugyldigt register til frv_print_operand_memory_reference_reg:"
 
 #: config/frv/frv.c:2574 config/frv/frv.c:2584 config/frv/frv.c:2593
 #: config/frv/frv.c:2621 config/frv/frv.c:2633 config/frv/frv.c:2637
-#, fuzzy
 msgid "Bad insn to frv_print_operand_memory_reference:"
-msgstr "ugyldig instruktion til d30v_print_operand_memory_reference:"
+msgstr "Ugyldig instruktion til frv_print_operand_memory_reference:"
 
 #: config/frv/frv.c:2779
-#, fuzzy
 msgid "Bad insn in frv_print_operand, bad const_double"
-msgstr "ugyldig instruktion til d30v_print_operand, 0 case"
+msgstr "Ugyldig instruktion i frv_print_operand, ugyldig const_double"
 
 #: config/frv/frv.c:2824
-#, fuzzy
 msgid "Bad insn to frv_print_operand, 'C' modifier:"
-msgstr "ugyldig instruktion til d30v_print_operand, 'B'-ændring:"
+msgstr "Ugyldig instruktionen til frv_print_operand, 'C'-modifikation:"
 
 #: config/frv/frv.c:2847
-#, fuzzy
 msgid "Bad insn to frv_print_operand, 'c' modifier:"
-msgstr "ugyldig instruktion til d30v_print_operand, 'B'-ændring:"
+msgstr "Ugyldig instruktion til frv_print_operand, 'c'-modifikation:"
 
 #: config/frv/frv.c:2872
-#, fuzzy
 msgid "Bad insn to frv_print_operand, 'e' modifier:"
-msgstr "ugyldig instruktion til d30v_print_operand, 'B'-ændring:"
+msgstr "Ugyldig instruktion til frv_print_operand, 'e'-modifikation:"
 
 #: config/frv/frv.c:2880
-#, fuzzy
 msgid "Bad insn to frv_print_operand, 'F' modifier:"
-msgstr "ugyldig instruktion til d30v_print_operand, 'B'-ændring:"
+msgstr "Ugyldig instruktion til frv_print_operand, 'F'-modifikation:"
 
 #: config/frv/frv.c:2896
-#, fuzzy
 msgid "Bad insn to frv_print_operand, 'f' modifier:"
-msgstr "ugyldig instruktion til d30v_print_operand, 'f'-ændring:"
+msgstr "Ugyldig instruktion til frv_print_operand, 'f'-modifikation:"
 
 #: config/frv/frv.c:2949
-#, fuzzy
 msgid "Bad insn to frv_print_operand, 'L' modifier:"
-msgstr "ugyldig instruktion til d30v_print_operand, 'B'-ændring:"
+msgstr "Ugyldig instruktion til frv_print_operand, 'L'-modifikation:"
 
 #: config/frv/frv.c:2962
-#, fuzzy
 msgid "Bad insn to frv_print_operand, 'M/N' modifier:"
-msgstr "ugyldig instruktion til d30v_print_operand, 'M'-ændring:"
+msgstr "Ugyldig instruktion til frv_print_operand, 'M/N'-modifikation:"
 
 #: config/frv/frv.c:2983
-#, fuzzy
 msgid "Bad insn to frv_print_operand, 'O' modifier:"
-msgstr "ugyldig instruktion til d30v_print_operand, 'B'-ændring:"
+msgstr "Ugyldig instruktion til frv_print_operand, 'O'-modifikation:"
 
 #: config/frv/frv.c:3001
-#, fuzzy
 msgid "Bad insn to frv_print_operand, P modifier:"
-msgstr "ugyldig instruktion til d30v_print_operand, 'B'-ændring:"
+msgstr "Ugyldig instruktion til frv_print_operand, P-modifikation:"
 
 #: config/frv/frv.c:3021
-#, fuzzy
 msgid "Bad insn in frv_print_operand, z case"
-msgstr "ugyldig instruktion til d30v_print_operand, 0 case"
+msgstr "Ugyldig instruktion i frv_print_operand, tilfældet z"
 
 #: config/frv/frv.c:3049
-#, fuzzy
 msgid "Bad insn in frv_print_operand, 0 case"
-msgstr "ugyldig instruktion til d30v_print_operand, 0 case"
+msgstr "Ugyldig instruktion i frv_print_operand, tilfældet 0"
 
 #: config/frv/frv.c:3054
-#, fuzzy
 msgid "frv_print_operand: unknown code"
-msgstr "fr30_print_operand: ukendt kode"
+msgstr "fr_print_operand: ukendt kode"
 
 #: config/frv/frv.c:5737
-#, fuzzy
 msgid "Bad output_move_single operand"
-msgstr "output_move_single:"
+msgstr "Ugyldig output_move_single-operand"
 
 #: config/frv/frv.c:5866
 msgid "Bad output_move_double operand"
-msgstr ""
+msgstr "Ugyldig output_move_double-operand"
 
 #: config/frv/frv.c:6010
-#, fuzzy
 msgid "Bad output_condmove_single operand"
-msgstr "output_move_single:"
+msgstr "Ugyldig output_condmove_single-operand"
 
 #: config/frv/frv.c:8315
 msgid "frv_registers_update"
-msgstr ""
+msgstr "frv_registers_update"
 
 #: config/frv/frv.c:8475
 msgid "frv_registers_used_p"
-msgstr ""
+msgstr "frv_registers_used_p"
 
 #: config/frv/frv.c:8604
 msgid "frv_registers_set_p"
-msgstr ""
+msgstr "frv_registers_set_p"
 
 #: config/frv/frv.c:9171
-#, fuzzy
 msgid "accumulator is not a constant integer"
-msgstr "parameteren til 'asm' er ikke en konstant streng"
+msgstr "akkumulator er ikke et konstant heltal"
 
 #: config/frv/frv.c:9176
 msgid "accumulator number is out of bounds"
-msgstr ""
+msgstr "akkumulatortal er uden for det gyldig interval"
 
 #: config/frv/frv.c:9187
-#, fuzzy, c-format
+#, c-format
 msgid "inappropriate accumulator for `%s'"
-msgstr "ingen tidligere erklæring af '%s'"
+msgstr "forkert akkumulator for '%s'"
 
 #: config/frv/frv.c:9253
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' expects a constant argument"
-msgstr "egenskaben '%s' kræver en heltalskonstant som parameter"
+msgstr "'%s' forventer en konstant parameter"
 
 #: config/frv/frv.c:9258
-#, fuzzy, c-format
+#, c-format
 msgid "constant argument out of range for `%s'"
-msgstr "operandnummer uden for det gyldige interval"
+msgstr "konstant parameter uden for det gyldige interval for '%s'"
 
 #: config/frv/frv.c:9638
 msgid "media functions are not available unless -mmedia is used"
-msgstr ""
+msgstr "mediafunktioner er ikke tilgængelige medmindre -mmedia benyttes"
 
 #: config/frv/frv.c:9650
 msgid "this media function is only available on the fr500"
-msgstr ""
+msgstr "denne mediafunktion er kun tilgængelig på fr500"
 
 #: config/frv/frv.c:9678
 msgid "this media function is only available on the fr400"
-msgstr ""
+msgstr "denne mediafunktion er kun tilgængelig på fr400"
 
 #. This macro is a C statement to print on `stderr' a string describing the
 #. particular machine description choice.  Every machine description should
@@ -10259,16 +10151,15 @@ msgstr ""
 #. #endif
 #: config/frv/frv.h:512
 msgid " (frv)"
-msgstr ""
+msgstr " (frv)"
 
 #: config/h8300/h8300.c:314
 msgid "-ms2600 is used without -ms"
 msgstr "-ms2600 benyttet uden -ms"
 
 #: config/h8300/h8300.c:320
-#, fuzzy
 msgid "-mn is used without -mh or -ms"
-msgstr "-ms2600 benyttet uden -ms"
+msgstr "-mn benyttet uden -mh eller -ms"
 
 #. Macro to define tables used to set the flags.
 #. This is a list in braces of pairs in braces,
@@ -10276,24 +10167,20 @@ msgstr "-ms2600 benyttet uden -ms"
 #. where VALUE is the bits to set or minus the bits to clear.
 #. An empty string NAME is used to identify the default VALUE.
 #: config/h8300/h8300.h:150
-#, fuzzy
 msgid "Generate H8S code"
-msgstr "Generér H8/S-kode"
+msgstr "Generér H8S-kode"
 
 #: config/h8300/h8300.h:151
-#, fuzzy
 msgid "Do not generate H8S code"
-msgstr "Generér ikke H8/S-kode"
+msgstr "Generér ikke H8S-kode"
 
 #: config/h8300/h8300.h:152
-#, fuzzy
 msgid "Generate H8S/2600 code"
-msgstr "Generér H8/S2600-kode"
+msgstr "Generér H8S/2600-kode"
 
 #: config/h8300/h8300.h:153
-#, fuzzy
 msgid "Do not generate H8S/2600 code"
-msgstr "Generér ikke H8/S2600-kode"
+msgstr "Generér ikke H8S/2600-kode"
 
 #: config/h8300/h8300.h:154
 msgid "Make integers 32 bits wide"
@@ -10321,7 +10208,7 @@ msgstr "Generér H8/300H-kode"
 
 #: config/h8300/h8300.h:165
 msgid "Enable the normal mode"
-msgstr ""
+msgstr "Aktivér den normale tilstand"
 
 #: config/h8300/h8300.h:166
 msgid "Do not generate H8/300H code"
@@ -10435,9 +10322,9 @@ msgid "-mbranch-cost=%d is not between 0 and 5"
 msgstr "-mbranch-cost=%d er ikke mellem 0 og 5"
 
 #: config/i386/i386.c:1235
-#, fuzzy, c-format
+#, c-format
 msgid "bad value (%s) for -mtls-dialect= switch"
-msgstr "ugyldig værdi (%s) til tilvalget -msdata"
+msgstr "ugyldig værdi (%s) til tilvalget -mtls-dialect"
 
 #: config/i386/i386.c:1256
 msgid "-malign-double makes no sense in the 64bit mode"
@@ -10492,9 +10379,8 @@ msgid "invalid operand code `%c'"
 msgstr "ugyldig operandkode '%c'"
 
 #: config/i386/i386.c:6861
-#, fuzzy
 msgid "invalid constraints for operand"
-msgstr "ugyldig %%c-operand"
+msgstr "ugyldige begrænsninger for operand"
 
 #: config/i386/i386.c:11027
 msgid "unknown insn mode"
@@ -10511,9 +10397,8 @@ msgid "mask must be an immediate"
 msgstr "maske skal være en umiddelbar værdi"
 
 #: config/i386/i386.c:13346
-#, fuzzy
 msgid "shift must be an immediate"
-msgstr "maske skal være en umiddelbar værdi"
+msgstr "skifteværdi skal være en umiddelbar værdi"
 
 #: config/i386/winnt.c:105
 #, c-format
@@ -10783,9 +10668,8 @@ msgid "Use given assembler dialect"
 msgstr "Benyt den givne maskinkodedialekt"
 
 #: config/i386/i386.h:436
-#, fuzzy
 msgid "Use given thread-local storage dialect"
-msgstr "Benyt den givne maskinkodedialekt"
+msgstr "Benyt den givne tråd-lokale lagringsdialekt"
 
 #: config/i386/sco5.h:700
 msgid "Generate ELF output"
@@ -10980,9 +10864,8 @@ msgid "Do not enable linker relaxation"
 msgstr "Aktivér ikke tolerant sammenkæder"
 
 #: config/ia64/ia64-c.c:50
-#, fuzzy
 msgid "malformed #pragma builtin"
-msgstr "forkert udformet '#pragma implementation'"
+msgstr "forkert udformet '#pragma builtin'"
 
 #: config/ia64/ia64.c:3879
 msgid "ia64_print_operand: unknown code"
@@ -10998,19 +10881,17 @@ msgid "%s-%s is an empty range"
 msgstr "%s-%s er et tomt interval"
 
 #: config/ia64/ia64.c:4215
-#, fuzzy
 msgid "cannot optimize floating point division for both latency and throughput"
-msgstr "kan ikke optimere division for både ventetid og båndbredde"
+msgstr "kan ikke optimere kommatalsdivision for både ventetid og båndbredde"
 
 #: config/ia64/ia64.c:4221
-#, fuzzy
 msgid "cannot optimize integer division for both latency and throughput"
-msgstr "kan ikke optimere division for både ventetid og båndbredde"
+msgstr "kan ikke optimere heltalsdivision for både ventetid og båndbredde"
 
 #: config/ia64/ia64.c:4233
-#, fuzzy, c-format
+#, c-format
 msgid "bad value (%s) for -mtls-size= switch"
-msgstr "ugyldig værdi (%s) for tilvalget -mcpu="
+msgstr "ugyldig værdi (%s) for tilvalget -mtls-size="
 
 #. This macro defines names of command options to set and clear bits in
 #. `target_flags'.  Its definition is an initializer with a subgrouping for
@@ -11076,24 +10957,20 @@ msgid "Generate self-relocatable code"
 msgstr "Generér selvflyttende kode"
 
 #: config/ia64/ia64.h:180
-#, fuzzy
 msgid "Generate inline floating point division, optimize for latency"
-msgstr "Generér indlejrede divisioner, optimér for ventetid"
+msgstr "Generér indlejrede kommatalsdivisioner, optimér for ventetid"
 
 #: config/ia64/ia64.h:182
-#, fuzzy
 msgid "Generate inline floating point division, optimize for throughput"
-msgstr "Generér indlejrede divisioner, optimér for båndbredde"
+msgstr "Generér indlejrede kommatalsdivisioner, optimér for båndbredde"
 
 #: config/ia64/ia64.h:184
-#, fuzzy
 msgid "Generate inline integer division, optimize for latency"
-msgstr "Generér indlejrede divisioner, optimér for ventetid"
+msgstr "Generér indlejrede heltalsdivisioner, optimér for ventetid"
 
 #: config/ia64/ia64.h:186
-#, fuzzy
 msgid "Generate inline integer division, optimize for throughput"
-msgstr "Generér indlejrede divisioner, optimér for båndbredde"
+msgstr "Generér indlejrede heltalsdivisioner, optimér for båndbredde"
 
 #: config/ia64/ia64.h:188
 msgid "Enable Dwarf 2 line debug info via GNU as"
@@ -11108,14 +10985,12 @@ msgid "Specify range of registers to make fixed"
 msgstr "Angiv interval af registre der skal gøres faste"
 
 #: config/ip2k/ip2k.c:1082
-#, fuzzy
 msgid "bad operand"
-msgstr "ugyldig %%f-operand"
+msgstr "ugyldig operand"
 
 #: config/ip2k/ip2k.c:3184
-#, fuzzy
 msgid "Only initialized variables can be placed into program memory area."
-msgstr "kun variabler med startværdi kan placeres i programhukommelsesområdet"
+msgstr "Kun variabler med startværdi kan placeres i programhukommelsesområdet."
 
 #: config/m32r/m32r.c:139
 #, c-format
@@ -11267,26 +11142,23 @@ msgstr "Selvformindskelse tilladt"
 
 #: config/m68hc11/m68hc11.h:166
 msgid "Auto pre/post decrement increment not allowed"
-msgstr "Selvforøgelse tilladt"
+msgstr "Selvforøgelse ikke tilladt"
 
 #: config/m68hc11/m68hc11.h:168
 msgid "Min/max instructions allowed"
-msgstr ""
+msgstr "Min/max-instruktioner tilladt"
 
 #: config/m68hc11/m68hc11.h:170
-#, fuzzy
 msgid "Min/max instructions not allowed"
-msgstr "ret-instruktion ikke implementeret"
+msgstr "Min/max-instruktioner ikke tilladt"
 
 #: config/m68hc11/m68hc11.h:172
-#, fuzzy
 msgid "Use call and rtc for function calls and returns"
-msgstr "Generér et kald til abort hvis en noreturn-funktion returnerer"
+msgstr "Benyt call og rtc til funktionskald og returneringer"
 
 #: config/m68hc11/m68hc11.h:174
-#, fuzzy
 msgid "Use jsr and rts for function calls and returns"
-msgstr "Benyt stubbe til funktionsindledninger"
+msgstr "Benyt jsr og rts til funktionskald og returneringer"
 
 #: config/m68hc11/m68hc11.h:176
 msgid "Do not use direct addressing mode for soft registers"
@@ -11623,7 +11495,7 @@ msgstr "ugyldig værdi (%s) til tilvalget -mabi="
 #: config/mips/mips.c:5142
 #, c-format
 msgid "-mips%d conflicts with the other architecture options, which specify a MIPS%d processor"
-msgstr ""
+msgstr "-mips%d er i konflikt med de andre arkitekturtilvalg som angiver en MIPS%d-processor"
 
 #: config/mips/mips.c:5149
 #, c-format
@@ -11633,30 +11505,28 @@ msgstr "ugyldig værdi (%s) til tilvalget -mips"
 #: config/mips/mips.c:5164
 #, c-format
 msgid "-march=%s is not compatible with the selected ABI"
-msgstr ""
+msgstr "-march=%s er ikke forenelig med den valgte ABI"
 
 #: config/mips/mips.c:5176
 msgid "-mgp64 used with a 32-bit processor"
-msgstr ""
+msgstr "-mgp64 benyttet med en 32 bit-processor"
 
 #: config/mips/mips.c:5178
-#, fuzzy
 msgid "-mgp32 used with a 64-bit ABI"
-msgstr "Benyt 64 bit-API"
+msgstr "-mgp32 benyttet med et 64 bit-ABI"
 
 #: config/mips/mips.c:5180
-#, fuzzy
 msgid "-mgp64 used with a 32-bit ABI"
-msgstr "Benyt 32 bit-API"
+msgstr "-mgp64 benyttet med et 32 bit-ABI"
 
 #: config/mips/mips.c:5198 config/mips/mips.c:5200 config/mips/mips.c:5202
-#, fuzzy, c-format
+#, c-format
 msgid "unsupported combination: %s"
-msgstr "versionen er ikke understøttet"
+msgstr "ikke-understøttet kombination: %s"
 
 #: config/mips/mips.c:5272
 msgid "generation of Branch Likely instructions enabled, but not supported by architecture"
-msgstr ""
+msgstr "generering af Branch Likely-instruktioner er aktiveret, men ikke understøttet af arkitekturen"
 
 #: config/mips/mips.c:5283
 msgid "-G is incompatible with PIC code which is the default"
@@ -11753,14 +11623,13 @@ msgid "can not handle inconsistent calls to `%s'"
 msgstr "kan ikke håndtere inkonsistente kald af '%s'"
 
 #: config/mips/mips.c:10444
-#, fuzzy
 msgid "the cpu name must be lower case"
-msgstr "Symbolnavne staves med små bogstaver"
+msgstr "processornavnet skal staves med små bogstaver"
 
 #: config/mips/mips.c:10466
-#, fuzzy, c-format
+#, c-format
 msgid "bad value (%s) for %s"
-msgstr "ugyldig værdi (%s) til tilvalget %s"
+msgstr "ugyldig værdi (%s) for %s"
 
 #. Target CPU builtins.
 #. We do this here because __mips is defined below		 and so we can't use builtin_define_std.
@@ -11971,11 +11840,11 @@ msgstr "Forårsag ikke undtagelse ved heltalsdivisionsoverløb"
 
 #: config/mips/mips.h:628
 msgid "Use Branch Likely instructions, overriding default for arch"
-msgstr ""
+msgstr "Benyt Branch Likely-instruktioner, overskrivende forvalget for arkitektur"
 
 #: config/mips/mips.h:630
 msgid "Don't use Branch Likely instructions, overriding default for arch"
-msgstr ""
+msgstr "Benyt ikke Branch Likely-instruktioner, overskrivende forvalget for arkitektur"
 
 #: config/mips/mips.h:744 config/pa/pa.h:296
 msgid "Specify CPU for scheduling purposes"
@@ -11986,9 +11855,8 @@ msgid "Specify CPU for code generation purposes"
 msgstr "Angiv processor til kodegenereringsformål"
 
 #: config/mips/mips.h:748
-#, fuzzy
 msgid "Specify an ABI"
-msgstr "Angiv ABI der skal bruges"
+msgstr "Angiv en ABI"
 
 #: config/mips/mips.h:750
 msgid "Specify a Standard MIPS ISA"
@@ -12180,14 +12048,12 @@ msgid "Do not use addresses that allocate global registers"
 msgstr "Benyt ikke adresser der allokerer globale registre"
 
 #: config/mmix/mmix.h:229
-#, fuzzy
 msgid "Generate a single exit point for each function"
-msgstr "Generér et kald til abort hvis en noreturn-funktion returnerer"
+msgstr "Generér et enkelt afslutningspunkt for hver funktion"
 
 #: config/mmix/mmix.h:231
-#, fuzzy
 msgid "Do not generate a single exit point for each function"
-msgstr "Generér ikke multm-instruktioner"
+msgstr "Generér ikke et enkelt afslutningspunkt for hver funktion"
 
 #: config/mn10300/mn10300.h:59
 msgid "Work around hardware multiply bug"
@@ -12278,13 +12144,13 @@ msgid "No \"Small register classes\" kludge"
 msgstr "Ingen \"Små registerklasser\"-lapning"
 
 #: config/pa/pa.c:246
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "unknown -mschedule= option (%s).\n"
 "Valid options are 700, 7100, 7100LC, 7200, 7300, and 8000\n"
 msgstr ""
-"ukendt '-mschedule='-tilvalg (%s).\n"
-"Gyldige tilvalg er 700, 7100, 7100LC, 7200 og 8000\n"
+"ukendt tilvalg til -mschedule= (%s).\n"
+"Gyldige tilvalg er 700, 7100, 7100LC, 7200, 7300 og 8000\n"
 
 #: config/pa/pa.c:271
 #, c-format
@@ -12292,7 +12158,7 @@ msgid ""
 "unknown -march= option (%s).\n"
 "Valid options are 1.0, 1.1, and 2.0\n"
 msgstr ""
-"ukendt '-march='-tilvalg (%s).\n"
+"ukendt tilvalg til -march= (%s).\n"
 "Gyldige tilvalg er 1.0, 1.1 og 2.0\n"
 
 #: config/pa/pa.c:284
@@ -12313,15 +12179,13 @@ msgstr "tilvalget -g deaktiveret"
 
 #: config/pa/pa-hiux.h:75 config/pa/pa-hpux.h:80 config/pa/pa-hpux7.h:81
 #: config/pa/pa64-hpux.h:25
-#, fuzzy
 msgid "Generate cpp defines for server IO"
-msgstr "Generér kode til en given processor"
+msgstr "Generér CPP-defineringer til server-IO"
 
 #: config/pa/pa-hiux.h:76 config/pa/pa-hpux.h:81 config/pa/pa-hpux7.h:82
 #: config/pa/pa64-hpux.h:27
-#, fuzzy
 msgid "Generate cpp defines for workstation IO"
-msgstr "Generér kode til en 11/40"
+msgstr "Generér CPP-defineringer til arbejdsstation-IO"
 
 #. Macro to define tables used to set the flags.  This is a
 #. list in braces of target switches with each switch being
@@ -12330,133 +12194,116 @@ msgstr "Generér kode til en 11/40"
 #. identify the default VALUE.  Do not mark empty strings for
 #. translation.
 #: config/pa/pa.h:218 config/pa/pa.h:224
-#, fuzzy
 msgid "Generate PA1.1 code"
-msgstr "Generér CA-kode"
+msgstr "Generér PA1.1-kode"
 
 #: config/pa/pa.h:220 config/pa/pa.h:222
-#, fuzzy
 msgid "Generate PA1.0 code"
-msgstr "Generér CA-kode"
+msgstr "Generér PA1.0-kode"
 
 #: config/pa/pa.h:226
 msgid "Generate PA2.0 code (requires binutils 2.10 or later)"
-msgstr ""
+msgstr "Generér PA2.0-kode (kræver binutils 2.10 eller nyere)"
 
 #: config/pa/pa.h:228
-#, fuzzy
 msgid "Disable FP regs"
-msgstr "Deaktivér fejlanalyseringsinfo"
+msgstr "Deaktivér kommatalsregistre"
 
 #: config/pa/pa.h:230
-#, fuzzy
 msgid "Do not disable FP regs"
-msgstr "Brug ikke kommatalsregistre"
+msgstr "Deaktivér ikke kommatalsregistre"
 
 #: config/pa/pa.h:232
 msgid "Disable space regs"
-msgstr ""
+msgstr "Deaktivér pladsregistre"
 
 #: config/pa/pa.h:234
-#, fuzzy
 msgid "Do not disable space regs"
-msgstr "Brug ikke kommatalsregistre"
+msgstr "Deaktivér ikke pladsregistre"
 
 #: config/pa/pa.h:236
 msgid "Put jumps in call delay slots"
-msgstr ""
+msgstr "Anbring spring på kaldeventetidspladser"
 
 #: config/pa/pa.h:238
 msgid "Do not put jumps in call delay slots"
-msgstr ""
+msgstr "Anbring ikke spring på kaldeventetidspladser"
 
 #: config/pa/pa.h:240
-#, fuzzy
 msgid "Disable indexed addressing"
-msgstr "ugyldig adresseringstilstand"
+msgstr "Deaktivér indekseret adressering"
 
 #: config/pa/pa.h:242
-#, fuzzy
 msgid "Do not disable indexed addressing"
-msgstr "Benyt ikke komplekse adresseringstilstande"
+msgstr "Deaktivér ikke indekseret adressering"
 
 #: config/pa/pa.h:244
-#, fuzzy
 msgid "Use portable calling conventions"
-msgstr "Brug normal kaldekonvention"
+msgstr "Benyt portable kaldekonventioner"
 
 #: config/pa/pa.h:246
-#, fuzzy
 msgid "Do not use portable calling conventions"
-msgstr "Brug normal kaldekonvention"
+msgstr "Benyt ikke portable kaldekonventioner"
 
 #: config/pa/pa.h:248
 msgid "Assume code will be assembled by GAS"
-msgstr ""
+msgstr "Antag at koden bliver oversat af GAS"
 
 #: config/pa/pa.h:250
 msgid "Do not assume code will be assembled by GAS"
-msgstr ""
+msgstr "Antag ikke at koden bliver oversat af GAS"
 
 #: config/pa/pa.h:254
-#, fuzzy
 msgid "Do not use software floating point"
-msgstr "Benyt ikke hardware-kommatal"
+msgstr "Benyt ikke softwarekommatal"
 
 #: config/pa/pa.h:256
 msgid "Emit long load/store sequences"
-msgstr ""
+msgstr "Udsend lange load/store-sekvenser"
 
 #: config/pa/pa.h:258
-#, fuzzy
 msgid "Do not emit long load/store sequences"
-msgstr "Generér ikke flere indlæsnings-/lagringsinstruktioner"
+msgstr "Udsend ikke lange load/store-sekvenser"
 
 #: config/pa/pa.h:260
-#, fuzzy
 msgid "Generate fast indirect calls"
-msgstr "Benyt ikke indirekte kald"
+msgstr "Generér hurtige indirekte kald"
 
 #: config/pa/pa.h:262
-#, fuzzy
 msgid "Do not generate fast indirect calls"
-msgstr "Generér ikke .size-direktiver"
+msgstr "Generér ikke hurtige indirekte kald"
 
 #: config/pa/pa.h:264
-#, fuzzy
 msgid "Generate code for huge switch statements"
-msgstr "Generér kode til høj hukommelse"
+msgstr "Generér kode til store switch-sætninger"
 
 #: config/pa/pa.h:266
-#, fuzzy
 msgid "Do not generate code for huge switch statements"
-msgstr "Generér ikke kode til nære kald"
+msgstr "Generér ikke kode til store switch-sætninger"
 
 #: config/pa/pa.h:268
-#, fuzzy
 msgid "Always generate long calls"
-msgstr "Generér ikke kode til nære kald"
+msgstr "Generér altid lange kalde"
 
 #: config/pa/pa.h:270
 msgid "Generate long calls only when needed"
-msgstr ""
+msgstr "Generér kun lange kalde når det er nødvendigt"
 
 #: config/pa/pa.h:272
-#, fuzzy
 msgid "Enable linker optimizations"
-msgstr "Aktivér SSA-optimeringer"
+msgstr "Aktivér sammenkæderoptimeringer"
 
 #: config/pa/pa.h:298
 msgid "Specify architecture for code generation.  Values are 1.0, 1.1, and 2.0.  2.0 requires gas snapshot 19990413 or later."
-msgstr ""
+msgstr "Angiv arkitekturen for kodegenerering. Mulige værdier er 1.0, 1.1 og 2.0. 2.0 kræver GAS-snapshot 19990413 eller senere."
 
 #: config/pa/pa64-hpux.h:29
 msgid "Assume code will be linked by GNU ld"
-msgstr ""
+msgstr "Antag at kode vil blive sammenkædet med GNU ld"
 
 #: config/pa/pa64-hpux.h:31
 msgid "Assume code will be linked by HP ld"
-msgstr ""
+msgstr "Antag at kode vil blive sammenkædet med HP ld"
 
 #: config/pdp11/pdp11.h:57
 msgid "Do not use hardware floating point"
@@ -12584,33 +12431,28 @@ msgstr "kan ikke have variable parameterlister med -mfp-arg-in-fp-regs"
 #. whether or not new function declarations receive a longcall
 #. attribute by default.
 #: config/rs6000/rs6000-c.c:44
-#, fuzzy
 msgid "ignoring malformed #pragma longcall"
-msgstr "ignorerer #pragma %s"
+msgstr "ignorerer forkert udformet #pragma longcall"
 
 #: config/rs6000/rs6000-c.c:58
-#, fuzzy
 msgid "missing open paren"
-msgstr "manglende Code-egenskab"
+msgstr "manglende startparantes"
 
 #: config/rs6000/rs6000-c.c:60
-#, fuzzy
 msgid "missing number"
-msgstr "Manglende navn"
+msgstr "manglende tal"
 
 #: config/rs6000/rs6000-c.c:62
-#, fuzzy
 msgid "missing close paren"
-msgstr "Manglende klassenavn"
+msgstr "manglende slutparantes"
 
 #: config/rs6000/rs6000-c.c:65
 msgid "number must be 0 or 1"
-msgstr ""
+msgstr "tal skal enten være 0 eller 1"
 
 #: config/rs6000/rs6000-c.c:68
-#, fuzzy
 msgid "junk at end of #pragma longcall"
-msgstr "ragelse i slutningen af #pragma map"
+msgstr "ragelse i slutningen af #pragma longcall"
 
 #: config/rs6000/rs6000.c:588
 msgid "-mmultiple is not supported on little endian systems"
@@ -12628,7 +12470,7 @@ msgstr "ukendt tilvalg -mdebug-%s"
 #: config/rs6000/rs6000.c:631
 #, c-format
 msgid "unknown -mtraceback arg `%s'; expecting `full', `partial' or `none'"
-msgstr ""
+msgstr "ukendt parameter '%s' til -mtraceback; forventer 'full', 'partial' eller 'none'"
 
 #: config/rs6000/rs6000.c:642
 #, c-format
@@ -12636,14 +12478,14 @@ msgid "Unknown switch -mlong-double-%s"
 msgstr "Ukendt tilvalg -mlong-double-%s"
 
 #: config/rs6000/rs6000.c:734
-#, fuzzy, c-format
+#, c-format
 msgid "unknown -misel= option specified: '%s'"
-msgstr "ukendt ABI angivet: '%s'"
+msgstr "ukendt tilvalg til -misel= angivet: '%s'"
 
 #: config/rs6000/rs6000.c:749
-#, fuzzy, c-format
+#, c-format
 msgid "unknown -mvrsave= option specified: '%s'"
-msgstr "ukendt ABI angivet: '%s'"
+msgstr "ukendt tilvalg til -mvrsave= angivet: '%s'"
 
 #: config/rs6000/rs6000.c:768
 #, c-format
@@ -12651,14 +12493,12 @@ msgid "unknown ABI specified: '%s'"
 msgstr "ukendt ABI angivet: '%s'"
 
 #: config/rs6000/rs6000.c:4169
-#, fuzzy
 msgid "argument 1 must be a 5-bit signed literal"
-msgstr "3. parameter til '%s' skal være en 2 bit-konstant"
+msgstr "1. parameter skal være en 5 bit-konstant med fortegn"
 
 #: config/rs6000/rs6000.c:4276 config/rs6000/rs6000.c:4866
-#, fuzzy
 msgid "argument 2 must be a 5-bit unsigned literal"
-msgstr "3. parameter til '%s' skal være en 2 bit-konstant"
+msgstr "2. parameter skal være en 5 bit-konstant uden fortegn"
 
 #: config/rs6000/rs6000.c:4319
 msgid "argument 1 of __builtin_altivec_predicate must be a constant"
@@ -12669,29 +12509,25 @@ msgid "argument 1 of __builtin_altivec_predicate is out of range"
 msgstr "1. parameter til __builtin_altivec_predicate er uden for det gyldige interval"
 
 #: config/rs6000/rs6000.c:4452
-#, fuzzy
 msgid "argument 3 must be a 4-bit unsigned literal"
-msgstr "3. parameter til '%s' skal være en 2 bit-konstant"
+msgstr "3. parameter skal være en 4 bit-konstant uden fortegn"
 
 #: config/rs6000/rs6000.c:4629
-#, fuzzy, c-format
+#, c-format
 msgid "argument to `%s' must be a 2-bit unsigned literal"
-msgstr "3. parameter til '%s' skal være en 2 bit-konstant"
+msgstr "parameter til '%s' skal være en 2 bit-konstant uden fortegn"
 
 #: config/rs6000/rs6000.c:4745
-#, fuzzy
 msgid "argument to dss must be a 2-bit unsigned literal"
-msgstr "3. parameter til '%s' skal være en 2 bit-konstant"
+msgstr "parameter til dss skal være en 2 bit-konstant uden fortegn"
 
 #: config/rs6000/rs6000.c:4976
-#, fuzzy
 msgid "argument 1 of __builtin_spe_predicate must be a constant"
-msgstr "1. parameter til __builtin_altivec_predicate skal være en konstant"
+msgstr "1. parameter til __builtin_spe_predicate skal være en konstant"
 
 #: config/rs6000/rs6000.c:5049
-#, fuzzy
 msgid "argument 1 of __builtin_spe_predicate is out of range"
-msgstr "1. parameter til __builtin_altivec_predicate er uden for det gyldige interval"
+msgstr "1. parameter til __builtin_spe_predicate er uden for det gyldige interval"
 
 #: config/rs6000/rs6000.c:7474
 #, c-format
@@ -12745,7 +12581,7 @@ msgstr "ugyldig %%v-værdi"
 
 #: config/rs6000/rs6000.c:12180
 msgid "no profiling of 64-bit code for this ABI"
-msgstr ""
+msgstr "ingen profilering af 64 bit-kode for denne ABI"
 
 #: config/rs6000/aix.h:160 config/rs6000/beos.h:32
 msgid "Always pass floating-point arguments in memory"
@@ -12921,7 +12757,7 @@ msgstr "Aktivér fejlanalyseringsuddata"
 
 #: config/rs6000/rs6000.h:396
 msgid "Select full, part, or no traceback table"
-msgstr ""
+msgstr "Vælg komplet, partiel eller ingen tilbagesporingstabel"
 
 #: config/rs6000/rs6000.h:397
 msgid "Specify ABI to use"
@@ -12933,16 +12769,15 @@ msgstr "Angiv størrelsen af long double (64 eller 128 bit)"
 
 #: config/rs6000/rs6000.h:401
 msgid "Specify yes/no if isel instructions should be generated"
-msgstr ""
+msgstr "Angiv yes/no hvis isel-instruktioner skal genereres"
 
 #: config/rs6000/rs6000.h:403
 msgid "Specify yes/no if VRSAVE instructions should be generated for AltiVec"
-msgstr ""
+msgstr "Angiv yes/no hvis VRSAVE-instruktioner skal genereres til AltiVec"
 
 #: config/rs6000/rs6000.h:405
-#, fuzzy
 msgid "Avoid all range limits on call instructions"
-msgstr "Deaktivér parallelle instruktioner"
+msgstr "Undgå alle områdegrænser ved kaldeinstruktioner"
 
 #. Definitions for __builtin_return_address and __builtin_frame_address.
 #. __builtin_return_address (0) should give link register (65), enable
@@ -13051,7 +12886,7 @@ msgstr "Sæt PPC_EMB-bitten i ELF-tilvalgshovedet"
 
 #: config/rs6000/sysv4.h:154
 msgid "Use the WindISS simulator"
-msgstr ""
+msgstr "Benyt WindISS-simulatoren"
 
 #. Sometimes certain combinations of command options do not make sense
 #. on a particular target machine.  You can define a macro
@@ -13175,7 +13010,7 @@ msgstr "__builtin_saveregs understøttes ikke af denne undermålarkitektur"
 
 #: config/sh/sh.c:5684
 msgid "attribute interrupt_handler is not compatible with -m5-compact"
-msgstr ""
+msgstr "egenskaben interrupt_handler er ikke forenelig med -m5-compact"
 
 #. The sp_switch attribute only has meaning for interrupt functions.
 #: config/sh/sh.c:5710 config/sh/sh.c:5749
@@ -13341,9 +13176,8 @@ msgid "Optimize for Cypress processors"
 msgstr "Optimér for Cypress-processorer"
 
 #: config/sparc/sparc.h:563
-#, fuzzy
 msgid "Optimize for SPARCLite processors"
-msgstr "Optimér for SparcLite-processorer"
+msgstr "Optimér for SPARCLite-processorer"
 
 #: config/sparc/sparc.h:565
 msgid "Optimize for F930 processors"
@@ -13354,14 +13188,12 @@ msgid "Optimize for F934 processors"
 msgstr "Optimér for F934-processorer"
 
 #: config/sparc/sparc.h:569
-#, fuzzy
 msgid "Use V8 SPARC ISA"
-msgstr "Benyt V8 Sparc ISA"
+msgstr "Benyt V8 SPARC ISA"
 
 #: config/sparc/sparc.h:571
-#, fuzzy
 msgid "Optimize for SuperSPARC processors"
-msgstr "Optimér for SuperSparc-processorer"
+msgstr "Optimér for SuperSPARC-processorer"
 
 #. End of deprecated options.
 #: config/sparc/sparc.h:574
@@ -13405,9 +13237,8 @@ msgid "Do not optimize tail call instructions in assembler or linker"
 msgstr "Optimér ikke halekaldsinstruktioner i maskinkodeoversætteren og sammenkæderen"
 
 #: config/sparc/sparc.h:637
-#, fuzzy
 msgid "Use given SPARC code model"
-msgstr "Benyt given Sparc-kodemodel"
+msgstr "Benyt given SPARC-kodemodel"
 
 #: config/stormy16/stormy16.c:1192
 msgid "cannot use va_start in interrupt function"
@@ -13534,24 +13365,24 @@ msgid "bogus JARL construction: %d\n"
 msgstr "falsk JARL-konstruktion: %d\n"
 
 #: config/v850/v850.c:3026
-#, fuzzy, c-format
+#, c-format
 msgid "Bogus DISPOSE construction: %d\n"
-msgstr "falsk JR-konstruktion: %d\n"
+msgstr "Falsk DISPOSE-konstruktion: %d\n"
 
 #: config/v850/v850.c:3048
 #, c-format
 msgid "Too much stack space to dispose of: %d"
-msgstr ""
+msgstr "For meget stakplads at tage sig af: %d"
 
 #: config/v850/v850.c:3224
-#, fuzzy, c-format
+#, c-format
 msgid "Bogus PREPEARE construction: %d\n"
-msgstr "falsk JARL-konstruktion: %d\n"
+msgstr "Falsk PREPARE-konstruktion: %d\n"
 
 #: config/v850/v850.c:3246
-#, fuzzy, c-format
+#, c-format
 msgid "Too much stack space to prepare: %d"
-msgstr "ugyldig størrelse af stakpladsfjernelse: %d"
+msgstr "For meget stakplads at forberede: %d"
 
 #. Macro to define tables used to set the flags.
 #. This is a list in braces of pairs in braces,
@@ -13587,30 +13418,25 @@ msgid "Compile for the v850 processor"
 msgstr "Oversæt for v850-processoren"
 
 #: config/v850/v850.h:175
-#, fuzzy
 msgid "Compile for v850e processor"
-msgstr "Oversæt for v850-processoren"
+msgstr "Oversæt for v850e-processoren"
 
 #. Make sure that the other bits are cleared.
 #: config/v850/v850.h:177
-#, fuzzy
 msgid "Enable the use of the short load instructions"
-msgstr "Aktivér brug af DB-instruktioner"
+msgstr "Aktivér brug af short load-instruktioner"
 
 #: config/v850/v850.h:180
-#, fuzzy
 msgid "Do not use the callt instruction"
-msgstr "Benyt ikke divisionsinstruktionen"
+msgstr "Benyt ikke callt-instruktionen"
 
 #: config/v850/v850.h:187
-#, fuzzy
 msgid "Do not use registers r2 and r5"
-msgstr "Benyt ikke registeret 'sb'"
+msgstr "Benyt ikke registrene r2 og r5"
 
 #: config/v850/v850.h:189
-#, fuzzy
 msgid "Enfore strict alignment"
-msgstr "Finjustér ikke stakjustering"
+msgstr "Gennemtving streng justering"
 
 #: config/v850/v850.h:192
 msgid "Use 4 byte entries in switch tables"
@@ -13654,9 +13480,8 @@ msgid "address offset not a constant"
 msgstr "adresseafsæt er ikke en konstant"
 
 #: config/xtensa/xtensa.c:2809
-#, fuzzy
 msgid "only uninitialized variables can be placed in a .bss section"
-msgstr "kun variabler med startværdi kan placeres i programhukommelsesområdet"
+msgstr "kun variabler uden startværdi kan placeres i .bss-sektionen"
 
 #: config/xtensa/xtensa.h:114
 msgid "Use the Xtensa code density option"
@@ -13817,9 +13642,8 @@ msgid "request for member `%D' in `%E', which is of non-aggregate type `%T'"
 msgstr "forespørgsel efter medlemmet '%D' i '%E' som er af en ikke-sammensat type '%T'"
 
 #: cp/call.c:557
-#, fuzzy
 msgid "request for member `%D' is ambiguous"
-msgstr "brug af '%D' er tvetydigt"
+msgstr "forespørgsel efter medlemmet '%D' er tvetydigt"
 
 #: cp/call.c:2446
 msgid "%s %D(%T, %T, %T) <built-in>"
@@ -13846,14 +13670,12 @@ msgid "conversion from `%T' to `%T' is ambiguous"
 msgstr "konvertering fra '%T' til '%T' er tvetydigt"
 
 #: cp/call.c:2690
-#, fuzzy
 msgid "incomplete type '%T' cannot be used to name a scope"
-msgstr "objekt af den ufuldstændige type '%T' vil ikke blive tilgået i %s"
+msgstr "ufuldstændig type '%T' kan ikke bruges til at navngive et virkefelt"
 
 #: cp/call.c:2706 cp/typeck.c:2176 cp/typeck.c:2205
-#, fuzzy
 msgid "'%D' has no member named '%E'"
-msgstr "%s har intet medlem ved navn '%s'"
+msgstr "'%D' har intet medlem ved navn '%E'"
 
 #: cp/call.c:2812
 msgid "no matching function for call to `%D(%A)'"
@@ -13979,9 +13801,8 @@ msgstr "  ved klargøring af midlertidig variabel fra resultatet af '%D'"
 #. here and do a bitwise copy, but now cp_expr_size will abort if we
 #. try to do that.
 #: cp/call.c:4215
-#, fuzzy
 msgid "cannot pass objects of non-POD type `%#T' through `...'; call will abort at runtime"
-msgstr "kan ikke videregive objekter af en ikke-POD type '%#T' gennem '...'"
+msgstr "kan ikke videregive objekter af en ikke-POD type '%#T' gennem '...'; kald vil afbryde på kørselstidspunktet"
 
 #. Undefined behavior [expr.call] 5.2.2/7.
 #: cp/call.c:4242
@@ -13997,9 +13818,8 @@ msgid "could not find class$ field in java interface type `%T'"
 msgstr "kunne ikke finde et class$-felt i Java-grænsefladetypen '%T'"
 
 #: cp/call.c:4831
-#, fuzzy
 msgid "call to non-function `%D'"
-msgstr "virtuel funktion '%s' tilhører ikke en klasse"
+msgstr "kald af ikke-funktion '%D'"
 
 #: cp/call.c:4937
 msgid "no matching function for call to `%T::%D(%A)%#V'"
@@ -14158,7 +13978,7 @@ msgstr "beskyttet medlem '%#D' i en anonym union"
 
 #: cp/class.c:2834
 msgid "vtable layout for class `%T' may not be ABI-compliant and may change in a future version of GCC due to implicit virtual destructor"
-msgstr ""
+msgstr "vtable-layout for klassen '%T' følger ikke nødvendigvis ABI'et og kan ændre sig i en fremtidig version af GCC pga. underforstået virtuel destruktionsfunktion"
 
 #: cp/class.c:2898
 msgid "bit-field `%#D' with non-integral type"
@@ -14251,11 +14071,11 @@ msgstr "  men overskriver ikke 'operator=(const %T&)'"
 
 #: cp/class.c:3775
 msgid "offset of empty base `%T' may not be ABI-compliant and maychange in a future version of GCC"
-msgstr ""
+msgstr "afsættet for tom stamklasse '%T' følger ikke nødvendigvis ABI'en og kan ændre sig i en fremtidig version af GCC"
 
 #: cp/class.c:3883
 msgid "class `%T' will be considered nearly empty in a future version of GCC"
-msgstr ""
+msgstr "klassen '%T' vil blive betragtet som næsten tom i en fremtidig version af GCC"
 
 #: cp/class.c:3973
 msgid "initializer specified for non-virtual method `%D'"
@@ -14263,7 +14083,7 @@ msgstr "startværdi angivet for ikke-virtuel medlemsfunktion '%D'"
 
 #: cp/class.c:4709
 msgid "offset of virtual base `%T' is not ABI-compliant and may change in a future version of GCC"
-msgstr ""
+msgstr "afsættet for virtuel stamklasse '%T' følger ikke ABI'en og kan ændre sig i en fremtidig version af GCC"
 
 #: cp/class.c:4809
 msgid "direct base `%T' inaccessible in `%T' due to ambiguity"
@@ -14275,19 +14095,19 @@ msgstr "virtuel stamklasse '%T' er ikke tilgængelig i '%T' på grund af tvetydigh
 
 #: cp/class.c:4978
 msgid "size assigned to `%T' may not be ABI-compliant and may change in a future version of GCC"
-msgstr ""
+msgstr "størrelsen der bliver tildelt '%T' følger ikke nødvendigvis ABI'en og kan ændre sig i en fremtidig version af GCC"
 
 #: cp/class.c:5011
 msgid "offset of `%D' is not ABI-compliant and may change in a future version of GCC"
-msgstr ""
+msgstr "afsættet for '%D' følger ikke ABI'en og kan ændre sig i en fremtidig version af GCC"
 
 #: cp/class.c:5020
 msgid "`%D' contains empty classes which may cause base classes to be placed at different locations in a future version of GCC"
-msgstr ""
+msgstr "'%D' indeholder tomme klasser hvad der kan få stamklasser til at blive placeret andre steder i en fremtidig version af GCC"
 
 #: cp/class.c:5079
 msgid "layout of classes derived from empty class `%T' may change in a future version of GCC"
-msgstr ""
+msgstr "layoutet af klasser der nedarver fra den tomme klasse '%T' kan ændre sig i en fremtidig version af GCC"
 
 #: cp/class.c:5320
 msgid "`%#T' has virtual functions but non-virtual destructor"
@@ -14369,7 +14189,6 @@ msgid "cannot convert `%E' from type `%T' to type `%T'"
 msgstr "kan ikke konvertere '%E' fra typen '%T' til typen '%T'"
 
 #: cp/cvt.c:262
-#, fuzzy
 msgid "invalid conversion from '%T' to '%T'"
 msgstr "ugyldig konvertering fra '%T' til '%T'"
 
@@ -14744,9 +14563,8 @@ msgid "  (use `typename %T::%D' if that's what you meant)"
 msgstr "  (benyt 'typename %T::%D' hvis det er hvad du mener)"
 
 #: cp/decl.c:6003
-#, fuzzy
 msgid "name lookup of `%D' changed"
-msgstr "navneopslag for '%s' ændret"
+msgstr "navneopslag for '%D' ændret"
 
 #: cp/decl.c:6005
 msgid "  matches this `%D' under ISO standard rules"
@@ -14757,9 +14575,8 @@ msgid "  matches this `%D' under old rules"
 msgstr "  passer med '%D' under tidligere regler"
 
 #: cp/decl.c:6021 cp/decl.c:6028
-#, fuzzy
 msgid "name lookup of `%D' changed for new ISO `for' scoping"
-msgstr "navneopslaget af '%s' er ændret på grund af ISO's nye 'for'-virkefelt"
+msgstr "navneopslaget af '%D' er ændret til ISO 'for'-virkefelt"
 
 #: cp/decl.c:6023
 msgid "  cannot use obsolete binding at `%D' because it has a destructor"
@@ -14823,9 +14640,8 @@ msgstr "'%D' kan kun angives for objekter og funktioner"
 
 # init dækker over værditildeling her - samme for de næste mange
 #: cp/decl.c:7312 cp/decl2.c:927
-#, fuzzy
 msgid "typedef `%D' is initialized (use __typeof__ instead)"
-msgstr "typedef '%D' bliver tildelt en værdi"
+msgstr "typedef '%D' bliver tildelt en værdi (benyt __typeof__ i stedet)"
 
 #: cp/decl.c:7317
 msgid "function `%#D' is initialized like a variable"
@@ -14911,19 +14727,16 @@ msgid "uninitialized const `%D'"
 msgstr "konstant '%D' uden startværdi"
 
 #: cp/decl.c:7836
-#, fuzzy
 msgid "brace-enclosed initializer used to initialize `%T'"
-msgstr "stamklasse-klargøring angivet, men der er ingen stamklasse at klargøre"
+msgstr "startværdi i krøllede paranteser benyttet til at klargøre '%T'"
 
 #: cp/decl.c:7900
-#, fuzzy
 msgid "initializer for `%T' must be brace-enclosed"
-msgstr "unavngiven klargøring af '%T' som ikke har nogen stamklasser"
+msgstr "startværdi for '%T' skal være indesluttet i krøllede paranteser"
 
 #: cp/decl.c:7964
-#, fuzzy
 msgid "too many initializers for `%T'"
-msgstr "stamklasseklargøringer for '%#T'"
+msgstr "for mange startværdier for '%T'"
 
 #: cp/decl.c:8000
 msgid "variable-sized object `%D' may not be initialized"
@@ -14958,14 +14771,12 @@ msgid "shadowing previous type declaration of `%#D'"
 msgstr "skygger for tidligere typeerklæring af '%#D'"
 
 #: cp/decl.c:8455
-#, fuzzy
 msgid "`%D' cannot be thread-local because it has non-POD type `%T'"
-msgstr "'%E' kan ikke bruges som en medlemshenvisning eftersom udtrykkets type er '%T'"
+msgstr "'%D' kan ikke være trådlokal eftersom den er af en ikke-POD type '%T'"
 
 #: cp/decl.c:8470
-#, fuzzy
 msgid "`%D' is thread-local and so cannot be dynamically initialized"
-msgstr "union '%T' uden navngivne elementer kan ikke tildeles startværdi"
+msgstr "'%D' er trådlokal og kan derfor ikke blive tildelt en startværdi dynamisk"
 
 #: cp/decl.c:8864 cp/init.c:547
 msgid "multiple initializations given for `%D'"
@@ -15164,7 +14975,7 @@ msgstr "destruktionsfunktion '%T' skal passe til klassenavnet '%T'"
 
 #: cp/decl.c:10100
 msgid "variable declaration is not allowed here"
-msgstr ""
+msgstr "variabelerklæring er ikke tilladt her"
 
 #: cp/decl.c:10127
 msgid "invalid declarator"
@@ -15193,9 +15004,9 @@ msgstr "  måske ønsker du '%T' for en konstruktionsfunktion"
 #. std::allocator alloc;
 #. Handle that gracefully.
 #: cp/decl.c:10303
-#, fuzzy, c-format
+#, c-format
 msgid "invalid use of template-name '%E' in a declarator"
-msgstr "ugyldig brug af skabelons-id '%D' i erklæring af primær skabelon"
+msgstr "ugyldig brug af skabelonsnavn '%E' i erklæring"
 
 #: cp/decl.c:10323
 msgid "declaration of `%D' as non-function"
@@ -15326,14 +15137,12 @@ msgid "destructors may not have parameters"
 msgstr "destruktionsfunktioner må ikke have parametre"
 
 #: cp/decl.c:11175 cp/decl.c:11182
-#, fuzzy
 msgid "cannot declare reference to `%#T'"
-msgstr "kan ikke erklære referencer til referencer"
+msgstr "kan ikke erklære reference til '%#T'"
 
 #: cp/decl.c:11176
-#, fuzzy
 msgid "cannot declare pointer to `%#T'"
-msgstr "kan ikke erklære henvisning til medlemmet '%#T'"
+msgstr "kan ikke erklære henvisning til '%#T'"
 
 #: cp/decl.c:11181
 msgid "cannot declare pointer to `%#T' member"
@@ -15353,7 +15162,7 @@ msgstr "kan ikke erklære medlem '%T::%s' inde i '%T'"
 
 #: cp/decl.c:11460
 msgid "data member may not have variably modified type `%T'"
-msgstr ""
+msgstr "datamedlem må ikke have variabelt ændret type '%T'"
 
 #. [dcl.fct.spec] The explicit specifier shall only be used in
 #. declarations of constructors within a class definition.
@@ -15415,9 +15224,8 @@ msgid "template parameters cannot be friends"
 msgstr "skabelonsparametre kan ikke være venner"
 
 #: cp/decl.c:11666
-#, fuzzy
 msgid "friend declaration requires class-key, i.e. `friend class %T::%D'"
-msgstr "friend-erklæring kræver klasseangivelse, dvs. 'friend class %T::%T'"
+msgstr "friend-erklæring kræver klasseangivelse, dvs. 'friend class %T::%D'"
 
 #: cp/decl.c:11670
 msgid "friend declaration requires class-key, i.e. `friend %#T'"
@@ -15524,9 +15332,9 @@ msgid "storage class `register' invalid for function `%s'"
 msgstr "lagringsklassen 'register' er ugyldig for funktionen '%s'"
 
 #: cp/decl.c:12052
-#, fuzzy, c-format
+#, c-format
 msgid "storage class `__thread' invalid for function `%s'"
-msgstr "lagringsklassen 'auto' er ugyldig for funktionen '%s'"
+msgstr "lagringsklassen '__thread' er ugyldig for funktionen '%s'"
 
 #: cp/decl.c:12063
 #, c-format
@@ -15947,9 +15755,8 @@ msgid "too many initialization functions required"
 msgstr "for mange klargøringsfunktioner påkrævet"
 
 #: cp/decl2.c:2966
-#, fuzzy
 msgid "inline function `%D' used but never defined"
-msgstr "'%s' brugt, men aldrig defineret"
+msgstr "indbygget funktion '%D' benyttet, men aldrig defineret"
 
 #: cp/decl2.c:3086
 msgid "use of old-style cast"
@@ -16061,14 +15868,13 @@ msgid "`%T' is not a class or union type"
 msgstr "'%T' er ikke af en klasse- eller union-type"
 
 #: cp/decl2.c:4862
-#, fuzzy
 msgid "template argument is required for `%T'"
-msgstr "modtog %d skabelonsparametre for '%#T'"
+msgstr "skabelonsparameter er påkrævet for '%T'"
 
 #: cp/error.c:35
 #, c-format
 msgid "`%s' not supported by %s"
-msgstr "'%s' ikke understøttet %s"
+msgstr "'%s' ikke understøttet af %s"
 
 #: cp/error.c:571
 #, c-format
@@ -16083,7 +15889,7 @@ msgstr "(statisk %s for %s)"
 #: cp/error.c:1482
 #, c-format
 msgid "\\x%x"
-msgstr ""
+msgstr "\\x%x"
 
 #: cp/error.c:2430
 #, c-format
@@ -16229,29 +16035,24 @@ msgid "initializer list treated as compound expression"
 msgstr "klargøringsliste behandlet som et sammensat udtryk"
 
 #: cp/init.c:523
-#, fuzzy
 msgid "`%D' will be initialized after"
-msgstr "medlemmet '%D' er en reference uden startværdi"
+msgstr "'%D' vil blive klargjort efter"
 
 #: cp/init.c:526
-#, fuzzy
 msgid "base `%T' will be initialized after"
-msgstr "stamklassen '%T' er allerede blevet klargjort"
+msgstr "stamklassen '%T' vil blive klargjort efter"
 
 #: cp/init.c:529
-#, fuzzy
 msgid "  `%#D'"
-msgstr "  og '%#D'"
+msgstr "  '%#D'"
 
 #: cp/init.c:531
-#, fuzzy
 msgid "  base `%T'"
-msgstr "  og '%#T'"
+msgstr "  stamklasse '%T'"
 
 #: cp/init.c:549
-#, fuzzy
 msgid "multiple initializations given for base `%T'"
-msgstr "flere startværdier angivet for '%D'"
+msgstr "flere startværdier angivet for stamklassen '%T'"
 
 #: cp/init.c:616
 msgid "initializations for multiple members of `%T'"
@@ -16341,9 +16142,8 @@ msgid "`%D' is not a member of type `%T'"
 msgstr "'%D' er ikke et medlem af typen '%T'"
 
 #: cp/init.c:1688
-#, fuzzy
 msgid "invalid pointer to bit-field `%D'"
-msgstr "ulovlig henvisning i bitfeltet '%D'"
+msgstr "ugyldig henvisning til bitfeltet '%D'"
 
 #: cp/init.c:1727
 msgid "object missing in use of pointer-to-member construct"
@@ -16506,7 +16306,7 @@ msgstr "skabelonsparametre med reelle værdi ved krydsoversættelse"
 
 #: cp/mangle.c:2325
 msgid "the mangled name of `%D' will change in a future version of GCC"
-msgstr ""
+msgstr "det ABI-navnet for '%D' vil ændre sig i en fremtidig version af GCC"
 
 #: cp/method.c:154
 msgid "invalid use of member `%D' in static member function"
@@ -16602,9 +16402,8 @@ msgstr "'%T' er ikke et gyldigt udtryk"
 #. This was previously allowed as an extension, but
 #. was removed in G++ 3.3.
 #: parse.y:1358
-#, fuzzy
 msgid "initialization of new expression with `='"
-msgstr "ISO C++ forbyder tildeling af startværdi til new-udtryk med '='"
+msgstr "tildeling af startværdi til new-udtryk med '='"
 
 #: parse.y:1384
 msgid "ISO C++ forbids compound literals"
@@ -17012,9 +16811,8 @@ msgid "template-argument `%T' uses local type `%T'"
 msgstr "skabelonsparameter '%T' benytter lokal type '%T'"
 
 #: cp/pt.c:3472
-#, fuzzy
 msgid "template-argument `%T' is a variably modified type"
-msgstr "skabelonsparameter '%T' benytter anonym type"
+msgstr "skabelonsparameter '%T' er en variabelt ændret type"
 
 #: cp/pt.c:3507
 msgid "could not convert template argument `%E' to `%T'"
@@ -17334,14 +17132,12 @@ msgid "invalid definition of qualified type `%T'"
 msgstr "ugyldig definition af modificeret type '%T'"
 
 #: cp/semantics.c:2051
-#, fuzzy
 msgid "invalid base-class specification"
-msgstr "ugyldig specifikation! Fejl i cc."
+msgstr "ugyldig stamklasseangivelse"
 
-# RETMIG: hvad står cv for?
 #: cp/semantics.c:2060
 msgid "base class `%T' has cv qualifiers"
-msgstr "stamklassen '%T' har cv-modifikationer"
+msgstr "stamklassen '%T' har const/volatile-modifikationer"
 
 #: cp/semantics.c:2091
 msgid "multiple declarators in template declaration"
@@ -17357,9 +17153,8 @@ msgid "parse error at end of saved function text"
 msgstr "tolkningsfejl ved slutningen af gemt funktionstekst"
 
 #: cp/spew.c:1090 cp/spew.c:1178
-#, fuzzy
 msgid "%Hend of file read inside definition"
-msgstr "nåede slutningen af filen inden i en strengkonstant"
+msgstr "%Hslutningen af filen læst inden i definition"
 
 #: cp/spew.c:1121
 msgid "parse error in method specification"
@@ -17370,9 +17165,8 @@ msgid "function body for constructor missing"
 msgstr "kroppen til konstruktionsfunktionen mangler"
 
 #: cp/spew.c:1258
-#, fuzzy
 msgid "%Hend of file read inside default argument"
-msgstr "nåede slutningen af filen inden i en tegnkonstant"
+msgstr "%Hslutningen af filen læst inden i standardparameter"
 
 #: cp/spew.c:1415
 msgid "circular dependency in default args of `%#D'"
@@ -17449,9 +17243,9 @@ msgid "`%s' attribute is not supported on this platform"
 msgstr "egenskaben '%s' er ikke understøttet på denne platform"
 
 #: cp/tree.c:2659
-#, fuzzy, c-format
+#, c-format
 msgid "lang_* check: failed in %s, at %s:%d"
-msgstr "træ-tjek: forventede %s, har %s i %s, ved %s:%d"
+msgstr "lang_*-kontrol: mislykkedes i %s, ved %s:%d"
 
 #: cp/typeck.c:524
 #, c-format
@@ -17467,14 +17261,14 @@ msgid "ISO C++ prohibits conversion from `%#T' to `(...)'"
 msgstr "ISO C++ forbyder konvertering fra '%#T' til '(...)'"
 
 #: cp/typeck.c:1516
-#, fuzzy, c-format
+#, c-format
 msgid "invalid application of `%s' to a member function"
-msgstr "ugyldig brug af 'this' i ikke-medlemsfunktion"
+msgstr "ugyldig brug af '%s' på en medlemsfunktion"
 
 #: cp/typeck.c:1522
-#, fuzzy, c-format
+#, c-format
 msgid "invalid application of `%s' to non-static member"
-msgstr "ugyldig brug af '%s' på henvisning til medlem"
+msgstr "ugyldig brug af '%s' på et ikke-statisk medlem"
 
 #: cp/typeck.c:1540
 msgid "sizeof applied to a bit-field"
@@ -17493,28 +17287,24 @@ msgid "deprecated conversion from string constant to `%T'"
 msgstr "forældet konvertering fra strengkonstant til '%T'"
 
 #: cp/typeck.c:1892 cp/typeck.c:2115
-#, fuzzy
 msgid "request for member `%D' in `%E', which is of non-class type `%T'"
-msgstr "forespørgsel efter medlemmet '%D' i '%E' som er af en ikke-sammensat type '%T'"
+msgstr "forespørgsel efter medlemmet '%D' i '%E' som er af en ikke-klassetype '%T'"
 
 #: cp/typeck.c:1918
-#, fuzzy
 msgid "`%D' is not a member of `%T'"
-msgstr "'%D' er ikke et medlem af typen '%T'"
+msgstr "'%D' er ikke et medlem af '%T'"
 
 #: cp/typeck.c:1958 cp/typeck.c:1979
-#, fuzzy
 msgid "invalid access to non-static data member `%D' of NULL object"
-msgstr "ugyldig brug af ikke-statisk felt '%D'"
+msgstr "ugyldig tilgang til ikke-statisk datamedlem '%D' af NULL-objekt"
 
 #: cp/typeck.c:1960 cp/typeck.c:1981
 msgid "(perhaps the `offsetof' macro was used incorrectly)"
-msgstr ""
+msgstr "(måske blev 'offsetof'-makroen benyttet forkert)"
 
 #: cp/typeck.c:2161
-#, fuzzy
 msgid "`%D::%D' is not a member of `%T'"
-msgstr "'%D' er ikke et medlem af typen '%T'"
+msgstr "'%D::%D' er ikke et medlem af '%T'"
 
 #: cp/typeck.c:2187
 msgid "destructor specifier `%T::~%T' must have matching names"
@@ -17525,9 +17315,8 @@ msgid "type `%T' has no destructor"
 msgstr "typen '%T' har ingen destruktionsfunktion"
 
 #: cp/typeck.c:2232
-#, fuzzy
 msgid "`%D' is not a member template function"
-msgstr "'%s' er ikke en funktion,"
+msgstr "'%D' er ikke en medlemsskabelonfunktion"
 
 #. A pointer to incomplete type (other than cv void) can be
 #. dereferenced [expr.unary.op]/1
@@ -17553,9 +17342,9 @@ msgid "subscripting array declared `register'"
 msgstr "indeksering af tabel som er erklæret 'register'"
 
 #: cp/typeck.c:2558
-#, fuzzy, c-format
+#, c-format
 msgid "object missing in use of `%E'"
-msgstr "objekt mangler i '%E'"
+msgstr "objekt mangler i brug af '%E'"
 
 #: cp/typeck.c:2663
 msgid "ISO C++ forbids calling `::main' from within program"
@@ -17664,12 +17453,12 @@ msgstr "ugyldig brug af en henvisning til en ufuldstændig type i henvisningsbere
 #: cp/typeck.c:3823
 #, c-format
 msgid "invalid use of '%E' to form a pointer-to-member-function.  Use a qualified-id."
-msgstr ""
+msgstr "ugyldig brug af '%E' til at danne en henvisning til medlemsfunktion; benyt et kaldenavn med klassepræfiks"
 
 #: cp/typeck.c:3829
 #, c-format
 msgid "parenthesis around '%E' cannot be used to form a pointer-to-member-function"
-msgstr ""
+msgstr "paranteser omkring '%E' kan ikke bruges til at danne en henvisning til medlemsfunktion"
 
 #: cp/typeck.c:3852
 msgid "taking address of temporary"
@@ -18089,14 +17878,12 @@ msgid "ISO C++ forbids defining types within %s"
 msgstr "ISO C++ forbyder definering af typer inden i %s"
 
 #: cp/typeck2.c:1399
-#, fuzzy
 msgid "call to function `%D' which throws incomplete type `%#T'"
-msgstr "kan ikke %s en henvisning til en ufuldstændig type '%T'"
+msgstr "kald af en funktion '%D' som kaster en ufuldstændig type '%#T'"
 
 #: cp/typeck2.c:1402
-#, fuzzy
 msgid "call to function which throws incomplete type `%#T'"
-msgstr "kan ikke %s en henvisning til en ufuldstændig type '%T'"
+msgstr "kald af en funktion som kaster en ufuldstændig type '%#T'"
 
 #. XXX Not i18n clean.
 #: cp/cp-tree.h:3846
@@ -20045,9 +19832,8 @@ msgid "`%s' is not a valid class name"
 msgstr "'%s' er et ugyldigt klassenavn"
 
 #: java/jvspec.c:435
-#, fuzzy
 msgid "--resource requires -o"
-msgstr "-R påkræver -o"
+msgstr "--resource påkræver -o"
 
 #: java/jvspec.c:442
 msgid "warning: already-compiled .class files ignored with -C"
@@ -20371,7 +20157,7 @@ msgstr "ugyldig pc i exception_table"
 
 #: java/verify.c:485
 msgid "exception handler inside code that is being protected"
-msgstr ""
+msgstr "undtagelseshåndtering inden i kode der bliver beskyttet"
 
 #: java/verify.c:1395
 #, c-format
@@ -20493,9 +20279,9 @@ msgid "cannot find reference tag for class `%s'"
 msgstr "kan ikke finde referencemærket for klassen '%s'"
 
 #: objc/objc-act.c:2050
-#, fuzzy, c-format
+#, c-format
 msgid "creating selector for non existant method %s"
-msgstr "potentiel vælgerkonflikt for metoden '%s'"
+msgstr "opretter vælger for ikke-eksisterende metode '%s'"
 
 #: objc/objc-act.c:2364
 #, c-format
@@ -20524,7 +20310,7 @@ msgstr "inkonsistent instansvariabelangivelse"
 
 #: objc/objc-act.c:4580
 msgid "can not use an object as parameter to a method\n"
-msgstr ""
+msgstr "kan ikke benytte et objekt som parameter til en metode\n"
 
 #: objc/objc-act.c:4780
 #, c-format
@@ -20569,9 +20355,9 @@ msgid "cannot find method"
 msgstr "kan ikke finde metode"
 
 #: objc/objc-act.c:5399
-#, fuzzy, c-format
+#, c-format
 msgid "undeclared selector `%s'"
-msgstr "omerklæret her som '%#D'"
+msgstr "uerklæret vælger '%s'"
 
 #. Historically, a class method that produced objects (factory
 #. method) would assign `self' to the instance that it
@@ -20719,60 +20505,55 @@ msgstr "Angiv navnet på klassen til konstante strenge"
 #. treelang.
 #: treelang/lang-options.h:26
 msgid "(debug) trace parsing process"
-msgstr ""
+msgstr "(fejlretning) følg fortolkningsprocessen"
 
 #: treelang/lang-options.h:27
 msgid "(debug) trace lexical analysis"
-msgstr ""
+msgstr "(fejlretning) følg lexikalsk analyse"
 
 #: config/darwin.h:212
 msgid "-current_version only allowed with -dynamiclib"
-msgstr ""
+msgstr "-current_version er kun tilladt med -dynamiclib"
 
 #: config/darwin.h:215
 msgid "-install_name only allowed with -dynamiclib"
-msgstr ""
+msgstr "-install_name er kun tilladt med -dynamiclib"
 
 #: config/darwin.h:220
-#, fuzzy
 msgid "-bundle not allowed with -dynamiclib"
-msgstr "-mlong-double-64 er ikke tilladt med -m64"
+msgstr "-bundle er ikke tilladt med -dynamiclib"
 
 #: config/darwin.h:221
-#, fuzzy
 msgid "-bundle_loader not allowed with -dynamiclib"
-msgstr "-mlong-double-64 er ikke tilladt med -m64"
+msgstr "-bundle_loader er ikke tilladt med -dynamiclib"
 
 #: config/darwin.h:222
-#, fuzzy
 msgid "-client_name not allowed with -dynamiclib"
-msgstr "-mlong-double-64 er ikke tilladt med -m64"
+msgstr "-client_name er ikke tilladt med -dynamiclib"
 
 #: config/darwin.h:225
 msgid "-force_cpusubtype_ALL not allowed with -dynamiclib"
-msgstr ""
+msgstr "-force_cpusubtype_ALL er ikke tilladt med -dynamiclib"
 
 #: config/darwin.h:226
 msgid "-force_flat_namespace not allowed with -dynamiclib"
-msgstr ""
+msgstr "-force_flat_namespace er ikke tilladt med -dynamiclib"
 
 #: config/darwin.h:228
 msgid "-keep_private_externs not allowed with -dynamiclib"
-msgstr ""
+msgstr "-keep_private_externs er ikke tilladt med -dynamiclib"
 
 #: config/darwin.h:229
-#, fuzzy
 msgid "-private_bundle not allowed with -dynamiclib"
-msgstr "-mlong-double-64 er ikke tilladt med -m64"
+msgstr "-private_bundle er ikke tilladt med -dynamiclib"
 
 #: f/lang-specs.h:38 gcc.c:689
 msgid "GNU C does not support -C without using -E"
 msgstr "GNU C understøtter ikke -C uden -E"
 
 #: f/lang-specs.h:39 gcc.c:690
-#, fuzzy
 msgid "GNU C does not support -CC without using -E"
-msgstr "GNU C understøtter ikke -C uden -E"
+msgstr "GNU C understøtter ikke -CC uden -E"
 
 #: config/sparc/sol2-bi.h:168 config/sparc/sol2-bi.h:178
 #: config/sparc/linux64.h:197 config/sparc/linux64.h:208
@@ -20803,7 +20584,7 @@ msgstr "-pg og -fomit-frame-pointer er indbyrdes uforenelige"
 
 #: config/rs6000/darwin.h:62
 msgid " conflicting code gen style switches are used"
-msgstr ""
+msgstr " konfliktende kodegenereringstilvalg er benyttet"
 
 #: config/i386/cygwin.h:115
 msgid "mno-cygwin and mno-win32 are not compatible"
@@ -20834,14 +20615,12 @@ msgid "-femit-class-file should used along with -fsyntax-only"
 msgstr "-femit-class-file skal bruges sammen med -fsyntax-only"
 
 #: treelang/lang-specs.h:52
-#, fuzzy
 msgid "-pg or -p and -fomit-frame-pointer are incompatible"
-msgstr "-pg og -fomit-frame-pointer er indbyrdes uforenelige"
+msgstr "-pg eller -p og -fomit-frame-pointer er indbyrdes uforenelige"
 
 #: config/vax/netbsd-elf.h:42
-#, fuzzy
 msgid "The -shared option is not currently supported for VAX ELF."
-msgstr "den indbyggede funktion '%s' understøttes i øjeblikket ikke"
+msgstr "Tilvalget -shared understøttes i øjeblikket ikke for VAX ELF."
 
 #: config/mcore/mcore.h:60
 msgid "choose either big or little endian, not both"
@@ -22079,7 +21858,7 @@ msgstr "-fPIC er ikke gyldig sammen med -mcoff"
 #~ msgstr "umuligt symbol i makroparameterlisten"
 
 #~ msgid "illegal token in macro argument list"
-#~ msgstr "ulovligt symbol i makroparameterlisten"
+#~ msgstr "ugyldigt symbol i makroparameterlisten"
 
 #~ msgid "another parameter follows \"...\""
 #~ msgstr "der optræder en parameter mere efter \"...\""
