@@ -1,3 +1,8 @@
+2004-12-18  Richard Henderson  <rth@redhat.com>
+
+	* c-decl.c (grokdeclarator): Save variable array size before
+	subtracting 1, rather than after.
+
 2004-12-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/15486
