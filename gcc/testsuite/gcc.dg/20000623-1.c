@@ -1,6 +1,9 @@
 /* { dg-do run } */
 /* { dg-options "-O3 -fno-strict-aliasing" } */
 
+extern void exit (int);
+extern void abort (void);
+
 struct foos { int l; }; 
 int foo;
 static struct foos *getfoo(void);
