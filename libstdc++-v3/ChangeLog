@@ -1,3 +1,14 @@
+2004-11-24  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in, aclocal.m4: Regenerate with automake 1.9.3.
+	* include/Makefile.in: Likewise.
+	* libmath/Makefile.in: Likewise.
+	* libsupc++/Makefile.in: Likewise.
+	* po/Makefile.in: Likewise.
+	* src/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+
 2004-11-24  Jonathan Wakely  <redi@kayari.org>
 
 	* docs/html/ext/howto.html: Fix incorrect link.
