@@ -18,7 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
 #include "hconfig.h"
 #include "system.h"
 
@@ -60,3 +59,22 @@ int main (argc, argv)
   return 0;
 }
 
+#if defined(USE_C_ALLOCA) && !defined(__GNUC__)
+/* FIXME: We only need an xmalloc definition because we are forced to
+   link with alloca.o on some platforms.  This should go away if/when
+   we link against libiberty.a. (ghazi@caip.rutgers.edu 6/3/98) */
+char *
+xmalloc (nbytes)
+     int nbytes;
+{
+  char *tmp = (char *) malloc (nbytes);
+
+  if (!tmp)
+    {
+      fprintf (stderr, "can't allocate %d bytes (out of virtual memory)\n", nbytes);
+      exit (FATAL_EXIT_CODE);
+    }
+
+  return tmp;
+}
+#endif /* USE_C_ALLOCA && !__GNUC__ */
