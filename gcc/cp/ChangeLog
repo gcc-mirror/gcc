@@ -1,3 +1,10 @@
+2004-09-11  Richard Henderson  <rth@redhat.com>
+
+	PR c++/17404
+        * pt.c (cur_stmt_expr): Move from tsubst_expr.
+        (tsubst_expr) <case STMT_EXPR>: Move ...
+        (tsubst_copy_and_build): ... here.
+
 2004-09-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* cp-tree.h (interface_only, interface_unknown): Delete declarations;
