@@ -2640,6 +2640,7 @@ extern tree builtin_function (const char *, tree, int, enum built_in_class,
 			      const char *, tree);
 
 /* In tree.c */
+extern unsigned crc32_string (unsigned, const char *);
 extern void clean_symbol_name (char *);
 extern tree get_file_function_name_long (const char *);
 extern tree get_set_constructor_bits (tree, char *, int);
