@@ -611,7 +611,12 @@ while [ $# -ne 0 ]; do
     sources)  MODE_SOURCES=1;;
     tarfiles) MODE_TARFILES=1;;
     upload)   MODE_UPLOAD=1;;
-    all)      MODE_SOURCES=1; MODE_TARFILES=1; MODE_DIFFS=1; MODE_GZIP=1; MODE_UPLOAD=1;;
+    all)      MODE_SOURCES=1; MODE_TARFILES=1; MODE_DIFFS=1; MODE_UPLOAD=1;
+              if [ $SNAPSHOT -ne 1 ]; then
+                # Only for releases and pre-releases.
+                MODE_GZIP=1;
+              fi
+              ;;
     *)        error "Unknown mode $1";;
     esac
     shift
