@@ -24,21 +24,29 @@ import java.util.ResourceBundle;
 public class DateFormatSymbols extends Object
   implements java.io.Serializable, Cloneable
 {
-  private String[] ampms;
-  private String[] eras;
+  String[] ampms;
+  String[] eras;
   private String localPatternChars;
-  private String[] months;
-  private String[] shortMonths;
-  private String[] shortWeekdays;
-  private String[] weekdays;
+  String[] months;
+  String[] shortMonths;
+  String[] shortWeekdays;
+  String[] weekdays;
   private String[][] zoneStrings;
 
   private static final long serialVersionUID = -5987973545549424702L;
 
+  // The order of these prefixes must be the same as in DateFormat
+  // FIXME: XXX: Note that this differs from the Classpath implemention
+  // in that there is no "default" entry; that is due to differing
+  // implementations where DateFormat.DEFAULT is MEDIUM here but 4 in
+  // Classpath (the JCL says it should be MEDIUM).  That will need to be 
+  // resolved in the merge.
+  private static final String[] formatPrefixes = { "full", "long", "medium", "short" };
+
   private static final String[] ampmsDefault = {"AM", "PM" };
   private static final String[] erasDefault = {"BC", "AD" };
   // localPatternCharsDefault is used by SimpleDateFormat.
-  protected static final String localPatternCharsDefault
+  private static final String localPatternCharsDefault
     = "GyMdkHmsSEDFwWahKz";
   private static final String[] monthsDefault = {
     "January", "February", "March", "April", "May", "June",
@@ -76,6 +84,24 @@ public class DateFormatSymbols extends Object
     { "AST", "Alaska Standard Time", "AST",
       /**/   "Alaska Daylight Time", "ADT", "Anchorage" }
   };
+
+  // These are each arrays with a value for SHORT, MEDIUM, LONG, FULL,
+  // and DEFAULT (constants defined in java.text.DateFormat).  While
+  // not part of the official spec, we need a way to get at locale-specific
+  // default formatting patterns.  They are declared package scope so
+  // as to be easily accessible where needed (DateFormat, SimpleDateFormat).
+  transient String[] dateFormats;
+  transient String[] timeFormats;
+
+  private String[] formatsForKey(ResourceBundle res, String key) 
+  {
+    String[] values = new String [formatPrefixes.length];
+    for (int i = 0; i < formatPrefixes.length; i++)
+      {
+        values[i] = res.getString(formatPrefixes[i]+key);
+      }
+    return values;
+  }
 
   private final Object safeGetResource (ResourceBundle res,
 					String key, Object def)
@@ -116,6 +142,9 @@ public class DateFormatSymbols extends Object
     weekdays = (String[]) safeGetResource (res, "weekdays", weekdaysDefault);
     zoneStrings = (String[][]) safeGetResource (res, "zoneStrings",
 						zoneStringsDefault);
+
+    dateFormats = formatsForKey(res, "DateFormat");
+    timeFormats = formatsForKey(res, "TimeFormat");
   }
 
   public DateFormatSymbols ()
@@ -134,6 +163,8 @@ public class DateFormatSymbols extends Object
     shortWeekdays = old.shortWeekdays;
     weekdays = old.weekdays;
     zoneStrings = old.zoneStrings;
+    dateFormats = old.dateFormats;
+    timeFormats = old.timeFormats;
   }
 
   public String[] getAmPmStrings()

@@ -991,6 +991,7 @@ java/net/natPlainDatagramSocketImpl.cc \
 java/net/natPlainSocketImpl.cc \
 java/text/natCollator.cc \
 java/util/natGregorianCalendar.cc \
+java/util/natTimeZone.cc \
 java/util/zip/natDeflater.cc \
 java/util/zip/natInflater.cc
 
@@ -1142,8 +1143,8 @@ java/lang/reflect/natArray.lo java/lang/reflect/natConstructor.lo \
 java/lang/reflect/natField.lo java/lang/reflect/natMethod.lo \
 java/net/natInetAddress.lo java/net/natPlainDatagramSocketImpl.lo \
 java/net/natPlainSocketImpl.lo java/text/natCollator.lo \
-java/util/natGregorianCalendar.lo java/util/zip/natDeflater.lo \
-java/util/zip/natInflater.lo
+java/util/natGregorianCalendar.lo java/util/natTimeZone.lo \
+java/util/zip/natDeflater.lo java/util/zip/natInflater.lo
 libgcjx_la_OBJECTS =  gnu/gcj/xlib/natClip.lo \
 gnu/gcj/xlib/natColormap.lo gnu/gcj/xlib/natDisplay.lo \
 gnu/gcj/xlib/natDrawable.lo gnu/gcj/xlib/natFont.lo \
@@ -1684,8 +1685,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/jar/JarException.P .deps/java/util/jar/JarFile.P \
 .deps/java/util/jar/JarInputStream.P \
 .deps/java/util/jar/JarOutputStream.P .deps/java/util/jar/Manifest.P \
-.deps/java/util/natGregorianCalendar.P .deps/java/util/zip/Adler32.P \
-.deps/java/util/zip/CRC32.P .deps/java/util/zip/CheckedInputStream.P \
+.deps/java/util/natGregorianCalendar.P .deps/java/util/natTimeZone.P \
+.deps/java/util/zip/Adler32.P .deps/java/util/zip/CRC32.P \
+.deps/java/util/zip/CheckedInputStream.P \
 .deps/java/util/zip/CheckedOutputStream.P \
 .deps/java/util/zip/Checksum.P \
 .deps/java/util/zip/DataFormatException.P \
