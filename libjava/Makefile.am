@@ -221,6 +221,16 @@ java/lang/FirstThread.h: java/lang/FirstThread.class libgcj.zip
 		-friend 'void _Jv_RunMain (const char*, int, const char **);' \
 		$(basename $<)
 
+java/lang/Thread.h: java/lang/Thread.class libgcj.zip
+	$(GCJH) -classpath $(top_builddir) \
+		-prepend 'class _Jv_JNIEnv;' \
+## Eww.
+		-prepend 'extern "Java" { namespace gnu { namespace gcj { namespace jni { class NativeThread; } } } };' \
+		-friend '_Jv_JNIEnv * _Jv_GetCurrentJNIEnv ();' \
+		-friend 'void _Jv_SetCurrentJNIEnv (_Jv_JNIEnv *env);' \
+		-friend 'class gnu::gcj::jni::NativeThread;' \
+		$(basename $<)
+
 java/lang/String.h: java/lang/String.class libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'jchar* _Jv_GetStringChars (jstring str);' \
@@ -512,6 +522,7 @@ built_java_source_files = java/lang/ConcreteProcess.java
 ## convert_source_files.  If the .java file has a hand-maintained
 ## header, please list it in special_java_source_files.
 ordinary_java_source_files =  $(convert_source_files) \
+gnu/gcj/jni/NativeThread.java \
 gnu/gcj/runtime/MethodInvocation.java \
 gnu/gcj/runtime/VMClassLoader.java \
 gnu/gcj/text/BaseBreakIterator.java \
@@ -796,6 +807,7 @@ gnu/gcj/convert/natInput_EUCJIS.cc \
 gnu/gcj/convert/natInput_SJIS.cc \
 gnu/gcj/convert/natOutput_EUCJIS.cc \
 gnu/gcj/convert/natOutput_SJIS.cc \
+gnu/gcj/jni/natNativeThread.cc \
 java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
 java/lang/natCharacter.cc \

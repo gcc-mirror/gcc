@@ -1,6 +1,6 @@
 // natThread.cc - Native part of Thread class.
 
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -23,6 +23,9 @@ details.  */
 #include <java/lang/IllegalThreadStateException.h>
 #include <java/lang/InterruptedException.h>
 #include <java/lang/NullPointerException.h>
+#include <gnu/gcj/RawData.h>
+
+#include <jni.h>
 
 
 
@@ -39,6 +42,9 @@ struct natThread
 
   // This is private data for the thread system layer.
   _Jv_Thread_t *thread;
+
+  // Each thread has its own JNI object.
+  JNIEnv *jni_env;
 
   // All threads waiting to join this thread are linked together and
   // waiting on their respective `interrupt' condition variables.
@@ -83,10 +89,13 @@ java::lang::Thread::initialize_native (void)
   // own finalizer then we will need to reinitialize this structure at
   // any "interesting" point.
   natThread *nt = (natThread *) _Jv_AllocBytes (sizeof (natThread));
-  data = (jobject) nt;
+  data = reinterpret_cast<gnu::gcj::RawData *> (nt);
   _Jv_MutexInit (&nt->interrupt_mutex);
   _Jv_CondInit (&nt->interrupt_cond);
   _Jv_ThreadInitData (&nt->thread, this);
+  // FIXME: if JNI_ENV is set we will want to free it.  It is
+  // malloc()d.
+  nt->jni_env = NULL;
   nt->joiner = 0;
   nt->next = 0;
 }
@@ -323,4 +332,21 @@ void
 java::lang::Thread::yield (void)
 {
   _Jv_ThreadYield ();
+}
+
+JNIEnv *
+_Jv_GetCurrentJNIEnv ()
+{
+  java::lang::Thread *t = _Jv_ThreadCurrent ();
+  if (t == NULL)
+    return NULL;
+  return ((natThread *) t->data)->jni_env;
+}
+
+void
+_Jv_SetCurrentJNIEnv (JNIEnv *env)
+{
+  java::lang::Thread *t = _Jv_ThreadCurrent ();
+  JvAssert (t != NULL);
+  ((natThread *) t->data)->jni_env = env;
 }

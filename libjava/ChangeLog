@@ -1,3 +1,49 @@
+2000-02-10  Tom Tromey  <tromey@cygnus.com>
+
+	* gnu/gcj/jni/natNativeThread.cc: New file.
+	* gnu/gcj/jni/NativeThread.java: New file.
+	* java/lang/Thread.java (data): Now a RawData.
+	* include/jvm.h (_Jv_GetCurrentJNIEnv, _Jv_SetCurrentJNIEnv):
+	Declare.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (java/lang/Thread.h): New target.
+	(ordinary_java_source_files): Added NativeThread.java.
+	(nat_source_files): Added natNativeThread.cc.
+	* java/lang/natThread.cc: Include <jni.h>
+	(struct natThread): Added `jni_env' field.
+	(_Jv_GetCurrentJNIEnv): New function.
+	(_Jv_SetCurrentJNIEnv): Likewise.
+	(initialize_native): Initialize jni_env.
+	Include RawData.h.
+	* jni.cc (ThreadGroupClass): New define.
+	(_Jv_JNI_InvokeFunctions): New structure.
+	(JNI_GetCreatedJavaVMs): New function.
+	(the_vm): New global.
+	(JNI_GetDefaultJavaVMInitArgs): New function.
+	Include NativeThread.h.
+	(NativeThreadClass): New define.
+	(_Jv_JNI_EnsureLocalCapacity): Return JNI_ERR, not -1.
+	(_Jv_JNI_DestroyJavaVM): New function.
+	(_Jv_JNI_AttachCurrentThread): New function.
+	(_Jv_JNI_DetachCurrentThread): New function.
+	(_Jv_JNI_GetEnv): New function.
+	(JNI_CreateJavaVM): New function.
+	(_Jv_JNI_GetJavaVM): New function.
+	(_Jv_JNIFunctions): Added entry for GetJavaVM.
+	* include/jni.h (JavaVMAttachArgs): New structure.
+	(JNI_EDETACHED): New define.
+	(JNI_EVERSION): Likewise.
+	(JavaVM): Define properly.
+	(struct JNIInvokeInterface): New structure.
+	(class _Jv_JavaVM): New class.
+	(JNI_OnLoad, JNI_OnUnload): Declare.
+	(JNI_GetDefaultJavaVMInitArgs, JNI_CreateJavaVM,
+	JNI_GetCreatedJavaVMs): Declare.
+	(JavaVMInitArgs): New typedef.
+	(JavaVMOption): Likewise.
+	(JNI_ERR): New define.
+	(JNI_OK): Likewise.
+
 2000-02-10  Andrew Haley  <aph@cygnus.com>
 
 	* interpret.cc: Don't include fdlibm.h.
