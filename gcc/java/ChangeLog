@@ -1,3 +1,22 @@
+Sat Dec 12 19:21:11 1998  Per Bothner  <bothner@cygnus.com>
+
+	* expr.c (encode_newarray_type, build_new_array):  New functions.
+	* java-tree.h:  Declare build_new_array.
+	* jcf-write.c (patch_newarray):  Use build_new_array.
+
+	* expr.c (java_lang_expand_exp):  Support NEW_ARRAY_INIT.
+	* jcf-write.c (generate_bytecode_insns):  Support NEW_ARRAY_INIT.
+
+	* parse.y (patch_new_array_init):  Re-organize.
+	Now is passed the actual array (pointer) type of the value.
+	Set the type of the CONSTRUCTOR to be an ARRAY_TYPE.
+	(patch_array_constructor):  Removed - merged into patch_new_array_init.
+ 	(java_complete_tree):  Update patch_new_array_init.
+
+	* jcf-write.c (find_constant_index):  New function.
+	(generate_bytecode_insns):  Use find_constant_index.
+	(generate_classfile):  Use find_constant_index for ConstantValue.
+
 1998-12-11  Tom Tromey  <tromey@cygnus.com>
 
 	* expr.c (invoke_build_dtable): Renamed dtable -> vtable.
