@@ -881,22 +881,21 @@ cpp_start_read (pfile, fname)
     {
       struct default_include *p = include_defaults_array;
       char *specd_prefix = opts->include_prefix;
-      char *default_prefix = alloca (sizeof GCC_INCLUDE_DIR - 7);
-      int default_len;
-      int specd_len;
 
       /* Search "translated" versions of GNU directories.
 	 These have /usr/local/lib/gcc... replaced by specd_prefix.  */
       if (specd_prefix != 0)
 	{
+	  char *default_prefix = alloca (sizeof GCC_INCLUDE_DIR - 7);
 	  /* Remove the `include' from /usr/local/lib/gcc.../include.
 	     GCC_INCLUDE_DIR will always end in /include. */
+	  int default_len = sizeof GCC_INCLUDE_DIR - 8;
+	  int specd_len = strlen (specd_prefix);
+
 	  default_len = sizeof GCC_INCLUDE_DIR - 8;
 	  memcpy (default_prefix, GCC_INCLUDE_DIR, default_len);
 	  default_prefix[default_len] = '\0';
 
-
-	  specd_len = strlen (specd_prefix);
 	  for (p = include_defaults_array; p->fname; p++)
 	    {
 	      /* Some standard dirs are only for C++.  */
@@ -909,10 +908,12 @@ cpp_start_read (pfile, fname)
 		    {
 		      /* Yes; change prefix and add to search list.  */
 		      int flen = strlen (p->fname);
-		      int this_len = specd_len - default_len + flen;
+		      int this_len = specd_len + flen - default_len;
 		      char *str = (char *) xmalloc (this_len + 1);
 		      memcpy (str, specd_prefix, specd_len);
-		      memcpy (str+specd_len, p->fname, flen + 1);
+		      memcpy (str + specd_len,
+			      p->fname + default_len,
+			      flen - default_len + 1);
 
 		      append_include_chain (pfile, opts->pending,
 					    str, SYSTEM);

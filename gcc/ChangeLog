@@ -1,3 +1,8 @@
+Tue Apr 13 12:14:07 1999  Dave Brolley  <brolley@cygnus.com>
+
+	* cppinit.c (cpp_start_read): Fix buffer overwrite.
+	* Makefile.in (cppinit.o): Typo in dependencies.
+
 Tue Apr 13 05:04:59 1999  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm.h (function prototypes for arm.c): Ifdef these out if
