@@ -144,17 +144,20 @@ namespace std
       _M_cache_facets(_M_ios_locale);
       _M_tie = 0;
 
-      // NB: The 27.4.4.1 Postconditions Table only specifies
-      // requirements after basic_ios::init() has been called. As part
-      // of this, fill() must return widen(' '), which needs an imbued
-      // ctype facet of char_type to return without throwing an
-      // exception. Unfortunately, ctype<char_type> is not necessarily a
-      // required facet, so streams with char_type != [char, wchar_t]
-      // will not have it by default. However, because fill()'s
-      // signature is const, this data member cannot be lazily
-      // initialized.  Thus, thoughts of using a non-const helper
-      // function in ostream inserters is really besides the point.
-      _M_fill = this->widen(' ');
+      // NB: The 27.4.4.1 Postconditions Table specifies requirements
+      // after basic_ios::init() has been called. As part of this,
+      // fill() must return widen(' ') any time after init() has been
+      // called, which needs an imbued ctype facet of char_type to
+      // return without throwing an exception. Unfortunately,
+      // ctype<char_type> is not necessarily a required facet, so
+      // streams with char_type != [char, wchar_t] will not have it by
+      // default. Because of this, the correct value for _M_fill is
+      // constructed on the first call of fill(). That way,
+      // unformatted input and output with non-required basic_ios
+      // instantiations is possible even without imbuing the expected
+      // ctype<char_type> facet.
+      _M_fill = 0;
+      _M_fill_init = false;
 
       _M_exception = goodbit;
       _M_streambuf = __sb;

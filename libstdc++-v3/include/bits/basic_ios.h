@@ -64,7 +64,8 @@ namespace std
       // Data members:
     protected:
       basic_ostream<_CharT, _Traits>* 	_M_tie;
-      char_type 			_M_fill;
+      mutable char_type 		_M_fill;
+      mutable bool			_M_fill_init;
       iostate 				_M_exception;
 
       basic_streambuf<_CharT, _Traits>* _M_streambuf;
@@ -160,7 +161,14 @@ namespace std
 
       char_type 
       fill() const 
-      { return _M_fill; }
+      {
+	if (!_M_fill_init)
+	  {
+	    _M_fill = this->widen(' ');
+	    _M_fill_init = true;
+	  }
+	return _M_fill; 
+      }
 
       char_type 
       fill(char_type __ch)

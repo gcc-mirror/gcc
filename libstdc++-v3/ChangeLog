@@ -1,4 +1,14 @@
-2002-02-26  Loren Rittle <ljrittle@acm.org>
+2002-02-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/basic_ios.tcc (basic_ios::init): Set _M_fill to zero.
+	Adjust comment.
+	* include/bits/basic_ios.h (basic_ios::_M_fill): Make mutable.
+	(basic_ios::_M_fill_init): New.
+	(basic_ios::fill()): Deal with _M_fill lazily.
+	Adjust comment. 
+	* testsuite/27_io/ios_init.cc (test02): Adjust testcase.
+
+2002-02-26  Loren Rittle  <ljrittle@acm.org>
 
 	* include/Makefile.am (thread_target_headers): Unconditionally
 	stage and install gthr-posix.h.

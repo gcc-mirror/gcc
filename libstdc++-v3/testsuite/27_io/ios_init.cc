@@ -83,10 +83,8 @@ void test01()
 }
 
 // Non-required instantiations don't have the required facets inbued,
-// by default, into the locale object. As such, basic_ios::init is
-// required to return a bad_cast for the first use of fill() call.
+// by default, into the locale object.
 // See 27.4.4.1
-
 class gnu_ios: public std::basic_ios<char> { };
 
 void test02() 
@@ -94,6 +92,7 @@ void test02()
   bool test = true;
 
   // 01: Doesn't call basic_ios::init, which uses ctype<char_type>..
+  // This should be unambiguously correct.
   try
     {
       gnu_ios gios;
@@ -103,15 +102,12 @@ void test02()
       test = false; 
     }
 
-  // 02: Calls basic_ios::init, which uses ctype<char_type>..
+  // 02: Calls basic_ios::init, which may call ctype<char_type>...
   try
     {
       std::basic_string<unsigned short>        	str;
       std::basic_ostringstream<unsigned short> 	oss(str);
       
-      // Shouldn't get this far.
-      test = false; 
-
       // Try each member functions for unformatted io.
       // put
       oss.put(324);
@@ -125,7 +121,9 @@ void test02()
     }
   catch(const std::bad_cast& obj)
     {
-      // This is correct.
+      // Should be able to do the above without calling fill() and
+      // forcing a call to widen...
+      test = false;
     }
   catch(...)
     {
