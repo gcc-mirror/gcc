@@ -4112,7 +4112,10 @@ rest_of_compilation (decl)
   if (!obey_regdecls)
     TIMEVAR (local_alloc_time,
 	     {
-	       recompute_reg_usage (insns, ! optimize_size);
+	       /* We recomputed reg usage as part of updating the rest
+		  of life info during sched.  */
+	       if (! flag_schedule_insns)
+		 recompute_reg_usage (insns, ! optimize_size);
 	       regclass (insns, max_reg_num ());
 	       rebuild_label_notes_after_reload = local_alloc ();
 	     });

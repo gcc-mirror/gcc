@@ -696,7 +696,11 @@ combine_instructions (f, nregs)
     }
 
   if (need_refresh)
-    update_life_info (refresh_blocks, UPDATE_LIFE_GLOBAL_RM_NOTES);
+    {
+      compute_bb_for_insn (get_max_uid ());
+      update_life_info (refresh_blocks, UPDATE_LIFE_GLOBAL_RM_NOTES,
+		        PROP_DEATH_NOTES);
+    }
   sbitmap_free (refresh_blocks);
 
   total_attempts += combine_attempts;

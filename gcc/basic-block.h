@@ -300,6 +300,7 @@ extern void compute_dominators		PROTO ((sbitmap *, sbitmap *,
 extern void compute_flow_dominators	PROTO ((sbitmap *, sbitmap *));
 extern void compute_immediate_dominators	PROTO ((int *, sbitmap *));
 
+
 enum update_life_extent
 {
   UPDATE_LIFE_LOCAL = 0,
@@ -307,7 +308,18 @@ enum update_life_extent
   UPDATE_LIFE_GLOBAL_RM_NOTES = 2,
 };
 
-extern void update_life_info	PROTO ((sbitmap, enum update_life_extent));
+/* Flags for life_analysis and update_life_info.  */
+
+#define PROP_DEATH_NOTES	1	/* Create DEAD and UNUSED notes.  */
+#define PROP_LOG_LINKS		2	/* Create LOG_LINKS.  */
+#define PROP_REG_INFO		4	/* Update regs_ever_live et al.  */
+#define PROP_KILL_DEAD_CODE	8	/* Remove dead code.  */
+#define PROP_SCAN_DEAD_CODE	16	/* Scan for dead code.  */
+#define PROP_AUTOINC		32	/* Create autoinc mem references.  */
+#define PROP_FINAL		63	/* All of the above.  */
+
+extern void update_life_info	PROTO ((sbitmap, enum update_life_extent,
+					int));
 extern int count_or_remove_death_notes	PROTO ((sbitmap, int));
 
 /* In lcm.c */

@@ -2661,7 +2661,7 @@ split_all_insns (upd_life)
     {
       compute_bb_for_insn (get_max_uid ());
       count_or_remove_death_notes (blocks, 1);
-      update_life_info (blocks, UPDATE_LIFE_LOCAL);
+      update_life_info (blocks, UPDATE_LIFE_LOCAL, PROP_DEATH_NOTES);
     }
 
   sbitmap_free (blocks);
@@ -2762,6 +2762,6 @@ peephole2_optimize (dump_file)
 
   compute_bb_for_insn (get_max_uid ());
   count_or_remove_death_notes (blocks, 1);
-  update_life_info (blocks, UPDATE_LIFE_LOCAL);
+  update_life_info (blocks, UPDATE_LIFE_LOCAL, PROP_DEATH_NOTES);
 }
 #endif

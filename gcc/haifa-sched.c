@@ -698,6 +698,7 @@ static void rm_other_notes PROTO ((rtx, rtx));
 static rtx reemit_notes PROTO ((rtx, rtx));
 
 static void get_block_head_tail PROTO ((int, rtx *, rtx *));
+static void get_bb_head_tail PROTO ((int, rtx *, rtx *));
 
 static int queue_to_ready PROTO ((rtx [], int));
 
@@ -4299,17 +4300,14 @@ unlink_line_notes (insn, tail)
 /* Return the head and tail pointers of BB.  */
 
 HAIFA_INLINE static void
-get_block_head_tail (bb, headp, tailp)
-     int bb;
+get_block_head_tail (b, headp, tailp)
+     int b;
      rtx *headp;
      rtx *tailp;
 {
 
   rtx head;
   rtx tail;
-  int b;
-
-  b = BB_TO_BLOCK (bb);
 
   /* HEAD and TAIL delimit the basic block being scheduled.  */
   head = BLOCK_HEAD (b);
@@ -4333,6 +4331,15 @@ get_block_head_tail (bb, headp, tailp)
   *tailp = tail;
 }
 
+HAIFA_INLINE static void
+get_bb_head_tail (bb, headp, tailp)
+     int bb;
+     rtx *headp;
+     rtx *tailp;
+{
+  get_block_head_tail (BB_TO_BLOCK (bb), headp, tailp);
+}
+
 /* Delete line notes from bb. Save them so they can be later restored
    (in restore_line_notes ()).  */
 
@@ -4345,7 +4352,7 @@ rm_line_notes (bb)
   rtx head;
   rtx insn;
 
-  get_block_head_tail (bb, &head, &tail);
+  get_bb_head_tail (bb, &head, &tail);
 
   if (head == tail
       && (GET_RTX_CLASS (GET_CODE (head)) != 'i'))
@@ -4391,7 +4398,7 @@ save_line_notes (bb)
   rtx line = line_note_head[BB_TO_BLOCK (bb)];
   rtx insn;
 
-  get_block_head_tail (bb, &head, &tail);
+  get_bb_head_tail (bb, &head, &tail);
   next_tail = NEXT_INSN (tail);
 
   for (insn = BLOCK_HEAD (BB_TO_BLOCK (bb));
@@ -4562,12 +4569,12 @@ rm_other_notes (head, tail)
 /* Calculate INSN_REG_WEIGHT for all insns of a block.  */
 
 static void
-find_insn_reg_weight (bb)
-    int bb;
+find_insn_reg_weight (b)
+    int b;
 {
   rtx insn, next_tail, head, tail;
 
-  get_block_head_tail (bb, &head, &tail);
+  get_block_head_tail (b, &head, &tail);
   next_tail = NEXT_INSN (tail);
 
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
@@ -5726,7 +5733,7 @@ schedule_block (bb, rgn_n_insns)
      However, it was removed when it proved to be of marginal benefit
      and caused problems because schedule_block and compute_forward_dependences
      had different notions of what the "head" insn was.  */
-  get_block_head_tail (bb, &head, &tail);
+  get_bb_head_tail (bb, &head, &tail);
 
   /* Interblock scheduling could have moved the original head insn from this
      block into a proceeding block.  This may also cause schedule_block and
@@ -5838,7 +5845,7 @@ schedule_block (bb, rgn_n_insns)
 	rtx src_next_tail;
 	rtx tail, head;
 
-	get_block_head_tail (bb_src, &head, &tail);
+	get_bb_head_tail (bb_src, &head, &tail);
 	src_next_tail = NEXT_INSN (tail);
 	src_head = head;
 
@@ -5968,15 +5975,14 @@ schedule_block (bb, rgn_n_insns)
 		}
 	      nr_inter++;
 
-	      /* Find the beginning of the scheduling group; update the
-		 containing block number for the insns.  */
+	      /* Find the beginning of the scheduling group.  */
+	      /* ??? Ought to update basic block here, but later bits of 
+		 schedule_block assumes the original insn block is 
+		 still intact.  */
+
 	      temp = insn;
-	      set_block_num (temp, target_bb);
 	      while (SCHED_GROUP_P (insn))
-		{
-		  temp = PREV_INSN (temp);
-		  set_block_num (temp, target_bb);
-		}
+		temp = PREV_INSN (temp);
 
 	      /* Update source block boundaries.   */
 	      b1 = BLOCK_FOR_INSN (temp);
@@ -6118,7 +6124,7 @@ compute_block_forward_dependences (bb)
   rtx next_tail;
   enum reg_note dep_type;
 
-  get_block_head_tail (bb, &head, &tail);
+  get_bb_head_tail (bb, &head, &tail);
   next_tail = NEXT_INSN (tail);
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
     {
@@ -6337,7 +6343,7 @@ compute_block_backward_dependences (bb)
     }
 
   /* Do the analysis for this block.  */
-  get_block_head_tail (bb, &head, &tail);
+  get_bb_head_tail (bb, &head, &tail);
   sched_analyze (head, tail);
   add_branch_dependences (head, tail);
 
@@ -6520,7 +6526,7 @@ debug_dependencies ()
 	  rtx next_tail;
 	  rtx insn;
 
-	  get_block_head_tail (bb, &head, &tail);
+	  get_bb_head_tail (bb, &head, &tail);
 	  next_tail = NEXT_INSN (tail);
 	  fprintf (dump, "\n;;   --- Region Dependences --- b %d bb %d \n",
 		   BB_TO_BLOCK (bb), bb);
@@ -6591,7 +6597,7 @@ set_priorities (bb)
   rtx prev_head;
   rtx head;
 
-  get_block_head_tail (bb, &head, &tail);
+  get_bb_head_tail (bb, &head, &tail);
   prev_head = PREV_INSN (head);
 
   if (head == tail
@@ -6647,8 +6653,6 @@ schedule_region (rgn)
   int bb;
   int rgn_n_insns = 0;
   int sched_rgn_n_insns = 0;
-  int initial_deaths;
-  sbitmap blocks;
 
   /* Set variables for the current region.  */
   current_nr_blocks = RGN_NR_BLOCKS (rgn);
@@ -6657,13 +6661,6 @@ schedule_region (rgn)
   reg_pending_sets = ALLOCA_REG_SET ();
   reg_pending_clobbers = ALLOCA_REG_SET ();
   reg_pending_sets_all = 0;
-
-  /* Create a bitmap of the blocks in this region.  */
-  blocks = sbitmap_alloc (n_basic_blocks);
-  sbitmap_zero (blocks);
-
-  for (bb = current_nr_blocks - 1; bb >= 0; --bb)
-    SET_BIT (blocks, BB_TO_BLOCK (bb));
 
   /* Initializations for region data dependence analyisis.  */
   if (current_nr_blocks > 1)
@@ -6713,13 +6710,6 @@ schedule_region (rgn)
   /* Compute INSN_DEPEND.  */
   for (bb = current_nr_blocks - 1; bb >= 0; bb--)
     compute_block_forward_dependences (bb);
-
-  /* Compute INSN_REG_WEIGHT.  */
-  for (bb = current_nr_blocks - 1; bb >= 0; bb--)
-    find_insn_reg_weight (bb);
-
-  /* Remove death notes.  */
-  initial_deaths = count_or_remove_death_notes (blocks, 1);
 
   /* Delete line notes and set priorities.  */
   for (bb = 0; bb < current_nr_blocks; bb++)
@@ -6797,20 +6787,6 @@ schedule_region (rgn)
   if (sched_rgn_n_insns != rgn_n_insns)
     abort ();
 
-  /* Update register life and usage information.  Scheduling a multi-block
-     region requires a global update.  */
-  if (current_nr_blocks > 1)
-    update_life_info (blocks, UPDATE_LIFE_GLOBAL);
-  else
-    {
-      update_life_info (blocks, UPDATE_LIFE_LOCAL);
-
-      /* In the single block case, the count of registers that died should
-	 not have changed during the schedule.  */
-      if (count_or_remove_death_notes (blocks, 0) != initial_deaths)
-        abort (); 
-    }
-
   /* Restore line notes.  */
   if (write_symbols != NO_DEBUG)
     {
@@ -6823,7 +6799,6 @@ schedule_region (rgn)
 
   FREE_REG_SET (reg_pending_sets);
   FREE_REG_SET (reg_pending_clobbers);
-  sbitmap_free (blocks);
 }
 
 /* The one entry point in this file.  DUMP_FILE is the dump file for
@@ -6833,13 +6808,14 @@ void
 schedule_insns (dump_file)
      FILE *dump_file;
 {
-
+  int *deaths_in_region;
+  sbitmap blocks, large_region_blocks;
   int max_uid;
   int b;
   rtx insn;
   int rgn;
-
   int luid;
+  int any_large_regions;
 
   /* Disable speculative loads in their presence if cc0 defined.  */
 #ifdef HAVE_cc0
@@ -6904,6 +6880,9 @@ schedule_insns (dump_file)
   rgn_bb_table = (int *) alloca ((n_basic_blocks) * sizeof (int));
   block_to_bb = (int *) alloca ((n_basic_blocks) * sizeof (int));
   containing_rgn = (int *) alloca ((n_basic_blocks) * sizeof (int));
+
+  blocks = sbitmap_alloc (n_basic_blocks);
+  large_region_blocks = sbitmap_alloc (n_basic_blocks);
 
   compute_bb_for_insn (max_uid);
 
@@ -6992,6 +6971,8 @@ schedule_insns (dump_file)
   insn_dep_count = (int *) xcalloc (max_uid, sizeof (int));
   insn_depend = (rtx *) xcalloc (max_uid, sizeof (rtx));
 
+  deaths_in_region = (int *) alloca (sizeof(int) * nr_regions);
+
   init_alias_analysis ();
 
   if (write_symbols != NO_DEBUG)
@@ -7034,6 +7015,21 @@ schedule_insns (dump_file)
 	       && GET_CODE (NEXT_INSN (insn)) == BARRIER)))
     emit_note_after (NOTE_INSN_DELETED, BLOCK_END (n_basic_blocks - 1));
 
+  /* Compute INSN_REG_WEIGHT for all blocks.  We must do this before
+     removing death notes.  */
+  for (b = n_basic_blocks - 1; b >= 0; b--)
+    find_insn_reg_weight (b);
+
+  /* Remove all death notes from the subroutine.  */
+  for (rgn = 0; rgn < nr_regions; rgn++)
+    {
+      sbitmap_zero (blocks);
+      for (b = RGN_NR_BLOCKS (rgn) - 1; b >= 0; --b)
+	SET_BIT (blocks, rgn_bb_table [RGN_BLOCKS (rgn) + b]);
+
+      deaths_in_region[rgn] = count_or_remove_death_notes (blocks, 1);
+    }
+
   /* Schedule every region in the subroutine.  */
   for (rgn = 0; rgn < nr_regions; rgn++)
     {
@@ -7042,6 +7038,49 @@ schedule_insns (dump_file)
 #ifdef USE_C_ALLOCA
       alloca (0);
 #endif
+    }
+
+  /* Update life analysis for the subroutine.  Do single block regions
+     first so that we can verify that live_at_start didn't change.  Then
+     do all other blocks.   */
+  /* ??? There is an outside possibility that update_life_info, or more
+     to the point propagate_block, could get called with non-zero flags
+     more than once for one basic block.  This would be kinda bad if it
+     were to happen, since REG_INFO would be accumulated twice for the
+     block, and we'd have twice the REG_DEAD notes.
+
+     I'm fairly certain that this _shouldn't_ happen, since I don't think
+     that live_at_start should change at region heads.  Not sure what the
+     best way to test for this kind of thing... */
+
+  allocate_reg_life_data ();
+  compute_bb_for_insn (max_uid);
+
+  any_large_regions = 0;
+  sbitmap_ones (large_region_blocks);
+
+  for (rgn = 0; rgn < nr_regions; rgn++)
+    if (RGN_NR_BLOCKS (rgn) > 1)
+      any_large_regions = 1;
+    else
+      {
+	sbitmap_zero (blocks);
+	SET_BIT (blocks, rgn_bb_table[RGN_BLOCKS (rgn)]);
+	RESET_BIT (large_region_blocks, rgn_bb_table[RGN_BLOCKS (rgn)]);
+
+	update_life_info (blocks, UPDATE_LIFE_LOCAL,
+			  PROP_DEATH_NOTES | PROP_REG_INFO);
+
+	/* In the single block case, the count of registers that died should
+	   not have changed during the schedule.  */
+	if (count_or_remove_death_notes (blocks, 0) != deaths_in_region[rgn])
+          abort (); 
+      }
+
+  if (any_large_regions)
+    {
+      update_life_info (large_region_blocks, UPDATE_LIFE_GLOBAL,
+		        PROP_DEATH_NOTES | PROP_REG_INFO);
     }
 
   /* Reposition the prologue and epilogue notes in case we moved the
@@ -7108,5 +7147,8 @@ schedule_insns (dump_file)
       free (out_edges);
       out_edges = NULL;
     }
+
+  sbitmap_free (blocks);
+  sbitmap_free (large_region_blocks);
 }
 #endif /* INSN_SCHEDULING */
