@@ -1,5 +1,10 @@
 2003-08-29  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/11928
+	* g++.dg/inherit/conv1.C: New test.
+
+2003-08-29  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/6196
 	* g++.dg/ext/label1.C: New test.
 	* g++.dg/ext/label2.C: Likewise.
