@@ -1,3 +1,9 @@
+2002-05-20  Richard Henderson  <rth@redhat.com>
+
+	* c-common.c (c_common_get_alias_set): Correctly handle characters.
+	Rearrange order of expressions; don't handle vectors here.
+	* alias.c (get_alias_set): Let vectors match their components.
+
 2002-06-19  Chris Demetriou  <cgd@broadcom.com>
 
         * config/mips/mips.c (mips_emit_prefetch): Use hints which
