@@ -4187,8 +4187,14 @@ choose_reload_regs (insn, avoid_return_reg)
 	  {
 	    /* But earlyclobber operands must stay as RELOAD_OTHER.  */
 	    for (i = 0; i < n_earlyclobbers; i++)
-	      if (rtx_equal_p (reload_out[j], reload_earlyclobbers[i]))
-		break;
+	      {
+		if (GET_CODE (reload_earlyclobbers[i]) == SUBREG
+		    && reg_overlap_mentioned_for_reload_p (reload_out[j],
+				    SUBREG_REG (reload_earlyclobbers[i])))
+		  break;
+		if (rtx_equal_p (reload_out[j], reload_earlyclobbers[i]))
+		  break;
+	      }
 	    if (i == n_earlyclobbers)
 	      reload_when_needed[j] = RELOAD_FOR_OUTPUT;
 	  }
