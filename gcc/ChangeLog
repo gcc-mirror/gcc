@@ -1,5 +1,12 @@
 2003-02-18  Roger Sayle  <roger@eyesopen.com>
 
+	* fold-const.c (negate_expr_p): New function to determine whether
+	an expression can be negated cheaply.
+	(fold) [MINUS_EXPR]: Use it to determine whether to transform
+	-A - B into -B - A for floating point types.
+
+2003-02-18  Roger Sayle  <roger@eyesopen.com>
+
 	* sbitmap.c (sbitmap_resize): New function.
 	* sbitmap.h (sbitmap_resize): Prototype here.
 	* recog.c (split_all_insns): Use sbitmap_resize.
