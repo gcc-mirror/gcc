@@ -1,3 +1,8 @@
+2004-02-05  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* sourcebuild.texi (Test Idioms): Update testcase naming
+	conventions.
+
 2004-02-04  Per Bothner  <per@bothner.com>
 
 	Partially revert/redo 2003-10-01 change; fix -fworking-directory.
