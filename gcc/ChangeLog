@@ -1,3 +1,14 @@
+2005-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/19084
+	PR rtl-optimization/19348
+	* recog.c (peephole2_optimize): Do global life update if some peephole
+	decides it doesn't need at least one of its inputs and that change
+	influences liveness at the start of the basic block.
+
+	* basic-block.h (EXECUTE_IF_AND_COMPL_IN_REG_SET): Needs 2 REGSET
+	arguments instead of 1.
+
 2005-01-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/18820
