@@ -3923,25 +3923,50 @@ split_double (value, first, second)
 	  /* In this case the CONST_INT holds both target words.
 	     Extract the bits from it into two word-sized pieces.
 	     Sign extend each half to HOST_WIDE_INT.  */
-	  rtx low, high;
-	  /* On machines where HOST_BITS_PER_WIDE_INT == BITS_PER_WORD
-	     the shift below will cause a compiler warning, even though
-	     this code won't be executed.  So put the shift amounts in
-	     variables to avoid the warning.  */
-	  int rshift = HOST_BITS_PER_WIDE_INT - BITS_PER_WORD;
-	  int lshift = HOST_BITS_PER_WIDE_INT - 2 * BITS_PER_WORD;
+	  unsigned HOST_WIDE_INT low, high;
+	  unsigned HOST_WIDE_INT mask, sign_bit, sign_extend;
 
-	  low = GEN_INT ((INTVAL (value) << rshift) >> rshift);
-	  high = GEN_INT ((INTVAL (value) << lshift) >> rshift);
+	  /* Set sign_bit to the most significant bit of a word.  */
+	  sign_bit = 1;
+	  sign_bit <<= BITS_PER_WORD - 1;
+
+	  /* Set mask so that all bits of the word are set.  We could
+	     have used 1 << BITS_PER_WORD instead of basing the
+	     calculation on sign_bit.  However, on machines where
+	     HOST_BITS_PER_WIDE_INT == BITS_PER_WORD, it could cause a
+	     compiler warning, even though the code would never be
+	     executed.  */
+	  mask = sign_bit << 1;
+	  mask--;
+
+	  /* Set sign_extend as any remaining bits.  */
+	  sign_extend = ~mask;
+	  
+	  /* Pick the lower word and sign-extend it.  */
+	  low = INTVAL (value);
+	  low &= mask;
+	  if (low & sign_bit)
+	    low |= sign_extend;
+
+	  /* Pick the higher word, shifted to the least significant
+	     bits, and sign-extend it.  */
+	  high = INTVAL (value);
+	  high >>= BITS_PER_WORD - 1;
+	  high >>= 1;
+	  high &= mask;
+	  if (high & sign_bit)
+	    high |= sign_extend;
+
+	  /* Store the words in the target machine order.  */
 	  if (WORDS_BIG_ENDIAN)
 	    {
-	      *first = high;
-	      *second = low;
+	      *first = GEN_INT (high);
+	      *second = GEN_INT (low);
 	    }
 	  else
 	    {
-	      *first = low;
-	      *second = high;
+	      *first = GEN_INT (low);
+	      *second = GEN_INT (high);
 	    }
 	}
       else
@@ -4026,7 +4051,7 @@ split_double (value, first, second)
       if ((HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
 	   || HOST_BITS_PER_WIDE_INT != BITS_PER_WORD)
 	  && ! flag_pretend_float)
-      abort ();
+	abort ();
 
       if (
 #ifdef HOST_WORDS_BIG_ENDIAN
