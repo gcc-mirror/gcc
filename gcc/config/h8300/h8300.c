@@ -2238,7 +2238,7 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	{
 	  if (count == 15 && shift_type == SHIFT_ASHIFTRT)
 	    {
-	      info->special = "shll\t%t0,%t0\n\tsubx\t%t0,%t0\n\tmov.b\t%t0,%s0";
+	      info->special = "shll\t%t0\n\tsubx\t%t0,%t0\n\tmov.b\t%t0,%s0";
 	      info->cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
