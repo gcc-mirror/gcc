@@ -1648,11 +1648,18 @@ stmt:
 	| expr ';'
 		{ stmt_count++;
 		  emit_line_note ($<filename>-1, $<lineno>0);
+/* It appears that this should not be done--that a non-lvalue array
+   shouldn't get an error if the value isn't used.
+   Section 3.2.2.1 says that an array lvalue gets converted to a pointer
+   if it appears as a top-level expression,
+   but says nothing about non-lvalue arrays.  */
+#if 0
 		  /* Call default_conversion to get an error
 		     on referring to a register array if pedantic.  */
 		  if (TREE_CODE (TREE_TYPE ($1)) == ARRAY_TYPE
 		      || TREE_CODE (TREE_TYPE ($1)) == FUNCTION_TYPE)
 		    $1 = default_conversion ($1);
+#endif
 		  iterator_expand ($1);
 		  clear_momentary (); }
 	| simple_if ELSE
