@@ -179,13 +179,26 @@ __premain:
 ;;
 ;; Exit operation.  Just loop forever and wait for interrupts.
 ;; (no other place to go)
+;; This operation is split in several pieces collected together by
+;; the linker script.  This allows to support destructors at the
+;; exit stage while not impacting program sizes when there is no
+;; destructors.
 ;;
-	.sect .text
-	.globl _exit	
+;; _exit:
+;;    *(.fini0)		/* Beginning of finish code (_exit symbol).  */
+;;    *(.fini1)		/* Place holder for applications.  */
+;;    *(.fini2)		/* C++ destructors.  */
+;;    *(.fini3)		/* Place holder for applications.  */
+;;    *(.fini4)		/* Runtime exit.  */
+;;
+	.sect .fini0,"ax",@progbits
+	.globl _exit
 	.globl exit
 	.weak  exit
 exit:
 _exit:
+
+	.sect .fini4,"ax",@progbits
 fatal:
 	cli
 	wai
@@ -1035,7 +1048,7 @@ A_low_B_low:
 
 #ifdef L_map_data
 
-	.sect	.install3,"ax",@progbits
+	.sect	.install2,"ax",@progbits
 	.globl	__map_data_section
 
 __map_data_section:
@@ -1063,7 +1076,7 @@ Done:
 
 #ifdef L_init_bss
 
-	.sect	.install3,"ax",@progbits
+	.sect	.install2,"ax",@progbits
 	.globl	__init_bss_section
 
 __init_bss_section:
@@ -1083,7 +1096,58 @@ Loop:
 Done:
 
 #endif
-	
+
+#ifdef L_ctor
+
+; End of constructor table
+	.sect	.install3,"ax",@progbits
+	.globl	__do_global_ctors
+
+__do_global_ctors:
+	; Start from the end - sizeof(void*)
+	ldx	#__CTOR_END__-2
+ctors_loop:
+	cpx	#__CTOR_LIST__
+	blt	ctors_done
+	pshx
+	ldx	0,x
+	jsr	0,x
+	pulx
+	dex
+	dex
+	bra	ctors_loop
+ctors_done:
+
+#endif
+
+#ifdef L_dtor
+
+	.sect	.fini3,"ax",@progbits
+	.globl	__do_global_dtors
+
+;;
+;; This piece of code is inserted in the _exit() code by the linker.
+;;
+__do_global_dtors:
+	pshb	; Save exit code
+	psha
+	ldx	#__DTOR_LIST__
+dtors_loop:
+	cpx	#__DTOR_END__
+	bge	dtors_done
+	pshx
+	ldx	0,x
+	jsr	0,x
+	pulx
+	inx
+	inx
+	bra	dtors_loop
+dtors_done:
+	pula	; Restore exit code
+	pulb
+
+#endif
+
 ;-----------------------------------------
 ; end required gcclib code
 ;-----------------------------------------

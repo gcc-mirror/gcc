@@ -1,3 +1,18 @@
+2001-08-03  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/t-m68hc11-gas (T_CPPFLAGS): Add _ctor and _dtor.
+	* config/m68hc11/larith.asm (_exit): Split in several sub-sections
+	merged by linker script to get a final _exit().
+	(__do_global_dtors): New for destructor handling in specific exit
+	section.
+	(__do_global_ctors): New for constructors in specific install section.
+	(__map_data_section): Map data sections before running constructors.
+	* config/m68hc11/m68hc11.h (INT_ASM_OP): Define to use .word.
+	(CTORS_SECTION_ASM_OP): Define to put in readonly section.
+	(DTORS_SECTION_ASM_OP): Likewise.
+	(CTORS_SECTION_FUNCTION): Define to force a reference to
+	__do_global_ctors.
+	(DTORS_SECTION_FUNCTION): Likewise for __do_global_dtors.
 
 2001-08-03  Ulrich Weigand  <uweigand@de.ibm.com>
  
