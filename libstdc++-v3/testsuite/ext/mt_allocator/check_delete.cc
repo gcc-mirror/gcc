@@ -21,11 +21,11 @@
 // 20.4.1.1 allocator members
 
 #include <cstdlib>
-#include <ext/new_allocator.h>
+#include <ext/mt_allocator.h>
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
 
-using __gnu_cxx::new_allocator;
+using __gnu_cxx::__mt_alloc;
 
 void* 
 operator new(std::size_t n) throw(std::bad_alloc)
@@ -35,18 +35,17 @@ operator new(std::size_t n) throw(std::bad_alloc)
 }
 
 void
-operator delete(void *v) throw()
+operator delete(void* v) throw()
 {
   delete_called = true;
   return std::free(v);
 }
 
-// These just help tracking down error messages.
 void test01() 
 { 
   bool test __attribute__((unused)) = true;
-  typedef new_allocator<unsigned int> allocator_type;
-  VERIFY( bool(__gnu_test::check_new<allocator_type, true>()) ); 
+  typedef __mt_alloc<unsigned int> allocator_type;
+  VERIFY( bool(__gnu_test::check_delete<allocator_type, false>()) ); 
 }
 
 int main()
@@ -54,4 +53,3 @@ int main()
   test01();
   return 0;
 }
-

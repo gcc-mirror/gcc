@@ -40,9 +40,8 @@
 
 namespace 
 {
-  bool         new_called = false;
-  bool         delete_called = false;
-  std::size_t  requested = 0;
+  bool new_called = false;
+  bool delete_called = false;
 };
 
 namespace __gnu_test
@@ -180,19 +179,24 @@ namespace __gnu_test
   bool
   check_construct_destroy(const char* tag, int expected_c, int expected_d);
 
-  template<typename Alloc, bool uses_global_new_and_delete>
+  template<typename Alloc, bool uses_global_new>
     bool 
     check_new(Alloc a = Alloc())
     {
       bool test __attribute__((unused)) = true;
       typename Alloc::pointer p = a.allocate(10);
-      if (uses_global_new_and_delete)  
-	test &= ( requested >= (10 * 15 * sizeof(long)) );
-      
-      test &= ( new_called == uses_global_new_and_delete );
+      test &= ( new_called == uses_global_new );
+      return test;
+    }
+
+  template<typename Alloc, bool uses_global_delete>
+    bool 
+    check_delete(Alloc a = Alloc())
+    {
+      bool test __attribute__((unused)) = true;
+      typename Alloc::pointer p = a.allocate(10);
       a.deallocate(p, 10);
-      test &= ( delete_called == uses_global_new_and_delete );
-      
+      test &= ( delete_called == uses_global_delete );
       return test;
     }
 

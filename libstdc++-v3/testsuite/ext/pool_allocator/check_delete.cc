@@ -21,11 +21,11 @@
 // 20.4.1.1 allocator members
 
 #include <cstdlib>
-#include <ext/new_allocator.h>
+#include <ext/pool_allocator.h>
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
 
-using __gnu_cxx::new_allocator;
+using __gnu_cxx::__pool_alloc;
 
 void* 
 operator new(std::size_t n) throw(std::bad_alloc)
@@ -41,12 +41,12 @@ operator delete(void *v) throw()
   return std::free(v);
 }
 
-// These just help tracking down error messages.
 void test01() 
 { 
+  // Uses new, but delete only sometimes.
   bool test __attribute__((unused)) = true;
-  typedef new_allocator<unsigned int> allocator_type;
-  VERIFY( bool(__gnu_test::check_new<allocator_type, true>()) ); 
+  typedef __pool_alloc<unsigned int> allocator_type;
+  VERIFY( bool(__gnu_test::check_delete<allocator_type, false>()) ); 
 }
 
 int main()
