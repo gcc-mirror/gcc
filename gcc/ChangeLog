@@ -1,3 +1,12 @@
+2002-06-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* genautomata.c (copy_node, VLA_PTR_CREATE, VLA_PTR_EXPAND,
+	VLA_PTR_ADD, VLA_HWINT_CREATE, VLA_HWINT_EXPAND, VLA_HWINT_ADD,
+	DECL_UNIT, DECL_BYPASS, DECL_AUTOMATON, DECL_EXCL, DECL_PRESENCE,
+	DECL_ABSENCE, DECL_RESERV, DECL_INSN_RESERV, REGEXP_UNIT,
+	REGEXP_RESERV, REGEXP_SEQUENCE, REGEXP_REPEAT, REGEXP_ALLOF,
+	REGEXP_ONEOF, check_name): Const-ify.
+
 2002-06-21  Matt Thomas  <matt@3am-software.com>
 
 	* config/vax/vax.c (vax_output_function_prologue): Use
