@@ -1412,29 +1412,39 @@ namespace std
   template<typename _BidirectionalIterator>
     void
     __reverse(_BidirectionalIterator __first, _BidirectionalIterator __last,
-			  bidirectional_iterator_tag)
+	      bidirectional_iterator_tag)
     {
       while (true)
 	if (__first == __last || __first == --__last)
 	  return;
 	else
-	  std::iter_swap(__first++, __last);
+	  {
+	    std::iter_swap(__first, __last);
+	    ++__first;
+	  }
     }
 
   /**
    *  @if maint
    *  This is an uglified reverse(_BidirectionalIterator,
    *                              _BidirectionalIterator)
-   *  overloaded for bidirectional iterators.
+   *  overloaded for random access iterators.
    *  @endif
   */
   template<typename _RandomAccessIterator>
     void
     __reverse(_RandomAccessIterator __first, _RandomAccessIterator __last,
-			  random_access_iterator_tag)
+	      random_access_iterator_tag)
     {
+      if (__first == __last)
+	return;
+      --__last;
       while (__first < __last)
-	std::iter_swap(__first++, --__last);
+	{
+	  std::iter_swap(__first, __last);
+	  ++__first;
+	  --__last;
+	}
     }
 
   /**
@@ -1454,7 +1464,7 @@ namespace std
     {
       // concept requirements
       __glibcxx_function_requires(_Mutable_BidirectionalIteratorConcept<
-		    _BidirectionalIterator>)
+				  _BidirectionalIterator>)
       __glibcxx_requires_valid_range(__first, __last);
       std::__reverse(__first, __last, std::__iterator_category(__first));
     }
@@ -1525,15 +1535,17 @@ namespace std
     __rotate(_ForwardIterator __first,
 	     _ForwardIterator __middle,
 	     _ForwardIterator __last,
-	      forward_iterator_tag)
+	     forward_iterator_tag)
     {
-      if ((__first == __middle) || (__last  == __middle))
+      if (__first == __middle || __last  == __middle)
 	return;
 
       _ForwardIterator __first2 = __middle;
       do
 	{
-	  swap(*__first++, *__first2++);
+	  swap(*__first, *__first2);
+	  ++__first;
+	  ++__first2;
 	  if (__first == __middle)
 	    __middle = __first2;
 	}
@@ -1543,7 +1555,9 @@ namespace std
 
       while (__first2 != __last)
 	{
-	  swap(*__first++, *__first2++);
+	  swap(*__first, *__first2);
+	  ++__first;
+	  ++__first2;
 	  if (__first == __middle)
 	    __middle = __first2;
 	  else if (__first2 == __last)
@@ -1565,16 +1579,19 @@ namespace std
     {
       // concept requirements
       __glibcxx_function_requires(_Mutable_BidirectionalIteratorConcept<
-	    _BidirectionalIterator>)
+				  _BidirectionalIterator>)
 
-      if ((__first == __middle) || (__last  == __middle))
+      if (__first == __middle || __last  == __middle)
 	return;
 
       std::__reverse(__first,  __middle, bidirectional_iterator_tag());
       std::__reverse(__middle, __last,   bidirectional_iterator_tag());
 
       while (__first != __middle && __middle != __last)
-	swap(*__first++, *--__last);
+	{
+	  swap(*__first, *--__last);
+	  ++__first;
+	}
 
       if (__first == __middle)
 	std::__reverse(__middle, __last,   bidirectional_iterator_tag());
@@ -1596,9 +1613,9 @@ namespace std
     {
       // concept requirements
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
-	    _RandomAccessIterator>)
+				  _RandomAccessIterator>)
 
-      if ((__first == __middle) || (__last  == __middle))
+      if (__first == __middle || __last  == __middle)
 	return;
 
       typedef typename iterator_traits<_RandomAccessIterator>::difference_type

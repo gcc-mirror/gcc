@@ -1,3 +1,28 @@
+2004-10-06  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/std_sstream.h (_M_sync): When the caller is
+	setbuf, don't trust _M_string.capacity() to be the size of
+	the buffer area, use _M_string.size() in this case.
+	* testsuite/27_io/basic_stringbuf/setbuf/char/4.cc: New.
+	* testsuite/27_io/basic_stringbuf/setbuf/wchar_t/4.cc: Likewise.
+
+	* include/bits/sstream.tcc (overflow): Avoid calling string::assign
+	unnecessarily when the current _M_string is empty.
+
+2004-10-06  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algo.h (__reverse(bidirectional_iterator_tag)):
+	Avoid iterator postincrement.
+	(__rotate): Likewise.
+
+	* include/bits/stl_algo.h: Minor formatting tweaks.
+
+2004-10-06  Christopher Jefferson <caj@cs.york.ac.uk>
+
+	* include/bits/stl_algo.h (__reverse(random_access_iterator_tag)):
+	Avoid iterator postincrement; fix swapping middle element with
+	itself on odd-length inputs.
+
 2004-10-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/17780

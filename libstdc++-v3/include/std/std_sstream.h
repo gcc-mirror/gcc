@@ -259,7 +259,13 @@ namespace std
 	  this->setg(__base, __base + __i, __end);
 	if (__testout)
 	  {
-	    this->setp(__base, __base + _M_string.capacity());
+	    // If __base comes from setbuf we cannot trust capacity()
+	    // to match the size of the buffer area: in general, after
+	    // Step 1 above, _M_string.capacity() >= __n.
+	    if (__base == _M_string.data())
+	      this->setp(__base, __base + _M_string.capacity());
+	    else
+	      this->setp(__base, __end);
 	    this->pbump(__o);
 	    // egptr() always tracks the string end. When !__testin,
 	    // for the correct functioning of the streambuf inlines
