@@ -24,6 +24,7 @@ load_lib gcc-dg.exp
 
 set comp_output [gcc_target_compile \
 		"$srcdir/$subdir/trivial.c" "trivial.S" assembly ""]
+remove-build-file "trivial.S"
 if { [string match "*not supported*" $comp_output] } {
   return 0
 }
