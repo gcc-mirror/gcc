@@ -1119,7 +1119,7 @@ valid_dbcc_comparison_p (x, mode)
     }
 }
 
-/* Return non-zero if flags are currently in the 68881 flag register.  */
+/* Return nonzero if flags are currently in the 68881 flag register.  */
 int
 flags_in_68881 ()
 {
@@ -3115,7 +3115,7 @@ print_operand (file, op, letter)
    macro.  See m68k/sgs.h for an example; for versions without the bug.
    Some assemblers refuse all the above solutions.  The workaround is to
    emit "K(pc,d0.l*2)" with K being a small constant known to give the
-   right behaviour.
+   right behavior.
 
    They also do not like things like "pea 1.w", so we simple leave off
    the .w on small constants. 

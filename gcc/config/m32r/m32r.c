@@ -1029,7 +1029,7 @@ extend_operand (op, mode)
     }
 }
 
-/* Return non-zero if the operand is an insn that is a small insn.
+/* Return nonzero if the operand is an insn that is a small insn.
    Allow const_int 0 as well, which is a placeholder for NOP slots.  */
 
 int
@@ -1046,7 +1046,7 @@ small_insn_p (op, mode)
   return get_attr_length (op) == 2;
 }
 
-/* Return non-zero if the operand is an insn that is a large insn.  */
+/* Return nonzero if the operand is an insn that is a large insn.  */
 
 int
 large_insn_p (op, mode)
@@ -2181,7 +2181,7 @@ m32r_output_function_epilogue (file, size)
   m32r_compute_function_type (NULL_TREE);
 }
 
-/* Return non-zero if this function is known to have a null or 1 instruction
+/* Return nonzero if this function is known to have a null or 1 instruction
    epilogue.  */
 
 int
@@ -2590,7 +2590,7 @@ zero_and_one (operand1, operand2)
 	||((INTVAL (operand1) == 1) && (INTVAL (operand2) == 0)));
 }
 
-/* Return non-zero if the operand is suitable for use in a conditional move sequence.  */
+/* Return nonzero if the operand is suitable for use in a conditional move sequence.  */
 int
 conditional_move_operand (operand, mode)
      rtx operand;
@@ -2862,7 +2862,7 @@ m32r_output_block_move (insn, operands)
      stores are done without any increment, then the remaining ones can use
      the pre-increment addressing mode.
      
-     Note: expand_block_move() also relies upon this behaviour when building
+     Note: expand_block_move() also relies upon this behavior when building
      loops to copy large blocks.  */
   first_time = 1;
   

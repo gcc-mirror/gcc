@@ -286,7 +286,7 @@ do {						\
     }									\
   while (0)
 
-/* Return non-zero if this entry is to be written into the constant
+/* Return nonzero if this entry is to be written into the constant
    pool in a special way.  We do so if this is a SYMBOL_REF, LABEL_REF
    or a CONST containing one of them.  If -mfp-in-toc (the default),
    we also do this for floating-point constants.  We actually can only

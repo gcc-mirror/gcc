@@ -651,7 +651,7 @@ extern int rs6000_default_long_calls;
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
-/* Non-zero if move instructions will actually fail to work
+/* Nonzero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 0
 
@@ -1226,8 +1226,8 @@ enum reg_class
    Return 1 if VALUE is in the range specified by C.
 
    `I' is a signed 16-bit constant
-   `J' is a constant with only the high-order 16 bits non-zero
-   `K' is a constant with only the low-order 16 bits non-zero
+   `J' is a constant with only the high-order 16 bits nonzero
+   `K' is a constant with only the low-order 16 bits nonzero
    `L' is a signed 16-bit constant shifted left 16 bits
    `M' is a constant that is greater than 31
    `N' is a positive constant that is an exact power of two
@@ -1694,13 +1694,13 @@ typedef struct rs6000_args
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
   function_arg_advance (&CUM, MODE, TYPE, NAMED)
 
-/* Non-zero if we can use a floating-point register to pass this arg.  */
+/* Nonzero if we can use a floating-point register to pass this arg.  */
 #define USE_FP_FOR_ARG_P(CUM,MODE,TYPE) \
   (GET_MODE_CLASS (MODE) == MODE_FLOAT  \
    && (CUM).fregno <= FP_ARG_MAX_REG    \
    && TARGET_HARD_FLOAT && TARGET_FPRS)
 
-/* Non-zero if we can use an AltiVec register to pass this arg.  */
+/* Nonzero if we can use an AltiVec register to pass this arg.  */
 #define USE_ALTIVEC_FOR_ARG_P(CUM,MODE,TYPE)	\
   (ALTIVEC_VECTOR_MODE (MODE)			\
    && (CUM).vregno <= ALTIVEC_ARG_MAX_REG	\
@@ -1817,7 +1817,7 @@ typedef struct rs6000_args
    the stack pointer does not matter. No definition is equivalent to
    always zero.
 
-   On the RS/6000, this is non-zero because we can restore the stack from
+   On the RS/6000, this is nonzero because we can restore the stack from
    its backpointer, which we maintain.  */
 #define EXIT_IGNORE_STACK	1
 
@@ -2261,7 +2261,7 @@ do {									     \
 #define MAX_MOVE_MAX 8
 
 /* Nonzero if access to memory by bytes is no faster than for words.
-   Also non-zero if doing byte operations (specifically shifts) in registers
+   Also nonzero if doing byte operations (specifically shifts) in registers
    is undesirable.  */
 #define SLOW_BYTE_ACCESS 1
 

@@ -1985,7 +1985,7 @@ mmix_get_hard_reg_initial_val (mode, regno)
   return get_hard_reg_initial_val (mode, regno);
 }
 
-/* Non-zero when the function epilogue is simple enough that a single
+/* Nonzero when the function epilogue is simple enough that a single
    "POP %d,0" should be used even within the function.  */
 
 int

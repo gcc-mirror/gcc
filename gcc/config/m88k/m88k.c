@@ -1906,7 +1906,7 @@ m88k_layout_frame ()
   m88k_stack_size = m88k_fp_offset + STARTING_FRAME_OFFSET;
 
   /* First, combine m88k_stack_size and size.  If m88k_stack_size is
-     non-zero, align the frame size to 8 mod 16; otherwise align the
+     nonzero, align the frame size to 8 mod 16; otherwise align the
      frame size to 0 mod 16.  (If stacks are 8 byte aligned, this ends
      up as a NOP.  */
   {

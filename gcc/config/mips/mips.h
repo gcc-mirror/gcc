@@ -2299,7 +2299,7 @@ extern enum reg_class mips_char_to_class[256];
 
 /* Certain machines have the property that some registers cannot be
    copied to some other registers without using memory.  Define this
-   macro on those machines to be a C expression that is non-zero if
+   macro on those machines to be a C expression that is nonzero if
    objects of mode MODE in registers of CLASS1 can only be copied to
    registers of class CLASS2 by storing a register of CLASS1 into
    memory and loading that memory location into a register of CLASS2.
@@ -2471,7 +2471,7 @@ extern enum reg_class mips_char_to_class[256];
  { FRAME_POINTER_REGNUM, GP_REG_FIRST + 30},				\
  { FRAME_POINTER_REGNUM, GP_REG_FIRST + 17}}
 
-/* A C expression that returns non-zero if the compiler is allowed to
+/* A C expression that returns nonzero if the compiler is allowed to
    try to replace register number FROM-REG with register number
    TO-REG.  This macro need only be defined if `ELIMINABLE_REGS' is
    defined, and will usually be the constant 1, since most of the

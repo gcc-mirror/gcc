@@ -551,7 +551,7 @@ fini_section ()								\
 #define	TARGET_ASM_SELECT_SECTION  rs6000_elf_select_section
 #define TARGET_ASM_UNIQUE_SECTION  rs6000_elf_unique_section
 
-/* Return non-zero if this entry is to be written into the constant pool
+/* Return nonzero if this entry is to be written into the constant pool
    in a special way.  We do so if this is a SYMBOL_REF, LABEL_REF or a CONST
    containing one of them.  If -mfp-in-toc (the default), we also do
    this for floating-point constants.  We actually can only do this
@@ -1401,7 +1401,7 @@ ncrtn.o%s"
    pack(pop)'.  The pack(push,<n>) pragma specifies the maximum
    alignment (in bytes) of fields within a structure, in much the
    same way as the __aligned__' and __packed__' __attribute__'s
-   do.  A pack value of zero resets the behaviour to the default.
+   do.  A pack value of zero resets the behavior to the default.
    Successive invocations of this pragma cause the previous values to
    be stacked, so that invocations of #pragma pack(pop)' will return
    to the previous value.  */

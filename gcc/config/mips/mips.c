@@ -216,7 +216,7 @@ struct mips_arg_info
   unsigned int stack_words;
 
   /* The offset from the start of the stack overflow area of the argument's
-     first stack word.  Only meaningful when STACK_WORDS is non-zero.  */
+     first stack word.  Only meaningful when STACK_WORDS is nonzero.  */
   unsigned int stack_offset;
 };
 
@@ -238,7 +238,7 @@ int sdb_label_count = 0;
 /* Next label # for each statement for Silicon Graphics IRIS systems.  */
 int sym_lineno = 0;
 
-/* Non-zero if inside of a function, because the stupid MIPS asm can't
+/* Nonzero if inside of a function, because the stupid MIPS asm can't
    handle .files inside of functions.  */
 int inside_function = 0;
 
@@ -1455,7 +1455,7 @@ mips_reg_mode_ok_for_base_p (reg, mode, strict)
 
 /* This function is used to implement GO_IF_LEGITIMATE_ADDRESS.  It
    returns a nonzero value if XINSN is a legitimate address for a
-   memory operand of the indicated MODE.  STRICT is non-zero if this
+   memory operand of the indicated MODE.  STRICT is nonzero if this
    function is called during reload.  */
 
 int
@@ -3103,7 +3103,7 @@ map_test_to_internal_test (test_code)
    ??? This is called with result nonzero by the Scond patterns in
    mips.md.  These patterns are called with a target in the mode of
    the Scond instruction pattern.  Since this must be a constant, we
-   must use SImode.  This means that if RESULT is non-zero, it will
+   must use SImode.  This means that if RESULT is nonzero, it will
    always be an SImode register, even if TARGET_64BIT is true.  We
    cope with this by calling convert_move rather than emit_move_insn.
    This will sometimes lead to an unnecessary extension of the result;
@@ -3345,7 +3345,7 @@ gen_conditional_branch (operands, test_code)
 	  test_code = NE;
 	}
       else if (GET_CODE (cmp1) == CONST_INT && INTVAL (cmp1) != 0)
-	/* We don't want to build a comparison against a non-zero
+	/* We don't want to build a comparison against a nonzero
 	   constant.  */
 	cmp1 = force_reg (mode, cmp1);
 
@@ -6013,7 +6013,7 @@ mips_assemble_integer (x, size, aligned_p)
 
    If we have -G 0, or the extern size is unknown, or the object is in a user
    specified section that is not .sbss/.sdata, don't bother emitting the
-   .externs.  In the case of user specified sections this behaviour is
+   .externs.  In the case of user specified sections this behavior is
    required as otherwise GAS will think the object lives in .sbss/.sdata.  */
 
 int
@@ -7889,7 +7889,7 @@ mips_can_use_return_insn ()
   return compute_frame_size (get_frame_size ()) == 0;
 }
 
-/* Returns non-zero if X contains a SYMBOL_REF.  */
+/* Returns nonzero if X contains a SYMBOL_REF.  */
 
 static int
 symbolic_expression_p (x)
@@ -8722,7 +8722,7 @@ mips16_constant (x, mode, addr, addend)
 /* Write out code to move floating point arguments in or out of
    general registers.  Output the instructions to FILE.  FP_CODE is
    the code describing which arguments are present (see the comment at
-   the definition of CUMULATIVE_ARGS in mips.h).  FROM_FP_P is non-zero if
+   the definition of CUMULATIVE_ARGS in mips.h).  FROM_FP_P is nonzero if
    we are copying from the floating point registers.  */
 
 static void
@@ -9919,11 +9919,11 @@ mips_adjust_insn_length (insn, length)
    INSN is the branch instruction.  OPERANDS[0] is the condition.
    OPERANDS[1] is the target of the branch.  OPERANDS[2] is the target
    of the first operand to the condition.  If TWO_OPERANDS_P is
-   non-zero the comparison takes two operands; OPERANDS[3] will be the
+   nonzero the comparison takes two operands; OPERANDS[3] will be the
    second operand.
 
-   If INVERTED_P is non-zero we are to branch if the condition does
-   not hold.  If FLOAT_P is non-zero this is a floating-point comparison.
+   If INVERTED_P is nonzero we are to branch if the condition does
+   not hold.  If FLOAT_P is nonzero this is a floating-point comparison.
 
    LENGTH is the length (in bytes) of the sequence we are to generate.
    That tells us whether to generate a simple conditional branch, or a
@@ -9945,7 +9945,7 @@ mips_output_conditional_branch (insn,
   static char buffer[200];
   /* The kind of comparison we are doing.  */
   enum rtx_code code = GET_CODE (operands[0]);
-  /* Non-zero if the opcode for the comparison needs a `z' indicating
+  /* Nonzero if the opcode for the comparison needs a `z' indicating
      that it is a comparision against zero.  */
   int need_z_p;
   /* A string to use in the assembly output to represent the first
@@ -9972,7 +9972,7 @@ mips_output_conditional_branch (insn,
 	 subtract B from A and then look at the sign bit.  But, if we
 	 are doing an unsigned comparison, and B is zero, we don't
 	 have to do the subtraction.  Instead, we can just check to
-	 see if A is non-zero.  Thus, we change the CODE here to
+	 see if A is nonzero.  Thus, we change the CODE here to
 	 reflect the simpler comparison operation.  */
       switch (code)
 	{

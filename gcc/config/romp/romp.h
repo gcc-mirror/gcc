@@ -1085,7 +1085,7 @@ struct rt_cargs {int gregs, fregs; };
 #define MOVE_MAX 4
 
 /* Nonzero if access to memory by bytes is no faster than for words.
-   Also non-zero if doing byte operations (specifically shifts) in registers
+   Also nonzero if doing byte operations (specifically shifts) in registers
    is undesirable.  */
 #define SLOW_BYTE_ACCESS 1
 
