@@ -192,10 +192,12 @@ floatformat_to_double (fmt, from, to)
      increment the exponent by one to account for the integer bit.  */
 
   if (!special_exponent)
-    if (fmt->intbit == floatformat_intbit_no)
-      dto = ldexp (1.0, exponent);
-    else
-      exponent++;
+    {
+      if (fmt->intbit == floatformat_intbit_no)
+	dto = ldexp (1.0, exponent);
+      else
+	exponent++;
+    }
 
   while (mant_bits_left > 0)
     {

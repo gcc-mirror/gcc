@@ -34,6 +34,7 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* For systems with larger pointers than ints, this must be declared.  */
 extern PTR malloc PARAMS ((size_t));
+extern void free PARAMS ((PTR));
 #endif
 
 /* These routines allocate space for an object.  Freeing allocated

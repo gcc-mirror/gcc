@@ -71,7 +71,7 @@ fnmatch (pattern, string, flags)
      int flags;
 {
   register const char *p = pattern, *n = string;
-  register char c;
+  register unsigned char c;
 
 /* Note that this evalutes C many times.  */
 #define FOLD(c)	((flags & FNM_CASEFOLD) && isupper (c) ? tolower (c) : (c))
@@ -98,7 +98,7 @@ fnmatch (pattern, string, flags)
 	      c = *p++;
 	      c = FOLD (c);
 	    }
-	  if (FOLD (*n) != c)
+	  if (FOLD ((unsigned char)*n) != c)
 	    return FNM_NOMATCH;
 	  break;
 
@@ -116,10 +116,10 @@ fnmatch (pattern, string, flags)
 	    return 0;
 
 	  {
-	    char c1 = (!(flags & FNM_NOESCAPE) && c == '\\') ? *p : c;
+	    unsigned char c1 = (!(flags & FNM_NOESCAPE) && c == '\\') ? *p : c;
 	    c1 = FOLD (c1);
 	    for (--p; *n != '\0'; ++n)
-	      if ((c == '[' || FOLD (*n) == c1) &&
+	      if ((c == '[' || FOLD ((unsigned char)*n) == c1) &&
 		  fnmatch (p, n, flags & ~FNM_PERIOD) == 0)
 		return 0;
 	    return FNM_NOMATCH;
@@ -144,7 +144,7 @@ fnmatch (pattern, string, flags)
 	    c = *p++;
 	    for (;;)
 	      {
-		register char cstart = c, cend = c;
+		register unsigned char cstart = c, cend = c;
 
 		if (!(flags & FNM_NOESCAPE) && c == '\\')
 		  cstart = cend = *p++;
@@ -174,7 +174,8 @@ fnmatch (pattern, string, flags)
 		    c = *p++;
 		  }
 
-		if (FOLD (*n) >= cstart && FOLD (*n) <= cend)
+		if (FOLD ((unsigned char)*n) >= cstart
+		    && FOLD ((unsigned char)*n) <= cend)
 		  goto matched;
 
 		if (c == ']')
@@ -203,7 +204,7 @@ fnmatch (pattern, string, flags)
 	  break;
 
 	default:
-	  if (c != FOLD (*n))
+	  if (c != FOLD ((unsigned char)*n))
 	    return FNM_NOMATCH;
 	}
 
