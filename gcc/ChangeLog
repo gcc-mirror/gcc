@@ -1,3 +1,8 @@
+Sun Oct 26 13:31:47 1997  Jim Wilson  (wilson@cygnus.com)
+
+	* expr.c (expand_expr, case INDIRECT_REF): Optimize a reference
+	to an element in a constant string.
+
 Sun Oct 26 11:41:49 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* dwarf2out.c (output_call_frame_info): The CIE pointer is now a 32

@@ -5406,6 +5406,18 @@ expand_expr (exp, target, tmode, modifier)
       {
 	tree exp1 = TREE_OPERAND (exp, 0);
 	tree exp2;
+	tree index;
+ 	tree string = string_constant (exp1, &index);
+ 	int i;
+ 
+ 	if (string
+ 	    && TREE_CODE (string) == STRING_CST
+ 	    && TREE_CODE (index) == INTEGER_CST
+ 	    && !TREE_INT_CST_HIGH (index)
+ 	    && (i = TREE_INT_CST_LOW (index)) < TREE_STRING_LENGTH (string)
+ 	    && GET_MODE_CLASS (mode) == MODE_INT
+ 	    && GET_MODE_SIZE (mode) == 1)
+ 	  return GEN_INT (TREE_STRING_POINTER (string)[i]);
 
 	op0 = expand_expr (exp1, NULL_RTX, VOIDmode, EXPAND_SUM);
 	op0 = memory_address (mode, op0);
