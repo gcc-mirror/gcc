@@ -1,3 +1,18 @@
+2000-04-25  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.h (struct cpp_buffer): Add 'mapped' flag; fix
+	commentary. 
+
+2000-04-25  Neil Booth  <NeilB@earthling.net>
+
+	Restore previous patch, plus the following fixes:
+
+	* cpphash.c (_cpp_create_definition): Test PREV_WHITESPACE in
+	flags, not CPP_OPEN_PAREN.
+	* cpplex.c (expand_token_space, init_token_list,
+	cpp_free_token_list): Put the dummy token at list->tokens[-1].
+	(_cpp_lex_line, _cpp_lex_file): token list is 0-based.
+
 Tue Apr 25 14:06:40 2000  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* config/i386/freebsd.h (INT_ASM_OP): Define.
