@@ -1,5 +1,11 @@
 2003-06-15  Neil Booth  <neil@daikokuya.co.uk>
 
+	* config/frv/frv.h: Remove declaration of g_switch_value.
+	* config/m32r/m32r.h: Remove declaration of g_switch_value.
+	* config/m68hc11/m68hc11.c: Remove declaration of asm_file_name.
+
+2003-06-15  Neil Booth  <neil@daikokuya.co.uk>
+
 	* opts.sh: Quote '+' in regex.
 
 2003-06-15  Andrew Pinski <pinskia@physics.uc.edu>

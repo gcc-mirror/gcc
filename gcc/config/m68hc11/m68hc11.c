@@ -5666,8 +5666,6 @@ m68hc11_rtx_costs (x, code, outer_code, total)
 /* print_options - called at the start of the code generation for a
    module.  */
 
-extern char *asm_file_name;
-
 #include <time.h>
 #include <sys/types.h>
 

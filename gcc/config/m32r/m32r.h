@@ -1687,8 +1687,6 @@ extern char m32r_punct_chars[256];
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
   do									\
     {									\
-      extern unsigned HOST_WIDE_INT g_switch_value;			\
-									\
       if (! TARGET_SDATA_NONE						\
 	  && (SIZE) > 0 && (SIZE) <= g_switch_value)			\
 	fprintf ((FILE), "%s", SCOMMON_ASM_OP);				\
