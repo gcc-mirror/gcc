@@ -1,5 +1,10 @@
 2001-04-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* lex.c (ffelex_hash_): Avoid eating one whole line after
+	#line.
+
+2001-04-02  Jakub Jelinek  <jakub@redhat.com>
+
 	* ifcvt.c (noce_emit_move_insn): New.
 	(noce_try_store_flag, noce_try_store_flag_constants,
 	noce_try_store_flag_inc, noce_try_store_flag_mask,

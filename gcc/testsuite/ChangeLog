@@ -1,5 +1,9 @@
 2001-04-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* g77.f-torture/compile/20010321-1.f: New test.
+
+2001-04-02  Jakub Jelinek  <jakub@redhat.com>
+
 	* gcc.c-torture/compile/20010329-1.c: New test.
 
 2001-04-02  Jakub Jelinek  <jakub@redhat.com>
