@@ -44,14 +44,14 @@ namespace std
 {
   template<typename _CharT, typename _Traits>
     basic_istream<_CharT, _Traits>::sentry::
-    sentry(basic_istream<_CharT, _Traits>& __in, bool __noskipws)
+    sentry(basic_istream<_CharT, _Traits>& __in, bool __noskip) : _M_ok(false)
     {
       ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
       if (__in.good())
 	{
 	  if (__in.tie())
 	    __in.tie()->flush();
-	  if (!__noskipws && (__in.flags() & ios_base::skipws))
+	  if (!__noskip && (__in.flags() & ios_base::skipws))
 	    {
 	      const __int_type __eof = traits_type::eof();
 	      __streambuf_type* __sb = __in.rdbuf();
@@ -59,7 +59,7 @@ namespace std
 
 	      const __ctype_type& __ct = __check_facet(__in._M_ctype);
 	      while (!traits_type::eq_int_type(__c, __eof)
-		     && __ct.is(ctype_base::space,
+		     && __ct.is(ctype_base::space, 
 				traits_type::to_char_type(__c)))
 		__c = __sb->snextc();
 
@@ -75,7 +75,6 @@ namespace std
 	_M_ok = true;
       else
 	{
-	  _M_ok = false;
 	  __err |= ios_base::failbit;
 	  __in.setstate(__err);
 	}

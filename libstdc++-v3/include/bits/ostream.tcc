@@ -44,7 +44,7 @@ namespace std
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>::sentry::
     sentry(basic_ostream<_CharT, _Traits>& __os)
-    : _M_os(__os)
+    : _M_ok(false), _M_os(__os)
     {
       // XXX MT
       if (__os.tie() && __os.good())
@@ -53,10 +53,7 @@ namespace std
       if (__os.good())
 	_M_ok = true;
       else
-	{
-	  _M_ok = false;
-	  __os.setstate(ios_base::failbit);
-	}
+	__os.setstate(ios_base::failbit);
     }
 
   template<typename _CharT, typename _Traits>
