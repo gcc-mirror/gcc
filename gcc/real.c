@@ -399,11 +399,15 @@ static void asctoe113	PROTO((char *, unsigned EMUSHORT *));
 static void asctoe	PROTO((char *, unsigned EMUSHORT *));
 static void asctoeg	PROTO((char *, unsigned EMUSHORT *, int));
 static void efloor	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
+#if 0
 static void efrexp	PROTO((unsigned EMUSHORT *, int *,
 			       unsigned EMUSHORT *));
+#endif
 static void eldexp	PROTO((unsigned EMUSHORT *, int, unsigned EMUSHORT *));
+#if 0
 static void eremain	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *,
 			       unsigned EMUSHORT *));
+#endif
 static void eiremain	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void mtherr	PROTO((char *, int));
 #ifdef DEC
@@ -420,11 +424,13 @@ static void toibm	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *,
 			       enum machine_mode));
 #endif
 static void make_nan	PROTO((unsigned EMUSHORT *, int, enum machine_mode));
+#if 0
 static void uditoe	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void ditoe	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void etoudi	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void etodi	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void esqrt	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
+#endif
 
 /* Copy 32-bit numbers obtained from array containing 16-bit numbers,
    swapping ends if required, into output array of longs.  The
@@ -5308,6 +5314,7 @@ efloor (x, y)
 }
 
 
+#if 0
 /* Return S and EXP such that  S * 2^EXP = X and .5 <= S < 1.
    For example, 1.1 = 0.55 * 2^1.  */
 
@@ -5332,6 +5339,7 @@ efrexp (x, exp, s)
   emovo (xi, s);
   *exp = (int) (li - 0x3ffe);
 }
+#endif
 
 /* Return e type Y = X * 2^PWR2.  */
 
@@ -5354,6 +5362,7 @@ eldexp (x, pwr2, y)
 }
 
 
+#if 0
 /* C = remainder after dividing B by A, all e type values.
    Least significant integer quotient bits left in EQUOT.  */
 
@@ -5389,6 +5398,7 @@ eremain (a, b, c)
     num[0] = 0xffff;
   emovo (num, c);
 }
+#endif
 
 /*  Return quotient of exploded e-types NUM / DEN in EQUOT,
     remainder in NUM.  */
@@ -5955,6 +5965,7 @@ ereal_from_double (d)
 }
 
 
+#if 0
 /* Convert target computer unsigned 64-bit integer to e-type.
    The endian-ness of DImode follows the convention for integers,
    so we use WORDS_BIG_ENDIAN here, not REAL_WORDS_BIG_ENDIAN.  */
@@ -6325,6 +6336,7 @@ esqrt (x, y)
   emdnorm (sq, k, 0, exp, 64);
   emovo (sq, y);
 }
+#endif
 #endif /* EMU_NON_COMPILE not defined */
 
 /* Return the binary precision of the significand for a given
