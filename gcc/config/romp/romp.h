@@ -1078,7 +1078,7 @@ struct rt_cargs {int gregs, fregs; };
 		     force_operand				\
 		     	(gen_rtx (PLUS, SImode, XEXP (X, 0), \
 				  GEN_INT (high_int << 16)), 0),\
-		     GEN_INT (, low_int));			\
+		     GEN_INT (low_int));			\
     }								\
 }
 
