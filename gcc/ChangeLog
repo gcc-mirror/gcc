@@ -1,5 +1,8 @@
 Thu Oct 22 22:34:42 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* reload1.c (reload_as_needed): When rewrite POST_INC, verify
+	reg_reloaded_contents matches incremented pseudo.
+
 	* v850/v850.c (v850_reorg): Call alter_subreg.  Delete subreg support.
 
 Fri Oct 23 11:11:56 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>

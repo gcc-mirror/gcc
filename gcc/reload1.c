@@ -4478,7 +4478,12 @@ reload_as_needed (live_known)
 		     or we can't use the reload register for inheritance.  */
 		  if ((code == POST_INC || code == POST_DEC)
 		      && TEST_HARD_REG_BIT (reg_reloaded_valid,
-					    REGNO (reload_reg_rtx[i])))
+					    REGNO (reload_reg_rtx[i]))
+		      /* Make sure it is the inc/dec pseudo, and not
+			 some other (e.g. output operand) pseudo.  */
+		      && (reg_reloaded_contents[REGNO (reload_reg_rtx[i])]
+			  == REGNO (XEXP (in_reg, 0))))
+					      
 		    {
 		      rtx reload_reg = reload_reg_rtx[i];
 		      enum machine_mode mode = GET_MODE (reload_reg);
