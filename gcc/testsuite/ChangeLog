@@ -1,3 +1,7 @@
+2004-09-12  Richard Henderson  <rth@redhat.com>
+
+	* g++.old-deja/g++.other/sizeof3.C: Fix abort declaration.
+
 2004-09-13  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* g++.dg/warn/Wswitch-1.C, g++.dg/warn/Wswitch-2.C,
