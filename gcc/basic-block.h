@@ -1,5 +1,5 @@
 /* Define control and data flow tables, and regsets.
-   Copyright (C) 1987, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -141,7 +141,20 @@ typedef struct edge_def {
 #define EDGE_COMPLEX	(EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_EH)
 
 
-/* Basic blocks need not start with a label nor end with a jump insn.
+/* A basic block is a sequence of instructions with only entry and
+   only one exit.  If any one of the instructions are executed, they
+   will all be executed, and in sequence from first to last.
+
+   There may be COND_EXEC instructions in the basic block.  The
+   COND_EXEC *instructions* will be executed -- but if the condition
+   is false the conditionally executed *expressions* will of course
+   not be executed.  We don't consider the conditionally executed
+   expression (which might have side-effects) to be in a separate
+   basic block because the program counter will always be at the same
+   location after the COND_EXEC instruction, regardless of whether the
+   condition is true or not.
+
+   Basic blocks need not start with a label nor end with a jump insn.
    For example, a previous basic block may just "conditionally fall"
    into the succeeding basic block, and the last basic block need not
    end with a jump insn.  Block 0 is a descendant of the entry block.
@@ -161,12 +174,21 @@ typedef struct basic_block_def {
   /* The edges into and out of the block.  */
   edge pred, succ;
 
-  /* Liveness info.  Note that in SSA form, global_live_at_start does
-     not reflect the use of regs in phi functions, since the liveness
-     of these regs may depend on which edge was taken into the block.  */
+  /* Liveness info.  */
+
+  /* The registers that are modified within this in block.  */
   regset local_set;
+  /* The registers that are conditionally modified within this block.
+     In other words, registers that are set only as part of a
+     COND_EXEC.  */
   regset cond_local_set;
+  /* The registers that are live on entry to this block.
+
+     Note that in SSA form, global_live_at_start does not reflect the
+     use of regs in phi functions, since the liveness of these regs
+     may depend on which edge was taken into the block.  */
   regset global_live_at_start;
+  /* The registers that are live on exit from this block.  */
   regset global_live_at_end;
 
   /* Auxiliary info specific to a pass.  */

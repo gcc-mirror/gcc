@@ -1,3 +1,14 @@
+2001-06-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* basic-block.h: Improve comments.
+	* except.c (expand_eh_region_end_allowed): Remove redundant call
+	to do_pending_stack_adjust.
+	* flow.c (life_analysis): Fix typo in comment.
+	(calculate_global_regs_live): Add documentation.
+	(mark_set_1): Likewise.
+	(debug_regset): Likewise.
+	* doc/rtl.texi (cond_exec): Document it.
+
 Fri Jun  8 21:52:51 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (CONST_COSTS): set cost of constants representable in

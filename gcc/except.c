@@ -857,10 +857,6 @@ expand_eh_region_end_allowed (allowed, failure)
      throws a different exception, that it will be processed by the
      correct region.  */
 
-  /* If there are any pending stack adjustments, we must emit them
-     before we branch -- otherwise, we won't know how much adjustment
-     is required later.  */
-  do_pending_stack_adjust ();
   around_label = gen_label_rtx ();
   emit_jump (around_label);
 
