@@ -1773,7 +1773,6 @@ enum m32r_function_type
 				  CONST_DOUBLE }},			\
 { "two_insn_const_operand",	{ CONST_INT }},				\
 { "symbolic_operand",		{ SYMBOL_REF, LABEL_REF, CONST }},	\
-{ "seth_add3_operand",		{ SYMBOL_REF, LABEL_REF, CONST }},	\
 { "int8_operand",		{ CONST_INT }},				\
 { "uint16_operand",		{ CONST_INT }},				\
 { "reg_or_int16_operand",	{ REG, SUBREG, CONST_INT }},		\
