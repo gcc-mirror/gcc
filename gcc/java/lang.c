@@ -179,7 +179,7 @@ lang_decode_option (argc, argv)
     {
       if (!(flag_emit_xref = xref_flag_value (p + sizeof (XARG) - 1)))
 	{
-	  error ("Unkown xref back end `%s'", p + sizeof (XARG) - 1);
+	  error ("Unkown xref format `%s'", p + sizeof (XARG) - 1);
 	}
     }
 #undef XARG

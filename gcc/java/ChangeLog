@@ -1,9 +1,15 @@
+Mon Mar 22 20:14:26 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* Changelog: Fixed 1999-03-22 typos.
+	* lang.c (lang_decode_option): Fixed typo in error string in the
+ 	XARG section.
+
 1999-03-22  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
-	* Makefile.in: (JAVA_OBJS) Added entry xref.o.
+	* Makefile.in (JAVA_OBJS): Added entry xref.o.
 	(xref.o): New rule.
 	* java-tree.h (flag_emit_xref): Declared extern.
-	* lang.c: (xref.h): Included.
+	* lang.c (xref.h): Included.
 	(flag_emit_xref): New global variable.
 	(lang_decode_option): Added support for -fxref.
 	* xref.c: Created.
