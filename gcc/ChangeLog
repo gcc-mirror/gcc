@@ -1,3 +1,8 @@
+2004-09-20  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_select_rtx_section): Remove.
+	(TARGET_ASM_SELECT_RTX_SECTION): Do not redefine.
+
 2004-09-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_expand_prologue): Add a REG_FRAME_RELATED_EXPR
