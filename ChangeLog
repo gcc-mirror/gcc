@@ -1,5 +1,8 @@
 2003-03-04  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* Makefile.tpl: Always pass down RANLIB.
+	* Makefile.in: Regenerate.
+
 	* Makefile.tpl: Don't set unused enable_shared, enable_threads macros.
 	* Makefile.in: Regenerate.
 	* configure.in: Remove unused logic relating to --enable-shared
