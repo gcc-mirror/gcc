@@ -1,3 +1,10 @@
+2003-11-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from 3.4-branch
+	2003-04-25  H.J. Lu  <hjl@gnu.org>
+
+	* gcc.dg/ia64-sync-4.c: New test.
+
 2003-10-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	PR libgcj/10610
