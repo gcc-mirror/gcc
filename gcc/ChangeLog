@@ -1,3 +1,17 @@
+2003-12-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR target/12721.
+	* config/avr/avr.c: Include ggc.h.
+	(tmp_reg_rtx): Declare with GTY.
+	(zero_reg_rtx): Likewise.
+	(ldi_reg_rtx): Remove.
+	(avr_override_options): Initialize zero_reg_rtx and
+	ldi_reg_rtx.
+	(avr_init): Remove.
+	Include gt-avr.h.
+	* config/avr/avr.h (LDI_REG_REGNO): Remove.
+	Remove externs for tmp_reg_rtx, zero_reg_rtx, and ldi_reg_rtx.
+
 2003-12-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/md.texi: Document PowerPC vector register constraint letter.

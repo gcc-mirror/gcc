@@ -2482,11 +2482,4 @@ extern int avr_case_values_threshold;
 /* zero register r1 */
 #define ZERO_REGNO 1
 
-/* Temporary register which used for load immediate values to r0-r15  */
-#define LDI_REG_REGNO 31
-
-extern struct rtx_def *tmp_reg_rtx;
-extern struct rtx_def *zero_reg_rtx;
-extern struct rtx_def *ldi_reg_rtx;
-
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG

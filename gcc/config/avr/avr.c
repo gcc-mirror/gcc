@@ -39,6 +39,7 @@
 #include "obstack.h"
 #include "function.h"
 #include "recog.h"
+#include "ggc.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
@@ -81,14 +82,10 @@ static int avr_address_cost (rtx);
 #define FIRST_CUM_REG 26
 
 /* Temporary register RTX (gen_rtx (REG,QImode,TMP_REGNO)) */
-rtx tmp_reg_rtx;
+static GTY(()) rtx tmp_reg_rtx;
 
 /* Zeroed register RTX (gen_rtx (REG,QImode,ZERO_REGNO)) */
-rtx zero_reg_rtx;
-
-/* RTX for register which will be used for loading immediate values to
-   r0-r15 registers.  */
-rtx ldi_reg_rtx;
+static GTY(()) rtx zero_reg_rtx;
 
 /* AVR register names {"r0", "r1", ..., "r31"} */
 static const char *const avr_regnames[] = REGISTER_NAMES;
@@ -274,29 +271,10 @@ avr_override_options (void)
 
   if (optimize && !TARGET_NO_TABLEJUMP)
     avr_case_values_threshold = (!AVR_MEGA || TARGET_CALL_PROLOGUES) ? 8 : 17;
+
+  tmp_reg_rtx  = gen_rtx_REG (QImode, TMP_REGNO);
+  zero_reg_rtx = gen_rtx_REG (QImode, ZERO_REGNO);
 }
-
-#if 0 /* Does not play nice with GC.  FIXME. */
-/* Initialize TMP_REG_RTX and ZERO_REG_RTX */
-void
-avr_init_once (void)
-{
-  tmp_reg_rtx = xcalloc (1, sizeof (struct rtx_def) + 1 * sizeof (rtunion));
-  PUT_CODE (tmp_reg_rtx, REG);
-  PUT_MODE (tmp_reg_rtx, QImode);
-  XINT (tmp_reg_rtx, 0) = TMP_REGNO;
-
-  zero_reg_rtx = xcalloc (1, sizeof (struct rtx_def) + 1 * sizeof (rtunion));
-  PUT_CODE (zero_reg_rtx, REG);
-  PUT_MODE (zero_reg_rtx, QImode);
-  XINT (zero_reg_rtx, 0) = ZERO_REGNO;
-
-  ldi_reg_rtx = xcalloc (1, sizeof (struct rtx_def) + 1 * sizeof (rtunion));
-  PUT_CODE (ldi_reg_rtx, REG);
-  PUT_MODE (ldi_reg_rtx, QImode);
-  XINT (ldi_reg_rtx, 0) = LDI_REG_REGNO;
-}
-#endif
 
 /*  return register class from register number */
 
@@ -5389,3 +5367,4 @@ avr_asm_out_dtor (rtx symbol, int priority)
   default_dtor_section_asm_out_destructor (symbol, priority);
 }
 
+#include "gt-avr.h"
