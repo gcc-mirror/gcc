@@ -330,8 +330,6 @@ struct loop
   int exit_count;
 };
 
-#define FLOW_LOOP_FIRST_BLOCK(loop) sbitmap_first_set_bit ((loop).nodes)
-#define FLOW_LOOP_LAST_BLOCK(loop) sbitmap_last_set_bit ((loop).nodes)
 
 /* Structure to hold CFG information about natural loops within a function.  */
 struct loops
