@@ -1,0 +1,14 @@
+# The shell may not be in /bin. 
+SHELL = sh
+RANLIB = true
+
+# We don't want debugging info in Interix-hosted toolchains.
+# Accomplish this by overriding CFLAGS. This is also a workaround
+# for LD crash when building shared libstdc++.
+CFLAGS=-O2
+CXXFLAGS=-O2
+
+# We also need to override LIBGCC2_DEBUG_CFLAGS so libgcc2 will be
+# built without debugging information
+
+LIBGCC2_DEBUG_CFLAGS=
