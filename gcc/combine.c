@@ -7544,9 +7544,6 @@ simplify_comparison (code, pop0, pop1)
 	  break;
 
 	case SUBREG:
-	  /* If the inner mode is narrower and we are extracting the low part,
-	     we can treat the SUBREG as if it were a ZERO_EXTEND.  */
-	  if (subreg_lowpart_p (op0)
 	  /* Check for the case where we are comparing A - C1 with C2,
 	     both constants are smaller than 1/2 the maxium positive
 	     value in MODE, and the comparison is equality or unsigned.
@@ -7576,6 +7573,9 @@ simplify_comparison (code, pop0, pop1)
 	      continue;
 	    }
 
+	  /* If the inner mode is narrower and we are extracting the low part,
+	     we can treat the SUBREG as if it were a ZERO_EXTEND.  */
+	  if (subreg_lowpart_p (op0)
 	      && GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0))) < mode_width)
 	    /* Fall through */ ;
 	  else
