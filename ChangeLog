@@ -1,3 +1,7 @@
+2002-07-01  Nathanael Nerode <neroden@gcc.gnu.org>
+
+	* Makefile.in: Eliminate last reference to LIBGCC1_TEST.
+
 2002-07-01  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config-ml.in: Eliminate references to Cygnus configure.
