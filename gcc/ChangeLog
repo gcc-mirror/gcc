@@ -1,5 +1,10 @@
 2003-10-07  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips_expand_prologue): Remove unused
+	traversal of function arguments.
+
+2003-10-07  Richard Sandiford  <rsandifo@redhat.com>
+
 	* doc/invoke.texi: Remove documentation of -mentry.
 	* config/mips/mips.c (mips_entry_string, mips_entry): Remove.
 	(override_options, mips_save_reg_p): Remove handling.

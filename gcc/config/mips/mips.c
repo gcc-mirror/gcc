@@ -6650,46 +6650,9 @@ mips_expand_prologue (void)
 {
   HOST_WIDE_INT tsize;
   rtx tmp_rtx = 0;
-  tree fndecl = current_function_decl;
-  tree fntype = TREE_TYPE (fndecl);
-  tree fnargs = DECL_ARGUMENTS (fndecl);
-  tree cur_arg;
-  CUMULATIVE_ARGS args_so_far;
 
   if (cfun->machine->global_pointer > 0)
     REGNO (pic_offset_table_rtx) = cfun->machine->global_pointer;
-
-  /* If struct value address is treated as the first argument, make it so.  */
-  if (aggregate_value_p (DECL_RESULT (fndecl), fndecl)
-      && ! current_function_returns_pcc_struct
-      && targetm.calls.struct_value_rtx (fndecl, 0) == 0)
-    {
-      tree type = build_pointer_type (fntype);
-      tree function_result_decl = build_decl (PARM_DECL, NULL_TREE, type);
-
-      DECL_ARG_TYPE (function_result_decl) = type;
-      TREE_CHAIN (function_result_decl) = fnargs;
-      fnargs = function_result_decl;
-    }
-
-  /* Go through the function arguments, leaving args_so_far reflecting
-     the final state.  */
-  INIT_CUMULATIVE_ARGS (args_so_far, fntype, NULL_RTX, current_function_decl);
-  for (cur_arg = fnargs; cur_arg != 0; cur_arg = TREE_CHAIN (cur_arg))
-    {
-      tree passed_type;
-      enum machine_mode passed_mode;
-
-      passed_type = DECL_ARG_TYPE (cur_arg);
-      if (TREE_ADDRESSABLE (passed_type))
-	{
-	  passed_type = build_pointer_type (passed_type);
-	  passed_mode = Pmode;
-	}
-      else
-	passed_mode = TYPE_MODE (passed_type);
-      FUNCTION_ARG_ADVANCE (args_so_far, passed_mode, passed_type, 1);
-    }
 
   tsize = compute_frame_size (get_frame_size ());
 
