@@ -1,3 +1,8 @@
+2004-01-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/13557
+	* config/sparc/sparc.c (function_arg): Reorder the cases.
+
 2004-01-19  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in (target_noncanonical, program_transform_name): Use 
