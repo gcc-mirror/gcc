@@ -1,3 +1,8 @@
+1999-04-30  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (cp_finish_decl): Don't permit arrays of abstract or
+	signature type.
+
 1999-04-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (do_static_destruction): Remove obsolete FIXME comment.
