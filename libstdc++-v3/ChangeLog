@@ -1,3 +1,9 @@
+2003-07-04  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/valarray_array.h: Fully qualify standard
+	functions with std::, thus avoiding Koenig lookup.
+	* include/bits/vector.tcc: Likewise.
+
 2003-07-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/Makefile.am: Update target_ to host_.
