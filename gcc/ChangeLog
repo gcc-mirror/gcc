@@ -1,3 +1,9 @@
+2004-01-12  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/13401
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue):
+	Objective-C language type value is 14.
+
 2004-01-12  Markus F.X.J. Oberhumer  <markus@oberhumer.com>
 
 	PR c/12148

@@ -12523,24 +12523,25 @@ rs6000_output_function_epilogue (FILE *file,
       /* Tbtab format type.  Use format type 0.  */
       fputs ("\t.byte 0,", file);
 
-      /* Language type.  Unfortunately, there doesn't seem to be any
-	 official way to get this info, so we use language_string.  C
-	 is 0.  C++ is 9.  No number defined for Obj-C, so use the
-	 value for C for now.  There is no official value for Java,
-         although IBM appears to be using 13.  */
-      if (! strcmp (language_string, "GNU C")
-	  || ! strcmp (language_string, "GNU Objective-C"))
+      /* Language type.  Unfortunately, there does not seem to be any
+	 official way to discover the language being compiled, so we
+	 use language_string.
+	 C is 0.  Fortran is 1.  Pascal is 2.  Ada is 3.  C++ is 9.
+	 Java is 13.  Objective-C is 14.  */
+      if (! strcmp (language_string, "GNU C"))
 	i = 0;
       else if (! strcmp (language_string, "GNU F77"))
 	i = 1;
-      else if (! strcmp (language_string, "GNU Ada"))
-	i = 3;
       else if (! strcmp (language_string, "GNU Pascal"))
 	i = 2;
+      else if (! strcmp (language_string, "GNU Ada"))
+	i = 3;
       else if (! strcmp (language_string, "GNU C++"))
 	i = 9;
       else if (! strcmp (language_string, "GNU Java"))
 	i = 13;
+      else if (! strcmp (language_string, "GNU Objective-C"))
+	i = 14;
       else
 	abort ();
       fprintf (file, "%d,", i);
