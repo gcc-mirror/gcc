@@ -445,9 +445,18 @@ STATIC func_ptr __DTOR_END__[1]
 #ifdef EH_FRAME_SECTION_NAME
 /* Terminate the frame unwind info section with a 4byte 0 as a sentinel;
    this would be the 'length' field in a real FDE.  */
-STATIC EH_FRAME_SECTION_CONST int __FRAME_END__[]
-     __attribute__ ((unused, mode(SI), section(EH_FRAME_SECTION_NAME),
-		     aligned(4)))
+# if __INT_MAX__ == 2147483647
+typedef int int32;
+# elif __LONG_MAX__ == 2147483647
+typedef long int32;
+# elif __SHRT_MAX__ == 2147483647
+typedef short int32;
+# else
+#  error "Missing a 4 byte integer"
+# endif
+STATIC EH_FRAME_SECTION_CONST int32 __FRAME_END__[]
+     __attribute__ ((unused, section(EH_FRAME_SECTION_NAME),
+		     aligned(sizeof(int32))))
      = { 0 };
 #endif /* EH_FRAME_SECTION_NAME */
 

@@ -1,5 +1,16 @@
 2004-10-13  Richard Henderson  <rth@redhat.com>
 
+	PR c/17384
+	* c-common.c (handle_mode_attribute): Disallow mode changes that
+	alter the CODE of the top-level type.
+
+	* crtstuff.c (__FRAME_END__): Remove mode attribute.  Find 32-bit
+	integer from internal limits macros.
+	* config/i386/emmintrin.h (__v2df): Fix base type.
+	* config/i386/xmmintrin.h (__m128, __v4sf): Likewise.
+
+2004-10-13  Richard Henderson  <rth@redhat.com>
+
 	PR debug/13841
 	* function.c (instantiate_decl): Recurse for CONCAT.
 
