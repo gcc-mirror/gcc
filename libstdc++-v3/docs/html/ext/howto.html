@@ -375,9 +375,11 @@
    </p>
    <p>Here are the issues which have resulted in code changes to the library.
       The links are to the specific defect reports from a <strong>partial
-      copy </strong> of the
-      Issues List.  You can read the full version online at the ISO C++
-      Committee homepage, linked to on the GCC &quot;Readings&quot; page.  If
+      copy </strong> of the Issues List.  You can read the full version online
+      at the <a href="http://www.dkuug.dk/jtc1/sc22/wg21/">ISO C++
+      Committee homepage</a>, linked to on the
+      <a href="http://gcc.gnu.org/readings.html">GCC &quot;Readings&quot;
+      page</a>.  If
       you spend a lot of time reading the issues, we recommend downloading
       the ZIP file and reading them locally.
    </p>
@@ -396,8 +398,6 @@
       until an issue has reached <a href="lwg-active.html#DR">DR</a> status.
    </p>
    <p><dl>
-<!-- FIXME:  locale_facets.h/tcc has a fix for get/num_get which I can't ID. -->
-
     <dt><a href="lwg-defects.html#5">5</a>:
         <em>string::compare specification questionable</em>
     <dd>This should be two overloaded functions rather than a single function.
@@ -405,6 +405,10 @@
     <dt><a href="lwg-defects.html#17">17</a>:
         <em>Bad bool parsing</em>
     <dd>Apparently extracting Boolean values was messed up...
+
+    <dt><a href="lwg-defects.html#22">22</a>:
+        <em>Member open vs flags</em>
+    <dd>Re-opening a file stream does <em>not</em> clear the state flags.
 
     <dt><a href="lwg-defects.html#25">25</a>:
         <em>String operator&lt;&lt; uses width() value wrong</em>
@@ -448,6 +452,14 @@
     <dd>This was not a const member function.  Note that the DR says to
         replace the function with a const one; we have instead provided an
         overloaded version with identical contents.
+
+    <dt><a href="lwg-defects.html#117">117</a>:
+        <em>basic_ostream uses nonexistent num_put member functions</em>
+    <dd><code>num_put::put()</code> was overloaded on the wrong types.
+
+    <dt><a href="lwg-defects.html#118">118</a>:
+        <em>basic_istream uses nonexistent num_get member functions</em>
+    <dd>Same as 177, but for <code>num_get::get()</code>.
 
     <dt><a href="lwg-defects.html#129">129</a>:
         <em>Need error indication from seekp() and seekg()</em>
@@ -496,6 +508,15 @@
         <em>std::pair::pair() effects overly restrictive</em>
     <dd>The default ctor would build its members from copies of temporaries;
         now it simply uses their respective default ctors.
+
+    <dt><a href="lwg-defects.html#266">266</a>:
+        <em>bad_exception::~bad_exception() missing Effects clause</em>
+    <dd>The <code>bad_</code>* classes no longer have destructors (they
+        are trivial), since no description of them was ever given.
+
+    <dt><a href="lwg-defects.html#275">275</a>:
+        <em>Wrong type in num_get::get() overloads</em>
+    <dd>Similar to 118.
 
 <!--
     <dt><a href="lwg-defects.html#"></a>:
