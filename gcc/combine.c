@@ -10568,7 +10568,7 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 		  for (i = regno; i < endregno; i++)
 		    if (! refers_to_regno_p (i, i + 1, PATTERN (place), 0))
 		      {
-			rtx piece = gen_rtx (REG, word_mode, i);
+			rtx piece = gen_rtx (REG, reg_raw_mode[i], i);
 			rtx p;
 
 			/* See if we already placed a USE note for this
@@ -10615,7 +10615,7 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 
 		      for (i = regno; i < endregno; i++)
 			{
-			  rtx piece = gen_rtx (REG, word_mode, i);
+			  rtx piece = gen_rtx (REG, reg_raw_mode[i], i);
 
 			  if (reg_referenced_p (piece, PATTERN (place))
 			      && ! dead_or_set_p (place, piece)
