@@ -51,13 +51,13 @@ hash_new (unsigned int size, hash_func_type hash_func,
 
   /* Allocate the cache structure.  calloc insures
      its initialization for default values.  */
-  cache = (cache_ptr) calloc (1, sizeof (struct cache));
+  cache = (cache_ptr) __objc_xcalloc (1, sizeof (struct cache));
   assert (cache);
 
   /* Allocate the array of buckets for the cache.
      calloc initializes all of the pointers to NULL.  */
   cache->node_table
-    = (node_ptr *) calloc (size, sizeof (node_ptr));
+    = (node_ptr *) __objc_xcalloc (size, sizeof (node_ptr));
   assert (cache->node_table);
 
   cache->size  = size;
@@ -96,7 +96,7 @@ void
 hash_add (cache_ptr *cachep, const void *key, void *value)
 {
   size_t indx = (*(*cachep)->hash_func)(*cachep, key);
-  node_ptr node = (node_ptr) calloc (1, sizeof (struct cache_node));
+  node_ptr node = (node_ptr) __objc_xcalloc (1, sizeof (struct cache_node));
 
 
   assert (node);

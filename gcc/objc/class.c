@@ -226,7 +226,7 @@ I implement posing by hiding SUPER_CLASS, creating new class and meta class
 Class*
 class_pose_as (Class* impostor, Class* super_class)
 {
-  Class* new_class = (Class*) calloc (1, sizeof (Class));
+  Class* new_class = (Class*) __objc_xcalloc (1, sizeof (Class));
   MetaClass* new_meta_class =
     (MetaClass*) __objc_xmalloc(sizeof (MetaClass));
   char *new_name = (char *)__objc_xmalloc ((size_t)strlen ((char*)super_class->name) + 12);

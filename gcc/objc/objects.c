@@ -41,7 +41,10 @@ class_create_instance(Class* class)
   if (CLS_ISCLASS(class))
     new = (*_objc_object_alloc)(class);
   if (new!=nil)
-    new->class_pointer = class;
+    {
+      bzero (new, class->instance_size);
+      new->class_pointer = class;
+    }
   return new;
 }
 
