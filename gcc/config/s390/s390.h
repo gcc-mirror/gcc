@@ -854,6 +854,79 @@ CUMULATIVE_ARGS;
 
 #define EXIT_IGNORE_STACK       1
 
+/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
+   Used for C++ multiple inheritance.  */
+#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)              \
+do {                                                                          \
+  if (TARGET_64BIT)                                                           \
+    {                                                                         \
+      if (flag_pic)                                                           \
+        {                                                                     \
+          fprintf (FILE, "\tlarl  1,0f\n");                                   \
+          fprintf (FILE, "\tagf   %d,0(1)\n",                                 \
+                   aggregate_value_p (TREE_TYPE                               \
+                                      (TREE_TYPE (FUNCTION))) ? 3 :2 );       \
+          fprintf (FILE, "\tlarl  1,");                                       \
+          assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));      \
+          fprintf (FILE, "@GOTENT\n");                                        \
+          fprintf (FILE, "\tlg    1,0(1)\n");                                 \
+          fprintf (FILE, "\tbr    1\n");                                      \
+          fprintf (FILE, "0:\t.long  ");	                              \
+          fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, (DELTA));                   \
+          fprintf (FILE, "\n");			                              \
+        }                                                                     \
+      else                                                                    \
+        {                                                                     \
+          fprintf (FILE, "\tlarl  1,0f\n");                                   \
+          fprintf (FILE, "\tagf   %d,0(1)\n",                                 \
+          aggregate_value_p (TREE_TYPE                                        \
+                             (TREE_TYPE (FUNCTION))) ? 3 :2 );                \
+          fprintf (FILE, "\tjg  ");                                           \
+          assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));      \
+          fprintf (FILE, "\n");                                               \
+          fprintf (FILE, "0:\t.long  ");		                      \
+          fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, (DELTA));                   \
+          fprintf (FILE, "\n");			                              \
+        }                                                                     \
+    }                                                                         \
+  else                                                                        \
+    {                                                                         \
+      if (flag_pic)                                                           \
+        {                                                                     \
+          fprintf (FILE, "\tbras  1,0f\n");                                   \
+          fprintf (FILE, "\t.long _GLOBAL_OFFSET_TABLE_-.\n");                \
+          fprintf (FILE, "\t.long  ");                                        \
+          assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));      \
+          fprintf (FILE, "@GOT\n");                                           \
+          fprintf (FILE, "\t.long  ");		                              \
+          fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, (DELTA));                   \
+          fprintf (FILE, "\n");			                              \
+          fprintf (FILE, "0:\tal  %d,8(1)\n",                                 \
+                   aggregate_value_p (TREE_TYPE                               \
+                                      (TREE_TYPE (FUNCTION))) ? 3 : 2 );      \
+          fprintf (FILE, "\tl     0,4(1)\n");                                 \
+          fprintf (FILE, "\tal    1,0(1)\n");                                 \
+          fprintf (FILE, "\talr   1,0\n");                                    \
+          fprintf (FILE, "\tl     1,0(1)\n");                                 \
+          fprintf (FILE, "\tbr    1\n");                                      \
+        } else {                                                              \
+          fprintf (FILE, "\tbras  1,0f\n");                                   \
+          fprintf (FILE, "\t.long  ");                                        \
+          assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));      \
+          fprintf (FILE, "-.\n");                                             \
+          fprintf (FILE, "\t.long  ");		                              \
+          fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, (DELTA));                   \
+          fprintf (FILE, "\n");			                              \
+          fprintf (FILE, "0:\tal  %d,4(1)\n",                                 \
+                   aggregate_value_p (TREE_TYPE                               \
+                                      (TREE_TYPE (FUNCTION))) ? 3 : 2 );      \
+          fprintf (FILE, "\tal    1,0(1)\n");                                 \
+          fprintf (FILE, "\tbr    1\n");                                      \
+       }                                                                      \
+    }                                                                         \
+} while (0)
+
+
 /* Addressing modes, and classification of registers for them.  */
 
 /* #define HAVE_POST_INCREMENT */
@@ -1237,10 +1310,43 @@ CUMULATIVE_ARGS;
  
 extern struct rtx_def *s390_compare_op0, *s390_compare_op1;
 
+/* implicit call of memcpy, not bcopy   */
+
+#define TARGET_MEM_FUNCTIONS
+
+
+/* Assembler file format.  */
+
+/* Character to start a comment.  */
+#define ASM_COMMENT_START "#"
+
+/* Declare an uninitialized external linkage data object.  */
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
+  asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
+
+/* Globalizing directive for a label.  */
+#define GLOBAL_ASM_OP ".globl "
+
+/* Advance the location counter to a multiple of 2**LOG bytes.  */
+#define ASM_OUTPUT_ALIGN(FILE, LOG) \
+  if ((LOG)) fprintf ((FILE), "\t.align\t%d\n", 1 << (LOG))
+
+/* Advance the location counter by SIZE bytes.  */
+#define ASM_OUTPUT_SKIP(FILE, SIZE) \
+  fprintf ((FILE), "\t.set\t.,.+%u\n", (SIZE))
+
+/* Store in OUTPUT a string (made with alloca) containing
+   an assembler-name for a local static variable named NAME.
+   LABELNO is an integer which is different for each call.  */
+#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
+  ((OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
+   sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
+
+/* The LOCAL_LABEL_PREFIX variable is used by dbxelf.h.  */
+#define LOCAL_LABEL_PREFIX "."
 
 /* How to refer to registers in assembler output.  This sequence is
    indexed by compiler's hard-register-number (see above).  */
-
 #define REGISTER_NAMES							\
 { "%r0",  "%r1",  "%r2",  "%r3",  "%r4",  "%r5",  "%r6",  "%r7",	\
   "%r8",  "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",	\
@@ -1249,22 +1355,36 @@ extern struct rtx_def *s390_compare_op0, *s390_compare_op1;
   "%ap",  "%cc",  "%fp"							\
 }
 
-/* implicit call of memcpy, not bcopy   */
-
-#define TARGET_MEM_FUNCTIONS
-
 /* Either simplify a location expression, or return the original.  */
-
 #define ASM_SIMPLIFY_DWARF_ADDR(X) \
   s390_simplify_dwarf_addr (X)
 
-/* Print operand X (an rtx) in assembler syntax to file FILE.
-   CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
-   For `%' followed by punctuation, CODE is the punctuation and X is null.  */
-
+/* Print operand X (an rtx) in assembler syntax to file FILE.  */
 #define PRINT_OPERAND(FILE, X, CODE) print_operand (FILE, X, CODE)
-
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
+
+/* Output an element of a case-vector that is absolute.  */
+#define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)				\
+do {									\
+  char buf[32];								\
+  fputs (integer_asm_op (UNITS_PER_WORD, TRUE), (FILE));		\
+  ASM_GENERATE_INTERNAL_LABEL (buf, "L", (VALUE));			\
+  assemble_name ((FILE), buf);						\
+  fputc ('\n', (FILE));							\
+} while (0)
+
+/* Output an element of a case-vector that is relative.  */
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)		\
+do {									\
+  char buf[32];								\
+  fputs (integer_asm_op (UNITS_PER_WORD, TRUE), (FILE));		\
+  ASM_GENERATE_INTERNAL_LABEL (buf, "L", (VALUE));			\
+  assemble_name ((FILE), buf);						\
+  fputc ('-', (FILE));							\
+  ASM_GENERATE_INTERNAL_LABEL (buf, "L", (REL));			\
+  assemble_name ((FILE), buf);						\
+  fputc ('\n', (FILE));							\
+} while (0)
 
 
 /* Define the codes that are matched by predicates in aux-output.c.  */
@@ -1281,6 +1401,17 @@ extern struct rtx_def *s390_compare_op0, *s390_compare_op1;
 			   CONST_INT, CONST_DOUBLE }},			\
   {"s390_plus_operand", { PLUS }},
 
+
+/* Sections.  */
+
+/* Output before read-only data.  */
+#define TEXT_SECTION_ASM_OP ".text"
+
+/* Output before writable (initialized) data.  */
+#define DATA_SECTION_ASM_OP ".data"
+
+/* Output before writable (uninitialized) data.  */
+#define BSS_SECTION_ASM_OP ".bss"
 
 /* S/390 constant pool breaks the devices in crtstuff.c to control section
    in where code resides.  We have to write it as asm code.  */
