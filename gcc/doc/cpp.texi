@@ -2028,8 +2028,10 @@ mechanism based on @code{setjmp} and @code{longjmp} for exception
 handling.
 
 @item __NEXT_RUNTIME__
-This macro is defined, with value 1, when the NeXT runtime
-(as in @option{-fnext-runtime}) is in use for Objective-C.
+This macro is defined, with value 1, if (and only if) the NeXT runtime
+(as in @option{-fnext-runtime}) is in use for Objective-C.  If the GNU
+runtime is used, this macro is not defined, so that you can use this
+macro to determine which runtime (NeXT or GNU) is being used.
 
 @item __TARGET_BITS_ORDER__
 This macro describes the target's bits order in a byte.  Its value is

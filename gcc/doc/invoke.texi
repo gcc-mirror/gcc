@@ -199,7 +199,7 @@ in the following sections.
 @gccoptlist{
 -fconstant-string-class=@var{class-name} @gol
 -fgnu-runtime  -fnext-runtime  -gen-decls @gol
--Wno-protocol  -Wselector}
+-Wno-protocol  -Wselector -Wundeclared-selector}
 
 @item Language Independent Options
 @xref{Language Independent Options,,Options to Control Diagnostic Messages Formatting}.
@@ -1731,7 +1731,9 @@ runtime.  This is the default for most types of systems.
 @item -fnext-runtime
 @opindex fnext-runtime
 Generate output compatible with the NeXT runtime.  This is the default
-for NeXT-based systems, including Darwin and Mac OS X@.
+for NeXT-based systems, including Darwin and Mac OS X@.  The macro
+@code{__NEXT_RUNTIME__} is predefined if (and only if) this option is
+used.
 
 @item -gen-decls
 @opindex gen-decls
@@ -1740,12 +1742,39 @@ file named @file{@var{sourcename}.decl}.
 
 @item -Wno-protocol
 @opindex Wno-protocol
-Do not warn if methods required by a protocol are not implemented
-in the class adopting it.
+If a class is declared to implement a protocol, a warning is issued for
+every method in the protocol that is not implemented by the class.  The
+default behaviour is to issue a warning for every method not explicitly
+implemented in the class, even if a method implementation is inherited
+from the superclass.  If you use the @code{-Wno-protocol} option, then
+methods inherited from the superclass are considered to be implemented,
+and no warning is issued for them.
 
 @item -Wselector
 @opindex Wselector
-Warn if a selector has multiple methods of different types defined.
+Warn if multiple methods of different types for the same selector are
+found during compilation.  The check is performed on the list of methods
+in the final stage of compilation.  Additionally, a check is performed
+that for each selector appearing in a @code{@@selector(@dots{})}
+expression, a corresponding method with that selector has been found
+during compilation.  Because these checks scan the method table only at
+the end of compilation, these warnings are not produced if the final
+stage of compilation is not reached, for example because an error is
+found during compilation, or because the @code{-fsyntax-only} option is
+being used.
+
+@item -Wundeclared-selector
+@opindex Wundeclared-selector
+Warn if a @code{@@selector(@dots{})} expression referring to an
+undeclared selector is found.  A selector is considered undeclared if no
+method with that name has been declared (explicitly, in an
+@code{@@interface} or @code{@@protocol} declaration, or implicitly, in
+an @code{@@implementation} section) before the
+@code{@@selector(@dots{})} expression.  This option always performs its
+checks as soon as a @code{@@selector(@dots{})} expression is found
+(while @code{-Wselector} only performs its checks in the final stage of
+compilation), and so additionally enforces the coding style convention
+that methods and selectors must be declared before being used.
 
 @c not documented because only avail via -Wp
 @c @item -print-objc-runtime-info
