@@ -25,6 +25,7 @@
 #    srcdir=$$srcdir1 tooldir=$(tooldir) AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
 #    GCC_FOR_TARGET="$$thisdir1/xgcc -B$$thisdir1/" \
 #    GCC_CFLAGS="$(GCC_CFLAGS)" incinstalldir=$$thisdir1/include
+#    OBJC_THREAD_FILE="$(OBJC_THREAD_FILE)"
 #  Two targets are used by ../Makefile: `all' and `mostlyclean'.
 
 SHELL=/bin/sh
@@ -57,7 +58,7 @@ all:
 
 OBJC_O = hash.o sarray.o class.o sendmsg.o init.o archive.o encoding.o \
          selector.o objects.o misc.o NXConstStr.o Object.o Protocol.o \
-	 nil_method.o thr.o
+         nil_method.o thr.o $(OBJC_THREAD_FILE).o
 
 libobjc.a: $(OBJC_O)
 	-rm -f libobjc.a
@@ -99,5 +100,6 @@ misc.o: misc.c
 NXConstStr.o: NXConstStr.m
 Object.o: Object.m
 Protocol.o: Protocol.m
-thr.o: thr.h thr.c thr-solaris.c thr-irix.c thr-win32.c thr-single.c
+thr.o: thr.h thr.c
+$(OBJC_THREAD_FILE).o: $(OBJC_THREAD_FILE).c
 nil_method.o: nil_method.c
