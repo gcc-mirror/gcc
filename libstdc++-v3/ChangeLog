@@ -1,3 +1,8 @@
+2004-11-14  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/streambuf_iterator.h (istreambuf_iterator::_M_get):
+	Slightly tweak for clarity (also leads to measurably better code).
+
 2004-11-12  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR other/14264
