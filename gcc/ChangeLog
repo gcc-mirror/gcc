@@ -1,3 +1,7 @@
+Tue Jun  5 21:08:39 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config.gcc (i?86-*-solaris2*): Enable shared libgcc.
+
 2001-06-05  Phil Edwards  <pme@sources.redhat.com>
 
 	* gccbug.in:  Remove high priority.

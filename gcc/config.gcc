@@ -1361,6 +1361,11 @@ i[34567]86-*-solaris2*)
 		tm_file="i386/sol2gas.h ${tm_file}"
 	fi
 	tmake_file="i386/t-i386bare i386/t-sol2"
+	if test x$gnu_ld = xyes; then
+		tmake_file="$tmake_file t-slibgcc-elf-ver"
+	else
+		tmake_file="$tmake_file t-slibgcc-sld"
+	fi
 	extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 	xmake_file=x-svr4
 	if test x${enable_threads} = x; then
