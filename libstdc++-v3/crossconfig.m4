@@ -42,6 +42,22 @@ case "${host}" in
     AC_DEFINE(HAVE_MMAP)
     ;;
 
+  *djgpp)
+    AC_CHECK_HEADERS([float.h ieeefp.h inttypes.h locale.h \
+      memory.h stdint.h stdlib.h strings.h string.h unistd.h \
+      wchar.h wctype.h machine/endian.h sys/ioctl.h sys/param.h \
+      sys/resource.h sys/stat.h sys/time.h sys/types.h sys/uio.h])
+    GLIBCXX_CHECK_COMPILER_FEATURES
+    GLIBCXX_CHECK_LINKER_FEATURES
+    GLIBCXX_CHECK_MATH_SUPPORT
+    GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT
+    GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
+    GLIBCXX_CHECK_WCHAR_T_SUPPORT
+    GLIBCXX_CHECK_STDLIB_SUPPORT
+    GLIBCXX_CHECK_S_ISREG_OR_S_IFREG
+    AC_DEFINE(HAVE_WRITEV)
+    ;;
+
   *-freebsd*)
     AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h \
       machine/endian.h machine/param.h sys/machine.h sys/types.h \
