@@ -1,5 +1,6 @@
 // Test that the named return value extension works when passed as a reference.
 // Origin: Jason Merrill <jason@redhat.com>
+// Special g++ Options:
 
 void f (int &i)
 {
