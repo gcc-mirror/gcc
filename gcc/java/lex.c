@@ -290,8 +290,13 @@ java_new_lexer (finput, encoding)
       /* If iconv failed, use the internal decoder if the default
 	 encoding was requested.  This code is used on platforms where
 	 iconv exists but is insufficient for our needs.  For
-	 instance, on Solaris 2.5 iconv cannot handle UTF-8 or UCS-2.  */
-      if (strcmp (encoding, DEFAULT_ENCODING))
+	 instance, on Solaris 2.5 iconv cannot handle UTF-8 or UCS-2.
+
+	 On Solaris the default encoding, as returned by nl_langinfo(),
+	 is `646' (aka ASCII), but the Solaris iconv_open() doesn't
+	 understand that.  We work around that by pretending
+	 `646' to be the same as UTF-8.   */
+      if (strcmp (encoding, DEFAULT_ENCODING) && strcmp (encoding, "646"))
 	enc_error = 1;
 #ifdef HAVE_ICONV
       else
