@@ -766,7 +766,7 @@
 	* config/alpha/vms.h (STRUCT_VALUE_REGNUM): Remove #undef.
 	(STRUCT_VALUE): Remove.
 
-2003-01-14  Steven Bosscher  <stevenb@suse.de>
+2004-01-14  Steven Bosscher  <stevenb@suse.de>
 
 	* system.h: Poison PROMOTED_MODE
 	* integrate.c (expand_inline_function): Don't mention the
