@@ -9935,10 +9935,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	     controlled just like plain `int', but a typedef for
 	     `signed int' cannot be so controlled.  */
 	  && !(typedef_decl 
-	       && C_TYPEDEF_EXPLICITLY_SIGNED (typedef_decl)))
+	       && C_TYPEDEF_EXPLICITLY_SIGNED (typedef_decl))
 	  && (TREE_CODE (type) == INTEGER_TYPE
 	      || TREE_CODE (type) == CHAR_TYPE)
-	  && !same_type_p (TYPE_MAIN_VARIANT (type), wchar_type_node))
+	  && !same_type_p (TYPE_MAIN_VARIANT (type), wchar_type_node)))
     {
       if (longlong)
 	type = long_long_unsigned_type_node;
