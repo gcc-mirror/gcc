@@ -1,3 +1,12 @@
+2003-10-21  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in (parse.o): Honor $(parsedir).
+	(lex.o): Likewise.
+	(lex.c): Likewise
+	(parse.c, parse.h): Likewise.
+	($(docobjdir)/treelang.info): Replace $(srcdir)/doc with $(docdir).
+	(dvi): Likewise.
+
 2003-10-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in ($(docobjdir)/treelang/treelang.info): Depend on
