@@ -947,8 +947,7 @@ save_comment (pfile, token, from)
   unsigned int len;
   cpp_toklist *list = &pfile->token_list;
   
-#define COMMENT_START_LEN 2
-  len = pfile->buffer->cur - from + COMMENT_START_LEN;
+  len = pfile->buffer->cur - from + 1; /* + 1 for the initial '/'.  */
   _cpp_reserve_name_space (list, len);
   buffer = list->namebuf + list->name_used;
   list->name_used += len;
@@ -957,10 +956,8 @@ save_comment (pfile, token, from)
   token->val.str.len = len;
   token->val.str.text = buffer;
 
-  /* from[-1] is '/' or '*' depending on the comment type.  */
-  *buffer++ = '/';
-  *buffer++ = from[-1];
-  memcpy (buffer, from, len - COMMENT_START_LEN);
+  buffer[0] = '/';
+  memcpy (buffer + 1, from, len - 1);
 }
 
 /* Subroutine of lex_token to handle '%'.  A little tricky, since we
@@ -1187,65 +1184,56 @@ lex_token (pfile, result)
       break;
 
     case '/':
+      /* A potential block or line comment.  */
+      comment_start = buffer->cur;
       result->type = CPP_DIV;
       c = get_effective_char (buffer);
       if (c == '=')
 	ACCEPT_CHAR (CPP_DIV_EQ);
-      else if (c == '*')
-	{
-	  comment_start = buffer->cur;
+      if (c != '/' && c != '*')
+	break;
 
-	  /* Skip_block_comment updates buffer->read_ahead.  */
+      if (c == '*')
+	{
 	  if (skip_block_comment (pfile))
 	    cpp_error_with_line (pfile, result->line, result->col,
 				 "unterminated comment");
-	  if (!pfile->state.save_comments)
-	    {
-	      result->flags |= PREV_WHITE;
-	      goto next_char;
-	    }
-
-	  /* Save the comment as a token in its own right.  */
-	  save_comment (pfile, result, comment_start);
 	}
-      else if (c == '/')
+      else
 	{
+	  if (!CPP_OPTION (pfile, cplusplus_comments)
+	      && !CPP_IN_SYSTEM_HEADER (pfile))
+	    break;
+
 	  /* We silently allow C++ comments in system headers,
 	     irrespective of conformance mode, because lots of
 	     broken systems do that and trying to clean it up in
 	     fixincludes is a nightmare.  */
-	  if (CPP_IN_SYSTEM_HEADER (pfile))
-	    goto do_line_comment;
-	  if (CPP_OPTION (pfile, cplusplus_comments))
+	  if (!CPP_IN_SYSTEM_HEADER (pfile)
+	      && CPP_OPTION (pfile, c89) && CPP_PEDANTIC (pfile)
+	      && !buffer->warned_cplusplus_comments)
 	    {
-	      if (CPP_OPTION (pfile, c89) && CPP_PEDANTIC (pfile)
-		  && ! buffer->warned_cplusplus_comments)
-		{
-		  cpp_pedwarn (pfile,
-		       "C++ style comments are not allowed in ISO C89");
-		  cpp_pedwarn (pfile,
-		       "(this will be reported only once per input file)");
-		  buffer->warned_cplusplus_comments = 1;
-		}
-
-	    do_line_comment:
-	      comment_start = buffer->cur;
-
-	      /* Skip_line_comment updates buffer->read_ahead.  */
-	      if (skip_line_comment (pfile))
-		cpp_warning_with_line (pfile, result->line, result->col,
-				       "multi-line comment");
-
-	      if (!pfile->state.save_comments)
-		{
-		  result->flags |= PREV_WHITE;
-		  goto next_char;
-		}
-
-	      /* Save the comment as a token in its own right.  */
-	      save_comment (pfile, result, comment_start);
+	      cpp_pedwarn (pfile,
+			   "C++ style comments are not allowed in ISO C89");
+	      cpp_pedwarn (pfile,
+			   "(this will be reported only once per input file)");
+	      buffer->warned_cplusplus_comments = 1;
 	    }
+
+	  if (skip_line_comment (pfile))
+	    cpp_warning_with_line (pfile, result->line, result->col,
+				   "multi-line comment");
 	}
+
+      /* Skipping the comment has updated buffer->read_ahead.  */
+      if (!pfile->state.save_comments)
+	{
+	  result->flags |= PREV_WHITE;
+	  goto next_char;
+	}
+
+      /* Save the comment as a token in its own right.  */
+      save_comment (pfile, result, comment_start);
       break;
 
     case '<':
