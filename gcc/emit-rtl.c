@@ -540,6 +540,23 @@ gen_reg_rtx (mode)
   return val;
 }
 
+/* Identify REG (which may be a CONCAT) as a user register.  */
+
+void
+mark_user_reg (reg)
+     rtx reg;
+{
+  if (GET_CODE (reg) == CONCAT)
+    {
+      REG_USERVAR_P (XEXP (reg, 0)) = 1;
+      REG_USERVAR_P (XEXP (reg, 1)) = 1;
+    }
+  else if (GET_CODE (reg) == REG)
+    REG_USERVAR_P (reg) = 1;
+  else
+    abort ();
+}
+
 /* Identify REG as a probable pointer register and show its alignment
    as ALIGN, if nonzero.  */
 
