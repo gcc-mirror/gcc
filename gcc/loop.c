@@ -7765,7 +7765,14 @@ get_condition (jump, earliest)
 	     like Alpha that have an IEEE compliant EQ instruction, and
 	     a non-IEEE compliant BEQ instruction.  The use of CCmode is
 	     actually artificial, simply to prevent the combination, but
-	     should not affect other platforms.  */
+	     should not affect other platforms.
+
+	     However, we must allow VOIDmode comparisons to match either
+	     CCmode or non-CCmode comparison, because some ports have
+	     modeless comparisons inside branch patterns.
+
+	     ??? This mode check should perhaps look more like the mode check
+	     in simplify_comparison in combine.  */
 
 	  if ((GET_CODE (SET_SRC (set)) == COMPARE
 	       || (((code == NE
@@ -7783,8 +7790,9 @@ get_condition (jump, earliest)
 #endif
 		     ))
 		   && GET_RTX_CLASS (GET_CODE (SET_SRC (set))) == '<'))
-	      && ((GET_MODE_CLASS (mode) == MODE_CC)
-		  == (GET_MODE_CLASS (inner_mode) == MODE_CC)))
+	      && (((GET_MODE_CLASS (mode) == MODE_CC)
+		   == (GET_MODE_CLASS (inner_mode) == MODE_CC))
+		  || mode == VOIDmode || inner_mode == VOIDmode))
 	    x = SET_SRC (set);
 	  else if (((code == EQ
 		     || (code == GE
@@ -7801,8 +7809,10 @@ get_condition (jump, earliest)
 #endif
 		     ))
 		   && GET_RTX_CLASS (GET_CODE (SET_SRC (set))) == '<'
-	           && ((GET_MODE_CLASS (mode) == MODE_CC)
-		       == (GET_MODE_CLASS (inner_mode) == MODE_CC)))
+	           && (((GET_MODE_CLASS (mode) == MODE_CC)
+			== (GET_MODE_CLASS (inner_mode) == MODE_CC))
+		       || mode == VOIDmode || inner_mode == VOIDmode))
+
 	    {
 	      /* We might have reversed a LT to get a GE here.  But this wasn't
 		 actually the comparison of data, so we don't flag that we
