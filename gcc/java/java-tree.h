@@ -1117,6 +1117,9 @@ struct lang_type GTY(())
 #define SEARCH_SUPER          2
 #define SEARCH_VISIBLE        4
 
+/* Defined in java-except.h  */
+struct eh_range;
+
 extern void java_parse_file (int);
 extern bool java_mark_addressable (tree);
 extern tree java_type_for_mode (enum machine_mode, int);
@@ -1345,6 +1348,7 @@ extern tree add_stmt_to_compound (tree, tree, tree);
 extern tree java_add_stmt (tree);
 extern tree java_add_local_var (tree decl);
 extern tree *get_stmts (void);
+extern void register_exception_range(struct eh_range *, int, int);
 
 extern void finish_method (tree);
 extern void java_expand_body (tree);
