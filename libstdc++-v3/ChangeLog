@@ -1,3 +1,10 @@
+2003-05-01  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/ext/stdio_filebuf.h
+	(stdio_filebuf(int, std::ios_base::openmode, bool, size_t),
+	stdio_filebuf(std::__c_file*, std::ios_base::openmode, size_t)):
+	Shorten a bit (-10 lines) by factoring out some code.
+
 2003-04-30  Phil Edwards  <pme@gcc.gnu.org>
 
 	* acinclude.m4:  Add bit missing from previous patch.
