@@ -116,6 +116,7 @@ Boston, MA 02111-1307, USA.  */
    This is used to align code labels according to Intel recommendations.  */
 
 #ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
+#undef  ASM_OUTPUT_MAX_SKIP_ALIGN
 #define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE, LOG, MAX_SKIP)					\
   if ((LOG) != 0) {														\
     if ((MAX_SKIP) == 0) fprintf ((FILE), "\t.p2align %d\n", (LOG));	\
