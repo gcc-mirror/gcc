@@ -777,16 +777,17 @@ real_value_truncate (mode, arg)
   volatile
 #endif
     REAL_VALUE_TYPE value;
-  jmp_buf handler;
+  jmp_buf handler, old_handler;
+  int handled;
 
   if (setjmp (handler))
     {
       error ("floating overflow");
       return dconst0;
     }
-  set_float_handler (handler);
+  handled = push_float_handler (handler, old_handler);
   value = REAL_VALUE_TRUNCATE (mode, arg);
-  set_float_handler (NULL_PTR);
+  pop_float_handler (handled, old_handler);
   return value;
 }
 
