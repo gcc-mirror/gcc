@@ -1,3 +1,7 @@
+1999-04-22  Tom Tromey  <tromey@cygnus.com>
+
+	* Make-lang.in (JAVA_SRCS): Added check-init.c.
+
 Wed Apr 21 11:13:36 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* decl.c (predef_filenames, predef_filenames_size): New globals
