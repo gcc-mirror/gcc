@@ -1,3 +1,11 @@
+2004-03-08  David Edelsohn  <edelsohn@gnu.org>
+
+	* collect2.c (main): Only export initfunc and finifunc if
+	LD_INIT_SWITCH not defined.
+	(scan_prog_file): Only export constructors and destructors if
+	LD_INIT_SWITCH not defined.  Only export symbols not found in
+	shared objects.
+
 2004-03-09  Alan Modra  <amodra@bigpond.net.au>
 
 	* doc/tm.texi (INIT_CUMULATIVE_ARGS): Update doco.
