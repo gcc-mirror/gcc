@@ -1,4 +1,4 @@
-2005-02-15  David Edelsohn  <edelsohn@gnu.org>
+2005-02-16  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/19019
 	* config/rs6000/t-aix43 (SHLIB_MAPFILES): Add libgcc-ppc64.ver.
