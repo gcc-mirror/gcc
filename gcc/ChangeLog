@@ -1,3 +1,14 @@
+2004-08-18  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (CONDITIONAL_REGISTER_USAGE): Don't exclude fixed registers
+	from call_used_regs.  Update call_really_used_regs.
+	(CALL_REALLY_USED_REGISTERS): Define.
+	* sh.c (output_stack_adjust, shmedia_target_regs_stack_space):
+	Replace call_used_regs with call_really_used_regs.
+	(calc_live_regs, sh_media_register_for_return): Likewise.
+	(sh5_schedule_saves, sh_expand_prologue, reg_unused_after): Likewise.
+	* sh.md (return_media): Likewise.
+
 2004-08-18  Andrew Pinski  <apinski@apple.com>
 
 	* config/darwin.c (machopic_legitimize_pic_address): Only set MEM_READONLY_P

@@ -4821,7 +4821,7 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
 	     to handle this case, so just abort when we see it.  */
 	  if (epilogue_p < 0
 	      || current_function_interrupt
-	      || ! call_used_regs[temp] || fixed_regs[temp])
+	      || ! call_really_used_regs[temp] || fixed_regs[temp])
 	    temp = -1;
 	  if (temp < 0 && ! current_function_interrupt
 	      && (TARGET_SHMEDIA || epilogue_p >= 0))
@@ -5051,7 +5051,7 @@ shmedia_target_regs_stack_space (HARD_REG_SET *live_regs_mask)
   int interrupt_handler = sh_cfun_interrupt_handler_p ();
 
   for (reg = LAST_TARGET_REG; reg >= FIRST_TARGET_REG; reg--)
-    if ((! call_used_regs[reg] || interrupt_handler)
+    if ((! call_really_used_regs[reg] || interrupt_handler)
         && ! TEST_HARD_REG_BIT (*live_regs_mask, reg))
       /* Leave space to save this target register on the stack,
 	 in case target register allocation wants to use it.  */
@@ -5111,7 +5111,8 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
   else if ((TARGET_SH4 || TARGET_SH2A_DOUBLE) && TARGET_FMOVD && TARGET_FPU_SINGLE)
     for (count = 0, reg = FIRST_FP_REG; reg <= LAST_FP_REG; reg += 2)
       if (regs_ever_live[reg] && regs_ever_live[reg+1]
-	  && (! call_used_regs[reg] || (interrupt_handler && ! pragma_trapa))
+	  && (! call_really_used_regs[reg]
+	      || (interrupt_handler && ! pragma_trapa))
 	  && ++count > 2)
 	{
 	  target_flags &= ~FPU_SINGLE_BIT;
@@ -5152,8 +5153,9 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
 	  : (interrupt_handler && ! pragma_trapa)
 	  ? (/* Need to save all the regs ever live.  */
 	     (regs_ever_live[reg]
-	      || (call_used_regs[reg]
-		  && (! fixed_regs[reg] || reg == MACH_REG || reg == MACL_REG)
+	      || (call_really_used_regs[reg]
+		  && (! fixed_regs[reg] || reg == MACH_REG || reg == MACL_REG
+		      || reg == PIC_OFFSET_TABLE_REGNUM)
 		  && has_call)
 	      || (has_call && REGISTER_NATURAL_MODE (reg) == SImode
 		  && (GENERAL_REGISTER_P (reg) || TARGET_REGISTER_P (reg))))
@@ -5167,7 +5169,7 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
 	      && flag_pic
 	      && current_function_args_info.call_cookie
 	      && reg == (int) PIC_OFFSET_TABLE_REGNUM)
-	     || (regs_ever_live[reg] && ! call_used_regs[reg])
+	     || (regs_ever_live[reg] && ! call_really_used_regs[reg])
 	     || (current_function_calls_eh_return
 		 && (reg == (int) EH_RETURN_DATA_REGNO (0)
 		     || reg == (int) EH_RETURN_DATA_REGNO (1)
@@ -5207,7 +5209,7 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
       && TARGET_SAVE_ALL_TARGET_REGS
       && shmedia_space_reserved_for_target_registers)
     for (reg = LAST_TARGET_REG; reg >= FIRST_TARGET_REG; reg--)
-      if ((! call_used_regs[reg] || interrupt_handler)
+      if ((! call_really_used_regs[reg] || interrupt_handler)
 	  && ! TEST_HARD_REG_BIT (*live_regs_mask, reg))
 	{
 	  SET_HARD_REG_BIT (*live_regs_mask, reg);
@@ -5262,7 +5264,7 @@ sh_media_register_for_return (void)
   tr0_used = flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM];
 
   for (regno = FIRST_TARGET_REG + tr0_used; regno <= LAST_TARGET_REG; regno++)
-    if (call_used_regs[regno] && ! regs_ever_live[regno])
+    if (call_really_used_regs[regno] && ! regs_ever_live[regno])
       return regno;
 
   return -1;
@@ -5310,7 +5312,7 @@ sh5_schedule_saves (HARD_REG_SET *live_regs_mask, save_schedule *schedule,
 
   if (! current_function_interrupt)
     for (i = FIRST_GENERAL_REG; tmpx < MAX_TEMPS && i <= LAST_GENERAL_REG; i++)
-      if (call_used_regs[i] && ! fixed_regs[i] && i != PR_MEDIA_REG
+      if (call_really_used_regs[i] && ! fixed_regs[i] && i != PR_MEDIA_REG
 	  && ! FUNCTION_ARG_REGNO_P (i)
 	  && i != FIRST_RET_REG
 	  && ! (cfun->static_chain_decl != NULL && i == STATIC_CHAIN_REGNUM)
@@ -5510,7 +5512,7 @@ sh_expand_prologue (void)
       save_entry *entry;
       int *tmp_pnt;
 
-      if (call_used_regs[R0_REG] && ! fixed_regs[R0_REG]
+      if (call_really_used_regs[R0_REG] && ! fixed_regs[R0_REG]
 	  && ! current_function_interrupt)
 	r0 = gen_rtx_REG (Pmode, R0_REG);
 
@@ -8005,7 +8007,7 @@ reg_unused_after (rtx reg, rtx insn)
       if (set == 0 && reg_overlap_mentioned_p (reg, PATTERN (insn)))
 	return 0;
 
-      if (code == CALL_INSN && call_used_regs[REGNO (reg)])
+      if (code == CALL_INSN && call_really_used_regs[REGNO (reg)])
 	return 1;
     }
   return 1;
