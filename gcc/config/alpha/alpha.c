@@ -173,6 +173,20 @@ and_operand (op, mode)
   return register_operand (op, mode);
 }
 
+/* Return 1 if OP is a valid first operand to an IOR insn.  */
+
+int
+ior_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) == CONST_INT)
+    return ((unsigned HOST_WIDE_INT) INTVAL (op) < 0x100
+	    || (unsigned HOST_WIDE_INT) ~ INTVAL (op) < 0x100);
+
+  return register_operand (op, mode);
+}
+
 /* Return 1 if OP is a constant that is the width, in bits, of an integral
    mode smaller than DImode.  */
 
