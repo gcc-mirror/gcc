@@ -4387,7 +4387,39 @@ build_over_call (struct z_candidate *cand, int flags)
       joust (cand, WRAPPER_ZC (TREE_VALUE (val)), 1);
 
   if (DECL_FUNCTION_MEMBER_P (fn))
-    perform_or_defer_access_check (cand->access_path, fn);
+    {
+      /* If FN is a template function, two cases must be considered.
+	 For example:
+
+	   struct A {
+	     protected:
+	       template <class T> void f();
+	   };
+	   template <class T> struct B {
+	     protected:
+	       void g();
+	   };
+	   struct C : A, B<int> {
+	     using A::f;	// #1
+	     using B<int>::g;	// #2
+	   };
+
+	 In case #1 where `A::f' is a member template, DECL_ACCESS is
+	 recorded in the primary template but not in its specialization.
+	 We check access of FN using its primary template.
+
+	 In case #2, where `B<int>::g' has a DECL_TEMPLATE_INFO simply
+	 because it is a member of class template B, DECL_ACCESS is
+	 recorded in the specialization `B<int>::g'.  We cannot use its
+	 primary template because `B<T>::g' and `B<int>::g' may have
+	 different access.  */
+      if (DECL_TEMPLATE_INFO (fn)
+	  && is_member_template (DECL_TI_TEMPLATE (fn)))
+	perform_or_defer_access_check (cand->access_path,
+				       DECL_TI_TEMPLATE (fn));
+      else
+	perform_or_defer_access_check (cand->access_path, fn);
+    }
 
   if (args && TREE_CODE (args) != TREE_LIST)
     args = build_tree_list (NULL_TREE, args);
