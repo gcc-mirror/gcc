@@ -892,7 +892,7 @@ do {									 \
       register unsigned char *_limited_str = (unsigned char *) (STR);	\
       register unsigned ch;						\
       fprintf ((FILE), "\t%s\t\"", STRING_ASM_OP);			\
-      for (; ch = *_limited_str; _limited_str++)			\
+      for (; (ch = *_limited_str); _limited_str++)			\
         {								\
 	  register int escape;						\
 	  switch (escape = ESCAPES[ch])					\

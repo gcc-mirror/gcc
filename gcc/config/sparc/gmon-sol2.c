@@ -44,6 +44,7 @@ static char sccsid[] = "@(#)gmon.c	5.3 (Berkeley) 5/22/91";
 #include <string.h>
 #include <limits.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #if 0
 #include "sparc/gmon.h"
@@ -95,7 +96,9 @@ static int	s_scale;
 
 #define	MSG "No space for profiling buffer(s)\n"
 
-monstartup(lowpc, highpc)
+static void moncontrol();
+
+void monstartup(lowpc, highpc)
     char	*lowpc;
     char	*highpc;
 {
@@ -201,7 +204,7 @@ _mcleanup()
 	else
 	    progname++;
 
-	sprintf(buf, "%s/%d.%s", profdir, getpid(), progname);
+	sprintf(buf, "%s/%ld.%s", profdir, getpid(), progname);
 	proffile = buf;
     } else {
 	proffile = "gmon.out";
@@ -279,11 +282,10 @@ asm(".global _mcount; _mcount: mov %i7,%o1; mov %o7,%o0;b,a internal_mcount");
 /* This is for compatibility with old versions of gcc which used mcount.  */
 asm(".global mcount; mcount: mov %i7,%o1; mov %o7,%o0;b,a internal_mcount");
 
-static internal_mcount(selfpc, frompcindex)
+static void internal_mcount(selfpc, frompcindex)
 	register char			*selfpc;
 	register unsigned short		*frompcindex;
 {
-	register char			*nextframe;
 	register struct tostruct	*top;
 	register struct tostruct	*prevtop;
 	register long			toindex;
@@ -410,7 +412,7 @@ overflow:
  *	profiling is what mcount checks to see if
  *	all the data structures are ready.
  */
-moncontrol(mode)
+static void moncontrol(mode)
     int mode;
 {
     if (mode) {

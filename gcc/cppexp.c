@@ -31,13 +31,22 @@ Written by Per Bothner 1994.  */
 extern char *xmalloc PARAMS ((unsigned));
 extern char *xrealloc PARAMS ((void *, unsigned));
 
-#ifdef MULTIBYTE_CHARS
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
+#ifdef MULTIBYTE_CHARS
 #include <locale.h>
 #endif
 
 #if HAVE_LIMITS_H
 # include <limits.h>
+#endif
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
 #endif
 
 #include <stdio.h>
@@ -306,7 +315,6 @@ cpp_lex (pfile, skip_evaluation)
      int skip_evaluation;
 {
   register int c;
-  register int namelen;
   register struct token *toktab;
   enum cpp_token token;
   struct operation op;
@@ -360,7 +368,7 @@ cpp_lex (pfile, skip_evaluation)
 	 It is mostly copied from c-lex.c.  */
       {
         register int result = 0;
-	register num_chars = 0;
+	register int num_chars = 0;
 	unsigned width = MAX_CHAR_TYPE_SIZE;
 	int wide_flag = 0;
 	int max_chars;
