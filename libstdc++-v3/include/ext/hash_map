@@ -64,8 +64,12 @@
 #include <ext/stl_hashtable.h>
 #include <bits/concept_check.h>
 
-namespace std
+namespace __gnu_cxx
 {
+using std::equal_to;
+using std::allocator;
+using std::pair;
+using std::_Select1st;
 
 // Forward declaration of equality operator; needed for friend declaration.
 
@@ -371,14 +375,17 @@ swap(hash_multimap<_Key,_Tp,_HashFcn,_EqlKey,_Alloc>& __hm1,
   __hm1.swap(__hm2);
 }
 
+} // namespace __gnu_cxx
 
+namespace std
+{
 // Specialization of insert_iterator so that it will work for hash_map
 // and hash_multimap.
 
 template <class _Key, class _Tp, class _HashFn,  class _EqKey, class _Alloc>
-class insert_iterator<hash_map<_Key, _Tp, _HashFn, _EqKey, _Alloc> > {
+class insert_iterator<__gnu_cxx::hash_map<_Key, _Tp, _HashFn, _EqKey, _Alloc> > {
 protected:
-  typedef hash_map<_Key, _Tp, _HashFn, _EqKey, _Alloc> _Container;
+  typedef __gnu_cxx::hash_map<_Key, _Tp, _HashFn, _EqKey, _Alloc> _Container;
   _Container* container;
 public:
   typedef _Container          container_type;
@@ -402,9 +409,9 @@ public:
 };
 
 template <class _Key, class _Tp, class _HashFn,  class _EqKey, class _Alloc>
-class insert_iterator<hash_multimap<_Key, _Tp, _HashFn, _EqKey, _Alloc> > {
+class insert_iterator<__gnu_cxx::hash_multimap<_Key, _Tp, _HashFn, _EqKey, _Alloc> > {
 protected:
-  typedef hash_multimap<_Key, _Tp, _HashFn, _EqKey, _Alloc> _Container;
+  typedef __gnu_cxx::hash_multimap<_Key, _Tp, _HashFn, _EqKey, _Alloc> _Container;
   _Container* container;
   typename _Container::iterator iter;
 public:

@@ -35,5 +35,6 @@
 
 namespace std
 {
-  template const unsigned long rope<char, std::allocator<char> >::_S_min_len;
+  template
+  const unsigned long __gnu_cxx::rope<char, std::allocator<char> >::_S_min_len;
 } // namespace std

@@ -49,8 +49,17 @@
 #include <bits/std_iostream.h>
 #include <bits/functexcept.h>
 
-namespace std
+namespace __gnu_cxx
 {
+using std::size_t;
+using std::printf;
+using std::basic_ostream;  
+using std::__throw_length_error;
+using std::__alloc;
+using std::_Destroy;
+using std::uninitialized_fill_n;
+using std::lexicographical_compare_3way;
+using std::uninitialized_copy_n;
 
 // Set buf_start, buf_end, and buf_ptr appropriately, filling tmp_buf
 // if necessary.  Assumes _M_path_end[leaf_index] and leaf_pos are correct.
@@ -837,13 +846,13 @@ bool rope<_CharT, _Alloc>::_S_apply_to_pieces(
 		_RopeRep* __left =  __conc->_M_left;
 		size_t __left_len = __left->_M_size;
 		if (__begin < __left_len) {
-		    size_t __left_end = min(__left_len, __end);
+		    size_t __left_end = std::min(__left_len, __end);
 		    if (!_S_apply_to_pieces(__c, __left, __begin, __left_end))
 			return false;
 		}
 		if (__end > __left_len) {
 		    _RopeRep* __right =  __conc->_M_right;
-		    size_t __right_start = max(__left_len, __begin);
+		    size_t __right_start = std::max(__left_len, __begin);
 		    if (!_S_apply_to_pieces(__c, __right,
 					 __right_start - __left_len,
 					 __end - __left_len)) {
@@ -901,7 +910,7 @@ basic_ostream<_CharT, _Traits>& operator<< (basic_ostream<_CharT, _Traits>& __o,
                                             const rope<_CharT, _Alloc>& __r)
 {
     size_t __w = __o.width();
-    bool __left = bool(__o.flags() & ios::left);
+    bool __left = bool(__o.flags() & std::ios::left);
     size_t __pad_len;
     size_t __rope_len = __r.size();
       _Rope_insert_char_consumer<_CharT, _Traits> __c(__o);
@@ -974,7 +983,7 @@ rope<_CharT,_Alloc>::_S_flatten(_RopeRep* __r, _CharT* __buffer)
 	case _RopeRep::_S_leaf:
 	    {
 		_RopeLeaf* __l = (_RopeLeaf*)__r;
-		return copy_n(__l->_M_data, __l->_M_size, __buffer).second;
+		return std::copy_n(__l->_M_data, __l->_M_size, __buffer).second;
 	    }
 	case _RopeRep::_S_function:
 	case _RopeRep::_S_substringfn:
@@ -1449,7 +1458,7 @@ const _CharT* rope<_CharT,_Alloc>::c_str() const {
 	_M_tree_ptr->_M_c_string = __result;
 #   else
       if ((__old_c_string = (__GC_CONST _CharT*)
-             _Atomic_swap((unsigned long *)(&(_M_tree_ptr->_M_c_string)),
+             std::_Atomic_swap((unsigned long *)(&(_M_tree_ptr->_M_c_string)),
 			  (unsigned long)__result)) != 0) {
 	// It must have been added in the interim.  Hence it had to have been
 	// separately allocated.  Deallocate the old copy, since we just
@@ -1530,7 +1539,7 @@ inline void rotate(
 }
 # endif
 
-} // namespace std
+} // namespace __gnu_cxx
 
 // Local Variables:
 // mode:C++

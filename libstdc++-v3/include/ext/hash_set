@@ -64,8 +64,12 @@
 #include <ext/stl_hashtable.h>
 #include <bits/concept_check.h>
 
-namespace std
+namespace __gnu_cxx
 {
+using std::equal_to;
+using std::allocator;
+using std::pair;
+using std::_Identity;
 
 // Forward declaration of equality operator; needed for friend declaration.
 
@@ -361,13 +365,17 @@ swap(hash_multiset<_Val,_HashFcn,_EqualKey,_Alloc>& __hs1,
   __hs1.swap(__hs2);
 }
 
+} // namespace __gnu_cxx
+
+namespace std
+{
 // Specialization of insert_iterator so that it will work for hash_set
 // and hash_multiset.
 
 template <class _Value, class _HashFcn, class _EqualKey, class _Alloc>
-class insert_iterator<hash_set<_Value, _HashFcn, _EqualKey, _Alloc> > {
+class insert_iterator<__gnu_cxx::hash_set<_Value, _HashFcn, _EqualKey, _Alloc> > {
 protected:
-  typedef hash_set<_Value, _HashFcn, _EqualKey, _Alloc> _Container;
+  typedef __gnu_cxx::hash_set<_Value, _HashFcn, _EqualKey, _Alloc> _Container;
   _Container* container;
 public:
   typedef _Container          container_type;
@@ -391,9 +399,9 @@ public:
 };
 
 template <class _Value, class _HashFcn, class _EqualKey, class _Alloc>
-class insert_iterator<hash_multiset<_Value, _HashFcn, _EqualKey, _Alloc> > {
+class insert_iterator<__gnu_cxx::hash_multiset<_Value, _HashFcn, _EqualKey, _Alloc> > {
 protected:
-  typedef hash_multiset<_Value, _HashFcn, _EqualKey, _Alloc> _Container;
+  typedef __gnu_cxx::hash_multiset<_Value, _HashFcn, _EqualKey, _Alloc> _Container;
   _Container* container;
   typename _Container::iterator iter;
 public:
