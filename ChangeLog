@@ -1,5 +1,7 @@
 2000-12-14  Tom Tromey  <tromey@redhat.com>
 
+	* MAINTAINERS: Removed brads.
+
 	* MAINTAINERS: Added gcj developers.
 
 2000-12-13  Anthony Green  <green@redhat.com>
