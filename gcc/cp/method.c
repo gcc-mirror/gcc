@@ -468,7 +468,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
       /* Re-enable access control.  */
       pop_deferring_access_checks ();
 
-      expand_or_defer_fn (finish_function (0));
+      expand_body (finish_function (0));
     }
 
   pop_from_top_level ();
