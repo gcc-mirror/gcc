@@ -105,8 +105,7 @@ toplevel_srcdir=\${srcdir}/$toprel
 AC_SUBST(toplevel_srcdir)
 
 AC_CANONICAL_SYSTEM
-_GCC_TOPLEV_NONCANONICAL_TARGET
-AC_SUBST(target_noncanonical)
+ACX_NONCANONICAL_TARGET
 
 # Export source directory.
 # These need to be absolute paths, yet at the same time need to
