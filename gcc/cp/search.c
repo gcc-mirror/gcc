@@ -2544,7 +2544,8 @@ dfs_push_decls (binfo, data)
 	  
       method_vec = (CLASS_TYPE_P (type) 
 		    ? CLASSTYPE_METHOD_VEC (type) : NULL_TREE);
-      if (method_vec)
+
+      if (method_vec && TREE_VEC_LENGTH (method_vec) >= 3)
 	{
 	  tree *methods;
 	  tree *end;
@@ -2553,7 +2554,7 @@ dfs_push_decls (binfo, data)
 	  end = TREE_VEC_END (method_vec);
 
 	  for (methods = &TREE_VEC_ELT (method_vec, 2);
-	       *methods && methods != end;
+	       methods < end && *methods;
 	       methods++)
 	    setup_class_bindings (DECL_NAME (OVL_CURRENT (*methods)), 
 				  /*type_binding_p=*/0);
