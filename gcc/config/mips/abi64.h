@@ -61,25 +61,33 @@ Boston, MA 02111-1307, USA.  */
 %{mips2: -D_MIPS_ISA=_MIPS_ISA_MIPS2} \
 %{mips3: -D_MIPS_ISA=_MIPS_ISA_MIPS3} \
 %{mips4: -D_MIPS_ISA=_MIPS_ISA_MIPS4} \
-%{!mips1: %{!mips2: %{!mips3: %{!mips4: -D_MIPS_ISA=_MIPS_ISA_MIPS4}}}} \
+%{!mips1: %{!mips2: %{!mips3: %{!mips4: -D_MIPS_ISA=_MIPS_ISA_MIPS3}}}} \
 %{mabi=32: -D_MIPS_SIM=_MIPS_SIM_ABI32}	\
 %{mabi=n32: -D_ABIN32=2 -D_MIPS_SIM=_ABIN32} \
 %{mabi=64: -D_ABI64=3 -D_MIPS_SIM=_ABI64} \
-%{!mabi=32: %{!mabi=n32: %{!mabi=64: -D_ABI64=3 -D_MIPS_SIM=_ABI64}}}	\
+%{!mabi=32: %{!mabi=n32: %{!mabi=64: -D_ABIN32=2 -D_MIPS_SIM=_ABIN32}}}	\
 %{!mint64: -D_MIPS_SZINT=32}%{mint64: -D_MIPS_SZINT=64} \
-%{mabi=32: -D_MIPS_SZLONG=32}%{mabi=n32: -D_MIPS_SZLONG=32} \
-%{!mabi=32: %{!mabi=n32: -D_MIPS_SZLONG=64}} \
-%{mabi=32: -D_MIPS_SZPTR=32}%{mabi=n32: -D_MIPS_SZPTR=32} \
-%{!mabi=32: %{!mabi=n32: -D_MIPS_SZPTR=64}} \
+%{mabi=32: -D_MIPS_SZLONG=32} \
+%{mabi=n32: -D_MIPS_SZLONG=32} \
+%{mabi=64: -D_MIPS_SZLONG=64} \
+%{!mabi=32: %{!mabi=n32: %{!mabi=64: -D_MIPS_SZLONG=32}}} \
+%{mabi=32: -D_MIPS_SZPTR=32} \
+%{mabi=n32: -D_MIPS_SZPTR=32} \
+%{mabi=64: -D_MIPS_SZPTR=64} \
+%{!mabi=32: %{!mabi=n32: %{!mabi=64: -D_MIPS_SZPTR=32}}} \
 %{!mips1:%{!mips2: -D_COMPILER_VERSION=601}}		\
 %{mabi=32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 %{mabi=n32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-%{!mabi=32:%{!mabi=n32: -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}} \
+%{mabi=64: -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
+%{!mabi=32:%{!mabi=n32: %{!mabi=64: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}} \
 %{mips3: -U__mips -D__mips=3} \
-%{!mips1:%{!mips2: -U__mips -D__mips=4}} \
+%{mips4: -U__mips -D__mips=4} \
+%{!mips1:%{!mips2:%{!mips3:%{!mips4: -U__mips -D__mips=3}}}} \
 %{mgp32: -U__mips64}%{mgp64: -D__mips64} \
-%{mabi=32: -U__mips64}%{mabi=n32: -D__mips64} \
-%{!mabi=32: %{!mabi=n32: -D__mips64}} \
+%{mabi=32: -U__mips64} \
+%{mabi=n32: -D__mips64} \
+%{mabi=64: -D__mips64} \
+%{!mabi=32: %{!mabi=n32: %{!mabi=64: -D__mips64}}} \
 %{msingle-float:%{!msoft-float:-D__mips_single_float}} \
 %{m4650:%{!msoft-float:-D__mips_single_float}} \
 %{EB:-UMIPSEL -U_MIPSEL -U__MIPSEL -U__MIPSEL__ -D_MIPSEB -D__MIPSEB -D__MIPSEB__ %{!ansi:-DMIPSEB}} \
