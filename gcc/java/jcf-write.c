@@ -25,6 +25,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "system.h"
 #include "jcf.h"
 #include "tree.h"
+#include "real.h"
 #include "java-tree.h"
 #include "obstack.h"
 #undef AND
@@ -1536,7 +1537,7 @@ generate_bytecode_insns (exp, target, state)
       {
 	int prec = TYPE_PRECISION (type) >> 5;
 	RESERVE(1);
-	if (real_zerop (exp))
+	if (real_zerop (exp) && ! REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (exp)))
 	  OP1 (prec == 1 ? OPCODE_fconst_0 : OPCODE_dconst_0);
 	else if (real_onep (exp))
 	  OP1 (prec == 1 ? OPCODE_fconst_1 : OPCODE_dconst_1);
