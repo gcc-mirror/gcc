@@ -633,7 +633,7 @@ process_start_catch_block_old (declspecs, declarator)
       decl = grokdeclarator (declarator, declspecs, CATCHPARM, 1, NULL_TREE);
 
       if (decl == NULL_TREE)
-	cp_error (ec_invalid_catch_parameter);
+	error ("invalid catch parameter");
     }
 
   if (decl)
@@ -745,7 +745,7 @@ process_start_catch_block (declspecs, declarator)
       decl = grokdeclarator (declarator, declspecs, CATCHPARM, 1, NULL_TREE);
 
       if (decl == NULL_TREE)
-	cp_error (ec_invalid_catch_parameter);
+	error ("invalid catch parameter");
     }
 
   if (decl)
@@ -1173,7 +1173,7 @@ expand_throw (exp)
 	  exp = build_modify_expr (object, INIT_EXPR, exp);
 
 	  if (exp == error_mark_node)
-	    cp_error (ec_in_thrown_expression);
+	    error ("  in thrown expression");
 
 	  expand_expr (exp, const0_rtx, VOIDmode, 0);
 	  expand_eh_region_end (build_terminate_handler ());
@@ -1277,7 +1277,7 @@ build_throw (e)
     return build_min (THROW_EXPR, void_type_node, e);
 
   if (e == null_node)
-    cp_warning (ec_throwing_which_has_integral_not_pointer_type);
+    cp_warning ("throwing NULL, which has integral, not pointer type");
 
   e = build1 (THROW_EXPR, void_type_node, e);
   TREE_SIDE_EFFECTS (e) = 1;

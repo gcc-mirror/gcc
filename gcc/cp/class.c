@@ -285,7 +285,7 @@ build_vbase_path (code, type, expr, path, nonnull)
 	    }
 	  else
 	    {
-	      cp_error (ec_cannot_cast_up_from_virtual_baseclass,
+	      cp_error ("cannot cast up from virtual baseclass `%T'",
 			  last_virtual);
 	      return error_mark_node;
 	    }
@@ -859,7 +859,7 @@ prepare_fresh_vtable (binfo, for_type)
 	 ensure that the binfo is from for_type's binfos, not from any
 	 base type's.  We can remove all this code after a while.  */
       if (binfo1 != binfo)
-	cp_warning (ec_internal_inconsistency_binfo_offset_error_for_rtti);
+	warning ("internal inconsistency: binfo offset error for rtti");
 
       offset = BINFO_OFFSET (binfo1);
     }
@@ -925,7 +925,7 @@ modify_vtable_entry (old_entry_in_list, new_entry, fndecl)
   tree base_fndecl = TREE_OPERAND (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (old_entry_in_list)), 0);
 
 #ifdef NOTQUITE
-  cp_warning (ec_replaced_with, DECL_ASSEMBLER_NAME (base_fndecl),
+  cp_warning ("replaced %D with %D", DECL_ASSEMBLER_NAME (base_fndecl),
 	      DECL_ASSEMBLER_NAME (fndecl));
 #endif
   TREE_VALUE (old_entry_in_list) = new_entry;
@@ -980,10 +980,10 @@ add_virtual_function (pv, phv, has_virtual, fndecl, t)
 
 #ifndef DUMB_USER
   if (current_class_type == 0)
-    cp_warning (ec_internal_problem_current_class_type_is_zero_when_adding_please_report,
+    cp_warning ("internal problem, current_class_type is zero when adding `%D', please report",
 		fndecl);
   if (current_class_type && t != current_class_type)
-    cp_warning (ec_internal_problem_current_class_type_differs_when_adding_please_report,
+    cp_warning ("internal problem, current_class_type differs when adding `%D', please report",
 		fndecl);
 #endif
 
@@ -1218,17 +1218,17 @@ delete_duplicate_fields_1 (field, fields)
 		{
 		  if (TREE_CODE (field) == CONST_DECL
 		      && TREE_CODE (x) == CONST_DECL)
-		    cp_error_at (ec_duplicate_enum_value, x);
+		    cp_error_at ("duplicate enum value `%D'", x);
 		  else if (TREE_CODE (field) == CONST_DECL
 			   || TREE_CODE (x) == CONST_DECL)
-		    cp_error_at (ec_duplicate_field_as_enum_and_nonenum,
+		    cp_error_at ("duplicate field `%D' (as enum and non-enum)",
 				x);
 		  else if (DECL_DECLARES_TYPE_P (field)
 			   && DECL_DECLARES_TYPE_P (x))
 		    {
 		      if (comptypes (TREE_TYPE (field), TREE_TYPE (x), 1))
 			continue;
-		      cp_error_at (ec_duplicate_nested_type, x);
+		      cp_error_at ("duplicate nested type `%D'", x);
 		    }
 		  else if (DECL_DECLARES_TYPE_P (field)
 			   || DECL_DECLARES_TYPE_P (x))
@@ -1239,11 +1239,11 @@ delete_duplicate_fields_1 (field, fields)
 			  || (TREE_CODE (x) == TYPE_DECL
 			      && DECL_ARTIFICIAL (x)))
 			continue;
-		      cp_error_at (ec_duplicate_field_as_type_and_nontype,
+		      cp_error_at ("duplicate field `%D' (as type and non-type)",
 				   x);
 		    }
 		  else
-		    cp_error_at (ec_duplicate_member, x);
+		    cp_error_at ("duplicate member `%D'", x);
 		  if (prev == 0)
 		    fields = TREE_CHAIN (fields);
 		  else
@@ -1281,9 +1281,9 @@ alter_access (t, binfo, fdecl, access)
       if (TREE_VALUE (elem) != access)
 	{
 	  if (TREE_CODE (TREE_TYPE (fdecl)) == FUNCTION_DECL)
-	    cp_error_at (ec_conflicting_access_specifications_for_method_ignored, TREE_TYPE (fdecl));
+	    cp_error_at ("conflicting access specifications for method `%D', ignored", TREE_TYPE (fdecl));
 	  else
-	    cp_error (ec_conflicting_access_specifications_for_field_s_ignored,
+	    error ("conflicting access specifications for field `%s', ignored",
 		   IDENTIFIER_POINTER (DECL_NAME (fdecl)));
 	}
       else
@@ -1332,13 +1332,13 @@ handle_using_decl (using_decl, t, method_vec, fields)
   
   if (name == constructor_name (ctype)
       || name == constructor_name_full (ctype))
-    cp_error_at (ec_usingdeclaration_for_constructor, using_decl);
+    cp_error_at ("using-declaration for constructor", using_decl);
   
   fdecl = lookup_member (binfo, name, 0, 0);
   
   if (!fdecl)
     {
-      cp_error_at (ec_no_members_matching_in, using_decl, ctype);
+      cp_error_at ("no members matching `%D' in `%#T'", using_decl, ctype);
       return;
     }
 
@@ -1362,8 +1362,8 @@ handle_using_decl (using_decl, t, method_vec, fields)
     if (DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, i)))
 	== name)
       {
-	cp_error (ec_cannot_adjust_access_to_in, fdecl, t);
-	cp_error_at (ec_because_of_local_method_with_same_name,
+	cp_error ("cannot adjust access to `%#D' in `%#T'", fdecl, t);
+	cp_error_at ("  because of local method `%#D' with same name",
 		     OVL_CURRENT (TREE_VEC_ELT (method_vec, i)));
 	return;
       }
@@ -1375,8 +1375,8 @@ handle_using_decl (using_decl, t, method_vec, fields)
   for (tmp = fields; tmp; tmp = TREE_CHAIN (tmp))
     if (DECL_NAME (tmp) == name)
       {
-	cp_error (ec_cannot_adjust_access_to_in, fdecl, t);
-	cp_error_at (ec_because_of_local_field_with_same_name, tmp);
+	cp_error ("cannot adjust access to `%#D' in `%#T'", fdecl, t);
+	cp_error_at ("  because of local field `%#D' with same name", tmp);
 	return;
       }
   
@@ -1606,7 +1606,7 @@ finish_base_struct (t, b)
 	 dtor is handled in finish_struct_1.  */
       if (warn_ecpp && ! TYPE_VIRTUAL_P (basetype)
 	  && TYPE_HAS_DESTRUCTOR (basetype))
-	cp_warning (ec_base_class_has_a_nonvirtual_destructor, basetype);
+	cp_warning ("base class `%#T' has a non-virtual destructor", basetype);
 
       /* If the type of basetype is incomplete, then
 	 we already complained about that fact
@@ -1634,9 +1634,9 @@ finish_base_struct (t, b)
 	  b->cant_have_default_ctor = 1;
 	  if (! TYPE_HAS_CONSTRUCTOR (t))
 	    {
-	      cp_pedwarn (ec_base_with_only_nondefault_constructor,
+	      cp_pedwarn ("base `%T' with only non-default constructor",
 			  basetype);
-	      cp_pedwarn (ec_in_class_without_a_constructor);
+	      cp_pedwarn ("in class without a constructor");
 	    }
 	}
 
@@ -2037,7 +2037,7 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 	  }
       if (nonprivate_method == 0 
 	  && warn_ctor_dtor_privacy)
-	cp_warning (ec_all_member_functions_in_class_are_private, t);
+	cp_warning ("all member functions in class `%T' are private", t);
     }
 
   /* Warn if all destructors are private (in which case this class is
@@ -2053,7 +2053,7 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 	       && CLASSTYPE_FRIEND_CLASSES (t) == NULL_TREE
 	       && DECL_FRIENDLIST (TYPE_MAIN_DECL (t)) == NULL_TREE
 	       && warn_ctor_dtor_privacy)
-	cp_warning (ec_only_defines_a_private_destructor_and_has_no_friends,
+	cp_warning ("`%#T' only defines a private destructor and has no friends",
 		    t);
     }
 
@@ -2091,8 +2091,8 @@ void
 duplicate_tag_error (t)
      tree t;
 {
-  cp_error (ec_redefinition_of, t);
-  cp_error_at (ec_previous_definition_here, t);
+  cp_error ("redefinition of `%#T'", t);
+  cp_error_at ("previous definition here", t);
 
   /* Pretend we haven't defined this type.  */
 
@@ -2247,9 +2247,9 @@ get_class_offset_1 (parent, binfo, context, t, fndecl)
 	      && ! tree_int_cst_equal (nrval, rval))
 	    {
 	      /* Only give error if the two offsets are different */
-	      cp_error (ec_every_virtual_function_must_have_a_unique_final_overrider);
-	      cp_error (ec_found_two_or_more_class_subobjects_in, context, t);
-	      cp_error (ec_with_virtual_from_virtual_base_class, fndecl);
+	      error ("every virtual function must have a unique final overrider");
+	      cp_error ("  found two (or more) `%T' class subobjects in `%T'", context, t);
+	      cp_error ("  with virtual `%D' from virtual base class", fndecl);
 	      return rval;
 	    }
 	  rval = nrval;
@@ -2396,7 +2396,7 @@ modify_one_vtable (binfo, t, fndecl, pfn)
 	    }
 
 #ifdef NOTQUITE
-	  cp_warning (ec_in, DECL_NAME (BINFO_VTABLE (binfo)));
+	  cp_warning ("in %D", DECL_NAME (BINFO_VTABLE (binfo)));
 #endif
 	  modify_vtable_entry (get_vtable_entry_n (BINFO_VIRTUALS (binfo), n),
 			       build_vtable_entry (this_offset, pfn),
@@ -2829,9 +2829,9 @@ check_for_override (decl, ctype)
 		 path to its virtual baseclass.  */
 	      if (TREE_CODE (TREE_TYPE (decl)) == FUNCTION_TYPE)
 		{
-		  cp_error_at (ec_method_may_not_be_declared_static,
+		  cp_error_at ("method `%D' may not be declared static",
 			       decl);
-		  cp_error_at (ec_since_declared_virtual_in_base_class,
+		  cp_error_at ("(since `%D' declared virtual in base class.)",
 			       tmp);
 		  break;
 		}
@@ -2932,8 +2932,8 @@ warn_hidden (t)
 			   TREE_PURPOSE (base_fndecls)))
 	    {
 	      /* Here we know it is a hider, and no overrider exists.  */
-	      cp_warning_at (ec_was_hidden, TREE_VALUE (base_fndecls));
-	      cp_warning_at (ec_by, TREE_PURPOSE (base_fndecls));
+	      cp_warning_at ("`%D' was hidden", TREE_VALUE (base_fndecls));
+	      cp_warning_at ("  by `%D'", TREE_PURPOSE (base_fndecls));
 	    }
 
 	  base_fndecls = TREE_CHAIN (base_fndecls);
@@ -2966,10 +2966,10 @@ finish_struct_anon (t)
 		continue;
 
 	      if (TREE_PRIVATE (*uelt))
-		cp_pedwarn_at (ec_private_member_in_anonymous_union,
+		cp_pedwarn_at ("private member `%#D' in anonymous union",
 			       *uelt);
 	      else if (TREE_PROTECTED (*uelt))
-		cp_pedwarn_at (ec_protected_member_in_anonymous_union,
+		cp_pedwarn_at ("protected member `%#D' in anonymous union",
 			       *uelt);
 
 	      TREE_PRIVATE (*uelt) = TREE_PRIVATE (field);
@@ -3049,12 +3049,12 @@ finish_struct_1 (t, warn_anon)
   int has_pointers = 0;
 
   if (warn_anon && code != UNION_TYPE && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
-    cp_pedwarn (ec_anonymous_class_type_not_used_to_declare_any_objects);
+    pedwarn ("anonymous class type not used to declare any objects");
 
   if (TYPE_SIZE (t))
     {
       if (IS_AGGR_TYPE (t))
-	cp_error (ec_redefinition_of, t);
+	cp_error ("redefinition of `%#T'", t);
       else
 	my_friendly_abort (172);
       popclass (0);
@@ -3161,7 +3161,7 @@ finish_struct_1 (t, warn_anon)
 
       check_for_override (x, t);
       if (DECL_ABSTRACT_VIRTUAL_P (x) && ! DECL_VINDEX (x))
-	cp_error_at (ec_initializer_specified_for_nonvirtual_method, x);
+	cp_error_at ("initializer specified for non-virtual method `%D'", x);
 
       /* The name of the field is the original field name
 	 Save this in auxiliary field for later overloading.  */
@@ -3218,24 +3218,24 @@ finish_struct_1 (t, warn_anon)
 
       /* ``A local class cannot have static data members.'' ARM 9.4 */
       if (current_function_decl && TREE_STATIC (x))
-	cp_error_at (ec_field_in_local_class_cannot_be_static, x);
+	cp_error_at ("field `%D' in local class cannot be static", x);
 
       /* Perform error checking that did not get done in
 	 grokdeclarator.  */
       if (TREE_CODE (TREE_TYPE (x)) == FUNCTION_TYPE)
 	{
-	  cp_error_at (ec_field_invalidly_declared_function_type,
+	  cp_error_at ("field `%D' invalidly declared function type",
 		       x);
 	  TREE_TYPE (x) = build_pointer_type (TREE_TYPE (x));
 	}
       else if (TREE_CODE (TREE_TYPE (x)) == METHOD_TYPE)
 	{
-	  cp_error_at (ec_field_invalidly_declared_method_type, x);
+	  cp_error_at ("field `%D' invalidly declared method type", x);
 	  TREE_TYPE (x) = build_pointer_type (TREE_TYPE (x));
 	}
       else if (TREE_CODE (TREE_TYPE (x)) == OFFSET_TYPE)
 	{
-	  cp_error_at (ec_field_invalidly_declared_offset_type, x);
+	  cp_error_at ("field `%D' invalidly declared offset type", x);
 	  TREE_TYPE (x) = build_pointer_type (TREE_TYPE (x));
 	}
 
@@ -3260,7 +3260,7 @@ finish_struct_1 (t, warn_anon)
 	{
 	  if (TREE_CODE (t) == UNION_TYPE)
 	    /* Unions cannot have static members.  */
-	    cp_error_at (ec_field_declared_static_in_union, x);
+	    cp_error_at ("field `%D' declared static in union", x);
 	      
 	  continue;
 	}
@@ -3287,9 +3287,9 @@ finish_struct_1 (t, warn_anon)
 	  if (! TYPE_HAS_CONSTRUCTOR (t) && extra_warnings)
 	    {
 	      if (DECL_NAME (x))
-		cp_warning_at (ec_nonstatic_reference_name_in_class_without_a_constructor, x);
+		cp_warning_at ("non-static reference `%#D' in class without a constructor", x);
 	      else
-		cp_warning_at (ec_nonstatic_reference_in_class_without_a_constructor, x);
+		cp_warning_at ("non-static reference in class without a constructor", x);
 	    }
 	}
 
@@ -3314,9 +3314,9 @@ finish_struct_1 (t, warn_anon)
 	      && extra_warnings)
 	    {
 	      if (DECL_NAME (x))
-		cp_warning_at (ec_nonstatic_const_member_name_in_class_without_a_constructor, x);
+		cp_warning_at ("non-static const member `%#D' in class without a constructor", x);
 	      else
-		cp_warning_at (ec_nonstatic_const_member_in_class_without_a_constructor, x);
+		cp_warning_at ("non-static const member in class without a constructor", x);
 	    }
 	}
       else
@@ -3346,7 +3346,7 @@ finish_struct_1 (t, warn_anon)
 	  if (DECL_INITIAL (x)
 	      && ! INTEGRAL_TYPE_P (TREE_TYPE (x)))
 	    {
-	      cp_error_at (ec_bitfield_with_nonintegral_type, x);
+	      cp_error_at ("bit-field `%#D' with non-integral type", x);
 	      DECL_INITIAL (x) = NULL;
 	    }
 
@@ -3367,7 +3367,7 @@ finish_struct_1 (t, warn_anon)
 
 	      if (TREE_CODE (w) != INTEGER_CST)
 		{
-		  cp_error_at (ec_bitfield_width_not_an_integer_constant,
+		  cp_error_at ("bit-field `%D' width not an integer constant",
 			       x);
 		  DECL_INITIAL (x) = NULL_TREE;
 		}
@@ -3375,12 +3375,12 @@ finish_struct_1 (t, warn_anon)
 		       width < 0)
 		{
 		  DECL_INITIAL (x) = NULL;
-		  cp_error_at (ec_negative_width_in_bitfield, x);
+		  cp_error_at ("negative width in bit-field `%D'", x);
 		}
 	      else if (width == 0 && DECL_NAME (x) != 0)
 		{
 		  DECL_INITIAL (x) = NULL;
-		  cp_error_at (ec_zero_width_for_bitfield, x);
+		  cp_error_at ("zero width for bit-field `%D'", x);
 		}
 	      else if (width
 		       > TYPE_PRECISION (long_long_unsigned_type_node))
@@ -3390,13 +3390,13 @@ finish_struct_1 (t, warn_anon)
 		  DECL_INITIAL (x) = NULL;
 		  sorry ("bit-fields larger than %d bits",
 			 TYPE_PRECISION (long_long_unsigned_type_node));
-		  cp_error_at (ec_in_declaration_of, x);
+		  cp_error_at ("  in declaration of `%D'", x);
 		}
 	      else if (width > TYPE_PRECISION (TREE_TYPE (x))
 		       && TREE_CODE (TREE_TYPE (x)) != ENUMERAL_TYPE
 		       && TREE_CODE (TREE_TYPE (x)) != BOOLEAN_TYPE)
 		{
-		  cp_warning_at (ec_width_of_exceeds_its_type, x);
+		  cp_warning_at ("width of `%D' exceeds its type", x);
 		}
 	      else if (TREE_CODE (TREE_TYPE (x)) == ENUMERAL_TYPE
 		       && ((min_precision (TYPE_MIN_VALUE (TREE_TYPE (x)),
@@ -3404,7 +3404,7 @@ finish_struct_1 (t, warn_anon)
 			   || (min_precision (TYPE_MAX_VALUE (TREE_TYPE (x)),
 					      TREE_UNSIGNED (TREE_TYPE (x))) > width)))
 		{
-		  cp_warning_at (ec_is_too_small_to_hold_all_values_of,
+		  cp_warning_at ("`%D' is too small to hold all values of `%#T'",
 				 x, TREE_TYPE (x));
 		}
 
@@ -3460,7 +3460,7 @@ finish_struct_1 (t, warn_anon)
 		  else if (TYPE_HAS_REAL_ASSIGNMENT (type))
 		    fie = "assignment operator";
 		  if (fie)
-		    cp_error_at (ec_member_with_s_not_allowed_in_union, x,
+		    cp_error_at ("member `%#D' with %s not allowed in union", x,
 				 fie);
 		}
 	      else
@@ -3486,10 +3486,10 @@ finish_struct_1 (t, warn_anon)
 		  if (! TYPE_HAS_CONSTRUCTOR (t))
 		    {
 		      if (DECL_NAME (x))
-			cp_pedwarn_at (ec_member_decl_with_only_nondefault_constructor, x);
+			cp_pedwarn_at ("member `%#D' with only non-default constructor", x);
 		      else
-			cp_pedwarn_at (ec_member_with_only_nondefault_constructor, x);
-		      cp_pedwarn_at (ec_in_class_without_a_constructor,
+			cp_pedwarn_at ("member with only non-default constructor", x);
+		      cp_pedwarn_at ("in class without a constructor",
 				     x);
 		    }
 #endif
@@ -3500,7 +3500,7 @@ finish_struct_1 (t, warn_anon)
 	      /* `build_class_init_list' does not recognize
 		 non-FIELD_DECLs.  */
 	      if (code == UNION_TYPE && any_default_members != 0)
-		cp_error_at (ec_multiple_fields_in_union_initialized);
+		cp_error_at ("multiple fields in union `%T' initialized");
 	      any_default_members = 1;
 	    }
 	}
@@ -3548,16 +3548,16 @@ finish_struct_1 (t, warn_anon)
   if (has_pointers && warn_ecpp && TYPE_HAS_CONSTRUCTOR (t)
       && ! (TYPE_HAS_INIT_REF (t) && TYPE_HAS_ASSIGN_REF (t)))
     {
-      cp_warning (ec_has_pointer_data_members, t);
+      cp_warning ("`%#T' has pointer data members", t);
       
       if (! TYPE_HAS_INIT_REF (t))
 	{
-	  cp_warning (ec_but_does_not_override_const, t, t);
+	  cp_warning ("  but does not override `%T(const %T&)'", t, t);
 	  if (! TYPE_HAS_ASSIGN_REF (t))
-	    cp_warning (ec_or_operatorconst, t);
+	    cp_warning ("  or `operator=(const %T&)'", t);
 	}
       else if (! TYPE_HAS_ASSIGN_REF (t))
-	cp_warning (ec_but_does_not_override_operatorconst, t);
+	cp_warning ("  but does not override `operator=(const %T&)'", t);
     }
 
   TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_HAS_DESTRUCTOR (t);
@@ -3630,7 +3630,7 @@ finish_struct_1 (t, warn_anon)
 	      }
 
 	  if (nonprivate_ctor == 0 && warn_ctor_dtor_privacy)
-	    cp_warning (ec_only_defines_private_constructors_and_has_no_friends,
+	    cp_warning ("`%#T' only defines private constructors and has no friends",
 			t);
 	}
     }
@@ -3727,8 +3727,8 @@ finish_struct_1 (t, warn_anon)
 	    if (DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, i)))
 		== name)
 	      {
-		cp_error_at (ec_data_member_conflicts_with, x);
-		cp_error_at (ec_function_member,
+		cp_error_at ("data member `%#D' conflicts with", x);
+		cp_error_at ("function member `%#D'",
 			     OVL_CURRENT (TREE_VEC_ELT (method_vec, i)));
 		break;
 	      }
@@ -3845,7 +3845,7 @@ finish_struct_1 (t, warn_anon)
     }
     
 #ifdef NOTQUITE
-  cp_warning (ec_oing_hard_virtuals_for, t);
+  cp_warning ("Doing hard virtuals for %T...", t);
 #endif
 
   if (has_virtual > max_has_virtual)
@@ -4075,7 +4075,7 @@ finish_struct_1 (t, warn_anon)
 
       if (warn_nonvdtor && TYPE_HAS_DESTRUCTOR (t)
 	  && DECL_VINDEX (TREE_VEC_ELT (method_vec, 1)) == NULL_TREE)
-	cp_warning (ec_has_virtual_functions_but_nonvirtual_destructor,
+	cp_warning ("`%#T' has virtual functions but non-virtual destructor",
 		    t);
     }
 
@@ -4242,9 +4242,9 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 		  && !(TREE_CODE (icv) == TYPE_DECL
 		       && DECL_CONTEXT (icv) == t))
 		{
-		  cp_pedwarn_at (ec_declaration_of_identifier_as,
+		  cp_pedwarn_at ("declaration of identifier `%D' as `%+#D'",
 				 name, x);
-		  cp_pedwarn_at (ec_conflicts_with_other_use_in_class_as,
+		  cp_pedwarn_at ("conflicts with other use in class as `%#D'",
 				 icv);
 		}
 	    }
@@ -4347,7 +4347,7 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
   if (current_class_type)
     popclass (0);
   else
-    cp_error (ec_trying_to_finish_struct_but_kicked_out_due_to_previous_parse_errors);
+    error ("trying to finish struct, but kicked out due to previous parse errors.");
 
   return t;
 }
@@ -4787,7 +4787,7 @@ push_lang_context (name)
       current_lang_name = name;
     }
   else
-    cp_error (ec_language_string_not_recognized, IDENTIFIER_POINTER (name));
+    error ("language string `\"%s\"' not recognized", IDENTIFIER_POINTER (name));
 }
   
 /* Get out of the current language scope.  */
@@ -4821,7 +4821,7 @@ validate_lhs (lhstype, complain)
       else
 	{
 	  if (complain)
-	    cp_error (ec_invalid_type_combination_for_overload);
+	    error ("invalid type combination for overload");
 	  return error_mark_node;
 	}
     }
@@ -4849,7 +4849,7 @@ instantiate_type (lhstype, rhs, complain)
   if (TREE_CODE (lhstype) == UNKNOWN_TYPE)
     {
       if (complain)
-	cp_error (ec_not_enough_type_information);
+	error ("not enough type information");
       return error_mark_node;
     }
 
@@ -4858,7 +4858,7 @@ instantiate_type (lhstype, rhs, complain)
       if (comptypes (lhstype, TREE_TYPE (rhs), 1))
 	return rhs;
       if (complain)
-	cp_error (ec_argument_of_type_does_not_match,
+	cp_error ("argument of type `%T' does not match `%T'",
 		  TREE_TYPE (rhs), lhstype);
       return error_mark_node;
     }
@@ -4960,14 +4960,14 @@ instantiate_type (lhstype, rhs, complain)
 	    if (field)
 	      {
 		if (complain)
-		  cp_error (ec_ambiguous_overload_for_requested);
+		  error ("ambiguous overload for COMPONENT_REF requested");
 		return error_mark_node;
 	      }
 	  }
 	else
 	  {
 	    if (complain)
-	      cp_error (ec_no_appropriate_overload_exists_for);
+	      error ("no appropriate overload exists for COMPONENT_REF");
 	    return error_mark_node;
 	  }
 #endif
@@ -5004,8 +5004,9 @@ instantiate_type (lhstype, rhs, complain)
 	    && TREE_CODE (lhstype) != METHOD_TYPE)
 	  {
 	    if (complain)
-	      cp_error (ec_cannot_resolve_overloaded_function,
-			DECL_NAME (OVL_FUNCTION (rhs)));
+	      cp_error("cannot resolve overloaded function `%D' " 
+		       "based on non-function type", 
+		       DECL_NAME (OVL_FUNCTION (rhs)));
 	    return error_mark_node;
 	  }
 	
@@ -5047,7 +5048,7 @@ instantiate_type (lhstype, rhs, complain)
 		  {
 		    if (save_elem)
 		      {
-			cp_error (ec_ambiguous_template_instantiation_converting_to, lhstype);
+			cp_error ("ambiguous template instantiation converting to `%#T'", lhstype);
 			return error_mark_node;
 		      }
 		    save_elem = instantiate_template (elem, t);
@@ -5091,10 +5092,11 @@ instantiate_type (lhstype, rhs, complain)
 		  {
 		    if (complain)
 		      {
-			cp_error (ec_cannot_resolve_overload_to_target_type,
+			cp_error 
+			  ("cannot resolve overload to target type `%#T'",
 			   lhstype);
-			cp_error_at (ec_ambiguity_between, save_elem); 
-			cp_error_at (ec_and_at_least, elem);
+			cp_error_at ("  ambiguity between `%#D'", save_elem); 
+			cp_error_at ("  and `%#D', at least", elem);
 		      }
 		    return error_mark_node;
 		  }
@@ -5106,8 +5108,9 @@ instantiate_type (lhstype, rhs, complain)
 	/* We failed to find a match.  */
 	if (complain)
 	  {
-	    cp_error (ec_cannot_resolve_overload_to_target_type, lhstype);
-	    cp_error (ec_because_no_suitable_overload_of_function_exists,
+	    cp_error ("cannot resolve overload to target type `%#T'", lhstype);
+	    cp_error 
+	      ("  because no suitable overload of function `%D' exists",
 	       DECL_NAME (OVL_FUNCTION (rhs)));
 	  }
 	return error_mark_node;
@@ -5176,7 +5179,7 @@ instantiate_type (lhstype, rhs, complain)
 		if (elem)
 		  {
 		    if (complain)
-		      cp_error (ec_ambiguous_overload_for_overloaded_method_requested);
+		      error ("ambiguous overload for overloaded method requested");
 		    return error_mark_node;
 		  }
 		mark_used (save_elem);
@@ -5201,7 +5204,7 @@ instantiate_type (lhstype, rhs, complain)
 #endif
 	  }
 	if (complain)
-	  cp_error (ec_no_compatible_member_functions_named, name);
+	  cp_error ("no compatible member functions named `%D'", name);
 	return error_mark_node;
       }
 
@@ -5259,7 +5262,7 @@ instantiate_type (lhstype, rhs, complain)
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
       if (complain)
-	cp_error (ec_invalid_operation_on_uninstantiated_type);
+	error ("invalid operation on uninstantiated type");
       return error_mark_node;
 
     case TRUTH_AND_EXPR:
@@ -5275,14 +5278,14 @@ instantiate_type (lhstype, rhs, complain)
     case TRUTH_ORIF_EXPR:
     case TRUTH_NOT_EXPR:
       if (complain)
-	cp_error (ec_not_enough_type_information);
+	error ("not enough type information");
       return error_mark_node;
 
     case COND_EXPR:
       if (type_unknown_p (TREE_OPERAND (rhs, 0)))
 	{
 	  if (complain)
-	    cp_error (ec_not_enough_type_information);
+	    error ("not enough type information");
 	  return error_mark_node;
 	}
       TREE_OPERAND (rhs, 1)
@@ -5312,7 +5315,7 @@ instantiate_type (lhstype, rhs, complain)
       else if (TREE_CODE (lhstype) != POINTER_TYPE)
 	{
 	  if (complain)
-	    cp_error (ec_type_for_resolving_address_of_overloaded_function_must_be_pointer_type);
+	    error ("type for resolving address of overloaded function must be pointer type");
 	  return error_mark_node;
 	}
       {

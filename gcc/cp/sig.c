@@ -492,7 +492,7 @@ build_signature_table_constructor (sig_ty, rhs)
 
 	      if (oty_type == NULL_TREE || oty_type == error_mark_node)
 		{
-		  cp_error (ec_class_does_not_contain_type,
+		  cp_error ("class `%T' does not contain type `%T'",
 			    rhstype, oty_type);
 		  undo_casts (sig_ty);
 		  return error_mark_node;
@@ -518,7 +518,7 @@ build_signature_table_constructor (sig_ty, rhs)
 	{
 	  if (! IS_DEFAULT_IMPLEMENTATION (sig_method))
 	    {
-	      cp_error (ec_class_does_not_contain_method,
+	      cp_error ("class `%T' does not contain method `%D'",
 			rhstype, sig_mname);
 	      undo_casts (sig_ty);
 	      return error_mark_node;
@@ -549,7 +549,7 @@ build_signature_table_constructor (sig_ty, rhs)
 	      || (compute_access (basetypes, rhs_method)
 		  != access_public_node))
 	    {
-	      cp_error (ec_class_s_does_not_contain_a_method_conforming_to_s,
+	      error ("class `%s' does not contain a method conforming to `%s'",
 		     TYPE_NAME_STRING (rhstype),
 		     fndecl_as_string (sig_method, 1));
 	      undo_casts (sig_ty);
@@ -735,7 +735,7 @@ build_sigtable (sig_type, rhs_type, init_from)
       if (SIGNATURE_HAS_OPAQUE_TYPEDECLS (sig_type)
 	  && SIGTABLE_HAS_BEEN_GENERATED (sig_type))
 	{
-	  cp_error (ec_signature_with_opaque_type_implemented_by_multiple_classes);
+	  error ("signature with opaque type implemented by multiple classes");
 	  return error_mark_node;
 	}
       SIGTABLE_HAS_BEEN_GENERATED (sig_type) = 1;
@@ -806,13 +806,13 @@ build_signature_pointer_constructor (lhs, rhs)
 	     && (IS_SIGNATURE_POINTER (rhstype)
 		 || IS_SIGNATURE_REFERENCE (rhstype)))))
     {
-      cp_error (ec_invalid_assignment_to_signature_pointer_or_reference);
+      error ("invalid assignment to signature pointer or reference");
       return error_mark_node;
     }
 
   if (TYPE_SIZE (sig_ty) == NULL_TREE)
     {
-      cp_error (ec_undefined_signature_used_in_signature_s_declaration,
+      cp_error ("undefined signature `%T' used in signature %s declaration",
 		sig_ty,
 		IS_SIGNATURE_POINTER (lhstype) ? "pointer" : "reference");
       return error_mark_node;
@@ -1018,7 +1018,7 @@ build_signature_method_call (function, parms)
       || (IS_DEFAULT_IMPLEMENTATION (function)
 	  && (!deflt_call || deflt_call == error_mark_node)))
     {
-      cp_compiler_error (ec_cannot_build_call_of_signature_member_function_s,
+      compiler_error ("cannot build call of signature member function `%s'",
 		      fndecl_as_string (function, 1));
       return error_mark_node;
     }

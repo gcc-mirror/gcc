@@ -489,8 +489,7 @@ extern_lang_string:
 		{ push_lang_context ($1); }
 	| extern_lang_string EXTERN_LANG_STRING
 		{ if (current_lang_name != $2)
-		    cp_error
-		      (ec_use_of_linkage_spec_is_different_from_previous_spec, $2, current_lang_name); 
+		    cp_error ("use of linkage spec `%D' is different from previous spec `%D'", $2, current_lang_name);
 		  pop_lang_context (); push_lang_context ($2); }
 	;
 
@@ -553,7 +552,7 @@ template_parm:
 		      && TREE_CODE ($3) != TEMPLATE_TEMPLATE_PARM
 		      && TREE_CODE ($3) != TYPE_DECL)
 		    {
-		      cp_error (ec_invalid_default_template_argument);
+		      error ("invalid default template argument");
 		      $3 = error_mark_node;
 		    }
 		  $$ = build_tree_list ($3, $1);
@@ -602,7 +601,7 @@ datadef:
 	| typed_declspecs initdecls ';'
                 { note_list_got_semicolon ($1.t); }
         | declmods ';'
-		{ cp_pedwarn (ec_empty_declaration); }
+		{ pedwarn ("empty declaration"); }
 	| explicit_instantiation ';'
 	| typed_declspecs ';'
 		{
@@ -758,7 +757,7 @@ base_init:
 	  ':' .set_base_init member_init_list
 		{
 		  if ($3 == 0)
-		    cp_error (ec_no_base_initializers_given_following);
+		    error ("no base initializers given following ':'");
 		  setup_vtbl_ptr ();
 		  /* Always keep the BLOCK node associated with the outermost
 		     pair of curley braces of a function.  These are needed
@@ -781,9 +780,9 @@ base_init:
 		      expand_start_bindings (0);
 		    }
 		  else if (current_class_type == NULL_TREE)
-		    cp_error (ec_base_initializers_not_allowed_for_nonmember_functions);
+		    error ("base initializers not allowed for non-member functions");
 		  else if (! DECL_CONSTRUCTOR_P (current_function_decl))
-		    cp_error (ec_only_constructors_take_base_initializers);
+		    error ("only constructors take base initializers");
 		}
 	;
 
@@ -800,13 +799,13 @@ member_init:
 	  '(' nonnull_exprlist ')'
 		{
 		  if (current_class_name)
-		    cp_pedwarn (ec_anachronistic_old_style_base_class_initializer);
+		    pedwarn ("anachronistic old style base class initializer");
 		  expand_member_init (current_class_ref, NULL_TREE, $2);
 		}
 	| LEFT_RIGHT
 		{
 		  if (current_class_name)
-		    cp_pedwarn (ec_anachronistic_old_style_base_class_initializer);
+		    pedwarn ("anachronistic old style base class initializer");
 		  expand_member_init (current_class_ref, NULL_TREE, void_type_node);
 		}
 	| notype_identifier '(' nonnull_exprlist ')'
@@ -917,7 +916,7 @@ template_close_bracket:
 	| RSHIFT 
 		{
 		  /* Handle `Class<Class<Type>>' without space in the `>>' */
-		  cp_pedwarn (ec_should_be_in_template_class_name);
+		  pedwarn ("`>>' should be `> >' in template class name");
 		  yyungetc ('>', 1);
 		}
 	;
@@ -964,7 +963,7 @@ expr:
 
 paren_expr_or_null:
 	LEFT_RIGHT
-		{ cp_error (ec_forbids_an_empty_condition_for_s,
+		{ error ("ANSI C++ forbids an empty condition for `%s'",
 			 cond_stmt_keyword);
 		  $$ = integer_zero_node; }
 	| '(' expr ')'
@@ -973,7 +972,7 @@ paren_expr_or_null:
 
 paren_cond_or_null:
 	LEFT_RIGHT
-		{ cp_error (ec_forbids_an_empty_condition_for_s,
+		{ error ("ANSI C++ forbids an empty condition for `%s'",
 			 cond_stmt_keyword);
 		  $$ = integer_zero_node; }
 	| '(' condition ')'
@@ -996,9 +995,9 @@ condition:
 		    if (TREE_CODE (d) == TYPE_DECL) {
 		      tree s = TREE_TYPE (d);
 		      if (TREE_CODE (s) == RECORD_TYPE)
-			cp_error (ec_definition_of_class_in_condition, s);
+			cp_error ("definition of class `%T' in condition", s);
 		      else if (TREE_CODE (s) == ENUMERAL_TYPE)
-			cp_error (ec_definition_of_enum_in_condition, s);
+			cp_error ("definition of enum `%T' in condition", s);
 		    }
 		  }
 		  current_declspecs = $1.t;
@@ -1012,7 +1011,7 @@ condition:
 		  resume_momentary ($<itype>5);
 		  $$ = $<ttype>6; 
 		  if (TREE_CODE (TREE_TYPE ($$)) == ARRAY_TYPE)
-		    cp_error (ec_definition_of_array_in_condition, $$); 
+		    cp_error ("definition of array `%#D' in condition", $$); 
 		}
 	| expr
 	;
@@ -1070,7 +1069,7 @@ unary_expr:
 	/* Refer to the address of a label as a pointer.  */
 	| ANDAND identifier
 		{ if (pedantic)
-		    cp_pedwarn (ec_forbids);
+		    pedwarn ("ANSI C++ forbids `&&'");
   		  $$ = finish_label_address_expr ($2); }
 	| SIZEOF unary_expr  %prec UNARY
 		{ $$ = expr_sizeof ($2); }
@@ -1155,7 +1154,7 @@ new_placement:
 	  '(' .begin_new_placement nonnull_exprlist ')'
                 { $$ = finish_new_placement ($3, $2); }
 	| '{' .begin_new_placement nonnull_exprlist '}'
-                { cp_pedwarn (ec_old_style_placement_syntax_use_instead);
+                { cp_pedwarn ("old style placement syntax, use () instead");
 		  $$ = finish_new_placement ($3, $2); }
 	;
 
@@ -1166,7 +1165,7 @@ new_initializer:
 		{ $$ = NULL_TREE; }
 	| '(' typespec ')'
 		{
-		  cp_error (ec_is_not_a_valid_expression, $2.t);
+		  cp_error ("`%T' is not a valid expression", $2.t);
 		  $$ = error_mark_node;
 		}
 	/* GNU extension so people can use initializer lists.  Note that
@@ -1175,7 +1174,7 @@ new_initializer:
 	| '=' init
 		{
 		  if (pedantic)
-		    cp_pedwarn (ec_forbids_initialization_of_new_expression_with);
+		    pedwarn ("ANSI C++ forbids initialization of new expression with `='");
 		  if (TREE_CODE ($2) != TREE_LIST
 		      && TREE_CODE ($2) != CONSTRUCTOR)
 		    $$ = build_expr_list (NULL_TREE, $2);
@@ -1205,7 +1204,7 @@ cast_expr:
 		  tree init = build_nt (CONSTRUCTOR, NULL_TREE,
 					nreverse ($3)); 
 		  if (pedantic)
-		    cp_pedwarn (ec_forbids_constructorexpressions);
+		    pedwarn ("ANSI C++ forbids constructor-expressions");
 		  /* Indicate that this was a GNU C constructor expression.  */
 		  TREE_HAS_CONSTRUCTOR (init) = 1;
 
@@ -1381,11 +1380,11 @@ primary:
 		{ tree scope = current_scope ();
 		  if (!scope || TREE_CODE (scope) != FUNCTION_DECL)
 		    {
-		      cp_error (ec_bracedgroup_within_expression_allowed_only_inside_a_function);
+		      error ("braced-group within expression allowed only inside a function");
 		      YYERROR;
 		    }
 		  if (pedantic)
-		    cp_pedwarn (ec_forbids_bracedgroups_within_expressions);  
+		    pedwarn ("ANSI C++ forbids braced-groups within expressions");  
 		  $<ttype>$ = begin_stmt_expr (); 
 		}
 	  compstmt ')'
@@ -1424,7 +1423,7 @@ primary:
 #if 0
 		  if ($3 == NULL_TREE)
 		    {
-		      cp_error (ec_cannot_cast_null_list_to_type_s,
+		      error ("cannot cast null list to type `%s'",
 		             IDENTIFIER_POINTER (TYPE_NAME (id)));
 		      $$ = error_mark_node;
 		      break;
@@ -1445,7 +1444,7 @@ primary:
 		      /* should not be able to get here (mrs) */
 		      else if (id == ridpointers[(int) RID_FRIEND])
 		        {
-		          cp_error (ec_cannot_cast_expression_to_friend_type);
+		          error ("cannot cast expression to `friend' type");
 		          $$ = error_mark_node;
 		          break;
 		        }
@@ -1539,13 +1538,13 @@ primary_no_id:
 	| '('
 		{ if (current_function_decl == 0)
 		    {
-		      cp_error (ec_bracedgroup_within_expression_allowed_only_inside_a_function);
+		      error ("braced-group within expression allowed only inside a function");
 		      YYERROR;
 		    }
 		  $<ttype>$ = expand_start_stmt_expr (); }
 	  compstmt ')'
 		{ if (pedantic)
-		    cp_pedwarn (ec_forbids_bracedgroups_within_expressions);
+		    pedwarn ("ANSI C++ forbids braced-groups within expressions");
 		  $$ = expand_end_stmt_expr ($<ttype>2); }
 	| primary_no_id '(' nonnull_exprlist ')'
 		{ $$ = build_x_function_call ($$, $3, current_class_ref); }
@@ -1638,7 +1637,7 @@ decl:
 		  note_list_got_semicolon ($1.t);
 		}
 	| declmods ';'
-		{ cp_warning (ec_empty_declaration); }
+		{ warning ("empty declaration"); }
 	| extension decl
 		{ pedantic = $<itype>1; }
 	;
@@ -1715,14 +1714,14 @@ typed_declspecs1:
 reserved_declspecs:
 	  SCSPEC
 		{ if (extra_warnings)
-		    cp_warning (ec_s_is_not_at_beginning_of_declaration,
+		    warning ("`%s' is not at beginning of declaration",
 			     IDENTIFIER_POINTER ($$));
 		  $$ = build_decl_list (NULL_TREE, $$); }
 	| reserved_declspecs typespecqual_reserved
 		{ $$ = decl_tree_cons (NULL_TREE, $2.t, $$); }
 	| reserved_declspecs SCSPEC
 		{ if (extra_warnings)
-		    cp_warning (ec_s_is_not_at_beginning_of_declaration,
+		    warning ("`%s' is not at beginning of declaration",
 			     IDENTIFIER_POINTER ($2));
 		  $$ = decl_tree_cons (NULL_TREE, $2, $$); }
 	| reserved_declspecs attributes
@@ -1746,7 +1745,7 @@ declmods:
 		  TREE_STATIC ($$) = 1; }
 	| declmods SCSPEC
 		{ if (extra_warnings && TREE_STATIC ($$))
-		    cp_warning (ec_s_is_not_at_beginning_of_declaration,
+		    warning ("`%s' is not at beginning of declaration",
 			     IDENTIFIER_POINTER ($2));
 		  $$ = decl_tree_cons (NULL_TREE, $2, $$);
 		  TREE_STATIC ($$) = TREE_STATIC ($1); }
@@ -1811,7 +1810,7 @@ typespec:
 		    }
 		  else
 		    {
-		      cp_error (ec_sigof_applied_to_nonaggregate_expression);
+		      error ("`sigof' applied to non-aggregate expression");
 		      $$.t = error_mark_node;
 		    }
 		}
@@ -1826,7 +1825,7 @@ typespec:
 		    }
 		  else
 		    {
-		      cp_error (ec_sigof_applied_to_nonaggregate_type);
+		      error("`sigof' applied to non-aggregate type");
 		      $$.t = error_mark_node;
 		    }
 		}
@@ -2102,7 +2101,7 @@ structsp:
 		{ $$.t = $2;
 		  $$.new_type_flag = 0; 
 		  if (!processing_template_decl)
-		    cp_pedwarn (ec_using_typename_outside_of_template); }
+		    cp_pedwarn ("using `typename' outside of template"); }
 	/* C++ extensions, merged with C to avoid shift/reduce conflicts */
 	| class_head left_curly 
           opt.component_decl_list '}' maybe_attribute
@@ -2126,7 +2125,7 @@ structsp:
 		  $$.new_type_flag = 0;
 		  if (TYPE_BINFO ($1) == NULL_TREE)
 		    {
-		      cp_error (ec_is_not_a_class_type, $1);
+		      cp_error ("%T is not a class type", $1);
 		      $$.t = error_mark_node;
 		    } 
 		  else
@@ -2135,7 +2134,7 @@ structsp:
 		      /* struct B: public A; is not accepted by the WP grammar.  */
 		      if (TYPE_BINFO_BASETYPES ($$.t) && !TYPE_SIZE ($$.t)
 			  && ! TYPE_BEING_DEFINED ($$.t))
-			cp_error (ec_base_clause_without_member_specification_for,
+			cp_error ("base clause without member specification for `%#T'",
 				  $$.t);
 		    }
 		}
@@ -2150,19 +2149,19 @@ maybecomma_warn:
 	  /* empty */
 	| ','
 		{ if (pedantic && !in_system_header)
-		    cp_pedwarn (ec_comma_at_end_of_enumerator_list); }
+		    pedwarn ("comma at end of enumerator list"); }
 	;
 
 aggr:
 	  AGGR
 	| aggr SCSPEC
-		{ cp_error (ec_storage_class_specifier_s_not_allowed_after_struct_or_class, IDENTIFIER_POINTER ($2)); }
+		{ error ("storage class specifier `%s' not allowed after struct or class", IDENTIFIER_POINTER ($2)); }
 	| aggr TYPESPEC
-		{ cp_error (ec_type_specifier_s_not_allowed_after_struct_or_class, IDENTIFIER_POINTER ($2)); }
+		{ error ("type specifier `%s' not allowed after struct or class", IDENTIFIER_POINTER ($2)); }
 	| aggr CV_QUALIFIER
-		{ cp_error (ec_type_qualifier_s_not_allowed_after_struct_or_class, IDENTIFIER_POINTER ($2)); }
+		{ error ("type qualifier `%s' not allowed after struct or class", IDENTIFIER_POINTER ($2)); }
 	| aggr AGGR
-		{ cp_error (ec_no_body_nor_separates_two_class_struct_or_union_declarations); }
+		{ error ("no body nor ';' separates two class, struct or union declarations"); }
 	| aggr attributes
 		{ $$ = build_decl_list ($2, $1); }
 	;
@@ -2223,10 +2222,10 @@ named_class_head:
 		  $$ = TREE_TYPE ($1);
 		  if (TREE_INT_CST_LOW (current_aggr) == union_type 
 		      && TREE_CODE ($$) != UNION_TYPE)
-		    cp_pedwarn (ec_union_tag_used_in_declaring, $$);
+		    cp_pedwarn ("`union' tag used in declaring `%#T'", $$);
 		  else if (TREE_CODE ($$) == UNION_TYPE
 			   && TREE_INT_CST_LOW (current_aggr) != union_type)
-		    cp_pedwarn (ec_nonunion_tag_used_in_declaring, $$);
+		    cp_pedwarn ("non-`union' tag used in declaring `%#T'", $$);
 		  if ($2)
 		    {
 		      maybe_process_partial_specialization ($$);
@@ -2287,13 +2286,13 @@ base_class.1:
 			}
 		      else
 			{
-			  cp_error (ec_sigof_applied_to_nonaggregate_expression);
+			  error ("`sigof' applied to non-aggregate expression");
 			  $$ = error_mark_node;
 			}
 		    }
 		  else
 		    {
-		      cp_error (ec_sigof_in_struct_or_class_declaration);
+		      error ("`sigof' in struct or class declaration");
 		      $$ = error_mark_node;
 		    }
 		}
@@ -2308,13 +2307,13 @@ base_class.1:
 			}
 		      else
 			{
-			  cp_error (ec_sigof_applied_to_nonaggregate_expression);
+			  error ("`sigof' applied to non-aggregate expression");
 			  $$ = error_mark_node;
 			}
 		    }
 		  else
 		    {
-		      cp_error (ec_sigof_in_struct_or_class_declaration);
+		      error ("`sigof' in struct or class declaration");
 		      $$ = error_mark_node;
 		    }
 		}
@@ -2324,12 +2323,12 @@ base_class_access_list:
 	  VISSPEC see_typename
 	| SCSPEC see_typename
 		{ if ($1 != ridpointers[(int)RID_VIRTUAL])
-		    cp_error (ec_access, $1);
+		    cp_error ("`%D' access", $1);
 		  $$ = access_default_virtual_node; }
 	| base_class_access_list VISSPEC see_typename
 		{
 		  if ($1 != access_default_virtual_node)
-		    cp_error (ec_multiple_access_specifiers);
+		    error ("multiple access specifiers");
 		  else if ($2 == access_public_node)
 		    $$ = access_public_virtual_node;
 		  else if ($2 == access_protected_node)
@@ -2339,7 +2338,7 @@ base_class_access_list:
 		}
 	| base_class_access_list SCSPEC see_typename
 		{ if ($2 != ridpointers[(int)RID_VIRTUAL])
-		    cp_error (ec_access, $2);
+		    cp_error ("`%D' access", $2);
 		  else if ($$ == access_public_node)
 		    $$ = access_public_virtual_node;
 		  else if ($$ == access_protected_node)
@@ -2347,7 +2346,7 @@ base_class_access_list:
 		  else if ($$ == access_private_node)
 		    $$ = access_private_virtual_node;
 		  else
-		    cp_error (ec_multiple_virtual_specifiers);
+		    error ("multiple `virtual' specifiers");
 		}
 	;
 
@@ -2380,7 +2379,7 @@ opt.component_decl_list:
 
 		  if (current_aggr == signature_type_node)
 		    {
-		      cp_error (ec_access_specifier_not_allowed_in_signature);
+		      error ("access specifier not allowed in signature");
 		      visspec = access_public_node;
 		    }
 		  $$ = chainon ($$, build_tree_list (visspec, $4));
@@ -2388,7 +2387,7 @@ opt.component_decl_list:
 	| opt.component_decl_list VISSPEC ':'
 		{
 		  if (current_aggr == signature_type_node)
-		    cp_error (ec_access_specifier_not_allowed_in_signature);
+		    error ("access specifier not allowed in signature");
 		}
 	;
 
@@ -2417,7 +2416,7 @@ component_decl:
 	  component_decl_1 ';'
 		{ }
 	| component_decl_1 '}'
-		{ cp_error (ec_missing_before_right_brace);
+		{ error ("missing ';' before right brace");
 		  yyungetc ('}', 0); }
 	/* C++: handle constructors, destructors and inline functions */
 	/* note that INLINE is like a TYPESPEC */
@@ -2615,7 +2614,7 @@ new_type_id:
 	      '[' expr ']'
 		{
 		  if (pedantic)
-		    cp_pedwarn (ec_forbids_array_dimensions_with_parenthesized_type_in_new);
+		    pedwarn ("ANSI C++ forbids array dimensions with parenthesized type in new");
 		  $$.t = build_parse_node (ARRAY_REF, TREE_VALUE ($3.t), $6);
 		  $$.t = build_decl_list (TREE_PURPOSE ($3.t), $$.t);
 		  $$.new_type_flag = $3.new_type_flag;
@@ -2871,7 +2870,7 @@ nested_name_specifier_1:
 	| IDENTIFIER SCOPE
 		{
 		 failed_scope:
-		  cp_error (ec_is_not_an_aggregate_typedef, 
+		  cp_error ("`%D' is not an aggregate typedef", 
 			    lastiddecl ? lastiddecl : $$);
 		  $$ = error_mark_node;
 		}
@@ -2891,7 +2890,7 @@ typename_sub0:
 		  if (TREE_CODE_CLASS (TREE_CODE ($1)) == 't')
 		    $$ = make_typename_type ($1, $2);
 		  else if (TREE_CODE ($2) == IDENTIFIER_NODE)
-		    cp_error (ec_is_not_a_class_or_namespace, $2);
+		    cp_error ("`%T' is not a class or namespace", $2);
 		  else
 		    {
 		      $$ = $2;
@@ -2911,14 +2910,14 @@ typename_sub1:
 	  typename_sub2
 		{
 		  if (TREE_CODE ($1) == IDENTIFIER_NODE)
-		    cp_error (ec_is_not_a_class_or_namespace, $1);
+		    cp_error ("`%T' is not a class or namespace", $1);
 		}
 	| typename_sub1 typename_sub2
 		{
 		  if (TREE_CODE_CLASS (TREE_CODE ($1)) == 't')
 		    $$ = make_typename_type ($1, $2);
 		  else if (TREE_CODE ($2) == IDENTIFIER_NODE)
-		    cp_error (ec_is_not_a_class_or_namespace, $2);
+		    cp_error ("`%T' is not a class or namespace", $2);
 		  else
 		    {
 		      $$ = $2;
@@ -2943,7 +2942,7 @@ typename_sub2:
 		  got_scope = $$ = complete_type (IDENTIFIER_TYPE_VALUE ($1));
 
 		  if ($$ == error_mark_node)
-		    cp_error (ec_is_not_a_class_or_namespace, $1);
+		    cp_error ("`%T' is not a class or namespace", $1);
 		}
 	| SELFNAME SCOPE
 		{
@@ -3101,7 +3100,7 @@ maybe_label_decls:
 	  /* empty */
 	| label_decls
 		{ if (pedantic)
-		    cp_pedwarn (ec_forbids_label_declarations); }
+		    pedwarn ("ANSI C++ forbids label declarations"); }
 	;
 
 label_decls:
@@ -3247,7 +3246,7 @@ simple_stmt:
 	| GOTO '*' expr ';'
                 { 
 		  if (pedantic)
-		    cp_pedwarn (ec_forbids_computed_gotos);
+		    pedwarn ("ANSI C++ forbids computed gotos");
 		  finish_goto_stmt ($3);
 		}
 	| GOTO identifier ';'
@@ -3255,7 +3254,7 @@ simple_stmt:
 	| label_colon stmt
 		{ finish_stmt (); }
 	| label_colon '}'
-		{ cp_error (ec_label_must_be_followed_by_statement);
+		{ error ("label must be followed by statement");
 		  yyungetc ('}', 0);
 		  finish_stmt (); }
 	| ';'
@@ -3360,7 +3359,7 @@ for.init.statement:
 	| decl
 	| '{' compstmtend
 		{ if (pedantic)
-		    cp_pedwarn (ec_forbids_compound_statements_inside_for_initializations);
+		    pedwarn ("ANSI C++ forbids compound statements inside for initializations");
 		}
 	;
 
@@ -3551,18 +3550,16 @@ see_typename:
 bad_parm:
 	  /* empty */ %prec EMPTY
 		{
-		  cp_error (ec_type_specifier_omitted_for_parameter);
+		  error ("type specifier omitted for parameter");
 		  $$ = build_tree_list (integer_type_node, NULL_TREE);
 		}
 	| notype_declarator
 		{
-		  cp_error (ec_type_specifier_omitted_for_parameter);
+		  error ("type specifier omitted for parameter");
 		  if (TREE_CODE ($$) == SCOPE_REF
 		      && (TREE_CODE (TREE_OPERAND ($$, 0)) == TEMPLATE_TYPE_PARM
 			  || TREE_CODE (TREE_OPERAND ($$, 0)) == TEMPLATE_TEMPLATE_PARM))
-		    cp_error
-		      (ec_perhaps_you_want_typename_expr_to_make_it_a_type, 
-		       $$);
+		    cp_error ("  perhaps you want `typename %E' to make it a type", $$);
 		  $$ = build_tree_list (integer_type_node, $$);
 		}
 	;

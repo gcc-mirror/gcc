@@ -155,9 +155,9 @@ add_friend (type, decl)
 	    {
 	      if (decl == TREE_VALUE (friends))
 		{
-		  cp_warning (ec_is_already_a_friend_of_class,
+		  cp_warning ("`%D' is already a friend of class `%T'",
 			      decl, type);
-		  cp_warning_at (ec_previous_friend_declaration_of,
+		  cp_warning_at ("previous friend declaration of `%D'",
 				 TREE_VALUE (friends));
 		  return;
 		}
@@ -205,11 +205,11 @@ add_friends (type, name, friend_type)
 	  if (friends)
 	    {
 	      if (friend_type)
-		cp_warning (ec_method_ss_is_already_a_friend_of_class,
+		warning ("method `%s::%s' is already a friend of class",
 			 TYPE_NAME_STRING (friend_type),
 			 IDENTIFIER_POINTER (name));
 	      else
-		cp_warning (ec_function_s_is_already_a_friend_of_class_s,
+		warning ("function `%s' is already a friend of class `%s'",
 			 IDENTIFIER_POINTER (name),
 			 IDENTIFIER_POINTER (DECL_NAME (typedecl)));
 	    }
@@ -252,12 +252,12 @@ make_friend_class (type, friend_type)
 
   if (IS_SIGNATURE (type))
     {
-      cp_error (ec_friend_declaration_in_signature_definition);
+      error ("`friend' declaration in signature definition");
       return;
     }
   if (IS_SIGNATURE (friend_type))
     {
-      cp_error (ec_signature_type_s_declared_friend,
+      error ("signature type `%s' declared `friend'",
 	     IDENTIFIER_POINTER (TYPE_IDENTIFIER (friend_type)));
       return;
     }
@@ -269,7 +269,7 @@ make_friend_class (type, friend_type)
 	 
 	 Friend declarations shall not declare partial
 	 specializations.  */
-      cp_error (ec_partial_specialization_declared_friend,
+      cp_error ("partial specialization `%T' declared `friend'",
 		friend_type);
       return;
     }
@@ -281,7 +281,7 @@ make_friend_class (type, friend_type)
     is_template_friend = 1;
   else if (comptypes (type, friend_type, 1))
     {
-      cp_pedwarn (ec_class_s_is_implicitly_friends_with_itself,
+      pedwarn ("class `%s' is implicitly friends with itself",
 	       TYPE_NAME_STRING (type));
       return;
     }
@@ -301,7 +301,7 @@ make_friend_class (type, friend_type)
 	      comptypes (TREE_VALUE (classes), friend_type, 1)))
     classes = TREE_CHAIN (classes);
   if (classes) 
-    cp_warning (ec_is_already_a_friend_of,
+    cp_warning ("`%T' is already a friend of `%T'",
 		TREE_VALUE (classes), type);
   else
     {
@@ -384,7 +384,7 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 		  TYPE_SIZE (ctype) || template_class_depth (ctype) > 0)
 		add_friend (current_class_type, decl);
 	      else
-		cp_error (ec_member_declared_as_friend_before_type_defined,
+		cp_error ("member `%D' declared as friend before type `%T' defined",
 			  decl, ctype);
 	    }
 	}
@@ -399,7 +399,7 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 	  if (fields)
 	    add_friends (current_class_type, declarator, ctype);
 	  else
-	    cp_error (ec_method_is_not_a_member_of_class,
+	    cp_error ("method `%D' is not a member of class `%T'",
 		      declarator, ctype);
 	  decl = void_type_node;
 	}
@@ -452,14 +452,14 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 	      && current_template_parms && uses_template_parms (decl))
 	    {
 	      static int explained;
-	      cp_warning (ec_friend_declaration, decl);
-	      cp_warning (ec_declares_a_nontemplate_function);
+	      cp_warning ("friend declaration `%#D'", decl);
+	      warning ("  declares a non-template function");
 	      if (! explained)
 		{
-		  cp_warning (ec_if_this_is_not_what_you_intended_make_sure);
-		  cp_warning (ec_the_function_template_has_already_been_declared);
-		  cp_warning (ec_and_add_after_the_function_name_here);
- 		  cp_warning (ec_o_disable_warning_use_nonontemplatefriend);
+		  warning ("  (if this is not what you intended, make sure");
+		  warning ("  the function template has already been declared,");
+		  warning ("  and add <> after the function name here)");
+ 		  warning ("  To disable warning use -Wno-non-template-friend");
 		  explained = 1;
 		}
 	    }
@@ -477,7 +477,7 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
       tree decl = lookup_name_nonclass (declarator);
       if (decl == NULL_TREE)
 	{
-	  cp_warning (ec_implicitly_declaring_as_struct, declarator);
+	  cp_warning ("implicitly declaring `%T' as struct", declarator);
 	  decl = xref_tag (record_type_node, declarator, 1);
 	  decl = TYPE_MAIN_DECL (decl);
 	}
@@ -486,7 +486,7 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 	 but not if those functions are really class names.  */
       if (TREE_CODE (decl) == TREE_LIST && TREE_TYPE (TREE_PURPOSE (decl)))
 	{
-	  cp_warning (ec_friend_archaic_use_friend_class_instead,
+	  cp_warning ("`friend %T' archaic, use `friend class %T' instead",
 		      declarator, declarator);
 	  decl = TREE_TYPE (TREE_PURPOSE (decl));
 	}
