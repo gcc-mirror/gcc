@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.204 1997/06/06 14:31:32 karl Exp $
+%% $Id: texinfo.tex,v 2.207 1997/06/18 19:58:18 karl Exp $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 96, 97 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.204 $
+\deftexinfoversion$Revision: 2.207 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -4559,8 +4559,50 @@ width0pt\relax} \fi
 %
 \def\finalout{\overfullrule=0pt}
 
+% @image.  We use the macros from epsf.tex to support this.
+% If epsf.tex is not installed and @image is used, we complain.
+% 
+% Check for and read epsf.tex up front.  If we read it only at @image
+% time, we might be inside a group, and then its definitions would get
+% undone and the next image would fail.
+\openin 1 = xepsf.tex
+\ifeof 1 \else
+  \closein 1
+  \def\epsfannounce{\toks0 = }% do not bother showing banner
+  \input epsf.tex
+\fi
+%
+\newif\ifwarnednoepsf
+\newhelp\noepsfhelp{epsf.tex must be installed for images to
+  work.  It is also included in the Texinfo distribution, or you can get
+  it from ftp://ftp.tug.org/tex/epsf.tex.}
+%
+% Only complain once about lack of epsf.tex.
+\def\image#1{%
+  \ifx\epsfbox\undefined
+    \ifwarnednoepsf \else
+      \errhelp = \noepsfhelp
+      \errmessage{epsf.tex not found, images will be ignored}%
+      \global\warnednoepsftrue
+    \fi
+  \else
+    \imagexxx #1,,,\finish
+  \fi
+}
+%
+% Arguments to @image:
+% #1 is (mandatory) image filename; we tack on .eps extension.
+% #2 is (optional) width, #3 is (optional) height.
+% #4 is just the usual extra ignored arg for parsing this stuff.
+\def\imagexxx#1,#2,#3,#4\finish{%
+  % \epsfbox itself resets \epsf?size at each figure.
+  \setbox0 = \hbox{\ignorespaces #2}\ifdim\wd0 > 0pt \epsfxsize=#2\relax \fi
+  \setbox0 = \hbox{\ignorespaces #3}\ifdim\wd0 > 0pt \epsfysize=#3\relax \fi
+  \epsfbox{#1.eps}%
+}
 
 % End of control word definitions.
+
 
 \message{and turning on texinfo input format.}
 
