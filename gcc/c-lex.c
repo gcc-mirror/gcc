@@ -53,6 +53,8 @@ extern cpp_options parse_options;
 FILE *finput;
 #endif
 
+extern void yyprint			PROTO((FILE *, int, YYSTYPE));
+
 /* The elements of `ridpointers' are identifier nodes
    for the reserved type names and storage classes.
    It is indexed by a RID_... value.  */
@@ -122,7 +124,6 @@ static int skip_white_space		PROTO((int));
 static int skip_white_space_on_line	PROTO((void));
 static char *extend_token_buffer	PROTO((char *));
 static int readescape			PROTO((int *));
-int check_newline ();
 
 /* Do not insert generated code into the source, instead, include it.
    This allows us to build gcc automatically even for targets that
@@ -1988,7 +1989,6 @@ yylex ()
 	  }
 	else if (objc_flag)
 	  {
-	    extern tree build_objc_string();
 	    /* Return an Objective-C @"..." constant string object.  */
 	    yylval.ttype = build_objc_string (p - token_buffer,
 					      token_buffer + 1);
