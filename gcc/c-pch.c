@@ -44,7 +44,11 @@ Boston, MA 02111-1307, USA.  */
    the version number in get_ident().  
 
    There are a bunch of fields named *_length; those are lengths of data that
-   follows this structure in the same order as the fields in the structure.  */
+   follows this structure in the same order as the fields in the structure.
+
+   The flags_info field is used to verify that certain flags settings that
+   have to be the same during the compilation of the PCH and a compilation
+   using the PCH are indeed the same.  */
 
 struct c_pch_validity
 {
@@ -52,9 +56,14 @@ struct c_pch_validity
   unsigned char target_machine_length;
   unsigned char version_length;
   unsigned char debug_info_type;
+  unsigned int flags_info;
   void (*pch_init) (void);
   size_t target_data_length;
 };
+
+/* If -funit-at-a-time is set, we require that it was also set during the
+   compilation of the PCH we may be using.  */
+#define FLAG_UNIT_AT_A_TIME_SET 1 << 0
 
 struct c_pch_header 
 {
@@ -103,10 +112,14 @@ pch_init (void)
   struct c_pch_validity v;
   void *target_validity;
   static const char partial_pch[IDENT_LENGTH] = "gpcWrite";
+  unsigned int current_flags_info = 0;
   
   if (! pch_file)
     return;
-  
+
+  if (flag_unit_at_a_time)
+    current_flags_info |= FLAG_UNIT_AT_A_TIME_SET;
+
   f = fopen (pch_file, "w+b");
   if (f == NULL)
     fatal_error ("can't create precompiled header %s: %m", pch_file);
@@ -120,6 +133,7 @@ pch_init (void)
   v.target_machine_length = strlen (target_machine);
   v.version_length = strlen (version_string);
   v.debug_info_type = write_symbols;
+  v.flags_info = current_flags_info;
   v.pch_init = &pch_init;
   target_validity = targetm.get_pch_validity (&v.target_data_length);
   
@@ -212,9 +226,14 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
   int strings_length;
   const char *pch_ident;
   struct c_pch_validity v;
+  unsigned int current_flags_info = 0;
+
+  if (flag_unit_at_a_time)
+    current_flags_info |= FLAG_UNIT_AT_A_TIME_SET;
 
   /* Perform a quick test of whether this is a valid
-     precompiled header for the current language.  */
+     precompiled header for the current language
+     and with the current flag settings.  */
 
   sizeread = read (fd, ident, IDENT_LENGTH);
   if (sizeread == -1)
@@ -285,6 +304,14 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
 		   (short_strings + v.host_machine_length 
 		    + v.target_machine_length), 
 		   version_string);
+      return 2;
+    }
+  if (v.flags_info != current_flags_info)
+    {
+      if (cpp_get_options (pfile)->warn_invalid_pch)
+	cpp_error (pfile, CPP_DL_WARNING,
+		   "%s: created using different flags",
+		   name);
       return 2;
     }
 

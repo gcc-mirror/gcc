@@ -1,3 +1,14 @@
+2004-03-24  Steven Bosscher  <stevenb@suse.de>
+
+	PR pch/14137
+	* c-pch.c (struct c_pch_validity): New flags_info field.
+	(FLAG_UNIT_AT_A_TIME_SET): New definition.
+	(pch_init): Write out the flags_info field to the PCH.  Set the
+	FLAG_UNIT_AT_A_TIME_SET bit of the field if flag_unit_at_a_time
+	is set.
+	(c_common_valid_pch): Make sure the flag settings used for compiling
+	the PCH are the same as those used in the current compilation.
+
 2004-03-24  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR preprocessor/14438
@@ -140,28 +151,28 @@
 
 2004-03-15  Richard Henderson  <rth@redhat.com>
 
-        PR target/14547
-        * target.h (struct gcc_target): Move calls substructure before
-        booleans.  Add split_complex_arg.
-        * function.c (assign_parms, split_complex_args): Use it.
-        * calls.c (expand_call): Likewise.
-        (split_complex_values): Likewise.  Check for splittable types
-        before allocating memory.
-        (split_complex_types): Likewise.
-        * system.h (SPLIT_COMPLEX_ARGS): Poison.
-        * expr.h (SPLIT_COMPLEX_ARGS): Remove.
-        * target-def.h (TARGET_SPLIT_COMPLEX_ARG): New.
-        * config/alpha/alpha.c (alpha_split_complex_arg): New.
-        (TARGET_SPLIT_COMPLEX_ARG): New.
-        * config/alpha/alpha.h (SPLIT_COMPLEX_ARGS): Remove.
-        * config/rs6000/rs6000.c (TARGET_SPLIT_COMPLEX_ARG): New.
-        (rs6000_override_options): Zap it for non-AIX.
-        (rs6000_function_value): Use targetm.calls.split_complex_arg.
-        * config/rs6000/rs6000.h (SPLIT_COMPLEX_ARGS): Remove.
-        * config/xtensa/xtensa.c (TARGET_SPLIT_COMPLEX_ARG): New.
-        * config/xtensa/xtensa.h (SPLIT_COMPLEX_ARGS): Remove.
-        * doc/tm.texi (TARGET_SPLIT_COMPLEX_ARG): Modify from old
-        SPLIT_COMPLEX_ARGS entry.
+	PR target/14547
+	* target.h (struct gcc_target): Move calls substructure before
+	booleans.  Add split_complex_arg.
+	* function.c (assign_parms, split_complex_args): Use it.
+	* calls.c (expand_call): Likewise.
+	(split_complex_values): Likewise.  Check for splittable types
+	before allocating memory.
+	(split_complex_types): Likewise.
+	* system.h (SPLIT_COMPLEX_ARGS): Poison.
+	* expr.h (SPLIT_COMPLEX_ARGS): Remove.
+	* target-def.h (TARGET_SPLIT_COMPLEX_ARG): New.
+	* config/alpha/alpha.c (alpha_split_complex_arg): New.
+	(TARGET_SPLIT_COMPLEX_ARG): New.
+	* config/alpha/alpha.h (SPLIT_COMPLEX_ARGS): Remove.
+	* config/rs6000/rs6000.c (TARGET_SPLIT_COMPLEX_ARG): New.
+	(rs6000_override_options): Zap it for non-AIX.
+	(rs6000_function_value): Use targetm.calls.split_complex_arg.
+	* config/rs6000/rs6000.h (SPLIT_COMPLEX_ARGS): Remove.
+	* config/xtensa/xtensa.c (TARGET_SPLIT_COMPLEX_ARG): New.
+	* config/xtensa/xtensa.h (SPLIT_COMPLEX_ARGS): Remove.
+	* doc/tm.texi (TARGET_SPLIT_COMPLEX_ARG): Modify from old
+	SPLIT_COMPLEX_ARGS entry.
 
 2004-03-15  Eric Botcazou  <ebotcazou@act-europe.fr>
 
@@ -272,9 +283,9 @@
 
 2004-03-10  Richard Henderson  <rth@redhat.com>
 
-        PR c/14517
-        * c-decl.c (grokdeclarator): Don't warn for duplicate qualifiers
-        except for pedantic c90 mode.
+	PR c/14517
+	* c-decl.c (grokdeclarator): Don't warn for duplicate qualifiers
+	except for pedantic c90 mode.
 
 2004-03-10  Andrew Haley  <aph@redhat.com>
 
