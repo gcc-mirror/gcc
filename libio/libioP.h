@@ -593,13 +593,18 @@ extern int _IO_vscanf __P ((const char *, _IO_va_list));
 /* VTABLE_LABEL defines NAME as of the CLASS class.
    CNLENGTH is strlen(#CLASS).  */
 #ifdef __GNUC__
-# if _G_VTABLE_LABEL_HAS_LENGTH
-#  define VTABLE_LABEL(NAME, CLASS, CNLENGTH) \
+# if (!defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100)
+#  if _G_VTABLE_LABEL_HAS_LENGTH
+#   define VTABLE_LABEL(NAME, CLASS, CNLENGTH) \
   extern char NAME[] asm (_G_VTABLE_LABEL_PREFIX #CNLENGTH #CLASS);
+#  else
+#   define VTABLE_LABEL(NAME, CLASS, CNLENGTH) \
+  extern char NAME[] asm (_G_VTABLE_LABEL_PREFIX #CLASS);
+#  endif
 # else
 #  define VTABLE_LABEL(NAME, CLASS, CNLENGTH) \
-  extern char NAME[] asm (_G_VTABLE_LABEL_PREFIX #CLASS);
-# endif
+  extern char NAME[] asm ("_ZN" #CNLENGTH #CLASS "TVE");
+# endif /* (!defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100) */
 #endif /* __GNUC__ */
 
 #if !defined(builtinbuf_vtable) && defined(__cplusplus)

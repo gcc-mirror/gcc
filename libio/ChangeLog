@@ -1,3 +1,8 @@
+2000-06-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* libioP.h: Handle new ABI mangling.
+	* stdstrbufs.cc: Likewise.
+
 2000-05-24  Ulrich Drepper  <drepper@redhat.com>
 
 	* iostream.cc (endl): Fix bug in last change.
