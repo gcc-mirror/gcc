@@ -1672,7 +1672,7 @@ struct saved_scope {
   struct binding_level *old_binding_level;
   tree old_bindings;
   struct saved_scope *prev;
-  tree class_name, class_type, class_decl, function_decl;
+  tree class_name, class_type, function_decl;
   tree base_init_list, member_init_list;
   struct binding_level *class_bindings;
   tree previous_class_type;
@@ -1748,7 +1748,6 @@ push_to_top_level ()
 
   s->class_name = current_class_name;
   s->class_type = current_class_type;
-  s->class_decl = current_class_decl;
   s->function_decl = current_function_decl;
   s->base_init_list = current_base_init_list;
   s->member_init_list = current_member_init_list;
@@ -1759,7 +1758,7 @@ push_to_top_level ()
   s->lang_stacksize = current_lang_stacksize;
   s->lang_name = current_lang_name;
   s->named_labels = named_labels;
-  current_class_name = current_class_type = current_class_decl = NULL_TREE;
+  current_class_name = current_class_type = NULL_TREE;
   current_function_decl = NULL_TREE;
   class_binding_level = (struct binding_level *)0;
   previous_class_type = NULL_TREE;
@@ -1799,11 +1798,6 @@ pop_from_top_level ()
     }
   current_class_name = s->class_name;
   current_class_type = s->class_type;
-  current_class_decl = s->class_decl;
-  if (current_class_type)
-    C_C_D = CLASSTYPE_INST_VAR (current_class_type);
-  else
-    C_C_D = NULL_TREE;
   current_base_init_list = s->base_init_list;
   current_member_init_list = s->member_init_list;
   current_function_decl = s->function_decl;
@@ -11211,32 +11205,17 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 	     parse errors may never get us to that point.  Here
 	     we keep the consistency between `current_class_type'
 	     and `current_class_decl'.  */
-	  current_class_decl = last_function_parms;
-	  my_friendly_assert (current_class_decl != NULL_TREE
-		  && TREE_CODE (current_class_decl) == PARM_DECL, 162);
-	  if (TREE_CODE (TREE_TYPE (current_class_decl)) == POINTER_TYPE)
-	    {
-	      tree variant = TREE_TYPE (TREE_TYPE (current_class_decl));
-	      if (CLASSTYPE_INST_VAR (ctype) == NULL_TREE)
-		{
-		  /* Can't call build_indirect_ref here, because it has special
-		     logic to return C_C_D given this argument.  */
-		  C_C_D = build1 (INDIRECT_REF, current_class_type, current_class_decl);
-		  CLASSTYPE_INST_VAR (ctype) = C_C_D;
-		}
-	      else
-		{
-		  C_C_D = CLASSTYPE_INST_VAR (ctype);
-		  /* `current_class_decl' is different for every
-		     function we compile.  */
-		  TREE_OPERAND (C_C_D, 0) = current_class_decl;
-		}
-	      TREE_READONLY (C_C_D) = TYPE_READONLY (variant);
-	      TREE_SIDE_EFFECTS (C_C_D) = TYPE_VOLATILE (variant);
-	      TREE_THIS_VOLATILE (C_C_D) = TYPE_VOLATILE (variant);
-	    }
-	  else
-	    C_C_D = current_class_decl;
+	  tree t = last_function_parms;
+	  int i = suspend_momentary ();
+
+	  my_friendly_assert (t != NULL_TREE
+			      && TREE_CODE (t) == PARM_DECL, 162);
+
+	  /* Fool build_indirect_ref.  */
+	  current_class_decl = NULL_TREE;
+	  C_C_D = build_indirect_ref (t, NULL_PTR);
+	  current_class_decl = t;
+	  resume_momentary (i);
 	}
     }
   else
@@ -11245,6 +11224,7 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 	push_nested_class (DECL_CONTEXT (decl1), 2);
       else
 	push_memoized_context (0, 1);
+      current_class_decl = C_C_D = NULL_TREE;
     }
 
   pushlevel (0);
@@ -11872,14 +11852,6 @@ finish_function (lineno, call_poplevel, nested)
   if (flag_gc)
     expand_gc_prologue_and_epilogue ();
 
-  /* That's the end of the vtable decl's life.  Need to mark it such
-     if doing stupid register allocation.
-
-     Note that current_vtable_decl is really an INDIRECT_REF
-     on top of a VAR_DECL here.  */
-  if (obey_regdecls && current_vtable_decl)
-    use_variable (DECL_RTL (TREE_OPERAND (current_vtable_decl, 0)));
-
   /* If this function is supposed to return a value, ensure that
      we do not fall into the cleanups by mistake.  The end of our
      function will look like this:
@@ -12477,6 +12449,8 @@ struct cp_function
   tree base_init_list;
   tree member_init_list;
   tree base_init_expr;
+  tree class_decl;
+  tree C_C_D;
   rtx result_rtx;
   struct cp_function *next;
   struct binding_level *binding_level;
@@ -12518,6 +12492,8 @@ push_cp_function_context (context)
   p->temp_name_counter = temp_name_counter;
   p->base_init_list = current_base_init_list;
   p->member_init_list = current_member_init_list;
+  p->class_decl = current_class_decl;
+  p->C_C_D = C_C_D;
 }
 
 /* Restore the variables used during compilation of a C++ function.  */
@@ -12567,6 +12543,8 @@ pop_cp_function_context (context)
   temp_name_counter = p->temp_name_counter;
   current_base_init_list = p->base_init_list;
   current_member_init_list = p->member_init_list;
+  current_class_decl = p->class_decl;
+  C_C_D = p->C_C_D;
 
   free (p);
 }
