@@ -791,7 +791,7 @@ enum reg_class {
    class of registers.  In that case, secondary reload registers are
    not needed and would not be helpful.  Instead, a stack location
    must be used to perform the copy and the `movM' pattern should use
-   memory as a intermediate storage.  This case often occurs between
+   memory as an intermediate storage.  This case often occurs between
    floating-point and general registers.  */
 
 /* `SECONDARY_MEMORY_NEEDED (CLASS1, CLASS2, M)'

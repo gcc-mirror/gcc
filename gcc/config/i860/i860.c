@@ -466,7 +466,7 @@ load_operand (op, mode)
   return (memory_operand (op, mode) || indexed_operand (op, mode));
 }
 
-/* Return truth value of whether OP is a integer which fits the
+/* Return truth value of whether OP is an integer which fits the
    range constraining immediate operands in add/subtract insns.  */
 
 int
@@ -477,7 +477,7 @@ small_int (op, mode)
   return (GET_CODE (op) == CONST_INT && SMALL_INT (op));
 }
 
-/* Return truth value of whether OP is a integer which fits the
+/* Return truth value of whether OP is an integer which fits the
    range constraining immediate operands in logic insns.  */
 
 int

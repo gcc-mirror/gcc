@@ -604,7 +604,7 @@ short_cint_operand (op, mode)
 	  && CONST_OK_FOR_LETTER_P (INTVAL (op), 'I'));
 }
 
-/* Similar for a unsigned D field.  */
+/* Similar for an unsigned D field.  */
 
 int
 u_short_cint_operand (op, mode)

@@ -183,7 +183,7 @@ signed_arith_operand (op, mode)
   return (register_operand (op, mode) || signed_literal (op, mode));
 }
 
-/* Return truth value of whether OP is a integer which fits the
+/* Return truth value of whether OP is an integer which fits the
    range constraining immediate operands in three-address insns.  */
 
 int

@@ -1649,7 +1649,7 @@ extern enum reg_class reg_class_from_letter[];
    registers can only be copied to memory and not to another class of
    registers.  In that case, secondary reload registers are not needed and
    would not be helpful.  Instead, a stack location must be used to perform the
-   copy and the `movM' pattern should use memory as a intermediate storage.
+   copy and the `movM' pattern should use memory as an intermediate storage.
    This case often occurs between floating-point and general registers.  */
 
 #define SECONDARY_RELOAD_CLASS(CLASS, MODE, X)				\
@@ -1962,7 +1962,7 @@ typedef struct d30v_stack {
    value of 4096 is suitable for most systems.  */
 /* #define STACK_CHECK_PROBE_INTERVAL */
 
-/* A integer which is nonzero if GNU CC should perform the stack probe as a
+/* An integer which is nonzero if GNU CC should perform the stack probe as a
    load instruction and zero if GNU CC should use a store instruction.  The
    default is zero, which is the most efficient choice on most systems.  */
 /* #define STACK_CHECK_PROBE_LOAD */

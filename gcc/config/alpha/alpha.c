@@ -1305,7 +1305,7 @@ reg_no_subreg_operand (op, mode)
   return register_operand (op, mode);
 }
 
-/* Recognize a addition operation that includes a constant.  Used to
+/* Recognize an addition operation that includes a constant.  Used to
    convince reload to canonize (plus (plus reg c1) c2) during register
    elimination.  */
 

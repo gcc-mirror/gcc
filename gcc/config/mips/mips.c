@@ -509,7 +509,7 @@ arith32_operand (op, mode)
   return register_operand (op, mode);
 }
 
-/* Return truth value of whether OP is a integer which fits in 16 bits  */
+/* Return truth value of whether OP is an integer which fits in 16 bits.  */
 
 int
 small_int (op, mode)

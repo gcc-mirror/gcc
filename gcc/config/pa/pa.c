@@ -497,7 +497,7 @@ arith_double_operand (op, mode)
 		  == ((CONST_DOUBLE_LOW (op) & 0x1000) == 0))));
 }
 
-/* Return truth value of whether OP is a integer which fits the
+/* Return truth value of whether OP is an integer which fits the
    range constraining immediate operands in three-address insns, or
    is an integer register.  */
 
@@ -519,7 +519,7 @@ ireg_operand (op, mode)
   return (GET_CODE (op) == REG && REGNO (op) > 0 && REGNO (op) < 32);
 }
 
-/* Return truth value of whether OP is a integer which fits the
+/* Return truth value of whether OP is an integer which fits the
    range constraining immediate operands in three-address insns.  */
 
 int

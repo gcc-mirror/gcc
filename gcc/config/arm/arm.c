@@ -5219,7 +5219,7 @@ struct minipool_node
      pushing fixes for forward references, all entries are sorted in order
      of increasing max_address.  */
   HOST_WIDE_INT max_address;
-  /* Similarly for a entry inserted for a backwards ref.  */
+  /* Similarly for an entry inserted for a backwards ref.  */
   HOST_WIDE_INT min_address;
   /* The number of fixes referencing this entry.  This can become zero
      if we "unpush" an entry.  In this case we ignore the entry when we

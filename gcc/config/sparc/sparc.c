@@ -1119,7 +1119,7 @@ arith10_double_operand (op, mode)
 	      && (unsigned HOST_WIDE_INT) (INTVAL (op) + 0x200) < 0x400));
 }
 
-/* Return truth value of whether OP is a integer which fits the
+/* Return truth value of whether OP is an integer which fits the
    range constraining immediate operands in most three-address insns,
    which have a 13 bit immediate field.  */
 

@@ -1,3 +1,25 @@
+2001-10-31  Kazu Hirata  <kazu@hxi.com>
+
+	* builtins.def: Fix comment typos.
+	* config/alpha.c: Likewise.
+	* config/arm/arm.c: Likewise.
+	* config/avr/avr.h: Likewise.
+	* config/d30v/d30v.c: Likewise.
+	* config/d30v/d30v.h: Likewise.
+	* config/d30v/d30v.md: Likewise.
+	* config/dsp16xx/dsp16xx.c: Likewise.
+	* config/fr30/fr30.c: Likewise.
+	* config/fr30/fr30.md: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/i860/i860.c: Likewise.
+	* config/i960/i960.c: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/pa/pa.c: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/sparc/sparc.c: Likewise.
+
 2001-10-30  Kazu Hirata  <kazu@hxi.com>
 
 	* config/mips/elf.h: Fix comment formatting.

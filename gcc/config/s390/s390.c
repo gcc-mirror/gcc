@@ -1559,8 +1559,8 @@ print_operand_address (file, addr)
     'N': print the second word of a DImode operand.
     'M': print the second word of a TImode operand.
 
-    'b': print integer X as if it's a unsigned byte.
-    'x': print integer X as if it's a unsigned word.
+    'b': print integer X as if it's an unsigned byte.
+    'x': print integer X as if it's an unsigned word.
     'h': print integer X as if it's a signed word.  */
 
 void
