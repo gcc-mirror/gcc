@@ -177,6 +177,10 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
       pp_cxx_template_id (pp, t);
       break;
 
+    case BASELINK:
+      pp_cxx_unqualified_id (pp, BASELINK_FUNCTIONS (t));
+      break;
+
     case RECORD_TYPE:
     case UNION_TYPE:
     case ENUMERAL_TYPE:

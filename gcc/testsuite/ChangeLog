@@ -1,3 +1,11 @@
+2004-07-28  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/13092
+	* g++.dg/template/non-dependent7.C: New test.
+	* g++.dg/template/non-dependent8.C: Likewise.
+	* g++.dg/template/non-dependent9.C: Likewise.
+	* g++.dg/template/non-dependent10.C: Likewise.
+
 2004-07-27  Andrew Pinski  <apinski@apple.com>
 
 	* g++.dg/rtti/tinfo1.C: Correct the xfail.
