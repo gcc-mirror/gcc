@@ -1,5 +1,5 @@
 /* Parse C expressions for CCCP.
-   Copyright (C) 1987, 1992, 1994, 1995, 1996 Free Software Foundation.
+   Copyright (C) 1987, 1992, 1994, 1995, 1996, 1997 Free Software Foundation.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -118,13 +118,13 @@ struct arglist {
 # define VA_START(va_list, var) va_start (va_list, var)
 # define PRINTF_ALIST(msg) char *msg, ...
 # define PRINTF_DCL(msg)
-# define PRINTF_PROTO(ARGS, m, n) PROTO (ARGS) __attribute__ ((format (printf, m, n)))
+# define PRINTF_PROTO(ARGS, m, n) PROTO (ARGS) __attribute__ ((format (__printf__, m, n)))
 #else
 # include <varargs.h>
 # define VA_START(va_list, var) va_start (va_list)
 # define PRINTF_ALIST(msg) msg, va_alist
 # define PRINTF_DCL(msg) char *msg; va_dcl
-# define PRINTF_PROTO(ARGS, m, n) () __attribute__ ((format (printf, m, n)))
+# define PRINTF_PROTO(ARGS, m, n) () __attribute__ ((format (__printf__, m, n)))
 # define vfprintf(file, msg, args) \
     { \
       char *a0 = va_arg(args, char *); \
