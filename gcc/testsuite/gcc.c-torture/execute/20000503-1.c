@@ -6,7 +6,7 @@ sub (int a)
 
 main ()
 {
-  if (sub1 (0) != 0)
+  if (sub (0) != 0)
     abort ();
 
   exit (0);

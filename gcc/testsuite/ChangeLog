@@ -1,5 +1,9 @@
 2000-05-04  Richard Henderson  <rth@cygnus.com>
 
+	* gcc.c-torture/execute/20000503-1.c: Fix typo.
+
+2000-05-04  Richard Henderson  <rth@cygnus.com>
+
 	* gcc.c-torture/compile/20000504-1.c: New test.  Derived from
 	OpenSSL by Jason R Thorpe.
 
