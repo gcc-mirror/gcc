@@ -1233,7 +1233,8 @@ output_prolog (file, size)
 	|| (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
 	    && GET_CODE (PATTERN (insn)) != USE
 	    && GET_CODE (PATTERN (insn)) != CLOBBER
-	    && get_attr_type (insn) == TYPE_LDSYM))
+	    && (get_attr_type (insn) == TYPE_LDSYM
+		|| get_attr_type (insn) == TYPE_ISUBR)))
       {
 	alpha_function_needs_gp = 1;
 	break;
