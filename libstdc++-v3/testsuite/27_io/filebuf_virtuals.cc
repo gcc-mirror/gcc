@@ -30,12 +30,12 @@ void test01()
   bool test = true;
   char buf[512];
   const char* strlit = "how to tell a story and other essays: mark twain";
-  const size_t strlitsize = strlen(strlit);
+  const size_t strlitsize = std::strlen(strlit);
   filebuf fbuf01;
 
   fbuf01.pubsetbuf(buf, 512);
   fbuf01.sputn(strlit, strlitsize);
-  VERIFY( strncmp(strlit, buf, strlitsize) != 0 );
+  VERIFY( std::strncmp(strlit, buf, strlitsize) != 0 );
 }
 
 void test02()
@@ -45,13 +45,13 @@ void test02()
   bool test = true;
   char buf[512];
   const char* strlit = "how to tell a story and other essays: mark twain";
-  const size_t strlitsize = strlen(strlit);
+  const size_t strlitsize = std::strlen(strlit);
   filebuf fbuf01;
   fbuf01.open("tmp", ios_base::out);
 
   fbuf01.pubsetbuf(buf, strlitsize);
   fbuf01.sputn(strlit, strlitsize);
-  VERIFY( strncmp(strlit, buf, strlitsize) == 0 );
+  VERIFY( std::strncmp(strlit, buf, strlitsize) == 0 );
 }
 
 main() 
