@@ -81,6 +81,7 @@ int rs6000_compare_fp_p;
 /* Label number of label created for -mrelocatable, to call to so we can
    get the address of the GOT section */
 int rs6000_pic_labelno;
+int rs6000_pic_func_labelno;
 
 /* Which abi to adhere to */
 char *rs6000_abi_name = RS6000_ABI_NAME;
@@ -3355,7 +3356,7 @@ rs6000_output_load_toc_table (file)
 	fprintf (file, "\tl");
 
       fprintf (file, " %s,(", reg_names[0]);
-      ASM_GENERATE_INTERNAL_LABEL (buf, "LCL", rs6000_pic_labelno);
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LCL", rs6000_pic_func_labelno);
       assemble_name (file, buf);
       fprintf (file, "-");
       ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
@@ -3664,7 +3665,12 @@ output_prolog (file, size)
   /* If TARGET_MINIMAL_TOC, and the constant pool is needed, then load the
      TOC_TABLE address into register 30.  */
   if (TARGET_TOC && TARGET_MINIMAL_TOC && get_pool_size () != 0)
-    rs6000_output_load_toc_table (file);
+    {
+#ifdef USING_SVR4_H
+      rs6000_pic_func_labelno = rs6000_pic_labelno;
+#endif
+      rs6000_output_load_toc_table (file);
+    }
 
   if (DEFAULT_ABI == ABI_NT)
     {
