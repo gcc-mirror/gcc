@@ -28,7 +28,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "insn-flags.h"
 #include "output.h"
 #include "insn-attr.h"
-
+#ifdef VMS
+#include "tree.h"
+#endif
 
 /* This is like nonimmediate_operand with a restriction on the type of MEM.  */
 
@@ -646,36 +648,102 @@ check_float_value (mode, d, overflow)
   return 0;
 }
 
+#ifdef VMS
+
 /* Linked list of all externals that are to be emitted when optimizing
    for the global pointer if they haven't been declared by the end of
    the program with an appropriate .comm or initialization.  */
 
+static
 struct extern_list {
   struct extern_list *next;	/* next external */
   char *name;			/* name of the external */
-} *extern_head = 0;
+  int size;			/* external's actual size */
+  int in_const;		/* section type flag */
+} *extern_head = 0, *pending_head = 0;
 
-/* Return 1 if NAME has already had an external definition;
-   0 if it has not (so caller should output one).  */
+/* Check whether NAME is already on the external definition list.  If not,
+   Add it to either that list of the pending definition list.  */
 
-int
-vms_check_external (name)
+void
+vms_check_external (decl, name, pending)
+     tree decl;
      char *name;
+     int pending;
 {
-  register struct extern_list *p;
+  register struct extern_list *p, *p0;
 
   for (p = extern_head; p; p = p->next)
     if (!strcmp (p->name, name))
-      return 1;
+      return;
 
+  for (p = pending_head, p0 = 0; p; p0 = p, p = p->next)
+    if (!strcmp (p->name, name))
+      {
+	if (pending)
+	  return;
+
+	/* Was pending, but may now be defined; move it to other list.  */
+	if (p == pending_head)
+	  pending_head = 0;
+	else
+	  p0->next = p->next;
+	p->next = extern_head;
+	extern_head = p;
+	return;
+      }
+
+  /* Not previously seen; create a new list entry.  */
   p = (struct extern_list *)permalloc ((long) sizeof (struct extern_list));
-  p->next = extern_head;
   p->name = name;
-  extern_head = p;
-  return 0;
+
+  if (pending)
+    {
+      /* Save the size and section type and link to `pending' list.  */
+      p->size = (DECL_SIZE (decl) == 0) ? 0 :
+	TREE_INT_CST_LOW (size_binop (CEIL_DIV_EXPR, DECL_SIZE (decl),
+				      size_int (BITS_PER_UNIT)));
+      p->in_const = (TREE_READONLY (decl) && ! TREE_THIS_VOLATILE (decl));
+
+      p->next = pending_head;
+      pending_head = p;
+    }
+  else
+    {
+      /* Size and section type don't matter; link to `declared' list.  */
+      p->size = p->in_const = 0;        /* arbitrary init */
+
+      p->next = extern_head;
+      extern_head = p;
+    }
+  return;
+}
+
+void
+vms_flush_pending_externals (file)
+     FILE *file;
+{
+  register struct extern_list *p;
+
+  while (pending_head)
+    {
+      /* Move next pending declaration to the "done" list.  */
+      p = pending_head;
+      pending_head = p->next;
+      p->next = extern_head;
+      extern_head = p;
+
+      /* Now output the actual declaration.  */
+      if (p->in_const)
+	const_section ();
+      else
+	data_section ();
+      fputs (".comm ", file);
+      assemble_name (file, p->name);
+      fprintf (file, ",%d\n", p->size);
+    }
 }
 
-#ifdef VMS
 /* Additional support code for VMS. */
 
 #ifdef QSORT_WORKAROUND
@@ -685,7 +753,8 @@ vms_check_external (name)
 	and is longword aligned, you cannot safely sort anything which
 	is either not a multiple of 4 in size or not longword aligned.
 	A static "move-by-longword" optimization flag inside qsort() is
-	never reset.  This is known of affect VMS V4.6 through VMS V5.5-1.
+	never reset.  This is known of affect VMS V4.6 through VMS V5.5-1,
+	and was finally fixed in VMS V5.5-2.
 
 	In this work-around an insertion sort is used for simplicity.
 	The qsort code from glibc should probably be used instead.
