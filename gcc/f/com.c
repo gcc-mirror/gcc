@@ -421,9 +421,7 @@ static void ffecom_let_char_ (tree dest_tree,
 			      ffebld source);
 static void ffecom_make_gfrt_ (ffecomGfrt ix);
 static void ffecom_member_phase1_ (ffestorag mst, ffestorag st);
-#ifdef SOMEONE_GETS_DEBUG_SUPPORT_WORKING
 static void ffecom_member_phase2_ (ffestorag mst, ffestorag st);
-#endif
 static void ffecom_prepare_let_char_ (ffetargetCharacterSize dest_size,
 				      ffebld source);
 static void ffecom_push_dummy_decls_ (ffebld dumlist,
@@ -6146,7 +6144,6 @@ ffecom_finish_symbol_transform_ (ffesymbol s)
   if ((ffesymbol_where (s) == FFEINFO_whereCOMMON)
       && (ffesymbol_hook (s).decl_tree != error_mark_node))
     {
-#ifdef SOMEONE_GETS_DEBUG_SUPPORT_WORKING
       int yes = suspend_momentary ();
 
       /* This isn't working, at least for dbxout.  The .s file looks
@@ -6159,7 +6156,6 @@ ffecom_finish_symbol_transform_ (ffesymbol s)
 			     ffesymbol_storage (s));
 
       resume_momentary (yes);
-#endif
     }
 
   return s;
@@ -7107,7 +7103,6 @@ ffecom_member_phase1_ (ffestorag mst UNUSED, ffestorag st)
    referencing the member.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
-#ifdef SOMEONE_GETS_DEBUG_SUPPORT_WORKING
 static void
 ffecom_member_phase2_ (ffestorag mst, ffestorag st)
 {
@@ -7151,7 +7146,6 @@ ffecom_member_phase2_ (ffestorag mst, ffestorag st)
   finish_decl (t, NULL_TREE, FALSE);
 }
 
-#endif
 #endif
 /* Prepare source expression for assignment into a destination perhaps known
    to be of a specific size.  */
@@ -8729,7 +8723,10 @@ ffecom_transform_common_ (ffesymbol s)
   if ((cbt != NULL_TREE)
       && (!is_init
 	  || !DECL_EXTERNAL (cbt)))
-    return;
+    {
+      if (st->hook == NULL) ffestorag_set_hook (st, cbt);
+      return;
+    }
 
   /* Process inits.  */
 
