@@ -1,6 +1,6 @@
 /* Generate code to initialize optabs from machine description.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -102,10 +102,8 @@ static const char * const optabs[] =
   "lshr_optab->handlers[$A].insn_code = CODE_FOR_$(lshr$a3$)",
   "rotl_optab->handlers[$A].insn_code = CODE_FOR_$(rotl$a3$)",
   "rotr_optab->handlers[$A].insn_code = CODE_FOR_$(rotr$a3$)",
-  "smin_optab->handlers[$A].insn_code = CODE_FOR_$(smin$I$a3$)",
-  "smin_optab->handlers[$A].insn_code = CODE_FOR_$(min$F$a3$)",
-  "smax_optab->handlers[$A].insn_code = CODE_FOR_$(smax$I$a3$)",
-  "smax_optab->handlers[$A].insn_code = CODE_FOR_$(max$F$a3$)",
+  "smin_optab->handlers[$A].insn_code = CODE_FOR_$(smin$a3$)",
+  "smax_optab->handlers[$A].insn_code = CODE_FOR_$(smax$a3$)",
   "umin_optab->handlers[$A].insn_code = CODE_FOR_$(umin$I$a3$)",
   "umax_optab->handlers[$A].insn_code = CODE_FOR_$(umax$I$a3$)",
   "pow_optab->handlers[$A].insn_code = CODE_FOR_$(pow$a3$)",

@@ -650,6 +650,9 @@ DEFTREECODE (FLOAT_EXPR, "float_expr", tcc_unary, 1)
 /* Unary negation.  */
 DEFTREECODE (NEGATE_EXPR, "negate_expr", tcc_unary, 1)
 
+/* Minimum and maximum values.  When used with floating point, if both
+   operands are zeros, or if either operand is NaN, then it is unspecified
+   which of the two operands is returned as the result.  */
 DEFTREECODE (MIN_EXPR, "min_expr", tcc_binary, 2)
 DEFTREECODE (MAX_EXPR, "max_expr", tcc_binary, 2)
 

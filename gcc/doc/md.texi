@@ -2834,25 +2834,24 @@ means of constraints requiring operands 1 and 0 to be the same location.
 @cindex @code{udiv@var{m}3} instruction pattern
 @cindex @code{mod@var{m}3} instruction pattern
 @cindex @code{umod@var{m}3} instruction pattern
-@cindex @code{smin@var{m}3} instruction pattern
-@cindex @code{smax@var{m}3} instruction pattern
 @cindex @code{umin@var{m}3} instruction pattern
 @cindex @code{umax@var{m}3} instruction pattern
 @cindex @code{and@var{m}3} instruction pattern
 @cindex @code{ior@var{m}3} instruction pattern
 @cindex @code{xor@var{m}3} instruction pattern
 @item @samp{sub@var{m}3}, @samp{mul@var{m}3}
-@itemx @samp{div@var{m}3}, @samp{udiv@var{m}3}, @samp{mod@var{m}3}, @samp{umod@var{m}3}
-@itemx @samp{smin@var{m}3}, @samp{smax@var{m}3}, @samp{umin@var{m}3}, @samp{umax@var{m}3}
+@itemx @samp{div@var{m}3}, @samp{udiv@var{m}3}
+@itemx @samp{mod@var{m}3}, @samp{umod@var{m}3}
+@itemx @samp{umin@var{m}3}, @samp{umax@var{m}3}
 @itemx @samp{and@var{m}3}, @samp{ior@var{m}3}, @samp{xor@var{m}3}
 Similar, for other arithmetic operations.
+
 @cindex @code{min@var{m}3} instruction pattern
 @cindex @code{max@var{m}3} instruction pattern
-@itemx @samp{min@var{m}3}, @samp{max@var{m}3}
-Floating point min and max operations.  If both operands are zeros,
-or if either operand is NaN, then it is unspecified which of the two
-operands is returned as the result.
-
+@item @samp{smin@var{m}3}, @samp{smax@var{m}3}
+Signed minimum and maximum operations.  When used with floating point,
+if both operands are zeros, or if either operand is @code{NaN}, then
+it is unspecified which of the two operands is returned as the result.
 
 @cindex @code{mulhisi3} instruction pattern
 @item @samp{mulhisi3}
