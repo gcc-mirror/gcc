@@ -1,3 +1,57 @@
+2002-09-12  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/DatagramSocketImpl.jav
+	(peekData): New method.
+	* java/net/PlainDatagramSocketImpl.java
+	(peekData): New method.
+	* java/net/natPlainDatagramSocketImpl.cc
+	(peekData): New method.
+	* java/net/URLConnection
+	(getPermission): New method.
+	(addRequestProperty): New method.
+	(getRequestProperties): New method.
+	(guessContentTypeFromStream): New method, not really implemented.
+	(URLConnection): Added/updated documentation.
+	(connect): Added/updated documentation.
+	(getURL): Added/updated documentation.
+	(getContentLength): Added/updated documentation.
+	(getContentType: Added/updated documentation.
+	(getContentEncoding): Added/updated documentation.
+	(getExpiration): Added/updated documentation.
+	(getDate): Added/updated documentation.
+	(getLastModified): Added/updated documentation.
+	(getHeaderField): Added/updated documentation.
+	(getHeaderFields): Added/updated documentation.
+	(getHeaderFieldInt): Added/updated documentation.
+	(getHeaderFieldDate): Added/updated documentation.
+	(getHeaderFieldKey): Added/updated documentation.
+	(getContent): Added/updated documentation.
+	(getInputStream): Added/updated documentation.
+	(getOutputStream): Added/updated documentation.
+	(toString): Added/updated documentation.
+	(setDoInput): Added/updated documentation.
+	(getDoInput): Added/updated documentation.
+	(setDoOutput): Added/updated documentation.
+	(getDoOutput): Added/updated documentation.
+	(setAllowUserInteraction): Added/updated documentation.
+	(getAllowUserInteraction): Added/updated documentation.
+	(setDefaultAllowUserInteraction): Added/updated documentation.
+	(getDefaultAllowUserInteraction): Added/updated documentation.
+	(setUseCaches): Added/updated documentation.
+	(getUseCaches): Added/updated documentation.
+	(setIfModifiedSince): Added/updated documentation.
+	(getIfModifiedSince): Added/updated documentation.
+	(getDefaultUseCaches): Added/updated documentation.
+	(setDefaultUseCaches): Added/updated documentation.
+	(setRequestProperty): Added/updated documentation.
+	(getRequestProperty): Added/updated documentation.
+	(setDefaultRequestProperty): Added/updated documentation.
+	(getDefaultRequestProperty): Added/updated documentation.
+	(setContentHandlerFactory): Added/updated documentation.
+	(guessContentTypeFromName): Added/updated documentation.
+	(getFileNameMap): Added/updated documentation.
+	(setFileNameMap): Added/updated documentation.
+	
 2002-09-11  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/Socket.java

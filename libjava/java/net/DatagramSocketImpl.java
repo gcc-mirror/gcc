@@ -112,6 +112,20 @@ public abstract class DatagramSocketImpl implements SocketOptions
   protected abstract int peek(InetAddress i) throws IOException;
 
   /**
+   * Takes a peek at the next packet received.  This packet is not consumed.
+   * With the next peekData/receive operation this packet will be read again.
+   * 
+   * @param p The DatagramPacket to fill in with the data sent.
+   *
+   * @return The port number of the sender of the packet.
+   * 
+   * @exception IOException If an error occurs
+   * 
+   * @since 1.4
+   */
+  protected abstract int peekData (DatagramPacket p) throws IOException;
+
+  /**
    * Transmits the specified packet of data to the network.  The destination
    * host and port should be encoded in the packet.
    *
@@ -208,7 +222,7 @@ public abstract class DatagramSocketImpl implements SocketOptions
    * Sets the specified option on a socket to the passed in object.  For
    * options that take an integer argument, the passed in object is an
    * <code>Integer</code>.  For options that are set to on or off, the
-   * value passed will be a <code>Boolean</code>.   The <code>option_id</code> 
+   * value passed will be a <code>Boolean</code>.   The <code>option_id</code>
    * parameter is one of the defined constants in the superinterface.
    *
    * @param option_id The identifier of the option
@@ -221,9 +235,9 @@ public abstract class DatagramSocketImpl implements SocketOptions
     throws SocketException;
 
   /**
-   * Returns the current setting of the specified option.  The 
-   * <code>Object</code> returned will be an <code>Integer</code> for options 
-   * that have integer values.  For options that are set to on or off, a 
+   * Returns the current setting of the specified option.  The
+   * <code>Object</code> returned will be an <code>Integer</code> for options
+   * that have integer values.  For options that are set to on or off, a
    * <code>Boolean</code> will be returned.   The <code>option_id</code>
    * is one of the defined constants in the superinterface.
    *

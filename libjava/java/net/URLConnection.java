@@ -19,6 +19,8 @@ import java.util.Locale;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.security.Permission;
+import java.security.AllPermission;
 import gnu.gcj.io.MimeTypes;
 
 /**
@@ -52,6 +54,14 @@ public abstract class URLConnection
   private static SimpleDateFormat dateFormat1, dateFormat2, dateFormat3;
   private static boolean dateformats_initialized = false;
 
+  /**
+   * Creates a URL connection to a given URL. A real connection is not made.
+   * Use #connect to do this.
+   *
+   * @param url The Object to create the URL connection to
+   *
+   * @see URLConnection:connect
+   */
   protected URLConnection(URL url)
   {
     this.url = url;
@@ -59,49 +69,84 @@ public abstract class URLConnection
     useCaches = defaultUseCaches;
   }
 
+  /**
+   * Creates a real connection to the object references by the URL given
+   * to the constructor
+   */
   public abstract void connect() throws IOException;
 
+  /**
+   * Returns ths URL to the object.
+   */
   public URL getURL()
   {
     return url;
   }
 
+  /**
+   * Returns the value of the content-length header field
+   */
   public int getContentLength()
   {
     return getHeaderFieldInt("content-length", -1);
   }
 
+  /**
+   * Returns the value of the content-type header field
+   */
   public String getContentType()
   {
     return getHeaderField("content-type");
   }
 
+  /**
+   * Returns the value of the content-encoding header field
+   */
   public String getContentEncoding()
   {
     return getHeaderField("content-encoding");
   }
 
+  /**
+   * Returns the value of the expires header field
+   */
   public long getExpiration()
   {
     return getHeaderFieldDate("expiration", 0L);
   }
 
+  /**
+   * Returns the value of the date header field
+   */
   public long getDate()
   {
     return getHeaderFieldDate("date", 0L);
   }
 
+  /**
+   * Returns the value of the last-modified header field
+   */
   public long getLastModified()
   {
     return getHeaderFieldDate("last-modified", 0L);
   }
 
-  public String getHeaderField(int n)
+  /**
+   * Returns the value of the n-th header field
+   *
+   * @param num The number of the header field
+   */
+  public String getHeaderField(int num)
   {
     // Subclasses for specific protocols override this.
     return null;
   }
 
+  /**
+   * Returns the value of the header filed specified by name
+   *
+   * @param name The name of the header field
+   */
   public String getHeaderField(String name)
   {
     // Subclasses for specific protocols override this.
@@ -109,6 +154,8 @@ public abstract class URLConnection
   }
 
   /**
+   * Returns a map of all sent header fields
+   * 
    * @since 1.4
    */
   public Map getHeaderFields()
@@ -117,6 +164,15 @@ public abstract class URLConnection
     return null;
   }
 
+  /**
+   * Returns the value of the header filed name as int.
+   *
+   * @param name The name of the header field
+   * @param val The default value
+   *
+   * @return Returns the value of the header filed or the default value
+   * if the field is missing or malformed
+   */
   public int getHeaderFieldInt(String name, int val)
   {
     String str = getHeaderField(name);
@@ -132,6 +188,16 @@ public abstract class URLConnection
     return val;
   }
 
+  /**
+   * Returns the value of a header field parsed as date. The result is then
+   * number of milliseconds since January 1st, 1970 GMT.
+   *
+   * @param name The name of the header field
+   * @param val The dafault date
+   *
+   * @return Returns the date value of the header filed or the default value
+   * if the field is missing or malformed
+   */
   public long getHeaderFieldDate(String name, long val)
   {
     if (! dateformats_initialized)
@@ -150,12 +216,20 @@ public abstract class URLConnection
     return val;
   }
 
-  public String getHeaderFieldKey(int n)
+  /**
+   * Returns the key of the n-th header field
+   *
+   * @param num The number of the header field
+   */
+  public String getHeaderFieldKey(int num)
   {
     // Subclasses for specific protocols override this.
     return null;
   }
 
+  /**
+   * Retrieves the content of this URLConnection
+   */
   public Object getContent() throws IOException
   {
     // FIXME: Doc indicates that other criteria should be applied as
@@ -170,12 +244,20 @@ public abstract class URLConnection
     return contentHandler.getContent(this);
   }
 
-// TODO12:  public Permission getPermission() throws IOException
-//   {
-//     // Subclasses may override this.
-//     return java.security.AllPermission;
-//   }
+  /**
+   * Returns a permission object representing the permission necessary to make
+   * the connection represented by this object. This method returns null if no
+   * permission is required to make the connection.
+   */
+  public Permission getPermission() throws IOException
+  {
+    // Subclasses may override this.
+    return new java.security.AllPermission();
+  }
 
+  /**
+   * Returns the input stream of the URL connection
+   */
   public InputStream getInputStream() throws IOException
   {
     // Subclasses for specific protocols override this.
@@ -183,6 +265,9 @@ public abstract class URLConnection
 			" does not support input.");
   }
 
+  /**
+   * Returns the output stream of the URL connection
+   */
   public OutputStream getOutputStream() throws IOException
   {
     // Subclasses for specific protocols override this.
@@ -190,11 +275,19 @@ public abstract class URLConnection
 			" does not support output.");
   }
 
+  /**
+   * Returns a string representation of the URL connection object
+   */
   public String toString()
   {
     return this.getClass().getName() + ":" + url.toString();
   }
 
+  /**
+   * Sets tha value of the doInput field.
+   *
+   * @param doinput The new value of the doInput field
+   */
   public void setDoInput(boolean doinput)
   {
     if (connected)
@@ -203,11 +296,19 @@ public abstract class URLConnection
     doInput = doinput;
   }
 
+  /**
+   * Returns the current value of the doInput field
+   */
   public boolean getDoInput()
   {
     return doInput;
   }
 
+  /**
+   * Sets the value of the doOutput field
+   *
+   * @param dooutput The new value of the doOutput field
+   */
   public void setDoOutput(boolean dooutput)
   {
     if (connected)
@@ -216,35 +317,58 @@ public abstract class URLConnection
     doOutput = dooutput;
   }
 
+  /**
+   * Returns the current value of the doOutput field
+   */
   public boolean getDoOutput()
   {
     return doOutput;
   }
 
-  public void setAllowUserInteraction(boolean allowuserinteraction)
+  /**
+   * Sets a new value to the allowUserInteraction field
+   *
+   * @param allowed The new value
+   */
+  public void setAllowUserInteraction(boolean allowed)
   {
     if (connected)
       throw new IllegalAccessError("Already connected");
 
-    allowUserInteraction = allowuserinteraction;
+    allowUserInteraction = allowed;
   }
 
+  /**
+   * Returns the current value of the allowUserInteraction field
+   */
   public boolean getAllowUserInteraction()
   {
     return allowUserInteraction;
   }
 
-  public static void
-    setDefaultAllowUserInteraction(boolean defaultallowuserinteraction)
+  /**
+   * Sets the default value if the allowUserInteraction field
+   *
+   * @param allowed The new default value
+   */
+  public static void setDefaultAllowUserInteraction(boolean allowed)
   {
-    defaultAllowUserInteraction = defaultallowuserinteraction;
+    defaultAllowUserInteraction = allowed;
   }
 
+  /**
+   * Returns the default value of the allowUserInteraction field
+   */
   public static boolean getDefaultAllowUserInteraction()
   {
     return defaultAllowUserInteraction;
   }
 
+  /**
+   * Sets a new value to the useCaches field
+   *
+   * @param usecaches The new value
+   */
   public void setUseCaches(boolean usecaches)
   {
     if (connected)
@@ -253,11 +377,20 @@ public abstract class URLConnection
     useCaches = usecaches;
   }
 
+  /**
+   * The current value of the useCaches field
+   */
   public boolean getUseCaches()
   {
     return useCaches;
   }
 
+  /**
+   * Sets the value of the ifModifiedSince field
+   *
+   * @param ifmodifiedsince The new value in milliseconds
+   * since January 1, 1970 GMT
+   */
   public void setIfModifiedSince(long ifmodifiedsince)
   {
     if (connected)
@@ -266,27 +399,77 @@ public abstract class URLConnection
     ifModifiedSince = ifmodifiedsince;
   }
 
+  /**
+   * Returns the current value of the ifModifiedSince field
+   */
   public long getIfModifiedSince()
   {
     return ifModifiedSince;
   }
 
+  /**
+   * Returns the default value of the useCaches field
+   */
   public boolean getDefaultUseCaches()
   {
     return defaultUseCaches;
   }
 
+  /**
+   * Sets the default value of the useCaches field
+   *
+   * @param defaultusecaches The new default value
+   */
   public void setDefaultUseCaches(boolean defaultusecaches)
   {
     defaultUseCaches = defaultusecaches;
   }
 
+  /**
+   * Sets a property specified by key to value.
+   * 
+   * @param key Key of the property to set
+   * @param value Value of the Property to set
+   *
+   * @see URLConnection:getRequestProperty(String key)
+   * @see URLConnection:addRequestProperty/String key, String value)
+   */
   public void setRequestProperty(String key, String value)
   {
     // Do nothing unless overridden by subclasses that support setting
     // header fields in the request.
   }
 
+  /**
+   * Sets a property specified by key to value. If the property key already
+   * is assigned to a value it does nothing.
+   * 
+   * @param key Key of the property to add
+   * @param value Value of the Property to add
+   * 
+   * @see URLConnection:getRequestProperty(String key)
+   * @see URLConnection:setRequestProperty(String key, String value)
+   * 
+   * @since 1.4
+   */
+  public void addRequestProperty(String key, String value)
+  {
+    if (getRequestProperty (key) == null)
+      {
+        setRequestProperty (key, value);
+      }
+  }
+
+  /**
+   * Returns a property value specified by key.
+   *
+   * @param key Key of the property to return
+   *
+   * @see URLConnection:setRequestProperty(String key, String value)
+   * @see URLConnection:addRequestProperty(String key, String value)
+   * 
+   * @return Value of the property.
+   */
   public String getRequestProperty(String key)
   {
     // Overridden by subclasses that support reading header fields from the
@@ -294,6 +477,28 @@ public abstract class URLConnection
     return null;
   }
 
+  /**
+   * Returns a map that contains all properties of the request
+   *
+   * @return The map of properties
+   */
+  public Map getRequestProperties()
+  {
+    // Overridden by subclasses that support reading header fields from the
+    // request.
+    return null;
+  }
+
+  /**
+   * Defines a default request property
+   *
+   * @param key The key of the property
+   * @param value The value of the property
+   *
+   * @deprecated 1.3 The method setRequestProperty should be used instead
+   *
+   * @see URLConnection:setRequestProperty
+   */
   public static void setDefaultRequestProperty(String key, String value)
   {
     // Do nothing unless overridden by subclasses that support setting
@@ -301,7 +506,15 @@ public abstract class URLConnection
   }
 
   /**
-   * @deprecated 1.3
+   * Returns the value of a default request property
+   *
+   * @param key The key of the default property
+   *
+   * @return The value of the default property or null if not available
+   * 
+   * @deprecated 1.3 The method getRequestProperty should be used instead
+   *
+   * @see URLConnection:getRequestProperty
    */
   public static String getDefaultRequestProperty(String key)
   {
@@ -309,6 +522,11 @@ public abstract class URLConnection
     return null;
   }
 
+  /**
+   * Sets a ContentHandlerFactory
+   *
+   * @param fac The ContentHandlerFactory
+   */
   public static void setContentHandlerFactory(ContentHandlerFactory fac)
   {
     if (factory != null)
@@ -322,6 +540,12 @@ public abstract class URLConnection
     factory = fac;
   }
 
+  /**
+   * Tries to determine the content type of an object, based on the
+   * specified file name
+   *
+   * @param fname The filename to guess the content type from
+   */
   protected static String guessContentTypeFromName(String fname)
   {
     int dot = fname.lastIndexOf (".");
@@ -342,14 +566,26 @@ public abstract class URLConnection
     return(type);
   }
 
-// TODO:  public static String guessContentTypeFromStream(InputStream is)
-//          throws IOException
-//   {
-//   }
-
-// TODO12:  protected void parseURL(URL u, String spec, int start, int limit)
+  /**
+   * Tries to guess the content type of an object, based on the characters
+   * at the beginning of then input stream
+   *
+   * @param is The input stream to guess from
+   *
+   * @exception IOException If an error occurs
+   */
+  public static String guessContentTypeFromStream(InputStream is)
+    throws IOException
+  {
+    is.mark(1024);
+    // FIXME: Implement this. Use system mimetype informations (like "file").
+    is.reset();
+    return null;
+  }
 
   /**
+   * Returns a filename map (a mimetable)
+   *
    * @since 1.2
    */
   public static FileNameMap getFileNameMap()
@@ -358,6 +594,10 @@ public abstract class URLConnection
   }
 
   /**
+   * Sets a FileNameMap
+   *
+   * @param map The new FileNameMap
+   * 
    * @since 1.2
    */
   public static void setFileNameMap(FileNameMap map)
