@@ -1,3 +1,8 @@
+Tue May  5 01:43:16 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* i386.c (output_fix_trunc): Add code to emulate non-popping DImode
+	case.
+
 Tue May  5 01:15:06 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* reorg.c (fill_slots_from_thread): Update REG_DEAD/REG_UNUSED notes
