@@ -1,3 +1,8 @@
+2004-07-22  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/7284
+	* gcc.c-torture/execute/pr7284-1.c: New test.
+
 2004-07-22  Brian Booth  <bbooth@redhat.com>
 
 	* gcc.dg/tree-ssa/20040721-1.c: New test.
