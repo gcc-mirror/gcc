@@ -1,3 +1,7 @@
+2003-10-20  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/builtins-28.c: New test.
+
 2003-10-20  Jan Hubicka  <jh@suse.cz>
 
 	* testsuite/g++.dg/opt/inline4.C: Do not use min-inline-insns

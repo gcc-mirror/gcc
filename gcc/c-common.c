@@ -3752,14 +3752,16 @@ expand_tree_builtin (tree function, tree params, tree coerced_params)
     case BUILT_IN_CREALL:
       if (coerced_params == 0)
 	return integer_zero_node;
-      return build_unary_op (REALPART_EXPR, TREE_VALUE (coerced_params), 0);
+      return non_lvalue (build_unary_op (REALPART_EXPR,
+					 TREE_VALUE (coerced_params), 0));
 
     case BUILT_IN_CIMAG:
     case BUILT_IN_CIMAGF:
     case BUILT_IN_CIMAGL:
       if (coerced_params == 0)
 	return integer_zero_node;
-      return build_unary_op (IMAGPART_EXPR, TREE_VALUE (coerced_params), 0);
+      return non_lvalue (build_unary_op (IMAGPART_EXPR,
+					 TREE_VALUE (coerced_params), 0));
 
     case BUILT_IN_ISGREATER:
       return expand_unordered_cmp (function, params, UNLE_EXPR, LE_EXPR);
