@@ -638,7 +638,7 @@ name_is_method_p (const unsigned char *name, int length)
 
 /* Free the method name list.  */
 static void
-free_method_name_list ()
+free_method_name_list (void)
 {
   struct method_name *p = method_name_list;
   while (p != NULL)
