@@ -1,3 +1,8 @@
+2000-07-11  Rodney Brown  <RodneyBrown@pmsc.com>
+
+	* gcc.texi: Fix minor typos
+	* extend.texi: Fix minor typos
+
 2000-07-11  Marc Espie <espie@openbsd.org>
 
 	* collect2.c (main): Recognize .lo as object files.
