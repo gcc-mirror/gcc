@@ -1691,6 +1691,13 @@ then
     fi
 fi
 
+# When bootstrapping from the toplevel, only run fixincludes during stage1
+if test -d ../prev-gcc
+then
+    STMP_FIXINC=
+    cp -R ../prev-gcc/include include
+fi
+
 # Expand extra_headers to include complete path.
 # This substitutes for lots of t-* files.
 extra_headers_list=
