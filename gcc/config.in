@@ -17,6 +17,15 @@
 /* Whether free must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_FREE
 
+/* Whether bcopy must be declared even if <string.h> is included.  */
+#undef NEED_DECLARATION_BCOPY
+
+/* Whether bcmp must be declared even if <string.h> is included.  */
+#undef NEED_DECLARATION_BCMP
+
+/* Whether bzero must be declared even if <string.h> is included.  */
+#undef NEED_DECLARATION_BZERO
+
 /* Whether index must be declared even if <string.h> is included.  */
 #undef NEED_DECLARATION_INDEX
 

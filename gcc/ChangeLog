@@ -1,3 +1,20 @@
+Sun Feb  1 01:48:18 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* aclocal.m4 (GCC_NEED_DECLARATION): Modify macro to accept a
+	shell variable argument instead of only hard coded functions.
+	(GCC_NEED_DECLARATIONS): New macro to accept multiple functions.
+
+	* configure.in: Collapse multiple calls to AC_CHECK_FUNCS into one
+	call.  Collapse multiple calls to GCC_NEED_DECLARATION into one
+	call to GCC_NEED_DECLARATIONS (new macro.)  Check if we need
+	declarations for bcopy, bcmp and bzero.
+
+	* acconfig.h: Add stubs for bcopy, bcmp and bzero declarations.
+
+	* gansidecl.h: If we have bcopy but don't declare it, then do so.
+	Likewise for bcmp and bzero.  Only define macros for bcopy, bcmp,
+	bzero, index and rindex if they aren't already present.
+
 Sat Jan 31 11:26:58 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* toplev.c (close_dump_file): Wrap function prototype for 

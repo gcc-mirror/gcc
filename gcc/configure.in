@@ -177,33 +177,11 @@ AC_CACHE_VAL(gcc_cv_header_inttypes_h,
   gcc_cv_header_inttypes_h=no)])
 AC_MSG_RESULT($gcc_cv_header_inttypes_h)
 
-AC_CHECK_FUNCS(strtoul)
-AC_CHECK_FUNCS(bsearch)
-AC_CHECK_FUNCS(strerror)
-AC_CHECK_FUNCS(putenv)
-AC_CHECK_FUNCS(popen)
-AC_CHECK_FUNCS(vprintf)
-AC_CHECK_FUNCS(bcopy)
-AC_CHECK_FUNCS(bzero)
-AC_CHECK_FUNCS(bcmp)
-AC_CHECK_FUNCS(index)
-AC_CHECK_FUNCS(rindex)
-AC_CHECK_FUNCS(kill)
-AC_CHECK_FUNCS(getrlimit)
-AC_CHECK_FUNCS(setrlimit)
-AC_CHECK_FUNCS(atoll)
-AC_CHECK_FUNCS(atoq)
+AC_CHECK_FUNCS(strtoul bsearch strerror putenv popen vprintf bcopy bzero bcmp \
+	index rindex kill getrlimit setrlimit atoll atoq)
 
-GCC_NEED_DECLARATION(malloc)
-GCC_NEED_DECLARATION(realloc)
-GCC_NEED_DECLARATION(calloc)
-GCC_NEED_DECLARATION(free)
-GCC_NEED_DECLARATION(index)
-GCC_NEED_DECLARATION(rindex)
-GCC_NEED_DECLARATION(getenv)
-GCC_NEED_DECLARATION(atol)
-GCC_NEED_DECLARATION(sbrk)
-GCC_NEED_DECLARATION(abort)
+GCC_NEED_DECLARATIONS(malloc realloc calloc free bcopy bzero bcmp \
+	index rindex getenv atol sbrk abort)
 
 AC_DECL_SYS_SIGLIST
 

@@ -1,5 +1,5 @@
-/* ANSI and traditional C compatability macros.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+/* ANSI and traditional C compatibility macros.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -46,14 +46,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #endif
 
-#ifndef STDIO_PROTO
-#ifdef BUFSIZ
-#define STDIO_PROTO(ARGS) PROTO(ARGS)
-#else
-#define STDIO_PROTO(ARGS) ()
-#endif
-#endif
-
 /* Define a generic NULL if one hasn't already been defined.  */
 
 #ifndef NULL
@@ -84,5 +76,47 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #endif /* ! __STDC__ */
+
+#ifdef HAVE_BCOPY
+# ifdef NEED_DECLARATION_BCOPY
+void bcopy ();
+# endif
+#else
+# ifndef bcopy
+#  define bcopy(src,dst,len) memcpy ((dst),(src),(len))
+# endif
+#endif
+
+#ifdef HAVE_BZERO
+# ifdef NEED_DECLARATION_BZERO
+void bzero ();
+# endif
+#else
+# ifndef bzero
+#  define bzero(dst,len) memset ((dst),0,(len))
+# endif
+#endif
+
+#ifdef HAVE_BCMP
+# ifdef NEED_DECLARATION_BCMP
+int bcmp ();
+# endif
+#else
+# ifndef bcmp
+#  define bcmp(left,right,len) memcmp ((left),(right),(len))
+# endif
+#endif
+
+#ifndef HAVE_RINDEX
+# ifndef rindex
+#  define rindex strrchr
+# endif
+#endif
+
+#ifndef HAVE_INDEX
+# ifndef index
+#  define index strchr
+# endif
+#endif
 
 #endif /* ANSIDECL_H */
