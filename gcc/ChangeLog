@@ -1,5 +1,18 @@
 2001-01-01  Michael Hayes  <mhayes@redhat.com>
 
+	* loop.h (struct loop_movables): New.
+	(LOOP_MOVABLES): New.
+	(struct loop_info): Add movables field.
+	* loop.c (struct movables): Delete.  Replace all uses
+	with struct loop_movables.
+	(the_movables): Delete.  Replace all uses with movables
+	field in loop_info.
+	(loop_movables_add, loop_movables_free): New functions.
+	(scan_loop): Use xmalloc instead of alloca for movables.
+	Call loop_movables_free.
+	
+2001-01-01  Michael Hayes  <mhayes@redhat.com>	
+
 	* loop.c (debug_loops): New.
 
 2000-12-31  Philip Blundell  <philb@gnu.org>
