@@ -18,7 +18,7 @@
 #define sys_fl 1.0f
 #define sys_ld 1.0L
 
-# 22 "bar.c" 2			/* { dg-warning "expected to return" }  */
+# 22 "sysmac2.c" 2
 
 int
 main ()
