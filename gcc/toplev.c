@@ -2373,7 +2373,6 @@ rest_of_compilation (decl)
   int tem;
   int failure = 0;
   int rebuild_label_notes_after_reload;
-  int register_life_up_to_date;
 
   timevar_push (TV_REST_OF_COMPILATION);
 
@@ -3227,10 +3226,6 @@ rest_of_compilation (decl)
      description to add extra information not needed previously.  */
   split_all_insns (1);
 
-  /* Any of the several passes since flow1 will have munged register
-     lifetime data a bit.  */
-  register_life_up_to_date = 0;
-
 #ifdef OPTIMIZE_MODE_SWITCHING
   timevar_push (TV_MODE_SWITCH);
 
@@ -3240,6 +3235,11 @@ rest_of_compilation (decl)
 
   timevar_pop (TV_MODE_SWITCH);
 #endif
+
+  /* Any of the several passes since flow1 will have munged register
+     lifetime data a bit.  We need it to be up to date for scheduling
+     (see handling of reg_known_equiv in init_alias_analysis).  */
+  recompute_reg_usage (insns, !optimize_size);
 
   timevar_push (TV_SCHED);
 
@@ -3257,10 +3257,6 @@ rest_of_compilation (decl)
       schedule_insns (rtl_dump_file);
 
       close_dump_file (DFI_sched, print_rtl_with_bb, insns);
-
-      /* Register lifetime information was updated as part of verifying
-	 the schedule.  */
-      register_life_up_to_date = 1;
     }
 #endif
   timevar_pop (TV_SCHED);
@@ -3279,9 +3275,6 @@ rest_of_compilation (decl)
 
      RUN_JUMP_AFTER_RELOAD records whether or not we need to rerun the
      jump optimizer after register allocation and reloading are finished.  */
-
-  if (! register_life_up_to_date)
-    recompute_reg_usage (insns, ! optimize_size);
 
   if (flag_new_regalloc)
     {
