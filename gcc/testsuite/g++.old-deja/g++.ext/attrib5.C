@@ -1,4 +1,4 @@
-// { dg-do run { xfail alpha*-dec-osf* *-*-hms i?86-pc-cygwin *-*-coff } }
+// { dg-do run { xfail alpha*-dec-osf* *-*-hms i?86-pc-cygwin *-*-coff hppa2*-hp-hpux11* } }
 // Test that attributes weak and alias coexist.
 
 extern "C" {
