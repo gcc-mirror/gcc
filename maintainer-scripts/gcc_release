@@ -648,10 +648,6 @@ if [ $MODE_UPLOAD -ne 0 ]; then
     changedir ~
     echo $DATE >.snapshot_date
 
-    # Update gcc_latest_snapshot tag.
-    ${CVS} rtag -d gcc_latest_snapshot gcc
-    ${CVS} rtag -rgcc_ss_${DATE} gcc_latest_snapshot gcc
-
     # Announce the snapshot.
     export QMAILHOST=gcc.gnu.org
     mail -s "gcc-ss-$DATE is now available" gcc@gcc.gnu.org < ~ftp/pub/gcc/snapshots/README
