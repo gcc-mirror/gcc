@@ -2082,64 +2082,25 @@ while (0)
    6 000c 00000000 	l2:	.long   function  */
 
 /* Length in units of the trampoline for entering a nested function.  */
-#define TRAMPOLINE_SIZE  (TARGET_SHMEDIA64 ? 40 : TARGET_SH5 ? 32 : 16)
+#define TRAMPOLINE_SIZE  (TARGET_SHMEDIA64 ? 40 : TARGET_SH5 ? 24 : 16)
 
 /* Alignment required for a trampoline in bits .  */
 #define TRAMPOLINE_ALIGNMENT \
-  ((CACHE_LOG < 3 || (TARGET_SMALLCODE && ! TARGET_HARVARD)) ? 32 : 64)
+  ((CACHE_LOG < 3 || (TARGET_SMALLCODE && ! TARGET_HARVARD)) ? 32 \
+   : TARGET_SHMEDIA ? 256 : 64)
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
    CXT is an RTX for the static chain value for the function.  */
 
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) do			\
-{									\
-  if (TARGET_SH5)							\
-    {									\
-      rtx tramp_templ = gen_rtx_SYMBOL_REF (Pmode,			\
-					    "__GCC_nested_trampoline");	\
-      int fixed_len = TRAMPOLINE_SIZE - 2 * GET_MODE_SIZE (Pmode);	\
-									\
-      tramp_templ = gen_datalabel_ref (tramp_templ);			\
-      emit_block_move (gen_rtx_MEM (BLKmode, (TRAMP)),			\
-		       gen_rtx_MEM (BLKmode, tramp_templ),		\
-		       GEN_INT (fixed_len));				\
-      emit_move_insn (gen_rtx_MEM (Pmode, plus_constant ((TRAMP),	\
-							 fixed_len)),	\
-		      (FNADDR));					\
-      emit_move_insn (gen_rtx_MEM (Pmode,				\
-				   plus_constant ((TRAMP),		\
-						  fixed_len		\
-						  + GET_MODE_SIZE (Pmode))), \
-		      (CXT));						\
-      emit_insn (gen_ic_invalidate_line (TRAMP));			\
-      break;								\
-    }									\
-  emit_move_insn (gen_rtx_MEM (SImode, (TRAMP)),			\
-                  GEN_INT (trunc_int_for_mode                  		\
-                         (TARGET_LITTLE_ENDIAN ? 0xd301d202 : 0xd202d301,\
-                          SImode))); \
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 4)),	\
-		  GEN_INT (TARGET_LITTLE_ENDIAN ? 0x0009422b : 0x422b0009));\
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 8)),	\
-		  (CXT));						\
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 12)),	\
-		  (FNADDR));						\
-  if (TARGET_HARVARD)							\
-    {									\
-      if (TARGET_USERMODE)						\
-	emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__ic_invalidate"),\
-			   0, VOIDmode, 1, (TRAMP), SImode);		\
-      else								\
-	emit_insn (gen_ic_invalidate_line (TRAMP));			\
-    }									\
-} while (0)
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
+  sh_initialize_trampoline ((TRAMP), (FNADDR), (CXT))
 
 /* On SH5, trampolines are SHmedia code, so add 1 to the address.  */
 
 #define TRAMPOLINE_ADJUST_ADDRESS(TRAMP) do				\
 {									\
-  if (TARGET_SH5)							\
+  if (TARGET_SHMEDIA)							\
     (TRAMP) = expand_simple_binop (Pmode, PLUS, (TRAMP), GEN_INT (1),	\
 				   gen_reg_rtx (Pmode), 0,		\
 				   OPTAB_LIB_WIDEN);			\

@@ -125,6 +125,7 @@ extern int fldi_ok PARAMS ((void));
 extern int sh_pr_n_sets PARAMS ((void));
 extern int sh_hard_regno_rename_ok PARAMS ((unsigned int, unsigned int));
 extern int sh_cfun_interrupt_handler_p (void);
+extern void sh_initialize_trampoline (rtx, rtx, rtx);
 
 #ifdef HARD_CONST
 extern void fpscr_set_from_mem PARAMS ((int, HARD_REG_SET));

@@ -3667,6 +3667,8 @@
   [(set_attr "length" "8")
    (set_attr "insn_class" "cwb")])
 
+;; ??? could make arg 0 an offsettable memory operand to allow to save
+;; an add in the code that calculates the address.
 (define_insn "ic_invalidate_line_media"
   [(unspec_volatile [(match_operand 0 "register_operand" "r")]
 		    UNSPEC_ICACHE)]
@@ -3679,6 +3681,37 @@
   [(unspec_volatile [(match_operand:SI 0 "register_operand" "z")
 		     (match_operand:SI 1 "register_operand" "r")]
 		    UNSPEC_ICACHE)
+   (clobber (reg:SI PR_REG))]
+  "TARGET_SHCOMPACT"
+  "jsr @%1%#"
+  [(set_attr "type" "sfunc")
+   (set_attr "needs_delay_slot" "yes")])
+
+(define_expand "initialize_trampoline"
+  [(match_operand:SI 0 "" "")
+   (match_operand:SI 1 "" "")
+   (match_operand:SI 2 "" "")]
+  "TARGET_SHCOMPACT"
+  "
+{
+  rtx sfun, tramp;
+
+  sfun = force_reg (Pmode, gen_rtx_SYMBOL_REF (Pmode, \"__init_trampoline\"));
+  tramp = gen_rtx_REG (SImode, R0_REG);
+  emit_move_insn (tramp, operands[0]);
+  emit_move_insn (gen_rtx_REG (SImode, R2_REG), operands[1]);
+  emit_move_insn (gen_rtx_REG (SImode, R3_REG), operands[2]);
+
+  emit_insn (gen_initialize_trampoline_compact (tramp, sfun));
+  DONE;
+}")
+
+(define_insn "initialize_trampoline_compact"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "z")
+		     (match_operand:SI 1 "register_operand" "r")
+		     (reg:SI R2_REG) (reg:SI R3_REG)]
+		    UNSPEC_INIT_TRAMP)
+
    (clobber (reg:SI PR_REG))]
   "TARGET_SHCOMPACT"
   "jsr @%1%#"
@@ -7198,62 +7231,6 @@
   "jsr @r0%#"
   [(set_attr "needs_delay_slot" "yes")])
 
-;; ??? could make arg 0 an offsettable memory operand - and do likewise
-;; for cache invalidation - to allow to save an add in the code that
-;; calculates the address.
-(define_insn "shmedia32_initialize_trampoline_big"
-  [(set (mem:BLK (match_operand:SI 0 "arith_reg_operand" "r"))
-	(unspec [(match_operand:SI 1 "arith_reg_operand" "r")
-		 (match_operand:SI 2 "arith_reg_operand" "r")]
-	 UNSPEC_INIT_TRAMP))
-   (clobber (match_scratch:SI 3 "=&r"))
-   (clobber (match_scratch:SI 4 "=&r"))]
-  "TARGET_SHMEDIA32 && ! TARGET_LITTLE_ENDIAN"
-  "movi 0x433,%3
-   shori 0x432,%3
-   mshflo.w %1,%3,%4
-   mextr7 %4,%4,%4
-   shlli %4,2,%4
-   st.q %0,0,%4
-   mshflo.w %2,%3,%4
-   shlli %4,10,%4
-   addi %4,0x10,%4
-   movi 0x6bf1,%3
-   shori 0x0600,%3
-   mextr4 %4,%3,%3
-   st.q %0,8,%3
-   shori 0x4401,%4
-   shori 0xfff0,%4
-   st.q %0,16,%4"
-  [(set_attr "length" "64")])
-
-(define_insn "shmedia32_initialize_trampoline_little"
-  [(set (mem:BLK (match_operand:SI 0 "arith_reg_operand" "r"))
-	(unspec [(match_operand:SI 1 "arith_reg_operand" "r")
-		 (match_operand:SI 2 "arith_reg_operand" "r")]
-	 UNSPEC_INIT_TRAMP))
-   (clobber (match_scratch:SI 3 "=&r"))
-   (clobber (match_scratch:SI 4 "=&r"))]
-  "TARGET_SHMEDIA32 && TARGET_LITTLE_ENDIAN"
-  "movi 0x433,%3
-   shori 0x432,%3
-   mshflo.w %1,%3,%4
-   mextr3 %4,%4,%4
-   shlli %4,2,%4
-   st.q %0,0,%4
-   mshflo.w %2,%3,%4
-   shlli %4,10,%4
-   addi %4,0x10,%4
-   movi 0x6bf1,%3
-   shori 0x0600,%3
-   shori 0x4401,%3
-   shori 0xfff0,%3
-   st.l %0,16,%r4
-   st.l %0,20,%r3
-   mshfhi.l %3,%4,%4
-   st.q %0,8,%4"
-  [(set_attr "length" "68")])
-
 (define_expand "prologue"
   [(const_int 0)]
   ""
@@ -10262,6 +10239,29 @@
   "TARGET_SHMEDIA"
   "mshflo.l	%N2, %N1, %0"
   [(set_attr "type" "arith_media")])
+
+;; Combiner pattern for trampoline initialization.
+(define_insn_and_split "*double_shori"
+  [(set (match_operand:DI 0 "arith_reg_dest" "=r")
+	(ior:DI (ashift:DI (match_operand:DI 1 "arith_reg_operand" "0")
+                           (const_int 32))
+		(match_operand:DI 2 "const_int_operand" "n")))]
+  "TARGET_SHMEDIA
+   && INTVAL (operands[2]) == trunc_int_for_mode (INTVAL (operands[2]), SImode)"
+  "#"
+  "rtx_equal_p (operands[0], operands[1])"
+  [(const_int 0)]
+  "
+{
+  HOST_WIDE_INT v = INTVAL (operands[2]);
+
+  emit_insn (gen_shori_media (operands[0], operands[0],
+	     gen_int_mode (INTVAL (operands[2]) >> 16, HImode)));
+  emit_insn (gen_shori_media (operands[0], operands[0],
+			      gen_int_mode (v, HImode)));
+  DONE;
+}")
+
 
 (define_insn "*mshflo_l_di_x"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r")
