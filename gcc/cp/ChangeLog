@@ -1,3 +1,7 @@
+2000-03-14  Jeff Sturm  <jsturm@sigma6.com>
+
+	* except.c (expand_throw): Fix typo in _Jv_Sjlj_Throw.
+
 2000-03-13  Jason Merrill  <jason@casey.cygnus.com>
 
 	* decl.c (grokfndecl): Set TREE_NOTHROW if TYPE_NOTHROW_P.
