@@ -1,6 +1,6 @@
 // interpret.cc - Code for the interpreter
 
-/* Copyright (C) 1999  Red Hat, Inc.
+/* Copyright (C) 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -403,19 +403,13 @@ gnu::gcj::runtime::MethodInvocation::continue1 (gnu::gcj::RawData *meth,
 */
 
 
-#ifdef __i386__
-#define PC_REGISTER_ASM  asm("%esi")
-#else
-#define PC_REGISTER_ASM
-#endif
-
 void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 {
   using namespace java::lang::reflect;
 
-  register _Jv_word      *sp                  = inv->sp;
-  register unsigned char *pc PC_REGISTER_ASM  = inv->pc;
-  _Jv_word               *locals              = inv->local_base ();
+  register _Jv_word      *sp     = inv->sp;
+  register unsigned char *pc     = inv->pc;
+  _Jv_word               *locals = inv->local_base ();
 
   _Jv_word *pool_data   = defining_class->constants.data;
   
