@@ -1,5 +1,9 @@
 1999-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* lang.c (chill_print_error_function): Constify a char*.
+
+1999-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* Makefile.in (ch-version.c): Constify a char*.
 
 	* actions.c (id_cmp, warn_unhandled, adjust_return_value,

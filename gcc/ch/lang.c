@@ -265,8 +265,8 @@ chill_print_error_function (file)
     }
   else
     {
-      char *kind = "function";
-      char *name = (*decl_printable_name) (current_function_decl, 2);
+      const char *kind = "function";
+      const char *name = (*decl_printable_name) (current_function_decl, 2);
       fprintf (stderr, "In %s `%s':\n", kind, name);
     }
 }
