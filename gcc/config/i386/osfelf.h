@@ -55,9 +55,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{mrose:	%{!noshrlib: %{pic-none: -noshrlib} %{!pic-none: -warn_nopic}} \
 		%{nostdlib} %{noshrlib} %{glue}} \
 %{!mrose:	%{dy} %{dn} %{glue: } \
-		%{!dy: %{!dn: \
+		%{h*} %{z*} \
+		%{static:-dn -Bstatic} \
+		%{shared:-G -dy} \
+		%{symbolic:-Bsymbolic -G -dy} \
+		%{G:-G} \
+		%{!dy: %{!dn: %{!static: %{!shared: %{!symbolic: \
 			%{noshrlib: -dn } %{pic-none: -dn } \
-			%{!noshrlib: %{!pic-none: -dy}}}}}"
+			%{!noshrlib: %{!pic-none: -dy}}}}}}}}"
 
 #undef TARGET_VERSION_INTERNAL
 #undef TARGET_VERSION

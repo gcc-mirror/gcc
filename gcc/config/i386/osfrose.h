@@ -30,6 +30,24 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define WORD_SWITCH_TAKES_ARG(STR)					\
  (DEFAULT_WORD_SWITCH_TAKES_ARG (STR) || !strcmp (STR, "pic-names"))
 
+/* This defines which switch letters take arguments.  On svr4, most of
+   the normal cases (defined in gcc.c) apply, and we also have -h* and
+   -z* options (for the linker).  */
+
+#define SWITCH_TAKES_ARG(CHAR) \
+  (   (CHAR) == 'D' \
+   || (CHAR) == 'U' \
+   || (CHAR) == 'o' \
+   || (CHAR) == 'e' \
+   || (CHAR) == 'T' \
+   || (CHAR) == 'u' \
+   || (CHAR) == 'I' \
+   || (CHAR) == 'm' \
+   || (CHAR) == 'L' \
+   || (CHAR) == 'A' \
+   || (CHAR) == 'h' \
+   || (CHAR) == 'z')
+
 #define MASK_HALF_PIC     	0x40000000	/* Mask for half-pic code */
 #define MASK_HALF_PIC_DEBUG	0x20000000	/* Debug flag */
 #define MASK_ELF		0x10000000	/* ELF not rose */
@@ -112,9 +130,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{!melf:	%{!noshrlib: %{pic-none: -noshrlib} %{!pic-none: -warn_nopic}} \
 		%{nostdlib} %{noshrlib} %{glue}} \
 %{melf:		%{dy} %{dn} %{glue: } \
-		%{!dy: %{!dn: \
+		%{h*} %{z*} \
+		%{static:-dn -Bstatic} \
+		%{shared:-G -dy} \
+		%{symbolic:-Bsymbolic -G -dy} \
+		%{G:-G} \
+		%{!dy: %{!dn: %{!static: %{!shared: %{!symbolic: \
 			%{noshrlib: -dn } %{pic-none: -dn } \
-			%{!noshrlib: %{!pic-none: -dy}}}}}"
+			%{!noshrlib: %{!pic-none: -dy}}}}}}}}"
 
 #undef  LIB_SPEC
 #define LIB_SPEC "-lc"
@@ -751,7 +774,8 @@ while (0)
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	 \
 do {									 \
      char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);			 \
-     if (!flag_inhibit_size_directive && DECL_SIZE (DECL)		 \
+     if (TARGET_ELF							 \
+	 && !flag_inhibit_size_directive && DECL_SIZE (DECL)		 \
          && ! AT_END && TOP_LEVEL					 \
 	 && DECL_INITIAL (DECL) == error_mark_node			 \
 	 && !size_directive_output)					 \
