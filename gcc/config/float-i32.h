@@ -93,4 +93,31 @@
 #undef LDBL_MAX_10_EXP
 #define LDBL_MAX_10_EXP 38
 
+#if __STDC_VERSION__ >= 199901L
+   /* The floating-point expression evaluation method.
+        -1  indeterminate
+         0  evaluate all operations and constants just to the range and
+            precision of the type
+         1  evaluate operations and constants of type float and double
+            to the range and precision of the double type, evaluate
+            long double operations and constants to the range and
+            precision of the long double type
+         2  evaluate all operations and constants to the range and
+            precision of the long double type
+   */
+# undef FLT_EVAL_METHOD
+# define FLT_EVAL_METHOD	0
+
+   /* Number of decimal digits to enable rounding to the given number of
+      decimal digits without loss of precision.
+         if FLT_RADIX == 10^n:  #mantissa * log10 (FLT_RADIX)
+         else                :  ceil (1 + #mantissa * log10 (FLT_RADIX))
+      where #mantissa is the number of bits in the mantissa of the widest
+      supported floating-point type.
+   */
+# undef DECIMAL_DIG
+# define DECIMAL_DIG	9
+
+#endif	/* C99 */
+
 #endif /*  _FLOAT_H_ */

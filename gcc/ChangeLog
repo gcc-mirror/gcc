@@ -1,3 +1,11 @@
+2001-01-31  Richard Henderson  <rth@redhat.com>
+
+	* config/float-i128.h (FLT_EVAL_METHOD, DECIMAL_DIG): Define.
+	* config/float-i32.h: Likewise.
+	* config/float-i64.h: Likewise.
+	* config/float-sh.h: Likewise.
+	* config/float-sparc.h: Likewise.
+
 2001-01-31  DJ Delorie  <dj@redhat.com>
 
 	* expmed.c (extract_bit_field): allow non-integral modes if we
