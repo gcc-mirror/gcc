@@ -2175,7 +2175,7 @@ build_new_1 (exp)
   /* True if the function we are calling is a placement allocation
      function.  */
   bool placement_allocation_fn_p;
-  tree args;
+  tree args = NULL_TREE;
 
   placement = TREE_OPERAND (exp, 0);
   type = TREE_OPERAND (exp, 1);
