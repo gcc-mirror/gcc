@@ -1,3 +1,8 @@
+2003-06-25  Loren James Rittle  <ljrittle@acm.org>
+
+	* configure.in (ld_vers): Portability [sed].
+	* configure: Regenerate with autoconf213.
+
 2003-06-25  H.J. Lu <hongjiu.lu@intel.com>
 
 	* doc/extend.texi: Document new builtin functions for Intel
