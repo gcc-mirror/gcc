@@ -74,26 +74,24 @@
 # define MANGLE_TRACE_TREE(FN, NODE)
 #endif
 
-/* Non-zero if NODE is a template-id.  */
-#define DECL_TEMPLATE_ID_P(NODE)				\
-  (DECL_LANG_SPECIFIC (NODE) != NULL 				\
-   && DECL_USE_TEMPLATE (NODE)					\
-   && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (NODE)))
-
-/* Non-zero if NODE is a class template-id.  */
-#define CLASSTYPE_TEMPLATE_ID_P(NODE)				\
-  (TYPE_LANG_SPECIFIC (NODE) != NULL 				\
-   && CLASSTYPE_USE_TEMPLATE (NODE)				\
-   && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (NODE)))
+/* Non-zero if NODE is a class template-id.  We can't rely on
+   CLASSTYPE_USE_TEMPLATE here because of tricky bugs in the parser
+   that hard to distinguish A<T> from A, where A<T> is the type as
+   instantiated outside of the template, and A is the type used
+   without parameters inside the template.  The logic here is
+   historical magic that apparently produces the right result.  */
+#define CLASSTYPE_TEMPLATE_ID_P(NODE)				      \
+  (TYPE_LANG_SPECIFIC (NODE) != NULL 				      \
+   && CLASSTYPE_TEMPLATE_INFO (NODE) != NULL                          \
+   && (PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (NODE))              \
+       || (TREE_CODE (CP_DECL_CONTEXT (CLASSTYPE_TI_TEMPLATE (NODE))) \
+           == FUNCTION_DECL)))
 
 /* Things we only need one of.  This module is not reentrant.  */
 static struct globals
 {
   /* The name in which we're building the mangled name.  */
   struct obstack name_obstack;
-
-  /* The current innermost template args.  */
-  tree template_args;
 
   /* An array of the current substitution candidates, in the order
      we've seen them.  */
@@ -135,6 +133,8 @@ integer_type_codes[itk_none] =
   'x',  /* itk_long_long */
   'y'   /* itk_unsigned_long_long */
 };
+
+static int decl_is_template_id PARAMS ((tree, tree*));
 
 /* Functions for handling substitutions.  */
 
@@ -227,6 +227,50 @@ static tree mangle_special_for_type PARAMS ((tree, const char *));
 /* Write out an unsigned quantity in base 10.  */
 #define write_unsigned_number(NUMBER) \
   write_number (NUMBER, /*unsigned_p=*/1, 10)
+
+/* If DECL is a template instance, return non-zero and, if
+   TEMPLATE_INFO is non-NULL, set *TEMPLATE_INFO to its template info.
+   Otherwise return zero.  */
+
+static int
+decl_is_template_id (decl, template_info)
+     tree decl;
+     tree* template_info;
+{
+  if (TREE_CODE (decl) == TYPE_DECL)
+    {
+      /* TYPE_DECLs are handled specially.  Look at its type to decide
+	 if this is a template instantiation.  */
+      tree type = TREE_TYPE (decl);
+
+      if (CLASS_TYPE_P (type) && CLASSTYPE_TEMPLATE_ID_P (type))
+	{
+	  if (template_info != NULL)
+	    /* For a templated TYPE_DECL, the template info is hanging
+	       off the type.  */
+	    *template_info = CLASSTYPE_TEMPLATE_INFO (type);
+	  return 1;
+	}
+    } 
+  else
+    {
+      /* Check if this is a primary template.  */
+      if (DECL_LANG_SPECIFIC (decl) != NULL
+	  && DECL_USE_TEMPLATE (decl)
+	  && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (decl))
+	  && TREE_CODE (decl) != TEMPLATE_DECL)
+	{
+	  if (template_info != NULL)
+	    /* For most templated decls, the template info is hanging
+	       off the decl.  */
+	    *template_info = DECL_TEMPLATE_INFO (decl);
+	  return 1;
+	}
+    }
+
+  /* It's not a template id.  */
+  return 0;
+}
 
 /* Produce debugging output of current substitution candidates.  */
 
@@ -591,12 +635,12 @@ write_encoding (decl)
     {
       tree fn_type;
 
-      if (DECL_TEMPLATE_ID_P (decl))
+      if (decl_is_template_id (decl, NULL))
 	fn_type = get_mostly_instantiated_function_type (decl, NULL, NULL);
       else
 	fn_type = TREE_TYPE (decl);
 
-      write_bare_function_type (fn_type, DECL_TEMPLATE_ID_P (decl));
+      write_bare_function_type (fn_type, decl_is_template_id (decl, NULL));
     }
 }
 
@@ -611,28 +655,30 @@ write_name (decl)
 {
   tree context;
 
-  context = CP_DECL_CONTEXT (decl);
-
   MANGLE_TRACE_TREE ("name", decl);
 
-  /* Decls in :: or ::std scope are treated specially.  */
-  if (context == global_namespace || DECL_NAMESPACE_STD_P (context))
+  if (TREE_CODE (decl) == TYPE_DECL)
     {
-      if (decl && DECL_TEMPLATE_ID_P (decl))
-	{
-	  /* Templated decls get an <unqualified-template-name>.  */
-	  write_unscoped_template_name (DECL_TI_TEMPLATE (decl));
-	  write_template_args (DECL_TI_ARGS (decl));
-	}
-      else if (TREE_CODE (decl) == TYPE_DECL 
-	       && CLASSTYPE_TEMPLATE_ID_P (TREE_TYPE (decl)))
-	{
-	  tree type;
+      /* In case this is a typedef, fish out the corresponding
+	 TYPE_DECL for the main variant.  */
+      decl = TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (decl)));
+      context = TYPE_CONTEXT (TYPE_MAIN_VARIANT (TREE_TYPE (decl)));
+    }
+  else
+    context = (DECL_CONTEXT (decl) == NULL) ? NULL : CP_DECL_CONTEXT (decl);
 
-	  /* Templated decls get an <unqualified-template-name>.  */
-	  type = TREE_TYPE (decl);
-	  write_unscoped_template_name (TYPE_TI_TEMPLATE (type));
-	  write_template_args (TYPE_TI_ARGS (type));
+  /* Decls in :: or ::std scope are treated specially.  */
+  if (context == NULL 
+      || context == global_namespace 
+      || DECL_NAMESPACE_STD_P (context))
+    {
+      tree template_info;
+      /* Is this a template instance?  */
+      if (decl_is_template_id (decl, &template_info))
+	{
+	  /* Yes: use <unscoped-template-name>.  */
+	  write_unscoped_template_name (TI_TEMPLATE (template_info));
+	  write_template_args (TI_ARGS (template_info));
 	}
       else
 	/* Everything else gets an <unqualified-name>.  */
@@ -696,6 +742,8 @@ static void
 write_nested_name (decl)
      tree decl;
 {
+  tree template_info;
+
   MANGLE_TRACE_TREE ("nested-name", decl);
 
   write_char ('N');
@@ -710,18 +758,16 @@ write_nested_name (decl)
 	write_char ('K');
     }
 
-  if (DECL_TEMPLATE_ID_P (decl))
+  /* Is this a template instance?  */
+  if (decl_is_template_id (decl, &template_info))
     {
+      /* Yes, use <template-prefix>.  */
       write_template_prefix (decl);
-      write_template_args (DECL_TI_ARGS (decl));
-    }
-  else if (CLASSTYPE_TEMPLATE_ID_P (TREE_TYPE (decl)))
-    {
-      write_template_prefix (decl);
-      write_template_args (CLASSTYPE_TI_ARGS (TREE_TYPE (decl)));
+      write_template_args (TI_ARGS (template_info));
     }
   else
     {
+      /* No, just use <prefix>  */
       write_prefix (DECL_CONTEXT (decl));
       write_component (decl);
     }
@@ -738,40 +784,42 @@ write_prefix (node)
      tree node;
 {
   tree decl;
-  tree type;
-  tree context;
+  /* Non-NULL if NODE represents a template-id.  */
+  tree template_info = NULL;
+
+  MANGLE_TRACE_TREE ("prefix", node);
 
   if (node == NULL
       || node == global_namespace)
     return;
 
-  MANGLE_TRACE_TREE ("prefix", node);
-
-  decl = DECL_P (node) ? node : TYPE_NAME (node);
-  type = DECL_P (node) ? TREE_TYPE (node) : node;
-  context = CP_DECL_CONTEXT (decl);
-
   if (find_substitution (node))
     return;
 
-  /* Check if this is a template-id.  For a template member, the
-     template info will be hanging off the decl.  */
-  if (DECL_TEMPLATE_ID_P (decl))
+  if (DECL_P (node))
+    /* Node is a decl.  */
+    {
+      decl = node;
+      decl_is_template_id (decl, &template_info);
+    }
+  else
+    /* Node is a type.  */
+    {
+      decl = TYPE_NAME (node);
+      if (CLASSTYPE_TEMPLATE_ID_P (node))
+	template_info = CLASSTYPE_TEMPLATE_INFO (node);
+    }
+
+  if (template_info != NULL)
+    /* Templated.  */
     {
       write_template_prefix (decl);
-      write_template_args (DECL_TI_ARGS (decl));
-    }
-  /* For a template class, the template info will be hanging off the
-     type.  */
-  else if (type && CLASSTYPE_TEMPLATE_ID_P (type))
-    {
-      write_template_prefix (type);
-      write_template_args (CLASSTYPE_TI_ARGS (type));
+      write_template_args (TI_ARGS (template_info));
     }
   else
     /* Not templated.  */
     {
-      write_prefix (context);
+      write_prefix (CP_DECL_CONTEXT (decl));
       write_component (decl);
     }
 
@@ -788,14 +836,15 @@ write_template_prefix (node)
   tree decl = DECL_P (node) ? node : TYPE_NAME (node);
   tree type = DECL_P (node) ? TREE_TYPE (node) : node;
   tree context = CP_DECL_CONTEXT (decl);
+  tree template_info;
   tree template;
   tree substitution;
 
   MANGLE_TRACE_TREE ("template-prefix", node);
 
   /* Find the template decl.  */
-  if (DECL_TEMPLATE_ID_P (decl))
-    template = DECL_TI_TEMPLATE (decl);
+  if (decl_is_template_id (decl, &template_info))
+    template = TI_TEMPLATE (template_info);
   else if (CLASSTYPE_TEMPLATE_ID_P (type))
     template = CLASSTYPE_TI_TEMPLATE (type);
   else
@@ -997,7 +1046,6 @@ write_identifier (identifier)
      <special-name> ::= C1   # complete object constructor
                     ::= C2   # base object constructor
                     ::= C3   # complete object allocating constructor
-                    ::= C4   # base object allocating constructor  
 
    Currently, allocating constructors are never used. 
 
@@ -1436,9 +1484,7 @@ write_bare_function_type (type, include_return_type_p)
 
 /* Write the mangled representation of a method parameter list of
    types given in PARM_LIST.  If METHOD_P is non-zero, the function is 
-   considered a non-static method, and the this parameter is omitted.
-   If VARARGS_P is non-zero, an additional token designating varargs
-   is appended.  */
+   considered a non-static method, and the this parameter is omitted.  */
 
 static void
 write_method_parms (parm_list, method_p)
@@ -1744,6 +1790,7 @@ write_template_template_arg (tree decl)
 /* Non-terminal <array-type>.  TYPE is an ARRAY_TYPE.  
 
      <array-type> ::= A [</dimension/ number>] _ </element/ type>  
+                  ::= A <expression> _ </element/ type>
 
      "Array types encode the dimension (number of elements) and the
      element type. For variable length arrays, the dimension (but not

@@ -1,3 +1,22 @@
+2000-07-30  Alex Samuel  <samuel@codesourcery.com>
+
+	* mangle.c (DECL_TEMPLATE_ID_P): Remove.
+	(CLASSTYEP_TEMPLATE_ID_P): Check template info, and context when
+	ascertaining primaryness.
+	(G): Remove template_args.
+	(decl_is_template_id): New function.
+	(write_encoding): Use decl_is_template_id.
+	(write_name): Likewise.  Handle type_decls.  Get main variant of
+	type decls.
+	(write_nested_name): Likewise.
+	(write_prefix): Likewise.
+	(write_template_prefix): Likewise.
+	(write_special_name_constructor): Remove defunct production from
+	comment.
+	(write_bare_function_type): Remove comment about absent parameter.
+	(write_template_template_arg): Add missing grammar production to
+	comment.
+
 2000-07-27  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (duplicate_decls): If common_type produces a non-typedef
