@@ -1,5 +1,26 @@
 2003-01-10  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/DatagramSocket.java
+	(ch): Description added.
+	(remotePort): Initialize with -1.
+	(connect): Doesnt throws SocketException.
+	* java/net/MulticastSocket.java
+	(setInterface): Merge with Classpath.
+	* java/net/ServerSocket.java
+	(closed): New member variable.
+	(bind): Check if socket is closed.
+	(close): Close an associated channel too, set new value to closed.
+	(isBound): Reindented.
+	(isClosed): Implemented.
+	* java/net/Socket.java
+	(closed): New member variable.
+	(bind): Check if socket is closed.
+	(connect): Check if socket is closed.
+	(close): Close an associated channel too, set new value to closed.
+	(isClosed): Implemented.
+
+2003-01-10  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/DisplayMode.java
 	(equals): Fixed argument type and implementation.
 

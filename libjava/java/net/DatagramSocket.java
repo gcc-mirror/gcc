@@ -72,6 +72,10 @@ public class DatagramSocket
    */
   DatagramSocketImpl impl;
 
+  /**
+   * The unique DatagramChannel object associated with this datagram socket,
+   * or null.
+   */
   DatagramChannel ch;
 
   /**
@@ -82,7 +86,7 @@ public class DatagramSocket
   /**
    * This is the port we are "connected" to
    */
-  private int remotePort;
+  private int remotePort = -1;
 
   /**
    * Creates a DatagramSocket from a specified DatagramSocketImpl instance
@@ -439,7 +443,6 @@ public class DatagramSocket
    * @since 1.2
    */
   public void connect(InetAddress address, int port)
-    throws SocketException
   {
     if (address == null)
       throw new IllegalArgumentException ("Address may not be null");
@@ -451,10 +454,15 @@ public class DatagramSocket
     if (sm != null)
       sm.checkAccept(address.getHostName (), port);
 
+    try
+      {
     impl.connect (address, port);
-
     remoteAddress = address;
     remotePort = port;
+      }
+    catch (SocketException e)
+      {
+      }
   }
 
   /**
