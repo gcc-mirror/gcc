@@ -1219,6 +1219,7 @@ changequote([,])dnl
 changequote(,)dnl
 	gcc_cv_gas_major_version=`expr "$gcc_cv_gas_version" : "VERSION=\([0-9]*\)"`
 	gcc_cv_gas_minor_version=`expr "$gcc_cv_gas_version" : "VERSION=[0-9]*\.\([0-9]*\)"`
+	gcc_cv_gas_patch_version=`expr "$gcc_cv_gas_version" : "VERSION=[0-9]*\.[0-9]*\.\([0-9]*\)"`
 changequote([,])dnl
 fi
 
@@ -1501,7 +1502,13 @@ AC_MSG_RESULT($gcc_cv_as_weak)
 AC_MSG_CHECKING(assembler hidden support)
 gcc_cv_as_hidden=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
-  if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 10 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
+  if test "$gcc_cv_gas_major_version" -eq 2	\
+	  -a "$gcc_cv_gas_minor_version" -eq 12	\
+	  -a "$gcc_cv_gas_patch_version" -ge 1	\
+	  -o "$gcc_cv_gas_major_version" -eq 2	\
+	  -a "$gcc_cv_gas_minor_version" -gt 12	\
+	  -o "$gcc_cv_gas_major_version" -gt 2	\
+    && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
     gcc_cv_as_hidden="yes"
   fi
 elif test x$gcc_cv_as != x; then
@@ -1512,6 +1519,19 @@ elif test x$gcc_cv_as != x; then
 		gcc_cv_as_hidden="yes"
 	fi
 	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
+
+ 	# GNU LD versions before 2.12.1 have buggy support for STV_HIDDEN.
+	# This is irritatingly difficult to feature test for.  Look for 
+	# the date string after the version number.
+	ld_ver=`$gcc_cv_ld --version 2>/dev/null | head -1`
+	if echo "$ld_ver" | grep GNU > /dev/null; then
+changequote(,)dnl
+		ld_date=`echo $ld_ver | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)[-]*\([01][0-9]\)[-]*\([0-3][0-9]\).*$,\1\2\3,;p'`
+changequote([,])dnl
+		if test 0"$ld_date" -lt 20020404; then
+			gcc_cv_as_hidden="no"
+		fi
+	fi
 fi
 if test x"$gcc_cv_as_hidden" = xyes; then
 	AC_DEFINE(HAVE_GAS_HIDDEN, 1,
