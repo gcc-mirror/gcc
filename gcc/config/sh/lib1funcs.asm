@@ -707,7 +707,7 @@ ___movstrSI4:
 	mov.l	r0,@(0,r4)
 ___movstrSI0:
 	rts
-	or	r0,r0,r0
+	nop
 
 	.align	4
 
@@ -855,9 +855,9 @@ ___mulsi3:
 	sts     macl,r0
 
 hiset:	sts	macl,r0		! r0 = bb*dd
-	mulu	r2,r5		| brewing macl = aa*dd
+	mulu	r2,r5		! brewing macl = aa*dd
 	sts	macl,r1
-	mulu	r3,r4		| brewing macl = cc*bb
+	mulu	r3,r4		! brewing macl = cc*bb
 	sts	macl,r2
 	add	r1,r2
 	shll16	r2
