@@ -3820,7 +3820,7 @@ get_filename:
 	    goto fail;
 	}
       }
-      *fend++ = 0;
+      *fend = 0;
 
       /* We have "filename".  Figure out directory this source
 	 file is coming from and put it on the front of the list. */
@@ -3877,8 +3877,8 @@ get_filename:
   default:
   fail:
     if (retried) {
-      fend = fbeg;
-      break;
+      error ("`#%s' expects \"FILENAME\" or <FILENAME>", keyword->name);
+      return 0;
     } else {
       trybuf = expand_to_temp_buffer (buf, limit, 0, 0);
       buf = (U_CHAR *) alloca (trybuf.bufp - trybuf.buf + 1);
@@ -3908,7 +3908,7 @@ get_filename:
 
   if (flen == 0)
     {
-      error ("`#%s' expects \"fname\" or <fname>", keyword->name);
+      error ("empty file name in `#%s'", keyword->name);
       return 0;
     }
 
