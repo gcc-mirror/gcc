@@ -1,3 +1,8 @@
+Wed Aug  4 09:06:14 1999  Richard Earnshaw (rearnsha@arm.com)
+
+	* recog.c (preproces_constraints): Zero recog_op_alt before 
+	processing the constraints.
+
 Mon Aug  2 19:18:44 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* linux.h (HANDLE_PRAGMA_PACK_PUSH_POP): Define.

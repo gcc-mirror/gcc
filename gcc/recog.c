@@ -2093,6 +2093,7 @@ preprocess_constraints ()
 {
   int i;
 
+  bzero (recog_op_alt, sizeof recog_op_alt);
   for (i = 0; i < recog_n_operands; i++)
     {
       int j;
