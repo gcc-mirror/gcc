@@ -2561,16 +2561,47 @@ expand_builtin_mempcpy (tree arglist, rtx target, enum machine_mode mode,
 	= get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
       rtx dest_mem, src_mem, len_rtx;
 
-      /* If DEST is not a pointer type or LEN is not constant,
-	 call the normal function.  */
-      if (dest_align == 0 || !host_integerp (len, 1))
+      /* If DEST is not a pointer type, call the normal function.  */
+      if (dest_align == 0)
 	return 0;
 
+      /* If SRC and DEST are the same (and not volatile), do nothing.  */
+      if (operand_equal_p (src, dest, 0))
+	{
+	  tree expr;
+
+	  if (endp == 0)
+	    {
+	      /* Evaluate and ignore LEN in case it has side-effects.  */
+	      expand_expr (len, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	      return expand_expr (dest, target, mode, EXPAND_NORMAL);
+	    }
+
+	  if (endp == 2)
+	    len = fold (build (MINUS_EXPR, TREE_TYPE (len), dest,
+			       integer_one_node));
+	  len = convert (TREE_TYPE (dest), len);
+	  expr = fold (build (PLUS_EXPR, TREE_TYPE (dest), dest, len));
+	  return expand_expr (expr, target, mode, EXPAND_NORMAL);
+	}
+
+      /* If LEN is not constant, call the normal function.  */
+      if (! host_integerp (len, 1))
+	return 0;
+  
       /* If the LEN parameter is zero, return DEST.  */
       if (tree_low_cst (len, 1) == 0)
 	{
 	  /* Evaluate and ignore SRC in case it has side-effects.  */
 	  expand_expr (src, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	  return expand_expr (dest, target, mode, EXPAND_NORMAL);
+	}
+
+      /* If SRC and DEST are the same (and not volatile), return DEST.  */
+      if (operand_equal_p (src, dest, 0))
+	{
+	  /* Evaluate and ignore LEN in case it has side-effects.  */
+	  expand_expr (len, const0_rtx, VOIDmode, EXPAND_NORMAL);
 	  return expand_expr (dest, target, mode, EXPAND_NORMAL);
 	}
 
@@ -2651,6 +2682,14 @@ expand_builtin_memmove (tree arglist, rtx target, enum machine_mode mode)
 	  return expand_expr (dest, target, mode, EXPAND_NORMAL);
 	}
 
+      /* If SRC and DEST are the same (and not volatile), return DEST.  */
+      if (operand_equal_p (src, dest, 0))
+	{
+	  /* Evaluate and ignore LEN in case it has side-effects.  */
+	  expand_expr (len, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	  return expand_expr (dest, target, mode, EXPAND_NORMAL);
+	}
+
       /* If either SRC is not a pointer type, don't do this
          operation in-line.  */
       if (src_align == 0)
@@ -2713,16 +2752,21 @@ expand_builtin_strcpy (tree arglist, rtx target, enum machine_mode mode)
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
 
+  src = TREE_VALUE (TREE_CHAIN (arglist));
+  dst = TREE_VALUE (arglist);
+
+  /* If SRC and DST are equal (and not volatile), return DST.  */
+  if (operand_equal_p (src, dst, 0))
+    return expand_expr (dst, target, mode, EXPAND_NORMAL);
+
   fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
   if (!fn)
     return 0;
 
-  src = TREE_VALUE (TREE_CHAIN (arglist));
   len = c_strlen (src, 1);
   if (len == 0 || TREE_SIDE_EFFECTS (len))
     return 0;
 
-  dst = TREE_VALUE (arglist);
   len = size_binop (PLUS_EXPR, len, ssize_int (1));
   arglist = build_tree_list (NULL_TREE, len);
   arglist = tree_cons (NULL_TREE, src, arglist);
@@ -3063,6 +3107,14 @@ expand_builtin_memcmp (tree exp ATTRIBUTE_UNUSED, tree arglist, rtx target,
       return const0_rtx;
     }
 
+  /* If both arguments are equal (and not volatile), return zero.  */
+  if (operand_equal_p (arg1, arg2, 0))
+    {
+      /* Evaluate and ignore len in case it has side-effects.  */
+      expand_expr (len, const0_rtx, VOIDmode, EXPAND_NORMAL);
+      return const0_rtx;
+    }
+
   p1 = c_getstr (arg1);
   p2 = c_getstr (arg2);
 
@@ -3191,6 +3243,10 @@ expand_builtin_strcmp (tree exp, rtx target, enum machine_mode mode)
 
   arg1 = TREE_VALUE (arglist);
   arg2 = TREE_VALUE (TREE_CHAIN (arglist));
+
+  /* If both arguments are equal (and not volatile), return zero.  */
+  if (operand_equal_p (arg1, arg2, 0))
+    return const0_rtx;
 
   p1 = c_getstr (arg1);
   p2 = c_getstr (arg2);
@@ -3329,6 +3385,14 @@ expand_builtin_strncmp (tree exp, rtx target, enum machine_mode mode)
 	 side-effects.  */
       expand_expr (arg1, const0_rtx, VOIDmode, EXPAND_NORMAL);
       expand_expr (arg2, const0_rtx, VOIDmode, EXPAND_NORMAL);
+      return const0_rtx;
+    }
+
+  /* If arg1 and arg2 are equal (and not volatile), return zero.  */
+  if (operand_equal_p (arg1, arg2, 0))
+    {
+      /* Evaluate and ignore arg3 in case it has side-effects.  */
+      expand_expr (arg3, const0_rtx, VOIDmode, EXPAND_NORMAL);
       return const0_rtx;
     }
 
