@@ -1597,18 +1597,19 @@ static bool
 forwarder_block_p (bb)
      basic_block bb;
 {
-  rtx insn;
+  rtx insn = bb->head;
   if (bb == EXIT_BLOCK_PTR || bb == ENTRY_BLOCK_PTR
       || !bb->succ || bb->succ->succ_next)
     return false;
 
-  insn = next_active_insn (bb->head);
-  if (!insn)
-    return false;
-  if (GET_CODE (insn) == CODE_LABEL
-      || (GET_CODE (insn) == JUMP_INSN && onlyjump_p (insn)))
-    return true;
-  return false;
+  while (insn != bb->end)
+    {
+      if (active_insn_p (insn))
+	return false;
+      insn = NEXT_INSN (insn);
+    }
+  return (!active_insn_p (insn)
+	  || (GET_CODE (insn) == JUMP_INSN && onlyjump_p (insn)));
 }
 
 /* Return nonzero if we can reach target from src by falling trought.  */
@@ -1699,6 +1700,8 @@ try_redirect_by_replacing_jump (e, target)
     e->flags = EDGE_FALLTHRU;
   else
     e->flags = 0;
+  e->probability = REG_BR_PROB_BASE;
+  e->count = src->count;
 
   /* Fixup barriers.  */
   barrier = next_nonnote_insn (insn);
@@ -1706,6 +1709,20 @@ try_redirect_by_replacing_jump (e, target)
     flow_delete_insn (barrier);
   else if (!fallthru && GET_CODE (barrier) != BARRIER)
     emit_barrier_after (insn);
+
+  /* In case we've zapped an conditional jump, we need to kill the cc0
+     setter too if available.  */
+#ifdef HAVE_cc0
+  insn = src->end;
+  if (GET_CODE (insn) == JUMP_INSN)
+    insn = prev_nonnote_insn (insn);
+  if (sets_cc0_p (insn))
+    {
+      if (insn == src->end)
+	src->end = PREV_INSN (insn);
+      flow_delete_insn (insn);
+    }
+#endif
 
   if (e->dest != target)
     redirect_edge_succ (e, target);
@@ -1766,7 +1783,7 @@ redirect_edge_and_branch (e, target)
       for (j = GET_NUM_ELEM (vec) - 1; j >= 0; --j)
 	if (XEXP (RTVEC_ELT (vec, j), 0) == old_label)
 	  {
-	    RTVEC_ELT (vec, j) = gen_rtx_LABEL_REF (VOIDmode, new_label);
+	    RTVEC_ELT (vec, j) = gen_rtx_LABEL_REF (Pmode, new_label);
 	    --LABEL_NUSES (old_label);
 	    ++LABEL_NUSES (new_label);
 	  }
@@ -1815,6 +1832,8 @@ redirect_edge_and_branch (e, target)
       if (s)
 	{
 	  s->flags |= e->flags;
+	  s->probability += e->probability;
+	  s->count += e->count;
 	  remove_edge (e);
 	}
       else
