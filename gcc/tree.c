@@ -1217,8 +1217,7 @@ int
 integer_zerop (expr)
      tree expr;
 {
-  while (TREE_CODE (expr) == NON_LVALUE_EXPR)
-    expr = TREE_OPERAND (expr, 0);
+  STRIP_NOPS (expr);
 
   return (TREE_CODE (expr) == INTEGER_CST
 	  && TREE_INT_CST_LOW (expr) == 0
@@ -1231,8 +1230,7 @@ int
 integer_onep (expr)
      tree expr;
 {
-  while (TREE_CODE (expr) == NON_LVALUE_EXPR)
-    expr = TREE_OPERAND (expr, 0);
+  STRIP_NOPS (expr);
 
   return (TREE_CODE (expr) == INTEGER_CST
 	  && TREE_INT_CST_LOW (expr) == 1
@@ -1249,8 +1247,7 @@ integer_all_onesp (expr)
   register int prec;
   register int uns;
 
-  while (TREE_CODE (expr) == NON_LVALUE_EXPR)
-    expr = TREE_OPERAND (expr, 0);
+  STRIP_NOPS (expr);
 
   if (TREE_CODE (expr) != INTEGER_CST)
     return 0;
@@ -1292,8 +1289,7 @@ integer_pow2p (expr)
 {
   HOST_WIDE_INT high, low;
 
-  while (TREE_CODE (expr) == NON_LVALUE_EXPR)
-    expr = TREE_OPERAND (expr, 0);
+  STRIP_NOPS (expr);
 
   if (TREE_CODE (expr) != INTEGER_CST)
     return 0;
@@ -1314,8 +1310,7 @@ int
 real_zerop (expr)
      tree expr;
 {
-  while (TREE_CODE (expr) == NON_LVALUE_EXPR)
-    expr = TREE_OPERAND (expr, 0);
+  STRIP_NOPS (expr);
 
   return (TREE_CODE (expr) == REAL_CST
 	  && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst0));
@@ -1327,8 +1322,7 @@ int
 real_onep (expr)
      tree expr;
 {
-  while (TREE_CODE (expr) == NON_LVALUE_EXPR)
-    expr = TREE_OPERAND (expr, 0);
+  STRIP_NOPS (expr);
 
   return (TREE_CODE (expr) == REAL_CST
 	  && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst1));
@@ -1340,8 +1334,7 @@ int
 real_twop (expr)
      tree expr;
 {
-  while (TREE_CODE (expr) == NON_LVALUE_EXPR)
-    expr = TREE_OPERAND (expr, 0);
+  STRIP_NOPS (expr);
 
   return (TREE_CODE (expr) == REAL_CST
 	  && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst2));
@@ -1353,6 +1346,7 @@ int
 really_constant_p (exp)
      tree exp;
 {
+  /* This is not quite the same as STRIP_NOPS.  It does more.  */
   while (TREE_CODE (exp) == NOP_EXPR
 	 || TREE_CODE (exp) == CONVERT_EXPR
 	 || TREE_CODE (exp) == NON_LVALUE_EXPR)

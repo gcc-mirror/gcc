@@ -2678,8 +2678,8 @@ output_constructor (exp, size)
 	field = TREE_PURPOSE (link);
 
       /* Eliminate the marker that makes a cast not be an lvalue.  */
-      if (val != 0 && TREE_CODE (val) == NON_LVALUE_EXPR)
-	val = TREE_OPERAND (val, 0);
+      if (val != 0)
+	STRIP_NOPS (val);
 
       if (field == 0 || !DECL_BIT_FIELD (field))
 	{

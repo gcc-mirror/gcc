@@ -6546,11 +6546,8 @@ do_store_flag (exp, target, mode, only_cheap)
   if (operand_mode == BLKmode)
     return 0;
 
-  while (TREE_CODE (arg0) == NON_LVALUE_EXPR)
-    arg0 = TREE_OPERAND (arg0, 0);
-
-  while (TREE_CODE (arg1) == NON_LVALUE_EXPR)
-    arg1 = TREE_OPERAND (arg1, 0);
+  STRIP_NOPS (arg0);
+  STRIP_NOPS (arg1);
 
   /* Get the rtx comparison code to use.  We know that EXP is a comparison
      operation of some type.  Some comparisons against 1 and -1 can be
