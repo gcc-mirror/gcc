@@ -1670,13 +1670,33 @@
   [(set_attr "length" "1,2")])
 
 ;; 32 bit result
-(define_insn "mulhisi3"
+(define_expand "mulhisi3"
+  [(set (match_dup 3)
+	(match_operand:HI 1 "general_operand" "g,g"))
+   (set (match_operand:SI 0 "register_operand" "=r,r") ; even numbered!
+	(mult:SI (truncate:HI 
+                  (match_dup 0))
+		 (match_operand:HI 2 "general_operand" "rR,Qi")))]
+  "TARGET_45"
+  "operands[3] = gen_lowpart(HImode, operands[1]);")
+
+(define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r,r") ; even numbered!
-	(mult:SI (match_operand:HI 1 "register_operand" "%0,0")
+	(mult:SI (truncate:HI 
+                  (match_operand:SI 1 "register_operand" "%0,0"))
 		 (match_operand:HI 2 "general_operand" "rR,Qi")))]
   "TARGET_45"
   "mul %2, %0"
   [(set_attr "length" "1,2")])
+
+;(define_insn "mulhisi3"
+;  [(set (match_operand:SI 0 "register_operand" "=r,r") ; even numbered!
+;	(mult:SI (truncate:HI 
+;                  (match_operand:SI 1 "register_operand" "%0,0"))
+;		 (match_operand:HI 2 "general_operand" "rR,Qi")))]
+;  "TARGET_45"
+;  "mul %2, %0"
+;  [(set_attr "length" "1,2")])
 
 ;;- divide
 ;; how can I use the remainder ? - 
