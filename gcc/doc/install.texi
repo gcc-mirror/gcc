@@ -3033,12 +3033,12 @@ GCC you first have to install a pre-built compiler, see our
 @uref{binaries.html,,binaries page} for details.
 
 The Solaris 2 @command{/bin/sh} will often fail to configure
-@file{libstdc++-v3}, @file{boehm-gc} or
-@file{libjava}.  If you encounter this problem, set @env{CONFIG_SHELL} to
-@command{/bin/ksh} in your environment before running @command{configure}.
+@file{libstdc++-v3}, @file{boehm-gc} or @file{libjava}.  We therefore
+recommend to set @env{CONFIG_SHELL} to @command{/bin/ksh} in your
+environment.
 
 Solaris 2 comes with a number of optional OS packages.  Some of these
-packages are needed to use GCC fully, namely @code{SUNWarc},
+are needed to use GCC fully, namely @code{SUNWarc},
 @code{SUNWbtool}, @code{SUNWesu}, @code{SUNWhea}, @code{SUNWlibm},
 @code{SUNWsprot}, and @code{SUNWtoo}.  If you did not install all
 optional packages when installing Solaris 2, you will need to verify that

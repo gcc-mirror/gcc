@@ -1,3 +1,9 @@
+2003-04-05  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	PR bootstrap/10267
+	* doc/install.texi (*-*-solaris2): /bin/ksh is not just recommended
+	for configuring.
+
 2003-04-04  Geoffrey Keating  <geoffk@apple.com>
 
 	* dbxout.c (scope_labelno): Add GTY.
