@@ -1,3 +1,7 @@
+2000-08-15  Andrew Haley  <aph@cygnus.com>
+
+	* include/jvm.h (_Jv_HashCode): New hash code.
+
 2000-08-15  Tom Tromey  <tromey@cygnus.com>
 
 	* java/io/ByteArrayOutputStream.java: Merged with Classpath.
