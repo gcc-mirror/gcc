@@ -79,7 +79,7 @@ extern int target_flags;
 #define CONSTLEN_3_BIT  (1<<21)
 #define HITACHI_BIT     (1<<22)
 #define CONSTLEN_0_BIT  (1<<25)
-#define PACKSTRUCT_BIT  (1<<28)
+#define PADSTRUCT_BIT  (1<<28)
 #define LITTLE_ENDIAN_BIT (1<<29)
 
 /* Nonzero if we should generate code using type 0 insns.  */
@@ -128,10 +128,12 @@ extern int target_flags;
 /* Nonzero if using Hitachi's calling convention.  */
 #define TARGET_HITACHI 		(target_flags & HITACHI_BIT)
 
-/* Nonzero if packing structures as small as they'll go (incompatible
-   with Hitachi's compiler).  */
-#define TARGET_PACKSTRUCT       (target_flags & PACKSTRUCT_BIT)
-
+/* Nonzero if padding structures to a multiple of 4 bytes.  This is
+   incompatible with Hitachi's compiler, and gives unusual structure layouts
+   which confuse programmers.
+   ??? This option is not useful, but is retained in case there are people
+   who are still relying on it.  It may be deleted in the future.  */
+#define TARGET_PADSTRUCT       (target_flags & PADSTRUCT_BIT)
 
 #define TARGET_LITTLE_ENDIAN     (target_flags & LITTLE_ENDIAN_BIT)
 
@@ -151,7 +153,7 @@ extern int target_flags;
   {"hitachi",	(HITACHI_BIT) },		\
   {"isize", 	(ISIZE_BIT) },			\
   {"l",		(LITTLE_ENDIAN_BIT) },  	\
-  {"packstruct",(PACKSTRUCT_BIT) },    		\
+  {"padstruct",(PADSTRUCT_BIT) },    		\
   {"r",  	(RTL_BIT) },			\
   {"space", 	(SPACE_BIT) },			\
   {"",   	TARGET_DEFAULT} 		\
@@ -276,7 +278,7 @@ do {								\
 /* Number of bits which any structure or union's size must be a
    multiple of.  Each structure or union's size is rounded up to a
    multiple of this.  */
-#define STRUCTURE_SIZE_BOUNDARY (TARGET_PACKSTRUCT ? 8 : 32)
+#define STRUCTURE_SIZE_BOUNDARY (TARGET_PADSTRUCT ? 32 : 8)
 
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
