@@ -1477,15 +1477,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	}
       else
 	{
-	  if (TYPE_MODE (type) == BLKmode)
-	    {
-	      output_rtx[i] = assign_stack_temp (BLKmode,
-						 int_size_in_bytes (type), 0);
-	      MEM_IN_STRUCT_P (output_rtx[i]) = AGGREGATE_TYPE_P (type);
-	    }
-	  else
-	    output_rtx[i] = gen_reg_rtx (TYPE_MODE (type));
-
+	  output_rtx[i] = assign_temp (type, 0, 0);
 	  TREE_VALUE (tail) = make_tree (type, output_rtx[i]);
 	}
     }
@@ -1585,10 +1577,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	      || GET_CODE (XVECEXP (body, 3, i)) == CONCAT))
 	{
 	  tree type = TREE_TYPE (TREE_VALUE (tail));
-	  rtx memloc = assign_stack_temp (TYPE_MODE (type),
-					  int_size_in_bytes (type), 1);
+	  rtx memloc = assign_temp (type, 1, 1);
 
-	  MEM_IN_STRUCT_P (memloc) = AGGREGATE_TYPE_P (type);
 	  emit_move_insn (memloc, XVECEXP (body, 3, i));
 	  XVECEXP (body, 3, i) = memloc;
 	}
