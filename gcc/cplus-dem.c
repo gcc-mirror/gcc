@@ -731,7 +731,7 @@ demangle_signature (work, mangled, declp)
 	    {
 	      remember_type (work, oldmangled, *mangled - oldmangled);
 	    }
-	  string_append(&tname, "::");
+	  string_append(&tname, (work -> options & DMGL_JAVA) ? "." : "::");
 	  string_prepends(declp, &tname);
 	  if (work -> destructor & 1)
 	    {
@@ -857,6 +857,7 @@ demangle_template (work, mangled, tname, trawname)
   const char *old_p;
   const char *start;
   int symbol_len;
+  int is_java_array;
   string temp;
 
   (*mangled)++;
@@ -868,9 +869,14 @@ demangle_template (work, mangled, tname, trawname)
     }
   if (trawname)
     string_appendn (trawname, *mangled, r);
-  string_appendn (tname, *mangled, r);
+  is_java_array = (work -> options & DMGL_JAVA)
+    && strncmp (*mangled, "JArray1Z", 8) == 0;
+  if (! is_java_array)
+    {
+      string_appendn (tname, *mangled, r);
+      string_append (tname, "<");
+    }
   *mangled += r;
-  string_append (tname, "<");
   /* get size of template parameter list */
   if (!get_count (mangled, &r))
     {
@@ -1085,9 +1091,16 @@ demangle_template (work, mangled, tname, trawname)
 	}
       need_comma = 1;
     }
-  if (tname->p[-1] == '>')
-    string_append (tname, " ");
-  string_append (tname, ">");
+  if (is_java_array)
+    {
+      string_append (tname, "[]");
+    }
+  else
+    {
+      if (tname->p[-1] == '>')
+	string_append (tname, " ");
+      string_append (tname, ">");
+    }
   
   /*
     if (work -> static_type)
@@ -1242,7 +1255,7 @@ demangle_class (work, mangled, declp)
 	      work -> constructor -= 1; 
 	    }
 	}
-      string_prepend (declp, "::");
+      string_prepend (declp, (work -> options & DMGL_JAVA) ? "." : "::");
       string_prepends (declp, &class_name);
       success = 1;
     }
@@ -1532,7 +1545,8 @@ gnu_special (work, mangled, declp)
 	    {
 	      if (p != NULL)
 		{
-		  string_append (declp, "::");
+		  string_append (declp,
+				 (work -> options & DMGL_JAVA) ? "." : "::");
 		  (*mangled)++;
 		}
 	    }
@@ -1569,7 +1583,7 @@ gnu_special (work, mangled, declp)
 	  /* Consumed everything up to the cplus_marker, append the
 	     variable name.  */
 	  (*mangled)++;
-	  string_append (declp, "::");
+	  string_append (declp, (work -> options & DMGL_JAVA) ? "." : "::");
 	  n = strlen (*mangled);
 	  string_appendn (declp, *mangled, n);
 	  (*mangled) += n;
@@ -1828,7 +1842,7 @@ demangle_qualified (work, mangled, result, isfuncname, append)
 	}
       if (qualifiers > 0)
         {
-          string_appendn (&temp, "::", 2);
+          string_append (&temp, (work -> options & DMGL_JAVA) ? "." : "::");
         }
     }
 
@@ -1839,7 +1853,7 @@ demangle_qualified (work, mangled, result, isfuncname, append)
 
   if (isfuncname && (work->constructor & 1 || work->destructor & 1))
     {
-      string_appendn (&temp, "::", 2);
+      string_append (&temp, (work -> options & DMGL_JAVA) ? "." : "::");
       if (work -> destructor & 1)
 	{
 	  string_append (&temp, "~");
@@ -1858,7 +1872,7 @@ demangle_qualified (work, mangled, result, isfuncname, append)
     {
       if (!STRING_EMPTY (result))
 	{
-	  string_appendn (&temp, "::", 2);
+	  string_append (&temp, (work -> options & DMGL_JAVA) ? "." : "::");
 	}
       string_prepends (result, &temp);
     }
@@ -1951,7 +1965,8 @@ do_type (work, mangled, result)
 	case 'P':
 	case 'p':
 	  (*mangled)++;
-	  string_prepend (&decl, "*");
+	  if (! (work -> options & DMGL_JAVA))
+	    string_prepend (&decl, "*");
 	  break;
 
 	  /* A reference type */
@@ -2033,7 +2048,7 @@ do_type (work, mangled, result)
 	      }
 
 	    string_append (&decl, ")");
-	    string_prepend (&decl, "::");
+	    string_prepend (&decl, (work -> options & DMGL_JAVA) ? "." : "::");
 	    if (isdigit (**mangled)) 
 	      {
 		n = consume_count (mangled);
@@ -2866,13 +2881,23 @@ string_prependn (p, s, n)
 
 #ifdef MAIN
 
+#include "getopt.h"
+
+static char *program_name;
+static char *program_version = VERSION;
+static int flags = DMGL_PARAMS | DMGL_ANSI;
+
+static void demangle_it PARAMS ((char *));
+static void usage PARAMS ((FILE *, int));
+static void fatal PARAMS ((char *));
+
 static void
 demangle_it (mangled_name)
      char *mangled_name;
 {
   char *result;
 
-  result = cplus_demangle (mangled_name, DMGL_PARAMS | DMGL_ANSI);
+  result = cplus_demangle (mangled_name, flags);
   if (result == NULL)
     {
       printf ("%s\n", mangled_name);
@@ -2883,11 +2908,6 @@ demangle_it (mangled_name)
       free (result);
     }
 }
-
-#include "getopt.h"
-
-static char *program_name;
-static char *program_version = VERSION;
 
 static void
 usage (stream, status)
@@ -2906,7 +2926,7 @@ Usage: %s [-_] [-n] [-s {gnu,lucid,arm}] [--strip-underscores]\n\
 char mbuffer[MBUF_SIZE];
 
 /* Defined in the automatically-generated underscore.c.  */
-extern int prepends_underscore;
+int prepends_underscore;
 
 int strip_underscore = 0;
 
@@ -2914,6 +2934,7 @@ static struct option long_options[] = {
   {"strip-underscores", no_argument, 0, '_'},
   {"format", required_argument, 0, 's'},
   {"help", no_argument, 0, 'h'},
+  {"java", no_argument, 0, 'j'},
   {"no-strip-underscores", no_argument, 0, 'n'},
   {"version", no_argument, 0, 'v'},
   {0, no_argument, 0, 0}
@@ -2931,7 +2952,7 @@ main (argc, argv)
 
   strip_underscore = prepends_underscore;
 
-  while ((c = getopt_long (argc, argv, "_ns:", long_options, (int *) 0)) != EOF)
+  while ((c = getopt_long (argc, argv, "_nsj:", long_options, (int *) 0)) != EOF)
     {
       switch (c)
 	{
@@ -2948,6 +2969,9 @@ main (argc, argv)
 	  exit (0);
 	case '_':
 	  strip_underscore = 1;
+	  break;
+	case 'j':
+	  flags |= DMGL_JAVA;
 	  break;
 	case 's':
 	  if (strcmp (optarg, "gnu") == 0)
@@ -3007,8 +3031,7 @@ main (argc, argv)
 
 	      mbuffer[i] = 0;
 	      
-	      result = cplus_demangle (mbuffer + skip_first,
-				       DMGL_PARAMS | DMGL_ANSI);
+	      result = cplus_demangle (mbuffer + skip_first, flags);
 	      if (result)
 		{
 		  if (mbuffer[0] == '.')
