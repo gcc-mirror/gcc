@@ -779,25 +779,6 @@ add_to_delay_list (insn, delay_list)
 
   return delay_list;
 }   
-
-#ifdef HAVE_cc0
-/* INSN uses CC0 and is being moved into a delay slot.  Set up REG_CC_SETTER
-   and REG_CC_USER notes so we can find it.  */
-
-static void
-link_cc0_insns (insn)
-     rtx insn;
-{
-  rtx user = next_nonnote_insn (insn);
-
-  if (GET_CODE (user) == INSN && GET_CODE (PATTERN (user)) == SEQUENCE)
-    user = XVECEXP (PATTERN (user), 0, 0);
-
-  REG_NOTES (user) = gen_rtx (INSN_LIST, REG_CC_SETTER, insn,
-			      REG_NOTES (user));
-  REG_NOTES (insn) = gen_rtx (INSN_LIST, REG_CC_USER, user, REG_NOTES (insn));
-}
-#endif
 
 /* Delete INSN from the the delay slot of the insn that it is in.  This may
    produce an insn without anything in its delay slots.  */

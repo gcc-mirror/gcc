@@ -45,6 +45,7 @@ extern char *strcat ();
 
 char *singlemove_string ();
 char *output_move_const_single ();
+char *output_fp_cc0_set ();
 
 static char *hi_reg_name[] = HI_REGISTER_NAMES;
 static char *qi_reg_name[] = QI_REGISTER_NAMES;
@@ -65,6 +66,12 @@ enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
   /* arg pointer */
   INDEX_REGS
 };
+
+/* Test and compare insns in i386.md store the information needed to
+   generate branch and scc insns here.  */
+
+struct rtx_def *i386_compare_op0, *i386_compare_op1;
+struct rtx_def *(*i386_compare_gen)(), *(*i386_compare_gen_eq)();
 
 /* Output an insn whose source is a 386 integer register.  SRC is the
    rtx for the register, and TEMPLATE is the op-code template.  SRC may
@@ -1353,6 +1360,8 @@ notice_update_cc (exp)
 	  CC_STATUS_INIT;
 	  if (! stack_regs_mentioned_p (SET_SRC (XVECEXP (exp, 0, 0))))
 	    cc_status.value1 = SET_SRC (XVECEXP (exp, 0, 0));
+
+	  cc_status.flags |= CC_IN_80387;
 	  return;
 	}
       CC_STATUS_INIT;
@@ -1679,7 +1688,8 @@ output_fix_trunc (insn, operands)
 
 /* Output code for INSN to compare OPERANDS.  The two operands might
    not have the same mode: one might be within a FLOAT or FLOAT_EXTEND
-   expression. */
+   expression.  If the compare is in mode CCFPEQmode, use an opcode that
+   will not fault if a qNaN is present. */
 
 char *
 output_float_compare (insn, operands)
@@ -1687,6 +1697,8 @@ output_float_compare (insn, operands)
      rtx *operands;
 {
   int stack_top_dies;
+  rtx body = XVECEXP (PATTERN (insn), 0, 0);
+  int unordered_compare = GET_MODE (SET_SRC (body)) == CCFPEQmode;
 
   if (! STACK_TOP_P (operands[0]))
     abort ();
@@ -1702,15 +1714,21 @@ output_float_compare (insn, operands)
 	 is also a stack register that dies, then this must be a
 	 `fcompp' float compare */
 
-      output_asm_insn ("fcompp", operands);
+      if (unordered_compare)
+	output_asm_insn ("fucompp", operands);
+      else
+	output_asm_insn ("fcompp", operands);
     }
   else
     {
       static char buf[100];
 
-      /* Decide if this is the integer or float compare opcode. */
+      /* Decide if this is the integer or float compare opcode, or the
+	 unordered float compare. */
 
-      if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_FLOAT)
+      if (unordered_compare)
+	strcpy (buf, "fucom");
+      else if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_FLOAT)
 	strcpy (buf, "fcom");
       else
 	strcpy (buf, "ficom");
@@ -1728,10 +1746,102 @@ output_float_compare (insn, operands)
 
   /* Now retrieve the condition code. */
 
-  output_asm_insn (AS1 (fnsts%W2,%2), operands);
+  return output_fp_cc0_set (insn);
+}
+
+/* Output opcodes to transfer the results of FP compare or test INSN
+   from the FPU to the CPU flags.  If TARGET_IEEE_FP, ensure that if the
+   result of the compare or test is unordered, no comparison operator
+   succeeds except NE.  Return an output template, if any.  */
 
-  cc_status.flags |= CC_IN_80387;
-  return "sahf";
+char *
+output_fp_cc0_set (insn)
+     rtx insn;
+{
+  rtx xops[3];
+  rtx unordered_label;
+  rtx next;
+  enum rtx_code code;
+
+  xops[0] = gen_rtx (REG, HImode, 0);
+  output_asm_insn (AS1 (fnsts%W0,%0), xops);
+
+  if (! TARGET_IEEE_FP)
+    return "sahf";
+
+  next = next_cc0_user (insn);
+
+  if (GET_CODE (next) == JUMP_INSN
+      && GET_CODE (PATTERN (next)) == SET
+      && SET_DEST (PATTERN (next)) == pc_rtx
+      && GET_CODE (SET_SRC (PATTERN (next))) == IF_THEN_ELSE)
+    {
+      code = GET_CODE (XEXP (SET_SRC (PATTERN (next)), 0));
+    }
+  else if (GET_CODE (PATTERN (next)) == SET)
+    {
+      code = GET_CODE (SET_SRC (PATTERN (next)));
+    }
+  else
+    abort ();
+
+  xops[0] = gen_rtx (REG, QImode, 0);
+
+  switch (code)
+    {
+    case GT:
+      xops[1] = gen_rtx (CONST_INT, VOIDmode, 0x45);
+      output_asm_insn (AS2 (and%B0,%1,%h0), xops);
+      /* je label */
+      break;
+
+    case LT:
+      xops[1] = gen_rtx (CONST_INT, VOIDmode, 0x45);
+      xops[2] = gen_rtx (CONST_INT, VOIDmode, 0x01);
+      output_asm_insn (AS2 (and%B0,%1,%h0), xops);
+      output_asm_insn (AS2 (cmp%B0,%2,%h0), xops);
+      /* je label */
+      break;
+
+    case GE:
+      xops[1] = gen_rtx (CONST_INT, VOIDmode, 0x05);
+      output_asm_insn (AS2 (and%B0,%1,%h0), xops);
+      /* je label */
+      break;
+
+    case LE:
+      xops[1] = gen_rtx (CONST_INT, VOIDmode, 0x45);
+      xops[2] = gen_rtx (CONST_INT, VOIDmode, 0x40);
+      output_asm_insn (AS2 (and%B0,%1,%h0), xops);
+      output_asm_insn (AS1 (dec%B0,%h0), xops);
+      output_asm_insn (AS2 (cmp%B0,%2,%h0), xops);
+      /* jb label */
+      break;
+
+    case EQ:
+      xops[1] = gen_rtx (CONST_INT, VOIDmode, 0x45);
+      xops[2] = gen_rtx (CONST_INT, VOIDmode, 0x40);
+      output_asm_insn (AS2 (and%B0,%1,%h0), xops);
+      output_asm_insn (AS2 (cmp%B0,%2,%h0), xops);
+      /* je label */
+      break;
+
+    case NE:
+      xops[1] = gen_rtx (CONST_INT, VOIDmode, 0x44);
+      xops[2] = gen_rtx (CONST_INT, VOIDmode, 0x40);
+      output_asm_insn (AS2 (and%B0,%1,%h0), xops);
+      output_asm_insn (AS2 (xor%B0,%2,%h0), xops);
+      /* jne label */
+      break;
+
+    case GTU:
+    case LTU:
+    case GEU:
+    case LEU:
+    default:
+      abort ();
+    }
+  RET;
 }
 
 #ifdef HANDLE_PRAGMA

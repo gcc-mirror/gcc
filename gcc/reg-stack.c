@@ -1825,6 +1825,8 @@ compare_for_stack_reg (insn, regstack, pat)
 	     the case handled above.  In all other cases, emit a separate
 	     pop and remove the death note from here. */
 
+	  link_cc0_insns (insn);
+
 	  remove_regno_note (insn, REG_DEAD, REGNO (XEXP (src2_note, 0)));
 
 	  emit_pop_insn (insn, regstack, XEXP (src2_note, 0),
