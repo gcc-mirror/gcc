@@ -2853,7 +2853,7 @@ eliminate_regs (x, mem_mode, insn)
 	 context.
 
 	 If we have (plus (eliminable) (reg)), we want to produce
-	 (plus (plus (replacement) (reg) (const))).  If this was part of a
+	 (plus (plus (replacement) (reg)) (const)).  If this was part of a
 	 normal add insn, (plus (replacement) (reg)) will be pushed as a
 	 reload.  This is the desired action.  */
 
@@ -2892,6 +2892,28 @@ eliminate_regs (x, mem_mode, insn)
       }
       return x;
 
+    case MINUS:
+      /* If we have (minus (eliminable) (reg)), we want to produce
+	 (plus (minus (replacement) (reg)) (const)).  The main reason being
+	 to be consistent with what is done for PLUS.  find_reloads_address
+	 assumes that we do this.  */
+      {
+	rtx new0 = eliminate_regs (XEXP (x, 0), mem_mode, insn);
+	rtx new1 = eliminate_regs (XEXP (x, 1), mem_mode, insn);
+
+	if (new0 != XEXP (x, 0) || new1 != XEXP (x, 1))
+	  {
+	    if (GET_CODE (new0) == PLUS)
+	      return gen_rtx (PLUS, GET_MODE (x),
+			      gen_rtx (MINUS, GET_MODE (x),
+				       XEXP (new0, 0), new1),
+			      XEXP (new0, 1));
+	    else
+	      return gen_rtx (MINUS, GET_MODE (x), new0, new1);
+	  }
+      }
+      return x;
+
     case MULT:
       /* If this is the product of an eliminable register and a 
 	 constant, apply the distribute law and move the constant out
@@ -2920,7 +2942,6 @@ eliminate_regs (x, mem_mode, insn)
 
     case CALL:
     case COMPARE:
-    case MINUS:
     case DIV:      case UDIV:
     case MOD:      case UMOD:
     case AND:      case IOR:      case XOR:
