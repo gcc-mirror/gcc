@@ -713,7 +713,7 @@ enum reg_class
    such as FUNCTION_ARG to determine where the next arg should go.  */
 
 #define CUMULATIVE_ARGS struct cum_arg
-struct cum_arg { int nbytes; };
+struct cum_arg { int nbytes; int anonymous_args; };
 
 /* Define where to put the arguments to a function.
    Value is zero to push the argument on the stack,
@@ -739,7 +739,7 @@ struct cum_arg { int nbytes; };
    For a library call, FNTYPE is 0.  */
 
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)	\
- ((CUM).nbytes = 0)
+ ((CUM).nbytes = 0, (CUM).anonymous_args = 0)
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
@@ -758,10 +758,9 @@ struct cum_arg { int nbytes; };
    space allocated by the caller.  */
 #define OUTGOING_REG_PARM_STACK_SPACE
 
-extern int current_function_anonymous_args;
 /* Do any setup necessary for varargs/stdargs functions.  */
 #define SETUP_INCOMING_VARARGS(CUM, MODE, TYPE, PAS, SECOND) \
-  current_function_anonymous_args = (!TARGET_GHS ? 1 : 0);
+  (CUM).anonymous_args = (!TARGET_GHS ? 1 : 0);
 
 /* Implement `va_arg'.  */
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \

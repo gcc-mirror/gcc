@@ -61,9 +61,6 @@ static void v850_encode_data_area    PARAMS ((tree));
 static void v850_encode_section_info PARAMS ((tree, int));
 static const char *v850_strip_name_encoding PARAMS ((const char *));
 
-/* True if the current function has anonymous arguments.  */
-int current_function_anonymous_args;
-
 /* Information about the various small memory areas.  */
 struct small_memory_info small_memory[ (int)SMALL_MEMORY_max ] =
 {
@@ -1656,7 +1653,7 @@ expand_prologue ()
     }
 
   /* Save arg registers to the stack if necessary.  */
-  else if (current_function_anonymous_args)
+  else if (current_function_args_info.anonymous_args)
     {
       if (TARGET_PROLOG_FUNCTION)
 	{
@@ -2063,7 +2060,6 @@ Saved %d bytes via epilogue function (%d vs. %d) in function %s\n",
 	emit_jump_insn (gen_return ());
     }
 
-  current_function_anonymous_args = 0;
   v850_interrupt_cache_p = FALSE;
   v850_interrupt_p = FALSE;
 }
