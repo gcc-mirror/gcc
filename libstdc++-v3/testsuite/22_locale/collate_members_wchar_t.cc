@@ -60,18 +60,18 @@ void test01()
   int i1;
   int size1 = char_traits<wchar_t>::length(strlit1) - 1;
   i1 = coll_c.compare(strlit1, strlit1 + size1, strlit1, strlit1 + 7);
-  VERIFY ( i1 > 0 );
+  VERIFY ( i1 == 1 );
   i1 = coll_c.compare(strlit1, strlit1 + 7, strlit1, strlit1 + size1);
-  VERIFY ( i1 < 0 );
+  VERIFY ( i1 == -1 );
   i1 = coll_c.compare(strlit1, strlit1 + 7, strlit1, strlit1 + 7);
   VERIFY ( i1 == 0 );
 
   int i2;
   int size2 = char_traits<wchar_t>::length(strlit2) - 1;
   i2 = coll_c.compare(strlit2, strlit2 + size2, strlit2, strlit2 + 13);
-  VERIFY ( i2 > 0 );
+  VERIFY ( i2 == 1 );
   i2 = coll_c.compare(strlit2, strlit2 + 13, strlit2, strlit2 + size2);
-  VERIFY ( i2 < 0 );
+  VERIFY ( i2 == -1 );
   i2 = coll_c.compare(strlit2, strlit2 + size2, strlit2, strlit2 + size2);
   VERIFY ( i2 == 0 );
 
@@ -86,10 +86,10 @@ void test01()
 
   wstring str1 = coll_c.transform(strlit1, strlit1 + size1);
   wstring str2 = coll_c.transform(strlit2, strlit2 + size2);
-  i1 = coll_c.compare(str1.c_str(), str1.c_str() + size1,
-		      str2.c_str(), str2.c_str() + size2);
+  i1 = str1.compare(str2);
   i2 = coll_c.compare(strlit1, strlit1 + size1, strlit2, strlit2 + size2);
-  VERIFY(i1 == i2);
+  VERIFY ( i2 == 1 );
+  VERIFY ( i1 * i2 > 0 );
 
   // Check German "de_DE" locale.
   const wchar_t* strlit3 = L"Äuglein Augment"; // "C" == "Augment Äuglein"
@@ -97,20 +97,20 @@ void test01()
 
   int size3 = char_traits<wchar_t>::length(strlit3) - 1;
   i1 = coll_de.compare(strlit3, strlit3 + size3, strlit3, strlit3 + 7);
-  VERIFY ( i1 > 0 );
+  VERIFY ( i1 == 1 );
   i1 = coll_de.compare(strlit3, strlit3 + 7, strlit3, strlit3 + size1);
-  VERIFY ( i1 < 0 );
+  VERIFY ( i1 == -1 );
   i1 = coll_de.compare(strlit3, strlit3 + 7, strlit3, strlit3 + 7);
   VERIFY ( i1 == 0 );
 
   i1 = coll_de.compare(strlit3, strlit3 + 6, strlit3 + 8, strlit3 + 14);
-  VERIFY ( i1 < 0 );
+  VERIFY ( i1 == -1 );
 
   int size4 = char_traits<wchar_t>::length(strlit4) - 1;
   i2 = coll_de.compare(strlit4, strlit4 + size4, strlit4, strlit4 + 13);
-  VERIFY ( i2 > 0 );
+  VERIFY ( i2 == 1 );
   i2 = coll_de.compare(strlit4, strlit4 + 13, strlit4, strlit4 + size4);
-  VERIFY ( i2 < 0 );
+  VERIFY ( i2 == -1 );
   i2 = coll_de.compare(strlit4, strlit4 + size4, strlit4, strlit4 + size4);
   VERIFY ( i2 == 0 );
 
@@ -123,10 +123,10 @@ void test01()
 
   wstring str3 = coll_de.transform(strlit3, strlit3 + size3);
   wstring str4 = coll_de.transform(strlit4, strlit4 + size4);
-  i1 = coll_de.compare(str3.c_str(), str3.c_str() + size3,
-		       str4.c_str(), str4.c_str() + size4);
+  i1 = str3.compare(str4);
   i2 = coll_de.compare(strlit3, strlit3 + size3, strlit4, strlit4 + size4);
-  VERIFY(i1 == i2);
+  VERIFY ( i2 == -1 );
+  VERIFY ( i1 * i2 > 0 );
 }
 
 // libstdc++/5280
