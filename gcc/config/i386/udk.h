@@ -25,6 +25,6 @@
 	%{G:-G} \
 	%{YP,*} \
 	%{!YP,*:%{p:-Y P,/udk/usr/ccs/lib/libp:/udk/usr/lib/libp:/udk/usr/ccs/lib:/udk/usr/lib} \
-	%{!p:-Y P,/udk/usr/ccs/lib:/usr/lib}} \
+	%{!p:-Y P,/udk/usr/ccs/lib:/udk/usr/lib}} \
 	%{Qy:} %{!Qn:-Qy}"
 
