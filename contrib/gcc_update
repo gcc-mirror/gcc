@@ -69,9 +69,9 @@ gcc/configure: gcc/configure.in
 gcc/cstamp-h.in: gcc/configure.in gcc/acconfig.h
 gcc/config.in: gcc/cstamp-h.in
 gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
-gcc/gcov.1: gcc/gcov.texi
-gcc/cpp.1: gcc/cpp.texi
-gcc/gcc.1: gcc/invoke.texi
+gcc/doc/gcov.1: gcc/doc/gcov.texi
+gcc/doc/cpp.1: gcc/doc/cpp.texi
+gcc/doc/gcc.1: gcc/doc/invoke.texi
 # And then, language-specific files
 # (None at present.)
 # And libraries, at last
