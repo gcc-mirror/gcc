@@ -1851,9 +1851,16 @@ do {									\
   case MULT:								\
     /* For multiplies wider than HImode, we have to go to the FPU,	\
        which normally involves copies.  Plus there's the latency	\
-       of the multiply itself.  */					\
+       of the multiply itself, and the latency of the instructions to	\
+       transfer integer regs to FP regs.  */				\
     if (GET_MODE_SIZE (GET_MODE (X)) > 2)				\
-      return COSTS_N_INSNS (4);						\
+      return COSTS_N_INSNS (10);					\
+    return COSTS_N_INSNS (2);						\
+  case PLUS:								\
+  case MINUS:								\
+  case ASHIFT:								\
+  case ASHIFTRT:							\
+  case LSHIFTRT:							\
     return COSTS_N_INSNS (1);						\
   case DIV:								\
   case UDIV:								\
