@@ -370,9 +370,9 @@ in the following sections.
 -ffixed-@var{reg}  -finhibit-size-directive
 -fcheck-memory-usage  -fprefix-function-name
 -fno-common  -fno-ident  -fno-gnu-linker
--fpcc-struct-return  -fpic  -fPIC
--freg-struct-return  -fshared-data  -fshort-enums
--fshort-double  -fvolatile  -fvolatile-global
+-fpcc-struct-return  -freg-struct-return
+-fshared-data  -fpic  -fPIC  -fexceptions
+-fshort-enums  -fshort-double  -fvolatile  -fvolatile-global
 -fverbose-asm  -fpack-struct  -fstack-check  +e0  +e1
 @end smallexample
 @end table
@@ -5195,7 +5195,6 @@ it.
 
 @table @code
 @item -fexceptions
-@item -fno-exceptions
 Enable exception handling, and generate extra code needed to propagate
 exceptions.  If you do not specify this option, GNU CC enables it by
 default for languages like C++ that normally require exception handling,
