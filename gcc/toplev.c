@@ -898,13 +898,15 @@ char *lang_options[] =
   "-A",
   "-D",
   "-I",
+  "-U",
+  "-idirafter",
   "-iprefix",
   "-isystem",
   "-lang-c",
   "-lang-c89",
   "-lang-c++",
+  "-nostdinc",
   "-nostdinc++",
-  "-U",
   "-undef",
 
 #include "options.h"
