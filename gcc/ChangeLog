@@ -1,5 +1,10 @@
 2004-11-04  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* bitmap.h: Fix a comment typo.  Follow spelling conventions.
+	* tree-vectorizer.c: Fix a comment typo.
+
+2004-11-04  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* sdbout.c (SDB_GENERATE_FAKE): Remove.
 	(gen_fake_label): Don't use SDB_GENERATE_FAKE.
 	* system.h: Poison SDB_GENERATE_FAKE.
