@@ -11,16 +11,12 @@ if [ -z "$1" ]; then
 fi
 
 output=$1
-rm -f $output.T
-
-# We used to exec > $output.T but apparently this has bugs.
-# Use a redirected subshell instead.
-(
+rm -f ${output}T
 
 # Define TARGET_CPU_DEFAULT if the system wants one.
 # This substitutes for lots of *.h files.
 if [ "$TARGET_CPU_DEFAULT" != "" ]; then
-    echo "#define TARGET_CPU_DEFAULT ($TARGET_CPU_DEFAULT)"
+    echo "#define TARGET_CPU_DEFAULT ($TARGET_CPU_DEFAULT)" >> ${output}T
 fi
 
 # The first entry in HEADERS may be auto-host.h or auto-build.h;
@@ -28,7 +24,7 @@ fi
 if [ -n "$HEADERS" ]; then
     set $HEADERS; first=$1
     case $first in auto-* )
-	echo "#include \"$first\""
+	echo "#include \"$first\"" >> ${output}T
 	shift
 	HEADERS=$*
 	;;
@@ -41,33 +37,35 @@ fi
 # rather than system.h allows the typedefs to be used anywhere in GCC.
 case $output in 
     *config.h | *hconfig.h | *tconfig.h)
-        echo "#ifdef IN_GCC"
-        echo "/* Provide three core typedefs used by everything, if we are compiling"
-        echo "   GCC.  These used to be found in rtl.h and tree.h, but this is no"
-        echo "   longer practical.  Providing these here rather that system.h allows"
-        echo "   the typedefs to be used everywhere within GCC. */"
-        echo "struct rtx_def;"
-        echo "typedef struct rtx_def *rtx;"
-        echo "struct rtvec_def;"
-        echo "typedef struct rtvec_def *rtvec;"
-        echo "union tree_node;"
-        echo "typedef union tree_node *tree;"
-        echo "#endif"
+        cat >> ${output}T <<EOF
+#ifdef IN_GCC
+/* Provide three core typedefs used by everything, if we are compiling
+   GCC.  These used to be found in rtl.h and tree.h, but this is no
+   longer practical.  Providing these here rather that system.h allows
+   the typedefs to be used everywhere within GCC. */
+struct rtx_def;
+typedef struct rtx_def *rtx;
+struct rtvec_def;
+typedef struct rtvec_def *rtvec;
+union tree_node;
+typedef union tree_node *tree;
+#endif
+EOF
         ;;
 esac
 
 if [ -n "$HEADERS" ]; then
-    echo '#ifdef IN_GCC'
+    echo '#ifdef IN_GCC' >> ${output}T
     for file in $HEADERS; do
-	echo "# include \"$file\""
+	echo "# include \"$file\"" >> ${output}T
     done
-    echo '#endif'
+    echo '#endif' >> ${output}T
 fi
 
 for def in $DEFINES; do
-    echo "#ifndef $def" | sed 's/=.*//'
-    echo "# define $def" | sed 's/=/ /'
-    echo "#endif"
+    echo "#ifndef $def" | sed 's/=.*//' >> ${output}T
+    echo "# define $def" | sed 's/=/ /' >> ${output}T
+    echo "#endif" >> ${output}T
 done
 
 # If this is tm_p.h, include tm-preds.h unconditionally.
@@ -76,32 +74,26 @@ done
 # but only if GENERATOR_FILE is not defined.
 case $output in
     *tm_p.h)
-	echo "#include \"tm-preds.h\""
+	echo "#include \"tm-preds.h\"" >> ${output}T
     ;;
     *tconfig.h | *hconfig.h)
     ;;
     *)
-	echo "#ifndef GENERATOR_FILE"
-	echo "# include \"insn-constants.h\""
-	echo "# include \"insn-flags.h\""
-	echo "#endif"
+        cat >> ${output}T <<EOF
+#ifndef GENERATOR_FILE
+# include "insn-constants.h"
+# include "insn-flags.h"
+#endif
+EOF
     ;;
 esac
 
-# Prevent obstack.c from thinking it can do i18n of its error message
-# when it's being linked against a build-side program.
-echo '#ifdef GENERATOR_FILE'
-echo '# undef ENABLE_NLS'
-echo '#endif'
-
-) > $output.T
-
 # Avoid changing the actual file if possible.
-if [ -f $output ] && cmp $output.T $output >/dev/null 2>&1; then
+if [ -f $output ] && cmp ${output}T $output >/dev/null 2>&1; then
     echo $output is unchanged >&2
-    rm -f $output.T
+    rm -f ${output}T
 else
-    mv -f $output.T $output
+    mv -f ${output}T $output
 fi
 
 # Touch a stamp file for Make's benefit.
