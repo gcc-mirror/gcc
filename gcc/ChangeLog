@@ -1,3 +1,10 @@
+2005-03-16  Roger Sayle  <roger@eyesopen.com>
+
+	PR tree-optimization/17454
+	* tree.c (tree_size): Add case for TREE_BINFO.
+	* fold-const.c (fold_checksum_tree): Only clear the overloaded
+	field TYPE_CACHED_VALUES if TYPE_CACHED_VALUES_P is set.
+
 2005-03-15  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.h (DWARF_CIE_DATA_ALIGNMENT): Change for

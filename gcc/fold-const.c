@@ -9908,8 +9908,11 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
       expr = (tree) buf;
       TYPE_POINTER_TO (expr) = NULL;
       TYPE_REFERENCE_TO (expr) = NULL;
-      TYPE_CACHED_VALUES_P (expr) = 0;
-      TYPE_CACHED_VALUES (expr) = NULL;
+      if (TYPE_CACHED_VALUES_P (expr))
+	{
+	  TYPE_CACHED_VALUES_P (expr) = 0;
+	  TYPE_CACHED_VALUES (expr) = NULL;
+	}
     }
   md5_process_bytes (expr, tree_size (expr), ctx);
   fold_checksum_tree (TREE_TYPE (expr), ctx, ht);
