@@ -1,8 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for
-   hosting on Windows NT 3.x, using a Unix style C library and tools,
-   as distinct from winnt.h, which is used to build GCC for use with a
-   windows style library and tool set and uses the Microsoft tools.
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000
+   hosting on Windows32, using a Unix style C library and tools.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -83,16 +81,21 @@ Boston, MA 02111-1307, USA. */
 
 #ifdef CROSS_COMPILE
 #define CYGWIN_INCLUDES "-idirafter " CYGWIN_CROSS_DIR "/include"
-#define CYGWIN_W32API "-I" CYGWIN_CROSS_DIR "/include/w32api"
+#define CYGWIN_W32API "-idirafter " CYGWIN_CROSS_DIR "/include/w32api"
 #define CYGWIN_LIB CYGWIN_CROSS_DIR "/lib"
 #define MINGW_LIBS "-L" CYGWIN_CROSS_DIR "/lib/mingw"
-#define MINGW_INCLUDES "-I" CYGWIN_CROSS_DIR "/include/mingw"
+#define MINGW_INCLUDES "-isystem " CYGWIN_CROSS_DIR "/include/mingw/g++-3 "\
+		       "-isystem " CYGWIN_CROSS_DIR "/include/mingw/g++ "\
+		       "-idirafter " CYGWIN_CROSS_DIR "/include/mingw"
 #else
 #define CYGWIN_INCLUDES "-isystem /usr/local/include -idirafter /usr/include"
-#define CYGWIN_W32API "-I/usr/include/w32api"
+#define CYGWIN_W32API "-idirafter /usr/include/w32api"
 #define CYGWIN_LIB "/usr/lib"
 #define MINGW_LIBS "-L/usr/local/lib/mingw -L/usr/lib/mingw"
-#define MINGW_INCLUDES "-isystem /usr/local/include/mingw -idirafter /usr/include/mingw"
+#define MINGW_INCLUDES "-isystem /usr/include/mingw/g++-3 "\
+		       "-isystem /usr/include/mingw/g++ "\
+		       "-isystem /usr/local/include/mingw" \
+		       "-idirafter /usr/include/mingw"
 #endif
 
 #undef STARTFILE_SPEC
@@ -108,16 +111,14 @@ Boston, MA 02111-1307, USA. */
     -D_cdecl=__attribute__((__cdecl__))} \
   -D__declspec(x)=__attribute__((x)) \
   -D__i386__ -D__i386 \
+  %{mno-win32: %{mno-cygwin: %emno-cygwin and mno-win32 are not compatible}} \
+  %(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
+  %{mno-cygwin:-D__MSVCRT__ -D__MINGW32__ %{mthreads:-D_MT} " MINGW_INCLUDES \
+    " -mwin32} \
   %{!mno-cygwin:-D__CYGWIN32__ -D__CYGWIN__ -Dunix -D__unix__ -D__unix \
     " CYGWIN_INCLUDES "} \
-  %{mno-win32: %{mno-cygwin: %emno-cygwin and mno-win32 are not compatible}} \
-  %{mno-cygwin:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ -DWINNT -D__MSVCRT__ \
-    -D__MINGW32__=0.3 %{mthreads:-D_MT} " MINGW_INCLUDES CYGWIN_W32API "\
-    -iwithprefixbefore ../../../../mingw/include/g++-3 \
-    -iwithprefixbefore ../../../../mingw/include \
-    -iwithprefixbefore ../../../../mingw32/include/g++-3 \
-    -iwithprefixbefore ../../../../mingw32/include } \
-   %{!mno-win32:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ -DWINNT " CYGWIN_W32API "}"
+  %{mwin32:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ -DWINNT " CYGWIN_W32API "} \
+"
 
 /* This macro defines names of additional specifications to put in the specs
    that can be used in various specifications like CC1_SPEC.  Its definition
@@ -359,7 +360,7 @@ do {									\
 #undef ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(STREAM, NAME)  		\
   fprintf (STREAM, "%s%s", USER_LABEL_PREFIX, 		\
-           I386_PE_STRIP_ENCODING (NAME))		\
+	   I386_PE_STRIP_ENCODING (NAME))		\
 
 /* Output a common block.  */
 #undef ASM_OUTPUT_COMMON
@@ -393,9 +394,9 @@ do {							\
 
 /* By default, target has a 80387, uses IEEE compatible arithmetic,
    and returns float values in the 387 and needs stack probes */
-#undef TARGET_DEFAULT
+#undef TARGET_SUBTARGET_DEFAULT
 
-#define TARGET_DEFAULT \
+#define TARGET_SUBTARGET_DEFAULT \
    (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_STACK_PROBE) 
 
 /* This is how to output an assembler line
@@ -447,10 +448,10 @@ do {									\
     {									\
       type = SECT_RW;							\
       if (TREE_CODE (DECL) == VAR_DECL					\
-          && lookup_attribute ("shared", DECL_MACHINE_ATTRIBUTES (DECL))) \
-        mode = "ws";							\
+	  && lookup_attribute ("shared", DECL_MACHINE_ATTRIBUTES (DECL))) \
+	mode = "ws";							\
       else								\
-        mode = "w";							\
+	mode = "w";							\
     }									\
 									\
   if (s == 0)								\
@@ -463,12 +464,12 @@ do {									\
       sections = s;							\
       fprintf (STREAM, ".section\t%s,\"%s\"\n", NAME, mode);		\
       /* Functions may have been compiled at various levels of		\
-         optimization so we can't use `same_size' here.  Instead,	\
-         have the linker pick one.  */					\
+	 optimization so we can't use `same_size' here.  Instead,	\
+	 have the linker pick one.  */					\
       if ((DECL) && DECL_ONE_ONLY (DECL))				\
-        fprintf (STREAM, "\t.linkonce %s\n",				\
-	         TREE_CODE (DECL) == FUNCTION_DECL			\
-	         ? "discard" : "same_size");				\
+	fprintf (STREAM, "\t.linkonce %s\n",				\
+		 TREE_CODE (DECL) == FUNCTION_DECL			\
+		 ? "discard" : "same_size");				\
     }									\
   else									\
     {									\
@@ -529,20 +530,12 @@ do {									\
       && MAIN_NAME_P (DECL_NAME (current_function_decl)))		\
      {									\
       emit_call_insn (gen_rtx (CALL, VOIDmode, 				\
-        gen_rtx_MEM (FUNCTION_MODE,					\
+	gen_rtx_MEM (FUNCTION_MODE,					\
 		     gen_rtx_SYMBOL_REF (Pmode, "_monstartup")),	\
 	const0_rtx));							\
      }
 
 /* External function declarations.  */
-
-#ifndef PARAMS
-#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define PARAMS(ARGS) ARGS
-#else
-#define PARAMS(ARGS) ()
-#endif
-#endif
 
 extern void i386_pe_record_external_function PARAMS ((char *));
 /* extern void i386_pe_declare_function_type PARAMS ((FILE *, char *, int)); */
