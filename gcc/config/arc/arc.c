@@ -751,7 +751,7 @@ arc_double_limm_p (value)
 
    We do things a little weird here.  We're supposed to only allocate space
    for the anonymous arguments.  However we need to keep the stack eight byte
-   aligned.  So we round the space up if necessary, and leave it to va-arc.h
+   aligned.  So we round the space up if necessary, and leave it to va_start
    to compensate.  */
 
 void
@@ -789,6 +789,8 @@ arc_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 			  plus_constant (arg_pointer_rtx,
 					 FIRST_PARM_OFFSET (0)
 					 + align_slop * UNITS_PER_WORD));
+      MEM_ALIAS_SET (regblock) = get_varargs_alias_set ();
+
       move_block_from_reg (first_reg_offset, regblock,
 			   MAX_ARC_PARM_REGS - first_reg_offset,
 			   ((MAX_ARC_PARM_REGS - first_reg_offset)
@@ -2200,4 +2202,91 @@ arc_ccfsm_record_branch_deleted ()
      cc setter and user.  We need to undo the effect of calling record_cc_ref
      for the just deleted branch.  */
   current_insn_set_cc_p = last_insn_set_cc_p;
+}
+
+void
+arc_va_start (stdarg_p, valist, nextarg)
+     int stdarg_p;
+     tree valist;
+     rtx nextarg;
+{
+  /* See arc_setup_incoming_varargs for reasons for this oddity.  */
+  if (current_function_args_info < 8
+      && (current_function_args_info & 1))
+    nextarg = plus_constant (nextarg, UNITS_PER_WORD);
+
+  std_expand_builtin_va_start (stdarg_p, valist, nextarg);
+}
+
+rtx
+arc_va_arg (valist, type)
+     tree valist, type;
+{
+  rtx addr_rtx;
+  tree addr, incr;
+  tree type_ptr = build_pointer_type (type);
+
+  /* All aggregates are passed by reference.  All scalar types larger
+     than 8 bytes are passed by reference.  */
+
+  if (AGGREGATE_TYPE_P (type) || int_size_in_bytes (type) > 8)
+    {
+      tree type_ptr_ptr = build_pointer_type (type_ptr);
+
+      addr = build (INDIRECT_REF, type_ptr,
+		    build (NOP_EXPR, type_ptr_ptr, valist));
+
+      incr = build (PLUS_EXPR, TREE_TYPE (valist),
+		    valist, build_int_2 (UNITS_PER_WORD, 0));
+    }
+  else
+    {
+      HOST_WIDE_INT align, rounded_size;
+
+      /* Compute the rounded size of the type.  */
+      align = PARM_BOUNDARY / BITS_PER_UNIT;
+      rounded_size = (((TREE_INT_CST_LOW (TYPE_SIZE (type)) / BITS_PER_UNIT
+			+ align - 1) / align) * align);
+
+      /* Align 8 byte operands.  */
+      addr = valist;
+      if (TYPE_ALIGN (type) > BITS_PER_WORD)
+	{
+	  /* AP = (TYPE *)(((int)AP + 7) & -8)  */
+
+	  addr = build (NOP_EXPR, integer_type_node, valist);
+	  addr = fold (build (PLUS_EXPR, integer_type_node, addr,
+			      build_int_2 (7, 0)));
+	  addr = fold (build (BIT_AND_EXPR, integer_type_node, addr,
+			      build_int_2 (-8, 0)));
+	  addr = fold (build (NOP_EXPR, TREE_TYPE (valist), addr));
+	}
+
+      /* The increment is always rounded_size past the aligned pointer.  */
+      incr = fold (build (PLUS_EXPR, TREE_TYPE (addr), addr,
+			  build_int_2 (rounded_size, 0)));
+
+      /* Adjust the pointer in big-endian mode.  */
+      if (BYTES_BIG_ENDIAN)
+	{
+	  HOST_WIDE_INT adj;
+	  adj = TREE_INT_CST_LOW (TYPE_SIZE (type)) / BITS_PER_UNIT;
+	  if (rounded_size > align)
+	    adj = rounded_size;
+
+	  addr = fold (build (PLUS_EXPR, TREE_TYPE (addr), addr,
+			      build_int_2 (rounded_size - adj, 0)));
+	}
+    }
+
+  /* Evaluate the data address.  */
+  addr_rtx = expand_expr (addr, NULL_RTX, Pmode, EXPAND_NORMAL);
+  addr_rtx = copy_to_reg (addr_rtx);
+  
+  /* Compute new value for AP.  */
+  incr = build (MODIFY_EXPR, TREE_TYPE (valist), valist, incr);
+  TREE_SIDE_EFFECTS (incr) = 1;
+  expand_expr (incr, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  return addr_rtx;
 }

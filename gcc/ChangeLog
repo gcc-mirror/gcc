@@ -1,3 +1,12 @@
+Sun Jul 25 22:56:47 1999  Richard Henderson  <rth@cygnus.com>
+
+	* arc.h (EXPAND_BUILTIN_VA_START): New.
+	(EXPAND_BUILTIN_VA_ARG): New.
+	* arc.c (arc_setup_incoming_varargs): Set alias set of 
+	varargs save area.
+	(arc_va_start): New.
+	(arc_va_arg): New.
+
 Sun Jul 25 22:45:55 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.h (EXPAND_BUILTIN_SAVEREGS): Delete.
