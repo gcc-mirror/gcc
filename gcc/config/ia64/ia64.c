@@ -3797,6 +3797,22 @@ ia64_function_value (valtype, func)
     }
 }
 
+/* This is called from dwarf2out.c via ASM_OUTPUT_DWARF_DTPREL.
+   We need to emit DTP-relative relocations.  */
+
+void
+ia64_output_dwarf_dtprel (file, size, x)
+     FILE *file;
+     int size;
+     rtx x;
+{
+  if (size != 8)
+    abort ();
+  fputs ("\tdata8.ua\t@dtprel(", file);
+  output_addr_const (file, x);
+  fputs (")", file);
+}
+
 /* Print a memory address as an operand to reference that memory location.  */
 
 /* ??? Do we need this?  It gets used only for 'a' operands.  We could perhaps
