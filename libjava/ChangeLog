@@ -1,3 +1,10 @@
+2001-05-18  Andrew Haley  <aph@cambridge.redhat.com>
+
+	* include/dwarf2-signal.h: New file.	
+	* configure.in (SYSDEP_SOURCES): Add dwarf2-signal.h for PPC.
+	* configure.host (EXCEPTIONSPEC): Don't use sjlj on PPC.
+        * configure: Rebuilt.
+
 2001-05-19  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* include/jvm.h: Move "#pragma GCC java_exceptions" to ...

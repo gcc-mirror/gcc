@@ -745,6 +745,9 @@ case "${host}" in
 #    SYSDEP_SOURCES=sysdep/ia64.c
 #    test -d sysdep || mkdir sysdep
 #    ;;
+ powerpc-*-linux*)
+    SIGNAL_HANDLER=include/dwarf2-signal.h
+    ;;
  *)
     SIGNAL_HANDLER=include/default-signal.h
     ;;
