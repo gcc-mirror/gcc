@@ -55,33 +55,56 @@ Boston, MA 02111-1307, USA.  */
 #define SPARC_ARCH64 0
 #endif
 
+/* Values of TARGET_CPU_DEFAULT, set via -D in the Makefile.  */
+#define TARGET_CPU_sparc     0
+#define TARGET_CPU_sparclet  1
+#define TARGET_CPU_sparclite 2
+#define TARGET_CPU_sparc64   3
+
+#if TARGET_CPU_DEFAULT == TARGET_CPU_sparc
+#define CPP_DEFAULT_SPEC ""
+#define ASM_DEFAULT_SPEC ""
+#else
+#if TARGET_CPU_DEFAULT == TARGET_CPU_sparclet
+#define CPP_DEFAULT_SPEC "-D__sparclet__"
+#define ASM_DEFAULT_SPEC "-Asparclet"
+#else
+#if TARGET_CPU_DEFAULT == TARGET_CPU_sparclite
+#define CPP_DEFAULT_SPEC "-D__sparclite__"
+#define ASM_DEFAULT_SPEC "-Asparclite"
+#else
+#if TARGET_CPU_DEFAULT == TARGET_CPU_sparc64
+/* ??? What does Sun's CC pass?  */
+#define CPP_DEFAULT_SPEC "-D__sparc_v9__"
+/* ??? It's not clear how other assemblers will handle this, so by default
+   use GAS.  Sun's Solaris assembler recognizes -xarch=v8plus, but this case
+   is handled in sol2.h.  */
+#define ASM_DEFAULT_SPEC "-Av9"
+#else
+Unrecognized value in TARGET_CPU_DEFAULT.
+#endif
+#endif
+#endif
+#endif
+
 /* Names to predefine in the preprocessor for this target machine.  */
 
 /* ??? The GCC_NEW_VARARGS macro is now obsolete, because gcc always uses
    the right varags.h file when bootstrapping.  */
+/* ??? It's not clear what value we want to use for -Acpu/machine for
+   sparc64 in 32 bit environments, so for now we only use `sparc64' in
+   64 bit environments.  */
+/* ??? __arch64__ is subject to change.  */
 
 #if SPARC_ARCH64
 #define CPP_PREDEFINES \
-  "-Dsparc -Dsun -Dunix -D__sparc_v9__ \
+  "-Dsparc -Dsun -Dunix -D__arch64__ \
    -Asystem(unix) -Asystem(bsd) -Acpu(sparc64) -Amachine(sparc64)"
 #else
 #define CPP_PREDEFINES \
   "-Dsparc -Dsun -Dunix -D__GCC_NEW_VARARGS__ \
    -Asystem(unix) -Asystem(bsd) -Acpu(sparc) -Amachine(sparc)"
 #endif
-
-#define LIB_SPEC "%{!shared:%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} %{g:-lg}}"
-
-/* Provide required defaults for linker -e and -d switches.  */
-
-#define LINK_SPEC \
- "%{!shared:%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp} %{static:-Bstatic} \
-  %{assert*} %{shared:-assert pure-text}"
-
-/* Special flags to the Sun-4 assembler when using pipe for input.  */
-
-#define ASM_SPEC \
-  " %| %{R} %{!pg:%{!p:%{fpic:-k} %{fPIC:-k}}} %{keep-local-as-symbols:-L}"
 
 /* Define macros to distinguish architectures.  */
 
@@ -91,27 +114,90 @@ Boston, MA 02111-1307, USA.  */
 %{mlong64:-D__LONG_MAX__=9223372036854775807LL} \
 "
 #else
-#define CPP_SPEC "\
+#define CPP_SPEC "%(cpp_cpu)"
+#endif
+
+/* Common CPP definitions used by CPP_SPEC amongst the various targets
+   for handling -mcpu=xxx switches.  */
+#define CPP_CPU_SPEC "\
+%{mcypress:} \
 %{msparclite:-D__sparclite__} \
 %{mf930:-D__sparclite__} %{mf934:-D__sparclite__} \
 %{mv8:-D__sparc_v8__} \
-%{msupersparc:-D__supersparc__ -D__sparc_v8__}	\
+%{msupersparc:-D__supersparc__ -D__sparc_v8__} \
+%{mcpu=sparclite:-D__sparclite__} \
+%{mcpu=f930:-D__sparclite__} %{mcpu=f934:-D__sparclite__} \
+%{mcpu=v8:-D__sparc_v8__} \
+%{mcpu=supersparc:-D__supersparc__ -D__sparc_v8__} \
+%{mcpu=v9:-D__sparc_v9__} \
+%{mcpu=ultrasparc:-D__sparc_v9__} \
+%{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:%(cpp_default)}}}}}}} \
 "
-#endif
 
 /* Prevent error on `-sun4' and `-target sun4' options.  */
 /* This used to translate -dalign to -malign, but that is no good
    because it can't turn off the usual meaning of making debugging dumps.  */
+/* Translate old style -m<cpu> into new style -mcpu=<cpu>.
+   At some point support for -m<cpu> will be deleted.  */
 
-#define CC1_SPEC "%{sun4:} %{target:}"
+#define CC1_SPEC "\
+%{sun4:} %{target:} \
+%{mcypress:-mcpu=cypress} \
+%{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
+%{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
+"
 
+#define LIB_SPEC "%{!shared:%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} %{g:-lg}}"
+
+/* Provide required defaults for linker -e and -d switches.  */
+
+#define LINK_SPEC \
+ "%{!shared:%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp} %{static:-Bstatic} \
+  %{assert*} %{shared:%{!mimpure-text:-assert pure-text}}"
+
+/* Special flags to the Sun-4 assembler when using pipe for input.  */
+
+#define ASM_SPEC "\
+%| %{R} %{!pg:%{!p:%{fpic:-k} %{fPIC:-k}}} %{keep-local-as-symbols:-L} \
+%(asm_cpu) \
+"
+
+/* Override in target specific files.  */
+#define ASM_CPU_SPEC "\
+%{msparclite:-Asparclite} \
+%{mf930:-Asparclite} %{mf934:-Asparclite} \
+%{mcpu=sparclite:-Asparclite} \
+%{mcpu=f930:-Asparclite} %{mcpu=f934:-Asparclite} \
+%{mcpu=v9:-Av9} \
+%{mcpu=ultrasparc:-Av9} \
+%{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:%(asm_default)}}}}}}} \
+"
+
+/* This macro defines names of additional specifications to put in the specs
+   that can be used in various specifications like CC1_SPEC.  Its definition
+   is an initializer with a subgrouping for each command option.
+
+   Each subgrouping contains a string constant, that defines the
+   specification name, and a string constant that used by the GNU CC driver
+   program.
+
+   Do not define this macro if it does not need to do anything.  */
+
+#define EXTRA_SPECS					\
+  { "cpp_cpu",		CPP_CPU_SPEC },			\
+  { "cpp_default",	CPP_DEFAULT_SPEC },		\
+  { "asm_cpu",		ASM_CPU_SPEC },			\
+  { "asm_default",	ASM_DEFAULT_SPEC },		\
+  SUBTARGET_EXTRA_SPECS
+
+#define SUBTARGET_EXTRA_SPECS
+
 #if SPARC_ARCH64
 #define PTRDIFF_TYPE "long long int"
 #define SIZE_TYPE "long long unsigned int"
 #else
 #define PTRDIFF_TYPE "int"
-/* In 2.4 it should work to delete this.
-   #define SIZE_TYPE "int"  */
+/* The default value for SIZE_TYPE is "unsigned int" which is what we want.  */
 #endif
 
 /* ??? This should be 32 bits for v9 but what can we do?  */
@@ -141,8 +227,8 @@ void sparc_override_options ();
 	  }								\
 	flag_omit_frame_pointer = 0;					\
       }									\
-    SUBTARGET_OVERRIDE_OPTIONS;						\
     sparc_override_options ();						\
+    SUBTARGET_OVERRIDE_OPTIONS;						\
   } while (0)
 
 /* This is meant to be redefined in the host dependent files.  */
@@ -191,44 +277,42 @@ extern int target_flags;
 #define MASK_SPARCLITE 0x10
 #define TARGET_SPARCLITE (target_flags & MASK_SPARCLITE)
 
-/* Nonzero means we should schedule code for the TMS390Z55 SuperSparc chip.  */
-#define MASK_SUPERSPARC 0x20
-#define TARGET_SUPERSPARC (target_flags & MASK_SUPERSPARC)
+/* Nonzero if we're compiling for the sparclet.  */
+#define MASK_SPARCLET 0x20
+#define TARGET_SPARCLET (target_flags & MASK_SPARCLET)
 
 /* Nonzero if we're compiling for v9 sparc.
    Note that v9's can run in 32 bit mode so this doesn't necessarily mean
-   the word size is 64.  It does mean that the extra fp regs are available
-   as are the new instructions that don't require 64 bit words.  */
+   the word size is 64.  */
 #define MASK_V9 0x40
 #define TARGET_V9 (target_flags & MASK_V9)
 
-/* ??? Bit 0x80 currently unused.  */
+/* Non-zero to generate code that uses the instructions deprecated in
+   the v9 architecture.  This option only applies to v9 systems.  */
+/* ??? This isn't user selectable yet.  It's used to enable such insns
+   on 32 bit v9 systems and for the moment they're permanently disabled
+   on 64 bit v9 systems.  */
+#define MASK_DEPRECATED_V8_INSNS 0x80
+#define TARGET_DEPRECATED_V8_INSNS (target_flags & MASK_DEPRECATED_V8_INSNS)
 
-/* Mask of all CPU selection flags.
-   ??? Migrate to -mcpu=?  */
-#define MASK_CPUS (MASK_V8 + MASK_SPARCLITE + MASK_SUPERSPARC + MASK_V9)
+/* Mask of all CPU selection flags.  */
+#define MASK_ISA \
+(MASK_V8 + MASK_SPARCLITE + MASK_SPARCLET + MASK_V9 + MASK_DEPRECATED_V8_INSNS)
+
+/* Non-zero means don't pass `-assert pure-text' to the linker.  */
+#define MASK_IMPURE_TEXT 0x100
+#define TARGET_IMPURE_TEXT (target_flags & MASK_IMPURE_TEXT)
 
 /* Nonzero means that we should generate code using a flat register window
-   model, i.e. no save/restore instructions are generated, in the most
-   efficient manner.  This code is not compatible with normal sparc code.  */
-/* This is not a user selectable option yet, because it requires changes
-   that are not yet switchable via command line arguments.  */
-/* ??? This flag is deprecated and may disappear at some point.  */
-#define MASK_FRW 0x100
-#define TARGET_FRW (target_flags & MASK_FRW)
-
-/* Nonzero means that we should generate code using a flat register window
-   model, i.e. no save/restore instructions are generated, but which is
-   compatible with normal sparc code.   This is the same as above, except
-   that the frame pointer is %i7 instead of %fp.  */
-/* ??? This use to be named TARGET_FRW_COMPAT.  At some point TARGET_FRW will
-   go away, but until that time only use this one when necessary.
-   -mflat sets both.  */
+   model, i.e. no save/restore instructions are generated, which is
+   compatible with normal sparc code.
+   The frame pointer is %i7 instead of %fp.  */
 #define MASK_FLAT 0x200
 #define TARGET_FLAT (target_flags & MASK_FLAT)
 
 /* Nonzero means use the registers that the Sparc ABI reserves for
-   application software.  This is the default for v8, but not v9.  */
+   application software.  This must be the default to coincide with the
+   setting in FIXED_REGISTERS.  */
 #define MASK_APP_REGS 0x400
 #define TARGET_APP_REGS (target_flags & MASK_APP_REGS)
 
@@ -238,10 +322,7 @@ extern int target_flags;
 #define MASK_HARD_QUAD 0x800
 #define TARGET_HARD_QUAD (target_flags & MASK_HARD_QUAD)
 
-/* Non-zero to generate code that uses the instructions deprecated in
-   the v9 architecture.  This option only applies to v9 systems.  */
-#define MASK_DEPRECATED_V8_INSNS 0x1000
-#define TARGET_DEPRECATED_V8_INSNS (target_flags & MASK_DEPRECATED_V8_INSNS)
+/* Bit 0x1000 currently unused.  */
 
 /* Nonzero if ints are 64 bits.
    This automatically implies longs are 64 bits too.
@@ -297,11 +378,6 @@ extern int target_flags;
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.  */
 
-/* The Fujitsu MB86930 is the original sparclite chip, with no fpu.
-   The Fujitsu MB86934 is the recent sparclite chip, with an fpu.
-   We use -mf930 and -mf934 options to choose which.
-   ??? These should perhaps be -mcpu= options.  */
-
 #define TARGET_SWITCHES  \
   { {"fpu", MASK_FPU},			\
     {"no-fpu", -MASK_FPU},		\
@@ -311,32 +387,31 @@ extern int target_flags;
     {"no-epilogue", -MASK_EPILOGUE},	\
     {"unaligned-doubles", MASK_UNALIGNED_DOUBLES}, \
     {"no-unaligned-doubles", -MASK_UNALIGNED_DOUBLES}, \
-    {"supersparc", -MASK_CPUS},		\
-    {"supersparc", MASK_SUPERSPARC+MASK_V8}, \
-    {"cypress", -MASK_CPUS},		\
-    {"v8", -MASK_CPUS},			\
-    {"v8", MASK_V8},			\
-    {"no-v8", -MASK_CPUS},		\
-    {"sparclite", -MASK_CPUS},		\
-    {"sparclite", MASK_SPARCLITE},	\
-    {"no-sparclite", -MASK_CPUS},	\
-    {"f930", -MASK_FPU-MASK_CPUS},	\
-    {"f930", MASK_SPARCLITE},		\
-    {"f934", -MASK_CPUS},		\
-    {"f934", MASK_FPU+MASK_SPARCLITE},	\
-    {"flat", MASK_FRW+MASK_FLAT},	\
-    {"no-flat", -(MASK_FRW+MASK_FLAT)},	\
+    {"impure-text", MASK_IMPURE_TEXT},	\
+    {"no-impure-text", -MASK_IMPURE_TEXT}, \
+    {"flat", MASK_FLAT},		\
+    {"no-flat", -MASK_FLAT},		\
     {"app-regs", MASK_APP_REGS},	\
     {"no-app-regs", -MASK_APP_REGS},	\
     {"hard-quad-float", MASK_HARD_QUAD}, \
     {"soft-quad-float", -MASK_HARD_QUAD}, \
+    /* ??? These are coerced to -mcpu=.  Delete in 2.9.  */ \
+    {"cypress", 0},			\
+    {"sparclite", 0},			\
+    {"f930", 0},			\
+    {"f934", 0},			\
+    {"v8", 0},				\
+    {"supersparc", 0},			\
     SUBTARGET_SWITCHES			\
     ARCH64_SWITCHES			\
     { "", TARGET_DEFAULT}}
 
+/* MASK_APP_REGS must always be the default because that's what
+   FIXED_REGISTERS is set to and -ffixed- is processed before
+   CONDITIONAL_REGISTER_USAGE is called (where we process -mno-app-regs).  */
 #define TARGET_DEFAULT (MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU)
 
-/* This is meant to be redefined in the host dependent files */
+/* This is meant to be redefined in target specific files.  */
 #define SUBTARGET_SWITCHES
 
 /* ??? Until we support a combination 32/64 bit compiler, these options
@@ -364,6 +439,37 @@ extern int target_flags;
 #else
 #define ARCH64_SWITCHES
 #endif
+
+extern enum attr_cpu sparc_cpu;
+
+/* This macro is similar to `TARGET_SWITCHES' but defines names of
+   command options that have values.  Its definition is an
+   initializer with a subgrouping for each command option.
+
+   Each subgrouping contains a string constant, that defines the
+   fixed part of the option name, and the address of a variable. 
+   The variable, type `char *', is set to the variable part of the
+   given option if the fixed part matches.  The actual option name
+   is made by appending `-m' to the specified name.
+
+   Here is an example which defines `-mshort-data-NUMBER'.  If the
+   given option is `-mshort-data-512', the variable `m88k_short_data'
+   will be set to the string `"512"'.
+
+	extern char *m88k_short_data;
+	#define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }  */
+
+/* ??? This isn't as fancy as rs6000.h.  Maybe in time.  */
+extern char *sparc_cpu_string;
+
+#define TARGET_OPTIONS \
+{ \
+  { "cpu=", &sparc_cpu_string }, \
+  SUBTARGET_OPTIONS \
+}
+
+/* This is meant to be redefined in target specific files.  */
+#define SUBTARGET_OPTIONS
 
 /* target machine storage layout */
 
@@ -558,8 +664,8 @@ extern int target_flags;
    g5 through g7 are reserved for the operating system.
    On v9 systems:
    g1 and g5 are free to use as temporaries.
-   g2-g4 are reserved for applications (the compiler will not normally use
-   them, but they can be used as temporaries with -mapp-regs).
+   g2-g4 are reserved for applications.  Gcc normally uses them as
+   temporaries, but this can be disabled via the -mno-app-regs option.
    g6-g7 are reserved for the operating system.
    ??? Register 1 is used as a temporary by the 64 bit sethi pattern, so must
    currently be a fixed register until this pattern is rewritten.
@@ -568,7 +674,7 @@ extern int target_flags;
 
 #if SPARC_V9
 #define FIXED_REGISTERS  \
- {0, 1, 1, 1, 1, 0, 1, 1,	\
+ {0, 1, 0, 0, 0, 0, 1, 1,	\
   0, 0, 0, 0, 0, 0, 1, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 1, 1,	\
@@ -604,7 +710,7 @@ extern int target_flags;
    and the register where structure-value addresses are passed.
    Aside from that, you can include as many other registers as you like.  */
 
-#if SPARC_V9
+#if SPARC_V9 && SPARC_ARCH64
 #define CALL_USED_REGISTERS  \
  {1, 1, 1, 1, 1, 1, 1, 1,	\
   1, 1, 1, 1, 1, 1, 1, 1,	\
@@ -623,6 +729,25 @@ extern int target_flags;
 				\
   1, 1, 1, 1}
 #else
+#if SPARC_V9 && ! SPARC_ARCH64
+#define CALL_USED_REGISTERS  \
+ {1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  0, 0, 0, 0, 0, 0, 0, 0,	\
+  0, 0, 0, 0, 0, 0, 1, 1,	\
+				\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+				\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+				\
+  1, 1, 1, 1}
+#else
 #define CALL_USED_REGISTERS  \
  {1, 1, 1, 1, 1, 1, 1, 1,	\
   1, 1, 1, 1, 1, 1, 1, 1,	\
@@ -634,6 +759,7 @@ extern int target_flags;
   1, 1, 1, 1, 1, 1, 1, 1,	\
   1, 1, 1, 1, 1, 1, 1, 1}
 #endif
+#endif
 
 /* If !TARGET_FPU, then make the fp registers fixed so that they won't
    be allocated.  On v9, also make the fp cc regs fixed.  */
@@ -643,12 +769,7 @@ do								\
   {								\
     if (SPARC_V9 && ! SPARC_ARCH64)				\
       {								\
-	int regno;						\
-	for (regno = 1; regno <= 4; regno++)			\
-	  fixed_regs[regno] = 0;				\
 	fixed_regs[5] = 1;					\
-	for (regno = 48; regno < 80; regno++)			\
-	  call_used_regs[regno] = 1;				\
       }								\
     if (! TARGET_FPU)						\
       {								\
@@ -656,18 +777,10 @@ do								\
 	for (regno = 32; regno < FIRST_PSEUDO_REGISTER; regno++) \
 	  fixed_regs[regno] = 1;				\
       }								\
-    if (! TARGET_APP_REGS)					\
-      {								\
-	fixed_regs[2] = 1;					\
-	fixed_regs[3] = 1;					\
-	fixed_regs[4] = 1;					\
-      }								\
-    else							\
-      {								\
-	fixed_regs[2] = 0;					\
-	fixed_regs[3] = 0;					\
-	fixed_regs[4] = TARGET_MEDANY != 0;			\
-      }								\
+    /* Don't unfix g2-g4 if they were fixed with -ffixed-.  */	\
+    fixed_regs[2] |= ! TARGET_APP_REGS;				\
+    fixed_regs[3] |= ! TARGET_APP_REGS;				\
+    fixed_regs[4] |= ! TARGET_APP_REGS || TARGET_MEDANY;	\
     if (TARGET_FLAT)						\
       {								\
 	/* Let the compiler believe the frame pointer is still	\
@@ -764,8 +877,8 @@ extern int sparc_mode_class[];
    flat window model.  However, the debugger won't be able to backtrace through
    us with out it.  */
 #define FRAME_POINTER_REQUIRED \
-  (TARGET_FRW ? (current_function_calls_alloca || current_function_varargs \
-		 || !leaf_function_p ()) \
+  (TARGET_FLAT ? (current_function_calls_alloca || current_function_varargs \
+		  || !leaf_function_p ()) \
    : ! (leaf_function_p () && only_leaf_regs_used ()))
 
 /* C statement to store the difference between the frame pointer
@@ -775,7 +888,7 @@ extern int sparc_mode_class[];
    it's not, there's no point in trying to eliminate the
    frame pointer.  If it is a leaf function, we guessed right!  */
 #define INITIAL_FRAME_POINTER_OFFSET(VAR) \
-  ((VAR) = (TARGET_FRW ? sparc_flat_compute_frame_size (get_frame_size ()) \
+  ((VAR) = (TARGET_FLAT ? sparc_flat_compute_frame_size (get_frame_size ()) \
 	    : compute_frame_size (get_frame_size (), 1)))
 
 /* Base register for access to arguments of the function.  */
@@ -1230,9 +1343,9 @@ extern char leaf_reg_remap[];
 #define BASE_OUTGOING_VALUE_REG(MODE) \
   (TARGET_ARCH64 \
    ? (TARGET_FPU && GET_MODE_CLASS (MODE) == MODE_FLOAT ? 32 \
-      : TARGET_FRW ? 8 : 24) \
+      : TARGET_FLAT ? 8 : 24) \
    : (((MODE) == SFmode || (MODE) == DFmode) && TARGET_FPU ? 32	\
-      : (TARGET_FRW ? 8 : 24)))
+      : (TARGET_FLAT ? 8 : 24)))
 #define BASE_PASSING_ARG_REG(MODE) \
   (TARGET_ARCH64 \
    ? (TARGET_FPU && GET_MODE_CLASS (MODE) == MODE_FLOAT ? 32 : 8) \
@@ -1240,8 +1353,8 @@ extern char leaf_reg_remap[];
 #define BASE_INCOMING_ARG_REG(MODE) \
   (TARGET_ARCH64 \
    ? (TARGET_FPU && GET_MODE_CLASS (MODE) == MODE_FLOAT ? 32 \
-      : TARGET_FRW ? 8 : 24) \
-   : (TARGET_FRW ? 8 : 24))
+      : TARGET_FLAT ? 8 : 24) \
+   : (TARGET_FLAT ? 8 : 24))
 
 /* Define this macro if the target machine has "register windows".  This
    C expression returns the register number as seen by the called function
@@ -1249,7 +1362,7 @@ extern char leaf_reg_remap[];
    Return OUT if register number OUT is not an outbound register.  */
 
 #define INCOMING_REGNO(OUT) \
- ((TARGET_FRW || (OUT) < 8 || (OUT) > 15) ? (OUT) : (OUT) + 16)
+ ((TARGET_FLAT || (OUT) < 8 || (OUT) > 15) ? (OUT) : (OUT) + 16)
 
 /* Define this macro if the target machine has "register windows".  This
    C expression returns the register number as seen by the calling function
@@ -1257,7 +1370,7 @@ extern char leaf_reg_remap[];
    Return IN if register number IN is not an inbound register.  */
 
 #define OUTGOING_REGNO(IN) \
- ((TARGET_FRW || (IN) < 24 || (IN) > 31) ? (IN) : (IN) - 16)
+ ((TARGET_FLAT || (IN) < 24 || (IN) > 31) ? (IN) : (IN) - 16)
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
@@ -1568,8 +1681,8 @@ do {									\
    to do this is made in regclass.c.  */
 
 extern int leaf_function;
-#define FUNCTION_PROLOGUE(FILE, SIZE)				\
-  (TARGET_FRW ? sparc_flat_output_function_prologue (FILE, SIZE) \
+#define FUNCTION_PROLOGUE(FILE, SIZE) \
+  (TARGET_FLAT ? sparc_flat_output_function_prologue (FILE, SIZE) \
    : output_function_prologue (FILE, SIZE, leaf_function))
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
@@ -1956,14 +2069,14 @@ extern int current_function_outgoing_args_size;
    because they occur inside of macros.  Sigh.  */
 extern union tree_node *current_function_decl;
 
-#define FUNCTION_EPILOGUE(FILE, SIZE)				\
-  (TARGET_FRW ? sparc_flat_output_function_epilogue (FILE, SIZE) \
+#define FUNCTION_EPILOGUE(FILE, SIZE) \
+  (TARGET_FLAT ? sparc_flat_output_function_epilogue (FILE, SIZE) \
    : output_function_epilogue (FILE, SIZE, leaf_function))
 
-#define DELAY_SLOTS_FOR_EPILOGUE	\
-  (TARGET_FRW ? sparc_flat_epilogue_delay_slots () : 1)
-#define ELIGIBLE_FOR_EPILOGUE_DELAY(trial, slots_filled)	\
-  (TARGET_FRW ? sparc_flat_eligible_for_epilogue_delay (trial, slots_filled) \
+#define DELAY_SLOTS_FOR_EPILOGUE \
+  (TARGET_FLAT ? sparc_flat_epilogue_delay_slots () : 1)
+#define ELIGIBLE_FOR_EPILOGUE_DELAY(trial, slots_filled) \
+  (TARGET_FLAT ? sparc_flat_eligible_for_epilogue_delay (trial, slots_filled) \
    : eligible_for_epilogue_delay (trial, slots_filled))
 
 /* Output assembler code for a block containing the constant parts
@@ -2591,8 +2704,8 @@ extern struct rtx_def *legitimize_pic_address ();
 
 /* Adjust the cost of dependencies.  */
 #define ADJUST_COST(INSN,LINK,DEP,COST) \
-  if (TARGET_SUPERSPARC) \
-  (COST) = supersparc_adjust_cost (INSN, LINK, DEP, COST)
+  if (sparc_cpu == CPU_SUPERSPARC) \
+    (COST) = supersparc_adjust_cost (INSN, LINK, DEP, COST)
 
 /* Conditional branches with empty delay slots have a length of two.  */
 #define ADJUST_INSN_LENGTH(INSN, LENGTH)	\
