@@ -491,7 +491,7 @@ namespace std {
     operator<<(basic_ostream<_CharT, _Traits>& __out, _CharT __c)
     {
       typedef basic_ostream<_CharT, _Traits> __ostream_type;
-      __ostream_type::sentry __cerb(__out);
+      typename __ostream_type::sentry __cerb(__out);
       if (__cerb)
 	{
 	  try {
@@ -524,7 +524,7 @@ namespace std {
     operator<<(basic_ostream<char, _Traits>& __out, char __c)
     {
       typedef basic_ostream<char, _Traits> __ostream_type;
-      __ostream_type::sentry __cerb(__out);
+      typename __ostream_type::sentry __cerb(__out);
       if (__cerb)
 	{
 	  try {
@@ -556,7 +556,7 @@ namespace std {
     operator<<(basic_ostream<_CharT, _Traits>& __out, const _CharT* __s)
     {
       typedef basic_ostream<_CharT, _Traits> __ostream_type;
-      __ostream_type::sentry __cerb(__out);
+      typename __ostream_type::sentry __cerb(__out);
       if (__cerb)
 	{
 	  try {
@@ -592,7 +592,7 @@ namespace std {
 // 167.  Improper use of traits_type::length()
       typedef char_traits<char>		     __ctraits_type;
 #endif
-      __ostream_type::sentry __cerb(__out);
+      typename __ostream_type::sentry __cerb(__out);
       if (__cerb)
 	{
 	  size_t __clen = __ctraits_type::length(__s);
@@ -632,7 +632,7 @@ namespace std {
     operator<<(basic_ostream<char, _Traits>& __out, const char* __s)
     {
       typedef basic_ostream<char, _Traits> __ostream_type;
-      __ostream_type::sentry __cerb(__out);
+      typename __ostream_type::sentry __cerb(__out);
       if (__cerb)
 	{
 	  try {
