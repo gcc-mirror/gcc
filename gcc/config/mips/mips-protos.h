@@ -53,6 +53,8 @@ extern struct rtx_def  *mips_function_value PARAMS ((tree, tree));
 
 extern unsigned int	mips_hard_regno_nregs PARAMS ((int,
 						       enum machine_mode));
+extern int              mips_return_in_memory PARAMS ((tree));
+
 extern struct rtx_def  *function_arg PARAMS ((CUMULATIVE_ARGS *,
 					      enum machine_mode, tree, int));
 extern void		function_arg_advance PARAMS ((CUMULATIVE_ARGS *,

@@ -2751,7 +2751,7 @@ extern struct mips_frame_info current_frame_info;
    to give us MIPS cc compatibility.  */
 
 #define RETURN_IN_MEMORY(TYPE)	\
-  (TYPE_MODE (TYPE) == BLKmode)
+	mips_return_in_memory (TYPE)
 
 
 #define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
