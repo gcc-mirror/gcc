@@ -83,8 +83,6 @@ static int base_alias_check		PROTO((rtx, rtx, enum machine_mode,
 					       enum machine_mode));
 static rtx find_base_value		PROTO((rtx));
 static int mems_in_disjoint_alias_sets_p PROTO((rtx, rtx));
-static int alias_set_compare            PROTO((splay_tree_key, 
-					       splay_tree_key));
 static int insert_subset_children       PROTO((splay_tree_node,
 					       void*));
 static alias_set_entry get_alias_set_entry PROTO((int));
@@ -168,25 +166,6 @@ static int copying_arguments;
 /* The splay-tree used to store the various alias set entries.  */
 
 static splay_tree alias_sets;
-
-/* Returns -1, 0, 1 according to whether SET1 is less than, equal to,
-   or greater than SET2.  */
-
-static int
-alias_set_compare (set1, set2)
-     splay_tree_key set1;
-     splay_tree_key set2;
-{
-  int s1 = (int) set1;
-  int s2 = (int) set2;
-
-  if (s1 < s2)
-    return -1;
-  else if (s1 > s2)
-    return 1;
-  else 
-    return 0;
-}
 
 /* Returns a pointer to the alias set entry for ALIAS_SET, if there is
    such an entry, or NULL otherwise.  */
@@ -305,7 +284,7 @@ record_alias_subset (superset, subset)
 	(alias_set_entry) xmalloc (sizeof (struct alias_set_entry));
       superset_entry->alias_set = superset;
       superset_entry->children 
-	= splay_tree_new (alias_set_compare, 0, 0);
+	= splay_tree_new (splay_tree_compare_ints, 0, 0);
       splay_tree_insert (alias_sets, 
 			 (splay_tree_key) superset,
 			 (splay_tree_value) superset_entry);
@@ -1329,7 +1308,7 @@ init_alias_once ()
 	&& HARD_REGNO_MODE_OK (i, Pmode))
       SET_HARD_REG_BIT (argument_registers, i);
 
-  alias_sets = splay_tree_new (alias_set_compare, 0, 0);
+  alias_sets = splay_tree_new (splay_tree_compare_ints, 0, 0);
 }
 
 void

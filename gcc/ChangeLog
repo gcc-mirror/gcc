@@ -1,3 +1,30 @@
+Tue Mar 30 20:51:40 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* alias.c (alias_set_compare): Remove.
+	(record_alias_subset): Use splay_tree_compare_ints instaed of
+	alias_set_compare.
+	(init_alias_once): Likewise.
+	* cse.c: Include splay-tree.h.
+	(reg_qty): Remove.
+	(reg_tick): Likewise.
+	(reg_table): Likewise.
+	(cse_reg_info): New structure.
+	(cse_reg_info_free_list): New variable.
+	(cse_reg_info_tree): Likewise.
+	(cached_regno): Likewise.
+	(cached_cse_reg_info): Likewise.
+	(all_minus_one): Remove.
+	(consec_ints): Likewise.
+	(GET_CSE_REG_INFO): New macro.
+	(REG_TICK): Likewise.  Use throughout instead of reg_tick.
+	(REG_IN_TABLE): Likewise.  Use throughout instead of reg_in_table.
+	(REG_QTY): Likewise.  Use throughout instead of reg_qty.
+	(get_cse_reg_info): New function.
+	(free_cse_reg_info): Likewise.
+	(new_basic_block): Reinitialize cse_reg_info_tree instead of
+	reg_tick, all_minus_one, and consec_ints.
+	* Makefile.in (cse.o): Depend on splay-tree.h
+
 Tue Mar 30 13:19:36 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* libgcc2.c (throw_helper): Just return the SP offset, rather than

@@ -1,3 +1,7 @@
+1999-03-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* splay-tree.h (splay_tree_compare_ints): Declare.
+
 Mon Dec 14 09:53:31 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* demangle.h: Don't check IN_GCC anymore.

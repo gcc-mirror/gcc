@@ -1515,7 +1515,8 @@ stupid.o : stupid.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h \
    $(BASIC_BLOCK_H) insn-config.h reload.h flags.h toplev.h
 
 cse.o : cse.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
-   real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h output.h
+   real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h output.h \
+   $(srcdir)/../include/splay-tree.h
 gcse.o : gcse.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
    real.h insn-config.h $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H) output.h
 resource.o : resource.c $(CONFIG_H) $(RTL_H) hard-reg-set.h system.h \
