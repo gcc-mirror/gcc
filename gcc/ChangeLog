@@ -1,6 +1,11 @@
+Sun Oct 11 14:40:24 1998  Ken Raeburn  <raeburn@cygnus.com>
+
+	* calls.c (store_one_arg): Use ARGS_SIZE_RTX to get size of argument
+	when emitting chkr_set_right_libfunc call.
+
 Mon Oct  5 18:28:33 1998  Hans-Peter Nilsson  <hp@axis.se>
 
-	* Makefile.in (version.c): Apply basename when using VERSION_DEP.s
+	* Makefile.in (version.c): Apply basename when using VERSION_DEP.
 
 Mon Oct  5 18:08:31 1998  Ken Raeburn  <raeburn@cygnus.com>
 
