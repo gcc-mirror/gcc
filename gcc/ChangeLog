@@ -1,3 +1,9 @@
+2000-09-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.h (PREDICATE_CODES): Add CONST_DOUBLE to
+	general_movsrc_operand, and remove CONST_INT from
+	general_movdst_operand.
+
 2000-09-12  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* cse.c (approx_reg_cost): If SMALL_REGISTER_CLASSES, return INT_MAX
