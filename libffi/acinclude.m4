@@ -11,8 +11,12 @@ AC_SUBST(LIBTOOL)
 # mmap(2) blacklisting.  Some platforms provide the mmap library routine
 # but don't support all of the features we need from it.
 AC_DEFUN([AC_FUNC_MMAP_BLACKLIST],
-[if test $ac_cv_header_sys_mman_h != yes \
- || test $ac_cv_func_mmap != yes; then
+[
+AC_CHECK_HEADER([sys/mman.h],
+		[libffi_header_sys_mman_h=yes], [libffi_header_sys_mman_h=no])
+AC_CHECK_FUNC([mmap], [libffi_func_mmap=yes], [libffi_func_mmap=no])
+if test "$libffi_header_sys_mman_h" != yes \
+ || test "$libffi_func_mmap" != yes; then
    ac_cv_func_mmap_file=no
    ac_cv_func_mmap_dev_zero=no
    ac_cv_func_mmap_anon=no

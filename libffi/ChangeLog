@@ -1,3 +1,11 @@
+2004-07-30  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* acinclude.m4 (AC_FUNC_MMAP_BLACKLIST): Check for <sys/mman.h>
+	and mmap() explicitly instead of relying on preset autoconf cache
+	variables.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2004-07-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* src/s390/ffi.c (ffi_prep_args): Fix C aliasing violation.
