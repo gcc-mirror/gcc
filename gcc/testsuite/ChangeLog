@@ -1,3 +1,9 @@
+2000-07-30  Richard Henderson  <rth@cygnus.com>
+
+	* gcc.dg/c90-digraph-1.c: Don't xfail.
+	* gcc.dg/compare2.c (case 10): Xfail.
+	* gcc.dg/noncompile/redecl-1.c: Fix expected error message.
+
 2000-07-27  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/c99-main-1.c: New test.
