@@ -2138,7 +2138,7 @@
 	(plus:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
 			  (match_operand:DF 2 "register_operand" "f"))
 		 (match_operand:DF 3 "register_operand" "f")))]
-  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && TARGET_FUSED_MADD"
   "madd.d\\t%0,%3,%1,%2"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"DF")])
@@ -2148,7 +2148,7 @@
 	(plus:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
 			  (match_operand:SF 2 "register_operand" "f"))
 		 (match_operand:SF 3 "register_operand" "f")))]
-  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_FUSED_MADD"
   "madd.s\\t%0,%3,%1,%2"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"SF")])
@@ -2158,7 +2158,7 @@
 	(minus:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
 			   (match_operand:DF 2 "register_operand" "f"))
 		  (match_operand:DF 3 "register_operand" "f")))]
-  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && TARGET_FUSED_MADD"
   "msub.d\\t%0,%3,%1,%2"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"DF")])
@@ -2169,7 +2169,7 @@
 			   (match_operand:SF 2 "register_operand" "f"))
 		  (match_operand:SF 3 "register_operand" "f")))]
 
-  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_FUSED_MADD"
   "msub.s\\t%0,%3,%1,%2"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"SF")])
@@ -2179,7 +2179,7 @@
 	(neg:DF (plus:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
 				  (match_operand:DF 2 "register_operand" "f"))
 			 (match_operand:DF 3 "register_operand" "f"))))]
-  "ISA_HAS_NMADD_NMSUB && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "ISA_HAS_NMADD_NMSUB && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && TARGET_FUSED_MADD"
   "nmadd.d\\t%0,%3,%1,%2"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"DF")])
@@ -2189,7 +2189,7 @@
 	(neg:SF (plus:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
 				  (match_operand:SF 2 "register_operand" "f"))
 			 (match_operand:SF 3 "register_operand" "f"))))]
-  "ISA_HAS_NMADD_NMSUB && TARGET_HARD_FLOAT"
+  "ISA_HAS_NMADD_NMSUB && TARGET_HARD_FLOAT && TARGET_FUSED_MADD"
   "nmadd.s\\t%0,%3,%1,%2"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"SF")])
@@ -2199,7 +2199,7 @@
 	(minus:DF (match_operand:DF 1 "register_operand" "f")
 		  (mult:DF (match_operand:DF 2 "register_operand" "f")
 			   (match_operand:DF 3 "register_operand" "f"))))]
-  "ISA_HAS_NMADD_NMSUB && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "ISA_HAS_NMADD_NMSUB && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && TARGET_FUSED_MADD"
   "nmsub.d\\t%0,%1,%2,%3"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"DF")])
@@ -2209,7 +2209,7 @@
 	(minus:SF (match_operand:SF 1 "register_operand" "f")
 		  (mult:SF (match_operand:SF 2 "register_operand" "f")
 			   (match_operand:SF 3 "register_operand" "f"))))]
-  "ISA_HAS_NMADD_NMSUB && TARGET_HARD_FLOAT"
+  "ISA_HAS_NMADD_NMSUB && TARGET_HARD_FLOAT && TARGET_FUSED_MADD"
   "nmsub.s\\t%0,%1,%2,%3"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"SF")])
