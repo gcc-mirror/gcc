@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.16 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -325,13 +325,15 @@ package body System.Arith_64 is
             T2 := Xhi * Ylo;
          end if;
 
-      else
-         if Yhi /= 0 then
-            T2 := Xlo * Yhi;
-         else
-            return X * Y;
-         end if;
+      elsif Yhi /= 0 then
+         T2 := Xlo * Yhi;
+
+      else -- Yhi = Xhi = 0
+         T2 := 0;
       end if;
+
+      --  Here we have T2 set to the contribution to the upper half
+      --  of the result from the upper halves of the input values.
 
       T1 := Xlo * Ylo;
       T2 := T2 + Hi (T1);

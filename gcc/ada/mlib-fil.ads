@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
 --              Copyright (C) 2001, Ada Core Technologies, Inc.             --
 --                                                                          --
@@ -36,16 +36,16 @@ package MLib.Fil is
       return     String;
    --  Return Filename with the extension change to New_Ext.
 
-   function Get_Ext (Filename : in String) return String;
+   function Get_Ext (Filename : String) return String;
    --  Return extension of filename.
 
    function Is_Archive (Filename : String) return Boolean;
    --  Test if filename is an archive
 
-   function Is_C (Filename : in String) return Boolean;
+   function Is_C (Filename : String) return Boolean;
    --  Test if Filename is a C file
 
-   function Is_Obj (Filename : in String) return Boolean;
+   function Is_Obj (Filename : String) return Boolean;
    --  Test if Filename is an object file
 
 end MLib.Fil;

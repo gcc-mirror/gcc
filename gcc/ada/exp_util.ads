@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.112 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -371,15 +371,6 @@ package Exp_Util is
    --  hueristically by the body of this routine. The purpose of this
    --  routine is to help avoid generating troublesome temporaries that
    --  intefere with the stack checking mechanism.
-
-   function Must_Be_Aligned (Obj : Node_Id) return Boolean;
-   --  Given an object reference, determines whether or not the object
-   --  is required to be aligned according to its type'alignment value.
-   --  Normally, objects are required to be aligned, and the result will
-   --  be True. The situation in which this is not the case is if the
-   --  object reference involves a component of a packed array, where
-   --  the type of the component is not required to have strict alignment.
-   --  In this case, false will be returned.
 
    procedure Remove_Side_Effects
      (Exp          : Node_Id;

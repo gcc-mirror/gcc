@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.511 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -2690,6 +2690,18 @@ package body Sem_Ch4 is
             Error_Msg_NE ("no selector& for&", N, Sel);
 
             Check_Misspelled_Selector (Entity_List, Sel);
+
+         elsif Is_Generic_Type (Prefix_Type)
+           and then Ekind (Prefix_Type) = E_Record_Type_With_Private
+           and then Is_Record_Type (Etype (Prefix_Type))
+         then
+            --  If this is a derived formal type, the parent may have a
+            --  different visibility at this point. Try for an inherited
+            --  component before reporting an error.
+
+            Set_Etype (Prefix (N), Etype (Prefix_Type));
+            Analyze_Selected_Component (N);
+            return;
 
          else
             if Ekind (Prefix_Type) = E_Record_Subtype then

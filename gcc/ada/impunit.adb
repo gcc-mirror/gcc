@@ -195,6 +195,7 @@ package body Impunit is
      "g-curexc",    -- GNAT.Current_Exception
      "g-debpoo",    -- GNAT.Debug_Pools
      "g-debuti",    -- GNAT.Debug_Utilities
+     "g-diopit",    -- GNAT.Directory_Operations.Iteration
      "g-dirope",    -- GNAT.Directory_Operations
      "g-dyntab",    -- GNAT.Dynamic_Tables
      "g-exctra",    -- GNAT.Exception_Traces

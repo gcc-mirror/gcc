@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.1 $                              --
+--                            $Revision$                              --
 --                                                                          --
 --          Copyright (C) 1992-1999 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -26,27 +26,26 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Simple services used by GNATDLL to deal with Filename extension.
+--  Simple services used by GNATDLL to deal with Filename extension
 
 package MDLL.Files is
 
    No_Ext : constant String := "";
+   --  Used to mark the absence of an extension
 
-   function Get_Ext (Filename : in String)
-                     return String;
-   --  return filename's extension.
+   function Get_Ext (Filename : String) return String;
+   --  Return extension of Filename
 
-   function Is_Ali (Filename : in String)
-                    return Boolean;
-   --  test if Filename is an Ada library file (.ali).
+   function Is_Ali (Filename : String) return Boolean;
+   --  Test if Filename is an Ada library file (.ali).
 
-   function Is_Obj (Filename : in String)
-                    return Boolean;
-   --  test if Filename is an object file (.o or .obj).
+   function Is_Obj (Filename : String) return Boolean;
+   --  Test if Filename is an object file (.o or .obj)
 
-   function Ext_To (Filename : in String;
-                    New_Ext  : in String := No_Ext)
-                    return String;
-   --  return Filename with the extension change to New_Ext.
+   function Ext_To
+     (Filename : String;
+      New_Ext  : String := No_Ext)
+      return     String;
+   --  Return Filename with the extension change to New_Ext
 
 end MDLL.Files;

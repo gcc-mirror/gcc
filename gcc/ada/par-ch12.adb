@@ -452,15 +452,16 @@ package body Ch12 is
       if Def_Node /= Error then
          Set_Formal_Type_Definition (Decl_Node, Def_Node);
          TF_Semicolon;
+
       else
          Decl_Node := Error;
 
+         --  If we have semicolon, skip it to avoid cascaded errors
+
          if Token = Tok_Semicolon then
-            --   Avoid further cascaded errors.
             Scan;
          end if;
       end if;
-
 
       return Decl_Node;
    end P_Formal_Type_Declaration;
