@@ -2456,7 +2456,7 @@ tail_recursion_args (actuals, formals)
   for (f = formals, a = actuals, i = 0; f;
        f = TREE_CHAIN (f), a = TREE_CHAIN (a), i++)
     {
-      if (DECL_MODE (f) == GET_MODE (argvec[i]))
+      if (GET_MODE (DECL_RTL (f)) == GET_MODE (argvec[i]))
 	emit_move_insn (DECL_RTL (f), argvec[i]);
       else
 	convert_move (DECL_RTL (f), argvec[i],
@@ -2834,7 +2834,18 @@ expand_decl (decl)
 	   && (DECL_REGISTER (decl) || ! obey_regdecls))
     {
       /* Automatic variable that can go in a register.  */
-      DECL_RTL (decl) = gen_reg_rtx (DECL_MODE (decl));
+      enum machine_mode reg_mode = DECL_MODE (decl);
+      int unsignedp = TREE_UNSIGNED (type);
+
+      if (TREE_CODE (type) == INTEGER_TYPE || TREE_CODE (type) == ENUMERAL_TYPE
+	  || TREE_CODE (type) == BOOLEAN_TYPE || TREE_CODE (type) == CHAR_TYPE
+	  || TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == POINTER_TYPE
+	  || TREE_CODE (type) == OFFSET_TYPE)
+	{
+	  PROMOTE_MODE (reg_mode, unsignedp, type);
+	}
+
+      DECL_RTL (decl) = gen_reg_rtx (reg_mode);
       if (TREE_CODE (type) == POINTER_TYPE)
 	mark_reg_pointer (DECL_RTL (decl));
       REG_USERVAR_P (DECL_RTL (decl)) = 1;
