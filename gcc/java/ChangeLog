@@ -1,3 +1,9 @@
+1999-08-09  Tom Tromey  <tromey@cygnus.com>
+
+	* javaop.h (WORD_TO_FLOAT): only inline if building with gcc.
+	(WORDS_TO_LONG): Likewise.
+	(WORDS_TO_DOUBLE): Likewise.
+
 1999-08-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (lang.o): Depend on $(RTL_H) $(EXPR_H).
