@@ -1,6 +1,6 @@
 // Thread.java - Thread class.
 
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -9,6 +9,8 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 package java.lang;
+
+import gnu.gcj.RawData;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
@@ -297,11 +299,8 @@ public class Thread implements Runnable
   private boolean interrupt_flag;
   private boolean alive_flag;
 
-  // This is a bit odd.  We need a way to represent some data that is
-  // manipulated only by the native side of this class.  We represent
-  // it as a Java object reference.  However, it is not actually a
-  // Java object.
-  private Object data;
+  // Our native data.
+  private RawData data;
 
   // Next thread number to assign.
   private static int nextThreadNumber = 0;

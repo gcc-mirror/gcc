@@ -207,4 +207,8 @@ void *_Jv_FindSymbolInExecutable (const char *);
 /* Initialize JNI.  */
 extern void _Jv_JNI_Init (void);
 
+/* Get or set the per-thread JNIEnv used by the invocation API.  */
+_Jv_JNIEnv *_Jv_GetCurrentJNIEnv ();
+void _Jv_SetCurrentJNIEnv (_Jv_JNIEnv *);
+
 #endif /* __JAVA_JVM_H__ */

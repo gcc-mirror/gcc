@@ -23,6 +23,7 @@ details.  */
 #include <gcj/javaprims.h>
 
 typedef struct _Jv_JNIEnv JNIEnv;
+typedef struct _Jv_JavaVM JavaVM;
 
 #define JNI_TRUE true
 #define JNI_FALSE false
@@ -59,6 +60,7 @@ typedef void *jfieldID;
 typedef void *jmethodID;
 
 typedef const struct JNINativeInterface *JNIEnv;
+typedef const struct JNIInvokeInterface *JavaVM;
 
 #define JNI_TRUE 1
 #define JNI_TRUE 0
@@ -75,6 +77,32 @@ typedef jobject jweak;
 /* Used when releasing array elements.  */
 #define JNI_COMMIT 1
 #define JNI_ABORT  2
+
+/* Error codes */
+#define JNI_OK            0
+#define JNI_ERR          -1
+#define JNI_EDETACHED    -2
+#define JNI_EVERSION     -3
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif /* __cplusplus */
+
+/* These functions might be defined in libraries which we load; the
+   JNI implementation calls them at the appropriate times.  */
+extern jint JNI_OnLoad (JavaVM *, void *);
+extern void JNI_OnUnload (JavaVM *, void *);
+
+/* These functions are called by user code to start using the
+   invocation API.  */
+extern jint JNI_GetDefaultJavaVMInitArgs (void *);
+extern jint JNI_CreateJavaVM (JavaVM **, void **, void *);
+extern jint JNI_GetCreatedJavaVMs(JavaVM **, jsize, jsize *);
+
+#ifdef __cplusplus
+};
+#endif /* __cplusplus */
 
 typedef union jvalue
 {
@@ -98,9 +126,6 @@ typedef struct
   char *signature;
   void *fnPtr;			/* Sigh.  */
 } JNINativeMethod;
-
-/* FIXME: this is just a placeholder.  */
-typedef int JavaVM;
 
 struct JNINativeInterface
 {
@@ -1401,5 +1426,75 @@ public:
   { return p->ExceptionCheck (this); }
 };
 #endif /* __cplusplus */
+
+/*
+ * Invocation API.
+ */
+
+struct JNIInvokeInterface
+{
+  _Jv_func reserved0;
+  _Jv_func reserved1;
+  _Jv_func reserved2;
+
+  jint (*DestroyJavaVM)         (JavaVM *);
+  jint (*AttachCurrentThread)   (JavaVM *, void **, void *);
+  jint (*DetachCurrentThread)   (JavaVM *);
+  jint (*GetEnv)                (JavaVM *, void **, jint);
+};
+
+#ifdef __cplusplus
+
+class _Jv_JavaVM
+{
+public:
+  const struct JNIInvokeInterface *functions;
+
+private:
+  /* FIXME: other fields.  */
+
+public:
+  jint DestroyJavaVM ()
+  { return functions->DestroyJavaVM (this); }
+
+  jint AttachCurrentThread (void **penv, void *args)
+  { return functions->AttachCurrentThread (this, penv, args); }
+
+  jint DetachCurrentThread ()
+  { return functions->DetachCurrentThread (this); }
+
+  jint GetEnv (void **penv, jint version)
+  { return functions->GetEnv (this, penv, version); }
+};
+#endif /* __cplusplus */
+
+typedef struct JavaVMAttachArgs
+{
+  jint version;			/* Must be JNI_VERSION_1_2.  */
+  char *name;			/* The name of the thread (or NULL).  */
+  jobject group;		/* Global ref of a ThreadGroup object
+				   (or NULL).  */
+} JavaVMAttachArgs;
+
+typedef struct JavaVMOption
+{
+  char *optionString;
+  void *extraInfo;
+} JavaVMOption;
+
+typedef struct JavaVMInitArgs
+{
+  /* Must be JNI_VERSION_1_2.  */
+  jint version;
+
+  /* Number of options.  */
+  jint nOptions;
+
+  /* Options to the VM.  */
+  JavaVMOption *options;
+
+  /* Whether we should ignore unrecognized options.  */
+  jboolean ignoreUnrecognized;
+} JavaVMInitArgs;
 
 #endif /* __GCJ_JNI_H__ */

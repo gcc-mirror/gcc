@@ -36,6 +36,7 @@ details.  */
 #include <java/lang/OutOfMemoryError.h>
 #include <java/util/Hashtable.h>
 #include <java/lang/Integer.h>
+#include <gnu/gcj/jni/NativeThread.h>
 
 #include <gcj/method.h>
 #include <gcj/field.h>
@@ -51,6 +52,10 @@ extern java::lang::Class ObjectClass;
 extern java::lang::Class ThrowableClass;
 #define MethodClass _CL_Q44java4lang7reflect6Method
 extern java::lang::Class MethodClass;
+#define ThreadGroupClass _CL_Q34java4lang11ThreadGroup
+extern java::lang::Class ThreadGroupClass;
+#define NativeThreadClass _CL_Q43gnu3gcj3jni12NativeThread
+extern java::lang::Class ThreadGroupClass;
 
 // This enum is used to select different template instantiations in
 // the invocation code.
@@ -62,8 +67,9 @@ enum invocation_type
   constructor
 };
 
-// Forward declaration.
+// Forward declarations.
 extern struct JNINativeInterface _Jv_JNIFunctions;
+extern struct JNIInvokeInterface _Jv_JNI_InvokeFunctions;
 
 // Number of slots in the default frame.  The VM must allow at least
 // 16.
@@ -88,6 +94,9 @@ struct _Jv_JNI_LocalFrame
 
 // This holds a reference count for all local and global references.
 static java::util::Hashtable *ref_table;
+
+// The only VM.
+static JavaVM *the_vm;
 
 
 
@@ -178,7 +187,7 @@ _Jv_JNI_EnsureLocalCapacity (JNIEnv *env, jint size)
     {
       // FIXME: exception processing.
       env->ex = new java::lang::OutOfMemoryError;
-      return -1;
+      return JNI_ERR;
     }
 
   frame->marker = true;
@@ -1380,6 +1389,238 @@ _Jv_JNIMethod::call (ffi_cif *cif, void *ret, ffi_raw *args, void *__this)
 
 
 
+//
+// Invocation API.
+//
+
+// An internal helper function.
+static jint
+_Jv_JNI_AttachCurrentThread (JavaVM *, jstring name, void **penv, void *args)
+{
+  JavaVMAttachArgs *attach = reinterpret_cast<JavaVMAttachArgs *> (args);
+  java::lang::ThreadGroup *group = NULL;
+
+  if (attach)
+    {
+      // FIXME: do we really want to support 1.1?
+      if (attach->version != JNI_VERSION_1_2
+	  && attach->version != JNI_VERSION_1_1)
+	return JNI_EVERSION;
+
+      JvAssert ((&ThreadGroupClass)->isInstance (attach->group));
+      group = reinterpret_cast<java::lang::ThreadGroup *> (attach->group);
+    }
+
+  // Attaching an already-attached thread is a no-op.
+  if (_Jv_ThreadCurrent () != NULL)
+    return 0;
+
+  // FIXME: NULL return?
+  JNIEnv *env = (JNIEnv *) _Jv_MallocUnchecked (sizeof (JNIEnv));
+  env->p = &_Jv_JNIFunctions;
+  env->ex = NULL;
+  env->klass = NULL;
+  // FIXME: NULL return?
+  env->locals
+    = (_Jv_JNI_LocalFrame *) _Jv_MallocUnchecked (sizeof (_Jv_JNI_LocalFrame)
+						  + (FRAME_SIZE
+						     * sizeof (jobject)));
+  *penv = reinterpret_cast<void *> (env);
+
+  java::lang::Thread *t = new gnu::gcj::jni::NativeThread (group, name);
+  t = t;			// Avoid compiler warning.  Eww.
+  _Jv_SetCurrentJNIEnv (env);
+
+  return 0;
+}
+
+// This is the one actually used by JNI.
+static jint
+_Jv_JNI_AttachCurrentThread (JavaVM *vm, void **penv, void *args)
+{
+  return _Jv_JNI_AttachCurrentThread (vm, NULL, penv, args);
+}
+
+static jint
+_Jv_JNI_DestroyJavaVM (JavaVM *vm)
+{
+  JvAssert (the_vm && vm == the_vm);
+
+  JNIEnv *env;
+  if (_Jv_ThreadCurrent () != NULL)
+    {
+      jint r = _Jv_JNI_AttachCurrentThread (vm,
+					    JvNewStringLatin1 ("main"),
+					    reinterpret_cast<void **> (&env),
+					    NULL);
+      if (r < 0)
+	return r;
+    }
+  else
+    env = _Jv_GetCurrentJNIEnv ();
+
+  _Jv_ThreadWait ();
+
+  // Docs say that this always returns an error code.
+  return JNI_ERR;
+}
+
+static jint
+_Jv_JNI_DetachCurrentThread (JavaVM *)
+{
+  java::lang::Thread *t = _Jv_ThreadCurrent ();
+  if (t == NULL)
+    return JNI_EDETACHED;
+
+  // FIXME: we only allow threads attached via AttachCurrentThread to
+  // be detached.  I have no idea how we could implement detaching
+  // other threads, given the requirement that we must release all the
+  // monitors.  That just seems evil.
+  JvAssert ((&NativeThreadClass)->isInstance (t));
+
+  // FIXME: release the monitors.  We'll take this to mean all
+  // monitors acquired via the JNI interface.  This means we have to
+  // keep track of them.
+
+  gnu::gcj::jni::NativeThread *nt
+    = reinterpret_cast<gnu::gcj::jni::NativeThread *> (t);
+  nt->finish ();
+
+  return 0;
+}
+
+static jint
+_Jv_JNI_GetEnv (JavaVM *, void **penv, jint version)
+{
+  if (_Jv_ThreadCurrent () == NULL)
+    {
+      *penv = NULL;
+      return JNI_EDETACHED;
+    }
+
+  // FIXME: do we really want to support 1.1?
+  if (version != JNI_VERSION_1_2 && version != JNI_VERSION_1_1)
+    {
+      *penv = NULL;
+      return JNI_EVERSION;
+    }
+
+  *penv = (void *) _Jv_GetCurrentJNIEnv ();
+  return 0;
+}
+
+jint
+JNI_GetDefaultJavaVMInitArgs (void *args)
+{
+  jint version = * (jint *) args;
+  // Here we only support 1.2.
+  if (version != JNI_VERSION_1_2)
+    return JNI_EVERSION;
+
+  JavaVMInitArgs *ia = reinterpret_cast<JavaVMInitArgs *> (args);
+  ia->version = JNI_VERSION_1_2;
+  ia->nOptions = 0;
+  ia->options = NULL;
+  ia->ignoreUnrecognized = true;
+
+  return 0;
+}
+
+jint
+JNI_CreateJavaVM (JavaVM **vm, void **penv, void *args)
+{
+  JvAssert (! the_vm);
+  // FIXME: synchronize
+  JavaVM *nvm = (JavaVM *) _Jv_MallocUnchecked (sizeof (JavaVM));
+  if (nvm == NULL)
+    return JNI_ERR;
+  nvm->functions = &_Jv_JNI_InvokeFunctions;
+
+  // Parse the arguments.
+  if (args != NULL)
+    {
+      jint version = * (jint *) args;
+      // We only support 1.2.
+      if (version != JNI_VERSION_1_2)
+	return JNI_EVERSION;
+      JavaVMInitArgs *ia = reinterpret_cast<JavaVMInitArgs *> (args);
+      for (int i = 0; i < ia->nOptions; ++i)
+	{
+	  if (! strcmp (ia->options[i].optionString, "vfprintf")
+	      || ! strcmp (ia->options[i].optionString, "exit")
+	      || ! strcmp (ia->options[i].optionString, "abort"))
+	    {
+	      // We are required to recognize these, but for now we
+	      // don't handle them in any way.  FIXME.
+	      continue;
+	    }
+	  else if (! strncmp (ia->options[i].optionString,
+			      "-verbose", sizeof ("-verbose") - 1))
+	    {
+	      // We don't do anything with this option either.  We
+	      // might want to make sure the argument is valid, but we
+	      // don't really care all that much for now.
+	      continue;
+	    }
+	  else if (! strncmp (ia->options[i].optionString, "-D", 2))
+	    {
+	      // FIXME.
+	      continue;
+	    }
+	  else if (ia->ignoreUnrecognized)
+	    {
+	      if (ia->options[i].optionString[0] == '_'
+		  || ! strncmp (ia->options[i].optionString, "-X", 2))
+		continue;
+	    }
+
+	  return JNI_ERR;
+	}
+    }
+
+  jint r =_Jv_JNI_AttachCurrentThread (nvm, penv, NULL);
+  if (r < 0)
+    return r;
+
+  the_vm = nvm;
+  *vm = the_vm;
+  return 0;
+}
+
+jint
+JNI_GetCreatedJavaVMs (JavaVM **vm_buffer, jsize buf_len, jsize *n_vms)
+{
+  JvAssert (buf_len > 0);
+  // We only support a single VM.
+  if (the_vm != NULL)
+    {
+      vm_buffer[0] = the_vm;
+      *n_vms = 1;
+    }
+  else
+    *n_vms = 0;
+  return 0;
+}
+
+jint
+_Jv_JNI_GetJavaVM (JNIEnv *, JavaVM **vm)
+{
+  // FIXME: synchronize
+  if (! the_vm)
+    {
+      JavaVM *nvm = (JavaVM *) _Jv_MallocUnchecked (sizeof (JavaVM));
+      if (nvm == NULL)
+	return JNI_ERR;
+      nvm->functions = &_Jv_JNI_InvokeFunctions;
+      the_vm = nvm;
+    }
+
+  *vm = the_vm;
+  return 0;
+}
+
+
+
 #define NOT_IMPL NULL
 #define RESERVED NULL
 
@@ -1614,7 +1855,7 @@ struct JNINativeInterface _Jv_JNIFunctions =
   NOT_IMPL /* UnregisterNatives */,
   _Jv_JNI_MonitorEnter,
   _Jv_JNI_MonitorExit,
-  NOT_IMPL /* GetJavaVM */,
+  _Jv_JNI_GetJavaVM,
 
   _Jv_JNI_GetStringRegion,
   _Jv_JNI_GetStringUTFRegion,
@@ -1627,4 +1868,16 @@ struct JNINativeInterface _Jv_JNIFunctions =
   NOT_IMPL /* deleteweakglobalref */,
 
   _Jv_JNI_ExceptionCheck
+};
+
+struct JNIInvokeInterface _Jv_JNI_InvokeFunctions =
+{
+  RESERVED,
+  RESERVED,
+  RESERVED,
+
+  _Jv_JNI_DestroyJavaVM,
+  _Jv_JNI_AttachCurrentThread,
+  _Jv_JNI_DetachCurrentThread,
+  _Jv_JNI_GetEnv
 };
