@@ -1,3 +1,8 @@
+2003-06-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/gcc-dg.exp (dg-require-alias): Fix typo.
+	(dg-require-gc-sections): Likewise.
+
 Sun Jun  8 16:46:04 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386-cmov1.c: Fix regular expression.

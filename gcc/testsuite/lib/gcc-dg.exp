@@ -279,7 +279,7 @@ proc dg-require-alias { args } {
 	unresolved "$name"
     }
     if { $alias_available < 2 } {
-	set dg-do-what [list [lindex $dg_do_what 0] "N" "P"]
+	set dg-do-what [list [lindex $dg-do-what 0] "N" "P"]
 	return
     }
 }
@@ -290,7 +290,7 @@ proc dg-require-alias { args } {
 proc dg-require-gc-sections { args } {
     if { ![ check_gc_sections_available ] } {
 	upvar dg-do-what dg-do-what
-	set dg-do-what [list [lindex $dg_do_what 0] "N" "P"]
+	set dg-do-what [list [lindex $dg-do-what 0] "N" "P"]
 	return
     }
 }
