@@ -1,3 +1,7 @@
+Tue Jan 12 02:36:10 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Tue Jan 12 01:30:19 1999  Richard Henderson  <rth@cygnus.com>
 
 	* rtl.c (rtx_alloc): Use memset instead of inline loop.
