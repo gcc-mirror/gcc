@@ -189,7 +189,7 @@ timing_init ()
 		    0, NOT_BUILT_IN, NULL_PTR);
 }
 
-#if 0
+/*
  *
  * build AT action
  *
@@ -206,7 +206,7 @@ timing_init ()
  * else
  *   to-action-list
  *
-#endif
+ */
 
 void
 build_at_action (t)
@@ -235,7 +235,7 @@ build_at_action (t)
   emit_line_note (input_filename, lineno);
 }
 
-#if 0
+/* 
  *
  * build CYCLE action
  *
@@ -254,7 +254,7 @@ build_at_action (t)
  *    goto label;
  *  }
  *
-#endif
+ */
 
 tree
 build_cycle_start (t)
@@ -317,7 +317,7 @@ build_cycle_end (toid)
   expand_goto (TREE_VALUE (toid));
 }
 
-#if 0
+/*
  *
  * build AFTER ACTION
  *
@@ -343,7 +343,7 @@ build_cycle_end (toid)
  *   end-label:
  * }
  *
-#endif
+ */
 
 void
 build_after_start (duration, delay_flag)

@@ -1466,7 +1466,7 @@ access_dynamic (access)
   return integer_zero_node;
 }
 
-#if 0
+/*
    returns a structure like
    STRUCT (data STRUCT (flags ULONG,
                         reclength ULONG,
@@ -1480,7 +1480,7 @@ access_dynamic (access)
    TYPE_DECL __recordmode recordmode ? recordmode : void_type_node
    TYPE_DECL __indexmode  indexmode  ? indexmode  : void_type_node
    CONST_DECL __dynamic   dynamic ? integer_one_node : integer_zero_node
-#endif
+*/
 
 static tree
 build_access_part ()
@@ -1547,7 +1547,7 @@ build_access_mode (indexmode, recordmode, dynamic)
   return type;
 }
 
-#if 0
+/*
   returns a structure like:
   STRUCT (txt STRUCT (flags ULONG,
                       text_record PTR,
@@ -1567,7 +1567,7 @@ build_access_mode (indexmode, recordmode, dynamic)
   TYPE_DECL __indexmode indexmode ? indexmode : void_type_node
   CONST_DECL __text_length
   CONST_DECL __dynamic  dynamic ? integer_one_node : integer_zero_node
-#endif
+*/
 tree
 build_text_mode (textlength, indexmode, dynamic)
      tree textlength;
