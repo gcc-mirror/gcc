@@ -2,11 +2,6 @@
 
 	* decl.c (grok_op_properties): Add an extra check of argtypes.
 
-2000-04-28  Jason Merrill  <jason@casey.cygnus.com>
-
-	* optimize.c (initialize_inlined_parameters): Call 
-	c_apply_type_quals_to_decl.  Set DECL_INITIAL.
-
 2000-04-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* optimize.c (copy_body_r): Use STRIP_TYPE_NOPS when copying
