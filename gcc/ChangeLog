@@ -1,5 +1,8 @@
 2004-05-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* tree-ssa-dce.c (perform_tree_ssa_dce): Free
+	el at the end of the function.
+
 	* tree-into-ssa.c (insert_phi_nodes_for): XFREE
 	bitmaps allocated with BITMAP_XMALLOC.
 
