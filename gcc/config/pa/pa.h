@@ -1296,7 +1296,12 @@ extern int may_call_alloca;
 
    `T' is for floating-point loads and stores.
 
-   `U' is the constant 63.  */
+   `U' is the constant 63.
+
+   `W' is a register indirect memory operand.  We could allow short
+       displacements but GO_IF_LEGITIMATE_ADDRESS can't tell when a
+       long displacement is valid.  This is only used for prefetch
+       instructions with the `sl' completer.  */
 
 #define EXTRA_CONSTRAINT(OP, C) \
   ((C) == 'Q' ?								\
@@ -1307,6 +1312,10 @@ extern int may_call_alloca;
 	&& !symbolic_memory_operand (OP, VOIDmode)			\
 	&& !IS_LO_SUM_DLT_ADDR_P (XEXP (OP, 0))				\
 	&& !IS_INDEX_ADDR_P (XEXP (OP, 0))))				\
+   : ((C) == 'W' ?							\
+      (GET_CODE (OP) == MEM						\
+       && REG_P (XEXP (OP, 0))						\
+       && REG_OK_FOR_BASE_P (XEXP (OP, 0)))				\
    : ((C) == 'A' ?							\
       (GET_CODE (OP) == MEM						\
        && IS_LO_SUM_DLT_ADDR_P (XEXP (OP, 0)))				\
@@ -1336,7 +1345,7 @@ extern int may_call_alloca;
    : ((C) == 'S' ?							\
       (GET_CODE (OP) == CONST_INT && INTVAL (OP) == 31)			\
    : ((C) == 'U' ?							\
-      (GET_CODE (OP) == CONST_INT && INTVAL (OP) == 63) : 0))))))
+      (GET_CODE (OP) == CONST_INT && INTVAL (OP) == 63) : 0)))))))
 	
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
@@ -2102,7 +2111,8 @@ forget_section (void)							\
 				       CONST_DOUBLE}},			\
   {"move_dest_operand", {SUBREG, REG, MEM}},				\
   {"move_src_operand", {SUBREG, REG, CONST_INT, MEM}},			\
-  {"prefetch_operand", {MEM}},						\
+  {"prefetch_cc_operand", {MEM}},					\
+  {"prefetch_nocc_operand", {MEM}},					\
   {"reg_or_cint_move_operand", {SUBREG, REG, CONST_INT}},		\
   {"pic_label_operand", {LABEL_REF, CONST}},				\
   {"fp_reg_operand", {REG}},						\
