@@ -382,12 +382,15 @@ print_operand (file, x, code)
   else if (GET_CODE (x) == MEM)
     {
       rtx tmp = XEXP (x, 0);
-#ifndef PC_RELATIVE
-      if (GET_CODE (tmp) == SYMBOL_REF || GET_CODE (tmp) == LABEL_REF)
+#if ! (defined (PC_RELATIVE) || defined (NO_ABSOLUTE_PREFIX_IF_SYMBOLIC))
+      if (GET_CODE (tmp) != CONST_INT)
 	{
 	  char *out = XSTR (tmp, 0);
 	  if (out[0] == '*')
-	    fprintf (file, "@%s", &out[1]);
+	    {
+	      PUT_ABSOLUTE_PREFIX (file);
+	      fprintf (file, "%s", &out[1]);
+	    }
 	  else
 	    ASM_OUTPUT_LABELREF (file, out);
 	}
@@ -404,7 +407,7 @@ print_operand (file, x, code)
 	  PUT_IMMEDIATE_PREFIX(file);
 #ifdef SEQUENT_ASM
 	  /* Sequent likes it's floating point constants as integers */
-	  fprintf (file, "0Dx%08x%08x", u.i[1], u.i[0])l
+	  fprintf (file, "0Dx%08x%08x", u.i[1], u.i[0]);
 #else
 #ifdef ENCORE_ASM
 	  fprintf (file, "0f%.20e", u.d); 
@@ -417,7 +420,7 @@ print_operand (file, x, code)
 	{ 
 	  union { double d; int i[2]; } u;
 	  u.i[0] = CONST_DOUBLE_LOW (x); u.i[1] = CONST_DOUBLE_HIGH (x);
-	  PUT_IMMEDIATE_PREFIX(file);
+	  PUT_IMMEDIATE_PREFIX (file);
 #ifdef SEQUENT_ASM
 	  {
 	    union { float f; long l; } uu;
@@ -530,12 +533,24 @@ print_operand_address (file, addr)
     }
   if (! offset)
     offset = const0_rtx;
+
+#ifdef INDEX_RATHER_THAN_BASE
+  /* This is a re-implementation of the SEQUENT_ADDRESS_BUG fix.  */
+  if (base && !indexexp && GET_CODE (base) == REG
+      && REG_OK_FOR_INDEX_P (REGNO (base))
+    {
+      indexexp = base;
+      base = 0;
+    }
+#endif
+
   /* now, offset, base and indexexp are set */
   if (! base)
     {
 #if defined (PC_RELATIVE) || defined (NO_ABSOLUTE_PREFIX_IF_SYMBOLIC)
-      if (! (GET_CODE (offset) == LABEL_REF
-	     || GET_CODE (offset) == SYMBOL_REF))
+      if (GET_CODE (offset) == CONST_INT)
+/*      if (! (GET_CODE (offset) == LABEL_REF
+	     || GET_CODE (offset) == SYMBOL_REF)) */
 #endif
 	PUT_ABSOLUTE_PREFIX (file);
     }
@@ -546,7 +561,7 @@ print_operand_address (file, addr)
       {
 	/* now we must output base.  Possible alternatives are:
 	   (rN)       (REG ...)
-	   (sp)	(REG ...)
+	   (sp)	      (REG ...)
 	   (fp)       (REG ...)
 	   (pc)       (REG ...)  used for SYMBOL_REF and LABEL_REF, output
 	   (disp(fp)) (MEM ...)       just before possible [rX:y]

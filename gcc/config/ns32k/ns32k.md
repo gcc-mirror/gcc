@@ -247,8 +247,8 @@
     return \"movf %1,%0\";
 #endif
 /* There was a #if 0 around this, but that was erroneous
-   for anything bug GAS syntax -- rms.  */
-#ifndef GAS_SYNTAX
+   for many machines -- rms.  */
+#ifndef MOVD_FLOAT_OK
   /* GAS understands floating constants in ordinary movd instructions
      but other assemblers might object.  */
   else if (GET_CODE (operands[1]) == CONST_DOUBLE)
@@ -2183,7 +2183,7 @@
       rtx temp = XEXP (operands[0], 0);
       if (CONSTANT_ADDRESS_P (temp))
 	{
-#ifdef GAS_SYNTAX
+#ifdef CALL_MEMREF_IMPLICIT
 	  operands[0] = temp;
 	  return \"bsr %0\";
 #else
@@ -2195,7 +2195,7 @@
 #endif
 	}
       if (GET_CODE (XEXP (operands[0], 0)) == REG)
-#if defined (GNX_V3) || defined (GAS_SYNTAX)
+#if defined (GNX_V3) || defined (CALL_MEMREF_IMPLICIT)
 	return \"jsr %0\";
 #else
         return \"jsr %a0\";
@@ -2218,7 +2218,7 @@
       rtx temp = XEXP (operands[1], 0);
       if (CONSTANT_ADDRESS_P (temp))
 	{
-#ifdef GAS_SYNTAX
+#ifdef CALL_MEMREF_IMPLICIT
 	  operands[1] = temp;
 	  return \"bsr %1\";
 #else
@@ -2230,7 +2230,7 @@
 #endif
 	}
       if (GET_CODE (XEXP (operands[1], 0)) == REG)
-#if defined (GNX_V3) || defined (GAS_SYNTAX)
+#if defined (GNX_V3) || defined (CALL_MEMREF_IMPLICIT)
 	return \"jsr %1\";
 #else
         return \"jsr %a1\";
