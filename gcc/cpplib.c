@@ -28,12 +28,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "intl.h"
 #include "symcat.h"
 
-#define PEEKN(N) (CPP_BUFFER (pfile)->rlimit - CPP_BUFFER (pfile)->cur >= (N) \
-		  ? CPP_BUFFER (pfile)->cur[N] : EOF)
-#define FORWARD(N) CPP_FORWARD (CPP_BUFFER (pfile), (N))
-#define GETC() CPP_BUF_GET (CPP_BUFFER (pfile))
-#define PEEKC() CPP_BUF_PEEK (CPP_BUFFER (pfile))
-
 /* `struct directive' defines one #-directive, including how to handle it.  */
 
 struct directive
@@ -63,9 +57,9 @@ typedef struct if_stack IF_STACK;
 static void validate_else		PARAMS ((cpp_reader *, const char *));
 static int parse_ifdef			PARAMS ((cpp_reader *, const char *));
 static unsigned int parse_include	PARAMS ((cpp_reader *, const char *));
-static void conditional_skip		PARAMS ((cpp_reader *, int, int,
+static int conditional_skip		PARAMS ((cpp_reader *, int, int,
 						 U_CHAR *));
-static void skip_if_group		PARAMS ((cpp_reader *));
+static int skip_if_group		PARAMS ((cpp_reader *));
 static void pass_thru_directive		PARAMS ((const U_CHAR *, size_t,
 						 cpp_reader *, int));
 static int read_line_number		PARAMS ((cpp_reader *, int *));
@@ -74,8 +68,14 @@ static int consider_directive_while_skipping
 					PARAMS ((cpp_reader *, IF_STACK *));
 static int get_macro_name		PARAMS ((cpp_reader *));
 
-/* Values for the "origin" field of the table below.  */
-enum { KANDR = 0, STDC89, EXTENSION };
+/* Values for the "origin" field of the table below.  KANDR and COND
+   directives come from traditional (K&R) C.  The difference is, if we
+   care about it while skipping a failed conditional block, its origin
+   is COND.  STDC89 directives come from the 1989 C standard.
+   EXTENSION directives are extensions, with origins noted below.  */
+enum { KANDR = 0, COND, STDC89, EXTENSION };
+
+#define TRAD_DIRECT_P(x) ((x) == KANDR || (x) == COND)
 
 /* This is the table of directive handlers.  It is ordered by
    frequency of occurrence; the numbers at the end are directive
@@ -95,16 +95,16 @@ enum { KANDR = 0, STDC89, EXTENSION };
 #endif
 
 #define DIRECTIVE_TABLE							\
-D(define,	T_DEFINE,	KANDR)		/* 270554 */		\
+D(define,	T_DEFINE = 0,	KANDR)		/* 270554 */		\
 D(include,	T_INCLUDE,	KANDR)		/*  52262 */		\
-D(endif,	T_ENDIF,	KANDR)		/*  45855 */		\
-D(ifdef,	T_IFDEF,	KANDR)		/*  22000 */		\
-D(if,		T_IF,		KANDR)		/*  18162 */		\
-D(else,		T_ELSE,		KANDR)		/*   9863 */		\
-D(ifndef,	T_IFNDEF,	KANDR)		/*   9675 */		\
+D(endif,	T_ENDIF,	COND)		/*  45855 */		\
+D(ifdef,	T_IFDEF,	COND)		/*  22000 */		\
+D(if,		T_IF,		COND)		/*  18162 */		\
+D(else,		T_ELSE,		COND)		/*   9863 */		\
+D(ifndef,	T_IFNDEF,	COND)		/*   9675 */		\
 D(undef,	T_UNDEF,	KANDR)		/*   4837 */		\
 D(line,		T_LINE,		KANDR)		/*   2465 */		\
-D(elif,		T_ELIF,		KANDR)		/*    610 */		\
+D(elif,		T_ELIF,		COND)		/*    610 */		\
 D(error,	T_ERROR,	STDC89)		/*    475 */		\
 D(pragma,	T_PRAGMA,	STDC89)		/*    195 */		\
 D(warning,	T_WARNING,	EXTENSION)	/*     22 - GNU   */	\
@@ -152,11 +152,12 @@ int
 _cpp_handle_directive (pfile)
      cpp_reader *pfile;
 {
-  int c, i;
+  int i;
   int hash_at_bol;
   unsigned int len;
   U_CHAR *ident;
   long old_written = CPP_WRITTEN (pfile);
+  enum cpp_token tok;
 
   if (CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
     {
@@ -164,18 +165,25 @@ _cpp_handle_directive (pfile)
       return 0;
     }
 
-  /* -traditional directives are recognized only with the # in column 1.
-     XXX Layering violation.  */
-  hash_at_bol = (CPP_BUFFER (pfile)->cur - CPP_BUFFER (pfile)->line_base == 1);
-  
-  _cpp_skip_hspace (pfile);
+  /* -traditional directives are recognized only with the # in column 1.  */
+  hash_at_bol = CPP_IN_COLUMN_1 (pfile);
 
-  c = PEEKC ();
+  /* Scan the next token, then pretend we didn't.  */
+  CPP_SET_MARK (pfile);
+  pfile->no_macro_expand++;
+  tok = _cpp_get_directive_token (pfile);
+  pfile->no_macro_expand--;
+
+  ident = pfile->token_buffer + old_written;
+  len = CPP_PWRITTEN (pfile) - ident;
+  CPP_SET_WRITTEN (pfile, old_written);
+  CPP_GOTO_MARK (pfile);
+
   /* # followed by a number is equivalent to #line.  Do not recognize
      this form in assembly language source files.  Complain about this
      form if we're being pedantic, but not if this is regurgitated
      input (preprocessed or fed back in by the C++ frontend).  */
-  if (c >= '0' && c <= '9')
+  if (tok == CPP_NUMBER)
     {
       if (CPP_OPTION (pfile, lang_asm))
 	return 0;
@@ -190,62 +198,86 @@ _cpp_handle_directive (pfile)
 
   /* If we are rescanning preprocessed input, don't obey any directives
      other than # nnn.  */
-  if (CPP_OPTION (pfile, preprocessed))
+  else if (CPP_OPTION (pfile, preprocessed))
     return 0;
 
-  /* Now find the directive name.  */
-  CPP_PUTC (pfile, '#');
-  _cpp_parse_name (pfile, GETC());
-  ident = pfile->token_buffer + old_written + 1;
-  len = CPP_PWRITTEN (pfile) - ident;
-  if (len == 0)
-    {
-      /* A line of just # becomes blank.  A line with something
-	 other than an identifier after the # is reparsed as a non-
-	 directive line.  */
-      CPP_SET_WRITTEN (pfile, old_written);
-      return (PEEKC() == '\n');
-    }
-
-  /* Decode the keyword and call the appropriate expansion routine.  */
-  for (i = 0; i < N_DIRECTIVES; i++)
-    {
-      if (dtable[i].length == len
-	  && !strncmp (dtable[i].name, ident, len)) 
-	break;
-    }
-  if (i == N_DIRECTIVES)
-    /* # identifier, but not a legit directive.  Pass onward as a
-       CPP_DIRECTIVE token anyway - let the consumer worry about it.  */
+  /* A line of just # becomes blank.  */
+  else if (tok == CPP_VSPACE)
     return 1;
 
-  CPP_SET_WRITTEN (pfile, old_written);
+  /* A NAME token might in fact be a directive!  */
+  else if (tok == CPP_NAME)
+    {
+      for (i = 0; i < N_DIRECTIVES; i++)
+	{
+	  if (dtable[i].length == len
+	      && !strncmp (dtable[i].name, ident, len)) 
+	    goto real_directive;
+	}
+      /* Don't complain about invalid directives in assembly source,
+	 we don't know where the comments are, and # may introduce
+	 assembler pseudo-ops.  */
+      if (!CPP_OPTION (pfile, lang_asm))
+	cpp_error (pfile, "invalid preprocessing directive #%s", ident);
+      return 0;
+    }
+  /* And anything else means the # wasn't a directive marker.   */
+  else
+    return 0;
 
+ real_directive:
+
+  /* In -traditional mode, a directive is ignored unless its # is in
+     column 1.  */
+  if (CPP_TRADITIONAL (pfile) && !hash_at_bol)
+    {
+      if (CPP_WTRADITIONAL (pfile))
+	cpp_warning (pfile, "ignoring #%s because of its indented #",
+		     dtable[i].name);
+      return 0;
+    }
+
+  /* no_directives is set when we are parsing macro arguments.  Directives
+     in macro arguments are undefined behavior (C99 6.10.3.11); this
+     implementation chooses to make them hard errors.  */
   if (pfile->no_directives)
     {
-      cpp_error (pfile, "`#%s' may not be used inside a macro argument",
+      cpp_error (pfile, "#%s may not be used inside a macro argument",
 		 dtable[i].name);
       _cpp_skip_rest_of_line (pfile);
       return 1;
     }
 
+  /* Issue -pedantic warnings for extended directives.   */
   if (CPP_PEDANTIC (pfile) && dtable[i].origin == EXTENSION)
     cpp_pedwarn (pfile, "ISO C does not allow #%s", dtable[i].name);
+
+  /* -Wtraditional gives warnings about directives with inappropriate
+     indentation of #.  */
   if (CPP_WTRADITIONAL (pfile))
     {
-      if (!hash_at_bol && dtable[i].origin == KANDR)
+      if (!hash_at_bol && TRAD_DIRECT_P (dtable[i].origin))
 	cpp_warning (pfile, "traditional C ignores #%s with the # indented",
 		     dtable[i].name);
-      else if (hash_at_bol && dtable[i].origin != KANDR)
+      else if (hash_at_bol && ! TRAD_DIRECT_P (dtable[i].origin))
 	cpp_warning (pfile,
-		     "traditional C rejects #%s unless the # is indented",
+		"suggest hiding #%s from traditional C with an indented #",
 		     dtable[i].name);
     }
 
-  if (CPP_TRADITIONAL (pfile) && !hash_at_bol)
-    return 0;
+  /* Unfortunately, it's necessary to scan the directive name again,
+     now we know we're going to consume it.  FIXME.  */
 
-  (*dtable[i].func) (pfile);
+  pfile->no_macro_expand++;
+  _cpp_get_directive_token (pfile);
+  pfile->no_macro_expand--;
+  CPP_SET_WRITTEN (pfile, old_written);
+
+  /* Some directives (e.g. #if) may return a request to execute
+     another directive handler immediately.  No directive ever
+     requests that #define be executed immediately, so it is safe for
+     the loop to terminate when some function returns 0 (== T_DEFINE).  */
+  while ((i = dtable[i].func (pfile)));
   return 1;
 }
 
@@ -282,7 +314,6 @@ get_macro_name (pfile)
   long here, len;
 
   here = CPP_WRITTEN (pfile);
-  pfile->no_macro_expand++;
   if (_cpp_get_directive_token (pfile) != CPP_NAME)
     {
       cpp_error (pfile, "`#define' must be followed by an identifier");
@@ -296,12 +327,10 @@ get_macro_name (pfile)
       goto invalid;
     }
 
-  pfile->no_macro_expand--;
   return len;
 
  invalid:
   _cpp_skip_rest_of_line (pfile);
-  pfile->no_macro_expand--;
   return 0;
 }
 
@@ -312,38 +341,52 @@ do_define (pfile)
      cpp_reader *pfile;
 {
   HASHNODE **slot;
-  DEFINITION *def;
+  DEFINITION *def = 0;
   long here;
   unsigned long hash;
-  int len, c;
-  int funlike = 0;
+  int len;
+  int funlike = 0, empty = 0;
   U_CHAR *sym;
+  enum cpp_token token;
+
+  pfile->no_macro_expand++;
+  pfile->parsing_define_directive++;
+  CPP_OPTION (pfile, discard_comments)++;
+  CPP_OPTION (pfile, no_line_commands)++;
 
   here = CPP_WRITTEN (pfile);
   len = get_macro_name (pfile);
   if (len == 0)
-    return 0;
+    goto out;
 
   /* Copy out the name so we can pop the token buffer.  */
   len = CPP_WRITTEN (pfile) - here;
   sym = (U_CHAR *) alloca (len + 1);
   memcpy (sym, pfile->token_buffer + here, len);
   sym[len] = '\0';
-  CPP_SET_WRITTEN (pfile, here);
 
   /* If the next character, with no intervening whitespace, is '(',
-     then this is a function-like macro.  */
-  c = PEEKC ();
-  if (c == '(')
+     then this is a function-like macro.
+     XXX Layering violation.  */
+  CPP_SET_MARK (pfile);
+  token = _cpp_get_directive_token (pfile);
+  if (token == CPP_VSPACE)
+    empty = 0;  /* Empty definition of object like macro.  */
+  else if (token == CPP_LPAREN && ADJACENT_TO_MARK (pfile))
     funlike = 1;
-  else if (c != '\n' && !is_hspace (c))
-    /* Otherwise, C99 requires white space after the name.  We treat it
-       as an object-like macro if this happens, with a warning.  */
+  else if (ADJACENT_TO_MARK (pfile))
+    /* If this is an object-like macro, C99 requires white space after
+       the name.  */
     cpp_pedwarn (pfile, "missing white space after `#define %.*s'", len, sym);
+  CPP_GOTO_MARK (pfile);
+  CPP_SET_WRITTEN (pfile, here);
 
-  def = _cpp_create_definition (pfile, funlike);
-  if (def == 0)
-    return 0;
+  if (! empty)
+    {
+      def = _cpp_create_definition (pfile, funlike);
+      if (def == 0)
+	goto out;
+    }
 
   slot = _cpp_lookup_slot (pfile, sym, len, 1, &hash);
   if (*slot)
@@ -353,7 +396,9 @@ do_define (pfile)
 
       /* Redefining a macro is ok if the definitions are the same.  */
       if (hp->type == T_MACRO)
-	ok = ! _cpp_compare_defs (pfile, def, hp->value.defn);
+	ok = ! empty && ! _cpp_compare_defs (pfile, def, hp->value.defn);
+      else if (hp->type == T_EMPTY)
+	ok = empty;
       /* Redefining a constant is ok with -D.  */
       else if (hp->type == T_CONST || hp->type == T_STDC)
         ok = ! pfile->done_initializing;
@@ -379,8 +424,16 @@ do_define (pfile)
 	  /* Replace the old definition.  */
 	  if (hp->type == T_MACRO)
 	    _cpp_free_definition (hp->value.defn);
-	  hp->type = T_MACRO;
-	  hp->value.defn = def;
+	  if (empty)
+	    {
+	      hp->type = T_EMPTY;
+	      hp->value.defn = 0;
+	    }
+	  else
+	    {
+	      hp->type = T_MACRO;
+	      hp->value.defn = def;
+	    }
 	}
     }
   else
@@ -396,6 +449,11 @@ do_define (pfile)
   else if (CPP_OPTION (pfile, dump_macros) == dump_names)
     pass_thru_directive (sym, len, pfile, T_DEFINE);
 
+ out:
+  pfile->no_macro_expand--;
+  pfile->parsing_define_directive--;
+  CPP_OPTION (pfile, discard_comments)--;
+  CPP_OPTION (pfile, no_line_commands)--;
   return 0;
 }
 
@@ -774,29 +832,21 @@ do_undef (pfile)
 {
   int len;
   HASHNODE **slot;
-  U_CHAR *buf, *name, *limit;
-  int c;
+  U_CHAR *name;
   long here = CPP_WRITTEN (pfile);
   enum cpp_token token;
 
-  _cpp_skip_hspace (pfile);
-  c = GETC();
-  if (! is_idstart(c))
-  {
+  pfile->no_macro_expand++;
+  token = _cpp_get_directive_token (pfile);
+  pfile->no_macro_expand--;
+
+  if (token != CPP_NAME)
+    {
       cpp_error (pfile, "token after #undef is not an identifier");
       _cpp_skip_rest_of_line (pfile);
-      return 1;
-  }
-
-  _cpp_parse_name (pfile, c);
-  buf = pfile->token_buffer + here;
-  limit = CPP_PWRITTEN(pfile);
-
-  /* Copy out the token so we can pop the token buffer. */
-  len = limit - buf;
-  name = (U_CHAR *) alloca (len + 1);
-  memcpy (name, buf, len);
-  name[len] = '\0';
+      return 0;
+    }
+  len = CPP_WRITTEN (pfile) - here;
 
   token = _cpp_get_directive_token (pfile);
   if (token != CPP_VSPACE)
@@ -804,20 +854,23 @@ do_undef (pfile)
       cpp_pedwarn (pfile, "junk on line after #undef");
       _cpp_skip_rest_of_line (pfile);
   }
+
+  name = pfile->token_buffer + here;
   CPP_SET_WRITTEN (pfile, here);
 
   slot = _cpp_lookup_slot (pfile, name, len, 0, 0);
   if (slot)
     {
       HASHNODE *hp = *slot;
-      /* If we are generating additional info for debugging (with -g) we
-	 need to pass through all effective #undef commands.  */
-      if (CPP_OPTION (pfile, debug_output))
-	pass_thru_directive (name, len, pfile, T_UNDEF);
       if (hp->type == T_POISON)
 	cpp_error (pfile, "cannot undefine poisoned `%s'", hp->name);
-      else 
+      else
 	{
+	  /* If we are generating additional info for debugging (with -g) we
+	     need to pass through all effective #undef commands.  */
+	  if (CPP_OPTION (pfile, debug_output))
+	    pass_thru_directive (hp->name, len, pfile, T_UNDEF);
+
 	  if (hp->type != T_MACRO)
 	    cpp_warning (pfile, "undefining `%s'", hp->name);
 
@@ -1184,8 +1237,7 @@ do_if (pfile)
 {
   U_CHAR *control_macro = detect_if_not_defined (pfile);
   int value = _cpp_parse_expr (pfile);
-  conditional_skip (pfile, value == 0, T_IF, control_macro);
-  return 0;
+  return conditional_skip (pfile, value == 0, T_IF, control_macro);
 }
 
 /*
@@ -1214,17 +1266,11 @@ do_elif (pfile)
     }
 
   if (pfile->if_stack->if_succeeded)
-    skip_if_group (pfile);
-  else
-    {
-      if (_cpp_parse_expr (pfile) == 0)
-	skip_if_group (pfile);
-      else
-	{
-	  ++pfile->if_stack->if_succeeded;	/* continue processing input */
-	  _cpp_output_line_command (pfile, same_file);
-	}
-    }
+    return skip_if_group (pfile);
+  if (_cpp_parse_expr (pfile) == 0)
+    return skip_if_group (pfile);
+
+  ++pfile->if_stack->if_succeeded;	/* continue processing input */
   return 0;
 }
 
@@ -1291,8 +1337,7 @@ do_ifdef (pfile)
      cpp_reader *pfile;
 {
   int skip = ! parse_ifdef (pfile, dtable[T_IFDEF].name);
-  conditional_skip (pfile, skip, T_IFDEF, 0);
-  return 0;
+  return conditional_skip (pfile, skip, T_IFDEF, 0);
 }
 
 /* #ifndef is a tad more complex, because we need to check for a
@@ -1311,8 +1356,7 @@ do_ifndef (pfile)
   if (start_of_file && !skip)
     control_macro = (U_CHAR *) xstrdup (CPP_PWRITTEN (pfile));
 
-  conditional_skip (pfile, skip, T_IFNDEF, control_macro);
-  return 0;
+  return conditional_skip (pfile, skip, T_IFNDEF, control_macro);
 }
 
 /* Push TYPE on stack; then, if SKIP is nonzero, skip ahead.
@@ -1320,7 +1364,7 @@ do_ifndef (pfile)
    CONTROL_MACRO is the macro name tested by the #ifndef.
    Otherwise, CONTROL_MACRO is 0.  */
 
-static void
+static int
 conditional_skip (pfile, skip, type, control_macro)
      cpp_reader *pfile;
      int skip;
@@ -1337,19 +1381,19 @@ conditional_skip (pfile, skip, type, control_macro)
 
   pfile->if_stack->type = type;
 
-  if (skip != 0) {
-    skip_if_group (pfile);
-    return;
-  } else {
-    ++pfile->if_stack->if_succeeded;
-    _cpp_output_line_command (pfile, same_file);
-  }
+  if (skip != 0)
+    return skip_if_group (pfile);
+
+  ++pfile->if_stack->if_succeeded;
+  return 0;
 }
 
-/* Subroutine of skip_if_group.	 Examine one preprocessing directive and
-   return 0 if skipping should continue, 1 if it should halt.  Also
-   adjusts the if_stack as appropriate.
-   The `#' has been read, but not the identifier. */
+/* Subroutine of skip_if_group.  Examine one preprocessing directive
+   and return 0 if skipping should continue, or the directive number
+   of the directive that ends the block if it should halt.
+
+   Also adjusts the if_stack as appropriate.  The `#' has been read,
+   but not the identifier. */
 
 static int
 consider_directive_while_skipping (pfile, stack)
@@ -1357,119 +1401,134 @@ consider_directive_while_skipping (pfile, stack)
     IF_STACK *stack; 
 {
   long ident;
-  const struct directive *kt;
-  int i;
+  int i, hash_at_bol;
   unsigned int len;
   IF_STACK *temp;
-    
-  _cpp_skip_hspace (pfile);
+
+  /* -traditional directives are recognized only with the # in column 1.  */
+  hash_at_bol = CPP_IN_COLUMN_1 (pfile);
 
   ident = CPP_WRITTEN (pfile);
-  _cpp_parse_name (pfile, GETC());
+  if (_cpp_get_directive_token (pfile) != CPP_NAME)
+    return 0;
   len = CPP_WRITTEN (pfile) - ident;
-
-  CPP_SET_WRITTEN (pfile, ident);
 
   for (i = 0; i < N_DIRECTIVES; i++)
     {
-      kt = &dtable[i];
-      if (kt->length == len
-	  && strncmp (pfile->token_buffer + ident, kt->name, kt->length) == 0)
-	switch (i)
-	  {
-	  case T_IF:
-	  case T_IFDEF:
-	  case T_IFNDEF:
-	    temp = (IF_STACK *) xmalloc (sizeof (IF_STACK));
-	    temp->next = pfile->if_stack;
-	    pfile->if_stack = temp;
-	    temp->type = i;
-	    return 0;
-
-	  case T_ELSE:
-	    if (pfile->if_stack != stack)
-	      validate_else (pfile, dtable[i].name);
-	    /* fall through */
-	  case T_ELIF:
-	    if (pfile->if_stack == stack)
-	      return 1;
-	    else
-	      {
-		pfile->if_stack->type = i;
-		return 0;
-	      }
-
-	  case T_ENDIF:
-	    if (pfile->if_stack != stack)
-	      validate_else (pfile, dtable[i].name);
-
-	    if (pfile->if_stack == stack)
-	      return 1;
-		    
-	    temp = pfile->if_stack;
-	    pfile->if_stack = temp->next;
-	    free (temp);
-	    return 0;
-
-	  default:
-	    return 0;
-	  }
+      if (dtable[i].length == len
+	  && !strncmp (dtable[i].name, pfile->token_buffer + ident, len)) 
+	goto real_directive;
     }
+  return 0;
 
-    /* Don't let erroneous code go by.	*/
-    if (!CPP_OPTION (pfile, lang_asm) && CPP_PEDANTIC (pfile))
-	cpp_pedwarn (pfile, "invalid preprocessor directive name");
+ real_directive:
+
+  /* If it's not a directive of interest to us, return now.  */
+  if (dtable[i].origin != COND)
     return 0;
+
+  /* First, deal with -traditional and -Wtraditional.
+     All COND directives are from K+R.  */
+
+  if (! hash_at_bol)
+    {
+      if (CPP_TRADITIONAL (pfile))
+	{
+	  if (CPP_WTRADITIONAL (pfile))
+	    cpp_warning (pfile, "ignoring #%s because of its indented #",
+			 dtable[i].name);
+	  return 0;
+	}
+      if (CPP_WTRADITIONAL (pfile))
+	cpp_warning (pfile, "traditional C ignores %s with the # indented",
+		     dtable[i].name);
+    }
+  
+  switch (i)
+    {
+    default:
+      cpp_ice (pfile, "non COND directive in switch in c_d_w_s");
+      return 0;
+
+    case T_IF:
+    case T_IFDEF:
+    case T_IFNDEF:
+      temp = (IF_STACK *) xcalloc (1, sizeof (IF_STACK));
+      temp->lineno = CPP_BUFFER (pfile)->lineno;
+      temp->next = pfile->if_stack;
+      temp->type = i;
+      pfile->if_stack = temp;
+      return 0;
+
+    case T_ELSE:
+      if (pfile->if_stack != stack)
+	validate_else (pfile, dtable[i].name);
+      /* fall through */
+    case T_ELIF:
+      if (pfile->if_stack == stack)
+	return i;
+
+      pfile->if_stack->type = i;
+      return 0;
+
+    case T_ENDIF:
+      if (pfile->if_stack != stack)
+	validate_else (pfile, dtable[i].name);
+
+      if (pfile->if_stack == stack)
+	return i;
+		    
+      temp = pfile->if_stack;
+      pfile->if_stack = temp->next;
+      free (temp);
+      return 0;
+    }
 }
 
-/* skip to #endif, #else, or #elif.  adjust line numbers, etc.
- * leaves input ptr at the sharp sign found.
- */
-static void
+/* Skip to #endif, #else, or #elif.  Consumes the directive that
+   causes it to stop, but not its argument.  Returns the number of
+   that directive, which must be passed back up to
+   _cpp_handle_directive, which will execute it.  */
+static int
 skip_if_group (pfile)
     cpp_reader *pfile;
 {
-  int c;
+  enum cpp_token token;
   IF_STACK *save_if_stack = pfile->if_stack; /* don't pop past here */
-  const U_CHAR *beg_of_line;
   long old_written;
+  int ret = 0;
 
   old_written = CPP_WRITTEN (pfile);
-  
+  pfile->no_macro_expand++;
+  CPP_OPTION (pfile, no_line_commands)++;
   for (;;)
     {
-      beg_of_line = CPP_BUFFER (pfile)->cur;
+      token = _cpp_get_directive_token (pfile);
 
-      if (! CPP_TRADITIONAL (pfile))
-	_cpp_skip_hspace (pfile);
-      c = GETC();
-      if (c == '\n')
+      if (token == CPP_DIRECTIVE)
 	{
-	  CPP_BUMP_LINE (pfile);
-	  continue;
-	}
-      else if (c == '#')
-	{
-	  if (consider_directive_while_skipping (pfile, save_if_stack))
+	  ret = consider_directive_while_skipping (pfile, save_if_stack);
+	  if (ret)
 	    break;
 	}
-      else if (c == EOF)
-	return;	 /* Caller will issue error. */
 
-      FORWARD(-1);
-      _cpp_skip_rest_of_line (pfile);
+      if (token != CPP_VSPACE)
+	_cpp_skip_rest_of_line (pfile);
 
-      c = GETC();
-      if (c == EOF)
-	return;	 /* Caller will issue error. */
-      else
-	CPP_BUMP_LINE (pfile);
-    }	  
-
-  /* Back up to the beginning of this line.  Caller will process the
-     directive. */
-  CPP_BUFFER (pfile)->cur = beg_of_line;
-  pfile->only_seen_white = 1;
+      /* Only cpp_get_token knows how to advance the line number
+	 properly.  */
+      token = cpp_get_token (pfile);
+      if (token == CPP_POP)
+	break;  /* Caller will issue error.  */
+      
+      else if (token != CPP_VSPACE)
+	cpp_ice (pfile, "cpp_get_token returned %d in skip_if_group", token);
+      CPP_SET_WRITTEN (pfile, old_written);
+    }
+  CPP_SET_WRITTEN (pfile, old_written);
+  pfile->no_macro_expand--;
+  CPP_OPTION (pfile, no_line_commands)--;
+  return ret;
 }
 
 /*
@@ -1507,12 +1566,9 @@ do_else (pfile)
     }
 
   if (pfile->if_stack->if_succeeded)
-    skip_if_group (pfile);
-  else
-    {
-      ++pfile->if_stack->if_succeeded;	/* continue processing input */
-      _cpp_output_line_command (pfile, same_file);
-    }
+    return skip_if_group (pfile);
+  
+  ++pfile->if_stack->if_succeeded;	/* continue processing input */
   return 0;
 }
 
@@ -1534,33 +1590,8 @@ do_endif (pfile)
       IF_STACK *temp = pfile->if_stack;
       pfile->if_stack = temp->next;
       if (temp->control_macro != 0)
-	{
-	  /* This #endif matched a #ifndef at the start of the file.
-	     See if it is at the end of the file.  */
-	  int c;
-
-	  CPP_SET_MARK (pfile);
-
-	  for (;;)
-	    {
-	      _cpp_skip_hspace (pfile);
-	      c = GETC ();
-	      if (c != '\n')
-		break;
-	    }
-	  CPP_GOTO_MARK (pfile);
-
-	  if (c == EOF)
-	    {
-	      /* This #endif ends a #ifndef
-		 that contains all of the file (aside from whitespace).
-		 Arrange not to include the file again
-		 if the macro that was tested is defined. */
-	      CPP_BUFFER (pfile)->ihash->control_macro = temp->control_macro;
-	    }
-        }
+	pfile->potential_control_macro = temp->control_macro;
       free (temp);
-      _cpp_output_line_command (pfile, same_file);
     }
   return 0;
 }
@@ -1574,13 +1605,17 @@ validate_else (pfile, directive)
      cpp_reader *pfile;
      const char *directive;
 {
+  long old_written;
   if (! CPP_PEDANTIC (pfile))
     return;
 
-  _cpp_skip_hspace (pfile);
-  if (PEEKC () != '\n')
+  old_written = CPP_WRITTEN (pfile);
+  pfile->no_macro_expand++;
+  if (_cpp_get_directive_token (pfile) != CPP_VSPACE)
     cpp_pedwarn (pfile,
 		 "text following `#%s' violates ANSI standard", directive);
+  CPP_SET_WRITTEN (pfile, old_written);
+  pfile->no_macro_expand--;
 }
 
 void
@@ -1604,6 +1639,13 @@ _cpp_handle_eof (pfile)
     }
   pfile->if_stack = ifs;
 
+  if (pfile->potential_control_macro)
+    {
+      CPP_BUFFER (pfile)->ihash->control_macro
+	= pfile->potential_control_macro;
+      pfile->potential_control_macro = 0;
+    }
+
   if (CPP_BUFFER (pfile)->nominal_fname && next_buf != NULL)
     {
       /* We're about to return from an #include file.
@@ -1623,38 +1665,37 @@ static int
 do_assert (pfile)
      cpp_reader *pfile;
 {
+  long old_written;
   U_CHAR *sym;
-  int ret, c;
+  int ret;
   HASHNODE *base, *this;
   HASHNODE **bslot, **tslot;
   size_t blen, tlen;
   unsigned long bhash, thash;
 
-  _cpp_skip_hspace (pfile);
-  sym = CPP_PWRITTEN (pfile);	/* remember where it starts */
+  old_written = CPP_WRITTEN (pfile);	/* remember where it starts */
   ret = _cpp_parse_assertion (pfile);
   if (ret == 0)
     goto error;
   else if (ret == 1)
     {
-      cpp_error (pfile, "missing token-sequence in `#assert'");
+      cpp_error (pfile, "missing token-sequence in #assert");
       goto error;
     }
+  tlen = CPP_WRITTEN (pfile) - old_written;
 
-  _cpp_skip_hspace (pfile);
-  c = PEEKC();
-  if (c != EOF && c != '\n')
+  if (_cpp_get_directive_token (pfile) != CPP_VSPACE)
     {
-      cpp_error (pfile, "junk at end of `#assert'");
+      cpp_error (pfile, "junk at end of #assert");
       goto error;
     }
 
-  tlen = strlen (sym);
+  sym = pfile->token_buffer + old_written;
   blen = (U_CHAR *) strchr (sym, '(') - sym;
   tslot = _cpp_lookup_slot (pfile, sym, tlen, 1, &thash);
   if (*tslot)
     {
-      cpp_warning (pfile, "`%s' re-asserted", sym);
+      cpp_warning (pfile, "%s re-asserted", sym);
       goto error;
     }
 
@@ -1677,13 +1718,10 @@ do_assert (pfile)
   *tslot = this = _cpp_make_hashnode (sym, tlen, T_ASSERT, thash);
   this->value.aschain = base->value.aschain;
   base->value.aschain = this;
-  
-  pfile->limit = sym;		/* Pop */
-  return 0;
 
  error:
   _cpp_skip_rest_of_line (pfile);
-  pfile->limit = sym;		/* Pop */
+  CPP_SET_WRITTEN (pfile, old_written);
   return 0;
 }
 
@@ -1691,24 +1729,26 @@ static int
 do_unassert (pfile)
      cpp_reader *pfile;
 {
-  int c, ret;
+  int ret;
+  long old_written;
   U_CHAR *sym;
   long baselen, thislen;
   HASHNODE *base, *this, *next;
-  
-  _cpp_skip_hspace (pfile);
 
-  sym = CPP_PWRITTEN (pfile);	/* remember where it starts */
+  old_written = CPP_WRITTEN (pfile);
   ret = _cpp_parse_assertion (pfile);
   if (ret == 0)
     goto error;
-  
-  _cpp_skip_hspace (pfile);
-  c = PEEKC ();
-  if (c != EOF && c != '\n')
-      cpp_error (pfile, "junk at end of `#unassert'");
+  thislen = CPP_WRITTEN (pfile) - old_written;
 
-  thislen = strlen (sym);
+  if (_cpp_get_directive_token (pfile) != CPP_VSPACE)
+    {
+      cpp_error (pfile, "junk at end of #unassert");
+      goto error;
+    }
+  sym = pfile->token_buffer + old_written;
+  CPP_SET_WRITTEN (pfile, old_written);
+
   if (ret == 1)
     {
       base = _cpp_lookup (pfile, sym, thislen);
@@ -1743,12 +1783,11 @@ do_unassert (pfile)
 	/* Last answer for this predicate deleted. */
 	htab_remove_elt (pfile->hashtab, base);
     }
-  
-  pfile->limit = sym;		/* Pop */
   return 0;
+  
  error:
   _cpp_skip_rest_of_line (pfile);
-  pfile->limit = sym;		/* Pop */
+  CPP_SET_WRITTEN (pfile, old_written);
   return 0;
 }
 
