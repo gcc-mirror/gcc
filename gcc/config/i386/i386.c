@@ -14801,6 +14801,17 @@ x86_output_mi_thunk (file, thunk, delta, vcall_offset, function)
       if (!flag_pic || (*targetm.binds_local_p) (function))
 	output_asm_insn ("jmp\t%P0", xops);
       else
+#if defined TARGET_MACHO
+	if (TARGET_MACHO)
+	  {
+	    char *ip = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (function));
+	    tmp = gen_rtx_SYMBOL_REF (Pmode, machopic_stub_name (ip));
+	    tmp = gen_rtx_MEM (QImode, tmp);
+	    xops[0] = tmp;
+	    output_asm_insn ("jmp\t%0", xops);
+	  }
+	else
+#endif /* TARGET_MACHO */
 	{
 	  tmp = gen_rtx_REG (SImode, 2 /* ECX */);
 	  output_set_got (tmp);

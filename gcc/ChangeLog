@@ -1,3 +1,7 @@
+2002-01-24  Stuart Hastings  <stuart@apple.com>
+
+	* config/i386/i386.c (x86_output_mi_thunk) Add Darwin/x86 support.
+
 2003-01-25  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (UNSPEC_BU): New constants.
