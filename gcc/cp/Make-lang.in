@@ -97,7 +97,7 @@ CXX_C_OBJS = attribs.o c-common.o c-format.o c-pragma.o c-semantics.o c-lex.o \
  c-dump.o $(CXX_TARGET_OBJS)
 
 # Language-specific object files.
-CXX_OBJS = cp/call.o cp/decl.o cp/errfn.o cp/expr.o cp/pt.o cp/typeck2.o \
+CXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
  cp/class.o cp/decl2.o cp/error.o cp/lex.o cp/parse.o cp/ptree.o cp/rtti.o \
  cp/spew.o cp/typeck.o cp/cvt.o cp/except.o cp/friend.o cp/init.o cp/method.o \
  cp/search.o cp/semantics.o cp/tree.o cp/xref.o cp/repo.o cp/dump.o \
@@ -271,8 +271,7 @@ cp/expr.o: cp/expr.c $(CXX_TREE_H) $(RTL_H) flags.h $(EXPR_H) toplev.h \
 cp/xref.o: cp/xref.c $(CXX_TREE_H) input.h toplev.h
 cp/pt.o: cp/pt.c $(CXX_TREE_H) cp/decl.h cp/parse.h cp/lex.h toplev.h \
   $(GGC_H) $(RTL_H) except.h
-cp/error.o: cp/error.c $(CXX_TREE_H) toplev.h diagnostic.h real.h
-cp/errfn.o: cp/errfn.c $(CXX_TREE_H) toplev.h
+cp/error.o: cp/error.c $(CXX_TREE_H) toplev.h diagnostic.h flags.h real.h
 cp/repo.o: cp/repo.c $(CXX_TREE_H) toplev.h $(GGC_H) diagnostic.h
 cp/semantics.o: cp/semantics.c $(CXX_TREE_H) cp/lex.h except.h toplev.h \
   flags.h $(GGC_H) debug.h output.h $(RTL_H) $(TIMEVAR_H) $(EXPR_H)

@@ -1,3 +1,7 @@
+2001-09-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* POTFILES.in: Remove cp/errfn.c.
+
 2001-08-01  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* POTFILES.in: Remove chorus.h files from i386, rs6000 and sparc
@@ -5,7 +9,7 @@
 
 Mon Jul  9 13:27:15 2001  Jeffrey A Law  (law@cygnus.com)
 
-        * POTFILES.in: Add ssa-ccp.c
+	* POTFILES.in: Add ssa-ccp.c
 
 Thu Jun 28 16:11:30 2001  Jeffrey A Law  (law@cygnus.com)
 
@@ -32,8 +36,8 @@ Tue Jun 19 08:03:43 2001  Jeffrey A Law  (law@cygnus.com)
 
 2001-06-11  Zack Weinberg  <zackw@stanford.edu>
 
-	* Makefile.in.in: Take --defines switch off of xgettext   
-	command line.                                           
+	* Makefile.in.in: Take --defines switch off of xgettext
+	command line.
 	* POTFILES.in: Massive update, removing all dead files and
 	adding approximately 300 files which had been left out.
 	Clarify comments on what should and should not appear here.
@@ -120,7 +124,7 @@ Thu Nov 30 01:28:08 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* POTFILES.in: Remove the files from the nuked
 	dead ports.
-	* ChangeLog: Correct David's entry. 
+	* ChangeLog: Correct David's entry.
 
 2000-09-28  David O'Brien  <obrien@FreeBSD.org>
 
@@ -131,7 +135,7 @@ Thu Nov 30 01:28:08 2000  Jeffrey A Law  (law@cygnus.com)
 2000-09-26  Philipp Thomas  <pthomas@suse.de>
 
 	* Makefile.in.in: Remove stamp-check-pot from list
-	of default targets as checks are only possible in a 
+	of default targets as checks are only possible in a
 	complete source tree and all languages configured.
 
 2000-09-13  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>

@@ -1,3 +1,12 @@
+2001-09-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* errors.h (warning, error, fatal, internal_error): Don't mark
+	with ATTRIBUTE_PRINTF_n.
+	* toplev.h (internal_error, fatal_io_error, warning, error,
+	pedwarn, pedwarn_with_file_and_line, warning_with_file_and_line,
+	error_with_file_and_line, sorry, error_for_asm, warning_for_asm):
+	Likewise.
+
 Sun Sep 23 18:19:48 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* function.c (pop_function_context_from): var_refs_queue
@@ -573,7 +582,7 @@ Thu Sep 20 12:19:36 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-09-18  Ulrich Weigand  <uweigand@de.ibm.com>:
 
-        * config.gcc (s390-*-linux-*, s390x-*-linux*): Switch to
+	* config.gcc (s390-*-linux-*, s390x-*-linux*): Switch to
 	new-style tm_file specification.  Specify correct tm_p_file,
 	md_file, and out_file for s390x.
 
@@ -586,12 +595,12 @@ Thu Sep 20 12:19:36 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 Tue Sep 18 09:51:11 2001  Eric Christopher  <ecechristo@redhat.com>
 
-        * config/mips/mips.c (mips_asm_file_start): Conditionalize Elf
-        code generation only for Gnu assembler.
+	* config/mips/mips.c (mips_asm_file_start): Conditionalize Elf
+	code generation only for Gnu assembler.
 
 2001-09-18  Catherine Moore  <clm@redhat.com>
 
-        * config/stormy16 (LIB_SPEC): Remove -lnosys.
+	* config/stormy16 (LIB_SPEC): Remove -lnosys.
 
 2001-09-18  Richard Sandiford  <rsandifo@redhat.com>
 
