@@ -1502,6 +1502,7 @@ integer_zerop (expr)
   STRIP_NOPS (expr);
 
   return ((TREE_CODE (expr) == INTEGER_CST
+	   && ! TREE_CONSTANT_OVERFLOW (expr)
 	   && TREE_INT_CST_LOW (expr) == 0
 	   && TREE_INT_CST_HIGH (expr) == 0)
 	  || (TREE_CODE (expr) == COMPLEX_CST
@@ -1519,6 +1520,7 @@ integer_onep (expr)
   STRIP_NOPS (expr);
 
   return ((TREE_CODE (expr) == INTEGER_CST
+	   && ! TREE_CONSTANT_OVERFLOW (expr)
 	   && TREE_INT_CST_LOW (expr) == 1
 	   && TREE_INT_CST_HIGH (expr) == 0)
 	  || (TREE_CODE (expr) == COMPLEX_CST
@@ -1543,7 +1545,8 @@ integer_all_onesp (expr)
       && integer_zerop (TREE_IMAGPART (expr)))
     return 1;
 
-  else if (TREE_CODE (expr) != INTEGER_CST)
+  else if (TREE_CODE (expr) != INTEGER_CST
+	   || TREE_CONSTANT_OVERFLOW (expr))
     return 0;
 
   uns = TREE_UNSIGNED (TREE_TYPE (expr));
@@ -1592,7 +1595,7 @@ integer_pow2p (expr)
       && integer_zerop (TREE_IMAGPART (expr)))
     return 1;
 
-  if (TREE_CODE (expr) != INTEGER_CST)
+  if (TREE_CODE (expr) != INTEGER_CST || TREE_CONSTANT_OVERFLOW (expr))
     return 0;
 
   high = TREE_INT_CST_HIGH (expr);
@@ -1614,6 +1617,7 @@ real_zerop (expr)
   STRIP_NOPS (expr);
 
   return ((TREE_CODE (expr) == REAL_CST
+	   && ! TREE_CONSTANT_OVERFLOW (expr)
 	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst0))
 	  || (TREE_CODE (expr) == COMPLEX_CST
 	      && real_zerop (TREE_REALPART (expr))
@@ -1629,6 +1633,7 @@ real_onep (expr)
   STRIP_NOPS (expr);
 
   return ((TREE_CODE (expr) == REAL_CST
+	   && ! TREE_CONSTANT_OVERFLOW (expr)
 	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst1))
 	  || (TREE_CODE (expr) == COMPLEX_CST
 	      && real_onep (TREE_REALPART (expr))
@@ -1644,6 +1649,7 @@ real_twop (expr)
   STRIP_NOPS (expr);
 
   return ((TREE_CODE (expr) == REAL_CST
+	   && ! TREE_CONSTANT_OVERFLOW (expr)
 	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst2))
 	  || (TREE_CODE (expr) == COMPLEX_CST
 	      && real_twop (TREE_REALPART (expr))
