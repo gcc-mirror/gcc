@@ -1,3 +1,7 @@
+Fri Jul 31 17:08:59 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* ns32k/netbsd.h: Fix typo.
+
 Fri Jul 31 10:23:55 1998  Doug Evans  <devans@canuck.cygnus.com>
 
 	* m32r/m32r.h (ASM_OUTPUT_SOURCE_LINE): Always output line number
