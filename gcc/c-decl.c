@@ -5401,6 +5401,12 @@ finish_struct (tree t, tree fieldlist, tree attributes)
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (t, toplevel);
 
+  /* If we're inside a function proper, i.e. not file-scope and not still
+     parsing parameters, then arrange for the size of a variable sized type
+     to be bound now.  */
+  if (cur_stmt_list && variably_modified_type_p (t, NULL))
+    add_stmt (build_stmt (DECL_EXPR, build_decl (TYPE_DECL, NULL, t)));
+
   return t;
 }
 
