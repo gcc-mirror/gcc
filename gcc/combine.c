@@ -3476,7 +3476,9 @@ subst (rtx x, rtx from, rtx to, int in_dest, int unique_copy)
 	      if (GET_CODE (new) == CLOBBER && XEXP (new, 0) == const0_rtx)
 		return new;
 
-	      if (GET_CODE (new) == CONST_INT && GET_CODE (x) == SUBREG)
+	      if (GET_CODE (x) == SUBREG
+		  && (GET_CODE (new) == CONST_INT
+		      || GET_CODE (new) == CONST_DOUBLE))
 		{
 		  enum machine_mode mode = GET_MODE (x);
 
