@@ -372,10 +372,16 @@ is_back_referenceable_type (type)
 
   switch (TREE_CODE (type)) 
     {
+    case BOOLEAN_TYPE:
+      if (!flag_do_squangling)
+	/* Even though the mangling of this is just `b', we did
+	   historically generate back-references for it.  */
+	return 1;
+      /* Fall through.  */
+      
     case INTEGER_TYPE:
     case REAL_TYPE:
     case VOID_TYPE:
-    case BOOLEAN_TYPE:
       /* These types have single-character manglings, so there's no
 	 point in generating back-references.  */
       return 0;         
