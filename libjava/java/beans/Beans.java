@@ -38,9 +38,11 @@ exception statement from your version. */
 
 package java.beans;
 
-import java.io.*;
-import java.applet.*;
-import gnu.java.io.*;
+import gnu.java.io.ClassLoaderObjectInputStream;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.applet.Applet;
 
 /**
  * <code>Beans</code> provides some helper methods that allow the basic

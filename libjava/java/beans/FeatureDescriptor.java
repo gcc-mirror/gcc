@@ -66,6 +66,7 @@ public class FeatureDescriptor
   String shortDescription;
   boolean expert;
   boolean hidden;
+  boolean preferred;
 
   Hashtable valueHash;
 
@@ -177,6 +178,15 @@ public class FeatureDescriptor
     this.hidden = hidden;
   }
 
+  public boolean isPreferred ()
+  {
+    return preferred;
+  }
+
+  public void setPreferred (boolean preferred)
+  {
+    this.preferred = preferred;
+  }
 
   /**
    * Get an arbitrary value set with setValue().

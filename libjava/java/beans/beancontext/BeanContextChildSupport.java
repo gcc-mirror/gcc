@@ -56,7 +56,7 @@ import java.io.Serializable;
  *           behavior.  If there are problems, let me know.
  *
  * @author John Keiser
- * @since JDK1.2
+ * @since 1.2
  * @see java.beans.beancontext.BeanContextChild
  */
 
@@ -97,14 +97,14 @@ public class BeanContextChildSupport
 	 */
 	protected VetoableChangeSupport vcSupport;
 
-
 	/**
 	 * Create a new <code>BeanContextChildSupport</code> with itself as the peer.
 	 * This is meant to be used when you subclass
 	 * <code>BeanContextChildSupport</code> to create your child.
 	 */
-	public BeanContextChildSupport() {
-		this(null);
+	public BeanContextChildSupport()
+  {
+		this (null);
 	};
 
 	/**
@@ -112,14 +112,16 @@ public class BeanContextChildSupport
 	 * @param peer the peer to use, or <code>null</code> to specify
 	 *        <code>this</code>.
 	 */
-	public BeanContextChildSupport(BeanContextChild peer) {
-		if(peer == null) {
-			peer = this;
-		}
+	public BeanContextChildSupport (BeanContextChild peer)
+  {
+		if (peer == null)
+      {
+        peer = this;
+      }
 
 		beanContextChildPeer = peer;
-		pcSupport = new PropertyChangeSupport(peer);
-		vcSupport = new VetoableChangeSupport(peer);
+		pcSupport = new PropertyChangeSupport (peer);
+		vcSupport = new VetoableChangeSupport (peer);
 	}
 
 	/**
@@ -178,34 +180,42 @@ public class BeanContextChildSupport
 	 *            <code>BeanContextChild</code> implementor does not
 	 *            wish to have its parent changed.
 	 */
-	public void setBeanContext(BeanContext newBeanContext)
-		throws PropertyVetoException {
-		synchronized(beanContextChildPeer) {
-			if(newBeanContext == beanContext)
-				return;
+  public void setBeanContext(BeanContext newBeanContext)
+    throws PropertyVetoException
+  {
+    synchronized (beanContextChildPeer)
+      {
+        if (newBeanContext == beanContext)
+          return;
 
-			if(!rejectedSetBCOnce) {
-				if(!validatePendingSetBeanContext(newBeanContext)) {
-					rejectedSetBCOnce = true;
-					throw new PropertyVetoException("validatePendingSetBeanContext() rejected change",
-						new PropertyChangeEvent(beanContextChildPeer, "beanContext", beanContext, newBeanContext));
-				}
-				try {
-					fireVetoableChange("beanContext", beanContext, newBeanContext);
-				} catch(PropertyVetoException e) {
-					rejectedSetBCOnce = true;
-					throw e;
-				}
-			}
+        if (!rejectedSetBCOnce)
+          {
+            if (!validatePendingSetBeanContext (newBeanContext))
+              {
+                rejectedSetBCOnce = true;
+                throw new PropertyVetoException ("validatePendingSetBeanContext() rejected change",
+                                                 new PropertyChangeEvent(beanContextChildPeer, "beanContext", beanContext, newBeanContext));
+              }
+            
+            try
+              {
+                fireVetoableChange ("beanContext", beanContext, newBeanContext);
+              }
+            catch (PropertyVetoException e)
+              {
+                rejectedSetBCOnce = true;
+                throw e;
+              }
+          }
 
-			releaseBeanContextResources();
+			releaseBeanContextResources ();
 
 			beanContext = newBeanContext;
 			rejectedSetBCOnce = false;
 
-			firePropertyChange("beanContext", beanContext, newBeanContext);
+			firePropertyChange ("beanContext", beanContext, newBeanContext);
 
-			initializeBeanContextResources();
+			initializeBeanContextResources ();
 		}
 	}
 
@@ -213,7 +223,8 @@ public class BeanContextChildSupport
 	 * Get the parent <code>BeanContext</code>.
 	 * @return the parent <code>BeanContext</code>.
 	 */
-	public BeanContext getBeanContext() {
+	public BeanContext getBeanContext()
+  {
 		return beanContext;
 	}
 
