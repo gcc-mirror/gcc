@@ -56,6 +56,8 @@
 /* No pic register.  */
 #elif defined(__mips__)
 /* PIC register is $28, but is used even without -fpic.  */
+#elif defined(__MMIX__)
+/* No pic register.  */
 #elif defined(__mn10200__)
 /* No pic register.  */
 #elif defined(__mn10300__)
