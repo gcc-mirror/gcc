@@ -284,6 +284,14 @@ do {									\
    }									\
 } while (0)
 
+/* A C statement (sans semicolon) to output to the stdio stream
+   FILE the assembler definition of uninitialized global DECL named
+   NAME whose size is SIZE bytes and alignment is ALIGN bytes.
+   Try to use asm_output_aligned_bss to implement this macro.  */
+
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) 		\
+  asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
+
 #undef ESCAPES
 #define ESCAPES \
 "\1\1\1\1\1\1\1\1btn\1fr\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\
@@ -366,6 +374,19 @@ do {									\
       if (bytes_in_chunk > 0)						\
         fprintf ((FILE), "\n");						\
 } while (0) 
+
+/* Must use data section for relocatable constants when pic.  */
+#undef SELECT_RTX_SECTION
+#define SELECT_RTX_SECTION(MODE,RTX)					\
+{									\
+  if (TARGET_ELF) {							\
+    if (flag_pic && symbolic_operand (RTX))				\
+      data_section ();							\
+    else								\
+      const_section ();							\
+  } else								\
+    readonly_data_section();						\
+}
 
 #undef ASM_OUTPUT_CASE_LABEL
 #define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,JUMPTABLE)		\
@@ -883,7 +904,11 @@ dtors_section ()							\
 
 #undef LIB_SPEC
 #define LIB_SPEC \
- "%{!shared:%{!symbolic:-lcrypt -lgen -lc}}"
+ "%{shared:pic/libgcc.a%s}%{!shared:%{!symbolic:-lcrypt -lgen -lc}}"
+
+#undef LIBGCC_SPEC
+#define LIBGCC_SPEC \
+ "%{!shared:-lgcc}"
 
 #define MASK_COFF     		010000000000	/* Mask for elf generation */
 #define TARGET_COFF             (target_flags & MASK_COFF)
