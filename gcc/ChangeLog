@@ -1,3 +1,19 @@
+2003-06-27  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.h (SECONDARY_OUTPUT_RELOAD_CLASS): Define.
+	* config/s390/s390.c (s390_secondary_output_reload_class): New function.
+	* config/s390/s390-protos.h (s390_secondary_output_reload_class): 
+	Declare it.
+	* config/s390/s390.md ("reload_outti", "reload_outdi", 
+	"reload_outdf"): New expanders.
+
+	* config/s390/s390.md ("movti" + splitters): Handle non-offsettable
+	memory operands as source.
+	("movdi" + splitters): Likewise.
+	("movdf" + splitters): Likewise.
+	* config/s390/s390.c (s390_split_ok_p): New function.
+	* config/s390/s390-protos.h (s390_split_ok_p): Declare it.
+
 2003-06-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* combine.c (force_to_mode): Replace the equality comparison

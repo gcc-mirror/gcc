@@ -863,6 +863,42 @@ s390_extract_qi (op, mode, part)
   abort ();
 }
 
+/* Check whether we can (and want to) split a double-word 
+   move in mode MODE from SRC to DST into two single-word 
+   moves, moving the subword FIRST_SUBWORD first.  */
+
+bool
+s390_split_ok_p (dst, src, mode, first_subword)
+     rtx dst;
+     rtx src;
+     enum machine_mode mode;
+     int first_subword;
+{
+  /* Floating point registers cannot be split.  */
+  if (FP_REG_P (src) || FP_REG_P (dst))
+    return false;
+
+  /* We don't need to split if operands are directly accessable.  */
+  if (s_operand (src, mode) || s_operand (dst, mode))
+    return false;
+
+  /* Non-offsettable memory references cannot be split.  */
+  if ((GET_CODE (src) == MEM && !offsettable_memref_p (src))
+      || (GET_CODE (dst) == MEM && !offsettable_memref_p (dst)))
+    return false;
+
+  /* Moving the first subword must not clobber a register
+     needed to move the second subword.  */
+  if (register_operand (dst, mode))
+    {
+      rtx subreg = operand_subword (dst, first_subword, 0, mode);
+      if (reg_overlap_mentioned_p (subreg, src))
+        return false;
+    }
+
+  return true;
+}
+
 
 /* Change optimizations to be performed, depending on the 
    optimization level.
@@ -1710,6 +1746,29 @@ s390_secondary_input_reload_class (class, mode, in)
      rtx in;
 {
   if (s390_plus_operand (in, mode))
+    return ADDR_REGS;
+
+  return NO_REGS;
+}
+
+/* Return the register class of a scratch register needed to
+   store a register of class CLASS in MODE into OUT:
+
+   We need a temporary when storing a double-word to a 
+   non-offsettable memory address.  */
+
+enum reg_class
+s390_secondary_output_reload_class (class, mode, out)
+     enum reg_class class;
+     enum machine_mode mode;
+     rtx out;
+{
+  if ((TARGET_64BIT ? mode == TImode
+                    : (mode == DImode || mode == DFmode))
+      && reg_classes_intersect_p (GENERAL_REGS, class)
+      && GET_CODE (out) == MEM
+      && !offsettable_memref_p (out)
+      && !s_operand (out, VOIDmode))
     return ADDR_REGS;
 
   return NO_REGS;
