@@ -1,3 +1,10 @@
+Tue Jan 19 21:20:52 1999  Richard Henderson  <rth@cygnus.com>
+
+	* expr.c (do_jump_for_compare): Handle conditional branch expanders
+	emitting multiple jump instructions.
+	* jump.c (condjump_label): New function.
+	* rtl.h (condjump_label): Declare it.
+
 Tue Jan 19 21:08:20 1999  Richard Henderson  <rth@cygnus.com>
 
 	* expr.c (emit_move_insn_1): Revert 17 Dec change.  Don't emit

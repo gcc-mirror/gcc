@@ -3402,6 +3402,32 @@ condjump_in_parallel_p (insn)
   return 0;
 }
 
+/* Return the label of a conditional jump.  */
+
+rtx
+condjump_label (insn)
+     rtx insn;
+{
+  register rtx x = PATTERN (insn);
+
+  if (GET_CODE (x) == PARALLEL)
+    x = XVECEXP (x, 0, 0);
+  if (GET_CODE (x) != SET)
+    return NULL_RTX;
+  if (GET_CODE (SET_DEST (x)) != PC)
+    return NULL_RTX;
+  x = SET_SRC (x);
+  if (GET_CODE (x) == LABEL_REF)
+    return x;
+  if (GET_CODE (x) != IF_THEN_ELSE)
+    return NULL_RTX;
+  if (XEXP (x, 2) == pc_rtx && GET_CODE (XEXP (x, 1)) == LABEL_REF)
+    return XEXP (x, 1);
+  if (XEXP (x, 1) == pc_rtx && GET_CODE (XEXP (x, 2)) == LABEL_REF)
+    return XEXP (x, 2);
+  return NULL_RTX;
+}
+
 #ifdef HAVE_cc0
 
 /* Return 1 if X is an RTX that does nothing but set the condition codes

@@ -1289,6 +1289,7 @@ extern void cse_end_of_basic_block	PROTO ((rtx,
 /* In jump.c */
 extern int comparison_dominates_p	PROTO ((enum rtx_code, enum rtx_code));
 extern int condjump_p			PROTO ((rtx));
+extern rtx condjump_label		PROTO ((rtx));
 extern int simplejump_p			PROTO ((rtx));
 extern int sets_cc0_p			PROTO ((rtx));
 extern int invert_jump			PROTO ((rtx, rtx));
