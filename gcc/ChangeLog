@@ -1,3 +1,49 @@
+Tue Aug 10 09:21:46 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* output.h (assemble_name): Constify a char*.
+
+	* varasm.c (UNIQUE_SECTION, assemble_start_function,
+	assemble_variable, assemble_name): Likewise.
+
+	* dwarf2out.c (ASM_NAME_TO_STRING): Likewise.
+
+	* arm/pe.c (arm_pe_unique_section): Likewise.
+	
+	* i386/cygwin.h (STRIP_NAME_ENCODING): Likewise.
+	
+	* i386/i386-interix.h (STRIP_NAME_ENCODING): Likewise.
+	
+	* i386/interix.c (i386_pe_unique_section): Likewise.
+	
+	* i386/win32.h (STRIP_NAME_ENCODING): Likewise.
+	
+	* i386/winnt.c (i386_pe_unique_section): Likewise.
+	
+	* m32r/m32r.h (ASM_OUTPUT_LABELREF): Likewise.
+	
+	* mn10200/mn10200.h (ASM_OUTPUT_LABELREF): Likewise.
+	
+	* mn10300/mn10300.h (ASM_OUTPUT_LABELREF): Likewise.
+	
+	* pa/pa.c (output_call): Likewise.
+	
+	* pa/pa.h (ASM_OUTPUT_MI_THUNK): Likewise.
+
+	* pa/som.h (ASM_OUTPUT_FUNCTION_PREFIX): Likewise.
+	
+	* rs6000/rs6000.c (rs6000_output_load_toc_table, output_toc):
+	Likewise.
+	
+	* rs6000/rs6000.h (RS6000_OUTPUT_BASENAME, STRIP_NAME_ENCODING):
+	Likewise.
+	
+	* rs6000/sol2.h (ASM_OUTPUT_SOURCE_LINE): Likewise.
+	
+	* rs6000/sysv4.h (ASM_DECLARE_FUNCTION_NAME, ASM_OUTPUT_INT,
+	STRIP_NAME_ENCODING, ASM_OUTPUT_LABELREF): Likewise.
+	
+	* v850/v850.h (ASM_OUTPUT_LABELREF): Likewise.
+
 Mon Aug  9 19:54:05 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* real.c (GET_REAL, PUT_REAL): Use memcpy instead of bcopy.

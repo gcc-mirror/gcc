@@ -627,13 +627,14 @@ extern int rs6000_pic_labelno;
 #undef	ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   do {									\
-    char *orig_name;							\
-    char *init_ptr = (TARGET_64BIT) ? ".quad" : ".long";		\
+    const char *orig_name;						\
+    const char *init_ptr = (TARGET_64BIT) ? ".quad" : ".long";		\
     STRIP_NAME_ENCODING (orig_name, NAME);				\
 									\
     if (TARGET_RELOCATABLE && (get_pool_size () != 0 || profile_flag))	\
       {									\
-	char buf[256], *buf_ptr;					\
+	char buf[256];							\
+	const char *buf_ptr;						\
 									\
 	ASM_OUTPUT_INTERNAL_LABEL (FILE, "LCL", rs6000_pic_labelno);	\
 									\
@@ -652,7 +653,7 @@ extern int rs6000_pic_labelno;
 									\
     if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_NT)		\
       {									\
-	char *desc_name = orig_name;					\
+	const char *desc_name = orig_name;				\
 									\
 	while (*desc_name == '.')					\
 	  desc_name++;							\
@@ -770,7 +771,8 @@ do {									\
       && CONSTANT_P (VALUE))						\
     {									\
       static int labelno = 0;						\
-      char buf[256], *p;						\
+      char buf[256];							\
+      const char *p;							\
 									\
       recurse = 1;							\
       ASM_GENERATE_INTERNAL_LABEL (buf, "LCP", labelno++);		\
@@ -835,7 +837,7 @@ extern void rs6000_encode_section_info ();
 #undef  STRIP_NAME_ENCODING
 #define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)				\
 do {									\
-  char *_name = SYMBOL_NAME;						\
+  const char *_name = SYMBOL_NAME;					\
   while (*_name == '*' || *_name == '@')				\
     _name++;								\
   (VAR) = _name;							\
@@ -847,7 +849,7 @@ do {									\
 #undef ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(FILE,NAME)	\
 do {									\
-  char *_name = NAME;							\
+  const char *_name = NAME;						\
   while (*_name == '*' || *_name == '@')				\
     _name++;								\
   fputs (_name, FILE);							\

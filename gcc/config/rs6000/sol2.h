@@ -102,7 +102,7 @@ do {									\
 do									\
   {									\
     static int sym_lineno = 1;						\
-    char *_p;								\
+    const char *_p;							\
     fprintf (file, "\t.stabd 68,0,%d,.LM%d-",				\
 	     line, sym_lineno);						\
     STRIP_NAME_ENCODING (_p, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0)); \

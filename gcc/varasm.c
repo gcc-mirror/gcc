@@ -286,7 +286,8 @@ named_section (decl, name, reloc)
 #define UNIQUE_SECTION(DECL,RELOC)				\
 do {								\
   int len;							\
-  char *name, *string;						\
+  const char *name;						\
+  char *string;							\
 								\
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
   /* Strip off any encoding in name.  */			\
@@ -1000,7 +1001,7 @@ assemble_start_function (decl, fnname)
     {
       if (! first_global_object_name)
 	{
-	  char *p;
+	  const char *p;
 	  char **name;
 
 	  if (! DECL_WEAK (decl) && ! DECL_ONE_ONLY (decl))
@@ -1279,7 +1280,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
       && ! DECL_WEAK (decl)
       && ! DECL_ONE_ONLY (decl))
     {
-      char *p;
+      const char *p;
 
       STRIP_NAME_ENCODING (p, name);
       first_global_object_name = permalloc (strlen (p) + 1);
@@ -1680,9 +1681,9 @@ assemble_label (name)
 void
 assemble_name (file, name)
      FILE *file;
-     char *name;
+     const char *name;
 {
-  char *real_name;
+  const char *real_name;
   tree id;
 
   STRIP_NAME_ENCODING (real_name, name);

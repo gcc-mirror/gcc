@@ -2755,7 +2755,7 @@ extern int toc_initialized;
 
 #define RS6000_OUTPUT_BASENAME(FILE, NAME)	\
   {						\
-    char *_p;					\
+    const char *_p;				\
 						\
     STRIP_NAME_ENCODING (_p, (NAME));		\
     assemble_name ((FILE), _p);			\
@@ -2766,7 +2766,7 @@ extern int toc_initialized;
 #define STRIP_NAME_ENCODING(VAR,NAME)					\
   do									\
     {									\
-      char *_name = (NAME);						\
+      const char *_name = (NAME);					\
       int _len;								\
       if (_name[0] == '*')						\
 	_name++;							\
@@ -2775,9 +2775,10 @@ extern int toc_initialized;
 	(VAR) = _name;							\
       else								\
 	{								\
-	  (VAR) = (char *) alloca (_len + 1);				\
-	  strcpy ((VAR), _name);					\
-	  (VAR)[_len - 4] = '\0';					\
+	  char *_new_name = (char *) alloca (_len + 1);			\
+	  strcpy (_new_name, _name);					\
+	  _new_name[_len - 4] = '\0';					\
+	  (VAR) = _new_name;						\
 	}								\
     }									\
   while (0)
