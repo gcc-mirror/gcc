@@ -701,8 +701,10 @@ RECOG_H = recog.h gansidecl.h
 
 # End of language makefile fragments.
 #
-# Avoid a lot of time thinking about remaking Makefile.in and *.def.
-.SUFFIXES: .in .def
+# The only suffixes we want for implicit rules are .c and .o, so clear
+# the list and add them.  This speeds up GNU Make, and allows -r to work.
+.SUFFIXES:
+.SUFFIXES: .c .o
 
 Makefile: $(srcdir)/Makefile.in config.status $(srcdir)/version.c \
    $(xmake_file) $(tmake_file) $(LANG_MAKEFILES)

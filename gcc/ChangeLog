@@ -1,3 +1,7 @@
+Wed May  6 19:02:29 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* Makefile.in: Fix .SUFFIXES.
+
 Wed May  6 19:31:32 1998  Alan Modra <alan@spri.levels.unisa.edu.au>
 
 	* config/linux.h (ASM_COMMENT_START): Define as "#".
