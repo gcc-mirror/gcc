@@ -1,3 +1,11 @@
+2001-06-06  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* call.c (convert_default_arg): Use INTEGRAL_TYPE_P.
+	(build_over_call): Likewise.
+	* decl.c (grokparms): Likewise.
+	* pt.c (tsubst_decl): Likewise.
+	* typeck.c (convert_arguments): Likewise.
+
 2001-06-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* semantics.c (begin_class_definition): Robustify.

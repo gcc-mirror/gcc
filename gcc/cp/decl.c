@@ -11970,8 +11970,7 @@ grokparms (first_parm)
 
 	  DECL_ARG_TYPE (decl) = TREE_TYPE (decl);
 	  if (PROMOTE_PROTOTYPES
-	      && (TREE_CODE (type) == INTEGER_TYPE
-		  || TREE_CODE (type) == ENUMERAL_TYPE)
+	      && INTEGRAL_TYPE_P (type)
 	      && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
 	    DECL_ARG_TYPE (decl) = integer_type_node;
 	  if (!any_error && init)
