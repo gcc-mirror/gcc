@@ -160,6 +160,10 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   int saw_C = 0;
   int saw_o = 0;
 
+  /* Saw soem -O* or -g* option, respectively. */
+  int saw_O = 0;
+  int saw_g = 0;
+
   /* An array used to flag each argument that needs a bit set for
      LANGSPEC, MATHLIB, WITHLIBC, or GCLIB.  */
   int *args;
@@ -274,6 +278,10 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 	      library = 0;
 	      will_link = 0;
 	    }
+	  else if (argv[i][1] == 'g')
+	    saw_g = 1;
+	  else if (argv[i][1] == 'O')
+	    saw_O = 1;
 	  else if (((argv[i][2] == '\0'
 		     && (char *)strchr ("bBVDUoeTuIYmLiA", argv[i][1]) != NULL)
 		    || strcmp (argv[i], "-Tdata") == 0))
@@ -389,6 +397,8 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
     {
       lang_specific_extra_outfiles++;
     }
+  if (saw_g + saw_O == 0)
+    num_args++;
   arglist = (char **) xmalloc ((num_args + 1) * sizeof (char *));
 
   for (i = 0, j = 0; i < argc; i++, j++)
@@ -485,6 +495,10 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
       arglist[j++] = combined_inputs_buffer;
     }
 #endif
+
+  /* If we saw no -O or -g option, default to -g1, for javac compatibility. */
+  if (saw_g + saw_O == 0)
+    arglist[j++] = "-g1";
 
   /* Add `-ljava' if we haven't already done so.  */
   if (library && ! saw_libjava)
