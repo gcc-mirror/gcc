@@ -26,6 +26,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CPP_PREDEFINES \
  "-Dsun -Dsparc -Dunix -D__svr4__ -Asystem(unix) -Acpu(sparc) -Amachine(sparc)"
 
+#undef CPP_SPEC
+#define CPP_SPEC "\
+   %{compat-bsd:-iwithprefix ucbinclude -idirafter /usr/ucbinclude}\
+   %{msparclite:-D__sparclite__} %{mv8:-D__sparc_v8__}"
+
 /* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
    It's safe to pass -s always, even if -g is not used. */
 #undef ASM_SPEC
@@ -158,7 +163,7 @@ do {									\
 #undef MD_STARTFILE_PREFIX
 #define MD_STARTFILE_PREFIX "/opt/SUNWspro/SC2.0/"
 
-#undef	STARTFILE_SPEC
+#undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared: \
 			 %{!symbolic: \
 			  %{pg:crt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}} \
@@ -170,25 +175,36 @@ do {									\
 			   %{!traditional:/usr/ccs/lib/values-Xa.o%s}}}} \
 			  crtbegin.o%s"
 
-#undef	LIB_SPEC
+/* ??? Note: in order for -compat-bsd to work fully,
+   we must somehow arrange to fixincludes /usr/ucbinclude
+   and put the result in $(libsubdir)/ucbinclude.  */
+
+#undef LIB_SPEC
 #define LIB_SPEC \
-  "%{!shared:%{!symbolic:-lc}} \
-  crtend.o%s \
-  %{!shared:%{!symbolic:%{pg:crtn.o%s}%{!pg:crtn.o%s}}}"
+  "%{compat-bsd:-lucb -lsocket -lnsl -lelf -laio} \
+   %{!shared:%{!symbolic:-lc}} \
+   crtend.o%s \
+   %{!shared:%{!symbolic:%{pg:crtn.o%s}%{!pg:crtn.o%s}}}"
 
 /* This should be the same as in svr4.h, except with -R added.  */
 #undef LINK_SPEC
-#define LINK_SPEC "%{h*} %{V} %{v:%{!V:-V}} \
-		   %{b} %{Wl,*:%*} \
-		   %{static:-dn -Bstatic} \
-		   %{shared:-G -dy} \
-		   %{symbolic:-Bsymbolic -G -dy} \
-		   %{G:-G} \
-		   %{YP,*} \
-		   %{R*} \
-		   %{!YP,*:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-		    %{!p:-Y P,/usr/ccs/lib:/usr/lib}} \
-		   %{Qy:} %{!Qn:-Qy}"
+#define LINK_SPEC \
+  "%{h*} %{V} %{v:%{!V:-V}} \
+   %{b} %{Wl,*:%*} \
+   %{static:-dn -Bstatic} \
+   %{shared:-G -dy} \
+   %{symbolic:-Bsymbolic -G -dy} \
+   %{G:-G} \
+   %{YP,*} \
+   %{R*} \
+   %{compat-bsd: \
+     %{!YP,*:%{p:-Y P,/usr/ucblib:/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
+       %{!p:-Y P,/usr/ucblib:/usr/ccs/lib:/usr/lib}} \
+     -R /usr/ucblib} \
+   %{!compat-bsd: \
+     %{!YP,*:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
+       %{!p:-Y P,/usr/ccs/lib:/usr/lib}}} \
+   %{Qy:} %{!Qn:-Qy}"
 
 /* This defines which switch letters take arguments.
    It is as in svr4.h but with -R added.  */
