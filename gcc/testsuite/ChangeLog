@@ -1,3 +1,7 @@
+2003-02-20  Randolph Chung  <tausq@debian.org>
+
+	* gcc.c-torture/compile/20030220-1.c: New test.
+
 2003-02-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9459

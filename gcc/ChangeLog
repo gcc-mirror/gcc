@@ -1,3 +1,15 @@
+2003-02-20  Randolph Chung  <tausq@debian.org>
+            Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/9768
+	Backport patch from mainline:
+
+	2002-03-21  DJ Delorie  <dj@redhat.com>
+
+	* bb-reorder.c (make_reorder_chain_1): Protect against
+	when redundant edges are omitted.
+	* predict.c (dump_prediction): Likewise.
+
 2003-02-20  BAN Nobuhiro  <ban@ipl.t.u-tokyo.ac.jp>
 
 	PR c/9678

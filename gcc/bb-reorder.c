@@ -205,7 +205,7 @@ make_reorder_chain_1 (bb, prev)
 	    e_taken = e;
 	}
 
-      next = (taken ? e_taken : e_fall)->dest;
+      next = ((taken && e_taken) ? e_taken : e_fall)->dest;
     }
 
   /* In the absence of a prediction, disturb things as little as possible
