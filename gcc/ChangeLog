@@ -1,3 +1,7 @@
+2002-04-29  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* combine.c (find_split_point): Use trunc_int_for_mode.
+
 Mon Apr 29 17:19:10 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* reload1.c (eliminate_regs, case SUBREG): Fix typo in
