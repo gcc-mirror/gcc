@@ -265,7 +265,7 @@ char *xmalloc ();
 char *xrealloc ();
 
 #ifdef LANG_SPECIFIC_DRIVER
-extern void lang_specific_driver PROTO ((void (*) (), int *, char ***));
+extern void lang_specific_driver PROTO ((void (*) (), int *, char ***, int *));
 #endif
 
 /* Specs are strings containing lines, each of which (if not blank)
@@ -2291,6 +2291,11 @@ static struct infile *infiles;
 
 static int n_infiles;
 
+/* This counts the number of libraries added by LANG_SPECIFIC_DRIVER, so that
+   we can tell if there were any user supplied any files or libraries.  */
+
+static int added_libraries;
+
 /* And a vector of corresponding output files is made up later.  */
 
 static char **outfiles;
@@ -2373,6 +2378,7 @@ process_command (argc, argv)
 
   n_switches = 0;
   n_infiles = 0;
+  added_libraries = 0;
 
   /* Figure compiler version from version string.  */
 
@@ -2515,7 +2521,7 @@ process_command (argc, argv)
 
 #ifdef LANG_SPECIFIC_DRIVER
   /* Do language-specific adjustment/addition of flags.  */
-  lang_specific_driver (fatal, &argc, &argv);
+  lang_specific_driver (fatal, &argc, &argv, &added_libraries);
 #endif
 
   /* Scan argv twice.  Here, the first time, just count how many switches
@@ -4696,7 +4702,7 @@ main (argc, argv)
 	exit (0);
     }
 
-  if (n_infiles == 0)
+  if (n_infiles == added_libraries)
     fatal ("No input files");
 
   /* Make a place to record the compiler output file names

@@ -1,3 +1,11 @@
+Sat Apr 18 15:30:49 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* gcc.c (lang_specific_driver): Add new parm type to prototype.
+	(added_libraries): New file scope static variable.
+	(process_command): Initialize added_libraries.  Pass it to
+	lang_specific_driver.
+	(main): Use added_libraries in check for no input files.
+	
 Sat Apr 18 01:23:11 1998  John Carr  <jfc@mit.edu>
 
 	* sparc.c, sparc.h, sparc.md, sol2.h: Many changes related to V9
