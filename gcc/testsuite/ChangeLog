@@ -1,3 +1,8 @@
+2003-10-28  Falk Hueffner  <falk@debian.org>
+
+	PR target/12654
+	* gcc.c-torture/execute/20031020-1.c: New test.
+
 2003-10-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* g++.dg/opt/reg-stack3.C: New test.
