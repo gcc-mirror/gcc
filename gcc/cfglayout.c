@@ -733,13 +733,15 @@ fixup_reorder_chain (void)
 	      /* Otherwise we can try to invert the jump.  This will
 		 basically never fail, however, keep up the pretense.  */
 	      else if (invert_jump (bb_end_insn,
-				    label_for_bb (e_fall->dest), 0))
+				    (e_fall->dest == EXIT_BLOCK_PTR
+				     ? NULL_RTX
+				     : label_for_bb (e_fall->dest)), 0))
 		{
+		  e_fall->flags &= ~EDGE_FALLTHRU;
 #ifdef ENABLE_CHECKING
 		  if (!could_fall_through (e_taken->src, e_taken->dest))
 		    abort ();
 #endif
-		  e_fall->flags &= ~EDGE_FALLTHRU;
 		  e_taken->flags |= EDGE_FALLTHRU;
 		  update_br_prob_note (bb);
 		  continue;
