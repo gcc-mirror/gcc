@@ -66,7 +66,7 @@ about previous `g77' versions up-to-date.
 the mainline, development version of `g77' within `egcs') is available
 at `http://egcs.cygnus.com/onlinedocs/g77_news.html'.
 
-   The following information was last updated on 1999-06-04:
+   The following information was last updated on 1999-06-16:
 
 In 0.5.25, `GCC' 2.95 (`EGCS' 1.2) versus `EGCS' 1.1.2:
 =======================================================
@@ -87,19 +87,22 @@ In 0.5.25, `GCC' 2.95 (`EGCS' 1.2) versus `EGCS' 1.1.2:
      now assigns through a temporary, in cases where such partial
      overlap is deemed possible.
 
-  4. Automatic arrays now seem to be working on HP-UX systems.
+  4. `libg2c' (`libf2c') no longer loses track of the file being worked
+     on during a `BACKSPACE' operation.
 
-  5. Fix `g77' so it no longer crashes when compiling I/O statements
+  5. Automatic arrays now seem to be working on HP-UX systems.
+
+  6. Fix `g77' so it no longer crashes when compiling I/O statements
      using keywords that define `INTEGER' values, such as `IOSTAT=J',
      where J is other than default `INTEGER' (such as `INTEGER*2').
      Instead, it issues a diagnostic.
 
-  6. Fix `g77' so it properly handles `DATA A/RPT*VAL/', where RPT is
+  7. Fix `g77' so it properly handles `DATA A/RPT*VAL/', where RPT is
      not default `INTEGER', such as `INTEGER*2', instead of producing a
      spurious diagnostic.  Also fix `DATA (A(I),I=1,N)', where `N' is
      not default `INTEGER' to work instead of crashing `g77'.
 
-  7. The `-ax' option is now obeyed when compiling Fortran programs.
+  8. The `-ax' option is now obeyed when compiling Fortran programs.
      (It is passed to the `f771' driver.)
 
    * The new `-fbounds-check' option causes `g77' to compile run-time
@@ -126,7 +129,7 @@ In 0.5.25, `GCC' 2.95 (`EGCS' 1.2) versus `EGCS' 1.1.2:
      to the implementations of these intrinsics using the `EXTERNAL'
      mechanism (which would avoid the new warnings).
 
-  8. `g77' now warns about a reference to a function when the
+  9. `g77' now warns about a reference to a function when the
      corresponding *subsequent* function program unit disagrees with
      the reference concerning the type of the function.
 
@@ -137,23 +140,23 @@ In 0.5.25, `GCC' 2.95 (`EGCS' 1.2) versus `EGCS' 1.1.2:
    * The `-malign-double' option now reliably aligns *all*
      double-precision variables and arrays on Intel x86 targets.
 
-  9. Even without the `-malign-double' option, `g77' reliably aligns
+ 10. Even without the `-malign-double' option, `g77' reliably aligns
      local double-precision variables that are not in `EQUIVALENCE'
      areas and not `SAVE''d.
 
- 10. `g77' now open-codes ("inlines") division of `COMPLEX' operands
+ 11. `g77' now open-codes ("inlines") division of `COMPLEX' operands
      instead of generating a run-time call to the `libf2c' routines
      `c_div' or `z_div', unless the `-Os' option is specified.
 
    * `g77' no longer generates code to maintain `errno', a C-language
      concept, when performing operations such as the `SqRt' intrinsic.
 
- 11. `g77' developers can temporarily use the `-fflatten-arrays' option
+ 12. `g77' developers can temporarily use the `-fflatten-arrays' option
      to compare how the compiler handles code generation using C-like
      constructs as compared to the Fortran-like method constructs
      normally used.
 
- 12. A substantial portion of the `g77' front end's code-generation
+ 13. A substantial portion of the `g77' front end's code-generation
      component was rewritten.  It now generates code using facilities
      more robustly supported by the `gcc' back end.  One effect of this
      rewrite is that some codes no longer produce a spurious "label LAB
@@ -161,11 +164,11 @@ In 0.5.25, `GCC' 2.95 (`EGCS' 1.2) versus `EGCS' 1.1.2:
 
    * Support for the `-fugly' option has been removed.
 
- 13. Improve documentation and indexing, including information on Year
+ 14. Improve documentation and indexing, including information on Year
      2000 (Y2K) compliance, and providing more information on internals
      of the front end.
 
- 14. Upgrade to `libf2c' as of 1999-05-10.
+ 15. Upgrade to `libf2c' as of 1999-05-10.
 
 In 0.5.24 versus 0.5.23:
 ========================
@@ -228,25 +231,25 @@ In `EGCS' 1.1.1 versus `EGCS' 1.1:
 In `EGCS' 1.1 versus `EGCS' 1.0.3:
 ==================================
 
- 15. Fix bugs in the `libU77' intrinsic `HostNm' that wrote one byte
+ 16. Fix bugs in the `libU77' intrinsic `HostNm' that wrote one byte
      beyond the end of its `CHARACTER' argument, and in the `libU77'
      intrinsics `GMTime' and `LTime' that overwrote their arguments.
 
- 16. Assumed arrays with negative bounds (such as `REAL A(-1:*)') no
+ 17. Assumed arrays with negative bounds (such as `REAL A(-1:*)') no
      longer elicit spurious diagnostics from `g77', even on systems
      with pointers having different sizes than integers.
 
      This bug is not known to have existed in any recent version of
      `gcc'.  It was introduced in an early release of `egcs'.
 
- 17. Valid combinations of `EXTERNAL', passing that external as a dummy
+ 18. Valid combinations of `EXTERNAL', passing that external as a dummy
      argument without explicitly giving it a type, and, in a subsequent
      program unit, referencing that external as an external function
      with a different type no longer crash `g77'.
 
- 18. `CASE DEFAULT' no longer crashes `g77'.
+ 19. `CASE DEFAULT' no longer crashes `g77'.
 
- 19. The `-Wunused' option no longer issues a spurious warning about
+ 20. The `-Wunused' option no longer issues a spurious warning about
      the "master" procedure generated by `g77' for procedures
      containing `ENTRY' statements.
 
@@ -271,25 +274,25 @@ In `EGCS' 1.1 versus `EGCS' 1.0.3:
      `libf2c' environment, even when `libf2c' (now `libg2c') is a
      shared library.
 
- 20. `g77' no longer installs the `f77' command and `f77.1' man page in
+ 21. `g77' no longer installs the `f77' command and `f77.1' man page in
      the `/usr' or `/usr/local' heirarchy, even if the `f77-install-ok'
      file exists in the source or build directory.  See the
      installation documentation for more information.
 
- 21. `g77' no longer installs the `libf2c.a' library and `f2c.h'
+ 22. `g77' no longer installs the `libf2c.a' library and `f2c.h'
      include file in the `/usr' or `/usr/local' heirarchy, even if the
      `f2c-install-ok' or `f2c-exists-ok' files exist in the source or
      build directory.  See the installation documentation for more
      information.
 
- 22. The `libf2c.a' library produced by `g77' has been renamed to
+ 23. The `libf2c.a' library produced by `g77' has been renamed to
      `libg2c.a'.  It is installed only in the `gcc' "private" directory
      heirarchy, `gcc-lib'.  This allows system administrators and users
      to choose which version of the `libf2c' library from `netlib' they
      wish to use on a case-by-case basis.  See the installation
      documentation for more information.
 
- 23. The `f2c.h' include (header) file produced by `g77' has been
+ 24. The `f2c.h' include (header) file produced by `g77' has been
      renamed to `g2c.h'.  It is installed only in the `gcc' "private"
      directory heirarchy, `gcc-lib'.  This allows system administrators
      and users to choose which version of the include file from
@@ -301,11 +304,11 @@ In `EGCS' 1.1 versus `EGCS' 1.0.3:
      than the one built and installed as part of the same `g77' version
      is picked up.
 
- 24. During the configuration and build process, `g77' creates
+ 25. During the configuration and build process, `g77' creates
      subdirectories it needs only as it needs them.  Other cleaning up
      of the configuration and build process has been performed as well.
 
- 25. `install-info' now used to update the directory of Info
+ 26. `install-info' now used to update the directory of Info
      documentation to contain an entry for `g77' (during installation).
 
    * Some diagnostics have been changed from warnings to errors, to
@@ -314,38 +317,38 @@ In `EGCS' 1.1 versus `EGCS' 1.0.3:
      in the `OPEN', `INQUIRE', `READ', and `WRITE' statements, and
      about truncations of various sorts of constants.
 
- 26. Improve compilation of `FORMAT' expressions so that a null byte is
+ 27. Improve compilation of `FORMAT' expressions so that a null byte is
      appended to the last operand if it is a constant.  This provides a
      cleaner run-time diagnostic as provided by `libf2c' for statements
      like `PRINT '(I1', 42'.
 
- 27. Improve documentation and indexing.
+ 28. Improve documentation and indexing.
 
- 28. The upgrade to `libf2c' as of 1998-06-18 should fix a variety of
+ 29. The upgrade to `libf2c' as of 1998-06-18 should fix a variety of
      problems, including those involving some uses of the `T' format
      specifier, and perhaps some build (porting) problems as well.
 
 In `EGCS' 1.1 versus `g77' 0.5.23:
 ==================================
 
- 29. Fix a code-generation bug that afflicted Intel x86 targets when
+ 30. Fix a code-generation bug that afflicted Intel x86 targets when
      `-O2' was specified compiling, for example, an old version of the
      `DNRM2' routine.
 
      The x87 coprocessor stack was being mismanaged in cases involving
      assigned `GOTO' and `ASSIGN'.
 
- 30. `g77' no longer produces incorrect code and initial values for
+ 31. `g77' no longer produces incorrect code and initial values for
      `EQUIVALENCE' and `COMMON' aggregates that, due to "unnatural"
      ordering of members vis-a-vis their types, require initial padding.
 
- 31. Fix `g77' crash compiling code containing the construct
+ 32. Fix `g77' crash compiling code containing the construct
      `CMPLX(0.)' or similar.
 
- 32. `g77' no longer crashes when compiling code containing
+ 33. `g77' no longer crashes when compiling code containing
      specification statements such as `INTEGER(KIND=7) PTR'.
 
- 33. `g77' no longer crashes when compiling code such as `J = SIGNAL(1,
+ 34. `g77' no longer crashes when compiling code such as `J = SIGNAL(1,
      2)'.
 
    * `g77' now treats `%LOC(EXPR)' and `LOC(EXPR)' as "ordinary"
@@ -356,7 +359,7 @@ In `EGCS' 1.1 versus `g77' 0.5.23:
      Previously, `g77' treated these expressions as denoting special
      "pointer" arguments for the purposes of filewide analysis.
 
- 34. Fix `g77' crash (or apparently infinite run-time) when compiling
+ 35. Fix `g77' crash (or apparently infinite run-time) when compiling
      certain complicated expressions involving `COMPLEX' arithmetic
      (especially multiplication).
 
@@ -386,9 +389,9 @@ In `EGCS' 1.1 versus `g77' 0.5.23:
    * The F90 `System_Clock' intrinsic allows the optional arguments
      (except for the `Count' argument) to be omitted.
 
- 35. Upgrade to `libf2c' as of 1998-06-18.
+ 36. Upgrade to `libf2c' as of 1998-06-18.
 
- 36. Improve documentation and indexing.
+ 37. Improve documentation and indexing.
 
 In previous versions:
 =====================
