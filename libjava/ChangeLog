@@ -1,3 +1,7 @@
+2004-11-17  David Daney  <ddaney@avtrex.com>
+
+	* java/io/BufferedInputStream.java (skip): Return zero on EOF.
+
 2004-11-17  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/Socket.java (getPort): Return 0 in error case.
