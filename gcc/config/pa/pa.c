@@ -769,26 +769,37 @@ emit_move_sequence (operands, mode, scratch_reg)
   register rtx operand1 = operands[1];
 
   /* Handle secondary reloads for loads/stores of FP registers from
-     REG+D addresses where D does not fit in 5 bits.  */
+     REG+D addresses where D does not fit in 5 bits, including 
+     (subreg (mem (addr)) cases.  */
   if (fp_reg_operand (operand0, mode)
-      && GET_CODE (operand1) == MEM
-      /* Using DFmode forces only short displacements be be
-	 recognized as valid in reg+d addressing modes.  */
-      && ! memory_address_p (DFmode, XEXP (operand1, 0))
+      && ((GET_CODE (operand1) == MEM
+	   && ! memory_address_p (DFmode, XEXP (operand1, 0)))
+	  || ((GET_CODE (operand1) == SUBREG
+	       && GET_CODE (XEXP (operand1, 0)) == MEM
+	       && !memory_address_p (DFmode, XEXP (XEXP (operand1, 0), 0)))))
       && scratch_reg)
     {
+      if (GET_CODE (operand1) == SUBREG)
+	operand1 = XEXP (operand1, 0);
+
+      scratch_reg = gen_rtx (REG, SImode, REGNO (scratch_reg));
       emit_move_insn (scratch_reg, XEXP (operand1, 0));
       emit_insn (gen_rtx (SET, VOIDmode, operand0, gen_rtx (MEM, mode,
 							    scratch_reg)));
       return 1;
     }
   else if (fp_reg_operand (operand1, mode)
-	   && GET_CODE (operand0) == MEM
-	   /* Using DFmode forces only short displacements be be
-	      recognized as valid in reg+d addressing modes.  */
-	   && ! memory_address_p (DFmode, XEXP (operand0, 0))
+	   && ((GET_CODE (operand0) == MEM
+		&& ! memory_address_p (DFmode, XEXP (operand0, 0)))
+	       || ((GET_CODE (operand0) == SUBREG)
+		   && GET_CODE (XEXP (operand0, 0)) == MEM
+		   && !memory_address_p (DFmode, XEXP (XEXP (operand0, 0), 0))))
 	   && scratch_reg)
     {
+      if (GET_CODE (operand0) == SUBREG)
+	operand0 = XEXP (operand0, 0);
+
+      scratch_reg = gen_rtx (REG, SImode, REGNO (scratch_reg));
       emit_move_insn (scratch_reg, XEXP (operand0, 0));
       emit_insn (gen_rtx (SET, VOIDmode, gen_rtx (MEM, mode, scratch_reg),
 			  operand1));
@@ -3260,6 +3271,15 @@ secondary_reload_class (class, mode, in)
 
   if (class != R1_REGS && symbolic_operand (in, VOIDmode))
     return R1_REGS;
+
+  if (GET_CODE (in) == SUBREG)
+    in = SUBREG_REG (in);
+
+  if (FP_REG_CLASS_P (class)
+      && GET_CODE (in) == MEM
+      && !memory_address_p (DFmode, XEXP (in, 0))
+      && memory_address_p (SImode, XEXP (in, 0)))
+    return GENERAL_REGS;
 
   return NO_REGS;
 }
