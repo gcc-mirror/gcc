@@ -30,6 +30,13 @@ Boston, MA 02111-1307, USA.  */
 /* This was defined in linux.h.  Define it here also. */
 #define HANDLE_PRAGMA_PACK_PUSH_POP
 
+/* Don't assume anything about the header files.  */
+#define NO_IMPLICIT_EXTERN_C
+
+/* The GNU C++ standard library requires that these macros be defined.  */
+#undef CPLUSPLUS_CPP_SPEC
+#define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
+
 /* Enable DWARF 2 exceptions.  */
 #undef DWARF2_UNWIND_INFO
 #define DWARF2_UNWIND_INFO 1
