@@ -153,8 +153,8 @@ template
   std::basic_string<unsigned char>::_Rep::_S_terminal;
 
 template
-  std::basic_streambuf<gnu_char_type>::int_type
-  std::basic_streambuf<gnu_char_type>::_S_pback_size;
+  std::basic_streambuf<unsigned char>::int_type
+  std::basic_streambuf<unsigned char>::_S_pback_size;
 #endif
 
 int main()
