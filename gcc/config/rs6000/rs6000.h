@@ -2209,8 +2209,8 @@ extern int rs6000_trunc_used;
 
 /* Function names to call to do floating point truncation.  */
 
-#define RS6000_ITRUNC "itrunc"
-#define RS6000_UITRUNC "uitrunc"
+#define RS6000_ITRUNC "__itrunc"
+#define RS6000_UITRUNC "__uitrunc"
 
 /* Prefix and suffix to use to saving floating point */
 #ifndef SAVE_FP_PREFIX
@@ -2223,6 +2223,9 @@ extern int rs6000_trunc_used;
 #define	RESTORE_FP_PREFIX "._restf"
 #define RESTORE_FP_SUFFIX ""
 #endif
+
+/* Function name to call to do profiling.  */
+#define RS6000_MCOUNT ".__mcount"
 
 
 /* Control the assembler format that we output.  */
@@ -2262,7 +2265,7 @@ extern int rs6000_trunc_used;
     private_data_section ();					\
   text_section ();						\
   if (profile_flag)						\
-    fputs ("\t.extern .mcount\n", FILE);			\
+    fprintf (FILE, "\t.extern %s\n", RS6000_MCOUNT);		\
   rs6000_file_start (FILE, TARGET_CPU_DEFAULT);			\
 }
 
