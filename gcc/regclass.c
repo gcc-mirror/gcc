@@ -1222,7 +1222,7 @@ copy_cost (x, mode, class, to_p)
    SCALE is twice the amount to multiply the cost by (it is twice so we
    can represent half-cost adjustments).  */
 
-void
+static void
 record_address_regs (x, class, scale)
      rtx x;
      enum reg_class class;
