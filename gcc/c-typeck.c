@@ -6832,8 +6832,6 @@ simple_asm_stmt (expr)
     {
       tree stmt;
 
-      if (TREE_CHAIN (expr))
-	expr = combine_strings (expr);
       stmt = add_stmt (build_stmt (ASM_STMT, NULL_TREE, expr,
 				   NULL_TREE, NULL_TREE,
 				   NULL_TREE));
@@ -6858,8 +6856,6 @@ build_asm_stmt (cv_qualifier, string, outputs, inputs, clobbers)
 {
   tree tail;
 
-  if (TREE_CHAIN (string))
-    string = combine_strings (string);
   if (TREE_CODE (string) != STRING_CST)
     {
       error ("asm template is not a string constant");

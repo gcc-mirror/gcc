@@ -1,3 +1,16 @@
+2001-12-08  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-lex.c (c_lex): Peek a token ahead for a string to concatenate,
+	using combine_strings to do the concatenation.
+	* c-parse.in: Replace uses of the string non-terminal with STRING.
+	Don't attempt string concatenation.
+	(OBJC_STRING): New terminal.
+	(string): Remove non-terminal.
+	(_yylex): Call combine_strings on function names.  Generate
+	OBJC_STRING terminals; don't pass '@' on to yacc.
+	* c-typeck.c (simple_asm_stmt): Don't concatenate strings here.
+	(build_asm_stmt): Similarly.
+
 2001-12-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* rtlanal.c (get_jump_table_offset): Delete unused variable.

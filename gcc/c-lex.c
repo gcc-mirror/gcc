@@ -762,6 +762,7 @@ c_lex (value)
      tree *value;
 {
   const cpp_token *tok;
+  enum cpp_ttype result;
 
   retry:
   timevar_push (TV_CPP);
@@ -776,7 +777,9 @@ c_lex (value)
   lineno = src_lineno;
 
   *value = NULL_TREE;
-  switch (tok->type)
+  result = tok->type;
+
+  switch (result)
     {
     case CPP_OPEN_BRACE:  indent_level++;  break;
     case CPP_CLOSE_BRACE: indent_level--;  break;
@@ -804,8 +807,48 @@ c_lex (value)
 
     case CPP_STRING:
     case CPP_WSTRING:
-      *value = lex_string ((const char *)tok->val.str.text,
-			   tok->val.str.len, tok->type == CPP_WSTRING);
+      {
+	tree full_str = NULL_TREE;
+
+	do
+	  {
+	    /* Translate escape sequences in this string, then append it.  */
+	    tree str = lex_string ((const char *) tok->val.str.text,
+				   tok->val.str.len,
+				   tok->type == CPP_WSTRING);
+
+	    if (full_str && c_language == clk_c && warn_traditional
+		&& !in_system_header)
+	      {
+		static int last_lineno;
+		static const char *last_input_filename;
+
+		if (lineno != last_lineno || !last_input_filename
+		    || strcmp (last_input_filename, input_filename))
+		  {
+		    warning ("traditional C rejects string concatenation");
+		    last_lineno = lineno;
+		    last_input_filename = input_filename;
+		  }
+	      }
+
+	    full_str = chainon (full_str, str);
+
+	    /* Wide and non-wide give a wide result.  */
+	    if (tok->type == CPP_WSTRING)
+	      result = CPP_WSTRING;
+
+	    /* Look ahead for another string token.  */
+	    do
+	      tok = cpp_get_token (parse_in);
+	    while (tok->type == CPP_PADDING);
+	  }
+	while (tok->type == CPP_STRING || tok->type == CPP_WSTRING);
+
+	_cpp_backup_tokens (parse_in, 1);
+
+	*value = combine_strings (full_str);
+      }
       break;
 
       /* These tokens should not be visible outside cpplib.  */
@@ -817,7 +860,7 @@ c_lex (value)
     default: break;
     }
 
-  return tok->type;
+  return result;
 }
 
 #define ERROR(msgid) do { error(msgid); goto syntax_error; } while(0)

@@ -99,9 +99,8 @@ end ifobjc
    yylval is the node for the constant.  */
 %token CONSTANT
 
-/* String constants in raw form.
-   yylval is a STRING_CST node.  */
-%token STRING
+/* String constants as arrays of the appropriate character type.  */
+%token STRING OBJC_STRING
 
 /* "...", used for functions with variable arglists.  */
 %token ELLIPSIS
@@ -151,7 +150,7 @@ end ifobjc
 %type <ttype> BREAK CONTINUE RETURN GOTO ASM_KEYWORD SIZEOF TYPEOF ALIGNOF
 
 %type <ttype> identifier IDENTIFIER TYPENAME CONSTANT expr nonnull_exprlist exprlist
-%type <ttype> expr_no_commas cast_expr unary_expr primary string STRING
+%type <ttype> expr_no_commas cast_expr unary_expr primary STRING
 %type <ttype> declspecs_nosc_nots_nosa_noea declspecs_nosc_nots_nosa_ea
 %type <ttype> declspecs_nosc_nots_sa_noea declspecs_nosc_nots_sa_ea
 %type <ttype> declspecs_nosc_ts_nosa_noea declspecs_nosc_ts_nosa_ea
@@ -204,6 +203,8 @@ end ifobjc
 %type <lineno> save_lineno
 
 ifobjc
+%token OBJC_STRING
+
 /* the Objective-C nonterminals */
 
 %type <ttype> ivar_decl_list ivar_decls ivar_decl ivars ivar_declarator
@@ -214,7 +215,7 @@ ifobjc
 %type <ttype> selectorarg keywordnamelist keywordname objcencodeexpr
 %type <ttype> objc_string non_empty_protocolrefs protocolrefs identifier_list objcprotocolexpr
 
-%type <ttype> CLASSNAME OBJECTNAME
+%type <ttype> CLASSNAME OBJECTNAME OBJC_STRING
 end ifobjc
 
 %{
@@ -618,8 +619,8 @@ primary:
 		  $$ = build_external_ref ($1, yychar == '(');
 		}
 	| CONSTANT
-	| string
-		{ $$ = combine_strings ($1); }
+	| STRING
+		{ $$ = $1; }
 	| VAR_FUNC_NAME
 		{ $$ = fname_decl (C_RID_CODE ($$), $$); }
 	| '(' typename ')' '{' 
@@ -709,37 +710,13 @@ ifobjc
 end ifobjc
 	;
 
-/* Produces a STRING_CST with perhaps more STRING_CSTs chained onto it.  */
-string:
-	  STRING
-	| string STRING
-		{
-ifc
-                  static int last_lineno = 0;
-                  static const char *last_input_filename = 0;
-end ifc
-                  $$ = chainon ($1, $2);
-ifc
-		  if (warn_traditional && !in_system_header
-		      && (lineno != last_lineno || !last_input_filename ||
-			  strcmp (last_input_filename, input_filename)))
-		    {
-		      warning ("traditional C rejects string concatenation");
-		      last_lineno = lineno;
-		      last_input_filename = input_filename;
-		    }
-end ifc
-		}
-	;
-
 ifobjc
-/* Produces an STRING_CST with perhaps more STRING_CSTs chained
-   onto it, which is to be read as an ObjC string object.  */
+/* Chains ObjC string objects together.  */
 objc_string:
-	  '@' STRING
-		{ $$ = $2; }
-	| objc_string '@' STRING
-		{ $$ = chainon ($1, $3); }
+	  OBJC_STRING
+		{ $$ = $1; }
+	| objc_string OBJC_STRING
+		{ $$ = chainon ($1, $2); }
 	;
 end ifobjc
 
@@ -1372,10 +1349,8 @@ notype_initdecls:
 maybeasm:
 	  /* empty */
 		{ $$ = NULL_TREE; }
-	| ASM_KEYWORD '(' string ')'
-		{ if (TREE_CHAIN ($3)) $3 = combine_strings ($3);
-		  $$ = $3;
-		}
+	| ASM_KEYWORD '(' STRING ')'
+		{ $$ = $3; }
 	;
 
 initdcl:
@@ -2433,10 +2408,10 @@ asm_operand:
 	;
 
 asm_clobbers:
-	  string
-		{ $$ = tree_cons (NULL_TREE, combine_strings ($1), NULL_TREE); }
-	| asm_clobbers ',' string
-		{ $$ = tree_cons (NULL_TREE, combine_strings ($3), $1); }
+	  STRING
+		{ $$ = tree_cons (NULL_TREE, $1, NULL_TREE); }
+	| asm_clobbers ',' STRING
+		{ $$ = tree_cons (NULL_TREE, $3, $1); }
 	;
 
 /* This is what appears inside the parens in a function declarator.
@@ -3578,7 +3553,8 @@ end ifobjc
 	       to string constants.  */
 	    const char *name = fname_string (rid_code);
 	  
-	    yylval.ttype = build_string (strlen (name) + 1, name);
+	    yylval.ttype
+	      = combine_strings (build_string (strlen (name) + 1, name));
 	    last_token = CPP_STRING;  /* so yyerror won't choke */
 	    return STRING;
 	  }
@@ -3695,23 +3671,16 @@ _yylex ()
 	 special significance.  */
     case CPP_ATSIGN:
 ifobjc
-      {
-	tree after_at;
-	enum cpp_ttype after_at_type;
+	last_token = c_lex (&yylval.ttype);
 
-	after_at_type = c_lex (&after_at);
+	if (last_token == CPP_NAME
+	    && C_IS_RESERVED_WORD (yylval.ttype)
+	    && OBJC_IS_AT_KEYWORD (C_RID_CODE (yylval.ttype)))
+	  return rid_to_yy [(int) C_RID_CODE (yylval.ttype)];
+	else if (last_token == CPP_STRING || last_token == CPP_WSTRING)
+	  return OBJC_STRING;
 
-	if (after_at_type == CPP_NAME
-	    && C_IS_RESERVED_WORD (after_at)
-	    && OBJC_IS_AT_KEYWORD (C_RID_CODE (after_at)))
-	  {
-	    yylval.ttype = after_at;
-	    last_token = after_at_type;
-	    return rid_to_yy [(int) C_RID_CODE (after_at)];
-	  }
-	_cpp_backup_tokens (parse_in, 1);
-	return '@';
-      }
+	/* Fall through...  */
 end ifobjc
 
       /* These tokens are C++ specific (and will not be generated
