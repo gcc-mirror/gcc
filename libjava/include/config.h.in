@@ -137,6 +137,9 @@
 /* Define if you have the ctime_r function.  */
 #undef HAVE_CTIME_R
 
+/* Define if you have the fstat function.  */
+#undef HAVE_FSTAT
+
 /* Define if you have the fsync function.  */
 #undef HAVE_FSYNC
 

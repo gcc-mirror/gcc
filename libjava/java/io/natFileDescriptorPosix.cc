@@ -234,17 +234,58 @@ java::io::FileDescriptor::read (jbyteArray buffer, jint offset, jint count)
 jint
 java::io::FileDescriptor::available (void)
 {
+#if defined (FIONREAD) || defined (HAVE_SELECT) || defined (HAVE_FSTAT)
+  long num = 0;
+  int r = 0;
+  bool num_set = false;
+
 #if defined (FIONREAD)
-  long num;
-  int r = ::ioctl (fd, FIONREAD, &num);
-  if (r == -1)
-    JvThrow (new IOException (JvNewStringLatin1 (strerror (errno))));
-  return (jint) num;
-#elif defined (HAVE_SELECT)
-  int r = -1;
-  if (fd < 0)
-    errno = EBADF;
+  r = ::ioctl (fd, FIONREAD, &num);
+  if (r == -1 && errno == ENOTTY)
+    {
+      // If the ioctl doesn't work, we don't care.
+      r = 0;
+      num = 0;
+    }
   else
+    num_set = true;
+#elif defined (HAVE_SELECT)
+  if (fd < 0)
+    {
+      errno = EBADF;
+      r = -1;
+    }
+#endif
+
+  if (r == -1)
+    {
+    posix_error:
+      JvThrow (new IOException (JvNewStringLatin1 (strerror (errno))));
+    }
+
+  // If we didn't get anything, and we have fstat, then see if see if
+  // we're reading a regular file.  On many systems, FIONREAD does not
+  // work on regular files; select() likewise returns a useless
+  // result.  This is run incorrectly when FIONREAD does work on
+  // regular files and we are at the end of the file.  However, this
+  // case probably isn't very important.
+#if defined (HAVE_FSTAT)
+  if (! num_set)
+    {
+      struct stat sb;
+      off_t where;
+      if (fstat (fd, &sb) != -1
+	  && S_ISREG (sb.st_mode)
+	  && (where = lseek (fd, SEEK_CUR, 0)) != (off_t) -1)
+	{
+	  num = (long) (sb.st_size - where);
+	  num_set = true;
+	}
+    }
+#endif /* HAVE_FSTAT */
+
+#if defined (HAVE_SELECT)
+  if (! num_set)
     {
       fd_set rd;
       FD_ZERO (&rd);
@@ -253,10 +294,13 @@ java::io::FileDescriptor::available (void)
       tv.tv_sec = 0;
       tv.tv_usec = 0;
       r = ::select (fd + 1, &rd, NULL, NULL, &tv);
+      if (r == -1)
+	goto posix_error;
+      num = r == 0 ? 0 : 1;
     }
-  if (r == -1)
-    JvThrow (new IOException (JvNewStringLatin1 (strerror (errno))));
-  return r == 0 ? 0 : 1;
+#endif /* HAVE_SELECT */
+
+  return (jint) num;
 #else
   JvThrow (new IOException (JvNewStringLatin1 ("unimplemented")));
 #endif
