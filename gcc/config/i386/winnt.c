@@ -41,6 +41,13 @@ Boston, MA 02111-1307, USA.  */
    multiple times.
 */
 
+static tree associated_type PARAMS ((tree));
+const char * gen_stdcall_suffix PARAMS ((tree));
+int i386_pe_dllexport_p PARAMS ((tree));
+int i386_pe_dllimport_p PARAMS ((tree));
+void i386_pe_mark_dllexport PARAMS ((tree));
+void i386_pe_mark_dllimport PARAMS ((tree));
+
 /* Return nonzero if ATTR is a valid attribute for DECL.
    ATTRIBUTES are any existing attributes and ARGS are the arguments
    supplied with ATTR.  */

@@ -228,6 +228,7 @@ ctor_section ()							\
       in_section = in_ctor;					\
     }								\
 }
+void ctor_section PARAMS ((void));
 
 #define DTOR_SECTION_FUNCTION					\
 void								\
@@ -239,6 +240,7 @@ dtor_section ()							\
       in_section = in_dtor;					\
     }								\
 }
+void dtor_section PARAMS ((void));
 
 #define DRECTVE_SECTION_FUNCTION \
 void									\
@@ -250,6 +252,7 @@ drectve_section ()							\
       in_section = in_drectve;						\
     }									\
 }
+void drectve_section PARAMS ((void));
 
 /* Switch to SECTION (an `enum in_section').
 
@@ -258,6 +261,7 @@ drectve_section ()							\
    ASM_DECLARE_OBJECT_NAME and then switch back to the original section
    afterwards.  */
 #define SWITCH_TO_SECTION_FUNCTION 				\
+void switch_to_section PARAMS ((enum in_section, tree));        \
 void 								\
 switch_to_section (section, decl) 				\
      enum in_section section; 					\
