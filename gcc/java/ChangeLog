@@ -1,3 +1,29 @@
+2000-02-02  Tom Tromey  <tromey@cygnus.com>
+
+	* jv-scan.c: Include version.c, <getopt.h>.
+	(LONG_OPT, OPT_HELP, OPT_VERSION): New macros.
+	(options): New array.
+	(usage): New function.
+	(version): New function.
+	(main): Use getopt_long to parse command line.
+	* jcf-dump.c: Include version.c, <getopt.h>.
+	(LONG_OPT, OPT_classpath, OPT_CLASSPATH, OPT_HELP, OPT_VERSION,
+	OPT_JAVAP): New macros.
+	(options): New array.
+	(usage): Return `void'.  Changed message.
+	(help): New function.
+	(version): New function.
+	(main): Use getopt_long_only to parse command line.
+	* gjavah.c: Include <getopt.h>.
+	(LONG_OPT, OPT_classpath, OPT_CLASSPATH, OPT_HELP, OPT_TEMP,
+	OPT_VERSION, OPT_PREPEND, OPT_FRIEND, OPT_ADD, OPT_APPEND, OPT_M,
+	OPT_MM, OPT_MG, OPT_MD, OPT_MMD): New macros.
+	(options): New array.
+	(java_no_argument): Removed.
+	(help): Updated with missing options.
+	(main): Use getopt_long_only to parse command line.
+	(usage): Changed message.
+
 2000-01-30  Anthony Green  <green@redhat.com>
 
 	* jcf-write.c (generate_bytecode_insns): Use TYPE_IS_WIDE to

@@ -35,6 +35,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "version.c"
 
+#include <getopt.h>
+
+
+
 /* The output file.  */
 FILE *out = NULL;
 
@@ -134,7 +138,6 @@ static const unsigned char *decode_signature_piece
 static void print_class_decls PARAMS ((FILE *, JCF *, int));
 static void usage PARAMS ((void)) ATTRIBUTE_NORETURN;
 static void help PARAMS ((void)) ATTRIBUTE_NORETURN;
-static void java_no_argument PARAMS ((const char *)) ATTRIBUTE_NORETURN;
 static void version PARAMS ((void)) ATTRIBUTE_NORETURN;
 
 JCF_u2 current_field_name;
@@ -161,7 +164,7 @@ static int method_pass;
       if (out && ! stubs)						      \
 	print_field_info (out, jcf, current_field_name,			      \
 			  current_field_signature,			      \
-			  current_field_flags);				      \
+ 			  current_field_flags);				      \
     }									      \
   else									      \
     if (! stubs) add_class_decl (out, jcf, current_field_signature);
@@ -901,7 +904,7 @@ DEFUN(print_full_cxx_name, (stream, jcf, name_index, signature_index, is_init, n
       fputs (")", stream);
     }
 }
-      
+
 static void
 DEFUN(print_stub, (stream, jcf, name_index, signature_index, is_init,
 		     name_override),
@@ -1490,10 +1493,51 @@ DEFUN(process_file, (jcf, out),
     }
 }
 
+
+
+/* This is used to mark options with no short value.  */
+#define LONG_OPT(Num)  ((Num) + 128)
+
+#define OPT_classpath LONG_OPT (0)
+#define OPT_CLASSPATH LONG_OPT (1)
+#define OPT_HELP      LONG_OPT (2)
+#define OPT_TEMP      LONG_OPT (3)
+#define OPT_VERSION   LONG_OPT (4)
+#define OPT_PREPEND   LONG_OPT (5)
+#define OPT_FRIEND    LONG_OPT (6)
+#define OPT_ADD       LONG_OPT (7)
+#define OPT_APPEND    LONG_OPT (8)
+#define OPT_M         LONG_OPT (9)
+#define OPT_MM        LONG_OPT (10)
+#define OPT_MG        LONG_OPT (11)
+#define OPT_MD        LONG_OPT (12)
+#define OPT_MMD       LONG_OPT (13)
+
+static struct option options[] =
+{
+  { "classpath", required_argument, NULL, OPT_classpath },
+  { "CLASSPATH", required_argument, NULL, OPT_CLASSPATH },
+  { "help",      no_argument,       NULL, OPT_HELP },
+  { "stubs",     no_argument,       &stubs, 1 },
+  { "td",        required_argument, NULL, OPT_TEMP },
+  { "verbose",   no_argument,       NULL, 'v' },
+  { "version",   no_argument,       NULL, OPT_VERSION },
+  { "prepend",   required_argument, NULL, OPT_PREPEND },
+  { "friend",    required_argument, NULL, OPT_FRIEND },
+  { "add",       required_argument, NULL, OPT_ADD },
+  { "append",    required_argument, NULL, OPT_APPEND },
+  { "M",         no_argument,       NULL, OPT_M   },
+  { "MM",        no_argument,       NULL, OPT_MM  },
+  { "MG",        no_argument,       NULL, OPT_MG  },
+  { "MD",        no_argument,       NULL, OPT_MD  },
+  { "MMD",       no_argument,       NULL, OPT_MMD },
+  { NULL,        no_argument,       NULL, 0 }
+};
+
 static void
 usage ()
 {
-  fprintf (stderr, "gcjh: no classes specified\n");
+  fprintf (stderr, "Try `gcjh --help' for more information.\n");
   exit (1);
 }
 
@@ -1502,32 +1546,40 @@ help ()
 {
   printf ("Usage: gcjh [OPTION]... CLASS...\n\n");
   printf ("Generate C++ header files from .class files\n\n");
+  printf ("  -stubs                  Generate an implementation stub file\n");
+  printf ("\n");
+  printf ("  -add TEXT               Insert TEXT into class body\n");
+  printf ("  -append TEXT            Insert TEXT after class declaration\n");
+  printf ("  -friend TEXT            Insert TEXT as `friend' declaration\n");
+  printf ("  -prepend TEXT           Insert TEXT before start of class\n");
+  printf ("\n");
   printf ("  --classpath PATH        Set path to find .class files\n");
   printf ("  --CLASSPATH PATH        Set path to find .class files\n");
   printf ("  -IDIR                   Append directory to class path\n");
   printf ("  -d DIRECTORY            Set output directory name\n");
-  printf ("  --help                  Print this help, then exit\n");
   printf ("  -o FILE                 Set output file name\n");
-  printf ("  -stubs                  Generate a C++ implementation stub file\n");
   printf ("  -td DIRECTORY           Set temporary directory name\n");
-  printf ("  -v, --verbose           Print extra information while running\n");
+  printf ("\n");
+  printf ("  --help                  Print this help, then exit\n");
   printf ("  --version               Print version number, then exit\n");
-  /* FIXME: print bug-report information.  */
+  printf ("  -v, --verbose           Print extra information while running\n");
+  printf ("\n");
+  printf ("  -M                      Print all dependencies to stdout;\n");
+  printf ("                             suppress ordinary output\n");
+  printf ("  -MM                     Print non-system dependencies to stdout;\n");
+  printf ("                             suppress ordinary output\n");
+  printf ("  -MD                     Print all dependencies to stdout\n");
+  printf ("  -MMD                    Print non-system dependencies to stdout\n");
+  /* We omit -MG until it is implemented.  */
+  printf ("\n");
+  printf ("For bug reporting instructions, please see:\n");
+  printf ("<URL:http://www.gnu.org/software/gcc/faq.html#bugreport>.\n");
   exit (0);
-}
-
-static void
-java_no_argument (opt)
-     const char *opt;
-{
-  fprintf (stderr, "gcjh: no argument given for option `%s'\n", opt);
-  exit (1);
 }
 
 static void
 version ()
 {
-  /* FIXME: use version.c?  */
   printf ("gcjh (%s)\n\n", version_string);
   printf ("Copyright (C) 1998, 1999 Free Software Foundation, Inc.\n");
   printf ("This is free software; see the source for copying conditions.  There is NO\n");
@@ -1543,148 +1595,123 @@ DEFUN(main, (argc, argv),
   int argi;
   char *output_file = NULL;
   int emit_dependencies = 0, suppress_output = 0;
+  int opt;
 
   if (argc <= 1)
-    usage ();
+    {
+      fprintf (stderr, "gcjh: no classes specified\n");
+      usage ();
+    }
 
   jcf_path_init ();
 
-  for (argi = 1; argi < argc; argi++)
+  /* We use getopt_long_only to allow single `-' long options.  For
+     some of our options this is more natural.  */
+  while ((opt = getopt_long_only (argc, argv, "I:d:o:v", options, NULL)) != -1)
     {
-      char *arg = argv[argi];
+      switch (opt)
+	{
+	case 0:
+	  /* Already handled.  */
+	  break;
 
-      if (arg[0] != '-' || ! strcmp (arg, "--"))
-	break;
+	case 'o':
+	  output_file = optarg;
+	  break;
 
-      /* Just let all arguments be given in either "-" or "--" form.  */
-      if (arg[1] == '-')
-	++arg;
+	case 'd':
+	  output_directory = optarg;
+	  break;
 
-      if (strcmp (arg, "-o") == 0)
-	{
-	  if (argi + 1 < argc)
-	    output_file = argv[++argi];
-	  else
-	    java_no_argument (argv[argi]);
-	}
-      else if (strcmp (arg, "-d") == 0)
-	{
-	  if (argi + 1 < argc)
-	    output_directory = argv[++argi];
-	  else
-	    java_no_argument (argv[argi]);
-	}
-      else if (strcmp (arg, "-td") == 0)
-	{
-	  if (argi + 1 < argc)
-	    temp_directory = argv[++argi];
-	  else
-	    java_no_argument (argv[argi]);
-	}
-      else if (strcmp (arg, "-prepend") == 0)
-	{
-	  if (argi + 1 < argc)
-	    {
-	      if (prepend_count == 0)
-		prepend_specs = (char**) ALLOC ((argc-argi) * sizeof (char*));
-	      prepend_specs[prepend_count++] = argv[++argi];
-	    }
-	  else
-	    java_no_argument (argv[argi]);
-	}
-      else if (strcmp (arg, "-friend") == 0)
-	{
-	  if (argi + 1 < argc)
-	    {
-	      if (friend_count == 0)
-		friend_specs = (char**) ALLOC ((argc-argi) * sizeof (char*));
-	      friend_specs[friend_count++] = argv[++argi];
-	    }
-	  else
-	    java_no_argument (argv[argi]);
-	}
-      else if (strcmp (arg, "-add") == 0)
-	{
-	  if (argi + 1 < argc)
-	    {
-	      if (add_count == 0)
-		add_specs = (char**) ALLOC ((argc-argi) * sizeof (char*));
-	      add_specs[add_count++] = argv[++argi];
-	    }
-	  else
-	    java_no_argument (argv[argi]);
-	}
-      else if (strcmp (arg, "-append") == 0)
-	{
-	  if (argi + 1 < argc)
-	    {
-	      if (append_count == 0)
-		append_specs = (char**) ALLOC ((argc-argi) * sizeof (char*));
-	      append_specs[append_count++] = argv[++argi];
-	    }
-	  else
-	    java_no_argument (argv[argi]);
-	}
-      else if (strcmp (arg, "-classpath") == 0)
-	{
-	  if (argi + 1 < argc)
-	    jcf_path_classpath_arg (argv[++argi]);
-	  else
-	    java_no_argument (argv[argi]);
-	}
-      else if (strcmp (arg, "-CLASSPATH") == 0)
-	{
-	  if (argi + 1 < argc)
-	    jcf_path_CLASSPATH_arg (argv[++argi]);
-	  else
-	    java_no_argument (argv[argi]);
-	}
-      else if (strncmp (arg, "-I", 2) == 0)
-	jcf_path_include_arg (arg + 2);
-      else if (strcmp (arg, "-verbose") == 0 || strcmp (arg, "-v") == 0)
-	verbose++;
-      else if (strcmp (arg, "-stubs") == 0)
-	stubs++;
-      else if (strcmp (arg, "-help") == 0)
-	help ();
-      else if (strcmp (arg, "-version") == 0)
-	version ();
-      else if (strcmp (arg, "-M") == 0)
-	{
+	case 'I':
+	  jcf_path_include_arg (optarg);
+	  break;
+
+	case 'v':
+	  verbose++;
+	  break;
+
+	case OPT_classpath:
+	  jcf_path_classpath_arg (optarg);
+	  break;
+
+	case OPT_CLASSPATH:
+	  jcf_path_CLASSPATH_arg (optarg);
+	  break;
+
+	case OPT_HELP:
+	  help ();
+	  break;
+
+	case OPT_TEMP:
+	  temp_directory = optarg;
+	  break;
+
+	case OPT_VERSION:
+	  version ();
+	  break;
+
+	case OPT_PREPEND:
+	  if (prepend_count == 0)
+	    prepend_specs = (char**) ALLOC (argc * sizeof (char*));
+	  prepend_specs[prepend_count++] = optarg;
+	  break;
+
+	case OPT_FRIEND:
+	  if (friend_count == 0)
+	    friend_specs = (char**) ALLOC (argc * sizeof (char*));
+	  friend_specs[friend_count++] = optarg;
+	  break;
+
+	case OPT_ADD:
+	  if (add_count == 0)
+	    add_specs = (char**) ALLOC (argc * sizeof (char*));
+	  add_specs[add_count++] = optarg;
+	  break;
+
+	case OPT_APPEND:
+	  if (append_count == 0)
+	    append_specs = (char**) ALLOC (argc * sizeof (char*));
+	  append_specs[append_count++] = optarg;
+	  break;
+
+	case OPT_M:
 	  emit_dependencies = 1;
 	  suppress_output = 1;
 	  jcf_dependency_init (1);
-	}
-      else if (strcmp (arg, "-MM") == 0)
-	{
+	  break;
+
+	case OPT_MM:
 	  emit_dependencies = 1;
 	  suppress_output = 1;
 	  jcf_dependency_init (0);
-	}
-      else if (strcmp (arg, "-MG") == 0)
-	{
+	  break;
+
+	case OPT_MG:
 	  fprintf (stderr, "gcjh: `%s' option is unimplemented\n", argv[argi]);
 	  exit (1);
-	}
-      else if (strcmp (arg, "-MD") == 0)
-	{
+
+	case OPT_MD:
 	  emit_dependencies = 1;
 	  jcf_dependency_init (1);
-	}
-      else if (strcmp (arg, "-MMD") == 0)
-	{
+	  break;
+
+	case OPT_MMD:
 	  emit_dependencies = 1;
 	  jcf_dependency_init (0);
-	}
-      else
-	{
-	  fprintf (stderr, "%s: illegal argument\n", argv[argi]);
-	  exit (1);
+	  break;
+
+	default:
+	  usage ();
+	  break;
 	}
     }
 
-  if (argi == argc)
-    usage ();
+  if (optind == argc)
+    {
+      fprintf (stderr, "gcjh: no classes specified\n");
+      usage ();
+    }
 
   jcf_path_seal ();
 
@@ -1694,7 +1721,7 @@ DEFUN(main, (argc, argv),
       exit (1);
     }
 
-  for (; argi < argc; argi++)
+  for (argi = optind; argi < argc; argi++)
     {
       char *classname = argv[argi];
       char *current_output_file;
@@ -1782,12 +1809,3 @@ DEFUN(main, (argc, argv),
 
   return found_error;
 }
-
-/* TODO:
-
- * Emit "structure forward declarations" when needed.
-
- * Generate C headers, like javah
-
- */
-

@@ -53,6 +53,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree.h"
 #include "java-tree.h"
 
+#include "version.c"
+
+#include <getopt.h>
+
 /* Outout file. */
 FILE *out;
 /* Name of output file, if NULL if stdout. */
@@ -86,7 +90,9 @@ static void disassemble_method PARAMS ((JCF*, const unsigned char *, int));
 static void print_name PARAMS ((FILE*, JCF*, int));
 static void print_signature PARAMS ((FILE*, JCF*, int, int));
 static int utf8_equal_string PARAMS ((struct JCF*, int, const char *));
-static int usage PARAMS ((void)) ATTRIBUTE_NORETURN;
+static void usage PARAMS ((void)) ATTRIBUTE_NORETURN;
+static void help PARAMS ((void)) ATTRIBUTE_NORETURN;
+static void version PARAMS ((void)) ATTRIBUTE_NORETURN;
 static void process_class PARAMS ((struct JCF *));
 static void print_constant_pool PARAMS ((struct JCF *));
 static void print_exception_table PARAMS ((struct JCF *,
@@ -679,13 +685,6 @@ DEFUN(print_exception_table, (jcf, entries, count),
 
 #include "jcf-reader.c"
 
-static int
-DEFUN (usage, (), )
-{
-  fprintf (stderr, "Usage: jcf-dump [-o outputfile] [-c] classname\n");
-  exit(1);
-}
-
 static void
 DEFUN(process_class, (jcf),
       JCF *jcf)
@@ -732,56 +731,140 @@ DEFUN(process_class, (jcf),
   jcf->filename = NULL;
 }
 
+
+
+/* This is used to mark options with no short value.  */
+#define LONG_OPT(Num)  ((Num) + 128)
+
+#define OPT_classpath LONG_OPT (0)
+#define OPT_CLASSPATH LONG_OPT (1)
+#define OPT_HELP      LONG_OPT (2)
+#define OPT_VERSION   LONG_OPT (3)
+#define OPT_JAVAP     LONG_OPT (4)
+
+static struct option options[] =
+{
+  { "classpath", required_argument, NULL, OPT_classpath },
+  { "CLASSPATH", required_argument, NULL, OPT_CLASSPATH },
+  { "help",      no_argument,       NULL, OPT_HELP },
+  { "verbose",   no_argument,       NULL, 'v' },
+  { "version",   no_argument,       NULL, OPT_VERSION },
+  { "javap",     no_argument,       NULL, OPT_JAVAP },
+  { "print-main", no_argument,      &flag_print_main, 1 },
+  { NULL,        no_argument,       NULL, 0 }
+};
+
+static void
+usage ()
+{
+  fprintf (stderr, "Try `jcf-dump --help' for more information.\n");
+  exit (1);
+}
+
+static void
+help ()
+{
+  printf ("Usage: jcf-dump [OPTION]... CLASS...\n\n");
+  printf ("Display contents of a class file in readable form.\n\n");
+  printf ("  -c                      Disassemble method bodies\n");
+  printf ("  --javap                 Generate output in `javap' format\n");
+  printf ("\n");
+  printf ("  --classpath PATH        Set path to find .class files\n");
+  printf ("  --CLASSPATH PATH        Set path to find .class files\n");
+  printf ("  -IDIR                   Append directory to class path\n");
+  printf ("  -o FILE                 Set output file name\n");
+  printf ("\n");
+  printf ("  --help                  Print this help, then exit\n");
+  printf ("  --version               Print version number, then exit\n");
+  printf ("  -v, --verbose           Print extra information while running\n");
+  printf ("\n");
+  printf ("For bug reporting instructions, please see:\n");
+  printf ("<URL:http://www.gnu.org/software/gcc/faq.html#bugreport>.\n");
+  exit (0);
+}
+
+static void
+version ()
+{
+  printf ("jcf-dump (%s)\n\n", version_string);
+  printf ("Copyright (C) 1998, 1999 Free Software Foundation, Inc.\n");
+  printf ("This is free software; see the source for copying conditions.  There is NO\n");
+  printf ("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");
+  exit (0);
+}
+
 int
 DEFUN(main, (argc, argv),
       int argc AND char** argv)
 {
   JCF jcf[1];
-  int argi;
+  int argi, opt;
+
   if (argc <= 1)
-    usage ();
+    {
+      fprintf (stderr, "jcf-dump: no classes specified\n");
+      usage ();
+    }
 
   jcf_path_init ();
 
-  for (argi = 1; argi < argc; argi++)
+  /* We use getopt_long_only to allow single `-' long options.  For
+     some of our options this is more natural.  */
+  while ((opt = getopt_long_only (argc, argv, "o:I:vc", options, NULL)) != -1)
     {
-      const char *arg = argv[argi];
-
-      if (arg[0] != '-' || ! strcmp (arg, "--"))
-	break;
-
-      /* Just let all arguments be given in either "-" or "--" form.  */
-      if (arg[1] == '-')
-	++arg;
-
-      if (strcmp (arg, "-o") == 0 && argi + 1 < argc)
-	output_file = argv[++argi];
-      else if (strcmp (arg, "-classpath") == 0 && argi + 1 < argc)
-	jcf_path_classpath_arg (argv[++argi]);
-      else if (strcmp (arg, "-CLASSPATH") == 0 && argi + 1 < argc)
-	jcf_path_CLASSPATH_arg (argv[++argi]);
-      else if (strncmp (arg, "-I", 2) == 0)
-	jcf_path_include_arg (arg + 2);
-      else if (strcmp (arg, "-verbose") == 0)
-	verbose++;
-      else if (strcmp (arg, "-print-main") == 0)
-	flag_print_main++;
-      else if (strcmp (arg, "-c") == 0)
-	flag_disassemble_methods++;
-      else if (strcmp (arg, "-javap") == 0)
+      switch (opt)
 	{
+	case 0:
+	  /* Already handled.  */
+	  break;
+
+        case 'o':
+	  output_file = optarg;
+	  break;
+
+	case 'I':
+	  jcf_path_include_arg (optarg);
+	  break;
+
+	case 'v':
+	  verbose++;
+	  break;
+
+	case 'c':
+	  flag_disassemble_methods = 1;
+	  break;
+
+	case OPT_classpath:
+	  jcf_path_classpath_arg (optarg);
+	  break;
+
+	case OPT_CLASSPATH:
+	  jcf_path_CLASSPATH_arg (optarg);
+	  break;
+
+	case OPT_HELP:
+	  help ();
+	  break;
+
+	case OPT_VERSION:
+	  version ();
+	  break;
+
+	case OPT_JAVAP:
 	  flag_javap_compatible++;
 	  flag_print_constant_pool = 0;
-	}
-      else
-	{
-	  fprintf (stderr, "%s: illegal argument\n", argv[argi]);
-	  return FATAL_EXIT_CODE;
+	  break;
+
+	default:
+	  usage ();
 	}
     }
 
-  if (argi == argc)
-    usage ();
+  if (optind == argc)
+    {
+      fprintf (stderr, "jcf-dump: no classes specified\n");
+      usage ();
+    }
 
   jcf_path_seal ();
 
@@ -806,7 +889,7 @@ DEFUN(main, (argc, argv),
   else
     out = stdout;
 
-  if (argi >= argc)
+  if (optind >= argc)
     {
       fprintf (out, "Reading .class from <standard input>.\n");
 #if JCF_USE_STDIO
@@ -818,7 +901,7 @@ DEFUN(main, (argc, argv),
     }
   else
     {
-      for (; argi < argc; argi++)
+      for (argi = optind; argi < argc; argi++)
 	{
 	  char *arg = argv[argi];
 	  const char *class_filename = find_class (arg, strlen (arg), jcf, 0);
@@ -926,6 +1009,8 @@ DEFUN(main, (argc, argv),
 
   return SUCCESS_EXIT_CODE;
 }
+
+
 
 static void
 DEFUN(disassemble_method, (jcf, byte_ops, len),
