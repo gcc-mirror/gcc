@@ -2118,9 +2118,7 @@ _Jv_LookupJNIMethod (jclass klass, _Jv_Utf8Const *name,
           function = _Jv_FindSymbolInExecutable (buf + 1);
         }
     }
-#else /* WIN32 */
-  args_size;  /* Dummy statement to avoid unused parameter warning */
-#endif /* ! WIN32 */
+#endif /* WIN32 */
 
   if (function == NULL)
     {
