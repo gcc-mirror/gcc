@@ -1847,6 +1847,18 @@ save_expr (expr)
       || TREE_CODE (t) == SAVE_EXPR)
     return t;
 
+  /* If T contains a PLACEHOLDER_EXPR, we must evaluate it each time, since
+     it means that the size or offset of some field of an object depends on
+     the value within another field.
+
+     Note that it must not be the case that T contains both a PLACEHOLDER_EXPR
+     and some variable since it would then need to be both evaluated once and
+     evaluated more than once.  Front-ends must assure this case cannot
+     happen by surrounding any such subexpressions in their own SAVE_EXPR
+     and forcing evaluation at the proper time.  */
+  if (contains_placeholder_p (t))
+    return t;
+
   t = build (SAVE_EXPR, TREE_TYPE (expr), t, current_function_decl, NULL_TREE);
 
   /* This expression might be placed ahead of a jump to ensure that the
@@ -1855,7 +1867,286 @@ save_expr (expr)
   TREE_SIDE_EFFECTS (t) = 1;
   return t;
 }
+
+/* Return 1 if EXP contains a PLACEHOLDER_EXPR; i.e., if it represents a size
+   or offset that depends on a field within a record.
 
+   Note that we only allow such expressions within simple arithmetic
+   or a COND_EXPR.  */
+
+int
+contains_placeholder_p (exp)
+     tree exp;
+{
+  register enum tree_code code = TREE_CODE (exp);
+  tree inner;
+
+  switch (TREE_CODE_CLASS (code))
+    {
+    case 'r':
+      for (inner = TREE_OPERAND (exp, 0);
+	   TREE_CODE_CLASS (TREE_CODE (inner)) == 'r';
+	   inner = TREE_OPERAND (inner, 0))
+	;
+      return TREE_CODE (inner) == PLACEHOLDER_EXPR;
+
+    case '1':
+    case '2':  case '<':
+    case 'e':
+      switch (tree_code_length[(int) code])
+	{
+	case 1:
+	  return contains_placeholder_p (TREE_OPERAND (exp, 0));
+	case 2:
+	  return (code != RTL_EXPR
+		  && ! (code == SAVE_EXPR && SAVE_EXPR_RTL (exp) != 0)
+		  && code != WITH_RECORD_EXPR
+		  && (contains_placeholder_p (TREE_OPERAND (exp, 0))
+		      || contains_placeholder_p (TREE_OPERAND (exp, 1))));
+	case 3:
+	  return (code == COND_EXPR
+		  && (contains_placeholder_p (TREE_OPERAND (exp, 0))
+		      || contains_placeholder_p (TREE_OPERAND (exp, 1))
+		      || contains_placeholder_p (TREE_OPERAND (exp, 2))));
+	}
+    }
+
+  return 0;
+}
+
+/* Given a tree EXP, a FIELD_DECL F, and a replacement value R,
+   return a tree with all occurrences of references to F in a
+   PLACEHOLDER_EXPR replaced by R.   Note that we assume here that EXP
+   contains only arithmetic expressions.  */
+
+tree
+substitute_in_expr (exp, f, r)
+     tree exp;
+     tree f;
+     tree r;
+{
+  enum tree_code code = TREE_CODE (exp);
+  tree inner;
+
+  switch (TREE_CODE_CLASS (code))
+    {
+    case 'c':
+    case 'd':
+      return exp;
+
+    case 'x':
+      if (code == PLACEHOLDER_EXPR)
+	return exp;
+      break;
+
+    case '1':
+    case '2':
+    case '<':
+    case 'e':
+      switch (tree_code_length[(int) code])
+	{
+	case 1:
+	  return fold (build1 (code, TREE_TYPE (exp),
+			       substitute_in_expr (TREE_OPERAND (exp, 0),
+						   f, r)));
+
+	case 2:
+	  if (code == RTL_EXPR)
+	    abort ();
+
+	  return fold (build (code, TREE_TYPE (exp),
+			      substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
+			      substitute_in_expr (TREE_OPERAND (exp, 1),
+						  f, r)));
+
+	case 3:
+	  if (code != COND_EXPR)
+	    abort ();
+
+	  return fold (build (code, TREE_TYPE (exp),
+			      substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
+			      substitute_in_expr (TREE_OPERAND (exp, 1), f, r),
+			      substitute_in_expr (TREE_OPERAND (exp, 2),
+						  f, r)));
+	}
+
+      break;
+
+    case 'r':
+      switch (code)
+	{
+	case COMPONENT_REF:
+	  /* If this expression is getting a value from a PLACEHOLDER_EXPR
+	     and it is the right field, replace it with R.  */
+	  for (inner = TREE_OPERAND (exp, 0);
+	       TREE_CODE_CLASS (TREE_CODE (inner)) == 'r';
+	       inner = TREE_OPERAND (inner, 0))
+	    ;
+	  if (TREE_CODE (inner) == PLACEHOLDER_EXPR
+	      && TREE_OPERAND (exp, 1) == f)
+	    return r;
+
+	  return fold (build (code, TREE_TYPE (exp),
+			      substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
+			      TREE_OPERAND (exp, 1)));
+	case BIT_FIELD_REF:
+	  return fold (build (code, TREE_TYPE (exp),
+			      substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
+			      substitute_in_expr (TREE_OPERAND (exp, 1), f, r),
+			      substitute_in_expr (TREE_OPERAND (exp, 2), f, r)));
+	case INDIRECT_REF:
+	case BUFFER_REF:
+	  return fold (build1 (code, TREE_TYPE (exp),
+			       substitute_in_expr (TREE_OPERAND (exp, 0),
+						 f, r)));
+	case OFFSET_REF:
+	  return fold (build (code, TREE_TYPE (exp),
+			      substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
+			      substitute_in_expr (TREE_OPERAND (exp, 1), f, r)));
+	}
+    }
+
+  /* If it wasn't one of the cases we handle, give up.  */
+
+  abort ();
+}
+
+/* Given a type T, a FIELD_DECL F, and a replacement value R,
+   return a new type with all size expressions that contain F
+   updated by replacing F with R.  */
+
+tree
+substitute_in_type (t, f, r)
+     tree t, f, r;
+{
+  switch (TREE_CODE (t))
+    {
+    case POINTER_TYPE:
+    case VOID_TYPE:
+      return t;
+    case INTEGER_TYPE:
+    case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
+    case CHAR_TYPE:
+      if ((TREE_CODE (TYPE_MIN_VALUE (t)) != INTEGER_CST
+	   && contains_placeholder_p (TYPE_MIN_VALUE (t)))
+	  || (TREE_CODE (TYPE_MAX_VALUE (t)) != INTEGER_CST
+	      && contains_placeholder_p (TYPE_MAX_VALUE (t))))
+	return build_range_type (t,
+				 substitute_in_expr (TYPE_MIN_VALUE (t), f, r),
+				 substitute_in_expr (TYPE_MAX_VALUE (t), f, r));
+      return t;
+
+    case REAL_TYPE:
+      if ((TREE_CODE (TYPE_MIN_VALUE (t)) != INTEGER_CST
+	   && contains_placeholder_p (TYPE_MIN_VALUE (t)))
+	  || (TREE_CODE (TYPE_MAX_VALUE (t)) != INTEGER_CST
+	      && contains_placeholder_p (TYPE_MAX_VALUE (t))))
+	{
+	  t = build_type_copy (t);
+	  TYPE_MIN_VALUE (t) = substitute_in_expr (TYPE_MIN_VALUE (t), f, r);
+	  TYPE_MAX_VALUE (t) = substitute_in_expr (TYPE_MAX_VALUE (t), f, r);
+	}
+      return t;
+
+    case COMPLEX_TYPE:
+      return build_complex_type (substitute_in_type (TREE_TYPE (t), f, r));
+
+    case OFFSET_TYPE:
+    case METHOD_TYPE:
+    case REFERENCE_TYPE:
+    case FILE_TYPE:
+    case SET_TYPE:
+    case STRING_TYPE:
+    case FUNCTION_TYPE:
+    case LANG_TYPE:
+      /* Don't know how to do these yet.  */
+      abort ();
+
+    case ARRAY_TYPE:
+      t = build_array_type (substitute_in_type (TREE_TYPE (t), f, r),
+			    substitute_in_type (TYPE_DOMAIN (t), f, r));
+      TYPE_SIZE (t) = 0;
+      layout_type (t);
+      return t;
+
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case QUAL_UNION_TYPE:
+      {
+	tree new = copy_node (t);
+	tree field;
+	tree last_field = 0;
+
+	/* Start out with no fields, make new fields, and chain them
+	   in.  */
+
+	TYPE_FIELDS (new) = 0;
+	TYPE_SIZE (new) = 0;
+
+	for (field = TYPE_FIELDS (t); field;
+	     field = TREE_CHAIN (field))
+	  {
+	    tree new_field = copy_node (field);
+
+	    TREE_TYPE (new_field)
+	      = substitute_in_type (TREE_TYPE (new_field), f, r);
+
+	    /* If this is an anonymous field and the type of this field is
+	       a UNION_TYPE or RECORD_TYPE with no elements, ignore it.  If
+	       the type just has one element, treat that as the field. 
+	       But don't do this if we are processing a QUAL_UNION_TYPE.  */
+	    if (TREE_CODE (t) != QUAL_UNION_TYPE && DECL_NAME (new_field) == 0
+		&& (TREE_CODE (TREE_TYPE (new_field)) == UNION_TYPE
+		    || TREE_CODE (TREE_TYPE (new_field)) == RECORD_TYPE))
+	      {
+		if (TYPE_FIELDS (TREE_TYPE (new_field)) == 0)
+		  continue;
+
+		if (TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (new_field))) == 0)
+		  new_field = TYPE_FIELDS (TREE_TYPE (new_field));
+	      }
+
+	    DECL_CONTEXT (new_field) = new;
+	    DECL_SIZE (new_field) = 0;
+
+	    if (TREE_CODE (t) == QUAL_UNION_TYPE)
+	      {
+		/* Do the substitution inside the qualifier and if we find
+		   that this field will not be present, omit it.  */
+		DECL_QUALIFIER (new_field)
+		  = substitute_in_expr (DECL_QUALIFIER (field), f, r);
+		if (integer_zerop (DECL_QUALIFIER (new_field)))
+		  continue;
+	      }
+
+	    if (last_field == 0)
+	      TYPE_FIELDS (new) = new_field;
+	    else
+	      TREE_CHAIN (last_field) = new_field;
+
+	    last_field = new_field;
+
+	    /* If this is a qualified type and this field will always be
+	       present, we are done.  */
+	    if (TREE_CODE (t) == QUAL_UNION_TYPE
+		&& integer_onep (DECL_QUALIFIER (new_field)))
+	      break;
+	  }
+
+	/* If this used to be a qualified union type, but we now know what
+	   field will be present, make this a normal union.  */
+	if (TREE_CODE (new) == QUAL_UNION_TYPE
+	    && (TYPE_FIELDS (new) == 0
+		|| integer_onep (DECL_QUALIFIER (TYPE_FIELDS (new)))))
+	  TREE_SET_CODE (new, UNION_TYPE);
+
+	layout_type (new);
+	return new;
+      }
+    }
+}
+
 /* Stabilize a reference so that we can use it any number of times
    without causing its operands to be evaluated more than once.
    Returns the stabilized reference.
