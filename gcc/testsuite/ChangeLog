@@ -1,3 +1,8 @@
+2004-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/range-test-1.c: New test.
+	* g++.dg/opt/range-test-1.C: New test.
+
 2004-06-17  Richard Henderson  <rth@redhat.com>
 
 	* objc.dg/sync-1.m: New.
