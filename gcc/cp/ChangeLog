@@ -1,5 +1,10 @@
 1998-07-17  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* pt.c (lookup_template_class): Don't mess with the context of the
+	instantiation.
+	* decl2.c (current_decl_namespace): Remove special handling for
+	templates.
+
 	* pt.c (tsubst, case FUNCTION_DECL): Fix getting complete args for
 	a member template specialization.
 
