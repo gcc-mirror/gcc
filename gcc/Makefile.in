@@ -718,7 +718,7 @@ C_AND_OBJC_OBJS = attribs.o c-errors.o c-lex.o c-pragma.o c-decl.o c-typeck.o \
   c-objc-common.o c-dump.o libcpp.a $(C_TARGET_OBJS)
 
 # Language-specific object files for C.
-C_OBJS = c-parse.o c-lang.o $(C_AND_OBJC_OBJS)
+C_OBJS = c-parse.o c-lang.o c-pretty-print.o $(C_AND_OBJC_OBJS)
 
 # Language-independent object files.
 
@@ -1230,6 +1230,8 @@ c-common.o : c-common.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(OBSTACK_H) \
 	$(C_COMMON_H) flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
 	$(EXPR_H) $(TM_P_H) builtin-types.def builtin-attrs.def $(TARGET_H) \
 	diagnostic.h tree-inline.h except.h gt-c-common.h real.h langhooks.h
+c-pretty-print.o : c-pretty-print.c c-pretty-print.h pretty-print.h \
+	$(C_COMMON_H) $(CONFIG_H) $(SYSTEM_H) real.h
 
 # A file used by all variants of C and some other languages.
 

@@ -53,7 +53,20 @@ struct pretty_print_info
 #define pp_colon(PPI)           output_add_character (pp_buffer (PPI), ':')
 #define pp_colon_colon(PPI)     output_add_string (pp_buffer (PPI), "::")
 #define pp_arrow(PPI)           output_add_string (pp_buffer (PPI), "->")
+#define pp_equal(PPI)           output_add_character (pp_buffer (PPI), '=')
+#define pp_question(PPI)        output_add_character (pp_buffer (PPI), '?')
+#define pp_bar(PPI)             output_add_character (pp_buffer (PPI), '|')
+#define pp_carret(PPI)          output_add_character (pp_buffer (PPI), '^')
+#define pp_ampersand(PPI)       output_add_character (pp_buffer (PPI), '&')
+#define pp_less(PPI)            output_add_character (pp_buffer (PPI), '<')
+#define pp_greater(PPI)         output_add_character (pp_buffer (PPI), '>')
+#define pp_plus(PPI)            output_add_character (pp_buffer (PPI), '+')
+#define pp_minus(PPI)           output_add_character (pp_buffer (PPI), '-')
 #define pp_star(PPI)            output_add_character (pp_buffer (PPI), '*')
+#define pp_slash(PPI)           output_add_character (pp_buffer (PPI), '/')
+#define pp_modulo(PPI)          output_add_character (pp_buffer (PPI), '%')
+#define pp_exclamation(PPI)     output_add_character (pp_buffer (PPI), '!')
+#define pp_complement(PPI)      output_add_character (pp_buffer (PPI), '~')
 #define pp_quote(PPI)           output_add_character (pp_buffer (PPI), '\'')
 #define pp_backquote(PPI)       output_add_character (pp_buffer (PPI), '`')
 #define pp_doublequote(PPI)     output_add_character (pp_buffer (PPI), '"')
@@ -80,7 +93,7 @@ struct pretty_print_info
 #define pp_tree_identifier(PPI, T) pp_identifier(PPI, IDENTIFIER_POINTER (T))
 
 #define pp_unsupported_tree(PPI, T) \
-  output_verbatim (pp_buffer((PPI), "#`%s' not supported by %s#",\
+  output_verbatim (pp_buffer(PPI), "#`%s' not supported by %s#",\
                    tree_code_name[(int) TREE_CODE (T)], __FUNCTION__)
 
 #endif /* GCC_PRETTY_PRINT_H */
