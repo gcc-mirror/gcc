@@ -525,7 +525,6 @@ install-data-local: myinstalldirs myinstallheaders
 myinstalldirs:
 	if test -z "$(MULTISUBDIR)"; then \
 	$(mkinstalldirs) $(DESTDIR)$(myincludep)/bits; \
-	$(mkinstalldirs) $(DESTDIR)$(myincludep)/backward; \
 	$(mkinstalldirs) $(DESTDIR)$(myincludep)/ext; \
 	fi
 myinstallheaders: 
@@ -539,8 +538,8 @@ myinstallheaders:
 	  $(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/ext/; \
 	done; \
 	for i in $(backward_headers); do \
-        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/backward/"; \
-	  $(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/backward/; \
+        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)"; \
+	  $(INSTALL_DATA) $(src_incdir)/$$i $(myincludep); \
 	done; \
 	for i in $(c_base_headers); do \
         echo "$(INSTALL_DATA) $(c_incdir)/$$i $(myincludep)/bits/"; \

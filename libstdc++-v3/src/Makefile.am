@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.56 2000/12/06 03:05:12 bkoz Exp $
+## $Id: Makefile.am,v 1.57 2000/12/10 20:51:22 apbianco Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -252,7 +252,6 @@ install-data-local: myinstalldirs myinstallheaders
 myinstalldirs:
 	if test -z "$(MULTISUBDIR)"; then \
 	$(mkinstalldirs) $(DESTDIR)$(myincludep)/bits; \
-	$(mkinstalldirs) $(DESTDIR)$(myincludep)/backward; \
 	$(mkinstalldirs) $(DESTDIR)$(myincludep)/ext; \
 	fi
 
@@ -273,8 +272,8 @@ myinstallheaders:
 	  $(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/ext/; \
 	done; \
 	for i in $(backward_headers); do \
-        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/backward/"; \
-	  $(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/backward/; \
+        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)"; \
+	  $(INSTALL_DATA) $(src_incdir)/$$i $(myincludep); \
 	done; \
 	for i in $(c_base_headers); do \
         echo "$(INSTALL_DATA) $(c_incdir)/$$i $(myincludep)/bits/"; \
