@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2001, 2002, 2003, 2004  Free Software Foundation
+/* Copyright (C) 1999, 2001, 2002, 2003, 2004, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -116,6 +116,27 @@ public final class VMClassLoader extends java.net.URLClassLoader
   static void initialize ()
   {
     instance.init();
+  }
+
+  // Define a package for something loaded natively.
+  void definePackageForNative(String className)
+  {
+    int lastDot = className.lastIndexOf('.');
+    if (lastDot != -1)
+      {
+	String packageName = className.substring(0, lastDot);
+	if (getPackage(packageName) == null)
+	  {
+	    // FIXME: this assumes we're defining the core, which
+	    // isn't necessarily so.  We could detect this and set up
+	    // appropriately.  We could also look at a manifest file
+	    // compiled into the .so.
+	    definePackage(packageName, "Java Platform API Specification",
+			  "GNU", "1.4", "gcj", "GNU",
+			  null, // FIXME: gcj version.
+			  null);
+	  }
+      }
   }
 
   // This keeps track of shared libraries we've already tried to load.

@@ -561,4 +561,6 @@ extern void (*_Jv_JVMPI_Notify_THREAD_END) (JVMPI_Event *event);
 /* FIXME: this should really be defined in some more generic place */
 #define ROUND(V, A) (((((unsigned) (V))-1) | ((A)-1))+1)
 
+extern void _Jv_RegisterBootstrapPackages ();
+
 #endif /* __JAVA_JVM_H__ */

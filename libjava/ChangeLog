@@ -1,5 +1,39 @@
 2005-01-10  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/12016, PR libgcj/18405, PR libgcj/17738:
+	* java/lang/Package.java (getPackages): Use VMClassLoader when
+	appropriate.
+	(getPackage): Likewise.
+	* prims.cc (_Jv_CreateJavaVM): Call
+	_Jv_RegisterBootstrapPackages.
+	* include/jvm.h (_Jv_RegisterBootstrapPackages): Declare.
+	* java/lang/VMClassLoader.java (getPackage): Rewrote.
+	(getPackages): Likewise.
+	(definedPackages): New field.
+	(definePackageForNative): New method.
+	* java/lang/Class.h (_Jv_FindClassInCache): Updated.
+	* java/lang/natVMClassLoader.cc (loadClass): Updated.
+	* defineclass.cc (handleClassBegin): Use
+	ClassLoader.findLoadedClass.
+	* java/lang/natClassLoader.cc (_Jv_RegisterInitiatingLoader):
+	Rewrote.
+	(struct _Jv_LoaderInfo): Removed.
+	(initiated_classes): Likewise.
+	(_Jv_UnregisterClass): Don't use initiated_classes.
+	(_Jv_FindClassInCache): Likewise.  Removed 'loader' argument.
+	(_Jv_FindClass): Register classes found during boostrap.
+	(BOOTSTRAP_CLASS_LIST_SIZE): New define.
+	(bootstrap_class_list): New global.
+	(bootstrap_index): Likewise.
+	(_Jv_RegisterBootstrapPackages): New function.
+	* gnu/gcj/runtime/natVMClassLoader.cc (findClass): Call
+	definePackageForNative.
+	(findClass): Updated.
+	* gnu/gcj/runtime/VMClassLoader.java (definePackageForNative):
+	New method.
+
+2005-01-10  Tom Tromey  <tromey@redhat.com>
+
 	PR libgcj/18868:
 	* include/jvm.h (_Jv_Linker::find_field): Declare.
 	(_Jv_Linker::find_field_helper): Likewise.

@@ -1,6 +1,6 @@
 // defineclass.cc - defining a class from .class format.
 
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -868,7 +868,7 @@ _Jv_ClassReader::handleClassBegin (int access_flags, int this_class, int super_c
   // was ClassLoader.defineClass called with an expected class name?
   if (def->name == 0)
     {
-      jclass orig = _Jv_FindClassInCache (loadedName, def->loader);
+      jclass orig = def->loader->findLoadedClass(loadedName->toString());
 
       if (orig == 0)
 	{

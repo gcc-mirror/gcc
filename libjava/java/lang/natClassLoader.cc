@@ -1,6 +1,6 @@
 // natClassLoader.cc - Implementation of java.lang.ClassLoader native methods.
 
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -42,19 +42,7 @@ details.  */
 #include <java/lang/StringBuffer.h>
 #include <java/io/Serializable.h>
 #include <java/lang/Cloneable.h>
-
-//
-//  A single class can have many "initiating" class loaders,
-//  and a single "defining" class loader.  The Defining
-//  class loader is what is returned from Class.getClassLoader()
-//  and is used when loading dependent classes during resolution.
-//  The set of initiating class loaders are used to ensure
-//  safety of linking, and is maintained in the hash table
-//  "initiated_classes".  A defining classloader is by definition also
-//  initiating, so we only store classes in this table if they have more
-//  than one class loader associated.
-//
-
+#include <java/util/HashMap.h>
 
 // Size of local hash table.
 #define HASH_LEN 1013
@@ -62,54 +50,35 @@ details.  */
 // Hash function for Utf8Consts.
 #define HASH_UTF(Utf) ((Utf)->hash16() % HASH_LEN)
 
-struct _Jv_LoaderInfo
-{
-  _Jv_LoaderInfo          *next;
-  java::lang::Class       *klass;
-  java::lang::ClassLoader *loader;
-};
-
-static _Jv_LoaderInfo *initiated_classes[HASH_LEN];
 static jclass loaded_classes[HASH_LEN];
 
 // This is the root of a linked list of classes
 static jclass stack_head;
 
+// While bootstrapping we keep a list of classes we found, so that we
+// can register their packages.  There aren't many of these so we
+// just keep a small buffer here and abort if we overflow.
+#define BOOTSTRAP_CLASS_LIST_SIZE 20
+static jclass bootstrap_class_list[BOOTSTRAP_CLASS_LIST_SIZE];
+static int bootstrap_index;
+
 
 
 
+// This tries to find a class in our built-in cache.  This cache is
+// used only for classes which are linked in to the executable or
+// loaded via dlopen().
 jclass
-_Jv_FindClassInCache (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
+_Jv_FindClassInCache (_Jv_Utf8Const *name)
 {
   JvSynchronize sync (&java::lang::Class::class$);
   jint hash = HASH_UTF (name);
 
-  if (loader && loader == java::lang::ClassLoader::getSystemClassLoader())
-    loader = NULL;
-
-  // first, if LOADER is a defining loader, then it is also initiating
   jclass klass;
   for (klass = loaded_classes[hash]; klass; klass = klass->next)
     {
-      if (loader == klass->loader && _Jv_equalUtf8Consts (name, klass->name))
+      if (_Jv_equalUtf8Consts (name, klass->name))
 	break;
-    }
-
-  // otherwise, it may be that the class in question was defined
-  // by some other loader, but that the loading was initiated by 
-  // the loader in question.
-  if (!klass)
-    {
-      _Jv_LoaderInfo *info;
-      for (info = initiated_classes[hash]; info; info = info->next)
-	{
-	  if (loader == info->loader
-	      && _Jv_equalUtf8Consts (name, info->klass->name))
-	    {
-	      klass = info->klass;
-	      break;
-	    }
-	}
     }
 
   return klass;
@@ -130,38 +99,15 @@ _Jv_UnregisterClass (jclass the_class)
 	  break;
 	}
     }
-
-  _Jv_LoaderInfo **info = &(initiated_classes[hash]);
-  for ( ; ; info = &((*info)->next))
-    {
-      while (*info && (*info)->klass == the_class)
-	{
-	  _Jv_LoaderInfo *old = *info;
-	  *info = (*info)->next;
-	  _Jv_Free (old);
-	}
-
-      if (*info == NULL)
-	break;
-    }
 }
 
+// Register an initiating class loader for a given class.
 void
 _Jv_RegisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
 {
-  if (loader && loader == java::lang::ClassLoader::getSystemClassLoader())
-    loader = NULL;
-
-  // This information can't be visible to the GC.
-  _Jv_LoaderInfo *info
-    = (_Jv_LoaderInfo *) _Jv_Malloc (sizeof(_Jv_LoaderInfo));
-  jint hash = HASH_UTF(klass->name);
-
-  JvSynchronize sync (&java::lang::Class::class$);
-  info->loader = loader;
-  info->klass  = klass;
-  info->next   = initiated_classes[hash];
-  initiated_classes[hash] = info;
+  if (! loader)
+    loader = java::lang::ClassLoader::getSystemClassLoader();
+  loader->loadedClasses->put(klass->name->toString(), klass);
 }
 
 // This function is called many times during startup, before main() is
@@ -254,15 +200,21 @@ _Jv_RegisterClass (jclass klass)
 jclass
 _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
 {
-  jclass klass = _Jv_FindClassInCache (name, loader);
+  // See if the class was already loaded by this loader.  This handles
+  // initiating loader checks, as we register classes with their
+  // initiating loaders.
+  java::lang::ClassLoader *sys
+    = java::lang::ClassLoader::getSystemClassLoader ();
+  java::lang::ClassLoader *real = loader;
+  if (! real)
+    real = sys;
+  jstring sname = name->toString();
+  // We might still be bootstrapping the VM, in which case there
+  // won't be a system class loader yet.
+  jclass klass = real ? real->findLoadedClass (sname) : NULL;
 
   if (! klass)
     {
-      jstring sname = name->toString();
-
-      java::lang::ClassLoader *sys
-	= java::lang::ClassLoader::getSystemClassLoader ();
-
       if (loader)
 	{
 	  // Load using a user-defined loader, jvmspec 5.3.2
@@ -277,7 +229,7 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
 	  if (klass && klass->getClassLoaderInternal () != delegate)
 	    _Jv_RegisterInitiatingLoader (klass, loader);
 	}
-      else 
+      else if (sys)
 	{
 	  // Load using the bootstrap loader jvmspec 5.3.1.
 	  klass = sys->loadClass (sname, false); 
@@ -285,6 +237,15 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
 	  // Register that we're an initiating loader.
 	  if (klass)
 	    _Jv_RegisterInitiatingLoader (klass, 0);
+	}
+      else
+	{
+	  // Not even a bootstrap loader, try the built-in cache.
+	  klass = _Jv_FindClassInCache (name);
+
+	  if (bootstrap_index == BOOTSTRAP_CLASS_LIST_SIZE)
+	    abort ();
+	  bootstrap_class_list[bootstrap_index++] = klass;
 	}
     }
   else
@@ -295,6 +256,13 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
     }
 
   return klass;
+}
+
+void
+_Jv_RegisterBootstrapPackages ()
+{
+  for (int i = 0; i < bootstrap_index; ++i)
+    java::lang::VMClassLoader::definePackageForNative(bootstrap_class_list[i]->getName());
 }
 
 jclass
