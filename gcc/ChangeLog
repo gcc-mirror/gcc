@@ -1,3 +1,8 @@
+2001-07-14  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.md: Use define_constants for unspec values.
+	Substitute throughout.
+
 2001-07-14  Tim Josling  <tej@melbpc.org.au>
 
 	* tree.def (EXPON_EXPR) remove. Never supported anyway.
