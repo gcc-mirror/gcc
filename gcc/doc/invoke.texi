@@ -3370,12 +3370,18 @@ Dump after null pointer elimination pass to @file{@var{file}.05.null}.
 @item U
 @opindex dU
 Dump callgraph and unit-at-a-time optimization @file{@var{file}.00.unit}.
+@item V
+@opindex dV
+Dump after the value profile transformations, to @file{@var{file}.13.vpt}.
 @item w
 @opindex dw
 Dump after the second flow pass, to @file{@var{file}.27.flow2}.
 @item z
 @opindex dz
 Dump after the peephole pass, to @file{@var{file}.28.peephole2}.
+@item Z
+@opindex dZ
+Dump after constructing the web, to @file{@var{file}.17.web}.
 @item a
 @opindex da
 Produce all the dumps listed above.
