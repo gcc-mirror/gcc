@@ -1,3 +1,7 @@
+Thu Dec 23 03:43:36 1999  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* MAINTAINERS: Add myself to "write after approval" list.
+
 1999-12-14  Richard Henderson  <rth@cygnus.com>
 
 	* config.guess (alpha-osf, alpha-linux): Detect ev67.
