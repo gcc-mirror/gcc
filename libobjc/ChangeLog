@@ -1,3 +1,7 @@
+Thu Sep 23 07:19:12 1999   Chris Ball <cball@fmco.com>
+
+	* thr-posix.c (__objc_mutex_deallocate): made deallocate work.
+
 Tue Sep 21 07:47:10 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (gc.o, gc_gc.o): Do not pass -fgnu-runtime to
