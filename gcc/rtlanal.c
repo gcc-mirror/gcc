@@ -703,16 +703,30 @@ single_set (insn)
   else if (GET_CODE (PATTERN (insn)) == PARALLEL)
     {
       for (i = 0, set = 0; i < XVECLEN (PATTERN (insn), 0); i++)
-	if (GET_CODE (XVECEXP (PATTERN (insn), 0, i)) == SET
-	    && (! find_reg_note (insn, REG_UNUSED,
-				 SET_DEST (XVECEXP (PATTERN (insn), 0, i)))
-		|| side_effects_p (XVECEXP (PATTERN (insn), 0, i))))
-	  {
-	    if (set)
+	{
+	  rtx sub = XVECEXP (PATTERN (insn), 0, i);
+
+	  switch (GET_CODE (sub))
+	    {
+	    case USE:
+	    case CLOBBER:
+	      break;
+
+	    case SET:
+	      if (! find_reg_note (insn, REG_UNUSED, SET_DEST (sub))
+		  || side_effects_p (sub))
+		{
+		  if (set)
+		    return 0;
+		  else
+		    set = sub;
+		}
+	      break;
+
+	    default:
 	      return 0;
-	    else
-	      set = XVECEXP (PATTERN (insn), 0, i);
-	  }
+	    }
+	}
       return set;
     }
   
