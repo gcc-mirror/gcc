@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.20 2001/06/12 19:36:53 jsm28 Exp $
+@comment $Id: install.texi,v 1.21 2001/06/13 03:38:52 aoliva Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -380,12 +380,24 @@ ideas of what it is for.  People use it as if it specified where to
 install part of GCC.  Perhaps they make this assumption because
 installing GCC creates the directory.
 
-@item --enable-shared
-Build shared versions of the
-C++ runtime libraries if supported. This is the default on most
-systems. Use @option{--disable-shared} for static libraries. Note that
-up to the gcc version 2.95.x series, static libraries were the default
-on all systems.
+@item --enable-shared[=@var{package}[,...]]
+Build shared versions of libraries, if shared libraries are supported on
+the target platform.  Unlike GCC 2.95.x and earlier, shared libraries
+are enabled by default on all platforms that support shared libraries.
+
+If a list of packages is given as an argument, build shared libraries
+only for the listed packages.  For other packages, only static libraries
+will be built.  Package names currently recognized in the GCC tree are
+@samp{libgcc} (also known as @samp{gcc}), @samp{libstdc++} (not
+@samp{libstdc++-v3}), @samp{libffi}, @samp{zlib}, @samp{boehm-gc} and
+@samp{libjava}.  Note that @samp{libobjc} does not recognize itself by
+any name, so, if you list package names in @option{--enable-shared},
+you'll only get static Objective C libraries.  @samp{libf2c} and
+@samp{libiberty} do not support shared libraries at all.
+
+Use @option{--disable-shared} to build only static libraries.  Note that
+@option{--disable-shared} does not accept a list of package names as
+argument, only @option{--enable-shared} does.
 
 @item @anchor{with-gnu-as}--with-gnu-as
 Specify that the compiler should assume that the
