@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Citicorp/TTI Unicom PBB version (using GAS with a %-register prefix)
-   Copyright (C) 1987, 1988, 1990, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1990, 1996, 1997, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -109,12 +109,17 @@ Boston, MA 02111-1307, USA.  */
       && ! find_equiv_reg (0, get_last_insn (), 0, 0, 0, 8, Pmode))	\
       asm_fprintf (FILE, "\tmovl %Rd0,%Ra0\n"); } 
 
-#define ASM_RETURN_CASE_JUMP \
-  do {						\
-    if (TARGET_5200)				\
-      return "ext%.l %0\n\tjmp %%pc@(2,%0:l)";	\
-    else					\
-      return "jmp %%pc@(2,%0:w)";		\
+#define ASM_RETURN_CASE_JUMP				\
+  do {							\
+    if (TARGET_5200)					\
+      {							\
+	if (ADDRESS_REG_P (operands[0]))		\
+	  return "jmp %%pc@(2,%0:l)";			\
+	else						\
+	  return "ext%.l %0\n\tjmp %%pc@(2,%0:l)";	\
+      }							\
+    else						\
+      return "jmp %%pc@(2,%0:w)";			\
   } while (0)
 
 /* Although the gas we use can create .ctor and .dtor sections from N_SETT
