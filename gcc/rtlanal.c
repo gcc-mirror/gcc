@@ -2298,7 +2298,11 @@ auto_inc_p (x)
    to and including TO is safe to move.  If NEW_TO is non-NULL, and
    the sequence is not already safe to move, but can be easily
    extended to a sequence which is safe, then NEW_TO will point to the
-   end of the extended sequence.  */
+   end of the extended sequence.  
+ 
+   For now, this function only checks that the region contains whole
+   exception regiongs, but it could be extended to check additional
+   conditions as well.  */
 
 int
 insns_safe_to_move_p (from, to, new_to)
@@ -2309,6 +2313,11 @@ insns_safe_to_move_p (from, to, new_to)
   int eh_region_count = 0;
   int past_to_p = 0;
   rtx r = from;
+
+  /* By default, assume the end of the region will be what was
+     suggested.  */
+  if (new_to)
+    *new_to = to;
 
   while (r)
     {
