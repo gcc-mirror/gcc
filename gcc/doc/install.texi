@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.10 2001/06/01 18:08:19 gerald Exp $
+@comment $Id: install.texi,v 1.11 2001/06/02 13:59:52 jsm28 Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -59,11 +59,11 @@ Copyright @copyright{} 2001 Free Software Foundation, Inc.
 @titlepage
 @sp 10
 @comment The title is printed in a large font.
-@center @titlefont{Sample Title}
+@center @titlefont{Installing GCC}
 
 @c The following two commands start the copyright page.
 @page
-vskip 0pt plus 1filll
+@vskip 0pt plus 1filll
 Copyright @copyright{} 2001 Free Software Foundation, Inc.
 @end titlepage
 
@@ -257,11 +257,11 @@ To configure GCC:
 @example
    % mkdir @var{objdir}
    % cd @var{objdir}
-   % @var{srcdir}/configure @strong{[target] [options]}
+   % @var{srcdir}/configure [@var{target}] [@var{options}]
 @end example
 
 
-@strong{target specification}
+@heading Target specification
 @itemize @bullet
 @item
 GCC has code to correctly determine the correct value for @var{target}
@@ -279,14 +279,14 @@ implies that the host defaults to @var{target}.
 @end itemize
 
 
-@strong{options specification}
+@heading Options specification
 
-Use @strong{options} to override several configure time options for
-GCC.  A partial list of supported @option{options}:
+Use @var{options} to override several configure time options for
+GCC.  A partial list of supported @var{options}:
 
-@itemize @bullet
-@item
-@option{--prefix=}@var{dirname} @minus{}@minus{} Specify the toplevel installation
+@table @code
+@item --prefix=@var{dirname}
+Specify the toplevel installation
 directory.  This is the recommended way to install the tools into a directory
 other than the default.  The toplevel installation directory defaults to
 @code{/usr/local}.
@@ -296,17 +296,17 @@ subdirectory of @var{objdir} or vice versa.
 
 These additional options control where certain parts of the distribution
 are installed.  Normally you should not need to use these options.
-@itemize @bullet
+@table @code
 
-@item
-@option{--with-gxx-include-dir=}@var{dirname} @minus{}@minus{} Specify
+@item --with-gxx-include-dir=@var{dirname}
+Specify
 the installation directory for g++ header files.  The default is
 @file{/usr/local/include/g++}.
   
-@end itemize
+@end table
 
-@item
-@option{--with-local-prefix=}@var{dirname} @minus{}@minus{} Specify the
+@item --with-local-prefix=@var{dirname}
+Specify the
 installation directory for local include files.  The default is
 @file{/usr/local}.  Specify this option if you want the compiler to
 search directory @file{@var{dirname}/include} for locally installed
@@ -340,26 +340,23 @@ ideas of what it is for.  People use it as if it specified where to
 install part of GCC.  Perhaps they make this assumption because
 installing GCC creates the directory.
 
-@item
-@option{--enable-shared} @minus{}@minus{} Build shared versions of the
+@item --enable-shared
+Build shared versions of the
 C++ runtime libraries if supported. This is the default on most
 systems. Use @option{--disable-shared} for static libraries. Note that
 up to the gcc version 2.95.x series, static libraries were the default
 on all systems.
 
-@item
-@html
-<a name="with-gnu-as">@option{--with-gnu-as}</a>
-@end html
-@minus{}@minus{} Specify that the compiler should assume that the
+@item @anchor{with-gnu-as}--with-gnu-as
+Specify that the compiler should assume that the
 assembler it finds is the GNU assembler. However, this does not modify
 the rules to find an assembler and will result in confusion if found
 assembler is not actually the GNU assembler.  If you have more than one
 assembler installed on your system, you may want to use this option in
 connection with @option{--with-as=@file{/path/to/gas}}.
 
-@item
-@option{--with-as=@file{/path/to/as}} @minus{}@minus{} Specify that the
+@item --with-as=@file{/path/to/as}
+Specify that the
 compiler should use the assembler pointed to by @var{pathname}, rather
 than the one found by the standard rules to find an assembler, which
 are:
@@ -381,36 +378,33 @@ want to use @option{--with-as} if no assembler is installed in the
 directories listed above, or if you have multiple assemblers installed
 and want to choose one that is not found by the above rules.
 
-@item
-@html
-<a name="with-gnu-ld">@option{--with-gnu-ld}</a>
-@end html
- @minus{}@minus{} Same as @uref{#with-gnu-as,,@option{--with-gnu-as}}
+@item @anchor{with-gnu-ld}--with-gnu-ld
+Same as @uref{#with-gnu-as,,@option{--with-gnu-as}}
 but for linker.
 
 
-@item
-@option{--with-ld=@file{/path/to/ld}} @minus{}@minus{} Same as
+@item --with-ld=@file{/path/to/ld}
+Same as
 @option{--with-as}, but for the linker.
 
-@item
-@option{--with-stabs} @minus{}@minus{} Specify that stabs debugging
+@item --with-stabs
+Specify that stabs debugging
 information should be used instead of whatever format the host normally
 uses.  Normally GCC uses the same debug format as the host system.
 
-@item
-@option{--enable-multilib} @minus{}@minus{} Specify that multiple target
+@item --enable-multilib
+Specify that multiple target
 libraries should be built to support different target variants, calling
 conventions, etc.  This is the default.
 
-@item
-@option{--enable-threads} @minus{}@minus{} Specify that the target
+@item --enable-threads
+Specify that the target
 supports threads.  This affects the Objective-C compiler and runtime
 library, and exception handling for other languages like C++ and Java.
 On some systems, this is the default.
 
-@item
-@option{--enable-threads=}@var{lib} @minus{}@minus{} Specify that
+@item --enable-threads=@var{lib}
+Specify that
 @var{lib} is the thread support library.  This affects the Objective-C
 compiler and runtime library, and exception handling for other languages
 like C++ and Java.  The possibilities for @var{lib} are @samp{aix},
@@ -418,32 +412,32 @@ like C++ and Java.  The possibilities for @var{lib} are @samp{aix},
 @samp{posix}, @samp{pthreads}, @samp{single}, @samp{solaris},
 @samp{vxworks} and @samp{win32}.
 
-@item
-@option{--with-cpu=}@var{cpu} @minus{}@minus{} Specify which cpu variant the
+@item --with-cpu=@var{cpu}
+Specify which cpu variant the
 compiler should generate code for by default.  This is currently
 only supported on the some ports, specifically arm, powerpc, and
 SPARC. If configure does not recognize the model name (e.g. arm700,
 603e, or ultrasparc) you provide, please check the configure script
 for a complete list of supported models.
 
-@item
-@option{--enable-target-optspace} @minus{}@minus{} Specify that target
+@item --enable-target-optspace
+Specify that target
 libraries should be optimized for code space instead of code speed.
 This is the default for the m32r platform.
 
-@item
-@option{--enable-cpp} @minus{}@minus{} Specify that a shell script which
+@item --enable-cpp
+Specify that a shell script which
 emulates traditional cpp functionality should be installed.
 
-@item
-@option{--enable-cpplib} @minus{}@minus{} Specify that the functionality of
+@item --enable-cpplib
+Specify that the functionality of
 CPP should be integrated into the compiler itself.  This option is
 not supported by snapshots since November 2000.  In snapshots where
 it is supported, it is not enabled by default, except for snapshots
 very close to November 2000.
 
-@item
-@option{--enable-maintainer-mode} @minus{}@minus{} The build rules that
+@item --enable-maintainer-mode
+The build rules that
 regenerate the GCC master message catalog @code{gcc.pot} are normally
 disabled. This is because it can only be rebuilt if the complete source
 tree is present. If you have changed the sources and want to rebuild the
@@ -451,14 +445,14 @@ catalog, configuring with @option{--enable-maintainer-mode} will enable
 this. Note that you need a recent version of the @code{gettext} tools
 to do so.
 
-@item
-@option{--without-fast-fixincludes} @minus{}@minus{} Specify that the
+@item --without-fast-fixincludes
+Specify that the
 old, slower method of fixing the system header files should be used.
 EGCS 1.1.x and older releases default to the slow version. GCC 2.95 and
 newer releases will default to the fast version.
 
-@item
-@option{--enable-version-specific-runtime-libs} @minus{}@minus{} Specify
+@item --enable-version-specific-runtime-libs
+Specify
 that runtime libraries should be installed in the compiler specific
 subdirectory (@file{@var{libsubdir}}) rather than the usual places.  In
 addition, libstdc++'s include files will be installed in
@@ -468,9 +462,8 @@ particularly useful if you intend to use several versions of GCC in
 parallel. This is currently supported by @option{libf2c} and
 @option{libstdc++}.
 
-@item
-@option{--enable-languages=}@var{lang1}@option{,}@var{lang2}@option{,...}
-@minus{}@minus{} Specify that only a particular subset of compilers and
+@item --enable-languages=@var{lang1},@var{lang2},@dots{}
+Specify that only a particular subset of compilers and
 their runtime libraries should be built. For a list of valid values for
 @var{lang}@option{x} you can issue the following command in the
 @file{gcc} directory of your GCC source tree:@* @samp{grep language=
@@ -482,11 +475,11 @@ EGCS 1.1.2 or older versions of egcs.  It is supported in GCC 2.95
 and newer versions.@*
 If you do not pass this flag, all languages available in the @file{gcc}
 sub-tree will be configured.  Re-defining LANGUAGES when calling
-@samp{make bootstrap} @strong{*does not*} work anymore, as those
+@samp{make bootstrap} @strong{does not} work anymore, as those
 language sub-directories might not have been configured!
 
-@item
-@option{--disable-libgcj} @minus{}@minus{} Specify that the run-time libraries
+@item --disable-libgcj
+Specify that the run-time libraries
 used by GCJ should not be built.  This is useful in case you intend
 to use GCJ with some other run-time, or you're going to install it
 separately, or it just happens not to build on your particular
@@ -497,32 +490,31 @@ may need to port it; in this case, before modifying the top-level
 configure.in so that libgcj is enabled by default on this platform,
 you may use @option{--enable-libgcj} to override the default.
 
-@item
-@option{--with-dwarf2} @minus{}@minus{} Specify that the compiler should
+@item --with-dwarf2
+Specify that the compiler should
 use DWARF2 debugging information as the default.
-@end itemize
+@end table
 
 Some options which only apply to building cross compilers:
-@itemize @bullet
-@item
-@option{--with-headers=}@var{dir} @minus{}@minus{} Specifies a directory
+@table @code
+@item --with-headers=@var{dir}
+Specifies a directory
 which has target include files.
 @emph{This options is required} when building a cross
 compiler, if @file{@var{prefix}/@var{target}/sys-include} doesn't pre-exist.
 These include files will be copied into the @file{gcc} install directory.
 Fixincludes will be run on these files to make them compatible with
 @command{gcc}.
-@item
-@option{--with-libs=}@emph{``dir1 dir2 ... dirN''} @minus{}@minus{}
+@item --with-libs=``@var{dir1} @var{dir2} @dots{} @var{dirN}''
 Specifies a list of directories which contain the target runtime
 libraries.  These libraries will be copied into the @file{gcc} install
 directory.
-@item
-@option{--with-newlib} @minus{}@minus{} Specifies that ``newlib'' is
+@item --with-newlib
+Specifies that ``newlib'' is
 being used as the target C library.  This causes @code{__eprintf} to be
 omitted from libgcc.a on the assumption that it will be provided by
 newlib.
-@end itemize
+@end table
  
 Note that each @option{--enable} option has a corresponding
 @option{--disable} option and that each @option{--with} option has a
@@ -607,7 +599,7 @@ the compilers to be built, only those you've actually enabled will be
 built. This will of course only build those runtime libraries, for
 which the particular compiler has been built.  Please note,
 that re-defining LANGUAGES when calling @samp{make bootstrap}
-@strong{*does not*} work anymore!
+@strong{does not} work anymore!
 
 
 @section Building a cross compiler
@@ -722,7 +714,7 @@ portability in the DejaGnu code.
 
 Finally, you can run the testsuite (which may take a long time):
 @example
-     cd @emph{objdir}; make -k check
+     cd @var{objdir}; make -k check
 @end example
 
 The testing process will try to test as many components in the GCC
@@ -789,10 +781,10 @@ problem in future releases.
 @section Submitting test results
 
 If you want to report the results to the GCC project, use the
-@code{contrib/test_summary} shell script. Start it in the @emph{objdir} with
+@code{contrib/test_summary} shell script. Start it in the @var{objdir} with
 
 @example
-    @emph{srcdir}/contrib/test_summary -p your_commentary.txt -m gcc-testresults@@gcc.gnu.org |sh
+    @var{srcdir}/contrib/test_summary -p your_commentary.txt -m gcc-testresults@@gcc.gnu.org |sh
 @end example
 
 This script uses the @code{Mail} program to send the results, so
@@ -823,8 +815,8 @@ should look here first if you think your results are unreasonable.
 @end ifnothtml
 
 Now that GCC has been built and tested, you can install it with
-@samp{cd @emph{objdir}; make install} for a native compiler or
-@samp{cd @emph{objdir}; make install LANGUAGES="c c++"} for 
+@samp{cd @var{objdir}; make install} for a native compiler or
+@samp{cd @var{objdir}; make install LANGUAGES="c c++"} for 
 a cross compiler (note installing cross compilers will be easier in the 
 next release!).
 
@@ -968,6 +960,7 @@ works.
 Please read this document carefully @emph{before} installing the
 GNU Compiler Collection on your machine.
 
+@ifhtml
 @itemize
 @item
 @uref{#alpha*-dec-linux*,,alpha*-dec-linux*}
@@ -1039,13 +1032,14 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#elf_targets,,all ELF targets} (SVR4, Solaris, etc.)
 @end itemize
+@end ifhtml
 
 
 @html
 <!-- -------- host/target specific issues start here ---------------- -->
 <hr>
-<h3><a name="alpha*-dec-linux*">alpha*-dec-linux*</a></h3>
 @end html
+@heading @anchor{alpha*-dec-linux*}alpha*-dec-linux*
 
 We require binutils 2.11 or newer.  Previous binutils releases
 had a number of problems with DWARF2 debugging information, not
@@ -1054,8 +1048,8 @@ the least of which is incorrect linking of shared libraries.
 @html
 </p>
 <hr>
-<h3><a name="alpha*-dec-osf*">alpha*-dec-osf*</a></h3>
 @end html
+@heading @anchor{alpha*-dec-osf*}alpha*-dec-osf*
 
 If you install a shared libstdc++ and, when you link a non-trivial C++
 program (for example, @file{gcc/testsuite/g++.other/delete3.C}),
@@ -1100,16 +1094,16 @@ flag @option{-mieee}.
 @html
 </p>
 <hr>
-<h3><a name="arm*-*-linux-gnu">arm*-*-linux-gnu</a></h3>
 @end html
+@heading @anchor{arm*-*-linux-gnu}arm*-*-linux-gnu
 
 We require GNU binutils 2.10 or newer.
 
 @html
 </p>
 <hr>
-<h3><a name="avr">avr</a></h3>
 @end html
+@heading @anchor{avr}avr
 
 Use @samp{configure --target=avr} 
 @option{--enable-languages="c"}' to configure GCC.
@@ -1136,24 +1130,24 @@ indicates that you should upgrade to a newer version of the binutils.
 @html
 </p>
 <hr>
-<h3><a name="dos">DOS</a></h3>
 @end html
+@heading @anchor{dos}DOS
 
 Please have a look at our @uref{binaries.html,,binaries page}.
 
 @html
 </p>
 <hr>
-<h3><a name="h8300-hms">h8300-hms</a></h3>
 @end html
+@heading @anchor{h8300-hms}h8300-hms
 
 Please have a look at our @uref{binaries.html,,binaries page}.
 
 @html
 </p>
 <hr>
-<h3><a name="hppa*-hp-hpux*">hppa*-hp-hpux*</a></h3>
 @end html
+@heading @anchor{hppa*-hp-hpux*}hppa*-hp-hpux*
 
 We @emph{highly} recommend using gas/binutils-2.8 or newer on all hppa
 platforms; you may encounter a variety of problems when using the HP 
@@ -1174,8 +1168,8 @@ More specific information to hppa*-hp-hpux* targets follows.
 @html
 </p>
 <hr>
-<h3><a name="hppa*-hp-hpux9">hppa*-hp-hpux9</a></h3>
 @end html
+@heading @anchor{hppa*-hp-hpux9}hppa*-hp-hpux9
 
 The HP assembler has major problems on this platform.  We've tried to work
 around the worst of the problems.  However, those workarounds may be causing
@@ -1191,8 +1185,8 @@ and @env{SHELL} to @file{/bin/ksh} in your environment.
 @html
 </p>
 <hr>
-<h3><a name="hppa*-hp-hpux10">hppa*-hp-hpux10</a></h3>
 @end html
+@heading @anchor{hppa*-hp-hpux10}hppa*-hp-hpux10
 
 For hpux10.20, we @emph{highly} recommend you pick up the latest sed patch 
 @code{PHCO_19798} from HP.  HP has two sites which provide patches free of 
@@ -1223,8 +1217,8 @@ bootstrap}.
 @html
 </p>
 <hr>
-<h3><a name="hppa*-hp-hpux11">hppa*-hp-hpux11</a></h3>
 @end html
+@heading @anchor{hppa*-hp-hpux11}hppa*-hp-hpux11
 
 GCC 2.95.2 does not support HP-UX 11, and it cannot generate 64-bit
 object files. Current (as of late 2000) snapshots and GCC 3.0 do support
@@ -1234,8 +1228,8 @@ HP-UX 11.
 @html
 </p>
 <hr>
-<h3><a name="*-*-linux-gnu">*-*-linux-gnu</a></h3>
 @end html
+@heading @anchor{*-*-linux-gnu}*-*-linux-gnu
 
 If you use glibc 2.2 (or 2.1.9x), GCC 2.95.2 won't install
 out-of-the-box.  You'll get compile errors while building libstdc++.
@@ -1245,8 +1239,8 @@ applied in the GCC source tree, fixes the compatibility problems.
 @html
 </p>
 <hr>
-<h3><a name="ix86-*-linux*">i?86-*-linux*</a></h3>
 @end html
+@heading @anchor{ix86-*-linux*}i?86-*-linux*
 
 You will need binutils-2.9.1.0.15 or newer for exception handling to work.
 
@@ -1257,8 +1251,8 @@ found on @uref{http://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
 @html
 </p>
 <hr>
-<h3><a name="ix86-*-sco3.2v5*">i?86-*-sco3.2v5*</a></h3>
 @end html
+@heading @anchor{ix86-*-sco3.2v5*}i?86-*-sco3.2v5*
 
 Unlike earlier versions of GCC, the ability to generate COFF with this
 target is no longer provided.
@@ -1338,8 +1332,8 @@ engineering and will hopefully be addressed in later releases.
 @html
 </p>
 <hr>
-<h3><a name="ix86-*-solaris*">i?86-*-solaris*</a></h3>
 @end html
+@heading @anchor{ix86-*-solaris*}i?86-*-solaris*
 
 GCC 2.95.2, when configured to use the GNU assembler, would invoke
 it with the @code{-s} switch, that GNU as up to 2.9.5.0.12 does
@@ -1351,8 +1345,8 @@ assembler, you'll need the patch
 @html
 </p>
 <hr>
-<h3><a name="ix86-*-udk">i?86-*-udk</a></h3>
 @end html
+@heading @anchor{ix86-*-udk}i?86-*-udk
 
 This target emulates the SCO Universal Development Kit and requires that
 package be installed.  (If it is installed, you will have a 
@@ -1390,9 +1384,9 @@ have installed.
 @html
 </p>
 <hr>
-<h3><a name="*-ibm-aix*">*-ibm-aix*</a></h3>
 <!-- rs6000-ibm-aix*, powerpc-ibm-aix* -->
 @end html
+@heading @anchor{*-ibm-aix*}*-ibm-aix*
 
 AIX Make frequently has problems with GCC makefiles.  GNU Make 3.76 or
 newer is recommended to build on this platform.
@@ -1465,8 +1459,8 @@ environment variable to "C" or "En_US".
 @html
 </p>
 <hr>
-<h3><a name="m68k-*-nextstep*">m68k-*-nextstep*</a></h3>
 @end html
+@heading @anchor{m68k-*-nextstep*}m68k-*-nextstep*
 
 You absolutely @strong{must} use GNU sed and GNU make on this platform.
 
@@ -1509,8 +1503,8 @@ for this sequence to work.
 @html
 </p>
 <hr>
-<h3><a name="m68k-sun-sunos4.1.1">m68k-sun-sunos4.1.1</a></h3>
 @end html
+@heading @anchor{m68k-sun-sunos4.1.1}m68k-sun-sunos4.1.1
 
 It is reported that you may need the GNU assembler on this platform.
 
@@ -1518,8 +1512,8 @@ It is reported that you may need the GNU assembler on this platform.
 @html
 </p>
 <hr>
-<h3><a name="mips*-sgi-irix[45]">mips*-sgi-irix[45]</a></h3>
 @end html
+@heading @anchor{mips*-sgi-irix[45]}mips*-sgi-irix[45]
 
 You must use GAS on these platforms, as the native assembler can not handle 
 the code for exception handling support. Either of these messages indicates 
@@ -1558,8 +1552,8 @@ information about using GCC on IRIX platforms.
 @html
 </p>
 <hr>
-<h3><a name="mips*-sgi-irix6">mips*-sgi-irix6</a></h3>
 @end html
+@heading @anchor{mips*-sgi-irix6}mips*-sgi-irix6
 
 You must @emph{not} use GAS on irix6 platforms; doing so will only
 cause problems.
@@ -1613,8 +1607,8 @@ information about using GCC on IRIX platforms.
 @html
 </p>
 <hr>
-<h3><a name="powerpc-*-linux-gnu*">powerpc-*-linux-gnu*</a></h3>
 @end html
+@heading @anchor{powerpc-*-linux-gnu*}powerpc-*-linux-gnu*
 
 You will need 
 @uref{ftp://ftp.varesearch.com/pub/support/hjl/binutils,,binutils-2.9.4.0.8} 
@@ -1625,8 +1619,8 @@ if you initially built it with gcc-2.7.2.x.
 @html
 </p>
 <hr>
-<h3><a name="*-*-solaris*">*-*-solaris*</a></h3>
 @end html
+@heading @anchor{*-*-solaris*}*-*-solaris*
 
 Starting with Solaris, Sun does not ship a C compiler any more. To
 bootstrap and install GCC you first have to install a pre-built
@@ -1648,8 +1642,8 @@ been fixed in later (5.x) versions of the assembler.
 @html
 <p>
 <hr>
-<h3><a name="sparc-sun-solaris*">sparc-sun-solaris*</a></h3>
 @end html
+@heading @anchor{sparc-sun-solaris*}sparc-sun-solaris*
 
 binutils 2.9.1 has known bugs on this platform. We recommend to use
 binutils 2.10 or the vendor tools (Sun as, Sun ld).
@@ -1664,8 +1658,8 @@ mangling template-heavy C++ function names.
 @html
 </p>
 <hr>
-<h3><a name="sparc-sun-solaris2.7">sparc-sun-solaris2.7</a></h3>
 @end html
+@heading @anchor{sparc-sun-solaris2.7}sparc-sun-solaris2.7
 
 Sun patch 107058-01 (1999-01-13) for SPARC Solaris 7 triggers a bug in
 the dynamic linker.  This problem (Sun bug 4210064) affects GCC 2.8
@@ -1705,9 +1699,9 @@ the bug, but (as of 1999-10-06) it is still being tested.
 @html
 <p>
 <hr>
-<h3><a name="*-sun-solaris2.8">*-sun-solaris2.8</a></h3>
 <!-- ripped from the same FAQ that I answered -->
 @end html
+@heading @anchor{*-sun-solaris2.8}*-sun-solaris2.8
 
 Sun bug 4296832 turns up when compiling X11 headers with GCC 2.95 or
 newer:  g++ will complain that types are missing.  These headers assume
@@ -1724,8 +1718,8 @@ For Solaris 8, this is fixed by revision 24 or later of patch 108652
 @html
 <p>
 <hr>
-<h3><a name="sunv5">Sun V5.0 Compiler Bugs</a></h3>
 @end html
+@heading @anchor{sunv5}Sun V5.0 Compiler Bugs
 
 The Sun V5.0 compilers are known to mis-compile GCC 2.95 and GCC 2.95.1,
 which in turn causes GCC to fail its bootstrap comparison test.
@@ -1735,8 +1729,8 @@ GCC 2.95.2 has a workaround.
 @html
 </p>
 <hr>
-<h3><a name="sparc-sun-sunos*">sparc-sun-sunos*</a></h3>
 @end html
+@heading @anchor{sparc-sun-sunos*}sparc-sun-sunos*
 
 A bug in the SunOS4 linker will cause it to crash when linking
 -fPIC compiled objects (and will therefore not allow you to build
@@ -1750,8 +1744,8 @@ from Sun's patch site.
 @html
 </p>
 <hr>
-<h3><a name="sparc-unknown-linux-gnulibc1">sparc-unknown-linux-gnulibc1</a></h3>
 @end html
+@heading @anchor{sparc-unknown-linux-gnulibc1}sparc-unknown-linux-gnulibc1
 
 It has been reported that you might need 
 @uref{ftp://ftp.yggdrasil.com/private/hjl,,binutils-2.8.1.0.23}
@@ -1761,8 +1755,8 @@ for this platform, too.
 @html
 </p>
 <hr>
-<h3><a name="sparc64-*-*">sparc64-*-*</a></h3>
 @end html
+@heading @anchor{sparc64-*-*}sparc64-*-*
 
 GCC version 2.95 is not able to compile code correctly for
 @code{sparc64} targets.  Users of the Linux kernel, at least,
@@ -1774,8 +1768,8 @@ recognize (via @samp{uname -a}) the system as @var{sparc-*-*} instead.
 @html
 </p>
 <hr>
-<h3><a name="windows"></a>Microsoft Windows (32 bit)</h3>
 @end html
+@heading @anchor{windows}Microsoft Windows (32 bit)
 
 A port of GCC 2.95.x is included with the 
 @uref{http://www.cygwin.com/,,Cygwin environment}.
@@ -1786,8 +1780,8 @@ without modification.
 @html
 </p>
 <hr>
-<h3><a name="os2"></a>OS/2</h3>
 @end html
+@heading @anchor{os2}OS/2
 
 GCC does not currently support OS/2.  However, Andrew Zabolotny has been
 working on a generic OS/2 port with pgcc.  The current code code can be found
@@ -1800,8 +1794,8 @@ ftp://ftp.leo.org/pub/comp/os/os2/leo/devtools/emx+gcc/}.
 @html
 </p>
 <hr>
-<h3><a name="older"></a>Older systems</h3> 
 @end html
+@heading @anchor{older}Older systems
  
 GCC contains support files for many older (1980s and early 
 1990s) Unix variants.  For the most part, support for these systems 
@@ -1844,8 +1838,8 @@ current GCC) is to be found in the GCC texinfo manual.
 @html
 </p>
 <hr>
-<h3><a name="elf_targets">all ELF targets (SVR4, Solaris, etc.)</a></h3>
 @end html
+@heading @anchor{elf_targets}all ELF targets (SVR4, Solaris, etc.)
 
 C++ support is significantly better on ELF targets if you use the
 @uref{./configure.html#with-gnu-ld,,GNU linker}; duplicate copies of
