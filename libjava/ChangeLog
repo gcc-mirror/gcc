@@ -1,3 +1,15 @@
+Sun Aug  1 16:29:25 1999  Tom Tromey  <tromey@ferrule.cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (AM_CXXFLAGS): Added -fpermissive.
+
+1999-08-01  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* configure.in: Check for bstring.h.
+	* configure, include/config.h.in: Rebuilt.
+	* java/net/natPlainDatagramSocketImpl.cc: #include bstring.h.
+	* java/net/natPlainSocketImpl.cc: Likewise.
+
 1999-07-31  Tom Tromey  <tromey@cygnus.com>
 
 	* NEWS: Likewise.

@@ -67,7 +67,8 @@ JAVAC = $(GCJ) -C
 EH_COMMON_INCLUDE = @EH_COMMON_INCLUDE@
 
 WARNINGS = -W -Wall
-AM_CXXFLAGS = -fno-rtti -fvtable-thunks @LIBGCJ_CXXFLAGS@ $(WARNINGS)
+## Need -fpermissive for SunOS.  FIXME.
+AM_CXXFLAGS = -fno-rtti -fvtable-thunks -fpermissive @LIBGCJ_CXXFLAGS@ $(WARNINGS)
 if USING_GCC
 AM_CFLAGS = @LIBGCJ_CFLAGS@ $(WARNINGS)
 else
