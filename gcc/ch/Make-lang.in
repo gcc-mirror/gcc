@@ -175,13 +175,13 @@ CHILL.maintainer-clean:
 # Stage hooks:
 # The main makefile has already created stage?/ch.
 
-CHILL.stage1:
+CHILL.stage1: stage1-start
 	-mv ch/*.o stage1/ch
-CHILL.stage2:
+CHILL.stage2: stage2-start
 	-mv ch/*.o stage2/ch
-CHILL.stage3:
+CHILL.stage3: stage3-start
 	-mv ch/*.o stage3/ch
-CHILL.stage4:
+CHILL.stage4: stage4-start
 	-mv ch/*.o stage4/ch
 #
 # Maintenance hooks:
