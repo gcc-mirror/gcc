@@ -1,3 +1,82 @@
+2004-05-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/mt_allocator.h:(__mt_alloc::allocate): Minor
+	tweaks.
+
+2004-05-30  Dhruv Matani  <dhruvbird@gmx.net>
+
+	* include/ext/mt_allocator.h:(__mt_alloc::allocate): Re-write
+	allocation loop which removes blocks from the global free list
+	from O(N) to O(1) when the required blocks are <= the number
+	available.
+
+2004-05-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/mt_allocator.h (__mt_alloc<>::deallocate):
+	Consistently update __bin._M_free[0].
+	(__mt_alloc<>::allocate): When __bin._M_first[0] != NULL use
+	__bin._M_free[0] to simplify the while loop (i.e., the number
+	of iterations becomes known at the outset).
+
+2004-05-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/mt_allocator.h (__mt_alloc<>::deallocate):
+	The critical section is actually very small, only two assignments.
+
+2004-05-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/mt_allocator.h (__mt_alloc<>::allocate): Factor out
+	some duplicated code.
+	(__mt_alloc<>::_Bin_record): Spare the space of _M_free and _M_used
+	in the single threaded case.
+
+2004-05-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/mt_allocator.h (__mt_alloc<>::deallocate):
+	Rearrange arithmetic to avoid computing two divisions at
+	each deallocation.
+
+2004-05-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/mt_allocator.h (__mt_alloc<>::_S_initialize):
+	Streamline the second half, wrapping it in a single
+	'#ifdef __GTHREADS if (__gthread_active_p())' and avoiding
+	conditionals inside loops.
+
+2004-05-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/mt_allocator.h: Uglify consistently names of
+	variables, members and classes; tidy.
+
+2004-05-30  Dhruv Matani  <dhruvbird@gmx.net>
+
+	* include/ext/mt_allocator.h (__mt_alloc<>::deallocate):
+	Deallocation loop rewrote.
+
+2004-05-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/mt_allocator.h (__mt_alloc<>::allocate,
+	__mt_alloc<>::deallocate): Protect two instances of
+	block->thread_id with __GTHREADS.
+
+2004-05-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/mt_allocator.h (__mt_alloc<>::tune):
+	Add _M_min_bin, the size in bytes of the smallest bin.
+	(__mt_alloc<>::tune()): Tweak accordingly.
+	(__mt_alloc<>::tune(size_t, ...)): Likewise.
+	(__mt_alloc<>::block_record): Change to a union: members next
+	and thread_id are never used at the same time.
+	(__mt_alloc<>::allocate): Update consistently.
+	(__mt_alloc<>::deallocate): Likewise.
+	(__mt_alloc<>::_S_initialize): Update setups of _S_binmap and
+	_S_bin_size for the configurable _M_min_size.
+
+2004-05-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/mt_allocator.h (__mt_alloc<>::allocate,
+	__mt_alloc<>::deallocate): Avoid redundant conditionals.
+
 2004-05-27  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/15565
