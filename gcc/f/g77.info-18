@@ -1,0 +1,1125 @@
+This is Info file g77.info, produced by Makeinfo version 1.68 from the
+input file g77.texi.
+
+   This file explains how to use the GNU Fortran system.
+
+   Published by the Free Software Foundation 59 Temple Place - Suite 330
+Boston, MA 02111-1307 USA
+
+   Copyright (C) 1995-1997 Free Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the sections entitled "GNU General Public License," "Funding for
+Free Software," and "Protect Your Freedom--Fight `Look And Feel'" are
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the sections entitled "GNU General Public
+License," "Funding for Free Software," and "Protect Your Freedom--Fight
+`Look And Feel'", and this permission notice, may be included in
+translations approved by the Free Software Foundation instead of in the
+original English.
+
+   Contributed by James Craig Burley (<burley@gnu.ai.mit.edu>).
+Inspired by a first pass at translating `g77-0.5.16/f/DOC' that was
+contributed to Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
+
+INFO-DIR-SECTION Fortran Programming
+START-INFO-DIR-ENTRY
+* g77: (g77).               The GNU Fortran compilation system.
+END-INFO-DIR-ENTRY
+
+
+File: g77.info,  Node: Bug Reporting,  Next: Sending Patches,  Prev: Bug Lists,  Up: Bugs
+
+How to Report Bugs
+==================
+
+   The fundamental principle of reporting bugs usefully is this:
+*report all the facts*.  If you are not sure whether to state a fact or
+leave it out, state it!
+
+   Often people omit facts because they think they know what causes the
+problem and they conclude that some details don't matter.  Thus, you
+might assume that the name of the variable you use in an example does
+not matter.  Well, probably it doesn't, but one cannot be sure.
+Perhaps the bug is a stray memory reference which happens to fetch from
+the location where that name is stored in memory; perhaps, if the name
+were different, the contents of that location would fool the compiler
+into doing the right thing despite the bug.  Play it safe and give a
+specific, complete example.  That is the easiest thing for you to do,
+and the most helpful.
+
+   Keep in mind that the purpose of a bug report is to enable someone to
+fix the bug if it is not known.  It isn't very important what happens if
+the bug is already known.  Therefore, always write your bug reports on
+the assumption that the bug is not known.
+
+   Sometimes people give a few sketchy facts and ask, "Does this ring a
+bell?"  This cannot help us fix a bug, so it is rarely helpful.  We
+respond by asking for enough details to enable us to investigate.  You
+might as well expedite matters by sending them to begin with.
+(Besides, there are enough bells ringing around here as it is.)
+
+   Try to make your bug report self-contained.  If we have to ask you
+for more information, it is best if you include all the previous
+information in your response, as well as the information that was
+missing.
+
+   Please report each bug in a separate message.  This makes it easier
+for us to track which bugs have been fixed and to forward your bugs
+reports to the appropriate maintainer.
+
+   Do not compress and encode any part of your bug report using programs
+such as `uuencode'.  If you do so it will slow down the processing of
+your bug.  If you must submit multiple large files, use `shar', which
+allows us to read your message without having to run any decompression
+programs.
+
+   (As a special exception for GNU Fortran bug-reporting, at least for
+now, if you are sending more than a few lines of code, if your
+program's source file format contains "interesting" things like
+trailing spaces or strange characters, or if you need to include binary
+data files, it is acceptable to put all the files together in a `tar'
+archive, and, whether you need to do that, it is acceptable to then
+compress the single file (`tar' archive or source file) using `gzip'
+and encode it via `uuencode'.  Do not use any MIME stuff--the current
+maintainer can't decode this.  Using `compress' instead of `gzip' is
+acceptable, assuming you have licensed the use of the patented
+algorithm in `compress' from Unisys.)
+
+   To enable someone to investigate the bug, you should include all
+these things:
+
+   * The version of GNU Fortran.  You can get this by running `g77'
+     with the `-v' option.  (Ignore any error messages that might be
+     displayed when the linker is run.)
+
+     Without this, we won't know whether there is any point in looking
+     for the bug in the current version of GNU Fortran.
+
+   * A complete input file that will reproduce the bug.  If the bug is
+     in the compiler proper (`f771') and you are using the C
+     preprocessor, run your source file through the C preprocessor by
+     doing `g77 -E SOURCEFILE > OUTFILE', then include the contents of
+     OUTFILE in the bug report.  (When you do this, use the same `-I',
+     `-D' or `-U' options that you used in actual compilation.)
+
+     A single statement is not enough of an example.  In order to
+     compile it, it must be embedded in a complete file of compiler
+     input; and the bug might depend on the details of how this is done.
+
+     Without a real example one can compile, all anyone can do about
+     your bug report is wish you luck.  It would be futile to try to
+     guess how to provoke the bug.  For example, bugs in register
+     allocation and reloading frequently depend on every little detail
+     of the function they happen in.
+
+   * Note that you should include with your bug report any files
+     included by the source file (via the `#include' or `INCLUDE'
+     directive) that you send, and any files they include, and so on.
+
+     It is not necessary to replace the `#include' and `INCLUDE'
+     directives with the actual files in the version of the source file
+     that you send, but it might make submitting the bug report easier
+     in the end.  However, be sure to *reproduce* the bug using the
+     *exact* version of the source material you submit, to avoid
+     wild-goose chases.
+
+   * The command arguments you gave GNU Fortran to compile that example
+     and observe the bug.  For example, did you use `-O'?  To guarantee
+     you won't omit something important, list all the options.
+
+     If we were to try to guess the arguments, we would probably guess
+     wrong and then we would not encounter the bug.
+
+   * The type of machine you are using, and the operating system name
+     and version number.  (Much of this information is printed by `g77
+     -v'--if you include that, send along any additional info you have
+     that you don't see clearly represented in that output.)
+
+   * The operands you gave to the `configure' command when you installed
+     the compiler.
+
+   * A complete list of any modifications you have made to the compiler
+     source.  (We don't promise to investigate the bug unless it
+     happens in an unmodified compiler.  But if you've made
+     modifications and don't tell us, then you are sending us on a
+     wild-goose chase.)
+
+     Be precise about these changes.  A description in English is not
+     enough--send a context diff for them.
+
+     Adding files of your own (such as a machine description for a
+     machine we don't support) is a modification of the compiler source.
+
+   * Details of any other deviations from the standard procedure for
+     installing GNU Fortran.
+
+   * A description of what behavior you observe that you believe is
+     incorrect.  For example, "The compiler gets a fatal signal," or,
+     "The assembler instruction at line 208 in the output is incorrect."
+
+     Of course, if the bug is that the compiler gets a fatal signal,
+     then one can't miss it.  But if the bug is incorrect output, the
+     maintainer might not notice unless it is glaringly wrong.  None of
+     us has time to study all the assembler code from a 50-line Fortran
+     program just on the chance that one instruction might be wrong.
+     We need *you* to do this part!
+
+     Even if the problem you experience is a fatal signal, you should
+     still say so explicitly.  Suppose something strange is going on,
+     such as, your copy of the compiler is out of synch, or you have
+     encountered a bug in the C library on your system.  (This has
+     happened!)  Your copy might crash and the copy here would not.  If
+     you said to expect a crash, then when the compiler here fails to
+     crash, we would know that the bug was not happening.  If you don't
+     say to expect a crash, then we would not know whether the bug was
+     happening.  We would not be able to draw any conclusion from our
+     observations.
+
+     If the problem is a diagnostic when building GNU Fortran with some
+     other compiler, say whether it is a warning or an error.
+
+     Often the observed symptom is incorrect output when your program
+     is run.  Sad to say, this is not enough information unless the
+     program is short and simple.  None of us has time to study a large
+     program to figure out how it would work if compiled correctly,
+     much less which line of it was compiled wrong.  So you will have
+     to do that.  Tell us which source line it is, and what incorrect
+     result happens when that line is executed.  A person who
+     understands the program can find this as easily as finding a bug
+     in the program itself.
+
+   * If you send examples of assembler code output from GNU Fortran,
+     please use `-g' when you make them.  The debugging information
+     includes source line numbers which are essential for correlating
+     the output with the input.
+
+   * If you wish to mention something in the GNU Fortran source, refer
+     to it by context, not by line number.
+
+     The line numbers in the development sources don't match those in
+     your sources.  Your line numbers would convey no convenient
+     information to the maintainers.
+
+   * Additional information from a debugger might enable someone to
+     find a problem on a machine which he does not have available.
+     However, you need to think when you collect this information if
+     you want it to have any chance of being useful.
+
+     For example, many people send just a backtrace, but that is never
+     useful by itself.  A simple backtrace with arguments conveys little
+     about GNU Fortran because the compiler is largely data-driven; the
+     same functions are called over and over for different RTL insns,
+     doing different things depending on the details of the insn.
+
+     Most of the arguments listed in the backtrace are useless because
+     they are pointers to RTL list structure.  The numeric values of the
+     pointers, which the debugger prints in the backtrace, have no
+     significance whatever; all that matters is the contents of the
+     objects they point to (and most of the contents are other such
+     pointers).
+
+     In addition, most compiler passes consist of one or more loops that
+     scan the RTL insn sequence.  The most vital piece of information
+     about such a loop--which insn it has reached--is usually in a
+     local variable, not in an argument.
+
+     What you need to provide in addition to a backtrace are the values
+     of the local variables for several stack frames up.  When a local
+     variable or an argument is an RTX, first print its value and then
+     use the GDB command `pr' to print the RTL expression that it points
+     to.  (If GDB doesn't run on your machine, use your debugger to call
+     the function `debug_rtx' with the RTX as an argument.)  In
+     general, whenever a variable is a pointer, its value is no use
+     without the data it points to.
+
+   Here are some things that are not necessary:
+
+   * A description of the envelope of the bug.
+
+     Often people who encounter a bug spend a lot of time investigating
+     which changes to the input file will make the bug go away and which
+     changes will not affect it.
+
+     This is often time consuming and not very useful, because the way
+     we will find the bug is by running a single example under the
+     debugger with breakpoints, not by pure deduction from a series of
+     examples.  You might as well save your time for something else.
+
+     Of course, if you can find a simpler example to report *instead* of
+     the original one, that is a convenience.  Errors in the output
+     will be easier to spot, running under the debugger will take less
+     time, etc.  Most GNU Fortran bugs involve just one function, so
+     the most straightforward way to simplify an example is to delete
+     all the function definitions except the one where the bug occurs.
+     Those earlier in the file may be replaced by external declarations
+     if the crucial function depends on them.  (Exception: inline
+     functions might affect compilation of functions defined later in
+     the file.)
+
+     However, simplification is not vital; if you don't want to do this,
+     report the bug anyway and send the entire test case you used.
+
+   * In particular, some people insert conditionals `#ifdef BUG' around
+     a statement which, if removed, makes the bug not happen.  These
+     are just clutter; we won't pay any attention to them anyway.
+     Besides, you should send us preprocessor output, and that can't
+     have conditionals.
+
+   * A patch for the bug.
+
+     A patch for the bug is useful if it is a good one.  But don't omit
+     the necessary information, such as the test case, on the
+     assumption that a patch is all we need.  We might see problems
+     with your patch and decide to fix the problem another way, or we
+     might not understand it at all.
+
+     Sometimes with a program as complicated as GNU Fortran it is very
+     hard to construct an example that will make the program follow a
+     certain path through the code.  If you don't send the example, we
+     won't be able to construct one, so we won't be able to verify that
+     the bug is fixed.
+
+     And if we can't understand what bug you are trying to fix, or why
+     your patch should be an improvement, we won't install it.  A test
+     case will help us to understand.
+
+     *Note Sending Patches::, for guidelines on how to make it easy for
+     us to understand and install your patches.
+
+   * A guess about what the bug is or what it depends on.
+
+     Such guesses are usually wrong.  Even the maintainer can't guess
+     right about such things without first using the debugger to find
+     the facts.
+
+   * A core dump file.
+
+     We have no way of examining a core dump for your type of machine
+     unless we have an identical system--and if we do have one, we
+     should be able to reproduce the crash ourselves.
+
+
+File: g77.info,  Node: Sending Patches,  Prev: Bug Reporting,  Up: Bugs
+
+Sending Patches for GNU Fortran
+===============================
+
+   If you would like to write bug fixes or improvements for the GNU
+Fortran compiler, that is very helpful.  Send suggested fixes to the
+bug report mailing list, <fortran@gnu.ai.mit.edu>.
+
+   Please follow these guidelines so we can study your patches
+efficiently.  If you don't follow these guidelines, your information
+might still be useful, but using it will take extra work.  Maintaining
+GNU Fortran is a lot of work in the best of circumstances, and we can't
+keep up unless you do your best to help.
+
+   * Send an explanation with your changes of what problem they fix or
+     what improvement they bring about.  For a bug fix, just include a
+     copy of the bug report, and explain why the change fixes the bug.
+
+     (Referring to a bug report is not as good as including it, because
+     then we will have to look it up, and we have probably already
+     deleted it if we've already fixed the bug.)
+
+   * Always include a proper bug report for the problem you think you
+     have fixed.  We need to convince ourselves that the change is
+     right before installing it.  Even if it is right, we might have
+     trouble judging it if we don't have a way to reproduce the problem.
+
+   * Include all the comments that are appropriate to help people
+     reading the source in the future understand why this change was
+     needed.
+
+   * Don't mix together changes made for different reasons.  Send them
+     *individually*.
+
+     If you make two changes for separate reasons, then we might not
+     want to install them both.  We might want to install just one.  If
+     you send them all jumbled together in a single set of diffs, we
+     have to do extra work to disentangle them--to figure out which
+     parts of the change serve which purpose.  If we don't have time
+     for this, we might have to ignore your changes entirely.
+
+     If you send each change as soon as you have written it, with its
+     own explanation, then the two changes never get tangled up, and we
+     can consider each one properly without any extra work to
+     disentangle them.
+
+     Ideally, each change you send should be impossible to subdivide
+     into parts that we might want to consider separately, because each
+     of its parts gets its motivation from the other parts.
+
+   * Send each change as soon as that change is finished.  Sometimes
+     people think they are helping us by accumulating many changes to
+     send them all together.  As explained above, this is absolutely
+     the worst thing you could do.
+
+     Since you should send each change separately, you might as well
+     send it right away.  That gives us the option of installing it
+     immediately if it is important.
+
+   * Use `diff -c' to make your diffs.  Diffs without context are hard
+     for us to install reliably.  More than that, they make it hard for
+     us to study the diffs to decide whether we want to install them.
+     Unidiff format is better than contextless diffs, but not as easy
+     to read as `-c' format.
+
+     If you have GNU `diff', use `diff -cp', which shows the name of the
+     function that each change occurs in.  (The maintainer of GNU
+     Fortran currently uses `diff -rcp2N'.)
+
+   * Write the change log entries for your changes.  We get lots of
+     changes, and we don't have time to do all the change log writing
+     ourselves.
+
+     Read the `ChangeLog' file to see what sorts of information to put
+     in, and to learn the style that we use.  The purpose of the change
+     log is to show people where to find what was changed.  So you need
+     to be specific about what functions you changed; in large
+     functions, it's often helpful to indicate where within the
+     function the change was.
+
+     On the other hand, once you have shown people where to find the
+     change, you need not explain its purpose.  Thus, if you add a new
+     function, all you need to say about it is that it is new.  If you
+     feel that the purpose needs explaining, it probably does--but the
+     explanation will be much more useful if you put it in comments in
+     the code.
+
+     If you would like your name to appear in the header line for who
+     made the change, send us the header line.
+
+   * When you write the fix, keep in mind that we can't install a
+     change that would break other systems.
+
+     People often suggest fixing a problem by changing
+     machine-independent files such as `toplev.c' to do something
+     special that a particular system needs.  Sometimes it is totally
+     obvious that such changes would break GNU Fortran for almost all
+     users.  We can't possibly make a change like that.  At best it
+     might tell us how to write another patch that would solve the
+     problem acceptably.
+
+     Sometimes people send fixes that *might* be an improvement in
+     general--but it is hard to be sure of this.  It's hard to install
+     such changes because we have to study them very carefully.  Of
+     course, a good explanation of the reasoning by which you concluded
+     the change was correct can help convince us.
+
+     The safest changes are changes to the configuration files for a
+     particular machine.  These are safe because they can't create new
+     bugs on other machines.
+
+     Please help us keep up with the workload by designing the patch in
+     a form that is good to install.
+
+
+File: g77.info,  Node: Service,  Next: Adding Options,  Prev: Bugs,  Up: Top
+
+How To Get Help with GNU Fortran
+********************************
+
+   If you need help installing, using or changing GNU Fortran, there
+are two ways to find it:
+
+   * Look in the service directory for someone who might help you for a
+     fee.  The service directory is found in the file named `SERVICE'
+     in the GNU CC distribution.
+
+   * Send a message to <fortran@gnu.ai.mit.edu>.
+
+
+File: g77.info,  Node: Adding Options,  Next: Projects,  Prev: Service,  Up: Top
+
+Adding Options
+**************
+
+   To add a new command-line option to `g77', first decide what kind of
+option you wish to add.  Search the `g77' and `gcc' documentation for
+one or more options that is most closely like the one you want to add
+(in terms of what kind of effect it has, and so on) to help clarify its
+nature.
+
+   * *Fortran options* are options that apply only when compiling
+     Fortran programs.  They are accepted by `g77' and `gcc', but they
+     apply only when compiling Fortran programs.
+
+   * *Compiler options* are options that apply when compiling most any
+     kind of program.
+
+   *Fortran options* are listed in the file `gcc/f/lang-options.h',
+which is used during the build of `gcc' to build a list of all options
+that are accepted by at least one language's compiler.  This list goes
+into the `lang_options' array in `gcc/toplev.c', which uses this array
+to determine whether a particular option should be offered to the
+linked-in front end for processing by calling `lang_option_decode',
+which, for `g77', is in `gcc/f/com.c' and just calls
+`ffe_decode_option'.
+
+   If the linked-in front end "rejects" a particular option passed to
+it, `toplev.c' just ignores the option, because *some* language's
+compiler is willing to accept it.
+
+   This allows commands like `gcc -fno-asm foo.c bar.f' to work, even
+though Fortran compilation does not currently support the `-fno-asm'
+option; even though the `f771' version of `lang_decode_option' rejects
+`-fno-asm', `toplev.c' doesn't produce a diagnostic because some other
+language (C) does accept it.
+
+   This also means that commands like `g77 -fno-asm foo.f' yield no
+diagnostics, despite the fact that no phase of the command was able to
+recognize and process `-fno-asm'--perhaps a warning about this would be
+helpful if it were possible.
+
+   Code that processes Fortran options is found in `gcc/f/top.c',
+function `ffe_decode_option'.  This code needs to check positive and
+negative forms of each option.
+
+   The defaults for Fortran options are set in their global
+definitions, also found in `gcc/f/top.c'.  Many of these defaults are
+actually macros defined in `gcc/f/target.h', since they might be
+machine-specific.  However, since, in practice, GNU compilers should
+behave the same way on all configurations (especially when it comes to
+language constructs), the practice of setting defaults in `target.h' is
+likely to be deprecated and, ultimately, stopped in future versions of
+`g77'.
+
+   Accessor macros for Fortran options, used by code in the `g77' FFE,
+are defined in `gcc/f/top.h'.
+
+   *Compiler options* are listed in `gcc/toplev.c' in the array
+`f_options'.  An option not listed in `lang_options' is looked up in
+`f_options' and handled from there.
+
+   The defaults for compiler options are set in the global definitions
+for the corresponding variables, some of which are in `gcc/toplev.c'.
+
+   You can set different defaults for *Fortran-oriented* or
+*Fortran-reticent* compiler options by changing the way `f771' handles
+the `-fset-g77-defaults' option, which is always provided as the first
+option when called by `g77' or `gcc'.
+
+   This code is in `ffe_decode_options' in `gcc/f/top.c'.  Have it
+change just the variables that you want to default to a different
+setting for Fortran compiles compared to compiles of other languages.
+
+   The `-fset-g77-defaults' option is passed to `f771' automatically
+because of the specification information kept in `gcc/f/lang-specs.h'.
+This file tells the `gcc' command how to recognize, in this case,
+Fortran source files (those to be preprocessed, and those that are
+not), and further, how to invoke the appropriate programs (including
+`f771') to process those source files.
+
+   It is in `gcc/f/lang-specs.h' that `-fset-g77-defaults',
+`-fversion', and other options are passed, as appropriate, even when
+the user has not explicitly specified them.  Other "internal" options
+such as `-quiet' also are passed via this mechanism.
+
+
+File: g77.info,  Node: Projects,  Next: Diagnostics,  Prev: Adding Options,  Up: Top
+
+Projects
+********
+
+   If you want to contribute to `g77' by doing research, design,
+specification, documentation, coding, or testing, the following
+information should give you some ideas.
+
+* Menu:
+
+* Efficiency::               Make `g77' itself compile code faster.
+* Better Optimization::      Teach `g77' to generate faster code.
+* Simplify Porting::         Make `g77' easier to configure, build,
+                             and install.
+* More Extensions::          Features many users won't know to ask for.
+* Machine Model::            `g77' should better leverage `gcc'.
+* Internals Documentation::  Make maintenance easier.
+* Internals Improvements::   Make internals more robust.
+* Better Diagnostics::       Make using `g77' on new code easier.
+
+
+File: g77.info,  Node: Efficiency,  Next: Better Optimization,  Up: Projects
+
+Improve Efficiency
+==================
+
+   Don't bother doing any performance analysis until most of the
+following items are taken care of, because there's no question they
+represent serious space/time problems, although some of them show up
+only given certain kinds of (popular) input.
+
+   * Improve `malloc' package and its uses to specify more info about
+     memory pools and, where feasible, use obstacks to implement them.
+
+   * Skip over uninitialized portions of aggregate areas (arrays,
+     `COMMON' areas, `EQUIVALENCE' areas) so zeros need not be output.
+     This would reduce memory usage for large initialized aggregate
+     areas, even ones with only one initialized element.
+
+     As of version 0.5.18, a portion of this item has already been
+     accomplished.
+
+   * Prescan the statement (in `sta.c') so that the nature of the
+     statement is determined as much as possible by looking entirely at
+     its form, and not looking at any context (previous statements,
+     including types of symbols).  This would allow ripping out of the
+     statement-confirmation, symbol retraction/confirmation, and
+     diagnostic inhibition mechanisms.  Plus, it would result in
+     much-improved diagnostics.  For example, `CALL
+     some-intrinsic(...)', where the intrinsic is not a subroutine
+     intrinsic, would result actual error instead of the
+     unimplemented-statement catch-all.
+
+   * Throughout `g77', don't pass line/column pairs where a simple
+     `ffewhere' type, which points to the error as much as is desired
+     by the configuration, will do, and don't pass `ffelexToken' types
+     where a simple `ffewhere' type will do.  Then, allow new default
+     configuration of `ffewhere' such that the source line text is not
+     preserved, and leave it to things like Emacs' next-error function
+     to point to them (now that `next-error' supports column, or,
+     perhaps, character-offset, numbers).  The change in calling
+     sequences should improve performance somewhat, as should not
+     having to save source lines.  (Whether this whole item will
+     improve performance is questionable, but it should improve
+     maintainability.)
+
+   * Handle `DATA (A(I),I=1,1000000)/1000000*2/' more efficiently,
+     especially as regards the assembly output.  Some of this might
+     require improving the back end, but lots of improvement in
+     space/time required in `g77' itself can be fairly easily obtained
+     without touching the back end.  Maybe type-conversion, where
+     necessary, can be speeded up as well in cases like the one shown
+     (converting the `2' into `2.').
+
+   * If analysis shows it to be worthwhile, optimize `lex.c'.
+
+   * Consider redesigning `lex.c' to not need any feedback during
+     tokenization, by keeping track of enough parse state on its own.
+
+
+File: g77.info,  Node: Better Optimization,  Next: Simplify Porting,  Prev: Efficiency,  Up: Projects
+
+Better Optimization
+===================
+
+   Much of this work should be put off until after `g77' has all the
+features necessary for its widespread acceptance as a useful F77
+compiler.  However, perhaps this work can be done in parallel during
+the feature-adding work.
+
+   * Do the equivalent of the trick of putting `extern inline' in front
+     of every function definition in `libf2c' and #include'ing the
+     resulting file in `f2c'+`gcc'--that is, inline all
+     run-time-library functions that are at all worth inlining.  (Some
+     of this has already been done, such as for integral
+     exponentiation.)
+
+   * When doing `CHAR_VAR = CHAR_FUNC(...)', and it's clear that types
+     line up and `CHAR_VAR' is addressable or not a `VAR_DECL', make
+     `CHAR_VAR', not a temporary, be the receiver for `CHAR_FUNC'.
+     (This is now done for `COMPLEX' variables.)
+
+   * Design and implement Fortran-specific optimizations that don't
+     really belong in the back end, or where the front end needs to
+     give the back end more info than it currently does.
+
+   * Design and implement a new run-time library interface, with the
+     code going into `libgcc' so no special linking is required to link
+     Fortran programs using standard language features.  This library
+     would speed up lots of things, from I/O (using precompiled formats,
+     doing just one, or, at most, very few, calls for arrays or array
+     sections, and so on) to general computing (array/section
+     implementations of various intrinsics, implementation of commonly
+     performed loops that aren't likely to be optimally compiled
+     otherwise, etc.).
+
+     Among the important things the library would do are:
+
+        * Be a one-stop-shop-type library, hence shareable and usable
+          by all, in that what are now library-build-time options in
+          `libf2c' would be moved at least to the `g77' compile phase,
+          if not to finer grains (such as choosing how list-directed
+          I/O formatting is done by default at `OPEN' time, for
+          preconnected units via options or even statements in the main
+          program unit, maybe even on a per-I/O basis with appropriate
+          pragma-like devices).
+
+   * Probably requiring the new library design, change interface to
+     normally have `COMPLEX' functions return their values in the way
+     `gcc' would if they were declared `__complex__ float', rather than
+     using the mechanism currently used by `CHARACTER' functions
+     (whereby the functions are compiled as returning void and their
+     first arg is a pointer to where to store the result).  (Don't
+     append underscores to external names for `COMPLEX' functions in
+     some cases once `g77' uses `gcc' rather than `f2c' calling
+     conventions.)
+
+   * Do something useful with `doiter' references where possible.  For
+     example, `CALL FOO(I)' cannot modify `I' if within a `DO' loop
+     that uses `I' as the iteration variable, and the back end might
+     find that info useful in determining whether it needs to read `I'
+     back into a register after the call.  (It normally has to do that,
+     unless it knows `FOO' never modifies its passed-by-reference
+     argument, which is rarely the case for Fortran-77 code.)
+
+
+File: g77.info,  Node: Simplify Porting,  Next: More Extensions,  Prev: Better Optimization,  Up: Projects
+
+Simplify Porting
+================
+
+   Making `g77' easier to configure, port, build, and install, either
+as a single-system compiler or as a cross-compiler, would be very
+useful.
+
+   * A new library (replacing `libf2c') should improve portability as
+     well as produce more optimal code.  Further, `g77' and the new
+     library should conspire to simplify naming of externals, such as
+     by removing unnecessarily added underscores, and to
+     reduce/eliminate the possibility of naming conflicts, while making
+     debugger more straightforward.
+
+     Also, it should make multi-language applications more feasible,
+     such as by providing Fortran intrinsics that get Fortran unit
+     numbers given C `FILE *' descriptors.
+
+   * Possibly related to a new library, `g77' should produce the
+     equivalent of a `gcc' `main(argc, argv)' function when it compiles
+     a main program unit, instead of compiling something that must be
+     called by a library implementation of `main()'.
+
+     This would do many useful things such as provide more flexibility
+     in terms of setting up exception handling, not requiring
+     programmers to start their debugging sessions with `breakpoint
+     MAIN__' followed by `run', and so on.
+
+   * The GBE needs to understand the difference between alignment
+     requirements and desires.  For example, on Intel x86 machines,
+     `g77' currently imposes overly strict alignment requirements, due
+     to the back end, but it would be useful for Fortran and C
+     programmers to be able to override these *recommendations* as long
+     as they don't violate the actual processor *requirements*.
+
+
+File: g77.info,  Node: More Extensions,  Next: Machine Model,  Prev: Simplify Porting,  Up: Projects
+
+More Extensions
+===============
+
+   These extensions are not the sort of things users ask for "by name",
+but they might improve the usability of `g77', and Fortran in general,
+in the long run.  Some of these items really pertain to improving `g77'
+internals so that some popular extensions can be more easily supported.
+
+   * Look through all the documentation on the GNU Fortran language,
+     dialects, compiler, missing features, bugs, and so on.  Many
+     mentions of incomplete or missing features are sprinkled
+     throughout.  It is not worth repeating them here.
+
+   * Support arbitrary operands for concatenation, even in contexts
+     where run-time allocation is required.
+
+   * Consider adding a `NUMERIC' type to designate typeless numeric
+     constants, named and unnamed.  The idea is to provide a
+     forward-looking, effective replacement for things like the
+     old-style `PARAMETER' statement when people really need
+     typelessness in a maintainable, portable, clearly documented way.
+     Maybe `TYPELESS' would include `CHARACTER', `POINTER', and
+     whatever else might come along.  (This is not really a call for
+     polymorphism per se, just an ability to express limited, syntactic
+     polymorphism.)
+
+   * Support `OPEN(...,KEY=(...),...)'.
+
+   * Support arbitrary file unit numbers, instead of limiting them to 0
+     through `MXUNIT-1'.  (This is a `libf2c' issue.)
+
+   * `OPEN(NOSPANBLOCKS,...)' is treated as
+     `OPEN(UNIT=NOSPANBLOCKS,...)', so a later `UNIT=' in the first
+     example is invalid.  Make sure this is what users of this feature
+     would expect.
+
+   * Currently `g77' disallows `READ(1'10)' since it is an obnoxious
+     syntax, but supporting it might be pretty easy if needed.  More
+     details are needed, such as whether general expressions separated
+     by an apostrophe are supported, or maybe the record number can be
+     a general expression, and so on.
+
+   * Support `STRUCTURE', `UNION', `MAP', and `RECORD' fully.
+     Currently there is no support at all for `%FILL' in `STRUCTURE'
+     and related syntax, whereas the rest of the stuff has at least
+     some parsing support.  This requires either major changes to
+     `libf2c' or its replacement.
+
+   * F90 and `g77' probably disagree about label scoping relative to
+     `INTERFACE' and `END INTERFACE', and their contained procedure
+     interface bodies (blocks?).
+
+   * `ENTRY' doesn't support F90 `RESULT()' yet, since that was added
+     after S8.112.
+
+   * Empty-statement handling (10 ;;CONTINUE;;) probably isn't
+     consistent with the final form of the standard (it was vague at
+     S8.112).
+
+   * It seems to be an "open" question whether a file, immediately
+     after being `OPEN'ed,is positioned at the beginning, the end, or
+     wherever--it might be nice to offer an option of opening to
+     "undefined" status, requiring an explicit absolute-positioning
+     operation to be performed before any other (besides `CLOSE') to
+     assist in making applications port to systems (some IBM?) that
+     `OPEN' to the end of a file or some such thing.
+
+
+File: g77.info,  Node: Machine Model,  Next: Internals Documentation,  Prev: More Extensions,  Up: Projects
+
+Machine Model
+=============
+
+   This items pertain to generalizing `g77''s view of the machine model
+to more fully accept whatever the GBE provides it via its configuration.
+
+   * Switch to using `REAL_VALUE_TYPE' to represent floating-point
+     constants exclusively so the target float format need not be
+     required.  This means changing the way `g77' handles
+     initialization of aggregate areas having more than one type, such
+     as `REAL' and `INTEGER', because currently it initializes them as
+     if they were arrays of `char' and uses the bit patterns of the
+     constants of the various types in them to determine what to stuff
+     in elements of the arrays.
+
+   * Rely more and more on back-end info and capabilities, especially
+     in the area of constants (where having the `g77' front-end's IL
+     just store the appropriate tree nodes containing constants might
+     be best).
+
+   * Suite of C and Fortran programs that a user/administrator can run
+     on a machine to help determine the configuration for `g77' before
+     building and help determine if the compiler works (especially with
+     whatever libraries are installed) after building.
+
+
+File: g77.info,  Node: Internals Documentation,  Next: Internals Improvements,  Prev: Machine Model,  Up: Projects
+
+Internals Documentation
+=======================
+
+   Better info on how `g77' works and how to port it is needed.  Much
+of this should be done only after the redesign planned for 0.6 is
+complete.
+
+
+File: g77.info,  Node: Internals Improvements,  Next: Better Diagnostics,  Prev: Internals Documentation,  Up: Projects
+
+Internals Improvements
+======================
+
+   Some more items that would make `g77' more reliable and easier to
+maintain:
+
+   * Generally make expression handling focus more on critical syntax
+     stuff, leaving semantics to callers.  For example, anything a
+     caller can check, semantically, let it do so, rather than having
+     `expr.c' do it.  (Exceptions might include things like diagnosing
+     `FOO(I--K:)=BAR' where `FOO' is a `PARAMETER'--if it seems
+     important to preserve the left-to-right-in-source order of
+     production of diagnostics.)
+
+   * Come up with better naming conventions for `-D' to establish
+     requirements to achieve desired implementation dialect via
+     `proj.h'.
+
+   * Clean up used tokens and `ffewhere's in `ffeglobal_terminate_1'.
+
+   * Replace `sta.c' `outpooldisp' mechanism with `malloc_pool_use'.
+
+   * Check for `opANY' in more places in `com.c', `std.c', and `ste.c',
+     and get rid of the `opCONVERT(opANY)' kludge (after determining if
+     there is indeed no real need for it).
+
+   * Utility to read and check `bad.def' messages and their references
+     in the code, to make sure calls are consistent with message
+     templates.
+
+   * Search and fix `&ffe...' and similar so that `ffe...ptr...' macros
+     are available instead (a good argument for wishing this could have
+     written all this stuff in C++, perhaps).  On the other hand, it's
+     questionable whether this sort of improvement is really necessary,
+     given the availability of tools such as Emacs and Perl, which make
+     finding any address-taking of structure members easy enough?
+
+   * Some modules truly export the member names of their structures
+     (and the structures themselves), maybe fix this, and fix other
+     modules that just appear to as well (by appending `_', though it'd
+     be ugly and probably not worth the time).
+
+   * Implement C macros `RETURNS(value)' and `SETS(something,value)' in
+     `proj.h' and use them throughout `g77' source code (especially in
+     the definitions of access macros in `.h' files) so they can be
+     tailored to catch code writing into a `RETURNS()' or reading from
+     a `SETS()'.
+
+   * Decorate throughout with `const' and other such stuff.
+
+   * All F90 notational derivations in the source code are still based
+     on the S8.112 version of the draft standard.  Probably should
+     update to the official standard, or put documentation of the rules
+     as used in the code...uh...in the code.
+
+   * Some `ffebld_new' calls (those outside of `ffeexpr.c' or inside
+     but invoked via paths not involving `ffeexpr_lhs' or
+     `ffeexpr_rhs') might be creating things in improper pools, leading
+     to such things staying around too long or (doubtful, but possible
+     and dangerous) not long enough.
+
+   * Some `ffebld_list_new' (or whatever) calls might not be matched by
+     `ffebld_list_bottom' (or whatever) calls, which might someday
+     matter.  (It definitely is not a problem just yet.)
+
+   * Probably not doing clean things when we fail to `EQUIVALENCE'
+     something due to alignment/mismatch or other problems--they end up
+     without `ffestorag' objects, so maybe the backend (and other parts
+     of the front end) can notice that and handle like an `opANY' (do
+     what it wants, just don't complain or crash).  Most of this seems
+     to have been addressed by now, but a code review wouldn't hurt.
+
+
+File: g77.info,  Node: Better Diagnostics,  Prev: Internals Improvements,  Up: Projects
+
+Better Diagnostics
+==================
+
+   These are things users might not ask about, or that need to be
+looked into, before worrying about.  Also here are items that involve
+reducing unnecessary diagnostic clutter.
+
+   * When `FUNCTION' and `ENTRY' point types disagree (`CHARACTER'
+     lengths, type classes, and so on), `ANY'-ize the offending `ENTRY'
+     point and any *new* dummies it specifies.
+
+   * Speed up and improve error handling for data when repeat-count is
+     specified.  For example, don't output 20 unnecessary messages
+     after the first necessary one for:
+
+          INTEGER X(20)
+          CONTINUE
+          DATA (X(I), J= 1, 20) /20*5/
+          END
+
+     (The `CONTINUE' statement ensures the `DATA' statement is
+     processed in the context of executable, not specification,
+     statements.)
+
+
+File: g77.info,  Node: Diagnostics,  Next: Index,  Prev: Projects,  Up: Top
+
+Diagnostics
+***********
+
+   Some diagnostics produced by `g77' require sufficient explanation
+that the explanations are given below, and the diagnostics themselves
+identify the appropriate explanation.
+
+   Identification uses the GNU Info format--specifically, the `info'
+command that displays the explanation is given in within square
+brackets in the diagnostic.  For example:
+
+     foo.f:5: Invalid statement [info -f g77 M FOOEY]
+
+   More details about the above diagnostic is found in the `g77' Info
+documentation, menu item `M', submenu item `FOOEY', which is displayed
+by typing the UNIX command `info -f g77 M FOOEY'.
+
+   Other Info readers, such as EMACS, may be just as easily used to
+display the pertinent node.  In the above example, `g77' is the Info
+document name, `M' is the top-level menu item to select, and, in that
+node (named `Diagnostics', the name of this chapter, which is the very
+text you're reading now), `FOOEY' is the menu item to select.
+
+* Menu:
+
+* CMPAMBIG::    Ambiguous use of intrinsic.
+* EXPIMP::      Intrinsic used explicitly and implicitly.
+* INTGLOB::     Intrinsic also used as name of global.
+* LEX::         Various lexer messages
+* GLOBALS::     Disagreements about globals.
+
+
+File: g77.info,  Node: CMPAMBIG,  Next: EXPIMP,  Up: Diagnostics
+
+`CMPAMBIG'
+==========
+
+     Ambiguous use of intrinsic INTRINSIC ...
+
+   The type of the argument to the invocation of the INTRINSIC
+intrinsic is a `COMPLEX' type other than `COMPLEX(KIND=1)'.  Typically,
+it is `COMPLEX(KIND=2)', also known as `DOUBLE COMPLEX'.
+
+   The interpretation of this invocation depends on the particular
+dialect of Fortran for which the code was written.  Some dialects
+convert the real part of the argument to `REAL(KIND=1)', thus losing
+precision; other dialects, and Fortran 90, do no such conversion.
+
+   So, GNU Fortran rejects such invocations except under certain
+circumstances, to avoid making an incorrect assumption that results in
+generating the wrong code.
+
+   To determine the dialect of the program unit, perhaps even whether
+that particular invocation is properly coded, determine how the result
+of the intrinsic is used.
+
+   The result of INTRINSIC is expected (by the original programmer) to
+be `REAL(KIND=1)' (the non-Fortran-90 interpretation) if:
+
+   * It is passed as an argument to a procedure that explicitly or
+     implicitly declares that argument `REAL(KIND=1)'.
+
+     For example, a procedure with no `DOUBLE PRECISION' or `IMPLICIT
+     DOUBLE PRECISION' statement specifying the dummy argument
+     corresponding to an actual argument of `REAL(Z)', where `Z' is
+     declared `DOUBLE COMPLEX', strongly suggests that the programmer
+     expected `REAL(Z)' to return `REAL(KIND=1)' instead of
+     `REAL(KIND=2)'.
+
+   * It is used in a context that would otherwise not include any
+     `REAL(KIND=2)' but where treating the INTRINSIC invocation as
+     `REAL(KIND=2)' would result in unnecessary promotions and
+     (typically) more expensive operations on the wider type.
+
+     For example:
+
+          DOUBLE COMPLEX Z
+          ...
+          R(1) = T * REAL(Z)
+
+     The above example suggests the programmer expected the real part
+     of `Z' to be converted to `REAL(KIND=1)' before being multiplied
+     by `T' (presumed, along with `R' above, to be type `REAL(KIND=1)').
+
+     Otherwise, the conversion would have to be delayed until after the
+     multiplication, requiring not only an extra conversion (of `T' to
+     `REAL(KIND=2)'), but a (typically) more expensive multiplication
+     (a double-precision multiplication instead of a single-precision
+     one).
+
+   The result of INTRINSIC is expected (by the original programmer) to
+be `REAL(KIND=2)' (the Fortran 90 interpretation) if:
+
+   * It is passed as an argument to a procedure that explicitly or
+     implicitly declares that argument `REAL(KIND=2)'.
+
+     For example, a procedure specifying a `DOUBLE PRECISION' dummy
+     argument corresponding to an actual argument of `REAL(Z)', where
+     `Z' is declared `DOUBLE COMPLEX', strongly suggests that the
+     programmer expected `REAL(Z)' to return `REAL(KIND=2)' instead of
+     `REAL(KIND=1)'.
+
+   * It is used in an expression context that includes other
+     `REAL(KIND=2)' operands, or is assigned to a `REAL(KIND=2)'
+     variable or array element.
+
+     For example:
+
+          DOUBLE COMPLEX Z
+          DOUBLE PRECISION R, T
+          ...
+          R(1) = T * REAL(Z)
+
+     The above example suggests the programmer expected the real part
+     of `Z' to *not* be converted to `REAL(KIND=1)' by the `REAL()'
+     intrinsic.
+
+     Otherwise, the conversion would have to be immediately followed by
+     a conversion back to `REAL(KIND=2)', losing the original, full
+     precision of the real part of `Z', before being multiplied by `T'.
+
+   Once you have determined whether a particular invocation of INTRINSIC
+expects the Fortran 90 interpretation, you can:
+
+   * Change it to `DBLE(EXPR)' (if INTRINSIC is `REAL') or
+     `DIMAG(EXPR)' (if INTRINSIC is `AIMAG') if it expected the Fortran
+     90 interpretation.
+
+     This assumes EXPR is `COMPLEX(KIND=2)'--if it is some other type,
+     such as `COMPLEX*32', you should use the appropriate intrinsic,
+     such as the one to convert to `REAL*16' (perhaps `DBLEQ()' in
+     place of `DBLE()', and `QIMAG()' in place of `DIMAG()').
+
+   * Change it to `REAL(INTRINSIC(EXPR))', otherwise.  This converts to
+     `REAL(KIND=1)' in all working Fortran compilers.
+
+   If you don't want to change the code, and you are certain that all
+ambiguous invocations of INTRINSIC in the source file have the same
+expectation regarding interpretation, you can:
+
+   * Compile with the `g77' option `-ff90', to enable the Fortran 90
+     interpretation.
+
+   * Compile with the `g77' options `-fno-f90 -fugly-complex', to
+     enable the non-Fortran-90 interpretations.
+
+   *Note REAL() and AIMAG() of Complex::, for more information on this
+issue.
+
+   Note: If the above suggestions don't produce enough evidence as to
+whether a particular program expects the Fortran 90 interpretation of
+this ambiguous invocation of INTRINSIC, there is one more thing you can
+try.
+
+   If you have access to most or all the compilers used on the program
+to create successfully tested and deployed executables, read the
+documentation for, and *also* test out, each compiler to determine how
+it treats the INTRINSIC intrinsic in this case.  (If all the compilers
+don't agree on an interpretation, there might be lurking bugs in the
+deployed versions of the program.)
+
+   The following sample program might help:
+
+           PROGRAM JCB003
+     C
+     C Written by James Craig Burley 1997-02-23.
+     C Contact via Internet email: burley@gnu.ai.mit.edu
+     C
+     C Determine how compilers handle non-standard REAL
+     C and AIMAG on DOUBLE COMPLEX operands.
+     C
+           DOUBLE COMPLEX Z
+           REAL R
+           Z = (3.3D0, 4.4D0)
+           R = Z
+           CALL DUMDUM(Z, R)
+           R = REAL(Z) - R
+           IF (R .NE. 0.) PRINT *, 'REAL() is Fortran 90'
+           IF (R .EQ. 0.) PRINT *, 'REAL() is not Fortran 90'
+           R = 4.4D0
+           CALL DUMDUM(Z, R)
+           R = AIMAG(Z) - R
+           IF (R .NE. 0.) PRINT *, 'AIMAG() is Fortran 90'
+           IF (R .EQ. 0.) PRINT *, 'AIMAG() is not Fortran 90'
+           END
+     C
+     C Just to make sure compiler doesn't use naive flow
+     C analysis to optimize away careful work above,
+     C which might invalidate results....
+     C
+           SUBROUTINE DUMDUM(Z, R)
+           DOUBLE COMPLEX Z
+           REAL R
+           END
+
+   If the above program prints contradictory results on a particular
+compiler, run away!
+
