@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "insn-config.h"
 #include "recog.h"
+#include "expr.h"
 
 #include <setjmp.h>
 
@@ -5140,7 +5141,7 @@ fold_rtx (x, insn)
 		 && GET_CODE (XEXP (addr, 1)) == SYMBOL_REF)
 	  base = XEXP (addr, 1);
 	else if (GET_CODE (addr) == ADDRESSOF)
-	  XEXP (x, 0) = addr;
+	  return change_address (x, VOIDmode, addr);
 
 	/* If this is a constant pool reference, we can fold it into its
 	   constant to allow better value tracking.  */
