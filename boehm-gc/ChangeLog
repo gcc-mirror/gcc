@@ -1,3 +1,8 @@
+2004-07-06  Andrew Pinski  <apinski@apple.com>
+
+	* os-dep.c (GC_task_self): Declare as static
+	and remove the second declaration.
+
 2004-06-20  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* Makefile.am: Add rule for .S files to fix bootstrap on
