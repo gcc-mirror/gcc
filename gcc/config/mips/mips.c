@@ -256,7 +256,8 @@ char mips_reg_names[][8] =
  "$f8",  "$f9",  "$f10", "$f11", "$f12", "$f13", "$f14", "$f15",
  "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",
  "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",
- "hi",   "lo",   "accum","$fcr31","$rap"
+ "hi",   "lo",   "accum","$fcc0","$fcc1","$fcc2","$fcc3","$fcc4",
+ "$fcc5","$fcc6","$fcc7","$rap"
 };
 
 /* Mips software names for the registers, used to overwrite the
@@ -272,7 +273,8 @@ char mips_sw_reg_names[][8] =
   "$f8",  "$f9",  "$f10", "$f11", "$f12", "$f13", "$f14", "$f15",
   "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",
   "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",
-  "hi",   "lo",   "accum","$fcr31","$rap"
+  "hi",   "lo",   "accum","$fcc0","$fcc1","$fcc2","$fcc3","$fcc4",
+  "$fcc5","$fcc6","$fcc7","$rap"
 };
 
 /* Map hard register number to register class */
@@ -295,7 +297,8 @@ enum reg_class mips_regno_to_class[] =
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
   HI_REG,	LO_REG,		HILO_REG,	ST_REGS,
-  GR_REGS
+  ST_REGS,	ST_REGS,	ST_REGS,	ST_REGS,
+  ST_REGS,	ST_REGS,	ST_REGS,	GR_REGS
 };
 
 /* Map register constraint character to register class.  */
@@ -522,6 +525,40 @@ mips_const_double_ok (op, mode)
     }
 
   return FALSE;
+}
+
+/* Accept the floating point constant 1 in the appropriate mode.  */
+
+int
+const_float_1_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  REAL_VALUE_TYPE d;
+  static REAL_VALUE_TYPE onedf;
+  static REAL_VALUE_TYPE onesf;
+  static int one_initialized;
+
+  if (GET_CODE (op) != CONST_DOUBLE
+      || mode != GET_MODE (op)
+      || (mode != DFmode && mode != SFmode))
+    return FALSE;
+
+  REAL_VALUE_FROM_CONST_DOUBLE (d, op);
+
+  /* We only initialize these values if we need them, since we will
+     never get called unless mips_isa >= 4.  */
+  if (! one_initialized)
+    {
+      onedf = REAL_VALUE_ATOF ("1.0", DFmode);
+      onesf = REAL_VALUE_ATOF ("1.0", SFmode);
+      one_initialized = TRUE;
+    }
+
+  if (mode == DFmode)
+    return REAL_VALUES_EQUAL (d, onedf);
+  else
+    return REAL_VALUES_EQUAL (d, onesf);
 }
 
 /* Return truth value if a memory operand fits in a single instruction
@@ -990,6 +1027,10 @@ mips_move_1word (operands, insn, unsignedp)
       code1 = GET_CODE (op1);
     }
 
+  /* For our purposes, a condition code mode is the same as SImode.  */
+  if (mode == CCmode)
+    mode = SImode;
+
   if (code0 == REG)
     {
       int regno0 = REGNO (op0) + subreg_word0;
@@ -1017,13 +1058,16 @@ mips_move_1word (operands, insn, unsignedp)
 		    ret = "mflo\t%0";
 		}
 
+	      else if (ST_REG_P (regno1) && mips_isa >= 4)
+		ret = "li\t%0,1\n\tmovf\t%0,%.,%1";
+
 	      else
 		{
 		  delay = DELAY_LOAD;
 		  if (FP_REG_P (regno1))
 		    ret = "mfc1\t%0,%1";
 
-		  else if (regno1 == FPSW_REGNUM)
+		  else if (regno1 == FPSW_REGNUM && mips_isa < 4)
 		    ret = "cfc1\t%0,$31";
 		}
 	    }
@@ -1050,7 +1094,7 @@ mips_move_1word (operands, insn, unsignedp)
 		}
 	    }
 
-	  else if (regno0 == FPSW_REGNUM)
+	  else if (regno0 == FPSW_REGNUM && mips_isa < 4)
 	    {
 	      if (GP_REG_P (regno1))
 		{
@@ -1079,6 +1123,7 @@ mips_move_1word (operands, insn, unsignedp)
 		  ret = "lw\t%0,%1";
 		  break;
 		case SImode:
+		case CCmode:
 		  ret = ((unsignedp && TARGET_64BIT)
 			 ? "lwu\t%0,%1"
 			 : "lw\t%0,%1");
@@ -1981,112 +2026,67 @@ gen_conditional_branch (operands, test_code)
      rtx operands[];
      enum rtx_code test_code;
 {
-  static enum machine_mode mode_map[(int)CMP_MAX][(int)ITEST_MAX] = {
-    {				/* CMP_SI */
-      SImode,			/* eq  */
-      SImode,			/* ne  */
-      SImode,			/* gt  */
-      SImode,			/* ge  */
-      SImode,			/* lt  */
-      SImode,			/* le  */
-      SImode,			/* gtu */
-      SImode,			/* geu */
-      SImode,			/* ltu */
-      SImode,			/* leu */
-    },
-    {				/* CMP_DI */
-      DImode,			/* eq  */
-      DImode,			/* ne  */
-      DImode,			/* gt  */
-      DImode,			/* ge  */
-      DImode,			/* lt  */
-      DImode,			/* le  */
-      DImode,			/* gtu */
-      DImode,			/* geu */
-      DImode,			/* ltu */
-      DImode,			/* leu */
-    },
-    {				/* CMP_SF */
-      CC_FPmode,		/* eq  */
-      CC_REV_FPmode,		/* ne  */
-      CC_FPmode,		/* gt  */
-      CC_FPmode,		/* ge  */
-      CC_FPmode,		/* lt  */
-      CC_FPmode,		/* le  */
-      VOIDmode,			/* gtu */
-      VOIDmode,			/* geu */
-      VOIDmode,			/* ltu */
-      VOIDmode,			/* leu */
-    },
-    {				/* CMP_DF */
-      CC_FPmode,		/* eq  */
-      CC_REV_FPmode,		/* ne  */
-      CC_FPmode,		/* gt  */
-      CC_FPmode,		/* ge  */
-      CC_FPmode,		/* lt  */
-      CC_FPmode,		/* le  */
-      VOIDmode,			/* gtu */
-      VOIDmode,			/* geu */
-      VOIDmode,			/* ltu */
-      VOIDmode,			/* leu */
-    },
-  };
-
+  enum cmp_type type = branch_type;
+  rtx cmp0 = branch_cmp[0];
+  rtx cmp1 = branch_cmp[1];
   enum machine_mode mode;
-  enum cmp_type type	  = branch_type;
-  rtx cmp0		  = branch_cmp[0];
-  rtx cmp1		  = branch_cmp[1];
-  rtx label1		  = gen_rtx (LABEL_REF, VOIDmode, operands[0]);
-  rtx label2		  = pc_rtx;
-  rtx reg		  = (rtx)0;
-  int invert		  = 0;
-  enum internal_test test = map_test_to_internal_test (test_code);
-
-  if (test == ITEST_MAX)
-    {
-      mode = word_mode;
-      goto fail;
-    }
-
-  /* Get the machine mode to use (CCmode, CC_EQmode, CC_FPmode, or CC_REV_FPmode).  */
-  mode = mode_map[(int)type][(int)test];
-  if (mode == VOIDmode)
-    goto fail;
+  rtx reg;
+  int invert;
+  rtx label1, label2;
 
   switch (type)
     {
     default:
-      goto fail;
+      abort_with_insn (gen_rtx (test_code, VOIDmode, cmp0, cmp1), "bad test");
 
     case CMP_SI:
     case CMP_DI:
-      reg = gen_int_relational (test_code, (rtx)0, cmp0, cmp1, &invert);
-      if (reg != (rtx)0)
+      mode = type == CMP_SI ? SImode : DImode;
+      invert = FALSE;
+      reg = gen_int_relational (test_code, NULL_RTX, cmp0, cmp1, &invert);
+      if (reg)
 	{
 	  cmp0 = reg;
 	  cmp1 = const0_rtx;
 	  test_code = NE;
 	}
-
-      /* Make sure not non-zero constant if ==/!= */
       else if (GET_CODE (cmp1) == CONST_INT && INTVAL (cmp1) != 0)
-	cmp1 = force_reg (mode, cmp1);
-
+	{
+	  /* We don't want to build a comparison against a non-zero
+             constant.  */
+	  cmp1 = force_reg (mode, cmp1);
+	}
       break;
 
-    case CMP_DF:
     case CMP_SF:
-      {
-	rtx reg = gen_rtx (REG, mode, FPSW_REGNUM);
-	emit_insn (gen_rtx (SET, VOIDmode, reg, gen_rtx (test_code, mode, cmp0, cmp1)));
-	cmp0 = reg;
-	cmp1 = const0_rtx;
-	test_code = NE;
-      }
+    case CMP_DF:
+      if (mips_isa < 4)
+	reg = gen_rtx (REG, CCmode, FPSW_REGNUM);
+      else
+	reg = gen_reg_rtx (CCmode);
+
+      /* For cmp0 != cmp1, build cmp0 == cmp1, and test for result ==
+         0 in the instruction built below.  The MIPS FPU handles
+         inequality testing by testing for equality and looking for a
+         false result.  */
+      emit_insn (gen_rtx (SET, VOIDmode,
+			  reg,
+			  gen_rtx (test_code == NE ? EQ : test_code,
+				   CCmode, cmp0, cmp1)));
+
+      test_code = test_code == NE ? EQ : NE;
+      mode = CCmode;
+      cmp0 = reg;
+      cmp1 = const0_rtx;
+      invert = FALSE;
       break;
     }
 
-  /* Generate the jump */
+  /* Generate the branch.  */
+
+  label1 = gen_rtx (LABEL_REF, VOIDmode, operands[0]);
+  label2 = pc_rtx;
+
   if (invert)
     {
       label2 = label1;
@@ -2099,13 +2099,102 @@ gen_conditional_branch (operands, test_code)
 				    gen_rtx (test_code, mode, cmp0, cmp1),
 				    label1,
 				    label2)));
-
-  return;
-
-fail:
-  abort_with_insn (gen_rtx (test_code, mode, cmp0, cmp1), "bad test");
 }
 
+/* Emit the common code for conditional moves.  OPERANDS is the array
+   of operands passed to the conditional move defined_expand.  */
+
+void
+gen_conditional_move (operands)
+     rtx *operands;
+{
+  rtx op0 = branch_cmp[0];
+  rtx op1 = branch_cmp[1];
+  enum machine_mode mode = GET_MODE (branch_cmp[0]);
+  enum rtx_code cmp_code = GET_CODE (operands[1]);
+  enum rtx_code move_code = NE;
+  enum machine_mode op_mode = GET_MODE (operands[0]);
+  enum machine_mode cmp_mode;
+  rtx cmp_reg;
+
+  if (GET_MODE_CLASS (mode) != MODE_FLOAT)
+    {
+      switch (cmp_code)
+	{
+	case EQ:
+	  cmp_code = XOR;
+	  move_code = EQ;
+	  break;
+	case NE:
+	  cmp_code = XOR;
+	  break;
+	case LT:
+	  break;
+	case GE:
+	  cmp_code = LT;
+	  move_code = EQ;
+	  break;
+	case GT:
+	  cmp_code = LT;
+	  op0 = force_reg (mode, branch_cmp[1]);
+	  op1 = branch_cmp[0];
+	  break;
+	case LE:
+	  cmp_code = LT;
+	  op0 = force_reg (mode, branch_cmp[1]);
+	  op1 = branch_cmp[0];
+	  move_code = EQ;
+	  break;
+	case LTU:
+	  break;
+	case GEU:
+	  cmp_code = LTU;
+	  move_code = EQ;
+	  break;
+	case GTU:
+	  cmp_code = LTU;
+	  op0 = force_reg (mode, branch_cmp[1]);
+	  op1 = branch_cmp[0];
+	  break;
+	case LEU:
+	  cmp_code = LTU;
+	  op0 = force_reg (mode, branch_cmp[1]);
+	  op1 = branch_cmp[0];
+	  move_code = EQ;
+	  break;
+	default:
+	  abort ();
+	}
+    }
+  else
+    {
+      if (cmp_code == NE)
+	{
+	  cmp_code = EQ;
+	  move_code = EQ;
+	}
+    }
+	  
+  if (mode == SImode || mode == DImode)
+    cmp_mode = mode;
+  else if (mode == SFmode || mode == DFmode)
+    cmp_mode = CCmode;
+  else
+    abort ();
+
+  cmp_reg = gen_reg_rtx (cmp_mode);
+  emit_insn (gen_rtx (SET, cmp_mode,
+		      cmp_reg,
+		      gen_rtx (cmp_code, cmp_mode, op0, op1)));
+  emit_insn (gen_rtx (SET, op_mode,
+		      operands[0],
+		      gen_rtx (IF_THEN_ELSE, op_mode,
+			       gen_rtx (move_code, VOIDmode,
+					cmp_reg,
+					CONST0_RTX (SImode)),
+			       operands[2],
+			       operands[3])));
+}
 
 #if 0
 /* Internal code to generate the load and store of one word/short/byte.
@@ -3443,6 +3532,11 @@ override_options ()
 	    mips_cpu = PROCESSOR_R4650;
 	  break;
 
+	case '5':
+	  if (!strcmp (p, "5000") || !strcmp (p, "5k") || !strcmp (p, "5K"))
+	    mips_cpu = PROCESSOR_R5000;
+	  break;
+
 	case '6':
 	  if (!strcmp (p, "6000") || !strcmp (p, "6k") || !strcmp (p, "6K"))
 	    mips_cpu = PROCESSOR_R6000;
@@ -3459,7 +3553,10 @@ override_options ()
 	  break;
 	}
 
-      if (seen_v && mips_cpu != PROCESSOR_R4300 && mips_cpu != PROCESSOR_R4100)
+      if (seen_v
+	  && mips_cpu != PROCESSOR_R4300
+	  && mips_cpu != PROCESSOR_R4100
+	  && mips_cpu != PROCESSOR_R5000)
 	mips_cpu = PROCESSOR_DEFAULT;
 
       if (mips_cpu == PROCESSOR_DEFAULT)
@@ -3642,8 +3739,15 @@ override_options ()
 	{
 	  register int temp;
 
-	  if (mode == CC_FPmode || mode == CC_REV_FPmode)
-	    temp = (regno == FPSW_REGNUM);
+	  if (mode == CCmode)
+	    {
+	      if (mips_isa < 4)
+		temp = (regno == FPSW_REGNUM);
+	      else
+		temp = (ST_REG_P (regno)
+			|| GP_REG_P (regno)
+			|| FP_REG_P (regno));
+	    }
 
 	  else if (GP_REG_P (regno))
 	    temp = ((regno & 1) == 0 || (size <= UNITS_PER_WORD));
@@ -3745,6 +3849,7 @@ mips_debugger_offset (addr, offset)
    'b'  print 'n' for EQ, 'z' for NE
    'T'  print 'f' for EQ, 't' for NE
    't'  print 't' for EQ, 'f' for NE
+   'Z'  print register and a comma, but print nothing for $fcc0
    '('	Turn on .set noreorder
    ')'	Turn on .set reorder
    '['	Turn on .set noat
@@ -3933,6 +4038,19 @@ print_operand (file, op, letter)
 
       ASM_GENERATE_INTERNAL_LABEL (buffer, "LS", CODE_LABEL_NUMBER (op));
       assemble_name (file, buffer);
+    }
+
+  else if (letter == 'Z')
+    {
+      register int regnum;
+
+      if (code != REG)
+	abort ();
+      regnum = REGNO (op);
+      if (! ST_REG_P (regnum))
+	abort ();
+      if (regnum != ST_REG_FIRST)
+	fprintf (file, "%s,", reg_names[regnum]);
     }
 
   else if (code == REG)
@@ -5848,6 +5966,27 @@ mips_secondary_reload_class (class, mode, x, in_p)
     }
   if (MD_REG_P (regno))
     {
+      if (class == GR_REGS)
+	return NO_REGS;
+      return GR_REGS;
+    }
+
+  /* We can only copy a value to a condition code register from a
+     floating point register, and even then we require a scratch
+     floating point register.  We can only copy a value out of a
+     condition code register into a general register.  */
+  if (class == ST_REGS)
+    {
+      if (in_p)
+	return FP_REGS;
+      if (GP_REG_P (regno))
+	return NO_REGS;
+      return GR_REGS;
+    }
+  if (ST_REG_P (regno))
+    {
+      if (! in_p)
+	return FP_REGS;
       if (class == GR_REGS)
 	return NO_REGS;
       return GR_REGS;
