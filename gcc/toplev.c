@@ -1518,13 +1518,28 @@ error VPROTO((char *msgid, ...))
   va_end (ap);
 }
 
-/* Report a fatal error at the current line number.  */
+/* Report a fatal error at the current line number.   Allow a front end to
+   intercept the message.  */
+
+static void (*fatal_function) PROTO((char *, va_list));
+
+/* Set the function to call when a fatal error occurs.  */
+
+void
+set_fatal_function (f)
+     void (*f) PROTO((char *, va_list));
+{
+  fatal_function = f;
+}
 
 static void
 vfatal (msgid, ap)
      char *msgid;
      va_list ap;
 {
+   if (fatal_function != 0)
+     (*fatal_function) (_(msgid), ap);
+
   verror (msgid, ap);
   exit (FATAL_EXIT_CODE);
 }
