@@ -1,3 +1,8 @@
+2001-05-21  Loren J. Rittle  <ljrittle@acm.org>
+
+	* libI77/Makefile.in (stamp-h): Create in $(objdir) instead
+	of $(srcdir).
+
 2001-05-18  Andreas Jaeger  <aj@suse.de>
 
 	* libI77/Makefile.in (stamp-h): Only create config.h, touch stamp-h.
