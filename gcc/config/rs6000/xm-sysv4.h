@@ -59,6 +59,9 @@ extern char *alloca ();
 /* Solaris has a different declaration of sys_siglist than collect uses.  */
 #define DONT_DECLARE_SYS_SIGLIST
 
+/* We have STRERROR */
+#define HAVE_STRERROR
+
 #ifdef __PPC__
 #ifndef __STDC__
 extern char *malloc (), *realloc (), *calloc ();
