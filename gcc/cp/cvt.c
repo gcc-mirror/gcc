@@ -487,7 +487,8 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
       /* B* bp; A& ar = (A&)bp; is valid, but it's probably not what they
          meant.  */
       if (TREE_CODE (intype) == POINTER_TYPE
-	  && (comptypes (TREE_TYPE (intype), type, -1)))
+	  && (comptypes (TREE_TYPE (intype), type, 
+			 COMPARE_BASE | COMPARE_RELAXED )))
 	cp_warning ("casting `%T' to `%T' does not dereference pointer",
 		    intype, reftype);
 	  
@@ -669,7 +670,7 @@ ocp_convert (type, expr, convtype, flags)
     /* We need a new temporary; don't take this shortcut.  */;
   else if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (e)))
     {
-      if (comptypes (type, TREE_TYPE (e), 1))
+      if (same_type_p (type, TREE_TYPE (e)))
 	/* The call to fold will not always remove the NOP_EXPR as
 	   might be expected, since if one of the types is a typedef;
 	   the comparsion in fold is just equality of pointers, not a

@@ -1406,8 +1406,8 @@ check_classfn (ctype, function)
 			  && TREE_CODE (TREE_TYPE (function)) == METHOD_TYPE)
 			p1 = TREE_CHAIN (p1);
 
-		      if (comptypes (TREE_TYPE (TREE_TYPE (function)),
-				     TREE_TYPE (TREE_TYPE (fndecl)), 1)
+		      if (same_type_p (TREE_TYPE (TREE_TYPE (function)),
+				       TREE_TYPE (TREE_TYPE (fndecl)))
 			  && compparms (p1, p2)
 			  && (DECL_TEMPLATE_SPECIALIZATION (function)
 			      == DECL_TEMPLATE_SPECIALIZATION (fndecl))

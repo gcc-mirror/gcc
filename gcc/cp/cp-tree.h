@@ -2431,8 +2431,37 @@ extern tree current_class_name;	/* IDENTIFIER_NODE: name of current class */
 #define WANT_ENUM	4 /* enumerated types */
 #define WANT_POINTER	8 /* pointer types */
 #define WANT_NULL      16 /* null pointer constant */
-
 #define WANT_ARITH	(WANT_INT | WANT_FLOAT)
+
+/* Used with comptypes, and related functions, to guide type
+   comparison.  */
+
+#define COMPARE_STRICT        0 /* Just check if the types are the
+				   same.  */
+#define COMPARE_BASE          1 /* Check to see if the second type is
+				   derived from the first, or if both
+				   are pointers (or references) and
+				   the types pointed to by the second
+				   type is derived from the pointed to
+				   by the first.  */
+#define COMPARE_RELAXED       2 /* Like COMPARE_DERIVED, but in
+				   reverse.  Also treat enmeration
+				   types as the same as integer types
+				   of the same width.  */
+#define COMPARE_REDECLARATION 4 /* The comparsion is being done when
+				   another declaration of an existing
+				   entity is seen.  */
+
+/* Returns nonzero iff TYPE1 and TYPE2 are the same type, in the usual
+   sense of `same'.  */
+#define same_type_p(type1, type2) \
+  comptypes ((type1), (type2), COMPARE_STRICT)
+
+/* Returns nonzero iff TYPE1 and TYPE2 are the same type, or if TYPE2
+   is derived from TYPE1, or if TYPE2 is a pointer (reference) to a
+   class derived from the type pointed to (referred to) by TYPE1.  */
+#define same_or_base_type_p(type1, type2) \
+  comptypes ((type1), (type2), COMPARE_BASE)
 
 #define FRIEND_NAME(LIST) (TREE_PURPOSE (LIST))
 #define FRIEND_DECLS(LIST) (TREE_VALUE (LIST))

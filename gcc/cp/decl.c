@@ -2552,7 +2552,7 @@ decls_match (newdecl, olddecl)
 	  return 0;
 	}
 
-      if (comptypes (TREE_TYPE (f1), TREE_TYPE (f2), 1))
+      if (same_type_p (TREE_TYPE (f1), TREE_TYPE (f2)))
 	{
 	  if (! strict_prototypes_lang_c && DECL_LANGUAGE (olddecl) == lang_c
 	      && p2 == NULL_TREE)
@@ -2595,7 +2595,8 @@ decls_match (newdecl, olddecl)
 	types_match = 0;
       else
 	types_match = comptypes (TREE_TYPE (newdecl),
-				 TREE_TYPE (olddecl), 1);
+				 TREE_TYPE (olddecl),
+				 COMPARE_REDECLARATION);
     }
 
   return types_match;
@@ -3527,7 +3528,7 @@ pushdecl (x)
 	  if (decl
 	      /* If different sort of thing, we already gave an error.  */
 	      && TREE_CODE (decl) == TREE_CODE (x)
-	      && ! comptypes (TREE_TYPE (x), TREE_TYPE (decl), 1))
+	      && !same_type_p (TREE_TYPE (x), TREE_TYPE (decl)))
 	    {
 	      cp_pedwarn ("type mismatch with previous external decl", x);
 	      cp_pedwarn_at ("previous external decl of `%#D'", decl);
@@ -4115,7 +4116,7 @@ redeclaration_error_message (newdecl, olddecl)
       /* Because C++ can put things into name space for free,
 	 constructs like "typedef struct foo { ... } foo"
 	 would look like an erroneous redeclaration.  */
-      if (comptypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl), 0))
+      if (same_type_p (TREE_TYPE (newdecl), TREE_TYPE (olddecl)))
 	return 0;
       else
 	return "redefinition of `%#D'";
@@ -5241,7 +5242,7 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 		    && CLASSTYPE_TEMPLATE_INFO (subtype)
 		    && CLASSTYPE_TI_TEMPLATE (subtype) == locval)
 	      && ! (TREE_CODE (locval) == TYPE_DECL
-		    && comptypes (TREE_TYPE (locval), subtype, 1)))
+		    && same_type_p (TREE_TYPE (locval), subtype)))
 	    {
 	      cp_warning ("lookup of `%D' finds `%#D'", name, locval);
 	      cp_warning ("  instead of `%D' from dependent base class",
@@ -9054,7 +9055,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
     }
   else if (return_type == return_conversion)
     {
-      if (comptypes (type, ctor_return_type, 1) == 0)
+      if (!same_type_p (type, ctor_return_type))
 	cp_error ("operator `%T' declared to return `%T'",
 		  ctor_return_type, type);
       else
@@ -9536,6 +9537,18 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	    if (size == error_mark_node)
 	      type = error_mark_node;
+	    else if (TREE_CODE (type) == ARRAY_TYPE && !TYPE_DOMAIN (type))
+	      {
+		/* [dcl.array]
+
+		   the constant expressions that specify the bounds of
+		   the arrays can be omitted only for the first member
+		   of the sequence.  */
+		cp_error ("declaration of `%D' as multidimensional array",
+			  dname);
+		cp_error ("must have bounds for all dimensions except the first");
+		type = error_mark_node;
+	      }
 
 	    if (type == error_mark_node)
 	      continue;
@@ -11023,7 +11036,7 @@ grokparms (first_parm, funcdef_flag)
 					 TREE_PURPOSE (decl),
 					 PARM, init != NULL_TREE,
 					 NULL_TREE);
-		  if (! decl)
+		  if (! decl || TREE_TYPE (decl) == error_mark_node)
 		    continue;
 
 		  /* Top-level qualifiers on the parameters are
@@ -11525,14 +11538,14 @@ grok_op_properties (decl, virtualp, friendp)
 	      if (list_length (argtypes) == 2)
 		{
 		  if (TREE_CODE (ret) != REFERENCE_TYPE
-		      || !comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (ret)),
-				     arg, 1))
+		      || !same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (ret)),
+				       arg))
 		    cp_warning ("prefix `%D' should return `%T'", decl,
 				build_reference_type (arg));
 		}
 	      else
 		{
-		  if (!comptypes (TYPE_MAIN_VARIANT (ret), arg, 1))
+		  if (!same_type_p (TYPE_MAIN_VARIANT (ret), arg))
 		    cp_warning ("postfix `%D' should return `%T'", decl, arg);
 		}
 	    }

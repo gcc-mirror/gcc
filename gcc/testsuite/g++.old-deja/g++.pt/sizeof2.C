@@ -3,8 +3,6 @@
 
 // Adapted from testcase by Oskar Enoksson <osken393@student.liu.se>
 
-// execution test - XFAIL *-*-*
-
 extern "C" void abort();
 
 template<int N, class T> // Base class

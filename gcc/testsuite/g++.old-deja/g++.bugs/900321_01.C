@@ -19,8 +19,8 @@ void function_0 ()
 {
   // we miss the first two because typeck.c (comp_array_types) deems
   // it okay if one of the sizes is null
-  ptr_to_array_of_ints = ptr_to_array_of_3_ints;	// ERROR - , XFAIL *-*-*
-  ptr_to_array_of_3_ints = ptr_to_array_of_ints;	// ERROR - , XFAIL *-*-*
+  ptr_to_array_of_ints = ptr_to_array_of_3_ints;	// ERROR - 
+  ptr_to_array_of_3_ints = ptr_to_array_of_ints;	// ERROR - 
 
   ptr_to_array_of_3_ints = ptr_to_array_of_5_ints;	// ERROR - 
   ptr_to_array_of_5_ints = ptr_to_array_of_3_ints;	// ERROR - 

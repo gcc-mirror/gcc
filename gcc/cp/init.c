@@ -1082,7 +1082,8 @@ expand_aggr_init (exp, init, flags)
 	  return;
 	}
       expand_vec_init (exp, exp, array_type_nelts (type), init,
-		       init && comptypes (TREE_TYPE (init), TREE_TYPE (exp), 1));
+		       init && same_type_p (TREE_TYPE (init),
+					    TREE_TYPE (exp)));
       TREE_READONLY (exp) = was_const;
       TREE_THIS_VOLATILE (exp) = was_volatile;
       TREE_TYPE (exp) = type;
@@ -2784,8 +2785,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
   expand_vec_init_try_block (type);
 
   if (init != NULL_TREE && TREE_CODE (init) == CONSTRUCTOR
-      && (!decl || comptypes (TREE_TYPE (init), 
-			      TREE_TYPE (decl), 1)))
+      && (!decl || same_type_p (TREE_TYPE (init), TREE_TYPE (decl))))
     {
       /* Do non-default initialization resulting from brace-enclosed
 	 initializers.  */

@@ -2314,7 +2314,7 @@ vec_binfo_member (elem, vec)
 
   if (vec)
     for (i = 0; i < TREE_VEC_LENGTH (vec); ++i)
-      if (comptypes (elem, BINFO_TYPE (TREE_VEC_ELT (vec, i)), 1))
+      if (same_type_p (elem, BINFO_TYPE (TREE_VEC_ELT (vec, i))))
 	return TREE_VEC_ELT (vec, i);
 
   return NULL_TREE;
@@ -2387,7 +2387,7 @@ cp_tree_equal (t1, t2)
       /* We need to do this when determining whether or not two
 	 non-type pointer to member function template arguments
 	 are the same.  */
-      if (!(comptypes (TREE_TYPE (t1), TREE_TYPE (t2), 1)
+      if (!(same_type_p (TREE_TYPE (t1), TREE_TYPE (t2))
 	    /* The first operand is RTL.  */
 	    && TREE_OPERAND (t1, 0) == TREE_OPERAND (t2, 0)))
 	return 0;
@@ -2455,15 +2455,14 @@ cp_tree_equal (t1, t2)
       if (TREE_CODE (TREE_OPERAND (t1, 0)) != TREE_CODE (TREE_OPERAND (t2, 0)))
 	return 0;
       if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (t1, 0))) == 't')
-	return comptypes (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0), 1);
+	return same_type_p (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
       break;
 
     case PTRMEM_CST:
       /* Two pointer-to-members are the same if they point to the same
 	 field or function in the same class.  */
       return (PTRMEM_CST_MEMBER (t1) == PTRMEM_CST_MEMBER (t2)
-	      && comptypes (PTRMEM_CST_CLASS (t1), PTRMEM_CST_CLASS (t2),
-			    1));
+	      && same_type_p (PTRMEM_CST_CLASS (t1), PTRMEM_CST_CLASS (t2)));
 
     default:
       break;

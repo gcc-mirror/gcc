@@ -1351,7 +1351,7 @@ delete_duplicate_fields_1 (field, fields)
 		  else if (DECL_DECLARES_TYPE_P (field)
 			   && DECL_DECLARES_TYPE_P (x))
 		    {
-		      if (comptypes (TREE_TYPE (field), TREE_TYPE (x), 1))
+		      if (same_type_p (TREE_TYPE (field), TREE_TYPE (x)))
 			continue;
 		      cp_error_at ("duplicate nested type `%D'", x);
 		    }
@@ -4592,7 +4592,7 @@ resolves_to_fixed_type_p (instance, nonnull)
     return 0;
   if (POINTER_TYPE_P (t))
     t = TREE_TYPE (t);
-  return comptypes (TYPE_MAIN_VARIANT (t), TYPE_MAIN_VARIANT (fixed), 1);
+  return same_type_p (TYPE_MAIN_VARIANT (t), TYPE_MAIN_VARIANT (fixed));
 }
 
 
@@ -4981,7 +4981,7 @@ instantiate_type (lhstype, rhs, complain)
 
   if (TREE_TYPE (rhs) != NULL_TREE && ! (type_unknown_p (rhs)))
     {
-      if (comptypes (lhstype, TREE_TYPE (rhs), 1))
+      if (same_type_p (lhstype, TREE_TYPE (rhs)))
 	return rhs;
       if (complain)
 	cp_error ("argument of type `%T' does not match `%T'",
@@ -5049,48 +5049,6 @@ instantiate_type (lhstype, rhs, complain)
 
 	/* I could not trigger this code. MvL */
 	my_friendly_abort (980326);
-#if 0
-	my_friendly_assert (TREE_CODE (field) == FIELD_DECL, 178);
-	my_friendly_assert (!(TREE_CODE (TREE_TYPE (field)) == FUNCTION_TYPE
-			      || TREE_CODE (TREE_TYPE (field)) == METHOD_TYPE),
-			    179);
-
-	TREE_TYPE (rhs) = lhstype;
-	/* First look for an exact match  */
-
-	while (field && TREE_TYPE (field) != lhstype)
-	  field = DECL_CHAIN (field);
-	if (field)
-	  {
-	    TREE_OPERAND (rhs, 1) = field;
-	    mark_used (field);
-	    return rhs;
-	  }
-
-	/* No exact match found, look for a compatible function.  */
-	field = TREE_OPERAND (rhs, 1);
-	while (field && ! comptypes (lhstype, TREE_TYPE (field), 0))
-	  field = DECL_CHAIN (field);
-	if (field)
-	  {
-	    TREE_OPERAND (rhs, 1) = field;
-	    field = DECL_CHAIN (field);
-	    while (field && ! comptypes (lhstype, TREE_TYPE (field), 0))
-	      field = DECL_CHAIN (field);
-	    if (field)
-	      {
-		if (complain)
-		  error ("ambiguous overload for COMPONENT_REF requested");
-		return error_mark_node;
-	      }
-	  }
-	else
-	  {
-	    if (complain)
-	      error ("no appropriate overload exists for COMPONENT_REF");
-	    return error_mark_node;
-	  }
-#endif
 	return rhs;
       }
 
@@ -5141,7 +5099,7 @@ instantiate_type (lhstype, rhs, complain)
 	  {
 	    elem = OVL_FUNCTION (elems);
 	    if (TREE_CODE (elem) == FUNCTION_DECL
-		&& comptypes (lhstype, TREE_TYPE (elem), 1))
+		&& same_type_p (lhstype, TREE_TYPE (elem)))
 	      {
 		mark_used (elem);
 		return elem;
@@ -5174,8 +5132,8 @@ instantiate_type (lhstype, rhs, complain)
 		      }
 		    save_elem = instantiate_template (elem, t);
 		    /* Check the return type.  */
-		    if (! comptypes (TREE_TYPE (lhstype),
-				     TREE_TYPE (TREE_TYPE (save_elem)), 1))
+		    if (!same_type_p (TREE_TYPE (lhstype),
+				      TREE_TYPE (TREE_TYPE (save_elem))))
 		      save_elem = 0;
 		  }
 	      }
@@ -5274,7 +5232,7 @@ instantiate_type (lhstype, rhs, complain)
 	  {
 	    elem = TREE_VALUE (baselink);
 	    while (elem)
-	      if (comptypes (lhstype, TREE_TYPE (OVL_CURRENT (elem)), 1))
+	      if (same_type_p (lhstype, TREE_TYPE (OVL_CURRENT (elem))))
 		{
 		  mark_used (OVL_CURRENT (elem));
 		  return OVL_CURRENT (elem);
