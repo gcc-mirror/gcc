@@ -1,3 +1,8 @@
+Thu Jul 30 19:15:53 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (fp cmp): Replicate patterns for ALPHA_TP_INSN.
+	(fcmov): Remove ALPHA_TP_INSN patterns -- fcmov doesn't trap.
+
 Thu Jul 30 19:50:15 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000/x-aix43 (AR_FOR_TARGET_FLAGS): Delete.
