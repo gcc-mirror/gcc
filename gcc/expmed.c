@@ -2835,7 +2835,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
       {
       case TRUNC_MOD_EXPR:
       case TRUNC_DIV_EXPR:
-	if (op1_is_constant && HOST_BITS_PER_WIDE_INT >= size)
+	if (op1_is_constant)
 	  {
 	    if (unsignedp)
 	      {
@@ -2870,7 +2870,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		    if (quotient == 0)
 		      goto fail1;
 		  }
-		else
+		else if (size <= HOST_BITS_PER_WIDE_INT)
 		  {
 		    /* Find a suitable multiplier and right shift count instead
 		       of multiplying with D.  */
@@ -2936,6 +2936,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 						 tquotient, 1);
 		      }
 		  }
+		else		/* Too wide mode to use tricky code */
+		  break;
 
 		insn = get_last_insn ();
 		if (insn != last
@@ -3029,7 +3031,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 						quotient, quotient, 0);
 		      }
 		  }
-		else
+		else if (size <= HOST_BITS_PER_WIDE_INT)
 		  {
 		    choose_multiplier (abs_d, size, size - 1,
 				       &ml, &post_shift, &lgup);
@@ -3081,6 +3083,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 						    tquotient);
 		      }
 		  }
+		else		/* Too wide mode to use tricky code */
+		  break;
 
 		insn = get_last_insn ();
 		if (insn != last
