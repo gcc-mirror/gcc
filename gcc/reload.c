@@ -645,8 +645,8 @@ get_secondary_mem (rtx x ATTRIBUTE_UNUSED, enum machine_mode mode,
     }
 
   secondary_memlocs_elim[(int) mode][opnum] = loc;
-  if (secondary_memlocs_elim_used <= opnum)
-    secondary_memlocs_elim_used = opnum + 1;
+  if (secondary_memlocs_elim_used <= (int)mode)
+    secondary_memlocs_elim_used = (int)mode + 1;
   return loc;
 }
 

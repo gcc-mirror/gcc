@@ -1,3 +1,8 @@
+2004-01-30  Jan Hubicka  <jh@suse.cz>
+
+	* reload.c (get_secondary_mem):  Fix updating of
+	secondary_memlocs_elim_used.
+
 2004-01-30  Andrew Pinski <pinskia@physics.uc.edu>
 
 	* toplev.c: Include alloc-pool.h.
