@@ -186,6 +186,7 @@ extern "Java"
       class Runtime;
       class RuntimeException;
       class RuntimePermission;
+      class SecurityContext;
       class SecurityException;
       class SecurityManager;
       class Short;
@@ -202,8 +203,10 @@ extern "Java"
       class Throwable;
       class UnknownError;
       class UnsatisfiedLinkError;
+      class UnsupportedClassVersionError;
       class UnsupportedOperationException;
       class VMClassLoader;
+      class VMSecurityManager;
       class VerifyError;
       class VirtualMachineError;
       class Void;

@@ -1,3 +1,10 @@
+2001-09-02  Tom Tromey  <tromey@redhat.com>
+
+	* gcj/javaprims.h: Regenerated class list.
+	* java/lang/IllegalThreadStateException.java,
+	java/lang/InstantiationException.java: Minor comment tweaks to
+	satisfy libgcj `classes.pl' script.
+
 2001-09-01  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.

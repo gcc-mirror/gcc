@@ -1,6 +1,6 @@
-/* IllegalThreadStateException.java -- exception thrown when trying to 
-   suspend or resume an object of class Thread when it is not in an 
-   appropriate state for the operation.
+/* IllegalThreadStateException.java -- exception thrown when trying to
+   suspend or resume a Thread when it is not in an appropriate state
+   for the operation.
    Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
