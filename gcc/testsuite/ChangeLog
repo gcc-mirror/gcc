@@ -1,3 +1,8 @@
+2000-10-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/g++.exp (g++_include_flags): Trust HAVE_LIBSTDCXX_V3
+	to tell us whether or not we are using V3.
+
 2000-10-26  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* g++.old-deja/g++.pt/memtemp77.C (main): Adjust comparaison

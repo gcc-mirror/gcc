@@ -1,3 +1,12 @@
+2000-10-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (check): Don't make mkcheck executable.
+	(check-install): Likewise.
+	* configure.in (AC_OUTPUT): Make mkcheck executable.
+	* mkcheck.in (top_srcdir): New variable.
+	(INC_PATH): Set the path to the backward and ext directories
+	correctly.
+	
 2000-10-25  Phil Edwards  <pme@sources.redhat.com>
 
         * configure.in:  Check for gconv.h.

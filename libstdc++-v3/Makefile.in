@@ -1,6 +1,6 @@
 # Makefile.in generated automatically by automake 1.4 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2000 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -407,11 +407,9 @@ mostlyclean distclean maintainer-clean
 # because then the paths will be full pathnames, not relative
 # pathnames. (-Wl,--rpath seems to like this better.)
 check:  $(top_builddir)/mkcheck
-	chmod +x  $(top_builddir)/mkcheck
 	$(top_builddir)/mkcheck 0 `pwd` $(top_srcdir)
 
 check-install: $(top_builddir)/mkcheck
-	chmod +x  $(top_builddir)/mkcheck
 	$(top_builddir)/mkcheck 1 `pwd` $(top_srcdir) $(prefix)
 
 # Multilib Makefile bits.

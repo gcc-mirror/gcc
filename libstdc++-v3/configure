@@ -19327,6 +19327,8 @@ if test -n "$CONFIG_FILES"; then
   ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
   grep '^MULTISUBDIR =' Makefile >> src/Makefile
 fi
+chmod +x mkcheck
+
 exit 0
 EOF
 chmod +x $CONFIG_STATUS
