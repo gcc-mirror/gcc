@@ -1151,6 +1151,7 @@ static tree
 make_method_value (mdecl)
      tree mdecl;
 {
+  static int method_name_count = 0;
   tree minit;
   tree code;
 #define ACC_TRANSLATED          0x4000
@@ -1173,6 +1174,44 @@ make_method_value (mdecl)
   }
   PUSH_FIELD_VALUE (minit, "accflags", build_int_2 (accflags, 0));
   PUSH_FIELD_VALUE (minit, "ncode", code);
+
+  {
+    /* Compute the `throws' information for the method.  */
+    tree table = integer_zero_node;
+    if (DECL_FUNCTION_THROWS (mdecl) != NULL_TREE)
+      {
+	int length = 1 + list_length (DECL_FUNCTION_THROWS (mdecl));
+	tree iter, type, array;
+	char buf[60];
+
+	table = tree_cons (NULL_TREE, table, NULL_TREE);
+	for (iter = DECL_FUNCTION_THROWS (mdecl);
+	     iter != NULL_TREE;
+	     iter = TREE_CHAIN (iter))
+	  {
+	    tree sig = build_java_signature (TREE_VALUE (iter));
+	    tree utf8
+	      = build_utf8_ref (unmangle_classname (IDENTIFIER_POINTER (sig),
+						    IDENTIFIER_LENGTH (sig)));
+	    table = tree_cons (NULL_TREE, utf8, table);
+	  }
+	type = build_prim_array_type (ptr_type_node, length);
+	table = build (CONSTRUCTOR, type, NULL_TREE, table);
+	/* Compute something unique enough.  */
+	sprintf (buf, "_methods%d", method_name_count++);
+	array = build_decl (VAR_DECL, get_identifier (buf), type);
+	DECL_INITIAL (array) = table;
+	TREE_STATIC (array) = 1;
+	DECL_ARTIFICIAL (array) = 1;
+	DECL_IGNORED_P (array) = 1;
+	rest_of_decl_compilation (array, (char*) 0, 1, 0);
+
+	table = build1 (ADDR_EXPR, ptr_type_node, array);
+      }
+
+    PUSH_FIELD_VALUE (minit, "throws", table);
+  }
+
   FINISH_RECORD_CONSTRUCTOR (minit);
   return minit;
 }

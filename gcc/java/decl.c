@@ -715,6 +715,7 @@ init_decl_processing ()
   PUSH_FIELD (method_type_node, field, "signature", utf8const_ptr_type);
   PUSH_FIELD (method_type_node, field, "accflags", access_flags_type_node);
   PUSH_FIELD (method_type_node, field, "ncode", nativecode_ptr_type_node);
+  PUSH_FIELD (method_type_node, field, "throws", ptr_type_node);
   FINISH_RECORD (method_type_node);
   build_decl (TYPE_DECL, get_identifier ("Method"), method_type_node);
 
