@@ -5945,7 +5945,7 @@ mips_file_end (void)
 		 when it is unsafe.  */
 	      if (TARGET_IRIX && mips_abi == ABI_32 && p->size == -1)
 		{
-		  fputs ("\t.globl ", asm_out_file);		       
+		  fputs ("\t.globl ", asm_out_file);
 		  assemble_name (asm_out_file, p->name);
 		  fputs (" .text\n", asm_out_file);
 		}
@@ -7012,7 +7012,7 @@ mips_expand_epilogue (int sibcall_p)
     emit_insn (gen_add3_insn (stack_pointer_rtx,
 			      stack_pointer_rtx,
 			      GEN_INT (step2)));
-    
+
   /* Add in the __builtin_eh_return stack adjustment.   We need to
      use a temporary in mips16 code.  */
   if (current_function_calls_eh_return)
@@ -8767,7 +8767,7 @@ mips_init_libfuncs (void)
       set_optab_libfunc (lt_optab, SFmode, "__mips16_ltsf2");
       set_optab_libfunc (le_optab, SFmode, "__mips16_lesf2");
 
-      set_conv_libfunc (sfix_optab, SImode, SFmode, "__mips16_fixsfsi");
+      set_conv_libfunc (sfix_optab, SImode, SFmode, "__mips16_fix_truncsfsi");
       set_conv_libfunc (sfloat_optab, SFmode, SImode, "__mips16_floatsisf");
 
       if (TARGET_DOUBLE_FLOAT)
@@ -8787,7 +8787,7 @@ mips_init_libfuncs (void)
 	  set_conv_libfunc (sext_optab, DFmode, SFmode, "__mips16_extendsfdf2");
 	  set_conv_libfunc (trunc_optab, SFmode, DFmode, "__mips16_truncdfsf2");
 
-	  set_conv_libfunc (sfix_optab, SImode, DFmode, "__mips16_fixdfsi");
+	  set_conv_libfunc (sfix_optab, SImode, DFmode, "__mips16_fix_truncdfsi");
 	  set_conv_libfunc (sfloat_optab, DFmode, SImode, "__mips16_floatsidf");
 	}
     }
@@ -9419,7 +9419,7 @@ mips_emit_prefetch (rtx *operands)
   int indexed = GET_CODE (operands[3]) == REG;
   int code;
   char buffer[30];
-  
+
   if (locality <= 0)
     code = (write ? 5 : 4);	/* store_streamed / load_streamed.  */
   else if (locality <= 2)

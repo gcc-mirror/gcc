@@ -92,14 +92,14 @@ STARTFN (NAME);			\
 	nop;			\
 	.set	reorder;	\
 	ENDFN (NAME)
-	
+
 #ifdef L_m16negsf2
 SFOP2(__mips16_negsf2, neg.s)
 #endif
 #ifdef L_m16abssf2
 SFOP2(__mips16_abssf2, abs.s)
 #endif
-	
+
 /* Single precision comparisons.  */
 
 /* This macro defines a function which loads two single precision
@@ -167,21 +167,21 @@ STARTFN (__mips16_floatsisf)
 	ENDFN (__mips16_floatsisf)
 #endif
 
-#ifdef L_m16fixsfsi
-STARTFN (__mips16_fixsfsi)
+#ifdef L_m16fix_truncsfsi
+STARTFN (__mips16_fix_truncsfsi)
 	.set	noreorder
 	mtc1	$4,$f0
 	nop
 	trunc.w.s $f0,$f0,$4
 	mfc1	$2,$f0
 	j	$31
-	nop	
+	nop
 	.set	reorder
-	ENDFN (__mips16_fixsfsi)
+	ENDFN (__mips16_fix_truncsfsi)
 #endif
 
 #if !defined(__mips_single_float) && !defined(__SINGLE_FLOAT)
-		
+
 /* The double precision operations.  We need to use different code
    based on the preprocessor symbol __mips64, because the way in which
    double precision values will change.  Without __mips64, the value
@@ -194,9 +194,9 @@ STARTFN (__mips16_fixsfsi)
 #define LDDBL1 dmtc1 $4,$f12
 #elif defined(__mipsfp64)
 #define LDDBL1 sw $4,0($29); sw $5,4($29); l.d $f12,0($29)
-#elif defined(__MIPSEB__)	
+#elif defined(__MIPSEB__)
 #define LDDBL1 mtc1 $4,$f13; mtc1 $5,$f12
-#else	
+#else
 #define LDDBL1 mtc1 $4,$f12; mtc1 $5,$f13
 #endif
 
@@ -207,24 +207,24 @@ STARTFN (__mips16_fixsfsi)
 #define LDDBL2 dmtc1 $5,$f14
 #elif defined(__mipsfp64)
 #define LDDBL2 sw $6,8($29); sw $7,12($29); l.d $f14,8($29)
-#elif defined(__MIPSEB__)	
+#elif defined(__MIPSEB__)
 #define LDDBL2 mtc1 $6,$f15; mtc1 $7,$f14
-#else	
+#else
 #define LDDBL2 mtc1 $6,$f14; mtc1 $7,$f15
 #endif
-	
+
 /* Move the double precision return value to the right place.  */
 
 #if defined(__mips64)
 #define RETDBL dmfc1 $2,$f0
 #elif defined(__mipsfp64)
 #define RETDBL s.d $f0,0($29); lw $2,0($29); lw $3,4($29)
-#elif defined(__MIPSEB__)	
+#elif defined(__MIPSEB__)
 #define RETDBL mfc1 $2,$f1; mfc1 $3,$f0
-#else	
+#else
 #define RETDBL mfc1 $2,$f0; mfc1 $3,$f1
 #endif
-	
+
 /* Double precision math.  */
 
 /* This macro defines a function which loads two double precision
@@ -268,7 +268,7 @@ STARTFN (NAME);			\
 	nop;			\
 	.set	reorder;	\
 	ENDFN (NAME)
-	
+
 #ifdef L_m16negdf2
 DFOP2(__mips16_negdf2, neg.d)
 #endif
@@ -276,7 +276,7 @@ DFOP2(__mips16_negdf2, neg.d)
 DFOP2(__mips16_absdf2, abs.d)
 #endif
 
-	
+
 /* Conversions between single and double precision.  */
 
 #ifdef L_m16extsfdf2
@@ -372,8 +372,8 @@ STARTFN (__mips16_floatsidf)
 	ENDFN (__mips16_floatsidf)
 #endif
 
-#ifdef L_m16fixdfsi
-STARTFN (__mips16_fixdfsi)
+#ifdef L_m16fix_truncdfsi
+STARTFN (__mips16_fix_truncdfsi)
 	.set	noreorder
 	LDDBL1
 	nop
@@ -382,7 +382,7 @@ STARTFN (__mips16_fixdfsi)
 	j	$31
 	nop
 	.set	reorder
-	ENDFN (__mips16_fixdfsi)
+	ENDFN (__mips16_fix_truncdfsi)
 #endif
 #endif /* !__mips_single_float */
 
@@ -410,12 +410,12 @@ STARTFN (__mips16_ret_df)
 #elif defined(__mipsfp64)
 	sw	$2,0($29)
 	sw	$3,4($29)
-	l.d	$f0,0($29) 
-#elif defined(__MIPSEB__)	
+	l.d	$f0,0($29)
+#elif defined(__MIPSEB__)
 	mtc1	$2,$f1
 	j	$31
 	mtc1	$3,$f0
-#else	
+#else
 	mtc1	$2,$f0
 	j	$31
 	mtc1	$3,$f1
@@ -737,4 +737,3 @@ STARTFN (__mips16_call_stub_df_10)
 	ENDFN (__mips16_call_stub_df_10)
 #endif
 #endif /* !__mips_single_float */
-
