@@ -1,5 +1,5 @@
 /* CPP main program, using CPP Library.
-   Copyright (C) 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1997, 1998 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
 This program is free software; you can redistribute it and/or modify it
@@ -26,6 +26,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "cpplib.h"
 #include <stdio.h>
+#include "intl.h"
 
 extern char *getenv ();
 
@@ -59,6 +60,10 @@ main (argc, argv)
   p = argv[0] + strlen (argv[0]);
   while (p != argv[0] && p[-1] != '/') --p;
   progname = p;
+
+  setlocale (LC_MESSAGES, "");
+  bindtextdomain (PACKAGE, localedir);
+  textdomain (PACKAGE);
 
   cpp_reader_init (&parse_in);
   parse_in.data = opts;
