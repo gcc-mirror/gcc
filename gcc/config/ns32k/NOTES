@@ -10,7 +10,7 @@ Ian Dall <ian@beware.dropbear.id.au>
 ------------------------------------
 
 The ns32x81 fpu handles most operands in hardware, but traps on NaN,
-Inf and Denormalized numbers. The correct behaviour can be handled by
+Inf and Denormalized numbers. The correct behavior can be handled by
 the trap handler. This is mostly transparent to the compiler, but in
 the case of floating point comparisions, the trap handler and the
 compiler must co-operate.

@@ -2350,7 +2350,7 @@ arm_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 
 /* Addressing mode support functions.  */
 
-/* Return non-zero if X is a legitimate immediate operand when compiling
+/* Return nonzero if X is a legitimate immediate operand when compiling
    for PIC.  */
 int
 legitimate_pic_operand_p (rtx x)

@@ -1,3 +1,13 @@
+2003-06-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/install.texi: Follow spelling conventions.
+	* doc/tm.texi: Likewise.
+	* config/fp-bit.c: Likewise.
+	* config/arm/arm.c: Likewise.
+	* config/frv/frv.c: Likewise.
+	* config/ns32k/NOTES: Likewise.
+	* config/ns32k/STATUS: Likewise.
+
 2003-06-14  Roger Sayle  <roger@eyesopen.com>
 	    Zack Weinberg  <zack@codesourcery.com>
 

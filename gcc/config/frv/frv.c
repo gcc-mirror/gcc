@@ -2338,8 +2338,8 @@ frv_final_prescan_insn (insn, opvec, noperands)
 
      Printable instructions will be asm_operands or match one of the .md
      patterns.  Since asm instructions cannot be packed -- and will
-     therefore have TImode -- this loop terminates on any recognisable
-     instruction, and on any unrecognisable instruction with TImode.  */
+     therefore have TImode -- this loop terminates on any recognizable
+     instruction, and on any unrecognizable instruction with TImode.  */
   for (insn = NEXT_INSN (insn); insn; insn = NEXT_INSN (insn))
     {
       if (NOTE_P (insn))
