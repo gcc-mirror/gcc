@@ -1,5 +1,9 @@
 2001-08-29  Kazu Hirata  <kazu@hxi.com>
 
+	* config/h8300/h8300.md (movsi_h8300hs): Make it 64-bit safe.
+
+2001-08-29  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/h8300-protos.h: Add a prototype for
 	emit_logical_op.
 	* config/h8300/h8300.c (emit_logical_op): New.
