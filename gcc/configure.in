@@ -134,7 +134,7 @@ AC_PROG_INSTALL
 AC_PROG_CC
 AC_PROG_MAKE_SET
 
-AC_CHECK_HEADERS(stddef.h string.h strings.h stdlib.h time.h unistd.h)
+AC_CHECK_HEADERS(stddef.h string.h strings.h stdlib.h time.h unistd.h varargs.h sys/varargs.h)
 
 GCC_NEED_DECLARATION(malloc)
 GCC_NEED_DECLARATION(realloc)

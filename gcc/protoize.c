@@ -57,7 +57,14 @@ Boston, MA 02111-1307, USA.  */
 #define _POSIX_SOURCE
 #endif
 
+#ifdef HAVE_VARARGS_H
 #include <varargs.h>
+#else
+#ifdef HAVE_SYS_VARARGS_H
+#include <sys/varargs.h>
+#endif
+#endif
+
 /* On some systems stdio.h includes stdarg.h;
    we must bring in varargs.h first.  */
 #include <stdio.h>

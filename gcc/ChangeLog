@@ -1,5 +1,12 @@
 Thu Sep 11 15:48:32 1997  Fred Fish  <fnf@ninemoons.com>
 
+	* protoize.c: Include <varargs.h> only if HAVE_VARARGS_H is
+	defined.  If not defined, include <sys/varargs.h> if
+	HAVE_SYS_VARARGS_H is defined.
+	* configure.in: Test for varargs.h and sys/varargs.h.
+	* configure: Regenerate with autoconf.
+	* config.in: Regenerate with autoheader.
+
 	* cpplib.c (quote_string): Cast first arg of sprintf call
 	from "unsigned char *" to "char *".
 	(output_line_command): Ditto.
