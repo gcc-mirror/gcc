@@ -1,3 +1,8 @@
+2004-03-08  Joel Sherrill  <joel@oarcorp.com>
+
+	PR target/14480
+	* config/rs6000/t-rtems: Add missing file on branch.
+
 2004-03-10  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* dbxout.c (dbxout_symbol_location): Do not output references
