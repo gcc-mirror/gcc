@@ -1,3 +1,7 @@
+2004-06-25  Mark G. Adams  <mark.g.adams@sympatico.ca>
+
+	* dbxout.h: Add include guards
+
 2004-06-25  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Define __ARM_EABI__.
