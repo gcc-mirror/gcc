@@ -1616,9 +1616,10 @@ output_movhi (insn, operands, l)
 		      return AS1 (inc,%0 ; reg_was_0);
 		    }
 
-		  *l = 2;
-		  return (AS1 (clr,%0) CR_TAB
-			  AS1 (inc,%0));
+		  *l = 3;
+		  return (AS1 (clr,%A0) CR_TAB
+			  AS1 (clr,%B0) CR_TAB
+			  AS1 (inc,%A0));
 		}
 	      else if (src == const2_rtx)
 		{
@@ -1629,10 +1630,11 @@ output_movhi (insn, operands, l)
 			      AS1 (inc,%0));
 		    }
 
-		  *l = 3;
-		  return (AS1 (clr,%0) CR_TAB
-			  AS1 (inc,%0) CR_TAB
-			  AS1 (inc,%0));
+		  *l = 4;
+		  return (AS1 (clr,%A0) CR_TAB
+			  AS1 (clr,%B0) CR_TAB
+			  AS1 (inc,%A0) CR_TAB
+			  AS1 (inc,%A0));
 		}
 	      else if (src == constm1_rtx)
 		{
@@ -2280,11 +2282,19 @@ output_movsisf(insn, operands, l)
 		      *l = 1;
 		      return AS1 (inc,%A0 ; reg_was_0);
 		    }
-
-		  *l = 4;
-		  return (AS1 (clr,%D0) CR_TAB
+		  if (AVR_ENHANCED)
+		    {
+		      *l = 4;
+		      return (AS1 (clr,%A0) CR_TAB
+			      AS1 (clr,%B0) CR_TAB
+			      AS2 (movw,%C0,%A0) CR_TAB
+			      AS1 (inc,%A0));
+		    }
+		  *l = 5;
+		  return (AS1 (clr,%A0) CR_TAB
 			  AS1 (clr,%B0) CR_TAB
 			  AS1 (clr,%C0) CR_TAB
+			  AS1 (clr,%D0) CR_TAB
 			  AS1 (inc,%A0));
 		}
 	      else if (src == const2_rtx)
