@@ -1,3 +1,12 @@
+2004-07-01  Nick Clifton  <nickc@redhat.com>
+
+	* target.h (struct gcc_target): Add new field to struct cxx:
+	import_export_class.
+        * target-def.h (TARGET_CXX): Initialise the new field.
+        (TARGET_CXX_IMPORT_EXPORT_CLASS): Provide a default value for
+	the new field.  
+        * doc/tm.texi: Document the new target hook.
+
 2004-07-01  Paolo Bonzini  <bonzini@gnu.org>
 
 	* builtins.c (fold_builtin_classify): Fix typo.

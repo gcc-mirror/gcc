@@ -1510,6 +1510,10 @@ import_export_class (tree ctype)
     import_export = 0;
 #endif
 
+  /* Allow backends the chance to overrule the decision.  */
+  if (targetm.cxx.import_export_class)
+    import_export = targetm.cxx.import_export_class (ctype, import_export);
+
   if (import_export)
     {
       SET_CLASSTYPE_INTERFACE_KNOWN (ctype);

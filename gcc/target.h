@@ -487,6 +487,9 @@ struct gcc_target
     /* Returns true if the element size should be stored in the
        array cookie.  */
     bool (*cookie_has_size) (void);
+    /* Allows backends to perform additional processing when
+       deciding if a class should be exported or imported.  */
+    int (*import_export_class) (tree, int);
   } cxx;
 
   /* Leave the boolean fields at the end.  */
