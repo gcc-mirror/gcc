@@ -1,3 +1,9 @@
+2004-01-15  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (uses_TOC): Correct comment.  Make static.
+	(rs6000_elf_declare_function_name): Formatting.
+	* config/rs6000/rs6000-protos.h (uses_TOC): Remove declaration.
+
 2004-01-15  Jan Hubicka  <jh@suse.cz>
 
 	PR bootstrap/13692

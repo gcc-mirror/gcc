@@ -184,7 +184,6 @@ extern void private_data_section (void);
 extern void read_only_data_section (void);
 extern void read_only_private_data_section (void);
 extern int get_TOC_alias_set (void);
-extern int uses_TOC (void);
 extern void rs6000_emit_prologue (void);
 extern void rs6000_emit_load_toc_table (int);
 extern void rs6000_aix_emit_builtin_unwind_init (void);
