@@ -177,7 +177,44 @@ Boston, MA 02111-1307, USA.  */
 #define RECORD_OR_UNION_TYPE_CHECK(NODE)	NODE
 
 #endif
+
+/* ABI control.  */
 
+/* Nonzero to enable experimental ABI changes.  */
+
+extern int flag_new_abi;
+
+/* Nonzero to use __cxa_atexit, rather than atexit, to register
+   destructors for local statics and global objects.  */
+
+extern int flag_use_cxa_atexit;
+
+/* Nonzero to not ignore namespace std. */
+
+extern int flag_honor_std;
+
+/* Nonzero means generate 'rtti' that give run-time type information.  */
+
+extern int flag_rtti;
+
+/* Nonzero if virtual base class offsets are stored in the virtual
+   function table.  Zero if, instead, a pointer to the virtual base is
+   stored in the object itself.  */
+#define vbase_offsets_in_vtable_p() (flag_new_abi)
+
+/* Nonzero if a derived class that needs a vptr should always get one,
+   even if a non-primary base class already has one.  For example,
+   given:
+
+     struct S { int i; virtual void f(); };
+     struct T : virtual public S {};
+
+   one could either reuse the vptr in `S' for `T', or create a new
+   vptr for `T'.  If this flag is nonzero we choose the latter
+   alternative; otherwise, we choose the former.  */
+#define vptrs_present_everywhere_p() (flag_new_abi)
+
+
 /* Language-dependent contents of an identifier.  */
 
 struct lang_identifier
@@ -2156,6 +2193,12 @@ struct lang_decl
    polymorphic class.  */
 #define TYPE_POLYMORPHIC_P(NODE) (TREE_LANG_FLAG_2 (NODE))
 
+/* Nonzero if this class has a virtual function table pointer.  */
+#define TYPE_CONTAINS_VPTR_P(NODE) 		\
+  (TYPE_POLYMORPHIC_P (NODE) 			\
+   || (vbase_offsets_in_vtable_p () 		\
+       && TYPE_USES_VIRTUAL_BASECLASSES (NODE)))
+
 extern int flag_new_for_scope;
 
 /* This flag is true of a local VAR_DECL if it was declared in a for
@@ -3160,10 +3203,6 @@ extern struct pending_inline *pending_inlines;
 
 extern int flag_this_is_variable;
 
-/* Nonzero means generate 'rtti' that give run-time type information.  */
-
-extern int flag_rtti;
-
 /* Nonzero means do emit exported implementations of functions even if
    they can be inlined.  */
 
@@ -3186,19 +3225,6 @@ extern int flag_implicit_templates;
    Otherwise, emit them as local symbols.  */
 
 extern int flag_weak;
-
-/* Nonzero to enable experimental ABI changes.  */
-
-extern int flag_new_abi;
-
-/* Nonzero to use __cxa_atexit, rather than atexit, to register
-   destructors for local statics and global objects.  */
-
-extern int flag_use_cxa_atexit;
-
-/* Nonzero to not ignore namespace std. */
-
-extern int flag_honor_std;
 
 /* Nonzero if we should expand functions calls inline at the tree
    level, rather than at the RTL level.  */
@@ -3959,6 +3985,11 @@ extern tree binfo_for_vtable			PROTO((tree));
 extern int  binfo_from_vbase			PROTO((tree));
 extern tree dfs_walk                            PROTO((tree, 
 						       tree (*)(tree, void *),
+						       tree (*) (tree, void *),
+						       void *));
+extern tree dfs_walk_real                      PROTO ((tree, 
+						       tree (*) (tree, void *),
+						       tree (*) (tree, void *),
 						       tree (*) (tree, void *),
 						       void *));
 extern tree dfs_unmark                          PROTO((tree, void *));

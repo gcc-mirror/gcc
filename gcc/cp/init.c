@@ -119,8 +119,12 @@ initialize_vtbl_ptrs (type, addr)
 {
   tree list = build_tree_list (type, addr);
 
-  dfs_walk (TYPE_BINFO (type), dfs_initialize_vtbl_ptrs, 
-	    dfs_unmarked_real_bases_queue_p, list);
+  /* Walk through the hierarchy, initializing the vptr in each base
+     class.  We do these in pre-order because under the new ABI we
+     can't find the virtual bases for a class until we've initialized
+     the vtbl for that class.  */
+  dfs_walk_real (TYPE_BINFO (type), dfs_initialize_vtbl_ptrs, 
+		 NULL, dfs_unmarked_real_bases_queue_p, list);
   dfs_walk (TYPE_BINFO (type), dfs_unmark,
 	    dfs_marked_real_bases_queue_p, type);
   if (TYPE_USES_VIRTUAL_BASECLASSES (type))
@@ -657,7 +661,7 @@ expand_virtual_init (binfo, decl)
   vtbl = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (vtbl)), vtbl);
   /* Under the new ABI, we need to point into the middle of the
      vtable.  */
-  if (flag_new_abi)
+  if (vbase_offsets_in_vtable_p ())
     vtbl = build (PLUS_EXPR, TREE_TYPE (vtbl), vtbl, 
 		  size_extra_vtbl_entries (binfo));
 
@@ -720,7 +724,7 @@ expand_aggr_vbase_init_1 (binfo, exp, addr, init_list)
 /* Construct the virtual base-classes of THIS_REF (whose address is
    THIS_PTR).  The object has the indicated TYPE.  The construction
    actually takes place only if FLAG is non-zero.  INIT_LIST is list
-   of initialization for constructor to perform.  */
+   of initializations for constructors to perform.  */
 
 static void
 construct_virtual_bases (type, this_ref, this_ptr, init_list, flag)
@@ -731,21 +735,25 @@ construct_virtual_bases (type, this_ref, this_ptr, init_list, flag)
      tree flag;
 {
   tree vbases;
-  tree result;
-  tree if_stmt;
 
   /* If there are no virtual baseclasses, we shouldn't even be here.  */
   my_friendly_assert (TYPE_USES_VIRTUAL_BASECLASSES (type), 19990621);
 
   /* First set the pointers in our object that tell us where to find
      our virtual baseclasses.  */
-  if_stmt = begin_if_stmt ();
-  finish_if_stmt_cond (flag, if_stmt);
-  result = init_vbase_pointers (type, this_ptr);
-  if (result)
-    finish_expr_stmt (build_compound_expr (result));
-  finish_then_clause (if_stmt);
-  finish_if_stmt ();
+  if (!vbase_offsets_in_vtable_p ())
+    {
+      tree if_stmt;
+      tree result;
+
+      if_stmt = begin_if_stmt ();
+      finish_if_stmt_cond (flag, if_stmt);
+      result = init_vbase_pointers (type, this_ptr);
+      if (result)
+	finish_expr_stmt (build_compound_expr (result));
+      finish_then_clause (if_stmt);
+      finish_if_stmt ();
+    }
 
   /* Now, run through the baseclasses, initializing each.  */ 
   for (vbases = CLASSTYPE_VBASECLASSES (type); vbases;
@@ -1019,11 +1027,6 @@ finish_init_stmts (stmt_expr, compound_stmt)
    If `init' is a CONSTRUCTOR, then we emit a warning message,
    explaining that such initializations are invalid.
 
-   ALIAS_THIS is nonzero iff we are initializing something which is
-   essentially an alias for current_class_ref.  In this case, the base
-   constructor may move it on us, and we must keep track of such
-   deviations.
-
    If INIT resolves to a CALL_EXPR which happens to return
    something of the type we are looking for, then we know
    that we can safely use that call to perform the
@@ -1216,8 +1219,6 @@ expand_default_init (binfo, true_exp, exp, init, flags)
    baseclass fields should really be pointing.  But we do know
    from TRUE_EXP.  In constructors, we don't know anything about
    the value being initialized.
-
-   ALIAS_THIS serves the same purpose it serves for expand_aggr_init.
 
    FLAGS is just passes to `build_method_call'.  See that function for
    its description.  */
