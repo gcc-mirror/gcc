@@ -40,11 +40,23 @@ Boston, MA 02111-1307, USA.  */
 /* fixproto guarantees these system headers exist. */
 #include <stdlib.h>
 #include <unistd.h>
+
+#else
+#include <stddef.h>
+#ifndef malloc
+extern void *malloc (size_t);
+#endif
+#ifndef free
+extern void free (void *);
+#endif
+#ifndef atexit
+extern int atexit(void (*)(void));
+#endif
 #endif
 
 #include "machmode.h"
 #include "defaults.h" 
-#ifndef L_trampoline
+#if !defined(L_trampoline) && !defined(inhibit_libc)
 #include <stddef.h>
 #endif
 
