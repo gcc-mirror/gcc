@@ -1009,6 +1009,13 @@ struct language_function
 
 #define doing_semantic_analysis_p() (!expanding_p)
 
+/* If original DECL_RESULT of current function was a register,
+   but due to being an addressable named return value, would up
+   on the stack, this variable holds the named return value's
+   original location.  */
+
+#define original_result_rtx cp_function_chain->x_result_rtx
+
 #define in_function_try_handler cp_function_chain->in_function_try_handler
 
 extern tree current_function_return_value;
@@ -2588,13 +2595,6 @@ extern int flag_new_for_scope;
 				   && CONSTRUCTOR_ELTS (NODE) == NULL_TREE \
 				   && ! TREE_HAS_CONSTRUCTOR (NODE))
 
-#if 0
-/* Indicates that a NON_LVALUE_EXPR came from a C++ reference.
-   Used to generate more helpful error message in case somebody
-   tries to take its address.  */
-#define TREE_REFERENCE_EXPR(NODE) (TREE_LANG_FLAG_3(NODE))
-#endif
-
 /* Nonzero for _TYPE means that the _TYPE defines a destructor.  */
 #define TYPE_HAS_DESTRUCTOR(NODE) (TYPE_LANG_FLAG_2(NODE))
 
@@ -2803,18 +2803,6 @@ extern int flag_new_for_scope;
 #define UNKNOWN_TYPE LANG_TYPE
 
 /* Define fields and accessors for nodes representing declared names.  */
-
-#if 0
-/* C++: A derived class may be able to directly use the virtual
-   function table of a base class.  When it does so, it may
-   still have a decl node used to access the virtual function
-   table (so that variables of this type can initialize their
-   virtual function table pointers by name).  When such thievery
-   is committed, know exactly which base class's virtual function
-   table is the one being stolen.  This effectively computes the
-   transitive closure.  */
-#define DECL_VPARENT(NODE) ((NODE)->decl.arguments)
-#endif
 
 #define TYPE_WAS_ANONYMOUS(NODE) (TYPE_LANG_SPECIFIC (NODE)->was_anonymous)
 
@@ -3903,9 +3891,6 @@ extern int duplicate_decls			PARAMS ((tree, tree));
 extern tree pushdecl				PARAMS ((tree));
 extern tree pushdecl_top_level			PARAMS ((tree));
 extern void pushdecl_class_level		PARAMS ((tree));
-#if 0
-extern void pushdecl_nonclass_level		PARAMS ((tree));
-#endif
 extern tree pushdecl_namespace_level            PARAMS ((tree));
 extern tree push_using_decl                     PARAMS ((tree, tree));
 extern tree push_using_directive                PARAMS ((tree));
@@ -3918,9 +3903,6 @@ extern void check_goto				PARAMS ((tree));
 extern void define_case_label			PARAMS ((void));
 extern tree getdecls				PARAMS ((void));
 extern tree gettags				PARAMS ((void));
-#if 0
-extern void set_current_level_tags_transparency	PARAMS ((int));
-#endif
 extern tree binding_for_name                    PARAMS ((tree, tree));
 extern tree namespace_binding                   PARAMS ((tree, tree));
 extern void set_namespace_binding               PARAMS ((tree, tree, tree));
@@ -3974,7 +3956,6 @@ extern void build_enumerator			PARAMS ((tree, tree, tree));
 extern int start_function			PARAMS ((tree, tree, tree, int));
 extern void expand_start_early_try_stmts	PARAMS ((void));
 extern void store_parm_decls			PARAMS ((void));
-extern void store_return_init			PARAMS ((tree));
 extern tree finish_function			PARAMS ((int));
 extern tree start_method			PARAMS ((tree, tree, tree));
 extern tree finish_method			PARAMS ((tree));
@@ -4166,9 +4147,6 @@ extern tree make_call_declarator		PARAMS ((tree, tree, tree, tree));
 extern void set_quals_and_spec			PARAMS ((tree, tree, tree));
 extern void lang_init				PARAMS ((void));
 extern void lang_finish				PARAMS ((void));
-#if 0
-extern void reinit_lang_specific		PARAMS ((void));
-#endif
 extern void print_parse_statistics		PARAMS ((void));
 extern void extract_interface_info		PARAMS ((void));
 extern void do_pending_inlines			PARAMS ((void));
@@ -4464,8 +4442,7 @@ extern void genrtl_ctor_stmt                    PARAMS ((tree));
 extern void genrtl_subobject                    PARAMS ((tree));
 extern tree genrtl_do_poplevel                  PARAMS ((void));
 extern void clear_out_block                     PARAMS ((void));
-extern void genrtl_named_return_value           PARAMS ((tree,
-							 tree));
+extern void genrtl_named_return_value           PARAMS ((void));
 extern tree begin_global_stmt_expr              PARAMS ((void));
 extern tree finish_global_stmt_expr             PARAMS ((tree));
 

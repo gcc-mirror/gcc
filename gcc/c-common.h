@@ -521,3 +521,5 @@ extern tree default_conversion                  PARAMS ((tree));
    Given two compatible ANSI C types, returns the merged type.  */
 
 extern tree common_type                         PARAMS ((tree, tree));
+
+extern tree expand_tree_builtin                 PARAMS ((tree, tree, tree));

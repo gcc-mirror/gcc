@@ -2,7 +2,7 @@
 /* simple program to demonstrate the bug with named return values in gcc
 */
 /* (w) 4.9.97 by Kurt Garloff <K.Garloff@ping.de> */
-// Special g++ Options:
+// Special g++ Options: -Wno-deprecated
 // 8/28/1998 - This dies in add_conversions from dfs_walk, null CLASSTYPE_METHOD_VEC
 // for the test<T> record_type.  This is marked as an expected failure for now,
 // until we actually fix it.

@@ -1,3 +1,7 @@
+2000-09-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* extend.texi: Mark named return value extension as deprecated.
+
 2000-09-06  Geoff Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/rs6000.c (rs6000_reverse_condition): Return

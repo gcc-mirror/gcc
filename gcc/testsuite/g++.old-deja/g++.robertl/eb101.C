@@ -1,4 +1,4 @@
-// Special g++ Options: -fcheck-memory-usage
+// Special g++ Options: -fcheck-memory-usage -Wno-deprecated
 // Build don't link: 
 
  

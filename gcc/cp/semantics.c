@@ -1030,55 +1030,30 @@ finish_decl_cleanup (decl, cleanup)
 /* Generate the RTL for a RETURN_INIT. */
 
 void
-genrtl_named_return_value (return_id, init)
-     tree return_id, init;
+genrtl_named_return_value ()
 {
   tree decl;
-  /* Clear this out so that finish_named_return_value can set it
-     again.  */
-  DECL_NAME (DECL_RESULT (current_function_decl)) = NULL_TREE;
 
   decl = DECL_RESULT (current_function_decl);
-  if (pedantic)
-    /* Give this error as many times as there are occurrences,
-       so that users can use Emacs compilation buffers to find
-       and fix all such places.  */
-    pedwarn ("ISO C++ does not permit named return values");
 
-  if (return_id != NULL_TREE)
+  emit_local_var (decl);
+
+  /* If this named return value comes in a register, put it in a
+     pseudo-register.  */
+  if (DECL_REGISTER (decl))
     {
-      if (DECL_NAME (decl) == NULL_TREE)
-	{
-	  DECL_NAME (decl) = return_id;
-	  DECL_ASSEMBLER_NAME (decl) = return_id;
-	}
-      else
-	{
-	  cp_error ("return identifier `%D' already in place", return_id);
-	  return;
-	}
+      original_result_rtx = DECL_RTL (decl);
+      /* Note that the mode of the old DECL_RTL may be wider than the
+	 mode of DECL_RESULT, depending on the calling conventions for
+	 the processor.  For example, on the Alpha, a 32-bit integer
+	 is returned in a DImode register -- the DECL_RESULT has
+	 SImode but the DECL_RTL for the DECL_RESULT has DImode.  So,
+	 here, we use the mode the back-end has already assigned for
+	 the return value.  */
+      DECL_RTL (decl) = gen_reg_rtx (GET_MODE (original_result_rtx));
+      if (TREE_ADDRESSABLE (decl))
+	put_var_into_stack (decl);
     }
-
-  /* Can't let this happen for constructors.  */
-  if (DECL_CONSTRUCTOR_P (current_function_decl))
-    {
-      error ("can't redefine default return value for constructors");
-      return;
-    }
-
-  /* If we have a named return value, put that in our scope as well.  */
-  if (DECL_NAME (decl) != NULL_TREE)
-    {
-      /* Let `cp_finish_decl' know that this initializer is ok.  */
-      DECL_INITIAL (decl) = init;
-      cp_finish_decl (decl, init, NULL_TREE, 0);
-      store_return_init (decl);
-    }
-
-  /* Don't use tree-inlining for functions with named return values.
-     That doesn't work properly because we don't do any translation of
-     the RETURN_INITs when they are copied.  */
-  DECL_UNINLINABLE (current_function_decl) = 1;
 }
 
 /* Bind a name and initialization to the return value of
@@ -1090,11 +1065,12 @@ finish_named_return_value (return_id, init)
 {
   tree decl = DECL_RESULT (current_function_decl);
 
+  /* Give this error as many times as there are occurrences, so that
+     users can use Emacs compilation buffers to find and fix all such
+     places.  */
   if (pedantic)
-    /* Give this error as many times as there are occurrences,
-       so that users can use Emacs compilation buffers to find
-       and fix all such places.  */
     pedwarn ("ISO C++ does not permit named return values");
+  cp_deprecated ("the named return value extension");
 
   if (return_id != NULL_TREE)
     {
@@ -1124,7 +1100,13 @@ finish_named_return_value (return_id, init)
       DECL_INITIAL (decl) = init;
       if (doing_semantic_analysis_p ())
 	pushdecl (decl);
-      add_tree (build_stmt (RETURN_INIT, return_id, init));
+      if (!processing_template_decl) 
+	{
+	  cp_finish_decl (decl, init, NULL_TREE, 0);
+	  add_tree (build_stmt (RETURN_INIT, NULL_TREE, NULL_TREE));
+	}
+      else
+	add_tree (build_stmt (RETURN_INIT, return_id, init));
     }
 
   /* Don't use tree-inlining for functions with named return values.
@@ -2463,8 +2445,7 @@ lang_expand_stmt (t)
 	  break;
 
 	case RETURN_INIT:
-	  genrtl_named_return_value (TREE_OPERAND (t, 0), 
-				     TREE_OPERAND (t, 1));
+	  genrtl_named_return_value ();
 	  break;
 
 	default:

@@ -36,6 +36,12 @@
 * G++ no longer allows you to overload the conditional operator (i.e., 
   the `?:' operator.)
 
+* The "named return value" extension:
+	
+    int f () return r { r = 3; }
+
+  has been deprecated, and will be removed in a future version of G++.
+
 *** Changes in GCC 2.95:
 
 * Messages about non-conformant code that we can still handle ("pedwarns")
