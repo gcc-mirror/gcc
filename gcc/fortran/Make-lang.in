@@ -132,19 +132,19 @@ f95.all.cross: gfortran-cross$(exeext)
 f95.start.encap: gfortran$(exeext)
 f95.rest.encap:
 
-f95.srcinfo: fortran/gfortran.info
+f95.srcinfo: doc/gfortran.info
 	-cp -p $^ $(srcdir)/fortran
 
 f95.tags: force
 	cd $(srcdir)/fortran; etags -o TAGS.sub *.c *.h; \
 	etags --include TAGS.sub --include ../TAGS.sub
 
-f95.info: fortran/gfortran.info
-f95.dvi: fortran/gfortran.dvi
-f95.generated-manpages:
+f95.info: doc/gfortran.info
+dvi:: doc/gfortran.dvi
 
 f95.man:
 f95.srcman:
+f95.srcextra:
 
 check-f95 : check-gfortran
 lang_checks += check-gfortran
@@ -158,17 +158,15 @@ GFORTRAN_TEXI = \
   $(srcdir)/doc/include/funding.texi \
   $(srcdir)/doc/include/gcc-common.texi
 
-fortran/gfortran.info: $(GFORTRAN_TEXI)
+doc/gfortran.info: $(GFORTRAN_TEXI)
 	if [ x$(BUILD_INFO) = xinfo ]; then \
-	  rm -f fortran/gfortran.info-*; \
+	  rm -f doc/gfortran.info-*; \
 	  $(MAKEINFO) -I$(srcdir)/doc/include -I$(srcdir)/fortran \
-	    -o fortran/gfortran.info $(srcdir)/fortran/gfortran.texi; \
+	    -o doc/gfortran.info $(srcdir)/fortran/gfortran.texi; \
 	else true; fi
 
-fortran/gfortran.dvi: $(GFORTRAN_TEXI)
-	s=`cd $(srcdir); ${PWD}`; export s; \
-	cd fortran && $(TEXI2DVI) -I $$s/doc/include -I $$s/fortran \
-	  $$s/fortran/gfortran.texi
+doc/gfortran.dvi: $(GFORTRAN_TEXI)
+	$(TEXI2DVI) -I $(srcdir)/fortran -I $(abs_docdir)/include -o $@ $<
 
 #
 # Install hooks:
@@ -198,23 +196,7 @@ f95.install-common: installdirs
 	  fi ; \
 	fi
 
-# Install the info documentation in $(infodir).
-# Taken from G77 (but then, what is not...)
-f95.install-info: f95.info installdirs
-	if [ -f fortran/gfortran.info ] ; then \
-	  rm -f $(DESTDIR)$(infodir)/gfortran.info*; \
-	  for f in fortran/gfortran.info*; do \
-	      realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
-	      $(INSTALL_DATA) $$f $(DESTDIR)$(infodir)/$$realfile; \
-	  done; \
-	  chmod a-x $(DESTDIR)$(infodir)/gfortran.info*; \
-	else true; fi
-	@if [ -f fortran/gfortran.info ] ; then \
-	  if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
-	  echo " install-info --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/gfortran.info"; \
-	    install-info --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/gfortran.info || : ; \
-	  else : ; fi; \
-	else : ; fi
+install-info:: $(DESTDIR)$(infodir)/gfortran.info
 
 f95.install-man: installdirs
 #TODO: write the gfortran man pages
@@ -243,7 +225,7 @@ f95.distclean:
 
 f95.extraclean:
 f95.maintainer-clean:
-	-rm -f fortran/gfortran.info* fortran/gfortran.*aux
+	-rm -f doc/gfortran.info* fortran/gfortran.*aux
 
 #
 # Stage hooks:
