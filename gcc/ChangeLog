@@ -1,3 +1,7 @@
+Sat Jan 16 21:48:17 1999  Marc Espie (Marc.Espie@openbsd.org)
+
+	* gcc.c: (do_spec_1): Fix obvious typo.
+
 Sat Jan 16 19:31:07 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-decl.c (duplicate_decls): If `warn_traditional', warn when

@@ -3628,12 +3628,12 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 		if (p[0] == '%' && p[1] == 'O')
 		  {
+		    p += 2;
 		    /* We don't support extra suffix characters after %O.  */
 		    if (*p == '.' || ISALPHA ((unsigned char)*p))
 		      abort ();
 		    suffix = OBJECT_SUFFIX;
 		    suffix_length = strlen (OBJECT_SUFFIX);
-		    p += 2;
 		  }
 		else
 		  {
