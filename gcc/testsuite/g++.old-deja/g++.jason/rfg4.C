@@ -1,6 +1,6 @@
 // Bug: f1 and f2 are treated as overloaded when they aren't.
 // Build don't link:
-// Special g++ Options: -pedantic -errors -w
+// Special g++ Options: -ansi -pedantic-errors -w
 
 int i;
 void f1(double) { }

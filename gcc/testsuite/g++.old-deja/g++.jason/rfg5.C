@@ -1,6 +1,6 @@
 // Bug: func is treated as an overloaded function when it isn't.
 // Build don't link:
-// Special g++ Options: -pedantic -errors -w
+// Special g++ Options: -ansi -pedantic-errors -w
 
 int *func () { return 0; }
 
