@@ -1,3 +1,12 @@
+2004-03-19  Ziemowit Laski  <zlaski@apple.com>
+
+	* config/rs6000/altivec.h (vec_dst, vec_dstst, vec_dststt,
+	vec_dstt, vec_sld, vec_splat): Add prototypes, marked with
+	always_inline attribute.
+	* config/rs6000/rs6000.c (altivec_expand_dst_builtin):
+	Treat expansion as completed even if literal argument is
+	invalid (so that other expansions are not tried in vain).
+
 2004-03-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* loop-doloop.c (add_test): Replace GEN_INT (0) with
