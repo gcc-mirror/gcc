@@ -1,3 +1,7 @@
+2002-10-01  Roger Sayle  <roger@eyesopen.com>
+
+	* unroll.c (loop_iterations): Revert 2002-09-08 change.
+
 2002-10-01  Richard Henderson  <rth@redhat.com>
 
 	* real.c (real_to_decimal): Crop trailing zeros for DIGITS < 0.
