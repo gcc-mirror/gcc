@@ -668,8 +668,8 @@ doloop_modify_runtime (loop, iterations_max,
 	    fprintf (loop_dump_stream,
 	         "Doloop: Basic induction var skips initial incr.\n");
 
-	  diff = expand_simple_binop (mode, PLUS, diff, increment, diff,
-				      unsigned_p, OPTAB_LIB_WIDEN);
+	  diff = expand_simple_binop (mode, PLUS, diff, GEN_INT (abs_inc),
+				      diff, unsigned_p, OPTAB_LIB_WIDEN);
 	}
     }
 
