@@ -19,23 +19,25 @@ enum e1 { E1 };
 /* Not declaring anything (pedwarns).  */
 struct { int a; }; /* { dg-warning "warning: unnamed struct/union that defines no instances" } */
 int; /* { dg-warning "warning: useless type name in empty declaration" } */
-long; /* { dg-warning "warning: useless keyword or type name in empty declaration" } */
-/* { dg-warning "warning: empty declaration" "long" { target *-*-* } 22 } */
+long; /* { dg-warning "warning: useless type name in empty declaration" } */
 T; /* { dg-warning "warning: useless type name in empty declaration" } */
 static const; /* { dg-warning "warning: useless storage class specifier in empty declaration" } */
-/* { dg-warning "warning: empty declaration" "long" { target *-*-* } 25 } */
+/* { dg-warning "warning: empty declaration" "static const" { target *-*-* } 24 } */
 union { long b; }; /* { dg-warning "warning: unnamed struct/union that defines no instances" } */
 
 /* Multiple type names (errors).  */
 struct s1 int; /* { dg-error "error: two or more data types in declaration specifiers" } */
 char union u1; /* { dg-error "error: two or more data types in declaration specifiers" } */
-/* { dg-warning "warning: useless type name in empty declaration" "char union" { target *-*-* } 31 } */
+/* { dg-warning "warning: useless type name in empty declaration" "char union" { target *-*-* } 30 } */
 double enum { E2 }; /* { dg-error "error: two or more data types in declaration specifiers" } */
-/* { dg-warning "warning: useless type name in empty declaration" "double enum" { target *-*-* } 33 } */
+/* { dg-warning "warning: useless type name in empty declaration" "double enum" { target *-*-* } 32 } */
 T struct s2; /* { dg-error "error: two or more data types in declaration specifiers" } */
-/* { dg-warning "warning: useless type name in empty declaration" "T struct" { target *-*-* } 35 } */
-long union u2; /* { dg-error "error: long, short, signed, unsigned or complex used invalidly in empty declaration" } */
-struct s3 short; /* { dg-error "error: long, short, signed, unsigned or complex used invalidly in empty declaration" } */
-union u3 signed; /* { dg-error "error: long, short, signed, unsigned or complex used invalidly in empty declaration" } */
-unsigned struct s4; /* { dg-error "error: long, short, signed, unsigned or complex used invalidly in empty declaration" } */
-_Complex enum { E3 }; /* { dg-error "error: long, short, signed, unsigned or complex used invalidly in empty declaration" } */
+/* { dg-warning "warning: useless type name in empty declaration" "T struct" { target *-*-* } 34 } */
+long union u2; /* { dg-error "error: two or more data types in declaration specifiers" } */
+/* { dg-warning "warning: useless type name in empty declaration" "empty" { target *-*-* } 36 } */
+struct s3 short; /* { dg-error "error: two or more data types in declaration specifiers" } */
+union u3 signed; /* { dg-error "error: two or more data types in declaration specifiers" } */
+unsigned struct s4; /* { dg-error "error: two or more data types in declaration specifiers" } */
+/* { dg-warning "warning: useless type name in empty declaration" "empty" { target *-*-* } 40 } */
+_Complex enum { E3 }; /* { dg-error "error: two or more data types in declaration specifiers" } */
+/* { dg-warning "warning: useless type name in empty declaration" "empty" { target *-*-* } 42 } */

@@ -2681,7 +2681,7 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 
   pending_invalid_xref = 0;
 
-  if (declspecs->type && !declspecs->typedef_p)
+  if (declspecs->type && !declspecs->default_int_p && !declspecs->typedef_p)
     {
       tree value = declspecs->type;
       enum tree_code code = TREE_CODE (value);
@@ -2730,17 +2730,6 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
       warned = 1;
     }
 
-  if (found_tag && (declspecs->specbits & ((1 << (int) RID_LONG)
-					   | (1 << (int) RID_SHORT)
-					   | (1 << (int) RID_UNSIGNED)
-					   | (1 << (int) RID_SIGNED)
-					   | (1 << (int) RID_COMPLEX))))
-    {
-      error ("long, short, signed, unsigned or complex used invalidly "
-	     "in empty declaration");
-      warned = 1;
-    }
-
   if (declspecs->inline_p)
     {
       error ("%<inline%> in empty declaration");
@@ -2779,12 +2768,6 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
       warned = 2;
     }
 
-  if (!warned && !in_system_header && declspecs->specbits)
-    {
-      warning ("useless keyword or type name in empty declaration");
-      warned = 2;
-    }
-
   if (warned != 1)
     {
       if (!found_tag)
@@ -2805,14 +2788,17 @@ quals_from_declspecs (const struct c_declspecs *specs)
 	       | (specs->restrict_p ? TYPE_QUAL_RESTRICT : 0));
   gcc_assert (!specs->type
 	      && !specs->decl_attr
-	      && !specs->specbits
+	      && specs->typespec_word == cts_none
 	      && specs->storage_class == csc_none
 	      && !specs->typedef_p
-	      && !specs->typedef_signed_p
+	      && !specs->explicit_signed_p
 	      && !specs->deprecated_p
-	      && !specs->explicit_int_p
-	      && !specs->explicit_char_p
+	      && !specs->long_p
 	      && !specs->long_long_p
+	      && !specs->short_p
+	      && !specs->signed_p
+	      && !specs->unsigned_p
+	      && !specs->complex_p
 	      && !specs->inline_p
 	      && !specs->thread_p);
   return quals;
@@ -3673,7 +3659,6 @@ grokdeclarator (const struct c_declarator *declarator,
 		struct c_declspecs *declspecs,
 		enum decl_context decl_context, bool initialized, tree *width)
 {
-  int specbits = declspecs->specbits;
   tree type = declspecs->type;
   bool threadp = declspecs->thread_p;
   enum c_storage_class storage_class = declspecs->storage_class;
@@ -3681,13 +3666,12 @@ grokdeclarator (const struct c_declarator *declarator,
   int restrictp;
   int volatilep;
   int type_quals = TYPE_UNQUALIFIED;
-  int defaulted_int = 0;
   const char *name, *orig_name;
   tree typedef_type = 0;
   int funcdef_flag = 0;
   bool funcdef_syntax = false;
   int size_varies = 0;
-  tree decl_attr = NULL_TREE;
+  tree decl_attr = declspecs->decl_attr;
   int array_ptr_quals = TYPE_UNQUALIFIED;
   tree array_ptr_attrs = NULL_TREE;
   int array_parm_static = 0;
@@ -3749,182 +3733,28 @@ grokdeclarator (const struct c_declarator *declarator,
     warn_deprecated_use (declspecs->type);
 
   typedef_type = type;
-  if (type)
-    size_varies = C_TYPE_VARIABLE_SIZE (type);
+  size_varies = C_TYPE_VARIABLE_SIZE (type);
 
-  /* No type at all: default to `int', and set DEFAULTED_INT
-     because it was not a user-defined typedef.  */
+  /* Diagnose defaulting to "int".  */
 
-  if (type == 0)
+  if (declspecs->default_int_p && !in_system_header)
     {
-      if ((! (specbits & ((1 << (int) RID_LONG) | (1 << (int) RID_SHORT)
-			  | (1 << (int) RID_SIGNED)
-			  | (1 << (int) RID_UNSIGNED)
-			  | (1 << (int) RID_COMPLEX))))
-	  /* Don't warn about typedef foo = bar.  */
-	  && ! (storage_class == csc_typedef && initialized)
-	  && ! in_system_header)
-	{
-	  /* Issue a warning if this is an ISO C 99 program or if -Wreturn-type
-	     and this is a function, or if -Wimplicit; prefer the former
-	     warning since it is more explicit.  */
-	  if ((warn_implicit_int || warn_return_type || flag_isoc99)
-	      && funcdef_flag)
-	    warn_about_return_type = 1;
-	  else if (warn_implicit_int || flag_isoc99)
-	    pedwarn_c99 ("type defaults to %<int%> in declaration of %qs",
-			 name);
-	}
-
-      defaulted_int = 1;
-      type = integer_type_node;
+      /* Issue a warning if this is an ISO C 99 program or if
+	 -Wreturn-type and this is a function, or if -Wimplicit;
+	 prefer the former warning since it is more explicit.  */
+      if ((warn_implicit_int || warn_return_type || flag_isoc99)
+	  && funcdef_flag)
+	warn_about_return_type = 1;
+      else if (warn_implicit_int || flag_isoc99)
+	pedwarn_c99 ("type defaults to %<int%> in declaration of %qs", name);
     }
 
-  /* Now process the modifiers that were specified
-     and check for invalid combinations.  */
-
-  /* Long double is a special combination.  */
-
-  if ((specbits & 1 << (int) RID_LONG) && ! declspecs->long_long_p
-      && TYPE_MAIN_VARIANT (type) == double_type_node)
-    {
-      specbits &= ~(1 << (int) RID_LONG);
-      type = long_double_type_node;
-    }
-
-  /* Check all other uses of type modifiers.  */
-
-  if (specbits & ((1 << (int) RID_LONG) | (1 << (int) RID_SHORT)
-		  | (1 << (int) RID_UNSIGNED) | (1 << (int) RID_SIGNED)))
-    {
-      int ok = 0;
-
-      if ((specbits & 1 << (int) RID_LONG)
-	  && (specbits & 1 << (int) RID_SHORT))
-	error ("both long and short specified for %qs", name);
-      else if (((specbits & 1 << (int) RID_LONG)
-		|| (specbits & 1 << (int) RID_SHORT))
-	       && declspecs->explicit_char_p)
-	error ("long or short specified with char for %qs", name);
-      else if (((specbits & 1 << (int) RID_LONG)
-		|| (specbits & 1 << (int) RID_SHORT))
-	       && TREE_CODE (type) == REAL_TYPE)
-	{
-	  static int already = 0;
-
-	  error ("long or short specified with floating type for %qs", name);
-	  if (! already && ! pedantic)
-	    {
-	      error ("the only valid combination is %<long double%>");
-	      already = 1;
-	    }
-	}
-      else if ((specbits & 1 << (int) RID_SIGNED)
-	       && (specbits & 1 << (int) RID_UNSIGNED))
-	error ("both signed and unsigned specified for %qs", name);
-      else if (TREE_CODE (type) != INTEGER_TYPE)
-	error ("long, short, signed or unsigned invalid for %qs", name);
-      else
-	{
-	  ok = 1;
-	  if (!declspecs->explicit_int_p && !defaulted_int
-	      && !declspecs->explicit_char_p)
-	    {
-	      error ("long, short, signed or unsigned used invalidly for %qs",
-		     name);
-	      ok = 0;
-	    }
-	}
-
-      /* Discard the type modifiers if they are invalid.  */
-      if (! ok)
-	{
-	  specbits &= ~((1 << (int) RID_LONG) | (1 << (int) RID_SHORT)
-			| (1 << (int) RID_UNSIGNED) | (1 << (int) RID_SIGNED));
-	  declspecs->long_long_p = 0;
-	}
-    }
-
-  if ((specbits & (1 << (int) RID_COMPLEX))
-      && TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != REAL_TYPE)
-    {
-      error ("complex invalid for %qs", name);
-      specbits &= ~(1 << (int) RID_COMPLEX);
-    }
-
-  /* Decide whether an integer type is signed or not.
-     Optionally treat bit-fields as signed by default.  */
-  if (specbits & 1 << (int) RID_UNSIGNED
-      || (bitfield && ! flag_signed_bitfields
-	  && (declspecs->explicit_int_p || defaulted_int
-	      || declspecs->explicit_char_p
-	      /* A typedef for plain `int' without `signed'
-		 can be controlled just like plain `int'.  */
-	      || !declspecs->typedef_signed_p)
-	  && TREE_CODE (type) != ENUMERAL_TYPE
-	  && !(specbits & 1 << (int) RID_SIGNED)))
-    {
-      if (declspecs->long_long_p)
-	type = long_long_unsigned_type_node;
-      else if (specbits & 1 << (int) RID_LONG)
-	type = long_unsigned_type_node;
-      else if (specbits & 1 << (int) RID_SHORT)
-	type = short_unsigned_type_node;
-      else if (type == char_type_node)
-	type = unsigned_char_type_node;
-      else if (declspecs->typedef_p)
-	type = c_common_unsigned_type (type);
-      else
-	type = unsigned_type_node;
-    }
-  else if ((specbits & 1 << (int) RID_SIGNED)
-	   && type == char_type_node)
-    type = signed_char_type_node;
-  else if (declspecs->long_long_p)
-    type = long_long_integer_type_node;
-  else if (specbits & 1 << (int) RID_LONG)
-    type = long_integer_type_node;
-  else if (specbits & 1 << (int) RID_SHORT)
-    type = short_integer_type_node;
-
-  if (specbits & 1 << (int) RID_COMPLEX)
-    {
-      if (pedantic && !flag_isoc99)
-	pedwarn ("ISO C90 does not support complex types");
-      /* If we just have "complex", it is equivalent to
-	 "complex double", but if any modifiers at all are specified it is
-	 the complex form of TYPE.  E.g, "complex short" is
-	 "complex short int".  */
-
-      if (defaulted_int && ! declspecs->long_long_p
-	  && ! (specbits & ((1 << (int) RID_LONG) | (1 << (int) RID_SHORT)
-			    | (1 << (int) RID_SIGNED)
-			    | (1 << (int) RID_UNSIGNED))))
-	{
-	  if (pedantic)
-	    pedwarn ("ISO C does not support plain %<complex%> meaning "
-		     "%<double complex%>");
-	  type = complex_double_type_node;
-	}
-      else if (type == integer_type_node)
-	{
-	  if (pedantic)
-	    pedwarn ("ISO C does not support complex integer types");
-	  type = complex_integer_type_node;
-	}
-      else if (type == float_type_node)
-	type = complex_float_type_node;
-      else if (type == double_type_node)
-	type = complex_double_type_node;
-      else if (type == long_double_type_node)
-	type = complex_long_double_type_node;
-      else
-	{
-	  if (pedantic)
-	    pedwarn ("ISO C does not support complex integer types");
-	  type = build_complex_type (type);
-	}
-    }
+  /* Adjust the type if a bit-field is being declared,
+     -funsigned-bitfields applied and the type is not explicitly
+     "signed".  */
+  if (bitfield && !flag_signed_bitfields && !declspecs->explicit_signed_p
+      && TREE_CODE (type) == INTEGER_TYPE)
+    type = c_common_unsigned_type (type);
 
   /* Check the type and width of a bit-field.  */
   if (bitfield)
@@ -4397,8 +4227,7 @@ grokdeclarator (const struct c_declarator *declarator,
       if (type_quals)
 	type = c_build_qualified_type (type, type_quals);
       decl = build_decl (TYPE_DECL, declarator->u.id, type);
-      if ((specbits & (1 << (int) RID_SIGNED))
-	  || declspecs->typedef_signed_p)
+      if (declspecs->explicit_signed_p)
 	C_TYPEDEF_EXPLICITLY_SIGNED (decl) = 1;
       decl_attributes (&decl, returned_attrs, 0);
       if (declspecs->inline_p)
@@ -4602,7 +4431,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	if (funcdef_flag)
 	  current_function_arg_info = arg_info;
 
-	if (defaulted_int)
+	if (declspecs->default_int_p)
 	  C_FUNCTION_IMPLICIT_INT (decl) = 1;
 
 	/* Record presence of `inline', if it is reasonable.  */
@@ -6765,15 +6594,19 @@ build_null_declspecs (void)
   ret->type = 0;
   ret->decl_attr = 0;
   ret->attrs = 0;
-  ret->specbits = 0;
+  ret->typespec_word = cts_none;
   ret->storage_class = csc_none;
   ret->non_sc_seen_p = false;
   ret->typedef_p = false;
-  ret->typedef_signed_p = false;
+  ret->explicit_signed_p = false;
   ret->deprecated_p = false;
-  ret->explicit_int_p = false;
-  ret->explicit_char_p = false;
+  ret->default_int_p = false;
+  ret->long_p = false;
   ret->long_long_p = false;
+  ret->short_p = false;
+  ret->signed_p = false;
+  ret->unsigned_p = false;
+  ret->complex_p = false;
   ret->inline_p = false;
   ret->thread_p = false;
   ret->const_p = false;
@@ -6825,38 +6658,254 @@ declspecs_add_type (struct c_declspecs *specs, tree type)
   specs->non_sc_seen_p = true;
   if (TREE_DEPRECATED (type))
     specs->deprecated_p = true;
-  if (type == ridpointers[(int) RID_INT])
-    specs->explicit_int_p = true;
-  if (type == ridpointers[(int) RID_CHAR])
-    specs->explicit_char_p = true;
 
+  /* Handle type specifier keywords.  */
   if (TREE_CODE (type) == IDENTIFIER_NODE && C_IS_RESERVED_WORD (type))
     {
       enum rid i = C_RID_CODE (type);
+      if (specs->type)
+	{
+	  error ("two or more data types in declaration specifiers");
+	  return specs;
+	}
       if ((int) i <= (int) RID_LAST_MODIFIER)
 	{
-	  if (i == RID_LONG && (specs->specbits & (1 << (int) RID_LONG)))
+	  /* "long", "short", "signed", "unsigned" or "_Complex".  */
+	  bool dupe = false;
+	  switch (i)
 	    {
+	    case RID_LONG:
 	      if (specs->long_long_p)
-		error ("%<long long long%> is too long for GCC");
-	      else
 		{
+		  error ("%<long long long%> is too long for GCC");
+		  break;
+		}
+	      if (specs->long_p)
+		{
+		  if (specs->typespec_word == cts_double)
+		    {
+		      error ("both %<long long%> and %<double%> in "
+			     "declaration specifiers");
+		      break;
+		    }
 		  if (pedantic && !flag_isoc99 && !in_system_header
 		      && warn_long_long)
 		    pedwarn ("ISO C90 does not support %<long long%>");
 		  specs->long_long_p = 1;
+		  break;
 		}
+	      if (specs->short_p)
+		error ("both %<long%> and %<short%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_void)
+		error ("both %<long%> and %<void%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_bool)
+		error ("both %<long%> and %<_Bool%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_char)
+		error ("both %<long%> and %<char%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_float)
+		error ("both %<long%> and %<float%> in "
+		       "declaration specifiers");
+	      else
+		specs->long_p = true;
+	      break;
+	    case RID_SHORT:
+	      dupe = specs->short_p;
+	      if (specs->long_p)
+		error ("both %<long%> and %<short%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_void)
+		error ("both %<short%> and %<void%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_bool)
+		error ("both %<short%> and %<_Bool%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_char)
+		error ("both %<short%> and %<char%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_float)
+		error ("both %<short%> and %<float%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_double)
+		error ("both %<short%> and %<double%> in "
+		       "declaration specifiers");
+	      else
+		specs->short_p = true;
+	      break;
+	    case RID_SIGNED:
+	      dupe = specs->signed_p;
+	      if (specs->unsigned_p)
+		error ("both %<signed%> and %<unsigned%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_void)
+		error ("both %<signed%> and %<void%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_bool)
+		error ("both %<signed%> and %<_Bool%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_float)
+		error ("both %<signed%> and %<float%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_double)
+		error ("both %<signed%> and %<double%> in "
+		       "declaration specifiers");
+	      else
+		specs->signed_p = true;
+	      break;
+	    case RID_UNSIGNED:
+	      dupe = specs->unsigned_p;
+	      if (specs->signed_p)
+		error ("both %<signed%> and %<unsigned%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_void)
+		error ("both %<unsigned%> and %<void%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_bool)
+		error ("both %<unsigned%> and %<_Bool%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_float)
+		error ("both %<unsigned%> and %<float%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_double)
+		error ("both %<unsigned%> and %<double%> in "
+		       "declaration specifiers");
+	      else
+		specs->unsigned_p = true;
+	      break;
+	    case RID_COMPLEX:
+	      dupe = specs->complex_p;
+	      if (pedantic && !flag_isoc99)
+		pedwarn ("ISO C90 does not support complex types");
+	      if (specs->typespec_word == cts_void)
+		error ("both %<complex%> and %<void%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_bool)
+		error ("both %<complex%> and %<_Bool%> in "
+		       "declaration specifiers");
+	      else
+		specs->complex_p = true;
+	      break;
+	    default:
+	      gcc_unreachable ();
 	    }
-	  else if (specs->specbits & (1 << (int) i))
+
+	  if (dupe)
 	    error ("duplicate %qs", IDENTIFIER_POINTER (type));
 
-	  specs->specbits |= 1 << (int) i;
 	  return specs;
 	}
+      else
+	{
+	  /* "void", "_Bool", "char", "int", "float" or "double".  */
+	  if (specs->typespec_word != cts_none)
+	    {
+	      error ("two or more data types in declaration specifiers");
+	      return specs;
+	    }
+	  switch (i)
+	    {
+	    case RID_VOID:
+	      if (specs->long_p)
+		error ("both %<long%> and %<void%> in "
+		       "declaration specifiers");
+	      else if (specs->short_p)
+		error ("both %<short%> and %<void%> in "
+		       "declaration specifiers");
+	      else if (specs->signed_p)
+		error ("both %<signed%> and %<void%> in "
+		       "declaration specifiers");
+	      else if (specs->unsigned_p)
+		error ("both %<unsigned%> and %<void%> in "
+		       "declaration specifiers");
+	      else if (specs->complex_p)
+		error ("both %<complex%> and %<void%> in "
+		       "declaration specifiers");
+	      else
+		specs->typespec_word = cts_void;
+	      return specs;
+	    case RID_BOOL:
+	      if (specs->long_p)
+		error ("both %<long%> and %<_Bool%> in "
+		       "declaration specifiers");
+	      else if (specs->short_p)
+		error ("both %<short%> and %<_Bool%> in "
+		       "declaration specifiers");
+	      else if (specs->signed_p)
+		error ("both %<signed%> and %<_Bool%> in "
+		       "declaration specifiers");
+	      else if (specs->unsigned_p)
+		error ("both %<unsigned%> and %<_Bool%> in "
+		       "declaration specifiers");
+	      else if (specs->complex_p)
+		error ("both %<complex%> and %<_Bool%> in "
+		       "declaration specifiers");
+	      else
+		specs->typespec_word = cts_bool;
+	      return specs;
+	    case RID_CHAR:
+	      if (specs->long_p)
+		error ("both %<long%> and %<char%> in "
+		       "declaration specifiers");
+	      else if (specs->short_p)
+		error ("both %<short%> and %<char%> in "
+		       "declaration specifiers");
+	      else
+		specs->typespec_word = cts_char;
+	      return specs;
+	    case RID_INT:
+	      specs->typespec_word = cts_int;
+	      return specs;
+	    case RID_FLOAT:
+	      if (specs->long_p)
+		error ("both %<long%> and %<float%> in "
+		       "declaration specifiers");
+	      else if (specs->short_p)
+		error ("both %<short%> and %<float%> in "
+		       "declaration specifiers");
+	      else if (specs->signed_p)
+		error ("both %<signed%> and %<float%> in "
+		       "declaration specifiers");
+	      else if (specs->unsigned_p)
+		error ("both %<unsigned%> and %<float%> in "
+		       "declaration specifiers");
+	      else
+		specs->typespec_word = cts_float;
+	      return specs;
+	    case RID_DOUBLE:
+	      if (specs->long_long_p)
+		error ("both %<long long%> and %<double%> in "
+		       "declaration specifiers");
+	      else if (specs->short_p)
+		error ("both %<short%> and %<double%> in "
+		       "declaration specifiers");
+	      else if (specs->signed_p)
+		error ("both %<signed%> and %<double%> in "
+		       "declaration specifiers");
+	      else if (specs->unsigned_p)
+		error ("both %<unsigned%> and %<double%> in "
+		       "declaration specifiers");
+	      else
+		specs->typespec_word = cts_double;
+	      return specs;
+	    default:
+	      /* ObjC reserved word "id", handled below.  */
+	      break;
+	    }
+	}
     }
-  if (specs->type)
+
+  /* Now we have a typedef (a TYPE_DECL node), an identifier (some
+     form of ObjC type, cases such as "int" and "long" being handled
+     above), a TYPE (struct, union, enum and typeof specifiers) or an
+     ERROR_MARK.  In none of these cases may there have previously
+     been any type specifiers.  */
+  if (specs->type || specs->typespec_word != cts_none
+      || specs->long_p || specs->short_p || specs->signed_p
+      || specs->unsigned_p || specs->complex_p)
     error ("two or more data types in declaration specifiers");
-  /* Actual typedefs come to us as TYPE_DECL nodes.  */
   else if (TREE_CODE (type) == TYPE_DECL)
     {
       if (TREE_TYPE (type) == error_mark_node)
@@ -6866,10 +6915,9 @@ declspecs_add_type (struct c_declspecs *specs, tree type)
 	  specs->type = TREE_TYPE (type);
 	  specs->decl_attr = DECL_ATTRIBUTES (type);
 	  specs->typedef_p = true;
-	  specs->typedef_signed_p = C_TYPEDEF_EXPLICITLY_SIGNED (type);
+	  specs->explicit_signed_p = C_TYPEDEF_EXPLICITLY_SIGNED (type);
 	}
     }
-  /* Built-in types come as identifiers.  */
   else if (TREE_CODE (type) == IDENTIFIER_NODE)
     {
       tree t = lookup_name (type);
@@ -6978,6 +7026,146 @@ struct c_declspecs *
 declspecs_add_attrs (struct c_declspecs *specs, tree attrs)
 {
   specs->attrs = chainon (attrs, specs->attrs);
+  return specs;
+}
+
+/* Combine "long", "short", "signed", "unsigned" and "_Complex" type
+   specifiers with any other type specifier to determine the resulting
+   type.  This is where ISO C checks on complex types are made, since
+   "_Complex long" is a prefix of the valid ISO C type "_Complex long
+   double".  */
+
+struct c_declspecs *
+finish_declspecs (struct c_declspecs *specs)
+{
+  /* If a type was specified as a whole, we have no modifiers and are
+     done.  */
+  if (specs->type != NULL_TREE)
+    {
+      gcc_assert (!specs->long_p && !specs->long_long_p && !specs->short_p
+		  && !specs->signed_p && !specs->unsigned_p
+		  && !specs->complex_p);
+      return specs;
+    }
+
+  /* If none of "void", "_Bool", "char", "int", "float" or "double"
+     has been specified, treat it as "int" unless "_Complex" is
+     present and there are no other specifiers.  If we just have
+     "_Complex", it is equivalent to "_Complex double", but e.g.
+     "_Complex short" is equivalent to "_Complex short int".  */
+  if (specs->typespec_word == cts_none)
+    {
+      if (specs->long_p || specs->short_p
+	  || specs->signed_p || specs->unsigned_p)
+	{
+	  specs->typespec_word = cts_int;
+	}
+      else if (specs->complex_p)
+	{
+	  specs->typespec_word = cts_double;
+	  if (pedantic)
+	    pedwarn ("ISO C does not support plain %<complex%> meaning "
+		     "%<double complex%>");
+	}
+      else
+	{
+	  specs->typespec_word = cts_int;
+	  specs->default_int_p = true;
+	  /* We don't diagnose this here because grokdeclarator will
+	     give more specific diagnostics according to whether it is
+	     a function definition.  */
+	}
+    }
+
+  /* If "signed" was specified, record this to distinguish "int" and
+     "signed int" in the case of a bit-field with
+     -funsigned-bitfields.  */
+  specs->explicit_signed_p = specs->signed_p;
+
+  /* Now compute the actual type.  */
+  switch (specs->typespec_word)
+    {
+    case cts_void:
+      gcc_assert (!specs->long_p && !specs->short_p
+		  && !specs->signed_p && !specs->unsigned_p
+		  && !specs->complex_p);
+      specs->type = void_type_node;
+      break;
+    case cts_bool:
+      gcc_assert (!specs->long_p && !specs->short_p
+		  && !specs->signed_p && !specs->unsigned_p
+		  && !specs->complex_p);
+      specs->type = boolean_type_node;
+      break;
+    case cts_char:
+      gcc_assert (!specs->long_p && !specs->short_p);
+      gcc_assert (!(specs->signed_p && specs->unsigned_p));
+      if (specs->signed_p)
+	specs->type = signed_char_type_node;
+      else if (specs->unsigned_p)
+	specs->type = unsigned_char_type_node;
+      else
+	specs->type = char_type_node;
+      if (specs->complex_p)
+	{
+	  if (pedantic)
+	    pedwarn ("ISO C does not support complex integer types");
+	  specs->type = build_complex_type (specs->type);
+	}
+      break;
+    case cts_int:
+      gcc_assert (!(specs->long_p && specs->short_p));
+      gcc_assert (!(specs->signed_p && specs->unsigned_p));
+      if (specs->long_long_p)
+	specs->type = (specs->unsigned_p
+		       ? long_long_unsigned_type_node
+		       : long_long_integer_type_node);
+      else if (specs->long_p)
+	specs->type = (specs->unsigned_p
+		       ? long_unsigned_type_node
+		       : long_integer_type_node);
+      else if (specs->short_p)
+	specs->type = (specs->unsigned_p
+		       ? short_unsigned_type_node
+		       : short_integer_type_node);
+      else
+	specs->type = (specs->unsigned_p
+		       ? unsigned_type_node
+		       : integer_type_node);
+      if (specs->complex_p)
+	{
+	  if (pedantic)
+	    pedwarn ("ISO C does not support complex integer types");
+	  specs->type = build_complex_type (specs->type);
+	}
+      break;
+    case cts_float:
+      gcc_assert (!specs->long_p && !specs->short_p
+		  && !specs->signed_p && !specs->unsigned_p);
+      specs->type = (specs->complex_p
+		     ? complex_float_type_node
+		     : float_type_node);
+      break;
+    case cts_double:
+      gcc_assert (!specs->long_long_p && !specs->short_p
+		  && !specs->signed_p && !specs->unsigned_p);
+      if (specs->long_p)
+	{
+	  specs->type = (specs->complex_p
+			 ? complex_long_double_type_node
+			 : long_double_type_node);
+	}
+      else
+	{
+	  specs->type = (specs->complex_p
+			 ? complex_double_type_node
+			 : double_type_node);
+	}
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
   return specs;
 }
 
