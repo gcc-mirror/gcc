@@ -3568,12 +3568,16 @@ push_parm_decl (parm)
   push_obstacks_nochange ();
 
   decl = grokdeclarator (TREE_VALUE (parm), TREE_PURPOSE (parm), PARM, 0);
+
+#if 0
   if (DECL_NAME (decl))
     {
       olddecl = lookup_name (DECL_NAME (decl));
       if (pedantic && olddecl != 0 && TREE_CODE (olddecl) == TYPE_DECL)
 	pedwarn_with_decl (decl, "ANSI C forbids parameter `%s' shadowing typedef");
     }
+#endif
+
   decl = pushdecl (decl);
 
   immediate_size_expand = old_immediate_size_expand;
