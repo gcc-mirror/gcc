@@ -1,5 +1,10 @@
 2004-09-09  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* combine.c (try_combine): When swapping i2 and i3, newi2pat may be
+	a PARALLEL instead of a SET due to added clobbers.
+
+2004-09-09  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* reload.c (find_reloads_address): Pass correct operand to 
 	maybe_memory_address_p.
 
