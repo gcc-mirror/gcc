@@ -1727,12 +1727,15 @@ gnu/gcj/protocol/http/Connection.java \
 gnu/gcj/protocol/http/Handler.java \
 gnu/gcj/protocol/jar/Connection.java \
 gnu/gcj/protocol/jar/Handler.java \
+gnu/gcj/protocol/gcjlib/Connection.java \
+gnu/gcj/protocol/gcjlib/Handler.java \
 gnu/gcj/runtime/FileDeleter.java \
 gnu/gcj/runtime/FinalizerThread.java \
 gnu/gcj/runtime/FirstThread.java \
 gnu/gcj/runtime/JNIWeakRef.java \
 gnu/gcj/runtime/MethodRef.java \
 gnu/gcj/runtime/NameFinder.java \
+gnu/gcj/runtime/SharedLibHelper.java \
 gnu/gcj/runtime/SharedLibLoader.java \
 gnu/gcj/runtime/StackTrace.java \
 gnu/gcj/runtime/StringBuffer.java \
@@ -2752,6 +2755,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/protocol/core/natCoreInputStream.P \
 .deps/gnu/gcj/protocol/file/Connection.P \
 .deps/gnu/gcj/protocol/file/Handler.P \
+.deps/gnu/gcj/protocol/gcjlib/Connection.P \
+.deps/gnu/gcj/protocol/gcjlib/Handler.P \
 .deps/gnu/gcj/protocol/http/Connection.P \
 .deps/gnu/gcj/protocol/http/Handler.P \
 .deps/gnu/gcj/protocol/jar/Connection.P \
@@ -2760,6 +2765,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/runtime/FinalizerThread.P \
 .deps/gnu/gcj/runtime/FirstThread.P .deps/gnu/gcj/runtime/JNIWeakRef.P \
 .deps/gnu/gcj/runtime/MethodRef.P .deps/gnu/gcj/runtime/NameFinder.P \
+.deps/gnu/gcj/runtime/SharedLibHelper.P \
 .deps/gnu/gcj/runtime/SharedLibLoader.P \
 .deps/gnu/gcj/runtime/StackTrace.P .deps/gnu/gcj/runtime/StringBuffer.P \
 .deps/gnu/gcj/runtime/VMClassLoader.P \

@@ -466,6 +466,22 @@ bool _Jv_VerifyClassName (_Jv_Utf8Const *name);
 bool _Jv_VerifyIdentifier (_Jv_Utf8Const *);
 bool _Jv_ClassNameSamePackage (_Jv_Utf8Const *name1, _Jv_Utf8Const *name2);
 
+struct _Jv_core_chain
+{
+  int name_length;
+  const char *name;
+  int data_length;
+  const void *data;
+
+  struct _Jv_core_chain *next;
+};
+
+// This is called when new core data is loaded.
+extern void (*_Jv_RegisterCoreHook) (_Jv_core_chain *);
+
+_Jv_core_chain *_Jv_FindCore (_Jv_core_chain *node, jstring name);
+void _Jv_FreeCoreChain (_Jv_core_chain *chain);
+
 #ifdef ENABLE_JVMPI
 
 #include "jvmpi.h"

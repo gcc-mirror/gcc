@@ -1,4 +1,4 @@
-// natSharedLibLoader.cc - Implementation of FirstThread native methods.
+// natSharedLibLoader.cc - Implementation of SharedLibHelper native methods.
 
 /* Copyright (C) 2001, 2003  Free Software Foundation
 
@@ -11,74 +11,113 @@ details.  */
 #include <config.h>
 
 #include <gcj/cni.h>
-#include <gnu/gcj/runtime/SharedLibLoader.h>
+#include <jvm.h>
+#include <gnu/gcj/runtime/SharedLibHelper.h>
 #include <java/io/IOException.h>
 #include <java/lang/UnsupportedOperationException.h>
-#include <java/lang/UnsatisfiedLinkError.h>
+#include <java/lang/UnknownError.h>
 
 #ifdef HAVE_DLOPEN
 #include <dlfcn.h>
 
 /* Only used during dlopen, while having a lock on Class.class. */
-static gnu::gcj::runtime::SharedLibLoader* curLoader;
+static java::lang::ClassLoader *curLoader;
+static gnu::gcj::runtime::SharedLibHelper *curHelper;
 
 typedef void (*ClassHookFunc) (jclass);
+typedef void (*CoreHookFunc) (_Jv_core_chain *);
+
+void
+_Jv_sharedlib_register_hook (jclass cls)
+{
+  curHelper->registerClass(cls->getName(), cls);
+  cls->protectionDomain = curHelper->domain;
+  cls->loader = curLoader;
+}
 
 static void
-::register_hook(jclass cls)
+core_hook (_Jv_core_chain *chain)
 {
-  curLoader->registerClass(cls->getName(), cls);
+  chain->next = (_Jv_core_chain *) curHelper->core_chain;
+  curHelper->core_chain = (gnu::gcj::RawData *) chain;
 }
 
 struct SharedLibDummy
 {
   ClassHookFunc saved;
+  CoreHookFunc saved_core;
   SharedLibDummy()
   {
     saved = _Jv_RegisterClassHook;
+    saved_core = _Jv_RegisterCoreHook;
   }
   ~SharedLibDummy()
   {
     _Jv_RegisterClassHook = saved;
+    _Jv_RegisterCoreHook = saved_core;
     curLoader = NULL;
   }
 };
 #endif
 
 void
-gnu::gcj::runtime::SharedLibLoader::init(jstring libname, jint flags)
+gnu::gcj::runtime::SharedLibHelper::init(void)
 {
 #ifdef HAVE_DLOPEN
-  jint len = _Jv_GetStringUTFLength (libname);
-  char lname[len + 1];
-  JvGetStringUTFRegion (libname, 0, libname->length(), lname);
-  lname[len] = '\0';
+  char *lname = (char *) __builtin_alloca (JvGetStringUTFLength (baseName)
+					   + 1);
+  jsize total = JvGetStringUTFRegion (baseName, 0, baseName->length(), lname);
+  lname[total] = '\0';
 
   if (flags==0)
-    flags = RTLD_LAZY;
+    flags = RTLD_GLOBAL | RTLD_LAZY;
   JvSynchronize dummy1(&java::lang::Class::class$);
   SharedLibDummy dummy2;
-  curLoader = this;
-  _Jv_RegisterClassHook = ::register_hook;
+  curLoader = loader;
+  curHelper = this;
+  _Jv_RegisterClassHook = _Jv_sharedlib_register_hook;
+  _Jv_RegisterCoreHook = core_hook;
   void *h = dlopen(lname, flags);
   if (h == NULL)
     {
       const char *msg = dlerror();
-      jstring str = JvNewStringLatin1 (lname);
-      str = str->concat (JvNewStringLatin1 (": "));
-      str = str->concat (JvNewStringLatin1 (msg));
-      throw new java::lang::UnsatisfiedLinkError (str);
+      throw new java::lang::UnknownError(JvNewStringLatin1(msg));
     }
   handler = (gnu::gcj::RawData*) h;
 #else
-  const char *msg = "SharedLibLoader is not supported on this platform";
+  const char *msg
+    = "shared library class loading is not supported on this platform";
   throw new java::lang::UnsupportedOperationException(JvNewStringLatin1(msg));
 #endif
 }
 
-void
-gnu::gcj::runtime::SharedLibLoader::finalize()
+jboolean
+gnu::gcj::runtime::SharedLibHelper::hasResource (jstring name)
 {
+#ifdef HAVE_DLOPEN
+  _Jv_core_chain *node = _Jv_FindCore ((_Jv_core_chain *) core_chain, name);
+  return node != NULL;
+#else
+  return false;
+#endif
+}
+
+gnu::gcj::Core *
+gnu::gcj::runtime::SharedLibHelper::findCore (jstring name)
+{
+#ifdef HAVE_DLOPEN
+  extern gnu::gcj::Core *_Jv_create_core (_Jv_core_chain *node, jstring name);
+  ensureInit();
+  return _Jv_create_core ((_Jv_core_chain *) core_chain, name);
+#else
+  return NULL;
+#endif
+}
+
+void
+gnu::gcj::runtime::SharedLibHelper::finalize()
+{
+  _Jv_FreeCoreChain ((_Jv_core_chain *) core_chain);
 #ifdef HAVE_DLOPEN
   dlclose (handler);
 #endif

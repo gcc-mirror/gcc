@@ -1,3 +1,42 @@
+2003-08-28  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Added new files.
+	* java/lang/Class.h (_Jv_sharedlib_register_hook): Declare as
+	friend.
+	* java/net/URLClassLoader.java (findClass): Don't use
+	findURLResource.  Use loader's getClass method.
+	(URLLoader.getClass): New method.
+	(addURL): Handle `gcjlib' URLs.
+	(SoURLLoader): New class.
+	(SoResource): Likewise.
+	* gnu/gcj/protocol/gcjlib/Connection.java: New file.
+	* gnu/gcj/protocol/gcjlib/Handler.java: New file.
+	* include/jvm.h (struct _Jv_core_chain): Moved from natCore.cc.
+	(_Jv_RegisterCoreHook): Declare.
+	(_Jv_FindCore): Declare.
+	* gnu/gcj/runtime/SharedLibHelper.java: New file.
+	* gnu/gcj/runtime/natSharedLibLoader.cc (CoreHookFunc): New
+	typedef.
+	(core_hook): New function.
+	(struct SharedLibDummy) [saved_core]: New field.
+	(init): Set _Jv_RegisterCoreHook.  Throw exception on failure.
+	(register_hook): Set protection domain and class loader on new
+	class.
+	(finalize): Free core chain.
+	* gnu/gcj/Core.java (Core): New constructor.
+	* gnu/gcj/runtime/SharedLibLoader.java: Rewrote to use
+	SharedLibHelper.
+	* gnu/gcj/natCore.cc (_Jv_RegisterResource): Indentation fixlet.
+	(_Jv_create_core): New function.
+	(create): Use it.
+	(default_register_resource): New function.
+	(_Jv_RegisterCoreHook): New global.
+	(_Jv_RegisterResource): Use it.
+	(core_chain_struct): Removed.
+	(_Jv_FindCore): New function.
+	(_Jv_FreeCoreChain): New function.
+
 2003-08-29  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/natInetAddressWin32.cc,

@@ -7,7 +7,12 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 package gnu.gcj.runtime;
-import java.util.Hashtable;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.CodeSource;
+import java.util.Enumeration;
+import java.util.Vector;
 
 /**
  * A ClassLoader backed by a gcj-compiled shared library.
@@ -16,55 +21,59 @@ import java.util.Hashtable;
 
 public class SharedLibLoader extends ClassLoader
 {
-  public native void finalize ();
-
-  /** Called during dlopen's processing of the init section. */
-  void registerClass(String name, Class cls)
-  {
-    classMap.put(name, cls);
-  }
-
   /** Load a shared library, and associate a ClassLoader with it.
    * @param libname named of shared library (passed to dlopen)
    * @param parent the parent ClassLoader
-   * @param flags passed to dlopen
+   * @parem flags passed to dlopen
    */
   public SharedLibLoader(String libname, ClassLoader parent, int flags)
   {
     super(parent);
-    init(libname, flags);
+    URL url;
+    try
+      {
+	url = new URL("file", "", libname);
+      }
+    catch (MalformedURLException _)
+      {
+	url = null;
+      }
+    helper = SharedLibHelper.findHelper(this, libname,
+					new CodeSource(url, null));
   }
-
 
   /** Load a shared library, and asociate a ClassLoader with it.
    * @param libname named of shared library (passed to dlopen)
    */
   public SharedLibLoader(String libname)
   {
-    super(getSystemClassLoader());
-    init(libname, 0);
-  }
-
-  native void init(String libname, int flags);
-
-  public Class loadClass(String name)
-    throws ClassNotFoundException
-  {
-    return super.loadClass(name);
+    this(libname, getSystemClassLoader(), 0);
   }
 
   public Class findClass(String name)
     throws ClassNotFoundException
   {
-    Object cls = classMap.get(name);
+    Class cls = helper.findClass(name);
     if (cls == null)
       throw new ClassNotFoundException(name);
-    return (Class) cls;
+    return cls;
   }
 
-  /** The handle returned by dlopen. */
-  gnu.gcj.RawData handler;
+  public URL findResource (String name)
+  {
+    return helper.findResource(name);
+  }
 
-  /** Map classnames to Classes. */
-  Hashtable classMap = new Hashtable(20);
+  public Enumeration findResources (String name) throws IOException
+  {
+    URL url = findResource(name);
+    if (url == null)
+      return null;
+    Vector v = new Vector(1);
+    v.add(url);
+    return v.elements();
+  }
+
+  /** The helper that does the work for us.  */
+  SharedLibHelper helper;
 }

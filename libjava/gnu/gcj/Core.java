@@ -1,4 +1,4 @@
-/* Copyright (C) 2001  Free Software Foundation
+/* Copyright (C) 2001, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -14,5 +14,8 @@ public class Core
 
   public RawData ptr;
   public int length;
-}
 
+  Core ()
+  {
+  }
+}

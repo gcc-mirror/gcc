@@ -1,6 +1,6 @@
 // natCore -- C++ side of Core
 
-/* Copyright (C) 2001, 2002  Free Software Foundation
+/* Copyright (C) 2001, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -21,40 +21,49 @@ details.  */
 #include <java/io/IOException.h>
 #include <gnu/gcj/Core.h>
 
-typedef struct core_chain_struct
+// List of global core values.
+static _Jv_core_chain *root;
+
+static void
+default_register_resource (_Jv_core_chain *node)
 {
-  int name_length;
-  const char *name;
-  int data_length;
-  const void *data;
-  
-  struct core_chain_struct *next;
-} core_chain;
+  node->next = root;
+  root = node;
+}
 
-static core_chain *root;
+// This is set only when a lock is held on java.lang.Class.
+// This function is called to handle a new core node.
+void (*_Jv_RegisterCoreHook) (_Jv_core_chain *) = default_register_resource;
 
-void _Jv_RegisterResource (void *vptr)
+void
+_Jv_RegisterResource (void *vptr)
 {
-  char *rptr = (char *)vptr;
+  char *rptr = (char *) vptr;
 
-  // These are permanent data structures for now.  This routine is
-  // called from a static constructor, so we shouldn't depend on too
-  // much existing infrastructure.
-  core_chain *cc = (core_chain *) _Jv_Malloc (sizeof (core_chain));
+  _Jv_core_chain *cc = (_Jv_core_chain *) _Jv_Malloc (sizeof (_Jv_core_chain));
 
   cc->name_length = ((int *)rptr)[0];
   cc->data_length = ((int *)rptr)[1];
-  cc->name = rptr + 2*sizeof(int);
+  cc->name = rptr + 2 * sizeof (int);
   cc->data = cc->name + cc->name_length;
+  cc->next = NULL;
 
-  // Add this new item to the chain...
-  core_chain *old_root = root;
-  cc->next = old_root;
-  root = cc;
+  (*_Jv_RegisterCoreHook) (cc);
 }
 
-gnu::gcj::Core *
-gnu::gcj::Core::create (jstring name)
+void
+_Jv_FreeCoreChain (_Jv_core_chain *chain)
+{
+  while (chain != NULL)
+    {
+      _Jv_core_chain *next = chain->next;
+      _Jv_Free (chain);
+      chain = next;
+    }
+}
+
+_Jv_core_chain *
+_Jv_FindCore (_Jv_core_chain *node, jstring name)
 {
   char *buf = (char *) __builtin_alloca (JvGetStringUTFLength (name) + 1);
   jsize total = JvGetStringUTFRegion (name, 0, name->length(), buf);
@@ -68,23 +77,38 @@ gnu::gcj::Core::create (jstring name)
       --total;
     }
 
-  core_chain *node = root;
-
   while (node)
     {
       if (total == node->name_length
 	  && strncmp (buf, node->name, total) == 0)
-	{
-	  gnu::gcj::Core *core = 
-	    (gnu::gcj::Core *) _Jv_AllocObject(&gnu::gcj::Core::class$,
-					       sizeof (gnu::gcj::Core));
-	  core->ptr = (gnu::gcj::RawData *) node->data;
-	  core->length = node->data_length;
-	  return core;
-	}
-      else
-	node = node->next;
+	return node;
+      node = node->next;
     }
 
-  throw new java::io::IOException (JvNewStringLatin1 ("can't open core"));
+  return NULL;
+}
+
+gnu::gcj::Core *
+_Jv_create_core (_Jv_core_chain *node, jstring name)
+{
+  node = _Jv_FindCore (node, name);
+
+  gnu::gcj::Core *core = NULL;
+  if (node)
+    {
+      core = (gnu::gcj::Core *) _Jv_AllocObject(&gnu::gcj::Core::class$,
+						sizeof (gnu::gcj::Core));
+      core->ptr = (gnu::gcj::RawData *) node->data;
+      core->length = node->data_length;
+    }
+  return core;
+}
+
+gnu::gcj::Core *
+gnu::gcj::Core::create (jstring name)
+{
+  gnu::gcj::Core *core = _Jv_create_core (root, name);
+  if (core == NULL)
+    throw new java::io::IOException (JvNewStringLatin1 ("can't open core"));
+  return core;
 }
