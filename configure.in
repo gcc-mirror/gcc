@@ -590,10 +590,9 @@ case "${target}" in
     target_configdirs="$target_configdirs target-libtermcap target-winsup"
     noconfigdirs="$noconfigdirs target-gperf target-libgloss ${libgcj}"
     # always build newlib if winsup directory is present.
-    if test -d "$srcdir/winsup"
-    then
+    if test -d "$srcdir/winsup"; then
       skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'`
-    else
+    elif test -d "$srcdir/newlib"; then
       echo "Warning: winsup is missing so newlib can't be built."
     fi
 

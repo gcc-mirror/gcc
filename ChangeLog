@@ -1,3 +1,8 @@
+2004-10-12  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* configure.in (*-*-cygwin*): Supress warning if newlib not present.
+	* configure: Regenerate.
+
 2004-10-07  J"orn Rennecke <joern.rennecke@st.com>
 
 	* MAINTAINERS:  Update my email address.
