@@ -1,3 +1,12 @@
+2001-06-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	* doc/install.texi (ix86-*-solaris*): Removed, outdated.
+	(*-*-solaris*): Document problem in /bin/sh that affects
+	configuring libraries.
+	(sparc-*-solaris*): Recommend GNU binutils 2.11.1 or vendor tools.
+	(*-sun-solaris2.8): Document linker problem that explains why
+	libjava is disabled by default.
+
 2001-06-09  Mark Mitchell  <mark@codesourcery.com>
 
 	Revert this patch:
