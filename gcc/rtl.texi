@@ -40,7 +40,7 @@ form uses nested parentheses to indicate the pointers in the internal form.
 * Reading RTL::       Reading textual RTL from a file.
 @end menu
 
-@node RTL Objects, RTL Classes, RTL, RTL
+@node RTL Objects
 @section RTL Object Types
 @cindex RTL object types
 
@@ -109,7 +109,7 @@ manual, they are shown as follows: @code{const_int}.
 In a few contexts a null pointer is valid where an expression is normally
 wanted.  The written form of this is @code{(nil)}.
 
-@node RTL Classes, Accessors, RTL Objects, RTL
+@node RTL Classes
 @section RTL Classes and Formats
 @cindex RTL classes
 @cindex classes of RTX codes
@@ -252,7 +252,7 @@ are of class @code{i}.
 You can make no assumptions about the format of these codes.
 @end table
 
-@node Accessors, Flags, RTL Classes, RTL
+@node Accessors
 @section Access to Operands
 @cindex accessors
 @cindex access to operands
@@ -328,7 +328,7 @@ All the macros defined in this section expand into lvalues and therefore
 can be used to assign the operands, lengths and vector elements as well as
 to access them.
 
-@node Flags, Machine Modes, Accessors, RTL
+@node Flags
 @section Flags in an RTL Expression
 @cindex flags in RTL expression
 
@@ -638,7 +638,7 @@ may be used for parameters as well, but this flag is not set on such
 uses.
 @end table
 
-@node Machine Modes, Constants, Flags, RTL
+@node Machine Modes
 @section Machine Modes
 @cindex machine modes
 
@@ -893,7 +893,7 @@ whose classes are @code{MODE_INT} and whose bitsizes are either
 @code{BITS_PER_UNIT} or @code{BITS_PER_WORD}, respectively.  On 32-bit
 machines, these are @code{QImode} and @code{SImode}, respectively.
 
-@node Constants, Regs and Memory, Machine Modes, RTL
+@node Constants
 @section Constant Expression Types
 @cindex RTL constants
 @cindex RTL constant expression types
@@ -1020,7 +1020,7 @@ reference a global memory location.
 @var{m} should be @code{Pmode}.
 @end table
 
-@node Regs and Memory, Arithmetic, Constants, RTL
+@node Regs and Memory
 @section Registers and Memory
 @cindex RTL register expressions
 @cindex RTL memory expressions
@@ -1307,7 +1307,7 @@ stack and the @code{addressof} expression is replaced with a @code{plus}
 expression for the address of its stack slot.
 @end table
 
-@node Arithmetic, Comparisons, Regs and Memory, RTL
+@node Arithmetic
 @section RTL Expressions for Arithmetic
 @cindex arithmetic, in RTL
 @cindex math, in RTL
@@ -1535,7 +1535,7 @@ depending on the target machine, various mode combinations may be
 valid.
 @end table
 
-@node Comparisons, Bit Fields, Arithmetic, RTL
+@node Comparisons
 @section Comparison Operations
 @cindex RTL comparison operations
 
@@ -1655,7 +1655,7 @@ This is currently not valid for instruction patterns and is supported only
 for insn attributes.  @xref{Insn Attributes}.
 @end table
 
-@node Bit Fields, Conversions, Comparisons, RTL
+@node Bit Fields
 @section Bit Fields
 @cindex bit fields
 
@@ -1693,7 +1693,7 @@ bit field.  The same sequence of bits are extracted, but they
 are filled to an entire word with zeros instead of by sign-extension.
 @end table
 
-@node Conversions, RTL Declarations, Bit Fields, RTL
+@node Conversions
 @section Conversions
 @cindex conversions
 @cindex machine mode conversions
@@ -1782,7 +1782,7 @@ integer, still represented in floating point mode @var{m}, by rounding
 towards zero.
 @end table
 
-@node RTL Declarations, Side Effects, Conversions, RTL
+@node RTL Declarations
 @section Declarations
 @cindex RTL declarations
 @cindex declarations, RTL
@@ -1805,7 +1805,7 @@ a subreg is allowed to have undefined effects on the rest of the
 register when @var{m} is less than a word.
 @end table
 
-@node Side Effects, Incdec, RTL Declarations, RTL
+@node Side Effects
 @section Side Effect Expressions
 @cindex RTL side effect expressions
 
@@ -2095,7 +2095,7 @@ position of @var{base}, @var{min} and @var{max} to the cointaining insn
 and of @var{min} and @var{max} to @var{base}.  See rtl.def for details.@refill
 @end table
 
-@node Incdec, Assembler, Side Effects, RTL
+@node Incdec
 @section Embedded Side-Effects on Addresses
 @cindex RTL preincrement
 @cindex RTL postincrement
@@ -2193,7 +2193,7 @@ allow them wherever a memory address is called for.  Describing them as
 additional parallel stores would require doubling the number of entries
 in the machine description.
 
-@node Assembler, Insns, Incdec, RTL
+@node Assembler
 @section Assembler Instructions as Expressions
 @cindex assembler instructions in RTL
 
@@ -2234,7 +2234,7 @@ template and vectors, but each contains the constraint for the respective
 output operand.  They are also distinguished by the output-operand index
 number, which is 0, 1, @dots{} for successive output operands.
 
-@node Insns, Calls, Assembler, RTL
+@node Insns
 @section Insns
 @cindex insns
 
@@ -2812,7 +2812,7 @@ assumed to be an insn and is printed in debugging dumps as the insn's
 unique id; the first operand of an @code{expr_list} is printed in the
 ordinary way as an expression.
 
-@node Calls, Sharing, Insns, RTL
+@node Calls
 @section RTL Representation of Function-Call Insns
 @cindex calling functions in RTL
 @cindex RTL function-call insns
