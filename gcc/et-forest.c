@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.
 #include "coretypes.h"
 #include "tm.h"
 #include "et-forest.h"
+#include "alloc-pool.h"
 
 struct et_forest_occurrence;
 typedef struct et_forest_occurrence* et_forest_occurrence_t;
@@ -37,6 +38,8 @@ struct et_forest
 {
   /* Linked list of nodes is used to destroy the structure.  */
   int nnodes;
+  alloc_pool node_pool;
+  alloc_pool occur_pool;
 };
 
 /* Single occurrence of node in ET-forest.  
@@ -73,7 +76,7 @@ struct et_forest_node
 
 
 static et_forest_occurrence_t splay PARAMS ((et_forest_occurrence_t));
-static void remove_all_occurrences PARAMS ((et_forest_node_t));
+static void remove_all_occurrences PARAMS ((et_forest_t, et_forest_node_t));
 static inline et_forest_occurrence_t find_leftmost_node 
                                PARAMS ((et_forest_occurrence_t));
 static inline et_forest_occurrence_t find_rightmost_node 
@@ -336,7 +339,8 @@ splay (node)
 
 /* Remove all occurences of the given node before destroying the node.  */
 static void
-remove_all_occurrences (forest_node)
+remove_all_occurrences (forest, forest_node)
+     et_forest_t forest;
      et_forest_node_t forest_node;
 {
   et_forest_occurrence_t first = forest_node->first;
@@ -381,7 +385,7 @@ remove_all_occurrences (forest_node)
       if (prev_node->node->last == next_node)
 	prev_node->node->last = prev_node;
 
-      free (next_node);
+      pool_free (forest->occur_pool, next_node);
     }
 
   if (first != last)
@@ -400,14 +404,14 @@ remove_all_occurrences (forest_node)
 	    node->right->parent = 0;
 
 	  next_node = node->next;
-	  free (node);
+	  pool_free (forest->occur_pool, node);
 	  node = next_node;
 	}
     }
 
-  free (first);
+  pool_free (forest->occur_pool, first);
   if (first != last)
-    free (last);
+    pool_free (forest->occur_pool, last);
 }
 
 /* Calculate ET value of the given node.  */
@@ -439,6 +443,8 @@ et_forest_create ()
   et_forest_t forest = xmalloc (sizeof (struct et_forest));
 
   forest->nnodes = 0;
+  forest->occur_pool = create_alloc_pool ("et_forest_occurrence pool", sizeof (struct et_forest_occurrence), 300);
+  forest->node_pool = create_alloc_pool ("et_forest_node pool", sizeof (struct et_forest_node), 300);
   return forest;
 }
 
@@ -451,7 +457,8 @@ et_forest_delete (forest)
 {
   if (forest->nnodes)
     abort ();
-
+  free_alloc_pool (forest->occur_pool);
+  free_alloc_pool (forest->node_pool);
   free (forest);
 }
 
@@ -466,8 +473,8 @@ et_forest_add_node (forest, value)
   et_forest_node_t node;
   et_forest_occurrence_t occ;
 
-  node = xmalloc (sizeof (struct et_forest_node));
-  occ = xmalloc (sizeof (struct et_forest_occurrence));
+  node = pool_alloc (forest->node_pool);
+  occ = pool_alloc (forest->occur_pool);
 
   node->first = node->last = occ;
   node->value = value;
@@ -505,7 +512,7 @@ et_forest_add_edge (forest, parent_node, child_node)
   if (child_occ->left)
     abort ();  /* child must be root of its containing tree.  */
   
-  new_occ = xmalloc (sizeof (struct et_forest_occurrence));
+  new_occ = pool_alloc (forest->occur_pool);
 
   new_occ->node = parent_node;
   new_occ->left = child_occ;
@@ -532,10 +539,10 @@ et_forest_remove_node (forest, node)
      et_forest_t forest;
      et_forest_node_t node;
 {
-  remove_all_occurrences (node);
+  remove_all_occurrences (forest, node);
   forest->nnodes--;
 
-  free (node);
+  pool_free (forest->node_pool, node);
 }
 
 /* Remove edge from the tree, return 1 if sucesfull,
@@ -575,7 +582,7 @@ et_forest_remove_edge (forest, parent_node, child_node)
   if (parent_post_occ == parent_node->last)
     parent_node->last = parent_pre_occ;
 
-  free (parent_post_occ);
+  pool_free (forest->occur_pool, parent_post_occ);
   return 1;
 }
 

@@ -57,11 +57,20 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "tm_p.h"
 #include "obstack.h"
+#include "alloc-pool.h"
 
 /* The obstack on which the flow graph components are allocated.  */
 
 struct obstack flow_obstack;
 static char *flow_firstobj;
+
+/* Basic block object pool.  */
+
+static alloc_pool bb_pool;
+
+/* Edge object pool.  */
+
+static alloc_pool edge_pool;
 
 /* Number of basic blocks in the current function.  */
 
@@ -74,11 +83,6 @@ int last_basic_block;
 /* Number of edges in the current function.  */
 
 int n_edges;
-
-/* First edge in the deleted edges chain.  */
-
-edge first_deleted_edge;
-static basic_block first_deleted_block;
 
 /* The basic block array.  */
 
@@ -140,8 +144,6 @@ init_flow ()
 {
   static int initialized;
 
-  first_deleted_edge = 0;
-  first_deleted_block = 0;
   n_edges = 0;
 
   if (!initialized)
@@ -152,9 +154,15 @@ init_flow ()
     }
   else
     {
+      free_alloc_pool (bb_pool);
+      free_alloc_pool (edge_pool);
       obstack_free (&flow_obstack, flow_firstobj);
       flow_firstobj = (char *) obstack_alloc (&flow_obstack, 0);
     }
+  bb_pool = create_alloc_pool ("Basic block pool", 
+			       sizeof (struct basic_block_def), 100);
+  edge_pool = create_alloc_pool ("Edge pool",
+			       sizeof (struct edge_def), 100);
 }
 
 /* Helper function for remove_edge and clear_edges.  Frees edge structure
@@ -165,9 +173,7 @@ free_edge (e)
      edge e;
 {
   n_edges--;
-  memset (e, 0, sizeof *e);
-  e->succ_next = first_deleted_edge;
-  first_deleted_edge = e;
+  pool_free (edge_pool, e);
 }
 
 /* Free the memory associated with the edge structures.  */
@@ -216,18 +222,8 @@ basic_block
 alloc_block ()
 {
   basic_block bb;
-
-  if (first_deleted_block)
-    {
-      bb = first_deleted_block;
-      first_deleted_block = (basic_block) bb->succ;
-      bb->succ = NULL;
-    }
-  else
-    {
-      bb = (basic_block) obstack_alloc (&flow_obstack, sizeof *bb);
-      memset (bb, 0, sizeof *bb);
-    }
+  bb = pool_alloc (bb_pool);
+  memset (bb, 0, sizeof (*bb));
   return bb;
 }
 
@@ -272,7 +268,6 @@ compact_blocks ()
   last_basic_block = n_basic_blocks;
 }
 
-
 /* Remove block B from the basic block array.  */
 
 void
@@ -282,12 +277,7 @@ expunge_block (b)
   unlink_block (b);
   BASIC_BLOCK (b->index) = NULL;
   n_basic_blocks--;
-
-  /* Invalidate data to make bughunting easier.  */
-  memset (b, 0, sizeof *b);
-  b->index = -3;
-  b->succ = (edge) first_deleted_block;
-  first_deleted_block = (basic_block) b;
+  pool_free (bb_pool, b);
 }
 
 /* Create an edge connecting SRC and DST with FLAGS optionally using
@@ -329,17 +319,10 @@ cached_make_edge (edge_cache, src, dst, flags)
 	  }
       break;
     }
-
-  if (first_deleted_edge)
-    {
-      e = first_deleted_edge;
-      first_deleted_edge = e->succ_next;
-    }
-  else
-    {
-      e = (edge) obstack_alloc (&flow_obstack, sizeof *e);
-      memset (e, 0, sizeof *e);
-    }
+  
+  
+  e = pool_alloc (edge_pool);
+  memset (e, 0, sizeof (*e));
   n_edges++;
 
   e->succ_next = src->succ;
@@ -504,7 +487,6 @@ dump_flow_info (file)
      FILE *file;
 {
   int i;
-  int max_regno = max_reg_num ();
   basic_block bb;
   static const char * const reg_class_names[] = REG_CLASS_NAMES;
 
