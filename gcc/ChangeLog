@@ -1,3 +1,8 @@
+Sun Jul 30 20:51:25 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* recog.c (general_operand, nonimmediate_operand): Accept
+	any mode for VOIDmode CONSTANT_P operands.
+
 Sun Jul 30 20:42:21 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (try_replace_reg): Use validate_replace_rtx_subexp

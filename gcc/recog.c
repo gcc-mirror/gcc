@@ -907,7 +907,8 @@ general_operand (op, mode)
     return 0;
 
   if (CONSTANT_P (op))
-    return ((GET_MODE (op) == VOIDmode || GET_MODE (op) == mode)
+    return ((GET_MODE (op) == VOIDmode || GET_MODE (op) == mode
+	     || mode == VOIDmode)
 #ifdef LEGITIMATE_PIC_OPERAND_P
 	    && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (op))
 #endif
@@ -1159,7 +1160,8 @@ nonmemory_operand (op, mode)
 	  && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
 	return 0;
 
-      return ((GET_MODE (op) == VOIDmode || GET_MODE (op) == mode)
+      return ((GET_MODE (op) == VOIDmode || GET_MODE (op) == mode
+	      || mode == VOIDmode)
 #ifdef LEGITIMATE_PIC_OPERAND_P
 	      && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (op))
 #endif
