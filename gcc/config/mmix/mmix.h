@@ -851,12 +851,6 @@ typedef struct { int regs; int lib; int now_varargs; } CUMULATIVE_ARGS;
 
 /* Node: Condition Code */
 
-#define EXTRA_CC_MODES				\
- CC(CC_UNSmode, "CC_UNS")			\
- CC(CC_FPmode, "CC_FP")				\
- CC(CC_FPEQmode, "CC_FPEQ")			\
- CC(CC_FUNmode, "CC_FUN")
-
 #define SELECT_CC_MODE(OP, X, Y)		\
  mmix_select_cc_mode (OP, X, Y)
 

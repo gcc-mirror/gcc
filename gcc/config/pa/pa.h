@@ -1515,11 +1515,6 @@ do { 									\
    between pointers and any other objects of this machine mode.  */
 #define Pmode word_mode
 
-/* Add any extra modes needed to represent the condition code.
-
-   HPPA floating comparisons produce condition codes.  */
-#define EXTRA_CC_MODES CC(CCFPmode, "CCFP")
-
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  For floating-point, CCFPmode
    should be used.  CC_NOOVmode should be used when the first operand is a

@@ -2379,18 +2379,6 @@ do {									     \
 
 /* #define ADJUST_INSN_LENGTH(X,LENGTH) */
 
-/* Add any extra modes needed to represent the condition code.
-
-   For the RS/6000, we need separate modes when unsigned (logical) comparisons
-   are being done and we need a separate mode for floating-point.  We also
-   use a mode for the case when we are comparing the results of two
-   comparisons, as then only the EQ bit is valid in the register.  */
-
-#define EXTRA_CC_MODES		\
-    CC(CCUNSmode,  "CCUNS")	\
-    CC(CCFPmode,   "CCFP")	\
-    CC(CCEQmode,   "CCEQ")
-
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a
    COMPARE, return the mode to be used for the comparison.  For
    floating-point, CCFPmode should be used.  CCUNSmode should be used

@@ -2834,34 +2834,6 @@ do {							\
 
 #define NO_RECURSIVE_FUNCTION_CSE
 
-/* Add any extra modes needed to represent the condition code.
-
-   For the i386, we need separate modes when floating-point
-   equality comparisons are being done.
-
-   Add CCNO to indicate comparisons against zero that requires
-   Overflow flag to be unset.  Sign bit test is used instead and
-   thus can be used to form "a&b>0" type of tests.
-
-   Add CCGC to indicate comparisons agains zero that allows
-   unspecified garbage in the Carry flag.  This mode is used
-   by inc/dec instructions.
-
-   Add CCGOC to indicate comparisons agains zero that allows
-   unspecified garbage in the Carry and Overflow flag. This
-   mode is used to simulate comparisons of (a-b) and (a+b)
-   against zero using sub/cmp/add operations.
-
-   Add CCZ to indicate that only the Zero flag is valid.  */
-
-#define EXTRA_CC_MODES		\
-	CC (CCGCmode, "CCGC")	\
-	CC (CCGOCmode, "CCGOC")	\
-	CC (CCNOmode, "CCNO")	\
-	CC (CCZmode, "CCZ")	\
-	CC (CCFPmode, "CCFP")	\
-	CC (CCFPUmode, "CCFPU")
-
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.
 

@@ -1200,14 +1200,6 @@ struct cum_args { int ca_nregparms; int ca_nstackparms; };
 
 extern struct rtx_def *i960_compare_op0, *i960_compare_op1;
 
-/* Add any extra modes needed to represent the condition code.
-
-   Also, signed and unsigned comparisons are distinguished, as
-   are operations which are compatible with chkbit insns.  */
-#define EXTRA_CC_MODES		\
-    CC(CC_UNSmode, "CC_UNS")	\
-    CC(CC_CHKmode, "CC_CHK")
-
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  For floating-point, CCFPmode
    should be used.  CC_NOOVmode should be used when the first operand is a

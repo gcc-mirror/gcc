@@ -990,15 +990,6 @@ do { \
     goto LABEL;				\
 }
 
-/* Condition code usage.  */
-
-/* Some insns set all condition code flags, some only set the ZNC flags, and
-   some only set the ZN flags.  */
-
-#define EXTRA_CC_MODES \
-	CC(CCZNCmode, "CCZNC") \
-	CC(CCZNmode, "CCZN")
-
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  */
 #define SELECT_CC_MODE(OP, X, Y) \
