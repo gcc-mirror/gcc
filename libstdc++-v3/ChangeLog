@@ -1,3 +1,16 @@
+2001-07-13  Phil Edwards  <pme@sources.redhat.com>
+
+	* include/bits/std_sstream.h (basic_stringbuf::basic_stringbuf(string):
+	Initialize _M_string with pointer-and-size constructor, not just
+	pointer.  Fix some comments.
+	* testsuite/21_strings/ctor_copy_dtor.cc (test03):  New test.
+	* testsuite/27_io/stringbuf.cc (test02):  Remove unused variable.
+	(test03):  Add embedded-NUL tests.
+
+	* mkcheck.in:  When printing totals, match the order of the tests.
+	* include/bits/stringfwd.h:  Use same declaration keywords.
+	* include/bits/std_iosfwd.h:  Cosmetic spacing.
+
 2001-07-13  Stephen M. Webb  <stephen@bregmasoft.com>
             Loren J. Rittle  <ljrittle@acm.org>
             Phil Edwards  <pme@sources.redhat.com>

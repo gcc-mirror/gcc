@@ -1,6 +1,6 @@
 // 981208 bkoz test functionality of basic_stringbuf for char_type == char
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997-2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -54,7 +54,6 @@ bool test02() {
 // test member functions
 bool test03() {
   bool test = true;
-  std::string str_tmp;
 
   //stringbuf::str()
   VERIFY( strb_01.str() == str_01 );
@@ -71,6 +70,18 @@ bool test03() {
   VERIFY( d1 != d2 ); //these should be the same
   VERIFY( str_01.length() == d1 );  
   VERIFY( strb_01.str() == strb_03.str() ); //ditto
+
+  // stringbuf::str(string&) and stringbuf::stringbuf(string&), where the
+  // string in question contains embedded NUL characters.  Note that in this
+  // embedded-NUL situation, the size must be passed to the string ctor.
+  std::string str_nulls ("eschew \0 obfuscation", 20);  // tested in 21_strings
+  std::stringbuf strb_normal (str_01);
+  std::stringbuf strb_nulls (str_nulls);
+  strb_normal.str(str_nulls);  // tried using 'strb_01' rather than declaring
+                               // another variable, but then test04 broke!
+  VERIFY( strb_nulls.in_avail() == str_nulls.size()  );
+  VERIFY( strb_nulls.str().size() == 20              );
+  VERIFY( strb_normal.in_avail() == str_nulls.size() );
 
 #ifdef DEBUG_ASSERT
   assert(test);

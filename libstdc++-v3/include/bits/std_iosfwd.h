@@ -100,7 +100,7 @@ namespace std
   typedef basic_ios<char> 		ios;
   typedef basic_streambuf<char> 	streambuf;
   typedef basic_istream<char> 		istream;
-   typedef basic_ostream<char> 		ostream;
+  typedef basic_ostream<char> 		ostream;
   typedef basic_iostream<char> 		iostream;
   typedef basic_stringbuf<char> 	stringbuf;
   typedef basic_istringstream<char> 	istringstream;
