@@ -1,3 +1,9 @@
+2001-10-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* arm.h (FUNCTION_ARG_REGNO_P): Use IN_RANGE.
+
+	* system.h (IN_RANGE): New macro.
+
 2001-10-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* aclocal.m4 (AM_WITH_NLS): Also create and substitute

@@ -1505,8 +1505,7 @@ typedef struct
 
 /* 1 if N is a possible register number for function argument passing.
    On the ARM, r0-r3 are used to pass args.  */
-#define FUNCTION_ARG_REGNO_P(REGNO)  \
-  ((REGNO) >= 0 && (REGNO) <= 3)
+#define FUNCTION_ARG_REGNO_P(REGNO)	(IN_RANGE ((REGNO), 0, 3))
 
 
 /* Tail calling.  */

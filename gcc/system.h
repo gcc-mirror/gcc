@@ -168,6 +168,16 @@ extern int errno;
 /* Get definitions of HOST_WIDE_INT and HOST_WIDEST_INT.  */
 #include "hwint.h"
 
+/* A macro to determine whether a VALUE lies inclusively within a
+   certain range without evaluating the VALUE more than once.  This
+   macro won't warn if the VALUE is unsigned and the LOWER bound is
+   zero, as it would e.g. with "VALUE >= 0 && ...".  Note the LOWER
+   bound *is* evaluated twice, and LOWER must not be greater than
+   UPPER.  However the bounds themselves can be either positive or
+   negative.  */
+#define IN_RANGE(VALUE, LOWER, UPPER) \
+  ((unsigned HOST_WIDE_INT)((VALUE) - (LOWER)) <= ((UPPER) - (LOWER)))
+
 /* Infrastructure for defining missing _MAX and _MIN macros.  Note that
    macros defined with these cannot be used in #if.  */
 
