@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define TEXT_SECTION_ASM_OP "\t.text"
 #define DATA_SECTION_ASM_OP "\t.data"
-#define BSS_SECTION_ASM_OP "\t.bss"
+#define BSS_SECTION_ASM_OP "\t.section\t.bss"
 
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
