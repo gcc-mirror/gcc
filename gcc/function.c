@@ -2756,9 +2756,11 @@ gen_mem_addressof (reg, decl)
      tree decl;
 {
   tree type = TREE_TYPE (decl);
-
   rtx r = gen_rtx_ADDRESSOF (Pmode, gen_reg_rtx (GET_MODE (reg)), REGNO (reg));
   SET_ADDRESSOF_DECL (r, decl);
+  /* If the original REG was a user-variable, then so is the REG whose
+     address is being taken.  */
+  REG_USERVAR_P (XEXP (r, 0)) = REG_USERVAR_P (reg);
 
   XEXP (reg, 0) = r;
   PUT_CODE (reg, MEM);

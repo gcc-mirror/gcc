@@ -1,3 +1,10 @@
+Wed Sep 30 10:09:39 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* function.c (gen_mem_addressof): If the address REG is
+	REG_USERVAR_P make the new REG be so also.
+	* loop.c (scan_loop): Apply DeMorgan's laws and add documentation
+	in an attempt to clarify slightly.
+
 Wed Sep 30 09:57:40 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* expr.c (expand_expr): Handle COMPONENT_REF, BIT_FIELD_REF ARRAY_REF
