@@ -3489,6 +3489,19 @@
       else
 	operands[1] = tem;
     }
+  else if (TARGET_BUILD_CONSTANTS
+	   && GET_CODE (operands[1]) == CONST_INT)
+    {
+#if HOST_BITS_PER_WIDE_INT == 64
+      tem = alpha_emit_set_long_const (operands[0], INTVAL (operands[1]));
+      if (rtx_equal_p (tem, operands[0]))
+	DONE;
+      else
+	operands[1] = tem;
+#else
+      abort();
+#endif
+    }
   else if (CONSTANT_P (operands[1]))
     {
       operands[1] = force_const_mem (DImode, operands[1]);
