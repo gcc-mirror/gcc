@@ -1,3 +1,8 @@
+2002-01-01  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* configure.in: Add support for NetBSD cross compiles.
+	* configure: Regenerate.
+
 2001-12-31  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/ext/iterator:  Add #include <bits/std_iterator.h>, tweak.
