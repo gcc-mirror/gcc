@@ -1,3 +1,8 @@
+2004-09-17  Vincent Celier  <celier@gnat.com>
+
+	* prj-attr-pm.ads, prj-attr-pm.adb: New files, to split some private
+	capabilities of the general project manager.
+
 2004-09-09  Vincent Celier  <celier@gnat.com>
 
 	* a-direct.ads: Add pragma Ada_05
