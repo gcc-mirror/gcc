@@ -58,17 +58,6 @@ package java.io;
  */
 public class PrintStream extends FilterOutputStream
 {
-  /*
-   * This class could easily have been extended to support character
-   * encodings.  In fact, PrintWriter is basically a superset of this
-   * except for the write() methods.  So let's do something tricky
-   * here and just redirect calls in this class to a hidden
-   * PrintWriter instance.  All the functionality goes there since
-   * that is the 'real' class.  The big win of doing this way is that
-   * the default character encoding is done automagicially by the
-   * PrintWriter tree!
-   */
-
   /**
    * This boolean indicates whether or not an error has ever occurred
    * on this stream.
@@ -155,7 +144,7 @@ public class PrintStream extends FilterOutputStream
   public boolean checkError ()
   {
     if (!closed)
-      pw.flush ();
+      flush ();
 
     return error_occurred | pw.checkError ();
   }
@@ -196,7 +185,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void print (boolean bool)
   {
-    pw.print (bool);
+    print (String.valueOf (bool));
   }
 
   /**
@@ -207,7 +196,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void print (int inum)
   {
-    pw.print (inum);
+    print (String.valueOf (inum));
   }
 
   /**
@@ -218,7 +207,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void print (long lnum)
   {
-    pw.print (lnum);
+    print (String.valueOf (lnum));
   }
 
   /**
@@ -229,7 +218,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void print (float fnum)
   {
-    pw.print (fnum);
+    print (String.valueOf (fnum));
   }
 
   /**
@@ -240,7 +229,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void print (double dnum)
   {
-    pw.print (dnum);
+    print (String.valueOf (dnum));
   }
 
   /**
@@ -281,12 +270,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void print (char ch)
   {
-    pw.print (ch);
-
-    if (auto_flush)
-      if ((ch == '\r')
-          || (ch == '\n'))
-        flush ();    
+    print (String.valueOf (ch));
   }
 
   /**
@@ -298,15 +282,6 @@ public class PrintStream extends FilterOutputStream
   public void print (char[] charArray)
   {
     pw.print (charArray);
-
-    if (auto_flush)
-      for (int i = 0; i < charArray.length; i++)
-        if ((charArray [i] == '\r')
-            || (charArray [i] == '\n'))
-          {
-            flush ();
-            break;
-          }
   }
 
   /**
@@ -316,7 +291,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void println ()
   {
-    pw.println ();
+    pw.println();
   }
 
   /**
@@ -330,7 +305,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void println (boolean bool)
   {
-    pw.println (bool);
+    println (String.valueOf (bool));
   }
 
   /**
@@ -343,7 +318,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void println (int inum)
   {
-    pw.println (inum);
+    println (String.valueOf (inum));
   }
 
   /**
@@ -356,7 +331,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void println (long lnum)
   {
-    pw.println (lnum);
+    println (String.valueOf (lnum));
   }
 
   /**
@@ -369,7 +344,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void println (float fnum)
   {
-    pw.println (fnum);
+    println (String.valueOf (fnum));
   }
 
   /**
@@ -382,7 +357,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void println (double dnum)
   {
-    pw.println (dnum);
+    println (String.valueOf (dnum));
   }
 
   /**
@@ -396,7 +371,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void println (Object obj)
   {
-    pw.println (obj);
+    println (String.valueOf (obj));
   }
 
   /**
@@ -422,7 +397,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void println (char ch)
   {
-    pw.println (ch);
+    println (String.valueOf (ch));
   }
 
   /**
@@ -447,21 +422,9 @@ public class PrintStream extends FilterOutputStream
    */
   public void write (int oneByte)
   {
-    // Sigh, we actually have to implement this method. Flush first so that
-    // things get written in the right order.
-    flush ();
-
-    try
-      {
-        out.write (oneByte);
-
-        if (auto_flush && oneByte == '\n')
-          flush ();
-      }
-    catch (IOException e)
-      {
-        setError ();
-      }
+    byte[] data = new byte [1];
+    data [0] = (byte) (oneByte & 0xff);
+    write (data, 0, 1);
   }
 
   /**

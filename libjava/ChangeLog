@@ -1,5 +1,16 @@
 2003-06-28  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/PrintStream.java
+	(checkError): Call flush() instead of direct flushing of the Writer
+	object.
+	(print): Call print(String) instead of direct print method of the
+	Writer Object.
+	(println): Call println(String) instead of direct println method of the
+	Writer Object.
+	(write): Simplified.
+
+2003-06-28  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/ServerSocket.java
 	(setChannel): New method.
 	* java/net/Socket.java
