@@ -1,3 +1,10 @@
+2002-05-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* fixinc/inclhack.def (windiss_math1): New fix.
+	(windiss_math2): Likewise.
+	(windiss_valist): Likewise.
+	* fixinc/fixincl.x: Regenerated.
+
 2002-05-07  Andreas Jaeger  <aj@suse.de>
 
 	* genautomata.c (output_internal_min_issue_delay_func): Add
