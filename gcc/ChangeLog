@@ -1,3 +1,7 @@
+Tue Oct 28 11:53:14 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* m68k.md (btst patterns): Add 5200 support.
+
 Tue Oct 28 11:58:40 1997  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* fold-const.c (fold): For ((a * C1) / C3) or (((a * C1) + C2) / C3)
