@@ -1,3 +1,14 @@
+2004-10-28  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* gcc.dg/visibility-[1-9a].c: Change to use scan-hidden instead of
+	scan-assembler.
+	* lib/scanasm.exp (hidden-scan-for): New proc.
+	(scan-hidden): Use hidden-scan-for instead of constructing the scan
+	string.
+	(scan-not-hidden): Likewise.
+	* lib/target-supports.exp (check_visibility_available): mach-o is
+	support too.
+
 2004-10-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17132

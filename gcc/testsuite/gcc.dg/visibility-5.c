@@ -2,7 +2,7 @@
    already had a forward declaration. */
 /* { dg-do compile } */
 /* { dg-require-visibility "" } */
-/* { dg-final { scan-assembler "\\.hidden.*foo" } } */
+/* { dg-final { scan-hidden "foo" } } */
 
 void foo();
 

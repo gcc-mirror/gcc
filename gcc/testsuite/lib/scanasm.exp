@@ -79,6 +79,21 @@ proc scan-assembler-not { args } {
     dg-scan "scan-assembler-not" 0 $testcase $output_file $args
 }
 
+# Return the scan for the assembly for hidden visibility. 
+
+proc hidden-scan-for { symbol } {
+
+    set objformat [gcc_target_object_format]
+
+    switch $objformat {
+        elf      { return "hidden\[ \t_\]*$symbol" }
+        mach-o   { return "private_extern\[ \t_\]*_?$symbol" }
+        default  { return "" }
+    }
+
+}
+
+
 # Check that a symbol is defined as a hidden symbol in the .s file
 # produced by the compiler.
 
@@ -87,7 +102,10 @@ proc scan-hidden { args } {
     set output_file "[file rootname [file tail $testcase]].s"
 
     set symbol [lindex $args 0]
-    set args [lreplace $args 0 0 "hidden\[ \t_\]*$symbol"]
+
+    set hidden_scan [hidden-scan-for $symbol]
+
+    set args [lreplace $args 0 0 "$hidden_scan"]
 
     dg-scan "scan-hidden" 1 $testcase $output_file $args
 }
@@ -100,7 +118,9 @@ proc scan-not-hidden { args } {
     set output_file "[file rootname [file tail $testcase]].s"
 
     set symbol [lindex $args 0]
-    set args [lreplace $args 0 0 "hidden\[ \t_\]*$symbol"]
+    set hidden_scan [hidden-scan-for symbol]
+
+    set args [lreplace $args 0 0 "$hidden_scan"]
 
     dg-scan "scan-not-hidden" 0 $testcase $output_file $args
 }
