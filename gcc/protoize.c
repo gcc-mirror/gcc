@@ -163,14 +163,14 @@ typedef char * const_pointer_type;
 /* Declaring stat or __flsbuf with a prototype
    causes conflicts with system headers on some systems.  */
 
-extern int creat ();
 #if 0 /* These conflict with stdio.h on some systems.  */
+extern int creat ();
 extern int fprintf (FILE *, const char *, ...);
 extern int printf (const char *, ...);
 extern int open (const char *, int, ...);
-#endif /* 0 */
 extern int read ();
 extern int write ();
+#endif /* 0 */
 extern int close ();
 extern int fflush ();
 extern int atoi ();

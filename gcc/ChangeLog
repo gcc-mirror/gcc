@@ -23,6 +23,8 @@ Fri Apr  3 17:02:13 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 Wed Apr  8 12:51:19 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* protoize.c (creat, read, write): Do not declare.
+
 	* jump.c (mark_jump_label): Record REG_LABEL notes for insns which
 	refer to the CODE_LABEL before a dispatch table.
 
