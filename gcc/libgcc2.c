@@ -42,7 +42,7 @@ Boston, MA 02111-1307, USA.  */
 #undef abort
 #endif
 
-#if (SUPPORTS_WEAK == 1) && defined (ASM_OUTPUT_DEF)
+#if (SUPPORTS_WEAK == 1) && (defined (ASM_OUTPUT_DEF) || defined (ASM_OUTPUT_WEAK_ALIAS))
 #define WEAK_ALIAS
 #endif
 
