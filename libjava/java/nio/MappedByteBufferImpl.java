@@ -39,73 +39,80 @@ exception statement from your version. */
 package java.nio;
 
 import java.io.IOException;
-import java.nio.channels.FileChannelImpl;
+import gnu.java.nio.channels.FileChannelImpl;
 import gnu.gcj.RawData;
 
-public class MappedByteBufferImpl extends MappedByteBuffer
+class MappedByteBufferImpl extends MappedByteBuffer
 {
   boolean readOnly;
-  RawData map_address;
-  public FileChannelImpl ch;
+  RawData address;
+
+  /** Posix uses this for the pointer returned by mmap;
+   * Win32 uses it for the pointer returned by MapViewOfFile. */
+  public RawData implPtr;
+  /** Posix uses this for the actual length passed to mmap;
+   * Win32 uses it for the pointer returned by CreateFileMapping. */
+  public long implLen;
   
-  public MappedByteBufferImpl (FileChannelImpl ch) throws IOException
+  public MappedByteBufferImpl (RawData address, int size, boolean readOnly)
+    throws IOException
   {
-    super ((int) ch.size (), (int) ch.size (), 0, -1);
-    
-    this.ch = ch;
-    map_address = ch.map_address;
-    long si = ch.size () / 1;
-    limit ((int) si);
-  }
-
-  public MappedByteBufferImpl (FileChannelImpl ch, int offset, int capacity, int limit, int position, int mark, boolean readOnly)
-  {
-    super (capacity, limit, position, mark);
-
-    this.ch = ch;
-    this.array_offset = offset;
+    super(size, size, 0, -1);
+    this.address = address;
     this.readOnly = readOnly;
   }
-  
+
   public boolean isReadOnly ()
   {
     return readOnly;
   }
   
-  public static byte getImpl (FileChannelImpl ch, int index,
-			      int limit, RawData map_address)
-  {
-    throw new Error ("Not implemented");
-  }
-  
-  public static void putImpl (FileChannelImpl ch, int index,
-			      int limit, byte value, RawData map_address)
-  {
-    throw new Error ("Not implemented");
-  }
-
   public byte get ()
   {
-    byte result = get (position());
-    position (position() + 1);
+    int pos = position();
+    if (pos >= limit())
+      throw new BufferUnderflowException();
+    byte result = DirectByteBufferImpl.getImpl(address, pos);
+    position (pos + 1);
     return result;
   }
 
   public ByteBuffer put (byte value)
   {
-    put (position(), value);
-    position (position() + 1);
+    int pos = position();
+    if (pos >= limit())
+      throw new BufferUnderflowException();
+    DirectByteBufferImpl.putImpl(address, pos, value);
+    position(pos + 1);
     return this;
   }
 
   public byte get (int index)
   {
-    return getImpl (ch, index, limit (), map_address);
+    if (index >= limit())
+      throw new BufferUnderflowException();
+    return DirectByteBufferImpl.getImpl(address, index);
+  }
+
+  public ByteBuffer get (byte[] dst, int offset, int length)
+  {
+    if (offset < 0 || length < 0 || offset + length > dst.length)
+      throw new IndexOutOfBoundsException ();
+    if (length > remaining())
+      throw new BufferUnderflowException();
+
+    int index = position();
+    DirectByteBufferImpl.getImpl(address, index, dst, offset, length);
+    position(index+length);
+
+    return this;
   }
 
   public ByteBuffer put (int index, byte value)
   {
-    putImpl (ch, index, limit (), value, map_address);
+    if (index >= limit())
+      throw new BufferUnderflowException();
+    DirectByteBufferImpl.putImpl(address, index, value);
     return this;
   }
 
@@ -129,17 +136,39 @@ public class MappedByteBufferImpl extends MappedByteBuffer
 
   public ByteBuffer slice ()
   {
-    throw new Error ("Not implemented");
+    int rem = remaining();
+    return new DirectByteBufferImpl (this,
+				     DirectByteBufferImpl
+				     .adjustAddress(address, position()),
+				     rem, rem, 0, isReadOnly ());
+  }
+
+  private ByteBuffer duplicate (boolean readOnly)
+  {
+    int pos = position();
+    reset();
+    int mark = position();
+    position(pos);
+    DirectByteBufferImpl result
+      = new DirectByteBufferImpl (this, address, capacity (), limit (),
+				  pos, readOnly);
+    if (mark != pos)
+      {
+	result.position(mark);
+	result.mark();
+	result.position(pos);
+      }
+    return result;
   }
 
   public ByteBuffer duplicate ()
   {
-    throw new Error ("Not implemented");
+    return duplicate(isReadOnly());
   }
 
   public ByteBuffer asReadOnlyBuffer ()
   {
-    throw new Error ("Not implemented");
+    return duplicate(true);
   }
 
   public CharBuffer asCharBuffer ()
@@ -303,4 +332,13 @@ public class MappedByteBufferImpl extends MappedByteBuffer
     ByteBufferHelper.putDouble (this, index, value, order());
     return this;
   }
+
+  // NOTE: In libgcj these methods are implemented in natFileChannelXxx.cc,
+  // because they're small, and to put them next to FileChannelImpl::mapImpl.
+  native void unmapImpl ();
+  native boolean isLoadedImpl ();
+    // FIXME: Try to load all pages into memory.
+  native void loadImpl();
+
+  native void forceImpl();
 }
