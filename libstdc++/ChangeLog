@@ -1,3 +1,10 @@
+Mon Aug  2 00:40:10 1999  Jeffrey A Law  (law@cygnus.com)
+
+	1999-07-16  Markus Gyger (mgyger@gmu.edu)
+	* stdexcepti.cc (__out_of_range): Use std:: qualifier for names 
+	in std.
+	(__length_error): Likewise.
+
 Wed Jul 28 21:39:31 PDT 1999 Jeff Law  (law@cygnus.com)
 
 	* gcc-2.95 Released.
