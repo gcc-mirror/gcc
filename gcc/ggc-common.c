@@ -580,12 +580,22 @@ ggc_alloc_string (contents, length)
       length = strlen (contents);
     }
 
-  string = (char *) ggc_alloc_obj (length + 1, 0);
+  string = (char *) ggc_alloc (length + 1);
   if (contents != NULL)
     memcpy (string, contents, length);
   string[length] = 0;
 
   return string;
+}
+
+/* Allocate a block of memory, then clear it.  */
+void *
+ggc_alloc_cleared (size)
+     size_t size;
+{
+  void *buf = ggc_alloc (size);
+  memset (buf, 0, size);
+  return buf;
 }
 
 /* Print statistics that are independent of the collector in use.  */

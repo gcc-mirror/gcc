@@ -1250,7 +1250,7 @@ add_candidate (candidates, fn, convs, viable)
      int viable;
 {
   struct z_candidate *cand
-    = (struct z_candidate *) ggc_alloc_obj (sizeof (struct z_candidate), 1);
+    = (struct z_candidate *) ggc_alloc_cleared (sizeof (struct z_candidate));
 
   cand->fn = fn;
   cand->convs = convs;

@@ -279,17 +279,11 @@ rtvec_alloc (n)
   if (ggc_p)
     rt = ggc_alloc_rtvec (n);
   else
-    {
-      int i;
-
-      rt = (rtvec) obstack_alloc (rtl_obstack,
-				  sizeof (struct rtvec_def)
-				  + (( n - 1) * sizeof (rtx)));
-
-      /* clear out the vector */
-      for (i = 0; i < n; i++)
-	rt->elem[i] = 0;
-    }
+    rt = (rtvec) obstack_alloc (rtl_obstack,
+				sizeof (struct rtvec_def)
+				+ ((n - 1) * sizeof (rtx)));
+  /* clear out the vector */
+  memset (&rt->elem[0], 0, n * sizeof (rtx));
 
   PUT_NUM_ELEM (rt, n);
   return rt;
@@ -303,39 +297,20 @@ rtx_alloc (code)
   RTX_CODE code;
 {
   rtx rt;
+  int n = GET_RTX_LENGTH (code);
 
   if (ggc_p)
-    rt = ggc_alloc_rtx (GET_RTX_LENGTH (code));
+    rt = ggc_alloc_rtx (n);
   else
-    {
-      register struct obstack *ob = rtl_obstack;
-      register int nelts = GET_RTX_LENGTH (code);
-      register int length = sizeof (struct rtx_def)
-	+ (nelts - 1) * sizeof (rtunion);
+    rt = (rtx) obstack_alloc (rtl_obstack,
+			      sizeof (struct rtx_def)
+			      + ((n - 1) * sizeof (rtunion)));
 
-      /* This function is called more than any other in GCC, so we
-	 manipulate the obstack directly.
+  /* We want to clear everything up to the FLD array.  Normally, this
+     is one int, but we don't want to assume that and it isn't very
+     portable anyway; this is.  */
 
-	 Even though rtx objects are word aligned, we may be sharing
-	 an obstack with tree nodes, which may have to be double-word
-	 aligned.  So align our length to the alignment mask in the
-	 obstack.  */
-
-      length = (length + ob->alignment_mask) & ~ ob->alignment_mask;
-
-      if (ob->chunk_limit - ob->next_free < length)
-	_obstack_newchunk (ob, length);
-      rt = (rtx)ob->object_base;
-      ob->next_free += length;
-      ob->object_base = ob->next_free;
-
-      /* We want to clear everything up to the FLD array.  Normally,
-	 this is one int, but we don't want to assume that and it
-	 isn't very portable anyway; this is.  */
-
-      memset (rt, 0, sizeof (struct rtx_def) - sizeof (rtunion));
-    }
-
+  memset (rt, 0, sizeof (struct rtx_def) - sizeof (rtunion));
   PUT_CODE (rt, code);
   return rt;
 }

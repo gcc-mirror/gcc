@@ -4125,6 +4125,7 @@ init_emit_once (line_numbers)
 
 	  bcopy ((char *) &u, (char *) &CONST_DOUBLE_LOW (tem), sizeof u);
 	  CONST_DOUBLE_MEM (tem) = cc0_rtx;
+	  CONST_DOUBLE_CHAIN (tem) = NULL_RTX;
 	  PUT_MODE (tem, mode);
 
 	  const_tiny_rtx[i][(int) mode] = tem;

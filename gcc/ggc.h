@@ -128,20 +128,19 @@ extern void ggc_pop_context PARAMS ((void));
 /* Allocation.  */
 
 /* The internal primitive.  */
-void *ggc_alloc_obj PARAMS ((size_t, int));
+void *ggc_alloc PARAMS ((size_t));
+/* Like ggc_alloc, but allocates cleared memory.  */
+void *ggc_alloc_cleared PARAMS ((size_t));
 
-#define ggc_alloc_rtx(NSLOTS)						     \
-  ((struct rtx_def *) ggc_alloc_obj (sizeof (struct rtx_def)		     \
-				     + ((NSLOTS) - 1) * sizeof (rtunion), 1))
+#define ggc_alloc_rtx(NSLOTS)						  \
+  ((struct rtx_def *) ggc_alloc (sizeof (struct rtx_def)		  \
+				 + ((NSLOTS) - 1) * sizeof (rtunion)))
 
 #define ggc_alloc_rtvec(NELT)						  \
-  ((struct rtvec_def *) ggc_alloc_obj (sizeof (struct rtvec_def)	  \
-				       + ((NELT) - 1) * sizeof (rtx), 1))
+  ((struct rtvec_def *) ggc_alloc (sizeof (struct rtvec_def)		  \
+				   + ((NELT) - 1) * sizeof (rtx)))
 
-#define ggc_alloc_tree(LENGTH)				\
-  ((union tree_node *) ggc_alloc_obj ((LENGTH), 1))
-
-#define ggc_alloc(SIZE)  ggc_alloc_obj((SIZE), 0)
+#define ggc_alloc_tree(LENGTH) ((union tree_node *) ggc_alloc (LENGTH))
 
 char *ggc_alloc_string PARAMS ((const char *contents, int length));
 

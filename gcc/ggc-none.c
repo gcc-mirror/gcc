@@ -36,12 +36,8 @@
 int ggc_p = 0;
 
 void *
-ggc_alloc_obj (size, zero)
+ggc_alloc (size)
      size_t size;
-     int zero;
 {
-  void *p = xmalloc (size);
-  if (zero)
-    memset (p, 0, size);
-  return p;
+  return xmalloc (size);
 }

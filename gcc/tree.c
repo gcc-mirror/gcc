@@ -1041,10 +1041,9 @@ make_node (code)
   if (ggc_p)
     t = ggc_alloc_tree (length);
   else
-    {
-      t = (tree) obstack_alloc (obstack, length);
-      memset ((PTR) t, 0, length);
-    }
+    t = (tree) obstack_alloc (obstack, length);
+
+  memset ((PTR) t, 0, length);
 
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int)kind]++;
@@ -1604,11 +1603,9 @@ make_tree_vec (len)
   if (ggc_p)
     t = ggc_alloc_tree (length);
   else
-    {
-      t = (tree) obstack_alloc (obstack, length);
-      bzero ((PTR) t, length);
-    }
+    t = (tree) obstack_alloc (obstack, length);
 
+  memset ((PTR) t, 0, length);
   TREE_SET_CODE (t, TREE_VEC);
   TREE_VEC_LENGTH (t) = len;
   TREE_SET_PERMANENT (t);
@@ -2164,10 +2161,9 @@ tree_cons (purpose, value, chain)
   if (ggc_p)
     node = ggc_alloc_tree (sizeof (struct tree_list));
   else
-    {
-      node = (tree) obstack_alloc (current_obstack, sizeof (struct tree_list));
-      memset (node, 0, sizeof (struct tree_common));
-    }
+    node = (tree) obstack_alloc (current_obstack, sizeof (struct tree_list));
+
+  memset (node, 0, sizeof (struct tree_common));
 
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int) x_kind]++;
@@ -3384,20 +3380,20 @@ build1 (code, type, node)
   if (ggc_p)
     t = ggc_alloc_tree (length);
   else
-    {
-      t = (tree) obstack_alloc (obstack, length);
-      memset ((PTR) t, 0, length);
-    }
+    t = (tree) obstack_alloc (obstack, length);
+
+  memset ((PTR) t, 0, sizeof (struct tree_common));
 
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int)kind]++;
   tree_node_sizes[(int)kind] += length;
 #endif
 
-  TREE_TYPE (t) = type;
   TREE_SET_CODE (t, code);
   TREE_SET_PERMANENT (t);
 
+  TREE_TYPE (t) = type;
+  TREE_COMPLEXITY (t) = 0;
   TREE_OPERAND (t, 0) = node;
   if (node && first_rtl_op (code) != 0 && TREE_SIDE_EFFECTS (node))
     TREE_SIDE_EFFECTS (t) = 1;
@@ -5599,7 +5595,7 @@ tree_check_failed (node, code, file, line, function)
 void
 tree_class_check_failed (node, cl, file, line, function)
      const tree node;
-     char cl;
+     int cl;
      const char *file;
      int line;
      const char *function;

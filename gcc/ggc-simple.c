@@ -182,9 +182,8 @@ tree_lookup (v)
 /* Alloc SIZE bytes of GC'able memory.  If ZERO, clear the memory.  */
 
 void *
-ggc_alloc_obj (size, zero)
+ggc_alloc (size)
      size_t size;
-     int zero;
 {
   struct ggc_mem *x;
 
@@ -195,11 +194,8 @@ ggc_alloc_obj (size, zero)
   x->context = G.context;
   x->size = size;
 
-  if (zero)
-    memset (&x->u, 0, size);
 #ifdef GGC_POISON
-  else
-    memset (&x->u, 0xaf, size);
+  memset (&x->u, 0xaf, size);
 #endif
 
   tree_insert (x);

@@ -4776,7 +4776,7 @@ retrofit_lang_decl (t)
   else
     size = sizeof (struct lang_decl_flags);
 
-  ld = (struct lang_decl *) ggc_alloc_obj (size, 1);
+  ld = (struct lang_decl *) ggc_alloc_cleared (size);
 
   DECL_LANG_SPECIFIC (t) = ld;
   if (current_lang_name == lang_name_cplusplus)
