@@ -13481,7 +13481,7 @@ store_return_init (decl)
        function definition.  (This processing will have taken place
        after the class definition is complete.)  */
 
-void
+tree
 finish_function (lineno, flags)
      int lineno;
      int flags;
@@ -13500,7 +13500,7 @@ finish_function (lineno, flags)
   /* When we get some parse errors, we can end up without a
      current_function_decl, so cope.  */
   if (fndecl == NULL_TREE)
-    return;
+    return error_mark_node;
 
   nested = function_depth > 1;
   fntype = TREE_TYPE (fndecl);
@@ -14083,6 +14083,7 @@ finish_function (lineno, flags)
   if (DECL_STATIC_DESTRUCTOR (fndecl))
     static_dtors = tree_cons (NULL_TREE, fndecl, static_dtors);
 
+  /* Clean up.  */
   if (! nested)
     {
       /* Let the error reporting routines know that we're outside a
@@ -14090,6 +14091,8 @@ finish_function (lineno, flags)
          pop_cp_function_context and then reset via pop_function_context.  */
       current_function_decl = NULL_TREE;
     }
+
+  return fndecl;
 }
 
 /* Create the FUNCTION_DECL for a function definition.

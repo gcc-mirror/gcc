@@ -1652,6 +1652,7 @@ search_tree (t, func)
     case COMPOUND_EXPR:
     case MODIFY_EXPR:
     case INIT_EXPR:
+    case OFFSET_REF:
       TRY (TREE_OPERAND (t, 0));
       TRY (TREE_OPERAND (t, 1));
       break;
@@ -1666,6 +1667,7 @@ search_tree (t, func)
     case THROW_EXPR:
     case EXIT_EXPR:
     case LOOP_EXPR:
+    case BIT_FIELD_REF:
       TRY (TREE_OPERAND (t, 0));
       break;
 
@@ -1917,6 +1919,7 @@ mapcar (t, func)
     case COMPOUND_EXPR:
     case MODIFY_EXPR:
     case INIT_EXPR:
+    case OFFSET_REF:
       t = copy_node (t);
       TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
       TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
@@ -1999,6 +2002,14 @@ mapcar (t, func)
       TREE_OPERAND (t, 2) = mapcar (TREE_OPERAND (t, 2), func);
       return t;
 
+    case BIT_FIELD_REF:
+      t = copy_node (t);
+      TREE_TYPE (t) = mapcar (TREE_TYPE (t), func);
+      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
+      TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
+      TREE_OPERAND (t, 2) = mapcar (TREE_OPERAND (t, 2), func);
+      return t;
+      
     case LOOKUP_EXPR:
     case EXIT_EXPR:
     case LOOP_EXPR:
