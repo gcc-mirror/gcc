@@ -1,3 +1,8 @@
+2004-06-06  Sean McNeil  <sean@mcneil.com>
+
+	* configure.ac: Add x86_64-*-freebsd* support.
+	* configure: Regenerate.
+
 2004-04-26  Joe Buck <jbuck@welsh-buck.org>
 
 	Bug 15093
