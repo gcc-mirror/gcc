@@ -1341,6 +1341,13 @@ d_identifier (di, len)
   name = d_str (di);
   d_advance (di, len);
 
+  /* A Java mangled name may have a trailing '$' if it is a C++
+     keyword.  This '$' is not included in the length count.  We just
+     ignore the '$'.  */
+  if ((di->options & DMGL_JAVA) != 0
+      && d_peek_char (di) == '$')
+    d_advance (di, 1);
+
   /* Look for something which looks like a gcc encoding of an
      anonymous namespace, and replace it with a more user friendly
      name.  */
