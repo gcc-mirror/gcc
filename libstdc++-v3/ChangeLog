@@ -1,3 +1,7 @@
+2001-04-01  Benjamin Kosnik  <bkoz@codesourcery.com>
+
+	* docs/html/configopts.html: Add --enable-sjlj-exceptions docs.
+
 2001-04-01  Zack Weinberg  <zackw@stanford.edu>
 
 	* tests_flags.in: Use test a = b, not test a == b which is not
