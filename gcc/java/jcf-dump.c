@@ -976,7 +976,9 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
 /* Print operand for invoke opcodes. */
 #define INVOKE(OPERAND_TYPE, OPERAND_VALUE) \
   fputc (' ', out); print_constant_ref (out, jcf, IMMEDIATE_u2);\
-  PC += 2 * OPERAND_VALUE /* for invokeinterface */;
+  if (OPERAND_VALUE) /* for invokeinterface */ \
+  { int nargs = IMMEDIATE_u1;  PC++; \
+    fprintf (out, " nargs:%d", nargs); }
 
 #define OBJECT(OPERAND_TYPE, OPERAND_VALUE) \
   fputc (' ', out); print_constant_ref (out, jcf, IMMEDIATE_u2);
