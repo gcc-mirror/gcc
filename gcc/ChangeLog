@@ -1,3 +1,13 @@
+Fri Mar 16 14:47:57 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_expand_fp_movcc): Do not attempt to construct
+	SSE based conditional moves on LTGT/UNEQ conditions;
+	Canonicalize EQ to NE.
+	* i386.md (sse_mov?fcc): Disallow EQ and NE in IEEE mode.
+	(sse_mov?fcc_ne): New.
+
+	* i386-protos.h (sign_extended_value, zero_extended_value): Declare.
+
 2001-03-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.c (sh_expand_prologue): Insns that set up the PIC
