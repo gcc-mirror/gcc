@@ -1,3 +1,8 @@
+2002-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (s-mlib): Handle --disable-multilib by separate
+	genmultilib invocation.
+
 2002-04-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (CUMULATIVE_ARGS): Rename fp_regs to num_fprs
