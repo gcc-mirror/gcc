@@ -181,6 +181,25 @@ Here are the rules for making fixes in the inclhack.def file:
         replaced.  You may delete text by supplying an empty string for
         the format (the first "c_fix_arg").
 
+	Note: In general, a format c_fix may be used in place of one
+	sed expression.  However, it will need to be rewritten by
+	hand.  For example:
+
+	sed = 's@^#if __GNUC__ == 2 && __GNUC_MINOR__ >= 7$'
+	       '@& || __GNUC__ >= 3@';
+
+	may be rewritten using a format c_fix as:
+
+	c_fix     = format;
+	c_fix_arg = '%0 || __GNUC__ >= 3';
+	c_fix_arg = '^#if __GNUC__ == 2 && __GNUC_MINOR__ >= 7$';
+
+	Multiple sed substitution expressions probably ought to remain sed
+	expressions in order to maintain clarity.  Also note that if the
+	second sed expression is the same as the first select expression,
+	then you may omit the second c_fix_arg.  The select expression will
+	be picked up and used in its absence.
+
 EXAMPLES OF FIXES:
 ==================
 
