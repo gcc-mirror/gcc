@@ -1,3 +1,7 @@
+2003-07-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/inherit/access5.C: New test.
+
 2003-07-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/11513

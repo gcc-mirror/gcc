@@ -1,3 +1,12 @@
+2003-07-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (convert_to_base_statically): Declare.
+	* call.c (build_special_member_call): Convert INSTANCE to the base
+	type.
+	* class.c (convert_to_base_statically): New method.
+	* init.c (construct_virtual_base): Use it.
+	* method.c (do_build_assign_ref): Fix typo in comment.
+
 2003-07-24  Jason Merrill  <jason@redhat.com>
 
 	* decl.c: Just set truthvalue_* to boolean_*.

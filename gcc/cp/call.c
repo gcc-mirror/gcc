@@ -4747,11 +4747,23 @@ build_special_member_call (tree instance, tree name, tree args,
       TREE_TYPE (instance) = build_pointer_type (class_type);
       instance = build1 (INDIRECT_REF, class_type, instance);
     }
-  else if (name == complete_dtor_identifier 
-	   || name == base_dtor_identifier
-	   || name == deleting_dtor_identifier)
-    my_friendly_assert (args == NULL_TREE, 20020712);
+  else
+    {
+      if (name == complete_dtor_identifier 
+	  || name == base_dtor_identifier
+	  || name == deleting_dtor_identifier)
+	my_friendly_assert (args == NULL_TREE, 20020712);
 
+      /* We must perform the conversion here so that we do not
+	 subsequently check to see whether BINFO is an accessible
+	 base.  (It is OK for a constructor to call a constructor in
+	 an inaccessible base as long as the constructor being called
+	 is accessible.)  */
+      if (!same_type_ignoring_top_level_qualifiers_p 
+	  (TREE_TYPE (instance), BINFO_TYPE (binfo)))
+	instance = convert_to_base_statically (instance, binfo);
+    }
+  
   my_friendly_assert (instance != NULL_TREE, 20020712);
 
   /* Resolve the name.  */
@@ -4787,7 +4799,9 @@ build_special_member_call (tree instance, tree name, tree args,
       args = tree_cons (NULL_TREE, sub_vtt, args);
     }
 
-  return build_new_method_call (instance, fns, args, binfo, flags);
+  return build_new_method_call (instance, fns, args, 
+				TYPE_BINFO (BINFO_TYPE (binfo)), 
+				flags);
 }
 
 /* Return the NAME, as a C string.  The NAME indicates a function that
