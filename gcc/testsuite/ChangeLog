@@ -1,3 +1,8 @@
+1999-03-07  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.f-torture/compile/960317-1.f: Moved from being
+	in execute/.  (Somehow I didn't notice "SUBROUTINE...".)
+
 1999-03-06  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/execute/960317-1.f: New (old) test.
