@@ -1,3 +1,8 @@
+2004-04-22  Dalibor Topic  <robilad@kaffe.org>
+
+	* javax/accessibility/AccessibleText.java:
+	Cleaned up imports.
+
 2004-04-22  Jeroen Frijters <jeroen@sumatra.nl>
 
 	* java/net/URLStreamHandler.java
