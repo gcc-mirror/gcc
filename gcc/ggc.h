@@ -245,9 +245,6 @@ extern void dump_ggc_loc_statistics (void);
 #define GGC_NEWVAR(T, S)	((T *) ggc_alloc ((S)))
 #define GGC_CNEWVAR(T, S)	((T *) ggc_alloc_cleared ((S)))
 
-#define ggc_alloc_rtx(CODE)                    \
-  ((rtx) ggc_alloc_typed (gt_ggc_e_7rtx_def, RTX_SIZE (CODE)))
-
 #define ggc_alloc_rtvec(NELT)						  \
   ((rtvec) ggc_alloc_typed (gt_ggc_e_9rtvec_def, sizeof (struct rtvec_def) \
 		      + ((NELT) - 1) * sizeof (rtx)))

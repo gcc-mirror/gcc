@@ -1,3 +1,8 @@
+2004-09-01  Dan Nicolaescu  <dann@ics.uci.edu>
+
+	* gengenrtl.c (gendef): Use rtx_alloc, don't do PUT_CODE.
+	* ggc.h (ggc_alloc_rtx): Delete.
+
 2004-09-01  Roger Sayle  <roger@eyesopen.com>
 
 	* expmed.c (enum alg_code): Remove long unused enumeration values.
