@@ -51,7 +51,10 @@ for TYPE in dev_t clock_t fpos_t gid_t ino_t mode_t nlink_t off_t pid_t size_t s
             eval "VALUE='`${SED} -e 's| *$||' -e '2,$d' <TMP`'"
 	    # Unless VALUE contains a blank, look for a typedef for it
 	    # in turn (this could be a loop, but that would be over-kill).
-	    if echo $VALUE | grep " " >/dev/null ; then true
+	    # Ensure $VALUE is double quoted to protect cases where it
+	    # contains an asterisk and would cause filename expansion.
+	    # E.g. when va_list is "char *".
+	    if echo "$VALUE" | grep " " >/dev/null ; then true
 	    else
 		rm -f TMP
 		${SED} -n -e "s|.*typedef[ 	][ 	]*\(.*[^a-zA-Z0-9_]\)${VALUE}[ 	]*;.*|\1|w TMP" <st-dummy.out>/dev/null
