@@ -227,7 +227,7 @@ do { union { float f; long l;} tem;			\
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "%s %u\n", SPACE_ASM_OP, (SIZE))
-
+
 /* Translate Motorola opcodes such as `jbeq' into SGS opcodes such
    as `beq.w'.
    Delete the `e' in `move...' and `fmove'.
@@ -236,18 +236,93 @@ do { union { float f; long l;} tem;			\
    Change `fsne' to `fsneq'
    Change `divsl' to `tdivs' (32/32 -> 32r:32q)
    Change `divul' to `tdivu' (32/32 -> 32r:32q)
+   Optionally change swap to swap.w.
    */
+
+#ifdef SGS_SWAP_W
+#define ASM_OUTPUT_OPCODE(FILE, PTR)			\
+{							\
+  extern int flag_pic;					\
+  if (!strncmp ((PTR), "jbsr", 4))			\
+    { if (flag_pic)					\
+        fprintf ((FILE), "bsr");			\
+      else						\
+        fprintf ((FILE), "jsr");			\
+    (PTR) += 4; }					\
+  else if ((PTR)[0] == 'j' && (PTR)[1] == 'b')		\
+    { ++(PTR);						\
+      while (*(PTR) != ' ')				\
+	{ putc (*(PTR), (FILE)); ++(PTR); }		\
+      fprintf ((FILE), ".w"); }				\
+  else if ((PTR)[0] == 's')				\
+    {							\
+      if (!strncmp ((PTR), "swap", 4))			\
+	{ fprintf ((FILE), "swap.w"); (PTR) += 4; }	\
+    }							\
+/* FMOVE ==> FMOV, (and F%& F%$ translations) */	\
+  else if ((PTR)[0] == 'f')				\
+    {							\
+      if (!strncmp ((PTR), "fmove", 5))			\
+	{ fprintf ((FILE), "fmov"); (PTR) += 5; }	\
+      else if (!strncmp ((PTR), "ftst", 4))		\
+	{ fprintf ((FILE), "ftest"); (PTR) += 4; }	\
+      else if (!strncmp ((PTR), "fbne", 4))		\
+	{ fprintf ((FILE), "fbneq"); (PTR) += 4; }	\
+      else if (!strncmp ((PTR), "fsne", 4))		\
+	{ fprintf ((FILE), "fsneq"); (PTR) += 4; }	\
+      else if (!strncmp ((PTR), "f%$move", 7))		\
+	{ (PTR) += 7;					\
+	  if (TARGET_68040_ONLY)			\
+	    fprintf ((FILE), "fsmov");			\
+	  else fprintf ((FILE), "fmov"); }		\
+      else if (!strncmp ((PTR), "f%&move", 7))		\
+	{ (PTR) += 7;					\
+	  if (TARGET_68040_ONLY)			\
+	    fprintf ((FILE), "fdmov");			\
+	  else fprintf ((FILE), "fmov"); }		\
+    }							\
+/* MOVE, MOVEA, MOVEQ, MOVEC ==> MOV	*/		\
+  else if ((PTR)[0] == 'm' && (PTR)[1] == 'o'		\
+	   && (PTR)[2] == 'v' && (PTR)[3] == 'e')	\
+    { fprintf ((FILE), "mov"); (PTR) += 4;		\
+       if ((PTR)[0] == 'q' || (PTR)[0] == 'a'		\
+	   || (PTR)[0] == 'c') (PTR)++; }		\
+/* SUB, SUBQ, SUBA, SUBI ==> SUB */			\
+  else if ((PTR)[0] == 's' && (PTR)[1] == 'u' 		\
+	   && (PTR)[2] == 'b')				\
+    { fprintf ((FILE), "sub"); (PTR) += 3;		\
+       if ((PTR)[0] == 'q' || (PTR)[0] == 'i'	 	\
+	   || (PTR)[0] == 'a') (PTR)++; }		\
+/* CMP, CMPA, CMPI, CMPM ==> CMP	*/		\
+  else if ((PTR)[0] == 'c' && (PTR)[1] == 'm'		\
+	   && (PTR)[2] == 'p')				\
+    { fprintf ((FILE), "cmp"); (PTR) += 3;		\
+       if ((PTR)[0] == 'a' || (PTR)[0] == 'i'	 	\
+	   || (PTR)[0] == 'm') (PTR)++; }		\
+/* DIVSL ==> TDIVS */					\
+  else if ((PTR)[0] == 'd' && (PTR)[1] == 'i'		\
+	   && (PTR)[2] == 'v' && (PTR)[3] == 's'	\
+	   && (PTR)[4] == 'l')				\
+    { fprintf ((FILE), "tdivs"); (PTR) += 5; }		\
+/* DIVUL ==> TDIVU */					\
+  else if ((PTR)[0] == 'd' && (PTR)[1] == 'i'		\
+	   && (PTR)[2] == 'v' && (PTR)[3] == 'u'	\
+	   && (PTR)[4] == 'l')				\
+    { fprintf ((FILE), "tdivu"); (PTR) += 5; }		\
+}
+
+#else /* not SGS_SWAP_W */
 
 #define ASM_OUTPUT_OPCODE(FILE, PTR)			\
 {							\
   extern int flag_pic;					\
-  if (!strncmp ((PTR), "jbsr", 4)) {			\
-    if (flag_pic)					\
-      fprintf ((FILE), "bsr");				\
-    else						\
-      fprintf ((FILE),"jsr");				\
-    (PTR) += 4;						\
-  } else if ((PTR)[0] == 'j' && (PTR)[1] == 'b')	\
+  if (!strncmp ((PTR), "jbsr", 4))			\
+    { if (flag_pic)					\
+        fprintf ((FILE), "bsr");			\
+      else						\
+        fprintf ((FILE), "jsr");			\
+    (PTR) += 4; }					\
+  else if ((PTR)[0] == 'j' && (PTR)[1] == 'b')		\
     { ++(PTR);						\
       while (*(PTR) != ' ')				\
 	{ putc (*(PTR), (FILE)); ++(PTR); }		\
@@ -278,20 +353,20 @@ do { union { float f; long l;} tem;			\
   else if ((PTR)[0] == 'm' && (PTR)[1] == 'o'		\
 	   && (PTR)[2] == 'v' && (PTR)[3] == 'e')	\
     { fprintf ((FILE), "mov"); (PTR) += 4;		\
-       if ((PTR)[0] == 'q' || (PTR)[0] == 'a' ||	\
-	   (PTR)[0] == 'c') (PTR)++; }			\
+       if ((PTR)[0] == 'q' || (PTR)[0] == 'a'		\
+	   || (PTR)[0] == 'c') (PTR)++; }		\
 /* SUB, SUBQ, SUBA, SUBI ==> SUB */			\
   else if ((PTR)[0] == 's' && (PTR)[1] == 'u' 		\
 	   && (PTR)[2] == 'b')				\
     { fprintf ((FILE), "sub"); (PTR) += 3;		\
-       if ((PTR)[0] == 'q' || (PTR)[0] == 'i' || 	\
-	   (PTR)[0] == 'a') (PTR)++; }			\
+       if ((PTR)[0] == 'q' || (PTR)[0] == 'i'	 	\
+	   || (PTR)[0] == 'a') (PTR)++; }		\
 /* CMP, CMPA, CMPI, CMPM ==> CMP	*/		\
   else if ((PTR)[0] == 'c' && (PTR)[1] == 'm'		\
 	   && (PTR)[2] == 'p')				\
     { fprintf ((FILE), "cmp"); (PTR) += 3;		\
-       if ((PTR)[0] == 'a' || (PTR)[0] == 'i' || 	\
-	   (PTR)[0] == 'm') (PTR)++; }			\
+       if ((PTR)[0] == 'a' || (PTR)[0] == 'i'	 	\
+	   || (PTR)[0] == 'm') (PTR)++; }		\
 /* DIVSL ==> TDIVS */					\
   else if ((PTR)[0] == 'd' && (PTR)[1] == 'i'		\
 	   && (PTR)[2] == 'v' && (PTR)[3] == 's'	\
@@ -304,6 +379,8 @@ do { union { float f; long l;} tem;			\
     { fprintf ((FILE), "tdivu"); (PTR) += 5; }		\
 }
 
+#endif /* not SGS_SWAP_W */
+
 /* This macro outputs the label at the start of a switch table.  The
    ".swbeg <N>" is an assembler directive that causes the switch table
    size to be inserted into the object code so that disassemblers, for
