@@ -1,3 +1,10 @@
+2004-04-12  Paolo Carlini <pcarlini@suse.de>
+
+	* config/locale/gnu/numeric_members.cc
+	(numpunct<wchar_t>::_M_initialize_numpunct): No need to wrap
+	in __uselocale, since btowc is called for chars belonging to
+	the basic character set.
+
 2004-04-09  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/22_locale/messages/members/char/1.cc: Remove junk.
