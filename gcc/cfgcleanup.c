@@ -190,8 +190,8 @@ try_simplify_condjump (cbranch_block)
 
 static bool
 mark_effect (exp, nonequal)
-  rtx exp;
-  regset nonequal;
+     rtx exp;
+     regset nonequal;
 {
   int regno;
   rtx dest;
@@ -199,41 +199,41 @@ mark_effect (exp, nonequal)
     {
       /* In case we do clobber the register, mark it as equal, as we know the
          value is dead so it don't have to match.  */
-      case CLOBBER:
-	if (REG_P (XEXP (exp, 0)))
-	  {
-	    dest = XEXP (exp, 0);
-	    regno = REGNO (dest);
-	    CLEAR_REGNO_REG_SET (nonequal, regno);
-	    if (regno < FIRST_PSEUDO_REGISTER)
-	      {
-		int n = HARD_REGNO_NREGS (regno, GET_MODE (dest));
-		while (--n > 0)
-		  CLEAR_REGNO_REG_SET (nonequal, regno + n);
-	      }
-	  }
-	return false;
+    case CLOBBER:
+      if (REG_P (XEXP (exp, 0)))
+	{
+	  dest = XEXP (exp, 0);
+	  regno = REGNO (dest);
+	  CLEAR_REGNO_REG_SET (nonequal, regno);
+	  if (regno < FIRST_PSEUDO_REGISTER)
+	    {
+	      int n = HARD_REGNO_NREGS (regno, GET_MODE (dest));
+	      while (--n > 0)
+		CLEAR_REGNO_REG_SET (nonequal, regno + n);
+	    }
+	}
+      return false;
 
-      case SET:
-	if (rtx_equal_for_cselib_p (SET_DEST (exp), SET_SRC (exp)))
-	  return false;
-	dest = SET_DEST (exp);
-	if (dest == pc_rtx)
-	  return false;
-	if (!REG_P (dest))
-	  return true;
-	regno = REGNO (dest);
-	SET_REGNO_REG_SET (nonequal, regno);
-	if (regno < FIRST_PSEUDO_REGISTER)
-	  {
-	    int n = HARD_REGNO_NREGS (regno, GET_MODE (dest));
-	    while (--n > 0)
-	      SET_REGNO_REG_SET (nonequal, regno + n);
-	  }
+    case SET:
+      if (rtx_equal_for_cselib_p (SET_DEST (exp), SET_SRC (exp)))
 	return false;
+      dest = SET_DEST (exp);
+      if (dest == pc_rtx)
+	return false;
+      if (!REG_P (dest))
+	return true;
+      regno = REGNO (dest);
+      SET_REGNO_REG_SET (nonequal, regno);
+      if (regno < FIRST_PSEUDO_REGISTER)
+	{
+	  int n = HARD_REGNO_NREGS (regno, GET_MODE (dest));
+	  while (--n > 0)
+	    SET_REGNO_REG_SET (nonequal, regno + n);
+	}
+      return false;
 
-      default:
-	return false;
+    default:
+      return false;
     }
 }
 
@@ -295,7 +295,7 @@ thread_jump (mode, e, b)
   /* Second branch must end with onlyjump, as we will eliminate the jump.  */
   if (!any_condjump_p (e->src->end))
     return NULL;
-  
+
   if (!any_condjump_p (b->end) || !onlyjump_p (b->end))
     {
       BB_SET_FLAG (b, BB_NONTHREADABLE_BLOCK);
@@ -357,22 +357,22 @@ thread_jump (mode, e, b)
 
   for (insn = NEXT_INSN (b->head); insn != NEXT_INSN (b->end) && !failed;
        insn = NEXT_INSN (insn))
-  {
-    if (INSN_P (insn))
-      {
-        rtx pat = PATTERN (insn);
+    {
+      if (INSN_P (insn))
+	{
+	  rtx pat = PATTERN (insn);
 
-        if (GET_CODE (pat) == PARALLEL)
-	  {
-	    for (i = 0; i < XVECLEN (pat, 0); i++)
-	      failed |= mark_effect (XVECEXP (pat, 0, i), nonequal);
-	  }
-	else
-	  failed |= mark_effect (pat, nonequal);
-      }
+	  if (GET_CODE (pat) == PARALLEL)
+	    {
+	      for (i = 0; i < XVECLEN (pat, 0); i++)
+		failed |= mark_effect (XVECEXP (pat, 0, i), nonequal);
+	    }
+	  else
+	    failed |= mark_effect (pat, nonequal);
+	}
 
-    cselib_process_insn (insn);
-  }
+      cselib_process_insn (insn);
+    }
 
   /* Later we should clear nonequal of dead registers.  So far we don't
      have life information in cfg_cleanup.  */
@@ -504,7 +504,7 @@ try_forward_edges (mode, b)
 	  if (mode & CLEANUP_PRE_LOOP)
 	    {
 	      rtx insn = (target->succ->flags & EDGE_FALLTHRU
-		          ? target->head : prev_nonnote_insn (target->end));
+			  ? target->head : prev_nonnote_insn (target->end));
 
 	      if (GET_CODE (insn) != NOTE)
 		insn = NEXT_INSN (insn);
@@ -522,7 +522,7 @@ try_forward_edges (mode, b)
 	  counter++;
 	  target = new_target;
 	  threaded |= new_target_threaded;
-  	}
+	}
 
       if (counter >= n_basic_blocks)
 	{
@@ -545,7 +545,7 @@ try_forward_edges (mode, b)
 	    {
 	      notice_new_block (redirect_edge_and_branch_force (e, target));
 	      if (rtl_dump_file)
-	        fprintf (rtl_dump_file, "Conditionals threaded.\n");
+		fprintf (rtl_dump_file, "Conditionals threaded.\n");
 	    }
 	  else if (!redirect_edge_and_branch (e, target))
 	    {
@@ -614,7 +614,7 @@ try_forward_edges (mode, b)
 		      && first == threaded_edges [n]->src)
 		    n++;
 		  t = first->succ;
-		 }
+		}
 
 	      t->count -= edge_count;
 	      if (t->count < 0)
@@ -812,7 +812,7 @@ merge_blocks (e, b, c, mode)
 
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, "Merged %d and %d without moving.\n",
-                 b_index, c_index);
+		 b_index, c_index);
 
       return true;
     }
@@ -886,8 +886,8 @@ merge_blocks (e, b, c, mode)
 
 static bool
 insns_match_p (mode, i1, i2)
-	int mode ATTRIBUTE_UNUSED;
-	rtx i1, i2;
+     int mode ATTRIBUTE_UNUSED;
+     rtx i1, i2;
 {
   rtx p1, p2;
 
@@ -1057,10 +1057,10 @@ flow_find_cross_jump (mode, bb1, bb2, f1, f2)
 	      remove_note (i1, equiv1);
 	      remove_note (i2, equiv2);
 	    }
-	     
+
 	  afterlast1 = last1, afterlast2 = last2;
 	  last1 = i1, last2 = i2;
-          ninsns++;
+	  ninsns++;
 	}
 
       i1 = PREV_INSN (i1);
@@ -1135,7 +1135,7 @@ outgoing_edges_match (mode, bb1, bb2)
       enum rtx_code code1, code2;
 
       if (!bb2->succ
-          || !bb2->succ->succ_next
+	  || !bb2->succ->succ_next
 	  || bb2->succ->succ_next->succ_next
 	  || !any_condjump_p (bb2->end)
 	  || !onlyjump_p (bb2->end))
@@ -1284,9 +1284,9 @@ outgoing_edges_match (mode, bb1, bb2)
   if (fallthru1)
     {
       basic_block d1 = (forwarder_block_p (fallthru1->dest)
-	                ? fallthru1->dest->succ->dest: fallthru1->dest);
+			? fallthru1->dest->succ->dest: fallthru1->dest);
       basic_block d2 = (forwarder_block_p (fallthru2->dest)
-	                ? fallthru2->dest->succ->dest: fallthru2->dest);
+			? fallthru2->dest->succ->dest: fallthru2->dest);
 
       if (d1 != d2)
 	return false;
@@ -1759,7 +1759,7 @@ delete_unreachable_blocks ()
   find_unreachable_blocks ();
 
   /* Delete all unreachable basic blocks.  Do compaction concurrently,
-     as otherwise we can wind up with O(N^2) behaviour here when we 
+     as otherwise we can wind up with O(N^2) behaviour here when we
      have oodles of dead code.  */
 
   for (i = j = 0; i < n_basic_blocks; ++i)

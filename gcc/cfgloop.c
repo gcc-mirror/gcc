@@ -110,9 +110,9 @@ flow_loop_dump (loop, file, loop_dump_aux, verbose)
 
   if (loop->first->head && loop->last->end)
     fprintf (file, ";;\n;; Loop %d (%d to %d):%s%s\n",
-	    loop->num, INSN_UID (loop->first->head),
-	    INSN_UID (loop->last->end),
-	    loop->shared ? " shared" : "", loop->invalid ? " invalid" : "");
+	     loop->num, INSN_UID (loop->first->head),
+	     INSN_UID (loop->last->end),
+	     loop->shared ? " shared" : "", loop->invalid ? " invalid" : "");
   else
     fprintf (file, ";;\n;; Loop %d:%s%s\n", loop->num,
 	     loop->shared ? " shared" : "", loop->invalid ? " invalid" : "");

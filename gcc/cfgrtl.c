@@ -90,7 +90,7 @@ can_delete_note_p (note)
 {
   return (NOTE_LINE_NUMBER (note) == NOTE_INSN_DELETED
 	  || NOTE_LINE_NUMBER (note) == NOTE_INSN_BASIC_BLOCK
-          || NOTE_LINE_NUMBER (note) == NOTE_INSN_PREDICTION);
+	  || NOTE_LINE_NUMBER (note) == NOTE_INSN_PREDICTION);
 }
 
 /* True if a given label can be deleted.  */
@@ -119,7 +119,7 @@ delete_insn (insn)
   if (GET_CODE (insn) == CODE_LABEL)
     {
       /* Some labels can't be directly removed from the INSN chain, as they
-         might be references via variables, constant pool etc. 
+         might be references via variables, constant pool etc.
          Convert them to the special NOTE_INSN_DELETED_LABEL note.  */
       if (! can_delete_label_p (insn))
 	{
@@ -381,13 +381,13 @@ flow_delete_block_noexpunge (b)
      NOTE_INSN_EH_REGION_END notes.  */
 
   /* Get rid of all NOTE_INSN_PREDICTIONs hanging before the block.  */
-  
+
   for (insn = PREV_INSN (b->head); insn; insn = PREV_INSN (insn))
     {
       if (GET_CODE (insn) != NOTE)
-        break;
+	break;
       if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_PREDICTION)
-        NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
     }
 
   insn = b->head;
@@ -434,7 +434,7 @@ flow_delete_block (b)
      basic_block b;
 {
   int deleted_handler = flow_delete_block_noexpunge (b);
-  
+
   /* Remove the basic block from the array, and compact behind it.  */
   expunge_block (b);
 
@@ -1371,8 +1371,8 @@ commit_one_edge_insertion (e, watch_calls)
       /* The first insn after the call may be a stack pop, skip it.  */
       while (next
 	     && keep_with_call_p (next))
-        {
-          after = next;
+	{
+	  after = next;
 	  next = next_nonnote_insn (next);
 	}
       bb = e->dest;
@@ -1833,17 +1833,17 @@ verify_flow_info ()
 	    }
 	}
       if (bb->count < 0)
-        {
-          error ("verify_flow_info: Wrong count of block %i %i",
+	{
+	  error ("verify_flow_info: Wrong count of block %i %i",
 	         bb->index, (int)bb->count);
-          err = 1;
-        }
+	  err = 1;
+	}
       if (bb->frequency < 0)
-        {
-          error ("verify_flow_info: Wrong frequency of block %i %i",
+	{
+	  error ("verify_flow_info: Wrong frequency of block %i %i",
 	         bb->index, bb->frequency);
-          err = 1;
-        }
+	  err = 1;
+	}
       for (e = bb->succ; e; e = e->succ_next)
 	{
 	  if (last_visited [e->dest->index + 2] == bb)
@@ -1971,7 +1971,7 @@ verify_flow_info ()
 	  error ("Abnormal edges for no purpose in bb %i", bb->index);
 	  err = 1;
 	}
-	
+
       if (!n_fallthru)
 	{
 	  rtx insn;
@@ -2223,7 +2223,7 @@ purge_dead_edges (bb)
 
 	  /* Avoid abnormal flags to leak from computed jumps turned
 	     into simplejumps.  */
- 
+
 	  e->flags &= ~EDGE_ABNORMAL;
 
 	  /* See if this edge is one we should keep.  */
@@ -2265,7 +2265,7 @@ purge_dead_edges (bb)
 	{
 	  bb->succ->probability = REG_BR_PROB_BASE;
 	  bb->succ->count = bb->count;
-        }
+	}
       else
 	{
 	  note = find_reg_note (insn, REG_BR_PROB, NULL);

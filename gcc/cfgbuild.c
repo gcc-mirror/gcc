@@ -104,35 +104,35 @@ control_flow_insn_p (insn)
 
   switch (GET_CODE (insn))
     {
-      case NOTE:
-      case CODE_LABEL:
-	return false;
+    case NOTE:
+    case CODE_LABEL:
+      return false;
 
-      case JUMP_INSN:
-	/* Jump insn always causes control transfer except for tablejumps.  */
-	return (GET_CODE (PATTERN (insn)) != ADDR_VEC
-		&& GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC);
+    case JUMP_INSN:
+      /* Jump insn always causes control transfer except for tablejumps.  */
+      return (GET_CODE (PATTERN (insn)) != ADDR_VEC
+	      && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC);
 
-      case CALL_INSN:
-	/* Call insn may return to the nonlocal goto handler.  */
-	return ((nonlocal_goto_handler_labels
-		 && (0 == (note = find_reg_note (insn, REG_EH_REGION,
-						 NULL_RTX))
-		     || INTVAL (XEXP (note, 0)) >= 0))
-		/* Or may trap.  */
-		|| can_throw_internal (insn));
+    case CALL_INSN:
+      /* Call insn may return to the nonlocal goto handler.  */
+      return ((nonlocal_goto_handler_labels
+	       && (0 == (note = find_reg_note (insn, REG_EH_REGION,
+					       NULL_RTX))
+		   || INTVAL (XEXP (note, 0)) >= 0))
+	      /* Or may trap.  */
+	      || can_throw_internal (insn));
 
-      case INSN:
-	return (flag_non_call_exceptions && can_throw_internal (insn));
+    case INSN:
+      return (flag_non_call_exceptions && can_throw_internal (insn));
 
-      case BARRIER:
-	/* It is nonsence to reach barrier when looking for the
-	   end of basic block, but before dead code is eliminated
-	   this may happen.  */
-	return false;
+    case BARRIER:
+      /* It is nonsence to reach barrier when looking for the
+         end of basic block, but before dead code is eliminated
+         this may happen.  */
+      return false;
 
-      default:
-	abort ();
+    default:
+      abort ();
     }
 }
 
@@ -207,9 +207,9 @@ find_label_refs (f, lvl)
 	      rtx lab = XEXP (note, 0), next;
 
 	      if ((next = next_nonnote_insn (lab)) != NULL
-		       && GET_CODE (next) == JUMP_INSN
-		       && (GET_CODE (PATTERN (next)) == ADDR_VEC
-			   || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
+		  && GET_CODE (next) == JUMP_INSN
+		  && (GET_CODE (PATTERN (next)) == ADDR_VEC
+		      || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
 		;
 	      else if (GET_CODE (lab) == NOTE)
 		;
@@ -305,7 +305,7 @@ make_edges (label_value_list, min, max, update_p)
 
 	    for (e = BASIC_BLOCK (i)->succ; e ; e = e->succ_next)
 	      if (e->dest != EXIT_BLOCK_PTR)
-	        SET_BIT (edge_cache[i], e->dest->index);
+		SET_BIT (edge_cache[i], e->dest->index);
 	  }
     }
 
@@ -849,7 +849,7 @@ find_many_sub_basic_blocks (blocks)
 
 void
 find_sub_basic_blocks (bb)
-    basic_block bb;
+     basic_block bb;
 {
   int i;
   int min, max;
