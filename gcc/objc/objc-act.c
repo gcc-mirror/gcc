@@ -47,6 +47,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "input.h"
 #include "function.h"
 
+
 /* This is the default way of generating a method name.  */
 /* I am not sure it is really correct.
    Perhaps there's a danger that it will make name conflicts
@@ -127,7 +128,7 @@ char *util_firstobj;
 #include "rtl.h"
 #include "c-parse.h"
 
-#define OBJC_VERSION	5
+#define OBJC_VERSION	6
 #define PROTOCOL_VERSION 2
 
 #define NULLT	(tree) 0
@@ -150,6 +151,7 @@ static char *build_module_descriptor		PROTO((void));
 static tree init_module_descriptor		PROTO((tree));
 static tree build_objc_method_call		PROTO((int, tree, tree, tree, tree, tree));
 static void generate_strings			PROTO((void));
+static tree get_proto_encoding 			PROTO((tree));
 static void build_selector_translation_table	PROTO((void));
 static tree build_ivar_chain			PROTO((tree, int));
 
@@ -157,6 +159,7 @@ static tree build_ivar_template			PROTO((void));
 static tree build_method_template		PROTO((void));
 static tree build_private_template		PROTO((tree));
 static void build_class_template		PROTO((void));
+static void build_selector_template		PROTO((void));
 static void build_category_template		PROTO((void));
 static tree build_super_template		PROTO((void));
 static tree build_category_initializer		PROTO((tree, tree, tree, tree, tree, tree));
@@ -263,6 +266,7 @@ static void forward_declare_categories		PROTO((void));
 static void generate_objc_symtab_decl		PROTO((void));
 static tree build_selector			PROTO((tree));
 static tree build_msg_pool_reference		PROTO((int));
+static tree build_typed_selector_reference     	PROTO((tree, tree));
 static tree build_selector_reference		PROTO((tree));
 static tree build_class_reference_decl		PROTO((tree));
 static void add_class_reference			PROTO((tree));
@@ -319,6 +323,7 @@ static void handle_class_ref			PROTO((tree));
 #define UTAG_MODULE		"_objc_module"
 #define UTAG_SYMTAB		"_objc_symtab"
 #define UTAG_SUPER		"_objc_super"
+#define UTAG_SELECTOR		"_objc_selector"
 
 #define UTAG_PROTOCOL		"_objc_protocol"
 #define UTAG_PROTOCOL_LIST	"_objc_protocol_list"
@@ -414,7 +419,7 @@ static int imp_count = 0;	/* `@implementation' */
 static int cat_count = 0;	/* `@category' */
 
 static tree objc_class_template, objc_category_template, uprivate_record;
-static tree objc_protocol_template;
+static tree objc_protocol_template, objc_selector_template;
 static tree ucls_super_ref, uucls_super_ref;
 
 static tree objc_method_template, objc_ivar_template;
@@ -436,6 +441,7 @@ static char *errbuf;	/* a buffer for error diagnostics */
 /* data imported from tree.c */
 
 extern struct obstack permanent_obstack, *current_obstack, *rtl_obstack;
+extern enum debug_info_type write_symbols;
 
 /* data imported from toplev.c  */
 
@@ -448,6 +454,8 @@ int flag_next_runtime = 1;
 #else
 int flag_next_runtime = 0;
 #endif
+
+int flag_typed_selectors;
 
 /* Open and close the file for outputting class declarations, if requested.  */
 
@@ -509,6 +517,7 @@ lang_init ()
       TAG_MSGSEND = "objc_msg_lookup";
       TAG_MSGSENDSUPER = "objc_msg_lookup_super";
       TAG_EXECCLASS = "__objc_exec_class";
+      flag_typed_selectors = 1;
     }
 
   if (doing_objc_thang)
@@ -1086,12 +1095,29 @@ synth_module_prologue ()
 
   /* static SEL _OBJC_SELECTOR_TABLE[]; */
 
-  temp_type = build_array_type (selector_type, NULLT);
-  layout_type (temp_type);
   if (! flag_next_runtime)
-    UOBJC_SELECTOR_TABLE_decl
-      = create_builtin_decl (VAR_DECL, temp_type,
-			     "_OBJC_SELECTOR_TABLE");
+    {
+      if (flag_typed_selectors)
+	{
+	  /* supress outputting debug symbols, because
+	     dbxout_init hasn'r been called yet... */
+	  enum debug_info_type save_write_symbols = write_symbols;
+	  write_symbols = NO_DEBUG;
+
+	  build_selector_template ();
+	  temp_type = build_array_type (objc_selector_template, NULLT);
+
+	  write_symbols = save_write_symbols;
+	}
+      else
+	temp_type = build_array_type (selector_type, NULLT);
+
+      layout_type (temp_type);
+      UOBJC_SELECTOR_TABLE_decl
+	= create_builtin_decl (VAR_DECL, temp_type,
+			       "_OBJC_SELECTOR_TABLE");
+    }
+
 
   generate_forward_declaration_to_string_table ();
 
@@ -1510,6 +1536,7 @@ build_module_descriptor ()
 				function_type);
     DECL_EXTERNAL (function_decl) = 1;
     TREE_PUBLIC (function_decl) = 1;
+
     pushdecl (function_decl);
     rest_of_decl_compilation (function_decl, 0, 0, 0);
 
@@ -1539,6 +1566,9 @@ build_module_descriptor ()
 
     assemble_external (function_decl);
     c_expand_expr_stmt (decelerator);
+
+    TREE_PUBLIC (current_function_decl) = 1;
+    DECL_EXTERNAL (current_function_decl) = 1;
 
     finish_function (0);
 
@@ -1652,8 +1682,10 @@ build_selector (ident)
      tree ident;
 {
   tree expr = add_objc_string (ident, meth_var_names);
-
-  return build_c_cast (selector_type, expr); /* cast! */
+  if (flag_typed_selectors)
+    return expr;
+  else
+    return build_c_cast (selector_type, expr); /* cast! */
 }
 
 /* Synthesize the following expr: (char *)&_OBJC_STRINGS[<offset>]
@@ -1729,8 +1761,20 @@ build_selector_translation_table ()
 	  end_temporary_allocation ();
 	  finish_decl (decl, expr, NULLT);
 	}
-      else
-	initlist = tree_cons (NULLT, expr, initlist);
+      else 
+	{
+	  if (flag_typed_selectors)
+	    {
+	      tree eltlist = NULLT;
+	      tree encoding = get_proto_encoding (TREE_PURPOSE (chain));
+	      eltlist = tree_cons (NULLT, expr, NULLT);
+	      eltlist = tree_cons (NULLT, encoding, eltlist);
+	      expr = build_constructor (objc_selector_template,
+					nreverse (eltlist));
+	    }
+	  initlist = tree_cons (NULLT, expr, initlist);
+	  
+	}
     }
 
   if (! flag_next_runtime)
@@ -1747,15 +1791,67 @@ build_selector_translation_table ()
     }
 }
 
+
+static tree
+get_proto_encoding (proto)
+     tree proto;
+{
+  tree encoding;
+  if (proto)
+    {
+      tree tmp_decl;
+
+      if (! METHOD_ENCODING (proto))
+	{
+	    tmp_decl = build_tmp_function_decl ();
+	    hack_method_prototype (proto, tmp_decl);
+	    encoding = encode_method_prototype (proto, tmp_decl);
+	    METHOD_ENCODING (proto) = encoding;
+	  }
+      else
+	encoding = METHOD_ENCODING (proto);
+
+      return add_objc_string (encoding, meth_var_types);
+    }
+  else
+    return build_int_2 (0, 0);
+}
+
 /* sel_ref_chain is a list whose "value" fields will be instances of
    identifier_node that represent the selector.  */
+
+static tree
+build_typed_selector_reference (ident, proto)
+     tree ident, proto;
+{
+  tree *chain = &sel_ref_chain;
+  tree expr;
+  int index = 0;
+
+  while (*chain)
+    {
+      if (TREE_PURPOSE (*chain) == ident && TREE_VALUE (*chain) == proto)
+	goto return_at_index;
+      index++;
+      chain = &TREE_CHAIN (*chain);
+    }
+
+  *chain = perm_tree_cons (proto, ident, NULLT);
+
+ return_at_index:
+  expr = build_unary_op (ADDR_EXPR,
+			 build_array_ref (UOBJC_SELECTOR_TABLE_decl,
+					  build_int_2 (index, 0)),
+			 1);
+  return build_c_cast (selector_type, expr);
+}
 
 static tree
 build_selector_reference (ident)
      tree ident;
 {
   tree *chain = &sel_ref_chain;
-  tree decl;
+  tree expr;
   int index = 0;
 
   while (*chain)
@@ -1770,12 +1866,12 @@ build_selector_reference (ident)
       chain = &TREE_CHAIN (*chain);
     }
 
-  decl = build_selector_reference_decl (ident);
+  expr = build_selector_reference_decl (ident);
 
-  *chain = perm_tree_cons (decl, ident, NULLT);
+  *chain = perm_tree_cons (expr, ident, NULLT);
 
   return (flag_next_runtime
-	  ? decl
+	  ? expr
 	  : build_array_ref (UOBJC_SELECTOR_TABLE_decl,
 			     build_int_2 (index, 0)));
 }
@@ -2531,6 +2627,8 @@ static tree
 build_tmp_function_decl ()
 {
   tree decl_specs, expr_decl, parms;
+  static int xxx = 0;
+  char buffer[80];
 
   /* struct objc_object *objc_xxx (id, SEL, ...); */
   pushlevel (0);
@@ -2547,7 +2645,8 @@ build_tmp_function_decl ()
   poplevel (0, 0, 0);
 
   decl_specs = build_tree_list (NULLT, objc_object_reference);
-  expr_decl = build_nt (CALL_EXPR, get_identifier ("objc_xxx"), parms, NULLT);
+  sprintf (buffer, "__objc_tmp_%x", xxx++);
+  expr_decl = build_nt (CALL_EXPR, get_identifier (buffer), parms, NULLT);
   expr_decl = build1 (INDIRECT_REF, NULLT, expr_decl);
 
   return define_decl (expr_decl, decl_specs);
@@ -2574,9 +2673,8 @@ hack_method_prototype (nst_methods, tmp_decl)
 
   /* Usually called from store_parm_decls -> init_function_start.  */
 
-  init_emit ();	/* needed to make assign_parms work (with -O).  */
-
   DECL_ARGUMENTS (tmp_decl) = TREE_PURPOSE (parms);
+  current_function_decl = tmp_decl;
 
   {
     /* Code taken from start_function.  */
@@ -2588,11 +2686,14 @@ hack_method_prototype (nst_methods, tmp_decl)
     DECL_RESULT (tmp_decl) = build_decl (RESULT_DECL, 0, restype);
   }
 
+  init_function_start (tmp_decl, "objc-act", 0);
+
   /* Typically called from expand_function_start for function definitions.  */
   assign_parms (tmp_decl, 0);
 
   /* install return type */
   TREE_TYPE (TREE_TYPE (tmp_decl)) = groktypename (TREE_TYPE (nst_methods));
+
 }
 
 static void
@@ -2650,18 +2751,23 @@ generate_protocols ()
 
       while (nst_methods)
 	{
-	  hack_method_prototype (nst_methods, tmp_decl);
-	  encoding = encode_method_prototype (nst_methods, tmp_decl);
-	  METHOD_ENCODING (nst_methods) = encoding;
-
+	  if (! METHOD_ENCODING (nst_methods))
+	    {
+	      hack_method_prototype (nst_methods, tmp_decl);
+	      encoding = encode_method_prototype (nst_methods, tmp_decl);
+	      METHOD_ENCODING (nst_methods) = encoding;
+	    }
 	  nst_methods = TREE_CHAIN (nst_methods);
 	}
 
       while (cls_methods)
 	{
-	  hack_method_prototype (cls_methods, tmp_decl);
-	  encoding = encode_method_prototype (cls_methods, tmp_decl);
-	  METHOD_ENCODING (cls_methods) = encoding;
+	  if (! METHOD_ENCODING (cls_methods))
+	    {
+	      hack_method_prototype (cls_methods, tmp_decl);
+	      encoding = encode_method_prototype (cls_methods, tmp_decl);
+	      METHOD_ENCODING (cls_methods) = encoding;
+	    }
 
 	  cls_methods = TREE_CHAIN (cls_methods);
 	}
@@ -2813,6 +2919,37 @@ build_category_template ()
   chainon (field_decl_chain, field_decl);
 
   finish_struct (objc_category_template, field_decl_chain);
+}
+
+/* struct objc_selector {
+     void *sel_id;
+     char *sel_type;
+   }; */
+
+static void
+build_selector_template ()
+{
+
+  tree decl_specs, field_decl, field_decl_chain;
+
+  objc_selector_template 
+    = start_struct (RECORD_TYPE, get_identifier (UTAG_SELECTOR));
+
+  /* void *sel_id; */
+
+  decl_specs = build_tree_list (NULLT, ridpointers[(int) RID_VOID]);
+  field_decl = build1 (INDIRECT_REF, NULLT, get_identifier ("sel_id"));
+  field_decl = grokfield (input_filename, lineno, field_decl, decl_specs, NULLT);
+  field_decl_chain = field_decl;
+
+  /* char *sel_type; */
+
+  decl_specs = build_tree_list (NULLT, ridpointers[(int) RID_CHAR]);
+  field_decl = build1 (INDIRECT_REF, NULLT, get_identifier ("sel_type"));
+  field_decl = grokfield (input_filename, lineno, field_decl, decl_specs, NULLT);
+  chainon (field_decl_chain, field_decl);
+
+  finish_struct (objc_selector_template, field_decl_chain);
 }
 
 /* struct objc_class {
@@ -3193,9 +3330,10 @@ build_method_list_template (list_type, size)
 
   /* int method_next; */
 
-  decl_specs = build_tree_list (NULLT, ridpointers[(int) RID_INT]);
-  field_decl = get_identifier ("method_next");
-
+  decl_specs = build_tree_list (NULLT, 
+				xref_tag (RECORD_TYPE,
+					  get_identifier (UTAG_METHOD_PROTOTYPE_LIST)));
+  field_decl = build1 (INDIRECT_REF, NULLT, get_identifier ("method_next"));
   field_decl = grokfield (input_filename, lineno, field_decl, decl_specs, NULLT);
   field_decl_chain = field_decl;
 
@@ -4343,11 +4481,6 @@ build_message_expr (mess)
   else if (TREE_CODE (args) == TREE_LIST)
     sel_name = build_keyword_selector (args);
 
-  /* Build the parameters list for looking up the method.
-     These are the object itself and the selector.  */
-
-  selector = build_selector_reference (sel_name);
-
   /* Build the parameter list to give to the method.  */
 
   method_params = NULLT;
@@ -4543,6 +4676,14 @@ build_message_expr (mess)
 
   /* Save the selector name for printing error messages.  */
   building_objc_message_expr = sel_name;
+
+  /* Build the parameters list for looking up the method.
+     These are the object itself and the selector.  */
+
+  if (flag_typed_selectors)
+    selector = build_typed_selector_reference (sel_name, method_prototype);
+  else
+    selector = build_selector_reference (sel_name);
 
   retval = build_objc_method_call (super, method_prototype,
 				   receiver, self_object,
@@ -4744,7 +4885,10 @@ build_selector_expr (selnamelist)
   else if (TREE_CODE (selnamelist) == TREE_LIST)
     selname = build_keyword_selector (selnamelist);
 
-  return build_selector_reference (selname);
+  if (flag_typed_selectors)
+    return build_typed_selector_reference (selname, 0);
+  else
+    return build_selector_reference (selname);
 }
 
 tree
