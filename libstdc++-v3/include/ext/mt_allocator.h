@@ -125,6 +125,12 @@ namespace __gnu_cxx
       static bool volatile _S_initialized;
 
       /*
+       * If the env var GLIBCXX_FORCE_NEW is set during _S_init()
+       * we set this var to true which causes all allocations to use new()
+       */
+      static bool _S_force_new;
+
+      /*
        * Using short int as type for the binmap implies we are never caching
        * blocks larger than 65535 with this allocator
        */
@@ -227,18 +233,6 @@ namespace __gnu_cxx
       allocate(size_t __n, std::allocator<void>::const_pointer __h = 0)
       {
         /*
-         * Requests larger than _S_max_bytes are handled by
-         * new/delete directly
-         */
-        if (__n * sizeof(_Tp) > _S_max_bytes)
-          {
-            void* __ret = malloc(__n * sizeof(_Tp));
-            if (!__ret)
-              __throw_bad_alloc();
-            return static_cast<_Tp*>(__ret);
-          }
-	
-        /*
          * Although the test in __gthread_once() would suffice, we
          * wrap test of the once condition in our own unlocked
          * check. This saves one function call to pthread_once()
@@ -256,6 +250,18 @@ namespace __gnu_cxx
                 _S_max_threads = 0;
                 _S_init();
               }
+          }
+
+        /*
+         * Requests larger than _S_max_bytes are handled by
+         * new/delete directly
+         */
+        if (__n * sizeof(_Tp) > _S_max_bytes || _S_force_new)
+          {
+            void* __ret = ::operator new(__n * sizeof(_Tp));
+            if (!__ret)
+              __throw_bad_alloc();
+            return static_cast<_Tp*>(__ret);
           }
 
         /*
@@ -308,7 +314,7 @@ namespace __gnu_cxx
                     __gthread_mutex_unlock(_S_bin[bin].mutex);
 
                     _S_bin[bin].first[thread_id] =
-                      (block_record*)malloc(_S_chunk_size);
+                      static_cast<block_record*>(::operator new(_S_chunk_size));
 
                     if (!_S_bin[bin].first[thread_id])
                       __throw_bad_alloc();
@@ -375,7 +381,8 @@ namespace __gnu_cxx
             else
 #endif
               {
-                _S_bin[bin].first[0] = (block_record*)malloc(_S_chunk_size);
+                _S_bin[bin].first[0] = 
+                  static_cast<block_record*>(::operator new(_S_chunk_size));
 
                 if (!_S_bin[bin].first[0])
                   __throw_bad_alloc();
@@ -425,7 +432,8 @@ namespace __gnu_cxx
 #endif
           }
 
-        return static_cast<_Tp*>(static_cast<void*>((char*)block + sizeof(block_record)));
+        return static_cast<_Tp*>(static_cast<void*>((char*)block + 
+                                                    sizeof(block_record)));
       }
 
       void
@@ -435,7 +443,7 @@ namespace __gnu_cxx
          * Requests larger than _S_max_bytes are handled by
          * malloc/free directly
          */
-        if (__n * sizeof(_Tp) > _S_max_bytes)
+        if (__n * sizeof(_Tp) > _S_max_bytes || _S_force_new)
           {
             free(__p);
             return;
@@ -546,6 +554,19 @@ namespace __gnu_cxx
     __mt_alloc<_Tp>::
     _S_init()
     {
+      if (getenv("GLIBCXX_FORCE_NEW"))
+        {
+          _S_force_new = true;
+          _S_initialized = true;
+
+          /*
+           * Since none of the code in allocate/deallocate ever will be 
+           * executed due to that the GLIBCXX_FORCE_NEW flag is set
+           * there is no need to create the internal structures either.
+           */
+          return;
+        }
+
       /*
        * Calculate the number of bins required based on _S_max_bytes,
        * _S_no_of_bins is initialized to 1 below.
@@ -590,7 +611,8 @@ namespace __gnu_cxx
       if (__gthread_active_p())
         {
           _S_thread_freelist_first =
-            (thread_record*)malloc(sizeof(thread_record) * _S_max_threads);
+            static_cast<thread_record*>(::operator 
+              new(sizeof(thread_record) * _S_max_threads));
 
           if (!_S_thread_freelist_first)
             __throw_bad_alloc();
@@ -625,7 +647,8 @@ namespace __gnu_cxx
       /*
        * Initialize _S_bin and its members
        */
-      _S_bin = (bin_record*)malloc(sizeof(bin_record) * _S_no_of_bins);
+      _S_bin = static_cast<bin_record*>(::operator 
+        new(sizeof(bin_record) * _S_no_of_bins));
 
       if (!_S_bin)
         __throw_bad_alloc();
@@ -639,14 +662,14 @@ namespace __gnu_cxx
 
       for (size_t bin = 0; bin < _S_no_of_bins; bin++)
         {
-          _S_bin[bin].first = (block_record**) 
-            malloc(sizeof(block_record*) * __n);
+          _S_bin[bin].first = static_cast<block_record**>(::operator 
+            new(sizeof(block_record*) * __n));
 
           if (!_S_bin[bin].first)
             __throw_bad_alloc();
 
-          _S_bin[bin].last = (block_record**) 
-            malloc(sizeof(block_record*) * __n);
+          _S_bin[bin].last = static_cast<block_record**>(::operator 
+            new(sizeof(block_record*) * __n));
 
           if (!_S_bin[bin].last)
             __throw_bad_alloc();
@@ -654,17 +677,20 @@ namespace __gnu_cxx
 #ifdef __GTHREADS
           if (__gthread_active_p())
             {
-              _S_bin[bin].free = (size_t*) malloc(sizeof(size_t) * __n);
+              _S_bin[bin].free = static_cast<size_t*>(::operator 
+                new(sizeof(size_t) * __n));
 
               if (!_S_bin[bin].free)
                 __throw_bad_alloc();
 
-              _S_bin[bin].used = (size_t*) malloc(sizeof(size_t) * __n);
+              _S_bin[bin].used = static_cast<size_t*>(::operator 
+                new(sizeof(size_t) * __n));
 
               if (!_S_bin[bin].used)
                 __throw_bad_alloc();
 
-              _S_bin[bin].mutex =(__gthread_mutex_t*) malloc(sizeof(__gthread_mutex_t));
+              _S_bin[bin].mutex = static_cast<__gthread_mutex_t*>(::operator 
+                new(sizeof(__gthread_mutex_t)));
 
 #ifdef __GTHREAD_MUTEX_INIT
               {
@@ -758,6 +784,9 @@ namespace __gnu_cxx
   template<typename _Tp> bool
   volatile __mt_alloc<_Tp>::_S_initialized = false;
 
+  template<typename _Tp> bool
+  __mt_alloc<_Tp>::_S_force_new = false;
+
   template<typename _Tp> typename __mt_alloc<_Tp>::binmap_type*
   __mt_alloc<_Tp>::_S_binmap = NULL;
 
@@ -770,7 +799,7 @@ namespace __gnu_cxx
   __mt_alloc<_Tp>::_S_max_bytes = 128;
 
   /*
-   * In order to avoid fragmenting and minimize the number of malloc()
+   * In order to avoid fragmenting and minimize the number of new()
    * calls we always request new memory using this value. Based on
    * previous discussions on the libstdc++ mailing list we have
    * choosen the value below. See
