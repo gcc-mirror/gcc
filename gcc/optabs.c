@@ -3877,6 +3877,7 @@ prepare_float_lib_cmp (rtx *px, rtx *py, enum rtx_code *pcomparison,
   rtx y = protect_from_queue (*py, 0);
   enum machine_mode orig_mode = GET_MODE (x);
   enum machine_mode mode;
+  rtx before_call;
   rtx libfunc = 0;
   rtx result;
 
@@ -3903,12 +3904,97 @@ prepare_float_lib_cmp (rtx *px, rtx *py, enum rtx_code *pcomparison,
       y = convert_to_mode (mode, y, 0);
     }
 
+  before_call = get_last_insn ();
+
+  result = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST_MAKE_BLOCK,
+				    word_mode, 2, x, mode, y, mode);
+
+  /* If we're optimizing attach a REG_EQUAL note describing the semantics
+     of the libcall to the RTL.  The allows the RTL optimizers to delete
+     the libcall if the condition can be determined at compile-time.  */
+  if (optimize
+      && ! side_effects_p (x)
+      && ! side_effects_p (y))
+    {
+      /* Search backwards through the insns emitted above looking for
+	 the instruction with the REG_RETVAL note.  */
+      rtx last = get_last_insn ();
+      while (last != before_call)
+	{
+	  if (find_reg_note (last, REG_RETVAL, NULL))
+	    break;
+	  last = PREV_INSN (last);
+	}
+
+      if (last != before_call)
+	{
+	  rtx equiv;
+	  if (comparison == UNORDERED)
+	    {
+	      rtx temp = simplify_gen_relational (NE, word_mode,
+						  mode, x, x);
+	      equiv = simplify_gen_relational (NE, word_mode,
+					       mode, y, y);
+	      equiv = simplify_gen_ternary (IF_THEN_ELSE, word_mode,
+					    word_mode, temp,
+					    const_true_rtx, equiv);
+	    }
+	  else
+	    {
+	      equiv = simplify_gen_relational (comparison, word_mode,
+					       mode, x, y);
+	      if (! FLOAT_LIB_COMPARE_RETURNS_BOOL (mode, comparison))
+		{
+		  rtx true_rtx, false_rtx;
+
+		  switch (comparison)
+		    {
+		    case EQ:
+		      true_rtx = const0_rtx;
+		      false_rtx = const_true_rtx;
+		      break;
+
+		    case NE:
+		      true_rtx = const_true_rtx;
+		      false_rtx = const0_rtx;
+		      break;
+
+		    case GT:
+		      true_rtx = const1_rtx;
+		      false_rtx = const0_rtx;
+		      break;
+
+		    case GE:
+		      true_rtx = const0_rtx;
+		      false_rtx = constm1_rtx;
+		      break;
+
+		    case LT:
+		      true_rtx = constm1_rtx;
+		      false_rtx = const0_rtx;
+		      break;
+
+		    case LE:
+		      true_rtx = const0_rtx;
+		      false_rtx = const1_rtx;
+		      break;
+
+		    default:
+		      abort ();
+		    }
+		  equiv = simplify_gen_ternary (IF_THEN_ELSE, word_mode,
+						word_mode, equiv,
+						true_rtx, false_rtx);
+		}
+	    }
+	  set_unique_reg_note (last, REG_EQUAL, equiv);
+	}
+    }
+
   if (comparison == UNORDERED
       || FLOAT_LIB_COMPARE_RETURNS_BOOL (mode, comparison))
     comparison = NE;
 
-  result = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST_MAKE_BLOCK,
-				    word_mode, 2, x, mode, y, mode);
   *px = result;
   *py = const0_rtx;
   *pmode = word_mode;
