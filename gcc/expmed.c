@@ -1752,11 +1752,16 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
   op1 = expand_expr (amount, NULL_RTX, VOIDmode, 0);
 
 #ifdef SHIFT_COUNT_TRUNCATED
-  if (SHIFT_COUNT_TRUNCATED
-      && GET_CODE (op1) == CONST_INT
-      && (unsigned HOST_WIDE_INT) INTVAL (op1) >= GET_MODE_BITSIZE (mode))
-    op1 = GEN_INT ((unsigned HOST_WIDE_INT) INTVAL (op1)
-		   % GET_MODE_BITSIZE (mode));
+  if (SHIFT_COUNT_TRUNCATED)
+    {
+      if (GET_CODE (op1) == CONST_INT
+          && (unsigned HOST_WIDE_INT) INTVAL (op1) >= GET_MODE_BITSIZE (mode))
+        op1 = GEN_INT ((unsigned HOST_WIDE_INT) INTVAL (op1)
+		       % GET_MODE_BITSIZE (mode));
+      else if (GET_CODE (op1) == SUBREG
+	       && SUBREG_WORD (op1) == 0)
+	op1 = SUBREG_REG (op1);
+    }
 #endif
 
   if (op1 == const0_rtx)
