@@ -1496,6 +1496,7 @@ install-common-headers: install-dir $(USER_H) gvarargs.h gstdarg.h gstddef.h
 	if [ -f $(assertdir)/assert.h ]; \
 	then \
 	  if grep "__eprintf" $(assertdir)/assert.h; \
+	    then \
 	    rm -f $(assertdir)/assert.h; \
 	    $(INSTALL_DATA) $(srcdir)/assert.h $(assertdir)/assert.h; \
 	    chmod a-x $(assertdir)/assert.h; \
