@@ -63,22 +63,22 @@ static int       const_ok_for_op 		PARAMS ((Hint, enum rtx_code));
 static int       eliminate_lr2ip		PARAMS ((rtx *));
 static rtx	 emit_multi_reg_push		PARAMS ((int));
 static rtx	 emit_sfm			PARAMS ((int, int));
-static char *    fp_const_from_val		PARAMS ((REAL_VALUE_TYPE *));
+static const char * fp_const_from_val		PARAMS ((REAL_VALUE_TYPE *));
 static arm_cc    get_arm_condition_code		PARAMS ((rtx));
 static void      init_fpa_table			PARAMS ((void));
 static Hint      int_log2			PARAMS ((Hint));
 static rtx       is_jump_table 			PARAMS ((rtx));
-static char *    output_multi_immediate		PARAMS ((rtx *, char *, char *, int, Hint));
-static void      print_multi_reg		PARAMS ((FILE *, char *, int, int, int));
+static const char * output_multi_immediate	PARAMS ((rtx *, const char *, const char *, int, Hint));
+static void      print_multi_reg		PARAMS ((FILE *, const char *, int, int, int));
 static Mmode     select_dominance_cc_mode	PARAMS ((rtx, rtx, Hint));
-static char *    shift_op			PARAMS ((rtx, Hint *));
+static const char * shift_op			PARAMS ((rtx, Hint *));
 static void      arm_init_machine_status	PARAMS ((struct function *));
 static void      arm_mark_machine_status        PARAMS ((struct function *));
 static int       number_of_first_bit_set        PARAMS ((int));
 static void      replace_symbols_in_block       PARAMS ((tree, rtx, rtx));
 static void      thumb_exit                     PARAMS ((FILE *, int, rtx));
 static void      thumb_pushpop                  PARAMS ((FILE *, int, int));
-static char *    thumb_condition_code           PARAMS ((rtx, int));
+static const char * thumb_condition_code        PARAMS ((rtx, int));
 static rtx	 is_jump_table		        PARAMS ((rtx));
 static Hint	 get_jump_table_size	        PARAMS ((rtx));
 static Mnode *   move_minipool_fix_forward_ref  PARAMS ((Mnode *, Mnode *, Hint));
@@ -202,7 +202,7 @@ rtx arm_target_insn;
 int arm_target_label;
 
 /* The condition codes of the ARM, and the inverse function.  */
-char * arm_condition_codes[] =
+const char * arm_condition_codes[] =
 {
   "eq", "ne", "cs", "cc", "mi", "pl", "vs", "vc",
   "hi", "ls", "ge", "lt", "gt", "le", "al", "nv"
@@ -214,7 +214,7 @@ char * arm_condition_codes[] =
 
 struct processors
 {
-  char *       name;
+  const char * name;
   unsigned int flags;
 };
 
@@ -357,8 +357,8 @@ arm_override_options ()
       unsigned int        sought;
       static struct cpu_default
       {
-	int    cpu;
-	char * name;
+	int          cpu;
+	const char * name;
       }
       cpu_defaults[] =
       {
@@ -599,7 +599,7 @@ arm_override_options ()
       && (tune_flags & FL_MODE32) == 0)
     flag_schedule_insns = flag_schedule_insns_after_reload = 0;
   
-  arm_prog_mode = TARGET_APCS_32 ? PROG_MODE_PROG32 : PROG_MODE_PROG26;
+  arm_prgmode = TARGET_APCS_32 ? PROG_MODE_PROG32 : PROG_MODE_PROG26;
   
   if (structure_size_string != NULL)
     {
@@ -1704,7 +1704,7 @@ arm_comp_type_attributes (type1, type2)
 void
 arm_encode_call_attribute (decl, flag)
   tree decl;
-  char flag;
+  int flag;
 {
   const char * str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
   int          len = strlen (str);
@@ -2455,7 +2455,7 @@ arm_adjust_cost (insn, link, dep, cost)
 
 static int fpa_consts_inited = 0;
 
-char * strings_fpa[8] =
+static const char * strings_fpa[8] =
 {
   "0",   "1",   "2",   "3",
   "4",   "5",   "0.5", "10"
@@ -3472,7 +3472,7 @@ load_multiple_sequence (operands, nops, regs, base, load_offset)
 	  || const_ok_for_arm (-unsorted_offsets[order[0]])) ? 5 : 0;
 }
 
-char *
+const char *
 emit_ldm_seq (operands, nops)
      rtx * operands;
      int nops;
@@ -3669,7 +3669,7 @@ store_multiple_sequence (operands, nops, regs, base, load_offset)
   return 0;
 }
 
-char *
+const char *
 emit_stm_seq (operands, nops)
      rtx * operands;
      int nops;
@@ -5611,7 +5611,7 @@ arm_reorg (first)
 /* If the rtx is the correct value then return the string of the number.
    In this way we can ensure that valid double constants are generated even
    when cross compiling.  */
-char *
+const char *
 fp_immediate_constant (x)
      rtx x;
 {
@@ -5630,7 +5630,7 @@ fp_immediate_constant (x)
 }
 
 /* As for fp_immediate_constant, but value is passed directly, not in rtx.  */
-static char *
+static const char *
 fp_const_from_val (r)
      REAL_VALUE_TYPE * r;
 {
@@ -5654,7 +5654,7 @@ fp_const_from_val (r)
 static void
 print_multi_reg (stream, instr, reg, mask, hat)
      FILE * stream;
-     char * instr;
+     const char * instr;
      int reg;
      int mask;
      int hat;
@@ -5681,7 +5681,7 @@ print_multi_reg (stream, instr, reg, mask, hat)
 
 /* Output a 'call' insn.  */
 
-char *
+const char *
 output_call (operands)
      rtx * operands;
 {
@@ -5739,7 +5739,7 @@ eliminate_lr2ip (x)
   
 /* Output a 'call' insn that is a reference in memory.  */
 
-char *
+const char *
 output_call_mem (operands)
      rtx * operands;
 {
@@ -5768,7 +5768,7 @@ output_call_mem (operands)
    OPERANDS[0] is an fpu register.
    OPERANDS[1] is the first registers of an arm register pair.  */
 
-char *
+const char *
 output_mov_long_double_fpu_from_arm (operands)
      rtx * operands;
 {
@@ -5792,7 +5792,7 @@ output_mov_long_double_fpu_from_arm (operands)
    OPERANDS[0] is the first registers of an arm register pair.
    OPERANDS[1] is an fpu register.  */
 
-char *
+const char *
 output_mov_long_double_arm_from_fpu (operands)
      rtx * operands;
 {
@@ -5814,7 +5814,7 @@ output_mov_long_double_arm_from_fpu (operands)
 /* Output a move from arm registers to arm registers of a long double
    OPERANDS[0] is the destination.
    OPERANDS[1] is the source.  */
-char *
+const char *
 output_mov_long_double_arm_from_arm (operands)
      rtx * operands;
 {
@@ -5851,7 +5851,7 @@ output_mov_long_double_arm_from_arm (operands)
    OPERANDS[0] is an fpu register.
    OPERANDS[1] is the first registers of an arm register pair.  */
 
-char *
+const char *
 output_mov_double_fpu_from_arm (operands)
      rtx * operands;
 {
@@ -5872,7 +5872,7 @@ output_mov_double_fpu_from_arm (operands)
    OPERANDS[0] is the first registers of an arm register pair.
    OPERANDS[1] is an fpu register.  */
 
-char *
+const char *
 output_mov_double_arm_from_fpu (operands)
      rtx * operands;
 {
@@ -5893,7 +5893,7 @@ output_mov_double_arm_from_fpu (operands)
    It must be REG<-REG, REG<-CONST_DOUBLE, REG<-CONST_INT, REG<-MEM
    or MEM<-REG and all MEMs must be offsettable addresses.  */
 
-char *
+const char *
 output_move_double (operands)
      rtx * operands;
 {
@@ -6129,7 +6129,7 @@ output_move_double (operands)
 /* Output an arbitrary MOV reg, #n.
    OPERANDS[0] is a register.  OPERANDS[1] is a const_int.  */
 
-char *
+const char *
 output_mov_immediate (operands)
      rtx * operands;
 {
@@ -6170,7 +6170,7 @@ output_mov_immediate (operands)
 /* Output an ADD r, s, #n where n may be too big for one instruction.  If
    adding zero to one register, output nothing.  */
 
-char *
+const char *
 output_add_immediate (operands)
      rtx * operands;
 {
@@ -6198,10 +6198,11 @@ output_add_immediate (operands)
    IMMED_OP is the index of the constant slot in OPERANDS.
    N is the constant value.  */
 
-static char *
+static const char *
 output_multi_immediate (operands, instr1, instr2, immed_op, n)
      rtx * operands;
-     char * instr1, * instr2;
+     const char * instr1;
+     const char * instr2;
      int immed_op;
      HOST_WIDE_INT n;
 {
@@ -6217,7 +6218,7 @@ output_multi_immediate (operands, instr1, instr2, immed_op, n)
   else
     {
       int i;
-      char *instr = instr1;
+      const char * instr = instr1;
 
       /* Note that n is never zero here (which would give no output).  */
       for (i = 0; i < 32; i += 2)
@@ -6231,6 +6232,7 @@ output_multi_immediate (operands, instr1, instr2, immed_op, n)
 	    }
 	}
     }
+  
   return "";
 }
 
@@ -6240,7 +6242,7 @@ output_multi_immediate (operands, instr1, instr2, immed_op, n)
    operation.  SHIFT_FIRST_ARG is TRUE if the first argument of the operator
    was shifted.  */
 
-char *
+const char *
 arithmetic_instr (op, shift_first_arg)
      rtx op;
      int shift_first_arg;
@@ -6274,12 +6276,12 @@ arithmetic_instr (op, shift_first_arg)
    On exit, *AMOUNTP will be -1 if the shift is by a register, or a constant
    shift.  */
 
-static char *
+static const char *
 shift_op (op, amountp)
      rtx op;
      HOST_WIDE_INT *amountp;
 {
-  char * mnem;
+  const char * mnem;
   enum rtx_code code = GET_CODE (op);
 
   if (GET_CODE (XEXP (op, 1)) == REG || GET_CODE (XEXP (op, 1)) == SUBREG)
@@ -6447,7 +6449,7 @@ output_ascii_pseudo_op (stream, p, len)
 }
 
 
-char *
+const char *
 output_return_instruction (operand, really_return, reverse)
      rtx operand;
      int really_return;
@@ -6732,7 +6734,7 @@ output_arm_prologue (f, frame_size)
 #endif
 }
 
-char *
+const char *
 arm_output_epilogue (really_return)
      int really_return;
 {
@@ -7398,7 +7400,7 @@ arm_print_operand (stream, x, code)
     case 'S':
       {
 	HOST_WIDE_INT val;
-	char * shift = shift_op (x, & val);
+	const char * shift = shift_op (x, & val);
 
 	if (shift)
 	  {
@@ -8041,7 +8043,7 @@ arm_debugger_arg_offset (value, addr)
 
   /* If we are using the frame pointer to point at the argument, then
      an offset of 0 is correct.  */
-  if (REGNO (addr) == HARD_FRAME_POINTER_REGNUM)
+  if (REGNO (addr) == (unsigned) HARD_FRAME_POINTER_REGNUM)
     return 0;
   
   /* If we are using the stack pointer to point at the
@@ -8087,7 +8089,7 @@ arm_debugger_arg_offset (value, addr)
 	  && REGNO    (XEXP (PATTERN (insn), 0)) == REGNO (addr)
 	  && GET_CODE (XEXP (PATTERN (insn), 1)) == PLUS
 	  && GET_CODE (XEXP (XEXP (PATTERN (insn), 1), 0)) == REG
-	  && REGNO    (XEXP (XEXP (PATTERN (insn), 1), 0)) == HARD_FRAME_POINTER_REGNUM
+	  && REGNO    (XEXP (XEXP (PATTERN (insn), 1), 0)) == (unsigned) HARD_FRAME_POINTER_REGNUM
 	  && GET_CODE (XEXP (XEXP (PATTERN (insn), 1), 1)) == CONST_INT
 	     )
 	{
@@ -8635,7 +8637,7 @@ is_called_in_ARM_mode (func)
 }
 
 /* The bits which aren't usefully expanded as rtl. */
-char *
+const char *
 thumb_unexpanded_epilogue ()
 {
   int regno;
@@ -9250,7 +9252,7 @@ output_thumb_prologue (f)
    a computed memory address.  The computed address may involve a
    register which is overwritten by the load.  */
 
-char *
+const char *
 thumb_load_double_from_address (operands)
      rtx * operands;
 {
@@ -9376,7 +9378,7 @@ thumb_load_double_from_address (operands)
 }
 
 
-char *
+const char *
 thumb_output_move_mem_multiple (n, operands)
      int n;
      rtx * operands;
@@ -9490,12 +9492,12 @@ thumb_cmp_operand (op, mode)
 	  || register_operand (op, mode));
 }
 
-static char *
+static const char *
 thumb_condition_code (x, invert)
      rtx x;
      int invert;
 {
-  static char * conds[] =
+  static const char * conds[] =
   {
     "eq", "ne", "cs", "cc", "mi", "pl", "vs", "vc", 
     "hi", "ls", "ge", "lt", "gt", "le"

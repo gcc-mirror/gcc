@@ -1,3 +1,19 @@
+2000-05-23  Nick Clifton  <nickc@cygnus.com>
+
+	* configure.in: Treat 'strongarm' as if it were 'arm' when
+	determining cpu type.
+
+	* configure: Regenerate.
+
+	* config/arm/arm.c: Change 'char *' to 'const char *' for cases
+	where constant strings are involved.
+
+	* config/arm/arm.h (arm_condition_codes): Change type to 'const
+	char *'.
+
+	* config/arm/arm-protos.h: Change 'char *' to 'const char *' for
+	cases where constant strings are involved.
+
 Tue May 23 15:08:31 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* config/sh/sh.c (gen_far_branch, split_branches): Update

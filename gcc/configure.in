@@ -566,6 +566,9 @@ for machine in $build $host $target; do
 	alpha*-*-*)
 		cpu_type=alpha
 		;;
+	strongarm*-*-*)
+		cpu_type=arm
+		;;
 	arm*-*-*)
 		cpu_type=arm
 		;;
