@@ -1282,6 +1282,20 @@ find_oldest_value_reg (class, reg, vd)
   enum machine_mode mode = GET_MODE (reg);
   unsigned int i;
 
+  /* If we are accessing REG in some mode other that what we set it in,
+     make sure that the replacement is valid.  In particular, consider
+	(set (reg:DI r11) (...))
+	(set (reg:SI r9) (reg:SI r11))
+	(set (reg:SI r10) (...))
+	(set (...) (reg:DI r9))
+     Replacing r9 with r11 is invalid.  */
+  if (mode != vd->e[regno].mode)
+    {
+      if (HARD_REGNO_NREGS (regno, mode)
+	  > HARD_REGNO_NREGS (regno, vd->e[regno].mode))
+	return NULL_RTX;
+    }
+
   for (i = vd->e[regno].oldest_regno; i != regno; i = vd->e[i].next_regno)
     if (TEST_HARD_REG_BIT (reg_class_contents[class], i)
 	&& (vd->e[i].mode == mode
@@ -1544,6 +1558,15 @@ copyprop_hardreg_forward_1 (bb, vd)
 	  unsigned int i;
 	  rtx new;
 
+	  /* If we are accessing SRC in some mode other that what we
+	     set it in, make sure that the replacement is valid.  */
+	  if (mode != vd->e[regno].mode)
+	    {
+	      if (HARD_REGNO_NREGS (regno, mode)
+		  > HARD_REGNO_NREGS (regno, vd->e[regno].mode))
+		goto no_move_special_case;
+	    }
+
 	  /* If the destination is also a register, try to find a source
 	     register in the same class.  */
 	  if (REG_P (SET_DEST (set)))
@@ -1578,6 +1601,7 @@ copyprop_hardreg_forward_1 (bb, vd)
 		  }
 	      }
 	}
+      no_move_special_case:
 
       /* For each input operand, replace a hard register with the
 	 eldest live copy that's in an appropriate register class.  */
@@ -1735,7 +1759,7 @@ debug_value_data (vd)
 	     j != INVALID_REGNUM;
 	     j = vd->e[j].next_regno)
 	  {
-	    if (TEST_HARD_REG_BIT (set, vd->e[j].next_regno))
+	    if (TEST_HARD_REG_BIT (set, j))
 	      {
 		fprintf (stderr, "[%u] Loop in regno chain\n", j);
 		return;
