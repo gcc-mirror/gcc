@@ -6212,7 +6212,7 @@ update_giv_derive (const struct loop *loop, rtx p)
    *MULT_VAL to CONST0_RTX, and store the invariant into *INC_VAL.
 
    We also want to detect a BIV when it corresponds to a variable
-   whose mode was promoted via PROMOTED_MODE.  In that case, an increment
+   whose mode was promoted.  In that case, an increment
    of the variable may be a PLUS that adds a SUBREG of that variable to
    an invariant and then sign- or zero-extends the result of the PLUS
    into the variable.

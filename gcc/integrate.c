@@ -771,7 +771,7 @@ expand_inline_function (tree fndecl, tree parms, rtx target, int ignore,
 		abort ();
 
 	      /* The mode if LOC and ARG can differ if LOC was a variable
-		 that had its mode promoted via PROMOTED_MODE.  */
+		 that had its mode promoted.  */
 	      arg_vals[i] = convert_modes (pmode,
 					   TYPE_MODE (TREE_TYPE (arg)),
 					   expand_expr (arg, NULL_RTX, mode,
