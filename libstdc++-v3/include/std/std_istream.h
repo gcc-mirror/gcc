@@ -73,6 +73,14 @@ namespace std
       typedef num_get<_CharT, __istreambuf_iter>        __numget_type;
       typedef ctype<_CharT>           			__ctype_type;
 
+      template<typename _CharT2, typename _Traits2>
+        friend basic_istream<_CharT2, _Traits2>&
+        operator>>(basic_istream<_CharT2, _Traits2>&, _CharT2&);
+ 
+      template<typename _CharT2, typename _Traits2>
+        friend basic_istream<_CharT2, _Traits2>&
+        operator>>(basic_istream<_CharT2, _Traits2>&, _CharT2*);
+ 
     protected:
       // Data Members:
       /**
