@@ -9155,3 +9155,14 @@ true when @var{after_prologue_epilogue_gen} is false, you still are likely
 to have to make special provisions in @code{INITIAL_ELIMINATION_OFFSET}
 to reserve space for caller-saved target registers.
 @end deftypefn
+
+@defmac POWI_MAX_MULTS
+If defined, this macro is interpreted as a signed integer C expression 
+that specifies the maximum number of floating point multiplications
+that should be emitted when expanding exponentiation by an integer
+constant inline.  When this value is defined, exponentiation requiring
+more than this number of multiplications is implemented by calling the
+system library's @code{pow}, @code{powf} or @code{powl} routines.
+The default value places no upper bound on the multiplication count.
+@end defmac
+

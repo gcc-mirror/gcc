@@ -1,3 +1,7 @@
+2003-06-23  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/builtins-24.c: New test case.
+
 2003-06-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/opt/operator1.C: New test.
