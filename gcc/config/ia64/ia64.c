@@ -1183,7 +1183,7 @@ ia64_compute_frame_size (size)
       break;
   current_frame_info.n_local_regs = regno - LOC_REG (0) + 1;
 
-  if (current_function_varargs || current_function_stdarg)
+  if (cfun->machine->n_varargs > 0)
     current_frame_info.n_input_regs = 8;
   else
     {
@@ -1323,7 +1323,7 @@ ia64_compute_frame_size (size)
 
   /* If we're forced to use st8.spill, we're forced to save and restore
      ar.unat as well.  */
-  if (spilled_gr_p || current_function_varargs || current_function_stdarg)
+  if (spilled_gr_p || cfun->machine->n_varargs)
     {
       SET_HARD_REG_BIT (mask, AR_UNAT_REGNUM);
       current_frame_info.reg_save_ar_unat = find_gr_spill (spill_size == 0);
@@ -1782,7 +1782,7 @@ ia64_expand_prologue ()
 
   /* Set up frame pointer, stack pointer, and spill iterators.  */
 
-  n_varargs = current_function_pretend_args_size / UNITS_PER_WORD;
+  n_varargs = cfun->machine->n_varargs;
   setup_spill_pointers (current_frame_info.n_spilled + n_varargs,
 			stack_pointer_rtx, 0);
 
@@ -2437,17 +2437,21 @@ ia64_initialize_trampoline (addr, fnaddr, static_chain)
 void
 ia64_setup_incoming_varargs (cum, int_mode, type, pretend_size, second_time)
      CUMULATIVE_ARGS cum;
-     int             int_mode ATTRIBUTE_UNUSED;
-     tree            type ATTRIBUTE_UNUSED;
+     int             int_mode;
+     tree            type;
      int *           pretend_size;
      int	     second_time ATTRIBUTE_UNUSED;
 {
-  /* If this is a stdarg function, then don't save the current argument.  */
-  int offset = ! current_function_varargs;
+  /* If this is a stdarg function, then skip the current argument.  */
+  if (! current_function_varargs)
+    ia64_function_arg_advance (&cum, int_mode, type, 1);
 
   if (cum.words < MAX_ARGUMENT_SLOTS)
-    *pretend_size = ((MAX_ARGUMENT_SLOTS - cum.words - offset)
-		     * UNITS_PER_WORD);
+    {
+      int n = MAX_ARGUMENT_SLOTS - cum.words;
+      *pretend_size = n * UNITS_PER_WORD;
+      cfun->machine->n_varargs = n;
+    }
 }
 
 /* Check whether TYPE is a homogeneous floating point aggregate.  If

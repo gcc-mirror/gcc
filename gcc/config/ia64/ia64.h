@@ -2795,6 +2795,9 @@ struct machine_function
 
   /* The GP value save register.  */
   struct rtx_def* ia64_gp_save;
+
+  /* The number of varargs registers to save.  */
+  int n_varargs;
 };
 
 
