@@ -54,6 +54,7 @@ public interface RSAMultiPrimePrivateCrtKey extends RSAPrivateKey
 {
   // Constants
   // --------------------------------------------------------------------------
+  long serialVersionUID = 618058533534628008L;
 
   // Methods
   // --------------------------------------------------------------------------

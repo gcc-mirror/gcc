@@ -43,7 +43,7 @@ import java.rmi.RemoteException;
 
 public interface ServerRef extends RemoteRef
 {
-  long serialVersionUID = 0;
+  long serialVersionUID = -4557750989390278438L;
 
   RemoteStub exportObject(Remote obj, Object data) throws RemoteException;
 

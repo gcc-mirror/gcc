@@ -1,3 +1,23 @@
+2005-02-22  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/io/Externalizable.java,
+	java/io/Serializable.java
+	(serialVersionUID): Removed.
+	* java/rmi/server/RemoteObject.java,
+	java/rmi/server/UID.java
+	(serialVersionUID): Made private.
+	* java/rmi/server/RemoteRef.java,
+	java/rmi/server/ServerRef.java
+	(serialVersionUID): Set proper value.
+	* java/security/interfaces/DSAPrivateKey.java,
+	java/security/interfaces/DSAPublicKey.java,
+	java/security/interfaces/RSAMultiPrimePrivateCrtKey.java,
+	java/security/interfaces/RSAPrivateCrtKey.java,
+	java/security/interfaces/RSAPrivateKey.java,
+	java/security/interfaces/RSAPublicKey.java,
+	javax/crypto/SecretKey.java
+	(serialVersionUID): Added.
+
 2005-02-22  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/Object.h (_JvObjectPrefix): Declare as extern "Java".

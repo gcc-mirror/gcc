@@ -50,6 +50,11 @@ import java.security.PublicKey;
 public interface DSAPublicKey extends DSAKey, PublicKey
 {
   /**
+   * The version identifier used for serialization.
+   */
+  long serialVersionUID = 1234526332779022332L;
+
+  /**
    * This method returns the value of the DSA public key
    */
   BigInteger getY();

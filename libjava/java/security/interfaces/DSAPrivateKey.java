@@ -50,6 +50,11 @@ import java.security.PrivateKey;
 public interface DSAPrivateKey extends DSAKey, PrivateKey
 {
   /**
+   * The version identifier used for serialization.
+   */
+  long serialVersionUID = 7776497482533790279L;
+
+  /**
    * This method returns the value of the DSA private key
    */
   BigInteger getX();

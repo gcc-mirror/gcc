@@ -60,8 +60,6 @@ package java.io;
  */
 public interface Externalizable extends Serializable
 {
-  long serialVersionUID = -282491828744381764L;
-
   /**
    * This method restores an object's state by reading in the instance data
    * for the object from the passed in stream.  Note that this stream is not

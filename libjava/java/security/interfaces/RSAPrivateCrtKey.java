@@ -49,6 +49,8 @@ import java.math.BigInteger;
  */
 public interface RSAPrivateCrtKey extends RSAPrivateKey
 {
+  long serialVersionUID = -5682214253527700368L;
+
   /**
    * Returns the public exponent for this key
    *
