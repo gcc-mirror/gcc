@@ -201,7 +201,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 
 #ifndef perform_lesf2
-#define perform_lesf2(a, b) return 1 - (a >= b);
+#define perform_lesf2(a, b) return 1 - (a <= b);
 #endif
 
 /* Define the C data type to use for an SImode value.  */
