@@ -2181,36 +2181,36 @@ do {									\
 }
 /* Define the codes that are matched by predicates in alpha.c.  */
 
-#define PREDICATE_CODES \
-  {"reg_or_0_operand", {SUBREG, REG, CONST_INT}},	\
-  {"reg_or_6bit_operand", {SUBREG, REG, CONST_INT}},	\
-  {"reg_or_8bit_operand", {SUBREG, REG, CONST_INT}},	\
-  {"cint8_operand", {CONST_INT}},                       \
-  {"reg_or_cint_operand", {SUBREG, REG, CONST_INT}},	\
-  {"add_operand", {SUBREG, REG, CONST_INT}},		\
-  {"sext_add_operand", {SUBREG, REG, CONST_INT}},	\
-  {"const48_operand", {CONST_INT}},			\
-  {"and_operand", {SUBREG, REG, CONST_INT}},		\
-  {"or_operand", {SUBREG, REG, CONST_INT}},		\
-  {"mode_mask_operand", {CONST_INT}},			\
-  {"mul8_operand", {CONST_INT}},			\
-  {"mode_width_operand", {CONST_INT}},			\
-  {"reg_or_fp0_operand", {SUBREG, REG, CONST_DOUBLE}},	\
-  {"alpha_comparison_operator", {EQ, LE, LT, LEU, LTU}}, \
-  {"alpha_swapped_comparison_operator", {EQ, GE, GT, GEU, GTU}}, \
-  {"signed_comparison_operator", {EQ, NE, LE, LT, GE, GT}}, \
-  {"divmod_operator", {DIV, MOD, UDIV, UMOD}},		\
-  {"fp0_operand", {CONST_DOUBLE}},			\
-  {"current_file_function_operand", {SYMBOL_REF}},	\
-  {"call_operand", {REG, SYMBOL_REF}},			\
-  {"input_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,	\
-		     SYMBOL_REF, CONST, LABEL_REF}},	\
-  {"some_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE, \
-		    SYMBOL_REF, CONST, LABEL_REF}},	\
-  {"aligned_memory_operand", {MEM}},			\
-  {"unaligned_memory_operand", {MEM}},			\
-  {"reg_or_unaligned_mem_operand", {SUBREG, REG, MEM}},	\
-  {"any_memory_operand", {MEM}},			\
+#define PREDICATE_CODES 						\
+  {"reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
+  {"reg_or_6bit_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
+  {"reg_or_8bit_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
+  {"cint8_operand", {CONST_INT, CONSTANT_P_RTX}},                       \
+  {"reg_or_cint_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
+  {"add_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},		\
+  {"sext_add_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
+  {"const48_operand", {CONST_INT}},					\
+  {"and_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},		\
+  {"or_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},		\
+  {"mode_mask_operand", {CONST_INT}},					\
+  {"mul8_operand", {CONST_INT}},					\
+  {"mode_width_operand", {CONST_INT}},					\
+  {"reg_or_fp0_operand", {SUBREG, REG, CONST_DOUBLE}},			\
+  {"alpha_comparison_operator", {EQ, LE, LT, LEU, LTU}},		\
+  {"alpha_swapped_comparison_operator", {EQ, GE, GT, GEU, GTU}},	\
+  {"signed_comparison_operator", {EQ, NE, LE, LT, GE, GT}},		\
+  {"divmod_operator", {DIV, MOD, UDIV, UMOD}},				\
+  {"fp0_operand", {CONST_DOUBLE}},					\
+  {"current_file_function_operand", {SYMBOL_REF}},			\
+  {"call_operand", {REG, SYMBOL_REF}},					\
+  {"input_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\
+		     SYMBOL_REF, CONST, LABEL_REF, CONSTANT_P_RTX}},	\
+  {"some_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\
+		    SYMBOL_REF, CONST, LABEL_REF, CONSTANT_P_RTX}},	\
+  {"aligned_memory_operand", {MEM}},					\
+  {"unaligned_memory_operand", {MEM}},					\
+  {"reg_or_unaligned_mem_operand", {SUBREG, REG, MEM}},			\
+  {"any_memory_operand", {MEM}},					\
   {"hard_fp_register_operand", {SUBREG, REG}},
 
 /* Tell collect that the object format is ECOFF.  */
