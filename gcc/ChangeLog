@@ -1,3 +1,7 @@
+2004-01-28  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* timevar.c (timevar_print): Mention when checking is enabled.
+
 2004-01-28  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* c-lex.c (c_lex): Rename to...
