@@ -39,7 +39,7 @@ static int bitmap_obstack_init = FALSE;
 
 /* Global data */
 bitmap_element bitmap_zero_bits;	/* An element of all zero bits. */
-bitmap_element *bitmap_free;		/* Freelist of bitmap elements. */
+static bitmap_element *bitmap_free;	/* Freelist of bitmap elements. */
 
 static void bitmap_element_free		PARAMS ((bitmap, bitmap_element *));
 static bitmap_element *bitmap_element_allocate PARAMS ((void));
@@ -47,7 +47,8 @@ static int bitmap_element_zerop		PARAMS ((bitmap_element *));
 static void bitmap_element_link		PARAMS ((bitmap, bitmap_element *));
 static bitmap_element *bitmap_find_bit	PARAMS ((bitmap, unsigned int));
 
-/* Free a bitmap element */
+/* Free a bitmap element.  Since these are allocated off the
+   bitmap_obstack, "free" actually means "put onto the freelist".  */
 
 static INLINE void
 bitmap_element_free (head, elt)
@@ -81,9 +82,6 @@ static INLINE bitmap_element *
 bitmap_element_allocate ()
 {
   bitmap_element *element;
-#if BITMAP_ELEMENT_WORDS != 2
-  int i;
-#endif
 
   if (bitmap_free != 0)
     {
@@ -125,12 +123,7 @@ bitmap_element_allocate ()
 						  sizeof (bitmap_element));
     }
 
-#if BITMAP_ELEMENT_WORDS == 2
-  element->bits[0] = element->bits[1] = 0;
-#else
-  for (i = 0; i < BITMAP_ELEMENT_WORDS; i++)
-    element->bits[i] = 0;
-#endif
+  memset (element->bits, 0, sizeof (element->bits));
 
   return element;
 }
@@ -242,7 +235,7 @@ bitmap_clear (head)
   head->first = head->current =  0;
 }
 
-/* Copy a bitmap to another bitmap */
+/* Copy a bitmap to another bitmap.  */
 
 void
 bitmap_copy (to, from)
@@ -350,7 +343,6 @@ bitmap_clear_bit (head, bit)
     }
 }
 
-
 /* Set a single bit in a bitmap.  */
 
 void
@@ -374,7 +366,7 @@ bitmap_set_bit (head, bit)
   else
     ptr->bits[word_num] |= bit_val;
 }
-
+
 /* Return whether a bit is set within a bitmap.  */
 
 int
@@ -397,6 +389,8 @@ bitmap_bit_p (head, bit)
   return (ptr->bits[word_num] >> bit_num) & 1;
 }
 
+/* Return the bit number of the first set bit in the bitmap, or -1
+   if the bitmap is empty.  */
 
 int 
 bitmap_first_set_bit (a)
@@ -448,6 +442,9 @@ bitmap_first_set_bit (a)
 	  + bit_num);
 }
 
+/* Return the bit number of the last set bit in the bitmap, or -1
+   if the bitmap is empty.  */
+
 int 
 bitmap_last_set_bit (a)
      bitmap a;
@@ -491,7 +488,7 @@ bitmap_last_set_bit (a)
   if (word & 0xc)
     word >>= 2, bit_num += 2;
   if (word & 0x2)
-    word >>= 1, bit_num += 1;
+    bit_num += 1;
 
   return (ptr->indx * BITMAP_ELEMENT_ALL_BITS
 	  + word_num * HOST_BITS_PER_WIDE_INT
@@ -766,7 +763,7 @@ debug_bitmap_file (file, head)
       fprintf (file, " }\n");
     }
 }
-
+
 /* Function to be called from the debugger to print the contents
    of a bitmap.  */
 
@@ -776,7 +773,7 @@ debug_bitmap (head)
 {
   debug_bitmap_file (stdout, head);
 }
-
+
 /* Function to print out the contents of a bitmap.  Unlike debug_bitmap_file,
    it does not print anything but the bits.  */
 

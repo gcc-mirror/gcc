@@ -1,3 +1,10 @@
+2001-07-11  Richard Henderson  <rth@redhat.com>
+
+	* bitmap.c: Comment some functions; fiddle whitespace.
+	(bitmap_free): Don't export.
+	(bitmap_element_allocate): Use memset.
+	* bitmap.h (bitmap_free): Don't declare.
+
 2001-07-11  Daniel Berlin  <dan@cgsoftware.com>
 
 	* gcse.c, lcm.c, sched-deps.c:

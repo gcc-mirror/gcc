@@ -65,7 +65,6 @@ enum bitmap_bits {
 };
 
 /* Global data */
-extern bitmap_element *bitmap_free;	/* Freelist of bitmap elements */
 extern bitmap_element bitmap_zero_bits;	/* Zero bitmap element */
 
 /* Clear a bitmap by freeing up the linked list.  */
