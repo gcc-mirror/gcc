@@ -1,3 +1,7 @@
+2001-10-03  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* resolve.cc (_Jv_PrepareClass): Fix typos in vtable layout.
+
 2001-09-30  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/lang/natClass.cc (_Jv_IsAssignableFrom): Handle the case of

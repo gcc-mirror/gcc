@@ -734,9 +734,9 @@ _Jv_PrepareClass(jclass klass)
 	    throw_internal_error ("vtable problem...");
 
 	  if (clz->interpreted_methods[i] == 0)
-	    vtable->set_method(i, (void*)&_Jv_abstractMethodError);
+	    vtable->set_method(index, (void*)&_Jv_abstractMethodError);
 	  else
-	    vtable->set_method(i, this_meth->ncode);
+	    vtable->set_method(index, this_meth->ncode);
 	}
     }
 
