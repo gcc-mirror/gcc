@@ -1,3 +1,9 @@
+2004-07-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* configure.in: Do not build libmudflap by default on non-GNU/Linux
+	systems.
+	* configure: Regenerated.
+
 2004-07-08 John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/16344

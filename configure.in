@@ -351,12 +351,21 @@ esac
 
 # Allow --disable-libmudflap to exclude target-libmudflap
 case $enable_libmudflap in
-yes | "")
-    # By default it's enabled
+yes)
     ;;
 no)
     noconfigdirs="$noconfigdirs target-libmudflap"
     ;;
+"")
+    case "${target}" in
+    *-*-linux*)
+        # Enable libmudflap by default in GNU/Linux.
+	;;
+    *)
+        # Disable it by default everywhere else.
+	noconfigdirs="$noconfigdirs target-libmudflap"
+	;;
+    esac
 esac
 
 
