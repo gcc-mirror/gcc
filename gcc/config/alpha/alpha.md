@@ -3654,11 +3654,11 @@
   ""
   "
 {
-  operands[0] = gen_rtx (MEM, DImode, plus_constant (stack_pointer_rtx,
+  operands[1] = gen_rtx (MEM, DImode, plus_constant (stack_pointer_rtx,
 						     INTVAL (operands[0])));
-  MEM_VOLATILE_P (operands[0]) = 1;
+  MEM_VOLATILE_P (operands[1]) = 1;
 
-  operands[1] = gen_reg_rtx (DImode);
+  operands[0] = const0_rtx;
 }")
 
 ;; This is how we allocate stack space.  If we are allocating a
@@ -3689,7 +3689,7 @@
 	    emit_insn (gen_probe_stack (GEN_INT (- (probed += 8192))));
 
 	  if (probed + 4096 < INTVAL (operands[0]))
-	    emit_insn (gen_probe_stack (GEN_INT (- (probed += 4096))));
+	    emit_insn (gen_probe_stack (GEN_INT (- INTVAL(operands[0]))));
 	}
 
       operands[0] = GEN_INT (- INTVAL (operands[0]));
@@ -3698,56 +3698,36 @@
     {
       rtx out_label = 0;
       rtx loop_label = gen_label_rtx ();
-      rtx count = gen_reg_rtx (DImode);
-      rtx access = gen_reg_rtx (Pmode);
-      rtx memref = gen_rtx (MEM, DImode, access);
+      rtx want = gen_reg_rtx (Pmode);
+      rtx tmp = gen_reg_rtx (Pmode);
+      rtx memref;
 
-      MEM_VOLATILE_P (memref) = 1;
-
-      /* If the amount to be allocated is not a constant, we only need to
-	 do something special if it is >= 4096.  */
+      emit_insn (gen_subdi3 (want, stack_pointer_rtx,
+			     force_reg (Pmode, operands[0])));
+      emit_insn (gen_adddi3 (tmp, stack_pointer_rtx, GEN_INT (-4096)));
 
       if (GET_CODE (operands[0]) != CONST_INT)
 	{
-	  operands[0] = force_reg (DImode, operands[0]);
 	  out_label = gen_label_rtx ();
-	  emit_insn (gen_cmpdi (operands[0],
-				force_reg (DImode, GEN_INT (4096))));
-	  emit_jump_insn (gen_ble (out_label));
-
-	  /* Compute COUNT = (N + 4096) / 8192.  N is known positive.  */
-	  emit_insn (gen_adddi3 (count, operands[0], GEN_INT (4096)));
-	  emit_insn (gen_lshrdi3 (count, count, GEN_INT (13)));
+	  emit_insn (gen_cmpdi (want, tmp));
+	  emit_jump_insn (gen_bgeu (out_label));
 	}
-      else
-	emit_move_insn (count, GEN_INT ((INTVAL (operands[0]) + 4096) >> 13));
 
-      /* ACCESS = SP + 4096.  */
-      emit_insn (gen_adddi3 (access, stack_pointer_rtx, GEN_INT (4096)));
       emit_label (loop_label);
-
-      /* Each iteration subtracts 8192 from ACCESS and references it.  */
-      emit_insn (gen_adddi3 (count, count, constm1_rtx));
-      emit_insn (gen_adddi3 (access, access, GEN_INT (-8192)));
-      emit_move_insn (gen_reg_rtx (DImode), memref);
-      emit_insn (gen_cmpdi (count, const0_rtx));
-      emit_jump_insn (gen_bgt (loop_label));
+      memref = gen_rtx (MEM, DImode, tmp);
+      MEM_VOLATILE_P (memref) = 1;
+      emit_move_insn (memref, const0_rtx);
+      emit_insn (gen_adddi3 (tmp, tmp, GEN_INT(-8192)));
+      emit_insn (gen_cmpdi (tmp, want));
+      emit_jump_insn (gen_bgtu (loop_label));
+      memref = gen_rtx (MEM, DImode, want);
+      MEM_VOLATILE_P (memref) = 1;
+      emit_move_insn (memref, const0_rtx);
 
       if (out_label)
 	emit_label (out_label);
 
-      /* We need to subtract operands[0] from SP.  We know it isn't a
-	 constant less than 32768, so we know we have to load it into
-	 a register.  */
-
-      emit_insn (gen_subdi3 (stack_pointer_rtx, stack_pointer_rtx,
-			     force_reg (Pmode, operands[0])));
-
-      /* Now, unless we have a constant and we know that we are within
-	 4096 from the end, we need to access sp + 4096.  */
-      if (! (GET_CODE (operands[0]) == CONST_INT
-	     && (INTVAL (operands[0]) % 8192) < 4096))
-	emit_insn (gen_probe_stack (GEN_INT (4096)));
+      emit_move_insn (stack_pointer_rtx, want);
 
       DONE;
     }
