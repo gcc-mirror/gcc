@@ -583,7 +583,15 @@ wstring-inst.lo: string-inst.cc
 # Alexandre put this in here for some libtool-related reason.
 all: libstdc++.INC
 libstdc++.INC: Makefile
-	echo $(INCLUDES) > $@
+	$(MAKE) \
+	top_builddir=`CDPATH=:. && cd $(top_builddir) && pwd` \
+	top_srcdir=`CDPATH=:. && cd $(top_srcdir) && pwd` \
+	tmp-$@
+	-rm -f $@
+	mv tmp-$@ $@
+
+tmp-libstdc++.INC: Makefile
+	echo -I$(top_builddir) $(INCLUDES) > $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.54 2000/11/29 21:30:30 bkoz Exp $
+## $Id: Makefile.am,v 1.55 2000/11/30 23:44:32 gdr Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -318,8 +318,15 @@ wstring-inst.lo: string-inst.cc
 # Alexandre put this in here for some libtool-related reason.
 all: libstdc++.INC
 libstdc++.INC: Makefile
-	echo $(INCLUDES) > $@
+	$(MAKE) \
+	top_builddir=`CDPATH=:. && cd $(top_builddir) && pwd` \
+	top_srcdir=`CDPATH=:. && cd $(top_srcdir) && pwd` \
+	tmp-$@
+	-rm -f $@
+	mv tmp-$@ $@
 
+tmp-libstdc++.INC: Makefile
+	echo -I$(top_builddir) $(INCLUDES) > $@
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
