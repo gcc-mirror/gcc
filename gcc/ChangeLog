@@ -1,3 +1,9 @@
+2004-03-26  Richard Henderson  <rth@redhat.com>
+
+	PR 11527
+	* c-typeck.c (pop_init_level): Emit pending init elements earlier
+	rather than later.
+
 2004-03-26  Jan Hubicka  <jh@suse.cz>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -90,9 +96,9 @@
 
 2004-03-15  Richard Henderson  <rth@redhat.com>
 
-        PR middle-end/14535
-        * except.c (collect_one_action_chain): Record action for cleanup
-        outer of exception spec.
+	PR middle-end/14535
+	* except.c (collect_one_action_chain): Record action for cleanup
+	outer of exception spec.
 
 2004-03-13  Dara Hazeghi  <dhazeghi@yahoo.com>
 
@@ -126,7 +132,7 @@
 
 	Backport:
 	2004-03-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
-        PR middle-end/14470
+	PR middle-end/14470
 	* expr.c (store_expr): Call emit_queue before generating the move
 	from the temporary to the original target.  Protect the temporary
 	from emit_queue.
@@ -146,8 +152,8 @@
 	options.
 
 2004-03-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
-        
-        Endorse:
+	
+	Endorse:
 	2004-01-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 	PR optimization/13472
 	* reload.c (reload): Don't record unchanging memory locations.
@@ -210,25 +216,25 @@
 
 2004-03-07  Aldy Hernandez  <aldyh@redhat.com>
  
-        * config/rs6000/rs6000.md (ashrdi3): Do not call ashrdi3_no_power
-        for little endian.
-        ("ashrdi3_no_power"): Disable for little endian.
+	* config/rs6000/rs6000.md (ashrdi3): Do not call ashrdi3_no_power
+	for little endian.
+	("ashrdi3_no_power"): Disable for little endian.
 	(ashrdi3): Same.
 
 2004-03-07  Richard Henderson  <rth@redhat.com>
 
-        * config/alpha/alpha.h (MASK_LONG_DOUBLE_128): New.
-        (TARGET_LONG_DOUBLE_128): New.
-        (TARGET_SWITCHES): Add long-double-{128,64}.
-        (TARGET_HAS_XFLOATING_LIBS): Default to TARGET_LONG_DOUBLE_128.
-        (LONG_DOUBLE_TYPE_SIZE): Honor TARGET_LONG_DOUBLE_128.
-        (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): New.
-        (WIDEST_HARDWARE_FP_SIZE): New.
-        (TARGET_CPU_CPP_BUILTINS): Define __LONG_DOUBLE_128__.
-        * config/alpha/alpha.c (override_options): Clear MASK_LONG_DOUBLE_128
-        if TARGET_VAX_FLOAT.
-        * config/alpha/osf5.h (LONG_DOUBLE_TYPE_SIZE): Remove.
-        (TARGET_DEFAULT): Set MASK_LONG_DOUBLE_128.
+	* config/alpha/alpha.h (MASK_LONG_DOUBLE_128): New.
+	(TARGET_LONG_DOUBLE_128): New.
+	(TARGET_SWITCHES): Add long-double-{128,64}.
+	(TARGET_HAS_XFLOATING_LIBS): Default to TARGET_LONG_DOUBLE_128.
+	(LONG_DOUBLE_TYPE_SIZE): Honor TARGET_LONG_DOUBLE_128.
+	(LIBGCC2_LONG_DOUBLE_TYPE_SIZE): New.
+	(WIDEST_HARDWARE_FP_SIZE): New.
+	(TARGET_CPU_CPP_BUILTINS): Define __LONG_DOUBLE_128__.
+	* config/alpha/alpha.c (override_options): Clear MASK_LONG_DOUBLE_128
+	if TARGET_VAX_FLOAT.
+	* config/alpha/osf5.h (LONG_DOUBLE_TYPE_SIZE): Remove.
+	(TARGET_DEFAULT): Set MASK_LONG_DOUBLE_128.
 
 2004-03-08  Hans-Peter Nilsson  <hp@axis.com>
 
@@ -255,7 +261,7 @@
 
 2004-03-06  Richard Henderson  <rth@redhat.com>
 
-        * config/alpha/alpha.c (alpha_in_small_data_p): False for functions.
+	* config/alpha/alpha.c (alpha_in_small_data_p): False for functions.
 
 2004-03-05  Ulrich Weigand  <uweigand@de.ibm.com>
 
@@ -341,15 +347,15 @@
 
 2004-03-02  Richard Henderson  <rth@redhat.com>
 
-        PR middle-end/11767
-        * optabs.c (prepare_cmp_insn): Force trapping memories to registers
-        before the compare, if flag_non_call_exceptions.
+	PR middle-end/11767
+	* optabs.c (prepare_cmp_insn): Force trapping memories to registers
+	before the compare, if flag_non_call_exceptions.
 
 2004-03-02  Richard Henderson  <rth@redhat.com>
 
-        PR middle-end/14327
-        * stmt.c (expand_computed_goto): Do do_pending_stack_adjust before
-        emitting the label, not after.
+	PR middle-end/14327
+	* stmt.c (expand_computed_goto): Do do_pending_stack_adjust before
+	emitting the label, not after.
 
 2004-03-02  Danny Smith  <dannysmith@users.sourceforge.net>
 
@@ -365,9 +371,9 @@
 	constants as signed values.
 
 	2004-01-16  J"orn Rennecke <joern.rennecke@superh.com>
-        PR optimization/11864
-        * reload1.c (reload_cse_simplify_operands): Don't remove
-        implicit extension from LOAD_EXTEND_OP.
+	PR optimization/11864
+	* reload1.c (reload_cse_simplify_operands): Don't remove
+	implicit extension from LOAD_EXTEND_OP.
 
 2004-02-29  Hans-Peter Nilsson  <hp@axis.com>
 
@@ -502,7 +508,7 @@
 
 	* config/i386/i386.c: Rename pni to sse3.
 	* config/i386/i386.h: Likewise.
-        * config/i386/i386.md: Likewise.
+	* config/i386/i386.md: Likewise.
 	* config/i386/pmmintrin.h: Likewise.
 	* doc/extend.texi: Likewise.
 	* doc/invoke.texi: Likewise.
@@ -552,10 +558,10 @@
 
 2004-01-23  Richard Henderson  <rth@redhat.com>
 
-        PR opt/12941
-        * combine.c (SHIFT_COUNT_TRUNCATED): Provide default value.
-        (simplify_comparison): Don't simplify (eq (zero_extract c 1 r) 0)
-        if SHIFT_COUNT_TRUNCATED is set.
+	PR opt/12941
+	* combine.c (SHIFT_COUNT_TRUNCATED): Provide default value.
+	(simplify_comparison): Don't simplify (eq (zero_extract c 1 r) 0)
+	if SHIFT_COUNT_TRUNCATED is set.
 
 2004-01-23  Ian Lance Taylor  <ian@wasabisystems.com>
 
@@ -575,18 +581,18 @@
 2004-01-21  Ralf Corsepius  <corsepiu@faw.uni-ulm.de>
 
 	PR target/13073
-        * config/h8300/t-rtems (h8300-*-rtems*): New.
-        * config.gcc: Use config/h8300/t-rtems.
+	* config/h8300/t-rtems (h8300-*-rtems*): New.
+	* config.gcc: Use config/h8300/t-rtems.
 	
 2004-01-20  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
-        Backport from mainline
+	Backport from mainline
 
-        2004-01-10  Jan Hubicka  <jh@suse.cz>
-        PR opt/12826
-        * loop.c (insert_loop_mem): Prefer VOLATILE memory references to be
-        stored. 
-        
+	2004-01-10  Jan Hubicka  <jh@suse.cz>
+	PR opt/12826
+	* loop.c (insert_loop_mem): Prefer VOLATILE memory references to be
+	stored. 
+	
 2004-01-16  Jan Hubicka  <jh@suse.cz>
 
 	PR opt/13608
@@ -594,16 +600,16 @@
 
 2004-01-16  Segher Boessenkool  <boessen@de.ibm.com>
 
-        PR target/11793
+	PR target/11793
 	* config/rs6000/rs6000.h (LEGITIMATE_CONSTANT_P): Handle
 	vectors.
 	
 2004-01-16  Jan Hubicka  <jh@suse.cz>
 
-        PR opt/11350
-        * cfgcleanup.c (try_optimize_cfg): Suppress tablejump removal
+	PR opt/11350
+	* cfgcleanup.c (try_optimize_cfg): Suppress tablejump removal
 	after reload.
-        * cfgrtl.c (try_redirect_by_replacing_branch): Likewise.
+	* cfgrtl.c (try_redirect_by_replacing_branch): Likewise.
 
 2004-01-15  J"orn Rennecke <joern.rennecke@superh.com>
 
@@ -629,11 +635,11 @@
 2003-01-14  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	PR objc/7993
-        * objc-act.c (is_private): Do not emit the 'instance variable %s
-        is declared private' error.
-        (is_public): Emit the error after calling is_private.
-        (lookup_objc_ivar): If the instance variable is private, return 0
-        - the instance variable is invisible here.
+	* objc-act.c (is_private): Do not emit the 'instance variable %s
+	is declared private' error.
+	(is_public): Emit the error after calling is_private.
+	(lookup_objc_ivar): If the instance variable is private, return 0
+	- the instance variable is invisible here.
        
 2004-01-12  Marc Espie <espie@openbsd.org>
 
@@ -641,10 +647,10 @@
 
 2004-01-12  Matthias Klose  <doko@debian.org>
 
-        Backport from mainline
+	Backport from mainline
 
-        2003-12-08 Stuart Hastings <stuart@apple.com>
-        * config/i386/i386.md: Typo in split of fp-valued if_then_else.
+	2003-12-08 Stuart Hastings <stuart@apple.com>
+	* config/i386/i386.md: Typo in split of fp-valued if_then_else.
 
 2004-01-12  Roger Sayle  <roger@eyesopen.com>
 
@@ -699,10 +705,10 @@
 	Backport the following from mainline: 
 
 	2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
-        * config/sh/rtemself.h (TARGET_OS_CPP_BUILTINS): Use instead of
-        CPP_PREDEFINES.
-        * config/sh/rtems.h (TARGET_OS_CPP_BUILTINS): Use instead of
-        CPP_PREDEFINES.
+	* config/sh/rtemself.h (TARGET_OS_CPP_BUILTINS): Use instead of
+	CPP_PREDEFINES.
+	* config/sh/rtems.h (TARGET_OS_CPP_BUILTINS): Use instead of
+	CPP_PREDEFINES.
 
 	2003-09-27  Kelley Cook  <kcook@gcc.gnu.org>
 	* config/sh/rtemself.h, config/sh/rtems.h: GNU CC -> GCC.

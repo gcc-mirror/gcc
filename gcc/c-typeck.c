@@ -5499,6 +5499,10 @@ pop_init_level (implicit)
 	abort ();
     }
 
+  /* Now output all pending elements.  */
+  constructor_incremental = 1;
+  output_pending_init_elements (1);
+
   p = constructor_stack;
 
   /* Error for initializing a flexible array member, or a zero-length
@@ -5552,10 +5556,6 @@ pop_init_level (implicit)
 	    RESTORE_SPELLING_DEPTH (constructor_depth);
 	  }
     }
-
-  /* Now output all pending elements.  */
-  constructor_incremental = 1;
-  output_pending_init_elements (1);
 
   /* Pad out the end of the structure.  */
   if (p->replacement_value)
