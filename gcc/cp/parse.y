@@ -758,9 +758,16 @@ eat_saved_input:
 	| END_OF_SAVED_INPUT
 	;
 
+/* The outermost block of a function really begins before the
+   mem-initializer-list, so we open one there and suppress the one that
+   actually corresponds to the curly braces.  */
 function_body:
-	  .begin_function_body ctor_initializer_opt compstmt
-		{
+	  .begin_function_body ctor_initializer_opt save_lineno '{'
+		{ $<ttype>$ = begin_compound_stmt (/*has_no_scope=*/1); }
+	  compstmtend 
+                {
+		  STMT_LINENO ($<ttype>5) = $3;
+		  finish_compound_stmt (/*has_no_scope=*/1, $<ttype>5);
 		  finish_function_body ($1);
 		}
 	;

@@ -4207,9 +4207,6 @@ pushdecl (x)
 		     them there.  */
 		  struct binding_level *b = current_binding_level->level_chain;
 
-		  /* Skip the ctor/dtor cleanup level.  */
-		  b = b->level_chain;
-
 		  /* ARM $8.3 */
 		  if (b->parm_flag == 1)
 		    {
@@ -14054,6 +14051,14 @@ begin_function_body ()
 {
   tree stmt;
 
+  if (processing_template_decl)
+    /* Do nothing now.  */;
+  else
+    /* Always keep the BLOCK node associated with the outermost pair of
+       curly braces of a function.  These are needed for correct
+       operation of dwarfout.c.  */
+    keep_next_level (1);
+
   stmt = begin_compound_stmt (0);
   COMPOUND_STMT_BODY_BLOCK (stmt) = 1;
 
@@ -14063,11 +14068,6 @@ begin_function_body ()
     begin_constructor_body ();
   else if (DECL_DESTRUCTOR_P (current_function_decl))
     begin_destructor_body ();
-
-  /* Always keep the BLOCK node associated with the outermost pair of
-     curly braces of a function.  These are needed for correct
-     operation of dwarfout.c.  */
-  keep_next_level (1);
 
   return stmt;
 }
