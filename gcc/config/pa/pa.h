@@ -107,6 +107,10 @@ extern int target_flags;
 
 #define TARGET_GAS (target_flags & 128)
 
+/* Emit code for processors which do not have an FPU.  */
+
+#define TARGET_SOFT_FLOAT (target_flags & 256)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -132,6 +136,8 @@ extern int target_flags;
    {"no-portable-runtime", -(64+16)},\
    {"gas", 128},		\
    {"no-gas", -128},		\
+   {"soft-float", 256},		\
+   {"no-soft-float", -256},	\
    { "", TARGET_DEFAULT}}
 
 #ifndef TARGET_DEFAULT
@@ -211,7 +217,7 @@ extern int target_flags;
 #define CPP_SPEC "%{msnake:-D__hp9000s700 -D_PA_RISC1_1}\
  %{mpa-risc-1-1:-D__hp9000s700 -D_PA_RISC1_1}"
 #else
-#define CPP_SPEC "%{!mpa-risc-1-0:%{!mnosnake:-D__hp9000s700 -D_PA_RISC1_1}}"
+#define CPP_SPEC "%{!mpa-risc-1-0:%{!mnosnake:%{!msoft-float:-D__hp9000s700 -D_PA_RISC1_1}}}"
 #endif
 
 /* Defines for a K&R CC */
@@ -257,6 +263,10 @@ do {								\
 
 /* target machine storage layout */
 
+/* Define for cross-compilation from a host with a different float format
+   or endianess (e.g. VAX, x86).  */
+#define REAL_ARITHMETIC
+
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
 #define BITS_BIG_ENDIAN 1
@@ -267,8 +277,6 @@ do {								\
 
 /* Define this if most significant word of a multiword number is lowest
    numbered.  */
-/* For the HP-PA we can decide arbitrarily
-   since there are no machine instructions for them.  */
 #define WORDS_BIG_ENDIAN 1
 
 /* number of bits in an addressable storage unit */
@@ -439,7 +447,8 @@ do {								\
       for (i = 33; i < 88; i += 2) 		\
 	fixed_regs[i] = call_used_regs[i] = 1; 	\
     }						\
-  else if (TARGET_DISABLE_FPREGS)		\
+  else if (TARGET_DISABLE_FPREGS		\
+	   || TARGET_SOFT_FLOAT)		\
     {						\
       for (i = 32; i < 88; i++) 		\
 	fixed_regs[i] = call_used_regs[i] = 1; 	\
@@ -786,26 +795,29 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), ((TYPE_MODE (VALTYPE) == SFmode ||	\
-				       TYPE_MODE (VALTYPE) == DFmode) ? \
+  gen_rtx (REG, TYPE_MODE (VALTYPE), ((! TARGET_SOFT_FLOAT		     \
+				       && (TYPE_MODE (VALTYPE) == SFmode ||  \
+					   TYPE_MODE (VALTYPE) == DFmode)) ? \
 				      32 : 28))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
-#define LIBCALL_VALUE(MODE) \
-  gen_rtx (REG, MODE, ((MODE) == SFmode || (MODE) == DFmode ? 32 : 28))
+#define LIBCALL_VALUE(MODE)	\
+  gen_rtx (REG, MODE,							\
+	   (! TARGET_SOFT_FLOAT						\
+	    && ((MODE) == SFmode || (MODE) == DFmode) ? 32 : 28))
 
 /* 1 if N is a possible register number for a function value
    as seen by the caller.  */
 
 #define FUNCTION_VALUE_REGNO_P(N) \
-  ((N) == 28 || (N) == 32)
+  ((N) == 28 || (! TARGET_SOFT_FLOAT && (N) == 32))
 
 /* 1 if N is a possible register number for function argument passing.  */
 
 #define FUNCTION_ARG_REGNO_P(N) \
-  (((N) >= 23 && (N) <= 26) || ((N) >= 32 && (N) <= 39))
+  (((N) >= 23 && (N) <= 26) || (! TARGET_SOFT_FLOAT && (N) >= 32 && (N) <= 39))
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
@@ -914,17 +926,20 @@ struct hppa_args {int words, nargs_prototype; };
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)		      		\
   (4 >= ((CUM).words + FUNCTION_ARG_SIZE ((MODE), (TYPE)))		\
    ? (!TARGET_PORTABLE_RUNTIME || (TYPE) == 0				\
-      || !FLOAT_MODE_P (MODE) || (CUM).nargs_prototype > 0)		\
+      || !FLOAT_MODE_P (MODE) || TARGET_SOFT_FLOAT			\
+      || (CUM).nargs_prototype > 0)					\
       ? gen_rtx (REG, (MODE),						\
 		 (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1		\
 		  ? (((!current_call_is_indirect 			\
 		       || TARGET_PORTABLE_RUNTIME)			\
-		      && (MODE) == DFmode)				\
+		      && (MODE) == DFmode				\
+		      && ! TARGET_SOFT_FLOAT)				\
 		     ? ((CUM).words ? 38 : 34)				\
 		     : ((CUM).words ? 23 : 25))				\
 		  : (((!current_call_is_indirect			\
 		       || TARGET_PORTABLE_RUNTIME)			\
-		      && (MODE) == SFmode)				\
+		      && (MODE) == SFmode				\
+		      && ! TARGET_SOFT_FLOAT)				\
 		     ? (32 + 2 * (CUM).words)				\
 		     : (27 - (CUM).words - FUNCTION_ARG_SIZE ((MODE),	\
 							      (TYPE))))))\
@@ -1006,9 +1021,11 @@ extern enum cmp_type hppa_branch_type;
 	     for (parm = DECL_ARGUMENTS (DECL), i = 0; parm && i < 4;	\
 		  parm = TREE_CHAIN (parm))				\
 	       {							\
-		 if (TYPE_MODE (DECL_ARG_TYPE (parm)) == SFmode)	\
+		 if (TYPE_MODE (DECL_ARG_TYPE (parm)) == SFmode		\
+		     && ! TARGET_SOFT_FLOAT)				\
 		   fprintf (FILE, ",ARGW%d=FR", i++);			\
-		 else if (TYPE_MODE (DECL_ARG_TYPE (parm)) == DFmode)	\
+		 else if (TYPE_MODE (DECL_ARG_TYPE (parm)) == DFmode	\
+			  && ! TARGET_SOFT_FLOAT)			\
 		   {							\
 		     if (i <= 2)					\
 		       {						\
@@ -1044,9 +1061,9 @@ extern enum cmp_type hppa_branch_type;
 		 for (; i < 4; i++)					\
 		   fprintf (FILE, ",ARGW%d=GR", i);			\
 	       }							\
-	     if (TYPE_MODE (fntype) == DFmode)				\
+	     if (TYPE_MODE (fntype) == DFmode && ! TARGET_SOFT_FLOAT)	\
 	       fprintf (FILE, ",RTNVAL=FR");				\
-	     else if (TYPE_MODE (fntype) == SFmode)			\
+	     else if (TYPE_MODE (fntype) == SFmode && ! TARGET_SOFT_FLOAT) \
 	       fprintf (FILE, ",RTNVAL=FU");				\
 	     else if (fntype != void_type_node)				\
 	       fprintf (FILE, ",RTNVAL=GR");				\
@@ -1373,7 +1390,9 @@ extern union tree_node *current_function_decl;
 	base = XEXP (X, 1), index = XEXP (X, 0);	\
       if (base != 0)					\
 	if (GET_CODE (index) == CONST_INT		\
-	    && ((INT_14_BITS (index) && (MODE) != SFmode && (MODE) != DFmode) \
+	    && ((INT_14_BITS (index)			\
+		 && (TARGET_SOFT_FLOAT			\
+		     || ((MODE) != SFmode && (MODE) != DFmode))) \
 		|| INT_5_BITS (index)))			\
 	  goto ADDR;					\
     }							\
@@ -1381,16 +1400,18 @@ extern union tree_node *current_function_decl;
 	   && GET_CODE (XEXP (X, 0)) == REG		\
 	   && REG_OK_FOR_BASE_P (XEXP (X, 0))		\
 	   && CONSTANT_P (XEXP (X, 1))			\
-	   && (MODE) != SFmode				\
-	   && (MODE) != DFmode)				\
+	   && (TARGET_SOFT_FLOAT			\
+	       || ((MODE) != SFmode			\
+		   && (MODE) != DFmode)))		\
     goto ADDR;						\
   else if (GET_CODE (X) == LO_SUM			\
 	   && GET_CODE (XEXP (X, 0)) == SUBREG		\
 	   && GET_CODE (SUBREG_REG (XEXP (X, 0))) == REG\
 	   && REG_OK_FOR_BASE_P (SUBREG_REG (XEXP (X, 0)))\
 	   && CONSTANT_P (XEXP (X, 1))			\
-	   && (MODE) != SFmode				\
-	   && (MODE) != DFmode)				\
+	   && (TARGET_SOFT_FLOAT			\
+	       || ((MODE) != SFmode			\
+		   && (MODE) != DFmode)))		\
     goto ADDR;						\
   else if (GET_CODE (X) == LABEL_REF			\
 	   || (GET_CODE (X) == CONST_INT		\
@@ -1636,8 +1657,9 @@ while (0)
 
 #define RTX_COSTS(X,CODE,OUTER_CODE) \
   case MULT:							\
-    return TARGET_SNAKE && ! TARGET_DISABLE_FPREGS		\
-      ? COSTS_N_INSNS (8) : COSTS_N_INSNS (20); 		\
+    return (TARGET_SNAKE && ! TARGET_DISABLE_FPREGS		\
+	    && ! TARGET_SOFT_FLOAT				\
+	    ? COSTS_N_INSNS (8) : COSTS_N_INSNS (20)); 		\
   case DIV:							\
   case UDIV:							\
   case MOD:							\
@@ -1892,19 +1914,18 @@ readonly_data ()							\
 /* This is how to output an assembler line defining a `double' constant.  */
 
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
-  do { union { double d; int i[2];} __u;	\
-    __u.d = (VALUE);				\
-    fprintf (FILE, "\t; .double %.20e\n\t.word %d ; = 0x%x\n\t.word %d ; = 0x%x\n",	\
-	     __u.d, __u.i[0], __u.i[0], __u.i[1], __u.i[1]);	\
-  } while (0)
+  do { long l[2];							\
+       REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);				\
+       fprintf (FILE, "\t.word 0x%lx\n\t.word 0x%lx\n", l[0], l[1]);	\
+     } while (0)
 
 /* This is how to output an assembler line defining a `float' constant.  */
 
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
-  do { union { float f; int i;} __u;		\
-    __u.f = (VALUE);				\
-    fprintf (FILE, "\t; .float %.12e\n\t.word %d ; = 0x%x\n", __u.f, __u.i, __u.i); \
-  } while (0)
+  do { long l;								\
+       REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);				\
+       fprintf (FILE, "\t.word 0x%lx\n", l);				\
+     } while (0)
 
 /* This is how to output an assembler line defining an `int' constant.  */
 
