@@ -1,5 +1,10 @@
 2002-03-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* expmed.c (emit_store_flag): Don't test BITS_PER_WORD * 2
+	wide volatile memory by parts.
+
+2002-03-05  Jakub Jelinek  <jakub@redhat.com>
+
 	* ssa-ccp.c (ssa_ccp_substitute_constants): Don't crash if def
 	is NULL.
 
