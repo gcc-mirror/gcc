@@ -1,0 +1,25 @@
+#! /usr/bin/perl -w -T
+#
+# Extract all maintainers' addresses from the GCC MAINTAINERS file, only
+# skipping those addresses specified in $OMIT.
+# 
+# Copyright (c) 2003 Free Software Foundation.
+#
+# Written by Gerald Pfeifer <gerald@pfeifer.com>, June 2003/October 2003
+#
+# This script is Free Software, and it can be copied, distributed and
+# modified as defined in the GNU General Public License.  A copy of
+# its license can be downloaded from http://www.gnu.org/copyleft/gpl.html
+
+my $OMIT='rms@gnu.org|config-patches@gnu.org';
+
+( @ARGV == 1  &&  -e $ARGV[0] ) || die "usage: $0 MAINTAINERS";
+
+while( <> ) {
+  chomp;
+
+  if( /([\w\d.+-]+@[\w\d.-]+)/ ) {
+    my $addr=$1;
+    printf $addr."\n" if( not $addr =~ /$OMIT/ );
+  }
+}
