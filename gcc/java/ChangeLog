@@ -1,3 +1,18 @@
+Tue May 25 15:06:13 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+ 
+        * parse.y (patch_assignment): Save the rhs before using it as an
+        argument to _Jv_CheckArrayStore.
+ 
+Tue May 25 11:23:59 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* lex.c (java_parse_doc_section): Fixed `tag' buffer size.
+
+Mon May 24 13:26:00 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * lex.c (java_lex): Accepts `+' or `-' after the beginning of a
+        floating point litteral only when the exponent indicator has been
+        parsed.
+
 Sat May 22 13:54:41 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (formal_parameter:): Construct argument tree list
