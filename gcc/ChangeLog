@@ -1,3 +1,7 @@
+2004-11-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cfgrtl.c: Fix a comment typo.
+
 2004-11-14  Stan Shebs  <shebs@apple.com>
 
 	Basic ABI changes for passing structs by value in 64-bit Darwin.
