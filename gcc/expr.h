@@ -225,12 +225,11 @@ enum direction {none, upward, downward};  /* Value has this type.  */
 	   && (FUNCTION_ARG_PADDING (MODE, TYPE)	\
 	       == MUST_PASS_IN_STACK_BAD_PADDING))))
 
-/* Nonzero if type TYPE should be returned in memory
-   (even though its mode is not BLKmode).
+/* Nonzero if type TYPE should be returned in memory.
    Most machines can use the following default definition.  */
 
 #ifndef RETURN_IN_MEMORY
-#define RETURN_IN_MEMORY(TYPE) 0
+#define RETURN_IN_MEMORY(TYPE) (TYPE_MODE (TYPE) == BLKmode)
 #endif
 
 /* Optabs are tables saying how to generate insn bodies

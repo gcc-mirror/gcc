@@ -447,7 +447,7 @@ extern int leaf_function;
    we follow GCC's normal policy.  Use -fpcc-struct-value
    if you want to follow the ABI.  */
 #define RETURN_IN_MEMORY(TYPE)	\
-  (TYPE_MODE (TYPE) == TFmode)
+  (TYPE_MODE (TYPE) == BLKmode || TYPE_MODE (TYPE) == TFmode)
 
 /* Functions which return large structures get the address
    to place the wanted value at offset 64 from the frame.

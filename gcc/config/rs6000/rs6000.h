@@ -644,7 +644,8 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
    For the RS/6000, any structure or union type is returned in memory.  */
 
 #define RETURN_IN_MEMORY(TYPE) \
-  (TREE_CODE (TYPE) == RECORD_TYPE || TREE_CODE (TYPE) == UNION_TYPE)
+  (TYPE_MODE (TYPE) == BLKmode \
+   || TREE_CODE (TYPE) == RECORD_TYPE || TREE_CODE (TYPE) == UNION_TYPE)
 
 /* 1 if N is a possible register number for a function value
    as seen by the caller.

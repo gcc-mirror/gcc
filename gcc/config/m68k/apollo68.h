@@ -161,7 +161,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    returned that way. */
 
 #define RETURN_IN_MEMORY(type) \
-  (GET_MODE_SIZE (TYPE_MODE (type)) > UNITS_PER_WORD)
+  (TYPE_MODE (type) == BLKmode \
+   || GET_MODE_SIZE (TYPE_MODE (type)) > UNITS_PER_WORD)
 
 /* In order to link with Apollo libraries, we can't prefix external
    symbols with an underscore.  */
