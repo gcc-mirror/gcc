@@ -43,6 +43,7 @@ MKINSTALLDIRS = @MKINSTALLDIRS@
 mkinstalldirs = $(SHELL) `case "$(MKINSTALLDIRS)" in /*) echo "$(MKINSTALLDIRS)" ;; *) echo "$(top_builddir)/$(MKINSTALLDIRS)" ;; esac`
 
 l = @INTL_LIBTOOL_SUFFIX_PREFIX@
+OUTPUT_OPTION = @OUTPUT_OPTION@
 
 AR = ar
 CC = @CC@
@@ -90,7 +91,7 @@ LTV_AGE=0
 .SUFFIXES:
 .SUFFIXES: .c .y .o .lo .sin .sed
 .c.o:
-	$(COMPILE) $<
+	$(COMPILE) $< $(OUTPUT_OPTION)
 .c.lo:
 	$(LIBTOOL) --mode=compile $(COMPILE) $<
 

@@ -1,3 +1,8 @@
+Mon Dec 10 06:09:57 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* Makefile.in (OUTPUT_OPTION): Add configure variable.
+	(.c.o): Add $(OUTPUT_OPTION).
+
 2001-11-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* l10nflist.c (_nl_normalize_codeset): Cast argument of ctype

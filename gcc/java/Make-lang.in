@@ -64,7 +64,7 @@ jvspec.o: $(srcdir)/java/jvspec.c $(SYSTEM_H) $(GCC_H) $(CONFIG_H)
 	(SHLIB_LINK='$(SHLIB_LINK)' \
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
-		$(INCLUDES) $(srcdir)/java/jvspec.c)
+		$(INCLUDES) $(srcdir)/java/jvspec.c $(OUTPUT_OPTION))
 
 # Create the compiler driver for $(GCJ).
 $(GCJ)$(exeext): gcc.o jvspec.o version.o \

@@ -1129,7 +1129,8 @@ c-errors.o: c-errors.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) flags.h \
     diagnostic.h $(TM_P_H)
 c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h $(GGC_H) intl.h \
     $(C_TREE_H) input.h flags.h $(SYSTEM_H) toplev.h output.h $(CPPLIB_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/c-parse.c
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	       -c $(srcdir)/c-parse.c $(OUTPUT_OPTION)
 
 $(srcdir)/c-parse.c: $(srcdir)/c-parse.y
 	(cd $(srcdir) && $(BISON) $(BISONFLAGS) -o c-p$$$$.c c-parse.y && \
@@ -1179,7 +1180,7 @@ collect2.o : collect2.c $(CONFIG_H) $(SYSTEM_H) gstab.h intl.h \
 	$(OBSTACK_H) $(DEMANGLE_H) collect2.h version.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES)  \
 	-DTARGET_MACHINE=\"$(target_alias)\" \
-	-c $(srcdir)/collect2.c
+	-c $(srcdir)/collect2.c $(OUTPUT_OPTION)
 
 tlink.o: tlink.c $(DEMANGLE_H) hash.h $(CONFIG_H) $(SYSTEM_H) collect2.h intl.h
 hash.o: hash.c hash.h $(SYSTEM_H) toplev.h $(GCONFIG_H)
@@ -1238,14 +1239,14 @@ gcc.o: gcc.c $(CONFIG_H) $(SYSTEM_H) intl.h multilib.h \
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   $(DRIVER_DEFINES) \
-  -c $(srcdir)/gcc.c)
+  -c $(srcdir)/gcc.c $(OUTPUT_OPTION))
 
 gccspec.o: gccspec.c $(CONFIG_H) $(SYSTEM_H) $(GCC_H)
 	(SHLIB_LINK='$(SHLIB_LINK)' \
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   $(DRIVER_DEFINES) \
-  -c $(srcdir)/gccspec.c)
+  -c $(srcdir)/gccspec.c $(OUTPUT_OPTION))
 
 cppspec.o: cppspec.c $(CONFIG_H) $(SYSTEM_H) $(GCC_H)
 
@@ -1262,7 +1263,7 @@ gencheck$(build_exeext) : gencheck.o $(HOST_LIBDEPS)
 gencheck.o : gencheck.c gencheck.h tree.def $(HCONFIG_H) $(SYSTEM_H) \
              $(lang_tree_files)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
-	  $(srcdir)/gencheck.c
+	  $(srcdir)/gencheck.c $(OUTPUT_OPTION)
 
 dumpvers: dumpvers.c
 
@@ -1290,7 +1291,7 @@ ggc-none.o: ggc-none.c $(GCONFIG_H) $(SYSTEM_H) $(GGC_H)
 prefix.o: prefix.c $(CONFIG_H) $(SYSTEM_H) Makefile prefix.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	-DPREFIX=\"$(prefix)\" \
-	  -c $(srcdir)/prefix.c
+	  -c $(srcdir)/prefix.c $(OUTPUT_OPTION)
 
 convert.o: convert.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) flags.h convert.h toplev.h
 
@@ -1323,7 +1324,7 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) function.h \
    langhooks.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
-	  -c $(srcdir)/toplev.c
+	  -c $(srcdir)/toplev.c $(OUTPUT_OPTION)
 main.o : main.c $(CONFIG_H) $(SYSTEM_H) toplev.h
 
 rtl-error.o: rtl-error.c system.h $(RTL_H) $(INSN_ATTR_H) insn-config.h \
@@ -1629,7 +1630,8 @@ s-constants : $(md_file) genconstants$(build_exeext) $(srcdir)/move-if-change
 insn-emit.o : insn-emit.c $(CONFIG_H) $(RTL_H) $(EXPR_H) real.h output.h \
   insn-config.h $(OPTABS_H) $(SYSTEM_H) reload.h $(RECOG_H) toplev.h \
   function.h flags.h hard-reg-set.h resource.h $(TM_P_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-emit.c
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-emit.c \
+	  $(OUTPUT_OPTION)
 
 insn-emit.c: s-emit ; @true
 s-emit : $(md_file) genemit$(build_exeext) $(srcdir)/move-if-change
@@ -1640,7 +1642,8 @@ s-emit : $(md_file) genemit$(build_exeext) $(srcdir)/move-if-change
 insn-recog.o : insn-recog.c $(CONFIG_H) $(RTL_H) insn-config.h $(RECOG_H) \
   real.h output.h flags.h $(SYSTEM_H) function.h hard-reg-set.h resource.h \
   $(TM_P_H) toplev.h reload.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-recog.c
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-recog.c \
+	  $(OUTPUT_OPTION)
 
 insn-recog.c: s-recog ; @true
 s-recog : $(md_file) genrecog$(build_exeext) $(srcdir)/move-if-change
@@ -1650,7 +1653,8 @@ s-recog : $(md_file) genrecog$(build_exeext) $(srcdir)/move-if-change
 
 insn-opinit.o : insn-opinit.c $(CONFIG_H) $(RTL_H) \
   insn-config.h flags.h $(RECOG_H) $(EXPR_H) $(OPTABS_H) reload.h $(SYSTEM_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-opinit.c
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-opinit.c \
+	  $(OUTPUT_OPTION)
 
 insn-opinit.c: s-opinit ; @true
 s-opinit : $(md_file) genopinit$(build_exeext) $(srcdir)/move-if-change
@@ -1660,7 +1664,8 @@ s-opinit : $(md_file) genopinit$(build_exeext) $(srcdir)/move-if-change
 
 insn-extract.o : insn-extract.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H) toplev.h \
   insn-config.h $(RECOG_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-extract.c
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-extract.c \
+	  $(OUTPUT_OPTION)
 
 insn-extract.c: s-extract ; @true
 s-extract : $(md_file) genextract$(build_exeext) $(srcdir)/move-if-change
@@ -1670,7 +1675,8 @@ s-extract : $(md_file) genextract$(build_exeext) $(srcdir)/move-if-change
 
 insn-peep.o : insn-peep.c $(CONFIG_H) $(RTL_H) $(REGS_H) output.h real.h \
 	$(SYSTEM_H) insn-config.h $(RECOG_H) except.h function.h $(TM_P_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-peep.c
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-peep.c \
+	  $(OUTPUT_OPTION)
 
 insn-peep.c: s-peep ; @true
 s-peep : $(md_file) genpeep$(build_exeext) $(srcdir)/move-if-change
@@ -1681,7 +1687,8 @@ s-peep : $(md_file) genpeep$(build_exeext) $(srcdir)/move-if-change
 insn-attrtab.o : insn-attrtab.c $(CONFIG_H) $(RTL_H) $(REGS_H) real.h \
     output.h $(INSN_ATTR_H) insn-config.h $(SYSTEM_H) toplev.h $(RECOG_H) \
 	$(TM_P_H) flags.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-attrtab.c
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-attrtab.c \
+	  $(OUTPUT_OPTION)
 
 insn-attr.h: s-attr ; @true
 s-attr : $(md_file) genattr$(build_exeext) $(srcdir)/move-if-change
@@ -1699,7 +1706,8 @@ insn-output.o : insn-output.c $(CONFIG_H) $(RTL_H) $(GGC_H) $(REGS_H) real.h \
     conditions.h hard-reg-set.h insn-config.h $(INSN_ATTR_H) $(EXPR_H) \
     output.h $(RECOG_H) function.h $(SYSTEM_H) toplev.h flags.h \
     insn-codes.h $(TM_P_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-output.c
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-output.c \
+	  $(OUTPUT_OPTION)
 
 insn-output.c: s-output ; @true
 s-output : $(md_file) genoutput$(build_exeext) $(srcdir)/move-if-change
@@ -1738,10 +1746,10 @@ s-preds: genpreds$(build_exeext) $(srcdir)/move-if-change
 
 read-rtl.o: read-rtl.c $(HCONFIG_H) $(SYSTEM_H) $(RTL_H) \
   $(OBSTACK_H) $(HASHTAB_H)
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/read-rtl.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/read-rtl.c $(OUTPUT_OPTION)
 
 gensupport.o: gensupport.c $(RTL_H) $(OBSTACK_H) $(SYSTEM_H) errors.h gensupport.h
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gensupport.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gensupport.c $(OUTPUT_OPTION)
 
 genconfig$(build_exeext) : genconfig.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
@@ -1749,7 +1757,7 @@ genconfig$(build_exeext) : genconfig.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) 
 
 genconfig.o : genconfig.c $(RTL_H) $(HCONFIG_H) \
   $(SYSTEM_H) errors.h gensupport.h
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genconfig.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genconfig.c $(OUTPUT_OPTION)
 
 genflags$(build_exeext) : genflags.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
@@ -1757,7 +1765,7 @@ genflags$(build_exeext) : genflags.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(
 
 genflags.o : genflags.c $(RTL_H) $(OBSTACK_H) $(HCONFIG_H) \
   $(SYSTEM_H) errors.h gensupport.h
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genflags.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genflags.c $(OUTPUT_OPTION)
 
 gencodes$(build_exeext) : gencodes.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
@@ -1765,21 +1773,21 @@ gencodes$(build_exeext) : gencodes.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(
 
 gencodes.o : gencodes.c $(RTL_H) $(HCONFIG_H) \
   $(SYSTEM_H) errors.h gensupport.h
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gencodes.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gencodes.c $(OUTPUT_OPTION)
 
 genconstants$(build_exeext) : genconstants.o $(HOST_RTL) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	 genconstants.o $(HOST_RTL) $(HOST_ERRORS) $(HOST_LIBS)
 
 genconstants.o : genconstants.c $(RTL_H) $(HCONFIG_H) $(SYSTEM_H) errors.h
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genconstants.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genconstants.c $(OUTPUT_OPTION)
 
 genemit$(build_exeext) : genemit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	 genemit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
 
 genemit.o : genemit.c $(RTL_H) $(HCONFIG_H) $(SYSTEM_H) errors.h gensupport.h
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genemit.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genemit.c $(OUTPUT_OPTION)
 
 genopinit$(build_exeext) : genopinit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
@@ -1787,7 +1795,7 @@ genopinit$(build_exeext) : genopinit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) 
 
 genopinit.o : genopinit.c $(RTL_H) $(HCONFIG_H) \
   $(SYSTEM_H) errors.h gensupport.h
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genopinit.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genopinit.c $(OUTPUT_OPTION)
 
 genrecog$(build_exeext) : genrecog.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
@@ -1795,7 +1803,7 @@ genrecog$(build_exeext) : genrecog.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(
 
 genrecog.o : genrecog.c $(RTL_H) $(HCONFIG_H) \
   $(SYSTEM_H) errors.h gensupport.h
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genrecog.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genrecog.c $(OUTPUT_OPTION)
 
 genextract$(build_exeext) : genextract.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
@@ -1803,21 +1811,21 @@ genextract$(build_exeext) : genextract.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS
 
 genextract.o : genextract.c $(RTL_H) $(HCONFIG_H) \
   $(SYSTEM_H) insn-config.h errors.h gensupport.h
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genextract.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genextract.c $(OUTPUT_OPTION)
 
 genpeep$(build_exeext) : genpeep.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	 genpeep.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
 
 genpeep.o : genpeep.c $(RTL_H) $(HCONFIG_H) $(SYSTEM_H) errors.h gensupport.h
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genpeep.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genpeep.c $(OUTPUT_OPTION)
 
 genattr$(build_exeext) : genattr.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	 genattr.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
 
 genattr.o : genattr.c $(RTL_H) $(HCONFIG_H) $(SYSTEM_H) errors.h gensupport.h
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattr.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattr.c $(OUTPUT_OPTION)
 
 genattrtab$(build_exeext) : genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
@@ -1825,7 +1833,7 @@ genattrtab$(build_exeext) : genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS
 
 genattrtab.o : genattrtab.c $(RTL_H) $(OBSTACK_H) $(HCONFIG_H) \
   $(SYSTEM_H) errors.h $(GGC_H) gensupport.h
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattrtab.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattrtab.c $(OUTPUT_OPTION)
 
 genoutput$(build_exeext) : genoutput.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
@@ -1833,21 +1841,21 @@ genoutput$(build_exeext) : genoutput.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) 
 
 genoutput.o : genoutput.c $(RTL_H) $(HCONFIG_H) \
   $(SYSTEM_H) errors.h gensupport.h
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genoutput.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genoutput.c $(OUTPUT_OPTION)
 
 gengenrtl$(build_exeext) : gengenrtl.o $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	 gengenrtl.o $(HOST_LIBS)
 
 gengenrtl.o : gengenrtl.c $(RTL_BASE_H) $(HCONFIG_H) $(SYSTEM_H) real.h
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gengenrtl.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gengenrtl.c $(OUTPUT_OPTION)
 
 genpreds$(build_exeext) : genpreds.o $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	 genpreds.o $(HOST_LIBS)
 
 genpreds.o : genpreds.c $(RTL_BASE_H) $(HCONFIG_H) $(SYSTEM_H)
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genpreds.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genpreds.c $(OUTPUT_OPTION)
 
 #
 # Compile the libraries to be used by gen*.
@@ -1858,36 +1866,36 @@ $(HOST_PREFIX_1)rtl.o: $(srcdir)/rtl.c $(HCONFIG_H) $(SYSTEM_H) $(RTL_H) \
   real.h $(GGC_H) errors.h
 	rm -f $(HOST_PREFIX)rtl.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/rtl.c > $(HOST_PREFIX)rtl.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)rtl.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)rtl.c $(OUTPUT_OPTION)
 
 $(HOST_PREFIX_1)print-rtl.o: $(srcdir)/print-rtl.c $(HCONFIG_H) \
   $(RTL_H) $(TREE_H) hard-reg-set.h $(BASIC_BLOCK_H)
 	rm -f $(HOST_PREFIX)print-rtl.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/print-rtl.c > $(HOST_PREFIX)print-rtl.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)print-rtl.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)print-rtl.c $(OUTPUT_OPTION)
 
 $(HOST_PREFIX_1)bitmap.o: $(srcdir)/bitmap.c $(HCONFIG_H) $(SYSTEM_H) $(RTL_H) \
   flags.h $(BASIC_BLOCK_H) $(REGS_H)
 	rm -f $(HOST_PREFIX)bitmap.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/bitmap.c > $(HOST_PREFIX)bitmap.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)bitmap.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)bitmap.c $(OUTPUT_OPTION)
 
 $(HOST_PREFIX_1)errors.o: errors.c $(HCONFIG_H) $(SYSTEM_H) errors.h
 	rm -f $(HOST_PREFIX)errors.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/errors.c > $(HOST_PREFIX)errors.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)errors.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)errors.c $(OUTPUT_OPTION)
 
 $(HOST_PREFIX_1)ggc-none.o: ggc-none.c $(HCONFIG_H) $(SYSTEM_H) $(GCC_H)
 	rm -f $(HOST_PREFIX)ggc-none.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/ggc-none.c > $(HOST_PREFIX)ggc-none.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)ggc-none.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)ggc-none.c $(OUTPUT_OPTION)
 
 #
 # Remake internationalization support.
 intl.o: intl.c $(CONFIG_H) system.h intl.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DLOCALEDIR=\"$(localedir)\" \
-	  -c $(srcdir)/intl.c
+	  -c $(srcdir)/intl.c $(OUTPUT_OPTION)
 
 $(top_builddir)/intl/libintl.a: intl.all
 
@@ -1953,7 +1961,7 @@ cppinit.o:  cppinit.c  $(CONFIG_H) $(LIBCPP_DEPS) cppdefault.h \
 cppdefault.o: cppdefault.c $(CONFIG_H) $(SYSTEM_H) cppdefault.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(PREPROCESSOR_DEFINES) \
-	  -c $(srcdir)/cppdefault.c
+	  -c $(srcdir)/cppdefault.c $(OUTPUT_OPTION)
 
 mkdeps.o: mkdeps.c $(CONFIG_H) $(SYSTEM_H) mkdeps.h
 
@@ -2158,10 +2166,10 @@ gen-protos$(build_exeext): $(GEN_PROTOS_OBJS)
 	  $(GEN_PROTOS_OBJS) $(HOST_LIBS)
 
 gen-protos.o: gen-protos.c scan.h $(HCONFIG_H) $(SYSTEM_H)
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gen-protos.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gen-protos.c $(OUTPUT_OPTION)
 
 scan.o: scan.c scan.h $(HCONFIG_H) $(SYSTEM_H)
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/scan.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/scan.c $(OUTPUT_OPTION)
 
 xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos$(build_exeext) Makefile
 	sed -e s/TARGET_GETGROUPS_T/$(TARGET_GETGROUPS_T)/ \
@@ -2182,10 +2190,10 @@ fix-header$(build_exeext): fix-header.o scan-decls.o scan.o xsys-protos.h \
 
 fix-header.o: fix-header.c $(OBSTACK_H) scan.h \
 	xsys-protos.h $(HCONFIG_H) $(SYSTEM_H) $(CPPLIB_H)
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/fix-header.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/fix-header.c $(OUTPUT_OPTION)
 
 scan-decls.o: scan-decls.c scan.h $(CPPLIB_H) $(HCONFIG_H) $(SYSTEM_H)
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/scan-decls.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/scan-decls.c $(OUTPUT_OPTION)
 
 # stmp-fixproto depends on this, not on fix-header directly.
 # The idea is to make sure fix-header gets built,
@@ -3274,7 +3282,7 @@ enquire.o: $(srcdir)/enquire.c $(GCC_PASSES) stmp-int-hdrs
 	fi; \
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(ENQUIRE_CFLAGS) \
 	  -DSYS_FLOAT_H_WRAP=$$SYS_FLOAT_H_WRAP \
-	  -I. -c $(srcdir)/enquire.c
+	  -I. -c $(srcdir)/enquire.c $(OUTPUT_OPTION)
 
 # Create float.h source for the native machine.
 # Make it empty if we can use the system float.h without changes.
