@@ -31,23 +31,18 @@
  * SUCH DAMAGE.
  */
 
-/* 
- * Re rework of the solaris 2 version of gmon by J.W.Hawtin 12/8/1996
- * Does not work right yet.
- */
-
 /*
- * This is a modified gmon.c by J.W.Hawtin <J.W.Hawtin@lboro.ac.uk>,
+ * This is a modified gmon.c by J.W.Hawtin <oolon@ankh.org>,
  * 14/8/96 based on the original gmon.c in GCC and the hacked version
  * solaris 2 sparc version (config/sparc/gmon-sol.c) by Mark Eichin. To do
- * process profiling on solaris 2.4 X86
+ * process profiling on solaris 2.X X86
  *
  * It must be used in conjunction with sol2-gc1.asm, which is used to start
  * and stop process monitoring.
  *
  * Differences.
  *
- * On Solaris 2 _mcount is called my library functions not mcount, so support
+ * On Solaris 2 _mcount is called by library functions not mcount, so support
  * has been added for both.
  *
  * Also the prototype for profil() is different
