@@ -55,6 +55,12 @@ void test04()
   VERIFY(before._M_singular());
   VERIFY(at._M_singular());
 
+  // Multiple element erase at end
+  before = v.begin();
+  at = before + 3;
+  v.erase(at, v.end());
+  *before;
+
   // clear()
   before = v.begin();
   VERIFY(before._M_dereferenceable());

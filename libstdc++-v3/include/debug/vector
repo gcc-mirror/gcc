@@ -34,6 +34,7 @@
 #include <vector>
 #include <debug/safe_sequence.h>
 #include <debug/safe_iterator.h>
+#include <utility>
 
 namespace __gnu_debug_def
 {
@@ -328,6 +329,7 @@ namespace __gnu_debug_def
       {
 	_Base::swap(__x);
 	this->_M_swap(__x);
+        std::swap(_M_guaranteed_capacity, __x._M_guaranteed_capacity);
       }
 
       void 
@@ -335,6 +337,7 @@ namespace __gnu_debug_def
       {
 	_Base::clear();
 	this->_M_invalidate_all();
+        _M_guaranteed_capacity = 0;
       }
 
       _Base&       

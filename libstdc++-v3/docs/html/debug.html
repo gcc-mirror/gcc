@@ -145,8 +145,7 @@
   functionally equivalent to the standard drop-in containers used in
   debug mode, but they are available in a separate namespace as GNU
   extensions and may be used in programs compiled with either release
-  mode or with debug mode. However, unlike the containers in namespace
-  <code>std</code>, these containers may not be specialized. The
+  mode or with debug mode. The
   following table provides the names and headers of the debugging
   containers:
 
@@ -250,7 +249,7 @@
 </table>
 
 <h4 class="left">Debug mode semantics</h4>
-<p>A program that does not use the C++ standard library incorrectly
+<p>A program that uses the C++ standard library correctly
   will maintain the same semantics under debug mode as it had with
   the normal (release) library. All functional and exception-handling
   guarantees made by the normal library also hold for the debug mode
@@ -276,7 +275,7 @@
   library, and is therefore somewhat hazardous. For this reason, the
   libstdc++ debug mode offers a "pedantic" mode (similar to
   GCC's <code>-pedantic</code> compiler flag) that attempts to emulate
-  the semantics guaranteed by the C++ standard. In pedantic mode, for
+  the semantics guaranteed by the C++ standard. For
   instance, constructing a <code>std::basic_string</code> with a NULL
   character pointer would result in an exception under normal mode or
   non-pedantic debug mode (this is a libstdc++ extension), whereas
@@ -288,6 +287,7 @@
 <p>The following library components provide extra debugging
   capabilities in debug mode:</p>
 <ul>
+  <li><code>std::basic_string</code> (no safe iterators)</li>
   <li><code>std::bitset</code></li>
   <li><code>std::deque</code></li>
   <li><code>__gnu_cxx::hash_map</code></li>

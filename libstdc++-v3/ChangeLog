@@ -1,3 +1,19 @@
+2003-11-13  Douglas Gregor  <gregod@cs.rpi.edu>
+
+	* docs/html/debug.html: Users are allowed to specialize in
+	namespace __gnu_debug, unlike in the Apple version of the debug
+	mode. Clear up a confusing double-negative. Note that
+	std::basic_string does provide extra debugging capabilities, but
+	not safe iterators.
+	* include/bits/basic_string.tcc: Make sure there's never an
+	ambiguity when calling __is_null_pointer. 
+	* include/debug/deque: (deque::erase) Properly handle invalidation
+	when erasing at the end of the deque.
+	* include/debug/vector: (vector::swap): Swap _M_guaranteed_capacity. 
+	(vector::clear): Set the guaranteed capacity to 0.
+	* testsuite/23_containers/deque/invalidation/4.cc: (test04): Test
+	iterator invalidation when erasing at the end of the deque.
+
 2003-11-13  Paolo Carlini  <pcarlini@suse.de>
 	    Petur Runolfsson  <peturr02@ru.is>
 

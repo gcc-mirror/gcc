@@ -52,7 +52,7 @@ namespace std
 
   template<typename _Type>
     inline bool
-    __is_null_pointer(const _Type&)
+    __is_null_pointer(_Type)
     { return false; }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
