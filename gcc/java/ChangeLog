@@ -1,3 +1,15 @@
+2004-10-05  Ranjit Mathew  <rmathew@hotmail.com>
+
+	Prepare for %q, %< and %> in diagnostic message strings.
+	* java-tree.h (parse_error_context): remove ATTRIBUTE_PRINTF_2.
+	Name second parameter 'msgid'.
+	* parse.y: Additionally include pretty-print.h and diagnostic.h.
+	(issue_warning_error_from_context): Use pretty-printer functions
+	instead of vsprintf for constructing formatted messages. Rename
+	parameter 'msg' to 'msgid'.
+	(parse_error_context): Rename parameter 'msg' to 'msgid'.
+	(parse_warning_context): Likewise.
+
 2004-10-05  Andrew Haley  <aph@redhat.com>
 
 	PR java/17779

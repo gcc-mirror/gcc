@@ -1247,8 +1247,7 @@ extern tree emit_symbol_table (tree, tree, tree, tree, tree);
 extern void lang_init_source (int);
 extern void write_classfile (tree);
 extern char *print_int_node (tree);
-extern void parse_error_context (tree cl, const char *, ...)
-  ATTRIBUTE_PRINTF_2;
+extern void parse_error_context (tree cl, const char *msgid, ...);
 extern void finish_class (void);
 extern void java_layout_seen_class_methods (void);
 extern void check_for_initialization (tree, tree);
