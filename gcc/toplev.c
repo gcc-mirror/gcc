@@ -1,5 +1,5 @@
 /* Top level of GNU C compiler
-   Copyright (C) 1987, 88, 89, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3366,7 +3366,12 @@ main (argc, argv, envp)
   save_argv = argv;
 
   p = argv[0] + strlen (argv[0]);
-  while (p != argv[0] && p[-1] != '/') --p;
+  while (p != argv[0] && p[-1] != '/'
+#ifdef DIR_SEPARATOR
+	 && p[-1] != DIR_SEPARATOR
+#endif
+	 )
+    --p;
   progname = p;
 
 #ifdef RLIMIT_STACK
