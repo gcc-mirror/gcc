@@ -80,6 +80,7 @@
         .set f21,21
 
 #define LIBFFI_ASM	
+#include <fficonfig.h>
 #include <ffi.h>
 #define JUMPTARGET(name) name
 #define L(x) x

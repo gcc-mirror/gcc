@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1998  Cygnus Solutions
+   ffi.c - Copyright (c) 1998  Red Hat, Inc.
    
    ARM Foreign Function Interface 
 

@@ -25,6 +25,7 @@
 
 #ifdef __x86_64__
 #define LIBFFI_ASM	
+#include <fficonfig.h>
 #include <ffi.h>
 
 	.section	.rodata

@@ -1,3 +1,78 @@
+2003-10-21  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* configure.in: AC_LINK_FILES(ffitarget.h).
+	* configure: Regenerate.
+	* Makefile.in: Likewise.
+	* include/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+	* fficonfig.h.in: Likewise.
+
+2003-10-21  Paolo Bonzini  <bonzini@gnu.org>
+	    Richard Henderson  <rth@redhat.com>
+
+	Avoid that ffi.h includes fficonfig.h.
+
+	* Makefile.am (EXTRA_DIST): Include ffitarget.h files
+	(TARGET_SRC_MIPS_GCC): Renamed to TARGET_SRC_MIPS_IRIX.
+	(TARGET_SRC_MIPS_SGI): Removed.
+	(MIPS_GCC): Renamed to TARGET_SRC_MIPS_IRIX.
+	(MIPS_SGI): Removed.
+	(CLEANFILES): Removed.
+	(mostlyclean-am, clean-am, mostlyclean-sub, clean-sub): New
+	targets.
+	* acconfig.h: Removed.
+	* configure.in: Compute sizeofs only for double and long double.
+	Use them to define and subst HAVE_LONG_DOUBLE.  Include comments
+	into AC_DEFINE instead of using acconfig.h.  Create
+	include/ffitarget.h instead of include/fficonfig.h.  Rename
+	MIPS_GCC to MIPS_IRIX, drop MIPS_SGI since we are in gcc's tree.
+	AC_DEFINE EH_FRAME_FLAGS.
+	* include/Makefile.am (DISTCLEANFILES): New automake macro.
+	(hack_DATA): Add ffitarget.h.
+	* include/ffi.h.in: Remove all system specific definitions.
+	Declare raw API even if it is not installed, why bother?
+	Use limits.h instead of SIZEOF_* to define ffi_type_*.  Do
+	not define EH_FRAME_FLAGS, it is in fficonfig.h now.  Include
+	ffitarget.h instead of fficonfig.h.  Remove ALIGN macro.
+	(UINT_ARG, INT_ARG): Removed, use ffi_arg and ffi_sarg instead.
+	* include/ffi_common.h (bool): Do not define.
+	(ffi_assert): Accept failed assertion.
+	(ffi_type_test): Return void and accept file/line.
+	(FFI_ASSERT): Pass stringized failed assertion.
+	(FFI_ASSERT_AT): New macro.
+	(FFI_ASSERT_VALID_TYPE): New macro.
+	(UINT8, SINT8, UINT16, SINT16, UINT32, SINT32,
+	UINT64, SINT64): Define here with gcc's __attribute__ macro
+	instead of in ffi.h
+	(FLOAT32, ALIGN): Define here instead of in ffi.h
+	* include/ffi-mips.h: Removed.  Its content moved to
+	src/mips/ffitarget.h after separating assembly and C sections.
+	* src/alpha/ffi.c, src/alpha/ffi.c, src/java_raw_api.c
+	src/prep_cif.c, src/raw_api.c, src/ia64/ffi.c,
+	src/mips/ffi.c, src/mips/n32.S, src/mips/o32.S,
+	src/mips/ffitarget.h, src/sparc/ffi.c, src/x86/ffi64.c:
+	SIZEOF_ARG -> FFI_SIZEOF_ARG.
+	* src/ia64/ffi.c: Include stdbool.h (provided by GCC 2.95+).
+	* src/debug.c (ffi_assert): Accept stringized failed assertion.
+	(ffi_type_test): Rewritten.
+	* src/prep-cif.c (initialize_aggregate, ffi_prep_cif): Call
+	FFI_ASSERT_VALID_TYPE.
+	* src/alpha/ffitarget.h, src/arm/ffitarget.h,
+	src/ia64/ffitarget.h, src/m68k/ffitarget.h,
+	src/mips/ffitarget.h, src/powerpc/ffitarget.h,
+	src/s390/ffitarget.h, src/sh/ffitarget.h,
+	src/sh64/ffitarget.h, src/sparc/ffitarget.h,
+	src/x86/ffitarget.h: New files.
+	* src/alpha/osf.S, src/arm/sysv.S, src/ia64/unix.S,
+	src/m68k/sysv.S, src/mips/n32.S, src/mips/o32.S,
+	src/powerpc/aix.S, src/powerpc/darwin.S,
+	src/powerpc/ffi_darwin.c, src/powerpc/linux64.S,
+	src/powerpc/linux64_closure.S, src/powerpc/ppc_closure.S,
+	src/powerpc/sysv.S, src/s390/sysv.S, src/sh/sysv.S,
+	src/sh64/sysv.S, src/sparc/v8.S, src/sparc/v9.S,
+	src/x86/sysv.S, src/x86/unix64.S, src/x86/win32.S:
+	include fficonfig.h
+
 2003-10-20  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* src/mips/ffi.c: Use _ABIN32, _ABIO32 instead of external

@@ -25,36 +25,8 @@
 /* Define if you have the ANSI C header files.  */
 #undef STDC_HEADERS
 
-/* Define this if you want extra debugging */
-#undef FFI_DEBUG
-
-/* Define this if you are using Purify and want to suppress 
-   spurious messages. */
-#undef USING_PURIFY
-
-/* Define this is you do not want support for aggregate types.  */
-#undef FFI_NO_STRUCTS
-
-/* Define this is you do not want support for the raw API.  */
-#undef FFI_NO_RAW_API
-
 /* Define if you have the memcpy function.  */
 #undef HAVE_MEMCPY
-
-/* The number of bytes in type short */
-#undef SIZEOF_SHORT
-
-/* The number of bytes in type int */
-#undef SIZEOF_INT
-
-/* The number of bytes in type long */
-#undef SIZEOF_LONG
-
-/* The number of bytes in type long long */
-#undef SIZEOF_LONG_LONG
-
-/* The number of bytes in type float */
-#undef SIZEOF_FLOAT
 
 /* The number of bytes in type double */
 #undef SIZEOF_DOUBLE
@@ -62,11 +34,15 @@
 /* The number of bytes in type long double */
 #undef SIZEOF_LONG_DOUBLE
 
-/* The number of bytes in type void * */
-#undef SIZEOF_VOID_P
+/* Define if you have the long double type and it is bigger than a double */
+#undef HAVE_LONG_DOUBLE
 
 /* whether byteorder is bigendian */
 #undef WORDS_BIGENDIAN
+
+/* Define if the host machine stores words of multi-word integers in
+   big-endian order. */
+#undef HOST_WORDS_BIG_ENDIAN
 
 /* 1234 = LIL_ENDIAN, 4321 = BIGENDIAN */
 #undef BYTEORDER
@@ -79,3 +55,22 @@
 
 /* Define if .eh_frame sections should be read-only. */
 #undef HAVE_RO_EH_FRAME
+
+/* Define to the flags needed for the .section .eh_frame directive. */
+#undef EH_FRAME_FLAGS
+
+/* Define to the flags needed for the .section .eh_frame directive. */
+#undef EH_FRAME_FLAGS
+
+/* Define this if you want extra debugging. */
+#undef FFI_DEBUG
+
+/* Define this is you do not want support for aggregate types. */
+#undef FFI_NO_STRUCTS
+
+/* Define this is you do not want support for the raw API. */
+#undef FFI_NO_RAW_API
+
+/* Define this if you are using Purify and want to suppress spurious messages. */
+#undef USING_PURIFY
+

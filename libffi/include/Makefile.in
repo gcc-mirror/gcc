@@ -72,6 +72,7 @@ DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
+HAVE_LONG_DOUBLE = @HAVE_LONG_DOUBLE@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 MAINT = @MAINT@
@@ -91,11 +92,12 @@ toolexeclibdir = @toolexeclibdir@
 
 AUTOMAKE_OPTIONS = foreign
 
-EXTRA_DIST = ffi.h.in ffi_common.h ffi_mips.h
+DISTCLEANFILES = ffitarget.h
+EXTRA_DIST = ffi.h.in ffi_common.h
 
 hackdir = $(includedir)
 
-hack_DATA = fficonfig.h ffi.h ffi_mips.h
+hack_DATA = ffitarget.h ffi.h
 mkinstalldirs = $(SHELL) $(top_srcdir)/${libffi_basedir}../mkinstalldirs
 CONFIG_HEADER = ../fficonfig.h
 CONFIG_CLEAN_FILES =  ffi.h
@@ -196,6 +198,7 @@ clean-generic:
 distclean-generic:
 	-rm -f Makefile $(CONFIG_CLEAN_FILES)
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
 
 maintainer-clean-generic:
 mostlyclean-am:  mostlyclean-generic

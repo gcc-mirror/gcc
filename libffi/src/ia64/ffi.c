@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1998 Cygnus Solutions
+   ffi.c - Copyright (c) 1998 Red Hat, Inc.
 	   Copyright (c) 2000 Hewlett Packard Company
    
    IA64 Foreign Function Interface 
@@ -28,6 +28,7 @@
 #include <ffi_common.h>
 
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "ia64_flags.h"
 
@@ -210,7 +211,7 @@ ffi_prep_args(struct ia64_args *stack, extended_cif *ecif, int bytes)
 	  {
 	      size_t sz = (*p_arg)->size;
 	      unsigned short element_type;
-              z = ((*p_arg)->size + SIZEOF_ARG - 1)/SIZEOF_ARG;
+              z = ((*p_arg)->size + FFI_SIZEOF_ARG - 1)/FFI_SIZEOF_ARG;
 	      if (is_homogeneous_fp_aggregate(*p_arg, 8, &element_type)) {
 		int i;
 		int nelements = sz/float_type_size(element_type);
@@ -596,7 +597,7 @@ ffi_prep_incoming_args_UNIX(struct ia64_args *args, void **rvalue,
 	  {
 	      size_t sz = (*p_arg)->size;
 	      unsigned short element_type;
-              z = ((*p_arg)->size + SIZEOF_ARG - 1)/SIZEOF_ARG;
+              z = ((*p_arg)->size + FFI_SIZEOF_ARG - 1)/FFI_SIZEOF_ARG;
 	      if (is_homogeneous_fp_aggregate(*p_arg, 8, &element_type)) {
 		int nelements = sz/float_type_size(element_type);
 		if (nelements + fp_reg_num >= 8) {

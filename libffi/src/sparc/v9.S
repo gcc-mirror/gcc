@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   v9.S - Copyright (c) 2000, 2003 Cygnus Solutions
+   v9.S - Copyright (c) 2000, 2003 Red Hat, Inc.
    
    Sparc 64bit Foreign Function Interface 
 
@@ -24,6 +24,7 @@
    ----------------------------------------------------------------------- */
 
 #define LIBFFI_ASM	
+#include <fficonfig.h>
 #include <ffi.h>
 
 #ifdef SPARC64

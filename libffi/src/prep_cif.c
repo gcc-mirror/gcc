@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   prep_cif.c - Copyright (c) 1996, 1998  Cygnus Solutions
+   prep_cif.c - Copyright (c) 1996, 1998  Red Hat, Inc.
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -26,9 +26,9 @@
 #include <stdlib.h>
 
 
-/* Round up to SIZEOF_ARG. */
+/* Round up to FFI_SIZEOF_ARG. */
 
-#define STACK_ARG_SIZE(x) ALIGN(x, SIZEOF_ARG)
+#define STACK_ARG_SIZE(x) ALIGN(x, FFI_SIZEOF_ARG)
 
 /* Perform machine independent initialization of aggregate type
    specifications. */
@@ -53,7 +53,7 @@ static ffi_status initialize_aggregate(/*@out@*/ ffi_type *arg)
 	return FFI_BAD_TYPEDEF;
       
       /* Perform a sanity check on the argument type */
-      FFI_ASSERT(ffi_type_test((*ptr)));
+      FFI_ASSERT_VALID_TYPE(*ptr);
 
       arg->size = ALIGN(arg->size, (*ptr)->alignment);
       arg->size += (*ptr)->size;
@@ -94,7 +94,7 @@ ffi_status ffi_prep_cif(/*@out@*/ /*@partial@*/ ffi_cif *cif,
   ffi_type **ptr;
 
   FFI_ASSERT(cif != NULL);
-  FFI_ASSERT((abi > FFI_FIRST_ABI) && (abi < FFI_LAST_ABI));
+  FFI_ASSERT((abi > FFI_FIRST_ABI) && (abi <= FFI_DEFAULT_ABI));
 
   cif->abi = abi;
   cif->arg_types = atypes;
@@ -110,7 +110,7 @@ ffi_status ffi_prep_cif(/*@out@*/ /*@partial@*/ ffi_cif *cif,
   /*@=usedef@*/
 
   /* Perform a sanity check on the return type */
-  FFI_ASSERT(ffi_type_test(cif->rtype));
+  FFI_ASSERT_VALID_TYPE(cif->rtype);
 
   /* x86-64 and s390 stack space allocation is handled in prep_machdep.  */
 #if !defined M68K && !defined __x86_64__ && !defined S390
@@ -126,7 +126,7 @@ ffi_status ffi_prep_cif(/*@out@*/ /*@partial@*/ ffi_cif *cif,
   for (ptr = cif->arg_types, i = cif->nargs; i > 0; i--, ptr++)
     {
       /* Perform a sanity check on the argument type */
-      FFI_ASSERT(ffi_type_test(*ptr));
+      FFI_ASSERT_VALID_TYPE(*ptr);
 
       /* Initialize any uninitialized aggregate type definitions */
       if (((*ptr)->size == 0) && (initialize_aggregate((*ptr)) != FFI_OK))

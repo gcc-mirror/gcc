@@ -689,7 +689,7 @@ ffi_closure_UNIX64_inner(ffi_closure *closure, va_list l, void *rp)
 	  FFI_ASSERT(0);
 	}
 
-      argn += ALIGN(arg_types[i]->size, SIZEOF_ARG) / SIZEOF_ARG;
+      argn += ALIGN(arg_types[i]->size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
       i++;
     }
 

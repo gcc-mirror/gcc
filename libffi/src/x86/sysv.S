@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   sysv.S - Copyright (c) 1996, 1998, 2001, 2002, 2003  Cygnus Solutions
+   sysv.S - Copyright (c) 1996, 1998, 2001, 2002, 2003  Red Hat, Inc.
    
    X86 Foreign Function Interface 
 
@@ -26,6 +26,7 @@
 #ifndef __x86_64__
 
 #define LIBFFI_ASM	
+#include <fficonfig.h>
 #include <ffi.h>
 
 .text

@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   unix.S - Copyright (c) 1998 Cygnus Solutions
+   unix.S - Copyright (c) 1998 Red Hat, Inc.
             Copyright (c) 2000 Hewlett Packard Company
    
    IA64/unix Foreign Function Interface 
@@ -29,6 +29,7 @@
    ----------------------------------------------------------------------- */
 
 #define LIBFFI_ASM	
+#include <fficonfig.h>
 #include <ffi.h>
 #include "ia64_flags.h"
 

@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   raw_api.c - Copyright (c) 1999  Cygnus Solutions
+   raw_api.c - Copyright (c) 1999  Red Hat, Inc.
 
    Author: Kresten Krab Thorup <krab@gnu.org>
 
@@ -44,10 +44,10 @@ ffi_raw_size (ffi_cif *cif)
     {
 #if !FFI_NO_STRUCTS
       if ((*at)->type == FFI_TYPE_STRUCT)
-	result += ALIGN (sizeof (void*), SIZEOF_ARG);
+	result += ALIGN (sizeof (void*), FFI_SIZEOF_ARG);
       else
 #endif
-	result += ALIGN ((*at)->size, SIZEOF_ARG);
+	result += ALIGN ((*at)->size, FFI_SIZEOF_ARG);
     }
 
   return result;
@@ -68,18 +68,18 @@ ffi_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args)
 	{
 	case FFI_TYPE_UINT8:
 	case FFI_TYPE_SINT8:
-	  *args = (void*) ((char*)(raw++) + SIZEOF_ARG - 1);
+	  *args = (void*) ((char*)(raw++) + FFI_SIZEOF_ARG - 1);
 	  break;
 	  
 	case FFI_TYPE_UINT16:
 	case FFI_TYPE_SINT16:
-	  *args = (void*) ((char*)(raw++) + SIZEOF_ARG - 2);
+	  *args = (void*) ((char*)(raw++) + FFI_SIZEOF_ARG - 2);
 	  break;
 
-#if SIZEOF_ARG >= 4	  
+#if FFI_SIZEOF_ARG >= 4	  
 	case FFI_TYPE_UINT32:
 	case FFI_TYPE_SINT32:
-	  *args = (void*) ((char*)(raw++) + SIZEOF_ARG - 4);
+	  *args = (void*) ((char*)(raw++) + FFI_SIZEOF_ARG - 4);
 	  break;
 #endif
 	
@@ -95,7 +95,7 @@ ffi_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args)
 	  
 	default:
 	  *args = raw;
-	  raw += ALIGN ((*tp)->size, SIZEOF_ARG) / SIZEOF_ARG;
+	  raw += ALIGN ((*tp)->size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
 	}
     }
 
@@ -152,7 +152,7 @@ ffi_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw)
 	  (raw++)->sint = *(SINT16*) (*args);
 	  break;
 
-#if SIZEOF_ARG >= 4
+#if FFI_SIZEOF_ARG >= 4
 	case FFI_TYPE_UINT32:
 	  (raw++)->uint = *(UINT32*) (*args);
 	  break;
@@ -174,7 +174,7 @@ ffi_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw)
 
 	default:
 	  memcpy ((void*) raw->data, (void*)*args, (*tp)->size);
-	  raw += ALIGN ((*tp)->size, SIZEOF_ARG) / SIZEOF_ARG;
+	  raw += ALIGN ((*tp)->size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
 	}
     }
 }
