@@ -1,3 +1,9 @@
+2003-05-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* Make-lang.in (java/parse.o, java/parse-scan.o): Depend on input.h.
+	* lex.h: #include input.h.
+	* jv-scan.c (input_filename): Remove.
+
 2003-05-02  Tom Tromey  <tromey@redhat.com>
 
 	PR java/10491:
