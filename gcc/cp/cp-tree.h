@@ -4025,6 +4025,7 @@ extern tree get_innermost_template_args         (tree, int);
 extern tree tsubst				(tree, tree, tsubst_flags_t, tree);
 extern tree tsubst_expr				(tree, tree, tsubst_flags_t, tree);
 extern tree tsubst_copy				(tree, tree, tsubst_flags_t, tree);
+extern tree tsubst_copy_and_build		(tree, tree, tsubst_flags_t, tree);
 extern void maybe_begin_member_template_processing (tree);
 extern void maybe_end_member_template_processing (void);
 extern tree finish_member_template_decl         (tree);
