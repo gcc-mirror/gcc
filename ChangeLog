@@ -1,3 +1,7 @@
+Sun Jul 19 00:46:53 CEST 1998  Marc Lehmann <pcg@goof.com>
+
+	* INSTALL/README: Fix typo.
+
 Sat Jun 27 22:46:32 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (BASE_FLAGS_TO_PASS): Add TARGET_SUBDIR.
@@ -158,7 +162,7 @@ Fri Mar  6 00:14:55 1998  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 	* configure.in: Revert 3 Jan change for powerpc-linux-gnulibc1.
 
 Mon Feb 23 15:09:18 1998  Bruno Haible <bruno@linuix.mathematik.uni-karlsruhe.de
->
+
         * config.sub (sco5): Fix typo.
 
 1998-02-16  Dave Love  <d.love@dl.ac.uk>
