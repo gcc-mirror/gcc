@@ -496,9 +496,7 @@ gen_expand (expand)
   /* Call `gen_sequence' to make a SEQUENCE out of all the
      insns emitted within this gen_... function.  */
 
-  printf (" _done:\n");
   printf ("  _val = gen_sequence ();\n");
-  printf (" _fail:\n");
   printf ("  end_sequence ();\n");
   printf ("  return _val;\n}\n\n");
 }
@@ -586,9 +584,7 @@ gen_split (split)
   /* Call `gen_sequence' to make a SEQUENCE out of all the
      insns emitted within this gen_... function.  */
 
-  printf (" _done:\n");
   printf ("  _val = gen_sequence ();\n");
-  printf (" _fail:\n");
   printf ("  end_sequence ();\n");
   printf ("  return _val;\n}\n\n");
 }
@@ -753,8 +749,8 @@ from the machine description file `md'.  */\n\n");
   printf ("extern char *insn_operand_constraint[][MAX_RECOG_OPERANDS];\n\n");
   printf ("extern rtx recog_operand[];\n");
   printf ("#define operands emit_operand\n\n");
-  printf ("#define FAIL goto _fail\n\n");
-  printf ("#define DONE goto _done\n\n");
+  printf ("#define FAIL {end_sequence (); return _val;}\n");
+  printf ("#define DONE {_val = gen_sequence (); end_sequence (); return _val;}\n");
 
   /* Read the machine description.  */
 

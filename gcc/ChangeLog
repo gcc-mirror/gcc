@@ -1,5 +1,10 @@
 Sat Mar 28 14:37:20 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* genemit.c (gen_expand): Do not emit "_done" or "_fail" labels.
+	(gen_split): Likewise.
+	(main): Rework generated definitions of DONE and FAIL so that they
+	no longer use gotos.  Avoids warnings about unused labels.
+
 	* integrate.c (copy_rtx_and_substitute): Rework to avoid need for
 	unused "junk" variable.
 
