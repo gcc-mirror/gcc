@@ -3377,7 +3377,7 @@ demangle_fund_type (work, mangled, result)
 	{
 	  int i;
 	  ++(*mangled);
-	  for (i = 0; **mangled != '_'; ++(*mangled), ++i)
+	  for (i = 0; **mangled && **mangled != '_'; ++(*mangled), ++i)
 	    buf[i] = **mangled;
 	  buf[i] = '\0';
 	  ++(*mangled);
