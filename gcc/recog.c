@@ -1739,7 +1739,8 @@ constrain_operands (insn_code_num, strict)
 			&& REGNO (op) >= FIRST_PSEUDO_REGISTER)
 		    || (strict == 0 && GET_CODE (op) == SCRATCH)
 		    || (GET_CODE (op) == REG
-			&& (GENERAL_REGS == ALL_REGS
+			&& ((GENERAL_REGS == ALL_REGS
+			     && REGNO (op) < FIRST_PSEUDO_REGISTER)
 			    || reg_fits_class_p (op, GENERAL_REGS,
 						 offset, mode))))
 		  win = 1;
