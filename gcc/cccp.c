@@ -894,7 +894,7 @@ static int ignore_srcdir;
 
 static int safe_read PROTO((int, char *, int));
 static void safe_write PROTO((int, char *, int));
-static void eprint_string PROTO((char *, size_t));
+static void eprint_string PROTO((const char *, size_t));
 
 int main PROTO((int, char **));
 
@@ -985,20 +985,20 @@ static int discard_comments PROTO((U_CHAR *, int, int));
 static int change_newlines PROTO((U_CHAR *, int));
 
 static char *my_strerror PROTO((int));
-static void notice VPROTO((char *, ...));
-static void vnotice PROTO((char *, va_list));
-void error VPROTO((char *, ...));
-void verror PROTO((char *, va_list));
+static void notice PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
+static void vnotice PROTO((const char *, va_list));
+void error PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
+void verror PROTO((const char *, va_list));
 static void error_from_errno PROTO((char *));
-void warning VPROTO((char *, ...));
-static void vwarning PROTO((char *, va_list));
-static void error_with_line VPROTO((int, char *, ...));
-static void verror_with_line PROTO((int, char *, va_list));
-static void vwarning_with_line PROTO((int, char *, va_list));
-static void warning_with_line VPROTO((int, char *, ...));
-void pedwarn VPROTO((char *, ...));
-void pedwarn_with_line VPROTO((int, char *, ...));
-static void pedwarn_with_file_and_line VPROTO((char *, size_t, int, char *, ...));
+void warning PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
+static void vwarning PROTO((const char *, va_list));
+static void error_with_line PVPROTO((int, const char *, ...)) ATTRIBUTE_PRINTF_2;
+static void verror_with_line PROTO((int, const char *, va_list));
+static void vwarning_with_line PROTO((int, const char *, va_list));
+static void warning_with_line PVPROTO((int, const char *, ...)) ATTRIBUTE_PRINTF_2;
+void pedwarn PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
+void pedwarn_with_line PVPROTO((int, const char *, ...)) ATTRIBUTE_PRINTF_2;
+static void pedwarn_with_file_and_line PVPROTO((const char *, size_t, int, const char *, ...)) ATTRIBUTE_PRINTF_4;
 static void pedwarn_strange_white_space PROTO((int));
 
 static void print_containing_files PROTO((void));
@@ -1022,21 +1022,21 @@ static void initialize_builtins PROTO((FILE_BUF *, FILE_BUF *));
 static void make_definition PROTO((char *));
 static void make_undef PROTO((char *, FILE_BUF *));
 
-static void make_assertion PROTO((char *, char *));
+static void make_assertion PROTO((const char *, const char *));
 
 static struct file_name_list *new_include_prefix PROTO((struct file_name_list *, const char *, const char *, const char *));
 static void append_include_chain PROTO((struct file_name_list *, struct file_name_list *));
 
-static int quote_string_for_make PROTO((char *, char *));
-static void deps_output PROTO((char *, int));
+static int quote_string_for_make PROTO((char *, const char *));
+static void deps_output PROTO((const char *, int));
 
-static void fatal VPROTO((char *, ...)) __attribute__ ((noreturn));
-void fancy_abort PROTO((void)) __attribute__ ((noreturn));
+static void fatal PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
 static void perror_with_name PROTO((char *));
-static void pfatal_with_name PROTO((char *)) __attribute__ ((noreturn));
-static void pipe_closed PROTO((int)) __attribute__ ((noreturn));
+static void pfatal_with_name PROTO((char *)) ATTRIBUTE_NORETURN;
+static void pipe_closed PROTO((int)) ATTRIBUTE_NORETURN;
 
-static void memory_full PROTO((void)) __attribute__ ((noreturn));
+static void memory_full PROTO((void)) ATTRIBUTE_NORETURN;
 static void print_help PROTO((void));
 
 /* Read LEN bytes at PTR from descriptor DESC, for file FILENAME,
@@ -1118,7 +1118,7 @@ safe_write (desc, ptr, len)
 
 static void
 eprint_string (string, length)
-     char *string;
+     const char *string;
      size_t length;
 {
   size_t segment_length;
@@ -9369,17 +9369,17 @@ my_strerror (errnum)
 /* notice - output message to stderr */
 
 static void
-notice VPROTO ((char * msgid, ...))
+notice VPROTO ((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char * msgid;
+  const char * msgid;
 #endif
   va_list args;
 
   VA_START (args, msgid);
 
 #ifndef ANSI_PROTOTYPES
-  msgid = va_arg (args, char *);
+  msgid = va_arg (args, const char *);
 #endif
  
   vnotice (msgid, args);
@@ -9388,7 +9388,7 @@ notice VPROTO ((char * msgid, ...))
 
 static void
 vnotice (msgid, args)
-     char *msgid;
+     const char *msgid;
      va_list args;
 {
   vfprintf (stderr, _(msgid), args);
@@ -9397,17 +9397,17 @@ vnotice (msgid, args)
 /* error - print error message and increment count of errors.  */
 
 void
-error VPROTO ((char * msgid, ...))
+error VPROTO ((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char * msgid;
+  const char * msgid;
 #endif
   va_list args;
 
   VA_START (args, msgid);
 
 #ifndef ANSI_PROTOTYPES
-  msgid = va_arg (args, char *);
+  msgid = va_arg (args, const char *);
 #endif
  
   verror (msgid, args);
@@ -9416,7 +9416,7 @@ error VPROTO ((char * msgid, ...))
 
 void
 verror (msgid, args)
-     char *msgid;
+     const char *msgid;
      va_list args;
 {
   int i;
@@ -9470,17 +9470,17 @@ error_from_errno (name)
 /* Print error message but don't count it.  */
 
 void
-warning VPROTO ((char * msgid, ...))
+warning VPROTO ((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char * msgid;
+  const char * msgid;
 #endif
   va_list args;
 
   VA_START (args, msgid);
 
 #ifndef ANSI_PROTOTYPES
-  msgid = va_arg (args, char *);
+  msgid = va_arg (args, const char *);
 #endif
 
   vwarning (msgid, args);
@@ -9489,7 +9489,7 @@ warning VPROTO ((char * msgid, ...))
 
 static void
 vwarning (msgid, args)
-     char *msgid;
+     const char *msgid;
      va_list args;
 {
   int i;
@@ -9519,11 +9519,11 @@ vwarning (msgid, args)
 }
 
 static void
-error_with_line VPROTO ((int line, char * msgid, ...))
+error_with_line VPROTO ((int line, const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   int line;
-  char * msgid;
+  const char * msgid;
 #endif
   va_list args;
 
@@ -9531,7 +9531,7 @@ error_with_line VPROTO ((int line, char * msgid, ...))
 
 #ifndef ANSI_PROTOTYPES
   line = va_arg (args, int);
-  msgid = va_arg (args, char *);
+  msgid = va_arg (args, const char *);
 #endif
 
   verror_with_line (line, msgid, args);
@@ -9542,7 +9542,7 @@ error_with_line VPROTO ((int line, char * msgid, ...))
 static void
 verror_with_line (line, msgid, args)
      int line;
-     char *msgid;
+     const char *msgid;
      va_list args;
 {
   int i;
@@ -9566,11 +9566,11 @@ verror_with_line (line, msgid, args)
 }
 
 static void
-warning_with_line VPROTO ((int line, char * msgid, ...))
+warning_with_line VPROTO ((int line, const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   int line;
-  char * msgid;
+  const char * msgid;
 #endif
   va_list args;
 
@@ -9578,7 +9578,7 @@ warning_with_line VPROTO ((int line, char * msgid, ...))
 
 #ifndef ANSI_PROTOTYPES
   line = va_arg (args, int);
-  msgid = va_arg (args, char *);
+  msgid = va_arg (args, const char *);
 #endif
 
   vwarning_with_line (line, msgid, args);
@@ -9588,7 +9588,7 @@ warning_with_line VPROTO ((int line, char * msgid, ...))
 static void
 vwarning_with_line (line, msgid, args)
      int line;
-     char *msgid;
+     const char *msgid;
      va_list args;
 {
   int i;
@@ -9620,17 +9620,17 @@ vwarning_with_line (line, msgid, args)
 /* Print an error message and maybe count it.  */
 
 void
-pedwarn VPROTO ((char * msgid, ...))
+pedwarn VPROTO ((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char * msgid;
+  const char * msgid;
 #endif
   va_list args;
 
   VA_START (args, msgid);
 
 #ifndef ANSI_PROTOTYPES
-  msgid = va_arg (args, char *);
+  msgid = va_arg (args, const char *);
 #endif
 
   if (pedantic_errors)
@@ -9641,11 +9641,11 @@ pedwarn VPROTO ((char * msgid, ...))
 }
 
 void
-pedwarn_with_line VPROTO ((int line, char * msgid, ...))
+pedwarn_with_line VPROTO ((int line, const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   int line;
-  char * msgid;
+  const char * msgid;
 #endif
   va_list args;
 
@@ -9653,7 +9653,7 @@ pedwarn_with_line VPROTO ((int line, char * msgid, ...))
 
 #ifndef ANSI_PROTOTYPES
   line = va_arg (args, int);
-  msgid = va_arg (args, char *);
+  msgid = va_arg (args, const char *);
 #endif
 
   if (pedantic_errors)
@@ -9667,14 +9667,14 @@ pedwarn_with_line VPROTO ((int line, char * msgid, ...))
    giving specified file name and line number, not current.  */
 
 static void
-pedwarn_with_file_and_line VPROTO ((char *file, size_t file_len, int line,
-				    char * msgid, ...))
+pedwarn_with_file_and_line VPROTO ((const char *file, size_t file_len, int line,
+				    const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *file;
+  const char *file;
   size_t file_len;
   int line;
-  char * msg;
+  const char * msgid;
 #endif
   va_list args;
 
@@ -9684,10 +9684,10 @@ pedwarn_with_file_and_line VPROTO ((char *file, size_t file_len, int line,
   VA_START (args, msgid);
  
 #ifndef ANSI_PROTOTYPES
-  file = va_arg (args, char *);
+  file = va_arg (args, const char *);
   file_len = va_arg (args, size_t);
   line = va_arg (args, int);
-  msgid = va_arg (args, char *);
+  msgid = va_arg (args, const char *);
 #endif
  
   if (file) {
@@ -10419,8 +10419,8 @@ make_undef (str, op)
 
 static void
 make_assertion (option, str)
-     char *option;
-     char *str;
+     const char *option;
+     const char *str;
 {
   FILE_BUF *ip;
   struct directive *kt;
@@ -10615,9 +10615,9 @@ append_include_chain (first, last)
 static int
 quote_string_for_make (dst, src)
      char *dst;
-     char *src;
+     const char *src;
 {
-  char *p = src;
+  const char *p = src;
   int i = 0;
   for (;;)
     {
@@ -10634,7 +10634,7 @@ quote_string_for_make (dst, src)
 	       preceded by 2N backslashes represents N backslashes at
 	       the end of a file name; and backslashes in other
 	       contexts should not be doubled.  */
-	    char *q;
+	    const char *q;
 	    for (q = p - 1; src < q && q[-1] == '\\';  q--)
 	      {
 		if (dst)
@@ -10677,7 +10677,7 @@ quote_string_for_make (dst, src)
 
 static void
 deps_output (string, spacer)
-     char *string;
+     const char *string;
      int spacer;
 {
   int size = quote_string_for_make ((char *) 0, string);
@@ -10716,10 +10716,10 @@ deps_output (string, spacer)
 }
 
 static void
-fatal VPROTO ((char * msgid, ...))
+fatal VPROTO ((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char * msgid;
+  const char * msgid;
 #endif
   va_list args;
 
@@ -10727,7 +10727,7 @@ fatal VPROTO ((char * msgid, ...))
   VA_START (args, msgid);
 
 #ifndef ANSI_PROTOTYPES
-  msgid = va_arg (args, char *);
+  msgid = va_arg (args, const char *);
 #endif
   vnotice (msgid, args);
   va_end (args);

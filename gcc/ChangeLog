@@ -1,3 +1,34 @@
+Fri Jan 29 07:10:27 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cccp.c (eprint_string): Constify a char*.
+	(notice): Likewise.  Use PVPROTO not VPROTO, add ATTRIBUTE_PRINTF_1.
+	(vnotice): Constify a char*.
+	(error): Likewise.  Use PVPROTO not VPROTO, add ATTRIBUTE_PRINTF_1.
+	(verror): Constify a char*.
+	(warning): Likewise.  Use PVPROTO not VPROTO, add ATTRIBUTE_PRINTF_1.
+	(vwarning): Constify a char*.
+	(error_with_line): Likewise.  Use PVPROTO not VPROTO, add
+	ATTRIBUTE_PRINTF_2.
+	(verror_with_line): Constify a char*.
+	(vwarning_with_line): Likewise.
+	(warning_with_line): Likewise.  Use PVPROTO not VPROTO, add
+	ATTRIBUTE_PRINTF_2.
+	(pedwarn): Constify a char*.  Use PVPROTO not VPROTO, add
+	ATTRIBUTE_PRINTF_1.
+	(pedwarn_with_line): Likewise with ATTRIBUTE_PRINTF_2.
+	(pedwarn_with_file_and_line): Likewise with ATTRIBUTE_PRINTF_4.
+	Also correct typo in parameter name declaration.
+	(make_assertion): Constify a char*.
+	(quote_string_for_make): Likewise.
+	(deps_output): Likewise.
+	(fatal): Likewise.  Use PVPROTO not VPROTO, add
+	ATTRIBUTE_PRINTF_1.  Use ATTRIBUTE_NORETURN not an explicit
+	"__attribute__ ((noreturn))".
+	(fancy_abort): Likewise for ATTRIBUTE_NORETURN.
+	(pfatal_with_name): Likewise.
+	(pipe_closed): Likewise.
+	(memory_full): Likewise.
+
 Fri Jan 29 00:14:55 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (strength_reduce): Grow set_in_loop / n_times_set /
