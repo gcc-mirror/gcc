@@ -1,3 +1,33 @@
+2003-05-10  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* defaults.h (GCOV_TYPE_SIZE): Remove.
+	* gcov-io.h (gcov_type): Set to specific mode int on target.
+	(gcov_unsigned_t, gcov_position_t): New.
+	(GCOV_TYPE_NODE): New.
+	(GCOV_TAG_SUMMARY_LENGTH): Adjust.
+	(GCOV_COUNTERS_SUMMABLE): New.
+	(gcov_ctr_summary, gcov_sumary, gcov_fn_info, gcov_merge_fn,
+	gcov_ctr_info, gcov_info): Adjust types.
+	(gcov_var): Adjust types.
+	(gcov_write_unsigned, gcov_write_tag,
+	gcov_write_length, gcov_write_tag_length, gcov_write_summary,
+	gcov_read_unsigned, gcov_read_summary): Adjust gcov types.
+	(gcov_position, gcov_sync, gcov_seek): Adjust gcov types.
+	* gcov-io.c (gcov_write_unsigned, gcov_write_tag,
+	gcov_write_length, gcov_write_tag_length, gcov_write_summary,
+	gcov_read_unsigned, gcov_read_summary): Adjust gcov types.
+	* libgcov.c (gcov_crc32, gcov_version_mismatch, gcov_exit,
+	__gcov_init, __gcov_merge_add): Adjust gcov types.
+	* coverage.c (ctr_merge_functions): Constify.
+	(ctr_names): New.
+	(read_counts_file): Adjust gcov types. Only summarize & merge
+	summable counters.
+	(coverage_counter_ref): Use GCOV_TYPE_NODE.
+	(build_fn_info_type, build_fn_info_value, build_ctr_info_type,
+	build_ctr_info_value, build_gcov_info): Adjust types.
+	* profile.c (branch_prob): Adjust gcov types.
+	* gcov_dump (dump_file): Adjust gcov types.
+
 2003-05-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (DOM_CC_X_AND_Y, DOM_CC_NX_OR_Y, DOM_CC_X_OR_Y): New 

@@ -99,7 +99,8 @@ static htab_t counts_hash = NULL;
 static GTY(()) rtx ctr_labels[GCOV_COUNTERS];
 
 /* The names of merge functions for counters.  */
-static const char *ctr_merge_functions[GCOV_COUNTERS] = GCOV_MERGE_FUNCTIONS;
+static const char *const ctr_merge_functions[GCOV_COUNTERS] = GCOV_MERGE_FUNCTIONS;
+static const char *const ctr_names[GCOV_COUNTERS] = GCOV_COUNTER_NAMES;
 
 /* Forward declarations.  */
 static hashval_t htab_counts_entry_hash PARAMS ((const void *));
@@ -151,8 +152,9 @@ htab_counts_entry_del (of)
 static void
 read_counts_file ()
 {
-  unsigned fn_ident = 0;
-  unsigned version, ix, checksum = -1;
+  gcov_unsigned_t fn_ident = 0;
+  gcov_unsigned_t version, checksum = -1;
+  unsigned ix;
   counts_entry_t *summaried = NULL;
   unsigned seen_summary = 0;
   
@@ -168,7 +170,7 @@ read_counts_file ()
   else if ((version = gcov_read_unsigned ()) != GCOV_VERSION)
     {
       char v[4], e[4];
-      unsigned required = GCOV_VERSION;
+      gcov_unsigned_t required = GCOV_VERSION;
       
       for (ix = 4; ix--; required >>= 8, version >>= 8)
 	{
@@ -186,8 +188,8 @@ read_counts_file ()
 			     htab_counts_entry_del);
   while (!gcov_is_eof ())
     {
-      unsigned tag, length;
-      unsigned long offset;
+      gcov_unsigned_t tag, length;
+      gcov_position_t offset;
       int error;
       
       tag = gcov_read_unsigned ();
@@ -259,17 +261,25 @@ read_counts_file ()
 	      htab_delete (counts_hash);
 	      break;
 	    }
-	  
-	  /* This should always be true for a just allocated entry,
-	     and always false for an existing one. Check this way, in
-	     case the gcov file is corrupt.  */
-	  if (!entry->chain || summaried != entry)
+	  else if (elt.ctr >= GCOV_COUNTERS_SUMMABLE)
+	    {
+	      warning ("cannot merge separate %s counters for function %u",
+		       ctr_names[elt.ctr], fn_ident);
+	      goto skip_merge;
+	    }
+
+	  if (elt.ctr < GCOV_COUNTERS_SUMMABLE
+	      /* This should always be true for a just allocated entry,
+	     	 and always false for an existing one. Check this way, in
+	     	 case the gcov file is corrupt.  */
+	      && (!entry->chain || summaried != entry))
 	    {
 	      entry->chain = summaried;
 	      summaried = entry;
 	    }
 	  for (ix = 0; ix != n_counts; ix++)
 	    entry->counts[ix] += gcov_read_counter ();
+	skip_merge:;
 	}
       gcov_sync (offset, length);
       if ((error = gcov_is_error ()))
@@ -332,7 +342,8 @@ get_coverage_counts (unsigned counter, unsigned expected,
 rtx
 coverage_counter_ref (unsigned counter, unsigned no)
 {
-  enum machine_mode mode = mode_for_size (GCOV_TYPE_SIZE, MODE_INT, 0);
+  unsigned gcov_size = tree_low_cst (TYPE_SIZE (GCOV_TYPE_NODE), 1);
+  enum machine_mode mode = mode_for_size (gcov_size, MODE_INT, 0);
   rtx ref;
 
   if (!ctr_labels[counter])
@@ -350,8 +361,7 @@ coverage_counter_ref (unsigned counter, unsigned no)
     }
 
   no += prg_n_ctrs[counter];
-  ref = plus_constant (ctr_labels[counter],
-		       GCOV_TYPE_SIZE / BITS_PER_UNIT * no);
+  ref = plus_constant (ctr_labels[counter], gcov_size / BITS_PER_UNIT * no);
   ref = gen_rtx_MEM (mode, ref);
   set_mem_alias_set (ref, new_alias_set ());
 
@@ -489,10 +499,10 @@ build_fn_info_type (counters)
   tree array_type;
   
   /* ident */
-  fields = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
+  fields = build_decl (FIELD_DECL, NULL_TREE, unsigned_intSI_type_node);
 
   /* checksum */
-  field = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
+  field = build_decl (FIELD_DECL, NULL_TREE, unsigned_intSI_type_node);
   TREE_CHAIN (field) = fields;
   fields = field;
 
@@ -525,14 +535,14 @@ build_fn_info_value (function, type)
   
   /* ident */
   value = tree_cons (fields,
-		     convert (unsigned_type_node,
+		     convert (unsigned_intSI_type_node,
 			      build_int_2 (function->ident, 0)),
 		     value);
   fields = TREE_CHAIN (fields);
   
   /* checksum */
   value = tree_cons (fields,
-		     convert (unsigned_type_node,
+		     convert (unsigned_intSI_type_node,
 			      build_int_2 (function->checksum, 0)),
 		     value);
   fields = TREE_CHAIN (fields);
@@ -562,26 +572,24 @@ build_ctr_info_type ()
 {
   tree type = (*lang_hooks.types.make_type) (RECORD_TYPE);
   tree field, fields = NULL_TREE;
+  tree gcov_ptr_type = build_pointer_type (GCOV_TYPE_NODE);
   tree gcov_merge_fn_type;
-  
+
   /* counters */
-  field = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
+  field = build_decl (FIELD_DECL, NULL_TREE, unsigned_intSI_type_node);
   TREE_CHAIN (field) = fields;
   fields = field;
 
   /* values */
-  field = build_decl (FIELD_DECL, NULL_TREE,
-		      build_pointer_type (make_signed_type (GCOV_TYPE_SIZE)));
+  field = build_decl (FIELD_DECL, NULL_TREE, gcov_ptr_type);
   TREE_CHAIN (field) = fields;
   fields = field;
 
   /* merge */
   gcov_merge_fn_type =
-	build_function_type_list (
-		void_type_node,
-		build_pointer_type (make_signed_type (GCOV_TYPE_SIZE)),
-		unsigned_type_node,
-		NULL_TREE);
+    build_function_type_list (void_type_node,
+			      gcov_ptr_type, unsigned_type_node,
+			      NULL_TREE);
   field = build_decl (FIELD_DECL, NULL_TREE,
 		      build_pointer_type (gcov_merge_fn_type));
   TREE_CHAIN (field) = fields;
@@ -607,7 +615,7 @@ build_ctr_info_value (counter, type)
 
   /* counters */
   value = tree_cons (fields,
-		     convert (unsigned_type_node,
+		     convert (unsigned_intSI_type_node,
 			      build_int_2 (prg_n_ctrs[counter], 0)),
 		     value);
   fields = TREE_CHAIN (fields);
@@ -641,9 +649,7 @@ build_ctr_info_value (counter, type)
   DECL_ARTIFICIAL (fn) = 1;
   TREE_NOTHROW (fn) = 1;
   value = tree_cons (fields,
-		     build1 (ADDR_EXPR,
-			     TREE_TYPE (fields),
-			     fn),
+		     build1 (ADDR_EXPR, TREE_TYPE (fields), fn),
 		     value);
 
   value = build_constructor (type, nreverse (value));
@@ -680,10 +686,10 @@ build_gcov_info ()
   const_type = build_qualified_type (type, TYPE_QUAL_CONST);
   
   /* Version ident */
-  field = build_decl (FIELD_DECL, NULL_TREE, long_unsigned_type_node);
+  field = build_decl (FIELD_DECL, NULL_TREE, unsigned_intSI_type_node);
   TREE_CHAIN (field) = fields;
   fields = field;
-  value = tree_cons (field, convert (long_unsigned_type_node,
+  value = tree_cons (field, convert (unsigned_intSI_type_node,
 				     build_int_2 (GCOV_VERSION, 0)),
 		     value);
   

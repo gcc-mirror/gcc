@@ -79,12 +79,12 @@ static struct gcov_info *gcov_list;
 
 /* A program checksum allows us to distinguish program data for an
    object file included in multiple programs.  */
-static unsigned gcov_crc32;
+static gcov_unsigned_t gcov_crc32;
 
 static void
-gcov_version_mismatch (struct gcov_info *ptr, unsigned version)
+gcov_version_mismatch (struct gcov_info *ptr, gcov_unsigned_t version)
 {
-  unsigned expected = GCOV_VERSION;
+  gcov_unsigned_t expected = GCOV_VERSION;
   unsigned ix;
   char e[4], v[4];
 
@@ -123,11 +123,11 @@ gcov_exit (void)
       unsigned t_ix;
       
       for (t_ix = 0, ci_ptr = gi_ptr->counts, cs_ptr = this_program.ctrs;
-	   t_ix != GCOV_COUNTERS; t_ix++, cs_ptr++)
+	   t_ix != GCOV_COUNTERS_SUMMABLE; t_ix++, cs_ptr++)
 	if ((1 << t_ix) & gi_ptr->ctr_mask)
 	  {
 	    const gcov_type *c_ptr;
-	    unsigned c_num;
+	    gcov_unsigned_t c_num;
 
 	    cs_ptr->num += ci_ptr->num;
 	    for (c_num = ci_ptr->num, c_ptr = ci_ptr->values; c_num--; c_ptr++)
@@ -140,7 +140,7 @@ gcov_exit (void)
 	  }
     }
 
-  /* Now write the data  */
+  /* Now merge each file  */
   for (gi_ptr = gcov_list; gi_ptr; gi_ptr = gi_ptr->next)
     {
       struct gcov_summary this_object;
@@ -154,18 +154,18 @@ gcov_exit (void)
       struct gcov_ctr_summary *cs_obj, *cs_tobj, *cs_prg, *cs_tprg, *cs_all;
       int error;
       int merging;
-      unsigned tag, length;
-      unsigned long summary_pos = ~0UL;
+      gcov_unsigned_t tag, length;
+      gcov_position_t summary_pos = ~(gcov_position_t)0;
 
       /* Totals for this object file.  */
       memset (&this_object, 0, sizeof (this_object));
       for (t_ix = c_ix = 0,
 	     ci_ptr = gi_ptr->counts, cs_ptr = this_object.ctrs;
-	   t_ix != GCOV_COUNTERS; t_ix++, cs_ptr++)
+	   t_ix != GCOV_COUNTERS_SUMMABLE; t_ix++, cs_ptr++)
 	if ((1 << t_ix) & gi_ptr->ctr_mask)
 	  {
 	    const gcov_type *c_ptr;
-	    unsigned c_num;
+	    gcov_unsigned_t c_num;
 
 	    cs_ptr->num += ci_ptr->num;
 	    values[c_ix] = ci_ptr->values;
@@ -258,7 +258,7 @@ gcov_exit (void)
 	  /* Check program & object summary */
 	  while (!gcov_is_eof ())
 	    {
-	      unsigned long base = gcov_position ();
+	      gcov_position_t base = gcov_position ();
 	      int is_program;
 	      
 	      tag = gcov_read_unsigned ();
@@ -295,7 +295,7 @@ gcov_exit (void)
 	     cs_obj = object.ctrs, cs_tobj = this_object.ctrs,
 	     cs_prg = program.ctrs, cs_tprg = this_program.ctrs,
 	     cs_all = all.ctrs;
-	   t_ix != GCOV_COUNTERS;
+	   t_ix != GCOV_COUNTERS_SUMMABLE;
 	   t_ix++, cs_obj++, cs_tobj++, cs_prg++, cs_tprg++, cs_all++)
 	{
 	  if ((1 << t_ix) & gi_ptr->ctr_mask)
@@ -340,8 +340,7 @@ gcov_exit (void)
       program.checksum = gcov_crc32;
       
       /* Write out the data.  */
-      gcov_write_unsigned (GCOV_DATA_MAGIC);
-      gcov_write_unsigned (GCOV_VERSION);
+      gcov_write_tag_length (GCOV_DATA_MAGIC, GCOV_VERSION);
       
       /* Write execution counts for each function.  */
       for (f_ix = gi_ptr->n_functions, fi_ptr = gi_ptr->functions; f_ix--;
@@ -396,16 +395,16 @@ __gcov_init (struct gcov_info *info)
   else
     {
       const char *ptr = info->filename;
-      unsigned crc32 = gcov_crc32;
+      gcov_unsigned_t crc32 = gcov_crc32;
   
       do
 	{
 	  unsigned ix;
-	  unsigned value = *ptr << 24;
+	  gcov_unsigned_t value = *ptr << 24;
 
 	  for (ix = 8; ix--; value <<= 1)
 	    {
-	      unsigned feedback;
+	      gcov_unsigned_t feedback;
 
 	      feedback = (value ^ crc32) & 0x80000000 ? 0x04c11db7 : 0;
 	      crc32 <<= 1;
@@ -456,9 +455,7 @@ __gcov_flush (void)
    an array COUNTERS of N_COUNTERS old counters and it reads the same number
    of counters from the gcov file.  */
 void
-__gcov_merge_add (counters, n_counters)
-     gcov_type *counters;
-     unsigned n_counters;
+__gcov_merge_add (gcov_type *counters, unsigned n_counters)
 {
   for (; n_counters; counters++, n_counters--)
     *counters += gcov_read_counter ();
