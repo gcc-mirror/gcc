@@ -572,10 +572,15 @@ dtors_section ()							\
 }
 
 /* Switch into a generic section.
-   This is currently only used to support section attributes.  */
+   This is currently only used to support section attributes.
 
+   We make the section read-only and executable for a function decl,
+   read-only for a const data decl, and writable for a non-const data decl.  */
 #define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
-  fprintf (FILE, ".section\t%s,\"a\",@progbits\n", NAME)
+  fprintf (FILE, ".section\t%s,\"%s\",@progbits\n", NAME, \
+	   TREE_CODE (DECL) == FUNCTION_DECL ? "ax" : \
+	   TREE_READONLY (DECL) ? "a" : "aw")
+
 
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */
