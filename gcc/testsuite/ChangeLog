@@ -1,5 +1,9 @@
 2003-03-06  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/init/ref3.C: New test.
+
+2003-03-06  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/9965
 	* g++.dg/init/ref2.C: New test.
 
