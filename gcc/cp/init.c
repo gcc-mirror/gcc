@@ -2798,6 +2798,8 @@ expand_vec_init (decl, base, maxindex, init, from_array)
       tree elts;
       tree baseref = build1 (INDIRECT_REF, type, base);
 
+      from_array = 0;
+
       for (elts = CONSTRUCTOR_ELTS (init); elts; elts = TREE_CHAIN (elts))
 	{
 	  tree elt = TREE_VALUE (elts);
@@ -2853,10 +2855,14 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 
   /* Now, default-initialize any remaining elements.  We don't need to
      do that if a) the type does not need constructing, or b) we've
-     already initialized all the elements.  */
-  if (TYPE_NEEDS_CONSTRUCTING (type)
-      && !(TREE_CODE (maxindex) == INTEGER_CST
-	   && num_initialized_elts == TREE_INT_CST_LOW (maxindex) + 1))
+     already initialized all the elements.
+
+     We do need to keep going if we're copying an array.  */
+
+  if (from_array
+      || (TYPE_NEEDS_CONSTRUCTING (type)
+	  && !(TREE_CODE (maxindex) == INTEGER_CST
+	       && num_initialized_elts == TREE_INT_CST_LOW (maxindex) + 1)))
     {
       /* If the ITERATOR is equal to -1, then we don't have to loop;
 	 we've already initialized all the elements.  */

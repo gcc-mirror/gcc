@@ -3143,7 +3143,7 @@ finish_struct_anon (t)
 	      if (DECL_ARTIFICIAL (*uelt))
 		continue;
 
-	      if (DECL_NAME (*uelt) == TYPE_IDENTIFIER (t))
+	      if (DECL_NAME (*uelt) == constructor_name (t))
 		cp_pedwarn_at ("ANSI C++ forbids member `%D' with same name as enclosing class",
 			       *uelt);
 

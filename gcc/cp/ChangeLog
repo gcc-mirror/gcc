@@ -1,3 +1,17 @@
+1998-11-22  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (tag_name): New fn.
+	(xref_tag): Complain about using typedef-name after class-key.
+
+	* init.c (expand_vec_init): Also keep going if from_array.
+
+	* tree.c (is_overloaded_fn): Also handle the output of
+	build_offset_ref.
+
+	* decl.c (grokdeclarator): Use constructor_name when comparing
+	field name against enclosing class.
+	* class.c (finish_struct_anon): Likewise.
+
 1998-11-22  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl.c (poplevel): Remove code to handle KEEP == 2.

@@ -10299,7 +10299,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
       if (decl_context == FIELD)
 	{
-	  if (declarator == current_class_name)
+	  if (declarator == constructor_name (current_class_type))
 	    cp_pedwarn ("ANSI C++ forbids nested type `%D' with same name as enclosing class",
 			declarator);
 	  decl = build_lang_decl (TYPE_DECL, declarator, type);
@@ -10781,7 +10781,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      }
 
 	    /* 9.2p13 [class.mem] */
-	    if (declarator == current_class_name)
+	    if (declarator == constructor_name (current_class_type))
 	      cp_pedwarn ("ANSI C++ forbids data member `%D' with same name as enclosing class",
 			  declarator);
 
@@ -11703,6 +11703,27 @@ grok_op_properties (decl, virtualp, friendp)
     }
 }
 
+static char *
+tag_name (code)
+     enum tag_types code;
+{
+  switch (code)
+    {
+    case record_type:
+      return "struct";
+    case class_type:
+      return "class";
+    case union_type:
+      return "union ";
+    case enum_type:
+      return "enum";
+    case signature_type:
+      return "signature";
+    default:
+      my_friendly_abort (981122);
+    }
+}
+
 /* Get the struct, enum or union (CODE says which) with tag NAME.
    Define the tag as a forward-reference if it is not defined.
 
@@ -11817,7 +11838,12 @@ xref_tag (code_type_node, name, globalize)
       else 
 	{
 	  if (t)
-	    ref = t;
+	    {
+	      if (t != TYPE_MAIN_VARIANT (t))
+		cp_pedwarn ("using typedef-name `%D' after `%s'",
+			    TYPE_NAME (t), tag_name (tag_code));
+	      ref = t;
+	    }
 	  else
 	    ref = lookup_tag (code, name, b, 0);
 	  
