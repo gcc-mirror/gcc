@@ -5,7 +5,7 @@
    PR:		none.
    Originator:	<andreast@gcc.gnu.org> 20030828	 */
 
-/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
+/* { dg-do run { xfail mips64*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
 #include "ffitest.h"
 
 typedef struct cls_struct_16byte {
@@ -86,6 +86,10 @@ int main (void)
   /* { dg-output "7 8 9 1 9 3: 8 17 12" } */
   printf("res: %d %g %d\n", res_dbl.a, res_dbl.b, res_dbl.c);
   /* { dg-output "\nres: 8 17 12" } */
+
+  res_dbl.a = 0;
+  res_dbl.b = 0.0;
+  res_dbl.c = 0;
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_struct_16byte_gn, NULL) == FFI_OK);
 

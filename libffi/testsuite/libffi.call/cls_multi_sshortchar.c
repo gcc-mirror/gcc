@@ -4,7 +4,7 @@
    PR:		PR13221.
    Originator:	<andreast@gcc.gnu.org> 20031129  */
 
-/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
+/* { dg-do run { xfail mips64*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
 #include "ffitest.h"
 
 signed short test_func_fn(signed char a1, signed short a2,
