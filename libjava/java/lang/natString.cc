@@ -445,7 +445,7 @@ java::lang::String::init(jcharArray chars, jint offset, jint count,
   jsize data_size = JvGetArrayLength (chars);
   if (offset < 0 || count < 0 || offset + count < 0
       || offset + count > data_size)
-    throw new StringIndexOutOfBoundsException;
+    throw new ArrayIndexOutOfBoundsException;
   jcharArray array;
   jchar *pdst;
   if (! dont_copy)
@@ -475,7 +475,7 @@ java::lang::String::init(jbyteArray ascii, jint hibyte, jint offset,
   jsize data_size = JvGetArrayLength (ascii);
   if (offset < 0 || count < 0 || offset + count < 0
       || offset + count > data_size)
-    throw new java::lang::StringIndexOutOfBoundsException;
+    throw new ArrayIndexOutOfBoundsException;
   jcharArray array = JvNewCharArray(count);
   jbyte *psrc = elements (ascii) + offset;
   jchar *pdst = elements (array);
@@ -498,7 +498,7 @@ java::lang::String::init (jbyteArray bytes, jint offset, jint count,
   jsize data_size = JvGetArrayLength (bytes);
   if (offset < 0 || count < 0 || offset + count < 0
       || offset + count > data_size)
-    throw new StringIndexOutOfBoundsException;
+    throw new ArrayIndexOutOfBoundsException;
   jcharArray array = JvNewCharArray (count);
   gnu::gcj::convert::BytesToUnicode *converter
     = gnu::gcj::convert::BytesToUnicode::getDecoder(encoding);
@@ -565,9 +565,10 @@ java::lang::String::getChars(jint srcBegin, jint srcEnd,
 			     jcharArray dst, jint dstBegin)
 {
   jint dst_length = JvGetArrayLength (dst);
-  if (srcBegin < 0 || srcBegin > srcEnd || srcEnd > count
-      || dstBegin < 0 || dstBegin + (srcEnd-srcBegin) > dst_length)
+  if (srcBegin < 0 || srcBegin > srcEnd || srcEnd > count)
     throw new java::lang::StringIndexOutOfBoundsException;
+  if (dstBegin < 0 || dstBegin + (srcEnd-srcBegin) > dst_length)
+    throw new ArrayIndexOutOfBoundsException;
   jchar *dPtr = elements (dst) + dstBegin;
   jchar *sPtr = JvGetStringChars (this) + srcBegin;
   jint i = srcEnd-srcBegin;
@@ -615,9 +616,10 @@ java::lang::String::getBytes(jint srcBegin, jint srcEnd,
 			     jbyteArray dst, jint dstBegin)
 {
   jint dst_length = JvGetArrayLength (dst);
-  if (srcBegin < 0 || srcBegin > srcEnd || srcEnd > count
-      || dstBegin < 0 || dstBegin + (srcEnd-srcBegin) > dst_length)
+  if (srcBegin < 0 || srcBegin > srcEnd || srcEnd > count)
     throw new java::lang::StringIndexOutOfBoundsException;
+  if (dstBegin < 0 || dstBegin + (srcEnd-srcBegin) > dst_length)
+    throw new ArrayIndexOutOfBoundsException;
   jbyte *dPtr = elements (dst) + dstBegin;
   jchar *sPtr = JvGetStringChars (this) + srcBegin;
   jint i = srcEnd-srcBegin;
@@ -1007,7 +1009,7 @@ java::lang::String::valueOf(jcharArray data, jint offset, jint count)
 {
   jint data_length = JvGetArrayLength (data);
   if (offset < 0 || count < 0 || offset+count > data_length)
-    throw new java::lang::IndexOutOfBoundsException;
+    throw new ArrayIndexOutOfBoundsException;
   jstring result = JvAllocString(count);
   jchar *sPtr = elements (data) + offset;
   jchar *dPtr = JvGetStringChars(result);
