@@ -669,10 +669,8 @@
 #     define ALIGNMENT 4	/* Guess.  Can someone verify?	*/
 				/* This was 2, but that didn't sound right. */
 #     define OS_TYPE "LINUX"
-#     define HEURISTIC1
 #     define DYNAMIC_LOADING
-#     undef STACK_GRAN
-#     define STACK_GRAN 0x10000000
+#     define LINUX_STACKBOTTOM
 	/* Stack usually starts at 0x80000000 */
 #     define LINUX_DATA_START
       extern int _end[];

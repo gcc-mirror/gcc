@@ -1,3 +1,9 @@
+2003-04-09  Tom Tromey  <tromey@redhat.com>
+
+	* include/private/gcconfig.h (LINUX_STACKBOTTOM): Define for
+	POWERPC.
+	(STACK_GRAN, HEURISTIC1): Don't define for POWERPC.
+
 2003-03-04  Hans Boehm <Hans.Boehm@hp.com>
 	* include/private/gcconfig.h (GC_data_start): declare when needed.
 	* include/private/gc_priv.h: Include gcconfig.h after ptr_t
