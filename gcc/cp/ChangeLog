@@ -1,5 +1,11 @@
 2003-07-31  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/11347
+	* pt.c (instantiate_class_template): Increment
+	processing_template_decl around the tsubst of a template member
+	class.
+	(tsubst_qualified_id): Assert we do not have a dependent scope.
+
 	* pt.c (coerce_template_template_parms, lookup_template_class,
 	can_complete_type_without_circularity, instantiate_class_template,
 	tsubst_decl, unify): Reformat.
