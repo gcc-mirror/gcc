@@ -254,9 +254,6 @@ DEFTREECODE (FUNCTION_TYPE, "function_type", tcc_type, 0)
    includes the hidden argument for "self".  */
 DEFTREECODE (METHOD_TYPE, "method_type", tcc_type, 0)
 
-/* Used for Pascal; details not determined right now.  */
-DEFTREECODE (FILE_TYPE, "file_type", tcc_type, 0)
-
 /* This is a language-specific kind of type.
    Its meaning is defined by the language front end.
    layout_type does not know how to lay this out,

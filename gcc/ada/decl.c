@@ -6402,7 +6402,6 @@ gnat_substitute_in_type (tree t, tree f, tree r)
 
     case OFFSET_TYPE:
     case METHOD_TYPE:
-    case FILE_TYPE:
     case FUNCTION_TYPE:
     case LANG_TYPE:
       /* Don't know how to do these yet.  */

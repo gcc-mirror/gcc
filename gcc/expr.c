@@ -4522,7 +4522,6 @@ count_type_elements (tree type)
 
     case VOID_TYPE:
     case METHOD_TYPE:
-    case FILE_TYPE:
     case FUNCTION_TYPE:
     case LANG_TYPE:
     default:

@@ -1,3 +1,7 @@
+2005-03-30  Tom Tromey  <tromey@redhat.com>
+
+	* decl.c (gnat_substitute_in_type): Don't handle FILE_TYPE.
+
 2005-03-30  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* adaint.c (_gnat_set_close_on_exec): Mark parameters unused.

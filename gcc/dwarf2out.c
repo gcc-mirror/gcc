@@ -8016,7 +8016,6 @@ is_base_type (tree type)
     case METHOD_TYPE:
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-    case FILE_TYPE:
     case OFFSET_TYPE:
     case LANG_TYPE:
     case VECTOR_TYPE:
@@ -12108,12 +12107,6 @@ gen_type_die (tree type, dw_die_ref context_die)
       /* Now output a DIE to represent this pointer-to-data-member type
 	 itself.  */
       gen_ptr_to_mbr_type_die (type, context_die);
-      break;
-
-    case FILE_TYPE:
-      gen_type_die (TREE_TYPE (type), context_die);
-      /* No way to represent these in Dwarf yet!  */
-      gcc_unreachable ();
       break;
 
     case FUNCTION_TYPE:

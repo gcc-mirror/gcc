@@ -7727,7 +7727,6 @@ sparc_type_code (register tree type)
 	case VECTOR_TYPE:
 	case CHAR_TYPE:		/* GNU Pascal CHAR type.  Not used in C.  */
 	case BOOLEAN_TYPE:	/* GNU Fortran BOOLEAN type.  */
-	case FILE_TYPE:		/* GNU Pascal FILE type.  */
 	case LANG_TYPE:		/* ? */
 	  return qualifiers;
   

@@ -1908,7 +1908,6 @@ type_contains_placeholder_1 (tree type)
     case OFFSET_TYPE:
     case REFERENCE_TYPE:
     case METHOD_TYPE:
-    case FILE_TYPE:
     case FUNCTION_TYPE:
     case VECTOR_TYPE:
       return false;

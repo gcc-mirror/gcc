@@ -1759,14 +1759,6 @@ layout_type (tree type)
       }
       break;
 
-    case FILE_TYPE:
-      /* The size may vary in different languages, so the language front end
-	 should fill in the size.  */
-      TYPE_ALIGN (type) = BIGGEST_ALIGNMENT;
-      TYPE_USER_ALIGN (type) = 0;
-      TYPE_MODE  (type) = BLKmode;
-      break;
-
     default:
       gcc_unreachable ();
     }

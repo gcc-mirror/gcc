@@ -1932,11 +1932,6 @@ dbxout_type (tree type, int full)
 	stabstr_S ("eFalse:0,True:1,;");
       break;
 
-    case FILE_TYPE:
-      stabstr_C ('d');
-      dbxout_type (TREE_TYPE (type), 0);
-      break;
-
     case COMPLEX_TYPE:
       /* Differs from the REAL_TYPE by its new data type number.
 	 R3 is NF_COMPLEX.  We don't try to use any of the other NF_*
