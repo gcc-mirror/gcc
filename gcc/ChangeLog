@@ -1,3 +1,10 @@
+2005-03-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* dominance.c (free_dominance_info): Speed up by freeing et
+	data structures without maintaining other nodes.
+	* et-forest.c (et_free_tree_force): New.
+	* et-forest.h: Add a prototype for et_free_tree_force.
+
 2005-03-25  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
 
 	PR target/15491
