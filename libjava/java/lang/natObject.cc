@@ -198,11 +198,15 @@ java::lang::Object::wait (jlong timeout, jint nanos)
   if (timeout < 0 || nanos < 0 || nanos > 999999)
     JvThrow (new IllegalArgumentException);
   _Jv_SyncInfo *si = (_Jv_SyncInfo *) sync_info;
-  if (_Jv_CondWait (&si->condition, &si->mutex, timeout, nanos))
-    JvThrow (new IllegalMonitorStateException(JvNewStringLatin1 
-                                              ("current thread not owner")));
-  if (Thread::interrupted())
-    JvThrow (new InterruptedException);
+  switch (_Jv_CondWait (&si->condition, &si->mutex, timeout, nanos))
+    {
+      case _JV_NOT_OWNER:
+	JvThrow (new IllegalMonitorStateException (JvNewStringLatin1 
+                          ("current thread not owner")));        
+      case _JV_INTERRUPTED:
+	if (Thread::interrupted ())
+	  JvThrow (new InterruptedException);        
+    }
 }
 
 //

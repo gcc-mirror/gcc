@@ -40,7 +40,6 @@ extern "C"
 struct starter
 {
   _Jv_ThreadStartFunc *method;
-  java::lang::Thread *object;
   _Jv_Thread_t *data;
 };
 
@@ -78,30 +77,23 @@ static int non_daemon_count;
 
 
 
+// Wait for the condition variable "CV" to be notified. 
+// Return values:
+// 0: the condition was notified, or the timeout expired.
+// _JV_NOT_OWNER: the thread does not own the mutex "MU".   
+// _JV_INTERRUPTED: the thread was interrupted. Its interrupted flag is set.   
 int
 _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
 	      jlong millis, jint nanos)
 {
-  if (_Jv_PthreadCheckMonitor (mu))
-    return 1;
+  pthread_t self = pthread_self();
+  if (mu->owner != self)
+    return _JV_NOT_OWNER;
 
-  int r;
-  pthread_mutex_t *pmu = _Jv_PthreadGetMutex (mu);
   struct timespec ts;
-  jlong m, m2, startTime;
-  bool done_sleeping = false;
+  jlong m, startTime;
 
-  if (millis == 0 && nanos == 0)
-    {
-#ifdef LINUX_THREADS
-      // pthread_cond_timedwait can be interrupted by a signal on linux, while
-      // pthread_cond_wait can not. So pthread_cond_timedwait() forever.
-      m = java::lang::Long::MAX_VALUE;
-      ts.tv_sec = LONG_MAX;
-      ts.tv_nsec = 0;
-#endif
-    }
-  else
+  if (millis > 0 || nanos > 0)
     {
       startTime = java::lang::System::currentTimeMillis();
       m = millis + startTime;
@@ -109,172 +101,178 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
       ts.tv_nsec = ((m % 1000) * 1000000) + nanos; 
     }
 
-  java::lang::Thread *current = _Jv_ThreadCurrent();
+  _Jv_Thread_t *current = _Jv_ThreadCurrentData ();
+  java::lang::Thread *current_obj = _Jv_ThreadCurrent ();
 
-  do
+  // Add this thread to the cv's wait set.
+  current->next = NULL;
+
+  if (cv->first == NULL)
+    cv->first = current;
+  else
+    for (_Jv_Thread_t *t = cv->first;; t = t->next)
+      {
+        if (t->next == NULL)
+          {
+            t->next = current;
+            break;
+          }
+      }
+
+  pthread_mutex_lock (&current->wait_mutex);
+  
+  // Now that we hold the wait mutex, check if this thread has been 
+  // interrupted already.
+  if (current_obj->interrupt_flag)
     {
-      r = EINTR;
-      // Check to ensure the thread hasn't already been interrupted.
-      if (!(current->isInterrupted ()))
-        {
-#ifdef LINUX_THREADS	
-	  // FIXME: in theory, interrupt() could be called on this thread
-	  // between the test above and the wait below, resulting in the 
-	  // interupt() call failing. I don't see a way to fix this 
-	  // without significant changes to the implementation.
-	  r = pthread_cond_timedwait (cv, pmu, &ts);
-#else
-	  if (millis == 0 && nanos == 0)
-	    r = pthread_cond_wait (cv, pmu);
-	  else	  
-	    r = pthread_cond_timedwait (cv, pmu, &ts);	  
-#endif
-	}
-      
-      if (r == EINTR)
-	{
-	  /* We were interrupted by a signal.  Either this is
-	     because we were interrupted intentionally (i.e. by
-	     Thread.interrupt()) or by the GC if it is
-	     signal-based.  */
-	  if (current->isInterrupted ())
-	    {
-	      r = 0;
-              done_sleeping = true;
-            }
-	  else
-            {
-	      /* We were woken up by the GC or another signal.  */
-	      m2 = java::lang::System::currentTimeMillis ();
-	      if (m2 >= m)
-		{
-		  r = 0;
-		  done_sleeping = true;
-		}
-	    }
-	}
-      else if (r == ETIMEDOUT)
-	{
-	  /* A timeout is a normal result.  */
-	  r = 0;
-	  done_sleeping = true;
-	}
-      else
-	done_sleeping = true;
+      pthread_mutex_unlock (&current->wait_mutex);
+      return _JV_INTERRUPTED;
     }
-  while (! done_sleeping);
 
-  return r != 0;
-}
+  // Record the current lock depth, so it can be restored when we re-aquire it.
+  int count = mu->count;
 
-#ifndef RECURSIVE_MUTEX_IS_DEFAULT
-
-void
-_Jv_MutexInit (_Jv_Mutex_t *mu)
-{
-#ifdef HAVE_RECURSIVE_MUTEX
-  pthread_mutexattr_t *val = NULL;
-
-#if defined (HAVE_PTHREAD_MUTEXATTR_SETTYPE)
-  pthread_mutexattr_t attr;
-
-  // If this is slow, then allocate it statically and only initialize
-  // it once.
-  pthread_mutexattr_init (&attr);
-  pthread_mutexattr_settype (&attr, PTHREAD_MUTEX_RECURSIVE);
-  val = &attr;
-#elif defined (HAVE_PTHREAD_MUTEXATTR_SETKIND_NP)
-  pthread_mutexattr_t attr;
-  pthread_mutexattr_init (&attr);
-  pthread_mutexattr_setkind_np (&attr, PTHREAD_MUTEX_RECURSIVE_NP);
-  val = &attr;
-#endif
-
-  pthread_mutex_init (_Jv_PthreadGetMutex (mu), val);
-#ifdef PTHREAD_MUTEX_IS_STRUCT
+  // Release the monitor mutex.
   mu->count = 0;
-#endif
-
-#if defined (HAVE_PTHREAD_MUTEXATTR_SETTYPE) || defined (HAVE_PTHREAD_MUTEXATTR_SETKIND_NP)
-  pthread_mutexattr_destroy (&attr);
-#endif
-
-#else /* HAVE_RECURSIVE_MUTEX */
-
-  // No recursive mutex, so simulate one.
-  pthread_mutex_init (&mu->mutex, NULL);
-  pthread_mutex_init (&mu->mutex2, NULL);
-  pthread_cond_init (&mu->cond, 0);
-  mu->count = 0;
-
-#endif /* HAVE_RECURSIVE_MUTEX */
-}
-
-#endif /* not RECURSIVE_MUTEX_IS_DEFAULT */
-
-#if ! defined (LINUX_THREADS) && ! defined (HAVE_RECURSIVE_MUTEX)
-
-void
-_Jv_MutexDestroy (_Jv_Mutex_t *mu)
-{
-  pthread_mutex_destroy (&mu->mutex);
-  pthread_mutex_destroy (&mu->mutex2);
-  pthread_cond_destroy (&mu->cond);
-}
-
-int
-_Jv_MutexLock (_Jv_Mutex_t *mu)
-{
-  if (pthread_mutex_lock (&mu->mutex))
-    return -1;
-  while (1)
-    {
-      if (mu->count == 0)
-	{
-	  // Grab the lock.
-	  mu->thread = pthread_self ();
-	  mu->count = 1;
-	  pthread_mutex_lock (&mu->mutex2);
-	  break;
-	}
-      else if (pthread_self () == mu->thread)
-	{
-	  // Already have the lock.
-	  mu->count += 1;
-	  break;
-	}
-      else
-	{
-	  // Try to acquire the lock.
-	  pthread_cond_wait (&mu->cond, &mu->mutex);
-	}
-    }
+  mu->owner = 0;
   pthread_mutex_unlock (&mu->mutex);
+  
+  int r = 0;
+  bool done_sleeping = false;
+
+  while (! done_sleeping)
+    {
+      if (millis == 0 && nanos == 0)
+	r = pthread_cond_wait (&current->wait_cond, &current->wait_mutex);
+      else
+	r = pthread_cond_timedwait (&current->wait_cond, &current->wait_mutex, 
+				    &ts);
+				    
+      // In older glibc's (prior to 2.1.3), the cond_wait functions may 
+      // spuriously wake up on a signal. Catch that here.
+      if (r != EINTR)
+        done_sleeping = true;
+    }
+  
+  // Check for an interrupt *before* unlocking the wait mutex.
+  jboolean interrupted = current_obj->interrupt_flag;
+  
+  pthread_mutex_unlock (&current->wait_mutex);
+
+  //  Reaquire the monitor mutex, and restore the lock count.
+  pthread_mutex_lock (&mu->mutex);
+  mu->owner = self;
+  mu->count = count;
+
+  // If we were interrupted, or if a timeout occured, remove ourself from
+  // the cv wait list now. (If we were notified normally, notify() will have
+  // already taken care of this)
+  if (r == ETIMEDOUT || interrupted)
+    {
+      _Jv_Thread_t *prev = NULL;
+      for (_Jv_Thread_t *t = cv->first; t != NULL; t = t->next)
+        {
+	  if (t == current)
+	    {
+	      if (prev != NULL)
+		prev->next = t->next;
+	      else
+	        cv->first = t->next;
+	      t->next = NULL;
+	      break;
+	    }
+	  prev = t;
+	}
+      if (interrupted)
+	return _JV_INTERRUPTED;
+    }
+  
   return 0;
 }
 
 int
-_Jv_MutexUnlock (_Jv_Mutex_t *mu)
+_Jv_CondNotify (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu)
 {
-  if (pthread_mutex_lock (&mu->mutex))
-    return -1;
-  int r = 0;
-  if (mu->count == 0 || pthread_self () != mu->thread)
-    r = -1;
-  else
+  if (_Jv_PthreadCheckMonitor (mu))
+    return _JV_NOT_OWNER;
+
+  _Jv_Thread_t *target;
+  _Jv_Thread_t *prev = NULL;
+
+  for (target = cv->first; target != NULL; target = target->next)
     {
-      mu->count -= 1;
-      if (! mu->count)
-	{
-	  pthread_mutex_unlock (&mu->mutex2);
-	  pthread_cond_signal (&mu->cond);
+      pthread_mutex_lock (&target->wait_mutex);
+
+      if (target->thread_obj->interrupt_flag)
+        {
+	  // Don't notify a thread that has already been interrupted.
+	  pthread_mutex_unlock (&target->wait_mutex);
+          prev = target;
+	  continue;
 	}
+
+      pthread_cond_signal (&target->wait_cond);
+      pthread_mutex_unlock (&target->wait_mutex);
+
+      // Two successive notify() calls should not be delivered to the same 
+      // thread, so we remove the target thread from the cv wait list now.
+      if (prev == NULL)
+	cv->first = target->next;
+      else
+        prev->next = target->next;
+		
+      target->next = NULL;
+      
+      break;
     }
-  pthread_mutex_unlock (&mu->mutex);
-  return r;
+
+  return 0;
 }
 
-#endif /* not LINUX_THREADS and not HAVE_RECURSIVE_MUTEX */
+int
+_Jv_CondNotifyAll (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu)
+{
+  if (_Jv_PthreadCheckMonitor (mu))
+    return _JV_NOT_OWNER;
+
+  _Jv_Thread_t *target;
+  _Jv_Thread_t *prev = NULL;
+
+  for (target = cv->first; target != NULL; target = target->next)
+    {
+      pthread_mutex_lock (&target->wait_mutex);
+      pthread_cond_signal (&target->wait_cond);
+      pthread_mutex_unlock (&target->wait_mutex);
+
+      if (prev != NULL)
+	prev->next = NULL;
+      prev = target;
+    }
+  if (prev != NULL)
+    prev->next = NULL;
+    
+  cv->first = NULL;
+
+  return 0;
+}
+
+void
+_Jv_ThreadInterrupt (_Jv_Thread_t *data)
+{
+  pthread_mutex_lock (&data->wait_mutex);
+
+  // Set the thread's interrupted flag *after* aquiring its wait_mutex. This
+  // ensures that there are no races with the interrupt flag being set after 
+  // the waiting thread checks it and before pthread_cond_wait is entered.
+  data->thread_obj->interrupt_flag = true;
+
+  // Interrupt blocking system calls using a signal.
+//  pthread_kill (data->thread, INTR);
+  
+  pthread_cond_signal (&data->wait_cond);
+  
+  pthread_mutex_unlock (&data->wait_mutex);
+}
 
 static void
 handle_intr (int)
@@ -300,10 +298,14 @@ _Jv_InitThreads (void)
 }
 
 void
-_Jv_ThreadInitData (_Jv_Thread_t **data, java::lang::Thread *)
+_Jv_ThreadInitData (_Jv_Thread_t **data, java::lang::Thread *obj)
 {
   _Jv_Thread_t *info = new _Jv_Thread_t;
   info->flags = 0;
+  info->thread_obj = obj;
+
+  pthread_mutex_init (&info->wait_mutex, NULL);
+  pthread_cond_init (&info->wait_cond, NULL);
 
   // FIXME register a finalizer for INFO here.
   // FIXME also must mark INFO somehow.
@@ -331,10 +333,16 @@ really_start (void *x)
 {
   struct starter *info = (struct starter *) x;
 
-  pthread_setspecific (_Jv_ThreadKey, info->object);
+  pthread_setspecific (_Jv_ThreadKey, info->data->thread_obj);
   pthread_setspecific (_Jv_ThreadDataKey, info->data);
-  info->method (info->object);
 
+  // glibc 2.1.3 doesn't set the value of `thread' until after start_routine
+  // is called. Since it may need to be accessed from the new thread, work 
+  // around the potential race here by explicitly setting it again.
+  info->data->thread = pthread_self ();
+
+  info->method (info->data->thread_obj);
+  
   if (! (info->data->flags & FLAG_DAEMON))
     {
       pthread_mutex_lock (&daemon_mutex);
@@ -343,6 +351,12 @@ really_start (void *x)
 	pthread_cond_signal (&daemon_cond);
       pthread_mutex_unlock (&daemon_mutex);
     }
+  
+#ifndef LINUX_THREADS
+  // Clean up. These calls do nothing on Linux.
+  pthread_mutex_destroy (&info->data->wait_mutex);
+  pthread_cond_destroy (&info->data->wait_cond);
+#endif /* ! LINUX_THREADS */
 
   return NULL;
 }
@@ -367,7 +381,6 @@ _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data,
   // FIXME: handle marking the info object for GC.
   info = (struct starter *) _Jv_AllocBytes (sizeof (struct starter));
   info->method = meth;
-  info->object = thread;
   info->data = data;
 
   if (! thread->isDaemon())
@@ -389,6 +402,39 @@ _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data,
     }
 }
 
+int
+_Jv_MutexLock (_Jv_Mutex_t *mu)
+{
+  pthread_t self = pthread_self ();
+  if (mu->owner == self)
+    {
+      mu->count++;
+    }
+  else
+    {
+      pthread_mutex_lock (&mu->mutex);
+      mu->count = 1;
+      mu->owner = self;
+    }
+  return 0;
+}
+
+int
+_Jv_MutexUnlock (_Jv_Mutex_t *mu)
+{
+  if (_Jv_PthreadCheckMonitor (mu))
+    return _JV_NOT_OWNER;
+    
+  mu->count--;
+
+  if (mu->count == 0)
+    {
+      mu->owner = 0;
+      pthread_mutex_unlock (&mu->mutex);
+    }
+  return 0;
+}
+
 void
 _Jv_ThreadWait (void)
 {
@@ -396,10 +442,4 @@ _Jv_ThreadWait (void)
   if (non_daemon_count)
     pthread_cond_wait (&daemon_cond, &daemon_mutex);
   pthread_mutex_unlock (&daemon_mutex);
-}
-
-void
-_Jv_ThreadInterrupt (_Jv_Thread_t *data)
-{
-  pthread_kill (data->thread, INTR);
 }

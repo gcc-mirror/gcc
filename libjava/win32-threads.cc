@@ -69,6 +69,8 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu, jlong millis, jint n
   DWORD time;
   DWORD rval;
 
+  // FIXME: check for mutex ownership?
+
   _Jv_MutexUnlock (mu);
 
   if((millis == 0) && (nanos > 0))
@@ -82,9 +84,7 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu, jlong millis, jint n
   _Jv_MutexLock (mu);
 
   if (rval == WAIT_FAILED)
-    return GetLastError ();       // FIXME: Map to errno?
-  else if (rval == WAIT_TIMEOUT)
-    return ETIMEDOUT;
+    return _JV_NOT_OWNER;       // FIXME?
   else
     return 0;
 }
