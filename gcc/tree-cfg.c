@@ -3942,35 +3942,102 @@ thread_jumps (void)
 {
   basic_block bb;
   bool retval = false;
-  bool rerun;
+  int *worklist = xmalloc (sizeof (int) * last_basic_block);
+  unsigned int size = 0;
 
   FOR_EACH_BB (bb)
-    bb_ann (bb)->forwardable = tree_forwarder_block_p (bb);
-
-  do
     {
-      rerun = false;
-      FOR_EACH_BB (bb)
+      bb_ann (bb)->forwardable = tree_forwarder_block_p (bb);
+      bb->flags &= ~BB_VISITED;
+    }
+
+  /* Initialize WORKLIST by putting the indexes of non-forwarder
+     blocks that immediately precede forwarder blocks because those
+     are the ones that we know we can thread jumps from.  We use
+     BB_VISITED to indicate that whether a given basic block is in
+     WORKLIST or not, thereby avoiding duplicates in WORKLIST.  */
+  FOR_EACH_BB (bb)
+    {
+      edge_iterator ei;
+      edge e;
+
+      /* We are not interested in finding non-forwarder blocks
+	 directly.  We want to find non-forwarder blocks as
+	 predecessors of a forwarder block.  */
+      if (!bb_ann (bb)->forwardable)
+	continue;
+
+      /* Now we know BB is a forwarder block.  Visit each of its
+	 incoming edges and add to WORKLIST all non-forwarder blocks
+	 among BB's predecessors.  */
+      FOR_EACH_EDGE (e, ei, bb->preds)
 	{
-	  /* Don't waste time on forwarders.  */
-	  if (bb_ann (bb)->forwardable)
-	    continue;
-
-	  if (thread_jumps_from_bb (bb))
+	  /* We are not interested in threading jumps from a forwarder
+	     block.  */
+	  if (!bb_ann (e->src)->forwardable
+	      /* We don't want to visit ENTRY_BLOCK_PTR.  */
+	      && e->src->index >= 0
+	      /* We don't want to put a duplicate into WORKLIST.  */
+	      && (e->src->flags & BB_VISITED) == 0)
 	    {
-	      retval = true;
-
-	      /* If we succeeded in threading a jump at BB, update the
-		 forwardable mark as BB may have become a new
-		 forwarder block.  This could happen if we have a
-		 useless "if" statement whose two arms eventually
-		 merge without any intervening statements.  */
-	      if (tree_forwarder_block_p (bb))
-		bb_ann (bb)->forwardable = rerun = true;
+	      e->src->flags |= BB_VISITED;
+	      worklist[size] = e->src->index;
+	      size++;
 	    }
 	}
     }
-  while (rerun);
+
+  /* Now let's drain WORKLIST.  */
+  while (size > 0)
+    {
+      size--;
+      bb = BASIC_BLOCK (worklist[size]);
+
+      /* Check if BB is NULL because BB may have been deleted.  This
+	 could happen if BB is originally a non-forwarder block, later
+	 becomes a forwarder block, and it is deleted when a jump is
+	 threaded through it.  */
+      if (!bb)
+	continue;
+
+      /* BB->INDEX is not longer in WORKLIST, so clear BB_VISITED.  */
+      bb->flags &= ~BB_VISITED;
+
+      if (thread_jumps_from_bb (bb))
+	{
+	  retval = true;
+
+	  if (tree_forwarder_block_p (bb))
+	    {
+	      edge_iterator ej;
+	      edge f;
+
+	      bb_ann (bb)->forwardable = true;
+
+	      /* Attempts to thread through BB may have been blocked
+		 because BB was not a forwarder block before.  Now
+		 that BB is a forwarder block, we should revisit BB's
+		 predecessors.  */
+	      FOR_EACH_EDGE (f, ej, bb->preds)
+		{
+		  /* We are not interested in threading jumps from a
+		     forwarder block.  */
+		  if (!bb_ann (f->src)->forwardable
+		      /* We don't want to visit ENTRY_BLOCK_PTR.  */
+		      && f->src->index >= 0
+		      /* We don't want to put a duplicate into WORKLIST.  */
+		      && (f->src->flags & BB_VISITED) == 0)
+		    {
+		      f->src->flags |= BB_VISITED;
+		      worklist[size] = f->src->index;
+		      size++;
+		    }
+		}
+	    }
+	}
+    }
+
+  free (worklist);
 
   return retval;
 }
