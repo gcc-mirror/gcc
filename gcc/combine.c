@@ -406,6 +406,7 @@ combine_instructions (f, nregs)
   combine_merges = 0;
   combine_extras = 0;
   combine_successes = 0;
+  undobuf.num_undo = previous_num_undos = 0;
 
   combine_max_regno = nregs;
 
