@@ -2679,99 +2679,55 @@ TEXI_GCCINSTALL_FILES = $(docdir)/install.texi $(docdir)/install-old.texi \
 
 TEXI_CPPINT_FILES = $(docdir)/cppinternals.texi
 
-$(docobjdir)/cpp.info: $(TEXI_CPP_FILES) stmp-docobjdir
-	$(MAKEINFO) $(MAKEINFOFLAGS) -I $(docdir) -I $(docdir)/include \
-	  -o $@ $(docdir)/cpp.texi
+$(docobjdir)/cpp.info cpp.dvi: $(TEXI_CPP_FILES)
+$(docobjdir)/gcc.info gcc.dvi: $(TEXI_GCC_FILES)
+$(docobjdir)/gccint.info gccint.dvi: $(TEXI_GCCINT_FILES)
+$(docobjdir)/gccinstall.info gccinstall.dvi: $(TEXI_GCCINSTALL_FILES)
+$(docobjdir)/cppinternals.info cppinternals.dvi: $(TEXI_CPPINT_FILES)
 
-$(docobjdir)/gcc.info: $(TEXI_GCC_FILES) stmp-docobjdir
+$(docobjdir)/%.info: $(docdir)/%.texi stmp-docobjdir
 	$(MAKEINFO) $(MAKEINFOFLAGS) -I $(docdir) -I $(docdir)/include \
-	  -o $@ $(docdir)/gcc.texi
-
-$(docobjdir)/gccint.info: $(TEXI_GCCINT_FILES) stmp-docobjdir
-	$(MAKEINFO) $(MAKEINFOFLAGS) -I $(docdir) -I $(docdir)/include \
-	  -o $@ $(docdir)/gccint.texi
-
-$(docobjdir)/gccinstall.info: $(TEXI_GCCINSTALL_FILES) stmp-docobjdir
-	$(MAKEINFO) $(MAKEINFOFLAGS) -I $(docdir) -I $(docdir)/include \
-	  -o $@ $(docdir)/install.texi
-
-$(docobjdir)/cppinternals.info: $(TEXI_CPPINT_FILES) stmp-docobjdir
-	$(MAKEINFO) $(MAKEINFOFLAGS) -I $(docdir) -I $(docdir)/include \
-	  -o $@ $(docdir)/cppinternals.texi
+	  -o $@ $<
 
 dvi: gcc.dvi gccint.dvi gccinstall.dvi cpp.dvi lang.dvi cppinternals.dvi
 
-# This works with GNU Make's default rule.
-cpp.dvi: $(TEXI_CPP_FILES)
-	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/cpp.texi
+%.dvi: $(docdir)/%.texi
+	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/$<
 
-gcc.dvi: $(TEXI_GCC_FILES)
-	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/gcc.texi
-
-gccint.dvi: $(TEXI_GCCINT_FILES)
-	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/gccint.texi
-
-gccinstall.dvi: $(TEXI_GCCINSTALL_FILES)
+gccinstall.dvi:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(TEXI2DVI) -I $$s/doc -I $$s/doc/include -o $@ $$s/doc/install.texi
 
-cppinternals.dvi: $(TEXI_CPPINT_FILES)
-	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/cppinternals.texi
-
 generated-manpages: $(docobjdir)/gcov.1 $(docobjdir)/cpp.1 $(docobjdir)/gcc.1 \
-	 $(docobjdir)/gfdl.7 $(docobjdir)/gpl.7 $(docobjdir)/fsf-funding.7 \
-	 lang.generated-manpages
+	$(docobjdir)/gfdl.7 $(docobjdir)/gpl.7 $(docobjdir)/fsf-funding.7 \
+	lang.generated-manpages
 
-$(docobjdir)/gcov.1: $(docdir)/gcov.texi stmp-docobjdir
-	$(STAMP) $(docobjdir)/gcov.1
-	-$(TEXI2POD) $(docdir)/gcov.texi > gcov.pod
-	-($(POD2MAN) --section=1 gcov.pod > $(docobjdir)/gcov.1.T$$$$ && \
-		mv -f $(docobjdir)/gcov.1.T$$$$ $(docobjdir)/gcov.1) || \
-		(rm -f $(docobjdir)/gcov.1.T$$$$ && exit 1)
-	-rm -f gcov.pod
-
+$(docobjdir)/gcov.1: $(docdir)/gcov.texi
 $(docobjdir)/cpp.1: $(docdir)/cpp.texi $(docdir)/cppenv.texi \
-  $(docdir)/cppopts.texi stmp-docobjdir
-	$(STAMP) $(docobjdir)/cpp.1
-	-$(TEXI2POD) $(docdir)/cpp.texi > cpp.pod
-	-($(POD2MAN) --section=1 cpp.pod > $(docobjdir)/cpp.1.T$$$$ && \
-		mv -f $(docobjdir)/cpp.1.T$$$$ $(docobjdir)/cpp.1) || \
-		(rm -f $(docobjdir)/cpp.1.T$$$$ && exit 1)
-	-rm -f cpp.pod
-
+  $(docdir)/cppopts.texi
 $(docobjdir)/gcc.1: $(docdir)/invoke.texi $(docdir)/cppenv.texi \
-  $(docdir)/cppopts.texi stmp-docobjdir
-	$(STAMP) $(docobjdir)/gcc.1
-	-$(TEXI2POD) $(docdir)/invoke.texi > gcc.pod
-	-($(POD2MAN) --section=1 gcc.pod > $(docobjdir)/gcc.1.T$$$$ && \
-		mv -f $(docobjdir)/gcc.1.T$$$$ $(docobjdir)/gcc.1) || \
-		(rm -f $(docobjdir)/gcc.1.T$$$$ && exit 1)
-	-rm -f gcc.pod
+  $(docdir)/cppopts.texi
+$(docobjdir)/gfdl.7: $(docdir)/include/fdl.texi
+$(docobjdir)/gpl.7: $(docdir)/include/gpl.texi
+$(docobjdir)/fsf-funding.7: $(docdir)/include/funding.texi
 
-$(docobjdir)/gfdl.7: $(docdir)/include/fdl.texi stmp-docobjdir
-	$(STAMP) $(docobjdir)/gfdl.7
-	-$(TEXI2POD) $(docdir)/include/fdl.texi > gfdl.pod
-	-($(POD2MAN) --section=7 gfdl.pod > $(docobjdir)/gfdl.7.T$$$$ && \
-		mv -f $(docobjdir)/gfdl.7.T$$$$ $(docobjdir)/gfdl.7) || \
-		(rm -f $(docobjdir)/gfdl.7.T$$$$ && exit 1)
-	-rm -f gfdl.pod
+$(docobjdir)/%.1: $(docdir)/%.texi stmp-docobjdir
+	$(STAMP) $@
+	-$(TEXI2POD) $< > $(basename $(notdir $@)).pod
+	-($(POD2MAN) --section=1 \
+			$(basename $(notdir $@)).pod > $(@).T$$$$ && \
+		mv -f $(@).T$$$$ $@) || \
+		(rm -f $(@).T$$$$ && exit 1)
+	-rm -f $(basename $(notdir $@)).pod
 
-$(docobjdir)/gpl.7: $(docdir)/include/gpl.texi stmp-docobjdir
-	$(STAMP) $(docobjdir)/gpl.7
-	-$(TEXI2POD) $(docdir)/include/gpl.texi > gpl.pod
-	-($(POD2MAN) --section=7 gpl.pod > $(docobjdir)/gpl.7.T$$$$ && \
-		mv -f $(docobjdir)/gpl.7.T$$$$ $(docobjdir)/gpl.7) || \
-		(rm -f $(docobjdir)/gpl.7.T$$$$ && exit 1)
-	-rm -f gpl.pod
-
-$(docobjdir)/fsf-funding.7: $(docdir)/include/funding.texi stmp-docobjdir
-	$(STAMP) $(docobjdir)/fsf-funding.7
-	-$(TEXI2POD) $(docdir)/include/funding.texi > fsf-funding.pod
-	-($(POD2MAN) --section=7 fsf-funding.pod \
-		> $(docobjdir)/fsf-funding.7.T$$$$ && \
-	    mv -f $(docobjdir)/fsf-funding.7.T$$$$ $(docobjdir)/fsf-funding.7) || \
-	    (rm -f $(docobjdir)/fsf-funding.7.T$$$$ && exit 1)
-	-rm -f fsf-funding.pod
+$(docobjdir)/%.7: $(docdir)/%.texi stmp-docobjdir
+	$(STAMP) $@
+	-$(TEXI2POD) $< > $(basename $(notdir $@)).pod
+	-($(POD2MAN) --section=7 \
+			$(basename $(notdir $@)).pod > $(@).T$$$$ && \
+		mv -f $(@).T$$$$ $@) || \
+		(rm -f $(@).T$$$$ && exit 1)
+	-rm -f $(basename $(notdir $@)).pod
 
 #
 # Deletion of files made during compilation.
