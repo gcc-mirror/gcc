@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="AUTHOR" CONTENT="pme@sources.redhat.com (Phil Edwards)">
+   <META NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, egcs, g++, libg++, STL">
+   <META NAME="DESCRIPTION" CONTENT="Notes for the libstdc++ extensions.">
+   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <TITLE>libstdc++-v3 HOWTO:  Extensions</TITLE>
+<LINK REL="home" HREF="http://sources.redhat.com/libstdc++/docs/ext/">
+<LINK REL=StyleSheet HREF="../lib3styles.css">
+<!-- $Id: howto.html,v 1.5 2000/09/19 21:54:48 pme Exp $ -->
+</HEAD>
+<BODY>
+
+<H1 CLASS="centered"><A NAME="top">Extensions</A></H1>
+
+<P>Here we will make an attempt at describing the non-Standard extensions to
+   the library.  Some of these are from SGI's STL, some of these are GNU's,
+   and some just seemed to appear on the doorstep.
+</P>
+<P><B>Before you leap in and use these</B>, be aware of two things:
+   <OL>
+    <LI>Non-Standard means exactly that.  The behavior, and the very
+        existence, of these extensions may change with little or no
+        warning.  (Ideally, the really good ones will appear in the next
+        revision of C++.)  Also, other platforms, other compilers, other
+        versions of g++ or libstdc++-v3 may not recognize these names, or
+        treat them differently, or...
+    <LI>You should know how to <A HREF="../faq/index.html#5_4">access
+        these headers properly</A>.
+   </OL>
+</P>
+
+
+<!-- ####################################################### -->
+<HR>
+<H1>Contents</H1>
+<UL>
+   <LI><A HREF="#1">Ropes and trees and hashes, oh my!</A>
+   <LI><A HREF="#2">Added members</A>
+   <LI><A HREF="#3">Allocators</A>
+</UL>
+
+<HR>
+
+<!-- ####################################################### -->
+
+<H2><A NAME="1">Ropes and trees and hashes, oh my!</A></H2>
+   <P>The SGI headers
+     <PRE>
+     &lt;bvector&gt;
+     &lt;hash_map&gt;
+     &lt;hash_set&gt;
+     &lt;rope&gt;
+     &lt;slist&gt;
+     &lt;tree&gt;
+     </PRE> are all here; <TT>&lt;bvector&gt;</TT> exposes the old bit_vector
+      class that was used before specialization of vector&lt;bool&gt; was
+      available.  <TT>&lt;hash_map&gt;</TT> and <TT>&lt;hash_set&gt;</TT>
+      are discussed further below.  <TT>&lt;rope&gt;</TT> is the SGI
+      specialization for large strings (&quot;rope,&quot; &quot;large
+      strings,&quot; get it?  love those SGI folks).
+      <TT>&lt;slist&gt;</TT> is a singly-linked list, for when the
+      doubly-linked <TT>list&lt;&gt;</TT> is too much space overhead, and
+      <TT>&lt;tree&gt;</TT> exposes the red-black tree classes used in the
+      implementation of the standard maps and sets.
+   </P>
+   <P>Okay, about those hashing classes...  I'm going to foist most of the
+      work off onto SGI's own site.
+   </P>
+   <P>Each of the associative containers map, multimap, set, and multiset
+      have a counterpart which uses a
+      <A HREF="http://www.sgi.com/Technology/STL/HashFunction.html">hashing
+      function</A> to do the arranging, instead of a strict weak ordering
+      function.  The classes take as one of their template parameters a
+      function object that will return the hash value; by default, an
+      instantiation of
+      <A HREF="http://www.sgi.com/Technology/STL/hash.html">hash</A>.
+      You should specialize this functor for your class, or define your own,
+      before trying to use one of the hashing classes.
+   </P>
+   <P>The hashing classes support all the usual associative container
+      functions, as well as some extra constructors specifying the number
+      of buckets, etc.
+   </P>
+   <P>(Side note:  for those of you wondering, <B>&quot;Why wasn't a hash
+      table included in the Standard in the first #!$@ place?&quot;</B> I'll
+      give a quick answer:  it was proposed, but too late and in too
+      unorganized a fashion.  Some sort of hashing will undoubtably be
+      included in a future Standard.
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+<HR>
+<H2><A NAME="2">Added members</A></H2>
+   <P>Some of the classes in the Standard Library have additional
+      publicly-available members.  Of those, some are intended purely for
+      the implementors, for example, additional typedefs.  Those won't be
+      described here (or anywhere else).  This list will grow slowly, since
+      we expect it to be rare -- most extensions will be self-contained.
+   </P>
+   <P>
+    <UL>
+     <LI><TT>filebuf</TT>s have another ctor with this signature:<BR>
+<TT>basic_filebuf(int __fd, const char* __name, ios_base::openmode __mode);</TT>
+         <BR>This comes in very handy in a number of places, such as
+         attaching Unix sockets, pipes, and anything else which uses file
+         descriptors, into the IOStream buffering classes.  The three
+         arguments are as follows:<BR>
+         <TT>int __fd,                  </TT>// open file descriptor<BR>
+         <TT>const char* __name,    </TT><BR>
+         <TT>ios_base::openmode __mode  </TT>// same as the other openmode uses
+    </UL>
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+<HR>
+<H2><A NAME="3">Allocators</A></H2>
+   <P>This will be blank for a while.  It will describe all of the different
+      memory allocators, most inherited from SGI's code.  Input is solicited.
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+
+
+
+
+<!-- ####################################################### -->
+
+<HR>
+<P CLASS="fineprint"><EM>
+Comments and suggestions are welcome, and may be sent to
+<A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
+<A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
+<BR> $Id: howto.html,v 1.5 2000/09/19 21:54:48 pme Exp $
+</EM></P>
+
+
+</BODY>
+</HTML>

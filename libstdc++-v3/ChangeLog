@@ -1,3 +1,11 @@
+2000-09-25  Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/documentation.html:  Add link to...
+	* docs/ext/howto.html:  ...this.  New dir/file, describing library
+	  extensions (both ours and SGI's).
+	* docs/faq/index.html:  Small updates.
+	* docs/faq/index.txt:  Regenerate.
+
 2000-09-25 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
         * bits/basic_file.h (_M_open_mode): Remove extra qualifier.
