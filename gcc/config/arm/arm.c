@@ -1,5 +1,5 @@
 /* Output routines for GCC for ARM/RISCiX.
-   Copyright (C) 1991, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    	      and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
@@ -114,7 +114,7 @@ static int arm_constant_limit = 3;
 
 /* For an explanation of these variables, see final_prescan_insn below.  */
 int arm_ccfsm_state;
-int arm_current_cc;
+enum arm_cond_code arm_current_cc;
 rtx arm_target_insn;
 int arm_target_label;
 
@@ -125,7 +125,7 @@ char *arm_condition_codes[] =
   "hi", "ls", "ge", "lt", "gt", "le", "al", "nv"
 };
 
-#define ARM_INVERSE_CONDITION_CODE(X)  ((X) ^ 1)
+static enum arm_cond_code get_arm_condition_code ();
 
 
 /* Initialization code */
@@ -1657,23 +1657,27 @@ cc_register (x, mode)
 }
 
 /* Return TRUE if this is the condition code register, if we aren't given
-   a mode, accept any mode in class CC_MODE that is reversible */
+   a mode, accept any class CCmode register which indicates a dominance
+   expression.  */
 
 int
-reversible_cc_register (x, mode)
+dominant_cc_register (x, mode)
      rtx x;
      enum machine_mode mode;
 {
   if (mode == VOIDmode)
     {
       mode = GET_MODE (x);
-      if (GET_MODE_CLASS (mode) != MODE_CC
-	  && GET_CODE (x) == REG && REGNO (x) == 24)
-	abort ();
-      if (GET_MODE_CLASS (mode) != MODE_CC
-	  || (! flag_fast_math && ! REVERSIBLE_CC_MODE (mode)))
+      if (GET_MODE_CLASS (mode) != MODE_CC)
 	return FALSE;
     }
+
+  if (mode != CC_DNEmode && mode != CC_DEQmode
+      && mode != CC_DLEmode && mode != CC_DLTmode
+      && mode != CC_DGEmode && mode != CC_DGTmode
+      && mode != CC_DLEUmode && mode != CC_DLTUmode
+      && mode != CC_DGEUmode && mode != CC_DGTUmode)
+    return FALSE;
 
   if (mode == GET_MODE (x) && GET_CODE (x) == REG && REGNO (x) == 24)
     return TRUE;
@@ -1931,6 +1935,384 @@ store_multiple_operation (op, mode)
 }
 
 int
+load_multiple_sequence (operands, nops, regs, base, load_offset)
+     rtx *operands;
+     int nops;
+     int *regs;
+     int *base;
+     HOST_WIDE_INT *load_offset;
+{
+  int unsorted_regs[4];
+  HOST_WIDE_INT unsorted_offsets[4];
+  int order[4];
+  int base_reg;
+  int i;
+
+  /* Can only handle 2, 3, or 4 insns at present, though could be easily
+     extended if required.  */
+  if (nops < 2 || nops > 4)
+    abort ();
+
+  /* Loop over the operands and check that the memory references are
+     suitable (ie immediate offsets from the same base register).  At
+     the same time, extract the target register, and the memory
+     offsets.  */
+  for (i = 0; i < nops; i++)
+    {
+      rtx reg;
+      rtx offset;
+
+      if (GET_CODE (operands[nops + i]) != MEM)
+	abort ();
+
+      /* Don't reorder volatile memory references; it doesn't seem worth
+	 looking for the case where the order is ok anyway.  */
+      if (MEM_VOLATILE_P (operands[nops + i]))
+	return 0;
+
+      offset = const0_rtx;
+
+      if ((GET_CODE (reg = XEXP (operands[nops + i], 0)) == REG
+	   || (GET_CODE (reg) == SUBREG
+	       && GET_CODE (reg = SUBREG_REG (reg)) == REG))
+	  || (GET_CODE (XEXP (operands[nops + i], 0)) == PLUS
+	      && ((GET_CODE (reg = XEXP (XEXP (operands[nops + i], 0), 0))
+		   == REG)
+		  || (GET_CODE (reg) == SUBREG
+		      && GET_CODE (reg = SUBREG_REG (reg)) == REG))
+	      && (GET_CODE (offset = XEXP (XEXP (operands[nops + i], 0), 1))
+		  == CONST_INT)))
+	{
+	  if (i == 0)
+	    {
+	      base_reg = REGNO(reg);
+	      unsorted_regs[0] = (GET_CODE (operands[i]) == REG
+				  ? REGNO (operands[i])
+				  : REGNO (SUBREG_REG (operands[i])));
+	      order[0] = 0;
+	    }
+	  else 
+	    {
+	      if (base_reg != REGNO (reg))
+		/* Not addressed from the same base register.  */
+		return 0;
+
+	      unsorted_regs[i] = (GET_CODE (operands[i]) == REG
+				  ? REGNO (operands[i])
+				  : REGNO (SUBREG_REG (operands[i])));
+	      if (unsorted_regs[i] < unsorted_regs[order[0]])
+		order[0] = i;
+	    }
+
+	  /* If it isn't an integer register, or if it overwrites the
+	     base register but isn't the last insn in the list, then
+	     we can't do this.  */
+	  if (unsorted_regs[i] < 0 || unsorted_regs[i] > 14
+	      || (i != nops - 1 && unsorted_regs[i] == base_reg))
+	    return 0;
+
+	  unsorted_offsets[i] = INTVAL (offset);
+	}
+      else
+	/* Not a suitable memory address.  */
+	return 0;
+    }
+
+  /* All the useful information has now been extracted from the
+     operands into unsorted_regs and unsorted_offsets; additionally,
+     order[0] has been set to the lowest numbered register in the
+     list.  Sort the registers into order, and check that the memory
+     offsets are ascending and adjacent.  */
+
+  for (i = 1; i < nops; i++)
+    {
+      int j;
+
+      order[i] = order[i - 1];
+      for (j = 0; j < nops; j++)
+	if (unsorted_regs[j] > unsorted_regs[order[i - 1]]
+	    && (order[i] == order[i - 1]
+		|| unsorted_regs[j] < unsorted_regs[order[i]]))
+	  order[i] = j;
+
+      /* Have we found a suitable register? if not, one must be used more
+	 than once.  */
+      if (order[i] == order[i - 1])
+	return 0;
+
+      /* Is the memory address adjacent and ascending? */
+      if (unsorted_offsets[order[i]] != unsorted_offsets[order[i - 1]] + 4)
+	return 0;
+    }
+
+  if (base)
+    {
+      *base = base_reg;
+
+      for (i = 0; i < nops; i++)
+	regs[i] = unsorted_regs[order[i]];
+
+      *load_offset = unsorted_offsets[order[0]];
+    }
+
+  if (unsorted_offsets[order[0]] == 0)
+    return 1; /* ldmia */
+
+  if (unsorted_offsets[order[0]] == 4)
+    return 2; /* ldmib */
+
+  if (unsorted_offsets[order[nops - 1]] == 0)
+    return 3; /* ldmda */
+
+  if (unsorted_offsets[order[nops - 1]] == -4)
+    return 4; /* ldmdb */
+
+  /* Can't do it without setting up the offset, only do this if it takes
+     no more than one insn.  */
+  return (const_ok_for_arm (unsorted_offsets[order[0]]) 
+	  || const_ok_for_arm (-unsorted_offsets[order[0]])) ? 5 : 0;
+}
+
+char *
+emit_ldm_seq (operands, nops)
+     rtx *operands;
+     int nops;
+{
+  int regs[4];
+  int base_reg;
+  HOST_WIDE_INT offset;
+  char buf[100];
+  int i;
+
+  switch (load_multiple_sequence (operands, nops, regs, &base_reg, &offset))
+    {
+    case 1:
+      strcpy (buf, "ldm%?ia\t");
+      break;
+
+    case 2:
+      strcpy (buf, "ldm%?ib\t");
+      break;
+
+    case 3:
+      strcpy (buf, "ldm%?da\t");
+      break;
+
+    case 4:
+      strcpy (buf, "ldm%?db\t");
+      break;
+
+    case 5:
+      if (offset >= 0)
+	sprintf (buf, "add%%?\t%s%s, %s%s, #%ld", REGISTER_PREFIX,
+		 reg_names[regs[0]], REGISTER_PREFIX, reg_names[base_reg],
+		 (long) offset);
+      else
+	sprintf (buf, "sub%%?\t%s%s, %s%s, #%ld", REGISTER_PREFIX,
+		 reg_names[regs[0]], REGISTER_PREFIX, reg_names[base_reg],
+		 (long) -offset);
+      output_asm_insn (buf, operands);
+      base_reg = regs[0];
+      strcpy (buf, "ldm%?ia\t");
+      break;
+
+    default:
+      abort ();
+    }
+
+  sprintf (buf + strlen (buf), "%s%s, {%s%s", REGISTER_PREFIX, 
+	   reg_names[base_reg], REGISTER_PREFIX, reg_names[regs[0]]);
+
+  for (i = 1; i < nops; i++)
+    sprintf (buf + strlen (buf), ", %s%s", REGISTER_PREFIX,
+	     reg_names[regs[i]]);
+
+  strcat (buf, "}\t%@ phole ldm");
+
+  output_asm_insn (buf, operands);
+  return "";
+}
+
+int
+store_multiple_sequence (operands, nops, regs, base, load_offset)
+     rtx *operands;
+     int nops;
+     int *regs;
+     int *base;
+     HOST_WIDE_INT *load_offset;
+{
+  int unsorted_regs[4];
+  HOST_WIDE_INT unsorted_offsets[4];
+  int order[4];
+  int base_reg;
+  int i;
+
+  /* Can only handle 2, 3, or 4 insns at present, though could be easily
+     extended if required.  */
+  if (nops < 2 || nops > 4)
+    abort ();
+
+  /* Loop over the operands and check that the memory references are
+     suitable (ie immediate offsets from the same base register).  At
+     the same time, extract the target register, and the memory
+     offsets.  */
+  for (i = 0; i < nops; i++)
+    {
+      rtx reg;
+      rtx offset;
+
+      if (GET_CODE (operands[nops + i]) != MEM)
+	abort ();
+
+      /* Don't reorder volatile memory references; it doesn't seem worth
+	 looking for the case where the order is ok anyway.  */
+      if (MEM_VOLATILE_P (operands[nops + i]))
+	return 0;
+
+      offset = const0_rtx;
+
+      if ((GET_CODE (reg = XEXP (operands[nops + i], 0)) == REG
+	   || (GET_CODE (reg) == SUBREG
+	       && GET_CODE (reg = SUBREG_REG (reg)) == REG))
+	  || (GET_CODE (XEXP (operands[nops + i], 0)) == PLUS
+	      && ((GET_CODE (reg = XEXP (XEXP (operands[nops + i], 0), 0))
+		   == REG)
+		  || (GET_CODE (reg) == SUBREG
+		      && GET_CODE (reg = SUBREG_REG (reg)) == REG))
+	      && (GET_CODE (offset = XEXP (XEXP (operands[nops + i], 0), 1))
+		  == CONST_INT)))
+	{
+	  if (i == 0)
+	    {
+	      base_reg = REGNO(reg);
+	      unsorted_regs[0] = (GET_CODE (operands[i]) == REG
+				  ? REGNO (operands[i])
+				  : REGNO (SUBREG_REG (operands[i])));
+	      order[0] = 0;
+	    }
+	  else 
+	    {
+	      if (base_reg != REGNO (reg))
+		/* Not addressed from the same base register.  */
+		return 0;
+
+	      unsorted_regs[i] = (GET_CODE (operands[i]) == REG
+				  ? REGNO (operands[i])
+				  : REGNO (SUBREG_REG (operands[i])));
+	      if (unsorted_regs[i] < unsorted_regs[order[0]])
+		order[0] = i;
+	    }
+
+	  /* If it isn't an integer register, then we can't do this.  */
+	  if (unsorted_regs[i] < 0 || unsorted_regs[i] > 14)
+	    return 0;
+
+	  unsorted_offsets[i] = INTVAL (offset);
+	}
+      else
+	/* Not a suitable memory address.  */
+	return 0;
+    }
+
+  /* All the useful information has now been extracted from the
+     operands into unsorted_regs and unsorted_offsets; additionally,
+     order[0] has been set to the lowest numbered register in the
+     list.  Sort the registers into order, and check that the memory
+     offsets are ascending and adjacent.  */
+
+  for (i = 1; i < nops; i++)
+    {
+      int j;
+
+      order[i] = order[i - 1];
+      for (j = 0; j < nops; j++)
+	if (unsorted_regs[j] > unsorted_regs[order[i - 1]]
+	    && (order[i] == order[i - 1]
+		|| unsorted_regs[j] < unsorted_regs[order[i]]))
+	  order[i] = j;
+
+      /* Have we found a suitable register? if not, one must be used more
+	 than once.  */
+      if (order[i] == order[i - 1])
+	return 0;
+
+      /* Is the memory address adjacent and ascending? */
+      if (unsorted_offsets[order[i]] != unsorted_offsets[order[i - 1]] + 4)
+	return 0;
+    }
+
+  if (base)
+    {
+      *base = base_reg;
+
+      for (i = 0; i < nops; i++)
+	regs[i] = unsorted_regs[order[i]];
+
+      *load_offset = unsorted_offsets[order[0]];
+    }
+
+  if (unsorted_offsets[order[0]] == 0)
+    return 1; /* stmia */
+
+  if (unsorted_offsets[order[0]] == 4)
+    return 2; /* stmib */
+
+  if (unsorted_offsets[order[nops - 1]] == 0)
+    return 3; /* stmda */
+
+  if (unsorted_offsets[order[nops - 1]] == -4)
+    return 4; /* stmdb */
+
+  return 0;
+}
+
+char *
+emit_stm_seq (operands, nops)
+     rtx *operands;
+     int nops;
+{
+  int regs[4];
+  int base_reg;
+  HOST_WIDE_INT offset;
+  char buf[100];
+  int i;
+
+  switch (store_multiple_sequence (operands, nops, regs, &base_reg, &offset))
+    {
+    case 1:
+      strcpy (buf, "stm%?ia\t");
+      break;
+
+    case 2:
+      strcpy (buf, "stm%?ib\t");
+      break;
+
+    case 3:
+      strcpy (buf, "stm%?da\t");
+      break;
+
+    case 4:
+      strcpy (buf, "stm%?db\t");
+      break;
+
+    default:
+      abort ();
+    }
+
+  sprintf (buf + strlen (buf), "%s%s, {%s%s", REGISTER_PREFIX, 
+	   reg_names[base_reg], REGISTER_PREFIX, reg_names[regs[0]]);
+
+  for (i = 1; i < nops; i++)
+    sprintf (buf + strlen (buf), ", %s%s", REGISTER_PREFIX,
+	     reg_names[regs[i]]);
+
+  strcat (buf, "}\t%@ phole stm");
+
+  output_asm_insn (buf, operands);
+  return "";
+}
+
+int
 multi_register_push (op, mode)
      rtx op;
      enum machine_mode mode;
@@ -2181,6 +2563,183 @@ gen_rotated_half_load (memref)
     return base;
 
   return gen_rtx (ROTATE, SImode, base, GEN_INT (16));
+}
+
+static enum machine_mode
+select_dominance_cc_mode (op, x, y, cond_or)
+     enum rtx_code op;
+     rtx x;
+     rtx y;
+     HOST_WIDE_INT cond_or;
+{
+  enum rtx_code cond1, cond2;
+  int swapped = 0;
+
+  /* Currently we will probably get the wrong result if the individual
+     comparisons are not simple.  This also ensures that it is safe to
+     reverse a comparions if necessary.  */
+  if ((arm_select_cc_mode (cond1 = GET_CODE (x), XEXP (x, 0), XEXP (x, 1))
+       != CCmode)
+      || (arm_select_cc_mode (cond2 = GET_CODE (y), XEXP (y, 0), XEXP (y, 1))
+	  != CCmode))
+    return CCmode;
+
+  if (cond_or)
+    cond1 = reverse_condition (cond1);
+
+  /* If the comparisons are not equal, and one doesn't dominate the other,
+     then we can't do this.  */
+  if (cond1 != cond2 
+      && ! comparison_dominates_p (cond1, cond2)
+      && (swapped = 1, ! comparison_dominates_p (cond2, cond1)))
+    return CCmode;
+
+  if (swapped)
+    {
+      enum rtx_code temp = cond1;
+      cond1 = cond2;
+      cond2 = temp;
+    }
+
+  switch (cond1)
+    {
+    case EQ:
+      if (cond2 == EQ || ! cond_or)
+	return CC_DEQmode;
+
+      switch (cond2)
+	{
+	case LE: return CC_DLEmode;
+	case LEU: return CC_DLEUmode;
+	case GE: return CC_DGEmode;
+	case GEU: return CC_DGEUmode;
+	}
+
+      break;
+
+    case LT:
+      if (cond2 == LT || ! cond_or)
+	return CC_DLTmode;
+      if (cond2 == LE)
+	return CC_DLEmode;
+      if (cond2 == NE)
+	return CC_DNEmode;
+      break;
+
+    case GT:
+      if (cond2 == GT || ! cond_or)
+	return CC_DGTmode;
+      if (cond2 == GE)
+	return CC_DGEmode;
+      if (cond2 == NE)
+	return CC_DNEmode;
+      break;
+      
+    case LTU:
+      if (cond2 == LTU || ! cond_or)
+	return CC_DLTUmode;
+      if (cond2 == LEU)
+	return CC_DLEUmode;
+      if (cond2 == NE)
+	return CC_DNEmode;
+      break;
+
+    case GTU:
+      if (cond2 == GTU || ! cond_or)
+	return CC_DGTUmode;
+      if (cond2 == GEU)
+	return CC_DGEUmode;
+      if (cond2 == NE)
+	return CC_DNEmode;
+      break;
+
+    /* The remaining cases only occur when both comparisons are the
+       same.  */
+    case NE:
+      return CC_DNEmode;
+
+    case LE:
+      return CC_DLEmode;
+
+    case GE:
+      return CC_DGEmode;
+
+    case LEU:
+      return CC_DLEUmode;
+
+    case GEU:
+      return CC_DGEUmode;
+    }
+
+  abort ();
+}
+
+enum machine_mode
+arm_select_cc_mode (op, x, y)
+     enum rtx_code op;
+     rtx x;
+     rtx y;
+{
+  /* All floating point compares return CCFP if it is an equality
+     comparison, and CCFPE otherwise.  */
+  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+    return (op == EQ || op == NE) ? CCFPmode : CCFPEmode;
+  
+  /* A compare with a shifted operand.  Because of canonicalization, the
+     comparison will have to be swapped when we emit the assembler.  */
+  if (GET_MODE (y) == SImode && GET_CODE (y) == REG
+      && (GET_CODE (x) == ASHIFT || GET_CODE (x) == ASHIFTRT
+	  || GET_CODE (x) == LSHIFTRT || GET_CODE (x) == ROTATE
+	  || GET_CODE (x) == ROTATERT))
+    return CC_SWPmode;
+
+  /* This is a special case, that is used by combine to alow a 
+     comarison of a shifted byte load to be split into a zero-extend
+     followed by a comparison of the shifted integer (only valid for
+     equalities and unsigned inequalites.  */
+  if (GET_MODE (x) == SImode
+      && GET_CODE (x) == ASHIFT
+      && GET_CODE (XEXP (x, 1)) == CONST_INT && INTVAL (XEXP (x, 1)) == 24
+      && GET_CODE (XEXP (x, 0)) == SUBREG
+      && GET_CODE (SUBREG_REG (XEXP (x, 0))) == MEM
+      && GET_MODE (SUBREG_REG (XEXP (x, 0))) == QImode
+      && (op == EQ || op == NE
+	  || op == GEU || op == GTU || op == LTU || op == LEU)
+      && GET_CODE (y) == CONST_INT)
+    return CC_Zmode;
+
+  /* An operation that sets the condition codes as a side-effect, the
+     V flag is not set correctly, so we can only use comparisons where
+     this doesn't matter.  (For LT and GE we can use "mi" and "pl"
+     instead.  */
+  if (GET_MODE (x) == SImode
+      && y == const0_rtx
+      && (op == EQ || op == NE || op == LT || op == GE)
+      && (GET_CODE (x) == PLUS || GET_CODE (x) == MINUS
+	  || GET_CODE (x) == AND || GET_CODE (x) == IOR
+	  || GET_CODE (x) == XOR || GET_CODE (x) == MULT
+	  || GET_CODE (x) == NOT || GET_CODE (x) == NEG
+	  || GET_CODE (x) == LSHIFTRT
+	  || GET_CODE (x) == ASHIFT || GET_CODE (x) == ASHIFTRT
+	  || GET_CODE (x) == ROTATERT || GET_CODE (x) == ZERO_EXTRACT))
+    return CC_NOOVmode;
+
+  /* A construct for a conditional compare, if the false arm contains
+     0, then both conditions must be true, otherwise either condition
+     must be true.  Not all conditions are possible, so CCmode is
+     returned if it can't be done.  */
+  if (GET_CODE (x) == IF_THEN_ELSE
+      && (XEXP (x, 2) == const0_rtx
+	  || XEXP (x, 2) == const1_rtx)
+      && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
+      && GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == '<')
+    return select_dominance_cc_mode (op, XEXP (x, 0), XEXP (x, 1), 
+				     INTVAL (XEXP (x, 2)));
+
+  if (GET_MODE (x) == QImode && (op == EQ || op == NE))
+    return CC_Zmode;
+
+  return CCmode;
 }
 
 /* X and Y are two things to compare using CODE.  Emit the compare insn and
@@ -3587,9 +4146,10 @@ function_really_clobbers_lr (first)
 }
 
 char *
-output_return_instruction (operand, really_return)
+output_return_instruction (operand, really_return, reverse)
      rtx operand;
      int really_return;
+     int reverse;
 {
   char instr[100];
   int reg, live_regs = 0;
@@ -3610,7 +4170,7 @@ output_return_instruction (operand, really_return)
       ops[0] = operand;
       ops[1] = gen_rtx (SYMBOL_REF, Pmode, "abort");
       assemble_external_libcall (ops[1]);
-      output_asm_insn ("bl%d0\t%a1", ops);
+      output_asm_insn (reverse ? "bl%D0\t%a1" : "bl%d0\t%a1", ops);
       return "";
     }
       
@@ -3633,9 +4193,11 @@ output_return_instruction (operand, really_return)
         live_regs++;
 
       if (frame_pointer_needed)
-        strcpy (instr, "ldm%?%d0ea\t%|fp, {");
+        strcpy (instr,
+		reverse ? "ldm%?%D0ea\t%|fp, {" : "ldm%?%d0ea\t%|fp, {");
       else
-        strcpy (instr, "ldm%?%d0fd\t%|sp!, {");
+        strcpy (instr, 
+		reverse ? "ldm%?%D0fd\t%|sp!, {" : "ldm%?%d0fd\t%|sp!, {");
 
       for (reg = 0; reg <= 10; reg++)
         if (regs_ever_live[reg] && ! call_used_regs[reg])
@@ -3667,8 +4229,8 @@ output_return_instruction (operand, really_return)
     }
   else if (really_return)
     {
-      strcpy (instr, (TARGET_APCS_32
-		      ? "mov%?%d0\t%|pc, %|lr" : "mov%?%d0s\t%|pc, %|lr"));
+      sprintf (instr, "mov%%?%%%s0%s\t%%|pc, %%|lr",
+	       reverse ? "D" : "d", TARGET_APCS_32 ? "" : "s");
       output_asm_insn (instr, &operand);
     }
 
@@ -4131,11 +4693,7 @@ arm_print_operand (stream, x, code)
       return;
 
     case 'D':
-      if (x && (flag_fast_math
-		|| GET_CODE (x) == EQ || GET_CODE (x) == NE
-		|| (GET_MODE (XEXP (x, 0)) != CCFPEmode
-		    && (GET_MODE_CLASS (GET_MODE (XEXP (x, 0)))
-			!= MODE_FLOAT))))
+      if (x)
         fputs (arm_condition_codes[ARM_INVERSE_CONDITION_CODE
 				   (get_arm_condition_code (x))],
 	       stream);
@@ -4277,58 +4835,104 @@ output_lcomm_directive (stream, name, size, rounded)
    `arm_condition_codes'.  COMPARISON should be an rtx like
    `(eq (...) (...))'.  */
 
-int
+static enum arm_cond_code
 get_arm_condition_code (comparison)
      rtx comparison;
 {
   enum machine_mode mode = GET_MODE (XEXP (comparison, 0));
+  register int code;
+  register enum rtx_code comp_code = GET_CODE (comparison);
 
   if (GET_MODE_CLASS (mode) != MODE_CC)
-    mode = SELECT_CC_MODE (GET_CODE (comparison), XEXP (comparison, 0),
+    mode = SELECT_CC_MODE (comp_code, XEXP (comparison, 0),
 			   XEXP (comparison, 1));
 
   switch (mode)
     {
+    case CC_DNEmode: code = ARM_NE; goto dominance;
+    case CC_DEQmode: code = ARM_EQ; goto dominance;
+    case CC_DGEmode: code = ARM_GE; goto dominance;
+    case CC_DGTmode: code = ARM_GT; goto dominance;
+    case CC_DLEmode: code = ARM_LE; goto dominance;
+    case CC_DLTmode: code = ARM_LT; goto dominance;
+    case CC_DGEUmode: code = ARM_CS; goto dominance;
+    case CC_DGTUmode: code = ARM_HI; goto dominance;
+    case CC_DLEUmode: code = ARM_LS; goto dominance;
+    case CC_DLTUmode: code = ARM_CC;
+
+    dominance:
+      if (comp_code != EQ && comp_code != NE)
+	abort ();
+
+      if (comp_code == EQ)
+	return ARM_INVERSE_CONDITION_CODE (code);
+      return code;
+
     case CC_NOOVmode:
-      switch (GET_CODE (comparison))
+      switch (comp_code)
 	{
-	case NE: return 1;
-	case EQ: return 0;
-	case GE: return 5;
-	case LT: return 4;
+	case NE: return ARM_NE;
+	case EQ: return ARM_EQ;
+	case GE: return ARM_PL;
+	case LT: return ARM_MI;
 	default: abort ();
 	}
 
     case CC_Zmode:
     case CCFPmode:
-      switch (GET_CODE (comparison))
+      switch (comp_code)
 	{
-	case NE: return 1;
-	case EQ: return 0;
+	case NE: return ARM_NE;
+	case EQ: return ARM_EQ;
 	default: abort ();
 	}
 
     case CCFPEmode:
-    case CCmode:
-      switch (GET_CODE (comparison))
+      switch (comp_code)
 	{
-	case NE: return 1;
-	case EQ: return 0;
-	case GE: return 10;
-	case GT: return 12;
-	case LE: return 13;
-	case LT: return 11;
-	case GEU: return 2;
-	case GTU: return 8;
-	case LEU: return 9;
-	case LTU: return 3;
+	case GE: return ARM_GE;
+	case GT: return ARM_GT;
+	case LE: return ARM_LS;
+	case LT: return ARM_MI;
+	default: abort ();
+	}
+
+    case CC_SWPmode:
+      switch (comp_code)
+	{
+	case NE: return ARM_NE;
+	case EQ: return ARM_EQ;
+	case GE: return ARM_LE;
+	case GT: return ARM_LT;
+	case LE: return ARM_GE;
+	case LT: return ARM_GT;
+	case GEU: return ARM_LS;
+	case GTU: return ARM_CC;
+	case LEU: return ARM_CS;
+	case LTU: return ARM_HI;
+	default: abort ();
+	}
+
+    case CCmode:
+      switch (comp_code)
+	{
+	case NE: return ARM_NE;
+	case EQ: return ARM_EQ;
+	case GE: return ARM_GE;
+	case GT: return ARM_GT;
+	case LE: return ARM_LE;
+	case LT: return ARM_LT;
+	case GEU: return ARM_CS;
+	case GTU: return ARM_HI;
+	case LEU: return ARM_LS;
+	case LTU: return ARM_CC;
 	default: abort ();
 	}
 
     default: abort ();
     }
-  /*NOTREACHED*/
-  return (42);
+
+  abort ();
 }
 
 
@@ -4646,12 +5250,9 @@ final_prescan_insn (insn, opvec, noperands)
 int arm_text_section_count = 1;
 
 char *
-aof_text_section (in_readonly)
-     int in_readonly;
+aof_text_section ()
 {
   static char buf[100];
-  if (in_readonly)
-    return "";
   sprintf (buf, "\tAREA |C$$code%d|, CODE, READONLY",
 	   arm_text_section_count++);
   if (flag_pic)
