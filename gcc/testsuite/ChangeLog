@@ -1,3 +1,7 @@
+2002-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20020320-1.c: New test.
+
 2002-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20020318-1.c: New test.
