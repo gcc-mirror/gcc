@@ -56,22 +56,6 @@ namespace std
   // Only one template keyword allowed here. 
   // See core issue #46 (NAD)
   // http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/cwg_closed.html#46
-  template 
-    S& 
-    S::_M_replace<S::iterator>
-    (S::iterator, S::iterator, S::iterator, S::iterator, forward_iterator_tag);
-
-  template 
-    S& 
-    S::_M_replace<S::const_iterator>
-    (S::iterator, S::iterator, 
-     S::const_iterator, S::const_iterator, forward_iterator_tag);
-
-  template 
-    C* 
-    S::_S_construct<S::iterator>
-    (S::iterator, S::iterator, const allocator<C>&, forward_iterator_tag);
-
   template
     S::basic_string(C*, C*, const allocator<C>&);
 
@@ -81,24 +65,46 @@ namespace std
   template 
     S::basic_string(S::iterator, S::iterator, const allocator<C>&);
 
+  template 
+    S::basic_string(S::const_iterator, S::const_iterator, const allocator<C>&);
+
+  template 
+    S& 
+    S::_M_replace(S::iterator, S::iterator, S::iterator, S::iterator, 
+		  forward_iterator_tag);
+
+  template 
+    S& 
+    S::_M_replace(S::iterator, S::iterator, S::const_iterator, 
+		  S::const_iterator, forward_iterator_tag);
+
   template
     S&
-    S::_M_replace(S::iterator, S::iterator, C*, C*, forward_iterator_tag);  
+    S::_M_replace(S::iterator, S::iterator, C*, C*, forward_iterator_tag); 
 
   template
     S&
     S::_M_replace(S::iterator, S::iterator, const C*, const C*, 
 		  forward_iterator_tag);  
 
-  template
-    C*
-    S::_S_construct(const C*, const C*, const allocator<C>&, 
-		    forward_iterator_tag);
+  template 
+    C* 
+    S::_S_construct(S::iterator, S::iterator, 
+		    const allocator<C>&, forward_iterator_tag);
+
+  template 
+    C* 
+    S::_S_construct(S::const_iterator, S::const_iterator, 
+		    const allocator<C>&, forward_iterator_tag);
 
   template
     C*
-    S::_S_construct (C*, C*, const allocator<C>&, 
-		     forward_iterator_tag);
+    S::_S_construct(C*, C*, const allocator<C>&, forward_iterator_tag);
+
+  template
+    C*
+    S::_S_construct(const C*, const C*, const allocator<C>&,
+		    forward_iterator_tag);
 
   template
     void
