@@ -63,6 +63,8 @@
 # include <byteswap.h>
 # define SWAP(i) bswap_32 (i)
 #else
+/* GCC LOCAL: Prototype first to avoid warnings.  */
+static inline nls_uint32 SWAP PARAMS ((nls_uint32));
 static inline nls_uint32
 SWAP (i)
      nls_uint32 i;
@@ -144,12 +146,13 @@ struct loaded_domain
 };
 
 /* We want to allocate a string at the end of the struct.  But ISO C
-   doesn't allow zero sized arrays.  */
-#ifdef __GNUC__
-# define ZERO 0
-#else
+   doesn't allow zero sized arrays.
+   GCC LOCAL: Always use 1, to avoid warnings.  */
+/*#ifdef __GNUC__*/
+/*# define ZERO 0*/
+/*#else*/
 # define ZERO 1
-#endif
+/*#endif*/
 
 /* A set of settings bound to a message domain.  Used to store settings
    from bindtextdomain() and bind_textdomain_codeset().  */
@@ -189,6 +192,10 @@ char *_nl_find_msg PARAMS ((struct loaded_l10nfile *domain_file,
 			    const char *msgid, size_t *lengthp))
      internal_function;
 
+/* GCC LOCAL: This prototype moved here from next to its
+   use in loadmsgcat.c.  */
+extern const char *locale_charset PARAMS ((void)) internal_function;
+     
 #ifdef _LIBC
 extern char *__gettext PARAMS ((const char *__msgid));
 extern char *__dgettext PARAMS ((const char *__domainname,

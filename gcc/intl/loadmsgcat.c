@@ -136,13 +136,14 @@ int _nl_msg_cat_cntr;
     || (defined __STDC_VERSION__ && __STDC_VERSION__ >= 199901L)
 
 /* These structs are the constant expression for the germanic plural
-   form determination.  It represents the expression  "n != 1".  */
-static const struct expression plvar =
+   form determination.  It represents the expression  "n != 1".
+   GCC LOCAL: Use __extension__ to suppress -Wtraditional warnings.  */
+__extension__ static const struct expression plvar =
 {
   .nargs = 0,
   .operation = var,
 };
-static const struct expression plone =
+__extension__ static const struct expression plone =
 {
   .nargs = 0,
   .operation = num,
@@ -151,7 +152,7 @@ static const struct expression plone =
     .num = 1
   }
 };
-static struct expression germanic_plural =
+__extension__ static struct expression germanic_plural =
 {
   .nargs = 2,
   .operation = not_equal,
@@ -271,7 +272,6 @@ _nl_init_domain_conv (domain_file, domain, domainbinding)
 		  outcharset = (*_nl_current[LC_CTYPE])->values[_NL_ITEM_INDEX (CODESET)].string;
 # else
 #  if HAVE_ICONV
-		  extern const char *locale_charset (void);
 		  outcharset = locale_charset ();
 #  endif
 # endif

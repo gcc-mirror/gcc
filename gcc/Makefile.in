@@ -335,6 +335,7 @@ USE_NLS = @USE_NLS@
 
 # Internationalization library.
 INTLLIBS = @INTLLIBS@
+INTLDEPS = @INTLDEPS@
 
 # Character encoding conversion library.
 LIBICONV = @LIBICONV@
@@ -615,7 +616,7 @@ USE_HOST_STRSTR= ` case "${HOST_STRSTR}" in ?*) echo ${HOST_PREFIX}${HOST_STRSTR
 # Dependency on obstack or whatever library facilities
 # are not installed in the system libraries.
 # We don't use USE_* because backquote expansion doesn't work in deps.
-LIBDEPS= $(INTLLIBS) $(OBSTACK) $(VFPRINTF) $(DOPRINT) $(STRSTR)
+LIBDEPS= $(INTLDEPS) $(OBSTACK) $(VFPRINTF) $(DOPRINT) $(STRSTR)
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.

@@ -1,3 +1,10 @@
+2001-10-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* aclocal.m4 (AM_WITH_NLS): Also create and substitute
+	INTLDEPS variable, which does not include $LIBICONV.
+	* Makefile.in: Use INTLDEPS in LIBDEPS.
+	* configure: Regenerate.
+
 2001-10-21  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpphash.h (struct cpp_buffer): Delete read_ahead and extra_char.
@@ -172,11 +179,11 @@ Sat Oct 20 12:01:07 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-10-19  Catherine Moore  <clm@redhat.com>
 
-        * config/stormy16/stormy-abi:  Updates to varargs descriptions.
-        * config/stormy16/stormy16.c (stormy16_build_va_list):  Reverse
-        base and count fields.
-        (stormy16_expand_builtin_va_start):  last_reg_count changed to
-        size_of_reg_args.  Use count + size in first comparison.
+	* config/stormy16/stormy-abi:  Updates to varargs descriptions.
+	* config/stormy16/stormy16.c (stormy16_build_va_list):  Reverse
+	base and count fields.
+	(stormy16_expand_builtin_va_start):  last_reg_count changed to
+	size_of_reg_args.  Use count + size in first comparison.
 
 Fri Oct 19 15:24:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
@@ -267,14 +274,14 @@ Fri Oct 19 15:24:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-10-19  Catherine Moore  <clm@redhat.com>
 
-        * config/stormy16/stormy16.h (ASM_COMMENT_START): Define.
+	* config/stormy16/stormy16.h (ASM_COMMENT_START): Define.
 
 	* config/stormy16/stormy16.c (stormy16_split_move):  Make
 	sure that REG_INC notes are present for auto_inc operands.
 
 2001-10-19  Andreas Jaeger  <aj@suse.de>
 
-        * configure: Regenerated.
+	* configure: Regenerated.
 	* configure.in: Add x86_64 to switch statements.
 
 2001-10-18  Richard Henderson  <rth@redhat.com>
