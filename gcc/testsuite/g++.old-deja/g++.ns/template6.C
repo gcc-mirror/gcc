@@ -13,7 +13,7 @@ namespace A {
          };
 
       template <>
-         const unsigned B<int,int>::count = 2;
+         const unsigned B<int,int>::count = 2; // ERROR - duplicate init
    }
 };
 
