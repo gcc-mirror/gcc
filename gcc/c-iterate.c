@@ -31,7 +31,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "rtl.h"
 
 static void expand_stmt_with_iterators_1 ();
-static tree collect_iterators();
+static tree collect_iterators ();
 static void iterator_loop_prologue ();
 static void iterator_loop_epilogue ();
 static void add_ixpansion ();
@@ -97,6 +97,9 @@ struct iter_stack_node
 struct iter_stack_node *iter_stack;
 
 struct iter_stack_node sublevel_ixpansions;
+
+/* During collect_iterators, a list of SAVE_EXPRs already scanned.  */
+static tree save_exprs;
 
 /* Initialize our obstack once per compilation.  */
 
@@ -144,7 +147,9 @@ void
 iterator_expand (stmt)
     tree stmt;
 {
-  tree iter_list = collect_iterators (stmt, NULL_TREE);
+  tree iter_list;
+  save_exprs = NULL_TREE;
+  iter_list = collect_iterators (stmt, NULL_TREE);
   expand_stmt_with_iterators_1 (stmt, iter_list);
   istack_sublevel_to_current ();
 }
@@ -202,6 +207,17 @@ collect_iterators (exp, list)
 	return list;
       }
 
+    case SAVE_EXPR:
+      /* In each scan, scan a given save_expr only once.  */
+      {
+	tree tail;
+	for (tail = save_exprs; tail; tail = TREE_CHAIN (tail))
+	  if (TREE_VALUE (tail) == exp)
+	    return list;
+      }
+      save_exprs = tree_cons (NULL_TREE, exp, save_exprs);
+      return collect_iterators (TREE_OPERAND (exp, 0), list);
+
       /* we do not automatically iterate blocks -- one must */
       /* use the FOR construct to do that */
 
@@ -229,7 +245,6 @@ collect_iterators (exp, list)
 	    /* Some tree codes have RTL, not trees, as operands.  */
 	    switch (TREE_CODE (exp))
 	      {
-	      case SAVE_EXPR:
 	      case CALL_EXPR:
 		num_args = 2;
 		break;
