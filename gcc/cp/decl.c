@@ -5643,10 +5643,6 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	}
     }
 
-  /* The name might be from an enclosing class of the current scope.  */
-  if (!val && !nonclass && current_class_type)
-    val = qualify_lookup (lookup_nested_field (name, !yylex), flags);
-  
   /* If we found a type from a dependent base class (using the
      implicit typename extension) make sure that there's not some
      global name which should be chosen instead.  */
@@ -7135,7 +7131,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 
   if (context && TYPE_SIZE (complete_type (context)) != NULL_TREE)
     {
-      pushclass (context, 2);
+      push_nested_class (context, 2);
 
       if (TREE_CODE (decl) == VAR_DECL)
 	{
@@ -8176,7 +8172,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	       the binding level..  */
 	    && TYPE_SIZE (context) != NULL_TREE
 	    && context == current_class_type)
-	  popclass ();
+	  pop_nested_class ();
       }
     }
 

@@ -3189,7 +3189,6 @@ extern tree get_binfo				PROTO((tree, tree, int));
 extern int get_base_distance			PROTO((tree, tree, int, tree *));
 extern int accessible_p                         PROTO((tree, tree));
 extern tree lookup_field			PROTO((tree, tree, int, int));
-extern tree lookup_nested_field			PROTO((tree, int));
 extern int lookup_fnfields_1                    PROTO((tree, tree));
 extern tree lookup_fnfields			PROTO((tree, tree, int));
 extern tree lookup_member			PROTO((tree, tree, int, int));
