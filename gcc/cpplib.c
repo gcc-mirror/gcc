@@ -77,6 +77,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "cpphash.h"
 #include "gansidecl.h"
+#include "intl.h"
 
 #ifdef NEED_DECLARATION_INDEX
 extern char *index ();
@@ -1518,7 +1519,7 @@ create_definition (buf, limit, pfile, predefinition)
 
   symname = bp;			/* remember where it starts */
 
-  sym_length = check_macro_name (pfile, bp, "macro");
+  sym_length = check_macro_name (pfile, bp, 0);
   bp += sym_length;
 
   /* Lossage will occur if identifiers or control keywords are broken
@@ -1666,13 +1667,13 @@ create_definition (buf, limit, pfile, predefinition)
 }
 
 /* Check a purported macro name SYMNAME, and yield its length.
-   USAGE is the kind of name this is intended for.  */
+   ASSERTION is nonzero if this is really for an assertion name.  */
 
 static int
-check_macro_name (pfile, symname, usage)
+check_macro_name (pfile, symname, assertion)
      cpp_reader *pfile;
      U_CHAR *symname;
-     char *usage;
+     int assertion;
 {
   U_CHAR *p;
   int sym_length;
@@ -1682,16 +1683,19 @@ check_macro_name (pfile, symname, usage)
   sym_length = p - symname;
   if (sym_length == 0
       || (sym_length == 1 && *symname == 'L' && (*p == '\'' || *p == '"')))
-    cpp_error (pfile, "invalid %s name", usage);
-  else if (!is_idstart[*symname]) {
+    cpp_error (pfile,
+	       assertion ? "invalid assertion name" : "invalid macro name");
+  else if (!is_idstart[*symname]
+	   || (! strncmp (symname, "defined", 7) && sym_length == 7)) {
     U_CHAR *msg;			/* what pain...  */
     msg = (U_CHAR *) alloca (sym_length + 1);
     bcopy (symname, msg, sym_length);
     msg[sym_length] = 0;
-    cpp_error (pfile, "invalid %s name `%s'", usage, msg);
-  } else {
-    if (! strncmp (symname, "defined", 7) && sym_length == 7)
-      cpp_error (pfile, "invalid %s name `defined'", usage);
+    cpp_error (pfile,
+	       (assertion
+		? "invalid assertion name `%s'"
+		: "invalid macro name `%s'"),
+	       msg);
   }
   return sym_length;
 }
@@ -1821,11 +1825,7 @@ do_define (pfile, keyword, buf, limit)
 	  if (CPP_OPTIONS (pfile)->debug_output && keyword)
 	    pass_thru_directive (buf, limit, pfile, keyword);
 
-	  msg = (U_CHAR *) alloca (mdef.symlen + 22);
-	  *msg = '`';
-	  bcopy (mdef.symnam, msg + 1, mdef.symlen);
-	  strcpy ((char *) (msg + mdef.symlen + 1), "' redefined");
-	  cpp_pedwarn (pfile, msg);
+	  cpp_pedwarn (pfile, "`%.*s' redefined", mdef.symlen, mdef.symnam);
 	  if (hp->type == T_MACRO)
 	    cpp_pedwarn_with_file_and_line (pfile, hp->value.defn->file, hp->value.defn->line,
 				      "this is the location of the previous definition");
@@ -3145,16 +3145,18 @@ do_include (pfile, keyword, unused1, unused2)
     {
       pfile->import_warning = 1;
       cpp_warning (pfile, "using `#import' is not recommended");
-      fprintf (stderr, "The fact that a certain header file need not be processed more than once\n");
-      fprintf (stderr, "should be indicated in the header file, not where it is used.\n");
-      fprintf (stderr, "The best way to do this is with a conditional of this form:\n\n");
-      fprintf (stderr, "  #ifndef _FOO_H_INCLUDED\n");
-      fprintf (stderr, "  #define _FOO_H_INCLUDED\n");
-      fprintf (stderr, "  ... <real contents of file> ...\n");
-      fprintf (stderr, "  #endif /* Not _FOO_H_INCLUDED */\n\n");
-      fprintf (stderr, "Then users can use `#include' any number of times.\n");
-      fprintf (stderr, "GNU C automatically avoids processing the file more than once\n");
-      fprintf (stderr, "when it is equipped with such a conditional.\n");
+      cpp_notice ("The fact that a certain header file need not be processed more than once\n\
+should be indicated in the header file, not where it is used.\n\
+The best way to do this is with a conditional of this form:\n\
+\n\
+  #ifndef _FOO_H_INCLUDED\n\
+  #define _FOO_H_INCLUDED\n\
+  ... <real contents of file> ...\n\
+  #endif /* Not _FOO_H_INCLUDED */\n\
+\n\
+Then users can use `#include' any number of times.\n\
+GNU C automatically avoids processing the file more than once\n\
+when it is equipped with such a conditional.\n");
     }
 
   pfile->parsing_include_directive++;
@@ -3871,7 +3873,7 @@ do_undef (pfile, keyword, buf, limit)
 #endif
 
   SKIP_WHITE_SPACE (buf);
-  sym_length = check_macro_name (pfile, buf, "macro");
+  sym_length = check_macro_name (pfile, buf, 0);
 
   while ((hp = cpp_lookup (pfile, buf, sym_length, -1)) != NULL)
     {
@@ -6003,13 +6005,13 @@ cpp_start_read (pfile, fname)
   /* With -v, print the list of dirs to search.  */
   if (opts->verbose) {
     struct file_name_list *p;
-    fprintf (stderr, "#include \"...\" search starts here:\n");
+    cpp_notice ("#include \"...\" search starts here:\n");
     for (p = opts->include; p; p = p->next) {
       if (p == opts->first_bracket_include)
-	fprintf (stderr, "#include <...> search starts here:\n");
+	cpp_notice ("#include <...> search starts here:\n");
       fprintf (stderr, " %s\n", p->fname);
     }
-    fprintf (stderr, "End of search list.\n");
+    cpp_notice ("End of search list.\n");
   }
 
   /* Scan the -imacros files before the main input.
@@ -6620,7 +6622,7 @@ cpp_handle_options (pfile, argc, argv)
 	break;
 
       case 'v':
-	fprintf (stderr, "GNU CPP version %s", version_string);
+	cpp_notice ("GNU CPP version %s", version_string);
 #ifdef TARGET_VERSION
 	TARGET_VERSION;
 #endif
@@ -6689,7 +6691,7 @@ cpp_handle_options (pfile, argc, argv)
 	  push_pending (pfile, "-U", argv[i] + 2);
 	else if (i + 1 == argc)
 	  {
-	    cpp_fatal (pfile, "Macro name missing after -U option", NULL);
+	    cpp_fatal (pfile, "Macro name missing after -U option");
 	    return argc;
 	  }
 	else
@@ -6898,8 +6900,7 @@ do_assert (pfile, keyword, buf, limit)
   cpp_skip_hspace (pfile);
   symstart = CPP_WRITTEN (pfile);	/* remember where it starts */
   parse_name (pfile, GETC());
-  sym_length = check_macro_name (pfile, pfile->token_buffer + symstart,
-				 "assertion");
+  sym_length = check_macro_name (pfile, pfile->token_buffer + symstart, 1);
 
   cpp_skip_hspace (pfile);
   if (PEEKC() != '(') {
@@ -6974,8 +6975,7 @@ do_unassert (pfile, keyword, buf, limit)
 
   symstart = CPP_WRITTEN (pfile);	/* remember where it starts */
   parse_name (pfile, GETC());
-  sym_length = check_macro_name (pfile, pfile->token_buffer + symstart,
-				 "assertion");
+  sym_length = check_macro_name (pfile, pfile->token_buffer + symstart, 1);
 
   cpp_skip_hspace (pfile);
   if (PEEKC() == '(') {
@@ -7376,22 +7376,22 @@ cpp_print_file_and_line (pfile)
 }
 
 void
-cpp_error (pfile, msg, arg1, arg2, arg3)
+cpp_error (pfile, msgid, arg1, arg2, arg3)
      cpp_reader *pfile;
-     char *msg;
+     char *msgid;
      char *arg1, *arg2, *arg3;
 {
   cpp_print_containing_files (pfile);
   cpp_print_file_and_line (pfile);
-  cpp_message (pfile, 1, msg, arg1, arg2, arg3);
+  cpp_message (pfile, 1, _(msgid), arg1, arg2, arg3);
 }
 
 /* Print error message but don't count it.  */
 
 void
-cpp_warning (pfile, msg, arg1, arg2, arg3)
+cpp_warning (pfile, msgid, arg1, arg2, arg3)
      cpp_reader *pfile;
-     char *msg;
+     char *msgid;
      char *arg1, *arg2, *arg3;
 {
   if (CPP_OPTIONS (pfile)->inhibit_warnings)
@@ -7402,28 +7402,38 @@ cpp_warning (pfile, msg, arg1, arg2, arg3)
 
   cpp_print_containing_files (pfile);
   cpp_print_file_and_line (pfile);
-  cpp_message (pfile, 0, msg, arg1, arg2, arg3);
+  cpp_message (pfile, 0, _(msgid), arg1, arg2, arg3);
+}
+
+/* Print an error message.  */
+
+void
+cpp_notice (msgid, arg1, arg2, arg3)
+     char *msgid;
+     char *arg1, *arg2, *arg3;
+{
+  cpp_message ((cpp_reader *) 0, -1, _(msgid), arg1, arg2, arg3);
 }
 
 /* Print an error message and maybe count it.  */
 
 void
-cpp_pedwarn (pfile, msg, arg1, arg2, arg3)
+cpp_pedwarn (pfile, msgid, arg1, arg2, arg3)
      cpp_reader *pfile;
-     char *msg;
+     char *msgid;
      char *arg1, *arg2, *arg3;
 {
   if (CPP_OPTIONS (pfile)->pedantic_errors)
-    cpp_error (pfile, msg, arg1, arg2, arg3);
+    cpp_error (pfile, msgid, arg1, arg2, arg3);
   else
-    cpp_warning (pfile, msg, arg1, arg2, arg3);
+    cpp_warning (pfile, msgid, arg1, arg2, arg3);
 }
 
 void
-cpp_error_with_line (pfile, line, column, msg, arg1, arg2, arg3)
+cpp_error_with_line (pfile, line, column, msgid, arg1, arg2, arg3)
      cpp_reader *pfile;
      int line, column;
-     char *msg;
+     char *msgid;
      char *arg1, *arg2, *arg3;
 {
   int i;
@@ -7434,14 +7444,14 @@ cpp_error_with_line (pfile, line, column, msg, arg1, arg2, arg3)
   if (ip != NULL)
     cpp_file_line_for_message (pfile, ip->nominal_fname, line, column);
 
-  cpp_message (pfile, 1, msg, arg1, arg2, arg3);
+  cpp_message (pfile, 1, _(msgid), arg1, arg2, arg3);
 }
 
 static void
-cpp_warning_with_line (pfile, line, column, msg, arg1, arg2, arg3)
+cpp_warning_with_line (pfile, line, column, msgid, arg1, arg2, arg3)
      cpp_reader *pfile;
      int line, column;
-     char *msg;
+     char *msgid;
      char *arg1, *arg2, *arg3;
 {
   int i;
@@ -7460,31 +7470,31 @@ cpp_warning_with_line (pfile, line, column, msg, arg1, arg2, arg3)
   if (ip != NULL)
     cpp_file_line_for_message (pfile, ip->nominal_fname, line, column);
 
-  cpp_message (pfile, 0, msg, arg1, arg2, arg3);
+  cpp_message (pfile, 0, _(msgid), arg1, arg2, arg3);
 }
 
 void
-cpp_pedwarn_with_line (pfile, line, column, msg, arg1, arg2, arg3)
+cpp_pedwarn_with_line (pfile, line, column, msgid, arg1, arg2, arg3)
      cpp_reader *pfile;
      int line;
-     char *msg;
+     char *msgid;
      char *arg1, *arg2, *arg3;
 {
   if (CPP_OPTIONS (pfile)->pedantic_errors)
-    cpp_error_with_line (pfile, column, line, msg, arg1, arg2, arg3);
+    cpp_error_with_line (pfile, column, line, msgid, arg1, arg2, arg3);
   else
-    cpp_warning_with_line (pfile, line, column, msg, arg1, arg2, arg3);
+    cpp_warning_with_line (pfile, line, column, msgid, arg1, arg2, arg3);
 }
 
 /* Report a warning (or an error if pedantic_errors)
    giving specified file name and line number, not current.  */
 
 void
-cpp_pedwarn_with_file_and_line (pfile, file, line, msg, arg1, arg2, arg3)
+cpp_pedwarn_with_file_and_line (pfile, file, line, msgid, arg1, arg2, arg3)
      cpp_reader *pfile;
      char *file;
      int line;
-     char *msg;
+     char *msgid;
      char *arg1, *arg2, *arg3;
 {
   if (!CPP_OPTIONS (pfile)->pedantic_errors
@@ -7493,7 +7503,7 @@ cpp_pedwarn_with_file_and_line (pfile, file, line, msg, arg1, arg2, arg3)
   if (file != NULL)
     cpp_file_line_for_message (pfile, file, line, -1);
   cpp_message (pfile, CPP_OPTIONS (pfile)->pedantic_errors,
-	       msg, arg1, arg2, arg3);
+	       _(msgid), arg1, arg2, arg3);
 }
 
 /* This defines "errno" properly for VMS, and gives us EACCES.  */
@@ -7540,7 +7550,7 @@ my_strerror (errnum)
 #endif
 
   if (!result)
-    result = "undocumented I/O error";
+    result = "errno = ?";
 
   return result;
 }
