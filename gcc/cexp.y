@@ -803,23 +803,28 @@ parse_escape (string_ptr)
       }
     case 'x':
       {
-	register int i = 0;
+	register unsigned i = 0, overflow = 0, digits_found = 0, digit;
 	for (;;)
 	  {
 	    c = *(*string_ptr)++;
 	    if (c >= '0' && c <= '9')
-	      i = (i << 4) + c - '0';
+	      digit = c - '0';
 	    else if (c >= 'a' && c <= 'f')
-	      i = (i << 4) + c - 'a' + 10;
+	      digit = c - 'a' + 10;
 	    else if (c >= 'A' && c <= 'F')
-	      i = (i << 4) + c - 'A' + 10;
+	      digit = c - 'A' + 10;
 	    else
 	      {
 		(*string_ptr)--;
 		break;
 	      }
+	    overflow |= i ^ (i << 4 >> 4);
+	    i = (i << 4) + digit;
+	    digits_found = 1;
 	  }
-	if ((i & ~((1 << BITS_PER_UNIT) - 1)) != 0)
+	if (!digits_found)
+	  yyerror ("\\x used with no following hex digits");
+	if (overflow | (i & ~((1 << BITS_PER_UNIT) - 1)))
 	  {
 	    i &= (1 << BITS_PER_UNIT) - 1;
 	    warning ("hex character constant does not fit in a byte");
