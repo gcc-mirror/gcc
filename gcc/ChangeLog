@@ -1,3 +1,7 @@
+2003-03-16  Neil Booth  <neil@daikokuya.co.uk>
+
+	* doc/cppopts.texi: Remove documentation of -A-.
+
 2003-03-15  Zack Weinberg  <zack@codesourcery.com>
 
 	* doc/libgcc.texi: Remove @tie.
