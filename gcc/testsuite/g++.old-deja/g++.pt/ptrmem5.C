@@ -14,4 +14,4 @@ struct Null {
 int *pd = NULL;
 int (*pf)() = NULL;
 int Null::*pmd = NULL;
-int (Null::*pmf)() = NULL; // { dg-bogus "" "" { xfail *-*-* } }  - cannot convert - 
+int (Null::*pmf)() = NULL; 

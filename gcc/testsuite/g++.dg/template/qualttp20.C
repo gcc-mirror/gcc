@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-options "-pedantic -pedantic-errors" }
 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 15 Dec 2001 <nathan@codesourcery.com>
@@ -16,7 +17,7 @@ struct AS
 template <typename T> struct B1 : T
 {
   typedef typename T::L __restrict__ r;// { dg-error "'__restrict__' qualifiers cannot" "" }
-  typedef typename T::myT __restrict__ p;// { dg-warning "ignoring '__restrict__'" "" { xfail *-*-* } }
+  typedef typename T::myT __restrict__ p;// { dg-error "ignoring '__restrict__'" }
 
   // The following are DR 295 dependent
   typedef typename T::myT volatile *myvolatile;
