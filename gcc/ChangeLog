@@ -1,3 +1,9 @@
+2003-02-25  Nick Clifton  <nickc@redhat.com>
+
+	* config/d30v/d30v.c (d30v_init_cumulative_args): Fix typo.  Name
+	of fourth arg is 'fndecl' not 'indirect'.  Update comment
+	describing the function's parameters.
+
 Mon Feb 24 22:08:22 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (simplify_shift_const):  Fix previous patch.

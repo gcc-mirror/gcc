@@ -1,21 +1,21 @@
 /* Definitions of target machine for Mitsubishi D30V.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
-   This file is part of GNU CC.
+   This file is part of GCC.
 
-   GNU CC is free software; you can redistribute it and/or modify
+   GCC is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2, or (at your option)
    any later version.
 
-   GNU CC is distributed in the hope that it will be useful,
+   GCC is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with GNU CC; see the file COPYING.  If not, write to
+   along with GCC; see the file COPYING.  If not, write to
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
@@ -1905,20 +1905,21 @@ direct_return ()
    state at the beginning of the argument list.  The variable has type
    `CUMULATIVE_ARGS'.  The value of FNTYPE is the tree node for the data type
    of the function which will receive the args, or 0 if the args are to a
-   compiler support library function.  The value of INDIRECT is nonzero when
-   processing an indirect call, for example a call through a function pointer.
-   The value of INDIRECT is zero for a call to an explicitly named function, a
-   library function call, or when `INIT_CUMULATIVE_ARGS' is used to find
-   arguments for the function being compiled.
+   compiler support library function.
+
+   The value of FNDECL is NULL for indirect calls (eg via a function pointer)
+   and library calls.  For direct calls, and when INIT_CUMULATIVE_ARGS is
+   being used to find arguments for the function being compiled it contains
+   the declaration node of FNTYPE.
 
    When processing a call to a compiler support library function, LIBNAME
    identifies which one.  It is a `symbol_ref' rtx which contains the name of
-   the function, as a string.  LIBNAME is 0 when an ordinary C function call is
-   being processed.  Thus, each time this macro is called, either LIBNAME or
-   FNTYPE is nonzero, but never both of them at once.  */
+   the function, as a string.  LIBNAME is 0 when an ordinary C function call
+   is being processed.  Thus, each time this macro is called, either LIBNAME
+   or FNTYPE is nonzero, but never both of them at once.  */
 
 void
-d30v_init_cumulative_args (cum, fntype, libname, indirect, incoming)
+d30v_init_cumulative_args (cum, fntype, libname, fndecl, incoming)
      CUMULATIVE_ARGS *cum;
      tree fntype;
      rtx libname;
@@ -2568,7 +2569,7 @@ d30v_expand_epilogue ()
    `fprintf'.
 
    The details of how the address should be passed to `mcount' are determined
-   by your operating system environment, not by GNU CC.  To figure them out,
+   by your operating system environment, not by GCC.  To figure them out,
    compile a small program for profiling using the system's installed C
    compiler and look at the assembler code that results.  */
 
