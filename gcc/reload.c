@@ -19,7 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
 /* This file contains subroutines used only from the file reload1.c.
    It knows how to scan one insn for operands and values
    that need to be copied into registers to make valid code.
@@ -70,7 +69,6 @@ NOTE SIDE EFFECTS:
 1 happens every time find_reloads is called.
 2 happens only when REPLACE is 1, which is only when
 actually doing the reloads, not when just counting them.
-
 
 Using a reload register for several reloads in one insn:
 
@@ -2173,26 +2171,26 @@ decompose (x)
 	  || GET_CODE (addr) == POST_DEC || GET_CODE (addr) == POST_INC)
 	{
 	  val.base = XEXP (addr, 0);
-	  val.start = - GET_MODE_SIZE (GET_MODE (x));
+	  val.start = -GET_MODE_SIZE (GET_MODE (x));
 	  val.end = GET_MODE_SIZE (GET_MODE (x));
 	  val.safe = REGNO (val.base) == STACK_POINTER_REGNUM;
 	  return val;
 	}
 
       if (GET_CODE (addr) == PRE_MODIFY || GET_CODE (addr) == POST_MODIFY)
- 	{
- 	  if (GET_CODE (XEXP (addr, 1)) == PLUS
+	{
+	  if (GET_CODE (XEXP (addr, 1)) == PLUS
 	      && XEXP (addr, 0) == XEXP (XEXP (addr, 1), 0)
 	      && CONSTANT_P (XEXP (XEXP (addr, 1), 1)))
- 	    {
- 	      val.base  = XEXP (addr, 0);
- 	      val.start = -INTVAL (XEXP (XEXP (addr, 1), 1));
- 	      val.end   = INTVAL (XEXP (XEXP (addr, 1), 1));
- 	      val.safe  = REGNO (val.base) == STACK_POINTER_REGNUM;
- 	      return val;
- 	    }
- 	}
-      
+	    {
+	      val.base  = XEXP (addr, 0);
+	      val.start = -INTVAL (XEXP (XEXP (addr, 1), 1));
+	      val.end   = INTVAL (XEXP (XEXP (addr, 1), 1));
+	      val.safe  = REGNO (val.base) == STACK_POINTER_REGNUM;
+	      return val;
+	    }
+	}
+
       if (GET_CODE (addr) == CONST)
 	{
 	  addr = XEXP (addr, 0);
@@ -2311,7 +2309,7 @@ immune_p (x, y, ydata)
   if (GET_CODE (x) != MEM)
     return 1;
 
-  xdata =  decompose (x);
+  xdata = decompose (x);
 
   if (! rtx_equal_p (xdata.base, ydata.base))
     {
@@ -2332,7 +2330,6 @@ immune_p (x, y, ydata)
       /* If either base is variable, we don't know anything.  */
       return 0;
     }
-
 
   return (xdata.start >= ydata.end || ydata.start >= xdata.end);
 }
@@ -2878,7 +2875,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      case '#':
 		/* Ignore rest of this alternative as far as
 		   reloading is concerned.  */
-		while (*p && *p != ',') p++;
+		while (*p && *p != ',')
+		  p++;
 		break;
 
 	      case '0':  case '1':  case '2':  case '3':  case '4':
@@ -2902,9 +2900,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		       only on one side of its diagonal.  */
 		    ? (operands_match
 		       [(c == commutative || c == commutative + 1)
-		       ? 2*commutative + 1 - c : c]
+		       ? 2 * commutative + 1 - c : c]
 		       [(i == commutative || i == commutative + 1)
-		       ? 2*commutative + 1 - i : i])
+		       ? 2 * commutative + 1 - i : i])
 		    : operands_match[c][i])
 		  {
 		    /* If we are matching a non-offsettable address where an
@@ -3233,7 +3231,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		       && ! const_to_mem)
 		bad = 1;
 
-
 	      /* We prefer to reload pseudos over reloading other things,
 		 since such reloads may be able to be eliminated later.
 		 If we are reloading a SCRATCH, we won't be generating any
@@ -3275,7 +3272,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 
 	     Don't do this if the preferred class has only one register
 	     because we might otherwise exhaust the class.  */
-
 
 	  if (! win && this_alternative[i] != (int) NO_REGS
 	      && GET_MODE_SIZE (operand_mode[i]) <= UNITS_PER_WORD
@@ -3511,7 +3507,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
       tem = *recog_data.operand_loc[commutative];
       *recog_data.operand_loc[commutative]
 	= *recog_data.operand_loc[commutative + 1];
-      *recog_data.operand_loc[commutative+1] = tem;
+      *recog_data.operand_loc[commutative + 1] = tem;
 
       for (i = 0; i < n_reloads; i++)
 	{
@@ -3947,8 +3943,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    {
 	      int secondary_in_reload = rld[i].secondary_in_reload;
 
-	      rld[secondary_in_reload].when_needed
-		= RELOAD_FOR_OPADDR_ADDR;
+	      rld[secondary_in_reload].when_needed = RELOAD_FOR_OPADDR_ADDR;
 
 	      /* If there's a tertiary reload we have to change it also.  */
 	      if (secondary_in_reload > 0
@@ -3963,8 +3958,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    {
 	      int secondary_out_reload = rld[i].secondary_out_reload;
 
-	      rld[secondary_out_reload].when_needed
-		= RELOAD_FOR_OPADDR_ADDR;
+	      rld[secondary_out_reload].when_needed = RELOAD_FOR_OPADDR_ADDR;
 
 	      /* If there's a tertiary reload we have to change it also.  */
 	      if (secondary_out_reload
@@ -4018,7 +4012,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
     int first_op_addr_num = -2;
     int first_inpaddr_num[MAX_RECOG_OPERANDS];
     int first_outpaddr_num[MAX_RECOG_OPERANDS];
-    int need_change= 0;
+    int need_change = 0;
     /* We use last_op_addr_reload and the contents of the above arrays
        first as flags - -2 means no instance encountered, -1 means exactly
        one instance encountered.
@@ -5131,12 +5125,12 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 	   of another register or by a constant value.  Thus, these
 	   operands must match.  */
 	if (op0 != XEXP (op1, 0))
-	  abort();
+	  abort ();
 
 	/* Require index register (or constant).  Let's just handle the
 	   register case in the meantime... If the target allows
 	   auto-modify by a constant then we could try replacing a pseudo
-	   register with its equivalent constant where applicable. */
+	   register with its equivalent constant where applicable.  */
 	if (REG_P (XEXP (op1, 1)))
 	  if (!REGNO_OK_FOR_INDEX_P (REGNO (XEXP (op1, 1))))
 	    find_reloads_address_1 (mode, XEXP (op1, 1), 1, &XEXP (op1, 1),
@@ -5186,14 +5180,14 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 	    if (!REGNO_MODE_OK_FOR_BASE_P (regno, GET_MODE (x)))
 	      {
 		push_reload (XEXP (op1, 0), XEXP (x, 0),
-			     &XEXP (op1, 0), &XEXP (x, 0), 
+			     &XEXP (op1, 0), &XEXP (x, 0),
 			     BASE_REG_CLASS,
 			     GET_MODE (x), GET_MODE (x), 0, 0,
 			     opnum, RELOAD_OTHER);
 	      }
 	  }
 	else
-	  abort();
+	  abort ();
       }
       return 0;
 
@@ -5928,7 +5922,7 @@ refers_to_regno_for_reload_p (regno, endregno, x, loc)
       else if (fmt[i] == 'E')
 	{
 	  register int j;
-	  for (j = XVECLEN (x, i) - 1; j >=0; j--)
+	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	    if (loc != &XVECEXP (x, i, j)
 		&& refers_to_regno_for_reload_p (regno, endregno,
 						 XVECEXP (x, i, j), loc))
@@ -6300,10 +6294,10 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
       if (GET_CODE (p) == CALL_INSN)
 	{
 	  int i;
-	  
+
 	  if (goal_mem || need_stable_sp)
 	    return 0;
-	  
+
 	  if (regno >= 0 && regno < FIRST_PSEUDO_REGISTER)
 	    for (i = 0; i < nregs; ++i)
 	      if (call_used_regs[regno + i])
@@ -6444,7 +6438,7 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 			      && xregno + xnregs > regno)
 			    return 0;
 			  else if (xregno < valueno + valuenregs
-			      && xregno + xnregs > valueno)
+				   && xregno + xnregs > valueno)
 			    return 0;
 			  else if (goal_mem_addr_varies
 				   && reg_overlap_mentioned_for_reload_p (dest,
@@ -6517,11 +6511,11 @@ find_inc_amount (x, inced)
 	       && XEXP (addr, 0) == XEXP (XEXP (addr, 1), 0)
 	       && XEXP (addr, 0) == inced
 	       && GET_CODE (XEXP (XEXP (addr, 1), 1)) == CONST_INT)
- 	{ 
- 	  i = INTVAL (XEXP (XEXP (addr, 1), 1));
- 	  return i < 0 ? -i : i;
- 	}
-   }
+	{
+	  i = INTVAL (XEXP (XEXP (addr, 1), 1));
+	  return i < 0 ? -i : i;
+	}
+    }
 
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)

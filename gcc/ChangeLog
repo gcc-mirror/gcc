@@ -1,5 +1,9 @@
 2000-08-29  Kazu Hirata  <kazu@hxi.com>
 
+	* reload.c: Fix formatting.
+
+	* stmt.c: Fix formatting.
+
 	* gcc.c: Fix formatting.
 
 2000-08-29  Zack Weinberg  <zack@wolery.cumb.org>
