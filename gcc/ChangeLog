@@ -1,3 +1,11 @@
+2003-04-01  Roger Sayle  <roger@eyesopen.com>
+
+	PR fortran/9974
+	* gcse.c (reg_killed_on_egde): New function to test whether the
+	given reg is overwritten by any instruction queued on an edge.
+	(bypass_block): Ignore substitutions killed on incoming edges.
+	Don't bypass outgoing edges that have queued instructions.
+
 2003-04-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* real.h (EXP_BITS): Make room for...

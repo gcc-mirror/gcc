@@ -1,3 +1,7 @@
+2003-04-01  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.c-torture/execute/20030401-1.c: New test case.
+
 2003-04-01  Ziemowit Laski <zlaski@apple.com>
 
 	* objc.dg/defs.m: New.
