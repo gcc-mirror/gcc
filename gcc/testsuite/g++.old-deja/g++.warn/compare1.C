@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-// { dg-options "-ansi -pedantic-errors -Wsign-compare" }
+// { dg-options "-ansi -pedantic-errors -Wsign-compare -Wno-deprecated" }
 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Kaveh R. Ghazi <ghazi@caip.rutgers.edu> 5/13/2001
