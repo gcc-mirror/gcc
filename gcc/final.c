@@ -1176,7 +1176,7 @@ shorten_branches (first)
 	  if (log)
 	    {
 	      int align = 1 << log;
-	      int new_address = insn_current_address + align - 1 & -align;
+	      int new_address = (insn_current_address + align - 1) & -align;
 	      insn_lengths[uid] = new_address - insn_current_address;
 	      insn_current_address = new_address;
 	    }
@@ -1279,7 +1279,7 @@ shorten_branches (first)
 	      if (log > insn_current_align)
 		{
 		  int align = 1 << log;
-		  int new_address= insn_current_address + align - 1 & -align;
+		  int new_address= (insn_current_address + align - 1) & -align;
 		  insn_lengths[uid] = new_address - insn_current_address;
 		  insn_current_align = log;
 		  insn_current_address = new_address;

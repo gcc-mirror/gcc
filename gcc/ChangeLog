@@ -1,3 +1,10 @@
+Thu Mar 19 10:10:36 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* final.c (shorten_branches): Add parentheses around +/- in
+	operand of &.
+
+	* flow.c (life_analysis): Wrap variable `i' in macro ELIMINABLE_REGS.
+
 Thu Mar 19 09:15:17 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* regclass.c (memory_move_secondary_cost): Wrap uses of
