@@ -1,6 +1,6 @@
 /* Specialized bits of code needed to support construction and
    destruction of file-scope objects in C++ code.
-   Copyright (C) 1991, 1994-1999 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994-1999, 2000 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GNU CC.
@@ -52,23 +52,9 @@ Boston, MA 02111-1307, USA.  */
    do not apply.  */
 
 #include "tm.h"
-
-/* We disable this when inhibit_libc, so that gcc can still be built without
-   needing header files first.  */
-/* ??? This is not a good solution, since prototypes may be required in
-   some cases for correct code.  See also libgcc2.c/frame.c.  */
-#ifndef inhibit_libc
-/* fixproto guarantees these system headers exist. */
-#include <stdlib.h>
-#include <unistd.h>
-#else
-# ifndef atexit
-extern int atexit(void (*)(void));
-# endif
-#endif
+#include "tsystem.h"
 
 #include "defaults.h"
-#include <stddef.h>
 #include "frame.h"
 
 /* We do not want to add the weak attribute to the declarations of these

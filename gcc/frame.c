@@ -1,6 +1,6 @@
 /* Subroutines needed for unwinding stack frames for exception handling.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@cygnus.com>.
 
 This file is part of GNU CC.
@@ -32,31 +32,12 @@ Boston, MA 02111-1307, USA.  */
    do not apply.  */
 
 #include "tconfig.h"
-
-/* We disable this when inhibit_libc, so that gcc can still be built without
-   needing header files first.  */
-/* ??? This is not a good solution, since prototypes may be required in
-   some cases for correct code.  See also libgcc2.c/crtstuff.c.  */
-#ifndef inhibit_libc
-/* fixproto guarantees these system headers exist. */
-#include <stdlib.h>
-#include <unistd.h>
-
-#else
-#include <stddef.h>
-#ifndef malloc
-extern void *malloc (size_t);
-#endif
-#ifndef free
-extern void free (void *);
-#endif
-#endif
+#include "tsystem.h"
 
 #include "defaults.h"
 
 #ifdef DWARF2_UNWIND_INFO
 #include "dwarf2.h"
-#include <stddef.h>
 #include "frame.h"
 #include "gthr.h"
 

@@ -1054,7 +1054,8 @@ libgcc2.ready: $(GCC_PASSES) $(LIBGCC2_DEPS) stmp-int-hdrs $(STMP_FIXPROTO)
 
 LIB2ADD = $(srcdir)/frame.c $(LIB2FUNCS_EXTRA) $(LANG_LIB2FUNCS)
 libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
-   $(MACHMODE_H) longlong.h frame.h gbl-ctors.h config.status stmp-int-hdrs
+   $(MACHMODE_H) longlong.h frame.h gbl-ctors.h config.status stmp-int-hdrs \
+   tsystem.h
 # Actually build it in tmplibgcc2.a, then rename at end,
 # so that libgcc2.a itself remains nonexistent if compilation is aborted.
 	-rm -f tmplibgcc2.a
@@ -1186,7 +1187,7 @@ s-mlib: $(srcdir)/genmultilib Makefile
 
 # Build multiple copies of libgcc.a, one for each target switch.
 stmp-multilib: $(LIBGCC1) libgcc2.c libgcc2.ready $(CONFIG_H) \
-   frame.h \
+   frame.h tsystem.h \
    $(LIB2ADD) $(MACHMODE_H) longlong.h gbl-ctors.h config.status
 	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
 	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
@@ -1272,14 +1273,14 @@ stmp-multilib-sub:
 # linked using GCC on systems using COFF or ELF, for the sake of C++
 # constructors.
 $(T)crtbegin.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
-  defaults.h frame.h gbl-ctors.h stmp-int-hdrs
+  defaults.h frame.h gbl-ctors.h stmp-int-hdrs tsystem.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
 	  -finhibit-size-directive -fno-inline-functions \
 	  -fno-exceptions $(CRTSTUFF_T_CFLAGS) @inhibit_libc@ \
 	  -c $(srcdir)/crtstuff.c -DCRT_BEGIN -o $(T)crtbegin$(objext)
 
 $(T)crtend.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
-  defaults.h frame.h gbl-ctors.h stmp-int-hdrs
+  defaults.h frame.h gbl-ctors.h stmp-int-hdrs tsystem.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
 	  -finhibit-size-directive -fno-inline-functions \
 	  -fno-exceptions $(CRTSTUFF_T_CFLAGS) @inhibit_libc@ \
@@ -1290,7 +1291,7 @@ $(T)crtend.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
 crtbeginS.o crtendS.o: s-crtS ; @true
 
 s-crtS: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
-  defaults.h frame.h gbl-ctors.h stmp-int-hdrs
+  defaults.h frame.h gbl-ctors.h stmp-int-hdrs tsystem.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS_S) \
 	  -DCRT_BEGIN -DCRTSTUFFS_O -finhibit-size-directive \
 	  -fno-inline-functions -fno-exceptions @inhibit_libc@ -g0 \
