@@ -1,3 +1,9 @@
+2004-09-17  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/17273
+	* tree-ssa.c (replace_immediate_uses): Call fold_stmt if the
+	replacement is a constant.
+
 2004-09-17  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-tree.h (enum c_typespec_keyword): New.

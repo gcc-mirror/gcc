@@ -1,3 +1,8 @@
+2004-09-17  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/17273
+	* gcc.c-torture/compile/pr17273.c: New test.
+
 2004-09-17  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/declspec-4.c, gcc.dg/declspec-5.c, gcc.dg/declspec-6.c:
