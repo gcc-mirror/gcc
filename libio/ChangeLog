@@ -1,3 +1,16 @@
+1998-02-17  Andreas Schwab  (schwab@issan.informatik.uni-dortmund.de)
+
+	* iostream.cc (istream::operator>>(long double&))
+	[!_G_HAVE_LONG_DOUBLE_IO]: Scan value into separate variable, in
+	case long double is bigger than double.
+	(ostream::operator<<(double)) [_G_HAVE_PRINTF_FP]: Fix order of
+	initializers of struct printf_info to match declaration order,
+	to work around g++ bug.
+	(ostream::operator<<(long double)) [_G_HAVE_PRINTF_FP]: Likewise.
+
+	* gen-params: Add missing quotes.  Avoid useless use of command
+	substitution.
+
 Tue Feb 17 21:52:44 1998  H.J. Lu  (hjl@gnu.org)
 
 	* config/linux.mt (IO_OBJECTS): Add iogetline.o.

@@ -333,11 +333,15 @@ READ_INT(bool)
 istream& istream::operator>>(long double& x)
 {
     if (ipfx0())
+      {
 #if _G_HAVE_LONG_DOUBLE_IO
 	scan("%Lg", &x);
 #else
-	scan("%lg", &x);
+	double y;
+	scan("%lg", &y);
+	x = y;
 #endif
+      }
     return *this;
 }
 
@@ -628,10 +632,10 @@ ostream& ostream::operator<<(double n)
 				      left: (flags() & ios::left) != 0,
 				      showsign: (flags() & ios::showpos) != 0,
 				      group: 0,
-				      pad: fill()
 #if defined __GLIBC__ && __GLIBC__ >= 2
-				      , extra: 0
+				      extra: 0,
 #endif
+				      pad: fill()
 	  };
 	  const void *ptr = (const void *) &n;
 	  if (__printf_fp (rdbuf(), &info, &ptr) < 0)
@@ -731,10 +735,10 @@ ostream& ostream::operator<<(long double n)
 				  left: (flags() & ios::left) != 0,
 				  showsign: (flags() & ios::showpos) != 0,
 				  group: 0,
-				  pad: fill()
 #if defined __GLIBC__ && __GLIBC__ >= 2
-				  , extra: 0
+				  extra: 0,
 #endif
+				  pad: fill()
       };
 
       const void *ptr = (const void *) &n;
