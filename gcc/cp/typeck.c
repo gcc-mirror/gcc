@@ -3822,10 +3822,10 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  else if ((resultcode == EQ_EXPR || resultcode == NE_EXPR)
 		   && ((op0_signed && TREE_CODE (orig_op1) == INTEGER_CST
 			&& int_fits_type_p (orig_op1,
-					    signed_type (result_type))
+					    signed_type (result_type)))
 			|| (op1_signed && TREE_CODE (orig_op0) == INTEGER_CST
 			    && int_fits_type_p (orig_op0,
-						signed_type (result_type))))))
+						signed_type (result_type)))))
 	    /* OK */;
 	  else
 	    warning ("comparison between signed and unsigned");
