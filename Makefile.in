@@ -1651,6 +1651,7 @@ all-target-winsup: all-target-newlib all-target-libiberty all-target-libtermcap 
 configure-target-winsup: configure-target-newlib
 all-uudecode: all-libiberty
 all-zip:
+all-zlib:
 configure-target-zlib: $(ALL_GCC)
 all-target-zlib: configure-target-zlib
 configure-target-libiberty: $(ALL_GCC) configure-target-newlib
