@@ -648,8 +648,6 @@ namespace std
     __numpunct_cache<_CharT>::_M_cache(const locale& __loc)
     {
       _M_allocated = true;
-      _M_grouping = NULL;
-      _M_truename = _M_falsename = NULL;
 
       const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
 
