@@ -12026,7 +12026,7 @@ require much more work on @code{libg2c}.
 @pindex asa
 @pindex fpr
 @code{g77} doesn't support @code{FORM='PRINT'} or an equivalent to
-translate the traditional `carraige control' characters in column 1 of
+translate the traditional `carriage control' characters in column 1 of
 output to use backspaces, carriage returns and the like.  However
 programs exist to translate them in output files (or standard output).
 These are typically called either @code{fpr} or @code{asa}.  You can get
@@ -12036,8 +12036,9 @@ systems which will probably build easily on other systems.
 Alternatively, @code{fpr} is in BSD distributions in various archive
 sites.
 
-I think both programs can either be used in a pipeline.
-
+@c (Can both programs can be used in a pipeline,
+@c with a named input file,
+@c and/or with a named output file???)
 
 @node ENCODE and DECODE
 @subsection @code{ENCODE} and @code{DECODE}

@@ -5,7 +5,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1998-09-05
+@c 1998-11-03
 
 @ifclear NEWSONLY
 @node News
@@ -61,11 +61,30 @@ somewhat more difficult.
 @heading In 0.5.24 and @code{egcs} 1.1.1 (versus 0.5.23 and 1.1):
 @itemize @bullet
 @item
+Fix @code{libg2c} so it performs an implicit @code{ENDFILE} operation
+(as appropriate)
+whenever a @code{REWIND} is done.
+
+(This bug was introduced in 0.5.23 and @code{egcs} 1.1 in
+@code{g77}'s version of @code{libf2c}.)
+
+@item
 Fix @code{libg2c} so it no longer crashes with a spurious diagnostic
 upon doing any I/O following a direct formatted write.
 
 (This bug was introduced in 0.5.23 and @code{egcs} 1.1 in
 @code{g77}'s version of @code{libf2c}.)
+
+@item
+Fix @code{g77} so it no longer crashes compiling references
+to the @samp{Rand} intrinsic on some systems.
+
+@item
+Fix @code{g77} portion of installation process so it works
+better on some systems
+(those with shells requiring @samp{else true} clauses
+on @samp{if} constructs
+for the completion code to be set properly).
 @end itemize
 
 @heading In @code{egcs} 1.1 (versus 0.5.24):
@@ -108,6 +127,7 @@ having the @code{SAVE} attribute
 or given initial values via @code{DATA}.
 @end itemize
 
+@c 1998-09-01: egcs-1.1 released.
 @heading In @code{egcs} 1.1 (versus @code{egcs} 1.0.3):
 @itemize @bullet
 @item
