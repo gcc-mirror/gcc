@@ -941,11 +941,23 @@ chain_member (tree elem, tree chain)
 int
 list_length (tree t)
 {
-  tree tail;
+  tree p = t;
+#ifdef ENABLE_TREE_CHECKING
+  tree q = t;
+#endif
   int len = 0;
 
-  for (tail = t; tail; tail = TREE_CHAIN (tail))
-    len++;
+  while (p)
+    {
+      p = TREE_CHAIN (p);
+#ifdef ENABLE_TREE_CHECKING
+      if (len % 2)
+	q = TREE_CHAIN (q);
+      if (p == q)
+	abort ();
+#endif
+      len++;
+    }
 
   return len;
 }

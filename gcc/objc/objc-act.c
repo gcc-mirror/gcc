@@ -64,8 +64,6 @@ Boston, MA 02111-1307, USA.  */
 #include "diagnostic.h"
 #include "cgraph.h"
 
-#define OBJC_VOID_AT_END	build_tree_list (NULL_TREE, void_type_node)
-
 /* This is the default way of generating a method name.  */
 /* I am not sure it is really correct.
    Perhaps there's a danger that it will make name conflicts
@@ -161,7 +159,6 @@ static void generate_ivar_lists (void);
 static void generate_dispatch_tables (void);
 static void generate_shared_structures (void);
 static tree generate_protocol_list (tree);
-static void generate_forward_declaration_to_string_table (void);
 static void build_protocol_reference (tree);
 
 static tree build_keyword_selector (tree);
@@ -1238,7 +1235,7 @@ synth_module_prologue (void)
         = build_function_type (IMP_type,
                                tree_cons (NULL_TREE, id_type,
                                           tree_cons (NULL_TREE, selector_type,
-                                                     OBJC_VOID_AT_END)));
+                                                     void_list_node)));
       umsg_decl = builtin_function (TAG_MSGSEND,
 				    temp_type, 0, NOT_BUILT_IN,
 				    NULL, NULL_TREE);
@@ -1248,7 +1245,7 @@ synth_module_prologue (void)
         = build_function_type (IMP_type,
                                tree_cons (NULL_TREE, super_type,
                                           tree_cons (NULL_TREE, selector_type,
-                                                     OBJC_VOID_AT_END)));
+                                                     void_list_node)));
       umsg_super_decl = builtin_function (TAG_MSGSENDSUPER,
 					  temp_type, 0, NOT_BUILT_IN,
 					  NULL, NULL_TREE);
@@ -1259,7 +1256,7 @@ synth_module_prologue (void)
   temp_type = build_function_type (id_type,
 				   tree_cons (NULL_TREE,
 					      const_string_type_node,
-					      OBJC_VOID_AT_END));
+					      void_list_node));
 
   objc_get_class_decl
     = builtin_function (TAG_GETCLASS, temp_type, 0, NOT_BUILT_IN,
@@ -1304,8 +1301,6 @@ synth_module_prologue (void)
       /* Avoid warning when not sending messages.  */
       TREE_USED (UOBJC_SELECTOR_TABLE_decl) = 1;
     }
-
-  generate_forward_declaration_to_string_table ();
 
   /* Forward declare constant_string_id and constant_string_type.  */
   if (!constant_string_class_name)
@@ -1877,7 +1872,7 @@ build_module_descriptor (void)
 				 get_identifier (TAG_EXECCLASS),
 				 build_function_type (void_type_node,
 					tree_cons (NULL_TREE, ptr_type_node,
-						   OBJC_VOID_AT_END)));
+						   void_list_node)));
 						
     DECL_EXTERNAL (execclass_decl) = 1;
     DECL_ARTIFICIAL (execclass_decl) = 1;
@@ -1892,7 +1887,7 @@ build_module_descriptor (void)
     start_function (void_list_node_1,
 		    build_nt (CALL_EXPR, init_function_name,
 			      tree_cons (NULL_TREE, NULL_TREE,
-					 OBJC_VOID_AT_END),
+					 void_list_node),
 			      NULL_TREE),
 		    NULL_TREE);
     store_parm_decls ();
@@ -1917,22 +1912,6 @@ build_module_descriptor (void)
 
     return XEXP (DECL_RTL (init_function_decl), 0);
   }
-}
-
-/* extern const char _OBJC_STRINGS[]; */
-
-static void
-generate_forward_declaration_to_string_table (void)
-{
-  tree sc_spec, decl_specs, expr_decl;
-
-  sc_spec = tree_cons (NULL_TREE, ridpointers[(int) RID_EXTERN], NULL_TREE);
-  decl_specs = tree_cons (NULL_TREE, ridpointers[(int) RID_CHAR], sc_spec);
-
-  expr_decl
-    = build_nt (ARRAY_REF, get_identifier ("_OBJC_STRINGS"), NULL_TREE);
-
-  UOBJC_STRINGS_decl = define_decl (expr_decl, decl_specs);
 }
 
 /* Return the DECL of the string IDENT in the SECTION.  */
@@ -2699,7 +2678,7 @@ objc_enter_block (void)
   block = begin_compound_stmt (0);
 #else
   block = c_begin_compound_stmt ();
-  pushlevel (0);
+  push_scope ();
   clear_last_expr ();
   add_scope_stmt (/*begin_p=*/1, /*partial_p=*/0);
 #endif
@@ -2724,7 +2703,7 @@ objc_exit_block (void)
   finish_compound_stmt (0, block);
 #else
   scope_stmt = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0);
-  inner = poplevel (KEEP_MAYBE, 1, 0);
+  inner = pop_scope ();
 
   SCOPE_STMT_BLOCK (TREE_PURPOSE (scope_stmt))
 	= SCOPE_STMT_BLOCK (TREE_VALUE (scope_stmt))
@@ -3331,7 +3310,7 @@ build_objc_exception_stuff (void)
     = build_function_type (id_type,
 			   tree_cons (NULL_TREE,
 				      build_pointer_type (objc_exception_data_template),
-				      OBJC_VOID_AT_END));
+				      void_list_node));
   objc_exception_extract_decl
     = builtin_function (TAG_EXCEPTIONEXTRACT, temp_type, 0, NOT_BUILT_IN, NULL, NULL_TREE);
   /* void objc_exception_try_enter(struct _objc_exception_data *); */
@@ -3340,7 +3319,7 @@ build_objc_exception_stuff (void)
     = build_function_type (void_type_node,
 			   tree_cons (NULL_TREE,
 				      build_pointer_type (objc_exception_data_template),
-				      OBJC_VOID_AT_END));
+				      void_list_node));
   objc_exception_try_enter_decl
     = builtin_function (TAG_EXCEPTIONTRYENTER, temp_type, 0, NOT_BUILT_IN, NULL, NULL_TREE);
   objc_exception_try_exit_decl
@@ -3350,7 +3329,7 @@ build_objc_exception_stuff (void)
   /* void objc_sync_exit(id); */
   temp_type = build_function_type (void_type_node,
 				   tree_cons (NULL_TREE, id_type,
-					      OBJC_VOID_AT_END));
+					      void_list_node));
   objc_exception_throw_decl
     = builtin_function (TAG_EXCEPTIONTHROW, temp_type, 0, NOT_BUILT_IN, NULL, NULL_TREE);
   DECL_ATTRIBUTES (objc_exception_throw_decl)
@@ -3363,7 +3342,7 @@ build_objc_exception_stuff (void)
   temp_type = build_function_type (integer_type_node,
 				   tree_cons (NULL_TREE, id_type,
 					      tree_cons (NULL_TREE, id_type,
-							 OBJC_VOID_AT_END)));
+							 void_list_node)));
   objc_exception_match_decl
     = builtin_function (TAG_EXCEPTIONMATCH, temp_type, 0, NOT_BUILT_IN, NULL, NULL_TREE);
 	
@@ -5463,7 +5442,7 @@ get_arg_type_list (tree meth, int context, int superflag)
 
   if (METHOD_ADD_ARGS (meth) == objc_ellipsis_node)
     /* We have a `, ...' immediately following the selector,
-       finalize the arglist...simulate get_parm_info (0).  */
+       finalize the arglist...simulate get_parm_info (true).  */
     ;
   else if (METHOD_ADD_ARGS (meth))
     {
@@ -5472,8 +5451,8 @@ get_arg_type_list (tree meth, int context, int superflag)
       chainon (arglist, add_arg_list);
     }
   else
-    /* finalize the arglist...simulate get_parm_info (1) */
-    chainon (arglist, OBJC_VOID_AT_END);
+    /* finalize the arglist...simulate get_parm_info (false) */
+    chainon (arglist, void_list_node);
 
   return arglist;
 }
@@ -7539,7 +7518,8 @@ start_method_def (tree method)
   UOBJC_SUPER_decl = NULL_TREE;
 
   /* Must be called BEFORE start_function.  */
-  pushlevel (0);
+  push_scope ();
+  declare_parm_level ();
 
   /* Generate prototype declarations for arguments..."new-style".  */
   synth_self_and_ucmd_args ();
@@ -7819,9 +7799,9 @@ continue_method_def (void)
 
   if (METHOD_ADD_ARGS (objc_method_context) == objc_ellipsis_node)
     /* We have a `, ...' immediately following the selector.  */
-    parmlist = get_parm_info (0);
+    parmlist = get_parm_info (/*ellipsis=*/true);
   else
-    parmlist = get_parm_info (1); /* place a `void_at_end' */
+    parmlist = get_parm_info (/*ellipsis=*/false);
 
 #ifndef OBJCPLUS
   /* Set self_decl from the first argument...this global is used by
@@ -7829,7 +7809,7 @@ continue_method_def (void)
   self_decl = TREE_PURPOSE (parmlist);
 #endif /* !OBJCPLUS */
 
-  poplevel (0, 0, 0);
+  pop_scope ();
   really_start_method (objc_method_context, parmlist);
   store_parm_decls ();
 }
@@ -8800,8 +8780,6 @@ finish_objc (void)
       objc_ivar_chain = NULL_TREE;
       objc_implementation_context = NULL_TREE;
     }
-
-  generate_forward_declaration_to_string_table ();
 
   /* Process the static instances here because initialization of objc_symtab
      depends on them.  */
