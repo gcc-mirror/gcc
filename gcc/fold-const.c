@@ -3978,7 +3978,7 @@ fold (expr)
 	 Look for NOPs and SAVE_EXPRs inside.  */
 
       if (TREE_CODE (arg1) == INTEGER_CST
-	  && tree_int_cst_lt (integer_zero_node, arg1))
+	  && tree_int_cst_sgn (arg1) >= 0)
 	{
 	  int have_save_expr = 0;
 	  tree c2 = integer_zero_node;
@@ -4009,12 +4009,12 @@ fold (expr)
 
 	  if (TREE_CODE (xarg0) == MULT_EXPR
 	      && TREE_CODE (TREE_OPERAND (xarg0, 1)) == INTEGER_CST
-	      && tree_int_cst_lt (integer_zero_node, TREE_OPERAND (xarg0, 1))
+	      && tree_int_cst_sgn (TREE_OPERAND (xarg0, 1)) >= 0
 	      && (integer_zerop (const_binop (TRUNC_MOD_EXPR,
 					      TREE_OPERAND (xarg0, 1), arg1, 1))
 		  || integer_zerop (const_binop (TRUNC_MOD_EXPR, arg1,
 						 TREE_OPERAND (xarg0, 1), 1)))
-	      && (tree_int_cst_lt (integer_zero_node, c2)
+	      && (tree_int_cst_sgn (c2) >= 0
 		  || integer_zerop (const_binop (TRUNC_MOD_EXPR, c2,
 						 arg1, 1))))
 	    {
@@ -4035,7 +4035,7 @@ fold (expr)
 			       const_binop (code, c2, c3, 1)));
 
 	      if (! integer_onep (outer_div))
-		t = fold (build (code, type, t, outer_div));
+		t = fold (build (code, type, t, convert (type, outer_div)));
 
 	      if (have_save_expr)
 		t = save_expr (t);
@@ -4091,7 +4091,7 @@ fold (expr)
 	      && integer_zerop (const_binop (TRUNC_MOD_EXPR,
 					     TREE_OPERAND (xarg0, 1),
 					     arg1, 1))
-	      && tree_int_cst_lt (integer_zero_node, c2))
+	      && tree_int_cst_sgn (c2) >= 0)
 	    /* The result is (C2%C3).  */
 	    return omit_one_operand (type, const_binop (code, c2, arg1, 1),
 				     TREE_OPERAND (xarg0, 0));
@@ -4107,7 +4107,7 @@ fold (expr)
 	return non_lvalue (convert (type, arg0));
       /* Since negative shift count is not well-defined,
 	 don't try to compute it in the compiler.  */
-      if (tree_int_cst_lt (arg1, integer_zero_node))
+      if (tree_int_cst_sgn (arg1) < 0)
 	return t;
       goto binary;
 
@@ -4309,7 +4309,7 @@ fold (expr)
       /* Change X >= CST to X > (CST - 1) if CST is positive.  */
       if (TREE_CODE (arg1) == INTEGER_CST
 	  && TREE_CODE (arg0) != INTEGER_CST
-	  && ! tree_int_cst_lt (arg1, integer_one_node))
+	  && tree_int_cst_sgn (arg1) > 0)
 	{
 	  switch (TREE_CODE (t))
 	    {
