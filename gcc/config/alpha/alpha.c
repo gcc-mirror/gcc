@@ -370,9 +370,7 @@ call_operand (op, mode)
   if (mode != Pmode)
     return 0;
 
-  return (GET_CODE (op) == SYMBOL_REF
-	  || (GET_CODE (op) == REG
-	      && (REGNO (op) == 27 || WINDOWS_NT)));
+  return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == REG);
 }
 
 /* Return 1 if OP is a valid Alpha comparison operator.  Here we know which
