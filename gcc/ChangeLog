@@ -1,3 +1,13 @@
+Mon Dec 15 17:48:05 1997  Ricahrd Henderson  <rth@cygnus.com>
+
+	* reload.h, reload1.c (eliminate_regs), caller-save.c, dbxout.c,
+	dwarfout.c, dwarf2out.c, reload.c, sdbout.c: Revert March 15 change.
+
+	* reload.c (push_reload): If WORD_REGISTER_OPERATIONS, reload the
+	SUBREG_REG if the word count is unchanged.
+	* reload1.c (eliminate_regs) [case SET]: If W_R_O, preserve
+	subregs of identical word size for push_reload.
+
 Mon Dec 15  Mark Mitchell  <mmitchell@usa.net> 11:41:32 1997
 
 	* toplev.c (rest_of_compilation): Don't call save_for_inline_copy

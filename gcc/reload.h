@@ -145,11 +145,6 @@ extern void clear_secondary_mem PROTO((void));
    reload TO.  */
 extern void transfer_replacements PROTO((int, int));
 
-/* Return 1 if ADDR is a valid memory address for mode MODE,
-   and check that each pseudo reg has the proper kind of
-   hard reg.  */
-extern int strict_memory_address_p PROTO((enum machine_mode, rtx));
-
 /* Like rtx_equal_p except that it allows a REG and a SUBREG to match
    if they are the same hard reg, and has special hacks for
    autoincrement and autodecrement.  */
@@ -212,7 +207,7 @@ extern int regno_clobbered_p PROTO((int, rtx));
 extern void init_reload PROTO((void));
 
 /* The reload pass itself.  */
-extern int reload STDIO_PROTO((rtx, int, FILE *));
+extern int reload PROTO((rtx, int, FILE *));
 
 /* Mark the slots in regs_ever_live for the hard regs
    used by pseudo-reg number REGNO.  */
@@ -220,7 +215,7 @@ extern void mark_home_live PROTO((int));
 
 /* Scan X and replace any eliminable registers (such as fp) with a
    replacement (such as sp), plus an offset.  */
-extern rtx eliminate_regs PROTO((rtx, enum machine_mode, rtx, int));
+extern rtx eliminate_regs PROTO((rtx, enum machine_mode, rtx));
 
 /* Emit code to perform a reload from IN (which may be a reload register) to
    OUT (which may also be a reload register).  IN or OUT is from operand

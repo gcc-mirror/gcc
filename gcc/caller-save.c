@@ -19,6 +19,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "insn-config.h"
 #include "flags.h"
@@ -335,7 +336,7 @@ setup_save_areas (pchanged)
     for (j = 1; j <= MOVE_MAX / UNITS_PER_WORD; j++)
       if (regno_save_mem[i][j] != 0)
 	ok &= strict_memory_address_p (GET_MODE (regno_save_mem[i][j]),
-				       XEXP (eliminate_regs (regno_save_mem[i][j], 0, NULL_RTX, 1), 0));
+				       XEXP (eliminate_regs (regno_save_mem[i][j], 0, NULL_RTX), 0));
 
   return ok;
 }

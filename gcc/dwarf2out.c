@@ -6968,7 +6968,7 @@ add_location_or_const_value_attribute (die, decl)
   if (rtl == NULL_RTX)
     return;
 
-  rtl = eliminate_regs (rtl, 0, NULL_RTX, 0);
+  rtl = eliminate_regs (rtl, 0, NULL_RTX);
 #ifdef LEAF_REG_REMAP
   if (leaf_function)
     leaf_renumber_regs_insn (rtl);

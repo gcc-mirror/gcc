@@ -1866,7 +1866,7 @@ output_bound_representation (bound, dim_num, u_or_l)
 
 	    if (TREE_CODE (bound) == SAVE_EXPR)
 	      output_loc_descriptor
-		(eliminate_regs (SAVE_EXPR_RTL (bound), 0, NULL_RTX, 0));
+		(eliminate_regs (SAVE_EXPR_RTL (bound), 0, NULL_RTX));
 	  }
 
 	ASM_OUTPUT_LABEL (asm_out_file, end_label);
@@ -2409,7 +2409,7 @@ location_or_const_value_attribute (decl)
   if (rtl == NULL_RTX)
     return;
 
-  rtl = eliminate_regs (rtl, 0, NULL_RTX, 0);
+  rtl = eliminate_regs (rtl, 0, NULL_RTX);
 #ifdef LEAF_REG_REMAP
   if (leaf_function)
     leaf_renumber_regs_insn (rtl);
