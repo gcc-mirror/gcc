@@ -563,9 +563,9 @@ ggc_print_statistics (stream, stats)
 		  / ggc_stats->total_size_trees));
       }
   fprintf (stream,
-	   "%-22s%-15u %-15u\n", "Total",
+	   "%-22s%-15u %-15lu\n", "Total",
 	   ggc_stats->total_num_trees,
-	   ggc_stats->total_size_trees);
+	   (unsigned long) ggc_stats->total_size_trees);
 
   /* Print the statistics for RTL.  */
   fprintf (stream, "\n%-22s%-16s%-16s%-7s\n", "Code", 
@@ -582,9 +582,9 @@ ggc_print_statistics (stream, stats)
 		  / ggc_stats->total_size_rtxs));
       }
   fprintf (stream,
-	   "%-22s%-15u %-15u\n", "Total",
+	   "%-22s%-15u %-15lu\n", "Total",
 	   ggc_stats->total_num_rtxs,
-	   ggc_stats->total_size_rtxs);
+	   (unsigned long) ggc_stats->total_size_rtxs);
 
 
   /* Don't gather statistics any more.  */

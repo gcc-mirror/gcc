@@ -5,6 +5,13 @@ Mon Nov 15 20:46:45 1999  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (calculate_global_regs_live): Zero bb->aux to begin.
 
+	* ggc-common.c (ggc_print_statistics): Cast size_t to unsigned long
+	for printing.
+	* ggc.h (struct ggc_statistics): Rearrange elements for better
+	packing on 64-bit hosts.
+	* lcm.c (compute_laterin): Store a size_t not an int in bb->aux.
+	(compute_nearerout): Likewise.
+
 Tue Nov 16 14:37:52 1999  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/rs6000.c (first_reg_to_save): Save
