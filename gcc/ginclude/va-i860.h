@@ -88,7 +88,7 @@ enum {
 #define __NUM_PARM_FREGS	8
 #define __NUM_PARM_IREGS	12
 
-#define __savereg(__va) ((__va_saved_regs *) (__va.__reg_base)
+#define __savereg(__va) ((__va_saved_regs *) (__va.__reg_base))
 
 /* This macro works both for SVR4 and pre-SVR4 environments.  */
 
