@@ -1,3 +1,17 @@
+2005-04-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/fr30/fr30-protos.h: Remove the prototypes for
+	stack_add_operand, add_immediate_operand,
+	high_register_operand, low_register_operand, call_operand,
+	di_operand, and nonimmediate_di_operand.
+	* config/fr30/fr30.c (stack_add_operand,
+	add_immediate_operand, high_register_operand,
+	low_register_operand, call_operand, di_operand,
+	nonimmediate_di_operand): Move to predicates.md.
+	* config/fr30/fr30.h (PREDICATE_CODES): Remove.
+	* config/fr30/fr30.md: Include predicates.md.
+	* config/fr30/predicates.md: New.
+
 2005-04-04  Alan Modra  <amodra@bigpond.net.au>
 
 	* passes.c (rest_of_handle_final): NULL unlikely_text_section_name

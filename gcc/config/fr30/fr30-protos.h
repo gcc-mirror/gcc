@@ -32,13 +32,6 @@ extern int   fr30_num_arg_regs (enum machine_mode, tree);
 #endif /* TREE_CODE */
 #ifdef HAVE_MACHINE_MODES
 #define Mmode enum machine_mode
-extern int   stack_add_operand (rtx, Mmode);
-extern int   add_immediate_operand (rtx, Mmode);
-extern int   high_register_operand (rtx, Mmode);
-extern int   low_register_operand (rtx, Mmode);
-extern int   call_operand (rtx, Mmode);
-extern int   di_operand (rtx, Mmode);
-extern int   nonimmediate_di_operand (rtx, Mmode);
 extern int   fr30_const_double_is_zero (rtx);
 #undef Mmode
 #endif /* HAVE_MACHINE_MODES */
