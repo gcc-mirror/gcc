@@ -3375,6 +3375,24 @@ delete_insn (insn)
 	return next;
       }
 
+  /* Likewise if we're deleting a dispatch table.  */
+
+  if (GET_CODE (insn) == JUMP_INSN
+      && (GET_CODE (PATTERN (insn)) == ADDR_VEC
+	  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC))
+    {
+      rtx pat = PATTERN (insn);
+      int i, diff_vec_p = GET_CODE (pat) == ADDR_DIFF_VEC;
+      int len = XVECLEN (pat, diff_vec_p);
+
+      for (i = 0; i < len; i++)
+	if (--LABEL_NUSES (XEXP (XVECEXP (pat, diff_vec_p, i), 0)) == 0)
+	  delete_insn (XEXP (XVECEXP (pat, diff_vec_p, i), 0));
+      while (next && INSN_DELETED_P (next))
+	next = NEXT_INSN (next);
+      return next;
+    }
+
   while (prev && (INSN_DELETED_P (prev) || GET_CODE (prev) == NOTE))
     prev = PREV_INSN (prev);
 
