@@ -505,6 +505,7 @@ verify_ssa (void)
   basic_block *definition_block = xcalloc (num_ssa_names, sizeof (basic_block));
   ssa_op_iter iter;
   tree op;
+  enum dom_state orig_dom_state = dom_computed[CDI_DOMINATORS];
 
   timevar_push (TV_TREE_SSA_VERIFY);
 
@@ -605,6 +606,13 @@ verify_ssa (void)
   verify_alias_info ();
 
   free (definition_block);
+  /* Restore the dominance infomation to its prior known state, so
+     that we do not perturb the compiler's subsequent behaviour.  */
+  if (orig_dom_state == DOM_NONE)
+    free_dominance_info (CDI_DOMINATORS);
+  else
+    dom_computed[CDI_DOMINATORS] = orig_dom_state;
+  
   timevar_pop (TV_TREE_SSA_VERIFY);
   return;
 
