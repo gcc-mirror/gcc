@@ -8325,10 +8325,62 @@ EOF
 fi
 echo "$ac_t""$gcc_cv_as_subsections" 1>&6
 
-echo $ac_n "checking assembler instructions""... $ac_c" 1>&6
-echo "configure:8330: checking assembler instructions" >&5
-gcc_cv_as_instructions=
-if test x$gcc_cv_as != x; then
+case "$target" in 
+  sparc*-*-*)
+    echo $ac_n "checking assembler .register pseudo-op support""... $ac_c" 1>&6
+echo "configure:8332: checking assembler .register pseudo-op support" >&5
+    gcc_cv_as_register_pseudo_op=
+    if test x$gcc_cv_as != x; then
+	# Check if we have .register
+	echo ".register %g2, #scratch" > conftest.s
+	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+		gcc_cv_as_register_pseudo_op=yes
+		cat >> confdefs.h <<\EOF
+#define HAVE_AS_REGISTER_PSEUDO_OP 1
+EOF
+
+	fi
+	rm -f conftest.s conftest.o
+    fi
+    echo "$ac_t""$gcc_cv_as_register_pseudo_op" 1>&6
+
+    echo $ac_n "checking assembler offsetable %lo() support""... $ac_c" 1>&6
+echo "configure:8349: checking assembler offsetable %lo() support" >&5
+    gcc_cv_as_offsetable_lo10=
+    if test x$gcc_cv_as != x; then
+	# Check if assembler has offsetable %lo()
+	echo "or %g1, %lo(ab) + 12, %g1" > conftest.s
+	echo "or %g1, %lo(ab + 12), %g1" > conftest1.s
+	gcc_cv_as_flags64="-xarch=v9"
+	if ! $gcc_cv_as $gcc_cv_as_flags64 -o conftest.o conftest.s > /dev/null 2>&1; then
+		gcc_cv_as_flags64="-64"
+		if ! $gcc_cv_as $gcc_cv_as_flags64 -o conftest.o conftest.s > /dev/null 2>&1; then
+			gcc_cv_as_flags64=""
+		fi
+	fi
+	if test -n "$gcc_cv_as_flags64" ; then
+		if $gcc_cv_as $gcc_cv_as_flags64 -o conftest1.o conftest1.s > /dev/null 2>&1; then
+			if cmp conftest.o conftest1.o > /dev/null 2>&1; then
+				:
+			else
+				gcc_cv_as_offsetable_lo10=yes
+				cat >> confdefs.h <<\EOF
+#define HAVE_AS_OFFSETABLE_LO10 1
+EOF
+
+			fi
+		fi
+	fi
+	rm -f conftest.s conftest.o conftest1.s conftest1.o
+    fi
+    echo "$ac_t""$gcc_cv_as_offsetable_lo10" 1>&6
+    ;;
+
+  i[34567]86-*-*)
+    echo $ac_n "checking assembler instructions""... $ac_c" 1>&6
+echo "configure:8382: checking assembler instructions" >&5
+    gcc_cv_as_instructions=
+    if test x$gcc_cv_as != x; then
 	set "filds fists" "filds mem; fists mem"
 	while test $# -gt 0
   	do
@@ -8343,8 +8395,10 @@ EOF
 		shift 2
 	done
 	rm -f conftest.s conftest.o
-fi
-echo "$ac_t""$gcc_cv_as_instructions" 1>&6
+    fi
+    echo "$ac_t""$gcc_cv_as_instructions" 1>&6
+    ;;
+esac
 
 # Figure out what language subdirectories are present.
 # Look if the user specified --enable-languages="..."; if not, use

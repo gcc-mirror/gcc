@@ -4153,9 +4153,55 @@ EOF
 fi
 AC_MSG_RESULT($gcc_cv_as_subsections)
 
-AC_MSG_CHECKING(assembler instructions)
-gcc_cv_as_instructions=
-if test x$gcc_cv_as != x; then
+case "$target" in 
+  sparc*-*-*)
+    AC_MSG_CHECKING(assembler .register pseudo-op support)
+    gcc_cv_as_register_pseudo_op=
+    if test x$gcc_cv_as != x; then
+	# Check if we have .register
+	echo ".register %g2, #scratch" > conftest.s
+	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+		gcc_cv_as_register_pseudo_op=yes
+		AC_DEFINE(HAVE_AS_REGISTER_PSEUDO_OP)
+	fi
+	rm -f conftest.s conftest.o
+    fi
+    AC_MSG_RESULT($gcc_cv_as_register_pseudo_op)
+
+    AC_MSG_CHECKING([assembler offsetable %lo() support])
+    gcc_cv_as_offsetable_lo10=
+    if test x$gcc_cv_as != x; then
+	# Check if assembler has offsetable %lo()
+	echo "or %g1, %lo(ab) + 12, %g1" > conftest.s
+	echo "or %g1, %lo(ab + 12), %g1" > conftest1.s
+	gcc_cv_as_flags64="-xarch=v9"
+	if ! $gcc_cv_as $gcc_cv_as_flags64 -o conftest.o conftest.s > /dev/null 2>&1; then
+		gcc_cv_as_flags64="-64"
+		if ! $gcc_cv_as $gcc_cv_as_flags64 -o conftest.o conftest.s > /dev/null 2>&1; then
+			gcc_cv_as_flags64=""
+		fi
+	fi
+	if test -n "$gcc_cv_as_flags64" ; then
+		if $gcc_cv_as $gcc_cv_as_flags64 -o conftest1.o conftest1.s > /dev/null 2>&1; then
+			if cmp conftest.o conftest1.o > /dev/null 2>&1; then
+				:
+			else
+				gcc_cv_as_offsetable_lo10=yes
+				AC_DEFINE(HAVE_AS_OFFSETABLE_LO10)
+			fi
+		fi
+	fi
+	rm -f conftest.s conftest.o conftest1.s conftest1.o
+    fi
+    AC_MSG_RESULT($gcc_cv_as_offsetable_lo10)
+    ;;
+
+changequote(,)dnl
+  i[34567]86-*-*)
+changequote([,])dnl
+    AC_MSG_CHECKING(assembler instructions)
+    gcc_cv_as_instructions=
+    if test x$gcc_cv_as != x; then
 	set "filds fists" "filds mem; fists mem"
 	while test $# -gt 0
   	do
@@ -4167,8 +4213,10 @@ if test x$gcc_cv_as != x; then
 		shift 2
 	done
 	rm -f conftest.s conftest.o
-fi
-AC_MSG_RESULT($gcc_cv_as_instructions)
+    fi
+    AC_MSG_RESULT($gcc_cv_as_instructions)
+    ;;
+esac
 
 # Figure out what language subdirectories are present.
 # Look if the user specified --enable-languages="..."; if not, use

@@ -141,6 +141,8 @@ int sparc_align_loops;
 int sparc_align_jumps;
 int sparc_align_funcs;
 
+char sparc_hard_reg_printed[8];
+
 struct sparc_cpu_select sparc_select[] =
 {
   /* switch	name,		tune	arch */
@@ -3108,6 +3110,32 @@ build_big_number (file, num, reg)
     }
 }
 
+/* Output any necessary .register pseudo-ops.  */
+void
+sparc_output_scratch_registers (file)
+     FILE *file;
+{
+#ifdef HAVE_AS_REGISTER_PSEUDO_OP
+  int i;
+
+  if (TARGET_ARCH32)
+    return;
+
+  /* Check if %g[2367] were used without
+     .register being printed for them already.  */
+  for (i = 2; i < 8; i++)
+    {
+      if (regs_ever_live [i]
+	  && ! sparc_hard_reg_printed [i])
+	{
+	  sparc_hard_reg_printed [i] = 1;
+	  fprintf (file, "\t.register\t%%g%d, #scratch\n", i);
+	}
+      if (i == 3) i = 5;
+    }
+#endif
+}
+
 /* Output code for the function prologue.  */
 
 void
@@ -3116,6 +3144,8 @@ output_function_prologue (file, size, leaf_function)
      int size;
      int leaf_function;
 {
+  sparc_output_scratch_registers (file);
+
   /* Need to use actual_fsize, since we are also allocating
      space for our callee (and our own register save area).  */
   actual_fsize = compute_frame_size (size, leaf_function);
@@ -5848,6 +5878,8 @@ sparc_flat_output_function_prologue (file, size)
 {
   char *sp_str = reg_names[STACK_POINTER_REGNUM];
   unsigned long gmask = current_frame_info.gmask;
+
+  sparc_output_scratch_registers (file);
 
   /* This is only for the human reader.  */
   fprintf (file, "\t%s#PROLOGUE# 0\n", ASM_COMMENT_START);

@@ -5591,6 +5591,15 @@ label definition (perhaps using @code{ASM_OUTPUT_LABEL}).  The argument
 If this macro is not defined, then the variable name is defined in the
 usual manner as a label (by means of @code{ASM_OUTPUT_LABEL}).
 
+@findex ASM_DECLARE_REGISTER_GLOBAL
+@item ASM_DECLARE_REGISTER_GLOBAL (@var{stream}, @var{decl}, @var{regno}, @var{name})
+A C statement (sans semicolon) to output to the stdio stream
+@var{stream} any text necessary for claiming a register @var{regno}
+for a global variable @var{decl} with name @var{name}.
+
+If you don't define this macro, that is equivalent to defining it to do
+nothing.
+
 @findex  ASM_FINISH_DECLARE_OBJECT
 @item ASM_FINISH_DECLARE_OBJECT (@var{stream}, @var{decl}, @var{toplevel}, @var{atend})
 A C statement (sans semicolon) to finish up declaring a variable name
