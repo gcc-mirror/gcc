@@ -882,26 +882,30 @@ noce_try_addcc (if_info)
       enum rtx_code code = reversed_comparison_code (cond, if_info->jump);
 
       /* First try to use addcc pattern.  */
-      start_sequence ();
-      target = emit_conditional_add (if_info->x, code,
-				     XEXP (cond, 0), XEXP (cond, 1),
-				     VOIDmode,
-				     if_info->b, XEXP (if_info->a, 1),
-				     GET_MODE (if_info->x),
-				     (code == LTU || code == GEU
-				      || code == LEU || code == GTU));
-      if (target)
+      if (general_operand (XEXP (cond, 0), VOIDmode)
+	  && general_operand (XEXP (cond, 1), VOIDmode))
 	{
-	  if (target != if_info->x)
-	    noce_emit_move_insn (if_info->x, target);
+	  start_sequence ();
+	  target = emit_conditional_add (if_info->x, code,
+					 XEXP (cond, 0), XEXP (cond, 1),
+					 VOIDmode,
+					 if_info->b, XEXP (if_info->a, 1),
+					 GET_MODE (if_info->x),
+					 (code == LTU || code == GEU
+					  || code == LEU || code == GTU));
+	  if (target)
+	    {
+	      if (target != if_info->x)
+		noce_emit_move_insn (if_info->x, target);
 
-	  seq = get_insns ();
+	      seq = get_insns ();
+	      end_sequence ();
+	      emit_insn_before_scope (seq, if_info->jump,
+				      INSN_SCOPE (if_info->insn_a));
+	      return TRUE;
+	    }
 	  end_sequence ();
-	  emit_insn_before_scope (seq, if_info->jump,
-				  INSN_SCOPE (if_info->insn_a));
-	  return TRUE;
 	}
-      end_sequence ();
 	
       /* If that fails, construct conditional increment or decrement using
 	 setcc.  */
