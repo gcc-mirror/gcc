@@ -1,3 +1,7 @@
+2002-10-02  Matt Austern  <austern@apple.com>
+	* cp/decl.c (walk_vtables_r): Fixed typo that caused result to
+	never get a nonzero value.
+	
 Wed Oct  2 17:01:36 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (print_operand_address): Use RIP addressing for offsetted

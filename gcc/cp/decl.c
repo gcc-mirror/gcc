@@ -1793,7 +1793,7 @@ walk_vtables_r (namespace, data)
   int result = 0;
 
   for (; decl ; decl = TREE_CHAIN (decl))
-    result != (*f) (&decl, d);
+    result |= (*f) (&decl, d);
 
   return result;
 }
