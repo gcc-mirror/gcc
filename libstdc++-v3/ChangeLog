@@ -1,9 +1,17 @@
+2003-05-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.in: Sort cross table.
+	* configure: Regenerate.
+
+2003-05-22  Brad Spencer  <spencer@infointeractive.com>
+
+	* configure.in: Add Solaris cross bits.
+
 2003-05-21  Danny Smith  <dannysmith@users.sourceforge.net>
 
-	* libstdc++-v3/config/os/mingw32/os_defines.h (__GTHREAD_HIDE_WIN32API):
-	Define to 1 by defualt.
-	(NOMINMAX): Define.
-	Update copyright year.
+	* libstdc++-v3/config/os/mingw32/os_defines.h
+	(__GTHREAD_HIDE_WIN32API): Define to 1 by defualt.
+	(NOMINMAX): Define.  Update copyright year.
 
 2003-05-21  Paolo Carlini  <pcarlini@unitus.it>
 
