@@ -462,8 +462,7 @@ package Lib is
    --  and False otherwise.
 
    function In_Extended_Main_Code_Unit
-     (N    : Node_Or_Entity_Id)
-      return Boolean;
+     (N : Node_Or_Entity_Id) return Boolean;
    --  Return True if the node is in the generated code of the extended main
    --  unit, defined as the main unit, its specification (if any), and all
    --  its subunits (considered recursively). Units for which this enquiry
@@ -472,15 +471,12 @@ package Lib is
    --  If the main unit is itself a subunit, then the extended main unit
    --  includes its parent unit, and the parent unit spec if it is separate.
 
-   function In_Extended_Main_Code_Unit
-     (Loc :  Source_Ptr)
-      return Boolean;
+   function In_Extended_Main_Code_Unit (Loc : Source_Ptr) return Boolean;
    --  Same function as above, but argument is a source pointer rather
    --  than a node.
 
    function In_Extended_Main_Source_Unit
-     (N    : Node_Or_Entity_Id)
-      return Boolean;
+     (N : Node_Or_Entity_Id) return Boolean;
    --  Return True if the node is in the source text of the extended main
    --  unit, defined as the main unit, its specification (if any), and all
    --  its subunits (considered recursively). Units for which this enquiry
@@ -490,9 +486,7 @@ package Lib is
    --  a subunit, then the extended main unit includes its parent unit,
    --  and the parent unit spec if it is separate.
 
-   function In_Extended_Main_Source_Unit
-     (Loc :  Source_Ptr)
-      return Boolean;
+   function In_Extended_Main_Source_Unit (Loc : Source_Ptr) return Boolean;
    --  Same function as above, but argument is a source pointer rather
    --  than a node.
 
@@ -515,8 +509,7 @@ package Lib is
    --  could not have been built without making a unit table entry.
 
    function Get_Cunit_Entity_Unit_Number
-     (E    : Entity_Id)
-      return Unit_Number_Type;
+     (E : Entity_Id) return Unit_Number_Type;
    --  Return unit number of the unit whose compilation unit spec entity is
    --  the one passed as an argument. This must always succeed since the
    --  entity could not have been built without making a unit table entry.
@@ -603,8 +596,7 @@ package Lib is
    --  compiled with the current approach.
 
    function Generic_Separately_Compiled
-     (Sfile : File_Name_Type)
-      return  Boolean;
+     (Sfile : File_Name_Type) return  Boolean;
    --  Same as the previous function, but works directly on a unit file name.
 
 private

@@ -47,6 +47,10 @@ package Prj is
    --  Default value of parameter Packages of procedures Parse, in Prj.Pars and
    --  Prj.Part, indicating that all packages should be checked.
 
+   Virtual_Prefix : constant String := "v$";
+   --  The prefix for virtual extending projects. Because of the '$', which is
+   --  normally forbidden for project names, there cannot be any name clash.
+
    Project_File_Extension : String := ".gpr";
    --  The standard project file name extension.
    --  It is not a constant, because Canonical_Case_File_Name is called
@@ -338,6 +342,9 @@ package Prj is
       Path_Name : Name_Id := No_Name;
       --  The path name of the project file.
       --  Set by Prj.Proc.Process.
+
+      Virtual : Boolean := False;
+      --  True for virtual extending projects
 
       Display_Path_Name : Name_Id := No_Name;
 

@@ -77,6 +77,7 @@ package body Prj is
      (First_Referred_By              => No_Project,
       Name                           => No_Name,
       Path_Name                      => No_Name,
+      Virtual                        => False,
       Display_Path_Name              => No_Name,
       Location                       => No_Location,
       Mains                          => Nil_String,

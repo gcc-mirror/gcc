@@ -719,6 +719,11 @@ package Opt is
    --  Set to True to enable output of generated code in source form. This
    --  flag is set by the -gnatG switch.
 
+   Print_Standard : Boolean := False;
+   --  GNAT
+   --  Set to true to enable printing of package standard in source form.
+   --  This flag is set by the -gnatS switch
+
    Propagate_Exceptions : Boolean := False;
    --  GNAT
    --  Indicates if subprogram descriptor exception tables should be

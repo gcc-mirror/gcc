@@ -37,6 +37,7 @@
 --    extend       handle recursive directories ("/**" notation)
 --    deps         post process dependency makefiles
 --    stamp        copy file time stamp from file1 to file2
+--    prefix       get the prefix of the GNAT installation
 
 with Ada.Characters.Handling;   use Ada.Characters.Handling;
 with Ada.Command_Line;          use Ada.Command_Line;
@@ -45,6 +46,8 @@ with GNAT.OS_Lib;               use GNAT.OS_Lib;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.Regpat;               use GNAT.Regpat;
 with Gnatvsn;
+with Osint;                     use Osint;
+with Namet;                     use Namet;
 
 procedure Gprcmd is
 
@@ -418,6 +421,40 @@ begin
       elsif Cmd = "stamp" then
          Check_Args (Argument_Count = 3);
          Copy_Time_Stamp (Argument (2), Argument (3));
+
+      elsif Cmd = "prefix" then
+
+         --  Find the GNAT prefix. gprcmd is found in <prefix>/bin.
+         --  So we find the full path of gprcmd, verify that it is in a
+         --  subdirectory "bin", and return the <prefix> if it is the case.
+         --  Otherwise, nothing is returned.
+
+         Find_Program_Name;
+
+         declare
+            Path : String_Access :=
+                     Locate_Exec_On_Path (Name_Buffer (1 .. Name_Len));
+            Index : Natural;
+
+         begin
+            if Path /= null then
+               Index := Path'Last;
+
+               while Index >= Path'First + 4 loop
+                  exit when Path (Index) = Directory_Separator;
+                  Index := Index - 1;
+               end loop;
+
+               if Index > Path'First + 5
+                 and then Path (Index - 3 .. Index - 1) = "bin"
+                 and then Path (Index - 4) = Directory_Separator
+               then
+                  --  We have found the <prefix>, return it.
+
+                  Put (Path (Path'First .. Index - 5));
+               end if;
+            end if;
+         end;
       end if;
    end;
 end Gprcmd;

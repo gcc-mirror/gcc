@@ -33,6 +33,7 @@ with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
+with Output;   use Output;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
@@ -119,6 +120,9 @@ package body CStand is
      (New_Node_Kind : Node_Kind := N_Defining_Identifier)
       return          Entity_Id;
    --  Builds a new entity for Standard
+
+   procedure Print_Standard;
+   --  Print representation of package Standard if switch set
 
    procedure Set_Integer_Bounds
      (Id  : Entity_Id;
@@ -1243,6 +1247,12 @@ package body CStand is
       --  The Error node has an Etype of Any_Type to help error recovery
 
       Set_Etype (Error, Any_Type);
+
+      --  Print representation of standard if switch set
+
+      if Opt.Print_Standard then
+         Print_Standard;
+      end if;
    end Create_Standard;
 
    ------------------------------------
@@ -1416,6 +1426,249 @@ package body CStand is
 
       return E;
    end New_Standard_Entity;
+
+   --------------------
+   -- Print_Standard --
+   --------------------
+
+   procedure Print_Standard is
+
+      procedure P (Item : String) renames Output.Write_Line;
+      --  Short-hand, since we do a lot of line writes here!
+
+      procedure P_Int_Range (Size : Pos);
+      --  Prints the range of an integer based on its Size
+
+      procedure P_Float_Range (Id : Entity_Id);
+      --  Prints the bounds range for the given float type entity
+
+      -------------------
+      -- P_Float_Range --
+      -------------------
+
+      procedure P_Float_Range (Id : Entity_Id) is
+         Digs : constant Nat := UI_To_Int (Digits_Value (Id));
+
+      begin
+         Write_Str ("     range ");
+
+         if Vax_Float (Id) then
+            if Digs = VAXFF_Digits then
+               Write_Str (VAXFF_First'Universal_Literal_String);
+               Write_Str (" .. ");
+               Write_Str (VAXFF_Last'Universal_Literal_String);
+
+            elsif Digs = VAXDF_Digits then
+               Write_Str (VAXDF_First'Universal_Literal_String);
+               Write_Str (" .. ");
+               Write_Str (VAXDF_Last'Universal_Literal_String);
+
+            else
+               pragma Assert (Digs = VAXGF_Digits);
+
+               Write_Str (VAXGF_First'Universal_Literal_String);
+               Write_Str (" .. ");
+               Write_Str (VAXGF_Last'Universal_Literal_String);
+            end if;
+
+         elsif Is_AAMP_Float (Id) then
+            if Digs = AAMPS_Digits then
+               Write_Str (AAMPS_First'Universal_Literal_String);
+               Write_Str (" .. ");
+               Write_Str (AAMPS_Last'Universal_Literal_String);
+
+            else
+               pragma Assert (Digs = AAMPL_Digits);
+               Write_Str (AAMPL_First'Universal_Literal_String);
+               Write_Str (" .. ");
+               Write_Str (AAMPL_Last'Universal_Literal_String);
+            end if;
+
+         elsif Digs = IEEES_Digits then
+            Write_Str (IEEES_First'Universal_Literal_String);
+            Write_Str (" .. ");
+            Write_Str (IEEES_Last'Universal_Literal_String);
+
+
+         elsif Digs = IEEEL_Digits then
+            Write_Str (IEEEL_First'Universal_Literal_String);
+            Write_Str (" .. ");
+            Write_Str (IEEEL_Last'Universal_Literal_String);
+
+         else
+            pragma Assert (Digs = IEEEX_Digits);
+
+            Write_Str (IEEEX_First'Universal_Literal_String);
+            Write_Str (" .. ");
+            Write_Str (IEEEX_Last'Universal_Literal_String);
+         end if;
+
+         Write_Str (";");
+         Write_Eol;
+      end P_Float_Range;
+
+      -----------------
+      -- P_Int_Range --
+      -----------------
+
+      procedure P_Int_Range (Size : Pos) is
+      begin
+         Write_Str (" is range -(2 **");
+         Write_Int (Size - 1);
+         Write_Str (")");
+         Write_Str (" .. +(2 **");
+         Write_Int (Size - 1);
+         Write_Str (" - 1);");
+         Write_Eol;
+      end P_Int_Range;
+
+   --  Start of processing for Print_Standard
+
+   begin
+      P ("--  Representation of package Standard");
+      Write_Eol;
+      P ("--  This is not accurate Ada, since new base types cannot be ");
+      P ("--  created, but the listing shows the target dependent");
+      P ("--  characteristics of the Standard types for this compiler");
+      Write_Eol;
+
+      P ("package Standard is");
+      P ("pragma Pure(Standard);");
+      Write_Eol;
+
+      P ("   type Boolean is (False, True);");
+      P ("   for Boolean'Size use 1;");
+      P ("   for Boolean use (False => 0, True => 1);");
+      Write_Eol;
+
+      --  Integer types
+
+      Write_Str ("   type Integer");
+      P_Int_Range (Standard_Integer_Size);
+      Write_Str ("   for Integer'Size use ");
+      Write_Int (Standard_Integer_Size);
+      P (";");
+      Write_Eol;
+
+      P ("   subtype Natural  is Integer range 0 .. Integer'Last;");
+      P ("   subtype Positive is Integer range 1 .. Integer'Last;");
+      Write_Eol;
+
+      Write_Str ("   type Short_Short_Integer");
+      P_Int_Range (Standard_Short_Short_Integer_Size);
+      Write_Str ("   for Short_Short_Integer'Size use ");
+      Write_Int (Standard_Short_Short_Integer_Size);
+      P (";");
+      Write_Eol;
+
+      Write_Str ("   type Short_Integer");
+      P_Int_Range (Standard_Short_Integer_Size);
+      Write_Str ("   for Short_Integer'Size use ");
+      Write_Int (Standard_Short_Integer_Size);
+      P (";");
+      Write_Eol;
+
+      Write_Str ("   type Long_Integer");
+      P_Int_Range (Standard_Long_Integer_Size);
+      Write_Str ("   for Long_Integer'Size use ");
+      Write_Int (Standard_Long_Integer_Size);
+      P (";");
+      Write_Eol;
+
+      Write_Str ("   type Long_Long_Integer");
+      P_Int_Range (Standard_Long_Long_Integer_Size);
+      Write_Str ("   for Long_Long_Integer'Size use ");
+      Write_Int (Standard_Long_Long_Integer_Size);
+      P (";");
+      Write_Eol;
+
+      --  Floating point types
+
+      Write_Str ("   type Short_Float is digits ");
+      Write_Int (Standard_Short_Float_Digits);
+      Write_Eol;
+      P_Float_Range (Standard_Short_Float);
+      Write_Str ("   for Short_Float'Size use ");
+      Write_Int (Standard_Short_Float_Size);
+      P (";");
+      Write_Eol;
+
+      Write_Str ("   type Float is digits ");
+      Write_Int (Standard_Float_Digits);
+      Write_Eol;
+      P_Float_Range (Standard_Float);
+      Write_Str ("   for Float'Size use ");
+      Write_Int (Standard_Float_Size);
+      P (";");
+      Write_Eol;
+
+      Write_Str ("   type Long_Float is digits ");
+      Write_Int (Standard_Long_Float_Digits);
+      Write_Eol;
+      P_Float_Range (Standard_Long_Float);
+      Write_Str ("   for Long_Float'Size use ");
+      Write_Int (Standard_Long_Float_Size);
+      P (";");
+      Write_Eol;
+
+      Write_Str ("   type Long_Long_Float is digits ");
+      Write_Int (Standard_Long_Long_Float_Digits);
+      Write_Eol;
+      P_Float_Range (Standard_Long_Long_Float);
+      Write_Str ("   for Long_Long_Float'Size use ");
+      Write_Int (Standard_Long_Long_Float_Size);
+      P (";");
+      Write_Eol;
+
+      P ("   type Character is (...)");
+      Write_Str ("   for Character'Size use ");
+      Write_Int (Standard_Character_Size);
+      P (";");
+      P ("   --  See RM A.1(35) for details of this type");
+      Write_Eol;
+
+      P ("   type Wide_Character is (...)");
+      Write_Str ("   for Wide_Character'Size use ");
+      Write_Int (Standard_Wide_Character_Size);
+      P (";");
+      P ("   --  See RM A.1(36) for details of this type");
+      Write_Eol;
+
+      P ("   type String is array (Positive range <>) of Character;");
+      P ("   pragma Pack (String);");
+      Write_Eol;
+
+      P ("   type Wide_String is array (Positive range <>)" &
+         " of Wide_Character;");
+      P ("   pragma Pack (Wide_String);");
+      Write_Eol;
+
+      --  Here it's OK to use the Duration type of the host compiler since
+      --  the implementation of Duration in GNAT is target independent.
+
+      if Duration_32_Bits_On_Target then
+         P ("   type Duration is delta 0.020");
+         P ("     range -((2 ** 31 - 1) * 0.020) ..");
+         P ("           +((2 ** 31 - 1) * 0.020);");
+         P ("   for Duration'Small use 0.020;");
+      else
+         P ("   type Duration is delta 0.000000001");
+         P ("     range -((2 ** 63 - 1) * 0.000000001) ..");
+         P ("           +((2 ** 63 - 1) * 0.000000001);");
+         P ("   for Duration'Small use 0.000000001;");
+      end if;
+
+      Write_Eol;
+
+      P ("   Constraint_Error : exception;");
+      P ("   Program_Error    : exception;");
+      P ("   Storage_Error    : exception;");
+      P ("   Tasking_Error    : exception;");
+      P ("   Numeric_Error    : exception renames Constraint_Error;");
+      Write_Eol;
+
+      P ("end Standard;");
+   end Print_Standard;
 
    ----------------------
    -- Set_Float_Bounds --

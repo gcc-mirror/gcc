@@ -135,6 +135,10 @@ package Prj.Tree is
    --  N_Variable_Declaration, N_Typed_Variable_Declaration, N_Expression,
    --  N_Term, N_Variable_Reference or N_Attribute_Reference nodes.
 
+   function Is_Extending_All (Node  : Project_Node_Id) return Boolean;
+   pragma Inline (Is_Extending_All);
+   --  Only valid for N_Project
+
    function First_Variable_Of
      (Node  : Project_Node_Id)
       return  Variable_Node_Id;
@@ -220,7 +224,7 @@ package Prj.Tree is
      (Node  : Project_Node_Id)
       return Project_Node_Id;
    pragma Inline (Extended_Project_Of);
-   --  Only valid for N_With_Clause nodes
+   --  Only valid for N_Project_Declaration nodes
 
    function Current_Item_Node
      (Node  : Project_Node_Id)
@@ -424,6 +428,9 @@ package Prj.Tree is
      (Node : Project_Node_Id;
       To   : Variable_Kind);
    pragma Inline (Set_Expression_Kind_Of);
+
+   procedure Set_Is_Extending_All (Node  : Project_Node_Id);
+   pragma Inline (Set_Is_Extending_All);
 
    procedure Set_First_Variable_Of
      (Node : Project_Node_Id;
@@ -684,6 +691,10 @@ package Prj.Tree is
          --  This flag is significant only for N_Attribute_Declaration and
          --  N_Atribute_Reference. It indicates for an associative array
          --  attribute, that the index is case insensitive.
+
+         Extending_All : Boolean := False;
+         --  This flag is significant only for N_Project. It indicates that
+         --  the project "extends all" another project.
 
       end record;
 

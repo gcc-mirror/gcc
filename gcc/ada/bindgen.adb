@@ -1894,9 +1894,7 @@ package body Bindgen is
    ---------------------
 
    procedure Gen_Output_File (Filename : String) is
-      Public_Version : constant Boolean := Gnat_Version_Type = "PUBLIC ";
-      --  Set true if this is the public version of GNAT
-
+      Is_Public_Version : constant Boolean := Get_Gnat_Build_Type = Public;
    begin
       --  Acquire settings for Interrupt_State pragmas
 
@@ -1929,7 +1927,7 @@ package body Bindgen is
 
       --  Get the time stamp of the former bind for public version warning
 
-      if Public_Version then
+      if Is_Public_Version then
          Record_Time_From_Last_Bind;
       end if;
 
@@ -1944,7 +1942,7 @@ package body Bindgen is
       --  Periodically issue a warning when the public version is used on
       --  big projects
 
-      if Public_Version then
+      if Is_Public_Version then
          Public_Version_Warning;
       end if;
    end Gen_Output_File;

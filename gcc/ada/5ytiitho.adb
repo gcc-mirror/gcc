@@ -35,10 +35,9 @@
 --  This is the VxWorks AE 653 version of this procedure
 
 separate (System.Threads.Initialization)
-
 procedure Initialize_Task_Hooks is
 
-   --  When defining the following routines for export in an AE 1.1
+   --  When defining the following routine for export in an AE 1.1
    --  simulation of AE653, Interfaces.C.int may be used for the
    --  parameters of FUNCPTR.
    type FUNCPTR is access function (T : OSI.Thread_Id) return OSI.STATUS;
@@ -51,16 +50,7 @@ procedure Initialize_Task_Hooks is
    pragma Import (C, procCreateHookAdd, "procCreateHookAdd");
    --  Registers task registration routine for AE653
 
-   procedure procStartHookAdd (StartHookFunction : FUNCPTR);
-   pragma Import (C, procStartHookAdd, "procStartHookAdd");
-   --  Registers task restart routine for AE653
-
-   Result : OSI.STATUS;
 begin
-   --  Register the exported routines with the vThreads ARINC API
+   --  Register the exported routine with the vThreads ARINC API
    procCreateHookAdd (Register'Access);
-   procStartHookAdd (Reset_TSD'Access);
-   --  Register the environment task
-   Result := Register (OSI.taskIdSelf);
-   pragma Assert (Result /= -1);
 end Initialize_Task_Hooks;

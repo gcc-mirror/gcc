@@ -812,6 +812,10 @@ package body System.File_IO is
          --  Normal case of non-null name given
 
          else
+            if Name'Length > Namelen then
+               raise Name_Error;
+            end if;
+
             Namestr (1 .. Name'Length) := Name;
             Namestr (Name'Length + 1)  := ASCII.NUL;
          end if;

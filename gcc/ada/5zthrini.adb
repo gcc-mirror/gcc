@@ -35,6 +35,7 @@
 --  the task hook libraries should be included in the VxWorks kernel.
 
 with System.Secondary_Stack;
+with System.Storage_Elements;
 with Interfaces.C;
 with Unchecked_Conversion;
 
@@ -64,12 +65,16 @@ package body System.Threads.Initialization is
    --------------
 
    function Register (T : OSI.Thread_Id) return OSI.STATUS is
-      TSD : ATSD_Access := new ATSD;
       Result : OSI.STATUS;
    begin
       --  It cannot be assumed that the caller of this routine has a ATSD;
       --  so neither this procedure nor the procedures that it calls should
-      --  raise or handle exceptions,  or make use of a secondary stack.
+      --  raise or handle exceptions, or make use of a secondary stack.
+
+      --  This routine is only necessary because taskVarAdd cannot be
+      --  executed once an AE653 partition has entered normal mode
+      --  (depending on configRecord.c, allocation could be disabled).
+      --  Otherwise, everything could have been done in Thread_Body_Enter.
 
       if OSI.taskIdVerify (T) = OSI.ERROR
         or else OSI.taskVarGet (T, Current_ATSD'Access) /= OSI.ERROR
@@ -78,36 +83,34 @@ package body System.Threads.Initialization is
       end if;
 
       Result := OSI.taskVarAdd (T, Current_ATSD'Access);
-      pragma Assert (Result /= -1);
-      Result := OSI.taskVarSet (T, Current_ATSD'Access, TSD.all'Address);
-      pragma Assert (Result /= -1);
-      TSD.Sec_Stack_Addr := SSS.SS_Create;
-      SSS.SS_Init (TSD.Sec_Stack_Addr);
+      pragma Assert (Result /= OSI.ERROR);
+
       return Result;
    end Register;
 
-   ---------------
-   -- Reset_TSD --
-   ---------------
+   subtype Default_Sec_Stack is
+     System.Storage_Elements.Storage_Array
+       (1 .. SSS.Default_Secondary_Stack_Size);
 
-   function Reset_TSD (T : OSI.Thread_Id) return OSI.STATUS is
-      TSD_Ptr : int;
-      function To_Address is new Unchecked_Conversion
-        (Interfaces.C.int, ATSD_Access);
-   begin
-      TSD_Ptr := OSI.taskVarGet (T, Current_ATSD'Access);
-      pragma Assert (TSD_Ptr /= OSI.ERROR);
+   Main_Sec_Stack : aliased Default_Sec_Stack;
 
-      --  Just reset the secondary stack pointer.  The implementation here
-      --  assumes that the fixed secondary stack implementation is used.
-      --  If not, there will be a memory leak (along with allocation, which
-      --  is prohibited for ARINC processes once the system enters "normal"
-      --  mode).
+   --  Secondary stack for environment task
 
-      SSS.SS_Init (To_Address (TSD_Ptr).Sec_Stack_Addr);
-      return OSI.OK;
-   end Reset_TSD;
+   Main_ATSD : aliased ATSD;
+
+   --  TSD for environment task
 
 begin
    Initialize_Task_Hooks;
+
+   --  Register the environment task
+   declare
+      Result : Interfaces.C.int := Register (OSI.taskIdSelf);
+      pragma Assert (Result /= OSI.ERROR);
+   begin
+      Thread_Body_Enter
+        (Main_Sec_Stack'Address,
+         Main_Sec_Stack'Size / System.Storage_Unit,
+         Main_ATSD'Address);
+   end;
 end System.Threads.Initialization;

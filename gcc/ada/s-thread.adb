@@ -33,17 +33,20 @@
 
 --  This is the VxWorks/Cert version of this package
 
+with System.Init;
+with System.Secondary_Stack;
+
 with Unchecked_Conversion;
 
 package body System.Threads is
+
+   package SSS renames System.Secondary_Stack;
 
    Current_ATSD  : aliased System.Address := System.Null_Address;
    pragma Export (C, Current_ATSD, "__gnat_current_atsd");
 
    function From_Address is
       new Unchecked_Conversion (Address, ATSD_Access);
-
-
 
    -----------------------
    -- Get_Current_Excep --
@@ -109,11 +112,18 @@ package body System.Threads is
       Sec_Stack_Size       : Natural;
       Process_ATSD_Address : System.Address)
    is
-      pragma Unreferenced (Sec_Stack_Address);
-      pragma Unreferenced (Sec_Stack_Size);
-      pragma Unreferenced (Process_ATSD_Address);
+      --  Current_ATSD must already be a taskVar of taskIdSelf.
+      --  No assertion because taskVarGet is not available on VxWorks/CERT
+
+      TSD : ATSD_Access := From_Address (Process_ATSD_Address);
+
    begin
-      null;
+      TSD.Sec_Stack_Addr := Sec_Stack_Address;
+      SSS.SS_Init (TSD.Sec_Stack_Addr, Sec_Stack_Size);
+      Current_ATSD := Process_ATSD_Address;
+
+      System.Init.Install_Handler;
+      System.Init.Init_Float;
    end Thread_Body_Enter;
 
    ----------------------------------
@@ -125,6 +135,7 @@ package body System.Threads is
    is
       pragma Unreferenced (EO);
    begin
+      --  No action for this target
       null;
    end Thread_Body_Exceptional_Exit;
 
@@ -134,6 +145,7 @@ package body System.Threads is
 
    procedure Thread_Body_Leave is
    begin
+      --  No action for this target
       null;
    end Thread_Body_Leave;
 

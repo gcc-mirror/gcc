@@ -34,6 +34,9 @@
 --  This package provides facilities to register a thread to the runtime,
 --  and allocate its task specific datas.
 
+--  pragma Thread_Body is currently supported for:
+--  VxWorks AE653 with the restricted / cert runtime
+
 with Ada.Exceptions;
 
 package System.Threads is

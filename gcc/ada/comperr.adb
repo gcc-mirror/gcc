@@ -80,12 +80,6 @@ package body Comperr is
       --  the FSF version of GNAT, but there are specializations for
       --  the GNATPRO and Public releases by Ada Core Technologies.
 
-      Public_Version  : constant Boolean := Gnat_Version_Type = "PUBLIC ";
-      --  Set True for the public version of GNAT
-
-      GNATPRO_Version : constant Boolean := Gnat_Version_Type = "GNATPRO";
-      --  Set True for the GNATPRO version of GNAT
-
       procedure End_Line;
       --  Add blanks up to column 76, and then a final vertical bar
 
@@ -98,6 +92,9 @@ package body Comperr is
          Repeat_Char (' ', 76, '|');
          Write_Eol;
       end End_Line;
+
+      Is_Public_Version : constant Boolean := Get_Gnat_Build_Type = Public;
+      Is_FSF_Version    : constant Boolean := Get_Gnat_Build_Type = FSF;
 
    --  Start of processing for Compiler_Abort
 
@@ -264,7 +261,13 @@ package body Comperr is
             --  Otherwise we use the standard fixed text
 
             else
-               if Public_Version or GNATPRO_Version then
+               if Is_FSF_Version then
+                  Write_Str
+                    ("| Please submit a bug report; see" &
+                     " http://gcc.gnu.org/bugs.html.");
+                  End_Line;
+
+               else
                   Write_Str
                     ("| Please submit bug report by email " &
                      "to report@gnat.com.");
@@ -274,15 +277,9 @@ package body Comperr is
                     ("| Use a subject line meaningful to you" &
                      " and us to track the bug.");
                   End_Line;
-
-               else
-                  Write_Str
-                    ("| Please submit a bug report; see" &
-                     " http://gcc.gnu.org/bugs.html.");
-                  End_Line;
                end if;
 
-               if GNATPRO_Version then
+               if not (Is_Public_Version and Is_FSF_Version) then
                   Write_Str
                     ("| (include your customer number #nnn " &
                      "in the subject line).");
@@ -307,7 +304,7 @@ package body Comperr is
                  ("| (concatenated together with no headers between files).");
                End_Line;
 
-               if Public_Version then
+               if Is_Public_Version then
                   Write_Str
                     ("| (use plain ASCII or MIME attachment).");
                   End_Line;
@@ -317,7 +314,7 @@ package body Comperr is
                      "for submitting bugs.");
                   End_Line;
 
-               elsif GNATPRO_Version then
+               elsif not Is_FSF_Version then
                   Write_Str
                     ("| (use plain ASCII or MIME attachment, or FTP "
                      & "to your customer directory).");

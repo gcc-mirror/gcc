@@ -338,7 +338,9 @@ package body Debug is
    --  dz   Print source of package Standard. Normally the source print out
    --       does not include package Standard, even if the -df switch is set.
    --       This switch forces output of the source recreated from the internal
-   --       tree built for Standard.
+   --       tree built for Standard. Note that this differs from -gnatS in
+   --       that it prints from the actual tree using the normal Sprint
+   --       circuitry for printing trees.
 
    --  dA   Forces output of representation information, including full
    --       information for all internal type and object entities, as well
