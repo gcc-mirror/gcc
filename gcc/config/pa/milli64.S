@@ -1,8 +1,8 @@
-/* 64-bit millicode, original author Hewlett-Packard
+/* 32 and 64-bit millicode, original author Hewlett-Packard
    adapted for gcc by Paul Bame <bame@debian.org>
-   and Alan Modra <alan@linuxcare.com.au>
+   and Alan Modra <alan@linuxcare.com.au>.
 
-   Copyright 2001 Free Software Foundation, Inc.
+   Copyright 2001, 2002 Free Software Foundation, Inc.
 
    This file is part of GNU CC and is released under the terms of
    of the GNU General Public License as published by the Free Software
@@ -194,6 +194,30 @@ mrp_slot:	.equ	-20     /* "current RP" slot (replacing "r31_slot") */
 #define LREF(sym)	 CAT(L$,sym)
 #endif
 
+#ifdef L_dyncall
+	SUBSPA_MILLI
+	ATTR_DATA
+GSYM($$dyncall)
+	.export $$dyncall,millicode
+	.proc
+	.callinfo	millicode
+	.entry
+	bb,>=,n %r22,30,LREF(1)		; branch if not plabel address
+	depi	0,31,2,%r22		; clear the two least significant bits
+	ldw	4(%r22),%r19		; load new LTP value
+	ldw	0(%r22),%r22		; load address of target
+LSYM(1)
+#ifdef LINUX
+	bv	%r0(%r22)		; branch to the real target
+#else
+	ldsid	(%sr0,%r22),%r1		; get the "space ident" selected by r22
+	mtsp	%r1,%sr0		; move that space identifier into sr0
+	be	0(%sr0,%r22)		; branch to the real target
+#endif
+	stw	%r2,-24(%r30)		; save return address into frame marker
+	.exit
+	.procend
+#endif
 
 #ifdef L_divI
 /* ROUTINES:	$$divI, $$divoI
