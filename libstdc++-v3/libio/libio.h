@@ -206,22 +206,22 @@ struct _IO_codecvt
 {
   void (*__codecvt_destr) (struct _IO_codecvt *);
   enum __codecvt_result (*__codecvt_do_out) (struct _IO_codecvt *,
-					     __mbstate_t *,
+					     __c_mbstate_t *,
 					     const wchar_t *,
 					     const wchar_t *,
 					     const wchar_t **, char *,
 					     char *, char **);
   enum __codecvt_result (*__codecvt_do_unshift) (struct _IO_codecvt *,
-						 __mbstate_t *, char *,
+						 __c_mbstate_t *, char *,
 						 char *, char **);
   enum __codecvt_result (*__codecvt_do_in) (struct _IO_codecvt *,
-					    __mbstate_t *,
+					    __c_mbstate_t *,
 					    const char *, const char *,
 					    const char **, wchar_t *,
 					    wchar_t *, wchar_t **);
   int (*__codecvt_do_encoding) (struct _IO_codecvt *);
   int (*__codecvt_do_always_noconv) (struct _IO_codecvt *);
-  int (*__codecvt_do_length) (struct _IO_codecvt *, __mbstate_t *,
+  int (*__codecvt_do_length) (struct _IO_codecvt *, __c_mbstate_t *,
 			      const char *, const char *, _IO_size_t);
   int (*__codecvt_do_max_length) (struct _IO_codecvt *);
 
@@ -247,8 +247,8 @@ struct _IO_wide_data
   wchar_t *_IO_save_end;	/* Pointer to end of non-current get area. */
 
 #if defined _LIBC || defined _GLIBCPP_USE_WCHAR_T
-  __mbstate_t _IO_state;
-  __mbstate_t _IO_last_state;
+  __c_mbstate_t _IO_state;
+  __c_mbstate_t _IO_last_state;
 #endif
   struct _IO_codecvt _codecvt;
 

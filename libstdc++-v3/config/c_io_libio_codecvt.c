@@ -30,17 +30,17 @@
 
 /* Prototypes of libio's codecvt functions.  */
 static enum __codecvt_result 
-do_out(struct _IO_codecvt *codecvt, __mbstate_t *statep,
+do_out(struct _IO_codecvt *codecvt, __c_mbstate_t *statep,
        const wchar_t *from_start, const wchar_t *from_end,
        const wchar_t **from_stop, char *to_start, char *to_end, 
        char **to_stop);
 
 static enum __codecvt_result 
-do_unshift(struct _IO_codecvt *codecvt, __mbstate_t *statep, char *to_start, 
+do_unshift(struct _IO_codecvt *codecvt, __c_mbstate_t *statep, char *to_start, 
 	   char *to_end, char **to_stop);
 
 static enum __codecvt_result 
-do_in(struct _IO_codecvt *codecvt, __mbstate_t *statep, 
+do_in(struct _IO_codecvt *codecvt, __c_mbstate_t *statep, 
       const char *from_start, const char *from_end, const char **from_stop, 
       wchar_t *to_start, wchar_t *to_end, wchar_t **to_stop);
 
@@ -48,7 +48,7 @@ static int
 do_encoding(struct _IO_codecvt *codecvt);
 
 static int 
-do_length(struct _IO_codecvt *codecvt, __mbstate_t *statep, 
+do_length(struct _IO_codecvt *codecvt, __c_mbstate_t *statep, 
 	  const char *from_start, const char *from_end, _IO_size_t max);
 
 static int 
@@ -72,7 +72,7 @@ struct _IO_codecvt __c_libio_codecvt =
 };
 
 static enum __codecvt_result
-do_out(struct _IO_codecvt *codecvt, __mbstate_t *statep,
+do_out(struct _IO_codecvt *codecvt, __c_mbstate_t *statep,
        const wchar_t *from_start, const wchar_t *from_end,
        const wchar_t **from_stop, char *to_start, char *to_end,
        char **to_stop)
@@ -97,7 +97,7 @@ do_out(struct _IO_codecvt *codecvt, __mbstate_t *statep,
 
 
 static enum __codecvt_result
-do_unshift(struct _IO_codecvt *codecvt, __mbstate_t *statep,
+do_unshift(struct _IO_codecvt *codecvt, __c_mbstate_t *statep,
 	   char *to_start, char *to_end, char **to_stop)
 {
   *to_stop = to_start;
@@ -106,7 +106,7 @@ do_unshift(struct _IO_codecvt *codecvt, __mbstate_t *statep,
 
 
 static enum __codecvt_result
-do_in(struct _IO_codecvt *codecvt, __mbstate_t *statep,
+do_in(struct _IO_codecvt *codecvt, __c_mbstate_t *statep,
       const char *from_start, const char *from_end, const char **from_stop,
       wchar_t *to_start, wchar_t *to_end, wchar_t **to_stop)
 {
@@ -140,7 +140,7 @@ do_always_noconv(struct _IO_codecvt *codecvt)
 
 
 static int
-do_length(struct _IO_codecvt *codecvt, __mbstate_t *statep,
+do_length(struct _IO_codecvt *codecvt, __c_mbstate_t *statep,
 	  const char *from_start, const char *from_end, _IO_size_t max)
 { return from_end - from_start; }
 
