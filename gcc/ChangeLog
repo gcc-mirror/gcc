@@ -1,3 +1,13 @@
+2003-02-22  Steven Bosscher  <s.bosscher@student.tudelft.nl>
+
+	PR other/3782
+	* toplev.c (process_options): If flag_detailed_statistics is set,
+	then set time_report as well.
+
+        PR c/8828
+        * jump.c (never_reached_warning): Don't fall through BARRRIER
+	insns.  Update comments to reflect what the function really does.
+
 2003-02-21  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (omit_one_operand): No longer static.
@@ -1776,7 +1786,7 @@ Mon Feb  3 21:19:11 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* config/i386/i386.c (TARGET_DELEGITIMIZE_ADDRESS): Define as
 	i386_simplify_dwarf_addr.
 	(ix86_find_base_term): Simplify using i386_simplify_dwarf_addr.
-  	(maybe_get_pool_constant): Likewise.
+	(maybe_get_pool_constant): Likewise.
 
 Mon Feb  3 16:01:17 CET 2003  Jan Hubicka  <jh@suse.cz>
 
@@ -2262,9 +2272,9 @@ Wed Jan 29 10:26:12 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* regclass.c (init_reg_autoinc): New function.
 	(regclass): Move initialization of forbidden_inc_dec_class from
- 	here...
+	here...
 	(init_regs): to here.  Avoids reinitialization for each function,
- 	saving compilation time.
+	saving compilation time.
 
 2003-01-28  Jason Merrill  <jason@redhat.com>
 
@@ -2391,16 +2401,16 @@ Wed Jan 29 10:26:12 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 Tue Jan 28 12:15:13 CET 2003  Jan Hubicka  <jh@suse.cz>
 
- 	* i386.c (ix86_carry_flag_operator):  New predicate.
- 	(fcmov_operator): Fix whitespace.
- 	(ix86_expand_carry_flag_compare):  Deal with floating point.
- 	(ix86_expand_int_movcc): Deal with fp; update insn expansion
- 	(ix86_expand_int_addcc): Likewise.
- 	(ix86_expand_strlensi_unroll_1): likewsie.
- 	* i386.h (PREDICATE_CODES): Add ix86_carry_flag_operator.
- 	* i386.md (add?i_carry_rex64): Use new predicate.
- 	(sub?i3_carry_rex64): Likewise.
- 	(x86_mov?icc_0_m1*): Likewise.
+	* i386.c (ix86_carry_flag_operator):  New predicate.
+	(fcmov_operator): Fix whitespace.
+	(ix86_expand_carry_flag_compare):  Deal with floating point.
+	(ix86_expand_int_movcc): Deal with fp; update insn expansion
+	(ix86_expand_int_addcc): Likewise.
+	(ix86_expand_strlensi_unroll_1): likewsie.
+	* i386.h (PREDICATE_CODES): Add ix86_carry_flag_operator.
+	* i386.md (add?i_carry_rex64): Use new predicate.
+	(sub?i3_carry_rex64): Likewise.
+	(x86_mov?icc_0_m1*): Likewise.
 
 2003-01-28  Andreas Schwab  <schwab@suse.de>
 
