@@ -304,17 +304,14 @@ handle_pragma_weak (dummy)
 void
 init_pragma ()
 {
-  cpp_reader *pfile ATTRIBUTE_UNUSED;
-  pfile = &parse_in;
-
 #ifdef HANDLE_PRAGMA_PACK
-  cpp_register_pragma (pfile, 0, "pack", handle_pragma_pack);
+  cpp_register_pragma (parse_in, 0, "pack", handle_pragma_pack);
 #endif
 #ifdef HANDLE_PRAGMA_WEAK
-  cpp_register_pragma (pfile, 0, "weak", handle_pragma_weak);
+  cpp_register_pragma (parse_in, 0, "weak", handle_pragma_weak);
 #endif
 #ifdef REGISTER_TARGET_PRAGMAS
-  REGISTER_TARGET_PRAGMAS (pfile);
+  REGISTER_TARGET_PRAGMAS (parse_in);
 #endif
 
 #ifdef HANDLE_PRAGMA_PACK_PUSH_POP
