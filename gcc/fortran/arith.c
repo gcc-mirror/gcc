@@ -1928,15 +1928,9 @@ gfc_expr *
 gfc_convert_real (const char *buffer, int kind, locus * where)
 {
   gfc_expr *e;
-  const char *t;
 
   e = gfc_constant_result (BT_REAL, kind, where);
-  /* A leading plus is allowed in Fortran, but not by mpfr_set_str */
-  if (buffer[0] == '+')
-    t = buffer + 1;
-  else
-    t = buffer;
-  mpfr_set_str (e->value.real, t, 10, GFC_RND_MODE);
+  mpfr_set_str (e->value.real, buffer, 10, GFC_RND_MODE);
 
   return e;
 }
