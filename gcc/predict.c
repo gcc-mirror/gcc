@@ -806,7 +806,7 @@ estimate_bb_frequencies (loops)
     }
   /* First compute probabilities locally for each loop from innermost
      to outermost to examine probabilities for back edges.  */
-  estimate_loops_at_level (loops->tree);
+  estimate_loops_at_level (loops->tree_root);
 
   /* Now fake loop around whole function to finalize probabilities.  */
   for (i = 0; i < n_basic_blocks; i++)

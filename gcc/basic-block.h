@@ -26,6 +26,11 @@ Boston, MA 02111-1307, USA.  */
 #include "varray.h"
 #include "partition.h"
 
+#ifndef TREE_CODE
+union tree_node;
+#define tree union tree_node *
+#endif
+
 /* Head of register set linked list.  */
 typedef bitmap_head regset_head;
 /* A pointer to a regset_head.  */
@@ -174,6 +179,10 @@ typedef struct basic_block_def {
   /* The first and last insns of the block.  */
   rtx head, end;
 
+  /* The first and last trees of the block.  */
+  tree head_tree;
+  tree end_tree;
+
   /* The edges into and out of the block.  */
   edge pred, succ;
 
@@ -246,6 +255,9 @@ extern regset regs_live_at_setjmp;
 
 #define BLOCK_HEAD(B)      (BASIC_BLOCK (B)->head)
 #define BLOCK_END(B)       (BASIC_BLOCK (B)->end)
+
+#define BLOCK_HEAD_TREE(B) (BASIC_BLOCK (B)->head_tree)
+#define BLOCK_END_TREE(B) (BASIC_BLOCK (B)->end_tree)
 
 /* Special block numbers [markers] for entry and exit.  */
 #define ENTRY_BLOCK (-1)
@@ -433,7 +445,7 @@ struct loops
   struct loop *array;
 
   /* Pointer to root of loop heirachy tree.  */
-  struct loop *tree;
+  struct loop *tree_root;
 
   /* Information derived from the CFG.  */
   struct cfg

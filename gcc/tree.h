@@ -130,6 +130,7 @@ struct tree_common
 {
   union tree_node *chain;
   union tree_node *type;
+  void *aux;
   ENUM_BITFIELD(tree_code) code : 8;
   unsigned side_effects_flag : 1;
   unsigned constant_flag : 1;

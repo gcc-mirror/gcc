@@ -195,6 +195,8 @@ varray_type basic_block_info;
 struct basic_block_def entry_exit_blocks[2]
 = {{NULL,			/* head */
     NULL,			/* end */
+    NULL,			/* head_tree */
+    NULL,			/* end_tree */
     NULL,			/* pred */
     NULL,			/* succ */
     NULL,			/* local_set */
@@ -210,6 +212,8 @@ struct basic_block_def entry_exit_blocks[2]
   {
     NULL,			/* head */
     NULL,			/* end */
+    NULL,			/* head_tree */
+    NULL,			/* end_tree */
     NULL,			/* pred */
     NULL,			/* succ */
     NULL,			/* local_set */
@@ -8718,8 +8722,8 @@ flow_loops_tree_build (loops)
   /* Root the loop hierarchy tree with the first loop found.
      Since we used a depth first search this should be the
      outermost loop.  */
-  loops->tree = &loops->array[0];
-  loops->tree->outer = loops->tree->inner = loops->tree->next = NULL;
+  loops->tree_root = &loops->array[0];
+  loops->tree_root->outer = loops->tree_root->inner = loops->tree_root->next = NULL;
 
   /* Add the remaining loops to the tree.  */
   for (i = 1; i < num_loops; i++)
@@ -8773,7 +8777,7 @@ flow_loops_level_compute (loops)
   int levels = 0;
 
   /* Traverse all the outer level loops.  */
-  for (loop = loops->tree; loop; loop = loop->next)
+  for (loop = loops->tree_root; loop; loop = loop->next)
     {
       level = flow_loop_level_compute (loop, 1);
       if (level > levels)
