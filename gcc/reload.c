@@ -2399,6 +2399,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   int no_input_reloads = 0, no_output_reloads = 0;
   int n_alternatives;
   int this_alternative[MAX_RECOG_OPERANDS];
+  char this_alternative_match_win[MAX_RECOG_OPERANDS];
   char this_alternative_win[MAX_RECOG_OPERANDS];
   char this_alternative_offmemok[MAX_RECOG_OPERANDS];
   char this_alternative_earlyclobber[MAX_RECOG_OPERANDS];
@@ -2410,6 +2411,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   int operand_reloadnum[MAX_RECOG_OPERANDS];
   int goal_alternative_matches[MAX_RECOG_OPERANDS];
   int goal_alternative_matched[MAX_RECOG_OPERANDS];
+  char goal_alternative_match_win[MAX_RECOG_OPERANDS];
   char goal_alternative_win[MAX_RECOG_OPERANDS];
   char goal_alternative_offmemok[MAX_RECOG_OPERANDS];
   char goal_alternative_earlyclobber[MAX_RECOG_OPERANDS];
@@ -2741,6 +2743,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	{
 	  register char *p = constraints[i];
 	  register int win = 0;
+	  int did_match = 0;
 	  /* 0 => this operand can be reloaded somehow for this alternative */
 	  int badop = 1;
 	  /* 0 => this operand can be reloaded if the alternative allows regs.  */
@@ -2839,6 +2842,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 
 	  this_alternative[i] = (int) NO_REGS;
 	  this_alternative_win[i] = 0;
+	  this_alternative_match_win[i] = 0;
 	  this_alternative_offmemok[i] = 0;
 	  this_alternative_earlyclobber[i] = 0;
 	  this_alternative_matches[i] = -1;
@@ -2917,7 +2921,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			&& ! this_alternative_win[c])
 		      bad = 1;
 
-		    win = this_alternative_win[c];
+		    did_match = this_alternative_win[c];
 		  }
 		else
 		  {
@@ -2953,12 +2957,11 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		   operand also had to match the same thing as this
 		   operand, we don't know how to do that.  So reject this
 		   alternative.  */
-		if (! win || force_reload)
+		if (! did_match || force_reload)
 		  for (j = 0; j < i; j++)
 		    if (this_alternative_matches[j]
 			== this_alternative_matches[i])
 		      badop = 1;
-
 		break;
 
 	      case 'p':
@@ -3175,6 +3178,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	  this_alternative_earlyclobber[i] = earlyclobber;
 	  if (win && ! force_reload)
 	    this_alternative_win[i] = 1;
+	  else if (did_match && ! force_reload)
+	    this_alternative_match_win[i] = 1;
 	  else
 	    {
 	      int const_to_mem = 0;
@@ -3276,7 +3281,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	     Don't do this if the preferred class has only one register
 	     because we might otherwise exhaust the class.  */
 
-	  if (! win && this_alternative[i] != (int) NO_REGS
+	  if (! win && ! did_match
+	      && this_alternative[i] != (int) NO_REGS
 	      && GET_MODE_SIZE (operand_mode[i]) <= UNITS_PER_WORD
 	      && reg_class_size[(int) preferred_class[i]] > 1)
 	    {
@@ -3302,7 +3308,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 
       for (i = 0; i < noperands; i++)
 	if (this_alternative_earlyclobber[i]
-	    && this_alternative_win[i])
+	    && (this_alternative_win[i] || this_alternative_match_win[i]))
 	  {
 	    struct decomposition early_data;
 
@@ -3345,6 +3351,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		    {
 		      losers++;
 		      this_alternative_win[j] = 0;
+		      this_alternative_match_win[j] = 0;
 		    }
 		  else
 		    break;
@@ -3355,11 +3362,13 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      {
 		losers++;
 		this_alternative_win[i] = 0;
+		this_alternative_match_win[j] = 0;
 		for (j = 0; j < noperands; j++)
 		  if (this_alternative_matches[j] == i
-		      && this_alternative_win[j])
+		      && this_alternative_match_win[j])
 		    {
 		      this_alternative_win[j] = 0;
+		      this_alternative_match_win[j] = 0;
 		      losers++;
 		    }
 	      }
@@ -3378,7 +3387,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    }
 	  for (i = 0; i < noperands; i++)
 	    {
-	      goal_alternative_win[i] = 1;
+	      goal_alternative_win[i] = this_alternative_win[i];
+	      goal_alternative_match_win[i] = this_alternative_match_win[i];
 	      goal_alternative[i] = this_alternative[i];
 	      goal_alternative_offmemok[i] = this_alternative_offmemok[i];
 	      goal_alternative_matches[i] = this_alternative_matches[i];
@@ -3406,6 +3416,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    {
 	      goal_alternative[i] = this_alternative[i];
 	      goal_alternative_win[i] = this_alternative_win[i];
+	      goal_alternative_match_win[i] = this_alternative_match_win[i];
 	      goal_alternative_offmemok[i] = this_alternative_offmemok[i];
 	      goal_alternative_matches[i] = this_alternative_matches[i];
 	      goal_alternative_earlyclobber[i]
@@ -3487,11 +3498,14 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 
   for (i = 0; i < noperands; i++)
     goal_alternative_matched[i] = -1;
-
+ 
   for (i = 0; i < noperands; i++)
     if (! goal_alternative_win[i]
 	&& goal_alternative_matches[i] >= 0)
       goal_alternative_matched[goal_alternative_matches[i]] = i;
+
+  for (i = 0; i < noperands; i++)
+    goal_alternative_win[i] |= goal_alternative_match_win[i];
 
   /* If the best alternative is with operands 1 and 2 swapped,
      consider them swapped before reporting the reloads.  Update the
