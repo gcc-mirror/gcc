@@ -34,6 +34,8 @@ const char class_mangling_prefix[] = "_CL_";
 
 struct obstack name_obstack;
 
+extern char *xmalloc PROTO((size_t));
+
 void
 error (const char *str)
 {
