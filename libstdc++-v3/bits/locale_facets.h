@@ -84,23 +84,66 @@ namespace std
 #ifdef _GLIBCPP_USE_WCHAR_T
   // Extensions to use icov for dealing with character encodings,
   // including conversions and comparisons between various character
-  // sets.  This object encapsulates data that codecvt and possibly
-  // ctype will use.
+  // sets.  This object encapsulates data that may need to be shared between
+  // char_traits, codecvt and ctype.
   template<typename _IntT, typename _ExtT>
   class __enc_traits
   {
   public:
     // Types:
-    typedef iconv_t	__conv_type;
     typedef _IntT	__intc_type;
     typedef _ExtT	__extc_type;
-
-    // max size of charset encoding name
+    typedef iconv_t	__conv_type;
+    typedef mbstate_t	__state_type;
+    
+    // Data Members:
+    // Max size of charset encoding name
     static const int 	__max_size = 32;
-    // name of internal character set encoding.
+    // Name of internal character set encoding.
     char	       	__intc_enc[__max_size];
-    // name of external character set encoding.
+    // Name of external character set encoding.
     char  	       	__extc_enc[__max_size];
+
+    // Conversion descriptor between external encoding to internal encoding.
+    __conv_type		__in_conv;
+    // Conversion descriptor between internal encoding to external encoding.
+    __conv_type		__out_conv;
+
+    __enc_traits()
+    {
+      // __intc_end = whatever we are using internally, which is
+      // UCS4 (linux) 
+      // UCS2 (microsoft, java, aix, whatever...)
+      // XXX Currently don't know how to get this data from target system...
+      strcpy(__intc_enc, "UCS4");
+
+      // __extc_end = external codeset in current locale
+      strcpy(__extc_enc, nl_langinfo(CODESET));
+      __in_conv = iconv_open(__intc_enc, __extc_enc);
+      __out_conv = iconv_open(__extc_enc, __intc_enc);
+      if (__out_conv == (iconv_t) -1 || __in_conv == (iconv_t) -1)
+	{
+	  // XXX Extended error checking.
+	}
+    }
+
+    __enc_traits(const char* __int, const char* __ext)
+    {
+      strcpy(__intc_enc, __int);
+      strcpy(__extc_enc, __ext);
+      __in_conv = iconv_open(__intc_enc, __extc_enc);
+      __out_conv = iconv_open(__extc_enc, __intc_enc);
+      if (__out_conv == (iconv_t) -1 || __in_conv == (iconv_t) -1)
+	{
+	  // XXX Extended error checking.
+	}
+    }
+
+    ~__enc_traits()
+    {
+      iconv_close(__in_conv);
+      iconv_close(__out_conv);
+    } 
 
     const char* 
     _M_get_intc_enc(void)
@@ -117,19 +160,14 @@ namespace std
     void
     _M_set_extc_enc(const char* __c)
     { strcpy(__extc_enc, __c); }
-
-    __enc_traits(const char* __int, const char* __ext)
-    {
-      // __intc_end = whatever we are using internally, which is
-      // almost alwyas UCS4 (linux) or UCS2 (microsoft, aix,
-      // whatever...)
-      // __extc_end = nl_langinfo(CODESET)
-      strcpy(__intc_enc, __int);
-      strcpy(__extc_enc, __ext);
-    }
-
+   
   protected:
-    __enc_traits();
+    // 21.1.2 traits typedefs
+    // p4
+    // typedef STATE_T state_type
+    // requires: state_type shall meet the requirements of
+    // CopyConstructible types (20.1.3)
+    // XXX because of this, these might actually need to be filled out.
     __enc_traits(const __enc_traits&);
   };
 #endif //_GLIBCPP_USE_WCHAR_T
@@ -652,7 +690,7 @@ namespace std
   
 
   template<typename _InternT, typename _ExternT, typename _StateT>
-    class codecvt : public _Codecvt<_InternT,_ExternT,_StateT>
+    class codecvt : public _Codecvt<_InternT, _ExternT, _StateT>
     {
     public:      
       // Types:
@@ -665,14 +703,14 @@ namespace std
 
       explicit 
       codecvt(size_t __refs = 0) 
-      : _Codecvt<_InternT,_ExternT,_StateT> (__refs) { }
+      : _Codecvt<_InternT, _ExternT, _StateT> (__refs) { }
 
     protected:
       virtual 
       ~codecvt() { }
     };
 
-  // codecvt<char,char,mbstate_t> specialization
+  // codecvt<char, char, mbstate_t> specialization
   template<>
     class codecvt<char, char, mbstate_t> 
     : public _Codecvt<char, char, mbstate_t>

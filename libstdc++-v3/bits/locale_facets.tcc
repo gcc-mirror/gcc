@@ -161,7 +161,7 @@ namespace std
     locale::id ctype<_CharT>::id;
 
   template<typename _InternT, typename _ExternT, typename _StateT>
-    locale::id codecvt<_InternT,_ExternT,_StateT>::id;
+    locale::id codecvt<_InternT, _ExternT, _StateT>::id;
 
   template<typename _CharT>
     int _Format_cache<_CharT>::_S_pword_ix;
