@@ -1,3 +1,9 @@
+2000-05-08  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	Test for PR gcj/224:
+	* libjava.compile/PR224.java: New file.
+	* libjava.compile/PR224.xfail: New file.	
+
 2000-04-28  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Test for PR gcj/218:
