@@ -120,6 +120,13 @@ extern int target_flags;
 /* This is meant to be redefined in the host dependent files */
 #define SUBTARGET_SWITCHES
 
+#define OVERRIDE_OPTIONS	\
+{				\
+  SUBTARGET_OVERRIDE_OPTIONS	\
+}
+
+/* This is meant to be redefined in the host dependent files */
+#define SUBTARGET_OVERRIDE_OPTIONS
 
 /* target machine storage layout */
 
