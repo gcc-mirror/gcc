@@ -1,3 +1,18 @@
+2004-12-22  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/emmintrin.h (_mm_loadh_pd): Don't cast pointer arg
+	to __v2si.
+	(_mm_storeh_pd, _mm_loadl_pd, _mm_storel_pd): Likewise.
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Use double* or
+	const double* for __builtin_ia32_loadhpd, __builtin_ia32_loadlpd,
+	__builtin_ia32_storehpd, __builtin_ia32_storelpd.
+	(ix86_expand_builtin): Update to match.
+	(ix86_expand_vector_init): Use sse2_loadlpd.
+	* config/i386/i386.md (vec_setv2df): Use sse2_loadlpd, sse2_loadhpd.
+	(vec_extractv2df): Use sse2_storelpd, sse2_storehpd.
+	(sse2_storehpd, sse2_loadhpd, sse2_storelpd, sse2_loadlpd): New.
+	(sse2_movhpd): Remove.
+
 2004-12-23  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/18751

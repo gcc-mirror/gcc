@@ -12551,12 +12551,9 @@ ix86_init_mmx_sse_builtins (void)
 				V2DF_type_node, V2DF_type_node,
 				integer_type_node,
 				NULL_TREE);
-  tree v2df_ftype_v2df_pv2si
+  tree v2df_ftype_v2df_pcdouble
     = build_function_type_list (V2DF_type_node,
-				V2DF_type_node, pv2si_type_node, NULL_TREE);
-  tree void_ftype_pv2si_v2df
-    = build_function_type_list (void_type_node,
-				pv2si_type_node, V2DF_type_node, NULL_TREE);
+				V2DF_type_node, pcdouble_type_node, NULL_TREE);
   tree void_ftype_pdouble_v2df
     = build_function_type_list (void_type_node,
 				pdouble_type_node, V2DF_type_node, NULL_TREE);
@@ -12858,10 +12855,10 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin (MASK_SSE2, "__builtin_ia32_storeupd", void_ftype_pdouble_v2df, IX86_BUILTIN_STOREUPD);
   def_builtin (MASK_SSE2, "__builtin_ia32_storesd", void_ftype_pdouble_v2df, IX86_BUILTIN_STORESD);
 
-  def_builtin (MASK_SSE2, "__builtin_ia32_loadhpd", v2df_ftype_v2df_pv2si, IX86_BUILTIN_LOADHPD);
-  def_builtin (MASK_SSE2, "__builtin_ia32_loadlpd", v2df_ftype_v2df_pv2si, IX86_BUILTIN_LOADLPD);
-  def_builtin (MASK_SSE2, "__builtin_ia32_storehpd", void_ftype_pv2si_v2df, IX86_BUILTIN_STOREHPD);
-  def_builtin (MASK_SSE2, "__builtin_ia32_storelpd", void_ftype_pv2si_v2df, IX86_BUILTIN_STORELPD);
+  def_builtin (MASK_SSE2, "__builtin_ia32_loadhpd", v2df_ftype_v2df_pcdouble, IX86_BUILTIN_LOADHPD);
+  def_builtin (MASK_SSE2, "__builtin_ia32_loadlpd", v2df_ftype_v2df_pcdouble, IX86_BUILTIN_LOADLPD);
+  def_builtin (MASK_SSE2, "__builtin_ia32_storehpd", void_ftype_pdouble_v2df, IX86_BUILTIN_STOREHPD);
+  def_builtin (MASK_SSE2, "__builtin_ia32_storelpd", void_ftype_pdouble_v2df, IX86_BUILTIN_STORELPD);
 
   def_builtin (MASK_SSE2, "__builtin_ia32_movmskpd", int_ftype_v2df, IX86_BUILTIN_MOVMSKPD);
   def_builtin (MASK_SSE2, "__builtin_ia32_pmovmskb128", int_ftype_v16qi, IX86_BUILTIN_PMOVMSKB128);
@@ -13405,8 +13402,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case IX86_BUILTIN_LOADLPD:
       icode = (fcode == IX86_BUILTIN_LOADHPS ? CODE_FOR_sse_movhps
 	       : fcode == IX86_BUILTIN_LOADLPS ? CODE_FOR_sse_movlps
-	       : fcode == IX86_BUILTIN_LOADHPD ? CODE_FOR_sse2_movhpd
-	       : CODE_FOR_sse2_movsd);
+	       : fcode == IX86_BUILTIN_LOADHPD ? CODE_FOR_sse2_loadhpd
+	       : CODE_FOR_sse2_loadlpd);
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
       op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
@@ -13430,12 +13427,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
     case IX86_BUILTIN_STOREHPS:
     case IX86_BUILTIN_STORELPS:
-    case IX86_BUILTIN_STOREHPD:
-    case IX86_BUILTIN_STORELPD:
       icode = (fcode == IX86_BUILTIN_STOREHPS ? CODE_FOR_sse_movhps
-	       : fcode == IX86_BUILTIN_STORELPS ? CODE_FOR_sse_movlps
-	       : fcode == IX86_BUILTIN_STOREHPD ? CODE_FOR_sse2_movhpd
-	       : CODE_FOR_sse2_movsd);
+	       : CODE_FOR_sse_movlps);
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
       op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
@@ -13451,7 +13444,28 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       if (! pat)
 	return 0;
       emit_insn (pat);
-      return 0;
+      return const0_rtx;
+
+    case IX86_BUILTIN_STOREHPD:
+    case IX86_BUILTIN_STORELPD:
+      icode = (fcode == IX86_BUILTIN_STOREHPD ? CODE_FOR_sse2_storehpd
+	       : CODE_FOR_sse2_storelpd);
+      arg0 = TREE_VALUE (arglist);
+      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+      mode0 = insn_data[icode].operand[0].mode;
+      mode1 = insn_data[icode].operand[1].mode;
+
+      op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
+      if (! (*insn_data[icode].operand[1].predicate) (op1, mode1))
+	op1 = copy_to_mode_reg (mode1, op1);
+
+      pat = GEN_FCN (icode) (op0, op1);
+      if (! pat)
+	return 0;
+      emit_insn (pat);
+      return const0_rtx;
 
     case IX86_BUILTIN_MOVNTPS:
       return ix86_expand_store_builtin (CODE_FOR_sse_movntv4sf, arglist);
@@ -15189,24 +15203,29 @@ ix86_expand_vector_init (rtx target, rtx vals)
 
   /* ... values where only first field is non-constant are best loaded
      from the pool and overwritten via move later.  */
-  if (!i)
+  if (i == 0)
     {
-      rtx op = simplify_gen_subreg (mode, XVECEXP (vals, 0, 0),
-				    GET_MODE_INNER (mode), 0);
-
-      op = force_reg (mode, op);
       XVECEXP (vals, 0, 0) = CONST0_RTX (GET_MODE_INNER (mode));
       emit_move_insn (target, gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0)));
+
       switch (GET_MODE (target))
 	{
-	  case V2DFmode:
-	    emit_insn (gen_sse2_movsd (target, target, op));
-	    break;
-	  case V4SFmode:
+	case V2DFmode:
+	  emit_insn (gen_sse2_loadlpd (target, target, XVECEXP (vals, 0, 0)));
+	  break;
+
+	case V4SFmode:
+	  {
+	    /* ??? We can represent this better.  */
+	    rtx op = simplify_gen_subreg (mode, XVECEXP (vals, 0, 0),
+				          GET_MODE_INNER (mode), 0);
+	    op = force_reg (mode, op);
 	    emit_insn (gen_sse_movss (target, target, op));
-	    break;
-	  default:
-	    break;
+	  }
+	  break;
+
+	default:
+	  break;
 	}
       return;
     }
