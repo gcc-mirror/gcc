@@ -1,5 +1,10 @@
 2005-03-13  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	PR fortran/16907
+	* resolve.c (gfc_resolve_index): Allow REAL indices as an extension.
+
+2005-03-13  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	PR fortran/20323
 	* resolve.c (gfc_resolve): Check if character lengths are
 	specification expressions.
