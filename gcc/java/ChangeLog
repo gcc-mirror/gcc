@@ -1,3 +1,33 @@
+Fri Mar 12 19:42:55 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* constants.c (find_class_or_string_constant): Cast variable `j'
+ 	to a `jword' when comparing against one.
+
+	* expr.c (java_lang_expand_expr): Remove unused variables
+	`has_finally_p' and `op0'.
+
+	* gjavah.c (print_field_info): Cast a value to jint when comparing
+	against one.  Likewise for a jlong.
+	(add_namelet): Likewise cast a `sizeof' to an int when comparing
+	against a signed quantity.
+	
+	* jcf-dump.c (print_signature_type): Remove unused variable `digit'.
+	(print_signature): Don't needlessly dereference variable `str'
+
+	* jcf-reader.c (get_attribute): Mark variables `max_stack' and
+	`max_locals' with ATTRIBUTE_UNUSED.
+	(jcf_parse_class): Likewise for variable `index'.
+
+	* parse.h (reverse_jdep_list): Remove static prototype.
+
+	* parse.y (build_jump_to_finally): Remove prototype and definition.
+	(reverse_jdep_list): Add static prototype.
+
+	* typeck.c (convert_ieee_real_to_integer): Remove unused variables
+	`assignment' and `expr_decl'.
+
+	* verify.c (verify_jvm_instructions): Remove unused label `bad_ldc'.
+
 1999-03-12  Andrew Haley  <aph@cygnus.com>
 
 	* jcf-path.c (add_entry): alloca len+2 rather than len+1 bytes;

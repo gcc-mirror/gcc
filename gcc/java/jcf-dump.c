@@ -520,8 +520,7 @@ DEFUN(print_signature_type, (stream, ptr, limit),
       array_size = -1;
       for ((*ptr)++; (*ptr) < limit && ISDIGIT (**ptr); (*ptr)++)
 	{
-	  int digit = 
-	    array_size = (array_size < 0 ? 0 : 10 * array_size) + *(*ptr) - '0';
+	  array_size = (array_size < 0 ? 0 : 10 * array_size) + *(*ptr) - '0';
 	}
       print_signature_type (stream, ptr, limit);
       if (array_size == -1)
@@ -592,7 +591,7 @@ DEFUN(print_signature, (stream, jcf, signature_index, int options),
 	    }
 	  if (options & PRINT_SIGNATURE_ARGS_ONLY)
 	    {
-	      *str++;
+	      str++;
 	      fputc ('(', stream);
 	      while (str < limit && *str != ')')
 		{

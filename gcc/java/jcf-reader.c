@@ -72,8 +72,8 @@ DEFUN(get_attribute, (jcf),
   if (name_length == 4 && memcmp (name_data, "Code", 4) == 0)
     {
       uint16 j;
-      uint16 max_stack = JCF_readu2 (jcf);
-      uint16 max_locals = JCF_readu2 (jcf);
+      uint16 max_stack ATTRIBUTE_UNUSED = JCF_readu2 (jcf);
+      uint16 max_locals ATTRIBUTE_UNUSED = JCF_readu2 (jcf);
       uint32 code_length = JCF_readu4 (jcf);
       uint16 exception_table_length, attributes_count;
       if (code_length + 12 > attribute_length)
@@ -242,7 +242,7 @@ DEFUN(jcf_parse_class, (jcf),
   /* Read interfaces. */
   for (i = 0; i < interfaces_count; i++)
     {
-      uint16 index = JCF_readu2 (jcf);
+      uint16 index ATTRIBUTE_UNUSED = JCF_readu2 (jcf);
 #ifdef HANDLE_CLASS_INTERFACE
       HANDLE_CLASS_INTERFACE (index);
 #endif

@@ -786,7 +786,6 @@ verify_jvm_instructions (jcf, byte_ops, length)
 		break;
 	      /* ... else fall through ... */
 	    default:
-	    bad_ldc:
 	      VERIFICATION_ERROR ("bad constant pool tag in ldc");
 	    }
 	  if (type == int_type_node)

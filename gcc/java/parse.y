@@ -199,7 +199,6 @@ static tree string_constant_concatenation PROTO ((tree, tree));
 static tree build_string_concatenation PROTO ((tree, tree));
 static tree patch_string_cst PROTO ((tree));
 static tree patch_string PROTO ((tree));
-static tree build_jump_to_finally PROTO ((tree, tree, tree, tree));
 static tree build_try_statement PROTO ((int, tree, tree));
 static tree build_try_finally_statement PROTO ((int, tree, tree));
 static tree patch_try_statement PROTO ((tree));
@@ -239,6 +238,7 @@ static char *purify_type_name PROTO ((char *));
 static tree patch_initialized_static_field PROTO ((tree));
 static tree fold_constant_for_init PROTO ((tree, tree));
 static tree strip_out_static_field_access_decl PROTO ((tree));
+static jdeplist *reverse_jdep_list PROTO ((struct parser_ctxt *));
 
 /* Number of error found so far. */
 int java_error_count; 
@@ -10710,36 +10710,6 @@ patch_switch_statement (node)
 }
 
 /* 14.18 The try statement */
-
-/* Wrap BLOCK around a LABELED_BLOCK, set DECL to the newly generated
-   exit labeld and issue a jump to FINALLY_LABEL:
-     
-   LABELED_BLOCK
-     BLOCK
-       <orignal_statments>
-       DECL = &LABEL_DECL
-       GOTO_EXPR
-         FINALLY_LABEL
-     LABEL_DECL */
-
-static tree
-build_jump_to_finally (block, decl, finally_label, type)
-     tree block, decl, finally_label, type;
-{
-  tree stmt;
-  tree new_block = build (LABELED_BLOCK_EXPR, type,
-			  create_label_decl (generate_name ()), block);
-
-  stmt = build (MODIFY_EXPR, void_type_node, decl,
-		build_address_of (LABELED_BLOCK_LABEL (new_block)));
-  TREE_SIDE_EFFECTS (stmt) = 1;
-  CAN_COMPLETE_NORMALLY (stmt) = 1;
-  add_stmt_to_block (block, type, stmt);
-  stmt = build (GOTO_EXPR, void_type_node, finally_label);
-  TREE_SIDE_EFFECTS (stmt) = 1;
-  add_stmt_to_block (block, type, stmt);
-  return new_block;
-}
 
 static tree
 build_try_statement (location, try_block, catches)
