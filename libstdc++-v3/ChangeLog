@@ -1,3 +1,9 @@
+2004-01-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/performance/ifstream_extract_float.cc: Add higher
+	precision tests.
+	* testsuite/performance/ofstream_insert_float.cc: Same.
+	
 2004-01-13  Paolo Carlini  <pcarlini@suse.de>
 
 	* src/locale-misc-inst.cc (__convert_from_v(long),

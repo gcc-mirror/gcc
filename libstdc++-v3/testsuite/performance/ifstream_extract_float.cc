@@ -26,36 +26,51 @@
 // the GNU General Public License.
 
 #include <fstream>
+#include <sstream>
 #include <testsuite_performance.h>
 
-int main() 
+void test_extraction(int p = 6)
 {
   using namespace std;
   using namespace __gnu_test;
 
-  time_counter time;
-  resource_counter resource;
+  const char* filename = "tmp_perf_float.txt";
   const int iterations = 10000000;
 
+  ostringstream oss;
+  oss << "precision " << p;
+
+  // Construct data.
   {
-    ofstream out("tmp_perf_float.txt");
+    ofstream out(filename);
+    out.precision(p);
     for (int i = 0; i < iterations; ++i)
       {
 	float f = i * 3.14159265358979323846;
-	out << f << "\n";
+	out << f << '\n';
       }
   }
 
   {
-    ifstream in("tmp_perf_float.txt");
+    time_counter time;
+    resource_counter resource;
+
+    ifstream in(filename);
+    in.precision(p);
     float f;
     start_counters(time, resource);  
     for (int j, i = 0; i < iterations; ++i)
       in >> f;
     stop_counters(time, resource);
-    report_performance(__FILE__, "", time, resource);
+    report_performance(__FILE__, oss.str(), time, resource);
   }
 
-  unlink("tmp_perf_int.txt");
-  return 0;
+  unlink(filename);
 };
+
+int main()
+{
+  test_extraction(6);
+  test_extraction(12);
+  return 0;
+}
