@@ -1,3 +1,7 @@
+2002-12-31  Neil Booth  <neil@daikokuya.co.uk>
+
+	* .cvsignore: Update.
+
 2002-12-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* parser.c (cp_parser_dependent_type_p): Fix thinko.
