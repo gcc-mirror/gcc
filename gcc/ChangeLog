@@ -1,3 +1,7 @@
+2003-12-15  David O'Brien  <obrien@FreeBSD.org>
+
+	* Makefile.in (CPPFLAGS): Initialize from configure.
+
 2003-12-15  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/13400
