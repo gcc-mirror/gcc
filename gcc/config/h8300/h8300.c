@@ -167,7 +167,7 @@ dosize (file, op, size)
 	   amount > 0;
 	   amount /= 2)
 	{
-	  for(; size >= amount; size -= amount)
+	  for (; size >= amount; size -= amount)
 	    fprintf (file, "\t%ss\t#%d,sp\n", op, amount);
 	}
     }
@@ -612,7 +612,7 @@ split_adds_subs (mode, operands)
        amount > 0;
        amount /= 2)
     {
-      for(; val >= amount; val -= amount)
+      for (; val >= amount; val -= amount)
 	{
 	  rtx tmp = gen_rtx_PLUS (mode, reg, GEN_INT (sign * amount));
 	  emit_insn (gen_rtx_SET (VOIDmode, reg, tmp));
@@ -1773,16 +1773,16 @@ enum shift_alg
 /* Symbols of the various shifts which can be used as indices.  */
 
 enum shift_type
-  {
-    SHIFT_ASHIFT, SHIFT_LSHIFTRT, SHIFT_ASHIFTRT
-  };
+{
+  SHIFT_ASHIFT, SHIFT_LSHIFTRT, SHIFT_ASHIFTRT
+};
 
 /* Symbols of the various modes which can be used as indices.  */
 
 enum shift_mode
-  {
-    QIshift, HIshift, SIshift
-  };
+{
+  QIshift, HIshift, SIshift
+};
 
 /* For single bit shift insns, record assembler and what bits of the
    condition code are valid afterwards (represented as various CC_FOO
@@ -2680,7 +2680,8 @@ fix_bit_operand (operands, what, type)
       if (CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), what))
 	{
 	  /* Ok to have a memory dest.  */
-	  if (GET_CODE (operands[0]) == MEM && !EXTRA_CONSTRAINT (operands[0], 'U'))
+	  if (GET_CODE (operands[0]) == MEM
+	      && !EXTRA_CONSTRAINT (operands[0], 'U'))
 	    {
 	      rtx mem = gen_rtx_MEM (GET_MODE (operands[0]),
 				     copy_to_mode_reg (Pmode,
@@ -2689,7 +2690,8 @@ fix_bit_operand (operands, what, type)
 	      operands[0] = mem;
 	    }
 
-	  if (GET_CODE (operands[1]) == MEM && !EXTRA_CONSTRAINT (operands[1], 'U'))
+	  if (GET_CODE (operands[1]) == MEM
+	      && !EXTRA_CONSTRAINT (operands[1], 'U'))
 	    {
 	      rtx mem = gen_rtx_MEM (GET_MODE (operands[1]),
 				     copy_to_mode_reg (Pmode,
