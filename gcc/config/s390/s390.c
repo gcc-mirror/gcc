@@ -57,8 +57,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 
 static bool s390_assemble_integer (rtx, unsigned int, int);
-static void s390_select_rtx_section (enum machine_mode, rtx,
-				     unsigned HOST_WIDE_INT);
 static void s390_encode_section_info (tree, rtx, int);
 static bool s390_cannot_force_const_mem (rtx);
 static rtx s390_delegitimize_address (rtx);
@@ -96,9 +94,6 @@ static bool s390_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode mode,
 
 #undef  TARGET_ASM_CLOSE_PAREN
 #define TARGET_ASM_CLOSE_PAREN ""
-
-#undef	TARGET_ASM_SELECT_RTX_SECTION
-#define	TARGET_ASM_SELECT_RTX_SECTION  s390_select_rtx_section
 
 #undef	TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO s390_encode_section_info
@@ -7542,20 +7537,6 @@ s390_function_profiler (FILE *file, int labelno)
       output_asm_insn ("basr\t%0,%0", op);
       output_asm_insn ("l\t%0,%1", op);
     }
-}
-
-/* Select section for constant in constant pool.  In 32-bit mode,
-   constants go in the function section; in 64-bit mode in .rodata.  */
-
-static void
-s390_select_rtx_section (enum machine_mode mode ATTRIBUTE_UNUSED,
-			 rtx x ATTRIBUTE_UNUSED,
-			 unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
-{
-  if (TARGET_CPU_ZARCH)
-    readonly_data_section ();
-  else
-    function_section (current_function_decl);
 }
 
 /* Encode symbol attributes (local vs. global, tls model) of a SYMBOL_REF
