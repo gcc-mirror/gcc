@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha on Tru64 5.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 
    This file is part of GNU CC.
 
@@ -20,3 +20,25 @@
 
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE  128
+
+/* Tru64 UNIX V5 has a 16 byte long double type and requires __X_FLOAT to be
+   defined to get the appropriate prototypes for the long double functions
+   in <math.h>.  */
+
+#undef CPP_XFLOAT_SPEC
+#define CPP_XFLOAT_SPEC "-D__X_FLOAT"
+
+/* In Tru64 UNIX V5.1, Compaq introduced a new assembler
+   (/usr/lib/cmplrs/cc/adu) which currently (versions between 3.04.29 and
+   3.04.32) breaks mips-tfile.  Passing the undocumented -oldas flag reverts
+   to using the old assembler (/usr/lib/cmplrs/cc/as[01]).
+
+   The V5.0 and V5.0A assemblers silently ignore -oldas, so it can be
+   specified here.
+
+   It is clearly not desirable to depend on this undocumented flag, and
+   Compaq wants -oldas to go away soon, but until they have released a
+   new adu that works with mips-tfile, this is the only option.  */
+
+#undef ASM_OLDAS_SPEC
+#define ASM_OLDAS_SPEC "-oldas"
