@@ -354,6 +354,7 @@ static struct undobuf undobuf;
 static int n_occurrences;
 
 static void set_nonzero_bits_and_sign_copies ();
+static void setup_incoming_promotions ();
 static void move_deaths ();
 rtx remove_death ();
 static void record_value_for_reg ();
@@ -458,6 +459,8 @@ combine_instructions (f, nregs)
 
   label_tick = 1;
 
+  setup_incoming_promotions ();
+
   for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
     {
       INSN_CUID (insn) = ++i;
@@ -487,6 +490,8 @@ combine_instructions (f, nregs)
   bzero (reg_last_set_table_tick, nregs * sizeof (short));
   bzero (reg_last_set_label, nregs * sizeof (short));
   bzero (reg_last_set_invalid, nregs * sizeof (char));
+
+  setup_incoming_promotions ();
 
   for (insn = f; insn; insn = next ? next : NEXT_INSN (insn))
     {
@@ -592,6 +597,28 @@ combine_instructions (f, nregs)
   total_successes += combine_successes;
 
   nonzero_sign_valid = 0;
+}
+
+/* Set up any promoted values for incoming argument registers.  */
+
+void
+setup_incoming_promotions ()
+{
+#ifdef PROMOTE_FUNCTION_ARGS
+  int regno;
+  rtx reg;
+  enum machine_mode mode;
+  int unsignedp;
+  rtx first = get_insns ();
+
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (FUNCTION_ARG_REGNO_P (regno)
+	&& (reg = promoted_input_arg (regno, &mode, &unsignedp)) != 0)
+      record_value_for_reg (reg, first,
+			    gen_rtx (unsignedp ? ZERO_EXTEND : SIGN_EXTEND,
+				     mode,
+				     gen_rtx (CLOBBER, VOIDmode, const0_rtx)));
+#endif
 }
 
 /* Called via note_stores.  If X is a pseudo that is used in more than
@@ -8637,8 +8664,8 @@ update_table_tick (x)
 
 /* Record that REG is set to VALUE in insn INSN.  If VALUE is zero, we
    are saying that the register is clobbered and we no longer know its
-   value.  If INSN is zero, don't update reg_last_set; this call is normally
-   done with VALUE also zero to invalidate the register.  */
+   value.  If INSN is zero, don't update reg_last_set; this is only permitted
+   with VALUE also zero and is used to invalidate the register.  */
 
 static void
 record_value_for_reg (reg, insn, value)
