@@ -1,3 +1,7 @@
+Sun Jan 17 01:15:04 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sat Jan 16 23:40:33 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* reload1.c (reload_cse_regs_1): Do not call
