@@ -1,3 +1,8 @@
+2003-08-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.misc-tests/linkage.exp: Treat all HP-UX platforms
+	identically.
+
 2003-08-22  Roger Sayle  <roger@eyesopen.com>
 	    Jim Wilson  <wilson@tuliptree.org>
 
