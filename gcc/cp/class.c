@@ -4688,6 +4688,8 @@ layout_class_type (t, empty_p, has_virtual_p,
      tree *new_virtuals_p;
      tree *overridden_virtuals_p;
 {
+  tree padding = NULL_TREE;
+
   /* If possible, we reuse the virtual function table pointer from one
      of our base classes.  */
   determine_primary_base (t, has_virtual_p);
@@ -4712,15 +4714,17 @@ layout_class_type (t, empty_p, has_virtual_p,
      have non-zero size.  The field that we add here is fake, in the
      sense that, for example, we don't want people to be able to
      initialize it later.  So, we add it just long enough to let the
-     back-end lay out the type, and then remove it.  */
+     back-end lay out the type, and then remove it.  In the new ABI,
+     the class may be empty even if it has basetypes.  Therefore, we
+     add the fake field at the end of the fields list; if there are
+     already FIELD_DECLs on the list, their offsets will not be
+     disturbed.  */
   if (*empty_p)
     {
-      tree decl = build_lang_decl
-	(FIELD_DECL, NULL_TREE, char_type_node);
-      TREE_CHAIN (decl) = TYPE_FIELDS (t);
-      TYPE_FIELDS (t) = decl;
+      padding = build_lang_decl (FIELD_DECL, NULL_TREE, char_type_node);
+      TYPE_FIELDS (t) = chainon (TYPE_FIELDS (t), padding);
       TYPE_NONCOPIED_PARTS (t) 
-	= tree_cons (NULL_TREE, decl, TYPE_NONCOPIED_PARTS (t));
+	= tree_cons (NULL_TREE, padding, TYPE_NONCOPIED_PARTS (t));
       TREE_STATIC (TYPE_NONCOPIED_PARTS (t)) = 1;
     }
 
@@ -4734,7 +4738,14 @@ layout_class_type (t, empty_p, has_virtual_p,
   /* If we added an extra field to make this class non-empty, remove
      it now.  */
   if (*empty_p)
-    TYPE_FIELDS (t) = TREE_CHAIN (TYPE_FIELDS (t));
+    {
+      tree *declp;
+
+      declp = &TYPE_FIELDS (t);
+      while (*declp != padding)
+	declp = &TREE_CHAIN (*declp);
+      *declp = TREE_CHAIN (*declp);
+    }
 
   /* Delete all zero-width bit-fields from the list of fields.  Now
      that the type is laid out they are no longer important.  */
