@@ -1,27 +1,27 @@
-gcc-ss-@BRANCH@-@DATE@ is now available on 
-  ftp://gcc.gnu.org/pub/gcc/snapshots/@BRANCH@-@DATE@
+gcc-ss-@RELEASE@ is now available on 
+  ftp://gcc.gnu.org/pub/gcc/snapshots/@RELEASE@/
 and on various mirrors, see http://gcc.gnu.org/mirrors.html for details.
 
 This snapshot has been generated from the GCC CVS @BRANCH@ branch.
 
 You'll find:
 
-  gcc-@DATE@.tar.bz2                 The full GCC snapshot, including all
-                                       languages and runtime libraries.
+  gcc-@RELEASE@.tar.bz2              The full GCC snapshot, including all
+                                        languages and runtime libraries.
 
-  gcc-core-@DATE@.tar.bz2            Just the C front end and core compiler.
+  gcc-core-@RELEASE@.tar.bz2         Just the C front end and core compiler.
 
-  gcc-testsuite-@DATE@.tar.bz2       The GCC testsuite.
+  gcc-testsuite-@RELEASE@.tar.bz2    The GCC testsuite.
 
-  gcc-ada-@DATE@.tar.bz2             The Ada language and runtime.
+  gcc-ada-@RELEASE@.tar.bz2          The Ada language and runtime.
 
-  gcc-g++-@DATE@.tar.bz2             The C++ front end and runtime.
+  gcc-g++-@RELEASE@.tar.bz2          The C++ front end and runtime.
 
-  gcc-g77-@DATE@.tar.bz2             The F77 front end and runtime.
+  gcc-g77-@RELEASE@.tar.bz2          The F77 front end and runtime.
 
-  gcc-objc-@DATE@.tar.bz2            The Objective-C front end and runtime.
+  gcc-objc-@RELEASE@.tar.bz2         The Objective-C front end and runtime.
 
-  gcc-java-@DATE@.tar.bz2            The Java front end and runtime.
+  gcc-java-@RELEASE@.tar.bz2         The Java front end and runtime.
 
 Diffs from @BRANCH@-@LAST_DATE@ are available in the diffs/ subdirectory. 
 

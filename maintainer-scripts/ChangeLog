@@ -1,7 +1,14 @@
+2003-07-14  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc_release (announce_snapshot): Add substitution of @RELEASE@
+	for README and index.html.
+	* snapshot-README: Use it.
+	* snapshot-index.html: Ditto.
+
 2003-07-09  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 	
-	* gcc_release (announce_snapshot): Add substitution of @BRANCH
-	for README and index.html.  Remove substitution of @LONG_DATE.
+	* gcc_release (announce_snapshot): Add substitution of @BRANCH@
+	for README and index.html.  Remove substitution of @LONG_DATE@.
 	Put index.html into the respective snapshot directory.
 	Adjust subject of the notification mail to the new naming scheme
 	for CVS tags.
