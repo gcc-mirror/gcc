@@ -1539,7 +1539,7 @@ line being effectively commented out---unfortunate if that
 line is a non-comment line of important code!
 
 @emph{Note:} The @samp{-traditional} and @samp{-undef} flags are supplied
-to @code{cpp} by default, to avoid unpleasant surprises.
+to @code{cpp} by default, to help avoid unpleasant surprises.
 @xref{Preprocessor Options,,Options Controlling the Preprocessor,
 gcc,Using and Porting GNU CC}.
 This means that ANSI C preprocessor features (such as the @samp{#}
@@ -1549,6 +1549,15 @@ substitution by C predefines.
 Thus, if you want to do system-specific
 tests, use, for example, @samp{#ifdef __linux__} rather than @samp{#ifdef linux}.
 Use the @samp{-v} option to see exactly how the preprocessor is invoked.
+
+@cindex /*
+Unfortunately, the @samp{-traditional} flag will not avoid an error from
+anything that @code{cpp} sees as an unterminated C comment, such as:
+@smallexample
+C Some Fortran compilers accept /* as starting
+C an inline comment.
+@end smallexample
+@xref{Trailing Comment}.
 
 The following options that affect overall processing are recognized
 by the @code{g77} and @code{gcc} commands in a GNU Fortran installation:
@@ -6868,6 +6877,9 @@ continuation line, imitating the behavior of @code{f2c}.
 @node Trailing Comment
 @section Trailing Comment
 
+@cindex trailing comment
+@cindex comment, trailing
+@cindex /*
 @code{g77} supports use of @samp{/*} to start a trailing
 comment.
 In the GNU Fortran language, @samp{!} is used for this purpose.
@@ -6887,6 +6899,7 @@ error (though it would likely behave incorrectly).
 @node Debug Line
 @section Debug Line
 @cindex debug line
+@cindex comment line, debug
 
 Use of @samp{D} or @samp{d} as the first character (column 1) of
 a source line denotes a debug line.
