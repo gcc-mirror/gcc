@@ -1,5 +1,7 @@
 2004-07-01  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* gimplify.c (gimplify_one_sizepos): Don't do anything if any VAR_DECL.
+
 	* tree-pretty-print.c (dump_generic_node, case ARRAY_REF): Use
 	access functions for lower bound and element size and only output
 	if lower bound nonzero or element size not same as that of type.
