@@ -1,3 +1,46 @@
+2004-07-12  David Billinghurst (David.Billinghurst@riotinto.com)
+ 
+	* gfortran.dg/g77/12002.f: Copy from g77.f-torture/compile .
+	Add {dg-do compile} directive.
+	* gfortran.dg/g77/13060.f: Likewise
+	* gfortran.dg/g77/19990218-0.f: Likewise
+	* gfortran.dg/g77/19990305-0.f: Likewise
+	* gfortran.dg/g77/19990419-0.f: Likewise
+	* gfortran.dg/g77/19990502-0.f: Likewise
+	* gfortran.dg/g77/19990502-1.f: Likewise
+	* gfortran.dg/g77/19990525-0.f: Likewise
+	* gfortran.dg/g77/19990826-1.f: Likewise
+	* gfortran.dg/g77/19990826-3.f: Likewise
+	* gfortran.dg/g77/19990905-2.f: Likewise
+	* gfortran.dg/g77/20000412-1.f: Likewise
+	* gfortran.dg/g77/20000511-1.f: Likewise
+	* gfortran.dg/g77/20000511-2.f: Likewise
+	* gfortran.dg/g77/20000518.f: Likewise
+	* gfortran.dg/g77/20000601-1.f: Likewise
+	* gfortran.dg/g77/20000601-2.f: Likewise
+	* gfortran.dg/g77/20000629-1.f: Likewise
+	* gfortran.dg/g77/20000630-2.f: Likewise
+	* gfortran.dg/g77/20010115.f: Likewise
+	* gfortran.dg/g77/20010321-1.f: Likewise
+	* gfortran.dg/g77/20010426.f: Likewise
+	* gfortran.dg/g77/20020307-1.f: Likewise
+	* gfortran.dg/g77/8485.f: Likewise
+	* gfortran.dg/g77/960317-1.f: Likewise
+	* gfortran.dg/g77/970915-0.f: Likewise
+	* gfortran.dg/g77/980310-1.f: Likewise
+	* gfortran.dg/g77/980310-2.f: Likewise
+	* gfortran.dg/g77/980310-3.f: Likewise
+	* gfortran.dg/g77/980310-4.f: Likewise
+	* gfortran.dg/g77/980310-6.f: Likewise
+	* gfortran.dg/g77/980310-7.f: Likewise
+	* gfortran.dg/g77/980310-8.f: Likewise
+	* gfortran.dg/g77/980419-2.f: Likewise
+	* gfortran.dg/g77/980424-0.f: Likewise
+	* gfortran.dg/g77/980427-0.f: Likewise
+	* gfortran.dg/g77/980729-0.f: Likewise
+	* gfortran.dg/g77/981117-1.f: Likewise
+	* gfortran.dg/g77/toon_1.f: Likewise
+
 2004-07-12  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/2204
