@@ -1,3 +1,9 @@
+Mon Jul 20 01:11:11 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* jump.c (jump_optimize): When simplifying noop moves and
+	PUSH_ROUNDING, fix thinko so we use same criterion for identifying
+	the PUSHes to rewrite in second loop as we did in the first.
+
 Sun Jul 19 08:23:53 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cplus-dem.c (demangle_nested_args): Make function definition
