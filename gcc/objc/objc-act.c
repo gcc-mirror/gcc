@@ -2624,7 +2624,8 @@ build_message_expr (mess)
       else if (TREE_CODE (receiver) == CALL_EXPR && rtype == id_type
 	       && (class_ident = receiver_is_class_object (receiver)))
 	;
-      else if (rtype != id_type && rtype != class_type)
+      else if (TYPE_MAIN_VARIANT (rtype) != TYPE_MAIN_VARIANT (id_type)
+	       && TYPE_MAIN_VARIANT (rtype) != TYPE_MAIN_VARIANT (class_type))
 	{
 	  bzero (errbuf, BUFSIZE);
 	  warning ("invalid receiver type `%s'", gen_declaration (rtype, errbuf));
@@ -2686,7 +2687,7 @@ build_message_expr (mess)
 
   /* Determine operation return type.  */
 
-  if (rtype == super_type)
+  if (TYPE_MAIN_VARIANT (rtype) == TYPE_MAIN_VARIANT (super_type))
     {
       tree iface;
 
@@ -3413,6 +3414,14 @@ check_methods (chain, list, mtype)
     }
 }
 
+/* Make sure that the class CLASS_NAME is defined
+   CODE says which kind of thing CLASS_NAME ought to be.
+   It can be INTERFACE_TYPE, IMPLEMENTATION_TYPE, PROTOCOL_TYPE
+   or CATEGORY_TYPE.
+
+   If CODE is INTERFACE_TYPE, we also do a push_obstacks_nochange
+   whose matching pop is in continue_class.  */
+
 tree
 start_class (code, class_name, super_name)
      enum tree_code code;
@@ -3421,8 +3430,14 @@ start_class (code, class_name, super_name)
 {
   tree class;
 
+  if (code == INTERFACE_TYPE)
+    {
+      push_obstacks_nochange ();
+      end_temporary_allocation ();
+    }
+
   if (!doing_objc_thang)
-     fatal ("Objective-C text in C source file");
+    fatal ("Objective-C text in C source file");
 
   class = make_node (code);
 
