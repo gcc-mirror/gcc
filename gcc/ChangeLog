@@ -1,3 +1,31 @@
+2003-02-08  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* cfgloop.h (fix_loop_placement, can_duplicate_loop_p,
+	duplicate_loop_to_header_edge, loopify, remove_path, split_loop_bb):
+	Declare.
+	(DLTHE_FLAG_UPDATE_FREQ): New.
+	* cfgloopmanip.c (duplicate_loop, duplicate_subloops, copy_loops_to,
+	loop_redirect_edge, loop_delete_branch_edge, copy_bbs, remove_bbs,
+	rpe_enum_p, find_branch, alp_enum_p, add_loop, fix_loop_placements,
+	fix_bb_placement, fix_bb_placements, place_new_loop,
+	scale_loop_frequencies, scale_bbs_frequencies, record_exit_edges):
+	New static functions.
+	(fix_loop_placement, can_duplicate_loop_p,
+	duplicate_loop_to_header_edge, loopify, remove_path, split_loop_bb):
+	New functions.
+
+	* cfgloop.h (loop_optimizer_init, loop_optimizer_finalize,
+	unswitch_loops): Declare.
+	* loop-init.c: New file.
+	* loop-unswitch.c: New file.
+	* Makefile.in (loop-init.o, loop-unswitch.o): New.
+	* params.def (PARAM_MAX_UNSWITCH_INSNS, PARAM_MAX_UNSWITCH_LEVEL): New.
+	* toplev.c (DFI_loop2): New dump.
+	(flag_unswitch_loops): New.
+	(lang_independent_options): Add it.
+	(rest_of_compilation): Call new loop optimizer.
+	(parse_options_and_default_flags): Turn flag_unswitch_loops on with -O3.
+
 2003-02-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/clzsi2.c: New.

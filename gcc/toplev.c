@@ -239,6 +239,7 @@ enum dump_file_index
   DFI_bp,
   DFI_ce1,
   DFI_tracer,
+  DFI_loop2,
   DFI_cse2,
   DFI_life,
   DFI_combine,
@@ -289,6 +290,7 @@ static struct dump_file_info dump_file[DFI_MAX] =
   { "bp",	'b', 1, 0, 0 },
   { "ce1",	'C', 1, 0, 0 },
   { "tracer",	'T', 1, 0, 0 },
+  { "loop2",	'L', 1, 0, 0 },
   { "cse2",	't', 1, 0, 0 },
   { "life",	'f', 1, 0, 0 },	/* Yes, duplicate enable switch.  */
   { "combine",	'c', 1, 0, 0 },
@@ -518,6 +520,9 @@ int flag_unroll_loops;
    This is generally not a win.  */
 
 int flag_unroll_all_loops;
+
+/* Nonzero enables loop unswitching.  */
+int flag_unswitch_loops;
 
 /* Nonzero enables prefetch optimizations for arrays in loops.  */
 
@@ -997,6 +1002,8 @@ static const lang_independent_options f_options[] =
    N_("Perform loop unrolling when iteration count is known") },
   {"unroll-all-loops", &flag_unroll_all_loops, 1,
    N_("Perform loop unrolling for all loops") },
+  {"unswitch-loops", &flag_unswitch_loops, 1,
+   N_("Perform loop unswitching") },
   {"prefetch-loop-arrays", &flag_prefetch_loop_arrays, 1,
    N_("Generate prefetch instructions, if available, for arrays in loops") },
   {"move-all-movables", &flag_move_all_movables, 1,
@@ -3057,6 +3064,38 @@ rest_of_compilation (decl)
       timevar_pop (TV_TRACER);
     }
 
+  /* Perform loop optimalizations.  It might be better to do them a bit
+     sooner, but we want the profile feedback to work more efficiently.  */
+  if (optimize > 0
+      && flag_unswitch_loops)
+    {
+      struct loops *loops;
+      timevar_push (TV_LOOP);
+      open_dump_file (DFI_loop2, decl);
+      if (rtl_dump_file)
+	dump_flow_info (rtl_dump_file);
+
+      loops = loop_optimizer_init (rtl_dump_file);
+
+      if (loops)
+	{
+	  /* The optimalizations:  */
+	  if (flag_unswitch_loops)
+	    unswitch_loops (loops);
+
+	  loop_optimizer_finalize (loops, rtl_dump_file);
+	}
+
+      cleanup_cfg (CLEANUP_EXPENSIVE);
+      delete_trivially_dead_insns (insns, max_reg_num ());
+      reg_scan (insns, max_reg_num (), 0);
+      if (rtl_dump_file)
+	dump_flow_info (rtl_dump_file);
+      close_dump_file (DFI_loop2, print_rtl_with_bb, get_insns ());
+      timevar_pop (TV_LOOP);
+      ggc_collect ();
+    }
+
   if (flag_rerun_cse_after_loop)
     {
       timevar_push (TV_CSE2);
@@ -4884,6 +4923,7 @@ parse_options_and_default_flags (argc, argv)
     {
       flag_inline_functions = 1;
       flag_rename_registers = 1;
+      flag_unswitch_loops = 1;
     }
 
   if (optimize < 2 || optimize_size)
