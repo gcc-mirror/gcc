@@ -9081,6 +9081,10 @@ static int
 check_final_assignment (lvalue, wfl)
      tree lvalue, wfl;
 {
+  if (TREE_CODE (lvalue) == COMPOUND_EXPR 
+      && JDECL_P (TREE_OPERAND (lvalue, 1)))
+    lvalue = TREE_OPERAND (lvalue, 1);
+
   if (JDECL_P (lvalue) 
       && FIELD_FINAL (lvalue) && !IS_CLINIT (current_function_decl))
     {
@@ -9160,7 +9164,7 @@ patch_assignment (node, wfl_op1, wfl_op2)
   else if (TREE_CODE (wfl_op1) == EXPR_WITH_FILE_LOCATION
 	   && resolve_expression_name (wfl_op1, &llvalue))
     {
-      if (check_final_assignment (llvalue, wfl_op1))
+      if (!error_found && check_final_assignment (llvalue, wfl_op1))
 	{
 	  /* What we should do instead is resetting the all the flags
 	     previously set, exchange lvalue for llvalue and continue. */
