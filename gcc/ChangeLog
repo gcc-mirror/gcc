@@ -1,3 +1,8 @@
+2001-01-29  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cpplib.c (T_BAD_DIRECTIVE): Remove.
+        (_cpp_init_stacks): Loop from 0 to N_DIRECTIVES - 1.
+
 2001-01-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* tree.c, tree.h (build_parse_node): Remove; was identical to
