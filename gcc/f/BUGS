@@ -2,7 +2,7 @@
 `bugs0.texi' and `bugs.texi'.  `BUGS' is *not* a source file, although
 it is normally included within source distributions.
 
-   This file lists known bugs in the FSF-0.5.25 version of the GNU
+   This file lists known bugs in the GCC-2.95 version of the GNU
 Fortran compiler.  Copyright (C) 1995-1999 Free Software Foundation,
 Inc.  You may copy, distribute, and modify it freely as long as you
 preserve this copyright notice and permission notice.
@@ -11,9 +11,9 @@ Known Bugs In GNU Fortran
 *************************
 
    This section identifies bugs that `g77' *users* might run into in
-the FSF-0.5.25 version of `g77'.  This includes bugs that are actually
-in the `gcc' back end (GBE) or in `libf2c', because those sets of code
-are at least somewhat under the control of (and necessarily intertwined
+the GCC-2.95 version of `g77'.  This includes bugs that are actually in
+the `gcc' back end (GBE) or in `libf2c', because those sets of code are
+at least somewhat under the control of (and necessarily intertwined
 with) `g77', so it isn't worth separating them out.
 
    For information on bugs in *other* versions of `g77', see
@@ -27,7 +27,7 @@ particularly concentrated on any version of this information that is
 distributed as part of a *released* `g77'.
 
    In particular, while this information is intended to apply to the
-FSF-0.5.25 version of `g77', only an official *release* of that version
+GCC-2.95 version of `g77', only an official *release* of that version
 is expected to contain documentation that is most consistent with the
 `g77' product in that version.
 
@@ -40,7 +40,7 @@ via `http://egcs.cygnus.com/onlinedocs/g77_bugs.html'.  Follow the
 port, build, and install `g77', see "Problems Installing" in
 `egcs/gcc/f/INSTALL'.
 
-   The following information was last updated on 1999-05-06:
+   The following information was last updated on 1999-06-28:
 
    * `g77' fails to warn about use of a "live" iterative-DO variable as
      an implied-DO variable in a `WRITE' or `PRINT' statement (although
