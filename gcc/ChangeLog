@@ -1,3 +1,11 @@
+2001-11-09  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.in ($(HOST_PREFIX_1)rtl.o,
+	$(HOST_PREFIX_1)print-rtl.o, $(HOST_PREFIX_1)bitmap.o,
+	$(HOST_PREFIX_1)vfprintf.o, $(HOST_PREFIX_1)doprint.o, 
+	$(HOST_PREFIX_1)strstr.o, $(HOST_PREFIX_1)errors.o,
+	$(HOST_PREFIX_1)ggc-none.o): Update dependencies.
+
 2001-11-09  H.J. Lu <hjl@gnu.org>
 
 	* config/mips/mips.c (mips_output_function_prologues): Cast
