@@ -86,6 +86,16 @@ static void process_reg_param		PROTO((struct inline_remap *, rtx,
 
 void set_decl_abstract_flags		PROTO((tree, int));
 static tree copy_and_set_decl_abstract_origin PROTO((tree));
+
+/* The maximum number of instructions accepted for inlining a
+   function.  Increasing values mean more agressive inlining.
+   This affects currently only functions explicitly marked as
+   inline (or methods defined within the class definition for C++).
+   The default value of 10000 is arbitrary but high to match the
+   previously unlimited gcc capabilities.  */
+
+int inline_max_insns = 10000;
+
 
 /* Returns the Ith entry in the label_map contained in MAP.  If the
    Ith entry has not yet been set, return a fresh label.  This function
@@ -116,7 +126,16 @@ function_cannot_inline_p (fndecl)
 {
   register rtx insn;
   tree last = tree_last (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
-  int max_insns = INTEGRATE_THRESHOLD (fndecl);
+
+  /* For functions marked as inline increase the maximum size to
+     inline_max_insns (-finline-limit-<n>).  For regular functions
+     use the limit given by INTEGRATE_THRESHOLD.  */
+
+  int max_insns = (DECL_INLINE (fndecl))
+		   ? (inline_max_insns
+		      + 8 * list_length (DECL_ARGUMENTS (fndecl)))
+		   : INTEGRATE_THRESHOLD (fndecl);
+
   register int ninsns = 0;
   register tree parms;
   rtx result;
@@ -136,7 +155,7 @@ function_cannot_inline_p (fndecl)
     return current_function_cannot_inline;
 
   /* If its not even close, don't even look.  */
-  if (!DECL_INLINE (fndecl) && get_max_uid () > 3 * max_insns)
+  if (get_max_uid () > 3 * max_insns)
     return N_("function too large to be inline");
 
 #if 0
@@ -170,7 +189,7 @@ function_cannot_inline_p (fndecl)
 	return N_("function with transparent unit parameter cannot be inline");
     }
 
-  if (!DECL_INLINE (fndecl) && get_max_uid () > max_insns)
+  if (get_max_uid () > max_insns)
     {
       for (ninsns = 0, insn = get_first_nonparm_insn ();
 	   insn && ninsns < max_insns;

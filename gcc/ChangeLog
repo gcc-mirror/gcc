@@ -1,3 +1,12 @@
+Mon Apr 26 00:28:25 1999  Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
+
+ 	* flags.h (inline_max_insns): Declare.
+ 	* integrate.c (inline_max_insns): New variable.
+ 	(function_cannot_inline_p): Use it.
+ 	* toplev.c (main): Add the flag -finline-limit-n.
+ 	(display_help): Document -finline-limit-n.
+ 	* invoke.texi: Document -finline-limit-n
+
 Sun Apr 25 23:03:32 1999  Richard Henderson  <rth@cygnus.com>
 
 	* stmt.c (expand_asm_operands): Reload in-out reg-only memory operands.

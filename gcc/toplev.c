@@ -4488,6 +4488,7 @@ display_help ()
   printf ("  -ffixed-<register>      Mark <register> as being unavailable to the compiler\n");
   printf ("  -fcall-used-<register>  Mark <register> as being corrupted by function calls\n");
   printf ("  -fcall-saved-<register> Mark <register> as being preserved across functions\n");
+  printf ("  -finline-limit-<number> Limits the size of inlined functions to <number>\n");
 
   for (i = NUM_ELEM (f_options); i--;)
     {
@@ -5062,6 +5063,9 @@ main (argc, argv)
 
 	      if (found)
 		;
+	      else if (!strncmp (p, "inline-limit-", 13))
+	        inline_max_insns =
+		  read_integral_parameter (p + 13, p - 2, inline_max_insns);
 #ifdef HAIFA
 #ifdef INSN_SCHEDULING
 	      else if (!strncmp (p, "sched-verbose-",14))
