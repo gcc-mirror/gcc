@@ -5737,6 +5737,8 @@ set_init_index (first, last)
     error_init ("nonconstant array index in initializer%s", " for `%s'", NULL);
   else if (last != 0 && TREE_CODE (last) != INTEGER_CST)
     error_init ("nonconstant array index in initializer%s", " for `%s'", NULL);
+  else if (! constructor_unfilled_index)
+    error_init ("array index in non-array initializer%s", " for `%s'", NULL);
   else if (tree_int_cst_lt (first, constructor_unfilled_index))
     error_init ("duplicate array index in initializer%s", " for `%s'", NULL);
   else
