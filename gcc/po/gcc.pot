@@ -11,7 +11,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2002-02-04 09:01-0800\n"
+"POT-Creation-Date: 2002-02-11 11:46-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,9 +42,9 @@ msgstr ""
 #: attribs.c:462 attribs.c:484 attribs.c:506 attribs.c:537 attribs.c:559
 #: attribs.c:582 attribs.c:612 attribs.c:650 attribs.c:697 attribs.c:727
 #: attribs.c:757 attribs.c:780 attribs.c:1026 attribs.c:1082 attribs.c:1138
-#: attribs.c:1199 attribs.c:1225 attribs.c:1427 config/arm/arm.c:2012
-#: config/arm/arm.c:2039 config/avr/avr.c:4683 config/h8300/h8300.c:3007
-#: config/h8300/h8300.c:3032 config/i386/i386.c:1261 config/i386/winnt.c:74
+#: attribs.c:1199 attribs.c:1225 attribs.c:1427 config/arm/arm.c:2009
+#: config/arm/arm.c:2036 config/avr/avr.c:4683 config/h8300/h8300.c:3009
+#: config/h8300/h8300.c:3034 config/i386/i386.c:1261 config/i386/winnt.c:74
 #, c-format
 msgid "`%s' attribute ignored"
 msgstr ""
@@ -231,7 +231,7 @@ msgid "__builtin_trap not supported by this target"
 msgstr ""
 
 #. just do library call, if unknown builtin
-#: builtins.c:3948 c-common.c:3685
+#: builtins.c:3948 c-common.c:3689
 #, c-format
 msgid "built-in function `%s' not currently supported"
 msgstr ""
@@ -292,148 +292,148 @@ msgstr ""
 msgid "case label does not reduce to an integer constant"
 msgstr ""
 
-#: c-common.c:1577
+#: c-common.c:1579
 msgid "invalid truth-value expression"
 msgstr ""
 
-#: c-common.c:1628
+#: c-common.c:1630
 #, c-format
 msgid "invalid operands to binary %s"
 msgstr ""
 
-#: c-common.c:1863 c-common.c:1872
+#: c-common.c:1865 c-common.c:1874
 msgid "comparison is always false due to limited range of data type"
 msgstr ""
 
-#: c-common.c:1865 c-common.c:1874
+#: c-common.c:1867 c-common.c:1876
 msgid "comparison is always true due to limited range of data type"
 msgstr ""
 
-#: c-common.c:1940
+#: c-common.c:1942
 msgid "comparison of unsigned expression >= 0 is always true"
 msgstr ""
 
-#: c-common.c:1949
+#: c-common.c:1951
 msgid "comparison of unsigned expression < 0 is always false"
 msgstr ""
 
-#: c-common.c:2000 f/com.c:14814
+#: c-common.c:2002 f/com.c:14818
 msgid "struct type value used where scalar is required"
 msgstr ""
 
-#: c-common.c:2004 f/com.c:14818
+#: c-common.c:2006 f/com.c:14822
 msgid "union type value used where scalar is required"
 msgstr ""
 
-#: c-common.c:2008 f/com.c:14822
+#: c-common.c:2010 f/com.c:14826
 msgid "array type value used where scalar is required"
 msgstr ""
 
-#: c-common.c:2123 f/com.c:14948
+#: c-common.c:2125 f/com.c:14952
 msgid "suggest parentheses around assignment used as truth value"
 msgstr ""
 
-#: c-common.c:2167 c-common.c:2199
+#: c-common.c:2169 c-common.c:2201
 msgid "invalid use of `restrict'"
 msgstr ""
 
-#: c-common.c:2315
+#: c-common.c:2317
 msgid "__alignof__ applied to an incomplete type"
 msgstr ""
 
-#: c-common.c:2341
+#: c-common.c:2343
 msgid "`__alignof' applied to a bit-field"
 msgstr ""
 
-#: c-common.c:2783
+#: c-common.c:2785
 #, c-format
 msgid "cannot disable built-in function `%s'"
 msgstr ""
 
-#: c-common.c:3064 c-typeck.c:1774
+#: c-common.c:3066 c-typeck.c:1782
 #, c-format
 msgid "too few arguments to function `%s'"
 msgstr ""
 
-#: c-common.c:3070 c-typeck.c:1627
+#: c-common.c:3072 c-typeck.c:1635
 #, c-format
 msgid "too many arguments to function `%s'"
 msgstr ""
 
-#: c-common.c:3258
+#: c-common.c:3260
 msgid "pointers are not permitted as case values"
 msgstr ""
 
-#: c-common.c:3264
+#: c-common.c:3266
 msgid "ISO C++ forbids range expressions in switch statements"
 msgstr ""
 
-#: c-common.c:3266
+#: c-common.c:3268
 msgid "ISO C forbids range expressions in switch statements"
 msgstr ""
 
-#: c-common.c:3296
+#: c-common.c:3298
 msgid "empty range specified"
 msgstr ""
 
-#: c-common.c:3347
+#: c-common.c:3349
 msgid "duplicate (or overlapping) case value"
 msgstr ""
 
-#: c-common.c:3349
+#: c-common.c:3351
 msgid "this is the first entry overlapping that value"
 msgstr ""
 
-#: c-common.c:3353 ch/actions.c:1125
+#: c-common.c:3355 ch/actions.c:1125
 msgid "duplicate case value"
 msgstr ""
 
-#: c-common.c:3354
+#: c-common.c:3356
 msgid "previously used here"
 msgstr ""
 
-#: c-common.c:3358
+#: c-common.c:3360
 msgid "multiple default labels in one switch"
 msgstr ""
 
-#: c-common.c:3359
+#: c-common.c:3361
 msgid "this is the first default label"
 msgstr ""
 
-#: c-common.c:3387
+#: c-common.c:3389
 msgid "ISO C++ forbids taking the address of a label"
 msgstr ""
 
-#: c-common.c:3389
+#: c-common.c:3391
 msgid "ISO C forbids taking the address of a label"
 msgstr ""
 
-#: c-common.c:4023
+#: c-common.c:4027
 msgid "-Wformat-y2k ignored without -Wformat"
 msgstr ""
 
-#: c-common.c:4025
+#: c-common.c:4029
 msgid "-Wformat-extra-args ignored without -Wformat"
 msgstr ""
 
-#: c-common.c:4027
+#: c-common.c:4031
 msgid "-Wformat-nonliteral ignored without -Wformat"
 msgstr ""
 
-#: c-common.c:4029
+#: c-common.c:4033
 msgid "-Wformat-security ignored without -Wformat"
 msgstr ""
 
-#: c-common.c:4031
+#: c-common.c:4035
 msgid "-Wmissing-format-attribute ignored without -Wformat"
 msgstr ""
 
-#: c-common.c:4122
+#: c-common.c:4126
 #, c-format
 msgid "declaration of `%s' shadows %s"
 msgstr ""
 
-#: c-convert.c:78 c-typeck.c:1031 c-typeck.c:4139 ch/convert.c:1164
+#: c-convert.c:78 c-typeck.c:1036 c-typeck.c:4160 ch/convert.c:1164
 #: cp/typeck.c:1728 cp/typeck.c:6304
 msgid "void value not ignored as it ought to be"
 msgstr ""
@@ -442,556 +442,556 @@ msgstr ""
 msgid "conversion to non-scalar type requested"
 msgstr ""
 
-#: c-decl.c:470
+#: c-decl.c:475
 msgid "-traditional is deprecated and may be removed"
 msgstr ""
 
-#: c-decl.c:560
+#: c-decl.c:565
 #, c-format
 msgid "unknown C standard `%s'"
 msgstr ""
 
-#: c-decl.c:842
+#: c-decl.c:847
 #, c-format
 msgid "array `%s' assumed to have one element"
 msgstr ""
 
-#: c-decl.c:1018
+#: c-decl.c:1023
 #, c-format
 msgid "`struct %s' incomplete in scope ending here"
 msgstr ""
 
-#: c-decl.c:1021
+#: c-decl.c:1026
 #, c-format
 msgid "`union %s' incomplete in scope ending here"
 msgstr ""
 
-#: c-decl.c:1024
+#: c-decl.c:1029
 #, c-format
 msgid "`enum %s' incomplete in scope ending here"
 msgstr ""
 
-#: c-decl.c:1138 c-decl.c:1279 ch/decl.c:2920 java/decl.c:1373
+#: c-decl.c:1143 c-decl.c:1284 ch/decl.c:2920 java/decl.c:1373
 #, c-format
 msgid "label `%s' used but not defined"
 msgstr ""
 
-#: c-decl.c:1144 c-decl.c:1286 ch/decl.c:2926 java/decl.c:1379
+#: c-decl.c:1149 c-decl.c:1291 ch/decl.c:2926 java/decl.c:1379
 #, c-format
 msgid "label `%s' defined but not used"
 msgstr ""
 
-#: c-decl.c:1403 cp/decl.c:3124
+#: c-decl.c:1408 cp/decl.c:3124
 #, c-format
 msgid "function `%s' redeclared as inline"
 msgstr ""
 
-#: c-decl.c:1405 cp/decl.c:3126
+#: c-decl.c:1410 cp/decl.c:3126
 #, c-format
 msgid "previous declaration of function `%s' with attribute noinline"
 msgstr ""
 
-#: c-decl.c:1412 cp/decl.c:3133
+#: c-decl.c:1417 cp/decl.c:3133
 #, c-format
 msgid "function `%s' redeclared with attribute noinline"
 msgstr ""
 
-#: c-decl.c:1414 cp/decl.c:3135
+#: c-decl.c:1419 cp/decl.c:3135
 #, c-format
 msgid "previous declaration of function `%s' was inline"
 msgstr ""
 
-#: c-decl.c:1443 c-decl.c:1496
+#: c-decl.c:1448 c-decl.c:1501
 #, c-format
 msgid "shadowing built-in function `%s'"
 msgstr ""
 
-#: c-decl.c:1445
+#: c-decl.c:1450
 #, c-format
 msgid "shadowing library function `%s'"
 msgstr ""
 
-#: c-decl.c:1451
+#: c-decl.c:1456
 #, c-format
 msgid "library function `%s' declared as non-function"
 msgstr ""
 
-#: c-decl.c:1455 c-decl.c:1458
+#: c-decl.c:1460 c-decl.c:1463
 #, c-format
 msgid "built-in function `%s' declared as non-function"
 msgstr ""
 
-#: c-decl.c:1462 objc/objc-act.c:2334 objc/objc-act.c:6036
+#: c-decl.c:1467 objc/objc-act.c:2334 objc/objc-act.c:6036
 #, c-format
 msgid "`%s' redeclared as different kind of symbol"
 msgstr ""
 
-#: c-decl.c:1463 c-decl.c:1645 c-decl.c:1794 objc/objc-act.c:2336
+#: c-decl.c:1468 c-decl.c:1650 c-decl.c:1799 objc/objc-act.c:2336
 #: objc/objc-act.c:6038 objc/objc-act.c:6093
 #, c-format
 msgid "previous declaration of `%s'"
 msgstr ""
 
 #. If types don't match for a built-in, throw away the built-in.
-#: c-decl.c:1549
+#: c-decl.c:1554
 #, c-format
 msgid "conflicting types for built-in function `%s'"
 msgstr ""
 
-#: c-decl.c:1592 c-decl.c:1611
+#: c-decl.c:1597 c-decl.c:1616
 #, c-format
 msgid "conflicting types for `%s'"
 msgstr ""
 
-#: c-decl.c:1634
+#: c-decl.c:1639
 msgid ""
 "a parameter list with an ellipsis can't match an empty parameter name list "
 "declaration"
 msgstr ""
 
-#: c-decl.c:1640
+#: c-decl.c:1645
 msgid ""
 "an argument type that has a default promotion can't match an empty parameter "
 "name list declaration"
 msgstr ""
 
-#: c-decl.c:1655 c-decl.c:1677
+#: c-decl.c:1660 c-decl.c:1682
 #, c-format
 msgid "redefinition of `%s'"
 msgstr ""
 
-#: c-decl.c:1658
+#: c-decl.c:1663
 #, c-format
 msgid "redeclaration of `%s'"
 msgstr ""
 
-#: c-decl.c:1661
+#: c-decl.c:1666
 #, c-format
 msgid "conflicting declarations of `%s'"
 msgstr ""
 
-#: c-decl.c:1670 c-decl.c:1682
+#: c-decl.c:1675 c-decl.c:1687
 #, c-format
 msgid "`%s' previously defined here"
 msgstr ""
 
-#: c-decl.c:1671 c-decl.c:1683
+#: c-decl.c:1676 c-decl.c:1688
 #, c-format
 msgid "`%s' previously declared here"
 msgstr ""
 
-#: c-decl.c:1704
+#: c-decl.c:1709
 #, c-format
 msgid "prototype for `%s' follows"
 msgstr ""
 
-#: c-decl.c:1705 c-decl.c:1713 c-decl.c:1729
+#: c-decl.c:1710 c-decl.c:1718 c-decl.c:1734
 msgid "non-prototype definition here"
 msgstr ""
 
-#: c-decl.c:1712
+#: c-decl.c:1717
 #, c-format
 msgid "prototype for `%s' follows and number of arguments doesn't match"
 msgstr ""
 
-#: c-decl.c:1727
+#: c-decl.c:1732
 #, c-format
 msgid "prototype for `%s' follows and argument %d doesn't match"
 msgstr ""
 
-#: c-decl.c:1745
+#: c-decl.c:1750
 #, c-format
 msgid "`%s' declared inline after being called"
 msgstr ""
 
-#: c-decl.c:1751
+#: c-decl.c:1756
 #, c-format
 msgid "`%s' declared inline after its definition"
 msgstr ""
 
-#: c-decl.c:1758
+#: c-decl.c:1763
 #, c-format
 msgid "static declaration for `%s' follows non-static"
 msgstr ""
 
-#: c-decl.c:1766
+#: c-decl.c:1771
 #, c-format
 msgid "non-static declaration for `%s' follows static"
 msgstr ""
 
-#: c-decl.c:1773
+#: c-decl.c:1778
 #, c-format
 msgid "const declaration for `%s' follows non-const"
 msgstr ""
 
-#: c-decl.c:1780
+#: c-decl.c:1785
 #, c-format
 msgid "type qualifiers for `%s' conflict with previous decl"
 msgstr ""
 
-#: c-decl.c:1793
+#: c-decl.c:1798
 #, c-format
 msgid "redundant redeclaration of `%s' in same scope"
 msgstr ""
 
-#: c-decl.c:2097 java/decl.c:1072
+#: c-decl.c:2102 java/decl.c:1072
 #, c-format
 msgid "declaration of `%s' shadows a parameter"
 msgstr ""
 
-#: c-decl.c:2100 java/decl.c:1075
+#: c-decl.c:2105 java/decl.c:1075
 #, c-format
 msgid "declaration of `%s' shadows a symbol from the parameter list"
 msgstr ""
 
-#: c-decl.c:2121 cp/decl.c:4206
+#: c-decl.c:2126 cp/decl.c:4206
 msgid "a parameter"
 msgstr ""
 
-#: c-decl.c:2123 cp/decl.c:4223
+#: c-decl.c:2128 cp/decl.c:4223
 msgid "a previous local"
 msgstr ""
 
 #. XXX shadow warnings in outer-more namespaces
-#: c-decl.c:2127 cp/decl.c:4227
+#: c-decl.c:2132 cp/decl.c:4227
 msgid "a global declaration"
 msgstr ""
 
-#: c-decl.c:2171
+#: c-decl.c:2176
 #, c-format
 msgid "nested extern declaration of `%s'"
 msgstr ""
 
-#: c-decl.c:2191 java/decl.c:1025
+#: c-decl.c:2196 java/decl.c:1025
 #, c-format
 msgid "`%s' used prior to declaration"
 msgstr ""
 
-#: c-decl.c:2206 c-decl.c:2421
+#: c-decl.c:2211 c-decl.c:2426
 #, c-format
 msgid "`%s' was declared implicitly `extern' and later `static'"
 msgstr ""
 
-#: c-decl.c:2316 cp/decl.c:4065
+#: c-decl.c:2321 cp/decl.c:4065
 msgid "type mismatch with previous external decl"
 msgstr ""
 
-#: c-decl.c:2317
+#: c-decl.c:2322
 #, c-format
 msgid "previous external decl of `%s'"
 msgstr ""
 
-#: c-decl.c:2330
+#: c-decl.c:2335
 msgid "type mismatch with previous implicit declaration"
 msgstr ""
 
-#: c-decl.c:2332
+#: c-decl.c:2337
 #, c-format
 msgid "previous implicit declaration of `%s'"
 msgstr ""
 
-#: c-decl.c:2349
+#: c-decl.c:2354
 #, c-format
 msgid "type of external `%s' is not global"
 msgstr ""
 
-#: c-decl.c:2400
+#: c-decl.c:2405
 #, c-format
 msgid "`%s' was previously implicitly declared to return `int'"
 msgstr ""
 
-#: c-decl.c:2425
+#: c-decl.c:2430
 #, c-format
 msgid "`%s' was declared `extern' and later `static'"
 msgstr ""
 
-#: c-decl.c:2449
+#: c-decl.c:2454
 #, c-format
 msgid "extern declaration of `%s' doesn't match global one"
 msgstr ""
 
-#: c-decl.c:2491
+#: c-decl.c:2496
 #, c-format
 msgid "`%s' locally external but globally static"
 msgstr ""
 
-#: c-decl.c:2613
+#: c-decl.c:2618
 #, c-format
 msgid "function `%s' was previously declared within a block"
 msgstr ""
 
-#: c-decl.c:2633 c-decl.c:2635
+#: c-decl.c:2638 c-decl.c:2640
 #, c-format
 msgid "implicit declaration of function `%s'"
 msgstr ""
 
-#: c-decl.c:2723
+#: c-decl.c:2728
 #, c-format
 msgid "label %s referenced outside of any function"
 msgstr ""
 
-#: c-decl.c:2780
+#: c-decl.c:2785
 #, c-format
 msgid "duplicate label declaration `%s'"
 msgstr ""
 
-#: c-decl.c:2783
+#: c-decl.c:2788
 msgid "this is a previous declaration"
 msgstr ""
 
-#: c-decl.c:3291
+#: c-decl.c:3300
 msgid "unnamed struct/union that defines no instances"
 msgstr ""
 
-#: c-decl.c:3310
+#: c-decl.c:3319
 msgid "useless keyword or type name in empty declaration"
 msgstr ""
 
-#: c-decl.c:3317
+#: c-decl.c:3326
 msgid "two types specified in one empty declaration"
 msgstr ""
 
-#: c-decl.c:3322 c-parse.y:725 c-parse.y:727 objc-parse.y:761 objc-parse.y:763
-#: objc-parse.y:2996 parse.y:728 parse.y:1808
+#: c-decl.c:3331 c-parse.y:725 c-parse.y:727 objc-parse.y:761 objc-parse.y:763
+#: objc-parse.y:2997 parse.y:728 parse.y:1808
 msgid "empty declaration"
 msgstr ""
 
-#: c-decl.c:3352
+#: c-decl.c:3361
 msgid ""
 "ISO C89 does not support `static' or type qualifiers in parameter array "
 "declarators"
 msgstr ""
 
-#: c-decl.c:3354
+#: c-decl.c:3363
 msgid "ISO C89 does not support `[*]' array declarators"
 msgstr ""
 
-#: c-decl.c:3357
+#: c-decl.c:3366
 msgid "GCC does not yet properly implement `[*]' array declarators"
 msgstr ""
 
-#: c-decl.c:3376
+#: c-decl.c:3385
 msgid "static or type qualifiers in abstract declarator"
 msgstr ""
 
-#: c-decl.c:3450
+#: c-decl.c:3459
 #, c-format
 msgid "`%s' is usually a function"
 msgstr ""
 
-#: c-decl.c:3464
+#: c-decl.c:3473
 #, c-format
 msgid "typedef `%s' is initialized"
 msgstr ""
 
-#: c-decl.c:3471
+#: c-decl.c:3480
 #, c-format
 msgid "function `%s' is initialized like a variable"
 msgstr ""
 
 #. DECL_INITIAL in a PARM_DECL is really DECL_ARG_TYPE.
-#: c-decl.c:3478
+#: c-decl.c:3487
 #, c-format
 msgid "parameter `%s' is initialized"
 msgstr ""
 
-#: c-decl.c:3498 c-typeck.c:4907
+#: c-decl.c:3507 c-typeck.c:4928
 msgid "variable-sized object may not be initialized"
 msgstr ""
 
-#: c-decl.c:3504
+#: c-decl.c:3513
 #, c-format
 msgid "variable `%s' has initializer but incomplete type"
 msgstr ""
 
-#: c-decl.c:3510
+#: c-decl.c:3519
 #, c-format
 msgid "elements of array `%s' have incomplete type"
 msgstr ""
 
-#: c-decl.c:3523
+#: c-decl.c:3532
 #, c-format
 msgid "declaration of `%s' has `extern' and is initialized"
 msgstr ""
 
-#: c-decl.c:3558 c-decl.c:6202 cp/decl.c:7255 cp/decl.c:13524
+#: c-decl.c:3567 c-decl.c:6216 cp/decl.c:7255 cp/decl.c:13531
 #, c-format
 msgid "inline function `%s' given attribute noinline"
 msgstr ""
 
-#: c-decl.c:3639
+#: c-decl.c:3648
 #, c-format
 msgid "initializer fails to determine size of `%s'"
 msgstr ""
 
-#: c-decl.c:3644
+#: c-decl.c:3653
 #, c-format
 msgid "array size missing in `%s'"
 msgstr ""
 
-#: c-decl.c:3660
+#: c-decl.c:3669
 #, c-format
 msgid "zero or negative size array `%s'"
 msgstr ""
 
-#: c-decl.c:3688 ch/decl.c:4133
+#: c-decl.c:3697 ch/decl.c:4133
 #, c-format
 msgid "storage size of `%s' isn't known"
 msgstr ""
 
-#: c-decl.c:3698
+#: c-decl.c:3707
 #, c-format
 msgid "storage size of `%s' isn't constant"
 msgstr ""
 
-#: c-decl.c:3757
+#: c-decl.c:3766
 #, c-format
 msgid "ignoring asm-specifier for non-static local variable `%s'"
 msgstr ""
 
-#: c-decl.c:3832
+#: c-decl.c:3841
 #, c-format
 msgid "ISO C forbids parameter `%s' shadowing typedef"
 msgstr ""
 
-#: c-decl.c:4136 cp/decl.c:10057
+#: c-decl.c:4145 cp/decl.c:10057
 msgid "`long long long' is too long for GCC"
 msgstr ""
 
-#: c-decl.c:4141
+#: c-decl.c:4150
 msgid "ISO C89 does not support `long long'"
 msgstr ""
 
-#: c-decl.c:4146 cp/decl.c:10062
+#: c-decl.c:4155 cp/decl.c:10062
 #, c-format
 msgid "duplicate `%s'"
 msgstr ""
 
-#: c-decl.c:4152 cp/decl.c:10086
+#: c-decl.c:4161 cp/decl.c:10086
 #, c-format
 msgid "two or more data types in declaration of `%s'"
 msgstr ""
 
-#: c-decl.c:4172 cp/decl.c:10091
+#: c-decl.c:4181 cp/decl.c:10091
 #, c-format
 msgid "`%s' fails to be a typedef or built in type"
 msgstr ""
 
-#: c-decl.c:4211
+#: c-decl.c:4220
 #, c-format
 msgid "type defaults to `int' in declaration of `%s'"
 msgstr ""
 
-#: c-decl.c:4240
+#: c-decl.c:4249
 #, c-format
 msgid "both long and short specified for `%s'"
 msgstr ""
 
-#: c-decl.c:4244 cp/decl.c:10205
+#: c-decl.c:4253 cp/decl.c:10205
 #, c-format
 msgid "long or short specified with char for `%s'"
 msgstr ""
 
-#: c-decl.c:4251 cp/decl.c:10209
+#: c-decl.c:4260 cp/decl.c:10209
 #, c-format
 msgid "long or short specified with floating type for `%s'"
 msgstr ""
 
-#: c-decl.c:4254
+#: c-decl.c:4263
 msgid "the only valid combination is `long double'"
 msgstr ""
 
-#: c-decl.c:4260
+#: c-decl.c:4269
 #, c-format
 msgid "both signed and unsigned specified for `%s'"
 msgstr ""
 
-#: c-decl.c:4262 cp/decl.c:10198
+#: c-decl.c:4271 cp/decl.c:10198
 #, c-format
 msgid "long, short, signed or unsigned invalid for `%s'"
 msgstr ""
 
-#: c-decl.c:4268 cp/decl.c:10218
+#: c-decl.c:4277 cp/decl.c:10218
 #, c-format
 msgid "long, short, signed or unsigned used invalidly for `%s'"
 msgstr ""
 
-#: c-decl.c:4287 cp/decl.c:10239
+#: c-decl.c:4296 cp/decl.c:10239
 #, c-format
 msgid "complex invalid for `%s'"
 msgstr ""
 
-#: c-decl.c:4332
+#: c-decl.c:4341
 msgid "ISO C89 does not support complex types"
 msgstr ""
 
-#: c-decl.c:4344
+#: c-decl.c:4353
 msgid "ISO C does not support plain `complex' meaning `double complex'"
 msgstr ""
 
-#: c-decl.c:4350 c-decl.c:4362
+#: c-decl.c:4359 c-decl.c:4371
 msgid "ISO C does not support complex integer types"
 msgstr ""
 
-#: c-decl.c:4377 c-decl.c:4816 cp/decl.c:10841
+#: c-decl.c:4386 c-decl.c:4825 cp/decl.c:10847
 msgid "duplicate `const'"
 msgstr ""
 
-#: c-decl.c:4379 c-decl.c:4820 cp/decl.c:10845
+#: c-decl.c:4388 c-decl.c:4829 cp/decl.c:10851
 msgid "duplicate `restrict'"
 msgstr ""
 
-#: c-decl.c:4381 c-decl.c:4818 cp/decl.c:10843
+#: c-decl.c:4390 c-decl.c:4827 cp/decl.c:10849
 msgid "duplicate `volatile'"
 msgstr ""
 
-#: c-decl.c:4403 cp/decl.c:10390
+#: c-decl.c:4412 cp/decl.c:10396
 #, c-format
 msgid "multiple storage classes in declaration of `%s'"
 msgstr ""
 
-#: c-decl.c:4412
+#: c-decl.c:4421
 msgid "function definition declared `auto'"
 msgstr ""
 
-#: c-decl.c:4414
+#: c-decl.c:4423
 msgid "function definition declared `register'"
 msgstr ""
 
-#: c-decl.c:4416
+#: c-decl.c:4425
 msgid "function definition declared `typedef'"
 msgstr ""
 
-#: c-decl.c:4429
+#: c-decl.c:4438
 #, c-format
 msgid "storage class specified for structure field `%s'"
 msgstr ""
 
-#: c-decl.c:4433 cp/decl.c:10437
+#: c-decl.c:4442 cp/decl.c:10443
 #, c-format
 msgid "storage class specified for parameter `%s'"
 msgstr ""
 
-#: c-decl.c:4436 cp/decl.c:10439
+#: c-decl.c:4445 cp/decl.c:10445
 msgid "storage class specified for typename"
 msgstr ""
 
-#: c-decl.c:4448 cp/decl.c:10453
+#: c-decl.c:4457 cp/decl.c:10459
 #, c-format
 msgid "`%s' initialized and declared `extern'"
 msgstr ""
 
-#: c-decl.c:4450 cp/decl.c:10456
+#: c-decl.c:4459 cp/decl.c:10462
 #, c-format
 msgid "`%s' has both `extern' and initializer"
 msgstr ""
 
-#: c-decl.c:4454 cp/decl.c:10460
+#: c-decl.c:4463 cp/decl.c:10466
 #, c-format
 msgid "nested function `%s' declared `extern'"
 msgstr ""
 
-#: c-decl.c:4457 cp/decl.c:10464
+#: c-decl.c:4466 cp/decl.c:10470
 #, c-format
 msgid "top-level declaration of `%s' specifies `auto'"
 msgstr ""
@@ -999,443 +999,447 @@ msgstr ""
 #. Only the innermost declarator (making a parameter be of
 #. array type which is converted to pointer type)
 #. may have static or type qualifiers.
-#: c-decl.c:4492 c-decl.c:4681
+#: c-decl.c:4501 c-decl.c:4690
 msgid "static or type qualifiers in non-parameter array declarator"
 msgstr ""
 
-#: c-decl.c:4536
+#: c-decl.c:4545
 #, c-format
 msgid "declaration of `%s' as array of voids"
 msgstr ""
 
-#: c-decl.c:4542
+#: c-decl.c:4551
 #, c-format
 msgid "declaration of `%s' as array of functions"
 msgstr ""
 
-#: c-decl.c:4563
+#: c-decl.c:4572
 #, c-format
 msgid "size of array `%s' has non-integer type"
 msgstr ""
 
-#: c-decl.c:4568
+#: c-decl.c:4577
 #, c-format
 msgid "ISO C forbids zero-size array `%s'"
 msgstr ""
 
-#: c-decl.c:4575
+#: c-decl.c:4584
 #, c-format
 msgid "size of array `%s' is negative"
 msgstr ""
 
-#: c-decl.c:4588
+#: c-decl.c:4597
 #, c-format
 msgid "ISO C89 forbids array `%s' whose size can't be evaluated"
 msgstr ""
 
-#: c-decl.c:4591
+#: c-decl.c:4600
 #, c-format
 msgid "ISO C89 forbids variable-size array `%s'"
 msgstr ""
 
-#: c-decl.c:4621 c-decl.c:4842 cp/decl.c:11062
+#: c-decl.c:4630 c-decl.c:4851 cp/decl.c:11069
 #, c-format
 msgid "size of array `%s' is too large"
 msgstr ""
 
-#: c-decl.c:4638
+#: c-decl.c:4647
 msgid "ISO C89 does not support flexible array members"
 msgstr ""
 
-#: c-decl.c:4648
+#: c-decl.c:4657
 msgid "array type has incomplete element type"
 msgstr ""
 
-#: c-decl.c:4655 c-decl.c:4892
+#: c-decl.c:4664 c-decl.c:4901
 msgid "ISO C forbids const or volatile function types"
 msgstr ""
 
-#: c-decl.c:4701 cp/decl.c:10601
+#: c-decl.c:4710 cp/decl.c:10607
 #, c-format
 msgid "`%s' declared as function returning a function"
 msgstr ""
 
-#: c-decl.c:4706 cp/decl.c:10606
+#: c-decl.c:4715 cp/decl.c:10612
 #, c-format
 msgid "`%s' declared as function returning an array"
 msgstr ""
 
-#: c-decl.c:4741
+#: c-decl.c:4750
 msgid "ISO C forbids qualified void function return type"
 msgstr ""
 
-#: c-decl.c:4745
+#: c-decl.c:4754
 msgid "type qualifiers ignored on function return type"
 msgstr ""
 
-#: c-decl.c:4774 c-decl.c:4857 c-decl.c:4981 c-decl.c:5075
+#: c-decl.c:4783 c-decl.c:4866 c-decl.c:4990 c-decl.c:5084
 msgid "ISO C forbids qualified function types"
 msgstr ""
 
-#: c-decl.c:4814 cp/decl.c:10837
+#: c-decl.c:4823 cp/decl.c:10843
 msgid "invalid type modifier within pointer declarator"
 msgstr ""
 
-#: c-decl.c:4912 cp/decl.c:11345
+#: c-decl.c:4921 cp/decl.c:11352
 #, c-format
 msgid "variable or field `%s' declared void"
 msgstr ""
 
-#: c-decl.c:4945
+#: c-decl.c:4954
 msgid "attributes in parameter array declarator ignored"
 msgstr ""
 
-#: c-decl.c:4970
+#: c-decl.c:4979
 msgid "invalid type modifier within array declarator"
 msgstr ""
 
-#: c-decl.c:5019
+#: c-decl.c:5028
 #, c-format
 msgid "field `%s' declared as a function"
 msgstr ""
 
-#: c-decl.c:5025
+#: c-decl.c:5034
 #, c-format
 msgid "field `%s' has incomplete type"
 msgstr ""
 
-#: c-decl.c:5057 c-decl.c:5059 c-decl.c:5066
+#: c-decl.c:5066 c-decl.c:5068 c-decl.c:5075
 #, c-format
 msgid "invalid storage class for function `%s'"
 msgstr ""
 
-#: c-decl.c:5081
+#: c-decl.c:5090
 msgid "`noreturn' function returns non-void value"
 msgstr ""
 
-#: c-decl.c:5093
+#: c-decl.c:5105
 msgid "cannot inline function `main'"
 msgstr ""
 
-#: c-decl.c:5146
+#: c-decl.c:5158
 #, c-format
 msgid "variable `%s' declared `inline'"
 msgstr ""
 
-#: c-decl.c:5219 c-decl.c:6254
+#: c-decl.c:5231 c-decl.c:6268
 msgid "function declaration isn't a prototype"
 msgstr ""
 
-#: c-decl.c:5225
+#: c-decl.c:5237
 msgid "parameter names (without types) in function declaration"
 msgstr ""
 
-#: c-decl.c:5257 c-decl.c:6645
+#: c-decl.c:5269 c-decl.c:6659
 #, c-format
 msgid "parameter `%s' has incomplete type"
 msgstr ""
 
-#: c-decl.c:5260
+#: c-decl.c:5272
 msgid "parameter has incomplete type"
 msgstr ""
 
-#: c-decl.c:5281
+#: c-decl.c:5293
 #, c-format
 msgid "parameter `%s' points to incomplete type"
 msgstr ""
 
-#: c-decl.c:5284
+#: c-decl.c:5296
 msgid "parameter points to incomplete type"
 msgstr ""
 
-#: c-decl.c:5349
+#: c-decl.c:5361
 #, c-format
 msgid "parameter `%s' has just a forward declaration"
 msgstr ""
 
-#: c-decl.c:5390
+#: c-decl.c:5402
 msgid "`void' in parameter list must be the entire list"
 msgstr ""
 
-#: c-decl.c:5421
+#: c-decl.c:5433
 #, c-format
 msgid "`struct %s' declared inside parameter list"
 msgstr ""
 
-#: c-decl.c:5424
+#: c-decl.c:5436
 #, c-format
 msgid "`union %s' declared inside parameter list"
 msgstr ""
 
-#: c-decl.c:5427
+#: c-decl.c:5439
 #, c-format
 msgid "`enum %s' declared inside parameter list"
 msgstr ""
 
-#: c-decl.c:5434
+#: c-decl.c:5446
 msgid "anonymous struct declared inside parameter list"
 msgstr ""
 
-#: c-decl.c:5436
+#: c-decl.c:5448
 msgid "anonymous union declared inside parameter list"
 msgstr ""
 
-#: c-decl.c:5438
+#: c-decl.c:5450
 msgid "anonymous enum declared inside parameter list"
 msgstr ""
 
-#: c-decl.c:5442
+#: c-decl.c:5454
 msgid ""
 "its scope is only this definition or declaration, which is probably not what "
 "you want"
 msgstr ""
 
-#: c-decl.c:5521
+#: c-decl.c:5533
 #, c-format
 msgid "redefinition of `union %s'"
 msgstr ""
 
-#: c-decl.c:5524
+#: c-decl.c:5536
 #, c-format
 msgid "redefinition of `struct %s'"
 msgstr ""
 
-#: c-decl.c:5563
+#: c-decl.c:5575
 msgid "unnamed fields of type other than struct or union are not allowed"
 msgstr ""
 
-#: c-decl.c:5604 c-decl.c:5607
+#: c-decl.c:5616 c-decl.c:5619
 #, c-format
 msgid "%s defined inside parms"
 msgstr ""
 
-#: c-decl.c:5605 c-decl.c:5608 c-decl.c:5619
+#: c-decl.c:5617 c-decl.c:5620 c-decl.c:5631
 msgid "union"
 msgstr ""
 
-#: c-decl.c:5605 c-decl.c:5608
+#: c-decl.c:5617 c-decl.c:5620
 msgid "structure"
 msgstr ""
 
-#: c-decl.c:5618
+#: c-decl.c:5630
 #, c-format
 msgid "%s has no %s"
 msgstr ""
 
-#: c-decl.c:5619
+#: c-decl.c:5631
 msgid "struct"
 msgstr ""
 
-#: c-decl.c:5620
+#: c-decl.c:5632
 msgid "named members"
 msgstr ""
 
-#: c-decl.c:5620
+#: c-decl.c:5632
 msgid "members"
 msgstr ""
 
-#: c-decl.c:5659
+#: c-decl.c:5671
 #, c-format
 msgid "nested redefinition of `%s'"
 msgstr ""
 
-#: c-decl.c:5672
+#: c-decl.c:5684
 #, c-format
 msgid "bit-field `%s' width not an integer constant"
 msgstr ""
 
-#: c-decl.c:5683
+#: c-decl.c:5695
 #, c-format
 msgid "bit-field `%s' has invalid type"
 msgstr ""
 
-#: c-decl.c:5695
+#: c-decl.c:5707
 #, c-format
 msgid "bit-field `%s' type invalid in ISO C"
 msgstr ""
 
-#: c-decl.c:5706
+#: c-decl.c:5718
 #, c-format
 msgid "negative width in bit-field `%s'"
 msgstr ""
 
-#: c-decl.c:5708
+#: c-decl.c:5720
 #, c-format
 msgid "width of `%s' exceeds its type"
 msgstr ""
 
-#: c-decl.c:5710
+#: c-decl.c:5722
 #, c-format
 msgid "zero width for bit-field `%s'"
 msgstr ""
 
-#: c-decl.c:5724
+#: c-decl.c:5736
 #, c-format
 msgid "`%s' is narrower than values of its type"
 msgstr ""
 
-#: c-decl.c:5769
+#: c-decl.c:5782
 msgid "flexible array member in union"
 msgstr ""
 
-#: c-decl.c:5771
+#: c-decl.c:5784
 msgid "flexible array member not at end of struct"
 msgstr ""
 
-#: c-decl.c:5773
+#: c-decl.c:5786
 msgid "flexible array member in otherwise empty struct"
 msgstr ""
 
-#: c-decl.c:5798 ch/typeck.c:3060
+#: c-decl.c:5811 ch/typeck.c:3060
 #, c-format
 msgid "duplicate member `%s'"
 msgstr ""
 
-#: c-decl.c:5842
+#: c-decl.c:5855
 msgid "union cannot be made transparent"
 msgstr ""
 
 #. This enum is a named one that has been declared already.
-#: c-decl.c:5936
+#: c-decl.c:5949
 #, c-format
 msgid "redeclaration of `enum %s'"
 msgstr ""
 
-#: c-decl.c:5970
+#: c-decl.c:5983
 msgid "enum defined inside parms"
 msgstr ""
 
-#: c-decl.c:6003
+#: c-decl.c:6016
 msgid "enumeration values exceed range of largest integer"
 msgstr ""
 
-#: c-decl.c:6112 ch/decl.c:4437
+#: c-decl.c:6125 ch/decl.c:4437
 #, c-format
 msgid "enumerator value for `%s' not integer constant"
 msgstr ""
 
-#: c-decl.c:6125 ch/decl.c:4449
+#: c-decl.c:6138 ch/decl.c:4449
 msgid "overflow in enumeration values"
 msgstr ""
 
-#: c-decl.c:6130
+#: c-decl.c:6143
 msgid "ISO C restricts enumerator values to range of `int'"
 msgstr ""
 
-#: c-decl.c:6208
+#: c-decl.c:6222
 msgid "return type is an incomplete type"
 msgstr ""
 
-#: c-decl.c:6216
+#: c-decl.c:6230
 msgid "return type defaults to `int'"
 msgstr ""
 
-#: c-decl.c:6263
+#: c-decl.c:6277
 #, c-format
 msgid "no previous prototype for `%s'"
 msgstr ""
 
-#: c-decl.c:6270
+#: c-decl.c:6284
 #, c-format
 msgid "`%s' was used with no prototype before its definition"
 msgstr ""
 
-#: c-decl.c:6276
+#: c-decl.c:6290
 #, c-format
 msgid "no previous declaration for `%s'"
 msgstr ""
 
-#: c-decl.c:6283
+#: c-decl.c:6297
 #, c-format
 msgid "`%s' was used with no declaration before its definition"
 msgstr ""
 
-#: c-decl.c:6307 c-decl.c:6888
+#: c-decl.c:6321 c-decl.c:6902
 #, c-format
 msgid "return type of `%s' is not `int'"
 msgstr ""
 
-#: c-decl.c:6323
+#: c-decl.c:6337
 #, c-format
 msgid "first argument of `%s' should be `int'"
 msgstr ""
 
-#: c-decl.c:6332
+#: c-decl.c:6346
 #, c-format
 msgid "second argument of `%s' should be `char **'"
 msgstr ""
 
-#: c-decl.c:6341
+#: c-decl.c:6355
 #, c-format
 msgid "third argument of `%s' should probably be `char **'"
 msgstr ""
 
-#: c-decl.c:6350
+#: c-decl.c:6364
 #, c-format
 msgid "`%s' takes only zero or two arguments"
 msgstr ""
 
-#: c-decl.c:6353
+#: c-decl.c:6367
 #, c-format
 msgid "`%s' is normally a non-static function"
 msgstr ""
 
-#: c-decl.c:6463
+#: c-decl.c:6477
 msgid "parm types given both in parmlist and separately"
 msgstr ""
 
-#: c-decl.c:6484
+#: c-decl.c:6498
 msgid "parameter name omitted"
 msgstr ""
 
-#: c-decl.c:6488 c-decl.c:6590
+#: c-decl.c:6502 c-decl.c:6604
 #, c-format
 msgid "parameter `%s' declared void"
 msgstr ""
 
-#: c-decl.c:6564
+#: c-decl.c:6578
 msgid "parameter name missing from parameter list"
 msgstr ""
 
-#: c-decl.c:6583
+#: c-decl.c:6597
 #, c-format
 msgid "multiple parameters named `%s'"
 msgstr ""
 
-#: c-decl.c:6614 c-decl.c:6616
+#: c-decl.c:6628 c-decl.c:6630
 #, c-format
 msgid "type of `%s' defaults to `int'"
 msgstr ""
 
-#: c-decl.c:6652
+#: c-decl.c:6666
 #, c-format
 msgid "declaration for parameter `%s' but no such parameter"
 msgstr ""
 
-#: c-decl.c:6700
+#: c-decl.c:6714
 msgid "number of arguments doesn't match prototype"
-msgstr ""
-
-#: c-decl.c:6730
-#, c-format
-msgid "promoted argument `%s' doesn't match prototype"
 msgstr ""
 
 #: c-decl.c:6744
 #, c-format
+msgid "promoted argument `%s' doesn't match prototype"
+msgstr ""
+
+#: c-decl.c:6758
+#, c-format
 msgid "argument `%s' doesn't match prototype"
 msgstr ""
 
-#: c-decl.c:7059
+#: c-decl.c:6933 cp/decl.c:14234
+msgid "no return statement in function returning non-void"
+msgstr ""
+
+#: c-decl.c:7088
 msgid "this function may return with or without a value"
 msgstr ""
 
-#: c-decl.c:7079
+#: c-decl.c:7108
 #, c-format
 msgid "size of return value of `%s' is %u bytes"
 msgstr ""
 
-#: c-decl.c:7083
+#: c-decl.c:7112
 #, c-format
 msgid "size of return value of `%s' is larger than %d bytes"
 msgstr ""
@@ -1443,36 +1447,36 @@ msgstr ""
 #. If we get here, declarations have been used in a for loop without
 #. the C99 for loop scope.  This doesn't make much sense, so don't
 #. allow it.
-#: c-decl.c:7138
+#: c-decl.c:7167
 msgid "`for' loop initial declaration used outside C99 mode"
 msgstr ""
 
-#: c-decl.c:7162
+#: c-decl.c:7191
 #, c-format
 msgid "`struct %s' declared in `for' loop initial declaration"
 msgstr ""
 
-#: c-decl.c:7165
+#: c-decl.c:7194
 #, c-format
 msgid "`union %s' declared in `for' loop initial declaration"
 msgstr ""
 
-#: c-decl.c:7168
+#: c-decl.c:7197
 #, c-format
 msgid "`enum %s' declared in `for' loop initial declaration"
 msgstr ""
 
-#: c-decl.c:7176
+#: c-decl.c:7205
 #, c-format
 msgid "declaration of non-variable `%s' in `for' loop initial declaration"
 msgstr ""
 
-#: c-decl.c:7178
+#: c-decl.c:7207
 #, c-format
 msgid "declaration of static variable `%s' in `for' loop initial declaration"
 msgstr ""
 
-#: c-decl.c:7180
+#: c-decl.c:7209
 #, c-format
 msgid "declaration of `extern' variable `%s' in `for' loop initial declaration"
 msgstr ""
@@ -2203,7 +2207,7 @@ msgstr ""
 msgid "ISO C forbids an empty source file"
 msgstr ""
 
-#: c-parse.y:321 c-typeck.c:6909 ch/parse.c:2113 objc-parse.y:343
+#: c-parse.y:321 c-typeck.c:6930 ch/parse.c:2113 objc-parse.y:343
 msgid "argument of `asm' is not a constant string"
 msgstr ""
 
@@ -2258,7 +2262,7 @@ msgstr ""
 #: objc-parse.y:1011 objc-parse.y:1032 objc-parse.y:1038 objc-parse.y:1044
 #: objc-parse.y:1050 objc-parse.y:1083 objc-parse.y:1089 objc-parse.y:1095
 #: objc-parse.y:1101 objc-parse.y:1146 objc-parse.y:1152 objc-parse.y:1158
-#: objc-parse.y:1164 parse.y:1888 parse.y:1895 parse.y:1934
+#: objc-parse.y:1164 parse.y:1888 parse.y:1895 parse.y:1930
 #, c-format
 msgid "`%s' is not at beginning of declaration"
 msgstr ""
@@ -2299,7 +2303,7 @@ msgstr ""
 msgid "no semicolon at end of struct or union"
 msgstr ""
 
-#: c-parse.y:1701 objc-parse.y:1742 objc-parse.y:2818
+#: c-parse.y:1701 objc-parse.y:1742 objc-parse.y:2819
 msgid "extra semicolon in struct or union specified"
 msgstr ""
 
@@ -2332,15 +2336,15 @@ msgstr ""
 msgid "braced-group within expression allowed only inside a function"
 msgstr ""
 
-#: c-parse.y:2160 objc-parse.y:2219
+#: c-parse.y:2161 objc-parse.y:2220
 msgid "empty body in an else-statement"
 msgstr ""
 
-#: c-parse.y:2280 objc-parse.y:2339
+#: c-parse.y:2281 objc-parse.y:2340
 msgid "ISO C forbids `goto *expr;'"
 msgstr ""
 
-#: c-parse.y:2378 objc-parse.y:2437
+#: c-parse.y:2379 objc-parse.y:2438
 msgid "ISO C forbids forward parameter declarations"
 msgstr ""
 
@@ -2350,11 +2354,11 @@ msgstr ""
 #. it caused problems with the code in expand_builtin which
 #. tries to verify that BUILT_IN_NEXT_ARG is being used
 #. correctly.
-#: c-parse.y:2404 objc-parse.y:2463
+#: c-parse.y:2405 objc-parse.y:2464
 msgid "ISO C requires a named argument before `...'"
 msgstr ""
 
-#: c-parse.y:2499 objc-parse.y:2558
+#: c-parse.y:2500 objc-parse.y:2559
 msgid "`...' in old-style identifier list"
 msgstr ""
 
@@ -2370,47 +2374,47 @@ msgstr ""
 msgid "parser stack overflow"
 msgstr ""
 
-#: c-parse.y:2823 cp/spew.c:1477 objc-parse.y:3510
+#: c-parse.y:2824 cp/spew.c:1477 objc-parse.y:3511
 #, c-format
 msgid "%s at end of input"
 msgstr ""
 
-#: c-parse.y:2829 cp/spew.c:1483 objc-parse.y:3516
+#: c-parse.y:2830 cp/spew.c:1483 objc-parse.y:3517
 #, c-format
 msgid "%s before %s'%c'"
 msgstr ""
 
-#: c-parse.y:2831 cp/spew.c:1485 objc-parse.y:3518
+#: c-parse.y:2832 cp/spew.c:1485 objc-parse.y:3519
 #, c-format
 msgid "%s before %s'\\x%x'"
 msgstr ""
 
-#: c-parse.y:2835 cp/spew.c:1489 objc-parse.y:3522
+#: c-parse.y:2836 cp/spew.c:1489 objc-parse.y:3523
 #, c-format
 msgid "%s before string constant"
 msgstr ""
 
-#: c-parse.y:2837 cp/spew.c:1491 objc-parse.y:3524
+#: c-parse.y:2838 cp/spew.c:1491 objc-parse.y:3525
 #, c-format
 msgid "%s before numeric constant"
 msgstr ""
 
-#: c-parse.y:2839 objc-parse.y:3526
+#: c-parse.y:2840 objc-parse.y:3527
 #, c-format
 msgid "%s before \"%s\""
 msgstr ""
 
-#: c-parse.y:2841 objc-parse.y:3528
+#: c-parse.y:2842 objc-parse.y:3529
 #, c-format
 msgid "%s before '%s' token"
 msgstr ""
 
-#: c-parse.y:2977 objc-parse.y:3707
+#: c-parse.y:2978 objc-parse.y:3708
 #, c-format
 msgid "syntax error at '%s' token"
 msgstr ""
 
-#: c-parse.y:3007 ch/parse.c:4329 cp/lex.c:906 objc-parse.y:3737
+#: c-parse.y:3008 ch/parse.c:4329 cp/lex.c:906 objc-parse.y:3738
 msgid "YYDEBUG not defined"
 msgstr ""
 
@@ -2494,7 +2498,7 @@ msgid ""
 "own scope.)"
 msgstr ""
 
-#: c-semantics.c:723 c-typeck.c:6937 cp/semantics.c:881
+#: c-semantics.c:723 c-typeck.c:6958 cp/semantics.c:884
 #, c-format
 msgid "%s qualifier ignored on asm"
 msgstr ""
@@ -2508,389 +2512,393 @@ msgstr ""
 msgid "invalid use of void expression"
 msgstr ""
 
-#: c-typeck.c:155 cp/typeck2.c:227
+#: c-typeck.c:154
+msgid "invalid use of flexible array member"
+msgstr ""
+
+#: c-typeck.c:160 cp/typeck2.c:227
 msgid "invalid use of array with unspecified bounds"
 msgstr ""
 
-#: c-typeck.c:163
+#: c-typeck.c:168
 #, c-format
 msgid "invalid use of undefined type `%s %s'"
 msgstr ""
 
 #. If this type has a typedef-name, the TYPE_NAME is a TYPE_DECL.
-#: c-typeck.c:167
+#: c-typeck.c:172
 #, c-format
 msgid "invalid use of incomplete typedef `%s'"
 msgstr ""
 
-#: c-typeck.c:398 c-typeck.c:412
+#: c-typeck.c:403 c-typeck.c:417
 msgid "function types not truly compatible in ISO C"
 msgstr ""
 
-#: c-typeck.c:572
+#: c-typeck.c:577
 msgid "types are not quite compatible"
 msgstr ""
 
-#: c-typeck.c:725
+#: c-typeck.c:730
 msgid "sizeof applied to a function type"
 msgstr ""
 
-#: c-typeck.c:731
+#: c-typeck.c:736
 msgid "sizeof applied to a void type"
 msgstr ""
 
-#: c-typeck.c:738
+#: c-typeck.c:743
 msgid "sizeof applied to an incomplete type"
 msgstr ""
 
-#: c-typeck.c:791 c-typeck.c:2809
+#: c-typeck.c:796 c-typeck.c:2817
 msgid "arithmetic on pointer to an incomplete type"
 msgstr ""
 
-#: c-typeck.c:1179
+#: c-typeck.c:1184
 #, c-format
 msgid "%s has no member named `%s'"
 msgstr ""
 
-#: c-typeck.c:1212
+#: c-typeck.c:1217
 #, c-format
 msgid "request for member `%s' in something not a structure or union"
 msgstr ""
 
-#: c-typeck.c:1244 ch/expr.c:810
+#: c-typeck.c:1249 ch/expr.c:810
 msgid "dereferencing pointer to incomplete type"
 msgstr ""
 
-#: c-typeck.c:1248 ch/expr.c:814
+#: c-typeck.c:1253 ch/expr.c:814
 msgid "dereferencing `void *' pointer"
 msgstr ""
 
-#: c-typeck.c:1265 cp/typeck.c:2402
+#: c-typeck.c:1270 cp/typeck.c:2402
 #, c-format
 msgid "invalid type argument of `%s'"
 msgstr ""
 
-#: c-typeck.c:1284 cp/typeck.c:2428
+#: c-typeck.c:1289 cp/typeck.c:2428
 msgid "subscript missing in array reference"
 msgstr ""
 
-#: c-typeck.c:1305 cp/typeck.c:2470
+#: c-typeck.c:1310 cp/typeck.c:2470
 msgid "array subscript has type `char'"
 msgstr ""
 
-#: c-typeck.c:1313 c-typeck.c:1402 cp/typeck.c:2477 cp/typeck.c:2556
+#: c-typeck.c:1318 c-typeck.c:1407 cp/typeck.c:2477 cp/typeck.c:2556
 msgid "array subscript is not an integer"
 msgstr ""
 
-#: c-typeck.c:1346
+#: c-typeck.c:1351
 msgid "ISO C forbids subscripting `register' array"
 msgstr ""
 
-#: c-typeck.c:1348
+#: c-typeck.c:1353
 msgid "ISO C89 forbids subscripting non-lvalue array"
 msgstr ""
 
-#: c-typeck.c:1381
+#: c-typeck.c:1386
 msgid "subscript has type `char'"
 msgstr ""
 
-#: c-typeck.c:1397 cp/typeck.c:2551
+#: c-typeck.c:1402 cp/typeck.c:2551
 msgid "subscripted value is neither array nor pointer"
 msgstr ""
 
-#: c-typeck.c:1451
+#: c-typeck.c:1456
 #, c-format
 msgid "`%s' undeclared here (not in a function)"
 msgstr ""
 
-#: c-typeck.c:1458
+#: c-typeck.c:1463
 #, c-format
 msgid "`%s' undeclared (first use in this function)"
 msgstr ""
 
-#: c-typeck.c:1463
+#: c-typeck.c:1468
 msgid "(Each undeclared identifier is reported only once"
 msgstr ""
 
-#: c-typeck.c:1464
+#: c-typeck.c:1469
 msgid "for each function it appears in.)"
 msgstr ""
 
-#: c-typeck.c:1481
+#: c-typeck.c:1486
 #, c-format
 msgid "local declaration of `%s' hides instance variable"
 msgstr ""
 
-#: c-typeck.c:1546
+#: c-typeck.c:1551
 msgid "called object is not a function"
 msgstr ""
 
-#: c-typeck.c:1630 cp/typeck.c:3189
+#: c-typeck.c:1638 cp/typeck.c:3189
 msgid "too many arguments to function"
 msgstr ""
 
-#: c-typeck.c:1651
+#: c-typeck.c:1659
 #, c-format
 msgid "type of formal parameter %d is incomplete"
 msgstr ""
 
-#: c-typeck.c:1664
+#: c-typeck.c:1672
 #, c-format
 msgid "%s as integer rather than floating due to prototype"
 msgstr ""
 
-#: c-typeck.c:1667
+#: c-typeck.c:1675
 #, c-format
 msgid "%s as integer rather than complex due to prototype"
 msgstr ""
 
-#: c-typeck.c:1670
+#: c-typeck.c:1678
 #, c-format
 msgid "%s as complex rather than floating due to prototype"
 msgstr ""
 
-#: c-typeck.c:1673
+#: c-typeck.c:1681
 #, c-format
 msgid "%s as floating rather than integer due to prototype"
 msgstr ""
 
-#: c-typeck.c:1676
+#: c-typeck.c:1684
 #, c-format
 msgid "%s as complex rather than integer due to prototype"
 msgstr ""
 
-#: c-typeck.c:1679
+#: c-typeck.c:1687
 #, c-format
 msgid "%s as floating rather than complex due to prototype"
 msgstr ""
 
-#: c-typeck.c:1689
+#: c-typeck.c:1697
 #, c-format
 msgid "%s as `float' rather than `double' due to prototype"
 msgstr ""
 
-#: c-typeck.c:1707
+#: c-typeck.c:1715
 #, c-format
 msgid "%s with different width due to prototype"
 msgstr ""
 
-#: c-typeck.c:1741
+#: c-typeck.c:1749
 #, c-format
 msgid "%s as unsigned due to prototype"
 msgstr ""
 
-#: c-typeck.c:1743
+#: c-typeck.c:1751
 #, c-format
 msgid "%s as signed due to prototype"
 msgstr ""
 
-#: c-typeck.c:1777 cp/typeck.c:3297
+#: c-typeck.c:1785 cp/typeck.c:3297
 msgid "too few arguments to function"
 msgstr ""
 
-#: c-typeck.c:1819
+#: c-typeck.c:1827
 msgid "suggest parentheses around + or - inside shift"
 msgstr ""
 
-#: c-typeck.c:1826
+#: c-typeck.c:1834
 msgid "suggest parentheses around && within ||"
 msgstr ""
 
-#: c-typeck.c:1835
+#: c-typeck.c:1843
 msgid "suggest parentheses around arithmetic in operand of |"
 msgstr ""
 
-#: c-typeck.c:1838
+#: c-typeck.c:1846
 msgid "suggest parentheses around comparison in operand of |"
 msgstr ""
 
-#: c-typeck.c:1847
+#: c-typeck.c:1855
 msgid "suggest parentheses around arithmetic in operand of ^"
 msgstr ""
 
-#: c-typeck.c:1850
+#: c-typeck.c:1858
 msgid "suggest parentheses around comparison in operand of ^"
 msgstr ""
 
-#: c-typeck.c:1857
+#: c-typeck.c:1865
 msgid "suggest parentheses around + or - in operand of &"
 msgstr ""
 
-#: c-typeck.c:1860
+#: c-typeck.c:1868
 msgid "suggest parentheses around comparison in operand of &"
 msgstr ""
 
-#: c-typeck.c:1867
+#: c-typeck.c:1875
 msgid "comparisons like X<=Y<=Z do not have their mathematical meaning"
 msgstr ""
 
-#: c-typeck.c:2027 c-typeck.c:2083 ch/expr.c:3951
+#: c-typeck.c:2035 c-typeck.c:2091 ch/expr.c:3951
 msgid "division by zero"
 msgstr ""
 
-#: c-typeck.c:2128 cp/typeck.c:3583
+#: c-typeck.c:2136 cp/typeck.c:3583
 msgid "right shift count is negative"
 msgstr ""
 
-#: c-typeck.c:2135 cp/typeck.c:3589
+#: c-typeck.c:2143 cp/typeck.c:3589
 msgid "right shift count >= width of type"
 msgstr ""
 
-#: c-typeck.c:2160 cp/typeck.c:3608
+#: c-typeck.c:2168 cp/typeck.c:3608
 msgid "left shift count is negative"
 msgstr ""
 
-#: c-typeck.c:2163 cp/typeck.c:3610
+#: c-typeck.c:2171 cp/typeck.c:3610
 msgid "left shift count >= width of type"
 msgstr ""
 
-#: c-typeck.c:2188
+#: c-typeck.c:2196
 msgid "shift count is negative"
 msgstr ""
 
-#: c-typeck.c:2190
+#: c-typeck.c:2198
 msgid "shift count >= width of type"
 msgstr ""
 
-#: c-typeck.c:2211 cp/typeck.c:3645
+#: c-typeck.c:2219 cp/typeck.c:3645
 msgid "comparing floating point with == or != is unsafe"
 msgstr ""
 
-#: c-typeck.c:2235 c-typeck.c:2241
+#: c-typeck.c:2243 c-typeck.c:2249
 msgid "ISO C forbids comparison of `void *' with function pointer"
 msgstr ""
 
-#: c-typeck.c:2244 c-typeck.c:2286 c-typeck.c:2314
+#: c-typeck.c:2252 c-typeck.c:2294 c-typeck.c:2322
 msgid "comparison of distinct pointer types lacks a cast"
 msgstr ""
 
-#: c-typeck.c:2259 c-typeck.c:2265 c-typeck.c:2335 c-typeck.c:2341
+#: c-typeck.c:2267 c-typeck.c:2273 c-typeck.c:2343 c-typeck.c:2349
 msgid "comparison between pointer and integer"
 msgstr ""
 
-#: c-typeck.c:2281 c-typeck.c:2309
+#: c-typeck.c:2289 c-typeck.c:2317
 msgid "ISO C forbids ordered comparisons of pointers to functions"
 msgstr ""
 
-#: c-typeck.c:2306
+#: c-typeck.c:2314
 msgid "comparison of complete and incomplete pointers"
 msgstr ""
 
-#: c-typeck.c:2322 c-typeck.c:2329
+#: c-typeck.c:2330 c-typeck.c:2337
 msgid "ordered comparison of pointer with integer zero"
 msgstr ""
 
-#: c-typeck.c:2355 cp/typeck.c:3778
+#: c-typeck.c:2363 cp/typeck.c:3778
 msgid "unordered comparison on non-floating point argument"
 msgstr ""
 
-#: c-typeck.c:2559
+#: c-typeck.c:2567
 msgid "comparison between signed and unsigned"
 msgstr ""
 
-#: c-typeck.c:2605 cp/typeck.c:4024
+#: c-typeck.c:2613 cp/typeck.c:4024
 msgid "comparison of promoted ~unsigned with constant"
 msgstr ""
 
-#: c-typeck.c:2613 cp/typeck.c:4032
+#: c-typeck.c:2621 cp/typeck.c:4032
 msgid "comparison of promoted ~unsigned with unsigned"
 msgstr ""
 
-#: c-typeck.c:2675
+#: c-typeck.c:2683
 msgid "pointer of type `void *' used in arithmetic"
 msgstr ""
 
-#: c-typeck.c:2681
+#: c-typeck.c:2689
 msgid "pointer to a function used in arithmetic"
 msgstr ""
 
-#: c-typeck.c:2761
+#: c-typeck.c:2769
 msgid "pointer of type `void *' used in subtraction"
 msgstr ""
 
-#: c-typeck.c:2763
+#: c-typeck.c:2771
 msgid "pointer to a function used in subtraction"
 msgstr ""
 
-#: c-typeck.c:2860
+#: c-typeck.c:2868
 msgid "wrong type argument to unary plus"
 msgstr ""
 
-#: c-typeck.c:2871
+#: c-typeck.c:2879
 msgid "wrong type argument to unary minus"
 msgstr ""
 
-#: c-typeck.c:2883
+#: c-typeck.c:2891
 msgid "ISO C does not support `~' for complex conjugation"
 msgstr ""
 
-#: c-typeck.c:2889
+#: c-typeck.c:2897
 msgid "wrong type argument to bit-complement"
 msgstr ""
 
-#: c-typeck.c:2900
+#: c-typeck.c:2908
 msgid "wrong type argument to abs"
 msgstr ""
 
-#: c-typeck.c:2912
+#: c-typeck.c:2920
 msgid "wrong type argument to conjugation"
 msgstr ""
 
-#: c-typeck.c:2926
+#: c-typeck.c:2934
 msgid "wrong type argument to unary exclamation mark"
 msgstr ""
 
-#: c-typeck.c:2969
+#: c-typeck.c:2977
 msgid "ISO C does not support `++' and `--' on complex types"
 msgstr ""
 
-#: c-typeck.c:2984 c-typeck.c:3016
+#: c-typeck.c:2992 c-typeck.c:3024
 msgid "wrong type argument to increment"
 msgstr ""
 
-#: c-typeck.c:2986 c-typeck.c:3018
+#: c-typeck.c:2994 c-typeck.c:3026
 msgid "wrong type argument to decrement"
 msgstr ""
 
-#: c-typeck.c:3007
+#: c-typeck.c:3015
 msgid "increment of pointer to unknown structure"
 msgstr ""
 
-#: c-typeck.c:3009
+#: c-typeck.c:3017
 msgid "decrement of pointer to unknown structure"
 msgstr ""
 
-#: c-typeck.c:3082
+#: c-typeck.c:3090
 msgid "invalid lvalue in increment"
 msgstr ""
 
-#: c-typeck.c:3083
+#: c-typeck.c:3091
 msgid "invalid lvalue in decrement"
 msgstr ""
 
-#: c-typeck.c:3091 cp/typeck.c:4612
+#: c-typeck.c:3099 cp/typeck.c:4612
 msgid "increment"
 msgstr ""
 
-#: c-typeck.c:3091 cp/typeck.c:4612
+#: c-typeck.c:3099 cp/typeck.c:4612
 msgid "decrement"
 msgstr ""
 
-#: c-typeck.c:3146
+#: c-typeck.c:3154
 msgid "ISO C forbids the address of a cast expression"
 msgstr ""
 
-#: c-typeck.c:3156
+#: c-typeck.c:3164
 msgid "invalid lvalue in unary `&'"
 msgstr ""
 
-#: c-typeck.c:3188
+#: c-typeck.c:3196
 #, c-format
 msgid "attempt to take address of bit-field structure member `%s'"
 msgstr ""
 
 #. condition met at compile time
-#: c-typeck.c:3297 c-typeck.c:4686 c-typeck.c:4702 c-typeck.c:4718
+#: c-typeck.c:3305 c-typeck.c:4707 c-typeck.c:4723 c-typeck.c:4739
 #: ch/expr.c:1782 ch/parse.c:361 ch/typeck.c:160 cp/typeck.c:4805 gcc.c:4459
 #: java/expr.c:387 java/verify.c:1464 java/verify.c:1465 java/verify.c:1480
 #: rtl-error.c:121 tradcif.y:532 tradcpp.c:4134
@@ -2898,536 +2906,540 @@ msgstr ""
 msgid "%s"
 msgstr ""
 
-#: c-typeck.c:3358
+#: c-typeck.c:3366
 msgid "ISO C forbids use of conditional expressions as lvalues"
 msgstr ""
 
-#: c-typeck.c:3361
+#: c-typeck.c:3369
 msgid "ISO C forbids use of compound expressions as lvalues"
 msgstr ""
 
-#: c-typeck.c:3364
+#: c-typeck.c:3372
 msgid "ISO C forbids use of cast expressions as lvalues"
 msgstr ""
 
-#: c-typeck.c:3381
+#: c-typeck.c:3389
 #, c-format
 msgid "%s of read-only member `%s'"
 msgstr ""
 
-#: c-typeck.c:3385
+#: c-typeck.c:3393
 #, c-format
 msgid "%s of read-only variable `%s'"
 msgstr ""
 
-#: c-typeck.c:3388
+#: c-typeck.c:3396
 #, c-format
 msgid "%s of read-only location"
 msgstr ""
 
-#: c-typeck.c:3406
+#: c-typeck.c:3414
 #, c-format
 msgid "cannot take address of bit-field `%s'"
 msgstr ""
 
-#: c-typeck.c:3434 ch/typeck.c:3676 ch/xtypeck.c:62
+#: c-typeck.c:3442 ch/typeck.c:3676 ch/xtypeck.c:62
 #, c-format
 msgid "global register variable `%s' used in nested function"
 msgstr ""
 
-#: c-typeck.c:3438 ch/typeck.c:3680 ch/xtypeck.c:66
+#: c-typeck.c:3446 ch/typeck.c:3680 ch/xtypeck.c:66
 #, c-format
 msgid "register variable `%s' used in nested function"
 msgstr ""
 
-#: c-typeck.c:3445 ch/typeck.c:3687 ch/xtypeck.c:73
+#: c-typeck.c:3453 ch/typeck.c:3687 ch/xtypeck.c:73
 #, c-format
 msgid "address of global register variable `%s' requested"
 msgstr ""
 
-#: c-typeck.c:3457 ch/typeck.c:3699 ch/xtypeck.c:85
+#: c-typeck.c:3465 ch/typeck.c:3699 ch/xtypeck.c:85
 msgid "cannot put object with volatile field into register"
 msgstr ""
 
-#: c-typeck.c:3461 ch/typeck.c:3703 ch/xtypeck.c:89
+#: c-typeck.c:3469 ch/typeck.c:3703 ch/xtypeck.c:89
 #, c-format
 msgid "address of register variable `%s' requested"
 msgstr ""
 
-#: c-typeck.c:3569
+#: c-typeck.c:3577
 msgid "signed and unsigned type in conditional expression"
 msgstr ""
 
-#: c-typeck.c:3576
+#: c-typeck.c:3584
 msgid "ISO C forbids conditional expr with only one void side"
 msgstr ""
 
-#: c-typeck.c:3592 c-typeck.c:3599
+#: c-typeck.c:3600 c-typeck.c:3607
 msgid "ISO C forbids conditional expr between `void *' and function pointer"
 msgstr ""
 
-#: c-typeck.c:3605
+#: c-typeck.c:3613
 msgid "pointer type mismatch in conditional expression"
 msgstr ""
 
-#: c-typeck.c:3612 c-typeck.c:3622
+#: c-typeck.c:3620 c-typeck.c:3630
 msgid "pointer/integer type mismatch in conditional expression"
 msgstr ""
 
-#: c-typeck.c:3636
+#: c-typeck.c:3644
 msgid "type mismatch in conditional expression"
 msgstr ""
 
-#: c-typeck.c:3707 cp/typeck.c:5062
+#: c-typeck.c:3715 cp/typeck.c:5062
 msgid "left-hand operand of comma expression has no effect"
 msgstr ""
 
-#: c-typeck.c:3746
+#: c-typeck.c:3754
 msgid "cast specifies array type"
 msgstr ""
 
-#: c-typeck.c:3752
+#: c-typeck.c:3760
 msgid "cast specifies function type"
 msgstr ""
 
-#: c-typeck.c:3762
+#: c-typeck.c:3770
 msgid "ISO C forbids casting nonscalar to the same type"
 msgstr ""
 
-#: c-typeck.c:3781
+#: c-typeck.c:3789
 msgid "ISO C forbids casts to union type"
 msgstr ""
 
-#: c-typeck.c:3797
+#: c-typeck.c:3805
 msgid "cast to union type from type not present in union"
+msgstr ""
+
+#: c-typeck.c:3856
+msgid "cast adds new qualifiers to function type"
 msgstr ""
 
 #. There are qualifiers present in IN_OTYPE that are not
 #. present in IN_TYPE.
-#: c-typeck.c:3840
+#: c-typeck.c:3861
 msgid "cast discards qualifiers from pointer target type"
 msgstr ""
 
-#: c-typeck.c:3855
+#: c-typeck.c:3876
 msgid "cast increases required alignment of target type"
 msgstr ""
 
-#: c-typeck.c:3861 cp/typeck.c:5476
+#: c-typeck.c:3882 cp/typeck.c:5476
 msgid "cast from pointer to integer of different size"
 msgstr ""
 
-#: c-typeck.c:3866
+#: c-typeck.c:3887
 msgid "cast does not match function type"
 msgstr ""
 
-#: c-typeck.c:3873 cp/typeck.c:5483
+#: c-typeck.c:3894 cp/typeck.c:5483
 msgid "cast to pointer from integer of different size"
 msgstr ""
 
 #. Now we have handled acceptable kinds of LHS that are not truly lvalues.
 #. Reject anything strange now.
-#: c-typeck.c:4031
+#: c-typeck.c:4052
 msgid "invalid lvalue in assignment"
 msgstr ""
 
 #. Convert new value to destination type.
-#: c-typeck.c:4040 c-typeck.c:4065 c-typeck.c:4082 ch/typeck.c:2334
+#: c-typeck.c:4061 c-typeck.c:4086 c-typeck.c:4103 ch/typeck.c:2334
 #: cp/typeck.c:5593 cp/typeck.c:5744
 msgid "assignment"
 msgstr ""
 
-#: c-typeck.c:4249 c-typeck.c:4316
+#: c-typeck.c:4270 c-typeck.c:4337
 #, c-format
 msgid "%s makes qualified function pointer from unqualified"
 msgstr ""
 
-#: c-typeck.c:4253 c-typeck.c:4296
+#: c-typeck.c:4274 c-typeck.c:4317
 #, c-format
 msgid "%s discards qualifiers from pointer target type"
 msgstr ""
 
-#: c-typeck.c:4259
+#: c-typeck.c:4280
 msgid "ISO C prohibits argument conversion to union type"
 msgstr ""
 
-#: c-typeck.c:4288
+#: c-typeck.c:4309
 #, c-format
 msgid "ISO C forbids %s between function pointer and `void *'"
 msgstr ""
 
-#: c-typeck.c:4305
+#: c-typeck.c:4326
 #, c-format
 msgid "pointer targets in %s differ in signedness"
 msgstr ""
 
-#: c-typeck.c:4321
+#: c-typeck.c:4342
 #, c-format
 msgid "%s from incompatible pointer type"
 msgstr ""
 
-#: c-typeck.c:4337
+#: c-typeck.c:4358
 #, c-format
 msgid "%s makes pointer from integer without a cast"
 msgstr ""
 
-#: c-typeck.c:4345
+#: c-typeck.c:4366
 #, c-format
 msgid "%s makes integer from pointer without a cast"
 msgstr ""
 
-#: c-typeck.c:4359 c-typeck.c:4362
+#: c-typeck.c:4380 c-typeck.c:4383
 #, c-format
 msgid "incompatible type for argument %d of `%s'"
 msgstr ""
 
-#: c-typeck.c:4366
+#: c-typeck.c:4387
 #, c-format
 msgid "incompatible type for argument %d of indirect function call"
 msgstr ""
 
-#: c-typeck.c:4370
+#: c-typeck.c:4391
 #, c-format
 msgid "incompatible types in %s"
 msgstr ""
 
 #. Function name is known; supply it.
-#: c-typeck.c:4401
+#: c-typeck.c:4422
 #, c-format
 msgid "passing arg %d of `%s'"
 msgstr ""
 
 #. Function name unknown (call through ptr); just give arg number.
-#: c-typeck.c:4411
+#: c-typeck.c:4432
 #, c-format
 msgid "passing arg %d of pointer to function"
 msgstr ""
 
-#: c-typeck.c:4478
+#: c-typeck.c:4499
 msgid "initializer for static variable is not constant"
 msgstr ""
 
-#: c-typeck.c:4484
+#: c-typeck.c:4505
 msgid "initializer for static variable uses complicated arithmetic"
 msgstr ""
 
-#: c-typeck.c:4492
+#: c-typeck.c:4513
 msgid "aggregate initializer is not constant"
 msgstr ""
 
-#: c-typeck.c:4494
+#: c-typeck.c:4515
 msgid "aggregate initializer uses complicated arithmetic"
 msgstr ""
 
-#: c-typeck.c:4501
+#: c-typeck.c:4522
 msgid "traditional C rejects automatic aggregate initialization"
 msgstr ""
 
-#: c-typeck.c:4689 c-typeck.c:4705 c-typeck.c:4721
+#: c-typeck.c:4710 c-typeck.c:4726 c-typeck.c:4742
 #, c-format
 msgid "(near initialization for `%s')"
 msgstr ""
 
-#: c-typeck.c:4773 cp/typeck2.c:513
+#: c-typeck.c:4794 cp/typeck2.c:513
 msgid "char-array initialized from wide string"
 msgstr ""
 
-#: c-typeck.c:4780 cp/typeck2.c:520
+#: c-typeck.c:4801 cp/typeck2.c:520
 msgid "int-array initialized from non-wide string"
 msgstr ""
 
-#: c-typeck.c:4798 cp/typeck2.c:536
+#: c-typeck.c:4819 cp/typeck2.c:536
 msgid "initializer-string for array of chars is too long"
 msgstr ""
 
-#: c-typeck.c:4834
+#: c-typeck.c:4855
 msgid "array initialized from non-constant array expression"
 msgstr ""
 
-#: c-typeck.c:4851 c-typeck.c:4853 c-typeck.c:4869 c-typeck.c:4890
-#: c-typeck.c:6311
+#: c-typeck.c:4872 c-typeck.c:4874 c-typeck.c:4890 c-typeck.c:4911
+#: c-typeck.c:6332
 msgid "initializer element is not constant"
 msgstr ""
 
-#: c-typeck.c:4885
+#: c-typeck.c:4906
 msgid "initialization"
 msgstr ""
 
-#: c-typeck.c:4896 c-typeck.c:6316
+#: c-typeck.c:4917 c-typeck.c:6337
 msgid "initializer element is not computable at load time"
 msgstr ""
 
-#: c-typeck.c:4933 c-typeck.c:4949 cp/typeck2.c:613
+#: c-typeck.c:4954 c-typeck.c:4970 cp/typeck2.c:613
 msgid "invalid initializer"
 msgstr ""
 
-#: c-typeck.c:5434
+#: c-typeck.c:5455
 msgid "extra brace group at end of initializer"
 msgstr ""
 
-#: c-typeck.c:5454
+#: c-typeck.c:5475
 msgid "missing braces around initializer"
 msgstr ""
 
-#: c-typeck.c:5506
+#: c-typeck.c:5527
 msgid "braces around scalar initializer"
 msgstr ""
 
-#: c-typeck.c:5554
+#: c-typeck.c:5575
 msgid "initialization of flexible array member in a nested context"
 msgstr ""
 
-#: c-typeck.c:5556
+#: c-typeck.c:5577
 msgid "initialization of a flexible array member"
 msgstr ""
 
-#: c-typeck.c:5587
+#: c-typeck.c:5608
 msgid "missing initializer"
 msgstr ""
 
-#: c-typeck.c:5612
+#: c-typeck.c:5633
 msgid "empty scalar initializer"
 msgstr ""
 
-#: c-typeck.c:5617
+#: c-typeck.c:5638
 msgid "extra elements in scalar initializer"
 msgstr ""
 
-#: c-typeck.c:5703
+#: c-typeck.c:5724
 msgid "initialization designators may not nest"
 msgstr ""
 
-#: c-typeck.c:5724 c-typeck.c:5795
+#: c-typeck.c:5745 c-typeck.c:5816
 msgid "array index in non-array initializer"
 msgstr ""
 
-#: c-typeck.c:5729 c-typeck.c:5847
+#: c-typeck.c:5750 c-typeck.c:5868
 msgid "field name not in record or union initializer"
 msgstr ""
 
-#: c-typeck.c:5791 c-typeck.c:5793
+#: c-typeck.c:5812 c-typeck.c:5814
 msgid "nonconstant array index in initializer"
 msgstr ""
 
-#: c-typeck.c:5798
+#: c-typeck.c:5819
 msgid "array index in initializer exceeds array bounds"
 msgstr ""
 
-#: c-typeck.c:5809
+#: c-typeck.c:5830
 msgid "empty index range in initializer"
 msgstr ""
 
-#: c-typeck.c:5818
+#: c-typeck.c:5839
 msgid "array index range in initializer exceeds array bounds"
 msgstr ""
 
-#: c-typeck.c:5859
+#: c-typeck.c:5880
 #, c-format
 msgid "unknown field `%s' specified in initializer"
 msgstr ""
 
-#: c-typeck.c:5896 c-typeck.c:5917 c-typeck.c:6379
+#: c-typeck.c:5917 c-typeck.c:5938 c-typeck.c:6400
 msgid "initialized field with side-effects overwritten"
 msgstr ""
 
-#: c-typeck.c:6589
+#: c-typeck.c:6610
 msgid "excess elements in char array initializer"
 msgstr ""
 
-#: c-typeck.c:6596 c-typeck.c:6642
+#: c-typeck.c:6617 c-typeck.c:6663
 msgid "excess elements in struct initializer"
 msgstr ""
 
-#: c-typeck.c:6709
+#: c-typeck.c:6730
 msgid "excess elements in union initializer"
 msgstr ""
 
-#: c-typeck.c:6730
+#: c-typeck.c:6751
 msgid "traditional C rejects initialization of unions"
 msgstr ""
 
-#: c-typeck.c:6793
+#: c-typeck.c:6814
 msgid "excess elements in array initializer"
 msgstr ""
 
-#: c-typeck.c:6819
+#: c-typeck.c:6840
 msgid "excess elements in scalar initializer"
 msgstr ""
 
-#: c-typeck.c:6930 ch/parse.c:2026
+#: c-typeck.c:6951 ch/parse.c:2026
 msgid "asm template is not a string constant"
 msgstr ""
 
-#: c-typeck.c:6962
+#: c-typeck.c:6983
 msgid "invalid lvalue in asm statement"
 msgstr ""
 
-#: c-typeck.c:7033
+#: c-typeck.c:7054
 msgid "modification by `asm'"
 msgstr ""
 
-#: c-typeck.c:7052 cp/typeck.c:6592
+#: c-typeck.c:7073 cp/typeck.c:6592
 msgid "function declared `noreturn' has a `return' statement"
 msgstr ""
 
-#: c-typeck.c:7059
+#: c-typeck.c:7080
 msgid "`return' with no value, in function returning non-void"
 msgstr ""
 
-#: c-typeck.c:7065
+#: c-typeck.c:7086
 msgid "`return' with a value, in function returning void"
 msgstr ""
 
-#: c-typeck.c:7069
+#: c-typeck.c:7090
 msgid "return"
 msgstr ""
 
-#: c-typeck.c:7120
+#: c-typeck.c:7142
 msgid "function returns address of local variable"
 msgstr ""
 
-#: c-typeck.c:7177 cp/semantics.c:525
+#: c-typeck.c:7198 cp/semantics.c:526
 msgid "switch quantity not an integer"
 msgstr ""
 
-#: c-typeck.c:7187
+#: c-typeck.c:7208
 msgid "`long' switch expression not converted to `int' in ISO C"
 msgstr ""
 
-#: c-typeck.c:7222 cp/decl.c:5216
+#: c-typeck.c:7243 cp/decl.c:5216
 msgid "case label not within a switch statement"
 msgstr ""
 
-#: c-typeck.c:7224 cp/decl.c:5221
+#: c-typeck.c:7245 cp/decl.c:5221
 msgid "`default' label not within a switch statement"
 msgstr ""
 
-#: calls.c:1901
+#: calls.c:1907
 #, c-format
 msgid "inlining failed in call to `%s'"
 msgstr ""
 
-#: calls.c:1902 calls.c:2208
+#: calls.c:1908 calls.c:2214
 msgid "called from here"
 msgstr ""
 
-#: calls.c:2207
+#: calls.c:2213
 #, c-format
 msgid "can't inline call to `%s'"
 msgstr ""
 
-#: calls.c:2237
+#: calls.c:2243
 msgid "function call has aggregate value"
 msgstr ""
 
-#: calls.c:4539
+#: calls.c:4550
 msgid "variable offset is passed partially in stack and in reg"
 msgstr ""
 
-#: calls.c:4541
+#: calls.c:4552
 msgid "variable size is passed partially in stack and in reg"
 msgstr ""
 
-#: cfgrtl.c:1591
+#: cfgrtl.c:1612
 #, c-format
 msgid "end insn %d for block %d not found in the insn stream"
 msgstr ""
 
-#: cfgrtl.c:1605
+#: cfgrtl.c:1626
 #, c-format
 msgid "insn %d is in multiple basic blocks (%d and %d)"
 msgstr ""
 
-#: cfgrtl.c:1617
+#: cfgrtl.c:1638
 #, c-format
 msgid "head insn %d for block %d not found in the insn stream"
 msgstr ""
 
-#: cfgrtl.c:1636
+#: cfgrtl.c:1657
 #, c-format
 msgid "verify_flow_info: Duplicate edge %i->%i"
 msgstr ""
 
-#: cfgrtl.c:1655
+#: cfgrtl.c:1676
 #, c-format
 msgid "verify_flow_info: Incorrect blocks for fallthru %i->%i"
 msgstr ""
 
-#: cfgrtl.c:1670
+#: cfgrtl.c:1691
 #, c-format
 msgid "verify_flow_info: Incorrect fallthru %i->%i"
 msgstr ""
 
-#: cfgrtl.c:1672
+#: cfgrtl.c:1693
 msgid "wrong insn in the fallthru edge"
 msgstr ""
 
-#: cfgrtl.c:1679
+#: cfgrtl.c:1700
 #, c-format
 msgid "verify_flow_info: Basic block %d succ edge is corrupted"
 msgstr ""
 
-#: cfgrtl.c:1703
+#: cfgrtl.c:1724
 #, c-format
 msgid "missing barrier after block %i"
 msgstr ""
 
-#: cfgrtl.c:1713
+#: cfgrtl.c:1734
 #, c-format
 msgid "basic block %d pred edge is corrupted"
 msgstr ""
 
-#: cfgrtl.c:1730
+#: cfgrtl.c:1751
 #, c-format
 msgid "insn %d inside basic block %d but block_for_insn is NULL"
 msgstr ""
 
-#: cfgrtl.c:1734
+#: cfgrtl.c:1755
 #, c-format
 msgid "insn %d inside basic block %d but block_for_insn is %i"
 msgstr ""
 
-#: cfgrtl.c:1748 cfgrtl.c:1758
+#: cfgrtl.c:1769 cfgrtl.c:1779
 #, c-format
 msgid "NOTE_INSN_BASIC_BLOCK is missing for block %d"
 msgstr ""
 
-#: cfgrtl.c:1771
+#: cfgrtl.c:1792
 #, c-format
 msgid "NOTE_INSN_BASIC_BLOCK %d in middle of basic block %d"
 msgstr ""
 
-#: cfgrtl.c:1783
+#: cfgrtl.c:1804
 #, c-format
 msgid "in basic block %d:"
 msgstr ""
 
-#: cfgrtl.c:1784
+#: cfgrtl.c:1805
 msgid "flow control insn inside a basic block"
 msgstr ""
 
-#: cfgrtl.c:1803
+#: cfgrtl.c:1824
 #, c-format
 msgid "basic block %i edge lists are corrupted"
 msgstr ""
 
-#: cfgrtl.c:1817
+#: cfgrtl.c:1838
 msgid "basic blocks not numbered consecutively"
 msgstr ""
 
-#: cfgrtl.c:1842
+#: cfgrtl.c:1863
 msgid "insn outside basic block"
 msgstr ""
 
-#: cfgrtl.c:1850
+#: cfgrtl.c:1871
 msgid "return not followed by barrier"
 msgstr ""
 
-#: cfgrtl.c:1855
+#: cfgrtl.c:1876
 #, c-format
 msgid "number of bb notes in insn chain (%d) != n_basic_blocks (%d)"
 msgstr ""
 
-#: cfgrtl.c:1859
+#: cfgrtl.c:1880
 msgid "verify_flow_info failed"
 msgstr ""
 
@@ -3749,7 +3761,7 @@ msgstr ""
 msgid "wrote %ld bytes, expected %ld, to %s"
 msgstr ""
 
-#: combine.c:12640
+#: combine.c:12611
 #, c-format
 msgid ""
 ";; Combiner statistics: %d attempts, %d substitutions (%d requiring new "
@@ -3758,7 +3770,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: combine.c:12650
+#: combine.c:12621
 #, c-format
 msgid ""
 "\n"
@@ -4909,54 +4921,54 @@ msgstr ""
 msgid "negative insn length"
 msgstr ""
 
-#: final.c:2627
+#: final.c:2628
 msgid "could not split insn"
 msgstr ""
 
-#: final.c:2971
+#: final.c:2972
 #, c-format
 msgid "invalid `asm': %s"
 msgstr ""
 
-#: final.c:2973
+#: final.c:2974
 #, c-format
 msgid "output_operand: %s"
 msgstr ""
 
-#: final.c:3146
+#: final.c:3147
 msgid "nested assembly dialect alternatives"
 msgstr ""
 
-#: final.c:3163 final.c:3175
+#: final.c:3164 final.c:3176
 msgid "unterminated assembly dialect alternative"
 msgstr ""
 
-#: final.c:3219
+#: final.c:3220
 #, c-format
 msgid "operand number missing after %-letter"
 msgstr ""
 
-#: final.c:3222 final.c:3261
+#: final.c:3223 final.c:3262
 msgid "operand number out of range"
 msgstr ""
 
-#: final.c:3280
+#: final.c:3281
 #, c-format
 msgid "invalid %%-code"
 msgstr ""
 
-#: final.c:3311
+#: final.c:3312
 msgid "`%l' operand isn't a label"
 msgstr ""
 
 #. We can't handle floating point constants;
 #. PRINT_OPERAND must handle them.
-#: config/i386/i386.c:5280 config/pdp11/pdp11.c:1570 final.c:3418
+#: config/i386/i386.c:5280 config/pdp11/pdp11.c:1570 final.c:3419
 #: vmsdbgout.c:478
 msgid "floating constant misused"
 msgstr ""
 
-#: config/i386/i386.c:5334 config/pdp11/pdp11.c:1617 final.c:3473
+#: config/i386/i386.c:5334 config/pdp11/pdp11.c:1617 final.c:3475
 #: vmsdbgout.c:535
 msgid "invalid expression as operand"
 msgstr ""
@@ -5731,7 +5743,7 @@ msgstr ""
 msgid "GCSE disabled: %d basic blocks and %d registers"
 msgstr ""
 
-#: ch/grant.c:2652 ch/lex.c:212 ch/lex.c:2189 f/com.c:14249 graph.c:421
+#: ch/grant.c:2652 ch/lex.c:212 ch/lex.c:2189 f/com.c:14253 graph.c:421
 #: java/jcf-parse.c:984 java/jcf-parse.c:1136 java/lex.c:1782
 #: objc/objc-act.c:529 profile.c:950 profile.c:958 toplev.c:1845 toplev.c:4954
 #, c-format
@@ -6263,22 +6275,22 @@ msgstr ""
 msgid "call-clobbered register used for global register variable"
 msgstr ""
 
-#: regrename.c:1821
+#: regrename.c:1826
 #, c-format
 msgid "validate_value_data: [%u] Bad next_regno for empty chain (%u)"
 msgstr ""
 
-#: regrename.c:1833
+#: regrename.c:1838
 #, c-format
 msgid "validate_value_data: Loop in regno chain (%u)"
 msgstr ""
 
-#: regrename.c:1836
+#: regrename.c:1841
 #, c-format
 msgid "validate_value_data: [%u] Bad oldest_regno (%u)"
 msgstr ""
 
-#: regrename.c:1848
+#: regrename.c:1853
 #, c-format
 msgid "validate_value_data: [%u] Non-empty reg in chain (%s %u %i)"
 msgstr ""
@@ -6393,7 +6405,7 @@ msgstr ""
 msgid "jump to `%s' invalidly jumps into binding contour"
 msgstr ""
 
-#: stmt.c:1163 stmt.c:3749
+#: stmt.c:1163 stmt.c:3757
 #, c-format
 msgid "label `%s' used before containing binding contour"
 msgstr ""
@@ -6474,73 +6486,73 @@ msgstr ""
 msgid "missing close brace for named operand"
 msgstr ""
 
-#: stmt.c:2164
+#: stmt.c:2172
 #, c-format
 msgid "undefined named operand '%s'"
 msgstr ""
 
-#: stmt.c:3686
+#: stmt.c:3694
 #, c-format
 msgid "unused variable `%s'"
 msgstr ""
 
-#: stmt.c:5138
+#: stmt.c:5147
 #, c-format
 msgid "enumeration value `%s' not handled in switch"
 msgstr ""
 
-#: stmt.c:5164 stmt.c:5184
+#: stmt.c:5173 stmt.c:5193
 #, c-format
 msgid "case value `%ld' not in enumerated type"
 msgstr ""
 
-#: stmt.c:5167 stmt.c:5187
+#: stmt.c:5176 stmt.c:5196
 #, c-format
 msgid "case value `%ld' not in enumerated type `%s'"
 msgstr ""
 
-#: stor-layout.c:172
+#: stor-layout.c:173
 msgid "type size can't be explicitly evaluated"
 msgstr ""
 
-#: stor-layout.c:174
+#: stor-layout.c:175
 msgid "variable-size type declared outside of any function"
 msgstr ""
 
-#: stor-layout.c:455
+#: stor-layout.c:456
 #, c-format
 msgid "size of `%s' is %d bytes"
 msgstr ""
 
-#: stor-layout.c:457
+#: stor-layout.c:458
 #, c-format
 msgid "size of `%s' is larger than %d bytes"
 msgstr ""
 
-#: stor-layout.c:836 stor-layout.c:1089
+#: stor-layout.c:856 stor-layout.c:1157
 #, c-format
 msgid "packed attribute causes inefficient alignment for `%s'"
 msgstr ""
 
-#: stor-layout.c:838 stor-layout.c:1091
+#: stor-layout.c:858 stor-layout.c:1159
 #, c-format
 msgid "packed attribute is unnecessary for `%s'"
 msgstr ""
 
-#: stor-layout.c:853
+#: stor-layout.c:873
 #, c-format
 msgid "padding struct to align `%s'"
 msgstr ""
 
-#: stor-layout.c:1053
+#: stor-layout.c:1121
 msgid "padding struct size to alignment boundary"
 msgstr ""
 
-#: stor-layout.c:1096
+#: stor-layout.c:1164
 msgid "packed attribute causes inefficient alignment"
 msgstr ""
 
-#: stor-layout.c:1098
+#: stor-layout.c:1166
 msgid "packed attribute is unnecessary"
 msgstr ""
 
@@ -7880,24 +7892,24 @@ msgstr ""
 msgid "ignoring unknown option `%.*s' in `-f%s'"
 msgstr ""
 
-#: tree.c:3847
+#: tree.c:3857
 msgid "arrays of functions are not meaningful"
 msgstr ""
 
-#: tree.c:3904
+#: tree.c:3914
 msgid "function return type cannot be function"
 msgstr ""
 
-#: tree.c:4651
+#: tree.c:4668
 msgid "invalid initializer for bit string"
 msgstr ""
 
-#: tree.c:4710
+#: tree.c:4727
 #, c-format
 msgid "tree check: expected %s, have %s in %s, at %s:%d"
 msgstr ""
 
-#: tree.c:4727
+#: tree.c:4744
 #, c-format
 msgid "tree check: expected class '%c', have '%c' (%s) in %s, at %s:%d"
 msgstr ""
@@ -7956,43 +7968,43 @@ msgstr ""
 msgid "requested alignment for %s is greater than implemented alignment of %d"
 msgstr ""
 
-#: varasm.c:4471
+#: varasm.c:4503
 msgid "initializer for integer value is too complicated"
 msgstr ""
 
-#: varasm.c:4476
+#: varasm.c:4508
 msgid "initializer for floating value is not a floating constant"
 msgstr ""
 
-#: varasm.c:4525
+#: varasm.c:4557
 msgid "unknown set constructor type"
 msgstr ""
 
-#: varasm.c:4739
+#: varasm.c:4771
 #, c-format
 msgid "invalid initial value for member `%s'"
 msgstr ""
 
-#: varasm.c:4931
+#: varasm.c:4963
 #, c-format
 msgid "weak declaration of `%s' must be public"
 msgstr ""
 
-#: varasm.c:4933
+#: varasm.c:4965
 #, c-format
 msgid "weak declaration of `%s' must precede definition"
 msgstr ""
 
-#: varasm.c:4937
+#: varasm.c:4969
 #, c-format
 msgid "weak declaration of `%s' not supported"
 msgstr ""
 
-#: varasm.c:5033
+#: varasm.c:5065
 msgid "only weak aliases are supported in this configuration"
 msgstr ""
 
-#: varasm.c:5038
+#: varasm.c:5070
 msgid "alias definitions not supported in this configuration; ignored"
 msgstr ""
 
@@ -8094,41 +8106,41 @@ msgstr ""
 msgid "invalid %%Q value"
 msgstr ""
 
-#: config/a29k/a29k.c:1034 config/alpha/alpha.c:5355
+#: config/a29k/a29k.c:1034 config/alpha/alpha.c:5352
 #, c-format
 msgid "invalid %%C value"
 msgstr ""
 
-#: config/a29k/a29k.c:1040 config/alpha/alpha.c:5200
-#: config/rs6000/rs6000.c:6110
+#: config/a29k/a29k.c:1040 config/alpha/alpha.c:5197
+#: config/rs6000/rs6000.c:6390
 #, c-format
 msgid "invalid %%N value"
 msgstr ""
 
-#: config/a29k/a29k.c:1046 config/alpha/alpha.c:5271
-#: config/rs6000/rs6000.c:6072
+#: config/a29k/a29k.c:1046 config/alpha/alpha.c:5268
+#: config/rs6000/rs6000.c:6352
 #, c-format
 msgid "invalid %%M value"
 msgstr ""
 
-#: config/a29k/a29k.c:1052 config/alpha/alpha.c:5263
-#: config/rs6000/rs6000.c:6037
+#: config/a29k/a29k.c:1052 config/alpha/alpha.c:5260
+#: config/rs6000/rs6000.c:6317
 #, c-format
 msgid "invalid %%m value"
 msgstr ""
 
-#: config/a29k/a29k.c:1154 config/alpha/alpha.c:5224 config/romp/romp.c:690
+#: config/a29k/a29k.c:1154 config/alpha/alpha.c:5221 config/romp/romp.c:690
 #, c-format
 msgid "invalid %%L value"
 msgstr ""
 
-#: config/a29k/a29k.c:1159 config/rs6000/rs6000.c:6118
+#: config/a29k/a29k.c:1159 config/rs6000/rs6000.c:6398
 #, c-format
 msgid "invalid %%O value"
 msgstr ""
 
-#: config/a29k/a29k.c:1165 config/alpha/alpha.c:5208
-#: config/rs6000/rs6000.c:6138
+#: config/a29k/a29k.c:1165 config/alpha/alpha.c:5205
+#: config/rs6000/rs6000.c:6418
 #, c-format
 msgid "invalid %%P value"
 msgstr ""
@@ -8214,108 +8226,108 @@ msgstr ""
 msgid "Do not generate multm instructions"
 msgstr ""
 
-#: config/alpha/alpha.c:273
+#: config/alpha/alpha.c:274
 #, c-format
 msgid "-f%s ignored for Unicos/Mk (not supported)"
 msgstr ""
 
-#: config/alpha/alpha.c:297
+#: config/alpha/alpha.c:298
 msgid "-mieee not supported on Unicos/Mk"
 msgstr ""
 
-#: config/alpha/alpha.c:308
+#: config/alpha/alpha.c:309
 msgid "-mieee-with-inexact not supported on Unicos/Mk"
 msgstr ""
 
-#: config/alpha/alpha.c:325
+#: config/alpha/alpha.c:326
 #, c-format
 msgid "bad value `%s' for -mtrap-precision switch"
 msgstr ""
 
-#: config/alpha/alpha.c:339
+#: config/alpha/alpha.c:340
 #, c-format
 msgid "bad value `%s' for -mfp-rounding-mode switch"
 msgstr ""
 
-#: config/alpha/alpha.c:354
+#: config/alpha/alpha.c:355
 #, c-format
 msgid "bad value `%s' for -mfp-trap-mode switch"
 msgstr ""
 
-#: config/alpha/alpha.c:373 config/alpha/alpha.c:385
+#: config/alpha/alpha.c:374 config/alpha/alpha.c:386
 #, c-format
 msgid "bad value `%s' for -mcpu switch"
 msgstr ""
 
-#: config/alpha/alpha.c:392
+#: config/alpha/alpha.c:393
 msgid "trap mode not supported on Unicos/Mk"
 msgstr ""
 
-#: config/alpha/alpha.c:399
+#: config/alpha/alpha.c:400
 msgid "fp software completion requires -mtrap-precision=i"
 msgstr ""
 
-#: config/alpha/alpha.c:415
+#: config/alpha/alpha.c:416
 msgid "rounding mode not supported for VAX floats"
 msgstr ""
 
-#: config/alpha/alpha.c:420
+#: config/alpha/alpha.c:421
 msgid "trap mode not supported for VAX floats"
 msgstr ""
 
-#: config/alpha/alpha.c:449
+#: config/alpha/alpha.c:450
 #, c-format
 msgid "L%d cache latency unknown for %s"
 msgstr ""
 
-#: config/alpha/alpha.c:464
+#: config/alpha/alpha.c:465
 #, c-format
 msgid "bad value `%s' for -mmemory-latency"
 msgstr ""
 
-#: config/alpha/alpha.c:5164 config/romp/romp.c:746 config/romp/romp.c:753
+#: config/alpha/alpha.c:5161 config/romp/romp.c:746 config/romp/romp.c:753
 #, c-format
 msgid "invalid %%H value"
 msgstr ""
 
-#: config/alpha/alpha.c:5174
+#: config/alpha/alpha.c:5171
 #, c-format
 msgid "invalid %%J value"
 msgstr ""
 
-#: config/alpha/alpha.c:5184 config/ia64/ia64.c:3525
+#: config/alpha/alpha.c:5181 config/ia64/ia64.c:3525
 #, c-format
 msgid "invalid %%r value"
 msgstr ""
 
-#: config/alpha/alpha.c:5194 config/rs6000/rs6000.c:6184
+#: config/alpha/alpha.c:5191 config/rs6000/rs6000.c:6464
 #, c-format
 msgid "invalid %%R value"
 msgstr ""
 
-#: config/alpha/alpha.c:5216 config/romp/romp.c:732 config/romp/romp.c:739
+#: config/alpha/alpha.c:5213 config/romp/romp.c:732 config/romp/romp.c:739
 #, c-format
 msgid "invalid %%h value"
 msgstr ""
 
-#: config/alpha/alpha.c:5306
+#: config/alpha/alpha.c:5303
 #, c-format
 msgid "invalid %%U value"
 msgstr ""
 
-#: config/alpha/alpha.c:5318 config/alpha/alpha.c:5332 config/romp/romp.c:698
-#: config/rs6000/rs6000.c:6192
+#: config/alpha/alpha.c:5315 config/alpha/alpha.c:5329 config/romp/romp.c:698
+#: config/rs6000/rs6000.c:6472
 #, c-format
 msgid "invalid %%s value"
 msgstr ""
 
-#: config/alpha/alpha.c:5392 config/rs6000/rs6000.c:5899
+#: config/alpha/alpha.c:5389 config/rs6000/rs6000.c:6179
 #, c-format
 msgid "invalid %%E value"
 msgstr ""
 
-#: config/alpha/alpha.c:5413 config/romp/romp.c:973
-#: config/rs6000/rs6000.c:6500
+#: config/alpha/alpha.c:5410 config/romp/romp.c:973
+#: config/rs6000/rs6000.c:6780
 #, c-format
 msgid "invalid %%xn code"
 msgstr ""
@@ -8327,7 +8339,7 @@ msgstr ""
 #. An empty string NAME is used to identify the default VALUE.
 #: config/alpha/alpha.h:214 config/i386/i386.h:285 config/i386/i386.h:287
 #: config/i386/i386.h:289 config/ns32k/ns32k.h:103 config/rs6000/rs6000.h:329
-#: config/s390/s390.h:51 config/sparc/sparc.h:552 config/sparc/sparc.h:557
+#: config/s390/s390.h:56 config/sparc/sparc.h:552 config/sparc/sparc.h:557
 msgid "Use hardware fp"
 msgstr ""
 
@@ -8467,114 +8479,114 @@ msgid "invalid operand to %V code"
 msgstr ""
 
 #. Unknown flag.
-#: config/arc/arc.c:1783 config/m32r/m32r.c:2417 config/sparc/sparc.c:6026
+#: config/arc/arc.c:1783 config/m32r/m32r.c:2417 config/sparc/sparc.c:6023
 msgid "invalid operand output code"
 msgstr ""
 
-#: config/arm/arm.c:439
+#: config/arm/arm.c:436
 #, c-format
 msgid "switch -mcpu=%s conflicts with -march= switch"
 msgstr ""
 
-#: config/arm/arm.c:449 config/rs6000/rs6000.c:441 config/sparc/sparc.c:383
+#: config/arm/arm.c:446 config/rs6000/rs6000.c:443 config/sparc/sparc.c:382
 #, c-format
 msgid "bad value (%s) for %s switch"
 msgstr ""
 
-#: config/arm/arm.c:585
+#: config/arm/arm.c:582
 msgid "target CPU does not support APCS-32"
 msgstr ""
 
-#: config/arm/arm.c:590
+#: config/arm/arm.c:587
 msgid "target CPU does not support APCS-26"
 msgstr ""
 
-#: config/arm/arm.c:596
+#: config/arm/arm.c:593
 msgid "target CPU does not support interworking"
 msgstr ""
 
-#: config/arm/arm.c:602
+#: config/arm/arm.c:599
 msgid "target CPU does not support THUMB instructions"
 msgstr ""
 
-#: config/arm/arm.c:616
+#: config/arm/arm.c:613
 msgid ""
 "enabling backtrace support is only meaningful when compiling for the Thumb"
 msgstr ""
 
-#: config/arm/arm.c:619
+#: config/arm/arm.c:616
 msgid ""
 "enabling callee interworking support is only meaningful when compiling for "
 "the Thumb"
 msgstr ""
 
-#: config/arm/arm.c:622
+#: config/arm/arm.c:619
 msgid ""
 "enabling caller interworking support is only meaningful when compiling for "
 "the Thumb"
 msgstr ""
 
-#: config/arm/arm.c:628
+#: config/arm/arm.c:625
 msgid "interworking forces APCS-32 to be used"
 msgstr ""
 
-#: config/arm/arm.c:634
+#: config/arm/arm.c:631
 msgid "-mapcs-stack-check incompatible with -mno-apcs-frame"
 msgstr ""
 
-#: config/arm/arm.c:642
+#: config/arm/arm.c:639
 msgid "-fpic and -mapcs-reent are incompatible"
 msgstr ""
 
-#: config/arm/arm.c:645
+#: config/arm/arm.c:642
 msgid "APCS reentrant code not supported.  Ignored"
 msgstr ""
 
-#: config/arm/arm.c:653
+#: config/arm/arm.c:650
 msgid "-g with -mno-apcs-frame may not give sensible debugging"
 msgstr ""
 
-#: config/arm/arm.c:661
+#: config/arm/arm.c:658
 msgid "passing floating point arguments in fp regs not yet supported"
 msgstr ""
 
-#: config/arm/arm.c:690
+#: config/arm/arm.c:687
 #, c-format
 msgid "invalid floating point emulation option: -mfpe-%s"
 msgstr ""
 
-#: config/arm/arm.c:714
+#: config/arm/arm.c:711
 msgid "structure size boundary can only be set to 8 or 32"
 msgstr ""
 
-#: config/arm/arm.c:722
+#: config/arm/arm.c:719
 msgid "-mpic-register= is useless without -fpic"
 msgstr ""
 
-#: config/arm/arm.c:731
+#: config/arm/arm.c:728
 #, c-format
 msgid "unable to use '%s' for PIC register"
 msgstr ""
 
-#: config/arm/arm.c:1975 config/arm/arm.c:1998 config/avr/avr.c:4703
-#: config/c4x/c4x.c:4650 config/h8300/h8300.c:2981 config/i386/i386.c:1254
+#: config/arm/arm.c:1972 config/arm/arm.c:1995 config/avr/avr.c:4703
+#: config/c4x/c4x.c:4650 config/h8300/h8300.c:2983 config/i386/i386.c:1254
 #: config/i386/i386.c:1283 config/m68hc11/m68hc11.c:1160
 #: config/mcore/mcore.c:3505 config/ns32k/ns32k.c:1044
-#: config/rs6000/rs6000.c:10412 config/sh/sh.c:4703 config/sh/sh.c:4723
-#: config/sh/sh.c:4762 config/stormy16/stormy16.c:2010 config/v850/v850.c:2044
+#: config/rs6000/rs6000.c:10692 config/sh/sh.c:5586 config/sh/sh.c:5606
+#: config/sh/sh.c:5645 config/stormy16/stormy16.c:2010 config/v850/v850.c:2044
 #, c-format
 msgid "`%s' attribute only applies to functions"
 msgstr ""
 
-#: config/arm/arm.c:9274
+#: config/arm/arm.c:9258
 msgid "unable to compute real location of stacked parameter"
 msgstr ""
 
-#: config/arm/arm.c:9954
+#: config/arm/arm.c:9938
 msgid "no low registers available for popping high registers"
 msgstr ""
 
-#: config/arm/arm.c:10146
+#: config/arm/arm.c:10130
 msgid "interrupt Service Routines cannot be coded in Thumb mode"
 msgstr ""
 
@@ -8588,111 +8600,111 @@ msgstr ""
 msgid "static variable `%s' is marked dllimport"
 msgstr ""
 
-#: config/arm/arm.h:424
+#: config/arm/arm.h:422
 msgid "Generate APCS conformant stack frames"
 msgstr ""
 
-#: config/arm/arm.h:427
+#: config/arm/arm.h:425
 msgid "Store function names in object code"
 msgstr ""
 
-#: config/arm/arm.h:431
+#: config/arm/arm.h:429
 msgid "Use the 32-bit version of the APCS"
 msgstr ""
 
-#: config/arm/arm.h:433
+#: config/arm/arm.h:431
 msgid "Use the 26-bit version of the APCS"
 msgstr ""
 
-#: config/arm/arm.h:437
+#: config/arm/arm.h:435
 msgid "Pass FP arguments in FP registers"
 msgstr ""
 
-#: config/arm/arm.h:440
+#: config/arm/arm.h:438
 msgid "Generate re-entrant, PIC code"
 msgstr ""
 
-#: config/arm/arm.h:443
+#: config/arm/arm.h:441
 msgid "The MMU will trap on unaligned accesses"
 msgstr ""
 
-#: config/arm/arm.h:450
+#: config/arm/arm.h:448
 msgid "Use library calls to perform FP operations"
 msgstr ""
 
-#: config/arm/arm.h:452 config/i960/i960.h:281
+#: config/arm/arm.h:450 config/i960/i960.h:281
 msgid "Use hardware floating point instructions"
 msgstr ""
 
-#: config/arm/arm.h:454
+#: config/arm/arm.h:452
 msgid "Assume target CPU is configured as big endian"
 msgstr ""
 
-#: config/arm/arm.h:456
+#: config/arm/arm.h:454
 msgid "Assume target CPU is configured as little endian"
 msgstr ""
 
-#: config/arm/arm.h:458
+#: config/arm/arm.h:456
 msgid "Assume big endian bytes, little endian words"
 msgstr ""
 
-#: config/arm/arm.h:460
+#: config/arm/arm.h:458
 msgid "Support calls between Thumb and ARM instruction sets"
 msgstr ""
 
-#: config/arm/arm.h:463
+#: config/arm/arm.h:461
 msgid "Generate a call to abort if a noreturn function returns"
 msgstr ""
 
-#: config/arm/arm.h:466
+#: config/arm/arm.h:464
 msgid "Do not move instructions into a function's prologue"
 msgstr ""
 
-#: config/arm/arm.h:469
+#: config/arm/arm.h:467
 msgid "Do not load the PIC register in function prologues"
 msgstr ""
 
-#: config/arm/arm.h:472
+#: config/arm/arm.h:470
 msgid "Generate call insns as indirect calls, if necessary"
 msgstr ""
 
-#: config/arm/arm.h:475
+#: config/arm/arm.h:473
 msgid "Compile for the Thumb not the ARM"
 msgstr ""
 
-#: config/arm/arm.h:479
+#: config/arm/arm.h:477
 msgid "Thumb: Generate (non-leaf) stack frames even if not needed"
 msgstr ""
 
-#: config/arm/arm.h:482
+#: config/arm/arm.h:480
 msgid "Thumb: Generate (leaf) stack frames even if not needed"
 msgstr ""
 
-#: config/arm/arm.h:485
+#: config/arm/arm.h:483
 msgid "Thumb: Assume non-static functions may be called from ARM code"
 msgstr ""
 
-#: config/arm/arm.h:489
+#: config/arm/arm.h:487
 msgid "Thumb: Assume function pointers may go to non-Thumb aware code"
 msgstr ""
 
-#: config/arm/arm.h:499
+#: config/arm/arm.h:497
 msgid "Specify the name of the target CPU"
 msgstr ""
 
-#: config/arm/arm.h:501
+#: config/arm/arm.h:499
 msgid "Specify the name of the target architecture"
 msgstr ""
 
-#: config/arm/arm.h:505
+#: config/arm/arm.h:503
 msgid "Specify the version of the floating point emulator"
 msgstr ""
 
-#: config/arm/arm.h:507
+#: config/arm/arm.h:505
 msgid "Specify the minimum bit alignment of structures"
 msgstr ""
 
-#: config/arm/arm.h:509
+#: config/arm/arm.h:507
 msgid "Specify the register to be used for PIC addressing"
 msgstr ""
 
@@ -9685,7 +9697,7 @@ msgstr ""
 msgid "Assume small address space"
 msgstr ""
 
-#: config/h8300/h8300.c:141
+#: config/h8300/h8300.c:142
 msgid "-ms2600 is used without -ms"
 msgstr ""
 
@@ -9779,7 +9791,7 @@ msgstr ""
 msgid "code model %s not supported in PIC mode"
 msgstr ""
 
-#: config/i386/i386.c:934 config/sparc/sparc.c:346
+#: config/i386/i386.c:934 config/sparc/sparc.c:345
 #, c-format
 msgid "bad value (%s) for -mcmodel= switch"
 msgstr ""
@@ -9803,12 +9815,12 @@ msgstr ""
 msgid "%i-bit mode not compiled in"
 msgstr ""
 
-#: config/i386/i386.c:987 config/mips/mips.c:4972
+#: config/i386/i386.c:987 config/mips/mips.c:4985
 #, c-format
 msgid "bad value (%s) for -march= switch"
 msgstr ""
 
-#: config/i386/i386.c:998 config/mips/mips.c:4928
+#: config/i386/i386.c:998 config/mips/mips.c:4941
 #, c-format
 msgid "bad value (%s) for -mcpu= switch"
 msgstr ""
@@ -10284,7 +10296,7 @@ msgstr ""
 msgid "sorry, not implemented: #pragma noalign NAME"
 msgstr ""
 
-#: config/i960/i960.c:1405 config/m68k/m68k.c:665 config/rs6000/rs6000.c:8094
+#: config/i960/i960.c:1405 config/m68k/m68k.c:665 config/rs6000/rs6000.c:8374
 msgid "stack limit expression is not supported"
 msgstr ""
 
@@ -10590,7 +10602,7 @@ msgid "post-increment address is not a register"
 msgstr ""
 
 #: config/m32r/m32r.c:2523 config/m32r/m32r.c:2539
-#: config/rs6000/rs6000.c:10712
+#: config/rs6000/rs6000.c:10992
 msgid "bad address"
 msgstr ""
 
@@ -11032,142 +11044,142 @@ msgstr ""
 msgid "Maximum amount for a single stack increment operation"
 msgstr ""
 
-#: config/mips/mips.c:4824
+#: config/mips/mips.c:4837
 #, c-format
 msgid "-mips%d not supported"
 msgstr ""
 
-#: config/mips/mips.c:4831
+#: config/mips/mips.c:4844
 #, c-format
 msgid "bad value (%s) for -mips switch"
 msgstr ""
 
-#: config/mips/mips.c:4852
+#: config/mips/mips.c:4865
 #, c-format
 msgid "bad value (%s) for -mabi= switch"
 msgstr ""
 
-#: config/mips/mips.c:4890
+#: config/mips/mips.c:4903
 #, c-format
 msgid "-mabi=%s does not support -mips%d"
 msgstr ""
 
-#: config/mips/mips.c:4907
+#: config/mips/mips.c:4920
 msgid "this target does not support the -mabi switch"
 msgstr ""
 
-#: config/mips/mips.c:5017
+#: config/mips/mips.c:5030
 #, c-format
 msgid "bad value (%s) for -mtune= switch"
 msgstr ""
 
-#: config/mips/mips.c:5033
+#: config/mips/mips.c:5046
 #, c-format
 msgid "-march=%s does not support -mips%d"
 msgstr ""
 
-#: config/mips/mips.c:5040
+#: config/mips/mips.c:5053
 #, c-format
 msgid "-mips%d does not support 64 bit fp registers"
 msgstr ""
 
-#: config/mips/mips.c:5046
+#: config/mips/mips.c:5059
 #, c-format
 msgid "-mips%d does not support 64 bit gp registers"
 msgstr ""
 
-#: config/mips/mips.c:5067
+#: config/mips/mips.c:5080
 msgid "-G is incompatible with PIC code which is the default"
 msgstr ""
 
-#: config/mips/mips.c:5083
+#: config/mips/mips.c:5096
 msgid "-membedded-pic and -mabicalls are incompatible"
 msgstr ""
 
-#: config/mips/mips.c:5086
+#: config/mips/mips.c:5099
 msgid "-G and -membedded-pic are incompatible"
 msgstr ""
 
-#: config/mips/mips.c:5137
+#: config/mips/mips.c:5150
 #, c-format
 msgid "invalid option `entry%s'"
 msgstr ""
 
-#: config/mips/mips.c:5140
+#: config/mips/mips.c:5153
 msgid "-mentry is only meaningful with -mips-16"
 msgstr ""
 
-#: config/mips/mips.c:5480
+#: config/mips/mips.c:5493
 #, c-format
 msgid "internal error: %%) found without a %%( in assembler pattern"
 msgstr ""
 
-#: config/mips/mips.c:5494
+#: config/mips/mips.c:5507
 #, c-format
 msgid "internal error: %%] found without a %%[ in assembler pattern"
 msgstr ""
 
-#: config/mips/mips.c:5507
+#: config/mips/mips.c:5520
 #, c-format
 msgid "internal error: %%> found without a %%< in assembler pattern"
 msgstr ""
 
-#: config/mips/mips.c:5520
+#: config/mips/mips.c:5533
 #, c-format
 msgid "internal error: %%} found without a %%{ in assembler pattern"
 msgstr ""
 
-#: config/mips/mips.c:5534
+#: config/mips/mips.c:5547
 #, c-format
 msgid "PRINT_OPERAND: unknown punctuation '%c'"
 msgstr ""
 
-#: config/mips/mips.c:5543 config/xtensa/xtensa.c:1894
+#: config/mips/mips.c:5556 config/xtensa/xtensa.c:1894
 msgid "PRINT_OPERAND null pointer"
 msgstr ""
 
-#: config/mips/mips.c:5676
+#: config/mips/mips.c:5689
 #, c-format
 msgid "invalid use of %%d, %%x, or %%X"
 msgstr ""
 
-#: config/mips/mips.c:5719 config/xtensa/xtensa.c:1986
+#: config/mips/mips.c:5732 config/xtensa/xtensa.c:1986
 msgid "PRINT_OPERAND_ADDRESS, null pointer"
 msgstr ""
 
-#: config/mips/mips.c:5943
+#: config/mips/mips.c:5956
 msgid ""
 "MIPS ECOFF format does not allow changing filenames within functions with "
 "#line"
 msgstr ""
 
-#: config/mips/mips.c:6257
+#: config/mips/mips.c:6270
 msgid "can't rewind temp file"
 msgstr ""
 
-#: config/mips/mips.c:6261
+#: config/mips/mips.c:6274
 msgid "can't write to output file"
 msgstr ""
 
-#: config/mips/mips.c:6264
+#: config/mips/mips.c:6277
 msgid "can't read from temp file"
 msgstr ""
 
-#: config/mips/mips.c:6267
+#: config/mips/mips.c:6280
 msgid "can't close temp file"
 msgstr ""
 
-#: config/mips/mips.c:6700
+#: config/mips/mips.c:6713
 #, c-format
 msgid "gp_offset (%ld) or end_offset (%ld) is less than zero"
 msgstr ""
 
-#: config/mips/mips.c:6862
+#: config/mips/mips.c:6875
 #, c-format
 msgid "fp_offset (%ld) or end_offset (%ld) is less than zero"
 msgstr ""
 
-#: config/mips/mips.c:8893
+#: config/mips/mips.c:8931
 #, c-format
 msgid "can not handle inconsistent calls to `%s'"
 msgstr ""
@@ -11427,98 +11439,98 @@ msgstr ""
 msgid "-f%s not supported: ignored"
 msgstr ""
 
-#: config/mmix/mmix.c:564
+#: config/mmix/mmix.c:590
 #, c-format
 msgid ""
 "too large function value type, needs %d registers, have only %d registers "
 "for this"
 msgstr ""
 
-#: config/mmix/mmix.c:651
+#: config/mmix/mmix.c:677
 msgid "stack frame too big"
 msgstr ""
 
-#: config/mmix/mmix.c:679
+#: config/mmix/mmix.c:705
 #, c-format
 msgid "stack frame not a multiple of 8 bytes: %d"
 msgstr ""
 
-#: config/mmix/mmix.c:1022
+#: config/mmix/mmix.c:1048
 #, c-format
 msgid "stack frame not a multiple of octabyte: %d"
 msgstr ""
 
-#: config/mmix/mmix.c:1190
+#: config/mmix/mmix.c:1216
 msgid "function_profiler support for MMIX"
 msgstr ""
 
-#: config/mmix/mmix.c:1227
+#: config/mmix/mmix.c:1253
 msgid "neither varargs or stdarg in mmix_setup_incoming_varargs"
 msgstr ""
 
-#: config/mmix/mmix.c:1233
+#: config/mmix/mmix.c:1259
 msgid "MMIX Internal: Last named vararg would not fit in a register"
 msgstr ""
 
 #. FIXME: Remove when I know this trigs.
-#: config/mmix/mmix.c:1556
+#: config/mmix/mmix.c:1587
 msgid "oops, not debugged; fixing up value:"
 msgstr ""
 
-#: config/mmix/mmix.c:2100 config/mmix/mmix.c:2234
+#: config/mmix/mmix.c:2138 config/mmix/mmix.c:2272
 msgid "MMIX Internal: Expected a CONST_INT, not this"
 msgstr ""
 
-#: config/mmix/mmix.c:2108 config/mmix/mmix.c:2132 config/mmix/mmix.c:2251
+#: config/mmix/mmix.c:2146 config/mmix/mmix.c:2170 config/mmix/mmix.c:2289
 #, c-format
 msgid "MMIX Internal: Bad register: %d"
 msgstr ""
 
-#: config/mmix/mmix.c:2179
+#: config/mmix/mmix.c:2217
 msgid "MMIX Internal: Bad value for 'm', not a CONST_INT"
 msgstr ""
 
-#: config/mmix/mmix.c:2202
+#: config/mmix/mmix.c:2240
 msgid "MMIX Internal: Expected a register, not this"
 msgstr ""
 
-#: config/mmix/mmix.c:2212
+#: config/mmix/mmix.c:2250
 msgid "MMIX Internal: Expected a constant, not this"
 msgstr ""
 
 #. Presumably there's a missing case above if we get here.
-#: config/mmix/mmix.c:2244
+#: config/mmix/mmix.c:2282
 #, c-format
 msgid "MMIX Internal: Missing `%c' case in mmix_print_operand"
 msgstr ""
 
 #. We need the original here.
-#: config/mmix/mmix.c:2295
+#: config/mmix/mmix.c:2333
 msgid "MMIX Internal: Cannot decode this operand"
 msgstr ""
 
-#: config/mmix/mmix.c:2354
+#: config/mmix/mmix.c:2398
 msgid "MMIX Internal: This is not a recognized address"
 msgstr ""
 
-#: config/mmix/mmix.c:2823 config/mmix/mmix.c:2892
+#: config/mmix/mmix.c:2894 config/mmix/mmix.c:2963
 #, c-format
 msgid "MMIX Internal: %s is not a shiftable int"
 msgstr ""
 
-#: config/mmix/mmix.c:3011
+#: config/mmix/mmix.c:3082
 msgid "MMIX Internal: Trying to output invalidly reversed condition:"
 msgstr ""
 
-#: config/mmix/mmix.c:3018
+#: config/mmix/mmix.c:3089
 msgid "MMIX Internal: What's the CC of this?"
 msgstr ""
 
-#: config/mmix/mmix.c:3022
+#: config/mmix/mmix.c:3093
 msgid "MMIX Internal: What is the CC of this?"
 msgstr ""
 
-#: config/mmix/mmix.c:3093
+#: config/mmix/mmix.c:3164
 msgid "MMIX Internal: This is not a constant:"
 msgstr ""
 
@@ -11549,50 +11561,58 @@ msgid "Set start-address of data"
 msgstr ""
 
 #. FIXME: Provide a way to *load* the epsilon register.
-#: config/mmix/mmix.h:175
+#: config/mmix/mmix.h:186
 msgid "For intrinsics library: pass all parameters in registers"
 msgstr ""
 
-#: config/mmix/mmix.h:178
+#: config/mmix/mmix.h:189
 msgid "Use register stack for parameters and return value"
 msgstr ""
 
-#: config/mmix/mmix.h:180
+#: config/mmix/mmix.h:191
 msgid "Use call-clobbered registers for parameters and return value"
 msgstr ""
 
-#: config/mmix/mmix.h:182
+#: config/mmix/mmix.h:193
 msgid "Use epsilon-respecting floating point compare instructions"
 msgstr ""
 
-#: config/mmix/mmix.h:185
+#: config/mmix/mmix.h:196
 msgid "Use zero-extending memory loads, not sign-extending ones"
 msgstr ""
 
-#: config/mmix/mmix.h:188
+#: config/mmix/mmix.h:199
 msgid ""
 "Generate divide results with reminder having the same sign as the divisor "
 "(not the dividend)"
 msgstr ""
 
-#: config/mmix/mmix.h:192
+#: config/mmix/mmix.h:203
 msgid "Prepend global symbols with \":\" (for use with PREFIX)"
 msgstr ""
 
-#: config/mmix/mmix.h:194
+#: config/mmix/mmix.h:205
 msgid "Do not provide a default start-address 0x100 of the program"
 msgstr ""
 
-#: config/mmix/mmix.h:196
+#: config/mmix/mmix.h:207
 msgid "Link to emit program in ELF format (rather than mmo)"
 msgstr ""
 
-#: config/mmix/mmix.h:198
+#: config/mmix/mmix.h:209
 msgid "Use P-mnemonics for branches statically predicted as taken"
 msgstr ""
 
-#: config/mmix/mmix.h:200
+#: config/mmix/mmix.h:211
 msgid "Don't use P-mnemonics for branches"
+msgstr ""
+
+#: config/mmix/mmix.h:213
+msgid "Use addresses that allocate global registers"
+msgstr ""
+
+#: config/mmix/mmix.h:215
+msgid "Do not use addresses that allocate global registers"
 msgstr ""
 
 #: config/mn10300/mn10300.h:59
@@ -11611,7 +11631,7 @@ msgstr ""
 msgid "Enable linker relaxations"
 msgstr ""
 
-#: config/ns32k/ns32k.h:104 config/s390/s390.h:52
+#: config/ns32k/ns32k.h:104 config/s390/s390.h:57
 msgid "Don't use hardware fp"
 msgstr ""
 
@@ -11683,33 +11703,33 @@ msgstr ""
 msgid "No \"Small register classes\" kludge"
 msgstr ""
 
-#: config/pa/pa.c:188
+#: config/pa/pa.c:200
 #, c-format
 msgid ""
 "unknown -mschedule= option (%s).\n"
 "Valid options are 700, 7100, 7100LC, 7200, and 8000\n"
 msgstr ""
 
-#: config/pa/pa.c:213
+#: config/pa/pa.c:225
 #, c-format
 msgid ""
 "unknown -march= option (%s).\n"
 "Valid options are 1.0, 1.1, and 2.0\n"
 msgstr ""
 
-#: config/pa/pa.c:218
+#: config/pa/pa.c:230
 msgid "PIC code generation is not supported in the portable runtime model\n"
 msgstr ""
 
-#: config/pa/pa.c:223
+#: config/pa/pa.c:235
 msgid "PIC code generation is not compatible with fast indirect calls\n"
 msgstr ""
 
-#: config/pa/pa.c:228
+#: config/pa/pa.c:240
 msgid "-g is only supported when using GAS on this processor,"
 msgstr ""
 
-#: config/pa/pa.c:229
+#: config/pa/pa.c:241
 msgid "-g option disabled"
 msgstr ""
 
@@ -11810,7 +11830,7 @@ msgstr ""
 msgid "invalid %%B value"
 msgstr ""
 
-#: config/romp/romp.c:709 config/rs6000/rs6000.c:6202
+#: config/romp/romp.c:709 config/rs6000/rs6000.c:6482
 #, c-format
 msgid "invalid %%S value"
 msgstr ""
@@ -11831,7 +11851,7 @@ msgid "invalid %%Z value"
 msgstr ""
 
 #: config/romp/romp.c:799 config/romp/romp.c:808 config/romp/romp.c:815
-#: config/rs6000/rs6000.c:5981
+#: config/rs6000/rs6000.c:6261
 #, c-format
 msgid "invalid %%k value"
 msgstr ""
@@ -11858,108 +11878,116 @@ msgstr ""
 msgid "can't have varargs with -mfp-arg-in-fp-regs"
 msgstr ""
 
-#: config/rs6000/rs6000.c:472
+#: config/rs6000/rs6000.c:474
 msgid "-mmultiple is not supported on little endian systems"
 msgstr ""
 
-#: config/rs6000/rs6000.c:479
+#: config/rs6000/rs6000.c:481
 msgid "-mstring is not supported on little endian systems"
 msgstr ""
 
-#: config/rs6000/rs6000.c:485 config/xtensa/xtensa.c:1827
+#: config/rs6000/rs6000.c:487 config/xtensa/xtensa.c:1827
 #, c-format
 msgid "-f%s ignored (all code is position independent)"
 msgstr ""
 
-#: config/rs6000/rs6000.c:494
+#: config/rs6000/rs6000.c:496
 msgid "-ffunction-sections disabled on AIX when debugging"
 msgstr ""
 
-#: config/rs6000/rs6000.c:500
+#: config/rs6000/rs6000.c:502
 msgid "-fdata-sections not supported on AIX"
 msgstr ""
 
-#: config/rs6000/rs6000.c:515
+#: config/rs6000/rs6000.c:517
 #, c-format
 msgid "unknown -mdebug-%s switch"
 msgstr ""
 
-#: config/rs6000/rs6000.c:525
+#: config/rs6000/rs6000.c:527
 #, c-format
 msgid "Unknown switch -mlong-double-%s"
 msgstr ""
 
-#: config/rs6000/rs6000.c:590
+#: config/rs6000/rs6000.c:592
 #, c-format
 msgid "unknown ABI specified: '%s'"
 msgstr ""
 
-#: config/rs6000/rs6000.c:3810
+#: config/rs6000/rs6000.c:3567
+msgid "argument 1 of __builtin_altivec_predicate must be a constant"
+msgstr ""
+
+#: config/rs6000/rs6000.c:3621
+msgid "argument 1 of __builtin_altivec_predicate is out of range"
+msgstr ""
+
+#: config/rs6000/rs6000.c:3977
 #, c-format
 msgid "argument 3 of `%s' must be a 2-bit literal"
 msgstr ""
 
-#: config/rs6000/rs6000.c:5908
+#: config/rs6000/rs6000.c:6188
 #, c-format
 msgid "invalid %%f value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:5917
+#: config/rs6000/rs6000.c:6197
 #, c-format
 msgid "invalid %%F value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:5926
+#: config/rs6000/rs6000.c:6206
 #, c-format
 msgid "invalid %%G value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:5961
+#: config/rs6000/rs6000.c:6241
 #, c-format
 msgid "invalid %%j code"
 msgstr ""
 
-#: config/rs6000/rs6000.c:5971
+#: config/rs6000/rs6000.c:6251
 #, c-format
 msgid "invalid %%J code"
 msgstr ""
 
-#: config/rs6000/rs6000.c:6001
+#: config/rs6000/rs6000.c:6281
 #, c-format
 msgid "invalid %%K value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:6128
+#: config/rs6000/rs6000.c:6408
 #, c-format
 msgid "invalid %%p value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:6165
+#: config/rs6000/rs6000.c:6445
 #, c-format
 msgid "invalid %%q value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:6228
+#: config/rs6000/rs6000.c:6508
 #, c-format
 msgid "%%S computed all 1's mask"
 msgstr ""
 
-#: config/rs6000/rs6000.c:6255
+#: config/rs6000/rs6000.c:6535
 #, c-format
 msgid "%%S computed all 0's mask"
 msgstr ""
 
-#: config/rs6000/rs6000.c:6265
+#: config/rs6000/rs6000.c:6545
 #, c-format
 msgid "invalid %%T value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:6275
+#: config/rs6000/rs6000.c:6555
 #, c-format
 msgid "invalid %%u value"
 msgstr ""
 
-#: config/rs6000/rs6000.c:6284
+#: config/rs6000/rs6000.c:6564
 #, c-format
 msgid "invalid %%v value"
 msgstr ""
@@ -12328,126 +12356,136 @@ msgstr ""
 msgid "Total size of local variables exceeds architecture limit."
 msgstr ""
 
-#: config/s390/s390.h:53
+#: config/s390/s390.h:58
 msgid "Set backchain"
 msgstr ""
 
-#: config/s390/s390.h:54
+#: config/s390/s390.h:59
 msgid "Don't set backchain (faster, but debug harder"
 msgstr ""
 
-#: config/s390/s390.h:55
+#: config/s390/s390.h:60
 msgid "Use bras for execucable < 64k"
 msgstr ""
 
-#: config/s390/s390.h:56
+#: config/s390/s390.h:61
 msgid "Don't use bras"
 msgstr ""
 
-#: config/s390/s390.h:57
+#: config/s390/s390.h:62
 msgid "Additional debug prints"
 msgstr ""
 
-#: config/s390/s390.h:58
+#: config/s390/s390.h:63
 msgid "Don't print additional debug prints"
 msgstr ""
 
-#: config/s390/s390.h:59
+#: config/s390/s390.h:64
 msgid "64 bit mode"
 msgstr ""
 
-#: config/s390/s390.h:60
+#: config/s390/s390.h:65
 msgid "31 bit mode"
 msgstr ""
 
-#: config/s390/s390.h:61
+#: config/s390/s390.h:66
 msgid "mvcle use"
 msgstr ""
 
-#: config/s390/s390.h:62
+#: config/s390/s390.h:67
 msgid "mvc&ex"
 msgstr ""
 
+#: config/sh/sh.c:5063
+msgid "__builtin_saveregs not supported by this subtarget"
+msgstr ""
+
 #. The sp_switch attribute only has meaning for interrupt functions.
-#: config/sh/sh.c:4730 config/sh/sh.c:4769
+#: config/sh/sh.c:5613 config/sh/sh.c:5652
 #, c-format
 msgid "`%s' attribute only applies to interrupt functions"
 msgstr ""
 
 #. The argument must be a constant string.
-#: config/sh/sh.c:4737
+#: config/sh/sh.c:5620
 #, c-format
 msgid "`%s' attribute argument not a string constant"
 msgstr ""
 
 #. The argument must be a constant integer.
-#: config/sh/sh.c:4776
+#: config/sh/sh.c:5659
 #, c-format
 msgid "`%s' attribute argument not an integer constant"
 msgstr ""
 
-#: config/sparc/sparc.c:319
+#. There are no delay slots on SHmedia.
+#. Relaxation isn't yet supported for SHmedia
+#: config/sh/sh.h:367
+msgid "Profiling is not supported on this target."
+msgstr ""
+
+#: config/sparc/sparc.c:318
 #, c-format
 msgid "%s is not supported by this configuration"
 msgstr ""
 
-#: config/sparc/sparc.c:326
+#: config/sparc/sparc.c:325
 msgid "-mlong-double-64 not allowed with -m64"
 msgstr ""
 
-#: config/sparc/sparc.c:351
+#: config/sparc/sparc.c:350
 msgid "-mcmodel= is not supported on 32 bit systems"
 msgstr ""
 
-#: config/sparc/sparc.c:439
+#: config/sparc/sparc.c:438
 msgid "profiling does not support code models other than medlow"
 msgstr ""
 
-#: config/sparc/sparc.c:5850 config/sparc/sparc.c:5856
+#: config/sparc/sparc.c:5847 config/sparc/sparc.c:5853
 #, c-format
 msgid "invalid %%Y operand"
 msgstr ""
 
-#: config/sparc/sparc.c:5926
+#: config/sparc/sparc.c:5923
 #, c-format
 msgid "invalid %%A operand"
 msgstr ""
 
-#: config/sparc/sparc.c:5936
+#: config/sparc/sparc.c:5933
 #, c-format
 msgid "invalid %%B operand"
 msgstr ""
 
-#: config/sparc/sparc.c:5975
+#: config/sparc/sparc.c:5972
 #, c-format
 msgid "invalid %%c operand"
 msgstr ""
 
-#: config/sparc/sparc.c:5976
+#: config/sparc/sparc.c:5973
 #, c-format
 msgid "invalid %%C operand"
 msgstr ""
 
-#: config/sparc/sparc.c:5997
+#: config/sparc/sparc.c:5994
 #, c-format
 msgid "invalid %%d operand"
 msgstr ""
 
-#: config/sparc/sparc.c:5998
+#: config/sparc/sparc.c:5995
 #, c-format
 msgid "invalid %%D operand"
 msgstr ""
 
-#: config/sparc/sparc.c:6016
+#: config/sparc/sparc.c:6013
 #, c-format
 msgid "invalid %%f operand"
 msgstr ""
 
-#: config/sparc/sparc.c:6066
+#: config/sparc/sparc.c:6063
 msgid "long long constant not a valid immediate operand"
 msgstr ""
 
-#: config/sparc/sparc.c:6069
+#: config/sparc/sparc.c:6066
 msgid "floating point constant not a valid immediate operand"
 msgstr ""
 
@@ -15649,277 +15687,277 @@ msgstr ""
 msgid "could not convert `%E' to `%T'"
 msgstr ""
 
-#: cp/class.c:286
+#: cp/class.c:287
 msgid ""
 "cannot convert from base `%T' to derived type `%T' via virtual base `%T'"
 msgstr ""
 
-#: cp/class.c:1012
+#: cp/class.c:1013
 msgid "`%#D' and `%#D' cannot be overloaded"
 msgstr ""
 
 #. There has already been a declaration of this method
 #. or member template.
-#: cp/class.c:1023
+#: cp/class.c:1024
 msgid "`%D' has already been declared in `%T'"
 msgstr ""
 
-#: cp/class.c:1104
+#: cp/class.c:1105
 msgid "duplicate enum value `%D'"
 msgstr ""
 
-#: cp/class.c:1107
+#: cp/class.c:1108
 msgid "duplicate field `%D' (as enum and non-enum)"
 msgstr ""
 
-#: cp/class.c:1114
+#: cp/class.c:1115
 msgid "duplicate nested type `%D'"
 msgstr ""
 
-#: cp/class.c:1125
+#: cp/class.c:1126
 msgid "duplicate field `%D' (as type and non-type)"
 msgstr ""
 
-#: cp/class.c:1129
+#: cp/class.c:1130
 msgid "duplicate member `%D'"
 msgstr ""
 
-#: cp/class.c:1172
+#: cp/class.c:1173
 msgid "conflicting access specifications for method `%D', ignored"
 msgstr ""
 
-#: cp/class.c:1174
+#: cp/class.c:1175
 #, c-format
 msgid "conflicting access specifications for field `%s', ignored"
 msgstr ""
 
-#: cp/class.c:1217
+#: cp/class.c:1218
 msgid "`%D' names constructor"
 msgstr ""
 
-#: cp/class.c:1223
+#: cp/class.c:1224
 msgid "`%D' invalid in `%T'"
 msgstr ""
 
-#: cp/class.c:1231
+#: cp/class.c:1232
 msgid "no members matching `%D' in `%#T'"
 msgstr ""
 
-#: cp/class.c:1263 cp/class.c:1271
+#: cp/class.c:1264 cp/class.c:1272
 msgid "`%D' invalid in `%#T'"
 msgstr ""
 
-#: cp/class.c:1264
+#: cp/class.c:1265
 msgid "  because of local method `%#D' with same name"
 msgstr ""
 
-#: cp/class.c:1272
+#: cp/class.c:1273
 msgid "  because of local member `%#D' with same name"
 msgstr ""
 
-#: cp/class.c:1344
+#: cp/class.c:1345
 msgid "base class `%#T' has a non-virtual destructor"
 msgstr ""
 
-#: cp/class.c:1364
+#: cp/class.c:1365
 msgid ""
 "base `%T' with only non-default constructor in class without a constructor"
 msgstr ""
 
-#: cp/class.c:1950
+#: cp/class.c:1951
 msgid "all member functions in class `%T' are private"
 msgstr ""
 
-#: cp/class.c:1964
+#: cp/class.c:1965
 msgid "`%#T' only defines a private destructor and has no friends"
 msgstr ""
 
-#: cp/class.c:2007
+#: cp/class.c:2008
 msgid "`%#T' only defines private constructors and has no friends"
 msgstr ""
 
-#: cp/class.c:2128 cp/class.c:5041
+#: cp/class.c:2129 cp/class.c:5043
 msgid "redefinition of `%#T'"
 msgstr ""
 
-#: cp/class.c:2129
+#: cp/class.c:2130
 msgid "previous definition of `%#T'"
 msgstr ""
 
-#: cp/class.c:2459
+#: cp/class.c:2460
 msgid "no unique final overrider for `%D' in `%T'"
 msgstr ""
 
 #. Here we know it is a hider, and no overrider exists.
-#: cp/class.c:2841
+#: cp/class.c:2842
 msgid "`%D' was hidden"
 msgstr ""
 
-#: cp/class.c:2842
+#: cp/class.c:2843
 msgid "  by `%D'"
 msgstr ""
 
-#: cp/class.c:2884
+#: cp/class.c:2885
 msgid "ISO C++ forbids member `%D' with same name as enclosing class"
 msgstr ""
 
-#: cp/class.c:2889 cp/decl2.c:1896
+#: cp/class.c:2890 cp/decl2.c:1896
 msgid "`%#D' invalid; an anonymous union can only have non-static data members"
 msgstr ""
 
-#: cp/class.c:2895 cp/decl2.c:1902
+#: cp/class.c:2896 cp/decl2.c:1902
 msgid "private member `%#D' in anonymous union"
 msgstr ""
 
-#: cp/class.c:2898 cp/decl2.c:1904
+#: cp/class.c:2899 cp/decl2.c:1904
 msgid "protected member `%#D' in anonymous union"
 msgstr ""
 
-#: cp/class.c:3050
+#: cp/class.c:3051
 msgid "bit-field `%#D' with non-integral type"
 msgstr ""
 
-#: cp/class.c:3070
+#: cp/class.c:3071
 msgid "bit-field `%D' width not an integer constant"
 msgstr ""
 
-#: cp/class.c:3076
+#: cp/class.c:3077
 msgid "negative width in bit-field `%D'"
 msgstr ""
 
-#: cp/class.c:3081
+#: cp/class.c:3082
 msgid "zero width for bit-field `%D'"
 msgstr ""
 
-#: cp/class.c:3087
+#: cp/class.c:3088
 msgid "width of `%D' exceeds its type"
 msgstr ""
 
-#: cp/class.c:3096
+#: cp/class.c:3097
 msgid "`%D' is too small to hold all values of `%#T'"
 msgstr ""
 
-#: cp/class.c:3179
+#: cp/class.c:3181
 msgid "member `%#D' with constructor not allowed in union"
 msgstr ""
 
-#: cp/class.c:3182
+#: cp/class.c:3184
 msgid "member `%#D' with destructor not allowed in union"
 msgstr ""
 
-#: cp/class.c:3185
+#: cp/class.c:3187
 msgid "member `%#D' with copy assignment operator not allowed in union"
 msgstr ""
 
-#: cp/class.c:3212
+#: cp/class.c:3214
 msgid "multiple fields in union `%T' initialized"
 msgstr ""
 
-#: cp/class.c:3331
+#: cp/class.c:3333
 msgid "field `%D' in local class cannot be static"
 msgstr ""
 
-#: cp/class.c:3337
+#: cp/class.c:3339
 msgid "field `%D' invalidly declared function type"
 msgstr ""
 
-#: cp/class.c:3344
+#: cp/class.c:3346
 msgid "field `%D' invalidly declared method type"
 msgstr ""
 
-#: cp/class.c:3350
+#: cp/class.c:3352
 msgid "field `%D' invalidly declared offset type"
 msgstr ""
 
 #. Unions cannot have static members.
-#: cp/class.c:3368
+#: cp/class.c:3370
 msgid "field `%D' declared static in union"
 msgstr ""
 
-#: cp/class.c:3394
+#: cp/class.c:3396
 msgid "non-static reference `%#D' in class without a constructor"
 msgstr ""
 
-#: cp/class.c:3425
+#: cp/class.c:3427
 msgid "non-static const member `%#D' in class without a constructor"
 msgstr ""
 
-#: cp/class.c:3440
+#: cp/class.c:3442
 msgid "field `%#D' with same name as class"
 msgstr ""
 
-#: cp/class.c:3458
+#: cp/class.c:3460
 msgid "`%#T' has pointer data members"
 msgstr ""
 
-#: cp/class.c:3462
+#: cp/class.c:3464
 msgid "  but does not override `%T(const %T&)'"
 msgstr ""
 
-#: cp/class.c:3464
+#: cp/class.c:3466
 msgid "  or `operator=(const %T&)'"
 msgstr ""
 
-#: cp/class.c:3467
+#: cp/class.c:3469
 msgid "  but does not override `operator=(const %T&)'"
 msgstr ""
 
-#: cp/class.c:3933
+#: cp/class.c:3935
 msgid "initializer specified for non-virtual method `%D'"
 msgstr ""
 
-#: cp/class.c:4717
+#: cp/class.c:4719
 msgid "virtual base `%T' inaccessible in `%T' due to ambiguity"
 msgstr ""
 
-#: cp/class.c:4787
+#: cp/class.c:4789
 msgid "direct base `%T' inaccessible in `%T' due to ambiguity"
 msgstr ""
 
-#: cp/class.c:5202
+#: cp/class.c:5204
 msgid "`%#T' has virtual functions but non-virtual destructor"
 msgstr ""
 
-#: cp/class.c:5286
+#: cp/class.c:5288
 msgid "trying to finish struct, but kicked out due to previous parse errors"
 msgstr ""
 
-#: cp/class.c:5743
+#: cp/class.c:5745
 #, c-format
 msgid "language string `\"%s\"' not recognized"
 msgstr ""
 
-#: cp/class.c:5839
+#: cp/class.c:5841
 msgid ""
 "cannot resolve overloaded function `%D' based on conversion to type `%T'"
 msgstr ""
 
-#: cp/class.c:5960
+#: cp/class.c:5962
 msgid "no matches converting function `%D' to type `%#T'"
 msgstr ""
 
-#: cp/class.c:5983
+#: cp/class.c:5985
 msgid "converting overloaded function `%D' to type `%#T' is ambiguous"
 msgstr ""
 
-#: cp/class.c:6009
+#: cp/class.c:6011
 msgid "assuming pointer to member `%D'"
 msgstr ""
 
-#: cp/class.c:6012
+#: cp/class.c:6014
 #, c-format
 msgid "(a pointer to member can only be formed with `&%E')"
 msgstr ""
 
-#: cp/class.c:6056 cp/class.c:6224 cp/class.c:6231
+#: cp/class.c:6058 cp/class.c:6226 cp/class.c:6233
 msgid "not enough type information"
 msgstr ""
 
-#: cp/class.c:6065
+#: cp/class.c:6067
 msgid "argument of type `%T' does not match `%T'"
 msgstr ""
 
-#: cp/class.c:6208
+#: cp/class.c:6210
 msgid "invalid operation on uninstantiated type"
 msgstr ""
 
@@ -15928,11 +15966,11 @@ msgstr ""
 #. A name N used in a class S shall refer to the same declaration
 #. in its context and when re-evaluated in the completed scope of
 #. S.
-#: cp/class.c:6459 cp/decl.c:1026 cp/decl.c:3164 cp/pt.c:1839
+#: cp/class.c:6461 cp/decl.c:1026 cp/decl.c:3164 cp/pt.c:1842
 msgid "declaration of `%#D'"
 msgstr ""
 
-#: cp/class.c:6460
+#: cp/class.c:6462
 msgid "changes meaning of `%D' from `%+#D'"
 msgstr ""
 
@@ -16701,28 +16739,20 @@ msgstr ""
 msgid "return type specified for `operator %T'"
 msgstr ""
 
-#: cp/decl.c:9690
+#: cp/decl.c:9691
 msgid "destructors must be member functions"
 msgstr ""
 
-#: cp/decl.c:9709
+#: cp/decl.c:9710
 msgid "destructor `%T' must match class name `%T'"
 msgstr ""
 
-#: cp/decl.c:9759
+#: cp/decl.c:9760
 msgid "invalid declarator"
 msgstr ""
 
-#: cp/decl.c:9812
+#: cp/decl.c:9813
 msgid "declarator-id missing; using reserved word `%D'"
-msgstr ""
-
-#: cp/decl.c:9856
-msgid "`%T::%D' is not a valid declarator"
-msgstr ""
-
-#: cp/decl.c:9858
-msgid "  perhaps you want `typename %T::%D' to make it a type"
 msgstr ""
 
 #: cp/decl.c:9870
@@ -16797,247 +16827,251 @@ msgstr ""
 msgid "member `%D' cannot be declared both virtual and static"
 msgstr ""
 
-#: cp/decl.c:10359
+#: cp/decl.c:10354
+msgid "`%T::%D' is not a valid declarator"
+msgstr ""
+
+#: cp/decl.c:10365
 msgid "storage class specifiers invalid in parameter declarations"
 msgstr ""
 
-#: cp/decl.c:10363
+#: cp/decl.c:10369
 msgid "typedef declaration invalid in parameter declaration"
 msgstr ""
 
-#: cp/decl.c:10376
+#: cp/decl.c:10382
 msgid "virtual outside class declaration"
 msgstr ""
 
-#: cp/decl.c:10430
+#: cp/decl.c:10436
 #, c-format
 msgid "storage class specified for %s `%s'"
 msgstr ""
 
-#: cp/decl.c:10468
+#: cp/decl.c:10474
 msgid "storage class specifiers invalid in friend function declarations"
 msgstr ""
 
-#: cp/decl.c:10572
+#: cp/decl.c:10578
 msgid "size of member `%D' is not constant"
 msgstr ""
 
-#: cp/decl.c:10651
+#: cp/decl.c:10657
 msgid "destructor cannot be static member function"
 msgstr ""
 
-#: cp/decl.c:10654
+#: cp/decl.c:10660
 #, c-format
 msgid "destructors may not be `%s'"
 msgstr ""
 
-#: cp/decl.c:10675
+#: cp/decl.c:10681
 msgid "constructor cannot be static member function"
 msgstr ""
 
-#: cp/decl.c:10678
+#: cp/decl.c:10684
 msgid "constructors cannot be declared virtual"
 msgstr ""
 
-#: cp/decl.c:10683
+#: cp/decl.c:10689
 #, c-format
 msgid "constructors may not be `%s'"
 msgstr ""
 
-#: cp/decl.c:10693
+#: cp/decl.c:10699
 msgid "return value type specifier for constructor ignored"
 msgstr ""
 
-#: cp/decl.c:10712
+#: cp/decl.c:10718
 #, c-format
 msgid "can't initialize friend function `%s'"
 msgstr ""
 
 #. Cannot be both friend and virtual.
-#: cp/decl.c:10716
+#: cp/decl.c:10722
 msgid "virtual functions cannot be friends"
 msgstr ""
 
-#: cp/decl.c:10721
+#: cp/decl.c:10727
 msgid "friend declaration not in class definition"
 msgstr ""
 
-#: cp/decl.c:10723
+#: cp/decl.c:10729
 #, c-format
 msgid "can't define friend function `%s' in a local class definition"
 msgstr ""
 
-#: cp/decl.c:10747
+#: cp/decl.c:10753
 msgid "destructors may not have parameters"
 msgstr ""
 
-#: cp/decl.c:10777
+#: cp/decl.c:10783
 #, c-format
 msgid "cannot declare %s to references"
 msgstr ""
 
-#: cp/decl.c:10788
+#: cp/decl.c:10794
 msgid "cannot declare pointer to `%#T' member"
 msgstr ""
 
-#: cp/decl.c:10803
+#: cp/decl.c:10809
 msgid "invalid type: `void &'"
 msgstr ""
 
-#: cp/decl.c:10854
+#: cp/decl.c:10860
 msgid "discarding `const' applied to a reference"
 msgstr ""
 
-#: cp/decl.c:10856
+#: cp/decl.c:10862
 msgid "discarding `volatile' applied to a reference"
 msgstr ""
 
-#: cp/decl.c:10967
+#: cp/decl.c:10974
 msgid "extra qualification `%T::' on member `%s' ignored"
 msgstr ""
 
-#: cp/decl.c:10977
+#: cp/decl.c:10984
 msgid "cannot declare member function `%T::%s' within `%T'"
 msgstr ""
 
-#: cp/decl.c:10992
+#: cp/decl.c:10999
 msgid "cannot declare member `%T::%s' within `%T'"
 msgstr ""
 
 #. [dcl.fct.spec] The explicit specifier shall only be used in
 #. declarations of constructors within a class definition.
-#: cp/decl.c:11072
+#: cp/decl.c:11079
 msgid "only declarations of constructors can be `explicit'"
 msgstr ""
 
-#: cp/decl.c:11080
+#: cp/decl.c:11087
 #, c-format
 msgid "non-member `%s' cannot be declared `mutable'"
 msgstr ""
 
-#: cp/decl.c:11085
+#: cp/decl.c:11092
 #, c-format
 msgid "non-object member `%s' cannot be declared `mutable'"
 msgstr ""
 
-#: cp/decl.c:11091
+#: cp/decl.c:11098
 #, c-format
 msgid "function `%s' cannot be declared `mutable'"
 msgstr ""
 
-#: cp/decl.c:11096
+#: cp/decl.c:11103
 #, c-format
 msgid "static `%s' cannot be declared `mutable'"
 msgstr ""
 
-#: cp/decl.c:11101
+#: cp/decl.c:11108
 #, c-format
 msgid "const `%s' cannot be declared `mutable'"
 msgstr ""
 
-#: cp/decl.c:11114
+#: cp/decl.c:11121
 msgid "template-id `%D' used as a declarator"
 msgstr ""
 
-#: cp/decl.c:11135
+#: cp/decl.c:11142
 msgid "ISO C++ forbids nested type `%D' with same name as enclosing class"
 msgstr ""
 
-#: cp/decl.c:11182
+#: cp/decl.c:11189
 msgid "typedef name may not be class-qualified"
 msgstr ""
 
-#: cp/decl.c:11190
+#: cp/decl.c:11197
 msgid "invalid type qualifier for non-member function type"
 msgstr ""
 
-#: cp/decl.c:11206
+#: cp/decl.c:11213
 msgid "typedef declaration includes an initializer"
 msgstr ""
 
-#: cp/decl.c:11259
+#: cp/decl.c:11266
 msgid "type qualifiers specified for friend class declaration"
 msgstr ""
 
-#: cp/decl.c:11264
+#: cp/decl.c:11271
 msgid "`inline' specified for friend class declaration"
 msgstr ""
 
-#: cp/decl.c:11274
+#: cp/decl.c:11281
 msgid "template parameters cannot be friends"
 msgstr ""
 
-#: cp/decl.c:11276
+#: cp/decl.c:11283
 msgid "friend declaration requires class-key, i.e. `friend class %T::%T'"
 msgstr ""
 
-#: cp/decl.c:11281
+#: cp/decl.c:11288
 msgid "friend declaration requires class-key, i.e. `friend %#T'"
 msgstr ""
 
-#: cp/decl.c:11297
+#: cp/decl.c:11304
 msgid "trying to make class `%T' a friend of global scope"
 msgstr ""
 
-#: cp/decl.c:11308
+#: cp/decl.c:11315
 msgid "invalid qualifiers on non-member function type"
 msgstr ""
 
-#: cp/decl.c:11327
+#: cp/decl.c:11334
 msgid "abstract declarator `%T' used as declaration"
 msgstr ""
 
-#: cp/decl.c:11339
+#: cp/decl.c:11346
 msgid "unnamed variable or field declared void"
 msgstr ""
 
-#: cp/decl.c:11348
+#: cp/decl.c:11355
 msgid "variable or field declared void"
 msgstr ""
 
-#: cp/decl.c:11358
+#: cp/decl.c:11365
 msgid "cannot use `::' in parameter declaration"
 msgstr ""
 
 #. Something like struct S { int N::j; };
-#: cp/decl.c:11404
+#: cp/decl.c:11411
 msgid "invalid use of `::'"
 msgstr ""
 
-#: cp/decl.c:11416
+#: cp/decl.c:11423
 msgid "function `%D' cannot be declared friend"
 msgstr ""
 
-#: cp/decl.c:11428
+#: cp/decl.c:11435
 msgid "can't make `%D' into a method -- not in a class"
 msgstr ""
 
-#: cp/decl.c:11437
+#: cp/decl.c:11444
 msgid "function `%D' declared virtual inside a union"
 msgstr ""
 
-#: cp/decl.c:11449
+#: cp/decl.c:11456
 msgid "`%D' cannot be declared virtual, since it is always static"
 msgstr ""
 
-#: cp/decl.c:11522
+#: cp/decl.c:11529
 msgid "field `%D' has incomplete type"
 msgstr ""
 
-#: cp/decl.c:11524
+#: cp/decl.c:11531
 msgid "name `%T' has incomplete type"
 msgstr ""
 
-#: cp/decl.c:11533
+#: cp/decl.c:11540
 msgid "  in instantiation of template `%T'"
 msgstr ""
 
-#: cp/decl.c:11543
+#: cp/decl.c:11550
 #, c-format
 msgid "`%s' is neither function nor member function; cannot be declared friend"
 msgstr ""
 
-#: cp/decl.c:11560
+#: cp/decl.c:11567
 msgid "member functions are implicitly friends of their class"
 msgstr ""
 
@@ -17053,101 +17087,101 @@ msgstr ""
 #. the rest of the compiler does not correctly
 #. handle the initialization unless the member is
 #. static so we make it static below.
-#: cp/decl.c:11602
+#: cp/decl.c:11609
 msgid "ISO C++ forbids initialization of member `%D'"
 msgstr ""
 
-#: cp/decl.c:11604
+#: cp/decl.c:11611
 msgid "making `%D' static"
 msgstr ""
 
-#: cp/decl.c:11628
+#: cp/decl.c:11635
 msgid ""
 "ISO C++ forbids static data member `%D' with same name as enclosing class"
 msgstr ""
 
-#: cp/decl.c:11669
+#: cp/decl.c:11676
 #, c-format
 msgid "storage class `auto' invalid for function `%s'"
 msgstr ""
 
-#: cp/decl.c:11671
+#: cp/decl.c:11678
 #, c-format
 msgid "storage class `register' invalid for function `%s'"
 msgstr ""
 
-#: cp/decl.c:11682
+#: cp/decl.c:11689
 #, c-format
 msgid ""
 "storage class `static' invalid for function `%s' declared out of global scope"
 msgstr ""
 
-#: cp/decl.c:11684
+#: cp/decl.c:11691
 #, c-format
 msgid ""
 "storage class `inline' invalid for function `%s' declared out of global scope"
 msgstr ""
 
-#: cp/decl.c:11691
+#: cp/decl.c:11698
 #, c-format
 msgid "virtual non-class function `%s'"
 msgstr ""
 
-#: cp/decl.c:11720
+#: cp/decl.c:11727
 msgid "cannot declare member function `%D' to have static linkage"
 msgstr ""
 
 #. FIXME need arm citation
-#: cp/decl.c:11726
+#: cp/decl.c:11733
 msgid "cannot declare static function inside another function"
 msgstr ""
 
-#: cp/decl.c:11754
+#: cp/decl.c:11761
 msgid ""
 "`static' may not be used when defining (as opposed to declaring) a static "
 "data member"
 msgstr ""
 
-#: cp/decl.c:11760
+#: cp/decl.c:11767
 msgid "static member `%D' declared `register'"
 msgstr ""
 
-#: cp/decl.c:11765
+#: cp/decl.c:11772
 msgid "cannot explicitly declare member `%#D' to have extern linkage"
 msgstr ""
 
-#: cp/decl.c:11937
+#: cp/decl.c:11944
 msgid "default argument for `%#D' has type `%T'"
 msgstr ""
 
-#: cp/decl.c:11940
+#: cp/decl.c:11947
 msgid "default argument for parameter of type `%T' has type `%T'"
 msgstr ""
 
-#: cp/decl.c:11957
+#: cp/decl.c:11964
 msgid "default argument `%E' uses local variable `%D'"
 msgstr ""
 
-#: cp/decl.c:12002
+#: cp/decl.c:12009
 #, c-format
 msgid "invalid string constant `%E'"
 msgstr ""
 
-#: cp/decl.c:12004
+#: cp/decl.c:12011
 msgid ""
 "invalid integer constant in parameter list, did you forget to give parameter "
 "name?"
 msgstr ""
 
-#: cp/decl.c:12042
+#: cp/decl.c:12049
 msgid "parameter `%D' invalidly declared method type"
 msgstr ""
 
-#: cp/decl.c:12048
+#: cp/decl.c:12055
 msgid "parameter `%D' invalidly declared offset type"
 msgstr ""
 
-#: cp/decl.c:12072
+#: cp/decl.c:12079
 msgid "parameter `%D' includes %s to array of unknown bound `%T'"
 msgstr ""
 
@@ -17166,176 +17200,172 @@ msgstr ""
 #. or implicitly defined), there's no need to worry about their
 #. existence.  Theoretically, they should never even be
 #. instantiated, but that's hard to forestall.
-#: cp/decl.c:12239
+#: cp/decl.c:12246
 msgid "invalid constructor; you probably meant `%T (const %T&)'"
 msgstr ""
 
-#: cp/decl.c:12390
+#: cp/decl.c:12397
 msgid "`%D' must be a nonstatic member function"
 msgstr ""
 
-#: cp/decl.c:12396
+#: cp/decl.c:12403
 msgid ""
 "`%D' must be either a non-static member function or a non-member function"
 msgstr ""
 
-#: cp/decl.c:12413
+#: cp/decl.c:12420
 msgid "`%D' must have an argument of class or enumerated type"
 msgstr ""
 
-#: cp/decl.c:12445
+#: cp/decl.c:12452
 #, c-format
 msgid "conversion to %s%s will never use a type conversion operator"
 msgstr ""
 
 #. 13.4.0.3
-#: cp/decl.c:12452
+#: cp/decl.c:12459
 msgid "ISO C++ prohibits overloading operator ?:"
 msgstr ""
 
-#: cp/decl.c:12502
+#: cp/decl.c:12509
 msgid "postfix `%D' must take `int' as its argument"
 msgstr ""
 
-#: cp/decl.c:12506
+#: cp/decl.c:12513
 msgid "postfix `%D' must take `int' as its second argument"
 msgstr ""
 
-#: cp/decl.c:12513
+#: cp/decl.c:12520
 msgid "`%D' must take either zero or one argument"
 msgstr ""
 
-#: cp/decl.c:12515
+#: cp/decl.c:12522
 msgid "`%D' must take either one or two arguments"
 msgstr ""
 
-#: cp/decl.c:12536
+#: cp/decl.c:12543
 msgid "prefix `%D' should return `%T'"
 msgstr ""
 
-#: cp/decl.c:12542
+#: cp/decl.c:12549
 msgid "postfix `%D' should return `%T'"
 msgstr ""
 
-#: cp/decl.c:12551
+#: cp/decl.c:12558
 msgid "`%D' must take `void'"
 msgstr ""
 
-#: cp/decl.c:12553 cp/decl.c:12561
+#: cp/decl.c:12560 cp/decl.c:12568
 msgid "`%D' must take exactly one argument"
 msgstr ""
 
-#: cp/decl.c:12563
+#: cp/decl.c:12570
 msgid "`%D' must take exactly two arguments"
 msgstr ""
 
-#: cp/decl.c:12571
+#: cp/decl.c:12578
 msgid "user-defined `%D' always evaluates both arguments"
 msgstr ""
 
-#: cp/decl.c:12583
+#: cp/decl.c:12590
 msgid "`%D' should return by value"
 msgstr ""
 
-#: cp/decl.c:12595 cp/decl.c:12598
+#: cp/decl.c:12602 cp/decl.c:12605
 msgid "`%D' cannot have default arguments"
 msgstr ""
 
-#: cp/decl.c:12691
+#: cp/decl.c:12698
 msgid "`%s %T' declares a new type at namespace scope"
 msgstr ""
 
-#: cp/decl.c:12694
+#: cp/decl.c:12701
 msgid ""
 "  names from dependent base classes are not visible to unqualified name "
 "lookup - to refer to the inherited type, say `%s %T::%T'"
 msgstr ""
 
-#: cp/decl.c:12730
+#: cp/decl.c:12737
 msgid "using typedef-name `%D' after `%s'"
 msgstr ""
 
-#: cp/decl.c:12733
+#: cp/decl.c:12740
 msgid "using template type parameter `%T' after `%s'"
 msgstr ""
 
-#: cp/decl.c:12815
+#: cp/decl.c:12822
 msgid "use of enum `%#D' without previous declaration"
 msgstr ""
 
-#: cp/decl.c:12926
+#: cp/decl.c:12933
 msgid "derived union `%T' invalid"
 msgstr ""
 
-#: cp/decl.c:12970
+#: cp/decl.c:12977
 msgid "base type `%T' fails to be a struct or class type"
 msgstr ""
 
-#: cp/decl.c:12980
+#: cp/decl.c:12987
 msgid "base class `%T' has incomplete type"
 msgstr ""
 
-#: cp/decl.c:12988
+#: cp/decl.c:12995
 msgid "recursive type `%T' undefined"
 msgstr ""
 
-#: cp/decl.c:12990
+#: cp/decl.c:12997
 msgid "duplicate base type `%T' invalid"
 msgstr ""
 
-#: cp/decl.c:13101
+#: cp/decl.c:13108
 msgid "multiple definition of `%#T'"
 msgstr ""
 
-#: cp/decl.c:13102
+#: cp/decl.c:13109
 msgid "previous definition here"
 msgstr ""
 
-#: cp/decl.c:13276
+#: cp/decl.c:13283
 msgid "enumerator value for `%D' not integer constant"
 msgstr ""
 
-#: cp/decl.c:13296
+#: cp/decl.c:13303
 msgid "overflow in enumeration values at `%D'"
 msgstr ""
 
-#: cp/decl.c:13382
+#: cp/decl.c:13389
 msgid "return type `%#T' is incomplete"
 msgstr ""
 
-#: cp/decl.c:13494
+#: cp/decl.c:13501
 msgid "semicolon missing after declaration of `%#T'"
 msgstr ""
 
-#: cp/decl.c:13515
+#: cp/decl.c:13522
 msgid "return type for `main' changed to `int'"
 msgstr ""
 
-#: cp/decl.c:13546
+#: cp/decl.c:13553
 msgid "`%D' implicitly declared before its definition"
 msgstr ""
 
-#: cp/decl.c:13568 cp/typeck.c:6669
+#: cp/decl.c:13575 cp/typeck.c:6669
 msgid "`operator=' should return a reference to `*this'"
 msgstr ""
 
-#: cp/decl.c:13832
+#: cp/decl.c:13839
 msgid "parameter `%D' declared void"
 msgstr ""
 
-#: cp/decl.c:14227
-msgid "no return statement in function returning non-void"
-msgstr ""
-
-#: cp/decl.c:14308
+#: cp/decl.c:14315
 msgid "`%D' is already defined in class `%T'"
 msgstr ""
 
-#: cp/decl.c:14454
+#: cp/decl.c:14461
 msgid "parser lost in parsing declaration of `%D'"
 msgstr ""
 
-#: cp/decl.c:14539
+#: cp/decl.c:14546
 msgid "static member function `%#D' declared with type qualifiers"
 msgstr ""
 
@@ -17422,7 +17452,7 @@ msgstr ""
 msgid "invalid use of `virtual' in template declaration of `%#D'"
 msgstr ""
 
-#: cp/decl2.c:1212 cp/pt.c:2559
+#: cp/decl2.c:1212 cp/pt.c:2562
 msgid "template declaration of `%#D'"
 msgstr ""
 
@@ -17654,38 +17684,38 @@ msgstr ""
 msgid "`%s' not supported by %s"
 msgstr ""
 
-#: cp/error.c:570
+#: cp/error.c:577
 #, c-format
 msgid "<anonymous %s>"
 msgstr ""
 
-#: cp/error.c:807
+#: cp/error.c:814
 #, c-format
 msgid "(static %s for %s)"
 msgstr ""
 
-#: cp/error.c:2431
+#: cp/error.c:2438
 #, c-format
 msgid "In %s `%s':"
 msgstr ""
 
-#: cp/error.c:2486
+#: cp/error.c:2493
 #, c-format
 msgid "%s: In instantiation of `%s':\n"
 msgstr ""
 
-#: cp/error.c:2510
+#: cp/error.c:2517
 #, c-format
 msgid "%s:%d:   instantiated from `%s'\n"
 msgstr ""
 
-#: cp/error.c:2515
+#: cp/error.c:2522
 #, c-format
 msgid "%s:%d:   instantiated from here\n"
 msgstr ""
 
 #. damn ICE suppression
-#: cp/error.c:2668
+#: cp/error.c:2675
 #, c-format
 msgid "unexpected letter `%c' in locate_error\n"
 msgstr ""
@@ -18153,15 +18183,15 @@ msgstr ""
 msgid "implementation-reserved name `%D' used"
 msgstr ""
 
-#: cp/method.c:422
+#: cp/method.c:428
 msgid "generic thunk code fails for method `%#D' which uses `...'"
 msgstr ""
 
-#: cp/method.c:652
+#: cp/method.c:653
 msgid "non-static const member `%#D', can't use default assignment operator"
 msgstr ""
 
-#: cp/method.c:657
+#: cp/method.c:658
 msgid ""
 "non-static reference member `%#D', can't use default assignment operator"
 msgstr ""
@@ -18303,138 +18333,138 @@ msgstr ""
 msgid "ISO C++ forbids label declarations"
 msgstr ""
 
-#: parse.y:3463
+#: parse.y:3468
 msgid "ISO C++ forbids computed gotos"
 msgstr ""
 
-#: parse.y:3471
+#: parse.y:3476
 msgid "label must be followed by statement"
 msgstr ""
 
-#: parse.y:3516
+#: parse.y:3521
 msgid "must have at least one catch per try block"
 msgstr ""
 
-#: parse.y:3576
+#: parse.y:3581
 msgid "ISO C++ forbids compound statements inside for initializations"
 msgstr ""
 
 #. This helps us recover from really nasty
 #. parse errors, for example, a missing right
 #. parenthesis.
-#: parse.y:3661 parse.y:3671
+#: parse.y:3666 parse.y:3676
 msgid "possibly missing ')'"
 msgstr ""
 
-#: parse.y:3764
+#: parse.y:3769
 msgid "type specifier omitted for parameter"
-msgstr ""
-
-#: parse.y:3773
-#, c-format
-msgid "`%E' is not a type, use `typename %E' to make it one"
-msgstr ""
-
-#: parse.y:3775
-msgid "no type `%D' in `%T'"
 msgstr ""
 
 #: parse.y:3778
 #, c-format
+msgid "`%E' is not a type, use `typename %E' to make it one"
+msgstr ""
+
+#: parse.y:3780
+msgid "no type `%D' in `%T'"
+msgstr ""
+
+#: parse.y:3783
+#, c-format
 msgid "type specifier omitted for parameter `%E'"
 msgstr ""
 
-#: parse.y:3786
+#: parse.y:3791
 msgid "'%D' is used as a type, but is not defined as a type."
 msgstr ""
 
-#: cp/pt.c:208
+#: cp/pt.c:211
 msgid "data member `%D' cannot be a member template"
 msgstr ""
 
-#: cp/pt.c:220
+#: cp/pt.c:223
 msgid "invalid member template declaration `%D'"
 msgstr ""
 
-#: cp/pt.c:615
+#: cp/pt.c:618
 msgid "explicit specialization in non-namespace scope `%D'"
 msgstr ""
 
-#: cp/pt.c:627
+#: cp/pt.c:630
 msgid "enclosing class templates are not explicitly specialized"
 msgstr ""
 
-#: cp/pt.c:702
+#: cp/pt.c:705
 msgid "specializing `%#T' in different namespace"
 msgstr ""
 
-#: cp/pt.c:703
+#: cp/pt.c:706
 msgid "  from definition of `%#D'"
 msgstr ""
 
-#: cp/pt.c:711
+#: cp/pt.c:714
 msgid "specialization of `%T' after instantiation"
 msgstr ""
 
-#: cp/pt.c:714
+#: cp/pt.c:717
 msgid "explicit specialization of non-template `%T'"
 msgstr ""
 
-#: cp/pt.c:846
+#: cp/pt.c:849
 msgid "specialization of %D after instantiation"
 msgstr ""
 
-#: cp/pt.c:949
+#: cp/pt.c:952
 msgid "%s %+#D"
 msgstr ""
 
-#: cp/pt.c:1000
+#: cp/pt.c:1003
 msgid "`%D' is not a function template"
 msgstr ""
 
-#: cp/pt.c:1123
+#: cp/pt.c:1126
 msgid "template-id `%D' for `%+D' does not match any template declaration"
 msgstr ""
 
-#: cp/pt.c:1131
+#: cp/pt.c:1134
 msgid "ambiguous template specialization `%D' for `%+D'"
 msgstr ""
 
 #. This case handles bogus declarations like template <>
 #. template <class T> void f<int>();
-#: cp/pt.c:1358 cp/pt.c:1432
+#: cp/pt.c:1361 cp/pt.c:1435
 msgid "template-id `%D' in declaration of primary template"
 msgstr ""
 
-#: cp/pt.c:1371
+#: cp/pt.c:1374
 msgid "template parameter list used in explicit instantiation"
 msgstr ""
 
-#: cp/pt.c:1377
+#: cp/pt.c:1380
 msgid "definition provided for explicit instantiation"
 msgstr ""
 
-#: cp/pt.c:1383
+#: cp/pt.c:1386
 msgid "too many template parameter lists in declaration of `%D'"
 msgstr ""
 
-#: cp/pt.c:1399
+#: cp/pt.c:1402
 msgid "too few template parameter lists in declaration of `%D'"
 msgstr ""
 
-#: cp/pt.c:1416
+#: cp/pt.c:1419
 msgid "explicit specialization not preceded by `template <>'"
 msgstr ""
 
-#: cp/pt.c:1429
+#: cp/pt.c:1432
 msgid "partial specialization `%D' of function template"
 msgstr ""
 
-#: cp/pt.c:1461
+#: cp/pt.c:1464
 msgid "default argument specified in explicit specialization"
 msgstr ""
 
-#: cp/pt.c:1465
+#: cp/pt.c:1468
 msgid "template specialization with C linkage"
 msgstr ""
 
@@ -18446,99 +18476,99 @@ msgstr ""
 #. program is ill-formed.
 #.
 #. Similar language is found in [temp.explicit].
-#: cp/pt.c:1553
+#: cp/pt.c:1556
 msgid "specialization of implicitly-declared special member function"
 msgstr ""
 
-#: cp/pt.c:1596
+#: cp/pt.c:1599
 msgid "no member function `%D' declared in `%T'"
 msgstr ""
 
 #. There are two many template parameter lists.
-#: cp/pt.c:1744
+#: cp/pt.c:1747
 msgid "too many template parameter lists in declaration of `%T'"
 msgstr ""
 
-#: cp/pt.c:1840
+#: cp/pt.c:1843
 msgid " shadows template parm `%#D'"
 msgstr ""
 
-#: cp/pt.c:2244
+#: cp/pt.c:2247
 msgid "template parameters not used in partial specialization:"
 msgstr ""
 
-#: cp/pt.c:2248
+#: cp/pt.c:2251
 msgid "        `%D'"
 msgstr ""
 
-#: cp/pt.c:2260
+#: cp/pt.c:2263
 msgid "partial specialization `%T' does not specialize any template arguments"
 msgstr ""
 
-#: cp/pt.c:2285
+#: cp/pt.c:2288
 #, c-format
 msgid "template argument `%E' involves template parameter(s)"
 msgstr ""
 
-#: cp/pt.c:2328
+#: cp/pt.c:2331
 msgid "type `%T' of template argument `%E' depends on template parameter(s)"
 msgstr ""
 
-#: cp/pt.c:2416
+#: cp/pt.c:2419
 msgid "no default argument for `%D'"
 msgstr ""
 
-#: cp/pt.c:2549
+#: cp/pt.c:2552
 msgid "template with C linkage"
 msgstr ""
 
-#: cp/pt.c:2552
+#: cp/pt.c:2555
 msgid "template class without a name"
 msgstr ""
 
-#: cp/pt.c:2627
+#: cp/pt.c:2632
 msgid "`%D' does not declare a template type"
 msgstr ""
 
-#: cp/pt.c:2633
+#: cp/pt.c:2638
 msgid "template definition of non-template `%#D'"
 msgstr ""
 
-#: cp/pt.c:2674
+#: cp/pt.c:2679
 msgid "expected %d levels of template parms for `%#D', got %d"
 msgstr ""
 
-#: cp/pt.c:2686
+#: cp/pt.c:2691
 msgid "got %d template parameters for `%#D'"
 msgstr ""
 
-#: cp/pt.c:2689
+#: cp/pt.c:2694
 msgid "got %d template parameters for `%#T'"
 msgstr ""
 
-#: cp/pt.c:2691
+#: cp/pt.c:2696
 #, c-format
 msgid "  but %d required"
 msgstr ""
 
-#: cp/pt.c:2759
+#: cp/pt.c:2764
 msgid "`%T' is not a template type"
 msgstr ""
 
-#: cp/pt.c:2775
+#: cp/pt.c:2780
 msgid "previous declaration `%D'"
 msgstr ""
 
-#: cp/pt.c:2776
+#: cp/pt.c:2781
 #, c-format
 msgid "used %d template parameter%s instead of %d"
 msgstr ""
 
-#: cp/pt.c:2792
+#: cp/pt.c:2797
 msgid "template parameter `%#D'"
 msgstr ""
 
-#: cp/pt.c:2793
+#: cp/pt.c:2798
 msgid "redeclared here as `%#D'"
 msgstr ""
 
@@ -18546,219 +18576,219 @@ msgstr ""
 #.
 #. A template-parameter may not be given default arguments
 #. by two different declarations in the same scope.
-#: cp/pt.c:2803
+#: cp/pt.c:2808
 msgid "redefinition of default argument for `%#D'"
 msgstr ""
 
-#: cp/pt.c:2804
+#: cp/pt.c:2809
 msgid "  original definition appeared here"
 msgstr ""
 
-#: cp/pt.c:2897
+#: cp/pt.c:2902
 #, c-format
 msgid "`%E' is not a valid template argument"
 msgstr ""
 
-#: cp/pt.c:2901
+#: cp/pt.c:2906
 msgid "it must be the address of a function with external linkage"
 msgstr ""
 
-#: cp/pt.c:2903
+#: cp/pt.c:2908
 msgid "it must be the address of an object with external linkage"
 msgstr ""
 
-#: cp/pt.c:2907
+#: cp/pt.c:2912
 msgid "it must be a pointer-to-member of the form `&X::Y'"
 msgstr ""
 
-#: cp/pt.c:2918
+#: cp/pt.c:2923
 #, c-format
 msgid ""
 "string literal %E is not a valid template argument because it is the address "
 "of an object with static linkage"
 msgstr ""
 
-#: cp/pt.c:2930
+#: cp/pt.c:2935
 #, c-format
 msgid "address of non-extern `%E' cannot be used as template argument"
 msgstr ""
 
-#: cp/pt.c:2941
+#: cp/pt.c:2946
 #, c-format
 msgid "non-constant `%E' cannot be used as template argument"
 msgstr ""
 
-#: cp/pt.c:2948
+#: cp/pt.c:2953
 #, c-format
 msgid "object `%E' cannot be used as template argument"
 msgstr ""
 
-#: cp/pt.c:3328
+#: cp/pt.c:3333
 #, c-format
 msgid "to refer to a type member of a template parameter, use `typename %E'"
 msgstr ""
 
-#: cp/pt.c:3341 cp/pt.c:3357 cp/pt.c:3396
+#: cp/pt.c:3348 cp/pt.c:3364 cp/pt.c:3403
 msgid "type/value mismatch at argument %d in template parameter list for `%D'"
 msgstr ""
 
-#: cp/pt.c:3344
+#: cp/pt.c:3351
 msgid "  expected a constant of type `%T', got `%T'"
 msgstr ""
 
-#: cp/pt.c:3348
+#: cp/pt.c:3355
 #, c-format
 msgid "  expected a type, got `%E'"
 msgstr ""
 
-#: cp/pt.c:3360
+#: cp/pt.c:3367
 msgid "  expected a type, got `%T'"
 msgstr ""
 
-#: cp/pt.c:3362
+#: cp/pt.c:3369
 msgid "  expected a class template, got `%T'"
 msgstr ""
 
-#: cp/pt.c:3398
+#: cp/pt.c:3405
 msgid "  expected a template of type `%D', got `%D'"
 msgstr ""
 
-#: cp/pt.c:3420
+#: cp/pt.c:3427
 msgid "template-argument `%T' uses anonymous type"
 msgstr ""
 
-#: cp/pt.c:3423
+#: cp/pt.c:3430
 msgid "template-argument `%T' uses local type `%T'"
 msgstr ""
 
-#: cp/pt.c:3458
+#: cp/pt.c:3465
 msgid "could not convert template argument `%E' to `%T'"
 msgstr ""
 
-#: cp/pt.c:3502
+#: cp/pt.c:3509
 #, c-format
 msgid "wrong number of template arguments (%d, should be %d)"
 msgstr ""
 
-#: cp/pt.c:3506
+#: cp/pt.c:3513
 msgid "provided for `%D'"
 msgstr ""
 
-#: cp/pt.c:3553
+#: cp/pt.c:3560
 #, c-format
 msgid "template argument %d is invalid"
 msgstr ""
 
-#: cp/pt.c:3785
+#: cp/pt.c:3792
 msgid "non-template used as template"
 msgstr ""
 
-#: cp/pt.c:3903
+#: cp/pt.c:3910
 msgid "`%T' is not a template"
 msgstr ""
 
-#: cp/pt.c:3916
+#: cp/pt.c:3923
 msgid "non-template type `%T' used as a template"
 msgstr ""
 
-#: cp/pt.c:3918
+#: cp/pt.c:3925
 msgid "for template declaration `%D'"
 msgstr ""
 
-#: cp/pt.c:4481
+#: cp/pt.c:4488
 msgid ""
 "template instantiation depth exceeds maximum of %d (use -ftemplate-depth-NN "
 "to increase the maximum) instantiating `%D'"
 msgstr ""
 
-#: cp/pt.c:4916
+#: cp/pt.c:4923
 msgid "ambiguous class template instantiation for `%#T'"
 msgstr ""
 
-#: cp/pt.c:4923
+#: cp/pt.c:4930
 msgid "%s %+#T"
 msgstr ""
 
-#: cp/pt.c:5942 cp/pt.c:6056
+#: cp/pt.c:5951 cp/pt.c:6065
 msgid "instantiation of `%D' as type `%T'"
 msgstr ""
 
-#: cp/pt.c:6098
+#: cp/pt.c:6107
 msgid "invalid parameter type `%T'"
 msgstr ""
 
-#: cp/pt.c:6100
+#: cp/pt.c:6109
 msgid "in declaration `%D'"
 msgstr ""
 
-#: cp/pt.c:6175
+#: cp/pt.c:6184
 msgid "creating pointer to member function of non-class type `%T'"
 msgstr ""
 
-#: cp/pt.c:6338
+#: cp/pt.c:6347
 msgid "creating array with size zero"
 msgstr ""
 
-#: cp/pt.c:6352
+#: cp/pt.c:6361
 #, c-format
 msgid "creating array with size zero (`%E')"
 msgstr ""
 
-#: cp/pt.c:6590
+#: cp/pt.c:6598
 msgid "forming reference to void"
 msgstr ""
 
-#: cp/pt.c:6592
+#: cp/pt.c:6600
 msgid "forming %s to reference type `%T'"
 msgstr ""
 
-#: cp/pt.c:6630
+#: cp/pt.c:6638
 msgid "creating pointer to member of non-class type `%T'"
 msgstr ""
 
-#: cp/pt.c:6637
+#: cp/pt.c:6644
 msgid "creating pointer to member reference type `%T'"
 msgstr ""
 
-#: cp/pt.c:6715
+#: cp/pt.c:6722
 msgid "creating array of `%T'"
 msgstr ""
 
-#: cp/pt.c:6761
+#: cp/pt.c:6765
 msgid "`%T' is not a class, struct, or union type"
 msgstr ""
 
-#: cp/pt.c:6873
+#: cp/pt.c:6868
 #, c-format
 msgid "use of `%s' in template"
 msgstr ""
 
-#: cp/pt.c:7630
+#: cp/pt.c:7624
 msgid "type `%T' composed from a local class is not a valid template-argument"
 msgstr ""
 
-#: cp/pt.c:7631
+#: cp/pt.c:7625
 msgid "  trying to instantiate `%D'"
 msgstr ""
 
-#: cp/pt.c:8061
+#: cp/pt.c:8055
 msgid "incomplete type unification"
 msgstr ""
 
-#: cp/pt.c:9016
+#: cp/pt.c:9006
 #, c-format
 msgid "use of `%s' in template type unification"
 msgstr ""
 
-#: cp/pt.c:9438 cp/pt.c:9506
+#: cp/pt.c:9426 cp/pt.c:9494
 msgid "explicit instantiation of non-template `%#D'"
 msgstr ""
 
-#: cp/pt.c:9454 cp/pt.c:9501
+#: cp/pt.c:9442 cp/pt.c:9489
 msgid "no matching template for `%D' found"
 msgstr ""
 
-#: cp/pt.c:9460
+#: cp/pt.c:9448
 msgid "explicit instantiation of `%#D'"
 msgstr ""
 
@@ -18766,52 +18796,52 @@ msgstr ""
 #.
 #. No program shall both explicitly instantiate and explicitly
 #. specialize a template.
-#: cp/pt.c:9477
+#: cp/pt.c:9465
 msgid "explicit instantiation of `%#D' after"
 msgstr ""
 
-#: cp/pt.c:9478 cp/pt.c:9615
+#: cp/pt.c:9466 cp/pt.c:9603
 msgid "explicit specialization here"
 msgstr ""
 
-#: cp/pt.c:9493
+#: cp/pt.c:9481
 msgid "duplicate explicit instantiation of `%#D'"
 msgstr ""
 
-#: cp/pt.c:9518
+#: cp/pt.c:9506
 msgid "ISO C++ forbids the use of `extern' on explicit instantiations"
 msgstr ""
 
-#: cp/pt.c:9522 cp/pt.c:9600
+#: cp/pt.c:9510 cp/pt.c:9588
 msgid "storage class `%D' applied to template instantiation"
 msgstr ""
 
-#: cp/pt.c:9567
+#: cp/pt.c:9555
 msgid "explicit instantiation of non-template type `%T'"
 msgstr ""
 
-#: cp/pt.c:9581
+#: cp/pt.c:9569
 msgid "explicit instantiation of `%#T' before definition of template"
 msgstr ""
 
-#: cp/pt.c:9589
+#: cp/pt.c:9577
 #, c-format
 msgid "ISO C++ forbids the use of `%s' on explicit instantiations"
 msgstr ""
 
-#: cp/pt.c:9614
+#: cp/pt.c:9602
 msgid "explicit instantiation of `%#T' after"
 msgstr ""
 
-#: cp/pt.c:9632
+#: cp/pt.c:9620
 msgid "duplicate explicit instantiation of `%#T'"
 msgstr ""
 
-#: cp/pt.c:9973
+#: cp/pt.c:9961
 msgid "explicit instantiation of `%D' but no definition available"
 msgstr ""
 
-#: cp/pt.c:10345
+#: cp/pt.c:10333
 msgid "`%#T' is not a valid type for a template constant parameter"
 msgstr ""
 
@@ -18904,72 +18934,72 @@ msgstr ""
 msgid "`%#D' needs a final overrider"
 msgstr ""
 
-#: cp/semantics.c:903
+#: cp/semantics.c:906
 #, c-format
 msgid "type of asm operand `%E' could not be determined"
 msgstr ""
 
-#: cp/semantics.c:1045
+#: cp/semantics.c:1048
 msgid "ISO C++ does not permit named return values"
 msgstr ""
 
-#: cp/semantics.c:1054
+#: cp/semantics.c:1057
 msgid "return identifier `%D' already in place"
 msgstr ""
 
-#: cp/semantics.c:1062
+#: cp/semantics.c:1065
 msgid "can't redefine default return value for constructors"
 msgstr ""
 
-#: cp/semantics.c:1129
+#: cp/semantics.c:1132
 msgid "base initializer for `%T'"
 msgstr ""
 
-#: cp/semantics.c:1131
+#: cp/semantics.c:1134
 msgid "   will be re-ordered to precede member initializations"
 msgstr ""
 
-#: cp/semantics.c:1319
+#: cp/semantics.c:1322
 msgid "`this' is unavailable for static member functions"
 msgstr ""
 
-#: cp/semantics.c:1325
+#: cp/semantics.c:1328
 msgid "invalid use of `this' in non-member function"
 msgstr ""
 
-#: cp/semantics.c:1327
+#: cp/semantics.c:1330
 msgid "invalid use of `this' at top level"
 msgstr ""
 
-#: cp/semantics.c:1365
+#: cp/semantics.c:1368
 msgid "calling type `%T' like a method"
 msgstr ""
 
-#: cp/semantics.c:1401
+#: cp/semantics.c:1404
 msgid "destructor specifier `%T::~%T()' must have matching names"
 msgstr ""
 
-#: cp/semantics.c:1407
+#: cp/semantics.c:1410
 msgid "`%E' is not of type `%T'"
 msgstr ""
 
-#: cp/semantics.c:1619
+#: cp/semantics.c:1622
 msgid "template type parameters must use the keyword `class' or `typename'"
 msgstr ""
 
-#: cp/semantics.c:1681
+#: cp/semantics.c:1684
 msgid "definition of `%#T' inside template parameter list"
 msgstr ""
 
-#: cp/semantics.c:1697
+#: cp/semantics.c:1700
 msgid "invalid definition of qualified type `%T'"
 msgstr ""
 
-#: cp/semantics.c:2052
+#: cp/semantics.c:2055
 msgid "base class `%T' has cv qualifiers"
 msgstr ""
 
-#: cp/semantics.c:2085
+#: cp/semantics.c:2088
 msgid "multiple declarators in template declaration"
 msgstr ""
 
@@ -19023,49 +19053,49 @@ msgstr ""
 msgid "non-lvalue in %s"
 msgstr ""
 
-#: cp/tree.c:536
+#: cp/tree.c:535
 msgid "`%T' cannot be `restrict'-qualified"
 msgstr ""
 
-#: cp/tree.c:547
+#: cp/tree.c:546
 msgid "`%T' cannot be `const'-, `volatile'-, or `restrict'-qualified"
 msgstr ""
 
-#: cp/tree.c:1888
+#: cp/tree.c:1887
 #, c-format
 msgid "`%s' attribute can only be applied to Java class definitions"
 msgstr ""
 
-#: cp/tree.c:1918
+#: cp/tree.c:1917
 #, c-format
 msgid "`%s' attribute can only be applied to class definitions"
 msgstr ""
 
-#: cp/tree.c:1924
+#: cp/tree.c:1923
 #, c-format
 msgid "`%s' is obsolete; g++ vtables are now COM-compatible by default"
 msgstr ""
 
-#: cp/tree.c:1949
+#: cp/tree.c:1948
 msgid "requested init_priority is not an integer constant"
 msgstr ""
 
-#: cp/tree.c:1970
+#: cp/tree.c:1969
 #, c-format
 msgid ""
 "can only use `%s' attribute on file-scope definitions of objects of class "
 "type"
 msgstr ""
 
-#: cp/tree.c:1978
+#: cp/tree.c:1977
 msgid "requested init_priority is out of range"
 msgstr ""
 
-#: cp/tree.c:1988
+#: cp/tree.c:1987
 msgid "requested init_priority is reserved for internal use"
 msgstr ""
 
-#: cp/tree.c:1998
+#: cp/tree.c:1997
 #, c-format
 msgid "`%s' attribute is not supported on this platform"
 msgstr ""
@@ -19802,7 +19832,7 @@ msgid "ISO C++ forbids defining types within %s"
 msgstr ""
 
 #. XXX Not i18n clean.
-#: cp/cp-tree.h:3851
+#: cp/cp-tree.h:3854
 #, c-format
 msgid "%s is deprecated, please see the documentation for details"
 msgstr ""
@@ -19999,65 +20029,65 @@ msgstr ""
 msgid "ASSIGN'ed label cannot fit into `%A' at %0 -- using wider sibling"
 msgstr ""
 
-#: f/com.c:11597
+#: f/com.c:11601
 msgid "no INTEGER type can hold a pointer on this configuration"
 msgstr ""
 
-#: f/com.c:11822
+#: f/com.c:11826
 #, c-format
 msgid "configuration: REAL, INTEGER, and LOGICAL are %d bits wide,"
 msgstr ""
 
-#: f/com.c:11824
+#: f/com.c:11828
 #, c-format
 msgid "and pointers are %d bits wide, but g77 doesn't yet work"
 msgstr ""
 
-#: f/com.c:11826
+#: f/com.c:11830
 msgid "properly unless they all are 32 bits wide"
 msgstr ""
 
-#: f/com.c:11827
+#: f/com.c:11831
 msgid "Please keep this in mind before you report bugs."
 msgstr ""
 
 #. I/O will probably crash.
-#: f/com.c:11835
+#: f/com.c:11839
 #, c-format
 msgid "configuration: char * holds %d bits, but ftnlen only %d"
 msgstr ""
 
 #. ASSIGN 10 TO I will crash.
-#: f/com.c:11844
+#: f/com.c:11848
 #, c-format
 msgid ""
 "configuration: char * holds %d bits, but INTEGER only %d --\n"
 " ASSIGN statement might fail"
 msgstr ""
 
-#: f/com.c:13678
+#: f/com.c:13682
 msgid "In statement function"
 msgstr ""
 
-#: f/com.c:13688
+#: f/com.c:13692
 msgid "Outside of any program unit:\n"
 msgstr ""
 
-#: f/com.c:15377
+#: f/com.c:15381
 #, no-c-format
 msgid "%A from %B at %0%C"
 msgstr ""
 
-#: f/com.c:15554
+#: f/com.c:15558
 msgid "directory name must immediately follow -I"
 msgstr ""
 
-#: f/com.c:15697
+#: f/com.c:15701
 #, no-c-format
 msgid "At %0, INCLUDE file %A exists, but is not readable"
 msgstr ""
 
-#: f/com.c:15732
+#: f/com.c:15736
 #, no-c-format
 msgid "At %0, INCLUDE nesting too deep"
 msgstr ""
@@ -23663,11 +23693,11 @@ msgstr ""
 msgid "potential selector conflict for method `%s'"
 msgstr ""
 
-#: objc-parse.y:2611
+#: objc-parse.y:2612
 msgid "`@end' must appear in an implementation context"
 msgstr ""
 
-#: objc-parse.y:2885
+#: objc-parse.y:2886
 msgid "method definition not in class context"
 msgstr ""
 
@@ -23699,12 +23729,8 @@ msgstr ""
 msgid "Specify the name of the class for constant strings"
 msgstr ""
 
-#: config/mmix/mmix.h:112
-msgid "options -mabi=mmixware and -mabi=gnu are mutually exclusive"
-msgstr ""
-
-#: f/lang-specs.h:35 gcc.c:664
-msgid "GNU C does not support -C without using -E"
+#: ada/lang-specs.h:39 gcc.c:690 java/jvspec.c:74
+msgid "-pg and -fomit-frame-pointer are incompatible"
 msgstr ""
 
 #: java/lang-specs.h:33
@@ -23719,6 +23745,19 @@ msgstr ""
 msgid "-femit-class-file should used along with -fsyntax-only"
 msgstr ""
 
+#: config/vax/vax.h:42 config/vax/vax.h:43
+msgid "profiling not supported with -mg\n"
+msgstr ""
+
+#: config/alpha/freebsd.h:36 config/i386/freebsd-aout.h:227
+#: config/ia64/freebsd.h:24 config/sparc/freebsd.h:31
+msgid "`-p' not supported; use `-pg' and gprof(1)"
+msgstr ""
+
+#: f/lang-specs.h:35 gcc.c:664
+msgid "GNU C does not support -C without using -E"
+msgstr ""
+
 #: config/mcore/mcore.h:60
 msgid "choose either big or little endian, not both"
 msgstr ""
@@ -23731,32 +23770,23 @@ msgstr ""
 msgid "the m210 does not have little endian support"
 msgstr ""
 
-#: config/alpha/freebsd.h:36 config/i386/freebsd-aout.h:227
-#: config/ia64/freebsd.h:24 config/sparc/freebsd.h:31
-msgid "`-p' not supported; use `-pg' and gprof(1)"
-msgstr ""
-
-#: ada/lang-specs.h:39 gcc.c:690 java/jvspec.c:74
-msgid "-pg and -fomit-frame-pointer are incompatible"
-msgstr ""
-
 #: ada/lang-specs.h:42
 msgid "-c or -S required for Ada"
 msgstr ""
 
-#: config/arm/arm.h:213
+#: config/arm/arm.h:211
 msgid "-mapcs-26 and -mapcs-32 may not be used together"
 msgstr ""
 
-#: config/arm/arm.h:225
+#: config/arm/arm.h:223
 msgid "-msoft-float and -mhard_float may not be used together"
 msgstr ""
 
-#: config/arm/arm.h:236
+#: config/arm/arm.h:234
 msgid "-mbig-endian and -mlittle-endian may not be used together"
 msgstr ""
 
-#: config/arm/arm.h:254
+#: config/arm/arm.h:252
 msgid "incompatible interworking options"
 msgstr ""
 
@@ -23820,16 +23850,16 @@ msgstr ""
 msgid "a -ifile option requires a -map option"
 msgstr ""
 
+#: config/i386/cygwin.h:114
+msgid "mno-cygwin and mno-win32 are not compatible"
+msgstr ""
+
 #: config/arc/arc.h:59 config/mips/mips.h:1007
 msgid "may not use both -EB and -EL"
 msgstr ""
 
 #: config/i860/fx2800.h:290
 msgid "-p option not supported: use -pg instead"
-msgstr ""
-
-#: config/i386/cygwin.h:114
-msgid "mno-cygwin and mno-win32 are not compatible"
 msgstr ""
 
 #: config/mips/mips.h:837
@@ -23856,6 +23886,6 @@ msgstr ""
 msgid "-msingle-float and -msoft-float can not both be specified"
 msgstr ""
 
-#: config/vax/vax.h:42 config/vax/vax.h:43
-msgid "profiling not supported with -mg\n"
+#: config/mmix/mmix.h:112
+msgid "options -mabi=mmixware and -mabi=gnu are mutually exclusive"
 msgstr ""
