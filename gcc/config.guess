@@ -222,6 +222,9 @@ EOF
     powerpc:machten:*:*)
 	echo powerpc-apple-machten${UNAME_RELEASE}
 	exit 0 ;;
+    macppc:NetBSD:*:*)
+        echo powerpc-apple-netbsd${UNAME_RELEASE}
+        exit 0 ;;
     RISC*:Mach:*:*)
 	echo mips-dec-mach_bsd4.3
 	exit 0 ;;
