@@ -2090,12 +2090,14 @@ process_aux_info_file (base_source_filename, keep_it, is_syscalls)
   /* Check that the aux_info file exists and is readable.  If it does not
      exist, try to create it (once only).  */
 
-start_over: ;
-
   /* If file doesn't exist, set must_create.
      Likewise if it exists and we can read it but it is obsolete.
      Otherwise, report an error.  */
   must_create = 0;
+
+  /* Come here with must_create set to 1 if file is out of date.  */
+start_over: ;
+
   if (my_access (aux_info_filename, R_OK) == -1)
     {
       if (errno == ENOENT)
@@ -2172,20 +2174,26 @@ start_over: ;
   
     aux_info_mtime = stat_buf.st_mtime;
 
-    /* Compare mod time with the .c file; update .X file if obsolete.
-       The code later on can fail to check the .c file
-       if it did not directly define any functions.  */
-  
-    if (my_stat (base_source_filename, &stat_buf) == -1)
+    if (!is_syscalls)
       {
-        fprintf (stderr, "%s: can't get status of aux info file `%s': %s\n",
-		 pname, shortpath (NULL, base_source_filename),
-		 sys_errlist[errno]);
-        errors++;
-        return;
+	/* Compare mod time with the .c file; update .X file if obsolete.
+	   The code later on can fail to check the .c file
+	   if it did not directly define any functions.  */
+
+	if (my_stat (base_source_filename, &stat_buf) == -1)
+	  {
+	    fprintf (stderr, "%s: can't get status of aux info file `%s': %s\n",
+		     pname, shortpath (NULL, base_source_filename),
+		     sys_errlist[errno]);
+	    errors++;
+	    return;
+	  }
+	if (stat_buf.st_mtime > aux_info_mtime)
+	  {
+	    must_create = 1;
+	    goto start_over;
+	  }
       }
-    if (stat_buf.st_mtime > aux_info_mtime)
-      goto start_over;
   }
 
   {
