@@ -1,3 +1,8 @@
+2003-05-31  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/10956
+	* g++.dg/template/spec9.C: New test.
+
 2003-05-29  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/duff-4.c: New test case.

@@ -10862,10 +10862,11 @@ instantiate_decl (d, defer_ok)
   td = template_for_substitution (d);
   code_pattern = DECL_TEMPLATE_RESULT (td);
 
-  if (DECL_NAMESPACE_SCOPE_P (d) && !DECL_INITIALIZED_IN_CLASS_P (d))
+  if ((DECL_NAMESPACE_SCOPE_P (d) && !DECL_INITIALIZED_IN_CLASS_P (d))
+      || DECL_TEMPLATE_SPECIALIZATION (td))
     /* In the case of a friend template whose definition is provided
        outside the class, we may have too many arguments.  Drop the
-       ones we don't need.  */
+       ones we don't need.  The same is true for specializations.  */
     args = get_innermost_template_args
       (gen_args, TMPL_PARMS_DEPTH  (DECL_TEMPLATE_PARMS (td)));
   else
