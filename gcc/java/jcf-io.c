@@ -231,30 +231,6 @@ DEFUN(read_zip_member, (jcf, zipd, zipf),
 	  return 0;
 }
 
-#if JCF_USE_STDIO
-const char *
-DEFUN(open_class, (filename, jcf, stream, dep_name),
-      const char *filename AND JCF *jcf AND FILE* stream
-      AND const char *dep_name)
-{
-  if (jcf)
-    {
-      if (dep_name != NULL)
-	jcf_dependency_add_file (dep_name, 0);
-      JCF_ZERO (jcf);
-      jcf->buffer = NULL;
-      jcf->buffer_end = NULL;
-      jcf->read_ptr = NULL;
-      jcf->read_end = NULL;
-      jcf->read_state = stream;
-      jcf->filename = filename;
-      jcf->filbuf = jcf_filbuf_from_stdio;
-    }
-  else
-    fclose (stream);
-  return filename;
-}
-#else
 const char *
 DEFUN(open_class, (filename, jcf, fd, dep_name),
       const char *filename AND JCF *jcf AND int fd AND const char *dep_name)
@@ -289,24 +265,16 @@ DEFUN(open_class, (filename, jcf, fd, dep_name),
     close (fd);
   return filename;
 }
-#endif
 
 
 const char *
 DEFUN(find_classfile, (filename, jcf, dep_name),
       char *filename AND JCF *jcf AND const char *dep_name)
 {
-#if JCF_USE_STDIO
-  FILE *stream = fopen (filename, "rb");
-  if (stream == NULL)
-    return NULL;
-  return open_class (arg, jcf, stream, dep_name);
-#else
   int fd = open (filename, O_RDONLY | O_BINARY);
   if (fd < 0)
     return NULL;
   return open_class (filename, jcf, fd, dep_name);
-#endif
 }
 
 #if JCF_USE_SCANDIR
@@ -461,11 +429,7 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
       const char *classname AND int classname_length AND JCF *jcf AND int source_ok)
 
 {
-#if JCF_USE_STDIO
-  FILE *stream;
-#else
   int fd;
-#endif
   int i, k, java = -1, class = -1;
   struct stat java_buf, class_buf;
   char *dep_file;
@@ -578,27 +542,6 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
     dep_file = java_buffer;
   else
     dep_file = buffer;
-#if JCF_USE_STDIO
-  if (!class)
-    {
-      SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
-      stream = fopen (buffer, "rb");
-      if (stream)
-	goto found;
-    }
-  /* Give .java a try, if necessary */
-  if (!java)
-    {
-      strcpy (buffer, java_buffer);
-      SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
-      stream = fopen (buffer, "r");
-      if (stream)
-	{
-	  jcf->java_source = 1;
-	  goto found;
-	}
-    }
-#else
   if (!class)
     {
       SOURCE_FRONTEND_DEBUG ((stderr, "[Class selected: %s]\n",
@@ -624,7 +567,6 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
 	  goto found;
 	}
     }
-#endif
 
   free (buffer);
 
@@ -635,12 +577,6 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
 
   return NULL;
  found:
-#if JCF_USE_STDIO
-  if (jcf->java_source)
-    return NULL;		/* FIXME */
-  else
-    return open_class (buffer, jcf, stream, dep_file);
-#else
   if (jcf->java_source)
     {
       JCF_ZERO (jcf);		/* JCF_FINISH relies on this */
@@ -652,7 +588,6 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
     buffer = (char *) open_class (buffer, jcf, fd, dep_file);
   jcf->classname = xstrdup (classname);
   return buffer;
-#endif
 }
 
 void

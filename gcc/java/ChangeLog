@@ -1,3 +1,16 @@
+2002-06-04  Zack Weinberg  <zack@codesourcery.com>
+
+	* java-tree.h, class.c, expr.c, jcf-parse.c, parse.y,
+	typeck.c, verify.c: Remove all #if JAVA_USE_HANDLES blocks,
+	all mention of CLASS_TO_HANDLE_TYPE or HANDLE_TO_CLASS_TYPE,
+	and all now-pointless local variables.  Rename other local
+	variables to reflect their not being handles.
+
+	* java-tree.h, jcf-dump.c, jcf-io.c: Remove all
+	#if JCF_USE_STDIO blocks.
+
+	* parse.y: Add missing semicolon at end of rule.
+
 2002-06-03  Geoffrey Keating  <geoffk@redhat.com>
 
 	* check-init.c (attach_initialized_static_class): Delete, unused.
@@ -7,7 +20,7 @@
 	(struct lang_decl_func): Use htab_t, set up for gengtype.
 	(struct init_test_hash_entry): Delete.
 	(struct treetreehash_entry): New.
-	(java_treetreehash_find): New 
+	(java_treetreehash_find): New
 	(java_treetreehash_new): New prototype.
 	(java_treetreehash_create): New prototype.
 	(java_mark_tree): Delete prototype.
@@ -128,7 +141,7 @@
 	* jcf.h (JCF_USE_SCANDIR): Define.
 	* parse.y (java_expand_classes): Write the class files in reverse
 	order.
-	
+
 2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Make-lang.in: Allow for PWDCMD to override hardcoded pwd.
@@ -141,7 +154,7 @@
 
 2002-05-08  Mark Mitchell  <mark@codesourcery.com>
 
-	* jcf-write.c (write_classfile): Write the file to a 
+	* jcf-write.c (write_classfile): Write the file to a
 	temporary file and then rename it.
 
 2002-05-07  Tom Tromey  <tromey@redhat.com>
@@ -157,7 +170,7 @@
 
 2002-05-07  Andreas Jaeger  <aj@suse.de>
 
-        * parse.y (finish_for_loop): Fix if statement.
+	* parse.y (finish_for_loop): Fix if statement.
 
 2002-05-06  Tom Tromey  <tromey@redhat.com>
 
@@ -216,13 +229,13 @@
 
 2002-04-19  Andrew Haley  <aph@redhat.com>
 
-        * jcf-write.c (push_long_const): lo, hi: New variables.
-        Use rshift_double to extract the high part of a 64-bit long.
-        Use WORD_TO_INT to extract the low part.
+	* jcf-write.c (push_long_const): lo, hi: New variables.
+	Use rshift_double to extract the high part of a 64-bit long.
+	Use WORD_TO_INT to extract the low part.
 
-        * jcf-parse.c (get_constant): CONSTANT_Integer: Use an unsigned
-        HOST_WIDE_INT for num.  Use JPOOL_UINT to get it.
-        CONSTANT_Double: Use JPOOL_UINT to get both halve of a double.
+	* jcf-parse.c (get_constant): CONSTANT_Integer: Use an unsigned
+	HOST_WIDE_INT for num.  Use JPOOL_UINT to get it.
+	CONSTANT_Double: Use JPOOL_UINT to get both halve of a double.
 
 2002-04-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 

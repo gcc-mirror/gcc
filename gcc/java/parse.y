@@ -1896,6 +1896,7 @@ catch_clause:
 		  exit_block ();
 		  $$ = $1;
 		}
+;
 
 catch_clause_parameter:
 	CATCH_TK OP_TK formal_parameter CP_TK
@@ -6303,7 +6304,7 @@ java_check_regular_methods (class_decl)
 {
   int saw_constructor = ANONYMOUS_CLASS_P (TREE_TYPE (class_decl));
   tree method;
-  tree class = CLASS_TO_HANDLE_TYPE (TREE_TYPE (class_decl));
+  tree class = TREE_TYPE (class_decl);
   tree found = NULL_TREE;
   tree mthrows;
 

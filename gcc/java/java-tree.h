@@ -1059,22 +1059,6 @@ struct lang_type GTY(())
   unsigned strictfp:1;		/* `strictfp' class.  */
 };
 
-#ifdef JAVA_USE_HANDLES
-/* TYPE_BINFO_HANDLE points from a handle-class to its corresponding
-   non-handle-class, and vice verse. */
-
-#define BINFO_HANDLE(NODE) TREE_VEC_ELT ((NODE), 6)
-
-/* Given a RECORD_TYPE for a handle type, return the corresponding class. */
-#define HANDLE_TO_CLASS_TYPE(HTYPE) BINFO_HANDLE (TYPE_BINFO (HTYPE))
-
-/* Given a RECORD_TYPE for a class, return the corresponding handle type. */
-#define CLASS_TO_HANDLE_TYPE(TYPE) BINFO_HANDLE (TYPE_BINFO (TYPE))
-#else
-#define HANDLE_TO_CLASS_TYPE(HTYPE) (HTYPE)
-#define CLASS_TO_HANDLE_TYPE(TYPE) (TYPE)
-#endif
-
 #define JCF_u4 unsigned long
 #define JCF_u2 unsigned short
 
@@ -1261,13 +1245,8 @@ extern void jcf_print_utf8 PARAMS ((FILE *, const unsigned char *, int));
 extern void jcf_print_char PARAMS ((FILE *, int));
 extern void jcf_print_utf8_replace PARAMS ((FILE *, const unsigned char *,
 					   int, int, int));
-# if JCF_USE_STDIO
-extern const char* open_class PARAMS ((const char *, struct JCF *,
-				       FILE *, const char *));
-# else
 extern const char* open_class PARAMS ((const char *, struct JCF *,
 				       int, const char *));
-# endif /* JCF_USE_STDIO */
 #endif
 extern void java_debug_context PARAMS ((void));
 extern void safe_layout_class PARAMS ((tree));
