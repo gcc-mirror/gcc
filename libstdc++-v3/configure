@@ -2556,9 +2556,9 @@ echo "$ac_t""$_cv_gnu_make_command" 1>&6 ;
   fi
   
 
-  if test "x$_cv_gnu_make_command" = "x"; then
-    { echo "configure: error: GNU make not found. Please install it or correct your path." 1>&2; exit 1; }
-  fi
+
+
+
 
 
 
