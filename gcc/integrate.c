@@ -492,7 +492,7 @@ save_for_inline (tree fndecl)
     }
   cfun->original_decl_initial = DECL_INITIAL (fndecl);
   cfun->no_debugging_symbols = (write_symbols == NO_DEBUG);
-  DECL_SAVED_INSNS (fndecl) = cfun;
+  cfun->saved_for_inline = 1;
 
   /* Clean up.  */
   if (! flag_no_inline)

@@ -504,6 +504,13 @@ struct function GTY(())
 
   /* Nonzero if code to initialize arg_pointer_save_area has been emitted.  */
   unsigned int arg_pointer_save_area_init : 1;
+
+  /* Flag for use by ther rtl inliner, to tell if the function has been
+     processed at least once.  */
+  unsigned int rtl_inline_init : 1;
+
+  /* Nonzero if the rtl inliner has saved the function for inlining.  */
+  unsigned int saved_for_inline : 1;
 };
 
 /* The function currently being compiled.  */
