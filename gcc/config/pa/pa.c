@@ -807,24 +807,22 @@ hppa_legitimize_address (x, oldx, mode)
     }
 
   /* Uh-oh.  We might have an address for x[n-100000].  This needs
-     special handling.
+     special handling to avoid creating an indexed memory address
+     with x-100000 as the base.
+    
+     If the constant part is small enough, then it's still safe because
+     there is a guard page at the beginning and end of the data segment.
 
-     This is common enough that we want to try and rearrange the terms
-     so that we can use indexing for these addresses too.  Again, only
+     Scaled references are common enough that we want to try and rearrange the
+     terms so that we can use indexing for these addresses too.  Only
      do the optimization for floatint point modes.  */
 
-  if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 0)) == MULT
-      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
-      && shadd_constant_p (INTVAL (XEXP (XEXP (x, 0), 1))))
+  if (GET_CODE (x) == PLUS
+      && symbolic_expression_p (XEXP (x, 1)))
     {
       /* Ugly.  We modify things here so that the address offset specified
 	 by the index expression is computed first, then added to x to form
-	 the entire address.
-
-	 For 2.5, it might be profitable to set things up so that we
-	 compute the raw (unscaled) index first, then use scaled indexing
-	 to access memory, or better yet have the MI parts of the compiler
-	 handle this.  */
+	 the entire address.  */
 
       rtx regx1, regx2, regy1, regy2, y;
 
@@ -859,6 +857,15 @@ hppa_legitimize_address (x, oldx, mode)
 					 gen_rtx (MULT, Pmode, regx2,
 						  XEXP (XEXP (x, 0), 1)),
 					 force_reg (Pmode, XEXP (y, 0))));
+	    }
+	  else if (GET_CODE (XEXP (y, 1)) == CONST_INT
+		   && INTVAL (XEXP (y, 1)) >= -4096
+		   && INTVAL (XEXP (y, 1)) <= 4095)
+	    {
+	      /* This is safe because of the guard page at the
+		 beginning and end of the data space.  Just
+		 return the original address.  */
+	      return orig;
 	    }
 	  else
 	    {
