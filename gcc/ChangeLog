@@ -1,3 +1,9 @@
+2004-12-15  Alexandre Oliva  <aoliva@redhat.com>
+
+	* reload.c (SMALL_REGISTER_CLASS_P): New.
+	(push_secondary_reload, find_reusable_reload, find_reloads): Use
+	it instead of testing only the class size.
+
 2004-12-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c++/17972
