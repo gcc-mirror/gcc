@@ -1,3 +1,8 @@
+Thu Oct 28 03:12:02 1999  David Starner  <dstarner98@aasaa.ofe.org>
+
+	* c-pragma.c (push_alignment): Don't check the return value
+	of xmalloc.
+
 Thu Oct 28 03:08:38 1999  Matteo Frigo <athena@fftw.org>
 
 	* sparc.h (ADJUST_COST): Fix thinko.
