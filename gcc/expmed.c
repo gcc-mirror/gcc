@@ -2568,7 +2568,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
   rtx quotient = 0, remainder = 0;
   rtx last;
   int size;
-  rtx insn;
+  rtx insn, set;
   optab optab1, optab2;
   int op1_is_constant, op1_is_pow2;
 
@@ -2813,10 +2813,13 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		  }
 
 		insn = get_last_insn ();
-		REG_NOTES (insn)
-		  = gen_rtx (EXPR_LIST, REG_EQUAL,
-			     gen_rtx (UDIV, compute_mode, op0, op1),
-			     REG_NOTES (insn));
+		if (insn != last
+		    && (set = single_set (insn)) != 0
+		    && SET_DEST (set) == quotient)
+		  REG_NOTES (insn)
+		    = gen_rtx (EXPR_LIST, REG_EQUAL,
+			       gen_rtx (UDIV, compute_mode, op0, op1),
+			       REG_NOTES (insn));
 	      }
 	    else		/* TRUNC_DIV, signed */
 	      {
@@ -2878,11 +2881,14 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		    if (d < 0)
 		      {
 			insn = get_last_insn ();
-			REG_NOTES (insn)
-			  = gen_rtx (EXPR_LIST, REG_EQUAL,
-				     gen_rtx (DIV, compute_mode, op0,
-					      GEN_INT (abs_d)),
-				     REG_NOTES (insn));
+			if (insn != last
+			    && (set = single_set (insn)) != 0
+			    && SET_DEST (set) == quotient)
+			  REG_NOTES (insn)
+			    = gen_rtx (EXPR_LIST, REG_EQUAL,
+				       gen_rtx (DIV, compute_mode, op0,
+						GEN_INT (abs_d)),
+				       REG_NOTES (insn));
 
 			quotient = expand_unop (compute_mode, neg_optab,
 						quotient, quotient, 0);
@@ -2935,14 +2941,14 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		      }
 		  }
 
-		if (quotient != 0)
-		  {
-		    insn = get_last_insn ();
-		    REG_NOTES (insn)
-		      = gen_rtx (EXPR_LIST, REG_EQUAL,
-				 gen_rtx (DIV, compute_mode, op0, op1),
-				 REG_NOTES (insn));
-		  }
+		insn = get_last_insn ();
+		if (insn != last
+		    && (set = single_set (insn)) != 0
+		    && SET_DEST (set) == quotient)
+		  REG_NOTES (insn)
+		    = gen_rtx (EXPR_LIST, REG_EQUAL,
+			       gen_rtx (DIV, compute_mode, op0, op1),
+			       REG_NOTES (insn));
 	      }
 	    break;
 	  }
