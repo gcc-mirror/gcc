@@ -966,14 +966,20 @@ namespace std
   { return __builtin_cpow(__x, __y); }
 
   inline __complex__ long double
-  __complex_pow(__complex__ long double& __x, __complex__ long double& __y)
+  __complex_pow(const __complex__ long double& __x,
+		const __complex__ long double& __y)
   { return __builtin_cpowl(__x, __y); }
-#endif
 
   template<typename _Tp>
     inline complex<_Tp>
     pow(const complex<_Tp>& __x, const complex<_Tp>& __y)
+    { return __complex_pow(__x.__rep(), __y.__rep()); }
+#else
+  template<typename _Tp>
+    inline complex<_Tp>
+    pow(const complex<_Tp>& __x, const complex<_Tp>& __y)
     { return __complex_pow(__x, __y); }
+#endif
 
   template<typename _Tp>
     inline complex<_Tp>
