@@ -2364,8 +2364,12 @@ no_conflict_p (insn, r0, r1)
 	if (find_reg_note (p, REG_DEAD, r1))
 	  ok = 1;
 
-	if (reg_mentioned_p (r1, PATTERN (p))
-	    && ! find_reg_note (p, REG_NO_CONFLICT, r1))
+	/* There must be a REG_NO_CONFLICT note on every insn, otherwise
+	   some earlier optimization pass has inserted instructions into
+	   the sequence, and it is not safe to perform this optimization.
+	   Note that emit_no_conflict_block always ensures that this is
+	   true when these sequences are created.  */
+	if (! find_reg_note (p, REG_NO_CONFLICT, r1))
 	  return 0;
       }
       
