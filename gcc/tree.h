@@ -1366,6 +1366,11 @@ extern int all_types_permanent;
 /* Pointer to function to compute the name to use to print a declaration.  */
 
 extern char *(*decl_printable_name) ();
+
+/* Pointer to function to finish handling an incomplete decl at the
+   end of compilation.  */
+
+extern void (*incomplete_decl_finalize_hook) ();
 
 /* In tree.c */
 extern char *perm_calloc			PROTO((int, long));
