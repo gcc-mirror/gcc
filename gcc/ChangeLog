@@ -1,3 +1,11 @@
+2003-05-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (compare_scc): Use shorter sequence for EQ case.
+	(ior_scc_scc_cmp, and_scc_scc_cmp): New insn-and-split patterns.
+	(and_scc_scc): Ensure split only applies when there is a dominance
+	of the comparisons.
+	(and_scc_scc_nodom): New insn-and-split pattern.
+
 2003-05-13  Richard Sandiford  <rsandifo@redhat.com>
 
 	* unwind-dw2.c (uw_init_context_1): Don't pass &outer_cfa directly

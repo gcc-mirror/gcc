@@ -6517,11 +6517,17 @@
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "*
-    if (GET_CODE (operands[1]) == LT && operands[3] == const0_rtx)
-      return \"mov\\t%0, %2, lsr #31\";
+    if (operands[3] == const0_rtx)
+      {
+	if (GET_CODE (operands[1]) == LT)
+	  return \"mov\\t%0, %2, lsr #31\";
 
-    if (GET_CODE (operands[1]) == GE && operands[3] == const0_rtx)
-      return \"mvn\\t%0, %2\;mov\\t%0, %0, lsr #31\";
+	if (GET_CODE (operands[1]) == GE)
+	  return \"mvn\\t%0, %2\;mov\\t%0, %0, lsr #31\";
+
+	if (GET_CODE (operands[1]) == EQ)
+	  return \"rsbs\\t%0, %2, #1\;movcc\\t%0, #0\";
+      }
 
     if (GET_CODE (operands[1]) == NE)
       {
@@ -6776,7 +6782,37 @@
   "operands[7]
      = gen_rtx_REG (arm_select_dominance_cc_mode (operands[3], operands[6],
 						  DOM_CC_X_OR_Y),
-		    CC_REGNUM);")
+		    CC_REGNUM);"
+  [(set_attr "conds" "clob")
+   (set_attr "length" "16")])
+
+; If the above pattern is followed by a CMP insn, then the compare is 
+; redundant, since we can rework the conditional instruction that follows.
+(define_insn_and_split "*ior_scc_scc_cmp"
+  [(set (match_operand 0 "dominant_cc_register" "")
+	(compare (ior:SI (match_operator:SI 3 "arm_comparison_operator"
+			  [(match_operand:SI 1 "s_register_operand" "r")
+			   (match_operand:SI 2 "arm_add_operand" "rIL")])
+			 (match_operator:SI 6 "arm_comparison_operator"
+			  [(match_operand:SI 4 "s_register_operand" "r")
+			   (match_operand:SI 5 "arm_add_operand" "rIL")]))
+		 (const_int 0)))
+   (set (match_operand:SI 7 "s_register_operand" "=r")
+	(ior:SI (match_op_dup 3 [(match_dup 1) (match_dup 2)])
+		(match_op_dup 6 [(match_dup 4) (match_dup 5)])))]
+  "TARGET_ARM"
+  "#"
+  "TARGET_ARM && reload_completed"
+  [(set (match_dup 0)
+	(compare
+	 (ior:SI
+	  (match_op_dup 3 [(match_dup 1) (match_dup 2)])
+	  (match_op_dup 6 [(match_dup 4) (match_dup 5)]))
+	 (const_int 0)))
+   (set (match_dup 7) (ne:SI (match_dup 0) (const_int 0)))]
+  ""
+  [(set_attr "conds" "set")
+   (set_attr "length" "16")])
 
 (define_insn_and_split "*and_scc_scc"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -6791,7 +6827,9 @@
    && (arm_select_dominance_cc_mode (operands[3], operands[6], DOM_CC_X_AND_Y)
        != CCmode)"
   "#"
-  "TARGET_ARM && reload_completed"
+  "TARGET_ARM && reload_completed
+   && (arm_select_dominance_cc_mode (operands[3], operands[6], DOM_CC_X_AND_Y)
+       != CCmode)"
   [(set (match_dup 7)
 	(compare
 	 (and:SI
@@ -6802,7 +6840,71 @@
   "operands[7]
      = gen_rtx_REG (arm_select_dominance_cc_mode (operands[3], operands[6],
 						  DOM_CC_X_AND_Y),
-		    CC_REGNUM);")
+		    CC_REGNUM);"
+  [(set_attr "conds" "clob")
+   (set_attr "length" "16")])
+
+; If the above pattern is followed by a CMP insn, then the compare is 
+; redundant, since we can rework the conditional instruction that follows.
+(define_insn_and_split "*and_scc_scc_cmp"
+  [(set (match_operand 0 "dominant_cc_register" "")
+	(compare (and:SI (match_operator:SI 3 "arm_comparison_operator"
+			  [(match_operand:SI 1 "s_register_operand" "r")
+			   (match_operand:SI 2 "arm_add_operand" "rIL")])
+			 (match_operator:SI 6 "arm_comparison_operator"
+			  [(match_operand:SI 4 "s_register_operand" "r")
+			   (match_operand:SI 5 "arm_add_operand" "rIL")]))
+		 (const_int 0)))
+   (set (match_operand:SI 7 "s_register_operand" "=r")
+	(and:SI (match_op_dup 3 [(match_dup 1) (match_dup 2)])
+		(match_op_dup 6 [(match_dup 4) (match_dup 5)])))]
+  "TARGET_ARM"
+  "#"
+  "TARGET_ARM && reload_completed"
+  [(set (match_dup 0)
+	(compare
+	 (and:SI
+	  (match_op_dup 3 [(match_dup 1) (match_dup 2)])
+	  (match_op_dup 6 [(match_dup 4) (match_dup 5)]))
+	 (const_int 0)))
+   (set (match_dup 7) (ne:SI (match_dup 0) (const_int 0)))]
+  ""
+  [(set_attr "conds" "set")
+   (set_attr "length" "16")])
+
+;; If there is no dominance in the comparison, then we can still save an
+;; instruction in the AND case, since we can know that the second compare
+;; need only zero the value if false (if true, then the value is already
+;; correct).
+(define_insn_and_split "*and_scc_scc_nodom"
+  [(set (match_operand:SI 0 "s_register_operand" "=&r,&r,&r")
+	(and:SI (match_operator:SI 3 "arm_comparison_operator"
+		 [(match_operand:SI 1 "s_register_operand" "r,r,0")
+		  (match_operand:SI 2 "arm_add_operand" "rIL,0,rIL")])
+		(match_operator:SI 6 "arm_comparison_operator"
+		 [(match_operand:SI 4 "s_register_operand" "r,r,r")
+		  (match_operand:SI 5 "arm_add_operand" "rIL,rIL,rIL")])))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_ARM
+   && (arm_select_dominance_cc_mode (operands[3], operands[6], DOM_CC_X_AND_Y)
+       == CCmode)"
+  "#"
+  "TARGET_ARM && reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
+	      (clobber (reg:CC CC_REGNUM))])
+   (set (match_dup 7) (match_op_dup 8 [(match_dup 4) (match_dup 5)]))
+   (set (match_dup 0)
+	(if_then_else:SI (match_op_dup 6 [(match_dup 7) (const_int 0)])
+			 (match_dup 0)
+			 (const_int 0)))]
+  "operands[7] = gen_rtx_REG (SELECT_CC_MODE (GET_CODE (operands[6]),
+					      operands[4], operands[5]),
+			      CC_REGNUM);
+   operands[8] = gen_rtx_COMPARE (GET_MODE (operands[7]), operands[4],
+				  operands[5]);"
+  [(set_attr "conds" "clob")
+   (set_attr "length" "20")])
 
 (define_insn "*negscc"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
