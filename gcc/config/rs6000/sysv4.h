@@ -331,6 +331,7 @@ do {									\
 
 /* Put jump tables in read-only memory, rather than in .text.  */
 #undef JUMP_TABLES_IN_TEXT_SECTION
+#define JUMP_TABLES_IN_TEXT_SECTION 0
 
 /* Disable AIX-ism that disables turning -B into -L if the argument specifies a
    relative file name.  This breaks setting GCC_EXEC_PREFIX to D:\path under

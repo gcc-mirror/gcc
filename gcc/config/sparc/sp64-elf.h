@@ -104,7 +104,7 @@ crtbegin.o%s \
    tables from other label refs (when we need to).  */
 /* ??? Revisit this.  */
 #undef JUMP_TABLES_IN_TEXT_SECTION
-#define JUMP_TABLES_IN_TEXT_SECTION
+#define JUMP_TABLES_IN_TEXT_SECTION 1
 
 /* System V Release 4 uses DWARF debugging info.
    GDB doesn't support 64 bit stabs yet and the desired debug format is DWARF

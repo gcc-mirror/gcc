@@ -130,6 +130,10 @@ Boston, MA 02111-1307, USA.  */
 #define IS_ASM_LOGICAL_LINE_SEPARATOR(C) ((C) == ';')
 #endif
 
+#ifndef JUMP_TABLES_IN_TEXT_SECTION
+#define JUMP_TABLES_IN_TEXT_SECTION 0
+#endif
+
 /* Nonzero means this function is a leaf function, with no function calls. 
    This variable exists to be examined in FUNCTION_PROLOGUE
    and FUNCTION_EPILOGUE.  Always zero, unless set by some action.  */
@@ -1062,23 +1066,27 @@ shorten_branches (first)
 	      max_skip = LABEL_ALIGN_MAX_SKIP;
 	    }
 	  next = NEXT_INSN (insn);
-/* ADDR_VECs only take room if read-only data goes into the text section.  */
-#if !defined(READONLY_DATA_SECTION) || defined(JUMP_TABLES_IN_TEXT_SECTION)
-	  if (next && GET_CODE (next) == JUMP_INSN)
-	    {
-	      rtx nextbody = PATTERN (next);
-	      if (GET_CODE (nextbody) == ADDR_VEC
-		  || GET_CODE (nextbody) == ADDR_DIFF_VEC)
-		{
-		  log = ADDR_VEC_ALIGN (next);
-		  if (max_log < log)
-		    {
-		      max_log = log;
-		      max_skip = LABEL_ALIGN_MAX_SKIP;
-		    }
-		}
-	    }
+	  /* ADDR_VECs only take room if read-only data goes into the text
+	     section.  */
+	  if (JUMP_TABLES_IN_TEXT_SECTION
+#if !defined(READONLY_DATA_SECTION)
+	      || 1
 #endif
+	      )
+	    if (next && GET_CODE (next) == JUMP_INSN)
+	      {
+		rtx nextbody = PATTERN (next);
+		if (GET_CODE (nextbody) == ADDR_VEC
+		    || GET_CODE (nextbody) == ADDR_DIFF_VEC)
+		  {
+		    log = ADDR_VEC_ALIGN (next);
+		    if (max_log < log)
+		      {
+			max_log = log;
+			max_skip = LABEL_ALIGN_MAX_SKIP;
+		      }
+		  }
+	      }
 	  LABEL_TO_ALIGNMENT (insn) = max_log;
 	  LABEL_TO_MAX_SKIP (insn) = max_skip;
 	  max_log = 0;
@@ -1254,11 +1262,15 @@ shorten_branches (first)
 	{
 	  /* This only takes room if read-only data goes into the text
 	     section.  */
-#if !defined(READONLY_DATA_SECTION) || defined(JUMP_TABLES_IN_TEXT_SECTION)
-	  insn_lengths[uid] = (XVECLEN (body, GET_CODE (body) == ADDR_DIFF_VEC)
-			       * GET_MODE_SIZE (GET_MODE (body)));
-	  /* Alignment is handled by ADDR_VEC_ALIGN.  */
+	  if (JUMP_TABLES_IN_TEXT_SECTION
+#if !defined(READONLY_DATA_SECTION)
+	      || 1
 #endif
+	      )
+	    insn_lengths[uid] = (XVECLEN (body,
+					  GET_CODE (body) == ADDR_DIFF_VEC)
+				 * GET_MODE_SIZE (GET_MODE (body)));
+	  /* Alignment is handled by ADDR_VEC_ALIGN.  */
 	}
       else if (asm_noperands (body) >= 0)
 	insn_lengths[uid] = asm_insn_count (body) * insn_default_length (insn);
@@ -1449,13 +1461,19 @@ shorten_branches (first)
 	      PUT_MODE (body, CASE_VECTOR_SHORTEN_MODE (min_addr - rel_addr,
 							max_addr - rel_addr,
 							body));
-#if !defined(READONLY_DATA_SECTION) || defined(JUMP_TABLES_IN_TEXT_SECTION)
-	      insn_lengths[uid]
-		= (XVECLEN (body, 1) * GET_MODE_SIZE (GET_MODE (body)));
-	      insn_current_address += insn_lengths[uid];
-	      if (insn_lengths[uid] != old_length)
-		something_changed = 1;
+	      if (JUMP_TABLES_IN_TEXT_SECTION
+#if !defined(READONLY_DATA_SECTION)
+		  || 1
 #endif
+		  )
+		{
+		  insn_lengths[uid]
+		    = (XVECLEN (body, 1) * GET_MODE_SIZE (GET_MODE (body)));
+		  insn_current_address += insn_lengths[uid];
+		  if (insn_lengths[uid] != old_length)
+		    something_changed = 1;
+		}
+
 	      continue;
 	    }
 #endif /* CASE_VECTOR_SHORTEN_MODE */
@@ -2307,16 +2325,18 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  if (GET_CODE (nextbody) == ADDR_VEC
 	      || GET_CODE (nextbody) == ADDR_DIFF_VEC)
 	    {
-#ifndef JUMP_TABLES_IN_TEXT_SECTION
-	      readonly_data_section ();
+	      if (! JUMP_TABLES_IN_TEXT_SECTION)
+		{
+		  readonly_data_section ();
 #ifdef READONLY_DATA_SECTION
-	      ASM_OUTPUT_ALIGN (file,
-				exact_log2 (BIGGEST_ALIGNMENT
-					    / BITS_PER_UNIT));
+		  ASM_OUTPUT_ALIGN (file,
+				    exact_log2 (BIGGEST_ALIGNMENT
+						/ BITS_PER_UNIT));
 #endif /* READONLY_DATA_SECTION */
-#else /* JUMP_TABLES_IN_TEXT_SECTION */
-	      function_section (current_function_decl);
-#endif /* JUMP_TABLES_IN_TEXT_SECTION */
+		}
+	      else
+		function_section (current_function_decl);
+
 #ifdef ASM_OUTPUT_CASE_LABEL
 	      ASM_OUTPUT_CASE_LABEL (file, "L", CODE_LABEL_NUMBER (insn),
 				     NEXT_INSN (insn));

@@ -1326,7 +1326,7 @@ do { char dstr[30];					\
 
 /* The switch instruction requires that the jump table immediately follow
    it. */
-#define JUMP_TABLES_IN_TEXT_SECTION
+#define JUMP_TABLES_IN_TEXT_SECTION 1
 
 /* svr4.h defines this assuming that 4 byte alignment is required.  */
 #undef ASM_OUTPUT_BEFORE_CASE_LABEL
