@@ -1478,7 +1478,7 @@ getdecls (void)
 static int no_print_functions = 0;
 static int no_print_builtins = 0;
 
-void
+static void
 print_binding_level (struct cp_binding_level* lvl)
 {
   tree t;
@@ -1656,7 +1656,7 @@ set_identifier_type_value (tree id, tree decl)
    specified class TYPE.  When given a template, this routine doesn't
    lose the specialization.  */
 
-tree
+static inline tree
 constructor_name_full (tree type)
 {
   return TYPE_IDENTIFIER (TYPE_MAIN_VARIANT (type));
@@ -2821,7 +2821,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 
 /* Return the namespace where the current declaration is declared.  */
 
-tree
+static tree
 current_decl_namespace (void)
 {
   tree result;

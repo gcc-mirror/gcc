@@ -1,5 +1,15 @@
 2005-01-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	* name-lookup.c (print_binding_level): Make static.
+	(constructor_name_full): Make static inline.
+	(current_decl_namespace): Make static.
+	* name-lookup.h (constructor_name_full): Remove prototype.
+	(print_binding_level): Likewise.
+	(storetags): Likewise.
+	(current_decl_namespace): Likewise.
+
+2005-01-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	* decl.h (debug_bindings_indentation): Remove.
 
 2005-01-23  Kazu Hirata  <kazu@cs.umass.edu>

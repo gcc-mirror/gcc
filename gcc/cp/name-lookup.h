@@ -94,7 +94,6 @@ DEF_VEC_GC_O(cxx_saved_binding);
 extern tree identifier_type_value (tree);
 extern void set_identifier_type_value (tree, tree);
 extern void pop_binding (tree, tree);
-extern tree constructor_name_full (tree);
 extern tree constructor_name (tree);
 extern bool constructor_name_p (tree, tree);
 
@@ -293,7 +292,6 @@ extern bool template_parm_scope_p (void);
 extern scope_kind innermost_scope_kind (void);
 extern cxx_scope *begin_scope (scope_kind, tree);
 extern void print_binding_stack	(void);
-extern void print_binding_level	(cxx_scope *);
 extern void push_to_top_level (void);
 extern void pop_from_top_level (void);
 extern void pop_everything (void);
@@ -328,7 +326,6 @@ extern bool push_class_level_binding (tree, tree);
 extern tree getdecls (void);
 extern tree cp_namespace_decls (tree);
 extern void set_decl_namespace (tree, tree, bool);
-extern tree current_decl_namespace (void);
 extern void push_decl_namespace (tree);
 extern void pop_decl_namespace (void);
 extern void do_namespace_alias (tree, tree);
