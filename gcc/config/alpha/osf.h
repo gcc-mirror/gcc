@@ -140,3 +140,7 @@ __enable_execute_stack (addr)						\
   if (mprotect (page, end - page, 7) < 0)				\
     perror ("mprotect of trampoline code");				\
 }
+
+/* Digital UNIX V4.0E (1091)/usr/include/sys/types.h 4.3.49.9 1997/08/14 */
+#define SIZE_TYPE	"long unsigned int"
+#define PTRDIFF_TYPE	"long int"

@@ -1,3 +1,7 @@
+2000-07-25  Rodney Brown  <RodneyBrown@pmsc.com>
+
+	* config/alpha/osf.h (SIZE_TYPE, PTRDIFF_TYPE): New.
+
 Tue Jul 25 23:08:33 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.md (cmpgtdi_t): Must be split.
