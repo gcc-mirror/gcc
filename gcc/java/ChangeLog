@@ -1,3 +1,9 @@
+2000-11-05  Tom Tromey  <tromey@cygnus.com>
+
+	* lex.h (JAVA_FLOAT_RANGE_ERROR): Typo fix.
+	* lex.c (IS_ZERO): New define.
+	(java_perform_atof): Error on floating point underflow.
+
 2000-11-04  Tom Tromey  <tromey@cygnus.com>
 
 	* lex.c (java_parse_escape_sequence): Only read two octal

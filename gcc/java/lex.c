@@ -774,6 +774,12 @@ struct jpa_args
   int number_beginning;
 };
 
+#ifdef REAL_ARITHMETIC
+#define IS_ZERO(X) (ereal_cmp (X, dconst0) == 0)
+#else
+#define IS_ZERO(X) ((X) == 0)
+#endif
+
 static void java_perform_atof	PARAMS ((PTR));
 
 static void
@@ -789,11 +795,35 @@ java_perform_atof (av)
   SET_REAL_VALUE_ATOF (value,
 		       REAL_VALUE_ATOF (a->literal_token, TYPE_MODE (type)));
 
-  if (REAL_VALUE_ISINF (value)
-      || REAL_VALUE_ISNAN (value))
+  if (REAL_VALUE_ISINF (value) || REAL_VALUE_ISNAN (value))
     {
       JAVA_FLOAT_RANGE_ERROR ((a->fflag ? "float" : "double"));
       value = DCONST0;
+    }
+  else if (IS_ZERO (value))
+    {
+      /* We check to see if the value is really 0 or if we've found an
+	 underflow.  We do this in the most primitive imaginable way.  */
+      int really_zero = 1;
+      char *p = a->literal_token;
+      if (*p == '-')
+	++p;
+      while (*p && *p != 'e' && *p != 'E')
+	{
+	  if (*p != '0' && *p != '.')
+	    {
+	      really_zero = 0;
+	      break;
+	    }
+	  ++p;
+	}
+      if (! really_zero)
+	{
+	  int i = ctxp->c_line->current;
+	  ctxp->c_line->current = number_beginning;
+	  java_lex_error ("Floating point literal underflow", 0);
+	  ctxp->c_line->current = i;
+	}
     }
 
   SET_LVAL_NODE_TYPE (build_real (type, value), type);
