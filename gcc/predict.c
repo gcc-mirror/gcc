@@ -240,7 +240,13 @@ void
 estimate_probability (loops_info)
      struct loops *loops_info;
 {
+  sbitmap *dominators, *post_dominators;
   int i;
+
+  dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
+  post_dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
+  calculate_dominance_info (NULL, dominators, 0);
+  calculate_dominance_info (NULL, post_dominators, 1);
 
   /* Try to predict out blocks in a loop that are not part of a
      natural loop.  */
@@ -282,9 +288,26 @@ estimate_probability (loops_info)
      is used as the prediction for the branch.  */
   for (i = 0; i < n_basic_blocks - 1; i++)
     {
-      rtx last_insn = BLOCK_END (i);
+      basic_block bb = BASIC_BLOCK (i);
+      rtx last_insn = bb->end;
       rtx cond, earliest;
       edge e;
+
+      /* If block has no sucessor, predict all possible paths to
+         it as improbable, as the block contains a call to a noreturn
+	 function and thus can be executed only once.  */
+      if (bb->succ == NULL)
+	{
+	  int y;
+	  for (y = 0; y < n_basic_blocks; y++)
+	    if (!TEST_BIT (post_dominators[y], i))
+	      {
+		for (e = BASIC_BLOCK (y)->succ; e; e = e->succ_next)
+		if (e->dest->index >= 0
+		    && TEST_BIT (post_dominators[e->dest->index], i))
+		  predict_edge_def (e, PRED_NORETURN, NOT_TAKEN);
+	      }
+	}
 
       if (GET_CODE (last_insn) != JUMP_INSN
 	  || ! any_condjump_p (last_insn))
@@ -293,12 +316,39 @@ estimate_probability (loops_info)
       if (find_reg_note (last_insn, REG_BR_PROB, 0))
 	continue;
 
-      /* If one of the successor blocks has no successors, predict
-	 that side not taken.  */
-      /* ??? Ought to do the same for any subgraph with no exit.  */
-      for (e = BASIC_BLOCK (i)->succ; e; e = e->succ_next)
-	if (e->dest->succ == NULL)
-	  predict_edge_def (e, PRED_NORETURN, NOT_TAKEN);
+      for (e = bb->succ; e; e = e->succ_next)
+	{
+	  /* Predict edges to blocks that return immediately to be
+	     improbable.  These are usually used to signal error states.  */
+	  if (e->dest == EXIT_BLOCK_PTR
+	      || (e->dest->succ && !e->dest->succ->succ_next
+		  && e->dest->succ->dest == EXIT_BLOCK_PTR))
+	    predict_edge_def (e, PRED_ERROR_RETURN, NOT_TAKEN);
+
+	  /* Look for block we are guarding (ie we dominate it,
+	     but it doesn't postdominate us).  */
+	  if (e->dest != EXIT_BLOCK_PTR
+	      && e->dest != bb
+	      && TEST_BIT (dominators[e->dest->index], e->src->index)
+	      && !TEST_BIT (post_dominators[e->src->index], e->dest->index))
+	    {
+	      rtx insn;
+	      /* The call heuristic claims that a guarded function call
+		 is improbable.  This is because such calls are often used
+		 to signal exceptional situations such as printing error
+		 messages.  */
+	      for (insn = e->dest->head; insn != NEXT_INSN (e->dest->end);
+		   insn = NEXT_INSN (insn))
+		if (GET_CODE (insn) == CALL_INSN
+		    /* Constant and pure calls are hardly used to signalize
+		       something exceptional.  */
+		    && ! CONST_CALL_P (insn))
+		  {
+		    predict_edge_def (e, PRED_CALL, NOT_TAKEN);
+		    break;
+		  }
+	    }
+	}
 
       cond = get_condition (last_insn, &earliest);
       if (! cond)
@@ -359,7 +409,9 @@ estimate_probability (loops_info)
 	  break;
 	case LE:
 	case LT:
-	  if (XEXP (cond, 1) == const0_rtx)
+	  if (XEXP (cond, 1) == const0_rtx
+	      || (GET_CODE (XEXP (cond, 1)) == CONST_INT
+		  && INTVAL (XEXP (cond, 1)) == -1))
 	    predict_insn_def (last_insn, PRED_OPCODE, NOT_TAKEN);
 	  break;
 	case GE:
@@ -385,6 +437,8 @@ estimate_probability (loops_info)
 	continue;
       combine_predictions_for_insn (last_insn, BASIC_BLOCK (i));
     }
+  sbitmap_vector_free (post_dominators);
+  sbitmap_vector_free (dominators);
 }
 
 /* __builtin_expect dropped tokens into the insn stream describing

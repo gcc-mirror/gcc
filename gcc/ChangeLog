@@ -1,3 +1,11 @@
+Sun Jun 10 10:00:17 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* predict.def (PRED_CALL, PRED_ERROR_RETURN): New.
+	* predict.c (estimate_probability): Calculate dominance
+	information; improve detection of NORETURN heuristics;
+	add call/error_return heuiristics; tweak comparison heuristics
+	to recognize -1.
+
 2001-06-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* doc/invoke.texi (C Dialect Options): Document -aux-info.
