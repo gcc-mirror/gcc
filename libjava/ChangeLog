@@ -1,3 +1,21 @@
+2002-07-12  Mark Wielaard  <mark@klomp.org>
+
+	* java/lang/natThrowable.cc (printRawStackTrace): removed.
+	(getStackTrace0): new method.
+	* java/lang/Throwable.java (CPlusPlusDemangler): removed.
+	(printStackTrace(PrintWriter)): replace with pure java implementation.
+	(printRawStackTrace): removed.
+	(getStackTrace0): new method.
+	* java/lang/StackTraceElement.java (toString): add extra whitespace.
+	* gcj/javaprims.h: regenerate class list.
+	* include/name-finder.h (lookup): new returns StackTraceElement*.
+	(method_name, file_name): fields removed.
+	(pid2, f2_pipe, b2_pipe, b2_pipe_fd): new fields.
+	(~_Jv_name_finder): close new descriptors.
+	* name-finder.cc(_Jv_name_finder): setup c++filt helper process.
+	(createStackTraceElement): new method.
+	(lookup): returns StackTraceElement*, uses createStackTraceElement().
+
 2002-07-10  Tom Tromey  <tromey@redhat.com>
 
 	* configure: Rebuilt.

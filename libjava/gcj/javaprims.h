@@ -134,7 +134,6 @@ extern "Java"
       class AssertionError;
       class Boolean;
       class Byte;
-      class CPlusPlusDemangler;
       class CharSequence;
       class Character;
       class Character$Subset;

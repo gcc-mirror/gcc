@@ -22,6 +22,7 @@ details.  */
 #include <java/lang/Object.h>
 #include <java-threads.h>
 #include <java/lang/Throwable.h>
+#include <java/lang/StackTraceElement.h>
 #include <java/io/PrintStream.h>
 #include <java/io/PrintWriter.h>
 #include <java/io/IOException.h>
@@ -67,38 +68,32 @@ java::lang::Throwable::fillInStackTrace (void)
   return this;
 }
 
-void 
-java::lang::Throwable::printRawStackTrace (java::io::PrintWriter *wr)
+JArray<java::lang::StackTraceElement*> *
+java::lang::Throwable::getStackTrace0 ()
 {
-  wr->println (toString ());
 #ifdef HAVE_BACKTRACE
   if (!stackTraceBytes)
-    return;
+    return NULL;
 
   int depth = stackTraceBytes->length / sizeof (void *);
   void *p[depth];
+  // This memcpy is esential; it ensures that the array of void* is
+  // correctly aligned.
   memcpy (p, elements (stackTraceBytes), sizeof p);
+
+  JArray<java::lang::StackTraceElement*> *result;
+  java::lang::StackTraceElement** el;
+  result = reinterpret_cast <JArray<java::lang::StackTraceElement *>*>
+    (JvNewObjectArray (depth, &java::lang::StackTraceElement::class$, NULL));
+  el = elements (result);
 
   _Jv_name_finder finder (_Jv_ThisExecutable ());
 
   for (int i = 0; i < depth; i++)
-    {
-      bool found = finder.lookup (p[i]);
-      wr->print (JvNewStringLatin1 ("   at "));
-      wr->print (JvNewStringLatin1 (finder.hex));
-      if (found)
-	{
-	  wr->print (JvNewStringLatin1 (": "));
-	  wr->print (JvNewStringLatin1 (finder.method_name));
-	  if (finder.file_name[0])
-	    {
-	      wr->print (JvNewStringLatin1 (" ("));
-	      wr->print (JvNewStringLatin1 (finder.file_name));
-	      wr->print (JvNewStringLatin1 (")"));
-	    }
-	}
-      wr->println ();
-    }
+    el[i] = finder.lookup (p[i]);
+
+  return result;
+#else
+  return NULL;
 #endif /* HAVE_BACKTRACE */
-  wr->flush ();
 }
