@@ -56,6 +56,7 @@ details.  */
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/ArithmeticException.h>
 #include <java/lang/ClassFormatError.h>
+#include <java/lang/InternalError.h>
 #include <java/lang/NegativeArraySizeException.h>
 #include <java/lang/NullPointerException.h>
 #include <java/lang/OutOfMemoryError.h>
@@ -533,8 +534,8 @@ _Jv_NewArray (jint type, jint size)
       case 10:  return JvNewIntArray (size);
       case 11:  return JvNewLongArray (size);
     }
-  JvFail ("newarray - bad type code");
-  return NULL;			// Placate compiler.
+  throw new java::lang::InternalError
+    (JvNewStringLatin1 ("invalid type code in _Jv_NewArray"));
 }
 
 // Allocate a possibly multi-dimensional array but don't check that
@@ -613,9 +614,14 @@ _Jv_InitPrimClass (jclass cl, char *cname, char sig, int len,
 {    
   using namespace java::lang::reflect;
 
-  // We must initialize every field of the class.  We do this in the
-  // same order they are declared in Class.h, except for fields that
-  // are initialized to NULL.
+  _Jv_InitNewClassFields (cl);
+
+  // We must set the vtable for the class; the Java constructor
+  // doesn't do this.
+  (*(_Jv_VTable **) cl) = java::lang::Class::class$.vtable;
+
+  // Initialize the fields we care about.  We do this in the same
+  // order they are declared in Class.h.
   cl->name = _Jv_makeUtf8Const ((char *) cname, -1);
   cl->accflags = Modifier::PUBLIC | Modifier::FINAL | Modifier::ABSTRACT;
   cl->method_count = sig;
