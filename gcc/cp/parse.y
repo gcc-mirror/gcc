@@ -3390,6 +3390,7 @@ function_try_block:
 		}
 	  ctor_initializer_opt compstmt
 		{ 
+		  end_protect_partials ();
                   expand_start_all_catch (); 
                 }
 	  handler_seq

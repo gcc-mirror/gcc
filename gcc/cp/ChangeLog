@@ -1,3 +1,8 @@
+1999-08-09  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (function_try_block): Call end_protect_partials
+	before expand_start_all_catch.
+
 1999-08-06  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (maybe_get_template_decl_from_type_decl): Make sure that
