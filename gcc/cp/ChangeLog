@@ -1,3 +1,7 @@
+1999-08-28  Richard Henderson  <rth@cygnus.com>
+
+	* decl2.c (arg_assoc_class): Bail if the class is a builtin type.
+
 1999-08-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.def (LABEL_STMT): New tree node.
