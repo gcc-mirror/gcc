@@ -1,3 +1,7 @@
+Tue Dec  8 10:48:21 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Make-lang.in (cxxmain.o): Depend on $(DEMANGLE_H), not demangle.h
+
 Mon Dec  7 17:56:06 1998  Mike Stump  <mrs@wrs.com>
 
 	* lex.c (check_newline): Add support for \ as `natural'
