@@ -40,6 +40,16 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef MEMORY_MOVE_COST
 #define MEMORY_MOVE_COST(x) 4
 #endif
+
+/* If we have auto-increment or auto-decrement and we can have secondary
+   reloads, we are not allowed to use classes requiring secondary
+   reloads for psuedos auto-incremented since reload can't handle it.  */
+
+#ifdef AUTO_INC_DEC
+#if defined(SECONARY_INPUT_RELOAD_CLASS) || defined(SECONDARY_OUTPUT_RELOAD_CLASS)
+#define FORBIDDEN_INC_DEC_CLASSES
+#endif
+#endif
 
 /* Register tables used by many passes.  */
 
@@ -159,6 +169,20 @@ static int move_cost[N_REG_CLASSES][N_REG_CLASSES];
    of the second so in that case the cost is zero.  */
 
 static int may_move_cost[N_REG_CLASSES][N_REG_CLASSES];
+
+#ifdef FORBIDDEN_INC_DEC_CLASSES
+
+/* These are the classes that regs which are auto-incremented or decremented
+   cannot be put in.  */
+
+static int forbidden_inc_dec_class[N_REG_CLASSES];
+
+/* Indexed by n, is non-zero if (REG n) is used in an auto-inc or auto-dec
+   context.  */
+
+static char *in_inc_dec;
+
+#endif FORBIDDEN_INC_DEC_CLASSES
 
 /* Function called only once to initialize the above data on reg usage.
    Once this is done, various switches may override.  */
@@ -507,6 +531,48 @@ regclass (f, nregs)
 
   init_recog ();
 
+  costs = (struct costs *) alloca (nregs * sizeof (struct costs));
+
+#ifdef FORBIDDEN_INC_DEC_CLASSES
+
+  in_inc_dec = (char *) alloca (nregs);
+
+  /* Initialize information about which register classes can be used for
+     pseudos that are auto-incremented or auto-decremented.  It would
+     seem better to put this in init_reg_sets, but we need to be able
+     to allocate rtx, which we can't do that early.  */
+
+  for (i = 0; i < N_REG_CLASSES; i++)
+    {
+      rtx r = gen_rtx (REG, VOIDmode, 0);
+      enum machine_mode m;
+
+      for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
+	if (TEST_HARD_REG_BIT (reg_class_contents[i], j))
+	  {
+	    REGNO (r) = j;
+
+	    for (m = VOIDmode; (int) m < (int) MAX_MACHINE_MODE;
+		 m = (enum machine_mode) ((int) m) + 1)
+	      if (HARD_REGNO_MODE_OK (j, m))
+		{
+		  PUT_MODE (r, m);
+		  if (0
+#ifdef SECONDARY_INPUT_RELOAD_CLASS
+		      || (SECONDARY_INPUT_RELOAD_CLASS (BASE_REG_CLASS, m, r)
+			  != NO_REGS)
+#endif
+#ifdef SECONDARY_OUTPUT_RELOAD_CLASS
+		      || (SECONDARY_OUTPUT_RELOAD_CLASS (BASE_REG_CLASS, m, r)
+			  != NO_REGS)
+#endif
+		      )
+		    forbidden_inc_dec_class[i] = 1;
+		}
+	  }
+    }
+#endif /* FORBIDDEN_INC_DEC_CLASSES */
+
   init_cost.mem_cost = 10000;
   for (i = 0; i < N_REG_CLASSES; i++)
     init_cost.cost[i] = 10000;
@@ -520,8 +586,11 @@ regclass (f, nregs)
     {
       /* Zero out our accumulation of the cost of each class for each reg.  */
 
-      costs = (struct costs *) alloca (nregs * sizeof (struct costs));
       bzero (costs, nregs * sizeof (struct costs));
+
+#ifdef FORBIDDEN_INC_DEC_CLASSES
+      bzero (in_inc_dec, nregs);
+#endif
 
       loop_depth = 0, loop_cost = 1;
 
@@ -796,9 +865,14 @@ regclass (f, nregs)
 
 	  for (class = (int) ALL_REGS - 1; class > 0; class--)
 	    {
-	      /* Ignore classes that are too small for this operand.  */
+	      /* Ignore classes that are too small for this operand or
+		 invalid for a operand that was auto-incremented.  */
 	      if (CLASS_MAX_NREGS (class, PSEUDO_REGNO_MODE (i))
-		  > reg_class_size[class])
+		  > reg_class_size[class]
+#ifdef FORBIDDEN_INC_DEC_CLASSES
+		  || (in_inc_dec[i] && forbidden_inc_dec_class[class])
+#endif
+		  )
 		;
 	      else if (p->cost[class] < best_cost)
 		{
@@ -820,7 +894,11 @@ regclass (f, nregs)
 	    for (class = 0; class < N_REG_CLASSES; class++)
 	      if (p->cost[class] < p->mem_cost
 		  && (reg_class_size[reg_class_subunion[(int) alt][class]]
-		      > reg_class_size[(int) alt]))
+		      > reg_class_size[(int) alt])
+#ifdef FORBIDDEN_INC_DEC_CLASSES
+		  && ! (in_inc_dec[i] && forbidden_inc_dec_class[class])
+#endif
+		  )
 		alt = reg_class_subunion[(int) alt][class];
 	  
 	  /* If we don't add any classes, nothing to try.  */
@@ -1391,7 +1469,14 @@ record_address_regs (x, class, scale)
     case PRE_DEC:
       /* Double the importance of a pseudo register that is incremented
 	 or decremented, since it would take two extra insns
-	 if it ends up in the wrong place.  */
+	 if it ends up in the wrong place.  If the operand is a pseudo,
+	 show it is being used in an INC_DEC context.  */
+
+#ifdef FORBIDDEN_INC_DEC_CLASSES
+      if (GET_CODE (XEXP (x, 0)) == REG
+	  && REGNO (XEXP (x, 0)) >= FIRST_PSEUDO_REGISTER)
+	in_inc_dec[REGNO (XEXP (x, 0))] = 1;
+#endif
 
       record_address_regs (XEXP (x, 0), class, 2 * scale);
       break;
