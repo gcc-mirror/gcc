@@ -1,3 +1,14 @@
+Wed Jun  5 15:05:41 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* f2cext.c (alarm_): Mark parameter(s) with attribute `unused'.
+	* libF77/h_len.c (h_len): Likewise.
+	* libF77/i_len.c (i_len): Likewise.
+	* libI77/rsli.c (i_ungetc): Likewise.
+	* libU77/date_.c (G77_date_y2kbuggy_0): Likewise.
+	* libU77/fputc_.c (G77_fputc_0): Likewise.
+	* libU77/vxtidate_.c (G77_vxtidate_y2kbuggy_0): Likewise.
+	* libU77/vxttime_.c (G77_vxttime_0): Likewise.
+
 Mon Jun  3 22:24:48 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libF77/main.c (f_setarg, f_setsig): Prototype.

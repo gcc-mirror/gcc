@@ -46,7 +46,8 @@ const char *G77_Non_Y2K_Compliance_Message =
   "Call to non Y2K compliant subroutine detected.";
 
 int
-G77_date_y2kbuggy_0 (char *buf, ftnlen buf_len)
+G77_date_y2kbuggy_0 (char *buf __attribute__ ((__unused__)),
+		     ftnlen buf_len __attribute__ ((__unused__)))
 {
   extern int G77_abort_0 ();
   fprintf (stderr, "%s\n", G77_Non_Y2K_Compliance_Message);

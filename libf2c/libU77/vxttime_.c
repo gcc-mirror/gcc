@@ -40,7 +40,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* Subroutine */
 void
-G77_vxttime_0 (char chtime[8], const ftnlen Lchtime)
+G77_vxttime_0 (char chtime[8],
+	       const ftnlen Lchtime __attribute__ ((__unused__)))
 {
   time_t tim;
   char *ctim;

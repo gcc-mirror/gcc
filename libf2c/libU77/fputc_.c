@@ -27,7 +27,8 @@ Boston, MA 02111-1307, USA.  */
 #include "fio.h"
 
 integer
-G77_fputc_0 (const integer * lunit, const char *c, const ftnlen Lc)
+G77_fputc_0 (const integer * lunit, const char *c,
+	     const ftnlen Lc __attribute__ ((__unused__)))
 {
   int err;
   FILE *f = f__units[*lunit].ufd;
