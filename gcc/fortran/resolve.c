@@ -1413,10 +1413,10 @@ resolve_operator (gfc_expr * e)
     case INTRINSIC_USER:
       if (op2 == NULL)
 	sprintf (msg, "Operand of user operator '%s' at %%L is %s",
-		 e->uop->ns->proc_name->name, gfc_typename (&op1->ts));
+		 e->uop->name, gfc_typename (&op1->ts));
       else
 	sprintf (msg, "Operands of user operator '%s' at %%L are %s/%s",
-		 e->uop->ns->proc_name->name, gfc_typename (&op1->ts),
+		 e->uop->name, gfc_typename (&op1->ts),
 		 gfc_typename (&op2->ts));
 
       goto bad_op;
