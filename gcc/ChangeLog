@@ -1,3 +1,11 @@
+2003-02-18  Jim Wilson  <wilson@redhat.com>
+
+	* config/ia64/ia64.md (floatdidf2, floatdisf2): Add %, before second
+	instruction in output template.
+	(bsp_value): Change output template from string to C code, add %,
+	before actual instruction.
+	(flushrs): Mark as not predicable.
+
 2003-02-18  Krister Walfridsson  <cato@df.lth.se>
 
 	* inclhack.def (netbsd_bogus_semicolon): New fix.
