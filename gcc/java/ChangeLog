@@ -1,5 +1,7 @@
 2001-12-08  Tom Tromey  <tromey@redhat.com>
 
+	* java-tree.h: Fixed typo.
+
 	* gjavah.c (decompile_method): Don't decompile to `return this'
 	for static methods.
 
