@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations: m68k version -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,8 +32,9 @@
 
 typedef int _Atomic_word;
 
-#if defined(__mc68020__) || defined(__mc68030__) \
-    || defined(__mc68040__) || defined(__mc68060__)
+#if ( defined(__mc68020__) || defined(__mc68030__) \
+      || defined(__mc68040__) || defined(__mc68060__) ) \
+    && !defined(__mcpu32__)
 // These variants support compare-and-swap.
 
 static inline _Atomic_word 
@@ -74,8 +75,7 @@ __exchange_and_add (volatile _Atomic_word *__mem, int __val)
   return __result;
 }
 
-#elif !defined(__mcf5200__) && !defined(__mcf5300__)
-// 68000, 68010, cpu32 and 5400 support test-and-set.
+#else
 
 template <int __inst>
 struct __Atomicity_lock
@@ -94,9 +94,26 @@ __exchange_and_add (volatile _Atomic_word *__mem, int __val)
 {
   _Atomic_word __result;
 
+// bset with no immediate addressing
+#if defined(__mcf5200__) || defined(__mcf5300__) || defined(__mcf5400__)
+  __asm__ __volatile__("1: bset.b #7,%0@\n\tjbne 1b"
+		       : /* no outputs */
+		       : "a"(&__Atomicity_lock<0>::_S_atomicity_lock)
+		       : "cc", "memory");
+
+// bset with immediate addressing
+#elif defined(__mc68000__)
+  __asm__ __volatile__("1: bset.b #7,%0\n\tjbne 1b"
+		       : "+m"(__Atomicity_lock<0>::_S_atomicity_lock)
+		       : /* none */
+		       : "cc");
+
+#else // 680x0, cpu32, 5400 support test-and-set.
   __asm__ __volatile__("1: tas %0\n\tjbne 1b"
-		       : "=m"(__Atomicity_lock<0>::_S_atomicity_lock)
-		       : "m"(__Atomicity_lock<0>::_S_atomicity_lock));
+		       : "+m"(__Atomicity_lock<0>::_S_atomicity_lock)
+		       : /* none */
+		       : "cc");
+#endif
 
   __result = *__mem;
   *__mem = __result + __val;
@@ -106,45 +123,7 @@ __exchange_and_add (volatile _Atomic_word *__mem, int __val)
   return __result;
 }
 
-#elif defined(__vxWorks__) || defined(__embedded__)
-// The best we can hope for is to disable interrupts, which we
-// can only do from supervisor mode.
-
-static inline _Atomic_word 
-__attribute__ ((__unused__))
-__exchange_and_add (volatile _Atomic_word *__mem, int __val)
-{
-  _Atomic_word __result;
-  short __level, __tmpsr;
-  __asm__ __volatile__ ("move%.w %%sr,%0\n\tor%.l %0,%1\n\tmove%.w %1,%%sr"
-		  	: "=d"(__level), "=d"(__tmpsr) : "1"(0x700));
-
-  __result = *__mem;
-  *__mem = __result + __val;
-
-  __asm__ __volatile__ ("move%.w %0,%%sr" : : "d"(__level));
-
-  return __result;
-}
-
-#else
-// These variants do not support any atomic operations at all.
-
-#warning "__exchange_and_add is not atomic for this target"
-
-static inline _Atomic_word
-__attribute__ ((__unused__))
-__exchange_and_add (volatile _Atomic_word *__mem, int __val)
-{
-  _Atomic_word __result;
-
-  __result = *__mem;
-  *__mem = __result + __val;
-
-  return __result;
-}
-
-#endif /* CAS / IRQ / TAS */
+#endif /* TAS / BSET */
 
 static inline void
 __attribute__ ((__unused__))
@@ -155,4 +134,4 @@ __atomic_add (volatile _Atomic_word* __mem, int __val)
   (void) __exchange_and_add (__mem, __val);
 }
 
-#endif /* atomicity.h */
+#endif /* _BITS_ATOMICITY_H */
