@@ -86,9 +86,6 @@ split_loop_bb (loops, bb, insn)
   free (dom_bbs);
   set_immediate_dominator (loops->cfg.dom, e->dest, e->src);
 
-  /* Take care of RBI.  */
-  alloc_aux_for_block (e->dest, sizeof (struct reorder_block_def));
-
   return e;
 }
 
@@ -123,7 +120,7 @@ remove_bbs (dom, bbs, nbbs)
     {
       remove_bb_from_loops (bbs[i]);
       delete_from_dominance_info (dom, bbs[i]);
-      flow_delete_block (bbs[i]);
+      delete_block (bbs[i]);
     }
 }
 
@@ -828,7 +825,7 @@ loop_redirect_edge (e, dest)
   if (e->dest == dest)
     return;
 
-  cfg_layout_redirect_edge (e, dest);
+  redirect_edge_and_branch_force (e, dest);
 }
 
 /* Deletes edge E from a branch if possible.  Unless REALLY_DELETE is set,
@@ -865,7 +862,7 @@ loop_delete_branch_edge (e, really_delete)
       /* Redirecting behaves wrongly wrto this flag.  */
       irr = snd->flags & EDGE_IRREDUCIBLE_LOOP;
       
-      if (!cfg_layout_redirect_edge (e, newdest))
+      if (!redirect_edge_and_branch (e, newdest))
 	return false;
       src->succ->flags &= ~EDGE_IRREDUCIBLE_LOOP;
       src->succ->flags |= irr;
@@ -1396,10 +1393,7 @@ create_preheader (loop, dom, flags)
       /* Split_block would not split block after its end.  */
       emit_note_after (NOTE_INSN_DELETED, insn);
     }
-  if (flags & CP_INSIDE_CFGLAYOUT)
-    fallthru = cfg_layout_split_block (loop->header, insn);
-  else
-    fallthru = split_block (loop->header, insn);
+  fallthru = split_block (loop->header, insn);
   dummy = fallthru->src;
   loop->header = fallthru->dest;
 
@@ -1424,18 +1418,13 @@ create_preheader (loop, dom, flags)
   dummy->frequency -= EDGE_FREQUENCY (e);
   dummy->count -= e->count;
   fallthru->count -= e->count;
-  if (flags & CP_INSIDE_CFGLAYOUT)
-    cfg_layout_redirect_edge (e, loop->header);
-  else
+  jump = redirect_edge_and_branch_force (e, loop->header);
+  if (jump)
     {
-      jump = redirect_edge_and_branch_force (e, loop->header);
-      if (jump)
-	{
-	  add_to_dominance_info (dom, jump);
-	  set_immediate_dominator (dom, jump, src);
-	  add_bb_to_loop (jump, loop);
-	  loop->latch = jump;
-	}
+      add_to_dominance_info (dom, jump);
+      set_immediate_dominator (dom, jump, src);
+      add_bb_to_loop (jump, loop);
+      loop->latch = jump;
     }
 
   /* Update structures.  */
@@ -1524,7 +1513,7 @@ loop_split_edge_with (e, insns, loops)
 
   new_bb->count = e->count;
   new_bb->frequency = EDGE_FREQUENCY (e);
-  cfg_layout_redirect_edge (e, new_bb);
+  redirect_edge_and_branch_force (e, new_bb);
 
   alloc_aux_for_block (new_bb, sizeof (struct reorder_block_def));
   if (insns)

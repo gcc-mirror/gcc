@@ -635,7 +635,7 @@ PARAMS_H = params.h params.def
 TREE_H = tree.h tree.def $(MACHMODE_H) tree-check.h version.h builtins.def \
           input.h
 BASIC_BLOCK_H = basic-block.h bitmap.h sbitmap.h varray.h $(PARTITION_H) \
-          hard-reg-set.h
+          hard-reg-set.h cfghooks.h
 COVERAGE_H = coverage.h gcov-io.h gcov-iov.h
 DEMANGLE_H = $(srcdir)/../include/demangle.h
 RECOG_H = recog.h
@@ -820,7 +820,7 @@ OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	   \
  sibcall.o simplify-rtx.o sreal.o ssa.o ssa-ccp.o ssa-dce.o stmt.o	   \
  stor-layout.o stringpool.o timevar.o toplev.o tracer.o tree.o tree-dump.o \
  tree-inline.o unroll.o varasm.o varray.o version.o vmsdbgout.o xcoffout.o \
- alloc-pool.o et-forest.o cgraph.o cgraphunit.o				   \
+ alloc-pool.o et-forest.o cgraph.o cgraphunit.o cfghooks.o		   \
  $(GGC) $(out_object_file) $(EXTRA_OBJS) $(host_hook_obj)
 
 BACKEND = main.o libbackend.a
@@ -1650,6 +1650,8 @@ flow.o : flow.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
 cfg.o : cfg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) flags.h insn-config.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h $(RECOG_H) \
    function.h except.h $(GGC_H) $(TM_P_H) alloc-pool.h
+cfghooks.o: cfghooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
+   $(BASIC_BLOCK_H) cfglayout.h
 cfgrtl.o : cfgrtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) flags.h \
    insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h $(RECOG_H) \
    function.h except.h $(GGC_H) $(TM_P_H) insn-config.h

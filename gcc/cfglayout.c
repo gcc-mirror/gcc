@@ -39,7 +39,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 extern struct obstack flow_obstack;
 
 /* Holds the interesting trailing notes for the function.  */
-static rtx function_footer;
+rtx cfg_layout_function_footer;
 
 static rtx skip_insns_after_block	PARAMS ((basic_block));
 static void record_effective_endpoints	PARAMS ((void));
@@ -52,11 +52,10 @@ static void change_scope		PARAMS ((rtx, tree, tree));
 void verify_insn_chain			PARAMS ((void));
 static void cleanup_unconditional_jumps	PARAMS ((struct loops *));
 static void fixup_fallthru_exit_predecessor PARAMS ((void));
-static rtx unlink_insn_chain PARAMS ((rtx, rtx));
 static rtx duplicate_insn_chain PARAMS ((rtx, rtx));
 static void break_superblocks PARAMS ((void));
 
-static rtx
+rtx
 unlink_insn_chain (first, last)
      rtx first;
      rtx last;
@@ -208,9 +207,9 @@ record_effective_endpoints ()
       next_insn = NEXT_INSN (bb->end);
     }
 
-  function_footer = next_insn;
-  if (function_footer)
-    function_footer = unlink_insn_chain (function_footer, get_last_insn ());
+  cfg_layout_function_footer = next_insn;
+  if (cfg_layout_function_footer)
+    cfg_layout_function_footer = unlink_insn_chain (cfg_layout_function_footer, get_last_insn ());
 }
 
 /* Build a varray mapping INSN_UID to lexical block.  Return it.  */
@@ -423,9 +422,9 @@ fixup_reorder_chain ()
   if (index != n_basic_blocks)
     abort ();
 
-  NEXT_INSN (insn) = function_footer;
-  if (function_footer)
-    PREV_INSN (function_footer) = insn;
+  NEXT_INSN (insn) = cfg_layout_function_footer;
+  if (cfg_layout_function_footer)
+    PREV_INSN (cfg_layout_function_footer) = insn;
 
   while (NEXT_INSN (insn))
     insn = NEXT_INSN (insn);
@@ -696,7 +695,7 @@ cleanup_unconditional_jumps (loops)
 		}
 
 	      redirect_edge_succ_nodup (bb->pred, bb->succ->dest);
-	      flow_delete_block (bb);
+	      delete_block (bb);
 	      bb = prev;
 	    }
 	  else if (simplejump_p (bb->end))
@@ -888,75 +887,6 @@ duplicate_insn_chain (from, to)
   delete_insn (last);
   return insn;
 }
-
-/* Redirect Edge to DEST.  */
-bool
-cfg_layout_redirect_edge (e, dest)
-     edge e;
-     basic_block dest;
-{
-  basic_block src = e->src;
-  basic_block old_next_bb = src->next_bb;
-  bool ret;
-
-  /* Redirect_edge_and_branch may decide to turn branch into fallthru edge
-     in the case the basic block appears to be in sequence.  Avoid this
-     transformation.  */
-
-  src->next_bb = NULL;
-  if (e->flags & EDGE_FALLTHRU)
-    {
-      /* Redirect any branch edges unified with the fallthru one.  */
-      if (GET_CODE (src->end) == JUMP_INSN
-	  && JUMP_LABEL (src->end) == e->dest->head)
-	{
-          if (!redirect_jump (src->end, block_label (dest), 0))
-	    abort ();
-	}
-      /* In case we are redirecting fallthru edge to the branch edge
-         of conditional jump, remove it.  */
-      if (src->succ->succ_next
-	  && !src->succ->succ_next->succ_next)
-	{
-	  edge s = e->succ_next ? e->succ_next : src->succ;
-	  if (s->dest == dest
-	      && any_condjump_p (src->end)
-	      && onlyjump_p (src->end))
-	    delete_insn (src->end);
-	}
-      redirect_edge_succ_nodup (e, dest);
-
-      ret = true;
-    }
-  else
-    ret = redirect_edge_and_branch (e, dest);
-
-  /* We don't want simplejumps in the insn stream during cfglayout.  */
-  if (simplejump_p (src->end))
-    {
-      delete_insn (src->end);
-      delete_barrier (NEXT_INSN (src->end));
-      src->succ->flags |= EDGE_FALLTHRU;
-    }
-  src->next_bb = old_next_bb;
-
-  return ret;
-}
-
-/* Same as split_block but update cfg_layout structures.  */
-edge
-cfg_layout_split_block (bb, insn)
-     basic_block bb;
-     rtx insn;
-{
-  edge fallthru = split_block (bb, insn);
-
-  alloc_aux_for_block (fallthru->dest, sizeof (struct reorder_block_def));
-  RBI (fallthru->dest)->footer = RBI (fallthru->src)->footer;
-  RBI (fallthru->src)->footer = NULL;
-  return fallthru;
-}
-
 /* Create a duplicate of the basic block BB and redirect edge E into it.  */
 
 basic_block
@@ -1037,7 +967,7 @@ cfg_layout_duplicate_bb (bb, e)
       new_bb->frequency = EDGE_FREQUENCY (e);
       bb->frequency -= EDGE_FREQUENCY (e);
 
-      cfg_layout_redirect_edge (e, new_bb);
+      redirect_edge_and_branch_force (e, new_bb);
     }
 
   if (bb->count < 0)
@@ -1060,6 +990,7 @@ cfg_layout_initialize (loops)
   /* Our algorithm depends on fact that there are now dead jumptables
      around the code.  */
   alloc_aux_for_blocks (sizeof (struct reorder_block_def));
+  cfg_layout_rtl_register_cfg_hooks ();
 
   cleanup_unconditional_jumps (loops);
 
@@ -1101,6 +1032,7 @@ break_superblocks ()
 void
 cfg_layout_finalize ()
 {
+  rtl_register_cfg_hooks ();
   fixup_fallthru_exit_predecessor ();
   fixup_reorder_chain ();
 

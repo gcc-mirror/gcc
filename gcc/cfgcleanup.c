@@ -180,7 +180,7 @@ try_simplify_condjump (cbranch_block)
   update_br_prob_note (cbranch_block);
 
   /* Delete the block with the unconditional jump, and clean up the mess.  */
-  flow_delete_block (jump_block);
+  delete_block (jump_block);
   tidy_fallthru_edge (cbranch_jump_edge, cbranch_block, cbranch_dest_block);
 
   return true;
@@ -1271,7 +1271,7 @@ outgoing_edges_match (mode, bb1, bb2)
 	  /* The labels should never be the same rtx.  If they really are same
 	     the jump tables are same too. So disable crossjumping of blocks BB1
 	     and BB2 because when deleting the common insns in the end of BB1
-	     by flow_delete_block () the jump table would be deleted too.  */
+	     by delete_block () the jump table would be deleted too.  */
 	  /* If LABEL2 is referenced in BB1->END do not do anything
 	     because we would loose information when replacing
 	     LABEL1 by LABEL2 and then LABEL2 by LABEL1 in BB1->END.  */
@@ -1568,7 +1568,7 @@ try_crossjump_to_edge (mode, e1, e2)
   to_remove = redirect_from->succ->dest;
 
   redirect_edge_and_branch_force (redirect_from->succ, redirect_to);
-  flow_delete_block (to_remove);
+  delete_block (to_remove);
 
   update_forwarder_flag (redirect_from);
 
@@ -1721,7 +1721,7 @@ try_optimize_cfg (mode)
 		    fprintf (rtl_dump_file, "Deleting block %i.\n",
 			     b->index);
 
-		  flow_delete_block (b);
+		  delete_block (b);
 		  changed = true;
 		  b = c;
 		}
@@ -1772,7 +1772,7 @@ try_optimize_cfg (mode)
 
 		  c = b->prev_bb == ENTRY_BLOCK_PTR ? b->next_bb : b->prev_bb;
 		  redirect_edge_succ_nodup (b->pred, b->succ->dest);
-		  flow_delete_block (b);
+		  delete_block (b);
 		  changed = true;
 		  b = c;
 		}
@@ -1871,7 +1871,7 @@ delete_unreachable_blocks ()
 
       if (!(b->flags & BB_REACHABLE))
 	{
-	  flow_delete_block (b);
+	  delete_block (b);
 	  changed = true;
 	}
     }

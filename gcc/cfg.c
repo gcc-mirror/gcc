@@ -828,3 +828,11 @@ free_aux_for_edges ()
 
   clear_aux_for_edges ();
 }
+
+/* Verify the CFG consistency.  
+   ??? In the future move IL idepdendent checks here.  */
+void
+verify_flow_info ()
+{
+  cfg_hooks->cfgh_verify_flow_info ();
+}
