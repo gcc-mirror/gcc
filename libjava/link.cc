@@ -131,6 +131,18 @@ _Jv_Linker::find_field_helper (jclass search, _Jv_Utf8Const *name,
   return NULL;
 }
 
+bool
+_Jv_Linker::has_field_p (jclass search, _Jv_Utf8Const *field_name)
+{
+  for (int i = 0; i < search->field_count; ++i)
+    {
+      _Jv_Field *field = &search->fields[i];
+      if (_Jv_equalUtf8Consts (field->name, field_name))
+	return true;
+    }
+  return false;
+}
+
 // Find a field.
 // KLASS is the class that is requesting the field.
 // OWNER is the class in which the field should be found.

@@ -278,6 +278,7 @@ private:
 
 public:
 
+  static bool has_field_p (jclass, _Jv_Utf8Const *);
   static void print_class_loaded (jclass);
   static void resolve_class_ref (jclass, jclass *);
   static void wait_for_state(jclass, int);

@@ -1,3 +1,12 @@
+2005-02-18  Tom Tromey  <tromey@redhat.com>
+
+	PR java/20056:
+	* include/jvm.h (_Jv_Linker::has_field_p): Declare.
+	* link.cc (has_field_p): New function.
+	* verify.cc (check_field_constant): Added 'putfield' argument.
+	(verify_instructions_0): Updated.
+	(type::equals): New method.
+
 2005-02-18  Anthony Green  <green@redhat.com>
 
 	* NEWS: Draft of libgcj NEWS for 4.0.
