@@ -49,6 +49,28 @@ details.  */
 extern "C" int gethostname (char *name, int namelen);
 #endif
 
+#ifdef DISABLE_JAVA_NET
+
+jbyteArray
+java::net::InetAddress::aton (jstring)
+{
+  return NULL;
+}
+
+JArray<java::net::InetAddress*> *
+java::net::InetAddress::lookup (jstring, java::net::InetAddress *, jboolean)
+{
+  return NULL;
+}
+
+jstring
+java::net::InetAddress::getLocalHostname ()
+{
+  return NULL;
+}
+
+#else /* DISABLE_JAVA_NET */
+
 jbyteArray
 java::net::InetAddress::aton (jstring host)
 {
@@ -300,3 +322,5 @@ java::net::InetAddress::getLocalHostname ()
   // anyway, thanks to the InetAddress.localhost cache.
   return JvNewStringUTF (chars);
 }
+
+#endif /* DISABLE_JAVA_NET */

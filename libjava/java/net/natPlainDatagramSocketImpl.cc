@@ -47,6 +47,71 @@ details.  */
 #include <java/lang/Boolean.h>
 #include <java/lang/Integer.h>
 
+#ifdef DISABLE_JAVA_NET
+
+void
+java::net::PlainDatagramSocketImpl::create ()
+{
+  JvThrow (new SocketException (JvNewStringLatin1 ("DatagramSocketImpl.create: unimplemented")));
+}
+
+void
+java::net::PlainDatagramSocketImpl::bind (jint, java::net::InetAddress *)
+{
+  JvThrow (new BindException (JvNewStringLatin1 ("DatagramSocketImpl.bind: unimplemented")));
+}
+
+jint
+java::net::PlainDatagramSocketImpl::peek (java::net::InetAddress *)
+{
+  JvThrow (new java::io::IOException (JvNewStringLatin1 ("DatagramSocketImpl.peek: unimplemented")));
+}
+
+void
+java::net::PlainDatagramSocketImpl::send (java::net::DatagramPacket *)
+{
+  JvThrow (new java::io::IOException (JvNewStringLatin1 ("DatagramSocketImpl.send: unimplemented")));
+}
+
+void
+java::net::PlainDatagramSocketImpl::receive (java::net::DatagramPacket *)
+{
+  JvThrow (new java::io::IOException (JvNewStringLatin1 ("DatagramSocketImpl.receive: unimplemented")));
+}
+
+void
+java::net::PlainDatagramSocketImpl::setTimeToLive (jint)
+{
+  JvThrow (new java::io::IOException (JvNewStringLatin1 ("DatagramSocketImpl.setTimeToLive: unimplemented")));
+}
+
+jint
+java::net::PlainDatagramSocketImpl::getTimeToLive ()
+{
+  JvThrow (new java::io::IOException (JvNewStringLatin1 ("DatagramSocketImpl.getTimeToLive: unimplemented")));
+}
+
+void
+java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *,
+					      jboolean)
+{
+  JvThrow (new java::io::IOException (JvNewStringLatin1 ("DatagramSocketImpl.mcastGrp: unimplemented")));
+}
+
+void
+java::net::PlainDatagramSocketImpl::setOption (jint, java::lang::Object *)
+{
+  JvThrow (new SocketException (JvNewStringLatin1 ("DatagramSocketImpl.setOption: unimplemented")));
+}
+
+java::lang::Object *
+java::net::PlainDatagramSocketImpl::getOption (jint)
+{
+  JvThrow (new SocketException (JvNewStringLatin1 ("DatagramSocketImpl.getOption: unimplemented")));
+}
+
+#else /* DISABLE_JAVA_NET */
+
 #ifndef HAVE_SOCKLEN_T
 typedef int socklen_t;
 #endif
@@ -296,7 +361,7 @@ java::net::PlainDatagramSocketImpl::setTimeToLive (jint ttl)
 
   char msg[100];
   char* strerr = strerror (errno);
-  sprintf (msg, "DatagramSocketImpl.setTimeToLime: %.*s", 80, strerr);
+  sprintf (msg, "DatagramSocketImpl.setTimeToLive: %.*s", 80, strerr);
   JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
 }
 
@@ -311,7 +376,7 @@ java::net::PlainDatagramSocketImpl::getTimeToLive ()
 
   char msg[100];
   char* strerr = strerror (errno);
-  sprintf (msg, "DatagramSocketImpl.setTimeToLime: %.*s", 80, strerr);
+  sprintf (msg, "DatagramSocketImpl.getTimeToLive: %.*s", 80, strerr);
   JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
 }
 
@@ -573,3 +638,5 @@ java::net::PlainDatagramSocketImpl::getOption (jint optID)
   sprintf (msg, "DatagramSocketImpl.getOption: %.*s", 80, strerr);
   JvThrow (new java::net::SocketException (JvNewStringUTF (msg)));
 }
+
+#endif /* DISABLE_JAVA_NET */
