@@ -1,3 +1,8 @@
+2003-11-14  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/frv/frv.c (frv_in_small_data_p): Return false for unknown
+	section names.
+
 2003-11-14  Jason Merrill  <jason@redhat.com>
 
 	PR middle-end/12526

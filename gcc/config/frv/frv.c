@@ -9784,10 +9784,6 @@ frv_in_small_data_p (decl)
   if (TREE_CODE (decl) != VAR_DECL || DECL_ARTIFICIAL (decl))
     return false;
 
-  size = int_size_in_bytes (TREE_TYPE (decl));
-  if (size > 0 && (unsigned HOST_WIDE_INT) size <= g_switch_value)
-    return true;
-
   /* If we already know which section the decl should be in, see if
      it's a small data section.  */
   section_name = DECL_SECTION_NAME (decl);
@@ -9799,7 +9795,12 @@ frv_in_small_data_p (decl)
 	return true;
       if (frv_string_begins_with (section_name, ".sbss"))
 	return true;
+      return false;
     }
+
+  size = int_size_in_bytes (TREE_TYPE (decl));
+  if (size > 0 && (unsigned HOST_WIDE_INT) size <= g_switch_value)
+    return true;
 
   return false;
 }
