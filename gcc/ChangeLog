@@ -1,5 +1,15 @@
 2002-03-16  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.c (m68hc11_override_options): Don't use
+	soft registers by default for 68HC12.
+	(m68hc11_conditional_register_usage): Don't use Z register for 68HC12
+	when compiling with -fomit-frame-pointer.
+	(expand_prologue): Use push/pop to allocate 4-bytes of locals on 68HC12.
+	(expand_epilogue): Likewise.
+	(m68hc11_gen_rotate): Use exg when rotating by 8.
+
+2002-03-16  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11-protos.h (ix_reg): Declare.
 	* config/m68hc11/m68hc11.md ("addsi3"): Use general_operand for sources.
 	(splits): Remove unused add splits.

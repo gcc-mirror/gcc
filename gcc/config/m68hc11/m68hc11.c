@@ -246,6 +246,8 @@ m68hc11_override_options ()
       if (TARGET_DEFAULT != MASK_M6811)
         target_flags &= ~TARGET_DEFAULT;
 
+      if (!TARGET_M6812)
+        target_flags &= ~TARGET_AUTO_INC_DEC;
       m68hc11_cost = &m6811_cost;
       m68hc11_min_offset = 0;
       m68hc11_max_offset = 256;
@@ -278,7 +280,7 @@ m68hc11_override_options ()
       target_flags &= ~MASK_M6811;
       target_flags |= MASK_NO_DIRECT_MODE;
       if (m68hc11_soft_reg_count == 0)
-	m68hc11_soft_reg_count = "2";
+	m68hc11_soft_reg_count = "0";
     }
   return 0;
 }
@@ -300,6 +302,14 @@ m68hc11_conditional_register_usage ()
     {
       fixed_regs[i] = 1;
       call_used_regs[i] = 1;
+    }
+
+  /* For 68HC12, the Z register emulation is not necessary when the
+     frame pointer is not used.  The frame pointer is eliminated and
+     replaced by the stack register (which is a BASE_REG_CLASS).  */
+  if (TARGET_M6812 && flag_omit_frame_pointer && optimize)
+    {
+      fixed_regs[HARD_Z_REGNUM] = 1;
     }
 }
 
@@ -1664,7 +1674,7 @@ expand_prologue ()
     emit_move_after_reload (stack_push_word, hard_frame_pointer_rtx, scratch);
 
   /* Allocate local variables.  */
-  if (TARGET_M6812 && size >= 2)
+  if (TARGET_M6812 && (size > 4 || size == 3))
     {
       emit_insn (gen_addhi3 (stack_pointer_rtx,
 			     stack_pointer_rtx, GEN_INT (-size)));
@@ -1752,7 +1762,7 @@ expand_epilogue ()
     }
 
   /* de-allocate auto variables */
-  if (TARGET_M6812 && size >= 2)
+  if (TARGET_M6812 && (size > 4 || size == 3))
     {
       emit_insn (gen_addhi3 (stack_pointer_rtx,
 			     stack_pointer_rtx, GEN_INT (size)));
@@ -3716,9 +3726,14 @@ m68hc11_gen_rotate (code, insn, operands)
   /* Rotate by 8-bits if the shift is within [5..11].  */
   if (val >= 5 && val <= 11)
     {
-      output_asm_insn ("psha", operands);
-      output_asm_insn ("tba", operands);
-      output_asm_insn ("pulb", operands);
+      if (TARGET_M6812)
+	output_asm_insn ("exg\ta,b", operands);
+      else
+	{
+	  output_asm_insn ("psha", operands);
+	  output_asm_insn ("tba", operands);
+	  output_asm_insn ("pulb", operands);
+	}
       val -= 8;
     }
 
