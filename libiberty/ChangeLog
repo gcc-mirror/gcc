@@ -1,3 +1,9 @@
+2004-12-11  Ben Elliston  <bje@au.ibm.com>
+
+	* configure.ac: Invoke AC_CHECK_SIZEOF for sizeof (int).
+	* configure: Regenerate.
+	* config.in: Likewise.
+
 2004-12-07  DJ Delorie  <dj@redhat.com>
 
 	* splay-tree.c (splay_tree_delete_helper): Redesign the logic so

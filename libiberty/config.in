@@ -341,6 +341,9 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
+/* The size of a `int', as computed by sizeof. */
+#undef SIZEOF_INT
+
 /* Define if you know the direction of stack growth for your system; otherwise
    it will be automatically deduced at run-time. STACK_DIRECTION > 0 => grows
    toward higher addresses STACK_DIRECTION < 0 => grows toward lower addresses
