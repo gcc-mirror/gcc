@@ -1,3 +1,7 @@
+2003-09-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/ultrasp10.c: New test.
+
 2003-09-08  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11786

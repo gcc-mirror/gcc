@@ -6881,6 +6881,8 @@
 {
   if (operands[2] == const1_rtx)
     return "add\t%1, %1, %0";
+  if (GET_CODE (operands[2]) == CONST_INT)
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
   return "sll\t%1, %2, %0";
 }
   [(set (attr "type")
@@ -6910,6 +6912,8 @@
 {
   if (operands[2] == const1_rtx)
     return "add\t%1, %1, %0";
+  if (GET_CODE (operands[2]) == CONST_INT)
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
   return "sllx\t%1, %2, %0";
 }
   [(set (attr "type")
@@ -6969,7 +6973,11 @@
 	(ashiftrt:SI (match_operand:SI 1 "register_operand" "r")
 		     (match_operand:SI 2 "arith_operand" "rI")))]
   ""
-  "sra\t%1, %2, %0"
+  {
+     if (GET_CODE (operands[2]) == CONST_INT)
+       operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+     return "sra\t%1, %2, %0";
+  }
   [(set_attr "type" "shift")])
 
 (define_insn "*ashrsi3_extend"
@@ -7016,12 +7024,17 @@
     }
 })
 
-(define_insn ""
+(define_insn "*ashrdi3_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashiftrt:DI (match_operand:DI 1 "register_operand" "r")
 		     (match_operand:SI 2 "arith_operand" "rI")))]
   "TARGET_ARCH64"
-  "srax\t%1, %2, %0"
+  
+  {
+    if (GET_CODE (operands[2]) == CONST_INT)
+      operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
+    return "srax\t%1, %2, %0";
+  }
   [(set_attr "type" "shift")])
 
 ;; XXX
@@ -7040,7 +7053,11 @@
 	(lshiftrt:SI (match_operand:SI 1 "register_operand" "r")
 		     (match_operand:SI 2 "arith_operand" "rI")))]
   ""
-  "srl\t%1, %2, %0"
+  {
+    if (GET_CODE (operands[2]) == CONST_INT)
+      operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+    return "srl\t%1, %2, %0";
+  }
   [(set_attr "type" "shift")])
 
 ;; This handles the case where
@@ -7097,12 +7114,16 @@
     }
 })
 
-(define_insn ""
+(define_insn "*lshrdi3_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(lshiftrt:DI (match_operand:DI 1 "register_operand" "r")
 		     (match_operand:SI 2 "arith_operand" "rI")))]
   "TARGET_ARCH64"
-  "srlx\t%1, %2, %0"
+  {
+    if (GET_CODE (operands[2]) == CONST_INT)
+      operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
+    return "srlx\t%1, %2, %0";
+  }
   [(set_attr "type" "shift")])
 
 ;; XXX

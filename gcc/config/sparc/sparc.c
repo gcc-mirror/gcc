@@ -8028,6 +8028,10 @@ sparc_v8plus_shift (operands, insn, opcode)
   if (which_alternative != 2)
     operands[3] = operands[0];
 
+  /* We can only shift by constants <= 63. */
+  if (GET_CODE (operands[2]) == CONST_INT)
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
+
   if (GET_CODE (operands[1]) == CONST_INT)
     {
       output_asm_insn ("mov\t%1, %3", operands);
