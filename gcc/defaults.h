@@ -108,3 +108,13 @@ do { fprintf (FILE, "\t%s\t", ASM_SHORT);				\
   }									      \
   while (0)
 #endif
+
+#ifndef ASM_IDENTIFY_GCC
+  /* Default the definition, only if ASM_IDENTIFY_GCC is not set,
+     because if it is set, we might not want ASM_IDENTIFY_LANGUAGE
+     outputting labels, if we do want it to, then it must be defined
+     in the tm.h file.  */
+#ifndef ASM_IDENTIFY_LANGUAGE
+#define ASM_IDENTIFY_LANGUAGE(FILE) output_lang_identify (FILE);
+#endif
+#endif

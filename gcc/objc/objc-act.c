@@ -371,6 +371,12 @@ lang_finish ()
 {
 }
 
+char *
+lang_identify ()
+{
+  return "objc";
+}
+
 int
 lang_decode_option (p)
      char *p;

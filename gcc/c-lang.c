@@ -47,6 +47,12 @@ lang_finish ()
 {
 }
 
+char *
+lang_identify ()
+{
+  return "c";
+}
+
 /* Used by c-lex.c, but only for objc.  */
 tree
 lookup_interface (arg)
