@@ -1,5 +1,12 @@
 2003-12-19  Michael Koch  <konqueror@gmx.de>
 
+	* java/text/NumberFormat.java: Sorted imports.
+	(getCurrency): New method.
+	(setCurrency): New method.
+	
+
+2003-12-19  Michael Koch  <konqueror@gmx.de>
+
 	* java/text/MessageFormat.java
 	(MessageFormat): New constructor.
 

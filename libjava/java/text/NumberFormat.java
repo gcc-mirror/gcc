@@ -38,13 +38,14 @@ exception statement from your version. */
 
 package java.text;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.MissingResourceException;
+import java.io.InvalidObjectException;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.IOException;
-import java.io.InvalidObjectException;
+import java.util.Currency;
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 /**
  * This is the abstract superclass of all classes which format and 
@@ -759,5 +760,45 @@ public abstract class NumberFormat extends Format implements Cloneable
       (byte) minimumIntegerDigits : Byte.MAX_VALUE;
     serialVersionOnStream = 1;
     stream.defaultWriteObject();
+  }
+
+  /**
+   * Returns the currency used by this number format when formatting currency
+   * values.
+   *
+   * The default implementation throws UnsupportedOperationException.
+   *
+   * @return The used currency object, or null.
+   *
+   * @throws UnsupportedOperationException If the number format class doesn't
+   * implement currency formatting.
+   *
+   * @since 1.4
+   */
+  public Currency getCurrency()
+  {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Sets the currency used by this number format when formatting currency
+   * values.
+   *
+   * The default implementation throws UnsupportedOperationException.
+   *
+   * @param currency The new currency to be used by this number format.
+   *
+   * @throws NullPointerException If currenc is null.
+   * @throws UnsupportedOperationException If the number format class doesn't
+   * implement currency formatting.
+   *
+   * @since 1.4
+   */
+  public void setCurreny(Currency currency)
+  {
+    if (currency == null)
+      throw new NullPointerException("currency may not be null");
+    
+    throw new UnsupportedOperationException();
   }
 }
