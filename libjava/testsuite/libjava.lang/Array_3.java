@@ -12,6 +12,13 @@ public class Array_3
     return null;
   }
 
+  static int baz ()
+  {
+    int[] x = (int[])null;
+    int nn = x.length;
+    return 5;
+  }
+
   public static void main(String args[])
   {
     boolean ok = false;
@@ -68,5 +75,17 @@ public class Array_3
       }
     if (!ok)
       throw new RuntimeException("test failed:4");
+
+    ok = false;
+    try
+      {
+	nn = baz ();
+      }
+    catch (NullPointerException _)
+      {
+	ok = true;
+      }
+    if (!ok)
+      throw new RuntimeException("test failed:5");
   }
 }
