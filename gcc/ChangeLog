@@ -1,3 +1,8 @@
+2001-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.md (movdf): Avoid calling validize_mem during
+	or after reload.
+
 2001-11-27  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 	Bruce Korb <bkorb@gnu.org>
 

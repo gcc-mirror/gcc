@@ -1,3 +1,7 @@
+2001-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20011109-1.c: New test.
+
 2001-11-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.old-deja/g++.pt/memtemp100.C: Remove non-standard

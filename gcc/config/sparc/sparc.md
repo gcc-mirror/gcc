@@ -3269,6 +3269,11 @@
 	  && fp_zero_operand (operands[1], DFmode))
 	goto movdf_is_ok;
 
+      /* We are able to build any DF constant in integer registers.  */
+      if (REGNO (operands[0]) < 32
+	  && (reload_completed || reload_in_progress))
+	goto movdf_is_ok;
+
       operands[1] = validize_mem (force_const_mem (GET_MODE (operands[0]),
                                                    operands[1]));
     }
