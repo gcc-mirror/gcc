@@ -47,11 +47,19 @@ static int insn_index_number;
 
 struct clobber_pat
 {
-  int code_number;		/* Counts only insns.  */
+  struct clobber_ent *insns;
   rtx pattern;
   int first_clobber;
   struct clobber_pat *next;
 } *clobber_list;
+
+/* Records one insn that uses the clobber list.  */
+
+struct clobber_ent
+{
+  int code_number;		/* Counts only insns.  */
+  struct clobber_ent *next;
+};
 
 static void
 max_operand_1 (x)
@@ -271,14 +279,54 @@ gen_insn (insn)
 
       if (i != XVECLEN (insn, 1) - 1)
 	{
-	  register struct clobber_pat *new
-	    = (struct clobber_pat *) xmalloc (sizeof (struct clobber_pat));
+	  register struct clobber_pat *p;
+	  register struct clobber_ent *link
+	    = (struct clobber_ent *) xmalloc (sizeof (struct clobber_ent));
+	  register int j;
+
+	  link->code_number = insn_code_number;
+
+	  /* See if any previous CLOBBER_LIST entry is the same as this
+	     one.  */
+
+	  for (p = clobber_list; p; p = p->next)
+	    {
+	      if (p->first_clobber != i + 1
+		  || XVECLEN (p->pattern, 1) != XVECLEN (insn, 1))
+		continue;
+
+	      for (j = i + 1; j < XVECLEN (insn, 1); j++)
+		{
+		  rtx old = XEXP (XVECEXP (p->pattern, 1, j), 0);
+		  rtx new = XEXP (XVECEXP (insn, 1, j), 0);
+
+		  /* OLD and NEW are the same if both are to be a SCRATCH
+		     or if both are registers of the same mode and number.  */
+		  if (! ((GET_CODE (old) == MATCH_SCRATCH
+			  && GET_CODE (new) == MATCH_SCRATCH)
+			 || (GET_CODE (old) == REG && GET_CODE (new) == REG
+			     && GET_MODE (old) == GET_MODE (new)
+			     && REGNO (old) == REGNO (new))))
+		    break;
+		}
+      
+	      if (j == XVECLEN (insn, 1))
+		break;
+	    }
+
+	  if (p == 0)
+	    {
+	      p = (struct clobber_pat *) xmalloc (sizeof (struct clobber_pat));
 	  
-	  new->code_number = insn_code_number;
-	  new->pattern = insn;
-	  new->first_clobber = i + 1;
-	  new->next = clobber_list;
-	  clobber_list = new;
+	      p->insns = 0;
+	      p->pattern = insn;
+	      p->first_clobber = i + 1;
+	      p->next = clobber_list;
+	      clobber_list = p;
+	    }
+
+	  link->next = p->insns;
+	  p->insns = link;
 	}
     }
 
@@ -547,6 +595,7 @@ static void
 output_add_clobbers ()
 {
   struct clobber_pat *clobber;
+  struct clobber_ent *ent;
   int i;
 
   printf ("\n\nvoid\nadd_clobbers (pattern, insn_code_number)\n");
@@ -558,7 +607,8 @@ output_add_clobbers ()
 
   for (clobber = clobber_list; clobber; clobber = clobber->next)
     {
-      printf ("    case %d:\n", clobber->code_number);
+      for (ent = clobber->insns; ent; ent = ent->next)
+	printf ("    case %d:\n", ent->code_number);
 
       for (i = clobber->first_clobber; i < XVECLEN (clobber->pattern, 1); i++)
 	{
@@ -567,7 +617,7 @@ output_add_clobbers ()
 	  printf (";\n");
 	}
 
-      printf ("      break;\n");
+      printf ("      break;\n\n");
     }
 
   printf ("    default:\n");
