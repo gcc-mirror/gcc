@@ -6402,39 +6402,27 @@ move\\t%0,%z4\\n\\
 {
   if ((reload_in_progress | reload_completed) == 0
       && !register_operand (operands[0], SFmode)
-      && !register_operand (operands[1], SFmode)
-      && (TARGET_MIPS16
-	  || ((GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) != 0)
-	       && operands[1] != CONST0_RTX (SFmode))))
-    {
-      rtx temp = force_reg (SFmode, operands[1]);
-      emit_move_insn (operands[0], temp);
-      DONE;
-    }
+      && !nonmemory_operand (operands[1], SFmode))
+    operands[1] = force_reg (SFmode, operands[1]);
 }")
 
 (define_insn "movsf_internal1"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,f,f,R,m,*f,*d,*d,*d,*d,*R,*m")
-	(match_operand:SF 1 "general_operand" "f,G,R,Fm,fG,fG,*d,*f,*G*d,*R,*F*m,*d,*d"))]
+	(match_operand:SF 1 "general_operand" "f,G,R,m,fG,fG,*d,*f,*G*d,*R,*m,*d,*d"))]
   "TARGET_HARD_FLOAT
    && (register_operand (operands[0], SFmode)
-       || register_operand (operands[1], SFmode)
-       || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0)
-       || operands[1] == CONST0_RTX (SFmode))"
+       || nonmemory_operand (operands[1], SFmode))"
   "* return mips_move_1word (operands, insn, FALSE);"
   [(set_attr "type"	"move,xfer,load,load,store,store,xfer,xfer,move,load,load,store,store")
    (set_attr "mode"	"SF")
    (set_attr "length"	"4,4,4,8,4,8,4,4,4,4,8,4,8")])
 
-
 (define_insn "movsf_internal2"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=d,d,d,R,m")
-	(match_operand:SF 1 "general_operand" "      Gd,R,Fm,d,d"))]
+	(match_operand:SF 1 "general_operand" "      Gd,R,m,d,d"))]
   "TARGET_SOFT_FLOAT && !TARGET_MIPS16
    && (register_operand (operands[0], SFmode)
-       || register_operand (operands[1], SFmode)
-       || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0)
-       || operands[1] == CONST0_RTX (SFmode))"
+       || nonmemory_operand (operands[1], SFmode))"
   "* return mips_move_1word (operands, insn, FALSE);"
   [(set_attr "type"	"move,load,load,store,store")
    (set_attr "mode"	"SF")
@@ -6442,7 +6430,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn ""
   [(set (match_operand:SF 0 "nonimmediate_operand" "=d,y,d,d,d,R,m")
-	(match_operand:SF 1 "general_operand"      "d,d,y,R,Fm,d,d"))]
+	(match_operand:SF 1 "nonimmediate_operand" "d,d,y,R,m,d,d"))]
   "TARGET_MIPS16
    && (register_operand (operands[0], SFmode)
        || register_operand (operands[1], SFmode))"
@@ -6462,55 +6450,40 @@ move\\t%0,%z4\\n\\
 {
   if ((reload_in_progress | reload_completed) == 0
       && !register_operand (operands[0], DFmode)
-      && !register_operand (operands[1], DFmode)
-      && (TARGET_MIPS16
-	  || ((GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) != 0)
-	       && operands[1] != CONST0_RTX (DFmode))))
-    {
-      rtx temp = force_reg (DFmode, operands[1]);
-      emit_move_insn (operands[0], temp);
-      DONE;
-    }
+      && !nonmemory_operand (operands[1], DFmode))
+    operands[1] = force_reg (DFmode, operands[1]);
 }")
 
 (define_insn "movdf_internal1"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,f,R,To,f,*f,*d,*d,*d,*d,*R,*T")
-	(match_operand:DF 1 "general_operand" "f,R,To,fG,fG,F,*d,*f,*d*G,*R,*T*F,*d,*d"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,f,R,To,*f,*d,*d,*d,*d,*R,*T")
+	(match_operand:DF 1 "general_operand" "f,R,To,fG,fG,*d,*f,*d*G,*R,*T,*d,*d"))]
   "TARGET_HARD_FLOAT && !(TARGET_FLOAT64 && !TARGET_64BIT)
    && TARGET_DOUBLE_FLOAT
    && (register_operand (operands[0], DFmode)
-       || register_operand (operands[1], DFmode)
-       || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0)
-       || operands[1] == CONST0_RTX (DFmode))"
+       || nonmemory_operand (operands[1], DFmode))"
   "* return mips_move_2words (operands, insn); "
-  [(set_attr "type"	"move,load,load,store,store,load,xfer,xfer,move,load,load,store,store")
+  [(set_attr "type"	"move,load,load,store,store,xfer,xfer,move,load,load,store,store")
    (set_attr "mode"	"DF")
-   (set_attr "length"	"4,8,16,8,16,16,8,8,8,8,16,8,16")])
+   (set_attr "length"	"4,8,16,8,16,8,8,8,8,16,8,16")])
 
 (define_insn "movdf_internal1a"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,R,R,To,To,*d,*d,*d,*To,*R,*d")
- 	(match_operand:DF 1 "general_operand"      " f,To,f,G,f,G,*F,*To,*R,*d,*d,*d"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,R,R,To,To,*d,*d,*To,*R,*d")
+ 	(match_operand:DF 1 "general_operand"      " f,To,f,G,f,G,*To,*R,*d,*d,*d"))]
   "TARGET_HARD_FLOAT && (TARGET_FLOAT64 && !TARGET_64BIT)
    && TARGET_DOUBLE_FLOAT
    && (register_operand (operands[0], DFmode)
-       || register_operand (operands[1], DFmode)
-       || (GET_CODE (operands [0]) == MEM
-	   && ((GET_CODE (operands[1]) == CONST_INT
-		&& INTVAL (operands[1]) == 0)
-	       || operands[1] == CONST0_RTX (DFmode))))"
+       || nonmemory_operand (operands[1], DFmode))"
   "* return mips_move_2words (operands, insn); "
-  [(set_attr "type"	"move,load,store,store,store,store,load,load,load,store,store,move")
+  [(set_attr "type"	"move,load,store,store,store,store,load,load,store,store,move")
    (set_attr "mode"	"DF")
-   (set_attr "length"	"4,8,4,4,8,8,8,8,4,8,4,4")])
+   (set_attr "length"	"4,8,4,4,8,8,8,4,8,4,4")])
 
 (define_insn "movdf_internal2"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=d,d,d,R,To,d,f,f")
-	(match_operand:DF 1 "general_operand" "dG,R,ToF,d,d,f,d,f"))]
+	(match_operand:DF 1 "general_operand" "dG,R,To,d,d,f,d,f"))]
   "(TARGET_SOFT_FLOAT || TARGET_SINGLE_FLOAT) && !TARGET_MIPS16
    && (register_operand (operands[0], DFmode)
-       || register_operand (operands[1], DFmode)
-       || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0)
-       || operands[1] == CONST0_RTX (DFmode))"
+       || nonmemory_operand (operands[1], DFmode))"
   "* return mips_move_2words (operands, insn); "
   [(set_attr "type"	"move,load,load,store,store,xfer,load,move")
    (set_attr "mode"	"DF")
@@ -6518,7 +6491,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn ""
   [(set (match_operand:DF 0 "nonimmediate_operand" "=d,y,d,d,d,R,To")
-	(match_operand:DF 1 "general_operand" "d,d,y,R,ToF,d,d"))]
+	(match_operand:DF 1 "nonimmediate_operand" "d,d,y,R,To,d,d"))]
   "TARGET_MIPS16
    && (register_operand (operands[0], DFmode)
        || register_operand (operands[1], DFmode))"
