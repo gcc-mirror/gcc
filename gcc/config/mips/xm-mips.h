@@ -74,7 +74,7 @@ extern char * alloca ();
 #endif /* not MIPS_OVERRIDE_ALLOCA */
 
 /* Say if we have vprintf.  BSD Mips targets probably don't have vfprintf.  */
-#if defined(__OSF1__) ||  defined(__OSF__)
+#if defined(__OSF1__) || defined(__OSF__) || defined(__osf__)
 #define HAVE_VFPRINTF
 #define HAVE_PUTENV
 

@@ -113,6 +113,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 #define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}"
 
+#undef TARGET_VERSION_INTERNAL
+#undef TARGET_VERSION
+
+#define I386_VERSION " 80386, OSF/rose objects"
+
+#define TARGET_VERSION_INTERNAL(STREAM) fputs (I386_VERSION, STREAM)
+#define TARGET_VERSION TARGET_VERSION_INTERNAL (stderr)
+
 #ifdef  MACHINE_TYPE
 #undef  MACHINE_TYPE
 #endif
