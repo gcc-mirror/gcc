@@ -71,8 +71,6 @@ FAIL: gnu.testlet.java.text.CollationElementIterator.jdk11: secondaryOrder() 5 (
 FAIL: gnu.testlet.java.text.CollationElementIterator.jdk11: secondaryOrder() 7 (number 1)
 FAIL: gnu.testlet.java.text.CollationElementIterator.jdk11: secondaryOrder() 9 (number 1)
 FAIL: gnu.testlet.java.text.CollationElementIterator.jdk11: tertiaryOrder() 10 (number 1)
-FAIL: gnu.testlet.java.net.ServerSocket.ServerSocketTest: Error : test_params failed - 5getInetAddress did not return proper values  (number 1)
-FAIL: gnu.testlet.java.net.Socket.SocketTest: Error : test_BasicServer failed - 11 exception was thrown :Illegal seek (number 1)
 FAIL: gnu.testlet.java.net.URLConnection.URLConnectionTest: Error in test_Basics  - 2  should not have raised  Throwable here  (number 1)
 FAIL: gnu.testlet.java.net.URLConnection.URLConnectionTest: Error in test_getHeaderField  - 2  4 header field wrong (number 1)
 FAIL: gnu.testlet.java.net.URL.URLTest: openStream (number 1)

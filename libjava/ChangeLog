@@ -1,5 +1,16 @@
 2003-11-25  Michael Koch  <konqueror@gmx.de>
 
+	* testsuite/libjava.mauve/xfails:
+	Removed these two tests, they mystically pass now:
+	-FAIL: gnu.testlet.java.net.ServerSocket.ServerSocketTest: Error :
+	test_params failed - 5getInetAddress did not return proper values
+	(number 1)
+	-FAIL: gnu.testlet.java.net.Socket.SocketTest: Error :
+	test_BasicServer failed - 11 exception was thrown :Illegal seek
+	(number 1)
+
+2003-11-25  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/DatagramSocket.java
 	(factory): Made private.
 	(closed): Removed.
