@@ -1,5 +1,6 @@
 2004-01-21  Caroline Tice <ctice@apple.com>
 
+	PR target/12308
 	* config/i386/i386.md (fix_truncxfdi2): Add clause to clobber 
 	flags register.
 	(fix_truncdfdi2): Likewise.
