@@ -71,7 +71,7 @@ GCJH = $(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
 ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
 endif # CANADIAN
 
-GCJCOMPILE = $(LIBTOOL) --mode=compile $(GCJ) -fassume-compiled -fclasspath=$(here) -L$(here) $(JC1FLAGS) -MD -MT $@ -MF $(@:.lo=.d) -c
+GCJCOMPILE = $(LIBTOOL) --tag=GCJ --mode=compile $(GCJ) -fassume-compiled -fclasspath=$(here) -L$(here) $(JC1FLAGS) -MD -MT $@ -MF $(@:.lo=.d) -c
 GCJLINK = $(LIBTOOL) --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
 LIBLINK = $(LIBTOOL) --mode=link $(CC) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
 
@@ -757,118 +757,10 @@ java/beans/Visibility.java
 ## directory.
 built_java_source_files = java/lang/ConcreteProcess.java
 
-## List of all .java files to be compiled.  Please keep this list
-## alphabetical.  Please put files from gnu/gcj/convert into
-## convert_source_files and files from java/awt into
-## awt_java_source_files.  If the .java file has a hand-maintained
-## header, please list it in special_java_source_files.
-ordinary_java_source_files =  $(convert_source_files) \
-$(awt_java_source_files) \
-gnu/gcj/RawData.java \
-gnu/gcj/io/DefaultMimeTypes.java \
-gnu/gcj/io/MimeTypes.java \
-gnu/gcj/io/SimpleSHSStream.java	\
-gnu/gcj/jni/NativeThread.java \
-gnu/gcj/math/MPN.java \
-gnu/gcj/protocol/file/Connection.java \
-gnu/gcj/protocol/file/Handler.java \
-gnu/gcj/protocol/http/Connection.java \
-gnu/gcj/protocol/http/Handler.java \
-gnu/gcj/protocol/jar/Connection.java \
-gnu/gcj/protocol/jar/Handler.java \
-gnu/gcj/runtime/FileDeleter.java \
-gnu/gcj/runtime/FirstThread.java \
-gnu/gcj/runtime/VMClassLoader.java \
-gnu/gcj/text/BaseBreakIterator.java \
-gnu/gcj/text/CharacterBreakIterator.java \
-gnu/gcj/text/LineBreakIterator.java \
-gnu/gcj/text/LocaleData_en.java	\
-gnu/gcj/text/LocaleData_en_US.java \
-gnu/gcj/text/SentenceBreakIterator.java	\
-gnu/gcj/text/WordBreakIterator.java \
-gnu/gcj/util/EnumerationChain.java \
-gnu/java/io/ClassLoaderObjectInputStream.java \
-gnu/java/io/NullOutputStream.java \
-gnu/java/io/ObjectIdentityWrapper.java \
-gnu/java/lang/ArrayHelper.java \
-gnu/java/lang/ClassHelper.java \
-gnu/java/lang/reflect/TypeSignature.java \
-gnu/java/security/provider/Gnu.java \
-gnu/java/security/provider/SHA.java \
-gnu/java/security/provider/SHA1PRNG.java \
-java/io/BlockDataException.java	\
-java/io/BufferedInputStream.java \
-java/io/BufferedOutputStream.java \
-java/io/BufferedReader.java \
-java/io/BufferedWriter.java \
-java/io/ByteArrayInputStream.java \
-java/io/ByteArrayOutputStream.java \
-java/io/CharArrayReader.java \
-java/io/CharArrayWriter.java \
-java/io/CharConversionException.java \
-java/io/DataInput.java \
-java/io/DataInputStream.java \
-java/io/DataOutput.java	\
-java/io/DataOutputStream.java \
-java/io/EOFException.java \
-java/io/Externalizable.java \
-java/io/File.java \
-java/io/FileDescriptor.java \
-java/io/FileInputStream.java \
-java/io/FileNotFoundException.java \
-java/io/FileOutputStream.java \
-java/io/FileReader.java	\
-java/io/FileWriter.java	\
-java/io/FilenameFilter.java \
-java/io/FilterInputStream.java \
-java/io/FilterOutputStream.java	\
-java/io/FilterReader.java \
-java/io/FilterWriter.java \
-java/io/IOException.java \
-java/io/InputStream.java \
-java/io/InputStreamReader.java \
-java/io/InterruptedIOException.java \
-java/io/InvalidClassException.java \
-java/io/InvalidObjectException.java \
-java/io/LineNumberInputStream.java \
-java/io/LineNumberReader.java \
-java/io/NotActiveException.java	\
-java/io/NotSerializableException.java \
-java/io/ObjectInput.java \
-java/io/ObjectInputStream.java \
-java/io/ObjectInputValidation.java \
-java/io/ObjectOutput.java \
-java/io/ObjectOutputStream.java	\
-java/io/ObjectStreamClass.java \
-java/io/ObjectStreamConstants.java \
-java/io/ObjectStreamException.java \
-java/io/ObjectStreamField.java \
-java/io/OptionalDataException.java \
-java/io/OutputStream.java \
-java/io/OutputStreamWriter.java	\
-java/io/PipedInputStream.java \
-java/io/PipedOutputStream.java \
-java/io/PipedReader.java \
-java/io/PipedWriter.java \
-java/io/PrintStream.java \
-java/io/PrintWriter.java \
-java/io/PushbackInputStream.java \
-java/io/PushbackReader.java \
-java/io/RandomAccessFile.java \
-java/io/Reader.java \
-java/io/SequenceInputStream.java \
-java/io/Serializable.java \
-java/io/SerializablePermission.java \
-java/io/StreamCorruptedException.java \
-java/io/StreamTokenizer.java \
-java/io/StringBufferInputStream.java \
-java/io/StringReader.java \
-java/io/StringWriter.java \
-java/io/SyncFailedException.java \
-java/io/UTFDataFormatException.java \
-java/io/UnsupportedEncodingException.java \
-java/io/WriteAbortedException.java \
-java/io/Writer.java \
+## Java files in the core packages java.lang, java.io, and java.util.
+## These are built before the other source files, in order to reduce 
+## build time.
+core_java_source_files = \
 java/lang/AbstractMethodError.java \
 java/lang/ArithmeticException.java \
 java/lang/ArrayIndexOutOfBoundsException.java \
@@ -946,6 +838,169 @@ java/lang/reflect/InvocationTargetException.java \
 java/lang/reflect/Member.java \
 java/lang/reflect/Method.java \
 java/lang/reflect/Modifier.java	\
+java/io/BlockDataException.java	\
+java/io/BufferedInputStream.java \
+java/io/BufferedOutputStream.java \
+java/io/BufferedReader.java \
+java/io/BufferedWriter.java \
+java/io/ByteArrayInputStream.java \
+java/io/ByteArrayOutputStream.java \
+java/io/CharArrayReader.java \
+java/io/CharArrayWriter.java \
+java/io/CharConversionException.java \
+java/io/DataInput.java \
+java/io/DataInputStream.java \
+java/io/DataOutput.java	\
+java/io/DataOutputStream.java \
+java/io/EOFException.java \
+java/io/Externalizable.java \
+java/io/File.java \
+java/io/FileDescriptor.java \
+java/io/FileInputStream.java \
+java/io/FileNotFoundException.java \
+java/io/FileOutputStream.java \
+java/io/FileReader.java	\
+java/io/FileWriter.java	\
+java/io/FilenameFilter.java \
+java/io/FilterInputStream.java \
+java/io/FilterOutputStream.java	\
+java/io/FilterReader.java \
+java/io/FilterWriter.java \
+java/io/IOException.java \
+java/io/InputStream.java \
+java/io/InputStreamReader.java \
+java/io/InterruptedIOException.java \
+java/io/InvalidClassException.java \
+java/io/InvalidObjectException.java \
+java/io/LineNumberInputStream.java \
+java/io/LineNumberReader.java \
+java/io/NotActiveException.java	\
+java/io/NotSerializableException.java \
+java/io/ObjectInput.java \
+java/io/ObjectInputStream.java \
+java/io/ObjectInputValidation.java \
+java/io/ObjectOutput.java \
+java/io/ObjectOutputStream.java	\
+java/io/ObjectStreamClass.java \
+java/io/ObjectStreamConstants.java \
+java/io/ObjectStreamException.java \
+java/io/ObjectStreamField.java \
+java/io/OptionalDataException.java \
+java/io/OutputStream.java \
+java/io/OutputStreamWriter.java	\
+java/io/PipedInputStream.java \
+java/io/PipedOutputStream.java \
+java/io/PipedReader.java \
+java/io/PipedWriter.java \
+java/io/PrintStream.java \
+java/io/PrintWriter.java \
+java/io/PushbackInputStream.java \
+java/io/PushbackReader.java \
+java/io/RandomAccessFile.java \
+java/io/Reader.java \
+java/io/SequenceInputStream.java \
+java/io/Serializable.java \
+java/io/SerializablePermission.java \
+java/io/StreamCorruptedException.java \
+java/io/StreamTokenizer.java \
+java/io/StringBufferInputStream.java \
+java/io/StringReader.java \
+java/io/StringWriter.java \
+java/io/SyncFailedException.java \
+java/io/UTFDataFormatException.java \
+java/io/UnsupportedEncodingException.java \
+java/io/WriteAbortedException.java \
+java/io/Writer.java \
+java/util/AbstractCollection.java \
+java/util/AbstractList.java \
+java/util/AbstractMap.java \
+java/util/AbstractSequentialList.java \
+java/util/AbstractSet.java \
+java/util/ArrayList.java \
+java/util/Arrays.java \
+java/util/BasicMapEntry.java \
+java/util/BitSet.java \
+java/util/Bucket.java \
+java/util/Calendar.java	\
+java/util/Collection.java \
+java/util/Comparator.java \
+java/util/ConcurrentModificationException.java \
+java/util/Date.java \
+java/util/Dictionary.java \
+java/util/EmptyStackException.java \
+java/util/Enumeration.java \
+java/util/EventListener.java \
+java/util/EventObject.java \
+java/util/GregorianCalendar.java \
+java/util/HashMap.java \
+java/util/Hashtable.java \
+java/util/Iterator.java	\
+java/util/List.java \
+java/util/ListIterator.java \
+java/util/ListResourceBundle.java \
+java/util/Locale.java \
+java/util/Map.java \
+java/util/MissingResourceException.java	\
+java/util/NoSuchElementException.java \
+java/util/Observable.java \
+java/util/Observer.java	\
+java/util/Properties.java \
+java/util/PropertyPermission.java \
+java/util/PropertyResourceBundle.java \
+java/util/Random.java \
+java/util/ResourceBundle.java \
+java/util/Set.java \
+java/util/SimpleTimeZone.java \
+java/util/SortedMap.java \
+java/util/SortedSet.java \
+java/util/Stack.java \
+java/util/StringTokenizer.java \
+java/util/TimeZone.java	\
+java/util/Timer.java \
+java/util/TimerTask.java \
+java/util/TooManyListenersException.java \
+java/util/Vector.java
+
+
+## List of all .java files to be compiled.  Please keep this list
+## alphabetical.  Please put files from java/lang, java/io, and java/util
+## into core_java_source_files. Please put files from gnu/gcj/convert 
+## into convert_source_files and files from java/awt into
+## awt_java_source_files.  If the .java file has a hand-maintained
+## header, please list it in special_java_source_files.
+ordinary_java_source_files = $(core_java_source_files) \
+gnu/gcj/RawData.java \
+gnu/gcj/io/DefaultMimeTypes.java \
+gnu/gcj/io/MimeTypes.java \
+gnu/gcj/io/SimpleSHSStream.java	\
+gnu/gcj/jni/NativeThread.java \
+gnu/gcj/math/MPN.java \
+gnu/gcj/protocol/file/Connection.java \
+gnu/gcj/protocol/file/Handler.java \
+gnu/gcj/protocol/http/Connection.java \
+gnu/gcj/protocol/http/Handler.java \
+gnu/gcj/protocol/jar/Connection.java \
+gnu/gcj/protocol/jar/Handler.java \
+gnu/gcj/runtime/FileDeleter.java \
+gnu/gcj/runtime/FirstThread.java \
+gnu/gcj/runtime/VMClassLoader.java \
+gnu/gcj/text/BaseBreakIterator.java \
+gnu/gcj/text/CharacterBreakIterator.java \
+gnu/gcj/text/LineBreakIterator.java \
+gnu/gcj/text/LocaleData_en.java	\
+gnu/gcj/text/LocaleData_en_US.java \
+gnu/gcj/text/SentenceBreakIterator.java	\
+gnu/gcj/text/WordBreakIterator.java \
+gnu/gcj/util/EnumerationChain.java \
+gnu/java/io/ClassLoaderObjectInputStream.java \
+gnu/java/io/NullOutputStream.java \
+gnu/java/io/ObjectIdentityWrapper.java \
+gnu/java/lang/ArrayHelper.java \
+gnu/java/lang/ClassHelper.java \
+gnu/java/lang/reflect/TypeSignature.java \
+gnu/java/security/provider/Gnu.java \
+gnu/java/security/provider/SHA.java \
+gnu/java/security/provider/SHA1PRNG.java \
 java/math/BigDecimal.java \
 java/math/BigInteger.java \
 java/net/BindException.java \
@@ -1072,55 +1127,6 @@ java/text/ParsePosition.java \
 java/text/RuleBasedCollator.java \
 java/text/SimpleDateFormat.java	\
 java/text/StringCharacterIterator.java \
-java/util/AbstractCollection.java \
-java/util/AbstractList.java \
-java/util/AbstractMap.java \
-java/util/AbstractSequentialList.java \
-java/util/AbstractSet.java \
-java/util/ArrayList.java \
-java/util/Arrays.java \
-java/util/BasicMapEntry.java \
-java/util/BitSet.java \
-java/util/Bucket.java \
-java/util/Calendar.java	\
-java/util/Collection.java \
-java/util/Comparator.java \
-java/util/ConcurrentModificationException.java \
-java/util/Date.java \
-java/util/Dictionary.java \
-java/util/EmptyStackException.java \
-java/util/Enumeration.java \
-java/util/EventListener.java \
-java/util/EventObject.java \
-java/util/GregorianCalendar.java \
-java/util/HashMap.java \
-java/util/Hashtable.java \
-java/util/Iterator.java	\
-java/util/List.java \
-java/util/ListIterator.java \
-java/util/ListResourceBundle.java \
-java/util/Locale.java \
-java/util/Map.java \
-java/util/MissingResourceException.java	\
-java/util/NoSuchElementException.java \
-java/util/Observable.java \
-java/util/Observer.java	\
-java/util/Properties.java \
-java/util/PropertyPermission.java \
-java/util/PropertyResourceBundle.java \
-java/util/Random.java \
-java/util/ResourceBundle.java \
-java/util/Set.java \
-java/util/SimpleTimeZone.java \
-java/util/SortedMap.java \
-java/util/SortedSet.java \
-java/util/Stack.java \
-java/util/StringTokenizer.java \
-java/util/TimeZone.java	\
-java/util/Timer.java \
-java/util/TimerTask.java \
-java/util/TooManyListenersException.java \
-java/util/Vector.java \
 java/util/jar/Attributes.java \
 java/util/jar/JarEntry.java \
 java/util/jar/JarException.java \
@@ -1145,9 +1151,11 @@ java/util/zip/ZipEntry.java \
 java/util/zip/ZipException.java	\
 java/util/zip/ZipFile.java \
 java/util/zip/ZipInputStream.java \
-java/util/zip/ZipOutputStream.java
+java/util/zip/ZipOutputStream.java \
+$(awt_java_source_files) \
+$(convert_source_files)
 
-java_source_files = $(ordinary_java_source_files) $(special_java_source_files)
+java_source_files = $(special_java_source_files) $(ordinary_java_source_files)
 
 ## Math library: C, not C++
 c_source_files = \

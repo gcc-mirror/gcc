@@ -1,3 +1,15 @@
+2000-10-25  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* Makefile.am (GCJCOMPILE): Pass --tag=GCJ to libtool.
+	(core_java_source_files): Put java.lang, java.io, and java.util here.
+	(ordinary_java_source_files): Order so that core_java_source_files are 
+	built first.
+	(java_source_files): Reorder so that special_java_source_files are 
+	built first.
+	* configure.in: Don't pass -I flag to gcj.
+	* Makefile.in: Rebuilt.
+	* configure: Rebuilt.
+
 2000-10-25  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.

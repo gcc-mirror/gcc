@@ -602,7 +602,6 @@ fi
 
 # Create it, so that compile/link tests don't fail
 test -f libgcj.spec || touch libgcj.spec
-GCJ="$GCJ -I$srcdir"
 
 LT_AC_PROG_GCJ
 
