@@ -1690,10 +1690,8 @@ fix_crossing_conditional_branches (void)
 		  
 		  /* Update register liveness information.  */
 		  
-		  new_bb->global_live_at_start = 
-		    OBSTACK_ALLOC_REG_SET (&reg_obstack);
-		  new_bb->global_live_at_end = 
-		    OBSTACK_ALLOC_REG_SET (&reg_obstack);
+		  new_bb->global_live_at_start = ALLOC_REG_SET (&reg_obstack);
+		  new_bb->global_live_at_end = ALLOC_REG_SET (&reg_obstack);
 		  COPY_REG_SET (new_bb->global_live_at_end,
 				prev_bb->global_live_at_end);
 		  COPY_REG_SET (new_bb->global_live_at_start,

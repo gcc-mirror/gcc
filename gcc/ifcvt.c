@@ -3165,10 +3165,10 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	   TEST_SET  = set of registers set between EARLIEST and the
 		       end of the block.  */
 
-      tmp = OBSTACK_ALLOC_REG_SET (&reg_obstack);
-      merge_set = OBSTACK_ALLOC_REG_SET (&reg_obstack);
-      test_live = OBSTACK_ALLOC_REG_SET (&reg_obstack);
-      test_set = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+      tmp = ALLOC_REG_SET (&reg_obstack);
+      merge_set = ALLOC_REG_SET (&reg_obstack);
+      test_live = ALLOC_REG_SET (&reg_obstack);
+      test_set = ALLOC_REG_SET (&reg_obstack);
 
       /* ??? bb->local_set is only valid during calculate_global_regs_live,
 	 so we must recompute usage for MERGE_BB.  Not so bad, I suppose,

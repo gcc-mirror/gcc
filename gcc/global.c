@@ -1805,7 +1805,7 @@ build_insn_chain (rtx first)
   struct insn_chain *prev = 0;
   basic_block b = ENTRY_BLOCK_PTR->next_bb;
 
-  live_relevant_regs = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+  live_relevant_regs = ALLOC_REG_SET (&reg_obstack);
 
   for (; first; first = NEXT_INSN (first))
     {

@@ -37,6 +37,12 @@ typedef bitmap_head regset_head;
 /* A pointer to a regset_head.  */
 typedef bitmap regset;
 
+/* Allocate a register set with oballoc.  */
+#define ALLOC_REG_SET(OBSTACK) BITMAP_OBSTACK_ALLOC (OBSTACK)
+
+/* Do any cleanup needed on a regset when it is no longer used.  */
+#define FREE_REG_SET(REGSET) BITMAP_OBSTACK_FREE (REGSET)
+
 /* Initialize a new regset.  */
 #define INIT_REG_SET(HEAD) bitmap_initialize (HEAD, &reg_obstack)
 
@@ -100,18 +106,6 @@ typedef bitmap_iterator reg_set_iterator;
    set in both regsets.  */
 #define EXECUTE_IF_AND_IN_REG_SET(REGSET1, REGSET2, MIN, REGNUM, RSI) \
   EXECUTE_IF_AND_IN_BITMAP (REGSET1, REGSET2, MIN, REGNUM, RSI)	\
-
-/* Allocate a register set with oballoc.  */
-#define OBSTACK_ALLOC_REG_SET(OBSTACK) BITMAP_OBSTACK_ALLOC (OBSTACK)
-
-/* Do any cleanup needed on a regset when it is no longer used.  */
-#define FREE_REG_SET(REGSET) BITMAP_OBSTACK_FREE(REGSET)
-
-/* Allocate a register set with xmalloc.  */
-#define XMALLOC_REG_SET() BITMAP_XMALLOC ()
-
-/* Free a register set.  */
-#define XFREE_REG_SET(REGSET) BITMAP_XFREE (REGSET)
 
 /* Type we use to hold basic block counters.  Should be at least
    64bit.  Although a counter cannot be negative, we use a signed
