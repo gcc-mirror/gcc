@@ -41,8 +41,8 @@
  *  contained in the namespace @c std.
  */
 
-#ifndef _CLOCALE
-#define _CLOCALE 1
+#ifndef _GLIBCXX_CLOCALE
+#define _GLIBCXX_CLOCALE 1
 
 #pragma GCC system_header
 

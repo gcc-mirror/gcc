@@ -58,8 +58,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _VECTOR
-#define _VECTOR 1
+#ifndef _GLIBCXX_VECTOR
+#define _GLIBCXX_VECTOR 1
 
 #pragma GCC system_header
 
@@ -75,5 +75,5 @@
 #  include <bits/vector.tcc>
 #endif
 
-#endif /* _VECTOR */
+#endif /* _GLIBCXX_VECTOR */
 

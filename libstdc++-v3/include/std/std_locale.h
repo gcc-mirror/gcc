@@ -36,8 +36,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _LOCALE
-#define _LOCALE	1
+#ifndef _GLIBCXX_LOCALE
+#define _GLIBCXX_LOCALE	1
 
 #pragma GCC system_header
 
@@ -46,4 +46,4 @@
 #include <bits/locale_facets.h>
 #include <bits/locale_facets.tcc>
 
-#endif
+#endif /* _GLIBCXX_LOCALE */

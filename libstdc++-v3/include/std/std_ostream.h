@@ -37,8 +37,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _OSTREAM
-#define _OSTREAM 1
+#ifndef _GLIBCXX_OSTREAM
+#define _GLIBCXX_OSTREAM 1
 
 #pragma GCC system_header
 
@@ -548,4 +548,4 @@ namespace std
 # include <bits/ostream.tcc>
 #endif
 
-#endif	/* _OSTREAM */
+#endif	/* _GLIBCXX_OSTREAM */

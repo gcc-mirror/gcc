@@ -41,8 +41,8 @@
  *  contained in the namespace @c std.
  */
 
-#ifndef _CSTDIO
-#define _CSTDIO 1
+#ifndef _GLIBCXX_CSTDIO
+#define _GLIBCXX_CSTDIO 1
 
 #pragma GCC system_header
 

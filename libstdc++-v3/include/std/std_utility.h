@@ -58,15 +58,15 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _UTILITY
-#define _UTILITY 1
+#ifndef _GLIBCXX_UTILITY
+#define _GLIBCXX_UTILITY 1
 
 #pragma GCC system_header
 #include <bits/c++config.h>
 #include <bits/stl_relops.h>
 #include <bits/stl_pair.h>
 
-#endif /* _UTILITY */
+#endif /* _GLIBCXX_UTILITY */
 
 // Local Variables:
 // mode:C++

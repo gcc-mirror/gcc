@@ -41,8 +41,8 @@
  *  contained in the namespace @c std.
  */
 
-#ifndef _CMATH
-#define _CMATH 1
+#ifndef _GLIBCXX_CMATH
+#define _GLIBCXX_CMATH 1
 
 #pragma GCC system_header
 

@@ -40,8 +40,8 @@
  *  contained in the namespace @c std.
  */
 
-#ifndef _CERRNO
-#define _CERRNO 1
+#ifndef _GLIBCXX_CERRNO
+#define _GLIBCXX_CERRNO 1
 
 #pragma GCC system_header
 

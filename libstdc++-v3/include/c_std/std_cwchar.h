@@ -41,8 +41,8 @@
  *  contained in the namespace @c std.
  */
 
-#ifndef _CWCHAR
-#define _CWCHAR 1
+#ifndef _GLIBCXX_CWCHAR
+#define _GLIBCXX_CWCHAR 1
 
 #pragma GCC system_header
 

@@ -35,8 +35,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _VALARRAY
-#define _VALARRAY 1
+#ifndef _GLIBCXX_VALARRAY
+#define _GLIBCXX_VALARRAY 1
 
 #pragma GCC system_header
 
@@ -689,7 +689,7 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
 
 } // namespace std
 
-#endif // _VALARRAY
+#endif /* _GLIBCXX_VALARRAY */
 
 // Local Variables:
 // mode:c++

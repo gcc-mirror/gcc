@@ -46,8 +46,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _MEMORY
-#define _MEMORY 1
+#ifndef _GLIBCXX_MEMORY
+#define _GLIBCXX_MEMORY 1
 
 #pragma GCC system_header
 
@@ -355,4 +355,4 @@ namespace std
   };
 } // namespace std
 
-#endif 
+#endif /* _GLIBCXX_MEMORY */

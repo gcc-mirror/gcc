@@ -36,8 +36,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _IOSTREAM
-#define _IOSTREAM 1
+#ifndef _GLIBCXX_IOSTREAM
+#define _GLIBCXX_IOSTREAM 1
 
 #pragma GCC system_header
 
@@ -77,4 +77,4 @@ namespace std
   static ios_base::Init __ioinit;
 } // namespace std
 
-#endif
+#endif /* _GLIBCXX_IOSTREAM */

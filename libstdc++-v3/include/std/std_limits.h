@@ -40,8 +40,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _NUMERIC_LIMITS
-#define _NUMERIC_LIMITS 1
+#ifndef _GLIBCXX_NUMERIC_LIMITS
+#define _GLIBCXX_NUMERIC_LIMITS 1
 
 #pragma GCC system_header
 
@@ -1140,4 +1140,4 @@ namespace std
 #undef __glibcxx_digits
 #undef __glibcxx_digits10
 
-#endif // _NUMERIC_LIMITS
+#endif // _GLIBCXX_NUMERIC_LIMITS

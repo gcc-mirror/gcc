@@ -41,8 +41,8 @@
  *  contained in the namespace @c std.
  */
 
-#ifndef _CSTDLIB
-#define _CSTDLIB 1
+#ifndef _GLIBCXX_CSTDLIB
+#define _GLIBCXX_CSTDLIB 1
 
 #pragma GCC system_header
 

@@ -58,8 +58,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _STACK
-#define _STACK 1
+#ifndef _GLIBCXX_STACK
+#define _GLIBCXX_STACK 1
 
 #pragma GCC system_header
 
@@ -74,4 +74,4 @@
 #  include <bits/deque.tcc>
 #endif
 
-#endif /* _STACK */
+#endif /* _GLIBCXX_STACK */

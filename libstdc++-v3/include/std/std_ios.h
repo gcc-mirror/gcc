@@ -36,8 +36,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _IOS
-#define _IOS 1
+#ifndef _GLIBCXX_IOS
+#define _GLIBCXX_IOS 1
 
 #pragma GCC system_header
 
@@ -50,5 +50,4 @@
 #include <streambuf> 
 #include <bits/basic_ios.h>
 
-#endif	/* _IOS */
-
+#endif	/* _GLIBCXX_IOS */

@@ -37,8 +37,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _STREAMBUF
-#define _STREAMBUF 1
+#ifndef _CLIBXX_STREAMBUF
+#define _CLIBXX_STREAMBUF 1
 
 #pragma GCC system_header
 
@@ -784,4 +784,4 @@ namespace std
 #include <bits/streambuf.tcc>
 #endif
 
-#endif	
+#endif /* _GLIBCXX_STREAMBUF */

@@ -45,8 +45,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _BITSET
-#define _BITSET 1
+#ifndef _GLIBCXX_BITSET
+#define _GLIBCXX_BITSET 1
 
 #pragma GCC system_header
 
@@ -1212,4 +1212,4 @@ namespace std
 #undef _GLIBCXX_BITSET_WORDS
 #undef _GLIBCXX_BITSET_BITS_PER_WORD
 
-#endif /* _BITSET */
+#endif /* _GLIBCXX_BITSET */

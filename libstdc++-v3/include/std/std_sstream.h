@@ -36,8 +36,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _SSTREAM
-#define _SSTREAM 1
+#ifndef _GLIBCXX_SSTREAM
+#define _GLIBCXX_SSTREAM 1
 
 #pragma GCC system_header
 
@@ -648,4 +648,4 @@ namespace std
 # include <bits/sstream.tcc>
 #endif
 
-#endif
+#endif /* _GLIBCXX_SSTREAM */

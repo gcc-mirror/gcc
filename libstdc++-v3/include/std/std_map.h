@@ -58,8 +58,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _MAP
-#define _MAP 1
+#ifndef _GLIBCXX_MAP
+#define _GLIBCXX_MAP 1
 
 #pragma GCC system_header
 
@@ -67,7 +67,7 @@
 #include <bits/stl_map.h>
 #include <bits/stl_multimap.h>
 
-#endif /* _MAP */
+#endif /* _GLIBCXX_MAP */
 
 // Local Variables:
 // mode:C++
