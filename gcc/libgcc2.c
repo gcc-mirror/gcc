@@ -2138,3 +2138,152 @@ func_ptr __CTOR_LIST__[2];
 #include "gbl-ctors.h"
 func_ptr __DTOR_LIST__[2];
 #endif
+
+#ifdef L_eh
+typedef struct {
+  void *start;
+  void *end;
+  void *exception_handler;
+} exception_table;
+
+struct exception_table_node {
+  exception_table *table;
+  void *start;
+  void *end;
+  struct exception_table_node *next;
+};
+
+static int except_table_pos = 0;
+static void *except_pc = (void *)0;
+static struct exception_table_node *exception_table_list = 0;
+
+static exception_table *
+find_exception_table (pc)
+     void* pc;
+{
+  register struct exception_table_node *table = exception_table_list;
+  for ( ; table != 0; table = table->next)
+    {
+      if (table->start <= pc && table->end > pc)
+	return table->table;
+    }
+  return 0;
+}
+
+/* this routine takes a pc, and the address of the exception handler associated
+   with the closest exception table handler entry associated with that PC,
+   or 0 if there are no table entries the PC fits in.  The algorithm works
+   something like this:
+
+    while(current_entry exists) {
+        if(current_entry.start < pc )
+            current_entry = next_entry;
+        else {
+            if(prev_entry.start <= pc && prev_entry.end > pc) {
+                save pointer to prev_entry;
+                return prev_entry.exception_handler;
+             }
+            else return 0;
+         }
+     }
+    return 0;
+
+   Assuming a correctly sorted table (ascending order) this routine should
+   return the tighest match...
+
+   In the advent of a tie, we have to give the last entry, as it represents
+   an inner block.
+ */
+
+
+void *
+__find_first_exception_table_match(pc)
+void *pc;
+{
+  exception_table *table = find_exception_table (pc);
+  int pos = 0;
+  int best = 0;
+  if (table == 0)
+    return (void*)0;
+#if 0
+  printf("find_first_exception_table_match(): pc = %x!\n",pc);
+#endif
+
+  except_pc = pc;
+
+#if 0
+  /* We can't do this yet, as we don't know that the table is sorted.  */
+  do {
+    ++pos;
+    if (table[pos].start > except_pc)
+      /* found the first table[pos].start > except_pc, so the previous
+	 entry better be the one we want! */
+      break;
+  } while(table[pos].exception_handler != (void*)-1);
+
+  --pos;
+  if (table[pos].start <= except_pc && table[pos].end > except_pc)
+    {
+      except_table_pos = pos;
+#if 0
+      printf("find_first_eh_table_match(): found match: %x\n",table[pos].exception_handler);
+#endif
+      return table[pos].exception_handler;
+    }
+#else
+  while (table[++pos].exception_handler != (void*)-1) {
+    if (table[pos].start <= except_pc && table[pos].end > except_pc)
+      {
+	/* This can apply.  Make sure it is better or as good as the previous
+	   best.  */
+	/* The best one ends first. */
+	if (best == 0 || (table[pos].end <= table[best].end
+			  /* The best one starts last.  */
+			  && table[pos].start >= table[best].start))
+	  best = pos;
+      }
+  }
+  if (best != 0)
+    return table[best].exception_handler;
+#endif
+
+#if 0
+  printf("find_first_eh_table_match(): else: returning NULL!\n");
+#endif
+  return (void*)0;
+}
+
+int
+__throw_type_match (const char *catch_type, const char *throw_type)
+{
+#if 0
+ printf("__throw_type_match (): catch_type = %s, throw_type = %s\n",
+	catch_type, throw_type);
+#endif
+ return strcmp (catch_type, throw_type);
+}
+
+void
+__register_exceptions (exception_table *table)
+{
+  struct exception_table_node *node = (struct exception_table_node*)
+      malloc (sizeof (struct exception_table_node));
+  exception_table *range = table + 1;
+  node->table = table;
+
+  /* This look can be optimized away either if the table
+     is sorted, or if we pass in extra parameters. */
+  node->start = range->start;
+  node->end = range->end;
+  for (range++ ; range->start != (void*)(-1); range++)
+    {
+      if (range->start < node->start)
+	node->start = range->start;
+      if (range->end < node->end)
+	node->end = range->end;
+    }
+
+  node->next = exception_table_list;
+  exception_table_list = node;
+}
+#endif /* L_eh */
