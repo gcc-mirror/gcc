@@ -3751,7 +3751,7 @@ statement_code_p (code)
     }
 }
 
-/* Walk the statemen tree, rooted at *tp.  Apply FUNC to all the
+/* Walk the statement tree, rooted at *tp.  Apply FUNC to all the
    sub-trees of *TP in a pre-order traversal.  FUNC is called with the
    DATA and the address of each sub-tree.  If FUNC returns a non-NULL
    value, the traversal is aborted, and the value returned by FUNC is
