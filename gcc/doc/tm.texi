@@ -3671,7 +3671,7 @@ has type @code{CUMULATIVE_ARGS}.  The value of @var{fntype} is the tree node
 for the data type of the function which will receive the args, or 0 if the args
 are to a compiler support library function.  For direct calls that are not
 libcalls, @var{fndecl} contain the declaration node of the function.
-@var{fndecl} is also set when code{INIT_CUMULATIVE_ARGS} is used to find
+@var{fndecl} is also set when @code{INIT_CUMULATIVE_ARGS} is used to find
 arguments for the function being compiled.
 
 When processing a call to a compiler support library function,
