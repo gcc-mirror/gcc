@@ -1,3 +1,8 @@
+Fri Apr  2 11:53:37 1999  John Wehle  (john@feith.com)
+
+	* i386.md (movsf+1, movdf+1, movxf+1): Update constraints
+	so that SECONDARY_MEMORY_RELOAD is used.  Remove dead code.
+
 1999-04-02  Bruce Korb <ddsinc09@ix.netcom.com>
 
 	* fixinc/mkfixinc.sh:  added support for x86-interix
