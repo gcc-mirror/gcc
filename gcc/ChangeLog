@@ -1,3 +1,7 @@
+Mon Jun 15 17:41:33 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* fold-const.c (fold_range_test): Prevent falling through with no ret.
+
 Sat Jun 13 15:49:53 1998  Carol LePage  <carolo@kemah.hal.com>
 
 	* configure.in (sparc-hal-solaris2*): New target.
