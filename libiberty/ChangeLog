@@ -1,3 +1,7 @@
+1999-08-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* splay-tree.c (splay_tree_insert): Return the new node.
+
 1999-07-14  Richard Henderson  <rth@cygnus.com>
 
 	* argv.c: Include stdlib.h and string.h instead of 

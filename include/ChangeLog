@@ -1,3 +1,7 @@
+1999-08-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* splay-tree.h (splay_tree_insert): Return the new node.
+
 1999-07-11  Ian Lance Taylor  <ian@zembu.com>
 
 	* ansidecl.h: Copy attribute support macros from egcs.
