@@ -1,3 +1,19 @@
+2004-07-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	2003-07-06  Alexandre Oliva  <aoliva@redhat.com>
+	* gcc.dg/sh4a-memmovua.c: Tweak regular expression.
+	2003-07-01  Alexandre Oliva  <aoliva@redhat.com>
+	* gcc.dg/sh4a-bitmovua.c: New.
+	* gcc.dg/sh4a-cos.c: New.
+	* gcc.dg/sh4a-cosf.c: New.
+	* gcc.dg/sh4a-fprun.c: New.
+	* gcc.dg/sh4a-fsrra.c: New.
+	* gcc.dg/sh4a-memmovua.c: New.
+	* gcc.dg/sh4a-sin.c: New.
+	* gcc.dg/sh4a-sincos.c: New.
+	* gcc.dg/sh4a-sincosf.c: New.
+	* gcc.dg/sh4a-sinf.c: New.
+
 2004-07-28  Diego Novillo  <dnovillo@redhat.com>
 
 	* gcc.dg/tree-ssa/20030714-2.c: Adjust number of expected

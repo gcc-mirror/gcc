@@ -1746,6 +1746,11 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 	case `echo ${target} | sed 's/e[lb]-/-/'` in
 	sh64*-*-netbsd*)	sh_cpu_target=sh5-64media ;;
 	sh64* | sh5*-*-netbsd*)	sh_cpu_target=sh5-32media ;;
+	sh4a_single_only*)	sh_cpu_target=sh4a-single-only ;;
+	sh4a_single*)		sh_cpu_target=sh4a-single ;;
+	sh4a_nofpu*)		sh_cpu_target=sh4a-nofpu ;;
+	sh4al)			sh_cpu_target=sh4al ;;
+	sh4a*)			sh_cpu_target=sh4a ;;
 	sh4_single_only*)	sh_cpu_target=sh4-single-only ;;
 	sh4_single*)		sh_cpu_target=sh4-single ;;
 	sh4_nofpu*)		sh_cpu_target=sh4-nofpu ;;
@@ -1760,6 +1765,7 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 	case $sh_cpu_default in
 	sh5-64media-nofpu | sh5-64media | \
 	  sh5-32media-nofpu | sh5-32media | sh5-compact-nofpu | sh5-compact | \
+	  sh4a-single-only | sh4a-single | sh4a-nofpu | sh4a | sh4al | \
 	  sh4-single-only | sh4-single | sh4-nofpu | sh4 | \
 	  sh3e | sh3 | sh2e | sh2 | sh1) ;;
 	"")	sh_cpu_default=${sh_cpu_target} ;;
@@ -1783,6 +1789,7 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 		case ${sh_multilib} in
 		sh1 | sh2 | sh2e | sh3 | sh3e | \
 		sh4 | sh4-single | sh4-single-only | sh4-nofpu | \
+		sh4a | sh4a-single | sh4a-single-only | sh4a-nofpu | sh4al | \
 		sh5-64media | sh5-64media-nofpu | \
 		sh5-32media | sh5-32media-nofpu | \
 		sh5-compact | sh5-compact-nofpu)
@@ -2476,9 +2483,12 @@ fi
 		"" | m1 | m2 | m2e | m3 | m3e | m4 | m4-single | m4-single-only | m4-nofpu )
 			# OK
 			;;
+		m4a | m4a-single | m4a-single-only | m4a-nofpu | m4al)
+		        ;;
 		*)
 			echo "Unknown CPU used in --with-cpu=$with_cpu, known values:"  1>&2
 			echo "m1 m2 m2e m3 m3e m4 m4-single m4-single-only m4-nofpu" 1>&2
+			echo "m4a m4a-single m4a-single-only m4a-nofpu m4al" 1>&2
 			exit 1
 			;;
 		esac

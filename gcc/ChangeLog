@@ -1,3 +1,93 @@
+2004-07-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	Introduce sh4a support.
+	* config.gcc: Handle sh4a multilibs and cpu selection.
+	* config/sh/sh.h: Likewise.  Handle sh4a command line flags.
+	* config/sh/t-mlib-sh4a: New.
+	* config/sh/t-mlib-sh4al: New.
+	* config/sh/t-mlib-sh4a-nofpu: New.
+	* config/sh/t-mlib-sh4a-single: New.
+	* config/sh/t-mlib-sh4a-single-only: New.
+	2004-02-20  DJ Delorie  <dj@redhat.com>
+	* config/sh/sh.md ("movua"): Change constraint from "m" to "Sua".
+	* config/sh/sh.h (EXTRA_CONSTRAINT_S): Add "Sua" support.
+	2003-08-22  Eric Christopher  <echristo@redhat.com>
+	* config/sh/sh4a.md: Update for chip errata.
+	2003-08-07  Eric Christopher  <echristo@redhat.com>
+	* config/sh/sh4a.md: New file. sh4a processor description.
+	2003-07-08  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (TARGET_SWITCHES): Added 4al.  Adjust description
+	of -m4a-nofpu.
+	(SH_ASM_SPEC): Pass -dsp for -m4al, not -m4a-nofpu.
+	* config/sh/t-sh (MULTILIB_MATCHES): Map -m4al to -m4a-nofpu.
+	* doc/invoke.texi (SH Options): Document -m4al.
+	2003-07-03  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.c (expand_block_move): Remove commented-out code
+	checked in by mistake.
+	(sh_cannot_change_mode_class): Enable SUBREGs to be used to select
+	single elements from SFmode vectors.
+	* config/sh/sh.md (fsca): Use VEC_CONCAT to initialize the output
+	register.
+	(sinsf2, cossf2, sindf2, cosdf2): Don't emit CLOBBER.
+	2003-07-01  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (sh_fsca_sf2int, sh_fsca_df2int,
+	sh_fsca_int2sf): Remove variable declarations.
+	* config/sh/sh.c (sh_fsca_sf2int, sh_fsca_df2int,
+	sh_fsca_int2sf): New functions.
+	(sh_fsca_sf2int_rtx, sh_fsca_df2int_rtx,
+	sh_fsca_int2sf_rtx): New static variables.
+	* config/sh/sh-protos.h (sh_fsca_sf2int, sh_fsca_df2int,
+	sh_fsca_int2sf): Declare.
+	* config/sh/sh.md: Adjust.
+	* doc/invoke.texi (SH Options): Document new options.
+	* config/sh/lib1funcs.asm (ic_invalidate): Remove SH4a forward
+	compatibility from SH4 code.
+	2003-06-27  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.c (expand_block_move): Don't emit POST_INC too
+	early.
+	(memory_movsrc_operand): Renamed to...
+	(unaligned_load_operand): ... this.  Simplified.
+	* config/sh/sh.h (PREDICATE_CODES): Adjust.
+	* config/sh/sh.md (movua, extv, extzv): Likewise.  Change movua's
+	input operand to SImode, and adjust the others.  Introduce
+	post-increment by peephole.
+	* config/sh/sh.c (expand_block_move): Give the target address the
+	same mode as the temp reg.
+	* config/sh/sh.c (expand_block_move): Use a temp reg for unaligned
+	copying.
+	2003-06-26  Alexandre Oliva  <aoliva@redhat.com>
+	Introduce support for SH4a.
+	* config/sh/lib1funcs.asm (ic_invalidate): Use icbi if
+	__SH4A__.  Emit 4 4kb blocks and touch all of them otherwise.
+	* config/sh/sh.c (sh_fsca_sf2int, sh_fsca_df2int,
+	sh_fsca_int2sf): New.
+	(sh_init_builtins): Initialize them.
+	(print_operand): Support `d'.
+	(expand_block_move): Use movua if src is misaligned.
+	(memory_movsrc_operand): New.
+	* config/sh/sh.h (TARGET_CPU_CPP_BUILTINS): Define __SH4A__
+	and one of the SH4 macros.
+	(SH4A_BIT, TARGET_SH4A_ARCH, TARGET_SH4A_FP,
+	SELECT_SH4A_NOFPU, SELECT_SH4A_SINGLE_ONLY, SELECT_SH4A,
+	SELECT_SH4A_SINGLE): New.
+	(TARGET_NONE): Add SH4A_BIT.
+	(TARGET_SWITCHES): Add 4a-single-only, 4a-single, 4a-nofpu and 4a.
+	(SH_ASM_SPEC): Pass -dsp if -m4a-nofpu.
+	(sh_fsca_sf2int, sh_fsca_df2int, sh_fsca_int2sf): Declare.
+	(OVERRIDE_OPTIONS): Set cpu to CPU_SH4A when appropriate.
+	(enum processor_type): Added PROCESSOR_SH4A.
+	(PREDICATE_CODES): Add memory_movsrc_operand.
+	* config/sh/sh.md: Removed unused variables.
+	(attr cpu): Add sh4a.
+	(attr type): Add movua, fsrra and fsca.
+	(prefetch): New, for SH4.
+	(ic_invalidate_line, ic_invalidate_line_sh4a): Use icbi.
+	(toggle_sz): Set type to fp.
+	(toggle_pr, rsqrtsf2, fsca, sinsf2, cossf2, sindf2, cosdf2): New.
+	(movua, extv, extzv): New.
+	* config/sh/t-sh: Add multilibs for 4a, 4a-nofpu, 4a-single
+	and 4a-single-only.
+
 2004-07-28  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-optimize.c (init_tree_optimization_passes): Schedule

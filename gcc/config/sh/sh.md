@@ -161,7 +161,7 @@
 ;; Target CPU.
 
 (define_attr "cpu"
- "sh1,sh2,sh2e,sh3,sh3e,sh4,sh5"
+ "sh1,sh2,sh2e,sh3,sh3e,sh4,sh4a,sh5"
   (const (symbol_ref "sh_cpu_attr")))
 
 (define_attr "endian" "big,little"
@@ -218,6 +218,9 @@
 ;; ftrc_s	fix_truncsfsi2_i4
 ;; dfdiv	double precision floating point divide (or square root)
 ;; cwb		ic_invalidate_line_i
+;; movua	SH4a unaligned load
+;; fsrra	square root reciprocal approximate
+;; fsca		sine and cosine approximate
 ;; tls_load     load TLS related address
 ;; arith_media	SHmedia arithmetic, logical, and shift instructions
 ;; cbranch_media SHmedia conditional branch instructions
@@ -249,7 +252,7 @@
 ;; nil		no-op move, will be deleted.
 
 (define_attr "type"
- "mt_group,cbranch,jump,jump_ind,arith,arith3,arith3b,dyn_shift,load,load_si,fload,store,move,fmove,smpy,dmpy,return,pload,prset,pstore,prget,pcload,pcload_si,pcfload,rte,sfunc,call,fp,fdiv,ftrc_s,dfp_arith,dfp_cmp,dfp_conv,dfdiv,gp_fpul,fpul_gp,mac_gp,mem_fpscr,gp_fpscr,cwb,tls_load,arith_media,cbranch_media,cmp_media,dfdiv_media,dfmul_media,dfparith_media,dfpconv_media,dmpy_media,fcmp_media,fdiv_media,fload_media,fmove_media,fparith_media,fpconv_media,fstore_media,gettr_media,invalidate_line_media,jump_media,load_media,pt_media,ptabs_media,store_media,mcmp_media,mac_media,d2mpy_media,atrans_media,ustore_media,nil,other"
+ "mt_group,cbranch,jump,jump_ind,arith,arith3,arith3b,dyn_shift,load,load_si,fload,store,move,fmove,smpy,dmpy,return,pload,prset,pstore,prget,pcload,pcload_si,pcfload,rte,sfunc,call,fp,fdiv,ftrc_s,dfp_arith,dfp_cmp,dfp_conv,dfdiv,gp_fpul,fpul_gp,mac_gp,mem_fpscr,gp_fpscr,cwb,movua,fsrra,fsca,tls_load,arith_media,cbranch_media,cmp_media,dfdiv_media,dfmul_media,dfparith_media,dfpconv_media,dmpy_media,fcmp_media,fdiv_media,fload_media,fmove_media,fparith_media,fpconv_media,fstore_media,gettr_media,invalidate_line_media,jump_media,load_media,pt_media,ptabs_media,store_media,mcmp_media,mac_media,d2mpy_media,atrans_media,ustore_media,nil,other"
   (const_string "other"))
 
 ;; We define a new attribute namely "insn_class".We use
@@ -3488,6 +3491,11 @@
       emit_insn (gen_ic_invalidate_line_compact (operands[0], operands[1]));
       DONE;
     }
+  else if (TARGET_SH4A_ARCH)
+    {
+      emit_insn (gen_ic_invalidate_line_sh4a (operands[0]));
+      DONE;
+    }
   operands[0] = force_reg (Pmode, operands[0]);
   operands[1] = force_reg (Pmode, GEN_INT (trunc_int_for_mode (0xf0000008,
 							       Pmode)));
@@ -3506,6 +3514,14 @@
   "TARGET_HARD_SH4"
   "ocbwb\\t@%0\;extu.w\\t%0,%2\;or\\t%1,%2\;mov.l\\t%0,@%2"
   [(set_attr "length" "8")
+   (set_attr "type" "cwb")])
+
+(define_insn "ic_invalidate_line_sh4a"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")]
+		    UNSPEC_ICACHE)]
+  "TARGET_SH4A_ARCH"
+  "ocbwb\\t@%0\;synco\;icbi\\t@%0"
+  [(set_attr "length" "16")
    (set_attr "type" "cwb")])
 
 ;; ??? could make arg 0 an offsettable memory operand to allow to save
@@ -8151,7 +8167,19 @@ mov.l\\t1f,r0\\n\\
 	(xor:PSI (reg:PSI FPSCR_REG) (const_int 1048576)))]
   "TARGET_SH4"
   "fschg"
-  [(set_attr "fp_set" "unknown")])
+  [(set_attr "type" "fp") (set_attr "fp_set" "unknown")])
+
+;; There's no way we can use it today, since optimize mode switching
+;; doesn't enable us to know from which mode we're switching to the
+;; mode it requests, to tell whether we can use a relative mode switch
+;; (like toggle_pr) or an absolute switch (like loading fpscr from
+;; memory).
+(define_insn "toggle_pr"
+  [(set (reg:PSI FPSCR_REG)
+	(xor:PSI (reg:PSI FPSCR_REG) (const_int 524288)))]
+  "TARGET_SH4A_FP && ! TARGET_FPU_SINGLE"
+  "fpchg"
+  [(set_attr "type" "fp")])
 
 (define_expand "addsf3"
   [(set (match_operand:SF 0 "arith_reg_operand" "")
@@ -8649,6 +8677,117 @@ mov.l\\t1f,r0\\n\\
   "fsqrt	%0"
   [(set_attr "type" "fdiv")
    (set_attr "fp_mode" "single")])
+
+(define_insn "rsqrtsf2"
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(div:SF (match_operand:SF 1 "immediate_operand" "i")
+		(sqrt:SF (match_operand:SF 2 "register_operand" "0"))))
+   (use (match_operand:PSI 3 "fpscr_operand" "c"))]
+  "TARGET_SH4A_FP && flag_unsafe_math_optimizations
+   && operands[1] == CONST1_RTX (SFmode)"
+  "fsrra	%0"
+  [(set_attr "type" "fsrra")
+   (set_attr "fp_mode" "single")])
+
+(define_insn "fsca"
+  [(set (match_operand:V2SF 0 "fp_arith_reg_operand" "=f")
+	(vec_concat:V2SF
+	 (unspec:SF [(mult:SF
+		      (float:SF (match_operand:SI 1 "fpul_operand" "y"))
+		      (match_operand:SF 2 "immediate_operand" "i"))
+		    ] UNSPEC_FSINA)
+	 (unspec:SF [(mult:SF (float:SF (match_dup 1)) (match_dup 2))
+		    ] UNSPEC_FCOSA)))
+   (use (match_operand:PSI 3 "fpscr_operand" "c"))]
+  "TARGET_SH4A_FP && flag_unsafe_math_optimizations
+   && operands[2] == sh_fsca_int2sf ()"
+  "fsca	fpul,%d0"
+  [(set_attr "type" "fsca")
+   (set_attr "fp_mode" "single")])
+
+(define_expand "sinsf2"
+  [(set (match_operand:SF 0 "nonimmediate_operand" "")
+	(unspec:SF [(match_operand:SF 1 "fp_arith_reg_operand" "")]
+		   UNSPEC_FSINA))]
+  "TARGET_SH4A_FP && flag_unsafe_math_optimizations"
+  "
+{
+  rtx scaled = gen_reg_rtx (SFmode);
+  rtx truncated = gen_reg_rtx (SImode);
+  rtx fsca = gen_reg_rtx (V2SFmode);
+  rtx scale_reg = force_reg (SFmode, sh_fsca_sf2int ());
+
+  emit_sf_insn (gen_mulsf3 (scaled, operands[1], scale_reg));
+  emit_sf_insn (gen_fix_truncsfsi2 (truncated, scaled));
+  emit_sf_insn (gen_fsca (fsca, truncated, sh_fsca_int2sf (),
+			  get_fpscr_rtx ()));
+  emit_move_insn (operands[0], gen_rtx_SUBREG (SFmode, fsca, 0));
+  DONE;
+}")
+
+(define_expand "cossf2"
+  [(set (match_operand:SF 0 "nonimmediate_operand" "")
+	(unspec:SF [(match_operand:SF 1 "fp_arith_reg_operand" "")]
+		   UNSPEC_FCOSA))]
+  "TARGET_SH4A_FP && flag_unsafe_math_optimizations"
+  "
+{
+  rtx scaled = gen_reg_rtx (SFmode);
+  rtx truncated = gen_reg_rtx (SImode);
+  rtx fsca = gen_reg_rtx (V2SFmode);
+  rtx scale_reg = force_reg (SFmode, sh_fsca_sf2int ());
+
+  emit_sf_insn (gen_mulsf3 (scaled, operands[1], scale_reg));
+  emit_sf_insn (gen_fix_truncsfsi2 (truncated, scaled));
+  emit_sf_insn (gen_fsca (fsca, truncated, sh_fsca_int2sf (),
+			  get_fpscr_rtx ()));
+  emit_move_insn (operands[0], gen_rtx_SUBREG (SFmode, fsca, 4));
+  DONE;
+}")
+
+(define_expand "sindf2"
+  [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
+	(unspec:DF [(match_operand:DF 1 "fp_arith_reg_operand" "")]
+		   UNSPEC_FSINA))]
+  "TARGET_SH4A_FP && ! TARGET_FPU_SINGLE && flag_unsafe_math_optimizations"
+  "
+{
+  rtx scaled = gen_reg_rtx (DFmode);
+  rtx truncated = gen_reg_rtx (SImode);
+  rtx fsca = gen_reg_rtx (V2SFmode);
+  rtx scale_reg = force_reg (DFmode, sh_fsca_df2int ());
+  rtx sfresult = gen_reg_rtx (SFmode);
+
+  emit_df_insn (gen_muldf3 (scaled, operands[1], scale_reg));
+  emit_df_insn (gen_fix_truncdfsi2 (truncated, scaled));
+  emit_sf_insn (gen_fsca (fsca, truncated, sh_fsca_int2sf (),
+			  get_fpscr_rtx ()));
+  emit_move_insn (sfresult, gen_rtx_SUBREG (SFmode, fsca, 0));
+  emit_df_insn (gen_extendsfdf2 (operands[0], sfresult));
+  DONE;
+}")
+
+(define_expand "cosdf2"
+  [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
+	(unspec:DF [(match_operand:DF 1 "fp_arith_reg_operand" "")]
+		   UNSPEC_FCOSA))]
+  "TARGET_SH4A_FP && ! TARGET_FPU_SINGLE && flag_unsafe_math_optimizations"
+  "
+{
+  rtx scaled = gen_reg_rtx (DFmode);
+  rtx truncated = gen_reg_rtx (SImode);
+  rtx fsca = gen_reg_rtx (V2SFmode);
+  rtx scale_reg = force_reg (DFmode, sh_fsca_df2int ());
+  rtx sfresult = gen_reg_rtx (SFmode);
+
+  emit_df_insn (gen_muldf3 (scaled, operands[1], scale_reg));
+  emit_df_insn (gen_fix_truncdfsi2 (truncated, scaled));
+  emit_sf_insn (gen_fsca (fsca, truncated, sh_fsca_int2sf (),
+			  get_fpscr_rtx ()));
+  emit_move_insn (sfresult, gen_rtx_SUBREG (SFmode, fsca, 4));
+  emit_df_insn (gen_extendsfdf2 (operands[0], sfresult));
+  DONE;
+}")
 
 (define_expand "abssf2"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "")
@@ -9188,6 +9327,71 @@ mov.l\\t1f,r0\\n\\
 
   DONE;
 }")
+
+(define_insn "movua"
+  [(set (match_operand:SI 0 "register_operand" "=z")
+	(sign_extract:SI (match_operand:SI 1 "unaligned_load_operand" "Sua>")
+			 (const_int 32) (const_int 0)))]
+  "TARGET_SH4A_ARCH"
+  "movua.l	%1,%0"
+  [(set_attr "type" "movua")])
+
+;; We shouldn't need this, but cse replaces increments with references
+;; to other regs before flow has a chance to create post_inc
+;; addressing modes, and only postreload's cse_move2add brings the
+;; increments back to a usable form.
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand" "")
+	(sign_extract:SI (mem:SI (match_operand:SI 1 "register_operand" ""))
+			 (const_int 32) (const_int 0)))
+   (set (match_dup 1) (plus:SI (match_dup 1) (const_int 4)))]
+  "TARGET_SH4A_ARCH && REGNO (operands[0]) != REGNO (operands[1])"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(sign_extract:SI (mem:SI (post_inc:SI
+				  (match_operand:SI 1 "register_operand" "")))
+			 (const_int 32) (const_int 0)))]
+  "")
+
+(define_expand "extv"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(sign_extract:SI (match_operand:QI 1 "unaligned_load_operand" "")
+			 (match_operand 2 "const_int_operand" "")
+			 (match_operand 3 "const_int_operand" "")))]
+  ""
+{
+  if (TARGET_SH4A_ARCH
+      && INTVAL (operands[2]) == 32
+      && INTVAL (operands[3]) == -24 * (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
+      && GET_CODE (operands[1]) == MEM && MEM_ALIGN (operands[1]) < 32)
+    {
+      emit_insn (gen_movua (operands[0],
+			    adjust_address (operands[1], SImode, 0)));
+      DONE;
+    }
+
+  FAIL;
+})
+
+(define_expand "extzv"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(zero_extract:SI (match_operand:QI 1 "unaligned_load_operand" "")
+			 (match_operand 2 "const_int_operand" "")
+			 (match_operand 3 "const_int_operand" "")))]
+  ""
+{
+  if (TARGET_SH4A_ARCH
+      && INTVAL (operands[2]) == 32
+      && INTVAL (operands[3]) == -24 * (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
+      && GET_CODE (operands[1]) == MEM && MEM_ALIGN (operands[1]) < 32)
+    {
+      emit_insn (gen_movua (operands[0],
+			    adjust_address (operands[1], SImode, 0)));
+      DONE;
+    }
+
+  FAIL;
+})
+
 
 ;; -------------------------------------------------------------------------
 ;; Peepholes
@@ -10661,9 +10865,11 @@ mov.l\\t1f,r0\\n\\
   [(prefetch (match_operand:QI 0 "address_operand" "p")
              (match_operand:SI 1 "const_int_operand" "n")
              (match_operand:SI 2 "const_int_operand" "n"))]
-  "TARGET_SHMEDIA"
+  "TARGET_SHMEDIA || TARGET_HARD_SH4"
   "*
 {
+  if (TARGET_HARD_SH4)
+    return \"pref @%0\";
   operands[0] = gen_rtx_MEM (QImode, operands[0]);
   output_asm_insn (\"ld%M0.b    %m0,r63\", operands);
   return \"\";

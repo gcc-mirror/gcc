@@ -60,6 +60,13 @@ do { \
     case PROCESSOR_SH4: \
       builtin_define (TARGET_FPU_SINGLE ? "__SH4_SINGLE__" : "__SH4__"); \
       break; \
+    case PROCESSOR_SH4A: \
+      builtin_define ("__SH4A__"); \
+      builtin_define (TARGET_SH4 \
+		      ? (TARGET_FPU_SINGLE ? "__SH4_SINGLE__" : "__SH4__") \
+		      : TARGET_FPU_ANY ? "__SH4_SINGLE_ONLY__" \
+		      : "__SH4_NOFPU__"); \
+      break; \
     case PROCESSOR_SH5: \
       { \
 	builtin_define_with_value ("__SH5__", \
@@ -138,6 +145,7 @@ extern int target_flags;
 #define HARD_SH4_BIT	(1<<5)
 #define FPU_SINGLE_BIT	(1<<7)
 #define SH4_BIT	       	(1<<12)
+#define SH4A_BIT	(1<<3)
 #define FMOVD_BIT	(1<<4)
 #define SH5_BIT		(1<<0)
 #define SPACE_BIT 	(1<<13)
@@ -199,6 +207,14 @@ extern int target_flags;
 
 /* Nonzero if we should generate code using type 4 insns.  */
 #define TARGET_SH4 ((target_flags & SH4_BIT) && (target_flags & SH1_BIT))
+
+/* Nonzero if we're generating code for the common subset of
+   instructions present on both SH4a and SH4al-dsp.  */
+#define TARGET_SH4A_ARCH (target_flags & SH4A_BIT)
+
+/* Nonzero if we're generating code for SH4a, unless the use of the
+   FPU is disabled (which makes it compatible with SH4al-dsp).  */
+#define TARGET_SH4A_FP (TARGET_SH4A_ARCH && TARGET_FPU_ANY)
 
 /* Nonzero if we should generate code for a SH5 CPU (either ISA).  */
 #define TARGET_SH5 (target_flags & SH5_BIT)
@@ -285,6 +301,10 @@ extern int target_flags;
 #define SELECT_SH4_SINGLE_ONLY   (HARD_SH4_BIT | SELECT_SH3E)
 #define SELECT_SH4               (SH4_BIT | SH_E_BIT | HARD_SH4_BIT | SELECT_SH3)
 #define SELECT_SH4_SINGLE        (FPU_SINGLE_BIT | SELECT_SH4)
+#define SELECT_SH4A_NOFPU        (SH4A_BIT | SELECT_SH4_NOFPU)
+#define SELECT_SH4A_SINGLE_ONLY  (SH4A_BIT | SELECT_SH4_SINGLE_ONLY)
+#define SELECT_SH4A              (SH4A_BIT | SELECT_SH4)
+#define SELECT_SH4A_SINGLE       (SH4A_BIT | SELECT_SH4_SINGLE)
 #define SELECT_SH5_64MEDIA       (SH5_BIT | SH4_BIT)
 #define SELECT_SH5_64MEDIA_NOFPU (SH5_BIT)
 #define SELECT_SH5_32MEDIA       (SH5_BIT | SH4_BIT | SH_E_BIT)
@@ -302,6 +322,12 @@ extern int target_flags;
 #ifndef SUPPORT_SH4_NOFPU
 #define TARGET_SWITCH_SH4_NOFPU
 #endif
+#ifndef SUPPORT_SH4A_NOFPU
+#define TARGET_SWITCH_SH4A_NOFPU
+#endif
+#ifndef SUPPORT_SH4AL
+#define TARGET_SWITCH_SH4AL
+#endif
 #endif
 #endif
 #endif
@@ -313,15 +339,24 @@ extern int target_flags;
 #ifndef SUPPORT_SH4_SINGLE_ONLY
 #define TARGET_SWITCH_SH4_SINGLE_ONLY
 #endif
+#ifndef SUPPORT_SH4A_SINGLE_ONLY
+#define TARGET_SWITCH_SH4A_SINGLE_ONLY
+#endif
 #endif
 #endif
 
 #ifndef SUPPORT_SH4
 #define TARGET_SWITCH_SH4
+#ifndef SUPPORT_SH4A
+#define TARGET_SWITCH_SH4A
+#endif
 #endif
 
 #ifndef SUPPORT_SH4_SINGLE
 #define TARGET_SWITCH_SH4_SINGLE
+#ifndef SUPPORT_SH4A_SINGLE
+#define TARGET_SWITCH_SH4A_SINGLE
+#endif
 #endif
 
 #ifndef SUPPORT_SH5_64MEDIA
@@ -342,7 +377,7 @@ extern int target_flags;
 
 /* Reset all target-selection flags.  */
 #define TARGET_NONE -(SH1_BIT | SH2_BIT | SH3_BIT | SH_E_BIT | SH4_BIT \
-		      | HARD_SH4_BIT | FPU_SINGLE_BIT | SH5_BIT)
+		      | SH4A_BIT | HARD_SH4_BIT | FPU_SINGLE_BIT | SH5_BIT)
 
 #ifndef TARGET_SWITCH_SH1
 #define TARGET_SWITCH_SH1 \
@@ -389,6 +424,31 @@ extern int target_flags;
   {"4",		TARGET_NONE, "" }, \
   {"4",		SELECT_SH4, "Generate SH4 code" },
 #endif
+#ifndef TARGET_SWITCH_SH4A
+#define TARGET_SWITCH_SH4A \
+  {"4a",	TARGET_NONE, "" }, \
+  {"4a",	SELECT_SH4A, "Generate SH4a code" },
+#endif
+#ifndef TARGET_SWITCH_SH4A_SINGLE_ONLY
+#define TARGET_SWITCH_SH4A_SINGLE_ONLY \
+  {"4a-single-only",	TARGET_NONE, "" },	\
+  {"4a-single-only",	SELECT_SH4A_SINGLE_ONLY, "Generate only single-precision SH4a code" },
+#endif
+#ifndef TARGET_SWITCH_SH4A_SINGLE
+#define TARGET_SWITCH_SH4A_SINGLE \
+  {"4a-single",	TARGET_NONE, "" },\
+  {"4a-single",	SELECT_SH4A_SINGLE, "Generate default single-precision SH4a code" },
+#endif
+#ifndef TARGET_SWITCH_SH4A_NOFPU
+#define TARGET_SWITCH_SH4A_NOFPU \
+  {"4a-nofpu",	TARGET_NONE, "" },\
+  {"4a-nofpu",	SELECT_SH4A_NOFPU, "Generate SH4a FPU-less code" },
+#endif
+#ifndef TARGET_SWITCH_SH4AL
+#define TARGET_SWITCH_SH4AL \
+  {"4al",	TARGET_NONE, "" },\
+  {"4al",	SELECT_SH4A_NOFPU, "Generate SH4al-dsp code" },
+#endif
 #ifndef TARGET_SWITCH_SH5_64MEDIA
 #define TARGET_SWITCH_SH5_64MEDIA \
   {"5-64media",	TARGET_NONE, "" },		\
@@ -424,6 +484,11 @@ extern int target_flags;
   TARGET_SWITCH_SH4_SINGLE \
   TARGET_SWITCH_SH4_NOFPU \
   TARGET_SWITCH_SH4 \
+  TARGET_SWITCH_SH4A_SINGLE_ONLY \
+  TARGET_SWITCH_SH4A_SINGLE \
+  TARGET_SWITCH_SH4A_NOFPU \
+  TARGET_SWITCH_SH4A \
+  TARGET_SWITCH_SH4AL \
   TARGET_SWITCH_SH5_64MEDIA \
   TARGET_SWITCH_SH5_64MEDIA_NOFPU \
   TARGET_SWITCHES_SH5_32MEDIA \
@@ -497,7 +562,7 @@ extern int target_flags;
 
 #define SH_ASM_SPEC \
  "%(subtarget_asm_endian_spec) %{mrelax:-relax %(subtarget_asm_relax_spec)}\
-%(subtarget_asm_isa_spec)"
+%(subtarget_asm_isa_spec) %{m4al:-dsp}"
 
 #define ASM_SPEC SH_ASM_SPEC
 
@@ -583,6 +648,11 @@ do {									\
     {									\
       assembler_dialect = 1;						\
       sh_cpu = CPU_SH4;							\
+    }									\
+  if (TARGET_SH4A_ARCH)							\
+    {									\
+      assembler_dialect = 1;						\
+      sh_cpu = CPU_SH4A;						\
     }									\
   if (TARGET_SH5)							\
     {									\
@@ -2441,8 +2511,12 @@ struct sh_args {
 #define EXTRA_CONSTRAINT_Sr0(OP) \
   (memory_operand((OP), GET_MODE (OP)) \
    && ! refers_to_regno_p (R0_REG, R0_REG + 1, OP, (rtx *)0))
+#define EXTRA_CONSTRAINT_Sua(OP) \
+  (memory_operand((OP), GET_MODE (OP)) \
+   && GET_CODE (XEXP (OP, 0)) != PLUS)
 #define EXTRA_CONSTRAINT_S(OP, STR) \
   ((STR)[1] == 'r' && (STR)[2] == '0' ? EXTRA_CONSTRAINT_Sr0 (OP) \
+   : (STR)[1] == 'u' && (STR)[2] == 'a' ? EXTRA_CONSTRAINT_Sua (OP) \
    : 0)
 
 #define EXTRA_CONSTRAINT_STR(OP, C, STR)		\
@@ -3175,6 +3249,7 @@ enum processor_type {
   PROCESSOR_SH3,
   PROCESSOR_SH3E,
   PROCESSOR_SH4,
+  PROCESSOR_SH4A,
   PROCESSOR_SH5
 };
 
@@ -3245,6 +3320,7 @@ extern int rtx_equal_function_value_matters;
   {"general_extend_operand", {SUBREG, REG, MEM, TRUNCATE}},		\
   {"general_movsrc_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE, MEM}}, \
   {"general_movdst_operand", {SUBREG, REG, MEM}},			\
+  {"unaligned_load_operand", {MEM}},					\
   {"greater_comparison_operator", {GT,GE,GTU,GEU}},			\
   {"int_gpr_dest", {SUBREG, REG}},					\
   {"inqhi_operand", {TRUNCATE}},					\
