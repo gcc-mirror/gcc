@@ -116,8 +116,8 @@ static int alter_access PARAMS ((tree, tree, tree));
 static void handle_using_decl PARAMS ((tree, tree));
 static void check_for_override PARAMS ((tree, tree));
 static tree dfs_modify_vtables PARAMS ((tree, void *));
-static tree modify_all_vtables PARAMS ((tree, int *, tree));
-static void determine_primary_base PARAMS ((tree, int *));
+static tree modify_all_vtables PARAMS ((tree, tree));
+static void determine_primary_base PARAMS ((tree));
 static void finish_struct_methods PARAMS ((tree));
 static void maybe_warn_about_overly_private_class PARAMS ((tree));
 static int field_decl_cmp PARAMS ((const tree *, const tree *));
@@ -142,10 +142,10 @@ static void check_bases PARAMS ((tree, int *, int *, int *));
 static void check_bases_and_members (tree);
 static tree create_vtable_ptr (tree, tree *);
 static void include_empty_classes (record_layout_info);
-static void layout_class_type (tree, int *, tree *);
+static void layout_class_type (tree, tree *);
 static void fixup_pending_inline PARAMS ((tree));
 static void fixup_inline_methods PARAMS ((tree));
-static void set_primary_base PARAMS ((tree, tree, int *));
+static void set_primary_base PARAMS ((tree, tree));
 static void propagate_binfo_offsets PARAMS ((tree, tree, tree));
 static void layout_virtual_bases (record_layout_info, splay_tree);
 static tree dfs_set_offset_for_unshared_vbases PARAMS ((tree, void *));
@@ -173,7 +173,6 @@ static bool layout_empty_base PARAMS ((tree, tree, splay_tree, tree));
 static void accumulate_vtbl_inits PARAMS ((tree, tree, tree, tree, tree));
 static tree dfs_accumulate_vtbl_inits PARAMS ((tree, tree, tree, tree,
 					       tree));
-static void set_vindex PARAMS ((tree, int *));
 static void build_rtti_vtbl_entries PARAMS ((tree, vtbl_init_data *));
 static void build_vcall_and_vbase_vtbl_entries PARAMS ((tree, 
 							vtbl_init_data *));
@@ -738,37 +737,9 @@ modify_vtable_entry (t, binfo, fndecl, delta, virtuals)
       BV_DELTA (v) = delta;
       BV_VCALL_INDEX (v) = NULL_TREE;
       BV_FN (v) = fndecl;
-
-      /* Now assign virtual dispatch information, if unset.  We can
-	 dispatch this through any overridden base function.
-
-	 FIXME this can choose a secondary vtable if the primary is not
-	 also lexically first, leading to useless conversions.
-	 In the V3 ABI, there's no reason for DECL_VIRTUAL_CONTEXT to
-	 ever be different from DECL_CONTEXT.  */
-      if (TREE_CODE (DECL_VINDEX (fndecl)) != INTEGER_CST)
-	{
-	  DECL_VINDEX (fndecl) = DECL_VINDEX (base_fndecl);
-	  DECL_VIRTUAL_CONTEXT (fndecl) = DECL_VIRTUAL_CONTEXT (base_fndecl);
-	}
     }
 }
 
-/* Set DECL_VINDEX for DECL.  VINDEX_P is the number of virtual
-   functions present in the vtable so far.  */
-
-static void
-set_vindex (decl, vfuns_p)
-     tree decl;
-     int *vfuns_p;
-{
-  int vindex;
-
-  vindex = *vfuns_p;
-  *vfuns_p += (TARGET_VTABLE_USES_DESCRIPTORS
-	       ? TARGET_VTABLE_USES_DESCRIPTORS : 1);
-  DECL_VINDEX (decl) = build_shared_int_cst (vindex);
-}
 
 /* Add method METHOD to class TYPE.  If ERROR_P is true, we are adding
    the method after the class has already been defined because a
@@ -1577,10 +1548,9 @@ mark_primary_bases (type)
 /* Make the BINFO the primary base of T.  */
 
 static void
-set_primary_base (t, binfo, vfuns_p)
+set_primary_base (t, binfo)
      tree t;
      tree binfo;
-     int *vfuns_p;
 {
   tree basetype;
 
@@ -1590,15 +1560,13 @@ set_primary_base (t, binfo, vfuns_p)
   TYPE_BINFO_VIRTUALS (t) = TYPE_BINFO_VIRTUALS (basetype);
   TYPE_VFIELD (t) = TYPE_VFIELD (basetype);
   CLASSTYPE_RTTI (t) = CLASSTYPE_RTTI (basetype);
-  *vfuns_p = CLASSTYPE_VSIZE (basetype);
 }
 
 /* Determine the primary class for T.  */
 
 static void
-determine_primary_base (t, vfuns_p)
+determine_primary_base (t)
      tree t;
-     int *vfuns_p;
 {
   int i, n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
   tree vbases;
@@ -1630,7 +1598,7 @@ determine_primary_base (t, vfuns_p)
 
 	  if (!CLASSTYPE_HAS_PRIMARY_BASE_P (t))
 	    {
-	      set_primary_base (t, base_binfo, vfuns_p);
+	      set_primary_base (t, base_binfo);
 	      CLASSTYPE_VFIELDS (t) = copy_list (CLASSTYPE_VFIELDS (basetype));
 	    }
 	  else
@@ -1732,7 +1700,7 @@ determine_primary_base (t, vfuns_p)
       /* If we've got a primary base, use it.  */
       if (candidate)
 	{
-	  set_primary_base (t, candidate, vfuns_p);
+	  set_primary_base (t, candidate);
 	  CLASSTYPE_VFIELDS (t) 
 	    = copy_list (CLASSTYPE_VFIELDS (BINFO_TYPE (candidate)));
 	}	
@@ -2544,9 +2512,8 @@ dfs_modify_vtables (binfo, data)
    should therefore be appended to the end of the vtable for T.  */
 
 static tree
-modify_all_vtables (t, vfuns_p, virtuals)
+modify_all_vtables (t, virtuals)
      tree t;
-     int *vfuns_p;
      tree virtuals;
 {
   tree binfo = TYPE_BINFO (t);
@@ -2570,12 +2537,6 @@ modify_all_vtables (t, vfuns_p, virtuals)
       if (!value_member (fn, BINFO_VIRTUALS (binfo))
 	  || DECL_VINDEX (fn) == error_mark_node)
 	{
-	  /* Set the vtable index.  */
-	  set_vindex (fn, vfuns_p);
-	  /* We don't need to convert to a base class when calling
-	     this function.  */
-	  DECL_VIRTUAL_CONTEXT (fn) = t;
-
 	  /* We don't need to adjust the `this' pointer when
 	     calling this function.  */
 	  BV_DELTA (*fnsp) = integer_zero_node;
@@ -2588,7 +2549,7 @@ modify_all_vtables (t, vfuns_p, virtuals)
 	/* We've already got an entry for this function.  Skip it.  */
 	*fnsp = TREE_CHAIN (*fnsp);
     }
-  
+
   return virtuals;
 }
 
@@ -4850,7 +4811,7 @@ include_empty_classes (record_layout_info rli)
    pointer.  Accumulate declared virtual functions on VIRTUALS_P.  */
 
 static void
-layout_class_type (tree t, int *vfuns_p, tree *virtuals_p)
+layout_class_type (tree t, tree *virtuals_p)
 {
   tree non_static_data_members;
   tree field;
@@ -4874,7 +4835,7 @@ layout_class_type (tree t, int *vfuns_p, tree *virtuals_p)
 
   /* If possible, we reuse the virtual function table pointer from one
      of our base classes.  */
-  determine_primary_base (t, vfuns_p);
+  determine_primary_base (t);
 
   /* Create a pointer to our virtual function table.  */
   vptr = create_vtable_ptr (t, virtuals_p);
@@ -5145,7 +5106,6 @@ finish_struct_1 (t)
      tree t;
 {
   tree x;
-  int vfuns;
   /* A TREE_LIST.  The TREE_VALUE of each node is a FUNCTION_DECL.  */
   tree virtuals = NULL_TREE;
   int n_fields = 0;
@@ -5166,7 +5126,6 @@ finish_struct_1 (t)
   TYPE_SIZE (t) = NULL_TREE;
   CLASSTYPE_GOT_SEMICOLON (t) = 0;
   CLASSTYPE_PRIMARY_BINFO (t) = NULL_TREE;
-  vfuns = 0;
   CLASSTYPE_RTTI (t) = NULL_TREE;
 
   fixup_inline_methods (t);
@@ -5182,7 +5141,7 @@ finish_struct_1 (t)
   check_bases_and_members (t);
 
   /* Layout the class itself.  */
-  layout_class_type (t, &vfuns, &virtuals);
+  layout_class_type (t, &virtuals);
 
   /* Make sure that we get our own copy of the vfield FIELD_DECL.  */
   vfield = TYPE_VFIELD (t);
@@ -5206,7 +5165,7 @@ finish_struct_1 (t)
   else
     my_friendly_assert (!vfield || DECL_FIELD_CONTEXT (vfield) == t, 20010726);
 
-  virtuals = modify_all_vtables (t, &vfuns, nreverse (virtuals));
+  virtuals = modify_all_vtables (t, nreverse (virtuals));
 
   /* If we created a new vtbl pointer for this class, add it to the
      list.  */
@@ -5246,6 +5205,9 @@ finish_struct_1 (t)
 
   if (TYPE_CONTAINS_VPTR_P (t))
     {
+      int vindex;
+      tree fn;
+
       if (TYPE_BINFO_VTABLE (t))
 	my_friendly_assert (DECL_VIRTUAL_P (TYPE_BINFO_VTABLE (t)),
 			    20000116);
@@ -5253,9 +5215,17 @@ finish_struct_1 (t)
 	my_friendly_assert (TYPE_BINFO_VIRTUALS (t) == NULL_TREE,
 			    20000116);
 
-      CLASSTYPE_VSIZE (t) = vfuns;
       /* Add entries for virtual functions introduced by this class.  */
       TYPE_BINFO_VIRTUALS (t) = chainon (TYPE_BINFO_VIRTUALS (t), virtuals);
+
+      /* Set DECL_VINDEX for all functions declared in this class.  */
+      for (vindex = 0, fn = BINFO_VIRTUALS (TYPE_BINFO (t)); 
+	   fn; 
+	   fn = TREE_CHAIN (fn), 
+	     vindex += (TARGET_VTABLE_USES_DESCRIPTORS
+			? TARGET_VTABLE_USES_DESCRIPTORS : 1))
+	if (TREE_CODE (DECL_VINDEX (BV_FN (fn))) != INTEGER_CST)
+	  DECL_VINDEX (BV_FN (fn)) = build_shared_int_cst (vindex);
     }
 
   finish_struct_bits (t);

@@ -1150,8 +1150,6 @@ struct lang_type_class GTY(())
      remove a flag.  */
   unsigned dummy : 4;
 
-  int vsize;
-
   tree primary_base;
   tree vfields;
   tree vbases;
@@ -1374,10 +1372,6 @@ struct lang_type GTY(())
    for this class.  */
 #define CLASSTYPE_PRIMARY_BINFO(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->primary_base)
-
-/* The number of virtual functions present in this class' virtual
-   function table.  */
-#define CLASSTYPE_VSIZE(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->vsize)
 
 /* A chain of BINFOs for the direct and indirect virtual base classes
    that this type uses in a post-order depth-first left-to-right
@@ -1766,13 +1760,10 @@ struct lang_decl GTY(())
       {
 	tree befriending_classes;
 	
-	/* For a virtual FUNCTION_DECL, this is DECL_VIRTUAL_CONTEXT.  For a
-	   non-virtual FUNCTION_DECL, this is DECL_FRIEND_CONTEXT.  */
+	/* For a non-virtual FUNCTION_DECL, this is
+	   DECL_FRIEND_CONTEXT.  For a virtual FUNCTION_DECL for which
+	   DECL_THUNK_P does not hold, this is DECL_THUNKS.  */
 	tree context;
-	
-	/* In a FUNCTION_DECL for which DECL_THUNK_P does not hold, this
-	   is DECL_THUNKS.  */
-	tree thunks;
 
 	/* In a FUNCTION_DECL, this is DECL_CLONED_FUNCTION.  */
 	tree cloned_function;
@@ -2060,7 +2051,7 @@ struct lang_decl GTY(())
 /* The thunks associated with NODE, a FUNCTION_DECL that is not itself
    a thunk.  */
 #define DECL_THUNKS(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->u.f.thunks)
+  (DECL_LANG_SPECIFIC (NODE)->u.f.context)
 
 /* Nonzero if NODE is a thunk, rather than an ordinary function.  */
 #define DECL_THUNK_P(NODE)			\
@@ -2113,11 +2104,6 @@ struct lang_decl GTY(())
 #define CP_DECL_CONTEXT(NODE) \
   (DECL_CONTEXT (NODE) ? DECL_CONTEXT (NODE) : global_namespace)
 #define FROB_CONTEXT(NODE)   ((NODE) == global_namespace ? NULL_TREE : (NODE))
-
-/* For a virtual function, the base where we find its vtable entry.
-   For a non-virtual function, the base where it is defined.  */
-#define DECL_VIRTUAL_CONTEXT(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->u.f.context)
 
 /* 1 iff NODE has namespace scope, including the global namespace.  */
 #define DECL_NAMESPACE_SCOPE_P(NODE)				\
