@@ -651,7 +651,19 @@ compute_nest_using_fourier_motzkin (int size,
 }
 
 /* Compute the loop bounds for the auxiliary space NEST.
-   Input system used is Ax <= b.  TRANS is the unimodular transformation.  */
+   Input system used is Ax <= b.  TRANS is the unimodular transformation.  
+   Given the original nest, this function will 
+   1. Convert the nest into matrix form, which consists of a matrix for the
+   coefficients, a matrix for the 
+   invariant coefficients, and a vector for the constants.  
+   2. Use the matrix form to calculate the lattice base for the nest (which is
+   a dense space) 
+   3. Compose the dense space transform with the user specified transform, to 
+   get a transform we can easily calculate transformed bounds for.
+   4. Multiply the composed transformation matrix times the matrix form of the
+   loop.
+   5. Transform the newly created matrix (from step 4) back into a loop nest
+   using fourier motzkin elimination to figure out the bounds.  */
 
 static lambda_loopnest
 lambda_compute_auxillary_space (lambda_loopnest nest,
@@ -786,9 +798,11 @@ lambda_compute_auxillary_space (lambda_loopnest nest,
 }
 
 /* Compute the loop bounds for the target space, using the bounds of
-   the auxiliary nest AUXILLARY_NEST, and the triangular matrix H.  This is
-   done by matrix multiplication and then transformation of the new matrix
-   back into linear expression form.
+   the auxiliary nest AUXILLARY_NEST, and the triangular matrix H.  
+   The target space loop bounds are computed by multiplying the triangular
+   matrix H by the auxillary nest, to get the new loop bounds.  The sign of
+   the loop steps (positive or negative) is then used to swap the bounds if
+   the loop counts downwards.
    Return the target loopnest.  */
 
 static lambda_loopnest

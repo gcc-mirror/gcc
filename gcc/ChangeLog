@@ -1,3 +1,15 @@
+2004-11-02  Daniel Berlin  <dberlin@dberlin.org>
+
+	* lambda-code.c (lambda_compute_auxillary_space): Update comments.
+	(lambda_compute_target_space). Ditto.
+	* lambda.h (lambda_trans_matrix): Ditto.
+	(lambda_linear_expression): Ditto.
+	(lambda_body_vector): Ditto.
+	(lambda_loopnest): Ditto.
+	* tree-loop-linear.c (gather_interchange_stats): Combine tests,
+	update comments, and remove pointless addition of 0.
+	(linear_transform_loops): Update comments.
+
 2004-11-03  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* tree.c (tree_fold_gcd): Use FLOOR_MOD_EXPR instead of
