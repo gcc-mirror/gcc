@@ -607,10 +607,14 @@ enum reg_class {
 
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
-#define REG_OK_FOR_INDEX_P(X) (REGNO (X) > 8)
+#define REG_OK_FOR_INDEX_P(X) \
+  (REGNO (X) > 8 \
+   && REGNO (X) != VIRTUAL_STACK_VARS_REGNUM \
+   && REGNO (X) != VIRTUAL_STACK_DYNAMIC_REGNUM \
+   && REGNO (X) != VIRTUAL_OUTGOING_ARGS_REGNUM)
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
-#define REG_OK_FOR_BASE_P(X) (REGNO (X) > 8)
+#define REG_OK_FOR_BASE_P(X) REG_OK_FOR_INDEX_P (X)
 
 #else
 
