@@ -1,3 +1,7 @@
+2004-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/torture/builtin-wctype-1.c: New test.
+
 2004-03-26  James A. Morrison  <ja2morri@uwaterloo.ca>
 
 	* gcc.dg/20001013-1.c: Run on 32-bit and 64-bit SPARC.
