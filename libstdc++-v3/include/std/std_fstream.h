@@ -42,7 +42,6 @@
 
 #pragma GCC system_header
 
-#include <streambuf>
 #include <istream>
 #include <ostream>
 #include <locale>	// For codecvt

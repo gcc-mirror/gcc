@@ -1,5 +1,15 @@
 2003-01-23  Benjamin Kosnik  <bkoz@redhat.com>
 
+	Revert include ordering.
+	* config/locale/generic/c_locale.h: Add include guards.
+	* config/locale/gnu/c_locale.h: Same.
+	* include/bits/locale_classes.h: Remove cctype include.
+	* include/std/std_iosfwd.h: Add c++locale.h, cctype includes.
+	* include/std/std_fstream.h: Remove streambuf include.
+	* include/std/std_sstream.h: Remove streambuf include.
+	
+2003-01-23  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* configure.in (libtool_VERSION): To 6:0:0.
 	* configure: Regenerated.
 	* config/linker-map.gnu: Clean.

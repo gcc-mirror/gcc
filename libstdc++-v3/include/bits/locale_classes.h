@@ -43,7 +43,6 @@
 #pragma GCC system_header
 
 #include <bits/localefwd.h>
-#include <cctype>		// For isspace, etc.
 #include <cstring>		// For strcmp.
 #include <string>
 #include <bits/atomicity.h>

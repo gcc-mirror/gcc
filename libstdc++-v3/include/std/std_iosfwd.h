@@ -43,6 +43,8 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
+#include <bits/c++locale.h> 
+#include <cctype>		// For isspace, etc.
 #include <bits/stringfwd.h> 	// For string forward declarations.
 #include <bits/fpos.h>
 #include <bits/functexcept.h>
