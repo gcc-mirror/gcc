@@ -1,3 +1,11 @@
+2004-04-12  Kelley Cook  <kcook@gcc.gnu.org>
+
+	PR bootstrap/14905
+	* configure.ac: Parse --enable-generated-files-in-srcdir.
+	* Makefile.am: Copy man and info files to srcdir if requested.
+	* configure: Regenerate.
+	* Makefile.in Regenerate.
+
 2004-03-10  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure.ac: Bump AC_PREREQ to 2.59.
