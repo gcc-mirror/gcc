@@ -4029,6 +4029,24 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	return gen_binary (MINUS, mode, XEXP (XEXP (x, 0), 1),
 			   XEXP (XEXP (x, 0), 0));
 
+      /* (neg (plus A B)) is canonicalized to (minus (neg A) B).  */
+      if (GET_CODE (XEXP (x, 0)) == PLUS
+	  && !HONOR_SIGNED_ZEROS (mode)
+	  && !HONOR_SIGN_DEPENDENT_ROUNDING (mode))
+	{
+	  temp = simplify_gen_unary (NEG, mode, XEXP (XEXP (x, 0), 0), mode);
+	  temp = combine_simplify_rtx (temp, mode, last, in_dest);
+	  return gen_binary (MINUS, mode, temp, XEXP (XEXP (x, 0), 1));
+	}
+
+      /* (neg (mult A B)) becomes (mult (neg A) B).  
+         This works even for floating-point values.  */
+      if (GET_CODE (XEXP (x, 0)) == MULT)
+	{
+	  temp = simplify_gen_unary (NEG, mode, XEXP (XEXP (x, 0), 0), mode);
+	  return gen_binary (MULT, mode, temp, XEXP (XEXP (x, 0), 1));
+	}
+
       /* (neg (xor A 1)) is (plus A -1) if A is known to be either 0 or 1.  */
       if (GET_CODE (XEXP (x, 0)) == XOR && XEXP (XEXP (x, 0), 1) == const1_rtx
 	  && nonzero_bits (XEXP (XEXP (x, 0), 0), mode) == 1)
@@ -4217,6 +4235,19 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 #endif
 
     case PLUS:
+      /* Canonicalize (plus (mult (neg B) C) A) to (minus A (mult B C)).
+       */
+      if (GET_CODE (XEXP (x, 0)) == MULT 
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == NEG)
+	{
+	  rtx in1, in2;
+	 
+	  in1 = XEXP (XEXP (XEXP (x, 0), 0), 0);
+	  in2 = XEXP (XEXP (x, 0), 1);
+	  return gen_binary (MINUS, mode, XEXP (x, 1),
+			     gen_binary (MULT, mode, in1, in2));
+	}
+
       /* If we have (plus (plus (A const) B)), associate it so that CONST is
 	 outermost.  That's because that's the way indexed addresses are
 	 supposed to appear.  This code used to check many more cases, but
@@ -4322,6 +4353,32 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  && rtx_equal_p (XEXP (XEXP (x, 1), 0), XEXP (x, 0)))
 	return simplify_and_const_int (NULL_RTX, mode, XEXP (x, 0),
 				       -INTVAL (XEXP (XEXP (x, 1), 1)) - 1);
+
+      /* Canonicalize (minus A (mult (neg B) C)) to (plus (mult B C) A).
+       */
+      if (GET_CODE (XEXP (x, 1)) == MULT 
+	  && GET_CODE (XEXP (XEXP (x, 1), 0)) == NEG)
+	{
+	  rtx in1, in2;
+	 
+	  in1 = XEXP (XEXP (XEXP (x, 1), 0), 0);
+	  in2 = XEXP (XEXP (x, 1), 1);
+	  return gen_binary (PLUS, mode, gen_binary (MULT, mode, in1, in2),
+			     XEXP (x, 0));
+	}
+
+       /* Canonicalize (minus (neg A) (mult B C)) to 
+	  (minus (mult (neg B) C) A). */
+      if (GET_CODE (XEXP (x, 1)) == MULT 
+	  && GET_CODE (XEXP (x, 0)) == NEG)
+	{
+	  rtx in1, in2;
+	 
+	  in1 = simplify_gen_unary (NEG, mode, XEXP (XEXP (x, 1), 0), mode);
+	  in2 = XEXP (XEXP (x, 1), 1);
+	  return gen_binary (MINUS, mode, gen_binary (MULT, mode, in1, in2),
+			     XEXP (XEXP (x, 0), 0));
+	}
 
       /* Canonicalize (minus A (plus B C)) to (minus (minus A B) C) for
 	 integers.  */
