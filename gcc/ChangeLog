@@ -6,6 +6,8 @@
 	* emit-rtl.c (push_to_full_sequence): Remove.
 	* rtl.h: Remove the corresponding prototype.
 
+	* cselib.c, expr.c: Fix comment typos.
+
 2004-11-13  Richard Henderson  <rth@redhat.com>
 
 	* calls.c (precompute_register_parameters): Force all PARALLELs
