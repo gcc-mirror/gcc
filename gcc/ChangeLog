@@ -1,3 +1,9 @@
+Mon Dec 20 23:06:47 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* longlong.h (_ARCH_PPC): Only protect add_ssaaaa and sub_ddmmss
+	with W_TYPE_SIZE == 32.  Do not fall through to POWER architecture
+	for umul_ppmm and smul_ppmm if !_ARCH_PPC and !_ARCH_POWER.
+
 Mon Dec 20 23:02:03 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* fold-const.c (real_hex_to_f): Remove unused "isldouble" variable.
