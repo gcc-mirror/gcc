@@ -1,3 +1,7 @@
+Thu Jan 18 06:43:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config.gcc (rs6000-ibm-aix*, rs6000-bull-bosx): Add rs6000/aix.h.
+
 2001-01-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cpplib.c (_cpp_handle_directive): Use buffer->was_skipping,
