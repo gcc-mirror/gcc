@@ -1,3 +1,11 @@
+2004-11-02  Ziemowit Laski  <zlaski@apple.com>
+
+	* c-lang.c (LANG_HOOKS_TYPES_COMPATIBLE_P): Remove.
+	(c_types_compatible_p): Move function definition...
+	* c-objc-common.c (c_types_compatible_p): ...here.
+	* c-objc-common.h (LANG_HOOKS_TYPES_COMPATIBLE_P): Moved here from
+	c-lang.c.
+
 2004-11-02  Steven Bosscher  <stevenb@suse.de>
 
 	* cfgloop.h (struct loop): Update comment.

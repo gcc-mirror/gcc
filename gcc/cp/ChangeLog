@@ -1,3 +1,13 @@
+2004-11-02  Ziemowit Laski  <zlaski@apple.com>
+
+	* cp-lang.c (cxx_types_compatible_p): Remove prototype and definition.
+	(LANG_HOOKS_TYPES_COMPATIBLE_P): Move to cp-objcp-common.h.
+	* cp-objcp-common.c (cxx_types_compatible_p): Moved definition here
+	from cp-lang.c.
+	* cp-objcp-common.h (cxx_types_compatible_p): Moved prototype here
+	from cp-lang.c.
+	(LANG_HOOKS_TYPES_COMPATIBLE_P): Moved here from cp-lang.c.
+
 2004-11-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/18064
