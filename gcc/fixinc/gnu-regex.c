@@ -23,6 +23,8 @@
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "auto-host.h"
+/* GCC LOCAL: we don't need NLS here.  */
+#undef ENABLE_NLS
 
 #undef	_GNU_SOURCE
 #define _GNU_SOURCE
