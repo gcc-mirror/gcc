@@ -28,7 +28,7 @@ public final class StringBuffer implements Serializable
 
   public synchronized StringBuffer append (char ch)
     {
-      ensureCapacity (count + 1);
+      ensureCapacity_unsynchronized (count + 1);
       value[count++] = ch;
       return this;
     }
@@ -63,7 +63,7 @@ public final class StringBuffer implements Serializable
       if (str == null)
 	str = "null";
       int len = str.length();
-      ensureCapacity (count + len);
+      ensureCapacity_unsynchronized (count + len);
       str.getChars(0, len, value, count);
       count += len;
       return this;
@@ -76,7 +76,7 @@ public final class StringBuffer implements Serializable
 
   public synchronized StringBuffer append (char[] data, int offset, int count)
     {
-      ensureCapacity (this.count + count);
+      ensureCapacity_unsynchronized (this.count + count);
       System.arraycopy(data, offset, value, this.count, count);
       this.count += count;
       return this;
@@ -104,7 +104,27 @@ public final class StringBuffer implements Serializable
 	  int max = (minimumCapacity > value.length
 		     ? value.length*2+2
 		     : value.length);
-	  minimumCapacity = Math.max(minimumCapacity, max);
+	  minimumCapacity = (minimumCapacity < max ? max : minimumCapacity);
+	  char[] nb = new char[minimumCapacity];
+	  System.arraycopy(value, 0, nb, 0, count);
+	  value = nb;
+	  shared = false;
+	}
+    }
+
+  // ensureCapacity is used by several synchronized methods in StringBuffer.
+  // There's no need to synchronize again.
+  private void ensureCapacity_unsynchronized (int minimumCapacity)
+    {
+      if (shared || minimumCapacity > value.length)
+	{
+	  // We don't want to make a larger vector when `shared' is
+	  // set.  If we do, then setLength becomes very inefficient
+	  // when repeatedly reusing a StringBuffer in a loop.
+	  int max = (minimumCapacity > value.length
+		     ? value.length*2+2
+		     : value.length);
+	  minimumCapacity = (minimumCapacity < max ? max : minimumCapacity);
 	  char[] nb = new char[minimumCapacity];
 	  System.arraycopy(value, 0, nb, 0, count);
 	  value = nb;
@@ -132,7 +152,7 @@ public final class StringBuffer implements Serializable
     {
       if (offset < 0 || offset > count)
 	throw new StringIndexOutOfBoundsException (offset);
-      ensureCapacity (count+1);
+      ensureCapacity_unsynchronized (count+1);
       System.arraycopy(value, offset, value, offset+1, count-offset);
       value[offset] = ch;
       count++;
@@ -172,7 +192,7 @@ public final class StringBuffer implements Serializable
       if (str == null)
 	str = "null";
       int len = str.length();
-      ensureCapacity(count+len);
+      ensureCapacity_unsynchronized (count+len);
       System.arraycopy(value, offset, value, offset+len, count-offset);
       str.getChars(0, len, value, offset);
       count += len;
@@ -184,7 +204,7 @@ public final class StringBuffer implements Serializable
       if (offset < 0 || offset > count)
 	throw new StringIndexOutOfBoundsException (offset);
       int len = data.length;
-      ensureCapacity (count+len);
+      ensureCapacity_unsynchronized (count+len);
       System.arraycopy(value, offset, value, offset+len, count-offset);
       System.arraycopy(data, 0, value, offset, len);
       count += len;
@@ -212,7 +232,7 @@ public final class StringBuffer implements Serializable
       if (index < 0 || index >= count)
 	throw new StringIndexOutOfBoundsException (index);
       // Call ensureCapacity to enforce copy-on-write.
-      ensureCapacity (count);
+      ensureCapacity_unsynchronized (count);
       value[index] = ch;
     }
 
@@ -221,7 +241,7 @@ public final class StringBuffer implements Serializable
       if (newLength < 0)
 	throw new StringIndexOutOfBoundsException (newLength);
 
-      ensureCapacity (newLength);
+      ensureCapacity_unsynchronized (newLength);
       for (int i = count; i < newLength; ++i)
 	value[i] = '\0';
       count = newLength;

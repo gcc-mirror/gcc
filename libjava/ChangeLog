@@ -1,3 +1,9 @@
+2000-04-08  Anthony Green  <green@cygnus.com>
+
+	* java/lang/StringBuffer.java (ensureCapacity): Don't call Math::max.
+	(ensureCapacity_unsynchronized): New private method.
+	(append): Use ensureCapacity_unsynchronized.
+
 2000-04-08  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.
