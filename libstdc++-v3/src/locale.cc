@@ -202,7 +202,7 @@ namespace std
 	if (strcmp(__s, "C") == 0 || strcmp(__s, "POSIX") == 0)
 	  (_M_impl = _S_classic)->_M_add_reference();
 	else if (strcmp(__s, "") == 0)
-	  _M_impl = new _Impl(setlocale(LC_ALL, __s), 1);
+	  _M_impl = new _Impl(setlocale(LC_ALL, NULL), 1);
 	else
 	  _M_impl = new _Impl(__s, 1);
       }

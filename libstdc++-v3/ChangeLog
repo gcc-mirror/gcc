@@ -1,5 +1,11 @@
 2002-07-24  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/7222
+	* src/locale.cc (locale::locale(const char*)): Use setlocale NULL.
+	* testsuite/22_locale/ctor_copy_dtor.cc (test02): New.
+	
+2002-07-24  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/7230
 	* config/linker-map.gnu: Revert strstream patch from 2002-07-01.
 	* include/Makefile.am (backward_headers): Use strstream, not
