@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Run-time Target Specification.  */
 #ifndef TARGET_VERSION
-#define TARGET_VERSION	fputs (" (ARM/ELF non-Linux)", stderr);
+#define TARGET_VERSION	fputs (" (ARM/ELF)", stderr);
 #endif
 
 /* Default to using APCS-32 and software floating point.  */
@@ -85,6 +85,10 @@ Boston, MA 02111-1307, USA.  */
       fprintf (FILE, "\t.space\t%d\n", SIZE);				\
     }									\
   while (0)
+
+#ifndef CPP_PREDEFINES
+#define CPP_PREDEFINES "-D__ELF__"
+#endif
 
 #ifndef CPP_APCS_PC_DEFAULT_SPEC
 #define CPP_APCS_PC_DEFAULT_SPEC	"-D__APCS_32__"
