@@ -1,3 +1,9 @@
+2003-06-14  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* snapshot-README: Use GCC instead of gcc, C++ front end instead of 
+	g++ language, and note that Java includes a run time.
+	* snapshot.index.html: Ditto.
+
 2003-06-10  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release (build_diff): Properly use ${TAR} instead of
