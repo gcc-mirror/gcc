@@ -3409,8 +3409,13 @@ notice_update_cc (exp)
       if (SET_DEST (XVECEXP (exp, 0, 0)) == cc0_rtx)
 	{
 	  CC_STATUS_INIT;
-	  if (stack_regs_mentioned_p (SET_SRC (XVECEXP (exp, 0, 0))))
-	    cc_status.flags |= CC_IN_80387;
+          if (stack_regs_mentioned_p (SET_SRC (XVECEXP (exp, 0, 0))))
+	    {
+              cc_status.flags |= CC_IN_80387;
+	      if (TARGET_CMOVE && stack_regs_mentioned_p
+		  (XEXP (SET_SRC (XVECEXP (exp, 0, 0)), 1)))
+		cc_status.flags |= CC_FCOMI;
+	    }
 	  else
 	    cc_status.value1 = SET_SRC (XVECEXP (exp, 0, 0));
 	  return;
