@@ -109,10 +109,11 @@ proc bytecompile_file { file objdir {classpath {}} } {
     }
     set here [pwd]
     cd $dirname
+    send_log "byte compile: $javac [list $file] -d $objdir 2>@ stdout\n"
     if {[catch {
 	set q [eval exec "$javac [list $file] -d $objdir 2>@ stdout"]
     } msg]} then {
-	verbose "couldn't compile $file: $msg"
+	send_log "couldn't compile $file: $msg\n"
 	set r 0
     } else {
 	set r 1
