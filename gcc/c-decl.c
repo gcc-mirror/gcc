@@ -1426,7 +1426,8 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 	  if (TREE_USED (olddecl)
 	      /* In unit-at-a-time mode we never inline re-defined extern
 	         inline functions.  */
-	      && !flag_unit_at_a_time)
+	      && !flag_unit_at_a_time
+	      && cgraph_function_possibly_inlined_p (olddecl))
 	    (*debug_hooks->outlining_inline_function) (olddecl);
 
 	  /* The new defn must not be inline.  */

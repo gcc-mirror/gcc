@@ -1,6 +1,6 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -277,8 +277,8 @@ enum dump_file_index
   DFI_flow2,
   DFI_peephole2,
   DFI_rnreg,
-  DFI_bbro,
   DFI_ce3,
+  DFI_bbro,
   DFI_branch_target_load,
   DFI_sched2,
   DFI_stack,
@@ -328,8 +328,8 @@ static struct dump_file_info dump_file[DFI_MAX] =
   { "flow2",	'w', 1, 0, 0 },
   { "peephole2", 'z', 1, 0, 0 },
   { "rnreg",	'n', 1, 0, 0 },
-  { "bbro",	'B', 1, 0, 0 },
   { "ce3",	'E', 1, 0, 0 },
+  { "bbro",	'B', 1, 0, 0 },
   { "btl",	'd', 1, 0, 0 }, /* Yes, duplicate enable switch.  */
   { "sched2",	'R', 1, 0, 0 },
   { "stack",	'k', 1, 0, 0 },
@@ -3463,14 +3463,6 @@ rest_of_compilation (tree decl)
     }
 #endif
 
-  if (optimize > 0)
-    {
-      if (flag_rename_registers || flag_cprop_registers)
-	rest_of_handle_regrename (decl, insns);
-
-      rest_of_handle_reorder_blocks (decl, insns);
-    }
-
   if (flag_if_conversion2)
     {
       timevar_push (TV_IFCVT2);
@@ -3482,23 +3474,31 @@ rest_of_compilation (tree decl)
       timevar_pop (TV_IFCVT2);
     }
 
-    if (flag_branch_target_load_optimize2)
-      {
-	/* Leave this a warning for now so that it is possible to experiment
-	   with running this pass twice.  In 3.6, we should either make this
-	   an error, or use separate dump files.  */
-	if (flag_branch_target_load_optimize)
-	  warning ("branch target register load optimization is not intended "
-		   "to be run twice");
+  if (optimize > 0)
+    {
+      if (flag_rename_registers || flag_cprop_registers)
+	rest_of_handle_regrename (decl, insns);
 
-	open_dump_file (DFI_branch_target_load, decl);
+      rest_of_handle_reorder_blocks (decl, insns);
+    }
 
-	branch_target_load_optimize (insns, true);
+  if (flag_branch_target_load_optimize2)
+    {
+      /* Leave this a warning for now so that it is possible to experiment
+	 with running this pass twice.  In 3.6, we should either make this
+	 an error, or use separate dump files.  */
+      if (flag_branch_target_load_optimize)
+	warning ("branch target register load optimization is not intended "
+		 "to be run twice");
 
-	close_dump_file (DFI_branch_target_load, print_rtl_with_bb, insns);
+      open_dump_file (DFI_branch_target_load, decl);
 
-	ggc_collect ();
-      }
+      branch_target_load_optimize (insns, true);
+
+      close_dump_file (DFI_branch_target_load, print_rtl_with_bb, insns);
+
+      ggc_collect ();
+    }
 
 #ifdef INSN_SCHEDULING
   if (optimize > 0 && flag_schedule_insns_after_reload)

@@ -1,5 +1,5 @@
 /* Some code common to C and ObjC front ends.
-   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -61,7 +61,8 @@ c_disregard_inline_limits (tree fn)
   if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) != NULL)
     return 1;
 
-  return DECL_DECLARED_INLINE_P (fn) && DECL_EXTERNAL (fn);
+  return (!flag_really_no_inline && DECL_DECLARED_INLINE_P (fn)
+	  && DECL_EXTERNAL (fn));
 }
 
 int

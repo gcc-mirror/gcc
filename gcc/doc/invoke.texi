@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-@c 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+@c 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -3626,7 +3626,6 @@ compilation time.
 -fmerge-constants @gol
 -fthread-jumps @gol
 -floop-optimize @gol
--fcrossjumping @gol
 -fif-conversion @gol
 -fif-conversion2 @gol
 -fdelayed-branch @gol
@@ -3663,7 +3662,8 @@ also turns on the following optimization flags:
 -fstrict-aliasing @gol
 -funit-at-a-time @gol
 -falign-functions  -falign-jumps @gol
--falign-loops  -falign-labels}
+-falign-loops  -falign-labels @gol
+-fcrossjumping}
 
 Please note the warning under @option{-fgcse} about
 invoking @option{-O2} on programs that use computed gotos.

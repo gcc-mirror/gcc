@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -536,13 +536,13 @@ decode_options (unsigned int argc, const char **argv)
       flag_guess_branch_prob = 1;
       flag_cprop_registers = 1;
       flag_loop_optimize = 1;
-      flag_crossjumping = 1;
       flag_if_conversion = 1;
       flag_if_conversion2 = 1;
     }
 
   if (optimize >= 2)
     {
+      flag_crossjumping = 1;
       flag_optimize_sibling_calls = 1;
       flag_cse_follow_jumps = 1;
       flag_cse_skip_blocks = 1;

@@ -1,6 +1,6 @@
 /* Subroutines used by or related to instruction recognition.
    Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998
-   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -476,16 +476,38 @@ validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object)
       return;
     }
 
-  /* Call ourself recursively to perform the replacements.  */
+  /* Call ourself recursively to perform the replacements.
+     We must not replace inside already replaced expression, otherwise we
+     get infinite recursion for replacements like (reg X)->(subreg (reg X))
+     done by regmove, so we must special case shared ASM_OPERANDS.  */
 
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+  if (GET_CODE (x) == PARALLEL)
     {
-      if (fmt[i] == 'e')
-	validate_replace_rtx_1 (&XEXP (x, i), from, to, object);
-      else if (fmt[i] == 'E')
-	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  validate_replace_rtx_1 (&XVECEXP (x, i, j), from, to, object);
+      for (j = XVECLEN (x, 0) - 1; j >= 0; j--)
+	{
+	  if (j && GET_CODE (XVECEXP (x, 0, j)) == SET
+	      && GET_CODE (SET_SRC (XVECEXP (x, 0, j))) == ASM_OPERANDS)
+	    {
+	      /* Verify that operands are really shared.  */
+	      if (ASM_OPERANDS_INPUT_VEC (SET_SRC (XVECEXP (x, 0, 0))) !=
+		  ASM_OPERANDS_INPUT_VEC (SET_SRC (XVECEXP (x, 0, j))))
+		abort ();
+	      validate_replace_rtx_1 (&SET_DEST (XVECEXP (x, 0, j)),
+				      from, to, object);
+	    }
+	  else
+	    validate_replace_rtx_1 (&XVECEXP (x, 0, j), from, to, object);
+	}
     }
+  else
+    for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+      {
+	if (fmt[i] == 'e')
+	  validate_replace_rtx_1 (&XEXP (x, i), from, to, object);
+	else if (fmt[i] == 'E')
+	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	    validate_replace_rtx_1 (&XVECEXP (x, i, j), from, to, object);
+      }
 
   /* If we didn't substitute, there is nothing more to do.  */
   if (num_changes == prev_changes)
