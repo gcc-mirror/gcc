@@ -1,3 +1,8 @@
+Mon Jun 30 00:50:43 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* regmove.c (regmove_optimize): Don't try to make src and dst match
+	when they are in different modes.
+
 Sun Jun 29 23:06:32 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.c (expand_builtin_mathfn, expand_builtin_mathfn_2): Avoid
