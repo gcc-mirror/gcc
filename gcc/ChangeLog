@@ -1,3 +1,25 @@
+2004-07-25  Roger Sayle  <roger@eyesopen.com>
+
+	* convert.c (convert_to_real, convert_to_integer,
+	convert_to_complex): Replace calls to build with calls to buildN.
+	* coverage.c (tree_coverage_counter_ref): Likewise.
+	* dojump.c (do_jump): Likewise.
+	* dwarf2out.c (loc_descriptor_from_tree): Likewise.
+	* emit-rtl.c (component_ref_for_mem_expr,
+	set_mem_attributes_minus_bitpos): Likewise.
+	* explow.c (update_nonlocal_goto_save_area): Likewise.
+	* expmed.c (expand_shift, make_tree, const_mult_add_overflow_p,
+	expand_mult_add): Likewise.
+	* expr.c (emit_block_move_via_libcall, clear_storage_via_libcall,
+	store_constructor, get_inner_reference, expand_expr_real_1,
+	try_casesi, try_tablejump): Likewise.
+	* function.c (expand_function_start): Likewise.
+	* stmt.c (emit_case_bit_tests, expand_end_case_type,
+	node_has_low_bound, node_has_high_bound, emit_case_nodes): Likewise.
+	* stor-layout.c (place_union_field, layout_type): Likewise.
+	* tree.c (substitute_in_expr, tree_fold_gcd): Likewise.
+	* varasm.c (copy_constant): Likewise.
+
 2004-07-25  Bernardo Innocenti  <bernie@develer.com>
 
 	* c-common.c: Rename all identifiers named `new'.

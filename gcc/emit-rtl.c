@@ -1460,8 +1460,8 @@ component_ref_for_mem_expr (tree ref)
   if (inner == TREE_OPERAND (ref, 0))
     return ref;
   else
-    return build (COMPONENT_REF, TREE_TYPE (ref), inner, TREE_OPERAND (ref, 1),
-		  NULL_TREE);
+    return build3 (COMPONENT_REF, TREE_TYPE (ref), inner,
+		   TREE_OPERAND (ref, 1), NULL_TREE);
 }
 
 /* Returns 1 if both MEM_EXPR can be considered equal
@@ -1634,8 +1634,8 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 		 index, then convert to sizetype and multiply by the size of
 		 the array element.  */
 	      if (! integer_zerop (low_bound))
-		index = fold (build (MINUS_EXPR, TREE_TYPE (index),
-				     index, low_bound));
+		index = fold (build2 (MINUS_EXPR, TREE_TYPE (index),
+				      index, low_bound));
 
 	      off_tree = size_binop (PLUS_EXPR,
 				     size_binop (MULT_EXPR, convert (sizetype,

@@ -268,9 +268,9 @@ convert_to_real (tree type, tree expr)
 		    newtype = TREE_TYPE (arg1);
 		  if (TYPE_PRECISION (newtype) < TYPE_PRECISION (itype))
 		    {
-		      expr = build (TREE_CODE (expr), newtype,
-				    fold (convert_to_real (newtype, arg0)),
-				    fold (convert_to_real (newtype, arg1)));
+		      expr = build2 (TREE_CODE (expr), newtype,
+				     fold (convert_to_real (newtype, arg0)),
+				     fold (convert_to_real (newtype, arg1)));
 		      if (newtype == type)
 			return expr;
 		    }
@@ -525,7 +525,7 @@ convert_to_integer (tree type, tree expr)
 		  /* If the original expression had side-effects, we must
 		     preserve it.  */
 		  if (TREE_SIDE_EFFECTS (expr))
-		    return build (COMPOUND_EXPR, type, expr, t);
+		    return build2 (COMPOUND_EXPR, type, expr, t);
 		  else
 		    return t;
 		}
@@ -605,9 +605,9 @@ convert_to_integer (tree type, tree expr)
 		    else
 		      typex = lang_hooks.types.signed_type (typex);
 		    return convert (type,
-				    fold (build (ex_form, typex,
-						 convert (typex, arg0),
-						 convert (typex, arg1))));
+				    fold (build2 (ex_form, typex,
+						  convert (typex, arg0),
+						  convert (typex, arg1))));
 		  }
 	      }
 	  }
@@ -658,9 +658,9 @@ convert_to_integer (tree type, tree expr)
 	case COND_EXPR:
 	  /* It is sometimes worthwhile to push the narrowing down through
 	     the conditional and never loses.  */
-	  return fold (build (COND_EXPR, type, TREE_OPERAND (expr, 0),
-			      convert (type, TREE_OPERAND (expr, 1)),
-			      convert (type, TREE_OPERAND (expr, 2))));
+	  return fold (build3 (COND_EXPR, type, TREE_OPERAND (expr, 0),
+			       convert (type, TREE_OPERAND (expr, 1)),
+			       convert (type, TREE_OPERAND (expr, 2))));
 
 	default:
 	  break;
@@ -704,8 +704,8 @@ convert_to_complex (tree type, tree expr)
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
     case CHAR_TYPE:
-      return build (COMPLEX_EXPR, type, convert (subtype, expr),
-		    convert (subtype, integer_zero_node));
+      return build2 (COMPLEX_EXPR, type, convert (subtype, expr),
+		     convert (subtype, integer_zero_node));
 
     case COMPLEX_TYPE:
       {
@@ -714,23 +714,22 @@ convert_to_complex (tree type, tree expr)
 	if (TYPE_MAIN_VARIANT (elt_type) == TYPE_MAIN_VARIANT (subtype))
 	  return expr;
 	else if (TREE_CODE (expr) == COMPLEX_EXPR)
-	  return fold (build (COMPLEX_EXPR,
-			      type,
-			      convert (subtype, TREE_OPERAND (expr, 0)),
-			      convert (subtype, TREE_OPERAND (expr, 1))));
+	  return fold (build2 (COMPLEX_EXPR, type,
+			       convert (subtype, TREE_OPERAND (expr, 0)),
+			       convert (subtype, TREE_OPERAND (expr, 1))));
 	else
 	  {
 	    expr = save_expr (expr);
 	    return
-	      fold (build (COMPLEX_EXPR,
-			   type, convert (subtype,
-					  fold (build1 (REALPART_EXPR,
-							TREE_TYPE (TREE_TYPE (expr)),
-							expr))),
-			   convert (subtype,
-				    fold (build1 (IMAGPART_EXPR,
-						  TREE_TYPE (TREE_TYPE (expr)),
-						  expr)))));
+	      fold (build2 (COMPLEX_EXPR, type,
+			    convert (subtype,
+				     fold (build1 (REALPART_EXPR,
+						   TREE_TYPE (TREE_TYPE (expr)),
+						   expr))),
+			    convert (subtype,
+				     fold (build1 (IMAGPART_EXPR,
+						   TREE_TYPE (TREE_TYPE (expr)),
+						   expr)))));
 	  }
       }
 

@@ -1898,8 +1898,7 @@ substitute_in_expr (tree exp, tree f, tree r)
 	 && TREE_OPERAND (exp, 1) == f)
        return r;
 
-     /* If this expression hasn't been completed let, leave it
-	alone.  */
+     /* If this expression hasn't been completed let, leave it alone.  */
      if (TREE_CODE (inner) == PLACEHOLDER_EXPR && TREE_TYPE (inner) == 0)
        return exp;
 
@@ -1907,8 +1906,8 @@ substitute_in_expr (tree exp, tree f, tree r)
      if (op0 == TREE_OPERAND (exp, 0))
        return exp;
 
-     new = fold (build (code, TREE_TYPE (exp), op0, TREE_OPERAND (exp, 1),
-			NULL_TREE));
+     new = fold (build3 (COMPONENT_REF, TREE_TYPE (exp),
+			 op0, TREE_OPERAND (exp, 1), NULL_TREE));
    }
   else
     switch (TREE_CODE_CLASS (code))
@@ -5761,16 +5760,16 @@ tree_fold_gcd (tree a, tree b)
     return a;
   
   if (tree_int_cst_sgn (a) == -1)
-    a = fold (build (MULT_EXPR, type, a,
-		     convert (type, integer_minus_one_node)));
+    a = fold (build2 (MULT_EXPR, type, a,
+		      convert (type, integer_minus_one_node)));
   
   if (tree_int_cst_sgn (b) == -1)
-    b = fold (build (MULT_EXPR, type, b,
-		     convert (type, integer_minus_one_node)));
+    b = fold (build2 (MULT_EXPR, type, b,
+		      convert (type, integer_minus_one_node)));
  
   while (1)
     {
-      a_mod_b = fold (build (CEIL_MOD_EXPR, type, a, b));
+      a_mod_b = fold (build2 (CEIL_MOD_EXPR, type, a, b));
  
       if (!TREE_INT_CST_LOW (a_mod_b)
 	  && !TREE_INT_CST_HIGH (a_mod_b))

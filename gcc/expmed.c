@@ -2075,11 +2075,11 @@ expand_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
 	      tree type = TREE_TYPE (amount);
 	      tree new_amount = make_tree (type, op1);
 	      tree other_amount
-		= fold (build (MINUS_EXPR, type,
-			       convert (type,
-					build_int_2 (GET_MODE_BITSIZE (mode),
-						     0)),
-			       amount));
+		= fold (build2 (MINUS_EXPR, type,
+				convert (type,
+					 build_int_2 (GET_MODE_BITSIZE (mode),
+						      0)),
+				amount));
 
 	      shifted = force_reg (mode, shifted);
 
@@ -4386,37 +4386,37 @@ make_tree (tree type, rtx x)
       }
 
     case PLUS:
-      return fold (build (PLUS_EXPR, type, make_tree (type, XEXP (x, 0)),
-			  make_tree (type, XEXP (x, 1))));
+      return fold (build2 (PLUS_EXPR, type, make_tree (type, XEXP (x, 0)),
+			   make_tree (type, XEXP (x, 1))));
 
     case MINUS:
-      return fold (build (MINUS_EXPR, type, make_tree (type, XEXP (x, 0)),
-			  make_tree (type, XEXP (x, 1))));
+      return fold (build2 (MINUS_EXPR, type, make_tree (type, XEXP (x, 0)),
+			   make_tree (type, XEXP (x, 1))));
 
     case NEG:
       return fold (build1 (NEGATE_EXPR, type, make_tree (type, XEXP (x, 0))));
 
     case MULT:
-      return fold (build (MULT_EXPR, type, make_tree (type, XEXP (x, 0)),
-			  make_tree (type, XEXP (x, 1))));
+      return fold (build2 (MULT_EXPR, type, make_tree (type, XEXP (x, 0)),
+			   make_tree (type, XEXP (x, 1))));
 
     case ASHIFT:
-      return fold (build (LSHIFT_EXPR, type, make_tree (type, XEXP (x, 0)),
-			  make_tree (type, XEXP (x, 1))));
+      return fold (build2 (LSHIFT_EXPR, type, make_tree (type, XEXP (x, 0)),
+			   make_tree (type, XEXP (x, 1))));
 
     case LSHIFTRT:
       t = lang_hooks.types.unsigned_type (type);
       return fold (convert (type,
-			    build (RSHIFT_EXPR, t,
-				   make_tree (t, XEXP (x, 0)),
-				   make_tree (type, XEXP (x, 1)))));
+			    build2 (RSHIFT_EXPR, t,
+				    make_tree (t, XEXP (x, 0)),
+				    make_tree (type, XEXP (x, 1)))));
 
     case ASHIFTRT:
       t = lang_hooks.types.signed_type (type);
       return fold (convert (type,
-			    build (RSHIFT_EXPR, t,
-				   make_tree (t, XEXP (x, 0)),
-				   make_tree (type, XEXP (x, 1)))));
+			    build2 (RSHIFT_EXPR, t,
+				    make_tree (t, XEXP (x, 0)),
+				    make_tree (type, XEXP (x, 1)))));
 
     case DIV:
       if (TREE_CODE (type) != REAL_TYPE)
@@ -4425,15 +4425,15 @@ make_tree (tree type, rtx x)
 	t = type;
 
       return fold (convert (type,
-			    build (TRUNC_DIV_EXPR, t,
-				   make_tree (t, XEXP (x, 0)),
-				   make_tree (t, XEXP (x, 1)))));
+			    build2 (TRUNC_DIV_EXPR, t,
+				    make_tree (t, XEXP (x, 0)),
+				    make_tree (t, XEXP (x, 1)))));
     case UDIV:
       t = lang_hooks.types.unsigned_type (type);
       return fold (convert (type,
-			    build (TRUNC_DIV_EXPR, t,
-				   make_tree (t, XEXP (x, 0)),
-				   make_tree (t, XEXP (x, 1)))));
+			    build2 (TRUNC_DIV_EXPR, t,
+				    make_tree (t, XEXP (x, 0)),
+				    make_tree (t, XEXP (x, 1)))));
 
     case SIGN_EXTEND:
     case ZERO_EXTEND:
@@ -4483,11 +4483,11 @@ const_mult_add_overflow_p (rtx x, rtx mult, rtx add, enum machine_mode mode, int
   add_type = (GET_MODE (add) == VOIDmode ? mult_type
 	      : lang_hooks.types.type_for_mode (GET_MODE (add), unsignedp));
 
-  result = fold (build (PLUS_EXPR, mult_type,
-			fold (build (MULT_EXPR, mult_type,
-				     make_tree (mult_type, x),
-				     make_tree (mult_type, mult))),
-			make_tree (add_type, add)));
+  result = fold (build2 (PLUS_EXPR, mult_type,
+			 fold (build2 (MULT_EXPR, mult_type,
+				       make_tree (mult_type, x),
+				       make_tree (mult_type, mult))),
+			 make_tree (add_type, add)));
 
   return TREE_CONSTANT_OVERFLOW (result);
 }
@@ -4508,11 +4508,11 @@ expand_mult_add (rtx x, rtx target, rtx mult, rtx add, enum machine_mode mode,
   tree add_type = (GET_MODE (add) == VOIDmode
 		   ? type: lang_hooks.types.type_for_mode (GET_MODE (add),
 							   unsignedp));
-  tree result =  fold (build (PLUS_EXPR, type,
-			      fold (build (MULT_EXPR, type,
-					   make_tree (type, x),
-					   make_tree (type, mult))),
-			      make_tree (add_type, add)));
+  tree result =  fold (build2 (PLUS_EXPR, type,
+			       fold (build2 (MULT_EXPR, type,
+					     make_tree (type, x),
+					     make_tree (type, mult))),
+			       make_tree (add_type, add)));
 
   return expand_expr (result, target, VOIDmode, 0);
 }
