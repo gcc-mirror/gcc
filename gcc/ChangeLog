@@ -1,3 +1,9 @@
+Mon Jan  1 21:28:29 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* function.c (expand_function_end): Properly handle DECL_RESULT
+	and copy when ptr_mode != Pmode.
+	* expmed.c (make_tree): Convert X from Pmode to ptr_mode, if needed.
+
 2001-01-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-common.c (c_common_nodes_and_builtins): Set prototype

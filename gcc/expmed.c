@@ -1,7 +1,7 @@
 /* Medium-level subroutines: convert bit-field store and extract
    and shifts, multiplies and divides to rtl instructions.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -4066,6 +4066,14 @@ make_tree (type, x)
    default:
       t = make_node (RTL_EXPR);
       TREE_TYPE (t) = type;
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+      /* If TYPE is a POINTER_TYPE, X might be Pmode with TYPE_MODE being
+	 ptr_mode.  So convert.  */
+      if (POINTER_TYPE_P (type) && GET_MODE (x) != TYPE_MODE (type))
+	x = convert_memory_address (TYPE_MODE (type), x);
+#endif
+
       RTL_EXPR_RTL (t) = x;
       /* There are no insns to be output
 	 when this rtl_expr is used.  */

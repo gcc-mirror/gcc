@@ -1,6 +1,6 @@
 /* Expands front end tree to back end RTL for GNU C-Compiler
    Copyright (C) 1987, 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -6825,8 +6825,8 @@ expand_function_end (filename, line, end_bindings)
   if (current_function_returns_struct
       || current_function_returns_pcc_struct)
     {
-      rtx value_address =
-	XEXP (DECL_RTL (DECL_RESULT (current_function_decl)), 0);
+      rtx value_address
+	= XEXP (DECL_RTL (DECL_RESULT (current_function_decl)), 0);
       tree type = TREE_TYPE (DECL_RESULT (current_function_decl));
 #ifdef FUNCTION_OUTGOING_VALUE
       rtx outgoing
@@ -6834,15 +6834,25 @@ expand_function_end (filename, line, end_bindings)
 				   current_function_decl);
 #else
       rtx outgoing
-	= FUNCTION_VALUE (build_pointer_type (type),
-			  current_function_decl);
+	= FUNCTION_VALUE (build_pointer_type (type), current_function_decl);
 #endif
 
       /* Mark this as a function return value so integrate will delete the
 	 assignment and USE below when inlining this function.  */
       REG_FUNCTION_VALUE_P (outgoing) = 1;
 
+#ifdef POINTERS_EXTEND_UNSIGNED
+      /* The address may be ptr_mode and OUTGOING may be Pmode.  */
+      if (GET_MODE (outgoing) != GET_MODE (value_address))
+	value_address = convert_memory_address (GET_MODE (outgoing),
+						value_address);
+#endif
+
       emit_move_insn (outgoing, value_address);
+
+      /* Show return register used to hold result (in this case the address
+	 of the result.  */
+      current_function_return_rtx = outgoing;
     }
 
   /* ??? This should no longer be necessary since stupid is no longer with
