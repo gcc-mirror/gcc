@@ -1719,15 +1719,15 @@ fi
 echo $ac_n "checking f2c integer type""... $ac_c" 1>&6
 echo "configure:1721: checking f2c integer type" >&5
 late_ac_cpp=$ac_cpp
-if test "$srcdir" = . ; then
-  ac_cpp="$late_ac_cpp -I../../gcc/f  -I../../gcc -I../../gcc/config"
-else
-  ac_cpp="$late_ac_cpp -I$srcdir/../gcc/f -I$srcdir/../gcc -I$srcdir/../gcc/config"
+ac_cpp="$late_ac_cpp -I../../gcc/f  -I../../gcc -I../../gcc/config"
+if test "$subdir" != . ; then
+  ac_cpp="$ac_cpp -I$srcdir/../gcc/f -I$srcdir/../gcc -I$srcdir/../gcc/config"
 fi
 if eval "test \"`echo '$''{'g77_cv_sys_f2cinteger'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  cat > conftest.$ac_ext <<EOF
+  echo "configure:1730: using $ac_cpp" >&5
+cat > conftest.$ac_ext <<EOF
 #line 1732 "configure"
 #include "confdefs.h"
 #include "proj.h"
@@ -1750,8 +1750,9 @@ fi
 rm -f conftest*
 
 if test "$g77_cv_sys_f2cinteger" = ""; then
+echo "configure:1754: using $ac_cpp" >&5
   cat > conftest.$ac_ext <<EOF
-#line 1755 "configure"
+#line 1756 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
@@ -1786,18 +1787,18 @@ ac_cpp=$late_ac_cpp
 
 
 echo $ac_n "checking f2c long int type""... $ac_c" 1>&6
-echo "configure:1790: checking f2c long int type" >&5
+echo "configure:1791: checking f2c long int type" >&5
 late_ac_cpp=$ac_cpp
-if test "$srcdir" = . ; then
-  ac_cpp="$late_ac_cpp -I../../gcc/f  -I../../gcc -I../../gcc/config"
-else
-  ac_cpp="$late_ac_cpp -I$srcdir/../gcc/f -I$srcdir/../gcc -I$srcdir/../gcc/config"
+ac_cpp="$late_ac_cpp -I../../gcc/f  -I../../gcc -I../../gcc/config"
+if test "$subdir" != . ; then
+  ac_cpp="$ac_cpp -I$srcdir/../gcc/f -I$srcdir/../gcc -I$srcdir/../gcc/config"
 fi
 if eval "test \"`echo '$''{'g77_cv_sys_f2clongint'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  cat > conftest.$ac_ext <<EOF
-#line 1801 "configure"
+  echo "configure:1800: using $ac_cpp" >&5
+cat > conftest.$ac_ext <<EOF
+#line 1802 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
@@ -1819,8 +1820,9 @@ fi
 rm -f conftest*
 
 if test "$g77_cv_sys_f2clongint" = ""; then
+echo "configure:1824: using $ac_cpp" >&5
   cat > conftest.$ac_ext <<EOF
-#line 1824 "configure"
+#line 1826 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
