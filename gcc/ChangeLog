@@ -1,3 +1,13 @@
+2000-11-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_strpbrk): New function.
+	(expand_builtin): Handle BUILT_IN_STRPBRK.
+
+	* builtins.def (BUILT_IN_STRPBRK): New entry.
+
+	* c-common.c (c_common_nodes_and_builtins): Declare builtin
+	strpbrk.
+
 2000-11-07  David O'Brien  <obrien@dragon.nuxi.com>
 
 	* config/alpha/freebsd.h: New file -- FreeBSD/alpha architecture file.
