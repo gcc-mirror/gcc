@@ -958,8 +958,14 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
       /* Don't substitute into an incremented register.  */
       || FIND_REG_INC_NOTE (i3, dest)
       || (succ && FIND_REG_INC_NOTE (succ, dest))
+#if 0
       /* Don't combine the end of a libcall into anything.  */
+      /* ??? This gives worse code, and appears to be unnecessary, since no
+	 pass after flow uses REG_LIBCALL/REG_RETVAL notes.  Local-alloc does
+	 use REG_RETVAL notes for noconflict blocks, but other code here
+	 makes sure that those insns don't disappear.  */
       || find_reg_note (insn, REG_RETVAL, NULL_RTX)
+#endif
       /* Make sure that DEST is not used after SUCC but before I3.  */
       || (succ && ! all_adjacent
 	  && reg_used_between_p (dest, succ, i3))
@@ -1371,7 +1377,12 @@ try_combine (i3, i2, i1)
   if (GET_RTX_CLASS (GET_CODE (i3)) != 'i'
       || GET_RTX_CLASS (GET_CODE (i2)) != 'i'
       || (i1 && GET_RTX_CLASS (GET_CODE (i1)) != 'i')
-      || find_reg_note (i3, REG_LIBCALL, NULL_RTX))
+#if 0
+      /* ??? This gives worse code, and appears to be unnecessary, since no
+	 pass after flow uses REG_LIBCALL/REG_RETVAL notes.  */
+      || find_reg_note (i3, REG_LIBCALL, NULL_RTX)
+#endif
+)
     return 0;
 
   combine_attempts++;
