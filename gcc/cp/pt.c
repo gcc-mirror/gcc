@@ -11625,6 +11625,15 @@ type_dependent_expression_p (tree expression)
     {
       if (TREE_CODE (expression) == ADDR_EXPR)
 	return type_dependent_expression_p (TREE_OPERAND (expression, 0));
+      if (TREE_CODE (expression) == COMPONENT_REF)
+	{
+	  if (type_dependent_expression_p (TREE_OPERAND (expression, 0)))
+	    return true;
+	  expression = TREE_OPERAND (expression, 1);
+	  if (TREE_CODE (expression) == IDENTIFIER_NODE)
+	    return false;
+	}
+      
       if (TREE_CODE (expression) == BASELINK)
 	expression = BASELINK_FUNCTIONS (expression);
       if (TREE_CODE (expression) == TEMPLATE_ID_EXPR)
