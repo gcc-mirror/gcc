@@ -1242,11 +1242,7 @@ extern void cse_end_of_basic_block	PROTO ((rtx,
 extern int comparison_dominates_p	PROTO ((enum rtx_code, enum rtx_code));
 extern int condjump_p			PROTO ((rtx));
 extern int simplejump_p			PROTO ((rtx));
-extern int sets_cc0_p			PROTO ((rtx))
-#ifndef HAVE_cc0
-  ATTRIBUTE_NORETURN
-#endif
-  ;
+extern int sets_cc0_p			PROTO ((rtx));
 extern int invert_jump			PROTO ((rtx, rtx));
 extern int rtx_renumbered_equal_p	PROTO ((rtx, rtx));
 extern int true_regnum			PROTO ((rtx));
