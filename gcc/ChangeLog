@@ -1,3 +1,7 @@
+2001-08-14  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
+
+	* predict.c (dump_prediction): Change `bool' parameter to `int'.
+
 2001-08-14  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* Makefile.in (OBJS): Add rtl-error.o
