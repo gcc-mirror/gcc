@@ -4432,7 +4432,7 @@ simplify_relational_operation (code, mode, op0, op1)
 	     be zero, but a SYMBOL_REF can due to #pragma weak.  */
 	  if (((NONZERO_BASE_PLUS_P (op0) && op1 == const0_rtx)
 	       || GET_CODE (op0) == LABEL_REF)
-#if FRAME_POINTER_REGNO != ARG_POINTGER_REGNO
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 	      /* On some machines, the ap reg can be 0 sometimes.  */
 	      && op0 != arg_pointer_rtx
 #endif
@@ -4443,7 +4443,7 @@ simplify_relational_operation (code, mode, op0, op1)
 	case NE:
 	  if (((NONZERO_BASE_PLUS_P (op0) && op1 == const0_rtx)
 	       || GET_CODE (op0) == LABEL_REF)
-#if FRAME_POINTER_REGNO != ARG_POINTER_REGNO
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 	      && op0 != arg_pointer_rtx
 #endif
 	      )
