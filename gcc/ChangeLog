@@ -1,3 +1,9 @@
+2004-07-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/16414
+	* config/ia64/ia64.c (ia64_dfa_new_cycle): Fix typo in comparison
+	of asm_noperands result.
+
 2004-07-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/16430
