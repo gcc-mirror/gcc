@@ -1,5 +1,10 @@
 2001-06-13  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
+	* gcc_release (build_sources): Generate documentation in HTML from
+	gcc/doc/install.texi.
+
+2001-06-13  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
 	* release: Remove.
 
 2001-06-11  Mark Mitchell  <mark@codesourcery.com>

@@ -127,6 +127,14 @@ build_sources() {
   # also a good sanity check to make sure that the release builds
   # on at least one platform.
   if [ $SNAPSHOT -ne 1 ]; then
+    # Generate the documentation.
+    inform "Building install docs"
+    SOURCEDIR=${SOURCE_DIRECTORY}/gcc/doc
+    DESTDIR=${SOURCE_DIRECTORY}/INSTALL
+    export SOURCEDIR
+    export DESTDIR
+    ${SOURCE_DIRECTORY}/gcc/doc/install.texi2html
+
     inform "Building compiler"
     contrib/gcc_build -d ${SOURCE_DIRECTORY} -o ../objdir build || \
       error "Could not rebuild GCC"
