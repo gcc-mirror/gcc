@@ -2036,15 +2036,13 @@ yylex ()
 		    /* mbtowc sometimes needs an extra char before accepting */
 		    if (char_len <= i)
 		      UNGETC (c);
-		    if (wide_flag)
+		    if (! wide_flag)
 		      {
-			*(wchar_t *)p = wc;
-			p += sizeof (wc);
+			p += (i + 1);
+			c = GETC ();
+			continue;
 		      }
-		    else
-		      p += (i + 1);
-		    c = GETC ();
-		    continue;
+		    c = wc;
 		  }
 #endif /* MULTIBYTE_CHARS */
 	      }
