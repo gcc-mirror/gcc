@@ -1,5 +1,10 @@
 2002-05-03  David S. Miller  <davem@redhat.com>
 
+	* config/sparc/sparc.md (DFA schedulers): Split out...
+	* config/sparc/cypress.md, config/sparc/hypersparc.md,
+	config/sparc/sparclet.md, config/sparc/supersparc.md,
+	config/sparc/ultra1_2.md, config/sparc/ultra3.md: ... into here.
+
 	* config/sparc/sparc.c (LEAF_REGISTERS): Do not do ifdef
 	checks on it, always defined for Sparc.
 
