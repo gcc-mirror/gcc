@@ -52,6 +52,9 @@ static const cpp_toklist * save_expansion PARAMS((cpp_reader *,
 static unsigned int find_param PARAMS ((const cpp_token *,
  					const cpp_token *));
 static cpp_toklist * alloc_macro PARAMS ((cpp_reader *, struct macro_info *));
+static void check_trad_stringification PARAMS ((cpp_reader *,
+						const struct macro_info *,
+						const cpp_string *));
 
 /* These are all the tokens that can have something pasted after them.
    Comma is included in the list only to support the GNU varargs extension
@@ -502,6 +505,12 @@ save_expansion (pfile, info)
 	    continue;
 	  break;
 
+	case CPP_STRING:
+	case CPP_CHAR:
+	  if (CPP_WTRADITIONAL (pfile) && list->paramc > 0)
+	    check_trad_stringification (pfile, info, &token->val.str);
+	  break;
+	  
 	default:
 	  break;
 	}
@@ -617,4 +626,47 @@ dump_macro_args (fp, list)
       param += len + 1;
     }
   putc (')', fp);
+}
+
+/* Warn if a token in `string' matches one of the function macro
+   arguments in `info'.  This function assumes that the macro is a
+   function macro and not an object macro.  */
+static void
+check_trad_stringification (pfile, info, string)
+     cpp_reader *pfile;
+     const struct macro_info *info;
+     const cpp_string *string;
+{
+  const U_CHAR *p, *q, *limit = string->text + string->len;
+  
+  /* Loop over the string.  */
+  for (p = string->text; p < limit; p = q)
+    {
+      const cpp_token *token;
+
+      /* Find the start of an identifier.  */
+      while (!is_idstart (*p) && p < limit) p++;
+
+      /* Find the end of the identifier.  */
+      q = p;
+      while (is_idchar (*q) && q < limit) q++;
+     
+      /* Loop over the function macro arguments to see if the
+	 identifier inside the string matches one of them.  */
+      for (token = info->first_param; token < info->first; token++)
+        {
+	  /* Skip the commas in between the arguments.  */
+	  if (token->type != CPP_NAME)
+	    continue;
+
+	  if (token->val.node->length == (q - p)
+	      && !memcmp (p, token->val.node->name, (q - p)))
+	    {
+	      cpp_warning (pfile,
+			   "macro arg \"%.*s\" would be stringified with -traditional.",
+			   (int) (q - p), p);
+	      break;
+	    }
+	}
+    }
 }
