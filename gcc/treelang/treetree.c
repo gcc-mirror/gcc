@@ -601,9 +601,9 @@ void
 tree_code_generate_return (tree type, tree exp)
 {
   tree setret;
+#ifdef ENABLE_CHECKING
   tree param;
 
-#ifdef ENABLE_CHECKING
   for (param = DECL_ARGUMENTS (current_function_decl);
        param;
        param = TREE_CHAIN (param))

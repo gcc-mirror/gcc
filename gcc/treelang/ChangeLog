@@ -1,3 +1,8 @@
+2004-10-24  James A. Morrison  <phython@gcc.gnu.org>
+
+	* treetree.c (tree_code_generate_return): Wrap param declaration in
+	ENABLE_CHECKING.
+
 2004-10-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* parse.y: Add list of diagnostic messages to insulate
