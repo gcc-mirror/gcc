@@ -401,7 +401,11 @@ combine_strings (strings)
 	      wide_flag = 1;
 	    }
 	  else
-	    length += (TREE_STRING_LENGTH (t) - 1);
+	    {
+	      length += (TREE_STRING_LENGTH (t) - 1);
+	      if (C_ARTIFICIAL_STRING_P (t) && !in_system_header)
+		warning ("concatenation of string literals with __FUNCTION__ is deprecated.  This feature will be removed in future"); 
+	    }
 	}
 
       /* If anything is wide, the non-wides will be converted,

@@ -3648,8 +3648,8 @@ __PRETTY_FUNCTION__ = int  a::sub (int)
 The compiler automagically replaces the identifiers with a string
 literal containing the appropriate name.  Thus, they are neither
 preprocessor macros, like @code{__FILE__} and @code{__LINE__}, nor
-variables.  This means that they catenate with other string literals, and
-that they can be used to initialize char arrays.  For example
+variables.  This means that they catenate with other string literals,
+and that they can be used to initialize char arrays.  For example
 
 @smallexample
 char here[] = "Function " __FUNCTION__ " in " __FILE__;
@@ -3659,8 +3659,9 @@ On the other hand, @samp{#ifdef __FUNCTION__} does not have any special
 meaning inside a function, since the preprocessor does not do anything
 special with the identifier @code{__FUNCTION__}.
 
-GCC also supports the magic word @code{__func__}, defined by the
-ISO standard C99:
+Note that these semantics are deprecated, and that GCC 3.2 will handle
+@code{__FUNCTION__} and @code{__PRETTY_FUNCTION__} the same way as
+@code{__func__}.  @code{__func__} is defined by the ISO standard C99:
 
 @display
 The identifier @code{__func__} is implicitly declared by the translator

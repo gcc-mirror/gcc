@@ -215,6 +215,10 @@ extern tree c_global_trees[CTI_MAX];
    These may be shadowed, and may be referenced from nested functions.  */
 #define C_DECLARED_LABEL_FLAG(label) TREE_LANG_FLAG_1 (label)
 
+/* Flag strings given by __FUNCTION__ and __PRETTY_FUNCTION__ for a
+   warning if they undergo concatenation.  */
+#define C_ARTIFICIAL_STRING_P(NODE) TREE_LANG_FLAG_0 (NODE)
+
 typedef enum c_language_kind
 {
   clk_c,           /* A dialect of C: K&R C, ANSI/ISO C89, C2000,

@@ -3245,12 +3245,15 @@ yylexname ()
 	       && DECL_INITIAL (decl) != 0
 	       && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST)
 	{
-	  tree stringval = DECL_INITIAL (decl);
+	  tree stringval = DECL_INITIAL (decl), str;
 
 	  /* Copy the string value so that we won't clobber anything
 	     if we put something in the TREE_CHAIN of this one.  */
-	  yylval.ttype = build_string (TREE_STRING_LENGTH (stringval),
-				       TREE_STRING_POINTER (stringval));
+	  str = build_string (TREE_STRING_LENGTH (stringval),
+			      TREE_STRING_POINTER (stringval));
+	  if (yylval.ttype != func_id_node)
+	    C_ARTIFICIAL_STRING_P (str) = 1;
+	  yylval.ttype = str;
 	  return STRING;
 	}
     }
