@@ -2181,7 +2181,7 @@ pattern or a @samp{tst@var{m}} pattern.
 
 Machines that use a pseudo register for the condition code value, or
 where the mode used for the comparison depends on the condition being
-tested, should also use the above mechanism.  @xref{Jump Patterns}
+tested, should also use the above mechanism.  @xref{Jump Patterns}.
 
 The above discussion also applies to the @samp{mov@var{mode}cc} and
 @samp{s@var{cond}} patterns.
@@ -2558,6 +2558,40 @@ pattern to some special register.
 This pattern must be defined if @code{RETURN_ADDR_RTX} does not yield
 something that can be reliably and permanently modified, i.e. a fixed
 hard register or a stack memory reference.
+
+@cindex @code{prologue} instruction pattern
+@item @samp{prologue}
+This pattern, if defined, emits RTL for entry to a function.  The function
+entry is resposible for setting up the stack frame, initializing the frame
+pointer register, saving callee saved registers, etc.
+
+Using a prologue pattern is generally preferred over defining
+@code{FUNCTION_PROLOGUE} to emit assembly code for the prologue.
+
+The @code{prologue} pattern is particularly useful for targets which perform
+instruction scheduling.
+
+@cindex @code{epilogue} instruction pattern
+@item @samp{epilogue}
+This pattern, if defined, emits RTL for exit from a function.  The function
+exit is resposible for deallocating the stack frame, restoring callee saved
+registers and emitting the return instruction.
+
+Using an epilogue pattern is generally preferred over defining
+@code{FUNCTION_EPILOGUE} to emit assembly code for the prologue.
+
+The @code{epilogue} pattern is particularly useful for targets which perform
+instruction scheduling or which have delay slots for their return instruction.
+
+@cindex @code{sibcall_epilogue} instruction pattern
+@item @samp{sibcall_epilogue}
+This pattern, if defined, emits RTL for exit from a function without the final
+branch back to the calling function.  This pattern will be emitted before any
+sibling call (aka tail call) sites.
+
+The @code{sibcall_epilogue} pattern must not clobber any arguments used for
+parameter passing or any stack slots for arguments passed to the current
+function.  
 @end table
 
 @node Pattern Ordering
