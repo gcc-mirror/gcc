@@ -1,3 +1,16 @@
+Fri Oct 29 08:03:57 1999  Catherine Moore  <clm@cygnus.com>
+
+	* expr.c (emit_push_insn): New argument alignment_pad.
+	Update all callers.  Adjust stack pointer based on alignment pad.
+	* function.c (pad_to_arg_alignment):  New argument alignment_pad.
+	Update all callers.  Track alignment_pad if boundary > PARM_BOUNDARY.
+	(locate_and_pad_parm): New argument alignment_pad.  Update all
+	callers.
+	* expr.h (emit_push_insn): Update prototype.
+	(locate_and_pad_parm): Update prototype.
+	* calls.c (arg_data):  Add new field alignment_pad.
+	(initialize_argument_information): Initialize alignment_pad.
+
 Fri Oct 29 02:51:35 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* except.c (free_eh_nesting_info): Free the info itself.

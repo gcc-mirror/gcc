@@ -2870,7 +2870,8 @@ get_push_address (size)
 
 void
 emit_push_insn (x, mode, type, size, align, partial, reg, extra,
-		args_addr, args_so_far, reg_parm_stack_space)
+		args_addr, args_so_far, reg_parm_stack_space,
+                alignment_pad)
      register rtx x;
      enum machine_mode mode;
      tree type;
@@ -2882,6 +2883,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
      rtx args_addr;
      rtx args_so_far;
      int reg_parm_stack_space;
+     rtx alignment_pad;
 {
   rtx xinner;
   enum direction stack_direction
@@ -3176,7 +3178,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 			  0, args_addr,
 			  GEN_INT (args_offset + ((i - not_stack + skip)
 						  * UNITS_PER_WORD)),
-			  reg_parm_stack_space);
+			  reg_parm_stack_space, alignment_pad);
     }
   else
     {
@@ -3248,6 +3250,9 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 
   if (extra && args_addr == 0 && where_pad == stack_direction)
     anti_adjust_stack (GEN_INT (extra));
+ 
+  if (alignment_pad)
+    anti_adjust_stack (alignment_pad);
 }
 
 /* Expand an assignment that stores the value of FROM into TO.

@@ -983,7 +983,7 @@ extern rtx gen_push_operand PROTO((void));
 #ifdef TREE_CODE
 /* Generate code to push something onto the stack, given its mode and type.  */
 extern void emit_push_insn PROTO((rtx, enum machine_mode, tree, rtx, int,
-				  int, rtx, int, rtx, rtx, int));
+				  int, rtx, int, rtx, rtx, int, rtx));
 
 /* Emit library call.  */
 extern void emit_library_call PVPROTO((rtx orgfun, int no_queue,
@@ -1075,7 +1075,7 @@ extern rtx expand_call PROTO((tree, rtx, int));
 
 extern rtx expand_shift PROTO((enum tree_code, enum machine_mode, rtx, tree, rtx, int));
 extern rtx expand_divmod PROTO((int, enum tree_code, enum machine_mode, rtx, rtx, rtx, int));
-extern void locate_and_pad_parm PROTO((enum machine_mode, tree, int, tree, struct args_size *, struct args_size *, struct args_size *));
+extern void locate_and_pad_parm PROTO((enum machine_mode, tree, int, tree, struct args_size *, struct args_size *, struct args_size *, struct args_size *));
 extern rtx expand_inline_function PROTO((tree, tree, rtx, int, tree, rtx));
 /* Return the CODE_LABEL rtx for a LABEL_DECL, creating it if necessary.  */
 extern rtx label_rtx PROTO((tree));

@@ -252,7 +252,7 @@ static void instantiate_decls_1	PROTO((tree, int));
 static void instantiate_decl	PROTO((rtx, int, int));
 static int instantiate_virtual_regs_1 PROTO((rtx *, rtx, int));
 static void delete_handlers	PROTO((void));
-static void pad_to_arg_alignment PROTO((struct args_size *, int));
+static void pad_to_arg_alignment PROTO((struct args_size *, int, struct args_size *));
 #ifndef ARGS_GROW_DOWNWARD
 static void pad_below		PROTO((struct args_size *, enum  machine_mode,
 				       tree));
@@ -3957,6 +3957,7 @@ assign_parms (fndecl)
   int varargs_setup = 0;
 #endif
   rtx conversion_insns = 0;
+  struct args_size alignment_pad;
 
   /* Nonzero if the last arg is named `__builtin_va_alist',
      which is used on some machines for old-fashioned non-ANSI varargs.h;
@@ -4169,7 +4170,8 @@ assign_parms (fndecl)
 					 pretend_named) != 0,
 #endif
 #endif
-			   fndecl, &stack_args_size, &stack_offset, &arg_size);
+			   fndecl, &stack_args_size, &stack_offset, &arg_size,
+                           &alignment_pad);
 
       {
 	rtx offset_rtx = ARGS_SIZE_RTX (stack_offset);
@@ -4861,7 +4863,8 @@ promoted_input_arg (regno, pmode, punsignedp)
 
 void
 locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
-		     initial_offset_ptr, offset_ptr, arg_size_ptr)
+		     initial_offset_ptr, offset_ptr, arg_size_ptr,
+                     alignment_pad)
      enum machine_mode passed_mode;
      tree type;
      int in_regs;
@@ -4869,6 +4872,8 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
      struct args_size *initial_offset_ptr;
      struct args_size *offset_ptr;
      struct args_size *arg_size_ptr;
+     struct args_size *alignment_pad;
+
 {
   tree sizetree
     = type ? size_in_bytes (type) : size_int (GET_MODE_SIZE (passed_mode));
@@ -4923,7 +4928,7 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
     sizetree = round_up (sizetree, PARM_BOUNDARY / BITS_PER_UNIT);
   SUB_PARM_SIZE (*offset_ptr, sizetree);
   if (where_pad != downward)
-    pad_to_arg_alignment (offset_ptr, boundary);
+    pad_to_arg_alignment (offset_ptr, boundary, alignment_pad);
   if (initial_offset_ptr->var)
     {
       arg_size_ptr->var = size_binop (MINUS_EXPR,
@@ -4938,7 +4943,7 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
 				- offset_ptr->constant); 
     }
 #else /* !ARGS_GROW_DOWNWARD */
-  pad_to_arg_alignment (initial_offset_ptr, boundary);
+  pad_to_arg_alignment (initial_offset_ptr, boundary, alignment_pad);
   *offset_ptr = *initial_offset_ptr;
 
 #ifdef PUSH_ROUNDING
@@ -4967,12 +4972,26 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
    BOUNDARY is measured in bits, but must be a multiple of a storage unit.  */
 
 static void
-pad_to_arg_alignment (offset_ptr, boundary)
+pad_to_arg_alignment (offset_ptr, boundary, alignment_pad)
      struct args_size *offset_ptr;
      int boundary;
+     struct args_size *alignment_pad;
 {
+  tree save_var;
+  HOST_WIDE_INT save_constant;
+
   int boundary_in_bytes = boundary / BITS_PER_UNIT;
   
+  if (boundary > PARM_BOUNDARY)
+    {
+      save_var = offset_ptr->var;
+      save_constant = offset_ptr->constant;
+    }
+
+  alignment_pad->var = NULL_TREE;
+  alignment_pad->constant = 0;
+  /* END CYGNUS LOCAL */
+
   if (boundary > BITS_PER_UNIT)
     {
       if (offset_ptr->var)
@@ -4986,6 +5005,8 @@ pad_to_arg_alignment (offset_ptr, boundary)
 	      (ARGS_SIZE_TREE (*offset_ptr),
 	       boundary / BITS_PER_UNIT);
 	  offset_ptr->constant = 0; /*?*/
+          if (boundary > PARM_BOUNDARY)
+            alignment_pad->var = size_binop (MINUS_EXPR, offset_ptr->var, save_var);
 	}
       else
 	offset_ptr->constant =
@@ -4994,6 +5015,8 @@ pad_to_arg_alignment (offset_ptr, boundary)
 #else
 	  CEIL_ROUND (offset_ptr->constant, boundary_in_bytes);
 #endif
+        if (boundary > PARM_BOUNDARY)
+          alignment_pad->constant = offset_ptr->constant - save_constant;
     }
 }
 
