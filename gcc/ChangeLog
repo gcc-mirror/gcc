@@ -1,3 +1,16 @@
+2004-07-24  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/ia64/ia64.c (general_xfmode_operand)
+	(destination_xfmode_operand): Delete.
+	* config/ia64/ia64.h (PREDICATE_CODES): Remove them.
+	* config/ia64/ia64.md (*movxf_internal): Use general_operand
+	and destination_operand.
+
+2004-07-24  Alexander Kabaev  <kan@freebsd.org>
+
+	* config/ia64/ia64.h (SUBTARGET_EXTRA_SPECS): Default to nothing.
+	(EXTRA_SPECS): Use SUBTARGET_EXTRA_SPECS.
+
 2004-07-24  Alexander Kabaev  <kan@freebsd.org>
 	    Zack Weinberg  <zack@codesourcery.com
 
