@@ -8855,6 +8855,8 @@ cp_parser_simple_type_specifier (cp_parser* parser, cp_parser_flags flags,
   /* The type-specifier must be a user-defined type.  */
   if (!(flags & CP_PARSER_FLAGS_NO_USER_DEFINED_TYPES)) 
     {
+      bool qualified_p;
+
       /* Don't gobble tokens or issue error messages if this is an
 	 optional type-specifier.  */
       if (flags & CP_PARSER_FLAGS_OPTIONAL)
@@ -8864,11 +8866,13 @@ cp_parser_simple_type_specifier (cp_parser* parser, cp_parser_flags flags,
       cp_parser_global_scope_opt (parser,
 				  /*current_scope_valid_p=*/false);
       /* Look for the nested-name specifier.  */
-      cp_parser_nested_name_specifier_opt (parser,
-					   /*typename_keyword_p=*/false,
-					   /*check_dependency_p=*/true,
-					   /*type_p=*/false,
-					   /*is_declaration=*/false);
+      qualified_p
+	= (cp_parser_nested_name_specifier_opt (parser,
+						/*typename_keyword_p=*/false,
+						/*check_dependency_p=*/true,
+						/*type_p=*/false,
+						/*is_declaration=*/false)
+	   != NULL_TREE);
       /* If we have seen a nested-name-specifier, and the next token
 	 is `template', then we are using the template-id production.  */
       if (parser->scope 
@@ -8890,6 +8894,12 @@ cp_parser_simple_type_specifier (cp_parser* parser, cp_parser_flags flags,
       /* Otherwise, look for a type-name.  */
       else
 	type = cp_parser_type_name (parser);
+      /* Keep track of all name-lookups performed in class scopes.  */
+      if (type  
+	  && !qualified_p
+	  && TREE_CODE (type) == TYPE_DECL 
+	  && TREE_CODE (DECL_NAME (type)) == IDENTIFIER_NODE)
+	maybe_note_name_used_in_class (DECL_NAME (type), type);
       /* If it didn't work out, we don't have a TYPE.  */
       if ((flags & CP_PARSER_FLAGS_OPTIONAL) 
 	  && !cp_parser_parse_definitely (parser))
