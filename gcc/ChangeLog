@@ -1,3 +1,17 @@
+2004-05-13  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/15130
+	* config/sh/sh-protos.h (sh_expand_epilogue): Change prototype.
+	* config/sh/sh.c (output_stack_adjust): Generate a special
+	push/pop sequence when failing to get a temporary register for
+	non SHmedia epilogue.
+	(sh_expand_epilogue): Add an argument to show whether it's for
+	sibcall or not.  Take the sibcall epilogue into account.
+	(sh_need_epilogue): Call sh_expand_epilogue with 0.
+	* config/sh/sh.md (sibcall_epilogue): Call sh_expand_epilogue
+	with 1.
+	(epilogue): Call sh_expand_epilogue with 0.
+
 2004-05-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alias.c (set_reg_known_value, set_reg_known_equiv_p):
