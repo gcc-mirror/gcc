@@ -1208,22 +1208,11 @@ expand_call (exp, target, ignore)
 	       highest_outgoing_arg_in_use - initial_highest_arg_in_use);
       needed = 0;
 
-      /* The only way the stack pointer can change here is if some arguments
-	 which are passed in memory are constructed in place in the outgoing
-	 argument area.  All objects which are constructed in place have
-	 pass_on_stack == 1 (see store_one_arg ()).
-
-	 The test for arguments being constructed on the stack is just an
-	 optimization: it would be correct but suboptimal to call
-	 copy_addr_to_reg () unconditionally.  */
+      /* The address of the outgoing argument list must not be copied to a
+	 register here, because argblock would be left pointing to the
+	 wrong place after the call to allocate_dynamic_stack_space below. */
 
       argblock = virtual_outgoing_args_rtx;
-      for (i = 0; i < num_actuals; i++)
-	if (args[i].pass_on_stack)
-	  {
-	    argblock = copy_addr_to_reg (argblock);
-	    break;
-	  }
 
 #else /* not ACCUMULATE_OUTGOING_ARGS */
       if (inhibit_defer_pop == 0)
@@ -1257,6 +1246,47 @@ expand_call (exp, target, ignore)
       argblock = copy_to_reg (argblock);
 #endif /* not ACCUMULATE_OUTGOING_ARGS */
     }
+
+
+#ifdef ACCUMULATE_OUTGOING_ARGS
+  /* The save/restore code in store_one_arg handles all cases except one:
+     a constructor call (including a C function returning a BLKmode struct)
+     to initialize an argument.  */
+  if (stack_arg_under_construction)
+    {
+#if defined(REG_PARM_STACK_SPACE) && ! defined(OUTGOING_REG_PARM_STACK_SPACE)
+      rtx push_size = gen_rtx (CONST_INT, VOIDmode,
+			       reg_parm_stack_space + args_size.constant);
+#else
+      rtx push_size = gen_rtx (CONST_INT, VOIDmode, args_size.constant);
+#endif
+      if (old_stack_level == 0)
+	{
+	  emit_stack_save (SAVE_BLOCK, &old_stack_level, 0);
+	  old_pending_adj = pending_stack_adjust;
+	  pending_stack_adjust = 0;
+	  /* stack_arg_under_construction says whether a stack arg is
+	     being constructed at the old stack level.  Pushing the stack
+	     gets a clean outgoing argument block.  */
+	  old_stack_arg_under_construction = stack_arg_under_construction;
+	  stack_arg_under_construction = 0;
+	  /* Make a new map for the new argument list.  */
+	  stack_usage_map = (char *)alloca (highest_outgoing_arg_in_use);
+	  bzero (stack_usage_map, highest_outgoing_arg_in_use);
+	  highest_outgoing_arg_in_use = 0;
+	}
+      allocate_dynamic_stack_space (push_size, 0, BITS_PER_UNIT);
+    }
+  /* If argument evaluation might modify the stack pointer, copy the
+     address of the argument list to a register.  */
+  for (i = 0; i < num_actuals; i++)
+    if (args[i].pass_on_stack)
+      {
+	argblock = copy_addr_to_reg (argblock);
+	break;
+      }
+#endif
+
 
   /* If we preallocated stack space, compute the address of each argument.
      We need not ensure it is a valid memory address here; it will be 
@@ -1308,37 +1338,6 @@ expand_call (exp, target, ignore)
 				(args_size.constant
 				 - original_args_size.constant)));
 #endif
-#endif
-
-#ifdef ACCUMULATE_OUTGOING_ARGS
-  /* The save/restore code in store_one_arg handles all cases except one:
-     a constructor call (including a C function returning a BLKmode struct)
-     to initialize an argument.  */
-  if (stack_arg_under_construction)
-    {
-#if defined(REG_PARM_STACK_SPACE) && ! defined(OUTGOING_REG_PARM_STACK_SPACE)
-      rtx push_size = gen_rtx (CONST_INT, VOIDmode,
-			       reg_parm_stack_space + args_size.constant);
-#else
-      rtx push_size = gen_rtx (CONST_INT, VOIDmode, args_size.constant);
-#endif
-      if (old_stack_level == 0)
-	{
-	  emit_stack_save (SAVE_BLOCK, &old_stack_level, 0);
-	  old_pending_adj = pending_stack_adjust;
-	  pending_stack_adjust = 0;
-	  /* stack_arg_under_construction says whether a stack arg is
-	     being constructed at the old stack level.  Pushing the stack
-	     gets a clean outgoing argument block.  */
-	  old_stack_arg_under_construction = stack_arg_under_construction;
-	  stack_arg_under_construction = 0;
-	  /* Make a new map for the new argument list.  */
-	  stack_usage_map = (char *)alloca (highest_outgoing_arg_in_use);
-	  bzero (stack_usage_map, highest_outgoing_arg_in_use);
-	  highest_outgoing_arg_in_use = 0;
-	}
-      allocate_dynamic_stack_space (push_size, 0, BITS_PER_UNIT);
-    }
 #endif
 
   /* Don't try to defer pops if preallocating, not even from the first arg,
