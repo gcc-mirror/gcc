@@ -1,3 +1,8 @@
+2004-10-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR other/18138
+	* testsuite/lib/libstdc++.exp: Accept more than one multilib libgcc.
+
 2004-10-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/basic_string.h (_Rep::_M_is_safe, _M_check_length,

@@ -57,7 +57,7 @@ if { [is_remote host] == 0 && [which $compiler] != 0 } {
 	if { "$mldir" == "." } {
 	    continue
 	}
-	if { [llength [glob -nocomplain ${rootme}/${mldir}/libgcc_s*.so.*]] == 1 } {
+	if { [llength [glob -nocomplain ${rootme}/${mldir}/libgcc_s*.so.*]] >= 1 } {
 	    append libgcc_s_path ":${rootme}/${mldir}"
 	}
     }
