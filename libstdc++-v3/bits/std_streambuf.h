@@ -1,6 +1,6 @@
 // Stream buffer classes -*- C++ -*-
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -84,8 +84,11 @@ namespace std {
       // leave it NULL.
       char_type*		_M_buf; 	
 
-      // Size of internal buffer, in bytes.
+      // Actual size of internal buffer, in bytes.
       int_type			_M_buf_size;
+
+      // Optimal or preferred size of internal buffer, in bytes.
+      int_type			_M_buf_size_opt;
 
       // True iff _M_in_* and _M_out_* buffers should always point to
       // the same place.  True for fstreams, false for sstreams.
@@ -284,10 +287,13 @@ namespace std {
 
     protected:
       basic_streambuf()
-      : _M_buf(NULL), _M_buf_size(0), _M_buf_unified(false),
-	_M_in_cur(0), _M_in_beg(0), _M_in_end(0), _M_out_cur(0), _M_out_beg(0),
-	_M_out_end(0), _M_mode(ios_base::openmode(0)), 
-	_M_locale_buf(locale()), _M_locale_set(false) 
+      : _M_buf(NULL), _M_buf_size(0), 
+	_M_buf_size_opt(static_cast<int_type>(BUFSIZ * sizeof(char_type))),
+	_M_buf_unified(false), _M_in_cur(0), _M_in_beg(0), _M_in_end(0), 
+	_M_out_cur(0), _M_out_beg(0), _M_out_end(0), 
+	_M_mode(ios_base::openmode(0)), _M_locale_buf(locale()), 
+	_M_locale_set(false) 
+
       { _M_fctype_buf =  &use_facet<__ctype_type>(this->getloc()); }
 
       // Get area:

@@ -1,6 +1,6 @@
 // File based streams -*- C++ -*-
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,7 +42,7 @@ namespace std
     _M_init_filebuf(void)
     {
       _M_buf_unified = true; // Tie input to output for basic_filebuf.
-      _M_buf_size = static_cast<int_type>(BUFSIZ * sizeof(char_type)); 
+      _M_buf_size = _M_buf_size_opt;
       try {
 	_M_file = new __file_type(&_M_lock);
       }
