@@ -1,3 +1,19 @@
+2004-06-17  Zack Weinberg  <zack@codesourcery.com>
+
+	Bug 14610
+	* Makefile.in (min-insn-modes.o): Correct dependencies.
+	* real.c (encode_ieee_extended, decode_ieee_extended): Always
+	produce/consume 12-byte little-endian Intel format.
+	(encode_ieee_extended_128, decode_ieee_extended_128): Delete.
+	(encode_ieee_extended_motorola, decode_ieee_extended_motorola)
+	(encode_ieee_extended_intel_96, decode_ieee_extended_intel_96)
+	(encode_ieee_extended_intel_128, decode_ieee_extended_intel_128):
+	New functions which convert between 12-byte little-endian Intel
+	format and the desired format.
+	(ieee_extended_motorola_format, ieee_extended_intel_96_round_53_format)
+	(ieee_extended_intel_96_format, ieee_extended_intel_128_format):
+	Update.
+
 2004-06-16  James E Wilson  <wilson@specifixinc.com>
 
 	PR c++/14808
@@ -39,7 +55,7 @@
 	(m32r_return_addr): Added for __builtin_return_address(0).
 	(m32r_reload_lr): Ditto.
 
-	* longlong.h: Fix macros for m32r add_ssaaaa and sub_ddmmss. 
+	* longlong.h: Fix macros for m32r add_ssaaaa and sub_ddmmss.
 
 2004-06-15  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
@@ -114,19 +130,19 @@
 
 	Backport from mainline:
 
-        * config/rs6000/rs6000.c (output_vec_const_move):
-        Find all cases of EASY_VECTOR_15_ADD_SELF.
-        (easy_vector_constant_add_self): Accept
-        all vector constant loadable by vsplt* and vadd*.
+	* config/rs6000/rs6000.c (output_vec_const_move):
+	Find all cases of EASY_VECTOR_15_ADD_SELF.
+	(easy_vector_constant_add_self): Accept
+	all vector constant loadable by vsplt* and vadd*.
 	(easy_vector_same): Use easy_vector_splat_const.
 	(easy_vector_const): Use easy_vector_splat_const.
-        (easy_vector_splat_const): New function.
+	(easy_vector_splat_const): New function.
 	(gen_easy_vector_constant_add_self): New function.
 
 	* config/rs6000/rs6000-protos.c (gen_easy_vector_constant_add_self):
 	New prototype.
 
-        * config/rs6000/altivec.md (movv4si splitter): Change to
+	* config/rs6000/altivec.md (movv4si splitter): Change to
 	emit move insn with halfed vector constant.
 	(*movv8hi splitter): Likewise.
 	(*movv16qi splitter): Likewise.
@@ -365,8 +381,8 @@
 	Backport from mainline:
 	2004-06-02  Eric Christopher  <echristo@redhat.com>
 
-        * c-typeck.c (common_type): Don't lose type qualifiers
-        when creating new variants.
+	* c-typeck.c (common_type): Don't lose type qualifiers
+	when creating new variants.
 
 2004-06-03  Bernardo Innocenti  <bernie@develer.com>
 
@@ -374,7 +390,7 @@
 	Backport from mainline:
 
 	2004-06-01  Peter Barada  <peter@the-baradas.com>
-	            Peter Jakubek  <peter@laseranimation.com>
+		    Peter Jakubek  <peter@laseranimation.com>
 
 	* config/m68k/m68k.c(m68k_output_mi_thunk):  For ColdFire, use %d0 as
 	a scratch to perform an add to memory.

@@ -1,3 +1,8 @@
+2004-06-17  Zack Weinberg  <zack@codesourcery.com>
+
+	Bug 14610
+	* gcc.dg/ia64-float80-1.c, gcc.dg/ia64-float80-2.c: New testcases.
+
 2004-06-15  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/15967
@@ -15,7 +20,7 @@
 
 	PR c++/14930
 	* g++.dg/template/friend30.C: New test.
-	
+
 2004-06-13  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR rtl-optimization/15296
@@ -26,8 +31,8 @@
 	PR c++/15862
 	* g++.dg/parse/enum1.C: New test.
 
-2004-06-11  Hartmut Penner  <hpenner@de.ibm.com>	
-	
+2004-06-11  Hartmut Penner  <hpenner@de.ibm.com>
+
 	Backport from mainline:
 
 	2004-03-30  Hartmut Penner  <hpenner@de.ibm.com>
@@ -91,7 +96,7 @@
 	Backport from mainline:
 	2004-06-02  Eric Christopher  <echristo@redhat.com>
 
-        * gcc.c-torture/compile/20040602-1.c: New.
+	* gcc.c-torture/compile/20040602-1.c: New.
 
 2004-06-01  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
