@@ -1,3 +1,8 @@
+Sun Dec  9 18:40:07 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* vmsdbgout.c (lookup_filename): Assign null string instead
+	of null pointer to fnam.
+
 2001-12-09  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_align_insns): Suppress realignment
