@@ -2679,6 +2679,7 @@ do {									\
   {"got_operand", {SYMBOL_REF, CONST, LABEL_REF}},			   \
   {"got_no_const_operand", {SYMBOL_REF, LABEL_REF}},			   \
   {"easy_fp_constant", {CONST_DOUBLE}},					   \
+  {"zero_fp_constant", {CONST_DOUBLE}},					   \
   {"reg_or_mem_operand", {SUBREG, MEM, REG}},				   \
   {"lwa_operand", {SUBREG, MEM, REG}},					   \
   {"volatile_mem_operand", {MEM}},					   \
@@ -2714,7 +2715,8 @@ do {									\
   {"trap_comparison_operator", {EQ, NE, LE, LT, GE,			   \
 				GT, LEU, LTU, GEU, GTU}},		   \
   {"boolean_operator", {AND, IOR, XOR}},				   \
-  {"boolean_or_operator", {IOR, XOR}},
+  {"boolean_or_operator", {IOR, XOR}},					   \
+  {"min_max_operator", {SMIN, SMAX, UMIN, UMAX}},
 
 /* uncomment for disabling the corresponding default options */
 /* #define  MACHINE_no_sched_interblock */
