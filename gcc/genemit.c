@@ -705,14 +705,14 @@ xrealloc (ptr, size)
 static void
 fatal VPROTO ((char *format, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *format;
 #endif
   va_list ap;
 
   VA_START (ap, format);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   format = va_arg (ap, char *);
 #endif
 

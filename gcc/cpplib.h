@@ -70,10 +70,6 @@ enum cpp_token {
   CPP_POP
 };
 
-#ifndef PARAMS
-#define PARAMS(P) PROTO(P)
-#endif /* !PARAMS */
-
 typedef enum cpp_token (*parse_underflow_t) PARAMS((cpp_reader *));
 typedef int (*parse_cleanup_t) PARAMS((cpp_buffer *, cpp_reader *));
 

@@ -1367,7 +1367,7 @@ v_cpp_message (pfile, is_error, msg, ap)
 void
 cpp_message VPROTO ((cpp_reader *pfile, int is_error, const char *msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   cpp_reader *pfile;
   int is_error;
   const char *msg;
@@ -1376,7 +1376,7 @@ cpp_message VPROTO ((cpp_reader *pfile, int is_error, const char *msg, ...))
   
   VA_START (ap, msg);
   
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   pfile = va_arg (ap, cpp_reader *);
   is_error = va_arg (ap, const int);
   msg = va_arg (ap, const char *);
@@ -1401,14 +1401,14 @@ v_fatal (str, ap)
 void
 fatal VPROTO ((const char *str, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   const char *str;
 #endif
   va_list ap;
   
   VA_START(ap, str);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   str = va_arg (ap, const char *);
 #endif
 
@@ -1419,7 +1419,7 @@ fatal VPROTO ((const char *str, ...))
 void
 cpp_fatal VPROTO ((cpp_reader * pfile ATTRIBUTE_UNUSED, const char *str, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   cpp_reader * pfile;
   const char *str;
 #endif
@@ -1427,7 +1427,7 @@ cpp_fatal VPROTO ((cpp_reader * pfile ATTRIBUTE_UNUSED, const char *str, ...))
   
   VA_START(ap, str);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   pfile = va_arg (ap, cpp_reader *);
   str = va_arg (ap, const char *);
 #endif

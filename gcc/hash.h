@@ -18,31 +18,9 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#ifdef IN_GCC
-
-/* Add prototype support.  */
-#ifndef PROTO
-#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define PROTO(ARGS) ARGS
-#else
-#define PROTO(ARGS) ()
-#endif
-#endif
-
-#define PARAMS(ARGS) PROTO(ARGS)
-
-#ifdef __STDC__
-#define PTR void *
-#else
-#ifndef const
-#define const
-#endif
-#define PTR char *
-#endif
-
-#else /* ! IN_GCC */
+#ifndef IN_GCC
 #include <ansidecl.h>
-#endif /* IN_GCC */
+#endif /* ! IN_GCC */
 
 #include "obstack.h"
 

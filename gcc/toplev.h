@@ -5,7 +5,7 @@
 #ifndef __GCC_TOPLEV_H__
 #define __GCC_TOPLEV_H__
 
-#ifdef __STDC__
+#ifdef ANSI_PROTOTYPES
 union tree_node;
 struct rtx_def;
 #endif

@@ -3694,7 +3694,7 @@ output_addr_const (file, x)
 void
 asm_fprintf VPROTO((FILE *file, char *p, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   FILE *file;
   char *p;
 #endif
@@ -3704,7 +3704,7 @@ asm_fprintf VPROTO((FILE *file, char *p, ...))
 
   VA_START (argptr, p);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   file = va_arg (argptr, FILE *);
   p = va_arg (argptr, char *);
 #endif

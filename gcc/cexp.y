@@ -1164,14 +1164,14 @@ initialize_random_junk ()
 void
 error VPROTO ((char * msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char * msg;
 #endif
   va_list args;
 
   VA_START (args, msg);
  
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   msg = va_arg (args, char *);
 #endif
  
@@ -1184,14 +1184,14 @@ error VPROTO ((char * msg, ...))
 void
 pedwarn VPROTO ((char * msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char * msg;
 #endif
   va_list args;
 
   VA_START (args, msg);
  
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   msg = va_arg (args, char *);
 #endif
  
@@ -1204,14 +1204,14 @@ pedwarn VPROTO ((char * msg, ...))
 void
 warning VPROTO ((char * msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char * msg;
 #endif
   va_list args;
 
   VA_START (args, msg);
  
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   msg = va_arg (args, char *);
 #endif
  

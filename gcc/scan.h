@@ -34,7 +34,7 @@ typedef struct sstring
   if ((STR)->limit - (STR)->ptr < (COUNT)) make_sstring_space (STR, COUNT);
 
 #ifndef _PARAMS
-#if defined(__STDC__) || defined(__cplusplus)
+#if defined(ANSI_PROTOTYPES) || defined(__cplusplus)
 #define _PARAMS(args) args
 #else
 #define _PARAMS(args) ()

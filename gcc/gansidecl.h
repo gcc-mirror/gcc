@@ -22,29 +22,17 @@ Boston, MA 02111-1307, USA.  */
    in binutils and gdb releases.
    ??? Over time the two should be merged into one.  */
 
-#ifndef	ANSIDECL_H
-#define	ANSIDECL_H
+#ifndef	__GANSIDECL_H__
+#define	__GANSIDECL_H__
 
-/* Add prototype support.  */
-#ifndef PROTO
-#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define PROTO(ARGS) ARGS
-#else
-#define PROTO(ARGS) ()
-#endif
-#endif
+#include "ansidecl.h"
 
-#ifndef VPROTO
-#ifdef __STDC__
-#define PVPROTO(ARGS)		ARGS
-#define VPROTO(ARGS)            ARGS
-#define VA_START(va_list,var)  va_start(va_list,var)
-#else
-#define PVPROTO(ARGS)		()
-#define VPROTO(ARGS)            (va_alist) va_dcl
-#define VA_START(va_list,var)  va_start(va_list)
-#endif
-#endif
+/* Undef ansidecl.h's "obsolete" version. */
+#undef PROTO
+/* These macros are deprecated, use ansidecl.h's PARAMS style instead. */
+#define PROTO(ARGS) PARAMS(ARGS)
+#define VPROTO(ARGS) VPARAMS(ARGS)
+#define PVPROTO(ARGS) PARAMS(ARGS)
 
 #if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
 # define __attribute__(x)
@@ -67,29 +55,10 @@ Boston, MA 02111-1307, USA.  */
 #define ATTRIBUTE_PRINTF_5 ATTRIBUTE_PRINTF(5, 6)
 #endif /* ATTRIBUTE_PRINTF */
 
-#ifndef GENERIC_PTR
-#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define GENERIC_PTR void *
-#else
-#define GENERIC_PTR char *
-#endif
-#endif
+#define GENERIC_PTR PTR
 
 #ifndef NULL_PTR
-#define NULL_PTR ((GENERIC_PTR) 0)
+#define NULL_PTR ((PTR) 0)
 #endif
 
-#ifdef __STDC__
-
-#define	PTR void *
-
-#else
-
-#define	PTR char *
-#ifndef const
-#define const
-#endif
-
-#endif /* ! __STDC__ */
-
-#endif /* ANSIDECL_H */
+#endif /* __GANSIDECL_H__ */

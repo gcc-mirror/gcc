@@ -118,14 +118,14 @@ concat VPROTO((char *first, ...))
   register char *end;
   register char *arg;
   va_list args;
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *first;
 #endif
 
   /* First compute the size of the result and get sufficient memory.  */
 
   VA_START (args, first);
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   first = va_arg (args, char *);
 #endif
 
@@ -144,7 +144,7 @@ concat VPROTO((char *first, ...))
   /* Now copy the individual pieces to the result string.  */
 
   VA_START (args, first);
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   first = va_arg (args, char *);
 #endif
 

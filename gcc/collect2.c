@@ -425,7 +425,7 @@ collect_exit (status)
 void
 fatal_perror VPROTO((const char * string, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   const char *string;
 #endif
   int e = errno;
@@ -433,7 +433,7 @@ fatal_perror VPROTO((const char * string, ...))
 
   VA_START (ap, string);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   string = va_arg (ap, const char *);
 #endif
 
@@ -450,14 +450,14 @@ fatal_perror VPROTO((const char * string, ...))
 void
 fatal VPROTO((const char * string, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   const char *string;
 #endif
   va_list ap;
   
   VA_START (ap, string);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   string = va_arg (ap, const char *);
 #endif
   
@@ -474,14 +474,14 @@ fatal VPROTO((const char * string, ...))
 void
 error VPROTO((const char * string, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   const char * string;
 #endif
   va_list ap;
  
   VA_START (ap, string);
   
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   string = va_arg (ap, const char *);
 #endif
 

@@ -199,13 +199,13 @@ checkit VPROTO ((const char* format, ...))
   va_list args;
   int result;
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *format;
 #endif
 
   VA_START (args, format);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   format = va_arg (args, char *);
 #endif
 

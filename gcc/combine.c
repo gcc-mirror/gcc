@@ -9288,7 +9288,7 @@ gen_lowpart_for_combine (mode, x)
 static rtx
 gen_rtx_combine VPROTO((enum rtx_code code, enum machine_mode mode, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   enum rtx_code code;
   enum machine_mode mode;
 #endif
@@ -9302,7 +9302,7 @@ gen_rtx_combine VPROTO((enum rtx_code code, enum machine_mode mode, ...))
 
   VA_START (p, mode);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   code = va_arg (p, enum rtx_code);
   mode = va_arg (p, enum machine_mode);
 #endif

@@ -1659,7 +1659,7 @@ v_error_with_file_and_line (file, line, s, ap)
 void
 error_with_file_and_line VPROTO((char *file, int line, char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *file;
   int line;
   char *s;
@@ -1668,7 +1668,7 @@ error_with_file_and_line VPROTO((char *file, int line, char *s, ...))
 
   VA_START (ap, s);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   file = va_arg (ap, char *);
   line = va_arg (ap, int);
   s = va_arg (ap, char *);
@@ -1696,7 +1696,7 @@ v_error_with_decl (decl, s, ap)
 void
 error_with_decl VPROTO((tree decl, char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   tree decl;
   char *s;
 #endif
@@ -1704,7 +1704,7 @@ error_with_decl VPROTO((tree decl, char *s, ...))
 
   VA_START (ap, s);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   decl = va_arg (ap, tree);
   s = va_arg (ap, char *);
 #endif
@@ -1735,7 +1735,7 @@ v_error_for_asm (insn, s, ap)
 void
 error_for_asm VPROTO((rtx insn, char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   rtx insn;
   char *s;
 #endif
@@ -1743,7 +1743,7 @@ error_for_asm VPROTO((rtx insn, char *s, ...))
 
   VA_START (ap, s);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   insn = va_arg (ap, rtx);
   s = va_arg (ap, char *);
 #endif
@@ -1765,14 +1765,14 @@ verror (s, ap)
 void
 error VPROTO((char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   s = va_arg (ap, char *);
 #endif
 
@@ -1794,14 +1794,14 @@ vfatal (s, ap)
 void
 fatal VPROTO((char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   s = va_arg (ap, char *);
 #endif
 
@@ -1828,7 +1828,7 @@ v_warning_with_file_and_line (file, line, s, ap)
 void
 warning_with_file_and_line VPROTO((char *file, int line, char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *file;
   int line;
   char *s;
@@ -1837,7 +1837,7 @@ warning_with_file_and_line VPROTO((char *file, int line, char *s, ...))
 
   VA_START (ap, s);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   file = va_arg (ap, char *);
   line = va_arg (ap, int);
   s = va_arg (ap, char *);
@@ -1867,7 +1867,7 @@ v_warning_with_decl (decl, s, ap)
 void
 warning_with_decl VPROTO((tree decl, char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   tree decl;
   char *s;
 #endif
@@ -1875,7 +1875,7 @@ warning_with_decl VPROTO((tree decl, char *s, ...))
 
   VA_START (ap, s);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   decl = va_arg (ap, tree);
   s = va_arg (ap, char *);
 #endif
@@ -1908,7 +1908,7 @@ v_warning_for_asm (insn, s, ap)
 void
 warning_for_asm VPROTO((rtx insn, char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   rtx insn;
   char *s;
 #endif
@@ -1916,7 +1916,7 @@ warning_for_asm VPROTO((rtx insn, char *s, ...))
 
   VA_START (ap, s);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   insn = va_arg (ap, rtx);
   s = va_arg (ap, char *);
 #endif
@@ -1938,14 +1938,14 @@ vwarning (s, ap)
 void
 warning VPROTO((char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   s = va_arg (ap, char *);
 #endif
 
@@ -1970,14 +1970,14 @@ vpedwarn (s, ap)
 void
 pedwarn VPROTO((char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   s = va_arg (ap, char *);
 #endif
 
@@ -2010,7 +2010,7 @@ v_pedwarn_with_decl (decl, s, ap)
 void
 pedwarn_with_decl VPROTO((tree decl, char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   tree decl;
   char *s;
 #endif
@@ -2018,7 +2018,7 @@ pedwarn_with_decl VPROTO((tree decl, char *s, ...))
 
   VA_START (ap, s);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   decl = va_arg (ap, tree);
   s = va_arg (ap, char *);
 #endif
@@ -2043,7 +2043,7 @@ v_pedwarn_with_file_and_line (file, line, s, ap)
 void
 pedwarn_with_file_and_line VPROTO((char *file, int line, char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *file;
   int line;
   char *s;
@@ -2052,7 +2052,7 @@ pedwarn_with_file_and_line VPROTO((char *file, int line, char *s, ...))
 
   VA_START (ap, s);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   file = va_arg (ap, char *);
   line = va_arg (ap, int);
   s = va_arg (ap, char *);
@@ -2081,14 +2081,14 @@ vsorry (s, ap)
 void
 sorry VPROTO((char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   s = va_arg (ap, char *);
 #endif
 
@@ -2115,14 +2115,14 @@ v_really_sorry (s, ap)
 void
 really_sorry VPROTO((char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   s = va_arg (ap, char *);
 #endif
 
