@@ -1,3 +1,9 @@
+Fri Dec 18 16:11:43 EST 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* cplus-dem.c (demangle_fund_type): Process CV and u codes before
+	bumping the pointer we read from. Also prepend these codes,
+	as we do in other places.
+
 Mon Dec 14 09:55:50 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* choose-temp.c: Don't check IN_GCC anymore.
