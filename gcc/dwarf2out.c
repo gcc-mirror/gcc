@@ -5584,12 +5584,12 @@ output_aranges ()
 	     ASM_COMMENT_START, 2 * PTR_SIZE);
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_ADDR (asm_out_file, TEXT_SECTION);
+  ASM_OUTPUT_DWARF_ADDR (asm_out_file, stripattributes (TEXT_SECTION));
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Address", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_ADDR_DELTA (asm_out_file, text_end_label, TEXT_SECTION);
+  ASM_OUTPUT_DWARF_ADDR_DELTA (asm_out_file, text_end_label, stripattributes (TEXT_SECTION));
   if (flag_debug_asm)
     fprintf (asm_out_file, "%s Length", ASM_COMMENT_START);
 
@@ -5774,14 +5774,14 @@ output_line_info ()
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNE_set_address);
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_ADDR (asm_out_file, TEXT_SECTION);
+  ASM_OUTPUT_DWARF_ADDR (asm_out_file, stripattributes (TEXT_SECTION));
   fputc ('\n', asm_out_file);
 
   /* Generate the line number to PC correspondence table, encoded as
      a series of state machine operations.  */
   current_file = 1;
   current_line = 1;
-  strcpy (prev_line_label, TEXT_SECTION);
+  strcpy (prev_line_label, stripattributes (TEXT_SECTION));
   for (lt_index = 1; lt_index < line_info_table_in_use; ++lt_index)
     {
       register dw_line_info_ref line_info;
