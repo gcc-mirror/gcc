@@ -115,6 +115,7 @@ static void sparc_output_addr_vec PROTO((rtx));
 static void sparc_output_addr_diff_vec PROTO((rtx));
 static void sparc_output_deferred_case_vectors PROTO((void));
 
+
 #ifdef DWARF2_DEBUGGING_INFO
 extern char *dwarf2out_cfi_label ();
 #endif
@@ -1040,7 +1041,7 @@ sparc_emit_set_const32 (op0, op1)
 
   if (GET_CODE (op1) == CONST_INT)
     {
-      int value = INTVAL (op1);
+      HOST_WIDE_INT value = INTVAL (op1);
 
       if (SPARC_SETHI_P (value)
 	  || SPARC_SIMM13_P (value))
@@ -1192,6 +1193,8 @@ sparc_emit_set_symbolic_const64 (op0, op1, temp1)
 }
 
 /* This avoids problems when cross compiling. */
+static rtx safe_constDI	PROTO((HOST_WIDE_INT));
+
 static rtx
 safe_constDI(val)
      HOST_WIDE_INT val;
@@ -1211,17 +1214,21 @@ safe_constDI(val)
    such values are similar to something required later on.
    Without doing this, the optimizer cannot see such
    opportunities.  */
+
+static void sparc_emit_set_const64_quick1
+	PROTO((rtx, rtx, unsigned HOST_WIDE_INT, int));
+
 static void
 sparc_emit_set_const64_quick1 (op0, temp, low_bits, is_neg)
   rtx op0;
   rtx temp;
-  unsigned int low_bits;
+  unsigned HOST_WIDE_INT low_bits;
   int is_neg;
 {
-  unsigned int high_bits;
+  unsigned HOST_WIDE_INT high_bits;
 
   if (is_neg)
-    high_bits = ~low_bits;
+    high_bits = (~low_bits) & 0xffffffff;
   else
     high_bits = low_bits;
 
@@ -1242,12 +1249,16 @@ sparc_emit_set_const64_quick1 (op0, temp, low_bits, is_neg)
     }
 }
 
+static void sparc_emit_set_const64_quick2
+	PROTO((rtx, rtx, unsigned HOST_WIDE_INT,
+	       unsigned HOST_WIDE_INT, int));
+
 static void
 sparc_emit_set_const64_quick2 (op0, temp, high_bits, low_immediate, shift_count)
   rtx op0;
   rtx temp;
-  unsigned int high_bits;
-  unsigned int low_immediate;
+  unsigned HOST_WIDE_INT high_bits;
+  unsigned HOST_WIDE_INT low_immediate;
   int shift_count;
 {
   rtx temp2 = op0;
@@ -1283,14 +1294,17 @@ sparc_emit_set_const64_quick2 (op0, temp, high_bits, low_immediate, shift_count)
 					 safe_constDI (low_immediate & 0x3ff))));
 }
 
+static void sparc_emit_set_const64_longway
+	PROTO((rtx, rtx, unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT));
+
 /* Full 64-bit constant decomposition.  Even though this is the
    'worst' case, we still optimize a few things away.  */
 static void
 sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits)
      rtx op0;
      rtx temp;
-     unsigned int high_bits;
-     unsigned int low_bits;
+     unsigned HOST_WIDE_INT high_bits;
+     unsigned HOST_WIDE_INT low_bits;
 {
   rtx sub_temp;
 
@@ -1356,7 +1370,7 @@ sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits)
 	{
 	  emit_insn (gen_rtx_SET (DImode, op0,
 				  gen_rtx_ASHIFT (DImode, sub_temp,
-						  GEN_INT(to_shift))));
+						  GEN_INT (to_shift))));
 	  emit_insn (gen_rtx_SET (DImode, op0,
 				  gen_rtx_IOR (DImode, op0, low1)));
 	  sub_temp = op0;
@@ -1391,9 +1405,14 @@ sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits)
 }
 
 /* Analyze a 64-bit constant for certain properties. */
+static void analyze_64bit_constant
+	PROTO((unsigned HOST_WIDE_INT,
+	       unsigned HOST_WIDE_INT,
+	       int *, int *, int *));
+
 static void
 analyze_64bit_constant (high_bits, low_bits, hbsp, lbsp, abbasp)
-     unsigned int high_bits, low_bits;
+     unsigned HOST_WIDE_INT high_bits, low_bits;
      int *hbsp, *lbsp, *abbasp;
 {
   int lowest_bit_set, highest_bit_set, all_bits_between_are_set;
@@ -1455,14 +1474,17 @@ analyze_64bit_constant (high_bits, low_bits, hbsp, lbsp, abbasp)
   *abbasp = all_bits_between_are_set;
 }
 
+static int const64_is_2insns
+	PROTO((unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT));
+
 static int
 const64_is_2insns (high_bits, low_bits)
-     unsigned int high_bits, low_bits;
+     unsigned HOST_WIDE_INT high_bits, low_bits;
 {
   int highest_bit_set, lowest_bit_set, all_bits_between_are_set;
 
   if (high_bits == 0
-      || high_bits == -1)
+      || high_bits == 0xffffffff)
     return 1;
 
   analyze_64bit_constant (high_bits, low_bits,
@@ -1479,12 +1501,16 @@ const64_is_2insns (high_bits, low_bits)
   return 0;
 }
 
-static unsigned int
+static unsigned HOST_WIDE_INT create_simple_focus_bits
+	PROTO((unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
+	       int, int, int));
+
+static unsigned HOST_WIDE_INT
 create_simple_focus_bits (high_bits, low_bits, highest_bit_set, lowest_bit_set, shift)
-     unsigned int high_bits, low_bits;
+     unsigned HOST_WIDE_INT high_bits, low_bits;
      int highest_bit_set, lowest_bit_set, shift;
 {
-  unsigned int hi, lo;
+  int hi, lo;
 
   if (lowest_bit_set < 32)
     {
@@ -1510,7 +1536,7 @@ sparc_emit_set_const64 (op0, op1)
      rtx op0;
      rtx op1;
 {
-  unsigned int high_bits, low_bits;
+  unsigned HOST_WIDE_INT high_bits, low_bits;
   int lowest_bit_set, highest_bit_set;
   int all_bits_between_are_set;
   int i;
@@ -1536,7 +1562,7 @@ sparc_emit_set_const64 (op0, op1)
   if (GET_CODE (op1) == CONST_DOUBLE)
     {
 #if HOST_BITS_PER_WIDE_INT == 64
-      high_bits = CONST_DOUBLE_LOW (op1) >> 32;
+      high_bits = (CONST_DOUBLE_LOW (op1) >> 32) & 0xffffffff;
       low_bits  = CONST_DOUBLE_LOW (op1) & 0xffffffff;
 #else
       high_bits = CONST_DOUBLE_HIGH (op1);
@@ -1546,7 +1572,7 @@ sparc_emit_set_const64 (op0, op1)
   else
     {
 #if HOST_BITS_PER_WIDE_INT == 64
-      high_bits = (INTVAL (op1) >> 32);
+      high_bits = ((INTVAL (op1) >> 32) & 0xffffffff);
       low_bits = (INTVAL (op1) & 0xffffffff);
 #else
       high_bits = ((INTVAL (op1) < 0) ?
@@ -1582,7 +1608,7 @@ sparc_emit_set_const64 (op0, op1)
   if (((highest_bit_set == 63
 	|| lowest_bit_set == 0)
        && all_bits_between_are_set != 0)
-      || ((highest_bit_set - lowest_bit_set) < 13))
+      || ((highest_bit_set - lowest_bit_set) < 12))
     {
       rtx the_const = constm1_rtx;
       int shift = lowest_bit_set;
@@ -1629,9 +1655,9 @@ sparc_emit_set_const64 (op0, op1)
    * 2) sethi	%hi(focus_bits), %reg
    *    srlx	%reg, shift, %reg
    */
-  if ((highest_bit_set - lowest_bit_set) < 22)
+  if ((highest_bit_set - lowest_bit_set) < 21)
     {
-      unsigned int focus_bits =
+      unsigned HOST_WIDE_INT focus_bits =
 	create_simple_focus_bits (high_bits, low_bits,
 				  highest_bit_set, lowest_bit_set, 10);
       emit_insn (gen_rtx_SET (DImode,
@@ -1659,9 +1685,9 @@ sparc_emit_set_const64 (op0, op1)
    *	xor	%reg, %lo(-0x400 | (low_bits & 0x3ff)), %reg
    */
   if (high_bits == 0
-      || high_bits == -1)
+      || high_bits == 0xffffffff)
     return sparc_emit_set_const64_quick1 (op0, temp, low_bits,
-					  (high_bits == -1));
+					  (high_bits == 0xffffffff));
 
   /* 1) sethi	%hi(high_bits), %reg
    *    or	%reg, %lo(high_bits), %reg
@@ -1669,7 +1695,7 @@ sparc_emit_set_const64 (op0, op1)
    */
   if (low_bits == 0
       || (SPARC_SIMM13_P(low_bits)
-	  && ((int)low_bits > 0)))
+	  && ((HOST_WIDE_INT)low_bits > 0)))
     return sparc_emit_set_const64_quick2 (op0, temp, high_bits, low_bits, 32);
 
   /* Now, try 3-insn sequences.  But first we may be able to do something
@@ -1677,7 +1703,7 @@ sparc_emit_set_const64 (op0, op1)
   if (const64_is_2insns ((~high_bits) & 0xffffffff,
 			 (~low_bits) & 0xfffffc00))
     {
-      unsigned int trailing_bits = (~low_bits) & 0x3ff;
+      unsigned HOST_WIDE_INT trailing_bits = (~low_bits) & 0x3ff;
 
       if ((((~high_bits) & 0xffffffff) == 0
 	   && ((~low_bits) & 0x80000000) == 0)
@@ -1718,7 +1744,7 @@ sparc_emit_set_const64 (op0, op1)
    */
   if ((highest_bit_set - lowest_bit_set) < 32)
     {
-      unsigned int hi, lo, focus_bits;
+      unsigned HOST_WIDE_INT hi, lo, focus_bits;
 
       /* We can't get here in this state.  */
       if (highest_bit_set < 32
@@ -3372,6 +3398,13 @@ struct function_arg_record_value_parms
   int slotno, named, regbase;
   int nregs, intoffset;
 };
+
+static void function_arg_record_value_3
+	PROTO((int, struct function_arg_record_value_parms *));
+static void function_arg_record_value_2
+	PROTO((tree, int, struct function_arg_record_value_parms *));
+static rtx function_arg_record_value
+	PROTO((tree, enum machine_mode, int, int, int));
 
 static void
 function_arg_record_value_1 (type, startbitpos, parms)

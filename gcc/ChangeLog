@@ -1,3 +1,23 @@
+Tue Aug 11 04:46:01 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.c (sparc_emit_set_const32): INTVAL is of
+	type HOST_WIDE_INT.
+	(safe_constDI sparc_emit_set_const64_quick1,
+	sparc_emit_set_const64_quick2, sparc_emit_set_const64_longway,
+	analyze_64bit_constant, const64_is_2insns,
+	create_simple_focus_bits): Fix some bugs when compiled on real
+	64-bit hosts.
+	(function_arg_record_value_3, function_arg_record_value_2,
+	function_arg_record_value): Add fully prototyped forward decls.
+	* config/sparc/sparc.md (define_insn cmpsi_insn_sp32): Rename back
+	to cmpsi_insn and use on both 64 and 32 bit targets.
+	(define_insn cmpsi_insn_sp64): Remove.
+	(define_expand zero_extendsidi2): Allow for 32-bit target too.
+	(define_insn zero_extendsidi2_insn): Rename to
+	zero_extendsidi2_insn_sp64.
+	(define_insn zero_extendsidi2_insn_sp32): New pattern and
+	assosciated forced split for it.
+
 Mon Aug 10 22:57:24 1998  John Carr  <jfc@mit.edu>
 
 	* config/sparc/sparc.md (define_insn jump): Output ba,pt not b,pt

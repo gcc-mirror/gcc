@@ -562,19 +562,11 @@
 
 ;; Now the compare DEFINE_INSNs.
 
-(define_insn "*cmpsi_insn_sp32"
+(define_insn "*cmpsi_insn"
   [(set (reg:CC 100)
 	(compare:CC (match_operand:SI 0 "register_operand" "r")
 		    (match_operand:SI 1 "arith_operand" "rI")))]
-  "TARGET_ARCH32"
-  "cmp\\t%0, %1"
-  [(set_attr "type" "compare")])
-
-(define_insn "*cmpsi_insn_sp64"
-  [(set (reg:CC 100)
-	(compare:CC (match_operand:SI 0 "register_operand" "r")
-		    (match_operand:SI 1 "arith_double_operand" "rHI")))]
-  "TARGET_ARCH64"
+  ""
   "cmp\\t%0, %1"
   [(set_attr "type" "compare")])
 
@@ -2662,7 +2654,7 @@
 
   /* Now emit using the real source and destination we found, swapping
      the order if we detect overlap.  */
-  if (REGNO(dest1) == REGNO(src2))
+  if (REGNO (dest1) == REGNO (src2))
     {
       emit_insn (gen_movsi (dest2, src2));
       emit_insn (gen_movsi (dest1, src1));
@@ -3809,10 +3801,10 @@ movtf_is_ok:
 (define_expand "zero_extendsidi2"
   [(set (match_operand:DI 0 "register_operand" "")
 	(zero_extend:DI (match_operand:SI 1 "register_operand" "")))]
-  "TARGET_ARCH64"
+  ""
   "")
 
-(define_insn "*zero_extendsidi2_insn"
+(define_insn "*zero_extendsidi2_insn_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(zero_extend:DI (match_operand:SI 1 "input_operand" "r,m")))]
   "TARGET_ARCH64 && GET_CODE (operands[1]) != CONST_INT"
@@ -3821,6 +3813,47 @@ movtf_is_ok:
    lduw\\t%1, %0"
   [(set_attr "type" "unary,load")
    (set_attr "length" "1")])
+
+(define_insn "*zero_extendsidi2_insn_sp32"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (zero_extend:DI (match_operand:SI 1 "register_operand" "r")))]
+  "! TARGET_ARCH64"
+  "#"
+  [(set_attr "type" "unary")
+   (set_attr "length" "2")])
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+        (zero_extend:DI (match_operand:SI 1 "register_operand" "")))]
+  "! TARGET_ARCH64 && reload_completed"
+  [(set (match_dup 2) (match_dup 3))
+   (set (match_dup 4) (match_dup 5))]
+  "
+{
+  rtx dest1, dest2;
+
+  if (GET_CODE (operands[0]) == SUBREG)
+    operands[0] = alter_subreg (operands[0]);
+
+  dest1 = gen_highpart (SImode, operands[0]);
+  dest2 = gen_lowpart (SImode, operands[0]);
+
+  /* Swap the order in case of overlap.  */
+  if (REGNO (dest1) == REGNO (operands[1]))
+    {
+      operands[2] = dest2;
+      operands[3] = operands[1];
+      operands[4] = dest1;
+      operands[5] = const0_rtx;
+    }
+  else
+    {
+      operands[2] = dest1;
+      operands[3] = const0_rtx;
+      operands[4] = dest2;
+      operands[5] = operands[1];
+    }
+}")
 
 ;; Simplify comparisons of extended values.
 
