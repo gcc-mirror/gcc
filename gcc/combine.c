@@ -843,20 +843,6 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
 
   /* Don't eliminate a store in the stack pointer.  */
   if (dest == stack_pointer_rtx
-      /* Don't install a subreg involving two modes not tieable.
-	 It can worsen register allocation, and can even make invalid reload
-	 insns, since the reg inside may need to be copied from in the
-	 outside mode, and that may be invalid if it is an fp reg copied in
-	 integer mode.  As a special exception, we can allow this if
-	 I3 is simply copying DEST, a REG,  to CC0.  */
-      || (GET_CODE (src) == SUBREG
-	  && ! MODES_TIEABLE_P (GET_MODE (src), GET_MODE (SUBREG_REG (src)))
-#ifdef HAVE_cc0
-	  && ! (GET_CODE (i3) == INSN && GET_CODE (PATTERN (i3)) == SET
-		&& SET_DEST (PATTERN (i3)) == cc0_rtx
-		&& GET_CODE (dest) == REG && dest == SET_SRC (PATTERN (i3)))
-#endif
-	  )
       /* If we couldn't eliminate a field assignment, we can't combine.  */
       || GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == STRICT_LOW_PART
       /* Don't combine with an insn that sets a register to itself if it has
@@ -2788,6 +2774,27 @@ subst (x, from, to, in_dest, unique_copy)
 
 	  if (COMBINE_RTX_EQUAL_P (XEXP (x, i), from))
 	    {
+	      /* In general, don't install a subreg involving two modes not
+		 tieable.  It can worsen register allocation, and can even
+		 make invalid reload insns, since the reg inside may need to
+		 be copied from in the outside mode, and that may be invalid
+		 if it is an fp reg copied in integer mode.
+
+		 We allow two exceptions to this: It is valid if it is inside
+		 another SUBREG and the mode of that SUBREG and the mode of
+		 the inside of TO is tieable and it is valid if X is a SET
+		 that copies FROM to CC0.  */
+	      if (GET_CODE (to) == SUBREG
+		  && ! MODES_TIEABLE_P (GET_MODE (to),
+					GET_MODE (SUBREG_REG (to)))
+		  && ! (code == SUBREG
+			&& MODES_TIEABLE_P (mode, GET_MODE (SUBREG_REG (to))))
+#ifdef HAVE_cc0
+		  && ! (code == SET && i == 1 && XEXP (x, 0) == cc0_rtx)
+#endif
+		  )
+		return gen_rtx (CLOBBER, VOIDmode, const0_rtx);
+
 	      new = (unique_copy && n_occurrences ? copy_rtx (to) : to);
 	      n_occurrences++;
 	    }
@@ -6260,6 +6267,7 @@ simplify_and_const_int (x, mode, varop, constop)
   register enum machine_mode tmode;
   register rtx temp;
   unsigned HOST_WIDE_INT nonzero;
+  int i;
 
   /* Simplify VAROP knowing that we will be only looking at some of the
      bits in it.  */
@@ -6286,6 +6294,12 @@ simplify_and_const_int (x, mode, varop, constop)
   if (constop == 0)
     return const0_rtx;
 
+  /* If VAROP is a NEG of something known to be zero or 1 and CONSTOP is
+     a power of two, we can replace this with a ASHIFT.  */
+  if (GET_CODE (varop) == NEG && nonzero_bits (XEXP (varop, 0), mode) == 1
+      && (i = exact_log2 (constop)) >= 0)
+    return simplify_shift_const (NULL_RTX, ASHIFT, mode, XEXP (varop, 0), i);
+				 
   /* If VAROP is an IOR or XOR, apply the AND to both branches of the IOR
      or XOR, then try to apply the distributive law.  This may eliminate
      operations if either branch can be simplified because of the AND.
