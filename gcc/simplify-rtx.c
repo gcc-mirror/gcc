@@ -2974,7 +2974,7 @@ simplify_const_relational_operation (enum rtx_code code,
   else
     {
       /* Optimize comparisons with upper and lower bounds.  */
-      if (INTEGRAL_MODE_P (mode)
+      if (SCALAR_INT_MODE_P (mode)
 	  && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
 	{
 	  rtx mmin, mmax;
