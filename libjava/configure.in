@@ -102,12 +102,6 @@ if test "$libgcj_sjlj" = yes; then
    AC_DEFINE(SJLJ_EXCEPTIONS)
 fi
 
-FORCELIBGCCSPEC=
-dnl Work around libgcc design flaw.
-if test "$ac_cv_prog_gnu_ld" = yes; then
-   FORCELIBGCCSPEC="-u __rethrow -u __frame_state_for -lgcc"
-fi   
-
 AC_MSG_CHECKING([for data_start])
 LIBDATASTARTSPEC=
 NEEDS_DATA_START=
@@ -630,7 +624,6 @@ AC_SUBST(ZDEPS)
 AC_SUBST(ZINCS)
 AC_SUBST(DIVIDESPEC)
 AC_SUBST(EXCEPTIONSPEC)
-AC_SUBST(FORCELIBGCCSPEC)
 
 AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
 AM_CONDITIONAL(NULL_TARGET, test "$NULL_TARGET" = yes)
