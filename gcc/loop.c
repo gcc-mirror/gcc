@@ -4621,6 +4621,35 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	    }
 	}
 
+      /* Check for givs whose first use is their definition and whose
+	 last use is the definition of another giv.  If so, it is likely
+	 dead and should not be used to derive another giv nor to
+	 eliminate a biv.  */
+      for (v = bl->giv; v; v = v->next_iv)
+	{
+	  if (v->ignore
+	      || (v->same && v->same->ignore))
+	    continue;
+
+	  if (v->last_use)
+	    {
+	      struct induction *v1;
+
+	      for (v1 = bl->giv; v1; v1 = v1->next_iv)
+		if (v->last_use == v1->insn)
+		  v->maybe_dead = 1;
+	    }
+	  else if (v->giv_type == DEST_REG
+	      && REGNO_FIRST_UID (REGNO (v->dest_reg)) == INSN_UID (v->insn))
+	    {
+	      struct induction *v1;
+
+	      for (v1 = bl->giv; v1; v1 = v1->next_iv)
+		if (REGNO_LAST_UID (REGNO (v->dest_reg)) == INSN_UID (v1->insn))
+		  v->maybe_dead = 1;
+	    }
+	}
+
 #if 0
       /* XXX Temporary.  */
       /* Now that we know which givs will be reduced, try to rearrange the
@@ -4789,11 +4818,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	 
 	 For each giv register that can be reduced now: if replaceable,
 	 substitute reduced reg wherever the old giv occurs;
-	 else add new move insn "giv_reg = reduced_reg".
+	 else add new move insn "giv_reg = reduced_reg".  */
 
-	 Also check for givs whose first use is their definition and whose
-	 last use is the definition of another giv.  If so, it is likely
-	 dead and should not be used to eliminate a biv.  */
       for (v = bl->giv; v; v = v->next_iv)
 	{
 	  if (v->same && v->same->ignore)
@@ -4801,24 +4827,6 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 
 	  if (v->ignore)
 	    continue;
-
-	  if (v->last_use)
-	    {
-	      struct induction *v1;
-
-	      for (v1 = bl->giv; v1; v1 = v1->next_iv)
-		if (v->last_use == v1->insn)
-		  v->maybe_dead = 1;
-	    }
-	  else if (v->giv_type == DEST_REG
-	      && REGNO_FIRST_UID (REGNO (v->dest_reg)) == INSN_UID (v->insn))
-	    {
-	      struct induction *v1;
-
-	      for (v1 = bl->giv; v1; v1 = v1->next_iv)
-		if (REGNO_LAST_UID (REGNO (v->dest_reg)) == INSN_UID (v1->insn))
-		  v->maybe_dead = 1;
-	    }
 
 	  /* Update expression if this was combined, in case other giv was
 	     replaced.  */
