@@ -308,6 +308,7 @@ extern void c4x_pr_FUNC_IS_PURE		PARAMS ((cpp_reader *));
 extern void c4x_pr_FUNC_NEVER_RETURNS	PARAMS ((cpp_reader *));
 extern void c4x_pr_INTERRUPT		PARAMS ((cpp_reader *));
 extern void c4x_pr_ignored		PARAMS ((cpp_reader *));
+extern void c4x_init_pragma		PARAMS ((int (*) (tree *)));
 #endif
 
 #endif
