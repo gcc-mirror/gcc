@@ -1,5 +1,5 @@
 /* Subroutines used by or related to instruction recognition.
-   Copyright (C) 1987, 1988, 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1896,7 +1896,8 @@ constrain_operands (insn_code_num, strict)
 		  if ((GET_CODE (recog_operand[opno]) == MEM
 		       || op_types[opno] != OP_OUT)
 		      && opno != eopno
-		      && constraints[opno] != 0
+		      /* Ignore things like match_operator operands. */
+		      && *constraints[opno] != 0
 		      && ! (matching_operands[opno] == eopno
 			    && rtx_equal_p (recog_operand[opno],
 					    recog_operand[eopno]))
