@@ -1,3 +1,7 @@
+Thu Aug  5 02:40:42 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* typeck2.c: Update URLs and mail addresses.
+
 1999-08-04  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (empty_except_spec): New global var.
