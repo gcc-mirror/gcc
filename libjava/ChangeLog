@@ -1,5 +1,8 @@
 2004-07-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Use build_noncanonical rather than build_alias.
+	* configure: Rebuild.
+
 	* configure.in: Eliminate CANADIAN and NULL_TARGET variables
 	by logic refactoring.  Move default definition of NATIVE closer
 	to first alternate definition.
