@@ -1,3 +1,7 @@
+Sat Feb 13 00:43:52 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.dg/990213-1.c: New test.
+
 Fri Feb 12 11:04:35 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/990106-2.c: Update to work on targets with 16bit
