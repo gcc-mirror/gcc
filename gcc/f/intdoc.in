@@ -1263,6 +1263,13 @@ DEFDOC (MCLOCK8, "Get number of clock ticks for process.", "\
 Returns the number of clock ticks since the start of the process.
 Supported on systems with @code{clock(3)} (q.v.).
 
+@emph{Warning:} this intrinsic does not increase the range
+of the timing values over that returned by @code{clock(3)}.
+On a system with a 32-bit @code{clock(3)},
+@code{@0@} will return a 32-bit value,
+even though converted to an @samp{INTEGER(KIND=2)} value.
+That means overflows of the 32-bit value can still occur.
+
 No Fortran implementations other than GNU Fortran are
 known to support this intrinsic at the time of this
 writing.
@@ -1314,6 +1321,13 @@ Returns the current time encoded as a long integer
 (in the manner of the UNIX function @code{time(3)}).
 This value is suitable for passing to @code{CTIME},
 @code{GMTIME}, and @code{LTIME}.
+
+@emph{Warning:} this intrinsic does not increase the range
+of the timing values over that returned by @code{time(3)}.
+On a system with a 32-bit @code{time(3)},
+@code{@0@} will return a 32-bit value,
+even though converted to an @samp{INTEGER(KIND=2)} value.
+That means overflows of the 32-bit value can still occur.
 
 No Fortran implementations other than GNU Fortran are
 known to support this intrinsic at the time of this
