@@ -1,3 +1,8 @@
+2003-07-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* cfgloopmanip.c (force_single_succ_latches): Force latch to be
+	different from header.
+
 2003-07-05  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.c: Remove code protected by CRDS.

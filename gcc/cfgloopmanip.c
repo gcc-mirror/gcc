@@ -1191,7 +1191,8 @@ force_single_succ_latches (struct loops *loops)
   for (i = 1; i < loops->num; i++)
     {
       loop = loops->parray[i];
-      if (!loop->latch->succ->succ_next)
+      if (loop->latch != loop->header
+	  && !loop->latch->succ->succ_next)
 	continue;
 
       for (e = loop->header->pred; e->src != loop->latch; e = e->pred_next)
