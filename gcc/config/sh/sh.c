@@ -449,8 +449,7 @@ print_operand (stream, x, code)
       break;
 
     case 'N':
-      if (x == const0_rtx
-	  || (GET_CODE (x) == CONST_VECTOR && zero_vec_operand (x, VOIDmode)))
+      if (x == CONST0_RTX (GET_MODE (x)))
 	{
 	  fprintf ((stream), "r63");
 	  break;
@@ -6122,6 +6121,25 @@ noncommutative_float_operator (op, mode)
 }
 
 int
+unary_float_operator (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_MODE (op) != mode)
+    return 0;
+  switch (GET_CODE (op))
+    {
+    case ABS:
+    case NEG:
+    case SQRT:
+      return 1;
+    default:
+      break;
+    }
+  return 0;
+}
+
+int
 binary_float_operator (op, mode)
      rtx op;
      enum machine_mode mode;
@@ -6283,23 +6301,6 @@ inqhi_operand (op, mode)
   /* Can't use true_regnum here because copy_cost wants to know about
      SECONDARY_INPUT_RELOAD_CLASS.  */
   return GET_CODE (op) == REG && FP_REGISTER_P (REGNO (op));
-}
-
-/* Return nonzero if V is a zero vector matching MODE.  */
-int
-zero_vec_operand (v, mode)
-     rtx v;
-     enum machine_mode mode;
-{
-  int i;
-
-  if (GET_CODE (v) != CONST_VECTOR
-      || (GET_MODE (v) != mode && mode != VOIDmode))
-    return 0;
-  for (i = XVECLEN (v, 0) - 1; i >= 0; i--)
-    if (XVECEXP (v, 0, i) != const0_rtx)
-      return 0;
-  return 1;
 }
 
 int
@@ -7156,19 +7157,21 @@ static const char signature_args[][4] =
   { 0, 8, 2 },
 #define SH_BLTIN_STUA_Q 14
   { 0, 8, 1 },
-#define SH_BLTIN_NUM_SHARED_SIGNATURES 15
-#define SH_BLTIN_2 15
-#define SH_BLTIN_SU 15
+#define SH_BLTIN_UDI 15
+  { 0, 8, 1 },
+#define SH_BLTIN_NUM_SHARED_SIGNATURES 16
+#define SH_BLTIN_2 16
+#define SH_BLTIN_SU 16
   { 1, 2 },
-#define SH_BLTIN_3 16
-#define SH_BLTIN_SUS 16
+#define SH_BLTIN_3 17
+#define SH_BLTIN_SUS 17
   { 2, 2, 1 },
-#define SH_BLTIN_PSSV 17
+#define SH_BLTIN_PSSV 18
   { 0, 8, 2, 2 },
-#define SH_BLTIN_XXUU 18
-#define SH_BLTIN_UUUU 18
+#define SH_BLTIN_XXUU 19
+#define SH_BLTIN_UUUU 19
   { 1, 1, 1, 1 },
-#define SH_BLTIN_PV 19
+#define SH_BLTIN_PV 20
   { 0, 8 },
 };
 /* mcmv: operands considered unsigned. */
@@ -7200,13 +7203,13 @@ static const struct builtin_description bdesc[] =
   { CODE_FOR_mcnvs_lw,	"__builtin_sh_media_MCNVS_LW", SH_BLTIN_3 },
   { CODE_FOR_mcnvs_wb,	"__builtin_sh_media_MCNVS_WB", SH_BLTIN_V4HI2V8QI },
   { CODE_FOR_mcnvs_wub,	"__builtin_sh_media_MCNVS_WUB", SH_BLTIN_V4HI2V8QI },
-  { CODE_FOR_mextr1,	"__builtin_sh_media_MEXTR1", SH_BLTIN_V8QI3 },
-  { CODE_FOR_mextr2,	"__builtin_sh_media_MEXTR2", SH_BLTIN_V8QI3 },
-  { CODE_FOR_mextr3,	"__builtin_sh_media_MEXTR3", SH_BLTIN_V8QI3 },
-  { CODE_FOR_mextr4,	"__builtin_sh_media_MEXTR4", SH_BLTIN_V8QI3 },
-  { CODE_FOR_mextr5,	"__builtin_sh_media_MEXTR5", SH_BLTIN_V8QI3 },
-  { CODE_FOR_mextr6,	"__builtin_sh_media_MEXTR6", SH_BLTIN_V8QI3 },
-  { CODE_FOR_mextr7,	"__builtin_sh_media_MEXTR7", SH_BLTIN_V8QI3 },
+  { CODE_FOR_mextr1,	"__builtin_sh_media_MEXTR1", SH_BLTIN_UDI },
+  { CODE_FOR_mextr2,	"__builtin_sh_media_MEXTR2", SH_BLTIN_UDI },
+  { CODE_FOR_mextr3,	"__builtin_sh_media_MEXTR3", SH_BLTIN_UDI },
+  { CODE_FOR_mextr4,	"__builtin_sh_media_MEXTR4", SH_BLTIN_UDI },
+  { CODE_FOR_mextr5,	"__builtin_sh_media_MEXTR5", SH_BLTIN_UDI },
+  { CODE_FOR_mextr6,	"__builtin_sh_media_MEXTR6", SH_BLTIN_UDI },
+  { CODE_FOR_mextr7,	"__builtin_sh_media_MEXTR7", SH_BLTIN_UDI },
   { CODE_FOR_mmacfx_wl,	"__builtin_sh_media_MMACFX_WL", SH_BLTIN_MAC_HISI },
   { CODE_FOR_mmacnfx_wl,"__builtin_sh_media_MMACNFX_WL", SH_BLTIN_MAC_HISI },
   { CODE_FOR_mulv2si3,	"__builtin_mulv2si3", SH_BLTIN_V2SI3, },
@@ -7261,8 +7264,10 @@ static const struct builtin_description bdesc[] =
   { CODE_FOR_sthi_q64,	"__builtin_sh_media_STHI_Q", SH_BLTIN_STUA_Q },
   { CODE_FOR_stlo_l64,	"__builtin_sh_media_STLO_L", SH_BLTIN_STUA_L },
   { CODE_FOR_stlo_q64,	"__builtin_sh_media_STLO_Q", SH_BLTIN_STUA_Q },
+#endif
   { CODE_FOR_nsb,	"__builtin_sh_media_NSB", SH_BLTIN_SU },
   { CODE_FOR_byterev,	"__builtin_sh_media_BYTEREV", SH_BLTIN_2 },
+#if 0
   { CODE_FOR_prefetch32,"__builtin_sh_media_PREFO", SH_BLTIN_PSSV },
   { CODE_FOR_prefetch64,"__builtin_sh_media_PREFO", SH_BLTIN_PSSV }
 #endif
@@ -7408,4 +7413,33 @@ sh_expand_builtin (exp, target, subtarget, mode, ignore)
   emit_insn (pat);
   return target;
 }
+
+void
+sh_expand_unop_v2sf (code, op0, op1)
+     enum rtx_code code;
+     rtx op0, op1;
+{
+  rtx sel0 = const0_rtx;
+  rtx sel1 = const1_rtx;
+  rtx (*fn) (rtx, rtx, rtx, rtx, rtx) = gen_unary_sf_op;
+  rtx op = gen_rtx_fmt_e (code, SFmode, op1);
+
+  emit_insn ((*fn) (op0, op1, op, sel0, sel0));
+  emit_insn ((*fn) (op0, op1, op, sel1, sel1));
+}
+
+void
+sh_expand_binop_v2sf (code, op0, op1, op2)
+     enum rtx_code code;
+     rtx op0, op1, op2;
+{
+  rtx sel0 = const0_rtx;
+  rtx sel1 = const1_rtx;
+  rtx (*fn) (rtx, rtx, rtx, rtx, rtx, rtx, rtx) = gen_binary_sf_op;
+  rtx op = gen_rtx_fmt_ee (code, SFmode, op1, op2);
+
+  emit_insn ((*fn) (op0, op1, op2, op, sel0, sel0, sel0));
+  emit_insn ((*fn) (op0, op1, op2, op, sel1, sel1, sel1));
+}
+
 #include "gt-sh.h"

@@ -1,3 +1,54 @@
+Wed Jul 17 14:04:10 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh-protos.h (binary_float_operator): Remove declaration.
+	(sh_expand_unop_v2sf, sh_expand_binop_v2sf): Declare.
+	* sh.c (print_operand, case 'N'): Check against CONST0_RTX.
+	(unary_float_operator, sh_expand_unop_v2sf): New functions.
+	(sh_expand_binop_v2sf): Likewise.
+	(zero_vec_operand): Delete.
+	(SH_BLTIN_UDI): New builtin shared signature define.  Renumbered
+	all non-shared ones.
+	(bdesc): Change all the mextr builtins to use SH_BLTIN_UDI.
+	Enable nsb and byterev.
+	* sh.h (CONDITIONAL_REGISTER_USAGE): Initialize DF_HI_REGS.
+	(HARD_REGNO_MODE_OK): Allow TImode in fp regs.  Allow V2SFmode
+	in general regs.
+	(enum reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS): Add DF_HI_REGS.
+	(SECONDARY_OUTPUT_RELOAD_CLASS): Likewise.  Remove clause for
+	immediate operands.
+	(SECONDARY_INPUT_RELOAD_CLASS): Add clause for immediate operands.
+	Add DF_HI_REGS.
+	(CLASS_CANNOT_CHANGE_MODE, CLASS_CANNOT_CHANGE_MODE_P): Allow
+	lowpart fp regs - only for big endian for now.
+	(LEGITIMATE_CONSTANT_P): Don't allow non-zero float vectors
+	when FPU is in use.
+	(EXTRA_CONTRAINT_U): Check against CONST0_RTX.
+	(LOAD_EXTEND_OP): NIL for SImode.
+	(REGISTER_MOVE_COST): Add DF_HI_REGS.  Const for moves between
+	general and fp registers is 4.
+	PREDICATE_CODES: Amend binary_float_operator entry.
+	Remove zero_vec_operand.  Add unary_float_operator.
+	* sh.md (udivsi3_i4_media): Use truncate instead of paradoxical
+	subreg SET_DEST.
+	(truncdisi2, truncdihi2, movv2sf): Allow memory destinations.
+	(truncdiqi2): Do sign extension.
+	(movsi_media, movdi_media): Allow to use r63 to an fp register.
+	(movdf_media, movsf_media): Likewise.
+	(movv2sf_i, movv2sf_i+1): Don't use f{ld,st}.p or SUBREGS.
+	Collapse to one define_insn_and_split.  Allow immediate sources.
+	(addv2sf3, subv2sf3, mulv2sf3, divv2sf3): New patterns.
+	(movv4sf_i): Allow immediate sources.  Use simplify_gen_subreg.
+	(movv4sf): Allow immediate sources.
+	(movsf_media_nofpu+1): Don't split moves to FP registers.
+	(unary_sf_op, binary_sf_op, mshflo_w_x, concat_v2sf): New patterns.
+	(movv8qi_i+3): Check against CONST0_RTX.
+	(mextr1, mextr2. mextr3. mextr4, mextr5, mextr6, mextr7): Use DImode
+	for input and output operands.  Fix argument 3 to gen_mextr_rl.
+	(mmul23_wl, mmul01_wl, mmulsum_wq_i): s/const_vector/parallel/
+	(msad_ubq_i, mshf4_b, mshf0_b, mshf4_l, mshf0_l, mshf4_w): Likewise.
+	(mshf0_w, fipr, ftrv): Likewise.
+	(mshfhi_l_di): Now insn_and_split.  Can handle FP regs.
+
 2002-07-17  Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
 
 	* arm.h (ARM_NUM_INTS, ARM_NUM_REGS, ARM_NUM_REGS2): Renamed from
