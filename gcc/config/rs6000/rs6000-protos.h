@@ -86,6 +86,7 @@ extern int input_operand (rtx, enum machine_mode);
 extern int small_data_operand (rtx, enum machine_mode);
 extern int s8bit_cint_operand (rtx, enum machine_mode);
 extern bool legitimate_constant_pool_address_p (rtx);
+extern int expand_block_clear (rtx[]);
 extern int expand_block_move (rtx[]);
 extern int load_multiple_operation (rtx, enum machine_mode);
 extern const char * rs6000_output_load_multiple (rtx[]);

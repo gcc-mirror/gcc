@@ -8253,6 +8253,89 @@ rs6000_init_libfuncs (void)
       set_conv_libfunc (sfloat_optab, TFmode, SImode, "_q_itoq");
     }
 }
+
+
+/* Expand a block clear operation, and return 1 if successful.  Return 0
+   if we should let the compiler generate normal code.
+
+   operands[0] is the destination
+   operands[1] is the length
+   operands[2] is the alignment */
+
+int
+expand_block_clear (rtx operands[])
+{
+  rtx orig_dest = operands[0];
+  rtx bytes_rtx	= operands[1];
+  rtx align_rtx = operands[2];
+  int constp	= (GET_CODE (bytes_rtx) == CONST_INT);
+  int align;
+  int bytes;
+  int offset;
+  int clear_bytes;
+
+  /* If this is not a fixed size move, just call memcpy */
+  if (! constp)
+    return 0;
+
+  /* If this is not a fixed size alignment, abort */
+  if (GET_CODE (align_rtx) != CONST_INT)
+    abort ();
+  align = INTVAL (align_rtx) * BITS_PER_UNIT;
+
+  /* Anything to clear? */
+  bytes = INTVAL (bytes_rtx);
+  if (bytes <= 0)
+    return 1;
+
+  if (bytes > (TARGET_POWERPC64 && align >= 32 ? 64 : 32))
+    return 0;
+
+  if (optimize_size && bytes > 16)
+    return 0;
+
+  for (offset = 0; bytes > 0; offset += clear_bytes, bytes -= clear_bytes)
+    {
+      rtx (*mov) (rtx, rtx);
+      enum machine_mode mode = BLKmode;
+      rtx dest;
+      
+      if (bytes >= 8 && TARGET_POWERPC64
+	       /* 64-bit loads and stores require word-aligned
+		  displacements.  */
+	       && (align >= 64 || (!STRICT_ALIGNMENT && align >= 32)))
+	{
+	  clear_bytes = 8;
+	  mode = DImode;
+	  mov = gen_movdi;
+	}
+      else if (bytes >= 4 && !STRICT_ALIGNMENT)
+	{			/* move 4 bytes */
+	  clear_bytes = 4;
+	  mode = SImode;
+	  mov = gen_movsi;
+	}
+      else if (bytes == 2 && !STRICT_ALIGNMENT)
+	{			/* move 2 bytes */
+	  clear_bytes = 2;
+	  mode = HImode;
+	  mov = gen_movhi;
+	}
+      else /* move 1 byte at a time */
+	{
+	  clear_bytes = 1;
+	  mode = QImode;
+	  mov = gen_movqi;
+	}
+      
+      dest = adjust_address (orig_dest, mode, offset);
+      
+      emit_insn ((*mov) (dest, const0_rtx));
+    }
+
+  return 1;
+}
+
 
 /* Expand a block move operation, and return 1 if successful.  Return 0
    if we should let the compiler generate normal code.
@@ -8286,7 +8369,7 @@ expand_block_move (rtx operands[])
   /* If this is not a fixed size alignment, abort */
   if (GET_CODE (align_rtx) != CONST_INT)
     abort ();
-  align = INTVAL (align_rtx);
+  align = INTVAL (align_rtx) * BITS_PER_UNIT;
 
   /* Anything to move? */
   bytes = INTVAL (bytes_rtx);
@@ -8346,7 +8429,7 @@ expand_block_move (rtx operands[])
       else if (bytes >= 8 && TARGET_POWERPC64
 	       /* 64-bit loads and stores require word-aligned
 		  displacements.  */
-	       && (align >= 8 || (! STRICT_ALIGNMENT && align >= 4)))
+	       && (align >= 64 || (!STRICT_ALIGNMENT && align >= 32)))
 	{
 	  move_bytes = 8;
 	  mode = DImode;
@@ -8357,13 +8440,13 @@ expand_block_move (rtx operands[])
 	  move_bytes = (bytes > 8) ? 8 : bytes;
 	  gen_func.movmemsi = gen_movmemsi_2reg;
 	}
-      else if (bytes >= 4 && (align >= 4 || ! STRICT_ALIGNMENT))
+      else if (bytes >= 4 && !STRICT_ALIGNMENT)
 	{			/* move 4 bytes */
 	  move_bytes = 4;
 	  mode = SImode;
 	  gen_func.mov = gen_movsi;
 	}
-      else if (bytes == 2 && (align >= 2 || ! STRICT_ALIGNMENT))
+      else if (bytes == 2 && !STRICT_ALIGNMENT)
 	{			/* move 2 bytes */
 	  move_bytes = 2;
 	  mode = HImode;
