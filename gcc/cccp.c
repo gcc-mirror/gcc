@@ -1692,6 +1692,11 @@ main (argc, argv)
 	       && p[len - 2] == 'c'
 	       && p[len - 1] == 'c')
 	deps_output (p, len - 3);
+      else if (p[len - 4] == '.'
+	       && p[len - 3] == 'c'
+	       && p[len - 2] == 'x'
+	       && p[len - 1] == 'x')
+	deps_output (p, len - 4);
       else if (p[len - 2] == '.' && p[len - 1] == 's')
 	deps_output (p, len - 2);
       else if (p[len - 2] == '.' && p[len - 1] == 'S')
