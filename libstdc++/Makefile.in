@@ -17,6 +17,8 @@
 VERSION = 2.9.0
 INTERFACE = 2
 
+gxx_include_dir=${includedir}/g++
+
 OBJS  = cstringi.o stdexcepti.o cstdlibi.o cmathi.o stlinst.o
 SUBLIBS = $(STAMP)-string $(STAMP)-complx
 

@@ -1,3 +1,10 @@
+Fri Apr  2 15:11:32 1999  H.J. Lu  (hjl@gnu.org)
+
+	* configure (gxx_include_dir): Removed.
+
+	* configure.in (gxx_include_dir): Handle it.
+	* Makefile.in: Likewise.
+
 Thu Mar 18 00:17:50 1999  Mark Elbrecht <snowball3@usa.net>
 
 	* config/mh-go32: Delete.

@@ -1331,35 +1331,6 @@ EOF
                 echo site_makefile_frag = ${invsubdir}${site_makefile_frag} >>${Makefile}
             fi 
 
-	    # provide a proper gxx_include_dir to all subdirs.
-	    # Note, if you change the default, make sure to fix both here
-	    # and in the gcc subdirectory.
-	    # Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
-	    gxx_include_dir=
-	    if test -n "${with_gxx_include_dir}"; then
-		case "${with_gxx_include_dir}" in
-		  yes )
-		    echo "configure: error: bad value ${withval} given for g++ include directory" 1>&2
-		    exit 1
-		    ;;
-		  no )
-		    ;;
-		  * )
-		    gxx_include_dir=${with_gxx_include_dir}
-		    ;;
-		esac
-	    fi
-	    if test x${gxx_include_dir} = x; then
-	        if test x${enable_version_specific_runtime_libs} = xyes; then
-		    echo gxx_include_dir = '${libsubdir}/include/g++' >> ${Makefile}
-		else
-		    . ${topsrcdir}/config.if
-		    echo gxx_include_dir = '${prefix}/include/g++'-${libstdcxx_interface} >> ${Makefile}
-		fi
-	    else
-		echo gxx_include_dir = ${gxx_include_dir} >> ${Makefile}
-	    fi
-
 	    # record if we want to build shared libs.
 	    if test -z "${enable_shared}"; then
 	        echo enable_shared = no >> ${Makefile}
