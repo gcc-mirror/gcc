@@ -16,6 +16,11 @@ Tue Nov  9 12:12:38 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* class.c (finish_class): Emit inlined methods if any native
 	methods exist in the class.  Fixes PR gcj/85.
 
+Wed Nov  3 15:20:02 MST 1999  Godmar Back <gback@cs.utah.edu>
+
+	* typeck.c: (lookup_java_method):  search all inherited
+	interfaces when looking up interface method.
+
 Mon Nov  1 23:42:00 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (method_header:): Issue error message for rule `type
