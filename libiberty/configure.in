@@ -259,7 +259,7 @@ if test -z "${setobjs}"; then
     funcs="`echo $funcs | sed -e 's/random//'`"
     LIBOBJS="$LIBOBJS random.o"
     vars="`echo $vars | sed -e 's/sys_siglist//'`"
-    checkfuncs="`echo $checkfuncs | sed -e 's/strsignal//' -e 's/psignal//`"
+    checkfuncs="`echo $checkfuncs | sed -e 's/strsignal//' -e 's/psignal//'`"
     ;;
 
   *-*-mingw32*)
