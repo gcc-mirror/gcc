@@ -134,7 +134,7 @@ static void rest_of_handle_loop2 (tree, rtx);
 static void rest_of_handle_jump_bypass (tree, rtx);
 static void rest_of_handle_sibling_calls (rtx);
 static void rest_of_handle_null_pointer (tree, rtx);
-static void rest_of_handle_addresof (tree, rtx);
+static void rest_of_handle_addressof (tree, rtx);
 static void rest_of_handle_cfg (tree, rtx);
 static void rest_of_handle_branch_prob (tree, rtx);
 static void rest_of_handle_if_conversion (tree, rtx);
@@ -2405,13 +2405,13 @@ rest_of_handle_cfg (tree decl, rtx insns)
 
 /* Purge addressofs.  */
 static void
-rest_of_handle_addresof (tree decl, rtx insns)
+rest_of_handle_addressof (tree decl, rtx insns)
 {
   open_dump_file (DFI_addressof, decl);
 
   purge_addressof (insns);
-  if (optimize)
-    purge_all_dead_edges (0);
+  if (optimize && purge_all_dead_edges (0))
+    delete_unreachable_blocks ();
   reg_scan (insns, max_reg_num (), 1);
 
   close_dump_file (DFI_addressof, print_rtl, insns);
@@ -3219,7 +3219,7 @@ rest_of_compilation (tree decl)
   if (optimize > 0)
     rest_of_handle_cse (decl, insns);
 
-  rest_of_handle_addresof (decl, insns);
+  rest_of_handle_addressof (decl, insns);
 
   ggc_collect ();
 
