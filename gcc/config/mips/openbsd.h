@@ -52,7 +52,6 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define ("__OpenBSD__");			\
 	builtin_assert ("system=unix");			\
 	builtin_assert ("system=OpenBSD");		\
-	builtin_assert ("machine=mips");			\
 } while (0)
 
 /* Layout of source language data types.  */

@@ -35,7 +35,6 @@ Boston, MA 02111-1307, USA.  */
       NETBSD_OS_CPP_BUILTINS_ELF();			\
       builtin_define ("__NO_LEADING_UNDERSCORES__");	\
       builtin_define ("__GP_SUPPORT__");		\
-      builtin_assert ("machine=mips");			\
       if (TARGET_LONG64)				\
 	builtin_define ("__LONG64");			\
 							\

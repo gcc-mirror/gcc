@@ -384,6 +384,10 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define TARGET_CPU_CPP_BUILTINS()				\
   do								\
     {								\
+      /* Everyone but IRIX defines this to mips.  */            \
+      if (!TARGET_IRIX)                                         \
+        builtin_assert ("machine=mips");                        \
+                                                                \
       builtin_assert ("cpu=mips");				\
       builtin_define ("__mips__");     				\
       builtin_define ("_mips");					\

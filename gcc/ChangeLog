@@ -1,3 +1,11 @@
+2004-12-23  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Add
+	assert for machine=mips for !TARGET_IRIX.
+	* config/mips/linux.h: Remove machine=mips assert.
+	* config/mips/netbsd.h: Ditto.
+	* config/mips/openbsd.h: Ditto.
+
 2004-12-23  Dale Johannesen  <dalej@apple.com>
 
 	* tree.c (iterative_hash_expr):  Canonicalize builtins.
@@ -129,7 +137,7 @@
 	later sse generations.  Disabling mmx also disables 3dnow.
 
 2004-12-22  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	* tree-inline.c (struct inline_data): Remove inlined_fns.
 	(expand_call_inline): Remove dead code setting
 	inlined_fns.
