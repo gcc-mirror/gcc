@@ -85,6 +85,7 @@ regex.o: regex.c
 
 fixincl.o : fixincl.x fixincl.c
 server.o : server.c server.h
+procopen.o : procopen.c server.h
 
 fixincl.x: fixincl.tpl inclhack.def
 	@if ( autogen --help > /dev/null 2>&1 ) ; then \
