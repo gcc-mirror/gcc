@@ -3930,13 +3930,23 @@ sched_analyze (head, tail)
 	}
 
       /* See comments on reemit_notes as to why we do this.  */
+      /* ??? Actually, the reemit_notes just say what is done, not why.  */
+
+      else if (GET_CODE (insn) == NOTE
+	       && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_RANGE_START
+		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_RANGE_END))
+	{
+	  loop_notes = alloc_EXPR_LIST (REG_DEAD, NOTE_RANGE_INFO (insn),
+					loop_notes);
+	  loop_notes = alloc_EXPR_LIST (REG_DEAD,
+					GEN_INT (NOTE_LINE_NUMBER (insn)),
+					loop_notes);
+	}
       else if (GET_CODE (insn) == NOTE
 	       && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
 		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END
 		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG
 		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END
-		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_RANGE_START
-		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_RANGE_END
 		   || (NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP
 		       && GET_CODE (PREV_INSN (insn)) != CALL_INSN)))
 	{
@@ -6461,12 +6471,21 @@ reemit_notes (insn, last)
       if (REG_NOTE_KIND (note) == REG_DEAD
 	  && GET_CODE (XEXP (note, 0)) == CONST_INT)
 	{
-	  if (INTVAL (XEXP (note, 0)) == NOTE_INSN_SETJMP)
+	  int note_type = INTVAL (XEXP (note, 0));
+	  if (note_type == NOTE_INSN_SETJMP)
 	    {
-	      retval = emit_note_after (INTVAL (XEXP (note, 0)), insn);
+	      retval = emit_note_after (NOTE_INSN_SETJMP, insn);
 	      CONST_CALL_P (retval) = CONST_CALL_P (note);
 	      remove_note (insn, note);
 	      note = XEXP (note, 1);
+	    }
+	  else if (note_type == NOTE_INSN_RANGE_START
+                   || note_type == NOTE_INSN_RANGE_END)
+	    {
+	      last = emit_note_before (note_type, last);
+	      remove_note (insn, note);
+	      note = XEXP (note, 1);
+	      NOTE_RANGE_INFO (last) = XEXP (note, 0);
 	    }
 	  else
 	    {
