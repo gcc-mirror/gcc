@@ -1,3 +1,7 @@
+2002-05-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* function.c: Fix formatting.
+
 2002-05-02  Jan Hubicka  <jh@suse.cz>
 
 	* haifa-sched.c (schedule_insn): Print table of instructions and
