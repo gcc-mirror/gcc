@@ -1,3 +1,9 @@
+2001-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/bits/stl_deque.h (_M_new_elements_at_front): Use
+	__throw_exception_again.
+	(_M_new_elements_at_back): Likewise.
+
 2001-10-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	libstdc++/3647
