@@ -2962,14 +2962,12 @@ fill_simple_delay_slots (first, non_jumps_p)
 	 is a CALL_INSN (or a CALL_INSN is passed), cannot trap (because the
 	 call might not return).
 
-	 If this is a conditional jump, see if it merges back to us early
-	 enough for us to pick up insns from the merge point.  Don't do
-	 this if there is another branch to our label unless we pass all of
-	 them.
-
-	 Another similar merge is if we jump to the same place that a
-	 later unconditional jump branches to.  In that case, we don't
-	 care about the number of uses of our label.  */
+	 There used to be code which continued past the target label if
+	 we saw all uses of the target label.  This code did not work,
+	 because it failed to account for some instructions which were
+	 both annulled and marked as from the target.  This can happen as a
+	 result of optimize_skip.  Since this code was redundant with
+	 fill_eager_delay_slots anyways, it was just deleted.  */
 
       if (slots_filled != slots_to_fill
           && (GET_CODE (insn) != JUMP_INSN
@@ -2979,8 +2977,6 @@ fill_simple_delay_slots (first, non_jumps_p)
 	{
 	  rtx target = 0;
 	  int maybe_never = 0;
-	  int passed_label = 0;
-	  int target_uses;
 	  struct resources needed_at_jump;
 
 	  CLEAR_RESOURCE (&needed);
@@ -2997,13 +2993,7 @@ fill_simple_delay_slots (first, non_jumps_p)
 	      mark_set_resources (insn, &set, 0, 1);
 	      mark_referenced_resources (insn, &needed, 1);
 	      if (GET_CODE (insn) == JUMP_INSN)
-		{
-		  /* Get our target and show how many more uses we want to
-		     see before we hit the label.  */
-		  target = JUMP_LABEL (insn);
-		  target_uses = LABEL_NUSES (target) - 1;
-		}
-		
+		target = JUMP_LABEL (insn);
 	    }
 
 	  for (trial = next_nonnote_insn (insn); trial; trial = next_trial)
@@ -3012,22 +3002,8 @@ fill_simple_delay_slots (first, non_jumps_p)
 
 	      next_trial = next_nonnote_insn (trial);
 
-	      if (GET_CODE (trial) == CODE_LABEL)
-		{
-		  passed_label = 1;
-
-		  /* If this is our target, see if we have seen all its uses.
-		     If so, indicate we have passed our target and ignore it.
-		     All other labels cause us to stop our search.  */
-		  if (trial == target && target_uses == 0)
-		    {
-		      target = 0;
-		      continue;
-		    }
-		  else
-		    break;
-		}
-	      else if (GET_CODE (trial) == BARRIER)
+	      if (GET_CODE (trial) == CODE_LABEL
+		  || GET_CODE (trial) == BARRIER)
 		break;
 
 	      /* We must have an INSN, JUMP_INSN, or CALL_INSN.  */
@@ -3052,9 +3028,7 @@ fill_simple_delay_slots (first, non_jumps_p)
 		{
 		  if (target == 0)
 		    break;
-		  else if (JUMP_LABEL (trial_delay) == target)
-		    target_uses--;
-		  else
+		  else if (JUMP_LABEL (trial_delay) != target)
 		    {
 		      mark_target_live_regs
 			(next_active_insn (JUMP_LABEL (trial_delay)),
@@ -3087,8 +3061,6 @@ fill_simple_delay_slots (first, non_jumps_p)
 		    link_cc0_insns (trial);
 #endif
 
-		  if (passed_label)
-		    update_block (trial, trial);
 		  delete_insn (trial);
 		  if (slots_to_fill == ++slots_filled)
 		    break;
