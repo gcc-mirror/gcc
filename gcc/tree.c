@@ -47,6 +47,14 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #include <stdio.h>
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef NEED_DECLARATION_FREE
+extern void free PROTO((void *));
+#endif
+
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 

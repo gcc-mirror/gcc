@@ -1654,15 +1654,25 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in
 		gas=yes gnu_ld=yes
 		;;
+	alpha*-*-linux-gnulibc1*)
+		tm_file="${tm_file} alpha/linux.h alpha/elf.h"
+		xm_file="${xm_file} alpha/xm-linux.h"
+		target_cpu_default="MASK_GAS"
+		tmake_file="t-linux t-linux-gnulibc1 alpha/t-linux"
+		xmake_file=none
+		fixincludes=Makefile.in
+		gas=yes gnu_ld=yes
+ 		if [ x$enable_threads = xyes ]; then
+ 			thread_file='posix'
+ 		fi
+		;;
 	alpha*-*-linux-gnu*)
 		tm_file="${tm_file} alpha/linux.h alpha/elf.h"
 		xm_file="${xm_file} alpha/xm-linux.h"
 		target_cpu_default="MASK_GAS"
-		gas=no
 		tmake_file="t-linux alpha/t-linux"
 		xmake_file=none
 		fixincludes=Makefile.in
-		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		gas=yes gnu_ld=yes
  		if [ x$enable_threads = xyes ]; then
  			thread_file='posix'

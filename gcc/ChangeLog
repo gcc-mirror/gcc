@@ -1,3 +1,15 @@
+Thu Aug 28 07:03:15 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump for latest snapshot.
+
+	* bc-optab.c: Conditionally include stdlib.h.
+	(free): Provide a declaration if NEED_DECLARATION_FREE.
+	* tree.c (free): Provide a declaration if NEED_DECLARATION_FREE.
+	* rtl.h (free): Remove declaration.
+	* tree.h (free): Remvoe declaration.
+
+	* configure: Rebuilt.
+
 Wed Aug 27 21:32:20 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* flags.h (flag_move_all_movables): Declare.
