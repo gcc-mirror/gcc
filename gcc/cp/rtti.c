@@ -1345,22 +1345,32 @@ emit_support_tinfos (void)
   for (ix = 0; fundamentals[ix]; ix++)
     {
       tree bltn = *fundamentals[ix];
-      tree bltn_ptr = build_pointer_type (bltn);
-      tree bltn_const_ptr = build_pointer_type
-              (build_qualified_type (bltn, TYPE_QUAL_CONST));
-      tree tinfo;
-      
-      tinfo = get_tinfo_decl (bltn);
-      TREE_USED (tinfo) = 1;
-      TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (tinfo)) = 1;
-      
-      tinfo = get_tinfo_decl (bltn_ptr);
-      TREE_USED (tinfo) = 1;
-      TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (tinfo)) = 1;
-      
-      tinfo = get_tinfo_decl (bltn_const_ptr);
-      TREE_USED (tinfo) = 1;
-      TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (tinfo)) = 1;
+      tree types[3] = {
+	bltn,
+	build_pointer_type (bltn),
+	build_pointer_type (build_qualified_type (bltn, TYPE_QUAL_CONST))
+      };
+      int i;
+
+      for (i = 0; i < 3; ++i)
+	{
+	  tree tinfo;
+	  tinfo = get_tinfo_decl (types[i]);
+	  TREE_USED (tinfo) = 1;
+	  mark_needed (tinfo);
+	  /* The C++ ABI requires that these objects be COMDAT.  But,
+	     On systems without weak symbols, initialized COMDAT 
+	     objects are emitted with internal linkage.  (See
+	     comdat_linkage for details.)  Since we want these objects
+	     to have external linkage so that copies do not have to be
+	     emitted in code outside the runtime library, we make them
+	     non-COMDAT here.  */
+	  if (!flag_weak)
+	    {
+	      gcc_assert (TREE_PUBLIC (tinfo) && !DECL_COMDAT (tinfo));
+	      DECL_INTERFACE_KNOWN (tinfo) = 1;
+	    }
+	}
     }
 }
 

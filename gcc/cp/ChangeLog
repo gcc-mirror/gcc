@@ -1,3 +1,21 @@
+2004-12-22  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18464
+	* call.c (build_this): In templates, do not bother with
+	build_unary_op.
+	* typeck.c (unary_complex_lvalue): In a template, always refuse
+	simplifications. 
+
+	PR c++/18492
+	* cp-gimplify.c (cp_genericize): Relax assertion.
+
+	PR c++/11224
+	* cvt.c (convert_to_void): Warn about unused values.
+
+	PR c++/18257
+	* rtti.c (emit_support_tinfos): On systems without weak symbols,
+	emit the runtime library type-info objects as non-COMDAT. 
+
 2004-12-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18378

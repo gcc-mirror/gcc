@@ -334,17 +334,19 @@ cp_genericize (tree fndecl)
 
   /* Fix up the types of parms passed by invisible reference.  */
   for (t = DECL_ARGUMENTS (fndecl); t; t = TREE_CHAIN (t))
-    {
-      gcc_assert (!DECL_BY_REFERENCE (t));
-      if (TREE_ADDRESSABLE (TREE_TYPE (t)))
-	{
-	  gcc_assert (DECL_ARG_TYPE (t) != TREE_TYPE (t));
-	  TREE_TYPE (t) = DECL_ARG_TYPE (t);
-	  DECL_BY_REFERENCE (t) = 1;
-	  TREE_ADDRESSABLE (t) = 0;
-	  relayout_decl (t);
-	}
-    }
+    if (TREE_ADDRESSABLE (TREE_TYPE (t)))
+      {
+	/* If a function's arguments are copied to create a thunk,
+	   then DECL_BY_REFERENCE will be set -- but the type of the
+	   argument will be a pointer type, so we will never get
+	   here.  */
+	gcc_assert (!DECL_BY_REFERENCE (t));
+	gcc_assert (DECL_ARG_TYPE (t) != TREE_TYPE (t));
+	TREE_TYPE (t) = DECL_ARG_TYPE (t);
+	DECL_BY_REFERENCE (t) = 1;
+	TREE_ADDRESSABLE (t) = 0;
+	relayout_decl (t);
+      }
 
   /* Do the same for the return value.  */
   if (TREE_ADDRESSABLE (TREE_TYPE (DECL_RESULT (fndecl))))
