@@ -1093,6 +1093,13 @@ extern int current_function_anonymous_args;
     && GET_CODE (PATTERN (X)) != CLOBBER	\
     && get_attr_type (X) == TYPE_SFUNC))
 
+/* Compute the cost of an address.  For the SH, all valid addresses are
+   the same cost.  */
+/* ??? Perhaps we should make reg+reg addresses have higher cost because
+   they add to register pressure on r0.  */
+
+#define ADDRESS_COST(RTX) 1
+
 /* Compute extra cost of moving data between one register class
    and another.
 
