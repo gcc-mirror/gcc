@@ -172,7 +172,8 @@ public final class Connection extends HttpURLConnection
     inputStream = new BufferedInputStream(socket.getInputStream());
 
     sendRequest();
-    getHttpHeaders();
+    receiveReply();
+
     connected = true;
   }
 
@@ -226,6 +227,62 @@ public final class Connection extends HttpURLConnection
   }
 
   /**
+   * Read HTTP reply from inputStream.
+   */
+  private void receiveReply() throws IOException
+  {
+    int buflen = 100;
+    byte[] buf = new byte[buflen];
+    String line = "";
+    boolean gotnl = false;
+    byte[] ch = new byte[1];
+    ch[0] = (byte) '\n';
+
+    while (true)
+      {
+	// Check for leftover byte from non-'\n' after a '\r'.
+	if (ch[0] != '\n')
+	  line = line + '\r' + new String(ch, 0, 1);
+
+	int i;
+	// FIXME: This is rather inefficient.
+	for (i = 0; i < buflen; i++)
+	  {
+	    buf[i] = (byte) inputStream.read();
+	    if (buf[i] == -1)
+	      throw new IOException("Malformed HTTP header");
+	    if (buf[i] == '\r')
+	      {
+	        inputStream.read(ch, 0, 1);
+		if (ch[0] == '\n')
+		  gotnl = true;
+		break;
+	      }
+	  }
+	line = line + new String(buf, 0, i);
+
+	// A '\r' '\n' combo indicates the end of the header entry.
+	// If it wasn't found, cycle back through the loop and append
+	// to 'line' until one is found.
+	if (gotnl)
+	  {
+	    // A zero length entry signals the end of the headers.
+	    if (line.length() == 0)
+	      break;
+
+	    // Store the header and reinitialize for next cycle.
+	    hdrVec.addElement(line);
+	    String key = getKey(line);
+	    if (key != null)
+	      hdrHash.put(key.toLowerCase(), getField(line));
+	    line = "";
+	    ch[0] = (byte) '\n';
+	    gotnl = false;
+	  }
+      }
+  }
+
+  /**
    * Return a boolean indicating whether or not this connection is
    * going through a proxy
    *
@@ -256,13 +313,21 @@ public final class Connection extends HttpURLConnection
     return inputStream;
   }
 
+  /**
+   * Returns on OutputStream for writing to this connection.
+   *
+   * @return An OutputStream for this connection.
+   *
+   * @exception IOException If an error occurs
+   */
   public OutputStream getOutputStream() throws IOException
   {
+    if (!doOutput)
+      throw new ProtocolException
+        ("Want output stream while haven't setDoOutput(true)");
+    
     if (!connected)
       connect();
-
-    if (! doOutput)
-      throw new ProtocolException("Can't open OutputStream if doOutput is false");
     
     return socket.getOutputStream();
   }
@@ -388,61 +453,5 @@ public final class Connection extends HttpURLConnection
       return str.substring(index + 1).trim();
     else
       return str;
-  }
-
-  /**
-   * Read HTTP reply from inputStream.
-   */
-  private void getHttpHeaders() throws IOException
-  {
-    int buflen = 100;
-    byte[] buf = new byte[buflen];
-    String line = "";
-    boolean gotnl = false;
-    byte[] ch = new byte[1];
-    ch[0] = (byte) '\n';
-
-    while (true)
-      {
-	// Check for leftover byte from non-'\n' after a '\r'.
-	if (ch[0] != '\n')
-	  line = line + '\r' + new String(ch, 0, 1);
-
-	int i;
-	// FIXME: This is rather inefficient.
-	for (i = 0; i < buflen; i++)
-	  {
-	    buf[i] = (byte) inputStream.read();
-	    if (buf[i] == -1)
-	      throw new IOException("Malformed HTTP header");
-	    if (buf[i] == '\r')
-	      {
-	        inputStream.read(ch, 0, 1);
-		if (ch[0] == '\n')
-		  gotnl = true;
-		break;
-	      }
-	  }
-	line = line + new String(buf, 0, i);
-
-	// A '\r' '\n' combo indicates the end of the header entry.
-	// If it wasn't found, cycle back through the loop and append
-	// to 'line' until one is found.
-	if (gotnl)
-	  {
-	    // A zero length entry signals the end of the headers.
-	    if (line.length() == 0)
-	      break;
-
-	    // Store the header and reinitialize for next cycle.
-	    hdrVec.addElement(line);
-	    String key = getKey(line);
-	    if (key != null)
-	      hdrHash.put(key.toLowerCase(), getField(line));
-	    line = "";
-	    ch[0] = (byte) '\n';
-	    gotnl = false;
-	  }
-      }
   }
 }
