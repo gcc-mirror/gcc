@@ -1714,6 +1714,10 @@ yylex ()
 		if (width < HOST_BITS_PER_INT
 		    && (unsigned) c >= (1 << width))
 		  pedwarn ("escape sequence out of range for character");
+#ifdef MAP_CHARACTER
+		if (isprint (c))
+		  c = MAP_CHARACTER (c);
+#endif
 	      }
 	    else if (c == '\n')
 	      {
