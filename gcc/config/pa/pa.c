@@ -842,7 +842,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 	  emit_insn (gen_rtx (SET, VOIDmode, operand0, operand1));
 	  return 1;
 	}
-      if (! reload_in_progress)
+      if (! (reload_in_progress || reload_completed))
 	{
 	  operands[0] = validize_mem (operand0);
 	  operands[1] = operand1 = force_reg (mode, operand1);
@@ -865,7 +865,13 @@ emit_move_sequence (operands, mode, scratch_reg)
 	{
 	  if (flag_pic)
 	    {
-	      rtx temp = reload_in_progress ? operand0 : gen_reg_rtx (Pmode);
+	      rtx temp;
+
+	      if (reload_in_progress || reload_completed)
+		temp = operand0;
+	      else
+		temp = gen_reg_rtx (Pmode);
+		
 	      operands[1] = legitimize_pic_address (operand1, mode, temp);
               emit_insn (gen_rtx (SET, VOIDmode, operand0, operands[1]));
 	    }
@@ -876,7 +882,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 	    {
 	      rtx temp, set;
 
-	      if (reload_in_progress) 
+	      if (reload_in_progress || reload_completed) 
 		temp = scratch_reg ? scratch_reg : operand0;
 	      else
 		temp = gen_reg_rtx (mode);
@@ -893,8 +899,13 @@ emit_move_sequence (operands, mode, scratch_reg)
 				  gen_rtx (HIGH, mode, operand1)));
 	      if (function_label_operand (operand1, mode))
 		{
-		  rtx temp = reload_in_progress ? scratch_reg
-		    : gen_reg_rtx (mode);
+		  rtx temp;
+
+		  if (reload_in_progress || reload_completed)
+		    temp = scratch_reg;
+		  else
+		    temp = gen_reg_rtx (mode);
+
 		  if (!temp)
 		    abort ();
 		  emit_insn (gen_rtx (PARALLEL, VOIDmode,
@@ -912,7 +923,13 @@ emit_move_sequence (operands, mode, scratch_reg)
       else if (GET_CODE (operand1) != CONST_INT
 	       || ! cint_ok_for_move (INTVAL (operand1)))
 	{
-	  rtx temp = reload_in_progress ? operand0 : gen_reg_rtx (mode);
+	  rtx temp;
+
+	  if (reload_in_progress || reload_completed)
+	    temp = operand0;
+	  else
+	    temp = gen_reg_rtx (mode);
+
 	  emit_insn (gen_rtx (SET, VOIDmode, temp,
 			      gen_rtx (HIGH, mode, operand1)));
 	  operands[1] = gen_rtx (LO_SUM, mode, temp, operand1);
