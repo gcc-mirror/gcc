@@ -1,5 +1,17 @@
 2003-01-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* dbxout.c (lastfile, cwd): Fix `unused' warning.
+	* dwarf2out.c (fde_table_in_use, current_funcdef_fde,
+	dw_cfi_oprnd1_desc, dw_cfi_oprnd2_desc, next_die_offset,
+	is_main_source, file_table, decl_die_table_in_use,
+	abbrev_die_table_in_use, line_info_table_in_use,
+	separate_line_info_table_in_use, pubname_table_in_use,
+	arange_table_in_use, ranges_table_in_use,
+	current_function_has_inlines): Likewise.
+	* flow.c (life_analysis): Likewise.
+	* genemit.c (gen_insn): Likewise.
+	* protoize.c (cplus_suffix): Likewise.
+
 	* arm.c (ROUND_UP_WORD): Renamed from ROUND_UP.
 	* arm.h (ROUND_UP_WORD): Likewise.
 
