@@ -3,7 +3,7 @@
 @setfilename g++FAQ.info
 @settitle Frequently asked questions about the GNU C++ compiler
 @setchapternewpage off
-@c version: @(#)g++FAQ.texi	1.61 05/31/98
+@c version: %W% %G%
 @c %**end of header
 
 @iftex
@@ -12,7 +12,7 @@
 @titlepage
 @title G++ FAQ
 @subtitle Frequently asked questions about the GNU C++ compiler
-@subtitle May 31, 1998.
+@subtitle June 8, 1998
 @sp 1
 @author Joe Buck
 @page
@@ -368,19 +368,19 @@ binaries may be discontinued.
 @cindex Solaris
 @cindex gcc/g++ binaries for Solaris
 
-You'll need to get prebuilt binaries from someone.
+You can obtain and install prebuilt binaries of gcc.
 
-It used to be that you could get GCC binaries from prep.ai.mit.edu;
-these are no longer there.
 
 @cindex Solaris pkgadd utility
-The WWW site @file{http://smc.vnet.net/solaris_2.5.html}
+The WWW site @file{http://smc.vnet.net/}
 contains various
-GNU and freeware programs for Solaris2.5 running on the sparc. These are
+GNU and freeware programs for Solaris 2.5 or 2.6, for either the Sparc
+or Intel platforms.  These are
 packaged to enable easy installation using the Solaris ``pkgadd'' utility.
-These include GNU emacs, gcc, gdb, perl, and others.  These versions
-are more recent than the binaries at ``prep'' (gcc 2.7.2 and libg++
-2.7.1 are there).
+These include GNU emacs, gcc, gdb, perl, and others.
+
+You can find also find prebuilt binaries of many GNU tools, including the
+compiler, at @file{http://sunsite.unc.edu/pub/solaris/}.
 
 @node g++ for other platforms, 1.x vs 2.x versions, g++ for Solaris 2.x, basics
 @section How do I get a copy of g++ for (some other platform)?
@@ -533,7 +533,13 @@ that have not yet made it into gcc-2.8.x, C++ users will find the
 two compilers to be almost the same at this stage, other than that 2.8.x
 users may get more bogus warnings with -Wall and optimization because
 some fixes to flow analysis in the presence of exceptions that egcs made
-are not yet present in gcc 2.8.x (as of 2.8.1).
+are not yet present in gcc 2.8.x (as of 2.8.1).  
+
+The flow analysis problem in 2.8.1 produces bad code in some cases, not
+just spurious errors.  It only affects code that actually throws an
+exception, and only the path corresponding to a thrown exception gets
+misoptimized.  If this happens, you can try reducing the level of
+optimization.
 
 Because the new feature lists for egcs and gcc 2.8 are almost the same,
 please see @xref{egcs-whats-new} for a list of new features.  It is a
@@ -542,13 +548,14 @@ fairly long list.
 @node egcs-intro, egcs-whats-new, new-in-2.8.x, egcs and 2.8.x
 @section What is egcs?
 
-egcs is the Experimental GNU compiler system (see
+egcs is the experimental GNU compiler system (see
 @file{http://www.cygnus.com/egcs} on the Web).  It is an effort to
 accelerate development of new gcc features by providing a more open
 development model than gcc has traditionally used.
 
 The first egcs release, egcs-1.0, came out on December 3, 1997.
-The current release is egcs-1.0.1, released January 6, 1998.
+The current release is egcs-1.0.3, released May 15, 1998.
+
 Questions not addressed here may be answered in the egcs FAQ
 (@file{http://www.cygnus.com/egcs/faq.html}).
 
@@ -696,14 +703,15 @@ inclusion; the reverse is also taking place, though a bug fix may
 appear in one before it does in the other.  egcs development is currently
 proceeding much more quickly than gcc 2.8.x development.  However, there
 is essentially only one C++ front end, which is shared by the two
-distinct compiler back ends.
+distinct compiler back ends (however, since egcs-1.0.3 is newer than
+gcc 2.8.1, it has more bug fixes).
 
 @node egcs-robustness,  , egcs-vs-2.8.x, egcs and 2.8.x
 @section How robust is egcs?
 
 While the 'e' stands for 'experimental', egcs has been tested thoroughly
 and should be of high quality.  The author considers egcs 1.0.3 the
-must robust GNU C++ compiler ever produced.
+most robust GNU C++ compiler ever produced.
 
 @node installation, evolution, egcs and 2.8.x, Top
 @chapter Installation Issues and Problems
@@ -2123,6 +2131,9 @@ than on RISC architectures.  The extra exceptions code is generated
 in a separate program section and is only paged in if an exception
 is thrown, so the cost is in disk, not in RAM or CPU.
 
+Exception overhead is much lower on ix86 if you use binutils 2.9 or
+later, as gas (the GNU assembler) can now compress the information.
+
 @node namespaces, agreement with standards, exceptions, User Problems
 @section Does g++ support namespaces?
 
@@ -2218,7 +2229,9 @@ fixed their code to comply with the new standard yet.
 @cindex DWARF debug format
 
 Most systems based on System V Release 4 (except Solaris) encode symbolic
-debugging information in a format known as `DWARF'.
+debugging information in a format known as `DWARF'.  There are two forms
+of DWARF, DWARF 1 and DWARF 2.  The default is often DWARF 1, which is
+not really expressive enough to do C++ correctly.
 
 Now that we have gdb 4.17, DWARF debugging is finally supported (if
 you use gcc 2.8.1 or egcs-1.0.x or newer).
@@ -2231,6 +2244,9 @@ configuring gcc with the @code{--with-stabs} option.  This causes gcc to
 use an alternate debugging format, one more like that used under SunOS4.
 You won't need to do anything special to GDB; it will always understand
 the ``stabs'' format.
+
+To specify DWARF 2 output on Unixware, you can give the @code{-ggdb}
+switch; alternatively, @code{-gstabs} produces ``stabs'' format.
 
 @node debugging problems on Solaris, X11 conflicts with libg++, debugging on SVR4 systems, User Problems
 @section debugging problems on Solaris
@@ -2405,4 +2421,3 @@ net, please use @file{gnu.misc.discuss}, not the technical newsgroups.
 @page
 @contents
 @bye
-
