@@ -1,3 +1,8 @@
+2005-03-30  Tom Tromey  <tromey@redhat.com>
+
+	* jcf-dump.c (HANDLE_INNERCLASSES_ATTRIBUTE): Handle cases where
+	inner_class_info_index==0 or outer_class_info_index==0.
+
 2005-03-29  Tom Tromey  <tromey@redhat.com>
 
 	* gcj.texi (libgcj Runtime Properties): Document
