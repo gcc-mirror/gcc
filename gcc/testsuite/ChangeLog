@@ -1,3 +1,10 @@
+2004-06-15  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/20040615-1.c: New test.
+	* gcc.dg/tree-ssa/20030824-1.c: Update expected output to
+	be less sensitive to operand ordering.
+	* gcc.dg/tree-ssa/20030824-2.c: Likewise.
+
 2004-06-16  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* g++.dg/abi/bitfield3.C: Add comment..
