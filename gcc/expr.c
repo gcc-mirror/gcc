@@ -5779,6 +5779,10 @@ expand_expr (exp, target, tmode, modifier)
       return expand_increment (exp, ! ignore);
 
     case ADDR_EXPR:
+      /* If nonzero, TEMP will be set to the address of something that might
+	 be a MEM corresponding to a stack slot. */
+      temp = 0;
+
       /* Are we taking the address of a nested function?  */
       if (TREE_CODE (TREE_OPERAND (exp, 0)) == FUNCTION_DECL
 	  && decl_function_context (TREE_OPERAND (exp, 0)) != 0)
@@ -5803,6 +5807,8 @@ expand_expr (exp, target, tmode, modifier)
 	  if (CONSTANT_P (op0))
 	    op0 = force_const_mem (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))),
 				   op0);
+	  else if (GET_CODE (op0) == MEM)
+	    temp = XEXP (op0, 0);
 
 	  /* These cases happen in Fortran.  Is that legitimate?
 	     Should Fortran work in another way?
@@ -5827,10 +5833,21 @@ expand_expr (exp, target, tmode, modifier)
   
 	  if (modifier == EXPAND_SUM || modifier == EXPAND_INITIALIZER)
 	    return XEXP (op0, 0);
+
 	  op0 = force_operand (XEXP (op0, 0), target);
 	}
+
       if (flag_force_addr && GET_CODE (op0) != REG)
-	return force_reg (Pmode, op0);
+	op0 = force_reg (Pmode, op0);
+
+      if (GET_CODE (op0) == REG)
+	mark_reg_pointer (op0);
+
+      /* If we might have had a temp slot, add an equivalent address
+	 for it.  */
+      if (temp != 0)
+	update_temp_slot_address (temp, op0);
+
       return op0;
 
     case ENTRY_VALUE_EXPR:
