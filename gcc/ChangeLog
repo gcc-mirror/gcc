@@ -1,3 +1,8 @@
+Wed Sep 22 19:56:25 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (c4x_process_after_reload): Rework machdep insn
+	splitting to not use output template.
+
 Wed Sep 22 19:50:12 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (EXPAND_BUILTIN_VA_START): Call c4x_va_start.
