@@ -1,3 +1,18 @@
+2004-12-10  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: Implement remove_const, remove_volatile,
+	and remove_cv.
+	* testsuite/tr1/4_metaprogramming/const_volatile_modifications/
+	remove_const.cc: New.
+	* testsuite/tr1/4_metaprogramming/const_volatile_modifications/
+	remove_cv.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/const_volatile_modifications/
+	remove_volatile.cc: Likewise.
+
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_array/is_array.cc: Slightly tweak consistently, remove typedefs,
+	add a few tests.
+
 2004-12-09  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits: Implement remove_extent and
