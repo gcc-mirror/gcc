@@ -1,3 +1,11 @@
+Tue Oct 13 23:03:37 1998  Richard Henderson  <rth@cygnus.com>
+
+	* function.c (purge_addressof_1): Fix typo in inequality: do
+	bitfield optimization for equal mode sizes.
+	* expmed.c (store_bit_field): Don't take subregs of subregs in
+	the movstrict case.  Tidy a potential problem in the multi-word case.
+	(extract_bit_field): Likewise.
+
 Tue Oct 13 22:12:11 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
         * flow.c (find_basic_blocks): Emit NOPs after normal calls in this

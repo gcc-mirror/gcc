@@ -2885,7 +2885,7 @@ purge_addressof_1 (loc, insn, force, store)
 
 	  /* Don't even consider working with paradoxical subregs,
 	     or the moral equivalent seen here.  */
-	  if (size_x < size_sub
+	  if (size_x <= size_sub
 	      && int_mode_for_mode (GET_MODE (sub)) != BLKmode)
 	    {
 	      /* Do a bitfield insertion to mirror what would happen

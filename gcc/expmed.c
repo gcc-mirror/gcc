@@ -347,8 +347,22 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       else
 	{
 	  int icode = movstrict_optab->handlers[(int) fieldmode].insn_code;
-	  if(! (*insn_operand_predicate[icode][1]) (value, fieldmode))
+	  if (! (*insn_operand_predicate[icode][1]) (value, fieldmode))
 	    value = copy_to_mode_reg (fieldmode, value);
+
+	  if (GET_CODE (op0) == SUBREG)
+	    {
+	      if (GET_MODE (SUBREG_REG (op0)) == fieldmode
+		  || GET_MODE_CLASS (fieldmode) == MODE_INT
+		  || GET_MODE_CLASS (fieldmode) == MODE_PARTIAL_INT)
+		op0 = SUBREG_REG (op0);
+	      else
+		/* Else we've got some float mode source being extracted into
+		   a different float mode destination -- this combination of
+		   subregs results in Severe Tire Damage.  */
+		abort ();
+	    }
+
 	  emit_insn (GEN_FCN (icode)
 		   (gen_rtx_SUBREG (fieldmode, op0, offset), value));
 	}
@@ -403,12 +417,16 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
   /* OFFSET is the number of words or bytes (UNIT says which)
      from STR_RTX to the first word or byte containing part of the field.  */
 
-  if (GET_CODE (op0) == REG)
+  if (GET_CODE (op0) != MEM)
     {
       if (offset != 0
 	  || GET_MODE_SIZE (GET_MODE (op0)) > UNITS_PER_WORD)
-	op0 = gen_rtx_SUBREG (TYPE_MODE (type_for_size (BITS_PER_WORD, 0)),
-		       op0, offset);
+	{
+	  if (GET_CODE (op0) != REG)
+	    op0 = copy_to_reg (op0);
+	  op0 = gen_rtx_SUBREG (mode_for_size (BITS_PER_WORD, MODE_INT, 0),
+		                op0, offset);
+	}
       offset = 0;
     }
   else
@@ -539,7 +557,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 		{
 		  /* Avoid making subreg of a subreg, or of a mem.  */
 		  if (GET_CODE (value1) != REG)
-		value1 = copy_to_reg (value1);
+		    value1 = copy_to_reg (value1);
 		  value1 = gen_rtx_SUBREG (maxmode, value1, 0);
 		}
 	      else
@@ -1146,8 +1164,12 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
     {
       if (offset != 0
 	  || GET_MODE_SIZE (GET_MODE (op0)) > UNITS_PER_WORD)
-	op0 = gen_rtx_SUBREG (mode_for_size (BITS_PER_WORD, MODE_INT, 0),
-		              op0, offset);
+	{
+	  if (GET_CODE (op0) != REG)
+	    op0 = copy_to_reg (op0);
+	  op0 = gen_rtx_SUBREG (mode_for_size (BITS_PER_WORD, MODE_INT, 0),
+		                op0, offset);
+	}
       offset = 0;
     }
   else
