@@ -6711,7 +6711,10 @@ These Fortran 90 features are supported:
 @cindex FORMAT descriptors
 @cindex Z edit descriptor
 @cindex edit descriptor, Z
-The @code{Z} edit descriptor is supported.
+@cindex O edit descriptor
+@cindex edit descriptor, O
+The @code{O} and @code{Z} edit descriptors are supported for I/O of
+integers in octal and hexadecimal formats, respectively.
 @item
 The @code{FILE=} specifier may be omitted in an @code{OPEN} statement if
 @code{STATUS='SCRATCH'} is supplied.  The @code{STATUS='REPLACE'}
@@ -6774,6 +6777,7 @@ permitted.  Character constants may be enclosed in double quotes
 @item Binary, octal and hexadecimal constants
 These are supported more generally than required by Fortran 90.
 @xref{Integer Type}.
+@item @samp{O} and @samp{Z} edit descriptors
 @item @code{NAMELIST}
 @xref{NAMELIST}.
 @item @code{OPEN} specifiers
