@@ -1,6 +1,7 @@
 2000-40-30  Bruce Korb  <bkorb@gnu.org>
 
-	* fixinc/inclhack.def:  Added definitions needed by OSR5
+	* fixinc/inclhack.def:  Added definitions needed by OSR5,
+	removed two stale entries (defined away with OLD_CPP).
 	* fixinc/inclhack.sh: regen
 	* fixinc/fixincl.x: regen
 

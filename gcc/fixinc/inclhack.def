@@ -3,13 +3,11 @@
 
 autogen definitions inclhack;
 
-/*
+/* Define all the fixes we know about for repairing damaged headers.
+   Please see the README before adding or changing entries in this file.
 
-Define all the fixes we know about for repairing damaged headers.
-Please see the README before adding or changing entries in this file.
-
-Set up a debug test so we can make the templates emit special
-code while debugging these fixes:  */
+   Set up a debug test so we can make the templates emit special
+   code while debugging these fixes:  */
 
 #ifdef DEBUG
 FIXINC_DEBUG = yes;
@@ -765,21 +763,6 @@ fix = {
 };
 
 
-#ifdef OLD_CPP
-/*
- *  Remove the double-slash comments.  The "double_slash" test will
- *  try to ignore C++ headers by checking for "CC/", "xx/" and "++/"
- *  in the file name.  There are still the occasional C++ headers
- *  that have their comments stripped.  Too bad.
- */
-fix = {
-    hackname = no_double_slash;
-    c_test = "double_slash";
-    c_fix  = "no_double_slash";
-};
-#endif
-
-
 /*
  * Fix these Sun OS files to avoid an invalid identifier in an #ifdef.
  */
@@ -789,23 +772,6 @@ fix = {
     files  = "sunwindow/win_cursor.h";
     sed    = "s/ecd.cursor/ecd_cursor/";
 };
-
-
-#ifdef OLD_CPP
-/*
- *  Fix else and endif directives that contain non-commentary text
- */
-fix = {
-    hackname = end_else_label;
-
-    /*
-     *  Select files that contain '#endif' or '#else' directives with
-     *  some sort of following junk.
-     */
-    c_test = "else_endif_label";
-    c_fix  = "else_endif_label";
-};
-#endif
 
 
 /*
