@@ -5202,7 +5202,8 @@ mark_used (decl)
      instantiation because that is not checked in instantiate_decl.  */
   if ((TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
       && DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)
-      && !DECL_EXPLICIT_INSTANTIATION (decl))
+      && (!DECL_EXPLICIT_INSTANTIATION (decl)
+	  || (TREE_CODE (decl) == FUNCTION_DECL && DECL_INLINE (decl))))
     instantiate_decl (decl);
 }
 
