@@ -1,5 +1,9 @@
 2004-05-18  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	* trans.c, trans-decl.c: Fix comment typos.
+
+2004-05-18  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	* trans-const.c (gfc_conv_mpf_to_tree): Fix typo.
 
 2004-05-18  Steve Kargl  <kargls@comcast.net>
