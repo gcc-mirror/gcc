@@ -58,7 +58,6 @@ char *alloca ();
 
 /* Major control parameters.  */
 
-#define GFC_VERSION "0.23"
 #define GFC_MAX_SYMBOL_LEN 63
 #define GFC_REAL_BITS 100	/* Number of bits in g95's floating point numbers.  */
 #define GFC_MAX_LINE 132	/* Characters beyond this are not seen.  */
