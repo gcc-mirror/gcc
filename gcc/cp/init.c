@@ -2172,6 +2172,7 @@ build_new_1 (exp)
      a VAR_DECL and is therefore reusable.  */
   tree alloc_node;
   tree alloc_fn;
+  tree cookie_expr, init_expr;
   int has_array = 0;
   enum tree_code code;
   int nothrow, check_new;
@@ -2357,13 +2358,11 @@ build_new_1 (exp)
      can use it more than once.  */
   full_pointer_type = build_pointer_type (full_type);
   alloc_expr = get_target_expr (build_nop (full_pointer_type, alloc_call));
-  alloc_node = TREE_OPERAND (alloc_expr, 0);
-  rval = NULL_TREE;
+  alloc_node = TARGET_EXPR_SLOT (alloc_expr);
 
   if (cookie_size)
     {
       tree cookie;
-      tree cookie_expr;
 
       /* Adjust so we're pointing to the start of the object.  */
       data_addr = get_target_expr (build (PLUS_EXPR, full_pointer_type,
@@ -2377,18 +2376,17 @@ build_new_1 (exp)
       cookie = build_indirect_ref (cookie, NULL);
 
       cookie_expr = build (MODIFY_EXPR, sizetype, cookie, nelts);
-      TREE_SIDE_EFFECTS (cookie_expr) = 1;
-      rval = build (COMPOUND_EXPR, void_type_node, data_addr, cookie_expr);
-      data_addr = TREE_OPERAND (data_addr, 0);
+      data_addr = TARGET_EXPR_SLOT (data_addr);
     }
   else
-    data_addr = alloc_node;
+    {
+      cookie_expr = NULL_TREE;
+      data_addr = alloc_node;
+    }
 
   /* Now initialize the allocated object.  */
   if (is_initialized)
     {
-      tree init_expr;
-
       init_expr = build_indirect_ref (data_addr, NULL);
 
       if (init == void_zero_node)
@@ -2502,24 +2500,36 @@ build_new_1 (exp)
 				end));
 	    }
 	}
-
-      if (rval)
-	rval = build (COMPOUND_EXPR, TREE_TYPE (init_expr), rval, init_expr);
-      else
-	rval = init_expr;
     }
+  else
+    init_expr = NULL_TREE;
 
-  rval = build (COMPOUND_EXPR, TREE_TYPE (alloc_node), rval, data_addr);
+  /* Now build up the return value in reverse order.  */
 
-  if (check_new)
+  rval = data_addr;
+
+  if (init_expr)
+    rval = build (COMPOUND_EXPR, TREE_TYPE (rval), init_expr, rval);
+  if (cookie_expr)
+    rval = build (COMPOUND_EXPR, TREE_TYPE (rval), cookie_expr, rval);
+
+  if (rval == alloc_node)
+    /* If we don't have an initializer or a cookie, strip the TARGET_EXPR
+       and return the call (which doesn't need to be adjusted).  */
+    rval = TARGET_EXPR_INITIAL (alloc_expr);
+  else
     {
-      tree ifexp = cp_build_binary_op (NE_EXPR, alloc_node, integer_zero_node);
-      rval = build_conditional_expr (ifexp, rval, alloc_node);
-    }
+      if (check_new)
+	{
+	  tree ifexp = cp_build_binary_op (NE_EXPR, alloc_node,
+					   integer_zero_node);
+	  rval = build_conditional_expr (ifexp, rval, alloc_node);
+	}
 
-  /* Perform the allocation before anything else, so that ALLOC_NODE
-     has been initialized before we start using it.  */
-  rval = build (COMPOUND_EXPR, TREE_TYPE (rval), alloc_expr, rval);
+      /* Perform the allocation before anything else, so that ALLOC_NODE
+	 has been initialized before we start using it.  */
+      rval = build (COMPOUND_EXPR, TREE_TYPE (rval), alloc_expr, rval);
+    }
 
   /* Convert to the final type.  */
   return build_nop (pointer_type, rval);
