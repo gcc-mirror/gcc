@@ -328,29 +328,6 @@ namespace std
         }
     }
     
-  #ifdef _GLIBCPP_DEPRECATED
-  // Called only if _M_finish._M_cur == _M_finish._M_last - 1.
-  template <typename _Tp, typename _Alloc>
-    void
-    deque<_Tp,_Alloc>::
-    _M_push_back_aux()
-    {
-      _M_reserve_map_at_back();
-      *(_M_finish._M_node + 1) = _M_allocate_node();
-      try
-        {
-          _Construct(_M_finish._M_cur);
-          _M_finish._M_set_node(_M_finish._M_node + 1);
-          _M_finish._M_cur = _M_finish._M_first;
-        }
-      catch(...)
-        {
-          _M_deallocate_node(*(_M_finish._M_node + 1));
-          __throw_exception_again;
-        }
-    }
-  #endif
-    
   // Called only if _M_start._M_cur == _M_start._M_first.
   template <typename _Tp, typename _Alloc>
     void
@@ -373,30 +350,6 @@ namespace std
           __throw_exception_again;
         }
     } 
-    
-  #ifdef _GLIBCPP_DEPRECATED
-  // Called only if _M_start._M_cur == _M_start._M_first.
-  template <typename _Tp, typename _Alloc>
-    void
-    deque<_Tp,_Alloc>::
-    _M_push_front_aux()
-    {
-      _M_reserve_map_at_front();
-      *(_M_start._M_node - 1) = _M_allocate_node();
-      try
-        {
-          _M_start._M_set_node(_M_start._M_node - 1);
-          _M_start._M_cur = _M_start._M_last - 1;
-          _Construct(_M_start._M_cur);
-        }
-      catch(...)
-        {
-          ++_M_start;
-          _M_deallocate_node(*(_M_start._M_node - 1));
-          __throw_exception_again;
-        }
-    } 
-  #endif
     
   // Called only if _M_finish._M_cur == _M_finish._M_first.
   template <typename _Tp, typename _Alloc>
@@ -507,44 +460,6 @@ namespace std
       *__pos = __x_copy;
       return __pos;
     }
-    
-  #ifdef _GLIBCPP_DEPRECATED
-  // Nothing seems to actually use this.  According to the pattern followed by
-  // the rest of the SGI code, it would be called by the deprecated insert(pos)
-  // function, but that has been replaced.  We'll take our time removing this
-  // anyhow; mark for 3.4.  -pme
-  template <typename _Tp, typename _Alloc>
-    typename deque<_Tp,_Alloc>::iterator 
-    deque<_Tp,_Alloc>::
-    _M_insert_aux(iterator __pos)
-    {
-      difference_type __index = __pos - _M_start;
-      if (static_cast<size_type>(__index) < size() / 2)
-      {
-        push_front(front());
-        iterator __front1 = _M_start;
-        ++__front1;
-        iterator __front2 = __front1;
-        ++__front2;
-        __pos = _M_start + __index;
-        iterator __pos1 = __pos;
-        ++__pos1;
-        copy(__front2, __pos1, __front1);
-      }
-      else
-      {
-        push_back(back());
-        iterator __back1 = _M_finish;
-        --__back1;
-        iterator __back2 = __back1;
-        --__back2;
-        __pos = _M_start + __index;
-        copy_backward(__pos, __back2, __back1);
-      }
-      *__pos = value_type();
-      return __pos;
-    }
-  #endif
     
   template <typename _Tp, typename _Alloc>
     void

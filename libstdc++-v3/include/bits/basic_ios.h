@@ -302,7 +302,14 @@ namespace std
        *  in derived classes by overrides of the zero-argument @c rdbuf(),
        *  which is non-virtual for hysterical raisins.  As a result, you
        *  must use explicit qualifications to access this function via any
-       *  derived class.
+       *  derived class.  For example:
+       *
+       *  @code
+       *  std::fstream     foo;         // or some other derived type
+       *  std::streambuf*  p = .....;
+       *
+       *  foo.ios::rdbuf(p);            // ios == basic_ios<char>
+       *  @endcode
       */
       basic_streambuf<_CharT, _Traits>* 
       rdbuf(basic_streambuf<_CharT, _Traits>* __sb);

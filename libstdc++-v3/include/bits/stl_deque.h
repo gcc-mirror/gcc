@@ -1025,31 +1025,6 @@ namespace std
         _M_push_front_aux(__x);
     }
   
-  #ifdef _GLIBCPP_DEPRECATED
-    /**
-     *  @brief  Add data to the front of the %deque.
-     *
-     *  This is a typical stack operation.  The function creates a
-     *  default-constructed element at the front of the %deque.  Due to the
-     *  nature of a %deque this operation can be done in constant time.  You
-     *  should consider using push_front(value_type()) instead.
-     *
-     *  @note This was deprecated in 3.2 and will be removed in 3.4.  You must
-     *        define @c _GLIBCPP_DEPRECATED to make this visible in 3.2; see
-     *        c++config.h.
-    */
-    void
-    push_front()
-    {
-      if (_M_start._M_cur != _M_start._M_first) {
-        _Construct(_M_start._M_cur - 1);
-        --_M_start._M_cur;
-      }
-      else
-        _M_push_front_aux();
-    }
-  #endif
-  
     /**
      *  @brief  Add data to the end of the %deque.
      *  @param  x  Data to be added.
@@ -1068,31 +1043,6 @@ namespace std
       else
         _M_push_back_aux(__x);
     }
-  
-  #ifdef _GLIBCPP_DEPRECATED
-    /**
-     *  @brief  Add data to the end of the %deque.
-     *
-     *  This is a typical stack operation.  The function creates a
-     *  default-constructed element at the end of the %deque.  Due to the nature
-     *  of a %deque this operation can be done in constant time.  You should
-     *  consider using push_back(value_type()) instead.
-     *
-     *  @note This was deprecated in 3.2 and will be removed in 3.4.  You must
-     *        define @c _GLIBCPP_DEPRECATED to make this visible in 3.2; see
-     *        c++config.h.
-    */
-    void
-    push_back()
-    {
-      if (_M_finish._M_cur != _M_finish._M_last - 1) {
-        _Construct(_M_finish._M_cur);
-        ++_M_finish._M_cur;
-      }
-      else
-        _M_push_back_aux();
-    }
-  #endif
   
     /**
      *  @brief  Removes first element.
@@ -1143,25 +1093,6 @@ namespace std
     */
     iterator
     insert(iterator position, const value_type& __x);
-  
-  #ifdef _GLIBCPP_DEPRECATED
-    /**
-     *  @brief  Inserts an element into the %deque.
-     *  @param  position  An iterator into the %deque.
-     *  @return  An iterator that points to the inserted element.
-     *
-     *  This function will insert a default-constructed element before the
-     *  specified location.  You should consider using
-     *  insert(position,value_type()) instead.
-     *
-     *  @note This was deprecated in 3.2 and will be removed in 3.4.  You must
-     *        define @c _GLIBCPP_DEPRECATED to make this visible in 3.2; see
-     *        c++config.h.
-    */
-    iterator
-    insert(iterator __position)
-    { return insert(__position, value_type()); }
-  #endif
   
     /**
      *  @brief  Inserts a number of copies of given data into the %deque.
@@ -1392,10 +1323,6 @@ namespace std
     */
     void _M_push_back_aux(const value_type&);
     void _M_push_front_aux(const value_type&);
-  #ifdef _GLIBCPP_DEPRECATED
-    void _M_push_back_aux();
-    void _M_push_front_aux();
-  #endif
     void _M_pop_back_aux();
     void _M_pop_front_aux();
     //@}
@@ -1458,11 +1385,6 @@ namespace std
       _M_insert_aux(iterator __pos, 
                     _ForwardIterator __first, _ForwardIterator __last,
                     size_type __n);
-  
-  #ifdef _GLIBCPP_DEPRECATED
-    // unused, see comment in implementation
-    iterator _M_insert_aux(iterator __pos);
-  #endif
   
     //@{
     /**
