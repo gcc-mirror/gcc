@@ -1,3 +1,12 @@
+2002-05-17  David S. Miller  <davem@redhat.com>
+
+	PR c/6689, PR optimization/6615
+	* local-alloc.c (struct equivalence): Rename 'src' to 'src_p'
+	and make it a pointer to rtx.  Update comments.
+	(update_equiv_regs): When scanning for equivalences, record
+	address of SET_SRC (set) in reg_equiv[].src_p.  Dereference
+	it while making the equiv replacements.
+
 2002-05-17  Kurt Wall <kwall@kurtwerks.com>
 
 	* doc/install.texi (Testing): Mention two common DejaGnu warnings

@@ -245,7 +245,7 @@ static rtx this_insn;
 struct equivalence
 {
   /* Set when an attempt should be made to replace a register
-     with the associated src entry.  */
+     with the associated src_p entry.  */
 
   char replace;
 
@@ -255,7 +255,7 @@ struct equivalence
 
   rtx replacement;
 
-  rtx src;
+  rtx *src_p;
 
   /* Loop depth is used to recognize equivalences which appear
      to be present within the same loop (or in an inner loop).  */
@@ -1004,7 +1004,7 @@ update_equiv_regs ()
 		recorded_label_ref = 1;
 
 	      reg_equiv[regno].replacement = XEXP (note, 0);
-	      reg_equiv[regno].src = src;
+	      reg_equiv[regno].src_p = &SET_SRC (set);
 	      reg_equiv[regno].loop_depth = loop_depth;
 
 	      /* Don't mess with things live during setjmp.  */
@@ -1086,7 +1086,7 @@ update_equiv_regs ()
 
 		  if (asm_noperands (PATTERN (equiv_insn)) < 0
 		      && validate_replace_rtx (regno_reg_rtx[regno],
-					       reg_equiv[regno].src, insn))
+					       *(reg_equiv[regno].src_p), insn))
 		    {
 		      rtx equiv_link;
 		      rtx last_link;
