@@ -1,5 +1,10 @@
 2003-06-19  Michael Koch  <konqueror@gmx.de>
 
+	* java/text/CollationElementIterator.java
+	(NULLORDER): Initialize with -1 as JDK documentation says.
+
+2003-06-19  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/HttpURLConnection.java,
 	java/net/Inet4Address.java,
 	java/net/Inet6Address.java,
