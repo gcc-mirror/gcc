@@ -1,5 +1,7 @@
 2001-04-30  Mark Mitchell  <mark@codesourcery.com>
 
+	* gcc.dg/20000724-1.c: Add a clobber of `esp'.
+	
 	* gcc.c-torture/execute/20010114-2.x: XFAIL it.
 	* gcc.c-torture/execute/20010123-1.x: Likewise.
 	* gcc.c-torture/execute/loop-2b.x: Likewise.

@@ -2297,11 +2297,16 @@ record_stack_memrefs (xp, data)
 	}
       return 1;
     case REG:
-      /* ??? We want be able to handle non-memory stack pointer references
-         later.  For now just discard all insns refering to stack pointer
-         outside mem expressions.  We would probably want to teach
-	 validate_replace to simplify expressions first.  */
-      if (x == stack_pointer_rtx)
+      /* ??? We want be able to handle non-memory stack pointer
+	 references later.  For now just discard all insns refering to
+	 stack pointer outside mem expressions.  We would probably
+	 want to teach validate_replace to simplify expressions first.
+
+	 We can't just compare with STACK_POINTER_RTX because the
+	 reference to the stack pointer might be in some other mode.
+	 In particular, an explict clobber in an asm statement will
+	 result in a QImode clober.  */
+      if (REGNO (x) == STACK_POINTER_REGNUM)
 	return 1;
       break;
     default:
