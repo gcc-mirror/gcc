@@ -1,3 +1,10 @@
+2004-02-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (cxx_push_function_context): Do not set
+	current_function_is_thunk.
+	* method.c (use_thunk): Set CALL_FROM_THUNK on the call to the
+	actual function.
+
 2003-02-04  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/13997
