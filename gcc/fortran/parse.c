@@ -2319,12 +2319,79 @@ done:
 }
 
 
+/* Come here to complain about a global symbol already in use as
+   something else.  */
+
+static void
+global_used (gfc_gsymbol *sym, locus *where)
+{
+  const char *name;
+
+  if (where == NULL)
+    where = &gfc_current_locus;
+
+  switch(sym->type)
+    {
+    case GSYM_PROGRAM:
+      name = "PROGRAM";
+      break;
+    case GSYM_FUNCTION:
+      name = "FUNCTION";
+      break;
+    case GSYM_SUBROUTINE:
+      name = "SUBROUTINE";
+      break;
+    case GSYM_COMMON:
+      name = "COMMON";
+      break;
+    case GSYM_BLOCK_DATA:
+      name = "BLOCK DATA";
+      break;
+    case GSYM_MODULE:
+      name = "MODULE";
+      break;
+    default:
+      gfc_internal_error ("gfc_gsymbol_type(): Bad type");
+      name = NULL;
+    }
+
+  gfc_error("Global name '%s' at %L is already being used as a %s at %L",
+           gfc_new_block->name, where, name, &sym->where);
+}
+
+
 /* Parse a block data program unit.  */
 
 static void
 parse_block_data (void)
 {
   gfc_statement st;
+  static locus blank_locus;
+  static int blank_block=0;
+  gfc_gsymbol *s;
+
+  if (gfc_new_block == NULL)
+    {
+      if (blank_block)
+       gfc_error ("Blank BLOCK DATA at %C conflicts with "
+                  "prior BLOCK DATA at %L", &blank_locus);
+      else
+       {
+         blank_block = 1;
+         blank_locus = gfc_current_locus;
+       }
+    }
+  else
+    {
+      s = gfc_get_gsymbol (gfc_new_block->name);
+      if (s->type != GSYM_UNKNOWN)
+       global_used(s, NULL);
+      else
+       {
+         s->type = GSYM_BLOCK_DATA;
+         s->where = gfc_current_locus;
+       }
+    }
 
   st = parse_spec (ST_NONE);
 
@@ -2344,6 +2411,16 @@ static void
 parse_module (void)
 {
   gfc_statement st;
+  gfc_gsymbol *s;
+
+  s = gfc_get_gsymbol (gfc_new_block->name);
+  if (s->type != GSYM_UNKNOWN)
+    global_used(s, NULL);
+  else
+    {
+      s->type = GSYM_MODULE;
+      s->where = gfc_current_locus;
+    }
 
   st = parse_spec (ST_NONE);
 
@@ -2368,6 +2445,46 @@ loop:
       reject_statement ();
       st = next_statement ();
       goto loop;
+    }
+}
+
+
+/* Add a procedure name to the global symbol table.  */
+
+static void
+add_global_procedure (int sub)
+{
+  gfc_gsymbol *s;
+
+  s = gfc_get_gsymbol(gfc_new_block->name);
+
+  if (s->type != GSYM_UNKNOWN)
+    global_used(s, NULL);
+  else
+    {
+      s->type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
+      s->where = gfc_current_locus;
+    }
+}
+
+
+/* Add a program to the global symbol table.  */
+
+static void
+add_global_program (void)
+{
+  gfc_gsymbol *s;
+
+  if (gfc_new_block == NULL)
+    return;
+  s = gfc_get_gsymbol (gfc_new_block->name);
+
+  if (s->type != GSYM_UNKNOWN)
+    global_used(s, NULL);
+  else
+    {
+      s->type = GSYM_PROGRAM;
+      s->where = gfc_current_locus;
     }
 }
 
@@ -2415,16 +2532,19 @@ loop:
 
       push_state (&s, COMP_PROGRAM, gfc_new_block);
       accept_statement (st);
+      add_global_program ();
       parse_progunit (ST_NONE);
       break;
 
     case ST_SUBROUTINE:
+      add_global_procedure (1);
       push_state (&s, COMP_SUBROUTINE, gfc_new_block);
       accept_statement (st);
       parse_progunit (ST_NONE);
       break;
 
     case ST_FUNCTION:
+      add_global_procedure (0);
       push_state (&s, COMP_FUNCTION, gfc_new_block);
       accept_statement (st);
       parse_progunit (ST_NONE);

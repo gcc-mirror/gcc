@@ -1,4 +1,20 @@
 2004-06-29  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+	Andrew Vaught  <andyv@firstinter.net>
+
+	* gfortran.h (gfc_gsymbol): New typedef.
+	(gfc_gsym_root): New variable.
+	(gfc_get_gsymbol, gfc_find_gsym): New prototypes.
+	* parse.c (global_used): New function.
+	(parse_block_data): Check for double empty BLOCK DATA,
+	use global symbol table.
+	(parse_module): Use global symbol table.
+	(add_global_procedure, add_global_program): New functions.
+	(gfc_parse_file): Use global symbol table.
+	* symbol.c (gfc_gsym_root): New variable.
+	(gfc_find_gsym, gsym_compare, gfc_get_gsymbol): New
+	functions.
+
+2004-06-29  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* module.c (mio_gmp_real): Correct writing of negative numbers.
 
