@@ -35,8 +35,6 @@ const char class_mangling_prefix[] = "_CL_";
 
 struct obstack name_obstack;
 
-extern char *xmalloc PROTO((size_t));
-
 void
 error (const char *str)
 {
@@ -110,4 +108,18 @@ main (int argc, const char **argv)
       exit (-1);
     }
   return 0;
+}
+
+PTR
+xmalloc (size)
+  size_t size;
+{
+  register PTR val = (PTR) malloc (size);
+ 
+  if (val == 0)
+    {
+      fprintf(stderr, "jvgenmain: virtual memory exhausted");
+      exit(FATAL_EXIT_CODE);
+    }
+  return val;
 }

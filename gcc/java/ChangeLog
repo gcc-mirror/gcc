@@ -1,3 +1,18 @@
+Fri Nov 27 13:20:51 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (jc1, jv-scan): Link with $(SUBDIR_OBSTACK).
+
+	* jv-scan.c: Fix xmalloc prototype.  Provide an xmalloc definition.
+	
+	* jvgenmain.c: Remove the xmalloc prototype, we get it from
+	libiberty.h.  Provide an xmalloc definition.
+
+	* jvspec.c: Remove the xmalloc prototype.
+
+	* parse-scan.y: Include config.h and system.h.  Don't include
+	OS headers or gansidecl.h.  Don't prototype xmalloc/xstrdup.
+	Provide an xstrdup definition.
+
 Wed Nov 26 22:03:58 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* jcf-path.c (add_entry): recognize ".jar" too

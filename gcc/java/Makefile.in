@@ -196,11 +196,11 @@ compiler: ../jc1$(exeext) ../jv-scan$(exeext)
 ../jc1$(exeext): $(P) $(JAVA_OBJS) $(OBJDEPS) $(LIBDEPS)
 	rm -f ../jc1$(exeext)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
-	      $(JAVA_OBJS) $(OBJS) $(LIBS)
+	      $(JAVA_OBJS) $(OBJS) $(SUBDIR_OBSTACK) $(LIBS)
 ../jv-scan$(exeext): $(P) $(JAVA_OBJS_LITE) $(OBJDEPS) $(LIBDEPS)
 	rm -f ../jv-scan$(exeext)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
-	      $(JAVA_OBJS_LITE) $(LIBS)
+	      $(JAVA_OBJS_LITE) $(SUBDIR_OBSTACK) $(LIBS)
 
 ../jcf-dump$(exeext): jcf-dump.o jcf-io.o jcf-depend.o jcf-path.o \
 		zextract.o

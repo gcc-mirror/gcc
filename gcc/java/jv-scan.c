@@ -34,7 +34,7 @@ void fatal VPROTO((char *s, ...));
 void warning VPROTO((char *s, ...));
 void gcc_obstack_init PROTO ((struct obstack *obstack));
 extern void reset_report PROTO ((void));
-extern char *xmalloc PROTO((size_t));
+extern PTR xmalloc PROTO((size_t));
 
 #define JC1_LITE
 #include "parse.h"
@@ -208,4 +208,15 @@ gcc_obstack_init (obstack)
   _obstack_begin (obstack, OBSTACK_CHUNK_SIZE, 0,
 		  (void *(*) ()) OBSTACK_CHUNK_ALLOC,
 		  (void (*) ()) OBSTACK_CHUNK_FREE);
+}
+
+PTR
+xmalloc (size)
+  size_t size;
+{
+  register PTR val = (PTR) malloc (size);
+ 
+  if (val == 0)
+    fatal ("virtual memory exhausted");
+  return val;
 }

@@ -61,7 +61,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #define MATH_LIBRARY "-lm"
 #endif
 
-extern char *xmalloc PROTO((size_t));
 extern int do_spec		PROTO((char *));
 extern char *input_filename;
 extern size_t input_filename_length;
