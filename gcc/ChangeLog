@@ -1,6 +1,7 @@
 2003-01-27  Richard Henderson  <rth@redhat.com>
 
 	* config/vax/vax.h (ASM_OUTPUT_MI_THUNK): Remove.  Really.
+	* config/vax/vax-protos.h: Update.  Really.
 
 2003-01-28  Alexandre Oliva  <aoliva@redhat.com>
 
