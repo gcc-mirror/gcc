@@ -1924,13 +1924,14 @@ expand_vector_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
      enum optab_methods methods;
 {
   enum machine_mode submode;
-  int elts, i;
+  int elts, subsize, i;
   rtx t, a, b, res, seq;
   enum mode_class class;
 
   class = GET_MODE_CLASS (mode);
 
   submode = GET_MODE_INNER (mode);
+  subsize = GET_MODE_UNIT_SIZE (mode);
   elts = GET_MODE_NUNITS (mode);
 
   if (!target)
@@ -1951,11 +1952,11 @@ expand_vector_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       for (i = 0; i < elts; ++i)
 	{
 	  t = simplify_gen_subreg (submode, target, mode,
-				   i * UNITS_PER_WORD);
+				   i * subsize);
 	  a = simplify_gen_subreg (submode, op0, mode,
-				   i * UNITS_PER_WORD);
+				   i * subsize);
 	  b = simplify_gen_subreg (submode, op1, mode,
-				   i * UNITS_PER_WORD);
+				   i * subsize);
 
 	  if (binoptab->code == DIV)
 	    {
@@ -1999,10 +2000,11 @@ expand_vector_unop (mode, unoptab, op0, target, unsignedp)
      int unsignedp;
 {
   enum machine_mode submode;
-  int elts, i;
+  int elts, subsize, i;
   rtx t, a, res, seq;
 
   submode = GET_MODE_INNER (mode);
+  subsize = GET_MODE_UNIT_SIZE (mode);
   elts = GET_MODE_NUNITS (mode);
 
   if (!target)
@@ -2016,8 +2018,8 @@ expand_vector_unop (mode, unoptab, op0, target, unsignedp)
 
   for (i = 0; i < elts; ++i)
     {
-      t = simplify_gen_subreg (submode, target, mode, i * UNITS_PER_WORD);
-      a = simplify_gen_subreg (submode, op0, mode, i * UNITS_PER_WORD);
+      t = simplify_gen_subreg (submode, target, mode, i * subsize);
+      a = simplify_gen_subreg (submode, op0, mode, i * subsize);
 
       res = expand_unop (submode, unoptab, a, t, unsignedp);
 
