@@ -97,7 +97,8 @@ struct args_size
    of type ssizetype.  */
 #define ARGS_SIZE_TREE(SIZE)					\
 ((SIZE).var == 0 ? ssize_int ((SIZE).constant)			\
- : size_binop (PLUS_EXPR, (SIZE).var, ssize_int ((SIZE).constant)))
+ : size_binop (PLUS_EXPR, convert (ssizetype, (SIZE).var),	\
+	       ssize_int ((SIZE).constant)))
 
 /* Convert the implicit sum in a `struct args_size' into an rtx.  */
 #define ARGS_SIZE_RTX(SIZE)					\
