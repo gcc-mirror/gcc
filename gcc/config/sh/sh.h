@@ -1758,12 +1758,20 @@ struct sh_args {
     (CUM).outgoing = 0;						\
   } while (0)
  
+#define OLD_ARG_MODE(MODE, TYPE) \
+  (((TYPE) \
+    && (TREE_CODE (TYPE) == RECORD_TYPE || TREE_CODE (TYPE) == UNION_TYPE) \
+    && (MODE) != BLKmode && GET_MODE_CLASS (MODE) != MODE_INT) \
+   ? int_mode_for_mode (MODE) : (MODE))
+
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
    (TYPE is null for libcalls where that information may not be
    available.)  */
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
+do {							\
+ enum machine_mode MODE_ = OLD_ARG_MODE ((MODE), (TYPE));\
  if ((CUM).force_mem)					\
    (CUM).force_mem = 0;					\
  else if (TARGET_SH5)					\
@@ -1771,17 +1779,17 @@ struct sh_args {
      tree TYPE_ = ((CUM).byref && (TYPE)		\
 		   ? TREE_TYPE (TYPE)			\
  		   : (TYPE));				\
-     enum machine_mode MODE_ = ((CUM).byref && (TYPE)	\
-				? TYPE_MODE (TYPE_)	\
-				: (MODE));		\
-     int dwords = (((CUM).byref				\
-		    ? (CUM).byref			\
-		    : (MODE_) == BLKmode		\
-		    ? int_size_in_bytes (TYPE_)		\
-		    : GET_MODE_SIZE (MODE_)) + 7) / 8;	\
-     int numregs = MIN (dwords, NPARM_REGS (SImode)	\
-			- (CUM).arg_count[(int) SH_ARG_INT]); \
+     int dwords, numregs;				\
 							\
+     MODE_ = ((CUM).byref && (TYPE)			\
+	      ? TYPE_MODE (TYPE_) : (MODE_));		\
+     dwords = (((CUM).byref				\
+		? (CUM).byref				\
+		: (MODE_) == BLKmode			\
+		? int_size_in_bytes (TYPE_)		\
+		: GET_MODE_SIZE (MODE_)) + 7) / 8;	\
+     numregs = MIN (dwords, NPARM_REGS (SImode)		\
+		    - (CUM).arg_count[(int) SH_ARG_INT]); \
      if (numregs)					\
        {						\
 	 (CUM).arg_count[(int) SH_ARG_INT] += numregs;	\
@@ -1873,12 +1881,13 @@ struct sh_args {
 	   }						\
        }						\
    }							\
- else if (! TARGET_SH4 || PASS_IN_REG_P ((CUM), (MODE), (TYPE))) \
-   ((CUM).arg_count[(int) GET_SH_ARG_CLASS (MODE)]	\
-    = (ROUND_REG ((CUM), (MODE))			\
-       + ((MODE) == BLKmode				\
+ else if (! TARGET_SH4 || PASS_IN_REG_P ((CUM), (MODE_), (TYPE))) \
+   ((CUM).arg_count[(int) GET_SH_ARG_CLASS (MODE_)]	\
+    = (ROUND_REG ((CUM), (MODE_))			\
+       + ((MODE_) == BLKmode				\
 	  ? ROUND_ADVANCE (int_size_in_bytes (TYPE))	\
-	  : ROUND_ADVANCE (GET_MODE_SIZE (MODE)))))
+	  : ROUND_ADVANCE (GET_MODE_SIZE (MODE_)))));	\
+} while (0)
 
 /* Return boolean indicating arg of mode MODE will be passed in a reg.
    This macro is only used in this file.  */
@@ -1917,10 +1926,13 @@ struct sh_args {
    its data type forbids.  */
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
+  FUNCTION_ARG_1 ((CUM), OLD_ARG_MODE ((MODE), (TYPE)), (MODE), (TYPE), (NAMED))
+
+#define FUNCTION_ARG_1(CUM, MODE, NEW_MODE, TYPE, NAMED) \
   ((! TARGET_SH5 \
     && PASS_IN_REG_P ((CUM), (MODE), (TYPE))				\
     && ((NAMED) || !TARGET_HITACHI))					\
-   ? gen_rtx_REG ((MODE),						\
+   ? gen_rtx_REG ((NEW_MODE),						\
 		  ((BASE_ARG_REG (MODE) + ROUND_REG ((CUM), (MODE))) 	\
 		   ^ ((MODE) == SFmode && TARGET_SH4			\
 		      && TARGET_LITTLE_ENDIAN != 0)))			\
@@ -1955,7 +1967,7 @@ struct sh_args {
    loads them into the full 64-bits registers.  */
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM,MODE,TYPE,NAMED) \
   (MUST_PASS_IN_STACK ((MODE), (TYPE)) \
-   || SHCOMPACT_BYREF ((CUM), (MODE), (TYPE), (NAMED)))
+   || SHCOMPACT_BYREF ((CUM), OLD_ARG_MODE ((MODE), (TYPE)), (TYPE), (NAMED)))
 
 #define SHCOMPACT_BYREF(CUM, MODE, TYPE, NAMED) \
   ((CUM).byref								\
