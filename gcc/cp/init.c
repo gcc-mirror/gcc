@@ -49,6 +49,7 @@ static tree initializing_context PARAMS ((tree));
 static void expand_cleanup_for_base PARAMS ((tree, tree));
 static tree get_temp_regvar PARAMS ((tree, tree));
 static tree dfs_initialize_vtbl_ptrs PARAMS ((tree, void *));
+static tree build_default_init PARAMS ((tree));
 static tree build_new_1	PARAMS ((tree));
 static tree get_cookie_size PARAMS ((tree));
 static tree build_dtor_call PARAMS ((tree, special_function_kind, int));
@@ -193,6 +194,50 @@ initialize_vtbl_ptrs (addr)
     fixup_all_virtual_upcast_offsets (addr);
 }
 
+/* [dcl.init]:
+
+  To default-initialize an object of type T means:
+
+  --if T is a non-POD class type (clause _class_), the default construc-
+    tor  for  T is called (and the initialization is ill-formed if T has
+    no accessible default constructor);
+
+  --if T is an array type, each element is default-initialized;
+
+  --otherwise, the storage for the object is zero-initialized.
+
+  A program that calls for default-initialization of an entity of refer-
+  ence type is ill-formed.  */
+
+static tree
+build_default_init (type)
+     tree type;
+{
+  tree init = NULL_TREE;
+
+  if (TYPE_NEEDS_CONSTRUCTING (type))
+    /* Other code will handle running the default constructor.  We can't do
+       anything with a CONSTRUCTOR for arrays here, as that would imply
+       copy-initialization.  */
+    return NULL_TREE;
+  else if (AGGREGATE_TYPE_P (type))
+    {
+      /* This is a default initialization of an aggregate, but not one of
+	 non-POD class type.  We cleverly notice that the initialization
+	 rules in such a case are the same as for initialization with an
+	 empty brace-initialization list.  */
+      init = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, NULL_TREE);
+    }
+  else if (TREE_CODE (type) == REFERENCE_TYPE)
+    /*   --if T is a reference type, no initialization is performed.  */
+    return NULL_TREE;
+  else
+    init = integer_zero_node;
+
+  init = digest_init (type, init, 0);
+  return init;
+}
+
 /* Subroutine of emit_base_init.  */
 
 static void
@@ -234,9 +279,7 @@ perform_member_init (member, init, explicit)
 	  && TREE_CODE (TREE_TYPE (TREE_VALUE (init))) == ARRAY_TYPE)
 	{
 	  /* Initialization of one array from another.  */
-	  finish_expr_stmt 
-	    (build_vec_init (TREE_OPERAND (decl, 1), decl,
-			     array_type_nelts (type), TREE_VALUE (init), 1));
+	  finish_expr_stmt (build_vec_init (decl, TREE_VALUE (init), 1));
 	}
       else
 	finish_expr_stmt (build_aggr_init (decl, init, 0));
@@ -247,28 +290,14 @@ perform_member_init (member, init, explicit)
 	{
 	  if (explicit)
 	    {
-	      /* default-initialization.  */
-	      if (AGGREGATE_TYPE_P (type))
-		{
-		  /* This is a default initialization of an aggregate,
-		     but not one of non-POD class type.  We cleverly
-		     notice that the initialization rules in such a
-		     case are the same as for initialization with an
-		     empty brace-initialization list.  We don't want
-		     to call build_modify_expr as that will go looking
-		     for constructors and such.  */
-		  tree e = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
-		  TREE_SIDE_EFFECTS (e) = 1;
-		  finish_expr_stmt (build (INIT_EXPR, type, decl, e));
-		}
- 	      else if (TREE_CODE (type) == REFERENCE_TYPE)
-		cp_error ("default-initialization of `%#D', which has reference type",
-			  member);
-	      else
-		init = integer_zero_node;
+	      init = build_default_init (type);
+	      if (TREE_CODE (type) == REFERENCE_TYPE)
+		cp_warning
+		  ("default-initialization of `%#D', which has reference type",
+		   member);
 	    }
 	  /* member traversal: note it leaves init NULL */
-	  else if (TREE_CODE (TREE_TYPE (member)) == REFERENCE_TYPE)
+	  else if (TREE_CODE (type) == REFERENCE_TYPE)
 	    cp_pedwarn ("uninitialized reference member `%D'", member);
 	}
       else if (TREE_CODE (init) == TREE_LIST)
@@ -1212,7 +1241,7 @@ build_aggr_init (exp, init, flags)
 	  if (init)
 	    TREE_TYPE (init) = TYPE_MAIN_VARIANT (itype);
 	}
-      stmt_expr = build_vec_init (exp, exp, array_type_nelts (type), init,
+      stmt_expr = build_vec_init (exp, init,
 				  init && same_type_p (TREE_TYPE (init),
 						       TREE_TYPE (exp)));
       TREE_READONLY (exp) = was_const;
@@ -2237,6 +2266,7 @@ build_new_1 (exp)
 {
   tree placement, init;
   tree type, true_type, size, rval, t;
+  tree full_type;
   tree nelts = NULL_TREE;
   tree alloc_call, alloc_expr, alloc_node;
   tree cookie_expr, init_expr;
@@ -2264,7 +2294,14 @@ build_new_1 (exp)
       has_array = 1;
       nelts = TREE_OPERAND (type, 1);
       type = TREE_OPERAND (type, 0);
+
+      full_type = cp_build_binary_op (MINUS_EXPR, nelts, integer_one_node);
+      full_type = build_index_type (full_type);
+      full_type = build_cplus_array_type (type, full_type);
     }
+  else
+    full_type = type;
+
   true_type = type;
 
   code = has_array ? VEC_NEW_EXPR : NEW_EXPR;
@@ -2395,7 +2432,10 @@ build_new_1 (exp)
     /* Adjust so we're pointing to the start of the object.  */
     alloc_expr = build (PLUS_EXPR, TREE_TYPE (alloc_expr),
 			alloc_expr, cookie_size);
-  alloc_expr = convert (build_pointer_type (type), alloc_expr);
+
+  /* While we're working, use a pointer to the type we've actually
+     allocated.  */
+  alloc_expr = convert (build_pointer_type (full_type), alloc_expr);
 
   /* Now save the allocation expression so we only evaluate it once.  */
   alloc_expr = get_target_expr (alloc_expr);
@@ -2434,66 +2474,40 @@ build_new_1 (exp)
   init_expr = NULL_TREE;
   if (TYPE_NEEDS_CONSTRUCTING (type) || init)
     {
-      if (! TYPE_NEEDS_CONSTRUCTING (type)
-	  && ! IS_AGGR_TYPE (type) && ! has_array)
+      init_expr = build_indirect_ref (alloc_node, NULL_PTR);
+
+      if (init == void_zero_node)
+	init = build_default_init (full_type);
+      else if (init && pedantic && has_array)
+	cp_pedwarn ("ISO C++ forbids initialization in array new");
+
+      if (has_array)
+	init_expr = build_vec_init (init_expr, init, 0);
+      else if (TYPE_NEEDS_CONSTRUCTING (type))
+	init_expr = build_method_call (init_expr, 
+				       complete_ctor_identifier,
+				       init, TYPE_BINFO (true_type),
+				       LOOKUP_NORMAL);
+      else
 	{
 	  /* We are processing something like `new int (10)', which
 	     means allocate an int, and initialize it with 10.  */
-	  tree deref;
-	  tree deref_type;
 
-	  deref = build_indirect_ref (alloc_node, NULL_PTR);
-
-	  /* Even for something like `new const int (10)' we must
-	     allow the expression to be non-const while we do the
-	     initialization.  */
-	  deref_type = TREE_TYPE (deref);
-	  if (CP_TYPE_CONST_P (deref_type))
-	    TREE_TYPE (deref) 
-	      = cp_build_qualified_type (deref_type,
-					 CP_TYPE_QUALS (deref_type) 
-					 & ~TYPE_QUAL_CONST);
-	  TREE_READONLY (deref) = 0;
-
-	  if (TREE_CHAIN (init) != NULL_TREE)
-	    pedwarn
-	      ("initializer list being treated as compound expression");
-	  else if (TREE_CODE (init) == CONSTRUCTOR)
+	  if (TREE_CODE (init) == TREE_LIST)
 	    {
-	      pedwarn
-		("initializer list appears where operand should be used");
-	      init = TREE_OPERAND (init, 1);
+	      if (TREE_CHAIN (init) != NULL_TREE)
+		pedwarn
+		  ("initializer list being treated as compound expression");
+	      init = build_compound_expr (init);
 	    }
-	  init = build_compound_expr (init);
+	  else if (TREE_CODE (init) == CONSTRUCTOR
+		   && TREE_TYPE (init) == NULL_TREE)
+	    {
+	      pedwarn ("ISO C++ forbids aggregate initializer to new");
+	      init = digest_init (type, init, 0);
+	    }
 
-	  init = convert_for_initialization (deref, type, init, LOOKUP_NORMAL,
-					     "new", NULL_TREE, 0);
-	  init_expr = build_modify_expr (deref, NOP_EXPR, init);
-	}
-      else if (! has_array)
-	{
-	  /* Constructors are never virtual. If it has an initialization, we
-	     need to complain if we aren't allowed to use the ctor that took
-	     that argument.  */
-	  int flags = LOOKUP_NORMAL|LOOKUP_NONVIRTUAL|LOOKUP_COMPLAIN;
-
-	  init_expr = build_indirect_ref (alloc_node, NULL_PTR);
-
-	  init_expr = build_method_call (init_expr, 
-					 complete_ctor_identifier,
-					 init, TYPE_BINFO (true_type), flags);
-	}
-      else
-	{
-	  if (init && pedantic)
-	    cp_pedwarn ("initialization in array new");
-
-	  init_expr = convert (build_pointer_type (true_type), alloc_node);
-	  init_expr = (build_vec_init
-		       (NULL_TREE, init_expr,
-			cp_build_binary_op (MINUS_EXPR, nelts,
-					    integer_one_node),
-			init, /*from_array=*/0));
+	  init_expr = build_modify_expr (init_expr, INIT_EXPR, init);
 	}
 
       if (init_expr == error_mark_node)
@@ -2577,16 +2591,22 @@ build_new_1 (exp)
   if (rval == alloc_node)
     /* If we didn't modify anything, strip the TARGET_EXPR and return the
        (adjusted) call.  */
-    return TREE_OPERAND (alloc_expr, 1);
-
-  if (check_new)
+    rval = TREE_OPERAND (alloc_expr, 1);
+  else
     {
-      tree ifexp = cp_build_binary_op (NE_EXPR, alloc_node,
-				       integer_zero_node);
-      rval = build_conditional_expr (ifexp, rval, alloc_node);
+      if (check_new)
+	{
+	  tree ifexp = cp_build_binary_op (NE_EXPR, alloc_node,
+					   integer_zero_node);
+	  rval = build_conditional_expr (ifexp, rval, alloc_node);
+	}
+
+      rval = build (COMPOUND_EXPR, TREE_TYPE (rval), alloc_expr, rval);
     }
 
-  rval = build (COMPOUND_EXPR, TREE_TYPE (rval), alloc_expr, rval);
+  /* Now strip the outer ARRAY_TYPE, so we return a pointer to the first
+     element.  */
+  rval = convert (build_pointer_type (type), rval);
 
   return rval;
 }
@@ -2767,12 +2787,7 @@ get_temp_regvar (type, init)
 /* `build_vec_init' returns tree structure that performs
    initialization of a vector of aggregate types.
 
-   DECL is passed only for error reporting, and provides line number
-   and source file name information.
-   BASE is the space where the vector will be.  For a vector of Ts,
-     the type of BASE is `T*'.
-   MAXINDEX is the maximum index of the array (one less than the
-	    number of elements).
+   BASE is a reference to the vector, of ARRAY_TYPE.
    INIT is the (possibly NULL) initializer.
 
    FROM_ARRAY is 0 if we should init everything with INIT
@@ -2783,8 +2798,8 @@ get_temp_regvar (type, init)
    but use assignment instead of initialization.  */
 
 tree
-build_vec_init (decl, base, maxindex, init, from_array)
-     tree decl, base, maxindex, init;
+build_vec_init (base, init, from_array)
+     tree base, init;
      int from_array;
 {
   tree rval;
@@ -2792,8 +2807,10 @@ build_vec_init (decl, base, maxindex, init, from_array)
   tree size;
   tree itype = NULL_TREE;
   tree iterator;
+  /* The type of the array.  */
+  tree atype = TREE_TYPE (base);
   /* The type of an element in the array.  */
-  tree type;
+  tree type = TREE_TYPE (atype);
   /* The type of a pointer to an element in the array.  */
   tree ptype;
   tree stmt_expr;
@@ -2802,38 +2819,56 @@ build_vec_init (decl, base, maxindex, init, from_array)
   tree try_block = NULL_TREE;
   tree try_body = NULL_TREE;
   int num_initialized_elts = 0;
+  tree maxindex = array_type_nelts (TREE_TYPE (base));
 
-  maxindex = cp_convert (ptrdiff_type_node, maxindex);
   if (maxindex == error_mark_node)
     return error_mark_node;
 
-  type = TREE_TYPE (TREE_TYPE (base));
+  /* For g++.ext/arrnew.C.  */
+  if (init && TREE_CODE (init) == CONSTRUCTOR && TREE_TYPE (init) == NULL_TREE)
+    init = digest_init (atype, init, 0);
+      
+  if (init && !TYPE_NEEDS_CONSTRUCTING (type)
+      && ((TREE_CODE (init) == CONSTRUCTOR
+	   /* Don't do this if the CONSTRUCTOR might contain something
+	      that might throw and require us to clean up.  */
+	   && (CONSTRUCTOR_ELTS (init) == NULL_TREE
+	       || ! TYPE_HAS_NONTRIVIAL_DESTRUCTOR (target_type (type))))
+	  || from_array))
+    {
+      /* Do non-default initialization of POD arrays resulting from
+	 brace-enclosed initializers.  In this case, digest_init and
+	 store_constructor will handle the semantics for us.  */
+
+      stmt_expr = build (INIT_EXPR, atype, base, init);
+      TREE_SIDE_EFFECTS (stmt_expr) = 1;
+      return stmt_expr;
+    }
+
+  maxindex = cp_convert (ptrdiff_type_node, maxindex);
   ptype = build_pointer_type (type);
   size = size_in_bytes (type);
+  if (TREE_CODE (TREE_TYPE (base)) == ARRAY_TYPE)
+    base = cp_convert (ptype, default_conversion (base));
 
   /* The code we are generating looks like:
 
        T* t1 = (T*) base;
-       T* rval = base;
+       T* rval = t1;
        ptrdiff_t iterator = maxindex;
        try {
-         ... initializations from CONSTRUCTOR ...
-         if (iterator != -1) {
-	   do {
-	     ... initialize *base ...
-	     ++base;
-	   } while (--iterator != -1);
-	 }
+	 do {
+	   ... initialize *t1 ...
+	   ++t1;
+	 } while (--iterator != -1);
        } catch (...) {
          ... destroy elements that were constructed ...
        }
+       return rval;
        
      We can omit the try and catch blocks if we know that the
      initialization will never throw an exception, or if the array
-     elements do not have destructors.  If we have a CONSTRUCTOR to
-     give us initialization information, we emit code to initialize
-     each of the elements before the loop in the try block, and then
-     iterate over fewer elements.  We can omit the loop completely if
+     elements do not have destructors.  We can omit the loop completely if
      the elements of the array do not have constructors.  
 
      We actually wrap the entire body of the above in a STMT_EXPR, for
@@ -2848,24 +2883,24 @@ build_vec_init (decl, base, maxindex, init, from_array)
   begin_init_stmts (&stmt_expr, &compound_stmt);
   destroy_temps = stmts_are_full_exprs_p ();
   current_stmt_tree ()->stmts_are_full_exprs_p = 0;
-  rval = get_temp_regvar (ptype, 
-			  cp_convert (ptype, default_conversion (base)));
+  rval = get_temp_regvar (ptype, base);
   base = get_temp_regvar (ptype, rval);
   iterator = get_temp_regvar (ptrdiff_type_node, maxindex);
 
   /* Protect the entire array initialization so that we can destroy
-     the partially constructed array if an exception is thrown.  */
-  if (flag_exceptions && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+     the partially constructed array if an exception is thrown.
+     But don't do this if we're assigning.  */
+  if (flag_exceptions && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
+      && from_array != 2)
     {
       try_block = begin_try_block ();
       try_body = begin_compound_stmt (/*has_no_scope=*/1);
     }
 
-  if (init != NULL_TREE && TREE_CODE (init) == CONSTRUCTOR
-      && (!decl || same_type_p (TREE_TYPE (init), TREE_TYPE (decl))))
+  if (init != NULL_TREE && TREE_CODE (init) == CONSTRUCTOR)
     {
-      /* Do non-default initialization resulting from brace-enclosed
-	 initializers.  */
+      /* Do non-default initialization of non-POD arrays resulting from
+	 brace-enclosed initializers.  */
 
       tree elts;
       from_array = 0;
@@ -2883,16 +2918,8 @@ build_vec_init (decl, base, maxindex, init, from_array)
 	    finish_expr_stmt (build_modify_expr (baseref, NOP_EXPR,
 						 elt));
 
-	  finish_expr_stmt (build_modify_expr 
-			    (base, 
-			     NOP_EXPR,
-			     build (PLUS_EXPR, build_pointer_type (type),
-				    base, size)));
-	  finish_expr_stmt (build_modify_expr
-			    (iterator,
-			     NOP_EXPR,
-			     build (MINUS_EXPR, ptrdiff_type_node,
-				    iterator, integer_one_node)));
+	  finish_expr_stmt (build_unary_op (PREINCREMENT_EXPR, base, 0));
+	  finish_expr_stmt (build_unary_op (PREDECREMENT_EXPR, iterator, 0));
 	}
 
       /* Clear out INIT so that we don't get confused below.  */
@@ -2903,11 +2930,6 @@ build_vec_init (decl, base, maxindex, init, from_array)
       /* If initializing one array from another, initialize element by
 	 element.  We rely upon the below calls the do argument
 	 checking.  */ 
-      if (decl == NULL_TREE)
-	{
-	  sorry ("initialization of array from dissimilar array type");
-	  return error_mark_node;
-	}
       if (init)
 	{
 	  base2 = default_conversion (init);
@@ -2988,20 +3010,17 @@ build_vec_init (decl, base, maxindex, init, from_array)
       else if (TREE_CODE (type) == ARRAY_TYPE)
 	{
 	  if (init != 0)
-	    sorry ("cannot initialize multi-dimensional array with initializer");
-	  elt_init = (build_vec_init 
-		      (decl, 
-		       build1 (NOP_EXPR, 
-			       build_pointer_type (TREE_TYPE (type)),
-			       base),
-		       array_type_nelts (type), 0, 0));
+	    sorry
+	      ("cannot initialize multi-dimensional array with initializer");
+	  elt_init = build_vec_init (build1 (INDIRECT_REF, type, base),
+				     0, 0);
 	}
       else
 	elt_init = build_aggr_init (build1 (INDIRECT_REF, type, base), 
 				    init, 0);
       
       /* The initialization of each array element is a
-	 full-expression.  */
+	 full-expression, as per core issue 124.  */
       if (!building_stmt_tree ())
 	{
 	  genrtl_expr_stmt (elt_init);
@@ -3014,25 +3033,14 @@ build_vec_init (decl, base, maxindex, init, from_array)
 	  current_stmt_tree ()->stmts_are_full_exprs_p = 0;
 	}
 
-      finish_expr_stmt (build_modify_expr
-			(base,
-			 NOP_EXPR,
-			 build (PLUS_EXPR, build_pointer_type (type), 
-				base, size)));
+      finish_expr_stmt (build_unary_op (PREINCREMENT_EXPR, base, 0));
       if (base2)
-	finish_expr_stmt (build_modify_expr
-			  (base2,
-			   NOP_EXPR,
-			   build (PLUS_EXPR, build_pointer_type (type), 
-				  base2, size)));
+	finish_expr_stmt (build_unary_op (PREINCREMENT_EXPR, base2, 0));
 
       finish_compound_stmt (/*has_no_scope=*/1, do_body);
       finish_do_body (do_stmt);
       finish_do_stmt (build (NE_EXPR, boolean_type_node,
-			     build (PREDECREMENT_EXPR, 
-				    ptrdiff_type_node, 
-				    iterator,
-				    integer_one_node), 
+			     build_unary_op (PREDECREMENT_EXPR, iterator, 0),
 			     minus_one_node),
 		      do_stmt);
 
@@ -3041,7 +3049,8 @@ build_vec_init (decl, base, maxindex, init, from_array)
     }
 
   /* Make sure to cleanup any partially constructed elements.  */
-  if (flag_exceptions && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+  if (flag_exceptions && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
+      && from_array != 2)
     {
       tree e;
 

@@ -3394,10 +3394,6 @@ do_static_initialization (decl, init)
   if (IS_AGGR_TYPE (TREE_TYPE (decl))
       || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
     expr = build_aggr_init (decl, init, 0);
-  else if (TREE_CODE (init) == TREE_VEC)
-    expr = build_vec_init (decl, TREE_VEC_ELT (init, 0),
-			   TREE_VEC_ELT (init, 1),
-			   TREE_VEC_ELT (init, 2), 0);
   else
     {
       expr = build (INIT_EXPR, TREE_TYPE (decl), decl, init);

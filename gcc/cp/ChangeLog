@@ -1,3 +1,17 @@
+2001-01-03  Jason Merrill  <jason@redhat.com>
+
+	* init.c (build_default_init): New fn.
+	(perform_member_init): Split out from here.
+	(build_new_1): Use it.  Simplify initialization logic.
+	(build_vec_init): Take an array, rather than a pointer and maxindex.
+	Speed up simple initializations.  Don't clean up if we're assigning.
+	* cp-tree.h: Adjust.
+	* decl2.c (do_static_initialization): Remove TREE_VEC case.
+	* parse.y (new_initializer): Return void_zero_node for ().
+	* typeck.c (build_modify_expr): Handle getting a CONSTRUCTOR.
+	* typeck2.c (digest_init): Only complain about user-written
+	CONSTRUCTORs.
+
 2000-12-22  Mike Stump  <mrs@wrs.com>
 
 	* decl2.c: (max_tinst_depth): Increase to 50.
