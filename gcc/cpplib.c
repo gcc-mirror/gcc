@@ -21,9 +21,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
-#include "coretypes.h"
-#include "tm.h"
-
 #include "cpplib.h"
 #include "cpphash.h"
 #include "obstack.h"
@@ -280,7 +277,7 @@ prepare_directive_trad (cpp_reader *pfile)
 				    || pfile->directive == &dtable[T_ELIF]);
       if (no_expand)
 	pfile->state.prevent_expansion++;
-      scan_out_logical_line (pfile, NULL);
+      _cpp_scan_out_logical_line (pfile, NULL);
       if (no_expand)
 	pfile->state.prevent_expansion--;
       pfile->state.skipping = was_skipping;

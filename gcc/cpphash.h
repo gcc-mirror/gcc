@@ -552,7 +552,7 @@ extern void _cpp_do_file_change (cpp_reader *, enum lc_reason, const char *,
 extern void _cpp_pop_buffer (cpp_reader *);
 
 /* In cpptrad.c.  */
-extern bool scan_out_logical_line (cpp_reader *, cpp_macro *);
+extern bool _cpp_scan_out_logical_line (cpp_reader *, cpp_macro *);
 extern bool _cpp_read_logical_line_trad (cpp_reader *);
 extern void _cpp_overlay_buffer (cpp_reader *pfile, const uchar *, size_t);
 extern void _cpp_remove_overlay (cpp_reader *);

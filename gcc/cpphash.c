@@ -25,8 +25,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "config.h"
 #include "system.h"
-#include "coretypes.h"
-#include "tm.h"
 #include "cpplib.h"
 #include "cpphash.h"
 
@@ -57,7 +55,10 @@ _cpp_init_hashtable (cpp_reader *pfile, hash_table *table)
       pfile->our_hashtable = 1;
       table = ht_create (13);	/* 8K (=2^13) entries.  */
       table->alloc_node = (hashnode (*) (hash_table *)) alloc_node;
-      gcc_obstack_init (&pfile->hash_ob);
+
+      _obstack_begin (&pfile->hash_ob, 0, 0,
+		      (void *(*) (long)) xmalloc,
+		      (void (*) (void *)) free);
     }
 
   table->pfile = pfile;
