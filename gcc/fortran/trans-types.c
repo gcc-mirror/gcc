@@ -860,7 +860,6 @@ gfc_get_dtype (tree type, int rank)
   if (GFC_DESCRIPTOR_TYPE_P (type) || GFC_ARRAY_TYPE_P (type))
     return (GFC_TYPE_ARRAY_DTYPE (type));
 
-  /* TODO: Correctly identify LOGICAL types.  */
   switch (TREE_CODE (type))
     {
     case INTEGER_TYPE:
