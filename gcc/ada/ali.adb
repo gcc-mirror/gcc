@@ -133,7 +133,8 @@ package body ALI is
       --  If Lower is set to true then the Name_Buffer will be converted to
       --  all lower case. This only happends for systems where file names are
       --  not case sensitive, and ensures that gnatbind works correctly on
-      --  such systems, regardless of the case of the file name.
+      --  such systems, regardless of the case of the file name. Note that
+      --  a name can be terminated by a right typeref bracket.
 
       function Get_Nat return Nat;
       --  Skip blanks, then scan out an unsigned integer value in Nat range
@@ -305,6 +306,7 @@ package body ALI is
             Name_Len := Name_Len + 1;
             Name_Buffer (Name_Len) := Getc;
             exit when At_End_Of_Field;
+            exit when Nextc = ')' or else Nextc = '}' or else Nextc = '>';
          end loop;
 
          --  Convert file name to all lower case if file names are not case
@@ -1253,30 +1255,55 @@ package body ALI is
 
                   Skip_Space;
 
-                  if Nextc = '<' then
-                     P := P + 1;
-                     N := Get_Nat;
+                  case Nextc is
+                     when '<'    => XE.Tref := Tref_Derived;
+                     when '('    => XE.Tref := Tref_Access;
+                     when '{'    => XE.Tref := Tref_Type;
+                     when others => XE.Tref := Tref_None;
+                  end case;
 
-                     if Nextc = '|' then
-                        XE.Ptype_File_Num :=
-                          Sdep_Id (N + Nat (First_Sdep_Entry) - 1);
-                        Current_File_Num := XE.Ptype_File_Num;
-                        P := P + 1;
-                        N := Get_Nat;
+                  --  Case of typeref field present
+
+                  if XE.Tref /= Tref_None then
+                     P := P + 1; -- skip opening bracket
+
+                     if Nextc in 'a' .. 'z' then
+                        XE.Tref_File_Num        := No_Sdep_Id;
+                        XE.Tref_Line            := 0;
+                        XE.Tref_Type            := ' ';
+                        XE.Tref_Col             := 0;
+                        XE.Tref_Standard_Entity := Get_Name;
 
                      else
-                        XE.Ptype_File_Num := Current_File_Num;
+                        N := Get_Nat;
+
+                        if Nextc = '|' then
+                           XE.Tref_File_Num :=
+                             Sdep_Id (N + Nat (First_Sdep_Entry) - 1);
+                           Current_File_Num := XE.Tref_File_Num;
+                           P := P + 1;
+                           N := Get_Nat;
+
+                        else
+                           XE.Tref_File_Num := Current_File_Num;
+                        end if;
+
+                        XE.Tref_Line            := N;
+                        XE.Tref_Type            := Getc;
+                        XE.Tref_Col             := Get_Nat;
+                        XE.Tref_Standard_Entity := No_Name;
                      end if;
 
-                     XE.Ptype_Line := N;
-                     XE.Ptype_Type := Getc;
-                     XE.Ptype_Col  := Get_Nat;
+                     P := P + 1; -- skip closing bracket
+
+                  --  No typeref entry present
 
                   else
-                     XE.Ptype_File_Num := No_Sdep_Id;
-                     XE.Ptype_Line     := 0;
-                     XE.Ptype_Type     := ' ';
-                     XE.Ptype_Col      := 0;
+                     XE.Tref_File_Num        := No_Sdep_Id;
+                     XE.Tref_Line            := 0;
+                     XE.Tref_Type            := ' ';
+                     XE.Tref_Col             := 0;
+                     XE.Tref_Standard_Entity := No_Name;
                   end if;
 
                   XE.First_Xref := Xref.Last + 1;

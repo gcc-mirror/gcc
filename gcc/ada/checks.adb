@@ -37,6 +37,7 @@ with Freeze;   use Freeze;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
+with Restrict; use Restrict;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Eval; use Sem_Eval;
@@ -276,6 +277,79 @@ package body Checks is
          Analyze_And_Resolve (N);
       end if;
    end Apply_Accessibility_Check;
+
+   ---------------------------
+   -- Apply_Alignment_Check --
+   ---------------------------
+
+   procedure Apply_Alignment_Check (E : Entity_Id; N : Node_Id) is
+      AC   : constant Node_Id := Address_Clause (E);
+      Expr : Node_Id;
+      Loc  : Source_Ptr;
+
+   begin
+      if No (AC) or else Range_Checks_Suppressed (E) then
+         return;
+      end if;
+
+      Loc  := Sloc (AC);
+      Expr := Expression (AC);
+
+      if Nkind (Expr) = N_Unchecked_Type_Conversion then
+         Expr := Expression (Expr);
+
+      elsif Nkind (Expr) = N_Function_Call
+        and then Is_RTE (Entity (Name (Expr)), RE_To_Address)
+      then
+         Expr := First (Parameter_Associations (Expr));
+
+         if Nkind (Expr) = N_Parameter_Association then
+            Expr := Explicit_Actual_Parameter (Expr);
+         end if;
+      end if;
+
+      --  Here Expr is the address value. See if we know that the
+      --  value is unacceptable at compile time.
+
+      if Compile_Time_Known_Value (Expr)
+        and then Known_Alignment (E)
+      then
+         if Expr_Value (Expr) mod Alignment (E) /= 0 then
+               Insert_Action (N,
+                  Make_Raise_Program_Error (Loc));
+               Error_Msg_NE
+                 ("?specified address for& not " &
+                  "consistent with alignment", Expr, E);
+         end if;
+
+      --  Here we do not know if the value is acceptable, generate
+      --  code to raise PE if alignment is inappropriate.
+
+      else
+         --  Skip generation of this code if we don't want elab code
+
+         if not Restrictions (No_Elaboration_Code) then
+            Insert_After_And_Analyze (N,
+              Make_Raise_Program_Error (Loc,
+                Condition =>
+                  Make_Op_Ne (Loc,
+                    Left_Opnd =>
+                      Make_Op_Mod (Loc,
+                        Left_Opnd =>
+                          Unchecked_Convert_To
+                           (RTE (RE_Integer_Address),
+                            Duplicate_Subexpr (Expr)),
+                        Right_Opnd =>
+                          Make_Attribute_Reference (Loc,
+                            Prefix => New_Occurrence_Of (E, Loc),
+                            Attribute_Name => Name_Alignment)),
+                    Right_Opnd => Make_Integer_Literal (Loc, Uint_0))),
+              Suppress => All_Checks);
+         end if;
+      end if;
+
+      return;
+   end Apply_Alignment_Check;
 
    -------------------------------------
    -- Apply_Arithmetic_Overflow_Check --

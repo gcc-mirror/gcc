@@ -1895,6 +1895,11 @@ package body Exp_Ch5 is
          --  the Then statements
 
          else
+            --  We do not delete the condition if constant condition
+            --  warnings are enabled, since otherwise we end up deleting
+            --  the desired warning. Of course the backend will get rid
+            --  of this True/False test anyway, so nothing is lost here.
+
             if not Constant_Condition_Warnings then
                Kill_Dead_Code (Condition (N));
             end if;

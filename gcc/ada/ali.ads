@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.71 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -588,6 +588,15 @@ package ALI is
      Table_Increment      => 300,
      Table_Name           => "Xref_Section");
 
+   --  The following is used to indicate whether a typeref field is present
+   --  for the entity, and if so what kind of typeref field.
+
+   type Tref_Kind is (
+     Tref_None,    --  No typeref present
+     Tref_Access,  --  Access type typeref (points to designated type)
+     Tref_Derived, --  Derived type typeref (points to parent type)
+     Tref_Type);   --  All other cases
+
    --  The following table records entities for which xrefs are recorded
 
    type Xref_Entity_Record is record
@@ -607,23 +616,38 @@ package ALI is
       Entity : Name_Id;
       --  Name of entity
 
-      Ptype_File_Num : Sdep_Id;
-      --  This field is set to No_Sdep_Id if no ptype (parent type) entry
-      --  is present, otherwise it is the file dependency reference for
-      --  the parent type declaration.
+      Tref : Tref_Kind;
+      --  Indicates if a typeref is present, and if so what kind. Set to
+      --  Tref_None if no typeref field is present.
 
-      Ptype_Line : Nat;
-      --  Set to zero if no ptype (parent type) entry, otherwise this is
-      --  the line number of the declaration of the parent type.
+      Tref_File_Num : Sdep_Id;
+      --  This field is set to No_Sdep_Id if no typeref is present, or
+      --  if the typeref refers to an entity in standard. Otherwise it
+      --  it is the dependency reference for the file containing the
+      --  declaration of the typeref entity.
 
-      Ptype_Type : Character;
-      --  Set to blank if no ptype (parent type) entry, otherwise this is
-      --  the identification character for the parent type. See section
+      Tref_Line : Nat;
+      --  This field is set to zero if no typeref is present, or if the
+      --  typeref refers to an entity in standard. Otherwise it contains
+      --  the line number of the declaration of the typeref entity.
+
+      Tref_Type : Character;
+      --  This field is set to blank if no typeref is present, or if the
+      --  typeref refers to an entity in standard. Otherwise it contains
+      --  the identification character for the typeref entity. See section
       --  "Cross-Reference Entity Indentifiers in lib-xref.ads for details.
 
-      Ptype_Col : Nat;
-      --  Set to zero if no ptype (parent type) entry, otherwise this is
+      Tref_Col : Nat;
+      --  This field is set to zero if no typeref is present, or if the
+      --  typeref refers to an entity in standard. Otherwise it contains
       --  the column number of the declaration of the parent type.
+
+      Tref_Standard_Entity : Name_Id;
+      --  This field is set to No_Name if no typeref is present or if the
+      --  typeref refers to a declared entity rather than an entity in
+      --  package Standard. If there is a typeref that references an
+      --  entity in package Standard, then this field is a Name_Id
+      --  reference for the entity name.
 
       First_Xref : Nat;
       --  Index into Xref table of first cross-reference
