@@ -281,7 +281,7 @@ find_stack_slot (int index, tree type)
 			      type, -1);
 }
 
-struct binding_level
+struct binding_level GTY(())
   {
     /* A chain of _DECL nodes for all variables, constants, functions,
      * and typedef types.  These are in the reverse of the order supplied.
@@ -314,27 +314,25 @@ struct binding_level
     /* The statements in this binding level.  */
     tree stmts;
 
-#if defined(DEBUG_JAVA_BINDING_LEVELS)
-    /* Binding depth at which this level began.  */
+    /* Binding depth at which this level began.  Used only for debugging.  */
     unsigned binding_depth;
-#endif /* defined(DEBUG_JAVA_BINDING_LEVELS) */
   };
 
 #define NULL_BINDING_LEVEL (struct binding_level *) NULL
 
 /* The binding level currently in effect.  */
 
-static struct binding_level *current_binding_level;
+static GTY(()) struct binding_level *current_binding_level;
 
 /* A chain of binding_level structures awaiting reuse.  */
 
-static struct binding_level *free_binding_level;
+static GTY(()) struct binding_level *free_binding_level;
 
 /* The outermost binding level, for names of file scope.
    This is created when the compiler is started and exists
    through the entire run.  */
 
-static struct binding_level *global_binding_level;
+static GTY(()) struct binding_level *global_binding_level;
 
 /* A PC value bigger than any PC value we may ever may encounter. */
 
@@ -344,11 +342,7 @@ static struct binding_level *global_binding_level;
 
 static const struct binding_level clear_binding_level
   = {NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE,
-     NULL_BINDING_LEVEL, LARGEST_PC, 0, NULL,
-#if defined(DEBUG_JAVA_BINDING_LEVELS)
-     0,
-#endif /* defined(DEBUG_JAVA_BINDING_LEVELS) */
-};
+     NULL_BINDING_LEVEL, LARGEST_PC, 0, NULL_TREE, 0};
 
 #if 0
 /* A list (chain of TREE_LIST nodes) of all LABEL_DECLs in the function
@@ -1200,7 +1194,7 @@ static struct binding_level *
 make_binding_level (void)
 {
   /* NOSTRICT */
-  return xmalloc (sizeof (struct binding_level));
+  return ggc_alloc_cleared (sizeof (struct binding_level));
 }
 
 void

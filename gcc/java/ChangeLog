@@ -1,5 +1,14 @@
 2004-05-26  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* decl.c (struct binding_level): Add GTY marker. Compile
+	binding_depth unconditionally.
+	(current_binding_level, free_binding_level, global_binding_level):
+	Likewise.
+	(clear_binding_level): Unconditionally set binding_depth.
+	(make_binding_level): Use ggc_alloc_cleared, not xmalloc.
+
+2004-05-26  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* lex.c (java_new_lexer): Set 'encoding'.
 	(java_read_char): Improve error message for unrecognized characters.
 	* lex.h (struct java_lexer): New field 'encoding'.
