@@ -743,13 +743,6 @@ AM_CONDITIONAL(USE_LIBDIR, test -z "$with_cross_host")
 AM_CONDITIONAL(NEEDS_DATA_START, test "$NEEDS_DATA_START" = yes && test "$NATIVE" = yes)
 AC_SUBST(GCC_UNWIND_INCLUDE)
 
-# Determine gcj version number.
-changequote(<<,>>)
-gcjvers="`$GCJ -v 2>&1 | sed -n 's/^.*version \([^ ]*\).*$/\1/p'`"
-changequote([,])
-AC_DEFINE_UNQUOTED(GCJVERSION, "$gcjvers")
-AC_SUBST(GCJVERSION)
-
 AC_SUBST(AM_RUNTESTFLAGS)
 
 dnl Work around a g++ bug.  Reported to gcc-bugs@gcc.gnu.org on Jan 22, 2000.
