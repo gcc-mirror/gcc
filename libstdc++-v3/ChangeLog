@@ -1,5 +1,11 @@
 2002-04-11  Richard Henderson  <rth@redhat.com>
 
+	* include/bits/fstream.tcc (basic_filebuf<>::open): Fix & ordering.
+	* include/bits/ostream.tcc (basic_ostream<>::operator<<(long)): Same.
+	(basic_ostream<>::operator<<(long long)): Same.
+
+2002-04-11  Richard Henderson  <rth@redhat.com>
+
 	* config/linker-map.gnu: Add __gxx_personality_sj0.
 
 2002-04-09  Benjamin Kosnik  <bkoz@redhat.com>

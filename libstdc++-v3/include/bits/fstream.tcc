@@ -165,7 +165,7 @@ namespace std
 	      
 	      // For time being, set both (in/out) sets  of pointers.
 	      _M_set_indeterminate();
-	      if (__mode & ios_base::ate
+	      if ((__mode & ios_base::ate)
 		  && this->seekoff(0, ios_base::end, __mode) < 0)
 		this->close();
 	      __ret = this;
