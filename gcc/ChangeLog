@@ -1,5 +1,74 @@
 2003-07-09  Alexandre Oliva  <aoliva@redhat.com>
 
+	2003-06-16  Alexandre Oliva  <aoliva@redhat.com>
+	* config/mn10300/mn10300.c (mn10300_unspec_int_label_counter):
+	Moved from...
+	* config/mn10300/mn10300.md (GOTaddr2picreg): ... here.
+	* config/mn10300/mn10300.h: GTY-declare it.
+	2003-06-11  Alexandre Oliva  <aoliva@redhat.com>
+	* config/mn10300/mn10300.c (mn10300_encode_section_info): Fix
+	prototype.  Use incoming RTL argument.
+	2002-12-12  Alexandre Oliva  <aoliva@redhat.com>
+	* config/mn10300/mn10300.md (int_label): Move C statements...
+	(GOTaddr2picreg): ... here.
+	2002-08-15  Alexandre Oliva  <aoliva@redhat.com>
+	* config/mn10300/mn10300.h (ENCODE_SECTION_INFO): Move...
+	* config/mn10300/mn10300.c (mn10300_encode_section_info):
+	... here.  New function.
+	(TARGET_ENCODE_SECTION_INFO): Define to it.
+	2001-11-04  Alexandre Oliva  <aoliva@redhat.com>
+	* config/mn10300/mn10300.md (builtin_setjmp_receiver): Fix typo in
+	pattern name.
+	(mn10300_loadPC): Define as insn splittable after reload.
+	2001-05-13  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/mn10300.h (JUMP_TABLES_IN_TEXT_SECTION): Let them
+	be defined in .rodata even in PIC, now that the assembler
+	supports that.
+	2001-05-09  Alexandre Oliva  <aoliva@redhat.com>
+	* config/mn10300/mn10300.h (GOT_SYMBOL_NAME): Don't let the
+	symbol take an underscore prefix.
+	2001-04-14  Alexandre Oliva  <aoliva@redhat.com>
+	* config/mn10300/mn10300-protos.h (legitimate_pic_operand_p,
+	legitimize_pic_address): Declare.
+	* config/mn10300/mn10300.h (CONDITIONAL_REGISTER_USAGE): Mark
+	the PIC register as fixed.
+	(EXTRA_CONSTRAINT): Match UNSPEC_PLT and UNSPEC_PIC for 'S'.
+	(GO_IF_LEGITIMATE_ADDRESS): Require legitimate_pic_operand for
+	PIC.
+	(LEGITIMATE_PIC_OPERAND_P): Define.
+	(PIC_OFFSET_TABLE_REGNUM): Define.
+	(GOT_SYMBOL_NAME): Define.
+	(SYMBOLIC_CONST_P): Define.
+	(ENCODE_SECTION_INFO): Use SYMBOL_REF_FLAG to mark local
+	symbols.
+	(MN10300_GLOBAL_P): Test it.
+	(OUTPUT_ADDR_CONST_EXTRA): Handle PIC-related unspecs.
+	(JUMP_TABLES_IN_TEXT_SECTION): Enable for PIC.
+	* config/mn10300/mn10300.c (print_operand): Handle unspec.
+	(expand_prologue): Set PIC register.
+	(call_address_operand): Don't match SYMBOL_REFs in PIC.
+	(legitimize_address): Call legitimize_pic_address.
+	(legitimize_pic_address): New fn.
+	(legitimate_pic_operand_p): New fn.
+	* config/mn10300/mn10300.md (PIC_REG, SP_REG): New constants.
+	(UNSPEC_INT_LABEL, UNSPEC_PIC, UNSPEC_GOT, UNSPEC_GOTOFF,
+	UNSPEC_PLT): New constants.
+	(pop_pic_reg): New insn.
+	(movsi): Adjust non-PIC addresses.
+	(builtin_setjmp_receiver): Restore the PIC register.
+	(casesi): New insn.
+	(call): Adjust non-PIC addresses.
+	(int_label, GOTaddr2picreg): New expands.
+	(am33_loadPC): New insn.
+	(mn10300_loadPC): New expand.
+	(call_next_insn): New insn.
+	(add_GOT_to_pic_reg): New expand.
+	(symGOT2reg, symGOT2reg_i): New expands.
+	(symGOTOFF2reg, symGOTOFF2reg_i): New expands.
+	(sym2PIC, sym2PLT): New expands.
+
+2003-07-09  Alexandre Oliva  <aoliva@redhat.com>
+
 	* config/mn10300/mn10300.h (PREDICATE_CODES): Define.
 	2001-05-01  Alexandre Oliva  <aoliva@redhat.com>
 	* config/mn10300/mn10300.md (sqrtsf2): flag_fast_math was renamed

@@ -44,6 +44,10 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 
+/* This is used by GOTaddr2picreg to uniquely identify
+   UNSPEC_INT_LABELs.  */
+int mn10300_unspec_int_label_counter;
+
 /* The size of the callee register save area.  Right now we save everything
    on entry since it costs us nothing in code size.  It does cost us from a
    speed standpoint, so we want to optimize this sooner or later.  */
@@ -75,6 +79,10 @@ static void mn10300_file_start PARAMS ((void));
 #undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 
+#undef  TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO mn10300_encode_section_info
+
+static void mn10300_encode_section_info (tree, rtx, int);
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 static void
@@ -410,6 +418,7 @@ print_operand (file, x, code)
 	  case CONST:
 	  case LABEL_REF:
 	  case CODE_LABEL:
+	  case UNSPEC:
 	    print_operand_address (file, x);
 	    break;
 	  default:
@@ -881,6 +890,24 @@ expand_prologue ()
     emit_insn (gen_addsi3 (stack_pointer_rtx,
 			   stack_pointer_rtx,
 			   GEN_INT (-size)));
+  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+    {
+      rtx insn = get_last_insn ();
+      rtx last = emit_insn (gen_GOTaddr2picreg ());
+
+      /* Mark these insns as possibly dead.  Sometimes, flow2 may
+	 delete all uses of the PIC register.  In this case, let it
+	 delete the initialization too.  */
+      do
+	{
+	  insn = NEXT_INSN (insn);
+
+	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD,
+						const0_rtx,
+						REG_NOTES (insn));
+	}
+      while (insn != last);
+    }
 }
 
 void
@@ -1269,6 +1296,9 @@ call_address_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
+  if (flag_pic)
+    return (EXTRA_CONSTRAINT (op, 'S') || GET_CODE (op) == REG);
+
   return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == REG);
 }
 
@@ -1756,6 +1786,9 @@ legitimize_address (x, oldx, mode)
      rtx oldx ATTRIBUTE_UNUSED;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
+  if (flag_pic && ! legitimate_pic_operand_p (x))
+    x = legitimize_pic_address (oldx, NULL_RTX);
+
   /* Uh-oh.  We might have an address for x[n-100000].  This needs
      special handling to avoid creating an indexed memory address
      with x-100000 as the base.  */
@@ -1784,6 +1817,75 @@ legitimize_address (x, oldx, mode)
 	}
     }
   return x;
+}
+
+/* Convert a non-PIC address in `orig' to a PIC address using @GOT or
+   @GOTOFF in `reg'. */
+rtx
+legitimize_pic_address (orig, reg)
+     rtx orig;
+     rtx reg;
+{
+  if (GET_CODE (orig) == LABEL_REF
+      || (GET_CODE (orig) == SYMBOL_REF
+	  && (CONSTANT_POOL_ADDRESS_P (orig)
+	      || ! MN10300_GLOBAL_P (orig))))
+    {
+      if (reg == 0)
+	reg = gen_reg_rtx (Pmode);
+
+      emit_insn (gen_symGOTOFF2reg (reg, orig));
+      return reg;
+    }
+  else if (GET_CODE (orig) == SYMBOL_REF)
+    {
+      if (reg == 0)
+	reg = gen_reg_rtx (Pmode);
+
+      emit_insn (gen_symGOT2reg (reg, orig));
+      return reg;
+    }
+  return orig;
+}
+
+/* Return zero if X references a SYMBOL_REF or LABEL_REF whose symbol
+   isn't protected by a PIC unspec; non-zero otherwise.  */
+int
+legitimate_pic_operand_p (x)
+     rtx x;
+{
+  register const char *fmt;
+  register int i;
+
+  if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF)
+    return 0;
+
+  if (GET_CODE (x) == UNSPEC
+      && (XINT (x, 1) == UNSPEC_PIC
+	  || XINT (x, 1) == UNSPEC_GOT
+	  || XINT (x, 1) == UNSPEC_GOTOFF
+	  || XINT (x, 1) == UNSPEC_PLT))
+      return 1;
+
+  if (GET_CODE (x) == QUEUED)
+    return legitimate_pic_operand_p (QUEUED_VAR (x));
+
+  fmt = GET_RTX_FORMAT (GET_CODE (x));
+  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'E')
+	{
+	  register int j;
+
+	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	    if (! legitimate_pic_operand_p (XVECEXP (x, i, j)))
+	      return 0;
+	}
+      else if (fmt[i] == 'e' && ! legitimate_pic_operand_p (XEXP (x, i)))
+	return 0;
+    }
+
+  return 1;
 }
 
 static int
@@ -1972,4 +2074,24 @@ mn10300_wide_const_load_uses_clr (operands)
     }
 
   return val[0] == 0 || val[1] == 0;
+}
+/* If using PIC, mark a SYMBOL_REF for a non-global symbol so that we
+   may access it using GOTOFF instead of GOT.  */
+
+static void
+mn10300_encode_section_info (decl, rtl, first)
+     tree decl;
+     rtx rtl;
+     int first;
+{
+  rtx symbol;
+
+  if (GET_CODE (rtl) != MEM)
+    return;
+  symbol = XEXP (rtl, 0);
+  if (GET_CODE (symbol) != SYMBOL_REF)
+    return;
+
+  if (flag_pic)
+    SYMBOL_REF_FLAG (symbol) = (*targetm.binds_local_p) (decl);
 }
