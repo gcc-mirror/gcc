@@ -2519,7 +2519,7 @@ fixinc.sh: $(FIXINCSRCDIR)/mkfixinc.sh $(FIXINCSRCDIR)/fixincl.c \
 	$(FIXINCSRCDIR)/server.h $(FIXINCSRCDIR)/inclhack.def specs.ready
 	(MAKE="$(MAKE)"; srcdir=`cd $(srcdir)/fixinc && ${PWD_COMMAND}` ; \
 	CC="$(CC_FOR_BUILD)"; CFLAGS="$(BUILD_CFLAGS)"; LDFLAGS="$(BUILD_LDFLAGS)"; \
-	WARN_CFLAGS="$(WARN_CFLAGS)"; LIBERTY=`pwd`/"$(BUILD_LIBIBERTY)"; \
+	WARN_CFLAGS="$(WARN_CFLAGS)"; LIBERTY=`${PWD_COMMAND}`/"$(BUILD_LIBIBERTY)"; \
 	export MAKE srcdir CC CFLAGS LDFLAGS WARN_CFLAGS LIBERTY; \
 	cd ./fixinc && \
 	$(SHELL) $${srcdir}/mkfixinc.sh $(build) $(target))
@@ -3396,7 +3396,7 @@ QMTEST_DIR=qmtestsuite
 ${QMTEST_DIR} stamp-qmtest:
 	${QMTEST} -D ${QMTEST_DIR} create-tdb \
 	    -c gcc_database.GCCDatabase \
-            -a srcdir=`cd ${srcdir}/testsuite && pwd` && \
+            -a srcdir=`cd ${srcdir}/testsuite && ${PWD_COMMAND}` && \
 	    $(STAMP) stamp-qmtest
 
 # Create the QMTest context file.
