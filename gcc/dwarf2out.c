@@ -2176,6 +2176,7 @@ typedef struct dw_loc_descr_struct
   enum dwarf_location_atom dw_loc_opc;
   dw_val_node dw_loc_oprnd1;
   dw_val_node dw_loc_oprnd2;
+  int dw_loc_addr;
 }
 dw_loc_descr_node;
 
@@ -2645,7 +2646,10 @@ size_of_locs (loc)
   register unsigned long size = 0;
 
   for (; loc != NULL; loc = loc->dw_loc_next)
-    size += size_of_loc_descr (loc);
+    {
+      loc->dw_loc_addr = size;
+      size += size_of_loc_descr (loc);
+    }
 
   return size;
 }
@@ -2683,8 +2687,17 @@ output_loc_operands (loc)
       break;
     case DW_OP_skip:
     case DW_OP_bra:
-      ASM_OUTPUT_DWARF_DATA2 (asm_out_file, val1->v.val_int);
-      fputc ('\n', asm_out_file);
+      {
+	int offset;
+
+	if (val1->val_class == dw_val_class_loc)
+	  offset = val1->v.val_loc->dw_loc_addr - (loc->dw_loc_addr + 3);
+	else
+	  abort ();
+
+	ASM_OUTPUT_DWARF_DATA2 (asm_out_file, offset);
+	fputc ('\n', asm_out_file);
+      }
       break;
 #else
     case DW_OP_addr:
@@ -3426,11 +3439,13 @@ static dw_die_ref modified_type_die	PARAMS ((tree, int, int, dw_die_ref));
 static int type_is_enum			PARAMS ((tree));
 static unsigned int reg_number		PARAMS ((rtx));
 static dw_loc_descr_ref reg_loc_descriptor PARAMS ((rtx));
+static dw_loc_descr_ref int_loc_descriptor PARAMS ((HOST_WIDE_INT));
 static dw_loc_descr_ref based_loc_descr	PARAMS ((unsigned, long));
 static int is_based_loc			PARAMS ((rtx));
 static dw_loc_descr_ref mem_loc_descriptor PARAMS ((rtx, enum machine_mode mode));
 static dw_loc_descr_ref concat_loc_descriptor PARAMS ((rtx, rtx));
 static dw_loc_descr_ref loc_descriptor	PARAMS ((rtx));
+static dw_loc_descr_ref loc_descriptor_from_tree PARAMS ((tree, int));
 static HOST_WIDE_INT ceiling		PARAMS ((HOST_WIDE_INT, unsigned int));
 static tree field_type			PARAMS ((tree));
 static unsigned int simple_type_align_in_bits PARAMS ((tree));
@@ -3440,6 +3455,7 @@ static void add_AT_location_description	PARAMS ((dw_die_ref,
 						 enum dwarf_attribute, rtx));
 static void add_data_member_location_attribute PARAMS ((dw_die_ref, tree));
 static void add_const_value_attribute	PARAMS ((dw_die_ref, rtx));
+static rtx rtl_for_decl_location	PARAMS ((tree));
 static void add_location_or_const_value_attribute PARAMS ((dw_die_ref, tree));
 static void tree_add_const_value_attribute PARAMS ((dw_die_ref, tree));
 static void add_name_attribute		PARAMS ((dw_die_ref, const char *));
@@ -7173,6 +7189,46 @@ reg_loc_descriptor (rtl)
   return loc_result;
 }
 
+/* Return a location descriptor that designates a constant.  */
+
+static dw_loc_descr_ref
+int_loc_descriptor (i)
+     HOST_WIDE_INT i;
+{
+  enum dwarf_location_atom op;
+
+  /* Pick the smallest representation of a constant, rather than just
+     defaulting to the LEB encoding.  */
+  if (i >= 0)
+    {
+      if (i <= 31)
+	op = DW_OP_lit0 + i;
+      else if (i <= 0xff)
+	op = DW_OP_const1u;
+      else if (i <= 0xffff)
+	op = DW_OP_const2u;
+      else if (HOST_BITS_PER_WIDE_INT == 32
+	       || i <= 0xffffffff)
+	op = DW_OP_const4u;
+      else
+	op = DW_OP_constu;
+    }
+  else
+    {
+      if (i >= -0x80)
+	op = DW_OP_const1s;
+      else if (i >= -0x8000)
+	op = DW_OP_const2s;
+      else if (HOST_BITS_PER_WIDE_INT == 32
+	       || i >= -0x80000000)
+	op = DW_OP_const4s;
+      else
+	op = DW_OP_consts;
+    }
+
+  return new_loc_descr (op, i, 0);
+}
+
 /* Return a location descriptor that designates a base+offset location.  */
 
 static dw_loc_descr_ref
@@ -7274,12 +7330,22 @@ mem_loc_descriptor (rtl, mode)
       break;
 
     case MEM:
-      mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0), mode);
-      add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_deref, 0, 0));
+      {
+	dw_loc_descr_ref deref;
+
+	mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (rtl));
+
+	if (GET_MODE_SIZE (mode) == DWARF2_ADDR_SIZE)
+	  deref = new_loc_descr (DW_OP_deref, 0, 0);
+	else
+	  deref = new_loc_descr (DW_OP_deref_size, GET_MODE_SIZE (mode), 0);
+
+	add_loc_descr (&mem_loc_result, deref);
+      }
       break;
 
-     case LABEL_REF:
-       /* Some ports can transform a symbol ref into a label ref, because
+    case LABEL_REF:
+      /* Some ports can transform a symbol ref into a label ref, because
  	 the symbol ref is too far away and has to be dumped into a constant
  	 pool.  */
     case CONST:
@@ -7306,24 +7372,37 @@ mem_loc_descriptor (rtl, mode)
 					  INTVAL (XEXP (rtl, 1)));
       else
 	{
-	  add_loc_descr (&mem_loc_result, mem_loc_descriptor (XEXP (rtl, 0),
-							      mode));
-	  add_loc_descr (&mem_loc_result, mem_loc_descriptor (XEXP (rtl, 1),
-							      mode));
-	  add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_plus, 0, 0));
+	  mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0), mode);
+
+	  if (GET_CODE (XEXP (rtl, 1)) == CONST_INT
+	      && INTVAL (XEXP (rtl, 1)) >= 0)
+	    {
+	      add_loc_descr (&mem_loc_result,
+			     new_loc_descr (DW_OP_plus_uconst,
+					    INTVAL (XEXP (rtl, 1)), 0));
+	    }
+	  else
+	    {
+	      add_loc_descr (&mem_loc_result,
+			     mem_loc_descriptor (XEXP (rtl, 1), mode));
+	      add_loc_descr (&mem_loc_result,
+			     new_loc_descr (DW_OP_plus, 0, 0));
+	    }
 	}
       break;
 
     case MULT:
       /* If a pseudo-reg is optimized away, it is possible for it to
 	 be replaced with a MEM containing a multiply.  */
-      add_loc_descr (&mem_loc_result, mem_loc_descriptor (XEXP (rtl, 0), mode));
-      add_loc_descr (&mem_loc_result, mem_loc_descriptor (XEXP (rtl, 1), mode));
+      add_loc_descr (&mem_loc_result,
+		     mem_loc_descriptor (XEXP (rtl, 0), mode));
+      add_loc_descr (&mem_loc_result,
+		     mem_loc_descriptor (XEXP (rtl, 1), mode));
       add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_mul, 0, 0));
       break;
 
     case CONST_INT:
-      mem_loc_result = new_loc_descr (DW_OP_constu, INTVAL (rtl), 0);
+      mem_loc_result = int_loc_descriptor (INTVAL (rtl));
       break;
 
     default:
@@ -7397,6 +7476,260 @@ loc_descriptor (rtl)
     }
 
   return loc_result;
+}
+
+/* Similar, but generate the descriptor from trees instead of rtl.
+   This comes up particularly with variable length arrays.  */
+
+static dw_loc_descr_ref
+loc_descriptor_from_tree (loc, addressp)
+     tree loc;
+     int addressp;
+{
+  dw_loc_descr_ref ret = NULL;
+  int indirect_size = 0;
+  int unsignedp = TREE_UNSIGNED (TREE_TYPE (loc));
+  enum dwarf_location_atom op;
+
+  /* ??? Most of the time we do not take proper care for sign/zero
+     extending the values properly.  Hopefully this won't be a real
+     problem...  */
+
+  switch (TREE_CODE (loc))
+    {
+    case ERROR_MARK:
+      break;
+
+    case VAR_DECL:
+    case PARM_DECL:
+      {
+	rtx rtl = rtl_for_decl_location (loc);
+	enum machine_mode mode = DECL_MODE (loc);
+
+	if (CONSTANT_P (rtl))
+	  {
+	    ret = new_loc_descr (DW_OP_addr, 0, 0);
+	    ret->dw_loc_oprnd1.val_class = dw_val_class_addr;
+	    ret->dw_loc_oprnd1.v.val_addr = rtl;
+	    indirect_size = GET_MODE_SIZE (mode);
+	  }
+	else
+	  {
+	    if (GET_CODE (rtl) == MEM)
+	      {
+		indirect_size = GET_MODE_SIZE (mode);
+		rtl = XEXP (rtl, 0);
+	      }
+	    ret = mem_loc_descriptor (rtl, mode);
+	  }
+      }
+      break;
+
+    case INDIRECT_REF:
+      ret = loc_descriptor_from_tree (TREE_OPERAND (loc, 0), 0);
+      indirect_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (loc)));
+      break;
+
+    case COMPONENT_REF:
+    case BIT_FIELD_REF:
+    case ARRAY_REF:
+      {
+	tree obj, offset;
+	HOST_WIDE_INT bitsize, bitpos, bytepos;
+	enum machine_mode mode;
+	int volatilep;
+	unsigned int alignment;
+
+	obj = get_inner_reference (loc, &bitsize, &bitpos, &offset, &mode,
+				   &unsignedp, &volatilep, &alignment);
+	ret = loc_descriptor_from_tree (obj, 1);
+
+	if (offset != NULL_TREE)
+	  {
+	    /* Variable offset.  */
+	    add_loc_descr (&ret, loc_descriptor_from_tree (offset, 0));
+	    add_loc_descr (&ret, new_loc_descr (DW_OP_plus, 0, 0));
+	  }
+
+	if (addressp)
+	  {
+	    /* We cannot address anything not on a unit boundary.  */
+	    if (bitpos % BITS_PER_UNIT != 0)
+	      abort ();
+	  }
+	else
+	  {
+	    if (bitpos % BITS_PER_UNIT != 0
+		|| bitsize % BITS_PER_UNIT != 0)
+	      {
+		/* ??? We could handle this by loading and shifting etc.
+		   Wait until someone needs it before expending the effort.  */
+		abort ();
+	      }
+
+	    indirect_size = bitsize / BITS_PER_UNIT;
+	  }
+
+	bytepos = bitpos / BITS_PER_UNIT;
+	if (bytepos > 0)
+	  add_loc_descr (&ret, new_loc_descr (DW_OP_plus_uconst, bytepos, 0));
+	else if (bytepos < 0)
+	  {
+	    add_loc_descr (&ret, int_loc_descriptor (bytepos));
+	    add_loc_descr (&ret, new_loc_descr (DW_OP_plus, 0, 0));
+	  }
+	break;
+      }
+
+    case INTEGER_CST:
+      if (host_integerp (loc, 0))
+	ret = int_loc_descriptor (tree_low_cst (loc, 0));
+      break;
+      break;
+
+    case BIT_AND_EXPR:
+      op = DW_OP_and;
+      goto do_binop;
+    case BIT_XOR_EXPR:
+      op = DW_OP_xor;
+      goto do_binop;
+    case BIT_IOR_EXPR:
+      op = DW_OP_or;
+      goto do_binop;
+    case TRUNC_DIV_EXPR:
+      op = DW_OP_div;
+      goto do_binop;
+    case MINUS_EXPR:
+      op = DW_OP_minus;
+      goto do_binop;
+    case TRUNC_MOD_EXPR:
+      op = DW_OP_mod;
+      goto do_binop;
+    case MULT_EXPR:
+      op = DW_OP_mul;
+      goto do_binop;
+    case LSHIFT_EXPR:
+      op = DW_OP_shl;
+      goto do_binop;
+    case RSHIFT_EXPR:
+      op = (unsignedp ? DW_OP_shr : DW_OP_shra);
+      goto do_binop;
+    case PLUS_EXPR:
+      if (TREE_CODE (TREE_OPERAND (loc, 1)) == INTEGER_CST
+	  && host_integerp (TREE_OPERAND (loc, 1), 0))
+	{
+	  ret = loc_descriptor_from_tree (TREE_OPERAND (loc, 0), 0);
+	  add_loc_descr (&ret,
+			 new_loc_descr (DW_OP_plus_uconst,
+					tree_low_cst (TREE_OPERAND (loc, 1),
+						      0),
+					0));
+	  break;
+	}
+      op = DW_OP_plus;
+      goto do_binop;
+    case LE_EXPR:
+      if (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (loc, 0))))
+	break;
+      op = DW_OP_le;
+      goto do_binop;
+    case GE_EXPR:
+      if (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (loc, 0))))
+	break;
+      op = DW_OP_ge;
+      goto do_binop;
+    case LT_EXPR:
+      if (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (loc, 0))))
+	break;
+      op = DW_OP_lt;
+      goto do_binop;
+    case GT_EXPR:
+      if (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (loc, 0))))
+	break;
+      op = DW_OP_gt;
+      goto do_binop;
+    case EQ_EXPR:
+      op = DW_OP_eq;
+      goto do_binop;
+    case NE_EXPR:
+      op = DW_OP_ne;
+      goto do_binop;
+
+    do_binop:
+      ret = loc_descriptor_from_tree (TREE_OPERAND (loc, 0), 0);
+      add_loc_descr (&ret, loc_descriptor_from_tree (TREE_OPERAND (loc, 1), 0));
+      add_loc_descr (&ret, new_loc_descr (op, 0, 0));
+      break;
+
+    case BIT_NOT_EXPR:
+      op = DW_OP_not;
+      goto do_unop;
+    case ABS_EXPR:
+      op = DW_OP_abs;
+      goto do_unop;
+    case NEGATE_EXPR:
+      op = DW_OP_neg;
+      goto do_unop;
+
+    do_unop:
+      ret = loc_descriptor_from_tree (TREE_OPERAND (loc, 0), 0);
+      add_loc_descr (&ret, new_loc_descr (op, 0, 0));
+      break;
+
+    case MAX_EXPR:
+      loc = build (COND_EXPR, TREE_TYPE (loc),
+		   build (LT_EXPR, integer_type_node,
+			  TREE_OPERAND (loc, 0), TREE_OPERAND (loc, 1)),
+		   TREE_OPERAND (loc, 1), TREE_OPERAND (loc, 0));
+      /* FALLTHRU */
+
+    case COND_EXPR:
+      {
+	dw_loc_descr_ref bra_node, jump_node, tmp;
+
+	ret = loc_descriptor_from_tree (TREE_OPERAND (loc, 0), 0);
+	bra_node = new_loc_descr (DW_OP_bra, 0, 0);
+	add_loc_descr (&ret, bra_node);
+
+	tmp = loc_descriptor_from_tree (TREE_OPERAND (loc, 2), 0);
+	add_loc_descr (&ret, tmp);
+	jump_node = new_loc_descr (DW_OP_skip, 0, 0);
+	add_loc_descr (&ret, jump_node);
+
+	tmp = loc_descriptor_from_tree (TREE_OPERAND (loc, 1), 0);
+	add_loc_descr (&ret, tmp);
+	bra_node->dw_loc_oprnd1.val_class = dw_val_class_loc;
+	bra_node->dw_loc_oprnd1.v.val_loc = tmp;
+
+	/* ??? Need a node to point the skip at.  Use a nop.  */
+	tmp = new_loc_descr (DW_OP_nop, 0, 0);
+	add_loc_descr (&ret, tmp);
+	jump_node->dw_loc_oprnd1.val_class = dw_val_class_loc;
+	jump_node->dw_loc_oprnd1.v.val_loc = tmp;
+      }
+      break;
+
+    default:
+      abort ();
+    }
+
+  /* If we can't fill the request for an address, die.  */
+  if (addressp && indirect_size == 0)
+    abort ();
+
+  /* If we've got an address and don't want one, dereference.  */
+  if (!addressp && indirect_size > 0)
+    {
+      if (indirect_size > DWARF2_ADDR_SIZE)
+	abort ();
+      if (indirect_size == DWARF2_ADDR_SIZE)
+	op = DW_OP_deref;
+      else
+	op = DW_OP_deref_size;
+      add_loc_descr (&ret, new_loc_descr (op, indirect_size, 0));
+    }
+
+  return ret;
 }
 
 /* Given a value, round it up to the lowest multiple of `boundary'
@@ -7768,31 +8101,11 @@ add_const_value_attribute (die, rtl)
 
 }
 
-/* Generate *either* an DW_AT_location attribute or else an DW_AT_const_value
-   data attribute for a variable or a parameter.  We generate the
-   DW_AT_const_value attribute only in those cases where the given variable
-   or parameter does not have a true "location" either in memory or in a
-   register.  This can happen (for example) when a constant is passed as an
-   actual argument in a call to an inline function.  (It's possible that
-   these things can crop up in other ways also.)  Note that one type of
-   constant value which can be passed into an inlined function is a constant
-   pointer.  This can happen for example if an actual argument in an inlined
-   function call evaluates to a compile-time constant address.  */
-
-static void
-add_location_or_const_value_attribute (die, decl)
-     register dw_die_ref die;
-     register tree decl;
+static rtx
+rtl_for_decl_location (decl)
+     tree decl;
 {
   register rtx rtl;
-  register tree declared_type;
-  register tree passed_type;
-
-  if (TREE_CODE (decl) == ERROR_MARK)
-    return;
-
-  if (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != PARM_DECL)
-    abort ();
 
   /* Here we have to decide where we are going to say the parameter "lives"
      (as far as the debugger is concerned).  We only have a couple of
@@ -7876,8 +8189,8 @@ add_location_or_const_value_attribute (die, decl)
     {
       if (rtl == NULL_RTX || is_pseudo_reg (rtl))
 	{
-	  declared_type = type_main_variant (TREE_TYPE (decl));
-	  passed_type = type_main_variant (DECL_ARG_TYPE (decl));
+	  tree declared_type = type_main_variant (TREE_TYPE (decl));
+	  tree passed_type = type_main_variant (DECL_ARG_TYPE (decl));
 
 	  /* This decl represents a formal parameter which was optimized out.
 	     Note that DECL_INCOMING_RTL may be NULL in here, but we handle
@@ -7924,14 +8237,43 @@ add_location_or_const_value_attribute (die, decl)
 	}
     }
 
-  if (rtl == NULL_RTX)
+  if (rtl != NULL_RTX)
+    {
+      rtl = eliminate_regs (rtl, 0, NULL_RTX);
+#ifdef LEAF_REG_REMAP
+      if (current_function_uses_only_leaf_regs)
+	leaf_renumber_regs_insn (rtl);
+#endif
+    }
+
+  return rtl;
+}
+
+/* Generate *either* an DW_AT_location attribute or else an DW_AT_const_value
+   data attribute for a variable or a parameter.  We generate the
+   DW_AT_const_value attribute only in those cases where the given variable
+   or parameter does not have a true "location" either in memory or in a
+   register.  This can happen (for example) when a constant is passed as an
+   actual argument in a call to an inline function.  (It's possible that
+   these things can crop up in other ways also.)  Note that one type of
+   constant value which can be passed into an inlined function is a constant
+   pointer.  This can happen for example if an actual argument in an inlined
+   function call evaluates to a compile-time constant address.  */
+
+static void
+add_location_or_const_value_attribute (die, decl)
+     register dw_die_ref die;
+     register tree decl;
+{
+  register rtx rtl;
+
+  if (TREE_CODE (decl) == ERROR_MARK)
     return;
 
-  rtl = eliminate_regs (rtl, 0, NULL_RTX);
-#ifdef LEAF_REG_REMAP
-  if (current_function_uses_only_leaf_regs)
-    leaf_renumber_regs_insn (rtl);
-#endif
+  if (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != PARM_DECL)
+    abort ();
+
+  rtl = rtl_for_decl_location (decl);
 
   switch (GET_CODE (rtl))
     {
@@ -8102,16 +8444,43 @@ add_bound_info (subrange_die, bound_attr, bound)
       /* Else leave out the attribute.  */
       break;
 
-    case MAX_EXPR:
     case VAR_DECL:
-    case COMPONENT_REF:
-    case COND_EXPR:
-      /* ??? These types of bounds can be created by the Ada front end,
-	 and it isn't clear how to emit debug info for them.  */
-      break;
+    case PARM_DECL:
+      {
+	dw_die_ref decl_die = lookup_decl_die (bound);
+
+	/* ??? Can this happen, or should the variable have been bound
+	   first?  Probably it can, since I imagine that we try to create
+	   the types of parameters in the order in which they exist in
+	   the list, and won't have created a forward reference to a 
+	   later parameter.  */
+	if (decl_die != NULL)
+	  add_AT_die_ref (subrange_die, bound_attr, decl_die);
+	break;
+      }
 
     default:
-      abort ();
+      {
+	/* Otherwise try to create a stack operation procedure to
+	   evaluate the value of the array bound.  */
+
+	dw_die_ref ctx, decl_die;
+	dw_loc_descr_ref loc;
+
+	loc = loc_descriptor_from_tree (bound, 0);
+	if (loc == NULL)
+	  break;
+
+	ctx = lookup_decl_die (current_function_decl);
+
+	decl_die = new_die (DW_TAG_variable, ctx);
+	add_AT_flag (decl_die, DW_AT_artificial, 1);
+	add_type_attribute (decl_die, TREE_TYPE (bound), 1, 0, ctx);
+	add_AT_loc (decl_die, DW_AT_location, loc);
+
+	add_AT_die_ref (subrange_die, bound_attr, decl_die);
+	break;
+      }
     }
 }
 
