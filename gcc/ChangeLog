@@ -1,3 +1,8 @@
+2003-08-01  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* except.c (sjlj_emit_dispatch_table): Use ptr_mode, not Pmode,
+	for accesses to exc_ptr.
+
 2003-08-01  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/sourcebuild.texi (Front End Directory): Don't make references
