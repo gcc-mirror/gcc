@@ -1,3 +1,17 @@
+2001-06-18  Stan Shebs  <shebs@apple.com>
+
+	* objc.dg: New directory.
+	* objc.dg/dg.exp: New file.
+	* objc.dg/alias.m: New.
+	* objc.dg/class-1.m: New.
+	* objc.dg/class-2.m: New.
+	* objc.dg/const-str-1.m: New.
+	* objc.dg/const-str-2.m: New.
+	* objc.dg/id-1.m: New.
+	* objc.dg/method-1.m: New.
+	* objc.dg/super-class-1.m: New.
+	* lib/objc-dg.exp: New file.
+
 2001-06-16  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* g++.dg/mangle1.C: Modify regexp to test for `[: \t\n]' at end
