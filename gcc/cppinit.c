@@ -405,7 +405,7 @@ merge_include_chains (pfile)
 static int cpp_init_completed = 0;
 
 void
-cpp_init (void)
+cpp_init ()
 {
 #ifdef HOST_EBCDIC
   /* For non-ASCII hosts, the cl_options array needs to be sorted at
