@@ -1281,6 +1281,11 @@ propagate_block (old, first, last, final, significant, bnum)
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	      NOTE_SOURCE_FILE (insn) = 0;
 
+	      /* CC0 is now known to be dead.  Either this insn used it,
+		 in which case it doesn't anymore, or clobbered it,
+		 so the next insn can't use it.  */
+	      cc0_live = 0;
+
 	      /* If this insn is copying the return value from a library call,
 		 delete the entire library call.  */
 	      if (libcall_is_dead)
