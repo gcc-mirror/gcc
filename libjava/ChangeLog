@@ -1,3 +1,7 @@
+2004-06-10  Tom Tromey  <tromey@redhat.com>
+
+	* interpret.cc (run): Handle wide fload.
+
 2004-06-06  Jerry Quinn  <jlquinn@optonline.net>
 
 	* java/util/zip/ZipEntry.java (setTime): Remove scaling.
