@@ -1330,6 +1330,8 @@ yylex ()
 		      case 'i': case 'I':
 			if (imag)
 			  error ("more than one `i' or `j' in numeric constant");
+			else if (pedantic)
+			  pedwarn ("ANSI C forbids imaginary numeric constants");
 			imag = 1;
 			break;
 
@@ -1458,6 +1460,8 @@ yylex ()
 		  {
 		    if (spec_imag)
 		      error ("more than one `i' or `j' in numeric constant");
+		    else if (pedantic)
+		      pedwarn ("ANSI C forbids imaginary numeric constants");
 		    spec_imag = 1;
 		  }
 		else
