@@ -1,5 +1,5 @@
 /* java.util.GregorianCalendar
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -917,11 +917,11 @@ public class GregorianCalendar extends Calendar
   }
 
   private static final int[] minimums =
-      { BC,       1,  1,  0, 1,  1,   1,   SUNDAY, 1, 
+      { BC,       1,  0,  0, 1,  1,   1,   SUNDAY, 1, 
         AM,  1,  0,  1,  1,   1, -(12*60*60*1000),               0 };
 
   private static final int[] maximums =
-      { AD, 5000000, 12, 53, 5, 31, 366, SATURDAY, 5, 
+      { AD, 5000000, 11, 53, 5, 31, 366, SATURDAY, 5, 
         PM, 12, 23, 59, 59, 999, +(12*60*60*1000), (12*60*60*1000) };
 
   /**
