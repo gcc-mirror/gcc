@@ -4608,7 +4608,9 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
      Use bit-field techniques or SUBREG to store in it.  */
 
   if (mode == VOIDmode
-      || (mode != BLKmode && ! direct_store[(int) mode])
+      || (mode != BLKmode && ! direct_store[(int) mode]
+	  && GET_MODE_CLASS (mode) != MODE_COMPLEX_INT
+	  && GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT)
       || GET_CODE (target) == REG
       || GET_CODE (target) == SUBREG
       /* If the field isn't aligned enough to store as an ordinary memref,

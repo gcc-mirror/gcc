@@ -1,3 +1,8 @@
+Thu Apr  1 12:04:05 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* expr.c (store_field): When check direct_store, assume all complex
+	modes can be directly stored.
+
 1999-04-01  Bruce Korb <ddsinc09@ix.netcom.com>
 
 	* fixinc/genfixes:  new shell script that runs autogen
