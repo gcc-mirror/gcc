@@ -1861,8 +1861,10 @@ convert_nontype_argument (type, expr)
 	   || expr_type == unknown_type_node)
     {
       tree referent;
+      tree e = expr;
+      STRIP_NOPS (e);
 
-      if (TREE_CODE (expr) != ADDR_EXPR)
+      if (TREE_CODE (e) != ADDR_EXPR)
 	{
 	bad_argument:
 	  cp_error ("`%E' is not a valid template argument", expr);
@@ -1874,7 +1876,7 @@ convert_nontype_argument (type, expr)
 	  return NULL_TREE;
 	}
 
-      referent = TREE_OPERAND (expr, 0);
+      referent = TREE_OPERAND (e, 0);
       STRIP_NOPS (referent);
       
       if (TREE_CODE (referent) == STRING_CST)
