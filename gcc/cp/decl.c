@@ -940,6 +940,11 @@ note_level_for_eh ()
 #define BINDING_LEVEL(NODE) \
    (((struct tree_binding*)NODE)->scope.level)
 
+/* A free list of CPLUS_BINDING nodes, connected by their
+   TREE_CHAINs.  */
+
+static tree free_bindings;
+
 /* Make DECL the innermost binding for ID.  The LEVEL is the binding
    level at which this declaration is being bound.  */
 
@@ -951,7 +956,13 @@ push_binding (id, decl, level)
 {
   tree binding;
 
-  binding = make_node (CPLUS_BINDING);
+  if (free_bindings)
+    {
+      binding = free_bindings;
+      free_bindings = TREE_CHAIN (binding);
+    }
+  else
+    binding = make_node (CPLUS_BINDING);
 
   /* Now, fill in the binding information.  */
   BINDING_VALUE (binding) = decl;
@@ -1189,9 +1200,19 @@ pop_binding (id, decl)
     my_friendly_abort (0);
 
   if (!BINDING_VALUE (binding) && !BINDING_TYPE (binding))
-    /* We're completely done with the innermost binding for this
-       identifier.  Unhook it from the list of bindings.  */
-    IDENTIFIER_BINDING (id) = TREE_CHAIN (binding);
+    {
+      /* We're completely done with the innermost binding for this
+	 identifier.  Unhook it from the list of bindings.  */
+      IDENTIFIER_BINDING (id) = TREE_CHAIN (binding);
+
+      /* Add it to the free list.  */
+      TREE_CHAIN (binding) = free_bindings;
+      free_bindings = binding;
+
+      /* Clear the BINDING_LEVEL so the garbage collector doesn't walk
+	 it.  */
+      BINDING_LEVEL (binding) = NULL;
+    }
 }
 
 /* When a label goes out of scope, check to see if that label was used
@@ -6472,7 +6493,7 @@ init_decl_processing ()
   /* Make a type to be the domain of a few array types
      whose domains don't really matter.
      200 is small enough that it always fits in size_t.  */
-  array_domain_type = build_index_type (build_int_2 (200, 0));
+  array_domain_type = build_index_type (size_int (200));
 
   /* Make a type for arrays of characters.
      With luck nothing will ever really depend on the length of this
@@ -6692,6 +6713,7 @@ init_decl_processing ()
 
   ggc_add_tree_root (&current_lang_name, 1);
   ggc_add_tree_root (&static_aggregates, 1);
+  ggc_add_tree_root (&free_bindings, 1);
 }
 
 /* Create the VAR_DECL for __FUNCTION__ etc. ID is the name to give the
@@ -6715,7 +6737,7 @@ cp_make_fname_decl (id, name, type_dep)
   if (!processing_template_decl)
     type_dep = 0;
   if (!type_dep)
-    domain = build_index_type (build_int_2 (length, 0));
+    domain = build_index_type (size_int (length));
 
   type =  build_cplus_array_type
           (build_qualified_type (char_type_node, TYPE_QUAL_CONST),

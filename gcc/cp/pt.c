@@ -322,7 +322,7 @@ push_inline_template_parms_recursive (parmlist, levels)
 
   ++processing_template_decl;
   current_template_parms
-    = tree_cons (build_int_2 (0, processing_template_decl),
+    = tree_cons (size_int (processing_template_decl),
 		 parms, current_template_parms);
   TEMPLATE_PARMS_FOR_INLINE (current_template_parms) = 1;
 
@@ -1918,7 +1918,7 @@ end_template_parm_list (parms)
   tree saved_parmlist = make_tree_vec (list_length (parms));
 
   current_template_parms
-    = tree_cons (build_int_2 (0, processing_template_decl),
+    = tree_cons (size_int (processing_template_decl),
 		 saved_parmlist, current_template_parms);
 
   for (parm = parms, nparms = 0; 
@@ -4195,6 +4195,7 @@ for_each_template_parm_r (tp, walk_subtrees, d)
 	 explicitly here.  */
       if (for_each_template_parm (TYPE_METHOD_BASETYPE (t), fn, data))
 	return error_mark_node;
+      /* Fall through.  */
 
     case FUNCTION_TYPE:
       /* Check the return type.  */
@@ -4323,10 +4324,14 @@ for_each_template_parm (t, fn, data)
   pfd.fn = fn;
   pfd.data = data;
 
-  /* Walk the tree.  */
-  return walk_tree_without_duplicates (&t, 
-				       for_each_template_parm_r, 
-				       &pfd) != NULL_TREE;
+  /* Walk the tree.  (Conceptually, we would like to walk without
+     duplicates, but for_each_template_parm_r recursively calls
+     for_each_template_parm, so we would need to reorganize a fair
+     bit to use walk_tree_without_duplicates.)  */
+  return walk_tree (&t, 
+		    for_each_template_parm_r, 
+		    &pfd,
+		    NULL) != NULL_TREE;
 }
 
 int
@@ -5315,8 +5320,8 @@ tsubst_template_parms (parms, args, complain)
 	}
       
       *new_parms = 
-	tree_cons (build_int_2 (0, (TMPL_PARMS_DEPTH (parms) 
-				    - TMPL_ARGS_DEPTH (args))),
+	tree_cons (size_int (TMPL_PARMS_DEPTH (parms) 
+			     - TMPL_ARGS_DEPTH (args)),
 		   new_vec, NULL_TREE);
     }
 
@@ -6759,8 +6764,8 @@ tsubst (t, args, complain, in_decl)
 	   c-common.c.  */
 	name = (*decl_printable_name) (current_function_decl, 2);
 	len = strlen (name) + 1;
-	type =  build_array_type (char_type_node,
-				  build_index_type (build_int_2 (len, 0)));
+	type =  build_array_type (char_type_node, 
+				  build_index_type (size_int (len)));
 	str = build_string (len, name);
 	TREE_TYPE (str) = type;
 	return str;

@@ -1839,7 +1839,7 @@ get_vmi_pseudo_type_info (num_bases)
     return desc;
   
   /* Add number of bases and trailing array of base_class_type_info.  */
-  array_domain = build_index_type (build_int_2 (num_bases, 0));
+  array_domain = build_index_type (size_int (num_bases));
   base_array = build_array_type (base_desc_type_node, array_domain);
 
   push_nested_namespace (abi_node);

@@ -1,3 +1,24 @@
+2001-01-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (invalidate_class_lookup_cache): Zero the
+	previous_class_values.
+	* cp-tree.h (TMPL_PARMS_DEPTH): Use TREE_INT_CST_LOW, not
+	TREE_INT_CST_HIGH.
+	(CLASSTYPE_TEMPLATE_LEVEL): Likewise.
+	* decl.c (free_bindings): New variable.
+	(push_binding): Don't create a new binding if we have one on the
+	free list.
+	(pop_binding): Put old bindings on the free list.
+	(init_decl_processing): Use size_int, not build_int_2.
+	Register free_bindings as a GC root.
+	(cp_make_fname_decl): Use size_int, not build_int_2.
+	(push_inline_template_parms_recursive): Likewise.
+	(end_template_parm_list): Likewise.
+	(for_each_tempalte_parm): Do not use walk_tree_without_duplicates.
+	(tsubst_template_parms): Use size_int, not build_int_2.
+	(tsubst): Likewise.
+	* rtti.c (get_vmi_pseudo_type_info): Likewise.
+	
 2001-01-02  Richard Henderson  <rth@redhat.com>
 
 	* parse.y (asm): Set ASM_INPUT_P.
