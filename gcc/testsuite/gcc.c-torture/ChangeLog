@@ -1,3 +1,8 @@
+Wed Apr  5 22:51:36 2000  Hans-Peter Nilsson  <hp@axis.com>
+
+	* execute/960327-1.c (f): Add a letter to s[] to avoid stack-frame
+	overwrite.
+
 2000-04-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* compile/20000405-2.c: New test.

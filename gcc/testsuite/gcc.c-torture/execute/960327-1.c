@@ -6,7 +6,7 @@ g ()
 
 f ()
 {
-  char s[] = "abcedfg01234";
+  char s[] = "abcedfg012345";
   char *sp = s + 12;
 
   switch (g ())
