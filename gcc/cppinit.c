@@ -189,7 +189,7 @@ path_include (pfile, list, path)
 	  name[q - p] = 0;
 	}
 
-      append_include_chain (pfile, name, path, 0);
+      append_include_chain (pfile, name, path, path == SYSTEM);
 
       /* Advance past this name.  */
       if (*q == 0)
