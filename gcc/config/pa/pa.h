@@ -266,13 +266,19 @@ extern int target_flags;
 /* HPUX has a program 'chatr' to list the dependencies of dynamically
    linked executables and shared libraries.  */
 #define LDD_SUFFIX "chatr"
-/* look for lines like "dynamic   /usr/lib/X11R5/libX11.sl".  */
+/* Look for lines like "dynamic   /usr/lib/X11R5/libX11.sl"
+   or "static    /usr/lib/X11R5/libX11.sl".  */
 #define PARSE_LDD_OUTPUT(PTR)					\
 do {								\
   while (*PTR == ' ') PTR++;					\
   if (strncmp (PTR, "dynamic", sizeof ("dynamic") - 1) == 0)	\
     {								\
       PTR += sizeof ("dynamic") - 1;				\
+      while (*p == ' ') PTR++;					\
+    }								\
+  else if (strncmp (PTR, "static", sizeof ("static") - 1) == 0)	\
+    {								\
+      PTR += sizeof ("static") - 1;				\
       while (*p == ' ') PTR++;					\
     }								\
   else								\
