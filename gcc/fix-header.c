@@ -1184,9 +1184,6 @@ main (argc, argv)
     }
   inf_size = sbuf.st_size;
   inf_buffer = (char *) xmalloc (inf_size + 2);
-  inf_buffer[inf_size] = '\n';
-  inf_buffer[inf_size + 1] = '\0';
-  inf_limit = inf_buffer + inf_size;
   inf_ptr = inf_buffer;
 
   to_read = inf_size;
@@ -1208,6 +1205,11 @@ main (argc, argv)
     }
 
   close (inf_fd);
+
+  /* Inf_size may have changed if read was short (as on VMS) */
+  inf_buffer[inf_size] = '\n';
+  inf_buffer[inf_size + 1] = '\0';
+  inf_limit = inf_buffer + inf_size;
 
   /* If file doesn't end with '\n', add one.  */
   if (inf_limit > inf_buffer && inf_limit[-1] != '\n')
