@@ -138,6 +138,9 @@ esac
 # cpu_limits.h can be found.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${target}" in
+   *-*-hpux*)
+     CPULIMITSH=config/os/hpux
+     ;;
    alpha*-*-*osf5*)
      CPULIMITSH=config/os/osf/osf5.0
      ;;

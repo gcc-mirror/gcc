@@ -39,10 +39,6 @@
 
 #define __glibcpp_wchar_t_is_signed false
 
-#ifdef __LP64__
-#define __glibcpp_long_bits 64
-#endif
-
 /* HP-UX, for reasons unknown choose to use a different name for
    the string to [unsigned] long long conversion routines.
 

@@ -1,3 +1,9 @@
+2001-12-29  Richard Henderson  <rth@redhat.com>
+
+	* config/os/hpux/bits/os_defines.h: Don't define __glibcpp_long_bits.
+	* config/os/hpux/bits/cpu_limits.h: New file.
+	* configure.target (CPULIMITSH): Use it.
+
 2001-12-28  Richard Henderson  <rth@redhat.com>
 
 	* config/cpu/ia64/bits/cpu_limits.h: New file.
@@ -26,7 +32,7 @@
 	* testsuite/ext/headers.cc:  Include <ext/algorithm>.
 
 2001-12-28  Paolo Carlini  <pcarlini@unitus.it>
-            Nathan Myers  <ncm@cantrip.org>
+	    Nathan Myers  <ncm@cantrip.org>
 
 	* include/bits/basic_string.h (insert(__pos, __s, __n)):
 	Optimize by avoiding temporaries and working in-place when possible.
@@ -89,7 +95,7 @@
 2001-12-22  Jeffrey A Law  <law@redhat.com>
 
 	* config/os/hpux/bits/os_defines.h: Update to avoid #defines
-        for strtoll and strtoull.
+	for strtoll and strtoull.
 
 2001-12-21  Jeffrey A Law  <law@redhat.com>
 	
@@ -160,7 +166,7 @@
 	* configure: Rebuild.
 	
 2001-12-18  Paolo Carlini  <pcarlini@unitus.it>
-            Nathan Myers  <ncm@cantrip.org>
+	    Nathan Myers  <ncm@cantrip.org>
 	
 	* include/bits/basic_string.h (assign(__str, __pos, __n)):
 	Call assign(__s, __n).
@@ -195,7 +201,7 @@
 	* testsuite/21_strings/assign.cc (test01): Add tests.
 
 2001-12-15  Paolo Carlini  <pcarlini@unitus.it>
-            Nathan Myers  <ncm@cantrip.org>
+	    Nathan Myers  <ncm@cantrip.org>
 
 	* include/bits/basic_string.h
 	(assign(__str, __pos, __n), assign(__s, __n)):  Optimize
@@ -254,15 +260,15 @@
 	* testsuite/22_locale/facet.cc: Fix spelling.
 	
 	Named locale support for ctype<wchar_t>.
-        * acinclude.m4 (GLIBCPP_ENABLE_CLOCALE): Add variable
-        ctype_members_* bits.
-        * aclocal.m4: Regenerate.
-        * configure: Regenerate.
-        * src/Makefile.am (sources): Add ctype.cc.
-        * src/Makefile.in: Regenerate.
-        * config/locale/ctype_members_generic.cc: New file.
-        * config/locale/ctype_members_gnu.cc: New file.
-        * src/locale.cc: Remove ctype<wchart_t> definitions.
+	* acinclude.m4 (GLIBCPP_ENABLE_CLOCALE): Add variable
+	ctype_members_* bits.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* src/Makefile.am (sources): Add ctype.cc.
+	* src/Makefile.in: Regenerate.
+	* config/locale/ctype_members_generic.cc: New file.
+	* config/locale/ctype_members_gnu.cc: New file.
+	* src/locale.cc: Remove ctype<wchart_t> definitions.
 
 2001-12-13  Roger Sayle <roger@eyesopen.com>
 
@@ -329,8 +335,8 @@
 	XFAIL for non-gnu locale models.
 
 2001-12-12  Philip Martin  <philip@codematters.co.uk>
-            Ross Smith     <r-smith@ihug.co.nz>
-            Paolo Carlini  <pcarlini@unitus.it>
+	    Ross Smith     <r-smith@ihug.co.nz>
+	    Paolo Carlini  <pcarlini@unitus.it>
 
 	libstdc++/5045
 	* include/bits/std_limits.h (defines, numeric_limits<bool>::digits10):
@@ -371,7 +377,7 @@
 	* include/bits/basic_string.h:  Fix typos.
 
 2001-12-10  Paolo Carlini  <pcarlini@unitus.it>
-            Nathan Myers  <ncm@cantrip.org>
+	    Nathan Myers  <ncm@cantrip.org>
 
 	* include/bits/basic_string.tcc (_M_replace_safe):  New function.
 	(_M_replace(input_iterator_tag), append members):  Use it.
@@ -421,7 +427,7 @@
 	* include/bits/basic_string.tcc (_M_mutate, _M_clone): Implement
 	exponential growth policy to meet linear amortized time
 	requirements of the standard.
-        (_S_create): Adjust comment.
+	(_S_create): Adjust comment.
 
 2001-12-06  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -486,12 +492,12 @@
 
 2001-12-04  Paolo Carlini <pcarlini@unitus.it>
 
-        libstdc++/4402
-        * testsuite/27_io/ostream_inserter_arith.cc (test02): Add testcase
+	libstdc++/4402
+	* testsuite/27_io/ostream_inserter_arith.cc (test02): Add testcase
 	from the PR.
-        * include/bits/locale_facets.tcc (num_put::_M_convert_float):
-        Deal properly with long ios_base::fixed floats.
-        (num_put::_M_widen_float): use
+	* include/bits/locale_facets.tcc (num_put::_M_convert_float):
+	Deal properly with long ios_base::fixed floats.
+	(num_put::_M_widen_float): use
 	__len in __builtin_alloca call.
 
 2001-12-04  Benjamin Kosnik  <bkoz@redhat.com>
@@ -533,10 +539,10 @@
 
 2001-12-03  Steve Ellcey  <sje@cup.hp.com>
 
-        * libstdc++-v3/configure.in: Add support for hpux cross compiles,
-        combine common linux/hpux/generic cross compile support to reduce
-        redundent lines.
-        * libstdc++-v3/configure: Regenerate.
+	* libstdc++-v3/configure.in: Add support for hpux cross compiles,
+	combine common linux/hpux/generic cross compile support to reduce
+	redundent lines.
+	* libstdc++-v3/configure: Regenerate.
 
 2001-12-03  Loren J. Rittle  <ljrittle@acm.org>
 
@@ -782,10 +788,10 @@
 
 2001-11-22  Stephen M. Webb  <stephen@bregmasoft.com>
 
-        * testsuite/23_containers/list_capacity.cc: New file.
-        * testsuite/23_containers/list_ctor.cc: New file.
-        * testsuite/23_containers/list_modifiers.cc: New file.
-        * testsuite/23_containers/list_operators.cc: New file.
+	* testsuite/23_containers/list_capacity.cc: New file.
+	* testsuite/23_containers/list_ctor.cc: New file.
+	* testsuite/23_containers/list_modifiers.cc: New file.
+	* testsuite/23_containers/list_operators.cc: New file.
 
 2001-11-22  Stephen M. Webb  <stephen@bregmasoft.com>
 
@@ -1212,46 +1218,46 @@
 
 2001-10-19  Brendan Kehoe  <brendan@zen.org>
 
-        * include/bits/std_complex.h: Default initialize second argument
+	* include/bits/std_complex.h: Default initialize second argument
 	of polar to 0, as specified in Library DR #79
 
 2001-10-19  Brendan Kehoe  <brendan@zen.org>
 
-        * include/bits/stl_raw_storage_iter.h (operator=): Fix to call
+	* include/bits/stl_raw_storage_iter.h (operator=): Fix to call
 	_Construct instead of construct.
 
 2001-10-19  Brendan Kehoe  <brendan@zen.org>
 
-        * include/bits/basic_string.tcc (find_first_not_of): Take out check for
-        __n being non-zero, since the standard does not mandate that.
-        e.g., a search for "" in "" should yield position 0, not npos.
-        (find_last_not_of): Likewise.
+	* include/bits/basic_string.tcc (find_first_not_of): Take out check for
+	__n being non-zero, since the standard does not mandate that.
+	e.g., a search for "" in "" should yield position 0, not npos.
+	(find_last_not_of): Likewise.
 
 2001-10-19  Brendan Kehoe  <brendan@zen.org>
 
-        * include/bits/stl_bvector.h (vector<bool>::_M_range_check): Fix
+	* include/bits/stl_bvector.h (vector<bool>::_M_range_check): Fix
 	to throw out_of_range, not range_error, thus sayeth $23.1.1.13.
 
 2001-10-19  Brendan Kehoe  <brendan@zen.org>
 
-        * include/bits/stl_iterator.h (reverse_iterator::current): Rename
-        member from _M_current, and change all uses; thus sayeth $24.4.1.1.
+	* include/bits/stl_iterator.h (reverse_iterator::current): Rename
+	member from _M_current, and change all uses; thus sayeth $24.4.1.1.
 
 2001-10-19  Brendan Kehoe  <brendan@zen.org>
 
-        * include/bits/stl_algo.h (partial_sort): Add missing `>' on the
-        template parameter _ValueType.
+	* include/bits/stl_algo.h (partial_sort): Add missing `>' on the
+	template parameter _ValueType.
 
 2001-10-19  Brendan Kehoe  <brendan@zen.org>
 
 	* include/bits/std_limits.h: Clean up extra semicolons.
-        * include/bits/locale_facets.h: Likewise.
-        * include/bits/type_traits.h: Likewise.
+	* include/bits/locale_facets.h: Likewise.
+	* include/bits/type_traits.h: Likewise.
 
 2001-10-19  Brendan Kehoe  <brendan@zen.org>
 
-        * include/bits/localefwd.h (locale::combine): Add const for lib DR 14.
-        * include/bits/locale_facets.tcc (locale::combine): Likewise.
+	* include/bits/localefwd.h (locale::combine): Add const for lib DR 14.
+	* include/bits/locale_facets.tcc (locale::combine): Likewise.
 
 2001-10-19  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -1817,7 +1823,7 @@
 	* include/bits/std_sstream.h (basic_ostringstream): Fix ctor.
 
 2001-08-24  Sylvain Pion <Sylvain.Pion@sophia.inria.fr>
-            Phil Edwards  <pme@sources.redhat.com>
+	    Phil Edwards  <pme@sources.redhat.com>
 
 	PR libstdc++/3349
 	* include/bits/stl_tree.h (insert_unique):  Revert last change.
@@ -2318,7 +2324,7 @@
 
 2001-07-31  Loren J. Rittle  <ljrittle@acm.org>
 
-        * src/gen-num-limits.cc:  Use __LONG_LONG_MAX__.
+	* src/gen-num-limits.cc:  Use __LONG_LONG_MAX__.
 
 2001-07-30  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -2361,7 +2367,7 @@
 	* testsuite/25_algorithms/unique.cc: New file.
 
 2001-07-19  Phil Edwards  <pme@sources.redhat.com>
-            Mark Mitchell <mark@codesourcery.com>
+	    Mark Mitchell <mark@codesourcery.com>
 
 	Merge from cp-parser-branch.
 	* include/bits/basic_string.h:  Qualify symbols with 'template'.
@@ -2376,7 +2382,7 @@
 	* src/locale.cc:  Likewise.
 
 2001-07-19  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
-            Bert De Knuydt <Bert.Deknuydt@esat.kuleuven.ac.be>
+	    Bert De Knuydt <Bert.Deknuydt@esat.kuleuven.ac.be>
 
 	* src/gen-num-limits.cc (set_signals_handler): New function.
 	Factor out signals setting.  Set signal handler for SIGILL.
@@ -2388,7 +2394,7 @@
 	* docs/html/faq/index.txt:  Regenerated.
 
 2001-07-18  Stephen M. Webb  <stephen@bregmasoft..com>
-            Roman Sulzhyk  <roman_sulzhyk@yahoo.com>
+	    Roman Sulzhyk  <roman_sulzhyk@yahoo.com>
 
 	libstdc++/3599
 	* include/bits/ostream.tcc (ostream::put): Fixed error condition check.
@@ -2479,8 +2485,8 @@
 	* include/bits/std_iosfwd.h:  Cosmetic spacing.
 
 2001-07-13  Stephen M. Webb  <stephen@bregmasoft.com>
-            Loren J. Rittle  <ljrittle@acm.org>
-            Phil Edwards  <pme@sources.redhat.com>
+	    Loren J. Rittle  <ljrittle@acm.org>
+	    Phil Edwards  <pme@sources.redhat.com>
 
 	* include/Makefile.am:  New file encapsulating header generation rules.
 	* Makefile.am (SUBDIRS):  Prepend 'include' directory.
@@ -2818,7 +2824,7 @@
 	(istream_iterator::operator*): Same.
 
 2001-06-26  Benjamin Kosnik  <bkoz@redhat.com>
-            Alexandre Petit-Bianco  <apbianco@redhat.com>
+	    Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* testsuite/21_strings/element_access.cc (test01): Chill Out Cafe
 	is on 41st, not 14th.
@@ -2849,7 +2855,7 @@
 	iterator_traits members.  Can't imagine why that used to work.
 
 2001-06-25  Phil Edwards  <pme@sources.redhat.com>
-            Kurt Garloff <garloff@suse.de>
+	    Kurt Garloff <garloff@suse.de>
 
 	PR libstdc++/3377
 	* src/cmath.cc:  New [version of an old] file; instantiate
@@ -3160,7 +3166,7 @@
 	* testsuite/20_util/binders.cc: New test.
 
 2001-06-11  Matthias Klose  <doko@debian.org>
-            Phil Edwards  <pme@sources.redhat.com>
+	    Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/doxygen/run_doxygen (find_doxygen):  Tweak version check.
 	(main script):  Echo more information.
@@ -3339,7 +3345,7 @@
 	* testsuite/22_locale/ctype.cc: Add test.
 
 2001-06-04  Kenny Simpson <theonetruekenny@yahoo.com>
-            Phil Edwards  <pme@sources.redhat.com>
+	    Phil Edwards  <pme@sources.redhat.com>
 
 	PR libstdc++/3035 and PR libstdc++/3036
 	* include/bits/stl_pair.h:  Fix pair ctor and make_pair according
@@ -3353,7 +3359,7 @@
 	* include/bits/stl_set.h:  Likewise.
 
 2001-06-04  Brendan Kehoe  <brendan@zen.org>
-            Phil Edwards  <pme@sources.redhat.com>
+	    Phil Edwards  <pme@sources.redhat.com>
 
 	PR libstdc++/3018
 	* include/bits/std_bitset.h (bitset::test):  Fix __pos >= _Nb
@@ -3522,8 +3528,8 @@
 	* configure: Same.
 
 2001-05-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
-            Phil Edwards  <pme@sources.redhat.com>
-            Alexandre Oliva  <aoliva@redhat.com>
+	    Phil Edwards  <pme@sources.redhat.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
 
 	* acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Set glibcpp_srcdir
 	in an amd-safe manner. Revert glibcpp_prefixdir.
@@ -4087,7 +4093,7 @@
 	* include/backward/backward_warning.h: Re-enable.
 
 2001-04-06  Benjamin Kosnik  <bkoz@redhat.com>
-            Alexandre Oliva  <aoliva@redhat.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
 
 	* tests_flags.in (CROSS_LIB_PATH): Add as -B flag.
 
@@ -4641,7 +4647,7 @@
 	* testsuite/27_io/istream_manip.cc (test01): Fix.
 
 2001-03-06  Nathan Myers  <ncm@cantrip.org>
-            Benjamin Kosnik  <bkoz@redhat.com>
+	    Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/c_std/bits/std_cerrno.h: Don't define errno in std::.
 	* testsuite/17_intro/header_cerrno.cc (test01): New file.
@@ -5235,7 +5241,7 @@
 	dejagnu/dg.exp.
 
 2001-02-13  Dirk Mueller <dmuell@gmx.net>
-            Phil Edwards  <pme@sources.redhat.com>
+	    Phil Edwards  <pme@sources.redhat.com>
 
 	* include/backward/function.h:  Do not use rel_ops for older
 	  headers either.
@@ -5369,7 +5375,7 @@
 	(_S_copy_streambufs): Likewise.
 
 2001-02-06  Hyman Rosen  <Hyman.Rosen@kbcfp.com>
-            Phil Edwards  <pme@sources.redhat.com>
+	    Phil Edwards  <pme@sources.redhat.com>
 
 	* include/bits/std_istream.h (op>> signed,unsigned char):  Must
 	  use reinterpret_cast, not static_cast.
