@@ -3735,26 +3735,35 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    {
 	      int c1 = *p++;  /* Select first or second version number.  */
 	      char *v = compiler_version;
-	      char *q, *copy;
+	      char *q;
+
+	      /* The format of the version string is
+		 ([^0-9]*-)?[0-9]+[.][0-9]+([.][0-9]+)?([- ].*)?  */
+
+	      /* Ignore leading non-digits.  i.e. "foo-" in "foo-2.7.2".  */
+	      while (! isdigit (*v))
+		v++;
+	      if (v > compiler_version && v[-1] != '-')
+		abort ();
+
 	      /* If desired, advance to second version number.  */
 	      if (c1 == '2')
 		{
 		  /* Set V after the first period.  */
-		  while (*v != 0 && *v != ' ' && *v != '.')
+		  while (isdigit (*v))
 		    v++;
-		  if (*v == '.')
-		    v++;
+		  if (*v != '.')
+		    abort ();
+		  v++;
 		}
+
 	      /* Set Q at the next period or at the end.  */
 	      q = v;
-	      while (*q != 0 && *q != ' ' && *q != '.')
+	      while (isdigit (*q))
 		q++;
-	      /* Empty string means zero.  */
-	      if (v == q)
-		{
-		  v = "0";
-		  q = v + 1;
-		}
+	      if (*q != 0 && *q != ' ' && *q != '.' && *q != '-')
+		abort ();
+
 	      /* Put that part into the command.  */
 	      obstack_grow (&obstack, v, q - v);
 	      arg_going = 1;
