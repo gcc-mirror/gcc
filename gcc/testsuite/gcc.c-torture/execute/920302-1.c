@@ -1,7 +1,7 @@
 short optab[5];
 char buf[10];
 execute (ip)
-     register unsigned short *ip;
+     register short *ip;
 {
 #ifndef NO_LABEL_VALUES
   register void *base = &&x;
@@ -30,7 +30,7 @@ short p[5];
 
 main ()
 {
-  execute ((unsigned short *) 0);
+  execute ((short *) 0);
   p[0] = optab[1];
   p[1] = optab[0];
   p[2] = optab[1];
