@@ -11,7 +11,7 @@ private:
 
 template <typename T>
 foo<T>::foo()               :v(),   t() {}
-template <typename T=float>	// ERROR - default parm for member template
-foo<T>::foo(vector<int> v_) :v(v_), t() {}
+template <typename T=float>
+foo<T>::foo(vector<int> v_) :v(v_), t() {} // ERROR - default arg for member template
 
 foo<float> a;
