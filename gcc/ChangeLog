@@ -1,3 +1,8 @@
+2003-09-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.h (ASM_OUTPUT_REG_PUSH, ASM_OUTPUT_REG_POP): Wrap in
+	do...while(0)
+
 2003-09-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc: Move use_fixproto=no from generic vxworks clause to
