@@ -158,7 +158,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 static int issue_rate;
 
-/* If the following variable value is non zero, the scheduler inserts
+/* If the following variable value is nonzero, the scheduler inserts
    bubbles (nop insns).  The value of variable affects on scheduler
    behavior only if automaton pipeline interface with multipass
    scheduling is used and hook dfa_bubble is defined.  */

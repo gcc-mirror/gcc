@@ -160,7 +160,7 @@ extern int target_flags;
 /* Disable use of FPRs.  */
 #define MASK_SOFT_FLOAT		0x00000800
 
-/* Enable load/store multiple, even on powerpc */
+/* Enable load/store multiple, even on PowerPC */
 #define	MASK_MULTIPLE		0x00001000
 #define	MASK_MULTIPLE_SET	0x00002000
 

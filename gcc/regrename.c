@@ -1243,7 +1243,7 @@ copy_value (dest, src, vd)
     return;
 
   /* Do not propagate copies to the stack pointer, as that can leave
-     memory accesses with no scheduling dependancy on the stack update.  */
+     memory accesses with no scheduling dependency on the stack update.  */
   if (dr == STACK_POINTER_REGNUM)
     return;
 

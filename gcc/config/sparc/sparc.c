@@ -3158,7 +3158,7 @@ pic_address_needs_scratch (x)
 
 /* Legitimize PIC addresses.  If the address is already position-independent,
    we return ORIG.  Newly generated position-independent addresses go into a
-   reg.  This is REG if non zero, otherwise we allocate register(s) as
+   reg.  This is REG if nonzero, otherwise we allocate register(s) as
    necessary.  */
 
 rtx

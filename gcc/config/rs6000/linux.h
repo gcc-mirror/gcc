@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler,
-   for powerpc machines running Linux.
+   for PowerPC machines running Linux.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, 
    Inc.
    Contributed by Michael Meissner (meissner@cygnus.com).
