@@ -71,11 +71,14 @@ make_compile='$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	  BUILD_PREFIX_1="$(BUILD_PREFIX_1)" \
 	  LANGUAGES="$(LANGUAGES)"'
 
+# Generic dependencies for libgcc
+libgcc_dep='$(CONFIG_H) coretypes.h $(TM_H) $(MACHMODE_H) longlong.h config.status stmp-int-hdrs tsystem.h'
+
 # Dependencies for libgcc2.c
-libgcc2_c_dep='stmp-dirs $(srcdir)/libgcc2.c $(CONFIG_H) coretypes.h $(TM_H) $(MACHMODE_H) longlong.h gbl-ctors.h config.status stmp-int-hdrs tsystem.h'" $LIB2ADDEHDEP"
+libgcc2_c_dep='stmp-dirs $(srcdir)/libgcc2.c gbl-ctors.h'" $libgcc_dep"
 
 # Dependencies for libgcov.c
-libgcov_c_dep='stmp-dirs $(srcdir)/libgcov.c $(CONFIG_H) coretypes.h $(TM_H) $(MACHMODE_H) longlong.h gbl-ctors.h config.status stmp-int-hdrs tsystem.h $(srcdir)/gcov-io.h $(srcdir)/gcov-io.c gcov-iov.h'
+libgcov_c_dep='stmp-dirs $(srcdir)/libgcov.c $(srcdir)/gcov-io.h $(srcdir)/gcov-io.c gcov-iov.h'" $libgcc_dep"
 
 # Dependencies for fp-bit.c
 fpbit_c_dep='stmp-dirs config.status tsystem.h'
@@ -212,7 +215,7 @@ for file in $LIB2ADD; do
       flags="$flags -xassembler-with-cpp"
     fi
 
-    echo $out: stmp-dirs $file
+    echo $out: stmp-dirs $file $libgcc_dep
     echo "	$gcc_compile" $flags -c $file -o $out
   done
   libgcc2_objs="$libgcc2_objs ${oname}${objext}"
@@ -230,7 +233,7 @@ for file in $LIB2ADDEH; do
       flags="$flags -xassembler-with-cpp"
     fi
 
-    echo $out: stmp-dirs $file
+    echo $out: stmp-dirs $file $LIB2ADDEHDEP $libgcc_dep
     echo "	$gcc_compile" $flags -fexceptions -c $file -o $out
   done
   if [ "$SHLIB_LINK" ]; then
@@ -252,7 +255,7 @@ for file in $LIB2ADD_ST; do
       flags="$flags -xassembler-with-cpp"
     fi
 
-    echo $out: stmp-dirs $file
+    echo $out: stmp-dirs $file $libgcc_dep
     echo "	$gcc_compile" $flags -c $file -o $out
   done
   libgcc2_st_objs="$libgcc2_st_objs ${oname}${objext}"

@@ -69,6 +69,14 @@ extern void abort (void) __attribute__ ((__noreturn__));
 extern size_t strlen (const char *);
 #endif
 
+#ifndef memcpy
+extern void *memcpy (void *, const void *, size_t);
+#endif
+
+#ifndef memset
+extern void *memset (void *, int, size_t);
+#endif
+
 #else /* ! inhibit_libc */
 /* We disable this when inhibit_libc, so that gcc can still be built without
    needing header files first.  */
