@@ -1,3 +1,11 @@
+2004-09-23  Michael Koch  <konqueror@gmx.de>
+
+	* java/applet/AppletContext.java,
+	java/applet/Applet.java,
+	java/applet/AppletStub.java,
+	java/applet/AudioClip.java:
+	Jalopied and checkstyle clean.
+
 2004-09-23  Mark Wielaard  <mark@klomp.org>
 
 	* java/util/Collections.java
