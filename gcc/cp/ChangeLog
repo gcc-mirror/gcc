@@ -1,3 +1,8 @@
+1998-10-10  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* decl2.c (start_objects): Add new variable `joiner' and
+	initialize it properly.
+
 1998-10-09  Mark Mitchell  <mark@markmitchell.com>
 
 	* search.c (expand_upcast_fixups): Tweak to match 1998-10-07
