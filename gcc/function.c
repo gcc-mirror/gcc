@@ -2834,7 +2834,12 @@ gen_mem_addressof (reg, decl)
 	fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type), 0);
     }
   else
-    fixup_var_refs (reg, GET_MODE (reg), 0, 0);
+    {
+      /* We have no alias information about this newly created MEM.  */
+      MEM_ALIAS_SET (reg) = 0;
+
+      fixup_var_refs (reg, GET_MODE (reg), 0, 0);
+    }
 
   return reg;
 }
