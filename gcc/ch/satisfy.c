@@ -533,8 +533,7 @@ satisfy (exp, chain)
 	    /* if we have an ACCESS or TEXT mode we have to set
 	       maximum_field_alignment to 0 to fit with runtime
 	       system, even when we compile with -fpack. */
-	    extern int maximum_field_alignment;
-	    int save_maximum_field_alignment = maximum_field_alignment;
+	    unsigned int save_maximum_field_alignment = maximum_field_alignment;
 
 	    if (CH_IS_ACCESS_MODE (exp) || CH_IS_TEXT_MODE (exp))
 	      maximum_field_alignment = 0;

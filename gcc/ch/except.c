@@ -396,7 +396,7 @@ emit_setup_handler ()
       /* We temporarily reset the maximum_field_alignment to zero so the
 	 compiler's exception data structures can be compatible with the
 	 run-time system, even when we're compiling with -fpack. */
-      int save_maximum_field_alignment = maximum_field_alignment;
+      unsigned int save_maximum_field_alignment = maximum_field_alignment;
       maximum_field_alignment = 0;
       push_obstacks_nochange ();
       end_temporary_allocation ();

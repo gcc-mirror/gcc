@@ -1088,8 +1088,7 @@ inout_init ()
   /* We temporarily reset the maximum_field_alignment to zero so the
      compiler's init data structures can be compatible with the
      run-time system, even when we're compiling with -fpack. */
-  extern int maximum_field_alignment;
-  int save_maximum_field_alignment = maximum_field_alignment;
+  unsigned int save_maximum_field_alignment = maximum_field_alignment;
 
   extern tree chill_predefined_function_type;
   tree endlink = void_list_node;
@@ -2821,8 +2820,7 @@ build_chill_gettextaccess (text)
   tree access, refaccess, acc, decl, listbase;
   tree tlocmode, indexmode, dynamic;
   tree result;
-  extern int maximum_field_alignment;
-  int save_maximum_field_alignment = maximum_field_alignment;
+  unsigned int save_maximum_field_alignment = maximum_field_alignment;
 
   if (! check_text (text, 1, "GETTEXTACCESS"))
     return error_mark_node;
@@ -4590,8 +4588,7 @@ void build_enum_tables ()
   /* We temporarily reset the maximum_field_alignment to zero so the
      compiler's init data structures can be compatible with the
      run-time system, even when we're compiling with -fpack. */
-  extern int maximum_field_alignment;
-  int save_maximum_field_alignment;
+  unsigned int save_maximum_field_alignment;
     
   if (pass == 1)
     return;
