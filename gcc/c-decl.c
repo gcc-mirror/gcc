@@ -488,6 +488,7 @@ objc_mark_locals_volatile (void *enclosing_blk)
 	  if (TREE_CODE (b->decl) == VAR_DECL
 	      || TREE_CODE (b->decl) == PARM_DECL)
 	    {
+	      C_DECL_REGISTER (b->decl) = 0;
 	      DECL_REGISTER (b->decl) = 0;
 	      TREE_THIS_VOLATILE (b->decl) = 1;
 	    }
@@ -2901,8 +2902,15 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	      /* In conjunction with an ASMSPEC, the `register'
 		 keyword indicates that we should place the variable
 		 in a particular register.  */
-	      if (DECL_REGISTER (decl))
-		DECL_C_HARD_REGISTER (decl) = 1;
+	      if (C_DECL_REGISTER (decl))
+		{
+		  DECL_C_HARD_REGISTER (decl) = 1;
+		  /* This cannot be done for a structure with volatile
+		     fields, on which DECL_REGISTER will have been
+		     reset.  */
+		  if (!DECL_REGISTER (decl))
+		    error ("cannot put object with volatile field into register");
+		}
 
 	      /* If this is not a static variable, issue a warning.
 		 It doesn't make any sense to give an ASMSPEC for an
@@ -2910,7 +2918,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 		 GCC has accepted -- but ignored -- the ASMSPEC in
 		 this case.  */
 	      if (TREE_CODE (decl) == VAR_DECL
-		  && !DECL_REGISTER (decl)
+		  && !C_DECL_REGISTER (decl)
 		  && !TREE_STATIC (decl))
 		warning ("%Jignoring asm-specifier for non-static local "
                          "variable '%D'", decl, decl);
@@ -4527,7 +4535,10 @@ grokdeclarator (tree declarator, tree declspecs,
        and in case doing stupid register allocation.  */
 
     if (specbits & (1 << (int) RID_REGISTER))
-      DECL_REGISTER (decl) = 1;
+      {
+	C_DECL_REGISTER (decl) = 1;
+	DECL_REGISTER (decl) = 1;
+      }
 
     /* Record constancy and volatility.  */
     c_apply_type_quals_to_decl (type_quals, decl);
@@ -4536,7 +4547,16 @@ grokdeclarator (tree declarator, tree declspecs,
        Otherwise, the fact that those components are volatile
        will be ignored, and would even crash the compiler.  */
     if (C_TYPE_FIELDS_VOLATILE (TREE_TYPE (decl)))
-      c_mark_addressable (decl);
+      {
+	/* It is not an error for a structure with volatile fields to
+	   be declared register, but reset DECL_REGISTER since it
+	   cannot actually go in a register.  */
+	int was_reg = C_DECL_REGISTER (decl);
+	C_DECL_REGISTER (decl) = 0;
+	DECL_REGISTER (decl) = 0;
+	c_mark_addressable (decl);
+	C_DECL_REGISTER (decl) = was_reg;
+      }
 
 #ifdef ENABLE_CHECKING
   /* This is the earliest point at which we might know the assembler
@@ -4684,7 +4704,7 @@ get_parm_info (bool ellipsis)
     {
       if (TREE_THIS_VOLATILE (b->decl)
 	  || TREE_READONLY (b->decl)
-	  || DECL_REGISTER (b->decl))
+	  || C_DECL_REGISTER (b->decl))
 	error ("'void' as only parameter may not be qualified");
 
       /* There cannot be an ellipsis.  */

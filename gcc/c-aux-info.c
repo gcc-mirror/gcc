@@ -2,7 +2,7 @@
    on information stored in GCC's tree structure.  This code implements the
    -aux-info option.
    Copyright (C) 1989, 1991, 1994, 1995, 1997, 1998,
-   1999, 2000, 2003 Free Software Foundation, Inc.
+   1999, 2000, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@segfault.us.com).
 
 This file is part of GCC.
@@ -531,7 +531,7 @@ gen_decl (tree decl, int is_func_definition, formals_style style)
 
   ret_val = affix_data_type (ret_val);
 
-  if (TREE_CODE (decl) != FUNCTION_DECL && DECL_REGISTER (decl))
+  if (TREE_CODE (decl) != FUNCTION_DECL && C_DECL_REGISTER (decl))
     ret_val = concat ("register ", ret_val, NULL);
   if (TREE_PUBLIC (decl))
     ret_val = concat ("extern ", ret_val, NULL);
