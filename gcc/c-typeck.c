@@ -5999,7 +5999,9 @@ process_init_element (value)
 	      break;
 	    }
 
-	  fieldtype = TYPE_MAIN_VARIANT (TREE_TYPE (constructor_fields));
+	  fieldtype = TREE_TYPE (constructor_fields);
+	  if (fieldtype != error_mark_node)
+	    fieldtype = TYPE_MAIN_VARIANT (fieldtype);
 	  fieldcode = TREE_CODE (fieldtype);
 
 	  /* Accept a string constant to initialize a subarray.  */
@@ -6060,7 +6062,9 @@ process_init_element (value)
 	      break;
 	    }
 
-	  fieldtype = TYPE_MAIN_VARIANT (TREE_TYPE (constructor_fields));
+	  fieldtype = TREE_TYPE (constructor_fields);
+	  if (fieldtype != error_mark_node)
+	    fieldtype = TYPE_MAIN_VARIANT (fieldtype);
 	  fieldcode = TREE_CODE (fieldtype);
 
 	  /* Accept a string constant to initialize a subarray.  */
