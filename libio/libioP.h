@@ -28,7 +28,11 @@
 # define __set_errno(Val) errno = (Val)
 #endif
 #if defined __GLIBC__ && __GLIBC__ >= 2
-# include <bits/libc-lock.h>
+# if __GLIBC_MINOR__ > 0
+#  include <bits/libc-lock.h>
+# else
+#  include <libc-lock.h>
+# endif
 #else
 /*# include <comthread.h>*/
 #endif

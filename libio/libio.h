@@ -150,23 +150,25 @@ struct _IO_jump_t;  struct _IO_FILE;
 /* Handle lock.  */
 #ifdef _IO_MTSAFE_IO
 # if defined __GLIBC__ && __GLIBC__ >= 2
-#  include <bits/stdio-lock.h>
+#  if __GLIBC_MINOR__ > 0
+#   include <bits/stdio-lock.h>
+#  else
+#   include <stdio-lock.h>
+#  endif
 #  define _IO_LOCK_T _IO_lock_t *
 # else
 /*# include <comthread.h>*/
 # endif
 #else
-/* XXX This will go away as soon as comthread is finished.  */
-# if defined __GLIBC__ && __GLIBC__ >= 2
+# if defined(__GLIBC__) && __GLIBC__ >= 2
+   typedef void _IO_lock_t;
 #  define _IO_LOCK_T void *
 # else
 #  ifdef __linux__
-struct _IO_lock_t {
-  void *ptr;
-  short int field1;
-  short int field2;
-};
+    struct _IO_lock_t { void *ptr; short int field1; short int field2; };
 #   define _IO_LOCK_T struct _IO_lock_t
+#  else
+    typedef void _IO_lock_t;
 #  endif
 # endif
 #endif
