@@ -269,6 +269,7 @@ java_new_lexer (finput, encoding)
 	      outc = 2;
 
 	      r = iconv (handle, (const char **) &inp, &inc, &outp, &outc);
+	      iconv_close (handle);
 	      /* Conversion must be complete for us to use the result.  */
 	      if (r != (size_t) -1 && inc == 0 && outc == 0)
 		need_byteswap = (result != 0xfeff);
