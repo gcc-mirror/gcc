@@ -82,6 +82,11 @@ public class File implements Serializable, Comparable
   // Remove duplicate and redundant separator characters.
   private String normalizePath(String p)
   {
+    // On Windows, convert any '/' to '\'.  This appears to be the same logic
+    // that Sun's Win32 Java performs.
+    if (separatorChar == '\\')
+      p = p.replace ('/', '\\');
+
     int dupIndex = p.indexOf(dupSeparator);
     int plen = p.length();
 
