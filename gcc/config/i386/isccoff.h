@@ -18,8 +18,12 @@
 
 /* Library spec */
 #undef LIB_SPEC
-#define LIB_SPEC "%{posix:-lcposix} %{shlib:-lc_s} -lc"
+#define LIB_SPEC "%{posix:-lcposix} %{shlib:-lc_s} -lc -lg"
 
+#if 0
+/* This is apparently not true: ISC versions up to 3.0,at least, use
+   the standard calling sequence in which the called function pops the
+   extra arg.  */
 /* caller has to pop the extra argument passed to functions that return
    structures. */
 
@@ -33,4 +37,4 @@
    : 0)
 /* On other 386 systems, the last line looks like this:
    : (aggregate_value_p (FUNTYPE)) ? GET_MODE_SIZE (Pmode) : 0)  */
-
+#endif
