@@ -1,3 +1,10 @@
+2004-09-28  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-alias.c (create_name_tags): If PTR points to a
+	volatile type, mark the tag volatile.
+	(get_tmt_for): If TAG_TYPE is a volatile type, mark the tag
+	volatile.
+
 2004-09-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* tree.def (vec_cond_expr): Fix. Change 'e'
