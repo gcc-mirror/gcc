@@ -2,8 +2,10 @@
 
 #include "gc_priv.h"
 
+#if 0
 #define STRICT
 #include <windows.h>
+#endif
 
 #define MAX_THREADS 64
 
@@ -61,7 +63,7 @@ ptr_t GC_current_stackbottom()
   ABORT("no thread table entry for current thread");
 }
 
-ptr_t GC_get_lo_stack_addr(ptr_t s)
+static ptr_t GC_get_lo_stack_addr(ptr_t s)
 {
     ptr_t bottom;
     MEMORY_BASIC_INFORMATION info;
@@ -81,7 +83,7 @@ void GC_push_all_stacks()
     if (thread_table[i].stack) {
       ptr_t bottom = GC_get_lo_stack_addr(thread_table[i].stack);
       if (thread_table[i].id == thread_id)
-	GC_push_all(&i, thread_table[i].stack);
+	GC_push_all_stack(&i, thread_table[i].stack);
       else {
 	thread_table[i].context.ContextFlags
 			= (CONTEXT_INTEGER|CONTEXT_CONTROL);

@@ -69,15 +69,18 @@
 # endif
 # if defined(mips) || defined(__mips)
 #    define MIPS
-#    if defined(ultrix) || defined(__ultrix) || defined(__NetBSD__)
-#	define ULTRIX
-#    else
-#	if defined(_SYSTYPE_SVR4) || defined(SYSTYPE_SVR4) || defined(__SYSTYPE_SVR4__)
-#	  define IRIX5   /* or IRIX 6.X */
-#	else
-#	  define RISCOS  /* or IRIX 4.X */
-#	endif
-#    endif
+#    if !defined(LINUX)
+#      if defined(ultrix) || defined(__ultrix) || defined(__NetBSD__)
+#	 define ULTRIX
+#      else
+#	 if defined(_SYSTYPE_SVR4) || defined(SYSTYPE_SVR4) \
+	    || defined(__SYSTYPE_SVR4__)
+#	   define IRIX5   /* or IRIX 6.X */
+#	 else
+#	   define RISCOS  /* or IRIX 4.X */
+#	 endif
+#      endif
+#    endif /* !LINUX */
 #    define mach_type_known
 # endif
 # if defined(sequent) && defined(i386)
@@ -159,8 +162,12 @@
 #    define M68K
 #    define mach_type_known
 # endif
-# if defined(LINUX) && defined(sparc)
+# if defined(LINUX) && (defined(sparc) || defined(__sparc__))
 #    define SPARC
+#    define mach_type_known
+# endif
+# if defined(LINUX) && defined(arm)
+#    define ARM32
 #    define mach_type_known
 # endif
 # if defined(__alpha) || defined(__alpha__)
@@ -255,6 +262,11 @@
 #   define CYGWIN32
 #   define mach_type_known
 # endif
+# if defined(__MINGW32__)
+#   define I386
+#   define MSWIN32
+#   define mach_type_known
+# endif
 # if defined(__BORLANDC__)
 #   define I386
 #   define MSWIN32
@@ -323,6 +335,9 @@
 		    /* 		        (CX_UX and DGUX)		*/
 		    /* 		   S370	      ==> 370-like machine	*/
 		    /* 			running Amdahl UTS4		*/
+		    /* 		   ARM32      ==> Intel StrongARM	*/
+		    /* 		   IA64	      ==> Intel IA64		*/
+		    /*				  (e.g. Itanium)	*/
 
 
 /*
@@ -408,6 +423,15 @@
  *
  * An architecture may define DYNAMIC_LOADING if dynamic_load.c
  * defined GC_register_dynamic_libraries() for the architecture.
+ *
+ * An architecture may define PREFETCH(x) to preload the cache with *x.
+ * This defaults to a no-op.
+ *
+ * PREFETCH_FOR_WRITE(x) is used if *x is about to be written.
+ *
+ * An architecture may also define CLEAR_DOUBLE(x) to be a fast way to
+ * clear the two words at GC_malloc-aligned address x.  By default,
+ * word stores of 0 are used instead.
  */
 
 
@@ -532,11 +556,9 @@
 #     undef STACK_GRAN
 #     define STACK_GRAN 0x10000000
 	/* Stack usually starts at 0x80000000 */
-      extern int data_start;
-#     define DATASTART (&data_start)
+#     define LINUX_DATA_START
       extern int _end;
 #     define DATAEND (&_end)
-#     define DYNAMIC_LOADING
 #   endif
 #   ifdef MACOSX
 #     define ALIGNMENT 4
@@ -633,8 +655,8 @@
 #   ifdef LINUX
 #     define OS_TYPE "LINUX"
 #     ifdef __ELF__
-#         define DATASTART GC_data_start
-#         define DYNAMIC_LOADING
+#       define LINUX_DATA_START
+#       define DYNAMIC_LOADING
 #     else
           Linux Sparc non elf ?
 #     endif
@@ -702,13 +724,16 @@
 #   endif
 #   ifdef LINUX
 #	define OS_TYPE "LINUX"
-#       define HEURISTIC1
-#       undef STACK_GRAN
-#       define STACK_GRAN 0x10000000
-	/* STACKBOTTOM is usually 0xc0000000, but this changes with	*/
-	/* different kernel configurations.  In particular, systems	*/
-	/* with 2GB physical memory will usually move the user		*/
-	/* address space limit, and hence initial SP to 0x80000000.	*/
+#       define LINUX_STACKBOTTOM
+#	if 0
+#	  define HEURISTIC1
+#         undef STACK_GRAN
+#         define STACK_GRAN 0x10000000
+	  /* STACKBOTTOM is usually 0xc0000000, but this changes with	*/
+	  /* different kernel configurations.  In particular, systems	*/
+	  /* with 2GB physical memory will usually move the user	*/
+	  /* address space limit, and hence initial SP to 0x80000000.	*/
+#       endif
 #       if !defined(LINUX_THREADS) || !defined(REDIRECT_MALLOC)
 	/* libgcj: Linux threads don't interact well with the read() wrapper.
 	   Not defining MPROTECT_VDB fixes this.  */
@@ -726,8 +751,7 @@
 #	     endif
 #	     include <features.h>
 #	     if defined(__GLIBC__) && __GLIBC__ >= 2
-		 extern int __data_start;
-#		 define DATASTART ((ptr_t)(&__data_start))
+#		 define LINUX_DATA_START
 #	     else
      	         extern char **__environ;
 #                define DATASTART ((ptr_t)(&__environ))
@@ -746,6 +770,26 @@
 	     extern int etext;
 #            define DATASTART ((ptr_t)((((word) (&etext)) + 0xfff) & ~0xfff))
 #       endif
+#	ifdef USE_I686_PREFETCH
+#	  define PREFETCH(x) \
+	    __asm__ __volatile__ ("	prefetchnta	%0": : "m"(*(char *)(x)))
+	    /* Empirically prefetcht0 is much more effective at reducing	*/
+	    /* cache miss stalls for the targetted load instructions.  But it	*/
+	    /* seems to interfere enough with other cache traffic that the net	*/
+	    /* result is worse than prefetchnta.				*/
+#         if 0 
+	    /* Using prefetches for write seems to have a slight negative	*/
+	    /* impact on performance, at least for a PIII/500.			*/
+#	    define PREFETCH_FOR_WRITE(x) \
+	      __asm__ __volatile__ ("	prefetcht0	%0": : "m"(*(char *)(x)))
+#	  endif
+#	endif
+#	ifdef USE_3DNOW_PREFETCH
+#	  define PREFETCH(x) \
+	    __asm__ __volatile__ ("	prefetch	%0": : "m"(*(char *)(x)))
+#	  define PREFETCH_FOR_WRITE(x) 
+	    __asm__ __volatile__ ("	prefetchw	%0": : "m"(*(char *)(x)))
+#	endif
 #   endif
 #   ifdef CYGWIN32
 #       define OS_TYPE "CYGWIN32"
@@ -862,36 +906,48 @@
         extern int _etext;
 #     define DATASTART ((ptr_t)(&_etext))
 #   else
-#     ifndef IRIX5
+/* #   define STACKBOTTOM ((ptr_t)0x7fff8000)  sometimes also works.  */
+#   ifdef LINUX
+      /* This was developed for a linuxce style platform.  Probably	*/
+      /* needs to be tweaked for workstation class machines.		*/
+#     define OS_TYPE "LINUX"
+      extern int __data_start;
+#     define DATASTART ((ptr_t)(&__data_start))
+#     define ALIGNMENT 4
+#     define USE_GENERIC_PUSH_REGS 1
+#     define STACKBOTTOM 0x80000000
+	/* In many cases, this should probably use LINUX_STACKBOTTOM 	*/
+	/* instead. But some kernel versions seem to give the wrong	*/
+	/* value from /proc.						*/
+#   endif /* Linux */
+#   ifdef ULTRIX
+#	define HEURISTIC2
 #       define DATASTART (ptr_t)0x10000000
 			      /* Could probably be slightly higher since */
 			      /* startup code allocates lots of stuff.   */
-#     else
+#	define OS_TYPE "ULTRIX"
+#       define ALIGNMENT 4
+#   endif
+#   ifdef RISCOS
+#	define HEURISTIC2
+#       define DATASTART (ptr_t)0x10000000
+#	define OS_TYPE "RISCOS"
+#   	define ALIGNMENT 4  /* Required by hardware */
+#   endif
+#   ifdef IRIX5
+#	define HEURISTIC2
         extern int _fdata;
 #       define DATASTART ((ptr_t)(&_fdata))
 #       ifdef USE_MMAP
-#           define HEAP_START (ptr_t)0x30000000
+#         define HEAP_START (ptr_t)0x30000000
 #       else
-#	    define HEAP_START DATASTART
+#	  define HEAP_START DATASTART
 #       endif
 			      /* Lowest plausible heap address.		*/
 			      /* In the MMAP case, we map there.	*/
 			      /* In either case it is used to identify	*/
 			      /* heap sections so they're not 		*/
 			      /* considered as roots.			*/
-#     endif /* IRIX5 */
-#   endif /* DATASTART_IS_ETEXT */
-#   define HEURISTIC2
-/* #   define STACKBOTTOM ((ptr_t)0x7fff8000)  sometimes also works.  */
-#   ifdef ULTRIX
-#	define OS_TYPE "ULTRIX"
-#       define ALIGNMENT 4
-#   endif
-#   ifdef RISCOS
-#	define OS_TYPE "RISCOS"
-#   	define ALIGNMENT 4  /* Required by hardware */
-#   endif
-#   ifdef IRIX5
 #	define OS_TYPE "IRIX5"
 #       define MPROTECT_VDB
 #       ifdef _MIPS_SZPTR
@@ -906,6 +962,7 @@
 #	endif
 #	define DYNAMIC_LOADING
 #   endif
+#   endif /* DATASTART_IS_ETEXT */
 #   endif /* ECOS */
 # ifdef ECOS
     extern char __ram_data_start;
@@ -963,12 +1020,16 @@
 #   endif
 #   include <unistd.h>
 #   define GETPAGESIZE() sysconf(_SC_PAGE_SIZE)
-	/* They misspelled the Posix macro?	*/
 # endif
 
 # ifdef ALPHA
 #   define MACH_TYPE "ALPHA"
 #   define ALIGNMENT 8
+#   define USE_GENERIC_PUSH_REGS
+	/* Gcc and probably the DEC/Compaq compiler spill pointers to preserved	*/
+	/* fp registers in some cases when the target is a 21264.  The assembly	*/
+	/* code doesn't handle that yet, and version dependencies make that a	*/
+	/* bit tricky.  Do the easy thing for now.				*/
 #   ifdef OSF1
 #	define OS_TYPE "OSF1"
 #   	define DATASTART ((ptr_t) 0x140000000)
@@ -989,12 +1050,9 @@
 #       define CPP_WORDSZ 64
 #       define STACKBOTTOM ((ptr_t) 0x120000000)
 #       ifdef __ELF__
-            /* glibc for Linux/Alpha no longer provides a symbol marking
-               the start of the data segment.  So libgcj defines
-               data_start on its own (in libgcjdata.a).  */
-            extern int data_start;
-#           define DATASTART &data_start
-#           define DYNAMIC_LOADING
+#	  define LINUX_DATA_START
+#         define DYNAMIC_LOADING
+	  /* This doesn't work if the collector is in a dynamic library. */
 #       else
 #           define DATASTART ((ptr_t) 0x140000000)
 #       endif
@@ -1011,6 +1069,9 @@
 #   define ALIGN_DOUBLE
 	/* Requires 16 byte alignment for malloc */
 #   define ALIGNMENT 8
+#   define USE_GENERIC_PUSH_REGS
+	/* We need to get preserved registers in addition to register windows.	*/
+	/* That's easiest to do with setjmp.					*/
 #   ifdef HPUX
 	--> needs work
 #   endif
@@ -1024,10 +1085,25 @@
 	/* backing store.  There is probably a better way to	*/
 	/* get that, too ...					*/
 #	define BACKING_STORE_BASE ((ptr_t) 0x9fffffff80000000l)
-#       define DATASTART GC_data_start
+#	if 1
+#	    define SEARCH_FOR_DATA_START
+#	    define DATASTART GC_data_start
+#	else
+	    extern int data_start;
+#	    define DATASTART ((ptr_t)(&data_start))
+#	endif
 #       define DYNAMIC_LOADING
+#	define MPROTECT_VDB
+		/* Requires Linux 2.3.47 or later.	*/
 	extern int _end;
 #	define DATAEND (&_end)
+	/* PREFETCH appears to have a large performance impact.	*/
+#	define PREFETCH(x) \
+	  __asm__ ("	lfetch	[%0]": : "r"((void *)(x)))
+#	define PREFETCH_FOR_WRITE(x) \
+	  __asm__ ("	lfetch.excl	[%0]": : "r"((void *)(x)))
+#	define CLEAR_DOUBLE(x) \
+	  __asm__ ("	stf.spill	[%0]=f0": : "r"((void *)(x)))
 #   endif
 # endif
 
@@ -1079,6 +1155,49 @@
 #       define DATASTART ((ptr_t)(&etext))
 #       define USE_GENERIC_PUSH_REGS
 #   endif
+#   ifdef LINUX
+#       define OS_TYPE "LINUX"
+#       define HEURISTIC1
+#       undef STACK_GRAN
+#       define STACK_GRAN 0x10000000
+#       define USE_GENERIC_PUSH_REGS
+#       ifdef __ELF__
+#            define DYNAMIC_LOADING
+#	     include <features.h>
+#	     if defined(__GLIBC__) && __GLIBC__ >= 2
+#		 define LINUX_DATA_START
+#	     else
+     	         extern char **__environ;
+#                define DATASTART ((ptr_t)(&__environ))
+			      /* hideous kludge: __environ is the first */
+			      /* word in crt0.o, and delimits the start */
+			      /* of the data segment, no matter which   */
+			      /* ld options were passed through.        */
+			      /* We could use _etext instead, but that  */
+			      /* would include .rodata, which may       */
+			      /* contain large read-only data tables    */
+			      /* that we'd rather not scan.		*/
+#	     endif
+	     extern int _end;
+#	     define DATAEND (&_end)
+#	else
+	     extern int etext;
+#            define DATASTART ((ptr_t)((((word) (&etext)) + 0xfff) & ~0xfff))
+#       endif
+#   endif
+#endif
+
+#ifdef LINUX_DATA_START
+    /* Some Linux distributions arrange to define __data_start.  Some	*/
+    /* define data_start as a weak symbol.  The latter is technically	*/
+    /* broken, since the user program may define data_start, in which	*/
+    /* case we lose.  Nonetheless, we try both, prefering __data_start.	*/
+    /* We assume gcc.	*/
+#   pragma weak __data_start
+    extern int __data_start;
+#   pragma weak data_start
+    extern int data_start;
+#   define DATASTART ((ptr_t)(&__data_start != 0? &__data_start : &data_start))
 #endif
 
 # ifndef STACK_GROWS_UP
@@ -1161,6 +1280,26 @@
 #   define DEFAULT_VDB
 # endif
 
+# ifndef PREFETCH
+#   define PREFETCH(x)
+#   define NO_PREFETCH
+# endif
+
+# ifndef PREFETCH_FOR_WRITE
+#   define PREFETCH_FOR_WRITE(x)
+#   define NO_PREFETCH_FOR_WRITE
+# endif
+
+# ifndef CACHE_LINE_SIZE
+#   define CACHE_LINE_SIZE 32	/* Wild guess	*/
+# endif
+
+# ifndef CLEAR_DOUBLE
+#   define CLEAR_DOUBLE(x) \
+	((word*)x)[0] = 0; \
+	((word*)x)[1] = 0;
+# endif /* CLEAR_DOUBLE */
+
 # if defined(_SOLARIS_PTHREADS) && !defined(SOLARIS_THREADS)
 #   define SOLARIS_THREADS
 # endif
@@ -1197,4 +1336,4 @@
 				/* include assembly code to do it well.	*/
 # endif
 
-# endif
+# endif /* GCCONFIG_H */

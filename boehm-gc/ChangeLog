@@ -1,3 +1,11 @@
+2000-04-19  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	Imported version version 5.0alpha6.
+	* acinclude.m4: Bump version to 5.0a6.
+	* configure.in: Don't use alpha_mach_dep.s.
+	* include/private/config.h, irix_threads.c gc_watcom.asm: Delete 
+	obsolete files.
+
 2000-03-26  Anthony Green  <green@redhat.com>
 
 	* misc.c (GC_enable): Always define GC_enable and GC_disable.
@@ -105,7 +113,7 @@ Fri Jan 28 17:13:20 2000  Anthony Green  <green@cygnus.com>
 
 Tue Aug 10 00:08:29 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
-	* gc_priv.h: Merged IRIX thread changes from
+	* gc_priv.h:  IRIX thread changes from
 	include/private/gc_priv.h.
 
 Mon Aug  9 18:33:38 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>

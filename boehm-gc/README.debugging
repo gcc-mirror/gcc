@@ -40,7 +40,8 @@ void * big_realloc(void *p, size_t new_size)
 1) Consider using GC_malloc_atomic for objects containing nonpointers.  This is especially important for large arrays containg compressed data, pseudo-random numbers, and the like.  (This isn't all that likely to solve your problem, but it's a useful and easy optimization anyway, and this is a good time to try it.)   If you allocate large objects containg only one or two pointers at the beginning, either try the typed allocation primitives is gc.h, or separate out the pointerfree component.
 2) If you are using the collector in its default mode, with interior pointer recognition enabled, consider using GC_malloc_ignore_off_page to allocate large objects.  (See gc.h and above for details.  Large means > 100K in most environments.)
 3) GC_print_block_list() will print a list of all currently allocated heap blocks and what size objects they contain.  GC_print_hblkfreelist() will print a list of free heap blocks, and whether they are blacklisted.  GC_dump calls both of these, and also prints information about heap sections, and root segments.
-4) Write a tool that traces back references to the appropriate root.  Send me the code.  (I have code that does this for old PCR.)
+4) Build the collector with -DKEEP_BACK_PTRS, and use the backptr.h
+interface to determine why objects are being retained.
 
 
 ****If the collector appears to be losing objects:
@@ -54,5 +55,14 @@ void * big_realloc(void *p, size_t new_size)
 6) "print *GC_find_header(p)" in dbx or gdb will print the garbage collector block header information associated with the object p (e.g. object size, etc.)
 7) GC_is_marked(p) determines whether p is the base address of a marked object.  Note that objects allocated since the last collection should not be marked, and that unmarked objects are reclaimed incrementally.  It's usually most interesting to set a breakpoint in GC_finish_collection and then to determine how much of the damaged data structure is marked at that point.
 8) Look at the tracing facility in mark.c.  (Ignore this suggestion unless you are very familiar with collector internals.)
+9) [From Melissa O'Neill:]
+If you're using multiple threads, double check that all thread
+creation goes through the GC_ wrapper functions rather than
+calling the thread-creation functions themselves (e.g.,
+GC_pthread_create rather than pthread_create).  The gc.h header
+file includes suitable preprocessor definitions to accomplish
+this mapping transparently -- the question is: are you including
+it in all the modules that create threads?
+
 
 

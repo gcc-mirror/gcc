@@ -15,6 +15,8 @@
 /* An incomplete test for the garbage collector.  		*/
 /* Some more obscure entry points are not tested at all.	*/
 
+# undef GC_BUILD
+
 # if defined(mips) && defined(SYSTYPE_BSD43)
     /* MIPS RISCOS 4 */
 # else
@@ -147,7 +149,6 @@ sexpr y;
     register sexpr r;
     
     r = (sexpr) GC_MALLOC_UNCOLLECTABLE(sizeof(struct SEXPR));
-assert(GC_is_marked(r));
     if (r == 0) {
         (void)GC_printf0("Out of memory\n");
         exit(1);
@@ -156,6 +157,76 @@ assert(GC_is_marked(r));
     r -> sexpr_cdr = (sexpr)(~(unsigned long)y);
     return(r);
 }
+
+#ifdef GC_GCJ_SUPPORT
+
+#include "gc_mark.h"
+#include "dbg_mlc.h"
+#include "include/gc_gcj.h"
+
+/* The following struct emulates the vtable in gcj.	*/
+/* This assumes the default value of MARK_DESCR_OFFSET. */
+struct fake_vtable {
+  void * dummy;		/* class pointer in real gcj.	*/
+  size_t descr;
+};
+
+struct fake_vtable gcj_class_struct1 = { 0, sizeof(struct SEXPR)
+					    + sizeof(struct fake_vtable *) };
+			/* length based descriptor.	*/
+struct fake_vtable gcj_class_struct2 =
+				{ 0, (3l << (CPP_WORDSZ - 3)) | DS_BITMAP};
+			/* Bitmap based descriptor.	*/
+
+struct ms_entry * fake_gcj_mark_proc(word * addr,
+				     struct ms_entry *mark_stack_ptr,
+				     struct ms_entry *mark_stack_limit,
+				     word env   )
+{
+    sexpr x;
+    if (1 == env) {
+	/* Object allocated with debug allocator.	*/
+	addr = (word *)USR_PTR_FROM_BASE(addr);
+    }
+    x = (sexpr)(addr + 1); /* Skip the vtable pointer. */
+    /* We could just call PUSH_CONTENTS directly here.  But any real	*/
+    /* real client would try to filter out the obvious misses.		*/
+    if (0 != x -> sexpr_cdr) {
+	PUSH_CONTENTS((ptr_t)(x -> sexpr_cdr), mark_stack_ptr,
+			      mark_stack_limit, &(x -> sexpr_cdr), exit1);
+    }
+    if ((ptr_t)(x -> sexpr_car) > GC_least_plausible_heap_addr) {
+	PUSH_CONTENTS((ptr_t)(x -> sexpr_car), mark_stack_ptr,
+			      mark_stack_limit, &(x -> sexpr_car), exit2);
+    }
+    return(mark_stack_ptr);
+}
+
+sexpr gcj_cons(x, y)
+sexpr x;
+sexpr y;
+{
+    GC_word * r;
+    sexpr result;
+    static int count = 0;
+    
+    if (++count & 1) {
+        r = (GC_word *) GC_GCJ_FAST_MALLOC(3, &gcj_class_struct1);
+    } else {
+        r = (GC_word *) GC_GCJ_MALLOC(sizeof(struct SEXPR)
+				      + sizeof(struct fake_vtable*),
+				      &gcj_class_struct2);
+    }
+    if (r == 0) {
+        (void)GC_printf0("Out of memory\n");
+        exit(1);
+    }
+    result = (sexpr)(r + 1);
+    result -> sexpr_car = x;
+    result -> sexpr_cdr = y;
+    return(result);
+}
+#endif
 
 /* Return reverse(x) concatenated with y */
 sexpr reverse1(x, y)
@@ -183,6 +254,35 @@ int low, up;
         return(small_cons(small_cons(INT_TO_SEXPR(low), nil), ints(low+1, up)));
     }
 }
+
+#ifdef GC_GCJ_SUPPORT
+/* Return reverse(x) concatenated with y */
+sexpr gcj_reverse1(x, y)
+sexpr x, y;
+{
+    if (is_nil(x)) {
+        return(y);
+    } else {
+        return( gcj_reverse1(cdr(x), gcj_cons(car(x), y)) );
+    }
+}
+
+sexpr gcj_reverse(x)
+sexpr x;
+{
+    return( gcj_reverse1(x, nil) );
+}
+
+sexpr gcj_ints(low, up)
+int low, up;
+{
+    if (low > up) {
+	return(nil);
+    } else {
+        return(gcj_cons(gcj_cons(INT_TO_SEXPR(low), nil), gcj_ints(low+1, up)));
+    }
+}
+#endif /* GC_GCJ_SUPPORT */
 
 /* To check uncollectable allocation we build lists with disguised cdr	*/
 /* pointers, and make sure they don't go away.				*/
@@ -367,7 +467,12 @@ void reverse_test()
     g[799] = ints(1,18);
     h = (sexpr *)GC_MALLOC(1025 * sizeof(sexpr));
     h = (sexpr *)GC_REALLOC((GC_PTR)h, 2000 * sizeof(sexpr));
-    h[1999] = ints(1,19);
+#   ifdef GC_GCJ_SUPPORT
+      h[1999] = gcj_ints(1,200);
+      h[1999] = gcj_reverse(h[1999]);
+#   else
+      h[1999] = ints(1,200);
+#   endif
     /* Try to force some collections and reuse of small list elements */
       for (i = 0; i < 10; i++) {
         (void)ints(1, BIG);
@@ -412,7 +517,10 @@ void reverse_test()
     check_uncollectable_ints(d, 1, 100);
     check_ints(f[5], 1,17);
     check_ints(g[799], 1,18);
-    check_ints(h[1999], 1,19);
+#   ifdef GC_GCJ_SUPPORT
+      h[1999] = gcj_reverse(h[1999]);
+#   endif
+    check_ints(h[1999], 1,200);
 #   ifndef THREADS
 	a = 0;
 #   endif  
@@ -759,6 +867,10 @@ void typed_test()
     old = 0;
     for (i = 0; i < 4000; i++) {
         new = (GC_word *) GC_malloc_explicitly_typed(4 * sizeof(GC_word), d1);
+        if (0 != new[0] || 0 != new[1]) {
+	    GC_printf0("Bad initialization by GC_malloc_explicitly_typed\n");
+	    FAIL;
+	}
         new[0] = 17;
         new[1] = (GC_word)old;
         old = new;
@@ -782,6 +894,10 @@ void typed_test()
           new = (GC_word *) GC_calloc_explicitly_typed(1001,
           					       3 * sizeof(GC_word),
         					       d2);
+          if (0 != new[0] || 0 != new[1]) {
+	    GC_printf0("Bad initialization by GC_malloc_explicitly_typed\n");
+	    FAIL;
+	  }
         }
         new[0] = 17;
         new[1] = (GC_word)old;
@@ -906,6 +1022,10 @@ void run_one_test()
     /* Test floating point alignment */
 	*(double *)GC_MALLOC(sizeof(double)) = 1.0;
 	*(double *)GC_MALLOC(sizeof(double)) = 1.0;
+#   ifdef GC_GCJ_SUPPORT
+      GC_REGISTER_DISPLACEMENT(sizeof(struct fake_vtable *));
+      GC_init_gcj_malloc(0, (void *)fake_gcj_mark_proc);
+#   endif
     /* Repeated list reversal test. */
 	reverse_test();
 #   ifdef PRINTSTATS
@@ -1032,7 +1152,7 @@ void SetMinimumStack(long minSize)
 #if !defined(PCR) && !defined(SOLARIS_THREADS) && !defined(WIN32_THREADS) \
   && !defined(IRIX_THREADS) && !defined(LINUX_THREADS) \
   && !defined(HPUX_THREADS) || defined(LINT)
-#ifdef MSWIN32
+#if defined(MSWIN32) && !defined(__MINGW32__)
   int APIENTRY WinMain(HINSTANCE instance, HINSTANCE prev, LPSTR cmd, int n)
 #else
   int main()
@@ -1114,19 +1234,24 @@ int APIENTRY WinMain(HINSTANCE instance, HINSTANCE prev, LPSTR cmd, int n)
 # endif
   InitializeCriticalSection(&incr_cs);
   (void) GC_set_warn_proc(warn_proc);
-  for (i = 0; i < NTEST; i++) {
+# if NTEST > 0
+   for (i = 0; i < NTEST; i++) {
     h[i] = (HANDLE)_beginthreadex(NULL, 0, thr_run_one_test, 0, 0, &thread_id);
     if (h[i] == (HANDLE)-1) {
       (void)GC_printf1("Thread creation failed %lu\n", (unsigned long)GetLastError());
       FAIL;
     }
-  }
+   }
+# endif /* NTEST > 0 */
   run_one_test();
-  for (i = 0; i < NTEST; i++)
+# if NTEST > 0
+   for (i = 0; i < NTEST; i++) {
     if (WaitForSingleObject(h[i], INFINITE) != WAIT_OBJECT_0) {
       (void)GC_printf1("Thread wait failed %lu\n", (unsigned long)GetLastError());
       FAIL;
     }
+   }
+# endif /* NTEST > 0 */
   check_heap_stats();
   (void)fflush(stdout);
   return(0);

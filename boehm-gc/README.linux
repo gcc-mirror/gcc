@@ -31,16 +31,28 @@ To use threads, you need to abide by the following requirements:
 2) You must compile the collector with -DLINUX_THREADS and -D_REENTRANT
    specified in the Makefile.
 
-3) Every file that makes thread calls should define LINUX_THREADS and 
+3a) Every file that makes thread calls should define LINUX_THREADS and 
    _REENTRANT and then include gc.h.  Gc.h redefines some of the
    pthread primitives as macros which also provide the collector with
    information it requires.
 
-4) Currently dlopen() is probably not safe.  The collector must traverse
-   the list of libraries maintained by the runtime loader.  That can
-   probably be an inconsistent state when a thread calling the loader is
-   is stopped for GC.  (It's possible that this is fixable in the
-   same way it is handled for SOLARIS_THREADS, with GC_dlopen.)
+3b) A new alternative to (3a) is to build the collector with
+   -DUSE_LD_WRAP, and to link the final program with
+
+   (for ld) --wrap read --wrap dlopen --wrap pthread_create \
+	    --wrap pthread_join --wrap pthread_sigmask
+
+   (for gcc) -Wl,--wrap -Wl,read -Wl,--wrap -Wl,dlopen -Wl,--wrap \
+	     -Wl,pthread_create -Wl,--wrap -Wl,pthread_join -Wl,--wrap \
+	     -Wl,pthread_sigmask
+
+   In any case, _REENTRANT should be defined during compilation.
+
+4) Dlopen() disables collection during its execution.  (It can't run
+   concurrently with the collector, since the collector looks at its
+   data structures.  It can't acquire the allocator lock, since arbitrary
+   user startup code may run as part of dlopen().)  Under unusual
+   conditions, this may cause unexpected heap growth.
 
 5) The combination of LINUX_THREADS, REDIRECT_MALLOC, and incremental
    collection fails in seemingly random places.  This hasn't been tracked
@@ -48,3 +60,9 @@ To use threads, you need to abide by the following requirements:
    uses malloc, and thus can presumably get SIGSEGVs while inside the
    package.  There is no real guarantee that signals are handled properly
    at that point.
+
+6) Thread local storage may not be viewed as part of the root set by the
+   collector.  This probably depends on the linuxthreads version.  For the
+   time being, any collectable memory referenced by thread local storage should
+   also be referenced from elsewhere, or be allocated as uncollectable.
+   (This is really a bug that should be fixed somehow.)

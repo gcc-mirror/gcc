@@ -76,14 +76,16 @@ GC_pthread_create(pthread_t *new_thread,
     pthread_attr_t  attr;
     word my_flags = 0;
     int  flag;
-    void * stack;
-    size_t stack_size;
+    void * stack = 0;
+    size_t stack_size = 0;
     int    n;
     struct sched_param schedparam;
    
-    (void)pthread_attr_getstacksize(attr_in, &stack_size);
-    (void)pthread_attr_getstackaddr(attr_in, &stack);
     (void)pthread_attr_init(&attr);
+    if (attr_in != 0) {
+	(void)pthread_attr_getstacksize(attr_in, &stack_size);
+	(void)pthread_attr_getstackaddr(attr_in, &stack);
+    }
 
     LOCK();
     if (!GC_thr_initialized) {
@@ -93,7 +95,11 @@ GC_pthread_create(pthread_t *new_thread,
 	    
     if (stack == 0) {
      	if (stack_size == 0)
-		stack_size = GC_min_stack_sz;
+		stack_size = 1048576;
+			  /* ^-- 1 MB (this was GC_min_stack_sz, but that
+			   * violates the pthread_create documentation which
+			   * says the default value if none is supplied is
+			   * 1MB) */
 	else
 		stack_size += thr_min_stack();
 
@@ -109,20 +115,22 @@ GC_pthread_create(pthread_t *new_thread,
     }
     (void)pthread_attr_setstacksize(&attr, stack_size);
     (void)pthread_attr_setstackaddr(&attr, stack);
-    (void)pthread_attr_getscope(attr_in, &n);
-    (void)pthread_attr_setscope(&attr, n);
-    (void)pthread_attr_getschedparam(attr_in, &schedparam);
-    (void)pthread_attr_setschedparam(&attr, &schedparam);
-    (void)pthread_attr_getschedpolicy(attr_in, &n);
-    (void)pthread_attr_setschedpolicy(&attr, n);
-    (void)pthread_attr_getinheritsched(attr_in, &n);
-    (void)pthread_attr_setinheritsched(&attr, n);
+    if (attr_in != 0) {
+	(void)pthread_attr_getscope(attr_in, &n);
+	(void)pthread_attr_setscope(&attr, n);
+	(void)pthread_attr_getschedparam(attr_in, &schedparam);
+	(void)pthread_attr_setschedparam(&attr, &schedparam);
+	(void)pthread_attr_getschedpolicy(attr_in, &n);
+	(void)pthread_attr_setschedpolicy(&attr, n);
+	(void)pthread_attr_getinheritsched(attr_in, &n);
+	(void)pthread_attr_setinheritsched(&attr, n);
 
-    (void)pthread_attr_getdetachstate(attr_in, &flag);
-    if (flag == PTHREAD_CREATE_DETACHED) {
-	    my_flags |= DETACHED;
+	(void)pthread_attr_getdetachstate(attr_in, &flag);
+	if (flag == PTHREAD_CREATE_DETACHED) {
+		my_flags |= DETACHED;
+	}
+	(void)pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
     }
-    (void)pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
     /*
      * thr_create can call malloc(), which if redirected will
      * attempt to acquire the allocation lock.
