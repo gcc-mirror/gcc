@@ -7961,7 +7961,7 @@ simplify_shift_const (x, code, result_mode, varop, count)
 	    rtx rhs = simplify_shift_const (NULL_RTX, code, shift_mode,
 					    XEXP (varop, 1), count);
 
-	    varop = gen_binary (GET_CODE (varop), GET_MODE (varop), lhs, rhs);
+	    varop = gen_binary (GET_CODE (varop), shift_mode, lhs, rhs);
 	    varop = apply_distributive_law (varop);
 
 	    count = 0;
