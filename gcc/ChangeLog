@@ -1,3 +1,9 @@
+
+2003-09-09  Devang Patel  <dpatel@apple.com>
+
+	* config/darwin.h (LINK_SPEC): Pass -nofixprebinding to linker.
+	* doc/invoke.texi: Document new Darwin linker option -nofixprebinding.
+	
 2003-09-09  Eric Christopher  <echristo@redhat.com>
 
 	* configure.in: Change usage of 'head' to 'sed 1q'.

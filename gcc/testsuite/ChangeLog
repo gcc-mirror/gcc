@@ -1,3 +1,8 @@
+
+2003-09-09  Devang Patel  <dpatel@apple.com>
+
+	* gcc.dg/darwin-ld-6.c: New test.
+	
 2003-09-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-explog-1.c: New testcase.
