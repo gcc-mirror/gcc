@@ -8271,6 +8271,8 @@ require_complete_types_for_parms (tree parms)
 {
   for (; parms; parms = TREE_CHAIN (parms))
     {
+      if (dependent_type_p (TREE_TYPE (parms)))
+	continue;
       if (VOID_TYPE_P (TREE_TYPE (parms)))
         /* grokparms will have already issued an error.  */
         TREE_TYPE (parms) = error_mark_node;
@@ -9840,6 +9842,8 @@ check_function_type (tree decl, tree current_function_parms)
   /* In a function definition, arg types must be complete.  */
   require_complete_types_for_parms (current_function_parms);
 
+  if (dependent_type_p (return_type))
+    return;
   if (!COMPLETE_OR_VOID_TYPE_P (return_type))
     {
       error ("return type %q#T is incomplete", TREE_TYPE (fntype));
@@ -9985,8 +9989,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   /* Make sure the parameter and return types are reasonable.  When
      you declare a function, these types can be incomplete, but they
      must be complete when you define the function.  */
-  if (! processing_template_decl)
-    check_function_type (decl1, current_function_parms);
+  check_function_type (decl1, current_function_parms);
 
   /* Build the return declaration for the function.  */
   restype = TREE_TYPE (fntype);

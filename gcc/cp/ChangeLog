@@ -1,3 +1,10 @@
+2004-11-16  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* decl.c (start_preparsed_function): Call check_function_type even
+	in templates.
+	(require_complete_types_for_parms): Skip dependent types.
+	(check_function_type): Likewise.
+
 2004-11-16  Steven Bosscher  <stevenb@suse.de>
 
 	* Make-lang.in (cp/decl.o, cp/search.o): Don't depend on stack.h.
