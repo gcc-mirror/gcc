@@ -1,5 +1,28 @@
 2003-03-02  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/FileChannelImpl.java
+	(fd): Type FileDescriptor instead of int.
+	(lengthInternal): Removed.
+	(FileChannelImpl): Fixed arguments, check type of file object.
+	(size): Made it native.
+	(implPosition): New native method.
+	(implTruncate): New native method.
+	(position): Implemented.
+	(truncate): Implemented.
+	(nio_mmap_file): Changed arguments.
+	(nio_munmap_file): Changed arguments.
+	(nio_msync): Changed arguments.
+	* gnu/java/nio/natFileChannelImpl.cc
+	(lengthInternal): Removed.
+	(size): New method.
+	(implPosition): New method.
+	(implTruncate): New method.
+	(nio_mmap_file): Changed arguments.
+	(nio_munmap_file): Changed arguments.
+	(nio_msync): Changed arguments.
+
+2003-03-02  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/dnd/DropTargetContext.java:
 	Compile fix: Forgot to commit import.
 	
