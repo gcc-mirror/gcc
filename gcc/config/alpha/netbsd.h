@@ -72,7 +72,8 @@ Boston, MA 02111-1307, USA.  */
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC		\
   "%{ffast-math|funsafe-math-optimizations:crtfm%O%s} \
-   %{!shared:crtend%O%s} %{shared:crtendS%O%s}"
+   %{!shared:crtend%O%s} %{shared:crtendS%O%s} \
+   %:if-exists(crtn%O%s)"
 
 
 /* Attempt to enable execute permissions on the stack.  */

@@ -292,6 +292,9 @@ static void delete_failure_queue PARAMS ((void));
 static void clear_failure_queue PARAMS ((void));
 static int check_live_switch	PARAMS ((int, int));
 static const char *handle_braces PARAMS ((const char *));
+static const struct spec_function *lookup_spec_function PARAMS ((const char *));
+static const char *eval_spec_function	PARAMS ((const char *, const char *));
+static const char *handle_spec_function PARAMS ((const char *));
 static char *save_string	PARAMS ((const char *, int));
 static void set_collect_gcc_options PARAMS ((void));
 static int do_spec_1		PARAMS ((const char *, int, const char *));
@@ -317,6 +320,7 @@ static void add_assembler_option	PARAMS ((const char *, int));
 static void add_linker_option		PARAMS ((const char *, int));
 static void process_command		PARAMS ((int, const char *const *));
 static int execute			PARAMS ((void));
+static void alloc_args			PARAMS ((void));
 static void clear_args			PARAMS ((void));
 static void fatal_error			PARAMS ((int));
 #ifdef ENABLE_SHARED_LIBGCC
@@ -327,6 +331,8 @@ static void init_gcc_specs              PARAMS ((struct obstack *,
 #if defined(HAVE_TARGET_OBJECT_SUFFIX) || defined(HAVE_TARGET_EXECUTABLE_SUFFIX)
 static const char *convert_filename	PARAMS ((const char *, int, int));
 #endif
+
+static const char *if_exists_spec_function PARAMS ((int, const char **));
 
 /* The Specs Language
 
@@ -450,6 +456,12 @@ or with constant text in a single argument.
  %*	substitute the variable part of a matched option.  (See below.)
 	Note that each comma in the substituted string is replaced by
 	a single space.
+ %:function(args)
+	Call the named function FUNCTION, passing it ARGS.  ARGS is
+	first processed as a nested spec string, then split into an
+	argument vector in the usual fashion.  The function returns
+	a string which is processed as if it had appeared literally
+	as part of the current spec.
  %{S}   substitutes the -S switch, if that switch was given to CC.
 	If that switch was not specified, this substitutes nothing.
 	Here S is a metasyntactic variable.
@@ -1439,6 +1451,16 @@ static struct spec_list *extra_specs = (struct spec_list *) 0;
 
 static struct spec_list *specs = (struct spec_list *) 0;
 
+/* List of static spec functions.  */
+
+static const struct spec_function static_spec_functions[] =
+{
+  { "if-exists",		if_exists_spec_function },
+  { 0, 0 }
+};
+
+static int processing_spec_function;
+
 /* Add appropriate libgcc specs to OBSTACK, taking into account
    various permutations of -shared-libgcc, -shared, and such.  */
 
@@ -1710,6 +1732,15 @@ static int signal_count;
 
 static const char *programname;
 
+/* Allocate the argument vector.  */
+
+static void
+alloc_args ()
+{
+  argbuf_length = 10;
+  argbuf = (const char **) xmalloc (argbuf_length * sizeof (const char *));
+}
+
 /* Clear out the vector of arguments (after a command is executed).  */
 
 static void
@@ -2752,6 +2783,9 @@ execute ()
   };
 
   struct command *commands;	/* each command buffer with above info.  */
+
+  if (processing_spec_function)
+    abort ();
 
   /* Count # of piped commands.  */
   for (n_commands = 1, i = 0; i < argbuf_index; i++)
@@ -5118,6 +5152,12 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      return -1;
 	    break;
 
+	  case ':':
+	    p = handle_spec_function (p);
+	    if (p == 0)
+	      return -1;
+	    break;
+
 	  case '%':
 	    obstack_1grow (&obstack, '%');
 	    break;
@@ -5311,8 +5351,177 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	arg_going = 1;
       }
 
-  /* End of string.  */
+  /* End of string.  If we are processing a spec function, we need to
+     end any pending argument.  */
+  if (processing_spec_function && arg_going)
+    {
+      obstack_1grow (&obstack, 0);
+      string = obstack_finish (&obstack);
+      if (this_is_library_file)
+        string = find_file (string);
+      store_arg (string, delete_this_arg, this_is_output_file);
+      if (this_is_output_file)
+        outfiles[input_file_number] = string;
+      arg_going = 0;
+    }
+
   return 0;
+}
+
+/* Look up a spec function.  */
+
+static const struct spec_function *
+lookup_spec_function (name)
+     const char *name;
+{
+  static const struct spec_function * const spec_function_tables[] =
+  {
+    static_spec_functions,
+    lang_specific_spec_functions,
+  };
+  const struct spec_function *sf;
+  unsigned int i;
+
+  for (i = 0; i < ARRAY_SIZE (spec_function_tables); i++)
+    {
+      for (sf = spec_function_tables[i]; sf->name != NULL; sf++)
+	if (strcmp (sf->name, name) == 0)
+	  return sf;
+    }
+
+  return NULL;
+}
+
+/* Evaluate a spec function.  */
+
+static const char *
+eval_spec_function (func, args)
+     const char *func, *args;
+{
+  const struct spec_function *sf;
+  const char *funcval;
+
+  /* Saved spec processing context.  */
+  int save_argbuf_index;
+  int save_argbuf_length;
+  const char **save_argbuf;
+
+  int save_arg_going;
+  int save_delete_this_arg;
+  int save_this_is_output_file;
+  int save_this_is_library_file;
+  int save_input_from_pipe;
+  const char *save_suffix_subst;
+
+
+  sf = lookup_spec_function (func);
+  if (sf == NULL)
+    fatal ("unknown spec function `%s'", func);
+
+  /* Push the spec processing context.  */
+  save_argbuf_index = argbuf_index;
+  save_argbuf_length = argbuf_length;
+  save_argbuf = argbuf;
+
+  save_arg_going = arg_going;
+  save_delete_this_arg = delete_this_arg;
+  save_this_is_output_file = this_is_output_file;
+  save_this_is_library_file = this_is_library_file;
+  save_input_from_pipe = input_from_pipe;
+  save_suffix_subst = suffix_subst;
+
+  /* Create a new spec processing context, and build the function
+     arguments.  */
+
+  alloc_args ();
+  if (do_spec_2 (args) < 0)
+    fatal ("error in args to spec function `%s'", func);
+
+  /* argbuf_index is an index for the next argument to be inserted, and
+     so contains the count of the args already inserted.  */
+
+  funcval = (*sf->func) (argbuf_index, argbuf);
+
+  /* Pop the spec processing context.  */
+  argbuf_index = save_argbuf_index;
+  argbuf_length = save_argbuf_length;
+  free (argbuf);
+  argbuf = save_argbuf;
+
+  arg_going = save_arg_going;
+  delete_this_arg = save_delete_this_arg;
+  this_is_output_file = save_this_is_output_file;
+  this_is_library_file = save_this_is_library_file;
+  input_from_pipe = save_input_from_pipe;
+  suffix_subst = save_suffix_subst;
+
+  return funcval;
+}
+
+/* Handle a spec function call of the form:
+
+   %:function(args)
+
+   ARGS is processed as a spec in a separate context and split into an
+   argument vector in the normal fashion.  The function returns a string
+   containing a spec which we then process in the caller's context, or
+   NULL if no processing is required.  */
+
+static const char *
+handle_spec_function (p)
+     const char *p;
+{
+  char *func, *args;
+  const char *endp, *funcval;
+  int count;
+
+  processing_spec_function++;
+
+  /* Get the function name.  */
+  for (endp = p; *endp != '\0'; endp++)
+    {
+      if (*endp == '(')		/* ) */
+        break;
+      /* Only allow [A-Za-z0-9], -, and _ in function names.  */
+      if (!ISALNUM (*endp) && !(*endp == '-' || *endp == '_'))
+	fatal ("malformed spec function name");
+    }
+  if (*endp != '(')		/* ) */
+    fatal ("no arguments for spec function");
+  func = save_string (p, endp - p);
+  p = ++endp;
+
+  /* Get the arguments.  */
+  for (count = 0; *endp != '\0'; endp++)
+    {
+      /* ( */
+      if (*endp == ')')
+	{
+	  if (count == 0)
+	    break;
+	  count--;
+	}
+      else if (*endp == '(')	/* ) */
+	count++;
+    }
+  /* ( */
+  if (*endp != ')')
+    fatal ("malformed spec function arguments");
+  args = save_string (p, endp - p);
+  p = ++endp;
+
+  /* p now points to just past the end of the spec function expression.  */
+
+  funcval = eval_spec_function (func, args);
+  if (funcval != NULL && do_spec_1 (funcval, 0, NULL) < 0)
+    p = NULL;
+
+  free (func);
+  free (args);
+
+  processing_spec_function--;
+
+  return p;
 }
 
 /* Return 0 if we call do_spec_1 and that returns -1.  */
@@ -5897,8 +6106,8 @@ main (argc, argv)
   signal (SIGCHLD, SIG_DFL);
 #endif
 
-  argbuf_length = 10;
-  argbuf = (const char **) xmalloc (argbuf_length * sizeof (const char *));
+  /* Allocate the argument vector.  */
+  alloc_args ();
 
   obstack_init (&obstack);
 
@@ -7252,4 +7461,24 @@ print_multilib_info ()
 
       ++p;
     }
+}
+
+/* if-exists built-in spec function.
+
+   Checks to see if the file specified by the absolute pathname in
+   ARGS exists.  Returns that pathname if found.
+
+   The usual use for this function is to check for a library file
+   (whose name has been expanded with %s).  */
+
+static const char *
+if_exists_spec_function (argc, argv)
+     int argc;
+     const char **argv;
+{
+  /* Must have only one argument.  */
+  if (argc == 1 && IS_ABSOLUTE_PATHNAME (argv[0]) && ! access (argv[0], R_OK))
+    return argv[0];
+
+  return NULL;
 }

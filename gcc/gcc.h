@@ -23,6 +23,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "version.h"
 
+/* The mapping of a spec function name to the C function that
+   implements it.  */
+struct spec_function
+{       
+  const char *name;
+  const char *(*func) PARAMS ((int, const char **));
+};
+
 /* These are exported by gcc.c.  */
 extern int do_spec PARAMS ((const char *));
 extern void record_temp_file PARAMS ((const char *, int, int));
@@ -47,6 +55,9 @@ extern int n_infiles;
 
 /* Number of extra output files that lang_specific_pre_link may generate.  */
 extern int lang_specific_extra_outfiles;
+
+/* Table of language-specific spec functions.  */
+extern const struct spec_function lang_specific_spec_functions[];
 
 /* A vector of corresponding output files is made up later.  */
 
