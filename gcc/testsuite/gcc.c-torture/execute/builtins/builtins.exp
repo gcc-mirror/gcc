@@ -1,0 +1,24 @@
+# This harness is for testing builtin support.  Each test has two files:
+#
+#    - foo.c defines the main testing function, main_test().
+#    - foo-lib.c implements the library functions that foo.c is testing.
+#
+# The functions in foo-lib.c will often want to abort on certain inputs.
+# They can use the global variable inside_main to see whether they are
+# being called from the test program or part of the common runtime.
+#
+# In many cases, the library functions will behave as normal at -O0
+# and abort when optimisation is enabled.  Such implementations should
+# go into the lib/ directory so that they can be included by any test
+# that needs them.  They shouldn't call any external functions in case
+# those functions were overridden too.
+
+load_lib c-torture.exp
+
+foreach src [lsort [find $srcdir/$subdir *.c]] {
+    if {![string match *-lib.c $src] && [runtest_file_p $runtests $src]} {
+	c-torture-execute [list $src \
+			        [file root $src]-lib.c \
+			        $srcdir/$subdir/lib/main.c]
+    }
+}

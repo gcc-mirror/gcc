@@ -1,6 +1,7 @@
 /* Test for builtin noreturn attributes when the visible declarations
-   are function-local.  Doesn't presently work.  Modified from
-   builtin-noret-1.c by Zack Weinberg <zack@codesourcery.com>.  */
+   are function-local.  Modified from builtin-noret-1.c by Zack Weinberg
+   <zack@codesourcery.com>.  */
+/* { dg-do link } */
 
 extern void tabort (void);
 extern void texit (void);
@@ -13,7 +14,6 @@ int
 main (void)
 {
   volatile int i = 0;
-  /* The real test here is that the program links.  */
   if (i)
     tabort ();
   if (i)
@@ -49,9 +49,8 @@ t_exit (void)
   link_failure ();
 }
 
-/* Some non-Unix libcs might not have _exit.  This version should never
-   get called.  */
-static void
+/* Some non-Unix libcs might not have _exit.  */
+void
 _exit (int i)
 {
   abort ();
@@ -65,20 +64,9 @@ t_Exit (void)
   link_failure ();
 }
 
-/* Some libcs might not have _Exit.  This version should never get called.  */
-static void
+/* Some libcs might not have _Exit.  */
+void
 _Exit (int i)
 {
   abort ();
 }
-
-/* When optimizing, no calls to link_failure should remain.  In any case,
-   link_failure should not be called.  */
-
-#ifndef __OPTIMIZE__
-void
-link_failure (void)
-{
-  abort ();
-}
-#endif

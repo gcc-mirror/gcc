@@ -1,3 +1,13 @@
+2003-05-11  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.c-torture/execute/builtins: New directory.
+	* gcc.c-torture/execute/string-opt-{3,4,16,17,18,19}.c: Move into
+	gcc.c-torture/execute/builtins.
+	* gcc.c-torture/execute/string-opt-asm-{1,2}.c: Likewise.
+	* gcc.c-torture/execute/builtin-noret-{1,2}.c: Move to...
+	* gcc.dg/torture: ...this new directory.  Turn into link-only tests.
+	* gcc.dg/no-builtin-1.c: Move into gcc.c-torture/execute/builtins.
+
 2003-05-10  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9252
