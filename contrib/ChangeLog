@@ -1,3 +1,8 @@
+2003-08-26  Matthias Klose  <doko@debian.org>
+
+	* test_summary: Include baseline used for libstdc++-v3
+	abi check in test summary.
+
 2004-08-25  Ben Elliston  <bje@au.ibm.com>
 
 	* gcc_update (libcpp/Makefile.in): Remove libcpp/Makefile.am.
