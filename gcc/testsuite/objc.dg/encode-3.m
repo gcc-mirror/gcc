@@ -28,7 +28,7 @@ union __XXAngle { unsigned int alpha, beta; };
 typedef struct { float x, y; union __XXAngle a; } XXPoint;
 typedef struct { double width, height; } XXSize;
 typedef struct _XXRect { XXPoint origin; XXSize size; struct _XXRect *next; } XXRect;
-- (void) char:(char)c float:(float)f double:(double)d unsigned:(unsigned)u short:(short)s long:(long)l;
+- (void) char:(signed char)c float:(float)f double:(double)d unsigned:(unsigned)u short:(short)s long:(long)l;
 - (void *)setRect:(XXRect)r withBool:(ProtoBool)b withInt:(int)i;
 + (Enum *)getEnum:(XXPoint *)pt enum:(enum Enum)e bool:(ObjCBool)b;
 + (ProtoBool **)getBool:(ObjCBool **)b;
