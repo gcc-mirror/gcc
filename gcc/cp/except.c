@@ -236,8 +236,8 @@ decl_is_java_type (tree decl, int err)
 	  && TYPE_FOR_JAVA (TREE_TYPE (decl)))
 	{
 	  /* Can't throw a reference.  */
-	  error ("type `%T' is disallowed in Java `throw' or `catch'",
-		    decl);
+	  error ("type %qT is disallowed in Java %<throw%> or %<catch%>",
+                 decl);
 	}
 
       if (r)
@@ -247,15 +247,15 @@ decl_is_java_type (tree decl, int err)
 
 	  if (jthrow_node == NULL_TREE)
 	    fatal_error
-	      ("call to Java `catch' or `throw' with `jthrowable' undefined");
+	      ("call to Java %<catch%> or %<throw%> with %<jthrowable%> undefined");
 
 	  jthrow_node = TREE_TYPE (TREE_TYPE (jthrow_node));
 
 	  if (! DERIVED_FROM_P (jthrow_node, TREE_TYPE (decl)))
 	    {
 	      /* Thrown object must be a Throwable.  */
-	      error ("type `%T' is not derived from `java::lang::Throwable'",
-			TREE_TYPE (decl));
+	      error ("type %qT is not derived from %<java::lang::Throwable%>",
+                     TREE_TYPE (decl));
 	    }
 	}
     }
@@ -596,7 +596,7 @@ build_throw (tree exp)
 	}
       else if (really_overloaded_fn (fn))
 	{
-	  error ("`%D' should never be overloaded", fn);
+	  error ("%qD should never be overloaded", fn);
 	  return error_mark_node;
 	}
       fn = OVL_CURRENT (fn);
@@ -807,7 +807,8 @@ is_admissible_throw_operand (tree expr)
             conversion.  */
   else if (CLASS_TYPE_P (type) && CLASSTYPE_PURE_VIRTUALS (type))
     {
-      error ("expression '%E' of abstract class type '%T' cannot be used in throw-expression", expr, type);
+      error ("expression %qE of abstract class type %qT cannot "
+             "be used in throw-expression", expr, type);
       return false;
     }
 
@@ -891,9 +892,9 @@ check_handlers_1 (tree master, tree_stmt_iterator i)
       tree handler = tsi_stmt (i);
       if (TREE_TYPE (handler) && can_convert_eh (type, TREE_TYPE (handler)))
 	{
-	  warning ("%Hexception of type `%T' will be caught",
+	  warning ("%Hexception of type %qT will be caught",
 		   EXPR_LOCUS (handler), TREE_TYPE (handler));
-	  warning ("%H   by earlier handler for `%T'",
+	  warning ("%H   by earlier handler for %qT",
 		   EXPR_LOCUS (master), type);
 	  break;
         }
@@ -923,7 +924,7 @@ check_handlers (tree handlers)
 	if (tsi_end_p (i))
 	  break;
 	if (TREE_TYPE (handler) == NULL_TREE)
-	  pedwarn ("%H`...' handler must be the last handler for"
+	  pedwarn ("%H%<...%> handler must be the last handler for"
 		   " its try block", EXPR_LOCUS (handler));
 	else
 	  check_handlers_1 (handler, i);

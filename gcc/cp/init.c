@@ -514,15 +514,15 @@ sort_mem_initializers (tree t, tree mem_inits)
       if (warn_reorder && !subobject_init)
 	{
 	  if (TREE_CODE (TREE_PURPOSE (next_subobject)) == FIELD_DECL)
-	    cp_warning_at ("`%D' will be initialized after",
+	    cp_warning_at ("%qD will be initialized after",
 			   TREE_PURPOSE (next_subobject));
 	  else
-	    warning ("base `%T' will be initialized after",
+	    warning ("base %qT will be initialized after",
 		     TREE_PURPOSE (next_subobject));
 	  if (TREE_CODE (subobject) == FIELD_DECL)
-	    cp_warning_at ("  `%#D'", subobject);
+	    cp_warning_at ("  %q#D", subobject);
 	  else
-	    warning ("  base `%T'", subobject);
+	    warning ("  base %qT", subobject);
 	  warning ("%J  when initialized here", current_function_decl);
 	}
 
@@ -666,7 +666,7 @@ emit_mem_initializers (tree mem_inits)
       if (extra_warnings && !arguments 
 	  && DECL_COPY_CONSTRUCTOR_P (current_function_decl)
 	  && TYPE_NEEDS_CONSTRUCTING (BINFO_TYPE (subobject)))
-	warning ("%Jbase class `%#T' should be explicitly initialized in the "
+	warning ("%Jbase class %q#T should be explicitly initialized in the "
 		 "copy constructor",
 		 current_function_decl, BINFO_TYPE (subobject));
 
@@ -890,26 +890,26 @@ member_init_ok_or_else (tree field, tree type, tree member_name)
     return 0;
   if (!field)
     {
-      error ("class `%T' does not have any field named `%D'", type,
+      error ("class %qT does not have any field named %qD", type,
 	     member_name);
       return 0;
     }
   if (TREE_CODE (field) == VAR_DECL)
     {
-      error ("`%#D' is a static data member; it can only be "
+      error ("%q#D is a static data member; it can only be "
 	     "initialized at its definition",
 	     field);
       return 0;
     }
   if (TREE_CODE (field) != FIELD_DECL)
     {
-      error ("`%#D' is not a non-static data member of `%T'",
+      error ("%q#D is not a non-static data member of %qT",
 	     field, type);
       return 0;
     }
   if (initializing_context (field) != type)
     {
-      error ("class `%T' does not have any field named `%D'", type,
+      error ("class %qT does not have any field named %qD", type,
 		member_name);
       return 0;
     }
@@ -942,7 +942,7 @@ expand_member_init (tree name)
       switch (BINFO_N_BASE_BINFOS (TYPE_BINFO (current_class_type)))
 	{
 	case 0:
-	  error ("unnamed initializer for `%T', which has no base classes",
+	  error ("unnamed initializer for %qT, which has no base classes",
 		 current_class_type);
 	  return NULL_TREE;
 	case 1:
@@ -950,7 +950,7 @@ expand_member_init (tree name)
 	    (BINFO_BASE_BINFO (TYPE_BINFO (current_class_type), 0));
 	  break;
 	default:
-	  error ("unnamed initializer for `%T', which uses multiple inheritance",
+	  error ("unnamed initializer for %qT, which uses multiple inheritance",
 		 current_class_type);
 	  return NULL_TREE;
       }
@@ -996,7 +996,7 @@ expand_member_init (tree name)
 	 base class, the mem-initializer is ill-formed.  */
       if (direct_binfo && virtual_binfo)
 	{
-	  error ("'%D' is both a direct base and an indirect virtual base",
+	  error ("%qD is both a direct base and an indirect virtual base",
 		 basetype);
 	  return NULL_TREE;
 	}
@@ -1004,10 +1004,10 @@ expand_member_init (tree name)
       if (!direct_binfo && !virtual_binfo)
 	{
 	  if (CLASSTYPE_VBASECLASSES (current_class_type))
-	    error ("type `%D' is not a direct or virtual base of `%T'",
+	    error ("type %qD is not a direct or virtual base of %qT",
 		   name, current_class_type);
 	  else
-	    error ("type `%D' is not a direct base of `%T'",
+	    error ("type %qD is not a direct base of %qT",
 		   name, current_class_type);
 	  return NULL_TREE;
 	}
@@ -1286,7 +1286,7 @@ is_aggr_type (tree type, int or_else)
       && TREE_CODE (type) != BOUND_TEMPLATE_TEMPLATE_PARM)
     {
       if (or_else)
-	error ("`%T' is not an aggregate type", type);
+	error ("%qT is not an aggregate type", type);
       return 0;
     }
   return 1;
@@ -1378,7 +1378,7 @@ build_offset_ref (tree type, tree name, bool address_p)
   if (TREE_CODE (name) == BIT_NOT_EXPR)
     {
       if (! check_dtor_name (type, name))
-	error ("qualified type `%T' does not match destructor name `~%T'",
+	error ("qualified type %qT does not match destructor name %<~%T%>",
 		  type, TREE_OPERAND (name, 0));
       name = dtor_identifier;
     }
@@ -1386,8 +1386,7 @@ build_offset_ref (tree type, tree name, bool address_p)
   if (!COMPLETE_TYPE_P (complete_type (type))
       && !TYPE_BEING_DEFINED (type))
     {
-      error ("incomplete type `%T' does not have member `%D'", type,
-		name);
+      error ("incomplete type %qT does not have member %qD", type, name);
       return error_mark_node;
     }
 
@@ -1406,7 +1405,7 @@ build_offset_ref (tree type, tree name, bool address_p)
 
   if (!member)
     {
-      error ("`%D' is not a member of type `%T'", name, type);
+      error ("%qD is not a member of type %qT", name, type);
       return error_mark_node;
     }
 
@@ -1433,7 +1432,7 @@ build_offset_ref (tree type, tree name, bool address_p)
 
   if (TREE_CODE (member) == FIELD_DECL && DECL_C_BIT_FIELD (member))
     {
-      error ("invalid pointer to bit-field `%D'", member);
+      error ("invalid pointer to bit-field %qD", member);
       return error_mark_node;
     }
 
@@ -1535,13 +1534,13 @@ build_offset_ref (tree type, tree name, bool address_p)
 	      PTRMEM_OK_P (member) = 1;
 	      return build_unary_op (ADDR_EXPR, member, 0);
 	    }
-	  error ("invalid use of non-static member function `%D'", 
+	  error ("invalid use of non-static member function %qD", 
 		 TREE_OPERAND (member, 1));
 	  return member;
 	}
       else if (TREE_CODE (member) == FIELD_DECL)
 	{
-	  error ("invalid use of non-static data member `%D'", member);
+	  error ("invalid use of non-static data member %qD", member);
 	  return error_mark_node;
 	}
       return member;
@@ -1696,7 +1695,7 @@ build_java_class_ref (tree type)
     {
       jclass_node = IDENTIFIER_GLOBAL_VALUE (get_identifier ("jclass"));
       if (jclass_node == NULL_TREE)
-	fatal_error ("call to Java constructor, while `jclass' undefined");
+	fatal_error ("call to Java constructor, while %<jclass%> undefined");
 
       jclass_node = TREE_TYPE (jclass_node);
     }
@@ -1825,7 +1824,7 @@ build_new_1 (tree exp)
 
   if (TREE_CODE (true_type) == VOID_TYPE)
     {
-      error ("invalid type `void' for new");
+      error ("invalid type %<void%> for new");
       return error_mark_node;
     }
 
@@ -1835,7 +1834,7 @@ build_new_1 (tree exp)
   is_initialized = (TYPE_NEEDS_CONSTRUCTING (type) || init);
   if (CP_TYPE_CONST_P (true_type) && !is_initialized)
     {
-      error ("uninitialized const in `new' of `%#T'", true_type);
+      error ("uninitialized const in %<new%> of %q#T", true_type);
       return error_mark_node;
     }
 
@@ -1868,12 +1867,12 @@ build_new_1 (tree exp)
       if (!get_global_value_if_present (get_identifier (alloc_name), 
 					&alloc_decl))
 	{
-	  error ("call to Java constructor with `%s' undefined", alloc_name);
+	  error ("call to Java constructor with %qs undefined", alloc_name);
 	  return error_mark_node;
 	}
       else if (really_overloaded_fn (alloc_decl))
 	{
-	  error ("`%D' should never be overloaded", alloc_decl);
+	  error ("%qD should never be overloaded", alloc_decl);
 	  return error_mark_node;
 	}
       alloc_decl = OVL_CURRENT (alloc_decl);
@@ -1908,7 +1907,7 @@ build_new_1 (tree exp)
 	  fns = lookup_fnfields (true_type, fnname, /*protect=*/2);
 	  if (TREE_CODE (fns) == TREE_LIST)
 	    {
-	      error ("request for member `%D' is ambiguous", fnname);
+	      error ("request for member %qD is ambiguous", fnname);
 	      print_candidates (fns);
 	      return error_mark_node;
 	    }
