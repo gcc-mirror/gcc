@@ -1,3 +1,10 @@
+2003-03-26  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/10167
+	* config/locale/ieee_1003.1-2001/codecvt_specializations.h
+	(do_out, do_unshift, do_in): qualify 'ok', 'error', 'partial',
+	'noconv' with codecvt_base::.
+
 2003-03-22  Loren J. Rittle  <ljrittle@acm.org>
 
 	* config/os/hpux/bits/ctype_noninline.h (ctype<char>::classic_table):
