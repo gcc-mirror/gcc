@@ -39,6 +39,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "hashtab.h"
 #include "cselib.h"
+#include "params.h"
 
 static int entry_and_rtx_equal_p (const void *, const void *);
 static hashval_t get_value_hash (const void *);
@@ -1114,6 +1115,7 @@ static void
 cselib_invalidate_mem (rtx mem_rtx)
 {
   cselib_val **vp, *v, *next;
+  int num_mems = 0;
 
   vp = &first_containing_mem;
   for (v = *vp; v != &dummy_val; v = next)
@@ -1135,9 +1137,11 @@ cselib_invalidate_mem (rtx mem_rtx)
 	      p = &(*p)->next;
 	      continue;
 	    }
-	  if (! cselib_mem_conflict_p (mem_rtx, x))
+	  if (num_mems < PARAM_VALUE (PARAM_MAX_CSELIB_MEMORY_LOCATIONS)
+	      && ! cselib_mem_conflict_p (mem_rtx, x))
 	    {
 	      has_mem = true;
+	      num_mems++;
 	      p = &(*p)->next;
 	      continue;
 	    }

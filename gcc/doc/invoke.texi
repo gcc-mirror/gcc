@@ -4859,6 +4859,11 @@ register.  Increasing values mean more aggressive optimization, making the
 compile time increase with probably slightly better performance.  The default
 value is 100.
 
+@item max-cselib-memory-location
+The maximum number of memory locations cselib should take into acount.
+Increasing values mean more aggressive optimization, making the compile time
+increase with probably slightly better performance.  The default value is 500.
+
 @item reorder-blocks-duplicate
 @itemx reorder-blocks-duplicate-feedback
 

@@ -1,3 +1,12 @@
+2004-01-12  Jan Hubicka  <jh@suse.cz>
+
+	Partial fox for PR opt/10776 II
+	* cselib.c: Include params.h
+	(cselib_invalidate_mem):  Limit amount of nonconflicting memory
+	locations.
+	* params.def (PARAM_MAX_CSELIB_MEMORY_LOCATIONS): New.
+	* Makefile.in (cselib.o): Depend on params.h
+
 2004-01-12  Richard Sandiford  <rsandifo@redhat.com>
 
 	* combine.c (combine_simplify_rtx): Don't pass VOIDmode to

@@ -238,6 +238,11 @@ DEFPARAM(PARAM_MAX_CSE_PATH_LENGTH,
 	 "The maximum length of path considered in cse",
 	 10)
 
+DEFPARAM(PARAM_MAX_CSELIB_MEMORY_LOCATIONS,
+	 "max-cselib-memory-locations",
+	 "The maximum memory locations recorded by cselib",
+	 500)
+
 #ifdef ENABLE_GC_ALWAYS_COLLECT
 # define GGC_MIN_EXPAND_DEFAULT 0
 # define GGC_MIN_HEAPSIZE_DEFAULT 0
