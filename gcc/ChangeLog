@@ -1,3 +1,7 @@
+2003-03-15  Neil Booth  <neil@daikokuya.co.uk>
+
+	* fix-header.c (read_scan_file): Fix thinko.
+
 2003-03-15  Glen Nakamura  <glen@imodulo.com>
 
 	* reload1.c (choose_reload_regs): Use && instead of ||
