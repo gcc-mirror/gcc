@@ -288,6 +288,7 @@ _Jv_NewStringUtf8Const (Utf8Const* str)
       chrs = JvGetStringChars(jstr);
       memcpy (chrs, buffer, sizeof(jchar)*length);
     }
+  jstr->cachedHashCode = hash;
   *ptr = jstr;
   SET_STRING_IS_INTERNED(jstr);
   // When string is GC'd, clear the slot in the hash table.
@@ -408,6 +409,7 @@ _Jv_AllocString(jsize len)
   obj->data = obj;
   obj->boffset = sizeof(java::lang::String);
   obj->count = len;
+  obj->cachedHashCode = 0;
   return obj;
 }
 
