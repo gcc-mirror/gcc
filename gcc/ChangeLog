@@ -1,3 +1,12 @@
+2000-10-27  Bernd Schmidt  <bernds@redhat.co.uk>
+	    Richard Henderson  <rth@redhat.com>
+
+        * regrename.c: Rewrite to handle multi-register modes and
+        cond_exec instructions.
+        * Makefile.in (regrename.o): Update dependancies.
+        * recog.h (struct operand_alternative): Add is_address.
+        * recog.c (preprocess_constraints) [case 'p']: Set it.
+
 2000-10-27  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* configure.in: If not NO_MINUS_C_MINUS_O, substitute
