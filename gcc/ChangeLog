@@ -1,7 +1,12 @@
+2002-01-22  Zack Weinberg  <zack@codesourcery.com>
+
+	* params.h: Rename arguments of DEFPARAM so that it will be
+	recognized as a translation keyword.
+
 2002-01-22  Aldy Hernandez  <aldyh@redhat.com>
 
-        * extend.texi: Document altivec functions.
-        Fix N-bit adjectives in X86 builtin documentation.
+	* extend.texi: Document altivec functions.
+	Fix N-bit adjectives in X86 builtin documentation.
 
 2002-01-22  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -176,7 +181,7 @@ Tue Jan 22 06:26:33 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* config/alpha/netbsd-elf.h: Remove.
 	* config/alpha/netbsd.h: Rewrite for a NetBSD/alpha ELF target.
 	* config/i386/netbsd-elf.h (LIB_SPEC): Remove.
-	(STARTFILE_SPEC): Remove redundant definition.  
+	(STARTFILE_SPEC): Remove redundant definition.
 	(ENDFILE_SPEC): Likewise.
 	(LINK_SPEC): Likewise.
 	(CPP_SPEC): Likewise.
