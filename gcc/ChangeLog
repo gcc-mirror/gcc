@@ -1,3 +1,8 @@
+2004-09-21  Stan Shebs  <shebs@apple.com>
+
+	* config/rs6000/darwin-tramp.asm: Add __ppc64__ case.
+	* config/rs6000/darwin-world.asm: Likewise.
+	
 2004-09-21  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa.c (verify_def): Use print_generic_stmt,

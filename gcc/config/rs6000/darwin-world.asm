@@ -42,7 +42,11 @@
 .non_lazy_symbol_pointer
 L_has_vec$non_lazy_ptr:
 	.indirect_symbol __cpu_has_altivec
+#ifdef __ppc64__
+	.quad	0
+#else
 	.long	0
+#endif
 
 #else
 
