@@ -213,11 +213,16 @@ add_dependence (insn, elem, dep_type)
 
   /* flow.c doesn't handle conditional lifetimes entirely correctly;
      calls mess up the conditional lifetimes.  */
+  /* ??? add_dependence is the wrong place to be eliding dependencies,
+     as that forgets that the condition expressions themselves may
+     be dependent.  */
   if (GET_CODE (insn) != CALL_INSN && GET_CODE (elem) != CALL_INSN)
     {
       cond1 = get_condition (insn);
       cond2 = get_condition (elem);
-      if (cond1 && cond2 && conditions_mutex_p (cond1, cond2))
+      if (cond1 && cond2
+	  && conditions_mutex_p (cond1, cond2)
+	  && !modified_in_p (cond1, elem))
 	return;
     }
 
