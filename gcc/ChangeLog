@@ -1,3 +1,11 @@
+2004-08-03  Paolo Bonzini <bonzini@gnu.org>
+
+	* gcc.c (add_prefix, add_sysrooted_prefix): Remove
+	penultimate parameter.  All callers adjusted.
+	(struct prefix_list): Remove used_flag_ptr.
+	(find_a_file): Do not set *pl->used_flag_ptr.
+	(warn_B, warn_std_ptr): Remove.
+
 2004-08-03  Yossi Markovich <yossim@il.ibm.com>
             Mostafa Hagog <mustafa@il.ibm.com>
 
