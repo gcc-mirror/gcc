@@ -79,3 +79,18 @@ mostlyclean:
 clean: mostlyclean
 distclean: mostlyclean
 extraclean: mostlyclean
+
+# For Sun VPATH.
+
+hash.o: hash.c
+sarray.o: sarray.c
+class.o: class.c
+sendmsg.o: sendmsg.c
+init.o: init.c
+archive.o: archive.c
+encoding.o: encoding.c
+selector.o: selector.c
+objects.o: objects.c
+misc.o: misc.c
+Object.o: Object.m
+Protocol.o: Protocol.m
