@@ -1,3 +1,14 @@
+2004-11-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_complex_function_value): Revert
+	previous change.
+	(rs6000_override_options): Likewise.
+	(spe_build_register_parallel): Handle complex doubles on e500v2.
+	(rs6000_spe_function_arg): Likewise.
+	(function_arg): Likewise.
+	(rs6000_function_value): Likewise.
+	(rs6000_libcall_value): Likewise.
+
 2004-11-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* ifcvt.c (find_if_block): Move the check for the number of edges
