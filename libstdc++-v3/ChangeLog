@@ -1,3 +1,8 @@
+2001-04-06  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+        * include/c_std/bits/std_cmath.h: Get rid of C99 math macros.
+        * testsuite/26_numerics/c99_macros.cc: Add test.
+
 2001-04-06  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/html/faq/index.html:  Update for 2.92, grab from RELEASE-NOTES.
