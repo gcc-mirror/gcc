@@ -958,6 +958,7 @@ truthvalue_conversion (expr)
   if (TREE_CODE (expr) == ERROR_MARK)
     return expr;
 
+#if 0 /* This appears to be wrong for C++.  */
   /* These really should return error_mark_node after 2.4 is stable.
      But not all callers handle ERROR_MARK properly.  */
   switch (TREE_CODE (TREE_TYPE (expr)))
@@ -977,6 +978,7 @@ truthvalue_conversion (expr)
     default:
       break;
     }
+#endif /* 0 */
 
   switch (TREE_CODE (expr))
     {
@@ -1072,7 +1074,7 @@ truthvalue_conversion (expr)
 	break;
       /* fall through... */
     case BIT_XOR_EXPR:
-      /* This and MINUR_EXPR can be changed into a comparison of the
+      /* This and MINUS_EXPR can be changed into a comparison of the
 	 two objects.  */
       if (TREE_TYPE (TREE_OPERAND (expr, 0))
 	  == TREE_TYPE (TREE_OPERAND (expr, 1)))
