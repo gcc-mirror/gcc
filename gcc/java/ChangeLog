@@ -1,5 +1,11 @@
 2004-12-03  Andrew Haley  <aph@redhat.com>
 
+	PR java/18812
+	* except.c (link_handler): Patch 'outer' field of siblings of the
+	range we're demoting.
+
+2004-12-03  Andrew Haley  <aph@redhat.com>
+
 	PR java/18697 
 	* class.c (layout_class_method): Don't fail to override a method
 	simply because it has DECL_ARTIFICIAL set.

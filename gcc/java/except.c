@@ -138,12 +138,18 @@ link_handler (struct eh_range *range, struct eh_range *outer)
       range->next_sibling = NULL;
       range->first_child = outer;
       {
+	struct eh_range *p = outer;
 	struct eh_range **pr = &(outer->outer->first_child);
 	while (*pr != outer)
 	  pr = &(*pr)->next_sibling;
 	*pr = range;
+
+	while (p)
+	  {
+	    p->outer = range;
+	    p = p->next_sibling;
+	  }
       }
-      outer->outer = range;
       return;
     }
 
