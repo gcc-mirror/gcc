@@ -1,3 +1,9 @@
+2001-01-13  Andreas Jaeger  <aj@suse.de>
+
+	* reload1.c: Add prototype for replace_pseudos_in_call_usage.
+
+	* regmove.c: Add prototype for replace_in_call_usage.
+
 2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cpplib.h (cpp_pool, mi_state, mi_ind, struct cpp_macro,
@@ -87,7 +93,7 @@ Sat Jan 13 09:53:32 MET 2001  Jan Hubicka  <jh@suse.cz>
         CPP_OPTION.
         * scan-decls.c (scan_decls): Use return value of
         cpp_pop_buffer rather than CPP_BUFFER.
-	
+
 2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cppinit.c (cpp_handle_option): help_only is now part of the

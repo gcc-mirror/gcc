@@ -370,6 +370,9 @@ static int (*offsets_at)[NUM_ELIMINABLE_REGS];
 
 static int num_labels;
 
+static void replace_pseudos_in_call_usage	PARAMS((rtx *,
+							enum machine_mode,
+							rtx));
 static void maybe_fix_stack_asms	PARAMS ((void));
 static void copy_reloads		PARAMS ((struct insn_chain *));
 static void calculate_needs_all_insns	PARAMS ((int));
@@ -381,7 +384,7 @@ static void delete_caller_save_insns	PARAMS ((void));
 static void spill_failure		PARAMS ((rtx, enum reg_class));
 static void count_spilled_pseudo	PARAMS ((int, int, int));
 static void delete_dead_insn		PARAMS ((rtx));
-static void alter_reg  			PARAMS ((int, int));
+static void alter_reg			PARAMS ((int, int));
 static void set_label_offsets		PARAMS ((rtx, rtx, int));
 static void check_eliminable_occurrences	PARAMS ((rtx));
 static void elimination_effects		PARAMS ((rtx, enum machine_mode));
@@ -594,7 +597,7 @@ replace_pseudos_in_call_usage (loc, mem_mode, usage)
 
   if (! x)
     return;
-  
+
   code = GET_CODE (x);
   if (code == REG)
     {
@@ -623,7 +626,7 @@ replace_pseudos_in_call_usage (loc, mem_mode, usage)
       replace_pseudos_in_call_usage (& XEXP (x, 0), GET_MODE (x), usage);
       return;
     }
-  
+
   /* Process each of our operands recursively.  */
   fmt = GET_RTX_FORMAT (code);
   for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
@@ -5649,7 +5652,7 @@ choose_reload_regs (chain)
 		 RELOAD_FOR_OUTPUT_ADDRESS reload.  */
 
 	      if (equiv != 0)
-  		{
+		{
 		  if (regno_clobbered_p (regno, insn, rld[r].mode, 0))
 		    switch (rld[r].when_needed)
 		      {
@@ -9187,7 +9190,7 @@ move2add_note_store (dst, set, data)
 	  reg_offset[regno] = dst;
 	}
       return;
-    } 
+    }
   if (GET_CODE (dst) != REG)
     return;
 

@@ -62,6 +62,7 @@ static void flags_set_1 PARAMS ((rtx, rtx, void *));
 
 static int try_auto_increment PARAMS ((rtx, rtx, rtx, rtx, HOST_WIDE_INT, int));
 static int find_matches PARAMS ((rtx, struct match *));
+static void replace_in_call_usage PARAMS ((rtx *, int, rtx, rtx));
 static int fixup_match_1 PARAMS ((rtx, rtx, rtx, rtx, rtx, int, int, int, FILE *))
 ;
 static int reg_is_remote_constant_p PARAMS ((rtx, rtx, rtx));
@@ -138,7 +139,7 @@ try_auto_increment (insn, inc_insn, inc_insn_set, reg, increment, pre)
 	    {
 	      if (inc_insn_set)
 		validate_change
-		  (inc_insn, 
+		  (inc_insn,
 		   &SET_SRC (inc_insn_set),
 		   XEXP (SET_SRC (inc_insn_set), 0), 1);
 	      validate_change (insn, &XEXP (use, 0),
@@ -176,7 +177,7 @@ discover_flags_reg ()
   tmp = gen_rtx_REG (word_mode, 10000);
   tmp = gen_add3_insn (tmp, tmp, GEN_INT (2));
 
-  /* If we get something that isn't a simple set, or a 
+  /* If we get something that isn't a simple set, or a
      [(set ..) (clobber ..)], this whole function will go wrong.  */
   if (GET_CODE (tmp) == SET)
     return NULL_RTX;
@@ -209,7 +210,7 @@ discover_flags_reg ()
 /* It is a tedious task identifying when the flags register is live and
    when it is safe to optimize.  Since we process the instruction stream
    multiple times, locate and record these live zones by marking the
-   mode of the instructions -- 
+   mode of the instructions --
 
    QImode is used on the instruction at which the flags becomes live.
 
@@ -237,7 +238,7 @@ mark_flags_life_zones (flags)
   else if (flags != cc0_rtx)
     flags = pc_rtx;
 #endif
-    
+
   /* Simple cases first: if no flags, clear all modes.  If confusing,
      mark the entire function as being in a flags shadow.  */
   if (flags == NULL_RTX || flags == pc_rtx)
@@ -398,7 +399,7 @@ static int perhaps_ends_bb_p (insn)
 
    Search forward to see if SRC dies before either it or DEST is modified,
    but don't scan past the end of a basic block.  If so, we can replace SRC
-   with DEST and let SRC die in INSN. 
+   with DEST and let SRC die in INSN.
 
    This will reduce the number of registers live in that range and may enable
    DEST to be tied to SRC, thus often saving one register in addition to a
@@ -1202,7 +1203,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	      dst_class = reg_preferred_class (REGNO (dst));
 	      if (! regclass_compatible_p (src_class, dst_class))
 		continue;
-	  
+
 	      if (fixup_match_1 (insn, set, src, src_subreg, dst, pass,
 				 op_no, match_no,
 				 regmove_dump_file))
@@ -1588,18 +1589,18 @@ replace_in_call_usage (loc, dst_reg, src, insn)
 
   if (! x)
     return;
-  
+
   code = GET_CODE (x);
   if (code == REG)
     {
       if (REGNO (x) != dst_reg)
 	return;
-	
+
       validate_change (insn, loc, src, 1);
 
       return;
     }
-  
+
   /* Process each of our operands recursively.  */
   fmt = GET_RTX_FORMAT (code);
   for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
@@ -1685,7 +1686,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
       if (GET_CODE (p) == CALL_INSN)
 	replace_in_call_usage (& CALL_INSN_FUNCTION_USAGE (p),
 			       REGNO (dst), src, p);
-	  
+
       /* ??? We can't scan past the end of a basic block without updating
 	 the register lifetime info (REG_DEAD/basic_block_live_at_start).  */
       if (perhaps_ends_bb_p (p))
@@ -2055,7 +2056,7 @@ stable_and_no_regs_but_for_p (x, src, dst)
     }
 }
 
-/* Track stack adjustments and stack memory references.  Attempt to 
+/* Track stack adjustments and stack memory references.  Attempt to
    reduce the number of stack adjustments by back-propogating across
    the memory references.
 
@@ -2094,7 +2095,7 @@ static struct csa_memlist *record_one_stack_memref
 static int try_apply_stack_adjustment
   PARAMS ((rtx, struct csa_memlist *, HOST_WIDE_INT, HOST_WIDE_INT));
 static void combine_stack_adjustments_for_block PARAMS ((basic_block));
-static int record_stack_memrefs 	PARAMS ((rtx *, void *));
+static int record_stack_memrefs	PARAMS ((rtx *, void *));
 
 
 /* Main entry point for stack adjustment combination.  */
@@ -2301,7 +2302,7 @@ record_stack_memrefs (xp, data)
 
 /* Subroutine of combine_stack_adjustments, called for each basic block.  */
 
-static void 
+static void
 combine_stack_adjustments_for_block (bb)
      basic_block bb;
 {
@@ -2423,7 +2424,7 @@ combine_stack_adjustments_for_block (bb)
 	}
       memlist = data.memlist;
 
-      /* Otherwise, we were not able to process the instruction. 
+      /* Otherwise, we were not able to process the instruction.
 	 Do not continue collecting data across such a one.  */
       if (last_sp_set
 	  && (GET_CODE (insn) == CALL_INSN
