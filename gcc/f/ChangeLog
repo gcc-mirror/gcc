@@ -1,3 +1,7 @@
+Mon Jun 21 05:33:51 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* news.texi: Add missing @end ifclear.
+
 Fri Jun 18 11:43:46 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* news.texi: Doc TtyNam fix.
