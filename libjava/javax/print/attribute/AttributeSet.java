@@ -46,32 +46,32 @@ public interface AttributeSet
    * Adds the specified attribute value to this attribute set
    * if it is not already present.
    */
-  public boolean add (Attribute attribute);
+  boolean add (Attribute attribute);
 
   /**
    * Adds all of the elements in the specified set to this attribute.
    */
-  public boolean addAll (AttributeSet attributes);
+  boolean addAll (AttributeSet attributes);
 
-  public void clear ();
+  void clear ();
 
-  public boolean containsKey (Class category);
+  boolean containsKey (Class category);
 
-  public boolean containsValue (Attribute attribute);
+  boolean containsValue (Attribute attribute);
   
-  public boolean equals (Object obj);
+  boolean equals (Object obj);
 
-  public Attribute get (Class Category);
+  Attribute get (Class Category);
 
-  public int hashCode ();
+  int hashCode ();
 
-  public boolean isEmpty ();
+  boolean isEmpty ();
 
-  public boolean remove (Attribute attribute);
+  boolean remove (Attribute attribute);
 
-  public boolean remove (Class category);
+  boolean remove (Class category);
 
-  public int size ();
+  int size ();
 
-  public Attribute[] toArray ();
+  Attribute[] toArray ();
 }

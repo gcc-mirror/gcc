@@ -1,5 +1,12 @@
 2003-10-11  Michael Koch  <konqueror@gmx.de>
 
+	* javax/print/attribute/Attribute.java,
+	javax/print/attribute/AttributeSet.java,
+	javax/print/attribute/PrintRequestAttributeSet.java:
+	Removing redundant modifiers.
+
+2003-10-11  Michael Koch  <konqueror@gmx.de>
+
 	* javax/sql/ConnectionEventListener.java,
 	javax/sql/ConnectionPoolDataSource.java,
 	javax/sql/DataSource.java,
