@@ -1,3 +1,7 @@
+Thu Mar  8 06:32:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/i386/i386.md (clrstrsi): Call ix86_set_move_mem_attrs.
+
 2001-03-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (enable_shared): Support per-package shared-library
