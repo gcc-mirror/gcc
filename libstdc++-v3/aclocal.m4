@@ -1130,41 +1130,37 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
 
 
 dnl
-dnl Check for which threading library to use.
-dnl
-dnl GLIBCPP_ENABLE_THREADS
-dnl --enable-threads=posix sets config/threads-posix.h et. al.
-dnl 
-dnl Default is no threads, which also disables _IO_MTSAFE_IO in
-dnl libio.  Any actual thread package will enable it.
+dnl Setup to use the gcc gthr.h thread-specific memory and mutex model.
+dnl We must stage the required headers so that they will be installed
+dnl with the library (unlike libgcc, the STL implementation is provided
+dnl solely within headers).  Since we must not inject random user-space
+dnl macro names into user-provided C++ code, we first stage into <file>-in
+dnl and process to <file> with an output command.  The reason for a two-
+dnl stage process here is to correctly handle $srcdir!=$objdir without
+dnl having to write complex code (the sed commands to clean the macro
+dnl namespace are complex and fragile enough as it is).
 dnl
 AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
   AC_MSG_CHECKING([for thread model used by GCC])
   target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
   AC_MSG_RESULT([$target_thread_file])
 
-  dnl Check for thread package actually supported in libstdc++ 
-  THREADH=
-  case "$target_thread_file" in
-    no | none | single)
-      THREADH=threads-no.h
-      ;;
-    posix | pthreads)
-      THREADH=threads-posix.h
-      ;;
-    decosf1 | irix | mach | os2 | solaris | win32 | dce | vxworks)
-      AC_MSG_WARN(disabling unsupported thread package $target_thread_file)
-      THREADH=threads-no.h
-      ;;
-    *)
-      AC_MSG_ERROR($target_thread_file: unsupported/unknown thread package)
-      ;;
-  esac
-
-  AC_LINK_FILES(config/$THREADH, include/bits/c++threads.h)
-  if test $THREADH != threads-no.h; then
-    AC_DEFINE(_GLIBCPP_USE_THREADS)
+  AC_LINK_FILES(../gcc/gthr.h, include/bits/gthr.h-in)
+  AC_LINK_FILES(../gcc/gthr-single.h, include/bits/gthr-single.h-in)
+  AC_LINK_FILES(../gcc/gthr-$target_thread_file.h,
+		include/bits/gthr-default.h-in)
+  if test $target_thread_file != single; then
+    AC_DEFINE(HAVE_GTHR_DEFAULT)
+    AC_DEFINE(_GLIBCPP_SUPPORTS_WEAK, __GXX_WEAK__)
   fi
+  AC_OUTPUT_COMMANDS([d=include/bits
+    rm -f $d/gthr.h $d/gthr-single.h $d/gthr-default.h
+    sed '/^#/s/\([A-Z_][A-Z_]*\)/_GLIBCPP_\1/g' <$d/gthr.h-in >$d/gthr.h
+    sed 's/\(UNUSED\)/_GLIBCPP_\1/g' <$d/gthr-single.h-in \
+      | sed 's/\(GCC[A-Z_]*_H\)/_GLIBCPP_\1/g' >$d/gthr-single.h
+    sed 's/\(UNUSED\)/_GLIBCPP_\1/g' <$d/gthr-default.h-in \
+      | sed 's/\(GCC[A-Z_]*_H\)/_GLIBCPP_\1/g' \
+      | sed 's/\([A-Z_]*WEAK\)/_GLIBCPP_\1/g' >$d/gthr-default.h])
 ])
 
 

@@ -34,7 +34,7 @@
 
 #include <stdio.h>
 #include <stddef.h>
-#include <bits/c++threads.h>
+#include <bits/gthr.h>
 
 namespace std 
 {
@@ -46,12 +46,7 @@ namespace std
 #endif
   typedef fpos_t  	__c_streampos;
 
-#ifdef _GLIBCPP_USE_THREADS
-  typedef __mutext_type __c_lock;
-#else
-  typedef int          	__c_lock;
-
-#endif
+  typedef __gthread_mutex_t __c_lock;
 
 // from basic_file.h
 #define _GLIBCPP_BASIC_FILE_ENCAPSULATION 1

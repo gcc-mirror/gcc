@@ -1,3 +1,43 @@
+2001-06-07  Loren J. Rittle  <ljrittle@acm.org>
+	    John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* config/threads-no.h: Remove file.
+	* config/threads-posix.h: Remove file.
+
+	* acconfig.h (_GLIBCPP_USE_THREADS): Remove.
+	(_GLIBCPP_SUPPORTS_WEAK): Add (required by namespace-clean gthr*.h).
+	(_GLIBCPP_HAVE_GTHR_DEFAULT): Likewise.
+	* config.h.in: Regenerate.
+
+	* acinclude.m4 (GLIBCPP_ENABLE_THREADS): Completely rework to
+	setup and use gthr*.h files.  In particular, make gthr.h files
+	namespace-clean in the staging area (they don't have to be for
+	libgcc.a).
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
+	* src/Makefile.am (build_headers): Remove bits/c++threads.h
+	and add bits/gthr.h bits/gthr-single.h bits/gthr-default.h.
+	* src/Makefile.in: Regenerate.
+
+	* include/bits/c++config: Cleanup threading configuration macros.
+	In particular, define __STL_GTHREADS macro which controls...
+	* include/bits/stl_threads.h: ...a brand new gthr.h-based
+        configuration here.
+
+	* config/c_io_stdio.h: Include staged gthr.h instead of local
+	thread configuration file.  Always use __gthread_mutex_t
+	instead of __mutext_type (or int).
+	* include/bits/std_fstream.h: Likewise.
+
+	* docs/html/17_intro/howto.html: Remove placeholder comment in
+	case this configuration patch didn't make it.  Add advice that
+	section only applies if configured with --enable-threads.
+	* docs/html/23_containers/howto.html: Reword to make clear
+	that _PTHREADS is no longer required for any port to be
+	correctly using STL with threads.  Add advice that section
+	only applies if configured with --enable-threads.
+
 2001-06-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/string-inst.cc (_Rep::_S_max_size): Add instantiation.

@@ -24,6 +24,15 @@
 // threads standard), and Win32 threads.  Uithread support by Jochen
 // Schlick, 1999.
 
+// GCC extension begin
+// In order to present a stable threading configuration, in all cases,
+// gcc looks for it's own abstraction layer before all others.  All
+// modifications to this file are marked to allow easier importation of
+// STL upgrades.
+#if defined(__STL_GTHREADS)
+#include "bits/gthr.h"
+#else
+// GCC extension end
 #if defined(__STL_SGI_THREADS)
 #include <mutex.h>
 #include <time.h>
@@ -35,6 +44,9 @@
 #elif defined(__STL_WIN32THREADS)
 #include <windows.h>
 #endif
+// GCC extension begin
+#endif
+// GCC extension end
 
 namespace std
 {
@@ -64,6 +76,22 @@ struct _Refcount_Base
    volatile _RC_t _M_ref_count;
 
   // Constructor
+// GCC extension begin
+#ifdef __STL_GTHREADS
+  __gthread_mutex_t _M_ref_count_lock;
+  _Refcount_Base(_RC_t __n) : _M_ref_count(__n)
+    {
+#ifdef __GTHREAD_MUTEX_INIT
+      __gthread_mutex_t __tmp = __GTHREAD_MUTEX_INIT;
+      _M_ref_count_lock = __tmp;
+#elif defined(__GTHREAD_MUTEX_INIT_FUNCTION)
+      __GTHREAD_MUTEX_INIT_FUNCTION (&_M_ref_count_lock);
+#else
+#error __GTHREAD_MUTEX_INIT or __GTHREAD_MUTEX_INIT_FUNCTION should be defined by gthr.h abstraction layer, report problem to libstdc++@gcc.gnu.org.
+#endif
+    }
+#else
+// GCC extension end
 # ifdef __STL_PTHREADS
   pthread_mutex_t _M_ref_count_lock;
   _Refcount_Base(_RC_t __n) : _M_ref_count(__n)
@@ -75,7 +103,25 @@ struct _Refcount_Base
 # else
   _Refcount_Base(_RC_t __n) : _M_ref_count(__n) {}
 # endif
+// GCC extension begin
+#endif
+// GCC extension end
 
+// GCC extension begin
+#ifdef __STL_GTHREADS
+  void _M_incr() {
+    __gthread_mutex_lock(&_M_ref_count_lock);
+    ++_M_ref_count;
+    __gthread_mutex_unlock(&_M_ref_count_lock);
+  }
+  _RC_t _M_decr() {
+    __gthread_mutex_lock(&_M_ref_count_lock);
+    volatile _RC_t __tmp = --_M_ref_count;
+    __gthread_mutex_unlock(&_M_ref_count_lock);
+    return __tmp;
+  }
+#else
+// GCC extension end
   // _M_incr and _M_decr
 # ifdef __STL_SGI_THREADS
   void _M_incr() {  __add_and_fetch(&_M_ref_count, 1); }
@@ -111,12 +157,24 @@ struct _Refcount_Base
   void _M_incr() { ++_M_ref_count; }
   _RC_t _M_decr() { return --_M_ref_count; }
 # endif
+// GCC extension begin
+#endif
+// GCC extension end
 };
 
 // Atomic swap on unsigned long
 // This is guaranteed to behave as though it were atomic only if all
 // possibly concurrent updates use _Atomic_swap.
 // In some cases the operation is emulated with a lock.
+// GCC extension begin
+#ifdef __STL_GTHREADS
+// We don't provide an _Atomic_swap in this configuration.  This only
+// affects the use of ext/rope with threads.  Someone could add this
+// later, if required.  You can start by cloning the __STL_PTHREADS
+// path while making the obvious changes.  Later it could be optimized
+// to use the atomicity.h abstraction layer from libstdc++-v3.
+#else
+// GCC extension end
 # ifdef __STL_SGI_THREADS
     inline unsigned long _Atomic_swap(unsigned long * __p, unsigned long __q) {
 #       if __mips < 3 || !(defined (_ABIN32) || defined(_ABI64))
@@ -205,6 +263,9 @@ struct _Refcount_Base
         return __result;
     }
 # endif
+// GCC extension begin
+#endif
+// GCC extension end
 
 // Locking class.  Note that this class *does not have a constructor*.
 // It must be initialized either statically, with __STL_MUTEX_INITIALIZER,
@@ -237,6 +298,21 @@ unsigned _STL_mutex_spin<__inst>::__last = 0;
 
 struct _STL_mutex_lock
 {
+// GCC extension begin
+#if defined(__STL_GTHREADS)
+  __gthread_mutex_t _M_lock;
+  void _M_initialize()
+  {
+#ifdef __GTHREAD_MUTEX_INIT
+  // There should be no code in this path given the usage rules above.
+#elif defined(__GTHREAD_MUTEX_INIT_FUNCTION)
+    __GTHREAD_MUTEX_INIT_FUNCTION (&_M_lock);
+#endif
+  }
+  void _M_acquire_lock() { __gthread_mutex_lock(&_M_lock); }
+  void _M_release_lock() { __gthread_mutex_unlock(&_M_lock); }
+#else
+// GCC extension end
 #if defined(__STL_SGI_THREADS) || defined(__STL_WIN32THREADS)
   // It should be relatively easy to get this to work on any modern Unix.
   volatile unsigned long _M_lock;
@@ -330,8 +406,20 @@ struct _STL_mutex_lock
   void _M_acquire_lock() {}
   void _M_release_lock() {}
 #endif
+// GCC extension begin
+#endif
+// GCC extension end
 };
 
+// GCC extension begin
+#if defined(__STL_GTHREADS)
+#ifdef __GTHREAD_MUTEX_INIT
+#define __STL_MUTEX_INITIALIZER = { __GTHREAD_MUTEX_INIT }
+#else
+#define __STL_MUTEX_INITIALIZER
+#endif
+#else
+// GCC extension end
 #ifdef __STL_PTHREADS
 // Pthreads locks must be statically initialized to something other than
 // the default value of zero.
@@ -345,6 +433,9 @@ struct _STL_mutex_lock
 #else
 #   define __STL_MUTEX_INITIALIZER
 #endif
+// GCC extension begin
+#endif
+// GCC extension end
 
 
 // A locking class that uses _STL_mutex_lock.  The constructor takes a
