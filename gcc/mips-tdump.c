@@ -234,19 +234,19 @@ ulong	*rfile_desc;		/* relative file tables */
 PDR	*proc_desc;		/* procedure tables */
 
 /* Forward reference for functions.  */
-static void *read_seek			PARAMS ((void *, size_t, off_t, const char *));
-static void read_tfile			PARAMS ((void));
-static void print_global_hdr		PARAMS ((struct filehdr *));
-static void print_sym_hdr		PARAMS ((HDRR *));
-static void print_file_desc		PARAMS ((FDR *, int));
-static void print_symbol		PARAMS ((SYMR *, int, const char *, AUXU *, int, FDR *));
-static void print_aux			PARAMS ((AUXU, int, int));
-static void emit_aggregate		PARAMS ((char *, AUXU, AUXU, const char *, FDR *));
-static const char *st_to_string		PARAMS ((st_t));
-static const char *sc_to_string		PARAMS ((sc_t));
-static const char *glevel_to_string	PARAMS ((glevel_t));
-static const char *lang_to_string	PARAMS ((lang_t));
-static const char *type_to_string	PARAMS ((AUXU *, int, FDR *));
+static void *read_seek (void *, size_t, off_t, const char *);
+static void read_tfile (void);
+static void print_global_hdr (struct filehdr *);
+static void print_sym_hdr (HDRR *);
+static void print_file_desc (FDR *, int);
+static void print_symbol (SYMR *, int, const char *, AUXU *, int, FDR *);
+static void print_aux (AUXU, int, int);
+static void emit_aggregate (char *, AUXU, AUXU, const char *, FDR *);
+static const char *st_to_string (st_t);
+static const char *sc_to_string (sc_t);
+static const char *glevel_to_string (glevel_t);
+static const char *lang_to_string (lang_t);
+static const char *type_to_string (AUXU *, int, FDR *);
 
 extern char *optarg;
 extern int   optind;
@@ -269,14 +269,13 @@ static const struct option options[] =
   { 0, 0, 0, 0 }
 };
 
-/* Read some bytes at a specified location, and return a pointer.  */
+/* Read some bytes at a specified location, and return a pointer.
+   Read_seek takes a pointer PTR to a buffer or NULL and reads SIZE
+   bytes from offset OFFSET.  In case of errors CONTEXT is used as
+   error message.  */
 
 static void *
-read_seek (ptr, size, offset, context)
-     void *ptr;			/* pointer to buffer or NULL */
-     size_t size;		/* # bytes to read */
-     off_t offset;		/* offset to read at */
-     const char *context;	/* context for error message */
+read_seek (void *ptr, size_t size, off_t offset,  const char *context)
 {
   long read_size = 0;
 
@@ -308,8 +307,7 @@ read_seek (ptr, size, offset, context)
 /* Convert language code to string format.  */
 
 static const char *
-lang_to_string (lang)
-     lang_t lang;
+lang_to_string (lang_t lang)
 {
   switch (lang)
     {
@@ -331,8 +329,7 @@ lang_to_string (lang)
 /* Convert storage class to string.  */
 
 static const char *
-sc_to_string(storage_class)
-     sc_t storage_class;
+sc_to_string (sc_t storage_class)
 {
   switch(storage_class)
     {
@@ -369,8 +366,7 @@ sc_to_string(storage_class)
 /* Convert symbol type to string.  */
 
 static const char *
-st_to_string(symbol_type)
-     st_t symbol_type;
+st_to_string (st_t symbol_type)
 {
   switch(symbol_type)
     {
@@ -410,8 +406,7 @@ st_to_string(symbol_type)
 /* Convert debug level to string.  */
 
 static const char *
-glevel_to_string (g_level)
-     glevel_t g_level;
+glevel_to_string (glevel_t g_level)
 {
   switch(g_level)
     {
@@ -423,15 +418,12 @@ glevel_to_string (g_level)
 
   return "??";
 }
-     
+
 
 /* Convert the type information to string format.  */
 
 static const char *
-type_to_string (aux_ptr, index, fdp)
-     AUXU *aux_ptr;
-     int index;
-     FDR *fdp;
+type_to_string (AUXU *aux_ptr, int index, FDR *fdp)
 {
   AUXU u;
   struct qual {
@@ -741,8 +733,7 @@ type_to_string (aux_ptr, index, fdp)
 /* Print out the global file header for object files.  */
 
 static void
-print_global_hdr (ptr)
-     struct filehdr *ptr;
+print_global_hdr (struct filehdr *ptr)
 {
   char *time = ctime ((time_t *)&ptr->f_timdat);
   ushort flags = ptr->f_flags;
@@ -796,8 +787,7 @@ print_global_hdr (ptr)
 /* Print out the symbolic header.  */
 
 static void
-print_sym_hdr (sym_ptr)
-     HDRR *sym_ptr;
+print_sym_hdr (HDRR *sym_ptr)
 {
   int width = 20;
 
@@ -870,13 +860,8 @@ print_sym_hdr (sym_ptr)
 /* Print out a symbol.  */
 
 static void
-print_symbol (sym_ptr, number, strbase, aux_base, ifd, fdp)
-     SYMR *sym_ptr;
-     int number;
-     const char *strbase;
-     AUXU *aux_base;
-     int ifd;
-     FDR *fdp;
+print_symbol (SYMR *sym_ptr, int number, const char *strbase, AUXU *aux_base,
+	      int ifd, FDR *fdp)
 {
   sc_t storage_class = (sc_t) sym_ptr->sc;
   st_t symbol_type   = (st_t) sym_ptr->st;
@@ -1050,10 +1035,7 @@ print_symbol (sym_ptr, number, strbase, aux_base, ifd, fdp)
 /* Print out a word from the aux. table in various formats.  */
 
 static void
-print_aux (u, auxi, used)
-     AUXU u;
-     int auxi;
-     int used;
+print_aux (AUXU u, int auxi, int used)
 {
   printf ("\t%s#%-5d %11ld, [%4ld/%7ld], [%2d %1d:%1d %1x:%1x:%1x:%1x:%1x:%1x]\n",
 	  (used) ? "  " : "* ",
@@ -1076,20 +1058,15 @@ print_aux (u, auxi, used)
 /* Write aggregate information to a string.  */
 
 static void
-emit_aggregate (string, u, u2, which, fdp)
-     char *string;
-     AUXU u;
-     AUXU u2;
-     const char *which;
-     FDR *fdp;
+emit_aggregate (char *string, AUXU u, AUXU u2, const char *which, FDR *fdp)
 {
   unsigned int ifd = u.rndx.rfd;
   unsigned int index = u.rndx.index;
   const char *name;
-  
+
   if (ifd == ST_RFDESCAPE)
     ifd = u2.isym;
-  
+
   /* An ifd of -1 is an opaque type.  An escaped index of 0 is a
      struct return type of a procedure compiled without -g.  */
   if (ifd == 0xffffffff
@@ -1105,7 +1082,7 @@ emit_aggregate (string, u, u2, which, fdp)
 	fdp = &file_desc[rfile_desc[fdp->rfdBase + ifd]];
       name = &l_strings[fdp->issBase + l_symbols[index + fdp->isymBase].iss];
     }
-  
+
   sprintf (string,
 	   "%s %s { ifd = %u, index = %u }",
 	   which, name, ifd, index);
@@ -1116,24 +1093,22 @@ emit_aggregate (string, u, u2, which, fdp)
    procedures, and line numbers within it.  */
 
 static void
-print_file_desc (fdp, number)
-     FDR *fdp;
-     int number;
+print_file_desc (FDR *fdp, int number)
 {
   char *str_base;
   AUXU *aux_base;
   int symi, pdi;
   int width = 20;
   char *used_base;
-  
-  str_base = l_strings + fdp->issBase;  
+
+  str_base = l_strings + fdp->issBase;
   aux_base = aux_symbols + fdp->iauxBase;
   used_base = aux_used + (aux_base - aux_symbols);
 
   printf ("\nFile #%d, \"%s\"\n\n",
 	  number,
 	  fdp->rss != issNil ? str_base + fdp->rss : "<unknown>");
-    
+
   printf ("    Name index  = %-10ld Readin      = %s\n",
 	  (long) fdp->rss, (fdp->fReadin) ? "Yes" : "No");
 
@@ -1203,7 +1178,7 @@ print_file_desc (fdp, number)
   if (want_scope && cur_scope != (scope_t *) 0)
     printf ("\n    Warning scope does not start at 0!\n");
 
-  /* 
+  /*
    * print the info about the symbol table.
    */
   printf ("\n    There are %lu local symbols, starting at %lu\n",
@@ -1256,7 +1231,7 @@ print_file_desc (fdp, number)
 	}
     }
 
-  /* 
+  /*
    * do the procedure descriptors.
    */
   printf ("\n    There are %lu procedure descriptor entries, ", (ulong) fdp->cpd);
@@ -1344,7 +1319,7 @@ print_file_desc (fdp, number)
 /* Read in the portions of the .T file that we will print out.  */
 
 static void
-read_tfile ()
+read_tfile (void)
 {
   short magic;
   off_t sym_hdr_offset = 0;
@@ -1436,12 +1411,10 @@ read_tfile ()
 
 
 
-extern int main PARAMS ((int, char **));
+extern int main (int, char **);
 
 int
-main (argc, argv)
-     int argc;
-     char **argv;
+main (int argc, char **argv)
 {
   int i, opt;
 
@@ -1546,7 +1519,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
   for (i = 0; i < sym_hdr.ifdMax; i++)
     print_file_desc (&file_desc[i], i);
 
-  /* 
+  /*
    * Print the external symbols.
    */
   want_scope = 0;		/* scope info is meaning for extern symbols */

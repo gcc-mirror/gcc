@@ -1,3 +1,8 @@
+2003-07-07  Andreas Jaeger  <aj@suse.de>
+
+	* mips-tfile.c: Convert prototypes to ISO C90.
+	* mips-tdump.c: Convert prototypes to ISO C90.
+
 2003-07-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* rtl.h (emit_line_note): Take a location_t.
