@@ -286,11 +286,14 @@ awt_java_source_files = \
 java/awt/AWTEvent.java \
 java/awt/BorderLayout.java \
 java/awt/Component.java \
+java/awt/Color.java \
 java/awt/Container.java \
 java/awt/Dimension.java \
 java/awt/Event.java \
 java/awt/Font.java \
 java/awt/Frame.java \
+java/awt/Graphics.java \
+java/awt/Image.java \
 java/awt/LayoutManager.java \
 java/awt/LayoutManager2.java \
 java/awt/Menu.java \
@@ -298,12 +301,15 @@ java/awt/MenuBar.java \
 java/awt/MenuItem.java \
 java/awt/MenuComponent.java \
 java/awt/MenuContainer.java \
+java/awt/Paint.java \
+java/awt/PaintContext.java \
 java/awt/Point.java \
 java/awt/Rectangle.java \
 java/awt/Shape.java \
 java/awt/TextArea.java \
 java/awt/TextComponent.java \
 java/awt/Toolkit.java \
+java/awt/Transparency.java \
 java/awt/Window.java \
 java/awt/event/ActionEvent.java \
 java/awt/event/ActionListener.java \
@@ -571,6 +577,8 @@ java/text/SimpleDateFormat.java	\
 java/text/StringCharacterIterator.java \
 java/util/BitSet.java \
 java/util/Calendar.java	\
+java/util/Collection.java \
+java/util/Comparator.java \
 java/util/ConcurrentModificationException.java \
 java/util/Date.java \
 java/util/Dictionary.java \
@@ -580,6 +588,9 @@ java/util/EventListener.java \
 java/util/EventObject.java \
 java/util/GregorianCalendar.java \
 java/util/Hashtable.java \
+java/util/Iterator.java \
+java/util/List.java \
+java/util/ListIterator.java \
 java/util/ListResourceBundle.java \
 java/util/Locale.java \
 java/util/MissingResourceException.java	\
@@ -974,14 +985,16 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/text/ParseException.P .deps/java/text/ParsePosition.P \
 .deps/java/text/RuleBasedCollator.P .deps/java/text/SimpleDateFormat.P \
 .deps/java/text/StringCharacterIterator.P .deps/java/util/BitSet.P \
-.deps/java/util/Calendar.P \
+.deps/java/util/Calendar.P .deps/java/util/Collection.P \
+.deps/java/util/Comparator.P \
 .deps/java/util/ConcurrentModificationException.P \
 .deps/java/util/Date.P .deps/java/util/Dictionary.P \
 .deps/java/util/EmptyStackException.P .deps/java/util/Enumeration.P \
 .deps/java/util/EventListener.P .deps/java/util/EventObject.P \
 .deps/java/util/GregorianCalendar.P .deps/java/util/Hashtable.P \
-.deps/java/util/ListResourceBundle.P .deps/java/util/Locale.P \
-.deps/java/util/MissingResourceException.P \
+.deps/java/util/Iterator.P .deps/java/util/List.P \
+.deps/java/util/ListIterator.P .deps/java/util/ListResourceBundle.P \
+.deps/java/util/Locale.P .deps/java/util/MissingResourceException.P \
 .deps/java/util/NoSuchElementException.P .deps/java/util/Observable.P \
 .deps/java/util/Observer.P .deps/java/util/Properties.P \
 .deps/java/util/PropertyResourceBundle.P .deps/java/util/Random.P \

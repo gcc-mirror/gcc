@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libjava.
 
@@ -23,6 +23,7 @@ public abstract class Toolkit
   }
 
   protected abstract FramePeer createFrame(Frame target);
+  public abstract Image getImage(URL url);
 
   private static native void init();
   // static { init(); }

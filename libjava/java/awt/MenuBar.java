@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libjava.
 
@@ -41,4 +41,7 @@ public class MenuBar extends MenuComponent  implements MenuContainer
 	  }
       }
   }
+
+  public Font getFont() { return null; } // FIXME
+  public boolean postEvent(Event evt) { return null; } // FIXME
 }
