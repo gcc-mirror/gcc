@@ -287,5 +287,7 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
 }
 
 #else
+/* Prevent multiple include of header files.  */
+#define _Unwind_Find_FDE _Unwind_Find_FDE
 #include "unwind-dw2-fde.c"
 #endif
