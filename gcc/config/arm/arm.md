@@ -3942,57 +3942,77 @@
 }")
 
 (define_insn "*movsicc_insn"
-  [(set (match_operand:SI 0 "s_register_operand" "=r,r,r,r,r,r")
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r,r,r,r,r,r,r")
 	(if_then_else:SI
 	 (match_operator 3 "comparison_operator"
 	  [(match_operand 4 "cc_register" "") (const_int 0)])
-	 (match_operand:SI 1 "arm_not_operand" "0,0,?rI,?rI,K,K")
-	 (match_operand:SI 2 "arm_not_operand" "rI,K,rI,K,rI,K")))]
+	 (match_operand:SI 1 "arm_not_operand" "0,0,rI,K,rI,rI,K,K")
+	 (match_operand:SI 2 "arm_not_operand" "rI,K,0,0,rI,K,rI,K")))]
   ""
   "@
    mov%D3\\t%0, %2
    mvn%D3\\t%0, #%B2
+   mov%d3\\t%0, %1
+   mvn%d3\\t%0, #%B1
    mov%d3\\t%0, %1\;mov%D3\\t%0, %2
    mov%d3\\t%0, %1\;mvn%D3\\t%0, #%B2
    mvn%d3\\t%0, #%B1\;mov%D3\\t%0, %2
    mvn%d3\\t%0, #%B1\;mvn%D3\\t%0, #%B2"
-  [(set_attr "length" "4,4,8,8,8,8")
+  [(set_attr "length" "4,4,4,4,8,8,8,8")
    (set_attr "conds" "use")])
 
 (define_insn "*movsfcc_hard_insn"
-  [(set (match_operand:SF 0 "s_register_operand" "=f,f")
-	(if_then_else:SF (match_operator 3 "comparison_operator" 
-			  [(match_operand 4 "cc_register" "") (const_int 0)])
-			 (match_operand:SF 1 "s_register_operand" "0,0")
-			 (match_operand:SF 2 "fpu_add_operand" "fG,H")))]
+  [(set (match_operand:SF 0 "s_register_operand" "=f,f,f,f,f,f,f,f")
+	(if_then_else:SF
+	 (match_operator 3 "comparison_operator" 
+	  [(match_operand 4 "cc_register" "") (const_int 0)])
+	 (match_operand:SF 1 "fpu_add_operand" "0,0,fG,H,fG,fG,H,H")
+	 (match_operand:SF 2 "fpu_add_operand" "fG,H,0,0,fG,H,fG,H")))]
   "TARGET_HARD_FLOAT"
   "@
    mvf%D3s\\t%0, %2
-   mnf%D3s\\t%0, #%N2"
-  [(set_attr "type" "ffarith")
+   mnf%D3s\\t%0, #%N2
+   mvf%d3s\\t%0, %1
+   mnf%d3s\\t%0, #%N1
+   mvf%d3\\t%0, %1\;mvf%D3\\t%0, %2
+   mvf%d3\\t%0, %1\;mnf%D3\\t%0, #%N2
+   mnf%d3\\t%0, #%N1\;mvf%D3\\t%0, %2
+   mnf%d3\\t%0, #%N1\;mnf%D3\\t%0, #%N2"
+  [(set_attr "length" "4,4,4,4,8,8,8,8")
+   (set_attr "type" "ffarith")
    (set_attr "conds" "use")])
 
 (define_insn "*movsfcc_soft_insn"
-  [(set (match_operand:SF 0 "s_register_operand" "=r")
+  [(set (match_operand:SF 0 "s_register_operand" "=r,r")
 	(if_then_else:SF (match_operator 3 "comparison_operator"
 			  [(match_operand 4 "cc_register" "") (const_int 0)])
-			 (match_operand:SF 1 "s_register_operand" "0")
-			 (match_operand:SF 2 "s_register_operand" "r")))]
+			 (match_operand:SF 1 "s_register_operand" "0,r")
+			 (match_operand:SF 2 "s_register_operand" "r,0")))]
   "TARGET_SOFT_FLOAT"
-  "mov%D3\\t%0, %2"
+  "@
+   mov%D3\\t%0, %2
+   mov%d3\\t%0, %1"
   [(set_attr "conds" "use")])
 
 (define_insn "*movdfcc_insn"
-  [(set (match_operand:DF 0 "s_register_operand" "=f,f")
-	(if_then_else:DF (match_operator 3 "comparison_operator"
-			  [(match_operand 4 "cc_register" "") (const_int 0)])
-			 (match_operand:DF 1 "s_register_operand" "0,0")
-			 (match_operand:DF 2 "fpu_add_operand" "fG,H")))]
+  [(set (match_operand:DF 0 "s_register_operand" "=f,f,f,f,f,f,f,f")
+	(if_then_else:DF
+	 (match_operator 3 "comparison_operator"
+	  [(match_operand 4 "cc_register" "") (const_int 0)])
+	 (match_operand:DF 1 "fpu_add_operand" "0,0,fG,H,fG,fG,H,H")
+	 (match_operand:DF 2 "fpu_add_operand" "fG,H,0,0,fG,H,fG,H")))]
   "TARGET_HARD_FLOAT"
   "@
    mvf%D3d\\t%0, %2
-   mnf%D3d\\t%0, #%N2"
-  [(set_attr "type" "ffarith")
+   mnf%D3d\\t%0, #%N2
+   mvf%d3d\\t%0, %1
+   mnf%d3d\\t%0, #%N1
+   mvf%d3\\t%0, %1\;mvf%D3\\t%0, %2
+   mvf%d3\\t%0, %1\;mnf%D3\\t%0, #%N2
+   mnf%d3\\t%0, #%N1\;mvf%D3\\t%0, %2
+   mnf%d3\\t%0, #%N1\;mnf%D3\\t%0, #%N2"
+  [(set_attr "length" "4,4,4,4,8,8,8,8")
+   (set_attr "type" "ffarith")
    (set_attr "conds" "use")])
 
 ;; Jump and linkage insns
