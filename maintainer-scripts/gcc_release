@@ -392,7 +392,7 @@ announce_snapshot() {
   inform "Updating links and READMEs on the FTP server"
   
   TEXT_DATE=`date --date=$DATE +%B\ %d,\ %Y`
-  cd ~ftp/pub/gcc/snapshots
+  changedir ~ftp/pub/gcc/snapshots
   sed -e "s%@DATE@%$DATE%g" \
     -e "s%@TEXT_DATE@%$TEXT_DATE%g" \
     -e "s%@LAST_DATE@%$LAST_DATE%g" \

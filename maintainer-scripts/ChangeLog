@@ -1,3 +1,8 @@
+2004-03-14  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gcc_release (announce_snapshot): Use changedir instead of
+	plain cd.
+	
 2004-01-20  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* gcc_release (build_sources): Delete call to make f77.rebuilt.
