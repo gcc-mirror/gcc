@@ -1,3 +1,13 @@
+2004-02-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/14113
+	Backport from mainline:
+
+	2004-02-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.md (call followed by jump define_peephole's):
+	Delete.
+
 2004-02-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/invoke.texi: Mention SSE2 and SSE3.

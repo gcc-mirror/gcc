@@ -8239,31 +8239,6 @@
   [(set_attr "type" "multi")
    (set_attr "length" "2")])
 
-;; Now peepholes to do a call followed by a jump.
-
-(define_peephole
-  [(parallel [(set (match_operand 0 "" "")
-		   (call (mem:SI (match_operand:SI 1 "call_operand_address" "ps"))
-			 (match_operand 2 "" "")))
-	      (clobber (reg:SI 15))])
-   (set (pc) (label_ref (match_operand 3 "" "")))]
-  "short_branch (INSN_UID (insn), INSN_UID (operands[3]))
-   && (USING_SJLJ_EXCEPTIONS || ! can_throw_internal (ins1))
-   && sparc_cpu != PROCESSOR_ULTRASPARC
-   && sparc_cpu != PROCESSOR_ULTRASPARC3"
-  "call\t%a1, %2\n\tadd\t%%o7, (%l3-.-4), %%o7")
-
-(define_peephole
-  [(parallel [(call (mem:SI (match_operand:SI 0 "call_operand_address" "ps"))
-		    (match_operand 1 "" ""))
-	      (clobber (reg:SI 15))])
-   (set (pc) (label_ref (match_operand 2 "" "")))]
-  "short_branch (INSN_UID (insn), INSN_UID (operands[2]))
-   && (USING_SJLJ_EXCEPTIONS || ! can_throw_internal (ins1))
-   && sparc_cpu != PROCESSOR_ULTRASPARC
-   && sparc_cpu != PROCESSOR_ULTRASPARC3"
-  "call\t%a0, %1\n\tadd\t%%o7, (%l2-.-4), %%o7")
-
 ;; ??? UltraSPARC-III note: A memory operation loading into the floating point register
 ;; ??? file, if it hits the prefetch cache, has a chance to dual-issue with other memory
 ;; ??? operations.  With DFA we might be able to model this, but it requires a lot of
