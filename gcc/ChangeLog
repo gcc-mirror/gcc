@@ -1,3 +1,9 @@
+2003-06-07  Andreas Jaeger  <aj@suse.de>
+
+	* crtstuff.c: Remove undefined usage of INIT_SECTION_PREAMBLE.
+
+	* system.h: Poison INIT_SECTION_PREAMBLE.
+
 2003-06-07  Zack Weinberg  <zack@codesourcery.com>
 
 	* config.gcc (with_cpu handling): Translate sparc64 in
