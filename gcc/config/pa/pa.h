@@ -914,7 +914,7 @@ extern enum cmp_type hppa_branch_type;
 	       }							\
 	     if (TARGET_PORTABLE_RUNTIME)				\
 	       {							\
-		 fputs ("ARGW0=NO,ARGW1=NO,ARGW2=NO,ARGW3=NO,", FILE);	\
+		 fputs (",ARGW0=NO,ARGW1=NO,ARGW2=NO,ARGW3=NO,", FILE);	\
 		 fputs ("RTNVAL=NO\n", FILE);				\
 		 break;							\
 	       }							\
