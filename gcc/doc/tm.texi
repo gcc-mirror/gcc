@@ -7848,6 +7848,11 @@ argument @var{name} is the name of an assembler symbol (for use with
 @item DBX_OUTPUT_RBRAC (@var{stream}, @var{name})
 Like @code{DBX_OUTPUT_LBRAC}, but for the end of a scope level.
 
+@findex DBX_OUTPUT_NFUN
+@item DBX_OUTPUT_NFUN (@var{stream}, @var{lscope_label}, @var{decl})
+Define this macro if the target machine requires special handling to
+output an @code{N_FUN} entry for the function @var{decl}.
+
 @findex DBX_OUTPUT_ENUM
 @item DBX_OUTPUT_ENUM (@var{stream}, @var{type})
 Define this macro if the target machine requires special handling to
