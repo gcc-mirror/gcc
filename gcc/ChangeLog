@@ -1,3 +1,7 @@
+Fri Jan 16 16:23:52 1998  Richard Henderson  <rth@cygnus.com>
+
+	* gengenrtl.c (DEF_RTL_EXPR): Provide a K&R compliant version.
+
 Fri Jan 16 10:16:10 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* calls.c (expand_call): Move #ifdef code out of macro argument
