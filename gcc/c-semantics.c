@@ -158,19 +158,6 @@ add_decl_stmt (tree decl)
   add_stmt (decl_stmt);
 }
 
-/* Queue a cleanup.  CLEANUP is an expression/statement to be executed
-   when the current scope is exited.  EH_ONLY is true when this is not
-   meant to apply to normal control flow transfer.  */
-
-void
-push_cleanup (tree decl, tree cleanup, bool eh_only)
-{
-  tree stmt = build_stmt (CLEANUP_STMT, NULL, cleanup, decl);
-  CLEANUP_EH_ONLY (stmt) = eh_only;
-  add_stmt (stmt);
-  CLEANUP_BODY (stmt) = push_stmt_list ();
-}
-
 /* Build a generic statement based on the given type of node and
    arguments. Similar to `build_nt', except that we set
    EXPR_LOCUS to be the current source location.  */

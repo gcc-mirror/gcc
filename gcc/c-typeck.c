@@ -6483,8 +6483,7 @@ static int if_stack_space = 0;
 /* Stack pointer.  */
 static int if_stack_pointer = 0;
 
-/* Begin an if-statement.  Returns a newly created IF_STMT if
-   appropriate.  */
+/* Begin an if-statement.  */
 
 void
 c_begin_if_stmt (void)
@@ -6504,7 +6503,7 @@ c_begin_if_stmt (void)
       if_stack = xrealloc (if_stack, if_stack_space * sizeof (if_elt));
     }
 
-  r = add_stmt (build_stmt (IF_STMT, NULL_TREE, NULL_TREE, NULL_TREE));
+  r = add_stmt (build_stmt (COND_EXPR, NULL_TREE, NULL_TREE, NULL_TREE));
 
   /* Record this if statement.  */
   elt = &if_stack[if_stack_pointer++];
@@ -6527,7 +6526,7 @@ c_finish_if_cond (tree cond, int compstmt_count, int stmt_count)
   if_elt *elt = &if_stack[if_stack_pointer - 1];
   elt->compstmt_count = compstmt_count;
   elt->stmt_count = stmt_count;
-  IF_COND (elt->if_stmt) = lang_hooks.truthvalue_conversion (cond);
+  COND_EXPR_COND (elt->if_stmt) = lang_hooks.truthvalue_conversion (cond);
 }
 
 /* Called after the then-clause for an if-statement is processed.  */
@@ -6536,7 +6535,7 @@ void
 c_finish_then (tree then_stmt)
 {
   if_elt *elt = &if_stack[if_stack_pointer - 1];
-  THEN_CLAUSE (elt->if_stmt) = then_stmt;
+  COND_EXPR_THEN (elt->if_stmt) = then_stmt;
   elt->empty_locus = input_location;
 }
 
@@ -6570,7 +6569,7 @@ void
 c_finish_else (tree else_stmt)
 {
   if_elt *elt = &if_stack[if_stack_pointer - 1];
-  ELSE_CLAUSE (elt->if_stmt) = else_stmt;
+  COND_EXPR_ELSE (elt->if_stmt) = else_stmt;
   elt->empty_locus = input_location;
 }
 
@@ -6581,6 +6580,9 @@ void
 c_finish_if_stmt (int stmt_count)
 {
   if_elt *elt = &if_stack[--if_stack_pointer];
+
+  if (COND_EXPR_ELSE (elt->if_stmt) == NULL)
+    COND_EXPR_ELSE (elt->if_stmt) = build_empty_stmt ();
 
   if (elt->needs_warning)
     warning ("%Hsuggest explicit braces to avoid ambiguous `else'",
@@ -6780,6 +6782,19 @@ c_end_compound_stmt (tree stmt, bool do_scope)
     }
 
   return stmt;
+}
+
+/* Queue a cleanup.  CLEANUP is an expression/statement to be executed
+   when the current scope is exited.  EH_ONLY is true when this is not
+   meant to apply to normal control flow transfer.  */
+
+void
+push_cleanup (tree decl ATTRIBUTE_UNUSED, tree cleanup, bool eh_only)
+{
+  enum tree_code code = eh_only ? TRY_CATCH_EXPR : TRY_FINALLY_EXPR;
+  tree stmt = build_stmt (code, NULL, cleanup);
+  add_stmt (stmt);
+  TREE_OPERAND (stmt, 0) = push_stmt_list ();
 }
 
 /* Build a binary-operation expression without default conversions.

@@ -411,7 +411,23 @@ cp_dump_tree (void* dump_info, tree t)
       dump_child ("nmsp", USING_STMT_NAMESPACE (t));
       dump_next_stmt (di, t);
       break;
-      
+
+    case CLEANUP_STMT:
+      dump_stmt (di, t);
+      dump_child ("decl", CLEANUP_DECL (t));
+      dump_child ("expr", CLEANUP_EXPR (t));
+      dump_child ("body", CLEANUP_BODY (t));
+      dump_next_stmt (di, t);
+      break;
+
+    case IF_STMT:
+      dump_stmt (di, t);
+      dump_child ("cond", IF_COND (t));
+      dump_child ("then", THEN_CLAUSE (t));
+      dump_child ("else", ELSE_CLAUSE (t));
+      dump_next_stmt (di, t);
+      break;
+
     default:
       break;
     }

@@ -922,13 +922,6 @@ extern void finish_file	(void);
 #define STATEMENT_LIST_STMT_EXPR(NODE) \
   TREE_LANG_FLAG_1 (STATEMENT_LIST_CHECK (NODE))
 
-/* IF_STMT accessors. These give access to the condition of the if
-   statement, the then block of the if statement, and the else block
-   of the if statement if it exists.  */
-#define IF_COND(NODE)           TREE_OPERAND (IF_STMT_CHECK (NODE), 0)
-#define THEN_CLAUSE(NODE)       TREE_OPERAND (IF_STMT_CHECK (NODE), 1)
-#define ELSE_CLAUSE(NODE)       TREE_OPERAND (IF_STMT_CHECK (NODE), 2)
-
 /* WHILE_STMT accessors. These give access to the condition of the
    while statement and the body of the while statement, respectively.  */
 #define WHILE_COND(NODE)        TREE_OPERAND (WHILE_STMT_CHECK (NODE), 0)
@@ -975,16 +968,6 @@ extern void finish_file	(void);
 #define COMPOUND_LITERAL_EXPR_DECL(NODE)			\
   DECL_STMT_DECL (COMPOUND_LITERAL_EXPR_DECL_STMT (NODE))
 
-/* The body of the CLEANUP_STMT.  */
-#define CLEANUP_BODY(NODE) \
-  TREE_OPERAND (CLEANUP_STMT_CHECK (NODE), 0)
-/* The cleanup to run in a CLEANUP_STMT.  */
-#define CLEANUP_EXPR(NODE) \
-  TREE_OPERAND (CLEANUP_STMT_CHECK (NODE), 1)
-/* The VAR_DECL to clean up in a CLEANUP_STMT.  */
-#define CLEANUP_DECL(NODE) \
-  TREE_OPERAND (CLEANUP_STMT_CHECK (NODE), 2)
-
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
 
 enum c_tree_code {
@@ -996,8 +979,7 @@ enum c_tree_code {
 #undef DEFTREECODE
 
 #define c_common_stmt_codes				\
-   CLEANUP_STMT,	EXPR_STMT,			\
-   DECL_STMT,		IF_STMT,	FOR_STMT,	\
+   EXPR_STMT,		DECL_STMT,	FOR_STMT,	\
    WHILE_STMT,		DO_STMT,	RETURN_STMT,	\
    BREAK_STMT,		CONTINUE_STMT,	SWITCH_STMT
 

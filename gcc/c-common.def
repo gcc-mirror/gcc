@@ -37,10 +37,6 @@ DEFTREECODE (EXPR_STMT, "expr_stmt", 'e', 1)
    DECL_STMT_DECL.  */
 DEFTREECODE (DECL_STMT, "decl_stmt", 'e', 1)
 
-/* Represents an 'if' statement. The operands are IF_COND,
-   THEN_CLAUSE, and ELSE_CLAUSE, respectively.  */
-DEFTREECODE (IF_STMT, "if_stmt", 'e', 3)
-
 /* Used to represent a `for' statement. The operands are
    FOR_INIT_STMT, FOR_COND, FOR_EXPR, and FOR_BODY, respectively.  */
 DEFTREECODE (FOR_STMT, "for_stmt", 'e', 4)
@@ -77,11 +73,6 @@ DEFTREECODE (STMT_EXPR, "stmt_expr", 'e', 1)
    the DECL_INITIAL of that decl is the CONSTRUCTOR that initializes
    the compound literal.  */
 DEFTREECODE (COMPOUND_LITERAL_EXPR, "compound_literal_expr", 'e', 1)
-
-/* A CLEANUP_STMT marks the point at which a declaration is fully
-   constructed.  The CLEANUP_EXPR is run on behalf of CLEANUP_DECL
-   when CLEANUP_BODY completes.  */
-DEFTREECODE (CLEANUP_STMT, "cleanup_stmt", 'e', 3)
 
 /*
 Local variables:

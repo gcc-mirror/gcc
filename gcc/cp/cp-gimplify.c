@@ -79,6 +79,26 @@ genericize_eh_spec_block (tree *stmt_p)
   *stmt_p = gimple_build_eh_filter (body, allowed, failure);
 }
 
+/* Genericize an IF_STMT by turning it into a COND_EXPR.  */
+
+static void
+gimplify_if_stmt (tree *stmt_p)
+{
+  tree stmt, then_, else_;
+
+  stmt = *stmt_p;
+  then_ = THEN_CLAUSE (stmt);
+  else_ = ELSE_CLAUSE (stmt);
+
+  if (!then_)
+    then_ = build_empty_stmt ();
+  if (!else_)
+    else_ = build_empty_stmt ();
+
+  stmt = build (COND_EXPR, void_type_node, IF_COND (stmt), then_, else_);
+  *stmt_p = stmt;
+}
+
 /* Gimplify initialization from an AGGR_INIT_EXPR.  */
 
 static void
@@ -224,6 +244,11 @@ cp_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p)
       ret = GS_ALL_DONE;
       break;
 
+    case IF_STMT:
+      gimplify_if_stmt (expr_p);
+      ret = GS_OK;
+      break;
+
     default:
       ret = c_gimplify_expr (expr_p, pre_p, post_p);
       break;
@@ -235,4 +260,34 @@ cp_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p)
       = saved_stmts_are_full_exprs_p;
 
   return ret;
+}
+
+/* Genericize a CLEANUP_STMT.  This just turns into a TRY_FINALLY or
+   TRY_CATCH depending on whether it's EH-only.  */
+
+static tree
+gimplify_cleanup_stmt (tree *stmt_p, int *walk_subtrees,
+		       void *data ATTRIBUTE_UNUSED)
+{
+  tree stmt = *stmt_p;
+
+  if (DECL_P (stmt) || TYPE_P (stmt))
+    *walk_subtrees = 0;
+  else if (TREE_CODE (stmt) == CLEANUP_STMT)
+    *stmt_p = build (CLEANUP_EH_ONLY (stmt) ? TRY_CATCH_EXPR : TRY_FINALLY_EXPR,
+		     void_type_node, CLEANUP_BODY (stmt), CLEANUP_EXPR (stmt));
+
+  return NULL;
+}
+
+void
+cp_genericize (tree fndecl)
+{
+  /* Due to the way voidify_wrapper_expr is written, we don't get a chance
+     to lower this construct before scanning it.  So we need to lower these
+     before doing anything else.  */
+  walk_tree (&DECL_SAVED_TREE (fndecl), gimplify_cleanup_stmt, NULL, NULL);
+
+  /* Do everything else.  */
+  c_genericize (fndecl);
 }
