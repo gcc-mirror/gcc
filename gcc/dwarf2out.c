@@ -4451,29 +4451,18 @@ build_abbrev_table (die)
     build_abbrev_table (c);
 }
 
-/* Return the size of a string, including the null byte.  */
+/* Return the size of a string, including the null byte.
+
+   This used to treat backslashes as escapes, and hence they were not included
+   in the count.  However, that conflicts with what ASM_OUTPUT_ASCII does,
+   which treats a backslash as a backslash, escaping it if necessary, and hence
+   we must include them in the count.  */
 
 static unsigned long
 size_of_string (str)
      register char *str;
 {
-  register unsigned long size = 0;
-  register unsigned long slen = strlen (str);
-  register unsigned long i;
-  register unsigned c;
-
-  for (i = 0; i < slen; ++i)
-    {
-      c = str[i];
-      if (c == '\\')
-	++i;
-
-      size += 1;
-    }
-
-  /* Null terminator.  */
-  size += 1;
-  return size;
+  return strlen (str) + 1;
 }
 
 /* Return the size of a location descriptor.  */
