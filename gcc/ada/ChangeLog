@@ -1,3 +1,7 @@
+2004-01-16  Andreas Jaeger  <aj@suse.de>
+
+	* Makefile.in: Add $(DESTDIR).
+
 2004-01-15  Olivier Hainque  <hainque@act-europe.fr>
 
 	* decl.c (gnat_to_gnu_entity, E_Variable): Retrieve the object size
@@ -152,7 +156,7 @@
 
 2004-01-05  Kelley Cook  <kcook@gcc.gnu.org>
 
-	* Make-lang.in: Revert stamp-xgnatug change from 2003-12-18. 
+	* Make-lang.in: Revert stamp-xgnatug change from 2003-12-18.
 	Update comment and copyright date.
 	* stamp-xgnatug: Delete.
 
@@ -177,14 +181,14 @@
 
 	* sprint.adb: Minor updates to avoid -gnatwa warnings
 
-	* s-secsta.ads, s-secsta.adb: 
+	* s-secsta.ads, s-secsta.adb:
 	(SS_Get_Max): New function to obtain high water mark for ss stack
 	Default_Secondary_Stack is not a constant since it may be modified by
 	the binder generated main program if the -D switch is used.
 
 	* switch-b.adb: New -Dnnn switch for binder
 
-	* switch-c.adb: 
+	* switch-c.adb:
 	Make -gnatg imply all warnings currently in -gnatwa
 
 	* vms_conv.adb: Minor reformatting
@@ -509,7 +513,7 @@
 	to __gnat_map_signal, imported from init.c to support
 	signal -> exception mappings that depend on the vxWorks version.
 
-	* init.c: 
+	* init.c:
 	Created and exported __gnat_map_signal to support signal -> exception
 	mapping that is dependent on the VxWorks version.
 	Change mapping of SIGBUS from Program_Error to Storage_Error on VxWorks
@@ -538,7 +542,7 @@
 
 	* sem_ch3.adb: Minor reformatting
 
-	* sem_prag.adb: 
+	* sem_prag.adb:
 	Fix bad prototype of Same_Base_Type in body (code reading cleanup)
 	Minor reformatting throughout
 
@@ -794,7 +798,7 @@
 
 	PR ada/11724
 
-	* adaint.h, adaint.c, g-os_lib.ads: 
+	* adaint.h, adaint.c, g-os_lib.ads:
 	Do not assume that the offset argument to lseek(2) is a 32 bit integer,
 	on some platforms (including FreeBSD), it is a 64 bit value.
 	Introduce a __gnat_lseek wrapper in adaint.c to allow for portability.
@@ -812,19 +816,19 @@
 	* gnatlbr.adb: Clean up: replace Library_Version by
 	Verbose_Library_Version.
 
-	* make.adb, lib-writ.adb, exp_attr.adb: 
+	* make.adb, lib-writ.adb, exp_attr.adb:
 	Clean up: replace Library_Version by Verbose_Library_Version.
 
 	* 5lintman.adb: Removed.
 
-	* Makefile.in: 
+	* Makefile.in:
 	Update and simplify computation of LIBRARY_VERSION.
 	Fix computation of GSMATCH_VERSION.
 	5lintman.adb is no longer used: replaced by 7sintman.adb.
 
 2003-12-03  Robert Dewar  <dewar@gnat.com>
 
-	* exp_ch5.adb: 
+	* exp_ch5.adb:
 	(Possible_Bit_Aligned_Component): Maybe_Bit_Aligned_Large_Component new
 	name. Modified to consider small non-bit-packed arrays as troublesome
 	and in need of component-by-component assigment expansion.
@@ -838,22 +842,22 @@
 
 2003-12-03  Jose Ruiz  <ruiz@act-europe.fr>
 
-	* Makefile.in: 
+	* Makefile.in:
 	When defining LIBGNAT_TARGET_PAIRS for bare board targets, remove the
 	redundant inclusion of EXTRA_HIE_NONE_TARGET_PAIRS, which is always
 	included in HIE_NONE_TARGET_PAIRS.
 
 2003-12-03  Ed Schonberg  <schonberg@gnat.com>
 
-	* sem_attr.adb: 
+	* sem_attr.adb:
 	(Legal_Formal_Attribute): Attribute is legal in an inlined body, as it
 	is legal in an instance, because legality is cheched in the template.
 
-	* sem_prag.adb: 
+	* sem_prag.adb:
 	(Analyze_Pragma, case Warnings): In an inlined body, the pragma may be
 	appplied to an unchecked conversion of a formal parameter.
 
-	* sem_warn.adb: 
+	* sem_warn.adb:
 	(Output_Unreferenced_Messages): Suppress "not read" warnings on imported
 	variables.
 
@@ -922,7 +926,7 @@
 
 2003-11-26  Thomas Quinot  <quinot@act-europe.fr>
 
-	* g-socket.ads, g-socket.adb: 
+	* g-socket.ads, g-socket.adb:
 	Clarify documentation of function Stream. Introduce a Free procedure
 	to release the returned Stream once it becomes unused.
 
@@ -936,14 +940,14 @@
 
 2003-11-26  Ed Schonberg  <schonberg@gnat.com>
 
-	* exp_ch4.adb: 
+	* exp_ch4.adb:
 	(Expand_N_Slice): Recognize all cases of slices that appear as actuals
 	in procedure calls and whose expansion must be deferred.
 
 	* exp_ch6.adb (Add_Call_By_Copy_Node): Remove previous fix. Proper fix
 	is in exp_ch4.
 
-	* sem_ch3.adb: 
+	* sem_ch3.adb:
 	(Build_Derived_Array_Type): Create operator for unconstrained type
 	if ancestor is unconstrained.
 
@@ -959,7 +963,7 @@
 	Change to object directory of main project before binding step.
 	(Initialize): Initialize Project_Object_Directory to No_Project
 
-	* mlib-prj.adb: 
+	* mlib-prj.adb:
 	(Build_Library): Take into account Builder'Default_Switches ("Ada") when
 	binding a Stand-Alone Library.
 
@@ -970,7 +974,7 @@
 
 	* sem_ch13.adb: (Check_Size): Reset size if size is too small
 
-	* sem_ch13.ads: 
+	* sem_ch13.ads:
 	(Check_Size): Fix documentation to include bit-packed array case
 
 	* sem_res.adb: Implement restriction No_Direct_Boolean_Operators
@@ -993,7 +997,7 @@
 
 2003-11-24  Jose Ruiz  <ruiz@act-europe.fr>
 
-	* Makefile.in: 
+	* Makefile.in:
 	Use 5zintman.ads for VxWorks targets. This file avoid confusion between
 	signals and interrupts.
 
@@ -1002,13 +1006,13 @@
 	* 5zintman.adb: Replace Exception_Interrupts by Exception_Signals, and
 	add exception signals to the set of unmasked signals.
 
-	* 5ztaprop.adb: 
+	* 5ztaprop.adb:
 	Use Abort_Task_Signal instead of Abort_Task_Interrupt to avoid confusion
 	between signals and interrupts.
 	Add to Unblocked_Signal_Mask the set of signals that are in
 	Keep_Unmasked.
 
-	* 7sinmaop.adb: 
+	* 7sinmaop.adb:
 	Adding a check to see whether the Interrupt_ID we want to unmask is in
 	the range of Keep_Unmasked (in procedure Interrupt_Self_Process). The
 	reason is that the index type of the Keep_Unmasked array is not always
@@ -1016,7 +1020,7 @@
 
 2003-11-24  Gary Dismukes  <dismukes@gnat.com>
 
-	* exp_util.adb: 
+	* exp_util.adb:
 	(Remove_Side_Effects): Condition constantness of object created for a
 	 an unchecked type conversion on the constantness of the expression
 	 to ensure the correct value for 'Constrained when passing components
@@ -1035,7 +1039,7 @@
 
 2003-11-24  Vincent Celier  <celier@gnat.com>
 
-	* make.adb: 
+	* make.adb:
 	(Gnatmake, Initialize): Call Usage instead of Makeusg directly
 	(Marking_Label): Label to mark processed source files. Incremented for
 	each executable.
@@ -1045,7 +1049,7 @@
 
 2003-11-24  Jerome Guitton  <guitton@act-europe.fr>
 
-	* s-thread.ads: 
+	* s-thread.ads:
 	Move the declaration of the TSD for System.Threads to System.Soft_Links.
 	Add some comments.
 
@@ -1055,7 +1059,7 @@
 
 2003-11-24  Vasiliy Fofanov  <fofanov@act-europe.fr>
 
-	* Make-lang.in: 
+	* Make-lang.in:
 	Use gnatls rather than gcc to obtain the location of GNAT RTL for
 	crosstools build.
 
@@ -1076,22 +1080,22 @@
 
 2003-11-24  Ed Schonberg  <schonberg@gnat.com>
 
-	* sem_ch3.adb: 
+	* sem_ch3.adb:
 	(New_Concatenation_Op): Proper name for New_Binary_Operator, only
 	used for implicit concatenation operators.
 	Code cleanup.
 
-	* sem_elab.adb: 
+	* sem_elab.adb:
 	(Check_Elab_Call): Set No_Elaboration_Check appropriately on calls in
 	task bodies that are in the scope of a Suppress pragma.
 	(Check_A Call): Use the flag to prevent spurious elaboration checks.
 
-	* sinfo.ads, sinfo.adb: 
+	* sinfo.ads, sinfo.adb:
 	New flag No_Elaboration_Check on function/procedure calls, to properly
 	suppress checks on calls in task bodies that are within a local suppress
 	pragma.
 
-	* exp_ch4.adb: 
+	* exp_ch4.adb:
 	(Expand_Concatenate_Other): Use the proper integer type for the
 	expression for the upper bound, to avoid universal_integer computations
 	when possible.
@@ -1187,11 +1191,11 @@
 	* snames.ads, snames.adbadb: New standard names
 	Library_Reference_Symbol_File and Library_Symbol_Policy
 
-	* mlib-prj.adb: 
+	* mlib-prj.adb:
 	(Build_Library): Call Build_Dinamic_Library with the Symbol_Data of the
 	project.
 
-	* mlib-tgt.adb: 
+	* mlib-tgt.adb:
 	(Build_Dynamic_Library): New parameter Symbol_Data (ignored)
 
 	* mlib-tgt.ads: (Build_Dynamic_Library): New parameter Symbol_Data
@@ -1201,11 +1205,11 @@
 	* prj.ads: (Policy, Symbol_Record): New types
 	(Project_Data): New component Symbol_Data
 
-	* prj-attr.adb: 
+	* prj-attr.adb:
 	New attributes Library_Symbol_File, Library_Symbol_Policy and
 	Library_Reference_Symbol_File.
 
-	* prj-nmsc.adb: 
+	* prj-nmsc.adb:
 	(Ada_Check): When project is a Stand-Alone library project, process
 	attribute Library_Symbol_File, Library_Symbol_Policy and
 	Library_Reference_Symbol_File.
@@ -1221,7 +1225,7 @@
 	gnatsym related to symbol file, symbol policy and reference symbol
 	file.
 
-	* 5vsymbol.adb: 
+	* 5vsymbol.adb:
 	Extensive modifications to take into account the reference symbol file,
 	the symbol policy, the library version and to put in the symbol file the
 	minor and major IDs.
@@ -1234,7 +1238,7 @@
 	(Flush): Remove last character of a line, if it is a back slash, to
 	avoid make problems.
 
-	* gnatsym.adb: 
+	* gnatsym.adb:
 	Implement new scheme with reference symbol file and symbol policy.
 
 	* g-os_lib.ads: (Is_Directory): Clarify comment
@@ -1269,7 +1273,7 @@
 
 2003-11-19  Ed Schonberg  <schonberg@gnat.com>
 
-	* exp_ch6.adb: 
+	* exp_ch6.adb:
 	(Add_Call_By_Copy_Node): Do not original node of rewritten expression
 	in the rewriting is the result of an inlined call.
 
@@ -1278,7 +1282,7 @@
 	post-call assignment, because expression may have been rewritten, e.g.
 	if it is a packed array.
 
-	* sem_attr.adb: 
+	* sem_attr.adb:
 	(Resolve_Attribute, case 'Constrained): Attribute is legal in an inlined
 	body, just as it is in an instance.
 	Categorization routines
@@ -1321,7 +1325,7 @@
 
 2003-11-18  Thomas Quinot  <quinot@act-europe.fr>
 
-	* cstreams.c: 
+	* cstreams.c:
 	Use realpath(3) on FreeBSD. Fix typo in comment while we are at it.
 
 	* init.c: Initialization routines for FreeBSD
@@ -1451,7 +1455,7 @@
 2003-11-14  Andreas Jaeger  <aj@suse.de>
 
 	* lang.opt: Change -Wno-long-long to -Wlong-long since the latter
-	is the canonical version. 
+	is the canonical version.
 	* misc.c (gnat_handle_option): Likewise.
 
 	* Makefile.in (LIBGNAT_TARGET_PAIRS): Add rules for x86_64-linux.

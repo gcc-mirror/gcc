@@ -1706,11 +1706,11 @@ install-gnatlib: ../stamp-gnatlib
 	for file in gnat gnarl; do \
 	   if [ -f rts/lib$$file-$(LIBRARY_VERSION)$(soext) ]; then \
 	      $(INSTALL) rts/lib$$file-$(LIBRARY_VERSION)$(soext) \
-			 $(ADA_RTL_OBJ_DIR); \
+			 $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
 	   fi; \
 	   if [ -f rts/lib$$file$(soext) ]; then \
 	      $(LN_S) lib$$file-$(LIBRARY_VERSION)$(soext) \
-	      $(ADA_RTL_OBJ_DIR)/lib$$file$(soext); \
+	      $(DESTDIR)$(ADA_RTL_OBJ_DIR)/lib$$file$(soext); \
 	   fi; \
 	done
 # This copy must be done preserving the date on the original file.
