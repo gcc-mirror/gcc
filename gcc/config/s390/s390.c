@@ -1050,6 +1050,19 @@ q_constraint (op)
   return 1;
 }
 
+/* Return the cost of an address rtx ADDR.  */
+
+int
+s390_address_cost (addr)
+     rtx addr;
+{
+  struct s390_address ad;
+  if (!s390_decompose_address (addr, &ad))
+    return 1000;
+
+  return ad.indx? COSTS_N_INSNS (1) + 1 : COSTS_N_INSNS (1);
+}
+
 /* Return true if OP is a valid operand for the BRAS instruction.
    OP is the current operation.
    MODE is the current operation mode.  */
