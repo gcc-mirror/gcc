@@ -1,5 +1,11 @@
 2004-01-15  Geoffrey Keating  <geoffk@apple.com>
 
+	PR pch/13689
+	* alias.c (struct alias_set_entry): Mark for GC.
+	(alias_sets): Make static, mark for GC.
+	(record_alias_subset): Use GC to allocate alias structures.
+	* varray.c (element): Make generic varrays GCed.
+
 	PR pch/13361
 	* c-typeck.c (constructor_asmspec): Delete.
 	(struct initializer_stack): Delete field 'asmspec'.
