@@ -1311,7 +1311,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss ${libgcj}"
     ;;
   m32r-*-*)
-    noconfigdirs="$noconfigdirs ${libgcj} gdb"
+    noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   m68hc11-*-*|m6811-*-*|m68hc12-*-*|m6812-*-*)
     noconfigdirs="$noconfigdirs target-libiberty target-libstdc++-v3 ${libgcj}"

@@ -1,3 +1,8 @@
+2003-08-01  Andrew Cagney  <cagney@redhat.com>
+
+	* configure.in (noconfigdirs): Do not add GDB when m32r-*-*.
+	* configure: Ditto.
+
 2003-07-31  Geoffrey Keating  <geoffk@apple.com>
 
 	* Makefile.tpl (libsubdir): Use gcc instead of gcc-lib.
