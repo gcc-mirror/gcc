@@ -1129,7 +1129,7 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 
   /* We expect PARMS to have the right length; don't crash if not.  */
   if (list_length (parms) != nargs)
-    return (rtx)-1;
+    return (rtx) (HOST_WIDE_INT) -1;
   /* Also check that the parms type match.  Since the appropriate
      conversions or default promotions have already been applied,
      the machine modes should match exactly.  */
@@ -1142,12 +1142,12 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
       tree arg = TREE_VALUE (actual);
       enum machine_mode mode = TYPE_MODE (DECL_ARG_TYPE (formal));
       if (mode != TYPE_MODE (TREE_TYPE (arg)))
-	return (rtx)-1;
+	return (rtx) (HOST_WIDE_INT) -1;
       /* If they are block mode, the types should match exactly.
          They don't match exactly if TREE_TYPE (FORMAL) == ERROR_MARK_NODE,
 	 which could happen if the parameter has incomplete type.  */
       if (mode == BLKmode && TREE_TYPE (arg) != TREE_TYPE (formal))
-	return (rtx)-1;
+	return (rtx) (HOST_WIDE_INT) -1;
     }
 
   /* Make a binding contour to keep inline cleanups called at
