@@ -1036,9 +1036,16 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
 		 it here.  */
 
 	      struct fixup_replacement *replacements = 0;
+	      rtx next_insn = NEXT_INSN (insn);
 
 	      fixup_var_refs_1 (var, promoted_mode, &PATTERN (insn), insn,
 				&replacements);
+
+	      /* If this is last_parm_insn, and any instructions were output
+		 after it to fix it up, then we must set last_parm_insn to
+		 the last such instruction emitted.  */
+	      if (insn == last_parm_insn)
+		last_parm_insn = PREV_INSN (next_insn);
 
 	      while (replacements)
 		{
