@@ -1901,7 +1901,7 @@ int main(int argc, char *argv)
     JvAttachCurrentThread(NULL, NULL);
 
     String *message = JvNewStringLatin1("Hello from C++");
-    JvInitClass(&System.class$);
+    JvInitClass(&System::class$);
     System::out->println(message);
 
     JvDetachCurrentThread();
