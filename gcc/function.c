@@ -7316,7 +7316,7 @@ struct epi_info
 };
 
 static void handle_epilogue_set (rtx, struct epi_info *);
-static void update_epilogue_consts PARAMS ((rtx, rtx, void *));
+static void update_epilogue_consts (rtx, rtx, void *);
 static void emit_equiv_load (struct epi_info *);
 
 /* Modify INSN, a list of one or more insns that is part of the epilogue, to
