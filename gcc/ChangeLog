@@ -1,3 +1,9 @@
+i2002-12-02  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	* configure.in: Use "missing" script to generate warning if
+	flex or bison programs not found, instead of invoking "false".
+	* configure: Rebuilt.
+
 Mon Dec  2 20:28:48 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* unroll.c (copy_loop_body): Copy CONST_OR_PURE_CALL_P.
