@@ -1,3 +1,7 @@
+Tue Jul 21 23:28:35 1998  Klaus Kaempf <kkaempf@rmi.de> 
+
+	* cccp.c (do_include): Fix vax c style include handling.
+
 Tue Jul 21 15:49:31 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.h (PREDICATE_CODES): Add CONSTANT_P_RTX.

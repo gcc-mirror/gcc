@@ -4442,7 +4442,7 @@ get_filename:
      */
     /* Note: The argument of ISALPHA() can be evaluated twice, so do
        the pre-decrement outside of the macro. */
-    if (retried && (--fbeg, ISALPHA(*(U_CHAR *) (fbeg)))) {
+    if (retried && (--fin, ISALPHA(*(U_CHAR *) (fin)))) {
       while (fin != limit && (!ISSPACE(*fin)))
 	*fend++ = *fin++;
       warning ("VAX-C-style include specification found, use '#include <filename.h>' !");
