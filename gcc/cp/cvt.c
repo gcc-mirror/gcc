@@ -826,11 +826,8 @@ ocp_convert (type, expr, convtype, flags)
 
       ctor = e;
 
-      if (IS_AGGR_TYPE (type) && CLASSTYPE_ABSTRACT_VIRTUALS (type))
-	{
-	  abstract_virtuals_error (NULL_TREE, type);
-	  return error_mark_node;
-	}
+      if (abstract_virtuals_error (NULL_TREE, type))
+	return error_mark_node;
 
       if ((flags & LOOKUP_ONLYCONVERTING)
 	  && ! (IS_AGGR_TYPE (dtype) && DERIVED_FROM_P (type, dtype)))

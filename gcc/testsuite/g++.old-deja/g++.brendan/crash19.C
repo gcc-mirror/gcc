@@ -1168,8 +1168,8 @@ class dict : public object {
 			 DISPLAYER displayer, STRINGER str_f)
 		{// ERROR - candidate for bad call
 			if (799  >=  800 ) cout <<  "Creating new dictionary..."  << '\n'; ;
-			if (cmp == __null )       cmp = &default_compare;
-			if (displayer == __null ) displayer = &default_displayer;
+			if (cmp == __null )       cmp = (COMPARE) &default_compare;
+			if (displayer == __null ) displayer = (DISPLAYER) &default_displayer;
 			if (str_f == __null )     str_f = &default_stringer;
 			compare_f = cmp;
 			display_f = displayer;
@@ -1417,7 +1417,7 @@ class queue : public object {
 		         DISPLAYER displayer, STRINGER str_f)
 		{// ERROR - candidate for bad call
 			if (799  >=  800 ) cout <<  "Creating new queue..."  << '\n'; ;
-			if (displayer == __null ) displayer = &default_displayer;
+			if (displayer == __null ) displayer = (DISPLAYER) &default_displayer;
 			if (str_f == __null )     str_f = &default_stringer;
 			display_f = displayer;
 			destroy_f = destroyer;

@@ -3619,8 +3619,7 @@ finish_struct_1 (t)
 	    {
 	      /* Never let anything with uninheritable virtuals
 		 make it through without complaint.  */
-	      if (CLASSTYPE_ABSTRACT_VIRTUALS (type))
-		abstract_virtuals_error (x, type);
+	      abstract_virtuals_error (x, type);
 		      
 	      /* Don't let signatures make it through either.  */
 	      if (IS_SIGNATURE (type))

@@ -7857,14 +7857,9 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       if (was_temp)
 	resume_temporary_allocation ();
 
-      if (type != error_mark_node
-	  && TYPE_LANG_SPECIFIC (core_type)
-	  && CLASSTYPE_ABSTRACT_VIRTUALS (core_type))
-	abstract_virtuals_error (decl, core_type);
-      else if ((TREE_CODE (type) == FUNCTION_TYPE
-		|| TREE_CODE (type) == METHOD_TYPE)
-	       && TYPE_LANG_SPECIFIC (TREE_TYPE (type))
-	       && CLASSTYPE_ABSTRACT_VIRTUALS (TREE_TYPE (type)))
+      if (!abstract_virtuals_error (decl, core_type)
+	  && (TREE_CODE (type) == FUNCTION_TYPE
+	      || TREE_CODE (type) == METHOD_TYPE))
 	abstract_virtuals_error (decl, TREE_TYPE (type));
 
       if (TYPE_LANG_SPECIFIC (core_type) && IS_SIGNATURE (core_type))
@@ -11614,13 +11609,8 @@ grokparms (first_parm, funcdef_flag)
 		      type = build_pointer_type (type);
 		      TREE_TYPE (decl) = type;
 		    }
-                  else if (TREE_CODE (type) == RECORD_TYPE
-                           && TYPE_LANG_SPECIFIC (type)
-                           && CLASSTYPE_ABSTRACT_VIRTUALS (type))
-                    {
-                      abstract_virtuals_error (decl, type);
-                      any_error = 1;  /* Seems like a good idea. */
-                    }
+                  else if (abstract_virtuals_error (decl, type))
+		    any_error = 1;  /* Seems like a good idea. */
                   else if (TREE_CODE (type) == RECORD_TYPE
                            && TYPE_LANG_SPECIFIC (type)
                            && IS_SIGNATURE (type))
@@ -12033,9 +12023,7 @@ grok_op_properties (decl, virtualp, friendp)
       else if (name == ansi_opname[(int) COND_EXPR])
 	{
 	  /* 13.4.0.3 */
-	  pedwarn ("ANSI C++ prohibits overloading operator ?:");
-	  if (list_length (argtypes) != 4)
-	    cp_error ("`%D' must take exactly three arguments", decl);
+	  cp_error ("ANSI C++ prohibits overloading operator ?:");
 	}	  
       else if (ambi_op_p (name))
 	{
@@ -13113,9 +13101,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 	    = CP_TYPE_VOLATILE_P (TREE_TYPE (fntype));
 	}
 
-      if (TYPE_LANG_SPECIFIC (TREE_TYPE (fntype))
-	  && CLASSTYPE_ABSTRACT_VIRTUALS (TREE_TYPE (fntype)))
-	abstract_virtuals_error (decl1, TREE_TYPE (fntype));
+      abstract_virtuals_error (decl1, TREE_TYPE (fntype));
     }
 
   /* Effective C++ rule 15.  See also c_expand_return.  */

@@ -2206,12 +2206,8 @@ build_new_1 (exp)
       return error_mark_node;
     }
 
-  if (TYPE_LANG_SPECIFIC (true_type)
-      && CLASSTYPE_ABSTRACT_VIRTUALS (true_type))
-    {
-      abstract_virtuals_error (NULL_TREE, true_type);
-      return error_mark_node;
-    }
+  if (abstract_virtuals_error (NULL_TREE, true_type))
+    return error_mark_node;
 
   if (TYPE_LANG_SPECIFIC (true_type) && IS_SIGNATURE (true_type))
     {

@@ -125,21 +125,27 @@ readonly_error (arg, string, soft)
     (*fn) ("%s of read-only location", string);
 }
 
-/* Print an error message for invalid use of a type which declares
-   virtual functions which are not inheritable.  */
+/* If TYPE has abstract virtual functions, issue an error about trying
+   to create an object of that type.  DECL is the object declared, or
+   NULL_TREE if the declaration is unavailable.  Returns 1 if an error
+   occurred; zero if all was well.  */
 
-void
+int
 abstract_virtuals_error (decl, type)
      tree decl;
      tree type;
 {
-  tree u = CLASSTYPE_ABSTRACT_VIRTUALS (type);
+  tree u;
   tree tu;
 
+  if (!CLASS_TYPE_P (type) || !CLASSTYPE_ABSTRACT_VIRTUALS (type))
+    return 0;
+
+  u = CLASSTYPE_ABSTRACT_VIRTUALS (type);
   if (decl)
     {
       if (TREE_CODE (decl) == RESULT_DECL)
-	return;
+	return 0;
 
       if (TREE_CODE (decl) == VAR_DECL)
 	cp_error ("cannot declare variable `%D' to be of type `%T'",
@@ -170,6 +176,8 @@ abstract_virtuals_error (decl, type)
     }
   else
     cp_error ("  since type `%T' has abstract virtual functions", type);
+
+  return 1;
 }
 
 /* Print an error message for invalid use of a signature type.
@@ -1486,11 +1494,8 @@ build_functional_cast (exp, parms)
       cp_error ("type `%T' is not yet defined", type);
       return error_mark_node;
     }
-  if (IS_AGGR_TYPE (type) && CLASSTYPE_ABSTRACT_VIRTUALS (type))
-    {
-      abstract_virtuals_error (NULL_TREE, type);
-      return error_mark_node;
-    }
+  if (abstract_virtuals_error (NULL_TREE, type))
+    return error_mark_node;
 
   if (parms && TREE_CHAIN (parms) == NULL_TREE)
     return build_c_cast (type, TREE_VALUE (parms));

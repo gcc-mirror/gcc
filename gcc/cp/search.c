@@ -3130,6 +3130,10 @@ add_conversions (binfo, data)
   tree method_vec = CLASSTYPE_METHOD_VEC (BINFO_TYPE (binfo));
   tree *conversions = (tree *) data;
 
+  /* Some builtin types have no method vector, not even an empty one.  */
+  if (!method_vec)
+    return NULL_TREE;
+
   for (i = 2; i < TREE_VEC_LENGTH (method_vec); ++i)
     {
       tree tmp = TREE_VEC_ELT (method_vec, i);
