@@ -1,3 +1,10 @@
+2003-06-09  Scott Gilbertson  <scottg@mantatest.com>
+
+	* gnu/gcj/xlib/natFont.cc (getMaxAscent): adjusted return value.
+	(getMaxDescent): adjusted return value.
+	(getAscent): modified to use metrics for 'O'.
+	(getDescent): modified to use metrics for 'y'.
+
 2003-06-08  Anthony Green  <green@redhat.com>
 
 	* java/net/URLStreamHandler.java (sameFile): Fix port value
