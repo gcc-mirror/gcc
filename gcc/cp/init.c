@@ -98,8 +98,10 @@ begin_init_stmts (stmt_expr_p, compound_stmt_p)
   
   if (building_stmt_tree ())
     *compound_stmt_p = begin_compound_stmt (/*has_no_scope=*/1);
-  //  else
-  //    *compound_stmt_p = genrtl_begin_compound_stmt (has_no_scope=1);
+  /*
+  else 
+    *compound_stmt_p = genrtl_begin_compound_stmt (has_no_scope=1);
+  */
 }
 
 /* Finish out the statement-expression begun by the previous call to

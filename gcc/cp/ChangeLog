@@ -1,3 +1,7 @@
+2000-09-13  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* init.c (begin_init_stmts): Don't use // comments.
+
 2000-09-12  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (maybe_deduce_size_from_array_init): Set do_default for
