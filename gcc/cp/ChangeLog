@@ -5,7 +5,9 @@ Tue Sep  9 19:49:38 1997  Jason Merrill  <jason@yorick.cygnus.com>
 Tue Sep  9 17:57:25 1997  Mark Mitchell  <mmitchell@usa.net>
 
 	* error.c (dump_decl): Avoid crashing when presented with a
-	uninitialized constant, as can occur with a template parameter.
+ 	uninitialized constant, as can occur with a template parameter.
+	(dump_expr): Make sure that there are enough levels of
+ 	current_template_parms before we start diving through them.
 
 1997-09-09  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
