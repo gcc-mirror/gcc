@@ -1905,6 +1905,15 @@ for machine in $build $host $target; do
 			use_collect2=yes
 		fi
 		;;
+	mn10200-*-*)
+		cpu_type=mn10200
+		tm_file="mn10200/mn10200.h"
+		if [[ x$stabs = xyes ]]
+		then
+			tm_file="${tm_file} dbx.h"
+		fi
+		use_collect2=no
+		;;
 	mn10300-*-*)
 		cpu_type=mn10300
 		tm_file="mn10300/mn10300.h"
