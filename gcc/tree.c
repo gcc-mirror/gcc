@@ -996,7 +996,7 @@ make_node (code)
       if (code == BIND_EXPR && obstack != &permanent_obstack)
 	obstack = saveable_obstack;
       length = sizeof (struct tree_exp)
-	+ (tree_code_length[(int) code] - 1) * sizeof (char *);
+	+ (TREE_CODE_LENGTH (code) - 1) * sizeof (char *);
       break;
 
     case 'c':  /* a constant */
@@ -1005,7 +1005,7 @@ make_node (code)
 #endif
       obstack = expression_obstack;
 
-      /* We can't use tree_code_length for INTEGER_CST, since the number of
+      /* We can't use TREE_CODE_LENGTH for INTEGER_CST, since the number of
 	 words is machine-dependent due to varying length of HOST_WIDE_INT,
 	 which might be wider than a pointer (e.g., long long).  Similarly
 	 for REAL_CST, since the number of words is machine-dependent due
@@ -1017,7 +1017,7 @@ make_node (code)
 	length = sizeof (struct tree_real_cst);
       else
 	length = sizeof (struct tree_common)
-	  + tree_code_length[(int) code] * sizeof (char *);
+	  + TREE_CODE_LENGTH (code) * sizeof (char *);
       break;
 
     case 'x':  /* something random, like an identifier.  */
@@ -1032,7 +1032,7 @@ make_node (code)
 	kind = x_kind;
 #endif
       length = sizeof (struct tree_common)
-	+ tree_code_length[(int) code] * sizeof (char *);
+	+ TREE_CODE_LENGTH (code) * sizeof (char *);
       /* Identifier nodes are always permanent since they are
 	 unique in a compiler run.  */
       if (code == IDENTIFIER_NODE) obstack = &permanent_obstack;
@@ -1171,11 +1171,11 @@ copy_node (node)
     case '1':  /* a unary arithmetic expression */
     case '2':  /* a binary arithmetic expression */
       length = sizeof (struct tree_exp)
-	+ (tree_code_length[(int) code] - 1) * sizeof (char *);
+	+ (TREE_CODE_LENGTH (code) - 1) * sizeof (char *);
       break;
 
     case 'c':  /* a constant */
-      /* We can't use tree_code_length for INTEGER_CST, since the number of
+      /* We can't use TREE_CODE_LENGTH for INTEGER_CST, since the number of
 	 words is machine-dependent due to varying length of HOST_WIDE_INT,
 	 which might be wider than a pointer (e.g., long long).  Similarly
 	 for REAL_CST, since the number of words is machine-dependent due
@@ -1186,12 +1186,12 @@ copy_node (node)
 	length = sizeof (struct tree_real_cst);
       else
 	length = (sizeof (struct tree_common)
-		  + tree_code_length[(int) code] * sizeof (char *));
+		  + TREE_CODE_LENGTH (code) * sizeof (char *));
       break;
 
     case 'x':  /* something random, like an identifier.  */
       length = sizeof (struct tree_common)
-	+ tree_code_length[(int) code] * sizeof (char *);
+	+ TREE_CODE_LENGTH (code) * sizeof (char *);
       if (code == TREE_VEC)
 	length += (TREE_VEC_LENGTH (node) - 1) * sizeof (char *);
     }
@@ -1298,7 +1298,7 @@ get_identifier (text)
 	  break;
 	}
 
-  if (tree_code_length[(int) IDENTIFIER_NODE] < 0)
+  if (TREE_CODE_LENGTH (IDENTIFIER_NODE) < 0)
     abort ();			/* set_identifier_size hasn't been called.  */
 
   /* Not found, create one, add to chain */
@@ -2590,7 +2590,7 @@ first_rtl_op (code)
     case METHOD_CALL_EXPR:
       return 3;
     default:
-      return tree_code_length [(int) code];
+      return TREE_CODE_LENGTH (code);
     }
 }
 
@@ -2862,7 +2862,7 @@ contains_placeholder_p (exp)
 	  break;
 	}
 
-      switch (tree_code_length[(int) code])
+      switch (TREE_CODE_LENGTH (code))
 	{
 	case 1:
 	  return contains_placeholder_p (TREE_OPERAND (exp, 0));
@@ -2981,7 +2981,7 @@ substitute_in_expr (exp, f, r)
     case '2':
     case '<':
     case 'e':
-      switch (tree_code_length[(int) code])
+      switch (TREE_CODE_LENGTH (code))
 	{
 	case 1:
 	  op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
@@ -3301,7 +3301,7 @@ build VPARAMS ((enum tree_code code, tree tt, ...))
 #endif
 
   t = make_node (code);
-  length = tree_code_length[(int) code];
+  length = TREE_CODE_LENGTH (code);
   TREE_TYPE (t) = tt;
 
   /* Below, we automatically set TREE_SIDE_EFFECTS and TREE_RAISED for
@@ -3451,7 +3451,7 @@ build_nt VPARAMS ((enum tree_code code, ...))
 #endif
 
   t = make_node (code);
-  length = tree_code_length[(int) code];
+  length = TREE_CODE_LENGTH (code);
 
   for (i = 0; i < length; i++)
     TREE_OPERAND (t, i) = va_arg (p, tree);
@@ -3484,7 +3484,7 @@ build_parse_node VPARAMS ((enum tree_code code, ...))
   expression_obstack = &temp_decl_obstack;
 
   t = make_node (code);
-  length = tree_code_length[(int) code];
+  length = TREE_CODE_LENGTH (code);
 
   for (i = 0; i < length; i++)
     TREE_OPERAND (t, i) = va_arg (p, tree);
@@ -4529,7 +4529,7 @@ simple_cst_equal (t1, t2)
     case 'r':
     case 's':
       cmp = 1;
-      for (i = 0; i < tree_code_length[(int) code1]; i++)
+      for (i = 0; i < TREE_CODE_LENGTH (code1); i++)
 	{
 	  cmp = simple_cst_equal (TREE_OPERAND (t1, i), TREE_OPERAND (t2, i));
 	  if (cmp <= 0)

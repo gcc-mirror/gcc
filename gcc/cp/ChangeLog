@@ -1,3 +1,9 @@
+Sat May 27 11:25:46 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* method.c (mangle_expression): Use TREE_CODE_LENGTH.
+	* tree.c (break_out_calls, build_min_nt): Use TREE_CODE_LENGTH.
+	(built_min, cp_tree_equal): Likewise.
+
 2000-05-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (layout_nonempty_base_or_field): Replace

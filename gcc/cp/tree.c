@@ -405,7 +405,7 @@ break_out_calls (exp)
     case 'e':  /* an expression */
     case 'r':  /* a reference */
     case 's':  /* an expression with side effects */
-      for (i = tree_code_length[(int) code] - 1; i >= 0; i--)
+      for (i = TREE_CODE_LENGTH (code) - 1; i >= 0; i--)
 	{
 	  t1 = break_out_calls (TREE_OPERAND (exp, i));
 	  if (t1 != TREE_OPERAND (exp, i))
@@ -427,7 +427,7 @@ break_out_calls (exp)
 	changed = 1;
       if (changed)
 	{
-	  if (tree_code_length[(int) code] == 1)
+	  if (TREE_CODE_LENGTH (code) == 1)
 	    return build1 (code, TREE_TYPE (exp), t1);
 	  else
 	    return build (code, TREE_TYPE (exp), t1, t2);
@@ -1659,7 +1659,7 @@ build_min_nt VPARAMS ((enum tree_code code, ...))
 #endif
 
   t = make_node (code);
-  length = tree_code_length[(int) code];
+  length = TREE_CODE_LENGTH (code);
   TREE_COMPLEXITY (t) = lineno;
 
   for (i = 0; i < length; i++)
@@ -1695,7 +1695,7 @@ build_min VPARAMS ((enum tree_code code, tree tt, ...))
 #endif
 
   t = make_node (code);
-  length = tree_code_length[(int) code];
+  length = TREE_CODE_LENGTH (code);
   TREE_TYPE (t) = tt;
   TREE_COMPLEXITY (t) = lineno;
 
@@ -1944,7 +1944,7 @@ cp_tree_equal (t1, t2)
     case 'r':
     case 's':
       cmp = 1;
-      for (i=0; i<tree_code_length[(int) code1]; ++i)
+      for (i = 0; i < TREE_CODE_LENGTH (code1); ++i)
 	{
 	  cmp = cp_tree_equal (TREE_OPERAND (t1, i), TREE_OPERAND (t2, i));
 	  if (cmp <= 0)

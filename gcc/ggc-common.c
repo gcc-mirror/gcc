@@ -348,27 +348,11 @@ ggc_mark_trees ()
 	case TREE_VEC:
 	  {
 	    int i = TREE_VEC_LENGTH (t);
+
 	    while (--i >= 0)
 	      ggc_mark_tree (TREE_VEC_ELT (t, i));
 	    continue;
 	  }
-
-	case SAVE_EXPR:
-	  ggc_mark_tree (TREE_OPERAND (t, 0));
-	  ggc_mark_tree (SAVE_EXPR_CONTEXT (t));
-	  ggc_mark_rtx (SAVE_EXPR_RTL (t));
-	  continue;
-
-	case RTL_EXPR:
-	  ggc_mark_rtx (RTL_EXPR_SEQUENCE (t));
-	  ggc_mark_rtx (RTL_EXPR_RTL (t));
-	  continue;
-
-	case CALL_EXPR:
-	  ggc_mark_tree (TREE_OPERAND (t, 0));
-	  ggc_mark_tree (TREE_OPERAND (t, 1));
-	  ggc_mark_rtx (CALL_EXPR_RTL (t));
-	  continue;
 
 	case COMPLEX_CST:
 	  ggc_mark_tree (TREE_REALPART (t));
@@ -450,10 +434,17 @@ ggc_mark_trees ()
 	case 'r': case '<': case '1':
 	case '2': case 'e': case 's': /* Expressions.  */
 	  {
-	    int i = tree_code_length[TREE_CODE (t)];
+	    int i = TREE_CODE_LENGTH (TREE_CODE (t));
+	    int first_rtl = first_rtl_op (TREE_CODE (t));
+
 	    while (--i >= 0)
-	      ggc_mark_tree (TREE_OPERAND (t, i));
-	    break;
+	      {
+		if (i >= first_rtl)
+		  ggc_mark_rtx ((rtx) TREE_OPERAND (t, i));
+		else
+		  ggc_mark_tree (TREE_OPERAND (t, i));
+	      }
+	    break;	
 	  }
 
 	case 'x':

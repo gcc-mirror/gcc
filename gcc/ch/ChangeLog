@@ -1,3 +1,8 @@
+Sat May 27 11:24:26 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* lang.c (deep_const_expr): Use first_rtl_op.
+	* satisfy.c (satisfy): Use TREE_CODE_LENGTH.
+
 2000-05-18  Chris Demetriou  <cgd@netbsd.org>
 
 	* Makefile.in (hash.h): Delete a redundant use of gawk and sed.

@@ -3297,7 +3297,7 @@ c_find_base_decl (t)
     case '1':
     case '2':
     case '3':
-      for (i = tree_code_length [(int) TREE_CODE (t)]; --i >= 0;)
+      for (i = TREE_CODE_LENGTH (TREE_CODE (t)); --i >= 0;)
 	{
 	  tree d = c_find_base_decl (TREE_OPERAND (t, i));
 	  if (d)

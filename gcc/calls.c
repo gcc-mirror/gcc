@@ -238,11 +238,14 @@ calls_function (exp, which)
      int which;
 {
   int val;
+
   calls_function_save_exprs = 0;
   val = calls_function_1 (exp, which);
   calls_function_save_exprs = 0;
   return val;
 }
+
+/* Recursive function to do the work of above function.  */
 
 static int
 calls_function_1 (exp, which)
@@ -251,8 +254,8 @@ calls_function_1 (exp, which)
 {
   register int i;
   enum tree_code code = TREE_CODE (exp);
-  int type = TREE_CODE_CLASS (code);
-  int length = tree_code_length[(int) code];
+  int class = TREE_CODE_CLASS (code);
+  int length = first_rtl_op (code);
 
   /* If this code is language-specific, we don't know what it will do.  */
   if ((int) code >= NUM_TREE_CODES)
@@ -265,16 +268,12 @@ calls_function_1 (exp, which)
 	return 1;
       else if (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
 	       && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
-		   == FUNCTION_DECL))
-	{
-	  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
-	  int flags = special_function_p (fndecl, 0);
-	  if (flags & ECF_MAY_BE_ALLOCA)
-	    return 1;
-	}
+		   == FUNCTION_DECL)
+	       && (special_function_p (TREE_OPERAND (TREE_OPERAND (exp, 0), 0),
+				       0)
+		   & ECF_MAY_BE_ALLOCA))
+	return 1;
 
-      /* Third operand is RTL.  */
-      length = 2;
       break;
 
     case SAVE_EXPR:
@@ -290,14 +289,12 @@ calls_function_1 (exp, which)
     case BLOCK:
       {
 	register tree local;
+	register tree subblock;
 
 	for (local = BLOCK_VARS (exp); local; local = TREE_CHAIN (local))
 	  if (DECL_INITIAL (local) != 0
 	      && calls_function_1 (DECL_INITIAL (local), which))
 	    return 1;
-      }
-      {
-	register tree subblock;
 
 	for (subblock = BLOCK_SUBBLOCKS (exp);
 	     subblock;
@@ -306,30 +303,19 @@ calls_function_1 (exp, which)
 	    return 1;
       }
       return 0;
+
     case TREE_LIST:
       for (; exp != 0; exp = TREE_CHAIN (exp))
 	if (calls_function_1 (TREE_VALUE (exp), which))
 	  return 1;
       return 0;
 
-    case METHOD_CALL_EXPR:
-      length = 3;
-      break;
-
-    case WITH_CLEANUP_EXPR:
-      length = 1;
-      break;
-
-    case RTL_EXPR:
-      return 0;
-
     default:
       break;
     }
 
-  /* Only expressions and references can contain calls.  */
-  if (type != 'e' && type != '<' && type != '1' && type != '2' && type != 'r'
-      && type != 'b')
+  /* Only expressions, references, and blocks can contain calls.  */
+  if (! IS_EXPR_CODE_CLASS (class) && class != 'r' && class != 'b')
     return 0;
 
   for (i = 0; i < length; i++)
