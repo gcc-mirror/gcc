@@ -1188,7 +1188,7 @@ EOF
   fi
 fi
 
-# parameters not const on DECstation Ultrix V4.0.
+# parameters not const on DECstation Ultrix V4.0 and OSF/1.
 file=stdio.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
@@ -1205,6 +1205,8 @@ if [ -r ${LIB}/$file ]; then
       -e 's@fscanf( FILE \*__stream, char \*__format,@fscanf( FILE *__stream, const char *__format,@' \
       -e 's@scanf( char \*__format,@scanf( const char *__format,@' \
       -e 's@sscanf( char \*__s, char \*__format,@sscanf( const char *__s, const char *__format,@' \
+      -e 's@popen(char \*, char \*);@popen(const char *, const char *);@' \
+      -e 's@tempnam(char\*,char\*);@tempnam(const char*,const char*);@' \
     ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
@@ -1726,6 +1728,7 @@ fi
 
 # Correct the return type for strlen in string.h on Lynx.
 # Correct the argument type for ffs in string.h on Alpha OSF/1 V2.0.
+# Add missing const for strdup on OSF/1 V3.0.
 file=string.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
@@ -1737,6 +1740,7 @@ if [ -r ${LIB}/$file ]; then
   echo Fixing $file
   sed -e 's/extern[ 	]*int[ 	]*strlen();/extern unsigned int strlen();/' \
       -e 's/extern[ 	]*int[ 	]*ffs[ 	]*(long);/extern int ffs(int);/' \
+      -e 's/strdup(char \*s1);/strdup(const char *s1);/' \
     ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
