@@ -43,7 +43,6 @@ Boston, MA 02111-1307, USA.  */
 #define MASK_HALF_PIC     	010000000000	/* Mask for half-pic code */
 #define MASK_HALF_PIC_DEBUG     004000000000	/* Debug flag */
 #define MASK_ELF		002000000000	/* ELF not rose */
-#define MASK_NO_IDENT		001000000000	/* suppress .ident */
 #define MASK_NO_UNDERSCORES	000400000000	/* suppress leading _ */
 #define MASK_LARGE_ALIGN	000200000000	/* align to >word boundaries */
 #define MASK_NO_MCOUNT		000100000000	/* profiling uses mcount_ptr */
@@ -53,28 +52,25 @@ Boston, MA 02111-1307, USA.  */
 #define HALF_PIC_DEBUG		TARGET_DEBUG
 #define TARGET_ELF		(target_flags & MASK_ELF)
 #define TARGET_ROSE		((target_flags & MASK_ELF) == 0)
-#define TARGET_IDENT		((target_flags & MASK_NO_IDENT) == 0)
 #define TARGET_UNDERSCORES	((target_flags & MASK_NO_UNDERSCORES) == 0)
 #define TARGET_LARGE_ALIGN	(target_flags & MASK_LARGE_ALIGN)
 #define TARGET_MCOUNT		((target_flags & MASK_NO_MCOUNT) == 0)
 
 #undef	SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES						\
-     { "half-pic",		 MASK_HALF_PIC},			\
-     { "no-half-pic",		-MASK_HALF_PIC},			\
-     { "debug-half-pic",	 MASK_HALF_PIC_DEBUG},			\
-     { "debugb",		 MASK_HALF_PIC_DEBUG},			\
-     { "elf",			 MASK_ELF},				\
-     { "rose",			-MASK_ELF},				\
-     { "ident",			-MASK_NO_IDENT},			\
-     { "no-ident",		 MASK_NO_IDENT},			\
-     { "underscores",		-MASK_NO_UNDERSCORES},			\
-     { "no-underscores",	 MASK_NO_UNDERSCORES},			\
-     { "large-align",		 MASK_LARGE_ALIGN},			\
-     { "no-large-align",	-MASK_LARGE_ALIGN},			\
-     { "mcount",		-MASK_NO_MCOUNT},			\
-     { "mcount-ptr",		 MASK_NO_MCOUNT},			\
-     { "no-mcount",		 MASK_NO_MCOUNT},
+     { "half-pic",		 MASK_HALF_PIC, "Emit half-PIC code" },			\
+     { "no-half-pic",		-MASK_HALF_PIC, "" }			\
+     { "debug-half-pic",	 MASK_HALF_PIC_DEBUG, 0 /* intentionally undoc */ },			\
+     { "debugb",		 MASK_HALF_PIC_DEBUG, 0 /* intentionally undoc */ },			\
+     { "elf",			 MASK_ELF, "Emit ELF object code" },				\
+     { "rose",			-MASK_ELF, "Emit ROSE object code" },				\
+     { "underscores",		-MASK_NO_UNDERSCORES, "Symbols have a leading underscore" },			\
+     { "no-underscores",	 MASK_NO_UNDERSCORES, "" },			\
+     { "large-align",		 MASK_LARGE_ALIGN, "Align to >word boundaries" },			\
+     { "no-large-align",	-MASK_LARGE_ALIGN, "" },			\
+     { "mcount",		-MASK_NO_MCOUNT, "Use mcount for profiling" },			\
+     { "mcount-ptr",		 MASK_NO_MCOUNT, "Use mcount_ptr for profiling" },			\
+     { "no-mcount",		 MASK_NO_MCOUNT, "" },
 
 /* OSF/rose uses stabs, not dwarf.  */
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
@@ -752,7 +748,7 @@ do									\
     if (HALF_PIC_P ())							\
       HALF_PIC_FINISH (STREAM);						\
 									\
-    if (TARGET_IDENT && !flag_no_ident)					\
+    if (!flag_no_ident)							\
       {									\
 	char *fstart = main_input_filename;				\
 	char *fname;							\

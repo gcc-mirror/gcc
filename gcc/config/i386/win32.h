@@ -48,12 +48,12 @@ Boston, MA 02111-1307, USA. */
 
 #undef  SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
-    { "win32",                           MASK_WIN32 }, \
-    { "cygwin",                          MASK_CYGWIN },  \
-    { "windows",                         MASK_WINDOWS }, \
-    { "dll",                             MASK_DLL },     \
-    { "nop-fun-dllimport",		 MASK_NOP_FUN_DLLIMPORT }, \
-    { "no-nop-fun-dllimport",		 MASK_NOP_FUN_DLLIMPORT },
+    { "win32",                           MASK_WIN32, "Use Mingw32 interface" }, \
+    { "cygwin",                          MASK_CYGWIN, "Use Cygwin interface"  },  \
+    { "windows",                         MASK_WINDOWS, "Use bare Windows interface" }, \
+    { "dll",                             MASK_DLL, "Generate code for a DLL" },     \
+    { "nop-fun-dllimport",		 MASK_NOP_FUN_DLLIMPORT, "Ignore dllimport for functions" }, \
+    { "no-nop-fun-dllimport",		 MASK_NOP_FUN_DLLIMPORT, "" },
 
 
 #undef CPP_PREDEFINES

@@ -47,7 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #define MASK_NOLEGEND		0x20000000 /* Discard legend information */
 #define MASK_EXTERNAL_LEGEND	0x10000000 /* Make external legends */
 #define MASK_IDENTIFY_REVISION  0x08000000 /* Emit 'ident' to .s */
-#define MASK_WARN_PASS_STRUCT   0x04000000 /* Emit 'ident' to .s */
+#define MASK_WARN_PASS_STRUCT   0x04000000 /* Warn when structures are passed */
 
 #define TARGET_STANDARD		  (target_flags & MASK_STANDARD)
 #define TARGET_NOLEGEND		  (target_flags & MASK_NOLEGEND)
@@ -57,12 +57,12 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
-    { "standard",			 MASK_STANDARD },          \
-    { "legend",				-MASK_NOLEGEND },          \
-    { "no-legend",			 MASK_NOLEGEND },          \
-    { "external-legend",		 MASK_EXTERNAL_LEGEND },   \
-    { "identify-revision", 		 MASK_IDENTIFY_REVISION }, \
-    { "warn-passed-structs", 		 MASK_WARN_PASS_STRUCT },
+    { "standard",			 MASK_STANDARD, "Retain standard MXDB information" },          \
+    { "legend",				-MASK_NOLEGEND, "Retain legend information" },          \
+    { "no-legend",			 MASK_NOLEGEND, "" },          \
+    { "external-legend",		 MASK_EXTERNAL_LEGEND, "Generate external legend information" },   \
+    { "identify-revision", 		 MASK_IDENTIFY_REVISION, "Emit identifying info in .s file" }, \
+    { "warn-passed-structs", 		 MASK_WARN_PASS_STRUCT, "Warn when a function arg is a structure" },
 
 #undef  DWARF_DEBUGGING_INFO
 #define DWARF_DEBUGGING_INFO
