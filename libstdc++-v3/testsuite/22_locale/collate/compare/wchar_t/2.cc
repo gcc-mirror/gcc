@@ -18,9 +18,8 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// Doesn't work due to use of literal ISO8859.1 characters.  PR 11439
-// { dg-do compile { xfail *-*-* } } should be run
-// { dg-excess-errors "" }
+// { dg-do run }
+// { dg-options "-finput-charset=iso-8859-1" }
 
 // 22.2.4.1.1 collate members
 

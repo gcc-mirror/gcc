@@ -170,7 +170,7 @@ one_utf8_to_cppchar (const uchar **inbufp, size_t *inbytesleftp,
 {
   static const uchar masks[6] = { 0x7F, 0x1F, 0x0F, 0x07, 0x02, 0x01 };
   static const uchar patns[6] = { 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
-  
+
   cppchar_t c;
   const uchar *inbuf = *inbufp;
   size_t nbytes, i;
@@ -274,7 +274,7 @@ one_cppchar_to_utf8 (cppchar_t c, uchar **outbufp, size_t *outbytesleftp)
    The return value is either 0 for success, or an errno value for
    failure, which may be E2BIG (need more space), EILSEQ (ill-formed
    input sequence), ir EINVAL (incomplete input sequence).  */
-   
+
 static inline int
 one_utf8_to_utf32 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
 		   uchar **outbufp, size_t *outbytesleftp)
@@ -489,7 +489,7 @@ conversion_loop (int (*const one_conversion)(iconv_t, const uchar **, size_t *,
       outbuf = to->text + to->asize - outbytesleft;
     }
 }
-		 
+
 
 /* These functions convert entire strings between character sets.
    They all have the signature
@@ -619,7 +619,7 @@ init_iconv_desc (cpp_reader *pfile, const char *to, const char *from)
   struct cset_converter ret;
   char *pair;
   size_t i;
-  
+
   if (!strcasecmp (to, from))
     {
       ret.func = convert_no_conversion;
@@ -1270,7 +1270,7 @@ narrow_str_to_charconst (cpp_reader *pfile, cpp_string str,
   *unsignedp = unsigned_p;
   return result;
 }
-			 
+
 /* Subroutine of cpp_interpret_charconst which performs the conversion
    to a number, for wide strings.  STR is the string structure returned
    by cpp_interpret_string.  PCHARS_SEEN and UNSIGNEDP are as for
@@ -1351,4 +1351,61 @@ cpp_interpret_charconst (cpp_reader *pfile, const cpp_token *token,
     free ((void *)str.text);
 
   return result;
+}
+
+uchar *
+_cpp_convert_input (cpp_reader *pfile, const char *input_charset,
+		    uchar *input, size_t size, size_t len, off_t *st_size)
+{
+  struct cset_converter input_cset;
+  struct _cpp_strbuf to;
+
+  input_cset = init_iconv_desc (pfile, SOURCE_CHARSET, input_charset);
+  if (input_cset.func == convert_no_conversion)
+    {
+      to.text = input;
+      to.asize = size;
+      to.len = len;
+    }
+  else
+    {
+      to.asize = MAX (65536, len);
+      to.text = xmalloc (to.asize);
+      to.len = 0;
+
+      if (!APPLY_CONVERSION (input_cset, input, len, &to))
+	cpp_error (pfile, CPP_DL_ERROR,
+		   "failure to convert %s to %s",
+		   CPP_OPTION (pfile, input_charset), SOURCE_CHARSET);
+
+      free (input);
+    }
+
+  /* Clean up the mess.  */
+  if (input_cset.func == convert_using_iconv)
+    iconv_close (input_cset.cd);
+
+  /* Resize buffer if we allocated substantially too much, or if we
+     haven't enough space for the \n-terminator.  */
+  if (to.len + 4096 < to.asize || to.len >= to.asize)
+    to.text = xrealloc (to.text, to.len + 1);
+
+  to.text[to.len] = '\n';
+  *st_size = to.len;
+  return to.text;
+}
+
+const char *
+_cpp_default_encoding (void)
+{
+  const char *current_encoding = NULL;
+
+#if defined (HAVE_LOCALE_H) && defined (HAVE_LANGINFO_CODESET)
+  setlocale (LC_CTYPE, "");
+  current_encoding = nl_langinfo (CODESET);
+#endif
+  if (current_encoding == NULL || *current_encoding == '\0')
+    current_encoding = SOURCE_CHARSET;
+
+  return current_encoding;
 }

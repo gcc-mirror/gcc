@@ -1,3 +1,16 @@
+2004-02-02  Eric Christopher  <echristo@redhat.com>
+	    Zack Weinberg  <zack@codesourcery.com>
+
+	* c-opts.c (c_common_handle_option): Add -finput-charset.
+	* c.opt: Ditto.
+	* cppcharset.c (_cpp_convert_input): New function.
+	(_cpp_default_encoding): Ditto.
+	* cpphash.h: Add prototypes for above.
+	* cppfiles.c (read_file_guts): Use _cpp_convert_input.
+	* cppinit.c (cpp_create_reader): Use _cpp_default_encoding
+	for narrow execution and input character sets.
+	* doc/cppopts.texi: Document -finput-charset.
+
 2004-02-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/invoke.texi (SPARC options): Further improve.

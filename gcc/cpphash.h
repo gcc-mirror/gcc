@@ -270,7 +270,7 @@ struct cpp_buffer
   const uchar *cur;		/* Current location.  */
   const uchar *line_base;	/* Start of current physical line.  */
   const uchar *next_line;	/* Start of to-be-cleaned logical line.  */
-  
+
   const uchar *buf;		/* Entire character buffer.  */
   const uchar *rlimit;		/* Writable byte at end of file.  */
 
@@ -573,8 +573,13 @@ extern size_t _cpp_replacement_text_len (const cpp_macro *);
 extern cppchar_t _cpp_valid_ucn (cpp_reader *, const uchar **,
 				 const uchar *, int);
 extern void _cpp_destroy_iconv (cpp_reader *);
-extern bool _cpp_interpret_string_notranslate (cpp_reader *, const cpp_string *,
+extern bool _cpp_interpret_string_notranslate (cpp_reader *,
+					       const cpp_string *,
 					       cpp_string *);
+extern uchar *_cpp_convert_input (cpp_reader *, const char *, uchar *,
+                                  size_t, size_t, off_t *);
+extern const char *_cpp_default_encoding (void);
+
 
 /* Utility routines and macros.  */
 #define DSC(str) (const uchar *)str, sizeof str - 1

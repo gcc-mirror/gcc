@@ -332,6 +332,9 @@ struct cpp_options
   /* Holds the name of the target wide character set.  */
   const char *wide_charset;
 
+  /* Holds the name of the input character set.  */
+  const char *input_charset;
+
   /* True to warn about precompiled header files we couldn't use.  */
   bool warn_invalid_pch;
 
@@ -417,7 +420,7 @@ struct cpp_dir
   /* Mapping of file names for this directory for MS-DOS and related
      platforms.  A NULL-terminated array of (from, to) pairs.  */
   const char **name_map;
-    
+
   /* The C front end uses these to recognize duplicated
      directories in the search path.  */
   ino_t ino;
@@ -481,7 +484,7 @@ struct cpp_hashnode GTY(())
 {
   struct ht_identifier ident;
   unsigned int is_directive : 1;
-  unsigned int directive_index : 7;	/* If is_directive, 
+  unsigned int directive_index : 7;	/* If is_directive,
 					   then index into directive table.
 					   Otherwise, a NODE_OPERATOR.  */
   unsigned char rid_code;		/* Rid code - for front ends.  */

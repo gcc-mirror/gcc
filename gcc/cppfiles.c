@@ -509,15 +509,8 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file)
     cpp_error (pfile, CPP_DL_WARNING,
 	       "%s is shorter than expected", file->path);
 
-  /* Shrink buffer if we allocated substantially too much.  */
-  if (total + 4096 < size)
-    buf = xrealloc (buf, total + 1);
-
-  /* The lexer requires that the buffer be \n-terminated.  */
-  buf[total] = '\n';
-
-  file->buffer = buf;
-  file->st.st_size = total;
+  file->buffer = _cpp_convert_input (pfile, CPP_OPTION (pfile, input_charset),
+				     buf, size, total, &file->st.st_size);
   file->buffer_valid = true;
 
   return true;
