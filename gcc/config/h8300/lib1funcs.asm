@@ -339,8 +339,8 @@ divnorm:
 
 	add	#1,A1L
 	addx	#0,A1H
-	addx	#0,A0H
 	addx	#0,A0L
+	addx	#0,A0H
 
 	mov.b	#1,S2L		; the sign will be -ve
 postive:
@@ -373,8 +373,8 @@ modnorm:
 
 	add	#1,A1L
 	addx	#0,A1H
-	addx	#0,A0H
 	addx	#0,A0L
+	addx	#0,A0H
 
 	mov.b	#1,S2L		; the sign will be -ve
 mpostive:
@@ -499,8 +499,8 @@ exitdiv:
 
 	add	#1,A1L
 	addx	#0,A1H
-	addx	#0,A0H
 	addx	#0,A0L
+	addx	#0,A0H
 #else /* __H8300H__ */
 	neg.l	A0P
 #endif
