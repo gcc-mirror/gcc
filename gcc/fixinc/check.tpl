@@ -1,4 +1,4 @@
-[= autogen template sh=check.sh =]
+[= autogen5 template sh=check.sh =]
 [=
 #
 #  This file contanes the shell template to run tests on the fixes
@@ -25,82 +25,81 @@ export TARGET_MACHINE DESTDIR SRCDIR FIND_BASE VERBOSE INPUT ORIGDIR
 
 rm -rf ${DESTDIR} ${SRCDIR}
 mkdir ${DESTDIR} ${SRCDIR}
-
-( cd ${SRCDIR}
-  set +e
-  for f in [=
-
-  _EVAL fix.files _stack _join "echo `
-
-  for f in %s
-  do case $f in
-     */* ) echo $f | sed 's;/[^/]*$;;' ;;
-     esac
-  done | sort -u
-
-  ` " _printf _shell =]
-  do
-    mkdir $f || mkdir -p $f
-  done ) > /dev/null 2>&1
-
+(
+[=
+  (shellf
+    "for f in %s
+     do case $f in
+        */* ) echo $f | sed 's;/[^/]*$;;' ;;
+        esac
+     done | sort -u | \
+     while read g
+     do echo \"  mkdir \\${SRCDIR}/$g || mkdir -p \\${SRCDIR}/$g || exit 1\"
+     done" (join " " (stack "fix.files"))  ) =]
+) 2> /dev/null[= # suppress 'No such file or directory' messages =]
 cd inc
 [=
+(define sfile "")
+(define dfile "")              =][=
 
-_FOR fix =][=
+FOR fix                        =][=
 
-  _IF test_text _count 1 > =]
-#
-#  [=hackname=] has [=_EVAL test_text _count=] tests
-#
-sfile=[=
-    _IF files _exist =][=
-      files[0] =][=
-    _ELSE =]testing.h[=
-    _ENDIF =][=
-    _FOR test_text FROM 1 =]
-dfile=`dirname $sfile`/[=hackname "#_A-Z" "#-a-z" _tr=]-[=_EVAL _index=].h
-cat >> $sfile <<_HACK_EOF_
+  IF (> (count "test_text") 1) =][=
+
+    (set! sfile (if (exist? "files") (get "files[]") "testing.h"))
+    (set! dfile (string-append
+          (if (*==* sfile "/")
+              (shellf "echo \"%s\"|sed 's,/[^/]*,/,'" sfile )
+              "" )
+          (string-tr! (get "hackname") "_A-Z" "-a-z")
+    )           )              =][=
+
+    FOR test_text (for-from 1) =]
+cat >> [=(. sfile)=] <<_HACK_EOF_
 
 
-#if defined( [=hackname _up=]_CHECK_[=_EVAL _index=] )
+#if defined( [=(string-upcase! (get "hackname"))=]_CHECK_[=(for-index)=] )
 [=test_text=]
-#endif  /* [=hackname _up=]_CHECK_[=_EVAL _index=] */
+#endif  /* [=(string-upcase! (get "hackname"))=]_CHECK_[=(for-index)=] */
 _HACK_EOF_
-echo $sfile | ../../fixincl
-mv -f $sfile $dfile
-[ -f ${DESTDIR}/$sfile ] && mv ${DESTDIR}/$sfile ${DESTDIR}/$dfile[=
-    /test_text =][=
-  _ENDIF =][=
+echo [=(. sfile)=] | ../../fixincl
+mv -f [=(. sfile)=] [=(. dfile)=]-[=(for-index)=].h
+[ -f ${DESTDIR}/[=(. sfile)=] ] && [=#
+   =]mv ${DESTDIR}/[=(. sfile)=] ${DESTDIR}/[=(. dfile)=]-[=(for-index)=].h[=
 
-/fix
+    ENDFOR  test_text =][=
+
+  ENDIF  multi-test   =][=
+
+ENDFOR  fix
 
 =][=
 
-_FOR fix =][=
+FOR fix =][=
 
-  _IF test_text _exist ! =][=
-    _IF replace _exist ! =]
+  IF (not (exist? "test_text")) =][=
+    IF (not (exist? "replace")) =]
 echo No test for [=hackname=] in inc/[=
-      _IF files _exist =][=
+      IF (exist? "files")       =][=
         files[0] =][=
-      _ELSE =]testing.h[=
-      _ENDIF =][=
-    _ENDIF =][=
-  _ELSE =]
+      ELSE  =]testing.h[=
+      ENDIF =][=
+    ENDIF   =][=
+  ELSE      =]
 cat >> [=
-    _IF files _exist =][=
+    IF (exist? "files") =][=
       files[0] =][=
-    _ELSE =]testing.h[=
-    _ENDIF =] <<_HACK_EOF_
+    ELSE =]testing.h[=
+    ENDIF =] <<_HACK_EOF_
 
 
-#if defined( [=hackname _up=]_CHECK )
+#if defined( [=(string-upcase! (get "hackname"))=]_CHECK )
 [=test_text=]
-#endif  /* [=hackname _up=]_CHECK */
+#endif  /* [=(string-upcase! (get "hackname"))=]_CHECK */
 _HACK_EOF_
-[=_ENDIF =][=
+[=ENDIF =][=
 
-/fix
+ENDFOR  fix
 
 =]
 
@@ -137,7 +136,7 @@ do
     :
 
   else
-    diff -c $f ${TESTBASE}/$f >&2 || :
+    diff -u $f ${TESTBASE}/$f >&2 || :
     exitok=false
   fi
 done
@@ -173,6 +172,6 @@ else
 fi
 $exitok[=
 
-_eval _outfile "chmod +x %s" _printf _shell
+(set-writable)
 
 =]

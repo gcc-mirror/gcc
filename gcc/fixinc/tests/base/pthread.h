@@ -18,3 +18,9 @@
 #if defined( PTHREAD_PAGE_SIZE_CHECK )
 extern int __page_size;
 #endif  /* PTHREAD_PAGE_SIZE_CHECK */
+
+
+#if defined( SOLARIS27_MUTEX_INIT_CHECK )
+#ident "@(#)pthread.h  1.26  98/04/12 SMI"
+#define PTHREAD_MUTEX_INITIALIZER {{{0},0}, {{{0}}}, {0}}
+#endif  /* SOLARIS27_MUTEX_INIT_CHECK */

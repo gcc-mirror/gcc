@@ -36,6 +36,9 @@ please, to me:  bkorb@gnu.org.
 
 Here are the rules for making fixes in the inclhack.def file:
 
+0.  If you are not the fixincludes maintainer, please send that
+    person email about any changes you may want to make.  Thanks!
+
 1.  Every fix must have a "hackname" that is compatible with C syntax
     for variable names and is unique without regard to alphabetic case.
     Please keep them alphabetical by this name.  :-)

@@ -19,9 +19,11 @@ typedef unsigned int size_t;
 #define _GCC_PTRDIFF_T
 typedef long ptrdiff_t;
 #endif
+#ifndef __cplusplus
 #ifndef _GCC_WCHAR_T
 #define _GCC_WCHAR_T
 typedef unsigned short wchar_t;
+#endif
 #endif
 #endif /* __GNUC_TYPEOF_FEATURE_BROKEN_USE_DEFAULT_UNTIL_FIXED__ */
 
