@@ -3125,17 +3125,17 @@ hfa_element_mode (type, nested)
 	 gcc's COMPLEX_TYPEs as HFAs.  We need to exclude the integral complex
 	 types though.  */
     case COMPLEX_TYPE:
-      if (GET_MODE_CLASS (TYPE_MODE (type)) == MODE_COMPLEX_FLOAT)
+      if (GET_MODE_CLASS (TYPE_MODE (type)) == MODE_COMPLEX_FLOAT
+	  && (TYPE_MODE (type) != TCmode || INTEL_EXTENDED_IEEE_FORMAT))
 	return mode_for_size (GET_MODE_UNIT_SIZE (TYPE_MODE (type))
 			      * BITS_PER_UNIT, MODE_FLOAT, 0);
       else
 	return VOIDmode;
 
     case REAL_TYPE:
-      /* ??? Should exclude 128-bit long double here.  */
       /* We want to return VOIDmode for raw REAL_TYPEs, but the actual
 	 mode if this is contained within an aggregate.  */
-      if (nested)
+      if (nested && (TYPE_MODE (type) != TFmode || INTEL_EXTENDED_IEEE_FORMAT))
 	return TYPE_MODE (type);
       else
 	return VOIDmode;
