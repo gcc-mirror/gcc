@@ -1,3 +1,9 @@
+2004-03-11  Michael Koch  <konqueror@gmx.de>
+
+	* java/util/Locale.java
+	(getISO3Language): Use String.equals() instead of ==.
+	(getISO3Country): Likewise.
+
 2004-03-11  Dalibor Topic  <robilad@kaffe.org>
 
 	* java/text/AttributedString.java
