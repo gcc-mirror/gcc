@@ -706,7 +706,7 @@ GEN= genemit genoutput genrecog genextract genflags gencodes genconfig \
 STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
  insn-attr.h insn-attrtab.c insn-opinit.c tree-check.h \
- s-flags s-config s-codes s-mlib s-unders s-genrtl \
+ s-flags s-config s-codes s-mlib s-under s-genrtl \
  s-output s-recog s-emit s-extract s-peep s-check \
  s-attr s-attrtab s-opinit s-crt0 \
  genemit$(build_exeext) genoutput$(build_exeext) genrecog$(build_exeext) \
