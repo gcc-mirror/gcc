@@ -1524,7 +1524,7 @@ compute_movstrsi_length (insn)
 
 	  /* Count last store or partial store.  */
 	  insn_count += 1;
-	  return insn_count;
+	  return insn_count * 4;
 	}
 
       if (align >= 2 && n_bytes >= 2)
@@ -1543,7 +1543,7 @@ compute_movstrsi_length (insn)
 	  /* ??? final store from loop.  */
 	  insn_count += 1;
 
-	  return insn_count;
+	  return insn_count * 4;
 	}
 
       /* First load.  */
@@ -1556,7 +1556,7 @@ compute_movstrsi_length (insn)
       /* Final store.  */
       insn_count += 1;
 
-      return insn_count;
+      return insn_count * 4;
     }
 
   if (align != 4)
@@ -1580,7 +1580,7 @@ compute_movstrsi_length (insn)
     }
   else
     insn_count += 4;
-  return insn_count;
+  return insn_count * 4;
 }
 
 
@@ -2511,11 +2511,11 @@ pa_adjust_insn_length (insn, length)
 
       if (GET_CODE (XVECEXP (pat, 0, 0)) == CALL
 	  && GET_CODE (XEXP (XEXP (XVECEXP (pat, 0, 0), 0), 0)) == SYMBOL_REF)
-	return 1;
+	return 4;
       else if (GET_CODE (XVECEXP (pat, 0, 0)) == SET
 	       && GET_CODE (XEXP (XEXP (XEXP (XVECEXP (pat, 0, 0), 1), 0), 0))
 		  == SYMBOL_REF)
-	return 1;
+	return 4;
       else
 	return 0;
     }
@@ -2525,7 +2525,7 @@ pa_adjust_insn_length (insn, length)
 	   && GET_CODE (pat) != USE
 	   && GET_CODE (pat) != CLOBBER
 	   && get_attr_type (insn) == TYPE_MILLI)
-    return 1;
+    return 4;
   /* Block move pattern.  */
   else if (GET_CODE (insn) == INSN
 	   && GET_CODE (pat) == PARALLEL
@@ -2533,15 +2533,15 @@ pa_adjust_insn_length (insn, length)
 	   && GET_CODE (XEXP (XVECEXP (pat, 0, 0), 1)) == MEM
 	   && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 0)) == BLKmode
 	   && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 1)) == BLKmode)
-    return compute_movstrsi_length (insn) - 1;
+    return compute_movstrsi_length (insn) - 4;
   /* Conditional branch with an unfilled delay slot.  */
   else if (GET_CODE (insn) == JUMP_INSN && ! simplejump_p (insn))
     {
       /* Adjust a short backwards conditional with an unfilled delay slot.  */
       if (GET_CODE (pat) == SET
-	  && length == 1
+	  && length == 4
 	  && ! forward_branch_p (insn))
-	return 1;
+	return 4;
       /* Adjust dbra insn with short backwards conditional branch with
 	 unfilled delay slot -- only for case where counter is in a 
 	 general register register. */
@@ -2549,9 +2549,9 @@ pa_adjust_insn_length (insn, length)
 	       && GET_CODE (XVECEXP (pat, 0, 1)) == SET
 	       && GET_CODE (XEXP (XVECEXP (pat, 0, 1), 0)) == REG
  	       && ! FP_REG_P (XEXP (XVECEXP (pat, 0, 1), 0)) 
-	       && length == 1
+	       && length == 4
 	       && ! forward_branch_p (insn))
-	return 1;
+	return 4;
       else
 	return 0;
     }
@@ -3266,20 +3266,20 @@ output_cbranch (operands, nullify, length, negated, insn)
   
   /* If this is a long branch with its delay slot unfilled, set `nullify'
      as it can nullify the delay slot and save a nop.  */
-  if (length == 2 && dbr_sequence_length () == 0)
+  if (length == 8 && dbr_sequence_length () == 0)
     nullify = 1;
 
   /* If this is a short forward conditional branch which did not get
      its delay slot filled, the delay slot can still be nullified.  */
-  if (! nullify && length == 1 && dbr_sequence_length () == 0)
+  if (! nullify && length == 4 && dbr_sequence_length () == 0)
     nullify = forward_branch_p (insn);
 
   /* A forward branch over a single nullified insn can be done with a 
      comclr instruction.  This avoids a single cycle penalty due to
      mis-predicted branch if we fall through (branch not taken).  */
-  if (length == 1
+  if (length == 4
       && next_real_insn (insn) != 0
-      && get_attr_length (next_real_insn (insn)) == 1
+      && get_attr_length (next_real_insn (insn)) == 4
       && JUMP_LABEL (insn) == next_nonnote_insn (next_real_insn (insn))
       && nullify)
     useskip = 1;
@@ -3288,7 +3288,7 @@ output_cbranch (operands, nullify, length, negated, insn)
     {
       /* All short conditional branches except backwards with an unfilled
 	 delay slot.  */
-      case 1:
+      case 4:
 	if (useskip)
 	  strcpy (buf, "com%I2clr,");
 	else
@@ -3308,7 +3308,7 @@ output_cbranch (operands, nullify, length, negated, insn)
      /* All long conditionals.  Note an short backward branch with an 
 	unfilled delay slot is treated just like a long backward branch
 	with an unfilled delay slot.  */
-      case 2:
+      case 8:
 	/* Handle weird backwards branch with a filled delay slot
 	   with is nullified.  */
 	if (dbr_sequence_length () != 0
@@ -3367,21 +3367,21 @@ output_bb (operands, nullify, length, negated, insn, which)
   
   /* If this is a long branch with its delay slot unfilled, set `nullify'
      as it can nullify the delay slot and save a nop.  */
-  if (length == 2 && dbr_sequence_length () == 0)
+  if (length == 8 && dbr_sequence_length () == 0)
     nullify = 1;
 
   /* If this is a short forward conditional branch which did not get
      its delay slot filled, the delay slot can still be nullified.  */
-  if (! nullify && length == 1 && dbr_sequence_length () == 0)
+  if (! nullify && length == 4 && dbr_sequence_length () == 0)
     nullify = forward_branch_p (insn);
 
   /* A forward branch over a single nullified insn can be done with a 
      extrs instruction.  This avoids a single cycle penalty due to
      mis-predicted branch if we fall through (branch not taken).  */
 
-  if (length == 1
+  if (length == 4
       && next_real_insn (insn) != 0
-      && get_attr_length (next_real_insn (insn)) == 1
+      && get_attr_length (next_real_insn (insn)) == 4
       && JUMP_LABEL (insn) == next_nonnote_insn (next_real_insn (insn))
       && nullify)
     useskip = 1;
@@ -3391,7 +3391,7 @@ output_bb (operands, nullify, length, negated, insn, which)
 
       /* All short conditional branches except backwards with an unfilled
 	 delay slot.  */
-      case 1:
+      case 4:
 	if (useskip)
 	  strcpy (buf, "extrs,");
 	else 
@@ -3416,7 +3416,7 @@ output_bb (operands, nullify, length, negated, insn, which)
      /* All long conditionals.  Note an short backward branch with an 
 	unfilled delay slot is treated just like a long backward branch
 	with an unfilled delay slot.  */
-      case 2:
+      case 8:
 	/* Handle weird backwards branch with a filled delay slot
 	   with is nullified.  */
 	if (dbr_sequence_length () != 0
@@ -3498,20 +3498,20 @@ output_dbra (operands, insn, which_alternative)
 
       /* If this is a long branch with its delay slot unfilled, set `nullify'
 	 as it can nullify the delay slot and save a nop.  */
-      if (length == 2 && dbr_sequence_length () == 0)
+      if (length == 8 && dbr_sequence_length () == 0)
 	nullify = 1;
 
       /* If this is a short forward conditional branch which did not get
 	 its delay slot filled, the delay slot can still be nullified.  */
-      if (! nullify && length == 1 && dbr_sequence_length () == 0)
+      if (! nullify && length == 4 && dbr_sequence_length () == 0)
 	nullify = forward_branch_p (insn);
 
       /* Handle short versions first.  */
-      if (length == 1 && nullify)
+      if (length == 4 && nullify)
 	return "addib,%C2,n %1,%0,%3";
-      else if (length == 1 && ! nullify)
+      else if (length == 4 && ! nullify)
 	return "addib,%C2 %1,%0,%3";
-      else if (length == 2)
+      else if (length == 8)
 	{
 	  /* Handle weird backwards branch with a fulled delay slot 
 	     which is nullified.  */
@@ -3537,7 +3537,7 @@ output_dbra (operands, insn, which_alternative)
 	 the FP register from MEM from within the branch's delay slot.  */ 
       output_asm_insn ("fstws %0,-16(0,%%r30)\n\tldw -16(0,%%r30),%4",operands);
       output_asm_insn ("ldo %1(%4),%4\n\tstw %4,-16(0,%%r30)", operands);
-      if (get_attr_length (insn) == 6)
+      if (get_attr_length (insn) == 24)
 	return "comb,%S2 0,%4,%3\n\tfldws -16(0,%%r30),%0";
       else
 	return "comclr,%B2 0,%4,0\n\tbl %3,0\n\tfldws -16(0,%%r30),%0";
@@ -3548,7 +3548,7 @@ output_dbra (operands, insn, which_alternative)
       /* Reload loop counter from memory, the store back to memory
 	 happens in the branch's delay slot.   */
       output_asm_insn ("ldw %0,%4", operands);
-      if (get_attr_length (insn) == 3)
+      if (get_attr_length (insn) == 12)
 	return "addib,%C2 %1,%4,%3\n\tstw %4,%0";
       else
 	return "addi,%N2 %1,%4,%0\n\tbl %3,0\n\tstw %4,%0";
@@ -3594,20 +3594,20 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
 
       /* If this is a long branch with its delay slot unfilled, set `nullify'
 	 as it can nullify the delay slot and save a nop.  */
-      if (length == 2 && dbr_sequence_length () == 0)
+      if (length == 8 && dbr_sequence_length () == 0)
 	nullify = 1;
 
       /* If this is a short forward conditional branch which did not get
 	 its delay slot filled, the delay slot can still be nullified.  */
-      if (! nullify && length == 1 && dbr_sequence_length () == 0)
+      if (! nullify && length == 4 && dbr_sequence_length () == 0)
 	nullify = forward_branch_p (insn);
 
       /* Handle short versions first.  */
-      if (length == 1 && nullify)
+      if (length == 4 && nullify)
 	return "movb,%C2,n %1,%0,%3";
-      else if (length == 1 && ! nullify)
+      else if (length == 4 && ! nullify)
 	return "movb,%C2 %1,%0,%3";
-      else if (length == 2)
+      else if (length == 8)
 	{
 	  /* Handle weird backwards branch with a fulled delay slot 
 	     which is nullified.  */
@@ -3632,7 +3632,7 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
 	 increment the GR, store the GR into MEM, and finally reload
 	 the FP register from MEM from within the branch's delay slot.  */ 
       output_asm_insn ("fstws %1,-16(0,%%r30)",operands);
-      if (get_attr_length (insn) == 3)
+      if (get_attr_length (insn) == 12)
 	return "comb,%S2 0,%1,%3\n\tfldws -16(0,%%r30),%0";
       else
 	return "comclr,%B2 0,%1,0\n\tbl %3,0\n\tfldws -16(0,%%r30),%0";
@@ -3642,7 +3642,7 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
     {
       /* Reload loop counter from memory, the store back to memory
 	 happens in the branch's delay slot.   */
-      if (get_attr_length (insn) == 2)
+      if (get_attr_length (insn) == 8)
 	return "comb,%S2 0,%1,%3\n\tstw %1,%0";
       else
 	return "comclr,%B2 0,%1,0\n\tbl %3,0\n\tstw %1,%0";
