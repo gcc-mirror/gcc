@@ -2931,7 +2931,7 @@ func_ptr __DTOR_LIST__[2];
 
 #ifdef NEED_ATEXIT
 
-#ifndef HAVE_ON_EXIT
+#ifndef ON_EXIT
 
 # include <errno.h>
 
@@ -2987,7 +2987,7 @@ exit (int status)
   _exit (status);
 }
 
-#else /* HAVE_ON_EXIT */
+#else /* ON_EXIT */
 
 /* Simple; we just need a wrapper for ON_EXIT.  */
 int
@@ -2996,7 +2996,7 @@ atexit (func_ptr func)
   return ON_EXIT (func);
 }
 
-#endif /* HAVE_ON_EXIT */
+#endif /* ON_EXIT */
 #endif /* NEED_ATEXIT */
 
 #endif /* L_exit */
