@@ -1,3 +1,7 @@
+Thu Oct  4 16:18:12 CEST 2001  Jan Hubicka  <jh@suse.cz.
+
+	* i386.c (setcc peep2): Do not use clobber of flags.
+
 2001-10-02  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.c (main): Set this_file_error if the appropriate
