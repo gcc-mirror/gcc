@@ -117,7 +117,6 @@ basic_file.cc: ${glibcpp_srcdir}/@BASIC_FILE_CC@
 
 # Sources present in the src directory.
 sources = \
-	bitset.cc \
 	codecvt.cc \
 	complex_io.cc \
 	concept-inst.cc \
