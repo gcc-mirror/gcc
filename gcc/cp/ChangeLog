@@ -1,3 +1,7 @@
+2001-02-27  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* except.c (call_eh_info): Revert "match_function"'s type.
+
 2001-02-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Fix ctor vtable vcall offsets.

@@ -201,8 +201,8 @@ call_eh_info ()
           short language;
           short version;
         };  */
-      fields[0] = build_decl (FIELD_DECL, 
-                    get_identifier ("match_function"), matcher_fn_type);
+      fields[0] = build_decl (FIELD_DECL,
+		    get_identifier ("match_function"), ptr_type_node);
       fields[1] = build_decl (FIELD_DECL, 
                     get_identifier ("language"), short_integer_type_node);
       fields[2] = build_decl (FIELD_DECL, 
