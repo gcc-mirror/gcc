@@ -55,6 +55,8 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define_std ("linux");		\
 	builtin_define_std ("unix");		\
 	builtin_define ("__gnu_linux__");	\
+	builtin_assert ("system=linux");	\
+	builtin_assert ("system=unix");		\
 	builtin_assert ("system=posix");	\
 	if (TARGET_ID_SHARED_LIBRARY)		\
 	  builtin_define ("__ID_SHARED_LIBRARY__"); \

@@ -12,10 +12,7 @@
 /* Target OS builtins.  */
 #define TARGET_OS_CPP_BUILTINS()		\
 do {						\
-	builtin_assert("system=linux");		\
-	builtin_define_std("linux");		\
-	builtin_define_std("unix");		\
-	builtin_define("__gnu_linux__");	\
+	LINUX_TARGET_OS_CPP_BUILTINS();		\
 	builtin_define("_LONGLONG");		\
 } while (0)
 

@@ -1124,7 +1124,7 @@ extern int fixuplabelno;
   %{!ansi:							  \
     %{!std=*:-Dunix -D__unix -Dlinux -D__linux}			  \
     %{std=gnu*:-Dunix -D__unix -Dlinux -D__linux}}}		  \
--Asystem=unix -Asystem=posix %{pthread:-D_REENTRANT}"
+-Asystem=linux -Asystem=unix -Asystem=posix %{pthread:-D_REENTRANT}"
 
 /* GNU/Hurd support.  */
 #define LIB_GNU_SPEC "%{mnewlib: --start-group -lgnu -lc --end-group } \

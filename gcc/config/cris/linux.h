@@ -48,9 +48,7 @@ Boston, MA 02111-1307, USA.  */
 #undef CRIS_CPP_SUBTARGET_SPEC
 #define CRIS_CPP_SUBTARGET_SPEC \
   "%{pthread:-D_REENTRANT}\
-   %{!march=*:%{!cpu=*:-D__arch_v10 -D__CRIS_arch_version=10}}\
-   %{!ansi:%{!std=*:%{!undef:-Dlinux -Dunix}\
-     -Asystem(unix) -Asystem(posix) -Acpu(cris) -Amachine(cris)}}"
+   %{!march=*:%{!cpu=*:-D__arch_v10 -D__CRIS_arch_version=10}}"
 
 #undef CRIS_CC1_SUBTARGET_SPEC
 #define CRIS_CC1_SUBTARGET_SPEC \
@@ -103,9 +101,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
-      builtin_define ("__gnu_linux__");		\
-      builtin_define ("__linux__");		\
-      builtin_define ("__unix__");		\
+      LINUX_TARGET_OS_CPP_BUILTINS();		\
       if (flag_pic)				\
 	{					\
 	  builtin_define ("__PIC__");		\

@@ -1,3 +1,7 @@
+2003-11-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* testsuite/gcc.dg/cpp/assert4.c: Update.
+
 2003-11-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/builtin-apply2.c: Set size of stack argument data to 64.

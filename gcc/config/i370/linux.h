@@ -29,13 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_ELF_ABI
 
 /* Target OS preprocessor built-ins.  */
-#define TARGET_OS_CPP_BUILTINS()		\
-    do {					\
-	builtin_define_std ("unix");		\
-	builtin_define_std ("linux");		\
-	builtin_define ("__gnu_linux__");	\
-	builtin_assert ("system=posix");	\
-    } while (0)
+#define TARGET_OS_CPP_BUILTINS() LINUX_TARGET_OS_CPP_BUILTINS()
 
 /* Options for this target machine.  */
 

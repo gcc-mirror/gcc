@@ -57,6 +57,8 @@ do { \
   builtin_define_std ("unix"); \
   builtin_define ("__gnu_linux__"); \
   builtin_define_std ("linux"); \
+  builtin_assert ("system=linux"); \
+  builtin_assert ("system=unix"); \
   builtin_assert ("system=posix"); \
 } while (0)
 

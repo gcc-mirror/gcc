@@ -55,12 +55,9 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_OS_CPP_BUILTINS()				\
     do {							\
-	builtin_define ("__gnu_linux__");			\
+	LINUX_TARGET_OS_CPP_BUILTINS();				\
 	builtin_define ("__PIC__");				\
 	builtin_define ("__pic__");				\
-	builtin_define_std ("unix");				\
-	builtin_define_std ("linux");				\
-	builtin_assert ("system=linux");			\
 	/* The GNU C++ standard library requires this.  */	\
 	if (c_dialect_cxx ())					\
 	  builtin_define ("_GNU_SOURCE");			\

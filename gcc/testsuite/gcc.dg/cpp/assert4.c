@@ -15,7 +15,7 @@
 #endif
 
 #if defined __gnu_hurd__
-# if !#system(gnu) || !#system(unix) || !#system(posix)
+# if !#system(gnu) || !#system(unix) || !#system(posix) || !#system(mach)
 #  error
 # endif
 #elif #system(gnu)
@@ -125,6 +125,14 @@
 #  error
 # endif
 #elif #cpu(arm) || #machine(arm)
+# error
+#endif
+
+#if defined __cris__
+# if !#cpu(cris) || !#machine(cris)
+#  error
+# endif
+#elif #cpu(cris) || #machine(cris)
 # error
 #endif
 

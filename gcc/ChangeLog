@@ -1,3 +1,21 @@
+2003-11-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/gnu.h (HURD_TARGET_OS_CPP_BUILTINS): New.
+	* config/linux.h (LINUX_TARGET_OS_CPP_BUILTINS): New.
+	
+	* config/alpha/gnu.h, config/alpha/linux.h,
+	config/arm/linux-elf.h, config/cris/cris.h, config/cris/linux.h,
+	config/i370/linux.h, config/i386/gnu.h, config/i386/i386.h,
+	config/i386/linux-aout.h, config/i386/linux.h,
+	config/i386/linux64.h, config/ia64/linux.h, config/m68k/linux.h,
+	config/m68k/uclinux.h, config/mips/linux.h,
+	config/mn10300/linux.h, config/pa/pa-linux.h,
+	config/rs6000/sysv4.h, config/s390/linux.h, config/sh/linux.h,
+	config/sparc/linux.h, config/sparc/linux64.h,
+	config/xtensa/linux.h (TARGET_OS_CPP_BUILTINS): Use
+	HURD_TARGET_OS_CPP_BUILTINS/LINUX_TARGET_OS_CPP_BUILTINS or ensure
+	all necessary assertions are included.
+
 2003-11-28  Jan Hubicka  <jh@suse.cz>
 
 	* emit-rtl.c (set_used_flags): New.
