@@ -1,3 +1,11 @@
+2003-10-08  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (EXTRA_CONSTRAINT): Add 'W' constraint.
+	(EXTRA_MEMORY_CONSTRAINT): Define.
+	(CAN_ELIMINATE): Remove lwu workaround.
+	* config/mips/mips.md (*zero_extendsidi2_mem): Enable for mips16 too.
+	Use a 'W' constraint for the source operand.
+
 2003-10-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* genopinit.c (main): Output code to declare undefined
