@@ -1,3 +1,9 @@
+2002-07-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (gengtype-lex.c): Work around a bug in flex.
+	* gengtype-lex.l (YY_USE_PROTOS): Undef.
+	(YY_DECL): Define.
+
 2002-07-27  Roger Sayle  <roger@eyesopen.com>
 
 	* doc/invoke.texi: Document that both -fno-builtin-foo and
