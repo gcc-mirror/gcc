@@ -12,7 +12,7 @@
 @cindex Trees
 @cindex C/C++ Internal Representation
 
-This chapter documents the internal representation used by GCC and C++ to
+This chapter documents the internal representation used by GCC to
 represent C and C++ source programs.  When presented with a C or C++
 source program, GCC parses the program, performs semantic analysis
 (including the generation of error messages), and then produces the
