@@ -1,17 +1,17 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
-   <meta NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <meta NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 27.">
-   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL">
+   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 27.">
+   <meta name="GENERATOR" content="vi and eight fingers">
    <title>libstdc++-v3 HOWTO:  Chapter 27</title>
-<link REL=StyleSheet HREF="../lib3styles.css">
+<link rel=StyleSheet href="../lib3styles.css">
 </head>
 <body>
 
-<h1 CLASS="centered"><a name="top">Chapter 27:  Input/Output</a></h1>
+<h1 class="centered"><a name="top">Chapter 27:  Input/Output</a></h1>
 
 <p>Chapter 27 deals with iostreams and all their subcomponents
    and extensions.  All <em>kinds</em> of fun stuff.
@@ -39,21 +39,21 @@
    <p>So you want to copy a file quickly and easily, and most important,
       completely portably.  And since this is C++, you have an open
       ifstream (call it IN) and an open ofstream (call it OUT):
-      <PRE>
+      <pre>
    #include &lt;fstream&gt;
 
    std::ifstream  IN ("input_file");
-   std::ofstream  OUT ("output_file"); </PRE>
+   std::ofstream  OUT ("output_file"); </pre>
    </p>
    <p>Here's the easiest way to get it completely wrong:
-      <PRE>
-   OUT &lt;&lt; IN;</PRE>
+      <pre>
+   OUT &lt;&lt; IN;</pre>
       For those of you who don't already know why this doesn't work
       (probably from having done it before), I invite you to quickly
       create a simple text file called &quot;input_file&quot; containing
       the sentence
-      <PRE>
-   The quick brown fox jumped over the lazy dog.</PRE>
+      <pre>
+   The quick brown fox jumped over the lazy dog.</pre>
       surrounded by blank lines.  Code it up and try it.  The contents
       of &quot;output_file&quot; may surprise you.
    </p>
@@ -75,8 +75,8 @@
       as well as the streams themselves.  The pointer is easily retrieved
       using the <code>rdbuf()</code> member function.  Therefore, the easiest
       way to copy the file is:
-      <PRE>
-   OUT &lt;&lt; IN.rdbuf();</PRE>
+      <pre>
+   OUT &lt;&lt; IN.rdbuf();</pre>
    </p>
    <p>So what <em>was</em> happening with OUT&lt;&lt;IN?  Undefined
       behavior, since that particular &lt;&lt; isn't defined by the Standard.
@@ -121,17 +121,17 @@
       is the effect you want when writing to a screen -- get the text
       out as soon as possible, etc -- but the buffering is largely
       wasted when doing this to a file:
-      <PRE>
+      <pre>
    output &lt;&lt; &quot;a line of text&quot; &lt;&lt; endl;
    output &lt;&lt; some_data_variable &lt;&lt; endl;
-   output &lt;&lt; &quot;another line of text&quot; &lt;&lt; endl; </PRE>
+   output &lt;&lt; &quot;another line of text&quot; &lt;&lt; endl; </pre>
       The proper thing to do in this case to just write the data out
       and let the libraries and the system worry about the buffering.
       If you need a newline, just write a newline:
-      <PRE>
+      <pre>
    output &lt;&lt; &quot;a line of text\n&quot;
           &lt;&lt; some_data_variable &lt;&lt; '\n'
-          &lt;&lt; &quot;another line of text\n&quot;; </PRE>
+          &lt;&lt; &quot;another line of text\n&quot;; </pre>
       I have also joined the output statements into a single statement.
       You could make the code prettier by moving the single newline to
       the start of the quoted text on the thing line, for example.
@@ -139,9 +139,9 @@
    <p>If you do need to flush the buffer above, you can send an
       <code>endl</code> if you also need a newline, or just flush the buffer
       yourself:
-      <PRE>
+      <pre>
    output &lt;&lt; ...... &lt;&lt; flush;    // can use std::flush manipulator
-   output.flush();               // or call a member fn </PRE>
+   output.flush();               // or call a member fn </pre>
    </p>
    <p>On the other hand, there are times when writing to a file should
       be like writing to standard error; no buffering should be done 
@@ -149,7 +149,7 @@
       log file for security-related information).  The way to do this is
       just to turn off the buffering <em>before any I/O operations at
       all</em> have been done, i.e., as soon as possible after opening:
-      <PRE>
+      <pre>
    std::ofstream    os (&quot;/foo/bar/baz&quot;);
    std::ifstream    is (&quot;/qux/quux/quuux&quot;);
    int   i;
@@ -158,7 +158,7 @@
    is.rdbuf()-&gt;pubsetbuf(0,0);
    ...
    os &lt;&lt; &quot;this data is written immediately\n&quot;;
-   is &gt;&gt; i;   // and this will probably cause a disk read </PRE>
+   is &gt;&gt; i;   // and this will probably cause a disk read </pre>
    </p>
    <p>Since all aspects of buffering are handled by a streambuf-derived
       member, it is necessary to get at that member with <code>rdbuf()</code>.
@@ -334,7 +334,7 @@
       transforms everything sent through it to uppercase.  This version
       assumes many things about the nature of the character type being
       used (for more information, read the books or the newsgroups):
-      <PRE>
+      <pre>
     #include &lt;iostream&gt;
     #include &lt;streambuf&gt;
     #include &lt;locale&gt;
@@ -365,13 +365,13 @@
 	// create special output buffer
 	outbuf ob;
 	// initialize output stream with that output buffer
-	std::ostream out(&ob);
+	std::ostream out(&amp;ob);
 
 	out &lt;&lt; "31 hexadecimal: "
 	    &lt;&lt; std::hex &lt;&lt; 31 &lt;&lt; std::endl;
 	return 0;
     }
-   </PRE>
+   </pre>
       Try it yourself!
    </p>
 
@@ -407,14 +407,14 @@
    </p>
    <p>Because the C++ library includes the C library, both C-style and
       C++-style I/O have to work at the same time.  For example:
-      <PRE>
+      <pre>
      #include &lt;iostream&gt;
      #include &lt;cstdio&gt;
 
      std::cout &lt;&lt; &quot;Hel&quot;;
      std::printf (&quot;lo, worl&quot;);
      std::cout &lt;&lt; &quot;d!\n&quot;;
-      </PRE>
+      </pre>
       This must do what you think it does.
    </p>
    <p>Alert members of the audience will immediately notice that buffering
@@ -434,11 +434,11 @@
       when both libraries' facilities are in use.  If your program only uses
       C++ I/O, then there's no need to sync with the C streams.  The right
       thing to do in this case is to call
-      <PRE>
+      <pre>
      #include <em>any of the I/O headers such as ios, iostream, etc</em>
 
      std::ios::sync_with_stdio(false);
-      </PRE>
+      </pre>
    </p>
    <p>You must do this before performing any I/O via the C++ stream objects.
       Once you call this, the C++ streams will operate independantly of the
@@ -446,9 +446,10 @@
       company will become fully buffered on their own.
    </p>
    <p>Note, by the way, that the synchronization requirement only applies to
-      the standard streams (<code>cin</code>, <code>cout</code>, <code>cerr</code>,
+      the standard streams (<code>cin</code>, <code>cout</code>,
+      <code>cerr</code>,
       <code>clog</code>, and their wide-character counterparts).  File stream
-      objects that you create yourself have no such requirement and are fully
+      objects that you declare yourself have no such requirement and are fully
       buffered.
    </p>
 
@@ -456,10 +457,10 @@
 <!-- ####################################################### -->
 
 <hr><br><br><br><br><br><br><br><br>
-<P CLASS="fineprint"><em>
+<p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to
-<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<a href="mailto:libstdc++@gcc.gnu.org">the libstdc++ mailing list</a>.
 </em></p>
 
 

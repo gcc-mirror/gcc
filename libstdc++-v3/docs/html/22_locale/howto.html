@@ -1,17 +1,17 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
-   <meta NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <meta NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 22.">
-   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL">
+   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 22.">
+   <meta name="GENERATOR" content="vi and eight fingers">
    <title>libstdc++-v3 HOWTO:  Chapter 22</title>
-<link REL=StyleSheet HREF="../lib3styles.css">
+<link rel=StyleSheet href="../lib3styles.css">
 </head>
 <body>
 
-<h1 CLASS="centered"><a name="top">Chapter 22:  Localization</a></h1>
+<h1 class="centered"><a name="top">Chapter 22:  Localization</a></h1>
 
 <p>Chapter 22 deals with the C++ localization facilities.
 </p>
@@ -38,18 +38,18 @@
 
 <hr>
 <h2><a name="1">class locale</a></h2>
-   <p> Notes made during the implementation of locales can be found 
-       <a href="locale.html">here</a>.
+   <p>Notes made during the implementation of locales can be found 
+      <a href="locale.html">here</a>.
    </p>
 
 <hr>
 <h2><a name="2">class codecvt</a></h2>
-   <p> Notes made during the implementation of codecvt can be found 
-       <a href="codecvt.html">here</a>.
+   <p>Notes made during the implementation of codecvt can be found 
+      <a href="codecvt.html">here</a>.
    </p>
 
-   <p> The following is the abstract from the implementation notes:
-   <BLOCKQUOTE>
+   <p>The following is the abstract from the implementation notes:
+   <blockquote>
    The standard class codecvt attempts to address conversions between
    different character encoding schemes. In particular, the standard
    attempts to detail conversions between the implementation-defined
@@ -63,18 +63,19 @@
    requirements are addressed, and examples of correct usage for both
    the required specializations for wide and narrow characters and the
    implementation-provided extended functionality are given.
-   </BLOCKQUOTE>
+   </blockquote>
+   </p>
 
 <hr>
 <h2><a name="3">class ctype</a></h2>
-   <p> Notes made during the implementation of ctype can be found 
-       <a href="ctype.html">here</a>.
+   <p>Notes made during the implementation of ctype can be found 
+      <a href="ctype.html">here</a>.
    </p>
 
 <hr>
 <h2><a name="4">class messages</a></h2>
-   <p> Notes made during the implementation of messages can be found 
-       <a href="messages.html">here</a>.
+   <p>Notes made during the implementation of messages can be found 
+      <a href="messages.html">here</a>.
    </p>
 
 <hr>
@@ -87,24 +88,24 @@
       description of locales and how to use them.
    </p>
    <p>He also writes:
-      <BLOCKQUOTE><em>
+      <blockquote><em>
       Please note that I still consider this detailed description of
-      locales beyond the needs of most C++ programmers. It is written
+      locales beyond the needs of most C++ programmers.  It is written
       with experienced programmers in mind and novices will do best to
       avoid it.
-      </em></BLOCKQUOTE>
+      </em></blockquote>
    </p>
 
 <hr>
 <h2><a name="6">Nathan Myers on Locales</a></h2>
-   <p> An article entitled &quot;The Standard C++ Locale&quot; was
-       published in Dr. Dobb's Journal and can be found
+   <p>An article entitled &quot;The Standard C++ Locale&quot; was
+      published in Dr. Dobb's Journal and can be found
       <a href="http://www.cantrip.org/locale.html">here</a>.
    </p>
 
 <hr>
 <h2><a name="7">Correct Transformations</a></h2>
-   <!-- Jumping directly here from chapter 21. -->
+   <!-- Jumping directly to here from chapter 21. -->
    <p>A very common question on newsgroups and mailing lists is, &quot;How
       do I do &lt;foo&gt; to a character string?&quot; where &lt;foo&gt; is
       a task such as changing all the letters to uppercase, to lowercase,
@@ -130,7 +131,7 @@
       is created.  Then member functions of that locale are called to
       perform minor tasks.  Continuing the example from Chapter 21, we wish
       to use the following convenience functions:
-   <PRE>
+   <pre>
    namespace std {
      template &lt;class charT&gt;
        charT
@@ -138,7 +139,7 @@
      template &lt;class charT&gt;
        charT
        tolower (charT c, const locale&amp; loc) const;
-   }</PRE>
+   }</pre>
       This function extracts the appropriate &quot;facet&quot; from the
       locale <em>loc</em> and calls the appropriate member function of that
       facet, passing <em>c</em> as its argument.  The resulting character
@@ -153,7 +154,7 @@
       parameter.  So we write simple wrapper structs to handle that.
    </p>
    <p>The next-to-final version of the code started in Chapter 21 looks like:
-      <PRE>
+      <pre>
    #include &lt;iterator&gt;    // for back_inserter
    #include &lt;locale&gt;
    #include &lt;string&gt;
@@ -198,7 +199,7 @@
       std::transform (s.begin(), s.end(), std::back_inserter(capital_s),
                       up
                      );
-   }</PRE>
+   }</pre>
    </p>
    <p>The final version of the code uses <code>bind2nd</code> to eliminate
       the wrapper structs, but the resulting code is tricky.  I have not
@@ -210,10 +211,10 @@
 <!-- ####################################################### -->
 
 <hr>
-<P CLASS="fineprint"><em>
+<p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to
-<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<a href="mailto:libstdc++@gcc.gnu.org">the libstdc++ mailing list</a>.
 </em></p>
 
 

@@ -1,17 +1,17 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
-   <meta NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, gcc, g++, libg++, STL">
-   <meta NAME="DESCRIPTION" CONTENT="HOWTO for libstdc++ chapter 17.">
-   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, gcc, g++, libg++, STL">
+   <meta name="DESCRIPTION" content="HOWTO for libstdc++ chapter 17.">
+   <meta name="GENERATOR" content="vi and eight fingers">
    <title>libstdc++-v3 HOWTO:  Chapter 17</title>
-<link REL=StyleSheet HREF="../lib3styles.css">
+<link rel=StyleSheet href="../lib3styles.css">
 </head>
 <body>
 
-<h1 CLASS="centered"><a name="top">Chapter 17:  Library Introduction</a></h1>
+<h1 class="centered"><a name="top">Chapter 17:  Library Introduction</a></h1>
 
 <p>Chapter 17 is actually a list of definitions and descriptions used
    in the following chapters of the Standard when describing the actual
@@ -27,7 +27,7 @@
    <li><a href="#2">The Standard C++ header files</a>
    <li><a href="#3">Thread-safety</a>
    <li><a href="#4"><code>&lt;foo&gt;</code> vs <code>&lt;foo.h&gt;</code></a>
-   <li><a href="porting-howto.html">Porting-howto</a>
+   <li><a href="porting-howto.html">Porting HOWTO</a>
 </ul>
 
 <hr>
@@ -92,9 +92,9 @@
       an application for high-speed using this implementation of the STL.
       Here is one possible example displaying the forcing of the malloc-based
       allocator over the typically higher-speed default allocator:
-      <PRE>
+      <pre>
       std::list &lt;void*, std::malloc_alloc&gt;  my_malloc_based_list;
-      </PRE>
+      </pre>
    </p>
    <p>A recent journal article has described &quot;atomic integer
       operations,&quot; which would allow us to, well, perform updates
@@ -177,10 +177,10 @@
 <!-- ####################################################### -->
 
 <hr>
-<P CLASS="fineprint"><em>
+<p class="fineprint"><em>
 See <a href="license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to
-<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<a href="mailto:libstdc++@gcc.gnu.org">the libstdc++ mailing list</a>.
 </em></p>
 
 

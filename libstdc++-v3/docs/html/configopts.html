@@ -1,16 +1,16 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
-   <meta NAME="KEYWORDS" CONTENT="libstdc++, libstdc++-v3, GCC, g++">
-   <meta NAME="DESCRIPTION" CONTENT="Configuration options for libstdc++-v3.">
-   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
+   <meta name="KEYWORDS" content="libstdc++, libstdc++-v3, GCC, g++">
+   <meta name="DESCRIPTION" content="Configuration options for libstdc++-v3.">
+   <meta name="GENERATOR" content="vi and eight fingers">
    <title>libstdc++-v3 configure options</title>
-<link REL=StyleSheet HREF="lib3styles.css">
+<link rel=StyleSheet href="lib3styles.css">
 </head>
 <body>
 
-<h1 CLASS="centered"><a name="top">Interesting <code>configure</code>
+<h1 class="centered"><a name="top">Interesting <code>configure</code>
 options</a></h1>
 
 <p>The latest version of this document is always available at
@@ -89,7 +89,7 @@ options</a></h1>
         (IEEE Std. 1003.1-200x) model based on langinfo/iconv/catgets,
         'gnu' to specify a model based on functionality from the GNU C
         library (langinfo/iconv/gettext) (from <A
-        HREF="http://sources.redhat.com/glibc/">glibc</a>, the GNU C
+        href="http://sources.redhat.com/glibc/">glibc</a>, the GNU C
         library), or 'generic' to use a generic &quot;C&quot;
         abstraction which consists of &quot;C&quot; locale info.  The
         default is 'generic'.
@@ -167,16 +167,16 @@ options</a></h1>
         the following puts all the libstdc++ headers into a directory
         called &quot;2.97-20001008&quot; instead of the usual
         &quot;g++-v3&quot;.
-        <PRE>
-   --with-gxx-include-dir=/foo/H-x86-gcc-3-c-gxx-inc/include/2.97-20001008</PRE>
+        <pre>
+   --with-gxx-include-dir=/foo/H-x86-gcc-3-c-gxx-inc/include/2.97-20001008</pre>
      </p>
 
  <dt><code>--enable-cxx-flags=FLAGS</code>
  <dd><p>With this option, you can pass a string of -f (functionality)
         flags to the compiler to use when building libstdc++.  FLAGS
         is a quoted string of options, like
-        <PRE>
-  --enable-cxx-flags='-fvtable-gc -fomit-frame-pointer -ansi'</PRE>
+        <pre>
+  --enable-cxx-flags='-fvtable-gc -fomit-frame-pointer -ansi'</pre>
         Note that the flags don't necessarily have to all be -f flags,
         as shown, but usually those are the ones that will make sense
         for experimentation and configure-time overriding.
@@ -187,13 +187,13 @@ options</a></h1>
         as well, so that everything matches.
      </p>
      <p>Fun flags to try might include combinations of
-        <PRE>
+        <pre>
   -fstrict-aliasing
   -fno-exceptions
   -ffunction-sections
-  -fvtable-gc</PRE>
-        and opposite forms (-fno-) of the same.  Tell us (the mailing
-        list) if you discover more!
+  -fvtable-gc</pre>
+        and opposite forms (-fno-) of the same.  Tell us (the libstdc++
+        mailing list) if you discover more!
      </p>
 
  <dt><code>--enable-c-mbchar  </code>[default]
@@ -207,17 +207,17 @@ options</a></h1>
 </dl>
 </p>
 <p>Return <a href="#top">to the top of the page</a> or
-   <a href="http://gcc.gnu.org/libstdc++/">to the homepage</a>.
+   <a href="http://gcc.gnu.org/libstdc++/">to the libstdc++ homepage</a>.
 </p>
 
 
 <!-- ####################################################### -->
 
 <hr>
-<P CLASS="fineprint"><em>
+<p class="fineprint"><em>
 See <a href="17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to
-<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<a href="mailto:libstdc++@gcc.gnu.org">the libstdc++ mailing list</a>.
 </em></p>
 
 

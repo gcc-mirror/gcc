@@ -1,16 +1,16 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
-   <meta NAME="KEYWORDS" CONTENT="libstdc++, libstdc++-v3, GCC, g++">
-   <meta NAME="DESCRIPTION" CONTENT="README for the GNU libstdc++ effort.">
-   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
+   <meta name="KEYWORDS" content="libstdc++, libstdc++-v3, GCC, g++">
+   <meta name="DESCRIPTION" content="README for the GNU libstdc++ effort.">
+   <meta name="GENERATOR" content="vi and eight fingers">
    <title>libstdc++-v3 Installation Instructions</title>
-<link REL=StyleSheet HREF="lib3styles.css">
+<link rel=StyleSheet href="lib3styles.css">
 </head>
 <body>
 
-<h1 CLASS="centered"><a name="top">libstdc++-v3 INSTALL</a></h1>
+<h1 class="centered"><a name="top">libstdc++-v3 INSTALL</a></h1>
 
 <p>The latest version of this document is always available at
    <a href="http://gcc.gnu.org/onlinedocs/libstdc++/install.html">
@@ -124,20 +124,20 @@
       (<code>gcc</code> or <code>gcc-3.0</code>, for example) is <em>gccsrcdir</em>.
       Once in <em>gccsrcdir</em>, you'll need to rename or delete the
       libstdc++-v3 directory which comes with that snapshot:
-      <PRE>
+      <pre>
    mv libstdc++-v3 libstdc++-v3-previous  <strong>[OR]</strong>
-   rm -r libstdc++-v3</PRE>
+   rm -r libstdc++-v3</pre>
    </p>
    <p>Next, unpack the libstdc++-v3 library tarball into this
       <em>gccsrcdir</em> directory; it will create a
       <em>libsrcdir</em> called <code>libstdc++-<em>version</em></code>:
-      <PRE>
-   gzip -dc libstdc++-version.tar.gz | tar xf -</PRE>
+      <pre>
+   gzip -dc libstdc++-version.tar.gz | tar xf -</pre>
    </p>
    <p>Finally, rename <em>libsrcdir</em> to <code>libstdc++-v3</code> so that
       gcc's configure flags will be able to deal with the new library.
-      <PRE>
-   mv <em>libsrcdir</em> libstdc++-v3</PRE>
+      <pre>
+   mv <em>libsrcdir</em> libstdc++-v3</pre>
    </p>
 
 
@@ -156,9 +156,9 @@
       building the C++ language parts.
    </p>
 
-   <p><PRE>
+   <p><pre>
    cd <em>gccbuilddir</em>
-   <em>gccsrcdir</em>/configure --prefix=<em>destdir</em> --other-opts...</PRE>
+   <em>gccsrcdir</em>/configure --prefix=<em>destdir</em> --other-opts...</pre>
    </p>
 
 
@@ -178,8 +178,8 @@
 
    <h3>[re]building only libstdc++</h3>
    <p>To rebuild just libstdc++, use:
-      <PRE>
-   make all-target-<em>libstdc++-v3</em></PRE>
+      <pre>
+   make all-target-<em>libstdc++-v3</em></pre>
       This will configure and build the C++ library in the
       <em>gccbuilddir/cpu-vendor-os/</em>libstdc++ directory.
    </p>
@@ -193,12 +193,12 @@
       simply edit it and remove lines.
    </p>
    <p>You're done.  Now install the rebuilt pieces with
-      <PRE>
-   make install</PRE>
+      <pre>
+   make install</pre>
       or 
-      <PRE>
+      <pre>
    make install-gcc
-   make install-target-libstdc++-v3</PRE>
+   make install-target-libstdc++-v3</pre>
    </p>
 
 
@@ -206,20 +206,20 @@
 <h2><a name="postinstall">Post-installation</a></h2>
    <p>Installation will create the <em>destdir</em> directory and
       populate it with subdirectories:
-      <PRE>
+      <pre>
    lib/
    include/g++-v3/
       backward/
       bits/
       <em>cpu-vendor-os</em>/bits/
-      ext/</PRE>
+      ext/</pre>
    </p>
    <p>You can check the status of the build without installing it using
-      <PRE>
-   make check</PRE>
+      <pre>
+   make check</pre>
       or you can check the status of the installed library using
-      <PRE>
-   make check-install</PRE>
+      <pre>
+   make check-install</pre>
       in the <em>libbuilddir</em> directory.
       These commands will create a 'testsuite' directory underneath
       <em>libbuilddir</em> containing the results of the tests.  We are
@@ -280,10 +280,10 @@
 <!-- ####################################################### -->
 
 <hr>
-<P CLASS="fineprint"><em>
+<p class="fineprint"><em>
 See <a href="17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to
-<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<a href="mailto:libstdc++@gcc.gnu.org">the libstdc++ mailing list</a>.
 </em></p>
 
 

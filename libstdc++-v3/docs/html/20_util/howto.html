@@ -1,17 +1,17 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
-   <meta NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <meta NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 20.">
-   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL">
+   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 20.">
+   <meta name="GENERATOR" content="vi and eight fingers">
    <title>libstdc++-v3 HOWTO:  Chapter 20</title>
-<link REL=StyleSheet HREF="../lib3styles.css">
+<link rel=StyleSheet href="../lib3styles.css">
 </head>
 <body>
 
-<h1 CLASS="centered"><a name="top">Chapter 20:  General Utilities</a></h1>
+<h1 class="centered"><a name="top">Chapter 20:  General Utilities</a></h1>
 
 <p>Chapter 20 deals with utility classes and functions, such as
    the oft-debated <code>auto_ptr&lt;&gt;</code>.
@@ -47,7 +47,7 @@
    </p>
    <p>AP <em>is</em> meant to prevent nasty leaks in the presence of
       exceptions.  That's <em>all</em>.  This code is AP-friendly:
-      <PRE>
+      <pre>
     // not a recommend naming scheme, but good for web-based FAQs
     typedef std::auto_ptr&lt;MyClass&gt;  APMC;
 
@@ -62,20 +62,20 @@
 
         function_taking_MyClass_pointer (ap.get());
     }
-      </PRE>When an exception gets thrown, the instance of MyClass that's
+      </pre>When an exception gets thrown, the instance of MyClass that's
       been created on the heap will be <code>delete</code>'d as the stack is
       unwound past <code>func()</code>.
    </p>
    <p>Changing that code as follows is <em>not</em> AP-friendly:
-      <PRE>
+      <pre>
         APMC  ap (new MyClass[22]);
-      </PRE>You will get the same problems as you would without the use
+      </pre>You will get the same problems as you would without the use
       of AP:
-      <PRE>
+      <pre>
         char*  array = new char[10];       // array new...
         ...
         delete array;                      // ...but single-object delete
-      </PRE>
+      </pre>
    </p>
    <p>AP cannot tell whether the pointer you've passed at creation points
       to one or many things.  If it points to many things, you are about
@@ -92,12 +92,12 @@
    <p>All of the <a href="../23_containers/howto.html">containers</a>
       described in the standard library require their contained types
       to have, among other things, a copy contructor like this:
-      <PRE>
+      <pre>
     struct My_Type
     {
         My_Type (My_Type const&amp;);
     };
-      </PRE>
+      </pre>
       Note the const keyword; the object being copied shouldn't change.
       The template class <code>auto_ptr</code> (called AP here) does not
       meet this requirement.  Creating a new AP by copying an existing
@@ -106,14 +106,14 @@
       copy ctors of AP do not take const objects.
    </p>
    <p>The resulting rule is simple:  <em>Never ever use a container of
-      auto_ptr objects.</em>  The standard says that undefined behavior
-      is the result, but it is guaranteed to be messy.
+      auto_ptr objects.</em>  The standard says that &quot;undefined&quot;
+      behavior is the result, but it is guaranteed to be messy.
    </p>
    <p>To prevent you from doing this to yourself, the
       <a href="../19_diagnostics/howto.html#3">concept checks</a> built
       in to this implementation will issue an error if you try to
       compile code like this:
-      <PRE>
+      <pre>
     #include &lt;vector&gt;
     #include &lt;memory&gt;
     
@@ -121,7 +121,7 @@
     {
         std::vector&lt; std::auto_ptr&lt;int&gt; &gt;   vec_ap_int;
     }
-      </PRE>
+      </pre>
       Should you try this with the checks enabled, you will see an error.
    </p>
    <p>Return <a href="#top">to top of page</a> or
@@ -151,16 +151,16 @@
    </p>
    <p>Construction is simple.  The default ctor initializes each member
       with its respective default ctor.  The other simple ctor,
-      <PRE>
+      <pre>
     pair (const T1&amp; x, const T2&amp; y);
-      </PRE>does what you think it does, <code>first</code> getting <code>x</code>
+      </pre>does what you think it does, <code>first</code> getting <code>x</code>
       and <code>second</code> getting <code>y</code>.
    </p>
    <p>There is a copy constructor, but it requires that your compiler
       handle member function templates:
-      <PRE>
+      <pre>
     template &lt;class U, class V&gt; pain (const pair&lt;U,V&gt;&amp; p);
-      </PRE>The compiler will convert as necessary from U to T1 and from
+      </pre>The compiler will convert as necessary from U to T1 and from
       V to T2 in order to perform the respective initializations.
    </p>
    <p>The comparison operators are done for you.  Equality
@@ -173,10 +173,10 @@
    <a name="pairlt">
    <p>The less-than operator is a bit odd the first time you see it.  It
       is defined as evaluating to:
-      <PRE>
+      <pre>
     x.first  &lt;  y.first  ||
         ( !(y.first  &lt;  x.first)  &amp;&amp;  x.second  &lt;  y.second )
-      </PRE>
+      </pre>
       The other operators are not defined using the <code>rel_ops</code>
       functions above, but their semantics are the same.
    </p>
@@ -184,9 +184,9 @@
    <p>Finally, there is a template function called <code>make_pair</code>
       that takes two references-to-const objects and returns an
       instance of a pair instantiated on their respective types:
-      <PRE>
+      <pre>
     pair&lt;int,MyClass&gt; p = make_pair(4,myobject);
-      </PRE>
+      </pre>
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
@@ -198,10 +198,10 @@
 <!-- ####################################################### -->
 
 <hr>
-<P CLASS="fineprint"><em>
+<p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to
-<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<a href="mailto:libstdc++@gcc.gnu.org">the libstdc++ mailing list</a>.
 </em></p>
 
 

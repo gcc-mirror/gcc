@@ -1,25 +1,25 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
-   <meta NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <meta NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 26.">
-   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL">
+   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 26.">
+   <meta name="GENERATOR" content="vi and eight fingers">
    <title>libstdc++-v3 HOWTO:  Chapter 26</title>
-<link REL=StyleSheet HREF="../lib3styles.css">
+<link rel=StyleSheet href="../lib3styles.css">
 </head>
 <body>
 
-<h1 CLASS="centered"><a name="top">Chapter 26:  Numerics</a></h1>
+<h1 class="centered"><a name="top">Chapter 26:  Numerics</a></h1>
 
 <p>Chapter 26 deals with building block abstractions to aid in
    numerical computing:
    <ul>
      <li>Template data structures such as <code>valarray&lt;&gt;</code>
          and <code>complex&lt;&gt;</code>.
-     <li>Template numerical functions such as <code>accumulate</code>;
-         <code>inner_product</code>; <code>partial_sum</code> and
+     <li>Template numerical functions such as <code>accumulate</code>,
+         <code>inner_product</code>, <code>partial_sum</code>, and
          <code>adjacent_difference</code>.
    </ul>
    All of the Standard C math functions are of course included in C++,
@@ -48,7 +48,7 @@
       compiled a list of C++98 and C99 conflict points; his description of
       C's new type versus those of C++ and how to get them playing together
       nicely is
-<a href="http://home.flash.net/~dtribble/text/cdiffs.htm#C99.complex">here</a>.
+<a href="http://david.tribble.com/text/cdiffs.htm#C99-complex">here</a>.
    </p>
    <p><code>complex&lt;&gt;</code> is intended to be instantiated with a
       floating-point type.  As long as you meet that and some other basic
@@ -66,9 +66,9 @@
 <h2><a name="2">Array Processing</a></h2>
    <p>One of the major reasons why FORTRAN can chew through numbers so well
       is that it is defined to be free of pointer aliasing, an assumption
-      that C89 is not allowed to make, and neither is C++.  C99 adds a new
-      keyword, <code>restrict</code>, to apply to individual pointers.  The C++
-      solution is contained in the library rather than the language
+      that C89 is not allowed to make, and neither is C++98.  C99 adds a new
+      keyword, <code>restrict</code>, to apply to individual pointers.  The
+      C++ solution is contained in the library rather than the language
       (although many vendors can be expected to add this to their compilers
       as an extension).
    </p>
@@ -102,7 +102,7 @@
       </ul>
    </p>
    <p>Here is a simple example of the two forms of <code>accumulate</code>.
-      <PRE>
+      <pre>
    int   ar[50];
    int   someval = somefunction();
 
@@ -111,7 +111,7 @@
    int  sum       = std::accumulate(ar,ar+50,0);
    int  sum_stuff = std::accumulate(ar,ar+50,someval);
    int  product   = std::accumulate(ar,ar+50,1,std::multiplies&lt;int&gt;());
-      </PRE>
+      </pre>
       The first call adds all the members of the array, using zero as an
       initial value for <code>sum</code>.  The second does the same, but uses
       <code>someval</code> as the starting value (thus, <code>sum_stuff == sum +
@@ -136,7 +136,8 @@
       neccessary support for C99 (e.g., header files) cannot be found.
    </p>
    <p>As of GCC 3.0, C99 support includes classification functions
-      such as <code>isnormal</code>, <code>isgreater</code>, <code>isnan</code>, etc.
+      such as <code>isnormal</code>, <code>isgreater</code>,
+      <code>isnan</code>, etc.
       The functions used for 'long long' support such as <code>strtoll</code>
       are supported, as is the <code>lldiv_t</code> typedef.  Also supported
       are the wide character functions using 'long long', like
@@ -151,10 +152,10 @@
 <!-- ####################################################### -->
 
 <hr>
-<P CLASS="fineprint"><em>
+<p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to
-<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<a href="mailto:libstdc++@gcc.gnu.org">the libstdc++ mailing list</a>.
 </em></p>
 
 

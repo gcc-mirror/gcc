@@ -1,17 +1,17 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
-   <meta NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <meta NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 24.">
-   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL">
+   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 24.">
+   <meta name="GENERATOR" content="vi and eight fingers">
    <title>libstdc++-v3 HOWTO:  Chapter 24</title>
-<link REL=StyleSheet HREF="../lib3styles.css">
+<link rel=StyleSheet href="../lib3styles.css">
 </head>
 <body>
 
-<h1 CLASS="centered"><a name="top">Chapter 24:  Iterators</a></h1>
+<h1 class="centered"><a name="top">Chapter 24:  Iterators</a></h1>
 
 <p>Chapter 24 deals with the FORTRAN subroutines for automatically
    transforming lemmings into gold.
@@ -50,7 +50,7 @@
       of overhead.  (If you think that's the case anywhere, you don't
       understand templates to begin with...)  Oh, no; if you pass
       in a pointer, then the compiler will instantiate that template
-      using T* as a type and good old high-speed pointer arithmetic as
+      using T* as a type, and good old high-speed pointer arithmetic as
       its operations, so the resulting code will be doing exactly the same
       things as it would be doing if you had hand-coded it yourself (for
       the 273rd time).
@@ -101,7 +101,7 @@
    <p>So, when you think of two pointers delimiting an array, don't think
       of them as indexing 0 through n-1.  Think of them as <em>boundary
       markers</em>:
-      <PRE>
+      <pre>
 
    beginning            end
      |                   |
@@ -121,7 +121,7 @@
      |                       |           dereference 'end'.
    beginning                end
 
-      </PRE>
+      </pre>
       See?  Everything between the boundary markers is part of the array.
       Simple.
    </p>
@@ -172,10 +172,10 @@
 <!-- ####################################################### -->
 
 <hr>
-<P CLASS="fineprint"><em>
+<p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to
-<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<a href="mailto:libstdc++@gcc.gnu.org">the libstdc++ mailing list</a>.
 </em></p>
 
 

@@ -105,14 +105,14 @@
 1.4 How do I get libstdc++?
 
    The  eleventh  (and  latest) snapshot of libstdc++-v3 is [47]available
-   via ftp.
+   via ftp. The filename is libstdc++-2.92.tar.gz.
 
    The  [48]homepage  has  instructions  for  retrieving  the  latest CVS
    sources, and for browsing the CVS sources over the web.
 
    The  subset  commonly known as the Standard Template Library (chapters
-   23  through  25, mostly) is adapted from the SGI STL, which is also an
-   ongoing work.
+   23  through  25,  mostly) is adapted from the final release of the SGI
+   STL.
      _________________________________________________________________
 
 1.5 When is libstdc++ going to be finished?
@@ -555,7 +555,8 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    ours...  The  general  question  of multithreading and libstdc++-v3 is
    addressed in the chapter-specific advice for [80]Library Introduction.
    Threadsafe  containers  are covered in more detail in [81]the Received
-   Wisdom section on containers.
+   Wisdom  section  on  containers.  Threading  and  I/O are discussed in
+   [82]the I/O chapter.
      _________________________________________________________________
 
 5.7 How do I get a copy of the ISO C++ Standard?
@@ -566,16 +567,16 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    their  two-meeting commitment for voting rights, may get a copy of the
    standard from their respective national standards organization. In the
    USA, this national standards organization is ANSI and their website is
-   right  [82]here. (And if you've already registered with them, clicking
-   this link will take you to directly to the place where you can [83]buy
+   right  [83]here. (And if you've already registered with them, clicking
+   this link will take you to directly to the place where you can [84]buy
    the standard on-line.
 
-   Who is your country's member body? Visit the [84]ISO homepage and find
+   Who is your country's member body? Visit the [85]ISO homepage and find
    out!
      _________________________________________________________________
 
-   See  [85]license.html for copying conditions. Comments and suggestions
-   are welcome, and may be sent to [86]the mailing list. 
+   See  [86]license.html for copying conditions. Comments and suggestions
+   are welcome, and may be sent to [87]the libstdc++ mailing list. 
 
 References
 
@@ -620,12 +621,12 @@ References
   39. ../faq/index.html#5_5
   40. ../faq/index.html#5_6
   41. ../faq/index.html#5_7
-  42. ftp://gcc.gnu.org/pub/libstdc++/libstdc++-2.92.tar.gz
+  42. http://gcc.gnu.org/libstdc++/download.html
   43. ../17_intro/DESIGN
   44. http://gcc.gnu.org/
   45. http://gcc.gnu.org/gcc-2.95/buildstat.html
   46. http://gcc.gnu.org/libstdc++/
-  47. ftp://gcc.gnu.org/pub/libstdc++/libstdc++-2.92.tar.gz
+  47. http://gcc.gnu.org/libstdc++/download.html
   48. http://gcc.gnu.org/libstdc++/
   49. ../17_intro/contribute.html
   50. http://www.boost.org/
@@ -658,10 +659,11 @@ References
   77. http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html
   78. http://www.sgi.com/Technology/STL/
   79. ../ext/howto.html
-  80. http://gcc.gnu.org/onlinedocs/libstdc++/17_intro/howto.html#3
-  81. http://gcc.gnu.org/onlinedocs/libstdc++/23_containers/howto.html
-  82. http://www.ansi.org/
-  83. http://webstore.ansi.org/ansidocstore/product.asp?sku=ISO%2FIEC+14882%2D1998
-  84. http://www.iso.ch/
-  85. ../17_intro/license.html
-  86. mailto:libstdc++@gcc.gnu.org
+  80. ../17_intro/howto.html#3
+  81. ../23_containers/howto.html
+  82. ../27_io/howto.html
+  83. http://www.ansi.org/
+  84. http://webstore.ansi.org/ansidocstore/product.asp?sku=ISO%2FIEC+14882%2D1998
+  85. http://www.iso.ch/
+  86. ../17_intro/license.html
+  87. mailto:libstdc++@gcc.gnu.org
