@@ -27,15 +27,19 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file 
- *  This is a TR1 C++ Library header. 
+/** @file
+ *  This is a TR1 C++ Library header.
  */
 
 #ifndef _TR1_FUNCTIONAL
 #define _TR1_FUNCTIONAL 1
 
 #include "../functional"
-#include <string>		// for std::tr1::hash
+#include <typeinfo>
+#include <tr1/type_traits>
+#include "../bits/cpp_type_traits.h"
+#include <string>               // for std::tr1::hash
+#include <cstdlib>              // for std::abort
 
 namespace std
 {
@@ -49,32 +53,32 @@ namespace tr1
       typedef _Tp type;
       explicit reference_wrapper(_Tp& __indata): _M_data(&__indata)
       { }
-    
+
       reference_wrapper(const reference_wrapper<_Tp>& __inref):
       _M_data(__inref._M_data)
       { }
 
-      reference_wrapper& 
+      reference_wrapper&
       operator=(const reference_wrapper<_Tp>& __inref)
       {
-	_M_data = __inref._M_data;
-	return *this;
+        _M_data = __inref._M_data;
+        return *this;
       }
-      
+
       operator _Tp&() const
       { return this->get(); }
-    
+
       _Tp&
       get() const
       { return *_M_data; }
     };
-  
+
   // Denotes a reference should be taken to a variable.
   template<typename _Tp>
     reference_wrapper<_Tp>
     ref(_Tp& __t)
     { return reference_wrapper<_Tp>(__t); }
-  
+
   // Denotes a const reference should be taken to a variable.
   template<typename _Tp>
     reference_wrapper<const _Tp>
@@ -89,16 +93,980 @@ namespace tr1
     reference_wrapper<const _Tp> cref(reference_wrapper<_Tp> __t)
     { return cref(__t.get()); }
 
+  template<typename _MemberPointer>
+    class _Mem_fn;
+
+   template<typename _Tp, bool>
+     struct _Mem_fn_const_or_non
+     {
+       typedef const _Tp& type;
+     };
+
+    template<typename _Tp>
+      struct _Mem_fn_const_or_non<_Tp, false>
+      {
+        typedef _Tp& type;
+      };
+
+  template<typename _Res, typename _Class>
+  class _Mem_fn<_Res _Class::*>
+  {
+    // This bit of genius is due to Peter Dimov, improved slightly by
+    // Douglas Gregor.
+    template<typename _Tp>
+      _Res&
+      _M_call(_Tp& __object, _Class *) const
+      { return __object.*__pm; }
+
+    template<typename _Tp, typename _Up>
+      _Res&
+      _M_call(_Tp& __object, _Up * const *) const
+      { return (*__object).*__pm; }
+
+    template<typename _Tp, typename _Up>
+      const _Res&
+      _M_call(_Tp& __object, const _Up * const *) const
+      { return (*__object).*__pm; }
+
+    template<typename _Tp>
+      const _Res&
+      _M_call(_Tp& __object, const _Class *) const
+      { return __object.*__pm; }
+
+    template<typename _Tp>
+      const _Res&
+      _M_call(_Tp& __ptr, const volatile void*) const
+      { return (*__ptr).*__pm; }
+
+    template<typename _Tp> static _Tp& __get_ref();
+
+    template<typename _Tp>
+      static __sfinae_types::__one __check_const(_Tp&, _Class*);
+    template<typename _Tp, typename _Up>
+      static __sfinae_types::__one __check_const(_Tp&, _Up * const *);
+    template<typename _Tp, typename _Up>
+      static __sfinae_types::__two __check_const(_Tp&, const _Up * const *);
+    template<typename _Tp>
+      static __sfinae_types::__two __check_const(_Tp&, const _Class*);
+    template<typename _Tp>
+      static __sfinae_types::__two __check_const(_Tp&, const volatile void*);
+
+    template<typename _Tp>
+      struct _Result_type
+        : _Mem_fn_const_or_non<
+            _Res,
+            (sizeof(__sfinae_types::__two)
+             == sizeof(__check_const<_Tp>(__get_ref<_Tp>(), (_Tp*)0)))>
+      { };
+
+  public:
+    explicit _Mem_fn(_Res _Class::*__pm) : __pm(__pm) { }
+
+    // Handle objects
+    _Res&       operator()(_Class& __object)       const
+    { return __object.*__pm; }
+
+    const _Res& operator()(const _Class& __object) const
+    { return __object.*__pm; }
+
+    // Handle pointers
+    _Res&       operator()(_Class* __object)       const
+    { return __object->*__pm; }
+
+    const _Res&
+    operator()(const _Class* __object) const
+    { return __object->*__pm; }
+
+    // Handle smart pointers and derived
+    template<typename _Tp>
+      typename _Result_type<_Tp>::type
+      operator()(_Tp& __unknown) const
+      { return _M_call(__unknown, &__unknown); }
+
+  private:
+    _Res _Class::*__pm;
+  };
+
+  /**
+   *  @brief Returns a function object that forwards to the member
+   *  pointer @a pm.
+   */
+  template<typename _T, typename _Class>
+    inline _Mem_fn<_T _Class::*>
+    mem_fn(_T _Class::* __pm)
+    {
+      return _Mem_fn<_T _Class::*>(__pm);
+    }
+
+  /**
+   *  @brief Exception class thrown when class template function's
+   *  operator() is called with an empty target.
+   *
+   */
+  class bad_function_call : public std::exception { };
+
+  /**
+   *  @if maint
+   *  The integral constant expression 0 can be converted into a
+   *  pointer to this type. It is used by the function template to
+   *  accept NULL pointers.
+   *  @endif
+   */
+  struct _M_clear_type;
+
+  /**
+   *  @if maint
+   *  Trait identifying "location-invariant" types, meaning that the
+   *  address of the object (or any of its members) will not escape.
+   *  Also implies a trivial copy constructor and assignment operator.
+   *   @endif
+   */
+  template<typename _Tp>
+    struct __is_location_invariant
+    : integral_constant<bool,
+                        (is_pointer<_Tp>::value
+                         || is_member_pointer<_Tp>::value)>
+    {
+    };
+
+  class _Undefined_class;
+
+  union _Nocopy_types
+  {
+    void*       _M_object;
+    const void* _M_const_object;
+    void (*_M_function_pointer)();
+    void (_Undefined_class::*_M_member_pointer)();
+  };
+
+  union _Any_data {
+    void*       _M_access()       { return &_M_pod_data[0]; }
+    const void* _M_access() const { return &_M_pod_data[0]; }
+
+    template<typename _Tp> _Tp& _M_access()
+    { return *static_cast<_Tp*>(_M_access()); }
+
+    template<typename _Tp> const _Tp& _M_access() const
+    { return *static_cast<const _Tp*>(_M_access()); }
+
+    _Nocopy_types _M_unused;
+    char _M_pod_data[sizeof(_Nocopy_types)];
+  };
+
+  enum _Manager_operation
+  {
+    __get_type_info,
+    __get_functor_ptr,
+    __clone_functor,
+    __destroy_functor
+  };
+
+  /* Simple type wrapper that helps avoid annoying const problems
+     when casting between void pointers and pointers-to-pointers. */
+  template<typename _Tp>
+    struct _Simple_type_wrapper
+    {
+      _Simple_type_wrapper(_Tp __value) : __value(__value) { }
+
+      _Tp __value;
+    };
+
+  template<typename _Tp>
+    struct __is_location_invariant<_Simple_type_wrapper<_Tp> >
+      : __is_location_invariant<_Tp>
+    {
+    };
+
+  // Converts a reference to a function object into a callable
+  // function object.
+  template<typename _Functor>
+    inline _Functor& __callable_functor(_Functor& __f) { return __f; }
+
+  template<typename _Member, typename _Class>
+    inline _Mem_fn<_Member _Class::*>
+    __callable_functor(_Member _Class::* &__p)
+    { return mem_fn(__p); }
+
+  template<typename _Member, typename _Class>
+    inline _Mem_fn<_Member _Class::*>
+    __callable_functor(_Member _Class::* const &__p)
+    { return mem_fn(__p); }
+
+  template<typename _Signature, typename _Functor>
+    class _Function_handler;
+
+  template<typename _Signature>
+    class function;
+
+
+  /**
+   *  @if maint
+   *  Base class of all polymorphic function object wrappers.
+   *  @endif
+   */
+  class _Function_base
+  {
+  public:
+    static const std::size_t _M_max_size = sizeof(_Nocopy_types);
+    static const std::size_t _M_max_align = __alignof__(_Nocopy_types);
+
+    template<typename _Functor>
+    class _Base_manager
+    {
+    protected:
+      static const bool __stored_locally =
+        (__is_location_invariant<_Functor>::value
+         && sizeof(_Functor) <= _M_max_size
+         && __alignof__(_Functor) <= _M_max_align
+         && (_M_max_align % __alignof__(_Functor) == 0));
+      typedef integral_constant<bool, __stored_locally> _Local_storage;
+
+      // Retrieve a pointer to the function object
+      static _Functor* _M_get_pointer(const _Any_data& __source)
+      {
+        const _Functor* __ptr =
+          __stored_locally? &__source._M_access<_Functor>()
+          /* have stored a pointer */ : __source._M_access<_Functor*>();
+        return const_cast<_Functor*>(__ptr);
+      }
+
+      // Clone a location-invariant function object that fits within
+      // an _Any_data structure.
+      static void
+      _M_clone(_Any_data& __dest, const _Any_data& __source, true_type)
+      {
+        new (__dest._M_access()) _Functor(__source._M_access<_Functor>());
+      }
+
+      // Clone a function object that is not location-invariant or
+      // that cannot fit into an _Any_data structure.
+      static void
+      _M_clone(_Any_data& __dest, const _Any_data& __source, false_type)
+      {
+        __dest._M_access<_Functor*>() =
+          new _Functor(*__source._M_access<_Functor*>());
+      }
+
+      // Destroying a location-invariant object may still require
+      // destruction.
+      static void
+      _M_destroy(_Any_data& __victim, true_type)
+      {
+        __victim._M_access<_Functor>().~_Functor();
+      }
+
+      // Destroying an object located on the heap.
+      static void
+      _M_destroy(_Any_data& __victim, false_type)
+      {
+        delete __victim._M_access<_Functor*>();
+      }
+
+    public:
+      static bool
+      _M_manager(_Any_data& __dest, const _Any_data& __source,
+                 _Manager_operation __op)
+      {
+        switch (__op) {
+        case __get_type_info:
+          __dest._M_access<const type_info*>() = &typeid(_Functor);
+          break;
+
+        case __get_functor_ptr:
+          __dest._M_access<_Functor*>() = _M_get_pointer(__source);
+          break;
+
+        case __clone_functor:
+          _M_clone(__dest, __source, _Local_storage());
+          break;
+
+        case __destroy_functor:
+          _M_destroy(__dest, _Local_storage());
+          break;
+        }
+        return false;
+      }
+
+      static void
+      _M_init_functor(_Any_data& __functor, const _Functor& __f)
+      {
+        _M_init_functor(__functor, __f, _Local_storage());
+      }
+
+      template<typename _Signature>
+      static bool
+      _M_not_empty_function(const function<_Signature>& __f)
+      {
+        return __f;
+      }
+
+      template<typename _Tp>
+      static bool
+      _M_not_empty_function(const _Tp*& __fp)
+      {
+        return __fp;
+      }
+
+      template<typename _Class, typename _Tp>
+      static bool
+      _M_not_empty_function(_Tp _Class::* const& __mp)
+      {
+        return __mp;
+      }
+
+      template<typename _Tp>
+      static bool
+      _M_not_empty_function(const _Tp&)
+      {
+        return true;
+      }
+
+    private:
+      static void
+      _M_init_functor(_Any_data& __functor, const _Functor& __f, true_type)
+      {
+        new (__functor._M_access()) _Functor(__f);
+      }
+
+      static void
+      _M_init_functor(_Any_data& __functor, const _Functor& __f, false_type)
+      {
+        __functor._M_access<_Functor*>() = new _Functor(__f);
+      }
+    };
+
+    template<typename _Functor>
+    class _Ref_manager : public _Base_manager<_Functor*>
+    {
+      typedef _Function_base::_Base_manager<_Functor*> _Base;
+
+    public:
+      static bool
+      _M_manager(_Any_data& __dest, const _Any_data& __source,
+                 _Manager_operation __op)
+      {
+        switch (__op) {
+        case __get_type_info:
+          __dest._M_access<const type_info*>() = &typeid(_Functor);
+          break;
+
+        case __get_functor_ptr:
+          __dest._M_access<_Functor*>() = *_Base::_M_get_pointer(__source);
+          return is_const<_Functor>::value;
+          break;
+
+        default:
+          _Base::_M_manager(__dest, __source, __op);
+        }
+        return false;
+      }
+
+      static void
+      _M_init_functor(_Any_data& __functor, reference_wrapper<_Functor> __f)
+      {
+        // TBD: Use address_of function instead
+        _Base::_M_init_functor(__functor, &__f.get());
+      }
+    };
+
+    _Function_base() : _M_manager(0) { }
+
+    ~_Function_base()
+    {
+      if (_M_manager)
+        {
+          _M_manager(_M_functor, _M_functor, __destroy_functor);
+        }
+    }
+
+
+    bool _M_empty() const { return !_M_manager; }
+
+    typedef bool (*_Manager_type)(_Any_data&, const _Any_data&,
+                                  _Manager_operation);
+
+    _Any_data     _M_functor;
+    _Manager_type _M_manager;
+  };
+
+#define _GLIBCXX_NUM_ARGS 0
+#define _GLIBCXX_COMMA
+#define _GLIBCXX_TEMPLATE_PARAMS
+#define _GLIBCXX_TEMPLATE_ARGS
+#define _GLIBCXX_PARAMS
+#define _GLIBCXX_ARGS
+#define _GLIBCXX_COMMA_SHIFTED
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#define _GLIBCXX_PARAMS_SHIFTED
+#define _GLIBCXX_ARGS_SHIFTED
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 1
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1
+#define _GLIBCXX_TEMPLATE_ARGS _T1
+#define _GLIBCXX_PARAMS _T1 __a1
+#define _GLIBCXX_ARGS __a1
+#define _GLIBCXX_COMMA_SHIFTED
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#define _GLIBCXX_PARAMS_SHIFTED
+#define _GLIBCXX_ARGS_SHIFTED
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 2
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2
+#define _GLIBCXX_TEMPLATE_ARGS _T1, _T2
+#define _GLIBCXX_PARAMS _T1 __a1, _T2 __a2
+#define _GLIBCXX_ARGS __a1, __a2
+#define _GLIBCXX_COMMA_SHIFTED ,
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED typename _T1
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED _T1
+#define _GLIBCXX_PARAMS_SHIFTED _T1 __a1
+#define _GLIBCXX_ARGS_SHIFTED __a1
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 3
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3
+#define _GLIBCXX_TEMPLATE_ARGS _T1, _T2, _T3
+#define _GLIBCXX_PARAMS _T1 __a1, _T2 __a2, _T3 __a3
+#define _GLIBCXX_ARGS __a1, __a2, __a3
+#define _GLIBCXX_COMMA_SHIFTED ,
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED typename _T1, typename _T2
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED _T1, _T2
+#define _GLIBCXX_PARAMS_SHIFTED _T1 __a1, _T2 __a2
+#define _GLIBCXX_ARGS_SHIFTED __a1, __a2
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 4
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4
+#define _GLIBCXX_TEMPLATE_ARGS _T1, _T2, _T3, _T4
+#define _GLIBCXX_PARAMS _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4
+#define _GLIBCXX_ARGS __a1, __a2, __a3, __a4
+#define _GLIBCXX_COMMA_SHIFTED ,
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED typename _T1, typename _T2, typename _T3
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED _T1, _T2, _T3
+#define _GLIBCXX_PARAMS_SHIFTED _T1 __a1, _T2 __a2, _T3 __a3
+#define _GLIBCXX_ARGS_SHIFTED __a1, __a2, __a3
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 5
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5
+#define _GLIBCXX_TEMPLATE_ARGS _T1, _T2, _T3, _T4, _T5
+#define _GLIBCXX_PARAMS _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5
+#define _GLIBCXX_ARGS __a1, __a2, __a3, __a4, __a5
+#define _GLIBCXX_COMMA_SHIFTED ,
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED typename _T1, typename _T2, typename _T3, typename _T4
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED _T1, _T2, _T3, _T4
+#define _GLIBCXX_PARAMS_SHIFTED _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4
+#define _GLIBCXX_ARGS_SHIFTED __a1, __a2, __a3, __a4
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 6
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6
+#define _GLIBCXX_TEMPLATE_ARGS _T1, _T2, _T3, _T4, _T5, _T6
+#define _GLIBCXX_PARAMS _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6
+#define _GLIBCXX_ARGS __a1, __a2, __a3, __a4, __a5, __a6
+#define _GLIBCXX_COMMA_SHIFTED ,
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED typename _T1, typename _T2, typename _T3, typename _T4, typename _T5
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED _T1, _T2, _T3, _T4, _T5
+#define _GLIBCXX_PARAMS_SHIFTED _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5
+#define _GLIBCXX_ARGS_SHIFTED __a1, __a2, __a3, __a4, __a5
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 7
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7
+#define _GLIBCXX_TEMPLATE_ARGS _T1, _T2, _T3, _T4, _T5, _T6, _T7
+#define _GLIBCXX_PARAMS _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7
+#define _GLIBCXX_ARGS __a1, __a2, __a3, __a4, __a5, __a6, __a7
+#define _GLIBCXX_COMMA_SHIFTED ,
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED _T1, _T2, _T3, _T4, _T5, _T6
+#define _GLIBCXX_PARAMS_SHIFTED _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6
+#define _GLIBCXX_ARGS_SHIFTED __a1, __a2, __a3, __a4, __a5, __a6
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 8
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8
+#define _GLIBCXX_TEMPLATE_ARGS _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8
+#define _GLIBCXX_PARAMS _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8
+#define _GLIBCXX_ARGS __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8
+#define _GLIBCXX_COMMA_SHIFTED ,
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED _T1, _T2, _T3, _T4, _T5, _T6, _T7
+#define _GLIBCXX_PARAMS_SHIFTED _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7
+#define _GLIBCXX_ARGS_SHIFTED __a1, __a2, __a3, __a4, __a5, __a6, __a7
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 9
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9
+#define _GLIBCXX_TEMPLATE_ARGS _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9
+#define _GLIBCXX_PARAMS _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9
+#define _GLIBCXX_ARGS __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9
+#define _GLIBCXX_COMMA_SHIFTED ,
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8
+#define _GLIBCXX_PARAMS_SHIFTED _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8
+#define _GLIBCXX_ARGS_SHIFTED __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 10
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10
+#define _GLIBCXX_TEMPLATE_ARGS _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10
+#define _GLIBCXX_PARAMS _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10
+#define _GLIBCXX_ARGS __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10
+#define _GLIBCXX_COMMA_SHIFTED ,
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9
+#define _GLIBCXX_PARAMS_SHIFTED _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9
+#define _GLIBCXX_ARGS_SHIFTED __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 11
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10, typename _T11
+#define _GLIBCXX_TEMPLATE_ARGS _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11
+#define _GLIBCXX_PARAMS _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10, _T11 __a11
+#define _GLIBCXX_ARGS __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10, __a11
+#define _GLIBCXX_COMMA_SHIFTED ,
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10
+#define _GLIBCXX_PARAMS_SHIFTED _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10
+#define _GLIBCXX_ARGS_SHIFTED __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 12
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10, typename _T11, typename _T12
+#define _GLIBCXX_TEMPLATE_ARGS _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12
+#define _GLIBCXX_PARAMS _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10, _T11 __a11, _T12 __a12
+#define _GLIBCXX_ARGS __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10, __a11, __a12
+#define _GLIBCXX_COMMA_SHIFTED ,
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10, typename _T11
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11
+#define _GLIBCXX_PARAMS_SHIFTED _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10, _T11 __a11
+#define _GLIBCXX_ARGS_SHIFTED __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10, __a11
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 13
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10, typename _T11, typename _T12, typename _T13
+#define _GLIBCXX_TEMPLATE_ARGS _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12, _T13
+#define _GLIBCXX_PARAMS _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10, _T11 __a11, _T12 __a12, _T13 __a13
+#define _GLIBCXX_ARGS __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10, __a11, __a12, __a13
+#define _GLIBCXX_COMMA_SHIFTED ,
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10, typename _T11, typename _T12
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12
+#define _GLIBCXX_PARAMS_SHIFTED _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10, _T11 __a11, _T12 __a12
+#define _GLIBCXX_ARGS_SHIFTED __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10, __a11, __a12
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 14
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10, typename _T11, typename _T12, typename _T13, typename _T14
+#define _GLIBCXX_TEMPLATE_ARGS _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12, _T13, _T14
+#define _GLIBCXX_PARAMS _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10, _T11 __a11, _T12 __a12, _T13 __a13, _T14 __a14
+#define _GLIBCXX_ARGS __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10, __a11, __a12, __a13, __a14
+#define _GLIBCXX_COMMA_SHIFTED ,
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10, typename _T11, typename _T12, typename _T13
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12, _T13
+#define _GLIBCXX_PARAMS_SHIFTED _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10, _T11 __a11, _T12 __a12, _T13 __a13
+#define _GLIBCXX_ARGS_SHIFTED __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10, __a11, __a12, __a13
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 15
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10, typename _T11, typename _T12, typename _T13, typename _T14, typename _T15
+#define _GLIBCXX_TEMPLATE_ARGS _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12, _T13, _T14, _T15
+#define _GLIBCXX_PARAMS _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10, _T11 __a11, _T12 __a12, _T13 __a13, _T14 __a14, _T15 __a15
+#define _GLIBCXX_ARGS __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10, __a11, __a12, __a13, __a14, __a15
+#define _GLIBCXX_COMMA_SHIFTED ,
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10, typename _T11, typename _T12, typename _T13, typename _T14
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12, _T13, _T14
+#define _GLIBCXX_PARAMS_SHIFTED _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10, _T11 __a11, _T12 __a12, _T13 __a13, _T14 __a14
+#define _GLIBCXX_ARGS_SHIFTED __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10, __a11, __a12, __a13, __a14
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 16
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10, typename _T11, typename _T12, typename _T13, typename _T14, typename _T15, typename _T16
+#define _GLIBCXX_TEMPLATE_ARGS _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12, _T13, _T14, _T15, _T16
+#define _GLIBCXX_PARAMS _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10, _T11 __a11, _T12 __a12, _T13 __a13, _T14 __a14, _T15 __a15, _T16 __a16
+#define _GLIBCXX_ARGS __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10, __a11, __a12, __a13, __a14, __a15, __a16
+#define _GLIBCXX_COMMA_SHIFTED ,
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10, typename _T11, typename _T12, typename _T13, typename _T14, typename _T15
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12, _T13, _T14, _T15
+#define _GLIBCXX_PARAMS_SHIFTED _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10, _T11 __a11, _T12 __a12, _T13 __a13, _T14 __a14, _T15 __a15
+#define _GLIBCXX_ARGS_SHIFTED __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10, __a11, __a12, __a13, __a14, __a15
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 17
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10, typename _T11, typename _T12, typename _T13, typename _T14, typename _T15, typename _T16, typename _T17
+#define _GLIBCXX_TEMPLATE_ARGS _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12, _T13, _T14, _T15, _T16, _T17
+#define _GLIBCXX_PARAMS _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10, _T11 __a11, _T12 __a12, _T13 __a13, _T14 __a14, _T15 __a15, _T16 __a16, _T17 __a17
+#define _GLIBCXX_ARGS __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10, __a11, __a12, __a13, __a14, __a15, __a16, __a17
+#define _GLIBCXX_COMMA_SHIFTED ,
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10, typename _T11, typename _T12, typename _T13, typename _T14, typename _T15, typename _T16
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12, _T13, _T14, _T15, _T16
+#define _GLIBCXX_PARAMS_SHIFTED _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10, _T11 __a11, _T12 __a12, _T13 __a13, _T14 __a14, _T15 __a15, _T16 __a16
+#define _GLIBCXX_ARGS_SHIFTED __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10, __a11, __a12, __a13, __a14, __a15, __a16
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 18
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10, typename _T11, typename _T12, typename _T13, typename _T14, typename _T15, typename _T16, typename _T17, typename _T18
+#define _GLIBCXX_TEMPLATE_ARGS _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12, _T13, _T14, _T15, _T16, _T17, _T18
+#define _GLIBCXX_PARAMS _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10, _T11 __a11, _T12 __a12, _T13 __a13, _T14 __a14, _T15 __a15, _T16 __a16, _T17 __a17, _T18 __a18
+#define _GLIBCXX_ARGS __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10, __a11, __a12, __a13, __a14, __a15, __a16, __a17, __a18
+#define _GLIBCXX_COMMA_SHIFTED ,
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10, typename _T11, typename _T12, typename _T13, typename _T14, typename _T15, typename _T16, typename _T17
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12, _T13, _T14, _T15, _T16, _T17
+#define _GLIBCXX_PARAMS_SHIFTED _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10, _T11 __a11, _T12 __a12, _T13 __a13, _T14 __a14, _T15 __a15, _T16 __a16, _T17 __a17
+#define _GLIBCXX_ARGS_SHIFTED __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10, __a11, __a12, __a13, __a14, __a15, __a16, __a17
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 19
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10, typename _T11, typename _T12, typename _T13, typename _T14, typename _T15, typename _T16, typename _T17, typename _T18, typename _T19
+#define _GLIBCXX_TEMPLATE_ARGS _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12, _T13, _T14, _T15, _T16, _T17, _T18, _T19
+#define _GLIBCXX_PARAMS _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10, _T11 __a11, _T12 __a12, _T13 __a13, _T14 __a14, _T15 __a15, _T16 __a16, _T17 __a17, _T18 __a18, _T19 __a19
+#define _GLIBCXX_ARGS __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10, __a11, __a12, __a13, __a14, __a15, __a16, __a17, __a18, __a19
+#define _GLIBCXX_COMMA_SHIFTED ,
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10, typename _T11, typename _T12, typename _T13, typename _T14, typename _T15, typename _T16, typename _T17, typename _T18
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12, _T13, _T14, _T15, _T16, _T17, _T18
+#define _GLIBCXX_PARAMS_SHIFTED _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10, _T11 __a11, _T12 __a12, _T13 __a13, _T14 __a14, _T15 __a15, _T16 __a16, _T17 __a17, _T18 __a18
+#define _GLIBCXX_ARGS_SHIFTED __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10, __a11, __a12, __a13, __a14, __a15, __a16, __a17, __a18
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+#define _GLIBCXX_NUM_ARGS 20
+#define _GLIBCXX_COMMA ,
+#define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10, typename _T11, typename _T12, typename _T13, typename _T14, typename _T15, typename _T16, typename _T17, typename _T18, typename _T19, typename _T20
+#define _GLIBCXX_TEMPLATE_ARGS _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12, _T13, _T14, _T15, _T16, _T17, _T18, _T19, _T20
+#define _GLIBCXX_PARAMS _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10, _T11 __a11, _T12 __a12, _T13 __a13, _T14 __a14, _T15 __a15, _T16 __a16, _T17 __a17, _T18 __a18, _T19 __a19, _T20 __a20
+#define _GLIBCXX_ARGS __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10, __a11, __a12, __a13, __a14, __a15, __a16, __a17, __a18, __a19, __a20
+#define _GLIBCXX_COMMA_SHIFTED ,
+#define _GLIBCXX_TEMPLATE_PARAMS_SHIFTED typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10, typename _T11, typename _T12, typename _T13, typename _T14, typename _T15, typename _T16, typename _T17, typename _T18, typename _T19
+#define _GLIBCXX_TEMPLATE_ARGS_SHIFTED _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12, _T13, _T14, _T15, _T16, _T17, _T18, _T19
+#define _GLIBCXX_PARAMS_SHIFTED _T1 __a1, _T2 __a2, _T3 __a3, _T4 __a4, _T5 __a5, _T6 __a6, _T7 __a7, _T8 __a8, _T9 __a9, _T10 __a10, _T11 __a11, _T12 __a12, _T13 __a13, _T14 __a14, _T15 __a15, _T16 __a16, _T17 __a17, _T18 __a18, _T19 __a19
+#define _GLIBCXX_ARGS_SHIFTED __a1, __a2, __a3, __a4, __a5, __a6, __a7, __a8, __a9, __a10, __a11, __a12, __a13, __a14, __a15, __a16, __a17, __a18, __a19
+#include <tr1/functional_iterate.h>
+#undef _GLIBCXX_ARGS_SHIFTED
+#undef _GLIBCXX_PARAMS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_ARGS_SHIFTED
+#undef _GLIBCXX_TEMPLATE_PARAMS_SHIFTED
+#undef _GLIBCXX_COMMA_SHIFTED
+#undef _GLIBCXX_ARGS
+#undef _GLIBCXX_PARAMS
+#undef _GLIBCXX_TEMPLATE_ARGS
+#undef _GLIBCXX_TEMPLATE_PARAMS
+#undef _GLIBCXX_COMMA
+#undef _GLIBCXX_NUM_ARGS
+
+  // [3.7.2.7] null pointer comparisons
+
+  /**
+   *  @brief Compares a polymorphic function object wrapper against 0
+   *  (the NULL pointer).
+   *  @returns @c true if the wrapper has no target, @c false otherwise
+   *
+   *  This function will not throw an exception.
+   */
+  template<typename _Signature>
+    inline bool
+    operator==(const function<_Signature>& __f, _M_clear_type*)
+    {
+      return !__f;
+    }
+
+  /**
+   *  @overload
+   */
+  template<typename _Signature>
+    inline bool
+    operator==(_M_clear_type*, const function<_Signature>& __f)
+    {
+      return !__f;
+    }
+
+  /**
+   *  @brief Compares a polymorphic function object wrapper against 0
+   *  (the NULL pointer).
+   *  @returns @c false if the wrapper has no target, @c true otherwise
+   *
+   *  This function will not throw an exception.
+   */
+  template<typename _Signature>
+    inline bool
+    operator!=(const function<_Signature>& __f, _M_clear_type*)
+    {
+      return __f;
+    }
+
+  /**
+   *  @overload
+   */
+  template<typename _Signature>
+    inline bool
+    operator!=(_M_clear_type*, const function<_Signature>& __f)
+    {
+      return __f;
+    }
+
+  // [3.7.2.8] specialized algorithms
+
+  /**
+   *  @brief Swap the targets of two polymorphic function object wrappers.
+   *
+   *  This function will not throw an exception.
+   */
+  template<typename _Signature>
+    inline void
+    swap(function<_Signature>& __x, function<_Signature>& __y)
+    {
+      __x.swap(__y);
+    }
+
 
 // Definition of default hash function std::tr1::hash<>.  The types for
 // which std::tr1::hash<T> is defined is in clause 6.3.3. of the PDTR.
 
   template <typename T> struct hash;
 
-  #define tr1_hashtable_define_trivial_hash(T) 				    \
-    template <> struct hash<T> {						    \
+  #define tr1_hashtable_define_trivial_hash(T)                              \
+    template <> struct hash<T> {                                                    \
       std::size_t operator()(T val) const { return static_cast<std::size_t>(val); } \
-    }									    \
+    }                                                                       \
 
   tr1_hashtable_define_trivial_hash(bool);
   tr1_hashtable_define_trivial_hash(char);
@@ -121,7 +1089,7 @@ namespace tr1
   template <typename T>
     struct hash<T*> {
       std::size_t operator()(T* p) const {
-	return reinterpret_cast<std::size_t>(p);
+        return reinterpret_cast<std::size_t>(p);
       }
     };
 
@@ -137,10 +1105,10 @@ namespace tr1
     {
       std::size_t operator()(const std::string& s) const
       {
-	std::size_t result = 0;
-	for (std::string::const_iterator i = s.begin(); i != s.end(); ++i)
-	  result = (result * 131) + *i;
-	return result;
+        std::size_t result = 0;
+        for (std::string::const_iterator i = s.begin(); i != s.end(); ++i)
+          result = (result * 131) + *i;
+        return result;
       }
     };
 
@@ -150,10 +1118,10 @@ namespace tr1
     {
       std::size_t operator()(const std::wstring& s) const
       {
-	std::size_t result = 0;
-	for (std::wstring::const_iterator i = s.begin(); i != s.end(); ++i)
-	  result = (result * 131) + *i;
-	return result;
+        std::size_t result = 0;
+        for (std::wstring::const_iterator i = s.begin(); i != s.end(); ++i)
+          result = (result * 131) + *i;
+        return result;
       }
     };
 #endif
