@@ -1511,15 +1511,21 @@ extern enum reg_class mips_char_to_class[];
    length of the outgoing arguments.  The default is correct for most
    machines.  See `function.c' for details.
 
-   The MIPS 3.0 linker does not like functions that dynamically
-   allocate the stack and have 0 for STACK_DYNAMIC_OFFSET, since it
-   looks like we are trying to create a second frame pointer to the
-   function, so allocate some stack space to make it happy.  */
+   The MIPS ABI states that functions which dynamically allocate the
+   stack must not have 0 for STACK_DYNAMIC_OFFSET, since it looks like
+   we are trying to create a second frame pointer to the function, so
+   allocate some stack space to make it happy.
 
+   However, the linker currently complains about linking any code that
+   dynamically allocates stack space, and there seems to be a bug in
+   STACK_DYNAMIC_OFFSET, so don't define this right now.  */
+
+#if 0
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
   ((current_function_outgoing_args_size == 0 && current_function_calls_alloca) \
 	? 4*UNITS_PER_WORD						\
 	: current_function_outgoing_args_size)
+#endif
 
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
