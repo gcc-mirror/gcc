@@ -1,3 +1,8 @@
+2000-10-31  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* g++.old-deja/g++.pt/memtemp77.C (main): Adjust comparison against.
+	__PRETTY_FUNCTION__
+
 2000-10-29  Neil Booth  <neilb@earthling.net>
 
 	* gcc.dg/cpp/defined.c, include1.c, paste11.c, skipping.c:
