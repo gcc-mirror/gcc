@@ -1,3 +1,8 @@
+2001-08-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcse.c (compute_hash_table): The SRC part of an insn with a RETVAL
+	note should not be considered outside the libcall block.
+
 2001-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* genattrtab.c (attr_printf): Use VA_OPEN/VA_FIXEDARG/VA_CLOSE.
