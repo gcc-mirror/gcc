@@ -1,3 +1,11 @@
+Fri Nov 27 02:39:36 1998  Paul Eggert  <eggert@twinsun.com>
+
+	* cccp.c (main): Make `-I -' equivalent to `-I-'.
+
+Fri Nov 27 02:39:36 1998  Sam Kendall  <kendall@init.com>
+
+	* cccp.c (main): Avoid `++i' and `i' in same expression.
+
 Thu Nov 26 19:42:02 1998  Stephen L Moshier  <moshier@mediaone.net>
 
 	* real.c (ereal_atof): New function for hexadecimal floating constants.
