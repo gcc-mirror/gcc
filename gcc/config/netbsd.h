@@ -170,7 +170,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Handle #pragma weak and #pragma pack.  */
 
-#define HANDLE_SYSV_PRAGMA
+#define HANDLE_SYSV_PRAGMA 1
 
 
 /* Define some types that are the same on all NetBSD platforms,

@@ -1,3 +1,33 @@
+2002-11-25  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/elfos.h (HANDLE_SYSV_PRAGMA): Define as 1.
+	* config/interix.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/linux-aout.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/lynx-ng.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/lynx.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/netbsd.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/openbsd.h (HANDLE_SYSV_PRAGMA: Likewise.
+	* config/alpha/elf.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/arm/netbsd.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/cris/aout.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/d30v/d30v.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/frv/frv.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/i386/djgpp.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/i386/i386-interix.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/i386/vxi386.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/ia64/ia64.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/m88k/m88k.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/mmix/mmix.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/rs6000/aix.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/rs6000/darwin.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/sparc/linux-aout.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/sparc/vxsparc64.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/stormy16/stormy16.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/alpha/osf.h (HANDLE_SYSV_PRAGMA): Don't undef before
+	defining.
+	* config/i386/sco5.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/mips/iris5.h (HANDLE_SYSV_PRAGMA): Likewise.
+
 2002-11-25  Dave Pitts  <dpitts@cozx.com>
 
 	* gcc/fixinc/mkfixinc.sh: add i370-*-openedition to bypass fixinc list

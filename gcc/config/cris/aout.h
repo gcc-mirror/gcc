@@ -359,7 +359,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Node: Misc */
 
-#define HANDLE_SYSV_PRAGMA
+#define HANDLE_SYSV_PRAGMA 1
 
 /* In theory, this one isn't necessary, but over time, external tools have
    been primed on names with "." rather than "$".  */

@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
     }							\
   while (0)
 
-#define HANDLE_SYSV_PRAGMA
+#define HANDLE_SYSV_PRAGMA 1
 
 /* VxWorks does all the library stuff itself.  */
 

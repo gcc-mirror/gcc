@@ -3890,7 +3890,7 @@ do {									\
    defined.
 
    Defined in svr4.h.  */
-#define HANDLE_SYSV_PRAGMA
+#define HANDLE_SYSV_PRAGMA 1
 
 /* Define this macro if you want to support the Win32 style pragmas
    #pragma pack(push,<n>) and #pragma pack(pop).  */

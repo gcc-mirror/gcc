@@ -95,7 +95,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Handle #pragma pack and sometimes #pragma weak.  */
 
-#define HANDLE_SYSV_PRAGMA
+#define HANDLE_SYSV_PRAGMA 1
 
 /* Some additional command-line options.  */
 

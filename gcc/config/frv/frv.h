@@ -3396,7 +3396,7 @@ do {                                                                    \
    defined.
 
    Defined in svr4.h.  */
-#define HANDLE_SYSV_PRAGMA
+#define HANDLE_SYSV_PRAGMA 1
 
 /* A C expression for the maximum number of instructions to execute via
    conditional execution instructions instead of a branch.  A value of

@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* We need that too.  */
-#define HANDLE_SYSV_PRAGMA
+#define HANDLE_SYSV_PRAGMA 1
 
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX

@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #define SDB_DEBUGGING_INFO 1
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-#define HANDLE_SYSV_PRAGMA
+#define HANDLE_SYSV_PRAGMA 1
 #undef HANDLE_PRAGMA_WEAK  /* until the link format can handle it */
 
 /* By default, target has a 80387, uses IEEE compatible arithmetic,
