@@ -579,7 +579,7 @@ extern int arm_is_strong;
 /* Nonzero if this chip is an XScale.  */
 extern int arm_is_xscale;
 
-/* Nonzero if this chip is a an ARM6 or an ARM7.  */
+/* Nonzero if this chip is an ARM6 or an ARM7.  */
 extern int arm_is_6_or_7;
 
 #ifndef TARGET_DEFAULT
