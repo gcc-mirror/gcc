@@ -1,3 +1,17 @@
+2004-08-17  Andrew Haley  <aph@redhat.com>
+
+	* lang.c (lang_printable_name): Obey verbose flag.
+	* parse.y (constructor_circularity_msg): Set VERBOSE arg for
+	lang_printable_name().
+	(verify_constructor_circularity, get_printable_method_name,
+	check_abstract_method_definitions, java_check_regular_methods,
+	java_check_abstract_methods, check_inner_class_access,
+	fix_constructors, patch_method_invocation, patch_return):
+	Likewise.
+	* expr.c (pop_type_0): Likewise.
+
+	* java-tree.h (lang_printable_name_wls): Delete.
+
 2004-08-16  Tom Tromey  <tromey@redhat.com>
 
 	PR java/8473:

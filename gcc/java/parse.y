@@ -4842,8 +4842,8 @@ static char *
 constructor_circularity_msg (tree from, tree to)
 {
   static char string [4096];
-  char *t = xstrdup (lang_printable_name (from, 0));
-  sprintf (string, "`%s' invokes `%s'", t, lang_printable_name (to, 0));
+  char *t = xstrdup (lang_printable_name (from, 2));
+  sprintf (string, "`%s' invokes `%s'", t, lang_printable_name (to, 2));
   free (t);
   return string;
 }
@@ -4875,7 +4875,7 @@ verify_constructor_circularity (tree meth, tree current)
 		  java_error_count--;
 		}
 	    }
-	  t = xstrdup (lang_printable_name (meth, 0));
+	  t = xstrdup (lang_printable_name (meth, 2));
 	  parse_error_context (TREE_PURPOSE (c),
 			       "%s: recursive invocation of constructor `%s'",
 			       constructor_circularity_msg (current, meth), t);
@@ -6100,7 +6100,7 @@ get_printable_method_name (tree decl)
       DECL_NAME (decl) = DECL_NAME (TYPE_NAME (DECL_CONTEXT (decl)));
     }
 
-  to_return = lang_printable_name (decl, 0);
+  to_return = lang_printable_name (decl, 2);
   if (DECL_CONSTRUCTOR_P (decl))
     DECL_NAME (decl) = name;
 
@@ -6207,7 +6207,7 @@ check_abstract_method_definitions (int do_interface, tree class_decl,
 	    (lookup_cl (class_decl),
 	     "Class `%s' doesn't define the abstract method `%s %s' from %s `%s'. This method must be defined or %s `%s' must be declared abstract",
 	     IDENTIFIER_POINTER (DECL_NAME (class_decl)),
-	     t, lang_printable_name (method, 0),
+	     t, lang_printable_name (method, 2),
 	     (CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (method))) ?
 	      "interface" : "class"),
 	     IDENTIFIER_POINTER (ccn),
@@ -6385,7 +6385,7 @@ java_check_regular_methods (tree class_decl)
 	  char *t = xstrdup (lang_printable_name (class, 0));
 	  parse_error_context
 	    (method_wfl, "Method `%s' can't be static in inner class `%s'. Only members of interfaces and top-level classes can be static",
-	     lang_printable_name (method, 0), t);
+	     lang_printable_name (method, 2), t);
 	  free (t);
 	}
 
@@ -6407,7 +6407,7 @@ java_check_regular_methods (tree class_decl)
 	  tree found_decl = TYPE_NAME (DECL_CONTEXT (found));
 	  parse_error_context (method_wfl, "Class `%s' must override `%s' with a public method in order to implement interface `%s'",
 			       IDENTIFIER_POINTER (DECL_NAME (class_decl)),
-			       lang_printable_name (method, 0),
+			       lang_printable_name (method, 2),
 			       IDENTIFIER_POINTER (DECL_NAME (found_decl)));
 	}
 
@@ -6416,11 +6416,11 @@ java_check_regular_methods (tree class_decl)
       if (TREE_TYPE (TREE_TYPE (found)) != TREE_TYPE (TREE_TYPE (method)))
 	{
 	  char *t = xstrdup
-	    (lang_printable_name (TREE_TYPE (TREE_TYPE (found)), 0));
+	    (lang_printable_name (TREE_TYPE (TREE_TYPE (found)), 2));
 	  parse_error_context
 	    (method_wfl,
 	     "Method `%s' was defined with return type `%s' in class `%s'",
-	     lang_printable_name (found, 0), t,
+	     lang_printable_name (found, 2), t,
 	     IDENTIFIER_POINTER
 	       (DECL_NAME (TYPE_NAME (DECL_CONTEXT (found)))));
 	  free (t);
@@ -6438,7 +6438,7 @@ java_check_regular_methods (tree class_decl)
 	    (method_wfl,
 	     "%s methods can't be overridden. Method `%s' is %s in class `%s'",
 	     (METHOD_FINAL (found) ? "Final" : "Static"),
-	     lang_printable_name (found, 0),
+	     lang_printable_name (found, 2),
 	     (METHOD_FINAL (found) ? "final" : "static"),
 	     IDENTIFIER_POINTER
 	       (DECL_NAME (TYPE_NAME (DECL_CONTEXT (found)))));
@@ -6451,7 +6451,7 @@ java_check_regular_methods (tree class_decl)
 	  parse_error_context
 	    (method_wfl,
 	     "Instance methods can't be overridden by a static method. Method `%s' is an instance method in class `%s'",
-	     lang_printable_name (found, 0),
+	     lang_printable_name (found, 2),
 	     IDENTIFIER_POINTER
 	       (DECL_NAME (TYPE_NAME (DECL_CONTEXT (found)))));
 	  continue;
@@ -6473,7 +6473,7 @@ java_check_regular_methods (tree class_decl)
 	{
 	  parse_error_context
 	    (method_wfl,
-	     "Methods can't be overridden to be more private. Method `%s' is not %s in class `%s'", lang_printable_name (method, 0),
+	     "Methods can't be overridden to be more private. Method `%s' is not %s in class `%s'", lang_printable_name (method, 2),
 	     (METHOD_PUBLIC (method) ? "public" :
 	      (METHOD_PRIVATE (method) ? "private" : "protected")),
 	     IDENTIFIER_POINTER (DECL_NAME
@@ -6616,7 +6616,7 @@ check_throws_clauses (tree method, tree method_wfl, tree found)
 	  parse_error_context
 	    (method_wfl, "Invalid checked exception class `%s' in `throws' clause.  The exception must be a subclass of an exception thrown by `%s' from class `%s'",
 	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (TREE_VALUE (mthrows)))),
-	     lang_printable_name (found, 0),
+	     lang_printable_name (found, 2),
 	     IDENTIFIER_POINTER
 	     (DECL_NAME (TYPE_NAME (DECL_CONTEXT (found)))));
 	}
@@ -6643,11 +6643,11 @@ java_check_abstract_methods (tree interface_decl)
       if (found)
 	{
 	  char *t;
-	  t = xstrdup (lang_printable_name (TREE_TYPE (TREE_TYPE (found)), 0));
+	  t = xstrdup (lang_printable_name (TREE_TYPE (TREE_TYPE (found)), 2));
 	  parse_error_context
 	    (DECL_FUNCTION_WFL (found),
 	     "Method `%s' was defined with return type `%s' in class `%s'",
-	     lang_printable_name (found, 0), t,
+	     lang_printable_name (found, 2), t,
 	     IDENTIFIER_POINTER
 	       (DECL_NAME (TYPE_NAME (DECL_CONTEXT (found)))));
 	  free (t);
@@ -6673,7 +6673,7 @@ java_check_abstract_methods (tree interface_decl)
 		(lookup_cl (sub_interface_method),
 		 "Interface `%s' inherits method `%s' from interface `%s'. This method is redefined with a different return type in interface `%s'",
 		 IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (interface))),
-		 lang_printable_name (found, 0),
+		 lang_printable_name (found, 2),
 		 IDENTIFIER_POINTER
 		   (DECL_NAME (TYPE_NAME
 			       (DECL_CONTEXT (sub_interface_method)))),
@@ -7240,7 +7240,7 @@ check_inner_class_access (tree decl, tree enclosing_decl, tree cl)
 
   parse_error_context (cl, "Nested %s %s is %s; cannot be accessed from here",
 		       (CLASS_INTERFACE (decl) ? "interface" : "class"),
-		       lang_printable_name (decl, 0), access);
+		       lang_printable_name (decl, 2), access);
 }
 
 /* Accessibility check for top-level classes. If CLASS_NAME is in a
@@ -8835,7 +8835,7 @@ fix_constructors (tree mdecl)
 	  parse_error_context
 	    (lookup_cl (TYPE_NAME (class_type)),
 	     "No constructor matching `%s' found in class `%s'",
-	     lang_printable_name (mdecl, 0), n);
+	     lang_printable_name (mdecl, 2), n);
 	  DECL_NAME (mdecl) = save;
 	}
 
@@ -10297,7 +10297,7 @@ patch_method_invocation (tree patch, tree primary, tree where, int from_super,
 	    }
 	  if (list && !METHOD_STATIC (list))
 	    {
-	      char *fct_name = xstrdup (lang_printable_name (list, 0));
+	      char *fct_name = xstrdup (lang_printable_name (list, 2));
 	      parse_error_context
 		(identifier_wfl,
 		 "Can't make static reference to method `%s %s' in class `%s'",
@@ -14669,13 +14669,13 @@ patch_return (tree node)
 	  parse_error_context (wfl_operator,
 			       "`return' with%s value from `%s %s'",
 			       (error_found == 1 ? "" : "out"),
-			       t, lang_printable_name (meth, 0));
+			       t, lang_printable_name (meth, 2));
 	  free (t);
 	}
       else
 	parse_error_context (wfl_operator,
 			     "`return' with value from constructor `%s'",
-			     lang_printable_name (meth, 0));
+			     lang_printable_name (meth, 2));
       return error_mark_node;
     }
 
