@@ -1,3 +1,10 @@
+2002-09-03  Stan Shebs  <shebs@apple.com>
+
+	* config/darwin.h (WARN_FOUR_CHAR_CONSTANTS): Remove, never used.
+	(DWARF2_DEBUGGING_INFO): Remove until assembler accepts Dwarf-2.
+	(PREFERRED_DEBUGGING_TYPE): Ditto.
+	(ASM_OUTPUT_IDENT): Remove empty definition.
+
 2002-09-03  Steve Ellcey  <sje@cup.hp.com>
 
 	* config.gcc (ia64*-*-hpux*): Add ia64-c.o to c_target and
