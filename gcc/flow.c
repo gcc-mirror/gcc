@@ -859,17 +859,6 @@ find_basic_blocks_1 (f)
 	     to a barrier or some such, no need to do it again.  */
 	  if (head != NULL_RTX)
 	    {
-	      /* While we now have edge lists with which other portions of
-		 the compiler might determine a call ending a basic block
-		 does not imply an abnormal edge, it will be a bit before
-		 everything can be updated.  So continue to emit a noop at
-		 the end of such a block.  */
-	      if (GET_CODE (end) == CALL_INSN && ! SIBLING_CALL_P (end))
-		{
-		  rtx nop = gen_rtx_USE (VOIDmode, const0_rtx);
-		  end = emit_insn_after (nop, end);
-		}
-
 	      create_basic_block (i++, head, end, bb_note);
 	      bb_note = NULL_RTX;
 	    }
@@ -911,17 +900,6 @@ find_basic_blocks_1 (f)
 	     jump already closed the basic block -- no need to do it again.  */
 	  if (head == NULL_RTX)
 	    break;
-
-	  /* While we now have edge lists with which other portions of the
-	     compiler might determine a call ending a basic block does not
-	     imply an abnormal edge, it will be a bit before everything can
-	     be updated.  So continue to emit a noop at the end of such a
-	     block.  */
-	  if (GET_CODE (end) == CALL_INSN && ! SIBLING_CALL_P (end))
-	    {
-	      rtx nop = gen_rtx_USE (VOIDmode, const0_rtx);
-	      end = emit_insn_after (nop, end);
-	    }
 	  goto new_bb_exclusive;
 
 	case CALL_INSN:
@@ -3393,6 +3371,9 @@ outgoing_edges_match (bb1, bb2)
 	code2 = reversed_comparison_code (cond2, bb2->end);
       else
 	code2 = GET_CODE (cond2);
+
+      if (code2 == UNKNOWN)
+	return false;
 
       /* See if we don have (cross) match in the codes and operands.  */
       match = ((code1 == code2
