@@ -1,5 +1,11 @@
 2004-11-25  Andrew Pinski <pinskia@physics.uc.edu>
 
+	* bitmap.h (BITMAP_XMALLOC): Use BITMAP_ALLOC and not
+	BITMAP_OBSTACK_ALLOC.
+	(BITMAP_XFREE): Use BITMAP_FREE and not BITMAP_OBSTACK_FREE.
+
+2004-11-25  Andrew Pinski <pinskia@physics.uc.edu>
+
 	parts of PR rtl-opt/18463, rtl-opt/17647
 	* cse.c (canon_for_address): New function.
 	(find_best_addr): Call canon_for_address before getting the

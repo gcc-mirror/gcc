@@ -160,14 +160,14 @@ extern unsigned bitmap_first_set_bit (bitmap);
 #define BITMAP_GGC_ALLOC() bitmap_gc_alloc ()
 
 /* Allocate a bitmap with xmalloc.  */
-#define BITMAP_XMALLOC() BITMAP_OBSTACK_ALLOC (NULL)
+#define BITMAP_XMALLOC() BITMAP_ALLOC (NULL)
 
 /* Do any cleanup needed on a bitmap when it is no longer used.  */
 #define BITMAP_FREE(BITMAP)			\
       	((void)(bitmap_obstack_free (BITMAP), (BITMAP) = NULL))
 
 /* Do any cleanup needed on an xmalloced bitmap when it is no longer used.  */
-#define BITMAP_XFREE(BITMAP) BITMAP_OBSTACK_FREE (BITMAP)
+#define BITMAP_XFREE(BITMAP) BITMAP_FREE (BITMAP)
 
 /* Iterator for bitmaps.  */
 
