@@ -506,6 +506,7 @@ extern rtx chkr_check_addr_libfunc;
 extern rtx chkr_set_right_libfunc;
 extern rtx chkr_copy_bitmap_libfunc;
 extern rtx chkr_check_exec_libfunc;
+extern rtx chkr_check_str_libfunc;
 
 typedef rtx (*rtxfun) ();
 
