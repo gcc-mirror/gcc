@@ -1,3 +1,21 @@
+2001-01-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_arch5e): New variable.
+	(all_cores): XScale is a 5TE device.
+	(arm_override_options): Set arm_arch5e.
+	(arm_init_builtins): __builtin_prefetch is in arch5e.
+	* arm.h (arm_arch5e): Declare it.
+
+	* arm.h (PREDICATE_CODES): Add arm_hard_register_operand.
+
+	* arm.md (define_constants): Add defines for UNSPEC and
+	UNSPEC_VOLATILE insns.  Update all users.
+	(define_constants): Add constants for IP_REGNUM, SP_REGNUM, PC_REGNUM.
+	* arm.c (multi_register_push, note_invalid_constants)
+	(emit_multi_reg_push, emit_sfm, expand_prologue): Use constants.
+	* arm.h (SP_REGNUM, IP_REGNUM, PC_REGNUM): Delete defines.
+	(STACK_POINTER_REGNUM): Define in terms of SP_REGNUM.
+	
 Mon Jan  8 16:14:56 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* jump.c (jump_optimize_1): Use reversed_comparison_code

@@ -28,31 +28,72 @@
 ;; Unfortunately RISC iX doesn't work well with these so they are disabled.
 ;; (See arm.h)
 
+;;---------------------------------------------------------------------------
+;; Constants
+
+;; Register numbers
+(define_constants
+  [(IP_REGNUM	    12)		; Scratch register
+   (SP_REGNUM	    13)		; Stack pointer
+   (LR_REGNUM       14)		; Return address register
+   (PC_REGNUM	    15)		; Program counter
+   (CC_REGNUM       24)		; Condition code pseudo register
+   (LAST_ARM_REGNUM 15)
+  ]
+)
+
 ;; UNSPEC Usage:
-;; 0 `sin' operation: operand 0 is the result, operand 1 the parameter,
-;;   the mode is MODE_FLOAT
-;; 1 `cos' operation: operand 0 is the result, operand 1 the parameter,
-;;   the mode is MODE_FLOAT
-;; 2 `push multiple' operation: operand 0 is the first register.  Subsequent
-;;   registers are in parallel (use...) expressions.
-;; 3 A symbol that has been treated properly for pic usage, that is, we
-;;   will add the pic_register value to it before trying to dereference it.
 ;; Note: sin and cos are no-longer used.
-;;
+
+(define_constants
+  [(UNSPEC_SIN       0)	; `sin' operation (MODE_FLOAT):
+			;   operand 0 is the result,
+			;   operand 1 the parameter.
+   (UNPSEC_COS	     1)	; `cos' operation (MODE_FLOAT):
+			;   operand 0 is the result,
+			;   operand 1 the parameter.
+   (UNSPEC_PUSH_MULT 2)	; `push multiple' operation:
+			;   operand 0 is the first register,
+			;   subsequent registers are in parallel (use ...)
+			;   expressions.
+   (UNSPEC_PIC_SYM   3) ; A symbol that has been treated properly for pic
+			;   usage, that is, we will add the pic_register
+			;   value to it before trying to dereference it.
+   (UNSPEC_PRLG_STK  4) ; A special barrier that prevents frame accesses 
+			;   being scheduled before the stack adjustment insn.
+   (UNSPEC_CLZ	     5) ; `clz' instruction, count leading zeros (SImode):
+			;   operand 0 is the result,
+			;   operand 1 is the parameter.
+  ]
+)
+
 ;; UNSPEC_VOLATILE Usage:
-;; 0 `blockage' insn to prevent scheduling across an insn in the code.
-;; 1 `epilogue' insn, used to represent any part of the instruction epilogue
-;;   sequence that isn't expanded into normal RTL.  Used for both normal
-;;   and sibcall epilogues.
-;; 2 `align' insn.  Used at the head of a minipool table for inlined 
-;;   constants.
-;; 3 `end-of-table'.  Used to mark the end of a minipool table.
-;; 4 `pool-entry(1)'.  An entry in the constant pool for an 8-bit object.
-;; 5 `pool-entry(2)'.  An entry in the constant pool for a 16-bit object.
-;; 6 `pool-entry(4)'.  An entry in the constant pool for a 32-bit object.
-;; 7 `pool-entry(8)'.  An entry in the constant pool for a 64-bit object.
-;;
+
+(define_constants
+  [(VUNSPEC_BLOCKAGE 0) ; `blockage' insn to prevent scheduling across an
+			;   insn in the code.
+   (VUNSPEC_EPILOGUE 1) ; `epilogue' insn, used to represent any part of the
+			;   instruction epilogue sequence that isn't expanded
+			;   into normal RTL.  Used for both normal and sibcall
+			;   epilogues.
+   (VUNSPEC_ALIGN    2) ; `align' insn.  Used at the head of a minipool table 
+			;   for inlined constants.
+   (VUNSPEC_POOL_END 3) ; `end-of-table'.  Used to mark the end of a minipool
+			;   table.
+   (VUNSPEC_POOL_1   4) ; `pool-entry(1)'.  An entry in the constant pool for
+			;   an 8-bit object.
+   (VUNSPEC_POOL_2   5) ; `pool-entry(2)'.  An entry in the constant pool for
+			;   a 16-bit object.
+   (VUNSPEC_POOL_4   6) ; `pool-entry(4)'.  An entry in the constant pool for
+			;   a 32-bit object.
+   (VUNSPEC_POOL_8   7) ; `pool-entry(8)'.  An entry in the constant pool for
+			;   a 64-bit object.
+   (VUNSPEC_PREFETCH 8) ; `pld' insn to prefetch a cache line:
+			;   operand 0 is the address to fetch.
+  ]
+)
 
+;;---------------------------------------------------------------------------
 ;; Attributes
 
 ; IS_THUMB is set to 'yes' when we are generating Thumb code, and 'no' when
@@ -345,14 +386,8 @@
        (eq_attr "type" "!mult,load,store1,store2,store3,store4")) 32 32)
 
 ;;---------------------------------------------------------------------------
-;; Make code more maintainable by using names for fixed registers.
-
-(define_constants
-  [(LR_REGNUM       14)
-   (LAST_ARM_REGNUM 15)
-   (CC_REGNUM       24)]
-)
-
+;; Insn patterns
+;;
 ;; Addition insns.
 
 ;; Note: For DImode insns, there is normally no reason why operands should
@@ -2869,14 +2904,16 @@
 ;; to always call a library function.
 ;(define_insn "sinsf2"
 ;  [(set (match_operand:SF 0 "s_register_operand" "=f")
-;	(unspec:SF [(match_operand:SF 1 "s_register_operand" "f")] 0))]
+;	(unspec:SF [(match_operand:SF 1 "s_register_operand" "f")]
+;		    UNSPEC_SIN))]
 ;  "TARGET_ARM && TARGET_HARD_FLOAT"
 ;  "sin%?s\\t%0, %1"
 ;[(set_attr "type" "float_em")])
 ;
 ;(define_insn "sindf2"
 ;  [(set (match_operand:DF 0 "s_register_operand" "=f")
-;	(unspec:DF [(match_operand:DF 1 "s_register_operand" "f")] 0))]
+;	(unspec:DF [(match_operand:DF 1 "s_register_operand" "f")]
+;		    UNSPEC_SIN))]
 ;  "TARGET_ARM && TARGET_HARD_FLOAT"
 ;  "sin%?d\\t%0, %1"
 ;[(set_attr "type" "float_em")])
@@ -2884,28 +2921,32 @@
 ;(define_insn "*sindf_esfdf"
 ;  [(set (match_operand:DF 0 "s_register_operand" "=f")
 ;	(unspec:DF [(float_extend:DF
-;		     (match_operand:SF 1 "s_register_operand" "f"))] 0))]
+;		     (match_operand:SF 1 "s_register_operand" "f"))]
+;		    UNSPEC_SIN))]
 ;  "TARGET_ARM && TARGET_HARD_FLOAT"
 ;  "sin%?d\\t%0, %1"
 ;[(set_attr "type" "float_em")])
 ;
 ;(define_insn "sinxf2"
 ;  [(set (match_operand:XF 0 "s_register_operand" "=f")
-;	(unspec:XF [(match_operand:XF 1 "s_register_operand" "f")] 0))]
+;	(unspec:XF [(match_operand:XF 1 "s_register_operand" "f")]
+;		   UNSPEC_SIN))]
 ;  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
 ;  "sin%?e\\t%0, %1"
 ;[(set_attr "type" "float_em")])
 ;
 ;(define_insn "cossf2"
 ;  [(set (match_operand:SF 0 "s_register_operand" "=f")
-;	(unspec:SF [(match_operand:SF 1 "s_register_operand" "f")] 1))]
+;	(unspec:SF [(match_operand:SF 1 "s_register_operand" "f")]
+;		   UNSPEC_COS))]
 ;  "TARGET_ARM && TARGET_HARD_FLOAT"
 ;  "cos%?s\\t%0, %1"
 ;[(set_attr "type" "float_em")])
 ;
 ;(define_insn "cosdf2"
 ;  [(set (match_operand:DF 0 "s_register_operand" "=f")
-;	(unspec:DF [(match_operand:DF 1 "s_register_operand" "f")] 1))]
+;	(unspec:DF [(match_operand:DF 1 "s_register_operand" "f")]
+;		   UNSPEC_COS))]
 ;  "TARGET_ARM && TARGET_HARD_FLOAT"
 ;  "cos%?d\\t%0, %1"
 ;[(set_attr "type" "float_em")])
@@ -2913,14 +2954,16 @@
 ;(define_insn "*cosdf_esfdf"
 ;  [(set (match_operand:DF 0 "s_register_operand" "=f")
 ;	(unspec:DF [(float_extend:DF
-;		     (match_operand:SF 1 "s_register_operand" "f"))] 1))]
+;		     (match_operand:SF 1 "s_register_operand" "f"))]
+;		   UNSPEC_COS))]
 ;  "TARGET_ARM && TARGET_HARD_FLOAT"
 ;  "cos%?d\\t%0, %1"
 ;[(set_attr "type" "float_em")])
 ;
 ;(define_insn "cosxf2"
 ;  [(set (match_operand:XF 0 "s_register_operand" "=f")
-;	(unspec:XF [(match_operand:XF 1 "s_register_operand" "f")] 1))]
+;	(unspec:XF [(match_operand:XF 1 "s_register_operand" "f")]
+;		   UNSEPC_COS))]
 ;  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
 ;  "cos%?e\\t%0, %1"
 ;[(set_attr "type" "float_em")])
@@ -4119,7 +4162,7 @@
 
 (define_insn "pic_load_addr_arm"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(unspec:SI [(match_operand:SI 1 "" "mX")] 3))]
+	(unspec:SI [(match_operand:SI 1 "" "mX")] UNSPEC_PIC_SYM))]
   "TARGET_ARM && flag_pic"
   "ldr%?\\t%0, %1"
   [(set_attr "type" "load")
@@ -4129,7 +4172,7 @@
 
 (define_insn "pic_load_addr_thumb"
   [(set (match_operand:SI 0 "s_register_operand" "=l")
-	(unspec:SI [(match_operand:SI 1 "" "mX")] 3))]
+	(unspec:SI [(match_operand:SI 1 "" "mX")] UNSPEC_PIC_SYM))]
   "TARGET_THUMB && flag_pic"
   "ldr\\t%0, %1"
   [(set_attr "type" "load")
@@ -4140,7 +4183,7 @@
 ;; pic register in the rtl.
 (define_expand "pic_load_addr_based"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(unspec:SI [(match_operand 1 "" "") (match_dup 2)] 3))]
+	(unspec:SI [(match_operand 1 "" "") (match_dup 2)] UNSPEC_PIC_SYM))]
   "TARGET_ARM && flag_pic"
   "operands[2] = pic_offset_table_rtx;"
 )
@@ -4148,7 +4191,8 @@
 (define_insn "*pic_load_addr_based_insn"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(unspec:SI [(match_operand 1 "" "")
-		    (match_operand 2 "s_register_operand" "r")] 3))]
+		    (match_operand 2 "s_register_operand" "r")]
+		   UNSPEC_PIC_SYM))]
   "TARGET_EITHER && flag_pic && operands[2] == pic_offset_table_rtx"
   "*
 #ifdef AOF_ASSEMBLER
@@ -6671,7 +6715,7 @@
 ;; all of memory.  This blocks insns from being moved across this point.
 
 (define_insn "blockage"
-  [(unspec_volatile [(const_int 0)] 0)]
+  [(unspec_volatile [(const_int 0)] VUNSPEC_BLOCKAGE)]
   "TARGET_EITHER"
   ""
   [(set_attr "length" "0")
@@ -8600,7 +8644,7 @@
 )
 
 (define_expand "epilogue"
-  [(unspec_volatile [(return)] 1)]
+  [(unspec_volatile [(return)] VUNSPEC_EPILOGUE)]
   "TARGET_EITHER"
   "
   if (TARGET_THUMB)
@@ -8613,13 +8657,13 @@
   emit_jump_insn (gen_rtx_UNSPEC_VOLATILE (VOIDmode,
 	gen_rtvec (1,
 		gen_rtx_RETURN (VOIDmode)),
-	1));
+	VUNSPEC_EPILOGUE));
   DONE;
   "
 )
 
 (define_insn "sibcall_epilogue"
-  [(unspec_volatile [(const_int 0)] 1)]
+  [(unspec_volatile [(const_int 0)] VUNSPEC_EPILOGUE)]
   "TARGET_ARM"
   "*
   output_asm_insn (\"%@ Sibcall epilogue\", operands);
@@ -8633,7 +8677,7 @@
 )
 
 (define_insn "*epilogue_insns"
-  [(unspec_volatile [(return)] 1)]
+  [(unspec_volatile [(return)] VUNSPEC_EPILOGUE)]
   "TARGET_EITHER"
   "*
   if (TARGET_ARM)
@@ -8838,7 +8882,8 @@
 (define_insn "*push_multi"
   [(match_parallel 2 "multi_register_push"
     [(set (match_operand:BLK 0 "memory_operand" "=m")
-	  (unspec:BLK [(match_operand:SI 1 "s_register_operand" "r")] 2))])]
+	  (unspec:BLK [(match_operand:SI 1 "s_register_operand" "r")]
+		      UNSPEC_PUSH_MULT))])]
   "TARGET_ARM"
   "*
   {
@@ -8875,7 +8920,8 @@
 (define_insn "*push_fp_multi"
   [(match_parallel 2 "multi_register_push"
     [(set (match_operand:BLK 0 "memory_operand" "=m")
-	  (unspec:BLK [(match_operand:XF 1 "f_register_operand" "f")] 2))])]
+	  (unspec:BLK [(match_operand:XF 1 "f_register_operand" "f")]
+		      UNSPEC_PUSH_MULT))])]
   "TARGET_ARM"
   "*
   {
@@ -8891,7 +8937,7 @@
 ;; Special patterns for dealing with the constant pool
 
 (define_insn "align_4"
-  [(unspec_volatile [(const_int 0)] 2)]
+  [(unspec_volatile [(const_int 0)] VUNSPEC_ALIGN)]
   "TARGET_EITHER"
   "*
   assemble_align (32);
@@ -8900,7 +8946,7 @@
 )
 
 (define_insn "consttable_end"
-  [(unspec_volatile [(const_int 0)] 3)]
+  [(unspec_volatile [(const_int 0)] VUNSPEC_POOL_END)]
   "TARGET_EITHER"
   "*
   making_const_table = FALSE;
@@ -8909,7 +8955,7 @@
 )
 
 (define_insn "consttable_1"
-  [(unspec_volatile [(match_operand 0 "" "")] 4)]
+  [(unspec_volatile [(match_operand 0 "" "")] VUNSPEC_POOL_1)]
   "TARGET_THUMB"
   "*
   making_const_table = TRUE;
@@ -8921,7 +8967,7 @@
 )
 
 (define_insn "consttable_2"
-  [(unspec_volatile [(match_operand 0 "" "")] 5)]
+  [(unspec_volatile [(match_operand 0 "" "")] VUNSPEC_POOL_2)]
   "TARGET_THUMB"
   "*
   making_const_table = TRUE;
@@ -8933,7 +8979,7 @@
 )
 
 (define_insn "consttable_4"
-  [(unspec_volatile [(match_operand 0 "" "")] 6)]
+  [(unspec_volatile [(match_operand 0 "" "")] VUNSPEC_POOL_4)]
   "TARGET_EITHER"
   "*
   {
@@ -8957,7 +9003,7 @@
 )
 
 (define_insn "consttable_8"
-  [(unspec_volatile [(match_operand 0 "" "")] 7)]
+  [(unspec_volatile [(match_operand 0 "" "")] VUNSPEC_POOL_8)]
   "TARGET_EITHER"
   "*
   {
@@ -8994,16 +9040,37 @@
 
 (define_insn "clz"
   [(set (match_operand:SI             0 "s_register_operand" "=r")
-	(unspec:SI [(match_operand:SI 1 "s_register_operand" "r")] 128))]
-  "TARGET_ARM"
+	(unspec:SI [(match_operand:SI 1 "s_register_operand" "r")]
+		   UNSPEC_CLZ))]
+  "TARGET_ARM && arm_arch5"
   "clz\\t%0, %1")
 
-;; XScale instructions.
+(define_expand "ffssi2"
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(ffs:SI (match_operand:SI 1 "s_register_operand" "")))]
+  "TARGET_ARM && arm_arch5"
+  "
+  {
+    rtx t1, t2, t3;
+
+    t1 = gen_reg_rtx (SImode);
+    t2 = gen_reg_rtx (SImode);
+    t3 = gen_reg_rtx (SImode);
+
+    emit_insn (gen_negsi2 (t1, operands[1]));
+    emit_insn (gen_andsi3 (t2, operands[1], t1));
+    emit_insn (gen_clz (t3, t2));
+    emit_insn (gen_subsi3 (operands[0], GEN_INT (32), t3));
+    DONE;
+  }"
+)
+
+;; V5E instructions.
 
 (define_insn "prefetch"
   [(unspec_volatile
-    [(match_operand:SI 0 "offsettable_memory_operand" "o")] 129)]
-  "TARGET_ARM"
+    [(match_operand:SI 0 "offsettable_memory_operand" "o")] VUNSPEC_PREFETCH)]
+  "TARGET_ARM && arm_arch5e"
   "pld\\t%0")
 
 ;; General predication pattern

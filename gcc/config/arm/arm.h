@@ -561,6 +561,9 @@ extern int arm_arch4;
 /* Nonzero if this chip supports the ARM Architecture 5 extensions */
 extern int arm_arch5;
 
+/* Nonzero if this chip supports the ARM Architecture 5E extensions */
+extern int arm_arch5e;
+
 /* Nonzero if this chip can benefit from load scheduling.  */
 extern int arm_ld_sched;
 
@@ -931,31 +934,20 @@ extern const char * structure_size_string;
    pointer.  */
 #define ARM_HARD_FRAME_POINTER_REGNUM	11
 #define THUMB_HARD_FRAME_POINTER_REGNUM	 7
-#define HARD_FRAME_POINTER_REGNUM       (TARGET_ARM ? ARM_HARD_FRAME_POINTER_REGNUM : THUMB_HARD_FRAME_POINTER_REGNUM)
+
+#define HARD_FRAME_POINTER_REGNUM		\
+  (TARGET_ARM					\
+   ? ARM_HARD_FRAME_POINTER_REGNUM		\
+   : THUMB_HARD_FRAME_POINTER_REGNUM)
+
 #define FP_REGNUM	                HARD_FRAME_POINTER_REGNUM
 
-/* Scratch register - used in all kinds of places, eg trampolines.  */
-#define IP_REGNUM		12
-
 /* Register to use for pushing function arguments.  */
-#define STACK_POINTER_REGNUM	13
-#define SP_REGNUM	        STACK_POINTER_REGNUM
-
-/* Register which holds return address from a subroutine call.  */
-#define LR_REGNUM		14
-
-/* Define this if the program counter is overloaded on a register.  */
-#define PC_REGNUM		15
-
-/* The number of the last ARM (integer) register.  */
-#define LAST_ARM_REGNUM 	15
+#define STACK_POINTER_REGNUM	SP_REGNUM
 
 /* ARM floating pointer registers.  */
 #define FIRST_ARM_FP_REGNUM 	16
 #define LAST_ARM_FP_REGNUM  	23
-
-/* Internal, so that we don't need to refer to a raw number */
-#define CC_REGNUM		24
 
 /* Base register for access to local variables of the function.  */
 #define FRAME_POINTER_REGNUM	25
@@ -2949,6 +2941,7 @@ extern int making_const_table;
 /* Define the codes that are matched by predicates in arm.c */
 #define PREDICATE_CODES							\
   {"s_register_operand", {SUBREG, REG}},				\
+  {"arm_hard_register_operand", {REG}},					\
   {"f_register_operand", {SUBREG, REG}},				\
   {"arm_add_operand",    {SUBREG, REG, CONST_INT}},			\
   {"fpu_add_operand",    {SUBREG, REG, CONST_DOUBLE}},			\
