@@ -1,3 +1,10 @@
+2004-06-05  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/UIManager.java
+	(LookAndFeel): Made public.
+	(LookAndFeel.getName): Likewise.
+	(LookAndFeel.getClassName): Likewise.
+
 2004-06-03  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/awt/peer/gtk/GtkComponentPeer.java
