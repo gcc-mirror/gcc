@@ -82,7 +82,7 @@ case "${target_os}" in
     os_include_dir="config/os/aix"
     ;;
   bsd* | freebsd* )
-    os_include_dir="config/os/freebsd"
+    os_include_dir="config/os/bsd/freebsd"
     ;;
   cygwin*)
     os_include_dir="config/os/newlib"
@@ -94,7 +94,7 @@ case "${target_os}" in
     os_include_dir="config/os/irix"
     ;;
   netbsd*)
-    os_include_dir="config/os/netbsd"
+    os_include_dir="config/os/bsd/netbsd"
     ;;
   solaris2.5*)
     os_include_dir="config/os/solaris/solaris2.5"
