@@ -1,3 +1,7 @@
+2001-04-03  Andreas Schwab  <schwab@suse.de>
+
+	* include/backward/fstream.h: Define filebuf and wfilebuf.
+
 2001-04-02  Phil Edwards  <pme@sources.redhat.com>
 
 	New concept checking implementation.
