@@ -1,3 +1,9 @@
+2004-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/14533
+	* config/s390/s390.c (legitimize_pic_address): Don't abort on UNSPEC
+	other than UNSPEC_GOTOFF.
+
 2004-03-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_legitimate_address_p): New argument, OUTER.  Pass through
