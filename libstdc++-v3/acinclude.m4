@@ -12,7 +12,7 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
     *)   AC_MSG_ERROR(bad value ${enableval} for multilib option) ;;
    esac], [multilib=yes])dnl
 
-  glibcpp_basedir=$auxdir/$1/libstdc++-v3
+  glibcpp_basedir=$srcdir/$toprel/$1/libstdc++-v3
   AC_SUBST(glibcpp_basedir)
 
   AM_INIT_AUTOMAKE(libstdc++, 3.0.0)
@@ -1144,9 +1144,10 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
   target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
   AC_MSG_RESULT([$target_thread_file])
 
-  AC_LINK_FILES(../gcc/gthr.h, include/bits/gthr.h-in)
-  AC_LINK_FILES(../gcc/gthr-single.h, include/bits/gthr-single.h-in)
-  AC_LINK_FILES(../gcc/gthr-$target_thread_file.h,
+  AC_LINK_FILES($toprel/gcc/gthr.h, include/bits/gthr.h-in)
+  AC_LINK_FILES($toprel/gcc/gthr-single.h,
+		include/bits/gthr-single.h-in)
+  AC_LINK_FILES($toprel/gcc/gthr-$target_thread_file.h,
 		include/bits/gthr-default.h-in)
   if test $target_thread_file != single; then
     AC_DEFINE(HAVE_GTHR_DEFAULT)

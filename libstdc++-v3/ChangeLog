@@ -1,3 +1,13 @@
+2001-06-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* configure.in (auxdir): Replace by ...
+	(toprel): ... new variable.
+	(toplevel_srcdir): Construct from $toprel.
+	* acinclude.m4 (GLIBCPP_ENABLE_THREADS): Use $toprel
+	rather than .. to locate gcc source directory.
+	(GLIBCPP_CONFIGURE): Replace $auxdir with $srcdir/$toprel.
+	* aclocal.m4, configure: Rebuilt.
+
 2001-06-13  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	(Approved by Mark and Benjamin.  Applied by Loren.)
