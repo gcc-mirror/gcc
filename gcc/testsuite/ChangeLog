@@ -1,3 +1,7 @@
+2001-06-11  Richard Henderson  <rth@redhat.com>
+
+	* g++.old-deja/g++.law/code-gen5.C: Don't send raw pointers to assert.
+
 2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.c-torture/compile/20010611-1.c: New test.
