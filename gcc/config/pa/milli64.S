@@ -1776,7 +1776,7 @@ DISCUSSION:
 	.align 16
 	.proc
 	.callinfo millicode
-	.export $$mulI, millicode
+	.export $$mulI,millicode
 GSYM($$mulI)	
 	combt,<<=	a1,a0,LREF(l4)	/* swap args if unsigned a1>a0 */
 	copy		0,r		/* zero out the result */
