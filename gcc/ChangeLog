@@ -1,3 +1,7 @@
+2000-01-05  Nick Clifton  <nickc@cygnus.com>
+
+	* config/fr30/fr30.h: Remove extraneous comments.
+
 2000-01-05  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* reload1.c (choose_reload_regs): When disabling a reload, also
