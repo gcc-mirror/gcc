@@ -234,7 +234,7 @@ typedef struct bb_value_sets
      basic block.  */
   value_set_t phi_gen;
 
-  /* The TMP_GEN set, which represents results/temporaries genererated
+  /* The TMP_GEN set, which represents results/temporaries generated
      in a basic block. IE the LHS of an expression.  */
   value_set_t tmp_gen;
 
@@ -1499,7 +1499,7 @@ add_to_sets (tree var, tree expr, vuse_optype vuses, value_set_t s1,
 
 
 /* Given a unary or binary expression EXPR, create and return a new
-   expresion with the same structure as EXPR but with its operands
+   expression with the same structure as EXPR but with its operands
    replaced with the value handles of each of the operands of EXPR.
    Insert EXPR's operands into the EXP_GEN set for BLOCK.
 

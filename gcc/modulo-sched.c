@@ -77,7 +77,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	 here the insns are not scheduled monotonically top-down (nor bottom-
 	 up).
       3. If failed in scheduling all insns - bump II++ and try again, unless
-	 II reaches an upper bound MaxII, inwhich case report failure.
+	 II reaches an upper bound MaxII, in which case report failure.
    5. If we succeeded in scheduling the loop within II cycles, we now
       generate prolog and epilog, decrease the counter of the loop, and
       perform modulo variable expansion for live ranges that span more than
@@ -443,7 +443,7 @@ calculate_maxii (ddg_ptr g)
 }
 
 
-/* Given the partial schdule, generate register moves when the length
+/* Given the partial schedule, generate register moves when the length
    of the register live range is more than ii; the number of moves is
    determined according to the following equation:
 		SCHED_TIME (use) - SCHED_TIME (def)   { 1 broken loop-carried

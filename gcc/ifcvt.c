@@ -699,7 +699,7 @@ end_ifcvt_sequence (struct noce_if_info *if_info)
 
   /* Make sure that all of the instructions emitted are recognizable,
      and that we haven't introduced a new jump instruction.
-     As an excersise for the reader, build a general mechanism that
+     As an exercise for the reader, build a general mechanism that
      allows proper placement of required clobbers.  */
   for (insn = seq; insn; insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == JUMP_INSN
