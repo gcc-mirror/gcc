@@ -1,3 +1,8 @@
+Thu Nov 11 19:45:24 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* dbxout.c (dbxout_type, case INTEGER_TYPE): Handle too large
+	unsigned types.
+
 Thu Nov 11 18:54:24 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* function.c (diddle_return_value): Use hard_function_value to

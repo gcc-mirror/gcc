@@ -1180,9 +1180,17 @@ dbxout_type (type, full, show_arg_types)
 	     can write it out in case the host wide int is narrower than the
 	     target "long".  */
 
+	  /* For unsigned types, we use octal if they are the same size or
+	     larger.  This is because we print the bounds as signed decimal,
+	     and hence they can't span same size unsigned types.  */
+
  	  if (use_gnu_debug_info_extensions
 	      && (TYPE_PRECISION (type) > TYPE_PRECISION (integer_type_node)
-		  || TYPE_PRECISION (type) > HOST_BITS_PER_WIDE_INT))
+		  || (TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)
+		      && TREE_UNSIGNED (type))
+		  || TYPE_PRECISION (type) > HOST_BITS_PER_WIDE_INT
+		  || (TYPE_PRECISION (type) == HOST_BITS_PER_WIDE_INT
+		      && TREE_UNSIGNED (type))))
 	    {
 	      fprintf (asmfile, "r");
 	      dbxout_type_index (type);
