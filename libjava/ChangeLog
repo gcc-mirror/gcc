@@ -1,5 +1,10 @@
 2004-01-28  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/lang/ClassHelper.java
+	(getPackagePortion): Removed.
+
+2004-01-28  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/JComponent.java
 	(listenerList): Initalize globally.
 	(ancestor_list): Removed.
