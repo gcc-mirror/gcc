@@ -79,6 +79,8 @@ java_init_lex ()
 #ifndef JC1_LITE
   if (!java_lang_id)
     java_lang_id = get_identifier ("java.lang");
+  if (!java_lang_cloneable)
+    java_lang_cloneable = get_identifier ("java.lang.Cloneable");
 
   if (!java_lang_imported)
     {

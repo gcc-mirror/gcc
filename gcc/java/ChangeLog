@@ -1,3 +1,14 @@
+Tue Feb  9 19:31:09 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* lex.c (java_lang_cloneable): Initialize.
+	* parse.y (java_lang_cloneable): New static variable.
+	(qualify_ambiguous_name): Take CONVERT_EXPR into account when
+ 	doing one more qualification round.
+	(valid_ref_assignconv_cast_p): Reject null source or
+ 	destination. Allow an array to be cast into java.lang.Cloneable.
+	(patch_cast): Swapped two first arguments to first call to
+ 	valid_ref_assignconv_cast_p.
+
 Mon Feb  8 11:50:50 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.h: DECL_P renamed JDECL_P.

@@ -285,6 +285,9 @@ static tree wfl_to_string = NULL_TREE;
 
 /* The "java.lang" import qualified name.  */
 static tree java_lang_id = NULL_TREE;
+
+/* The "java.lang.Cloneable" qualified name.  */
+static tree java_lang_cloneable = NULL_TREE;
 %}
 
 %union {
@@ -7335,9 +7338,11 @@ qualify_ambiguous_name (id)
 	/* Do one more interation to set things up */
 	super_found = again = 1;
       }
-    /* Loop one more time if we're dealing with ?: or a string constant */
+    /* Loop one more time if we're dealing with ?: or a string
+       constant, or a convert expression */
     if (TREE_CODE (qual_wfl) == CONDITIONAL_EXPR
-	|| TREE_CODE (qual_wfl) == STRING_CST)
+	|| TREE_CODE (qual_wfl) == STRING_CST
+	|| TREE_CODE (qual_wfl) == CONVERT_EXPR)
       {
 	qual = TREE_CHAIN (qual);
 	qual_wfl = QUAL_WFL (qual);
@@ -8646,6 +8651,9 @@ valid_ref_assignconv_cast_p (source, dest, cast)
      tree dest;
      int cast;
 {
+  /* SOURCE or DEST might be null if not from a declared entity. */
+  if (!source || !dest)
+    return 0;
   if (JNULLP_TYPE_P (source))
     return 1;
   if (TREE_CODE (source) == POINTER_TYPE)
@@ -8723,8 +8731,10 @@ valid_ref_assignconv_cast_p (source, dest, cast)
     {
       if (TYPE_CLASS_P (dest))
 	return dest == object_type_node;
+      /* Can't cast an array to an interface unless the interface is
+	 java.lang.Cloneable */
       if (TYPE_INTERFACE_P (dest))
-	return 0;		/* Install test on Clonable. FIXME */
+	return (DECL_NAME (TYPE_NAME (dest)) == java_lang_cloneable ? 1 : 0);
       else			/* Arrays */
 	{
 	  tree source_element_type = TYPE_ARRAY_ELEMENT (source);
@@ -9672,7 +9682,7 @@ patch_cast (node, wfl_operator)
   /* The remaining legal casts involve conversion between reference
      types. Check for their compile time correctness. */
   if (JREFERENCE_TYPE_P (op_type) && JREFERENCE_TYPE_P (cast_type) 
-      && valid_ref_assignconv_cast_p (cast_type, op_type, 1))
+      && valid_ref_assignconv_cast_p (op_type, cast_type, 1))
     {
       TREE_TYPE (node) = promote_type (cast_type);
       /* Now, the case can be determined correct at compile time if
