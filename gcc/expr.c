@@ -5098,6 +5098,18 @@ expand_expr (exp, target, tmode, modifier)
 	       is the actual stack address that we want to initialize.
 	       The function we call will perform the cleanup in this case.  */
 
+	    /* If we have already assigned it space, use that space,
+	       not target that we were passed in, as our target
+	       parameter is only a hint.  */
+	    if (DECL_RTL (slot) != 0)
+              {
+                target = DECL_RTL (slot);
+                /* If we have already expanded the slot, so don't do
+                   it again.  (mrs)  */
+                if (TREE_OPERAND (exp, 1) == NULL_TREE)
+                  return target;
+	      }
+
 	    DECL_RTL (slot) = target;
 	  }
 
