@@ -1,3 +1,9 @@
+2004-03-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* bt-load.c, builtins.c, cfghooks.c, cfgrtl.c, gcse.c,
+	ggc-page.c, integrate.c, var-tracking.c, web.c: Remove
+	unnecessary casts.
+
 2004-03-22  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/14291

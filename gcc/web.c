@@ -267,12 +267,10 @@ web_main (void)
   df = df_init ();
   df_analyze (df, 0, DF_UD_CHAIN | DF_EQUIV_NOTES);
 
-  def_entry =
-    (struct web_entry *) xcalloc (df->n_defs, sizeof (struct web_entry));
-  use_entry =
-    (struct web_entry *) xcalloc (df->n_uses, sizeof (struct web_entry));
-  used = (char *) xcalloc (max, sizeof (char));
-  use_addressof = (char *) xcalloc (max, sizeof (char));
+  def_entry = xcalloc (df->n_defs, sizeof (struct web_entry));
+  use_entry = xcalloc (df->n_uses, sizeof (struct web_entry));
+  used = xcalloc (max, sizeof (char));
+  use_addressof = xcalloc (max, sizeof (char));
 
   if (dump_file)
     df_dump (df, DF_UD_CHAIN | DF_DU_CHAIN, dump_file);

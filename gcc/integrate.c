@@ -1667,11 +1667,11 @@ copy_insn_list (rtx insns, struct inline_remap *map, rtx static_chain_value)
 		  tree *mapped_block_p;
 
 		  mapped_block_p
-		    = (tree *) bsearch (NOTE_BLOCK (insn),
-					&VARRAY_TREE (map->block_map, 0),
-					map->block_map->elements_used,
-					sizeof (tree),
-					find_block);
+		    = bsearch (NOTE_BLOCK (insn),
+			       &VARRAY_TREE (map->block_map, 0),
+			       map->block_map->elements_used,
+			       sizeof (tree),
+			       find_block);
 
 		  if (!mapped_block_p)
 		    abort ();

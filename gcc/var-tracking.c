@@ -1297,8 +1297,8 @@ dataflow_set_different_1 (void **slot, void *data)
   variable var1, var2;
 
   var1 = *(variable *) slot;
-  var2 = (variable) htab_find_with_hash (htab, var1->decl,
-					 VARIABLE_HASH_VAL (var1->decl));
+  var2 = htab_find_with_hash (htab, var1->decl,
+			      VARIABLE_HASH_VAL (var1->decl));
   if (!var2)
     {
       dataflow_set_different_value = true;
@@ -1329,8 +1329,8 @@ dataflow_set_different_2 (void **slot, void *data)
   variable var1, var2;
 
   var1 = *(variable *) slot;
-  var2 = (variable) htab_find_with_hash (htab, var1->decl,
-					 VARIABLE_HASH_VAL (var1->decl));
+  var2 = htab_find_with_hash (htab, var1->decl,
+			      VARIABLE_HASH_VAL (var1->decl));
   if (!var2)
     {
       dataflow_set_different_value = true;
@@ -1671,8 +1671,8 @@ vt_find_locations (void)
 
   /* Compute reverse completion order of depth first search of the CFG
      so that the data-flow runs faster.  */
-  rc_order = (int *) xmalloc (n_basic_blocks * sizeof (int));
-  bb_order = (int *) xmalloc (last_basic_block * sizeof (int));
+  rc_order = xmalloc (n_basic_blocks * sizeof (int));
+  bb_order = xmalloc (last_basic_block * sizeof (int));
   flow_depth_first_order_compute (NULL, rc_order);
   for (i = 0; i < n_basic_blocks; i++)
     bb_order[rc_order[i]] = i;
@@ -2272,8 +2272,8 @@ emit_notes_for_differences_1 (void **slot, void *data)
   variable old_var, new_var;
 
   old_var = *(variable *) slot;
-  new_var = (variable) htab_find_with_hash (new_vars, old_var->decl,
-					    VARIABLE_HASH_VAL (old_var->decl));
+  new_var = htab_find_with_hash (new_vars, old_var->decl,
+				 VARIABLE_HASH_VAL (old_var->decl));
 
   if (!new_var)
     {
@@ -2305,8 +2305,8 @@ emit_notes_for_differences_2 (void **slot, void *data)
   variable old_var, new_var;
 
   new_var = *(variable *) slot;
-  old_var = (variable) htab_find_with_hash (old_vars, new_var->decl,
-					    VARIABLE_HASH_VAL (new_var->decl));
+  old_var = htab_find_with_hash (old_vars, new_var->decl,
+				 VARIABLE_HASH_VAL (new_var->decl));
   if (!old_var)
     {
       /* Variable has appeared.  */
