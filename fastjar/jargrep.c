@@ -21,9 +21,15 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-/* $Id: jargrep.c,v 1.3 2000/12/14 18:45:35 ghazi Exp $
+/* $Id: jargrep.c,v 1.4 2000/12/15 18:45:09 tromey Exp $
 
 $Log: jargrep.c,v $
+Revision 1.4  2000/12/15 18:45:09  tromey
+	* jargrep.c: Include getopt.h if it exists.
+	(optind): Declare.
+	* configure, config.h: Rebuilt.
+	* configure.in: Check for getopt.h.
+
 Revision 1.3  2000/12/14 18:45:35  ghazi
 Warning fixes:
 
@@ -90,7 +96,7 @@ will test some other platforms later.
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <ctype.h>
-#ifdef STDC_HEADERS
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
 #include "jargrep.h"
@@ -440,7 +446,7 @@ purpose:	Verify the CRC matches that as what is stored in the jar file.
 */
 
 static void check_crc(pb_file *pbf, const char *stream, ub4 usize) {
-	ub4 crc;
+	ub4 crc=0;
 	ub4 lcrc;
 	ub1 scratch[16];
 
@@ -550,7 +556,7 @@ static int cont_grep(regex_t *exp, regex_t *nl_exp, int fd, pb_file *pbf, int op
 	char *filename;
 	char *str_stream;
 	regmatch_t *match_array;
-	regmatch_t *nl_offsets;
+	regmatch_t *nl_offsets=0;
 
 	if(pb_read(pbf, (file_header + 4), 26) != 26) {
 		perror("read");
