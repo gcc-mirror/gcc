@@ -1,3 +1,25 @@
+2003-05-02  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/FileChannelImpl.java
+	(read): New implementation.
+	(implRead): New methods.
+	(write): New implementation, call other write insteal of read method.
+	(implWrite): New methods.
+	(map): Added comment.
+	(transferFrom): Implemented.
+	(transferTo): Implemented.
+	(lock): Added checks to throw exceptions.
+	(truncate): Added check to throw exception.
+	* gnu/java/nio/natFileChannelImpl.cc
+	(implRead): New method.
+	(implWrite): New method.
+	* java/nio/ByteBuffer.java
+	(hashCode): Fixed comment.
+	(get): Fixed exception documentation.
+	(put): Fixed exception documentation.
+	* java/nio/CharBuffer.java:
+	Added comment for later optimizations.
+
 2003-04-30  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/10582:
