@@ -1,0 +1,2 @@
+# We are building for the Linux C library 5.
+T_CFLAGS = -DUSE_GNULIBC_1
