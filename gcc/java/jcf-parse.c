@@ -570,6 +570,8 @@ jcf_parse_source ()
   java_push_parser_context ();
   input_filename = current_jcf->filename;
   file = get_identifier (input_filename);
+  current_class = NULL_TREE;
+  current_function_decl = NULL_TREE;
   if (!HAS_BEEN_ALREADY_PARSED_P (file))
     {
       if (!(finput = fopen (input_filename, "r")))
