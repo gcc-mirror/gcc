@@ -1,3 +1,8 @@
+2001-10-16  Florian Weimer  <fw@deneb.enyo.de>
+
+	* trans.c (tree_transform): Adjust to recent change in
+	expand_asm_operands to implement named asm operands.
+
 2001-10-11  Ed Schonberg  <schonber@gnat.com>
 
 	* exp_ch8.adb (Expand_N_Object_Renaming_Declaration): Bugfix in 
