@@ -1,3 +1,9 @@
+2003-09-17  Daniel Jacobowitz  <drow@mvista.com>
+
+	* configure.in (TOPLEVEL_CONFIGURE_ARGUMENTS, baseargs): Fix
+	quoting.
+	* configure: Regenerated.
+
 2003-09-16  Joel Brobecker  <brobecker@gnat.com>
 
 	* MAINTAINERS (Write After Approval): Add myself to write after

@@ -344,7 +344,11 @@ SEND-PR: support             I need help with gcc.
 host: @host@
 build: @build@
 target: @target@
+__EOF__
+      cat >> $file << \__EOF__
 configured with: @gcc_config_arguments@
+__EOF__
+      cat >> $file << __EOF__
 >Description:
 	$DESCRIPTION_C
 >How-To-Repeat:

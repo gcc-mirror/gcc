@@ -1,3 +1,9 @@
+2003-09-17  Daniel Jacobowitz  <drow@mvista.com>
+
+	* configure.in: Quote gcc_config_arguments for configargs.h.
+	* configure: Regenerated.
+	* gccbug.in: Don't shell-expand gcc_config_arguments.
+
 2003-09-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR c++/11357
