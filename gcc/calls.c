@@ -395,9 +395,6 @@ emit_call_1 (rtx funexp, tree fntree, tree fndecl ATTRIBUTE_UNUSED,
   if (ecf_flags & ECF_NORETURN)
     REG_NOTES (call_insn) = gen_rtx_EXPR_LIST (REG_NORETURN, const0_rtx,
 					       REG_NOTES (call_insn));
-  if (ecf_flags & ECF_ALWAYS_RETURN)
-    REG_NOTES (call_insn) = gen_rtx_EXPR_LIST (REG_ALWAYS_RETURN, const0_rtx,
-					       REG_NOTES (call_insn));
 
   if (ecf_flags & ECF_RETURNS_TWICE)
     {
@@ -3233,9 +3230,6 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       break;
     case LCT_THROW:
       flags = ECF_NORETURN;
-      break;
-    case LCT_ALWAYS_RETURN:
-      flags = ECF_ALWAYS_RETURN;
       break;
     case LCT_RETURNS_TWICE:
       flags = ECF_RETURNS_TWICE;

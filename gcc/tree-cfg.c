@@ -5327,7 +5327,7 @@ need_fake_edge_p (tree t)
   tree call;
 
   /* NORETURN and LONGJMP calls already have an edge to exit.
-     CONST, PURE and ALWAYS_RETURN calls do not need one.
+     CONST and PURE calls do not need one.
      We don't currently check for CONST and PURE here, although
      it would be a good idea, because those attributes are
      figured out from the RTL in mark_constant_function, and
@@ -5335,7 +5335,7 @@ need_fake_edge_p (tree t)
      leads to different results from -fbranch-probabilities.  */
   call = get_call_expr_in (t);
   if (call
-      && !(call_expr_flags (call) & (ECF_NORETURN | ECF_ALWAYS_RETURN)))
+      && !(call_expr_flags (call) & ECF_NORETURN))
     return true;
 
   if (TREE_CODE (t) == ASM_EXPR

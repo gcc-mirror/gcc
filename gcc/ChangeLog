@@ -1,3 +1,17 @@
+2005-02-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* calls.c (emit_call_1): Don't use  REG_ALWAYS_RETURN.
+	(emit_library_call_value_1): Don't use LCT_ALWAYS_RETURN and
+	REG_ALWAYS_RETURN.
+	* cfgrtl.c (need_fake_edge_p): Likewise.
+	* combine.c (distribute_notes): Likewise.
+	* emit-rtl.c (try_split): Likewise.
+	* recog.c (peephole2_opimize): Likewise.
+	* reg-notes.def (ALWAYS_RETURN): Remove.
+	* rtl.h (LCT_ALWAYS_RETURN): Remove.
+	* tree-cfg.c (need_fake_edge_p): Don't use ECF_ALWAYS_RETURN.
+	* tree.h (ECF_ALWAYS_RETURN): Remove.
+
 2005-02-28  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/19874

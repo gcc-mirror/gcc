@@ -3070,7 +3070,6 @@ peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
 			  {
 			  case REG_NORETURN:
 			  case REG_SETJMP:
-			  case REG_ALWAYS_RETURN:
 			    REG_NOTES (new_insn)
 			      = gen_rtx_EXPR_LIST (REG_NOTE_KIND (note),
 						   XEXP (note, 0),
