@@ -2860,7 +2860,7 @@ else
 #include "confdefs.h"
 int *p;
 int main() {
-extern int $v []; p = &$v;
+extern int $v []; p = $v;
 ; return 0; }
 EOF
 if { (eval echo configure:2867: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
