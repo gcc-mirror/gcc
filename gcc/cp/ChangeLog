@@ -1,3 +1,12 @@
+2001-02-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* mangle.c (write_encoding): Pass write_function_type the
+	FUNCTION_DECL for the function being encoded.
+	(write_function_type): Pass it along to write_bare_function_type.
+	(write_bare_function_type): Pass it along to write_method_parms.
+	(write_method_parms): Don't mangle the compiler-generated
+	parameters to a constructor or destructor.
+
 2001-02-22  Andreas Jaeger  <aj@suse.de>
 
 	* optimize.c: Include toplev.h for
