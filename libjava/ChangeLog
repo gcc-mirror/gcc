@@ -1,3 +1,7 @@
+2001-10-16  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* name-finder.cc (_Jv_name_finder::lookup): Check for NULL dli_sname.
+
 2001-10-15  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/util/HashMap.java (HashEntry.clone): Removed.
