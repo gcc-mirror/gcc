@@ -1,5 +1,10 @@
 2001-05-16  Richard Henderson  <rth@redhat.com>
 
+	* dwarf2asm.c (eh_data_format_name): Add names for "pointer size" 
+	variants of non-absolute encodings.
+
+2001-05-16  Richard Henderson  <rth@redhat.com>
+
 	* except.c (eh_data_format_name): Move to ...
 	* dwarf2asm.c: ... here.  Use designated initializers if available.
 	(dw2_asm_output_encoded_addr_rtx): Accept varargs commentary.
