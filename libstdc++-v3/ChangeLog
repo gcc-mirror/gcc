@@ -1,5 +1,8 @@
 2000-06-19  Benjamin Kosnik  <bkoz@soma.redhat.com>
 
+	* acinclude.m4 ((GLIBCPP_CHECK_MATH_SUPPORT): Revert last change.
+	Add -Werror-implicit-function-declaration instead.
+
 	Regenerate with fixed maintainer-tools.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
