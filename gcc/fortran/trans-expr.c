@@ -1077,7 +1077,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	      /* Pass a NULL pointer for an absent arg.  */
 	      gfc_init_se (&parmse, NULL);
 	      parmse.expr = null_pointer_node;
-              if (formal && formal->sym->ts.type == BT_CHARACTER)
+              if (arg->missing_arg_type == BT_CHARACTER)
                 {
                   stringargs = gfc_chainon_list (stringargs,
                       convert (gfc_strlen_type_node, integer_zero_node));

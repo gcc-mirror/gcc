@@ -538,6 +538,11 @@ typedef struct gfc_actual_arglist
   /* Alternate return label when the expr member is null.  */
   struct gfc_st_label *label;
 
+  /* This is set to the type of an eventual omitted optional
+     argument. This is used to determine if a hidden string length
+     argument has to be added to a function call.  */
+  bt missing_arg_type;
+
   struct gfc_expr *expr;
   struct gfc_actual_arglist *next;
 }
