@@ -1,3 +1,9 @@
+2003-03-29  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.h (FUNCTION_VALUE_REGNO_P): Respect
+	TARGET_HARD_FLOAT.  Reformat.
+	(FUNCTION_ARG_REGNO_P): Likewise, and remove unneeded casts.
+
 2003-03-29  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_emit_prologoue): Make sure backchain is
