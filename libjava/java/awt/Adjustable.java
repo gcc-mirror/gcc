@@ -18,8 +18,8 @@ import java.awt.event.*;
 
 public interface Adjustable
 {
-  static final int HORIZONTAL;
-  static final int VERTICAL;
+  public static final int HORIZONTAL = 0;
+  public static final int VERTICAL = 1;
 
   public void addAdjustmentListener (AdjustmentListener l);
   public int getBlockIncrement ();

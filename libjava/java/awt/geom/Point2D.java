@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libjava.
 
@@ -10,7 +10,7 @@ package java.awt.geom;
 
 /**
  * @author Per Bothner <bothner@cygnus.com>
- * @date Fenruary 8, 1999.
+ * @date February 8, 1999.
  */
 
 /* Written using "Java Class Libraries", 2nd edition, plus online
@@ -65,5 +65,83 @@ public abstract class Point2D implements Cloneable
   public Object clone()
   {
     return super.clone();
+  }
+
+  public static class Double extends Point2D
+  {
+    public double x;
+    public double y;
+
+    public Double ()
+    {
+      x = 0;
+      y = 0;
+    }
+
+    public Double (double x, double y)
+    {
+      this.x = x;
+      this.y = y;
+    }
+
+    public double getX ()
+    {
+      return x;
+    }
+
+    public double getY ()
+    {
+      return y;
+    }
+
+    public void setLocation (double x, double y)
+    {
+      this.x = x;
+      this.y = y;
+    }
+
+    public String toString ()
+    {
+      return "(" + x + ", " + y + ")";
+    }
+  }
+
+  public static class Float extends Point2D
+  {
+    public float x;
+    public float y;
+
+    public Float ()
+    {
+      x = 0;
+      y = 0;
+    }
+
+    public Float (float x, float y)
+    {
+      this.x = x;
+      this.y = y;
+    }
+
+    public double getX ()
+    {
+      return x;
+    }
+
+    public double getY ()
+    {
+      return y;
+    }
+
+    public void setLocation (double x, double y)
+    {
+      this.x = (float) x;
+      this.y = (float) y;
+    }
+
+    public String toString ()
+    {
+      return "(" + x + ", " + y + ")";
+    }
   }
 }
