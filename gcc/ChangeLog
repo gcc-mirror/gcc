@@ -1,3 +1,8 @@
+2003-12-17  Santiago Vila  <sanvila@unex.es>
+
+	* config/kfreebsdgnu.h (TARGET_OS_CPP_BUILTINS): Rename from
+	TARET_OS_CPP_BUILTINS.
+
 2003-12-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* emit-rtl.c: Fix signed/unsigned comparison warnings.

@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE "int"
 
 #undef TARGET_OS_CPP_BUILTINS
-#define TARET_OS_CPP_BUILTINS()				\
+#define TARGET_OS_CPP_BUILTINS()				\
   builtin_define ("__GNU_KFreeBSD__=0");		\
   builtin_define ("__gnu_kfreebsd__=0");		\
   builtin_define ("__FreeBSD_kernel__=5");		\
