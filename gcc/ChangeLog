@@ -1,5 +1,19 @@
 2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-common.c (STD_C9L, ADJ_STD): Define.
+	(printf_length_specs, scanf_length_specs): Mark "ll" as standard
+	STD_C9L.
+	(T99_LL): Rename to T9L_LL.
+	(T99_ULL): Rename to T9L_ULL.
+	(print_char_table, scan_char_table): Use T9L_LL and T9L_ULL
+	instead of T99_LL and T99_ULL.
+	(check_format_info_main): Use ADJ_STD on all format standard
+	versions being compared.
+	* c-common.h: Declare warn_long_long.
+	* c-tree.h: Don't declare warn_long_long.
+
+2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* COPYING: Update to current
 	ftp://ftp.gnu.org/pub/gnu/Licenses/COPYING-2.0 (fixes references
 	to 19yy as example year in copyright notice).

@@ -1,3 +1,7 @@
+2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* cp-tree.h: Don't declare warn_long_long.
+
 2000-12-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* tree.c (no_linkage_helper): Use CLASS_TYPE_P instead of

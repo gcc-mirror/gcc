@@ -1,3 +1,7 @@
+2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/format-warnll-1.c: New test.
+
 2000-12-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/cmdlne-P.c: New test.
