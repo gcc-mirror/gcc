@@ -1,3 +1,10 @@
+2004-10-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17132
+	* pt.c (instantiate_class_template): Increment
+	processing_template_decl when substituting into a member class
+	template.
+
 2004-10-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18140
