@@ -2236,7 +2236,7 @@ compile_file (name)
   if (flag_caller_saves)
     init_caller_save ();
 
-  /* How that we can emit RTL, see if the value of flag_regmove was
+  /* Now that we can emit RTL, see if the value of flag_regmove was
      defaulted from -O2 and, if so, set its proper default.  */
   if (flag_regmove == 2)
     flag_regmove = regmove_profitable_p ();
