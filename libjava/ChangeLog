@@ -1,3 +1,8 @@
+2003-07-18  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/logging/Handler.java (isLoggable): Check record level
+	smaller or equal.
+
 2003-07-17  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/awt/peer/gtk/GtkToolkit.java:
