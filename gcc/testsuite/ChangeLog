@@ -1,3 +1,9 @@
+2004-02-02  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	DR206
+	PR c++/13813
+	* g++.dg/template/member4.C: New test.
+
 2004-02-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13113
