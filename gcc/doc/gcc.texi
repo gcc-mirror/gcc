@@ -3126,14 +3126,19 @@ file is responsible for initialization, decoding arguments, opening and
 closing files, and sequencing the passes.
 
 @cindex parsing pass
-The parsing pass is invoked only once, to parse the entire input.  The RTL
-intermediate code for a function is generated as the function is parsed, a
-statement at a time.  Each statement is read in as a syntax tree and then
-converted to RTL; then the storage for the tree for the statement is
-reclaimed.  Storage for types (and the expressions for their sizes),
-declarations, and a representation of the binding contours and how they nest,
-remain until the function is finished being compiled; these are all needed
-to output the debugging information.
+The parsing pass is invoked only once, to parse the entire input.  A
+high level tree representation is then generated from the input, 
+one function at a time.  This tree code is then transformed into RTL
+intermediate code, and processed. The files involved in transforming
+the trees into RTL are @file{expr.c}, @file{expmed.c}, and
+@file{stmt.c}. 
+@c Note, the above files aren't strictly the only files involved. It's
+@c all over the place (function.c, final.c,etc).  However, those are
+@c the files that are supposed to be directly involved, and have
+@c their purpose listed as such, so i've only listed them.
+The order of trees that are processed, is not
+necessarily the same order they are generated from 
+the input, due to deferred inlining, and other considerations.  
 
 @findex rest_of_compilation
 @findex rest_of_decl_compilation
@@ -3146,7 +3151,8 @@ the assembler language.  All other compiler passes run, in sequence,
 within @code{rest_of_compilation}.  When that function returns from
 compiling a function definition, the storage used for that function
 definition's compilation is entirely freed, unless it is an inline
-function
+function, or was deferred for some reason (this can occur in
+templates, for example).
 @ifset USING
 (@pxref{Inline,,An Inline Function is As Fast As a Macro}).
 @end ifset
@@ -3161,9 +3167,7 @@ with @option{-d} options.
 @itemize @bullet
 @item
 Parsing.  This pass reads the entire text of a function definition,
-constructing partial syntax trees.  This and RTL generation are no longer
-truly separate passes (formerly they were), but it is easier to think
-of them as separate.
+constructing a high level tree representation.
 
 The tree representation does not entirely follow C syntax, because it is
 intended to support other languages as well.
@@ -3172,16 +3176,15 @@ Language-specific data type analysis is also done in this pass, and every
 tree node that represents an expression has a data type attached.
 Variables are represented as declaration nodes.
 
-@cindex constant folding
-@cindex arithmetic simplifications
-@cindex simplifications, arithmetic
-Constant folding and some arithmetic simplifications are also done
-during this pass.
-
 The language-independent source files for parsing are
 @file{stor-layout.c}, @file{fold-const.c}, and @file{tree.c}.
 There are also header files @file{tree.h} and @file{tree.def}
 which define the format of the tree representation.@refill
+
+C Preprocessing, for language front ends, that want or require it, is
+performed by cpplib, which is covered in seperate documentation.  In
+particular, the internals are covered in @xref{Top, ,Cpplib internals, cppinternals, Cpplib Internals}.
+
 
 @c Avoiding overfull is tricky here.
 The source files to parse C are
@@ -3202,7 +3205,8 @@ They are @file{parse.y},
 @file{except.c},@*
 @file{expr.c}, @file{init.c}, @file{lex.c},
 @file{method.c}, @file{ptree.c},@*
-@file{search.c}, @file{tree.c},
+@file{search.c}, @file{spew.c}, @*
+@file{semantics.c}, @file{tree.c},
 @file{typeck2.c}, and
 @file{typeck.c}, along with header files @file{cp-tree.def},
 @file{cp-tree.h}, and @file{decl.h}.
@@ -3214,11 +3218,31 @@ well.
 
 The file @file{c-common.c} is also used for all of the above languages.
 
+
+@cindex Tree optimization
+@item
+Tree optimization.   This is the optimization of the tree
+representation, before converting into RTL code.
+
+@cindex inline on trees, automatic
+Currently, the main optimization performed here is tree-based
+inlining.  
+This is implemented for C++ in @file{cp/optimize.c}.  Note that
+tree based inlining turns off rtx based inlining (since it's more
+powerful, it would be a waste of time to do rtx based inlining in
+addition).
+The C front end currently does not perform tree based inlining. 
+
+@cindex constant folding
+@cindex arithmetic simplifications
+@cindex simplifications, arithmetic
+Constant folding and some arithmetic simplifications are also done
+during this pass, on the tree representation.
+The routines that perform these tasks are located in @file{fold-const.c}. 
+
 @cindex RTL generation
 @item
 RTL generation.  This is the conversion of syntax tree into RTL code.
-It is actually done statement-by-statement during parsing, but for
-most purposes it can be thought of as a separate pass.
 
 @cindex target-parameter-dependent code
 This is where the bulk of target-parameter-dependent code is found,
@@ -3259,7 +3283,7 @@ Aside from debugging information output, none of the following passes
 refers to the tree structure representation of the function (only
 part of which is saved).
 
-@cindex inline, automatic
+@cindex inline on rtx, automatic
 The decision of whether the function can and should be expanded inline
 in its subsequent callers is made at the end of rtl generation.  The
 function must meet certain criteria, currently related to the size of
@@ -3275,6 +3299,22 @@ is also used for this purpose.
 The option @option{-dr} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.rtl} to
 the input file name.
+
+@c Should the exception handling pass be talked about here?
+
+@cindex sibling call optimization
+@item
+Sibiling call optimization.   This pass performs tail recursion
+elimination, and tail and sibling call optimizations.  The purpose of
+these optimizations is to reduce the overhead of function calls,
+whenever possible.
+
+The source file of this pass is @file{sibcall.c}
+
+@opindex di
+The option @option{-di} causes a debugging dump of the RTL code after
+this pass is run. This dump file's name is made by appending
+@samp{.sibling} to the input file name.
 
 @cindex jump optimization
 @cindex unreachable code
@@ -3322,26 +3362,71 @@ the second conditional test.  The source code for this pass is in
 @cindex constant propagation
 @item
 Common subexpression elimination.  This pass also does constant
-propagation.  Its source file is @file{cse.c}.  If constant
-propagation causes conditional jumps to become unconditional or to
-become no-ops, jump optimization is run again when CSE is finished.
+propagation.  Its source files are @file{cse.c}, and @file{cselib.c}.
+If constant  propagation causes conditional jumps to become
+unconditional or to become no-ops, jump optimization is run again when
+CSE is finished. 
 
 @opindex ds
 The option @option{-ds} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.cse} to
 the input file name.
 
+@cindex SSA optimizations
+@cindex Single Static Assignment optimizations
+@opindex fssa
+@item
+Static Single Assignment (SSA) based optimization passes. The
+SSA conversion passes (to/from) are turned on by the @option{-fssa}
+option (it is also done automatically if you enable an SSA optimization pass).
+These passes utilize a form called Static Single Assignment. In SSA form,
+each variable (pseudo register) is only set once, giving you def-use
+and use-def chains for free, and enabling a lot more optimization
+passes to be run in linear time.
+Conversion to and from SSA form is handled by functions in
+@file{ssa.c}.
+
+@opindex de
+The option @option{-de} causes a debugging dump of the RTL code after
+this pass.  This dump file's name is made by appending @samp{.ssa} to
+the input file name.
+@itemize @bullet
+@cindex SSA DCE 
+@cindex DCE, SSA based
+@cindex dead code elimination
+@opindex fdce
+@item
+Dead Code Elimination.  Turned on by the @option{-fdce} option. 
+This pass performs elimination of code considered unnecessary because it
+is never executed.  It operates in linear time.
+
+@opindex dX
+The option @option{-dX} causes a debugging dump of the RTL code after
+this pass. This dump file's name is made by appending @samp{.dce} to
+the input file name.
+@end itemize
 @cindex global common subexpression elimination
 @cindex constant propagation
 @cindex copy propagation
 @item
-Global common subexpression elimination.  This pass performs GCSE
-using Morel-Renvoise Partial Redundancy Elimination, with the exception
-that it does not try to move invariants out of loops---that is left to
-the loop optimization pass.  This pass also performs global constant
-and copy propagation.
+Global common subexpression elimination.  This pass performs two
+different types of GCSE  depending on whether you are optimizing for
+size or not (LCM based GCSE tends to increase code size for a gain in
+speed, while Morel-Renvoise based GCSE does not). 
+When optimizing for size, GCSE is done using Morel-Renvoise Partial
+Redundancy Elimination, with the exception that it does not try to move
+invariants out of loops---that is left to  the loop optimization pass.
+If MR PRE GCSE is done, code hoisting (aka unification) is also done, as
+well as load motion.
+If you are optimizing for speed, LCM (lazy code motion) based GCSE is
+done. LCM is based on the work of Knoop, Ruthing, and Steffen.  LCM
+based GCSE also does loop invariant code motion.  We also perform load
+and store motion when optimizing for speed.
+Regardless of which type of GCSE is used, the GCSE pass also performs
+global constant and  copy propagation.  
 
-The source file for this pass is gcse.c.
+The source file for this pass is @file{gcse.c}, and the LCM routines
+are in @file{lcm.c}. 
 
 @opindex dG
 The option @option{-dG} causes a debugging dump of the RTL code after
@@ -3357,6 +3442,7 @@ and optionally does strength-reduction and loop unrolling as well.
 Its source files are @file{loop.c} and @file{unroll.c}, plus the header
 @file{loop.h} used for communication between them.  Loop unrolling uses
 some functions in @file{integrate.c} and the header @file{integrate.h}.
+Loop dependency analysis routines are contained in @file{dependence.c}.
 
 @opindex dL
 The option @option{-dL} causes a debugging dump of the RTL code after
@@ -3407,6 +3493,18 @@ and then attempts to match the result against the machine description.
 The option @option{-dc} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.combine}
 to the input file name.
+
+@cindex if conversion
+@item
+If-conversion is a transformation that transforms control dependencies
+into data dependencies (IE it transforms conditional code into a
+single control stream).
+It is implemented in the file @file{ifcvt.c}.
+
+@opindex dE
+The option @option{-dE} causes a debugging dump of the RTL code after
+this pass.  This dump file's name is made by appending @samp{.ce} to
+the input file name.
 
 @cindex register movement
 @item
@@ -3497,6 +3595,21 @@ The option @option{-dR} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.sched2}
 to the input file name.
 
+@cindex basic block reordering
+@cindex reordering, block
+@item
+Basic block reordering.  This pass implements profile guided code
+positioning. If profile information is not available, various types of
+static analysis are performed to make the predictions normally coming
+from the profile feedback (IE execution frequency, branch probability,
+etc). It is implemented in the file @file{bb-reorder.c}, and the
+various prediction routines are in @file{predict.c}.
+
+@opindex dB
+The option @option{-dB} causes a debugging dump of the RTL code after
+this pass. This dump file's name is made by appending @samp{.bbro} to
+the input file name.
+
 @cindex cross-jumping
 @cindex no-op move instructions
 @item
@@ -3560,8 +3673,9 @@ for communication between these files.
 Debugging information output.  This is run after final because it must
 output the stack slot offsets for pseudo registers that did not get
 hard registers.  Source files are @file{dbxout.c} for DBX symbol table
-format, @file{sdbout.c} for SDB symbol table format, and
-@file{dwarfout.c} for DWARF symbol table format.
+format, @file{sdbout.c} for SDB symbol table format,  @file{dwarfout.c}
+for DWARF symbol table format, and the files @file{dwarf2out.c} and
+@file{dwarf2asm.c} for DWARF2 symbol table format.
 @end itemize
 
 Some additional files are used by all or many passes:

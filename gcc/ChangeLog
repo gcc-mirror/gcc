@@ -1,3 +1,8 @@
+2001-06-14  Daniel J. Berlin <dan@cgsoftware.com>
+
+	* doc/gcc.texi:  Update passes documentation to be more in tune
+	with reality.
+
 2001-06-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/c-tree.texi, doc/contrib.texi, doc/extend.texi,
