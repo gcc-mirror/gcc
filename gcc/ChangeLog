@@ -1,5 +1,9 @@
 2000-05-19  Richard Henderson  <rth@cygnus.com>
 
+	* flow.c (make_edges): The sibling call edge to exit is abnormal.
+
+2000-05-19  Richard Henderson  <rth@cygnus.com>
+
 	* jump.c (redirect_jump): Add delete_unused argument.  Don't
 	remove labels and code following when LABEL_NUSES goes to zero.
 	(invert_jump): Likewise.
