@@ -37,50 +37,11 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "obstack.h"
 #include "toplev.h"
+#include "v850-protos.h"
 
 #ifndef streq
 #define streq(a,b) (strcmp (a, b) == 0)
 #endif
-
-/* Function prototypes that cannot exist in v850.h due to dependency
-   compilcations.  */
-extern rtx    function_arg
-  PROTO ((CUMULATIVE_ARGS *, enum machine_mode, tree, int));
-extern int    function_arg_partial_nregs
-  PROTO ((CUMULATIVE_ARGS *, enum machine_mode, tree, int));
-extern void   asm_file_start                PROTO ((FILE *));
-extern void   print_operand                 PROTO ((FILE *, rtx, int ));
-extern void   print_operand_address         PROTO ((FILE *, rtx));
-extern void   v850_output_aligned_bss
-  PROTO ((FILE *, tree, char *, int, int));
-extern void   v850_output_common
-  PROTO ((FILE *, tree, char *, int, int));
-extern void   v850_output_local
-  PROTO ((FILE *, tree, char *, int, int));
-extern int    const_costs                   PROTO ((rtx, enum rtx_code));
-extern char * output_move_double            PROTO ((rtx *));
-extern char * output_move_single            PROTO ((rtx *));
-extern int    ep_memory_operand
-  PROTO ((rtx, enum machine_mode, int));
-extern int    reg_or_0_operand              PROTO ((rtx, enum machine_mode));
-extern int    reg_or_int5_operand           PROTO ((rtx, enum machine_mode));
-extern int    call_address_operand          PROTO ((rtx, enum machine_mode));
-extern int    movsi_source_operand          PROTO ((rtx, enum machine_mode));
-extern int    power_of_two_operand          PROTO ((rtx, enum machine_mode));
-extern int    not_power_of_two_operand      PROTO ((rtx, enum machine_mode));
-extern int    special_symbolref_operand     PROTO ((rtx, enum machine_mode));
-extern void   v850_reorg                    PROTO ((rtx));
-extern void   notice_update_cc              PROTO ((rtx, rtx));
-extern int    v850_valid_machine_decl_attribute
-  PROTO ((tree, tree, tree));
-extern int    v850_interrupt_function_p     PROTO ((tree));
-extern int    pattern_is_ok_for_prologue    PROTO ((rtx, enum machine_mode));
-extern int    pattern_is_ok_for_epilogue    PROTO ((rtx, enum machine_mode));
-extern int    register_is_ok_for_epilogue   PROTO ((rtx, enum machine_mode));
-extern char * construct_save_jarl           PROTO ((rtx));
-extern char * construct_restore_jr          PROTO ((rtx));
-extern void   v850_encode_data_area         PROTO ((tree));
-extern void   v850_set_default_decl_attr    PROTO ((tree));
 
 /* Function prototypes for stupid compilers:  */
 static void const_double_split
@@ -1537,7 +1498,7 @@ expand_prologue ()
   /* Save/setup global registers for interrupt functions right now */
   if (interrupt_handler)
     {
-      emit_insn (gen_save_interrupt ());
+	emit_insn (gen_save_interrupt ());
       
       actual_fsize -= INTERRUPT_FIXED_SAVE_SIZE;
       
@@ -3156,7 +3117,7 @@ rtx
 v850_va_arg (valist, type)
      tree valist, type;
 {
-  HOST_WIDE_INT size, rsize, align;
+  HOST_WIDE_INT size, rsize;
   tree addr, incr;
   rtx addr_rtx;
   int indirect;
