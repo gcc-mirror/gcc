@@ -1,3 +1,7 @@
+Tue Dec 11 07:08:57 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* localealias.c (strings.h): Include.
+
 Mon Dec 10 06:09:57 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* Makefile.in (OUTPUT_OPTION): Add configure variable.
