@@ -793,7 +793,6 @@ add_dependence (insn, elem, dep_type)
       && (INSN_BB (elem) != INSN_BB (insn)))
     return;
 
-#endif
 
   /* If we already have a true dependency for ELEM, then we do not
      need to do anything.  Avoiding the list walk below can cut
@@ -801,6 +800,7 @@ add_dependence (insn, elem, dep_type)
   if (true_dependency_cache
       && TEST_BIT (true_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem)))
     return;
+#endif
 
   /* Check that we don't already have this dependence.  */
   for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
@@ -811,10 +811,12 @@ add_dependence (insn, elem, dep_type)
 	if ((int) dep_type < (int) REG_NOTE_KIND (link))
 	  PUT_REG_NOTE_KIND (link, dep_type);
 
+#ifdef INSN_SCHEDULING
 	/* If we are adding a true dependency to INSN's LOG_LINKs, then
 	   note that in the bitmap cache of true dependency information.  */
 	if ((int)dep_type == 0 && true_dependency_cache)
 	  SET_BIT (true_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem));
+#endif
 	return;
       }
   /* Might want to check one level of transitivity to save conses.  */
@@ -848,11 +850,13 @@ remove_dependence (insn, elem)
 	  else
 	    LOG_LINKS (insn) = next;
 
+#ifdef INSN_SCHEDULING
 	  /* If we are removing a true dependency from the LOG_LINKS list,
 	     make sure to remove it from the cache too.  */
 	  if (REG_NOTE_KIND (link) == 0 && true_dependency_cache)
 	    RESET_BIT (true_dependency_cache[INSN_LUID (insn)],
 		       INSN_LUID (elem));
+#endif
 
 	  free_INSN_LIST_node (link);
 
