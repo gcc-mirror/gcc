@@ -1,3 +1,7 @@
+2002-08-01  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md: Add [!]TARGET_MIPS16 to sgtu conditions.
+
 2002-08-01  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* gcse.c (expr_hash_table_size, n_exprs, set_hash_table_size,
