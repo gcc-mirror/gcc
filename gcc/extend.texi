@@ -366,9 +366,7 @@ does not refer to anything that has gone out of scope, you should be
 safe.
 
 GNU CC implements taking the address of a nested function using a
-technique called @dfn{trampolines}.  A paper describing them is
-available from @samp{maya.idiap.ch} in directory @file{pub/tmb},
-file @file{usenix88-lexic.ps.Z}.
+technique called @dfn{trampolines}.
 
 A nested function can jump to a label inherited from a containing
 function, provided the label was explicitly declared in the containing
@@ -2174,7 +2172,7 @@ possibly unused.  GNU CC will not produce a warning for any variables of
 that type, even if the variable appears to do nothing.  This is often
 the case with lock or thread classes, which are usually defined and then
 not referenced, but contain constructors and destructors that have
-non-trivial bookeeping functions.
+nontrivial bookkeeping functions.
 
 @end table
 
