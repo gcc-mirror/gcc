@@ -361,6 +361,9 @@ main (argc, argv)
       /* Output interface for pipeline hazards recognition based on
 	 DFA (deterministic finite state automata.  */
       printf ("\n/* DFA based pipeline interface.  */");
+      printf ("\n#ifndef AUTOMATON_ALTS\n");
+      printf ("#define AUTOMATON_ALTS 0\n");
+      printf ("#endif\n\n");
       printf ("\n#ifndef AUTOMATON_STATE_ALTS\n");
       printf ("#define AUTOMATON_STATE_ALTS 0\n");
       printf ("#endif\n\n");
@@ -384,10 +387,12 @@ main (argc, argv)
       printf ("   Use the function if bypass_p returns nonzero for\n");
       printf ("   the 1st insn. */\n");
       printf ("extern int insn_latency PARAMS ((rtx, rtx));\n\n");
+      printf ("\n#if AUTOMATON_ALTS\n");
       printf ("/* The following function returns number of alternative\n");
       printf ("   reservations of given insn.  It may be used for better\n");
       printf ("   insns scheduling heuristics. */\n");
       printf ("extern int insn_alts PARAMS ((rtx));\n\n");
+      printf ("#endif\n\n");
       printf ("/* Maximal possible number of insns waiting results being\n");
       printf ("   produced by insns whose execution is not finished. */\n");
       printf ("extern int max_insn_queue_index;\n\n");

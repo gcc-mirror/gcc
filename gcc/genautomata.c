@@ -7577,10 +7577,6 @@ output_reserved_units_table_name (f, automaton)
 /* Name of result variable in some functions.  */
 #define RESULT_VARIABLE_NAME "res"
 
-/* Name of function (attribute) to translate insn into number of insn
-   alternatives reservation.  */
-#define INSN_ALTS_FUNC_NAME "insn_alts"
-
 /* Name of function (attribute) to translate insn into internal insn
    code.  */
 #define INTERNAL_DFA_INSN_CODE_FUNC_NAME "internal_dfa_insn_code"
