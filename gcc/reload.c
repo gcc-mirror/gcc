@@ -4561,12 +4561,18 @@ find_reloads_address_1 (x, context, loc, opnum, type, ind_levels)
 	  {
 	    op0 = SUBREG_REG (op0);
 	    code0 = GET_CODE (op0);
+	    if (code0 == REG && REGNO (op0) < FIRST_PSEUDO_REGISTER)
+	      op0 = gen_rtx (REG, word_mode,
+			     REGNO (op0) + SUBREG_WORD (orig_op0));
 	  }
 
 	if (GET_CODE (op1) == SUBREG)
 	  {
 	    op1 = SUBREG_REG (op1);
 	    code1 = GET_CODE (op1);
+	    if (code1 == REG && REGNO (op1) < FIRST_PSEUDO_REGISTER)
+	      op1 = gen_rtx (REG, GET_MODE (op1),
+			     REGNO (op1) + SUBREG_WORD (orig_op1));
 	  }
 
 	if (code0 == MULT || code0 == SIGN_EXTEND || code0 == TRUNCATE 
@@ -4828,21 +4834,37 @@ find_reloads_address_1 (x, context, loc, opnum, type, ind_levels)
       return 0;
 
     case SUBREG:
-      /* If this is a SUBREG of a hard register and the resulting register is
-	 of the wrong class, reload the whole SUBREG.  This avoids needless
-	 copies if SUBREG_REG is multi-word.  */
-      if (GET_CODE (SUBREG_REG (x)) == REG
-	  && REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER)
+      if (GET_CODE (SUBREG_REG (x)) == REG)
 	{
-	  int regno = REGNO (SUBREG_REG (x)) + SUBREG_WORD (x);
-
-	  if (! (context ? REGNO_OK_FOR_INDEX_P (regno)
-		 : REGNO_OK_FOR_BASE_P (regno)))
+	  /* If this is a SUBREG of a hard register and the resulting register
+	     is of the wrong class, reload the whole SUBREG.  This avoids
+	     needless copies if SUBREG_REG is multi-word.  */
+	  if (REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER)
 	    {
-	      push_reload (x, NULL_RTX, loc, NULL_PTR,
-			   context ? INDEX_REG_CLASS : BASE_REG_CLASS,
-			   GET_MODE (x), VOIDmode, 0, 0, opnum, type);
-	      return 1;
+	      int regno = REGNO (SUBREG_REG (x)) + SUBREG_WORD (x);
+
+	      if (! (context ? REGNO_OK_FOR_INDEX_P (regno)
+		     : REGNO_OK_FOR_BASE_P (regno)))
+		{
+		  push_reload (x, NULL_RTX, loc, NULL_PTR,
+			       context ? INDEX_REG_CLASS : BASE_REG_CLASS,
+			       GET_MODE (x), VOIDmode, 0, 0, opnum, type);
+		  return 1;
+		}
+	    }
+	  /* If this is a SUBREG of a pseudo-register, and the psuedo-register
+	     is larger than the class size, then reload the whole SUBREG.  */
+	  else
+	    {
+	      enum reg_class class = (context
+				      ? INDEX_REG_CLASS : BASE_REG_CLASS);
+	      if (CLASS_MAX_NREGS (class, GET_MODE (SUBREG_REG (x)))
+		  > reg_class_size[class])
+		{
+		  push_reload (x, NULL_RTX, loc, NULL_PTR, class,
+			       GET_MODE (x), VOIDmode, 0, 0, opnum, type);
+		  return 1;
+		}
 	    }
 	}
       break;
