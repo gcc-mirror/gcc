@@ -58,27 +58,27 @@ typedef SBITMAP_ELT_TYPE *sbitmap_ptr;
 /* Loop over all elements of SBITSET, starting with MIN.  */
 #define EXECUTE_IF_SET_IN_SBITMAP(SBITMAP, MIN, N, CODE)		\
 do {									\
-  unsigned int _word_num;						\
-  unsigned int _bit_num = (MIN) % (unsigned int) SBITMAP_ELT_BITS;	\
-  unsigned int _size = (SBITMAP)->size;					\
-  SBITMAP_ELT_TYPE *_ptr = (SBITMAP)->elms;				\
+  unsigned int word_num_;						\
+  unsigned int bit_num_ = (MIN) % (unsigned int) SBITMAP_ELT_BITS;	\
+  unsigned int size_ = (SBITMAP)->size;					\
+  SBITMAP_ELT_TYPE *ptr_ = (SBITMAP)->elms;				\
 									\
-  for (_word_num = (MIN) / (unsigned int) SBITMAP_ELT_BITS;		\
-       _word_num < _size; _word_num++, _bit_num = 0)			\
+  for (word_num_ = (MIN) / (unsigned int) SBITMAP_ELT_BITS;		\
+       word_num_ < size_; word_num_++, bit_num_ = 0)			\
     {									\
-      SBITMAP_ELT_TYPE _word = _ptr[_word_num];				\
+      SBITMAP_ELT_TYPE word_ = ptr_[word_num_];				\
 									\
-      if (_word != 0)							\
-	for (; _bit_num < SBITMAP_ELT_BITS; _bit_num++)			\
+      if (word_ != 0)							\
+	for (; bit_num_ < SBITMAP_ELT_BITS; bit_num_++)			\
 	  {								\
-	    SBITMAP_ELT_TYPE _mask = (SBITMAP_ELT_TYPE)1 << _bit_num;	\
+	    SBITMAP_ELT_TYPE _mask = (SBITMAP_ELT_TYPE)1 << bit_num_;	\
 									\
-	    if ((_word & _mask) != 0)					\
+	    if ((word_ & _mask) != 0)					\
 	      {								\
-		_word &= ~ _mask;					\
-		(N) = _word_num * SBITMAP_ELT_BITS + _bit_num;		\
+		word_ &= ~ _mask;					\
+		(N) = word_num_ * SBITMAP_ELT_BITS + bit_num_;		\
 		CODE;							\
-		if (_word == 0)						\
+		if (word_ == 0)						\
 		  break;						\
 	      }								\
 	  }								\
