@@ -21,6 +21,7 @@
 
 SHELL = /bin/sh
 MAKEOVERRIDES=
+.NOEXPORTS:
 
 #### Start of system configuration section. ####
 
@@ -73,6 +74,7 @@ RANLIB = @RANLIB@
 # Quote this way so that it can be used to set shell variables too.
 FLAGS_TO_PASS= \
 	CC='$(CC)' \
+	LD='$(LD)' \
 	LIBTOOL='$(LIBTOOL)' \
 	CFLAGS='$(CFLAGS)' \
 	CPPFLAGS='$(CPPFLAGS)' \
