@@ -1,3 +1,7 @@
+Fri Aug 27 09:48:59 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c (fatal): Make definition static to match prototype.
+
 Fri Aug 27 10:33:35 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* combine.c (get_last_value): Don't look for earlier sets if the last

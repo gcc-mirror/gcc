@@ -5341,7 +5341,7 @@ fancy_abort ()
 
 /* Output an error message and exit */
 
-void
+static void
 fatal VPROTO((const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
