@@ -37,7 +37,7 @@ static inline char *
 ctime_adaptor (char* (*ctime_r)(T_clock *clock, T_buf *buf),
 	       time_t *clock, char (&buf)[buflen])
 {
-  return ctime_r(clock, buf);
+  return ctime_r (clock, buf);
 }
 
 /* This is an old-style ctime_r, used on IRIX 5.2.  */
@@ -46,7 +46,7 @@ static inline char *
 ctime_adaptor (char* (*ctime_r)(T_clock *clock, T_buf *buf, T_buflen len),
 	       time_t *clock, char (&buf)[buflen])
 {
-  return ctime_r(clock, buf, buflen);
+  return ctime_r (clock, buf, buflen);
 }
 #endif
 
