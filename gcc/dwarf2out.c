@@ -2140,6 +2140,7 @@ typedef enum
   dw_val_class_offset,
   dw_val_class_loc,
   dw_val_class_loc_list,
+  dw_val_class_range_list,
   dw_val_class_const,
   dw_val_class_unsigned_const,
   dw_val_class_long_long,
@@ -3447,6 +3448,9 @@ static void add_AT_lbl_offset		PARAMS ((dw_die_ref,
 static void add_AT_offset		PARAMS ((dw_die_ref,
 						 enum dwarf_attribute,
 						 unsigned long));
+static void add_AT_range_list		PARAMS ((dw_die_ref,
+						 enum dwarf_attribute,
+						 unsigned long));
 static dw_attr_ref get_AT		PARAMS ((dw_die_ref,
 						 enum dwarf_attribute));
 static const char *get_AT_low_pc	PARAMS ((dw_die_ref));
@@ -3672,6 +3676,9 @@ static char *gen_internal_sym 		PARAMS ((const char *));
 #ifndef DEBUG_LOC_SECTION_LABEL
 #define DEBUG_LOC_SECTION_LABEL		"Ldebug_loc"
 #endif
+#ifndef DEBUG_RANGES_SECTION_LABEL
+#define DEBUG_RANGES_SECTION_LABEL	"Ldebug_ranges"
+#endif
 #ifndef DEBUG_MACINFO_SECTION_LABEL
 #define DEBUG_MACINFO_SECTION_LABEL     "Ldebug_macinfo"
 #endif
@@ -3689,6 +3696,7 @@ static char debug_info_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 static char debug_line_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 static char macinfo_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 static char loc_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
+static char ranges_section_label[2 * MAX_ARTIFICIAL_LABEL_BYTES];
 #ifndef TEXT_END_LABEL
 #define TEXT_END_LABEL		"Letext"
 #endif
@@ -4699,7 +4707,7 @@ add_AT_lbl_offset (die, attr_kind, label)
 
 /* Add an offset attribute value to a DIE.  */
 
-static void
+static inline void
 add_AT_offset (die, attr_kind, offset)
      dw_die_ref die;
      enum dwarf_attribute attr_kind;
@@ -4710,6 +4718,23 @@ add_AT_offset (die, attr_kind, offset)
   attr->dw_attr_next = NULL;
   attr->dw_attr = attr_kind;
   attr->dw_attr_val.val_class = dw_val_class_offset;
+  attr->dw_attr_val.v.val_offset = offset;
+  add_dwarf_attr (die, attr);
+}
+
+/* Add an range_list attribute value to a DIE.  */
+
+static void
+add_AT_range_list (die, attr_kind, offset)
+     dw_die_ref die;
+     enum dwarf_attribute attr_kind;
+     unsigned long offset;
+{
+  dw_attr_ref attr = (dw_attr_ref) xmalloc (sizeof (dw_attr_node));
+
+  attr->dw_attr_next = NULL;
+  attr->dw_attr = attr_kind;
+  attr->dw_attr_val.val_class = dw_val_class_range_list;
   attr->dw_attr_val.v.val_offset = offset;
   add_dwarf_attr (die, attr);
 }
@@ -5146,6 +5171,9 @@ print_die (die, outfile)
 	case dw_val_class_loc_list:
 	  fprintf (outfile, "location list -> label:%s",
 		   AT_loc_list (a)->ll_symbol);
+	  break;
+	case dw_val_class_range_list:
+	  fprintf (outfile, "range list");
 	  break;
 	case dw_val_class_const:
 	  fprintf (outfile, "%ld", AT_int (a));
@@ -5818,6 +5846,9 @@ size_of_die (die)
 	case dw_val_class_loc_list:
 	  size += DWARF_OFFSET_SIZE;
 	  break;
+	case dw_val_class_range_list:
+	  size += DWARF_OFFSET_SIZE;
+	  break;
 	case dw_val_class_const:
 	  size += size_of_sleb128 (AT_int (a));
 	  break;
@@ -5956,6 +5987,7 @@ value_format (a)
     {
     case dw_val_class_addr:
       return DW_FORM_addr;
+    case dw_val_class_range_list:
     case dw_val_class_offset:
       if (DWARF_OFFSET_SIZE == 4)
 	return DW_FORM_data4;
@@ -6147,7 +6179,7 @@ output_loc_list (list_head)
     }
   for (curr = list_head; curr != NULL; curr=curr->dw_loc_next)
     {
-      int size;
+      unsigned long size;
       dw2_asm_output_delta (DWARF2_ADDR_SIZE, curr->begin, curr->section,
 			    "Location list begin address (%s)",
 			    list_head->ll_symbol);
@@ -6157,9 +6189,10 @@ output_loc_list (list_head)
       size = size_of_locs (curr->expr);
       
       /* Output the block length for this list of location operations.  */
-      dw2_asm_output_data (constant_size (size), size, "%s",
-			   "Location expression size");
-      
+      if (size > 0xffff)
+	abort ();
+      dw2_asm_output_data (2, size, "%s", "Location expression size");
+
       output_loc_sequence (curr->expr);
     }
   dw2_asm_output_data (DWARF_OFFSET_SIZE, 0,
@@ -6202,6 +6235,17 @@ output_die (die)
 	case dw_val_class_offset:
 	  dw2_asm_output_data (DWARF_OFFSET_SIZE, a->dw_attr_val.v.val_offset,
 			       "%s", name);
+	  break;
+
+	case dw_val_class_range_list:
+	  {
+	    char *p = strchr (ranges_section_label, '\0');
+
+	    sprintf (p, "+0x%lx", a->dw_attr_val.v.val_offset);
+	    dw2_asm_output_offset (DWARF_OFFSET_SIZE, ranges_section_label,
+				   "%s", name);
+	    *p = '\0';
+	  }
 	  break;
 
 	case dw_val_class_loc:
@@ -10388,7 +10432,7 @@ gen_lexical_block_die (stmt, context_die, depth)
 	{
 	  tree chain;
 
-	  add_AT_offset (stmt_die, DW_AT_ranges, add_ranges (stmt));
+	  add_AT_range_list (stmt_die, DW_AT_ranges, add_ranges (stmt));
 
 	  chain = BLOCK_FRAGMENT_CHAIN (stmt);
 	  do
@@ -11832,6 +11876,8 @@ dwarf2out_init (main_input_filename)
 			       DEBUG_INFO_SECTION_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (debug_line_section_label,
 			       DEBUG_LINE_SECTION_LABEL, 0);
+  ASM_GENERATE_INTERNAL_LABEL (ranges_section_label,
+			       DEBUG_RANGES_SECTION_LABEL, 0);
   named_section_flags (DEBUG_ABBREV_SECTION, SECTION_DEBUG);
   ASM_OUTPUT_LABEL (asm_out_file, abbrev_section_label);
   named_section_flags (DEBUG_INFO_SECTION, SECTION_DEBUG);
@@ -12023,6 +12069,7 @@ dwarf2out_finish (input_filename)
   if (ranges_table_in_use)
     {
       named_section_flags (DEBUG_RANGES_SECTION, SECTION_DEBUG);
+      ASM_OUTPUT_LABEL (asm_out_file, ranges_section_label);
       output_ranges ();
     }
 

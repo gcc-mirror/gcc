@@ -1,5 +1,18 @@
 2001-12-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (dw_val_class): Add dw_val_class_range_list.
+	(DEBUG_RANGES_SECTION_LABEL): Define.
+	(ranges_section_label): Add.
+	(add_AT_range_list): New.
+	(print_die, sizeof_die, value_format): Handle dw_val_class_range_list.
+	(output_loc_list): Location expression length is always 2-byte.
+	(output_die): Handle dw_val_class_range_list.
+	(gen_lexical_block_die): Call add_AT_range_list.
+	(dwarf2out_init): Initialize ranges_section_label.
+	(dwarf2out_finish): Emit ranges_section_label.
+
+2001-12-12  Jakub Jelinek  <jakub@redhat.com>
+
 	* c-typeck.c (digest_init): Allow initializing
 	static storage duration objects with compound literals.
 	* doc/extend.texi (Compound literals): Document the extension.
