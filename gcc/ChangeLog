@@ -1,5 +1,8 @@
 2000-08-06  Kazu Hirata  <kazu@hxi.com>
 
+	* invoke.texi (Options for Debugging Your Program or GCC): Update
+	the names of dump files.
+
 	* h8300.c (dosize): Rearrange code for conciseness.
 	(split_adds_subs): Likewise.
 
