@@ -1,3 +1,9 @@
+2004-01-28  David Jee  <djee@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkFramePeer.java
+	(create): Set the default foreground color to
+	java.awt.SystemColor.windowText.
+
 2004-01-27  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/awt/peer/gtk/GdkClasspathFontPeer.java,
