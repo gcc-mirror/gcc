@@ -444,10 +444,14 @@ SYM (__umodsi3):
 	jbsr	SYM (__udivsi3)
 	addql	IMM (8), sp
 	movel	sp@(8), d1	/* d1 = divisor */
+#ifndef __mcf5200__
 	movel	d1, sp@-
 	movel	d0, sp@-
 	jbsr	SYM (__mulsi3)	/* d0 = (a/b)*b */
 	addql	IMM (8), sp
+#else
+	mulsl	d1,d0
+#endif
 	movel	sp@(4), d1	/* d1 = dividend */
 	subl	d0, d1		/* d1 = a - (a/b)*b */
 	movel	d1, d0
@@ -466,10 +470,14 @@ SYM (__modsi3):
 	jbsr	SYM (__divsi3)
 	addql	IMM (8), sp
 	movel	sp@(8), d1	/* d1 = divisor */
+#ifndef __mcf5200__
 	movel	d1, sp@-
 	movel	d0, sp@-
 	jbsr	SYM (__mulsi3)	/* d0 = (a/b)*b */
 	addql	IMM (8), sp
+#else
+	mulsl	d1,d0
+#endif
 	movel	sp@(4), d1	/* d1 = dividend */
 	subl	d0, d1		/* d1 = a - (a/b)*b */
 	movel	d1, d0
