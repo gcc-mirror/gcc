@@ -1,3 +1,8 @@
+2004-12-14  Jeff Law  <law@redhat.com>
+
+	* tree-outof-ssa.c (coalesce_abnormal_edges): Pass the correct target
+	partition to conflict_graph_merge_regs.
+
 2004-12-14  Uttam Pawar  <uttamp@us.ibm.com>
 	    Janis Johnson  <janis187@us.ibm.com>
 

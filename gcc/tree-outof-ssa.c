@@ -569,7 +569,7 @@ coalesce_abnormal_edges (var_map map, conflict_graph graph, root_var_p rv)
   basic_block bb;
   edge e;
   tree phi, var, tmp;
-  int x, y;
+  int x, y, z;
   edge_iterator ei;
 
   /* Code cannot be inserted on abnormal edges. Look for all abnormal 
@@ -641,8 +641,9 @@ coalesce_abnormal_edges (var_map map, conflict_graph graph, root_var_p rv)
 				      "ABNORMAL: Coalescing ",
 				      var, " and ", tmp);
 		  }
+	        z = var_union (map, var, tmp);
 #ifdef ENABLE_CHECKING
-		if (var_union (map, var, tmp) == NO_PARTITION)
+		if (z == NO_PARTITION)
 		  {
 		    print_exprs_edge (stderr, e, "\nUnable to coalesce", 
 				      partition_to_var (map, x), " and ", 
@@ -650,9 +651,13 @@ coalesce_abnormal_edges (var_map map, conflict_graph graph, root_var_p rv)
 		    internal_error ("SSA corruption");
 		  }
 #else
-		gcc_assert (var_union (map, var, tmp) != NO_PARTITION);
+		gcc_assert (z != NO_PARTITION);
 #endif
-		conflict_graph_merge_regs (graph, x, y);
+		gcc_assert (z == x || z == y);
+		if (z == x)
+		  conflict_graph_merge_regs (graph, x, y);
+		else
+		  conflict_graph_merge_regs (graph, y, x);
 	      }
 	  }
 }
