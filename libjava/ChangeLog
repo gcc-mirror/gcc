@@ -1,5 +1,10 @@
 2003-06-25  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/image/ColorModel.java:
+	New version from classpath.
+
+2003-06-25  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/PlainDatagramSocketImpl.java:
 	Partly merged with classpath, this mainly adds documentation.
 

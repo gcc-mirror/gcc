@@ -76,7 +76,7 @@ import gnu.java.awt.Buffers;
  * </ul>
  *
  * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
- * @author C. Brian Jones (cbj@gnu.org) 
+ * @author C. Brian Jones <cbj@gnu.org>
  */
 public abstract class ColorModel implements Transparency
 {
@@ -155,6 +155,11 @@ public abstract class ColorModel implements Transparency
     this.transferType = transferType;
   }
 
+  public void finalize()
+  {
+    // Do nothing here.
+  }
+
   /**
    * Returns the default color model which in Sun's case is an instance
    * of <code>DirectColorModel</code>.
@@ -226,7 +231,7 @@ public abstract class ColorModel implements Transparency
    *
    * @see #getRed(int)
    */
-    public abstract int getGreen(int pixel);
+  public abstract int getGreen(int pixel);
     
   /**
    * Converts pixel value to sRGB and extract blue int sample
@@ -384,7 +389,7 @@ public abstract class ColorModel implements Transparency
    */
   public Object getDataElements(int rgb, Object pixel)
   {
-    // FIXME: implement
+    // subclasses has to implement this method.
     throw new UnsupportedOperationException();
   }
 
@@ -403,8 +408,9 @@ public abstract class ColorModel implements Transparency
    * according to the color model. Each component sample is stored
    * as a separate element in the array.
    */
-  public int[] getComponents(int pixel, int[] components, int offset) {
-    // FIXME: implement
+  public int[] getComponents(int pixel, int[] components, int offset)
+  {
+    // subclasses has to implement this method.
     throw new UnsupportedOperationException();
   }
   
@@ -426,6 +432,7 @@ public abstract class ColorModel implements Transparency
    */
   public int[] getComponents(Object pixel, int[] components, int offset)
   {
+    // subclasses has to implement this method.
     throw new UnsupportedOperationException();
   }
 
@@ -476,6 +483,19 @@ public abstract class ColorModel implements Transparency
   }
 
   /**
+   * Convert unnormalized components to normalized components.
+   *
+   * @since 1.4
+   */
+  public float[] getNormalizedComponents (Object pixel,
+                                          float[] normComponents,
+                                          int normOffset)
+  {
+    // subclasses has to implement this method.
+    throw new UnsupportedOperationException();
+  }
+
+  /**
    * Converts the unnormalized component samples from an array to a
    * pixel value. I.e. composes the pixel from component samples, but
    * does not perform any color conversion or scaling of the samples.
@@ -499,14 +519,28 @@ public abstract class ColorModel implements Transparency
    */
   public int getDataElement(int[] components, int offset)
   {
+    // subclasses has to implement this method.
     throw new UnsupportedOperationException();
   }
 
+  public int getDataElement (float[] components, int offset)
+  {
+    // subclasses has to implement this method.
+    throw new UnsupportedOperationException();
+  }
+  
   public Object getDataElements(int[] components, int offset, Object obj)
   {
+    // subclasses has to implement this method.
     throw new UnsupportedOperationException();
   }
 
+  public int getDataElements (float[] components, Object obj)
+  {
+    // subclasses has to implement this method.
+    throw new UnsupportedOperationException();
+  }
+  
   public boolean equals(Object obj)
   {
     if (!(obj instanceof ColorModel)) return false;
@@ -592,10 +626,6 @@ public abstract class ColorModel implements Transparency
   public final int getTransferType ()
   {
     return transferType;
-  }
-
-  public void finalize()
-  {
   }
 
   /**
