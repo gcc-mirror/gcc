@@ -366,7 +366,7 @@ write_rbrac ()
   register struct partial_proto *partial;
 
   if (required_unseen_count)
-    fprintf (outf, "#if defined(__STDC__) || defined(__cplusplus)\n");
+    fprintf (outf, "#ifdef __cplusplus\n");
 
   /* Now we print out prototypes for those functions that we haven't seen. */
   for (rptr = required_functions; *rptr; rptr++)
@@ -395,7 +395,7 @@ write_rbrac ()
     }
   if (required_unseen_count)
     fprintf (outf,
-	     "#endif /* defined(__STDC__) || defined(__cplusplus) */\n");
+	     "#endif /* defined(__cplusplus) */\n");
 
   switch (special_file_handling)
     {
