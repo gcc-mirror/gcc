@@ -439,13 +439,17 @@ large_int (op, mode)
     return FALSE;
 
   value = INTVAL (op);
-  if ((value & ~0x0000ffff) == 0)			/* ior reg,$r0,value */
+
+  /* ior reg,$r0,value */
+  if ((value & ~ ((HOST_WIDE_INT) 0x0000ffff)) == 0)
     return FALSE;
 
-  if (((unsigned long)(value + 32768)) <= 32767)	/* subu reg,$r0,value */
+  /* subu reg,$r0,value */
+  if (((unsigned HOST_WIDE_INT) (value + 32768)) <= 32767)
     return FALSE;
 
-  if ((value & 0x0000ffff) == 0)			/* lui reg,value>>16 */
+  /* lui reg,value>>16 */
+  if ((value & 0x0000ffff) == 0)
     return FALSE;
 
   return TRUE;
@@ -2079,7 +2083,7 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
   if (test == ITEST_MAX)
     abort ();
 
-  p_info = &info[ (int)test ];
+  p_info = &info[(int) test];
   eqne_p = (p_info->test_code == XOR);
 
   mode = GET_MODE (cmp0);
@@ -2094,11 +2098,11 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
 	{
 	  /* Comparisons against zero are simple branches */
 	  if (GET_CODE (cmp1) == CONST_INT && INTVAL (cmp1) == 0)
-	    return (rtx)0;
+	    return NULL_RTX;
 
 	  /* Test for beq/bne.  */
 	  if (eqne_p)
-	    return (rtx)0;
+	    return NULL_RTX;
 	}
 
       /* allocate a pseudo to calculate the value in.  */
@@ -2112,6 +2116,7 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
   if (GET_CODE (cmp1) == CONST_INT)
     {
       HOST_WIDE_INT value = INTVAL (cmp1);
+
       if (value < p_info->const_low
 	  || value > p_info->const_high
 	  /* ??? Why?  And why wasn't the similar code below modified too?  */
@@ -2144,6 +2149,7 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
       if (p_info->const_add != 0)
 	{
 	  HOST_WIDE_INT new = INTVAL (cmp1) + p_info->const_add;
+
 	  /* If modification of cmp1 caused overflow,
 	     we would get the wrong answer if we follow the usual path;
 	     thus, x > 0xffffffffU would turn into x > 0U.  */
@@ -2249,8 +2255,7 @@ gen_conditional_branch (operands, test_code)
          0 in the instruction built below.  The MIPS FPU handles
          inequality testing by testing for equality and looking for a
          false result.  */
-      emit_insn (gen_rtx (SET, VOIDmode,
-			  reg,
+      emit_insn (gen_rtx (SET, VOIDmode, reg,
 			  gen_rtx (test_code == NE ? EQ : test_code,
 				   CCmode, cmp0, cmp1)));
 
@@ -2273,8 +2278,7 @@ gen_conditional_branch (operands, test_code)
       label1 = pc_rtx;
     }
 
-  emit_jump_insn (gen_rtx (SET, VOIDmode,
-			   pc_rtx,
+  emit_jump_insn (gen_rtx (SET, VOIDmode, pc_rtx,
 			   gen_rtx (IF_THEN_ELSE, VOIDmode,
 				    gen_rtx (test_code, mode, cmp0, cmp1),
 				    label1,
@@ -4147,22 +4151,17 @@ print_operand (file, op, letter)
       fprintf (file, s);
     }
 
-  else if ((letter == 'x') && (GET_CODE(op) == CONST_INT))
+  else if (letter == 'x' && GET_CODE(op) == CONST_INT)
     fprintf (file, "0x%04x", 0xffff & (INTVAL(op)));
 
-  else if ((letter == 'X') && (GET_CODE(op) == CONST_INT)
-	   && HOST_BITS_PER_WIDE_INT == 32)
-    fprintf (file, "0x%08x", INTVAL(op));
+  else if (letter == 'X' && GET_CODE(op) == CONST_INT)
+    fprintf (file, HOST_WIDE_INT_PRINT_HEX, INTVAL (op));
 
-  else if ((letter == 'X') && (GET_CODE(op) == CONST_INT)
-	   && HOST_BITS_PER_WIDE_INT == 64)
-    fprintf (file, "0x%016lx", INTVAL(op));
-
-  else if ((letter == 'd') && (GET_CODE(op) == CONST_INT))
-    fprintf (file, "%d", (INTVAL(op)));
+  else if (letter == 'd' && GET_CODE(op) == CONST_INT)
+    fprintf (file, HOST_WIDE_INT_PRINT_DEC, (INTVAL(op)));
 
   else if (letter == 'z'
-	   && (GET_CODE (op) == CONST_INT)
+	   && GET_CODE (op) == CONST_INT
 	   && INTVAL (op) == 0)
     fputs (reg_names[GP_REG_FIRST], file);
 
