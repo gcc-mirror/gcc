@@ -3276,6 +3276,17 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 	}
 
       return 1;
+
+    case ADDRESSOF:
+      if (GET_CODE (XEXP (x, 0)) == REG)
+	return 1;
+
+      else if (GET_CODE (XEXP (x, 0)) == MEM)
+	{
+	  *loc = XEXP (XEXP (x, 0), 0);
+	  goto restart;
+	}
+      break;
       
     default:
       break;
@@ -4749,6 +4760,9 @@ fix_lexical_addr (addr, var)
 
   if (fp == 0)
     abort ();
+
+  if (GET_CODE (addr) == ADDRESSOF && GET_CODE (XEXP (addr, 0)) == MEM)
+    addr = XEXP (XEXP (addr, 0), 0);
 
   /* Decode given address as base reg plus displacement.  */
   if (GET_CODE (addr) == REG)
