@@ -95,3 +95,8 @@ __SDATA2_END__:
 	.globl	__SBSS2_END__
 	.type	__SBSS2_END__,@object
 __SBSS2_END__:
+
+	.section ".gcc_except_table","aw"
+	.globl	__EXCEPT_END__
+	.type	__EXCEPT_END__,@object
+__EXCEPT_END__:

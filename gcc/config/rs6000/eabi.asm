@@ -90,6 +90,12 @@
 .Ldtore = .-.LCTOC1
 	.long	__DTOR_END__			/* end of .dtor section */
 
+.Lexcepts = .-.LCTOC1
+	.long	__EXCEPT_START__		/* start of .gcc_except_table section */
+
+.Lexcepte = .-.LCTOC1
+	.long	__EXCEPT_END__			/* end of .gcc_except_table section */
+
 .Linit = .-.LCTOC1
 	.long	.Linit_p			/* address of variable to say we've been called */
 
@@ -182,7 +188,7 @@ FUNC_START(__eabi)
 	lwz	4,.Ldtore(11)			/* destructors pointers end */
 
 	cmpw	1,3,4				/* any pointers to adjust */
-	bc	12,6,.Lfix
+	bc	12,6,.Lexcept
 
 .Ldloop:
 	lwz	5,0(3)				/* next pointer */
@@ -191,6 +197,25 @@ FUNC_START(__eabi)
 	addi	3,3,4				/* bump to next word */
 	cmpw	1,3,4				/* more pointers to adjust? */
 	bc	4,6,.Ldloop
+
+/* Fixup the .gcc_except_table section for G++ exceptions */
+
+.Lexcept:
+	lwz	3,.Lexcepts(11)			/* exception table pointers start */
+	lwz	4,.Lexcepte(11)			/* exception table pointers end */
+
+	cmpw	1,3,4				/* any pointers to adjust */
+	bc	12,6,.Lfix
+
+.Leloop:
+	lwz	5,0(3)				/* next pointer */
+	addi	3,3,4				/* bump to next word */
+	cmpi	1,5,0
+	beq	1,.Leloop			/* if NULL pointer, don't adjust */
+	add	5,5,12				/* adjust */
+	stw	5,-4(3)
+	cmpw	1,3,4				/* more pointers to adjust? */
+	bc	4,6,.Leloop
 
 /* Fixup any user initialized pointers now (the compiler drops pointers to */
 /* each of the relocs that it does in the .fixup section).  */
