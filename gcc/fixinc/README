@@ -2,22 +2,17 @@
 FIXINCLUDES OPERATION
 =====================
 
-See also:  http://autogen.SourceForge.net/fixincludes
+See also:  http://autogen.SourceForge.net/fixinc.html
 
 The set of fixes required was distilled down to just the data required
 to specify what needed to happen for each fix.  Those data were edited
-into a file named gcc/fixinc/inclhack.def.  A program called
-AutoGen (http://autogen.SourceForge.net, ver 4.x) uses these definitions
-to instantiate several different templates (gcc/fixinc/*.tpl) that then
-produces a fixincludes replacement shell script (inclhack.sh), a
-replacement binary program (fixincl.x).
-
-If there is no special purpose script, then mkfixinc.sh will try to
-compile, link and execute the fixincl program.  Otherwise, it will
-install and use the current fixinc.* for that system instead.
-Also, on certain platforms (viz. those that do not have functional
-bidirectional pipes), the fixincl program is split into two.
-This should only concern you on DOS and BeOS.
+into a file named gcc/fixinc/inclhack.def.  A program called AutoGen
+(http://autogen.SourceForge.net) uses these definitions to instantiate
+several different templates that then produces code for a fixinclude
+program (fixincl.x) and a shell script to test its functioning.  On
+certain platforms (viz. those that do not have functional bidirectional
+pipes), the fixincl program is split into two.  This should only concern
+you on DOS and BeOS.
 
 Regards,
 	Bruce <bkorb@gnu.org>
@@ -34,7 +29,38 @@ definitions file, ``inclhack.def''.  Please also send relevant
 information to gcc-bugs@gcc.gnu.org, gcc-patches@gcc.gnu.org and,
 please, to me:  bkorb@gnu.org.
 
-Here are the rules for making fixes in the inclhack.def file:
+To make your fix, you will need to do several things:
+
+1.  Obtain access to the AutoGen program on some platform.  It does
+    not have to be your build platform, but it is more convenient.
+
+2.  Edit "inclhack.def" to reflect the changes you need to make.
+    See below for information on how to make those changes.
+
+3.  Run the "genfixes" shell script to produce a new copy of
+    the "fixincl.x" file.
+
+4.  Rebuild the compiler and check the header causing the issue.
+    Make sure it is now properly handled.  Add tests to the
+    "test_text" entry(ies) that validate your fix.  This will
+    help ensure that future fixes won't negate your work.
+
+5.  Go into the fixinc build directory and type, "make check".
+    You are guaranteed to have issues printed out as a result.
+    Look at the diffs produced.  Make sure you have not clobbered
+    the proper functioning of a different fix.  Make sure your
+    fix is properly tested and it does what it is supposed to do.
+
+6.  Now that you have the right things happening, syncronize the
+    $(srcdir)/tests/base directory with the $(builddir)/tests/res
+    directory.  The output of "make check" will be some diffs that
+    should give you some hints about what to do.
+
+7.  Rerun "make check" and verify that there are no issues left.
+
+
+MAKING CHANGES TO INCLHACK.DEF
+==============================
 
 0.  If you are not the fixincludes maintainer, please send that
     person email about any changes you may want to make.  Thanks!
