@@ -18,7 +18,7 @@ xp-bit.c: $(srcdir)/config/fp-bit.c
 
 MULTILIB_OPTIONS=mnumerics/msoft-float
 MULTILIB_DIRNAMES=float soft-float
-MULTILIB_MATCHES=mnumerics=msb mnumerics=msc mnumerics=mkb mnumerics=mkc mnumerics=mmc mnumerics=mcb mnumerics=mcc msoft-float=msa msoft-float=mka msoft-float=mca msoft-float=mcf
+MULTILIB_MATCHES=mnumerics=msb mnumerics=msc mnumerics=mkb mnumerics=mkc mnumerics=mmc mnumerics=mcb mnumerics=mcc mnumerics=mjf msoft-float=msa msoft-float=mka msoft-float=mca msoft-float=mcf
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
