@@ -1,3 +1,8 @@
+Fri Oct 16 10:58:23 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (find_basic_blocks_1): Do not delete unreachable blocks
+	after reload has completed.
+
 Fri Oct 16 17:26:10 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* cpplib.c (cpp_get_token): Replace whitespace that occurs between
