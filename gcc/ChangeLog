@@ -1,3 +1,8 @@
+Thu Nov 13 11:41:42 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* confiugre.in: Tweak NCR entries.
+	* configure: Rebuilt.
+
 Thu Nov 13 11:07:41 1997  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.c (num_insns_constant): Use REAL_VALUE_FROM_CONST_DOUBLE to
