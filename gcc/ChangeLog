@@ -1,3 +1,8 @@
+2003-06-23  Nick Clifton  <nickc@redhat.com>
+
+	* read-rtl.c (read_braced_string): Check for EOF.  If
+	encountered issue an error message.
+
 2003-06-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/invoke.texi: Document dump options, dT and dW.
