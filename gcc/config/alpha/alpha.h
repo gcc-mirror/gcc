@@ -461,15 +461,6 @@ extern const char *alpha_tls_size_string; /* For -mtls-size= */
       (MODE) = DImode;				\
     }
 
-/* Define this if function arguments should also be promoted using the above
-   procedure.  */
-
-#define PROMOTE_FUNCTION_ARGS
-
-/* Likewise, if the function return value is promoted.  */
-
-#define PROMOTE_FUNCTION_RETURN
-
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.
 
@@ -1003,15 +994,6 @@ extern int alpha_memory_latency;
 #define LIBCALL_VALUE(MODE) \
   function_value (NULL, NULL, MODE)
 
-/* The definition of this macro implies that there are cases where
-   a scalar value cannot be returned in registers.
-
-   For the Alpha, any structure or union type is returned in memory, as
-   are integers whose size is larger than 64 bits.  */
-
-#define RETURN_IN_MEMORY(TYPE) \
-  return_in_memory (TYPE, VOIDmode)
-
 /* 1 if N is a possible register number for a function value
    as seen by the caller.  */
 
@@ -1095,11 +1077,6 @@ extern int alpha_memory_latency;
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED)	\
 ((CUM) < 6 && 6 < (CUM) + ALPHA_ARG_SIZE (MODE, TYPE, NAMED)	\
  ? 6 - (CUM) : 0)
-
-/* Perform any needed actions needed for a function that is receiving a
-   variable number of arguments.  */
-#define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL) \
-  alpha_setup_incoming_varargs(CUM,MODE,TYPE,&(PRETEND_SIZE),NO_RTL)
 
 /* Try to output insns to set TARGET equal to the constant C if it can be
    done in less than N insns.  Do all computations in MODE.  Returns the place
