@@ -1478,6 +1478,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 {
   /* New patterns for I3 and I2, respectively.  */
   rtx newpat, newi2pat = 0;
+  int substed_i2 = 0, substed_i1 = 0;
   /* Indicates need to preserve SET in I1 or I2 in I3 if it is not dead.  */
   int added_sets_1, added_sets_2;
   /* Total number of SETs to put into I3.  */
@@ -1939,6 +1940,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
       subst_low_cuid = INSN_CUID (i2);
       newpat = subst (PATTERN (i3), i2dest, i2src, 0,
 		      ! i1_feeds_i3 && i1dest_in_i1src);
+      substed_i2 = 1;
 
       /* Record whether i2's body now appears within i3's body.  */
       i2_is_used = n_occurrences;
@@ -1963,6 +1965,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
       n_occurrences = 0;
       subst_low_cuid = INSN_CUID (i1);
       newpat = subst (newpat, i1dest, i1src, 0, 0);
+      substed_i1 = 1;
     }
 
   /* Fail if an autoincrement side-effect has been duplicated.  Be careful
@@ -2534,6 +2537,23 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 
     INSN_CODE (i3) = insn_code_number;
     PATTERN (i3) = newpat;
+
+    if (GET_CODE (i3) == CALL_INSN && CALL_INSN_FUNCTION_USAGE (i3))
+      {
+	rtx call_usage = CALL_INSN_FUNCTION_USAGE (i3);
+
+	reset_used_flags (call_usage);
+	call_usage = copy_rtx (call_usage);
+
+	if (substed_i2)
+	  replace_rtx (call_usage, i2dest, i2src);
+
+	if (substed_i1)
+	  replace_rtx (call_usage, i1dest, i1src);
+
+	CALL_INSN_FUNCTION_USAGE (i3) = call_usage;
+      }
+
     if (undobuf.other_insn)
       INSN_CODE (undobuf.other_insn) = other_code_number;
 
