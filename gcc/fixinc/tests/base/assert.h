@@ -19,6 +19,11 @@
 #include <stdio.h>
 
 
+#if defined( ALPHA___ASSERT_CHECK )
+extern void __assert(const char *, const char *, int);
+#endif  /* ALPHA___ASSERT_CHECK */
+
+
 #if defined( BROKEN_ASSERT_STDIO_CHECK )
 extern FILE* stderr;
 #endif  /* BROKEN_ASSERT_STDIO_CHECK */
