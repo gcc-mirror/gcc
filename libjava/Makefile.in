@@ -488,12 +488,20 @@ built_java_source_files = java/lang/ConcreteProcess.java
 
 ordinary_java_source_files = $(convert_source_files) \
 $(awt_java_source_files) \
-gnu/gcj/protocol/http/Connection.java \
-gnu/gcj/protocol/http/Handler.java \
+gnu/gcj/RawData.java \
+gnu/gcj/io/DefaultMimeTypes.java \
+gnu/gcj/io/MimeTypes.java \
+gnu/gcj/io/SimpleSHSStream.java	\
+gnu/gcj/jni/NativeThread.java \
+gnu/gcj/math/MPN.java \
 gnu/gcj/protocol/file/Connection.java \
 gnu/gcj/protocol/file/Handler.java \
+gnu/gcj/protocol/http/Connection.java \
+gnu/gcj/protocol/http/Handler.java \
 gnu/gcj/protocol/jar/Connection.java \
 gnu/gcj/protocol/jar/Handler.java \
+gnu/gcj/runtime/FirstThread.java \
+gnu/gcj/runtime/VMClassLoader.java \
 gnu/gcj/text/BaseBreakIterator.java \
 gnu/gcj/text/CharacterBreakIterator.java \
 gnu/gcj/text/LineBreakIterator.java \
@@ -502,23 +510,16 @@ gnu/gcj/text/LocaleData_en_US.java \
 gnu/gcj/text/SentenceBreakIterator.java	\
 gnu/gcj/text/WordBreakIterator.java \
 gnu/gcj/util/EnumerationChain.java \
-gnu/gcj/RawData.java \
-gnu/gcj/math/MPN.java \
-gnu/gcj/runtime/VMClassLoader.java \
-gnu/gcj/runtime/FirstThread.java \
-gnu/gcj/jni/NativeThread.java \
-gnu/gcj/io/DefaultMimeTypes.java \
-gnu/gcj/io/MimeTypes.java \
-gnu/gcj/io/SimpleSHSStream.java	\
 gnu/java/io/ClassLoaderObjectInputStream.java \
 gnu/java/io/NullOutputStream.java \
 gnu/java/io/ObjectIdentityWrapper.java \
-gnu/java/lang/reflect/TypeSignature.java \
 gnu/java/lang/ArrayHelper.java \
 gnu/java/lang/ClassHelper.java \
+gnu/java/lang/reflect/TypeSignature.java \
 gnu/java/security/provider/Gnu.java \
 gnu/java/security/provider/SHA.java \
 gnu/java/security/provider/SHA1PRNG.java \
+java/io/BlockDataException.java	\
 java/io/BufferedInputStream.java \
 java/io/BufferedOutputStream.java \
 java/io/BufferedReader.java \
@@ -533,7 +534,9 @@ java/io/DataInputStream.java \
 java/io/DataOutput.java	\
 java/io/DataOutputStream.java \
 java/io/EOFException.java \
+java/io/Externalizable.java \
 java/io/File.java \
+java/io/FileDescriptor.java \
 java/io/FileInputStream.java \
 java/io/FileNotFoundException.java \
 java/io/FileOutputStream.java \
@@ -548,37 +551,10 @@ java/io/IOException.java \
 java/io/InputStream.java \
 java/io/InputStreamReader.java \
 java/io/InterruptedIOException.java \
-java/io/LineNumberInputStream.java \
-java/io/LineNumberReader.java \
-java/io/OutputStream.java \
-java/io/OutputStreamWriter.java	\
-java/io/Externalizable.java \
-java/io/FileDescriptor.java \
-java/io/PipedOutputStream.java \
-java/io/PipedReader.java \
-java/io/PipedWriter.java \
-java/io/PrintStream.java \
-java/io/PrintWriter.java \
-java/io/PushbackInputStream.java \
-java/io/PushbackReader.java \
-java/io/RandomAccessFile.java \
-java/io/Reader.java \
-java/io/SequenceInputStream.java \
-java/io/Serializable.java \
-java/io/StreamTokenizer.java \
-java/io/StringBufferInputStream.java \
-java/io/StringReader.java \
-java/io/StringWriter.java \
-java/io/SyncFailedException.java \
-java/io/UTFDataFormatException.java \
-java/io/UnsupportedEncodingException.java \
-java/io/Writer.java \
-java/io/ObjectStreamException.java \
-java/io/OptionalDataException.java \
-java/io/StreamCorruptedException.java \
-java/io/BlockDataException.java	\
 java/io/InvalidClassException.java \
 java/io/InvalidObjectException.java \
+java/io/LineNumberInputStream.java \
+java/io/LineNumberReader.java \
 java/io/NotActiveException.java	\
 java/io/NotSerializableException.java \
 java/io/ObjectInput.java \
@@ -588,20 +564,36 @@ java/io/ObjectOutput.java \
 java/io/ObjectOutputStream.java	\
 java/io/ObjectStreamClass.java \
 java/io/ObjectStreamConstants.java \
+java/io/ObjectStreamException.java \
 java/io/ObjectStreamField.java \
+java/io/OptionalDataException.java \
+java/io/OutputStream.java \
+java/io/OutputStreamWriter.java	\
+java/io/PipedInputStream.java \
+java/io/PipedOutputStream.java \
+java/io/PipedReader.java \
+java/io/PipedWriter.java \
+java/io/PrintStream.java \
+java/io/PrintWriter.java \
+java/io/PushbackInputStream.java \
+java/io/PushbackReader.java \
+java/io/RandomAccessFile.java \
+java/io/Reader.java \
 java/io/Replaceable.java \
 java/io/Resolvable.java	\
+java/io/SequenceInputStream.java \
+java/io/Serializable.java \
 java/io/SerializablePermission.java \
+java/io/StreamCorruptedException.java \
+java/io/StreamTokenizer.java \
+java/io/StringBufferInputStream.java \
+java/io/StringReader.java \
+java/io/StringWriter.java \
+java/io/SyncFailedException.java \
+java/io/UTFDataFormatException.java \
+java/io/UnsupportedEncodingException.java \
 java/io/WriteAbortedException.java \
-java/io/PipedInputStream.java \
-java/lang/reflect/Constructor.java \
-java/lang/reflect/AccessibleObject.java	\
-java/lang/reflect/Array.java \
-java/lang/reflect/Method.java \
-java/lang/reflect/Field.java \
-java/lang/reflect/InvocationTargetException.java \
-java/lang/reflect/Member.java \
-java/lang/reflect/Modifier.java	\
+java/io/Writer.java \
 java/lang/AbstractMethodError.java \
 java/lang/ArithmeticException.java \
 java/lang/ArrayIndexOutOfBoundsException.java \
@@ -630,10 +622,10 @@ java/lang/IllegalMonitorStateException.java \
 java/lang/IllegalStateException.java \
 java/lang/IllegalThreadStateException.java \
 java/lang/IncompatibleClassChangeError.java \
-java/lang/InstantiationError.java \
-java/lang/Integer.java \
 java/lang/IndexOutOfBoundsException.java \
+java/lang/InstantiationError.java \
 java/lang/InstantiationException.java \
+java/lang/Integer.java \
 java/lang/InternalError.java \
 java/lang/InterruptedException.java \
 java/lang/LinkageError.java \
@@ -671,126 +663,54 @@ java/lang/UnsupportedOperationException.java \
 java/lang/VerifyError.java \
 java/lang/VirtualMachineError.java \
 java/lang/Void.java \
+java/lang/reflect/AccessibleObject.java	\
+java/lang/reflect/Array.java \
+java/lang/reflect/Constructor.java \
+java/lang/reflect/Field.java \
+java/lang/reflect/InvocationTargetException.java \
+java/lang/reflect/Member.java \
+java/lang/reflect/Method.java \
+java/lang/reflect/Modifier.java	\
+java/math/BigDecimal.java \
+java/math/BigInteger.java \
 java/net/BindException.java \
 java/net/ConnectException.java \
 java/net/ContentHandler.java \
 java/net/ContentHandlerFactory.java \
+java/net/DatagramPacket.java \
+java/net/DatagramSocket.java \
+java/net/DatagramSocketImpl.java \
 java/net/FileNameMap.java \
 java/net/HttpURLConnection.java	\
 java/net/InetAddress.java \
+java/net/JarURLConnection.java \
 java/net/MalformedURLException.java \
+java/net/MulticastSocket.java \
 java/net/NoRouteToHostException.java \
+java/net/PlainDatagramSocketImpl.java \
 java/net/PlainSocketImpl.java \
 java/net/ProtocolException.java	\
 java/net/ServerSocket.java \
-java/net/URL.java \
 java/net/Socket.java \
 java/net/SocketException.java \
 java/net/SocketImpl.java \
 java/net/SocketImplFactory.java	\
+java/net/SocketOptions.java \
+java/net/URL.java \
+java/net/URLClassLoader.java \
 java/net/URLConnection.java \
+java/net/URLDecoder.java \
+java/net/URLEncoder.java \
 java/net/URLStreamHandler.java \
 java/net/URLStreamHandlerFactory.java \
 java/net/UnknownHostException.java \
 java/net/UnknownServiceException.java \
-java/net/URLDecoder.java \
-java/net/URLEncoder.java \
-java/net/DatagramPacket.java \
-java/net/DatagramSocket.java \
-java/net/DatagramSocketImpl.java \
-java/net/MulticastSocket.java \
-java/net/PlainDatagramSocketImpl.java \
-java/net/SocketOptions.java \
-java/net/JarURLConnection.java \
-java/net/URLClassLoader.java \
-java/text/Collator.java	\
-java/text/BreakIterator.java \
-java/text/CharacterIterator.java \
-java/text/ChoiceFormat.java \
-java/text/DateFormat.java \
-java/text/DateFormatSymbols.java \
-java/text/DecimalFormat.java \
-java/text/DecimalFormatSymbols.java \
-java/text/FieldPosition.java \
-java/text/Format.java \
-java/text/MessageFormat.java \
-java/text/NumberFormat.java \
-java/text/ParseException.java \
-java/text/ParsePosition.java \
-java/text/SimpleDateFormat.java	\
-java/text/StringCharacterIterator.java \
-java/text/CollationElementIterator.java	\
-java/text/CollationKey.java \
-java/text/RuleBasedCollator.java \
-java/util/zip/Adler32.java \
-java/util/zip/CRC32.java \
-java/util/zip/Checksum.java \
-java/util/zip/Deflater.java \
-java/util/zip/DeflaterOutputStream.java	\
-java/util/zip/ZipConstants.java	\
-java/util/zip/ZipEntry.java \
-java/util/zip/ZipException.java	\
-java/util/zip/ZipFile.java \
-java/util/zip/ZipOutputStream.java \
-java/util/zip/InflaterInputStream.java \
-java/util/zip/ZipInputStream.java \
-java/util/zip/DataFormatException.java \
-java/util/zip/CheckedInputStream.java \
-java/util/zip/CheckedOutputStream.java \
-java/util/zip/Inflater.java \
-java/util/zip/GZIPInputStream.java \
-java/util/zip/GZIPOutputStream.java \
-java/util/jar/JarEntry.java \
-java/util/jar/JarFile.java \
-java/util/jar/JarInputStream.java \
-java/util/BitSet.java \
-java/util/Calendar.java	\
-java/util/ConcurrentModificationException.java \
-java/util/Date.java \
-java/util/Dictionary.java \
-java/util/EmptyStackException.java \
-java/util/Enumeration.java \
-java/util/EventListener.java \
-java/util/EventObject.java \
-java/util/GregorianCalendar.java \
-java/util/Hashtable.java \
-java/util/ListResourceBundle.java \
-java/util/Locale.java \
-java/util/MissingResourceException.java	\
-java/util/NoSuchElementException.java \
-java/util/Observable.java \
-java/util/Observer.java	\
-java/util/Properties.java \
-java/util/Random.java \
-java/util/ResourceBundle.java \
-java/util/SimpleTimeZone.java \
-java/util/Stack.java \
-java/util/StringTokenizer.java \
-java/util/TimeZone.java	\
-java/util/TooManyListenersException.java \
-java/util/Vector.java \
-java/util/List.java \
-java/util/Collection.java \
-java/util/Comparator.java \
-java/util/Iterator.java	\
-java/util/PropertyResourceBundle.java \
-java/util/Arrays.java \
-java/util/ListIterator.java \
-java/util/AbstractCollection.java \
-java/util/AbstractList.java \
-java/security/MessageDigest.java \
-java/security/NoSuchAlgorithmException.java \
-java/security/SecureClassLoader.java \
-java/security/interfaces/DSAKey.java \
-java/security/interfaces/DSAParams.java	\
-java/security/interfaces/DSAPrivateKey.java \
-java/security/interfaces/DSAPublicKey.java \
-java/security/interfaces/RSAPrivateCrtKey.java \
-java/security/interfaces/RSAPrivateKey.java \
-java/security/interfaces/RSAPublicKey.java \
 java/security/AlgorithmParameterGeneratorSpi.java \
+java/security/BasicPermission.java \
 java/security/DigestException.java \
+java/security/DigestOutputStream.java \
 java/security/GeneralSecurityException.java \
+java/security/Guard.java \
 java/security/InvalidAlgorithmParameterException.java \
 java/security/InvalidKeyException.java \
 java/security/InvalidParameterException.java \
@@ -799,15 +719,41 @@ java/security/KeyException.java	\
 java/security/KeyPair.java \
 java/security/KeyPairGenerator.java \
 java/security/KeyPairGeneratorSpi.java \
+java/security/MessageDigest.java \
+java/security/NoSuchAlgorithmException.java \
 java/security/NoSuchProviderException.java \
+java/security/Permission.java \
+java/security/PermissionCollection.java	\
 java/security/Principal.java \
 java/security/PrivateKey.java \
 java/security/Provider.java \
 java/security/PublicKey.java \
+java/security/SecureClassLoader.java \
 java/security/SecureRandom.java	\
 java/security/Security.java \
 java/security/Signature.java \
 java/security/SignatureException.java \
+java/security/cert/CRL.java \
+java/security/cert/CRLException.java \
+java/security/cert/Certificate.java \
+java/security/cert/CertificateEncodingException.java \
+java/security/cert/CertificateException.java \
+java/security/cert/CertificateExpiredException.java \
+java/security/cert/CertificateFactory.java \
+java/security/cert/CertificateFactorySpi.java \
+java/security/cert/CertificateNotYetValidException.java \
+java/security/cert/CertificateParsingException.java \
+java/security/cert/X509CRL.java \
+java/security/cert/X509CRLEntry.java \
+java/security/cert/X509Certificate.java \
+java/security/cert/X509Extension.java \
+java/security/interfaces/DSAKey.java \
+java/security/interfaces/DSAParams.java	\
+java/security/interfaces/DSAPrivateKey.java \
+java/security/interfaces/DSAPublicKey.java \
+java/security/interfaces/RSAPrivateCrtKey.java \
+java/security/interfaces/RSAPrivateKey.java \
+java/security/interfaces/RSAPublicKey.java \
 java/security/spec/AlgorithmParameterSpec.java \
 java/security/spec/InvalidKeySpecException.java	\
 java/security/spec/InvalidParameterSpecException.java \
@@ -815,13 +761,6 @@ java/security/spec/KeySpec.java	\
 java/security/spec/RSAPrivateCrtKeySpec.java \
 java/security/spec/RSAPrivateKeySpec.java \
 java/security/spec/RSAPublicKeySpec.java \
-java/security/BasicPermission.java \
-java/security/Guard.java \
-java/security/DigestOutputStream.java \
-java/security/Permission.java \
-java/security/PermissionCollection.java	\
-java/math/BigDecimal.java \
-java/math/BigInteger.java \
 java/sql/CallableStatement.java	\
 java/sql/Connection.java \
 java/sql/DataTruncation.java \
@@ -838,7 +777,91 @@ java/sql/SQLWarning.java \
 java/sql/Statement.java	\
 java/sql/Time.java \
 java/sql/Timestamp.java	\
-java/sql/Types.java
+java/sql/Types.java \
+java/text/BreakIterator.java \
+java/text/CharacterIterator.java \
+java/text/ChoiceFormat.java \
+java/text/CollationElementIterator.java	\
+java/text/CollationKey.java \
+java/text/Collator.java	\
+java/text/DateFormat.java \
+java/text/DateFormatSymbols.java \
+java/text/DecimalFormat.java \
+java/text/DecimalFormatSymbols.java \
+java/text/FieldPosition.java \
+java/text/Format.java \
+java/text/MessageFormat.java \
+java/text/NumberFormat.java \
+java/text/ParseException.java \
+java/text/ParsePosition.java \
+java/text/RuleBasedCollator.java \
+java/text/SimpleDateFormat.java	\
+java/text/StringCharacterIterator.java \
+java/util/AbstractCollection.java \
+java/util/AbstractList.java \
+java/util/AbstractSet.java \
+java/util/Arrays.java \
+java/util/BasicMapEntry.java \
+java/util/BitSet.java \
+java/util/Bucket.java \
+java/util/Calendar.java	\
+java/util/Collection.java \
+java/util/Comparator.java \
+java/util/ConcurrentModificationException.java \
+java/util/Date.java \
+java/util/Dictionary.java \
+java/util/EmptyStackException.java \
+java/util/Enumeration.java \
+java/util/EventListener.java \
+java/util/EventObject.java \
+java/util/GregorianCalendar.java \
+java/util/Hashtable.java \
+java/util/Iterator.java	\
+java/util/List.java \
+java/util/ListIterator.java \
+java/util/ListResourceBundle.java \
+java/util/Locale.java \
+java/util/Map.java \
+java/util/MissingResourceException.java	\
+java/util/NoSuchElementException.java \
+java/util/Observable.java \
+java/util/Observer.java	\
+java/util/Properties.java \
+java/util/PropertyResourceBundle.java \
+java/util/Random.java \
+java/util/ResourceBundle.java \
+java/util/Set.java \
+java/util/SimpleTimeZone.java \
+java/util/Stack.java \
+java/util/StringTokenizer.java \
+java/util/TimeZone.java	\
+java/util/TooManyListenersException.java \
+java/util/Vector.java \
+java/util/jar/Attributes.java \
+java/util/jar/JarEntry.java \
+java/util/jar/JarException.java \
+java/util/jar/JarFile.java \
+java/util/jar/JarInputStream.java \
+java/util/jar/JarOutputStream.java \
+java/util/jar/Manifest.java \
+java/util/zip/Adler32.java \
+java/util/zip/CRC32.java \
+java/util/zip/CheckedInputStream.java \
+java/util/zip/CheckedOutputStream.java \
+java/util/zip/Checksum.java \
+java/util/zip/DataFormatException.java \
+java/util/zip/Deflater.java \
+java/util/zip/DeflaterOutputStream.java	\
+java/util/zip/GZIPInputStream.java \
+java/util/zip/GZIPOutputStream.java \
+java/util/zip/Inflater.java \
+java/util/zip/InflaterInputStream.java \
+java/util/zip/ZipConstants.java	\
+java/util/zip/ZipEntry.java \
+java/util/zip/ZipException.java	\
+java/util/zip/ZipFile.java \
+java/util/zip/ZipInputStream.java \
+java/util/zip/ZipOutputStream.java
 
 
 java_source_files = $(ordinary_java_source_files) $(special_java_source_files)
@@ -1001,7 +1024,7 @@ libgcj-test.spec.in libgcj.spec.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -1357,7 +1380,20 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/security/SecureClassLoader.P \
 .deps/java/security/SecureRandom.P .deps/java/security/Security.P \
 .deps/java/security/Signature.P \
-.deps/java/security/SignatureException.P \
+.deps/java/security/SignatureException.P .deps/java/security/cert/CRL.P \
+.deps/java/security/cert/CRLException.P \
+.deps/java/security/cert/Certificate.P \
+.deps/java/security/cert/CertificateEncodingException.P \
+.deps/java/security/cert/CertificateException.P \
+.deps/java/security/cert/CertificateExpiredException.P \
+.deps/java/security/cert/CertificateFactory.P \
+.deps/java/security/cert/CertificateFactorySpi.P \
+.deps/java/security/cert/CertificateNotYetValidException.P \
+.deps/java/security/cert/CertificateParsingException.P \
+.deps/java/security/cert/X509CRL.P \
+.deps/java/security/cert/X509CRLEntry.P \
+.deps/java/security/cert/X509Certificate.P \
+.deps/java/security/cert/X509Extension.P \
 .deps/java/security/interfaces/DSAKey.P \
 .deps/java/security/interfaces/DSAParams.P \
 .deps/java/security/interfaces/DSAPrivateKey.P \
@@ -1392,9 +1428,10 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/text/RuleBasedCollator.P .deps/java/text/SimpleDateFormat.P \
 .deps/java/text/StringCharacterIterator.P \
 .deps/java/util/AbstractCollection.P .deps/java/util/AbstractList.P \
-.deps/java/util/Arrays.P .deps/java/util/BitSet.P \
-.deps/java/util/Calendar.P .deps/java/util/Collection.P \
-.deps/java/util/Comparator.P \
+.deps/java/util/AbstractSet.P .deps/java/util/Arrays.P \
+.deps/java/util/BasicMapEntry.P .deps/java/util/BitSet.P \
+.deps/java/util/Bucket.P .deps/java/util/Calendar.P \
+.deps/java/util/Collection.P .deps/java/util/Comparator.P \
 .deps/java/util/ConcurrentModificationException.P \
 .deps/java/util/Date.P .deps/java/util/Dictionary.P \
 .deps/java/util/EmptyStackException.P .deps/java/util/Enumeration.P \
@@ -1402,15 +1439,19 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/GregorianCalendar.P .deps/java/util/Hashtable.P \
 .deps/java/util/Iterator.P .deps/java/util/List.P \
 .deps/java/util/ListIterator.P .deps/java/util/ListResourceBundle.P \
-.deps/java/util/Locale.P .deps/java/util/MissingResourceException.P \
+.deps/java/util/Locale.P .deps/java/util/Map.P \
+.deps/java/util/MissingResourceException.P \
 .deps/java/util/NoSuchElementException.P .deps/java/util/Observable.P \
 .deps/java/util/Observer.P .deps/java/util/Properties.P \
 .deps/java/util/PropertyResourceBundle.P .deps/java/util/Random.P \
-.deps/java/util/ResourceBundle.P .deps/java/util/SimpleTimeZone.P \
-.deps/java/util/Stack.P .deps/java/util/StringTokenizer.P \
-.deps/java/util/TimeZone.P .deps/java/util/TooManyListenersException.P \
-.deps/java/util/Vector.P .deps/java/util/jar/JarEntry.P \
-.deps/java/util/jar/JarFile.P .deps/java/util/jar/JarInputStream.P \
+.deps/java/util/ResourceBundle.P .deps/java/util/Set.P \
+.deps/java/util/SimpleTimeZone.P .deps/java/util/Stack.P \
+.deps/java/util/StringTokenizer.P .deps/java/util/TimeZone.P \
+.deps/java/util/TooManyListenersException.P .deps/java/util/Vector.P \
+.deps/java/util/jar/Attributes.P .deps/java/util/jar/JarEntry.P \
+.deps/java/util/jar/JarException.P .deps/java/util/jar/JarFile.P \
+.deps/java/util/jar/JarInputStream.P \
+.deps/java/util/jar/JarOutputStream.P .deps/java/util/jar/Manifest.P \
 .deps/java/util/zip/Adler32.P .deps/java/util/zip/CRC32.P \
 .deps/java/util/zip/CheckedInputStream.P \
 .deps/java/util/zip/CheckedOutputStream.P \
