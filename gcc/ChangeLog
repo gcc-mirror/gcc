@@ -1,3 +1,8 @@
+2001-01-24  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.md (builtin_longjmp_internal): New.
+	(builtin_longjmp): Use it instead of emit_indirect_jump.
+
 2001-01-23  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* bb-reorder.c (make_reorder_chain_1): Handle case where
