@@ -2060,12 +2060,12 @@ gengtype.o : gengtype.c gengtype.h $(HCONFIG_H) $(SYSTEM_H) real.h gtyp-gen.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	  $(srcdir)/gengtype.c $(OUTPUT_OPTION)
 
-gengtype-lex.o : gengtype-lex.c gengtype.h gengtype-yacc.c \
+gengtype-lex.o : $(srcdir)/gengtype-lex.c gengtype.h $(srcdir)/gengtype-yacc.c \
   $(HCONFIG_H) $(SYSTEM_H)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	  $(srcdir)/gengtype-lex.c $(OUTPUT_OPTION)
 
-gengtype-yacc.o : gengtype-yacc.c gengtype.h $(HCONFIG_H) $(SYSTEM_H)
+gengtype-yacc.o : $(srcdir)/gengtype-yacc.c gengtype.h $(HCONFIG_H) $(SYSTEM_H)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	  $(srcdir)/gengtype-yacc.c $(OUTPUT_OPTION)
 
