@@ -216,27 +216,26 @@ do {								\
    So, we force exception information into the data section.  */
 #define TARGET_ASM_EXCEPTION_SECTION data_section
 
-/* This is how to output a command to make the user-level label named NAME
-   defined for reference from other files.
+/* This is how to output a command to make the user-level label
+   named NAME defined for reference from other files.  We use
+   assemble_name_raw instead of assemble_name since a symbol in
+   a .IMPORT directive that isn't otherwise referenced is not
+   placed in the symbol table of the assembled object.
 
-   We call assemble_name, which in turn sets TREE_SYMBOL_REFERENCED.  This
-   macro will restore the original value of TREE_SYMBOL_REFERENCED to avoid
-   placing useless function definitions in the output file.
+   Failure to import a function reference can cause the HP linker
+   to segmentation fault!
 
-   Also note that the SOM based tools need the symbol imported as a CODE
-   symbol, while the ELF based tools require the symbol to be imported as
-   an ENTRY symbol.  What a crock.  */
+   Note that the SOM based tools need the symbol imported as a
+   CODE symbol, while the ELF based tools require the symbol to
+   be imported as an ENTRY symbol.  */
 
-#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)	\
-  do { int save_referenced;					\
-       save_referenced = TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (DECL)); \
-       fputs ("\t.IMPORT ", FILE);				\
-       assemble_name (FILE, NAME);				\
-       if (FUNCTION_NAME_P (NAME))     				\
-	 fputs (",CODE\n", FILE);				\
-       else							\
-	 fputs (",DATA\n", FILE);				\
-       TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (DECL)) = save_referenced; \
+#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME) \
+  do { fputs ("\t.IMPORT ", FILE);					\
+       assemble_name_raw (FILE, NAME);					\
+       if (FUNCTION_NAME_P (NAME))					\
+	 fputs (",CODE\n", FILE);					\
+       else								\
+	 fputs (",DATA\n", FILE);					\
      } while (0)
 
 /* The bogus HP assembler requires ALL external references to be
