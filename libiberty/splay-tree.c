@@ -23,8 +23,18 @@
      Lewis, Harry R. and Denenberg, Larry.  Data Structures and Their
      Algorithms.  Harper-Collins, Inc.  1991.  */
 
+#if defined (IN_GCC) || defined (HAVE_CONFIG_H)
+#include "config.h"
+#endif
+
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 #ifndef IN_GCC
 #include "libiberty.h"
+#else /* IN_GCC */
+extern char* xmalloc ();
 #endif /* IN_GCC */
 #include "splay-tree.h"
 
