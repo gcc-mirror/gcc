@@ -411,10 +411,16 @@ namespace std
       bool __testok = this->fail() != true;
       
       if (__testok)
+	{
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
 // 136.  seekp, seekg setting wrong streams?
-	this->rdbuf()->pubseekpos(__pos, ios_base::out);
+	  pos_type __err = this->rdbuf()->pubseekpos(__pos, ios_base::out);
+
+// 129. Need error indication from seekp() and seekg()
+	  if (__err == pos_type(off_type(-1)))
+	    this->setstate(failbit);
 #endif
+	}
       return *this;
     }
 
@@ -426,9 +432,16 @@ namespace std
       bool __testok = this->fail() != true;
       
       if (__testok)
+	{
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
 // 136.  seekp, seekg setting wrong streams?
-	this->rdbuf()->pubseekoff(__off, __d, ios_base::out);
+	  pos_type __err = this->rdbuf()->pubseekoff(__off, __d, 
+						     ios_base::out);
+
+// 129. Need error indication from seekp() and seekg()
+	  if (__err == pos_type(off_type(-1)))
+	    this->setstate(failbit);
+	}
 #endif
       return *this;
     }

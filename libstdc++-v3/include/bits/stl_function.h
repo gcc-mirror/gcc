@@ -199,6 +199,13 @@ public:
   operator()(const typename _Operation::second_argument_type& __x) const {
     return op(value, __x); 
   }
+#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+  // 109. Missing binders for non-const sequence elements
+  typename _Operation::result_type
+  operator()(typename _Operation::second_argument_type& __x) const {
+    return op(value, __x); 
+  }
+#endif
 };
 
 template <class _Operation, class _Tp>
@@ -224,6 +231,13 @@ public:
   operator()(const typename _Operation::first_argument_type& __x) const {
     return op(__x, value); 
   }
+#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+  // 109. Missing binders for non-const sequence elements
+  typename _Operation::result_type
+  operator()(typename _Operation::first_argument_type& __x) const {
+    return op(__x, value); 
+  }
+#endif
 };
 
 template <class _Operation, class _Tp>
