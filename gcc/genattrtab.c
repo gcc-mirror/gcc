@@ -2091,7 +2091,7 @@ expand_units ()
 	  if (unit->needs_range_function)
 	    {
 	      /* Compute the blockage range function and make an attribute
-		 for writing it's value.  */
+		 for writing its value.  */
 	      newexp = operate_exp (RANGE_OP, min_blockage, max_blockage);
 	      newexp = simplify_knowing (newexp, unit->condexp);
 
@@ -4327,7 +4327,7 @@ gen_unit (def)
   unit->condexp = insert_right_side (IOR, unit->condexp, op->condexp, -2, -2);
 }
 
-/* Given a piece of RTX, print a C expression to test it's truth value.
+/* Given a piece of RTX, print a C expression to test its truth value.
    We use AND and IOR both for logical and bit-wise operations, so 
    interpret them as logical unless they are inside a comparison expression.
    The second operand of this function will be non-zero in that case.  */

@@ -4477,7 +4477,7 @@ All modules should be compiled with the same @samp{-G @var{num}}
 value.
 
 @item -nocpp
-Tell the MIPS assembler to not run it's preprocessor over user
+Tell the MIPS assembler to not run its preprocessor over user
 assembler files (with a @samp{.s} suffix) when assembling them.
 @end table
 

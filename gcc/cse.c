@@ -1557,7 +1557,7 @@ invalidate (x, full_mode)
       register unsigned hash = HASH (x, GET_MODE (x));
 
       /* Remove REGNO from any quantity list it might be on and indicate
-	 that it's value might have changed.  If it is a pseudo, remove its
+	 that its value might have changed.  If it is a pseudo, remove its
 	 entry from the hash table.
 
 	 For a hard register, we do the first two actions above for any

@@ -1473,7 +1473,7 @@ extern int lvalue_or_else		PROTO((tree, char *));
 extern tree save_expr			PROTO((tree));
 
 /* unsave_expr (EXP) returns an expression equivalent to EXP but it
-   can be used multiple times and will evaluate EXP, in it's entirety
+   can be used multiple times and will evaluate EXP, in its entirety
    each time.  */
 
 extern tree unsave_expr			PROTO((tree));

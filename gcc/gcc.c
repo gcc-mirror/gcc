@@ -344,7 +344,7 @@ or with constant text in a single argument.
         This allows config.h to specify part of the spec for running as.
  %A	process ASM_FINAL_SPEC as a spec.  A capital A is actually
 	used here.  This can be used to run a post-processor after the
-	assembler has done it's job.
+	assembler has done its job.
  %D	Dump out a -L option for each directory in startfile_prefixes.
 	If multilib_dir is set, extra entries are generated with it affixed.
  %l     process LINK_SPEC as a spec.

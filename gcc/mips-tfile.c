@@ -966,7 +966,7 @@ enum alloc_type {
    grow linearly, and which are written in the object file as sequential
    pages.  On systems with a BSD malloc that define USE_MALLOC, the
    MAX_CLUSTER_PAGES should be 1 less than a power of two, since malloc
-   adds it's overhead, and rounds up to the next power of 2.  Pages are
+   adds its overhead, and rounds up to the next power of 2.  Pages are
    linked together via a linked list.
 
    If PAGE_SIZE is > 4096, the string length in the shash_t structure
@@ -5129,7 +5129,7 @@ out_of_bounds (indx, max, str, prog_line)
 
 
 /* Allocate a cluster of pages.  USE_MALLOC says that malloc does not
-   like sbrk's behind it's back (or sbrk isn't available).  If we use
+   like sbrk's behind its back (or sbrk isn't available).  If we use
    sbrk, we assume it gives us zeroed pages.  */
 
 #ifndef MALLOC_CHECK

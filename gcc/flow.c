@@ -2127,7 +2127,7 @@ find_auto_inc (needed, x, insn)
 	    {
 	      /* We have *p followed sometime later by q = p+size.
 		 Both p and q must be live afterward,
-		 and q is not used between INSN and it's assignment.
+		 and q is not used between INSN and its assignment.
 		 Change it to q = p, ...*q..., q = q+size.
 		 Then fall into the usual case.  */
 	      rtx insns, temp;

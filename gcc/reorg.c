@@ -569,7 +569,7 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
 	    SET_HARD_REG_SET (res->regs);
 	}
 
-      /* ... and also what it's RTL says it modifies, if anything.  */
+      /* ... and also what its RTL says it modifies, if anything.  */
 
     case JUMP_INSN:
     case INSN:
@@ -971,7 +971,7 @@ add_to_delay_list (insn, delay_list)
      rtx delay_list;
 {
   /* If we have an empty list, just make a new list element.  If
-     INSN has it's block number recorded, clear it since we may
+     INSN has its block number recorded, clear it since we may
      be moving the insn to a new block.  */
 
   if (delay_list == 0)

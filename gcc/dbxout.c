@@ -1893,7 +1893,7 @@ dbxout_symbol_location (decl, type, suffix, home)
   /* Don't mention a variable at all
      if it was completely optimized into nothingness.
      
-     If the decl was from an inline function, then it's rtl
+     If the decl was from an inline function, then its rtl
      is not identically the rtl that was used in this
      particular compilation.  */
   if (GET_CODE (home) == REG)

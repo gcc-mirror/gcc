@@ -1957,7 +1957,7 @@ save_def_or_dec (l, is_syscalls)
         }
 
       /* Handle a special case.  If we have a function definition marked as
-         being in "old" style, and if it's formal names list is empty, then
+         being in "old" style, and if its formal names list is empty, then
          it may actually have the string "void" in its real formals list
          in the original source code.  Just to make sure, we will get setup
          to convert such things anyway.
@@ -2807,7 +2807,7 @@ connect_defs_and_decs (hp)
 
      Also, for each item which is only a function declaration, but which
      nonetheless has its own prototype already (obviously supplied by the user)
-     declare the item as it's own definition.
+     declare the item as its own definition.
 
      Note that when/if there are multiple user-supplied prototypes already
      present for multiple declarations of any given function, these multiple

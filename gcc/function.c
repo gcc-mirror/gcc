@@ -1386,7 +1386,7 @@ put_var_into_stack (decl)
   
   context = decl_function_context (decl);
 
-  /* Get the current rtl used for this object and it's original mode.  */
+  /* Get the current rtl used for this object and its original mode.  */
   reg = TREE_CODE (decl) == SAVE_EXPR ? SAVE_EXPR_RTL (decl) : DECL_RTL (decl);
 
   /* No need to do anything if decl has no rtx yet
@@ -4840,7 +4840,7 @@ setjmp_protect (block)
 	    || (GET_CODE (DECL_RTL (decl)) == MEM
 		&& GET_CODE (XEXP (DECL_RTL (decl), 0)) == ADDRESSOF))
 	/* If this variable came from an inline function, it must be
-	   that it's life doesn't overlap the setjmp.  If there was a
+	   that its life doesn't overlap the setjmp.  If there was a
 	   setjmp in the function, it would already be in memory.  We
 	   must exclude such variable because their DECL_RTL might be
 	   set to strange things such as virtual_stack_vars_rtx.  */
