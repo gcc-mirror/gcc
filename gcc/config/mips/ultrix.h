@@ -62,4 +62,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    our own exit function.  Ultrix 4.x has this, 3.x probably does not.  */
 #define HAVE_ATEXIT
 
+/* Generate calls to memcpy, etc., not bcopy, etc.  */
+#define TARGET_MEM_FUNCTIONS
+
 #include "mips.h"
