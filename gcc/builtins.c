@@ -7623,11 +7623,18 @@ fold_builtin_isdigit (tree arglist)
   else
     {
       /* Transform isdigit(c) -> (unsigned)(c) - '0' <= 9.  */
-      /* According to the C standard, isdigit is unaffected by locale.  */
-      tree arg = TREE_VALUE (arglist);
-      arg = fold_convert (unsigned_type_node, arg);
+      /* According to the C standard, isdigit is unaffected by locale.
+	 However, it definitely is affected by the target character set.  */
+      tree arg;
+      unsigned HOST_WIDE_INT target_digit0
+	= lang_hooks.to_target_charset ('0');
+
+      if (target_digit0 == 0)
+	return NULL_TREE;
+
+      arg = fold_convert (unsigned_type_node, TREE_VALUE (arglist));
       arg = build2 (MINUS_EXPR, unsigned_type_node, arg,
-		    build_int_cst (unsigned_type_node, TARGET_DIGIT0));
+		    build_int_cst (unsigned_type_node, target_digit0));
       arg = build2 (LE_EXPR, integer_type_node, arg,
 		    build_int_cst (unsigned_type_node, 9));
       arg = fold (arg);

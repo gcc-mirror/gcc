@@ -1,12 +1,37 @@
+2005-02-20  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 18785
+	* langhooks.h (struct lang_hooks): Add to_target_charset.
+	* langhooks.c (lhd_to_target_charset): New function.
+	* langhooks-def.h: Declare lhd_to_target_charset.
+	(LANG_HOOKS_TO_TARGET_CHARSET): New macro.
+	(LANG_HOOKS_INITIALIZER): Update.
+	* c-common.c (c_common_to_target_charset): New function.
+	* c-common.h: Declare it.
+	* c-objc-common.h (LANG_HOOKS_TO_TARGET_CHARSET): Set to
+	c_common_to_target_charset.
+
+	* defaults.c (TARGET_BELL, TARGET_BS, TARGET_CR, TARGET_DIGIT0)
+	(TARGET_ESC, TARGET_FF, TARGET_NEWLINE, TARGET_TAB, TARGET_VT):
+	Delete definitions.
+	* system.h: Poison them.
+	* doc/tm.texi: Don't discuss them.
+	* builtins.c (fold_builtin_isdigit): Use lang_hooks.to_target_charset.
+	* c-pretty-print.c (pp_c_integer_constant): Don't use pp_c_char.
+	(pp_c_char): Do not attempt to generate letter escapes for
+	newline, tab, etc.
+	* config/arm/arm.c (output_ascii_pseudo_op): Likewise.
+	* config/mips/mips.c (mips_output_ascii): Likewise.
+
 2005-02-20  Dorit Naishlos  <dorit@il.ibm.com>
 
 	PR tree-optimization/19951
 	* tree-vect-analyze.c (vect_analyze_loop_form): Check if loop exit edge
 	is abnormal.
-	
+
 2005-02-19  Steven Bosscher  <stevenb@suse.de>
 
-	PR middle-end/19698 
+	PR middle-end/19698
 	* function.h (struct function): New field `max_loop_depth'.
 	* cfgloop.c (establish_preds): Update maximum loop depth seen so far.
 	(flow_loops_find): Reset the max loop depth count before finding loops.

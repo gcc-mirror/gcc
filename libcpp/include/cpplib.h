@@ -659,6 +659,9 @@ extern bool cpp_interpret_string_notranslate (cpp_reader *,
 					      const cpp_string *, size_t,
 					      cpp_string *, bool);
 
+/* Convert a host character constant to the execution character set.  */
+extern cppchar_t cpp_host_to_exec_charset (cpp_reader *, cppchar_t);
+
 /* Used to register macros and assertions, perhaps from the command line.
    The text is the same as the command line argument.  */
 extern void cpp_define (cpp_reader *, const char *);
@@ -742,12 +745,6 @@ cpp_num cpp_num_sign_extend (cpp_num, size_t);
 /* Nonzero if a diagnostic level is one of the warnings.  */
 #define CPP_DL_WARNING_P(l)	(CPP_DL_EXTRACT (l) >= CPP_DL_WARNING \
 				 && CPP_DL_EXTRACT (l) <= CPP_DL_PEDWARN)
-
-/* N.B. The error-message-printer prototypes have not been nicely
-   formatted because exgettext needs to see 'msgid' on the same line
-   as the name of the function in order to work properly.  Only the
-   string argument gets a name in an effort to keep the lines from
-   getting ridiculously oversized.  */
 
 /* Output a diagnostic of some kind.  */
 extern void cpp_error (cpp_reader *, int, const char *msgid, ...)

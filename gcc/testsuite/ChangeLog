@@ -1,3 +1,8 @@
+2005-02-20  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 18785
+	* gcc.dg/charset/builtin1.c: New test.
+
 2005-02-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/19299
@@ -13,7 +18,7 @@
 2005-02-19  Devang Patel  <dpatel@apple.com>
 
 	* gcc.dg/cpp/mac-eol-at-eof.c: New test.
-	
+
 2005-02-19  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.dg/achar_1.f90: New test.
@@ -47,8 +52,8 @@
 
 2005-01-20  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
-        PR c++/19508
-        * g++.dg/ext/attrib20.C: New test.
+	PR c++/19508
+	* g++.dg/ext/attrib20.C: New test.
 
 2004-02-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -315,9 +320,9 @@
 	no longer optimize.
 	* gcc.dg/builtins-47.c: New testcase.
 
-2005-02-07  Leehod Baruch  <leehod@il.ibm.com> 
+2005-02-07  Leehod Baruch  <leehod@il.ibm.com>
 	    Dorit Naishlos  <dorit@il.ibm.com>
-	
+
 	* testsuite/gcc.dg/vect/vect.exp: Add -ftree-vectorizer-verbose=3.
 
 2005-02-06  Richard Sandiford  <rsandifo@redhat.com>
@@ -346,7 +351,7 @@
 2005-02-03  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/vect-85.c: Remove xfail.
-	* gcc.dg/vect/vect-86.c: Remove xfail. 
+	* gcc.dg/vect/vect-86.c: Remove xfail.
 	* gcc.dg/vect/vect-87.c: Remove xfail.
 	* gcc.dg/vect/vect-88.c: Remove xfail.
 
@@ -370,7 +375,7 @@
 	PR c++/19628
 	* g++/ext/builtin7.C: New.
 	* g++/ext/builtin8.C: New.
-	
+
 2005-02-02  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/18502
@@ -524,7 +529,7 @@
 	* g++.dg/template/static10.C: New test.
 
 	PR c++/19395
-	* g++.dg/parse/error24.C: New test. 
+	* g++.dg/parse/error24.C: New test.
 
 	PR c++/19367
 	* g++.dg/lookup/builtin1.C: New test.
@@ -645,7 +650,7 @@
 
 2005-01-26  Greg Parker  <gparker@apple.com>
 	Stuart Hastings  <stuart@apple.com>
-	
+
 	* gcc.c-torture/execute/20050125-1.c: New.
 
 2005-01-18  Jan Hubicka  <jh@suse.cz>
@@ -958,7 +963,7 @@
 	* ada/acats/tests/c3/c92005b.ada: Likewise.
 	* ada/acats/tests/c3/cxb3012.a: Likewise.
 	* ada/acats/norun.lst: Add c380004 and c953002, add PR
-	
+
 2005-01-09  Paul Brook  <paul@codesourcery.com>
 
 	* gfortran.dg/common_2.f90: New file.

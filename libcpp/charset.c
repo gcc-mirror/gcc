@@ -81,8 +81,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #if HOST_CHARSET == HOST_CHARSET_ASCII
 #define SOURCE_CHARSET "UTF-8"
+#define LAST_POSSIBLY_BASIC_SOURCE_CHAR 0x7e
 #elif HOST_CHARSET == HOST_CHARSET_EBCDIC
 #define SOURCE_CHARSET "UTF-EBCDIC"
+#define LAST_POSSIBLY_BASIC_SOURCE_CHAR 0xFF
 #else
 #error "Unrecognized basic host character set"
 #endif
@@ -714,6 +716,63 @@ _cpp_destroy_iconv (cpp_reader *pfile)
     }
 }
 
+/* Utility routine for use by a full compiler.  C is a character taken
+   from the *basic* source character set, encoded in the host's
+   execution encoding.  Convert it to (the target's) execution
+   encoding, and return that value.
+
+   Issues an internal error if C's representation in the narrow
+   execution character set fails to be a single-byte value (C99
+   5.2.1p3: "The representation of each member of the source and
+   execution character sets shall fit in a byte.")  May also issue an
+   internal error if C fails to be a member of the basic source
+   character set (testing this exactly is too hard, especially when
+   the host character set is EBCDIC).  */
+cppchar_t
+cpp_host_to_exec_charset (cpp_reader *pfile, cppchar_t c)
+{
+  uchar sbuf[1];
+  struct _cpp_strbuf tbuf;
+
+  /* This test is merely an approximation, but it suffices to catch
+     the most important thing, which is that we don't get handed a
+     character outside the unibyte range of the host character set.  */
+  if (c > LAST_POSSIBLY_BASIC_SOURCE_CHAR)
+    {
+      cpp_error (pfile, CPP_DL_ICE,
+		 "character 0x%lx is not in the basic source character set\n",
+		 (unsigned long)c);
+      return 0;
+    }
+
+  /* Being a character in the unibyte range of the host character set,
+     we can safely splat it into a one-byte buffer and trust that that
+     is a well-formed string.  */
+  sbuf[0] = c;
+
+  /* This should never need to reallocate, but just in case... */
+  tbuf.asize = 1;
+  tbuf.text = xmalloc (tbuf.asize);
+  tbuf.len = 0;
+
+  if (!APPLY_CONVERSION (pfile->narrow_cset_desc, sbuf, 1, &tbuf))
+    {
+      cpp_errno (pfile, CPP_DL_ICE, "converting to execution character set");
+      return 0;
+    }
+  if (tbuf.len != 1)
+    {
+      cpp_error (pfile, CPP_DL_ICE,
+		 "character 0x%lx is not unibyte in execution character set",
+		 (unsigned long)c);
+      return 0;
+    }
+  c = tbuf.text[0];
+  free(tbuf.text);
+  return c;
+}
+
+
 
 /* Utility routine that computes a mask of the form 0000...111... with
    WIDTH 1-bits.  */
@@ -726,8 +785,6 @@ width_to_mask (size_t width)
   else
     return ((size_t) 1 << width) - 1;
 }
-
-
 
 /* Returns 1 if C is valid in an identifier, 2 if C is valid except at
    the start of an identifier, and 0 if C is not valid in an

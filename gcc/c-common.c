@@ -5620,6 +5620,27 @@ c_warn_unused_result (tree *top_p)
     }
 }
 
+/* Convert a character from the host to the target execution character
+   set.  cpplib handles this, mostly.  */
+
+HOST_WIDE_INT
+c_common_to_target_charset (HOST_WIDE_INT c)
+{
+  /* Character constants in GCC proper are sign-extended under -fsigned-char,
+     zero-extended under -fno-signed-char.  cpplib insists that characters
+     and character constants are always unsigned.  Hence we must convert
+     back and forth.  */
+  cppchar_t uc = ((cppchar_t)c) & ((((cppchar_t)1) << CHAR_BIT)-1);
+
+  uc = cpp_host_to_exec_charset (parse_in, uc);
+
+  if (flag_signed_char)
+    return ((HOST_WIDE_INT)uc) << (HOST_BITS_PER_WIDE_INT - CHAR_TYPE_SIZE)
+			       >> (HOST_BITS_PER_WIDE_INT - CHAR_TYPE_SIZE);
+  else
+    return uc;
+}
+
 /* Build the result of __builtin_offsetof.  EXPR is a nested sequence of
    component references, with an INDIRECT_REF at the bottom; much like
    the traditional rendering of offsetof as a macro.  Returns the folded
