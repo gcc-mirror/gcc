@@ -1,5 +1,9 @@
 2000-07-20  Geoff Keating  <geoffk@cygnus.com>
 
+	* config/rs6000/aix43.h (CPP_SPEC): Define __LONG_MAX__ correctly
+	in 64-bit mode.
+	* glimits.h: Don't do #if defined for ARCH_PPC.
+
 	* config/rs6000/rs6000.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): All
 	constants of size no larger than a pointer should go in the TOC.
 	Add 'MODE' parameter.
