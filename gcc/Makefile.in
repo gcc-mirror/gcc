@@ -1582,7 +1582,7 @@ patch-header: patch-header.o scan-decls.o scan.o xsys-protos.h $(HOST_OBSTACK)
 
 patch-header.o: xsys-protos.h
 
-stmp-fixproto: patch-header xsys-protos.h
+stmp-fixproto: patch-header xsys-protos.h fixproto
 	CPP="$(GCC_FOR_TARGET) -E"; export CPP; \
 	  ${srcdir}/fixproto include include $(SYSTEM_HEADER_DIR)
 	touch stmp-fixproto
