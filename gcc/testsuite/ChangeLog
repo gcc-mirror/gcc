@@ -1,3 +1,7 @@
+2001-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20010117-1.c: New test.
+
 2001-01-15  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* g77.f-torture/execute/20010116.[fx]: New test,

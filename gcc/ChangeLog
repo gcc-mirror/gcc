@@ -1,3 +1,7 @@
+2001-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (cmpqi_minus_1): Use {b} for QImode operation.
+
 Tue Jan 16 22:23:04 2001  Alan Modra (alan@linuxcare.com.au)
 
 	* config/pa/pa.h (PIC_OFFSET_TABLE_REGNUM_SAVED): Remove.
