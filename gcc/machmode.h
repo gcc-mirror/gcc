@@ -1,5 +1,5 @@
 /* Machine mode definitions for GNU C-Compiler; included by rtl.h and tree.h.
-   Copyright (C) 1991, 1993, 1994  Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,17 +18,10 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
-/* Add prototype support.  */
-#ifndef PROTO
-#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define PROTO(ARGS) ARGS
-#else
-#define PROTO(ARGS) ()
-#endif
-#endif
-
 #ifndef HAVE_MACHINE_MODES
+#define HAVE_MACHINE_MODES
+
+#include "gansidecl.h"
 
 /* Strictly speaking, this isn't the proper place to include these definitions,
    but this file is included by every GCC file.
@@ -76,8 +69,6 @@ enum machine_mode {
 MAX_MACHINE_MODE };
 
 #undef DEF_MACHMODE
-
-#define HAVE_MACHINE_MODES
 
 #ifndef NUM_MACHINE_MODES
 #define NUM_MACHINE_MODES (int) MAX_MACHINE_MODE
