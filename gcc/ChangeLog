@@ -1,3 +1,15 @@
+2001-11-01  Eric Christopher  <echristo@redhat.com>
+
+        * config.gcc: Revert part of earlier patch.
+        * config/mips/linux.h: Ditto.
+	* df.c: Include tm_p.h to avoid warnings.
+        * config/mips/mips.h (ABI_GAS_ASM_SPEC): Add defaults.  Adjust
+	#if/#endif.
+	* config/mips/mips.c: Define mips_abi regardless.
+	(mips_output_function_prologues): Add long casts for .frame
+	output.
+	(override_options): Allow use of ABI_32.
+
 2001-11-01  Kazu Hirata  <kazu@hxi.com>
 
 	* config/m68hc11/m68hc11.c: Fix comment formatting.

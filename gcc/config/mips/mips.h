@@ -99,15 +99,6 @@ enum processor_type {
    with different names.  */
 #define ABI_MEABI 5
 
-
-#ifndef MIPS_ABI_DEFAULT
-/* We define this away so that there is no extra runtime cost if the target
-   doesn't support multiple ABIs.  */
-#define mips_abi ABI_32
-#else
-extern int mips_abi;
-#endif
-
 /* Whether to emit abicalls code sequences or not.  */
 
 enum mips_abicalls_type {
@@ -873,51 +864,51 @@ while (0)
 /* GAS_ASM_SPEC is passed when using gas, rather than the MIPS
    assembler.  */
 
-#define GAS_ASM_SPEC "%{march=*} %{mtune=*} %{mcpu=*} %{m4650} %{mmad:-m4650} %{m3900} %{v} %{mgp32} %{mgp64} %(abi_gas_asm_spec) %{mabi=32:%{!mips*:-mips2}}"
+#define GAS_ASM_SPEC "%{march=*} %{mtune=*} %{mcpu=*} %{m4650} %{mmad:-m4650} %{m3900} %{v} %{mgp32} %{mgp64} %(abi_gas_asm_spec) %{mabi=32:%{!mips*:-mips1}}"
+
+
+/* We use the o32 abi as default for mips1 and mips2.  SGI uses n32/n64 for
+   mips3 and mips4 by default, however, this is unsupported at this point in
+   binutils so we use o64. This should change when n32/n64 is supported.  */
+
+extern int mips_abi;
 
 #ifndef MIPS_ABI_DEFAULT
-#define ABI_GAS_ASM_SPEC "\
-%{mabi=*} \
-%{!mabi=*:%{mips1|mips2|mips32:-mabi=32} %{!mips1:%{!mips2:%{!mips32:-mabi=64}}}}"
+#define MIPS_ABI_DEFAULT ABI_32
+#endif
 
-#else
 #if MIPS_ABI_DEFAULT == ABI_32
-#define ABI_GAS_ASM_SPEC "%{mabi=*} %{!mabi=*:-mabi=32}"
+#define ABI_GAS_ASM_SPEC "%{mabi=*} \
+%{!mabi=*:%{mips3|mips4|mips5|mips64:-mabi=o64} %{!mips3:%{!mips4:%{!mips5:%{!mips64:-mabi=32}}}}}"
+#endif
 
-#else
 #if MIPS_ABI_DEFAULT == ABI_N32
 #define ABI_GAS_ASM_SPEC "%{mabi=*} %{!mabi=*:-mabi=n32}"
+#endif
 
-#else
 #if MIPS_ABI_DEFAULT == ABI_64
 #define ABI_GAS_ASM_SPEC "%{mabi=*} %{!mabi=*:-mabi=64}"
+#endif
 
-#else
 #if MIPS_ABI_DEFAULT == ABI_EABI
 #define ABI_GAS_ASM_SPEC "%{mabi=*} %{!mabi=*:-mabi=eabi}"
+#endif
 
-#else
 #if MIPS_ABI_DEFAULT == ABI_O64
 #define ABI_GAS_ASM_SPEC "\
 %{mabi=*} \
-%{!mabi=*:%{mips1|mips2|mips32:-mabi=32} %{!mips1:%{!mips2:%{!mips32:-mabi=o64}}}}"
+%{!mabi=*:%{mips1|mips2|mips32:-mabi=32} %{!mips1:%{!mips2:%{!mips3:%{!mips32:-mabi=o64}}}}}"
+#endif
 
-#else
 #if MIPS_ABI_DEFAULT == ABI_MEABI
 #define ABI_GAS_ASM_SPEC "\
 %{mabi=*} \
 %{!mabi=*:-mabi=meabi }"
+#endif
 
-#else
+#ifndef ABI_GAS_ASM_SPEC
  #error "Unhandled MIPS_ABI_DEFAULT"
 #endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-
 
 /* TARGET_ASM_SPEC is used to select either MIPS_AS_ASM_SPEC or
    GAS_ASM_SPEC as the default, depending upon the value of

@@ -224,11 +224,8 @@ enum processor_type mips_tune;
 /* which instruction set architecture to use.  */
 int mips_isa;
 
-#ifdef MIPS_ABI_DEFAULT
-/* Which ABI to use.  This is defined to a constant in mips.h if the target
-   doesn't support multiple ABIs.  */
+/* which abi to use.  */
 int mips_abi;
-#endif
 
 /* Strings to hold which cpu and instruction set architecture to use.  */
 const char *mips_cpu_string;	/* for -mcpu=<xxx> */
@@ -4886,10 +4883,6 @@ override_options ()
 	  || mips_abi == ABI_64))
     target_flags |= MASK_LONG64;
 
-  /* ??? This doesn't work yet, so don't let people try to use it.  */
-  if (mips_abi == ABI_32)
-    error ("The -mabi=32 support does not work yet.");
-
 #else
   if (mips_abi_string)
     error ("This target does not support the -mabi switch.");
@@ -7001,9 +6994,9 @@ mips_output_function_prologue (file, size)
 	       (reg_names[(frame_pointer_needed)
 			  ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM]),
 	       ((frame_pointer_needed && TARGET_MIPS16)
-		? (tsize - current_function_outgoing_args_size)
-		: tsize),
-	       reg_names[31 + GP_REG_FIRST],
+		? ((long) tsize - current_function_outgoing_args_size)
+		: (long) tsize),
+	       reg_names[GP_REG_FIRST + 31],
 	       current_frame_info.var_size,
 	       current_frame_info.num_gp,
 	       current_frame_info.num_fp,
