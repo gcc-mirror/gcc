@@ -129,9 +129,9 @@ subroutine_nesting (tree label)
 static tree
 defer_merging (tree type1, tree type2)
 {
-  // FIXME: This is just a placeholder until we replace the verifier
-  // altogether.  We really need to ouput a type assertion for all of
-  // the types, every time they are used.
+  /* FIXME: This is just a placeholder until we replace the verifier
+     altogether.  We really need to ouput a type assertion for all of
+     the types, every time they are used.  */
   return object_ptr_type_node;
 
   if (TREE_CODE (type1) == POINTER_TYPE)
