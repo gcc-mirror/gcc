@@ -1,5 +1,26 @@
 2003-06-17  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* scripts: New.
+	* config/abi/extract_symvers: Move to...
+	* scripts/extract_symvers: ...here.
+	* mkcheck.in: Move to..
+	* scripts/check_survey.in: ...here.
+	* testsuite_flags.in: Move to..
+	* scripts/testsuite_flags.in: ...here.
+	* configure.in: Change check and testsuite_flags locations.
+	* configure: Regenerate.
+	* testsuite/Makefile.am (current_symbols.txt): Change location.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Modify
+	location of testsuite_flags.
+	* Makefile.am (check-script): Move..
+	(check-script-install): Move...
+	* testsuite/Makefile.am: ... here.	
+	* testsuite/Makefile.in: Regenerate.
+	* Makefile.in: Regenerate.	
+	
+2003-06-17  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* config/abi/i486-linux-gnu/baseline_symbols.txt: Update to 3.3.0.
 
 2003-06-16  Benjamin Kosnik  <bkoz@redhat.com>
