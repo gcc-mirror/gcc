@@ -1,3 +1,12 @@
+2000-06-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Update new-abi dynamic cast algorithm.
+	* tinfo.cc (__class_type_info::__dyncast_result): Add
+	whole_details. Adjust constructor.
+	(__vmi_class_type_info::__do_dyncast): Adjust for vmi_flags.
+	Avoid unnecessary searching.
+	(__dynamic_cast): Adjust for __dyncast_result::whole_details.
+
 Mon Jun  5 06:48:55 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c (init_decl_processing): Don't call record_component_aliases.
