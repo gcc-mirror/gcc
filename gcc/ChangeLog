@@ -1,3 +1,9 @@
+2004-12-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/18964
+	* config/darwin.c (darwin_assemble_visibility): Fix minor diadnostic
+	problem, adding a space at the end of the string before concatenation.
+
 2004-12-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-common.c (fname_as_string): Free namep if we are returning
