@@ -1,3 +1,10 @@
+2000-03-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* hashtab.c (htab_find_with_hash): Avoid calculating hash2
+	unless it will be used.  Rearrange loop for better
+	optimization.
+	(higher_prime_number): Add static prototype.
+
 Thu Mar 16 01:33:58 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (partition.o): Depend on config.h
