@@ -7782,86 +7782,90 @@ reposition_prologue_and_epilogue_notes (f)
      rtx f ATTRIBUTE_UNUSED;
 {
 #if defined (HAVE_prologue) || defined (HAVE_epilogue)
+  rtx insn, last, note;
   int len;
 
   if ((len = VARRAY_SIZE (prologue)) > 0)
     {
-      rtx insn, note = 0;
+      last = 0, note = 0;
 
       /* Scan from the beginning until we reach the last prologue insn.
 	 We apparently can't depend on basic_block_{head,end} after
 	 reorg has run.  */
-      for (insn = f; len && insn; insn = NEXT_INSN (insn))
+      for (insn = f; insn; insn = NEXT_INSN (insn))
 	{
 	  if (GET_CODE (insn) == NOTE)
 	    {
 	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_PROLOGUE_END)
 		note = insn;
 	    }
-	  else if ((len -= contains (insn, prologue)) == 0)
+	  else if (contains (insn, prologue))
 	    {
-	      rtx next;
-	      /* Find the prologue-end note if we haven't already, and
-		 move it to just after the last prologue insn.  */
-	      if (note == 0)
-		{
-		  for (note = insn; (note = NEXT_INSN (note));)
-		    if (GET_CODE (note) == NOTE
-			&& NOTE_LINE_NUMBER (note) == NOTE_INSN_PROLOGUE_END)
-		      break;
-		}
-
-	      next = NEXT_INSN (note);
-
-	      /* Whether or not we can depend on BLOCK_HEAD,
-		 attempt to keep it up-to-date.  */
-	      if (BLOCK_HEAD (0) == note)
-		BLOCK_HEAD (0) = next;
-
-	      remove_insn (note);
-	      /* Avoid placing note between CODE_LABEL and BASIC_BLOCK note.  */
-	      if (GET_CODE (insn) == CODE_LABEL)
-		insn = NEXT_INSN (insn);
-	      add_insn_after (note, insn);
+	      last = insn;
+	      if (--len == 0)
+		break;
 	    }
+	}
+		
+      if (last)
+	{
+	  rtx next;
+
+	  /* Find the prologue-end note if we haven't already, and
+	     move it to just after the last prologue insn.  */
+	  if (note == 0)
+	    {
+	      for (note = last; (note = NEXT_INSN (note));)
+		if (GET_CODE (note) == NOTE
+		    && NOTE_LINE_NUMBER (note) == NOTE_INSN_PROLOGUE_END)
+		  break;
+	    }
+
+	  next = NEXT_INSN (note);
+
+	  /* Avoid placing note between CODE_LABEL and BASIC_BLOCK note.  */
+	  if (GET_CODE (last) == CODE_LABEL)
+	    last = NEXT_INSN (last);
+	  reorder_insns (note, note, last);
 	}
     }
 
   if ((len = VARRAY_SIZE (epilogue)) > 0)
     {
-      rtx insn, note = 0;
+      last = 0, note = 0;
 
       /* Scan from the end until we reach the first epilogue insn.
 	 We apparently can't depend on basic_block_{head,end} after
 	 reorg has run.  */
-      for (insn = get_last_insn (); len && insn; insn = PREV_INSN (insn))
+      for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
 	{
 	  if (GET_CODE (insn) == NOTE)
 	    {
 	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EPILOGUE_BEG)
 		note = insn;
 	    }
-	  else if ((len -= contains (insn, epilogue)) == 0)
+	  else if (contains (insn, epilogue))
 	    {
-	      /* Find the epilogue-begin note if we haven't already, and
-		 move it to just before the first epilogue insn.  */
-	      if (note == 0)
-		{
-		  for (note = insn; (note = PREV_INSN (note));)
-		    if (GET_CODE (note) == NOTE
-			&& NOTE_LINE_NUMBER (note) == NOTE_INSN_EPILOGUE_BEG)
-		      break;
-		}
-
-	      /* Whether or not we can depend on BLOCK_HEAD,
-		 attempt to keep it up-to-date.  */
-	      if (n_basic_blocks
-		  && BLOCK_HEAD (n_basic_blocks-1) == insn)
-		BLOCK_HEAD (n_basic_blocks-1) = note;
-
-	      remove_insn (note);
-	      add_insn_before (note, insn);
+	      last = insn;
+	      if (--len == 0)
+		break;
 	    }
+	}
+
+      if (last)
+	{
+	  /* Find the epilogue-begin note if we haven't already, and
+	     move it to just before the first epilogue insn.  */
+	  if (note == 0)
+	    {
+	      for (note = insn; (note = PREV_INSN (note));)
+		if (GET_CODE (note) == NOTE
+		    && NOTE_LINE_NUMBER (note) == NOTE_INSN_EPILOGUE_BEG)
+		  break;
+	    }
+
+	  if (PREV_INSN (last) != note)
+	    reorder_insns (note, note, PREV_INSN (last));
 	}
     }
 #endif /* HAVE_prologue or HAVE_epilogue */

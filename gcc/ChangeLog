@@ -1,5 +1,12 @@
 2002-03-12  Richard Henderson  <rth@redhat.com>
 
+	PR optimization/5901
+	* function.c (reposition_prologue_and_epilogue_notes): Position
+	the markers after/before the last/first insn not deleted.
+
+2002-03-12  Richard Henderson  <rth@redhat.com>
+
+	PR optimization/5878
 	* config/arc/arc.h, config/cris/cris.h, config/i386/i386.h,
 	config/m68k/m68k.h, config/s390/s390.h, config/sparc/sparc.h
 	(PIC_OFFSET_TABLE_REGNUM): Conditionalize on flag_pic.
