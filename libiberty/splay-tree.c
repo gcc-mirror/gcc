@@ -195,7 +195,7 @@ splay_tree_splay (sp, key)
    returns a non-zero value, the iteration ceases immediately, and the
    value is returned.  Otherwise, this function returns 0.  */
 
-int
+static int
 splay_tree_foreach_helper (sp, node, fn, data)
      splay_tree sp;
      splay_tree_node node;
