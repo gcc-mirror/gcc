@@ -93,9 +93,7 @@ static tree lex_charconst	PARAMS ((const char *, unsigned int, int));
 static void update_header_times	PARAMS ((const char *));
 static int dump_one_header	PARAMS ((splay_tree_node, void *));
 static void cb_ident		PARAMS ((cpp_reader *, const cpp_string *));
-static void cb_enter_file	PARAMS ((cpp_reader *));
-static void cb_leave_file	PARAMS ((cpp_reader *));
-static void cb_rename_file	PARAMS ((cpp_reader *));
+static void cb_change_file    PARAMS ((cpp_reader *, const cpp_file_change *));
 static void cb_def_pragma	PARAMS ((cpp_reader *));
 
 const char *
@@ -125,9 +123,7 @@ init_c_lex (filename)
 #endif
 
   parse_in.cb.ident = cb_ident;
-  parse_in.cb.enter_file = cb_enter_file;
-  parse_in.cb.leave_file = cb_leave_file;
-  parse_in.cb.rename_file = cb_rename_file;
+  parse_in.cb.change_file = cb_change_file;
   parse_in.cb.def_pragma = cb_def_pragma;
 
   /* Make sure parse_in.digraphs matches flag_digraphs.  */
@@ -218,240 +214,6 @@ dump_time_statistics ()
   splay_tree_foreach (file_info_tree, dump_one_header, 0);
 }
 
-#if 0 /* Keep this code for a while for reference.  */
-static void
-process_directive ()
-{
-  enum cpp_ttype token;
-  tree value;
-  int saw_line;
-  enum { act_none, act_push, act_pop } action;
-  int action_number, l;
-  const char *new_file;
-#ifndef NO_IMPLICIT_EXTERN_C
-  int entering_c_header = 0;
-#endif
-  
-  /* Don't read beyond this line.  */
-  saw_line = 0;
-  linemode = 1;
-  
-  token = c_lex (&value);
-
-  if (token == CPP_NAME)
-    {
-      /* If a letter follows, then if the word here is `line', skip
-	 it and ignore it; otherwise, ignore the line, with an error
-	 if the word isn't `pragma'.  */
-
-      const char *name = IDENTIFIER_POINTER (value);
-
-      if (!strcmp (name, "pragma"))
-	{
-	  dispatch_pragma ();
-	  goto skipline;
-	}
-      else if (!strcmp (name, "define"))
-	{
-	  debug_define (lex_lineno, GET_DIRECTIVE_LINE ());
-	  goto skipline;
-	}
-      else if (!strcmp (name, "undef"))
-	{
-	  debug_undef (lex_lineno, GET_DIRECTIVE_LINE ());
-	  goto skipline;
-	}
-      else if (!strcmp (name, "line"))
-	{
-	  saw_line = 1;
-	  token = c_lex (&value);
-	  goto linenum;
-	}
-      else if (!strcmp (name, "ident"))
-	{
-	  /* #ident.  We expect a string constant here.
-	     The pedantic warning and syntax error are now in cpp.  */
-
-	  token = c_lex (&value);
-	  if (token != CPP_STRING || TREE_CODE (value) != STRING_CST)
-	    goto skipline;
-
-#ifdef ASM_OUTPUT_IDENT
-	  if (! flag_no_ident)
-	    {
-	      ASM_OUTPUT_IDENT (asm_out_file, TREE_STRING_POINTER (value));
-	    }
-#endif
-
-	  /* Skip the rest of this line.  */
-	  goto skipline;
-	}
-
-      error ("undefined or invalid # directive `%s'", name);
-      goto skipline;
-    }
-
-  /* If the # is the only nonwhite char on the line,
-     just ignore it.  Check the new newline.  */
-  if (token == CPP_EOF)
-    goto skipline;
-
-linenum:
-  /* Here we have either `#line' or `# <nonletter>'.
-     In either case, it should be a line number; a digit should follow.  */
-
-  if (token != CPP_NUMBER || TREE_CODE (value) != INTEGER_CST)
-    {
-      error ("invalid #-line");
-      goto skipline;
-    }
-
-  /* subtract one, because it is the following line that
-     gets the specified number */
-
-  l = TREE_INT_CST_LOW (value) - 1;
-
-  /* More follows: it must be a string constant (filename).
-     It would be neat to use cpplib to quickly process the string, but
-     (1) we don't have a handy tokenization of the string, and
-     (2) I don't know how well that would work in the presense
-     of filenames that contain wide characters.  */
-
-  if (saw_line)
-    {
-      /* Don't treat \ as special if we are processing #line 1 "...".
-	 If you want it to be treated specially, use # 1 "...".  */
-      ignore_escape_flag = 1;
-    }
-
-  /* Read the string constant.  */
-  token = c_lex (&value);
-
-  ignore_escape_flag = 0;
-
-  if (token == CPP_EOF)
-    {
-      /* No more: store the line number and check following line.  */
-      lex_lineno = l;
-      goto skipline;
-    }
-
-  if (token != CPP_STRING || TREE_CODE (value) != STRING_CST)
-    {
-      error ("invalid #line");
-      goto skipline;
-    }
-
-  new_file = TREE_STRING_POINTER (value);
-
-  if (main_input_filename == 0)
-    main_input_filename = new_file;
-
-  action = act_none;
-  action_number = 0;
-
-  /* Each change of file name
-     reinitializes whether we are now in a system header.  */
-  in_system_header = 0;
-
-  if (!read_line_number (&action_number))
-    {
-      /* Update the name in the top element of input_file_stack.  */
-      if (input_file_stack)
-	input_file_stack->name = input_filename;
-    }
-
-  /* `1' after file name means entering new file.
-     `2' after file name means just left a file.  */
-
-  if (action_number == 1)
-    {
-      action = act_push;
-      read_line_number (&action_number);
-    }
-  else if (action_number == 2)
-    {
-      action = act_pop;
-      read_line_number (&action_number);
-    }
-  if (action_number == 3)
-    {
-      /* `3' after file name means this is a system header file.  */
-      in_system_header = 1;
-      read_line_number (&action_number);
-    }
-#ifndef NO_IMPLICIT_EXTERN_C
-  if (action_number == 4)
-    {
-      /* `4' after file name means this is a C header file.  */
-      entering_c_header = 1;
-      read_line_number (&action_number);
-    }
-#endif
-
-  /* Do the actions implied by the preceding numbers.  */
-  if (action == act_push)
-    {
-      lineno = lex_lineno;
-      push_srcloc (input_filename, 1);
-      input_file_stack->indent_level = indent_level;
-      debug_start_source_file (input_filename);
-#ifndef NO_IMPLICIT_EXTERN_C
-      if (c_header_level)
-	++c_header_level;
-      else if (entering_c_header)
-	{
-	  c_header_level = 1;
-	  ++pending_lang_change;
-	}
-#endif
-    }
-  else if (action == act_pop)
-    {
-      /* Popping out of a file.  */
-      if (input_file_stack->next)
-	{
-#ifndef NO_IMPLICIT_EXTERN_C
-	  if (c_header_level && --c_header_level == 0)
-	    {
-	      if (entering_c_header)
-		warning ("badly nested C headers from preprocessor");
-	      --pending_lang_change;
-	    }
-#endif
-#if 0
-	  if (indent_level != input_file_stack->indent_level)
-	    {
-	      warning_with_file_and_line
-		(input_filename, lex_lineno,
-		 "This file contains more '%c's than '%c's.",
-		 indent_level > input_file_stack->indent_level ? '{' : '}',
-		 indent_level > input_file_stack->indent_level ? '}' : '{');
-	    }
-#endif
-	  pop_srcloc ();
-	  debug_end_source_file (input_file_stack->line);
-	}
-      else
-	error ("#-lines for entering and leaving files don't match");
-    }
-
-  update_header_times (new_file);
-
-  input_filename = new_file;
-  lex_lineno = l;
-
-  /* Hook for C++.  */
-  extract_interface_info ();
-
-  /* skip the rest of this line.  */
- skipline:
-  linemode = 0;
-
-  while (getch () != '\n');
-}
-#endif
-
 /* Not yet handled: #pragma, #define, #undef.
    No need to deal with linemarkers under normal conditions.  */
 
@@ -471,93 +233,72 @@ cb_ident (pfile, str)
 }
 
 static void
-cb_enter_file (pfile)
-     cpp_reader *pfile;
+cb_change_file (pfile, fc)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     const cpp_file_change *fc;
 {
-  cpp_buffer *ip = CPP_BUFFER (pfile);
-  /* Bleah, need a better interface to this.  */
-  const char *flags = cpp_syshdr_flags (pfile, ip);
+  if (fc->from.filename == 0)
+    main_input_filename = fc->to.filename;
+  in_system_header = fc->sysp;
 
-  /* Mustn't stack the main buffer on the input stack.  (Ick.)  */
-  if (ip->prev)
+  /* Do the actions implied by the preceding numbers.  */
+  if (fc->reason == FC_ENTER)
     {
-      lex_lineno = lineno = ip->prev->lineno - 1;
-      push_srcloc (ip->nominal_fname, 1);
-      input_file_stack->indent_level = indent_level;
-      debug_start_source_file (ip->nominal_fname);
-    }
-  else
-    lex_lineno = 1;
-
-  update_header_times (ip->nominal_fname);
-
-  /* Hook for C++.  */
-  extract_interface_info ();
-
-  in_system_header = (flags[0] != 0);
-#ifndef NO_IMPLICIT_EXTERN_C
-  if (c_header_level)
-    ++c_header_level;
-  else if (in_system_header && flags[1] != 0 && flags[2] != 0)
-    {
-      c_header_level = 1;
-      ++pending_lang_change;
-    }
-#endif
-}
-
-static void
-cb_leave_file (pfile)
-     cpp_reader *pfile;
-{
-  /* Bleah, need a better interface to this.  */
-  const char *flags = cpp_syshdr_flags (pfile, CPP_BUFFER (pfile));
-
-  if (input_file_stack->next)
-    {
-#ifndef NO_IMPLICIT_EXTERN_C
-      if (c_header_level && --c_header_level == 0)
+      /* FIXME.  Don't stack the main buffer on the input stack.  */
+      if (fc->from.filename)
 	{
-	  if (flags[2] != 0)
-	    warning ("badly nested C headers from preprocessor");
-	  --pending_lang_change;
+	  lineno = lex_lineno;
+	  push_srcloc (fc->to.filename, 1);
+	  input_file_stack->indent_level = indent_level;
+	  debug_start_source_file (fc->to.filename);
+#ifndef NO_IMPLICIT_EXTERN_C
+	  if (c_header_level)
+	    ++c_header_level;
+	  else if (fc->externc)
+	    {
+	      c_header_level = 1;
+	      ++pending_lang_change;
+	    }
+#endif
 	}
+    }
+  else if (fc->reason == FC_LEAVE)
+    {
+      /* Popping out of a file.  */
+      if (input_file_stack->next)
+	{
+#ifndef NO_IMPLICIT_EXTERN_C
+	  if (c_header_level && --c_header_level == 0)
+	    {
+	      if (fc->externc)
+		warning ("badly nested C headers from preprocessor");
+	      --pending_lang_change;
+	    }
 #endif
 #if 0
-      if (indent_level != input_file_stack->indent_level)
-	{
-	  warning_with_file_and_line
-	    (input_filename, lex_lineno,
-	     "This file contains more '%c's than '%c's.",
-	     indent_level > input_file_stack->indent_level ? '{' : '}',
-	     indent_level > input_file_stack->indent_level ? '}' : '{');
-	}
+	  if (indent_level != input_file_stack->indent_level)
+	    {
+	      warning_with_file_and_line
+		(input_filename, lex_lineno,
+		 "This file contains more '%c's than '%c's.",
+		 indent_level > input_file_stack->indent_level ? '{' : '}',
+		 indent_level > input_file_stack->indent_level ? '}' : '{');
+	    }
 #endif
-      /* We get called for the main buffer, but we mustn't pop it.  */
-      pop_srcloc ();
-      debug_end_source_file (input_file_stack->line);
+	  pop_srcloc ();
+	  debug_end_source_file (input_file_stack->line);
+	}
+      else
+	error ("leaving more files than we entered");
     }
+  else if (fc->reason == FC_RENAME)
+    input_filename = fc->to.filename;
 
-  in_system_header = (flags[0] != 0);
-  lex_lineno = CPP_BUFFER (pfile)->lineno;
+  update_header_times (fc->to.filename);
 
-  update_header_times (input_file_stack->name);
-  /* Hook for C++.  */
-  extract_interface_info ();
-}
+  input_filename = fc->to.filename;
+  lex_lineno = fc->to.lineno;
 
-static void
-cb_rename_file (pfile)
-     cpp_reader *pfile;
-{
-  cpp_buffer *ip = CPP_BUFFER (pfile);
-  /* Bleah, need a better interface to this.  */
-  const char *flags = cpp_syshdr_flags (pfile, ip);
-  input_filename = ip->nominal_fname;
-  lex_lineno = ip->lineno;
-  in_system_header = (flags[0] != 0);
-
-  update_header_times (ip->nominal_fname);
   /* Hook for C++.  */
   extract_interface_info ();
 }

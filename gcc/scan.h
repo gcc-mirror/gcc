@@ -61,8 +61,7 @@ extern int scan_string _PARAMS((FILE *, sstring *, int));
 extern int read_upto _PARAMS((FILE *, sstring *, int));
 extern unsigned long hash _PARAMS((const char *));
 extern void recognized_function _PARAMS((const struct cpp_token *,
-					 unsigned int, int, int,
-					 const char *));
+					 unsigned int, int, int));
 extern void recognized_extern _PARAMS((const struct cpp_token *));
 extern unsigned int hashstr _PARAMS((const char *, unsigned int));
 

@@ -98,6 +98,58 @@ struct include_file
 ((inc)->cmacro && ((inc)->cmacro == NEVER_REREAD \
 		   || ((inc)->cmacro->type == NT_MACRO) == (inc)->defined))
 
+struct cpp_buffer
+{
+  const unsigned char *cur;	 /* current position */
+  const unsigned char *rlimit; /* end of valid data */
+  const unsigned char *line_base; /* start of current line */
+  cppchar_t read_ahead;		/* read ahead character */
+  cppchar_t extra_char;		/* extra read-ahead for long tokens.  */
+
+  struct cpp_reader *pfile;	/* Owns this buffer.  */
+  struct cpp_buffer *prev;
+
+  const unsigned char *buf;	 /* entire buffer */
+
+  /* Filename specified with #line command.  */
+  const char *nominal_fname;
+
+  /* Actual directory of this file, used only for "" includes */
+  struct file_name_list *actual_dir;
+
+  /* Pointer into the include table.  Used for include_next and
+     to record control macros. */
+  struct include_file *inc;
+
+  /* Value of if_stack at start of this file.
+     Used to prohibit unmatched #endif (etc) in an include file.  */
+  struct if_stack *if_stack;
+
+  /* Token column position adjustment owing to tabs in whitespace.  */
+  unsigned int col_adjust;
+
+  /* Line number at line_base (above). */
+  unsigned int lineno;
+
+  /* Because of the way the lexer works, -Wtrigraphs can sometimes
+     warn twice for the same trigraph.  This helps prevent that.  */
+  const unsigned char *last_Wtrigraphs;
+
+  /* True if we have already warned about C++ comments in this file.
+     The warning happens only for C89 extended mode with -pedantic on,
+     or for -Wtraditional, and only once per file (otherwise it would
+     be far too noisy).  */
+  unsigned char warned_cplusplus_comments;
+
+  /* True if we don't process trigraphs and escaped newlines.  True
+     for preprocessed input, command line directives, and _Pragma
+     buffers.  */
+  unsigned char from_stage3;
+
+  /* Temporary storage for pfile->skipping whilst in a directive.  */
+  unsigned char was_skipping;
+};
+
 /* Character classes.
    If the definition of `numchar' looks odd to you, please look up the
    definition of a pp-number in the C standard [section 6.4.8 of C99].
@@ -208,6 +260,8 @@ extern void _cpp_do__Pragma	PARAMS ((cpp_reader *));
 extern void _cpp_init_stacks	PARAMS ((cpp_reader *));
 extern void _cpp_cleanup_stacks	PARAMS ((cpp_reader *));
 extern void _cpp_init_internal_pragmas PARAMS ((cpp_reader *));
+extern void _cpp_do_file_change PARAMS ((cpp_reader *, enum cpp_fc_reason,
+					 const char *, unsigned int));
 
 /* Utility routines and macros.  */
 #define DSC(str) (const U_CHAR *)str, sizeof str - 1

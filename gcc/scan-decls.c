@@ -181,8 +181,7 @@ scan_decls (pfile, argc, argv)
 				   cpp_get_line (pfile)->line,
 				   (saw_inline ? 'I'
 				    : in_extern_C_brace || current_extern_C
-				    ? 'F' : 'f'), have_arg_list,
-				   CPP_BUFFER (pfile)->nominal_fname);
+				    ? 'F' : 'f'), have_arg_list);
 	      cpp_get_token (pfile, &token);
 	      if (token.type == CPP_OPEN_BRACE)
 		{

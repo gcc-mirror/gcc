@@ -718,12 +718,16 @@ static void
 do_line (pfile)
      cpp_reader *pfile;
 {
-  cpp_buffer *ip = CPP_BUFFER (pfile);
+  cpp_buffer *buffer = pfile->buffer;
+  const char *filename = buffer->nominal_fname;
+  unsigned int lineno = buffer->lineno;
+  enum cpp_fc_reason reason = (enum cpp_fc_reason) -1;
   unsigned long new_lineno;
-  /* C99 raised the minimum limit on #line numbers.  */
-  unsigned int cap = CPP_OPTION (pfile, c99) ? 2147483647 : 32767;
-  int enter = 0, leave = 0, rename = 0;
+  unsigned int cap;
   cpp_token token;
+
+  /* C99 raised the minimum limit on #line numbers.  */
+  cap = CPP_OPTION (pfile, c99) ? 2147483647 : 32767;
 
   /* #line commands expand macros.  */
   cpp_get_token (pfile, &token);
@@ -739,32 +743,24 @@ do_line (pfile)
     cpp_pedwarn (pfile, "line number out of range");
 
   cpp_get_token (pfile, &token);
-
-  if (token.type != CPP_EOF)
+  if (token.type == CPP_STRING)
     {
       char *fname;
       unsigned int len;
       int action_number = 0;
-
-      if (token.type != CPP_STRING)
-	{
-	  cpp_error (pfile, "\"%s\" is not a valid filename",
-		     cpp_token_as_text (pfile, &token));
-	  return;
-	}
 
       len = token.val.str.len;
       fname = alloca (len + 1);
       memcpy (fname, token.val.str.text, len);
       fname[len] = '\0';
     
-      if (strcmp (fname, ip->nominal_fname))
+      if (strcmp (fname, buffer->nominal_fname))
 	{
-	  rename = 1;
-	  if (!strcmp (fname, ip->inc->name))
-	    ip->nominal_fname = ip->inc->name;
+	  reason = FC_RENAME;
+	  if (!strcmp (fname, buffer->inc->name))
+	    buffer->nominal_fname = buffer->inc->name;
 	  else
-	    ip->nominal_fname = _cpp_fake_include (pfile, fname);
+	    buffer->nominal_fname = _cpp_fake_include (pfile, fname);
 	}
 
       if (read_line_number (pfile, &action_number) != 0)
@@ -774,39 +770,66 @@ do_line (pfile)
 
 	  if (action_number == 1)
 	    {
-	      enter = 1;
-	      cpp_make_system_header (pfile, ip, 0);
+	      reason = FC_ENTER;
+	      cpp_make_system_header (pfile, buffer, 0);
 	      read_line_number (pfile, &action_number);
 	    }
 	  else if (action_number == 2)
 	    {
-	      leave = 1;
-	      cpp_make_system_header (pfile, ip, 0);
+	      reason = FC_LEAVE;
+	      cpp_make_system_header (pfile, buffer, 0);
 	      read_line_number (pfile, &action_number);
 	    }
 	  if (action_number == 3)
 	    {
-	      cpp_make_system_header (pfile, ip, 1);
+	      cpp_make_system_header (pfile, buffer, 1);
 	      read_line_number (pfile, &action_number);
 	    }
 	  if (action_number == 4)
 	    {
-	      cpp_make_system_header (pfile, ip, 2);
+	      cpp_make_system_header (pfile, buffer, 2);
 	      read_line_number (pfile, &action_number);
 	    }
 	}
+
       check_eol (pfile);
+    }
+  else if (token.type != CPP_EOF)
+    {
+      cpp_error (pfile, "\"%s\" is not a valid filename",
+		 cpp_token_as_text (pfile, &token));
+      return;
     }
 
   /* Our line number is incremented after the directive is processed.  */
-  ip->lineno = new_lineno - 1;
-  pfile->lexer_pos.output_line = ip->lineno;
-  if (enter && pfile->cb.enter_file)
-    (*pfile->cb.enter_file) (pfile);
-  if (leave && pfile->cb.leave_file)
-    (*pfile->cb.leave_file) (pfile);
-  if (rename && pfile->cb.rename_file)
-    (*pfile->cb.rename_file) (pfile);
+  buffer->lineno = new_lineno - 1;
+  if (reason != (enum cpp_fc_reason) -1)
+    _cpp_do_file_change (pfile, reason, filename, lineno);
+}
+
+/* Arrange the file_change callback.  The assumption is that the
+   current buffer's lineno is one less than the next line.  */
+void
+_cpp_do_file_change (pfile, reason, from_file, from_lineno)
+     cpp_reader *pfile;
+     enum cpp_fc_reason reason;
+     const char *from_file;
+     unsigned int from_lineno;
+{
+  if (pfile->cb.change_file)
+    {
+      cpp_file_change fc;
+      cpp_buffer *buffer = pfile->buffer;
+
+      fc.reason = reason;
+      fc.from.filename = from_file;
+      fc.from.lineno = from_lineno;
+      fc.to.filename = buffer->nominal_fname;
+      fc.to.lineno = buffer->lineno + 1;
+      fc.sysp = buffer->inc->sysp;
+      fc.externc = CPP_OPTION (pfile, cplusplus) && buffer->inc->sysp == 2;
+      pfile->cb.change_file (pfile, &fc);
+    }
 }
 
 /*
@@ -1745,8 +1768,10 @@ cpp_pop_buffer (pfile)
      cpp_reader *pfile;
 {
   cpp_buffer *buffer = pfile->buffer;
+  const char *filename = buffer->nominal_fname;
+  unsigned int lineno = buffer->lineno;
   struct if_stack *ifs = buffer->if_stack;
-  int wfb;
+  int wfb = (buffer->inc != 0);
 
   /* Walk back up the conditional stack till we reach its level at
      entry to this file, issuing error messages.  */
@@ -1754,7 +1779,6 @@ cpp_pop_buffer (pfile)
     cpp_error_with_line (pfile, ifs->pos.line, ifs->pos.col,
 			 "unterminated #%s", dtable[ifs->type].name);
 
-  wfb = (buffer->inc != 0);
   if (wfb)
     _cpp_pop_file_buffer (pfile, buffer);
 
@@ -1762,8 +1786,8 @@ cpp_pop_buffer (pfile)
   obstack_free (pfile->buffer_ob, buffer);
   pfile->buffer_stack_depth--;
 
-  if (pfile->buffer && wfb && pfile->cb.leave_file)
-    (*pfile->cb.leave_file) (pfile);
+  if (pfile->buffer && wfb)
+    _cpp_do_file_change (pfile, FC_LEAVE, filename, lineno);
   
   return pfile->buffer;
 }

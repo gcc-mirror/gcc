@@ -212,7 +212,15 @@ stack_include_file (pfile, inc)
      cpp_reader *pfile;
      struct include_file *inc;
 {
+  const char *filename = 0;
+  unsigned int lineno = 0;
   cpp_buffer *fp;
+
+  if (pfile->buffer)
+    {
+      filename = pfile->buffer->nominal_fname;
+      lineno = pfile->buffer->lineno;
+    }
 
   if (pfile->context->prev)
     cpp_ice (pfile, "attempt to push file buffer with contexts stacked");
@@ -237,7 +245,7 @@ stack_include_file (pfile, inc)
   fp->buf = inc->buffer;
   fp->rlimit = fp->buf + inc->st.st_size;
   fp->cur = fp->buf;
-  fp->lineno = 1;
+  fp->lineno = 0;
   fp->line_base = fp->buf;
 
   /* The ->actual_dir field is only used when ignore_srcdir is not in effect;
@@ -249,9 +257,9 @@ stack_include_file (pfile, inc)
   pfile->include_depth++;
   pfile->input_stack_listing_current = 0;
 
-  if (pfile->cb.enter_file)
-    (*pfile->cb.enter_file) (pfile);
+  _cpp_do_file_change (pfile, FC_ENTER, filename, lineno);
 
+  fp->lineno = 1;
   return 1;
 }
 
@@ -529,20 +537,6 @@ cpp_make_system_header (pfile, pbuf, flag)
     cpp_ice (pfile, "cpp_make_system_header called on non-file buffer");
   else
     pbuf->inc->sysp = flag;
-}
-
-const char *
-cpp_syshdr_flags (pfile, pbuf)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-     cpp_buffer *pbuf;
-{
-#ifndef NO_IMPLICIT_EXTERN_C
-  if (CPP_OPTION (pfile, cplusplus) && pbuf->inc->sysp == 2)
-    return " 3 4";
-#endif
-  if (pbuf->inc->sysp)
-    return " 3";
-  return "";
 }
 
 /* Report on all files that might benefit from a multiple include guard.

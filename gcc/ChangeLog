@@ -1,3 +1,28 @@
+2000-11-27  Neil Booth  <neilb@earthling.net>
+
+        * c-lex.c (cb_enter_file, cb_leave_file, cb_rename_file):
+        Combine into the new function cb_change_file.
+        (init_c_lex): Update.
+        * cppfiles.c (stack_include_file): Use _cpp_do_file_change.
+        (cpp_syshdr_flags): Delete.
+        * cpphash.h (_cpp_do_file_change): New prototype.
+        Move struct cpp_buffer here from...
+        * cpplib.h (struct cpp_buffer): ... here.
+        (enum cpp_fc_reason, struct cpp_file_loc,
+        struct_cpp_file_change, change_file): New.
+        (enter_file, leave_file, rename_file, cpp_syshdr_flags): Delete.
+        * cpplib.c (do_line): Update for new cb_change_file callback.
+        (_cpp_do_file_change): New function.
+        (_cpp_pop_buffer): Update to use it.
+        * cppmain.c (move_printer): Delete.
+        (main): Set up single callback cb_change_file.
+        (cb_enter_file, cb_leave_file, cb_rename_file): Delete.
+        (cb_change_file): New.
+        * fix-header.c (cur_file, cb_change_file): New.
+        (recognized_function, read_scan_file): Update.
+        * scan-decls.c (scan_decls): Update.
+        * scan.h (recognized_function): Update prototype.
+
 2000-11-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.h (mark_tree_hashtable): New function.
