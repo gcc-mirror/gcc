@@ -398,7 +398,7 @@ void
 cgraph_remove_node (struct cgraph_node *node)
 {
   void **slot;
-  bool check_dead = 1;
+  bool kill_body = false;
 
   cgraph_node_remove_callers (node);
   cgraph_node_remove_callees (node);
@@ -426,12 +426,7 @@ cgraph_remove_node (struct cgraph_node *node)
       else
 	{
           htab_clear_slot (cgraph_hash, slot);
-	  if (!dump_enabled_p (TDI_tree_all))
-	    {
-              DECL_SAVED_TREE (node->decl) = NULL;
-	      DECL_STRUCT_FUNCTION (node->decl) = NULL;
-	    }
-	  check_dead = false;
+	  kill_body = true;
 	}
     }
   else
@@ -443,23 +438,23 @@ cgraph_remove_node (struct cgraph_node *node)
       n->next_clone = node->next_clone;
     }
 
-  /* Work out whether we still need a function body (either there is inline
-     clone or there is out of line function whose body is not written).  */
-  if (check_dead && flag_unit_at_a_time)
+  /* While all the clones are removed after being proceeded, the function 
+     itself is kept in the cgraph even after it is compiled.  Check whether
+     we are done with this body and reclaim it proactively if this is the case.
+     */
+  if (!kill_body && *slot)
     {
-      struct cgraph_node *n;
+      struct cgraph_node *n = *slot;
+      if (!n->next_clone && !n->global.inlined_to
+	  && (TREE_ASM_WRITTEN (n->decl) || DECL_EXTERNAL (n->decl)))
+	kill_body = true;
+    }
 
-      for (n = *slot; n; n = n->next_clone)
-	if (n->global.inlined_to
-	    || (!n->global.inlined_to
-		&& !TREE_ASM_WRITTEN (n->decl) && !DECL_EXTERNAL (n->decl)))
-	  break;
-      if (!n && !dump_enabled_p (TDI_tree_all))
-	{
-	  DECL_SAVED_TREE (node->decl) = NULL;
-	  DECL_STRUCT_FUNCTION (node->decl) = NULL;
-          DECL_INITIAL (node->decl) = error_mark_node;
-	}
+  if (kill_body && !dump_enabled_p (TDI_tree_all) && flag_unit_at_a_time)
+    {
+      DECL_SAVED_TREE (node->decl) = NULL;
+      DECL_STRUCT_FUNCTION (node->decl) = NULL;
+      DECL_INITIAL (node->decl) = error_mark_node;
     }
   cgraph_n_nodes--;
   /* Do not free the structure itself so the walk over chain can continue.  */

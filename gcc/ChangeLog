@@ -1,3 +1,9 @@
+2005-03-18  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_remove_node): Avoid loop in code deciding whether 
+	function body should be released; do not proactively release function
+	bodies in non-unit-at-a-time mode.
+
 2005-03-18  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config/i386/t-rtems-i386 (MULTILIBS): Remove k6, athlon,
