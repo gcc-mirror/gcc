@@ -3328,6 +3328,14 @@ propagate_block (bb, old, significant, flags)
 			  PUT_CODE (next, NOTE);
 			  NOTE_LINE_NUMBER (next) = NOTE_INSN_DELETED;
 			  NOTE_SOURCE_FILE (next) = 0;
+
+			  if ((next = next_nonnote_insn (label)) != NULL
+			      && GET_CODE (next) == BARRIER)
+			    {
+			      PUT_CODE (next, NOTE);
+			      NOTE_LINE_NUMBER (next) = NOTE_INSN_DELETED;
+			      NOTE_SOURCE_FILE (next) = 0;
+			    }
 			}
 		    }
 		}
