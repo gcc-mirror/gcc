@@ -1,3 +1,13 @@
+2004-03-09  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* system.h (SUNOS4_SHARED_LIBRARIES): Poison.
+	* collect2.c: Remove SUNOS4_SHARED_LIBRARIES code.
+	* config/sparc/aout.h (TARGET_ASM_SELECT_SECTION): Don't define.
+	* config/sparc/sparc.c (sparc_aout_select_section): Remove.
+	(sparc_aout_select_rtx_section): Don't check
+	SUNOS4_SHARED_LIBRARIES.
+	* config/sparc/sparc.h (SUNOS4_SHARED_LIBRARIES): Don't define.
+
 2004-03-10  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR other/14474
