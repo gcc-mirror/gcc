@@ -1,5 +1,11 @@
 2001-04-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* output.h (assemble_real): Declare if REAL_VALUE_TYPE is defined.
+
+	* real.h (ereal_atof, real_value_truncate, target_isnan,
+	target_isinf, target_negative, assemble_real, debug_real): Delete
+	redundant prototypes.
+
 	* Makefile.in (ifcvt.o): Depend on toplev.h.
 
 	* c-semantics.c: Include expr.h.
