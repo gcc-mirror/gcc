@@ -1,3 +1,9 @@
+2000-10-31  Nick Clifton  <nickc@redhat.com>
+
+	* MAINTAINERS: Rename <name>@cygnus.com addresses to
+	<name>@redhat.com.  Also installed new email address for Clint
+	Popetz.
+	
 2000-10-30  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* etc: Remove directory from GCC.

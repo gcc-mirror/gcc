@@ -3,89 +3,89 @@
 Craig Burley					craig@jcb-sc.com
 John Carr					jfc@mit.edu
 Richard Earnshaw				rearnsha@arm.com
-Richard Henderson                               rth@cygnus.com
-Geoffrey Keating				geoffk@cygnus.com
+Richard Henderson                               rth@redhat.com
+Geoffrey Keating				geoffk@redhat.com
 Richard Kenner					kenner@nyu.edu
-Jeff Law					law@cygnus.com
-Jason Merrill					jason@cygnus.com
-Michael Meissner				meissner@cygnus.com
+Jeff Law					law@redhat.com
+Jason Merrill					jason@redhat.com
+Michael Meissner				meissner@redhat.com
 David S. Miller					davem@redhat.com
 Mark Mitchell					mark@codesourcery.com
-Jim Wilson					wilson@cygnus.com
+Jim Wilson					wilson@redhat.com
 
 
 			Various Maintainers
 
-sh port			Joern Rennecke		amylaar@cygnus.com
-v850 port		Nick Clifton		nickc@cygnus.com
-v850 port		Michael Meissner	meissner@cygnus.com
-arm port		Nick Clifton		nickc@cygnus.com
+sh port			Joern Rennecke		amylaar@redhat.com
+v850 port		Nick Clifton		nickc@redhat.com
+v850 port		Michael Meissner	meissner@redhat.com
+arm port		Nick Clifton		nickc@redhat.com
 arm port		Richard Earnshaw	rearnsha@arm.com
-m32r port		Nick Clifton		nickc@cygnus.com
-			Michael Meissner	meissner@cygnus.com
-h8 port			Jeff Law		law@cygnus.com
+m32r port		Nick Clifton		nickc@redhat.com
+			Michael Meissner	meissner@redhat.com
+h8 port			Jeff Law		law@redhat.com
 mcore			Nick Clifton		nickc@redhat.com
 			Jim Dein		jdein@windriver.com
-mn10200 port		Jeff Law		law@cygnus.com
-mn10300 port		Jeff Law		law@cygnus.com
+mn10200 port		Jeff Law		law@redhat.com
+mn10300 port		Jeff Law		law@redhat.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
-hppa port		Jeff Law		law@cygnus.com
+hppa port		Jeff Law		law@redhat.com
 m68hc11 port		Stephane Carrez		Stephane.Carrez@worldnet.fr
-m68k port (?)		Jeff Law		law@cygnus.com
+m68k port (?)		Jeff Law		law@redhat.com
 m68k-motorola-sysv port	Philippe De Muyter	phdm@macqel.be
-rs6000 port		Geoff Keating		geoffk@cygnus.com
+rs6000 port		Geoff Keating		geoffk@redhat.com
 rs6000 port		David Edelsohn		dje@watson.ibm.com
-mips port		Gavin Romig-Koch	gavin@cygnus.com
-ia64 port		Jim Wilson		wilson@cygnus.com
-i860 port		Jason Eckhardt		jle@cygnus.com
-i960 port		Jim Wilson		wilson@cygnus.com
-a29k port		Jim Wilson		wilson@cygnus.com
-alpha port		Richard Henderson	rth@cygnus.com
-sparc port		Richard Henderson	rth@cygnus.com
+mips port		Gavin Romig-Koch	gavin@redhat.com
+ia64 port		Jim Wilson		wilson@redhat.com
+i860 port		Jason Eckhardt		jle@redhat.com
+i960 port		Jim Wilson		wilson@redhat.com
+a29k port		Jim Wilson		wilson@redhat.com
+alpha port		Richard Henderson	rth@redhat.com
+sparc port		Richard Henderson	rth@redhat.com
 sparc port		David S. Miller		davem@redhat.com
 sparc port		Jakub Jelinek		jakub@redhat.com
-x86 ports		Stan Cox		scox@cygnus.com
+x86 ports		Stan Cox		scox@redhat.com
 c4x port		Michael Hayes		m.hayes@elec.canterbury.ac.nz
 arc port		Richard Kenner		kenner@nyu.edu
-fr30 port		Nick Clifton		niclc@cygnus.com
-fortran			Richard Henderson	rth@cygnus.com
+fr30 port		Nick Clifton		niclc@redhat.com
+fortran			Richard Henderson	rth@redhat.com
 fortran			Toon Moene		toon@moene.indiv.nluug.nl
-c++			Jason Merrill		jason@cygnus.com
+c++			Jason Merrill		jason@redhat.com
 c++                     Mark Mitchell		mark@codesourcery.com
-chill			Dave Brolley		brolley@cygnus.com
+chill			Dave Brolley		brolley@redhat.com
 chill			Per Bothner		per@bothner.com
 java			Per Bothner		per@bothner.com
-java			Alexandre Petit-Bianco	apbianco@cygnus.com
+java			Alexandre Petit-Bianco	apbianco@redhat.com
 objective-c		Ovidiu Predescu		ovidiu@cup.hp.com
-cpplib/cccp		Dave Brolley		brolley@cygnus.com
+cpplib/cccp		Dave Brolley		brolley@redhat.com
 cpplib/cccp		Per Bothner		per@bothner.com
 cpplib/cccp		Zack Weinberg		zack@wolery.cumb.org
 cpplib			Neil Booth		neilb@earthling.net
 alias analysis		John Carr		jfc@mit.edu
-loop unrolling		Jim Wilson		wilson@cygnus.com
+loop unrolling		Jim Wilson		wilson@redhat.com
 loop discovery		Michael Hayes		m.hayes@elec.canterbury.ac.nz
-scheduler (+ haifa)	Jim Wilson		wilson@cygnus.com
-scheduler (+ haifa)	Michael Meissner	meissner@cygnus.com
-scheduler (+ haifa)	Jeff Law		law@cygnus.com
-reorg			Jeff Law		law@cygnus.com
-caller-save.c		Jeff Law		law@cygnus.com
-debugging code		Jim Wilson		wilson@cygnus.com
-dwarf debugging code	Jason Merrill		jason@cygnus.com
-c++ runtime libs	Ulrich Drepper		drepper@cygnus.com
+scheduler (+ haifa)	Jim Wilson		wilson@redhat.com
+scheduler (+ haifa)	Michael Meissner	meissner@redhat.com
+scheduler (+ haifa)	Jeff Law		law@redhat.com
+reorg			Jeff Law		law@redhat.com
+caller-save.c		Jeff Law		law@redhat.com
+debugging code		Jim Wilson		wilson@redhat.com
+dwarf debugging code	Jason Merrill		jason@redhat.com
+c++ runtime libs	Ulrich Drepper		drepper@redhat.com
 c++ runtime libs        Gabriel Dos Reis        dosreis@cmla.ens-cachan.fr
 *synthetic multiply	Torbjorn Granlund	tege@swox.com
 *c-torture		Torbjorn Granlund	tege@swox.com
 *f-torture		Kate Hedstrom		kate@ahab.rutgers.edu
 sco5, unixware, sco udk	Robert Lipe		robertlipe@usa.net
 fixincludes		Bruce Korb		bkorb@gnu.org
-gcse.c 			Jeff Law		law@cygnus.com
-global opt framework	Jeff Law		law@cygnus.com
+gcse.c 			Jeff Law		law@redhat.com
+global opt framework	Jeff Law		law@redhat.com
 jump.c			David S. Miller		davem@redhat.com
 web pages		Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
-C front end/isoc9x	Gavin Romig-Koch	gavin@cygnus.com
-config.sub/config.guess	Ben Elliston		bje@cygnus.com
+C front end/isoc9x	Gavin Romig-Koch	gavin@redhat.com
+config.sub/config.guess	Ben Elliston		bje@redhat.com
 avr port		Denis Chertykov		denisc@overta.ru
-basic block reordering	Jason Eckhardt		jle@cygnus.com
+basic block reordering	Jason Eckhardt		jle@redhat.com
 i18n			Philipp Thomas		pthomas@suse.de
 diagnostic messages	Gabriel Dos Reis	gdr@codesourcery.com
 windows, cygwin, mingw	Christopher Faylor	cgf@redhat.com
@@ -106,34 +106,34 @@ William Cohen					wcohen@redhat.com
 *Paul Eggert					eggert@twinsun.com
 Marc Espie					espie@cvs.openbsd.org
 Kaveh Ghazi					ghazi@caip.rutgers.edu
-Anthony Green					green@cygnus.com
-Stu Grossman					grossman@cygnus.com
-Andrew Haley					aph@cygnus.com
-Manfred Hollstein				mhollstein@cygnus.com
+Anthony Green					green@redhat.com
+Stu Grossman					grossman@redhat.com
+Andrew Haley					aph@redhat.com
+Manfred Hollstein				mhollstein@redhat.com
 Jan Hubicka					hubicka@freesoft.cz
 Jakub Jelinek					jakub@redhat.com
 Klaus Kaempf					kkaempf@progis.de
-Brendan Kehoe					brendan@cygnus.com
+Brendan Kehoe					brendan@redhat.com
 Mumit Khan					khan@xraylith.wisc.edu
-Benjamin Kosnik					bkoz@cygnus.com
+Benjamin Kosnik					bkoz@redhat.com
 Marc Lehmann					pcg@goof.com
-Don Lindsay					dlindsay@cygnus.com
+Don Lindsay					dlindsay@redhat.com
 Dave Love					d.love@dl.ac.uk
 *HJ Lu						hjl@lucon.org
-Andrew Macleod					amacleod@cygnus.com
-Vladimir Makarov				vmakarov@cygnus.com
+Andrew Macleod					amacleod@redhat.com
+Vladimir Makarov				vmakarov@redhat.com
 Greg McGary					gkm@gnu.org
 Toon Moene					toon@moene.indiv.nluug.nl
-Catherine Moore					clm@cygnus.com
+Catherine Moore					clm@redhat.com
 Joseph Myers					jsm28@cam.ac.uk
 Hans-Peter Nilsson				hp@bitrange.com
-Diego Novillo					dnovillo@cygnus.com
+Diego Novillo					dnovillo@redhat.com
 David O'Brien					obrien@FreeBSD.org
 Jeffrey D. Oldham				oldham@codesourcery.com
 Alexandre Oliva					oliva@lsd.ic.unicamp.br
-Alexandre Petit-Bianco				apbianco@cygnus.com
-Clinton Popetz					cpopetz@cygnus.com
-Ken Raeburn					raeburn@cygnus.com
+Alexandre Petit-Bianco				apbianco@redhat.com
+Clinton Popetz					cpopetz@cpopetz.com
+Ken Raeburn					raeburn@redhat.com
 Gabriel Dos Reis                                dosreis@cmla.ens-cachan.fr
 Alex Samuel					samuel@codesourcery.com
 Bernd Schmidt					crux@pool.informatik.rwth-aachen.de
@@ -141,15 +141,15 @@ Andreas Schwab					schwab@issan.informatik.uni-dortmund.de
 Nathan Sidwell					nathan@acm.org
 Franz Sirl					franz.sirl-kernel@lauterbach.com
 Mike Stump					mrs@windriver.com
-Tom Tromey					tromey@cygnus.com
+Tom Tromey					tromey@redhat.com
 John Wehle					john@feith.com
 Martin v. Löwis					loewis@informatik.hu-berlin.de
 Ian Taylor					ian@zembu.com
 Andreas Jaeger					aj@suse.de
 Andrew cagney					cagney@redhat.com
 Philipp Thomas					pthomas@suse.de
-Aldy Hernandez					aldyh@cygnus.com
-Eric Christopher				echristo@cygnus.com
+Aldy Hernandez					aldyh@redhat.com
+Eric Christopher				echristo@redhat.com
 Kazu Hirata					kazu@hxi.com
 
 * Indicates folks we need to get Kerberos/ssh accounts ready so they
