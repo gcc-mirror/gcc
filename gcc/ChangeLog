@@ -1,4 +1,10 @@
+Sat May 23 18:45:59 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* m68k/t-linux: Remove stuff already included in config/t-linux.
+
 Sat May 23 18:35:07 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/m68k/t-linux: 
 
 	* Makefile.in (uninstall): Delete info files.
 
