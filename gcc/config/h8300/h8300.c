@@ -1996,10 +1996,10 @@ static enum shift_alg get_shift_alg PARAMS ((enum shift_type,
 					     enum shift_mode, int,
 					     struct shift_info *));
 
-/* Given CPU, MODE, SHIFT_TYPE, and shift count COUNT, determine the best
-   algorithm for doing the shift.  The assembler code is stored in ASSEMBLER.
-   We don't achieve maximum efficiency in all cases, but the hooks are here
-   to do so.
+/* Given SHIFT_TYPE, SHIFT_MODE, and shift count COUNT, determine the
+   best algorithm for doing the shift.  The assembler code is stored
+   in the pointers in INFO.  We don't achieve maximum efficiency in
+   all cases, but the hooks are here to do so.
 
    For now we just use lots of switch statements.  Since we don't even come
    close to supporting all the cases, this is simplest.  If this function ever
