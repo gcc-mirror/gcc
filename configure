@@ -3,7 +3,7 @@
 ### WARNING: this file contains embedded tabs.  Do not run untabify on this file.
 
 # Configuration script
-# Copyright (C) 1988, 90, 91, 92, 93, 94, 95, 96, 97, 98, 1999
+# Copyright (C) 1988, 90, 91, 92, 93, 94, 95, 96, 97, 98, 1999, 2000, 2001
 # Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -89,7 +89,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.34 $"
+version="$Revision: 1.34.2.1 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -663,13 +663,15 @@ case "${TMPDIR}" in
 esac
 
 # keep this filename short for &%*%$*# 14 char file names and 8+3 file names
-tmpfile=${TMPDIR}/cNf$$
+tmpdir=${TMPDIR}/cNf$$
+mkdir ${tmpdir} || exit 1
+tmpfile=${tmpdir}/cNf$$
 # Note that under many versions of sh a trap handler for 0 will *override* any
 # exit status you explicitly specify!  At this point, the only non-error exit
 # is at the end of the script; these actions are duplicated there, minus
 # the "exit 1".  Don't use "exit 0" anywhere after this without resetting the
 # trap handler, or you'll lose.
-trap "rm -f Makefile.tem ${tmpfile}.com ${tmpfile}.tgt ${tmpfile}.hst ${tmpfile}.pos; exit 1" 0 1 2 15
+trap "rm -rf Makefile.tem ${tmpdir}; exit 1" 0 1 2 15
 
 # split ${srcdir}/configure.in into common, per-host, per-target,
 # and post-target parts.  Post-target is optional.
@@ -696,7 +698,7 @@ if test -f skip-this-dir; then
 	# Perform the same cleanup as the trap handler, minus the "exit 1" of course,
 	# and reset the trap handler.
 	trap 0
-	rm -f Makefile* ${tmpfile}.com ${tmpfile}.tgt ${tmpfile}.hst ${tmpfile}.pos
+	rm -rf Makefile* ${tmpdir}
 	# Execute the final clean-up actions
 	${config_shell} skip-this-dir
 	# and stop configuring this directory.
@@ -1600,7 +1602,7 @@ fi
 
 # Perform the same cleanup as the trap handler, minus the "exit 1" of course,
 # and reset the trap handler.
-rm -f ${tmpfile}.com ${tmpfile}.tgt ${tmpfile}.hst ${tmpfile}.pos
+rm -rf ${tmpdir}
 trap 0
 
 exit 0
