@@ -1,3 +1,9 @@
+Fri Aug 27 01:03:48 1999  Jim Kingdon  <http://developer.redhat.com>
+	with much help from Jeffrey A Law and Richard Henderson
+
+	* i386.md: In the 6 insns which call output_fix_trunc,
+	earlyclobber operands[0].
+
 Fri Aug 27 01:01:51 1999  Philip Blundell  <pb@nexus.co.uk>  
 
 	* jump.c (duplicate_loop_exit_test): Call reg_scan_update after
