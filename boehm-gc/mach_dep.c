@@ -74,7 +74,8 @@ asm static void PushMacRegisters()
 /* on your architecture.  Run the test_setjmp program to see whether    */
 /* there is any chance it will work.                                    */
 
-#ifndef USE_GENERIC_PUSH_REGS
+#if !defined(USE_GENERIC_PUSH_REGS) && !defined(USE_ASM_PUSH_REGS)
+#undef HAVE_PUSH_REGS
 void GC_push_regs()
 {
 #       ifdef RT
@@ -91,6 +92,7 @@ void GC_push_regs()
 	  asm("pushl r8");	asm("calls $1,_GC_push_one");
 	  asm("pushl r7");	asm("calls $1,_GC_push_one");
 	  asm("pushl r6");	asm("calls $1,_GC_push_one");
+#	  define HAVE_PUSH_REGS
 #       endif
 #       if defined(M68K) && (defined(SUNOS4) || defined(NEXT))
 	/*  M68K SUNOS - could be replaced by generic code */
@@ -113,6 +115,7 @@ void GC_push_regs()
 	  asm("movl d7,sp@");	asm("jbsr _GC_push_one");
 
 	  asm("addqw #0x4,sp");		/* put stack back where it was	*/
+#	  define HAVE_PUSH_REGS
 #       endif
 
 #       if defined(M68K) && defined(HP)
@@ -135,6 +138,7 @@ void GC_push_regs()
 	  asm("mov.l %d7,(%sp)"); asm("jsr _GC_push_one");
 
 	  asm("addq.w &0x4,%sp");	/* put stack back where it was	*/
+#	  define HAVE_PUSH_REGS
 #       endif /* M68K HP */
 
 #	if defined(M68K) && defined(AMIGA)
@@ -158,6 +162,7 @@ void GC_push_regs()
 	  asm("mov.l %d7,(%sp)"); asm("jsr _GC_push_one");
 
 	  asm("addq.w &0x4,%sp");	/* put stack back where it was	*/
+#	  define HAVE_PUSH_REGS
 #        else /* !__GNUC__ */
 	  GC_push_one(getreg(REG_A2));
 	  GC_push_one(getreg(REG_A3));
@@ -174,6 +179,7 @@ void GC_push_regs()
 	  GC_push_one(getreg(REG_D5));
 	  GC_push_one(getreg(REG_D6));
 	  GC_push_one(getreg(REG_D7));
+#	  define HAVE_PUSH_REGS
 #	 endif /* !__GNUC__ */
 #       endif /* AMIGA */
 
@@ -196,10 +202,12 @@ void GC_push_regs()
               PushMacReg(d7);
               add.w   #4,sp                   ; fix stack.
 	  }
+#	  define HAVE_PUSH_REGS
 #	  undef PushMacReg
 #	endif /* THINK_C */
 #	if defined(__MWERKS__)
 	  PushMacRegisters();
+#	  define HAVE_PUSH_REGS
 #	endif	/* __MWERKS__ */
 #   endif	/* MACOS */
 
@@ -222,13 +230,15 @@ void GC_push_regs()
 	  asm("pushl %esi");  asm("call _GC_push_one"); asm("addl $4,%esp");
 	  asm("pushl %edi");  asm("call _GC_push_one"); asm("addl $4,%esp");
 	  asm("pushl %ebx");  asm("call _GC_push_one"); asm("addl $4,%esp");
+#	  define HAVE_PUSH_REGS
 #       endif
 
 #	if ( defined(I386) && defined(LINUX) && defined(__ELF__) ) \
 	|| ( defined(I386) && defined(FREEBSD) && defined(__ELF__) ) \
 	|| ( defined(I386) && defined(NETBSD) && defined(__ELF__) ) \
 	|| ( defined(I386) && defined(OPENBSD) && defined(__ELF__) ) \
-	|| ( defined(I386) && defined(HURD) && defined(__ELF__) )
+	|| ( defined(I386) && defined(HURD) && defined(__ELF__) ) \
+	|| ( defined(I386) && defined(DGUX) )
 
 	/* This is modified for Linux with ELF (Note: _ELF_ only) */
 	/* This section handles FreeBSD with ELF. */
@@ -243,6 +253,7 @@ void GC_push_regs()
 	  asm("pushl %esi; call GC_push_one; addl $4,%esp");
 	  asm("pushl %edi; call GC_push_one; addl $4,%esp");
 	  asm("pushl %ebx; call GC_push_one; addl $4,%esp");
+#	  define HAVE_PUSH_REGS
 #	endif
 
 #	if ( defined(I386) && defined(BEOS) && defined(__ELF__) )
@@ -254,6 +265,7 @@ void GC_push_regs()
 	  asm("pushl %esi; call GC_push_one; addl $4,%esp");
 	  asm("pushl %edi; call GC_push_one; addl $4,%esp");
 	  asm("pushl %ebx; call GC_push_one; addl $4,%esp");
+#	  define HAVE_PUSH_REGS
 #       endif
 
 #       if defined(I386) && defined(MSWIN32) && !defined(__MINGW32__) \
@@ -280,6 +292,7 @@ void GC_push_regs()
 	  __asm  push edi
 	  __asm  call GC_push_one
 	  __asm  add esp,4
+#	  define HAVE_PUSH_REGS
 #       endif
 
 #       if defined(I386) && (defined(SVR4) || defined(SCO) || defined(SCO_ELF))
@@ -291,6 +304,7 @@ void GC_push_regs()
 	  asm("pushl %ebp");  asm("call GC_push_one"); asm("addl $4,%esp");
 	  asm("pushl %esi");  asm("call GC_push_one"); asm("addl $4,%esp");
 	  asm("pushl %edi");  asm("call GC_push_one"); asm("addl $4,%esp");
+#	  define HAVE_PUSH_REGS
 #       endif
 
 #       ifdef NS32K
@@ -299,14 +313,12 @@ void GC_push_regs()
 	  asm ("movd r5, tos"); asm ("bsr ?_GC_push_one"); asm ("adjspb $-4");
 	  asm ("movd r6, tos"); asm ("bsr ?_GC_push_one"); asm ("adjspb $-4");
 	  asm ("movd r7, tos"); asm ("bsr ?_GC_push_one"); asm ("adjspb $-4");
+#	  define HAVE_PUSH_REGS
 #       endif
 
 #       if defined(SPARC)
-	  {
-	      word GC_save_regs_in_stack();
-	      
-	      GC_save_regs_ret_val = GC_save_regs_in_stack();
-	  }
+	  GC_save_regs_ret_val = GC_save_regs_in_stack();
+#	  define HAVE_PUSH_REGS
 #       endif
 
 #	ifdef RT
@@ -322,6 +334,7 @@ void GC_push_regs()
 	    asm("cas r11, r13, r0"); GC_push_one(TMP_SP); /* through */
 	    asm("cas r11, r14, r0"); GC_push_one(TMP_SP); /* r15 */
 	    asm("cas r11, r15, r0"); GC_push_one(TMP_SP);
+#	    define HAVE_PUSH_REGS
 #       endif
 
 #       if defined(M68K) && defined(SYSV)
@@ -345,6 +358,7 @@ void GC_push_regs()
   	  asm("movl %d7,%sp@");	asm("jbsr GC_push_one");
   
   	  asm("addqw #0x4,%sp");	/* put stack back where it was	*/
+#	  define HAVE_PUSH_REGS
 #        else /* !__GNUC__*/
   	  asm("subq.w &0x4,%sp");	/* allocate word on top of stack */
   
@@ -362,6 +376,7 @@ void GC_push_regs()
   	  asm("mov.l %d7,(%sp)"); asm("jsr GC_push_one");
   
   	  asm("addq.w &0x4,%sp");	/* put stack back where it was	*/
+#	  define HAVE_PUSH_REGS
 #        endif /* !__GNUC__ */
 #       endif /* M68K/SYSV */
 
@@ -371,21 +386,19 @@ void GC_push_regs()
 	    extern int *__libc_stack_end;
 
 	    GC_push_all_stack (sp, __libc_stack_end);
+#	    define HAVE_PUSH_REGS
+	    /* Isn't this redundant with the code to push the stack? */
         }
 #     endif
 
       /* other machines... */
-#       if !defined(M68K) && !defined(VAX) && !defined(RT) 
-#	if !defined(SPARC) && !defined(I386) && !defined(NS32K)
-#	if !defined(POWERPC) && !defined(UTS4) 
-#       if !defined(PJ) && !(defined(MIPS) && defined(LINUX))
-	    --> bad news <--
-#	endif
-#       endif
-#       endif
+#       if !defined(HAVE_PUSH_REGS)
+	    --> We just generated an empty GC_push_regs, which
+	    --> is almost certainly broken.  Try defining
+	    --> USE_GENERIC_PUSH_REGS instead.
 #       endif
 }
-#endif /* !USE_GENERIC_PUSH_REGS */
+#endif /* !USE_GENERIC_PUSH_REGS && !USE_ASM_PUSH_REGS */
 
 #if defined(USE_GENERIC_PUSH_REGS)
 void GC_generic_push_regs(cold_gc_frame)
@@ -427,8 +440,6 @@ ptr_t cold_gc_frame;
 	      /* needed on IA64, since some non-windowed registers are	*/
 	      /* preserved.						*/
 	      {
-	        word GC_save_regs_in_stack();
-	      
 	        GC_save_regs_ret_val = GC_save_regs_in_stack();
 		/* On IA64 gcc, could use __builtin_ia64_flushrs() and	*/
 		/* __builtin_ia64_flushrs().  The latter will be done	*/
@@ -445,7 +456,7 @@ ptr_t cold_gc_frame;
 /* the stack.	Return sp.						*/
 # ifdef SPARC
     asm("	.seg 	\"text\"");
-#   ifdef SVR4
+#   if defined(SVR4) || defined(NETBSD)
       asm("	.globl	GC_save_regs_in_stack");
       asm("GC_save_regs_in_stack:");
       asm("	.type GC_save_regs_in_stack,#function");

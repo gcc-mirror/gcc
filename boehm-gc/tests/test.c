@@ -43,7 +43,7 @@
 #   include "gc_local_alloc.h"
 # endif
 # include "private/gc_priv.h"	/* For output, locking, MIN_WORDS, 	*/
-			/* and some statistics.			*/
+				/* and some statistics.			*/
 # include "private/gcconfig.h"
 
 # if defined(MSWIN32) || defined(MSWINCE)
@@ -68,13 +68,13 @@
 #   include <pthread.h>
 # endif
 
-# ifdef GC_WIN32_THREADS
-#   ifndef MSWINCE
-#     include <process.h>
-#     define GC_CreateThread(a,b,c,d,e,f) ((HANDLE) _beginthreadex(a,b,c,d,e,f))
-#   endif
+# if defined(GC_WIN32_THREADS) && !defined(GC_PTHREADS)
     static CRITICAL_SECTION incr_cs;
 # endif
+
+#ifdef __STDC__
+# include <stdarg.h>
+#endif
 
 
 /* Allocation Statistics */
@@ -205,40 +205,6 @@ sexpr y;
 }
 # endif
 
-sexpr small_cons (x, y)
-sexpr x;
-sexpr y;
-{
-    register sexpr r;
-    
-    collectable_count++;
-    r = (sexpr) GC_MALLOC(sizeof(struct SEXPR));
-    if (r == 0) {
-        (void)GC_printf0("Out of memory\n");
-        exit(1);
-    }
-    r -> sexpr_car = x;
-    r -> sexpr_cdr = y;
-    return(r);
-}
-
-sexpr small_cons_uncollectable (x, y)
-sexpr x;
-sexpr y;
-{
-    register sexpr r;
-    
-    uncollectable_count++;
-    r = (sexpr) GC_MALLOC_UNCOLLECTABLE(sizeof(struct SEXPR));
-    if (r == 0) {
-        (void)GC_printf0("Out of memory\n");
-        exit(1);
-    }
-    r -> sexpr_car = x;
-    r -> sexpr_cdr = (sexpr)(~(unsigned long)y);
-    return(r);
-}
-
 #ifdef GC_GCJ_SUPPORT
 
 #include "gc_mark.h"
@@ -278,6 +244,93 @@ struct GC_ms_entry * fake_gcj_mark_proc(word * addr,
 			      mark_stack_limit, (GC_PTR *)&(x -> sexpr_car));
     return(mark_stack_ptr);
 }
+
+#endif /* GC_GCJ_SUPPORT */
+
+#ifdef THREAD_LOCAL_ALLOC
+
+#undef GC_REDIRECT_TO_LOCAL
+#include "gc_local_alloc.h"
+
+sexpr local_cons (x, y)
+sexpr x;
+sexpr y;
+{
+    register sexpr r;
+    register int *p;
+    register int my_extra = extra_count;
+    static int my_random = 0;
+    
+    collectable_count++;
+    r = (sexpr) GC_LOCAL_MALLOC(sizeof(struct SEXPR) + my_extra);
+#   ifdef GC_GCJ_SUPPORT
+      if (collectable_count % 2 == 0) {
+        r = (sexpr) GC_LOCAL_GCJ_MALLOC(sizeof(struct SEXPR) + sizeof(GC_word) + my_extra,
+					&gcj_class_struct1);
+        r = (sexpr) ((GC_word *)r + 1);
+      }
+#   endif
+    if (r == 0) {
+        (void)GC_printf0("Out of memory\n");
+        exit(1);
+    }
+    for (p = (int *)r;
+         ((char *)p) < ((char *)r) + my_extra + sizeof(struct SEXPR); p++) {
+	if (*p) {
+	    (void)GC_printf1("Found nonzero at 0x%lx (local) - allocator is broken\n",
+	    		     (unsigned long)p);
+	    FAIL;
+        }
+        *p = 13;
+    }
+    r -> sexpr_car = x;
+    r -> sexpr_cdr = y;
+    my_extra++;
+    if ( my_extra >= 5000 || my_extra == 200 && ++my_random % 37 != 0) {
+        extra_count = 0;
+    } else {
+        extra_count = my_extra;
+    }
+    return(r);
+}
+#endif /* THREAD_LOCAL_ALLOC */
+
+sexpr small_cons (x, y)
+sexpr x;
+sexpr y;
+{
+    register sexpr r;
+    
+    collectable_count++;
+    r = (sexpr) GC_MALLOC(sizeof(struct SEXPR));
+    if (r == 0) {
+        (void)GC_printf0("Out of memory\n");
+        exit(1);
+    }
+    r -> sexpr_car = x;
+    r -> sexpr_cdr = y;
+    return(r);
+}
+
+sexpr small_cons_uncollectable (x, y)
+sexpr x;
+sexpr y;
+{
+    register sexpr r;
+    
+    uncollectable_count++;
+    r = (sexpr) GC_MALLOC_UNCOLLECTABLE(sizeof(struct SEXPR));
+    if (r == 0) {
+        (void)GC_printf0("Out of memory\n");
+        exit(1);
+    }
+    r -> sexpr_car = x;
+    r -> sexpr_cdr = (sexpr)(~(unsigned long)y);
+    return(r);
+}
+
+#ifdef GC_GCJ_SUPPORT
+
 
 sexpr gcj_cons(x, y)
 sexpr x;
@@ -323,6 +376,9 @@ sexpr x, y;
 sexpr reverse(x)
 sexpr x;
 {
+#   ifdef TEST_WITH_SYSTEM_MALLOC
+      malloc(100000);
+#   endif
     return( reverse1(x, nil) );
 }
 
@@ -364,6 +420,35 @@ int low, up;
     }
 }
 #endif /* GC_GCJ_SUPPORT */
+
+#ifdef THREAD_LOCAL_ALLOC
+/* Return reverse(x) concatenated with y */
+sexpr local_reverse1(x, y)
+sexpr x, y;
+{
+    if (is_nil(x)) {
+        return(y);
+    } else {
+        return( local_reverse1(cdr(x), local_cons(car(x), y)) );
+    }
+}
+
+sexpr local_reverse(x)
+sexpr x;
+{
+    return( local_reverse1(x, nil) );
+}
+
+sexpr local_ints(low, up)
+int low, up;
+{
+    if (low > up) {
+	return(nil);
+    } else {
+        return(local_cons(local_cons(INT_TO_SEXPR(low), nil), local_ints(low+1, up)));
+    }
+}
+#endif /* THREAD_LOCAL_ALLOC */
 
 /* To check uncollectable allocation we build lists with disguised cdr	*/
 /* pointers, and make sure they don't go away.				*/
@@ -435,25 +520,24 @@ sexpr x;
     }
 }
 
-/* Try to force a to be strangely aligned */
-struct {
-  char dummy;
-  sexpr aa;
-} A;
-#define a A.aa
-
 /*
  * A tiny list reversal test to check thread creation.
  */
 #ifdef THREADS
 
-# ifdef GC_WIN32_THREADS
-    unsigned __stdcall tiny_reverse_test(void * arg)
+# if defined(GC_WIN32_THREADS) && !defined(CYGWIN32)
+    DWORD  __stdcall tiny_reverse_test(void * arg)
 # else
     void * tiny_reverse_test(void * arg)
 # endif
 {
-    check_ints(reverse(reverse(ints(1,10))), 1, 10);
+    int i;
+    for (i = 0; i < 5; ++i) {
+      check_ints(reverse(reverse(ints(1,10))), 1, 10);
+#     ifdef THREAD_LOCAL_ALLOC
+        check_ints(local_reverse(local_reverse(local_ints(1,10))), 1, 10);
+#     endif
+    }
     return 0;
 }
 
@@ -477,7 +561,7 @@ struct {
 # elif defined(GC_WIN32_THREADS)
     void fork_a_thread()
     {
-  	unsigned thread_id;
+  	DWORD thread_id;
 	HANDLE h;
     	h = GC_CreateThread(NULL, 0, tiny_reverse_test, 0, 0, &thread_id);
         if (h == (HANDLE)NULL) {
@@ -505,6 +589,13 @@ struct {
 # define fork_a_thread()
 
 #endif 
+
+/* Try to force a to be strangely aligned */
+struct {
+  char dummy;
+  sexpr aa;
+} A;
+#define a A.aa
 
 /*
  * Repeatedly reverse lists built out of very different sized cons cells.
@@ -563,7 +654,9 @@ void reverse_test()
     h = (sexpr *)GC_REALLOC((GC_PTR)h, 2000 * sizeof(sexpr));
 #   ifdef GC_GCJ_SUPPORT
       h[1999] = gcj_ints(1,200);
-      h[1999] = gcj_reverse(h[1999]);
+      for (i = 0; i < 51; ++i) 
+        h[1999] = gcj_reverse(h[1999]);
+      /* Leave it as the reveresed list for now. */
 #   else
       h[1999] = ints(1,200);
 #   endif
@@ -594,6 +687,9 @@ void reverse_test()
     	/* 49 integers.  Thus this is thread safe without locks,	  */
     	/* assuming atomic pointer assignments.				  */
         a = reverse(reverse(a));
+#       ifdef THREAD_LOCAL_ALLOC
+	  a = local_reverse(local_reverse(a));
+#	endif
 #	if !defined(AT_END) && !defined(THREADS)
 	  /* This is not thread safe, since realloc explicitly deallocates */
           if (i & 1) {
@@ -620,6 +716,8 @@ void reverse_test()
 #   endif  
     b = c = 0;
 }
+
+#undef a
 
 /*
  * The rest of this builds balanced binary trees, checks that they don't
@@ -655,15 +753,17 @@ VOLATILE int dropped_something = 0;
 # if  defined(GC_PTHREADS)
     static pthread_mutex_t incr_lock = PTHREAD_MUTEX_INITIALIZER;
     pthread_mutex_lock(&incr_lock);
-# endif
-# ifdef GC_WIN32_THREADS
-    EnterCriticalSection(&incr_cs);
+# else
+#   ifdef GC_WIN32_THREADS
+      EnterCriticalSection(&incr_cs);
+#   endif
 # endif
   if ((int)(GC_word)client_data != t -> level) {
      (void)GC_printf0("Wrong finalization data - collector is broken\n");
      FAIL;
   }
   finalized_count++;
+  t -> level = -1;	/* detect duplicate finalization immediately */
 # ifdef PCR
     PCR_ThCrSec_ExitSys();
 # endif
@@ -672,9 +772,10 @@ VOLATILE int dropped_something = 0;
 # endif
 # if defined(GC_PTHREADS)
     pthread_mutex_unlock(&incr_lock);
-# endif
-# ifdef GC_WIN32_THREADS
-    LeaveCriticalSection(&incr_cs);
+# else
+#   ifdef GC_WIN32_THREADS
+      LeaveCriticalSection(&incr_cs);
+#   endif
 # endif
 }
 
@@ -746,9 +847,10 @@ int n;
 #         if defined(GC_PTHREADS)
             static pthread_mutex_t incr_lock = PTHREAD_MUTEX_INITIALIZER;
             pthread_mutex_lock(&incr_lock);
-#         endif
-#         ifdef GC_WIN32_THREADS
-            EnterCriticalSection(&incr_cs);
+#         else
+#           ifdef GC_WIN32_THREADS
+              EnterCriticalSection(&incr_cs);
+#           endif
 #         endif
 		/* Losing a count here causes erroneous report of failure. */
           finalizable_count++;
@@ -761,9 +863,10 @@ int n;
 #	  endif
 #	  if defined(GC_PTHREADS)
 	    pthread_mutex_unlock(&incr_lock);
-#	  endif
-#         ifdef GC_WIN32_THREADS
-            LeaveCriticalSection(&incr_cs);
+#	  else
+#           ifdef GC_WIN32_THREADS
+              LeaveCriticalSection(&incr_cs);
+#           endif
 #         endif
 	}
 
@@ -1068,6 +1171,25 @@ void fail_proc1(GC_PTR x)
     fail_count++;
 }   
 
+static void uniq(void *p, ...) {
+  va_list a;
+  void *q[100];
+  int n = 0, i, j;
+  q[n++] = p;
+  va_start(a,p);
+  for (;(q[n] = va_arg(a,void *));n++) ;
+  va_end(a);
+  for (i=0; i<n; i++)
+    for (j=0; j<i; j++)
+      if (q[i] == q[j]) {
+        GC_printf0(
+              "Apparently failed to mark form some function arguments.\n"
+              "Perhaps GC_push_regs was configured incorrectly?\n"
+        );
+	FAIL;
+      }
+}
+
 #endif /* __STDC__ */
 
 #ifdef THREADS
@@ -1148,6 +1270,19 @@ void run_one_test()
     		"GC_is_valid_displacement produced incorrect result\n");
 	FAIL;
       }
+#     if defined(__STDC__) && !defined(MSWIN32) && !defined(MSWINCE)
+        /* Harder to test under Windows without a gc.h declaration.  */
+        {
+	  size_t i;
+	  extern void *GC_memalign();
+
+	  GC_malloc(17);
+	  for (i = sizeof(GC_word); i < 512; i *= 2) {
+	    GC_word result = (GC_word) GC_memalign(i, 17);
+	    if (result % i != 0 || result == 0 || *(int *)result != 0) FAIL;
+	  } 
+	}
+#     endif
 #     ifndef ALL_INTERIOR_POINTERS
 #      if defined(RS6000) || defined(POWERPC)
         if (!TEST_FAIL_COUNT(1)) {
@@ -1168,6 +1303,21 @@ void run_one_test()
       GC_REGISTER_DISPLACEMENT(sizeof(struct fake_vtable *));
       GC_init_gcj_malloc(0, (void *)fake_gcj_mark_proc);
 #   endif
+    /* Make sure that fn arguments are visible to the collector.	*/
+#   ifdef __STDC__
+      uniq(
+        GC_malloc(12), GC_malloc(12), GC_malloc(12),
+        (GC_gcollect(),GC_malloc(12)),
+        GC_malloc(12), GC_malloc(12), GC_malloc(12),
+	(GC_gcollect(),GC_malloc(12)),
+        GC_malloc(12), GC_malloc(12), GC_malloc(12),
+	(GC_gcollect(),GC_malloc(12)),
+        GC_malloc(12), GC_malloc(12), GC_malloc(12),
+	(GC_gcollect(),GC_malloc(12)),
+        GC_malloc(12), GC_malloc(12), GC_malloc(12),
+	(GC_gcollect(),GC_malloc(12)),
+        (void *)0);
+#   endif
     /* Repeated list reversal test. */
 	reverse_test();
 #   ifdef PRINTSTATS
@@ -1183,6 +1333,15 @@ void run_one_test()
     LOCK();
     n_tests++;
     UNLOCK();
+#   if defined(THREADS) && defined(HANDLE_FORK)
+      if (fork() == 0) {
+	GC_gcollect();
+	tiny_reverse_test(0);
+	GC_gcollect();
+	GC_printf0("Finished a child process\n");
+	exit(0);
+      }
+#   endif
     /* GC_printf1("Finished %x\n", pthread_self()); */
 }
 
@@ -1202,7 +1361,7 @@ void check_heap_stats()
     }
 #   else
     if (sizeof(char *) > 4) {
-        max_heap_sz = 15000000;
+        max_heap_sz = 19000000;
     } else {
     	max_heap_sz = 11000000;
     }
@@ -1212,7 +1371,7 @@ void check_heap_stats()
 #       ifdef SAVE_CALL_CHAIN
 	    max_heap_sz *= 3;
 #           ifdef SAVE_CALL_COUNT
-		max_heap_sz *= SAVE_CALL_COUNT/4;
+		max_heap_sz += max_heap_sz * SAVE_CALL_COUNT/4;
 #	    endif
 #       endif
 #   endif
@@ -1327,6 +1486,10 @@ void SetMinimumStack(long minSize)
 #   endif
     n_tests = 0;
     
+#if defined(__APPLE__) && defined(__MACH__)
+	GC_INIT();
+#endif
+    
 #   if defined(DJGPP)
 	/* No good way to determine stack base from library; do it */
 	/* manually on this platform.				   */
@@ -1340,13 +1503,18 @@ void SetMinimumStack(long minSize)
 #   endif
     GC_INIT();	/* Only needed if gc is dynamic library.	*/
     (void) GC_set_warn_proc(warn_proc);
-#   if (defined(MPROTECT_VDB) || defined(PROC_VDB)) && !defined(MAKE_BACK_GRAPH)
+#   if (defined(MPROTECT_VDB) || defined(PROC_VDB)) \
+          && !defined(MAKE_BACK_GRAPH)
       GC_enable_incremental();
       (void) GC_printf0("Switched to incremental mode\n");
 #     if defined(MPROTECT_VDB)
 	(void)GC_printf0("Emulating dirty bits with mprotect/signals\n");
 #     else
+#       ifdef PROC_VDB
 	(void)GC_printf0("Reading dirty bits from /proc\n");
+#       else
+    (void)GC_printf0("Using DEFAULT_VDB dirty bit implementation\n");
+#       endif
 #      endif
 #   endif
     run_one_test();
@@ -1378,9 +1546,9 @@ void SetMinimumStack(long minSize)
 }
 # endif
 
-#ifdef GC_WIN32_THREADS
+#if defined(GC_WIN32_THREADS) && !defined(CYGWIN32)
 
-unsigned __stdcall thr_run_one_test(void *arg)
+DWORD __stdcall thr_run_one_test(void *arg)
 {
   run_one_test();
   return 0;
@@ -1412,7 +1580,7 @@ LRESULT CALLBACK window_proc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
   return ret;
 }
 
-unsigned __stdcall thr_window(void *arg)
+DWORD __stdcall thr_window(void *arg)
 {
   WNDCLASS win_class = {
     CS_NOCLOSE,
@@ -1474,10 +1642,11 @@ int APIENTRY WinMain(HINSTANCE instance, HINSTANCE prev, LPSTR cmd, int n)
 # ifdef MSWINCE
     HANDLE win_thr_h;
 # endif
-  unsigned thread_id;
+  DWORD thread_id;
 # if 0
     GC_enable_incremental();
 # endif
+  GC_init();
   InitializeCriticalSection(&incr_cs);
   (void) GC_set_warn_proc(warn_proc);
 # ifdef MSWINCE
@@ -1625,15 +1794,30 @@ main()
           (void)GC_printf0("pthread_default_stacksize_np failed.\n");
 	}
 #   endif	/* GC_HPUX_THREADS */
+# 	if defined(__APPLE__) && defined(__MACH__)
+		GC_INIT();
+#	endif
+
     pthread_attr_init(&attr);
-#   if defined(GC_IRIX_THREADS) || defined(GC_FREEBSD_THREADS)
+#   if defined(GC_IRIX_THREADS) || defined(GC_FREEBSD_THREADS) \
+    	|| defined(GC_DARWIN_THREADS) || defined(GC_AIX_THREADS)
     	pthread_attr_setstacksize(&attr, 1000000);
 #   endif
     n_tests = 0;
-#   if  defined(MPROTECT_VDB) && !defined(PARALLEL_MARK) &&!defined(REDIRECT_MALLOC) && !defined(MAKE_BACK_GRAPH)
+#   if (defined(MPROTECT_VDB)) \
+            && !defined(PARALLEL_MARK) &&!defined(REDIRECT_MALLOC) \
+            && !defined(MAKE_BACK_GRAPH)
     	GC_enable_incremental();
         (void) GC_printf0("Switched to incremental mode\n");
-	(void) GC_printf0("Emulating dirty bits with mprotect/signals\n");
+#     if defined(MPROTECT_VDB)
+        (void)GC_printf0("Emulating dirty bits with mprotect/signals\n");
+#     else
+#       ifdef PROC_VDB
+            (void)GC_printf0("Reading dirty bits from /proc\n");
+#       else
+            (void)GC_printf0("Using DEFAULT_VDB dirty bit implementation\n");
+#       endif
+#     endif
 #   endif
     (void) GC_set_warn_proc(warn_proc);
     if ((code = pthread_key_create(&fl_key, 0)) != 0) {

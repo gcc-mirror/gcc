@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -66,9 +66,11 @@ target_triplet = @target@
 AR = @AR@
 AS = @AS@
 CC = @CC@
+CFLAGS = @CFLAGS@
 CPP = @CPP@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
+CXXFLAGS = @CXXFLAGS@
 CXXINCLUDES = @CXXINCLUDES@
 DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
@@ -89,7 +91,10 @@ RANLIB = @RANLIB@
 STRIP = @STRIP@
 THREADLIBS = @THREADLIBS@
 VERSION = @VERSION@
+addincludes = @addincludes@
+addlibs = @addlibs@
 addobjs = @addobjs@
+addtests = @addtests@
 gc_basedir = @gc_basedir@
 mkinstalldirs = @mkinstalldirs@
 target_all = @target_all@
@@ -109,17 +114,21 @@ MULTIDO = true
 MULTICLEAN = true
 
 noinst_LTLIBRARIES = libgcjgc.la libgcjgc_convenience.la
+@POWERPC_DARWIN_TRUE@asm_libgc_sources = @POWERPC_DARWIN_TRUE@powerpc_darwin_mach_dep.s
+@POWERPC_DARWIN_FALSE@asm_libgc_sources = 
 
 GC_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
-dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c irix_threads.c \
-linux_threads.c malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
+dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c aix_irix_threads.c \
+malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
 obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
 solaris_pthreads.c solaris_threads.c specific.c stubborn.c typd_mlc.c \
-backgraph.c win32_threads.c
+backgraph.c win32_threads.c \
+pthread_support.c pthread_stop_world.c darwin_stop_world.c \
+$(asm_libgc_sources)
 
 
-EXTRA_GC_SOURCES = alpha_mach_dep.s \
-mips_sgi_mach_dep.S mips_ultrix_mach_dep.s powerpc_macosx_mach_dep.s \
+EXTRA_GC_SOURCES = alpha_mach_dep.S \
+mips_sgi_mach_dep.s mips_ultrix_mach_dep.s powerpc_darwin_mach_dep.s \
 rs6000_mach_dep.s sparc_mach_dep.S sparc_netbsd_mach_dep.s \
 sparc_sunos4_mach_dep.s ia64_save_regs_in_stack.s
 
@@ -213,24 +222,53 @@ DEFS = @DEFS@ -I. -I$(srcdir)
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-libgcjgc_la_OBJECTS =  allchblk.lo alloc.lo blacklst.lo checksums.lo \
-dbg_mlc.lo dyn_load.lo finalize.lo gc_dlopen.lo gcj_mlc.lo headers.lo \
-irix_threads.lo linux_threads.lo malloc.lo mallocx.lo mark.lo \
-mark_rts.lo misc.lo new_hblk.lo obj_map.lo os_dep.lo pcr_interface.lo \
-ptr_chck.lo real_malloc.lo reclaim.lo solaris_pthreads.lo \
-solaris_threads.lo specific.lo stubborn.lo typd_mlc.lo backgraph.lo \
-win32_threads.lo
+@POWERPC_DARWIN_FALSE@libgcjgc_la_OBJECTS =  allchblk.lo alloc.lo \
+@POWERPC_DARWIN_FALSE@blacklst.lo checksums.lo dbg_mlc.lo dyn_load.lo \
+@POWERPC_DARWIN_FALSE@finalize.lo gc_dlopen.lo gcj_mlc.lo headers.lo \
+@POWERPC_DARWIN_FALSE@aix_irix_threads.lo malloc.lo mallocx.lo mark.lo \
+@POWERPC_DARWIN_FALSE@mark_rts.lo misc.lo new_hblk.lo obj_map.lo \
+@POWERPC_DARWIN_FALSE@os_dep.lo pcr_interface.lo ptr_chck.lo \
+@POWERPC_DARWIN_FALSE@real_malloc.lo reclaim.lo solaris_pthreads.lo \
+@POWERPC_DARWIN_FALSE@solaris_threads.lo specific.lo stubborn.lo \
+@POWERPC_DARWIN_FALSE@typd_mlc.lo backgraph.lo win32_threads.lo \
+@POWERPC_DARWIN_FALSE@pthread_support.lo pthread_stop_world.lo \
+@POWERPC_DARWIN_FALSE@darwin_stop_world.lo
+@POWERPC_DARWIN_TRUE@libgcjgc_la_OBJECTS =  allchblk.lo alloc.lo \
+@POWERPC_DARWIN_TRUE@blacklst.lo checksums.lo dbg_mlc.lo dyn_load.lo \
+@POWERPC_DARWIN_TRUE@finalize.lo gc_dlopen.lo gcj_mlc.lo headers.lo \
+@POWERPC_DARWIN_TRUE@aix_irix_threads.lo malloc.lo mallocx.lo mark.lo \
+@POWERPC_DARWIN_TRUE@mark_rts.lo misc.lo new_hblk.lo obj_map.lo \
+@POWERPC_DARWIN_TRUE@os_dep.lo pcr_interface.lo ptr_chck.lo \
+@POWERPC_DARWIN_TRUE@real_malloc.lo reclaim.lo solaris_pthreads.lo \
+@POWERPC_DARWIN_TRUE@solaris_threads.lo specific.lo stubborn.lo \
+@POWERPC_DARWIN_TRUE@typd_mlc.lo backgraph.lo win32_threads.lo \
+@POWERPC_DARWIN_TRUE@pthread_support.lo pthread_stop_world.lo \
+@POWERPC_DARWIN_TRUE@darwin_stop_world.lo powerpc_darwin_mach_dep.lo
 libgcjgc_convenience_la_LDFLAGS = 
-libgcjgc_convenience_la_OBJECTS =  allchblk.lo alloc.lo blacklst.lo \
-checksums.lo dbg_mlc.lo dyn_load.lo finalize.lo gc_dlopen.lo gcj_mlc.lo \
-headers.lo irix_threads.lo linux_threads.lo malloc.lo mallocx.lo \
-mark.lo mark_rts.lo misc.lo new_hblk.lo obj_map.lo os_dep.lo \
-pcr_interface.lo ptr_chck.lo real_malloc.lo reclaim.lo \
-solaris_pthreads.lo solaris_threads.lo specific.lo stubborn.lo \
-typd_mlc.lo backgraph.lo win32_threads.lo
+@POWERPC_DARWIN_FALSE@libgcjgc_convenience_la_OBJECTS =  allchblk.lo \
+@POWERPC_DARWIN_FALSE@alloc.lo blacklst.lo checksums.lo dbg_mlc.lo \
+@POWERPC_DARWIN_FALSE@dyn_load.lo finalize.lo gc_dlopen.lo gcj_mlc.lo \
+@POWERPC_DARWIN_FALSE@headers.lo aix_irix_threads.lo malloc.lo \
+@POWERPC_DARWIN_FALSE@mallocx.lo mark.lo mark_rts.lo misc.lo \
+@POWERPC_DARWIN_FALSE@new_hblk.lo obj_map.lo os_dep.lo pcr_interface.lo \
+@POWERPC_DARWIN_FALSE@ptr_chck.lo real_malloc.lo reclaim.lo \
+@POWERPC_DARWIN_FALSE@solaris_pthreads.lo solaris_threads.lo \
+@POWERPC_DARWIN_FALSE@specific.lo stubborn.lo typd_mlc.lo backgraph.lo \
+@POWERPC_DARWIN_FALSE@win32_threads.lo pthread_support.lo \
+@POWERPC_DARWIN_FALSE@pthread_stop_world.lo darwin_stop_world.lo
+@POWERPC_DARWIN_TRUE@libgcjgc_convenience_la_OBJECTS =  allchblk.lo \
+@POWERPC_DARWIN_TRUE@alloc.lo blacklst.lo checksums.lo dbg_mlc.lo \
+@POWERPC_DARWIN_TRUE@dyn_load.lo finalize.lo gc_dlopen.lo gcj_mlc.lo \
+@POWERPC_DARWIN_TRUE@headers.lo aix_irix_threads.lo malloc.lo \
+@POWERPC_DARWIN_TRUE@mallocx.lo mark.lo mark_rts.lo misc.lo new_hblk.lo \
+@POWERPC_DARWIN_TRUE@obj_map.lo os_dep.lo pcr_interface.lo ptr_chck.lo \
+@POWERPC_DARWIN_TRUE@real_malloc.lo reclaim.lo solaris_pthreads.lo \
+@POWERPC_DARWIN_TRUE@solaris_threads.lo specific.lo stubborn.lo \
+@POWERPC_DARWIN_TRUE@typd_mlc.lo backgraph.lo win32_threads.lo \
+@POWERPC_DARWIN_TRUE@pthread_support.lo pthread_stop_world.lo \
+@POWERPC_DARWIN_TRUE@darwin_stop_world.lo powerpc_darwin_mach_dep.lo
 check_PROGRAMS =  gctest$(EXEEXT)
 gctest_DEPENDENCIES =  ./libgcjgc.la
-CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 DIST_COMMON =  ChangeLog Makefile.am Makefile.in acinclude.m4 aclocal.m4 \
@@ -368,7 +406,7 @@ maintainer-clean-recursive:
 	dot_seen=no; \
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \
-	  test "$$subdir" = "." && dot_seen=yes; \
+	  test "$$subdir" != "." || dot_seen=yes; \
 	done; \
 	test "$$dot_seen" = "no" && rev=". $$rev"; \
 	target=`echo $@ | sed s/-recursive//`; \
@@ -598,7 +636,9 @@ mostlyclean distclean maintainer-clean
 test.o:	tests/test.c
 	$(COMPILE) -c $(srcdir)/tests/test.c
 $(all_objs) : include/private/gcconfig.h include/private/gc_priv.h \
-include/private/gc_hdrs.h include/gc.h include/gc_gcj.h include/gc_mark.h
+include/private/gc_hdrs.h include/gc.h include/gc_gcj.h \
+include/gc_pthread_redirects.h include/gc_config_macros.h \
+include/gc_mark.h @addincludes@
 
 .s.lo:
 	$(LTCOMPILE) -Wp,-P -x assembler-with-cpp -c $<

@@ -70,7 +70,7 @@ extern hdr * GC_invalid_header; /* header for an imaginary block 	*/
 #define ADVANCE(p, hhdr, source) \
 	    { \
 	      hdr * new_hdr = GC_invalid_header; \
-              p = GC_FIND_START(p, hhdr, &new_hdr, (word)source); \
+              p = GC_find_start(p, hhdr, &new_hdr); \
 	      hhdr = new_hdr; \
     	    }
 

@@ -47,12 +47,16 @@ GC_bool GC_use_entire_heap = 0;
 struct hblk * GC_hblkfreelist[N_HBLK_FLS+1] = { 0 };
 
 #ifndef USE_MUNMAP
+
   word GC_free_bytes[N_HBLK_FLS+1] = { 0 };
 	/* Number of free bytes on each list.	*/
 
   /* Is bytes + the number of free bytes on lists n .. N_HBLK_FLS 	*/
   /* > GC_max_large_allocd_bytes?					*/
-  GC_bool GC_enough_large_bytes_left(bytes,n)
+# ifdef __GNUC__
+  __inline__
+# endif
+  static GC_bool GC_enough_large_bytes_left(bytes,n)
   word bytes;
   int n;
   {
@@ -583,11 +587,11 @@ int n;
 	    if (!GC_use_entire_heap
 		&& size_avail != size_needed
 		&& USED_HEAP_SIZE >= GC_requested_heapsize
-		&& !GC_incremental && GC_should_collect()) {
+		&& !TRUE_INCREMENTAL && GC_should_collect()) {
 #		ifdef USE_MUNMAP
 		    continue;
 #		else
-		    /* If we enough large blocks left to cover any	*/
+		    /* If we have enough large blocks left to cover any	*/
 		    /* previous request for large blocks, we go ahead	*/
 		    /* and split.  Assuming a steady state, that should	*/
 		    /* be safe.  It means that we can use the full 	*/
@@ -595,6 +599,12 @@ int n;
 		    if (!GC_enough_large_bytes_left(GC_large_allocd_bytes, n)) {
 		      continue;
 		    } 
+		    /* If we are deallocating lots of memory from	*/
+		    /* finalizers, fail and collect sooner rather	*/
+		    /* than later.					*/
+		    if (GC_finalizer_mem_freed > (GC_heapsize >> 4))  {
+		      continue;
+		    }
 #		endif /* !USE_MUNMAP */
 	    }
 	    /* If the next heap block is obviously better, go on.	*/

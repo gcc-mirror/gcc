@@ -1,21 +1,18 @@
 See README.alpha for Linux on DEC AXP info.
 
-This file applies mostly to Linux/Intel IA32.  Ports to Linux on an M68K
-and PowerPC are also integrated.  They should behave similarly, except that
-the PowerPC port lacks incremental GC support, and it is unknown to what
-extent the Linux threads code is functional.  See below for M68K specific
-notes.
+This file applies mostly to Linux/Intel IA32.  Ports to Linux on an M68K, IA64,
+SPARC, MIPS, Alpha and PowerPC are also integrated.  They should behave
+similarly, except that the PowerPC port lacks incremental GC support, and
+it is unknown to what extent the Linux threads code is functional.
+See below for M68K specific notes.
 
-Incremental GC is supported on Intel IA32 and M68K.
+Incremental GC is generally supported.
 
 Dynamic libraries are supported on an ELF system.  A static executable
 should be linked with the gcc option "-Wl,-defsym,_DYNAMIC=0".
 
-The collector appears to work with Linux threads.  We have seen
-intermittent hangs in sem_wait.  So far we have been unable to reproduce
-these unless the process was being debugged or traced.  Thus it's
-possible that the only real issue is that the debugger loses
-signals on rare occasions.
+The collector appears to work reliably with Linux threads, but beware 
+of older versions of glibc and gdb.
 
 The garbage collector uses SIGPWR and SIGXCPU if it is used with
 Linux threads.  These should not be touched by the client program.

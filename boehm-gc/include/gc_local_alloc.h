@@ -33,6 +33,9 @@
  * -DTHREAD_LOCAL_ALLOC, which is currently supported only on Linux.
  *
  * The debugging allocators use standard, not thread-local allocation.
+ *
+ * These routines normally require an explicit call to GC_init(), though
+ * that may be done from a constructor function.
  */
 
 #ifndef GC_LOCAL_ALLOC_H

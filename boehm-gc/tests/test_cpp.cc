@@ -28,7 +28,10 @@ few minutes to complete.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef __GNUC__
+#define USE_STD_ALLOCATOR
+#ifdef USE_STD_ALLOCATOR
+#   include "gc_allocator.h"
+#elif __GNUC__
 #   include "new_gc_alloc.h"
 #else
 #   include "gc_alloc.h"
@@ -189,25 +192,32 @@ int APIENTRY WinMain(
 # endif
 #endif
 
+   GC_init();
+
 #  if defined(MACOS)                        // MacOS
     char* argv_[] = {"test_cpp", "10"};     //   doesn't
     argv = argv_;                           //     have a
     argc = sizeof(argv_)/sizeof(argv_[0]);  //       commandline
 #  endif 
     int i, iters, n;
-#   if !defined(MACOS)
+#   ifdef USE_STD_ALLOCATOR
+      int *x = gc_allocator<int>().allocate(1);
+      int **xptr = traceable_allocator<int *>().allocate(1);
+#   else 
 #     ifdef __GNUC__
-        int *x = (int *)gc_alloc::allocate(sizeof(int));
+          int *x = (int *)gc_alloc::allocate(sizeof(int));
 #     else
-        int *x = (int *)alloc::allocate(sizeof(int));
+          int *x = (int *)alloc::allocate(sizeof(int));
 #     endif
-
-      *x = 29;
-      x -= 3;
+#   endif
+    *x = 29;
+#   ifdef USE_STD_ALLOCATOR
+      *xptr = x;
+      x = 0;
 #   endif
     if (argc != 2 || (0 >= (n = atoi( argv[ 1 ] )))) {
-        GC_printf0( "usage: test_cpp number-of-iterations\n" );
-        exit( 1 );}
+        GC_printf0( "usage: test_cpp number-of-iterations\nAssuming 10 iters\n" );
+        n = 10;}
         
     for (iters = 1; iters <= n; iters++) {
         GC_printf1( "Starting iteration %d\n", iters );
@@ -268,9 +278,10 @@ int APIENTRY WinMain(
         D::Test();
         F::Test();}
 
-#   if !defined(__GNUC__) && !defined(MACOS)
-      my_assert (29 == x[3]);
+#   ifdef USE_STD_ALLOCATOR
+      x = *xptr;
 #   endif
+    my_assert (29 == x[0]);
     GC_printf0( "The test appears to have succeeded.\n" );
     return( 0 );}
     

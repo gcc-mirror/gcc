@@ -19,12 +19,14 @@
 /*
  * This used to be in dyn_load.c.  It was extracted into a separate file
  * to avoid having to link against libdl.{a,so} if the client doesn't call
- * dlopen.  -HB
+ * dlopen.  Of course this fails if the collector is in a dynamic
+ * library. -HB
  */
 
 #include "private/gc_priv.h"
 
-# if defined(GC_PTHREADS) || defined(GC_SOLARIS_THREADS)
+# if (defined(GC_PTHREADS) && !defined(GC_DARWIN_THREADS)) \
+      || defined(GC_SOLARIS_THREADS)
 
 # if defined(dlopen) && !defined(GC_USE_LD_WRAP)
     /* To support various threads pkgs, gc.h interposes on dlopen by     */
@@ -44,19 +46,14 @@
   /* calls in either a multithreaded environment, or if the library	*/
   /* initialization code allocates substantial amounts of GC'ed memory.	*/
   /* But I don't know of a better solution.				*/
-  /* This can still deadlock if the client explicitly starts a GC 	*/
-  /* during the dlopen.  He shouldn't do that.				*/
-  static GC_bool disable_gc_for_dlopen()
+  static void disable_gc_for_dlopen()
   {
-    GC_bool result;
     LOCK();
-    result = GC_dont_gc;
     while (GC_incremental && GC_collection_in_progress()) {
 	GC_collect_a_little_inner(1000);
     }
-    GC_dont_gc = TRUE;
+    ++GC_dont_gc;
     UNLOCK();
-    return(result);
   }
 
   /* Redefine dlopen to guarantee mutual exclusion with	*/
@@ -74,10 +71,9 @@
 #endif
 {
     void * result;
-    GC_bool dont_gc_save;
     
 #   ifndef USE_PROC_FOR_LIBRARIES
-      dont_gc_save = disable_gc_for_dlopen();
+      disable_gc_for_dlopen();
 #   endif
 #   ifdef GC_USE_LD_WRAP
       result = (void *)__real_dlopen(path, mode);
@@ -85,7 +81,7 @@
       result = dlopen(path, mode);
 #   endif
 #   ifndef USE_PROC_FOR_LIBRARIES
-      GC_dont_gc = dont_gc_save;
+      GC_enable(); /* undoes disable_gc_for_dlopen */
 #   endif
     return(result);
 }

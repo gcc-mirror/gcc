@@ -27,23 +27,61 @@ signed_word GC_mem_found = 0;
 	/* nonzero.							*/
 #endif /* PARALLEL_MARK */
 
-static void report_leak(p, sz)
-ptr_t p;
-word sz;
+/* We defer printing of leaked objects until we're done with the GC	*/
+/* cycle, since the routine for printing objects needs to run outside	*/
+/* the collector, e.g. without the allocation lock.			*/
+#define MAX_LEAKED 40
+ptr_t GC_leaked[MAX_LEAKED];
+unsigned GC_n_leaked = 0;
+
+GC_bool GC_have_errors = FALSE;
+
+void GC_add_leaked(leaked)
+ptr_t leaked;
 {
-    if (HDR(p) -> hb_obj_kind == PTRFREE) {
-        GC_err_printf0("Leaked atomic object at ");
-    } else {
-        GC_err_printf0("Leaked composite object at ");
+    if (GC_n_leaked < MAX_LEAKED) {
+      GC_have_errors = TRUE;
+      GC_leaked[GC_n_leaked++] = leaked;
+      /* Make sure it's not reclaimed this cycle */
+        GC_set_mark_bit(leaked);
     }
-    GC_print_heap_obj(p);
-    GC_err_printf0("\n");
 }
+
+static GC_bool printing_errors = FALSE;
+/* Print all objects on the list after printing any smashed objs. 	*/
+/* Clear both lists.							*/
+void GC_print_all_errors ()
+{
+    unsigned i;
+
+    LOCK();
+    if (printing_errors) {
+	UNLOCK();
+	return;
+    }
+    printing_errors = TRUE;
+    UNLOCK();
+    if (GC_debugging_started) GC_print_all_smashed();
+    for (i = 0; i < GC_n_leaked; ++i) {
+	ptr_t p = GC_leaked[i];
+	if (HDR(p) -> hb_obj_kind == PTRFREE) {
+	    GC_err_printf0("Leaked atomic object at ");
+	} else {
+	    GC_err_printf0("Leaked composite object at ");
+	}
+	GC_print_heap_obj(p);
+	GC_err_printf0("\n");
+	GC_free(p);
+	GC_leaked[i] = 0;
+    }
+    GC_n_leaked = 0;
+    printing_errors = FALSE;
+}
+
 
 #   define FOUND_FREE(hblk, word_no) \
       { \
-         report_leak((ptr_t)hblk + WORDS_TO_BYTES(word_no), \
-         	     HDR(hblk) -> hb_sz); \
+         GC_add_leaked((ptr_t)hblk + WORDS_TO_BYTES(word_no)); \
       }
 
 /*
@@ -866,7 +904,7 @@ void GC_print_block_list()
  * Clear *flp.
  * This must be done before dropping a list of free gcj-style objects,
  * since may otherwise end up with dangling "descriptor" pointers.
- * It may help for other pointer-containg objects.
+ * It may help for other pointer-containing objects.
  */
 void GC_clear_fl_links(flp)
 ptr_t *flp;

@@ -1,7 +1,7 @@
 Copyright (c) 1988, 1989 Hans-J. Boehm, Alan J. Demers
 Copyright (c) 1991-1996 by Xerox Corporation.  All rights reserved.
 Copyright (c) 1996-1999 by Silicon Graphics.  All rights reserved.
-Copyright (c) 1999-2001 by Hewlett-Packard Company. All rights reserved.
+Copyright (c) 1999-2003 by Hewlett-Packard Company. All rights reserved.
 
 The file linux_threads.c is also
 Copyright (c) 1998 by Fergus Henderson.  All rights reserved.
@@ -9,8 +9,9 @@ Copyright (c) 1998 by Fergus Henderson.  All rights reserved.
 The files Makefile.am, and configure.in are
 Copyright (c) 2001 by Red Hat Inc. All rights reserved.
 
-The files config.guess and a few others are copyrighted by the Free
-Software Foundation.
+Several files supporting GNU-style builds are copyrighted by the Free
+Software Foundation, and carry a different license from that given
+below.
 
 THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
 OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
@@ -27,7 +28,7 @@ are GPL'ed, but with an exception that should cover all uses in the
 collector.  (If you are concerned about such things, I recommend you look
 at the notice in config.guess or ltmain.sh.)
 
-This is version 6.1alpha3 of a conservative garbage collector for C and C++.
+This is version 6.3alpha1 of a conservative garbage collector for C and C++.
 
 You might find a more recent version of this at
 
@@ -228,10 +229,12 @@ and several of those are compatible with the collector.
 or equivalent is supplied.  Many of these have separate README.system
 files.
 
-  Dynamic libraries are completely supported only under SunOS
+  Dynamic libraries are completely supported only under SunOS/Solaris,
 (and even that support is not functional on the last Sun 3 release),
-Linux, IRIX 5&6, HP-PA, Win32 (not Win32S) and OSF/1 on DEC AXP machines.
-On other machines we recommend that you do one of the following:
+Linux, FreeBSD, NetBSD, IRIX 5&6, HP/UX, Win32 (not Win32S) and OSF/1
+on DEC AXP machines plus perhaps a few others listed near the top
+of dyn_load.c.  On other machines we recommend that you do one of
+the following:
 
   1) Add dynamic library support (and send us the code).
   2) Use static versions of the libraries.
@@ -245,6 +248,8 @@ On other machines we recommend that you do one of the following:
   In all cases we assume that pointer alignment is consistent with that
 enforced by the standard C compilers.  If you use a nonstandard compiler
 you may have to adjust the alignment parameters defined in gc_priv.h.
+Note that this may also be an issue with packed records/structs, if those
+enforce less alignment for pointers.
 
   A port to a machine that is not byte addressed, or does not use 32 bit
 or 64 bit addresses will require a major effort.  A port to plain MSDOS

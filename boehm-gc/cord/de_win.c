@@ -249,7 +249,7 @@ LRESULT CALLBACK WndProc (HWND hwnd, UINT message,
 
                case IDM_HELPABOUT:
                   if( DialogBox( hInstance, "ABOUTBOX",
-                                 hwnd, lpfnAboutBox ) );
+                                 hwnd, lpfnAboutBox ) )
                      InvalidateRect( hwnd, NULL, TRUE );
                   return( 0 );
 	       case IDM_HELPCONTENTS:

@@ -219,7 +219,7 @@ CORD CORD_cat_char_star(CORD x, const char * y, size_t leny)
     	result->len = result_len;
     	result->left = x;
     	result->right = y;
-    	if (depth > MAX_DEPTH) {
+    	if (depth >= MAX_DEPTH) {
     	    return(CORD_balance((CORD)result));
     	} else {
     	    return((CORD) result);
@@ -260,7 +260,11 @@ CORD CORD_cat(CORD x, CORD y)
     	result->len = result_len;
     	result->left = x;
     	result->right = y;
-    	return((CORD) result);
+    	if (depth >= MAX_DEPTH) {
+    	    return(CORD_balance((CORD)result));
+    	} else {
+    	    return((CORD) result);
+    	}
     }
 }
 

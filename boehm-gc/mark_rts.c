@@ -275,33 +275,72 @@ void GC_clear_roots GC_PROTO((void))
 }
 
 /* Internal use only; lock held.	*/
+static void GC_remove_root_at_pos(i) 
+int i;
+{
+    GC_root_size -= (GC_static_roots[i].r_end - GC_static_roots[i].r_start);
+    GC_static_roots[i].r_start = GC_static_roots[n_root_sets-1].r_start;
+    GC_static_roots[i].r_end = GC_static_roots[n_root_sets-1].r_end;
+    GC_static_roots[i].r_tmp = GC_static_roots[n_root_sets-1].r_tmp;
+    n_root_sets--;
+}
+
+#if !defined(MSWIN32) && !defined(MSWINCE)
+static void GC_rebuild_root_index()
+{
+    register int i;
+    	
+    for (i = 0; i < RT_SIZE; i++) GC_root_index[i] = 0;
+    for (i = 0; i < n_root_sets; i++)
+	add_roots_to_index(GC_static_roots + i);
+}
+#endif
+
+/* Internal use only; lock held.	*/
 void GC_remove_tmp_roots()
 {
     register int i;
     
     for (i = 0; i < n_root_sets; ) {
     	if (GC_static_roots[i].r_tmp) {
-    	    GC_root_size -=
-		(GC_static_roots[i].r_end - GC_static_roots[i].r_start);
-    	    GC_static_roots[i].r_start = GC_static_roots[n_root_sets-1].r_start;
-    	    GC_static_roots[i].r_end = GC_static_roots[n_root_sets-1].r_end;
-    	    GC_static_roots[i].r_tmp = GC_static_roots[n_root_sets-1].r_tmp;
-    	    n_root_sets--;
+            GC_remove_root_at_pos(i);
+    	} else {
+    	    i++;
+    }
+    }
+    #if !defined(MSWIN32) && !defined(MSWINCE)
+    GC_rebuild_root_index();
+    #endif
+}
+
+#if !defined(MSWIN32) && !defined(MSWINCE)
+void GC_remove_roots(b, e)
+char * b; char * e;
+{
+    DCL_LOCK_STATE;
+    
+    DISABLE_SIGNALS();
+    LOCK();
+    GC_remove_roots_inner(b, e);
+    UNLOCK();
+    ENABLE_SIGNALS();
+}
+
+/* Should only be called when the lock is held */
+void GC_remove_roots_inner(b,e)
+char * b; char * e;
+{
+    int i;
+    for (i = 0; i < n_root_sets; ) {
+    	if (GC_static_roots[i].r_start >= (ptr_t)b && GC_static_roots[i].r_end <= (ptr_t)e) {
+            GC_remove_root_at_pos(i);
     	} else {
     	    i++;
     	}
     }
-#   if !defined(MSWIN32) && !defined(MSWINCE)
-    {
-    	register int i;
-    	
-    	for (i = 0; i < RT_SIZE; i++) GC_root_index[i] = 0;
-    	for (i = 0; i < n_root_sets; i++)
-		add_roots_to_index(GC_static_roots + i);
-    }
-#   endif
-    
+    GC_rebuild_root_index();
 }
+#endif /* !defined(MSWIN32) && !defined(MSWINCE) */
 
 #if defined(MSWIN32) || defined(_WIN32_WCE_EMULATION)
 /* Workaround for the OS mapping and unmapping behind our back:		*/
@@ -573,8 +612,11 @@ ptr_t cold_gc_frame;
 
      /* Mark thread local free lists, even if their mark 	*/
      /* descriptor excludes the link field.			*/
+     /* If the world is not stopped, this is unsafe.  It is	*/
+     /* also unnecessary, since we will do this again with the	*/
+     /* world stopped.						*/
 #      ifdef THREAD_LOCAL_ALLOC
-         GC_mark_thread_local_free_lists();
+         if (GC_world_stopped) GC_mark_thread_local_free_lists();
 #      endif
 
     /*

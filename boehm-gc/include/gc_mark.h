@@ -129,7 +129,9 @@ extern GC_PTR GC_greatest_plausible_heap_addr;
 /* be reserved for exceptional cases.  That will ensure that 		*/
 /* performance of this call is not extremely performance critical.	*/
 /* (Otherwise we would need to inline GC_mark_and_push completely,	*/
-/* which would tie the client code to a fixed colllector version.)	*/
+/* which would tie the client code to a fixed collector version.)	*/
+/* Note that mark procedures should explicitly call FIXUP_POINTER()	*/
+/* if required.								*/
 struct GC_ms_entry *GC_mark_and_push
 		GC_PROTO((GC_PTR obj,
 			  struct GC_ms_entry * mark_stack_ptr,

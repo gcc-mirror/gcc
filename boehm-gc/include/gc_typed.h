@@ -29,14 +29,21 @@
 #   include "gc.h"
 # endif
 
+#ifdef __cplusplus
+  extern "C" {
+#endif
 typedef GC_word * GC_bitmap;
 	/* The least significant bit of the first word is one if	*/
 	/* the first word in the object may be a pointer.		*/
 	
+# define GC_WORDSZ (8*sizeof(GC_word))
 # define GC_get_bit(bm, index) \
-		(((bm)[divWORDSZ(index)] >> modWORDSZ(index)) & 1)
+		(((bm)[index/GC_WORDSZ] >> (index%GC_WORDSZ)) & 1)
 # define GC_set_bit(bm, index) \
-		(bm)[divWORDSZ(index)] |= (word)1 << modWORDSZ(index)
+		(bm)[index/GC_WORDSZ] |= ((GC_word)1 << (index%GC_WORDSZ))
+# define GC_WORD_OFFSET(t, f) (offsetof(t,f)/sizeof(GC_word))
+# define GC_WORD_LEN(t) (sizeof(t)/ sizeof(GC_word))
+# define GC_BITMAP_SIZE(t) ((GC_WORD_LEN(t) + GC_WORDSZ-1)/GC_WORDSZ)
 
 typedef GC_word GC_descr;
 
@@ -56,6 +63,16 @@ GC_API GC_descr GC_make_descriptor GC_PROTO((GC_bitmap bm, size_t len));
 		/* may consume some amount of a finite resource.  This	*/
 		/* is intended to be called once per type, not once	*/
 		/* per allocation.					*/
+
+/* It is possible to generate a descriptor for a C type T with	*/
+/* word aligned pointer fields f1, f2, ... as follows:			*/
+/*									*/
+/* GC_descr T_descr;                                                    */
+/* GC_word T_bitmap[GC_BITMAP_SIZE(T)] = {0};				*/
+/* GC_set_bit(T_bitmap, GC_WORD_OFFSET(T,f1));				*/
+/* GC_set_bit(T_bitmap, GC_WORD_OFFSET(T,f2));				*/
+/* ...									*/
+/* T_descr = GC_make_descriptor(T_bitmap, GC_WORD_LEN(T));		*/
 
 GC_API GC_PTR GC_malloc_explicitly_typed
 			GC_PROTO((size_t size_in_bytes, GC_descr d));
@@ -79,15 +96,18 @@ GC_API GC_PTR GC_calloc_explicitly_typed
 	/* Returned object is cleared.				*/
 
 #ifdef GC_DEBUG
-#   define GC_MALLOC_EXPLICTLY_TYPED(bytes, d) GC_MALLOC(bytes)
-#   define GC_CALLOC_EXPLICTLY_TYPED(n, bytes, d) GC_MALLOC(n*bytes)
+#   define GC_MALLOC_EXPLICITLY_TYPED(bytes, d) GC_MALLOC(bytes)
+#   define GC_CALLOC_EXPLICITLY_TYPED(n, bytes, d) GC_MALLOC(n*bytes)
 #else
-#  define GC_MALLOC_EXPLICTLY_TYPED(bytes, d) \
+#  define GC_MALLOC_EXPLICITLY_TYPED(bytes, d) \
 	GC_malloc_explicitly_typed(bytes, d)
-#  define GC_CALLOC_EXPLICTLY_TYPED(n, bytes, d) \
+#  define GC_CALLOC_EXPLICITLY_TYPED(n, bytes, d) \
 	GC_calloc_explicitly_typed(n, bytes, d)
 #endif /* !GC_DEBUG */
 
+#ifdef __cplusplus
+  } /* matches extern "C" */
+#endif
 
 #endif /* _GC_TYPED_H */
 

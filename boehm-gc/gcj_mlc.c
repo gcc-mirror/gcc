@@ -157,6 +157,7 @@ DCL_LOCK_STATE;
             GC_words_allocd += lw;
         }
 	*(void **)op = ptr_to_struct_containing_descr;
+	GC_ASSERT(((void **)op)[1] == 0);
 	UNLOCK();
     } else {
 	LOCK();
