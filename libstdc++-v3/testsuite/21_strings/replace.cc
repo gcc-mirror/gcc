@@ -73,8 +73,8 @@ bool test01(void)
   test &= x == "jello";
 
   int ar[] = { 'H', 'e', 'l', 'l', 'o' };
-  x.replace(find(x.begin(), x.end(), 'l'), 
-	    find(x.rbegin(), x.rend(), 'l').base(), ar, 
+  x.replace(std::find(x.begin(), x.end(), 'l'), 
+	    std::find(x.rbegin(), x.rend(), 'l').base(), ar, 
 	    ar + sizeof(ar) / sizeof(ar[0]));
   test &= x == "jeHelloo";
 #endif
