@@ -16,6 +16,9 @@
    This is relevant only when building GCC with some other compiler.  */
 #include <stdarg.h>
 #else
+#ifdef __clipper__
+#include <va-clipper.h>
+#else
 #ifdef __m88k__
 #include <va-m88k.h>
 #else
@@ -91,6 +94,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #endif /* not hppa */
 #endif /* not i860 */
 #endif /* not m88k */
+#endif /* not clipper */
 
 #ifdef _STDARG_H
 /* Define va_list, if desired, from __gnuc_va_list. */
