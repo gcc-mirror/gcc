@@ -3416,10 +3416,13 @@ decode_rtx_const (mode, x, value)
     switch (GET_CODE (value->un.addr.base))
       {
       case SYMBOL_REF:
-      case LABEL_REF:
 	/* Use the string's address, not the SYMBOL_REF's address,
-	   for the sake of addresses of library routines.
-	   For a LABEL_REF, compare labels.  */
+	   for the sake of addresses of library routines.  */
+	value->un.addr.base = XSTR (value->un.addr.base, 0);
+	break;
+
+      case LABEL_REF:
+	/* For a LABEL_REF, compare labels.  */
 	value->un.addr.base = XEXP (value->un.addr.base, 0);
 	
       default:

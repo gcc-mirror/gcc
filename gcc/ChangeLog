@@ -1,3 +1,8 @@
+Wed Nov  3 10:40:53 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	 * varasm.c (decode_rtx_const): Use XSTR to access the string
+	 of a SYMBOL_REF.
+
 Wed Nov  3 10:10:58 1999  Richard Henderson  <rth@cygnus.com>
 
 	* c-decl.c (duplicate_decls): Copy DECL_MODE too.
@@ -32,8 +37,8 @@ Tue Nov  2 15:38:17 1999  Richard Henderson  <rth@cygnus.com>
 Tue Nov  2 14:21:37 1999  Jason Eckhardt  <jle@cygnus.com>
 
 	* config/pa/pa.md (height reduction patterns): Add checks for
-        overlapping operands to avoid semantic-destroying splits for 
-        height reduction patterns.
+	overlapping operands to avoid semantic-destroying splits for 
+	height reduction patterns.
 
 Tue Nov  2 15:27:31 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
@@ -67,13 +72,13 @@ Tue Nov  2 16:57:22 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 Tue Nov  2 09:43:00 1999   Catherine Moore  <clm@cygnus.com>
 
-        * Makefile.in (genattrtab): Don't use (HOST_RTLANAL).
-        * rtl.h (rtx_equal_p): Move prototype.
-        * rtl.c (rtx_equal_function_value_matters): Move from 
-        rtlanal.c
-        (rtx_equal_p): Likewise.
-        * rtlanal.c (rtx_equal_function_value_matters): Delete.
-        (rtx_equal_p): Likewise.
+	* Makefile.in (genattrtab): Don't use (HOST_RTLANAL).
+	* rtl.h (rtx_equal_p): Move prototype.
+	* rtl.c (rtx_equal_function_value_matters): Move from 
+	rtlanal.c
+	(rtx_equal_p): Likewise.
+	* rtlanal.c (rtx_equal_function_value_matters): Delete.
+	(rtx_equal_p): Likewise.
 
 Mon Nov  1 23:21:17 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
