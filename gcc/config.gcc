@@ -1144,6 +1144,7 @@ i[34567]86-*-mingw32*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/mingw32.h"
 	xm_file=i386/xm-mingw32.h
 	tmake_file="i386/t-cygming i386/t-mingw32"
+	xmake_file=i386/x-mingw32
 	extra_objs=winnt.o
 	if test x$enable_threads = xyes; then
 		thread_file='win32'
