@@ -1,5 +1,8 @@
 Sat Sep 18 01:07:21 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* haifa-sched.c (sched_analyze): Use free_INSN_LIST_list instead of
+	zapping the LOG_LINKS of sched_before_next_call.
+
 	* pa.h (INSN_SETS_ARE_DELAYED): Delete.
 	* pa.c (insn_refs_are_delayed): Renamed from
 	insn_sets_and_refs_are_delayed.
