@@ -334,22 +334,16 @@ setup_save_areas (pchanged)
 	      = assign_stack_local (regno_save_mode[i][j],
 				    GET_MODE_SIZE (regno_save_mode[i][j]), 0);
 
-	    /* Setup singe word save area just in case... */
+	    /* Setup single word save area just in case... */
 	    for (k = 0; k < j; k++)
 	      {
-		int offset;
-		rtx temp;
+		/* This should not depend on WORDS_BIG_ENDIAN.
+		   The order of words in regs is the same as in memory.  */
+		rtx temp = gen_rtx (MEM, regno_save_mode[i+k][1], 
+				    XEXP (regno_save_mem[i][j], 0));
 
-		if (WORDS_BIG_ENDIAN) 
-		  offset = k * UNITS_PER_WORD;
-		else
-		  offset =  - k * UNITS_PER_WORD;
-
-		temp 
-		  = gen_rtx(MEM, regno_save_mode[i+k][1], 
-			    XEXP (regno_save_mem[i][j], 0));
 		regno_save_mem[i+k][1] 
-		  = adj_offsettable_operand(temp, offset);
+		  = adj_offsettable_operand (temp, k * UNITS_PER_WORD);
 	      }
 	    *pchanged = 1;
 	  }
