@@ -811,6 +811,7 @@ do_ident (pfile)
 static int do_pragma_once		PARAMS ((cpp_reader *));
 static int do_pragma_implementation	PARAMS ((cpp_reader *));
 static int do_pragma_poison		PARAMS ((cpp_reader *));
+static int do_pragma_system_header	PARAMS ((cpp_reader *));
 static int do_pragma_default		PARAMS ((cpp_reader *));
 
 static int
@@ -846,6 +847,8 @@ do_pragma (pfile)
     pop = do_pragma_implementation (pfile);
   else if (tokis ("poison"))
     pop = do_pragma_poison (pfile);
+  else if (tokis ("system_header"))
+    pop = do_pragma_system_header (pfile);
   else
     pop = do_pragma_default (pfile);
 #undef tokis
@@ -978,6 +981,25 @@ do_pragma_poison (pfile)
 	CPP_PUTC (pfile, ' ');
     }
   return !writeit;
+}
+
+/* Mark the current header as a system header.  This will suppress
+   some categories of warnings (notably those from -pedantic).  It is
+   intended for use in system libraries that cannot be implemented in
+   conforming C, but cannot be certain that their headers appear in a
+   system include directory.  To prevent abuse, it is rejected in the
+   primary source file.  */
+static int
+do_pragma_system_header (pfile)
+     cpp_reader *pfile;
+{
+  cpp_buffer *ip = cpp_file_buffer (pfile);
+  if (CPP_PREV_BUFFER (ip) == NULL)
+    cpp_warning (pfile, "#pragma system_header outside include file");
+  else
+    ip->system_header_p = 1;
+
+  return 1;
 }
  
 /* Just ignore #sccs, on systems where we define it at all.  */
