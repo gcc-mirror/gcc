@@ -122,7 +122,7 @@ extern int target_flags;
     { "68881", MASK_68881},						\
     { "bitfield", MASK_BITFIELD},					\
     { "68000", - (MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD)},	\
-    { "c68000", - (MASK_68020|MASK_68040|MASK_68020|MASK_BITFIELD)},	\
+    { "c68000", - (MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD)},	\
     { "soft-float", - (MASK_68060|MASK_68040_ONLY|MASK_68881)},		\
     { "nobitfield", - MASK_BITFIELD},					\
     { "rtd", MASK_RTD},							\
