@@ -642,11 +642,6 @@ name:
 
 simple_name:
 	identifier		/* Default rule */
-	{
-	  if (strchr (IDENTIFIER_POINTER (EXPR_WFL_NODE ($$)), '$'))
-	    parse_error_context ($$, "Invalid type name `%s'",
-				 IDENTIFIER_POINTER (EXPR_WFL_NODE ($$)));
-	}
 ;
 
 qualified_name:
@@ -3497,18 +3492,7 @@ find_as_inner_class (enclosing, name, cl)
   else
     qual = build_tree_list (build_expr_wfl (name, NULL, 0, 0), NULL_TREE);
 
-  if (!(to_return = find_as_inner_class_do (qual, enclosing)))
-    {
-      /* It might be the case that the enclosing class was loaded as
-	 bytecode, in which case it will be missing the
-	 DECL_INNER_CLASS_LIST. We build a fully qualified internal
-	 innerclass name and we try to load it. */
-      tree fqin = identifier_subst (name, "", '.', '$', "");
-      tree ptr;
-      BUILD_PTR_FROM_NAME (ptr, fqin);
-      to_return = resolve_class (NULL_TREE, ptr, NULL_TREE, cl);
-    }
-  return to_return;
+  return find_as_inner_class_do (qual, enclosing);
 }
 
 /* We go inside the list of sub classes and try to find a way
@@ -5214,8 +5198,7 @@ jdep_resolve_class (dep)
     
   if (!decl)
     complete_class_report_errors (dep);
-
-  if (PURE_INNER_CLASS_DECL_P (decl))
+  else if (PURE_INNER_CLASS_DECL_P (decl))
     check_inner_class_access (decl, JDEP_ENCLOSING (dep), JDEP_WFL (dep));
   return decl;
 }
@@ -6630,7 +6613,8 @@ find_in_imports_on_demand (class_type)
 	    {
 	      seen_once++;
 	      parse_error_context 
-		(import, "Type `%s' also potentially defined in package `%s'",
+		(TREE_PURPOSE (import), 
+		 "Type `%s' also potentially defined in package `%s'",
 		 IDENTIFIER_POINTER (TYPE_NAME (class_type)),
 		 IDENTIFIER_POINTER (EXPR_WFL_NODE (TREE_PURPOSE (import))));
 	    }

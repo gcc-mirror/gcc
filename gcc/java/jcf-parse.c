@@ -192,19 +192,18 @@ set_source_filename (jcf, index)
   int c = (count);							  \
   while (c--)								  \
     {									  \
-      tree class = get_class_constant (jcf, JCF_readu2 (jcf));	    	  \
-      if (DECL_P (class) && !CLASS_COMPLETE_P (class))			  \
+      tree class = get_class_constant (jcf, JCF_readu2 (jcf));	   	  \
+      tree decl = TYPE_NAME (class);					  \
+      if (DECL_P (decl) && !CLASS_COMPLETE_P (decl))			  \
 	{								  \
 	  tree outer = TYPE_NAME (get_class_constant (jcf, 		  \
 						      JCF_readu2 (jcf))); \
 	  tree alias = get_name_constant (jcf, JCF_readu2 (jcf));	  \
-	  tree decl = TYPE_NAME (class);				  \
 	  JCF_SKIP (jcf, 2);					     	  \
-	  IDENTIFIER_GLOBAL_VALUE (alias) = decl;	     		  \
 	  DECL_CONTEXT (decl) = outer;					  \
 	  DECL_INNER_CLASS_LIST (outer) = 				  \
 	    tree_cons (decl, alias, DECL_INNER_CLASS_LIST (outer));	  \
-	  CLASS_COMPLETE_P (class) = 1;					  \
+	  CLASS_COMPLETE_P (decl) = 1;					  \
 	}								  \
       else								  \
 	JCF_SKIP (jcf, 6);						  \
