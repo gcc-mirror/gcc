@@ -154,7 +154,7 @@ try_simplify_condjump (basic_block cbranch_block)
 
   if (flag_reorder_blocks_and_partition
       && (jump_block->partition != jump_dest_block->partition
-	  || cbranch_jump_edge->crossing_edge))
+	  || (cbranch_jump_edge->flags & EDGE_CROSSING)))
     return false;
 
   /* The conditional branch must target the block after the
@@ -461,7 +461,7 @@ try_forward_edges (int mode, basic_block b)
 	  may_thread |= target->flags & BB_DIRTY;
 
 	  if (FORWARDER_BLOCK_P (target)
-	      && !target->succ->crossing_edge
+	      && !(target->succ->flags & EDGE_CROSSING)
 	      && target->succ->dest != EXIT_BLOCK_PTR)
 	    {
 	      /* Bypass trivial infinite loops.  */
@@ -1674,7 +1674,7 @@ try_crossjump_bb (int mode, basic_block bb)
   
   if (flag_reorder_blocks_and_partition
       && (bb->pred->src->partition != bb->pred->pred_next->src->partition
-	  || bb->pred->crossing_edge))
+	  || (bb->pred->flags & EDGE_CROSSING)))
     return false;
 
   /* It is always cheapest to redirect a block that ends in a branch to

@@ -1114,7 +1114,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
 	    }
 	  if (JUMP_P (BB_END (jump_block))
 	      && !any_condjump_p (BB_END (jump_block))
-	      && jump_block->succ->crossing_edge )
+	      && (jump_block->succ->flags & EDGE_CROSSING))
 	    REG_NOTES (BB_END (jump_block)) = gen_rtx_EXPR_LIST 
 	      (REG_CROSSING_JUMP, NULL_RTX, 
 	       REG_NOTES (BB_END (jump_block)));
@@ -1602,7 +1602,7 @@ commit_one_edge_insertion (edge e, int watch_calls)
 	      && targetm.have_named_sections
 	      && e->src != ENTRY_BLOCK_PTR
 	      && e->src->partition == COLD_PARTITION
-	      && !e->crossing_edge)
+	      && !(e->flags & EDGE_CROSSING))
 	    {
 	      rtx bb_note, new_note, cur_insn;
 
@@ -1621,7 +1621,7 @@ commit_one_edge_insertion (edge e, int watch_calls)
 	      NOTE_BASIC_BLOCK (new_note) = bb;
 	      if (JUMP_P (BB_END (bb))
 		  && !any_condjump_p (BB_END (bb))
-		  && bb->succ->crossing_edge )
+		  && (bb->succ->flags & EDGE_CROSSING))
 		REG_NOTES (BB_END (bb)) = gen_rtx_EXPR_LIST 
 		  (REG_CROSSING_JUMP, NULL_RTX, REG_NOTES (BB_END (bb)));
 	      if (after == bb_note)
@@ -1986,7 +1986,7 @@ rtl_verify_flow_info_1 (void)
 	  if (e->flags & EDGE_FALLTHRU)
 	    {
 	      n_fallthru++, fallthru = e;
-	      if (e->crossing_edge
+	      if ((e->flags & EDGE_CROSSING)
 		  || (e->src->partition != e->dest->partition
 		      && e->src != ENTRY_BLOCK_PTR
 		      && e->dest != EXIT_BLOCK_PTR))

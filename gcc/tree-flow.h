@@ -489,7 +489,6 @@ extern void bsi_insert_on_edge (edge, tree);
 extern void bsi_commit_edge_inserts (int *);
 extern void notice_special_calls (tree);
 extern void clear_special_calls (void);
-extern void compute_dominance_frontiers (bitmap *);
 extern void verify_stmts (void);
 extern tree tree_block_label (basic_block bb);
 extern void extract_true_false_edges_from_block (basic_block, edge *, edge *);

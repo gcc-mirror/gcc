@@ -1,3 +1,27 @@
+2004-09-19  Steven Bosscher  <stevenb@suse.de>
+
+	* basic-block.h (struct edge_def): Remove crossing_edge.
+	(EDGE_CROSSING): New define.
+	(EDGE_ALL_FLAGS): Update.
+	* bb-reorder.c (find_traces_1_round, better_edge_p,
+	find_rarely_executed_basic_blocks_and_cr, fix_up_fall_thru_edges,
+	find_jump_block, fix_crossing_conditional_branches,
+	fix_crossing_unconditional_branches, add_reg_crossing_jump_notes):
+	Replace all occurences of crossing_edge with an edge flag check
+	or set/reset.
+	* cfgcleanup.c (try_simplify_condjump, try_forward_edges,
+	try_crossjump_bb): Likewise.
+	* cfglayout.c (fixup_reorder_chain): Likewise.
+	* cfgrtl.c (force_nonfallthru_and_redirect,
+	commit_one_edge_insertion): Likewise.
+
+	* Makefile.in (cfganal.o): Depend on TIMEVAR_H.
+	* tree-flow.h (compute_dominance_frontiers): Move prototype...
+	* basic-block.h:  ...here.
+	* tree-cfg.c (compute_dominance_frontiers_1,
+	compute_dominance_frontiers): Move from here...
+	* cfganal.c: ...to here.  Include timevar.h.
+
 2004-08-18  James E Wilson  <wilson@specifixinc.com>
 
 	* config/mips/mips.h (ASM_SPEC): In comment, change -meabi= to -mabi=.
