@@ -63,6 +63,7 @@ Boston, MA 02111-1307, USA.  */
       BINFO_PUSHDECLS_MARKED.
       (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
+      FN_TRY_BLOCK_P (in TRY_BLOCK)
    4: BINFO_NEW_VTABLE_MARKED.
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
           or FIELD_DECL).
@@ -2429,6 +2430,8 @@ extern int flag_new_for_scope;
 #define TRY_STMTS(NODE)         TREE_OPERAND (NODE, 0)
 #define TRY_HANDLERS(NODE)      TREE_OPERAND (NODE, 1)
 #define CLEANUP_P(NODE)         TREE_LANG_FLAG_0 (NODE)
+/* Nonzero if this try block is a function try block.  */
+#define FN_TRY_BLOCK_P(NODE)    TREE_LANG_FLAG_3 (NODE)
 #define HANDLER_PARMS(NODE)     TREE_OPERAND (NODE, 0)
 #define HANDLER_BODY(NODE)      TREE_OPERAND (NODE, 1)
 #define COMPOUND_BODY(NODE)     TREE_OPERAND (NODE, 0)

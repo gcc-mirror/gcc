@@ -225,10 +225,6 @@ perform_member_init (member, name, init, explicit)
     {
       tree expr;
 
-      /* All cleanups must be on the function_obstack.  */
-      push_obstacks_nochange ();
-      resume_temporary_allocation ();
-
       expr = build_component_ref (current_class_ref, name, NULL_TREE,
 				  explicit);
       expr = build_delete (type, expr, integer_zero_node,
@@ -236,8 +232,6 @@ perform_member_init (member, name, init, explicit)
 
       if (expr != error_mark_node)
 	finish_subobject (expr);
-
-      pop_obstacks ();
     }
 }
 
@@ -699,10 +693,6 @@ expand_cleanup_for_base (binfo, flag)
   if (!TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (binfo)))
     return;
 
-  /* All cleanups must be on the function_obstack.  */
-  push_obstacks_nochange ();
-  resume_temporary_allocation ();
-
   /* Call the destructor.  */
   expr = (build_scoped_method_call
 	  (current_class_ref, binfo, dtor_identifier,
@@ -712,7 +702,6 @@ expand_cleanup_for_base (binfo, flag)
 			truthvalue_conversion (flag),
 			expr, integer_zero_node));
 
-  pop_obstacks ();
   finish_subobject (expr);
 }
 
@@ -1009,9 +998,17 @@ finish_init_stmts (stmt_expr, compound_stmt)
      tree compound_stmt;
 {
   pop_momentary ();
-  return finish_stmt_expr (stmt_expr,
-			   finish_compound_stmt (/*has_no_scope=*/1, 
-						 compound_stmt));
+  stmt_expr 
+    = finish_stmt_expr (stmt_expr,
+			finish_compound_stmt (/*has_no_scope=*/1, 
+					      compound_stmt));
+
+  /* To avoid spurious warnings about unused values, we set 
+     TREE_USED.  */
+  if (stmt_expr)
+    TREE_USED (stmt_expr) = 1;
+
+  return stmt_expr;
 }
 
 /* This is like `expand_member_init', only it stores one aggregate

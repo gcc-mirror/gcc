@@ -41,7 +41,6 @@
    parsing into this file; that will make implementing the new parser
    much easier since it will be able to make use of these routines.  */
 
-static void expand_stmts PROTO((tree));
 static void do_pushlevel PROTO((void));
 static tree do_poplevel PROTO((void));
 static void finish_expr_stmt_real PROTO((tree, int));
@@ -650,6 +649,7 @@ begin_function_try_block ()
     {
       tree r = build_min_nt (TRY_BLOCK, NULL_TREE,
 			     NULL_TREE);
+      FN_TRY_BLOCK_P (r) = 1;
       add_tree (r);
       return r;
     }
@@ -672,6 +672,14 @@ finish_try_block (try_block)
     RECHAIN_STMTS (try_block, TRY_STMTS (try_block));
   else
     expand_start_all_catch ();  
+}
+
+void
+finish_cleanup_try_block (try_block)
+     tree try_block;
+{
+  if (building_stmt_tree ())
+    RECHAIN_STMTS (try_block, TRY_STMTS (try_block));
 }
 
 /* Finish an implicitly generated try-block, with a cleanup is given
@@ -698,7 +706,18 @@ finish_function_try_block (try_block)
      tree try_block; 
 {
   if (building_stmt_tree ())
-    RECHAIN_STMTS (try_block, TRY_STMTS (try_block));
+    {
+      if (TREE_CHAIN (try_block) 
+	  && TREE_CODE (TREE_CHAIN (try_block)) == CTOR_INITIALIZER)
+	{
+	  /* Chain the compound statement after the CTOR_INITIALIZER.  */
+	  TREE_CHAIN (TREE_CHAIN (try_block)) = last_tree;
+	  /* And make the CTOR_INITIALIZER the body of the try-block.  */
+	  RECHAIN_STMTS (try_block, TRY_STMTS (try_block));
+	}
+      else
+	RECHAIN_STMTS (try_block, TRY_STMTS (try_block));
+    }
   else
     {
       end_protect_partials ();
@@ -2025,218 +2044,224 @@ expand_cond (t)
     return t;
 }
 
-/* Generate RTL for the chain of statements T.  */
-
-static void 
-expand_stmts (t)
-     tree t;
-{
-  while (t)
-    {
-      expand_stmt (t);
-      t = TREE_CHAIN (t);
-    }
-}
-
-/* Generate RTL for the statement T, and its substatements.  */
+/* Generate RTL for the statement T, and its substatements, and any
+   other statements at its nesting level.  */
 
 tree
 expand_stmt (t)
      tree t;
 {
-  int saved_stmts_are_full_exprs_p;
   tree rval;
 
-  if (t == NULL_TREE || t == error_mark_node)
-    return NULL_TREE;
-
-  /* Assume we'll have nothing to return.  */
-  rval = NULL_TREE;
-
-  /* Set up context appropriately for handling this statement.  */
-  saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p;
-  prep_stmt (t);
-
-  switch (TREE_CODE (t))
+  while (t && t != error_mark_node)
     {
-    case RETURN_STMT:
-      finish_return_stmt (RETURN_EXPR (t));
-      break;
+      int saved_stmts_are_full_exprs_p;
 
-    case EXPR_STMT:
-      finish_expr_stmt_real (EXPR_STMT_EXPR (t),
-			     EXPR_STMT_ASSIGNS_THIS (t));
-      break;
+      /* Assume we'll have nothing to return.  */
+      rval = NULL_TREE;
 
-    case DECL_STMT:
-      {
-	tree decl;
-	int i = suspend_momentary ();
+      /* Set up context appropriately for handling this statement.  */
+      saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p;
+      prep_stmt (t);
 
-	lineno = STMT_LINENO (t);
-	emit_line_note (input_filename, lineno);
-	decl = DECL_STMT_DECL (t);
-	if (TREE_CODE (decl) == LABEL_DECL)
-	  finish_label_decl (DECL_NAME (decl));
-	else
+      switch (TREE_CODE (t))
+	{
+	case RETURN_STMT:
+	  finish_return_stmt (RETURN_EXPR (t));
+	  break;
+
+	case EXPR_STMT:
+	  finish_expr_stmt_real (EXPR_STMT_EXPR (t),
+				 EXPR_STMT_ASSIGNS_THIS (t));
+	  break;
+
+	case DECL_STMT:
 	  {
-	    /* We need to clear DECL_CONTEXT so that maybe_push_decl
-	       will push it into the current scope.  */
-	    if (DECL_CONTEXT (decl) == current_function_decl)
-	      DECL_CONTEXT (decl) = NULL_TREE;
-	    /* If we marked this variable as dead when we processed it
-	       before, we must undo that now.  The variable has been
-	       resuscitated.  */
-	    if (TREE_CODE (decl) == VAR_DECL)
-	      DECL_DEAD_FOR_LOCAL (decl) = 0;
-	    maybe_push_decl (decl);
-	    if (TREE_CODE (decl) == VAR_DECL && !TREE_STATIC (decl))
+	    tree decl;
+	    int i = suspend_momentary ();
+
+	    emit_line_note (input_filename, lineno);
+	    decl = DECL_STMT_DECL (t);
+	    if (TREE_CODE (decl) == LABEL_DECL)
+	      finish_label_decl (DECL_NAME (decl));
+	    else
 	      {
-		maybe_inject_for_scope_var (decl);
-		initialize_local_var (decl, DECL_INITIAL (decl), 0);
+		/* If we marked this variable as dead when we processed it
+		   before, we must undo that now.  The variable has been
+		   resuscitated.  */
+		if (TREE_CODE (decl) == VAR_DECL)
+		  DECL_DEAD_FOR_LOCAL (decl) = 0;
+		/* We need to clear DECL_CONTEXT so that maybe_push_decl
+		   will push it into the current scope.  */
+		if (DECL_CONTEXT (decl) == current_function_decl)
+		  {
+		    DECL_CONTEXT (decl) = NULL_TREE;
+		    maybe_push_decl (decl);
+		  }
+		/* If this is a declaration for an automatic local
+		   variable, initialize it.  Note that we might also see a
+		   declaration for a namespace-scope object (declared with
+		   `extern') or an object with static storage duration
+		   (declared with `static').  We don't have to handle the
+		   initialization of those objects here; the former can
+		   never be a definition (only a declaration), and the
+		   latter is handled in finish_file.  */
+		if (TREE_CODE (decl) == VAR_DECL 
+		    && !TREE_STATIC (decl)
+		    && !DECL_EXTERNAL (decl))
+		  {
+		    /* Support the old for-scope rules for backwards
+		       compatibility.  */
+		    maybe_inject_for_scope_var (decl);
+		    /* Let the back-end know about this variable.  */
+		    initialize_local_var (decl, DECL_INITIAL (decl), 0);
+		  }
 	      }
+	    resume_momentary (i);
 	  }
-	resume_momentary (i);
-      }
-      break;
+	  break;
 
-    case FOR_STMT:
-      {
-	tree tmp;
+	case FOR_STMT:
+	  {
+	    tree tmp;
 
-	begin_for_stmt ();
-	for (tmp = FOR_INIT_STMT (t); tmp; tmp = TREE_CHAIN (tmp))
-	  expand_stmt (tmp);
-	finish_for_init_stmt (NULL_TREE);
-	finish_for_cond (expand_cond (FOR_COND (t)), NULL_TREE);
-	tmp = FOR_EXPR (t);
-	finish_for_expr (tmp, NULL_TREE);
-	expand_stmt (FOR_BODY (t));
-	finish_for_stmt (tmp, NULL_TREE);
-      }
-      break;
+	    begin_for_stmt ();
+	    expand_stmt (FOR_INIT_STMT (t));
+	    finish_for_init_stmt (NULL_TREE);
+	    finish_for_cond (expand_cond (FOR_COND (t)), NULL_TREE);
+	    tmp = FOR_EXPR (t);
+	    finish_for_expr (tmp, NULL_TREE);
+	    expand_stmt (FOR_BODY (t));
+	    finish_for_stmt (tmp, NULL_TREE);
+	  }
+	  break;
 
-    case WHILE_STMT:
-      {
-	begin_while_stmt ();
-	finish_while_stmt_cond (expand_cond (WHILE_COND (t)), NULL_TREE);
-	expand_stmt (WHILE_BODY (t));
-	finish_while_stmt (NULL_TREE);
-      }
-      break;
+	case WHILE_STMT:
+	  {
+	    begin_while_stmt ();
+	    finish_while_stmt_cond (expand_cond (WHILE_COND (t)), NULL_TREE);
+	    expand_stmt (WHILE_BODY (t));
+	    finish_while_stmt (NULL_TREE);
+	  }
+	  break;
 
-    case DO_STMT:
-      {
-	begin_do_stmt ();
-	expand_stmt (DO_BODY (t));
-	finish_do_body (NULL_TREE);
-	finish_do_stmt (DO_COND (t), NULL_TREE);
-      }
-      break;
+	case DO_STMT:
+	  {
+	    begin_do_stmt ();
+	    expand_stmt (DO_BODY (t));
+	    finish_do_body (NULL_TREE);
+	    finish_do_stmt (DO_COND (t), NULL_TREE);
+	  }
+	  break;
 
-    case IF_STMT:
-      begin_if_stmt ();
-      finish_if_stmt_cond (expand_cond (IF_COND (t)), NULL_TREE);
-      if (THEN_CLAUSE (t))
-	{
-	  expand_stmt (THEN_CLAUSE (t));
-	  finish_then_clause (NULL_TREE);
+	case IF_STMT:
+	  begin_if_stmt ();
+	  finish_if_stmt_cond (expand_cond (IF_COND (t)), NULL_TREE);
+	  if (THEN_CLAUSE (t))
+	    {
+	      expand_stmt (THEN_CLAUSE (t));
+	      finish_then_clause (NULL_TREE);
+	    }
+	  if (ELSE_CLAUSE (t))
+	    {
+	      begin_else_clause ();
+	      expand_stmt (ELSE_CLAUSE (t));
+	      finish_else_clause (NULL_TREE);
+	    }
+	  finish_if_stmt ();
+	  break;
+
+	case COMPOUND_STMT:
+	  begin_compound_stmt (COMPOUND_STMT_NO_SCOPE (t));
+	  expand_stmt (COMPOUND_BODY (t));
+	  rval = finish_compound_stmt (COMPOUND_STMT_NO_SCOPE (t), 
+				       NULL_TREE);
+	  break;
+
+	case BREAK_STMT:
+	  finish_break_stmt ();
+	  break;
+
+	case CONTINUE_STMT:
+	  finish_continue_stmt ();
+	  break;
+
+	case SWITCH_STMT:
+	  {
+	    tree cond;
+
+	    begin_switch_stmt ();
+	    cond = expand_cond (SWITCH_COND (t));
+	    finish_switch_cond (cond, NULL_TREE);
+	    expand_stmt (SWITCH_BODY (t));
+	    finish_switch_stmt (cond, NULL_TREE);
+	  }
+	  break;
+
+	case CASE_LABEL:
+	  finish_case_label (CASE_LOW (t), CASE_HIGH (t));
+	  break;
+
+	case LABEL_STMT:
+	  finish_label_stmt (DECL_NAME (LABEL_STMT_LABEL (t)));
+	  break;
+
+	case GOTO_STMT:
+	  if (TREE_CODE (GOTO_DESTINATION (t)) == LABEL_DECL)
+	    finish_goto_stmt (DECL_NAME (GOTO_DESTINATION (t)));
+	  else
+	    finish_goto_stmt (GOTO_DESTINATION (t));
+	  break;
+
+	case ASM_STMT:
+	  finish_asm_stmt (ASM_CV_QUAL (t), ASM_STRING (t), ASM_OUTPUTS
+			   (t), ASM_INPUTS (t), ASM_CLOBBERS (t));
+	  break;
+
+	case TRY_BLOCK:
+	  if (CLEANUP_P (t))
+	    {
+	      expand_eh_region_start ();
+	      expand_stmt (TRY_STMTS (t));
+	      finish_cleanup_try_block (NULL_TREE);
+	      finish_cleanup (TRY_HANDLERS (t), NULL_TREE);
+	    }
+	  else
+	    {
+	      begin_try_block ();
+	      expand_stmt (TRY_STMTS (t));
+	      finish_try_block (NULL_TREE);
+	      expand_stmt (TRY_HANDLERS (t));
+	      finish_handler_sequence (NULL_TREE);
+	    }
+	  break;
+
+	case HANDLER:
+	  begin_handler ();
+	  if (HANDLER_PARMS (t))
+	    expand_start_catch_block (DECL_STMT_DECL (HANDLER_PARMS (t)));
+	  else
+	    expand_start_catch_block (NULL_TREE);
+	  finish_handler_parms (NULL_TREE);
+	  expand_stmt (HANDLER_BODY (t));
+	  finish_handler (NULL_TREE);
+	  break;
+
+	case SUBOBJECT:
+	  finish_subobject (SUBOBJECT_CLEANUP (t));
+	  break;
+
+	default:
+	  my_friendly_abort (19990810);
+	  break;
 	}
-      if (ELSE_CLAUSE (t))
-	{
-	  begin_else_clause ();
-	  expand_stmt (ELSE_CLAUSE (t));
-	  finish_else_clause (NULL_TREE);
-	}
-      finish_if_stmt ();
-      break;
 
-    case COMPOUND_STMT:
-      begin_compound_stmt (COMPOUND_STMT_NO_SCOPE (t));
-      expand_stmts (COMPOUND_BODY (t));
-      rval = finish_compound_stmt (COMPOUND_STMT_NO_SCOPE (t), 
-				   NULL_TREE);
-      break;
+      /* Restore saved state.  */
+      stmts_are_full_exprs_p = saved_stmts_are_full_exprs_p;
 
-    case BREAK_STMT:
-      finish_break_stmt ();
-      break;
-
-    case CONTINUE_STMT:
-      finish_continue_stmt ();
-      break;
-
-    case SWITCH_STMT:
-      {
-	tree cond;
-
-	begin_switch_stmt ();
-	cond = expand_cond (SWITCH_COND (t));
-	finish_switch_cond (cond, NULL_TREE);
-	expand_stmt (SWITCH_BODY (t));
-	finish_switch_stmt (cond, NULL_TREE);
-      }
-      break;
-
-    case CASE_LABEL:
-      finish_case_label (CASE_LOW (t), CASE_HIGH (t));
-      break;
-
-    case LABEL_STMT:
-      finish_label_stmt (DECL_NAME (LABEL_STMT_LABEL (t)));
-      break;
-
-    case GOTO_STMT:
-      if (TREE_CODE (GOTO_DESTINATION (t)) == LABEL_DECL)
-	finish_goto_stmt (DECL_NAME (GOTO_DESTINATION (t)));
-      else
-	finish_goto_stmt (GOTO_DESTINATION (t));
-      break;
-
-    case ASM_STMT:
-      finish_asm_stmt (ASM_CV_QUAL (t), ASM_STRING (t), ASM_OUTPUTS
-		       (t), ASM_INPUTS (t), ASM_CLOBBERS (t));
-      break;
-
-    case TRY_BLOCK:
-      if (CLEANUP_P (t))
-	{
-	  expand_eh_region_start ();
-	  expand_stmt (TRY_STMTS (t));
-	  finish_cleanup (TRY_HANDLERS (t), NULL_TREE);
-	}
-      else
-	{
-	  begin_try_block ();
-	  expand_stmt (TRY_STMTS (t));
-	  finish_try_block (NULL_TREE);
-	  expand_stmts (TRY_HANDLERS (t));
-	  finish_handler_sequence (NULL_TREE);
-	}
-      break;
-
-    case HANDLER:
-      begin_handler ();
-      if (HANDLER_PARMS (t))
-	expand_start_catch_block (DECL_STMT_DECL (HANDLER_PARMS (t)));
-      else
-	expand_start_catch_block (NULL_TREE);
-      finish_handler_parms (NULL_TREE);
-      expand_stmt (HANDLER_BODY (t));
-      finish_handler (NULL_TREE);
-      break;
-
-    case SUBOBJECT:
-      finish_subobject (SUBOBJECT_CLEANUP (t));
-      break;
-
-    default:
-      my_friendly_abort (19990810);
-      break;
+      /* Go on to the next statement in this scope.  */
+      t = TREE_CHAIN (t);
     }
-
-  /* Restore saved state.  */
-  stmts_are_full_exprs_p = saved_stmts_are_full_exprs_p;
 
   return rval;
 }
@@ -2247,8 +2272,29 @@ void
 expand_body (fn)
      tree fn;
 {
+  int saved_lineno;
+  char *saved_input_filename;
   tree t;
   tree try_block;
+
+  /* When the parser calls us after finishing the body of a template
+     function, we don't really want to expand the body.  When we're
+     processing an in-class definition of an inline function,
+     PROCESSING_TEMPLATE_DECL will no longer be set here, so we have
+     to look at the function itself.  */
+  if (processing_template_decl
+      || (DECL_LANG_SPECIFIC (fn) 
+	  && DECL_TEMPLATE_INFO (fn)
+	  && uses_template_parms (DECL_TI_ARGS (fn))))
+    return;
+
+  /* Save the current file name and line number.  When we expand the
+     body of the funciton, we'll set LINENO and INPUT_FILENAME so that
+     error-mesages come out in the right places.  */
+  saved_lineno = lineno;
+  saved_input_filename = input_filename;
+  lineno = DECL_SOURCE_LINE (fn);
+  input_filename = DECL_SOURCE_FILE (fn);
 
   start_function (NULL_TREE, fn, NULL_TREE, SF_PRE_PARSED | SF_EXPAND);
   store_parm_decls ();
@@ -2292,13 +2338,22 @@ expand_body (fn)
   if (try_block)
     {
       finish_function_try_block (NULL_TREE);
-      {
-	tree handler = TRY_HANDLERS (try_block);
-	for (; handler; handler = TREE_CHAIN (handler))
-	  expand_stmt (handler);
-      }
+      expand_stmt (TRY_HANDLERS (try_block));
       finish_function_handler_sequence (NULL_TREE);
     }
 
+  /* Statements should always be full-expressions at the outermost set
+     of curly braces for a function.  */
+  my_friendly_assert (stmts_are_full_exprs_p, 19990831);
+
+  /* The outermost statement for a function contains the line number
+     recorded when we finished processing the function.  */
+  lineno = STMT_LINENO (DECL_SAVED_TREE (fn));
+
+  /* Generate code for the function.  */
   finish_function (lineno, 0);
+
+  /* And restore the current source position.  */
+  lineno = saved_lineno;
+  input_filename = saved_input_filename;
 }
