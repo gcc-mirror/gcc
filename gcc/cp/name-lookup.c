@@ -4279,7 +4279,8 @@ arg_assoc_class (struct arg_lookup *k, tree type)
 	    return true;
 
   /* Process template arguments.  */
-  if (CLASSTYPE_TEMPLATE_INFO (type))
+  if (CLASSTYPE_TEMPLATE_INFO (type) 
+      && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type)))
     {
       list = INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (type));
       for (i = 0; i < TREE_VEC_LENGTH (list); ++i) 
