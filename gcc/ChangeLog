@@ -57,7 +57,7 @@
 	* rtl.h (enum insn_note): New enumeration.  Subsume
 	NOTE_INSN_DELETED and friends.
 	(GET_NOTE_INSN_NAME): Adjust index by NOTE_INSN_BIAS.
-	* rtl.c (note_insn_name): Tweek string order.
+	* rtl.c (note_insn_name): Tweak string order.
 
 2000-04-15  Zack Weinberg  <zack@wolery.cumb.org>
 
@@ -16213,7 +16213,7 @@ Sat Oct  9 12:18:16 1999  Richard Henderson  <rth@cygnus.com>
 	(count_or_remove_death_notes): New.
 	(verify_flow_info): Abort on error after all checks.
 	(remove_edge): Decrement n_edges.
-	(remove_fake_edges): Tweek format.
+	(remove_fake_edges): Tweak format.
 	* haifa-sched.c (schedule_insns): Use split_all_insns.
 	* output.h (update_life_info): Remove declaration.
 	* recog.c (split_all_insns): From the corpse of split_block_insns,
