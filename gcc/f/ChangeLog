@@ -1,3 +1,8 @@
+Tue May 18 00:21:34 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* lang-specs.h: Define __GNUC__ and __GNUC_MINOR__ only if -no-gcc
+	was not given.
+
 Thu May 13 12:23:20 1999  Craig Burley  <craig@jcb-sc.com>
 
 	Fix INTEGER*8 subscripts in array references:
