@@ -1,3 +1,12 @@
+2002-06-21  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.md: Change GNU CC to GCC in file header comment.
+	* config/mmix/mmix.h: Ditto.
+	* config/mmix/mmix-protos.h: Ditto.
+	* config/mmix/mmix.c: Ditto.  Fix typo in comment.
+	* config/mmix/mmix-modes.def: Change GNU CC to GCC in file header
+	comment.  Comment extra CC modes.
+
 2002-06-20 Jan Hubicka  <jh@suse.cz>
 
 	* cfglayout.c (scope_to_insns_initialize): Call set_block_levels.
