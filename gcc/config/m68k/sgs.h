@@ -38,6 +38,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define LONG_ASM_OP		".long"
 #define SPACE_ASM_OP		".space"
 #define ALIGN_ASM_OP		".align"
+#undef GLOBAL_ASM_OP
 #define GLOBAL_ASM_OP		".global"
 #define SWBEG_ASM_OP		".swbeg"
 #define SET_ASM_OP		".set"
@@ -198,17 +199,6 @@ do { union { float f; long l;} tem;			\
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (68k, SGS/AT&T syntax)");
-
-/* This is how to output a command to make the user-level label named NAME
-   defined for reference from other files.  */
-
-#undef ASM_GLOBALIZE_LABEL
-#define ASM_GLOBALIZE_LABEL(FILE,NAME)				\
-    do {							\
-	fprintf ((FILE), "\t%s ", GLOBAL_ASM_OP);		\
-	assemble_name ((FILE), NAME);				\
-	fputs ("\n", FILE);					\
-    } while (0)
 
 #undef PRINT_OPERAND_PRINT_FLOAT
 #define PRINT_OPERAND_PRINT_FLOAT(CODE,FILE)			\

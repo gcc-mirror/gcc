@@ -159,10 +159,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
         fprintf (FILE, "\tlink %%a6,&%d\n", -fsize);		\
       else							\
 	fprintf (FILE, "\tlink %%a6,&0\n\tsub.l &%d,%%sp\n", fsize); }  \
-  for (regno = 24; regno < 56; regno++)                         \
-    if (regs_ever_live[regno] && ! call_used_regs[regno])       \
-      fprintf(FILE, "\tfpmoved %s,-(%%sp)\n",                   \
-	      reg_names[regno]);                                \
   for (regno = 16; regno < 24; regno++)				\
     if (regs_ever_live[regno] && ! call_used_regs[regno])	\
        mask |= 1 << (regno - 16);				\
@@ -188,20 +184,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 { register int regno;						\
   register int mask, fmask;					\
   register int nregs;						\
-  int offset, foffset, fpoffset;   	                        \
+  int offset, foffset;		   	                        \
   extern char call_used_regs[];					\
   int fsize = ((SIZE) + 3) & -4;				\
   int big = 0;							\
-  nregs = 0;  fmask = 0; fpoffset = 0;  			\
-  for (regno = 24 ; regno < 56 ; regno++)			\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-      nregs++;							\
-  fpoffset = nregs*8;						\
-  nregs = 0;							\
+  nregs = 0;  fmask = 0;		  			\
   for (regno = 16; regno < 24; regno++)				\
     if (regs_ever_live[regno] && ! call_used_regs[regno])	\
       { nregs++; fmask |= 1 << (23 - regno); }			\
-  foffset = fpoffset + nregs * 12;				\
+  foffset = nregs * 12;						\
   nregs = 0;  mask = 0;						\
   if (frame_pointer_needed) regs_ever_live[FRAME_POINTER_REGNUM] = 0; \
   for (regno = 0; regno < 16; regno++)				\
@@ -210,7 +201,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   offset = foffset + nregs * 4;					\
   if (offset + fsize >= 0x8000 					\
       && frame_pointer_needed 					\
-      && (mask || fmask || fpoffset)) 				\
+      && (mask || fmask))	 				\
     { fprintf (FILE, "\tmov.l &%d,%%a0\n", -fsize);		\
       fsize = 0, big = 1; }					\
   if (exact_log2 (mask) >= 0) {					\
@@ -241,20 +232,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
     else							\
       fprintf (FILE, "\tfmovm -%d(%%a6),&0x%x\n",		\
 	       foffset + fsize, fmask); }			\
-  if (fpoffset != 0)						\
-    for (regno = 55; regno >= 24; regno--)			\
-      if (regs_ever_live[regno] && ! call_used_regs[regno]) {	\
-	if (big)						\
-	  fprintf(FILE, "\tfpmoved -%d(%%a6,%%a0.l),%s\n",	\
-		  fpoffset + fsize, reg_names[regno]);		\
-	else if (! frame_pointer_needed)			\
-	  fprintf(FILE, "\tfpmoved (%%sp)+,%s\n",		\
-		  reg_names[regno]);				\
-	else							\
-	  fprintf(FILE, "\tfpmoved -%d(%%a6),%s\n",		\
-		  fpoffset + fsize, reg_names[regno]);		\
-	fpoffset -= 8;						\
-      }								\
   if (current_function_returns_pointer)                         \
     fprintf (FILE, "\tmov.l %%d0,%%a0\n");                      \
   if (frame_pointer_needed)					\
@@ -314,16 +291,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 11),	\
   sprintf ((OUTPUT), "%s%%%%%d", (NAME), (LABELNO)))
-
-/* This is how to output a command to make the user-level label named NAME
+ 
+/* This is the command to make the user-level label named NAME
    defined for reference from other files.  */
 
-#undef ASM_GLOBALIZE_LABEL
-#define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
-do { fputs ("\tglobal ", FILE);         \
-     assemble_name (FILE, NAME);        \
-     fputs ("\n", FILE);                \
-   } while (0)
+#undef GLOBAL_ASM_OP
+#define GLOBAL_ASM_OP "global"
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)	\
@@ -577,7 +550,9 @@ do { fprintf (asm_out_file, "\tdef\t");	\
 #define PUT_SDB_ENDEF fputs("\tendef\n", asm_out_file)
 #define PUT_SDB_TYPE(a) fprintf(asm_out_file, "\ttype\t0%o;", a)
 #define PUT_SDB_SIZE(a) fprintf(asm_out_file, "\tsize\t%d;", a)
-#define PUT_SDB_DIM(a) fprintf(asm_out_file, "\tdim\t%d;", a)
+#define PUT_SDB_START_DIM fprintf(asm_out_file, "\tdim\t")
+#define PUT_SDB_NEXT_DIM(a) fprintf(asm_out_file, "%d,", a)
+#define PUT_SDB_LAST_DIM(a) fprintf(asm_out_file, "%d;", a)
 
 #define PUT_SDB_TAG(a)				\
 do { fprintf (asm_out_file, "\ttag\t");	\
