@@ -1,3 +1,7 @@
+2003-03-10  Ben Elliston  <bje@wasabisystems.com>
+
+	* MAINTAINERS: Update my mail address.
+
 2003-03-09  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* configure.in (gxx_include_dir): Fix typo.
