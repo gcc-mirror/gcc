@@ -1,4 +1,9 @@
-*** Changes in GCC 3.0:
+*** Changes since GCC 2.95:
+
+* G++ now supports importing member functions from base classes with a
+  using-declaration.
+
+* G++ now enforces access control for nested types.
 
 * In some obscure cases, functions with the same type could have the
   same mangled name.  This bug caused compiler crashes, link-time clashes,
