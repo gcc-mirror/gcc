@@ -1,4 +1,4 @@
-# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation
+# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation
 
 load_lib "libgloss.exp"
 
@@ -495,7 +495,21 @@ proc gcj_invoke {program expectFile ld_library_additions} {
 # Invoke a program and check its output.  EXECUTABLE is the program;
 # ARGS are the arguments to the program.  Returns 1 if tests passed
 # (or things were left untested), 0 otherwise.
-proc libjava_invoke {errname testName optName executable inpfile resultfile args} {
+proc libjava_invoke {errname testName optName executable inpfile resultfile
+		      ld_library_additions args} {
+    global env
+    set lib_path $env(LD_LIBRARY_PATH)
+
+    set newval .
+    if {[llength $ld_library_additions] > 0} {
+	append newval :[join $ld_library_additions :]
+    }
+
+    append newval :$lib_path
+
+    setenv LD_LIBRARY_PATH $newval
+
+    verbose "LD_LIBRARY_PATH=$env(LD_LIBRARY_PATH)"
     upvar $optName opts
 
     if {[info exists opts(no-exec)]} {
@@ -512,6 +526,10 @@ proc libjava_invoke {errname testName optName executable inpfile resultfile args
     set result [libjava_load $executable $args "$inpfile"]
     set status [lindex $result 0]
     set output [lindex $result 1]
+
+    # Restore LD_LIBRARY_PATH setting.
+    setenv LD_LIBRARY_PATH $lib_path
+
     if {[info exists opts(xfail-exec)]} then {
 	setup_xfail *-*-*
     }
@@ -658,7 +676,7 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
 	set opts(xfail-output) x
     }
     if {[libjava_invoke $errname "source compiled test" opts $executable \
-	   $inpfile $resultfile]} {
+	   $inpfile $resultfile ""]} {
 	# Everything ok, so clean up.
 	eval gcj_cleanup $removeList
     }
@@ -796,7 +814,7 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     # program; in this case we want to skip the test.
     if {$INTERPRETER == "yes" && $gij != "gij"} {
 	libjava_invoke $errname "gij test" opts $gij \
-	  $inpfile $resultfile $main_name
+	  $inpfile $resultfile "" $main_name
     }
 
     # Initial arguments.
@@ -859,7 +877,7 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	set opts(xfail-output) x
     }
     if {[libjava_invoke $errname "bytecode->native test" opts $executable \
-	   $inpfile $resultfile]} {
+	   $inpfile $resultfile ""]} {
 	# Everything ok, so clean up.
 	eval gcj_cleanup $removeList
     }

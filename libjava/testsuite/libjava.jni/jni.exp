@@ -126,6 +126,9 @@ proc gcj_jni_test_one {file} {
 	}
       }
       lappend cxxflaglist $arg
+      # In case the libstdc++ is not installed yet, we pass the build
+      # directory of it to the cxxflaglist.
+      lappend cxxflaglist "-L$cxxldlibflags"
     }
 
     lappend cxxflaglist "-lstdc++"
@@ -149,17 +152,19 @@ proc gcj_jni_test_one {file} {
     # FIXME
     return 0
   }
-  
+
   # We purposely ignore errors here; we still want to run the other
   # appropriate tests.
   set errname [file rootname [file tail $file]]
   set gij [libjava_find_gij]
   # libjava_find_gij will return `gij' if it couldn't find the
   # program; in this case we want to skip the test.
-  if {$INTERPRETER == "yes" && $gij != "gij"} {
-      libjava_invoke $errname "gij test" opts $gij \
-	"" $resultfile $main
-  }  
+  # If the libraries are not installed yet, we have to pass them via
+  # cxxldlibflags to libjava_invoke.
+    if {$INTERPRETER == "yes" && $gij != "gij"} {
+	libjava_invoke $errname "gij test" opts $gij \
+	    "" $resultfile $cxxldlibflags $main
+  }
 
   # When we succeed we remove all our clutter.
   eval gcj_cleanup [glob -nocomplain -- ${main}.*] [list $main lib${main}.${so_extension}]
