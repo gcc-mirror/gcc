@@ -719,7 +719,7 @@ libgcc1.a: libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
 # We don't use -e here because there are if statements
 # that should not make the command give up when the if condition is false.
 # Instead, we test for failure after each command where it matters.
-	-for file in .. $(LIB1FUNCS_EXTRA); \
+	for file in .. $(LIB1FUNCS_EXTRA); \
 	do \
 	  if [ x$${file} != x.. ]; then \
 	    name=`echo $${file} | sed -e 's/[.]c$$//' -e 's/[.]asm$$//'`; \
@@ -773,7 +773,7 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
 # We don't use -e here because there are if statements
 # that should not make the command give up when the if condition is false.
 # Instead, we test for failure after each command where it matters.
-	-for file in .. $(LIB2FUNCS_EXTRA); \
+	for file in .. $(LIB2FUNCS_EXTRA); \
 	do \
 	  if [ x$${file} != x.. ]; then \
 	    name=`echo $${file} | sed -e 's/[.]c$$//' -e 's/[.]asm$$//'`; \
