@@ -453,11 +453,6 @@ extern int flag_pic;
 
 extern int flag_exceptions;
 
-/* Nonzero means use the new model for exception handling. Replaces 
-   -DNEW_EH_MODEL as a compile option. */
-
-extern int flag_new_exceptions;
-
 /* Nonzero means generate frame unwind info table when supported */
 
 extern int flag_unwind_tables;

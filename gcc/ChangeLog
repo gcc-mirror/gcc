@@ -23,6 +23,11 @@
 	* combine.c (distribute_notes) [REG_EH_REGION]: If non-call
 	exceptions, put the note on the trapping instruction.
 
+	* flags.h (flag_new_exceptions): Remove.
+	* toplev.c: Don't set it.
+	* final.c: Don't check it.
+	* except.c: Provide stub definition.
+
 2001-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in: Don't check for bcopy.

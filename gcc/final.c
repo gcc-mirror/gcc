@@ -2129,8 +2129,6 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  if (! USING_SJLJ_EXCEPTIONS)
 	    {
 	      ASM_OUTPUT_INTERNAL_LABEL (file, "LEHB", NOTE_EH_HANDLER (insn));
-	      if (! flag_new_exceptions)
-		add_eh_table_entry (NOTE_EH_HANDLER (insn));
 #ifdef ASM_OUTPUT_EH_REGION_BEG
 	      ASM_OUTPUT_EH_REGION_BEG (file, NOTE_EH_HANDLER (insn));
 #endif
@@ -2141,8 +2139,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  if (! USING_SJLJ_EXCEPTIONS)
 	    {
 	      ASM_OUTPUT_INTERNAL_LABEL (file, "LEHE", NOTE_EH_HANDLER (insn));
-	      if (flag_new_exceptions)
-		add_eh_table_entry (NOTE_EH_HANDLER (insn));
+	      add_eh_table_entry (NOTE_EH_HANDLER (insn));
 #ifdef ASM_OUTPUT_EH_REGION_END
 	      ASM_OUTPUT_EH_REGION_END (file, NOTE_EH_HANDLER (insn));
 #endif

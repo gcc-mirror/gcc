@@ -723,11 +723,6 @@ int flag_pic;
 
 int flag_exceptions;
 
-/* Nonzero means use the new model for exception handling. Replaces
-   -DNEW_EH_MODEL as a compile option.  */
-
-int flag_new_exceptions = 1;
-
 /* Nonzero means generate frame unwind info table when supported.  */
 
 int flag_unwind_tables = 0;
@@ -1077,8 +1072,6 @@ lang_independent_options f_options[] =
   {"PIC", &flag_pic, 2, ""},
   {"exceptions", &flag_exceptions, 1,
    "Enable exception handling" },
-  {"new-exceptions", &flag_new_exceptions, 1,
-   "Use the new model for exception handling" },
   {"unwind-tables", &flag_unwind_tables, 1,
     "Just generate unwind tables for exception handling" },
   {"non-call-exceptions", &flag_non_call_exceptions, 1,
@@ -4873,14 +4866,6 @@ toplev_main (argc, argv)
 #ifdef OVERRIDE_OPTIONS
   /* Some machines may reject certain combinations of options.  */
   OVERRIDE_OPTIONS;
-#endif
-
-  /* Since each function gets its own handler data, we can't support the
-     new model currently, since it depend on a specific rethrow label
-     which is declared at the front of the table, and we can only
-     have one such symbol in a file.  */
-#ifdef IA64_UNWIND_INFO
-  flag_new_exceptions = 0;
 #endif
 
   /* Set up the align_*_log variables, defaulting them to 1 if they

@@ -152,7 +152,6 @@ int flag_force_classes_archive_check;
 
 /* From gcc/flags.h, and indicates if exceptions are turned on or not.  */
 
-extern int flag_new_exceptions;
 extern int flag_exceptions;
 
 /* Table of language-dependent -f options.
@@ -704,7 +703,6 @@ void lang_init_source (level)
 static void
 java_init_options ()
 {
-  flag_new_exceptions = 1;
   flag_bounds_check = 1;
 }
 
