@@ -1,3 +1,10 @@
+2002-03-26  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR java/5942:
+	* parse.y (init_src_parse): Added sanity check.
+	* parse.h (struct parser_ctxt) [modifier_ctx]: Array has 12
+	elements, not 11.
+
 2002-03-22  Mark Wielaard  <mark@klomp.org>
 
 	Fix for PR java/5368:

@@ -762,7 +762,7 @@ struct parser_ctxt {
 
   /* This section is defined only if we compile jc1 */
 #ifndef JC1_LITE
-  tree modifier_ctx [11];	    /* WFL of modifiers */
+  tree modifier_ctx [12];	    /* WFL of modifiers */
   tree class_type;		    /* Current class */
   tree function_decl;	            /* Current function decl, save/restore */
 

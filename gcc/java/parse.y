@@ -16013,6 +16013,11 @@ init_src_parse ()
 {
   /* Register roots with the garbage collector.  */
   ggc_add_tree_root (src_parse_roots, sizeof (src_parse_roots) / sizeof(tree));
+
+  /* Sanity check; we've been bit by this before.  */
+  if (sizeof (ctxp->modifier_ctx) / sizeof (tree) != 
+      MODIFIER_TK - PUBLIC_TK)
+    abort ();
 }
 
 
