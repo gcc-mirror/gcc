@@ -1,3 +1,8 @@
+2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77install.texi: Remove obsolete parts only used for INSTALL,
+	and DOC-G77 conditionals.  Update last-update-install date.
+
 Sat Dec  9 10:20:11 2000  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* .cvsignore: New file; add info files.
