@@ -1,3 +1,12 @@
+Thu Aug 19 10:26:18 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (method_header): Return a null pointer if the current
+ 	class node is null.
+	(finish_method_declaration): Return if the current function decl
+ 	is null.
+	(source_start_java_method): Likewise.
+	(java_method_add_stmt): Likewise.
+
 Wed Aug 18 13:17:15 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (emit_register_class): Removed unnecessary call to
