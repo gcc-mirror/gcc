@@ -5710,7 +5710,7 @@ joust (cand1, cand2, warn)
 	      && TREE_CODE (convn) == QUAL_CONV)
 	    /* Don't complain about `operator char *()' beating
 	       `operator const char *() const'.  */;
-	  else if (warn)
+	  else if (warn && warn_conversion)
 	    {
 	      tree source = source_type (TREE_VEC_ELT (w->convs, 0));
 	      if (! DECL_CONSTRUCTOR_P (w->fn))

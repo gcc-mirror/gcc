@@ -2,6 +2,7 @@
 // warn about it.  We choose op char* not because it is a member of B --
 // the standard says that all conversion ops are treated as coming from
 // the type of the argument -- but because it is non-const.
+// Special Options: -Wconversion
 
 struct A  {
   operator const char *() const { return ""; }

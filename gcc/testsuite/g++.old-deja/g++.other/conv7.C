@@ -5,6 +5,7 @@
 
 // Bug 2726. We ICE'd trying to say something about possibly confusing
 // conversion overload resolution.
+// Special Options: -Wconversion
 
 class foo
 {

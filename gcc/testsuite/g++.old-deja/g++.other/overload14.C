@@ -1,3 +1,5 @@
+// Special Options: -Wconversion
+
 extern "C" void abort();
 
 struct A {

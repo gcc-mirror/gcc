@@ -1,6 +1,7 @@
 // 981203 bkoz
 // g++/16077
-// Build don't link: 
+// Build don't link:
+// Special Options: -Wconversion
 
 class nicaragua;
 struct colombia {
