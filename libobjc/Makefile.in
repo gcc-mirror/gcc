@@ -147,10 +147,10 @@ encoding_gc.o:	encoding.c
 		$(CC) -c -o $@ $(ALL_CFLAGS) $(OBJC_GCFLAGS) $(INCLUDES) $<
 
 gc.o:		gc.c
-		$(CC) -fgnu-runtime -c -o $@ $(ALL_CFLAGS) $(INCLUDES) $<
+		$(CC) -c -o $@ $(ALL_CFLAGS) $(INCLUDES) $<
 
 gc_gc.o:	gc.c
-		$(CC) -fgnu-runtime -c -o $@ $(ALL_CFLAGS) $(OBJC_GCFLAGS) \
+		$(CC) -c -o $@ $(ALL_CFLAGS) $(OBJC_GCFLAGS) \
 			$(INCLUDES) $<
 
 hash_gc.o:	hash.c
