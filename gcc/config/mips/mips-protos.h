@@ -141,7 +141,7 @@ extern bool		mips_legitimize_address PARAMS ((rtx *,
 							 enum machine_mode));
 extern bool		mips_legitimize_move PARAMS ((enum machine_mode,
 						      rtx, rtx));
-extern rtx		mips_simplify_dwarf_addr PARAMS ((rtx));
+extern rtx		mips_delegitimize_address PARAMS ((rtx));
 extern void		mips_expand_call PARAMS ((rtx, rtx, rtx, rtx, int));
 extern int              mips_reg_mode_ok_for_base_p PARAMS ((rtx,
 							     enum machine_mode,

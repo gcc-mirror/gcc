@@ -1348,7 +1348,7 @@ extern int mips_abi;
    SFmode register saves.  */
 #define DWARF_CIE_DATA_ALIGNMENT 4
 
-#define ASM_SIMPLIFY_DWARF_ADDR mips_simplify_dwarf_addr
+#define FIND_BASE_TERM(X) mips_delegitimize_address (X)
 
 /* Overrides for the COFF debug format.  */
 #define PUT_SDB_SCL(a)					\
