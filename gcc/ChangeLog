@@ -1,5 +1,8 @@
 Tue Apr 18 14:16:47 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* stmt.c (mark_case_node): New function.
+	(mark_case_nesting): Call it.
+
 	* expmed.c (emit_store_flag): If comparing two-word integer
 	with zero, can optimize NE, EQ, GE, and LT.
 
