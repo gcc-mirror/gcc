@@ -1,3 +1,7 @@
+2003-06-21  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* mkconfig.sh: Add multiple inclusion guards to generated headers.
+
 2003-06-20  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-decl.c (store_parm_decls): Make saved_warn_shadow boolean.
