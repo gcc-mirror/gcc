@@ -5832,7 +5832,8 @@ alpha_va_arg (valist, type)
    descriptior to generate.  */
 
 /* Nonzero if we need a stack procedure.  */
-static int alpha_is_stack_procedure;
+enum alpha_procedure_types {PT_NULL = 0, PT_REGISTER = 1, PT_STACK = 2};
+static enum alpha_procedure_types alpha_procedure_type;
 
 /* Register number (either FP or SP) that is used to unwind the frame.  */
 static int vms_unwind_regno;
@@ -5868,7 +5869,7 @@ alpha_sa_mask (imaskP, fmaskP)
       return;
     }
 
-  if (TARGET_ABI_OPEN_VMS && alpha_is_stack_procedure)
+  if (TARGET_ABI_OPEN_VMS && alpha_procedure_type == PT_STACK)
     imask |= (1L << HARD_FRAME_POINTER_REGNUM);
 
   /* One for every register we have to save.  */
@@ -5933,17 +5934,16 @@ alpha_sa_size ()
 	 use alloca and have not determined that we need a frame for other
 	 reasons.  */
 
-      alpha_is_stack_procedure = (sa_size
-				  || get_frame_size() != 0
-				  || current_function_outgoing_args_size
-				  || current_function_varargs
-				  || current_function_stdarg
-				  || current_function_calls_alloca
-				  || frame_pointer_needed);
+      alpha_procedure_type
+	= (sa_size || get_frame_size() != 0
+	   || current_function_outgoing_args_size || current_function_varargs
+	   || current_function_stdarg || current_function_calls_alloca
+	   || frame_pointer_needed)
+	  ? PT_STACK : PT_REGISTER;
 
       /* Always reserve space for saving callee-saved registers if we
 	 need a frame as required by the calling convention.  */
-      if (alpha_is_stack_procedure)
+      if (alpha_procedure_type == PT_STACK)
         sa_size = 14;
     }
   else if (TARGET_ABI_OPEN_VMS)
@@ -5951,22 +5951,29 @@ alpha_sa_size ()
       /* Start by assuming we can use a register procedure if we don't
 	 make any calls (REG_RA not used) or need to save any
 	 registers and a stack procedure if we do.  */
-      alpha_is_stack_procedure = ((mask[0] >> REG_RA) & 1);
+      if ((mask[0] >> REG_RA) & 1)
+	alpha_procedure_type = PT_STACK;
+      else if (get_frame_size() != 0)
+	alpha_procedure_type = PT_REGISTER;
+      else
+	alpha_procedure_type = PT_NULL;
 
       /* Don't reserve space for saving RA yet.  Do that later after we've
 	 made the final decision on stack procedure vs register procedure.  */
-      if (alpha_is_stack_procedure)
+      if (alpha_procedure_type == PT_STACK)
 	sa_size--;
 
       /* Decide whether to refer to objects off our PV via FP or PV.
 	 If we need FP for something else or if we receive a nonlocal
 	 goto (which expects PV to contain the value), we must use PV.
 	 Otherwise, start by assuming we can use FP.  */
-      vms_base_regno = (frame_pointer_needed
-			|| current_function_has_nonlocal_label
-			|| alpha_is_stack_procedure
-			|| current_function_outgoing_args_size
-			? REG_PV : HARD_FRAME_POINTER_REGNUM);
+
+      vms_base_regno
+	= (frame_pointer_needed
+	   || current_function_has_nonlocal_label
+	   || alpha_procedure_type == PT_STACK
+	   || current_function_outgoing_args_size)
+	  ? REG_PV : HARD_FRAME_POINTER_REGNUM;
 
       /* If we want to copy PV into FP, we need to find some register
 	 in which to save FP.  */
@@ -5977,15 +5984,17 @@ alpha_sa_size ()
 	  if (! fixed_regs[i] && call_used_regs[i] && ! regs_ever_live[i])
 	    vms_save_fp_regno = i;
 
-      if (vms_save_fp_regno == -1)
-	vms_base_regno = REG_PV, alpha_is_stack_procedure = 1;
+      if (vms_save_fp_regno == -1 && alpha_procedure_type == PT_REGISTER)
+	vms_base_regno = REG_PV, alpha_procedure_type = PT_STACK;
+      else if (alpha_procedure_type == PT_NULL)
+	vms_base_regno = REG_PV;
 
       /* Stack unwinding should be done via FP unless we use it for PV.  */
       vms_unwind_regno = (vms_base_regno == REG_PV
 			  ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
 
       /* If this is a stack procedure, allow space for saving FP and RA.  */
-      if (alpha_is_stack_procedure)
+      if (alpha_procedure_type == PT_STACK)
 	sa_size += 2;
     }
   else
@@ -6002,7 +6011,7 @@ int
 alpha_pv_save_size ()
 {
   alpha_sa_size ();
-  return alpha_is_stack_procedure ? 8 : 0;
+  return alpha_procedure_type == PT_STACK ? 8 : 0;
 }
 
 int
@@ -6151,13 +6160,13 @@ alpha_expand_prologue ()
   frame_size = get_frame_size ();
   if (TARGET_ABI_OPEN_VMS)
     frame_size = ALPHA_ROUND (sa_size 
-			      + (alpha_is_stack_procedure ? 8 : 0)
+			      + (alpha_procedure_type == PT_STACK ? 8 : 0)
 			      + frame_size
 			      + current_function_pretend_args_size);
   else if (TARGET_ABI_UNICOSMK)
     /* We have to allocate space for the DSIB if we generate a frame.  */
     frame_size = ALPHA_ROUND (sa_size
-			      + (alpha_is_stack_procedure ? 48 : 0))
+			      + (alpha_procedure_type == PT_STACK ? 48 : 0))
 		 + ALPHA_ROUND (frame_size
 				+ current_function_outgoing_args_size);
   else
@@ -6312,7 +6321,7 @@ alpha_expand_prologue ()
 	}
     
       /* Save regs in stack order.  Beginning with VMS PV.  */
-      if (TARGET_ABI_OPEN_VMS && alpha_is_stack_procedure)
+      if (TARGET_ABI_OPEN_VMS && alpha_procedure_type == PT_STACK)
 	{
 	  mem = gen_rtx_MEM (DImode, stack_pointer_rtx);
 	  set_mem_alias_set (mem, alpha_sr_alias_set);
@@ -6348,7 +6357,7 @@ alpha_expand_prologue ()
 	    reg_offset += 8;
 	  }
     }
-  else if (TARGET_ABI_UNICOSMK && alpha_is_stack_procedure)
+  else if (TARGET_ABI_UNICOSMK && alpha_procedure_type == PT_STACK)
     {
       /* The standard frame on the T3E includes space for saving registers.
 	 We just have to use it. We don't have to save the return address and
@@ -6377,17 +6386,18 @@ alpha_expand_prologue ()
 
   if (TARGET_ABI_OPEN_VMS)
     {
-      if (!alpha_is_stack_procedure)
-	/* Register frame procedures save the fp.  */
-	/* ??? Ought to have a dwarf2 save for this.  */
+      if (alpha_procedure_type == PT_REGISTER)
+	/* Register frame procedures save the fp.
+	   ?? Ought to have a dwarf2 save for this.  */
 	emit_move_insn (gen_rtx_REG (DImode, vms_save_fp_regno),
 			hard_frame_pointer_rtx);
 
-      if (vms_base_regno != REG_PV)
+      if (alpha_procedure_type != PT_NULL && vms_base_regno != REG_PV)
 	emit_insn (gen_force_movdi (gen_rtx_REG (DImode, vms_base_regno),
 				    gen_rtx_REG (DImode, REG_PV)));
 
-      if (vms_unwind_regno == HARD_FRAME_POINTER_REGNUM)
+      if (alpha_procedure_type != PT_NULL
+	  && vms_unwind_regno == HARD_FRAME_POINTER_REGNUM)
 	FRP (emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx));
 
       /* If we have to allocate space for outgoing args, do it now.  */
@@ -6460,12 +6470,12 @@ alpha_start_function (file, fnname, decl)
   frame_size = get_frame_size ();
   if (TARGET_ABI_OPEN_VMS)
     frame_size = ALPHA_ROUND (sa_size 
-			      + (alpha_is_stack_procedure ? 8 : 0)
+			      + (alpha_procedure_type == PT_STACK ? 8 : 0)
 			      + frame_size
 			      + current_function_pretend_args_size);
   else if (TARGET_ABI_UNICOSMK)
     frame_size = ALPHA_ROUND (sa_size
-			      + (alpha_is_stack_procedure ? 48 : 0))
+			      + (alpha_procedure_type == PT_STACK ? 48 : 0))
 		 + ALPHA_ROUND (frame_size
 			      + current_function_outgoing_args_size);
   else
@@ -6585,7 +6595,7 @@ alpha_start_function (file, fnname, decl)
 	fprintf (file, "\t.mask 0x%lx,0\n", imask & ~(1L << REG_RA));
       if (fmask)
 	fprintf (file, "\t.fmask 0x%lx,0\n", fmask);
-      if (!alpha_is_stack_procedure)
+      if (alpha_procedure_type == PT_REGISTER)
 	fprintf (file, "\t.fp_save $%d\n", vms_save_fp_regno);
     }
   else if (!flag_inhibit_size_directive)
@@ -6629,7 +6639,9 @@ alpha_start_function (file, fnname, decl)
   ASM_OUTPUT_LABEL (file, fnname);
   fprintf (file, "\t.pdesc ");
   assemble_name (file, fnname);
-  fprintf (file, "..en,%s\n", alpha_is_stack_procedure ? "stack" : "reg");
+  fprintf (file, "..en,%s\n",
+	   alpha_procedure_type == PT_STACK ? "stack"
+	   : alpha_procedure_type == PT_REGISTER ? "reg" : "null");
   alpha_need_linkage (fnname, 1);
   text_section ();
 #endif
@@ -6683,12 +6695,12 @@ alpha_expand_epilogue ()
   frame_size = get_frame_size ();
   if (TARGET_ABI_OPEN_VMS)
     frame_size = ALPHA_ROUND (sa_size 
-			      + (alpha_is_stack_procedure ? 8 : 0)
+			      + (alpha_procedure_type == PT_STACK ? 8 : 0)
 			      + frame_size
 			      + current_function_pretend_args_size);
   else if (TARGET_ABI_UNICOSMK)
     frame_size = ALPHA_ROUND (sa_size
-			      + (alpha_is_stack_procedure ? 48 : 0))
+			      + (alpha_procedure_type == PT_STACK ? 48 : 0))
 		 + ALPHA_ROUND (frame_size
 			      + current_function_outgoing_args_size);
   else
@@ -6698,14 +6710,20 @@ alpha_expand_epilogue ()
 				 + current_function_pretend_args_size));
 
   if (TARGET_ABI_OPEN_VMS)
-    reg_offset = 8;
+    {
+       if (alpha_procedure_type == PT_STACK)
+          reg_offset = 8;
+       else
+          reg_offset = 0;
+    }
   else
     reg_offset = ALPHA_ROUND (current_function_outgoing_args_size);
 
   alpha_sa_mask (&imask, &fmask);
 
-  fp_is_frame_pointer = ((TARGET_ABI_OPEN_VMS && alpha_is_stack_procedure)
-			 || (!TARGET_ABI_OPEN_VMS && frame_pointer_needed));
+  fp_is_frame_pointer
+    = ((TARGET_ABI_OPEN_VMS && alpha_procedure_type == PT_STACK)
+       || (!TARGET_ABI_OPEN_VMS && frame_pointer_needed));
   fp_offset = 0;
   sa_reg = stack_pointer_rtx;
 
@@ -6772,7 +6790,7 @@ alpha_expand_epilogue ()
 	    reg_offset += 8;
 	  }
     }
-  else if (TARGET_ABI_UNICOSMK && alpha_is_stack_procedure)
+  else if (TARGET_ABI_UNICOSMK && alpha_procedure_type == PT_STACK)
     {
       /* Restore callee-saved general-purpose registers.  */
 
@@ -6892,13 +6910,13 @@ alpha_expand_epilogue ()
     }
   else 
     {
-      if (TARGET_ABI_OPEN_VMS && !alpha_is_stack_procedure)
+      if (TARGET_ABI_OPEN_VMS && alpha_procedure_type == PT_REGISTER)
         {
           emit_insn (gen_blockage ());
           FRP (emit_move_insn (hard_frame_pointer_rtx,
 			       gen_rtx_REG (DImode, vms_save_fp_regno)));
         }
-      else if (TARGET_ABI_UNICOSMK && !alpha_is_stack_procedure)
+      else if (TARGET_ABI_UNICOSMK && alpha_procedure_type != PT_STACK)
 	{
 	  /* Decrement the frame pointer if the function does not have a
 	     frame.  */
@@ -8701,7 +8719,7 @@ static void
 unicosmk_gen_dsib (imaskP)
       unsigned long * imaskP;
 {
-  if (alpha_is_stack_procedure)
+  if (alpha_procedure_type == PT_STACK)
     {
       const char *ssib_name;
       rtx mem;

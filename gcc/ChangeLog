@@ -1,3 +1,12 @@
+2002-02-16  Douglas B Rupp  <rupp@gnat.com>
+
+	* config/alpha/alpha.c: Implement null frame procedure types on VMS.
+	(alpha_procedure_type): Replaces alpha_is_stack_procedure.
+	(alpha_sa_mask, alpha_sa_size): Reflect above change.
+	(alpha_pv_save_size, alpha_expand_prologue): Likewise.
+	(alpha_start_function, alpha_expand_epilogue): Likewise.
+	(unicosmk_gen_dsib): Likewise.
+
 Sat Feb 16 13:39:09 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (store_constructor): Handle target REG case for ARRAY_TYPE.
