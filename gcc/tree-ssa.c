@@ -100,6 +100,27 @@ ssa_redirect_edge (edge e, basic_block dest)
   return e;
 }
 
+/* Add PHI arguments queued in PENDINT_STMT list on edge E to edge
+   E->dest.  */
+
+void
+flush_pending_stmts (edge e)
+{
+  tree phi, arg;
+
+  if (!PENDING_STMT (e))
+    return;
+
+  for (phi = phi_nodes (e->dest), arg = PENDING_STMT (e);
+       phi;
+       phi = TREE_CHAIN (phi), arg = TREE_CHAIN (arg))
+    {
+      tree def = TREE_VALUE (arg);
+      add_phi_arg (&phi, def, e);
+    }
+
+  PENDING_STMT (e) = NULL;
+}
 
 /* Return true if SSA_NAME is malformed and mark it visited.
 

@@ -2109,31 +2109,6 @@ perfect_nest_p (struct loop *loop)
   return true;
 }
 
-
-/* Add phi args using PENDINT_STMT list.  */
-
-static void
-nestify_update_pending_stmts (edge e)
-{
-  basic_block dest;
-  tree phi, arg, def;
-
-  if (!PENDING_STMT (e))
-    return;
-
-  dest = e->dest;
-
-  for (phi = phi_nodes (dest), arg = PENDING_STMT (e);
-       phi;
-       phi = TREE_CHAIN (phi), arg = TREE_CHAIN (arg))
-    {
-      def = TREE_VALUE (arg);
-      add_phi_arg (&phi, def, e);
-    }
-
-  PENDING_STMT (e) = NULL;
-}
-
 /* Replace the USES of tree X in STMT with tree Y */
 
 static void
@@ -2317,7 +2292,7 @@ perfect_nestify (struct loops *loops,
       add_phi_arg (&phi, def, EDGE_PRED (preheaderbb, 0));
     } 
       
-  nestify_update_pending_stmts (e);
+  flush_pending_stmts (e);
   bodybb = create_empty_bb (EXIT_BLOCK_PTR->prev_bb);
   latchbb = create_empty_bb (EXIT_BLOCK_PTR->prev_bb);
   make_edge (headerbb, bodybb, EDGE_FALLTHRU); 

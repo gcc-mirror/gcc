@@ -1,3 +1,18 @@
+2004-10-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* lambda-code.c (nestify_update_pending_stmts): Remove.
+	(perfect_nestify): Use flush_pending_stmts instead of
+	nestify_update_pending_stmts.
+	* tree-cfg.c (tree_make_forwarder_block): Use
+	flush_pending_stmts.
+	* tree-flow.h: Add a prototype for flush_pending_stmts.
+	* tree-ssa-loop-manip.c (tree_duplicate_loop_to_header_edge):
+	Use flush_pending_stmts.
+	(lv_update_pending_stmts): Remove.
+	(tree_ssa_loop_version): Use flush_pending_stmts instead of
+	lv_update_pending_stmts.
+	* tree-ssa.c (flush_pending_stmts): New.
+
 2004-10-28  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/15286
