@@ -553,18 +553,6 @@ assign_stack_local (mode, size, align)
   else
     alignment = align / BITS_PER_UNIT;
 
-#if 0 /* Let's see if this is really needed--rms.  */
-#ifdef STRICT_ALIGNMENT
-  /* Supposedly sub-word sized units may later be accessed
-     with word intructions.  It's not certain this is really true.  */
-  if (mode != BLKmode && align == 0 && alignment < UNITS_PER_WORD)
-    alignment = UNITS_PER_WORD;
-
-  /* This is in case we just made the alignment bigger than the size.  */
-  size = CEIL_ROUND (size, alignment);
-#endif
-#endif
-
   /* Round frame offset to that alignment.
      We must be careful here, since FRAME_OFFSET might be negative and
      division with a negative dividend isn't as well defined as we might
@@ -641,18 +629,6 @@ assign_outer_stack_local (mode, size, align, function)
     }
   else
     alignment = align / BITS_PER_UNIT;
-
-#if 0 /* Let's see if this is really needed--rms.  */
-#ifdef STRICT_ALIGNMENT
-  /* Sub-word sized units may later be accessed with word intructions.
-     This results from (SUBREG (MEM ...) ...).  */
-  if (mode != BLKmode && align == 0 && alignment < UNITS_PER_WORD)
-    alignment = UNITS_PER_WORD;
-
-  /* This is in case we just made the alignment bigger than the size.  */
-  size = CEIL_ROUND (size, alignment);
-#endif
-#endif
 
   /* Round frame offset to that alignment.  */
 #ifdef FRAME_GROWS_DOWNWARD
@@ -1928,11 +1904,14 @@ instantiate_decls (fndecl, valid_only)
       if (DECL_RTL (decl) && GET_CODE (DECL_RTL (decl)) == MEM)
 	instantiate_virtual_regs_1 (&XEXP (DECL_RTL (decl), 0),
 				    valid_only ? DECL_RTL (decl) : 0, 0);
+#if 0 /* This is probably correct, but it seems to require fixes
+	 elsewhere in order to work.  Let's fix them in 2.1.  */
       if (DECL_INCOMING_RTL (decl)
 	  && GET_CODE (DECL_INCOMING_RTL (decl)) == MEM)
 	instantiate_virtual_regs_1 (&XEXP (DECL_INCOMING_RTL (decl), 0),
 				    valid_only ? DECL_INCOMING_RTL (decl) : 0,
 				    0);
+#endif
     }
 
   /* Now process all variables defined in the function or its subblocks. */
@@ -2831,7 +2810,21 @@ assign_parms (fndecl, second_time)
 
 	  /* Copy the value into the register.  */
 	  if (GET_MODE (parmreg) != GET_MODE (entry_parm))
-	    convert_move (parmreg, validize_mem (entry_parm), 0);
+	    {
+	      /* If ENTRY_PARM is a hard register, it might be in a register
+		 not valid for operating in its mode (e.g., an odd-numbered
+		 register for a DFmode).  In that case, moves are the only
+		 thing valid, so we can't do a convert from there.  This
+		 occurs when the calling sequence allow such misaligned
+		 usages.  */
+	      if (GET_CODE (entry_parm) == REG
+		  && REGNO (entry_parm) < FIRST_PSEUDO_REGISTER
+		  && ! HARD_REGNO_MODE_OK (REGNO (entry_parm),
+					   GET_MODE (entry_parm)))
+		convert_move (parmreg, copy_to_reg (entry_parm));
+	      else
+		convert_move (parmreg, validize_mem (entry_parm), 0);
+	    }
 	  else
 	    emit_move_insn (parmreg, validize_mem (entry_parm));
 
@@ -2872,8 +2865,15 @@ assign_parms (fndecl, second_time)
 	     during function execution.  */
 
 	  if (passed_mode != nominal_mode)
-	    /* Conversion is required.  */
-	    entry_parm = convert_to_mode (nominal_mode, entry_parm, 0);
+	    {
+	      /* Conversion is required.   */
+	      if (GET_CODE (entry_parm) == REG
+		  && REGNO (entry_parm) < FIRST_PSEUDO_REGISTER
+		  && ! HARD_REGNO_MODE_OK (REGNO (entry_parm), passed_mode))
+		entry_parm = copy_to_reg (entry_parm);
+
+	      entry_parm = convert_to_mode (nominal_mode, entry_parm, 0);
+	    }
 
 	  if (entry_parm != stack_parm)
 	    {
@@ -3335,6 +3335,7 @@ fix_lexical_addr (addr, var)
       base = copy_to_reg (gen_rtx (MEM, Pmode, addr));
 #else
       displacement += (FIRST_PARM_OFFSET (context) - STARTING_FRAME_OFFSET);
+      base = lookup_static_chain (var);
 #endif
     }
 
@@ -3844,8 +3845,12 @@ expand_function_end (filename, line)
       /* First make sure this compilation has a template for
 	 initializing trampolines.  */
       if (initial_trampoline == 0)
-	initial_trampoline
-	  = gen_rtx (MEM, BLKmode, assemble_trampoline_template ());
+	{
+	  end_temporary_allocation ();
+	  initial_trampoline
+	    = gen_rtx (MEM, BLKmode, assemble_trampoline_template ());
+	  resume_temporary_allocation ();
+	}
 
       /* Generate insns to initialize the trampoline.  */
       start_sequence ();

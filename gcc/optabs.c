@@ -1495,12 +1495,12 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
 #endif
 	{
 #ifdef TARGET_MEM_FUNCTIONS
-	  emit_library_call (memcmp_libfunc, 0,
+	  emit_library_call (memcmp_libfunc, 1,
 			     TYPE_MODE (integer_type_node), 3,
 			     XEXP (x, 0), Pmode, XEXP (y, 0), Pmode,
 			     size, Pmode);
 #else
-	  emit_library_call (bcmp_libfunc, 0,
+	  emit_library_call (bcmp_libfunc, 1,
 			     TYPE_MODE (integer_type_node), 3,
 			     XEXP (x, 0), Pmode, XEXP (y, 0), Pmode,
 			     size, Pmode);
@@ -1585,7 +1585,7 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
       if (unsignedp && ucmp_optab->handlers[(int) mode].libfunc)
 	libfunc = ucmp_optab->handlers[(int) mode].libfunc;
 
-      emit_library_call (libfunc, 0,
+      emit_library_call (libfunc, 1,
 			 SImode, 2, x, mode, y, mode);
 
       /* Integer comparison returns a result that must be compared against 1,
@@ -1706,7 +1706,7 @@ emit_float_lib_cmp (x, y, comparison)
       abort ();
     }
 
-  emit_library_call (libfunc, 0,
+  emit_library_call (libfunc, 1,
 		     SImode, 2, x, mode, y, mode);
 
   emit_cmp_insn (hard_libcall_value (SImode), const0_rtx, comparison,
@@ -2556,7 +2556,7 @@ expand_float (to, from, unsignedp)
 
       start_sequence ();
 
-      emit_library_call (libfcn, 0, GET_MODE (to), 1, from, GET_MODE (from));
+      emit_library_call (libfcn, 1, GET_MODE (to), 1, from, GET_MODE (from));
       insns = get_insns ();
       end_sequence ();
 
@@ -2752,7 +2752,7 @@ expand_fix (to, from, unsignedp)
 
       start_sequence ();
 
-      emit_library_call (libfcn, 0, GET_MODE (to), 1, from, GET_MODE (from));
+      emit_library_call (libfcn, 1, GET_MODE (to), 1, from, GET_MODE (from));
       insns = get_insns ();
       end_sequence ();
 
