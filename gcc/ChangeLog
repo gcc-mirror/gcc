@@ -1,3 +1,18 @@
+2004-03-24  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config.gcc (mips64vr-*-elf*, mips64vrel-*-elf*): Remove tm_defines.
+	* config/mips/vr.h (DEFAULT_VR_ARCH): New macro, defined to vr4130.
+	(MULTILIB_DEFAULTS): Use it.
+	(MIPS_CPU_STRING_DEFAULT): Remove.
+	(MIPS_ABI_DEFAULT, MIPS_MARCH_CONTROLS_SOFT_FLOAT): Define.
+	(DRIVER_SELF_SPECS): Make -mfix-vr4122-bugs imply -march=vr4120.  Make
+	EABI64 -mlong32 the default ABI.  Enforce the default architecture.
+	* config/mips/t-vr (MULTILIB_OPTIONS): Add mfix-vr4122-bugs,
+	march=vr4130, march=vr4300 and march=vr5000.
+	(MULTILIB_MATCHES): Use -mfix-vr4122-bugs multilibs for -march=vr4120.
+	(MULTILIB_EXCEPTIONS): Change choice of multilibs.  Update comments
+	accordingly.
+
 2004-03-24  DJ Delorie  <dj@redhat.com>
 	    Richard Sandiford  <rsandifo@redhat.com>
 
