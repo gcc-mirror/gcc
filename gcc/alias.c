@@ -728,6 +728,7 @@ find_base_value (src)
      rtx src;
 {
   unsigned int regno;
+
   switch (GET_CODE (src))
     {
     case SYMBOL_REF:
@@ -846,8 +847,6 @@ find_base_value (src)
       if (GET_MODE_SIZE (GET_MODE (src)) < GET_MODE_SIZE (Pmode))
 	break;
       /* Fall through.  */
-    case ZERO_EXTEND:
-    case SIGN_EXTEND:	/* used for NT/Alpha pointers */
     case HIGH:
     case PRE_INC:
     case PRE_DEC:
@@ -856,6 +855,19 @@ find_base_value (src)
     case PRE_MODIFY:
     case POST_MODIFY:
       return find_base_value (XEXP (src, 0));
+
+    case ZERO_EXTEND:
+    case SIGN_EXTEND:	/* used for NT/Alpha pointers */
+      {
+	rtx temp = find_base_value (XEXP (src, 0));
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+	if (temp != 0 && CONSTANT_P (temp) && GET_MODE (temp) != Pmode)
+	  temp = convert_memory_address (Pmode, temp);
+#endif
+
+	return temp;
+      }
 
     default:
       break;
