@@ -6,6 +6,7 @@ Thu Sep  9 14:36:31 1999  Mark Mitchell  <mark@codesourcery.com>
 	
 	* c-decl.c (finish_struct): Use ggc_alloc to allocate
 	TYPE_LANG_SPECIFIC when garbage collecting.
+	(lang_mark_tree): Mark TYPE_LANG_SPECIFIC.
 	(lang_cleanup_tree): Remove.
 
 Thu Sep  9 14:23:02 1999  Jason Merrill  <jason@yorick.cygnus.com>
