@@ -1,3 +1,16 @@
+2003-07-04  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/2064.md: Change GNU CC to GCC.
+	* config/s390/2084.md: Likewise.
+	* config/s390/fixdfdi.h: Likewise.
+	* config/s390/linux.h: Likewise.
+	* config/s390/s390-modes.def: Likewise.
+	* config/s390/s390-protos.h: Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/s390/s390.h: Likewise.
+	* config/s390/s390.md: Likewise.
+	* config/s390/s390x.h: Likewise.
+
 2003-07-04  Jeff Law  <law@redhat.com>
 
 	* expr.c (do_store_flag): Pass in the correct result type
