@@ -3527,9 +3527,16 @@ resolve_inner_class (htab_t circularity_hash, tree cl, tree *enclosing,
 	    return decl;
 	}
 
-      /* Now go to the upper classes, bail out if necessary. We will
+      /* Now go to the upper classes, bail out if necessary.  We will
 	 analyze the returned SUPER and act accordingly (see
-	 do_resolve_class.) */
+	 do_resolve_class).  */
+      if (JPRIMITIVE_TYPE_P (TREE_TYPE (local_enclosing))
+	  || TREE_TYPE (local_enclosing) == void_type_node)
+	{
+	  parse_error_context (cl, "Qualifier must be a reference");
+	  local_enclosing = NULL_TREE;
+	  break;
+	}
       local_super = CLASSTYPE_SUPER (TREE_TYPE (local_enclosing));
       if (!local_super || local_super == object_type_node)
         break;

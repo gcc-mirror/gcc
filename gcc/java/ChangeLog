@@ -1,3 +1,8 @@
+2003-03-13  Tom Tromey  <tromey@redhat.com>
+
+	* parse.y (resolve_inner_class): Error if qualifier is a primitive
+	type.
+
 2003-03-04  Andrew Haley  <aph@redhat.com>
 
         * gjavah.c (is_first_data_member): New global variable.
