@@ -1,3 +1,11 @@
+Thu Nov 23 02:09:09 2000  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.h (FIRST_GENERAL_REG, LAST_GENERAL_REG): New.
+	Moved most register-number #defines...
+	* config/sh/sh.md (define_constants): ... here.  Use macros to
+	refer to registers and unspecs.
+	* config/sh/sh.c: Likewise.
+
 Thu Nov 23 01:01:32 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* Makefile.in (HOST_CFLAGS): Add -DGENERATOR_FILE.

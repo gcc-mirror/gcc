@@ -432,20 +432,18 @@ do {									\
    All registers that the compiler knows about must be given numbers,
    even those that are not normally considered general registers.  */
 
-#define AP_REG   16
-#define PR_REG   17
-#define T_REG    18
-#define GBR_REG  19
-#define MACH_REG 20
-#define MACL_REG 21
-#define SPECIAL_REG(REGNO) ((REGNO) >= 18 && (REGNO) <= 21)
-#define FPUL_REG 22
-#define RAP_REG 23
-#define FIRST_FP_REG 24
-#define LAST_FP_REG 39
-#define FIRST_XD_REG 40
-#define LAST_XD_REG 47
-#define FPSCR_REG 48
+/* There are many other relevant definitions in sh.md's md_constants.  */
+
+#define FIRST_GENERAL_REG R0_REG
+#define LAST_GENERAL_REG (FIRST_GENERAL_REG + 15)
+#define FIRST_FP_REG DR0_REG
+#define LAST_FP_REG  (FIRST_FP_REG + 15)
+#define FIRST_XD_REG XD0_REG
+#define LAST_XD_REG  (FIRST_XD_REG + 7)
+
+#define SPECIAL_REG(REGNO) \
+  ((REGNO) == GBR_REG || (REGNO) == T_REG \
+   || (REGNO) == MACH_REG || (REGNO) == MACL_REG)
 
 #define FIRST_PSEUDO_REGISTER 49
 
@@ -554,18 +552,18 @@ do {									\
 /* #define PC_REGNUM		15*/
 
 /* Register to use for pushing function arguments.  */
-#define STACK_POINTER_REGNUM	15
+#define STACK_POINTER_REGNUM	SP_REG
 
 /* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM	14
+#define FRAME_POINTER_REGNUM	FP_REG
 
 /* Fake register that holds the address on the stack of the
    current function's return address.  */
-#define RETURN_ADDRESS_POINTER_REGNUM 23
+#define RETURN_ADDRESS_POINTER_REGNUM RAP_REG
 
 /* Register to hold the addressing base for position independent
    code access to data items.  */
-#define PIC_OFFSET_TABLE_REGNUM	12
+#define PIC_OFFSET_TABLE_REGNUM	PIC_REG
 
 #define GOT_SYMBOL_NAME "*_GLOBAL_OFFSET_TABLE_"
 
@@ -831,7 +829,7 @@ extern enum reg_class reg_class_from_letter[];
 		  || system_reg_operand (X, VOIDmode)))))		\
    ? GENERAL_REGS							\
    : (((CLASS) == MAC_REGS || (CLASS) == PR_REGS)			\
-      && GET_CODE (X) == REG && REGNO (X) > 15				\
+      && GET_CODE (X) == REG && REGNO (X) > SP_REG			\
       && (CLASS) != REGNO_REG_CLASS (REGNO (X)))			\
    ? GENERAL_REGS : NO_REGS)
 
@@ -886,8 +884,8 @@ extern enum reg_class reg_class_from_letter[];
    ? 8 \
    : 4)
 
-#define FIRST_PARM_REG 4
-#define FIRST_RET_REG  0
+#define FIRST_PARM_REG (FIRST_GENERAL_REG + 4)
+#define FIRST_RET_REG  FIRST_GENERAL_REG
 
 #define FIRST_FP_PARM_REG (FIRST_FP_REG + 4)
 #define FIRST_FP_RET_REG FIRST_FP_REG
@@ -1269,7 +1267,7 @@ extern int current_function_anonymous_args;
 #define REGNO_OK_FOR_BASE_P(REGNO) \
   ((REGNO) < PR_REG || (unsigned) reg_renumber[(REGNO)] < PR_REG)
 #define REGNO_OK_FOR_INDEX_P(REGNO) \
-  ((REGNO) == 0 || (unsigned) reg_renumber[(REGNO)] == 0)
+  ((REGNO) == R0_REG || (unsigned) reg_renumber[(REGNO)] == R0_REG)
 
 /* Maximum number of registers that can appear in a valid memory
    address.  */
@@ -1299,17 +1297,17 @@ extern int current_function_anonymous_args;
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X) \
-  (REGNO (X) <= 16 || REGNO (X) >= FIRST_PSEUDO_REGISTER)
+  (REGNO (X) <= AP_REG || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_INDEX_P(X) \
-  (REGNO (X) == 0 || REGNO (X) >= FIRST_PSEUDO_REGISTER)
+  (REGNO (X) == R0_REG || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 
 /* Nonzero if X/OFFSET is a hard reg that can be used as an index
    or if X is a pseudo reg.  */
 #define SUBREG_OK_FOR_INDEX_P(X, OFFSET) \
-  ((REGNO (X) == 0 && OFFSET == 0) || REGNO (X) >= FIRST_PSEUDO_REGISTER)
+  ((REGNO (X) == R0_REG && OFFSET == 0) || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 
 #else
 

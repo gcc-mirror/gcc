@@ -598,7 +598,7 @@ from_compare (operands, code)
     }
   else
     insn = gen_rtx_SET (VOIDmode,
-			gen_rtx_REG (SImode, 18),
+			gen_rtx_REG (SImode, T_REG),
 			gen_rtx (code, SImode, sh_compare_op0,
 				 sh_compare_op1));
   if (TARGET_SH4 && GET_MODE_CLASS (mode) == MODE_FLOAT)
@@ -1596,7 +1596,7 @@ gen_shl_and (dest, left_rtx, mask_rtx, source)
                                     (match_operand:SI 2 "const_int_operand" "n")
                          (match_operand:SI 3 "const_int_operand" "n")
                          (const_int 0)))
-   (clobber (reg:SI 18))]
+   (clobber (reg:SI T_REG))]
   LEFT_RTX is operand 2 in the above pattern, and SIZE_RTX is operand 3.
   return 0 for simple left / right shift combination.
   return 1 for left shift / 8 bit sign extend / left shift.
@@ -2097,7 +2097,7 @@ mova_p (insn)
   return (GET_CODE (insn) == INSN
 	  && GET_CODE (PATTERN (insn)) == SET
 	  && GET_CODE (SET_SRC (PATTERN (insn))) == UNSPEC
-	  && XINT (SET_SRC (PATTERN (insn)), 1) == 1);
+	  && XINT (SET_SRC (PATTERN (insn)), 1) == UNSPEC_MOVA);
 }
 
 /* Find the last barrier from insn FROM which is close enough to hold the
@@ -2786,7 +2786,7 @@ barrier_align (barrier_or_label)
   if (GET_CODE (pat) == ADDR_DIFF_VEC)
     return 2;
 
-  if (GET_CODE (pat) == UNSPEC_VOLATILE && XINT (pat, 1) == 1)
+  if (GET_CODE (pat) == UNSPEC_VOLATILE && XINT (pat, 1) == UNSPECV_ALIGN)
     /* This is a barrier in front of a constant table.  */
     return 0;
 
@@ -3282,7 +3282,7 @@ machine_dependent_reorg (first)
 		  /* This is a mova needing a label.  Create it.  */
 		  else if (GET_CODE (src) == CONST
 			   && GET_CODE (XEXP (src, 0)) == UNSPEC
-			   && XINT (XEXP (src, 0), 1) == 1
+			   && XINT (XEXP (src, 0), 1) == UNSPEC_MOVA
 			   && GET_CODE (XVECEXP (XEXP (src, 0),
 						 0, 0)) == CONST)
 		    {
@@ -3290,7 +3290,8 @@ machine_dependent_reorg (first)
 						   0, 0), mode, 0);
 		      newsrc = gen_rtx_LABEL_REF (VOIDmode, lab);
 		      newsrc = gen_rtx_UNSPEC (VOIDmode,
-					       gen_rtvec (1, newsrc), 1);
+					       gen_rtvec (1, newsrc),
+					       UNSPEC_MOVA);
 		    }
 		  else
 		    {
@@ -5000,7 +5001,7 @@ get_fpscr_rtx ()
 
   if (! fpscr_rtx)
     {
-      fpscr_rtx = gen_rtx (REG, PSImode, 48);
+      fpscr_rtx = gen_rtx (REG, PSImode, FPSCR_REG);
       REG_USERVAR_P (fpscr_rtx) = 1;
       ggc_add_rtx_root (&fpscr_rtx, 1);
       mark_user_reg (fpscr_rtx);
@@ -5276,7 +5277,10 @@ nonpic_symbol_mentioned_p (x)
     return 1;
 
   if (GET_CODE (x) == UNSPEC
-      && (XINT (x, 1) >= 6 && XINT (x, 1) <= 9))
+      && (XINT (x, 1) == UNSPEC_PIC
+	  || XINT (x, 1) == UNSPEC_GOT
+	  || XINT (x, 1) == UNSPEC_GOTOFF
+	  || XINT (x, 1) == UNSPEC_PLT))
       return 0;
 
   fmt = GET_RTX_FORMAT (GET_CODE (x));
