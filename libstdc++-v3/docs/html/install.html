@@ -67,32 +67,57 @@
 
    <p>As of June 19, 2000, libstdc++ attempts to use tricky and
       space-saving features of the GNU toolchain, enabled with
-      <code>-ffunction-sections -fdata-sections -Wl,--gc-sections</code>.
-      To obtain maximum benefit from this, binutils after this date
-      should also be used (bugs were fixed with C++ exception handling
-      related to this change in libstdc++-v3).  The version of these
-      tools should be <code>2.10.90</code>, and you can get snapshots (as
-      well as releases) of binutils
-      <a href="ftp://sources.redhat.com/pub/binutils">here</a>.
+      <code>-ffunction-sections -fdata-sections
+      -Wl,--gc-sections</code>.  To obtain maximum benefit from this,
+      binutils after this date should also be used (bugs were fixed
+      with C++ exception handling related to this change in
+      libstdc++-v3).  The version of these tools should be
+      <code>2.10.90</code>, or later, and you can get snapshots (as
+      well as releases) of binutils 
+      <a href="ftp://sources.redhat.com/pub/binutils">here</a>. The
+      configure process will automatically detect and use these
+      features if the underlying support is present.
    </p>
 
    <p>If you are using a 3.1-series libstdc++ snapshot, then the
-      requirements are slightly more stringent:  the compiler sources must
-      also be 3.1 or later (for both technical and licensing reasons), and
-      your binutils must be 2.11.95 or later if you want to use symbol
-      versioning in shared libraries.
+      requirements are slightly more stringent: the compiler sources
+      must also be 3.1 or later (for both technical and licensing
+      reasons), and your binutils must be 2.11.95 or later if you want
+      to use symbol versioning in shared libraries. Again, the
+      configure process will automatically detect and use these
+      features if the underlying support is present.
    </p>
  
- <!-- Commented until some system-specific requirements appear.
-   <p>Finally, a few system-specific requirements:
+    <p>Finally, a few system-specific requirements:
       <dl>
-        <dt>Cygwin
-        <dd>If you are using Cygwin to compile libstdc++-v3 on Win32, you'll
-            [snip]
+        <dt> linux
 
+        <dd>If you are using gcc 3.1 or later on linux, and are using
+        the gnu locale model (enabled by default for sufficient
+        versions of glibc), the following locales are used and tested
+        in the libstdc++ testsuites: en_HK, en_US, fr_FR, fr_FR@euro,
+        de_DE, de_DE@euro, ja_JP.eucjp, and it_IT. Failure to have the
+        underlying "C" library locale information installed will mean
+        that C++ named locales for the above regions will not work:
+        because of this, the libstdc++ testsuite will not pass the
+        named locale tests. If this isn't an issue, don't worry about
+        it. If named locales are needed, the underlying locale
+        information must be installed. Note that rebuilding libstdc++
+        after locales are installed is not necessary. 
+	
+	<p> To install
+        support for locales, do only one of the following: </p>
+        <p>
+ 	  <li> install all locales
+	  <p> <code> export LC_ALL=C </code> </p>
+	  <p> <code> rpm -e glibc-common --nodeps </code> </p>
+	  <p> <code> rpm -i --define "_install_langs all" 
+	  glibc-common-2.2.5-34.i386.rpm </code> </p>
+ 	  <li> install just the necessary locales
+	  <p> <code> localedef -i de_DE -f ISO-8859-1 de_DE </code> </p>
+         </p>
       </dl>
    </p>
--->
 
 <hr>
 

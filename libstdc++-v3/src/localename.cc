@@ -255,13 +255,7 @@ namespace std
 	    facet** __old = _M_facets;
 	    facet** __new;
 	    const size_t __new_size = __index + 4;
-	    try
-	      { __new = new facet*[__new_size]; }
-	    catch(...) 
-	      {
-		delete [] __new;
-		__throw_exception_again;
-	      }
+	    __new = new facet*[__new_size]; 
 	    for (size_t __i = 0; __i < _M_facets_size; ++__i)
 	      __new[__i] = _M_facets[__i];
 	    for (size_t __i2 = _M_facets_size; __i2 < __new_size; ++__i2)
