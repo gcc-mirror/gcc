@@ -224,7 +224,7 @@ int main(/*@unused@*/ int argc, /*@unused@*/ char *argv[])
   signed int si1;
   signed int si2;
 
-#if defined(ALPHA) || defined(IA64) || (defined(MIPS) && (_MIPS_SIM == _ABIN32))
+#if defined(ALPHA) || defined(IA64) || defined(SPARC64) || (defined(MIPS) && (_MIPS_SIM == _ABIN32))
   long long rint;
 #else
   int rint;
@@ -295,7 +295,7 @@ int main(/*@unused@*/ int argc, /*@unused@*/ char *argv[])
 
   /* return value tests */
   {
-#if defined(MIPS) || defined(SPARC) /* || defined(ARM) */
+#if defined(MIPS) /* || defined(ARM) */
     puts ("long long tests not run. This is a known bug on this architecture.");
 #else
     args[0] = &ffi_type_sint64;

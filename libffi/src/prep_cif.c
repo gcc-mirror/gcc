@@ -107,7 +107,11 @@ ffi_status ffi_prep_cif(/*@out@*/ /*@partial@*/ ffi_cif *cif,
 
 #ifndef M68K
   /* Make space for the return structure pointer */
-  if (cif->rtype->type == FFI_TYPE_STRUCT)
+  if (cif->rtype->type == FFI_TYPE_STRUCT
+#ifdef SPARC
+      && (cif->abi != FFI_V9 || cif->rtype->size > 32)
+#endif
+      )
     bytes = STACK_ARG_SIZE(sizeof(void*));
 #endif
 
@@ -121,8 +125,10 @@ ffi_status ffi_prep_cif(/*@out@*/ /*@partial@*/ ffi_cif *cif,
 	return FFI_BAD_TYPEDEF;
 
 #ifdef SPARC
-      if ((*ptr)->type == FFI_TYPE_STRUCT
-	  || (*ptr)->type == FFI_TYPE_LONGDOUBLE)
+      if (((*ptr)->type == FFI_TYPE_STRUCT
+	   && ((*ptr)->size > 16 || cif->abi != FFI_V9))
+	  || ((*ptr)->type == FFI_TYPE_LONGDOUBLE
+	      && cif->abi != FFI_V9))
 	bytes += sizeof(void*);
       else
 #endif
@@ -140,4 +146,3 @@ ffi_status ffi_prep_cif(/*@out@*/ /*@partial@*/ ffi_cif *cif,
   /* Perform machine dependent cif processing */
   return ffi_prep_cif_machdep(cif);
 }
-

@@ -84,7 +84,7 @@ AUTOMAKE_OPTIONS = cygnus
 
 EXTRA_DIST = LICENSE ChangeLog.v1 src/mips/ffi.c src/mips/n32.S \
 		src/mips/n32.s src/mips/o32.S src/mips/o32.s \
-		src/sparc/ffi.c src/sparc/v8.S \
+		src/sparc/ffi.c src/sparc/v8.S src/sparc/v9.S \
 		src/x86/ffi.c src/x86/sysv.S \
 		src/alpha/ffi.c src/alpha/osf.S \
 		src/m68k/ffi.c src/m68k/sysv.S \
@@ -115,7 +115,7 @@ ffitest_LDADD = libffi.la
 TARGET_SRC_MIPS_GCC = src/mips/ffi.c src/mips/o32.S src/mips/n32.S
 TARGET_SRC_MIPS_SGI = src/mips/ffi.c src/mips/o32.s src/mips/n32.s
 TARGET_SRC_X86 = src/x86/ffi.c src/x86/sysv.S
-TARGET_SRC_SPARC = src/sparc/ffi.c src/sparc/v8.S
+TARGET_SRC_SPARC = src/sparc/ffi.c src/sparc/v8.S src/sparc/v9.S 
 TARGET_SRC_ALPHA = src/alpha/ffi.c src/alpha/osf.S
 TARGET_SRC_IA64 = src/ia64/ffi.c src/ia64/unix.S
 TARGET_SRC_M68K = src/m68k/ffi.c src/m68k/sysv.S
@@ -164,7 +164,7 @@ libffi_la_LIBADD =
 @POWERPC_TRUE@am_libffi_la_OBJECTS =  debug.lo prep_cif.lo types.lo \
 @POWERPC_TRUE@raw_api.lo java_raw_api.lo ffi.lo sysv.lo
 @SPARC_TRUE@am_libffi_la_OBJECTS =  debug.lo prep_cif.lo types.lo \
-@SPARC_TRUE@raw_api.lo java_raw_api.lo ffi.lo v8.lo
+@SPARC_TRUE@raw_api.lo java_raw_api.lo ffi.lo v8.lo v9.lo
 @X86_TRUE@am_libffi_la_OBJECTS =  debug.lo prep_cif.lo types.lo \
 @X86_TRUE@raw_api.lo java_raw_api.lo ffi.lo sysv.lo
 libffi_la_OBJECTS =  $(am_libffi_la_OBJECTS)
@@ -179,7 +179,7 @@ COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CF
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CFLAGS = @CFLAGS@
 CCLD = $(CC)
-LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES =  $(libffi_la_SOURCES) $(ffitest_SOURCES)
 DIST_COMMON =  README ./stamp-h.in ChangeLog Makefile.am Makefile.in \
 acconfig.h aclocal.m4 config.guess config.sub configure configure.in \
@@ -299,6 +299,7 @@ sysv.lo: src/arm/sysv.S
 o32.lo: src/mips/o32.S
 n32.lo: src/mips/n32.S
 v8.lo: src/sparc/v8.S
+v9.lo: src/sparc/v9.S
 
 libffi.la: $(libffi_la_OBJECTS) $(libffi_la_DEPENDENCIES)
 	$(LINK) -rpath $(toolexeclibdir) $(libffi_la_LDFLAGS) $(libffi_la_OBJECTS) $(libffi_la_LIBADD) $(LIBS)

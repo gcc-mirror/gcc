@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------*-C-*-
    libffi @VERSION@ - Copyright (c) 1996-1999  Cygnus Solutions
 
-   $Id: ffi.h.in,v 1.3 1999/09/01 23:16:34 tromey Exp $
+   $Id: ffi.h.in,v 1.4 2000/02/25 19:13:44 tromey Exp $
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -160,6 +160,12 @@ extern "C" {
 #define SIZEOF_ARG SIZEOF_VOID_P
 #endif
 
+#ifdef SPARC
+#if defined(__arch64__) || defined(__sparcv9)
+#define SPARC64
+#endif
+#endif
+
 #ifndef LIBFFI_ASM
 
 /* ---- Generic type definitions ----------------------------------------- */
@@ -176,9 +182,13 @@ typedef enum ffi_abi {
   /* ---- Sparc -------------------- */
 #ifdef SPARC
   FFI_V8,
-  FFI_DEFAULT_ABI = FFI_V8,
   FFI_V8PLUS,
   FFI_V9,
+#ifdef SPARC64
+  FFI_DEFAULT_ABI = FFI_V9,
+#else
+  FFI_DEFAULT_ABI = FFI_V8,
+#endif
 #endif
 
   /* ---- Intel x86 ---------------- */

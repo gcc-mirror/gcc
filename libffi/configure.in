@@ -50,6 +50,8 @@ i*86-*-solaris*) TARGET=X86; TARGETDIR=x86;;
 i*86-*-beos*) TARGET=X86; TARGETDIR=x86;;
 sparc-sun-4*) TARGET=SPARC; TARGETDIR=sparc;;
 sparc-sun-*) TARGET=SPARC; TARGETDIR=sparc;;
+sparc-*-linux*) TARGET=SPARC; TARGETDIR=sparc;;
+sparc64-*-linux*) TARGET=SPARC; TARGETDIR=sparc;;
 alpha*-*-linux* | alpha*-*-osf*) TARGET=ALPHA; TARGETDIR=alpha;;
 ia64*-*-*) TARGET=IA64; TARGETDIR=ia64;;
 m68k-*-linux*) TARGET=M68K; TARGETDIR=m68k;;
