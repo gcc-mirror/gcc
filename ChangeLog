@@ -1,3 +1,11 @@
+2001-04-10  Loren J. Rittle  <ljrittle@acm.org>
+
+	* ltcf-cxx.sh: Support creation of C++ shared libraries on
+	recent versions of FreeBSD (release 3 or later).
+	* ltconfig: On FreeBSD, -lc must not be provided when building
+	a shared library or else the standard -pthread gcc option is
+	rendered worthless to later users of the built library.
+
 2001-04-08  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* MAINTAINERS: Add myself as "documentation co-maintainer".
