@@ -763,7 +763,7 @@ public class SimpleTimeZone extends TimeZone
     else
       {
 	int length = input.readInt();
-	byte[]byteArray = new byte[length];
+	byte[] byteArray = new byte[length];
 	input.read(byteArray, 0, length);
 	if (length >= 4)
 	  {

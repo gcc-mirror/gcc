@@ -43,7 +43,7 @@ import java.io.ObjectStreamField;
  * to or removing from the end of a list, checking the size, &c.
  *
  * @author        Jon A. Zeppieri
- * @version       $Id: ArrayList.java,v 1.2 2000/10/29 05:06:10 bryce Exp $
+ * @version       $Id: ArrayList.java,v 1.3 2000/11/02 10:08:03 bryce Exp $
  * @see           java.util.AbstractList
  * @see           java.util.List
  */
@@ -219,15 +219,7 @@ public class ArrayList extends AbstractList
    */
   public boolean addAll(Collection c)
   {
-    modCount++;
-    Iterator itr = c.iterator();
-    int csize = c.size();
-    ensureCapacity(size + csize);
-    for (int pos = 0; pos < csize; pos++)
-      {
-	data[size++] = itr.next();
-      }
-    return (csize > 0);
+    return addAll(size, c);
   }
 
   /** 
@@ -295,9 +287,7 @@ public class ArrayList extends AbstractList
    */
   public int indexOf(Object e)
   {
-    int i;
-
-    for (i = 0; i < size; i++)
+    for (int i = 0; i < size; i++)
       {
 	if (e == null ? data[i] == null : e.equals(data[i]))
 	  return i;
@@ -330,6 +320,10 @@ public class ArrayList extends AbstractList
   public void clear()
   {
     modCount++;
+    for (int i = 0; i < size; i++)
+      {
+	data[i] = null;
+      }    
     size = 0;
   }
 
@@ -364,8 +358,8 @@ public class ArrayList extends AbstractList
   }
 
   /**
-   * Returns an Array whse component type is the runtime component type of
-   * the passes-in Array.  The returned Array is populated with all of the
+   * Returns an Array whose component type is the runtime component type of
+   * the passed-in Array.  The returned Array is populated with all of the
    * elements in this ArrayList.  If the passed-in Array is not large enough
    * to store all of the elements in this List, a new Array will be created 
    * and returned; if the passed-in Array is <i>larger</i> than the size
