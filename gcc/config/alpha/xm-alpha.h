@@ -1,6 +1,6 @@
 /* Configuration for GNU C-compiler for DEC Alpha.
-   Copyright (C) 1990, 1992, 1993 Free Software Foundation, Inc.
-   Contributed by Richard Kenner (kenner@nyu.edu).
+   Copyright (C) 1990, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu).
 
 This file is part of GNU CC.
 
