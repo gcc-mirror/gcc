@@ -274,7 +274,7 @@ struct propagate_block_info
   /* Nonzero if the value of CC0 is live.  */
   int cc0_live;
 
-  /* Flags controling the set of information propagate_block collects.  */
+  /* Flags controlling the set of information propagate_block collects.  */
   int flags;
 };
 
@@ -1680,7 +1680,7 @@ propagate_one_insn (pbi, insn)
 	    }
 
 	  /* Similarly if INSN contains a LIBCALL note, remove the
-	     dnagling REG_RETVAL note.  */
+	     dangling REG_RETVAL note.  */
 	  note = find_reg_note (insn, REG_LIBCALL, NULL_RTX);
 	  if (note)
 	    {
@@ -4231,7 +4231,7 @@ dump_regset (r, outf)
     });
 }
 
-/* Print a human-reaable representation of R on the standard error
+/* Print a human-readable representation of R on the standard error
    stream.  This function is designed to be used from within the
    debugger.  */
 

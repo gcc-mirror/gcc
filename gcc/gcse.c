@@ -1260,7 +1260,7 @@ record_set_info (dest, setter, data)
 /* Scan the function and record each set of each pseudo-register.
 
    This is called once, at the start of the gcse pass.  See the comments for
-   `reg_set_table' for further documenation.  */
+   `reg_set_table' for further documentation.  */
 
 static void
 compute_sets (f)
@@ -1593,7 +1593,7 @@ hash_expr_1 (x, mode, do_not_record_p)
   const char *fmt;
 
   /* Used to turn recursion into iteration.  We can't rely on GCC's
-     tail-recursion eliminatio since we need to keep accumulating values
+     tail-recursion elimination since we need to keep accumulating values
      in HASH.  */
 
   if (x == 0)
@@ -3952,7 +3952,7 @@ try_replace_reg (from, to, insn)
 
   /* REG_EQUAL may get simplified into register.
      We don't allow that. Remove that note. This code ought
-     not to hapen, because previous code ought to syntetize
+     not to happen, because previous code ought to synthesize
      reg-reg move, but be on the safe side.  */
   if (note && REG_P (XEXP (note, 0)))
     remove_note (insn, note);
@@ -4032,7 +4032,7 @@ find_avail_set (regno, insn)
 
 /* Subroutine of cprop_insn that tries to propagate constants into
    JUMP_INSNS.  JUMP must be a conditional jump.  If SETCC is non-NULL
-   it is the instruction that immediately preceeds JUMP, and must be a
+   it is the instruction that immediately precedes JUMP, and must be a
    single SET of a register.  FROM is what we will try to replace,
    SRC is the constant we will try to substitute for it.  Returns nonzero
    if a change was made.  */
@@ -4292,7 +4292,7 @@ do_local_cprop (x, insn, alter_jumps, libcall_sp)
       if (newcnst && constprop_register (insn, x, newcnst, alter_jumps))
 	{
 	  /* If we find a case where we can't fix the retval REG_EQUAL notes
-	     match the new register, we either have to abandom this replacement
+	     match the new register, we either have to abandon this replacement
 	     or fix delete_trivially_dead_insns to preserve the setting insn,
 	     or make it delete the REG_EUAQL note, and fix up all passes that
 	     require the REG_EQUAL note there.  */
@@ -4697,7 +4697,7 @@ bypass_conditional_jumps ()
     }
 
   /* If we bypassed any register setting insns, we inserted a
-     copy on the redirected edge.  These need to be commited.  */
+     copy on the redirected edge.  These need to be committed.  */
   if (changed)
     commit_edge_insertions();
 
@@ -5039,7 +5039,7 @@ insert_insn_end_bb (expr, bb, pre)
       /* Keeping in mind SMALL_REGISTER_CLASSES and parameters in registers,
 	 we search backward and place the instructions before the first
 	 parameter is loaded.  Do this for everyone for consistency and a
-	 presumtion that we'll get better code elsewhere as well.
+	 presumption that we'll get better code elsewhere as well.
 
 	 It should always be the case that we can put these instructions
 	 anywhere in the basic block with performing PRE optimizations.
@@ -5684,7 +5684,7 @@ delete_null_pointer_checks_1 (block_reg, nonnull_avin,
     }
 
   /* Now compute global properties based on the local properties.   This
-     is a classic global availablity algorithm.  */
+     is a classic global availability algorithm.  */
   compute_available (nonnull_local, nonnull_killed,
 		     nonnull_avout, nonnull_avin);
 
@@ -5765,7 +5765,7 @@ delete_null_pointer_checks_1 (block_reg, nonnull_avin,
    reference of that form, then we know the register can not have the value
    zero at the conditional branch.
 
-   So we merely need to compute the local properies and propagate that data
+   So we merely need to compute the local properties and propagate that data
    around the cfg, then optimize where possible.
 
    We run this pass two times.  Once before CSE, then again after CSE.  This
@@ -6947,7 +6947,7 @@ store_killed_after (x, insn, bb)
      Note that if registers are changed ANYWHERE in the block, we'll
      decide we can't move it, regardless of whether it changed above
      or below the store. This could be improved by checking the register
-     operands while lookinng for aliasing in each insn.  */
+     operands while looking for aliasing in each insn.  */
   if (!store_ops_ok (XEXP (x, 0), bb))
     return 1;
 
@@ -6974,7 +6974,7 @@ store_killed_before (x, insn, bb)
      Note that if registers are changed ANYWHERE in the block, we'll
      decide we can't move it, regardless of whether it changed above
      or below the store. This could be improved by checking the register
-     operands while lookinng for aliasing in each insn.  */
+     operands while looking for aliasing in each insn.  */
   if (!store_ops_ok (XEXP (x, 0), bb))
     return 1;
 
@@ -7020,7 +7020,7 @@ build_store_vectors ()
 
 	  if (!store_killed_after (ptr->pattern, insn, bb))
 	    {
-	      /* If we've already seen an availale expression in this block,
+	      /* If we've already seen an available expression in this block,
 		 we can delete the one we saw already (It occurs earlier in
 		 the block), and replace it with this one). We'll copy the
 		 old SRC expression to an unused register in case there
@@ -7084,7 +7084,7 @@ build_store_vectors ()
 	      Load in the middle here if we push the store down. It happens in
 		    gcc.c-torture/execute/960311-1.c with -O3
 	      If we always kill it in this case, we'll sometimes do
-	      uneccessary work, but it shouldn't actually hurt anything.
+	      unnecessary work, but it shouldn't actually hurt anything.
 	    if (!TEST_BIT (ae_gen[b], ptr->index)).  */
 	    SET_BIT (ae_kill[b->index], ptr->index);
 	  }
@@ -7107,7 +7107,7 @@ build_store_vectors ()
     }
 }
 
-/* Insert an instruction at the begining of a basic block, and update
+/* Insert an instruction at the beginning of a basic block, and update
    the BLOCK_HEAD if needed.  */
 
 static void

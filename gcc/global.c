@@ -695,7 +695,7 @@ global_conflicts ()
 		2. Y is live at some instruction on the path that
 		   evaluates X.
 
-		3. Either X or Y is not evaluted on the path to P
+		3. Either X or Y is not evaluated on the path to P
 		   (ie it is used uninitialized) and thus the
 		   conflict can be ignored.
 

@@ -39,8 +39,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    following:
 
    1. New operator `|' (alternative) is permitted in functional unit
-      reservation which can be treated deterministicly and
-      non-deterministicly.
+      reservation which can be treated deterministically and
+      non-deterministically.
 
    2. Possibility of usage of nondeterministic automata too.
 
@@ -1156,7 +1156,7 @@ struct arc
    of automaton insn or which is part of NDFA.  */
 struct alt_state
 {
-  /* The following field is a determinist state which characterizes
+  /* The following field is a deterministic state which characterizes
      unit reservations of the instruction.  */
   state_t state;
   /* The following field refers to the next state which characterizes
@@ -1212,7 +1212,7 @@ struct ainsn
   int important_p;
 };
 
-/* The folowing describes an automaton for PHR.  */
+/* The following describes an automaton for PHR.  */
 struct automaton
 {
   /* The following field value is the list of insn declarations for
@@ -1605,7 +1605,7 @@ next_sep_el (pstr, sep, par_flag)
 
 /* Given a string and a separator, return the number of separated
    elements in it, taking parentheses into account if PAR_FLAG has
-   nonzero value.  Return 0 for the null string, -1 if parantheses is
+   nonzero value.  Return 0 for the null string, -1 if parentheses is
    not balanced.  */
 static int
 n_sep_els (s, sep, par_flag)
@@ -4001,7 +4001,7 @@ reserv_sets_are_intersected (operand_1, operand_2)
 
 /* The function sets up RESULT bits by bits of OPERAND shifted on one
    cpu cycle.  The remaining bits of OPERAND (representing the last
-   cycle unit reservations) are not chenged.  */
+   cycle unit reservations) are not changed.  */
 static void
 reserv_sets_shift (result, operand)
      reserv_sets_t result;
@@ -5411,7 +5411,7 @@ transform_regexp (regexp)
   return regexp;
 }
 
-/* The function applys all transformations for reservations of all
+/* The function applies all transformations for reservations of all
    insn declarations.  */
 static void
 transform_insn_regexps ()
@@ -7205,7 +7205,7 @@ longest_path_length (state)
        advance' arcs -- see comment below.  */
     abort ();
   else if (state->longest_path_length != UNDEFINED_LONGEST_PATH_LENGTH)
-    /* We alreday visited the state.  */
+    /* We already visited the state.  */
     return state->longest_path_length;
 
   result = 0;
@@ -8359,7 +8359,7 @@ output_max_insn_queue_index_def ()
 }
 
 
-/* The function outputs switch cases for insn reseravtions using
+/* The function outputs switch cases for insn reservations using
    function *output_automata_list_code.  */
 static void
 output_insn_code_cases (output_automata_list_code)
