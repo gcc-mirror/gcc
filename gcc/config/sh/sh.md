@@ -1188,8 +1188,10 @@
     {
       /* The address must be set outside the libcall,
 	 since it goes into a pseudo.  */
-      rtx addr = force_reg (SImode, gen_rtx_SYMBOL_REF (SImode, \"__mulsi3\"));
-      rtx insns = gen_mulsi3_call (operands[0], operands[1], operands[2], addr);
+      rtx sym = gen_rtx_SYMBOL_REF (SImode, \"__mulsi3\");
+      rtx addr = force_reg (SImode, sym);
+      rtx insns = gen_mulsi3_call (operands[0], operands[1],
+				   operands[2], addr);
       first = XVECEXP (insns, 0, 0);
       last = XVECEXP (insns, 0, XVECLEN (insns, 0) - 1);
       emit_insn (insns);
@@ -2357,6 +2359,7 @@
 	mov.l	%1,%0
 	fake	%1,%0"
   [(set_attr "type" "pcload,move,load,move,move,store,pcload")])
+
 (define_expand "movsi"
   [(set (match_operand:SI 0 "general_movdst_operand" "")
 	(match_operand:SI 1 "general_movsrc_operand" ""))]
@@ -2493,7 +2496,7 @@
   [(set (match_operand:DI 0 "general_movdst_operand" "")
 	(match_operand:DI 1 "general_movsrc_operand" ""))]
   ""
-  "{ if ( prepare_move_operands (operands, DImode)) DONE; }")
+  "{ if (prepare_move_operands (operands, DImode)) DONE; }")
 
 ;; ??? This should be a define expand.
 
