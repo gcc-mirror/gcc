@@ -1,3 +1,11 @@
+2004-02-11  Hartmut Penner  <hpenner@de.ibm.com>
+
+	* gcc/config/rs6000/rs6000.c (rs6000_override_options)
+	Set AltiVec ABI and vrsave as default for ppc64 linux.
+	(init_cumulative_args): Post error, if try to return
+	value in AltiVec register without enable AltiVec.
+	(function_arg_advance): Ditto for passing arguments. 
+
 2004-02-11  Richard Sandiford  <rsandifo@redhat.com>
 
 	* emit-rtl.c (mark_label_nuses): Check that a LABEL_REF refers to
