@@ -226,14 +226,14 @@ extern int c4x_T_constraint PARAMS ((rtx));
 
 extern int c4x_U_constraint PARAMS ((rtx));
 
-extern void c4x_emit_libcall PARAMS ((const char *, enum rtx_code,
+extern void c4x_emit_libcall PARAMS ((rtx, enum rtx_code,
 				      enum machine_mode,
 				      enum machine_mode, int, rtx *));
 
-extern void c4x_emit_libcall3 PARAMS ((const char *, enum rtx_code, 
+extern void c4x_emit_libcall3 PARAMS ((rtx, enum rtx_code, 
 				       enum machine_mode, rtx *));
 
-extern void c4x_emit_libcall_mulhi PARAMS ((char *, enum rtx_code,
+extern void c4x_emit_libcall_mulhi PARAMS ((rtx, enum rtx_code,
 					    enum machine_mode, rtx *));
 
 extern int c4x_emit_move_sequence PARAMS ((rtx *, enum machine_mode));
@@ -250,6 +250,17 @@ extern int valid_parallel_operands_4 PARAMS ((rtx *, enum machine_mode));
 extern int valid_parallel_operands_5 PARAMS ((rtx *, enum machine_mode));
 
 extern int valid_parallel_operands_6 PARAMS ((rtx *, enum machine_mode));
+
+extern rtx smulhi3_libfunc;
+extern rtx umulhi3_libfunc;
+extern rtx fix_truncqfhi2_libfunc;
+extern rtx fixuns_truncqfhi2_libfunc;
+extern rtx fix_trunchfhi2_libfunc;
+extern rtx fixuns_trunchfhi2_libfunc;
+extern rtx floathiqf2_libfunc;
+extern rtx floatunshiqf2_libfunc;
+extern rtx floathihf2_libfunc;
+extern rtx floatunshihf2_libfunc;
 
 #endif /* RTX_CODE */
 

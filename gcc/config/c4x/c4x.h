@@ -1462,7 +1462,6 @@ CUMULATIVE_ARGS;
 
 #define FFS_LIBCALL	    "__ffs"
 
-
 #define INIT_TARGET_OPTABS \
   do { \
     smul_optab->handlers[(int) QImode].libfunc		\
@@ -1493,6 +1492,26 @@ CUMULATIVE_ARGS;
       = init_one_libfunc (UMODHI3_LIBCALL);		\
     ffs_optab->handlers[(int) QImode].libfunc		\
       = init_one_libfunc (FFS_LIBCALL);			\
+    smulhi3_libfunc					\
+      = init_one_libfunc(SMULHI3_LIBCALL);		\
+    umulhi3_libfunc					\
+      = init_one_libfunc(UMULHI3_LIBCALL);		\
+    fix_truncqfhi2_libfunc				\
+      = init_one_libfunc(FIX_TRUNCQFHI2_LIBCALL);	\
+    fixuns_truncqfhi2_libfunc				\
+      = init_one_libfunc(FIXUNS_TRUNCQFHI2_LIBCALL);	\
+    fix_trunchfhi2_libfunc				\
+      = init_one_libfunc(FIX_TRUNCHFHI2_LIBCALL);	\
+    fixuns_trunchfhi2_libfunc				\
+      = init_one_libfunc(FIXUNS_TRUNCHFHI2_LIBCALL);	\
+    floathiqf2_libfunc					\
+      = init_one_libfunc(FLOATHIQF2_LIBCALL);		\
+    floatunshiqf2_libfunc				\
+      = init_one_libfunc(FLOATUNSHIQF2_LIBCALL);	\
+    floathihf2_libfunc					\
+      = init_one_libfunc(FLOATHIHF2_LIBCALL);		\
+    floatunshihf2_libfunc				\
+      = init_one_libfunc(FLOATUNSHIHF2_LIBCALL);	\
   } while (0)
 
 #define TARGET_MEM_FUNCTIONS
