@@ -40,7 +40,7 @@ proc scan-assembler { args } {
     # This assumes that we are two frames down from dg-test, and that
     # it still stores the filename of the testcase in a local variable "name".
     # A cleaner solution would require a new dejagnu release.
-    set testcase [uplevel 2 { expr { $name } }]
+    upvar 2 name testcase
 
     # This must match the rule in gcc-dg.exp.
     set output_file "[file rootname [file tail $testcase]].s"
@@ -75,7 +75,7 @@ proc scan-assembler-not { args } {
 	}
     }
 
-    set testcase [uplevel 2 { expr { $name } }]
+    upvar 2 name testcase
     set output_file "[file rootname [file tail $testcase]].s"
 
     set fd [open $output_file r]
@@ -120,7 +120,7 @@ proc scan-assembler-dem { args } {
 	verbose -log "c++filt is $cxxfilt"
     }
 
-    set testcase [uplevel 2 { expr { $name } }]
+    upvar 2 name testcase
     set output_file "[file rootname [file tail $testcase]].s"
 
     set fd [open "| $cxxfilt < $output_file" r]
@@ -172,7 +172,7 @@ proc scan-assembler-dem-not { args } {
 	verbose -log "c++filt is $cxxfilt"
     }
 
-    set testcase [uplevel 2 { expr { $name } }]
+    upvar 2 name testcase
     set output_file "[file rootname [file tail $testcase]].s"
 
     set fd [open "| $cxxfilt < $output_file" r]
