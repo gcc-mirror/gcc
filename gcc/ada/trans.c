@@ -3773,7 +3773,7 @@ tree_transform (gnat_node)
 	  gnu_orig_out_list = nreverse (gnu_orig_out_list);
 	  expand_asm_operands (gnu_template, gnu_output_list, gnu_input_list,
 			       gnu_clobber_list, Is_Asm_Volatile (gnat_node),
-			       input_filename, input_line);
+			       input_location);
 
 	  /* Copy all the intermediate outputs into the specified outputs.  */
 	  for (; gnu_output_list;

@@ -1435,7 +1435,7 @@ decl_conflicts_with_clobbers_p (tree decl, const HARD_REG_SET clobbered_regs)
 
 void
 expand_asm_operands (tree string, tree outputs, tree inputs,
-		     tree clobbers, int vol, const char *filename, int line)
+		     tree clobbers, int vol, location_t locus)
 {
   rtvec argvec, constraintvec;
   rtx body;
@@ -1656,7 +1656,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 				: GET_MODE (output_rtx[0])),
 			       TREE_STRING_POINTER (string),
 			       empty_string, 0, argvec, constraintvec,
-			       filename, line);
+			       locus.file, locus.line);
 
   MEM_VOLATILE_P (body) = vol;
 
@@ -1803,7 +1803,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 			   (GET_MODE (output_rtx[i]),
 			    TREE_STRING_POINTER (string),
 			    constraints[i], i, argvec, constraintvec,
-			    filename, line));
+			    locus.file, locus.line));
 
 	  MEM_VOLATILE_P (SET_SRC (XVECEXP (body, 0, i))) = vol;
 	}

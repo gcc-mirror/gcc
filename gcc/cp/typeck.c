@@ -5750,7 +5750,7 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
 
 void
 c_expand_asm_operands (tree string, tree outputs, tree inputs, tree clobbers,
-		       int vol, const char *filename, int line)
+		       int vol, location_t locus)
 {
   int noutputs = list_length (outputs);
   register int i;
@@ -5765,7 +5765,7 @@ c_expand_asm_operands (tree string, tree outputs, tree inputs, tree clobbers,
   /* Generate the ASM_OPERANDS insn;
      store into the TREE_VALUEs of OUTPUTS some trees for
      where the values were actually stored.  */
-  expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line);
+  expand_asm_operands (string, outputs, inputs, clobbers, vol, locus);
 
   /* Copy all the intermediate outputs into the specified outputs.  */
   for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
