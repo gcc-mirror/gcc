@@ -1,3 +1,12 @@
+2004-07-21  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/509
+	* pt.c (determine_specialization): New parameter template_count.
+	Disambiguate between member templates and member functions counting
+	the template headers.
+	(check_explicit_specialization): Update caller.
+	(tsubst_friend_function): Likewise.
+
 2004-07-20  Steven Bosscher  <stevenb@suse.de>
 
 	* cp-tree.def (TINST_LEVEL): Make it an 'x' node.

@@ -155,7 +155,7 @@ static int verify_class_unification (tree, tree, tree);
 static tree try_class_unification (tree, tree, tree, tree);
 static int coerce_template_template_parms (tree, tree, tsubst_flags_t,
 					   tree, tree);
-static tree determine_specialization (tree, tree, tree *, int);
+static tree determine_specialization (tree, tree, tree *, int, int);
 static int template_args_equal (tree, tree);
 static void tsubst_default_arguments (tree);
 static tree for_each_template_parm_r (tree *, int *, void *);
@@ -1205,6 +1205,10 @@ print_candidates (tree fns)
    If NEED_MEMBER_TEMPLATE is nonzero the function is known to be a
    specialization of a member template.
 
+   The TEMPLATE_COUNT is the number of references to qualifying
+   template classes that appeared in the name of the function. See
+   check_explicit_specialization for a more accurate description.
+
    The template args (those explicitly specified and those deduced)
    are output in a newly created vector *TARGS_OUT.
 
@@ -1215,13 +1219,16 @@ static tree
 determine_specialization (tree template_id, 
                           tree decl, 
                           tree* targs_out, 
-			  int need_member_template)
+			  int need_member_template,
+			  int template_count)
 {
   tree fns;
   tree targs;
   tree explicit_targs;
   tree candidates = NULL_TREE;
   tree templates = NULL_TREE;
+  int header_count;
+  struct cp_binding_level *b;
 
   *targs_out = NULL_TREE;
 
@@ -1243,6 +1250,14 @@ determine_specialization (tree template_id,
       error ("`%D' is not a function template", fns);
       return error_mark_node;
     }
+
+  /* Count the number of template headers specified for this
+     specialization.  */
+  header_count = 0;
+  for (b = current_binding_level;
+       b->kind == sk_template_parms || b->kind == sk_template_spec;
+       b = b->level_chain)
+    ++header_count;
 
   for (; fns; fns = OVL_NEXT (fns))
     {
@@ -1278,6 +1293,35 @@ determine_specialization (tree template_id,
 	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
 	      && !same_type_p (TREE_VALUE (fn_arg_types), 
 			       TREE_VALUE (decl_arg_types)))
+	    continue;
+
+	  /* In case of explicit specialization, we need to check if
+	     the number of template headers appearing in the specialization
+	     is correct. This is usually done in check_explicit_specialization,
+	     but the check done there cannot be exhaustive when specializing
+	     member functions. Consider the following code:
+
+	     template <> void A<int>::f(int);
+	     template <> template <> void A<int>::f(int);
+
+	     Assuming that A<int> is not itself an explicit specialization
+	     already, the first line specializes "f" which is a non-template
+	     member function, whilst the second line specializes "f" which
+	     is a template member function. So both lines are syntactically
+	     correct, and check_explicit_specialization does not reject
+	     them.
+	     
+	     Here, we can do better, as we are matching the specialization
+	     against the declarations. We count the number of template
+	     headers, and we check if they match TEMPLATE_COUNT + 1
+	     (TEMPLATE_COUNT is the number of qualifying template classes,
+	     plus there must be another header for the member template
+	     itself).
+	     
+	     Notice that if header_count is zero, this is not a
+	     specialization but rather a template instantiation, so there
+	     is no check we can perform here.  */
+	  if (header_count && header_count != template_count + 1)
 	    continue;
 
 	  /* See whether this function might be a specialization of this
@@ -1872,7 +1916,8 @@ check_explicit_specialization (tree declarator,
 	 declaration.  */
       tmpl = determine_specialization (declarator, decl,
 				       &targs, 
-				       member_specialization);
+				       member_specialization,
+				       template_count);
 	    
       if (!tmpl || tmpl == error_mark_node)
 	/* We couldn't figure out what this declaration was
@@ -4980,7 +5025,8 @@ tsubst_friend_function (tree decl, tree args)
       new_friend = tsubst (decl, args, tf_error | tf_warning, NULL_TREE);
       tmpl = determine_specialization (template_id, new_friend,
 				       &new_args, 
-				       /*need_member_template=*/0);
+				       /*need_member_template=*/0,
+				       TREE_VEC_LENGTH (args));
       new_friend = instantiate_template (tmpl, new_args, tf_error);
       goto done;
     }
