@@ -147,6 +147,9 @@ int flag_use_boehm_gc = 0;
    object to its synchronization structure.  */
 int flag_hash_synchronization;
 
+/* When nonzero, permit the use of the assert keyword.  */
+int flag_assert = 1;
+
 /* When nonzero, assume all native functions are implemented with
    JNI, not CNI.  */
 int flag_jni = 0;
@@ -205,7 +208,8 @@ lang_f_options[] =
   {"force-classes-archive-check", &flag_force_classes_archive_check, 1},
   {"optimize-static-class-initialization", &flag_optimize_sci, 1 },
   {"indirect-dispatch", &flag_indirect_dispatch, 1},
-  {"store-check", &flag_store_check, 1}
+  {"store-check", &flag_store_check, 1},
+  {"assert", &flag_assert, 1}
 };
 
 static const struct string_option

@@ -428,6 +428,10 @@ using JNI, then you must use @code{-fjni}.  This option causes
 @command{gcj} to generate stubs which will invoke the underlying JNI
 methods.
 
+@item -fno-assert
+Don't recognize the @code{assert} keyword.  This is for compatibility
+with older versions of the language specification.
+
 @item -fno-optimize-static-class-initialization
 When the optimization level is greater or equal to @code{-O2},
 @command{gcj} will try to optimize the way calls into the runtime are made
@@ -622,8 +626,9 @@ source file (@file{.java} file).
 
 @ignore
 @c man begin SYNOPSIS jv-scan
-jv-scan [@option{--complexity}] [@option{--encoding}=@var{name}]
-    [@option{--print-main}] [@option{--list-class}] [@option{--list-filename}]
+jv-scan [@option{--no-assert}] [@option{--complexity}] 
+    [@option{--encoding}=@var{name}] [@option{--print-main}] 
+    [@option{--list-class}] [@option{--list-filename}]
     [@option{--version}] [@option{--help}]
     [@option{-o} @var{file}] @var{inputfile}@dots{}
 @c man end
@@ -634,6 +639,11 @@ and the Info entries for @file{gcj} and @file{gcc}.
 @end ignore
 
 @c man begin OPTIONS jv-scan
+
+@table @gcctabopt
+@item --no-assert
+Don't recognize the @code{assert} keyword, for backwards compatibility
+with older versions of the language specification.
 
 @table @gcctabopt
 @item --complexity
