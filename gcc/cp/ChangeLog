@@ -1,3 +1,16 @@
+Wed Jul 13 03:57:54 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+        * cp-tree.h (TYPE_NEEDS_CONSTRUCTING): #if 0 out; this macro is now
+        defined in the language-independent tree.h.
+
+        * tree.c (count_functions): Avoid bogus warning when compiling this
+        function.
+
+Mon Jul 11 18:37:20 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+        * decl.c (grok_reference_init): Always save the initializer of a
+        reference.
+
 Fri Jul  8 17:41:46 1994  Mike Stump  (mrs@cygnus.com)
 
 	* decl.c (cplus_expand_expr_stmt): Wrap statement expressions inside
