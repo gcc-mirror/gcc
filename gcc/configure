@@ -6220,8 +6220,53 @@ EOF
 fi
 echo "$ac_t""$gcc_cv_as_hidden" 1>&6
 
+echo $ac_n "checking assembler leb128 support""... $ac_c" 1>&6
+echo "configure:6225: checking assembler leb128 support" >&5
+gcc_cv_as_leb128=no
+if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
+  if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 11 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
+    gcc_cv_as_leb128="yes"
+  fi
+elif test x$gcc_cv_as != x; then
+	# Check if we have .[us]leb128, and support symbol arithmetic with it.
+	cat > conftest.s <<EOF
+	.data
+	.uleb128 L2 - L1
+L1:
+	.uleb128 1280
+	.sleb128 -1010
+L2:
+EOF
+	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+		gcc_cv_as_leb128="yes"
+
+		# GAS versions before 2.11 do not support uleb128,
+		# despite appearing to.
+		# ??? There exists an elf-specific test that will crash
+		# the assembler.  Perhaps it's better to figure out whether
+		# arbitrary sections are supported and try the test.
+		as_ver=`$gcc_cv_as --version 2>/dev/null | head -1`
+		if echo "$as_ver" | grep GNU > /dev/null; then
+			as_ver=`echo $as_ver | sed -e 's/.* //'`
+			as_major=`echo $as_ver | sed 's/\..*//'`
+			as_minor=`echo $as_ver | sed 's/[^.]*\.\([0-9]*\).*/\1/'`
+			if test $as_major -eq 2 -a $as_minor -lt 11; then
+				gcc_cv_as_leb128="no"
+			fi
+		fi
+	fi
+	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
+fi
+if test x"$gcc_cv_as_leb128" = xyes; then
+	cat >> confdefs.h <<\EOF
+#define HAVE_AS_LEB128 1
+EOF
+
+fi
+echo "$ac_t""$gcc_cv_as_leb128" 1>&6
+
 echo $ac_n "checking assembler eh_frame optimization""... $ac_c" 1>&6
-echo "configure:6225: checking assembler eh_frame optimization" >&5
+echo "configure:6270: checking assembler eh_frame optimization" >&5
 gcc_cv_as_eh_frame=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 12 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
@@ -6297,7 +6342,7 @@ echo "$ac_t""$gcc_cv_as_eh_frame" 1>&6
 case "$target" in 
   sparc*-*-*)
     echo $ac_n "checking assembler .register pseudo-op support""... $ac_c" 1>&6
-echo "configure:6301: checking assembler .register pseudo-op support" >&5
+echo "configure:6346: checking assembler .register pseudo-op support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_register_pseudo_op'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -6325,7 +6370,7 @@ EOF
     fi
 
     echo $ac_n "checking assembler supports -relax""... $ac_c" 1>&6
-echo "configure:6329: checking assembler supports -relax" >&5
+echo "configure:6374: checking assembler supports -relax" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_relax_opt'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -6355,7 +6400,7 @@ EOF
     case "$tm_file" in
     *64*)
 	echo $ac_n "checking for 64 bit support in assembler ($gcc_cv_as)""... $ac_c" 1>&6
-echo "configure:6359: checking for 64 bit support in assembler ($gcc_cv_as)" >&5
+echo "configure:6404: checking for 64 bit support in assembler ($gcc_cv_as)" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_flags64'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -6400,7 +6445,7 @@ EOF
 
     if test "x$gcc_cv_as_flags64" != xno; then
 	echo $ac_n "checking for assembler offsetable %lo() support""... $ac_c" 1>&6
-echo "configure:6404: checking for assembler offsetable %lo() support" >&5
+echo "configure:6449: checking for assembler offsetable %lo() support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_offsetable_lo10'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -6439,7 +6484,7 @@ EOF
 
   i[34567]86-*-*)
     echo $ac_n "checking assembler instructions""... $ac_c" 1>&6
-echo "configure:6443: checking assembler instructions" >&5
+echo "configure:6488: checking assembler instructions" >&5
     gcc_cv_as_instructions=
     if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
       if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 9 -o "$gcc_cv_gas_major_version" -gt 2; then
@@ -6468,7 +6513,7 @@ EOF
 esac
 
 echo $ac_n "checking assembler dwarf2 debug_line support""... $ac_c" 1>&6
-echo "configure:6472: checking assembler dwarf2 debug_line support" >&5
+echo "configure:6517: checking assembler dwarf2 debug_line support" >&5
 gcc_cv_as_dwarf2_debug_line=no
 # ??? Not all targets support dwarf2 debug_line, even within a version
 # of gas.  Moreover, we need to emit a valid instruction to trigger any
@@ -6657,7 +6702,7 @@ EOF
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:6661: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:6706: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"
