@@ -1,3 +1,12 @@
+Thu Mar 12 07:18:48 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* calls.c (expand_call, expand_library_call{,_value}, store_one_arg):
+	Rework handling of REG_PARM_STACK_SPACE to treat return value of
+	zero as if macro not defined; add new arg to emit_push_insn.
+	* expr.c (emit_push_insn): New arg, REG_PARM_STACK_SPACE.
+	* expr.h (emit_push_insn): Likewise.
+	* mips/abi64.h (REG_PARM_STACK_SPACE): Define.
+
 Wed Mar 11 06:58:13 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* m68k.h (CONST_OK_FOR_LETTER_P, case 'M'): Correct range check.
