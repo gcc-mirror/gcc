@@ -124,40 +124,9 @@
          <a href="sgiexts.html">their own page</a>.  Since the SGI STL is no
          longer actively maintained, we will try and keep this code working
          ourselves.</li>
-     <li>3.0.x <code>filebuf</code>s have another ctor with this signature:
-         <br />
-        <code>basic_filebuf(__c_file_type*, ios_base::openmode, int_type);</code>
-         <br />This comes in very handy in a number of places, such as
-         attaching Unix sockets, pipes, and anything else which uses file
-         descriptors, into the IOStream buffering classes.  The three
-         arguments are as follows:
-         <ul>
-          <li><code>__c_file_type*      F   </code>
-              // the __c_file_type typedef usually boils down to stdio's FILE
-          </li>
-          <li><code>ios_base::openmode  M   </code>
-              // same as all the other uses of openmode
-          </li>
-          <li><code>int_type            B   </code>
-              // buffer size, defaults to BUFSIZ if not specified
-          </li>
-         </ul>
-         For those wanting to use file descriptors instead of FILE*'s, I
-         invite you to contemplate the mysteries of C's <code>fdopen()</code>.
-     </li>
-     <li>In library snapshot 3.0.95 and later, <code>filebuf</code>s bring
-         back an old extension:  the <code>fd()</code> member function.  The
-         integer returned from this function can be used for whatever file
-         descriptors can be used for on your platform.  Naturally, the
-         library cannot track what you do on your own with a file descriptor,
-         so if you perform any I/O directly, don't expect the library to be
-         aware of it.
-     </li>
-     <li>Beginning with 3.1, the extra <code>filebuf</code> constructor and
-         the <code>fd()</code> function were removed from the standard
-         filebuf.  Instead, <code>&lt;ext/stdio_filebuf.h&gt;</code> contains
-         a derived class called <code>__gnu_cxx::stdio_filebuf</code>.
-     </li>
+     <li>Extensions allowing <code>filebuf</code>s to be constructed from
+         stdio types are described in the
+         <a href="../27_io/howto.html#11">chapter 27 notes</a>.</li>
    </ul>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.

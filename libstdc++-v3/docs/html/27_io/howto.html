@@ -35,6 +35,7 @@
    <li><a href="#8">Pathetic performance?  Ditch C.</a></li>
    <li><a href="#9">Threads and I/O</a></li>
    <li><a href="#10">Which header?</a></li>
+   <li><a href="#11">Using FILE*s and file descriptors with IOStreams</a></li>
 </ul>
 
 <hr />
@@ -691,6 +692,60 @@
       compile times will go down when there's less parsing work to do.
    </p>
 
+
+<hr />
+<h2><a name="11">Using FILE*s and file descriptors with IOStreams</a></h2>
+   <p>The v2 library included non-standard extensions to construct
+      <code>std::filebuf</code>s from C stdio types such as
+      <code>FILE*</code>s and POSIX file descriptors.
+      Today the recommended way to use stdio types with libstdc++-v3
+      IOStreams is via the <code>stdio_filebuf</code> class (see below),
+      but earlier releases provided slightly different mechanisms.
+   </p>
+   <ul>
+     <li>3.0.x <code>filebuf</code>s have another ctor with this signature:
+         <br />
+        <code>basic_filebuf(__c_file_type*, ios_base::openmode, int_type);</code>
+         <br />This comes in very handy in a number of places, such as
+         attaching Unix sockets, pipes, and anything else which uses file
+         descriptors, into the IOStream buffering classes.  The three
+         arguments are as follows:
+         <ul>
+          <li><code>__c_file_type*      F   </code>
+              // the __c_file_type typedef usually boils down to stdio's FILE
+          </li>
+          <li><code>ios_base::openmode  M   </code>
+              // same as all the other uses of openmode
+          </li>
+          <li><code>int_type            B   </code>
+              // buffer size, defaults to BUFSIZ if not specified
+          </li>
+         </ul>
+         For those wanting to use file descriptors instead of FILE*'s, I
+         invite you to contemplate the mysteries of C's <code>fdopen()</code>.
+     </li>
+     <li>In library snapshot 3.0.95 and later, <code>filebuf</code>s bring
+         back an old extension:  the <code>fd()</code> member function.  The
+         integer returned from this function can be used for whatever file
+         descriptors can be used for on your platform.  Naturally, the
+         library cannot track what you do on your own with a file descriptor,
+         so if you perform any I/O directly, don't expect the library to be
+         aware of it.
+     </li>
+     <li>Beginning with 3.1, the extra <code>filebuf</code> constructor and
+         the <code>fd()</code> function were removed from the standard
+         filebuf.  Instead, <code>&lt;ext/stdio_filebuf.h&gt;</code> contains
+         a derived class called <code>__gnu_cxx::stdio_filebuf</code>. This
+         class can be constructed from a C <code>FILE*</code> or a file
+         descriptor, and provides the <code>fd()</code> function.
+     </li>
+   </ul>
+   <p>If you want to access a <code>filebuf</code>s file descriptor to
+      implement file locking (e.g. using the <code>fcntl()</code> system
+      call) then you might be interested in Henry Suter's
+      <a href="http://suter.home.cern.ch/suter/RWLock.html">RWLock</a>
+      class.
+   </p>
 
 <!-- ####################################################### -->
 
