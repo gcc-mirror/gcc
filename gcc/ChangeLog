@@ -1,3 +1,15 @@
+2001-12-12  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c (rs6000_override_options): Add
+        SUBSUBTARGET_OVERRIDE_OPTIONS.
+
+        * config/rs6000/eabialtivec.h: New file.
+
+	* config/rs6000/linuxaltivec.h: New file.
+
+	* config.gcc: Add powerpc-*-eabialtivec and
+	powerpc-*-linux-gnualtivec.
+
 2001-12-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* toplev.c (process_options, parse_options_and_default_flags):
