@@ -33,6 +33,7 @@
 
 #include <bits/basic_file.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #ifdef _GLIBCPP_HAVE_SYS_IOCTL_H
 #define BSD_COMP /* Get FIONREAD on Solaris2. */

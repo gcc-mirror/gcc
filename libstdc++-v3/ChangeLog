@@ -1,3 +1,12 @@
+2003-06-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR bootstrap/11272
+	Backport from mainline:
+
+	2003-03-09  Paolo Carlini  <pcarlini@unitus.it>
+
+	* config/io/basic_file_stdio.cc: include <unistd.h>.
+
 2003-06-20  Matthias Klose  <doko@debian.org>
 
 	* configure.target: Set try_cpu to target_cpu for existing
