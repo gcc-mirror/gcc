@@ -1,5 +1,9 @@
 2003-08-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* fixinc/tests/base/string.h, fixinc/tests/base/sys/regset.h:
+	Fix to match produced versions.
+	* fixinc/inclhack.def (longlong_t): New disabled test, ported
+	from fixinc.svr4.
 	* fixinc/inclhack.def (ptx_pwd_h): New disabled fix, ported
 	from fixinc.ptx.
         * fixinc/inclhack.def (ptx_sys_mc_param_h): New disabled fix,
