@@ -2919,6 +2919,7 @@ assign_parms (fndecl, second_time)
       if (MUST_PASS_IN_STACK (passed_mode, passed_type))
 	entry_parm = 0;
 
+#ifdef FUNCTION_ARG_PARTIAL_NREGS
       /* If this parm was passed part in regs and part in memory,
 	 pretend it arrived entirely in memory
 	 by pushing the register-part onto the stack.
@@ -2929,11 +2930,8 @@ assign_parms (fndecl, second_time)
 
       if (entry_parm)
 	{
-	  int nregs = 0;
-#ifdef FUNCTION_ARG_PARTIAL_NREGS
-	  nregs = FUNCTION_ARG_PARTIAL_NREGS (args_so_far, passed_mode,
-					      passed_type, ! last_named);
-#endif
+	  int nregs = FUNCTION_ARG_PARTIAL_NREGS (args_so_far, passed_mode,
+						  passed_type, ! last_named);
 
 	  if (nregs > 0)
 	    {
@@ -2948,6 +2946,7 @@ assign_parms (fndecl, second_time)
 	      entry_parm = stack_parm;
 	    }
 	}
+#endif
 
       /* If we didn't decide this parm came in a register,
 	 by default it came on the stack.  */
