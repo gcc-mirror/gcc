@@ -243,11 +243,12 @@ const_double_htab_eq (x, y)
 
   if (GET_MODE (a) != GET_MODE (b))
     return 0;
-  for (i = 0; i < sizeof(CONST_DOUBLE_FORMAT)-1; i++)
-    if (XWINT (a, i) != XWINT (b, i))
-      return 0;
-
-  return 1;
+  if (GET_MODE (a) == VOIDmode)
+    return (CONST_DOUBLE_LOW (a) == CONST_DOUBLE_LOW (b)
+	    && CONST_DOUBLE_HIGH (a) == CONST_DOUBLE_HIGH (b));
+  else
+    return real_identical (CONST_DOUBLE_REAL_VALUE (a),
+			   CONST_DOUBLE_REAL_VALUE (b));
 }
 
 /* Returns a hash code for X (which is a really a mem_attrs *).  */
