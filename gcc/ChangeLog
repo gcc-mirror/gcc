@@ -1,3 +1,7 @@
+2001-11-15  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* fix-header.c (read_scan_file): Update.
+
 Thu Nov 15 08:36:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* toplev.c (toplev_main): Don't start timing until after
