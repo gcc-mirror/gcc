@@ -1,3 +1,11 @@
+Sat Sep  6 10:20:27 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* decl.c (replace_defag): Undo previous change.
+	* lex.c (do_pending_defargs): Deal with member templates.
+	
+	* pt.c (is_member_template): Avoid crashing when passed a
+	non-function argument.
+
 Fri Sep  5 17:27:38 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c (grow_method): Remove check for redeclaration.

@@ -1873,6 +1873,8 @@ do_pending_defargs ()
 
 	  push_nested_class (TREE_PURPOSE (defarg_fns), 1);
 	  pushlevel (0);
+	  if (is_member_template (defarg_fn))
+	    begin_member_template_processing (DECL_TI_ARGS (defarg_fn));
 
 	  if (TREE_CODE (defarg_fn) == FUNCTION_DECL)
 	    {
@@ -1899,6 +1901,8 @@ do_pending_defargs ()
 	    return;
 	  }
 
+      if (is_member_template (defarg_fn))
+	end_member_template_processing ();
       poplevel (0, 0, 0);
       pop_nested_class (1);
     }

@@ -10070,7 +10070,7 @@ void
 replace_defarg (arg, init)
      tree arg, init;
 {
-  if (! processing_template_decl && ! uses_template_parms (TREE_VALUE (arg))
+  if (! processing_template_decl
       && ! can_convert_arg (TREE_VALUE (arg), TREE_TYPE (init), init))
     cp_pedwarn ("invalid type `%T' for default argument to `%T'",
 		TREE_TYPE (init), TREE_VALUE (arg));
