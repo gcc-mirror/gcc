@@ -1061,7 +1061,8 @@ libgcc.a: $(LIBGCC_DEPS)
 # switches.
 multilib.h: s-mlib; @true
 s-mlib: $(srcdir)/genmultilib Makefile
-	if test @enable_multilib@ = yes; then \
+	if test @enable_multilib@ = yes \
+	   || test -n "$(MULTILIB_OSDIRNAMES)"; then \
 	  $(SHELL) $(srcdir)/genmultilib \
 	    "$(MULTILIB_OPTIONS)" \
 	    "$(MULTILIB_DIRNAMES)" \
@@ -1070,9 +1071,11 @@ s-mlib: $(srcdir)/genmultilib Makefile
 	    "$(MULTILIB_EXTRA_OPTS)" \
 	    "$(MULTILIB_EXCLUSIONS)" \
 	    "$(MULTILIB_OSDIRNAMES)" \
+	    "@enable_multilib@" \
 	    > tmp-mlib.h; \
 	else \
-	  $(SHELL) $(srcdir)/genmultilib '' '' '' '' '' '' '' > tmp-mlib.h; \
+	  $(SHELL) $(srcdir)/genmultilib '' '' '' '' '' '' '' no \
+	    > tmp-mlib.h; \
 	fi
 	$(SHELL) $(srcdir)/move-if-change tmp-mlib.h multilib.h
 	$(STAMP) s-mlib

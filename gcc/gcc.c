@@ -6926,11 +6926,11 @@ set_multilib_dir ()
 
 	  while (q < end && *q != ':')
 	    q++;
-	  if (*q == ':')
+	  if (q < end)
 	    {
 	      char *new_multilib_os_dir = xmalloc (end - q);
-	      strncpy (new_multilib_os_dir, q + 1, end - q - 1);
-	      new_multilib_os_dir[end - q] = '\0';
+	      memcpy (new_multilib_os_dir, q + 1, end - q - 1);
+	      new_multilib_os_dir[end - q - 1] = '\0';
 	      multilib_os_dir = new_multilib_os_dir;
 	      break;
 	    }
@@ -6985,6 +6985,12 @@ print_multilib_info ()
 	    abort ();
 	  ++p;
 	}
+
+      /* When --disable-multilib was used but target defines
+	 MULTILIB_OSDIRNAMES, entries starting with .: are there just
+	 to find multilib_os_dir, so skip them from output.  */
+      if (this_path[0] == '.' && this_path[1] == ':')
+	skip = 1;
 
       /* Check for matches with the multilib_exclusions. We don't bother
          with the '!' in either list. If any of the exclusion rules match

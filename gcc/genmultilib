@@ -68,6 +68,9 @@
 # The difference is that second argument describes multilib directories
 # in GCC conventions, while this one the OS multilib convention.
 
+# The last option should be "yes" if multilibs are enabled.  If it is not
+# "yes", all GCC multilib dir names will be ".".
+
 # The output looks like
 #   #define MULTILIB_MATCHES "\
 #   SUBDIRECTORY OPTIONS;\
@@ -85,7 +88,7 @@
 #   genmultilib 'm64/m32 mno-app-regs|mcmodel=medany' '64 32 alt'
 #		'mcmodel?medany=mcmodel?medmid' 'm32/mno-app-regs* m32/mcmodel=*'
 #		'' 'm32/!m64/mno-app-regs m32/!m64/mcmodel=medany'
-#		'../lib64 ../lib32 alt'
+#		'../lib64 ../lib32 alt' yes
 # This produces:
 #   ". !m64 !m32 !mno-app-regs !mcmodel=medany;",
 #   "64:../lib64 m64 !m32 !mno-app-regs !mcmodel=medany;",
@@ -113,6 +116,7 @@ exceptions=$4
 extra=$5
 exclusions=$6
 osdirnames=$7
+enable_multilib=$8
 
 echo "static const char *const multilib_raw[] = {"
 
@@ -292,8 +296,17 @@ for combo in ${combinations}; do
     osdirout=`echo ${combo} | sed ${toosdirnames}`
     # Remove the leading and trailing slashes.
     osdirout=`echo ${osdirout} | sed -e 's|^/||' -e 's|/$||g'`
-    if [ "x${dirout}" != "x${osdirout}" ]; then
+    if [ "x${enable_multilib}" != xyes ]; then
+      dirout=".:${osdirout}"
+    else
       dirout="${dirout}:${osdirout}"
+    fi
+  else
+    if [ "x${enable_multilib}" != xyes ]; then
+      # genmultilib with --disable-multilib should be
+      # called with '' '' '' '' '' '' '' no
+      # if MULTILIB_OSDIRNAMES is empty.
+      exit 1
     fi
   fi
 

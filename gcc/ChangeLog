@@ -1,3 +1,16 @@
+2002-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c (set_multilib_dir): Don't access *end.
+	Use memcpy instead of strncpy.  Don't write beyond malloced buffer.
+	(print_multilib_info): Don't show paths starting with ".:".
+	* genmultilib: Add new option, "yes" if multilibs are enabled.
+	Update comments.  If multilibs not enabled, print .:${osdirout}
+	for each directory.  If multilibs are enabled, always print
+	${dirout}:${osdirout}, even if the two are the same.
+	* Makefile.in (s-mlib): Pass @enable_multilib@ to genmultilib.
+	Pass all MULTILIB_* variables to genmultilib even if
+	--disable-multilib but MULTILIB_OSDIRNAMES is not empty.
+
 2002-10-04  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/inclhack.def(hpux11_abs):  use format fix
