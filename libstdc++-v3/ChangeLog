@@ -1,3 +1,8 @@
+2003-03-17  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* libsupc++/Makefile.am (LTCOMPILE): Add $(AM_CFLAGS) $(CFLAGS).
+	* libsupc++/Makefile.in: Regenerate.
+
 2003-03-09  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/9988
