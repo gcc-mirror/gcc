@@ -546,6 +546,7 @@ multi-do:
 		flags=`echo $$i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
 		if (cd ../$${dir}/$${lib}; $(MAKE) $(FLAGS_TO_PASS) \
 				CFLAGS="$(CFLAGS) $${flags}" \
+				FCFLAGS="$(FCFLAGS) $${flags}" \
 				FFLAGS="$(FFLAGS) $${flags}" \
 				ADAFLAGS="$(ADAFLAGS) $${flags}" \
 				prefix="$(prefix)" \
@@ -779,13 +780,14 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
         break
       fi
     done
-    ml_config_env='CC="${CC_}$flags" CXX="${CXX_}$flags" F77="${F77_}$flags" GCJ="${GCJ_}$flags"'
+    ml_config_env='CC="${CC_}$flags" CXX="${CXX_}$flags" F77="${F77_}$flags" GCJ="${GCJ_}$flags" GFORTRAN="${GFORTRAN_}$flags"'
 
     if [ "${with_target_subdir}" = "." ]; then
 	CC_=$CC' '
 	CXX_=$CXX' '
 	F77_=$F77' '
 	GCJ_=$GCJ' '
+	GFORTRAN_=$GFORTRAN' '
     else
 	# Create a regular expression that matches any string as long
 	# as ML_POPDIR.
@@ -835,6 +837,18 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 	    GCJ_="${GCJ_}"`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
 	  *)
 	    GCJ_="${GCJ_}${arg} " ;;
+	  esac
+	done
+
+	GFORTRAN_=
+	for arg in ${GFORTRAN}; do
+	  case $arg in
+	  -[BIL]"${ML_POPDIR}"/*)
+	    GFORTRAN_="${GFORTRAN_}"`echo "X${arg}" | sed -n "s/X\\(-[BIL]${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X-[BIL]${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
+	  "${ML_POPDIR}"/*)
+	    GFORTRAN_="${GFORTRAN_}"`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
+	  *)
+	    GFORTRAN_="${GFORTRAN_}${arg} " ;;
 	  esac
 	done
 
