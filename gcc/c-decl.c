@@ -6768,8 +6768,13 @@ void
 c_expand_deferred_function (fndecl)
      tree fndecl;
 {
-  c_expand_body (fndecl, 0, 0);
-  current_function_decl = NULL;
+  /* DECL_INLINE or DECL_RESULT might got cleared after the inline
+     function was deferred, e.g. in duplicate_decls.  */
+  if (DECL_INLINE (fndecl) && DECL_RESULT (fndecl))
+    {
+      c_expand_body (fndecl, 0, 0);
+      current_function_decl = NULL;
+    }
 }
 
 /* Generate the RTL for the body of FNDECL.  If NESTED_P is non-zero,
