@@ -1,3 +1,14 @@
+2001-07-23  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300-protos.h: Add a prototype for
+	general_operand_dst_push.
+ 	* config/h8300/h8300.c (general_operand_dst_push): New.
+	* config/h8300/h8300.h (OK_FOR_T): New.
+	(EXTRA_CONSTRAINT): Use it.
+	* config/h8300/h8300.md (movqi_push): Remove and integrate into
+	the existing movqi pattern.
+	(movhi_push): Likewise.
+
 Mon Jul 23 23:34:07 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (cprop_insn): Update call of cprop_cc0_jump.

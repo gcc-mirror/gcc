@@ -840,7 +840,17 @@ struct cum_arg
   (GET_CODE (X) == CONST_INT && TARGET_H8300H		\
    && 0xffff00 <= INTVAL (X) && INTVAL (X) <= 0xffffff)
 
-/* 'U' if valid for a bset destination;
+/* 'T' if valid for a push destination using pre_modify.  */
+#define OK_FOR_T(OP)							      \
+  (GET_CODE (OP) == MEM							      \
+   && GET_CODE (XEXP (OP, 0)) == PRE_MODIFY				      \
+   && GET_CODE (XEXP (XEXP (OP, 0), 1)) == PLUS				      \
+   && XEXP (XEXP (XEXP (OP, 0), 1), 0) == XEXP (XEXP (OP, 0), 0)	      \
+   && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 1), 1)) == CONST_INT		      \
+   && INTVAL (XEXP (XEXP (XEXP (OP, 0), 1), 1)) == - (int) STACK_BOUNDARY / 8 \
+   && XEXP (XEXP (OP, 0), 0) == stack_pointer_rtx)
+
+ /* 'U' if valid for a bset destination;
    i.e. a register, register indirect, or the eightbit memory region
    (a SYMBOL_REF with an SYMBOL_REF_FLAG set).
 
@@ -862,7 +872,8 @@ struct cum_arg
        && GET_CODE (XEXP (OP, 0)) == CONST_INT))
 
 #define EXTRA_CONSTRAINT(OP, C)			\
-  ((C) == 'U' ? OK_FOR_U (OP) :			\
+  ((C) == 'T' ? OK_FOR_T (OP) :			\
+   (C) == 'U' ? OK_FOR_U (OP) :			\
    0)
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
