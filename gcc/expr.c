@@ -6961,8 +6961,6 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_NEXT_ARG:
       {
 	tree fntype = TREE_TYPE (current_function_decl);
-	tree last_parm = tree_last (DECL_ARGUMENTS (current_function_decl));
-	tree arg;
 
 	if (TYPE_ARG_TYPES (fntype) == 0
 	    || (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
@@ -6973,15 +6971,24 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	    return const0_rtx;
 	  }
 
-	arg = TREE_VALUE (arglist);
-	/* Strip off all nops for the sake of the comparison.  This is not
-	   quite the same as STRIP_NOPS.  It does more.  */
-	while (TREE_CODE (arg) == NOP_EXPR
-	       || TREE_CODE (arg) == CONVERT_EXPR
-	       || TREE_CODE (arg) == NON_LVALUE_EXPR)
-	  arg = TREE_OPERAND (arg, 0);
-	if (arg != last_parm)
-	  warning ("second parameter of `va_start' not last named argument");
+	if (arglist)
+	  {
+	    tree last_parm = tree_last (DECL_ARGUMENTS (current_function_decl));
+	    tree arg = TREE_VALUE (arglist);
+
+	    /* Strip off all nops for the sake of the comparison.  This
+	       is not quite the same as STRIP_NOPS.  It does more.  */
+	    while (TREE_CODE (arg) == NOP_EXPR
+		   || TREE_CODE (arg) == CONVERT_EXPR
+		   || TREE_CODE (arg) == NON_LVALUE_EXPR)
+	      arg = TREE_OPERAND (arg, 0);
+	    if (arg != last_parm)
+	      warning ("second parameter of `va_start' not last named argument");
+	  }
+	else
+	  /* Evidently an out of date version of <stdarg.h>; can't validate
+	     va_start's second argument, but can still work as intended.  */
+	  warning ("`__builtin_next_arg' called without an argument");
       }
 
       return expand_binop (Pmode, add_optab,
