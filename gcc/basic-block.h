@@ -384,4 +384,7 @@ extern void compute_available		PARAMS ((sbitmap *, sbitmap *,
 extern rtx emit_block_insn_after	PARAMS ((rtx, rtx, basic_block));
 extern rtx emit_block_insn_before	PARAMS ((rtx, rtx, basic_block));
 
+/* In predict.c */
+extern void estimate_probability        PARAMS ((struct loops *));
+
 #endif /* _BASIC_BLOCK_H */

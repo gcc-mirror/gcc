@@ -1,3 +1,11 @@
+Thu Jan 13 14:46:03 2000  Jason Eckhardt  <jle@cygnus.com>
+                          Stan Cox  <scox@cygnus.com>
+
+	* predict.c: New file. Preliminary infrastructure work for static
+	branch prediction and basic block reordering.
+	* basic-block.h: Add prototype for estimate_probability.
+	* Makefile.in: Add rules for predict.o.
+
 2000-01-13  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* fixincludes (va_list): Use __not_va_list__ for the dummy.

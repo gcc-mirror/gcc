@@ -673,7 +673,7 @@ OBJS = diagnostic.o \
  insn-opinit.o insn-recog.o insn-extract.o insn-output.o insn-emit.o lcm.o \
  profile.o insn-attrtab.o $(out_object_file) $(EXTRA_OBJS) convert.o \
  mbchar.o dyn-string.o splay-tree.o graph.o sbitmap.o resource.o hash.o \
- lists.o ggc-common.o $(GGC) simplify-rtx.o
+ predict.o lists.o ggc-common.o $(GGC) simplify-rtx.o
 
 # GEN files are listed separately, so they can be built before doing parallel
 #  makes for cc1 or cc1plus.  Otherwise sequent parallel make attempts to load
@@ -1620,6 +1620,9 @@ reg-stack.o : reg-stack.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) $(RECOG_H) \
    $(REGS_H) hard-reg-set.h flags.h insn-config.h insn-flags.h toplev.h \
    varray.h function.h
 dyn-string.o: dyn-string.c dyn-string.h $(CONFIG_H) system.h
+predict.o: predict.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
+   insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h \
+   $(RECOG_H) insn-flags.h function.h except.h expr.h
 lists.o: lists.c $(CONFIG_H) system.h toplev.h $(RTL_H) ggc.h
 
 $(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) ggc.h \
