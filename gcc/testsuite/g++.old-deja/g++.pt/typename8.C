@@ -7,6 +7,7 @@ public:
 
   anotherT t; // ERROR - undefined type 
 
+  A() { }
   A(anotherT _t) { // ERROR - undefined type
     t=_t;
   }
@@ -20,8 +21,8 @@ class B : public A< B > // ERROR - forward declaration
 {
 public:
   typedef int myT;
-}; // ERROR - base with non-default constructor
+};
 
 int main() {
-  B b; // ERROR - no constructor
+  B b;
 }
