@@ -1672,7 +1672,17 @@ any_operand (rtx op ATTRIBUTE_UNUSED,
   return 1;
 }
 
+/* Returns 1 always.  */
+
+int
+any_parallel_operand (rtx op ATTRIBUTE_UNUSED, 
+		      enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return 1;
+}
+
 /* Returns 1 if op is the count register.  */
+
 int
 count_register_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
@@ -1689,6 +1699,7 @@ count_register_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 }
 
 /* Returns 1 if op is an altivec register.  */
+
 int
 altivec_register_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
