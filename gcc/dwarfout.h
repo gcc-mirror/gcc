@@ -34,8 +34,4 @@ extern void dwarfout_end_epilogue	PARAMS ((void));
 extern void dwarfout_begin_block	PARAMS ((unsigned));
 extern void dwarfout_end_block		PARAMS ((unsigned));
 
-#ifdef RTX_CODE
-extern void dwarfout_label		PARAMS ((rtx));
-#endif
 extern void dwarfout_line		PARAMS ((const char *, unsigned));
-

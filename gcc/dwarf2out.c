@@ -3594,9 +3594,6 @@ static char debug_line_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 #ifndef BSS_END_LABEL
 #define BSS_END_LABEL           "Lebss"
 #endif
-#ifndef INSN_LABEL_FMT
-#define INSN_LABEL_FMT		"LI%u_"
-#endif
 #ifndef BLOCK_BEGIN_LABEL
 #define BLOCK_BEGIN_LABEL	"LBB"
 #endif
@@ -9824,7 +9821,6 @@ gen_label_die (decl, context_die)
   register dw_die_ref lbl_die = new_die (DW_TAG_label, context_die);
   register rtx insn;
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
-  char label2[MAX_ARTIFICIAL_LABEL_BYTES];
 
   if (origin != NULL)
     add_abstract_origin_attribute (lbl_die, origin);
@@ -9852,9 +9848,7 @@ gen_label_die (decl, context_die)
 	  if (INSN_DELETED_P (insn))
 	    abort ();
 
-	  sprintf (label2, INSN_LABEL_FMT, current_funcdef_number);
-	  ASM_GENERATE_INTERNAL_LABEL (label, label2,
-				       (unsigned) INSN_UID (insn));
+	  ASM_GENERATE_INTERNAL_LABEL (label, "L", CODE_LABEL_NUMBER (insn));
 	  add_AT_lbl_id (lbl_die, DW_AT_low_pc, label);
 	}
     }
@@ -10964,24 +10958,6 @@ dwarf2out_ignore_block (block)
 	|| (TREE_CODE (decl) == TYPE_DECL && TYPE_DECL_IS_STUB (decl)))
       return 0;
   return 1;
-}
-
-/* Output a marker (i.e. a label) at a point in the assembly code which
-   corresponds to a given source level label.  */
-
-void
-dwarf2out_label (insn)
-     register rtx insn;
-{
-  char label[MAX_ARTIFICIAL_LABEL_BYTES];
-
-  if (debug_info_level >= DINFO_LEVEL_NORMAL)
-    {
-      function_section (current_function_decl);
-      sprintf (label, INSN_LABEL_FMT, current_funcdef_number);
-      ASM_OUTPUT_DEBUG_LABEL (asm_out_file, label,
-				 (unsigned) INSN_UID (insn));
-    }
 }
 
 /* Lookup a filename (in the list of filenames that we know about here in

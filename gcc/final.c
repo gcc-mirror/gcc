@@ -2268,22 +2268,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  /* Emit the label.  We may have deleted the CODE_LABEL because
 	     the label could be proved to be unreachable, though still
 	     referenced (in the form of having its address taken.  */
-	  /* ??? Figure out how not to do this unconditionally.  This
-	     interferes with bundling on LIW targets.  */
 	  ASM_OUTPUT_DEBUG_LABEL (file, "L", CODE_LABEL_NUMBER (insn));
-
-	  if (debug_info_level == DINFO_LEVEL_NORMAL
-	      || debug_info_level == DINFO_LEVEL_VERBOSE)
-	    {
-#ifdef DWARF_DEBUGGING_INFO
-	      if (write_symbols == DWARF_DEBUG)
-		dwarfout_label (insn);
-#endif
-#ifdef DWARF2_DEBUGGING_INFO
-	      if (write_symbols == DWARF2_DEBUG)
-		dwarf2out_label (insn);
-#endif
-	    }
 	  break;
 
 	case 0:
@@ -2402,14 +2387,6 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 #ifdef SDB_DEBUGGING_INFO
       if (write_symbols == SDB_DEBUG && LABEL_NAME (insn))
 	sdbout_label (insn);
-#endif
-#ifdef DWARF_DEBUGGING_INFO
-      if (write_symbols == DWARF_DEBUG && LABEL_NAME (insn))
-	dwarfout_label (insn);
-#endif
-#ifdef DWARF2_DEBUGGING_INFO
-      if (write_symbols == DWARF2_DEBUG && LABEL_NAME (insn))
-	dwarf2out_label (insn);
 #endif
       if (app_on)
 	{

@@ -561,9 +561,6 @@ static void retry_incomplete_types	PARAMS ((void));
 #ifndef PUB_DIE_LABEL_FMT
 #define PUB_DIE_LABEL_FMT	"*.L_P%u"
 #endif
-#ifndef INSN_LABEL_FMT
-#define INSN_LABEL_FMT		"*.L_I%u_%u"
-#endif
 #ifndef BLOCK_BEGIN_LABEL_FMT
 #define BLOCK_BEGIN_LABEL_FMT	"*.L_B%u"
 #endif
@@ -3485,8 +3482,7 @@ output_label_die (arg)
 	  if (INSN_DELETED_P (insn))
 	    abort ();	/* Should never happen.  */
 
-	  sprintf (label, INSN_LABEL_FMT, current_funcdef_number,
-				          (unsigned) INSN_UID (insn));
+	  ASM_GENERATE_INTERNAL_LABEL (label, "L", CODE_LABEL_NUMBER (insn));
 	  low_pc_attribute (label);
 	}
     }
@@ -5292,24 +5288,6 @@ dwarfout_end_block (blocknum)
   function_section (current_function_decl);
   sprintf (label, BLOCK_END_LABEL_FMT, blocknum);
   ASM_OUTPUT_LABEL (asm_out_file, label);
-}
-
-/* Output a marker (i.e. a label) at a point in the assembly code which
-   corresponds to a given source level label.  */
-
-void
-dwarfout_label (insn)
-     register rtx insn;
-{
-  if (debug_info_level >= DINFO_LEVEL_NORMAL)
-    {
-      char label[MAX_ARTIFICIAL_LABEL_BYTES];
-
-      function_section (current_function_decl);
-      sprintf (label, INSN_LABEL_FMT, current_funcdef_number,
-				      (unsigned) INSN_UID (insn));
-      ASM_OUTPUT_LABEL (asm_out_file, label);
-    }
 }
 
 /* Output a marker (i.e. a label) for the point in the generated code where
