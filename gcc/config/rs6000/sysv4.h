@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for PowerPC running System V.4
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003
    Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
@@ -1318,6 +1318,21 @@ ncrtn.o%s"
 #define CPP_OS_NETBSD_SPEC "\
 -D__powerpc__ -D__NetBSD__ -D__ELF__ -D__KPRINTF_ATTRIBUTE__"
 
+/* RTEMS support.  */  
+
+#define CPP_OS_RTEMS_SPEC "\
+%{!mcpu*:  %{!Dppc*: %{!Dmpc*: -Dmpc750} } }\
+%{mcpu=403:  %{!Dppc*: %{!Dmpc*: -Dppc403}  } } \
+%{mcpu=505:  %{!Dppc*: %{!Dmpc*: -Dmpc505}  } } \
+%{mcpu=601:  %{!Dppc*: %{!Dmpc*: -Dppc601}  } } \
+%{mcpu=602:  %{!Dppc*: %{!Dmpc*: -Dppc602}  } } \
+%{mcpu=603:  %{!Dppc*: %{!Dmpc*: -Dppc603}  } } \
+%{mcpu=603e: %{!Dppc*: %{!Dmpc*: -Dppc603e} } } \
+%{mcpu=604:  %{!Dppc*: %{!Dmpc*: -Dmpc604}  } } \
+%{mcpu=750:  %{!Dppc*: %{!Dmpc*: -Dmpc750}  } } \
+%{mcpu=821:  %{!Dppc*: %{!Dmpc*: -Dmpc821}  } } \
+%{mcpu=860:  %{!Dppc*: %{!Dmpc*: -Dmpc860}  } }" 
+
 /* VxWorks support.  */
 /* VxWorks does all the library stuff itself.  */
 #define LIB_VXWORKS_SPEC ""
@@ -1439,6 +1454,7 @@ ncrtn.o%s"
   { "cpp_os_linux",		CPP_OS_LINUX_SPEC },			\
   { "cpp_os_netbsd",		CPP_OS_NETBSD_SPEC },			\
   { "cpp_os_vxworks",		CPP_OS_VXWORKS_SPEC },			\
+  { "cpp_os_rtems",		CPP_OS_RTEMS_SPEC },			\
   { "cpp_os_default",		CPP_OS_DEFAULT_SPEC },
 
 /* Define this macro as a C expression for the initializer of an

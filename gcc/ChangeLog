@@ -1,3 +1,12 @@
+2003-01-30	Ralf Corsepius <corsepiu@faw.uni-ulm.de>
+
+	PR target/9316 
+	* config/rs6000/rtems.h: Add CPP_OS_DEFAULT_SPEC.
+	* config/rs6000/sysv4.h: Add CPP_OS_RTEMS_SPEC.
+	* config/rs6000/t-rtems: New file. multilib variants to match OS.
+	* config.gcc (powerpc-*-rtems*): Use rs6000/t-rtems instead of
+	rs6000/t-ppcgas so we get the desired multilibs.
+
 2003-01-29	Joel Sherrill <joel@OARcorp.com>
 
 	* gthr-rtems.h: Define __GTHREAD_MUTEX_INIT.  Apparently no code

@@ -1,5 +1,5 @@
 # GCC build-, host- and target-specific configuration file.
-# Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+# Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -2839,7 +2839,7 @@ powerpc-*-eabi*)
 powerpc-*-rtems*)
 	xm_defines=POSIX
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/eabi.h rs6000/rtems.h rtems.h"
-	tmake_file="rs6000/t-ppcgas t-rtems rs6000/t-ppccomm"
+	tmake_file="rs6000/t-rtems t-rtems rs6000/t-ppccomm"
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi
