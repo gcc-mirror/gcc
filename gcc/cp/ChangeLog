@@ -1,3 +1,8 @@
+2002-06-14  Steve Ellcey  <sje@cup.hp.com>
+
+	* g++spec.c (LIBUNWIND): New.
+	(lang_specific_driver): Add it if USE_UNWIND_EXCEPTIONS is set.
+
 2002-06-13  Jessica Han  <jessica@cup.hp.com>
 
 	* class.c (build_vtable): Use TARGET_VTABLE_ENTRY_ALIGN.
