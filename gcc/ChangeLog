@@ -19,6 +19,8 @@ Mon Jul  6 22:21:56 1998  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
 
 Mon Jul  6 22:17:19 1998  Alasdair Baird	<alasdair@wildcat.demon.co.uk>
 
+	* i386.c (is_fp_test): Fix thinko.
+
 	* jump.c (jump_optimize) Check for CONST_INT before using INTVAL.
 
 Mon Jul  6 22:14:31 1998  Richard Henderson  (rth@cygnus.com)

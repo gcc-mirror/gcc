@@ -4840,7 +4840,7 @@ is_fp_dest (insn)
 	  || GET_MODE (SET_DEST (PATTERN (insn))) == XFmode)
       && GET_CODE (SET_DEST (PATTERN (insn))) == REG
       && REGNO (SET_DEST (PATTERN (insn))) >= FIRST_FLOAT_REG
-      && GET_CODE (SET_SRC (insn)) != MEM)
+      && GET_CODE (SET_SRC (PATTERN (insn))) != MEM)
     return 1;
 
   return 0;
