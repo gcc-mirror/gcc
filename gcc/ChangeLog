@@ -1,3 +1,11 @@
+2004-09-09  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/17377
+	* config/cris/cris-protos.h (cris_return_address_on_stack): Declare.
+	* config/cris/cris.c (cris_return_address_on_stack): New function.
+	* config/cris/cris.md ("return"): For location of return address,
+	also check cris_return_address_on_stack.
+
 2004-09-09  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-outof-ssa.c (coalesce_abnormal_edges): Fix typo in

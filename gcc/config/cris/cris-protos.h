@@ -47,6 +47,8 @@ extern int cris_cfun_uses_pic_table (void);
 extern void cris_target_asm_named_section (const char *, unsigned int);
 #endif /* RTX_CODE */
 
+extern int cris_return_address_on_stack (void);
+
 extern void cris_pragma_expand_mul (struct cpp_reader *);
 
 /* Need one that returns an int; usable in expressions.  */
