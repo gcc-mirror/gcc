@@ -711,25 +711,25 @@ lang_decode_option (argc, argv)
 	  warn_return_type = setting;
 	  warn_unused = setting;
 	  warn_implicit = setting;
-	  warn_ctor_dtor_privacy = setting;
 	  warn_switch = setting;
 	  warn_format = setting;
 	  warn_parentheses = setting;
 	  warn_missing_braces = setting;
 	  warn_sign_compare = setting;
-	  warn_extern_inline = setting;
-	  warn_nonvdtor = setting;
 	  warn_multichar = setting;
 	  /* We save the value of warn_uninitialized, since if they put
 	     -Wuninitialized on the command line, we need to generate a
 	     warning about not using it without also specifying -O.  */
 	  if (warn_uninitialized != 1)
 	    warn_uninitialized = (setting ? 2 : 0);
-	  warn_reorder = setting;
-	  warn_sign_promo = setting;
 	  /* Only warn about unknown pragmas that are not in system
 	     headers.  */                                        
 	  warn_unknown_pragmas = 1;       
+
+	  /* C++-specific warnings.  */
+	  warn_ctor_dtor_privacy = setting;
+	  warn_nonvdtor = setting;
+	  warn_reorder = setting;
 	  warn_nontemplate_friend = setting;           
 	}
       else return strings_processed;
