@@ -128,7 +128,7 @@ char *util_firstobj;
 #include "rtl.h"
 #include "c-parse.h"
 
-#define OBJC_VERSION	6
+#define OBJC_VERSION	(flag_next_runtime ? 5 : 6)
 #define PROTOCOL_VERSION 2
 
 #define NULLT	(tree) 0
