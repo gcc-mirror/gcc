@@ -22,7 +22,7 @@ struct kernel_dirent64
 };
 
 static inline int __attribute__ ((__always_inline__))
-__syscall_getdents64 (int fd, unsigned char * dirp, unsigned count)
+__syscall_getdents64 (int fd, char * dirp, unsigned count)
 {
   register unsigned long __sys_res asm ("r10");
   register unsigned long __r10 __asm__ ("r10") = (unsigned long) fd;
