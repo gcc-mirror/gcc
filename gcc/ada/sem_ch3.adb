@@ -6586,11 +6586,15 @@ package body Sem_Ch3 is
            (Full, Related_Nod, Full_Base, Discriminant_Constraint (Priv));
 
       --  If the full base is itself derived from private, build a congruent
-      --  subtype of its underlying type, for use by the back end.
+      --  subtype of its underlying type, for use by the back end. Do not
+      --  do this for a constrained record component, where the back-end has
+      --  the proper information and there is no place for the declaration.
 
       elsif Ekind (Full_Base) in Private_Kind
         and then Is_Derived_Type (Full_Base)
         and then Has_Discriminants (Full_Base)
+        and then Nkind (Related_Nod) /= N_Component_Declaration
+        and then (Ekind (Current_Scope) /= E_Record_Subtype)
         and then
           Nkind (Subtype_Indication (Parent (Priv))) = N_Subtype_Indication
       then
@@ -7324,6 +7328,7 @@ package body Sem_Ch3 is
            Make_Subtype_Declaration (Loc,
              Defining_Identifier => Def_Id,
              Subtype_Indication  => Indic);
+
          Set_Parent (Subtyp_Decl, Parent (Related_Node));
 
          --  Itypes must be analyzed with checks off (see itypes.ads).

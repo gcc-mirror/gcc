@@ -33,15 +33,19 @@
 
 --  This package provides a system-independent implementation of stack
 --  checking using comparison with stack base and limit.
---  This package defines basic types and objects. Operations related
---  to stack checking can be found in package
---  System.Stack_Checking.Operations.
+
+--  This package defines basic types and objects. Operations related to
+--  stack checking can be found in package System.Stack_Checking.Operations.
 
 with System.Storage_Elements;
 
 package System.Stack_Checking is
 
    pragma Elaborate_Body;
+   --  This unit has a junk null body. The reason is that historically we
+   --  used to have a real body, and it causes bootstrapping path problems
+   --  to eliminate it, since the old body may still be present in the
+   --  compilation environment for a build.
 
    type Stack_Info is record
       Limit : System.Address := System.Null_Address;

@@ -31,5 +31,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  As noted in the spec, this dummy body is present because otherwise we
+--  have bootstrapping path problems (there used to be a real body).
+
 package body System.Stack_Checking is
 end System.Stack_Checking;

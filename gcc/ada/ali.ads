@@ -253,7 +253,7 @@ package ALI is
 
       Dynamic_Elab : Boolean;
       --  Set to True if the unit was compiled with dynamic elaboration
-      --  checks (i.e. either -gnatE or pragma Elaboration_Checks (Static)
+      --  checks (i.e. either -gnatE or pragma Elaboration_Checks (RM)
       --  was used to compile the unit).
 
       Elaborate_Body : Boolean;

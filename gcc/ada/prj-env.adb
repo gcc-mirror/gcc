@@ -335,6 +335,7 @@ package body Prj.Env is
       --  Check if the directory is already in the table
 
       for Index in 1 .. Object_Paths.Last loop
+
          --  If it is, remove it, and add it as the last one
 
          if Object_Paths.Table (Index) = Object_Dir then
@@ -361,7 +362,6 @@ package body Prj.Env is
    procedure Add_To_Path (Source_Dirs : String_List_Id) is
       Current    : String_List_Id := Source_Dirs;
       Source_Dir : String_Element;
-
    begin
       while Current /= Nil_String loop
          Source_Dir := String_Elements.Table (Current);
@@ -384,8 +384,10 @@ package body Prj.Env is
 
       function Is_Present (Path : String; Dir : String) return Boolean is
          Last : constant Integer := Path'Last - Dir'Length + 1;
+
       begin
          for J in Path'First .. Last loop
+
             --  Note: the order of the conditions below is important, since
             --  it ensures a minimal number of string comparisons.
 
@@ -403,8 +405,11 @@ package body Prj.Env is
          return False;
       end Is_Present;
 
+   --  Start of processing for Add_To_Path
+
    begin
       if Is_Present (Ada_Path_Buffer (1 .. Ada_Path_Length), Dir) then
+
          --  Dir is already in the path, nothing to do
 
          return;
@@ -413,6 +418,7 @@ package body Prj.Env is
       Min_Len := Ada_Path_Length + Dir'Length;
 
       if Ada_Path_Length > 0 then
+
          --  Add 1 for the Path_Separator character
 
          Min_Len := Min_Len + 1;
@@ -535,7 +541,7 @@ package body Prj.Env is
          end;
       end if;
 
-      --  Returned the value stored
+      --  Returned the stored value
 
       return Namet.Get_Name_String (Data.File_Names (Body_Part).Path);
    end Body_Path_Name_Of;
@@ -566,6 +572,7 @@ package body Prj.Env is
       --  For call to Close
 
       procedure Check (Project : Project_Id);
+      --  ??? requires a comment
 
       procedure Check_Temp_File;
       --  Check that a temporary file has been opened.
@@ -576,11 +583,11 @@ package body Prj.Env is
         (Unit_Name : Name_Id;
          File_Name : Name_Id;
          Unit_Kind : Spec_Or_Body);
-      --  Put an SFN pragma in the temporary file.
+      --  Put an SFN pragma in the temporary file
 
       procedure Put (File : File_Descriptor; S : String);
-
       procedure Put_Line (File : File_Descriptor; S : String);
+      --  Output procedures, analogous to normal Text_IO procs of same name
 
       -----------
       -- Check --
@@ -1045,7 +1052,6 @@ package body Prj.Env is
       if not Status then
          Prj.Com.Fail ("disk full");
       end if;
-
    end Create_Mapping_File;
 
    --------------------------
@@ -1163,7 +1169,8 @@ package body Prj.Env is
       --  this loop will be run only once.
 
       loop
-         --  For every unit
+         --  Loop through units
+         --  Should have comment explaining reverse ???
 
          for Current in reverse Units.First .. Units.Last loop
             Unit := Units.Table (Current);
@@ -1175,7 +1182,7 @@ package body Prj.Env is
             then
                declare
                   Current_Name : constant Name_Id :=
-                    Unit.File_Names (Body_Part).Name;
+                                   Unit.File_Names (Body_Part).Name;
 
                begin
                   --  Case of a body present
@@ -1238,7 +1245,7 @@ package body Prj.Env is
             then
                declare
                   Current_Name : constant Name_Id :=
-                    Unit.File_Names (Specification).Name;
+                                   Unit.File_Names (Specification).Name;
 
                begin
                   --  Case of spec present
@@ -1251,8 +1258,7 @@ package body Prj.Env is
                         Write_Eol;
                      end if;
 
-                     --  If name same as the original name, return original
-                     --  name.
+                     --  If name same as original name, return original name
 
                      if Unit.Name = The_Original_Name
                        or else Current_Name = The_Original_Name
@@ -1265,7 +1271,6 @@ package body Prj.Env is
                         if Full_Path then
                            return Get_Name_String
                              (Unit.File_Names (Specification).Path);
-
                         else
                            return Get_Name_String (Current_Name);
                         end if;
@@ -1281,7 +1286,6 @@ package body Prj.Env is
                         if Full_Path then
                            return Get_Name_String
                              (Unit.File_Names (Specification).Path);
-
                         else
                            return Extended_Spec_Name;
                         end if;
@@ -1509,6 +1513,8 @@ package body Prj.Env is
       Path             : out Name_Id)
    is
    begin
+      --  Body below could use some comments ???
+
       if Current_Verbosity > Default then
          Write_Str ("Getting Reference_Of (""");
          Write_Str (Source_File_Name);
@@ -1566,7 +1572,6 @@ package body Prj.Env is
 
                return;
             end if;
-
          end loop;
       end;
 
@@ -1583,10 +1588,11 @@ package body Prj.Env is
    -- Initialize --
    ----------------
 
+   --  This is a place holder for possible required initialization in
+   --  the future. In the current version no initialization is required.
+
    procedure Initialize is
    begin
-      --  There is nothing to do anymore
-
       null;
    end Initialize;
 
@@ -1594,11 +1600,13 @@ package body Prj.Env is
    -- Path_Name_Of_Library_Unit_Body --
    ------------------------------------
 
+   --  Could use some comments in the body here ???
+
    function Path_Name_Of_Library_Unit_Body
      (Name    : String;
       Project : Project_Id) return String
    is
-      Data : constant Project_Data := Projects.Table (Project);
+      Data          : constant Project_Data := Projects.Table (Project);
       Original_Name : String := Name;
 
       Extended_Spec_Name : String :=
@@ -1699,7 +1707,6 @@ package body Prj.Env is
                   return Spec_Path_Name_Of (Current);
 
                elsif Current_Name = Extended_Spec_Name then
-
                   if Current_Verbosity = High then
                      Write_Line ("   OK");
                   end if;
@@ -1722,6 +1729,8 @@ package body Prj.Env is
    -------------------
    -- Print_Sources --
    -------------------
+
+   --  Could use some comments in this body ???
 
    procedure Print_Sources is
       Unit : Unit_Data;
@@ -1769,7 +1778,6 @@ package body Prj.Env is
               (Namet.Get_Name_String
                (Unit.File_Names (Body_Part).Name));
          end if;
-
       end loop;
 
       Write_Line ("end of List of Sources.");
@@ -2070,8 +2078,8 @@ package body Prj.Env is
       --  Set the env vars, if they need to be changed, and set the
       --  corresponding flags.
 
-      if
-        Current_Source_Path_File /= Projects.Table (Project).Include_Path_File
+      if Current_Source_Path_File /=
+           Projects.Table (Project).Include_Path_File
       then
          Current_Source_Path_File :=
            Projects.Table (Project).Include_Path_File;
@@ -2191,6 +2199,9 @@ package body Prj.Env is
 
       return Result;
    end Ultimate_Extension_Of;
+
+--  Package initialization
+--  What is relationshiop to procedure Initialize
 
 begin
    Path_Files.Set_Last (0);

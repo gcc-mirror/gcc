@@ -1788,10 +1788,14 @@ package body Sem_Ch6 is
       --  the actuals at the point of inlining, i.e. instantiation. To treat
       --  the formals as globals to the body to inline, we nest it within
       --  a dummy parameterless subprogram, declared within the real one.
+      --  To avoid generating an internal name (which is never public, and
+      --  which affects serial numbers of other generated names), we use
+      --  an internal symbol that cannot conflict with user declarations.
 
       Set_Parameter_Specifications (Specification (Original_Body), No_List);
-      Set_Defining_Unit_Name (Specification (Original_Body),
-        Make_Defining_Identifier (Sloc (N), New_Internal_Name ('S')));
+      Set_Defining_Unit_Name
+        (Specification (Original_Body),
+          Make_Defining_Identifier (Sloc (N), Name_uParent));
       Set_Corresponding_Spec (Original_Body, Empty);
 
       Body_To_Analyze := Copy_Generic_Node (Original_Body, Empty, False);

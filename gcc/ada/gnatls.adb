@@ -45,6 +45,8 @@ procedure Gnatls is
 
    Max_Column : constant := 80;
 
+   No_Obj : aliased String := "<no_obj>";
+
    type File_Status is (
      OK,                  --  matching timestamp
      Checksum_OK,         --  only matching checksum
@@ -271,8 +273,13 @@ procedure Gnatls is
             end if;
 
             if Print_Object then
-               Get_Name_String (ALIs.Table (Id).Ofile_Full_Name);
-               Max_Obj_Length := Integer'Max (Max_Obj_Length, Name_Len + 1);
+               if ALIs.Table (Id).No_Object then
+                  Max_Obj_Length :=
+                    Integer'Max (Max_Obj_Length, No_Obj'Length);
+               else
+                  Get_Name_String (ALIs.Table (Id).Ofile_Full_Name);
+                  Max_Obj_Length := Integer'Max (Max_Obj_Length, Name_Len + 1);
+               end if;
             end if;
          end if;
       end loop;
@@ -363,8 +370,13 @@ procedure Gnatls is
 
    begin
       if Print_Object then
-         Get_Name_String (O);
-         Object_Name := To_Host_File_Spec (Name_Buffer (1 .. Name_Len));
+         if O /= No_File then
+            Get_Name_String (O);
+            Object_Name := To_Host_File_Spec (Name_Buffer (1 .. Name_Len));
+         else
+            Object_Name := No_Obj'Unchecked_Access;
+         end if;
+
          Write_Str (Object_Name.all);
 
          if Print_Source or else Print_Unit then
@@ -501,14 +513,21 @@ procedure Gnatls is
          end if;
 
          if Verbose_Mode then
-            if U.Preelab        or
-               U.No_Elab        or
-               U.Pure           or
-               U.Elaborate_Body or
-               U.Remote_Types   or
-               U.Shared_Passive or
-               U.RCI            or
-               U.Predefined
+            if U.Preelab             or
+               U.No_Elab             or
+               U.Pure                or
+               U.Dynamic_Elab        or
+               U.Has_RACW            or
+               U.Remote_Types        or
+               U.Shared_Passive      or
+               U.RCI                 or
+               U.Predefined          or
+               U.Internal            or
+               U.Is_Generic          or
+               U.Init_Scalars        or
+               U.Interface           or
+               U.Body_Needed_For_SAL or
+               U.Elaborate_Body
             then
                Write_Eol; Write_Str ("     Flags  =>");
 
@@ -522,6 +541,50 @@ procedure Gnatls is
 
                if U.Pure then
                   Write_Str (" Pure");
+               end if;
+
+               if U.Dynamic_Elab then
+                  Write_Str (" Dynamic_Elab");
+               end if;
+
+               if U.Has_RACW then
+                  Write_Str (" Has_RACW");
+               end if;
+
+               if U.Remote_Types then
+                  Write_Str (" Remote_Types");
+               end if;
+
+               if U.Shared_Passive then
+                  Write_Str (" Shared_Passive");
+               end if;
+
+               if U.RCI then
+                  Write_Str (" RCI");
+               end if;
+
+               if U.Predefined then
+                  Write_Str (" Predefined");
+               end if;
+
+               if U.Internal then
+                  Write_Str (" Internal");
+               end if;
+
+               if U.Is_Generic then
+                  Write_Str (" Is_Generic");
+               end if;
+
+               if U.Init_Scalars then
+                  Write_Str (" Init_Scalars");
+               end if;
+
+               if U.Interface then
+                  Write_Str (" Interface");
+               end if;
+
+               if U.Body_Needed_For_SAL then
+                  Write_Str (" Body_Needed_For_SAL");
                end if;
 
                if U.Elaborate_Body then
@@ -540,9 +603,6 @@ procedure Gnatls is
                   Write_Str (" Predefined");
                end if;
 
-               if U.RCI then
-                  Write_Str (" Remote_Call_Interface");
-               end if;
             end if;
          end if;
 
@@ -966,7 +1026,11 @@ begin
          Get_Name_String (Units.Table (ALIs.Table (Id).First_Unit).Uname);
 
          if Also_Predef or else not Is_Internal_Unit then
-            Output_Object (ALIs.Table (Id).Ofile_Full_Name);
+            if ALIs.Table (Id).No_Object then
+               Output_Object (No_File);
+            else
+               Output_Object (ALIs.Table (Id).Ofile_Full_Name);
+            end if;
 
             --  In verbose mode print all main units in the ALI file, otherwise
             --  just print the first one to ease columnwise printout
