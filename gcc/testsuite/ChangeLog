@@ -1,3 +1,8 @@
+2004-02-13  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/13927
+	* g++.dg/other/error8.C: New test.
+
 2004-02-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14083
