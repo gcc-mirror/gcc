@@ -23,7 +23,7 @@ case $BASH_VERSION in
 esac
 
 flags_script=$BUILD_DIR/scripts/testsuite_flags
-INCLUDES=`$flags_script --build-includes`
+INCLUDES="`$flags_script --build-includes` -include bits/stdc++.h"
 FLAGS=`$flags_script --cxxflags`
 THREAD_FLAG='-pthread'
 COMPILER=`$flags_script --build-cxx`
