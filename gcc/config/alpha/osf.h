@@ -57,12 +57,13 @@ Boston, MA 02111-1307, USA.  */
  %{threads: -lpthreads} %{pthread|threads: -lpthread -lmach -lexc} -lc"
 
 /* Pass "-G 8" to ld because Alpha's CC does.  Pass -O3 if we are
-   optimizing, -O1 if we are not.  Pass -shared, -non_shared or
+   optimizing, -O1 if we are not.  Pass -S to silence `weak symbol
+   multiply defined' warnings.  Pass -shared, -non_shared or
    -call_shared as appropriate.  Pass -hidden_symbol so that our
    constructor and call-frame data structures are not accidentally
    overridden.  */
 #define LINK_SPEC  \
-  "-G 8 %{O*:-O3} %{!O*:-O1} %{static:-non_shared} \
+  "-G 8 %{O*:-O3} %{!O*:-O1} -S %{static:-non_shared} \
    %{!static:%{shared:-shared -hidden_symbol _GLOBAL_*} \
    %{!shared:-call_shared}} %{pg} %{taso} %{rpath*}"
 
