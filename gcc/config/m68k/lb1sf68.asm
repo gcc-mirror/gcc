@@ -1,5 +1,5 @@
 /* libgcc1 routines for 68000 w/o floating-point hardware.
-   Copyright (C) 1994, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2685,9 +2685,9 @@ Laddsf$3:
 #else
 	movel	d6,d4
 	movel	a0,d6
-	movel	d4,d6
+	movel	d4,a0
 	movel	d7,d4
-	movel	a1,d4
+	movel	a1,d7
 	movel	d4,a1
 #endif
 	eorl	d6,d7		| combine sign bits
