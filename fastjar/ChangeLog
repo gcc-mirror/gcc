@@ -1,3 +1,8 @@
+2002-11-21  Ranjit Mathew <rmathew@hotmail.com>
+
+	* jartool.c (extract_jar): Use "open" with O_BINARY instead of
+	"creat" to create extracted files.
+
 2002-11-11  Tom Tromey  <tromey@redhat.com>
 
 	* dostime.c (dos2unixtime): Mask for seconds is 0x1f.  Correctly
