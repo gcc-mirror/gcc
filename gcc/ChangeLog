@@ -1,3 +1,7 @@
+2002-09-04  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/sparc/t-netbsd64: Disable multilib for now.
+
 2002-09-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* c-tree.h (skip_evaluation): Move declaration...
