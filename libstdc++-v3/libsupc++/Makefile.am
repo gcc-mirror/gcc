@@ -117,9 +117,6 @@ AM_CXXFLAGS = \
 # an include diretory, which screws up shadow headers. (That way,
 # things like -O2 passed down from the toplevel can be overridden by
 # --enable-debug.)
-CXXCOMPILE = $(CXX) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	     $(CXXFLAGS) $(AM_CXXFLAGS) 
-
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(INCLUDES) \
 	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
 

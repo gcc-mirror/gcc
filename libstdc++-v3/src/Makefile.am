@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.38 2000/10/10 23:50:39 bkoz Exp $
+## $Id: Makefile.am,v 1.39 2000/10/12 11:45:23 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -310,9 +310,6 @@ AM_CXXFLAGS = \
 # an include diretory, which screws up shadow headers. (That way,
 # things like -O2 passed down from the toplevel can be overridden by
 # --enable-debug.)
-CXXCOMPILE = $(CXX) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	     $(CXXFLAGS) $(AM_CXXFLAGS) 
-
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(INCLUDES) \
 	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
 

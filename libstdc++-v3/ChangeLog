@@ -11,7 +11,12 @@
 	* configure.in: Use it.
 
 	* mkcheck.in (SRC_DIR): Use C_INCLUDE_DIR.
-	
+
+	* src/Makefile.am (CXXCOMPILE): Remove.
+	* src/Makefile.in: Regenerate.
+	* libsupc++/Makefile.am (CXXCOMPILE): Same here.
+	* libsupc++/Makefile.in: Regenerate.
+
 2000-10-11  Phil Edwards  <pme@sources.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_LINKER_FEATURES):  Comment out
