@@ -503,7 +503,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs ${libgcj} target-newlib target-libgloss"
     ;;
   crx-*-*)
-    noconfigdirs="$noconfigdirs target-libgloss target-libstdc++-v3 target-mudflap ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libstdc++-v3 target-mudflap ${libgcj}"
     ;;
   d10v-*-*)
     noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj}"
