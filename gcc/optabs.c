@@ -1309,6 +1309,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 						   copy_rtx (xop0),
 						   copy_rtx (xop1)));
 	    }
+	  else
+	    target = xtarget;
 
 	  return target;
 	}
