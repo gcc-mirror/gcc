@@ -544,7 +544,8 @@ reload (first, global, dumpfile)
   bzero (cannot_omit_stores, max_regno);
 
 #ifdef SMALL_REGISTER_CLASSES
-  CLEAR_HARD_REG_SET (forbidden_regs);
+  if (SMALL_REGISTER_CLASSES)
+    CLEAR_HARD_REG_SET (forbidden_regs);
 #endif
 
   /* Look for REG_EQUIV notes; record what each pseudo is equivalent to.
@@ -722,9 +723,10 @@ reload (first, global, dumpfile)
      rtl as a spill register.  But on some, we have to.  Those will have
      taken care to keep the life of hard regs as short as possible.  */
 
-#ifndef SMALL_REGISTER_CLASSES
-  COPY_HARD_REG_SET (forbidden_regs, bad_spill_regs);
+#ifdef SMALL_REGISTER_CLASSES
+  if (! SMALL_REGISTER_CLASSES)
 #endif
+    COPY_HARD_REG_SET (forbidden_regs, bad_spill_regs);
 
   /* Spill any hard regs that we know we can't eliminate.  */
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
@@ -986,7 +988,7 @@ reload (first, global, dumpfile)
 #ifdef SMALL_REGISTER_CLASSES
 	      /* Set avoid_return_reg if this is an insn
 		 that might use the value of a function call.  */
-	      if (GET_CODE (insn) == CALL_INSN)
+	      if (SMALL_REGISTER_CLASSES && GET_CODE (insn) == CALL_INSN)
 		{
 		  if (GET_CODE (PATTERN (insn)) == SET)
 		    after_call = SET_DEST (PATTERN (insn));
@@ -996,7 +998,8 @@ reload (first, global, dumpfile)
 		  else
 		    after_call = 0;
 		}
-	      else if (after_call != 0
+	      else if (SMALL_REGISTER_CLASSES
+		       && after_call != 0
 		       && !(GET_CODE (PATTERN (insn)) == SET
 			    && SET_DEST (PATTERN (insn)) == stack_pointer_rtx))
 		{
@@ -1344,7 +1347,7 @@ reload (first, global, dumpfile)
 		 This makes sure we have a register available that does
 		 not overlap the return value.  */
 
-	      if (avoid_return_reg)
+	      if (SMALL_REGISTER_CLASSES && avoid_return_reg)
 		{
 		  int regno = REGNO (avoid_return_reg);
 		  int nregs
@@ -1702,7 +1705,7 @@ reload (first, global, dumpfile)
 		  /* We can't complete a group, so start one.  */
 #ifdef SMALL_REGISTER_CLASSES
 		  /* Look for a pair neither of which is explicitly used.  */
-		  if (i == FIRST_PSEUDO_REGISTER)
+		  if (SMALL_REGISTER_CLASSES && i == FIRST_PSEUDO_REGISTER)
 		    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 		      {
 			int k;
@@ -3584,7 +3587,9 @@ scan_paradoxical_subregs (x)
     {
     case REG:
 #ifdef SMALL_REGISTER_CLASSES
-      if (REGNO (x) < FIRST_PSEUDO_REGISTER && REG_USERVAR_P (x))
+      if (SMALL_REGISTER_CLASSES
+	  && REGNO (x) < FIRST_PSEUDO_REGISTER
+	  && REG_USERVAR_P (x))
 	SET_HARD_REG_BIT (forbidden_regs, REGNO (x));
 #endif
       return;
@@ -3698,14 +3703,15 @@ order_regs_for_reload (global)
       else if (regs_explicitly_used[i])
 	{
 	  hard_reg_n_uses[i].uses += large + 1;
-#ifndef SMALL_REGISTER_CLASSES
 	  /* ??? We are doing this here because of the potential that
 	     bad code may be generated if a register explicitly used in
 	     an insn was used as a spill register for that insn.  But
 	     not using these are spill registers may lose on some machine.
 	     We'll have to see how this works out.  */
-	  SET_HARD_REG_BIT (bad_spill_regs, i);
+#ifdef SMALL_REGISTER_CLASSES
+	  if (! SMALL_REGISTER_CLASSES)
 #endif
+	    SET_HARD_REG_BIT (bad_spill_regs, i);
 	}
     }
   hard_reg_n_uses[HARD_FRAME_POINTER_REGNUM].uses += 2 * large + 2;
@@ -3859,7 +3865,7 @@ reload_as_needed (first, live_known)
 #ifdef SMALL_REGISTER_CLASSES
 	  /* Set avoid_return_reg if this is an insn
 	     that might use the value of a function call.  */
-	  if (GET_CODE (insn) == CALL_INSN)
+	  if (SMALL_REGISTER_CLASSES && GET_CODE (insn) == CALL_INSN)
 	    {
 	      if (GET_CODE (PATTERN (insn)) == SET)
 		after_call = SET_DEST (PATTERN (insn));
@@ -3869,7 +3875,8 @@ reload_as_needed (first, live_known)
 	      else
 		after_call = 0;
 	    }
-	  else if (after_call != 0
+	  else if (SMALL_REGISTER_CLASSES
+		   && after_call != 0
 		   && !(GET_CODE (PATTERN (insn)) == SET
 			&& SET_DEST (PATTERN (insn)) == stack_pointer_rtx))
 	    {
@@ -3947,7 +3954,8 @@ reload_as_needed (first, live_known)
 	      /* Merge any reloads that we didn't combine for fear of 
 		 increasing the number of spill registers needed but now
 		 discover can be safely merged.  */
-	      merge_assigned_reloads (insn);
+	      if (SMALL_REGISTER_CLASSES)
+		merge_assigned_reloads (insn);
 #endif
 
 	      /* Generate the insns to reload operands into or out of
@@ -4991,7 +4999,7 @@ choose_reload_regs (insn, avoid_return_reg)
 #ifdef SMALL_REGISTER_CLASSES
   /* Don't bother with avoiding the return reg
      if we have no mandatory reload that could use it.  */
-  if (avoid_return_reg)
+  if (SMALL_REGISTER_CLASSES && avoid_return_reg)
     {
       int do_avoid = 0;
       int regno = REGNO (avoid_return_reg);
@@ -5024,7 +5032,8 @@ choose_reload_regs (insn, avoid_return_reg)
   {
     int tem = 0;
 #ifdef SMALL_REGISTER_CLASSES
-    int tem = (avoid_return_reg != 0);
+    if (SMALL_REGISTER_CLASSES)
+      tem = (avoid_return_reg != 0);
 #endif
     for (j = 0; j < n_reloads; j++)
       if (! reload_optional[j]
@@ -5041,7 +5050,7 @@ choose_reload_regs (insn, avoid_return_reg)
 #ifdef SMALL_REGISTER_CLASSES
   /* Don't use the subroutine call return reg for a reload
      if we are supposed to avoid it.  */
-  if (avoid_return_reg)
+  if (SMALL_REGISTER_CLASSES && avoid_return_reg)
     {
       int regno = REGNO (avoid_return_reg);
       int nregs

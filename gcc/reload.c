@@ -477,7 +477,7 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
 			      == CODE_FOR_nothing)))
 	    && (reg_class_size[(int) t_class] == 1
 #ifdef SMALL_REGISTER_CLASSES
-		|| 1
+		|| SMALL_REGISTER_CLASSES
 #endif
 		)
 	    && MERGABLE_RELOADS (secondary_type,
@@ -538,7 +538,7 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
 	    || (! in_p && reload_secondary_out_icode[s_reload] == t_icode))
 	&& (reg_class_size[(int) class] == 1
 #ifdef SMALL_REGISTER_CLASSES
-	    || 1
+	    || SMALL_REGISTER_CLASSES
 #endif
 	    )
 	&& MERGABLE_RELOADS (secondary_type, reload_when_needed[s_reload],
@@ -1157,7 +1157,7 @@ push_reload (in, out, inloc, outloc, class,
 	     && (in == 0 || reload_in[i] == 0 || MATCHES (reload_in[i], in))))
 	&& (reg_class_size[(int) class] == 1
 #ifdef SMALL_REGISTER_CLASSES
-	    || 1
+	    || SMALL_REGISTER_CLASSES
 #endif
 	    )
 	&& MERGABLE_RELOADS (type, reload_when_needed[i],
@@ -1193,7 +1193,7 @@ push_reload (in, out, inloc, outloc, class,
 	       && MATCHES (XEXP (in, 0), reload_in[i])))
 	  && (reg_class_size[(int) class] == 1
 #ifdef SMALL_REGISTER_CLASSES
-	      || 1
+	      || SMALL_REGISTER_CLASSES
 #endif
 	      )
 	  && MERGABLE_RELOADS (type, reload_when_needed[i],
@@ -1534,14 +1534,17 @@ combine_reloads ()
 	    || rtx_equal_p (secondary_memlocs_elim[(int) reload_outmode[output_reload]][reload_opnum[i]],
 			    secondary_memlocs_elim[(int) reload_outmode[output_reload]][reload_opnum[output_reload]]))
 #endif
+	&& (
 #ifdef SMALL_REGISTER_CLASSES
-	&& reload_reg_class[i] == reload_reg_class[output_reload]
+	    SMALL_REGISTER_CLASSES
 #else
-	&& (reg_class_subset_p (reload_reg_class[i],
-				reload_reg_class[output_reload])
-	    || reg_class_subset_p (reload_reg_class[output_reload],
-				   reload_reg_class[i]))
+	    0
 #endif
+	      ? reload_reg_class[i] == reload_reg_class[output_reload]
+	      : (reg_class_subset_p (reload_reg_class[i],
+				     reload_reg_class[output_reload])
+		 || reg_class_subset_p (reload_reg_class[output_reload],
+					reload_reg_class[i])))
 	&& (MATCHES (reload_in[i], reload_out[output_reload])
 	    /* Args reversed because the first arg seems to be
 	       the one that we imagine being modified
@@ -1559,7 +1562,7 @@ combine_reloads ()
 							     reload_out[output_reload]))))
 	&& (reg_class_size[(int) reload_reg_class[i]]
 #ifdef SMALL_REGISTER_CLASSES
-	     || 1
+	     || SMALL_REGISTER_CLASSES
 #endif
 	    )
 	/* We will allow making things slightly worse by combining an

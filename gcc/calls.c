@@ -271,10 +271,11 @@ prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
 #ifdef SMALL_REGISTER_CLASSES
     /* If we are using registers for parameters, force the
 	 function address into a register now.  */
-      reg_parm_seen ? force_not_mem (memory_address (FUNCTION_MODE, funexp))
-		    :
+      (SMALL_REGISTER_CLASSES && reg_parm_seen)
+       ? force_not_mem (memory_address (FUNCTION_MODE, funexp))
+       :
 #endif
-		      memory_address (FUNCTION_MODE, funexp);
+         memory_address (FUNCTION_MODE, funexp);
   else
     {
 #ifndef NO_FUNCTION_CSE
@@ -1657,7 +1658,8 @@ expand_call (exp, target, ignore)
 	    && args[i].mode != BLKmode
 	    && rtx_cost (args[i].value, SET) > 2
 #ifdef SMALL_REGISTER_CLASSES
-	    && (reg_parm_seen || preserve_subexpressions_p ())
+	    && ((SMALL_REGISTER_CLASSES && reg_parm_seen)
+		|| preserve_subexpressions_p ())
 #else
 	    && preserve_subexpressions_p ()
 #endif

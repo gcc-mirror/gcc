@@ -967,9 +967,10 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
 	      || (REGNO (src) < FIRST_PSEUDO_REGISTER
 		  && (! HARD_REGNO_MODE_OK (REGNO (src), GET_MODE (src))
 #ifdef SMALL_REGISTER_CLASSES
-		      || (! all_adjacent && ! REG_USERVAR_P (src))
-		      || (FUNCTION_VALUE_REGNO_P (REGNO (src))
-			  && ! REG_USERVAR_P (src))
+		      || (SMALL_REGISTER_CLASSES
+			  && ((! all_adjacent && ! REG_USERVAR_P (src))
+			      || (FUNCTION_VALUE_REGNO_P (REGNO (src))
+				  && ! REG_USERVAR_P (src))))
 #endif
 		      ))))
 	return 0;
@@ -1152,7 +1153,8 @@ combinable_i3pat (i3, loc, i2dest, i1dest, i1_not_in_src, pi3dest_killed)
 	      && (! HARD_REGNO_MODE_OK (REGNO (inner_dest),
 					GET_MODE (inner_dest))
 #ifdef SMALL_REGISTER_CLASSES
-		 || (GET_CODE (src) != CALL && ! REG_USERVAR_P (inner_dest)
+		 || (SMALL_REGISTER_CLASSES
+		     && GET_CODE (src) != CALL && ! REG_USERVAR_P (inner_dest)
 		     && FUNCTION_VALUE_REGNO_P (REGNO (inner_dest)))
 #endif
 		  ))
@@ -1296,7 +1298,8 @@ try_combine (i3, i2, i1)
       && GET_CODE (SET_SRC (PATTERN (i3))) == REG
       && REGNO (SET_SRC (PATTERN (i3))) >= FIRST_PSEUDO_REGISTER
 #ifdef SMALL_REGISTER_CLASSES
-      && (GET_CODE (SET_DEST (PATTERN (i3))) != REG
+      && (! SMALL_REGISTER_CLASSES
+	  || GET_CODE (SET_DEST (PATTERN (i3))) != REG
 	  || REGNO (SET_DEST (PATTERN (i3))) >= FIRST_PSEUDO_REGISTER
 	  || REG_USERVAR_P (SET_DEST (PATTERN (i3))))
 #endif
