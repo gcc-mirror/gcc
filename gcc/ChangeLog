@@ -1,3 +1,20 @@
+2004-07-08  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* tree-scalar-evolution.c: New file.
+	* tree-scalar-evolution.h: New file.
+	* tree-ssa-loop-niter.c: New file.
+	* Makefile.in (SCEV_H): New.
+	(tree-scalar-evolution.o, tree-ssa-loop-niter.o): Add new files.
+	* cfgloop.h (struct loop): Add bounds field.
+	* tree-flow.h (struct tree_niter_desc): New type.
+	(number_of_iterations_cond, number_of_iterations_exit,
+	loop_niter_by_eval, find_loop_niter_by_eval,
+	estimate_numbers_of_iterations, can_count_iv_in_wider_type,
+	free_numbers_of_iterations_estimates): Declare.
+	* tree.h (lower_bound_in_type, upper_bound_in_type): Declare.
+	* params.def (PARAM_MAX_ITERATIONS_TO_TRACK): New parameter.
+	* doc/invoke.texi (max-iterations-to-track): Document.
+
 2004-07-08  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_va_arg): Initinalize lab_over.

@@ -5174,6 +5174,11 @@ The maximum number of insns of an unswitched loop.
 @item max-unswitch-level
 The maximum number of branches unswitched in a single loop.
 
+@item max-iterations-to-track
+
+The maximum number of iterations of a loop the brute force algorithm
+for analysis of # of iterations of the loop tries to evaluate.
+
 @item hot-bb-count-fraction
 Select fraction of the maximal count of repetitions of basic block in program
 given basic block needs to have to be considered hot.
