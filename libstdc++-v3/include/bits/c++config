@@ -65,6 +65,7 @@
 
 // Concept-checking code is on by default unless users define
 // the _STL_NO_CONCEPT_CHECKS hook.
+//#define _STL_NO_CONCEPT_CHECKS 1
 #if !defined(_STL_NO_CONCEPT_CHECKS)
 #  define __STL_USE_CONCEPT_CHECKS
 #endif

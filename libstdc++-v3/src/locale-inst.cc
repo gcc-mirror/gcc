@@ -44,7 +44,6 @@
 
 namespace std
 {
-
   typedef ostreambuf_iterator<char, char_traits<char> > obuf_iterator;
   typedef istreambuf_iterator<char, char_traits<char> > ibuf_iterator;
   typedef ostreambuf_iterator<wchar_t, char_traits<wchar_t> > wobuf_iterator;
@@ -285,9 +284,6 @@ namespace std
     (wostreambuf_iter, ios_base &, wchar_t, bool, unsigned long long);
 #endif
 #endif // _GLIBCPP_USE_WCHAR_T
-
-  template
-    void __sink_unused_warning<locale::facet*>(locale::facet*);
 
   template 
     locale::facet** 
