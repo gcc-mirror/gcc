@@ -2970,6 +2970,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		 here.  */
 
 	      if (! CONSTANT_P (operand)
+		  && (enum reg_class) this_alternative[i] != NO_REGS
 		  && (PREFERRED_RELOAD_CLASS (operand,
 					      (enum reg_class) this_alternative[i])
 		      == NO_REGS))
