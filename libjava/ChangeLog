@@ -1,5 +1,12 @@
 2003-02-03  Ranjit Mathew <rmathew@hotmail.com>
 
+	* java/lang/natRuntime.cc (java::lang::Runtime::_load)): Take care
+	of the fact that on Win32, JNI_OnLoad is an "stdcall" function and
+	could also have been exported as "JNI_OnLoad@8" (MinGW) or
+	"_JNI_OnLoad@8" (MSVC).
+
+2003-02-03  Ranjit Mathew <rmathew@hotmail.com>
+
 	* resolve.cc (_Jv_JNIMethod::ncode): Use stdcall calling
 	convention on Win32 to invoke native JNI methods.
 

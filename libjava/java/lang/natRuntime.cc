@@ -1,6 +1,6 @@
 // natRuntime.cc - Implementation of native side of Runtime class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -241,6 +241,19 @@ java::lang::Runtime::_load (jstring path, jboolean do_search)
   add_library (h);
 
   void *onload = lt_dlsym (h, "JNI_OnLoad");
+
+#ifdef WIN32
+  // On Win32, JNI_OnLoad is an "stdcall" function taking two pointers
+  // (8 bytes) as arguments.  It could also have been exported as
+  // "JNI_OnLoad@8" (MinGW) or "_JNI_OnLoad@8" (MSVC).
+  if (onload == NULL)
+    {
+      onload = lt_dlsym (h, "JNI_OnLoad@8");
+      if (onload == NULL)
+	onload = lt_dlsym (h, "_JNI_OnLoad@8");
+    }
+#endif /* WIN32 */
+
   if (onload != NULL)
     {
       JavaVM *vm = _Jv_GetJavaVM ();
@@ -249,7 +262,7 @@ java::lang::Runtime::_load (jstring path, jboolean do_search)
 	  // FIXME: what?
 	  return;
 	}
-      jint vers = ((jint (*) (JavaVM *, void *)) onload) (vm, NULL);
+      jint vers = ((jint (JNICALL *) (JavaVM *, void *)) onload) (vm, NULL);
       if (vers != JNI_VERSION_1_1 && vers != JNI_VERSION_1_2
 	  && vers != JNI_VERSION_1_4)
 	{
