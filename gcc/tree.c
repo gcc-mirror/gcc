@@ -844,13 +844,21 @@ make_node (code)
       kind = c_kind;
 #endif
       obstack = expression_obstack;
-      /* We can't use tree_code_length for this, since the number of words
-	 is machine-dependent due to varying alignment of `double'.  */
-      if (code == REAL_CST)
-	{
-	  length = sizeof (struct tree_real_cst);
-	  break;
-	}
+
+      /* We can't use tree_code_length for INTEGER_CST, since the number of
+	 words is machine-dependent due to varying length of HOST_WIDE_INT,
+	 which might be wider than a pointer (e.g., long long).  Similarly
+	 for REAL_CST, since the number of words is machine-dependent due
+	 to varying size and alignment of `double'.  */
+
+      if (code == INTEGER_CST)
+	length = sizeof (struct tree_int_cst);
+      else if (code == REAL_CST)
+	length = sizeof (struct tree_real_cst);
+      else
+	length = sizeof (struct tree_common)
+	  + tree_code_length[(int) code] * sizeof (char *);
+      break;
 
     case 'x':  /* something random, like an identifier.  */
 #ifdef GATHER_STATISTICS
