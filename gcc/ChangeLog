@@ -1,3 +1,11 @@
+2004-07-12  Richard Henderson  <rth@redhat.com>
+
+	* target.h (struct gcc_target): Move gimplify_va_arg_expr
+	next to build_builtin_va_list.
+	* target-def.h (TARGET_GIMPLIFY_VA_ARG_EXPR): Update to match.
+	* builtins.c (gimplify_va_arg_expr): Likewise.
+	* gimplify.c (copy_if_shared_r): Likewise.
+
 2004-07-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* passes.c (rest_of_decl_compilation): Don't defer call of

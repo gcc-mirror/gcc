@@ -667,7 +667,7 @@ copy_if_shared_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
     {
       TREE_VISITED (t) = 1;
       if (TREE_CODE (*tp) == VA_ARG_EXPR
-	  && targetm.calls.gimplify_va_arg_expr == NULL)
+	  && targetm.gimplify_va_arg_expr == NULL)
 	{
 	  /* Mark any _DECL inside the operand as volatile to avoid
 	     the optimizers messing around with it. We have to do this

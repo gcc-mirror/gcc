@@ -4642,11 +4642,11 @@ gimplify_va_arg_expr (tree *expr_p, tree *pre_p, tree *post_p)
       else
 	gimplify_expr (&valist, pre_p, post_p, is_gimple_min_lval, fb_lvalue);
 
-      if (!targetm.calls.gimplify_va_arg_expr)
+      if (!targetm.gimplify_va_arg_expr)
 	/* Once most targets are converted this should abort.  */
 	return GS_ALL_DONE;
 
-      *expr_p = targetm.calls.gimplify_va_arg_expr (valist, type, pre_p, post_p);
+      *expr_p = targetm.gimplify_va_arg_expr (valist, type, pre_p, post_p);
       return GS_OK;
     }
 }
