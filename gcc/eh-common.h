@@ -1,5 +1,5 @@
 /* EH stuff
-   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -92,6 +92,7 @@ typedef struct exception_descriptor
   exception_table table[1];
 } exception_descriptor;
 
+struct __eh_info; /* forward declaration */
 
 /* A pointer to a matching function is initialized at runtime by the 
    specific language if run-time exceptions are supported. 
@@ -101,7 +102,7 @@ typedef struct exception_descriptor
     3 - exception table region is in (exception descriptor *)
 */
 
-typedef void * (*__eh_matcher)          PROTO ((void *, void *, void *));
+typedef void * (*__eh_matcher)          PROTO ((struct __eh_info *, void *, struct exception_descriptor *));
 
 /* This value is to be checked as a 'match all' case in the runtime field. */
 
