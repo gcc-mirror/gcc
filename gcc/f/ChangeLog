@@ -1,5 +1,10 @@
 1999-02-14  Craig Burley  <craig@jcb-sc.com>
 
+	* lang-specs.h, g77.1, g77.texi, news.texi: Recognize `.FOR'
+	and `.FPP' as well as `.for' and `.fpp'.
+
+1999-02-14  Craig Burley  <craig@jcb-sc.com>
+
 	* intdoc.in (LOG10): Fix description.
 
 1999-02-14  Craig Burley  <craig@jcb-sc.com>

@@ -26,6 +26,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
   {".F", {"@f77-cpp-input"}},
   {".fpp", {"@f77-cpp-input"}},
+  {".FPP", {"@f77-cpp-input"}},
   {"@f77-cpp-input",
      /* For f77 we want -traditional to avoid errors with, for
 	instance, mismatched '.  Also, we avoid unpleasant surprises
@@ -70,6 +71,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
            %{!pipe:%g.s} %A\n }}"}},
   {".f", {"@f77"}},
   {".for", {"@f77"}},
+  {".FOR", {"@f77"}},
   {"@f77",
    {"%{!M:%{!MM:%{!E:f771 %i %(f771) \
 		   %{!Q:-quiet} -dumpbase %b.f %{d*} %{m*} %{a}\
