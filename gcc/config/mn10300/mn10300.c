@@ -244,17 +244,18 @@ expand_epilogue ()
 			     frame_pointer_rtx,
 			     GEN_INT (-20)));
       emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
+      size = 0;
     }
-  else if (size)
-    emit_insn (gen_addsi3 (stack_pointer_rtx,
-			   stack_pointer_rtx,
-			   GEN_INT (size)));
+  else if (size > 255)
+    {
+      emit_insn (gen_addsi3 (stack_pointer_rtx,
+			     stack_pointer_rtx,
+			     GEN_INT (size)));
+      size = 0;
+    }
 
-  /* And restore the registers.  */
-  emit_insn (gen_load_movm ());
-
-  /* And return.  */
-  emit_jump_insn (gen_return_internal ());
+  /* Deallocate remaining stack, restore registers and return.  And return.  */
+  emit_jump_insn (gen_return_internal (GEN_INT (size)));
 }
 
 /* Update the condition code from the insn.  */
