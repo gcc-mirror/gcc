@@ -51,7 +51,6 @@ tSCC zAaa_Ki_IfaceSelect0[] =
        "These definitions are for HP Internal developers";
 
 #define    AAA_KI_IFACE_TEST_CT  1
-#define    AAA_KI_IFACE_RE_CT    1
 tTestDesc aAaa_Ki_IfaceTests[] = {
   { TT_EGREP,    zAaa_Ki_IfaceSelect0, (regex_t*)NULL }, };
 
@@ -85,7 +84,6 @@ tSCC zAaa_KiSelect0[] =
        "11.00 HP-UX LP64";
 
 #define    AAA_KI_TEST_CT  1
-#define    AAA_KI_RE_CT    1
 tTestDesc aAaa_KiTests[] = {
   { TT_EGREP,    zAaa_KiSelect0, (regex_t*)NULL }, };
 
@@ -119,7 +117,6 @@ tSCC zAaa_Ki_CallsSelect0[] =
        "kthread_create_caller_t";
 
 #define    AAA_KI_CALLS_TEST_CT  1
-#define    AAA_KI_CALLS_RE_CT    1
 tTestDesc aAaa_Ki_CallsTests[] = {
   { TT_EGREP,    zAaa_Ki_CallsSelect0, (regex_t*)NULL }, };
 
@@ -153,7 +150,6 @@ tSCC zAaa_Ki_DefsSelect0[] =
        "Kernel Instrumentation Definitions";
 
 #define    AAA_KI_DEFS_TEST_CT  1
-#define    AAA_KI_DEFS_RE_CT    1
 tTestDesc aAaa_Ki_DefsTests[] = {
   { TT_EGREP,    zAaa_Ki_DefsSelect0, (regex_t*)NULL }, };
 
@@ -180,7 +176,6 @@ tSCC zAaa_Bad_FixesList[] =
  */
 #define apzAaa_Bad_FixesMachs (const char**)NULL
 #define AAA_BAD_FIXES_TEST_CT  0
-#define AAA_BAD_FIXES_RE_CT    0
 #define aAaa_Bad_FixesTests   (tTestDesc*)NULL
 
 /*
@@ -213,7 +208,6 @@ tSCC zAaa_TimeSelect0[] =
        "11.0 and later representation of ki time";
 
 #define    AAA_TIME_TEST_CT  1
-#define    AAA_TIME_RE_CT    1
 tTestDesc aAaa_TimeTests[] = {
   { TT_EGREP,    zAaa_TimeSelect0, (regex_t*)NULL }, };
 
@@ -240,7 +234,6 @@ tSCC zAab_Dgux_Int_VarargsList[] =
  */
 #define apzAab_Dgux_Int_VarargsMachs (const char**)NULL
 #define AAB_DGUX_INT_VARARGS_TEST_CT  0
-#define AAB_DGUX_INT_VARARGS_RE_CT    0
 #define aAab_Dgux_Int_VarargsTests   (tTestDesc*)NULL
 
 /*
@@ -337,7 +330,6 @@ tSCC zAab_Fd_Zero_Asm_Posix_Types_HBypass0[] =
        "} while";
 
 #define    AAB_FD_ZERO_ASM_POSIX_TYPES_H_TEST_CT  1
-#define    AAB_FD_ZERO_ASM_POSIX_TYPES_H_RE_CT    1
 tTestDesc aAab_Fd_Zero_Asm_Posix_Types_HTests[] = {
   { TT_NEGREP,   zAab_Fd_Zero_Asm_Posix_Types_HBypass0, (regex_t*)NULL }, };
 
@@ -386,7 +378,6 @@ tSCC* apzAab_Fd_Zero_Gnu_Types_HMachs[] = {
         "i[34567]86-*-linux-gnu*",
         (const char*)NULL };
 #define AAB_FD_ZERO_GNU_TYPES_H_TEST_CT  0
-#define AAB_FD_ZERO_GNU_TYPES_H_RE_CT    0
 #define aAab_Fd_Zero_Gnu_Types_HTests   (tTestDesc*)NULL
 
 /*
@@ -433,7 +424,6 @@ tSCC* apzAab_Fd_Zero_Selectbits_HMachs[] = {
         "i[34567]86-*-linux-gnu*",
         (const char*)NULL };
 #define AAB_FD_ZERO_SELECTBITS_H_TEST_CT  0
-#define AAB_FD_ZERO_SELECTBITS_H_RE_CT    0
 #define aAab_Fd_Zero_Selectbits_HTests   (tTestDesc*)NULL
 
 /*
@@ -489,7 +479,6 @@ tSCC* apzAab_Svr4_Replace_ByteorderMachs[] = {
         "sparc-*-solaris2.[0-4]",
         (const char*)NULL };
 #define AAB_SVR4_REPLACE_BYTEORDER_TEST_CT  0
-#define AAB_SVR4_REPLACE_BYTEORDER_RE_CT    0
 #define aAab_Svr4_Replace_ByteorderTests   (tTestDesc*)NULL
 
 /*
@@ -665,7 +654,6 @@ tSCC zAix_SyswaitSelect0[] =
        "bos325,";
 
 #define    AIX_SYSWAIT_TEST_CT  1
-#define    AIX_SYSWAIT_RE_CT    1
 tTestDesc aAix_SyswaitTests[] = {
   { TT_EGREP,    zAix_SyswaitSelect0, (regex_t*)NULL }, };
 
@@ -701,7 +689,6 @@ tSCC zAix_VolatileSelect0[] =
        "typedef volatile int sig_atomic_t";
 
 #define    AIX_VOLATILE_TEST_CT  1
-#define    AIX_VOLATILE_RE_CT    1
 tTestDesc aAix_VolatileTests[] = {
   { TT_EGREP,    zAix_VolatileSelect0, (regex_t*)NULL }, };
 
@@ -736,7 +723,6 @@ tSCC zAlpha_GetoptSelect0[] =
        "getopt\\(int, char \\*\\[";
 
 #define    ALPHA_GETOPT_TEST_CT  1
-#define    ALPHA_GETOPT_RE_CT    1
 tTestDesc aAlpha_GetoptTests[] = {
   { TT_EGREP,    zAlpha_GetoptSelect0, (regex_t*)NULL }, };
 
@@ -771,7 +757,6 @@ tSCC zAlpha_ParensSelect0[] =
        "#ifndef\\(__mips64\\)";
 
 #define    ALPHA_PARENS_TEST_CT  1
-#define    ALPHA_PARENS_RE_CT    1
 tTestDesc aAlpha_ParensTests[] = {
   { TT_EGREP,    zAlpha_ParensSelect0, (regex_t*)NULL }, };
 
@@ -806,7 +791,6 @@ tSCC zAlpha_SbrkSelect0[] =
        "char[ \t]*\\*[\t ]*sbrk[ \t]*\\(";
 
 #define    ALPHA_SBRK_TEST_CT  1
-#define    ALPHA_SBRK_RE_CT    1
 tTestDesc aAlpha_SbrkTests[] = {
   { TT_EGREP,    zAlpha_SbrkSelect0, (regex_t*)NULL }, };
 
@@ -841,7 +825,6 @@ tSCC zArm_Norcroft_HintSelect0[] =
        "___type p_type";
 
 #define    ARM_NORCROFT_HINT_TEST_CT  1
-#define    ARM_NORCROFT_HINT_RE_CT    1
 tTestDesc aArm_Norcroft_HintTests[] = {
   { TT_EGREP,    zArm_Norcroft_HintSelect0, (regex_t*)NULL }, };
 
@@ -876,7 +859,6 @@ tSCC zArm_WcharSelect0[] =
        "#[ \t]*define[ \t]*__wchar_t";
 
 #define    ARM_WCHAR_TEST_CT  1
-#define    ARM_WCHAR_RE_CT    1
 tTestDesc aArm_WcharTests[] = {
   { TT_EGREP,    zArm_WcharSelect0, (regex_t*)NULL }, };
 
@@ -912,7 +894,6 @@ tSCC zAux_AsmSelect0[] =
        "#ifndef NOINLINE";
 
 #define    AUX_ASM_TEST_CT  1
-#define    AUX_ASM_RE_CT    1
 tTestDesc aAux_AsmTests[] = {
   { TT_EGREP,    zAux_AsmSelect0, (regex_t*)NULL }, };
 
@@ -940,7 +921,6 @@ tSCC zAvoid_BoolList[] =
  */
 #define apzAvoid_BoolMachs (const char**)NULL
 #define AVOID_BOOL_TEST_CT  0
-#define AVOID_BOOL_RE_CT    0
 #define aAvoid_BoolTests   (tTestDesc*)NULL
 
 /*
@@ -993,7 +973,6 @@ tSCC zBad_Struct_TermSelect0[] =
        "^[ \t]*typedef[ \t]+struct[ \t]+term[ \t]*;";
 
 #define    BAD_STRUCT_TERM_TEST_CT  1
-#define    BAD_STRUCT_TERM_RE_CT    1
 tTestDesc aBad_Struct_TermTests[] = {
   { TT_EGREP,    zBad_Struct_TermSelect0, (regex_t*)NULL }, };
 
@@ -1021,7 +1000,6 @@ tSCC zBadquoteList[] =
  */
 #define apzBadquoteMachs (const char**)NULL
 #define BADQUOTE_TEST_CT  0
-#define BADQUOTE_RE_CT    0
 #define aBadquoteTests   (tTestDesc*)NULL
 
 /*
@@ -1055,7 +1033,6 @@ tSCC zBad_LvalSelect0[] =
        "^[ \t]*#[ \t]*pragma[ \t][ \t]*extern_prefix";
 
 #define    BAD_LVAL_TEST_CT  1
-#define    BAD_LVAL_RE_CT    1
 tTestDesc aBad_LvalTests[] = {
   { TT_EGREP,    zBad_LvalSelect0, (regex_t*)NULL }, };
 
@@ -1096,7 +1073,6 @@ tSCC zBroken_Assert_StdioBypass0[] =
        "include.*stdio.h";
 
 #define    BROKEN_ASSERT_STDIO_TEST_CT  2
-#define    BROKEN_ASSERT_STDIO_RE_CT    2
 tTestDesc aBroken_Assert_StdioTests[] = {
   { TT_NEGREP,   zBroken_Assert_StdioBypass0, (regex_t*)NULL },
   { TT_EGREP,    zBroken_Assert_StdioSelect0, (regex_t*)NULL }, };
@@ -1139,7 +1115,6 @@ tSCC zBroken_Assert_StdlibBypass0[] =
        "include.*stdlib.h";
 
 #define    BROKEN_ASSERT_STDLIB_TEST_CT  2
-#define    BROKEN_ASSERT_STDLIB_RE_CT    2
 tTestDesc aBroken_Assert_StdlibTests[] = {
   { TT_NEGREP,   zBroken_Assert_StdlibBypass0, (regex_t*)NULL },
   { TT_EGREP,    zBroken_Assert_StdlibSelect0, (regex_t*)NULL }, };
@@ -1177,7 +1152,6 @@ tSCC zBsd43_Io_MacrosSelect0[] =
        "BSD43__IO";
 
 #define    BSD43_IO_MACROS_TEST_CT  1
-#define    BSD43_IO_MACROS_RE_CT    1
 tTestDesc aBsd43_Io_MacrosTests[] = {
   { TT_EGREP,    zBsd43_Io_MacrosSelect0, (regex_t*)NULL }, };
 
@@ -1206,7 +1180,6 @@ tSCC zDec_Intern_AsmList[] =
  */
 #define apzDec_Intern_AsmMachs (const char**)NULL
 #define DEC_INTERN_ASM_TEST_CT  0
-#define DEC_INTERN_ASM_RE_CT    0
 #define aDec_Intern_AsmTests   (tTestDesc*)NULL
 
 /*
@@ -1241,7 +1214,6 @@ tSCC zNo_Double_SlashName[] =
 tSCC zNo_Double_SlashFTst0[] = "double_slash";
 
 #define    NO_DOUBLE_SLASH_TEST_CT  1
-#define    NO_DOUBLE_SLASH_RE_CT    0
 tTestDesc aNo_Double_SlashTests[] = {
   { TT_FUNCTION, zNo_Double_SlashFTst0,   0 /* unused */ }, };
 
@@ -1268,7 +1240,6 @@ tSCC zEcd_CursorList[] =
  */
 #define apzEcd_CursorMachs (const char**)NULL
 #define ECD_CURSOR_TEST_CT  0
-#define ECD_CURSOR_RE_CT    0
 #define aEcd_CursorTests   (tTestDesc*)NULL
 
 /*
@@ -1297,7 +1268,6 @@ tSCC* apzSco5_Stat_WrappersMachs[] = {
         "i*86-*-sco3.2v5*",
         (const char*)NULL };
 #define SCO5_STAT_WRAPPERS_TEST_CT  0
-#define SCO5_STAT_WRAPPERS_RE_CT    0
 #define aSco5_Stat_WrappersTests   (tTestDesc*)NULL
 
 /*
@@ -1337,7 +1307,6 @@ tSCC zEnd_Else_LabelName[] =
 tSCC zEnd_Else_LabelFTst0[] = "else_endif_label";
 
 #define    END_ELSE_LABEL_TEST_CT  1
-#define    END_ELSE_LABEL_RE_CT    0
 tTestDesc aEnd_Else_LabelTests[] = {
   { TT_FUNCTION, zEnd_Else_LabelFTst0,   0 /* unused */ }, };
 
@@ -1371,7 +1340,6 @@ tSCC zHp_InlineSelect0[] =
        "include.*\"\\.\\./machine/";
 
 #define    HP_INLINE_TEST_CT  1
-#define    HP_INLINE_RE_CT    1
 tTestDesc aHp_InlineTests[] = {
   { TT_EGREP,    zHp_InlineSelect0, (regex_t*)NULL }, };
 
@@ -1407,7 +1375,6 @@ tSCC zHp_SysfileSelect0[] =
        "HPUX_SOURCE";
 
 #define    HP_SYSFILE_TEST_CT  1
-#define    HP_SYSFILE_RE_CT    1
 tTestDesc aHp_SysfileTests[] = {
   { TT_EGREP,    zHp_SysfileSelect0, (regex_t*)NULL }, };
 
@@ -1442,7 +1409,6 @@ tSCC zCxx_UnreadyBypass0[] =
        "\"C\"|__BEGIN_DECLS";
 
 #define    CXX_UNREADY_TEST_CT  1
-#define    CXX_UNREADY_RE_CT    1
 tTestDesc aCxx_UnreadyTests[] = {
   { TT_NEGREP,   zCxx_UnreadyBypass0, (regex_t*)NULL }, };
 
@@ -1478,7 +1444,6 @@ tSCC zHpux_MaxintList[] =
  */
 #define apzHpux_MaxintMachs (const char**)NULL
 #define HPUX_MAXINT_TEST_CT  0
-#define HPUX_MAXINT_RE_CT    0
 #define aHpux_MaxintTests   (tTestDesc*)NULL
 
 /*
@@ -1515,7 +1480,6 @@ tSCC zHpux_SystimeSelect0[] =
        "^extern struct sigevent;";
 
 #define    HPUX_SYSTIME_TEST_CT  1
-#define    HPUX_SYSTIME_RE_CT    1
 tTestDesc aHpux_SystimeTests[] = {
   { TT_EGREP,    zHpux_SystimeSelect0, (regex_t*)NULL }, };
 
@@ -1550,7 +1514,6 @@ tSCC zHpux8_Bogus_InlinesSelect0[] =
        "inline";
 
 #define    HPUX8_BOGUS_INLINES_TEST_CT  1
-#define    HPUX8_BOGUS_INLINES_RE_CT    1
 tTestDesc aHpux8_Bogus_InlinesTests[] = {
   { TT_EGREP,    zHpux8_Bogus_InlinesSelect0, (regex_t*)NULL }, };
 
@@ -1588,7 +1551,6 @@ tSCC zHpux11_Uint32_CSelect0[] =
        "^#define UINT32_C\\(__c\\)[ \t]*__CONCAT__\\(__CONCAT_U__\\(__c\\),l\\)";
 
 #define    HPUX11_UINT32_C_TEST_CT  1
-#define    HPUX11_UINT32_C_RE_CT    1
 tTestDesc aHpux11_Uint32_CTests[] = {
   { TT_EGREP,    zHpux11_Uint32_CSelect0, (regex_t*)NULL }, };
 
@@ -1625,7 +1587,6 @@ tSCC zInteractv_Add1Test1[] =
        " -n \"`grep _POSIX_VERSION /usr/include/sys/unistd.h`\"";
 
 #define    INTERACTV_ADD1_TEST_CT  2
-#define    INTERACTV_ADD1_RE_CT    0
 tTestDesc aInteractv_Add1Tests[] = {
   { TT_TEST,     zInteractv_Add1Test0,   0 /* unused */ },
   { TT_TEST,     zInteractv_Add1Test1,   0 /* unused */ }, };
@@ -1663,7 +1624,6 @@ tSCC zInteractv_Add2Test1[] =
        " -n \"`grep _POSIX_VERSION /usr/include/sys/unistd.h`\"";
 
 #define    INTERACTV_ADD2_TEST_CT  2
-#define    INTERACTV_ADD2_RE_CT    0
 tTestDesc aInteractv_Add2Tests[] = {
   { TT_TEST,     zInteractv_Add2Test0,   0 /* unused */ },
   { TT_TEST,     zInteractv_Add2Test1,   0 /* unused */ }, };
@@ -1701,7 +1661,6 @@ tSCC zInteractv_Add3Test1[] =
        " -n \"`grep _POSIX_VERSION /usr/include/sys/unistd.h`\"";
 
 #define    INTERACTV_ADD3_TEST_CT  2
-#define    INTERACTV_ADD3_RE_CT    0
 tTestDesc aInteractv_Add3Tests[] = {
   { TT_TEST,     zInteractv_Add3Test0,   0 /* unused */ },
   { TT_TEST,     zInteractv_Add3Test1,   0 /* unused */ }, };
@@ -1737,7 +1696,6 @@ tSCC zIo_Def_QuotesSelect0[] =
        "[ \t]*[ \t](_|DES)IO[A-Z]*[ \t]*\\( *[^,']";
 
 #define    IO_DEF_QUOTES_TEST_CT  1
-#define    IO_DEF_QUOTES_RE_CT    1
 tTestDesc aIo_Def_QuotesTests[] = {
   { TT_EGREP,    zIo_Def_QuotesSelect0, (regex_t*)NULL }, };
 
@@ -1774,7 +1732,6 @@ tSCC zIoctl_Fix_CtrlSelect0[] =
        "CTRL[ \t]*\\(";
 
 #define    IOCTL_FIX_CTRL_TEST_CT  1
-#define    IOCTL_FIX_CTRL_RE_CT    1
 tTestDesc aIoctl_Fix_CtrlTests[] = {
   { TT_EGREP,    zIoctl_Fix_CtrlSelect0, (regex_t*)NULL }, };
 
@@ -1814,7 +1771,6 @@ tSCC zIp_Missing_SemiSelect0[] =
        "}$";
 
 #define    IP_MISSING_SEMI_TEST_CT  1
-#define    IP_MISSING_SEMI_RE_CT    1
 tTestDesc aIp_Missing_SemiTests[] = {
   { TT_EGREP,    zIp_Missing_SemiSelect0, (regex_t*)NULL }, };
 
@@ -1842,7 +1798,6 @@ tSCC zIrix_Multiline_CmntList[] =
  */
 #define apzIrix_Multiline_CmntMachs (const char**)NULL
 #define IRIX_MULTILINE_CMNT_TEST_CT  0
-#define IRIX_MULTILINE_CMNT_RE_CT    0
 #define aIrix_Multiline_CmntTests   (tTestDesc*)NULL
 
 /*
@@ -1877,7 +1832,6 @@ tSCC zIrix_SockaddrSelect0[] =
        "authdes_create.*struct sockaddr";
 
 #define    IRIX_SOCKADDR_TEST_CT  1
-#define    IRIX_SOCKADDR_RE_CT    1
 tTestDesc aIrix_SockaddrTests[] = {
   { TT_EGREP,    zIrix_SockaddrSelect0, (regex_t*)NULL }, };
 
@@ -1906,7 +1860,6 @@ tSCC zIrix_Struct__FileList[] =
  */
 #define apzIrix_Struct__FileMachs (const char**)NULL
 #define IRIX_STRUCT__FILE_TEST_CT  0
-#define IRIX_STRUCT__FILE_RE_CT    0
 #define aIrix_Struct__FileTests   (tTestDesc*)NULL
 
 /*
@@ -1941,7 +1894,6 @@ tSCC zIrix_Asm_ApostropheSelect0[] =
        "^[ \t]*#.*[Ww]e're";
 
 #define    IRIX_ASM_APOSTROPHE_TEST_CT  1
-#define    IRIX_ASM_APOSTROPHE_RE_CT    1
 tTestDesc aIrix_Asm_ApostropheTests[] = {
   { TT_EGREP,    zIrix_Asm_ApostropheSelect0, (regex_t*)NULL }, };
 
@@ -1976,7 +1928,6 @@ tSCC zIsc_FmodSelect0[] =
        "fmod\\(double\\)";
 
 #define    ISC_FMOD_TEST_CT  1
-#define    ISC_FMOD_RE_CT    1
 tTestDesc aIsc_FmodTests[] = {
   { TT_EGREP,    zIsc_FmodSelect0, (regex_t*)NULL }, };
 
@@ -2006,7 +1957,6 @@ tSCC* apzMotorola_NestedMachs[] = {
         "m68k-motorola-sysv*",
         (const char*)NULL };
 #define MOTOROLA_NESTED_TEST_CT  0
-#define MOTOROLA_NESTED_RE_CT    0
 #define aMotorola_NestedTests   (tTestDesc*)NULL
 
 /*
@@ -2041,7 +1991,6 @@ tSCC zIsc_Sys_LimitsSelect0[] =
        "CHILD_MAX";
 
 #define    ISC_SYS_LIMITS_TEST_CT  1
-#define    ISC_SYS_LIMITS_RE_CT    1
 tTestDesc aIsc_Sys_LimitsTests[] = {
   { TT_EGREP,    zIsc_Sys_LimitsSelect0, (regex_t*)NULL }, };
 
@@ -2077,7 +2026,6 @@ tSCC zKandr_ConcatSelect0[] =
        "/\\*\\*/";
 
 #define    KANDR_CONCAT_TEST_CT  1
-#define    KANDR_CONCAT_RE_CT    1
 tTestDesc aKandr_ConcatTests[] = {
   { TT_EGREP,    zKandr_ConcatSelect0, (regex_t*)NULL }, };
 
@@ -2112,7 +2060,6 @@ tSCC zLimits_IfndefsBypass0[] =
        "ifndef[ \t]+FLT_MIN";
 
 #define    LIMITS_IFNDEFS_TEST_CT  1
-#define    LIMITS_IFNDEFS_RE_CT    1
 tTestDesc aLimits_IfndefsTests[] = {
   { TT_NEGREP,   zLimits_IfndefsBypass0, (regex_t*)NULL }, };
 
@@ -2171,7 +2118,6 @@ tSCC zLynx_Void_IntSelect0[] =
        "#[ \t]*define[ \t]+void[ \t]+int";
 
 #define    LYNX_VOID_INT_TEST_CT  1
-#define    LYNX_VOID_INT_RE_CT    1
 tTestDesc aLynx_Void_IntTests[] = {
   { TT_EGREP,    zLynx_Void_IntSelect0, (regex_t*)NULL }, };
 
@@ -2206,7 +2152,6 @@ tSCC zLynxos_Fcntl_ProtoSelect0[] =
        "fcntl.*\\(int, int, int\\)";
 
 #define    LYNXOS_FCNTL_PROTO_TEST_CT  1
-#define    LYNXOS_FCNTL_PROTO_RE_CT    1
 tTestDesc aLynxos_Fcntl_ProtoTests[] = {
   { TT_EGREP,    zLynxos_Fcntl_ProtoSelect0, (regex_t*)NULL }, };
 
@@ -2236,7 +2181,6 @@ tSCC* apzM88k_Bad_Hypot_OptMachs[] = {
         "m88k-motorola-sysv3*",
         (const char*)NULL };
 #define M88K_BAD_HYPOT_OPT_TEST_CT  0
-#define M88K_BAD_HYPOT_OPT_RE_CT    0
 #define aM88k_Bad_Hypot_OptTests   (tTestDesc*)NULL
 
 /*
@@ -2285,7 +2229,6 @@ tSCC zM88k_Bad_S_IfSelect0[] =
        "#define[ \t]+S_IS[A-Z]*(m)[ \t]";
 
 #define    M88K_BAD_S_IF_TEST_CT  1
-#define    M88K_BAD_S_IF_RE_CT    1
 tTestDesc aM88k_Bad_S_IfTests[] = {
   { TT_EGREP,    zM88k_Bad_S_IfSelect0, (regex_t*)NULL }, };
 
@@ -2323,7 +2266,6 @@ tSCC zM88k_Multi_InclBypass0[] =
        "#ifndef";
 
 #define    M88K_MULTI_INCL_TEST_CT  1
-#define    M88K_MULTI_INCL_RE_CT    1
 tTestDesc aM88k_Multi_InclTests[] = {
   { TT_NEGREP,   zM88k_Multi_InclBypass0, (regex_t*)NULL }, };
 
@@ -2364,7 +2306,6 @@ tSCC zMachine_NameSelect0[] =
        "^#[ \t]*(if|elif).*[^a-zA-Z0-9_](M32|_*MIPSE[LB]|_*SYSTYPE_[A-Z0-9]|_*[Rr][34]000|_*host_mips|_*i386|_*mips|bsd4|is68k|m[68]8k|mc680|news|ns32000|pdp11|pyr|sel|sony_news|sparc|sun|tahoe|tower|u370|u3b|unix|vax)";
 
 #define    MACHINE_NAME_TEST_CT  1
-#define    MACHINE_NAME_RE_CT    1
 tTestDesc aMachine_NameTests[] = {
   { TT_EGREP,    zMachine_NameSelect0, (regex_t*)NULL }, };
 
@@ -2439,7 +2380,6 @@ tSCC zMath_ExceptionBypass0[] =
        "We have a problem when using C++";
 
 #define    MATH_EXCEPTION_TEST_CT  2
-#define    MATH_EXCEPTION_RE_CT    2
 tTestDesc aMath_ExceptionTests[] = {
   { TT_NEGREP,   zMath_ExceptionBypass0, (regex_t*)NULL },
   { TT_EGREP,    zMath_ExceptionSelect0, (regex_t*)NULL }, };
@@ -2488,7 +2428,6 @@ tSCC zMath_Huge_Val_From_Dbl_MaxBypass0[] =
        "define[ \t]*DBL_MAX";
 
 #define    MATH_HUGE_VAL_FROM_DBL_MAX_TEST_CT  2
-#define    MATH_HUGE_VAL_FROM_DBL_MAX_RE_CT    2
 tTestDesc aMath_Huge_Val_From_Dbl_MaxTests[] = {
   { TT_NEGREP,   zMath_Huge_Val_From_Dbl_MaxBypass0, (regex_t*)NULL },
   { TT_EGREP,    zMath_Huge_Val_From_Dbl_MaxSelect0, (regex_t*)NULL }, };
@@ -2529,7 +2468,6 @@ tSCC zMath_Huge_Val_IfndefSelect0[] =
        "define[ \t]*HUGE_VAL";
 
 #define    MATH_HUGE_VAL_IFNDEF_TEST_CT  1
-#define    MATH_HUGE_VAL_IFNDEF_RE_CT    1
 tTestDesc aMath_Huge_Val_IfndefTests[] = {
   { TT_EGREP,    zMath_Huge_Val_IfndefSelect0, (regex_t*)NULL }, };
 
@@ -2560,7 +2498,6 @@ tSCC zNested_CommentList[] =
  */
 #define apzNested_CommentMachs (const char**)NULL
 #define NESTED_COMMENT_TEST_CT  0
-#define NESTED_COMMENT_RE_CT    0
 #define aNested_CommentTests   (tTestDesc*)NULL
 
 /*
@@ -2594,7 +2531,6 @@ tSCC zNews_Os_RecursionSelect0[] =
        "#include <stdlib.h>";
 
 #define    NEWS_OS_RECURSION_TEST_CT  1
-#define    NEWS_OS_RECURSION_RE_CT    1
 tTestDesc aNews_Os_RecursionTests[] = {
   { TT_EGREP,    zNews_Os_RecursionSelect0, (regex_t*)NULL }, };
 
@@ -2632,7 +2568,6 @@ tSCC zNext_Math_PrefixSelect0[] =
        "^extern.*double.*__const__.*";
 
 #define    NEXT_MATH_PREFIX_TEST_CT  1
-#define    NEXT_MATH_PREFIX_RE_CT    1
 tTestDesc aNext_Math_PrefixTests[] = {
   { TT_EGREP,    zNext_Math_PrefixSelect0, (regex_t*)NULL }, };
 
@@ -2671,7 +2606,6 @@ tSCC zNext_TemplateSelect0[] =
        "template";
 
 #define    NEXT_TEMPLATE_TEST_CT  1
-#define    NEXT_TEMPLATE_RE_CT    1
 tTestDesc aNext_TemplateTests[] = {
   { TT_EGREP,    zNext_TemplateSelect0, (regex_t*)NULL }, };
 
@@ -2707,7 +2641,6 @@ tSCC zNext_VolitileSelect0[] =
        "volatile";
 
 #define    NEXT_VOLITILE_TEST_CT  1
-#define    NEXT_VOLITILE_RE_CT    1
 tTestDesc aNext_VolitileTests[] = {
   { TT_EGREP,    zNext_VolitileSelect0, (regex_t*)NULL }, };
 
@@ -2743,7 +2676,6 @@ tSCC zNext_Wait_UnionSelect0[] =
        "wait\\(union wait";
 
 #define    NEXT_WAIT_UNION_TEST_CT  1
-#define    NEXT_WAIT_UNION_RE_CT    1
 tTestDesc aNext_Wait_UnionTests[] = {
   { TT_EGREP,    zNext_Wait_UnionSelect0, (regex_t*)NULL }, };
 
@@ -2771,7 +2703,6 @@ tSCC zNodeent_SyntaxList[] =
  */
 #define apzNodeent_SyntaxMachs (const char**)NULL
 #define NODEENT_SYNTAX_TEST_CT  0
-#define NODEENT_SYNTAX_RE_CT    0
 #define aNodeent_SyntaxTests   (tTestDesc*)NULL
 
 /*
@@ -2811,7 +2742,6 @@ tSCC zOsf_Namespace_ATest3[] =
        " -z \"`grep __regex_t regex.h`\"";
 
 #define    OSF_NAMESPACE_A_TEST_CT  4
-#define    OSF_NAMESPACE_A_RE_CT    0
 tTestDesc aOsf_Namespace_ATests[] = {
   { TT_TEST,     zOsf_Namespace_ATest0,   0 /* unused */ },
   { TT_TEST,     zOsf_Namespace_ATest1,   0 /* unused */ },
@@ -2857,7 +2787,6 @@ tSCC zOsf_Namespace_BTest3[] =
        " -z \"`grep __regex_t regex.h`\"";
 
 #define    OSF_NAMESPACE_B_TEST_CT  4
-#define    OSF_NAMESPACE_B_RE_CT    0
 tTestDesc aOsf_Namespace_BTests[] = {
   { TT_TEST,     zOsf_Namespace_BTest0,   0 /* unused */ },
   { TT_TEST,     zOsf_Namespace_BTest1,   0 /* unused */ },
@@ -2898,7 +2827,6 @@ tSCC zPthread_Page_SizeSelect0[] =
        "^int __page_size";
 
 #define    PTHREAD_PAGE_SIZE_TEST_CT  1
-#define    PTHREAD_PAGE_SIZE_RE_CT    1
 tTestDesc aPthread_Page_SizeTests[] = {
   { TT_EGREP,    zPthread_Page_SizeSelect0, (regex_t*)NULL }, };
 
@@ -2933,7 +2861,6 @@ tSCC zRead_Ret_TypeSelect0[] =
        "extern int\t.*, fread\\(\\), fwrite\\(\\)";
 
 #define    READ_RET_TYPE_TEST_CT  1
-#define    READ_RET_TYPE_RE_CT    1
 tTestDesc aRead_Ret_TypeTests[] = {
   { TT_EGREP,    zRead_Ret_TypeSelect0, (regex_t*)NULL }, };
 
@@ -2969,7 +2896,6 @@ tSCC zRs6000_DoubleSelect0[] =
        "[^a-zA-Z_]class\\(";
 
 #define    RS6000_DOUBLE_TEST_CT  1
-#define    RS6000_DOUBLE_RE_CT    1
 tTestDesc aRs6000_DoubleTests[] = {
   { TT_EGREP,    zRs6000_DoubleSelect0, (regex_t*)NULL }, };
 
@@ -3007,7 +2933,6 @@ tSCC zRs6000_FchmodSelect0[] =
        "fchmod\\(char";
 
 #define    RS6000_FCHMOD_TEST_CT  1
-#define    RS6000_FCHMOD_RE_CT    1
 tTestDesc aRs6000_FchmodTests[] = {
   { TT_EGREP,    zRs6000_FchmodSelect0, (regex_t*)NULL }, };
 
@@ -3042,7 +2967,6 @@ tSCC zRs6000_ParamSelect0[] =
        "const char new";
 
 #define    RS6000_PARAM_TEST_CT  1
-#define    RS6000_PARAM_RE_CT    1
 tTestDesc aRs6000_ParamTests[] = {
   { TT_EGREP,    zRs6000_ParamSelect0, (regex_t*)NULL }, };
 
@@ -3077,7 +3001,6 @@ tSCC zSony_IncludeSelect0[] =
        "\"\\.\\./machine/endian.h\"";
 
 #define    SONY_INCLUDE_TEST_CT  1
-#define    SONY_INCLUDE_RE_CT    1
 tTestDesc aSony_IncludeTests[] = {
   { TT_EGREP,    zSony_IncludeSelect0, (regex_t*)NULL }, };
 
@@ -3112,7 +3035,6 @@ tSCC zStatsswtchSelect0[] =
        "boottime$";
 
 #define    STATSSWTCH_TEST_CT  1
-#define    STATSSWTCH_RE_CT    1
 tTestDesc aStatsswtchTests[] = {
   { TT_EGREP,    zStatsswtchSelect0, (regex_t*)NULL }, };
 
@@ -3147,7 +3069,6 @@ tSCC zStdio_Va_ListBypass0[] =
        "__gnuc_va_list";
 
 #define    STDIO_VA_LIST_TEST_CT  1
-#define    STDIO_VA_LIST_RE_CT    1
 tTestDesc aStdio_Va_ListTests[] = {
   { TT_NEGREP,   zStdio_Va_ListBypass0, (regex_t*)NULL }, };
 
@@ -3199,7 +3120,6 @@ tSCC zSun_Bogus_IfdefSelect0[] =
        "#ifdef __i386__ || __vax__";
 
 #define    SUN_BOGUS_IFDEF_TEST_CT  1
-#define    SUN_BOGUS_IFDEF_RE_CT    1
 tTestDesc aSun_Bogus_IfdefTests[] = {
   { TT_EGREP,    zSun_Bogus_IfdefSelect0, (regex_t*)NULL }, };
 
@@ -3234,7 +3154,6 @@ tSCC zSun_Bogus_Ifdef_Sun4cSelect0[] =
        "#ifdef __i386__ || __sun4c__";
 
 #define    SUN_BOGUS_IFDEF_SUN4C_TEST_CT  1
-#define    SUN_BOGUS_IFDEF_SUN4C_RE_CT    1
 tTestDesc aSun_Bogus_Ifdef_Sun4cTests[] = {
   { TT_EGREP,    zSun_Bogus_Ifdef_Sun4cSelect0, (regex_t*)NULL }, };
 
@@ -3269,7 +3188,6 @@ tSCC zSun_CatmacroSelect0[] =
        "^#define[ \t]+CAT\\(a,b\\)";
 
 #define    SUN_CATMACRO_TEST_CT  1
-#define    SUN_CATMACRO_RE_CT    1
 tTestDesc aSun_CatmacroTests[] = {
   { TT_EGREP,    zSun_CatmacroSelect0, (regex_t*)NULL }, };
 
@@ -3302,7 +3220,6 @@ tSCC zSun_MallocList[] =
  */
 #define apzSun_MallocMachs (const char**)NULL
 #define SUN_MALLOC_TEST_CT  0
-#define SUN_MALLOC_RE_CT    0
 #define aSun_MallocTests   (tTestDesc*)NULL
 
 /*
@@ -3339,7 +3256,6 @@ tSCC zSun_MemcpySelect0[] =
        "/\\*\t@\\(#\\)(head/memory.h\t50.1\t |memory\\.h 1\\.[2-4] 8./../.. SMI; from S5R2 1\\.2\t)\\*/";
 
 #define    SUN_MEMCPY_TEST_CT  1
-#define    SUN_MEMCPY_RE_CT    1
 tTestDesc aSun_MemcpyTests[] = {
   { TT_EGREP,    zSun_MemcpySelect0, (regex_t*)NULL }, };
 
@@ -3394,7 +3310,6 @@ tSCC zSun_Rusers_SemiSelect0[] =
        "_cnt$";
 
 #define    SUN_RUSERS_SEMI_TEST_CT  1
-#define    SUN_RUSERS_SEMI_RE_CT    1
 tTestDesc aSun_Rusers_SemiTests[] = {
   { TT_EGREP,    zSun_Rusers_SemiSelect0, (regex_t*)NULL }, };
 
@@ -3429,7 +3344,6 @@ tSCC zSun_SignalSelect0[] =
        "^void\t\\(\\*signal\\(\\)\\)\\(\\);";
 
 #define    SUN_SIGNAL_TEST_CT  1
-#define    SUN_SIGNAL_RE_CT    1
 tTestDesc aSun_SignalTests[] = {
   { TT_EGREP,    zSun_SignalSelect0, (regex_t*)NULL }, };
 
@@ -3469,7 +3383,6 @@ tSCC zSun_Auth_ProtoSelect0[] =
        "\\(\\*[a-z][a-z_]*\\)\\(\\)";
 
 #define    SUN_AUTH_PROTO_TEST_CT  1
-#define    SUN_AUTH_PROTO_RE_CT    1
 tTestDesc aSun_Auth_ProtoTests[] = {
   { TT_EGREP,    zSun_Auth_ProtoSelect0, (regex_t*)NULL }, };
 
@@ -3509,7 +3422,6 @@ tSCC zSunos_Matherr_DeclBypass0[] =
        "matherr.*struct exception";
 
 #define    SUNOS_MATHERR_DECL_TEST_CT  1
-#define    SUNOS_MATHERR_DECL_RE_CT    1
 tTestDesc aSunos_Matherr_DeclTests[] = {
   { TT_NEGREP,   zSunos_Matherr_DeclBypass0, (regex_t*)NULL }, };
 
@@ -3546,7 +3458,6 @@ tSCC zSunos_StrlenSelect0[] =
        "int[ \t]*strlen";
 
 #define    SUNOS_STRLEN_TEST_CT  1
-#define    SUNOS_STRLEN_RE_CT    1
 tTestDesc aSunos_StrlenTests[] = {
   { TT_EGREP,    zSunos_StrlenSelect0, (regex_t*)NULL }, };
 
@@ -3581,7 +3492,6 @@ tSCC zSystypesSelect0[] =
        "typedef[ \t]+[a-z_][ \ta-z_]*[ \t](size|ptrdiff|wchar)_t";
 
 #define    SYSTYPES_TEST_CT  1
-#define    SYSTYPES_RE_CT    1
 tTestDesc aSystypesTests[] = {
   { TT_EGREP,    zSystypesSelect0, (regex_t*)NULL }, };
 
@@ -3646,7 +3556,6 @@ tSCC zSystypes_For_AixBypass0[] =
        "_GCC_SIZE_T";
 
 #define    SYSTYPES_FOR_AIX_TEST_CT  2
-#define    SYSTYPES_FOR_AIX_RE_CT    2
 tTestDesc aSystypes_For_AixTests[] = {
   { TT_NEGREP,   zSystypes_For_AixBypass0, (regex_t*)NULL },
   { TT_EGREP,    zSystypes_For_AixSelect0, (regex_t*)NULL }, };
@@ -3679,7 +3588,6 @@ tSCC zSysv68_StringList[] =
  */
 #define apzSysv68_StringMachs (const char**)NULL
 #define SYSV68_STRING_TEST_CT  0
-#define SYSV68_STRING_RE_CT    0
 #define aSysv68_StringTests   (tTestDesc*)NULL
 
 /*
@@ -3716,7 +3624,6 @@ tSCC zSysz_Stdlib_For_SunList[] =
  */
 #define apzSysz_Stdlib_For_SunMachs (const char**)NULL
 #define SYSZ_STDLIB_FOR_SUN_TEST_CT  0
-#define SYSZ_STDLIB_FOR_SUN_RE_CT    0
 #define aSysz_Stdlib_For_SunTests   (tTestDesc*)NULL
 
 /*
@@ -3754,7 +3661,6 @@ tSCC zSysz_Stdtypes_For_SunList[] =
  */
 #define apzSysz_Stdtypes_For_SunMachs (const char**)NULL
 #define SYSZ_STDTYPES_FOR_SUN_TEST_CT  0
-#define SYSZ_STDTYPES_FOR_SUN_RE_CT    0
 #define aSysz_Stdtypes_For_SunTests   (tTestDesc*)NULL
 
 /*
@@ -3802,7 +3708,6 @@ tSCC zTinfo_CplusplusSelect0[] =
        "[ \t]_cplusplus";
 
 #define    TINFO_CPLUSPLUS_TEST_CT  1
-#define    TINFO_CPLUSPLUS_RE_CT    1
 tTestDesc aTinfo_CplusplusTests[] = {
   { TT_EGREP,    zTinfo_CplusplusSelect0, (regex_t*)NULL }, };
 
@@ -3837,7 +3742,6 @@ tSCC zUltrix_Ansi_CompatSelect0[] =
        "ULTRIX";
 
 #define    ULTRIX_ANSI_COMPAT_TEST_CT  1
-#define    ULTRIX_ANSI_COMPAT_RE_CT    1
 tTestDesc aUltrix_Ansi_CompatTests[] = {
   { TT_EGREP,    zUltrix_Ansi_CompatSelect0, (regex_t*)NULL }, };
 
@@ -3874,7 +3778,6 @@ tSCC zUltrix_Fix_FixprotoSelect0[] =
        "ULTRIX";
 
 #define    ULTRIX_FIX_FIXPROTO_TEST_CT  1
-#define    ULTRIX_FIX_FIXPROTO_RE_CT    1
 tTestDesc aUltrix_Fix_FixprotoTests[] = {
   { TT_EGREP,    zUltrix_Fix_FixprotoSelect0, (regex_t*)NULL }, };
 
@@ -3910,7 +3813,6 @@ tSCC zUltrix_Atof_ParamSelect0[] =
        "atof\\([ \t]*char";
 
 #define    ULTRIX_ATOF_PARAM_TEST_CT  1
-#define    ULTRIX_ATOF_PARAM_RE_CT    1
 tTestDesc aUltrix_Atof_ParamTests[] = {
   { TT_EGREP,    zUltrix_Atof_ParamSelect0, (regex_t*)NULL }, };
 
@@ -3938,7 +3840,6 @@ tSCC zUltrix_ConstList[] =
  */
 #define apzUltrix_ConstMachs (const char**)NULL
 #define ULTRIX_CONST_TEST_CT  0
-#define ULTRIX_CONST_RE_CT    0
 #define aUltrix_ConstTests   (tTestDesc*)NULL
 
 /*
@@ -3980,7 +3881,6 @@ tSCC zUltrix_IfdefSelect0[] =
        "#ifdef KERNEL";
 
 #define    ULTRIX_IFDEF_TEST_CT  1
-#define    ULTRIX_IFDEF_RE_CT    1
 tTestDesc aUltrix_IfdefTests[] = {
   { TT_EGREP,    zUltrix_IfdefSelect0, (regex_t*)NULL }, };
 
@@ -4008,7 +3908,6 @@ tSCC zUltrix_Nested_CmntList[] =
  */
 #define apzUltrix_Nested_CmntMachs (const char**)NULL
 #define ULTRIX_NESTED_CMNT_TEST_CT  0
-#define ULTRIX_NESTED_CMNT_RE_CT    0
 #define aUltrix_Nested_CmntTests   (tTestDesc*)NULL
 
 /*
@@ -4042,7 +3941,6 @@ tSCC zUltrix_StaticSelect0[] =
        "#include \"r[34]_cpu";
 
 #define    ULTRIX_STATIC_TEST_CT  1
-#define    ULTRIX_STATIC_RE_CT    1
 tTestDesc aUltrix_StaticTests[] = {
   { TT_EGREP,    zUltrix_StaticSelect0, (regex_t*)NULL }, };
 
@@ -4084,7 +3982,6 @@ tSCC zUndefine_NullBypass0[] =
        "#[ \t]*(ifn|un)def[ \t]*[ \t]NULL($|[ \t])";
 
 #define    UNDEFINE_NULL_TEST_CT  2
-#define    UNDEFINE_NULL_RE_CT    2
 tTestDesc aUndefine_NullTests[] = {
   { TT_NEGREP,   zUndefine_NullBypass0, (regex_t*)NULL },
   { TT_EGREP,    zUndefine_NullSelect0, (regex_t*)NULL }, };
@@ -4128,7 +4025,6 @@ tSCC zUnixware7_Byteorder_FixSelect0[] =
        "in_port_t";
 
 #define    UNIXWARE7_BYTEORDER_FIX_TEST_CT  1
-#define    UNIXWARE7_BYTEORDER_FIX_RE_CT    1
 tTestDesc aUnixware7_Byteorder_FixTests[] = {
   { TT_EGREP,    zUnixware7_Byteorder_FixSelect0, (regex_t*)NULL }, };
 
@@ -4164,7 +4060,6 @@ tSCC zVa_I960_MacroSelect0[] =
        "__(vsiz|vali|vpad|alignof__)";
 
 #define    VA_I960_MACRO_TEST_CT  1
-#define    VA_I960_MACRO_RE_CT    1
 tTestDesc aVa_I960_MacroTests[] = {
   { TT_EGREP,    zVa_I960_MacroSelect0, (regex_t*)NULL }, };
 
@@ -4202,7 +4097,6 @@ tSCC zVoid_NullSelect0[] =
        "#[ \t]*define[ \t][ \t]*NULL[ \t].*void";
 
 #define    VOID_NULL_TEST_CT  1
-#define    VOID_NULL_RE_CT    1
 tTestDesc aVoid_NullTests[] = {
   { TT_EGREP,    zVoid_NullSelect0, (regex_t*)NULL }, };
 
@@ -4237,7 +4131,6 @@ tSCC zVxworks_Gcc_ProblemSelect0[] =
        "__GNUC_TYPEOF_FEATURE_BROKEN_USE_DEFAULT_UNTIL_FIXED__";
 
 #define    VXWORKS_GCC_PROBLEM_TEST_CT  1
-#define    VXWORKS_GCC_PROBLEM_RE_CT    1
 tTestDesc aVxworks_Gcc_ProblemTests[] = {
   { TT_EGREP,    zVxworks_Gcc_ProblemSelect0, (regex_t*)NULL }, };
 
@@ -4287,7 +4180,6 @@ tSCC zVxworks_Needs_VxtypesSelect0[] =
        "uint_t[ \t][ \t]*_clocks_per_sec";
 
 #define    VXWORKS_NEEDS_VXTYPES_TEST_CT  1
-#define    VXWORKS_NEEDS_VXTYPES_RE_CT    1
 tTestDesc aVxworks_Needs_VxtypesTests[] = {
   { TT_EGREP,    zVxworks_Needs_VxtypesSelect0, (regex_t*)NULL }, };
 
@@ -4332,7 +4224,6 @@ tSCC zVxworks_Needs_VxworksTest2[] =
        " -n \"`egrep ULONG $file`\"";
 
 #define    VXWORKS_NEEDS_VXWORKS_TEST_CT  4
-#define    VXWORKS_NEEDS_VXWORKS_RE_CT    1
 tTestDesc aVxworks_Needs_VxworksTests[] = {
   { TT_TEST,     zVxworks_Needs_VxworksTest0,   0 /* unused */ },
   { TT_TEST,     zVxworks_Needs_VxworksTest1,   0 /* unused */ },
@@ -4377,7 +4268,6 @@ tSCC zVxworks_TimeTest0[] =
        " -r vxWorks.h";
 
 #define    VXWORKS_TIME_TEST_CT  2
-#define    VXWORKS_TIME_RE_CT    1
 tTestDesc aVxworks_TimeTests[] = {
   { TT_TEST,     zVxworks_TimeTest0,   0 /* unused */ },
   { TT_EGREP,    zVxworks_TimeSelect0, (regex_t*)NULL }, };
@@ -4422,7 +4312,6 @@ tSCC zX11_ClassBypass0[] =
        "__cplusplus";
 
 #define    X11_CLASS_TEST_CT  1
-#define    X11_CLASS_RE_CT    1
 tTestDesc aX11_ClassTests[] = {
   { TT_NEGREP,   zX11_ClassBypass0, (regex_t*)NULL }, };
 
@@ -4462,7 +4351,6 @@ tSCC zX11_Class_UsageBypass0[] =
        "__cplusplus";
 
 #define    X11_CLASS_USAGE_TEST_CT  1
-#define    X11_CLASS_USAGE_RE_CT    1
 tTestDesc aX11_Class_UsageTests[] = {
   { TT_NEGREP,   zX11_Class_UsageBypass0, (regex_t*)NULL }, };
 
@@ -4497,7 +4385,6 @@ tSCC zX11_NewBypass0[] =
        "__cplusplus";
 
 #define    X11_NEW_TEST_CT  1
-#define    X11_NEW_RE_CT    1
 tTestDesc aX11_NewTests[] = {
   { TT_NEGREP,   zX11_NewBypass0, (regex_t*)NULL }, };
 
@@ -4531,7 +4418,6 @@ tSCC zX11_SprintfList[] =
  */
 #define apzX11_SprintfMachs (const char**)NULL
 #define X11_SPRINTF_TEST_CT  0
-#define X11_SPRINTF_RE_CT    0
 #define aX11_SprintfTests   (tTestDesc*)NULL
 
 /*
@@ -4547,7 +4433,7 @@ extern char *\tsprintf();\\\n\
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          89
+#define REGEX_COUNT          109
 #define MACH_LIST_SIZE_LIMIT 279
 #define FIX_COUNT            114
 

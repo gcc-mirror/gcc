@@ -34,8 +34,9 @@
 # Directory in which to store the results.
 # Fail if no arg to specify a directory for the output.
 if [ "x$1" = "x" ]
-then echo fixincludes: no output directory specified
-exit 1
+then
+  echo fixincludes: no output directory specified
+  exit 1
 fi
 
 LIB=${1}
@@ -52,6 +53,17 @@ else
     echo fixincludes:  output dir '`'$LIB"' is an invalid directory"
     exit 1
   }
+fi
+
+if test -z "$VERBOSE"
+then
+  VERBOSE=2
+  export VERBOSE
+else
+  case "$VERBOSE" in
+  [0-9] ) : ;;
+  * )  VERBOSE=3 ;;
+  esac
 fi
 
 # Define what target system we're fixing.
@@ -96,7 +108,8 @@ case $LIB in
     ;;
 esac
 
-echo Fixing headers into ${LIB} for ${target_canonical} target
+if test $VERBOSE -gt 0
+then echo Fixing headers into ${LIB} for ${target_canonical} target ; fi
 
 # Determine whether this system has symbolic links.
 if ln -s X $LIB/ShouldNotExist 2>/dev/null; then
@@ -131,7 +144,8 @@ INPUT=`${PWDCMD}`
 #
 # # # # # # # # # # # # # # # # # # # # #
 #
-echo Finding directories and links to directories
+if test $VERBOSE -gt 1
+then echo Finding directories and links to directories ; fi
 
 # Find all directories and all symlinks that point to directories.
 # Put the list in $all_dirs.
@@ -150,7 +164,8 @@ do
   newdirs=
   for d in $dirs
   do
-    echo " Searching $INPUT/$d"
+    if test $VERBOSE -gt 1
+    then echo " Searching $INPUT/$d" ; fi
 
     # Find all directories under $d, relative to $d, excluding $d itself.
     # (The /. is needed after $d in case $d is a symlink.)
@@ -186,8 +201,10 @@ done
 # # # # # # # # # # # # # # # # # # # # #
 #
 dirs=
-echo "All directories (including links to directories):"
-echo $all_dirs
+if test $VERBOSE -gt 2
+then echo "All directories (including links to directories):"
+     echo $all_dirs
+fi
 
 for file in $all_dirs; do
   rm -rf $LIB/$file
@@ -205,7 +222,8 @@ mkdir $LIB/root
 treetops=". ${LIB}"
 
 if $LINKS; then
-  echo 'Making symbolic directory links'
+  if test $VERBOSE -gt 1
+  then echo 'Making symbolic directory links' ; fi
   cwd=`${PWDCMD}`
 
   for sym_link in $search_dirs; do
@@ -235,7 +253,8 @@ if $LINKS; then
       # If a link points to ., make a similar link to .
       #
       if [ ${full_dest_dir} = ${cinput} ]; then
-        echo ${sym_link} '->' . ': Making self link'
+        if test $VERBOSE -gt 2
+        then echo ${sym_link} '->' . ': Making self link' ; fi
         rm -fr ${LIB}/${sym_link} > /dev/null 2>&1
         ln -s . ${LIB}/${sym_link} > /dev/null 2>&1
 
@@ -248,7 +267,8 @@ if $LINKS; then
         # DOTS is the relative path from ${LIB}/${sym_link} back to ${LIB}.
         dots=`echo "${sym_link}" |
           sed -e 's@^./@@' -e 's@/./@/@g' -e 's@[^/][^/]*@..@g' -e 's@..$@@'`
-        echo ${sym_link} '->' $dots$y ': Making local link'
+        if test $VERBOSE -gt 2
+        then echo ${sym_link} '->' $dots$y ': Making local link' ; fi
         rm -fr ${LIB}/${sym_link} > /dev/null 2>&1
         ln -s $dots$y ${LIB}/${sym_link} > /dev/null 2>&1
 
@@ -258,7 +278,9 @@ if $LINKS; then
         # and process $target into ${INPUT}/root$target
         # treat this directory as if it actually contained the files.
         #
-        echo ${sym_link} '->' root${full_dest_dir} ': Making rooted link'
+        if test $VERBOSE -gt 2
+        then echo ${sym_link} '->' root${full_dest_dir} ': Making rooted link'
+        fi
         if [ -d $LIB/root${full_dest_dir} ]
         then true
         else
@@ -282,7 +304,8 @@ if $LINKS; then
             ${sym_link}/*)
               dupdir=${LIB}/root${full_dest_dir}/`echo $file2 |
                       sed -n "s|^${sym_link}/||p"`
-              echo "Duplicating ${sym_link}'s ${dupdir}"
+              if test $VERBOSE -gt 2
+              then echo "Duplicating ${sym_link}'s ${dupdir}" ; fi
               if [ -d ${dupdir} ]
               then true
               else
@@ -337,7 +360,8 @@ while [ $# != 0 ]; do
   then continue ; fi
 
   touch ${DESTDIR}/DONE
-  echo Fixing directory ${SRCDIR} into ${DESTDIR}
+  if test $VERBOSE -gt 1
+  then echo Fixing directory ${SRCDIR} into ${DESTDIR} ; fi
 
   # Check files which are symlinks as well as those which are files.
   #
@@ -371,7 +395,8 @@ while [ $# != 0 ]; do
         cp $2 $3 >/dev/null 2>&1 || echo "Can't copy $2" >&2
         chmod +w $3 2>/dev/null
         chmod a+r $3 2>/dev/null
-        echo Copied $2
+        if test $VERBOSE -gt 2
+        then echo Copied $2 ; fi
         for include in `egrep '^[ 	]*#[ 	]*include[ 	]*"[^/]' $3 |
              sed -e 's/^[ 	]*#[ 	]*include[ 	]*"\([^"]*\)".*$/\1/'`
         do
@@ -387,16 +412,21 @@ while [ $# != 0 ]; do
   shift
 done
 
-echo 'Cleaning up DONE files.'
+if test $VERBOSE -gt 2
+then echo 'Cleaning up DONE files.' ; fi
 cd $LIB
 find . -name DONE -exec rm -f '{}' ';'
 
-echo 'Removing unneeded directories:'
+if test $VERBOSE -gt 1
+then echo 'Cleaning up unneeded directories:' ; fi
 cd $LIB
 all_dirs=`find . -type d \! -name '.' -print | sort -r`
 for file in $all_dirs; do
   rmdir $LIB/$file > /dev/null 2>&1
 done
+
+if test $VERBOSE -gt 0
+then echo fixincludes is done ; fi
 
 # # # # # # # # # # # # # # # # # # # # #
 #

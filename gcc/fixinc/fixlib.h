@@ -84,6 +84,11 @@ typedef enum
 } t_bool;
 #endif
 
+typedef int apply_fix_p_t;  /* Apply Fix Predicate Type */
+
+#define APPLY_FIX 0
+#define SKIP_FIX  1
+
 #define _P_(p)	()
 #endif
 
@@ -91,5 +96,6 @@ typedef enum
  *  Exported procedures
  */
 char * load_file_data _P_(( FILE* fp ));
+t_bool is_cxx_header  _P_(( tCC* filename, tCC* filetext ));
 
 #endif /* FIXINCLUDES_FIXLIB_H */

@@ -1,3 +1,24 @@
+
+1999-12-29  Bruce Korb  <autogen@linuxbox.com>
+
+	* fixinc/fixincl.c(wait_for_pid): sometimes a WSTOPSIG of zero is OK
+	* fixinc/fixincl.tpl(<hack>TEST_CT): Just do the existence test once
+	(<hack>_RE_CT): not needed
+	* fixinc/fixlib.c(is_cxx_header): moved from fixtests.c
+	rewritten to scan the file text once only
+	"template<..." test added
+	* fixinc/fixlib.h(apply_fix_p_t): moved from fixtests.c
+	(is_cxx_header): declaration added
+	* fixinc/fixtests.c(is_cxx_header): removed
+	(apply_fix_p_t): removed
+	(double_slash_test): is_cxx_header is only called once now
+	* fixinc/hackshell.tpl: indexing the fixes is now done under DEBUG
+	* fixinc/inclhack.def(FIXINC_DEBUG): added for testing DEBUG state
+	within the templates.
+	The borken spelling of "broken" was fixed.
+	* fixinc/inclhack.tpl: The $VERBOSE level is used on various messages
+	The default level depends on FIXINC_DEBUG.
+
 1999-12-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* crtstuff.c: If !inhibit_libc, include stdlib.h/unistd.h.

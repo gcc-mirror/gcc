@@ -57,3 +57,74 @@ load_file_data (fp)
 
   return pz_data;
 }
+
+
+t_bool
+is_cxx_header (fname, text)
+     tCC *fname;
+     tCC *text;
+{
+  /*  First, check to see if the file is in a C++ directory */
+  for (;;)
+    {
+      switch (*(fname++))
+        {
+        case 'C': /* check for "CC/" */
+          if ((fname[0] == 'C') && (fname[1] == '/'))
+            return BOOL_TRUE;
+          break;
+
+        case 'x': /* check for "xx/" */
+          if ((fname[0] == 'x') && (fname[1] == '/'))
+            return BOOL_TRUE;
+          break;
+
+        case '+': /* check for "++" */
+          if (fname[0] == '+')
+            return BOOL_TRUE;
+          break;
+
+        case NUL:
+          goto not_cxx_name;
+        }
+    } not_cxx_name:;
+
+  /* Or it might contain the phrase 'extern "C++"' */
+  for (;;)
+    {
+      tSCC zExtern[]   = "extern";
+      tSCC zExtCxx[]   = "\"C++\"";
+      tSCC zTemplate[] = "template";
+
+      switch (*(text++))
+        {
+        case 'e':
+          /*  Check for "extern \"C++\"" */
+          if (strncmp (text, zExtern+1, sizeof( zExtern )-2) != 0)
+            break;
+          text += sizeof( zExtern )-2;
+          if (! isspace( *(text++)) )
+            break;
+          while (isspace( *text ))  text++;
+          if (strncmp (text, zExtCxx, sizeof (zExtCxx) -1) == 0)
+            return BOOL_TRUE;
+          break;
+
+        case 't':
+          /*  Check for "template<" */
+          if (strncmp (text, zTemplate+1, sizeof( zTemplate )-2) != 0)
+            break;
+          text += sizeof( zTemplate )-2;
+          while (isspace( *text ))  text++;
+          if (*text == '<')
+            return BOOL_TRUE;
+          break;
+
+        case NUL:
+          goto text_done;
+          break;
+        }
+    } text_done:;
+
+  return BOOL_FALSE;
+}
