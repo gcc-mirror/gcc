@@ -843,8 +843,8 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand"
-			  "=r,r,Q,!r,!fx,!fx")
-	(match_operand:SI 1 "move_operand" "rM,Q,rM,!fxy,!r,!fx"))]
+			  "=r,r,Q,!*r,!fx,!fx")
+	(match_operand:SI 1 "move_operand" "rM,Q,rM,!fxy,!*r,!fx"))]
   "register_operand (operands[0], SImode)
    || reg_or_0_operand (operands[1], SImode)"
   "@
@@ -996,8 +996,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,Q,!r,!*fx,!*fx")
-	(match_operand:HI 1 "move_operand" "rM,Q,rM,*fx,r,!*fx"))]
+  [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,Q,!*r,!fx,!fx")
+	(match_operand:HI 1 "move_operand" "rM,Q,rM,fx,*r,!fx"))]
   "register_operand (operands[0], HImode)
    || reg_or_0_operand (operands[1], HImode)"
   "@
@@ -1058,8 +1058,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "reg_or_nonsymb_mem_operand" "=r,r,Q,!r,!*fx,!*fx")
-	(match_operand:QI 1 "move_operand" "rM,Q,rM,*fx,r,*fx"))]
+  [(set (match_operand:QI 0 "reg_or_nonsymb_mem_operand" "=r,r,Q,!*r,!fx,!fx")
+	(match_operand:QI 1 "move_operand" "rM,Q,rM,fx,*r,fx"))]
   "register_operand (operands[0], QImode)
    || reg_or_0_operand (operands[1], QImode)"
   "@
@@ -1226,7 +1226,7 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand"
-			  "=fx,*r,Q,?Q,fx,*&r,?fx,?r")
+			  "=fx,*r,Q,?Q,fx,*&r,?fx,?*r")
 	(match_operand:DF 1 "reg_or_nonsymb_mem_operand"
 			  "fx,*r,fx,*r,Q,Q,*r,fx"))]
   "register_operand (operands[0], DFmode)
@@ -1338,9 +1338,9 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand"
-			  "=r,Q,&r,&r,fx,fx,r")
+			  "=r,Q,&r,&r,fx,fx,*r")
 	(match_operand:DI 1 "general_operand"
-			  "r,r,Q,i,r,fx,fx"))]
+			  "r,r,Q,i,*r,fx,fx"))]
   "register_operand (operands[0], DImode)
    || reg_or_0_operand (operands[1], DImode)"
   "*
@@ -1387,9 +1387,9 @@
 
 (define_insn ""
   [(set (match_operand:SF 0 "reg_or_nonsymb_mem_operand"
-			  "=fx,r,r,fx,fx,r,Q,Q")
+			  "=fx,r,*r,fx,fx,r,Q,Q")
 	(match_operand:SF 1 "reg_or_nonsymb_mem_operand"
-			  "fx,r,!fx,!r,Q,Q,fx,r"))]
+			  "fx,r,!fx,!*r,Q,Q,fx,r"))]
   "register_operand (operands[0], SFmode)
    || register_operand (operands[1], SFmode)"
   "@
