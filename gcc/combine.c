@@ -5889,15 +5889,15 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 
       if (GET_CODE (inner) == MEM)
 	{
-	  int offset;
+	  HOST_WIDE_INT offset;
+
 	  /* POS counts from lsb, but make OFFSET count in memory order.  */
 	  if (BYTES_BIG_ENDIAN)
 	    offset = (GET_MODE_BITSIZE (is_mode) - len - pos) / BITS_PER_UNIT;
 	  else
 	    offset = pos / BITS_PER_UNIT;
 
-	  new = gen_rtx_MEM (tmode, plus_constant (XEXP (inner, 0), offset));
-	  MEM_COPY_ATTRIBUTES (new, inner);
+	  new = adjust_address_nv (inner, tmode, offset);
 	}
       else if (GET_CODE (inner) == REG)
 	{
@@ -5905,7 +5905,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	     a SUBREG and it would sometimes return a new hard register.  */
 	  if (tmode != inner_mode)
 	    {
-	      int final_word = pos / BITS_PER_WORD;
+	      HOST_WIDE_INT final_word = pos / BITS_PER_WORD;
 
 	      if (WORDS_BIG_ENDIAN
 		  && GET_MODE_SIZE (inner_mode) > UNITS_PER_WORD)
@@ -6125,13 +6125,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 		  - GET_MODE_SIZE (wanted_inner_mode) - offset);
 
       if (offset != 0 || inner_mode != wanted_inner_mode)
-	{
-	  rtx newmem = gen_rtx_MEM (wanted_inner_mode,
-				    plus_constant (XEXP (inner, 0), offset));
-
-	  MEM_COPY_ATTRIBUTES (newmem, inner);
-	  inner = newmem;
-	}
+	inner = adjust_address_nv (inner, wanted_inner_mode, offset);
     }
 
   /* If INNER is not memory, we can always get it into the proper mode.  If we
@@ -8976,14 +8970,10 @@ simplify_shift_const (x, code, result_mode, varop, input_count)
 	      && (tmode = mode_for_size (GET_MODE_BITSIZE (mode) - count,
 					 MODE_INT, 1)) != BLKmode)
 	    {
-	      if (BYTES_BIG_ENDIAN)
-		new = gen_rtx_MEM (tmode, XEXP (varop, 0));
-	      else
-		new = gen_rtx_MEM (tmode,
-				   plus_constant (XEXP (varop, 0),
-						  count / BITS_PER_UNIT));
+	      new = adjust_address_nv (varop, tmode,
+				       BYTES_BIG_ENDIAN ? 0
+				       : count / BITS_PER_UNIT);
 
-	      MEM_COPY_ATTRIBUTES (new, varop);
 	      varop = gen_rtx_fmt_e (code == ASHIFTRT ? SIGN_EXTEND
 				     : ZERO_EXTEND, mode, new);
 	      count = 0;
@@ -9749,9 +9739,8 @@ gen_lowpart_for_combine (mode, x)
 	  offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode))
 		     - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (x))));
 	}
-      new = gen_rtx_MEM (mode, plus_constant (XEXP (x, 0), offset));
-      MEM_COPY_ATTRIBUTES (new, x);
-      return new;
+
+      return adjust_address_nv (x, mode, offset);
     }
 
   /* If X is a comparison operator, rewrite it in a new mode.  This

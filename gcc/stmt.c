@@ -4112,11 +4112,7 @@ expand_anon_union_decl (decl, cleanup, decl_elts)
 	  if (mode == GET_MODE (x))
 	    SET_DECL_RTL (decl_elt, x);
 	  else
-	    {
-	      SET_DECL_RTL (decl_elt,
-			    gen_rtx_MEM (mode, copy_rtx (XEXP (x, 0))));
-	      MEM_COPY_ATTRIBUTES (DECL_RTL (decl_elt), x);
-	    }
+	    SET_DECL_RTL (decl_elt, adjust_address_nv (x, mode, 0));
 	}
       else if (GET_CODE (x) == REG)
 	{

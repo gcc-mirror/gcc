@@ -332,8 +332,9 @@ setup_save_areas ()
 	  /* This should not depend on WORDS_BIG_ENDIAN.
 	     The order of words in regs is the same as in memory.  */
 	  regno_save_mem[i + k][1]
-	    = adjust_address (regno_save_mem[i][j], regno_save_mode[i + k][1],
-			      k * UNITS_PER_WORD);
+	    = adjust_address_nv (regno_save_mem[i][j],
+				 regno_save_mode[i + k][1],
+				 k * UNITS_PER_WORD);
       }
 
   /* Now loop again and set the alias set of any save areas we made to

@@ -715,21 +715,13 @@ rtx
 stabilize (x)
      rtx x;
 {
-  register rtx addr;
 
-  if (GET_CODE (x) != MEM)
+  if (GET_CODE (x) != MEM
+      || ! rtx_unstable_p (XEXP (x, 0)))
     return x;
 
-  addr = XEXP (x, 0);
-  if (rtx_unstable_p (addr))
-    {
-      rtx temp = force_reg (Pmode, copy_all_regs (addr));
-      rtx mem = gen_rtx_MEM (GET_MODE (x), temp);
-
-      MEM_COPY_ATTRIBUTES (mem, x);
-      return mem;
-    }
-  return x;
+  return
+    replace_equiv_address (x, force_reg (Pmode, copy_all_regs (XEXP (x, 0))));
 }
 
 /* Copy the value or contents of X to a new temp reg and return that reg.  */

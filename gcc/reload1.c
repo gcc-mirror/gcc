@@ -2052,13 +2052,7 @@ alter_reg (i, from_reg)
       /* If we have any adjustment to make, or if the stack slot is the
 	 wrong mode, make a new stack slot.  */
       if (adjust != 0 || GET_MODE (x) != GET_MODE (regno_reg_rtx[i]))
-	{
-	  rtx new = gen_rtx_MEM (GET_MODE (regno_reg_rtx[i]),
-				 plus_constant (XEXP (x, 0), adjust));
-
-	  MEM_COPY_ATTRIBUTES (new, x);
-	  x = new;
-	}
+	x = adjust_address_nv (x, GET_MODE (regno_reg_rtx[i]), adjust);
 
       /* Save the stack slot for later.   */
       reg_equiv_memory_loc[i] = x;
@@ -2572,15 +2566,10 @@ eliminate_regs (x, mem_mode, insn)
       /* Our only special processing is to pass the mode of the MEM to our
 	 recursive call and copy the flags.  While we are here, handle this
 	 case more efficiently.  */
-      new = eliminate_regs (XEXP (x, 0), GET_MODE (x), insn);
-      if (new != XEXP (x, 0))
-	{
-	  new = gen_rtx_MEM (GET_MODE (x), new);
-	  MEM_COPY_ATTRIBUTES (new, x);
-	  return new;
-	}
-      else
-	return x;
+      return
+	replace_equiv_address_nv (x,
+				  eliminate_regs (XEXP (x, 0),
+						  GET_MODE (x), insn));
 
     case USE:
       /* Handle insn_list USE that a call to a pure function may generate.  */

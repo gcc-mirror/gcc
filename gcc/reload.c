@@ -893,25 +893,18 @@ push_reload (in, out, inloc, outloc, class,
   /* If we have a read-write operand with an address side-effect,
      change either IN or OUT so the side-effect happens only once.  */
   if (in != 0 && out != 0 && GET_CODE (in) == MEM && rtx_equal_p (in, out))
-    {
-      if (GET_CODE (XEXP (in, 0)) == POST_INC
-	  || GET_CODE (XEXP (in, 0)) == POST_DEC
-	  || GET_CODE (XEXP (in, 0)) == POST_MODIFY)
-	{
-	  rtx new = gen_rtx_MEM (GET_MODE (in), XEXP (XEXP (in, 0), 0));
+    switch (GET_CODE (XEXP (in, 0)))
+      {
+      case POST_INC: case POST_DEC:   case POST_MODIFY:
+	in = replace_equiv_address_nv (in, XEXP (XEXP (in, 0), 0));
+	break;
 
-	  MEM_COPY_ATTRIBUTES (new, in);
-	  in = new;
-	}
-      if (GET_CODE (XEXP (in, 0)) == PRE_INC
-	  || GET_CODE (XEXP (in, 0)) == PRE_DEC
-	  || GET_CODE (XEXP (in, 0)) == PRE_MODIFY)
-	{
-	  rtx new = gen_rtx_MEM (GET_MODE (out), XEXP (XEXP (out, 0), 0));
+      case PRE_INC: case PRE_DEC: case PRE_MODIFY:
+	out = replace_equiv_address_nv (out, XEXP (XEXP (out, 0), 0));
+	break;
 
-	  MEM_COPY_ATTRIBUTES (new, out);
-	  out = new;
-	}
+      default:
+	break;
     }
 
   /* If we are reloading a (SUBREG constant ...), really reload just the
@@ -4484,9 +4477,8 @@ make_memloc (ad, regno)
   if (rtx_varies_p (tem, 0))
     tem = copy_rtx (tem);
 
-  tem = gen_rtx_MEM (GET_MODE (ad), tem);
-  MEM_COPY_ATTRIBUTES (tem, reg_equiv_memory_loc[regno]);
-  return tem;
+  tem = replace_equiv_address_nv (reg_equiv_memory_loc[regno], tem);
+  return adjust_address_nv (tem, GET_MODE (ad), 0);
 }
 
 /* Record all reloads needed for handling memory address AD

@@ -384,23 +384,23 @@ protect_from_queue (x, modify)
       if (code == MEM && GET_MODE (x) != BLKmode
 	  && GET_CODE (XEXP (x, 0)) == QUEUED && !modify)
 	{
-	  register rtx y = XEXP (x, 0);
-	  register rtx new = gen_rtx_MEM (GET_MODE (x), QUEUED_VAR (y));
-
-	  MEM_COPY_ATTRIBUTES (new, x);
+	  rtx y = XEXP (x, 0);
+	  rtx new = replace_equiv_address_nv (x, QUEUED_VAR (y));
 
 	  if (QUEUED_INSN (y))
 	    {
-	      register rtx temp = gen_reg_rtx (GET_MODE (new));
+	      rtx temp = gen_reg_rtx (GET_MODE (x));
+
 	      emit_insn_before (gen_move_insn (temp, new),
 				QUEUED_INSN (y));
 	      return temp;
 	    }
+
 	  /* Copy the address into a pseudo, so that the returned value
 	     remains correct across calls to emit_queue.  */
-	  XEXP (new, 0) = copy_to_reg (XEXP (new, 0));
-	  return new;
+	  return replace_equiv_address (new, copy_to_reg (XEXP (new, 0)));
 	}
+
       /* Otherwise, recursively protect the subexpressions of all
 	 the kinds of rtx's that can contain a QUEUED.  */
       if (code == MEM)
@@ -1577,8 +1577,8 @@ move_by_pieces_1 (genfun, mode, data)
 	{
 	  if (data->autinc_to)
 	    {
-	      to1 = gen_rtx_MEM (mode, data->to_addr);
-	      MEM_COPY_ATTRIBUTES (to1, data->to);
+	      to1 = replace_equiv_address (data->to, data->to_addr);
+	      to1 = adjust_address (to1, mode, 0);
 	    }
 	  else
 	    to1 = adjust_address (data->to, mode, data->offset);
@@ -1586,8 +1586,8 @@ move_by_pieces_1 (genfun, mode, data)
 
       if (data->autinc_from)
 	{
-	  from1 = gen_rtx_MEM (mode, data->from_addr);
-	  MEM_COPY_ATTRIBUTES (from1, data->from);
+	  from1 = replace_equiv_address (data->from, data->from_addr);
+	  from1 = adjust_address (from1, mode, 0);
 	}
       else
 	from1 = adjust_address (data->from, mode, data->offset);
@@ -2508,8 +2508,8 @@ store_by_pieces_2 (genfun, mode, data)
 
       if (data->autinc_to)
 	{
-	  to1 = gen_rtx_MEM (mode, data->to_addr);
-	  MEM_COPY_ATTRIBUTES (to1, data->to);
+	  to1 = replace_equiv_address (data->to, data->to_addr);
+	  to1 = adjust_address (to1, mode, 0);
 	}
       else
 	to1 = adjust_address (data->to, mode, data->offset);
@@ -3003,20 +3003,10 @@ emit_move_insn_1 (x, y)
 	 is scheduled for replacement.  */
       if (reload_in_progress && GET_CODE (x) == MEM
 	  && (inner = find_replacement (&XEXP (x, 0))) != XEXP (x, 0))
-	{
-	  rtx new = gen_rtx_MEM (GET_MODE (x), inner);
-
-	  MEM_COPY_ATTRIBUTES (new, x);
-	  x = new;
-	}
+	x = replace_equiv_address_nv (x, inner);
       if (reload_in_progress && GET_CODE (y) == MEM
 	  && (inner = find_replacement (&XEXP (y, 0))) != XEXP (y, 0))
-	{
-	  rtx new = gen_rtx_MEM (GET_MODE (y), inner);
-
-	  MEM_COPY_ATTRIBUTES (new, y);
-	  y = new;
-	}
+	y = replace_equiv_address_nv (y, inner);
 
       start_sequence ();
 
@@ -7241,14 +7231,7 @@ expand_expr (exp, target, tmode, modifier)
 	/* Get a reference to just this component.  */
 	if (modifier == EXPAND_CONST_ADDRESS
 	    || modifier == EXPAND_SUM || modifier == EXPAND_INITIALIZER)
-	  {
-	    rtx new = gen_rtx_MEM (mode1,
-				   plus_constant (XEXP (op0, 0),
-						  (bitpos / BITS_PER_UNIT)));
-
-	    MEM_COPY_ATTRIBUTES (new, op0);
-	    op0 = new;
-	  }
+	  op0 = adjust_address_nv (op0, mode1, bitpos / BITS_PER_UNIT);
 	else
 	  op0 = adjust_address (op0, mode1, bitpos / BITS_PER_UNIT);
 

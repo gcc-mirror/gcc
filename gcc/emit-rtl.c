@@ -1474,23 +1474,18 @@ operand_subword (op, offset, validate_address, mode)
   /* Form a new MEM at the requested address.  */
   if (GET_CODE (op) == MEM)
     {
-      rtx addr = plus_constant (XEXP (op, 0), (offset * UNITS_PER_WORD));
-      rtx new;
+      rtx new = adjust_address_nv (op, word_mode, offset * UNITS_PER_WORD);
 
-      if (validate_address)
+      if (! validate_address)
+	return new;
+
+      else if (reload_completed)
 	{
-	  if (reload_completed)
-	    {
-	      if (! strict_memory_address_p (word_mode, addr))
-		return 0;
-	    }
-	  else
-	    addr = memory_address (word_mode, addr);
+	  if (! strict_memory_address_p (word_mode, XEXP (new, 0)))
+	    return 0;
 	}
-
-      new = gen_rtx_MEM (word_mode, addr);
-      MEM_COPY_ATTRIBUTES (new, op);
-      return new;
+      else
+	return replace_equiv_address (new, XEXP (new, 0));
     }
 
   /* Rest can be handled by simplify_subreg.  */
@@ -1567,13 +1562,16 @@ reverse_comparison (insn)
 /* Return a memory reference like MEMREF, but with its mode changed
    to MODE and its address changed to ADDR.
    (VOIDmode means don't change the mode.
-   NULL for ADDR means don't change the address.)  */
+   NULL for ADDR means don't change the address.)
+   VALIDATE is nonzero if the returned memory location is required to be
+   valid.  */
 
 rtx
-change_address (memref, mode, addr)
+change_address_1 (memref, mode, addr, validate)
      rtx memref;
      enum machine_mode mode;
      rtx addr;
+     int validate;
 {
   rtx new;
 
@@ -1584,19 +1582,16 @@ change_address (memref, mode, addr)
   if (addr == 0)
     addr = XEXP (memref, 0);
 
-  /* If reload is in progress, don't check for validity of the address since we
-     assume the caller knows what they are doing.  If reload has completed, the
-     address must be valid.  Otherwise, we call memory_address to make it
-     valid.  */
-  if (reload_in_progress)
-    ;
-  else if (reload_completed)
+  if (validate)
     {
-      if (! memory_address_p (mode, addr))
-	abort ();
+      if (reload_in_progress || reload_completed)
+	{
+	  if (! memory_address_p (mode, addr))
+	    abort ();
+	}
+      else
+	addr = memory_address (mode, addr);
     }
-  else
-    addr = memory_address (mode, addr);
 
   if (rtx_equal_p (addr, XEXP (memref, 0)) && mode == GET_MODE (memref))
     return memref;
@@ -1621,6 +1616,20 @@ adjust_address (memref, mode, offset)
     change_address (memref, mode, plus_constant (XEXP (memref, 0), offset));
 }
 
+/* Likewise, but the reference is not required to be valid.  */
+
+rtx
+adjust_address_nv (memref, mode, offset)
+     rtx memref;
+     enum machine_mode mode;
+     HOST_WIDE_INT offset;
+{
+  /* For now, this is just a wrapper for change_address, but eventually
+     will do memref tracking.  */
+  return change_address_1 (memref, mode,
+			   plus_constant (XEXP (memref, 0), offset), 0);
+}
+
 /* Return a memory reference like MEMREF, but with its address changed to
    ADDR.  The caller is asserting that the actual piece of memory pointed
    to is the same, just the form of the address is being changed, such as
@@ -1634,6 +1643,17 @@ replace_equiv_address (memref, addr)
   /* For now, this is just a wrapper for change_address, but eventually
      will do memref tracking.  */
   return change_address (memref, VOIDmode, addr);
+}
+/* Likewise, but the reference is not required to be valid.  */
+
+rtx
+replace_equiv_address_nv (memref, addr)
+     rtx memref;
+     rtx addr;
+{
+  /* For now, this is just a wrapper for change_address, but eventually
+     will do memref tracking.  */
+  return change_address_1 (memref, VOIDmode, addr, 0);
 }
 
 /* Return a newly created CODE_LABEL rtx with a unique label number.  */

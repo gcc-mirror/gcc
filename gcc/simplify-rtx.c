@@ -265,22 +265,10 @@ simplify_replace_rtx (x, old, new)
 
     default:
       if (GET_CODE (x) == MEM)
-	{
-	  /* We can't use change_address here, since it verifies memory address
-	     for corectness.  We don't want such check, since we may handle
-	     addresses previously incorect (such as ones in push instructions)
-	     and it is caller's work to verify whether resulting insn match.  */
-	  rtx addr = simplify_replace_rtx (XEXP (x, 0), old, new);
-	  rtx mem;
-	  if (XEXP (x, 0) != addr)
-	    {
-	      mem = gen_rtx_MEM (GET_MODE (x), addr);
-	      MEM_COPY_ATTRIBUTES (mem, x);
-	    }
-	  else
-	    mem = x;
-	  return mem;
-	}
+	return
+	  replace_equiv_address_nv (x,
+				    simplify_replace_rtx (XEXP (x, 0),
+							  old, new));
 
       return x;
     }
@@ -2415,13 +2403,7 @@ simplify_subreg (outermode, op, innermode, byte)
 	  || (mov_optab->handlers[(int) innermode].insn_code
 	      == CODE_FOR_nothing))
       && GET_MODE_SIZE (outermode) <= GET_MODE_SIZE (GET_MODE (op)))
-    {
-      rtx new;
-
-      new = gen_rtx_MEM (outermode, plus_constant (XEXP (op, 0), byte));
-      MEM_COPY_ATTRIBUTES (new, op);
-      return new;
-    }
+    return adjust_address_nv (op, outermode, byte);
 
   /* Handle complex values represented as CONCAT
      of real and imaginary part.  */

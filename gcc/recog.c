@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #include "hard-reg-set.h"
 #include "recog.h"
 #include "regs.h"
+#include "expr.h"
 #include "function.h"
 #include "flags.h"
 #include "real.h"
@@ -597,10 +598,7 @@ validate_replace_rtx_1 (loc, from, to, object)
 
 	      pos %= GET_MODE_BITSIZE (wanted_mode);
 
-	      newmem = gen_rtx_MEM (wanted_mode,
-				    plus_constant (XEXP (XEXP (x, 0), 0),
-						   offset));
-	      MEM_COPY_ATTRIBUTES (newmem, XEXP (x, 0));
+	      newmem = adjust_address_nv (XEXP (x, 0), wanted_mode, offset);
 
 	      validate_change (object, &XEXP (x, 2), GEN_INT (pos), 1);
 	      validate_change (object, &XEXP (x, 0), newmem, 1);
