@@ -1025,11 +1025,11 @@ private:
 	  // See push_jump_merge to understand this case.
 	  if (ret_semantics)
 	    locals[i] = type (copy->local_changed[i]
-			      ? unsuitable_type
+			      ? copy->locals[i]
 			      : unused_by_subroutine_type);
 	  else
 	    locals[i] = copy->locals[i];
-	  local_changed[i] = copy->local_changed[i];
+	  local_changed[i] = subroutine ? copy->local_changed[i] : false;
 	}
 
       clean_subrs ();
@@ -1465,7 +1465,8 @@ private:
 	// which was not modified by the subroutine.
 	states[npc] = new state (nstate, current_method->max_stack,
 				 current_method->max_locals, ret_semantics);
-	debug_print ("== New state in push_jump_merge\n");
+	debug_print ("== New state in push_jump_merge (ret_semantics = %s)\n",
+		     ret_semantics ? "true" : "false");
 	states[npc]->print ("New", npc, current_method->max_stack,
 			    current_method->max_locals);
       }

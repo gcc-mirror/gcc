@@ -1,5 +1,11 @@
 2003-11-18  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/13026:
+	* verify.cc (state::copy): Only set local_changed if we're in a
+	subroutine.  Correctly copy local variables which were modified
+	by the subroutine.
+	(push_jump_merge): Added more debugging output.
+
 	* jni.cc (_Jv_JNI_GetStringUTFChars): Fail gracefully if string
 	is null.
 
