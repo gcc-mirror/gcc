@@ -1,10 +1,21 @@
+Fri May 14 12:31:08 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* xref.c (xref_set_current_fp): New function, defined.
+	* xref.h (xref_set_current_fp): New function, prototyped.
+
+Fri May 14 11:57:54 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* check-init.c (check_init): Take into account that
+ 	LABELED_BLOCK_STMT can be empty.
+
 Thu May 13 18:30:48 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (java_check_regular_methods): Warning check on not
  	overriding methods with default access in other packages does not
  	apply to `<clinit>'.
 	(java_complete_lhs): If block body is an empty_stmt_node, replace
- 	it by NULL_TREE. This avoid gcc generating an irrelevant warning.
+ 	it by NULL_TREE. This prevents gcc from generating an irrelevant
+ 	warning.
 
 Thu May 13 13:23:38 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 

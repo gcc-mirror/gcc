@@ -28,6 +28,7 @@ int xref_flag_value PROTO ((char *));
 void expand_xref PROTO ((tree));
 void xref_set_data PROTO ((int, void *));
 void *xref_get_data PROTO ((int));
+void xref_set_current_fp PROTO ((FILE *));
 
 /* flag_emit_xref range of possible values. */
 

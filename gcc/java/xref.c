@@ -66,6 +66,13 @@ xref_get_data (flag)
   return xref_table [flag-1].data;
 }
 
+void
+xref_set_current_fp (fp)
+     FILE *fp;
+{
+  xref_table [flag_emit_xref-1].fp = fp;
+}
+
 /* Branch to the right xref "back-end".  */
 
 void
