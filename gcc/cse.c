@@ -2899,7 +2899,8 @@ find_comparison_args (code, parg1, parg2, pmode1, pmode2)
 		  && code == LT && STORE_FLAG_VALUE == -1)
 #ifdef FLOAT_STORE_FLAG_VALUE
 	      || (GET_MODE_CLASS (GET_MODE (arg1)) == MODE_FLOAT
-		  && FLOAT_STORE_FLAG_VALUE < 0)
+		  && (REAL_VALUE_NEGATIVE
+		      (FLOAT_STORE_FLAG_VALUE (GET_MODE (arg1)))))
 #endif
 	      )
 	    x = arg1;
@@ -2908,7 +2909,8 @@ find_comparison_args (code, parg1, parg2, pmode1, pmode2)
 		       && code == GE && STORE_FLAG_VALUE == -1)
 #ifdef FLOAT_STORE_FLAG_VALUE
 		   || (GET_MODE_CLASS (GET_MODE (arg1)) == MODE_FLOAT
-		       && FLOAT_STORE_FLAG_VALUE < 0)
+		       && (REAL_VALUE_NEGATIVE
+			   (FLOAT_STORE_FLAG_VALUE (GET_MODE (arg1)))))
 #endif
 		   )
 	    x = arg1, reverse_code = 1;
@@ -2954,7 +2956,8 @@ find_comparison_args (code, parg1, parg2, pmode1, pmode2)
 #ifdef FLOAT_STORE_FLAG_VALUE
 		   || (code == LT
 		       && GET_MODE_CLASS (inner_mode) == MODE_FLOAT
-		       && FLOAT_STORE_FLAG_VALUE < 0)
+		       && (REAL_VALUE_NEGATIVE
+			   (FLOAT_STORE_FLAG_VALUE (GET_MODE (arg1)))))
 #endif
 		   )
 		  && GET_RTX_CLASS (GET_CODE (p->exp)) == '<'))
@@ -2973,7 +2976,8 @@ find_comparison_args (code, parg1, parg2, pmode1, pmode2)
 #ifdef FLOAT_STORE_FLAG_VALUE
 		    || (code == GE
 			&& GET_MODE_CLASS (inner_mode) == MODE_FLOAT
-			&& FLOAT_STORE_FLAG_VALUE < 0)
+		        && (REAL_VALUE_NEGATIVE
+			    (FLOAT_STORE_FLAG_VALUE (GET_MODE (arg1)))))
 #endif
 		    )
 		   && GET_RTX_CLASS (GET_CODE (p->exp)) == '<')
@@ -3639,8 +3643,8 @@ fold_rtx (x, insn)
 #ifdef FLOAT_STORE_FLAG_VALUE
 	  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	    {
-	      true = CONST_DOUBLE_FROM_REAL_VALUE (FLOAT_STORE_FLAG_VALUE,
-						   mode);
+	      true = (CONST_DOUBLE_FROM_REAL_VALUE
+		      (FLOAT_STORE_FLAG_VALUE (mode), mode));
 	      false = CONST0_RTX (mode);
 	    }
 #endif
@@ -3753,8 +3757,8 @@ fold_rtx (x, insn)
 #ifdef FLOAT_STORE_FLAG_VALUE
 	      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 		{
-		  true = CONST_DOUBLE_FROM_REAL_VALUE (FLOAT_STORE_FLAG_VALUE,
-						       mode);
+		  true = (CONST_DOUBLE_FROM_REAL_VALUE
+			  (FLOAT_STORE_FLAG_VALUE (mode), mode));
 		  false = CONST0_RTX (mode);
 		}
 #endif
@@ -3784,8 +3788,13 @@ fold_rtx (x, insn)
 					   const_arg1 ? const_arg1 : folded_arg1);
 #ifdef FLOAT_STORE_FLAG_VALUE
       if (new != 0 && GET_MODE_CLASS (mode) == MODE_FLOAT)
-	new = ((new == const0_rtx) ? CONST0_RTX (mode)
-	       : CONST_DOUBLE_FROM_REAL_VALUE (FLOAT_STORE_FLAG_VALUE, mode));
+	{
+	  if (new == const0_rtx)
+	    new = CONST0_RTX (mode);
+	  else
+	    new = (CONST_DOUBLE_FROM_REAL_VALUE
+		   (FLOAT_STORE_FLAG_VALUE (mode), mode));
+	}
 #endif
       break;
 
