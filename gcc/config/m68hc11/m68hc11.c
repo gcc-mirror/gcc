@@ -37,9 +37,7 @@ Note:
 #include "system.h"
 #include "rtl.h"
 #include "tree.h"
-#if GCC_VERSION > 2095
 #include "tm_p.h"
-#endif
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "real.h"
@@ -52,16 +50,8 @@ Note:
 #include "expr.h"
 #include "toplev.h"
 #include "basic-block.h"
-#if GCC_VERSION > 2095
 #include "function.h"
 #include "ggc.h"
-#else
-#include "m68hc11-protos.h"
-#endif
-
-#if GCC_VERSION == 2095
-extern char *version_string;
-#endif
 
 static void print_options PARAMS ((FILE *));
 static void emit_move_after_reload PARAMS ((rtx, rtx, rtx));
@@ -140,7 +130,6 @@ static void m68hc11_add_gc_roots PARAMS ((void));
 
 static int nb_soft_regs;
 
-#if GCC_VERSION > 2095
 /* Flag defined in c-decl.c
 
    Nonzero means don't recognize the non-ANSI builtin functions.
@@ -151,16 +140,13 @@ static int nb_soft_regs;
    conflict with newlib definition.  Don't define as external to
    avoid a link problem for f77.  */
 int flag_no_nonansi_builtin;
-#endif
 
 int
 m68hc11_override_options ()
 {
   m68hc11_add_gc_roots ();
 
-#if GCC_VERSION > 2095
   flag_no_nonansi_builtin = 1;
-#endif
   
   memset (m68hc11_reg_valid_for_index, 0,
 	  sizeof (m68hc11_reg_valid_for_index));
@@ -1324,8 +1310,6 @@ m68hc11_function_arg (cum, mode, type, named)
   return NULL_RTX;
 }
 
-#if GCC_VERSION > 2095
-
 /* The "standard" implementation of va_start: just assign `nextarg' to
    the variable.  */
 void
@@ -1393,7 +1377,6 @@ m68hc11_va_arg (valist, type)
 
   return addr;
 }
-#endif
 
 /* If defined, a C expression which determines whether, and in which direction,
    to pad out an argument with extra space.  The value should be of type
@@ -4588,49 +4571,6 @@ m68hc11_reassign_regs (first)
     }
 }
 
-#if GCC_VERSION == 2095
-/* Split all insns in the function.  If UPD_LIFE, update life info after.  */
-
-static int
-m68hc11_split_all_insns (first)
-     rtx first;
-{
-  rtx insn;
-  int split_done = 0;
-
-  for (insn = first; insn; insn = NEXT_INSN (insn))
-    {
-      rtx last;
-
-      if (INSN_DELETED_P (insn))
-	continue;
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
-	continue;
-
-      last = try_split (PATTERN (insn), insn, 1);
-
-      /* When not optimizing, the old insn will be still left around
-         with only the 'deleted' bit set.  Transform it into a note
-         to avoid confusion of subsequent processing.  */
-      if (INSN_DELETED_P (insn))
-	{
-	  PUT_CODE (insn, NOTE);
-	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	  NOTE_SOURCE_FILE (insn) = 0;
-	  split_done = 1;
-	}
-
-      if (last != insn)
-	{
-	  PUT_CODE (insn, NOTE);
-	  NOTE_SOURCE_FILE (insn) = 0;
-	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	  split_done = 1;
-	}
-    }
-  return split_done;
-}
-#endif /* GCC_VERSION == 2095 */
 
 void
 m68hc11_reorg (first)
@@ -4641,20 +4581,14 @@ m68hc11_reorg (first)
   z_replacement_completed = 0;
   z_reg = gen_rtx (REG, HImode, HARD_Z_REGNUM);
 
-#if GCC_VERSION > 2095
   /* Some RTX are shared at this point.  This breaks the Z register
      replacement, unshare everything.  */
   unshare_all_rtl_again (first);
-#endif
 
   /* Force a split of all splitable insn.  This is necessary for the
      Z register replacement mechanism because we end up with basic insns.  */
-#if GCC_VERSION > 2095
   split_all_insns (0);
   split_done = 1;
-#else
-  split_done = m68hc11_split_all_insns (first);
-#endif
 
   z_replacement_completed = 1;
   m68hc11_reassign_regs (first);
@@ -4668,14 +4602,8 @@ m68hc11_reorg (first)
      description to use the best assembly directives.  */
   if (optimize)
     {
-#if GCC_VERSION > 2095
       find_basic_blocks (first, max_reg_num (), 0);
       life_analysis (first, 0, PROP_REG_INFO | PROP_DEATH_NOTES);
-#else
-      find_basic_blocks (first, max_reg_num (), 0, 1);
-      life_analysis (first, max_reg_num (), 0,
-		     1 /* SCz: dead code elim fails. Must investigate. */ );
-#endif
     }
 
   z_replacement_completed = 2;
@@ -4684,11 +4612,7 @@ m68hc11_reorg (first)
      split after Z register replacement.  This gives more opportunities
      for peephole (in particular for consecutives xgdx/xgdy).  */
   if (optimize > 0)
-#if GCC_VERSION > 2095
     split_all_insns (0);
-#else
-    m68hc11_split_all_insns (first);
-#endif
 
   /* Once insns are split after the z_replacement_completed == 2,
      we must not re-run the life_analysis.  The xgdx/xgdy patterns
@@ -4996,9 +4920,6 @@ m68hc11_rtx_costs (x, code, outer_code)
 /* print_options - called at the start of the code generation for a
    module. */
 
-#if GCC_VERSION == 2095
-extern char *main_input_filename;
-#endif
 extern char *asm_file_name;
 
 #include <time.h>
@@ -5052,7 +4973,6 @@ m68hc11_asm_file_start (out, main_file)
 static void
 m68hc11_add_gc_roots ()
 {
-#if GCC_VERSION > 2095
   ggc_add_rtx_root (&m68hc11_soft_tmp_reg, 1);
   ggc_add_rtx_root (&ix_reg, 1);
   ggc_add_rtx_root (&iy_reg, 1);
@@ -5062,5 +4982,4 @@ m68hc11_add_gc_roots ()
   ggc_add_rtx_root (&z_reg_qi, 1);
   ggc_add_rtx_root (&stack_push_word, 1);
   ggc_add_rtx_root (&stack_pop_word, 1);
-#endif
 }

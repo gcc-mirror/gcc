@@ -53,11 +53,8 @@ extern void m68hc11_encode_section_info PARAMS((tree));
 #endif
 
 #ifdef RTX_CODE
-#if GCC_VERSION > 2095
 extern rtx m68hc11_compare_op0;
 extern rtx m68hc11_compare_op1;
-#endif
-
 extern rtx m68hc11_soft_tmp_reg;
 extern rtx iy_reg;
 extern rtx d_reg;
@@ -165,10 +162,9 @@ extern void m68hc11_function_epilogue PARAMS((FILE*,int));
 
 #endif /* TREE_CODE */
 
-#if GCC_VERSION > 2095
 extern HOST_WIDE_INT m68hc11_min_offset;
 extern HOST_WIDE_INT m68hc11_max_offset;
-#endif
+
 #endif /* HAVE_MACHINE_MODES */
 #endif /* RTX_CODE */
 
