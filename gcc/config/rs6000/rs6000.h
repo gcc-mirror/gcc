@@ -641,14 +641,15 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
 
-   On RS/6000, r1 is used for the stack and r2 is used as the TOC pointer.
+   On RS/6000, r1 is used for the stack.  On Darwin, r2 is available
+   as a local register; for all other OS's r2 is the TOC pointer.
 
    cr5 is not supposed to be used.
 
    On System V implementations, r13 is fixed and not available for use.  */
 
 #define FIXED_REGISTERS  \
-  {0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, FIXED_R13, 0, 0, \
+  {0, 1, FIXED_R2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, FIXED_R13, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
