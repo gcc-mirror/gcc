@@ -163,6 +163,7 @@ typedef unsigned int UDItype __attribute__ ((mode (DI)));
 #		define multiply 	fpmul
 #		define divide 		fpdiv
 #		define compare 		fpcmp
+#		define usi_to_float 	__floatunsisf
 #		define si_to_float 	sitofp
 #		define float_to_si 	fptosi
 #		define float_to_usi 	fptoui
@@ -175,6 +176,7 @@ typedef unsigned int UDItype __attribute__ ((mode (DI)));
 #		define multiply 	dpmul
 #		define divide 		dpdiv
 #		define compare 		dpcmp
+#		define usi_to_float 	__floatunsidf
 #		define si_to_float 	litodp
 #		define float_to_si 	dptoli
 #		define float_to_usi 	dptoul
