@@ -1,4 +1,4 @@
-/* Configuration for GCC for Intel i386 running Linux.
+/* Configuration for GCC for SPARC running Linux.
    Copyright (C) 1996 Free Software Foundation, Inc.
    Contributed by Eddie C. Dost (ecd@skynet.be)
 
