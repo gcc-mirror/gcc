@@ -1,3 +1,8 @@
+2003-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.c (store_constructor): Only set RTX_UNCHANGING_P for
+	read-only field if cleared is 0.
+
 2003-12-03  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc: Mark obsolete targets for GCC 3.4.
