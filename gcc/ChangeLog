@@ -1,3 +1,7 @@
+2001-03-22  Gordon Sadler  <gbsadler1@lcisp.com>
+
+	* Makefile.in (stage1_build): Pass CFLAGS to stage1_build.
+
 2001-03-22  Zack Weinberg  <zackw@stanford.edu>
 
 	* gcc.c, objc/lang-specs.h: Add zero initializer for cpp_spec field to
