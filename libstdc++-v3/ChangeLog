@@ -1,3 +1,12 @@
+2004-02-02  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/13976
+	* include/ext/malloc_allocator.h (malloc_allocator::allocate):
+	Make the second parameter unnamed, to void unused parameter
+	warnings.
+	* include/ext/mt_allocator.h (__mt_alloc::allocate): Ditto.
+	* include/ext/new_allocator.h (new_allocator::allocate): Ditto.
+
 2004-02-01  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_algo.h: Additional minor tweaks.
