@@ -1,3 +1,8 @@
+2000-03-08  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/reflect/natArray.cc (newInstance): Don't allow array
+	of `void' to be created.
+
 2000-03-08  Warren Levy  <warrenl@cygnus.com>
 
 	* java/math/BigInteger.java(signum): Handle zero properly.
