@@ -692,7 +692,7 @@ int flag_pic;
 
 /* Set to the default thread-local storage (tls) model to use.  */
 
-enum tls_model flag_tls_default;
+enum tls_model flag_tls_default = TLS_MODEL_GLOBAL_DYNAMIC;
 
 /* Nonzero means generate extra code for exception handling and enable
    exception handling.  */
