@@ -593,7 +593,7 @@ namespace std
 	  // Ditch any pback buffers to avoid confusion.
 	  _M_destroy_pback();
 
-	  off_type __computed_off = __off;	  
+	  off_type __computed_off = __off * __width;
 	  if (this->pbase() < this->pptr())
 	    {
 	      // Part one: update the output sequence.
@@ -603,13 +603,26 @@ namespace std
 	      _M_output_unshift();
 	    }
 	  else if (_M_reading && __way == ios_base::cur)
-	    __computed_off += this->gptr() - this->egptr();
+	    {
+	      if (_M_codecvt->always_noconv())
+		__computed_off += this->gptr() - this->egptr();
+	      else
+		{
+		  // Calculate offset from _M_ext_buf that corresponds
+		  // to gptr().
+		  const int __gptr_off =
+		    _M_codecvt->length(_M_state_cur, _M_ext_buf, _M_ext_next,
+				       this->gptr() - this->eback());
+		  __computed_off += _M_ext_buf + __gptr_off - _M_ext_end;
+		}
+	    }
 	  
 	  // Returns pos_type(off_type(-1)) in case of failure.
-	  __ret = _M_file.seekoff(__computed_off * __width, __way, __mode);
+	  __ret = _M_file.seekoff(__computed_off, __way, __mode);
 	  
 	  _M_reading = false;
 	  _M_writing = false;
+	  _M_ext_next = _M_ext_end = _M_ext_buf;
 	  _M_set_buffer(-1);
 	}
       _M_last_overflowed = false;	
