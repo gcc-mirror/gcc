@@ -115,6 +115,9 @@ init_caller_save ()
   rtx address;
   int i, j;
   enum machine_mode mode;
+  rtx savepat, restpat;
+  rtx test_reg, test_mem;
+  rtx saveinsn, restinsn;
 
   /* First find all the registers that we need to deal with and all
      the modes that they can have.  If we can't find a mode to use,
@@ -179,7 +182,17 @@ init_caller_save ()
     address = addr_reg;
 
   /* Next we try to form an insn to save and restore the register.  We
-     see if such an insn is recognized and meets its constraints.  */
+     see if such an insn is recognized and meets its constraints. 
+
+     To avoid lots of unnecessary RTL allocation, we construct all the RTL
+     once, then modify the memory and register operands in-place.  */
+
+  test_reg = gen_rtx_REG (VOIDmode, 0);
+  test_mem = gen_rtx_MEM (VOIDmode, address);
+  savepat = gen_rtx_SET (VOIDmode, test_mem, test_reg);
+  restpat = gen_rtx_SET (VOIDmode, test_reg, test_mem);
+  saveinsn = emit_insn (savepat);
+  restinsn = emit_insn (restpat);
 
   start_sequence ();
 
@@ -187,13 +200,13 @@ init_caller_save ()
     for (mode = 0 ; mode < MAX_MACHINE_MODE; mode++)
       if (HARD_REGNO_MODE_OK (i, mode))
         {
-	  rtx mem = gen_rtx_MEM (mode, address);
-	  rtx reg = gen_rtx_REG (mode, i);
-	  rtx savepat = gen_rtx_SET (VOIDmode, mem, reg);
-	  rtx restpat = gen_rtx_SET (VOIDmode, reg, mem);
-	  rtx saveinsn = emit_insn (savepat);
-	  rtx restinsn = emit_insn (restpat);
 	  int ok;
+
+	  /* Update the register number and modes of the register
+	     and memory operand.  */
+	  REGNO (test_reg) = i;
+	  PUT_MODE (test_reg, mode);
+	  PUT_MODE (test_mem, mode);
 
 	  reg_save_code[i][mode] = recog_memoized (saveinsn);
 	  reg_restore_code[i][mode] = recog_memoized (restinsn);

@@ -1,3 +1,23 @@
+2002-06-10  Jeffrey Law  <law@redhat.com>
+
+	* alias.c (static_reg_base_value): New to hold RTL for
+	items allocated once per function for the aliasing code.
+	(init_alias_once_per_function): Initialize static_reg_base_value.
+	(init_alias_analysis): Avoid throw-away allocations of RTL by
+	using pre-computed values in static_reg_base_value.
+	* function.c (prepare_function_start): Call
+	init_alias_once_per_function appropriately.
+	* rtl.h (init_alias_once_per_function): Declare.
+	* caller-save (init_caller_save): Restructure slightly to
+	avoid lots of silly RTL generation.
+	* expr.c (init_expr_once): Likewise.
+	* reload1.c (reload_cse_regs_1): Allocate throw-away register
+	RTL object here.  Pass it into children.
+	(reload_cse_simplify_operands): Use passed-in register RTL
+	object.
+	(reload_cse_simplify): Pass through throw-away register
+	RTL object.
+
 2002-06-10  Daniel Berlin  <dberlin@dberlin.org>
 	
 	* Makefile.in (ssa.o): Add dependency on $(RTL_H), which was missing.
