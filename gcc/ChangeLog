@@ -1,3 +1,8 @@
+2004-02-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (h8300_emit_stack_adjustment):
+	Don't generate insns by hand.
+
 2004-02-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/14178

@@ -370,6 +370,10 @@ byte_reg (rtx x, int b)
 static void
 h8300_emit_stack_adjustment (int sign, unsigned int size)
 {
+  /* If the frame size is 0, we don't have anything to do.  */
+  if (size == 0)
+    return 0;
+
   /* H8/300 cannot add/subtract a large constant with a single
      instruction.  If a temporary register is available, load the
      constant to it and then do the addition.  */
@@ -378,11 +382,10 @@ h8300_emit_stack_adjustment (int sign, unsigned int size)
       && !h8300_current_function_interrupt_function_p ()
       && !(current_function_needs_context && sign < 0))
     {
-      rtx new_sp;
       rtx r3 = gen_rtx_REG (Pmode, 3);
-      emit_insn (gen_rtx_SET (Pmode, r3, GEN_INT (sign * size)));
-      new_sp = gen_rtx_PLUS (Pmode, stack_pointer_rtx, r3);
-      emit_insn (gen_rtx_SET (Pmode, stack_pointer_rtx, new_sp));
+      emit_insn (gen_movhi (r3, GEN_INT (sign * size)));
+      emit_insn (gen_addhi3 (stack_pointer_rtx,
+			     stack_pointer_rtx, r3));
     }
   else
     {
@@ -390,8 +393,12 @@ h8300_emit_stack_adjustment (int sign, unsigned int size)
 	 splitter.  In case of H8/300, the splitter always splits the
 	 addition emitted here to make the adjustment
 	 interrupt-safe.  */
-      rtx new_sp = plus_constant (stack_pointer_rtx, sign * size);
-      emit_insn (gen_rtx_SET (Pmode, stack_pointer_rtx, new_sp));
+      if (Pmode == HImode)
+	emit_insn (gen_addhi3 (stack_pointer_rtx,
+			       stack_pointer_rtx, GEN_INT (sign * size)));
+      else
+	emit_insn (gen_addsi3 (stack_pointer_rtx,
+			       stack_pointer_rtx, GEN_INT (sign * size)));
     }
 }
 
