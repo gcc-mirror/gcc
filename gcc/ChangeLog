@@ -1,3 +1,14 @@
+Wed Sep 20 21:44:31 2000  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.c (adjust_insn_length): Adjust lengths of
+	`reload_in*' insns.
+
+2000-09-19  Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* config/avr/avr.md (neghi2): Add alternative for input and output
+	operands in different registers, as in negsi2.
+	(*negsi2): Remove '*' from the name.  Use "movw" if available.
+
 2000-09-19  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/crtbegin.asm (__dso_handle): Delete use of

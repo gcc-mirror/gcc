@@ -1006,24 +1006,30 @@
    (set_attr "cc" "set_zn")])
 
 (define_insn "neghi2"
-  [(set (match_operand:HI 0 "register_operand" "=!d,r")
-	(neg:HI (match_operand:HI 1 "register_operand" "0,0")))]
+  [(set (match_operand:HI 0 "register_operand"       "=!d,r,&r")
+	(neg:HI (match_operand:HI 1 "register_operand" "0,0,r")))]
   ""
   "@
 	com %B0\;neg %A0\;sbci %B0,lo8(-1)
-	com %B0\;neg %A0\;sbc %B0,__zero_reg__\;inc %B0"
-  [(set_attr "length" "3,4")
-   (set_attr "cc" "set_czn,set_n")])
+	com %B0\;neg %A0\;sbc %B0,__zero_reg__\;inc %B0
+	clr %A0\;clr %B0\;sub %A0,%A1\;sbc %B0,%B1"
+  [(set_attr "length" "3,4,4")
+   (set_attr "cc" "set_czn,set_n,set_czn")])
 
-(define_insn "*negsi2"
+(define_insn "negsi2"
   [(set (match_operand:SI 0 "register_operand"       "=!d,r,&r")
 	(neg:SI (match_operand:SI 1 "register_operand" "0,0,r")))]
   ""
   "@
 	com %D0\;com %C0\;com %B0\;neg %A0\;sbci %B0,lo8(-1)\;sbci %C0,lo8(-1)\;sbci %D0,lo8(-1)
 	com %D0\;com %C0\;com %B0\;com %A0\;adc %A0,__zero_reg__\;adc %B0,__zero_reg__\;adc %C0,__zero_reg__\;adc %D0,__zero_reg__
-	clr %A0\;clr %B0\;clr %C0\;clr %D0\;sub %A0,%A1\;sbc %B0,%B1\;sbc %C0,%C1\;sbc %D0,%D1"
-  [(set_attr "length" "7,8,8")
+	clr %A0\;clr %B0\;{clr %C0\;clr %D0|movw %C0,%A0}\;sub %A0,%A1\;sbc %B0,%B1\;sbc %C0,%C1\;sbc %D0,%D1"
+  [(set_attr_alternative "length"
+			 [(const_int 7)
+			  (const_int 8)
+			  (if_then_else (eq_attr "mcu_enhanced" "yes")
+					(const_int 7)
+					(const_int 8))])
    (set_attr "cc" "set_czn,set_n,set_czn")])
 
 (define_insn "negsf2"

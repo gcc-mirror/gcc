@@ -3509,6 +3509,7 @@ adjust_insn_length (insn, len)
 {
   rtx patt = PATTERN (insn);
   rtx set;
+
   if (GET_CODE (patt) == SET)
     {
       rtx op[10];
@@ -3577,9 +3578,34 @@ adjust_insn_length (insn, len)
   if (set)
     {
       rtx op[10];
+
       op[1] = SET_SRC (set);
       op[0] = SET_DEST (set);
-      if (GET_CODE (op[1]) == ASHIFT
+
+      if (GET_CODE (patt) == PARALLEL
+	  && general_operand (op[1], VOIDmode)
+	  && general_operand (op[0], VOIDmode))
+	{
+	  if (XVECLEN (patt, 0) == 2)
+	    op[2] = XVECEXP (patt, 0, 1);
+
+	  switch (GET_MODE (op[0]))
+	    {
+	    case QImode:
+	      len = 2;
+	      break;
+	    case HImode:
+	      output_reload_inhi (insn, op, &len);
+	      break;
+	    case SImode:
+	    case SFmode:
+	      output_reload_insisf (insn, op, &len);
+	      break;
+	    default:
+	      break;
+	    }
+	}
+      else if (GET_CODE (op[1]) == ASHIFT
 	  || GET_CODE (op[1]) == ASHIFTRT
 	  || GET_CODE (op[1]) == LSHIFTRT)
 	{
