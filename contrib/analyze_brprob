@@ -1,5 +1,5 @@
 #!/usr/bin/awk -f
-# Script to analyze experimental results of our branch prediction heursitics
+# Script to analyze experimental results of our branch prediction heuristics
 # Contributed by Jan Hubicka, SuSE inc.
 # Copyright (C) 2001 Free Software Foundation, Inc.
 #
@@ -22,7 +22,7 @@
 #
 #
 # This script is used to calculate two basic properties of the branch prediction
-# heursitics - coverage and hitrate.  Coverage is number of executions of given
+# heuristics - coverage and hitrate.  Coverage is number of executions of given
 # branch matched by the heuristics and hitrate is probability that once branch is
 # predicted as taken it is really taken.
 #
@@ -58,7 +58,7 @@
 #noreturn call                    951  27.6% 100.00%/100.00%      1759809  17.6%
 #
 #  The heuristics called "first match" is heuristics used by gcc branch
-#  prediction pass and it predicts 89.92% branches correctly.  
+#  prediction pass and it predicts 89.92% branches correctly.
 #
 #  The quality of heuristics can be rated using both, coverage and hitrate
 #  parameters.  For example "loop branch" heuristics (predicting loopback edge
