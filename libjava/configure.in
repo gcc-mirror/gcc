@@ -412,7 +412,7 @@ case "$TARGET_ECOS" in
       ;;
 esac
 AC_SUBST(PLATFORMOBJS)
-AC_LINK_FILES(include/$PLATFORMH, include/platform.h)
+AC_CONFIG_LINKS(include/platform.h:include/$PLATFORMH)
 
 AC_EGREP_HEADER(uint32_t, stdint.h, AC_DEFINE(HAVE_INT32_DEFINED, 1,
                                       [Define if you have int32_t and uint32_t.]))
@@ -436,30 +436,30 @@ AC_EGREP_HEADER(localtime, time.h, AC_DEFINE(HAVE_LOCALTIME, 1,
 test -d java || mkdir java
 test -d java/io || mkdir java/io
 test -d gnu || mkdir gnu
-AC_LINK_FILES(java/io/natFile${FILE-${PLATFORM}}.cc, java/io/natFile.cc)
+AC_CONFIG_LINKS(java/io/natFile.cc:java/io/natFile${FILE-${PLATFORM}}.cc)
 
 # Likewise for ConcreteProcess.java and natConcreteProcess.cc.
 test -d java/lang || mkdir java/lang
-AC_LINK_FILES(java/lang/${PLATFORM}Process.java, java/lang/ConcreteProcess.java)
-AC_LINK_FILES(java/lang/nat${PLATFORM}Process.cc, java/lang/natConcreteProcess.cc)
+AC_CONFIG_LINKS(java/lang/ConcreteProcess.java:java/lang/${PLATFORM}Process.java)
+AC_CONFIG_LINKS(java/lang/natConcreteProcess.cc:java/lang/nat${PLATFORM}Process.cc)
 
 # Likewise for natInetAddress.cc and natNetworkInterface.cc.
 test -d java/net || mkdir java/net
-AC_LINK_FILES(java/net/natInetAddress${PLATFORMNET}.cc, java/net/natInetAddress.cc)
-AC_LINK_FILES(java/net/natNetworkInterface${PLATFORMNET}.cc, java/net/natNetworkInterface.cc)
+AC_CONFIG_LINKS(java/net/natInetAddress.cc:java/net/natInetAddress${PLATFORMNET}.cc)
+AC_CONFIG_LINKS(java/net/natNetworkInterface.cc:java/net/natNetworkInterface${PLATFORMNET}.cc)
 
 # Likewise for natPlainSocketImpl.cc and natPlainDatagramSocketImpl.cc.
 test -d gnu/java || mkdir gnu/java
 test -d gnu/java/net || mkdir gnu/java/net
-AC_LINK_FILES(gnu/java/net/natPlainSocketImpl${PLATFORMNET}.cc, gnu/java/net/natPlainSocketImpl.cc)
-AC_LINK_FILES(gnu/java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc, gnu/java/net/natPlainDatagramSocketImpl.cc)
+AC_CONFIG_LINKS(gnu/java/net/natPlainSocketImpl.cc:gnu/java/net/natPlainSocketImpl${PLATFORMNET}.cc)
+AC_CONFIG_LINKS(gnu/java/net/natPlainDatagramSocketImpl.cc:gnu/java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc)
 
 # Likewise for natPipeImpl.cc and natSelectorImpl.cc.
 test -d gnu/java/nio || mkdir gnu/java/nio
-AC_LINK_FILES(gnu/java/nio/natPipeImpl${PLATFORM}.cc, gnu/java/nio/natPipeImpl.cc)
-AC_LINK_FILES(gnu/java/nio/natSelectorImpl${PLATFORM}.cc, gnu/java/nio/natSelectorImpl.cc)
+AC_CONFIG_LINKS(gnu/java/nio/natPipeImpl.cc:gnu/java/nio/natPipeImpl${PLATFORM}.cc)
+AC_CONFIG_LINKS(gnu/java/nio/natSelectorImpl.cc:gnu/java/nio/natSelectorImpl${PLATFORM}.cc)
 test -d gnu/java/nio/channels || mkdir gnu/java/nio/channels
-AC_LINK_FILES(gnu/java/nio/channels/natFileChannel${FILE-${PLATFORM}}.cc, gnu/java/nio/channels/natFileChannelImpl.cc)
+AC_CONFIG_LINKS(gnu/java/nio/channels/natFileChannelImpl.cc:gnu/java/nio/channels/natFileChannel${FILE-${PLATFORM}}.cc)
 
 case "${host}" in
     *mingw*)
@@ -601,7 +601,7 @@ AC_SUBST(GCOBJS)
 AC_SUBST(GCSPEC)
 AC_SUBST(JC1GCSPEC)
 AC_SUBST(GCTESTSPEC)
-AC_LINK_FILES(include/$GCHDR, include/java-gc.h)
+AC_CONFIG_LINKS(include/java-gc.h:include/$GCHDR)
 
 
 AC_MSG_CHECKING([for thread model used by GCC])
@@ -699,7 +699,7 @@ case "$THREADS" in
     THREADH=no-threads.h
     ;;
 esac
-AC_LINK_FILES(include/$THREADH, include/java-threads.h)
+AC_CONFIG_LINKS(include/java-threads.h:include/$THREADH)
 AC_SUBST(THREADLIBS)
 AC_SUBST(THREADINCS)
 AC_SUBST(THREADDEPS)
@@ -709,7 +709,7 @@ AC_SUBST(THREADLDFLAGS)
 AC_SUBST(THREADCXXFLAGS)
 
 if test -d sysdep; then true; else mkdir sysdep; fi
-AC_LINK_FILES(sysdep/$sysdeps_dir/locks.h, sysdep/locks.h)
+AC_CONFIG_LINKS(sysdep/locks.h:sysdep/$sysdeps_dir/locks.h)
 
 HASH_SYNC_SPEC=
 # Hash synchronization is only useful with posix threads right now.
@@ -1349,8 +1349,8 @@ if test -z "$SIGNAL_HANDLER_AUX"; then
   SIGNAL_HANDLER_AUX=$SIGNAL_HANDLER
 fi
 
-AC_LINK_FILES($SIGNAL_HANDLER $SIGNAL_HANDLER_AUX,
-	      include/java-signal.h include/java-signal-aux.h)
+AC_CONFIG_LINKS(include/java-signal.h:$SIGNAL_HANDLER
+		include/java-signal-aux.h:$SIGNAL_HANDLER_AUX)
 
 if test "${multilib}" = "yes"; then
   multilib_arg="--enable-multilib"

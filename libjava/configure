@@ -5244,14 +5244,7 @@ _ACEOF
       ;;
 esac
 
-ac_sources="include/$PLATFORMH"
-ac_dests="include/platform.h"
-while test -n "$ac_sources"; do
-  set $ac_dests; ac_dest=$1; shift; ac_dests=$*
-  set $ac_sources; ac_source=$1; shift; ac_sources=$*
-  ac_config_links_1="$ac_config_links_1 $ac_dest:$ac_source"
-done
-          ac_config_links="$ac_config_links $ac_config_links_1"
+          ac_config_links="$ac_config_links include/platform.h:include/$PLATFORMH"
 
 
 ac_ext=c
@@ -5628,109 +5621,39 @@ rm -f conftest*
 test -d java || mkdir java
 test -d java/io || mkdir java/io
 test -d gnu || mkdir gnu
-ac_sources="java/io/natFile${FILE-${PLATFORM}}.cc"
-ac_dests="java/io/natFile.cc"
-while test -n "$ac_sources"; do
-  set $ac_dests; ac_dest=$1; shift; ac_dests=$*
-  set $ac_sources; ac_source=$1; shift; ac_sources=$*
-  ac_config_links_2="$ac_config_links_2 $ac_dest:$ac_source"
-done
-          ac_config_links="$ac_config_links $ac_config_links_2"
+          ac_config_links="$ac_config_links java/io/natFile.cc:java/io/natFile${FILE-${PLATFORM}}.cc"
 
 
 # Likewise for ConcreteProcess.java and natConcreteProcess.cc.
 test -d java/lang || mkdir java/lang
-ac_sources="java/lang/${PLATFORM}Process.java"
-ac_dests="java/lang/ConcreteProcess.java"
-while test -n "$ac_sources"; do
-  set $ac_dests; ac_dest=$1; shift; ac_dests=$*
-  set $ac_sources; ac_source=$1; shift; ac_sources=$*
-  ac_config_links_3="$ac_config_links_3 $ac_dest:$ac_source"
-done
-          ac_config_links="$ac_config_links $ac_config_links_3"
+          ac_config_links="$ac_config_links java/lang/ConcreteProcess.java:java/lang/${PLATFORM}Process.java"
 
-ac_sources="java/lang/nat${PLATFORM}Process.cc"
-ac_dests="java/lang/natConcreteProcess.cc"
-while test -n "$ac_sources"; do
-  set $ac_dests; ac_dest=$1; shift; ac_dests=$*
-  set $ac_sources; ac_source=$1; shift; ac_sources=$*
-  ac_config_links_4="$ac_config_links_4 $ac_dest:$ac_source"
-done
-          ac_config_links="$ac_config_links $ac_config_links_4"
+          ac_config_links="$ac_config_links java/lang/natConcreteProcess.cc:java/lang/nat${PLATFORM}Process.cc"
 
 
 # Likewise for natInetAddress.cc and natNetworkInterface.cc.
 test -d java/net || mkdir java/net
-ac_sources="java/net/natInetAddress${PLATFORMNET}.cc"
-ac_dests="java/net/natInetAddress.cc"
-while test -n "$ac_sources"; do
-  set $ac_dests; ac_dest=$1; shift; ac_dests=$*
-  set $ac_sources; ac_source=$1; shift; ac_sources=$*
-  ac_config_links_5="$ac_config_links_5 $ac_dest:$ac_source"
-done
-          ac_config_links="$ac_config_links $ac_config_links_5"
+          ac_config_links="$ac_config_links java/net/natInetAddress.cc:java/net/natInetAddress${PLATFORMNET}.cc"
 
-ac_sources="java/net/natNetworkInterface${PLATFORMNET}.cc"
-ac_dests="java/net/natNetworkInterface.cc"
-while test -n "$ac_sources"; do
-  set $ac_dests; ac_dest=$1; shift; ac_dests=$*
-  set $ac_sources; ac_source=$1; shift; ac_sources=$*
-  ac_config_links_6="$ac_config_links_6 $ac_dest:$ac_source"
-done
-          ac_config_links="$ac_config_links $ac_config_links_6"
+          ac_config_links="$ac_config_links java/net/natNetworkInterface.cc:java/net/natNetworkInterface${PLATFORMNET}.cc"
 
 
 # Likewise for natPlainSocketImpl.cc and natPlainDatagramSocketImpl.cc.
 test -d gnu/java || mkdir gnu/java
 test -d gnu/java/net || mkdir gnu/java/net
-ac_sources="gnu/java/net/natPlainSocketImpl${PLATFORMNET}.cc"
-ac_dests="gnu/java/net/natPlainSocketImpl.cc"
-while test -n "$ac_sources"; do
-  set $ac_dests; ac_dest=$1; shift; ac_dests=$*
-  set $ac_sources; ac_source=$1; shift; ac_sources=$*
-  ac_config_links_7="$ac_config_links_7 $ac_dest:$ac_source"
-done
-          ac_config_links="$ac_config_links $ac_config_links_7"
+          ac_config_links="$ac_config_links gnu/java/net/natPlainSocketImpl.cc:gnu/java/net/natPlainSocketImpl${PLATFORMNET}.cc"
 
-ac_sources="gnu/java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc"
-ac_dests="gnu/java/net/natPlainDatagramSocketImpl.cc"
-while test -n "$ac_sources"; do
-  set $ac_dests; ac_dest=$1; shift; ac_dests=$*
-  set $ac_sources; ac_source=$1; shift; ac_sources=$*
-  ac_config_links_8="$ac_config_links_8 $ac_dest:$ac_source"
-done
-          ac_config_links="$ac_config_links $ac_config_links_8"
+          ac_config_links="$ac_config_links gnu/java/net/natPlainDatagramSocketImpl.cc:gnu/java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc"
 
 
 # Likewise for natPipeImpl.cc and natSelectorImpl.cc.
 test -d gnu/java/nio || mkdir gnu/java/nio
-ac_sources="gnu/java/nio/natPipeImpl${PLATFORM}.cc"
-ac_dests="gnu/java/nio/natPipeImpl.cc"
-while test -n "$ac_sources"; do
-  set $ac_dests; ac_dest=$1; shift; ac_dests=$*
-  set $ac_sources; ac_source=$1; shift; ac_sources=$*
-  ac_config_links_9="$ac_config_links_9 $ac_dest:$ac_source"
-done
-          ac_config_links="$ac_config_links $ac_config_links_9"
+          ac_config_links="$ac_config_links gnu/java/nio/natPipeImpl.cc:gnu/java/nio/natPipeImpl${PLATFORM}.cc"
 
-ac_sources="gnu/java/nio/natSelectorImpl${PLATFORM}.cc"
-ac_dests="gnu/java/nio/natSelectorImpl.cc"
-while test -n "$ac_sources"; do
-  set $ac_dests; ac_dest=$1; shift; ac_dests=$*
-  set $ac_sources; ac_source=$1; shift; ac_sources=$*
-  ac_config_links_10="$ac_config_links_10 $ac_dest:$ac_source"
-done
-          ac_config_links="$ac_config_links $ac_config_links_10"
+          ac_config_links="$ac_config_links gnu/java/nio/natSelectorImpl.cc:gnu/java/nio/natSelectorImpl${PLATFORM}.cc"
 
 test -d gnu/java/nio/channels || mkdir gnu/java/nio/channels
-ac_sources="gnu/java/nio/channels/natFileChannel${FILE-${PLATFORM}}.cc"
-ac_dests="gnu/java/nio/channels/natFileChannelImpl.cc"
-while test -n "$ac_sources"; do
-  set $ac_dests; ac_dest=$1; shift; ac_dests=$*
-  set $ac_sources; ac_source=$1; shift; ac_sources=$*
-  ac_config_links_11="$ac_config_links_11 $ac_dest:$ac_source"
-done
-          ac_config_links="$ac_config_links $ac_config_links_11"
+          ac_config_links="$ac_config_links gnu/java/nio/channels/natFileChannelImpl.cc:gnu/java/nio/channels/natFileChannel${FILE-${PLATFORM}}.cc"
 
 
 case "${host}" in
@@ -7568,14 +7491,7 @@ esac
 
 
 
-ac_sources="include/$GCHDR"
-ac_dests="include/java-gc.h"
-while test -n "$ac_sources"; do
-  set $ac_dests; ac_dest=$1; shift; ac_dests=$*
-  set $ac_sources; ac_source=$1; shift; ac_sources=$*
-  ac_config_links_12="$ac_config_links_12 $ac_dest:$ac_source"
-done
-          ac_config_links="$ac_config_links $ac_config_links_12"
+          ac_config_links="$ac_config_links include/java-gc.h:include/$GCHDR"
 
 
 
@@ -7696,14 +7612,7 @@ _ACEOF
     THREADH=no-threads.h
     ;;
 esac
-ac_sources="include/$THREADH"
-ac_dests="include/java-threads.h"
-while test -n "$ac_sources"; do
-  set $ac_dests; ac_dest=$1; shift; ac_dests=$*
-  set $ac_sources; ac_source=$1; shift; ac_sources=$*
-  ac_config_links_13="$ac_config_links_13 $ac_dest:$ac_source"
-done
-          ac_config_links="$ac_config_links $ac_config_links_13"
+          ac_config_links="$ac_config_links include/java-threads.h:include/$THREADH"
 
 
 
@@ -7714,14 +7623,7 @@ done
 
 
 if test -d sysdep; then true; else mkdir sysdep; fi
-ac_sources="sysdep/$sysdeps_dir/locks.h"
-ac_dests="sysdep/locks.h"
-while test -n "$ac_sources"; do
-  set $ac_dests; ac_dest=$1; shift; ac_dests=$*
-  set $ac_sources; ac_source=$1; shift; ac_sources=$*
-  ac_config_links_14="$ac_config_links_14 $ac_dest:$ac_source"
-done
-          ac_config_links="$ac_config_links $ac_config_links_14"
+          ac_config_links="$ac_config_links sysdep/locks.h:sysdep/$sysdeps_dir/locks.h"
 
 
 HASH_SYNC_SPEC=
@@ -14864,14 +14766,7 @@ if test -z "$SIGNAL_HANDLER_AUX"; then
   SIGNAL_HANDLER_AUX=$SIGNAL_HANDLER
 fi
 
-ac_sources="$SIGNAL_HANDLER $SIGNAL_HANDLER_AUX"
-ac_dests="include/java-signal.h include/java-signal-aux.h"
-while test -n "$ac_sources"; do
-  set $ac_dests; ac_dest=$1; shift; ac_dests=$*
-  set $ac_sources; ac_source=$1; shift; ac_sources=$*
-  ac_config_links_15="$ac_config_links_15 $ac_dest:$ac_source"
-done
-          ac_config_links="$ac_config_links $ac_config_links_15"
+                    ac_config_links="$ac_config_links include/java-signal.h:$SIGNAL_HANDLER include/java-signal-aux.h:$SIGNAL_HANDLER_AUX"
 
 
 if test "${multilib}" = "yes"; then
@@ -15447,21 +15342,22 @@ do
   "gcj/Makefile" ) CONFIG_FILES="$CONFIG_FILES gcj/Makefile" ;;
   "include/Makefile" ) CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
   "testsuite/Makefile" ) CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
-  "$ac_config_links_1" ) CONFIG_LINKS="$CONFIG_LINKS $ac_config_links_1" ;;
-  "$ac_config_links_2" ) CONFIG_LINKS="$CONFIG_LINKS $ac_config_links_2" ;;
-  "$ac_config_links_3" ) CONFIG_LINKS="$CONFIG_LINKS $ac_config_links_3" ;;
-  "$ac_config_links_4" ) CONFIG_LINKS="$CONFIG_LINKS $ac_config_links_4" ;;
-  "$ac_config_links_5" ) CONFIG_LINKS="$CONFIG_LINKS $ac_config_links_5" ;;
-  "$ac_config_links_6" ) CONFIG_LINKS="$CONFIG_LINKS $ac_config_links_6" ;;
-  "$ac_config_links_7" ) CONFIG_LINKS="$CONFIG_LINKS $ac_config_links_7" ;;
-  "$ac_config_links_8" ) CONFIG_LINKS="$CONFIG_LINKS $ac_config_links_8" ;;
-  "$ac_config_links_9" ) CONFIG_LINKS="$CONFIG_LINKS $ac_config_links_9" ;;
-  "$ac_config_links_10" ) CONFIG_LINKS="$CONFIG_LINKS $ac_config_links_10" ;;
-  "$ac_config_links_11" ) CONFIG_LINKS="$CONFIG_LINKS $ac_config_links_11" ;;
-  "$ac_config_links_12" ) CONFIG_LINKS="$CONFIG_LINKS $ac_config_links_12" ;;
-  "$ac_config_links_13" ) CONFIG_LINKS="$CONFIG_LINKS $ac_config_links_13" ;;
-  "$ac_config_links_14" ) CONFIG_LINKS="$CONFIG_LINKS $ac_config_links_14" ;;
-  "$ac_config_links_15" ) CONFIG_LINKS="$CONFIG_LINKS $ac_config_links_15" ;;
+  "include/platform.h" ) CONFIG_LINKS="$CONFIG_LINKS include/platform.h:include/$PLATFORMH" ;;
+  "java/io/natFile.cc" ) CONFIG_LINKS="$CONFIG_LINKS java/io/natFile.cc:java/io/natFile${FILE-${PLATFORM}}.cc" ;;
+  "java/lang/ConcreteProcess.java" ) CONFIG_LINKS="$CONFIG_LINKS java/lang/ConcreteProcess.java:java/lang/${PLATFORM}Process.java" ;;
+  "java/lang/natConcreteProcess.cc" ) CONFIG_LINKS="$CONFIG_LINKS java/lang/natConcreteProcess.cc:java/lang/nat${PLATFORM}Process.cc" ;;
+  "java/net/natInetAddress.cc" ) CONFIG_LINKS="$CONFIG_LINKS java/net/natInetAddress.cc:java/net/natInetAddress${PLATFORMNET}.cc" ;;
+  "java/net/natNetworkInterface.cc" ) CONFIG_LINKS="$CONFIG_LINKS java/net/natNetworkInterface.cc:java/net/natNetworkInterface${PLATFORMNET}.cc" ;;
+  "gnu/java/net/natPlainSocketImpl.cc" ) CONFIG_LINKS="$CONFIG_LINKS gnu/java/net/natPlainSocketImpl.cc:gnu/java/net/natPlainSocketImpl${PLATFORMNET}.cc" ;;
+  "gnu/java/net/natPlainDatagramSocketImpl.cc" ) CONFIG_LINKS="$CONFIG_LINKS gnu/java/net/natPlainDatagramSocketImpl.cc:gnu/java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc" ;;
+  "gnu/java/nio/natPipeImpl.cc" ) CONFIG_LINKS="$CONFIG_LINKS gnu/java/nio/natPipeImpl.cc:gnu/java/nio/natPipeImpl${PLATFORM}.cc" ;;
+  "gnu/java/nio/natSelectorImpl.cc" ) CONFIG_LINKS="$CONFIG_LINKS gnu/java/nio/natSelectorImpl.cc:gnu/java/nio/natSelectorImpl${PLATFORM}.cc" ;;
+  "gnu/java/nio/channels/natFileChannelImpl.cc" ) CONFIG_LINKS="$CONFIG_LINKS gnu/java/nio/channels/natFileChannelImpl.cc:gnu/java/nio/channels/natFileChannel${FILE-${PLATFORM}}.cc" ;;
+  "include/java-gc.h" ) CONFIG_LINKS="$CONFIG_LINKS include/java-gc.h:include/$GCHDR" ;;
+  "include/java-threads.h" ) CONFIG_LINKS="$CONFIG_LINKS include/java-threads.h:include/$THREADH" ;;
+  "sysdep/locks.h" ) CONFIG_LINKS="$CONFIG_LINKS sysdep/locks.h:sysdep/$sysdeps_dir/locks.h" ;;
+  "include/java-signal.h" ) CONFIG_LINKS="$CONFIG_LINKS include/java-signal.h:$SIGNAL_HANDLER" ;;
+  "include/java-signal-aux.h" ) CONFIG_LINKS="$CONFIG_LINKS include/java-signal-aux.h:$SIGNAL_HANDLER_AUX" ;;
   "default-1" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
   "default" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;
   "include/config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS include/config.h" ;;
