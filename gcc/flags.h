@@ -624,4 +624,7 @@ extern int flag_eliminate_dwarf2_dups;
    and to print them when we are done.  */
 extern int flag_detailed_statistics;
 
+/* Nonzero means enable synchronous exceptions for non-call instructions.  */
+extern int flag_non_call_exceptions;
+
 #endif /* GCC_FLAGS_H */
