@@ -3570,7 +3570,7 @@ internal_build_compound_expr (list, first_p)
   if (! TREE_SIDE_EFFECTS (TREE_VALUE (list)))
     {
       /* The left-hand operand of a comma expression is like an expression
-         statement: with -W or -Wunused, we should warn if it doesn't have
+         statement: with -Wextra or -Wunused, we should warn if it doesn't have
 	 any side-effects, unless it was explicitly cast to (void).  */
       if ((extra_warnings || warn_unused_value)
            && ! (TREE_CODE (TREE_VALUE (list)) == CONVERT_EXPR

@@ -1,3 +1,18 @@
+2003-01-24  Phil Edwards  <pme@gcc.gnu.org>
+
+	Rename -W to -Wextra.
+	* c-decl.c:  Update comments.
+	* c-typeck.c:  Likewise.
+	* flags.h:  Likewise.
+	* function.c:  Likewise.
+	* stmt.c:  Likewise.
+	* toplev.c:  Update comments.
+	(W_options):  Add 'extra'.
+	(display_help):  Remove '-W'.
+	(decode_W_option):  Special warn_uninitialized treatment in the case
+	of -Wextra.
+	* doc/invoke.texi:  Update with new entries.
+
 2003-01-23  Richard Henderson  <rth@redhat.com>
 
         * ifcvt.c (noce_process_if_block): Re-add check vs X being changed

@@ -1411,7 +1411,7 @@ int inhibit_warnings = 0;
 
 int warn_system_headers = 0;
 
-/* Print various extra warnings.  -W.  */
+/* Print various extra warnings.  -W/-Wextra.  */
 
 int extra_warnings = 0;
 
@@ -1506,7 +1506,7 @@ int warn_deprecated_decl = 1;
 
 int warn_strict_aliasing;
 
-/* Likewise for -W.  */
+/* Like f_options, but for -W.  */
 
 static const lang_independent_options W_options[] =
 {
@@ -1550,6 +1550,8 @@ static const lang_independent_options W_options[] =
    N_("Warn when an optimization pass is disabled") },
   {"deprecated-declarations", &warn_deprecated_decl, 1,
    N_("Warn about uses of __attribute__((deprecated)) declarations") },
+  {"extra", &extra_warnings, 1,
+   N_("Print extra (possibly unwanted) warnings") },
   {"missing-noreturn", &warn_missing_noreturn, 1,
    N_("Warn about functions which might be candidates for attribute noreturn") },
   {"strict-aliasing", &warn_strict_aliasing, 1,
@@ -3743,7 +3745,6 @@ display_help ()
   printf (_("  -pedantic               Issue warnings needed by strict compliance to ISO C\n"));
   printf (_("  -pedantic-errors        Like -pedantic except that errors are produced\n"));
   printf (_("  -w                      Suppress warnings\n"));
-  printf (_("  -W                      Enable extra warnings\n"));
 
   for (i = ARRAY_SIZE (W_options); i--;)
     {
@@ -4116,6 +4117,14 @@ decode_W_option (arg)
   else if (!strcmp (arg, "no-unused"))
     {
       set_Wunused (0);
+    }
+  else if (!strcmp (arg, "extra"))
+    {
+      /* We save the value of warn_uninitialized, since if they put
+	 -Wuninitialized on the command line, we need to generate a
+	 warning about not using it without also specifying -O.  */
+      if (warn_uninitialized != 1)
+	warn_uninitialized = 2;
     }
   else
     return 0;
