@@ -1,3 +1,7 @@
+2004-09-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/sh/sh.c: Follow spelling conventions.
+
 2004-09-29  Richard Henderson  <rth@redhat.com>
 
 	* unwind-dw2.c (_Unwind_GetGR): Honor DWARF_ZERO_REG.

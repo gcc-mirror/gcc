@@ -10036,7 +10036,7 @@ sh_fsca_int2sf (void)
   return sh_fsca_int2sf_rtx;
 }
 
-/* Initialise the CUMULATIVE_ARGS structure.  */
+/* Initialize the CUMULATIVE_ARGS structure.  */
 
 void
 sh_init_cumulative_args (CUMULATIVE_ARGS *  pcum,
@@ -10090,7 +10090,7 @@ sh_init_cumulative_args (CUMULATIVE_ARGS *  pcum,
 	     in memory then we must force the address of this memory
 	     block onto the stack.  Ideally we would like to call
 	     targetm.calls.return_in_memory() here but we do not have
-	     the TYPE or the FNDECL available so we synthesise the
+	     the TYPE or the FNDECL available so we synthesize the
 	     contents of that function as best we can.  */
 	  pcum->force_mem =
 	    (TARGET_DEFAULT & HITACHI_BIT)
