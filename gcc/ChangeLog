@@ -1,3 +1,7 @@
+Mon Oct 20 14:16:38 1997  Geoffrey KEATING  <geoffk@ozemail.com.au>
+
+	* rs6000/t-ppccomm: Use -msdata=none for crtstuff.
+
 Mon Oct 20 02:00:18 1997  Klaus Kaempf <kkaempf@progis.de>
 			  Jeff Law <law@cygnus.com>
 			  Richard Kenner <kenner@vlsi1.ultra.nyu.edu>
