@@ -1,3 +1,8 @@
+2004-08-12  Ben Elliston  <bje@au.ibm.com>
+
+	PR target/16286
+	* gcc.dg/pr16286.c: New test.
+
 2004-08-12 Jan Beulich <jbeulich@novell.com>
 
 	* g++.dg/ext/asm5.C: New.
