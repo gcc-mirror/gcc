@@ -1,3 +1,10 @@
+1999-02-05  Andrew Haley  <aph@cygnus.com>
+
+	* class.c (make_class_data): The superclass of an interface should
+	be null, not class Object.
+
+	* lex.c (java_lex): Sign extend hex literals.
+
 1999-02-04  Andrew Haley  <aph@cygnus.com>
 
 	* class.c (build_utf8_ref): Output signatures using '.' as a

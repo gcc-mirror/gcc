@@ -1135,7 +1135,8 @@ make_class_data (type)
   PUSH_FIELD_VALUE (cons, "accflags",
 		    build_int_2 (get_access_flags_from_decl (type_decl), 0));
 
-  PUSH_FIELD_VALUE (cons, "superclass", super);
+  PUSH_FIELD_VALUE (cons, "superclass", 
+		    CLASS_INTERFACE (type_decl) ? null_pointer_node : super);
   PUSH_FIELD_VALUE (cons, "constants", constant_pool_constructor);
   PUSH_FIELD_VALUE (cons, "methods",
 		    build1 (ADDR_EXPR, method_ptr_type_node, methods_decl));
