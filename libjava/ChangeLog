@@ -1,5 +1,20 @@
 2003-10-02  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/InetAddress.java
+	(zeros): Removed.
+	(ANY_IF): Initalizie in static block.
+	(static): Load library with native methods here and initialize ANY_IF.
+	(isAnyLocalAddress): Check if equal to ANY_IF.
+	(equals): Use addr directly instead of addr1. Simplify for loop.
+	(toString): Rename "result" to "host" and add IP address allways.
+	(getLocalHost): Merged documentation from classpath.
+	* java/net/ServerSocket.java
+	(ServerSocket): New package-private constructor used by java.nio.
+	* java/net/URLConnection.java
+	(getRequestProperties): Check if already connected.
+
+2003-10-02  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/ByteBufferHelper.java:
 	Rewrote all methods by suggestions from Eric Blake.
 
