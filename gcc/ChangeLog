@@ -1,3 +1,11 @@
+Sat Aug 15 06:28:19 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.c (sparc_emit_set_const64_quick1): If
+	emitting a XOR of -1 at the end, emit a NOT instead for combine's
+	sake.
+	(sparc_emit_set_const64): Likewise, also when computing trailing
+	bits do not negate low_bits and make fast_int an int.
+
 Fri Aug 14 21:07:03 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* loop.c (add_label_notes): Do not ignore references to labels

@@ -1336,12 +1336,27 @@ sparc_emit_set_const64_quick1 (op0, temp, low_bits, is_neg)
 
   sparc_emit_set_safe_HIGH64 (temp, high_bits);
   if (!is_neg)
-    emit_insn (gen_rtx_SET (VOIDmode, op0,
-			    gen_safe_OR64 (temp, (high_bits & 0x3ff))));
+    {
+      emit_insn (gen_rtx_SET (VOIDmode, op0,
+			      gen_safe_OR64 (temp, (high_bits & 0x3ff))));
+    }
   else
-    emit_insn (gen_rtx_SET (VOIDmode, op0,
-			    gen_safe_XOR64 (temp,
-					    (-0x400 | (low_bits & 0x3ff)))));
+    {
+      /* If we are XOR'ing with -1, then we should emit a one's complement
+	 instead.  This way the combiner will notice logical operations
+	 such as ANDN later on and substitute.  */
+      if ((low_bits & 0x3ff) == 0x3ff)
+	{
+	  emit_insn (gen_rtx_SET (VOIDmode, op0,
+				  gen_rtx_NOT (DImode, temp)));
+	}
+      else
+	{
+	  emit_insn (gen_rtx_SET (VOIDmode, op0,
+				  gen_safe_XOR64 (temp,
+						  (-0x400 | (low_bits & 0x3ff)))));
+	}
+    }
 }
 
 static void sparc_emit_set_const64_quick2
@@ -1453,7 +1468,7 @@ sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits)
 
       /* We are in the middle of reload, so this is really
 	 painful.  However we do still make an attempt to
-	 avoid emmitting truly stupid code.  */
+	 avoid emitting truly stupid code.  */
       if (low1 != const0_rtx)
 	{
 	  emit_insn (gen_rtx_SET (VOIDmode, op0,
@@ -1795,17 +1810,20 @@ sparc_emit_set_const64 (op0, op1)
   if (const64_is_2insns ((~high_bits) & 0xffffffff,
 			 (~low_bits) & 0xfffffc00))
     {
-      unsigned HOST_WIDE_INT trailing_bits = (~low_bits) & 0x3ff;
+      /* NOTE: The trailing bits get XOR'd so we need the
+	 non-negated bits, not the negated ones.  */
+      unsigned HOST_WIDE_INT trailing_bits = low_bits & 0x3ff;
 
       if ((((~high_bits) & 0xffffffff) == 0
 	   && ((~low_bits) & 0x80000000) == 0)
 	  || (((~high_bits) & 0xffffffff) == 0xffffffff
 	      && ((~low_bits) & 0x80000000) != 0))
 	{
-	  HOST_WIDE_INT fast_int = (~low_bits & 0xffffffff);
+	  int fast_int = (~low_bits & 0xffffffff);
 
-	  if (SPARC_SETHI_P (fast_int)
-	      || SPARC_SIMM13_P (((int)fast_int)))
+	  if ((SPARC_SETHI_P (fast_int)
+	       && (~high_bits & 0xffffffff) == 0)
+	      || SPARC_SIMM13_P (fast_int))
 	    emit_insn (gen_safe_SET64 (temp, fast_int));
 	  else
 	    sparc_emit_set_const64 (temp, GEN_INT64 (fast_int));
@@ -1823,10 +1841,22 @@ sparc_emit_set_const64 (op0, op1)
 #endif
 	  sparc_emit_set_const64 (temp, negated_const);
 	}
-      emit_insn (gen_rtx_SET (VOIDmode,
-			      op0,
-			      gen_safe_XOR64 (temp,
-					      (-0x400 | trailing_bits))));
+
+      /* If we are XOR'ing with -1, then we should emit a one's complement
+	 instead.  This way the combiner will notice logical operations
+	 such as ANDN later on and substitute.  */
+      if (trailing_bits == 0x3ff)
+	{
+	  emit_insn (gen_rtx_SET (VOIDmode, op0,
+				  gen_rtx_NOT (DImode, temp)));
+	}
+      else
+	{
+	  emit_insn (gen_rtx_SET (VOIDmode,
+				  op0,
+				  gen_safe_XOR64 (temp,
+						  (-0x400 | trailing_bits))));
+	}
       return;
     }
 
