@@ -376,6 +376,11 @@ extern int current_function_outgoing_args_size;
 
 extern int current_function_varargs;
 
+/* Nonzero if current function uses stdarg.h or equivalent.
+   Zero for functions that use varargs.h.  */
+
+extern int current_function_stdarg;
+
 /* Quantities of various kinds of registers
    used for the current function's args.  */
 
