@@ -2690,3 +2690,16 @@ plus_xor_ior_operator (op, mode)
   return (GET_CODE (op) == PLUS || GET_CODE (op) == XOR
 	  || GET_CODE (op) == IOR);
 }
+
+/* Return 1 if the given constant is 2, 4, or 8.  These are the valid
+   constants for shadd instructions.  */
+int
+shadd_constant_p (val)
+     int val;
+{
+  if (val == 2 || val == 4 || val == 8)
+    return 1;
+  else
+    return 0;
+}
+
