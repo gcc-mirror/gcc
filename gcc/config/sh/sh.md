@@ -697,17 +697,9 @@
                      (const_int 31)))
    (clobber (reg:SI 18))]
   ""
-  "*
-{
-  if (which_alternative == 1)
-    {
-      if (dead_or_set_p (insn, operands[1]))
-        return \"shll	%1\;subc	%0,%0\";
-      else
-        return \"mov	%1,%0\;shll	%0\;subc	%0,%0\";
-    }
-  return \"shll	%0\;subc	%0,%0\";
-}"
+  "@
+   shll	%0\;subc	%0,%0
+   mov	%1,%0\;shll	%0\;subc	%0,%0"
   [(set_attr "length" "4,6")])
 
 
