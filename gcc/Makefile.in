@@ -812,6 +812,7 @@ gcc.o: gcc.c $(CONFIG_H) gvarargs.h obstack.h
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc-lib/\" \
   -DDEFAULT_TARGET_MACHINE=\"$(target)\" \
   -DTOOLDIR=\"$(tooldir)/\" \
+  $(MAYBE_TARGET_DEFAULT) \
   -c `echo $(srcdir)/gcc.c | sed 's,^\./,,'`
 
 dumpvers: dumpvers.c
