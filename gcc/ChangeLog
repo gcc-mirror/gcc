@@ -1,3 +1,7 @@
+2004-09-28  Devang Patel  <dpatel@apple.com>
+
+	* tree-pretty-print.c (dump_generic_node): Print vector types.
+	
 2004-09-28  Nick Clifton  <nickc@redhat.com>
 
 	* config/sh/sh.h (INIT_CUMULATIVE_ARGS): Replace with an
