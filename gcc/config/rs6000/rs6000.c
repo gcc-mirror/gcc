@@ -11254,11 +11254,13 @@ rs6000_emit_prologue ()
 			  && info->first_gp_reg_save < 31);
   saving_FPRs_inline = (info->first_fp_reg_save == 64
 			|| FP_SAVE_INLINE (info->first_fp_reg_save)
+			|| current_function_calls_eh_return
 			|| cfun->machine->ra_need_lr);
 
   /* For V.4, update stack before we do any saving and set back pointer.  */
   if (info->push_p
-      && (DEFAULT_ABI == ABI_V4 || current_function_calls_eh_return))
+      && (DEFAULT_ABI == ABI_V4
+	  || current_function_calls_eh_return))
     {
       if (info->total_size < 32767)
 	sp_offset = info->total_size;
