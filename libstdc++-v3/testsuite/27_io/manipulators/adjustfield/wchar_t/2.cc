@@ -1,5 +1,4 @@
-// Copyright (C) 1997, 1998, 1999, 2002, 2004
-// Free Software Foundation, Inc.
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,21 +33,21 @@
 void test02()
 {
   bool test __attribute__((unused)) = true;
-  const std::string 	str_blank;
-  std::string 	        str_tmp;
-  std::stringbuf 	strbuf;
-  std::ostream          o(&strbuf);
+  const std::wstring 	str_blank;
+  std::wstring 	        str_tmp;
+  std::wstringbuf 	strbuf;
+  std::wostream 	o(&strbuf);
 
-  o << std::setw(6) << std::right << "san";
-  VERIFY( strbuf.str() == "   san" ); 
+  o << std::setw(6) << std::right << L"san";
+  VERIFY( strbuf.str() == L"   san" ); 
   strbuf.str(str_blank);
 
-  o << std::setw(6) << std::internal << "fran";
-  VERIFY( strbuf.str() == "  fran" ); 
+  o << std::setw(6) << std::internal << L"fran";
+  VERIFY( strbuf.str() == L"  fran" ); 
   strbuf.str(str_blank);
 
-  o << std::setw(6) << std::left << "cisco";
-  VERIFY( strbuf.str() == "cisco " ); 
+  o << std::setw(6) << std::left << L"cisco";
+  VERIFY( strbuf.str() == L"cisco " ); 
   strbuf.str(str_blank);
 }
 

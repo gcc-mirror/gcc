@@ -1,7 +1,4 @@
-// 981027 ncm work with libstdc++v3
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
-// Free Software Foundation, Inc.
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,23 +30,23 @@
 #include <iomanip>
 #include <testsuite_hooks.h>
 
-struct MyNP : std::numpunct<char>
+struct MyNP : std::numpunct<wchar_t>
 {
-  std::string do_truename() const;
-  std::string do_falsename() const;
+  std::wstring do_truename() const;
+  std::wstring do_falsename() const;
 };
 
-std::string
+std::wstring
 MyNP::do_truename() const 
 { 
-  std::string s("yea"); 
+  std::wstring s(L"yea"); 
   return s; 
 }
 
-std::string
+std::wstring
 MyNP::do_falsename() const 
 { 
-  std::string s("nay"); 
+  std::wstring s(L"nay"); 
   return s; 
 }
 
@@ -57,41 +54,41 @@ void
 test01()
 {
   bool test __attribute__((unused)) = true;
-  const char lit[] = "1 0\n"
-                     "true false\n"
-                     ":  true:\n"
-                     ":true  :\n"
-                     ": false:\n"
-                     ":  1:\n"
-                     ":1  :\n"
-                     ":  0:\n"
-                     "yea nay\n"
-                     ":   yea:\n"
-                     ":yea   :\n"
-                     ":   nay:\n";
+  const wchar_t lit[] = L"1 0\n"
+                        L"true false\n"
+                        L":  true:\n"
+                        L":true  :\n"
+                        L": false:\n"
+                        L":  1:\n"
+                        L":1  :\n"
+                        L":  0:\n"
+                        L"yea nay\n"
+                        L":   yea:\n"
+                        L":yea   :\n"
+                        L":   nay:\n";
 
-  std::ostringstream oss;
-  oss << true << " " << false << std::endl;
+  std::wostringstream oss;
+  oss << true << L" " << false << std::endl;
   oss << std::boolalpha;
-  oss << true << " " << false << std::endl;
+  oss << true << L" " << false << std::endl;
 
-  oss << ":" << std::setw(6) << std::internal << true << ":" << std::endl;
-  oss << ":" << std::setw(6) << std::left << true << ":" << std::endl;
-  oss << ":" << std::setw(6) << std::right << false << ":" << std::endl;
+  oss << L":" << std::setw(6) << std::internal << true << L":" << std::endl;
+  oss << L":" << std::setw(6) << std::left << true << L":" << std::endl;
+  oss << L":" << std::setw(6) << std::right << false << L":" << std::endl;
   oss << std::noboolalpha;
-  oss << ":" << std::setw(3) << std::internal << true << ":" << std::endl;
-  oss << ":" << std::setw(3) << std::left << true << ":" << std::endl;
-  oss << ":" << std::setw(3) << std::right << false << ":" << std::endl;
+  oss << L":" << std::setw(3) << std::internal << true << L":" << std::endl;
+  oss << L":" << std::setw(3) << std::left << true << L":" << std::endl;
+  oss << L":" << std::setw(3) << std::right << false << L":" << std::endl;
 
   std::locale loc = std::locale(std::locale::classic(), new MyNP);
   oss.imbue(loc);
 
   oss << std::boolalpha;
-  oss << true << " " << false << std::endl;
+  oss << true << L" " << false << std::endl;
 
-  oss << ":" << std::setw(6) << std::internal << true << ":" << std::endl;
-  oss << ":" << std::setw(6) << std::left << true << ":" << std::endl;
-  oss << ":" << std::setw(6) << std::right << false << ":" << std::endl;
+  oss << L":" << std::setw(6) << std::internal << true << L":" << std::endl;
+  oss << L":" << std::setw(6) << std::left << true << L":" << std::endl;
+  oss << L":" << std::setw(6) << std::right << false << L":" << std::endl;
 
   VERIFY( oss.good() );
   VERIFY( oss.str() == lit );
