@@ -4422,7 +4422,12 @@ local_cprop_pass (alter_jumps)
   cselib_finish ();
   /* Global analysis may get into infinite loops for unreachable blocks.  */
   if (changed && alter_jumps)
-    delete_unreachable_blocks ();
+    {
+      delete_unreachable_blocks ();
+      free_reg_set_mem ();
+      alloc_reg_set_mem (max_reg_num ());
+      compute_sets (get_insns ());
+    }
 }
 
 /* Forward propagate copies.  This includes copies and constants.  Return
