@@ -1,3 +1,7 @@
+Thu May 14 15:10:30 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (expr.o): Remove dependency on deleted modemap.def file.
+
 Thu May 14 16:30:47 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* eh-common.h: New file for basic EH data structures.
