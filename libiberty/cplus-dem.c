@@ -3350,7 +3350,7 @@ demangle_args (work, mangled, declp)
 /* Like demangle_args, but for demangling the argument lists of function
    and method pointers or references, not top-level declarations.  */
 
-int
+static int
 demangle_nested_args (work, mangled, declp)
      struct work_stuff *work;
      const char **mangled;
