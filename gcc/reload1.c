@@ -1083,7 +1083,8 @@ reload (first, global, dumpfile)
 	      find_address_reloads for details.  */
 
 	      caller_save_spill_class
-		= double_reg_address_ok ? INDEX_REG_CLASS : BASE_REG_CLASS;
+		= (double_reg_address_ok ? reload_address_index_reg_class
+		   : reload_address_base_reg_class);
 	      caller_save_group_size
 		= CLASS_MAX_NREGS (caller_save_spill_class, Pmode);
 	      something_changed = 1;
