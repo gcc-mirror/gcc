@@ -1885,12 +1885,9 @@ dwarf2out_frame_init ()
      sake of lookup_cfa.  */
 
 #ifdef DWARF2_UNWIND_INFO
-  if (DWARF2_UNWIND_INFO)
-    {
-      /* On entry, the Canonical Frame Address is at SP.  */
-      dwarf2out_def_cfa (NULL, STACK_POINTER_REGNUM, INCOMING_FRAME_SP_OFFSET);
-      initial_return_save (INCOMING_RETURN_ADDR_RTX);
-    }
+  /* On entry, the Canonical Frame Address is at SP.  */
+  dwarf2out_def_cfa (NULL, STACK_POINTER_REGNUM, INCOMING_FRAME_SP_OFFSET);
+  initial_return_save (INCOMING_RETURN_ADDR_RTX);
 #endif
 }
 
