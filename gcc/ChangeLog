@@ -1,5 +1,15 @@
 2002-03-15  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.md ("tstqi_1"): Try to use ldab instead of tst.
+	("tstqi" split): Avoid using memory for tstqi on address register.
+	(splits): Remove constraints.
+	("cmphi_1_hc12"): New from "cmphi_1" and tuned for 68HC12.
+	("cmpdf", "cmpsf"): Remove since not used.
+	("*tbeq", "*tbne", "*tbeq8", "*tbne8"): Also look in cc_status.value2.
+	(peephole2): New peepholes to optimize tstqi and pre inc/dec addressing.
+
+2002-03-15  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.md ("negsi2"): Optimize inline case.
 	("neghi2"): Tighten constraints.
 	("one_cmplsi2"): Optimize and simplify split.
