@@ -1,3 +1,9 @@
+2002-04-12  DJ Delorie  <dj@redhat.com>
+
+	* integrate.c (compare_blocks): Make comparisons safe for when
+	sizeof(int) < sizeof(char *).
+	(find_block): Likewise.
+
 2002-04-12  Jan Hubicka  <jh@suse.cz>
 	    David Edelsohn  <edelsohn@gnu.org>
 
