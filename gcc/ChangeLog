@@ -1,3 +1,8 @@
+2003-12-12  Geoffrey Keating  <geoffk@apple.com>
+
+	* config.gcc <i[34567]86-*-darwin*>: Don't use fixproto.
+	<powerpc-*-darwin*>: Likewise.
+
 2003-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/ia64/linux.h (IA64_GATE_AREA_END): Increase by 64K.
