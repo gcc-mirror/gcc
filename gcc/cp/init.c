@@ -2131,7 +2131,7 @@ resolve_offset_ref (exp)
       member = cp_convert (ptrdiff_type_node,
 			   build_unary_op (ADDR_EXPR, member, 0));
       
-      /* Pointer to data mebers are offset by one, so that a null
+      /* Pointer to data members are offset by one, so that a null
 	 pointer with a real value of 0 is distinguishable from an
 	 offset of the first member of a structure.  */
       member = build_binary_op (MINUS_EXPR, member,
