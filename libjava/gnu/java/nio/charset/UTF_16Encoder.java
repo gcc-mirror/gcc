@@ -63,7 +63,7 @@ final class UTF_16Encoder extends CharsetEncoder
   UTF_16Encoder (Charset cs, int byteOrder, boolean useByteOrderMark)
   {
     super (cs, 2.0f,
-           useByteOrderMark ? 4.0f : 2.0f,
+           useByteOrderMark ? 2.0f : 4.0f,
            byteOrder == BIG_ENDIAN
              ? new byte[] { (byte) 0xFF, (byte) 0xFD }
              : new byte[] { (byte) 0xFD, (byte) 0xFF });
