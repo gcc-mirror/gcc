@@ -1,3 +1,8 @@
+2004-01-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.md: Change predicate of a peephole2 pattern from reg_or_0_operand
+	to register_operand.
+
 2004-01-28  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/ia64/ia64.md (fetchadd_acq_si, fetchadd_acq_di)

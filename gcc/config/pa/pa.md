@@ -2305,7 +2305,7 @@
 			  (const_int 4))
 		 (match_operand:SI 2 "register_operand" "")))
    (set (mem:SI (match_dup 0))
-        (match_operand:SI 3 "reg_or_0_operand" ""))]
+        (match_operand:SI 3 "register_operand" ""))]
   "!TARGET_SOFT_FLOAT
    && REG_OK_FOR_BASE_P (operands[2])
    && FP_REGNO_P (REGNO (operands[3]))"
