@@ -1,3 +1,10 @@
+2003-05-29  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips-protos.h (mips_output_load_label): Declare.
+	* config/mips/mips.c (mips_output_load_label): New function.
+	(mips_output_conditional_branch): Use it.
+	* config/mips/mips.md (jump): And here.
+
 2003-05-28  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa-protos.h (smalloffset_double_mem_p): Delete.
