@@ -42,14 +42,14 @@ extern struct obstack *rtl_obstack;
 
 /* Indexed by mode class, gives the narrowest mode for each class.  */
 
-enum machine_mode class_narrowest_mode[(int) MAX_MODE_CLASS];
+extern enum machine_mode class_narrowest_mode[(int) MAX_MODE_CLASS];
 
 /* Commonly used modes.  */
 /* Mode whose width is BITS_PER_UNIT */
-enum machine_mode byte_mode;
+extern enum machine_mode byte_mode;
 
 /* Mode whose width is BITS_PER_WORD */
-enum machine_mode word_mode;
+extern enum machine_mode word_mode;
 
 /* Vector indexed by opcode giving info about the args for each opcode. */
 static struct arityvec arityvec[] = {
