@@ -1,3 +1,8 @@
+2002-04-01  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/pa/pa-pro-end.h (ASM_OUTPUT_ALIGNED_COMMON,
+        ASM_OUTPUT_ALIGNED_LOCAL): Redefine them.
+
 2002-04-01  Jim Blandy  <jimb@redhat.com>
 
 	* cppmacro.c (cpp_macro_definition): Do not emit spaces after
