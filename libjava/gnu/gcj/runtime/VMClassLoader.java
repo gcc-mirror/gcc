@@ -56,6 +56,16 @@ public final class VMClassLoader extends java.net.URLClassLoader
 	    /* Ignore this path element */
 	  }
       }
+    // Add core:/ to the end of the java.class.path so any resources
+    // compiled into this executable may be found.
+    try
+      {
+	p.addElement (new URL("core", "", -1, "/"));
+      }
+    catch (java.net.MalformedURLException x)
+      {
+	// This should never happen.
+      }
 
     URL[] urls = new URL[p.size()];
     p.copyInto (urls);
