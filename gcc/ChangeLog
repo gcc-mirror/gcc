@@ -1,5 +1,7 @@
 1997-08-27  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
+	* Makefile.in (config.status): Depend on version.c
+
 	* expr.h (insn_gen_function): Reenable prototype.
 
 	* expr.c (move_by_pieces_1, clear_by_pieces_1): Fix prototype of
