@@ -348,10 +348,10 @@ static void undo_all (void);
 static void undo_commit (void);
 static rtx *find_split_point (rtx *, rtx);
 static rtx subst (rtx, rtx, rtx, int, int);
-static rtx combine_simplify_rtx (rtx, enum machine_mode, int, int);
+static rtx combine_simplify_rtx (rtx, enum machine_mode, int);
 static rtx simplify_if_then_else (rtx);
 static rtx simplify_set (rtx);
-static rtx simplify_logical (rtx, int);
+static rtx simplify_logical (rtx);
 static rtx expand_compound_operation (rtx);
 static rtx expand_field_assignment (rtx);
 static rtx make_extraction (enum machine_mode, rtx, HOST_WIDE_INT,
@@ -3543,7 +3543,7 @@ subst (rtx x, rtx from, rtx to, int in_dest, int unique_copy)
       /* If X is sufficiently simple, don't bother trying to do anything
 	 with it.  */
       if (code != CONST_INT && code != REG && code != CLOBBER)
-	x = combine_simplify_rtx (x, op0_mode, i == 3, in_dest);
+	x = combine_simplify_rtx (x, op0_mode, in_dest);
 
       if (GET_CODE (x) == code)
 	break;
@@ -3562,13 +3562,11 @@ subst (rtx x, rtx from, rtx to, int in_dest, int unique_copy)
    outer level; call `subst' to simplify recursively.  Return the new
    expression.
 
-   OP0_MODE is the original mode of XEXP (x, 0); LAST is nonzero if this
-   will be the iteration even if an expression with a code different from
-   X is returned; IN_DEST is nonzero if we are inside a SET_DEST.  */
+   OP0_MODE is the original mode of XEXP (x, 0).  IN_DEST is nonzero
+   if we are inside a SET_DEST.  */
 
 static rtx
-combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
-		      int in_dest)
+combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest)
 {
   enum rtx_code code = GET_CODE (x);
   enum machine_mode mode = GET_MODE (x);
@@ -4223,7 +4221,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
 	{
 	  /* Try to simplify the expression further.  */
 	  rtx tor = gen_binary (IOR, mode, XEXP (x, 0), XEXP (x, 1));
-	  temp = combine_simplify_rtx (tor, mode, last, in_dest);
+	  temp = combine_simplify_rtx (tor, mode, in_dest);
 
 	  /* If we could, great.  If not, do not go ahead with the IOR
 	     replacement, since PLUS appears in many special purpose
@@ -4508,7 +4506,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
     case AND:
     case IOR:
     case XOR:
-      return simplify_logical (x, last);
+      return simplify_logical (x);
 
     case ABS:
       /* (abs (neg <foo>)) -> (abs <foo>) */
@@ -5290,10 +5288,10 @@ simplify_set (rtx x)
 }
 
 /* Simplify, X, and AND, IOR, or XOR operation, and return the simplified
-   result.  LAST is nonzero if this is the last retry.  */
+   result.  */
 
 static rtx
-simplify_logical (rtx x, int last)
+simplify_logical (rtx x)
 {
   enum machine_mode mode = GET_MODE (x);
   rtx op0 = XEXP (x, 0);
@@ -5343,11 +5341,13 @@ simplify_logical (rtx x, int last)
 
 	  /* If we have (ior (and (X C1) C2)) and the next restart would be
 	     the last, simplify this by making C1 as small as possible
-	     and then exit.  */
-	  if (last
-	      && GET_CODE (x) == IOR && GET_CODE (op0) == AND
+	     and then exit.  Only do this if C1 actually changes: for now
+	     this only saves memory but, should this transformation be
+	     moved to simplify-rtx.c, we'd risk unbounded recursion there.  */
+	  if (GET_CODE (x) == IOR && GET_CODE (op0) == AND
 	      && GET_CODE (XEXP (op0, 1)) == CONST_INT
-	      && GET_CODE (op1) == CONST_INT)
+	      && GET_CODE (op1) == CONST_INT
+	      && (INTVAL (XEXP (op0, 1)) & INTVAL (op1)) != 0)
 	    return gen_binary (IOR, mode,
 			       gen_binary (AND, mode, XEXP (op0, 0),
 					   GEN_INT (INTVAL (XEXP (op0, 1))

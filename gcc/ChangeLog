@@ -1,3 +1,13 @@
+2004-03-16  Paolo Bonzini  <bonzini@gnu.org>
+
+	* combine.c (combine_simplify_rtx): Remove the "last"
+	parameter and its documentation.  Adjust recursive calls.
+	(simplify_logical): Always perform the only simplification
+	controlled by "last", if the simplified expression is
+	actually different.
+	(try_combine): Do not pass the "last" parameter to
+	combine_simplify_rtx.
+
 2004-03-16  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/14599
