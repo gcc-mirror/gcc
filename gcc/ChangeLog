@@ -1,5 +1,9 @@
 2003-03-20  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (a peephole2): New.
+
+2003-03-20  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md (*addsi3_and_r_1): New.
 	(*addsi3_and_not_r_1): Likewise.
 
