@@ -1,3 +1,7 @@
+2004-01-08  Stuart Hastings  <stuart@apple.com>
+
+	* config/i386/i386.md: Typos in MMX/SSE immediate shifts.
+
 2004-01-08  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_decide_inlining):  Fix typo.

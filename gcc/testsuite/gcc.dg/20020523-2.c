@@ -4,6 +4,7 @@
 /* { dg-do run { target i386-*-* } } */
 /* { dg-options "-march=pentium3 -msse -ffast-math -O2" } */
 
+#include "i386-cpuid.h"
 extern void abort (void);
 extern void exit (int);
 
@@ -27,24 +28,10 @@ typedef struct
 
 void bail_if_no_sse (void)
 {
-  int fl1, fl2;
-
-  /* See if we can use cpuid.  */
-  __asm__ ("pushfl; pushfl; popl %0; movl %0,%1; xorl %2,%0;"
-	   "pushl %0; popfl; pushfl; popl %0; popfl"
-	   : "=&r" (fl1), "=&r" (fl2)
-	   : "i" (0x00200000));
-  if (((fl1 ^ fl2) & 0x00200000) == 0)
-    exit (0);
-
-  /* See if cpuid gives capabilities.  */
-  __asm__ ("cpuid" : "=a" (fl1) : "0" (0) : "ebx", "ecx", "edx", "cc");
-  if (fl1 == 0)
-    exit (0);
-
+  unsigned int edx;
   /* See if capabilities include SSE (25th bit; 26 for SSE2).  */
-  __asm__ ("cpuid" : "=a" (fl1), "=d" (fl2) : "0" (1) : "ebx", "ecx", "cc");
-  if ((fl2 & (1 << 25)) == 0)
+  edx = i386_cpuid();
+  if (!(edx & bit_SSE))
     exit (0);
 }
 

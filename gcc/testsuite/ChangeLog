@@ -1,3 +1,9 @@
+2004-01-08  Stuart Hastings  <stuart@apple.com>
+
+	* testsuite/gcc.dg/20020523-2.c (bail_if_no_sse): Moved cpu-ID code...
+	testsuite/gcc.dg/i386-cpuid.h (i386_cpuid): ...to here, to share with...
+	* testsuite/gcc.dg/i386-sse-6.c: ...this new testcase.
+
 2004-01-09  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.dg/array-quals-1.c: Accept .data.rel.ro.
