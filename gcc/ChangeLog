@@ -1,5 +1,9 @@
 2003-06-30  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	* Changelog: Remove ">>>>>>>" from previous change.
+
+2003-06-30  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	* config/cris/cris.c: Fix spelling for "testcase".
 	* config/cris/cris.h: Likewise.
 	* config/cris/cris.md: Likewise.
@@ -164,7 +168,6 @@ Mon Jun 30 09:52:39 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* config.gcc (sh*-*-kaos*): Put tm_file setting in separate case
 	statement from tmake_file set.
 
->>>>>>> 2.268
 2003-06-29  James E Wilson  <wilson@tuliptree.org>
 
 	* reload.c (find_reloads): Change push_reloads to push_reload in
