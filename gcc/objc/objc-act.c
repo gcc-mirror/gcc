@@ -187,7 +187,7 @@ static tree lookup_method_static (tree, tree, int);
 static void add_method_to_hash_list (hash *, tree);
 static tree add_class (tree);
 static void add_category (tree, tree);
-static tree lookup_category (tree, tree);
+static inline tree lookup_category (tree, tree);
 
 enum string_section
 {
@@ -5068,7 +5068,7 @@ build_shared_structure_initializer (tree type, tree isa, tree super,
 
 /* Retrieve category interface CAT_NAME (if any) associated with CLASS.  */
 
-static tree
+static inline tree
 lookup_category (tree class, tree cat_name)
 {
   tree category = CLASS_CATEGORY_LIST (class);
