@@ -2609,6 +2609,8 @@ extern HOST_WIDE_INT get_alias_set		PARAMS ((tree));
 /* In c-common.c */
 extern HOST_WIDE_INT lang_get_alias_set		PARAMS ((tree));
 
+struct obstack;
+
 /* In tree.c */
 extern int really_constant_p		PARAMS ((tree));
 extern void set_identifier_size		PARAMS ((int));
