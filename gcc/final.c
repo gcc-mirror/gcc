@@ -1672,16 +1672,7 @@ output_source_line (file, insn)
 
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
       if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
-	{
-	  dbxout_source_file (file, filename);
-
-#ifdef ASM_OUTPUT_SOURCE_LINE
-	  ASM_OUTPUT_SOURCE_LINE (file, NOTE_LINE_NUMBER (insn));
-#else
-	  fprintf (file, "\t%s %d,0,%d\n", ASM_STABD_OP, 
-		   N_SLINE, NOTE_LINE_NUMBER (insn));
-#endif
-	}
+	dbxout_source_line (file, filename, NOTE_LINE_NUMBER (insn));
 #endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
 
 #ifdef DWARF_DEBUGGING_INFO
