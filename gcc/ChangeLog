@@ -1,5 +1,12 @@
 Fri May 28 03:07:10 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
+	* rs6000/sysv4.h (CC1_SPEC): Add support for -profile
+	(LIB_LINUX_SPEC): Likewise.
+	(LIB_LINUX_SPEC): Add support for -pthread
+	(CPP_OS_LINUX_SPEC): Likewise.
+	(CPP_SYSV_SPEC): Avoid redefinitions if both -fpic and -fPIC are
+	specified
+
 	* rs6000.c (output_mi_thunk): Enable full support again.
 
 Thu May 27 13:04:52 1999  H.J. Lu  (hjl@gnu.org)
