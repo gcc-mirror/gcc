@@ -43,7 +43,7 @@ static inline void function_declaration_noinline_inline_before(void); /* { dg-wa
 
 static void function_declaration_noinline_inline_before(void) {}
 
-int f () {
+void f () {
   function_definition ();
   function_declaration_both_before ();
   function_declaration_both_after ();

@@ -20,4 +20,5 @@ int foo (int s)
 					: "cc"); r; }))
         continue;
     }
+  return 0;
 }

@@ -18,4 +18,5 @@ foo ()
   for (i = 0; i < 10; i++)
     ;
   fabs (x - y);
+  return 0;
 }

@@ -132,6 +132,10 @@ struct lang_type
 /* Record whether a typedef for type `int' was actually `signed int'.  */
 #define C_TYPEDEF_EXPLICITLY_SIGNED(EXP) DECL_LANG_FLAG_1 (EXP)
 
+/* For a FUNCTION_DECL, nonzero if it was defined without an explicit
+   return type.  */
+#define C_FUNCTION_IMPLICIT_INT(EXP) DECL_LANG_FLAG_1 (EXP)
+
 /* Nonzero for a declaration of a built in function if there has been no
    occasion that would declare the function in ordinary C.
    Using the function draws a pedantic warning in this case.  */
@@ -276,6 +280,11 @@ extern int current_function_returns_value;
    a return statement with no argument is seen.  */
 
 extern int current_function_returns_null;
+
+/* Set to 0 at beginning of a function definition, set to 1 if
+   a call to a noreturn function is seen.  */
+
+extern int current_function_returns_abnormally;
 
 /* Nonzero means the expression being parsed will never be evaluated.
    This is a count, since unevaluated expressions can nest.  */

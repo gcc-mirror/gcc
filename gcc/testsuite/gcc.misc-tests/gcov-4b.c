@@ -41,7 +41,7 @@ test_for2 (int m, int n, int o)
   return for_temp;
 }
 
-int
+void
 call_for ()
 {
   for_val1 += test_for1 (0);

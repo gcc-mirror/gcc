@@ -21,13 +21,14 @@ int ATSYM(var) ATTR;  /* { dg-warning "attribute ignored" "" } */
 
 int ATSYM(fn_knrarg) (arg)
   int arg ATTR; /* { dg-warning "attribute ignored" "" } */
-{}
+{ return 0; }
 
-int ATSYM(fn_isoarg) (int arg ATTR) {} /* { dg-warning "attribute ignored" "" } */
+int ATSYM(fn_isoarg) (int arg ATTR) { return 0; } /* { dg-warning "attribute ignored" "" } */
 
 int ATSYM(fn_vars) (void) {
   static int svar ATTR; /* { dg-warning "attribute ignored" "" } */
   auto int lvar ATTR; /* { dg-warning "attribute ignored" "" } */
+  return 0;
 }
 
 
@@ -46,11 +47,12 @@ int ATSYM(var) ATTR;  /* { dg-warning "attribute ignored" "" } */
 
 int ATSYM(fn_knrarg) (arg)
   int arg ATTR; /* { dg-warning "attribute ignored" "" } */
-{}
+{ return 0; }
 
-int ATSYM(fn_isoarg) (int arg ATTR) {} /* { dg-warning "attribute ignored" "" } */
+int ATSYM(fn_isoarg) (int arg ATTR) { return 0; } /* { dg-warning "attribute ignored" "" } */
 
 int ATSYM(fn_vars) (void) {
   static int svar ATTR; /* { dg-warning "attribute ignored" "" } */
   auto int lvar ATTR; /* { dg-warning "attribute ignored" "" } */
+  return 0;
 }

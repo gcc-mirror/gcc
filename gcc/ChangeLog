@@ -1,3 +1,21 @@
+2002-02-06  Jason Merrill  <jason@redhat.com>
+
+	* c-decl.c (finish_function): Warn about a non-void function with
+	no return statement and no abnormal exit.
+	(current_function_returns_abnormally): New variable.
+	(start_function): Clear it.
+	(struct c_language_function): Add returns_abnormally.
+	(push_c_function_context): Save it.
+	(pop_c_function_context): Restore it.
+	(builtin_function): Set TREE_THIS_VOLATILE on return fns.
+	(grokdeclarator): Set C_FUNCTION_IMPLICIT_INT on functions without
+	an explicit return type.
+	* c-tree.h: Declare current_function_returns_abnormally.
+	(C_FUNCTION_IMPLICIT_INT): New macro.
+	* c-typeck.c (build_function_call): Set it.
+	(c_expand_return): Set current_function_returns_value even if the
+	value is erroneous.
+
 2002-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/5420:

@@ -17,4 +17,5 @@ div_and_round_double (lden_orig, hden_orig)
       quo[i] = work / (unsigned int ) lden;
       carry = work % (unsigned int ) lden;
     }
+  return 0;
 }

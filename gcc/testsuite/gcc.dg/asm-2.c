@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
 
-int f()
+void f()
 {
   asm volatile ("foo%%bar" : : );
 }
