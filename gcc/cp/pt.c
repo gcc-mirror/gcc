@@ -88,7 +88,6 @@ static htab_t local_specializations;
 #define GTB_IGNORE_TYPE 2 /* We don't need to try to unify the current
 			     type with the desired type.  */
 
-static void push_access_scope_real (tree, tree, tree);
 static void push_access_scope (tree);
 static void pop_access_scope (tree);
 static int resolve_overloaded_unification (tree, tree, tree, tree,
@@ -173,62 +172,27 @@ static tree tsubst_copy	(tree, tree, tsubst_flags_t, tree);
 
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
-   template, TEMPLATE_DECL for uninstantiated one, or VAR_DECL for
-   static member variable (need by instantiate_decl).  ARGS is the 
-   template argument for TEMPLATE_DECL.  If CONTEXT is not NULL_TREE, 
-   this is used instead of the context of T.  */
+   template, or VAR_DECL for static member variable (need by
+   instantiate_decl).  */
 
 static void
-push_access_scope_real (tree t, tree args, tree context)
+push_access_scope (tree t)
 {
-  if (TREE_CODE (t) == FUNCTION_DECL || DECL_FUNCTION_TEMPLATE_P (t))
-    {
-      /* When we are processing specialization `foo<Outer>' for code like
+  my_friendly_assert (TREE_CODE (t) == FUNCTION_DECL
+		      || TREE_CODE (t) == VAR_DECL,
+		      0);
 
-	   template <class U> typename U::Inner foo ();
-	   class Outer {
-	     struct Inner {};
-	     friend Outer::Inner foo<Outer> ();
-	   };
-
-	 `T' is a TEMPLATE_DECL, but `Outer' is only a friend of one of
-	 its specialization.  We can get the FUNCTION_DECL with the right
-	 information because this specialization has already been
-	 registered by the friend declaration above.  */
-
-      if (DECL_FUNCTION_TEMPLATE_P (t) && args)
-	{
-	  tree full_args = tsubst_template_arg_vector
-	    (DECL_TI_ARGS (DECL_TEMPLATE_RESULT (t)), args, tf_none);
-	  tree spec = NULL_TREE;
-	  if (full_args != error_mark_node)
-	    spec = retrieve_specialization (t, full_args);
-	  if (spec)
-	    t = spec;
-	}
-    }
-
-  if (!context)
-    context = DECL_CONTEXT (t);
-  if (context && TYPE_P (context))
-    push_nested_class (context);
+  if (DECL_CLASS_SCOPE_P (t))
+    push_nested_class (DECL_CONTEXT (t));
   else
     push_to_top_level ();
     
-  if (TREE_CODE (t) == FUNCTION_DECL || DECL_FUNCTION_TEMPLATE_P (t))
+  if (TREE_CODE (t) == FUNCTION_DECL)
     {
       saved_access_scope = tree_cons
 	(NULL_TREE, current_function_decl, saved_access_scope);
       current_function_decl = t;
     }
-}
-
-/* Like push_access_scope_real, but always uses DECL_CONTEXT.  */
-
-static void
-push_access_scope (tree t)
-{
-  push_access_scope_real (t, NULL_TREE, NULL_TREE);
 }
 
 /* Restore the scope set up by push_access_scope.  T is the node we
@@ -237,7 +201,7 @@ push_access_scope (tree t)
 static void
 pop_access_scope (tree t)
 {
-  if (TREE_CODE (t) == FUNCTION_DECL || DECL_FUNCTION_TEMPLATE_P (t))
+  if (TREE_CODE (t) == FUNCTION_DECL)
     {
       current_function_decl = TREE_VALUE (saved_access_scope);
       saved_access_scope = TREE_CHAIN (saved_access_scope);
@@ -8509,18 +8473,23 @@ instantiate_template (tree tmpl, tree targ_ptr, tsubst_flags_t complain)
 			       complain))
     return error_mark_node;
   
-  /* Make sure that we can see identifiers, and compute access
-     correctly.  The desired FUNCTION_DECL for FNDECL may or may not be
-     created earlier.  Let push_access_scope_real figure that out.  */
-  push_access_scope_real
-    (gen_tmpl, targ_ptr, tsubst (DECL_CONTEXT (gen_tmpl), targ_ptr, 
-				 complain, gen_tmpl));
+  /* We are building a FUNCTION_DECL, during which the access of its
+     parameters and return types have to be checked.  However this
+     FUNCTION_DECL which is the desired context for access checking
+     is not built yet.  We solve this chicken-and-egg problem by
+     deferring all checks until we have the FUNCTION_DECL.  */
+  push_deferring_access_checks (dk_deferred);
 
   /* substitute template parameters */
   fndecl = tsubst (DECL_TEMPLATE_RESULT (gen_tmpl),
 		   targ_ptr, complain, gen_tmpl);
 
-  pop_access_scope (gen_tmpl);
+  /* Now we know the specialization, compute access previously
+     deferred.  */
+  push_access_scope (fndecl);
+  perform_deferred_access_checks ();
+  pop_access_scope (fndecl);
+  pop_deferring_access_checks ();
 
   /* The DECL_TI_TEMPLATE should always be the immediate parent
      template, not the most general template.  */
@@ -10618,13 +10587,16 @@ regenerate_decl_from_template (tree decl, tree tmpl)
      instantiation of a specialization, which it isn't: it's a full
      instantiation.  */
   gen_tmpl = most_general_template (tmpl);
-  push_access_scope_real (gen_tmpl, args, DECL_CONTEXT (decl));
   unregistered = unregister_specialization (decl, gen_tmpl);
 
   /* If the DECL was not unregistered then something peculiar is
      happening: we created a specialization but did not call
      register_specialization for it.  */
   my_friendly_assert (unregistered, 0);
+
+  /* Make sure that we can see identifiers, and compute access
+     correctly.  */
+  push_access_scope (decl);
 
   /* Do the substitution to get the new declaration.  */
   new_decl = tsubst (code_pattern, args, tf_error, NULL_TREE);
