@@ -1,3 +1,13 @@
+1999-08-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cplus-dem.c (gnu_special): Cast a `size_t' to `long' when
+	comparing against a signed quantity.
+	(arm_special): Likewise.
+	(demangle_fund_type): Likewise.
+	(do_hpacc_template_const_value): Mark parameter `work' with
+	ATTRIBUTE_UNUSED.	
+	(main): Constify variable `valid_symbols'.
+
 Tue Aug 24 02:50:45 1999  Philippe De Muyter  <phdm@macqel.be>
 
 	* strtoul.c (strtoul): Add parentheses around && within ||.
