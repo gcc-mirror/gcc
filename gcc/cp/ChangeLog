@@ -1,3 +1,26 @@
+2000-04-10  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* inc/cxxabi.h (__pointer_type_info): Add restrict and
+	incomplete flags.
+	(__pointer_type_info::__pointer_catch): New virtual function.
+	(__pointer_to_member_type_info): Derive from
+	__pointer_type_info. Adjust.
+	(__pointer_to_member_type_info::__do_catch): Remove.
+	(__pointer_to_member_type_info::__is_pointer_p): Declare.
+	(__pointer_to_member_type_info::__pointer_catch): Declare.
+	* rtti.c (qualifier_flags): Add restrict flag.
+	(ptmd_initializer): Reorder members.
+	(create_tinfo_types): Expand comments. Reorder
+	ptmd_desc_type_node members.
+	* tinfo2.cc (__pointer_to_member_type_info::__is_pointer_p):
+	Implement.
+	(__pointer_type_info::__do_catch): Move specific code into
+	__pointer_catch. Call it.
+	(__pointer_type_info::__pointer_catch): Non-pointer-to-member
+	specific catch checking. Fix void conversion check.
+	(__pointer_to_member_type_info::__do_catch): Remove.
+	(__pointer_to_member_type_info::__pointer_catch): Implement.
+	
 2000-04-10  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* lex.c (init_parse): Remove traces of classof and headof.
