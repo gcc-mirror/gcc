@@ -44,7 +44,6 @@
 
 #include <bits/c++config.h>
 #include <iosfwd>
-#include <cstdio> 	// For SEEK_SET, SEEK_CUR, SEEK_END
 #include <bits/localefwd.h>
 #include <bits/ios_base.h>
 
@@ -172,14 +171,6 @@ namespace std
 
       /**
        *  @if maint
-       *  Actual size of allocated internal buffer. Unused for sstreams,
-       *  which have readily available _M_string.capacity().
-       *  @endif
-      */
-      size_t			_M_buf_size;
-
-      /**
-       *  @if maint
        *  True iff _M_in_* and _M_out_* buffers should always point to
        *  the same place.  True for fstreams, false for sstreams.
        *  @endif
@@ -278,7 +269,6 @@ namespace std
       ~basic_streambuf() 
       {
 	_M_buf_unified = false;
-	_M_buf_size = 0;
 	_M_mode = ios_base::openmode(0);
       }
 
@@ -477,7 +467,7 @@ namespace std
        *  - this is not an error
       */
       basic_streambuf()
-      : _M_buf(NULL), _M_buf_size(BUFSIZ), _M_buf_unified(false),
+      : _M_buf(NULL), _M_buf_unified(false),
       _M_in_beg(0), _M_in_cur(0), _M_in_end(0), _M_out_beg(0),
       _M_out_cur(0), _M_out_end(0), _M_out_lim(0),
       _M_mode(ios_base::openmode(0)), _M_buf_locale(locale()) 
