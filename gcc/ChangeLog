@@ -1,3 +1,8 @@
+2003-04-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/i386/winnt.c (i386_pe_mark_dllimport): Make the new RTL
+	have the same form as the old RTL.
+
 2003-04-21  Andreas Jaeger  <aj@suse.de>
 
         * cppcharset.c (_cpp_valid_ucn): Cast field precision to int.
