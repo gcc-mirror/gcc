@@ -1,3 +1,8 @@
+2002-11-30  Mark Wielaard  <mark@klomp.org>
+
+	* java/lang/StringBuffer.java (getChars): Remove wrong dstOffset check
+	against count.
+
 2002-11-21  Anthony Green  <green@redhat.com>
 
 	* Makefile.am: Move org.xml.sax and org.w3c.dom into their own
