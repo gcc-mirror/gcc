@@ -134,4 +134,6 @@ extern int warningcount;
 extern int sorrycount;
 
 extern const char *progname;
+
+extern void set_fatal_function PARAMS ((void (*)(const char *, va_list)));
 #endif /* __GCC_TOPLEV_H */

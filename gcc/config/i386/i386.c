@@ -402,6 +402,8 @@ static HOST_WIDE_INT ix86_compute_frame_size PARAMS((HOST_WIDE_INT,
 static int ix86_nsaved_regs PARAMS((void));
 static void ix86_emit_save_regs PARAMS((void));
 static void ix86_emit_epilogue_esp_adjustment PARAMS((int));
+static void ix86_sched_reorder_pentium PARAMS((rtx *, rtx *));
+static void ix86_sched_reorder_ppro PARAMS((rtx *, rtx *));
 
 struct ix86_address
 {
@@ -6206,7 +6208,7 @@ ix86_pent_find_pair (e_ready, ready, type, first)
 
 /* Subroutines of ix86_sched_reorder.  */
 
-void
+static void
 ix86_sched_reorder_pentium (ready, e_ready)
      rtx *ready;
      rtx *e_ready;
@@ -6271,7 +6273,7 @@ ix86_sched_reorder_pentium (ready, e_ready)
     ix86_reorder_insn (insnp, e_ready - 1);
 }
 
-void
+static void
 ix86_sched_reorder_ppro (ready, e_ready)
      rtx *ready;
      rtx *e_ready;

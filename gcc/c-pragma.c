@@ -60,6 +60,9 @@ static int  default_alignment;
 
 static int  push_alignment PARAMS ((int, tree));
 static int  pop_alignment  PARAMS ((tree));
+#ifdef HANDLE_PRAGMA_PACK_PUSH_POP
+static void mark_align_stack PARAMS ((void *));
+#endif
 
 /* Push an alignment value onto the stack.  */
 static int

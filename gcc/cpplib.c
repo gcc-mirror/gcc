@@ -105,6 +105,8 @@ static void v_cpp_error_with_line PARAMS ((cpp_reader *, int, int,
 static void v_cpp_warning_with_line PARAMS ((cpp_reader *, int, int, const char *, va_list));
 static U_CHAR *detect_if_not_defined PARAMS ((cpp_reader *));
 static int consider_directive_while_skipping PARAMS ((cpp_reader *, IF_STACK_FRAME *));
+static void skip_block_comment PARAMS ((cpp_reader *));
+static void skip_line_comment PARAMS ((cpp_reader *));
 
 /* Here is the actual list of #-directives.
    This table is ordered by frequency of occurrence; the numbers

@@ -200,6 +200,7 @@ static void append_include_chain	PARAMS ((cpp_reader *,
 static char *base_name			PARAMS ((const char *));
 static void dump_special_to_buffer	PARAMS ((cpp_reader *, const char *));
 static void initialize_dependency_output PARAMS ((cpp_reader *));
+static void new_pending_define PARAMS ((struct cpp_options *, const char *));
 
 /* Last argument to append_include_chain: chain to use */
 enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };

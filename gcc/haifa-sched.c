@@ -788,6 +788,7 @@ static rtx group_leader PARAMS ((rtx));
 static int set_priorities PARAMS ((int));
 static void init_deps PARAMS ((struct deps *));
 static void schedule_region PARAMS ((int));
+static void propagate_deps PARAMS ((int, struct deps *, int));
 
 #endif /* INSN_SCHEDULING */
 

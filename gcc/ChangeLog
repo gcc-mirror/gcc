@@ -1,3 +1,44 @@
+2000-02-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (c-common.o): Depend on $(EXPR_H).
+
+	* c-common.c: Include expr.h.
+
+	* c-pragma.c (mark_align_stack): Add prototype.
+
+	* caller-save.c (add_stored_regs): Likewise.
+
+	* combine.c (record_promoted_value): Likewise.
+
+	* i386.c (ix86_sched_reorder_pentium, ix86_sched_reorder_ppro):
+	Likewise.
+
+	* cppinit.c (new_pending_define): Likewise.
+
+	* cpplib.c (skip_block_comment, skip_line_comment): Likewise.
+
+	* dwarf2out.c (save_rtx, splice_child_die, reverse_die_lists,
+	AT_class, AT_flag, AT_int, AT_unsigned, AT_string, AT_ref, AT_loc,
+	AT_addr, AT_lbl, get_AT_ref, free_AT, free_die, local_scope_p,
+	class_scope_p): Likewise.
+
+	* dwarf2out.h (dwarf2out_set_demangle_name_func,
+	dwarf2out_add_library_unit_info): Likewise.
+
+	* ggc.h (ggc_page_print_statistics): Likewise.
+
+	* haifa-sched.c (propagate_deps): Likewise.
+
+	* reg-stack.c (next_flags_user, record_label_references): Likewise.
+
+	* rtl.h (set_stack_check_libfunc): Likewise.
+
+	* toplev.h (set_fatal_function): Likewise.
+
+	* toplev.c (set_fatal_function): Delete prototype.
+	
+	* diagnostic.c: Deconstify functions returning malloc'ed ptrs.
+	
 2000-02-05  Geoff Keating  <geoffk@cygnus.com>
 
 	* ginclude/ppc-asm.h (FUNC_START): Use USER_LABEL_PREFIX.

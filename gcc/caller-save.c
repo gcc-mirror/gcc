@@ -93,6 +93,7 @@ static int insert_restore		PARAMS ((struct insn_chain *, int, int,
 						 int));
 static struct insn_chain *insert_one_insn PARAMS ((struct insn_chain *, int,
 						   enum insn_code, rtx));
+static void add_stored_regs		PARAMS ((rtx, rtx, void *));
 
 /* Initialize for caller-save.
 

@@ -45,16 +45,15 @@ Boston, MA 02111-1307, USA.  */
 struct output_buffer
 {
   struct obstack obstack;       /* where we build the text to output */
-  const char *prefix;           /* prefix of every new line  */
+  char *prefix;                 /* prefix of every new line  */
   int line_length;              /* current line length (in characters) */
   int max_length;               /* maximum characters per line */
 };
 
 /* Prototypes. */
 static int doing_line_wrapping PARAMS ((void));
-static void init_output_buffer PARAMS ((struct output_buffer*,
-					const char *, int));
-static const char *get_output_prefix PARAMS ((const struct output_buffer *));
+static void init_output_buffer PARAMS ((struct output_buffer*, char *, int));
+static char *get_output_prefix PARAMS ((const struct output_buffer *));
 static int output_space_left PARAMS ((const struct output_buffer *));
 static void emit_output_prefix PARAMS ((struct output_buffer *));
 static void output_newline PARAMS ((struct output_buffer *));
@@ -62,10 +61,10 @@ static void output_append PARAMS ((struct output_buffer *, const char *,
 				   const char *));
 static void output_puts PARAMS ((struct output_buffer *, const char *));
 static void dump_output PARAMS ((struct output_buffer *, FILE *));
-static const char *vbuild_message_string PARAMS ((const char *, va_list));
-static const char *build_message_string PARAMS ((const char *, ...))
+static char *vbuild_message_string PARAMS ((const char *, va_list));
+static char *build_message_string PARAMS ((const char *, ...))
      ATTRIBUTE_PRINTF_1;
-static const char *build_location_prefix PARAMS ((const char *, int, int));
+static char *build_location_prefix PARAMS ((const char *, int, int));
 static void voutput_notice PARAMS ((struct output_buffer *, const char *,
 				    va_list));
 static void output_printf PARAMS ((struct output_buffer *, const char *, ...))
@@ -150,7 +149,7 @@ set_message_length (n)
 static void
 init_output_buffer (buffer, prefix, max_length)
      struct output_buffer *buffer;
-     const char *prefix;
+     char *prefix;
      int max_length;
 {
   obstack_init (&buffer->obstack);
@@ -161,7 +160,7 @@ init_output_buffer (buffer, prefix, max_length)
 
 /* Return BUFFER's prefix.  */
 
-static const char *
+static char *
 get_output_prefix (buffer)
      const struct output_buffer *buffer;
 {
@@ -263,16 +262,16 @@ dump_output (buffer, file)
      struct output_buffer *buffer;
      FILE *file;
 {
-  const char *text;
+  char *text;
   
   obstack_1grow (&buffer->obstack, '\0');
   text = obstack_finish (&buffer->obstack);
   fputs (text, file);
-  obstack_free (&buffer->obstack, (char *)text);
+  obstack_free (&buffer->obstack, text);
   buffer->line_length = 0;
 }
 
-static const char *
+static char *
 vbuild_message_string (msgid, ap)
      const char *msgid;
      va_list ap;
@@ -286,14 +285,14 @@ vbuild_message_string (msgid, ap)
 /*  Return a malloc'd string containing MSGID formatted a la
     printf.  The caller is reponsible for freeing the memory.  */
 
-static const char *
+static char *
 build_message_string VPARAMS ((const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *msgid;
 #endif
   va_list ap;
-  const char *str;
+  char *str;
 
   VA_START (ap, msgid);
 
@@ -312,7 +311,7 @@ build_message_string VPARAMS ((const char *msgid, ...))
 /* Return a malloc'd string describing a location.  The caller is
    responsible for freeing the memory.  */
 
-static const char *
+static char *
 build_location_prefix (file, line, warn)
      const char *file;
      int line;
@@ -342,10 +341,10 @@ voutput_notice (buffer, msgid, ap)
      const char *msgid;
      va_list ap;
 {
-  const char *message = vbuild_message_string (msgid, ap);
+  char *message = vbuild_message_string (msgid, ap);
 
   output_puts (buffer, message);
-  free ((char *)message);
+  free (message);
 }
 
 
@@ -392,7 +391,7 @@ line_wrapper_printf VPARAMS ((FILE *file, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif  
 
-  init_output_buffer (&buffer, (const char *)NULL, output_maximum_width);
+  init_output_buffer (&buffer, NULL, output_maximum_width);
   voutput_notice (&buffer, msgid, ap);
   dump_output (&buffer, file);
 
@@ -1006,7 +1005,7 @@ default_print_error_function (file)
 {
   if (last_error_function != current_function_decl)
     {
-      const char *prefix = NULL;
+      char *prefix = NULL;
       struct output_buffer buffer;
       
       if (file)
@@ -1056,7 +1055,7 @@ default_print_error_function (file)
       if (doing_line_wrapping ())
         dump_output (&buffer, stderr);
       
-      free ((char *)prefix);
+      free (prefix);
     }
 }
 

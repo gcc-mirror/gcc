@@ -417,6 +417,7 @@ static void distribute_notes	PARAMS ((rtx, rtx, rtx, rtx, rtx, rtx));
 static void distribute_links	PARAMS ((rtx));
 static void mark_used_regs_combine PARAMS ((rtx));
 static int insn_cuid		PARAMS ((rtx));
+static void record_promoted_value PARAMS ((rtx, rtx));
 
 /* Substitute NEWVAL, an rtx expression, into INTO, a place in some
    insn.  The substitution can be undone by undo_all.  If INTO is already
