@@ -263,7 +263,8 @@ static void __objc_send_initialize(Class class)
 
 	    for (i=0;i<method_list->method_count;i++) {
 	      method = &(method_list->method_list[i]);
-	      if (method->method_name->sel_id == op->sel_id) {
+	      if (method->method_name
+		  && method->method_name->sel_id == op->sel_id) {
 	        imp = method->method_imp;
 	        break;
 	      }
@@ -280,14 +281,39 @@ static void __objc_send_initialize(Class class)
 		
       }
     }
-}  
+}
+
+/* Walk on the methods list of class and install the methods in the reverse
+   order of the lists. Since methods added by categories are before the methods
+   of class in the methods list, this allows categories to substitute methods
+   declared in class. However if more than one category replace the same method
+   nothing is guarranteed about what method will be used.
+   Assumes that __objc_runtime_mutex is locked down. */
+static void
+__objc_install_methods_in_dtable (Class class, MethodList_t method_list)
+{
+  int i;
+
+  if (!method_list)
+    return;
+
+  if (method_list->method_next)
+    __objc_install_methods_in_dtable (class, method_list->method_next);
+
+  for (i = 0; i < method_list->method_count; i++)
+    {
+      Method_t method = &(method_list->method_list[i]);
+      sarray_at_put_safe (class->dtable,
+			  (sidx) method->method_name->sel_id,
+			  method->method_imp);
+    }
+}
 
 /* Assumes that __objc_runtime_mutex is locked down. */
 static void
 __objc_install_dispatch_table_for_class (Class class)
 {
   Class super;
-  MethodList_t mlist;
   int counter;
 
   /* If the class has not yet had it's class links resolved, we must 
@@ -310,18 +336,7 @@ __objc_install_dispatch_table_for_class (Class class)
   else
     class->dtable = sarray_lazy_copy (super->dtable);
 
-  for (mlist = class->methods; mlist; mlist = mlist->method_next)
-    {
-      counter = mlist->method_count - 1;
-      while (counter >= 0)
-        {
-          Method_t method = &(mlist->method_list[counter]);
-	  sarray_at_put_safe (class->dtable,
-			      (sidx) method->method_name->sel_id,
-			      method->method_imp);
-          counter -= 1;
-        }
-    }
+  __objc_install_methods_in_dtable (class, class->methods);
 }
 
 void __objc_update_dispatch_table_for_class (Class class)
@@ -361,10 +376,6 @@ void
 class_add_method_list (Class class, MethodList_t list)
 {
   int i;
-  static SEL initialize_sel = 0;                /* !T:SAFE2 */
-
-  if (!initialize_sel)
-    initialize_sel = sel_register_name ("initialize");
 
   /* Passing of a linked list is not allowed.  Do multiple calls.  */
   assert (!list->method_next);
@@ -380,24 +391,16 @@ class_add_method_list (Class class, MethodList_t list)
 	  method->method_name = 
 	    sel_register_typed_name ((const char*)method->method_name,
 				     method->method_types);
-
-	  if (search_for_method_in_list (class->methods, method->method_name)
-	      && method->method_name->sel_id != initialize_sel->sel_id)
-	    {
-	      /* Duplication. Print a error message an change the method name
-		 to NULL. */
-	      fprintf (stderr, "attempt to add a existing method: %s\n",
-		       sel_get_name(method->method_name));
-	      method->method_name = 0;
-	    }
 	}
     }
 
   /* Add the methods to the class's method list.  */
   list->method_next = class->methods;
   class->methods = list;
-}
 
+  /* Update the dispatch table of class */
+  __objc_update_dispatch_table_for_class (class);
+}
 
 Method_t
 class_get_instance_method(Class class, SEL op)
