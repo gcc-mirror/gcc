@@ -1,3 +1,9 @@
+2000-12-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* src/Makefile.am (libstdc++.INC:): 2000-12-05 reverted to include
+	2000-11-12 hunk.
+	* src/Makefile.in: Rebuilt.
+
 2000-12-09  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/20_util/auto_ptr.cc (test07): Remove test that tries
