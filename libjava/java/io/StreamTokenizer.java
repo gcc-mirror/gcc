@@ -1,5 +1,5 @@
 /* StreamTokenizer.java -- parses streams of characters into tokens
-   Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -167,14 +167,21 @@ public class StreamTokenizer
   }
 
   /**
-   * This method sets the comment attribute on the specified character.
+   * This method sets the comment attribute on the specified
+   * character.  Other attributes for the character are cleared.
    *
    * @param c The character to set the comment attribute for, passed as an int
    */
   public void commentChar(int ch)
   {
     if (ch >= 0 && ch <= 255)
-      comment[ch] = true;
+      {
+	comment[ch] = true;
+	whitespace[ch] = false;
+	alphabetic[ch] = false;
+	numeric[ch] = false;
+	quote[ch] = false;
+      }
   }
 
   /**
@@ -566,13 +573,20 @@ public class StreamTokenizer
 
   /**
    * This method sets the quote attribute on the specified character.
+   * Other attributes for the character are cleared.
    *
    * @param c The character to set the quote attribute for, passed as an int.
    */
   public void quoteChar(int ch)
   {
     if (ch >= 0 && ch <= 255)
-      quote[ch] = true;
+      {
+	quote[ch] = true;
+	comment[ch] = false;
+	whitespace[ch] = false;
+	alphabetic[ch] = false;
+	numeric[ch] = false;
+      }
   }
 
   /**

@@ -1,3 +1,10 @@
+2003-11-16  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/13062:
+	* java/io/StreamTokenizer.java (commentChar): Clear other
+	attributes for character.
+	(quoteChar): Likewise.
+
 2003-11-14  Tom Fitzsimmons  <fitzsim@redhat.com>
 
 	* java/awt/GridBagLayout.java (getLayoutDimensions): Return array of two
