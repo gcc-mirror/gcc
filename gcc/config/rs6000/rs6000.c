@@ -6875,7 +6875,7 @@ rs6000_select_section (decl, reloc)
       else
 	data_section ();
     }
-  else if (TREE_CODE (decl) == VAR_DECL)
+  else if (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == CONSTRUCTOR)
     {
       if ((flag_pic && reloc)
 	  || ! TREE_READONLY (decl)
