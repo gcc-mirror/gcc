@@ -1,3 +1,7 @@
+2003-02-07  Gabor Greif  <ggreif@lucent.com>
+
+	* doc/c-tree.texi (Namespaces): Fix typo.
+
 Fri Feb  7 02:18:57 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* regrename.c (do_replace, find_oldest_value_reg,
