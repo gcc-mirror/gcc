@@ -3984,13 +3984,13 @@ expand_decl_init (tree decl)
       if (code == INTEGER_TYPE || code == REAL_TYPE || code == ENUMERAL_TYPE
 	  || code == POINTER_TYPE || code == REFERENCE_TYPE)
 	expand_assignment (decl, convert (TREE_TYPE (decl), integer_zero_node),
-			   0, 0);
+			   0);
       emit_queue ();
     }
   else if (DECL_INITIAL (decl) && TREE_CODE (DECL_INITIAL (decl)) != TREE_LIST)
     {
       emit_line_note (DECL_SOURCE_LOCATION (decl));
-      expand_assignment (decl, DECL_INITIAL (decl), 0, 0);
+      expand_assignment (decl, DECL_INITIAL (decl), 0);
       emit_queue ();
     }
 

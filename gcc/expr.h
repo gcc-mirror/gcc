@@ -493,7 +493,7 @@ extern void emit_push_insn (rtx, enum machine_mode, tree, rtx, unsigned int,
 			    int, rtx, int, rtx, rtx, int, rtx);
 
 /* Expand an assignment that stores the value of FROM into TO.  */
-extern rtx expand_assignment (tree, tree, int, int);
+extern rtx expand_assignment (tree, tree, int);
 
 /* Generate code for computing expression EXP,
    and storing the value into TARGET.

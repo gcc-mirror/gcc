@@ -4128,16 +4128,10 @@ get_subtarget (rtx x)
    If WANT_VALUE is nonzero, return an rtx for the value of TO.
    (This may contain a QUEUED rtx;
    if the value is constant, this rtx is a constant.)
-   Otherwise, the returned value is NULL_RTX.
-
-   SUGGEST_REG is no longer actually used.
-   It used to mean, copy the value through a register
-   and return that register, if that is possible.
-   We now use WANT_VALUE to decide whether to do this.  */
+   Otherwise, the returned value is NULL_RTX.  */
 
 rtx
-expand_assignment (tree to, tree from, int want_value,
-		   int suggest_reg ATTRIBUTE_UNUSED)
+expand_assignment (tree to, tree from, int want_value)
 {
   rtx to_rtx = 0;
   rtx result;
@@ -9144,7 +9138,7 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode, enum expand_modifier
 	tree lhs = TREE_OPERAND (exp, 0);
 	tree rhs = TREE_OPERAND (exp, 1);
 
-	temp = expand_assignment (lhs, rhs, ! ignore, original_target != 0);
+	temp = expand_assignment (lhs, rhs, ! ignore);
 	return temp;
       }
 
@@ -9189,13 +9183,13 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode, enum expand_modifier
 					     (TREE_CODE (rhs) == BIT_IOR_EXPR
 					      ? integer_one_node
 					      : integer_zero_node)),
-			       0, 0);
+			       0);
 	    do_pending_stack_adjust ();
 	    emit_label (label);
 	    return const0_rtx;
 	  }
 
-	temp = expand_assignment (lhs, rhs, ! ignore, original_target != 0);
+	temp = expand_assignment (lhs, rhs, ! ignore);
 
 	return temp;
       }
@@ -9798,7 +9792,7 @@ expand_increment (tree exp, int post, int ignore)
 	  incremented = TREE_OPERAND (incremented, 0);
 	}
 
-      temp = expand_assignment (incremented, newexp, ! post && ! ignore , 0);
+      temp = expand_assignment (incremented, newexp, ! post && ! ignore);
       return post ? op0 : temp;
     }
 
