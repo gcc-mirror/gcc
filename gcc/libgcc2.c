@@ -76,7 +76,7 @@ __addvsi3 (Wtype a, Wtype b)
     abort ();
 
   return w;
-} 
+}
 #endif
 
 #ifdef L_addvdi3
@@ -1069,7 +1069,7 @@ __floatdidf (DWtype u)
 
 /* Define codes for all the float formats that we know of.  Note
    that this is copied from real.h.  */
-   
+
 #define UNKNOWN_FLOAT_FORMAT 0
 #define IEEE_FLOAT_FORMAT 1
 #define VAX_FLOAT_FORMAT 2
@@ -1311,13 +1311,13 @@ char *ctime PARAMS ((const time_t *));
 
 static struct bb *bb_head;
 
-static int num_digits (long value, int base) __attribute__ ((const));
+static int num_digits (long long value, int base) __attribute__ ((const));
 
 /* Return the number of digits needed to print a value */
-/* __inline__ */ static int num_digits (long value, int base)
+/* __inline__ */ static int num_digits (long long value, int base)
 {
   int minus = (value < 0 && base != 16);
-  unsigned long v = (minus) ? -value : value;
+  unsigned long long v = (minus) ? -value : value;
   int ret = minus;
 
   do
@@ -1406,7 +1406,7 @@ __bb_exit_func (void)
 	  else
 	    {
 	      long n_counts = 0;
-	      
+
 	      if (ungetc (firstchar, da_file) == EOF)
 		rewind (da_file);
 	      if (__read_long (&n_counts, da_file, 8) != 0)
@@ -1448,7 +1448,7 @@ __bb_exit_func (void)
 
 	  if (__write_gcov_type (ptr->ncounts, da_file, 8) != 0)
 	    {
-	      
+
 	      fprintf (stderr, "arc profiling: Error writing output file %s.\n",
 		       ptr->filename);
 	    }
@@ -1470,7 +1470,7 @@ __bb_exit_func (void)
 		fprintf (stderr, "arc profiling: Error writing output file %s.\n",
 			 ptr->filename);
 	    }
-	  
+
 	  if (fclose (da_file) == EOF)
 	    fprintf (stderr, "arc profiling: Error closing output file %s.\n",
 		     ptr->filename);
@@ -1512,7 +1512,7 @@ __bb_exit_func (void)
 	  int file_p	= (func_p && ptr->filenames);
 	  int addr_p	= (ptr->addresses != 0);
 	  long ncounts	= ptr->ncounts;
-	  long cnt_max  = 0;
+	  gcov_type cnt_max  = 0;
 	  long line_max = 0;
 	  long addr_max = 0;
 	  int file_len	= 0;
@@ -1564,10 +1564,17 @@ __bb_exit_func (void)
 	  /* Now print out the basic block information.  */
 	  for (i = 0; i < ncounts; i++)
 	    {
+#if LONG_TYPE_SIZE == GCOV_TYPE_SIZE
 	      fprintf (file,
 		       "    Block #%*d: executed %*ld time(s)",
 		       blk_len, i+1,
 		       cnt_len, ptr->counts[i]);
+#else
+	      fprintf (file,
+		       "    Block #%*d: executed %*lld time(s)",
+		       blk_len, i+1,
+		       cnt_len, ptr->counts[i]);
+#endif
 
 	      if (addr_p)
 		fprintf (file, " address= 0x%.*lx", addr_len,
@@ -1677,7 +1684,7 @@ struct {
   struct bb *blocks;
 } __bb;
 
-/* Vars to store addrs of source and destination basic blocks 
+/* Vars to store addrs of source and destination basic blocks
    of a jump.  */
 
 static unsigned long bb_src = 0;
@@ -1727,7 +1734,7 @@ gopen (char *fn, char *mode)
   if (mode[1])
     return (FILE *) 0;
 
-  if (mode[0] != 'r' && mode[0] != 'w') 
+  if (mode[0] != 'r' && mode[0] != 'w')
     return (FILE *) 0;
 
   p = fn + strlen (fn)-1;
@@ -1791,7 +1798,7 @@ __bb_exit_trace_func (void)
   FILE *file = fopen ("bb.out", "a");
   struct bb_func *f;
   struct bb *b;
-        
+
   if (!file)
     perror ("bb.out");
 
@@ -1832,7 +1839,7 @@ __bb_exit_trace_func (void)
                     goto found;
                 }
             }
-  
+
           if (!printed_something)
             {
               fprintf (file, "Functions in `bb.in' not executed during basic block profiling on %s\n", ctime ((void *) &time_value));
@@ -1843,7 +1850,7 @@ __bb_exit_trace_func (void)
           if (p->filename)
               fprintf (file, " of file %s", p->filename);
           fprintf (file, "\n" );
-  
+
 found:        ;
         }
 
@@ -1863,7 +1870,7 @@ found:        ;
             }
           return;
         }
-    
+
       else if (file)
         {
           long time_value;
@@ -1872,13 +1879,13 @@ found:        ;
           unsigned long cnt_max  = 0;
           int cnt_len;
           int addr_len;
-    
+
           /* This is somewhat type incorrect, but it avoids worrying about
              exactly where time.h is included from.  It should be ok unless
              a void * differs from other pointer formats, or if sizeof (long)
              is < sizeof (time_t).  It would be nice if we could assume the
              use of rationale standards here.  */
-    
+
           time ((void *) &time_value);
           fprintf (file, "Basic block jump tracing");
 
@@ -1902,36 +1909,36 @@ found:        ;
             }
 
           fprintf (file, " finished on %s\n", ctime ((void *) &time_value));
-    
+
           for (i = 0; i < BB_BUCKETS; i++)
             {
                struct bb_edge *bucket = bb_hashbuckets[i];
                for ( ; bucket; bucket = bucket->next )
                  {
-                   if (addr_max < bucket->src_addr) 
+                   if (addr_max < bucket->src_addr)
                      addr_max = bucket->src_addr;
-                   if (addr_max < bucket->dst_addr) 
+                   if (addr_max < bucket->dst_addr)
                      addr_max = bucket->dst_addr;
-                   if (cnt_max < bucket->count) 
+                   if (cnt_max < bucket->count)
                      cnt_max = bucket->count;
                  }
             }
           addr_len = num_digits (addr_max, 16);
           cnt_len  = num_digits (cnt_max, 10);
-    
+
           for ( i = 0; i < BB_BUCKETS; i++)
             {
                struct bb_edge *bucket = bb_hashbuckets[i];
                for ( ; bucket; bucket = bucket->next )
                  {
                    fprintf (file,
-	"Jump from block 0x%.*lx to block 0x%.*lx executed %*lu time(s)\n", 
-                            addr_len, bucket->src_addr, 
-                            addr_len, bucket->dst_addr, 
+	"Jump from block 0x%.*lx to block 0x%.*lx executed %*lu time(s)\n",
+                            addr_len, bucket->src_addr,
+                            addr_len, bucket->dst_addr,
                             cnt_len, bucket->count);
                  }
             }
-  
+
           fprintf (file, "\n");
 
         }
@@ -2003,14 +2010,14 @@ __bb_init_prg (void)
 	buf[i--] = '\0';
 
       p = buf;
-      if (*p == '-') 
-        { 
-          m = TRACE_OFF; 
-          p++; 
+      if (*p == '-')
+        {
+          m = TRACE_OFF;
+          p++;
         }
-      else 
-        { 
-          m = TRACE_ON; 
+      else
+        {
+          m = TRACE_ON;
         }
       if (!strcmp (p, "__bb_trace__"))
         bb_mode |= 1;
@@ -2020,7 +2027,7 @@ __bb_init_prg (void)
         bb_mode |= 4;
       else if (!strcmp (p, "__bb_showret__"))
         bb_mode |= 8;
-      else 
+      else
         {
           struct bb_func *f = (struct bb_func *) malloc (sizeof (struct bb_func));
           if (f)
@@ -2055,7 +2062,7 @@ __bb_init_prg (void)
     }
   fclose (file);
 
-#ifdef HAVE_POPEN 
+#ifdef HAVE_POPEN
 
   if (bb_mode & 1)
       bb_tracefile = gopen ("bbtrace.gz", "w");
@@ -2069,7 +2076,7 @@ __bb_init_prg (void)
 
   if (bb_mode & 2)
     {
-      bb_hashbuckets = (struct bb_edge **) 
+      bb_hashbuckets = (struct bb_edge **)
                    malloc (BB_BUCKETS * sizeof (struct bb_edge *));
       if (bb_hashbuckets)
 	/* Use a loop here rather than calling bzero to avoid having to
@@ -2116,7 +2123,7 @@ __bb_trace_func (void)
 	= & bb_hashbuckets[ (((int) bb_src*8) ^ (int) bb_dst) % BB_BUCKETS ];
       bucket = *startbucket;
 
-      for (bucket = *startbucket; bucket; 
+      for (bucket = *startbucket; bucket;
            oldnext = &(bucket->next), bucket = *oldnext)
         {
           if (bucket->src_addr == bb_src
@@ -2179,7 +2186,7 @@ __bb_trace_func_ret (void)
 	= & bb_hashbuckets[ (((int) bb_dst * 8) ^ (int) bb_src) % BB_BUCKETS ];
       bucket = *startbucket;
 
-      for (bucket = *startbucket; bucket; 
+      for (bucket = *startbucket; bucket;
            oldnext = &(bucket->next), bucket = *oldnext)
         {
           if (bucket->src_addr == bb_dst
@@ -2293,9 +2300,9 @@ __bb_init_trace_func (struct bb *blocks, unsigned long blockno)
   MACHINE_STATE_SAVE("3")
 
   if (!blocks->zero_word)
-    { 
+    {
       if (!trace_init)
-        { 
+        {
           trace_init = 1;
           __bb_init_prg ();
         }
@@ -2362,7 +2369,7 @@ void
 __clear_cache (char *beg __attribute__((__unused__)),
 	       char *end __attribute__((__unused__)))
 {
-#ifdef CLEAR_INSN_CACHE 
+#ifdef CLEAR_INSN_CACHE
   CLEAR_INSN_CACHE (beg, end);
 #else
 #ifdef INSN_CACHE_SIZE
@@ -2426,7 +2433,7 @@ __clear_cache (char *beg __attribute__((__unused__)),
   /* Compute the cache alignment of the place to stop clearing.  */
 #if 0  /* This is not needed for gcc's purposes.  */
   /* If the block to clear is bigger than a cache plane,
-     we clear the entire cache, and OFFSET is already correct.  */ 
+     we clear the entire cache, and OFFSET is already correct.  */
   if (end < beg + INSN_CACHE_PLANE_SIZE)
 #endif
     offset = (((int) (end + INSN_CACHE_LINE_WIDTH - 1)
@@ -2514,8 +2521,8 @@ mprotect (char *addr, int len, int prot)
 
 #endif /* WINNT && ! __CYGWIN__ && ! _UWIN */
 
-#ifdef TRANSFER_FROM_TRAMPOLINE 
-TRANSFER_FROM_TRAMPOLINE 
+#ifdef TRANSFER_FROM_TRAMPOLINE
+TRANSFER_FROM_TRAMPOLINE
 #endif
 
 #if defined (NeXT) && defined (__MACH__)
@@ -2550,7 +2557,7 @@ __enable_execute_stack (char *addr)
 #else
   __clear_cache ((int) addr, (int) eaddr);
 #endif
-} 
+}
 
 #endif /* defined (NeXT) && defined (__MACH__) */
 
@@ -2596,7 +2603,7 @@ __enable_execute_stack (void)
   int save_errno;
   static unsigned long lowest = USRSTACK;
   unsigned long current = (unsigned long) &save_errno & -NBPC;
-  
+
   /* Ignore errno being set. memctl sets errno to EINVAL whenever the
      address is seen as 'negative'. That is the case with the stack.   */
 
@@ -2650,7 +2657,7 @@ __clear_insn_cache (void)
   errno changing without explicitly calling any system-call. */
   save_errno = errno;
 
-  /* Keep it simple : memctl (MCT_TEXT) always fully clears the insn cache. 
+  /* Keep it simple : memctl (MCT_TEXT) always fully clears the insn cache.
      No need to use an address derived from _start or %sp, as 0 works also. */
   memctl(0, 4096, MCT_TEXT);
   errno = save_errno;
@@ -2878,7 +2885,7 @@ atexit (func_ptr func)
 extern void _cleanup (void);
 extern void _exit (int) __attribute__ ((__noreturn__));
 
-void 
+void
 exit (int status)
 {
   if (atexit_chain)
