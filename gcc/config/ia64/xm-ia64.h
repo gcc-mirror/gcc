@@ -1,5 +1,5 @@
 /* Definitions of target machine for IA64.
-   Copyright (C) 1999 Cygnus Solutions.
+   Copyright (C) 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
