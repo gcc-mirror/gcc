@@ -1,5 +1,9 @@
 1998-07-14  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* parse.y (namespace_qualifier): Fix multiple level handling.
+	* decl2.c (namespace_ancestor): Use CP_DECL_CONTEXT.
+	(arg_assoc): Don't skip the first argument of a function.
+
 	* call.c (joust): Don't warn about "confusing" conversions to the
 	same type.
 
