@@ -3907,7 +3907,7 @@ output_global_address (file, x, round_constant)
     {
       char *sep = "";
       int offset = 0;		/* assembler wants -$global$ at end */
-      rtx base;
+      rtx base = NULL_RTX;
 
       if (GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF)
 	{
