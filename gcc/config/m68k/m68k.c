@@ -2426,3 +2426,36 @@ strict_low_part_peephole_ok (mode, first_insn, target)
 
   return 0;
 }
+
+/* Accept integer operands in the range 0..0xffffffff.  We have to check the
+   range carefully since this predicate is used in DImode contexts.  Also, we
+   need some extra crud to make it work when hosted on 64-bit machines.  */
+
+int
+const_uint32_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+#if HOST_BITS_PER_WIDE_INT > 32
+  /* All allowed constants will fit a CONST_INT.  */
+  return (GET_CODE (op) == CONST_INT
+	  && (INTVAL (op) >= 0 && INTVAL (op) <= 0xffffffffL));
+#else
+  return (GET_CODE (op) == CONST_INT
+	  || (GET_CODE (op) == CONST_DOUBLE && CONST_DOUBLE_HIGH (op) == 0));
+#endif
+}
+
+/* Accept integer operands in the range -0x80000000..0x7fffffff.  We have
+   to check the range carefully since this predicate is used in DImode
+   contexts.  */
+
+int
+const_sint32_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  /* All allowed constants will fit a CONST_INT.  */
+  return (GET_CODE (op) == CONST_INT
+	  && (INTVAL (op) >= (-0x7fffffff - 1) && INTVAL (op) <= 0x7fffffff));
+}
