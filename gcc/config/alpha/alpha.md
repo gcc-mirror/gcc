@@ -2391,28 +2391,28 @@
 
 (define_insn ""
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,r,f,f")
-	(match_operand:HI 1 "input_operand" "r,J,I,K,f,J"))]
+	(match_operand:HI 1 "input_operand" "r,J,I,n,f,J"))]
   "register_operand (operands[0], HImode)
    || register_operand (operands[1], HImode)"
   "@
    bis %1,%1,%0
    bis $31,$31,%0
    bis $31,%1,%0
-   lda %0,%1
+   lda %0,%L1
    cpys %1,%1,%0
    cpys $f31,$f31,%0"
   [(set_attr "type" "iaddlog,iaddlog,iaddlog,iaddlog,fpop,fpop")])
 
 (define_insn ""
   [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,r,f,f")
-	(match_operand:QI 1 "input_operand" "r,J,I,K,f,J"))]
+	(match_operand:QI 1 "input_operand" "r,J,I,n,f,J"))]
   "register_operand (operands[0], QImode)
    || register_operand (operands[1], QImode)"
   "@
    bis %1,%1,%0
    bis $31,$31,%0
    bis $31,%1,%0
-   lda %0,%1
+   lda %0,%L1
    cpys %1,%1,%0
    cpys $f31,$f31,%0"
   [(set_attr "type" "iaddlog,iaddlog,iaddlog,iaddlog,fpop,fpop")])
