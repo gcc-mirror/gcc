@@ -457,3 +457,7 @@ SECTION_FUNCTION (objc_module_info_section,	\
    For NeXT's Mach-O format, this is 2^15.  */
 
 #define MAX_OFILE_ALIGNMENT 0x8000
+
+/* Don't default to pcc-struct-return, because gcc is the only compiler, and
+   we want to retain compatibility with older gcc versions.  */
+#define DEFAULT_PCC_STRUCT_RETURN 0

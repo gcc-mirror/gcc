@@ -1006,6 +1006,10 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 		&& TYPE_ALIGN (TYPE) == BITS_PER_WORD \
 		&& int_size_in_bytes (TYPE) == UNITS_PER_WORD))))
 
+/* Don't default to pcc-struct-return, because we have already specified
+   exactly how to return structures in the RETURN_IN_MEMORY macro.  */
+#define DEFAULT_PCC_STRUCT_RETURN 0
+
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 #define LIBCALL_VALUE(MODE)  gen_rtx (REG, MODE, 2)
