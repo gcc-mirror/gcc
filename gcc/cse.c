@@ -3453,7 +3453,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	  /* In IEEE floating point, x+0 is not the same as x.  Similarly
 	     for the other optimizations below.  */
 	  if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-	      && FLOAT_MODE_P (mode))
+	      && FLOAT_MODE_P (mode) && ! flag_fast_math)
 	    break;
 
 	  if (op1 == CONST0_RTX (mode))
@@ -3554,7 +3554,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	     In IEEE floating point, x-0 is not the same as x.  */
 
 	  if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	       || ! FLOAT_MODE_P (mode))
+	       || ! FLOAT_MODE_P (mode) || flag_fast_math)
 	      && op1 == CONST0_RTX (mode))
 	    return op0;
 #else
@@ -3566,14 +3566,16 @@ simplify_binary_operation (code, mode, op0, op1)
 	  /* None of these optimizations can be done for IEEE
 	     floating point.  */
 	  if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-	      && FLOAT_MODE_P (mode))
+	      && FLOAT_MODE_P (mode) && ! flag_fast_math)
 	    break;
 
-	  /* We can't assume x-x is 0 even with non-IEEE floating point.  */
+	  /* We can't assume x-x is 0 even with non-IEEE floating point,
+	     but since it is zero except in very strange circumstances, we
+	     will treat it as zero with -ffast-math.  */
 	  if (rtx_equal_p (op0, op1)
 	      && ! side_effects_p (op0)
-	      && ! FLOAT_MODE_P (mode))
-	    return const0_rtx;
+	      && (! FLOAT_MODE_P (mode) || flag_fast_math))
+	    return CONST0_RTX (mode);
 
 	  /* Change subtraction from zero into negation.  */
 	  if (op0 == CONST0_RTX (mode))
@@ -3672,7 +3674,7 @@ simplify_binary_operation (code, mode, op0, op1)
 
 	  /* In IEEE floating point, x*0 is not always 0.  */
 	  if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	       && ! FLOAT_MODE_P (mode))
+	       || ! FLOAT_MODE_P (mode) || flag_fast_math)
 	      && op1 == CONST0_RTX (mode)
 	      && ! side_effects_p (op0))
 	    return op1;
@@ -3772,32 +3774,35 @@ simplify_binary_operation (code, mode, op0, op1)
 
 	  /* In IEEE floating point, 0/x is not always 0.  */
 	  if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	       || ! FLOAT_MODE_P (mode))
+	       || ! FLOAT_MODE_P (mode) || flag_fast_math)
 	      && op0 == CONST0_RTX (mode)
 	      && ! side_effects_p (op1))
 	    return op0;
 
-#if 0 /* Turned off till an expert says this is a safe thing to do.  */
 #if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
-	  /* Change division by a constant into multiplication.  */
+	  /* Change division by a constant into multiplication.  Only do
+	     this with -ffast-math until an expert says it is safe in
+	     general.  */
 	  else if (GET_CODE (op1) == CONST_DOUBLE
 		   && GET_MODE_CLASS (GET_MODE (op1)) == MODE_FLOAT
-		   && op1 != CONST0_RTX (mode))
+		   && op1 != CONST0_RTX (mode)
+		   && flag_fast_math)
 	    {
 	      REAL_VALUE_TYPE d;
 	      REAL_VALUE_FROM_CONST_DOUBLE (d, op1);
-	      if (REAL_VALUES_EQUAL (d, dconst0))
-		abort();
+
+	      if (! REAL_VALUES_EQUAL (d, dconst0))
+		{
 #if defined (REAL_ARITHMETIC)
-	      REAL_ARITHMETIC (d, (int) RDIV_EXPR, dconst1, d);
-	      return gen_rtx (MULT, mode, op0, 
-			      CONST_DOUBLE_FROM_REAL_VALUE (d, mode));
+		  REAL_ARITHMETIC (d, rtx_to_tree_code (DIV), dconst1, d);
+		  return gen_rtx (MULT, mode, op0, 
+				  CONST_DOUBLE_FROM_REAL_VALUE (d, mode));
 #else
-	      return gen_rtx (MULT, mode, op0, 
-			      CONST_DOUBLE_FROM_REAL_VALUE (1./d, mode));
+		  return gen_rtx (MULT, mode, op0, 
+				  CONST_DOUBLE_FROM_REAL_VALUE (1./d, mode));
+#endif
+		}
 	    }
-#endif
-#endif
 #endif
 	  break;
 
@@ -4302,7 +4307,7 @@ simplify_relational_operation (code, mode, op0, op1)
 	 the result.  */
       if (rtx_equal_p (op0, op1)
 	  && (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	      || ! FLOAT_MODE_P (GET_MODE (op0))))
+	      || ! FLOAT_MODE_P (GET_MODE (op0)) || flag_fast_math))
 	return (code == EQ || code == GE || code == LE || code == LEU
 		|| code == GEU) ? const_true_rtx : const0_rtx;
 
@@ -5234,7 +5239,7 @@ fold_rtx (x, insn)
 		 since x might be a NaN.  */
 
 	      if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-		   || ! FLOAT_MODE_P (mode_arg0))
+		   || ! FLOAT_MODE_P (mode_arg0) || flag_fast_math)
 		  && (folded_arg0 == folded_arg1
 		      || (GET_CODE (folded_arg0) == REG
 			  && GET_CODE (folded_arg1) == REG
