@@ -1,3 +1,7 @@
+2004-10-07  Paul Brook  <paul@codesourcery.com>
+
+	* gfortran.dg/empty_format_1.f90: Remove stray commas.
+
 2004-10-07  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.fortran-torture/execute/intrinsic_mvbits.f90, 
