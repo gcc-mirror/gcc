@@ -1,3 +1,7 @@
+2003-03-12  Steven Bosscher  <s.bosscher@student.tudelft.nl>
+
+	* gcc.dg/return-type-3.c: New test.
+
 2003-03-12  Daniel Jacobowitz  <drow@mvista.com>
 
 	* gcc.c-torture/execute/20030224-2.c: New test.
