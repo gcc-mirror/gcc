@@ -1,3 +1,13 @@
+Thu Oct 14 17:30:14 1999  Richard Henderson  <rth@cygnus.com>
+
+	* sparc.md (*): Use {nonimmediate,register}_operand as appropriate
+	instead of general_operand in a SET_DEST.  Use const_double_operand
+	instead of an explicit test against CONST_DOUBLE.
+	(movsf_const_lo): Add missing register mode.
+	(goto_handler_and_restore): Add auxiliary test for Pmode.
+	(flush): Adjust to use address_operand.
+	(return_sf_no_fpu): Add missing output constraint.
+
 Thu Oct 14 17:21:26 1999  Richard Henderson  <rth@cygnus.com>
 
 	* rs6000.md (call_value_indirect_aix32): Use wildcard match_operand
