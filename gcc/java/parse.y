@@ -8888,6 +8888,65 @@ java_expand_classes (void)
 	}
     }
 
+  /* Expanding the constructors of anonymous classes generates access
+     methods.  Scan all the methods looking for null DECL_RESULTs --
+     this will be the case if a method hasn't been expanded.  */
+  for (cur_ctxp = ctxp_for_generation; cur_ctxp; cur_ctxp = cur_ctxp->next)
+    {
+      tree current;
+      ctxp = cur_ctxp;
+      for (current = ctxp->class_list; current; current = TREE_CHAIN (current))
+	{
+	  tree d;
+	  current_class = TREE_TYPE (current);
+	  for (d = TYPE_METHODS (current_class); d; d = TREE_CHAIN (d))
+	    {
+	      if (DECL_RESULT (d) == NULL_TREE)
+		{
+		  restore_line_number_status (1);
+		  java_complete_expand_method (d);
+		  restore_line_number_status (0);
+		}
+	    }
+	}
+    }
+
+  /* ???  Instead of all this we could iterate around the list of
+     classes until there were no more un-expanded methods.  It would
+     take a little longer -- one pass over the whole list of methods
+     -- but it would be simpler.  Like this:  */
+#if 0
+    {
+      int something_changed;
+    
+      do
+	{
+	  something_changed = 0;
+	  for (cur_ctxp = ctxp_for_generation; cur_ctxp; cur_ctxp = cur_ctxp->next)
+	    {
+	      tree current;
+	      ctxp = cur_ctxp;
+	      for (current = ctxp->class_list; current; current = TREE_CHAIN (current))
+		{
+		  tree d;
+		  current_class = TREE_TYPE (current);
+		  for (d = TYPE_METHODS (current_class); d; d = TREE_CHAIN (d))
+		    {
+		      if (DECL_RESULT (d) == NULL_TREE)
+			{
+			  something_changed = 1;
+			  restore_line_number_status (1);
+			  java_complete_expand_method (d);
+			  restore_line_number_status (0);
+			}
+		    }
+		}
+	    }
+	}
+      while (something_changed);
+    }
+#endif
+
   /* If we've found error at that stage, don't try to generate
      anything, unless we're emitting xrefs or checking the syntax only
      (but not using -fsyntax-only for the purpose of generating
