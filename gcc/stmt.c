@@ -1477,7 +1477,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	}
       else
 	{
-	  output_rtx[i] = assign_temp (type, 0, 0);
+	  output_rtx[i] = assign_temp (type, 0, 0, 0);
 	  TREE_VALUE (tail) = make_tree (type, output_rtx[i]);
 	}
     }
@@ -1577,7 +1577,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	      || GET_CODE (XVECEXP (body, 3, i)) == CONCAT))
 	{
 	  tree type = TREE_TYPE (TREE_VALUE (tail));
-	  rtx memloc = assign_temp (type, 1, 1);
+	  rtx memloc = assign_temp (type, 1, 1, 1);
 
 	  emit_move_insn (memloc, XVECEXP (body, 3, i));
 	  XVECEXP (body, 3, i) = memloc;
