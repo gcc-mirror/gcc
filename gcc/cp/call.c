@@ -3258,8 +3258,8 @@ build_over_call (cand, args, flags)
       tree argtype = TREE_TYPE (TREE_VALUE (arg));
       tree t;
       if (ICS_BAD_FLAG (TREE_VEC_ELT (convs, i)))
-	cp_error ("passing `%T' as `this' argument of `%#D' discards qualifiers",
-		  TREE_TYPE (argtype), fn);
+	cp_pedwarn ("passing `%T' as `this' argument of `%#D' discards qualifiers",
+		    TREE_TYPE (argtype), fn);
 
       /* [class.mfct.nonstatic]: If a nonstatic member function of a class
 	 X is called for an object that is not of type X, or of a type

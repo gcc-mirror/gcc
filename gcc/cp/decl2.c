@@ -445,6 +445,11 @@ int flag_do_squangling;
 
 int flag_vtable_gc;
 
+/* Nonzero means make the default pedwarns warnings instead of errors.
+   The value of this flag is ignored if -pedantic is specified.  */
+
+int flag_permissive;
+
 /* Table of language-dependent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE
@@ -488,6 +493,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"nonansi-builtins", &flag_no_nonansi_builtin, 0},
   {"operator-names", &flag_operator_names, 1},
   {"optional-diags", &flag_optional_diags, 1},
+  {"permissive", &flag_permissive, 1},
   {"repo", &flag_use_repository, 1},
   {"rtti", &flag_rtti, 1},
   {"squangle", &flag_do_squangling, 1},
@@ -4115,9 +4121,15 @@ ambiguous_decl (name, old, new, flags)
 	  /* Some declarations are functions, some are not. */
           if (flags & LOOKUP_COMPLAIN)
             {
-              cp_error ("use of `%D' is ambiguous", name);
-              cp_error_at ("  first declared as `%#D' here",
-                           BINDING_VALUE (old));
+	      /* If we've already given this error for this lookup,
+		 BINDING_VALUE (old) is error_mark_node, so let's not
+		 repeat ourselves.  */
+	      if (BINDING_VALUE (old) != error_mark_node)
+		{
+		  cp_error ("use of `%D' is ambiguous", name);
+		  cp_error_at ("  first declared as `%#D' here",
+			       BINDING_VALUE (old));
+		}
               cp_error_at ("  also declared as `%#D' here", val);
             }
 	  return error_mark_node;

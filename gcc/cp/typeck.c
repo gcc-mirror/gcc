@@ -6618,11 +6618,11 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	  if (!at_least_as_qualified_p (ttl, ttr))
 	    {
 	      if (fndecl)
-		cp_error ("passing `%T' as argument %P of `%D' discards qualifiers",
-			  rhstype, parmnum, fndecl);
+		cp_pedwarn ("passing `%T' as argument %P of `%D' discards qualifiers",
+			    rhstype, parmnum, fndecl);
 	      else
-		cp_error ("%s to `%T' from `%T' discards qualifiers",
-			  errtype, type, rhstype);
+		cp_pedwarn ("%s to `%T' from `%T' discards qualifiers",
+			    errtype, type, rhstype);
 	    }
 	}
 
@@ -6675,10 +6675,10 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 		  if (string_conv_p (type, rhs, 1))
 		    /* converting from string constant to char *, OK.  */;
 		  else if (fndecl)
-		    cp_error ("passing `%T' as argument %P of `%D' discards qualifiers",
-			      rhstype, parmnum, fndecl);
+		    cp_pedwarn ("passing `%T' as argument %P of `%D' discards qualifiers",
+				rhstype, parmnum, fndecl);
 		  else
-		    cp_error ("%s to `%T' from `%T' discards qualifiers",
+		    cp_pedwarn ("%s to `%T' from `%T' discards qualifiers",
 				errtype, type, rhstype);
 		}
 	      else if (TREE_CODE (ttl) == TREE_CODE (ttr)
@@ -6739,10 +6739,10 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	      if (drops_quals)
 		{
 		  if (fndecl)
-		    cp_error ("passing `%T' as argument %P of `%D' discards qualifiers",
-			      rhstype, parmnum, fndecl);
+		    cp_pedwarn ("passing `%T' as argument %P of `%D' discards qualifiers",
+				rhstype, parmnum, fndecl);
 		  else
-		    cp_error ("%s to `%T' from `%T' discards qualifiers",
+		    cp_pedwarn ("%s to `%T' from `%T' discards qualifiers",
 				errtype, type, rhstype);
 		}
 	      if (unsigned_parity > 0)

@@ -1,3 +1,27 @@
+1998-12-07  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (build_typename_type): Set DECL_ARTIFICIAL.
+
+	* error.c (dump_simple_decl): Also print namespace context.
+	(dump_function_decl): Likewise.
+
+	* decl2.c (ambiguous_decl): Don't print old value if it's
+	error_mark_node.
+
+	* decl.c (lookup_name_real): Fix handling of local types shadowed
+	by a non-type decl.  Remove obsolete code.
+	* cp-tree.h (DECL_FUNCTION_SCOPE_P): New macro.
+
+	* lang-options.h: Add -fpermissive.
+	* decl2.c: Likewise.
+	* cp-tree.h: Add flag_permissive.
+	* decl.c (init_decl_processing): If neither -fpermissive or -pedantic
+	were specified, set flag_pedantic_errors.
+	* call.c (build_over_call): Turn dropped qualifier messages
+	back into pedwarns.
+	* cvt.c (convert_to_reference): Likewise.
+	* typeck.c (convert_for_assignment): Likewise.
+
 1998-12-05  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (coerce_new_type): Use same_type_p.
