@@ -1,3 +1,7 @@
+Sun Jun 20 17:24:35 1999  Richard Henderson  <rth@cygnus.com>
+
+	* haifa-sched.c (sched_analyze): Don't clear reg_last_uses on calls.
+
 Sat Jun 19 22:52:55 1999  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (sched_analyze): Mark call-user regs as clobbered

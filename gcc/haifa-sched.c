@@ -3952,7 +3952,6 @@ sched_analyze (head, tail)
 		  {
 		    for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
 		      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-		    reg_last_uses[i] = 0;
 
 		    for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
 		      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
