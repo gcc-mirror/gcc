@@ -809,6 +809,9 @@ create_name_tags (struct alias_info *ai)
 	  continue;
 	}
 
+      TREE_THIS_VOLATILE (pi->name_mem_tag)
+	  |= TREE_THIS_VOLATILE (TREE_TYPE (TREE_TYPE (ptr)));
+
       /* Mark the new name tag for renaming.  */
       bitmap_set_bit (vars_to_rename, var_ann (pi->name_mem_tag)->uid);
     }
@@ -2138,7 +2141,7 @@ get_tmt_for (tree ptr, struct alias_info *ai)
     }
 
   /* If the pointed-to type is volatile, so is the tag.  */
-  TREE_THIS_VOLATILE (tag) = TREE_THIS_VOLATILE (tag_type);
+  TREE_THIS_VOLATILE (tag) |= TREE_THIS_VOLATILE (tag_type);
 
   /* Make sure that the type tag has the same alias set as the
      pointed-to type.  */
