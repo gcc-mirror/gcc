@@ -46,7 +46,7 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.2.3.6 29 Jun 1992 16:06:14";
+static char out_sccs_id[] = "@(#)m88k.c	2.2.6.6 02 Jul 1992 06:06:08";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
@@ -91,6 +91,28 @@ classify_integer (mode, value)
     return m88k_set;
   else
     return m88k_oru_or;
+}
+
+/* Return the bit number in a compare word corresponding to CONDITION.  */
+
+int
+condition_value (condition)
+     rtx condition;
+{
+  switch (GET_CODE (condition))
+    {
+    case EQ: return 2;
+    case NE: return 3;
+    case GT: return 4;
+    case LE: return 5;
+    case LT: return 6;
+    case GE: return 7;
+    case GTU: return 8;
+    case LEU: return 9;
+    case LTU: return 10;
+    case GEU: return 11;
+    default: abort ();
+    }
 }
 
 int
@@ -1664,10 +1686,10 @@ m88k_layout_frame ()
   }
 }
 
-/* Return true if this function is known to have a null epilogue.  */
+/* Return true if this function is known to have a null prologue.  */
 
 int
-null_epilogue ()
+null_prologue ()
 {
   if (! reload_completed)
     return 0;
@@ -1786,7 +1808,7 @@ m88k_expand_prologue ()
 	emit_move_insn (return_reg, temp_reg);
     }
   if (profile_flag || profile_block_flag)
-    emit_insn (gen_profiler ());
+    emit_insn (gen_blockage ());
 }
 
 /* This function generates the assembly code for function exit,
@@ -1811,8 +1833,17 @@ m88k_end_epilogue (stream, size)
      FILE *stream;
      int size;
 {
+  rtx insn = get_last_insn ();
+
   if (TARGET_OCS_DEBUG_INFO && !epilogue_marked)
     PUT_OCS_FUNCTION_END (stream);
+
+  /* If the last insn isn't a BARRIER, we must write a return insn.  This
+     should only happen if the function has no prologe and no body.  */
+  if (GET_CODE (insn) == NOTE)
+    insn = prev_nonnote_insn (insn);
+  if (insn == 0 || GET_CODE (insn) != BARRIER)
+    fprintf (stream, "\tjmp\t %s\n", reg_names[1]);
 
   output_short_branch_defs (stream);
 
