@@ -1,5 +1,10 @@
 Tue May  5 14:33:49 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* c-common.c (scan_char_table): Separate 's' and 'c'.  'c' does not
+	accept 'a' flag.  'S' does accept 'a' flag.
+	(check_format_info): When pedantic, warn for m/C/S/a/A formats,
+	and `a' flag.
+
 	* elf64.h (MULTILIB_DEFAULTS): Move definition after mips.h include.
 
 Tue May  5 10:50:39 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>

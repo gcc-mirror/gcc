@@ -1012,10 +1012,11 @@ static format_char_info scan_char_table[] = {
   { "di",	1,	T_I,	T_C,	T_S,	T_L,	T_LL,	T_LL,	NULL,	"*"	},
   { "ouxX",	1,	T_UI,	T_UC,	T_US,	T_UL,	T_ULL,	T_ULL,	NULL,	"*"	},
   { "efgEGaA",	1,	T_F,	NULL,	NULL,	T_D,	NULL,	T_LD,	NULL,	"*"	},
-  { "sc",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	"*a"	},
+  { "c",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	"*"	},
+  { "s",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	"*a"	},
   { "[",	1,	T_C,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*a"	},
   { "C",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
-  { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
+  { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*a"	},
   { "p",	2,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
   { "n",	1,	T_I,	T_C,	T_S,	T_L,	T_LL,	NULL,	NULL,	""	},
   { NULL }
@@ -1574,6 +1575,15 @@ check_format_info (info, params)
 	  warning ("conversion lacks type at end of format");
 	  continue;
 	}
+      /* The m, C, and S formats are GNU extensions.  */
+      if (pedantic && info->format_type != strftime_format_type
+	  && (format_char == 'm' || format_char == 'C' || format_char == 'S'))
+	warning ("ANSI C does not support the `%c' format", format_char);
+      /* ??? The a and A formats are C9X extensions, and should be allowed
+	 when a C9X option is added.  */
+      if (pedantic && info->format_type != strftime_format_type
+	  && (format_char == 'a' || format_char == 'A'))
+	warning ("ANSI C does not support the `%c' format", format_char);
       format_chars++;
       switch (info->format_type)
 	{
@@ -1625,6 +1635,9 @@ check_format_info (info, params)
 	  /* To simplify the following code.  */
 	  aflag = 0;
 	}
+      /* The a flag is a GNU extension.  */
+      else if (pedantic && aflag)
+	warning ("ANSI C does not support the `a' flag");
       if (info->format_type == scanf_format_type && format_char == '[')
 	{
 	  /* Skip over scan set, in case it happens to have '%' in it.  */
