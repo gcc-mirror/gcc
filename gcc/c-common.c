@@ -1659,12 +1659,8 @@ check_format_info (info, params)
 	}
       if (wanted_type == 0
 	  || (pedantic && length_char == 'L' && integral_format))
-	{
-	  sprintf (message,
-		   "use of `%c' length character with `%c' type character",
-		   length_char, format_char);
-	  warning (message);
-	}
+	warning ("use of `%c' length character with `%c' type character",
+		 length_char, format_char);
 
       /*
        ** XXX -- should kvetch about stuff such as
