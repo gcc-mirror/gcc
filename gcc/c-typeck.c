@@ -6239,6 +6239,7 @@ c_expand_return (retval)
 	    inner = TREE_OPERAND (inner, 0);
 
 	  if (TREE_CODE (inner) == VAR_DECL
+	      && ! DECL_EXTERNAL (inner)
 	      && ! TREE_STATIC (inner)
 	      && DECL_CONTEXT (inner) == current_function_decl)
 	    warning ("function returns address of local variable");
