@@ -3588,7 +3588,7 @@ c_expand_expr (exp, target, tmode, modifier)
      tree exp;
      rtx target;
      enum machine_mode tmode;
-     enum expand_modifier modifier;
+     int modifier;  /* Actually enum_modifier.  */
 {
   switch (TREE_CODE (exp))
     {

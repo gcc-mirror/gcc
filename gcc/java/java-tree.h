@@ -1247,12 +1247,10 @@ extern void append_gpp_mangled_name PARAMS ((const char *, int));
 extern void add_predefined_file PARAMS ((tree));
 extern int predefined_filename_p PARAMS ((tree));
 
-/* We use ARGS_SIZE_RTX to indicate that gcc/expr.h has been included
-   to declare `enum expand_modifier'. */
-#if defined (TREE_CODE) && defined(RTX_CODE) && defined (HAVE_MACHINE_MODES) && defined (ARGS_SIZE_RTX)
-struct rtx_def * java_lang_expand_expr PARAMS ((tree, rtx, enum machine_mode,
-					       enum expand_modifier)); 
-#endif /* TREE_CODE && RTX_CODE && HAVE_MACHINE_MODES && ARGS_SIZE_RTX */
+#if defined(RTX_CODE) && defined (HAVE_MACHINE_MODES)
+struct rtx_def * java_expand_expr PARAMS ((tree, rtx, enum machine_mode,
+					   int)); 
+#endif
 
 #define DECL_FINAL(DECL) DECL_LANG_FLAG_3 (DECL)
 

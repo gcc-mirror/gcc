@@ -3907,8 +3907,10 @@ extern void check_handlers			PARAMS ((tree));
 extern void choose_personality_routine		PARAMS ((enum languages));
 
 /* in expr.c */
-extern void init_cplus_expand			PARAMS ((void));
 extern int extract_init				PARAMS ((tree, tree));
+extern rtx cxx_expand_expr			PARAMS ((tree, rtx,
+							 enum machine_mode,
+							 int));
 extern tree cplus_expand_constant               PARAMS ((tree));
 
 /* friend.c */

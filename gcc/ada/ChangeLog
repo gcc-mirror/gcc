@@ -1,5 +1,11 @@
 2002-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* misc.c (LANG_HOOKS_EXPAND_EXPR): Redefine.
+	(gnat_init): Don't set hook.
+	(gnat_expand_expr): Fix prototype.
+
+2002-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* misc.c (ggc_p): Remove.
 
 2002-03-27  Geert Bosch  <bosch@gnat.com>

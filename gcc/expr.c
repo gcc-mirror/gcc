@@ -7240,7 +7240,8 @@ expand_expr (exp, target, tmode, modifier)
         {
 	  if (DECL_BUILT_IN_CLASS (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
 	      == BUILT_IN_FRONTEND)
-	    return (*lang_expand_expr) (exp, original_target, tmode, modifier);
+	    return (*lang_hooks.expand_expr)
+	      (exp, original_target, tmode, modifier);
 	  else
 	    return expand_builtin (exp, target, subtarget, tmode, ignore);
 	}
@@ -8800,7 +8801,7 @@ expand_expr (exp, target, tmode, modifier)
       abort ();
 
     default:
-      return (*lang_expand_expr) (exp, original_target, tmode, modifier);
+      return (*lang_hooks.expand_expr) (exp, original_target, tmode, modifier);
     }
 
   /* Here to do an ordinary binary operator, generating an instruction

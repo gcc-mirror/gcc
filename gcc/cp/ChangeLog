@@ -1,3 +1,13 @@
+2002-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-lang.c (LANG_HOOKS_EXPAND_EXPR): Redefine.
+	* cp-tree.h (init_cplus_expand): Remove.
+	(cxx_expand_expr): New.
+	* expr.c (cplus_expand_expr): Rename cxx_expand_expr,
+	fix prototype.
+	(init_cplus_expand): Remove.
+	* lex.c (cxx_init): Don't call init_cplus_expand.
+
 2002-03-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/4884.

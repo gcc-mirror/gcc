@@ -349,14 +349,6 @@ tree current_function_decl;
    if none.  */
 tree current_function_func_begin_label;
 
-/* Pointer to function to compute rtl for a language-specific tree code.  */
-
-typedef rtx (*lang_expand_expr_t)
-  PARAMS ((union tree_node *, rtx, enum machine_mode,
-	  enum expand_modifier modifier));
-
-lang_expand_expr_t lang_expand_expr = 0;
-
 /* Pointer to function to finish handling an incomplete decl at the
    end of compilation.  */
 
@@ -4945,8 +4937,6 @@ process_options ()
 static void
 lang_independent_init ()
 {
-  lang_expand_expr = (lang_expand_expr_t) do_abort;
-
   /* Initialize the garbage-collector, and string pools.  */
   init_ggc ();
   ggc_add_rtx_root (&stack_limit_rtx, 1);

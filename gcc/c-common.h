@@ -842,12 +842,9 @@ extern tree finish_label_address_expr		PARAMS ((tree));
    different implementations.  Used in c-common.c.  */
 extern tree lookup_label			PARAMS ((tree));
 
-/* enum expand_modified is in expr.h, as is the macro below.  */
-
-#ifdef QUEUED_VAR
-extern rtx c_expand_expr            PARAMS ((tree, rtx, enum machine_mode,
-					     enum expand_modifier));
-#endif
+extern rtx c_expand_expr			PARAMS ((tree, rtx,
+							 enum machine_mode,
+							 int));
 
 extern int c_safe_from_p                        PARAMS ((rtx, tree));
 
