@@ -108,7 +108,10 @@ java_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
       return GS_UNHANDLED;
 
     case SAVE_EXPR:
-      if (TREE_CODE (TREE_OPERAND (*expr_p, 0)) == VAR_DECL)
+      /* Note that we can see <save_expr NULL> if the save_expr was
+	 already handled by gimplify_save_expr.  */
+      if (TREE_OPERAND (*expr_p, 0) != NULL_TREE
+	  && TREE_CODE (TREE_OPERAND (*expr_p, 0)) == VAR_DECL)
 	TREE_OPERAND (*expr_p, 0) 
 	  = java_replace_reference (TREE_OPERAND (*expr_p, 0), 
 			       /* want_lvalue */ false);
