@@ -5334,11 +5334,12 @@ expand_expr (exp, target, tmode, modifier)
 	   an integer-mode (e.g., SImode) object.  Handle this case
 	   by doing the extract into an object as wide as the field
 	   (which we know to be the width of a basic mode), then
-	   storing into memory, and changing the mode to BLKmode.  */
+	   storing into memory, and changing the mode to BLKmode.
+	   If we ultimately want the address (EXPAND_CONST_ADDRESS or
+	   EXPAND_INITIALIZER), then we must not copy to a temporary.  */
 	if (mode1 == VOIDmode
 	    || GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
 	    || (modifier != EXPAND_CONST_ADDRESS
-		&& modifier != EXPAND_SUM
 		&& modifier != EXPAND_INITIALIZER
 		&& ((mode1 != BLKmode && ! direct_load[(int) mode1])
 		    /* If the field isn't aligned enough to fetch as a memref,
