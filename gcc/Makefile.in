@@ -2566,8 +2566,8 @@ gengtype$(build_exeext) : gengtype.o gengtype-lex.o gengtype-yacc.o \
 	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
 	 gengtype.o gengtype-lex.o gengtype-yacc.o $(BUILD_LIBS)
 
-gengtype.o : gengtype.c gengtype.h $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) \
-  real.h $(RTL_BASE_H) gtyp-gen.h
+gengtype.o : gengtype.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) \
+  gengtype.h gtyp-gen.h rtl.def insn-notes.def
 
 gengtype-lex.o : gengtype-lex.c gengtype.h gengtype-yacc.h \
   $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H) vec.h

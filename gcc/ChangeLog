@@ -3,6 +3,15 @@
 	* rtl.def: Reorganize, placing all codes used only in machine
 	descriptions at the end.
 
+	* rtl.def: Wrap MD-only codes in #ifdef GENERATOR_FILE.
+	* gengtype.c: Don't include rtl.h.  Define enum rtx_code and
+	rtx_name, rtx_format arrays by direct reference to rtl.def,
+	first undefining GENERATOR_FILE.  Define enum insn_note and
+	note_insn_name array by direct reference to insn-notes.def.
+	(adjust_field_rtx_def): Remove local definition of rtx_name.
+	Use symbolic names for insn notes.
+	* Makefile.in (gengtype.o): Update dependencies.
+
 2004-08-24  Zack Weinberg  <zack@codesourcery.com>
 
 	* basic-block.h (struct basic_block_def): Reorder fields to

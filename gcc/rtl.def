@@ -685,6 +685,7 @@ DEF_RTL_EXPR(VAR_LOCATION, "var_location", "te", RTX_EXTRA)
 
 /* All expressions from this point forward appear only in machine
    descriptions.  */
+#ifdef GENERATOR_FILE
 
 /* Include a secondary machine-description file at this point.  */
 DEF_RTL_EXPR(INCLUDE, "include", "s", RTX_EXTRA)
@@ -1160,6 +1161,7 @@ DEF_RTL_EXPR (ATTR_FLAG, "attr_flag", "s", RTX_EXTRA)
    true, the second operand will be used as the value of the conditional.  */
 DEF_RTL_EXPR(COND, "cond", "Ee", RTX_EXTRA)
 
+#endif /* GENERATOR_FILE */
 
 /*
 Local variables:
