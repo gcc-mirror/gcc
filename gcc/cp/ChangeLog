@@ -1,5 +1,9 @@
 2002-05-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	* error.c (dump_type) [TYPEOF_TYPE]: Fix parenthesis printing.
+
+2002-05-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/186, DR 259
 	* pt.c (do_decl_instantiation): Don't complain explicit
 	instantiation after explicit specialization.
