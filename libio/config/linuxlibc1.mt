@@ -20,7 +20,7 @@ STDIO_OBJECTS=
 USER_INCLUDES=PlotFile.h SFile.h builtinbuf.h editbuf.h fstream.h \
 	indstream.h iomanip.h iostream.h istream.h ostream.h \
 	parsestream.h pfstream.h procbuf.h stdiostream.h stream.h \
-	streambuf.h strfile.h strstream.h
+	streambuf.h strfile.h strstream.h libio.h
 
 # A bad kludge
 MT_CFLAGS=-D_G_HAVE_MMAP

@@ -157,15 +157,17 @@ struct _IO_jump_t;  struct _IO_FILE;
 # endif
 #else
 /* XXX This will go away as soon as comthread is finished.  */
-# ifdef __linux__
+# if defined __GLIBC__ && __GLIBC__ >= 2
+#  define _IO_LOCK_T void *
+# else
+#  ifdef __linux__
 struct _IO_lock_t {
   void *ptr;
   short int field1;
   short int field2;
 };
-#  define _IO_LOCK_T struct _IO_lock_t
-# else
-typedef void _IO_lock_t;
+#   define _IO_LOCK_T struct _IO_lock_t
+#  endif
 # endif
 #endif
 
