@@ -1,3 +1,10 @@
+Thu May 14 14:11:37 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alpha.c (tree.h): Include earlier.
+	(alpha_initialize_trampoline): New function.
+	* alpha.h (INITIALIZE_TRAMPOLINE): Call it.
+	* alpha/linux.h (INITIALIZE_TRAMPOLINE): Don't redefine.
+
 Thu May 14 13:35:53 1998  Cyrille Comar  <comar@gnat.com>
 
 	* Makefile.in (STAGESTUFF): Add s-under.
