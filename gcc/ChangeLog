@@ -1,3 +1,7 @@
+2001-01-14  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c (get_shift_alg): Update comments.
+
 Sun Jan 14 06:20:49 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* ggc-page.c (alloc_annon): Call perror and correctly call exit.
