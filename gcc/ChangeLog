@@ -1,3 +1,7 @@
+2004-09-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/invoke.texi: Fix typos.  Follow spelling conventions.
+
 2004-09-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* doc/c-tree.texi (Classes): Remove index entries for
