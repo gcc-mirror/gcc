@@ -197,8 +197,8 @@ add_to_hash (java::lang::ref::Reference *the_reference)
       link = &iter->next;
       iter = *link;
     }
-  *link = n;
   n->next = (*link) ? (*link)->next : NULL;
+  *link = n;
 }
 
 // This is called when an object is ready to be finalized.  This
