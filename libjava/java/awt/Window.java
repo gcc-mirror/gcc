@@ -46,6 +46,8 @@ import java.awt.peer.WindowPeer;
 import java.util.EventListener;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
 
 /**
  * This class represents a top-level window with no decorations.
@@ -53,8 +55,10 @@ import java.util.ResourceBundle;
  * @author Aaron M. Renn <arenn@urbanophile.com>
  * @author Warren Levy  <warrenl@cygnus.com>
  */
-public class Window extends Container
+public class Window extends Container implements Accessible
 {
+  private static final long serialVersionUID = 4497834738069338734L;
+
   // Serialized fields, from Sun's serialization spec.
   private String warningString = null;
   private int windowSerializedDataVersion = 0; // FIXME
@@ -69,6 +73,7 @@ public class Window extends Container
   private transient WindowFocusListener windowFocusListener;
   private transient WindowStateListener windowStateListener;
   private transient GraphicsConfiguration graphicsConfiguration;
+  private transient AccessibleContext accessibleContext;
 
   /** 
    * This (package access) constructor is used by subclasses that want
@@ -87,7 +92,7 @@ public class Window extends Container
     this();
     graphicsConfiguration = gc;
   }
-    
+
   /**
    * Initializes a new instance of <code>Window</code> with the specified
    * parent.  The window will initially be invisible.
@@ -585,7 +590,7 @@ public class Window extends Container
    */
   public void applyResourceBundle(ResourceBundle rb)
   {
-    // FIXME
+    throw new Error ("Not implemented");
   }
 
   /**
@@ -600,12 +605,12 @@ public class Window extends Container
       applyResourceBundle(rb);    
   }
 
-  /*
   public AccessibleContext getAccessibleContext()
   {
     // FIXME
+    //return null;
+    throw new Error ("Not implemented");
   }
-  */
 
   /** 
    * Get graphics configuration.  The implementation for Window will

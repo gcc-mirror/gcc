@@ -1,5 +1,17 @@
 2003-06-27  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/Window.java,
+	java/awt/font/GraphicAttribute.java,
+	java/awt/font/ImageGraphicAttribute.java,
+	java/awt/image/DataBufferByte.java,
+	java/awt/image/DataBufferInt.java,
+	java/awt/image/DataBufferUShort.java,
+	java/awt/image/DirectColorModel.java,
+	java/awt/image/PixelGrabber.java:
+	New versions from classpath.
+
+2003-06-27  Michael Koch  <konqueror@gmx.de>
+
 	* java/security/Certificate.java
 	(getGuarantor): Removed wrong @deprecated tag.
 	(getPrincipal): Likewise.

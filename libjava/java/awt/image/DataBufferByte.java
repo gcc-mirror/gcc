@@ -49,7 +49,7 @@ package java.awt.image;
 /**
  * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
  */
-public class DataBufferByte extends DataBuffer
+public final class DataBufferByte extends DataBuffer
 {
   private byte[] data;
   private byte[][] bankData;

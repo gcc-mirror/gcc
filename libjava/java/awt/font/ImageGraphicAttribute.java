@@ -45,7 +45,7 @@ import java.awt.geom.Rectangle2D;
 /**
  * @author Michael Koch
  */
-public class ImageGraphicAttribute extends GraphicAttribute
+public final class ImageGraphicAttribute extends GraphicAttribute
 {
   private Image image;
   
