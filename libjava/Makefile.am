@@ -640,8 +640,10 @@ $(ordinary_nat_headers) $(xlib_nat_headers): %.h: %.class
 
 java/lang/ClassLoader.h: java/lang/ClassLoader.class
 	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
-		-friend 'jclass _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader);' \
-		-friend 'void _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, bool is_jar);' \
+		-prepend 'jclass _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader);' \
+		-prepend 'void _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, bool is_jar);' \
+		-friend 'jclass (::_Jv_FindClass) (_Jv_Utf8Const *name, java::lang::ClassLoader *loader);' \
+		-friend 'void ::_Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, bool is_jar);' \
 		$(basename $<)
 
 java/lang/Thread.h: java/lang/Thread.class
@@ -649,45 +651,64 @@ java/lang/Thread.h: java/lang/Thread.class
 		-prepend 'class _Jv_JNIEnv;' \
 		-prepend '#define _JV_NOT_OWNER 1' \
 		-prepend '#define _JV_INTERRUPTED 2' \
-		-friend '_Jv_JNIEnv * _Jv_GetCurrentJNIEnv ();' \
-		-friend 'void _Jv_SetCurrentJNIEnv (_Jv_JNIEnv *env);' \
-		-friend 'void _Jv_ThreadRun (java::lang::Thread* thread);' \
-		-friend 'jint _Jv_AttachCurrentThread(java::lang::Thread* thread);' \
-		-friend 'java::lang::Thread* _Jv_AttachCurrentThread(jstring name, java::lang::ThreadGroup* group);' \
-		-friend 'java::lang::Thread* _Jv_AttachCurrentThreadAsDaemon(jstring name, java::lang::ThreadGroup* group);' \
-		-friend 'jint _Jv_DetachCurrentThread ();' \
+		-prepend '_Jv_JNIEnv * _Jv_GetCurrentJNIEnv ();' \
+		-prepend 'void _Jv_SetCurrentJNIEnv (_Jv_JNIEnv *env);' \
+		-prepend 'void _Jv_ThreadRun (java::lang::Thread* thread);' \
+		-prepend 'jint _Jv_AttachCurrentThread(java::lang::Thread* thread);' \
+		-prepend 'java::lang::Thread* _Jv_AttachCurrentThread (jstring name, java::lang::ThreadGroup* group);' \
+		-prepend 'java::lang::Thread* _Jv_AttachCurrentThreadAsDaemon (jstring name, java::lang::ThreadGroup* group);' \
+		-prepend 'jint _Jv_DetachCurrentThread ();' \
+		-friend '_Jv_JNIEnv * ::_Jv_GetCurrentJNIEnv ();' \
+		-friend 'void ::_Jv_SetCurrentJNIEnv (_Jv_JNIEnv *env);' \
+		-friend 'void ::_Jv_ThreadRun (java::lang::Thread* thread);' \
+		-friend 'jint (::_Jv_AttachCurrentThread) (java::lang::Thread* thread);' \
+		-friend 'java::lang::Thread* ::_Jv_AttachCurrentThread (jstring name, java::lang::ThreadGroup* group);' \
+		-friend 'java::lang::Thread* ::_Jv_AttachCurrentThreadAsDaemon (jstring name, java::lang::ThreadGroup* group);' \
+		-friend 'jint (::_Jv_DetachCurrentThread) ();' \
 		$(basename $<)
 
 java/lang/String.h: java/lang/String.class
 	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
-	    -friend 'jchar* _Jv_GetStringChars (jstring str);' \
-	    -friend 'jstring* _Jv_StringFindSlot (jchar*, jint, jint);' \
-	    -friend 'jstring* _Jv_StringGetSlot (jstring);' \
-	    -friend 'jstring _Jv_NewStringUtf8Const (_Jv_Utf8Const* str);' \
-	    -friend 'jstring _Jv_NewStringLatin1 (const char*, jsize);' \
-	    -friend 'jstring _Jv_AllocString (jsize);' \
+	    -prepend 'jchar* _Jv_GetStringChars (jstring str);' \
+	    -prepend 'jstring* _Jv_StringFindSlot (jchar*, jint, jint);' \
+	    -prepend 'jstring* _Jv_StringGetSlot (jstring);' \
+	    -prepend 'jstring _Jv_NewStringUtf8Const (_Jv_Utf8Const* str);' \
+	    -prepend 'jstring _Jv_NewStringLatin1 (const char*, jsize);' \
+	    -prepend 'jstring _Jv_AllocString (jsize);' \
+	    -friend 'jchar* ::_Jv_GetStringChars (jstring str);' \
+	    -friend 'jstring* ::_Jv_StringFindSlot (jchar*, jint, jint);' \
+	    -friend 'jstring* ::_Jv_StringGetSlot (jstring);' \
+	    -friend 'jstring (::_Jv_NewStringUtf8Const) (_Jv_Utf8Const* str);' \
+	    -friend 'jstring (::_Jv_NewStringLatin1) (const char*, jsize);' \
+	    -friend 'jstring (::_Jv_AllocString) (jsize);' \
 	    $(basename $<)
 
 java/lang/reflect/Constructor.h: java/lang/reflect/Constructor.class
 	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
-	    -friend 'jmethodID _Jv_FromReflectedConstructor (java::lang::reflect::Constructor *);' \
+	    -prepend 'jmethodID _Jv_FromReflectedConstructor (java::lang::reflect::Constructor *);' \
+	    -prepend 'jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
+	    -friend 'jmethodID (::_Jv_FromReflectedConstructor) (java::lang::reflect::Constructor *);' \
+	    -friend 'jobject (::_Jv_JNI_ToReflectedMethod) (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
 	    -friend 'class java::lang::Class;' \
-	    -friend 'jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
 	    $(basename $<)
 
 java/lang/reflect/Field.h: java/lang/reflect/Field.class
 	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
-	    -friend 'jfieldID _Jv_FromReflectedField (java::lang::reflect::Field *);' \
-	    -friend 'jobject _Jv_JNI_ToReflectedField (_Jv_JNIEnv*, jclass, jfieldID, jboolean);' \
+	    -prepend 'jfieldID _Jv_FromReflectedField (java::lang::reflect::Field *);' \
+	    -prepend 'jobject _Jv_JNI_ToReflectedField (_Jv_JNIEnv*, jclass, jfieldID, jboolean);' \
+	    -friend 'jfieldID (::_Jv_FromReflectedField) (java::lang::reflect::Field *);' \
+	    -friend 'jobject (::_Jv_JNI_ToReflectedField) (_Jv_JNIEnv*, jclass, jfieldID, jboolean);' \
 	    -friend 'class java::lang::Class;' \
 	    $(basename $<)
 
 java/lang/reflect/Method.h: java/lang/reflect/Method.class
 	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
-	    -friend 'jmethodID _Jv_FromReflectedMethod (java::lang::reflect::Method *);' \
+	    -prepend 'jmethodID _Jv_FromReflectedMethod (java::lang::reflect::Method *);' \
+	    -prepend 'jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
+	    -friend 'jmethodID (::_Jv_FromReflectedMethod) (java::lang::reflect::Method *);' \
+	    -friend 'jobject (::_Jv_JNI_ToReflectedMethod) (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
 	    -friend 'class java::lang::Class;' \
 	    -friend 'class java::io::ObjectInputStream;' \
-	    -friend 'jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
 	    $(basename $<)
 
 java/lang/reflect/Proxy.h: java/lang/reflect/Proxy.class
