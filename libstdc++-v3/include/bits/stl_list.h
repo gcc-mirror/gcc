@@ -495,7 +495,7 @@ public:
    *  @param  first  An input iterator.
    *  @param  last  An input iterator.
    * 
-   *  Creats a %list consisting of copies of the elements from [first,last).
+   *  Create a %list consisting of copies of the elements from [first,last).
    *  This is linear in N (where N is distance(first,last)).
    *
    *  @if maint

@@ -170,7 +170,7 @@ public:
    *  @param  first  An input iterator.
    *  @param  last  An input iterator.
    *
-   *  Creats a %map consisting of copies of the elements from [first,last).
+   *  Create a %map consisting of copies of the elements from [first,last).
    *  This is linear in N if the range is already sorted, and NlogN
    *  otherwise (where N is distance(first,last)).
   */
@@ -186,7 +186,7 @@ public:
    *  @param  comp  A comparison functor.
    *  @param  a  An allocator object.
    *
-   *  Creats a %map consisting of copies of the elements from [first,last).
+   *  Create a %map consisting of copies of the elements from [first,last).
    *  This is linear in N if the range is already sorted, and NlogN
    *  otherwise (where N is distance(first,last)).
   */
