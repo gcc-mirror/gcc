@@ -1933,7 +1933,7 @@ tidy_fallthru_edge (e, b, c)
      edge e;
      basic_block b, c;
 {
-  rtx p, q, h;
+  rtx q, h;
 
   /* ??? In a late-running flow pass, other folks may have deleted basic
      blocks by nopping out blocks, leaving multiple BARRIERs between here
@@ -1943,12 +1943,10 @@ tidy_fallthru_edge (e, b, c)
      barriers and notes.  */
 
   q = NEXT_INSN (b->end);
-  do
-    {
-      p = q;
-      q = next_nonnote_insn (q);
-    }
-  while (GET_CODE (q) == BARRIER);
+  if (q && GET_CODE (q) == NOTE)
+    q = next_nonnote_insn (q);
+  while (q && GET_CODE (q) == BARRIER)
+    q = next_nonnote_insn (q);
 
   /* Assert that we now actually do fall through.  */
   h = c->head;
@@ -1963,6 +1961,13 @@ tidy_fallthru_edge (e, b, c)
   q = b->end;
   if (GET_CODE (q) == JUMP_INSN)
     {
+#ifdef HAVE_cc0
+      /* If this was a conditional jump, we need to also delete
+	 the insn that set cc0.  */
+      if (! simplejump_p (q) && condjump_p (q))
+	q = PREV_INSN (q);
+#endif
+
       if (b->head == q)
 	{
 	  PUT_CODE (q, NOTE);
@@ -1974,7 +1979,8 @@ tidy_fallthru_edge (e, b, c)
     }
 
   /* Selectively unlink the sequence.  */
-  delete_insn_chain (NEXT_INSN (q), p);
+  if (q != PREV_INSN (c->head))
+    delete_insn_chain (NEXT_INSN (q), PREV_INSN (c->head));
 
   e->flags |= EDGE_FALLTHRU;
 }

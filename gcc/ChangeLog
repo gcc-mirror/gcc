@@ -1,3 +1,8 @@
+Tue Mar  9 15:48:15 1999  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (tidy_fallthru_edge): Be more careful finding the last
+	BARRIER of a list.  Delete the cc0 setter as well as a cond jump.
+
 Tue Mar  9 15:26:02 1999  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* i386.md (ashlsi3 splitter): Fix typo in last change.
