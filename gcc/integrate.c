@@ -414,6 +414,10 @@ save_for_inline_copying (fndecl)
   rtx first_nonparm_insn;
   char *new, *new1;
 
+  /* The pointer used to track the true location of the memory used
+     for LABEL_MAP.  */
+  rtx *real_label_map = NULL_PTR;
+
   /* Make and emit a return-label if we have not already done so. 
      Do this before recording the bounds on label numbers.  */
 
@@ -512,8 +516,12 @@ save_for_inline_copying (fndecl)
 
   /* Likewise each label rtx must have a unique rtx as its copy.  */
 
-  label_map = (rtx *)alloca ((max_labelno - min_labelno) * sizeof (rtx));
-  label_map -= min_labelno;
+  /* We used to use alloca here, but the size of what it would try to
+     allocate would occasionally cause it to exceed the stack limit and
+     cause unpredictable core dumps.  Some examples were > 2Mb in size.  */
+  real_label_map
+    = (rtx *) xmalloc ((max_labelno - min_labelno) * sizeof (rtx));
+  label_map = real_label_map - min_labelno;
 
   for (i = min_labelno; i < max_labelno; i++)
     label_map[i] = gen_label_rtx ();
@@ -655,6 +663,9 @@ save_for_inline_copying (fndecl)
   regno_pointer_align = new1;
 
   set_new_first_and_last_insn (first_insn, last_insn);
+
+  if (real_label_map)
+    free (real_label_map);
 }
 
 /* Return a copy of a chain of nodes, chained through the TREE_CHAIN field.
