@@ -519,7 +519,10 @@ permanent_allocation (function_end)
   /* Free up previous temporary obstack data */
   obstack_free (&temporary_obstack, temporary_firstobj);
   if (function_end)
-    obstack_free (&momentary_obstack, momentary_function_firstobj);
+    {
+      obstack_free (&momentary_obstack, momentary_function_firstobj);
+      momentary_firstobj = momentary_function_firstobj;
+    }
   else
     obstack_free (&momentary_obstack, momentary_firstobj);
   obstack_free (&maybepermanent_obstack, maybepermanent_firstobj);
