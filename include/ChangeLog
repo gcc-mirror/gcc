@@ -1,3 +1,7 @@
+2002-01-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libiberty.h (C_alloca): Add ATTRIBUTE_MALLOC.
+
 2001-12-06  Richard Henderson  <rth@redhat.com>
 
 	* demangle.h (no_demangling): New.

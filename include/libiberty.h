@@ -1,6 +1,6 @@
 /* Function declarations for libiberty.
 
-   Copyright 2001 Free Software Foundation, Inc.
+   Copyright 2001, 2002 Free Software Foundation, Inc.
    
    Note - certain prototypes declared in this header file are for
    functions whoes implementation copyright does not belong to the
@@ -283,7 +283,7 @@ extern int vasprintf PARAMS ((char **, const char *, va_list))
    USE_C_ALLOCA yourself.  The canonical autoconf macro C_ALLOCA is
    also set/unset as it is often used to indicate whether code needs
    to call alloca(0).  */
-extern PTR C_alloca PARAMS((size_t));
+extern PTR C_alloca PARAMS ((size_t)) ATTRIBUTE_MALLOC;
 #undef alloca
 #if GCC_VERSION >= 2000 && !defined USE_C_ALLOCA
 # define alloca(x) __builtin_alloca(x)
