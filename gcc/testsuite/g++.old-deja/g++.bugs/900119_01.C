@@ -15,7 +15,7 @@ public:
   static int class0_member_1 = 99;		/* ERROR -  */
   int &class0_member_2 = global_int;		/* ERROR -  */
 
-  class0 () : class0_member_2 (global_int) { }
+  class0 () : class0_member_2 (global_int) { }  /* ERROR -  */
 };
 
 
@@ -24,7 +24,7 @@ struct struct0 {
   static int struct0_member_1 = 99;		/* ERROR -  */
   int &struct0_member_2 = global_int;		/* ERROR -  */
 
-  struct0 () : struct0_member_2 (global_int) { }
+  struct0 () : struct0_member_2 (global_int) { } /* ERROR -  */
 };
 
 // g++ does not allow unions to have more than one member with an initializer
@@ -40,7 +40,7 @@ union union1 {
 union union2 {
   int &union2_member_0 = global_int;		/* ERROR -  */
 
-  union2 () : union2_member_0 (global_int) { }
+  union2 () : union2_member_0 (global_int) { }  /* ERROR -  */
 };
 
 int main () { return 0; }
