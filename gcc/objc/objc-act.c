@@ -363,11 +363,6 @@ static void ggc_mark_hash_table			PARAMS ((void *));
 #define UTAG_METHOD_PROTOTYPE	"_objc_method_prototype"
 #define UTAG_METHOD_PROTOTYPE_LIST "_objc__method_prototype_list"
 
-#ifdef NEXT_OBJC_RUNTIME
-#define STRING_OBJECT_CLASS_NAME "NSConstantString"
-#else
-#define STRING_OBJECT_CLASS_NAME "NXConstantString"
-#endif
 /* Note that the string object global name is only needed for the
    NeXT runtime.  */
 #define STRING_OBJECT_GLOBAL_NAME "_NSConstantStringClassReference"
@@ -381,6 +376,7 @@ static const char *TAG_GETMETACLASS;
 static const char *TAG_MSGSEND;
 static const char *TAG_MSGSENDSUPER;
 static const char *TAG_EXECCLASS;
+static const char *default_constant_string_class_name;
 
 /* The OCTI_... enumeration itself is in objc/objc-act.h.  */
 tree objc_global_trees[OCTI_MAX];
@@ -541,6 +537,7 @@ objc_init (filename)
       TAG_MSGSEND = "objc_msgSend";
       TAG_MSGSENDSUPER = "objc_msgSendSuper";
       TAG_EXECCLASS = "__objc_execClass";
+      default_constant_string_class_name = "NSConstantString";
     }
   else
     {
@@ -549,6 +546,7 @@ objc_init (filename)
       TAG_MSGSEND = "objc_msg_lookup";
       TAG_MSGSENDSUPER = "objc_msg_lookup_super";
       TAG_EXECCLASS = "__objc_exec_class";
+      default_constant_string_class_name = "NXConstantString";
       flag_typed_selectors = 1;
     }
 
@@ -1204,7 +1202,7 @@ synth_module_prologue ()
 
   /* Forward declare constant_string_id and constant_string_type.  */
   if (!constant_string_class_name)
-    constant_string_class_name = STRING_OBJECT_CLASS_NAME;
+    constant_string_class_name = default_constant_string_class_name;
 
   constant_string_id = get_identifier (constant_string_class_name);
   constant_string_type = xref_tag (RECORD_TYPE, constant_string_id);
