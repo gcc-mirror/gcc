@@ -1,3 +1,8 @@
+2004-06-10  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/sourcebuild.texi (Front End): Add details of more
+	installation documentation required.
+
 2004-06-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/15653

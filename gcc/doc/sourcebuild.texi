@@ -450,6 +450,13 @@ files for that front end.  @xref{Front End Directory, , The Front End
 A mention of the language in the list of supported languages in
 @file{gcc/doc/install.texi}.
 @item
+A mention of the name under which the language's runtime library is
+recognized by @option{--enable-shared=@var{package}} in the
+documentation of that option in @file{gcc/doc/install.texi}.
+@item
+A mention of any special prerequisites for building the front end in
+the documentation of prerequisites in @file{gcc/doc/install.texi}.
+@item
 Details of contributors to that front end in
 @file{gcc/doc/contrib.texi}.  If the details are in that front end's
 own manual then there should be a link to that manual's list in
