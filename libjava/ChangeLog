@@ -1,5 +1,41 @@
 Mon Aug  9 18:33:38 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+        * Makefile: Rebuilt.
+	* Makefile.am (toolexeclibdir): Add $(MULTISUBDIR) even for native
+	builds.
+
+	* java/net/natPlainSocketImpl.cc: Include <sys/select.h> only if
+	present.
+
+	* configure: Rebuilt.
+	* configure.in: Properly align --help output, fix capitalization
+	and punctuation.
+	* acinclude.m4: Likewise.
+
+1999-08-09  Kresten Krab Thorup  <krab@gnu.org>
+
+	* include/javaprims.h (_Jv_word, _Jv_word2): New types.
+
+	* include/java-interp.h (_Jv_InterpMethodInvocation): Use _Jv_word.
+	(_Jv_callInterpretedMethod): Unused. Remove.
+	(_Jv_InterpMethod::run,run_normal,run_synch_object,run_synch_class):
+	Use ffi_raw.
+	* include/java-cpool.h (_Jv_get, _Jv_put): Remove.
+	(_Jv_{store,load}{Indexes,Int,Float,Long,Double}): Use _Jv_word.
+	* boehm.cc (_Jv_MarkObj): Use _Jv_word.
+	* interpret.cc: use _Jv_word.
+	* defineclass.cc: use_Jv_word.
+	* resolve.cc: Use _Jv_word.
+	(_Jv_ResolvePoolEntry): Return _Jv_word.
+	* java/lang/Class.h (_Jv_Constants): Use _Jv_word for cpool.
+	* java/lang/natClassLoader.cc (_Jv_InternClassStrings): Use _Jv_word.
+
+	* interpret.cc (gnu::gcj::runtime::MethodInvocation::continue1): 
+	Change comment.
+
+Mon Aug  9 18:33:38 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure: Rebuilt.
 	* configure.in (sched_yield): Try librt first, then libposix4.
 	Add -lrt, -lposix4 to THREADSPEC.
 

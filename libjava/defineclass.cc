@@ -614,7 +614,8 @@ void _Jv_ClassReader::handleConstantPool ()
 
   // the pool is scanned explicitly by the collector
   jbyte *pool_tags = (jbyte*) _Jv_AllocBytesChecked (pool_count);
-  void **pool_data = (void**) _Jv_AllocBytesChecked (pool_count * sizeof (void*));
+  _Jv_word *pool_data
+    = (_Jv_word*) _Jv_AllocBytesChecked (pool_count * sizeof (_Jv_word));
   
   def->constants.tags = pool_tags;
   def->constants.data = pool_data;
@@ -634,7 +635,7 @@ void _Jv_ClassReader::handleConstantPool ()
 	  check_tag (utf_index, JV_CONSTANT_Utf8);
 	  unsigned char *utf_data = bytes + offsets[utf_index];
 	  int len = get2u (utf_data);
-	  pool_data[i] = (void*)_Jv_makeUtf8Const ((char*)(utf_data+2), len);
+	  pool_data[i].utf8 = _Jv_makeUtf8Const ((char*)(utf_data+2), len);
 	  pool_tags[i] = JV_CONSTANT_String;
 	}
       else
@@ -671,7 +672,7 @@ _Jv_ClassReader::prepare_pool_entry (int index, unsigned char this_tag)
      structure we are currently defining */
 
   unsigned char *pool_tags = (unsigned char*) def->constants.tags;
-  void         **pool_data = (void**) def->constants.data;
+  _Jv_word      *pool_data = def->constants.data;
 
   /* this entry was already prepared */
   if (pool_tags[index] == this_tag)
@@ -703,7 +704,7 @@ _Jv_ClassReader::prepare_pool_entry (int index, unsigned char this_tag)
 	      buffer[i] = (char) s[i];
 	  }
 	
-	pool_data[index] = (void*)_Jv_makeUtf8Const (buffer, len);
+	pool_data[index].utf8 = _Jv_makeUtf8Const (buffer, len);
 	pool_tags[index] = JV_CONSTANT_Utf8;
       }
       break;
@@ -715,9 +716,9 @@ _Jv_ClassReader::prepare_pool_entry (int index, unsigned char this_tag)
 	prepare_pool_entry (utf_index, JV_CONSTANT_Utf8);
 
 	if (verify)
-	  _Jv_VerifyClassName ((_Jv_Utf8Const*)pool_data[utf_index]);
+	  _Jv_VerifyClassName (pool_data[utf_index].utf8);
 		
-	pool_data[index] = pool_data[utf_index];
+	pool_data[index].utf8 = pool_data[utf_index].utf8;
 	pool_tags[index] = JV_CONSTANT_Class;
       }
       break;
@@ -743,24 +744,22 @@ _Jv_ClassReader::prepare_pool_entry (int index, unsigned char this_tag)
 	if (verify)
 	{
 	  _Jv_ushort name_index, type_index;
-	  _Jv_loadIndexes ((const void**)&pool_data[nat_index],
+	  _Jv_loadIndexes (&pool_data[nat_index],
 			   name_index, type_index);
 
 	  if (this_tag == JV_CONSTANT_Fieldref)
-	    _Jv_VerifyFieldSignature
-	      ((_Jv_Utf8Const*)pool_data[type_index]);
+	    _Jv_VerifyFieldSignature (pool_data[type_index].utf8);
 	  else
-	    _Jv_VerifyMethodSignature
-	      ((_Jv_Utf8Const*)pool_data[type_index]);
+	    _Jv_VerifyMethodSignature (pool_data[type_index].utf8);
 
-	  _Jv_Utf8Const* name = (_Jv_Utf8Const*)pool_data[name_index];
+	  _Jv_Utf8Const* name = pool_data[name_index].utf8;
 
 	  if (this_tag != JV_CONSTANT_Fieldref
 	      && (   _Jv_equalUtf8Consts (name, clinit_name)
 		  || _Jv_equalUtf8Consts (name, init_name)))
 	    /* ignore */;
 	  else
-	    _Jv_VerifyIdentifier ((_Jv_Utf8Const*)pool_data[name_index]);
+	    _Jv_VerifyIdentifier (pool_data[name_index].utf8);
 	}
 	    
 	_Jv_storeIndexes (&pool_data[index], class_index, nat_index);
@@ -827,10 +826,10 @@ _Jv_ClassReader::handleClassBegin
   (int access_flags, int this_class, int super_class)
 {
   unsigned char *pool_tags = (unsigned char*) def->constants.tags;
-  void         **pool_data = (void**) def->constants.data;
+  _Jv_word      *pool_data = def->constants.data;
 
   check_tag (this_class, JV_CONSTANT_Class);
-  _Jv_Utf8Const *loadedName = (_Jv_Utf8Const*)pool_data[this_class];
+  _Jv_Utf8Const *loadedName = pool_data[this_class].utf8;
 
   // was ClassLoader.defineClass called with an expected class name?
   if (def->name == 0)
@@ -865,7 +864,7 @@ _Jv_ClassReader::handleClassBegin
     }
 
   def->accflags = access_flags;
-  pool_data[this_class] = (void*)def;
+  pool_data[this_class].clazz = def;
   pool_tags[this_class] = JV_CONSTANT_ResolvedClass;
 
   if (super_class == 0)
@@ -894,8 +893,7 @@ _Jv_ClassReader::handleClassBegin
     {
       // load the super class
       check_tag (super_class, JV_CONSTANT_Class);
-      _Jv_Utf8Const* super_name =
-	(_Jv_Utf8Const*)pool_data[super_class]; 
+      _Jv_Utf8Const* super_name = pool_data[super_class].utf8; 
 
       // load the super class using our defining loader
       jclass the_super = _Jv_FindClass (super_name,
@@ -906,7 +904,7 @@ _Jv_ClassReader::handleClassBegin
       checkExtends (def, the_super);
 
       def->superclass = the_super;
-      pool_data[super_class] = (void*) the_super;
+      pool_data[super_class].clazz = the_super;
       pool_tags[super_class] = JV_CONSTANT_ResolvedClass;
     }
 	    
@@ -956,19 +954,19 @@ void _Jv_ClassReader::handleInterfacesBegin (int count)
 
 void _Jv_ClassReader::handleInterface (int if_number, int offset)
 {
-  void          ** pool_data = def->constants.data;
+  _Jv_word       * pool_data = def->constants.data;
   unsigned char  * pool_tags = (unsigned char*) def->constants.tags;
 
   jclass the_interface;
 
   if (pool_tags[offset] == JV_CONSTANT_Class)
     {
-      _Jv_Utf8Const* name = (_Jv_Utf8Const*) pool_data[offset];
+      _Jv_Utf8Const* name = pool_data[offset].utf8;
       the_interface =  _Jv_FindClass (name, def->loader);
     }
   else if (pool_tags[offset] == JV_CONSTANT_ResolvedClass)
     {
-      the_interface = (jclass)pool_data[offset];
+      the_interface = pool_data[offset].clazz;
     }
   else
     {
@@ -979,7 +977,7 @@ void _Jv_ClassReader::handleInterface (int if_number, int offset)
   // allowed to implement that interface.
   checkImplements (def, the_interface);
   
-  pool_data[offset] = (void*)the_interface;
+  pool_data[offset].clazz = the_interface;
   pool_tags[offset] = JV_CONSTANT_ResolvedClass;
   
   def->interfaces[if_number] = the_interface;
@@ -1028,10 +1026,10 @@ void _Jv_ClassReader::handleField (int field_no,
 				   int name,
 				   int desc)
 {
-  void **const pool_data = def->constants.data;
+  _Jv_word *pool_data = def->constants.data;
 
   _Jv_Field *field = &def->fields[field_no];
-  _Jv_Utf8Const *field_name = (_Jv_Utf8Const*) pool_data[name];
+  _Jv_Utf8Const *field_name = pool_data[name].utf8;
 
 #ifndef COMPACT_FIELDS
   field->name      = field_name;
@@ -1056,7 +1054,7 @@ void _Jv_ClassReader::handleField (int field_no,
 	throw_class_format_error ("erroneous field access flags");
     }
 
-  _Jv_Utf8Const* sig = (_Jv_Utf8Const*) pool_data[desc];
+  _Jv_Utf8Const* sig = pool_data[desc].utf8;
 
   if (verify)
     _Jv_VerifyFieldSignature (sig);
@@ -1158,16 +1156,16 @@ void _Jv_ClassReader::handleMethodsBegin (int count)
 void _Jv_ClassReader::handleMethod 
     (int mth_index, int accflags, int name, int desc)
 { 
-  void **const pool_data = def->constants.data;
+  _Jv_word *pool_data = def->constants.data;
   _Jv_Method *method = &def->methods[mth_index];
 
   check_tag (name, JV_CONSTANT_Utf8);
   prepare_pool_entry (name, JV_CONSTANT_Utf8);
-  method->name = (_Jv_Utf8Const*)pool_data[name];
+  method->name = pool_data[name].utf8;
 
   check_tag (desc, JV_CONSTANT_Utf8);
   prepare_pool_entry (desc, JV_CONSTANT_Utf8);
-  method->signature = (_Jv_Utf8Const*)pool_data[desc];
+  method->signature = pool_data[desc].utf8;
 
   // ignore unknown flags
   method->accflags = accflags & ALL_FLAGS;

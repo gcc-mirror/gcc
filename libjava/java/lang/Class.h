@@ -49,7 +49,7 @@ struct _Jv_Constants
 {
   jint size;
   jbyte *tags;
-  void **data;
+  _Jv_word *data;
 };
 
 struct _Jv_Method
@@ -192,7 +192,7 @@ private:
   friend int _Jv_DetermineVTableIndex (jclass, _Jv_Utf8Const *, 
 				       _Jv_Utf8Const*);
   friend void _Jv_InitField (jobject, jclass, int);
-  friend void* _Jv_ResolvePoolEntry (jclass, int);
+  friend _Jv_word _Jv_ResolvePoolEntry (jclass, int);
   friend void _Jv_PrepareClass (jclass);
 
   friend class _Jv_ClassReader;	

@@ -105,11 +105,11 @@ class _Jv_InterpMethod {
   void *ncode ();
   void continue1 (_Jv_InterpMethodInvocation *inv);
 
-  static void run_normal (ffi_cif*, void*, void**, void*);
-  static void run_synch_object (ffi_cif*, void*, void**, void*);
-  static void run_synch_class (ffi_cif*, void*, void**, void*);
+  static void run_normal (ffi_cif*, void*, ffi_raw*, void*);
+  static void run_synch_object (ffi_cif*, void*, ffi_raw*, void*);
+  static void run_synch_class (ffi_cif*, void*, ffi_raw*, void*);
 
-  inline jobject run (ffi_cif*, void*, void**, 
+  inline jobject run (ffi_cif*, void*, ffi_raw*, 
 		      _Jv_InterpMethodInvocation*);
 
   bool find_exception (jobject ex,
@@ -123,21 +123,16 @@ class _Jv_InterpMethod {
   friend class gnu::gcj::runtime::MethodInvocation;
 
   friend void _Jv_PrepareClass(jclass);
-
-  friend void _Jv_callInterpretedMethod (ffi_cif*,
-					 void*,
-					 void **,
-					 void*);
 };
 
 class _Jv_InterpMethodInvocation {
   _Jv_InterpMethod *running;
-  void            **sp;
+  _Jv_word         *sp;
   unsigned char    *pc;
-  void*             state[0];
+  _Jv_word          state[0];
 
-  void**            stack_base () { return &state[0]; }
-  void**            local_base () { return &state[running->max_stack]; }
+  _Jv_word*         stack_base () { return &state[0]; }
+  _Jv_word*         local_base () { return &state[running->max_stack]; }
 
   friend class _Jv_InterpMethod;
 };

@@ -233,8 +233,8 @@ _Jv_InternClassStrings(jclass klass)
       if (pool->tags[i] == JV_CONSTANT_String)
 	{
 	  jstring str;
-	  str = _Jv_NewStringUtf8Const ((_Jv_Utf8Const *) pool->data[i]);
-	  pool->data[i] = (void *) str;
+	  str = _Jv_NewStringUtf8Const (pool->data[i].utf8);
+	  pool->data[i].string = str;
 	  pool->tags[i] |= JV_CONSTANT_ResolvedFlag;
 	}
     }

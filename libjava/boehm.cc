@@ -112,7 +112,8 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void * /*env*/)
       MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit, c, c4label);
       for (int i = 0; i < c->constants.size; ++i)
 	{
-	  w = (word) c->constants.data[i];
+	  /* FIXME: We could make this more precise by using the tags -KKT */
+	  w = (word) c->constants.data[i].p;
 	  MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit, c, c5label);
 	}
 
