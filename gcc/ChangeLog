@@ -1,3 +1,9 @@
+Thu Mar 25 12:46:37 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* a29k/a29k.h (TARGET_SWITCHES): Add doc strings.
+	* i960/i960.h (TARGET_SWITCHES): Add doc strings.
+	* invoke.texi (a29k): Add documentation for -mno-multm option.
+
 Thu Mar 25 14:04:54 EST 1999  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* rtl.texi (RTX_FRAME_RELATED_P): Add documentation.
