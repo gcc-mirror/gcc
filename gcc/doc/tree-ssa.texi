@@ -685,7 +685,7 @@ void f()
 
 The optimizers need to associate attributes with statements and
 variables during the optimization process.  For instance, we need to
-know what basic block does a statement belong to or whether a variable
+know what basic block a statement belongs to or whether a variable
 has aliases.  All these attributes are stored in data structures
 called annotations which are then linked to the field @code{ann} in
 @code{struct tree_common}.

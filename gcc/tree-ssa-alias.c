@@ -2709,7 +2709,7 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_t) **fieldstack,
     {
       size_t before = VEC_length (fieldoff_t, *fieldstack);
       /* Empty structures may have actual size, like in C++. So see if we
-	 actually end up pushing a field, and if not, if the size is non-zero,
+	 actually end up pushing a field, and if not, if the size is nonzero,
 	 push the field onto the stack */
       push_fields_onto_fieldstack (TREE_TYPE (field), fieldstack, offset);
       if (before == VEC_length (fieldoff_t, *fieldstack)
@@ -2739,7 +2739,7 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_t) **fieldstack,
 	  push_fields_onto_fieldstack (TREE_TYPE (field), fieldstack, 
 				       offset + bitpos_of_field (field));
       /* Empty structures may have actual size, like in C++. So see if we
-	 actually end up pushing a field, and if not, if the size is non-zero,
+	 actually end up pushing a field, and if not, if the size is nonzero,
 	 push the field onto the stack */
 	  if (before == VEC_length (fieldoff_t, *fieldstack)
 	      && DECL_SIZE (field)
