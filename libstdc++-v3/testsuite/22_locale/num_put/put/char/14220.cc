@@ -33,13 +33,13 @@ void test01()
   ostringstream oss;
   const num_put<char>& np = use_facet<num_put<char> >(oss.getloc());
 
-  int precision = 10;
+  const int precision = 1000;
 
   oss.precision(precision);
   oss.setf(ios_base::fixed);
   np.put(oss.rdbuf(), oss, '+', 1.0);
-  string result = oss.str();
-  VERIFY( result.size() > precision );
+  const string result = oss.str();
+  VERIFY( result.size() == precision + 2 );
 }
 
 int main()

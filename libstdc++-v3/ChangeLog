@@ -1,3 +1,30 @@
+2004-07-30  Paolo Carlini  <pcarlini@suse.de>
+            Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/12658 (continued)
+	* src/locale_init.cc (locale::locale, locale::global): Use
+	a single locale_mutex instead of two separate mutexes.
+
+2004-07-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/22_locale/locale/cons/12658_thread.cc: Xfail: due to
+	a bug in glibcs older than 2004-07-16, it can unpredictably fail
+	irrespective of the correctness of libstdc++.
+
+2004-07-30  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/locale_init.cc: Use __gnu_cxx::lock.
+
+2004-07-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/22_locale/num_put/put/char/14220.cc: Increase the value
+	of precision: 10 is too small to actually trigger the bug.
+	* testsuite/22_locale/num_put/put/wchar_t/14220.c: Likewise.
+
+2004-07-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 31.
+
 2004-07-29  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/16813

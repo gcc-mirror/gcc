@@ -33,13 +33,13 @@ void test01()
   wostringstream oss;
   const num_put<wchar_t>& np = use_facet<num_put<wchar_t> >(oss.getloc());
 
-  int precision = 10;
+  const int precision = 1000;
 
   oss.precision(precision);
   oss.setf(ios_base::fixed);
   np.put(oss.rdbuf(), oss, L'+', 1.0);
-  wstring result = oss.str();
-  VERIFY( result.size() > precision );
+  const wstring result = oss.str();
+  VERIFY( result.size() == precision + 2 );
 }
 
 int main()
