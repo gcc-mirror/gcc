@@ -1,3 +1,23 @@
+2001-12-23  Florian Weimer  <fw@deneb.enyo.de>
+
+	* gnat-style.texi (header): Add @dircategory, @direntry.
+	(title page): Remove date.
+	(general) Add @./@: where approriate, and two spaces after the
+	full stop at the end of a sentence.  Use @samp markup when
+	referring concrete lexical entities (keywords, attribute names
+	etc.), and @syntax for ARM grammar elements. Use @r for English
+	text in comments.  Use @emph for emphasis.  Change "if-statements"
+	etc. to "if statements" (without @samp). Break long lines.  Make
+	casing of section names consistent.
+	(Identifiers): Use @samp markup for variable names.
+	(Comments): Use @samp markup for comment characters. Line-end
+	comments may follow any Ada code, not just statements.  Fix
+	misspelling of "Integer" as "integer".
+	(Loop statements): Do not use variable name "I", use "J".
+	(Subprogram Declarations): Document alignment.
+	(Subprogram Bodies, Block statements): Document empty line before
+	"begin".
+
 2001-12-22  Florian Weimer  <fw@deneb.enyo.de>
 
 	* make.adb (Add_Switch): Make Generic_Position a procedure.  The
