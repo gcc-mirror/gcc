@@ -559,8 +559,8 @@ free_stmt_status (f)
   /* We're about to free the function obstack.  If we hold pointers to
      things allocated there, then we'll try to mark them when we do
      GC.  So, we clear them out here explicitly.  */
-
-  free (f->stmt);
+  if (f->stmt)
+    free (f->stmt);
   f->stmt = NULL;
 }
 

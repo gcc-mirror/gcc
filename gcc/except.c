@@ -3297,5 +3297,6 @@ free_eh_nesting_info (info)
 	      free (info->handlers[x]);
 	  free (info->handlers);
 	}
+      free (info);
     }
 }
