@@ -131,6 +131,16 @@ struct c_expr
   enum tree_code original_code;
 };
 
+/* A storage class specifier.  */
+enum c_storage_class {
+  csc_none,
+  csc_auto,
+  csc_extern,
+  csc_register,
+  csc_static,
+  csc_typedef
+};
+
 /* A sequence of declaration specifiers in C.  */
 struct c_declspecs {
   /* The type specified, not reflecting modifiers such as "short" and
@@ -144,6 +154,8 @@ struct c_declspecs {
   tree attrs;
   /* The modifier bits present.  */
   int specbits;
+  /* The storage class specifier, or csc_none if none.  */
+  enum c_storage_class storage_class;
   /* Whether something other than a storage class specifier or
      attribute has been seen.  This is used to warn for the
      obsolescent usage of storage class specifiers other than at the
@@ -164,6 +176,10 @@ struct c_declspecs {
   BOOL_BITFIELD explicit_char_p : 1;
   /* Whether "long" was specified more than once.  */
   BOOL_BITFIELD long_long_p : 1;
+  /* Whether "inline" was specified.  */
+  BOOL_BITFIELD inline_p : 1;
+  /* Whether "__thread" was specified.  */
+  BOOL_BITFIELD thread_p : 1;
 };
 
 /* The various kinds of declarators in C.  */
