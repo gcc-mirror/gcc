@@ -1,5 +1,11 @@
 2003-10-10  Roger Sayle  <roger@eyesopen.com>
 
+	* builtins.c (builtin_mathfn_code): Generalize to check whether
+	the call is to any built-in function by comparing the call's
+	argument list against the builtin decl's function type.
+
+2003-10-10  Roger Sayle  <roger@eyesopen.com>
+
 	* cse.c (constant_pool_entries_regcost): New global variable to
 	hold the register cost component of constant_pool_entries_cost.
 	(fold_rtx): Calculate constant_pool_entries_regcost at the same

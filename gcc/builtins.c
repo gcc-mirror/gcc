@@ -5318,15 +5318,16 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 }
 
 /* Determine whether a tree node represents a call to a built-in
-   math function.  If the tree T is a call to a built-in function
-   taking a single real argument, then the return value is the
-   DECL_FUNCTION_CODE of the call, e.g. BUILT_IN_SQRT.  Otherwise
-   the return value is END_BUILTINS.  */
+   function.  If the tree T is a call to a built-in function with
+   the right number of arguments of the appropriate types, return
+   the DECL_FUNCTION_CODE of the call, e.g. BUILT_IN_SQRT.
+   Otherwise the return value is END_BUILTINS.  */
 
 enum built_in_function
 builtin_mathfn_code (tree t)
 {
-  tree fndecl, arglist;
+  tree fndecl, arglist, parmlist;
+  tree argtype, parmtype;
 
   if (TREE_CODE (t) != CALL_EXPR
       || TREE_CODE (TREE_OPERAND (t, 0)) != ADDR_EXPR)
@@ -5334,36 +5335,57 @@ builtin_mathfn_code (tree t)
 
   fndecl = get_callee_fndecl (t);
   if (fndecl == NULL_TREE
+      || TREE_CODE (fndecl) != FUNCTION_DECL
       || ! DECL_BUILT_IN (fndecl)
       || DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
     return END_BUILTINS;
 
   arglist = TREE_OPERAND (t, 1);
-  if (! arglist
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != REAL_TYPE)
-    return END_BUILTINS;
-
-  arglist = TREE_CHAIN (arglist);
-  switch (DECL_FUNCTION_CODE (fndecl))
+  parmlist = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+  for (; parmlist; parmlist = TREE_CHAIN (parmlist))
     {
-    case BUILT_IN_POW:
-    case BUILT_IN_POWF:
-    case BUILT_IN_POWL:
-    case BUILT_IN_ATAN2:
-    case BUILT_IN_ATAN2F:
-    case BUILT_IN_ATAN2L:
-      if (! arglist
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != REAL_TYPE
-	  || TREE_CHAIN (arglist))
-	return END_BUILTINS;
-      break;
+      /* If a function doesn't take a variable number of arguments,
+	 the last element in the list will have type `void'.  */
+      parmtype = TREE_VALUE (parmlist);
+      if (VOID_TYPE_P (parmtype))
+	{
+	  if (arglist)
+	    return END_BUILTINS;
+	  return DECL_FUNCTION_CODE (fndecl);
+	}
 
-    default:
-      if (arglist)
+      if (! arglist)
 	return END_BUILTINS;
-      break;
+
+      argtype = TREE_TYPE (TREE_VALUE (arglist));
+
+      if (SCALAR_FLOAT_TYPE_P (parmtype))
+	{
+	  if (! SCALAR_FLOAT_TYPE_P (argtype))
+	    return END_BUILTINS;
+	}
+      else if (COMPLEX_FLOAT_TYPE_P (parmtype))
+	{
+	  if (! COMPLEX_FLOAT_TYPE_P (argtype))
+	    return END_BUILTINS;
+	}
+      else if (POINTER_TYPE_P (parmtype))
+	{
+	  if (! POINTER_TYPE_P (argtype))
+	    return END_BUILTINS;
+	}
+      else if (INTEGRAL_TYPE_P (parmtype))
+	{
+	  if (! INTEGRAL_TYPE_P (argtype))
+	    return END_BUILTINS;
+	}
+      else
+	return END_BUILTINS;
+
+      arglist = TREE_CHAIN (arglist);
     }
 
+  /* Variable-length argument list.  */
   return DECL_FUNCTION_CODE (fndecl);
 }
 
