@@ -2807,6 +2807,9 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode, punsignedp, pvolati
 
   while (1)
     {
+      if (TREE_CODE (exp) == INDIRECT_REF && flag_volatile)
+ 	*pvolatilep = 1;
+
       if (TREE_CODE (exp) == COMPONENT_REF || TREE_CODE (exp) == BIT_FIELD_REF)
 	{
 	  tree pos = (TREE_CODE (exp) == COMPONENT_REF
