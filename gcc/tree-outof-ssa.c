@@ -2362,6 +2362,95 @@ remove_ssa_form (FILE *dump, var_map map, int flags)
   dump_file = save;
 }
 
+/* Search every PHI node for arguments associated with backedges which
+   we can trivially determine will need a copy (the argument is either
+   not an SSA_NAME or the argument has a different underlying variable
+   than the PHI result).
+
+   Insert a copy from the PHI argument to a new destination at the
+   end of the block with the backedge to the top of the loop.  Update
+   the PHI argument to reference this new destination.  */
+
+static void
+insert_backedge_copies (void)
+{
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      tree phi;
+
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	{
+	  tree result = PHI_RESULT (phi);
+	  tree result_var;
+	  int i;
+
+	  if (!is_gimple_reg (result))
+	    continue;
+
+	  result_var = SSA_NAME_VAR (result);
+	  for (i = 0; i < PHI_NUM_ARGS (phi); i++)
+	    {
+	      tree arg = PHI_ARG_DEF (phi, i);
+	      edge e = PHI_ARG_EDGE (phi, i);
+
+	      /* If the argument is not an SSA_NAME, then we will
+		 need a constant initialization.  If the argument is
+		 an SSA_NAME with a different underlying variable and
+		 we are not combining temporaries, then we will
+		 need a copy statement.  */
+	      if ((e->flags & EDGE_DFS_BACK)
+		  && (TREE_CODE (arg) != SSA_NAME
+		      || (!flag_tree_combine_temps
+			  && SSA_NAME_VAR (arg) != result_var)))
+		{
+		  tree stmt, name, last = NULL;
+		  block_stmt_iterator bsi;
+
+		  bsi = bsi_last (PHI_ARG_EDGE (phi, i)->src);
+		  if (!bsi_end_p (bsi))
+		    last = bsi_stmt (bsi);
+
+		  /* In theory the only way we ought to get back to the
+		     start of a loop should be with a COND_EXPR or GOTO_EXPR.
+		     However, better safe than sorry. 
+
+		     If the block ends with a control statment or
+		     something that might throw, then we have to
+		     insert this assignment before the last
+		     statement.  Else insert it after the last statement.  */
+		  if (last && stmt_ends_bb_p (last))
+		    {
+		      /* If the last statement in the block is the definition
+			 site of the PHI argument, then we can't insert
+			 anything after it.  */
+		      if (TREE_CODE (arg) == SSA_NAME
+			  && SSA_NAME_DEF_STMT (arg) == last)
+			continue;
+		    }
+
+		  /* Create a new instance of the underlying
+		     variable of the PHI result.  */
+		  stmt = build (MODIFY_EXPR, TREE_TYPE (result_var),
+				NULL, PHI_ARG_DEF (phi, i));
+		  name = make_ssa_name (result_var, stmt);
+		  TREE_OPERAND (stmt, 0) = name;
+
+		  /* Insert the new statement into the block and update
+		     the PHI node.  */
+		  if (last && stmt_ends_bb_p (last))
+		    bsi_insert_before (&bsi, stmt, BSI_NEW_STMT);
+		  else
+		    bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
+		  modify_stmt (stmt);
+		  SET_PHI_ARG_DEF (phi, i, name);
+		}
+	    }
+	}
+    }
+}
+
 /* Take the current function out of SSA form, as described in
    R. Morgan, ``Building an Optimizing Compiler'',
    Butterworth-Heinemann, Boston, MA, 1998. pp 176-186.  */
@@ -2372,6 +2461,14 @@ rewrite_out_of_ssa (void)
   var_map map;
   int var_flags = 0;
   int ssa_flags = (SSANORM_REMOVE_ALL_PHIS | SSANORM_USE_COALESCE_LIST);
+
+  /* If elimination of a PHI requires inserting a copy on a backedge,
+     then we will have to split the backedge which has numerous
+     undesirable performance effects.
+
+     A significant number of such cases can be handled here by inserting
+     copies into the loop itself.  */
+  insert_backedge_copies ();
 
   if (!flag_tree_live_range_split)
     ssa_flags |= SSANORM_COALESCE_PARTITIONS;

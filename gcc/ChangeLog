@@ -1,3 +1,8 @@
+2004-12-29  Jeff Law  <law@redhat.com>
+
+	* tree-outof-ssa.c (insert_backedge_copies): New function.
+	(rewrite_out_of_ssa): Use it.
+
 2004-12-29  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/18179
