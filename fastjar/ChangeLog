@@ -1,3 +1,8 @@
+2002-01-11  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (AUTOMAKE_OPTIONS): New macro.
+
 2002-01-09  Tom Tromey  <tromey@redhat.com>
 
 	For PR libgcj/5303:
