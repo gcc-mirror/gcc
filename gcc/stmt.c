@@ -1230,6 +1230,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       tree val = TREE_VALUE (tail);
       tree type = TREE_TYPE (val);
       char *constraint;
+      char *p;
       int c_len;
       int j;
       int is_inout = 0;
@@ -1247,11 +1248,29 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       c_len = TREE_STRING_LENGTH (TREE_PURPOSE (tail)) - 1;
       constraint = TREE_STRING_POINTER (TREE_PURPOSE (tail));
 
-      if (c_len == 0
-	  || (constraint[0] != '=' && constraint[0] != '+'))
+      /* Allow the `=' or `+' to not be at the beginning of the string,
+	 since it wasn't explicitly documented that way, and there is a
+	 large body of code that puts it last.  Swap the character to
+	 the front, so as not to uglify any place else.  */
+      switch (c_len)
 	{
+	default:
+	  if ((p = strchr (constraint, '=')) != NULL)
+	    break;
+	  if ((p = strchr (constraint, '+')) != NULL)
+	    break;
+	case 0:
 	  error ("output operand constraint lacks `='");
 	  return;
+	}
+
+      if (p != constraint)
+	{
+	  j = *p;
+	  bcopy (constraint, constraint+1, p-constraint);
+	  *constraint = j;
+
+	  warning ("output constraint `%c' for operand %d is not at the beginning", j, i);
 	}
 
       is_inout = constraint[0] == '+';

@@ -1,3 +1,7 @@
+Mon Oct 26 13:32:31 1998  Richard Henderson  <rth@cygnus.com>
+
+	* stmt.c (expand_asm_operands): Accept `=' or `+' at any position.
+
 Mon Oct 26 12:53:14 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* tm.texi (ASM_OUTPUT_MAX_SKIP_ALIGN): Document.
