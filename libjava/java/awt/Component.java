@@ -1283,7 +1283,7 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public String toString()
   {
-    return paramString();
+    return this.getClass().getName() + "[" + paramString() + "]";
   }
   
   public void list()
