@@ -4097,6 +4097,15 @@ if test x$enable_haifa != x; then
     done
 fi
 
+# if $(exec_prefix) is not the same as $(prefix), then do not use a relative
+# directory to get to $gcc_tooldir.
+if test x$exec_prefix = x$prefix; then
+    gcc_tooldir='$(libsubdir)/$(unlibsubdir)/../$(target_alias)'
+else
+    gcc_tooldir='$(tooldir)'
+fi
+AC_SUBST(gcc_tooldir)
+
 # Warn if using init_priority.
 AC_MSG_CHECKING(whether to enable init_priority by default)
 if test x$enable_init_priority != xyes; then
