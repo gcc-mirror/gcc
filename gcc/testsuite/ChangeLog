@@ -1,3 +1,8 @@
+2000-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c90-printf-1.c: Add test for printf formats reading
+	through a null pointer.
+
 2000-12-06  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* g++.old-deja/g++.oliva/partspec1.C: Remove XFAIL.

@@ -245,4 +245,5 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   printf ("%n", cn); /* { dg-warning "constant" "%n with const" } */
   printf ((const char *)L"foo"); /* { dg-warning "wide" "wide string" } */
   printf ("%n", (int *)0); /* { dg-warning "null" "%n with NULL" } */
+  printf ("%s", (char *)0); /* { dg-warning "null" "%s with NULL" } */
 }

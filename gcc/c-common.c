@@ -1416,6 +1416,7 @@ typedef struct
      years in some locales, "4" for "2" which becomes "3" with an "E" modifier,
      "o" if use of strftime "O" is a GNU extension beyond C99,
      "W" if the argument is a pointer which is dereferenced and written into,
+     "R" if the argument is a pointer which is dereferenced and read from,
      "i" for printf integer formats where the '0' flag is ignored with
      precision, and "[" for the starting character of a scanf scanset.  */
   const char *flags2;
@@ -1521,6 +1522,9 @@ typedef struct format_wanted_type
   /* Whether the argument, dereferenced once, is written into and so the
      argument must not be a pointer to a const-qualified type.  */
   int writing_in_flag;
+  /* Whether the argument, dereferenced once, is read from and so
+     must not be a NULL pointer.  */
+  int reading_from_flag;
   /* If warnings should be of the form "field precision is not type int",
      the name to use (in this case "field precision"), otherwise NULL,
      for "%s format, %s arg" type messages.  If (in an extension), this
@@ -1694,23 +1698,23 @@ static const format_flag_pair strftime_flag_pairs[] =
 static const format_char_info print_char_table[] =
 {
   /* C89 conversion specifiers.  */
-  { "di",  0, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM  }, "-wp0 +'I", "i" },
-  { "oxX", 0, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0#",    "i" },
-  { "u",   0, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0'I",   "i" },
-  { "fgG", 0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#'", ""  },
-  { "eE",  0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#",  ""  },
-  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T94_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w",       ""  },
-  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp",      "c" },
-  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w",       "c" },
-  { "n",   1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM  }, "",         "W" },
+  { "di",  0, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM  }, "-wp0 +'I", "i"  },
+  { "oxX", 0, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0#",    "i"  },
+  { "u",   0, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0'I",   "i"  },
+  { "fgG", 0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#'", ""   },
+  { "eE",  0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#",  ""   },
+  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T94_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w",       ""   },
+  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp",      "cR" },
+  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w",       "c"  },
+  { "n",   1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM  }, "",         "W"  },
   /* C99 conversion specifiers.  */
-  { "F",   0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#'", ""  },
-  { "aA",  0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#",  ""  },
+  { "F",   0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#'", ""   },
+  { "aA",  0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#",  ""   },
   /* X/Open conversion specifiers.  */
-  { "C",   0, STD_EXT, { TEX_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w",       ""  },
-  { "S",   1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp",      ""  },
+  { "C",   0, STD_EXT, { TEX_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w",       ""   },
+  { "S",   1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp",      "R"  },
   /* GNU conversion specifiers.  */
-  { "m",   0, STD_EXT, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp",      ""  },
+  { "m",   0, STD_EXT, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp",      ""   },
   { NULL,  0, 0, NOLENGTHS, NULL, NULL }
 };
 
@@ -2718,6 +2722,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
 		  width_wanted_type.pointer_count = 0;
 		  width_wanted_type.char_lenient_flag = 0;
 		  width_wanted_type.writing_in_flag = 0;
+		  width_wanted_type.reading_from_flag = 0;
 		  width_wanted_type.name = _("field width");
 		  width_wanted_type.param = cur_param;
 		  width_wanted_type.arg_num = arg_num;
@@ -2803,6 +2808,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
 		  precision_wanted_type.pointer_count = 0;
 		  precision_wanted_type.char_lenient_flag = 0;
 		  precision_wanted_type.writing_in_flag = 0;
+		  precision_wanted_type.reading_from_flag = 0;
 		  precision_wanted_type.name = _("field precision");
 		  precision_wanted_type.param = cur_param;
 		  precision_wanted_type.arg_num = arg_num;
@@ -3129,8 +3135,16 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	  if (strchr (fci->flags2, 'c') != 0)
 	    main_wanted_type.char_lenient_flag = 1;
 	  main_wanted_type.writing_in_flag = 0;
-	  if (strchr (fci->flags2, 'W') != 0)
+	  main_wanted_type.reading_from_flag = 0;
+	  if (aflag)
 	    main_wanted_type.writing_in_flag = 1;
+	  else
+	    {
+	      if (strchr (fci->flags2, 'W') != 0)
+		main_wanted_type.writing_in_flag = 1;
+	      if (strchr (fci->flags2, 'R') != 0)
+		main_wanted_type.reading_from_flag = 1;
+	    }
 	  main_wanted_type.name = NULL;
 	  main_wanted_type.param = cur_param;
 	  main_wanted_type.arg_num = arg_num;
@@ -3206,6 +3220,15 @@ check_format_types (status, types)
 		  && integer_zerop (cur_param))
 		status_warning (status,
 				"writing through null pointer (arg %d)",
+				arg_num);
+
+	      /* Check for reading through a NULL pointer.  */
+	      if (types->reading_from_flag
+		  && i == 0
+		  && cur_param != 0
+		  && integer_zerop (cur_param))
+		status_warning (status,
+				"reading through null pointer (arg %d)",
 				arg_num);
 
 	      if (cur_param != 0 && TREE_CODE (cur_param) == ADDR_EXPR)
