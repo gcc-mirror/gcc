@@ -1,3 +1,8 @@
+2003-12-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* trans.c: Remove uses of "register" specifier in
+	declarations of local variables.
+
 2003-12-18  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* stamp-xgnatug: New stamp file.

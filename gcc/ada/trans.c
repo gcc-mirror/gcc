@@ -5156,9 +5156,9 @@ protect_multiple_eval (tree exp)
 tree
 gnat_stabilize_reference (tree ref, int force)
 {
-  register tree type = TREE_TYPE (ref);
-  register enum tree_code code = TREE_CODE (ref);
-  register tree result;
+  tree type = TREE_TYPE (ref);
+  enum tree_code code = TREE_CODE (ref);
+  tree result;
 
   switch (code)
     {
@@ -5252,9 +5252,9 @@ gnat_stabilize_reference (tree ref, int force)
 static tree
 gnat_stabilize_reference_1 (tree e, int force)
 {
-  register enum tree_code code = TREE_CODE (e);
-  register tree type = TREE_TYPE (e);
-  register tree result;
+  enum tree_code code = TREE_CODE (e);
+  tree type = TREE_TYPE (e);
+  tree result;
 
   /* We cannot ignore const expressions because it might be a reference
      to a const array but whose index contains side-effects.  But we can
