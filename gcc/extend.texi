@@ -1525,7 +1525,8 @@ string argument (starting from 1), while @var{first-to-check} is the
 number of the first argument to check against the format string.  For
 functions where the arguments are not available to be checked (such as
 @code{vprintf}), specify the third parameter as zero.  In this case the
-compiler only checks the format string for consistency.
+compiler only checks the format string for consistency.  For
+@code{strftime} formats, the third parameter is required to be zero.
 
 In the example above, the format string (@code{my_format}) is the second
 argument of the function @code{my_print}, and the arguments to check
@@ -1534,12 +1535,16 @@ attribute are 2 and 3.
 
 The @code{format} attribute allows you to identify your own functions
 which take format strings as arguments, so that GNU CC can check the
-calls to these functions for errors.  The compiler always checks formats
-for the ANSI library functions @code{printf}, @code{fprintf},
+calls to these functions for errors.  The compiler always (unless
+@samp{-ffreestanding} is used) checks formats
+for the standard library functions @code{printf}, @code{fprintf},
 @code{sprintf}, @code{scanf}, @code{fscanf}, @code{sscanf}, @code{strftime},
 @code{vprintf}, @code{vfprintf} and @code{vsprintf} whenever such
 warnings are requested (using @samp{-Wformat}), so there is no need to
-modify the header file @file{stdio.h}.
+modify the header file @file{stdio.h}.  In C99 mode, the functions
+@code{snprintf}, @code{vsnprintf}, @code{vscanf}, @code{vfscanf} and
+@code{vsscanf} are also checked.
+@xref{C Dialect Options,,Options Controlling C Dialect}.
 
 @item format_arg (@var{string-index})
 @cindex @code{format_arg} function attribute
@@ -1568,7 +1573,9 @@ functions which modify format strings, so that GNU CC can check the
 calls to @code{printf}, @code{scanf}, or @code{strftime} function whose
 operands are a call to one of your own function.  The compiler always
 treats @code{gettext}, @code{dgettext}, and @code{dcgettext} in this
-manner.
+manner except when strict ISO C support is requested by @samp{-ansi} or
+an appropriate @samp{-std} option, or @samp{-ffreestanding} is used.
+@xref{C Dialect Options,,Options Controlling C Dialect}.
 
 @item no_instrument_function
 @cindex @code{no_instrument_function} function attribute
