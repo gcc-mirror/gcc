@@ -227,7 +227,7 @@ $(PARSE_H) $(PARSE_C) : $(srcdir)/parse.y
 	@echo $(CONFLICTS)
 	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o p$$$$.c parse.y ; \
 	grep '^#define[ 	]*YYEMPTY' p$$$$.c >> p$$$$.h ; \
-	mv -f p$$$$.c $(PARSE_C) ; mv -f p$$$$.h $(PARSE_H)
+	mv -f p$$$$.c parse.c ; mv -f p$$$$.h parse.h
 #$(PARSE_C) $(PARSE_H) : stamp-parse ; @true
 #stamp-parse: $(srcdir)/parse.y
 #	@echo $(CONFLICTS)
