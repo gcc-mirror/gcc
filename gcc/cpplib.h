@@ -123,7 +123,7 @@ typedef struct cpp_name cpp_name;
   H(CPP_CHILL_COMMENT,	spell_comment)	/* Only if output comments.  */ \
   N(CPP_MACRO_ARG,      0)              /* Macro argument.  */          \
   N(CPP_SUBLIST,        0)	        /* Sublist.  */                 \
-  E(CPP_VSPACE,		"\n")		/* End of line.  */		\
+  T(CPP_VSPACE,		"\n")		/* End of line.  */		\
   N(CPP_EOF,		0)		/* End of file.  */		\
   N(CPP_HEADER_NAME,	0)		/* <stdio.h> in #include */	\
   N(CPP_ASSERTION,	0)		/* (...) in #assert */		\
@@ -138,7 +138,6 @@ typedef struct cpp_name cpp_name;
 #define H(e, s) e,
 #define C(e, s) e,
 #define N(e, s) e,
-#define E(e, s) e,
 enum cpp_ttype
 {
   TTYPE_TABLE
@@ -148,7 +147,6 @@ enum cpp_ttype
 #undef H
 #undef C
 #undef N
-#undef E
 
 /* Payload of a NAME, NUMBER, FLOAT, STRING, or COMMENT token.  */
 struct cpp_name

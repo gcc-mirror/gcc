@@ -1,3 +1,11 @@
+Mon  8 May 22:17:35 2000  Neil Booth  <NeilB@earthling.net>
+
+	* cpplex.c (spell_token): New function.
+	  (TOKEN_LEN): Add 1 for whitespace.
+	  (_cpp_lex_file): Update to use spell_token.
+	* cpplib.h (E): Remove.
+	(TTYPE_TABLE): Update CPP_VSPACE entry.
+
 2000-05-08  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (init_propagate_block_info): Watch out for conditional
