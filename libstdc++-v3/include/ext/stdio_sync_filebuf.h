@@ -57,10 +57,7 @@ namespace __gnu_cxx
   template<typename _CharT, typename _Traits = std::char_traits<_CharT> >
     class stdio_sync_filebuf : public std::basic_streambuf<_CharT, _Traits>
     {
-    private:
-      std::__c_file* const _M_file;
-
-     public:
+    public:
       // Types:
       typedef _CharT                  	        	char_type;
       typedef _Traits		                    	traits_type;
@@ -68,8 +65,19 @@ namespace __gnu_cxx
       typedef typename traits_type::pos_type 		pos_type;
       typedef typename traits_type::off_type 		off_type;
 
+    private:
+      // Underlying stdio FILE
+      std::__c_file* const _M_file;
+      
+      // Last character gotten. This is used when pbackfail is
+      // called from basic_streambuf::sungetc()
+      int_type _M_unget_buf;
+
+    public:
       explicit 
-      stdio_sync_filebuf(std::__c_file* __f) : _M_file(__f) { }
+      stdio_sync_filebuf(std::__c_file* __f)
+      : _M_file(__f), _M_unget_buf(traits_type::eof())
+      { }
 
     protected:
 
@@ -91,11 +99,33 @@ namespace __gnu_cxx
 
       virtual int_type
       uflow()
-      { return this->syncgetc(); }
+      {
+	// Store the gotten character in case we need to unget it.
+	_M_unget_buf = this->syncgetc();
+	return _M_unget_buf;
+      }
 
       virtual int_type
       pbackfail(int_type __c = traits_type::eof())
-      { return this->syncungetc(__c); }
+      {
+	int_type __ret;
+	const int_type __eof = traits_type::eof();
+
+	// Check if the unget or putback was requested
+	if (traits_type::eq_int_type(__c, __eof)) // unget
+	  {
+	    if (!traits_type::eq_int_type(_M_unget_buf, __eof))
+	      __ret = this->syncungetc(_M_unget_buf);
+	    else // buffer invalid, fail.
+	      __ret = __eof;
+	  }
+	else // putback
+	  __ret = this->syncungetc(__c);
+
+	// The buffered character is no longer valid, discard it.
+	_M_unget_buf = __eof;
+	return __ret;
+      }
 
       virtual std::streamsize
       xsgetn(char_type* __s, std::streamsize __n);
@@ -179,7 +209,14 @@ namespace __gnu_cxx
   template<>
     inline std::streamsize
     stdio_sync_filebuf<char>::xsgetn(char* __s, std::streamsize __n)
-    { return std::fread(__s, 1, __n, _M_file); }
+    {
+      std::streamsize __ret = std::fread(__s, 1, __n, _M_file);
+      if (__ret > 0)
+	_M_unget_buf = traits_type::to_int_type(__s[__ret - 1]);
+      else
+	_M_unget_buf = traits_type::eof();
+      return __ret;
+    }
 
   template<>
     inline std::streamsize
@@ -213,9 +250,14 @@ namespace __gnu_cxx
 	  int_type __c = this->syncgetc();
 	  if (traits_type::eq_int_type(__c, __eof))
 	    break;
-	  *__s++ = __c;
+	  __s[__ret] = traits_type::to_char_type(__c);
 	  ++__ret;
 	}
+
+      if (__ret > 0)
+	_M_unget_buf = traits_type::to_int_type(__s[__ret - 1]);
+      else
+	_M_unget_buf = traits_type::eof();
       return __ret;
     }
       

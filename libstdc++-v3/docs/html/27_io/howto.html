@@ -185,9 +185,10 @@
       <code>setbuf()</code>-ish functions; the classes derived from
       <code>streambuf</code> each define behavior that &quot;makes 
       sense&quot; for that class:  an argument of (0,0) turns off buffering
-      for <code>filebuf</code> but has undefined behavior for its sibling
-      <code>stringbuf</code>, and specifying anything other than (0,0) has
-      varying effects.  Other user-defined class derived from streambuf can
+      for <code>filebuf</code> but does nothing at all for its siblings
+      <code>stringbuf</code> and <code>strstreambuf</code>, and specifying
+      anything other than (0,0) has varying effects.
+      User-defined classes derived from <code>streambuf</code> can
       do whatever they want.  (For <code>filebuf</code> and arguments for
       <code>(p,s)</code> other than zeros, libstdc++ does what you'd expect:
       the first <code>s</code> bytes of <code>p</code> are used as a buffer,

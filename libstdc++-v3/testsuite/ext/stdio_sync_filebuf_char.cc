@@ -52,13 +52,89 @@ void test01()
   VERIFY( sbuf.sgetn(buf, 5) == 5 );
   VERIFY( !memcmp(buf, c_lit + 3, 5) );
   VERIFY( getc(fin) == c_lit[8] );
-  VERIFY( sbuf.sungetc() == EOF );
 
   fclose(fin);
+}
+
+// libstdc++/12048
+void test02()
+{
+  bool test = true;
+  const char* name = "cin_unget-1.txt";
+
+  std::FILE* file = std::fopen(name, "r");
+  __gnu_cxx::stdio_sync_filebuf<char> sbuf(file);
+  int c1 = sbuf.sbumpc();
+  VERIFY( c1 != EOF );
+  int c2 = sbuf.sungetc();
+  VERIFY( c2 != EOF );
+  int c3 = sbuf.sbumpc();
+  VERIFY( c3 == c1 );
+
+  std::fclose(file);
+}
+
+// libstdc++/12048
+void test03()
+{
+  bool test = true;
+  const char* name = "cin_unget-1.txt";
+
+  std::FILE* file = std::fopen(name, "r");
+  __gnu_cxx::stdio_sync_filebuf<char> sbuf(file);
+  int c1 = sbuf.sbumpc();
+  VERIFY( c1 != EOF );
+  int c2 = sbuf.sungetc();
+  VERIFY( c2 != EOF );
+  int c3 = std::fgetc(file);
+  VERIFY( c3 == c1 );
+
+  std::fclose(file);
+}
+
+// libstdc++/12048
+void test04()
+{
+  bool test = true;
+  const char* name = "cin_unget-1.txt";
+
+  std::FILE* file = std::fopen(name, "r");
+  __gnu_cxx::stdio_sync_filebuf<char> sbuf(file);
+  char buf[2];
+  VERIFY( sbuf.sgetn(buf, 2) == 2 );
+  int c2 = sbuf.sungetc();
+  VERIFY( c2 != EOF );
+  int c3 = sbuf.sbumpc();
+  VERIFY( c3 == std::char_traits<char>::to_int_type(buf[1]) );
+
+  std::fclose(file);
+}
+
+// libstdc++/12048
+void test05()
+{
+  bool test = true;
+  const char* name = "cin_unget-1.txt";
+
+  std::FILE* file = std::fopen(name, "r");
+  __gnu_cxx::stdio_sync_filebuf<char> sbuf(file);
+  char buf[2];
+  VERIFY( sbuf.sgetn(buf, 2) == 2 );
+  int c2 = sbuf.sungetc();
+  VERIFY( c2 != EOF );
+  int c3 = std::fgetc(file);
+  VERIFY( c3 == std::char_traits<char>::to_int_type(buf[1]) );
+
+  std::fclose(file);
 }
 
 int main ()
 {
   test01();
+  test02();
+  test03();
+  test04();
+  test05();
+
   return 0;
 }
