@@ -1,3 +1,7 @@
+2001-09-08  Andreas Jaeger  <aj@suse.de>
+
+	* i386.h (TARGET_SWITCHES): Fix description.
+
 2001-09-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (num_insns_constant): Compute number of instructions

@@ -345,7 +345,7 @@ extern const int x86_epilogue_using_move;
     N_("Do not support MMX, SSE and SSE2 builtins and code generation") },    \
   { "mix-sse-i387",		 MASK_MIX_SSE_I387,			      \
     N_("Use both SSE and i387 instruction sets for floating point arithmetics") },\
-  { "nomix-sse-i387",		-MASK_MIX_SSE_I387,			      \
+  { "no-mix-sse-i387",		-MASK_MIX_SSE_I387,			      \
     N_("Do not use both SSE and i387 instruction sets for floating point arithmetics") },\
   { "128bit-long-double",	 MASK_128BIT_LONG_DOUBLE,		      \
     N_("sizeof(long double) is 16.") },					      \
