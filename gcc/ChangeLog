@@ -1,3 +1,11 @@
+2000-04-05   Benjamin Kosnik  <bkoz@cygnus.com>
+
+        * configure.in: And here.
+        * configure: Regenerate.
+        * acconfig.h: Add ENABLE_STD_NAMESPACE to set flag_honor_std if
+        --enable-libstdcxx-v3 is passed at configure time.
+        * config.h.in: Regenerate.
+
 2000-04-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* final.c (final): Use xcalloc to allocate line_note_exists.
