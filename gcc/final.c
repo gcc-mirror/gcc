@@ -2278,6 +2278,12 @@ output_addr_const (file, x)
       break;
 
     case MINUS:
+      /* Avoid outputting things like x-x or x+5-x,
+	 since some assemblers can't handle that.  */
+      x = simplify_subtraction (x);
+      if (GET_CODE (x) != MINUS)
+	goto restart;
+
       output_addr_const (file, XEXP (x, 0));
       fprintf (file, "-");
       if (GET_CODE (XEXP (x, 1)) == CONST_INT
