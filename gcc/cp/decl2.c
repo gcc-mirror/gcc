@@ -1190,8 +1190,21 @@ constructor_name (tree type)
 bool
 constructor_name_p (tree name, tree type)
 {
-  return (name == constructor_name (type)
-	  || name == constructor_name_full (type));
+  tree ctor_name;
+
+  if (!name)
+    return false;
+  
+  if (TREE_CODE (name) != IDENTIFIER_NODE)
+    return false;
+  
+  ctor_name = constructor_name_full (type);
+  if (name == ctor_name)
+    return true;
+  if (IDENTIFIER_TEMPLATE (ctor_name)
+      && name == IDENTIFIER_TEMPLATE (ctor_name))
+    return true;
+  return false;
 }
 
 

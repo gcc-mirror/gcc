@@ -1,3 +1,11 @@
+2003-07-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++ 9483
+	* class.c (check_field_decls): Pass DECL_NAME to constructor_name_p.
+	* decl2.c (constructor_name_p): Avoid repeated constructor_name
+	calls.
+	* decl.c (grokdeclarator): Refactor ctor/dtor detection.
+
 2003-07-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* typeck.c (build_x_unary_op): Take note of the fact that
