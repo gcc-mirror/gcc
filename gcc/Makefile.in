@@ -1579,13 +1579,13 @@ xsys-protos.h: $(srcdir)/sys-protos.h deduced.h gen-protos Makefile
 	  | ./gen-protos >xsys-protos.h
 	rm -rf fixtmp.c
 
-patch-header: patch-header.o scan-decls.o scan.o xsys-protos.h $(HOST_OBSTACK)
-	$(HOST_CC) -o patch-header patch-header.o scan-decls.o scan.o $(HOST_OBSTACK)
+fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_OBSTACK)
+	$(HOST_CC) -o fix-header fix-header.o scan-decls.o scan.o $(HOST_OBSTACK)
 
-patch-header.o: xsys-protos.h
+fix-header.o: xsys-protos.h
 
 # stmp-headers is to make sure fixincludes has already finished.
-stmp-fixproto: patch-header xsys-protos.h fixproto stmp-headers
+stmp-fixproto: fix-header xsys-protos.h fixproto stmp-headers
 	CPP="$(GCC_FOR_TARGET) -E"; export CPP; \
 	  ${srcdir}/fixproto include include $(SYSTEM_HEADER_DIR)
 	touch stmp-fixproto
@@ -1658,7 +1658,7 @@ mostlyclean: bytecode.mostlyclean
 	-rm -f specs gfloat.h float.h-* enquire SYSCALLS.c.X SYSCALLS.c
 	-rm -f collect collect2 ld mips-tfile mips-tdump alloca.s
 # Delete files generated for fixproto
-	-rm -rf patch-header xsys-protos.h deduced.h tmp-deduced.h \
+	-rm -rf fix-header xsys-protos.h deduced.h tmp-deduced.h \
 	  gen-protos fixproto.list fixtmp.*
 # Delete unwanted output files from TeX.
 	-rm -f *.toc *.log *.vr *.fn *.cp *.tp *.ky *.pg
