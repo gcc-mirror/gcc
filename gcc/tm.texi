@@ -6375,6 +6375,14 @@ section.
 A C statement to output to the stdio stream @var{stream} an assembler
 command to advance the location counter to a multiple of 2 to the
 @var{power} bytes.  @var{power} will be a C expression of type @code{int}.
+
+@findex ASM_OUTPUT_MAX_SKIP_ALIGN
+@item ASM_OUTPUT_MAX_SKIP_ALIGN (@var{stream}, @var{power}, @var{max_skip})
+A C statement to output to the stdio stream @var{stream} an assembler
+command to advance the location counter to a multiple of 2 to the
+@var{power} bytes, but only if @var{max_skip} or fewer bytes are needed to
+satisfy the alignment request.  @var{power} and @var{max_skip} will be
+a C expression of type @code{int}.
 @end table
 
 @need 3000
