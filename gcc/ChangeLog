@@ -1,5 +1,7 @@
 2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* fr30.c (fr30_print_operand): Fix format specifier warnings.
+
 	* dsp16xx.c (print_operand_address): Fix format specifier warning.
 	* dsp16xx.h (INCLUDE_DEFAULTS): Add missing initializers.
 
