@@ -131,6 +131,14 @@ get_filename (tree expr)
     return "???";
 }
 
+/* Return true if T is a noreturn call.  */
+static inline bool
+noreturn_call_p (tree t)
+{
+  tree call = get_call_expr_in (t);
+  return call != 0 && (call_expr_flags (call) & ECF_NORETURN) != 0;
+}
+
 /* Mark statement T as modified.  */
 static inline void
 modify_stmt (tree t)
@@ -138,6 +146,8 @@ modify_stmt (tree t)
   stmt_ann_t ann = stmt_ann (t);
   if (ann == NULL)
     ann = create_stmt_ann (t);
+  else if (noreturn_call_p (t))
+    VEC_safe_push (tree, modified_noreturn_calls, t);
   ann->modified = 1;
 }
 

@@ -297,6 +297,8 @@ union tree_ann_d GTY((desc ("ann_type ((tree_ann_t)&%h)")))
   struct stmt_ann_d GTY((tag ("STMT_ANN"))) stmt;
 };
 
+extern GTY(()) VEC(tree) *modified_noreturn_calls;
+
 typedef union tree_ann_d *tree_ann_t;
 typedef struct var_ann_d *var_ann_t;
 typedef struct stmt_ann_d *stmt_ann_t;
@@ -310,6 +312,7 @@ static inline stmt_ann_t get_stmt_ann (tree);
 static inline enum tree_ann_type ann_type (tree_ann_t);
 static inline basic_block bb_for_stmt (tree);
 extern void set_bb_for_stmt (tree, basic_block);
+static inline bool noreturn_call_p (tree);
 static inline void modify_stmt (tree);
 static inline void unmodify_stmt (tree);
 static inline bool stmt_modified_p (tree);

@@ -1,3 +1,15 @@
+2005-02-02  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR tree-optimization/19578
+	* tree-flow.h (modified_noreturn_calls): Declare.
+	(noreturn_call_p): Declare.
+	* tree-flow-inline.h (noreturn_call_p): New function.
+	(modify_stmt): Add modified noreturn calls to modified_noreturn_calls.
+	* tree-cfg.c (modified_noreturn_calls): New variable.
+	(cleanup_control_flow): Use noreturn_call_p.  Split basic blocks
+	that contain a mid-block noreturn call.
+	* tree-ssa.c (delete_tree_ssa): Clear modified_noreturn_calls.
+
 2005-02-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* df.c (df_def_record_1, df_uses_record): Don't use
