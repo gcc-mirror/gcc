@@ -17,9 +17,17 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-/* $Id: jartool.c,v 1.7 2001/08/27 23:09:37 tromey Exp $
+/* $Id: jartool.c,v 1.8 2001/08/29 01:35:31 apbianco Exp $
 
    $Log: jartool.c,v $
+   Revision 1.8  2001/08/29 01:35:31  apbianco
+   2001-08-28  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+   	* jartool.c (add_to_jar): Return 1 if `stat' initialy failed.
+   	Fixes PR java/3949.
+
+   (http://gcc.gnu.org/ml/gcc-patches/2001-08/msg01641.html)
+
    Revision 1.7  2001/08/27 23:09:37  tromey
    	* jartool.c (jarfile): Remove length limitation.
    	(main): Use jt_strdup when initializing jarfile.
@@ -1302,7 +1310,7 @@ int extract_jar(int fd, char **files, int file_num){
 #endif
     }
 
-    if(filename_len < fnlen){
+    if(filename_len < fnlen + 1){
       if(filename != NULL)
         free(filename);
       
