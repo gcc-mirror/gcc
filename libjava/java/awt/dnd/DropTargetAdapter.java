@@ -35,30 +35,25 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.awt.dnd;
 
 /**
- * This class implements <code>DragSourceListener</code> and
- * <code>DragSourceMotionListener</code>, and implements all methods
+ * This class implements <code>DropTargetListener</code>, and implements all methods
  * with empty bodies.  This allows a listener interested in implementing only
  * a subset of these interfaces to extend this class and override only the
  * desired methods.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
- * @see DragSourceEvent
- * @see DragSourceListener
- * @see DragSourceMotionListener
+ * @author Michael Koch <konqueror@gmx.de>
  * @since 1.4
  * @status updated to 1.4
  */
-public abstract class DragSourceAdapter
-  implements DragSourceListener, DragSourceMotionListener
+public abstract class DropTargetAdapter
+  implements DropTargetListener
 {
   /**
    * Default constructor.
    */
-  public DragSourceAdapter()
+  public DropTargetAdapter()
   {
   }
 
@@ -68,7 +63,7 @@ public abstract class DragSourceAdapter
    *
    * @param e the event
    */
-  public void dragEnter(DragSourceDragEvent e)
+  public void dragEnter (DropTargetDragEvent e)
   {
   }
 
@@ -78,16 +73,7 @@ public abstract class DragSourceAdapter
    *
    * @param e the event
    */
-  public void dragOver(DragSourceDragEvent e)
-  {
-  }
-
-  /**
-   * Called whenever the mouse is moved during a drag-and-drop operation.
-   *
-   * @param e the event
-   */
-  public void dragMouseMoved(DragSourceDragEvent e)
+  public void dragOver (DropTargetDragEvent e)
   {
   }
 
@@ -97,7 +83,7 @@ public abstract class DragSourceAdapter
    *
    * @param e the event
    */
-  public void dropActionChanged(DragSourceDragEvent e)
+  public void dropActionChanged (DropTargetDragEvent e)
   {
   }
 
@@ -108,19 +94,7 @@ public abstract class DragSourceAdapter
    *
    * @param e the event
    */
-  public void dragExit(DragSourceEvent e)
+  public void dragExit(DropTargetEvent e)
   {
   }
-
-  /**
-   * Called when the drag and drop operation is complete. After this event,
-   * <code>getDropSuccess</code> of the event is valid, and
-   * <code>getDropAction</code> holds the action requested by the drop site.
-   * Furthermore, the <code>DragSourceContext</code> is invalidated.
-   *
-   * @param e the event
-   */
-  public void dragDropEnd(DragSourceDropEvent e)
-  {
-  }
-} // class DragSourceAdapter
+} // class DropTargetAdapter
