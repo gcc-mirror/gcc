@@ -1230,15 +1230,16 @@ do {						\
 #define COND_EXEC_TEST(RTX) XCEXP (RTX, 0, COND_EXEC)
 #define COND_EXEC_CODE(RTX) XCEXP (RTX, 1, COND_EXEC)
 
-/* 1 if RTX is a symbol_ref that addresses this function's constants pool.  */
+/* 1 if RTX is a symbol_ref that addresses this function's rtl
+   constants pool.  */
 #define CONSTANT_POOL_ADDRESS_P(RTX)					\
   (RTL_FLAG_CHECK1("CONSTANT_POOL_ADDRESS_P", (RTX), SYMBOL_REF)->unchanging)
 
-/* 1 if RTX is a symbol_ref that addresses a value in the file's constant
-   pool which has not yet been output.  This information is private to
-   varasm.c.  */
-#define DEFERRED_CONSTANT_P(RTX)					\
-  (RTL_FLAG_CHECK1("DEFERRED_CONSTANT_P", (RTX), SYMBOL_REF)->frame_related)
+/* 1 if RTX is a symbol_ref that addresses a value in the file's
+   tree constant pool.  This information is private to varasm.c.  */
+#define TREE_CONSTANT_POOL_ADDRESS_P(RTX)				\
+  (RTL_FLAG_CHECK1("TREE_CONSTANT_POOL_ADDRESS_P",			\
+		   (RTX), SYMBOL_REF)->frame_related)
 
 /* Used if RTX is a symbol_ref, for machine-specific purposes.  */
 #define SYMBOL_REF_FLAG(RTX)						\
