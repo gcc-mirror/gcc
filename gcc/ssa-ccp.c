@@ -936,10 +936,7 @@ ssa_ccp_df_delete_unreachable_insns ()
     {
       basic_block b = BASIC_BLOCK (i);
 
-      if (b->aux != NULL)
-	/* This block was found.  Tidy up the mark.  */
-	b->aux = NULL;
-      else
+      if (!(b->flags & BB_REACHABLE))
 	{
 	  rtx start = b->head;
 	  rtx end = b->end;
