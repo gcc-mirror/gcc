@@ -9558,7 +9558,7 @@ expand_builtin_apply (function, arguments, argsize)
      haven't figured out how the calling convention macros effect this,
      but it's likely that the source and/or destination addresses in
      the block copy will need updating in machine specific ways.  */
-  dest = copy_addr_to_reg (push_block (argsize, 0, 0));
+  dest = allocate_dynamic_stack_space (argsize, 0, 0);
   emit_block_move (gen_rtx (MEM, BLKmode, dest),
 		   gen_rtx (MEM, BLKmode, incoming_args),
 		   argsize,
