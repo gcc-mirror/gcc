@@ -1987,6 +1987,8 @@ rest_of_compilation (decl)
      to be restored after we finish compiling the function
      (for use when compiling inline calls to this function).  */
   tree saved_block_tree = 0;
+  /* Likewise, for DECL_ARGUMENTS.  */
+  tree saved_arguments = 0;
   int failure = 0;
 
   /* If we are reconsidering an inline function
@@ -2041,11 +2043,12 @@ rest_of_compilation (decl)
 	  goto exit_rest_of_compilation;
 	}
 
-      /* If we have to compile the function now, save its rtl
+      /* If we have to compile the function now, save its rtl and subdecls
 	 so that its compilation will not affect what others get.  */
       if (TREE_INLINE (decl))
 	{
 	  saved_block_tree = DECL_INITIAL (decl);
+	  saved_arguments = DECL_ARGUMENTS (decl);
 	  TIMEVAR (integration_time, save_for_inline_copying (decl));
 	}
     }
@@ -2523,12 +2526,15 @@ rest_of_compilation (decl)
     sdbout_types (NULL_TREE);
 #endif
 
-  /* Put back the tree of subblocks from before we copied it.
+  /* Put back the tree of subblocks and list of arguments
+     from before we copied them.
      Code generation and the output of debugging info may have modified
      the copy, but the original is unchanged.  */
 
   if (saved_block_tree != 0)
     DECL_INITIAL (decl) = saved_block_tree;
+  if (saved_arguments != 0)
+    DECL_ARGUMENTS (decl) = saved_arguments;
 
   reload_completed = 0;
 
