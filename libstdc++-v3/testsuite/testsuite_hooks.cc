@@ -78,6 +78,10 @@ __set_testsuite_memlimit(float) { }
 
 gnu_counting_struct::size_type  gnu_counting_struct::count = 0;
 
-int gnu_copy_tracker::itsCopyCount = 0;
-int gnu_copy_tracker::itsDtorCount = 0;
+unsigned int gnu_copy_constructor::count_ = 0;
+unsigned int gnu_copy_constructor::throw_on_ = 0;
+unsigned int gnu_assignment_operator::count_ = 0;
+unsigned int gnu_assignment_operator::throw_on_ = 0;
+unsigned int gnu_destructor::count_ = 0;
+int gnu_copy_tracker::next_id_ = 0;
 

@@ -51,7 +51,7 @@ INCLUDES = \
 
 ## Build support library.
 noinst_LIBRARIES = libv3test.a
-libv3test_a_SOURCES = testsuite_hooks.cc
+libv3test_a_SOURCES = testsuite_hooks.cc testsuite_allocator.cc
 
 ## Build support utilities.
 ## Only build this as native, as need to find startup files and libc to link.
