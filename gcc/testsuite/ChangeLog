@@ -1,3 +1,9 @@
+2002-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tls/pic-1.c: New test.
+	* gcc.dg/tls/nonpic-1.c: New test.
+	* gcc.dg/20021018-1.c: New test.
+
 2002-10-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* lib/profopt.exp (profopt-cleanup): New argument TESTCASE.

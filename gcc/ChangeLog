@@ -1,3 +1,60 @@
+2002-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (x86_64_sign_extended_value): Add allow_rip
+	argument.  In CM_SMALL_PIC model consider SYMBOL_REFs binding locally or
+	from constant pool or LABEL_REFs as sign extended if allow_rip.
+	Change all +-1GB limits to +-16MB.
+	(x86_64_general_operand, x86_64_szext_general_operand,
+	x86_64_nonmemory_operand, x86_64_movabs_operand,
+	x86_64_szext_nonmemory_operand, x86_64_immediate_operand,
+	legitimate_address_p, ix86_expand_int_movcc): Update callers.
+	(local_symbolic_operand): Don't allow offsets bigger than +-16MB
+	in CM_SMALL_PIC model.
+	(legitimate_pic_address_disp_p): Don't check offsets before
+	calling local_symbolic_operand.
+	(legitimize_pic_address): Force offsets bigger than +-16MB into
+	register.
+	* config/i386/i386.h (EXTRA_CONSTRAINT, CONST_COSTS): Likewise.
+	* config/i386/i386-protos.h (x86_64_sign_extended_value): Update
+	prototype.
+
+	* configure.in: Test for @GOTNTPOFF and @INDNTPOFF on IA-32 too.
+	Add x86-64 test.  Set tls_first_minor to 14 on IA-32 and x86-64.
+	* configure: Rebuilt.
+	* config/i386/i386.c (x86_64_sign_extended_value): Don't allow TLS
+	SYMBOL_REFs unless enclosed in UNSPEC.  Handle UNSPEC_DTPOFF,
+	UNSPEC_GOTNTPOFF and UNSPEC_NTPOFF.
+	(legitimate_address_p): Allow foo@dtpoff(base) even on TARGET_64BIT
+	-fpic.
+	(ix86_encode_section_info): Don't ever generate TLSGD or TLSLD for
+	non-pic code if TARGET_64BIT.
+	(legitimize_address): Generate 64-bit TLS sequences.
+	(output_pic_addr_const): Support x86-64 TLS operators.
+	(i386_output_dwarf_dtprel): Output 64-bit DTPOFF as .long f@DTPOFF, 0.
+	(print_operand_address): Use %fs instead of %gs on TARGET_64BIT.
+	Don't append (%rip) in 64-bit TLSGD and TLSLD sequences.
+	(output_addr_const_extra): Support x86-64 TLS operators.
+	(maybe_get_pool_constant): Handle TARGET_64BIT -fpic.
+	(ix86_tls_get_addr): Use __tls_get_addr on TARGET_64BIT
+	unconditionally.
+	* config/i386/i386.md (*tls_global_dynamic_gnu): Renamed to...
+	(*tls_global_dynamic_32_gnu): ..., add !TARGET_64BIT.
+	(*tls_global_dynamic_sun): Renamed to...
+	(*tls_global_dynamic_32_sun): ..., add !TARGET_64BIT.
+	(tls_global_dynamic): Renamed to...
+	(tls_global_dynamic_32): ... this.
+	(tls_global_dynamic_64, *tls_global_dynamic_64): New.
+	(*tls_local_dynamic_base_dynamic_gnu): Renamed to...
+	(*tls_local_dynamic_base_dynamic_32_gnu): ..., add !TARGET_64BIT.
+	(*tls_local_dynamic_base_dynamic_sun): Renamed to...
+	(*tls_local_dynamic_base_dynamic_32_sun): ..., add !TARGET_64BIT.
+	(tls_local_dynamic_base_dynamic): Renamed to...
+	(tls_local_dynamic_base_dynamic_32): ... this.
+	(tls_local_dynamic_base_dynamic_64,
+	*tls_local_dynamic_base_dynamic_64): New.
+	(*tls_local_dynamic_once): Renamed to...
+	(*tls_local_dynamic_32_once): ... this.
+
 2002-10-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* libgcc2.c: Inline __udiv_w_sdiv when compiling __udivdi3,
