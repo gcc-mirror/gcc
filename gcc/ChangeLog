@@ -1,3 +1,8 @@
+2001-03-23  Richard Henderson  <rth@redhat.com>
+
+	* config/mips/iris4.h (ASM_OUTPUT_ASCII): Rename local variables
+	to avoid shadowing arguments.
+
 2001-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* varasm.c (make_decl_rtl): Don't append var_labelno discriminator
