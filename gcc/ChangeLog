@@ -1,3 +1,10 @@
+2004-01-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/10904
+	PR target/13058
+	* config/sparc/sparc.h (CANNOT_CHANGE_MODE_CLASS): New.
+	Forbid mode changes from SImode for lower FP regs if ARCH64.
+
 2004-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_constant_alignment): Decrease alignment
