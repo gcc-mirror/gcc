@@ -363,7 +363,8 @@ extern int target_flags;
    aligned on word boundaries, and optimizes calls to the str* and mem*
    library functions.  */
 #define CONSTANT_ALIGNMENT(EXP, ALIGN) \
-  (i960_object_bytes_bitalign (int_size_in_bytes (TREE_TYPE (EXP))) > (ALIGN) \
+  (TREE_CODE (EXP) == STRING_CST	\
+   && i960_object_bytes_bitalign (int_size_in_bytes (TREE_TYPE (EXP))) > (ALIGN) \
    ? i960_object_bytes_bitalign (int_size_in_bytes (TREE_TYPE (EXP)))	    \
    : (ALIGN))
 
