@@ -5,6 +5,17 @@
 
 #include "i386v.h"
 
+/* By default, target has a 80387, uses IEEE compatible arithmetic,
+   and returns float values in the 387, ie,
+   (TARGET_80387 | TARGET_FLOAT_RETURNS_IN_80387)
+
+   SCO's software emulation of a 387 fails to handle the `fucomp'
+   opcode.  fucomp is only used when generating IEEE compliant code.
+   So don't make TARGET_IEEE_FP default for SCO. */
+
+#undef TARGET_DEFAULT
+#define TARGET_DEFAULT 0201
+
 /* Use crt1.o as a startup file and crtn.o as a closing file.  */
 
 #undef STARTFILE_SPEC
