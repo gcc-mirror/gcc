@@ -39,11 +39,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static void tree_ssa_phiopt (void);
 static bool conditional_replacement (basic_block, tree, tree, tree);
 static bool value_replacement (basic_block, tree, tree, tree);
+static bool abs_replacement (basic_block, tree, tree, tree);
 static void replace_phi_with_stmt (block_stmt_iterator, basic_block,
 				   basic_block, tree, tree);
 static bool candidate_bb_for_phi_optimization (basic_block,
 					       basic_block *,
 					       basic_block *);
+static bool empty_block_p (basic_block);
 
 /* This pass eliminates PHI nodes which can be trivially implemented as
    an assignment from a conditional expression.  ie if we have something
@@ -82,8 +84,29 @@ static bool candidate_bb_for_phi_optimization (basic_block,
       x = b;
 
    This can sometimes occur as a result of other optimizations.  A
-   similar transformation is done by the ifcvt RTL optimizer.  */
-   
+   similar transformation is done by the ifcvt RTL optimizer. 
+
+   This pass also eliminates PHI nodes which are really absolute 
+   values.  i.e. if we have something like:
+
+     bb0:
+      if (a >= 0) goto bb2; else goto bb1;
+     bb1:
+      x = -a;
+     bb2:
+      x = PHI (x (bb1), a (bb0));
+
+   We can rewrite that as:
+
+     bb0:
+     bb1:
+     bb2:
+      x = ABS_EXPR< a >;
+
+   bb1 will become unreachable and bb0 and bb2 will almost always be merged
+   into a single block.  Similar transformations are done by the ifcvt
+   RTL optimizer.  */ 
+
 static void
 tree_ssa_phiopt (void)
 {
@@ -106,7 +129,8 @@ tree_ssa_phiopt (void)
 	    
 	  /* Do the replacement of conditional if it can be done.  */
 	    if (conditional_replacement (bb, phi, arg0, arg1)
-		|| value_replacement (bb, phi, arg0, arg1))
+		|| value_replacement (bb, phi, arg0, arg1)
+		|| abs_replacement (bb, phi, arg0, arg1))
 	      {
 		/* We have done the replacement so we need to rebuild the
 		   cfg when this pass is complete.  */
@@ -121,12 +145,32 @@ tree_ssa_phiopt (void)
     cleanup_tree_cfg ();
 }
 
+/* Return TRUE if block BB has no executable statements, otherwise return
+   FALSE.  */
+static bool
+empty_block_p (basic_block bb)
+{
+  block_stmt_iterator bsi;
+
+  /* BB must have no executable statements.  */
+  bsi = bsi_start (bb);
+  while (!bsi_end_p (bsi)
+	  && (TREE_CODE (bsi_stmt (bsi)) == LABEL_EXPR
+	      || IS_EMPTY_STMT (bsi_stmt (bsi))))
+    bsi_next (&bsi);
+  
+  if (!bsi_end_p (bsi))
+    return false;
+
+  return true;
+}
+
 /* BB is a basic block which has only one PHI node with precisely two
    arguments.
 
    Examine both of BB's predecessors to see if one ends with a 
-   COND_EXPR and the other is an empty block.  If so, then we may
-   be able to optimize PHI nodes at the start of BB. 
+   COND_EXPR and the other is a successor of the COND_EXPR.  If so, then
+   we may be able to optimize PHI nodes at the start of BB. 
 
    If so, mark store the block with the COND_EXPR into COND_BLOCK_P
    and the other block into OTHER_BLOCK_P and return true, otherwise
@@ -138,12 +182,10 @@ candidate_bb_for_phi_optimization (basic_block bb,
 				   basic_block *other_block_p)
 {
   tree last0, last1;
-  block_stmt_iterator bsi;
   basic_block cond_block, other_block;
 
   /* One of the alternatives must come from a block ending with
-     a COND_EXPR.  The other block must be entirely empty, except
-     for labels.  */
+     a COND_EXPR.  */
   last0 = last_stmt (bb->pred->src);
   last1 = last_stmt (bb->pred->pred_next->src);
   if (last0 && TREE_CODE (last0) == COND_EXPR)
@@ -180,16 +222,6 @@ candidate_bb_for_phi_optimization (basic_block bb,
       || phi_nodes (other_block))
     return false;
   
-  /* OTHER_BLOCK must have no executable statements.  */
-  bsi = bsi_start (other_block);
-  while (!bsi_end_p (bsi)
-	  && (TREE_CODE (bsi_stmt (bsi)) == LABEL_EXPR
-	      || IS_EMPTY_STMT (bsi_stmt (bsi))))
-    bsi_next (&bsi);
-  
-  if (!bsi_end_p (bsi))
-    return false;
-
   *cond_block_p = cond_block;
   *other_block_p = other_block;
   /* Everything looks OK.  */
@@ -271,7 +303,8 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
   else
     return false;
   
-  if (!candidate_bb_for_phi_optimization (bb, &cond_block, &other_block))
+  if (!candidate_bb_for_phi_optimization (bb, &cond_block, &other_block)
+      || !empty_block_p (other_block))
     return false;
 										
   /* If the condition is not a naked SSA_NAME and its type does not
@@ -397,7 +430,8 @@ value_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
   if (HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg1))))
     return false;
 
-  if (!candidate_bb_for_phi_optimization (bb, &cond_block, &other_block))
+  if (!candidate_bb_for_phi_optimization (bb, &cond_block, &other_block)
+      || !empty_block_p (other_block))
     return false;
 
   cond = COND_EXPR_COND (last_stmt (cond_block));
@@ -445,6 +479,159 @@ value_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
       return true;
     }
   return false;
+}
+
+/*  The function absolute_replacement does the main work of doing the absolute
+    replacement.  Return true if the replacement is done.  Otherwise return
+    false.
+    bb is the basic block where the replacement is going to be done on.  arg0
+    is argument 0 from the phi.  Likewise for arg1.   */
+static bool
+abs_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
+{
+  tree result;
+  basic_block other_block = NULL;
+  basic_block cond_block = NULL;
+  tree new, cond;
+  block_stmt_iterator bsi;
+  edge true_edge, false_edge;
+  tree assign = NULL;
+  edge e;
+  tree rhs = NULL, lhs = NULL;
+  bool negate;
+  enum tree_code cond_code;
+
+  /* If the type says honor signed zeros we cannot do this
+     optimization.   */
+  if (HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg1))))
+    return false;
+
+  if (!candidate_bb_for_phi_optimization (bb, &cond_block, &other_block))
+    return false;
+
+  /* OTHER_BLOCK must have only one executable statement which must have the
+     form arg0 = -arg1 or arg1 = -arg0.  */
+  bsi = bsi_start (other_block);
+  while (!bsi_end_p (bsi))
+    {
+      tree stmt = bsi_stmt (bsi);
+
+      /* Empty statements and labels are uninteresting.  */
+      if (TREE_CODE (stmt) == LABEL_EXPR
+          || IS_EMPTY_STMT (stmt))
+        {
+          bsi_next (&bsi);
+          continue;
+        }
+
+      /* If we found the assignment, but it was not the only executable
+	 statement in OTHER_BLOCK, then we can not optimize.  */
+      if (assign)
+	return false;
+
+      /* If we got here, then we have found the first executable statement
+	 in OTHER_BLOCK.  If it is anything other than arg = -arg1 or
+	 arg1 = -arg0, then we can not optimize.  */
+      if (TREE_CODE (stmt) == MODIFY_EXPR)
+        {
+          lhs = TREE_OPERAND (stmt, 0);
+          rhs = TREE_OPERAND (stmt, 1);
+
+          if (TREE_CODE (rhs) == NEGATE_EXPR)
+            {
+              rhs = TREE_OPERAND (rhs, 0);
+
+              /* The assignment has to be arg0 = -arg1 or arg1 = -arg0.  */
+              if ((lhs == arg0 && rhs == arg1)
+		  || (lhs == arg1 && rhs == arg0))
+		{
+		  assign = stmt;
+		  bsi_next (&bsi);
+		}
+	      else
+		return false;
+            }
+	  else
+	    return false;
+        }
+      else
+	return false;
+    }
+
+  /* If we did not find the proper negation assignment, then we can not
+     optimize.  */
+  if (assign == NULL)
+    return false;
+
+  cond = COND_EXPR_COND (last_stmt (cond_block));
+  result = PHI_RESULT (phi);
+
+  /* Only relationals comparing arg[01] against zero are interesting.  */
+  cond_code = TREE_CODE (cond);
+  if (cond_code != GT_EXPR && cond_code != GE_EXPR
+      && cond_code != LT_EXPR && cond_code != LE_EXPR)
+    return false;
+
+  /* Make sure the conditional is arg[01] OP y.   */
+  if (TREE_OPERAND (cond, 0) != rhs)
+    return false;
+
+  if (FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (cond, 1)))
+	       ? real_zerop (TREE_OPERAND (cond, 1))
+	       : integer_zerop (TREE_OPERAND (cond, 1)))
+    ;
+  else
+    return false;
+
+  /* We need to know which is the true edge and which is the false
+     edge so that we know if have abs or negative abs.  */
+  extract_true_false_edges_from_block (cond_block, &true_edge, &false_edge);
+
+  /* For GT_EXPR/GE_EXPR, if the true edge goes to OTHER_BLOCK, then we
+     will need to negate the result.  Similarly for LT_EXPR/LE_EXPR if
+     the false edge goes to OTHER_BLOCK.  */
+  if (cond_code == GT_EXPR || cond_code == GE_EXPR)
+    e = true_edge;
+  else
+    e = false_edge;
+  
+  if (e->dest == other_block)
+    negate = true;
+  else
+    negate = false;
+  
+  if (negate)
+    lhs = make_rename_temp (TREE_TYPE (result), NULL);
+  else
+    lhs = result;
+
+  /*  Build the modify expression with abs expression.   */
+  new = build (MODIFY_EXPR, TREE_TYPE (lhs),
+               lhs, build1 (ABS_EXPR, TREE_TYPE (lhs), rhs));
+
+  replace_phi_with_stmt (bsi_start (bb), bb, cond_block, phi, new);
+
+  if (negate)
+    {
+
+      /* Get the right BSI.  We want to insert after the recently 
+	 added ABS_EXPR statement (which we know is the first statement
+	 in the block.  */
+      bsi = bsi_start (bb);
+      bsi_next (&bsi);
+      new = build (MODIFY_EXPR, TREE_TYPE (result),
+                   result, build1 (NEGATE_EXPR, TREE_TYPE (lhs), lhs));
+
+      bsi_insert_after (&bsi, new, BSI_NEW_STMT);
+
+      /* Register the new statement as defining the temporary -- this is
+	 normally done by replace_phi_with_stmt, but the link will be wrong
+	 if we had to negate the resulting value.  */
+      SSA_NAME_DEF_STMT (result) = new;
+    }
+
+  /* Note that we optimized this PHI.  */
+  return true;
 }
 
 

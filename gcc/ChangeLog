@@ -40,6 +40,12 @@
 2004-05-18  Andrew Pinski  <pinskia@physics.uc.edu>
 	    Jeff Law <law@redhat.com>
 
+	* tree-ssa-phiopt.c (abs_replacement): New function.
+	(empty_block_p): New function extracted from...
+	(candidate_bb_for_phi_optimization): Break out empty block test.
+	(conditional_replacement): Use empty_block_p.
+	(value_replacement): Similarly.
+
 	* Makefile.in (tree-ssa-phiopt.o): Depends on flags.h.
 	* tree-ssa-phiopt.c: Include flags.h.
 	(conditional_replacement): Remove argument names from prototype.

@@ -11,5 +11,7 @@ foo2 (distance, i, j)
  return t;
 }
 
-/* There should be no ABS_EXPR.  */
-/* { dg-final { scan-tree-dump-times "ABS_EXPR " 0 "dom3"} } */
+/* There should be one ABS_EXPR and no conditionals.  */
+/* { dg-final { scan-tree-dump-times "ABS_EXPR " 1 "dom3"} } */
+/* { dg-final { scan-tree-dump-times "if " 0 "dom3"} } */
+
