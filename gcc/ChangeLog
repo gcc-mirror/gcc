@@ -1,5 +1,11 @@
 2004-06-23  Eric Christopher  <echristo@redhat.com>
 
+	* fold-const.c (make_range): Cleanup type checking through function.
+	Remove orig_type. Replace with checks to exp_type and arg0_type.
+	Clarify comment when converting from unsigned to signed.
+
+2004-06-23  Eric Christopher  <echristo@redhat.com>
+
 	* config/mips/mips.c (mips_use_dfa_pipeline_interface): Add R3000.
 	* config/mips/mips.md: Remove R3000 scheduling description.
 	* config/mips/3000.md: New file.
