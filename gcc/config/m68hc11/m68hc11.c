@@ -1,5 +1,5 @@
 /* Subroutines for code generation on Motorola 68HC11 and 68HC12.
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@nerim.fr)
 
 This file is part of GNU CC.
@@ -5058,6 +5058,11 @@ m68hc11_reorg (first)
   int split_done = 0;
   rtx insn;
 
+  compute_bb_for_insn ();
+
+  /* ??? update_life_info_in_dirty_blocks fails to terminate during
+     non-optimizing bootstrap.  */
+  // update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES, PROP_DEATH_NOTES);
   z_replacement_completed = 0;
   z_reg = gen_rtx (REG, HImode, HARD_Z_REGNUM);
 
@@ -5072,9 +5077,6 @@ m68hc11_reorg (first)
 
   z_replacement_completed = 1;
   m68hc11_reassign_regs (first);
-
-  if (optimize)
-    compute_bb_for_insn ();
 
   /* After some splitting, there are some oportunities for CSE pass.
      This happens quite often when 32-bit or above patterns are split.  */
@@ -5506,7 +5508,10 @@ m68hc11_asm_file_start (out, main_file)
      const char *main_file;
 {
   fprintf (out, ";;;-----------------------------------------\n");
-  fprintf (out, ";;; Start MC68HC11 gcc assembly output\n");
+  fprintf (out, ";;; Start %s gcc assembly output\n",
+           TARGET_M6811
+           ? "MC68HC11"
+           : TARGET_M68S12 ? "MC68HCS12" : "MC68HC12");
   fprintf (out, ";;; gcc compiler %s\n", version_string);
   print_options (out);
   fprintf (out, ";;;-----------------------------------------\n");

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Motorola 68HC11 and 68HC12.
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@nerim.fr)
 
 This file is part of GNU CC.
@@ -43,13 +43,22 @@ Note:
 
 /* Compile and assemble for a 68hc11 unless there is a -m68hc12 option.  */
 #ifndef ASM_SPEC
-#define ASM_SPEC       "%{m68hc12:-m68hc12}%{!m68hc12:-m68hc11}"
+#define ASM_SPEC                                                \
+"%{m68hc12:-m68hc12}"                                           \
+"%{m68hcs12:-m68hcs12}"                                         \
+"%{!m68hc12:%{!m68hcs12:-m68hc11}} "                            \
+"%{mshort:-mshort}%{!mshort:-mlong} "                           \
+"%{fshort-double:-mshort-double}%{!fshort-double:-mlong-double}"
 #endif
 
 /* We need to tell the linker the target elf format.  Just pass an
    emulation option.  This can be overriden by -Wl option of gcc.  */
 #ifndef LINK_SPEC
-#define LINK_SPEC      "%{m68hc12:-m m68hc12elf}%{!m68hc12:-m m68hc11elf} %{mrelax:-relax}"
+#define LINK_SPEC                                               \
+"%{m68hc12:-m m68hc12elf}"                                      \
+"%{m68hcs12:-m m68hc12elf}"                                     \
+"%{!m68hc12:%{!m68hcs12:-m m68hc11elf}} "                       \
+"%{!mnorelax:%{!m68hc12:%{!m68hcs12:-relax}}}"
 #endif
 
 #ifndef LIB_SPEC
@@ -65,7 +74,8 @@ Note:
 "%{mshort:-D__HAVE_SHORT_INT__ -D__INT__=16}\
  %{!mshort:-D__INT__=32}\
  %{m68hc12:-Dmc6812 -DMC6812 -Dmc68hc12}\
- %{!m68hc12:-Dmc6811 -DMC6811 -Dmc68hc11}\
+ %{m68hcs12:-Dmc6812 -DMC6812 -Dmc68hcs12}\
+ %{!m68hc12:%{!m68hcs12:-Dmc6811 -DMC6811 -Dmc68hc11}}\
  %{fshort-double:-D__HAVE_SHORT_DOUBLE__}\
  %{mlong-calls:-D__USE_RTC__}"
 #endif
@@ -118,15 +128,16 @@ extern short *reg_renumber;	/* def in local_alloc.c */
 #define MASK_SHORT              0002	/* Compile with 16-bit `int' */
 #define MASK_AUTO_INC_DEC       0004
 #define MASK_M6811              0010
-#define MASK_M6812              0020
-#define MASK_NO_DIRECT_MODE     0040
-#define MASK_MIN_MAX            0100
-#define MASK_LONG_CALLS         0200
+#define MASK_M68S12             0040
+#define MASK_NO_DIRECT_MODE     0100
+#define MASK_MIN_MAX            0200
+#define MASK_LONG_CALLS         0400
 
 #define TARGET_OP_TIME		(optimize && optimize_size == 0)
 #define TARGET_SHORT            (target_flags & MASK_SHORT)
 #define TARGET_M6811            (target_flags & MASK_M6811)
 #define TARGET_M6812            (target_flags & MASK_M6812)
+#define TARGET_M68S12           (target_flags & MASK_M68S12)
 #define TARGET_AUTO_INC_DEC     (target_flags & MASK_AUTO_INC_DEC)
 #define TARGET_MIN_MAX          (target_flags & MASK_MIN_MAX)
 #define TARGET_NO_DIRECT_MODE   (target_flags & MASK_NO_DIRECT_MODE)
@@ -178,10 +189,14 @@ extern short *reg_renumber;	/* def in local_alloc.c */
     N_("Compile for a 68HC11")},				\
   { "68hc12", MASK_M6812,					\
     N_("Compile for a 68HC12")},				\
+  { "68hcs12", MASK_M6812 | MASK_M68S12,			\
+    N_("Compile for a 68HCS12")},				\
   { "6811",   MASK_M6811,					\
     N_("Compile for a 68HC11")},				\
   { "6812",   MASK_M6812,					\
     N_("Compile for a 68HC12")},				\
+  { "68S12",  MASK_M6812 | MASK_M68S12,				\
+    N_("Compile for a 68HCS12")},				\
   { "", TARGET_DEFAULT, 0 }}
 
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
@@ -214,7 +229,7 @@ extern const char *m68hc11_soft_reg_count;
 #endif
 
 /* Print subsidiary information on the compiler version in use.  */
-#define TARGET_VERSION		fprintf (stderr, " (MC68HC11/MC68HC12)")
+#define TARGET_VERSION	fprintf (stderr, " (MC68HC11/MC68HC12/MC68HCS12)")
 
 /* Sometimes certain combinations of command options do not make
    sense on a particular target machine.  You can define a macro
