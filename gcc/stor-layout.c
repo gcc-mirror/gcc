@@ -1318,7 +1318,9 @@ compute_record_mode (tree type)
 
       if (TREE_CODE (TREE_TYPE (field)) == ERROR_MARK
 	  || (TYPE_MODE (TREE_TYPE (field)) == BLKmode
-	      && ! TYPE_NO_FORCE_BLK (TREE_TYPE (field)))
+	      && ! TYPE_NO_FORCE_BLK (TREE_TYPE (field))
+	      && !(TYPE_SIZE (TREE_TYPE (field)) != 0
+		   && integer_zerop (TYPE_SIZE (TREE_TYPE (field)))))
 	  || ! host_integerp (bit_position (field), 1)
 	  || DECL_SIZE (field) == 0
 	  || ! host_integerp (DECL_SIZE (field), 1))

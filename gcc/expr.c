@@ -7223,6 +7223,12 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode,
 
 	    if (ext_mode == BLKmode)
 	      {
+		if (target == 0)
+		  target = assign_temp (type, 0, 1, 1);
+
+		if (bitsize == 0)
+		  return target;
+
 		/* In this case, BITPOS must start at a byte boundary and
 		   TARGET, if specified, must be a MEM.  */
 		if (GET_CODE (op0) != MEM
@@ -7230,11 +7236,9 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode,
 		    || bitpos % BITS_PER_UNIT != 0)
 		  abort ();
 
-		op0 = adjust_address (op0, VOIDmode, bitpos / BITS_PER_UNIT);
-		if (target == 0)
-		  target = assign_temp (type, 0, 1, 1);
-
-		emit_block_move (target, op0,
+		emit_block_move (target,
+				 adjust_address (op0, VOIDmode,
+						 bitpos / BITS_PER_UNIT),
 				 GEN_INT ((bitsize + BITS_PER_UNIT - 1)
 					  / BITS_PER_UNIT),
 				 (modifier == EXPAND_STACK_PARM
