@@ -1,6 +1,6 @@
 // 1999-08-16 bkoz
 
-// Copyright (C) 2000, 1999 Free Software Foundation
+// Copyright (C) 1999, 2000, 2002 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -52,10 +52,7 @@ bool test01()
   f << str01;
   f.close();
 
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-
+  VERIFY( test );
   return test;
 }
 
@@ -92,11 +89,6 @@ bool test02(void)
   oss03 << str03;
   tmp = oss03.str();
   VERIFY( tmp == "909909" );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
- 
   return test;
 }
 
@@ -133,17 +125,12 @@ bool test03(void)
   oss03 << str03;
   tmp = oss03.str();
   VERIFY( tmp == "909909" );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
- 
   return test;
 }
 
 // stringstream and large strings
-bool test04() {
-
+bool test04() 
+{
   bool test = true;
   std::string str_01;
   const std::string str_02("coltrane playing 'softly as a morning sunrise'");
@@ -166,11 +153,6 @@ bool test04() {
   VERIFY( oss_02.good() );
   VERIFY( str_tmp != str_01 );
   VERIFY( str_tmp.size() == 2390 );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
- 
   return test;
 }
 
@@ -216,11 +198,6 @@ bool test05()
   str10 = sstr05.str();
   VERIFY( str05 == str01 );
   VERIFY( str10 == str01 );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-
   return test;
 }
 
@@ -249,12 +226,68 @@ void test06()
   VERIFY( ostr2.str() == "blackalicious NIA " );
   ostr2 << "4: deception (5:19)";  // should append to full string from above
   VERIFY( ostr2.str() == "blackalicious NIA 4: deception (5:19)" );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
 }
 
+// Global counter, needs to be reset after use.
+bool used;
+
+class gnu_ctype : public std::ctype<wchar_t>
+{
+protected:
+  char_type        
+  do_widen(char c) const
+  { 
+    used = true;
+    return std::ctype<wchar_t>::do_widen(c);
+  }
+
+  const char*  
+  do_widen(const char* low, const char* high, char_type* dest) const
+  { 
+    used = true;
+    return std::ctype<wchar_t>::do_widen(low, high, dest);
+  }
+};
+
+// 27.6.2.5.4 - Character inserter template functions 
+// [lib.ostream.inserters.character]
+void test07()
+{
+#if _GLIBCPP_USE_WCHAR_T
+  using namespace std;
+  bool test = true;
+
+  const char* buffer = "SFPL 5th floor, outside carrol, the Asian side";
+
+  wostringstream oss;
+  oss.imbue(locale(locale::classic(), new gnu_ctype));
+  
+  // 1
+  // template<class charT, class traits>
+  // basic_ostream<charT,traits>& operator<<(basic_ostream<charT,traits>& out,
+  //                                           const char* s);
+  used = false;
+  oss << buffer;
+  VERIFY( used ); // Only required for char_type != char
+  wstring str = oss.str();
+  wchar_t c1 = oss.widen(buffer[0]);
+  VERIFY( str[0] == c1 );
+  wchar_t c2 = oss.widen(buffer[1]);
+  VERIFY( str[1] == c2 );
+
+  // 2
+  // template<class charT, class traits>
+  // basic_ostream<charT,traits>& operator<<(basic_ostream<charT,traits>& out,
+  //                                         char c);
+  used = false;
+  oss.str(wstring());
+  oss << 'b';
+  VERIFY( used ); // Only required for char_type != char
+  str = oss.str();
+  wchar_t c3 = oss.widen('b');
+  VERIFY( str[0] == c3 );
+#endif
+}
 
 int main()
 {
@@ -264,5 +297,6 @@ int main()
   test04();
   test05();
   test06();
+  test07();
   return 0;
 }
