@@ -1,3 +1,8 @@
+2001-10-11  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/xcoff.h (UNALIGNED_DOUBLE_INT_ASM_OP): Only
+	available in 64-bit mode.
+
 2001-10-11  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config.gcc: Add cris-*-aout, cris-*-elf, cris-*-none,

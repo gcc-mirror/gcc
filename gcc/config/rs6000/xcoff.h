@@ -464,7 +464,8 @@ toc_section ()						\
 
 #define UNALIGNED_SHORT_ASM_OP		"\t.vbyte\t2,"
 #define UNALIGNED_INT_ASM_OP		"\t.vbyte\t4,"
-#define UNALIGNED_DOUBLE_INT_ASM_OP	"\t.vbyte\t8,"
+/* Only define if alignment greater than 4.  */
+#define UNALIGNED_DOUBLE_INT_ASM_OP	(TARGET_64BIT ? "\t.vbyte\t8," : NULL)
 
 /* Output before instructions.  */
 #define TEXT_SECTION_ASM_OP "\t.csect .text[PR]"
