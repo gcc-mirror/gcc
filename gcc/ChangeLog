@@ -1,3 +1,12 @@
+Tue Mar 11 20:20:14 2003  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mips/linux64.h (DRIVER_SELF_SPECS): Add endian_spec.
+	Default to -mips3 on -mabi=64.  Don't add -mips* flag if -march is
+	specified.
+	(SUBTARGET_ASM_SPEC): Remove -mips*-adding code obviated by
+	DRIVER_SELF_SPECS.
+	(LINK_SPEC): Let endian options affect the linker emulation name.
+
 Tue Mar 11 22:35:39 2003  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.md (reload_inqi): Fix mode for source in second set.
