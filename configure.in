@@ -1,19 +1,3 @@
-#! /bin/bash
-##############################################################################
-
-## This file is a shell script fragment that supplies the information
-## necessary to tailor a template configure script into the configure
-## script appropriate for this directory.  For more information, check
-## any existing configure script.  
-
-## Be warned, there are two types of configure.in files.  There are those
-## used by Autoconf, which are macros which are expanded into a configure
-## script by autoconf.  The other sort, of which this is one, is executed
-## by Cygnus configure.  
-
-## For more information on these two systems, check out the documentation
-## for 'Autoconf' (autoconf.texi) and 'Configure' (configure.texi).  
-
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
 #   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 #
@@ -32,29 +16,114 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 ##############################################################################
+### WARNING: this file contains embedded tabs.  Do not run untabify on this file.
+
+AC_INIT(move-if-change)
+AC_CANONICAL_SYSTEM
+AC_ARG_PROGRAM
+
+sinclude(config/acx.m4)
+
+# clear some things potentially inherited from environment.
+
+enable_threads=no
+enable_shared=no
+enable_libstdcxx_v3=yes
+floating_point=default
+gas=default
+x11=default
+
+### we might need to use some other shell than /bin/sh for running subshells
+### If we are on Windows, search for the shell.  This will permit people
+### to not have /bin/sh, but to be able to see /SOME/PATH/sh configure
+### without also having to set CONFIG_SHELL.  This code will work when
+### using bash, which sets OSTYPE.
+case "${OSTYPE}" in
+*win32*)
+  if test x${CONFIG_SHELL} = x ; then
+    if test ! -f /bin/sh ; then
+      if test x${SHELL} != x && test -f ${SHELL} ; then
+	CONFIG_SHELL=${SHELL}
+	export CONFIG_SHELL
+      else
+	for prog in sh sh.exe bash bash.exe; do
+	  IFS="${IFS=	}"; save_ifs="$IFS"; IFS="${IFS}:"
+	  for dir in $PATH; do
+	    test -z "$dir" && dir=.
+	    if test -f $dir/$prog; then
+	      CONFIG_SHELL=$dir/$prog
+	      export CONFIG_SHELL
+	      break
+	    fi
+	  done
+	  IFS="$save_ifs"
+	  test -n "${CONFIG_SHELL}" && break
+	done
+      fi
+    fi
+  fi
+  ;;
+esac
+
+config_shell=${CONFIG_SHELL-/bin/sh}
+
+## this is a little touchy and won't always work, but...
+##
+## if the argv[[0]] starts with a slash then it is an absolute name that can (and
+## must) be used as is.
+##
+## otherwise, if argv[[0]] has no slash in it, we can assume that it is on the
+## path.  Since PATH might include "." we also add `pwd` to the end of PATH.
+##
+
+progname=$0
+# if PWD already has a value, it is probably wrong.
+if test -n "$PWD" ; then PWD=`${PWDCMD-pwd}`; fi
+
+case "${progname}" in
+/* | [[A-Za-z]]:[[\\/]]* ) ;;
+*/*) ;;
+*)
+        PATH=$PATH:${PWD=`${PWDCMD-pwd}`} ; export PATH
+        ;;
+esac
+
+# Export original configure arguments for use by sub-configures.
+TOPLEVEL_CONFIGURE_ARGUMENTS="$progname $@"
+export TOPLEVEL_CONFIGURE_ARGUMENTS
+
+moveifchange=${srcdir}/move-if-change
+
+# Set srcdir to "." if that's what it is.
+# This is important for multilib support.
+pwd=`${PWDCMD-pwd}`
+srcpwd=`cd ${srcdir} ; ${PWDCMD-pwd}`
+if test "${pwd}" = "${srcpwd}" ; then
+  srcdir=.
+fi
+
+topsrcdir=$srcpwd
 
 extra_host_args=
 # Define the trigger file to make sure configure will re-run whenever
 # the gcc version number changes.
-if [ "${with_gcc_version_trigger+set}" = set ]; then
-    gcc_version_trigger="$with_gcc_version_trigger"
-    gcc_version=`grep version_string ${with_gcc_version_trigger} | sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/'`
+if test "${with_gcc_version_trigger+set}" = set ; then
+  gcc_version_trigger="$with_gcc_version_trigger"
+  gcc_version=`grep version_string ${with_gcc_version_trigger} | sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/'`
 else
-    # If gcc's sources are available, define the trigger file.
-    if [ -f ${topsrcdir}/gcc/version.c ] ; then
-	gcc_version_trigger=${topsrcdir}/gcc/version.c
-	gcc_version=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/'`
-	case "$arguments" in
-	  *--with-gcc-version-trigger=$gcc_version_trigger* )
-	    ;;
-	  * )
-	    # Add to all subconfigure arguments: build, host, and target.
-	    arguments="--with-gcc-version-trigger=$gcc_version_trigger $arguments"
-	    ;;
-	esac
-	# This will be redundant when we start all subconfigures from the Makefile.
-	extra_host_args="--with-gcc-version-trigger=$gcc_version_trigger $extra_host_args"
-    fi
+  # If gcc's sources are available, define the trigger file.
+  if test -f ${topsrcdir}/gcc/version.c ; then
+    gcc_version_trigger=${topsrcdir}/gcc/version.c
+    gcc_version=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/'`
+    case "$ac_configure_args" in
+      *--with-gcc-version-trigger=$gcc_version_trigger* )
+        ;;
+      * )
+        # Add to all subconfigure arguments: build, host, and target.
+        ac_configure_args="--with-gcc-version-trigger=$gcc_version_trigger $ac_configure_args"
+        ;;
+    esac
+  fi
 fi
 
 ### To add a new directory to the tree, first choose whether it is a target
@@ -124,17 +193,10 @@ target_configdirs=`echo ${target_libs} ${target_tools}`
 
 ################################################################################
 
-srctrigger=move-if-change
 srcname="gnu development package"
 
 # This gets set non-empty for some net releases of packages.
 appdirs=""
-
-# per-host:
-
-# There is no longer anything interesting in the per-host section.
-
-# per-target:
 
 # Define is_cross_compiler to save on calls to 'test'.
 is_cross_compiler=
@@ -243,17 +305,17 @@ case "${host}" in
   hppa*64*-*-*)
     noconfigdirs="$noconfigdirs byacc"
     ;;
-  i[3456]86-*-vsta)
+  i[[3456]]86-*-vsta)
     noconfigdirs="tcl expect dejagnu make texinfo bison patch flex byacc send-pr gprof uudecode dejagnu diff guile perl itcl tix db snavigator gnuserv gettext"
     ;;
-  i[3456]86-*-go32* | i[3456]86-*-msdosdjgpp*)
+  i[[3456]]86-*-go32* | i[[3456]]86-*-msdosdjgpp*)
     noconfigdirs="tcl tk expect dejagnu send-pr uudecode guile itcl tix db snavigator gnuserv libffi"
 	;;
-  i[3456]86-*-mingw32*)
+  i[[3456]]86-*-mingw32*)
     # noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl itcl tix db snavigator gnuserv"
      noconfigdirs="expect dejagnu autoconf automake send-pr rcs guile perl texinfo libtool"
 	;;
-  i[3456]86-*-beos*)
+  i[[3456]]86-*-beos*)
      noconfigdirs="$noconfigdirs tk itcl tix libgui gdb"
      ;;
   *-*-cygwin*)
@@ -293,7 +355,7 @@ case "${target}" in
   *-*-chorusos)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
     ;;
-  *-*-freebsd[12] | *-*-freebsd[12].* | *-*-freebsd*aout*)
+  *-*-freebsd[[12]] | *-*-freebsd[[12]].* | *-*-freebsd*aout*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
     ;;
   *-*-netbsd*)
@@ -448,13 +510,13 @@ case "${target}" in
     # No gdb or ld support yet.
     noconfigdirs="$noconfigdirs tix readline mmalloc libgui itcl gdb ld"
     ;;
-  i[3456]86-*-coff | i[3456]86-*-elf)
+  i[[3456]]86-*-coff | i[[3456]]86-*-elf)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
-  i[34567]86-*-freebsd*)
+  i[[34567]]86-*-freebsd*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
-  i[3456]86-*-linux*)
+  i[[3456]]86-*-linux*)
     # The GCC port for glibc1 has no MD_FALLBACK_FRAME_STATE_FOR, so let's
     # not build java stuff by default.
     case "${target}" in
@@ -473,13 +535,13 @@ case "${target}" in
     # if the --with-newlib option has been given, because otherwise
     # 'target-newlib' will appear in skipdirs.
     ;;
-  i[3456]86-*-mingw32*)
+  i[[3456]]86-*-mingw32*)
     target_configdirs="$target_configdirs target-mingw"
     noconfigdirs="$noconfigdirs expect target-libgloss ${libgcj}"
 
     # Can't build gdb for mingw32 if not native.
     case "${host}" in
-      i[3456]86-*-mingw32) ;; # keep gdb tcl tk expect etc.
+      i[[3456]]86-*-mingw32) ;; # keep gdb tcl tk expect etc.
       *) noconfigdirs="$noconfigdirs gdb tcl tk expect itcl tix db snavigator gnuserv"
          ;;
     esac
@@ -497,24 +559,24 @@ case "${target}" in
          ;;
     esac
     ;;    
-  i[3456]86-*-pe)
+  i[[3456]]86-*-pe)
     noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss ${libgcj}"
     ;;
-  i[3456]86-*-sco3.2v5*)
+  i[[3456]]86-*-sco3.2v5*)
     # The linker does not yet know about weak symbols in COFF,
     # and is not configured to handle mixed ELF and COFF.
     noconfigdirs="$noconfigdirs ld target-libgloss ${libgcj}"
     ;;
-  i[3456]86-*-sco*)
+  i[[3456]]86-*-sco*)
     noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
     ;;
-  i[3456]86-*-solaris2*)
+  i[[3456]]86-*-solaris2*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
-  i[3456]86-*-sysv4*)
+  i[[3456]]86-*-sysv4*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
-  i[3456]86-*-beos*)
+  i[[3456]]86-*-beos*)
      noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss ${libgcj}"
      ;;
   m68hc11-*-*|m6811-*-*|m68hc12-*-*|m6812-*-*)
@@ -612,9 +674,9 @@ case "${target}" in
     ;;
   sh-*-*)
     case "${host}" in
-      i[3456]86-*-vsta) ;; # don't add gprof back in
-      i[3456]86-*-go32*) ;; # don't add gprof back in
-      i[3456]86-*-msdosdjgpp*) ;; # don't add gprof back in
+      i[[3456]]86-*-vsta) ;; # don't add gprof back in
+      i[[3456]]86-*-go32*) ;; # don't add gprof back in
+      i[[3456]]86-*-msdosdjgpp*) ;; # don't add gprof back in
       *) skipdirs=`echo " ${skipdirs} " | sed -e 's/ gprof / /'` ;;
     esac
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
@@ -700,7 +762,7 @@ else
 		exit 1
 	fi
 fi
-enable_languages=`echo "${enable_languages}" | sed -e 's/[ 	,][ 	,]*/,/g' -e 's/,$//'`
+enable_languages=`echo "${enable_languages}" | sed -e 's/[[ 	,]][[ 	,]]*/,/g' -e 's/,$//'`
 
 # First scan to see if an enabled language requires some other language.
 # We assume that a given config-lang.in will list all the language
@@ -712,11 +774,11 @@ do
        ;;
     # The odd quoting in the next line works around
     # an apparent bug in bash 1.12 on linux.
-    ${srcdir}/gcc/[*]/config-lang.in)
+    ${srcdir}/gcc/[[*]]/config-lang.in)
        ;;
     *)
-       lang_alias=`sed -n -e 's,^language=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^language=\([^ 	]*\).*$,\1,p' $lang`
-       this_lang_requires=`sed -n -e 's,^lang_requires=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^lang_requires=\([^ 	]*\).*$,\1,p' $lang`
+       lang_alias=`sed -n -e 's,^language=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^language=\([[^ 	]]*\).*$,\1,p' $lang`
+       this_lang_requires=`sed -n -e 's,^lang_requires=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^lang_requires=\([[^ 	]]*\).*$,\1,p' $lang`
        for other in $this_lang_requires
        do
 	  case ,${enable_languages}, in
@@ -741,12 +803,12 @@ do
 	..) ;;
 	# The odd quoting in the next line works around
 	# an apparent bug in bash 1.12 on linux.
-	${srcdir}/gcc/[*]/config-lang.in) ;;
+	${srcdir}/gcc/[[*]]/config-lang.in) ;;
 	*)
-	  lang_alias=`sed -n -e 's,^language=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^language=\([^ 	]*\).*$,\1,p' $lang`
-	  this_lang_libs=`sed -n -e 's,^target_libs=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^target_libs=\([^ 	]*\).*$,\1,p' $lang`
-	  this_lang_dirs=`sed -n -e 's,^lang_dirs=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^lang_dirs=\([^ 	]*\).*$,\1,p' $lang`
-	  build_by_default=`sed -n -e 's,^build_by_default=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^build_by_default=\([^ 	]*\).*$,\1,p' $lang`
+	  lang_alias=`sed -n -e 's,^language=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^language=\([[^ 	]]*\).*$,\1,p' $lang`
+	  this_lang_libs=`sed -n -e 's,^target_libs=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^target_libs=\([[^ 	]]*\).*$,\1,p' $lang`
+	  this_lang_dirs=`sed -n -e 's,^lang_dirs=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^lang_dirs=\([[^ 	]]*\).*$,\1,p' $lang`
+	  build_by_default=`sed -n -e 's,^build_by_default=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^build_by_default=\([[^ 	]]*\).*$,\1,p' $lang`
 	  if test "x$lang_alias" = x
 	  then
 		echo "$lang doesn't set \$language." 1>&2
@@ -958,16 +1020,18 @@ done
 
 # Work in distributions that contain no compiler tools, like Autoconf.
 tentative_cc=""
+host_makefile_frag=/dev/null
 if test -d ${srcdir}/config ; then
 case "${host}" in
   m68k-hp-hpux*)
     # Avoid "too much defining" errors from HPUX compiler.
     tentative_cc="cc -Wp,-H256000"
-    host_makefile_frag="config/mh-hp300"
+    # If "ar" in $PATH is GNU ar, the symbol table may need rebuilding.
+    # If it's HP/UX ar, this should be harmless.
+    RANLIB="ar ts"
     ;;
   m68k-apollo-sysv*)
     tentative_cc="cc -A ansi -A runtype,any -A systype,any -U__STDC__ -DUSG"
-    host_makefile_frag="config/mh-apollo68"
     ;;
   m68k-apollo-bsd*)
     #None of the Apollo compilers can compile gas or binutils.  The preprocessor
@@ -976,8 +1040,8 @@ case "${host}" in
     # the apollo compiler" (the preferred version of GCC could be called cc,
     # or whatever), but I'm not sure leaving CC as cc is any better...
     #CC=cc -A ansi -A runtype,any -A systype,any -U__STDC__ -DNO_STDARG
+    # Used to have BISON=yacc.
     tentative_cc=gcc
-    host_makefile_frag="config/mh-a68bsd"
     ;;
   m88k-dg-dgux*)
     tentative_cc="gcc -Wall -ansi -D__using_DGUX"
@@ -989,7 +1053,6 @@ case "${host}" in
     host_makefile_frag="config/mh-cxux"
     ;;
   m88k-motorola-sysv*)
-    host_makefile_frag="config/mh-delta88"
     ;;
   mips*-dec-ultrix*)
     tentative_cc="cc -Wf,-XNg1000"
@@ -1000,20 +1063,11 @@ case "${host}" in
     tentative_cc="cc -ZXNd=5000 -ZXNg=1000"
     host_makefile_frag="config/mh-necv4"
     ;;
-  mips*-sgi-irix6*)
-    host_makefile_frag="config/mh-irix6"
-    ;;
-  mips*-sgi-irix5*)
-    host_makefile_frag="config/mh-irix5"
-    ;;
   mips*-sgi-irix4*)
     # Tell compiler to use K&R C.  We can't compile under the SGI Ansi
     # environment.  Also bump switch table size so that cp-parse will
     # compile.  Bump string length limit so linker builds.
     tentative_cc="cc -cckr -Wf,-XNg1500 -Wf,-XNk1000 -Wf,-XNh2000 -Wf,-XNl8192"
-    ;;
-  mips*-sgi-irix3*)
-    host_makefile_frag="config/mh-sysv"
     ;;
   mips*-*-sysv4*)
     host_makefile_frag="config/mh-sysv4"
@@ -1032,26 +1086,23 @@ case "${host}" in
     # This is not part of CFLAGS because perhaps not all C compilers have this
     # option.
     tentative_cc="cc -systype sysv"
-    host_makefile_frag="config/mh-riscos"
     ;;
   i370-ibm-opened*)
     tentative_cc="c89"
-    host_makefile_frag="config/mh-openedition"
     ;;
-  i[3456]86-*-sysv5*)
+  i[[3456]]86-*-sysv5*)
     host_makefile_frag="config/mh-sysv5"
     ;;
-  i[3456]86-*-dgux*)
+  i[[3456]]86-*-dgux*)
     tentative_cc="gcc -Wall -ansi -D__using_DGUX"
     host_makefile_frag="config/mh-dgux386"
     ;;
-  i[3456]86-ncr-sysv4.3*)
+  i[[3456]]86-ncr-sysv4.3*)
     # The MetaWare compiler will generate a copyright message unless you
     # turn it off by adding the -Hnocopyr flag.
     tentative_cc="cc -Hnocopyr"
-    host_makefile_frag="config/mh-ncrsvr43"
     ;;
-  i[3456]86-ncr-sysv4*)
+  i[[3456]]86-ncr-sysv4*)
     # for an NCR 3000 (i486/SVR4) system.
     # The NCR 3000 ships with a MetaWare compiler installed as /bin/cc.
     # This compiler not only emits obnoxious copyright messages every time
@@ -1060,28 +1111,21 @@ case "${host}" in
     tentative_cc="/usr/ccs/ATT/cc"
     host_makefile_frag="config/mh-ncr3000"
     ;;
-  i[3456]86-*-sco3.2v5*)
-    host_makefile_frag="config/mh-sysv"
+  i[[3456]]86-*-sco3.2v5*)
     ;;
-  i[3456]86-*-sco*)
+  i[[3456]]86-*-sco*)
     # The native C compiler botches some simple uses of const.  Unfortunately,
     # it doesn't defined anything like "__sco__" for us to test for in ansidecl.h.
     tentative_cc="cc -Dconst="
     host_makefile_frag="config/mh-sco"
     ;;
-  i[3456]86-*-udk*)
+  i[[3456]]86-*-udk*)
     host_makefile_frag="config/mh-sysv5"
     ;;
-  i[3456]86-*-isc*)
-    host_makefile_frag="config/mh-sysv"
-    ;;
-  i[3456]86-*-solaris2*)
+  i[[3456]]86-*-solaris2*)
     host_makefile_frag="config/mh-sysv4"
     ;;
-  i[3456]86-*-aix*)
-    host_makefile_frag="config/mh-aix386"
-    ;;
-  i[3456]86-*-msdosdjgpp*)
+  i[[3456]]86-*-msdosdjgpp*)
     host_makefile_frag="config/mh-djgpp"
     ;;
   *-cygwin*)
@@ -1105,17 +1149,11 @@ case "${host}" in
     # without overflowing the jump tables (-J says to use a 32 bit table)
     tentative_cc="cc -J"
     ;;
-  *-hp-hpux[78]*)
-    tentative_cc="cc -Wp,-H256000"
-    host_makefile_frag="config/mh-hpux8"
-    ;;
   *-hp-hpux*)
     tentative_cc="cc -Wp,-H256000"
-    host_makefile_frag="config/mh-hpux"
     ;;
   *-*-hiux*)
     tentative_cc="cc -Wp,-H256000"
-    host_makefile_frag="config/mh-hpux"
     ;;
   rs6000-*-lynxos*)
     # /bin/cc is less than useful for our purposes.  Always use GCC
@@ -1129,26 +1167,15 @@ case "${host}" in
   *-*-sysv4*)
     host_makefile_frag="config/mh-sysv4"
     ;;
-  *-*-sysv*)
-    host_makefile_frag="config/mh-sysv"
-    ;;
 esac
-fi
-
-rm -f mh-frag
-if test -n "${host_makefile_frag}" ; then
-  for f in ${host_makefile_frag}
-  do
-    cat ${srcdir}/$f >> mh-frag
-  done
-  host_makefile_frag=mh-frag
 fi
 
 extra_arflags_for_target=
 extra_nmflags_for_target=
 extra_ranlibflags_for_target=
+target_makefile_frag=/dev/null
 case "${target}" in
-  i[3456]86-*-netware*)
+  i[[3456]]86-*-netware*)
     target_makefile_frag="config/mt-netware"
     ;;
   powerpc-*-netware*)
@@ -1157,7 +1184,7 @@ case "${target}" in
   *-*-linux*)
     target_makefile_frag="config/mt-linux"
     ;;
-  *-*-aix4.[3456789]* | *-*-aix[56789].*)
+  *-*-aix4.[[3456789]]* | *-*-aix[[56789]].*)
     # nm and ar from AIX 4.3 and above require -X32_64 flag to all ar and nm 
     # commands to handle both 32-bit and 64-bit objects.  These flags are
     # harmless if we're using GNU nm or ar.
@@ -1173,7 +1200,7 @@ case "${target}" in
     ;;
 esac
 
-alphaieee_frag=
+alphaieee_frag=/dev/null
 case $target in
   alpha*-*-*)
     # This just makes sure to use the -mieee option to build target libs.
@@ -1185,7 +1212,7 @@ esac
 # If --enable-target-optspace always use -Os instead of -O2 to build
 # the target libraries, similarly if it is not specified, use -Os
 # on selected platforms.
-ospace_frag=
+ospace_frag=/dev/null
 case "${enable_target_optspace}:${target}" in
   yes:*)
     ospace_frag="config/mt-ospace"
@@ -1202,15 +1229,6 @@ case "${enable_target_optspace}:${target}" in
     echo "*** bad value \"${enable_target_optspace}\" for --enable-target-optspace flag; ignored" 1>&2
     ;;
 esac
-
-rm -f mt-frag
-if test -n "${target_makefile_frag}${alphaieee_frag}${ospace_frag}" ; then
-  for f in ${target_makefile_frag} ${alphaieee_frag} ${ospace_frag}
-  do
-    cat ${srcdir}/$f >> mt-frag
-  done
-  target_makefile_frag=mt-frag
-fi
 
 # Set with_gnu_as and with_gnu_ld as appropriate.
 #
@@ -1288,9 +1306,6 @@ case "${host}" in
     ;;
 esac
 
-# This will go away when we start subconfigures from the Makefile.
-withoptions="${withoptions} ${extra_host_args}"
-
 # If we aren't going to be using gcc, see if we can extract a definition
 # of CC from the fragment.
 # Actually, use the 'pre-extracted' version above.
@@ -1310,7 +1325,255 @@ if test -z "${CC}" && test "${build}" = "${host}" ; then
   fi
 fi
 
-# post-target:
+# Some systems (e.g., one of the i386-aix systems the gas testers are
+# using) don't handle "\$" correctly, so don't use it here.
+tooldir='$(exec_prefix)'/${target_alias}
+build_tooldir=${tooldir}
+
+# Generate a default definition for YACC.  This is used if the makefile can't
+# locate bison or byacc in objdir.
+
+for prog in 'bison -y' byacc yacc
+do
+  set dummy $prog; tmp=$2
+  IFS="${IFS= 	}"; save_ifs="$IFS"; IFS="${IFS}:"
+  for dir in $PATH; do
+    test -z "$dir" && dir=.
+    if test -f $dir/$tmp; then
+      DEFAULT_YACC="$prog"
+      break
+    fi
+  done
+  IFS="$save_ifs"
+
+  test -n "$DEFAULT_YACC" && break
+done
+
+# Generate a default definition for M4.  This is used if the makefile can't
+# locate m4 in objdir.
+
+for prog in gm4 gnum4 m4
+do
+  set dummy $prog; tmp=$2
+  IFS="${IFS=   }"; save_ifs="$IFS"; IFS="${IFS}:"
+  for dir in $PATH; do
+    test -z "$dir" && dir=.
+    if test -f $dir/$tmp; then
+      DEFAULT_M4="$prog"
+      break
+    fi
+  done
+  IFS="$save_ifs"
+
+  test -n "$DEFAULT_M4" && break
+done
+
+# Generate a default definition for LEX.  This is used if the makefile can't
+# locate flex in objdir.
+
+for prog in flex lex
+do
+  set dummy $prog; tmp=$2
+  IFS="${IFS= 	}"; save_ifs="$IFS"; IFS="${IFS}:"
+  for dir in $PATH; do
+    test -z "$dir" && dir=.
+    if test -f $dir/$tmp; then
+      DEFAULT_LEX="$prog"
+      break
+    fi
+  done
+  IFS="$save_ifs"
+
+  test -n "$DEFAULT_LEX" && break
+done
+
+if test "${build}" != "${host}" ; then
+  # If we are doing a Canadian Cross, in which the host and build systems
+  # are not the same, we set reasonable default values for the tools.
+
+  BISON=${BISON-bison}
+  CC=${CC-${host_alias}-gcc}
+  CFLAGS=${CFLAGS-"-g -O2"}
+  CXX=${CXX-${host_alias}-c++}
+  CXXFLAGS=${CXXFLAGS-"-g -O2"}
+  CC_FOR_BUILD=${CC_FOR_BUILD-gcc}
+  CC_FOR_TARGET=${CC_FOR_TARGET-${target_alias}-gcc}
+  CXX_FOR_TARGET=${CXX_FOR_TARGET-${target_alias}-c++}
+  GCJ_FOR_TARGET=${GCJ_FOR_TARGET-${target_alias}-gcj}
+  GCC_FOR_TARGET=${GCC_FOR_TARGET-${CC_FOR_TARGET-${target_alias}-gcc}}
+  BUILD_PREFIX=${build_alias}-
+  BUILD_PREFIX_1=${build_alias}-
+  MAKEINFO=${MAKEINFO-makeinfo}
+
+  if test -z "${YACC}" ; then
+    IFS="${IFS= 	}"; save_ifs="$IFS"; IFS="${IFS}:"
+    for dir in $PATH; do
+      test -z "$dir" && dir=.
+      if test -f $dir/bison; then
+	YACC="bison -y"
+	break
+      fi
+      if test -f $dir/byacc; then
+	YACC=byacc
+	break
+      fi
+      if test -f $dir/yacc; then
+	YACC=yacc
+	break
+      fi
+    done
+    IFS="$save_ifs"
+    if test -z "${YACC}" ; then
+      YACC="bison -y"
+    fi
+  fi
+
+  if test -z "${LEX}" ; then
+    IFS="${IFS= 	}"; save_ifs="$IFS"; IFS="${IFS}:"
+    for dir in $PATH; do
+      test -z "$dir" && dir=.
+      if test -f $dir/flex; then
+	LEX=flex
+	break
+      fi
+      if test -f $dir/lex; then
+	LEX=lex
+	break
+      fi
+    done
+    IFS="$save_ifs"
+    LEX=${LEX-flex}
+  fi
+
+else
+  # Set reasonable default values for some tools even if not Canadian.
+  # Of course, these are different reasonable default values, originally
+  # specified directly in the Makefile.
+  # We don't export, so that autoconf can do its job.
+  # Note that all these settings are above the fragment inclusion point
+  # in Makefile.in, so can still be overridden by fragments.
+  # This is all going to change when we autoconfiscate...
+
+  BISON="\$(USUAL_BISON)"
+  CC_FOR_BUILD="\$(CC)"
+  GCC_FOR_TARGET="\$(USUAL_GCC_FOR_TARGET)"
+  BUILD_PREFIX=
+  BUILD_PREFIX_1=loser-
+  MAKEINFO="\$(USUAL_MAKEINFO)"
+  LEX="\$(USUAL_LEX)"
+  YACC="\$(USUAL_YACC)"
+
+  # If CC is still not set, try to get gcc.
+  if test -z "${CC}" ; then
+    IFS="${IFS= 	}"; save_ifs="$IFS"; IFS="${IFS}:"
+    for dir in $PATH; do
+      test -z "$dir" && dir=.
+      if test -f $dir/gcc; then
+	CC="gcc"
+	echo 'void f(){}' > conftest.c
+	if test -z "`${CC} -g -c conftest.c 2>&1`"; then
+	  CFLAGS=${CFLAGS-"-g -O2"}
+	  CXXFLAGS=${CXXFLAGS-"-g -O2"}
+	else
+	  CFLAGS=${CFLAGS-"-O2"}
+	  CXXFLAGS=${CXXFLAGS-"-O2"}
+	fi
+	rm -f conftest*
+	break
+      fi
+    done
+    IFS="$save_ifs"
+    CC=${CC-cc}
+  else
+    if test -z "${CFLAGS}"; then
+      # Here CC is set but CFLAGS is not.  Use a quick hack to use -O2 if CC
+      # is set to a version of gcc.
+      case "${CC}" in
+      *gcc)
+	echo 'void f(){}' > conftest.c
+	if test -z "`${CC} -g -c conftest.c 2>&1`"; then
+	  CFLAGS=${CFLAGS-"-g -O2"}
+	  CXXFLAGS=${CXXFLAGS-"-g -O2"}
+	else
+	  CFLAGS=${CFLAGS-"-O2"}
+	  CXXFLAGS=${CXXFLAGS-"-O2"}
+	fi
+	rm -f conftest*
+	;;
+      esac
+    fi
+  fi
+
+  CXX=${CXX-"c++"}
+  CFLAGS=${CFLAGS-"-g"}
+  CXXFLAGS=${CXXFLAGS-"-g -O2"}
+fi
+
+# FIXME Should this be done recursively ??? (Useful for e.g. gdbtest)
+# Set up the list of links to be made.
+# ${links} is the list of link names, and ${files} is the list of names to link to.
+
+# Make the links.
+configlinks="${links}"
+if test -r ./config.status  ; then
+  mv -f ./config.status ./config.back
+fi
+while test -n "${files}" ; do
+  # set file to car of files, files to cdr of files
+  set ${files}; file=$1; shift; files=$*
+  set ${links}; link=$1; shift; links=$*
+
+  if test ! -r ${srcdir}/${file} ; then
+    if test ! -r ${file} ; then
+      echo '***' "${progname}: cannot create a link \"${link}\"," 1>&2
+      echo '***' "since the file \"${srcdir}/${file}\" does not exist." 1>&2
+      exit 1
+    else
+      srcfile=${file}
+    fi
+  else
+    srcfile=${srcdir}/${file}
+  fi
+
+  ${remove} -f ${link}
+  # Make a symlink if possible, otherwise try a hard link
+  if ${symbolic_link} ${srcfile} ${link} >/dev/null 2>&1 ; then
+    true
+  else
+    # We need to re-remove the file because Lynx leaves a 
+    # very strange directory there when it fails an NFS symlink.
+    ${remove} -r -f ${link}
+    ${hard_link} ${srcfile} ${link}
+  fi
+  if test ! -r ${link} ; then
+    echo '***' "${progname}: unable to link \"${link}\" to \"${srcfile}\"." 1>&2
+    exit 1
+  fi
+
+  echo "Linked \"${link}\" to \"${srcfile}\"."
+done
+
+# Create a .gdbinit file which runs the one in srcdir
+# and tells GDB to look there for source files.
+
+if test -r ${srcdir}/.gdbinit ; then
+  case ${srcdir} in
+    .) ;;
+    *) cat > ./.gdbinit <<EOF
+# ${NO_EDIT}
+dir ${srcdir}
+dir .
+source ${srcdir}/.gdbinit
+EOF
+    ;;
+  esac
+fi
+
+# record if we want runtime library stuff installed in libsubdir.
+# Blank means no.
+if test -z "${enable_version_specific_runtime_libs}"; then
+  enable_version_specific_runtime_libs=no
+fi
 
 # Make sure that the compiler is able to generate an executable.  If it
 # can't, we are probably in trouble.  We don't care whether we can run the
@@ -1338,7 +1601,7 @@ rm -f conftest*
 case "${host}" in
   sparc-sun-solaris2*)
       CCBASE="`echo ${CC-cc} | sed 's/ .*$//'`"
-      if test "`type $CCBASE | sed 's/^[^/]*//'`" = "/usr/ucb/cc" ; then
+      if test "`type $CCBASE | sed 's/^[[^/]]*//'`" = "/usr/ucb/cc" ; then
           could_use=
           test -d /opt/SUNWspro/bin && could_use="/opt/SUNWspro/bin"
           if test -d /opt/cygnus/bin ; then
@@ -1369,18 +1632,12 @@ if test "${shared}" = "yes" ; then
 else
   SET_LIB_PATH=
 fi
-sed -e "s/@SET_LIB_PATH@/${SET_LIB_PATH}/" Makefile > Makefile.tem
-rm -f Makefile
-mv -f Makefile.tem Makefile
 
 
 case "${host}" in
   *-*-hpux*) RPATH_ENVVAR=SHLIB_PATH ;;
   *) RPATH_ENVVAR=LD_LIBRARY_PATH ;;
 esac
-sed -e "s/@RPATH_ENVVAR@/${RPATH_ENVVAR}/" Makefile > Makefile.tem
-rm -f Makefile
-mv -f Makefile.tem Makefile
 
 # Record target_configdirs and the configure arguments for target and
 # build configuration in Makefile.
@@ -1443,11 +1700,8 @@ for item in ${all_build_modules} ${all_host_modules} ${all_target_modules} \
 	; do
   echo "maybe-${item}: ${item}" >> maybedep.tmp
 done
-sed -e '/@maybe_dependencies@/r maybedep.tmp' \
-    -e 's/@maybe_dependencies@//' Makefile > Makefile.tem
-rm -f Makefile
-mv -f Makefile.tem Makefile
-rm -f maybedep.tmp
+maybe_dependencies=maybedep.tmp
+AC_SUBST_FILE(maybe_dependencies)
 
 # Create the serialization dependencies.  This uses a temporary file.
 
@@ -1478,21 +1732,18 @@ for item in ${target_configdirs} ; do
   esac
   olditem=${item}
 done
-sed -e '/@serialization_dependencies@/r serdep.tmp' \
-    -e 's/@serialization_dependencies@//' Makefile > Makefile.tem
-rm -f Makefile
-mv -f Makefile.tem Makefile
-rm -f serdep.tmp
+serialization_dependencies=serdep.tmp
+AC_SUBST_FILE(serialization_dependencies)
 
 # Base args.  Strip norecursion, cache-file, srcdir, host, build, target.
 # These are the ones we might not want to pass down to subconfigures.
-baseargs=`echo "${arguments}" | \
-	sed -e 's/--no[^ 	]*//' \
-	    -e 's/--cache[a-z-]*=[^ 	]*//' \
-	    -e 's/--sr[a-z-]*=[^ 	]*//' \
-	    -e 's/--ho[a-z-]*=[^ 	]*//' \
-	    -e 's/--bu[a-z-]*=[^ 	]*//' \
-	    -e 's/--ta[a-z-]*=[^ 	]*//'`
+baseargs=`echo "${ac_configure_args}" | \
+	sed -e 's/--no[[^ 	]]*//' \
+	    -e 's/--cache[[a-z-]]*=[[^ 	]]*//' \
+	    -e 's/--sr[[a-z-]]*=[[^ 	]]*//' \
+	    -e 's/--ho[[a-z-]]*=[[^ 	]]*//' \
+	    -e 's/--bu[[a-z-]]*=[[^ 	]]*//' \
+	    -e 's/--ta[[a-z-]]*=[[^ 	]]*//'`
 
 # For the build-side libraries, we just need to pretend we're native,
 # and not use the same cache file.  Multilibs are neither needed nor
@@ -1503,7 +1754,7 @@ build_configargs="--cache-file=../config.cache --build=${build_alias} --host=${b
 case "${cache_file}" in
 "") # empty
   cache_file_option="" ;;
-/* | [A-Za-z]:[\\/]* ) # absolute path
+/* | [[A-Za-z]]:[[\\/]]* ) # absolute path
   cache_file_option="--cache-file=${cache_file}" ;;
 *) # relative path
   cache_file_option="--cache-file=../${cache_file}" ;;
@@ -1599,7 +1850,7 @@ case " $target_configdirs " in
    fi
 
    case "${target}-${is_cross_compiler}" in
-   i[3456]86-*-linux*-no)
+   i[[3456]]86-*-linux*-no)
       # Here host == target, so we don't need to build gcc,
       # so we don't want to discard standard headers.
       FLAGS_FOR_TARGET=`echo " $FLAGS_FOR_TARGET " | sed -e 's/ -nostdinc / /'`
@@ -1640,12 +1891,7 @@ elif test "$host" = "$target"; then
 else
   CC_FOR_TARGET=`echo gcc | sed -e 's/x/x/' ${program_transform_name}`
 fi
-# On Canadian crosses, configure reads CC_FOR_TARGET from Makefile,
-# if Makefile exists.  Prevent $(FLAGS_FOR_TARGET) from being duplicated.
-case $CC_FOR_TARGET in
-*' $(FLAGS_FOR_TARGET)') ;;
-*) CC_FOR_TARGET=$CC_FOR_TARGET' $(FLAGS_FOR_TARGET)' ;;
-esac
+CC_FOR_TARGET=$CC_FOR_TARGET' $(FLAGS_FOR_TARGET)'
 
 if test "x${GCJ_FOR_TARGET+set}" = xset; then
   :
@@ -1656,10 +1902,7 @@ elif test "$host" = "$target"; then
 else
   GCJ_FOR_TARGET=`echo gcj | sed -e 's/x/x/' ${program_transform_name}`
 fi
-case $GCJ_FOR_TARGET in
-*' $(FLAGS_FOR_TARGET)') ;;
-*) GCJ_FOR_TARGET=$GCJ_FOR_TARGET' $(FLAGS_FOR_TARGET)' ;;
-esac
+GCJ_FOR_TARGET=$GCJ_FOR_TARGET' $(FLAGS_FOR_TARGET)'
 
 # Don't use libstdc++-v3's flags to configure/build itself.
 libstdcxx_flags='`test ! -f $$r/$(TARGET_SUBDIR)/libstdc++-v3/testsuite_flags || $(SHELL) $$r/$(TARGET_SUBDIR)/libstdc++-v3/testsuite_flags --build-includes` -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs'
@@ -1682,17 +1925,11 @@ else
   CXX_FOR_TARGET=`echo c++ | sed -e 's/x/x/' ${program_transform_name}`
   RAW_CXX_FOR_TARGET=${CXX_FOR_TARGET}
 fi
-case $CXX_FOR_TARGET in
-*' $(FLAGS_FOR_TARGET)') ;;
-*) CXX_FOR_TARGET=$CXX_FOR_TARGET' $(FLAGS_FOR_TARGET)' ;;
-esac
-case $RAW_CXX_FOR_TARGET in
-*' $(FLAGS_FOR_TARGET)') ;;
-*) RAW_CXX_FOR_TARGET=$RAW_CXX_FOR_TARGET' $(FLAGS_FOR_TARGET)' ;;
-esac
+CXX_FOR_TARGET=$CXX_FOR_TARGET' $(FLAGS_FOR_TARGET)'
+RAW_CXX_FOR_TARGET=$RAW_CXX_FOR_TARGET' $(FLAGS_FOR_TARGET)'
 
-qCXX_FOR_TARGET=`echo "$CXX_FOR_TARGET" | sed 's,[&%],\\\&,g'`
-qRAW_CXX_FOR_TARGET=`echo "$RAW_CXX_FOR_TARGET" | sed 's,[&%],\\\&,g'`
+qCXX_FOR_TARGET=`echo "$CXX_FOR_TARGET" | sed 's,[[&%]],\\\&,g'`
+qRAW_CXX_FOR_TARGET=`echo "$RAW_CXX_FOR_TARGET" | sed 's,[[&%]],\\\&,g'`
 
 # We want to defer the evaluation of `cmd`s and shell variables in
 # CXX_FOR_TARGET when recursing in the top-level Makefile, such as for
@@ -1700,8 +1937,8 @@ qRAW_CXX_FOR_TARGET=`echo "$RAW_CXX_FOR_TARGET" | sed 's,[&%],\\\&,g'`
 # quotes, but we still have to duplicate `$'s so that shell variables
 # can be expanded by the nested make as shell variables, not as make
 # macros.
-qqCXX_FOR_TARGET=`echo "$qCXX_FOR_TARGET" | sed -e 's,[$][$],$$$$,g'`
-qqRAW_CXX_FOR_TARGET=`echo "$qRAW_CXX_FOR_TARGET" | sed -e 's,[$][$],$$$$,g'`
+qqCXX_FOR_TARGET=`echo "$qCXX_FOR_TARGET" | sed -e 's,[[$]][[$]],$$$$,g'`
+qqRAW_CXX_FOR_TARGET=`echo "$qRAW_CXX_FOR_TARGET" | sed -e 's,[[$]][[$]],$$$$,g'`
 
 # Wrap CC_FOR_TARGET and friends, for certain types of builds.
 CC_FOR_TARGET="\$(STAGE_CC_WRAPPER) ${CC_FOR_TARGET}"
@@ -1711,38 +1948,120 @@ RAW_CXX_FOR_TARGET="\$(STAGE_CC_WRAPPER) ${qRAW_CXX_FOR_TARGET}"
 CXX_FOR_TARGET_FOR_RECURSIVE_MAKE="\$(STAGE_CC_WRAPPER) ${qqCXX_FOR_TARGET}"
 RAW_CXX_FOR_TARGET_FOR_RECURSIVE_MAKE="\$(STAGE_CC_WRAPPER) ${qqRAW_CXX_FOR_TARGET}"
 
-sedtemp=sed.$$
-cat >$sedtemp <<EOF
-s%@GDB_TK@%${GDB_TK}%
-s%@configure_build_modules@%${configure_build_modules}%
-s%@all_build_modules@%${all_build_modules}%
-s%@configure_host_modules@%${configure_host_modules}%
-s%@all_host_modules@%${all_host_modules}%
-s%@check_host_modules@%${check_host_modules}%
-s%@install_host_modules@%${install_host_modules}%
-s%@install_host_modules_nogcc@%${install_host_modules_nogcc}%
-s%@configure_target_modules@%${configure_target_modules}%
-s%@all_target_modules@%${all_target_modules}%
-s%@check_target_modules@%${check_target_modules}%
-s%@install_target_modules@%${install_target_modules}%
-s:@target_configdirs@:${target_configdirs}:
-s%@target_configargs@%${target_configargs}%
-s%@FLAGS_FOR_TARGET@%${FLAGS_FOR_TARGET}%
-s%@CC_FOR_TARGET@%${CC_FOR_TARGET}%
-s%@GCJ_FOR_TARGET@%${GCJ_FOR_TARGET}%
-s%@CXX_FOR_TARGET@%${CXX_FOR_TARGET}%
-s%@RAW_CXX_FOR_TARGET@%${RAW_CXX_FOR_TARGET}%
-s%@CXX_FOR_TARGET_FOR_RECURSIVE_MAKE@%${CXX_FOR_TARGET_FOR_RECURSIVE_MAKE}%
-s%@RAW_CXX_FOR_TARGET_FOR_RECURSIVE_MAKE@%${RAW_CXX_FOR_TARGET_FOR_RECURSIVE_MAKE}%
-s%@target_subdir@%${target_subdir}%
-s%@build_subdir@%${build_subdir}%
-s%@build_configargs@%${build_configargs}%
-s%@gxx_include_dir@%${gxx_include_dir}%
-s%@libstdcxx_incdir@%${libstdcxx_incdir}%
-s%@host_configargs@%${host_configargs}%
-EOF
-sed -f $sedtemp Makefile > Makefile.tem
-rm -f Makefile $sedtemp
-mv -f Makefile.tem Makefile
+# Makefile fragments.
+host_makefile_frag=${srcdir}/${host_makefile_frag}
+target_makefile_frag=${srcdir}/${target_makefile_frag}
+alphaieee_frag=${srcdir}/${alphaieee_frag}
+ospace_frag=${srcdir}/${ospace_frag}
+AC_SUBST_FILE(host_makefile_frag)
+AC_SUBST_FILE(target_makefile_frag)
+AC_SUBST_FILE(alphaieee_frag)
+AC_SUBST_FILE(ospace_frag)
 
-#
+# Miscellanea: directories, flags, etc.
+AC_SUBST(SET_LIB_PATH)
+AC_SUBST(RPATH_ENVVAR)
+AC_SUBST(BUILD_PREFIX)
+AC_SUBST(BUILD_PREFIX_1)
+AC_SUBST(configlinks)
+AC_SUBST(enable_shared)
+AC_SUBST(enable_threads)
+AC_SUBST(enable_version_specific_runtime_libs)
+AC_SUBST(gcc_version_trigger)
+AC_SUBST(gcc_version)
+AC_SUBST(tooldir)
+AC_SUBST(build_tooldir)
+AC_SUBST(GDB_TK)
+AC_SUBST(gxx_include_dir)
+AC_SUBST(libstdcxx_incdir)
+
+# Build module lists & subconfigure args.
+AC_SUBST(build_subdir)
+AC_SUBST(build_configargs)
+AC_SUBST(configure_build_modules)
+AC_SUBST(all_build_modules)
+
+# Host module lists & subconfigure args.
+AC_SUBST(host_configargs)
+AC_SUBST(configdirs)
+AC_SUBST(configure_host_modules)
+AC_SUBST(all_host_modules)
+AC_SUBST(check_host_modules)
+AC_SUBST(install_host_modules)
+AC_SUBST(install_host_modules_nogcc)
+
+# Target module lists & subconfigure args.
+AC_SUBST(target_subdir)
+AC_SUBST(target_configargs)
+AC_SUBST(target_configdirs)
+AC_SUBST(configure_target_modules)
+AC_SUBST(all_target_modules)
+AC_SUBST(check_target_modules)
+AC_SUBST(install_target_modules)
+
+# Build tools.
+AC_SUBST(BISON)
+AC_SUBST(CC_FOR_BUILD)
+AC_SUBST(LEX)
+AC_SUBST(MAKEINFO)
+AC_SUBST(YACC)
+AC_SUBST(config_shell)
+
+# Host tools.
+AC_CHECK_TOOL(AR, ar)
+AC_CHECK_TOOL(AS, as)
+AC_CHECK_TOOL(DLLTOOL, dlltool)
+AC_CHECK_TOOL(LD, ld)
+AC_CHECK_TOOL(NM, nm)
+AC_CHECK_TOOL(RANLIB, ranlib, :)
+AC_CHECK_TOOL(WINDRES, windres)
+AC_CHECK_TOOL(OBJCOPY, objcopy)
+AC_CHECK_TOOL(OBJDUMP, objdump)
+AC_SUBST(CC)
+AC_SUBST(CXX)
+AC_SUBST(CFLAGS)
+AC_SUBST(CXXFLAGS)
+AC_SUBST(DEFAULT_YACC)
+AC_SUBST(DEFAULT_LEX)
+AC_SUBST(DEFAULT_M4)
+
+# Target tools.
+NCN_CHECK_TARGET_TOOL(AR_FOR_TARGET, ar)
+NCN_CHECK_TARGET_TOOL(AS_FOR_TARGET, as)
+NCN_CHECK_TARGET_TOOL(DLLTOOL_FOR_TARGET, dlltool)
+NCN_CHECK_TARGET_TOOL(LD_FOR_TARGET, ld)
+NCN_CHECK_TARGET_TOOL(NM_FOR_TARGET, nm)
+NCN_CHECK_TARGET_TOOL(RANLIB_FOR_TARGET, ranlib, :)
+NCN_CHECK_TARGET_TOOL(WINDRES_FOR_TARGET, windres)
+
+AC_SUBST(GCC_FOR_TARGET)
+AC_SUBST(FLAGS_FOR_TARGET)
+AC_SUBST(CC_FOR_TARGET)
+AC_SUBST(GCJ_FOR_TARGET)
+AC_SUBST(CXX_FOR_TARGET)
+AC_SUBST(RAW_CXX_FOR_TARGET)
+AC_SUBST(CXX_FOR_TARGET_FOR_RECURSIVE_MAKE)
+AC_SUBST(RAW_CXX_FOR_TARGET_FOR_RECURSIVE_MAKE)
+
+# Fix up target tools.
+if test "x${build}" = "x${host}" ; then
+  # In this case, the newly built tools can and should be used,
+  # so we override the results of the autoconf tests.
+  # This should really only happen when the tools are actually being built,
+  # but that's a further refinement.  The new build scheme, where
+  # tools are built into a structure paralleling where they're installed,
+  # should also eliminate all of this cleanly.
+  AR_FOR_TARGET="\$(USUAL_AR_FOR_TARGET)"
+  AS_FOR_TARGET="\$(USUAL_AS_FOR_TARGET)"
+  DLLTOOL_FOR_TARGET="\$(USUAL_DLLTOOL_FOR_TARGET)"
+  LD_FOR_TARGET="\$(USUAL_LD_FOR_TARGET)"
+  NM_FOR_TARGET="\$(USUAL_NM_FOR_TARGET)"
+  RANLIB_FOR_TARGET="\$(USUAL_RANLIB_FOR_TARGET)"
+  WINDRES_FOR_TARGET="\$(USUAL_WINDRES_FOR_TARGET)"
+fi
+# Certain tools may need extra flags.
+AR_FOR_TARGET=${AR_FOR_TARGET}${extra_arflags_for_target}
+RANLIB_FOR_TARGET=${RANLIB_FOR_TARGET}${extra_ranlibflags_for_target}
+NM_FOR_TARGET=${NM_FOR_TARGET}${extra_nmflags_for_target}
+
+AC_OUTPUT(Makefile)
