@@ -1992,7 +1992,7 @@ scalarize_function (void)
 
   sra_walk_function (&fns);
   scalarize_parms ();
-  bsi_commit_edge_inserts (NULL);
+  bsi_commit_edge_inserts ();
 }
 
 

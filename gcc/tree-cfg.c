@@ -3005,29 +3005,20 @@ tree_find_edge_insert_loc (edge e, block_stmt_iterator *bsi,
 
 
 /* This routine will commit all pending edge insertions, creating any new
-   basic blocks which are necessary.
-
-   If specified, NEW_BLOCKS returns a count of the number of new basic
-   blocks which were created.  */
+   basic blocks which are necessary.  */
 
 void
-bsi_commit_edge_inserts (int *new_blocks)
+bsi_commit_edge_inserts (void)
 {
   basic_block bb;
   edge e;
-  int blocks;
   edge_iterator ei;
-
-  blocks = n_basic_blocks;
 
   bsi_commit_one_edge_insert (EDGE_SUCC (ENTRY_BLOCK_PTR, 0), NULL);
 
   FOR_EACH_BB (bb)
     FOR_EACH_EDGE (e, ei, bb->succs)
       bsi_commit_one_edge_insert (e, NULL);
-
-  if (new_blocks)
-    *new_blocks = n_basic_blocks - blocks;
 }
 
 
@@ -5168,7 +5159,7 @@ tree_flow_call_edges_add (sbitmap blocks)
 	    if (e->dest == EXIT_BLOCK_PTR)
 	      {
 		bsi_insert_on_edge (e, build_empty_stmt ());
-		bsi_commit_edge_inserts ((int *)NULL);
+		bsi_commit_edge_inserts ();
 		break;
 	      }
 	}

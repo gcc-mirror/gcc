@@ -596,7 +596,7 @@ loop_commit_inserts (void)
   basic_block bb;
 
   old_last_basic_block = last_basic_block;
-  bsi_commit_edge_inserts (NULL);
+  bsi_commit_edge_inserts ();
   for (i = old_last_basic_block; i < (unsigned) last_basic_block; i++)
     {
       bb = BASIC_BLOCK (i);

@@ -1900,7 +1900,7 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 					     new_ivs,
 					     invariants, MAX_EXPR, &stmts);
       bsi_insert_on_edge (loop_preheader_edge (temp), stmts);
-      bsi_commit_edge_inserts (NULL);
+      bsi_commit_edge_inserts ();
       /* Build the new upper bound and insert its statements in the
          basic block of the exit condition */
       newupperbound = lle_to_gcc_expression (LL_UPPER_BOUND (newloop),

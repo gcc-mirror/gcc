@@ -8,6 +8,18 @@
 	TREE_OPERAND with COND_EXPR_COND, COND_EXPR_THEN, or
 	COND_EXPR_ELSE.
 
+	* tree-cfg.c (bsi_commit_edge_inserts): Remove an argument.
+	(tree_flow_call_edges_add): Update the call to
+	bsi_commit_edge_inserts.
+	* lambda-code.c (lambda_loopnest_to_gcc_loopnest): Likewise.
+	* profile.c (branch_prob): Likewise.
+	* tree-mudflap.c (mf_decl_cache_locals): Likewise.
+	* tree-sra.c (scalarize_function): Likewise.
+	* tree-ssa-loop-im.c (loop_commit_inserts): Likewise.
+	* tree-ssa-pre.c (fini_pre): Likewise.
+	* tree-flow.h: Update the prototype for
+	bsi_commit_edge_inserts.
+
 2004-11-15  Eric Christopher  <echristo@redhat.com>
 
 	* sched-deps.c (set_sched_group_p): Delete.

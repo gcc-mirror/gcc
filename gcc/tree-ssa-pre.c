@@ -1964,7 +1964,7 @@ fini_pre (void)
   basic_block bb;
   unsigned int i;
 
-  bsi_commit_edge_inserts (NULL);
+  bsi_commit_edge_inserts ();
 
   obstack_free (&grand_bitmap_obstack, NULL);
   free_alloc_pool (value_set_pool);
