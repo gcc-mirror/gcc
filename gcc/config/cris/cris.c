@@ -125,6 +125,7 @@ static bool cris_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				    tree, bool);
 static int cris_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				   tree, bool);
+static tree cris_md_asm_clobbers (tree);
 
 /* This is the argument from the "-max-stack-stackframe=" option.  */
 const char *cris_max_stackframe_str;
@@ -196,6 +197,8 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #define TARGET_PASS_BY_REFERENCE cris_pass_by_reference
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES cris_arg_partial_bytes
+#undef TARGET_MD_ASM_CLOBBERS
+#define TARGET_MD_ASM_CLOBBERS cris_md_asm_clobbers
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -479,6 +482,9 @@ cris_conditional_register_usage (void)
   if (flag_pic)
     fixed_regs[PIC_OFFSET_TABLE_REGNUM]
       = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+
+  if (TARGET_HAS_MUL_INSNS)
+    fixed_regs[CRIS_MOF_REGNUM] = 0;
 }
 
 /* Return current_function_uses_pic_offset_table.  For use in cris.md,
@@ -1454,6 +1460,16 @@ cris_print_operand (FILE *file, rtx x, int code)
       fprintf (file, INTVAL (operand) < 0 ? "adds.w" : "addq");
       return;
 
+    case 'd':
+      /* If this is a GOT symbol, print it as :GOT regardless of -fpic.  */
+      if (flag_pic && CONSTANT_P (operand) && cris_got_symbol (operand))
+	{
+	  cris_output_addr_const (file, operand);
+	  fprintf (file, ":GOT");
+	  return;
+	}
+      break;
+
     case 'D':
       /* When emitting an sub for the high part of a DImode constant, we
 	 want to use subq for 0 and subs.w for -1.  */
@@ -1488,7 +1504,9 @@ cris_print_operand (FILE *file, rtx x, int code)
   switch (GET_CODE (operand))
     {
     case REG:
-      if (REGNO (operand) > 15)
+      if (REGNO (operand) > 15
+	  && REGNO (operand) != CRIS_MOF_REGNUM
+	  && REGNO (operand) != CRIS_SRP_REGNUM)
 	internal_error ("internal error: bad register: %d", REGNO (operand));
       fprintf (file, "$%s", reg_names[REGNO (operand)]);
       return;
@@ -3039,6 +3057,16 @@ cris_arg_partial_bytes (CUMULATIVE_ARGS *ca, enum machine_mode mode,
     return 0;
 }
 
+/* Worker function for TARGET_MD_ASM_CLOBBERS.  */
+
+static tree
+cris_md_asm_clobbers (tree clobbers)
+{
+  return tree_cons (NULL_TREE,
+		    build_string (strlen (reg_names[CRIS_MOF_REGNUM]),
+				  reg_names[CRIS_MOF_REGNUM]),
+		    clobbers);
+}
 
 #if 0
 /* Various small functions to replace macros.  Only called from a
