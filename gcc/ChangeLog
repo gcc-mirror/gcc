@@ -1,3 +1,24 @@
+Fri Sep  3 01:28:33 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* objc/objc-act.c (objc_tree_code_type, objc_tree_code_length,
+	objc_tree_code_name, synth_id_with_class_suffix, warn_with_method,
+	error_with_ivar, gen_declarator, create_builtin_decl,
+	my_build_string, generate_descriptor_table, generate_ivars_list,
+	generate_dispatch_table, check_protocols, TAG_GETCLASS,
+	TAG_GETMETACLASS, TAG_MSGSEND, TAG_MSGSENDSUPER, TAG_EXECCLASS,
+	dump_base_name, lang_decode_option, build_encode_expr,
+	start_class, finish_class, encode_pointer, really_start_method,
+	gen_declaration, dump_interface, handle_class_ref, handle_impent):
+	Constify.
+	(objc_demangle, objc_printable_name, generate_struct_by_value_array):
+	Add static prototypes.
+	(build_objc_string_decl, build_selector_reference_decl,
+	encode_bitfield, build_class_reference_decl): Remove unused
+	parameter, all callers changed.
+	(maybe_objc_method_name): Mark with ATTRIBUTE_UNUSED.
+	(objc_printable_name): Likewise.  Change second parameter to type int.
+	(init_objc): Use memcpy, not bcopy, to avoid casts.
+
 Thu Sep  2 21:49:52 1999  Richard Henderson  <rth@cygnus.com>
 
 	* reload1.c (eliminate_regs_in_insn): Avoid eliminating the

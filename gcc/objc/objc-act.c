@@ -92,7 +92,7 @@ extern cpp_options parse_options;
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
 
-char objc_tree_code_type[] = {
+static const char objc_tree_code_type[] = {
   'x',
 #include "objc-tree.def"
 };
@@ -104,7 +104,7 @@ char objc_tree_code_type[] = {
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
 
-int objc_tree_code_length[] = {
+static const int objc_tree_code_length[] = {
   0,
 #include "objc-tree.def"
 };
@@ -114,7 +114,7 @@ int objc_tree_code_length[] = {
    Used for printing out the tree and error messages.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
 
-char *objc_tree_code_name[] = {
+static const char * const objc_tree_code_name[] = {
   "@@dummy",
 #include "objc-tree.def"
 };
@@ -195,13 +195,15 @@ static void build_protocol_reference		PROTO((tree));
 static tree init_selector			PROTO((int));
 #endif
 static tree build_keyword_selector		PROTO((tree));
-static tree synth_id_with_class_suffix		PROTO((char *, tree));
+static tree synth_id_with_class_suffix		PROTO((const char *, tree));
 
 static void generate_static_references		PROTO((void));
 static int check_methods_accessible		PROTO((tree, tree,
 						       int));
 static void encode_aggregate_within		PROTO((tree, int, int,
 					               int, int));
+static const char *objc_demangle		PROTO((const char *));
+static const char *objc_printable_name		PROTO((tree, int));
 
 /* Misc. bookkeeping */
 
@@ -241,9 +243,8 @@ static tree add_objc_string			PROTO((tree,
 						       enum string_section));
 static tree get_objc_string_decl		PROTO((tree,
 						       enum string_section));
-static tree build_objc_string_decl		PROTO((tree,
-						       enum string_section));
-static tree build_selector_reference_decl	PROTO((tree));
+static tree build_objc_string_decl		PROTO((enum string_section));
+static tree build_selector_reference_decl	PROTO((void));
 
 /* Protocol additions.  */
 
@@ -257,7 +258,7 @@ static void encode_type_qualifiers		PROTO((tree));
 static void encode_pointer			PROTO((tree, int, int));
 static void encode_array			PROTO((tree, int, int));
 static void encode_aggregate			PROTO((tree, int, int));
-static void encode_bitfield			PROTO((int, int));
+static void encode_bitfield			PROTO((int));
 static void encode_type				PROTO((tree, int, int));
 static void encode_field_decl			PROTO((tree, int, int));
 
@@ -269,11 +270,12 @@ static tree expr_last				PROTO((tree));
 
 /* Utilities for debugging and error diagnostics.  */
 
-static void warn_with_method			PROTO((char *, int, tree));
-static void error_with_ivar			PROTO((char *, tree, tree));
+static void warn_with_method			PROTO((const char *, int, tree));
+static void error_with_ivar			PROTO((const char *, tree, tree));
 static char *gen_method_decl			PROTO((tree, char *));
 static char *gen_declaration			PROTO((tree, char *));
-static char *gen_declarator			PROTO((tree, char *, char *));
+static char *gen_declarator			PROTO((tree, char *,
+						       const char *));
 static int is_complex_decl			PROTO((tree));
 static void adorn_decl				PROTO((tree, char *));
 static void dump_interface			PROTO((FILE *, tree));
@@ -286,8 +288,8 @@ static tree define_decl				PROTO((tree, tree));
 static tree lookup_method_in_protocol_list	PROTO((tree, tree, int));
 static tree lookup_protocol_in_reflist		PROTO((tree, tree));
 static tree create_builtin_decl			PROTO((enum tree_code,
-						       tree, char *));
-static tree my_build_string			PROTO((int, char *));
+						       tree, const char *));
+static tree my_build_string			PROTO((int, const char *));
 static void build_objc_symtab_template		PROTO((void));
 static tree init_def_list			PROTO((tree));
 static tree init_objc_symtab			PROTO((tree));
@@ -299,7 +301,7 @@ static tree build_msg_pool_reference		PROTO((int));
 #endif
 static tree build_typed_selector_reference     	PROTO((tree, tree));
 static tree build_selector_reference		PROTO((tree));
-static tree build_class_reference_decl		PROTO((tree));
+static tree build_class_reference_decl		PROTO((void));
 static void add_class_reference			PROTO((tree));
 static tree objc_copy_list			PROTO((tree, tree *));
 static tree build_protocol_template		PROTO((void));
@@ -308,7 +310,8 @@ static tree build_method_prototype_list_template PROTO((tree, int));
 static tree build_method_prototype_template	PROTO((void));
 static int forwarding_offset			PROTO((tree));
 static tree encode_method_prototype		PROTO((tree, tree));
-static tree generate_descriptor_table		PROTO((tree, char *, int, tree, tree));
+static tree generate_descriptor_table		PROTO((tree, const char *,
+						       int, tree, tree));
 static void generate_method_descriptors		PROTO((tree));
 static tree build_tmp_function_decl		PROTO((void));
 static void hack_method_prototype		PROTO((tree, tree));
@@ -318,10 +321,10 @@ static void check_ivars				PROTO((tree, tree));
 static tree build_ivar_list_template		PROTO((tree, int));
 static tree build_method_list_template		PROTO((tree, int));
 static tree build_ivar_list_initializer		PROTO((tree, tree));
-static tree generate_ivars_list			PROTO((tree, char *,
+static tree generate_ivars_list			PROTO((tree, const char *,
 						       int, tree));
 static tree build_dispatch_table_initializer	PROTO((tree, tree));
-static tree generate_dispatch_table		PROTO((tree, char *,
+static tree generate_dispatch_table		PROTO((tree, const char *,
 						       int, tree));
 static tree build_shared_structure_initializer	PROTO((tree, tree, tree, tree,
 						       tree, int, tree, tree,
@@ -333,11 +336,14 @@ static tree check_duplicates			PROTO((hash));
 static tree receiver_is_class_object		PROTO((tree));
 static int check_methods			PROTO((tree, tree, int));
 static int conforms_to_protocol			PROTO((tree, tree));
-static void check_protocols			PROTO((tree, char *, char *));
+static void check_protocols			PROTO((tree, const char *,
+						       const char *));
 static tree encode_method_def			PROTO((tree));
 static void gen_declspecs			PROTO((tree, char *, int));
 static void generate_classref_translation_entry	PROTO((tree));
 static void handle_class_ref			PROTO((tree));
+static void generate_struct_by_value_array	PROTO((void))
+     ATTRIBUTE_NORETURN;
 
 /*** Private Interface (data) ***/
 
@@ -369,11 +375,11 @@ static void handle_class_ref			PROTO((tree));
 #define STRING_OBJECT_CLASS_NAME "NXConstantString"
 #define PROTOCOL_OBJECT_CLASS_NAME "Protocol"
 
-static char *TAG_GETCLASS;
-static char *TAG_GETMETACLASS;
-static char *TAG_MSGSEND;
-static char *TAG_MSGSENDSUPER;
-static char *TAG_EXECCLASS;
+static const char *TAG_GETCLASS;
+static const char *TAG_GETMETACLASS;
+static const char *TAG_MSGSEND;
+static const char *TAG_MSGSENDSUPER;
+static const char *TAG_EXECCLASS;
 
 /* Set by `continue_class' and checked by `is_public'.  */
 
@@ -482,7 +488,7 @@ extern enum debug_info_type write_symbols;
 
 /* Data imported from toplev.c.  */
 
-extern char *dump_base_name;
+extern const char *dump_base_name;
 
 /* Generate code for GNU or NeXT runtime environment.  */
 
@@ -529,7 +535,7 @@ static int print_struct_values = 0;
    an invisible pointer.  Determine at what size structure is the 
    transition point between the two possibilities. */
 
-void
+static void
 generate_struct_by_value_array ()
 {
   tree type;
@@ -690,7 +696,7 @@ lang_decode_option (argc, argv)
      int argc;
      char **argv;
 {
-  char *p = argv[0];
+  const char *p = argv[0];
   if (!strcmp (p, "-lang-objc"))
     doing_objc_thang = 1;
   else if (!strcmp (p, "-gen-decls"))
@@ -1133,7 +1139,7 @@ static tree
 create_builtin_decl (code, type, name)
      enum tree_code code;
      tree type;
-     char *name;
+     const char *name;
 {
   tree decl = build_decl (code, get_identifier (name), type);
 
@@ -1291,7 +1297,7 @@ synth_module_prologue ()
 static tree
 my_build_string (len, str)
      int len;
-     char *str;
+     const char *str;
 {
   int wide_flag = 0;
   tree a_string = build_string (len, str);
@@ -1998,8 +2004,7 @@ generate_strings ()
 }
 
 static tree
-build_selector_reference_decl (name)
-      tree name;
+build_selector_reference_decl ()
 {
   tree decl, ident;
   char buf[256];
@@ -2220,7 +2225,7 @@ build_selector_reference (ident)
       chain = &TREE_CHAIN (*chain);
     }
 
-  expr = build_selector_reference_decl (ident);
+  expr = build_selector_reference_decl ();
 
   *chain = perm_tree_cons (expr, ident, NULL_TREE);
 
@@ -2231,8 +2236,7 @@ build_selector_reference (ident)
 }
 
 static tree
-build_class_reference_decl (name)
-      tree name;
+build_class_reference_decl ()
 {
   tree decl, ident;
   char buf[256];
@@ -2306,12 +2310,12 @@ get_class_reference (ident)
 	if (TREE_VALUE (*chain) == ident)
 	  {
 	    if (! TREE_PURPOSE (*chain))
-	      TREE_PURPOSE (*chain) = build_class_reference_decl (ident);
+	      TREE_PURPOSE (*chain) = build_class_reference_decl ();
 
 	    return TREE_PURPOSE (*chain);
 	  }
 
-      decl = build_class_reference_decl (ident);
+      decl = build_class_reference_decl ();
       *chain = perm_tree_cons (decl, ident, NULL_TREE);
       return decl;
     }
@@ -2363,7 +2367,7 @@ add_objc_string (ident, section)
       chain = &TREE_CHAIN (*chain);
     }
 
-  decl = build_objc_string_decl (ident, section);
+  decl = build_objc_string_decl (section);
 
   *chain = perm_tree_cons (decl, ident, NULL_TREE);
 
@@ -2371,8 +2375,7 @@ add_objc_string (ident, section)
 }
 
 static tree
-build_objc_string_decl (name, section)
-     tree name;
+build_objc_string_decl (section)
      enum string_section section;
 {
   tree decl, ident;
@@ -2929,7 +2932,7 @@ encode_method_prototype (method_decl, func_decl)
 static tree
 generate_descriptor_table (type, name, size, list, proto)
      tree type;
-     char *name;
+     const char *name;
      int size;
      tree list;
      tree proto;
@@ -3574,7 +3577,7 @@ synth_forward_declarations ()
 
 static void
 error_with_ivar (message, decl, rawdecl)
-     char *message;
+     const char *message;
      tree decl;
      tree rawdecl;
 {
@@ -3885,7 +3888,7 @@ build_ivar_list_initializer (type, field_decl)
 static tree
 generate_ivars_list (type, name, size, list)
      tree type;
-     char *name;
+     const char *name;
      int size;
      tree list;
 {
@@ -4058,7 +4061,7 @@ build_method_template ()
 static tree
 generate_dispatch_table (type, name, size, list)
      tree type;
-     char *name;
+     const char *name;
      int size;
      tree list;
 {
@@ -4568,14 +4571,14 @@ generate_shared_structures ()
 
 static tree
 synth_id_with_class_suffix (preamble, ctxt)
-     char *preamble;
+     const char *preamble;
      tree ctxt;
 {
   char *string;
   if (TREE_CODE (ctxt) == CLASS_IMPLEMENTATION_TYPE
       || TREE_CODE (ctxt) == CLASS_INTERFACE_TYPE)
     {
-      char *class_name
+      const char *class_name
 	= IDENTIFIER_POINTER (CLASS_NAME (implementation_context));
       string = (char *) alloca (strlen (preamble) + strlen (class_name) + 3);
       sprintf (string, "%s_%s", preamble,
@@ -4585,9 +4588,9 @@ synth_id_with_class_suffix (preamble, ctxt)
 	   || TREE_CODE (ctxt) == CATEGORY_INTERFACE_TYPE)
     {
       /* We have a category.  */
-      char *class_name
+      const char *class_name
 	= IDENTIFIER_POINTER (CLASS_NAME (implementation_context));
-      char *class_super_name
+      const char *class_super_name
 	= IDENTIFIER_POINTER (CLASS_SUPER_NAME (implementation_context));
       string = (char *) alloca (strlen (preamble)
 				+ strlen (class_name)
@@ -4597,7 +4600,7 @@ synth_id_with_class_suffix (preamble, ctxt)
     }
   else if (TREE_CODE (ctxt) == PROTOCOL_INTERFACE_TYPE)
     {
-      char *protocol_name = IDENTIFIER_POINTER (PROTOCOL_NAME (ctxt));
+      const char *protocol_name = IDENTIFIER_POINTER (PROTOCOL_NAME (ctxt));
       string
 	= (char *) alloca (strlen (preamble) + strlen (protocol_name) + 3);
       sprintf (string, "%s_%s", preamble, protocol_name);
@@ -5401,7 +5404,7 @@ build_encode_expr (type)
      tree type;
 {
   tree result;
-  char *string;
+  const char *string;
 
   if (!doing_objc_thang)
     objc_fatal ();
@@ -6076,8 +6079,8 @@ check_methods_accessible (chain, context, mtype)
 static void
 check_protocols (proto_list, type, name)
      tree proto_list;
-     char *type;
-     char *name;
+     const char *type;
+     const char *name;
 {
   for ( ; proto_list; proto_list = TREE_CHAIN (proto_list))
     {
@@ -6213,7 +6216,8 @@ start_class (code, class_name, super_name, protocol_list)
 	  && (super_name != CLASS_SUPER_NAME (implementation_template)))
         {
 	  tree previous_name = CLASS_SUPER_NAME (implementation_template);
-          char *name = previous_name ? IDENTIFIER_POINTER (previous_name) : "";
+          const char *name =
+	    previous_name ? IDENTIFIER_POINTER (previous_name) : "";
 	  error ("conflicting super class name `%s'",
 		 IDENTIFIER_POINTER (super_name));
 	  error ("previous declaration of `%s'", name);
@@ -6412,7 +6416,7 @@ finish_class (class)
   else if (TREE_CODE (class) == CLASS_INTERFACE_TYPE)
     {
       tree decl_specs;
-      char *class_name = IDENTIFIER_POINTER (CLASS_NAME (class));
+      const char *class_name = IDENTIFIER_POINTER (CLASS_NAME (class));
       char *string = (char *) alloca (strlen (class_name) + 3);
 
       /* extern struct objc_object *_<my_name>; */
@@ -6535,7 +6539,7 @@ encode_pointer (type, curtype, format)
       if (TYPE_NAME (pointer_to)
 	  && TREE_CODE (TYPE_NAME (pointer_to)) == IDENTIFIER_NODE)
 	{
-	  char *name = IDENTIFIER_POINTER (TYPE_NAME (pointer_to));
+	  const char *name = IDENTIFIER_POINTER (TYPE_NAME (pointer_to));
 
 	  if (strcmp (name, TAG_OBJECT) == 0) /* '@' */
 	    {
@@ -6770,9 +6774,8 @@ encode_aggregate (type, curtype, format)
    hand generating this string (which is tedious).  */
 
 static void
-encode_bitfield (width, format)
+encode_bitfield (width)
      int width;
-     int format;
 {
   char buffer[40];
   sprintf (buffer, "b%d", width);
@@ -6930,11 +6933,11 @@ encode_field_decl (field_decl, curtype, format)
   if (flag_next_runtime)
     {
       if (DECL_BIT_FIELD (field_decl))
-	encode_bitfield (DECL_FIELD_SIZE (field_decl), format);
+	encode_bitfield (DECL_FIELD_SIZE (field_decl));
       else if (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
 	       && DECL_FIELD_SIZE (field_decl)
 	       && TYPE_MODE (type) > DECL_MODE (field_decl))
-	encode_bitfield (DECL_FIELD_SIZE (field_decl), format);
+	encode_bitfield (DECL_FIELD_SIZE (field_decl));
       else
 	encode_type (TREE_TYPE (field_decl), curtype, format);
     }
@@ -6972,7 +6975,7 @@ expr_last (complex_expr)
 
 tree
 maybe_objc_method_name (decl)
-      tree decl;
+      tree decl ATTRIBUTE_UNUSED;
 {
   if (method_context)
     return METHOD_SEL_NAME (method_context);
@@ -7076,7 +7079,7 @@ start_method_def (method)
 
 static void
 warn_with_method (message, mtype, method)
-     char *message;
+     const char *message;
      int mtype;
      tree method;
 {
@@ -7159,7 +7162,8 @@ really_start_method (method, parmlist)
 {
   tree sc_spec, ret_spec, ret_decl, decl_specs;
   tree method_decl, method_id;
-  char *buf, *sel_name, *class_name, *cat_name;
+  const char *sel_name, *class_name, *cat_name;
+  char *buf;
 
   /* Synth the storage class & assemble the return type.  */
   sc_spec = tree_cons (NULL_TREE, ridpointers[(int) RID_STATIC], NULL_TREE);
@@ -7575,7 +7579,7 @@ static char *
 gen_declarator (decl, buf, name)
      tree decl;
      char *buf;
-     char *name;
+     const char *name;
 {
   if (decl)
     {
@@ -7977,9 +7981,9 @@ gen_declaration (atype_or_adecl, buf)
 	  || TREE_CODE (atype_or_adecl) == PARM_DECL
 	  || TREE_CODE (atype_or_adecl) == FUNCTION_DECL)
 	{
-	  char *decl_name = (DECL_NAME (atype_or_adecl)
-			     ? IDENTIFIER_POINTER (DECL_NAME (atype_or_adecl))
-			     : "");
+	  const char *decl_name =
+	    (DECL_NAME (atype_or_adecl)
+	     ? IDENTIFIER_POINTER (DECL_NAME (atype_or_adecl)) : "");
 
 	  if (declarator)
 	    {
@@ -8074,7 +8078,7 @@ dump_interface (fp, chain)
      tree chain;
 {
   char *buf = (char *)xmalloc (256);
-  char *my_name = IDENTIFIER_POINTER (CLASS_NAME (chain));
+  const char *my_name = IDENTIFIER_POINTER (CLASS_NAME (chain));
   tree ivar_decls = CLASS_RAW_IVARS (chain);
   tree nst_methods = CLASS_NST_METHODS (chain);
   tree cls_methods = CLASS_CLS_METHODS (chain);
@@ -8083,7 +8087,7 @@ dump_interface (fp, chain)
 
   if (CLASS_SUPER_NAME (chain))
     {
-      char *super_name = IDENTIFIER_POINTER (CLASS_SUPER_NAME (chain));
+      const char *super_name = IDENTIFIER_POINTER (CLASS_SUPER_NAME (chain));
       fprintf (fp, " : %s\n", super_name);
     }
   else
@@ -8178,7 +8182,7 @@ objc_demangle (mangled)
 static const char *
 objc_printable_name (decl, kind)
      tree decl;
-     char **kind;
+     int kind ATTRIBUTE_UNUSED;
 {
   return objc_demangle (IDENTIFIER_POINTER (DECL_NAME (decl)));
 }
@@ -8193,17 +8197,15 @@ init_objc ()
   gcc_obstack_init (&util_obstack);
   util_firstobj = (char *) obstack_finish (&util_obstack);
 
-  bcopy (objc_tree_code_type,
-	 tree_code_type + (int) LAST_CODE,
-	 (int) LAST_OBJC_TREE_CODE - (int) LAST_CODE);
-  bcopy ((char *) objc_tree_code_length,
-	 (char *) (tree_code_length + (int) LAST_CODE),
-	 (((int) LAST_OBJC_TREE_CODE - (int) LAST_CODE)
-	  * sizeof (int)));
-  bcopy ((char *) objc_tree_code_name,
-	 (char *) (tree_code_name + (int) LAST_CODE),
-	 (((int) LAST_OBJC_TREE_CODE - (int) LAST_CODE)
-	  * sizeof (char *)));
+  memcpy (tree_code_type + (int) LAST_CODE,
+	  objc_tree_code_type,
+	  (int) LAST_OBJC_TREE_CODE - (int) LAST_CODE);
+  memcpy (tree_code_length + (int) LAST_CODE,
+	  objc_tree_code_length,
+	  (((int) LAST_OBJC_TREE_CODE - (int) LAST_CODE) * sizeof (int)));
+  memcpy (tree_code_name + (int) LAST_CODE,
+	  objc_tree_code_name,
+	  (((int) LAST_OBJC_TREE_CODE - (int) LAST_CODE) * sizeof (char *)));
 
   errbuf = (char *)xmalloc (BUFSIZE);
   hash_init ();
@@ -8378,7 +8380,7 @@ static void
 handle_class_ref (chain)
      tree chain;
 {
-  char *name = IDENTIFIER_POINTER (TREE_VALUE (chain));
+  const char *name = IDENTIFIER_POINTER (TREE_VALUE (chain));
   if (! flag_next_runtime)
     {
       tree decl;
@@ -8430,7 +8432,8 @@ handle_impent (impent)
 
   if (TREE_CODE (impent->imp_context) == CLASS_IMPLEMENTATION_TYPE)
     {
-      char *class_name = IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context));
+      const char *class_name =
+	IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context));
       char *string = (char *) alloca (strlen (class_name) + 30);
 
       if (flag_next_runtime)
@@ -8456,9 +8459,10 @@ handle_impent (impent)
 
   else if (TREE_CODE (impent->imp_context) == CATEGORY_IMPLEMENTATION_TYPE)
     {
-      char *class_name = IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context));
-      char *class_super_name
-	= IDENTIFIER_POINTER (CLASS_SUPER_NAME (impent->imp_context));
+      const char *class_name =
+	IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context));
+      const char *class_super_name =
+	IDENTIFIER_POINTER (CLASS_SUPER_NAME (impent->imp_context));
       char *string = (char *) alloca (strlen (class_name)
 				      + strlen (class_super_name) + 30);
 
