@@ -135,7 +135,8 @@ NAME:
 	stmdb	sp!, REGLIST lr}
 ifelse(S, `true',
 `	@ compute sign of result; if neither is negative, no problem
-	eor	SIGN, divisor, dividend	@ compute sign
+	ifelse(OP, `div', `eor	SIGN, divisor, dividend	@ compute sign',
+		`mov	SIGN, dividend')
 	cmp	divisor, #0
 	rsbmi	divisor, divisor, #0
 	beq	Ldiv_zero
@@ -1266,7 +1267,7 @@ pc	.req	r15
 ___modsi3:
 	stmdb	sp!, {r4, r5, r6, lr}
 	@ compute sign of result; if neither is negative, no problem
-	eor	r6, r1, r0	@ compute sign
+	mov	r6, r0
 	cmp	r1, #0
 	rsbmi	r1, r1, #0
 	beq	Ldiv_zero
