@@ -2207,25 +2207,19 @@ namespace std
 				   const streamsize __newlen, 
 				   const streamsize __oldlen, const bool __num)
     {
-      size_t __plen = static_cast<size_t>(__newlen - __oldlen);
-      _CharT* __pads = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
-							     * __plen));
-      _Traits::assign(__pads, __plen, __fill); 
+      const size_t __plen = static_cast<size_t>(__newlen - __oldlen);
+      const ios_base::fmtflags __adjust = __io.flags() & ios_base::adjustfield;
 
-      _CharT* __beg;
-      _CharT* __end;
-      size_t __mod = 0;
-      size_t __beglen; //either __plen or __oldlen
-      ios_base::fmtflags __adjust = __io.flags() & ios_base::adjustfield;
-
+      // Padding last.
       if (__adjust == ios_base::left)
 	{
-	  // Padding last.
-	  __beg = const_cast<_CharT*>(__olds);
-	  __beglen = __oldlen;
-	  __end = __pads;
+	  _Traits::copy(__news, const_cast<_CharT*>(__olds), __oldlen);
+	  _Traits::assign(__news + __oldlen, __plen, __fill);
+	  return;
 	}
-      else if (__adjust == ios_base::internal && __num)
+
+      size_t __mod = 0;
+      if (__adjust == ios_base::internal && __num)
 	{
 	  // Pad after the sign, if there is one.
 	  // Pad after 0[xX], if there is one.
@@ -2254,20 +2248,10 @@ namespace std
 	      ++__news;
 	    }
 	  // else Padding first.
-	  
-	  __beg = __pads;
-	  __beglen = __plen;
-	  __end = const_cast<_CharT*>(__olds + __mod);
 	}
-      else
-	{
-	  // Padding first.
-	  __beg = __pads;
-	  __beglen = __plen;
-	  __end = const_cast<_CharT*>(__olds);
-	}
-      _Traits::copy(__news, __beg, __beglen);
-      _Traits::copy(__news + __beglen, __end, __newlen - __beglen - __mod);
+      _Traits::assign(__news, __plen, __fill);
+      _Traits::copy(__news + __plen, const_cast<_CharT*>(__olds + __mod),
+		    __oldlen - __mod);
     }
 
   template<typename _CharT>

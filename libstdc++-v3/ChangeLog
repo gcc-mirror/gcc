@@ -1,3 +1,9 @@
+2003-10-06  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/locale_facets.tcc (__pad<>::_S_pad):
+	Improve performance-wise: avoid one traits::copy, avoid
+	the __builtin_alloca, streamline.
+
 2003-10-05  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/locale_facets.tcc
