@@ -1089,6 +1089,8 @@ fix_applies (p_fixd)
 #ifdef DEBUG
   static const char z_failed[] = "not applying %s to %s - test %d failed\n";
 #endif
+  const char *pz_fname = pz_curr_file;
+  const char *pz_scan = p_fixd->file_list;
   int test_ct;
   tTestDesc *p_test;
 
@@ -1098,10 +1100,8 @@ fix_applies (p_fixd)
   /*  IF there is a file name restriction,
       THEN ensure the current file name matches one in the pattern  */
 
-  if (p_fixd->file_list != (char *) NULL)
+  if (pz_scan != (char *) NULL)
     {
-      const char *pz_fname = pz_curr_file;
-      const char *pz_scan = p_fixd->file_list;
       size_t name_len;
 
       while ((pz_fname[0] == '.') && (pz_fname[1] == '/'))
