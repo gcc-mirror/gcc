@@ -1,3 +1,7 @@
+2004-09-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
 2004-09-04  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.c (save_expr): No longer TREE_READONLY.
