@@ -1,3 +1,9 @@
+Wed Jun  2 15:44:15 1999  Mark Mitchell <mark@codesourcery.com>
+
+        Revert this change:
+        * fold-const.c (fold): STRIP_NOPS when deciding whether or not
+	something is a candidate for optimize_bit_field_compare.
+
 Wed Jun  2 21:53:05 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.h (CONST_OK_FOR_I, CONST_OK_FOR_L): Cast VALUE to HOST_WIDE_INT.
