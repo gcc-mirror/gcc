@@ -1,0 +1,4 @@
+CLIB = -lPW -lcposix
+INSTALL = cp
+X_CFLAGS = -D_POSIX_SOURCE
+ENQUIRE_LDFLAGS = -posix $(LDFLAGS)
