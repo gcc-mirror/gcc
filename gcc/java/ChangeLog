@@ -1,3 +1,7 @@
+2000-04-18  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (maybe_make_nested_class_name): Use `obstack_grow0'.
+
 2000-04-18  Tom Tromey  <tromey@cygnus.com>
 
 	PR gcj/211:
@@ -21,6 +25,14 @@
 
 	* gjavah.c (decompile_method): Use print_field_name.
 	Fixes PR gcj/205.
+
+2000-04-14  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (java_expand_classes): Reverse the package list once.
+	(java_complete_lhs): PLUS_EXPR: don't try rhs and lhs at string
+	reduction.
+	(patch_binop): New temp `cn'. Call patch_string on LHS/RHS of
+	the `==' and `!=' operators.
 
 2000-04-05  Tom Tromey  <tromey@cygnus.com>
 
