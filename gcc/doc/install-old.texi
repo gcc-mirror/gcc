@@ -34,9 +34,7 @@ See @ref{VMS Install}, for VMS systems.
 If you have chosen a configuration for GNU CC which requires other GNU
 tools (such as GAS or the GNU linker) instead of the standard system
 tools, install the required tools in the build directory under the names
-@file{as}, @file{ld} or whatever is appropriate.  This will enable the
-compiler to find the proper tools for compilation of the program
-@file{enquire}.
+@file{as}, @file{ld} or whatever is appropriate.
 
 Alternatively, you can do subsequent compilation using a value of the
 @code{PATH} environment variable such that the necessary GNU tools come
@@ -457,16 +455,6 @@ tar xf tarfile
 
 Now you can proceed just as for compiling a single-machine compiler
 through the step of building stage 1.
-
-If your target is exotic, you may need to provide the header file
-@file{float.h}.One way to do this is to compile @file{enquire} and run
-it on your target machine.  The job of @file{enquire} is to run on the
-target machine and figure out by experiment the nature of its floating
-point representation.  @file{enquire} records its findings in the header
-file @file{float.h}.  If you can't produce this file by running
-@file{enquire} on the target machine, then you will need to come up with
-a suitable @file{float.h} in some other way (or else, avoid using it in
-your programs).
 
 Do not try to build stage 2 for a cross-compiler.  It doesn't work to
 rebuild GNU CC as a cross-compiler using the cross-compiler, because
