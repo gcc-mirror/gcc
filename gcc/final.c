@@ -51,7 +51,6 @@ Boston, MA 02111-1307, USA.  */
 #include <varargs.h>
 #endif
 #include <stdio.h>
-#include <ctype.h>
 
 #include "tree.h"
 #include "rtl.h"
@@ -68,6 +67,7 @@ Boston, MA 02111-1307, USA.  */
 #include "defaults.h"
 #include "output.h"
 #include "except.h"
+#include "intl.h"
 
 /* Get N_SLINE and N_SOL from stab.h if we can expect the file to exist.  */
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
@@ -2524,11 +2524,11 @@ alter_cond (cond)
    In an `asm', it's the user's fault; otherwise, the compiler's fault.  */
 
 void
-output_operand_lossage (str)
-     char *str;
+output_operand_lossage (msgid)
+     char *msgid;
 {
   if (this_is_asm_operands)
-    error_for_asm (this_is_asm_operands, "invalid `asm': %s", str);
+    error_for_asm (this_is_asm_operands, "invalid `asm': %s", _(msgid));
   else
     abort ();
 }
