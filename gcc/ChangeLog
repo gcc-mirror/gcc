@@ -6,6 +6,13 @@
 
 2004-07-09  Richard Henderson  <rth@redhat.com>
 
+	* config/stormy16/stormy16-protos.h (xstormy16_expand_builtin_va_arg):
+	Remove.
+	* config/stormy16/stormy16.c (TARGET_GIMPLIFY_VA_ARG_EXPR): New.
+	(xstormy16_gimplify_va_arg_expr): Rewrite from
+	xstormy16_expand_builtin_va_arg.
+	* config/stormy16/stormy16.h (EXPAND_BUILTIN_VA_ARG): Remove.
+
 	* config/sparc/sparc-protos.h (sparc_va_arg): Remove.
 	* config/sparc/sparc.c (sparc_gimplify_va_arg): Mark static.
 
