@@ -464,7 +464,20 @@ value_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
       edge e;
       tree arg;
 
+      /* For NE_EXPR, we want to build an assignment result = arg where
+	 arg is the PHI argument associated with the true edge.  For
+	 EQ_EXPR we want the PHI argument associated with the false edge.  */
       e = (TREE_CODE (cond) == NE_EXPR ? true_edge : false_edge);
+
+      /* Unfortunately, E may not reach BB (it may instead have gone to
+	 OTHER_BLOCK).  If that is the case, then we want the single outgoing
+	 edge from OTHER_BLOCK which reaches BB and represents the desired
+	 path from COND_BLOCK.  */
+      if (e->dest == other_block)
+	e = e->dest->succ;
+
+      /* Now we know the incoming edge to BB that has the argument for the
+	 RHS of our new assignment statement.  */
       if (PHI_ARG_EDGE (phi, 0) == e)
 	arg = arg0;
       else

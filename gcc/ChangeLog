@@ -1,3 +1,9 @@
+2004-05-19  Jeff Law <law@redhat.com>
+
+	* tree-ssa-phiopt.c (value_replacement): Handle the case where
+	the desired edge out of COND_BLOCK reaches OTHER_BLOCK rather than
+	BB directly.
+
 2004-05-19  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	PR c++/15463
