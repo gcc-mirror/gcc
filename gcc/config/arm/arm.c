@@ -7736,9 +7736,10 @@ arm_expand_prologue ()
 	    /* FIXME - the way to handle this situation is to allow
 	       the pretend args to be dumped onto the stack, then
 	       reuse r3 to save IP.  This would involve moving the
-	       copying os SP into IP until after the pretend args
+	       copying of SP into IP until after the pretend args
 	       have been dumped, but this is not too hard.  */
-	    error ("Unable to find a temporary location for static chanin register");
+	    /* [See e.g. gcc.c-torture/execute/nest-stdar-1.c.]  */
+	    error ("Unable to find a temporary location for static chain register");
 	}
 
       if (fp_offset)
