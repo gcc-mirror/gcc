@@ -3,10 +3,14 @@
    Ensure all expected transformations of builtin strstr occur and
    perform correctly in presence of redirect.  */
 
+#define ASMNAME(cname)  ASMNAME2 (__USER_LABEL_PREFIX__, cname)
+#define ASMNAME2(prefix, cname) STRING (prefix) cname
+#define STRING(x)    #x
+
 typedef __SIZE_TYPE__ size_t;
 extern void abort (void);
 extern char *strstr (const char *, const char *)
-  __asm ("my_strstr");
+  __asm (ASMNAME ("my_strstr"));
 
 const char *p = "rld", *q = "hello world";
 
