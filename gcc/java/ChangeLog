@@ -1,3 +1,26 @@
+2000-02-25  Anthony Green  <green@cygnus.com>
+
+	* expr.c (build_class_init): Mark the decl to be ignored by
+	check_init.
+	* java-tree.h (DECL_BIT_INDEX): Move definition from check-init.c
+	* check-init.c: Move DECL_BIT_INDEX to java-tree.h
+	* class.c (init_test_hash_newfunc): New function.
+	(decl_hash): New function.
+	(decl_compare): New function.
+	* decl.c (emit_init_test_initialization): New function.
+	(complete_start_java_method): Traverse the init test hashtable,
+	calling emit_init_test_initialization.
+	(always_initialize_class_p): Define.
+	* expr.c (build_class_init): Use initialization tests when
+	emitting class initialization code.
+	(always_initialize_class_p): Declare.
+	* jcf-parse.c (parse_class_file): Set always_initialize_class_p to
+	1.
+	* java-tree.h: Include hash.h.
+	(DECL_FUNCTION_INIT_TEST_TABLE): Define.
+	(struct lang_decl): Add init_test_table field.
+	(init_test_hash_entry): Define.
+
 Fri Feb 25 18:41:31 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* gjavah.c (main): Avoid using `argi' to report unimplemented

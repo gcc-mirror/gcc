@@ -48,6 +48,10 @@ static tree lookup_name_current_level PARAMS ((tree));
 static tree push_promoted_type PARAMS ((const char *, tree));
 static struct binding_level *make_binding_level PARAMS ((void));
 
+/* Set to non-zero value in order to emit class initilization code
+   before static field references.  */
+extern int always_initialize_class_p;
+
 #ifndef INT_TYPE_SIZE
 #define INT_TYPE_SIZE BITS_PER_WORD
 #endif
@@ -1623,6 +1627,24 @@ build_result_decl (fndecl)
   return (DECL_RESULT (fndecl) = build_decl (RESULT_DECL, NULL_TREE, restype));
 }
 
+
+/* Called for every element in DECL_FUNCTION_INIT_TEST_TABLE in order
+   to emit initialization code for each test flag.  */
+   
+static boolean
+emit_init_test_initialization (entry, key)
+  struct hash_entry *entry;
+  hash_table_key key;
+{
+  struct init_test_hash_entry *ite = (struct init_test_hash_entry *) entry;
+  expand_decl (ite->init_test_decl);
+
+  expand_expr_stmt (build (MODIFY_EXPR, boolean_type_node, 
+			   ite->init_test_decl, boolean_false_node));
+
+  return true;
+}
+
 void
 complete_start_java_method (fndecl)
   tree fndecl;
@@ -1634,6 +1656,11 @@ complete_start_java_method (fndecl)
 
       /* Set up parameters and prepare for return, for the function.  */
       expand_function_start (fndecl, 0);
+
+      /* Emit initialization code for test flags.  */
+      if (! always_initialize_class_p)
+	hash_traverse (&DECL_FUNCTION_INIT_TEST_TABLE (fndecl),
+		       emit_init_test_initialization, 0);
     }
 
   /* Allocate further tree nodes temporarily during compilation

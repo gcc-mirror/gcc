@@ -25,6 +25,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Hacked by Per Bothner <bothner@cygnus.com> February 1996. */
 
+#include "hash.h"
+
 /* Java language-specific tree codes.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
 enum java_tree_code {
@@ -368,6 +370,12 @@ struct lang_identifier
 /* How specific the function is (for method selection - Java source
    code front-end */
 #define DECL_SPECIFIC_COUNT(DECL) DECL_ARG_SLOT_COUNT(DECL)
+/* For each function decl, init_test_table contains a hash table whose
+   entries are keyed on class names, and whose values are local
+   boolean decls.  The variables are intended to be TRUE when the
+   class has been initialized in this function, and FALSE otherwise.  */
+#define DECL_FUNCTION_INIT_TEST_TABLE(DECL) \
+  (DECL_LANG_SPECIFIC(DECL)->init_test_table)
 
 /* In a LABEL_DECL, a TREE_VEC that saves the type_map at that point. */
 #define LABEL_TYPE_STATE(NODE) (DECL_INITIAL (NODE))
@@ -429,6 +437,11 @@ struct lang_identifier
 #define DECL_LOCAL_SLOT_CHAIN(NODE) \
   (((struct lang_decl_var*)DECL_LANG_SPECIFIC(NODE))->slot_chain)
 
+/* For a local VAR_DECL, holds the index into a words bitstring that
+   specifies if this decl is definitively assigned.
+   A DECL_BIT_INDEX of -1 means we no longer care. */
+#define DECL_BIT_INDEX(DECL) DECL_FIELD_SIZE(DECL)
+
 /* DECL_LANG_SPECIFIC for FUNCTION_DECLs. */
 struct lang_decl
 {
@@ -443,7 +456,17 @@ struct lang_decl
   tree function_decl_body;	/* Hold all function's statements */
   tree called_constructor;	/* When decl is a constructor, the
 				   list of other constructor it calls. */
+  struct hash_table init_test_table;
+                                /* Class initialization test variables.  */
 };
+
+/* init_test_table hash table entry structure.  */
+struct init_test_hash_entry
+{
+  struct hash_entry root;
+  tree init_test_decl;
+};
+
 
 /* DECL_LANG_SPECIFIC for VAR_DECL and PARM_DECL. */
 struct lang_decl_var

@@ -389,7 +389,7 @@ set_super_info (access_flags, this_class, super_class, interfaces_count)
       CLASS_HAS_SUPER (this_class) = 1;
     }
   pop_obstacks ();
-  
+
   if (access_flags & ACC_PUBLIC)    CLASS_PUBLIC (class_decl) = 1;
   if (access_flags & ACC_FINAL)     CLASS_FINAL (class_decl) = 1;
   if (access_flags & ACC_SUPER)     CLASS_SUPER (class_decl) = 1;
@@ -548,6 +548,40 @@ build_java_method_type (fntype, this_class, access_flags)
   return build_method_type (CLASS_TO_HANDLE_TYPE (this_class), fntype);
 }
 
+static struct hash_entry *
+init_test_hash_newfunc (entry, table, string)
+     struct hash_entry *entry;
+     struct hash_table *table;
+     hash_table_key string ATTRIBUTE_UNUSED;
+{
+  struct init_test_hash_entry *ret = (struct init_test_hash_entry *) entry;
+  if (ret == NULL)
+    {
+      ret = ((struct init_test_hash_entry *)
+	     hash_allocate (table, sizeof (struct init_test_hash_entry)));
+      if (ret == NULL)
+	return NULL;
+    }
+  ret->init_test_decl = 0;
+  return (struct hash_entry *) ret;
+}
+
+static unsigned long
+decl_hash (k)
+     hash_table_key k;
+{
+  return (long) k;
+}
+
+static boolean
+decl_compare (k1, k2)
+     hash_table_key k1;
+     hash_table_key k2;
+{
+  return ((char*) k1 == (char*) k2);
+}
+
+
 tree
 add_method_1 (handle_class, access_flags, name, function_type)
      tree handle_class;
@@ -567,6 +601,11 @@ add_method_1 (handle_class, access_flags, name, function_type)
   DECL_LANG_SPECIFIC (fndecl)
     = (struct lang_decl *) permalloc (sizeof (struct lang_decl));
   bzero ((PTR) DECL_LANG_SPECIFIC (fndecl), sizeof (struct lang_decl));
+
+  /* Initialize the static initializer test table.  */
+  hash_table_init (&DECL_FUNCTION_INIT_TEST_TABLE (fndecl),
+		   init_test_hash_newfunc, decl_hash,
+		   decl_compare);
 
   TREE_CHAIN (fndecl) = TYPE_METHODS (handle_class);
   TYPE_METHODS (handle_class) = fndecl;
