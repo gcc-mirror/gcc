@@ -1,3 +1,10 @@
+2001-10-01  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.md ("add-split"): Fix add split when
+	operand 2 is the stack pointer.
+	("addr-peephole"): Fix address computation peephole when operand 2
+	is the stack pointer.
+
 2001-09-30  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md ("cmpqi_1"): Fix constraints.
