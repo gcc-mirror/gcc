@@ -107,14 +107,20 @@ Notable areas of divergence from what may be previous local practice
   { }
 
 08. Try/Catch blocks
-  try {
-    //
-  }   
-  catch(...) {
-    //
-  }   
+  try 
+    {
+      //
+    }   
+  catch (...)
+    {
+      //
+    }   
   -NOT-
-  try { // } catch(...) { // }
+  try {
+    // 
+  } catch(...) { 
+    //
+  }
 
 09. Member functions declarations and defintions
    Keywords such as extern, static, export, explicit, inline, etc
@@ -128,7 +134,7 @@ Notable areas of divergence from what may be previous local practice
 	Reason: GNU coding conventions dictate return types for functions
      	are on a separate line than the function name and parameter list
      	for definitions. For C++, where we have member functions that can
-.    	be either inline definitions or declarations, keeping to this
+    	be either inline definitions or declarations, keeping to this
      	standard allows all member function names for a given class to be
 	aligned to the same margin, increasing readibility.
 
@@ -139,6 +145,8 @@ Notable areas of divergence from what may be previous local practice
   this->sync()
   -NOT-
   sync()
+
+	Reason: ???
 
 The library currently has a mixture of GNU-C and modern C++ coding
 styles.  The GNU C usages will be combed out gradually.
