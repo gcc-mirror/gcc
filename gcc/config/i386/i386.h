@@ -447,6 +447,10 @@ extern int x86_prefetch_sse;
    redefines this to 1.  */
 #define TARGET_MACHO 0
 
+/* Subtargets may reset this to 1 in order to enable 96-bit long double
+   with the rounding mode forced to 53 bits.  */
+#define TARGET_96_ROUND_53_LONG_DOUBLE 0
+
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
    command options that have values.  Its definition is an
    initializer with a subgrouping for each command option.

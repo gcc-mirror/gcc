@@ -1,3 +1,11 @@
+2004-11-12  Richard Henderson  <rth@redhat.com>
+
+	PR 17778
+	* config/i386/i386.h (TARGET_96_ROUND_53_LONG_DOUBLE): New.
+	* config/i386/freebsd.h (SUBTARGET_OVERRIDE_OPTIONS): Remove.
+	(TARGET_96_ROUND_53_LONG_DOUBLE): New.
+	* config/i386/i386-modes.def (XF): Use it.
+
 2004-11-12  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config/rs6000/t-rtems (MULTILIB_NEW_EXCEPTIONS_ONLY):
@@ -217,9 +225,9 @@
 
 2004-10-13  Richard Henderson  <rth@redhat.com>
 
-        PR debug/15860
-        * dwarf2out.c (rtl_for_decl_location): Apply big-endian correction
-        for DECL_INCOMING_RTL.
+	PR debug/15860
+	* dwarf2out.c (rtl_for_decl_location): Apply big-endian correction
+	for DECL_INCOMING_RTL.
 
 2004-10-13  Richard Henderson  <rth@redhat.com>
 

@@ -138,12 +138,5 @@ Boston, MA 02111-1307, USA.  */
 
 /* FreeBSD sets the rounding precision of the FPU to 53 bits.  Let the
    compiler get the contents of <float.h> and std::numeric_limits correct.  */
-#define SUBTARGET_OVERRIDE_OPTIONS			\
-  do {							\
-    if (!TARGET_64BIT) {				\
-      REAL_MODE_FORMAT (XFmode)				\
-	= &ieee_extended_intel_96_round_53_format;	\
-      REAL_MODE_FORMAT (TFmode)				\
-	= &ieee_extended_intel_96_round_53_format;	\
-    }							\
-  } while (0)
+#undef TARGET_96_ROUND_53_LONG_DOUBLE
+#define TARGET_96_ROUND_53_LONG_DOUBLE (!TARGET_64BIT)
