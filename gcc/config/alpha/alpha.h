@@ -647,6 +647,7 @@ extern const char *alpha_tls_size_string; /* For -mtls-size= */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) 				\
   ((REGNO) >= 32 && (REGNO) <= 62 					\
    ? (MODE) == SFmode || (MODE) == DFmode || (MODE) == DImode		\
+     || (MODE) == SCmode || (MODE) == DCmode				\
    : 1)
 
 /* A C expression that is nonzero if a value of mode
