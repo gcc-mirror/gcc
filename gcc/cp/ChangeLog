@@ -1,5 +1,37 @@
 2001-06-12  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/3130, c++/3131, c++/3132
+	* cp-tree.h (BINFO_UNSHARED_MARKED): New #define.
+	* class.c (force_canonical_binfo_r): Move
+	BINFO_UNSHARED_MARKED, BINFO_LOST_PRIMARY_P. Don't move
+	virtual bases unless they're primary and what they're primary
+	too has been moved.
+	(dfs_unshared_virtual_bases): Use BINFO_UNSHARED_MARKED. Cope
+	with morally virtual bases. Duplicate BINFO_LOST_PRIMARY_P and
+	BINFO_PRIMARY_BASE_OF. Clear BINFO_VTABLE for all but the most
+	derived binfo.
+	(mark_primary_bases): Use BINFO_UNSHARED_MARKED.
+	(layout_nonempty_base_or_field): Add most derived type
+	parameter. Adjust.
+	(layout_empty_base): Likewise.
+	(build_base_field): Likewise.
+	(build_base_fields): Likewise.
+	(propagate_binfo_offsets): Add most derived type
+	parameter. Skip non canonical virtual bases too.
+	(dfs_set_offset_for_unshared_vbases): Don't skip primary
+	bases. Do skip canonical bases.
+	(layout_virtual_bases): Adjust.
+	(layout_class_type): Adjust.
+	(dfs_get_primary_binfo): Build list of virtual primary base
+	candidates.
+	(get_primary_binfo): Check that the shared virtual primary
+	base candidate was found first.
+	(accumulate_vtbl_inits): Don't do anything for non-vptr
+	containing binfos. For case 1 primary virtual bases, keep
+	checking that we've not emerged from the hierarchy of RTTI_BINFO.
+
+2001-06-12  Nathan Sidwell  <nathan@codesourcery.com>
+
 	PR c++/3089
 	* class.c (dfs_accumulate_vtbl_inits): Always walk down the
 	hierarchy looking for primary bases for a ctor

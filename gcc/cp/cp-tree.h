@@ -1656,6 +1656,10 @@ struct lang_type
    inheritance is indicated by the absence of the other two flags, not
    by TREE_VIA_PRIVATE, which is unused.  */
 
+/* Mark the binfo, whether shared or not. Each instance of a virtual
+   base can be separately marked.  */
+#define BINFO_UNSHARED_MARKED(NODE) TREE_LANG_FLAG_0(NODE)
+
 /* Nonzero means marked by DFS or BFS search, including searches
    by `get_binfo' and `get_base_distance'.  */
 #define BINFO_MARKED(NODE) (TREE_VIA_VIRTUAL(NODE)?CLASSTYPE_MARKED(BINFO_TYPE(NODE)):TREE_LANG_FLAG_0(NODE))
