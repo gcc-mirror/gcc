@@ -54,6 +54,24 @@ Boston, MA 02111-1307, USA.  */
 #define PROT_WRITE 2
 #endif
 
+/* These flags aren't defined on all targets (mingw32), so provide them
+   here.  */
+#ifndef S_IRGRP
+#define S_IRGRP 0
+#endif
+
+#ifndef S_IWGRP
+#define S_IWGRP 0
+#endif
+
+#ifndef S_IROTH
+#define S_IROTH 0
+#endif
+
+#ifndef S_IWOTH
+#define S_IWOTH 0
+#endif
+
 /* This implementation of stream I/O is based on the paper:
  *
  *  "Exploiting the advantages of mapped files for stream I/O",
@@ -921,8 +939,8 @@ unpack_filename (char *cstring, const char *fstring, int len)
 /* tempfile()-- Generate a temporary filename for a scratch file and
  * open it.  mkstemp() opens the file for reading and writing, but the
  * library mode prevents anything that is not allowed.  The descriptor
- * is returns, which is less than zero on error.  The template is
- * pointed to by ioparm.file, which is copied into the unit structure
+ * is returned, which is -1 on error.  The template is pointed to by 
+ * ioparm.file, which is copied into the unit structure
  * and freed later. */
 
 static int
@@ -940,9 +958,22 @@ tempfile (void)
 
   template = get_mem (strlen (tempdir) + 20);
 
-  st_sprintf (template, "%s/gfortantmpXXXXXX", tempdir);
+  st_sprintf (template, "%s/gfortrantmpXXXXXX", tempdir);
+
+#ifdef HAVE_MKSTEMP
 
   fd = mkstemp (template);
+
+#else /* HAVE_MKSTEMP */
+
+  if (mktemp (template))
+    do
+      fd = open (template, O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
+    while (!(fd == -1 && errno == EEXIST) && mktemp (template));
+  else
+    fd = -1;
+
+#endif /* HAVE_MKSTEMP */
 
   if (fd < 0)
     free_mem (template);

@@ -159,7 +159,7 @@ AC_CHECK_HEADER([complex.h],[AC_DEFINE([HAVE_COMPLEX_H], [1], [complex.h exists]
 AC_CHECK_LIB([m],[csin],[need_math="no"],[need_math="yes"])
 
 # Check for library functions.
-AC_CHECK_FUNCS(getrusage times)
+AC_CHECK_FUNCS(getrusage times mkstemp)
 
 # Check libc for getgid, getpid, getuid
 AC_CHECK_LIB([c],[getgid],[AC_DEFINE([HAVE_GETGID],[1],[libc includes getgid])])
