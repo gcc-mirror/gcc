@@ -52,13 +52,8 @@ extern int target_flags;
 /* Nonzero if compiling code that Unix assembler can assemble.  */
 #define TARGET_UNIX_ASM (target_flags & 1)
 
-/* Use the indexed addressing modes (were once not known to work).
-   Leaving this in means we can disable them and so find out what
-   they win us.  */
-#define TARGET_INDEX (target_flags & 2)
-
 /* Implement stdarg in the same fashion used on all other machines.  */
-#define TARGET_GNU_STDARG   (target_flags & 4)
+#define TARGET_GNU_STDARG   (target_flags & 2)
 
 /* Compile using RETD to pop off the args.
    This will not work unless you use prototypes at least
@@ -66,7 +61,7 @@ extern int target_flags;
    This contravenes the Pyramid calling convention, so we don't
    do it yet.  */
 
-#define TARGET_RETD (target_flags & 8)
+#define TARGET_RETD (target_flags & 4)
 
 /* Macros used in the machine description to test the flags.  */
 
@@ -76,19 +71,15 @@ extern int target_flags;
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.
 
-   -mgnu will be useful if we ever have GAS on a pyramid.
-   -mindex was used to enable indexing when I didn't understand
-    how pyramid's indexing modes worked.  */
+   -mgnu will be useful if we ever have GAS on a pyramid.  */
 
 #define TARGET_SWITCHES  \
   { {"unix", 1},  		\
     {"gnu", -1},  		\
-    {"index", 2},		\
-    {"noindex", -2},		\
-    {"gnu-stdarg", 4},		\
-    {"nognu-stdarg", -4},	\
-    {"retd", 8},		\
-    {"no-retd", -8},		\
+    {"gnu-stdarg", 2},		\
+    {"nognu-stdarg", -2},	\
+    {"retd", 4},		\
+    {"no-retd", -4},		\
     { "", TARGET_DEFAULT}}
 
 /* Default target_flags if no switches specified.
@@ -96,7 +87,7 @@ extern int target_flags;
    (equivalent to "-munix -mindex -mgnu-stdarg")  */
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT (1 + 2 + 4)
+#define TARGET_DEFAULT (1 + 2)
 #endif
 
 /* Never allow $ in identifiers */
@@ -105,16 +96,17 @@ extern int target_flags;
 
 /*** Target machine storage layout ***/
 
-/* Define this if most significant bit is lowest numbered
-   in instructions that operate on numbered bit-fields.
+/* Define this to non-zero if most significant bit is lowest
+   numbered in instructions that operate on numbered bit-fields.
    This is not true on the pyramid.  */
 #define BITS_BIG_ENDIAN 0
 
-/* Define this if most significant byte of a word is the lowest numbered.  */
+/* Define this to non-zero if most significant byte of a word is
+   the lowest numbered.  */
 #define BYTES_BIG_ENDIAN 1
 
-/* Define this if most significant word of a multiword number is the lowest
-   numbered.  */
+/* Define this to non-zero if most significant word of a multiword
+   number is the lowest numbered.  */
 #define WORDS_BIG_ENDIAN 1
 
 /* Number of bits in an addressable storage unit */
@@ -146,7 +138,6 @@ extern int target_flags;
 #define EMPTY_FIELD_BOUNDARY 32
 
 /* Every structure's size must be a multiple of this.  */
-/* ??? This is a guess.  */
 #define STRUCTURE_SIZE_BOUNDARY 32
 
 /* No data type wants to be aligned rounder than this.  */
@@ -161,7 +152,6 @@ extern int target_flags;
    on the size of a cache line, which is 32 bytes.
    Newer pyrs have single insns that do strcmp() and strcpy(), so this
    may not actually win anything.   */
-
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
   (TREE_CODE (EXP) == STRING_CST	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
@@ -256,8 +246,7 @@ frame n    |            |            |            |
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
 
-   On the pyramid, these are LOGPSW, CFP, SP, PC, and all the other 
-   global regs.  */
+   On the pyramid, these are LOGPSW, SP, and PC.  */
 
 #define FIXED_REGISTERS \
   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	\
@@ -314,7 +303,7 @@ frame n    |            |            |            |
 
 /* Base register for access to local variables of the function.
    Pyramid uses CFP (GR13) as both frame pointer and argument pointer. */
-#define FRAME_POINTER_REGNUM 13 /* PYR_GREG(13) */
+#define FRAME_POINTER_REGNUM PYR_GREG(13)
 
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms
@@ -799,10 +788,11 @@ extern int current_function_calls_alloca;
 /* All registers except gr0 OK as index or base registers.  */
 
 #define REGNO_OK_FOR_BASE_P(regno) \
-((0 < (regno) && (regno) < FIRST_PSEUDO_REGISTER) || reg_renumber[regno] > 0)
+((regno) < FIRST_PSEUDO_REGISTER || reg_renumber[regno] < FIRST_PSEUDO_REGISTER)
 
 #define REGNO_OK_FOR_INDEX_P(regno)  \
-((0 < (regno) && (regno) < FIRST_PSEUDO_REGISTER) || reg_renumber[regno] > 0)
+((unsigned) (regno) - 1 < FIRST_PSEUDO_REGISTER - 1 \
+ || (unsigned) reg_renumber[regno] - 1 < FIRST_PSEUDO_REGISTER - 1)
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 
@@ -834,7 +824,7 @@ extern int current_function_calls_alloca;
 
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
-#define REG_OK_FOR_INDEX_P(X) 1
+#define REG_OK_FOR_INDEX_P(X) (REGNO (X) > 0)
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X) 1
@@ -857,8 +847,7 @@ extern int current_function_calls_alloca;
    except for CONSTANT_ADDRESS_P which is actually machine-independent.  */
 
 
-/* Go to ADDR if X is indexable -- ie, neither indexed nor offset.
-   Note that X is indexable iff x is offset.  */
+/* Go to ADDR if X is indexable -- i.e., neither indexed nor offset.  */
 #define GO_IF_INDEXABLE_ADDRESS(X, ADDR)  \
 { register rtx xfoob = (X);						\
   if ((CONSTANT_ADDRESS_P (xfoob))					\
@@ -923,7 +912,7 @@ extern int current_function_calls_alloca;
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)  \
 { register rtx xone, xtwo, xfoo0, xfoo1;				\
   GO_IF_NONINDEXED_ADDRESS (X, ADDR);					\
-  if (TARGET_INDEX && GET_CODE (X) == PLUS)				\
+  if (GET_CODE (X) == PLUS)						\
     {									\
       /* Handle <address>[index] represented with index-sum outermost */\
       xone = XEXP (X, 0);						\
