@@ -3747,9 +3747,11 @@ operator:
         OPERATOR
         {
 	  saved_scopes = tree_cons (got_scope, got_object, saved_scopes);
+	  TREE_LANG_FLAG_0 (saved_scopes) = looking_for_typename;
 	  /* We look for conversion-type-id's in both the class and current
 	     scopes, just as for ID in 'ptr->ID::'.  */
-	  looking_for_typename = 1; got_object = got_scope;
+	  looking_for_typename = 1;
+	  got_object = got_scope;
           got_scope = NULL_TREE;
 	}
         ;
@@ -3757,7 +3759,9 @@ operator:
 unoperator:
         { got_scope = TREE_PURPOSE (saved_scopes);
           got_object = TREE_VALUE (saved_scopes);
-          saved_scopes = TREE_CHAIN (saved_scopes); }
+	  looking_for_typename = TREE_LANG_FLAG_0 (saved_scopes);
+          saved_scopes = TREE_CHAIN (saved_scopes);
+	}
         ;
 
 operator_name:

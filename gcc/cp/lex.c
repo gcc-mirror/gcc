@@ -1264,7 +1264,7 @@ do_identifier (token, parsing, args)
   register tree id;
   int lexing = (parsing == 1);
 
-  if (! lexing || IDENTIFIER_OPNAME_P (token))
+  if (! lexing)
     id = lookup_name (token, 0);
   else
     id = lastiddecl;

@@ -956,7 +956,8 @@ frob_id (yyc, peek, idp)
 tree frob_opname (id)
      tree id;
 {
-  frob_id (0, yychar, &id);
+  scan_tokens (0);
+  frob_id (0, nth_token (0)->yychar, &id);
   got_object = NULL_TREE;
   return id;
 }

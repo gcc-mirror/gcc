@@ -1,3 +1,10 @@
+2000-11-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* lex.c (do_identifier): Don't lookup_name for operators.
+	* parse.y (operator): Save looking_for_typename.
+	(unoperator): Restore it.
+	* spew.c (frob_opname): Use nth_token for lookahead.
+
 2000-11-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (grok_op_properties): Always use coerce_new_type and
