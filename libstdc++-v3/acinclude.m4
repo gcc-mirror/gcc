@@ -337,14 +337,16 @@ dnl
 dnl GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1
 AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1, [
   AC_MSG_CHECKING([for $1 declaration])
-  AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
-    AC_LANG_SAVE
-    AC_LANG_CPLUSPLUS
-    AC_TRY_COMPILE([#include <math.h>], 
-                   [ $1(0);], 
-                   [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
-    AC_LANG_RESTORE
-  ])
+  if test x${glibcpp_cv_func_$1_use+set} != xset; then
+    AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
+      AC_LANG_SAVE
+      AC_LANG_CPLUSPLUS
+      AC_TRY_COMPILE([#include <math.h>], 
+                     [ $1(0);], 
+                     [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
+      AC_LANG_RESTORE
+    ])
+  fi
   AC_MSG_RESULT($glibcpp_cv_func_$1_use)
   if test x$glibcpp_cv_func_$1_use = x"yes"; then
     AC_CHECK_FUNCS($1)    
@@ -366,14 +368,16 @@ dnl
 dnl GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2
 AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2, [
   AC_MSG_CHECKING([for $1 declaration])
-  AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
-    AC_LANG_SAVE
-    AC_LANG_CPLUSPLUS
-    AC_TRY_COMPILE([#include <math.h>], 
-                   [ $1(0, 0);], 
-                   [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
-    AC_LANG_RESTORE
-  ])
+  if test x${glibcpp_cv_func_$1_use+set} != xset; then
+    AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
+      AC_LANG_SAVE
+      AC_LANG_CPLUSPLUS
+      AC_TRY_COMPILE([#include <math.h>], 
+                     [ $1(0, 0);], 
+                     [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
+      AC_LANG_RESTORE
+    ])
+  fi
   AC_MSG_RESULT($glibcpp_cv_func_$1_use)
   if test x$glibcpp_cv_func_$1_use = x"yes"; then
     AC_CHECK_FUNCS($1)    
@@ -395,14 +399,16 @@ dnl
 dnl GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3
 AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3, [
   AC_MSG_CHECKING([for $1 declaration])
-  AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
-    AC_LANG_SAVE
-    AC_LANG_CPLUSPLUS
-    AC_TRY_COMPILE([#include <math.h>], 
-                   [ $1(0, 0, 0);], 
-                   [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
-    AC_LANG_RESTORE
-  ])
+  if test x${glibcpp_cv_func_$1_use+set} != xset; then
+    AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
+      AC_LANG_SAVE
+      AC_LANG_CPLUSPLUS
+      AC_TRY_COMPILE([#include <math.h>], 
+                     [ $1(0, 0, 0);], 
+                     [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
+      AC_LANG_RESTORE
+    ])
+  fi
   AC_MSG_RESULT($glibcpp_cv_func_$1_use)
   if test x$glibcpp_cv_func_$1_use = x"yes"; then
     AC_CHECK_FUNCS($1)    
@@ -425,14 +431,16 @@ dnl
 dnl GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_2
 AC_DEFUN(GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_2, [
   AC_MSG_CHECKING([for $1 declaration])
-  AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
-    AC_LANG_SAVE
-    AC_LANG_CPLUSPLUS
-    AC_TRY_COMPILE([#include <stdlib.h>], 
-                   [ $1(0, 0);], 
-                   [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
-    AC_LANG_RESTORE
-  ])
+  if test x${glibcpp_cv_func_$1_use+set} != xset; then
+    AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
+      AC_LANG_SAVE
+      AC_LANG_CPLUSPLUS
+      AC_TRY_COMPILE([#include <stdlib.h>], 
+                     [ $1(0, 0);], 
+                     [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
+      AC_LANG_RESTORE
+    ])
+  fi
   AC_MSG_RESULT($glibcpp_cv_func_$1_use)
   if test x$glibcpp_cv_func_$1_use = x"yes"; then
     AC_CHECK_FUNCS($1)    
@@ -456,22 +464,26 @@ dnl
 dnl GLIBCPP_CHECK_BUILTIN_MATH_DECL_LINKAGE_1
 AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1, [
   AC_MSG_CHECKING([for $1 declaration])
-  AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
-    AC_LANG_SAVE
-    AC_LANG_CPLUSPLUS
-    AC_TRY_COMPILE([#include <math.h>], 
-                   [ $1(0);], 
-                   [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
-    AC_LANG_RESTORE
-  ])
+  if test x${glibcpp_cv_func_$1_use+set} != xset; then
+    AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
+      AC_LANG_SAVE
+      AC_LANG_CPLUSPLUS
+      AC_TRY_COMPILE([#include <math.h>], 
+                     [ $1(0);], 
+                     [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
+      AC_LANG_RESTORE
+    ])
+  fi
   AC_MSG_RESULT($glibcpp_cv_func_$1_use)
   if test x$glibcpp_cv_func_$1_use = x"yes"; then
     AC_MSG_CHECKING([for $1 linkage])
-    AC_CACHE_VAL(glibcpp_cv_func_$1_link, [
-      AC_TRY_LINK([#include <math.h>], 
-                  [ $1(0);], 
-                  [glibcpp_cv_func_$1_link=yes], [glibcpp_cv_func_$1_link=no])
-    ])
+    if test x${glibcpp_cv_func_$1_link+set} != xset; then
+      AC_CACHE_VAL(glibcpp_cv_func_$1_link, [
+        AC_TRY_LINK([#include <math.h>], 
+                    [ $1(0);], 
+                    [glibcpp_cv_func_$1_link=yes], [glibcpp_cv_func_$1_link=no])
+      ])
+    fi
     AC_MSG_RESULT($glibcpp_cv_func_$1_link)
     if test x$glibcpp_cv_func_$1_link = x"yes"; then
       ac_tr_func=HAVE_`echo $1 | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
