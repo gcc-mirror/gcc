@@ -1,5 +1,7 @@
 Wed Nov 28 08:21:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree.h (TREE_VIA_PROTECTED): Update to show can be in TREE_VEC.
+
 	* tree.h: Add missing checks on some macros; make formatting more
 	consistent.
 
