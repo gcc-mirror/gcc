@@ -445,7 +445,7 @@ in the following sections.
 -mtoc  -mno-toc -mlittle  -mlittle-endian  -mbig  -mbig-endian @gol
 -mcall-aix -mcall-sysv -mcall-netbsd @gol
 -maix-struct-return -msvr4-struct-return
--mabi=altivec @gol
+-mabi=altivec -mabi=no-altivec @gol
 -mprototype  -mno-prototype @gol
 -msim  -mmvme  -mads  -myellowknife  -memb -msdata @gol
 -msdata=@var{opt}  -mvxworks -G @var{num} -pthread}
@@ -7037,6 +7037,10 @@ SVR4 ABI)@.
 Extend the current ABI with AltiVec ABI extensions.  This does not
 change the default ABI, instead it adds the AltiVec ABI extensions to
 the current ABI@.
+
+@item -mabi=no-altivec
+@opindex mabi=no-altivec
+Disable AltiVec ABI extensions for the current ABI.
 
 @item -mprototype
 @itemx -mno-prototype

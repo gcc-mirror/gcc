@@ -1,3 +1,11 @@
+2002-03-07  Aldy Hernandez  <aldyh@redhat.com>
+
+        * doc/invoke.texi: Add documentation for -mabi=no-altivec.
+
+        * config/rs6000/rs6000.c (rs6000_parse_abi_options): Add
+        -mabi=no-altivec
+        (alt_reg_names): Remove % for vrsave.
+
 2002-03-06  Jeffrey A Law  (law@redhat.com)
 
 	* ssa-ccp.c (ssa_fast_dce): Update the DF def-use chains

@@ -217,7 +217,7 @@ static const char alt_reg_names[][8] =
    "%v8",  "%v9",  "%v10", "%v11", "%v12", "%v13", "%v14", "%v15",
    "%v16", "%v17", "%v18", "%v19", "%v20", "%v21", "%v22", "%v23",
    "%v24", "%v25", "%v26", "%v27", "%v28", "%v29", "%v30", "%v31",
-   "%vrsave"
+   "vrsave"
 };
 #endif
 
@@ -589,6 +589,8 @@ rs6000_parse_abi_options ()
     return;
   else if (! strcmp (rs6000_abi_string, "altivec"))
     rs6000_altivec_abi = 1;
+  else if (! strcmp (rs6000_abi_string, "no-altivec"))
+    rs6000_altivec_abi = 0;
   else
     error ("unknown ABI specified: '%s'", rs6000_abi_string);
 }
