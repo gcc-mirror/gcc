@@ -1,3 +1,8 @@
+Wed Mar  3 00:00:37 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.c (force_into): New function.
+	(expand_block_move): Use it.
+
 Tue Mar  2 10:39:43 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* cccp.c (struct default_include): Add 'included' field.
