@@ -5917,6 +5917,7 @@ tsubst_copy (t, args, in_decl)
      tree in_decl;
 {
   enum tree_code code;
+  tree r;
 
   if (t == NULL_TREE || t == error_mark_node)
     return t;
@@ -6000,7 +6001,7 @@ tsubst_copy (t, args, in_decl)
 
 	if (id != TREE_OPERAND (t, 0))
 	  {
-	    tree r = build_nt (LOOKUP_EXPR, id);
+	    r = build_nt (LOOKUP_EXPR, id);
 	    LOOKUP_EXPR_GLOBAL (r) = LOOKUP_EXPR_GLOBAL (t);
 	    t = r;
 	  }
@@ -6119,7 +6120,7 @@ tsubst_copy (t, args, in_decl)
     case COND_EXPR:
     case MODOP_EXPR:
       {
-	tree r = build_nt
+	r = build_nt
 	  (code, tsubst_copy (TREE_OPERAND (t, 0), args, in_decl),
 	   tsubst_copy (TREE_OPERAND (t, 1), args, in_decl),
 	   tsubst_copy (TREE_OPERAND (t, 2), args, in_decl));
@@ -6142,7 +6143,7 @@ tsubst_copy (t, args, in_decl)
 
     case NEW_EXPR:
       {
-	tree r = build_nt
+	r = build_nt
 	(code, tsubst_copy (TREE_OPERAND (t, 0), args, in_decl),
 	 tsubst_copy (TREE_OPERAND (t, 1), args, in_decl),
 	 tsubst_copy (TREE_OPERAND (t, 2), args, in_decl));
@@ -6152,7 +6153,7 @@ tsubst_copy (t, args, in_decl)
 
     case DELETE_EXPR:
       {
-	tree r = build_nt
+	r = build_nt
 	(code, tsubst_copy (TREE_OPERAND (t, 0), args, in_decl),
 	 tsubst_copy (TREE_OPERAND (t, 1), args, in_decl));
 	DELETE_EXPR_USE_GLOBAL (r) = DELETE_EXPR_USE_GLOBAL (t);
@@ -6223,9 +6224,13 @@ tsubst_copy (t, args, in_decl)
 	return t;
 
     case CONSTRUCTOR:
-      return build
-	(CONSTRUCTOR, tsubst (TREE_TYPE (t), args, in_decl), NULL_TREE,
-	 tsubst_copy (CONSTRUCTOR_ELTS (t), args, in_decl));
+      {
+	r = build
+	  (CONSTRUCTOR, tsubst (TREE_TYPE (t), args, in_decl), NULL_TREE,
+	   tsubst_copy (CONSTRUCTOR_ELTS (t), args, in_decl));
+	TREE_HAS_CONSTRUCTOR (r) = TREE_HAS_CONSTRUCTOR (t);
+	return r;
+      }
 
     default:
       return t;

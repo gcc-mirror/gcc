@@ -1482,8 +1482,9 @@ extern int flag_new_for_scope;
    has been duly initialized in its constructor.  */
 #define TREE_HAS_CONSTRUCTOR(NODE) (TREE_LANG_FLAG_4(NODE))
 
-#define EMPTY_CONSTRUCTOR_P(NODE) (TREE_CODE (NODE) == CONSTRUCTOR \
-				   && CONSTRUCTOR_ELTS (NODE) == NULL_TREE)
+#define EMPTY_CONSTRUCTOR_P(NODE) (TREE_CODE (NODE) == CONSTRUCTOR	   \
+				   && CONSTRUCTOR_ELTS (NODE) == NULL_TREE \
+				   && ! TREE_HAS_CONSTRUCTOR (NODE))
 
 #if 0
 /* Indicates that a NON_LVALUE_EXPR came from a C++ reference.
