@@ -181,6 +181,10 @@ struct cpp_reader
   /* Current depth of buffer stack. */
   int buffer_stack_depth;
 
+  /* Hash table of macros and assertions.  See cpphash.c */
+#define HASHSIZE 1403
+  struct hashnode **hashtab;
+  
   /* Hash table of other included files.  See cppfiles.c */
 #define ALL_INCLUDE_HASHSIZE 71
   struct include_hash *all_include_files[ALL_INCLUDE_HASHSIZE];
@@ -245,10 +249,6 @@ struct cpp_reader
 
   /* Number of bytes since the last newline.  */
   int deps_column;
-
-#ifdef __cplusplus
-  ~cpp_reader () { cpp_cleanup (this); }
-#endif
 };
 
 #define CPP_FATAL_LIMIT 1000

@@ -657,8 +657,8 @@ do_define (pfile, keyword)
 	 that for this new definition now.  */
       if (CPP_OPTIONS (pfile)->debug_output && keyword)
 	pass_thru_directive (macro, end, pfile, keyword);
-      install (mdef.symnam, mdef.symlen, T_MACRO,
-	       (char *) mdef.defn, hashcode);
+      cpp_install (pfile, mdef.symnam, mdef.symlen, T_MACRO,
+		   (char *) mdef.defn, hashcode);
     }
 
   return 0;
@@ -2845,7 +2845,7 @@ do_assert (pfile, keyword)
 
   base = cpp_lookup (pfile, sym, baselen, -1);
   if (! base)
-    base = install (sym, baselen, T_ASSERT, 0, -1);
+    base = cpp_install (pfile, sym, baselen, T_ASSERT, 0, -1);
   else if (base->type != T_ASSERT)
   {
     /* Token clash - but with what?! */
@@ -2854,8 +2854,8 @@ do_assert (pfile, keyword)
     goto error;
   }
 
-  this = install (sym, thislen, T_ASSERT,
-		  (char *)base->value.aschain, -1);
+  this = cpp_install (pfile, sym, thislen, T_ASSERT,
+		      (char *)base->value.aschain, -1);
   base->value.aschain = this;
   
   pfile->limit = sym; /* Pop */

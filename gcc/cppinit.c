@@ -452,6 +452,8 @@ cpp_reader_init (pfile)
   pfile->token_buffer_size = 200;
   pfile->token_buffer = (U_CHAR *) xmalloc (pfile->token_buffer_size);
   CPP_SET_WRITTEN (pfile, 0);
+
+  pfile->hashtab = (HASHNODE **) xcalloc (HASHSIZE, sizeof (HASHNODE *));
 }
 
 /* Free resources used by PFILE.
@@ -500,7 +502,12 @@ cpp_cleanup (pfile)
       pfile->all_include_files[i] = 0;
     }
 
-  cpp_hash_cleanup (pfile);
+  for (i = HASHSIZE; --i >= 0;)
+    {
+      while (pfile->hashtab[i])
+	delete_macro (pfile->hashtab[i]);
+    }
+  free (pfile->hashtab);
 }
 
 
@@ -510,31 +517,31 @@ initialize_builtins (pfile)
      cpp_reader *pfile;
 {
 #define NAME(str) (U_CHAR *)str, sizeof str - 1
-  install (NAME("__TIME__"),		  T_TIME,	0, -1);
-  install (NAME("__DATE__"),		  T_DATE,	0, -1);
-  install (NAME("__FILE__"),		  T_FILE,	0, -1);
-  install (NAME("__BASE_FILE__"),	  T_BASE_FILE,	0, -1);
-  install (NAME("__LINE__"),		  T_SPECLINE,	0, -1);
-  install (NAME("__INCLUDE_LEVEL__"),	  T_INCLUDE_LEVEL, 0, -1);
-  install (NAME("__VERSION__"),		  T_VERSION,	0, -1);
+  cpp_install (pfile, NAME("__TIME__"),		  T_TIME,	0, -1);
+  cpp_install (pfile, NAME("__DATE__"),		  T_DATE,	0, -1);
+  cpp_install (pfile, NAME("__FILE__"),		  T_FILE,	0, -1);
+  cpp_install (pfile, NAME("__BASE_FILE__"),	  T_BASE_FILE,	0, -1);
+  cpp_install (pfile, NAME("__LINE__"),		  T_SPECLINE,	0, -1);
+  cpp_install (pfile, NAME("__INCLUDE_LEVEL__"),  T_INCLUDE_LEVEL, 0, -1);
+  cpp_install (pfile, NAME("__VERSION__"),	  T_VERSION,	0, -1);
 #ifndef NO_BUILTIN_SIZE_TYPE
-  install (NAME("__SIZE_TYPE__"),	  T_CONST, SIZE_TYPE, -1);
+  cpp_install (pfile, NAME("__SIZE_TYPE__"),	  T_CONST, SIZE_TYPE, -1);
 #endif
 #ifndef NO_BUILTIN_PTRDIFF_TYPE
-  install (NAME("__PTRDIFF_TYPE__ "),	  T_CONST, PTRDIFF_TYPE, -1);
+  cpp_install (pfile, NAME("__PTRDIFF_TYPE__ "),  T_CONST, PTRDIFF_TYPE, -1);
 #endif
-  install (NAME("__WCHAR_TYPE__"),	  T_CONST, WCHAR_TYPE, -1);
-  install (NAME("__USER_LABEL_PREFIX__"), T_CONST, user_label_prefix, -1);
-  install (NAME("__REGISTER_PREFIX__"),	  T_CONST, REGISTER_PREFIX, -1);
+  cpp_install (pfile, NAME("__WCHAR_TYPE__"),	  T_CONST, WCHAR_TYPE, -1);
+  cpp_install (pfile, NAME("__USER_LABEL_PREFIX__"), T_CONST, user_label_prefix, -1);
+  cpp_install (pfile, NAME("__REGISTER_PREFIX__"),  T_CONST, REGISTER_PREFIX, -1);
   if (!CPP_TRADITIONAL (pfile))
     {
-      install (NAME("__STDC__"),	  T_STDC,  0, -1);
+      cpp_install (pfile, NAME("__STDC__"),	  T_STDC,  0, -1);
 #if 0
       if (CPP_OPTIONS (pfile)->c9x)
-	install (NAME("__STDC_VERSION__"),T_CONST, "199909L", -1);
+	cpp_install (pfile, NAME("__STDC_VERSION__"),T_CONST, "199909L", -1);
       else
 #endif
-	install (NAME("__STDC_VERSION__"),T_CONST, "199409L", -1);
+	cpp_install (pfile, NAME("__STDC_VERSION__"),T_CONST, "199409L", -1);
     }
 #undef NAME
 

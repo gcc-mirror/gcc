@@ -45,18 +45,16 @@ typedef struct hashnode HASHNODE;
    the hashf () function.  Hashf () only exists for the sake of
    politeness, for use when speed isn't so important. */
 
-#define HASHSIZE 1403
 #define HASHSTEP(old, c) ((old << 2) + c)
 #define MAKE_POS(v) (v & 0x7fffffff) /* make number positive */
 
-extern HASHNODE *install PARAMS ((U_CHAR *, int, enum node_type,
-				  const char *, int));
-extern int hashf PARAMS ((const U_CHAR *, int, int));
-extern void delete_macro PARAMS ((HASHNODE *));
+extern HASHNODE *cpp_install	  PARAMS ((cpp_reader *, U_CHAR *, int,
+					   enum node_type, const char *, int));
+extern int hashf		  PARAMS ((const U_CHAR *, int, int));
+extern void delete_macro	  PARAMS ((HASHNODE *));
 
 extern MACRODEF create_definition PARAMS ((U_CHAR *, U_CHAR *,
 					   cpp_reader *, int));
 extern int compare_defs		  PARAMS ((cpp_reader *, DEFINITION *,
 					   DEFINITION *));
 extern void macroexpand		  PARAMS ((cpp_reader *, HASHNODE *));
-extern void cpp_hash_cleanup	  PARAMS ((cpp_reader *));
