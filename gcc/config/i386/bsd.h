@@ -28,8 +28,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Define the syntax of pseudo-ops, labels and comments.  */
 
-/* Prefix for internally generated assembler labels.  */
+/* Prefix for internally generated assembler labels.  If we aren't using
+   underscores, we are using prefix `.'s to identify labels that should
+   be ignored, as in `i386gas.h' --karl@cs.umb.edu  */
+#ifdef NO_UNDERSCORES
+#define LPREFIX ".L"
+#else
 #define LPREFIX "L"
+#endif /* not NO_UNDERSCORES */
 
 /* Assembler pseudos to introduce constants of various size.  */
 
