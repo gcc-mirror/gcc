@@ -3101,8 +3101,8 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, purpose)
     {
       rtx result;
       enum machine_mode result_mode;
-      unsigned int opalign ATTRIBUTE_UNUSED
-	= (MIN (MEM_ALIGN (x), MEM_ALIGN (y)) / BITS_PER_UNIT);
+      rtx opalign ATTRIBUTE_UNUSED
+	= GEN_INT (MIN (MEM_ALIGN (x), MEM_ALIGN (y)) / BITS_PER_UNIT);
 
       emit_queue ();
       x = protect_from_queue (x, 0);

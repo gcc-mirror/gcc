@@ -1,3 +1,8 @@
+2001-11-16  Graham Stott  <grahams@redhat.com>
+
+	* optabs.c (prepare_cmp_insn): Correct lossage in last change fix
+	OPALIGN type.
+
 2001-11-16  Olivier Hainque <hainque@act-europe.fr>
 
         * except.c: Support for catching a list of types with a single handler
