@@ -1,5 +1,5 @@
 /* Low-level functions for atomic operations.  AIX version.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -20,7 +20,14 @@
 #ifndef _BITS_ATOMICITY_H
 #define _BITS_ATOMICITY_H       1
 
-/* Should this be type long so 64-bit word in 64-bit mode?  */
+/* We cannot use the cpu/powerpc/bits/atomicity.h inline assembly
+   definitions for these operations since they depend on operations
+   that are not available on the original POWER architecture.  AIX
+   still runs on the POWER architecture, so it would be incorrect to
+   assume the existence of these instructions.  */
+
+/* This should match the type pointed to by atomic_p in
+   <sys/atomic_op.h>.  */
 typedef int _Atomic_word;
 
 #include <sys/atomic_op.h>
@@ -37,36 +44,6 @@ __attribute__ ((unused))
 __atomic_add (atomic_p __mem, int __val)
 {
   (void) fetch_and_add (__mem, __val);
-}
-
-static inline int
-__attribute__ ((unused))
-__compare_and_swap (atomic_l __p, long int __oldval, long int __newval)
-{
-  return compare_and_swaplp (__p, &__oldval, __newval);
-}
-
-static inline long
-__attribute__ ((unused))
-__always_swap (atomic_l __p, long int __newval)
-{
-  long __val = *__p;
-
-  while (! compare_and_swaplp (__p, &__val, __newval))
-    /* EMPTY */;
-
-  return __val;
-}
-
-static inline int
-__attribute__ ((unused))
-__test_and_set (atomic_l __p, long int __newval)
-{
-  long __val = 0;
-
-  (void) compare_and_swaplp (__p, &__val, __newval);
-
-  return __val;
 }
 
 #endif /* atomicity.h */
