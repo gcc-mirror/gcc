@@ -2757,7 +2757,7 @@ simplify_relational_operation (enum rtx_code code, enum machine_mode mode,
 #ifdef VECTOR_STORE_FLAG_VALUE
 	  {
 	    int i, units;
-	    rtvec c;
+	    rtvec v;
 
 	    rtx val = VECTOR_STORE_FLAG_VALUE (mode);
 	    if (val == NULL_RTX)
