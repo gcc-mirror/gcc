@@ -1,5 +1,7 @@
 Wed Jul  8 15:08:29 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* Makefile.in (STAGESTUFF): Readd line lost during June 9 FSF merge.
+
 	* configure.in (mips64orion-*-rtems*): Use elf64.h not elfl64.h.
 
 1998-07-08  Vladimir N. Makarov  <vmakarov@cygnus.com>
