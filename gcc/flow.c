@@ -176,12 +176,6 @@ int max_regno;
 
 varray_type reg_n_info;
 
-/* Size of a regset for the current function,
-   in (1) bytes and (2) elements.  */
-
-int regset_bytes;
-int regset_size;
-
 /* Regset of regs live when calls to `setjmp'-like functions happen.  */
 /* ??? Does this exist only for the setjmp-clobbered warning message?  */
 
