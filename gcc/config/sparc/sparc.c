@@ -1586,7 +1586,8 @@ sparc_emit_set_const64 (op0, op1)
 	temp = op0;
       else
 	temp = gen_reg_rtx (DImode);
-      return sparc_emit_set_symbolic_const64 (op0, op1, temp);
+      sparc_emit_set_symbolic_const64 (op0, op1, temp);
+      return;
     }
 
   if (GET_CODE (op1) == CONST_DOUBLE)
@@ -1716,8 +1717,11 @@ sparc_emit_set_const64 (op0, op1)
    */
   if (high_bits == 0
       || high_bits == 0xffffffff)
-    return sparc_emit_set_const64_quick1 (op0, temp, low_bits,
-					  (high_bits == 0xffffffff));
+    {
+      sparc_emit_set_const64_quick1 (op0, temp, low_bits,
+				     (high_bits == 0xffffffff));
+      return;
+    }
 
   /* 1) sethi	%hi(high_bits), %reg
    *    or	%reg, %lo(high_bits), %reg
@@ -1726,7 +1730,10 @@ sparc_emit_set_const64 (op0, op1)
   if (low_bits == 0
       || (SPARC_SIMM13_P(low_bits)
 	  && ((HOST_WIDE_INT)low_bits > 0)))
-    return sparc_emit_set_const64_quick2 (op0, temp, high_bits, low_bits, 32);
+    {
+      sparc_emit_set_const64_quick2 (op0, temp, high_bits, low_bits, 32);
+      return;
+    }
 
   /* Now, try 3-insn sequences.  But first we may be able to do something
      quick when the constant is negated, so try that.  */
@@ -1788,9 +1795,10 @@ sparc_emit_set_const64 (op0, op1)
       if (hi & lo)
 	abort();
       focus_bits = (hi | lo);
-      return sparc_emit_set_const64_quick2 (op0, temp,
-					    focus_bits, 0,
-					    lowest_bit_set);
+      sparc_emit_set_const64_quick2 (op0, temp,
+				     focus_bits, 0,
+				     lowest_bit_set);
+      return;
     }
 
   /* The easiest way when all else fails, is full decomposition. */

@@ -1934,6 +1934,7 @@
   /* All QI constants require only one insn, so proceed.  */
 
  movqi_is_ok:
+  ;
 }")
 
 (define_insn "*movqi_insn"
@@ -2002,6 +2003,7 @@
       DONE;
     }
  movhi_is_ok:
+  ;
 }")
 
 (define_insn "*movhi_insn"
@@ -2106,6 +2108,7 @@
       DONE;
     }
  movsi_is_ok:
+  ;
 }")
 
 ;; Special LIVE_G0 pattern to obtain zero in a register.
@@ -2290,6 +2293,7 @@
     }
 
  movdi_is_ok:
+  ;
 }")
 
 ;; Be careful, fmovd does not exist when !arch64.
@@ -2764,6 +2768,7 @@
     }
 
  movsf_is_ok:
+  ;
 }")
 
 (define_insn "*movsf_insn"
@@ -2849,6 +2854,7 @@
     }
 
  movdf_is_ok:
+  ;
 }")
 
 ;; Be careful, fmovd does not exist when !arch64.
@@ -3072,7 +3078,8 @@
 	}
     }
 
-movtf_is_ok:
+ movtf_is_ok:
+  ;
 }")
 
 ;; Be careful, fmovq and {st,ld}{x,q} do not exist when !arch64 so
