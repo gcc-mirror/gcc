@@ -1,6 +1,6 @@
 // { dg-options "-fno-implicit-templates" }
 
-// Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,15 +34,15 @@ test01()
 {
   using namespace std;
   bool test __attribute__((unused)) = true;
-  string x ("   this is text");
-  istringstream  sin(x);
-  ostringstream  sout;
+  wstring x(L"   this is text");
+  wistringstream  sin(x);
+  wostringstream  sout;
 
   // same order as in bits/std_iomanip.h
   sin >> resetiosflags(ios_base::dec)
       >> setiosflags(ios_base::dec)
       >> setbase(ios_base::dec)
-      >> setfill('c')
+      >> setfill(L'c')
       >> setprecision(5)
       >> setw(20)
       >> ws;
@@ -51,7 +51,7 @@ test01()
   sout << resetiosflags(ios_base::dec)
        << setiosflags(ios_base::dec)
        << setbase(ios_base::dec)
-       << setfill('c')
+       << setfill(L'c')
        << setprecision(5)
        << setw(20)
        << ends << flush << endl;

@@ -1,4 +1,4 @@
-// Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,9 +28,9 @@ test01()
   using namespace std;
   bool test __attribute__((unused)) = true;
 
-  string s("john coltrane, a love supreme");
-  istringstream  iss(s);
-  ostringstream  oss;
+  wstring s(L"john coltrane, a love supreme");
+  wistringstream  iss(s);
+  wostringstream  oss;
 
   // resetiosflags
   resetiosflags(ios_base::boolalpha);
@@ -54,10 +54,10 @@ test01()
   VERIFY(oss.good());
 
   // setfil
-  setfill('a');
-  iss >> setfill('a');
+  setfill(L'a');
+  iss >> setfill(L'a');
   VERIFY(iss.good());
-  oss << setfill('a');
+  oss << setfill(L'a');
   VERIFY(oss.good());
  
   // setprecision

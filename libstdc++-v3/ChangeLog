@@ -1,3 +1,18 @@
+2004-08-27  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/manipulators/adjustfield/wchar_t/1.cc: New.
+	* testsuite/27_io/manipulators/adjustfield/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/manipulators/basefield/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/manipulators/standard/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/manipulators/standard/wchar_t/2.cc: Likewise.
+	
+	* testsuite/27_io/manipulators/adjustfield/char/1.cc: Minor
+	formatting fixes.
+	* testsuite/27_io/manipulators/adjustfield/char/2.cc: Likewise.
+	* testsuite/27_io/manipulators/basefield/char/1.cc: Likewise.
+	* testsuite/27_io/manipulators/standard/char/1.cc: Likewise.
+	* testsuite/27_io/manipulators/standard/char/2.cc: Likewise.
+
 2004-08-25  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/17038 (partial)
