@@ -1,3 +1,7 @@
+2000-07-25  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c90-impl-int-2.c, gcc.dg/c99-impl-int-2.c: New tests.
+
 Wed Jul 26 19:41:51 2000  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.c-tortuer/execute/20000726-1.c: New test.
