@@ -1,3 +1,9 @@
+2001-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* combine.c (nonzero_bits): If using reg_nonzero_bits,
+	we don't know anything about bits outside of X mode.
+	(num_sign_bit_copies): Likewise.
+
 2001-12-21  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/arm.md (prefetch): Use 'a' operand code.

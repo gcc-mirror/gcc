@@ -7990,7 +7990,14 @@ nonzero_bits (x, mode)
 	  return nonzero_bits (tem, mode);
 	}
       else if (nonzero_sign_valid && reg_nonzero_bits[REGNO (x)])
-	return reg_nonzero_bits[REGNO (x)] & nonzero;
+	{
+	  unsigned HOST_WIDE_INT mask = reg_nonzero_bits[REGNO (x)];
+
+	  if (GET_MODE_BITSIZE (GET_MODE (x)) < mode_width)
+	    /* We don't know anything about the upper bits.  */
+	    mask |= GET_MODE_MASK (mode) ^ GET_MODE_MASK (GET_MODE (x));
+	  return nonzero & mask;
+	}
       else
 	return nonzero;
 
@@ -8385,7 +8392,8 @@ num_sign_bit_copies (x, mode)
       if (tem != 0)
 	return num_sign_bit_copies (tem, mode);
 
-      if (nonzero_sign_valid && reg_sign_bit_copies[REGNO (x)] != 0)
+      if (nonzero_sign_valid && reg_sign_bit_copies[REGNO (x)] != 0
+	  && GET_MODE_BITSIZE (GET_MODE (x)) == bitwidth)
 	return reg_sign_bit_copies[REGNO (x)];
       break;
 
