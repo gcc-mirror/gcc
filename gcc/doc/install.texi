@@ -2168,11 +2168,16 @@ bootstrap}.
 GCC 3.0 and up support HP-UX 11.  On 64-bit capable systems, there
 are two distinct ports.  The @samp{hppa2.0w-hp-hpux11*} port generates
 code for the 32-bit pa-risc runtime architecture.  It uses the HP
-linker and is currently the default selected by config.guess.  The
-optional @samp{hppa64-hp-hpux11*} port generates 64-bit code for the
-pa-risc 2.0 architecture.  It must be explicitly selected using the
-@samp{--host=hppa64-hp-hpux11*} configure option.  Different prefixes
-must be used if both ports are to be installed on the same system.
+linker.  The @samp{hppa64-hp-hpux11*} port generates 64-bit code for the
+pa-risc 2.0 architecture.  The script config.guess now selects the port
+type based on the type compiler detected during configuration.  You must
+set your @env{PATH} or define @env{CC} so that configure finds an appropriate
+compiler for the initial bootstrap.  Different prefixes must be used if
+both ports are to be installed on the same system.
+
+GCC 2.95.x is not supported under HP-UX 11 and cannot be used to
+compile GCC 3.0 and up.  Refer to @uref{binaries.html,,binaries} for
+information about obtaining precompiled GCC binaries for HP-UX.
 
 You must use GNU binutils 2.11 or above with the 32-bit port.  Thread
 support is not currently implemented, so @option{--enable-threads} does
@@ -2183,17 +2188,30 @@ not work.  See:
 @item @uref{http://gcc.gnu.org/ml/gcc-bugs/2002-01/msg00663.html}
 @end itemize
 
-GCC 2.95.x is not supported under HP-UX 11 and cannot be used to
-compile GCC 3.0 and up.  Refer to @uref{binaries.html,,binaries} for
-information about obtaining precompiled GCC binaries for HP-UX.
+GCC 3.3 and later support weak symbols on the 32-bit port using SOM
+secondary definition symbols.  This feature is not enabled for earlier
+versions of HP-UX since there have been bugs in the linker support for
+secondary symbols.  The HP linker patches @code{PHSS_26559} and
+@code{PHSS_24304} for HP-UX 11.00 and 11.11, respectively, correct the
+problem of linker core dumps creating C++ libraries.  Earlier patches
+may work but they have not been tested.
 
-GNU binutils 2.13 or later is recommended with the 64-bit port.
-The HP assembler has many limitations and is not recommended.  For
-example, it does not support weak symbols or alias definitions.
-As a result, explicit template instantiations are required when
-using C++.  Either the HP or GNU linker can be used but it may be
-necessary to use the GNU linker when dwarf2 exception support is
-implemented.
+GCC 3.3 nows uses the ELF DT_INIT_ARRAY and DT_FINI_ARRAY capability
+to run initializers and finalizers on the 64-bit port.  The feature
+requires CVS binutils as of January 2, 2003, or a subsequent release
+to correct a problem arising from HP's non-standard use of the .init
+and .fini sections.  The 32-bit port uses the linker @option{+init}
+and @option{+fini} options.  As with the support for secondary symbols,
+there have been bugs in the order in which these options are executed
+by the HP linker.  So, again a recent linker patch is recommended.
+
+The HP assembler has many limitations and is not recommended for either
+the 32 or 64-bit ports.  For example, it does not support weak symbols
+or alias definitions.  As a result, explicit template instantiations
+are required when using C++.  You also can't generate debugging information
+when using the HP assembler.  Either the HP or GNU linker can be used
+with the 64-bit port but it may be necessary to use the GNU linker
+when dwarf2 exception support is implemented.
 
 There are several possible approaches to building the distribution.
 Binutils can be built first using the HP tools.  Then, the GCC
