@@ -1,3 +1,10 @@
+2000-11-18  Neil Booth  <neilb@earthling.net>
+
+	* cppinit.c: Update comments.
+	(cpp_reader_init): Make -imacro and -include use the standard
+	#include "" search path.
+	(do_includes): New function.
+
 2000-11-18  Ben Elliston  <bje@redhat.com>
 
 	* config/sh/crt1.asm (start_l): Move PC-relative move instruction

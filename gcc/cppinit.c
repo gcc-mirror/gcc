@@ -30,7 +30,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "mkdeps.h"
 #include "cppdefault.h"
 
-/* Predefined symbols, built-in macros, and the default include path. */
+/* Predefined symbols, built-in macros, and the default include path.  */
 
 #ifndef GET_ENV_PATH_LIST
 #define GET_ENV_PATH_LIST(VAR,NAME)	do { (VAR) = getenv (NAME); } while (0)
@@ -47,13 +47,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define INO_T_EQ(a, b) ((a) == (b))
 #endif
 
-/* Internal structures and prototypes. */
+/* Internal structures and prototypes.  */
 
-/* A `struct pending_option' remembers one -D, -A, -U, -include, or -imacros
-   switch.  There are four lists: one for -D and -U, one for -A, one
-   for -include, one for -imacros.  `undef' is set for -U, clear for
-   -D, ignored for the others.
-   (Future: add an equivalent of -U for -A) */
+/* A `struct pending_option' remembers one -D, -A, -U, -include, or
+   -imacros switch.  */
 
 typedef void (* cl_directive_handler) PARAMS ((cpp_reader *, const char *));
 struct pending_option
@@ -66,7 +63,7 @@ struct pending_option
 /* The `pending' structure accumulates all the options that are not
    actually processed until we hit cpp_start_read.  It consists of
    several lists, one for each type of option.  We keep both head and
-   tail pointers for quick insertion. */
+   tail pointers for quick insertion.  */
 struct cpp_pending
 {
   struct pending_option *directive_head, *directive_tail;
@@ -105,7 +102,9 @@ struct file_name_list * remove_dup_dir	PARAMS ((cpp_reader *,
 struct file_name_list * remove_dup_dirs PARAMS ((cpp_reader *,
 						 struct file_name_list *));
 static void merge_include_chains	PARAMS ((cpp_reader *));
-
+static void do_includes			PARAMS ((cpp_reader *,
+						 struct pending_option *,
+						 int));
 static void initialize_dependency_output PARAMS ((cpp_reader *));
 static void initialize_standard_includes PARAMS ((cpp_reader *));
 static void new_pending_directive	PARAMS ((struct cpp_pending *,
@@ -116,7 +115,7 @@ static int opt_comp			PARAMS ((const void *, const void *));
 #endif
 static int parse_option			PARAMS ((const char *));
 
-/* Fourth argument to append_include_chain: chain to use */
+/* Fourth argument to append_include_chain: chain to use.  */
 enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
 
 /* If we have designated initializers (GCC >2.7) these tables can be
@@ -124,10 +123,10 @@ enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
    runtime.  */
 #if HAVE_DESIGNATED_INITIALIZERS
 
-#define init_IStable()  /* nothing */
+#define init_IStable()  /* Nothing.  */
 #define ISTABLE __extension__ const U_CHAR _cpp_IStable[UCHAR_MAX + 1] = {
 
-#define init_trigraph_map()  /* nothing */
+#define init_trigraph_map()  /* Nothing.  */
 #define TRIGRAPH_MAP \
 __extension__ const U_CHAR _cpp_trigraph_map[UCHAR_MAX + 1] = {
 
@@ -343,7 +342,7 @@ remove_dup_dirs (pfile, head)
    bracket_include path.
 
    For the future: Check if the directory is empty (but
-   how?) and possibly preload the include hash. */
+   how?) and possibly preload the include hash.  */
 
 static void
 merge_include_chains (pfile)
@@ -452,7 +451,7 @@ cpp_reader_init (pfile)
   CPP_OPTION (pfile, pending) =
     (struct cpp_pending *) xcalloc (1, sizeof (struct cpp_pending));
 
-  /* Initialize comment saving state.  */
+  /* Initialize lexer state.  */
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
 
   /* Indicate date and time not yet calculated.  */
@@ -475,7 +474,7 @@ cpp_reader_init (pfile)
   /* Macro pool initially 8K.  Aligned, permanent pool.  */
   _cpp_init_pool (&pfile->macro_pool, 8 * 1024, 0, 0);
 
-  /* Start with temporary pool.   */
+  /* Start with temporary pool.  */
   pfile->string_pool = &pfile->temp_string_pool;
 
   _cpp_init_hashtable (pfile);
@@ -823,18 +822,42 @@ initialize_standard_includes (pfile)
 	  || (CPP_OPTION (pfile, cplusplus)
 	      && !CPP_OPTION (pfile, no_standard_cplusplus_includes)))
 	{
-	  /* XXX Potential memory leak! */
 	  char *str = xstrdup (update_path (p->fname, p->component));
 	  append_include_chain (pfile, str, SYSTEM, p->cxx_aware);
 	}
     }
 }
 
-/* This is called after options have been processed.
- * Check options for consistency, and setup for processing input
- * from the file named FNAME.  (Use standard input if FNAME==NULL.)
- * Return 1 on success, 0 on failure.
- */
+/* Handles -imacro and -include from the command line.  */
+static void
+do_includes (pfile, p, scan)
+     cpp_reader *pfile;
+     struct pending_option *p;
+     int scan;
+{
+  while (p)
+    {
+      cpp_token header;
+      struct pending_option *q;
+
+      header.type = CPP_STRING;
+      header.val.str.text = (unsigned char *) p->arg;
+      header.val.str.len = strlen (p->arg);
+
+      /* Use the #include "" search path.  */
+      _cpp_execute_include (pfile, &header, 0, 0);
+      if (scan)
+	cpp_scan_buffer_nooutput (pfile);
+      q = p->next;
+      free (p);
+      p = q;
+    }
+}
+
+/* This is called after options have been processed.  Check options
+ for consistency, and setup for processing input from the file named
+ FNAME.  (Use standard input if FNAME == NULL.)  Return 1 on success,
+ 0 on failure.  */
 
 int
 cpp_start_read (pfile, fname)
@@ -918,27 +941,12 @@ cpp_start_read (pfile, fname)
   pfile->done_initializing = 1;
 
   /* The -imacros files can be scanned now, but the -include files
-     have to be pushed onto the include stack and processed later,
-     in the main loop calling cpp_get_token.  */
-
-  p = CPP_OPTION (pfile, pending)->imacros_head;
-  while (p)
-    {
-      if (cpp_read_file (pfile, p->arg))
-	cpp_scan_buffer_nooutput (pfile);
-      q = p->next;
-      free (p);
-      p = q;
-    }
-
-  p = CPP_OPTION (pfile, pending)->include_head;
-  while (p)
-    {
-      cpp_read_file (pfile, p->arg);
-      q = p->next;
-      free (p);
-      p = q;
-    }
+     have to be pushed onto the buffer stack and processed later,
+     otherwise cppmain.c won't see the tokens.  include_head was built
+     up as a stack, and popping this stack onto the buffer stack means
+     we preserve the order of the command line.  */
+  do_includes (pfile, CPP_OPTION (pfile, pending)->imacros_head, 1);
+  do_includes (pfile, CPP_OPTION (pfile, pending)->include_head, 0);
 
   free (CPP_OPTION (pfile, pending));
   CPP_OPTION (pfile, pending) = NULL;
@@ -949,7 +957,7 @@ cpp_start_read (pfile, fname)
 /* This is called at the end of preprocessing.  It pops the
    last buffer and writes dependency output.  It should also
    clear macro definitions, such that you could call cpp_start_read
-   with a new filename to restart processing. */
+   with a new filename to restart processing.  */
 void
 cpp_finish (pfile)
      cpp_reader *pfile;
@@ -1118,7 +1126,7 @@ static const struct cl_option cl_options[] =
    e.g. -iwithprefix and -iwithprefixbefore.  Moreover, we want to
    accept options beginning with -g and -W that we do not recognise,
    but not to swallow any subsequent command line argument; these are
-   handled as special cases in cpp_handle_option */
+   handled as special cases in cpp_handle_option.  */
 static int
 parse_option (input)
      const char *input;
@@ -1149,13 +1157,13 @@ parse_option (input)
 	     we may match a later option or we may have been passed the
 	     argument.  The longest possible option match succeeds.
 	     If the option takes no arguments we have not matched and
-	     continue the search (e.g. input="stdc++" match was "stdc") */
+	     continue the search (e.g. input="stdc++" match was "stdc").  */
 	  mn = md + 1;
 	  if (cl_options[md].msg)
 	    {
 	      /* Scan forwards.  If we get an exact match, return it.
 		 Otherwise, return the longest option-accepting match.
-		 This loops no more than twice with current options */
+		 This loops no more than twice with current options.  */
 	      mx = md;
 	      for (; mn < N_OPTS; mn++)
 		{
@@ -1204,7 +1212,7 @@ cpp_handle_option (pfile, argc, argv)
       int opt_index;
       const char *arg = 0;
 
-      /* Skip over '-' */
+      /* Skip over '-'.  */
       opt_index = parse_option (&argv[i][1]);
       if (opt_index < 0)
 	return i;
@@ -1216,7 +1224,7 @@ cpp_handle_option (pfile, argc, argv)
 
 	  /* Yuk. Special case for -g and -W as they must not swallow
 	     up any following argument.  If this becomes common, add
-	     another field to the cl_options table */
+	     another field to the cl_options table.  */
 	  if (arg[0] == '\0' && !(opt_code == OPT_g || opt_code == OPT_W))
 	    {
 	      arg = argv[++i];
@@ -1230,7 +1238,7 @@ cpp_handle_option (pfile, argc, argv)
 
       switch (opt_code)
 	{
-	case N_OPTS: /* shut GCC up */
+	case N_OPTS: /* Shut GCC up.  */
 	  break;
 	case OPT_fleading_underscore:
 	  CPP_OPTION (pfile, user_label_prefix) = "_";
@@ -1263,7 +1271,7 @@ cpp_handle_option (pfile, argc, argv)
 	case OPT_w:
 	  CPP_OPTION (pfile, inhibit_warnings) = 1;
 	  break;
-	case OPT_g:  /* Silently ignore anything but -g3 */
+	case OPT_g:  /* Silently ignore anything but -g3.  */
 	  if (!strcmp(&argv[i][2], "3"))
 	    CPP_OPTION (pfile, debug_output) = 1;
 	  break;
@@ -1286,7 +1294,7 @@ cpp_handle_option (pfile, argc, argv)
 	case OPT_P:
 	  CPP_OPTION (pfile, no_line_commands) = 1;
 	  break;
-	case OPT_dollar:		/* Don't include $ in identifiers.  */
+	case OPT_dollar:	/* Don't include $ in identifiers.  */
 	  CPP_OPTION (pfile, dollars_in_ident) = 0;
 	  break;
 	case OPT_H:
@@ -1423,7 +1431,7 @@ cpp_handle_option (pfile, argc, argv)
 	  CPP_OPTION (pfile, verbose) = 1;
 	  break;
 	case OPT_stdin_stdout:
-	  /* JF handle '-' as file name meaning stdin or stdout */
+	  /* JF handle '-' as file name meaning stdin or stdout.  */
 	  if (CPP_OPTION (pfile, in_fname) == NULL)
 	    CPP_OPTION (pfile, in_fname) = "";
 	  else if (CPP_OPTION (pfile, out_fname) == NULL)
@@ -1432,7 +1440,7 @@ cpp_handle_option (pfile, argc, argv)
 	case OPT_d:
 	  /* Args to -d specify what parts of macros to dump.
 	     Silently ignore unrecognised options; they may
-	     be aimed at the compiler proper. */
+	     be aimed at the compiler proper.  */
  	  {
 	    char c;
 
@@ -1479,9 +1487,9 @@ cpp_handle_option (pfile, argc, argv)
  	  else
 	    CPP_OPTION (pfile, print_deps) = 1;
 
-	  /* For -MD and -MMD options, write deps on file named by next arg */
-	  /* For -M and -MM, write deps on standard output
-	     and suppress the usual output.  */
+	  /* For -MD and -MMD, write deps on file named by next arg.  */
+	  /* For -M and -MM, write deps on standard output and
+	     suppress the usual output.  */
 	  if (opt_code == OPT_MD || opt_code == OPT_MMD)
 	      CPP_OPTION (pfile, deps_file) = arg;
  	  else
@@ -1549,7 +1557,7 @@ cpp_handle_option (pfile, argc, argv)
 	  break;
 	case OPT_isystem:
 	  /* Add directory to beginning of system include path, as a system
-	     include directory. */
+	     include directory.  */
 	  append_include_chain (pfile, xstrdup (arg), SYSTEM, 0);
 	  break;
 	case OPT_include:
@@ -1613,7 +1621,7 @@ cpp_handle_option (pfile, argc, argv)
 	  append_include_chain (pfile, xstrdup (arg), AFTER, 0);
 	  break;
 	case OPT_W:
-	  /* Silently ignore unrecognised options */
+	  /* Silently ignore unrecognised options.  */
 	  if (!strcmp (argv[i], "-Wall"))
 	    {
 	      CPP_OPTION (pfile, warn_trigraphs) = 1;
