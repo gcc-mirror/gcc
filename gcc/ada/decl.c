@@ -1011,6 +1011,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    const_flag = true;
 	  }
 
+	if (const_flag)
+	  gnu_type = build_qualified_type (gnu_type, (TYPE_QUALS (gnu_type)
+						      | TYPE_QUAL_CONST));
+
 	/* Convert the expression to the type of the object except in the
 	   case where the object's type is unconstrained or the object's type
 	   is a padded record whose field is of self-referential size.  In
@@ -1037,14 +1041,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    && (!Is_Imported (gnat_entity)
 			|| Is_Exported (gnat_entity)))))
 	  gnu_ext_name = create_concat_name (gnat_entity, 0);
-
-	if (const_flag)
-	  {
-	    gnu_type = build_qualified_type (gnu_type, (TYPE_QUALS (gnu_type)
-							| TYPE_QUAL_CONST));
-	    if (gnu_expr)
-	      gnu_expr = convert (gnu_type, gnu_expr);
-	  }
 
 	/* If this is constant initialized to a static constant and the
 	   object has an aggregrate type, force it to be statically
