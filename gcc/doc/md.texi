@@ -3374,17 +3374,17 @@ and thence the call frame exception handling library routines, are
 built.  It is intended to handle non-trivial actions needed along
 the abnormal return path.
 
-The pattern takes two arguments.  The first is an offset to be applied
-to the stack pointer.  It will have been copied to some appropriate
-location (typically @code{EH_RETURN_STACKADJ_RTX}) which will survive
-until after reload to when the normal epilogue is generated.
-The second argument is the address of the exception handler to which
-the function should return.  This will normally need to copied by the
-pattern to some special register or memory location.
+The address of the exception handler to which the function should return
+is passed as operand to this pattern.  It will normally need to copied by 
+the pattern to some special register or memory location.
+If the pattern needs to determine the location of the target call
+frame in order to do so, it may use @code{EH_RETURN_STACKADJ_RTX},
+if defined; it will have already been assigned.
 
-This pattern only needs to be defined if call frame exception handling
-is to be used, and simple moves involving @code{EH_RETURN_STACKADJ_RTX}
-and @code{EH_RETURN_HANDLER_RTX} are not sufficient.
+If this pattern is not defined, the default action will be to simply
+copy the return address to @code{EH_RETURN_HANDLER_RTX}.  Either
+that macro or this pattern needs to be defined if call frame exception
+handling is to be used.
 
 @cindex @code{prologue} instruction pattern
 @anchor{prologue instruction pattern}

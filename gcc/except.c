@@ -76,12 +76,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Provide defaults for stuff that may not be defined when using
    sjlj exceptions.  */
-#ifndef EH_RETURN_STACKADJ_RTX
-#define EH_RETURN_STACKADJ_RTX 0
-#endif
-#ifndef EH_RETURN_HANDLER_RTX
-#define EH_RETURN_HANDLER_RTX 0
-#endif
 #ifndef EH_RETURN_DATA_REGNO
 #define EH_RETURN_DATA_REGNO(N) INVALID_REGNUM
 #endif
@@ -3077,77 +3071,73 @@ expand_builtin_frob_return_addr (addr_tree)
 
 void
 expand_builtin_eh_return (stackadj_tree, handler_tree)
-    tree stackadj_tree, handler_tree;
+    tree stackadj_tree ATTRIBUTE_UNUSED;
+    tree handler_tree;
 {
-  rtx stackadj, handler;
+  rtx tmp;
 
-  stackadj = expand_expr (stackadj_tree, cfun->eh->ehr_stackadj, VOIDmode, 0);
-  handler = expand_expr (handler_tree, cfun->eh->ehr_handler, VOIDmode, 0);
-
+#ifdef EH_RETURN_STACKADJ_RTX
+  tmp = expand_expr (stackadj_tree, cfun->eh->ehr_stackadj, VOIDmode, 0);
 #ifdef POINTERS_EXTEND_UNSIGNED
-  if (GET_MODE (stackadj) != Pmode)
-    stackadj = convert_memory_address (Pmode, stackadj);
-
-  if (GET_MODE (handler) != Pmode)
-    handler = convert_memory_address (Pmode, handler);
+  if (GET_MODE (tmp) != Pmode)
+    tmp = convert_memory_address (Pmode, tmp);
+#endif
+  if (!cfun->eh->ehr_stackadj)
+    cfun->eh->ehr_stackadj = copy_to_reg (tmp);
+  else if (tmp != cfun->eh->ehr_stackadj)
+    emit_move_insn (cfun->eh->ehr_stackadj, tmp);
 #endif
 
-  if (! cfun->eh->ehr_label)
-    {
-      cfun->eh->ehr_stackadj = copy_to_reg (stackadj);
-      cfun->eh->ehr_handler = copy_to_reg (handler);
-      cfun->eh->ehr_label = gen_label_rtx ();
-    }
-  else
-    {
-      if (stackadj != cfun->eh->ehr_stackadj)
-	emit_move_insn (cfun->eh->ehr_stackadj, stackadj);
-      if (handler != cfun->eh->ehr_handler)
-	emit_move_insn (cfun->eh->ehr_handler, handler);
-    }
+  tmp = expand_expr (handler_tree, cfun->eh->ehr_handler, VOIDmode, 0);
+#ifdef POINTERS_EXTEND_UNSIGNED
+  if (GET_MODE (tmp) != Pmode)
+    tmp = convert_memory_address (Pmode, tmp);
+#endif
+  if (!cfun->eh->ehr_handler)
+    cfun->eh->ehr_handler = copy_to_reg (tmp);
+  else if (tmp != cfun->eh->ehr_handler)
+    emit_move_insn (cfun->eh->ehr_handler, tmp);
 
+  if (!cfun->eh->ehr_label)
+    cfun->eh->ehr_label = gen_label_rtx ();
   emit_jump (cfun->eh->ehr_label);
 }
 
 void
 expand_eh_return ()
 {
-  rtx sa, ra, around_label;
+  rtx around_label;
 
   if (! cfun->eh->ehr_label)
     return;
 
-  sa = EH_RETURN_STACKADJ_RTX;
-  if (! sa)
-    {
-      error ("__builtin_eh_return not supported on this target");
-      return;
-    }
-
   current_function_calls_eh_return = 1;
 
+#ifdef EH_RETURN_STACKADJ_RTX
+  emit_move_insn (EH_RETURN_STACKADJ_RTX, const0_rtx);
+#endif
+
   around_label = gen_label_rtx ();
-  emit_move_insn (sa, const0_rtx);
   emit_jump (around_label);
 
   emit_label (cfun->eh->ehr_label);
   clobber_return_register ();
 
+#ifdef EH_RETURN_STACKADJ_RTX
+  emit_move_insn (EH_RETURN_STACKADJ_RTX, cfun->eh->ehr_stackadj);
+#endif
+
 #ifdef HAVE_eh_return
   if (HAVE_eh_return)
-    emit_insn (gen_eh_return (cfun->eh->ehr_stackadj, cfun->eh->ehr_handler));
+    emit_insn (gen_eh_return (cfun->eh->ehr_handler));
   else
 #endif
     {
-      ra = EH_RETURN_HANDLER_RTX;
-      if (! ra)
-	{
-	  error ("__builtin_eh_return not supported on this target");
-	  ra = gen_reg_rtx (Pmode);
-	}
-
-      emit_move_insn (sa, cfun->eh->ehr_stackadj);
-      emit_move_insn (ra, cfun->eh->ehr_handler);
+#ifdef EH_RETURN_HANDLER_RTX
+      emit_move_insn (EH_RETURN_HANDLER_RTX, cfun->eh->ehr_handler);
+#else
+      error ("__builtin_eh_return not supported on this target");
+#endif
     }
 
   emit_label (around_label);

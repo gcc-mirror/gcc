@@ -3016,8 +3016,12 @@ It will be assigned zero on code paths that return normally.
 Typically this is a call-clobbered hard register that is otherwise
 untouched by the epilogue, but could also be a stack slot.
 
-You must define this macro if you want to support call frame exception
-handling like that provided by DWARF 2.
+Do not define this macro if the stack pointer is saved and restored
+by the regular prolog and epilog code in the call frame itself; in 
+this case, the exception handling library routines will update the 
+stack location to be restored in place.  Otherwise, you must define 
+this macro if you want to support call frame exception handling like 
+that provided by DWARF 2.
 
 @findex EH_RETURN_HANDLER_RTX
 @item EH_RETURN_HANDLER_RTX
@@ -3029,8 +3033,9 @@ Typically this is the location in the call frame at which the normal
 return address is stored.  For targets that return by popping an
 address off the stack, this might be a memory address just below
 the @emph{target} call frame rather than inside the current call
-frame.  @code{EH_RETURN_STACKADJ_RTX} will have already been assigned,
-so it may be used to calculate the location of the target call frame.
+frame.  If defined, @code{EH_RETURN_STACKADJ_RTX} will have already 
+been assigned, so it may be used to calculate the location of the 
+target call frame.
 
 Some targets have more complex requirements than storing to an
 address calculable during initial code generation.  In that case
