@@ -4058,19 +4058,33 @@ cprop_jump (bb, setcc, jump, from, src)
       && !modified_between_p (src, setcc, jump))
     {
       rtx setcc_set = single_set (setcc);
+      rtx note = find_reg_equal_equiv_note (setcc);
+      /* Use REG_EQUAL note if available.  */
+      rtx setcc_set_src = (note == 0) ? SET_SRC (setcc_set) : XEXP (note, 0);
+
       new_set = simplify_replace_rtx (SET_SRC (set),
 				      SET_DEST (setcc_set),
-				      SET_SRC (setcc_set));
+				      setcc_set_src);
     }
   else
     new_set = set;
 
-  new = simplify_replace_rtx (new_set, from, src);
+  /* If NEW_SET is simplified down to either a label or a no-op, we
+     don't have to replace FROM with SRC, but we still have to either
+     turn JUMP to an unconditional branch or remove the no-op.  This
+     can happen if JUMP is simplified using the REG_EQUAL note in
+     SETCC.  */
+  if (GET_CODE (new_set) == LABEL_REF || new_set == pc_rtx)
+    new = new_set;
+  else
+    {
+      new = simplify_replace_rtx (new_set, from, src);
 
-  /* If no simplification can be made, then try the next
-     register.  */
-  if (rtx_equal_p (new, new_set) || rtx_equal_p (new, SET_SRC (set)))
-    return 0;
+      /* If no simplification can be made, then try the next
+	 register.  */
+      if (rtx_equal_p (new, new_set) || rtx_equal_p (new, SET_SRC (set)))
+	return 0;
+    }
 
   /* If this is now a no-op delete it, otherwise this must be a valid insn.  */
   if (new == pc_rtx)

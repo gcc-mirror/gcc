@@ -1,3 +1,7 @@
+2003-02-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcse.c (cprop_jump): Use the REG_EQUAL note if available.
+
 2003-02-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* doc/invoke.texi (ggc-min-expand, ggc-min-heapsize): Document
