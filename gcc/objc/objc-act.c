@@ -8308,6 +8308,7 @@ handle_class_ref (chain)
   decl = build_decl (VAR_DECL, get_identifier (string), string_type_node);
   DECL_INITIAL (decl) = exp;
   TREE_STATIC (decl) = 1;
+  TREE_USED (decl) = 1;
 
   pushdecl (decl);
   rest_of_decl_compilation (decl, 0, 0, 0);
