@@ -445,7 +445,7 @@ if test -z "${setobjs}"; then
     libiberty_cv_var_sys_errlist=yes
     ;;
 
-  *-*-msdosdjgpp)
+  *-*-msdosdjgpp*)
     # vfork and fork are stubs.
     ac_cv_func_vfork_works=no
     ;;
