@@ -1,3 +1,7 @@
+1999-11-26  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* loop.c (try_copy_prop): Avoid GNU C extension.
+
 1999-11-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* except.c (init_eh_for_function): But still zero

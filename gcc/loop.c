@@ -9961,7 +9961,12 @@ try_copy_prop (scan_start, loop_top, end, replacement, regno)
        insn = next_insn_in_loop (insn, scan_start, end, loop_top))
     {
       rtx set;
-      rtx array[3] = { regno_reg_rtx[regno], replacement, insn };
+      rtx array[3];
+
+      array[0] = regno_reg_rtx[regno];
+      array[1] = replacement;
+      array[2] = insn;
+
       if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
 	continue;
       set = single_set (insn);
