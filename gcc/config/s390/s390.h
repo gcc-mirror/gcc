@@ -22,6 +22,13 @@ Boston, MA 02111-1307, USA.  */
 #ifndef _S390_H
 #define _S390_H
 
+/* Override the __fixdfdi etc. routines when building libgcc2.
+   ??? This should be done in a cleaner way ...  */
+#ifdef IN_LIBGCC2
+#include <s390/fixdfdi.h>
+#endif
+
+
 extern int flag_pic; 
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
