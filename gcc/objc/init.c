@@ -48,6 +48,12 @@ static void __objc_init_protocols (struct objc_protocol_list* protos);
 /* Add protocol to class */
 static void __objc_class_add_protocols (Class, struct objc_protocol_list*);
 
+/* This is a hook which is called by __objc_exec_class every time a class
+   or a category is loaded into the runtime.  This may e.g. help a
+   dynamic loader determine the classes that have been loaded when
+   an object file is dynamically linked in */
+void (*_objc_load_callback)(Class class, Category* category) = 0;
+
 /* Is all categories/classes resolved? */
 BOOL __objc_dangling_categories = NO;
 
@@ -190,6 +196,9 @@ __objc_exec_class (Module_t module)
 
       if (class->protocols)
 	__objc_init_protocols (class->protocols);
+
+      if (_objc_load_callback)
+	_objc_load_callback(class, 0);
    }
 
   /* Process category information from the module.  */
@@ -221,6 +230,8 @@ __objc_exec_class (Module_t module)
 	      __objc_class_add_protocols (class, category->protocols);
 	    }
 
+          if (_objc_load_callback)
+	    _objc_load_callback(class, category);
 	}
       else
 	{
@@ -264,6 +275,8 @@ __objc_exec_class (Module_t module)
 	      __objc_class_add_protocols (class, category->protocols);
 	    }
 	  
+          if (_objc_load_callback)
+	    _objc_load_callback(class, category);
 	}
     }
   
