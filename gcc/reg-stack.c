@@ -1773,9 +1773,12 @@ compare_for_stack_reg (insn, regstack, pat)
     {
       rtx temp, next;
 
-      temp = *src1;
-      *src1 = *src2;
-      *src2 = temp;
+      temp = XEXP (SET_SRC (pat), 0);
+      XEXP (SET_SRC (pat), 0) = XEXP (SET_SRC (pat), 1);
+      XEXP (SET_SRC (pat), 1) = temp;
+
+      src1 = get_true_reg (&XEXP (SET_SRC (pat), 0));
+      src2 = get_true_reg (&XEXP (SET_SRC (pat), 1));
 
       next = next_cc0_user (insn);
       if (next == NULL_RTX)
