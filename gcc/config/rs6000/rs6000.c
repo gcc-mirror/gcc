@@ -2526,7 +2526,7 @@ legitimate_lo_sum_address_p (enum machine_mode mode, rtx x, int strict)
     return false;
   x = XEXP (x, 1);
 
-  if (TARGET_ELF)
+  if (TARGET_ELF || TARGET_MACHO)
     {
       if (DEFAULT_ABI != ABI_AIX && flag_pic)
 	return false;
