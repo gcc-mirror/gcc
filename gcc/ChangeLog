@@ -1,3 +1,8 @@
+Thu Nov 13 20:37:33 1997  Michael Meissner  <meissner@tiktok.cygnus.com>
+
+	* reload1.c (new_spill_reg): Improve fixed or forbidden register
+	spill error message.
+
 Thu Nov 13 20:29:08 1997  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* prefix.c: Use stdarg.h only ifdef __STDC__.  Otherwise,
