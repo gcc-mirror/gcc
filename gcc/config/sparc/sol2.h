@@ -179,3 +179,15 @@ Boston, MA 02111-1307, USA.  */
 #define WIDEST_HARDWARE_FP_SIZE 64
 
 #define STDC_0_IN_SYSTEM_HEADERS
+
+#define MULDI3_LIBCALL "__mul64"
+#define DIVDI3_LIBCALL "__div64"
+#define UDIVDI3_LIBCALL "__udiv64"
+#define MODDI3_LIBCALL "__rem64"
+#define UMODDI3_LIBCALL "__urem64"
+
+/* No weird SPARC variants on Solaris */
+#undef TARGET_LIVE_G0
+#define TARGET_LIVE_G0	0
+#undef TARGET_BROKEN_SAVERESTORE
+#define TARGET_BROKEN_SAVERESTORE 0
