@@ -1,3 +1,7 @@
+2004-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* gcc.dg/unused-7.c: Use the correct option.
+
 2004-10-04  Paul Brook  <paul@codesourcery.com>
 	Bud Davis  <bdavis9659@comcast.net>
 
