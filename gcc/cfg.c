@@ -428,14 +428,9 @@ edge
 redirect_edge_succ_nodup (edge e, basic_block new_succ)
 {
   edge s;
-  edge_iterator ei;
 
-  /* Check whether the edge is already present.  */
-  FOR_EACH_EDGE (s, ei, e->src->succs)
-    if (s->dest == new_succ && s != e)
-      break;
-
-  if (s)
+  s = find_edge (e->src, new_succ);
+  if (s && s != e)
     {
       s->flags |= e->flags;
       s->probability += e->probability;
