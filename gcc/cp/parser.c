@@ -7026,6 +7026,13 @@ cp_parser_simple_declaration (cp_parser* parser,
       /* Give up.  */
       goto done;
     }
+  
+  /* If we have seen at least one decl-specifier, and the next token
+     is not a parenthesis, then we must be looking at a declaration.
+     (After "int (" we might be looking at a functional cast.)  */
+  if (decl_specifiers.any_specifiers_p 
+      && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_PAREN))
+    cp_parser_commit_to_tentative_parse (parser);
 
   /* Keep going until we hit the `;' at the end of the simple
      declaration.  */
@@ -7079,7 +7086,12 @@ cp_parser_simple_declaration (cp_parser* parser,
       /* Anything else is an error.  */
       else
 	{
-	  cp_parser_error (parser, "expected `,' or `;'");
+	  /* If we have already issued an error message we don't need
+	     to issue another one.  */
+	  if (decl != error_mark_node
+	      || (cp_parser_parsing_tentatively (parser)
+		  && !cp_parser_committed_to_tentative_parse (parser)))
+	    cp_parser_error (parser, "expected `,' or `;'");
 	  /* Skip tokens until we reach the end of the statement.  */
 	  cp_parser_skip_to_end_of_statement (parser);
 	  /* If the next token is now a `;', consume it.  */
@@ -10641,7 +10653,7 @@ cp_parser_init_declarator (cp_parser* parser,
       && token->type != CPP_COMMA
       && token->type != CPP_SEMICOLON)
     {
-      cp_parser_error (parser, "expected init-declarator");
+      cp_parser_error (parser, "expected initializer");
       return error_mark_node;
     }
 

@@ -1,5 +1,15 @@
 2004-09-16  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/16002
+	* parser.c (cp_parser_simple_declaration): Commit to tentative
+	parses after seeing a decl-specifier.
+	(cp_parser_simple_declaration): Eliminate spurious message.
+	(cp_parser_init_declarator): Adjust error message.
+
+	PR c++/16029
+	* lex.c (unqualified_name_lookup_error): Mark the dummy
+	declaration as used.
+
 	PR c++/17501
 	* parser.c (cp_parser_nested_name_specifier): Do not resolve
 	typename types if the user explicitly said "typename".
