@@ -1,5 +1,9 @@
 2000-07-31  Kazu Hirata  <kazu@hxi.com>
 
+	* h8300.h (MODES_TIEABLE_P): Accept a combination of QImode and
+	HImode on all architectures and a combination of HImode and SImode
+	on H8/300H and H8/S.
+
 	* h8300.c (split_adds_subs): Rearrange code for conciseness.
 
 Mon Jul 31 12:27:55 MET DST 2000  Jan Hubicka  <jh@suse.cz>
