@@ -468,9 +468,9 @@ combine_strings (strings)
   /* Compute the number of elements, for the array type.  */
   nchars = wide_flag ? length / wchar_bytes : length;
 
-  if (pedantic && nchars > nchars_max && c_language == clk_c)
+  if (pedantic && nchars - 1 > nchars_max && c_language == clk_c)
     pedwarn ("string length `%d' is greater than the minimum length `%d' ISO C%d is required to support",
-	     nchars, nchars_max, flag_isoc99 ? 99 : 89);
+	     nchars - 1, nchars_max, flag_isoc99 ? 99 : 89);
 
   /* Create the array type for the string constant.
      -Wwrite-strings says make the string constant an array of const char

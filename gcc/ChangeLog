@@ -1,4 +1,8 @@
-2000-12-01  Geoffrey Keating  <geoffk@redhat.com>
+2000-12-02  Geoffrey Keating  <geoffk@redhat.com>
+
+	* c-common.c (combine_strings): When the ISO C standard specifies
+ 	the maximum length of a string, it doesn't include the trailing
+ 	zero byte.
 
 	* cpplib.c (do_ifdef): Add check_eol() call.
 	(do_ifndef): Likewise.
