@@ -1541,11 +1541,31 @@ elif test x$gcc_cv_as != x; then
 	ld_ver=`$gcc_cv_ld --version 2>/dev/null | head -1`
 	if echo "$ld_ver" | grep GNU > /dev/null; then
 changequote(,)dnl
-		ld_date=`echo $ld_ver | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)[-]*\([01][0-9]\)[-]*\([0-3][0-9]\).*$,\1\2\3,;p'`
-changequote([,])dnl
+		ld_vers=`echo $ld_ver | sed -n 's,^.*[ 	]\([0-9][0-9]*\.[0-9][0-9]*\(\|\.[0-9][0-9]*\)\)\([ 	].*\|\)$,\1,p'`
+		ld_date=`echo $ld_ver | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)[-]*\([01][0-9]\)[-]*\([0-3][0-9]\).*$,\1\2\3,p'`
 		if test 0"$ld_date" -lt 20020404; then
-			gcc_cv_as_hidden="no"
+			if test -n "$ld_date"; then
+				# If there was date string, but was earlier than 2002-04-04, fail
+				gcc_cv_as_hidden="no"
+			elif test -z "$ld_vers"; then
+				# If there was no date string nor ld version number, something is wrong
+				gcc_cv_as_hidden="no"
+			else
+				ld_vers_major=`expr "$ld_vers" : '\([0-9]*\)'`
+				ld_vers_minor=`expr "$ld_vers" : '[0-9]*\.\([0-9]*\)'`
+				ld_vers_patch=`expr "$ld_vers" : '[0-9]*\.[0-9]*\.\([0-9]*\)'`
+				test -z "$ld_vers_patch" && ld_vers_patch=0
+				if test "$ld_vers_major" -lt 2; then
+					gcc_cv_as_hidden="no"
+				elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 12; then
+					gcc_cv_as_hidden="no"
+				elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -eq 12 \
+					  -a "$ld_vers_patch" -eq 0; then
+					gcc_cv_as_hidden="no"
+				fi
+			fi
 		fi
+changequote([,])dnl
 	fi
 fi
 if test x"$gcc_cv_as_hidden" = xyes; then
