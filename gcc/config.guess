@@ -526,6 +526,10 @@ EOF
 		echo ns32k-sni-sysv
 	fi
 	exit 0 ;;
+    PENTIUM:CPunix:4.0*:*) # Unisys `ClearPath HMP IX 4000' SVR4/MP effort
+                           # says <Richard.M.Bartel@ccMail.Census.GOV>
+        echo i586-unisys-sysv4
+        exit 0 ;;
     *:UNIX_System_V:4*:FTX*)
 	# From Gerald Hewes <hewes@openmarket.com>.
 	# How about differentiating between stratus architectures? -djm
