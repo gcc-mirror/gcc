@@ -1419,6 +1419,8 @@ enumlist:
 	  enumerator
 	| enumlist ',' enumerator
 		{ $$ = chainon ($3, $1); }
+	| error
+		{ $$ = error_mark_node; }
 	;
 
 
