@@ -37,8 +37,6 @@
 # Variables that exist for you to override.
 # See below for how to change them for certain systems.
 
-ALLOCA =
-
 # Various ways of specifying flags for compilations:
 # CFLAGS is for the user to override to, e.g., do a bootstrap with -O2.
 # BOOT_CFLAGS is the value of CFLAGS to pass
@@ -70,10 +68,6 @@ TEXI2DVI = texi2dvi
 # to compile all the gen* files first by hand to avoid erroneous results.
 P =
 
-# This is used in the definition of SUBDIR_USE_ALLOCA.
-# ??? Perhaps it would be better if it just looked for *gcc*.
-OLDCC = cc
-
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
 # It omits XCFLAGS, and specifies -B./.
 # It also specifies -B$(tooldir)/ to find as and ld for a cross compiler.
@@ -93,10 +87,6 @@ VPATH = @srcdir@
 
 # Additional system libraries to link with.
 CLIB=
-
-# Change this to a null string if obstacks are installed in the
-# system library.
-OBSTACK=obstack.o
 
 # Choose the real default target.
 ALL=all
@@ -134,21 +124,19 @@ ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS) -W 
 # Likewise.
 ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
 
+# This is where we get libiberty.a from.
+LIBIBERTY = ../../libiberty/libiberty.a
+
 # We should be compiling with the built compiler, for which
 # BOOT_LDFLAGS is appropriate.  (Formerly we had a separate
 # F771_LDFLAGS, but the ld flags can be taken care of by the target
 # configuration files in egcs.)
 LDFLAGS=$(BOOT_LDFLAGS)
 
-# Even if ALLOCA is set, don't use it if compiling with GCC.
-
-SUBDIR_OBSTACK = `if [ x$(OBSTACK) != x ]; then echo ../$(OBSTACK); else true; fi`
-SUBDIR_USE_ALLOCA = `case "${CC}" in "${OLDCC}") if [ x$(ALLOCA) != x ]; then echo ../$(ALLOCA); else true; fi ;; esac`
-SUBDIR_MALLOC = `if [ x$(MALLOC) != x ]; then echo ../$(MALLOC); else true; fi`
-
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = $(SUBDIR_OBSTACK) $(SUBDIR_USE_ALLOCA) $(SUBDIR_MALLOC) $(CLIB)
+LIBS = $(LIBIBERTY) $(CLIB)
+LIBDEPS = $(LIBIBERTY)
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
