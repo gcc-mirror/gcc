@@ -3,7 +3,7 @@
    Changed by Michael Meissner,		meissner@osf.org
    64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
    Brendan Eich, brendan@microunity.com.
-   Copyright (C) 1989, 1990, 1991, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90, 91, 92, 93, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2620,7 +2620,6 @@ while (0)
 									\
   case ASHIFT:								\
   case ASHIFTRT:							\
-  case LSHIFT:								\
   case LSHIFTRT:							\
     if (GET_MODE (X) == DImode && !TARGET_64BIT)			\
       return COSTS_N_INSNS ((GET_CODE (XEXP (X, 1)) == CONST_INT) ? 4 : 12); \
