@@ -1,3 +1,8 @@
+Mon May 24 20:30:08 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* configure.in (rs6000-ibm-aix4.[12]*): Delete use of aix41-gld.h.
+	Add use of x-aix41-gld.
+	
 Mon May 24 16:44:09 1999  Jakub Jelinek  <jj@ultra.linux.cz>
 
 	* sparc/linux64.h (ASM_OUTPUT_CONSTRUCTOR): Define.
