@@ -160,8 +160,8 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h" 
 #include "ggc.h"
 #include "params.h"
-
 #include "obstack.h"
+#include "df.h"
 #define obstack_chunk_alloc gmalloc
 #define obstack_chunk_free free
 
@@ -304,6 +304,10 @@ static char can_copy_p[(int) NUM_MACHINE_MODES];
 
 /* Non-zero if can_copy_p has been initialized.  */
 static int can_copy_init_p;
+
+/* Dataflow analyzer  */
+struct df *df_analyzer;
+
 
 struct reg_use {rtx reg_rtx; };
 
@@ -466,8 +470,8 @@ struct ls_expr
 {
   struct expr * expr;		/* Gcse expression reference for LM.  */
   rtx pattern;			/* Pattern of this mem.  */
-  rtx loads;			/* INSN list of loads seen.  */
-  rtx stores;			/* INSN list of stores seen.  */
+  rtx loads;			/* INSN list for where load appears */
+  rtx stores;		        /* INSN list for where store appears */
   struct ls_expr * next;	/* Next in the list.  */
   int invalid;			/* Invalid for some reason.  */
   int index;			/* If it maps to a bitmap index.  */
@@ -676,14 +680,13 @@ static void invalidate_any_buried_refs	PARAMS ((rtx));
 static void compute_ld_motion_mems	PARAMS ((void)); 
 static void trim_ld_motion_mems		PARAMS ((void));
 static void update_ld_motion_stores	PARAMS ((struct expr *));
-static void reg_set_info		PARAMS ((rtx, rtx, void *));
-static int store_ops_ok			PARAMS ((rtx, basic_block));
+static int store_ops_ok			PARAMS ((rtx, basic_block, rtx, int));
 static void find_moveable_store		PARAMS ((rtx));
 static int compute_store_table		PARAMS ((void));
 static int load_kills_store		PARAMS ((rtx, rtx));
 static int find_loads			PARAMS ((rtx, rtx));
 static int store_killed_in_insn		PARAMS ((rtx, rtx));
-static int store_killed_after		PARAMS ((rtx, rtx, basic_block));
+static int store_killed_after		PARAMS ((rtx, rtx, basic_block, int));
 static int store_killed_before		PARAMS ((rtx, rtx, basic_block));
 static void build_store_vectors		PARAMS ((void));
 static void insert_insn_start_bb	PARAMS ((rtx, basic_block));
@@ -1466,7 +1469,6 @@ mems_conflict_for_gcse_p (dest, setter, data)
      elsewhere.  */
   if (GET_CODE (dest) != MEM)
     return;
-
   /* If we are setting a MEM in our list of specially recognized MEMs,
      don't mark as killed this time.  */ 
   
@@ -1476,7 +1478,6 @@ mems_conflict_for_gcse_p (dest, setter, data)
 	gcse_mems_conflict_p = 1;
       return;
     }
-
   if (true_dependence (dest, GET_MODE (dest), gcse_mem_operand,
 		       rtx_addr_varies_p))
     gcse_mems_conflict_p = 1;
@@ -1754,6 +1755,7 @@ hash_expr_1 (x, mode, do_not_record_p)
 	hash += hash_string_1 (XSTR (x, i));
       else if (fmt[i] == 'i')
 	hash += (unsigned int) XINT (x, i);
+      else if (fmt[i] == 't');
       else
 	abort ();
     }
@@ -1912,8 +1914,9 @@ expr_equiv_p (x, y)
 	break;
 
 	case '0':
+	case 't':
 	  break;
-
+	
 	default:
 	  abort ();
 	}
@@ -5896,9 +5899,9 @@ static void
 free_ldst_entry (ptr)
      struct ls_expr * ptr;
 {
-  free_INSN_LIST_list (& ptr->loads);
-  free_INSN_LIST_list (& ptr->stores);
 
+  free_INSN_LIST_list (&ptr->stores);
+  free_INSN_LIST_list (&ptr->loads);
   free (ptr);
 }
 
@@ -6019,10 +6022,11 @@ simple_mem (x)
   
   if (GET_MODE (x) == BLKmode)
     return 0;
-
-  if (!rtx_varies_p (XEXP (x, 0), 0))
+#if 0
+  /* See comment in find_moveable_store */
+  if (!rtx_addr_varies_p (XEXP (x, 0), 0))
     return 1;
-  
+#endif
   return 0;
 }
 
@@ -6104,7 +6108,6 @@ compute_ld_motion_mems ()
 		      /* Make sure there isn't a buried load somewhere.  */
 		      invalidate_any_buried_refs (src);
 		    }
-		  
 		  /* Check for stores. Don't worry about aliased ones, they
 		     will block any movement we might do later. We only care
 		     about this exact pattern since those are the only
@@ -6251,37 +6254,59 @@ update_ld_motion_stores (expr)
 
 /* Store motion code.  */
 
-/* This is used to communicate the target bitvector we want to use in the 
-   reg_set_info routine when called via the note_stores mechanism.  */
-static sbitmap * regvec;
-
 /* Used in computing the reverse edge graph bit vectors.  */
 static sbitmap * st_antloc;
 
 /* Global holding the number of store expressions we are dealing with.  */
 static int num_stores;
 
-/* Checks to set if we need to mark a register set. Called from note_stores.  */
 
-static void
-reg_set_info (dest, setter, data)
-     rtx dest, setter ATTRIBUTE_UNUSED;
-     void * data ATTRIBUTE_UNUSED;
+/* Mark which registers are used by the mem, in the sbitmap used. */
+static int
+mark_mem_regs (x, used)
+     rtx x;
+     sbitmap used;
 {
-  if (GET_CODE (dest) == SUBREG)
-    dest = SUBREG_REG (dest);
+  register const char *fmt;
+  int i, j;
 
-  if (GET_CODE (dest) == REG)
-    SET_BIT (*regvec, REGNO (dest));
+  if (GET_CODE (x) == REG)
+    {
+      if (!TEST_BIT (used, REGNO (x)))
+	{
+	  SET_BIT (used, REGNO (x));
+	  return 1;
+}
+      return 0;
+    }
+
+  fmt = GET_RTX_FORMAT (GET_CODE (x));
+  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  if (mark_mem_regs (XEXP (x, i),used))
+	    return 1;
+	}
+      else if (fmt[i] == 'E')
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  if (mark_mem_regs (XVECEXP (x, i, j),used))
+	    return 1;
+    }
+
+  return 0;
 }
 
+
 /* Return non-zero if the register operands of expression X are killed 
-   anywhere in basic block BB.  */
+   before/after insn in basic block BB.  */
 
 static int
-store_ops_ok (x, bb)
+store_ops_ok (x, bb,insn, before)
      rtx x;
      basic_block bb;
+     rtx insn;
+     int before;
 {
   int i;
   enum rtx_code code;
@@ -6297,10 +6322,46 @@ store_ops_ok (x, bb)
   switch (code)
     {
     case REG:
-	/* If a reg has changed after us in this
-	   block, the operand has been killed.  */
-	return TEST_BIT (reg_set_in_block[bb->index], REGNO (x));
+	{
+	  /* Okay, since the reg def chains are ordered by bb/insn
+	     (since that's how it calculates them, and even if it didn't,
+	     we could just sort them), we just walk until we find a def
+	     in our BB, then walk until we find a def after/before our
+	     insn, and if we find a reg def after/before our insn, in the
+	     same bb, we return the approriate value.  If there is no
+	     such def, to prevent walking *every* reg def, we stop once
+	     we are out of our BB again. */
+	  struct df_link *currref;
+	  bool thereyet=FALSE;
+	  for (currref = df_analyzer->regs[REGNO(x)].defs;
+	       currref;
+	       currref = currref->next)
+	    {
+	      if (! (DF_REF_BB (currref->ref)  == bb))
+		{
+		  if (!thereyet)
+		    continue;
+		  else 
+		    return 1;
+		}
+	      if (before)
+		{
+		  if (INSN_UID (DF_REF_INSN (currref->ref)) >= INSN_UID (insn))
+		    continue;
+		}
+	      else
+		{
+		  if (INSN_UID (DF_REF_INSN (currref->ref)) < INSN_UID (insn))
+		    continue;
+		}
+	      thereyet = TRUE;
+	      if (DF_REF_TYPE (currref->ref) == DF_REF_REG_DEF)
+		return 0;
+	    }
+	  return 1;
+	}
 
+	
     case MEM:
       x = XEXP (x, 0);
       goto repeat;
@@ -6344,7 +6405,7 @@ store_ops_ok (x, bb)
 	      goto repeat;
 	    }
 	  
-	  if (! store_ops_ok (tem, bb))
+	  if (! store_ops_ok (tem, bb, insn, before))
 	    return 0;
 	}
       else if (fmt[i] == 'E')
@@ -6353,7 +6414,7 @@ store_ops_ok (x, bb)
 	  
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    {
-	      if (! store_ops_ok (XVECEXP (x, i, j), bb))
+	      if (! store_ops_ok (XVECEXP (x, i, j), bb, insn, before))
 		return 0;
 	    }
 	}
@@ -6362,7 +6423,9 @@ store_ops_ok (x, bb)
   return 1;
 }
 
-/* Determine whether insn is MEM store pattern that we will consider moving.  */
+/* Determine whether insn is MEM store pattern that we will consider
+   moving.  We'll consider moving pretty much anything that we can
+   move safely. */
 
 static void
 find_moveable_store (insn)
@@ -6371,6 +6434,9 @@ find_moveable_store (insn)
   struct ls_expr * ptr;
   rtx dest = PATTERN (insn);
 
+  /* It's it's not a set, it's not a mem store we want to consider.
+     Also, if it's an ASM, we certainly don't want to try to touch
+     it. */
   if (GET_CODE (dest) != SET
       || GET_CODE (SET_SRC (dest)) == ASM_OPERANDS)
     return;
@@ -6379,66 +6445,43 @@ find_moveable_store (insn)
   
   if (GET_CODE (dest) != MEM || MEM_VOLATILE_P (dest)
       || GET_MODE (dest) == BLKmode)
-    return;
-
-  if (GET_CODE (XEXP (dest, 0)) != SYMBOL_REF)
       return;
-
-  if (rtx_varies_p (XEXP (dest, 0), 0))
+#if 0
+  /* ??? Is this conservative, or just correct? We get more
+     *candidates* without it, but i don't think we ever remove any
+     stores where the address did vary. */
+  if (rtx_addr_varies_p (XEXP (dest, 0), 0))
     return;
-
+#endif
   ptr = ldst_entry (dest);
   ptr->stores = alloc_INSN_LIST (insn, ptr->stores);
 }
 
-/* Perform store motion. Much like gcse, except we move expressions the
-   other way by looking at the flowgraph in reverse.  */
+/* Perform store motion. 
+   Store motion is modeled as a lazy code motion problem, like PRE is
+   above. The main diffence is that we want to move stores down as far
+   as possible, so we have LCM work on the reverse flowgraph. */
 
 static int
 compute_store_table ()
 {
   int bb, ret;
-  unsigned regno;
   rtx insn, pat;
-
   max_gcse_regno = max_reg_num ();
 
-  reg_set_in_block = (sbitmap *) sbitmap_vector_alloc (n_basic_blocks,
-						       max_gcse_regno);
-  sbitmap_vector_zero (reg_set_in_block, n_basic_blocks);
   pre_ldst_mems = 0;
-
   /* Find all the stores we care about.  */
   for (bb = 0; bb < n_basic_blocks; bb++)
     {
-      regvec = & (reg_set_in_block[bb]);
       for (insn = BLOCK_END (bb);
 	   insn && insn != PREV_INSN (BLOCK_HEAD (bb));
 	   insn = PREV_INSN (insn))
 	{
-#ifdef NON_SAVING_SETJMP 
-	  if (NON_SAVING_SETJMP && GET_CODE (insn) == NOTE
-	      && NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)
-	    {
-	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		SET_BIT (reg_set_in_block[bb], regno);
-	      continue;
-	    }
-#endif
-	/* Ignore anything that is not a normal insn.  */
-	if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	  /* Ignore anything that is not a normal insn.  */
+	  if (!INSN_P (insn))
 	    continue;
 
-	  if (GET_CODE (insn) == CALL_INSN)
-	    {
-	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		if (TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
-		  SET_BIT (reg_set_in_block[bb], regno);
-	    }
-	  
 	  pat = PATTERN (insn);
-	  note_stores (pat, reg_set_info, NULL);
-	  
 	  /* Now that we've marked regs, look for stores.  */
 	  if (GET_CODE (pat) == SET)
 	    find_moveable_store (insn);
@@ -6456,7 +6499,8 @@ compute_store_table ()
   return ret;
 }
 
-/* Check to see if the load X is aliased with STORE_PATTERN.  */
+/* Check to see if the load X is aliased with STORE_PATTERN. 
+   If it is, it means that load kills the store.*/
 
 static int
 load_kills_store (x, store_pattern)
@@ -6467,8 +6511,8 @@ load_kills_store (x, store_pattern)
   return 0;
 }
 
-/* Go through the entire insn X, looking for any loads which might alias 
-   STORE_PATTERN.  Return 1 if found.  */
+/* Go through the entire insn X, looking for any loads which might
+   alias, and therefore, kill, STORE_PATTERN.  Return 1 if found.  */
 
 static int
 find_loads (x, store_pattern)
@@ -6524,9 +6568,10 @@ store_killed_in_insn (x, insn)
       rtx pat = PATTERN (insn);
       /* Check for memory stores to aliased objects.  */
       if (GET_CODE (SET_DEST (pat)) == MEM && !expr_equiv_p (SET_DEST (pat), x))
-	/* pretend its a load and check for aliasing.  */
+	{
 	if (find_loads (SET_DEST (pat), x))
 	  return 1;
+	}
       return find_loads (SET_SRC (pat), x);
     }
   else
@@ -6537,31 +6582,31 @@ store_killed_in_insn (x, insn)
    within basic block BB.  */
 
 static int 
-store_killed_after (x, insn, bb)
+store_killed_after (x, insn, bb, testops)
      rtx x, insn;
      basic_block bb;
+     int testops;
 {
    rtx last = bb->end;
    
    if (insn == last)
      return 0;
-
-  /* Check if the register operands of the store are OK in this block.
-     Note that if registers are changed ANYWHERE in the block, we'll 
-     decide we can't move it, regardless of whether it changed above 
-     or below the store. This could be improved by checking the register
-     operands while lookinng for aliasing in each insn.  */
-  if (!store_ops_ok (XEXP (x, 0), bb))
+   
+   if (testops)
+     /* Check if the register operands of the store are OK in this block.*/
+     if (!store_ops_ok (XEXP (x, 0), bb, insn, 0))
     return 1;
 
-   for ( ; insn && insn != NEXT_INSN (last); insn = NEXT_INSN (insn))
+   for ( ; 
+	 insn && insn != NEXT_INSN (last); 
+	 insn = NEXT_INSN (insn))
      if (store_killed_in_insn (x, insn))
        return 1;
    
   return 0;
 }
 
-/* Returns 1 if the expression X is loaded or clobbered on or before INSN
+/* Returns 1 if the expression X is loaded or clobbered before INSN
    within basic block BB.  */
 static int 
 store_killed_before (x, insn, bb)
@@ -6572,16 +6617,14 @@ store_killed_before (x, insn, bb)
 
    if (insn == first)
      return store_killed_in_insn (x, insn);
-   
-  /* Check if the register operands of the store are OK in this block.
-     Note that if registers are changed ANYWHERE in the block, we'll 
-     decide we can't move it, regardless of whether it changed above 
-     or below the store. This could be improved by checking the register
-     operands while lookinng for aliasing in each insn.  */
-  if (!store_ops_ok (XEXP (x, 0), bb))
+   /* Check if the register operands of the store are OK in this block.*/
+   if (!store_ops_ok (XEXP (x, 0), bb, insn, 1))
     return 1;
 
-   for ( ; insn && insn != PREV_INSN (first); insn = PREV_INSN (insn))
+   for (insn = PREV_INSN (insn) ; 
+	insn && insn != PREV_INSN (first); 
+	insn = PREV_INSN (insn))
+     
      if (store_killed_in_insn (x, insn))
        return 1;
    
@@ -6598,9 +6641,11 @@ static void
 build_store_vectors () 
 {
   basic_block bb;
-  int b;
+  int b,i,j;
   rtx insn, st;
   struct ls_expr * ptr;
+  sbitmap tested, *result;
+  sbitmap used;
 
   /* Build the gen_vector. This is any store in the table which is not killed
      by aliasing later in its block.  */
@@ -6609,7 +6654,16 @@ build_store_vectors ()
 
   st_antloc = (sbitmap *) sbitmap_vector_alloc (n_basic_blocks, num_stores);
   sbitmap_vector_zero (st_antloc, n_basic_blocks);
-
+  
+  /* Note: In case someone needs something to optimize about store
+     motion, here's the next place to look.  We currently test one more
+     basic block per store than necessary (at least).  Since we know, at
+     the end of this for loop, whether a store was killed in one of the
+     basic blocks (We know both whether it's killed before, and killed
+     after, the insn in the bb it resides in. So unless the insn
+     consists of multiple store/loads, we know whether it was killed
+     in the entire bb), we could avoid testing it for kill and transp in
+     the next for loop. */
   for (ptr = first_ls_expr (); ptr != NULL; ptr = next_ls_expr (ptr))
     { 
       /* Put all the stores into either the antic list, or the avail list,
@@ -6621,8 +6675,7 @@ build_store_vectors ()
 	{
 	  insn = XEXP (st, 0);
 	  bb = BLOCK_FOR_INSN (insn);
-	  
-	  if (!store_killed_after (ptr->pattern, insn, bb))
+	  if (!store_killed_after (ptr->pattern, insn, bb, 1))
 	    {
 	      /* If we've already seen an availale expression in this block,
 		 we can delete the one we saw already (It occurs earlier in
@@ -6666,49 +6719,141 @@ build_store_vectors ()
   ae_kill = (sbitmap *) sbitmap_vector_alloc (n_basic_blocks, num_stores);
   sbitmap_vector_zero (ae_kill, n_basic_blocks);
 
+
   transp = (sbitmap *) sbitmap_vector_alloc (n_basic_blocks, num_stores);
-  sbitmap_vector_zero (transp, n_basic_blocks);
+  sbitmap_vector_ones (transp, n_basic_blocks);
+
+  tested = sbitmap_alloc (max_gcse_regno);
+  sbitmap_zero (tested);
+  result = sbitmap_vector_alloc (n_basic_blocks, max_gcse_regno);
+  sbitmap_vector_zero (result, n_basic_blocks);
+  used = sbitmap_alloc (max_gcse_regno);
+  sbitmap_zero (used);
+
+  /* This whole big nasty thing computes kill and transparent.
+     It's done in this nasty way because profiling showed store motion
+     taking twice as long as GCSE, with the cause being 1 million calls
+     to store_ops_ok taking 30% of the entire runtime of the
+     compiler. 
+     Since store most expressions use the same registers, there's no
+     point in checking them 8 million times for the same basic blocks. If
+     they weren't okay in a BB the last time we checked, they won't be
+     okay now. Since we check all the bb's on each iteration, we don't
+     need a vector for which registers we've tested, just the results.
+     We then proceed to use the results of what store_ops_ok was for a
+     given reg and bb, and if the results were a kill, we don't even need
+     to check if the store was killed in the basic block, it'll be
+     in the kill set because it's regs changed between here and there.
+
+     
+     If the whole store had no registers, we just skip store_ops_okay
+     anyway (since it's checking reg operands), and proceed to see if
+     it's okay in each bb, setting the approriate bits.
+
+     With this in place, we now take almost no time at all to perform
+     store motion. (It's not on the first page of the profile, it
+     takes less than a second).
+     
+  */
 
   for (ptr = first_ls_expr (); ptr != NULL; ptr = next_ls_expr (ptr))
-    for (b = 0; b < n_basic_blocks; b++)
       {
-	if (store_killed_after (ptr->pattern, BLOCK_HEAD (b), BASIC_BLOCK (b)))
+      /* Make sure we don't have a load-only expr, which we never seem
+	 to, but i don't think there's actually a guarantee */
+      if (ptr->stores != NULL)
 	  {
-	    /* The anticipatable expression is not killed if it's gen'd. */
-	    /*
-	      We leave this check out for now. If we have a code sequence 
-	      in a block which looks like:
-			ST MEMa = x
-			L     y = MEMa
-			ST MEMa = z
-	      We should flag this as having an ANTIC expression, NOT
-	      transparent, NOT killed, and AVAIL.
-	      Unfortunately, since we haven't re-written all loads to
-	      use the reaching reg, we'll end up doing an incorrect 
-	      Load in the middle here if we push the store down. It happens in
-		    gcc.c-torture/execute/960311-1.c with -O3
-	      If we always kill it in this case, we'll sometimes do
-	      uneccessary work, but it shouldn't actually hurt anything.
-	    if (!TEST_BIT (ae_gen[b], ptr->index)).  */
-	    SET_BIT (ae_kill[b], ptr->index);
-	  }
-	else
-	  SET_BIT (transp[b], ptr->index);
-      }
-
-  /* Any block with no exits calls some non-returning function, so
-     we better mark the store killed here, or we might not store to
-     it at all.  If we knew it was abort, we wouldn't have to store,
-     but we don't know that for sure.  */
-  if (gcse_file) 
-    {
-      fprintf (gcse_file, "ST_avail and ST_antic (shown under loads..)\n");
-      print_ldst_list (gcse_file);
-      dump_sbitmap_vector (gcse_file, "st_antloc", "", st_antloc, n_basic_blocks);
-      dump_sbitmap_vector (gcse_file, "st_kill", "", ae_kill, n_basic_blocks);
-      dump_sbitmap_vector (gcse_file, "Transpt", "", transp, n_basic_blocks);
-      dump_sbitmap_vector (gcse_file, "st_avloc", "", ae_gen, n_basic_blocks);
+	  /* First mark the regs used by the mem */
+	  mark_mem_regs (ptr->pattern, used);
+	  /* Now see if it had any regs */
+	  if (!(sbitmap_first_set_bit (used) == -1))
+	    {
+	      /* For each register, see if we've tested it */
+	      EXECUTE_IF_SET_IN_SBITMAP (used, 0, i, 
+	      {
+		if (TEST_BIT (tested, i))
+		  {
+		    /* Already tested the register, so check the
+		       result, and if we had an okay result, check the
+		       store itself. */
+		    for (j = 0; j < n_basic_blocks; j++)
+		      {
+			if (!TEST_BIT (result[j], i) 
+			    || store_killed_after (ptr->pattern, BLOCK_HEAD (j), 
+						   BASIC_BLOCK (j), FALSE))
+			  {
+			    SET_BIT (ae_kill[j], ptr->index);
+			    if (!TEST_BIT (ae_gen[j], ptr->index)
+				|| !TEST_BIT (st_antloc[j], ptr->index))
+			      RESET_BIT (transp[j], ptr->index);
+			  }
+		      }
+		  }
+		else
+		  {
+		    /* We haven't tested it yet, so mark it tested,
+		       and perform the tests */
+		    SET_BIT (tested, i);
+		    /* Check if it's okay in each BB */
+		    for (j = 0; j < n_basic_blocks; j++)
+		      {
+			if (store_ops_ok (XEXP (ptr->pattern, 0), 
+					  BASIC_BLOCK (j), BLOCK_HEAD (j), 0))
+			  {
+			    SET_BIT (result[j], ptr->index);
+			  }
+			else
+			  {
+			    /* It's not okay, so it's killed and maybe
+			       not transparent */
+			    SET_BIT (ae_kill[j], ptr->index);
+			    if (!TEST_BIT (ae_gen[j], ptr->index)
+				|| !TEST_BIT (st_antloc[j], ptr->index))
+			      {
+				RESET_BIT (transp[j], ptr->index);
+			      }
+			    continue;
+			  }
+			/* The ops were okay, so check the store
+			   itself */
+			if (store_killed_after (ptr->pattern, BLOCK_HEAD (j), 
+						BASIC_BLOCK (j), FALSE))
+			  {
+			    SET_BIT (ae_kill[j], ptr->index);
+			    if (!TEST_BIT (ae_gen[j], ptr->index)
+				|| !TEST_BIT (st_antloc[j], ptr->index))
+			      {
+				RESET_BIT (transp[j], ptr->index);
+			      }
+			  }
+		      }
+		  }
+	      });
+	      /* Reset the used list */
+	      sbitmap_zero (used);
+	    }
+	  /* If it had no registers, we come here, and do the
+	     approriate testing */
+	  else
+	    {
+	      for (j = 0; j < n_basic_blocks; j++)
+		{
+		  if (store_killed_after (ptr->pattern, BLOCK_HEAD (j), 
+					  BASIC_BLOCK (j), FALSE))
+		    {
+		      SET_BIT (ae_kill[j], ptr->index);
+		      if (!TEST_BIT (ae_gen[j], ptr->index)
+			  || !TEST_BIT (st_antloc[j], ptr->index))
+			{
+			  RESET_BIT (transp[j], ptr->index);
+			}
+		    }
+		}
+	    }  
     }
+}
+  sbitmap_free (tested);
+  sbitmap_free (used);
+  sbitmap_vector_free (result);
 }
 
 /* Insert an instruction at the begining of a basic block, and update 
@@ -6888,7 +7033,6 @@ static void
 free_store_memory ()
 {
   free_ldst_mems ();
-  
   if (ae_gen)
     sbitmap_vector_free (ae_gen);
   if (ae_kill)
@@ -6901,8 +7045,6 @@ free_store_memory ()
     sbitmap_vector_free (pre_insert_map);
   if (pre_delete_map)
     sbitmap_vector_free (pre_delete_map);
-  if (reg_set_in_block)
-    sbitmap_vector_free (reg_set_in_block);
   
   ae_gen = ae_kill = transp = st_antloc = NULL;
   pre_insert_map = pre_delete_map = reg_set_in_block = NULL;
@@ -6916,8 +7058,10 @@ store_motion ()
 {
   int x;
   struct ls_expr * ptr;
-  int update_flow = 0;
+  sbitmap trapping_expr;
+  int i;
 
+  int update_flow = 0;
   if (gcse_file)
     {
       fprintf (gcse_file, "before store motion\n");
@@ -6926,12 +7070,13 @@ store_motion ()
 
 
   init_alias_analysis ();
-
+  df_analyzer = df_init();
+  df_analyse (df_analyzer, 0,   DF_RD_CHAIN | DF_HARD_REGS);
   /* Find all the stores that are live to the end of their block.  */
   num_stores = compute_store_table ();
   if (num_stores == 0)
     {
-      sbitmap_vector_free (reg_set_in_block);
+      df_finish (df_analyzer);
       end_alias_analysis ();
       return;
     }
@@ -6939,6 +7084,31 @@ store_motion ()
   /* Now compute whats actually available to move.  */
   add_noreturn_fake_exit_edges ();
   build_store_vectors ();
+
+  /* Collect expressions which might trap.  */
+  trapping_expr = sbitmap_alloc (num_stores);
+  sbitmap_zero (trapping_expr);
+  for (ptr = first_ls_expr (); ptr != NULL; ptr = next_ls_expr(ptr))
+    {
+	    if (may_trap_p (ptr->pattern))
+		    SET_BIT (trapping_expr, ptr->index);
+    }
+  for (i = 0; i < n_basic_blocks; i++)
+    {
+      edge e;
+
+      /* If the current block is the destination of an abnormal edge, we
+	 kill all trapping expressions because we won't be able to properly
+	 place the instruction on the edge.  So make them neither
+	 anticipatable nor transparent.  This is fairly conservative.  */
+      for (e = BASIC_BLOCK (i)->pred; e ; e = e->pred_next)
+	if (e->flags & EDGE_ABNORMAL)
+	  {
+	    sbitmap_difference (st_antloc[i], st_antloc[i], trapping_expr);
+	    sbitmap_difference (transp[i], transp[i], trapping_expr);
+	    break;
+	  }
+    }
 
   edge_list = pre_edge_rev_lcm (gcse_file, num_stores, transp, ae_gen, 
 				st_antloc, ae_kill, &pre_insert_map, 
@@ -6958,9 +7128,10 @@ store_motion ()
 
   if (update_flow)
     commit_edge_insertions ();
-
+  sbitmap_free (trapping_expr);
   free_store_memory ();
   free_edge_list (edge_list);
   remove_fake_edges ();
   end_alias_analysis ();
+  df_finish (df_analyzer);
 }
