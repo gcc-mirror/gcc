@@ -3332,7 +3332,7 @@ move\\t%0,%z4\\n\\
     {
       rtx op1   = gen_lowpart (DImode, operands[1]);
       rtx temp  = gen_reg_rtx (DImode);
-      rtx shift = gen_rtx (CONST_INT, VOIDmode, 32);
+      rtx shift = GEN_INT (32);
 
       emit_insn (gen_ashldi3 (temp, op1, shift));
       emit_insn (gen_lshrdi3 (operands[0], temp, shift));
@@ -3609,7 +3609,7 @@ move\\t%0,%z4\\n\\
     {
       rtx op1   = gen_lowpart (DImode, operands[1]);
       rtx temp  = gen_reg_rtx (DImode);
-      rtx shift = gen_rtx (CONST_INT, VOIDmode, 48);
+      rtx shift = GEN_INT (48);
 
       emit_insn (gen_ashldi3 (temp, op1, shift));
       emit_insn (gen_ashrdi3 (operands[0], temp, shift));
@@ -3639,7 +3639,7 @@ move\\t%0,%z4\\n\\
     {
       rtx op1   = gen_lowpart (SImode, operands[1]);
       rtx temp  = gen_reg_rtx (SImode);
-      rtx shift = gen_rtx (CONST_INT, VOIDmode, 16);
+      rtx shift = GEN_INT (16);
 
       emit_insn (gen_ashlsi3 (temp, op1, shift));
       emit_insn (gen_ashrsi3 (operands[0], temp, shift));
@@ -3670,7 +3670,7 @@ move\\t%0,%z4\\n\\
       rtx op0   = gen_lowpart (SImode, operands[0]);
       rtx op1   = gen_lowpart (SImode, operands[1]);
       rtx temp  = gen_reg_rtx (SImode);
-      rtx shift = gen_rtx (CONST_INT, VOIDmode, 24);
+      rtx shift = GEN_INT (24);
 
       emit_insn (gen_ashlsi3 (temp, op1, shift));
       emit_insn (gen_ashrsi3 (op0, temp, shift));
@@ -3701,7 +3701,7 @@ move\\t%0,%z4\\n\\
     {
       rtx op1   = gen_lowpart (SImode, operands[1]);
       rtx temp  = gen_reg_rtx (SImode);
-      rtx shift = gen_rtx (CONST_INT, VOIDmode, 24);
+      rtx shift = GEN_INT (24);
 
       emit_insn (gen_ashlsi3 (temp, op1, shift));
       emit_insn (gen_ashrsi3 (operands[0], temp, shift));
@@ -3731,7 +3731,7 @@ move\\t%0,%z4\\n\\
     {
       rtx op1   = gen_lowpart (DImode, operands[1]);
       rtx temp  = gen_reg_rtx (DImode);
-      rtx shift = gen_rtx (CONST_INT, VOIDmode, 56);
+      rtx shift = GEN_INT (56);
 
       emit_insn (gen_ashldi3 (temp, op1, shift));
       emit_insn (gen_ashrdi3 (operands[0], temp, shift));
@@ -3983,7 +3983,7 @@ move\\t%0,%z4\\n\\
 
       emit_label (label1);
       emit_move_insn (reg2, gen_rtx (MINUS, DFmode, operands[1], reg1));
-      emit_move_insn (reg3, gen_rtx (CONST_INT, VOIDmode, 0x80000000));
+      emit_move_insn (reg3, GEN_INT (0x80000000));
 
       emit_insn (gen_fix_truncdfsi2 (operands[0], reg2));
       emit_insn (gen_iorsi3 (operands[0], operands[0], reg3));
@@ -4026,7 +4026,7 @@ move\\t%0,%z4\\n\\
 
       emit_label (label1);
       emit_move_insn (reg2, gen_rtx (MINUS, DFmode, operands[1], reg1));
-      emit_move_insn (reg3, gen_rtx (CONST_INT, VOIDmode, 0x80000000));
+      emit_move_insn (reg3, GEN_INT (0x80000000));
       emit_insn (gen_ashldi3 (reg3, reg3, GEN_INT (32)));
 
       emit_insn (gen_fix_truncdfdi2 (operands[0], reg2));
@@ -4070,7 +4070,7 @@ move\\t%0,%z4\\n\\
 
       emit_label (label1);
       emit_move_insn (reg2, gen_rtx (MINUS, SFmode, operands[1], reg1));
-      emit_move_insn (reg3, gen_rtx (CONST_INT, VOIDmode, 0x80000000));
+      emit_move_insn (reg3, GEN_INT (0x80000000));
 
       emit_insn (gen_fix_truncsfsi2 (operands[0], reg2));
       emit_insn (gen_iorsi3 (operands[0], operands[0], reg3));
@@ -4113,7 +4113,7 @@ move\\t%0,%z4\\n\\
 
       emit_label (label1);
       emit_move_insn (reg2, gen_rtx (MINUS, SFmode, operands[1], reg1));
-      emit_move_insn (reg3, gen_rtx (CONST_INT, VOIDmode, 0x80000000));
+      emit_move_insn (reg3, GEN_INT (0x80000000));
       emit_insn (gen_ashldi3 (reg3, reg3, GEN_INT (32)));
 
       emit_insn (gen_fix_truncsfdi2 (operands[0], reg2));
@@ -4697,8 +4697,8 @@ move\\t%0,%z4\\n\\
 		(match_dup 3)))]
   "
 {
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & 0xffff0000);
-  operands[3] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & 0x0000ffff);
+  operands[2] = GEN_INT (INTVAL (operands[1]) & 0xffff0000);
+  operands[3] = GEN_INT (INTVAL (operands[1]) & 0x0000ffff);
 }")
 
 ;; Unlike most other insns, the move insns can't be split with
@@ -5882,7 +5882,7 @@ move\\t%0,%z4\\n\\
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
 
   return \"sll\\t%0,%1,%2\";
 }"
@@ -5901,7 +5901,7 @@ move\\t%0,%z4\\n\\
     return \"sll\\t%0,%2\";
 
   if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
 
   return \"sll\\t%0,%1,%2\";
 }"
@@ -6016,7 +6016,7 @@ move\\t%0,%z4\\n\\
    && (INTVAL (operands[2]) & 32) != 0"
   "*
 {
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);
+  operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
   operands[4] = const0_rtx;
   return \"sll\\t%M0,%L1,%2\;move\\t%L0,%z4\";
 }"
@@ -6039,7 +6039,7 @@ move\\t%0,%z4\\n\\
   [(set (subreg:SI (match_dup 0) 1) (ashift:SI (subreg:SI (match_dup 1) 0) (match_dup 2)))
    (set (subreg:SI (match_dup 0) 0) (const_int 0))]
 
-  "operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);")
+  "operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);")
 
 
 (define_split
@@ -6056,7 +6056,7 @@ move\\t%0,%z4\\n\\
   [(set (subreg:SI (match_dup 0) 0) (ashift:SI (subreg:SI (match_dup 1) 1) (match_dup 2)))
    (set (subreg:SI (match_dup 0) 1) (const_int 0))]
 
-  "operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);")
+  "operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);")
 
 
 (define_insn "ashldi3_internal3"
@@ -6071,9 +6071,9 @@ move\\t%0,%z4\\n\\
 {
   int amount = INTVAL (operands[2]);
 
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, (amount & 31));
+  operands[2] = GEN_INT ((amount & 31));
   operands[4] = const0_rtx;
-  operands[5] = gen_rtx (CONST_INT, VOIDmode, ((-amount) & 31));
+  operands[5] = GEN_INT (((-amount) & 31));
 
   return \"sll\\t%M0,%M1,%2\;srl\\t%3,%L1,%5\;or\\t%M0,%M0,%3\;sll\\t%L0,%L1,%2\";
 }"
@@ -6112,8 +6112,8 @@ move\\t%0,%z4\\n\\
   "
 {
   int amount = INTVAL (operands[2]);
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, (amount & 31));
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, ((-amount) & 31));
+  operands[2] = GEN_INT ((amount & 31));
+  operands[4] = GEN_INT (((-amount) & 31));
 }")
 
 
@@ -6147,8 +6147,8 @@ move\\t%0,%z4\\n\\
   "
 {
   int amount = INTVAL (operands[2]);
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, (amount & 31));
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, ((-amount) & 31));
+  operands[2] = GEN_INT ((amount & 31));
+  operands[4] = GEN_INT (((-amount) & 31));
 }")
 
 
@@ -6264,7 +6264,7 @@ move\\t%0,%z4\\n\\
     return \"sra\\t%0,%2\";
 
   if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
 
   return \"sra\\t%0,%1,%2\";
 }"
@@ -6375,7 +6375,7 @@ move\\t%0,%z4\\n\\
   "!TARGET_64BIT && !TARGET_DEBUG_G_MODE && (INTVAL (operands[2]) & 32) != 0"
   "*
 {
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);
+  operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
   return \"sra\\t%L0,%M1,%2\;sra\\t%M0,%M1,31\";
 }"
   [(set_attr "type"	"darith")
@@ -6396,7 +6396,7 @@ move\\t%0,%z4\\n\\
   [(set (subreg:SI (match_dup 0) 0) (ashiftrt:SI (subreg:SI (match_dup 1) 1) (match_dup 2)))
    (set (subreg:SI (match_dup 0) 1) (ashiftrt:SI (subreg:SI (match_dup 1) 1) (const_int 31)))]
 
-  "operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);")
+  "operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);")
 
 
 (define_split
@@ -6412,7 +6412,7 @@ move\\t%0,%z4\\n\\
   [(set (subreg:SI (match_dup 0) 1) (ashiftrt:SI (subreg:SI (match_dup 1) 0) (match_dup 2)))
    (set (subreg:SI (match_dup 0) 0) (ashiftrt:SI (subreg:SI (match_dup 1) 0) (const_int 31)))]
 
-  "operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);")
+  "operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);")
 
 
 (define_insn "ashrdi3_internal3"
@@ -6427,8 +6427,8 @@ move\\t%0,%z4\\n\\
 {
   int amount = INTVAL (operands[2]);
 
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, (amount & 31));
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, ((-amount) & 31));
+  operands[2] = GEN_INT ((amount & 31));
+  operands[4] = GEN_INT (((-amount) & 31));
 
   return \"srl\\t%L0,%L1,%2\;sll\\t%3,%M1,%4\;or\\t%L0,%L0,%3\;sra\\t%M0,%M1,%2\";
 }"
@@ -6467,8 +6467,8 @@ move\\t%0,%z4\\n\\
   "
 {
   int amount = INTVAL (operands[2]);
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, (amount & 31));
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, ((-amount) & 31));
+  operands[2] = GEN_INT ((amount & 31));
+  operands[4] = GEN_INT (((-amount) & 31));
 }")
 
 
@@ -6502,8 +6502,8 @@ move\\t%0,%z4\\n\\
   "
 {
   int amount = INTVAL (operands[2]);
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, (amount & 31));
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, ((-amount) & 31));
+  operands[2] = GEN_INT ((amount & 31));
+  operands[4] = GEN_INT (((-amount) & 31));
 }")
 
 
@@ -6596,7 +6596,7 @@ move\\t%0,%z4\\n\\
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
 
   return \"srl\\t%0,%1,%2\";
 }"
@@ -6615,7 +6615,7 @@ move\\t%0,%z4\\n\\
     return \"srl\\t%0,%2\";
 
   if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
 
   return \"srl\\t%0,%1,%2\";
 }"
@@ -6759,7 +6759,7 @@ move\\t%0,%z4\\n\\
    && (INTVAL (operands[2]) & 32) != 0"
   "*
 {
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);
+  operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
   operands[4] = const0_rtx;
   return \"srl\\t%L0,%M1,%2\;move\\t%M0,%z4\";
 }"
@@ -6782,7 +6782,7 @@ move\\t%0,%z4\\n\\
   [(set (subreg:SI (match_dup 0) 0) (lshiftrt:SI (subreg:SI (match_dup 1) 1) (match_dup 2)))
    (set (subreg:SI (match_dup 0) 1) (const_int 0))]
 
-  "operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);")
+  "operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);")
 
 
 (define_split
@@ -6799,7 +6799,7 @@ move\\t%0,%z4\\n\\
   [(set (subreg:SI (match_dup 0) 1) (lshiftrt:SI (subreg:SI (match_dup 1) 0) (match_dup 2)))
    (set (subreg:SI (match_dup 0) 0) (const_int 0))]
 
-  "operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);")
+  "operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);")
 
 
 (define_insn "lshrdi3_internal3"
@@ -6814,8 +6814,8 @@ move\\t%0,%z4\\n\\
 {
   int amount = INTVAL (operands[2]);
 
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, (amount & 31));
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, ((-amount) & 31));
+  operands[2] = GEN_INT ((amount & 31));
+  operands[4] = GEN_INT (((-amount) & 31));
 
   return \"srl\\t%L0,%L1,%2\;sll\\t%3,%M1,%4\;or\\t%L0,%L0,%3\;srl\\t%M0,%M1,%2\";
 }"
@@ -6854,8 +6854,8 @@ move\\t%0,%z4\\n\\
   "
 {
   int amount = INTVAL (operands[2]);
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, (amount & 31));
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, ((-amount) & 31));
+  operands[2] = GEN_INT ((amount & 31));
+  operands[4] = GEN_INT (((-amount) & 31));
 }")
 
 
@@ -6889,8 +6889,8 @@ move\\t%0,%z4\\n\\
   "
 {
   int amount = INTVAL (operands[2]);
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, (amount & 31));
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, ((-amount) & 31));
+  operands[2] = GEN_INT ((amount & 31));
+  operands[4] = GEN_INT (((-amount) & 31));
 }")
 
 
@@ -7924,7 +7924,7 @@ move\\t%0,%z4\\n\\
   "!TARGET_MIPS16 && INTVAL (operands[2]) < 32767"
   "*
 {
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2])+1);
+  operands[2] = GEN_INT (INTVAL (operands[2])+1);
   return \"slt\\t%0,%1,%2\";
 }"
   [(set_attr "type"	"arith")
@@ -7938,7 +7938,7 @@ move\\t%0,%z4\\n\\
   "TARGET_MIPS16 && INTVAL (operands[2]) < 32767"
   "*
 {
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2])+1);
+  operands[2] = GEN_INT (INTVAL (operands[2])+1);
   return \"slt\\t%1,%2\";
 }"
   [(set_attr "type"	"arith")
@@ -7954,7 +7954,7 @@ move\\t%0,%z4\\n\\
   "TARGET_64BIT && !TARGET_MIPS16 && INTVAL (operands[2]) < 32767"
   "*
 {
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2])+1);
+  operands[2] = GEN_INT (INTVAL (operands[2])+1);
   return \"slt\\t%0,%1,%2\";
 }"
   [(set_attr "type"	"arith")
@@ -7968,7 +7968,7 @@ move\\t%0,%z4\\n\\
   "TARGET_64BIT && TARGET_MIPS16 && INTVAL (operands[2]) < 32767"
   "*
 {
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2])+1);
+  operands[2] = GEN_INT (INTVAL (operands[2])+1);
   return \"slt\\t%1,%2\";
 }"
   [(set_attr "type"	"arith")
@@ -8264,7 +8264,7 @@ move\\t%0,%z4\\n\\
   "!TARGET_MIPS16 && INTVAL (operands[2]) < 32767"
   "*
 {
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2])+1);
+  operands[2] = GEN_INT (INTVAL (operands[2])+1);
   return \"sltu\\t%0,%1,%2\";
 }"
   [(set_attr "type"	"arith")
@@ -8278,7 +8278,7 @@ move\\t%0,%z4\\n\\
   "TARGET_MIPS16 && INTVAL (operands[2]) < 32767"
   "*
 {
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2])+1);
+  operands[2] = GEN_INT (INTVAL (operands[2])+1);
   return \"sltu\\t%1,%2\";
 }"
   [(set_attr "type"	"arith")
@@ -8294,7 +8294,7 @@ move\\t%0,%z4\\n\\
   "TARGET_64BIT && !TARGET_MIPS16 && INTVAL (operands[2]) < 32767"
   "*
 {
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2])+1);
+  operands[2] = GEN_INT (INTVAL (operands[2])+1);
   return \"sltu\\t%0,%1,%2\";
 }"
   [(set_attr "type"	"arith")
@@ -8308,7 +8308,7 @@ move\\t%0,%z4\\n\\
   "TARGET_64BIT && TARGET_MIPS16 && INTVAL (operands[2]) < 32767"
   "*
 {
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2])+1);
+  operands[2] = GEN_INT (INTVAL (operands[2])+1);
   return \"sltu\\t%1,%2\";
 }"
   [(set_attr "type"	"arith")

@@ -1,3 +1,7 @@
+Mon Feb  2 16:43:10 1998  John Carr  <jfc@mit.edu>
+
+	* mips.md: Change gen_rtx (CONST_INT) to GEN_INT.
+
 Mon Feb  2 13:06:47 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* vmsconfig.com: Remove bytecode references.
