@@ -1,3 +1,12 @@
+2002-07-10  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	Revert all patches for optimization of Complex .op. Real.
+	* complex_part_zero_p: Remove
+	* expand_cmplxdiv_straight: Replace complex_part_zero_p(x)
+	with x.
+	* expand_cmplxdiv_wide: Ditto.
+	* expand_binop: Ditto.
+
 2002-07-10  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	* config/avr/avr.md: Fix two 0x80000000 constants to make them
