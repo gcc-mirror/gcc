@@ -1059,9 +1059,52 @@ extern struct rtx_def *sh_builtin_saveregs ();
    GO_IF_LEGITIMATE_ADDRESS.
 
    It is always safe for this macro to do nothing.  It exists to recognize
-   opportunities to optimize the output.  */
+   opportunities to optimize the output.
 
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN) ;
+   For the SH, if X is almost suitable for indexing, but the offset is
+   out of range, convert it into a normal form so that cse has a chance
+   of reducing the number of address registers used.  */
+
+#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)			\
+{								\
+  if (GET_CODE (x) == PLUS					\
+      && (GET_MODE_SIZE (MODE) == 4				\
+	  || GET_MODE_SIZE (MODE) == 8)				\
+      && GET_CODE (XEXP (X, 1)) == CONST_INT			\
+      && BASE_REGISTER_RTX_P (XEXP (X, 0))			\
+      && ! (TARGET_SH3E && MODE == SFmode))			\
+    {								\
+      rtx index_rtx = XEXP (X, 1);				\
+      HOST_WIDE_INT offset = INTVAL (index_rtx), offset_base;	\
+      rtx sum;							\
+								\
+      GO_IF_LEGITIMATE_INDEX (MODE, index_rtx, WIN);		\
+      /* On rare occaisons, we might get an unaligned pointer	\
+	 that is indexed in a way to give an aligned address.	\
+	 Therefore, keep the lower two bits in offset_base.  */ \
+      /* Instead of offset_base 128..131 use 124..127, so that	\
+	 simple add suffices.  */				\
+      if (offset > 127)						\
+	{							\
+	  offset_base = ((offset + 4) & ~60) - 4;		\
+	}							\
+      else							\
+	offset_base = offset & ~60;				\
+      /* Sometimes the normal form does not suit DImode.  We	\
+	 could avoid that by using smaller ranges, but that	\
+	 would give less optimized code when SImode is
+	 prevalent.  */						\
+      if (GET_MODE_SIZE (MODE) + offset - offset_base <= 64)	\
+	{							\
+	  sum = expand_binop (Pmode, add_optab, XEXP (x, 0),	\
+			      GEN_INT (offset_base), NULL_RTX, 0, \
+			      OPTAB_LIB_WIDEN);			\
+                                                                \
+	  (X) = gen_rtx (PLUS, Pmode, sum, GEN_INT (offset - offset_base)); \
+	  goto WIN;						\
+	}							\
+    }								\
+}
 
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.  */
