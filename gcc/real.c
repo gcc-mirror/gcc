@@ -1227,23 +1227,25 @@ real_identical (a, b)
     {
     case rvc_zero:
     case rvc_inf:
-      break;
+      return true;
 
     case rvc_normal:
       if (a->exp != b->exp)
  	return false;
-      /* FALLTHRU */
+      break;
+
     case rvc_nan:
       if (a->signalling != b->signalling)
 	return false;
-      for (i = 0; i < SIGSZ; ++i)
-	if (a->sig[i] != b->sig[i])
-	  return false;
       break;
 
     default:
       abort ();
     }
+
+  for (i = 0; i < SIGSZ; ++i)
+    if (a->sig[i] != b->sig[i])
+      return false;
 
   return true;
 }

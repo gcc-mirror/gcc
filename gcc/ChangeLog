@@ -1,3 +1,8 @@
+2003-03-31  Richard Henderson  <rth@redhat.com>
+
+	* real.c (real_identical): Reorg so as to not compare
+	signalling for normals.
+
 2003-03-31  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.c (hard_reg_operand): Check the mode.
