@@ -1,3 +1,9 @@
+2002-01-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* typeck2.c (friendly_abort): Delete definition.
+	* cp-tree.h (friendly_abort): Don't prototype.
+	(my_friendly_assert): Use fancy_abort.
+
 2002-01-23  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	* cp-tree.h (my_friendly_abort): Remove.
@@ -17,9 +23,9 @@
 
 2002-01-23  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
-	* call.c, class.c, decl.c, decl2.c, error.c, expr.c, friend.c, 
-	init.c, lex.c, mangle.c, method.c, pt.c, repo.c, rtti.c, search.c, 
-	semantics.c, spew.c, tree.c, typeck.c, typeck2.c, xref.c: 
+	* call.c, class.c, decl.c, decl2.c, error.c, expr.c, friend.c,
+	init.c, lex.c, mangle.c, method.c, pt.c, repo.c, rtti.c, search.c,
+	semantics.c, spew.c, tree.c, typeck.c, typeck2.c, xref.c:
 	Change my_fancy_abort() to abort().
 
 2002-01-23  Jason Merrill  <jason@redhat.com>
@@ -171,7 +177,7 @@
 	(BINDING_TYPE): Whitespace.
 	(IDENTIFIER_GLOBAL_VALUE): Add parenthesis.
 	(SET_IDENTIFIER_GLOBAL_VALUE): Likewise.
-	(IDENTIFIER_NAMESPACE_VALUE): Likewise. 
+	(IDENTIFIER_NAMESPACE_VALUE): Likewise.
 	(SET_IDENTIFIER_NAMESPACE_VALUE: Likewise.
 	(same_type_p): Uppercase macro parameters.
 	(same_type_ignoring_top_level_qualifiers_p): Likewise.
@@ -380,7 +386,7 @@
 	PR c++/5116, c++/764 reversion
 	* call.c (build_new_op): Revert the instantiations. They are
 	incorrect.
-	
+
 2002-01-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/5089
@@ -462,7 +468,7 @@
 	* cvt.c (convert_to_reference): Likewise.
 	* semantics.c (setup_vtbl_ptr): Likewise.
 	* pt.c (lookup_template_class): Comment typo.
-	
+
 2001-12-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/5125
