@@ -1035,10 +1035,10 @@ accessed through the data cache.  */
 
 #define TRAMPOLINE_SIZE 18
 
-/* Alignment required for a trampoline.  16 is used to find the
+/* Alignment required (in *bits*) for a trampoline.  16 is used to find the
    beginning of a line in the instruction cache.  */
 
-#define TRAMPOLINE_ALIGNMENT 16
+#define TRAMPOLINE_ALIGNMENT (16 * BITS_PER_UNIT)
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
