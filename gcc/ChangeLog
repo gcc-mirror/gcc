@@ -1,3 +1,7 @@
+Sun May 24 21:50:12 1998  Alan Modra <alan@spri.levels.unisa.edu.au>
+
+	* i386/linux{,-aout,oldld}.h (ASM_COMMENT_START): Define.
+
 Sun May 24 11:58:37 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* m68k.md (adddi3, subdi3): Properly negate the DImode constant.
