@@ -40,37 +40,56 @@ Boston, MA 02111-1307, USA.  */
    slots in a CONST_DOUBLE, so we provide them even if one would suffice.  */
 
 #ifdef REAL_ARITHMETIC
-#if MAX_LONG_DOUBLE_TYPE_SIZE == 96
-#define REAL_WIDTH	(11*8 + HOST_BITS_PER_WIDE_INT)/HOST_BITS_PER_WIDE_INT
-#elif MAX_LONG_DOUBLE_TYPE_SIZE == 128
-#define REAL_WIDTH	(19*8 + HOST_BITS_PER_WIDE_INT)/HOST_BITS_PER_WIDE_INT
-#elif HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
-#define REAL_WIDTH	(7*8 + HOST_BITS_PER_WIDE_INT)/HOST_BITS_PER_WIDE_INT
-#endif
+# if MAX_LONG_DOUBLE_TYPE_SIZE == 96
+#  define REAL_WIDTH	\
+     (11*8 + HOST_BITS_PER_WIDE_INT)/HOST_BITS_PER_WIDE_INT
+# else
+#  if MAX_LONG_DOUBLE_TYPE_SIZE == 128
+#   define REAL_WIDTH	\
+      (19*8 + HOST_BITS_PER_WIDE_INT)/HOST_BITS_PER_WIDE_INT
+#  else
+#   if HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
+#    define REAL_WIDTH	\
+      (7*8 + HOST_BITS_PER_WIDE_INT)/HOST_BITS_PER_WIDE_INT
+#   endif
+#  endif
+# endif
 #endif /* REAL_ARITHMETIC */
 
 #ifndef REAL_WIDTH
-#if HOST_BITS_PER_WIDE_INT*2 >= MAX_LONG_DOUBLE_TYPE_SIZE
-#define REAL_WIDTH	2
-#elif HOST_BITS_PER_WIDE_INT*3 >= MAX_LONG_DOUBLE_TYPE_SIZE
-#define REAL_WIDTH	3
-#elif HOST_BITS_PER_WIDE_INT*4 >= MAX_LONG_DOUBLE_TYPE_SIZE
-#define REAL_WIDTH	4
-#endif
+# if HOST_BITS_PER_WIDE_INT*2 >= MAX_LONG_DOUBLE_TYPE_SIZE
+#  define REAL_WIDTH	2
+# else
+#  if HOST_BITS_PER_WIDE_INT*3 >= MAX_LONG_DOUBLE_TYPE_SIZE
+#   define REAL_WIDTH	3
+#  else
+#   if HOST_BITS_PER_WIDE_INT*4 >= MAX_LONG_DOUBLE_TYPE_SIZE
+#    define REAL_WIDTH	4
+#   endif
+#  endif
+# endif
 #endif /* REAL_WIDTH */
 
 #if REAL_WIDTH == 1
-#define CONST_DOUBLE_FORMAT	"e0ww"
-#elif REAL_WIDTH == 2
-#define CONST_DOUBLE_FORMAT	"e0ww"
-#elif REAL_WIDTH == 3
-#define CONST_DOUBLE_FORMAT	"e0www"
-#elif REAL_WIDTH == 4
-#define CONST_DOUBLE_FORMAT	"e0wwww"
-#elif REAL_WIDTH == 5
-#define CONST_DOUBLE_FORMAT	"e0wwwww"
+# define CONST_DOUBLE_FORMAT	"e0ww"
 #else
-#define CONST_DOUBLE_FORMAT	/* nothing - will cause syntax error */
+# if REAL_WIDTH == 2
+#  define CONST_DOUBLE_FORMAT	"e0ww"
+# else
+#  if REAL_WIDTH == 3
+#   define CONST_DOUBLE_FORMAT	"e0www"
+#  else
+#   if REAL_WIDTH == 4
+#    define CONST_DOUBLE_FORMAT	"e0wwww"
+#   else
+#    if REAL_WIDTH == 5
+#     define CONST_DOUBLE_FORMAT	"e0wwwww"
+#    else
+#     define CONST_DOUBLE_FORMAT /* nothing - will cause syntax error */
+#    endif
+#   endif
+#  endif
+# endif
 #endif
 
 
