@@ -218,24 +218,52 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
       /* fold_single_bit_test() converts (X & (1 << C)) into (X >> C) & 1.
 	 See if the former is preferred for jump tests and restore it
 	 if so.  */
-      if (TREE_CODE (TREE_OPERAND (exp, 0)) == RSHIFT_EXPR
-	  && integer_onep (TREE_OPERAND (exp, 1)))
+      if (integer_onep (TREE_OPERAND (exp, 1)))
 	{
-	  tree arg = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
-	  tree shift = TREE_OPERAND (TREE_OPERAND (exp, 0), 1);
-	  tree one = TREE_OPERAND (exp, 1);
-	  tree argtype = TREE_TYPE (arg);
-	  if (TREE_CODE (shift) == INTEGER_CST
-	      && compare_tree_int (shift, 0) > 0
-	      && compare_tree_int (shift, HOST_BITS_PER_WIDE_INT) < 0
-	      && prefer_and_bit_test (TYPE_MODE (argtype),
-				      TREE_INT_CST_LOW (shift)))
+	  tree exp0 = TREE_OPERAND (exp, 0);
+	  rtx set_label, clr_label;
+
+	  /* Strip narrowing integral type conversions.  */
+	  while ((TREE_CODE (exp0) == NOP_EXPR
+		  || TREE_CODE (exp0) == CONVERT_EXPR
+		  || TREE_CODE (exp0) == NON_LVALUE_EXPR)
+		 && TREE_OPERAND (exp0, 0) != error_mark_node
+		 && TYPE_PRECISION (TREE_TYPE (exp0))
+		    <= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (exp0, 0))))
+	    exp0 = TREE_OPERAND (exp0, 0);
+
+	  /* "exp0 ^ 1" inverts the sense of the single bit test.  */
+	  if (TREE_CODE (exp0) == BIT_XOR_EXPR
+	      && integer_onep (TREE_OPERAND (exp0, 1)))
 	    {
-	      do_jump (build2 (BIT_AND_EXPR, argtype, arg,
-			       fold (build2 (LSHIFT_EXPR, argtype,
-					     one, shift))),
-		       if_false_label, if_true_label);
-	      break;
+	      exp0 = TREE_OPERAND (exp0, 0);
+	      clr_label = if_true_label;
+	      set_label = if_false_label;
+	    }
+	  else
+	    {
+	      clr_label = if_false_label;
+	      set_label = if_true_label;
+	    }
+
+	  if (TREE_CODE (exp0) == RSHIFT_EXPR)
+	    {
+	      tree arg = TREE_OPERAND (exp0, 0);
+	      tree shift = TREE_OPERAND (exp0, 1);
+	      tree argtype = TREE_TYPE (arg);
+	      if (TREE_CODE (shift) == INTEGER_CST
+		  && compare_tree_int (shift, 0) >= 0
+		  && compare_tree_int (shift, HOST_BITS_PER_WIDE_INT) < 0
+		  && prefer_and_bit_test (TYPE_MODE (argtype),
+					  TREE_INT_CST_LOW (shift)))
+		{
+		  HOST_WIDE_INT mask = (HOST_WIDE_INT) 1
+				       << TREE_INT_CST_LOW (shift);
+		  do_jump (build2 (BIT_AND_EXPR, argtype, arg,
+				   build_int_cst_type (argtype, mask)),
+			   clr_label, set_label);
+		  break;
+		}
 	    }
 	}
 

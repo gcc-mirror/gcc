@@ -1,3 +1,12 @@
+2004-12-10  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/18002
+	PR middle-end/18424
+	* dojump.c (do_jump): When attempting to reverse the effects of
+	fold_single_bit_test, we need to STRIP_NOPS and narrowing type
+	conversions, and handle BIT_XOR_EXPR that's used to invert the
+	sense of the single bit test.
+
 2004-12-10  Devang Patel  <dpatel@apple.com>
 
 	PR 18732
