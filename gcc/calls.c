@@ -2804,8 +2804,7 @@ emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
       argvec[count].mode = mode;
 
       argvec[count].reg = FUNCTION_ARG (args_so_far, mode, NULL_TREE, 1);
-      if (argvec[count].reg && GET_CODE (argvec[count].reg) == PARALLEL)
-	abort ();
+
 #ifdef FUNCTION_ARG_PARTIAL_NREGS
       argvec[count].partial
 	= FUNCTION_ARG_PARTIAL_NREGS (args_so_far, mode, NULL_TREE, 1);
@@ -3085,8 +3084,15 @@ emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
       rtx reg = argvec[argnum].reg;
       int partial = argvec[argnum].partial;
 
-      if (reg != 0 && partial == 0)
+      /* Handle calls that pass values in multiple non-contiguous
+	 locations.  The PA64 has examples of this for library calls.  */
+      if (GET_CODE (reg) == PARALLEL)
+	emit_group_load (reg, val,
+			 GET_MODE_SIZE (GET_MODE (val)),
+			 GET_MODE_ALIGNMENT (GET_MODE (val)));
+      else if (reg != 0 && partial == 0)
 	emit_move_insn (reg, val);
+
       NO_DEFER_POP;
     }
 
@@ -3096,8 +3102,12 @@ emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
 
   /* Any regs containing parms remain in use through the call.  */
   for (count = 0; count < nargs; count++)
-    if (argvec[count].reg != 0)
-       use_reg (&call_fusage, argvec[count].reg);
+    {
+      if (GET_CODE (argvec[count].reg) == PARALLEL)
+	use_group_regs (&call_fusage, argvec[count].reg);
+      else if (argvec[count].reg != 0)
+	use_reg (&call_fusage, argvec[count].reg);
+    }
 
   /* Don't allow popping to be deferred, since then
      cse'ing of library calls could delete a call and leave the pop.  */
@@ -3382,8 +3392,7 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
       argvec[count].mode = mode;
 
       argvec[count].reg = FUNCTION_ARG (args_so_far, mode, NULL_TREE, 1);
-      if (argvec[count].reg && GET_CODE (argvec[count].reg) == PARALLEL)
-	abort ();
+
 #ifdef FUNCTION_ARG_PARTIAL_NREGS
       argvec[count].partial
 	= FUNCTION_ARG_PARTIAL_NREGS (args_so_far, mode, NULL_TREE, 1);
@@ -3662,8 +3671,15 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
       rtx reg = argvec[argnum].reg;
       int partial = argvec[argnum].partial;
 
-      if (reg != 0 && partial == 0)
+      /* Handle calls that pass values in multiple non-contiguous
+	 locations.  The PA64 has examples of this for library calls.  */
+      if (GET_CODE (reg) == PARALLEL)
+	emit_group_load (reg, val,
+			 GET_MODE_SIZE (GET_MODE (val)),
+			 GET_MODE_ALIGNMENT (GET_MODE (val)));
+      else if (reg != 0 && partial == 0)
 	emit_move_insn (reg, val);
+
       NO_DEFER_POP;
     }
 
@@ -3675,8 +3691,12 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
 
   /* Any regs containing parms remain in use through the call.  */
   for (count = 0; count < nargs; count++)
-    if (argvec[count].reg != 0)
-       use_reg (&call_fusage, argvec[count].reg);
+    {
+      if (GET_CODE (argvec[count].reg) == PARALLEL)
+	use_group_regs (&call_fusage, argvec[count].reg);
+      else if (argvec[count].reg != 0)
+	use_reg (&call_fusage, argvec[count].reg);
+    }
 
   /* Pass the function the address in which to return a structure value.  */
   if (mem_value != 0 && struct_value_rtx != 0 && ! pcc_struct_value)

@@ -5,6 +5,11 @@ Tue Feb 29 14:07:04 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 Tue Feb 29 10:45:59 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* calls.c (emit_library_call): Do not abort if FUNCTION_ARG
+	returns a PARALLEL.  Use emit_group_load and use_group_regs
+	as needed.  
+	(emit_library_call_value): Similarly.
+
 	* pa/t-pa: Use quadlib.c instead of quadlib.asm.
 	* pa/quadlib.asm: Remove.
 	* pa/quadlib.c: New file.
