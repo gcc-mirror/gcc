@@ -3202,6 +3202,9 @@ duplicate_decls (newdecl, olddecl)
 	  else
 	    /* Discard the old built-in function.  */
 	    return 0;
+
+	  /* Replace the old RTL to avoid problems with inlining.  */
+	  SET_DECL_RTL (olddecl, DECL_RTL (newdecl));
 	}
 
       if (DECL_THIS_STATIC (newdecl) && !DECL_THIS_STATIC (olddecl))
@@ -3623,7 +3626,6 @@ duplicate_decls (newdecl, olddecl)
       TREE_READONLY (olddecl) = TREE_READONLY (newdecl);
       TREE_THIS_VOLATILE (olddecl) = TREE_THIS_VOLATILE (newdecl);
       TREE_SIDE_EFFECTS (olddecl) = TREE_SIDE_EFFECTS (newdecl);
-      COPY_DECL_RTL (newdecl, olddecl);
     }
 
   /* Merge the storage class information.  */
