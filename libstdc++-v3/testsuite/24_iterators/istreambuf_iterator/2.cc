@@ -24,32 +24,6 @@
 #include <iterator>
 #include <testsuite_hooks.h>
 
-void test01()
-{
-  using namespace std;
-
-  // Check for required base class.
-  typedef istreambuf_iterator<char> test_iterator;
-  typedef char_traits<char>::off_type off_type;
-  typedef iterator<input_iterator_tag, char, off_type, char*, char&> base_iterator;
-
-  istringstream isstream("this tag");
-  test_iterator  r_it(isstream);
-  base_iterator* base __attribute__((unused)) = &r_it;
-
-  // Check for required typedefs
-  typedef test_iterator::value_type value_type;
-  typedef test_iterator::difference_type difference_type;
-  typedef test_iterator::pointer pointer;
-  typedef test_iterator::reference reference;
-  typedef test_iterator::iterator_category iteratory_category;
-
-  typedef test_iterator::char_type char_type;
-  typedef test_iterator::traits_type traits_type;
-  typedef test_iterator::istream_type istream_type;
-  typedef test_iterator::streambuf_type streambuf_type;
-}
-
 bool test02(void)
 {
 
@@ -136,46 +110,8 @@ bool test02(void)
   return test;
 }
 
-// libstdc++/2627
-void test03()
-{
-  bool test __attribute__((unused)) = true;
-  const std::string s("free the vieques");
-
-  // 1
-  std::string res_postfix;
-  std::istringstream iss01(s);
-  std::istreambuf_iterator<char> isbufit01(iss01);
-  for (std::size_t j = 0; j < s.size(); ++j, isbufit01++)
-    res_postfix += *isbufit01;
-
-  // 2
-  std::string res_prefix;
-  std::istringstream iss02(s);
-  std::istreambuf_iterator<char> isbufit02(iss02);
-  for (std::size_t j = 0; j < s.size(); ++j, ++isbufit02)
-    res_prefix += *isbufit02;
-
-  // 3 mixed
-  std::string res_mixed;
-  std::istringstream iss03(s);
-  std::istreambuf_iterator<char> isbufit03(iss03);
-  for (std::size_t j = 0; j < (s.size() / 2); ++j)
-    {
-      res_mixed += *isbufit03;
-      ++isbufit03;
-      res_mixed += *isbufit03;
-      isbufit03++;
-    }
-
-  VERIFY ( res_postfix == res_prefix );
-  VERIFY ( res_mixed == res_prefix );
-}
-
 int main()
 {
-  test01();
   test02();
-  test03();
   return 0;
 }

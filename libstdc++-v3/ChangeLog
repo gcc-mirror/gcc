@@ -1,3 +1,20 @@
+2003-11-24  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* include/bits/streambuf_iterator.h (ostreambuf_iterator): Remove
+	non-standard throw specs.
+	* testsuite/24_iterators/istreambuf_iterator.cc: Split into...
+	* testsuite/24_iterators/istreambuf_iterator/1.cc
+	* testsuite/24_iterators/istreambuf_iterator/2.cc
+	* testsuite/24_iterators/istreambuf_iterator/2627.cc
+	* testsuite/24_iterators/ostreambuf_iterator.cc: Split into...
+	* testsuite/24_iterators/ostreambuf_iterator/1.cc
+	* testsuite/24_iterators/ostreambuf_iterator/2.cc
+
+	* testsuite/24_iterators/reverse_iterator/1.cc: Just compile,
+	don't link.
+	
+	* include/bits/allocator.h: Formatting tweak.
+	
 2003-11-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* src/locale_init.cc: Cosmetic reformatting.
