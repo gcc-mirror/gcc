@@ -1,3 +1,8 @@
+1999-06-04  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* semantics.c (finish_if_stmt_cond): Copy cond to permanent_obstack.
+	(finish_while_stmt_cond, finish_do_stmt, finish_for_cond): Likewise.
+
 1999-05-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* lex.c (make_lang_type): Create TYPE_BINFO for
