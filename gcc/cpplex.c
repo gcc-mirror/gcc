@@ -2972,7 +2972,6 @@ push_macro_context (pfile, token)
       args->tokens = 0;
       args->capacity = 0;
       args->used = 0;
-      args->level = pfile->cur_context;
 
       prev_nme = prevent_macro_expansion (pfile);
       pfile->args = args;
@@ -2984,6 +2983,8 @@ push_macro_context (pfile, token)
 	  free_macro_args (args);
 	  return 1;
 	}
+      /* Set the level after the call to parse_args.  */
+      args->level = pfile->cur_context;
     }
 
   /* Now push its context.  */
