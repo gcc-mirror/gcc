@@ -1295,9 +1295,10 @@ build_x_arrow (datum)
       type = TREE_TYPE (rval);
     }
 
-  if (IS_AGGR_TYPE (type) && TYPE_OVERLOADS_ARROW (complete_type (type)))
+  if (IS_AGGR_TYPE (type))
     {
-      while ((rval = build_opfncall (COMPONENT_REF, LOOKUP_NORMAL, rval, NULL_TREE, NULL_TREE)))
+      while ((rval = build_opfncall (COMPONENT_REF, LOOKUP_NORMAL, rval,
+				     NULL_TREE, NULL_TREE)))
 	{
 	  if (rval == error_mark_node)
 	    return error_mark_node;

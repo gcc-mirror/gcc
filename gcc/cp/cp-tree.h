@@ -2084,7 +2084,6 @@ extern tree convert				PROTO((tree, tree));
 extern tree convert_force			PROTO((tree, tree, int));
 extern tree build_type_conversion		PROTO((enum tree_code, tree, tree, int));
 extern tree build_expr_type_conversion		PROTO((int, tree, int));
-extern int build_default_binary_type_conversion	PROTO((enum tree_code, tree *, tree *));
 extern tree type_promotes_to			PROTO((tree));
 extern tree perform_qualification_conversions   PROTO((tree, tree));
 
