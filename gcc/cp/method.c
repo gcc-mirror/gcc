@@ -1,6 +1,6 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
-   Copyright (C) 1987, 89, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92-97, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1201,7 +1201,8 @@ build_mangled_name (parmtypes, begin, end)
   return (char *)obstack_base (&scratch_obstack);
 }
 
-/* handles emitting modifiers such as Constant, read-only, and volatile */
+/* Emit modifiers such as constant, read-only, and volatile.  */
+
 void 
 process_modifiers (parmtype) 
      tree parmtype;
@@ -1212,6 +1213,8 @@ process_modifiers (parmtype)
   if (TYPE_READONLY (parmtype))
     OB_PUTC ('C');
   if (TREE_CODE (parmtype) == INTEGER_TYPE
+      && parmtype != char_type_node
+      && parmtype != wchar_type_node
       && (TYPE_MAIN_VARIANT (parmtype)
 	  == unsigned_type (TYPE_MAIN_VARIANT (parmtype)))
       && ! TYPE_FOR_JAVA (parmtype))
@@ -1267,7 +1270,8 @@ check_btype (type)
   return 0;
 }
 
-/* handle emitting the correct code for various node types */
+/* Emit the correct code for various node types.  */
+
 static void 
 process_overload_item (parmtype, extra_Gcode) 
   tree parmtype;
@@ -1275,9 +1279,9 @@ process_overload_item (parmtype, extra_Gcode)
 {
   numeric_output_need_bar = 0;
 
-  /* These tree types are considered modifiers for B code squangling , */
-  /* and therefore should not get entries in the Btypelist             */
-  /* they are, however, repeatable types                               */
+  /* These tree types are considered modifiers for B code squangling,
+     and therefore should not get entries in the Btypelist.  They are,
+     however, repeatable types.  */
 
   switch (TREE_CODE (parmtype))
     {

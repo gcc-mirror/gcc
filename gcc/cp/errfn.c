@@ -1,5 +1,5 @@
 /* Provide a call-back mechanism for handling error output.
-   Copyright (C) 1993, 94-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1993, 94-98, 1999 Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com)
 
    This file is part of GNU CC.
@@ -47,17 +47,12 @@ extern int   cp_line_of PROTO((tree));
 /* This function supports only `%s', `%d', `%%', and the C++ print
    codes.  */
 
-#ifdef __STDC__
-static void
-cp_thing (errorfn *errfn, int atarg1, const char *format, va_list ap)
-#else
 static void
 cp_thing (errfn, atarg1, format, ap)
      errorfn *errfn;
      int atarg1;
      const char *format;
      va_list ap;
-#endif
 {
   static char *buf;
   static long buflen;
@@ -194,81 +189,154 @@ cp_thing (errfn, atarg1, format, ap)
 
 }
 
-#ifdef __STDC__
-#define DECLARE(name) void name (const char *format, ...)
-#define INIT va_start (ap, format)
-#else
-#define DECLARE(name) void name (format, va_alist) char *format; va_dcl
-#define INIT va_start (ap)
+void
+cp_error VPROTO((const char *format, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  char *format;
+#endif
+  va_list ap;
+
+  VA_START (ap, format);
+
+#ifndef ANSI_PROTOTYPES
+  format = va_arg (ap, char *);
 #endif
 
-DECLARE (cp_error)
-{
-  va_list ap;
-  INIT;
   if (! cp_silent)
     cp_thing ((errorfn *) error, 0, format, ap);
   va_end (ap);
 }
 
-DECLARE (cp_warning)
+void
+cp_warning VPROTO((const char *format, ...))
 {
+#ifndef ANSI_PROTOTYPES
+  char *format;
+#endif
   va_list ap;
-  INIT;
+
+  VA_START (ap, format);
+
+#ifndef ANSI_PROTOTYPES
+  format = va_arg (ap, char *);
+#endif
+
   if (! cp_silent)
     cp_thing ((errorfn *) warning, 0, format, ap);
   va_end (ap);
 }
 
-DECLARE (cp_pedwarn)
+void
+cp_pedwarn VPROTO((const char *format, ...))
 {
+#ifndef ANSI_PROTOTYPES
+  char *format;
+#endif
   va_list ap;
-  INIT;
+
+  VA_START (ap, format);
+
+#ifndef ANSI_PROTOTYPES
+  format = va_arg (ap, char *);
+#endif
+
   if (! cp_silent)
     cp_thing ((errorfn *) pedwarn, 0, format, ap);
   va_end (ap);
 }
 
-DECLARE (cp_compiler_error)
+extern errorfn compiler_error;
+
+void
+cp_compiler_error VPROTO((const char *format, ...))
 {
-  extern errorfn compiler_error;
+#ifndef ANSI_PROTOTYPES
+  char *format;
+#endif
   va_list ap;
-  INIT;
+
+  VA_START (ap, format);
+
+#ifndef ANSI_PROTOTYPES
+  format = va_arg (ap, char *);
+#endif
+
   if (! cp_silent)
     cp_thing (compiler_error, 0, format, ap);
   va_end (ap);
 }
 
-DECLARE (cp_sprintf)
+void
+cp_sprintf VPROTO((const char *format, ...))
 {
+#ifndef ANSI_PROTOTYPES
+  char *format;
+#endif
   va_list ap;
-  INIT;
+
+  VA_START (ap, format);
+
+#ifndef ANSI_PROTOTYPES
+  format = va_arg (ap, char *);
+#endif
+
   cp_thing ((errorfn *) sprintf, 0, format, ap);
   va_end (ap);
 }
 
-DECLARE (cp_error_at)
+void
+cp_error_at VPROTO((const char *format, ...))
 {
+#ifndef ANSI_PROTOTYPES
+  char *format;
+#endif
   va_list ap;
-  INIT;
+
+  VA_START (ap, format);
+
+#ifndef ANSI_PROTOTYPES
+  format = va_arg (ap, char *);
+#endif
+
   if (! cp_silent)
     cp_thing ((errorfn *) error_with_file_and_line, 1, format, ap);
   va_end (ap);
 }
 
-DECLARE (cp_warning_at)
+void
+cp_warning_at VPROTO((const char *format, ...))
 {
+#ifndef ANSI_PROTOTYPES
+  char *format;
+#endif
   va_list ap;
-  INIT;
+
+  VA_START (ap, format);
+
+#ifndef ANSI_PROTOTYPES
+  format = va_arg (ap, char *);
+#endif
+
   if (! cp_silent)
     cp_thing ((errorfn *) warning_with_file_and_line, 1, format, ap);
   va_end (ap);
 }
 
-DECLARE (cp_pedwarn_at)
+void
+cp_pedwarn_at VPROTO((const char *format, ...))
 {
+#ifndef ANSI_PROTOTYPES
+  char *format;
+#endif
   va_list ap;
-  INIT;
+
+  VA_START (ap, format);
+
+#ifndef ANSI_PROTOTYPES
+  format = va_arg (ap, char *);
+#endif
+
   if (! cp_silent)
     cp_thing ((errorfn *) pedwarn_with_file_and_line, 1, format, ap);
   va_end (ap);
