@@ -22,7 +22,8 @@
 # Boston, MA 02111-1307, USA.
 
 website=http://gcc.gnu.org/
-files="gcc-3.2/index.html gcc-3.2/changes.html
+files="gcc-3.3/index.html gcc-3.3/changes.html
+    gcc-3.2/index.html gcc-3.2/changes.html
     gcc-3.1/index.html gcc-3.1/changes.html
     gcc-3.0/gcc-3.0.html gcc-3.0/features.html gcc-3.0/caveats.html
     gcc-2.95/index.html gcc-2.95/features.html gcc-2.95/caveats.html
