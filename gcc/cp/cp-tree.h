@@ -1524,6 +1524,37 @@ extern int flag_new_for_scope;
 #define builtin_function(NAME, TYPE, CODE, LIBNAME) \
   define_function (NAME, TYPE, CODE, (void (*) PROTO((tree)))pushdecl, LIBNAME)
 
+/* These macros provide convenient access to the various _STMT nodes
+   created when parsing template declarations.  */
+#define IF_COND(NODE)           TREE_OPERAND (NODE, 0)
+#define THEN_CLAUSE(NODE)       TREE_OPERAND (NODE, 1)
+#define ELSE_CLAUSE(NODE)       TREE_OPERAND (NODE, 2)
+#define WHILE_COND(NODE)        TREE_OPERAND (NODE, 0)
+#define WHILE_BODY(NODE)        TREE_OPERAND (NODE, 1)
+#define DO_COND(NODE)           TREE_OPERAND (NODE, 0)
+#define DO_BODY(NODE)           TREE_OPERAND (NODE, 1)
+#define RETURN_EXPR(NODE)       TREE_OPERAND (NODE, 0)
+#define EXPR_STMT_EXPR(NODE)    TREE_OPERAND (NODE, 0)
+#define FOR_INIT_STMT(NODE)     TREE_OPERAND (NODE, 0)
+#define FOR_COND(NODE)          TREE_OPERAND (NODE, 1)
+#define FOR_EXPR(NODE)          TREE_OPERAND (NODE, 2)
+#define FOR_BODY(NODE)          TREE_OPERAND (NODE, 3)
+#define SWITCH_COND(NODE)       TREE_OPERAND (NODE, 0)
+#define SWITCH_BODY(NODE)       TREE_OPERAND (NODE, 1)
+#define CASE_LOW(NODE)          TREE_OPERAND (NODE, 0)
+#define CASE_HIGH(NODE)         TREE_OPERAND (NODE, 1)
+#define GOTO_DESTINATION(NODE)  TREE_OPERAND (NODE, 0)
+#define TRY_STMTS(NODE)         TREE_OPERAND (NODE, 0)
+#define TRY_HANDLERS(NODE)      TREE_OPERAND (NODE, 1)
+#define HANDLER_PARMS(NODE)     TREE_OPERAND (NODE, 0)
+#define HANDLER_BODY(NODE)      TREE_OPERAND (NODE, 1)
+#define COMPOUND_BODY(NODE)     TREE_OPERAND (NODE, 0)
+#define ASM_CV_QUAL(NODE)       TREE_OPERAND (NODE, 0)
+#define ASM_STRING(NODE)        TREE_OPERAND (NODE, 1)
+#define ASM_OUTPUTS(NODE)       TREE_OPERAND (NODE, 2)
+#define ASM_INPUTS(NODE)        TREE_OPERAND (NODE, 3)
+#define ASM_CLOBBERS(NODE)      TREE_OPERAND (NODE, 4)
+
 /* An enumeration of the kind of tags that C++ accepts.  */
 enum tag_types { record_type, class_type, union_type, enum_type,
 		   signature_type };
@@ -2511,6 +2542,42 @@ extern tree current_scope			PROTO((void));
 extern tree lookup_conversions			PROTO((tree));
 extern tree get_template_base			PROTO((tree, tree));
 
+/* in semantics.c */
+extern void finish_expr_stmt                    PROTO((tree));
+extern tree begin_if_stmt                       PROTO((void));
+extern void finish_if_stmt_cond                 PROTO((tree, tree));
+extern tree finish_then_clause                  PROTO((tree));
+extern void begin_else_clause                   PROTO((void));
+extern void finish_else_clause                  PROTO((tree));
+extern void finish_if_stmt                      PROTO((void));
+extern tree begin_while_stmt                    PROTO((void));
+extern void finish_while_stmt_cond              PROTO((tree, tree));
+extern void finish_while_stmt                   PROTO((tree));
+extern tree begin_do_stmt                       PROTO((void));
+extern void finish_do_body                      PROTO((tree));
+extern void finish_do_stmt                      PROTO((tree, tree));
+extern void finish_return_stmt                  PROTO((tree));
+extern tree begin_for_stmt                      PROTO((void));
+extern void finish_for_init_stmt                PROTO((tree));
+extern void finish_for_cond                     PROTO((tree, tree));
+extern void finish_for_expression               PROTO((tree, tree));
+extern void finish_for_stmt                     PROTO((tree, tree));
+extern void finish_break_stmt                   PROTO((void));
+extern void finish_continue_stmt                PROTO((void));
+extern void begin_switch_stmt                   PROTO((void));
+extern tree finish_switch_cond                  PROTO((tree));
+extern void finish_switch_stmt                  PROTO((tree, tree));
+extern void finish_case_label                   PROTO((tree, tree));
+extern void finish_goto_stmt                    PROTO((tree));
+extern tree begin_try_block                     PROTO((void));
+extern void finish_try_block                    PROTO((tree));
+extern void finish_handler_sequence             PROTO((tree));
+extern tree begin_handler                       PROTO((void));
+extern void finish_handler_parms                PROTO((tree));
+extern void finish_handler                      PROTO((tree));
+extern tree begin_compound_stmt                 PROTO((int));
+extern tree finish_compound_stmt                PROTO((int, tree));
+extern void finish_asm_stmt                     PROTO((tree, tree, tree, tree, tree));
 /* in sig.c */
 extern tree build_signature_pointer_type	PROTO((tree, int, int));
 extern tree build_signature_reference_type	PROTO((tree, int, int));

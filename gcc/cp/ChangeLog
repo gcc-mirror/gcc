@@ -1,3 +1,15 @@
+Wed Mar 18 10:09:51 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* semantics.c: New file, containing routines to perform the
+	semantic phase of parsing.
+	* parse.y: Use it.
+	* pt.c (tsubst_expr): Likewise.
+	* cp-tree.h: Declare the various functions in semantics.c.
+	Provide macros to access _STMT tree nodes.
+	* cp-tree.def: Add ASM_STMT tree node.
+	* Makefile.in, Make-lang.in: Add dependencies on and for
+	semantics.c.
+	
 Wed Mar 18 00:24:10 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (push_template_decl): Only check primary templates.
