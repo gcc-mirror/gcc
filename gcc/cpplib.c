@@ -1410,7 +1410,7 @@ do_define (pfile, keyword)
       else if (hp->type == T_MACRO)
 	ok = ! compare_defs (pfile, mdef.defn, hp->value.defn);
       /* Redefining a constant is ok with -D.  */
-      else if (hp->type == T_CONST)
+      else if (hp->type == T_CONST || hp->type == T_STDC)
         ok = ! CPP_OPTIONS (pfile)->done_initializing;
       /* Print the warning if it's not ok.  */
       if (!ok)
