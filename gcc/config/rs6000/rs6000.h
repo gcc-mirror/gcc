@@ -1429,6 +1429,8 @@ enum reg_class
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
  (((CLASS) == FLOAT_REGS) 						\
   ? ((GET_MODE_SIZE (MODE) + UNITS_PER_FP_WORD - 1) / UNITS_PER_FP_WORD) \
+  : (TARGET_E500_DOUBLE && (CLASS) == GENERAL_REGS && (MODE) == DFmode) \
+  ? 1                                                                   \
   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 
@@ -1441,6 +1443,8 @@ enum reg_class
    : GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)				  \
    ? reg_classes_intersect_p (FLOAT_REGS, CLASS)			  \
    : (TARGET_E500_DOUBLE && (((TO) == DFmode) + ((FROM) == DFmode)) == 1) \
+   ? reg_classes_intersect_p (GENERAL_REGS, CLASS)			  \
+   : (TARGET_E500_DOUBLE && (((TO) == DImode) + ((FROM) == DImode)) == 1) \
    ? reg_classes_intersect_p (GENERAL_REGS, CLASS)			  \
    : (TARGET_SPE && (SPE_VECTOR_MODE (FROM) + SPE_VECTOR_MODE (TO)) == 1) \
    ? reg_classes_intersect_p (GENERAL_REGS, CLASS)			  \
@@ -2588,6 +2592,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   {"current_file_function_operand", {SYMBOL_REF}},			   \
   {"input_operand", {SUBREG, MEM, REG, CONST_INT,			   \
 		     CONST_DOUBLE, SYMBOL_REF}},			   \
+  {"rs6k_nonimmediate_operand", {SUBREG, MEM, REG}},		   	   \
   {"load_multiple_operation", {PARALLEL}},				   \
   {"store_multiple_operation", {PARALLEL}},				   \
   {"lmw_operation", {PARALLEL}},					   \

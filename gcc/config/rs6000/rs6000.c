@@ -710,6 +710,7 @@ static rtx spe_expand_builtin (tree, rtx, bool *);
 static rtx spe_expand_stv_builtin (enum insn_code, tree);
 static rtx spe_expand_predicate_builtin (enum insn_code, tree, rtx);
 static rtx spe_expand_evsel_builtin (enum insn_code, tree, rtx);
+static bool invalid_e500_subreg (rtx, enum machine_mode);
 static int rs6000_emit_int_cmove (rtx, rtx, rtx, rtx);
 static rs6000_stack_t *rs6000_stack_info (void);
 static void debug_stack_info (rs6000_stack_t *);
@@ -3035,6 +3036,39 @@ input_operand (rtx op, enum machine_mode mode)
   return 0;
 }
 
+/* Return TRUE if OP is an invalid SUBREG operation on the e500.  */
+static bool
+invalid_e500_subreg (rtx op, enum machine_mode mode)
+{
+  /* Reject (subreg:SI (reg:DF)).  */
+  if (GET_CODE (op) == SUBREG
+      && mode == SImode
+      && REG_P (SUBREG_REG (op))
+      && GET_MODE (SUBREG_REG (op)) == DFmode)
+    return true;
+
+  /* Reject (subreg:DF (reg:DI)).  */
+  if (GET_CODE (op) == SUBREG
+      && mode == DFmode
+      && REG_P (SUBREG_REG (op))
+      && GET_MODE (SUBREG_REG (op)) == DImode)
+    return true;
+
+  return false;
+}
+
+/* Just like nonimmediate_operand, but return 0 for invalid SUBREG's
+   on the e500.  */
+int
+rs6k_nonimmediate_operand (rtx op, enum machine_mode mode)
+{
+  if (TARGET_E500_DOUBLE
+      && GET_CODE (op) == SUBREG
+      && invalid_e500_subreg (op, mode))
+    return 0;
+
+  return nonimmediate_operand (op, mode);
+}
 
 /* Darwin, AIX increases natural record alignment to doubleword if the first
    field is an FP double while the FP fields remain word aligned.  */
@@ -3248,6 +3282,14 @@ rs6000_legitimate_offset_address_p (enum machine_mode mode, rtx x, int strict)
 	return SPE_CONST_OFFSET_OK (offset);
 
     case DImode:
+      /* On e500v2, we may have:
+
+	   (subreg:DF (mem:DI (plus (reg) (const_int))) 0).
+
+         Which gets addressed with evldd instructions.  */
+      if (TARGET_E500_DOUBLE)
+	return SPE_CONST_OFFSET_OK (offset);
+
       if (mode == DFmode || !TARGET_POWERPC64)
 	extra = 4;
       else if (offset & 3)
@@ -3326,7 +3368,8 @@ legitimate_lo_sum_address_p (enum machine_mode mode, rtx x, int strict)
     return false;
   if (!INT_REG_OK_FOR_BASE_P (XEXP (x, 0), strict))
     return false;
-  if (TARGET_E500_DOUBLE && mode == DFmode)
+  /* Restrict addressing for DI because of our SUBREG hackery.  */
+  if (TARGET_E500_DOUBLE && (mode == DFmode || mode == DImode))
     return false;
   x = XEXP (x, 1);
 
@@ -3403,7 +3446,8 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	   && GET_MODE_NUNITS (mode) == 1
 	   && ((TARGET_HARD_FLOAT && TARGET_FPRS)
 	       || TARGET_POWERPC64
-	       || ((mode != DFmode || TARGET_E500_DOUBLE) && mode != TFmode))
+	       || (((mode != DImode && mode != DFmode) || TARGET_E500_DOUBLE)
+		   && mode != TFmode))
 	   && (TARGET_POWERPC64 || mode != DImode)
 	   && mode != TImode)
     {
@@ -3423,8 +3467,11 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       return reg;
     }
   else if (SPE_VECTOR_MODE (mode)
-	   || (TARGET_E500_DOUBLE && mode == DFmode))
+	   || (TARGET_E500_DOUBLE && (mode == DFmode
+				      || mode == DImode)))
     {
+      if (mode == DImode)
+	return NULL_RTX;
       /* We accept [reg + reg] and [reg + OFFSET].  */
 
       if (GET_CODE (x) == PLUS)
@@ -3834,7 +3881,8 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
       && REG_MODE_OK_FOR_BASE_P (XEXP (x, 0), mode)
       && GET_CODE (XEXP (x, 1)) == CONST_INT
       && !SPE_VECTOR_MODE (mode)
-      && !(TARGET_E500_DOUBLE && mode == DFmode)
+      && !(TARGET_E500_DOUBLE && (mode == DFmode
+				  || mode == DImode))
       && !ALTIVEC_VECTOR_MODE (mode))
     {
       HOST_WIDE_INT val = INTVAL (XEXP (x, 1));
@@ -3942,7 +3990,8 @@ rs6000_legitimate_address (enum machine_mode mode, rtx x, int reg_ok_strict)
   if ((GET_CODE (x) == PRE_INC || GET_CODE (x) == PRE_DEC)
       && !ALTIVEC_VECTOR_MODE (mode)
       && !SPE_VECTOR_MODE (mode)
-      && !(TARGET_E500_DOUBLE && mode == DFmode)
+      /* Restrict addressing for DI because of our SUBREG hackery.  */
+      && !(TARGET_E500_DOUBLE && (mode == DFmode || mode == DImode))
       && TARGET_UPDATE
       && legitimate_indirect_address_p (XEXP (x, 0), reg_ok_strict))
     return 1;
@@ -5084,31 +5133,23 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 static rtx
 spe_build_register_parallel (enum machine_mode mode, int gregno)
 {
-  rtx r1, r2, r3, r4;
-  enum machine_mode inner = SImode;
+  rtx r1, r3;
 
   if (mode == DFmode)
     {
-      r1 = gen_rtx_REG (inner, gregno);
-      r1 = gen_rtx_EXPR_LIST (SImode, r1, const0_rtx);
-      r2 = gen_rtx_REG (inner, gregno + 1);
-      r2 = gen_rtx_EXPR_LIST (SImode, r2, GEN_INT (4));
-      return gen_rtx_PARALLEL (mode, gen_rtvec (2, r1, r2));
+      r1 = gen_rtx_REG (DImode, gregno);
+      r1 = gen_rtx_EXPR_LIST (VOIDmode, r1, const0_rtx);
+      return gen_rtx_PARALLEL (mode, gen_rtvec (1, r1));
     }
   else if (mode == DCmode)
     {
-      r1 = gen_rtx_REG (inner, gregno);
-      r1 = gen_rtx_EXPR_LIST (SImode, r1, const0_rtx);
-      r2 = gen_rtx_REG (inner, gregno + 1);
-      r2 = gen_rtx_EXPR_LIST (SImode, r2, GEN_INT (4));
-      r3 = gen_rtx_REG (inner, gregno + 2);
-      r3 = gen_rtx_EXPR_LIST (SImode, r3, GEN_INT (8));
-      r4 = gen_rtx_REG (inner, gregno + 3);
-      r4 = gen_rtx_EXPR_LIST (SImode, r4, GEN_INT (12));
-      return gen_rtx_PARALLEL (mode, gen_rtvec (4, r1, r2, r3, r4));
+      r1 = gen_rtx_REG (DImode, gregno);
+      r1 = gen_rtx_EXPR_LIST (VOIDmode, r1, const0_rtx);
+      r3 = gen_rtx_REG (DImode, gregno + 2);
+      r3 = gen_rtx_EXPR_LIST (VOIDmode, r3, GEN_INT (8));
+      return gen_rtx_PARALLEL (mode, gen_rtvec (2, r1, r3));
     }
-
-  abort ();
+  abort();
   return NULL_RTX;
 }
 

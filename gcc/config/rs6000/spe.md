@@ -2192,8 +2192,45 @@
    (set_attr  "length" "4")])
 
 ;; Double-precision floating point instructions.
+
+;; FIXME: Add o=r option.
+(define_insn "*frob_df_di"
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r")
+        (subreg:DF (match_operand:DI 1 "input_operand" "r,m") 0))]
+  "TARGET_E500_DOUBLE"
+  "@
+   evmergelo %0,%H1,%L1
+   evldd%X1 %0,%y1")
+
+(define_insn "*frob_di_df"
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=&r")
+        (subreg:DI (match_operand:DF 1 "input_operand" "r") 0))]
+  "TARGET_E500_DOUBLE" /*one of these can be an mr */
+  "evmergehi %H0,%1,%1\;evmergelo %L0,%1,%1"
+  [(set_attr "length" "8")])
+
+(define_insn "*frob_di_df_2"
+  [(set (subreg:DF (match_operand:DI 0 "register_operand" "=&r") 0)
+	(match_operand:DF 1 "register_operand" "r"))]
+  "TARGET_E500_DOUBLE"
+  "evmergehi %H0,%1,%1\;evmergelo %L0,%1,%1"
+  [(set_attr "length" "8")])
+
+(define_insn "*mov_sidf_e500_subreg0"
+  [(set (subreg:SI (match_operand:DF 0 "register_operand" "+r") 0)
+	(match_operand:SI 1 "register_operand" "r"))]
+  "TARGET_E500_DOUBLE"
+  "evmergelo %0,%1,%0")
+
+(define_insn "*mov_sidf_e500_subreg4"
+  [(set (subreg:SI (match_operand:DF 0 "register_operand" "+r") 4)
+	(match_operand:SI 1 "register_operand" "r"))]
+  "TARGET_E500_DOUBLE"
+  "mr %0,%1")
+
+;; FIXME: Allow r=CONST0.
 (define_insn "*movdf_e500_double"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m")
+  [(set (match_operand:DF 0 "rs6k_nonimmediate_operand" "=r,r,m")
 	(match_operand:DF 1 "input_operand" "r,m,r"))]
   "TARGET_HARD_FLOAT && TARGET_E500_DOUBLE
     && (gpc_reg_operand (operands[0], DFmode)
