@@ -542,15 +542,13 @@ dbxout_init (const char *input_file_name)
   dbxout_typedefs (syms);
 }
 
-/* Output any typedef names for types described by TYPE_DECLs in SYMS,
-   in the reverse order from that which is found in SYMS.  */
+/* Output any typedef names for types described by TYPE_DECLs in SYMS. */
 
 static void
 dbxout_typedefs (tree syms)
 {
-  if (syms)
+  for (; syms != NULL_TREE; syms = TREE_CHAIN (syms))
     {
-      dbxout_typedefs (TREE_CHAIN (syms));
       if (TREE_CODE (syms) == TYPE_DECL)
 	{
 	  tree type = TREE_TYPE (syms);
