@@ -270,12 +270,6 @@ int flag_pcc_struct_return = DEFAULT_PCC_STRUCT_RETURN;
 
 int flag_complex_divide_method = 0;
 
-/* Nonzero means performs web construction pass.  When flag_web ==
-   AUTODETECT_FLAG_VAR_TRACKING it will be set according to optimize
-   and default_debug_hooks in process_options ().  */
-
-int flag_web = AUTODETECT_FLAG_VAR_TRACKING;
-
 /* Nonzero means that we don't want inlining by virtue of -fno-inline,
    not just because the tree inliner turned us off.  */
 
@@ -1827,7 +1821,7 @@ process_options (void)
 	   debug_type_names[write_symbols]);
 
   /* Now we know which debug output will be used so we can set
-     flag_var_tracking, flag_rename_registers and flag_web if the user has
+     flag_var_tracking, flag_rename_registers if the user has
      not specified them.  */
   if (debug_info_level < DINFO_LEVEL_NORMAL
       || debug_hooks->var_location == do_nothing_debug_hooks.var_location)
@@ -1847,10 +1841,6 @@ process_options (void)
   if (flag_rename_registers == AUTODETECT_FLAG_VAR_TRACKING)
     flag_rename_registers = default_debug_hooks->var_location
 	    		    != do_nothing_debug_hooks.var_location;
-
-  if (flag_web == AUTODETECT_FLAG_VAR_TRACKING)
-    flag_web = optimize >= 2 && (default_debug_hooks->var_location
-	    		         != do_nothing_debug_hooks.var_location);
 
   if (flag_var_tracking == AUTODETECT_FLAG_VAR_TRACKING)
     flag_var_tracking = optimize >= 1;

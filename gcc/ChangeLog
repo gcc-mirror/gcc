@@ -1,5 +1,14 @@
 2004-09-28  Steven Bosscher  <stevenb@suse.de>
 
+	* common.opt (flag_gcse_sm): Disable by default.
+	(flag_gcse_las): Likewise.
+	(flag_web): Likewise.  Create from this file.
+	* flags.h: Remove flag_web declaration.
+	* toplev.c (flag_web): Likewise.
+	(process_options): Never set flag_web.
+
+2004-09-28  Steven Bosscher  <stevenb@suse.de>
+
 	* Makefile.in (tree-ssa-propagate.o): Depend on vec.h.
 	* tree-ssa-propagate.c: Include vec.h.
 	(interesting_ssa_edges, varying_ssa_edges): Make these VECs
