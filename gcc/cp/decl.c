@@ -2810,28 +2810,8 @@ decls_match (newdecl, olddecl)
 		&& DECL_LANGUAGE (olddecl) == lang_c))
 	return 0;
 
-      /* When we parse a static member function definition,
-	 we put together a FUNCTION_DECL which thinks its type
-	 is METHOD_TYPE.  Change that to FUNCTION_TYPE, and
-	 proceed.  */
-      if (TREE_CODE (f1) == METHOD_TYPE && DECL_STATIC_FUNCTION_P (olddecl))
-	revert_static_member_fn (&newdecl, &f1, &p1);
-      else if (TREE_CODE (f2) == METHOD_TYPE
-	       && DECL_STATIC_FUNCTION_P (newdecl))
-	revert_static_member_fn (&olddecl, &f2, &p2);
-
-      /* Here we must take care of the case where new default
-	 parameters are specified.  Also, warn if an old
-	 declaration becomes ambiguous because default
-	 parameters may cause the two to be ambiguous.  */
       if (TREE_CODE (f1) != TREE_CODE (f2))
-	{
-	  if (TREE_CODE (f1) == OFFSET_TYPE)
-	    cp_compiler_error ("`%D' redeclared as member function", newdecl);
-	  else
-	    cp_compiler_error ("`%D' redeclared as non-member function", newdecl);
-	  return 0;
-	}
+        return 0;
 
       if (same_type_p (TREE_TYPE (f1), TREE_TYPE (f2)))
 	{
