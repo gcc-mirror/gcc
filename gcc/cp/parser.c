@@ -1766,6 +1766,8 @@ static bool cp_parser_skip_to_closing_parenthesis_or_comma
   (cp_parser *);
 static void cp_parser_skip_to_end_of_statement
   PARAMS ((cp_parser *));
+static void cp_parser_consume_semicolon_at_end_of_statement
+  (cp_parser *);
 static void cp_parser_skip_to_end_of_block_or_statement
   PARAMS ((cp_parser *));
 static void cp_parser_skip_to_closing_brace
@@ -2104,6 +2106,25 @@ cp_parser_skip_to_end_of_statement (parser)
 	++nesting_depth;
       /* Consume the token.  */
       cp_lexer_consume_token (parser->lexer);
+    }
+}
+
+/* This function is called at the end of a statement or declaration.
+   If the next token is a semicolon, it is consumed; otherwise, error
+   recovery is attempted.  */
+
+static void
+cp_parser_consume_semicolon_at_end_of_statement (cp_parser *parser)
+{
+  /* Look for the trailing `;'.  */
+  if (!cp_parser_require (parser, CPP_SEMICOLON, "`;'"))
+    {
+      /* If there is additional (erroneous) input, skip to the end of
+	 the statement.  */
+      cp_parser_skip_to_end_of_statement (parser);
+      /* If the next token is now a `;', consume it.  */
+      if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+	cp_lexer_consume_token (parser->lexer);
     }
 }
 
@@ -5628,15 +5649,7 @@ cp_parser_expression_statement (parser)
       statement = NULL_TREE;
     }
   /* Consume the final `;'.  */
-  if (!cp_parser_require (parser, CPP_SEMICOLON, "`;'"))
-    {
-      /* If there is additional (erroneous) input, skip to the end of
-	 the statement.  */
-      cp_parser_skip_to_end_of_statement (parser);
-      /* If the next token is now a `;', consume it.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
-	cp_lexer_consume_token (parser->lexer);
-    }
+  cp_parser_consume_semicolon_at_end_of_statement (parser);
 
   return statement;
 }
@@ -8256,8 +8269,7 @@ cp_parser_explicit_instantiation (parser)
   /* Trun access control back on.  */
   scope_chain->check_access = flag_access_control;
 
-  /* Look for the trailing `;'.  */
-  cp_parser_require (parser, CPP_SEMICOLON, "`;'");
+  cp_parser_consume_semicolon_at_end_of_statement (parser);
 }
 
 /* Parse an explicit-specialization.
