@@ -6937,19 +6937,6 @@ expr_last (complex_expr)
   return complex_expr;
 }
 
-/* The selector of the current method,
-   or NULL if we aren't compiling a method.  */
-
-tree
-maybe_objc_method_name (decl)
-      tree decl ATTRIBUTE_UNUSED;
-{
-  if (method_context)
-    return METHOD_SEL_NAME (method_context);
-  else
-    return 0;
-}
-
 /* Transform a method definition into a function definition as follows:
    - synthesize the first two arguments, "self" and "_cmd".  */
 
