@@ -138,6 +138,7 @@ extern int mips_isa;			/* architectural level */
 extern char *mips_cpu_string;		/* for -mcpu=<xxx> */
 extern char *mips_isa_string;		/* for -mips{1,2,3,4} */
 extern char *mips_abi_string;		/* for -misa={32,n32,64} */
+extern int mips_split_addresses;	/* perform high/lo_sum support */
 extern int dslots_load_total;		/* total # load related delay slots */
 extern int dslots_load_filled;		/* # filled load delay slots */
 extern int dslots_jump_total;		/* total # jump related delay slots */
@@ -180,6 +181,7 @@ extern void		mips_declare_object ();
 extern int		mips_epilogue_delay_slots ();
 extern void		mips_expand_epilogue ();
 extern void		mips_expand_prologue ();
+extern int		mips_check_split ();
 extern char	       *mips_fill_delay_slot ();
 extern char	       *mips_move_1word ();
 extern char	       *mips_move_2words ();
@@ -214,6 +216,7 @@ extern int		nonimmediate_operand ();
 extern int		nonmemory_operand ();
 extern int		register_operand ();
 extern int		scratch_operand ();
+extern int		move_operand ();
 
 /* Functions to change what output section we are using.  */
 extern void		data_section ();
@@ -2350,8 +2353,19 @@ typedef struct mips_args {
   if (GET_CODE (xinsn) == REG && REG_OK_FOR_BASE_P (xinsn))		\
     goto ADDR;								\
 									\
-  if (CONSTANT_ADDRESS_P (xinsn))					\
+  if (CONSTANT_ADDRESS_P (xinsn)					\
+      && ! (mips_split_addresses && mips_check_split (xinsn, MODE)))	\
     goto ADDR;								\
+									\
+  if (GET_CODE (xinsn) == LO_SUM && mips_split_addresses)		\
+    {									\
+      register rtx xlow0 = XEXP (xinsn, 0);				\
+      register rtx xlow1 = XEXP (xinsn, 1);				\
+									\
+      if (GET_CODE (xlow0) == REG && REG_OK_FOR_BASE_P (xlow0)		\
+	  && mips_check_split (xlow1, MODE))				\
+	goto ADDR;							\
+    }									\
 									\
   if (GET_CODE (xinsn) == PLUS)						\
     {									\
@@ -2396,6 +2410,7 @@ typedef struct mips_args {
 	  if (!TARGET_DEBUG_A_MODE					\
 	      && mips_abi == ABI_32					\
 	      && CONSTANT_ADDRESS_P (xplus1)				\
+	      && ! mips_split_addresses					\
 	      && (!TARGET_EMBEDDED_PIC					\
 		  || code1 != CONST					\
 		  || GET_CODE (XEXP (xplus1, 0)) != MINUS))		\
@@ -2491,6 +2506,14 @@ typedef struct mips_args {
     {									\
       GO_PRINTF ("\n========== LEGITIMIZE_ADDRESS\n");			\
       GO_DEBUG_RTX (xinsn);						\
+    }									\
+									\
+  if (mips_split_addresses && mips_check_split (X, MODE))		\
+    {									\
+      /* ??? Is this ever executed?  */					\
+      X = gen_rtx (LO_SUM, Pmode,					\
+		   copy_to_mode_reg (Pmode, gen_rtx (HIGH, Pmode, X)), X); \
+      goto WIN;								\
     }									\
 									\
   if (GET_CODE (xinsn) == CONST						\
@@ -3034,7 +3057,10 @@ while (0)
   {"cmp_op",			{ EQ, NE, GT, GE, GTU, GEU, LT, LE,	\
 				  LTU, LEU }},				\
   {"pc_or_label_operand",	{ PC, LABEL_REF }},			\
-  {"call_insn_operand",		{ MEM }},				\
+  {"call_insn_operand",		{ CONST_INT, CONST, SYMBOL_REF, REG}},	\
+  {"move_operand", 		{ CONST_INT, CONST_DOUBLE, CONST,	\
+				  SYMBOL_REF, LABEL_REF, SUBREG,	\
+				  REG, MEM}},				\
 
 
 /* If defined, a C statement to be executed just prior to the
