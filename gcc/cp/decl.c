@@ -11959,8 +11959,11 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
     {
       decl1 = declarator;
 
+#if 0
+      /* What was this testing for, exactly?  */
       if (! DECL_ARGUMENTS (decl1)
 	  && !DECL_STATIC_FUNCTION_P (decl1)
+	  && !DECL_ARTIFICIAL (decl1)
 	  && DECL_CLASS_SCOPE_P (decl1)
 	  && TYPE_IDENTIFIER (DECL_CONTEXT (decl1))
 	  && IDENTIFIER_TEMPLATE (TYPE_IDENTIFIER (DECL_CONTEXT (decl1))))
@@ -11973,6 +11976,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 	  else if (BINDING_VALUE (binding))
 	    cp_error_at ("previous declaration here", BINDING_VALUE (binding));
 	}
+#endif
 
       fntype = TREE_TYPE (decl1);
       if (TREE_CODE (fntype) == METHOD_TYPE)

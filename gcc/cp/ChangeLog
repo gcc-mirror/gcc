@@ -1,3 +1,16 @@
+1998-07-23  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (build_vtable): Pass at_eof to import_export_vtable.
+	(prepare_fresh_vtable): Likewise.
+	* decl2.c (import_export_class): Split out...
+	(finish_prevtable_vardecl): From here.
+	* class.c (finish_struct_1): Call import_export_class if at_eof.
+
+	* decl.c (start_function): #if 0 mysterious code I wrote and have 
+	forgotten why.
+	* rtti.c (get_tinfo_fn): If this is for a class type, set
+	DECL_CONTEXT.
+
 1998-07-22  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* inc/exception: Change terminate and unexpected to ().
