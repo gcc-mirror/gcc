@@ -45,6 +45,7 @@
 #include "cfglayout.h"
 #include "fibheap.h"
 #include "flags.h"
+#include "timevar.h"
 #include "params.h"
 #include "coverage.h"
 
@@ -360,6 +361,9 @@ tracer (void)
 {
   if (n_basic_blocks <= 1)
     return;
+
+  timevar_push (TV_TRACER);
+
   cfg_layout_initialize ();
   mark_dfs_back_edges ();
   if (rtl_dump_file)
@@ -369,6 +373,9 @@ tracer (void)
   if (rtl_dump_file)
     dump_flow_info (rtl_dump_file);
   cfg_layout_finalize ();
+
   /* Merge basic blocks in duplicated traces.  */
   cleanup_cfg (CLEANUP_EXPENSIVE);
+
+  timevar_pop (TV_TRACER);
 }

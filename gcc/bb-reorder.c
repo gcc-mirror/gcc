@@ -72,6 +72,7 @@
 #include "rtl.h"
 #include "basic-block.h"
 #include "flags.h"
+#include "timevar.h"
 #include "output.h"
 #include "cfglayout.h"
 #include "fibheap.h"
@@ -1064,6 +1065,8 @@ reorder_basic_blocks (void)
   if ((* targetm.cannot_modify_jumps_p) ())
     return;
 
+  timevar_push (TV_REORDER_BLOCKS);
+
   cfg_layout_initialize ();
 
   set_edge_can_fallthru_flag ();
@@ -1096,4 +1099,6 @@ reorder_basic_blocks (void)
     dump_flow_info (rtl_dump_file);
 
   cfg_layout_finalize ();
+
+  timevar_pop (TV_REORDER_BLOCKS);
 }
