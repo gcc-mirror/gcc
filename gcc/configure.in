@@ -4099,10 +4099,13 @@ fi
 
 # if $(exec_prefix) is not the same as $(prefix), then do not use a relative
 # directory to get to $gcc_tooldir.
+# Don't set gcc_tooldir to tooldir since that's only passed in by the toplevel
+# make and thus we'd get different behavior depending on where we built the
+# sources.
 if test x$exec_prefix = x$prefix; then
     gcc_tooldir='$(libsubdir)/$(unlibsubdir)/../$(target_alias)'
 else
-    gcc_tooldir='$(tooldir)'
+    gcc_tooldir='$(exec_prefix)'/${target_alias}
 fi
 AC_SUBST(gcc_tooldir)
 
