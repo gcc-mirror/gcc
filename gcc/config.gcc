@@ -978,6 +978,17 @@ i370-*-linux*)
 		thread_file='posix'
 	fi
 	;;
+i[34567]86-*-chorusos*)
+	xm_file="${xm_file} xm-svr4.h i386/xm-sysv4.h"
+	tm_file="i386/i386.h i386/att.h elfos.h i386/i386afe.h i386/i386elf.h i386/chorus.h"
+	tmake_file=i386/t-i386elf
+	xmake_file=x-svr4
+	case x${enable_threads} in
+	  xyes | xpthreads | xposix)
+		thread_file='posix'
+		;;
+	esac
+	;;
 i[34567]86-*-elf*)
 	xm_file="${xm_file} xm-svr4.h i386/xm-sysv4.h"
 	tm_file="i386/i386.h i386/att.h elfos.h i386/i386afe.h i386/i386elf.h"
@@ -2750,6 +2761,16 @@ powerpc-*-sysv*)
 	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
 	xmake_file=rs6000/x-sysv4
 	;;
+powerpc-*-chorusos*)
+	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/chorus.h"
+	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
+	extra_headers=ppc-asm.h
+	case x${enable_threads} in
+	  xyes | xpthreads | xposix)
+		thread_file='posix'
+		;;
+	esac
+	;;
 powerpc-*-eabiaix*)
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/eabi.h rs6000/eabiaix.h"
 	tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
@@ -2989,6 +3010,17 @@ sparc-*-openbsd*)
 	;;
 sparc-*-bsd*)
 	tm_file=sparc/bsd.h
+	;;
+sparc-*-chorusos*)
+	tm_file="sparc/sol2.h sparc/elf.h sparc/chorus.h"
+	tmake_file=sparc/t-chorus-elf
+	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
+	float_format=i64
+	case x${enable_threads} in
+	  xyes | xpthreads | xposix)
+		thread_file='posix'
+		;;
+	esac
 	;;
 sparc-*-elf*)
 	tm_file="sparc/sol2.h sparc/elf.h"
