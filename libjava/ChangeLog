@@ -1,3 +1,9 @@
+2001-04-06  Tom Tromey  <tromey@redhat.com>
+
+	* jni.cc (wrap_value<jobject>, wrap_value<jclass>): Removed.
+	(wrap_value<T*>): New specialization.
+	(_Jv_JNI_PopLocalFrame): Update env->locals.
+
 2001-04-05  Tom Tromey  <tromey@redhat.com>
 
 	* libtool-version: Updated current.
