@@ -50,7 +50,6 @@ static void vax_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				 HOST_WIDE_INT, tree);
 static int vax_address_cost_1 (rtx);
 static int vax_address_cost (rtx);
-static int vax_rtx_costs_1 (rtx, enum rtx_code, enum rtx_code);
 static bool vax_rtx_costs (rtx, int, int, int *);
 static rtx vax_struct_value_rtx (tree, int);
 
@@ -529,179 +528,228 @@ vax_address_cost (rtx x)
 
 /* Cost of an expression on a VAX.  This version has costs tuned for the
    CVAX chip (found in the VAX 3 series) with comments for variations on
-   other models.  */
+   other models.
 
-static int
-vax_rtx_costs_1 (register rtx x, enum rtx_code code, enum rtx_code outer_code)
+   FIXME: The costs need review, particularly for TRUNCATE, FLOAT_EXTEND
+   and FLOAT_TRUNCATE.  We need a -mcpu option to allow provision of
+   costs on a per cpu basis.  */
+
+static bool
+vax_rtx_costs (rtx x, int code, int outer_code, int *total)
 {
   enum machine_mode mode = GET_MODE (x);
-  register int c;
-  int i = 0;				/* may be modified in switch */
+  int i = 0;				   /* may be modified in switch */
   const char *fmt = GET_RTX_FORMAT (code); /* may be modified in switch */
 
   switch (code)
     {
       /* On a VAX, constants from 0..63 are cheap because they can use the
-         1 byte literal constant format.  compare to -1 should be made cheap
-         so that decrement-and-branch insns can be formed more easily (if
-         the value -1 is copied to a register some decrement-and-branch
+	 1 byte literal constant format.  Compare to -1 should be made cheap
+	 so that decrement-and-branch insns can be formed more easily (if
+	 the value -1 is copied to a register some decrement-and-branch
 	 patterns will not match).  */
     case CONST_INT:
       if (INTVAL (x) == 0)
-	return 0;
+	return true;
       if (outer_code == AND)
-        return ((unsigned HOST_WIDE_INT) ~INTVAL (x) <= 077) ? 1 : 2;
-      if ((unsigned HOST_WIDE_INT) INTVAL (x) <= 077)
-	return 1;
-      if (outer_code == COMPARE && INTVAL (x) == -1)
-        return 1;
-      if (outer_code == PLUS && (unsigned HOST_WIDE_INT) -INTVAL (x) <= 077)
-        return 1;
+	{
+          *total = ((unsigned HOST_WIDE_INT) ~INTVAL (x) <= 077) ? 1 : 2;
+	  return true;
+	}
+      if ((unsigned HOST_WIDE_INT) INTVAL (x) <= 077
+	  || (outer_code == COMPARE
+	      && INTVAL (x) == -1)
+	  || ((outer_code == PLUS || outer_code == MINUS)
+	      && (unsigned HOST_WIDE_INT) -INTVAL (x) <= 077))
+	{
+	  *total = 1;
+	  return true;
+	}
       /* FALLTHRU */
 
     case CONST:
     case LABEL_REF:
     case SYMBOL_REF:
-      return 3;
+      *total = 3;
+      return true;
 
     case CONST_DOUBLE:
       if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
-        return vax_float_literal (x) ? 5 : 8;
+	*total = vax_float_literal (x) ? 5 : 8;
       else
-        return (((CONST_DOUBLE_HIGH (x) == 0
-		  && (unsigned HOST_WIDE_INT) CONST_DOUBLE_LOW (x) < 64)
-	         || (outer_code == PLUS
-		     && CONST_DOUBLE_HIGH (x) == -1		\
-		     && (unsigned HOST_WIDE_INT)-CONST_DOUBLE_LOW (x) < 64))
-	        ? 2 : 5);
+        *total = ((CONST_DOUBLE_HIGH (x) == 0
+		   && (unsigned HOST_WIDE_INT) CONST_DOUBLE_LOW (x) < 64)
+		  || (outer_code == PLUS
+		      && CONST_DOUBLE_HIGH (x) == -1
+		      && (unsigned HOST_WIDE_INT)-CONST_DOUBLE_LOW (x) < 64))
+		 ? 2 : 5;
+      return true;
  
     case POST_INC:
-      return 2;
+      *total = 2;
+      return true;		/* Implies register operand.  */
+
     case PRE_DEC:
-      return 3;
+      *total = 3;
+      return true;		/* Implies register operand.  */
+
     case MULT:
       switch (mode)
 	{
 	case DFmode:
-	  c = 16;		/* 4 on VAX 9000 */
+	  *total = 16;		/* 4 on VAX 9000 */
 	  break;
 	case SFmode:
-	  c = 9;		/* 4 on VAX 9000, 12 on VAX 2 */
+	  *total = 9;		/* 4 on VAX 9000, 12 on VAX 2 */
 	  break;
 	case DImode:
-	  c = 16;		/* 6 on VAX 9000, 28 on VAX 2 */
+	  *total = 16;		/* 6 on VAX 9000, 28 on VAX 2 */
 	  break;
 	case SImode:
 	case HImode:
 	case QImode:
-	  c = 10;		/* 3-4 on VAX 9000, 20-28 on VAX 2 */
+	  *total = 10;		/* 3-4 on VAX 9000, 20-28 on VAX 2 */
 	  break;
 	default:
-	  return MAX_COST;	/* Mode is not supported.  */
+	  *total = MAX_COST;	/* Mode is not supported.  */
+	  return true;
 	}
       break;
+
     case UDIV:
       if (mode != SImode)
-	return MAX_COST;	/* Mode is not supported.  */
-      c = 17;
+	{
+	  *total = MAX_COST;	/* Mode is not supported.  */
+	  return true;
+	}
+      *total = 17;
       break;
+
     case DIV:
       if (mode == DImode)
-	c = 30;	/* highly variable */
+	*total = 30;		/* Highly variable.  */
       else if (mode == DFmode)
 	/* divide takes 28 cycles if the result is not zero, 13 otherwise */
-	c = 24;
+	*total = 24;
       else
-	c = 11;			/* 25 on VAX 2 */
+	*total = 11;		/* 25 on VAX 2 */
       break;
+
     case MOD:
-      c = 23;
+      *total = 23;
       break;
+
     case UMOD:
       if (mode != SImode)
-	return MAX_COST;	/* Mode is not supported.  */
-      c = 29;
+	{
+	  *total = MAX_COST;	/* Mode is not supported.  */
+	  return true;
+	}
+      *total = 29;
       break;
+
     case FLOAT:
-      c = 6 + (mode == DFmode) + (GET_MODE (XEXP (x, 0)) != SImode);
-      /* 4 on VAX 9000 */
+      *total = (6		/* 4 on VAX 9000 */
+		+ (mode == DFmode) + (GET_MODE (XEXP (x, 0)) != SImode));
       break;
+
     case FIX:
-      c = 7;			/* 17 on VAX 2 */
+      *total = 7;		/* 17 on VAX 2 */
       break;
+
     case ASHIFT:
     case LSHIFTRT:
     case ASHIFTRT:
       if (mode == DImode)
-	c = 12;
+	*total = 12;
       else
-	c = 10;			/* 6 on VAX 9000 */
+	*total = 10;		/* 6 on VAX 9000 */
       break;
+
     case ROTATE:
     case ROTATERT:
-      c = 6;			/* 5 on VAX 2, 4 on VAX 9000 */
+      *total = 6;		/* 5 on VAX 2, 4 on VAX 9000 */
       if (GET_CODE (XEXP (x, 1)) == CONST_INT)
-	fmt = "e";	/* all constant rotate counts are short */
+	fmt = "e"; 		/* all constant rotate counts are short */
       break;
+
     case PLUS:
     case MINUS:
-      c = (mode == DFmode) ? 13 : 8;	/* 6/8 on VAX 9000, 16/15 on VAX 2 */
+      *total = (mode == DFmode) ? 13 : 8; /* 6/8 on VAX 9000, 16/15 on VAX 2 */
       /* Small integer operands can use subl2 and addl2.  */
       if ((GET_CODE (XEXP (x, 1)) == CONST_INT)
 	  && (unsigned HOST_WIDE_INT)(INTVAL (XEXP (x, 1)) + 63) < 127)
 	fmt = "e";
       break;
+
     case IOR:
     case XOR:
-      c = 3;
+      *total = 3;
       break;
+
     case AND:
       /* AND is special because the first operand is complemented.  */
-      c = 3;
+      *total = 3;
       if (GET_CODE (XEXP (x, 0)) == CONST_INT)
 	{
 	  if ((unsigned HOST_WIDE_INT)~INTVAL (XEXP (x, 0)) > 63)
-	    c = 4;
+	    *total = 4;
 	  fmt = "e";
 	  i = 1;
 	}
       break;
+
     case NEG:
       if (mode == DFmode)
-	return 9;
+	*total = 9;
       else if (mode == SFmode)
-	return 6;
+	*total = 6;
       else if (mode == DImode)
-	return 4;
+	*total = 4;
+      else
+	*total = 2;
+      break;
+
     case NOT:
-      return 2;
+      *total = 2;
+      break;
+
     case ZERO_EXTRACT:
     case SIGN_EXTRACT:
-      c = 15;
+      *total = 15;
       break;
+
     case MEM:
       if (mode == DImode || mode == DFmode)
-	c = 5;				/* 7 on VAX 2 */
+	*total = 5;		/* 7 on VAX 2 */
       else
-	c = 3;				/* 4 on VAX 2 */
+	*total = 3;		/* 4 on VAX 2 */
       x = XEXP (x, 0);
-      if (GET_CODE (x) == REG || GET_CODE (x) == POST_INC)
-	return c;
-      return c + vax_address_cost_1 (x);
-    default:
-      c = 3;
+      if (GET_CODE (x) != REG && GET_CODE (x) != POST_INC)
+	*total += vax_address_cost_1 (x);
+      return true;
+
+    case FLOAT_EXTEND:
+    case FLOAT_TRUNCATE:
+    case TRUNCATE:
+      *total = 3;		/* FIXME: Costs need to be checked  */
       break;
+
+    default:
+      return false;
     }
 
   /* Now look inside the expression.  Operands which are not registers or
      short constants add to the cost.
 
      FMT and I may have been adjusted in the switch above for instructions
-     which require special handling */
+     which require special handling.  */
 
   while (*fmt++ == 'e')
     {
-      register rtx op = XEXP (x, i++);
+      rtx op = XEXP (x, i);
+
+      i += 1;
       code = GET_CODE (op);
 
       /* A NOT is likely to be found as the first operand of an AND
@@ -715,12 +763,12 @@ vax_rtx_costs_1 (register rtx x, enum rtx_code code, enum rtx_code outer_code)
 	case CONST_INT:
 	  if ((unsigned HOST_WIDE_INT)INTVAL (op) > 63
 	      && GET_MODE (x) != QImode)
-	    c += 1;		/* 2 on VAX 2 */
+	    *total += 1;	/* 2 on VAX 2 */
 	  break;
 	case CONST:
 	case LABEL_REF:
 	case SYMBOL_REF:
-	  c += 1;		/* 2 on VAX 2 */
+	  *total += 1;		/* 2 on VAX 2 */
 	  break;
 	case CONST_DOUBLE:
 	  if (GET_MODE_CLASS (GET_MODE (op)) == MODE_FLOAT)
@@ -728,37 +776,30 @@ vax_rtx_costs_1 (register rtx x, enum rtx_code code, enum rtx_code outer_code)
 	      /* Registers are faster than floating point constants -- even
 		 those constants which can be encoded in a single byte.  */
 	      if (vax_float_literal (op))
-		c++;
+		*total += 1;
 	      else
-		c += (GET_MODE (x) == DFmode) ? 3 : 2;
+		*total += (GET_MODE (x) == DFmode) ? 3 : 2;
 	    }
 	  else
 	    {
 	      if (CONST_DOUBLE_HIGH (op) != 0
 		  || (unsigned)CONST_DOUBLE_LOW (op) > 63)
-		c += 2;
+		*total += 2;
 	    }
 	  break;
 	case MEM:
-	  c += 1;		/* 2 on VAX 2 */
+	  *total += 1;		/* 2 on VAX 2 */
 	  if (GET_CODE (XEXP (op, 0)) != REG)
-	    c += vax_address_cost_1 (XEXP (op, 0));
+	    *total += vax_address_cost_1 (XEXP (op, 0));
 	  break;
 	case REG:
 	case SUBREG:
 	  break;
 	default:
-	  c += 1;
+	  *total += 1;
 	  break;
 	}
     }
-  return c;
-}
-
-static bool
-vax_rtx_costs (rtx x, int code, int outer_code, int * total)
-{
-  *total = vax_rtx_costs_1 (x, code, outer_code);
   return true;
 }
 
