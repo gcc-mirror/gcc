@@ -1,3 +1,8 @@
+2001-08-22  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* config/i386/i386-protos.h: Correct declaration of
+	i386_pe_asm_named_section.
+
 2001-08-22  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa32-regs.h (CONDITIONAL_REGISTER_USAGE): Add declaration for
