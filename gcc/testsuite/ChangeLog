@@ -1,5 +1,13 @@
 2004-12-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* cpp/pragma-once-1.c: New test.
+	* cpp/pragma-once-1b.h: Likewise.
+	* cpp/pragma-once-1c.h: Likewise.
+	* cpp/pragma-once-1d.h: Likewise.
+	* cpp/inc/pragma-once-1a.h: Likewise.
+
+2004-12-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.dg/ftrapv-2.c: New test.
 
 2004-12-14  Jakub Jelinek  <jakub@redhat.com>

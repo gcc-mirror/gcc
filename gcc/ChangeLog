@@ -1,5 +1,12 @@
 2004-12-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR preprocessor/15167
+	* cppfiles.c (destroy_cpp_file): New function.
+	(should_stack_file): Make a new file if the
+	compared file is still stacked.
+
+2004-12-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR other/18665
 	* libgcc-std.ver (GCC_3.4.4): Inherit from GCC_3.4.2.
 	Export __absvti2, __addvti3, __mulvti3, __negvti2 and __subvti3.

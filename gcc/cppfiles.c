@@ -168,6 +168,7 @@ static void open_file_failed (cpp_reader *pfile, _cpp_file *file);
 static struct file_hash_entry *search_cache (struct file_hash_entry *head,
 					     const cpp_dir *start_dir);
 static _cpp_file *make_cpp_file (cpp_reader *, cpp_dir *, const char *fname);
+static void destroy_cpp_file (_cpp_file *);
 static cpp_dir *make_cpp_dir (cpp_reader *, const char *dir_name, int sysp);
 static void allocate_file_hash_entries (cpp_reader *pfile);
 static struct file_hash_entry *new_file_hash_entry (cpp_reader *pfile);
@@ -598,12 +599,38 @@ should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
       if ((import || f->once_only)
 	  && f->err_no == 0
 	  && f->st.st_mtime == file->st.st_mtime
-	  && f->st.st_size == file->st.st_size
-	  && read_file (pfile, f)
-	  /* Size might have changed in read_file().  */
-	  && f->st.st_size == file->st.st_size
-	  && !memcmp (f->buffer, file->buffer, f->st.st_size))
-	break;
+	  && f->st.st_size == file->st.st_size)
+	{
+	  _cpp_file *ref_file;
+	  bool same_file_p = false;
+
+	  if (f->buffer && !f->buffer_valid)
+	    {
+	      /* We already have a buffer but it is not valid, because
+		 the file is still stacked.  Make a new one.  */
+	      ref_file = make_cpp_file (pfile, f->dir, f->name);
+	      ref_file->path = f->path;
+	    }
+	  else
+	    /* The file is not stacked anymore.  We can reuse it.  */
+	    ref_file = f;
+
+	  same_file_p = read_file (pfile, ref_file)
+			/* Size might have changed in read_file().  */
+			&& ref_file->st.st_size == file->st.st_size
+			&& !memcmp (ref_file->buffer,
+				    file->buffer,
+				    file->st.st_size);
+
+	  if (f->buffer && !f->buffer_valid)
+	    {
+	      ref_file->path = 0;
+	      destroy_cpp_file (ref_file);
+	    }
+
+	  if (same_file_p)
+	    break;
+	}
     }
 
   return f == NULL;
@@ -779,6 +806,16 @@ make_cpp_file (cpp_reader *pfile, cpp_dir *dir, const char *fname)
   file->name = xstrdup (fname);
 
   return file;
+}
+
+/* Release a _cpp_file structure.  */
+static void
+destroy_cpp_file (_cpp_file *file)
+{
+  if (file->buffer)
+    free ((void *) file->buffer);
+  free ((void *) file->name);
+  free (file);
 }
 
 /* A hash of directory names.  The directory names are the path names
