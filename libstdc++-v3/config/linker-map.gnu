@@ -130,12 +130,48 @@ GLIBCPP_3.4 {
     _ZdaPvRKSt9nothrow_t;
 
     # vtable
-    _ZTV*;
-    _ZTT*;
+    _ZTVN9__gnu_cxx*;
+    _ZTVNSt8ios_base7failureE;
+    _ZTVNSt6locale5facetE;
+    _ZTVS[a-z];
+    _ZTVSt[0-9][A-Za-z]*;
+    _ZTVSt[0-9][0-9][A-Za-z]*;
+    _ZTVSt11__timepunctI[cw]E;
+    _ZTVSt23__codecvt_abstract_baseI[cw]c11__mbstate_tE;
+    _ZTVSt21__ctype_abstract_baseI[cw]E;
+
+    _ZTTS[a-z];
+    _ZTTSt[0-9][A-Za-z]*;
+    _ZTTSt[0-9][0-9][A-Za-z]*;
 
     # typeinfo
-    _ZTI*;
-    _ZTS*;
+    _ZTI[a-z];
+    _ZTINSt8ios_base7failureE;
+    _ZTINSt6locale5facetE;
+    _ZTIN9__gnu_cxx*;
+    _ZTIP[a-z];
+    _ZTIPK[a-z];
+    _ZTIS[a-z];
+    _ZTISt[0-9][A-Za-z]*;
+    _ZTISt[0-9][0-9][A-Za-z]*;
+    _ZTISt11__timepunctI[cw]E;
+    _ZTISt10__num_base;
+    _ZTISt21__ctype_abstract_baseI[cw]E;
+    _ZTISt23__codecvt_abstract_baseI[cw]c11__mbstate_tE;
+
+    _ZTS[a-z];
+    _ZTSNSt8ios_base7failureE;
+    _ZTSNSt6locale5facetE;
+    _ZTSN9__gnu_cxx*;
+    _ZTSP[a-z];
+    _ZTSPK[a-z];
+    _ZTSS[a-z];
+    _ZTSSt[0-9][A-Za-z]*;
+    _ZTSSt[0-9][0-9][A-Za-z]*;
+    _ZTSSt11__timepunctI[cw]E;
+    _ZTSSt10__num_base;
+    _ZTSSt21__ctype_abstract_baseI[cw]E;
+    _ZTSSt23__codecvt_abstract_baseI[cw]c11__mbstate_tE;
 
     # function-scope static objects requires a guard variable.
     _ZGV*;
@@ -224,6 +260,13 @@ CXXABI_1.3 {
 
     # __gnu_cxx::_verbose_terminate_handler()
     _ZN9__gnu_cxx27__verbose_terminate_handlerEv;
+
+    # typeinfo
+    _ZTIN10__cxxabi*;
+    _ZTSN10__cxxabi*;
+
+    # vtable
+    _ZTVN10__cxxabi*;
 
   local:
     *;

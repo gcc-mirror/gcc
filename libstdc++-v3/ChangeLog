@@ -1,3 +1,9 @@
+2003-03-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/globals.cc: Clarify comments, remove c_locale_imp_compat.
+
+	* config/linker-map.gnu: Filter typeinfo and vtable info.
+
 2003-03-04  Jerry Quinn  <jlquinn@optonline.net>
 
 	* src/ios.cc (ios_base::_M_grow_words): Don't delete _M_word on
