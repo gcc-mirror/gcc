@@ -1,5 +1,12 @@
 2000-10-09  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.c (thumb_expand_movstrqi): Rewrite to support SSA form.
+	(thumb_output_move_mem_multiple): Support new insn format.
+	* arm.md (movmem12b): Use SSA compatible format.
+	(movmem8b): Likewise.
+
+2000-10-09  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.md (predicable): New attribute, default to "no".
 	(all patterns): Mark as predicable if appropriate.
 	(conditional execution splits): Split using predication format.

@@ -9543,38 +9543,38 @@ thumb_output_move_mem_multiple (n, operands)
   switch (n)
     {
     case 2:
-      if (REGNO (operands[2]) > REGNO (operands[3]))
+      if (REGNO (operands[4]) > REGNO (operands[5]))
 	{
-	  tmp = operands[2];
-	  operands[2] = operands[3];
-	  operands[3] = tmp;
+	  tmp = operands[4];
+	  operands[4] = operands[5];
+	  operands[5] = tmp;
 	}
-      output_asm_insn ("ldmia\t%1!, {%2, %3}", operands);
-      output_asm_insn ("stmia\t%0!, {%2, %3}", operands);
+      output_asm_insn ("ldmia\t%1!, {%4, %5}", operands);
+      output_asm_insn ("stmia\t%0!, {%4, %5}", operands);
       break;
 
     case 3:
-      if (REGNO (operands[2]) > REGNO (operands[3]))
+      if (REGNO (operands[4]) > REGNO (operands[5]))
 	{
-	  tmp = operands[2];
-	  operands[2] = operands[3];
-	  operands[3] = tmp;
+	  tmp = operands[4];
+	  operands[4] = operands[5];
+	  operands[5] = tmp;
 	}
-      if (REGNO (operands[3]) > REGNO (operands[4]))
+      if (REGNO (operands[5]) > REGNO (operands[6]))
 	{
-	  tmp = operands[3];
-	  operands[3] = operands[4];
-	  operands[4] = tmp;
+	  tmp = operands[5];
+	  operands[5] = operands[6];
+	  operands[6] = tmp;
 	}
-      if (REGNO (operands[2]) > REGNO (operands[3]))
+      if (REGNO (operands[4]) > REGNO (operands[5]))
 	{
-	  tmp = operands[2];
-	  operands[2] = operands[3];
-	  operands[3] = tmp;
+	  tmp = operands[4];
+	  operands[4] = operands[5];
+	  operands[5] = tmp;
 	}
       
-      output_asm_insn ("ldmia\t%1!, {%2, %3, %4}", operands);
-      output_asm_insn ("stmia\t%0!, {%2, %3, %4}", operands);
+      output_asm_insn ("ldmia\t%1!, {%4, %5, %6}", operands);
+      output_asm_insn ("stmia\t%0!, {%4, %5, %6}", operands);
       break;
 
     default:
@@ -9597,13 +9597,13 @@ thumb_expand_movstrqi (operands)
 
   while (len >= 12)
     {
-      emit_insn (gen_movmem12b (out, in));
+      emit_insn (gen_movmem12b (out, in, out, in));
       len -= 12;
     }
   
   if (len >= 8)
     {
-      emit_insn (gen_movmem8b (out, in));
+      emit_insn (gen_movmem8b (out, in, out, in));
       len -= 8;
     }
   
