@@ -1,5 +1,10 @@
 2003-08-02  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/lang/ArrayHelper.java
+	(equalsArray): Reformated, added method documentation.
+
+2003-08-02  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/URL.java
 	(URL): Added paragraph about the
 	gnu.java.net.nocache_protocol_handlers property.
