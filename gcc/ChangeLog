@@ -1,3 +1,8 @@
+Mon Aug  2 16:27:42 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* combine.c (force_to_mode, case LSHIFTRT): Add goto shiftrt.
+	(force_to_mode, case ASHIFTRT): Add shiftrt label.
+
 Tue Aug  3 00:45:02 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (strength_reduce): When doing biv->giv conversion, update

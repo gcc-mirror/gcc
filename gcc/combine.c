@@ -6574,7 +6574,8 @@ force_to_mode (x, mode, mask, reg, just_select)
 	x = gen_binary (LSHIFTRT, GET_MODE (x), XEXP (x, 0),
 			GEN_INT (GET_MODE_BITSIZE (GET_MODE (x))
 				 - exact_log2 (mask + 1)));
-      break;
+
+      goto shiftrt;
 
     case ASHIFTRT:
       /* If we are just looking for the sign bit, we don't need this shift at
@@ -6639,7 +6640,9 @@ force_to_mode (x, mode, mask, reg, just_select)
       if (mask == 1)
 	x = gen_binary (LSHIFTRT, GET_MODE (x), XEXP (x, 0), XEXP (x, 1));
 
-      /* If this is a sign-extension operation that just affects bits
+    shiftrt:
+
+      /* If this is a zero- or sign-extension operation that just affects bits
 	 we don't care about, remove it.  Be sure the call above returned
 	 something that is still a shift.  */
 
