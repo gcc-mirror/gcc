@@ -109,23 +109,31 @@ F77 f77: f771
   f77.maintainer-clean f77.realclean f77.stage1 f77.stage2 f77.stage3 \
   f77.stage4 f77.distdir f77.rebuilt
 
-# Create the compiler driver for g77 (only if `f77' is in LANGUAGES).
-g77: $(srcdir)/f/g77.c $(srcdir)/f/version.c $(CONFIG_H) $(LIBDEPS)
-	case '$(LANGUAGES)' in \
-	*f77*) \
-	  $(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) \
-	    -o $@ $(srcdir)/f/g77.c $(srcdir)/f/version.c $(LIBS) ;; \
-	esac
+g77.c: $(srcdir)/gcc.c
+	-rm -f $@
+	$(LN_S) $(srcdir)/gcc.c $@
 
-# Create a version of the g77 driver which calls the cross-compiler
-# (only if `f77' is in LANGUAGES).
-g77-cross: $(srcdir)/f/g77.c $(srcdir)/f/version.c version.o $(LIBDEPS)
-	case '$(LANGUAGES)' in \
-	*f77*) \
-	  $(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) \
-	    -DGCC_NAME=\"$(GCC_CROSS_NAME)\" \
-	    -o $@ $(srcdir)/f/g77.c $(srcdir)/f/version.c $(LIBS) ;; \
-	esac
+g77spec.o: $(srcdir)/f/g77spec.c
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/f/g77spec.c
+
+# N.B.: This is a copy of the gcc.o rule, with -DLANG_SPECIFIC_DRIVER added.
+# It'd be nice if we could find an easier way to do this---rather than have
+# to track changes to the toplevel gcc Makefile as well.
+# We depend on g77.c last, to make it obvious where it came from.
+g77.o: $(CONFIG_H) multilib.h config.status $(lang_specs_files) g77.c
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(DRIVER_DEFINES) \
+	-DLANG_SPECIFIC_DRIVER -c g77.c
+
+# Create the compiler driver for g77.
+g77$(exeext): g77.o g77spec.o version.o choose-temp.o pexecute.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ g77.o g77spec.o version.o \
+	  choose-temp.o pexecute.o $(EXTRA_GCC_OBJS) $(LIBS)
+
+# Create a version of the g77 driver which calls the cross-compiler.
+g77-cross$(exeext): g77$(exeext)
+	-rm -f g77-cross$(exeext)
+	cp g77$(exeext) g77-cross$(exeext)
 
 F77_SRCS = \
  $(srcdir)/f/assert.j \

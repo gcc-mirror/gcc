@@ -1,3 +1,9 @@
+Mon Oct 13 12:12:41 1997  Richard Henderson  <rth@cygnus.com>
+
+	* Make-lang.in (g77*): Copied from cp/Make-lang.in g++*.
+	* g77spec.c: New file, mostly copied from g++spec.c
+	* g77.c: Removed.
+
 Mon Oct  6 14:15:03 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Make-lang.in (f77.mostlyclean): Clean up stuff in the
