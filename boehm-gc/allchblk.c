@@ -654,9 +654,13 @@ int n;
 	                 && orig_avail - size_needed
 			    > (signed_word)BL_LIMIT) {
 	        /* Punt, since anything else risks unreasonable heap growth. */
-		if (0 == GETENV("GC_NO_BLACKLIST_WARNING")) {
-	          WARN("Needed to allocate blacklisted block at 0x%lx\n",
-		       (word)hbp);
+		if (++GC_large_alloc_warn_suppressed
+		    >= GC_large_alloc_warn_interval) {
+	          WARN("Repeated allocation of very large block "
+		       "(appr. size %ld):\n"
+		       "\tMay lead to memory leak and poor performance.\n",
+		       size_needed);
+		  GC_large_alloc_warn_suppressed = 0;
 		}
 	        size_avail = orig_avail;
 	      } else if (size_avail == 0 && size_needed == HBLKSIZE
