@@ -267,16 +267,9 @@ parse_defined (pfile)
       op.unsignedp = 0;
       op.op = CPP_NUMBER;
 
-      /* No macros?  At top of file?  */
-      if (pfile->mi_state == MI_OUTSIDE && pfile->mi_cmacro == 0
-	  && pfile->mi_if_not_defined == MI_IND_NOT && pfile->mi_lexed == 1)
-	{
-	  cpp_start_lookahead (pfile);
-	  cpp_get_token (pfile, &token);
-	  if (token.type == CPP_EOF)
-	    pfile->mi_ind_cmacro = node;
-	  cpp_stop_lookahead (pfile, 0);
-	}
+      /* A possible controlling macro of the form #if !defined ().
+	 _cpp_parse_expr checks there was no other junk on the line.  */
+      pfile->mi_ind_cmacro = node;
     }
 
   pfile->state.prevent_expansion--;
@@ -351,10 +344,6 @@ lex (pfile, skip_evaluation, token)
 	}
       else
 	{
-	  /* Controlling #if expressions cannot contain identifiers (they
-	     could become macros in the future).  */
-	  pfile->mi_state = MI_FAILED;
-
 	  op.op = CPP_NUMBER;
 	  op.unsignedp = 0;
 	  op.value = 0;
@@ -376,11 +365,6 @@ lex (pfile, skip_evaluation, token)
 	op.value = temp;
 	return op;
       }
-
-    case CPP_NOT:
-      /* We don't worry about its position here.  */
-      pfile->mi_if_not_defined = MI_IND_NOT;
-      /* Fall through.  */
 
     default:
       if (((int) token->type > (int) CPP_EQ
@@ -598,10 +582,12 @@ _cpp_parse_expr (pfile)
   register struct op *top = stack + 1;
   int skip_evaluation = 0;
   int result;
+  unsigned int lex_count, saw_leading_not;
 
   /* Set up detection of #if ! defined().  */
-  pfile->mi_lexed = 0;
-  pfile->mi_if_not_defined = MI_IND_NONE;
+  pfile->mi_ind_cmacro = 0;
+  saw_leading_not = 0;
+  lex_count = 0;
 
   /* We've finished when we try to reduce this.  */
   top->op = CPP_EOF;
@@ -618,7 +604,7 @@ _cpp_parse_expr (pfile)
 
       /* Read a token */
       op = lex (pfile, skip_evaluation, &token);
-      pfile->mi_lexed++;
+      lex_count++;
 
       /* If the token is an operand, push its value and get next
 	 token.  If it is an operator, get its priority and flags, and
@@ -638,6 +624,11 @@ _cpp_parse_expr (pfile)
 	  continue;
 
 	case CPP_EOF:	prio = FORCE_REDUCE_PRIO;	break;
+
+	case CPP_NOT:
+	  saw_leading_not = lex_count == 1;
+	  prio = op_to_prio[op.op];
+	  break;
 	case CPP_PLUS:
 	case CPP_MINUS: prio = PLUS_PRIO;  if (top->flags & HAVE_VALUE) break;
           /* else unary; fall through */
@@ -869,7 +860,14 @@ _cpp_parse_expr (pfile)
     }
 
  done:
+  /* The controlling macro expression is only valid if we called lex 3
+     times: <!> <defined expression> and <EOF>.  push_conditional ()
+     checks that we are at top-of-file.  */
+  if (pfile->mi_ind_cmacro && !(saw_leading_not && lex_count == 3))
+    pfile->mi_ind_cmacro = 0;
+
   result = (top[1].value != 0);
+
   if (top != stack)
     CPP_ICE ("unbalanced stack in #if");
   else if (!(top[1].flags & HAVE_VALUE))

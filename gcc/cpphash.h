@@ -93,10 +93,6 @@ struct search_path
   struct file_name_map *name_map;
 };
 
-/* Multiple-include optimisation.  */
-enum mi_state {MI_FAILED = 0, MI_OUTSIDE};
-enum mi_ind {MI_IND_NONE = 0, MI_IND_NOT};
-
 /* #include types.  */
 enum include_type {IT_INCLUDE, IT_INCLUDE_NEXT, IT_IMPORT, IT_CMDLINE};
 
@@ -268,11 +264,9 @@ struct cpp_reader
   const struct directive *directive;
 
   /* Multiple inlcude optimisation.  */
-  enum mi_state mi_state;
-  enum mi_ind mi_if_not_defined;
-  unsigned int mi_lexed;
   const cpp_hashnode *mi_cmacro;
   const cpp_hashnode *mi_ind_cmacro;
+  bool mi_valid;
 
   /* Token lookahead.  */
   struct cpp_lookahead *la_read;	/* Read from this lookahead.  */

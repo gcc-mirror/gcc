@@ -332,7 +332,7 @@ stack_include_file (pfile, inc)
   fp->sysp = sysp;
 
   /* Initialise controlling macro state.  */
-  pfile->mi_state = MI_OUTSIDE;
+  pfile->mi_valid = true;
   pfile->mi_cmacro = 0;
   pfile->include_depth++;
 
@@ -748,12 +748,12 @@ _cpp_pop_file_buffer (pfile, buf)
     pfile->include_depth--;
 
   /* Record the inclusion-preventing macro, which could be NULL
-     meaning no controlling macro, if we haven't got it already.  */
-  if (pfile->mi_state == MI_OUTSIDE && inc->cmacro == NULL)
+     meaning no controlling macro.  */
+  if (pfile->mi_valid && inc->cmacro == NULL)
     inc->cmacro = pfile->mi_cmacro;
 
   /* Invalidate control macros in the #including file.  */
-  pfile->mi_state = MI_FAILED;
+  pfile->mi_valid = false;
 
   inc->refcnt--;
   if (inc->refcnt == 0 && DO_NOT_REREAD (inc))

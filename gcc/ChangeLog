@@ -1,3 +1,23 @@
+2001-07-29  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* cppexp.c (parse_defined): Always record the macro name.
+	(lex): Don't worry about identifiers, or special-case
+	CPP_NOT here.
+	(_cpp_parse_expr): Figure out at the end of the routine
+	whether we saw a valid !defined() expression.
+	* cppfiles.c (stack_include_file): Update for mi_valid.
+	(_cpp_pop_file_buffer): Similarly.
+	* cpplex.c (_cpp_lex_token): Similarly.
+	* cpphash.h (enum mi_state, enum mi_ind, mi_state,
+	mi_if_not_defined, mi_lexed): Remove.
+	(mi_valid): New.
+	* cpplib.c (do_if): Simplify.
+	(do_endif, push_conditional, _cpp_handle_directive): Update
+	for renaming of mi_state to mi_valid.
+doc:
+	* cpp.texi: Add index entries for digraphs, and add comment
+	that C++ refers to them as alternative tokens.
+
 Sun Jul 29 18:59:13 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (CLEANUP_PRE_LOOP): New.

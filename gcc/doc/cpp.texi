@@ -536,15 +536,18 @@ be removed in GCC 3.1.  You may use continued lines instead, or string
 constant concatenation.  @xref{Differences from previous versions}.
 
 @cindex punctuators
+@cindex digraphs
+@cindex alternative tokens
 @dfn{Punctuators} are all the usual bits of punctuation which are
 meaningful to C and C++.  All but three of the punctuation characters in
 ASCII are C punctuators.  The exceptions are @samp{@@}, @samp{$}, and
 @samp{`}.  In addition, all the two- and three-character operators are
-punctuators.  There are also six @dfn{digraphs}, which are merely
-alternate ways to spell other punctuators.  This is a second attempt to
-work around missing punctuation in obsolete systems.  It has no negative
-side effects, unlike trigraphs, but does not cover as much ground.  The
-digraphs and their corresponding normal punctuators are:
+punctuators.  There are also six @dfn{digraphs}, which the C++ standard
+calls @dfn{alternative tokens}, which are merely alternate ways to spell
+other punctuators.  This is a second attempt to work around missing
+punctuation in obsolete systems.  It has no negative side effects,
+unlike trigraphs, but does not cover as much ground.  The digraphs and
+their corresponding normal punctuators are:
 
 @example
 Digraph:        <%  %>  <:  :>  %:  %:%:
