@@ -8,6 +8,7 @@
 	* fixinc/inclhack.def (hpux10_cpp_pow_inline, hpux11_cpp_pow_inline):
 	Escape { and } characters which are not part of range expressions.
 	* fixinc/fixincl.x: Regenerate.
+	* fixinc/gnu-regex.c, fixinc/gnu-regex.h: Delete file.
 
 2003-07-08  Steven Bosscher  <steven@gcc.gnu.org>
 
