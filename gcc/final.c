@@ -3678,7 +3678,11 @@ output_addr_const (file, x)
       /* Fall through.  */
     case CODE_LABEL:
       ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (x));
+#ifdef ASM_OUTPUT_LABEL_REF
+      ASM_OUTPUT_LABEL_REF (file, buf);
+#else
       assemble_name (file, buf);
+#endif
       break;
 
     case CONST_INT:

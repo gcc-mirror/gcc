@@ -1,3 +1,12 @@
+2001-11-10  Geoffrey Keating  <geoffk@redhat.com>
+
+	* doc/tm.texi (Label Output): Document ASM_OUTPUT_LABEL_REF.
+	* final.c (output_addr_const): Use ASM_OUTPUT_LABEL_REF.
+	* config/stormy16/stormy16.c (xstormy16_print_operand): For '%C',
+	don't print an @fptr for labels either.
+	(xstormy16_output_addr_vec): Don't print @fptr here.
+	* config/stormy16/stormy16.h (ASM_OUTPUT_LABEL_REF): New macro.
+
 Sat Nov 10 08:50:50 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* ssa-ccp.c (examine_flow_edges): Use old-style definition, not
