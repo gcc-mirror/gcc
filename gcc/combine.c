@@ -5011,7 +5011,8 @@ simplify_set (x)
      simplify the expression for the object knowing that we only need the
      low-order bits.  */
 
-  if (GET_MODE_CLASS (mode) == MODE_INT)
+  if (GET_MODE_CLASS (mode) == MODE_INT
+      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
     {
       src = force_to_mode (src, mode, ~(HOST_WIDE_INT) 0, NULL_RTX, 0);
       SUBST (SET_SRC (x), src);
