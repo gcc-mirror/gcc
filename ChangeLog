@@ -1,3 +1,8 @@
+2000-07-12  Andrew Haley  <aph@cygnus.com>
+
+	* configure.in (host_makefile_frag): Use mh-ia64pic on IA-64 hosts.
+	(target_makefile_frag): Use mt-ia64pic on IA-64 targets.
+
 Fri Jul 14 18:13:23 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* config/mh-irix6 (CC): Don't set it.
