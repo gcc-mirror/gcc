@@ -4970,7 +4970,8 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 	      int win = 0;
 	      tree index = TREE_PURPOSE (tail);
 
-	      if (index && TREE_CODE (index) == NON_LVALUE_EXPR)
+	      if (index && (TREE_CODE (index) == NON_LVALUE_EXPR
+			    || TREE_CODE (index) == NOP_EXPR))
 		index = TREE_OPERAND (index, 0);
 
 	      /* Begin a range.  */
@@ -4979,10 +4980,15 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 		  start_index = TREE_PURPOSE (index);
 		  end_index = TREE_PURPOSE (TREE_CHAIN (index));
 
-		  /* Expose constants.  */
-		  if (end_index && TREE_CODE (end_index) == NON_LVALUE_EXPR)
+		  /* Expose constants.  It Doesn't matter if we change
+		     the mode.*/
+		  if (end_index
+		      && (TREE_CODE (end_index) == NON_LVALUE_EXPR
+			  || TREE_CODE (end_index) == NOP_EXPR))
 		    end_index = TREE_OPERAND (end_index, 0);
-		  if (start_index && TREE_CODE (start_index) == NON_LVALUE_EXPR)
+		  if (start_index
+		      && (TREE_CODE (start_index) == NON_LVALUE_EXPR
+			  || TREE_CODE (start_index) == NOP_EXPR))
 		    start_index = TREE_OPERAND (start_index, 0);
 
 		  if ((TREE_CODE (start_index) == IDENTIFIER_NODE) 
@@ -5026,7 +5032,11 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 		current_index = index, win = 1;
 
 	      if (!win)
-		TREE_VALUE (tail) = error_mark_node;
+		{
+		  /* If there was an error, end the current range.  */
+		  end_index = 0;
+		  TREE_VALUE (tail) = error_mark_node;
+		}
 	    }
 
 	  if (max_index && tree_int_cst_lt (max_index, current_index))
