@@ -1,3 +1,10 @@
+2004-01-14  Jan Hubicka  <jh@suse.cz>
+
+	Partial fix to PR c++/12850
+	* decl2.c (mark_used): Do not proactively instantiate templates
+	when compiling in unit-at-a-time or not optimizing.
+	* optimize.c (maybe_clone_body): Do not increase function depth.
+
 2004-01-13  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/13474
