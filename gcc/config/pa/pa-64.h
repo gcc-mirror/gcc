@@ -51,12 +51,19 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE_SIZE 32
 
 /* If it is not listed here, then the default selected by GCC is OK.  */
+#undef SHORT_TYPE_SIZE
 #define SHORT_TYPE_SIZE 16
+#undef INT_TYPE_SIZE
 #define INT_TYPE_SIZE 32
+#undef MAX_LONG_TYPE_SIZE
 #define MAX_LONG_TYPE_SIZE 64
+#undef LONG_TYPE_SIZE
 #define LONG_TYPE_SIZE 64
+#undef LONG_LONG_TYPE_SIZE
 #define LONG_LONG_TYPE_SIZE 64
+#undef FLOAT_TYPE_SIZE
 #define FLOAT_TYPE_SIZE 32
+#undef DOUBLE_TYPE_SIZE
 #define DOUBLE_TYPE_SIZE 64
 /* This should be 128, but until we work out the ABI for the 128bit
    FP codes supplied by HP we'll keep it at 64 bits.  */
