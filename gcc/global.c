@@ -2011,7 +2011,7 @@ struct bb_info
      killed afterward in the basic block.  */
   bitmap killed, avloc;
   /* Registers partially available and living (in other words whose
-     values were calclualted and used) correspondingly at the start
+     values were calculated and used) correspondingly at the start
      and end of the basic block.  */
   bitmap live_pavin, live_pavout;
 };

@@ -1,3 +1,7 @@
+2004-12-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* global.c: Fix a comment typo.
+
 2004-12-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Roger Sayle  <roger@eyesopen.com>
  
