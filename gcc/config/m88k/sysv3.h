@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Motorola m88100 running the AT&T/Unisoft/Motorola V.3 reference port.
-   Copyright (C) 1990, 1991, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1997, 1999 Free Software Foundation, Inc.
    Contributed by Ray Essick (ressick@mot.com)
    Enhanced by Tom Wood (Tom_Wood@NeXT.com)
 
@@ -43,6 +43,10 @@ Boston, MA 02111-1307, USA.  */
    names other than that.  arul@sdsu.edu says -lg is always needed.  */
 #undef	LIB_SPEC
 #define LIB_SPEC "%{p:-L/lib/libp}%{pg:%{!p:-L/lib/libp}} -lg -lc crtend.o%s"
+
+/* We need POSIX/XOPEN symbols; otherwise building libio will fail.  */
+#define ADD_MISSING_POSIX 1
+#define ADD_MISSING_XOPEN 1
 
 /* Hot version of the profiler that uses r10 to pass the address of
    the counter.  the _gcc_mcount routine knows not to screw with

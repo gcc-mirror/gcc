@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    SysV68 Motorola 3300 Delta Series.
-   Copyright (C) 1987, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 93, 94, 95, 96, 1997, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Abramo and Roberto Bagnara (bagnara@dipisa.di.unipi.it)
    based on Alex Crain's 3B1 definitions.
    Maintained by Philippe De Muyter (phdm@info.ucl.ac.be).
@@ -96,6 +96,10 @@ Boston, MA 02111-1307, USA.  */
 /* size_t is unsigned int.  */
 
 #define SIZE_TYPE "unsigned int"
+
+/* We need POSIX/XOPEN symbols; otherwise building libio will fail.  */
+#define ADD_MISSING_POSIX 1
+#define ADD_MISSING_XOPEN 1
 
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 

@@ -1,6 +1,6 @@
 /* Configuration for GNU C-compiler for Motorola 68000 family.
    SysV68 Motorola 3300 Delta Series
-   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -35,7 +35,3 @@ extern char *alloca ();
 
 #define __PTR_TO_INT(P) ((int)(P))
 #define __INT_TO_PTR(P) ((char *)(P))
-
-/* We need POSIX/XOPEN symbols; otherwise make check will fail.  */
-#define ADD_MISSING_POSIX 1
-#define ADD_MISSING_XOPEN 1
