@@ -114,18 +114,22 @@ static int *reg_max_ref_width;
    constant or memory slot.  */
 static rtx *reg_equiv_init;
 
-/* During reload_as_needed, element N contains the last pseudo regno
-   reloaded into the Nth reload register.  This vector is in parallel
-   with spill_regs.  If that pseudo reg occupied more than one register,
+/* During reload_as_needed, element N contains the last pseudo regno reloaded
+  into hard register N.  If that pseudo reg occupied more than one register,
    reg_reloaded_contents points to that pseudo for each spill register in
    use; all of these must remain set for an inheritance to occur.  */
 static int reg_reloaded_contents[FIRST_PSEUDO_REGISTER];
 
 /* During reload_as_needed, element N contains the insn for which
-   the Nth reload register was last used.  This vector is in parallel
-   with spill_regs, and its contents are significant only when
-   reg_reloaded_contents is significant.  */
+   hard register N was last used.   Its contents are significant only
+   when reg_reloaded_valid is set for this register.  */
 static rtx reg_reloaded_insn[FIRST_PSEUDO_REGISTER];
+
+/* Indicate if reg_reloaded_insn / reg_reloaded_contents is valid */
+static HARD_REG_SET reg_reloaded_valid;
+/* Indicate if the register was dead at the end of the reload.
+   This is only valid if reg_reloaded_contents is set and valid.  */
+static HARD_REG_SET reg_reloaded_dead;
 
 /* Number of spill-regs so far; number of valid elements of spill_regs.  */
 static int n_spills;
@@ -3980,11 +3984,7 @@ reload_as_needed (first, live_known)
   reg_last_reload_reg = (rtx *) alloca (max_regno * sizeof (rtx));
   bzero ((char *) reg_last_reload_reg, max_regno * sizeof (rtx));
   reg_has_output_reload = (char *) alloca (max_regno);
-  for (i = 0; i < n_spills; i++)
-    {
-      reg_reloaded_contents[i] = -1;
-      reg_reloaded_insn[i] = 0;
-    }
+  CLEAR_HARD_REG_SET (reg_reloaded_valid);
 
   /* Reset all offsets on eliminable registers to their initial values.  */
 #ifdef ELIMINABLE_REGS
@@ -4197,32 +4197,21 @@ reload_as_needed (first, live_known)
 	}
       /* A reload reg's contents are unknown after a label.  */
       if (GET_CODE (insn) == CODE_LABEL)
-	for (i = 0; i < n_spills; i++)
-	  {
-	    reg_reloaded_contents[i] = -1;
-	    reg_reloaded_insn[i] = 0;
-	  }
+	CLEAR_HARD_REG_SET (reg_reloaded_valid);
 
       /* Don't assume a reload reg is still good after a call insn
 	 if it is a call-used reg.  */
       else if (GET_CODE (insn) == CALL_INSN)
-	for (i = 0; i < n_spills; i++)
-	  if (call_used_regs[spill_regs[i]])
-	    {
-	      reg_reloaded_contents[i] = -1;
-	      reg_reloaded_insn[i] = 0;
-	    }
+	AND_COMPL_HARD_REG_SET(reg_reloaded_valid, call_used_reg_set);
 
       /* In case registers overlap, allow certain insns to invalidate
 	 particular hard registers.  */
 
 #ifdef INSN_CLOBBERS_REGNO_P
-      for (i = 0 ; i < n_spills ; i++)
-	if (INSN_CLOBBERS_REGNO_P (insn, spill_regs[i]))
-	  {
-	    reg_reloaded_contents[i] = -1;
-	    reg_reloaded_insn[i] = 0;
-	  }
+      for (i = 0 ; i < FIRST_PSEUDO_REGISTER; i++)
+	if (TEST_HARD_REG_BIT (reg_reloaded_valid, i)
+	    && INSN_CLOBBERS_REGNO_P (insn, i))
+	  CLEAR_HARD_REG_BIT (reg_reloaded_valid, i);
 #endif
 
       insn = next;
@@ -4272,15 +4261,11 @@ forget_old_reloads_1 (x, ignored)
 	 and it wasn't spilled because this block's total need is 0.
 	 Then some insn might have an optional reload and use this reg.  */
       for (i = 0; i < nr; i++)
-	if (spill_reg_order[regno + i] >= 0
-	    /* But don't do this if the reg actually serves as an output
-	       reload reg in the current instruction.  */
-	    && (n_reloads == 0
-		|| ! TEST_HARD_REG_BIT (reg_is_output_reload, regno + i)))
-	  {
-	    reg_reloaded_contents[spill_reg_order[regno + i]] = -1;
-	    reg_reloaded_insn[spill_reg_order[regno + i]] = 0;
-	  }
+	/* But don't do this if the reg actually serves as an output
+	   reload reg in the current instruction.  */
+	if (n_reloads == 0
+	    || ! TEST_HARD_REG_BIT (reg_is_output_reload, regno + i))
+	  CLEAR_HARD_REG_BIT (reg_reloaded_valid, regno + i);
     }
 
   /* Since value of X has changed,
@@ -5005,8 +4990,8 @@ rtx reload_inheritance_insn[MAX_RELOADS];
    rather than using reload_in.  */
 rtx reload_override_in[MAX_RELOADS];
 
-/* For each reload, the index in spill_regs of the spill register used,
-   or -1 if we did not need one of the spill registers for this reload.  */
+/* For each reload, the hard register number of the register used,
+   or -1 if we did not need a register for this reload.  */
 int reload_spill_index[MAX_RELOADS];
 
 /* Find a spill register to use as a reload register for reload R.
@@ -5181,7 +5166,7 @@ allocate_reload_reg (r, insn, last_reload, noerror)
 				    reload_when_needed[r], reload_mode[r]);
 
 	    reload_reg_rtx[r] = new;
-	    reload_spill_index[r] = i;
+	    reload_spill_index[r] = spill_regs[i];
 	    return 1;
 	  }
     }
@@ -5504,32 +5489,32 @@ choose_reload_regs (insn, avoid_return_reg)
 
 	      if (regno >= 0 && reg_last_reload_reg[regno] != 0)
 		{
-		  i = spill_reg_order[REGNO (reg_last_reload_reg[regno])];
+		  i = REGNO (reg_last_reload_reg[regno]);
 
 		  if (reg_reloaded_contents[i] == regno
+		      && TEST_HARD_REG_BIT (reg_reloaded_valid, i)
 		      && (GET_MODE_SIZE (GET_MODE (reg_last_reload_reg[regno]))
 			  >= GET_MODE_SIZE (mode))
-		      && HARD_REGNO_MODE_OK (spill_regs[i], reload_mode[r])
+		      && HARD_REGNO_MODE_OK (i, reload_mode[r])
 		      && TEST_HARD_REG_BIT (reg_class_contents[(int) reload_reg_class[r]],
-					    spill_regs[i])
+					    i)
 		      && (reload_nregs[r] == max_group_size
 			  || ! TEST_HARD_REG_BIT (reg_class_contents[(int) group_class],
-						  spill_regs[i]))
-		      && reload_reg_free_p (spill_regs[i], reload_opnum[r],
+						  i))
+		      && reload_reg_free_p (i, reload_opnum[r],
 					    reload_when_needed[r])
-		      && reload_reg_free_before_p (spill_regs[i],
-						   reload_opnum[r],
+		      && reload_reg_free_before_p (i, reload_opnum[r],
 						   reload_when_needed[r]))
 		    {
 		      /* If a group is needed, verify that all the subsequent
 			 registers still have their values intact.  */
 		      int nr
-			= HARD_REGNO_NREGS (spill_regs[i], reload_mode[r]);
+			= HARD_REGNO_NREGS (i, reload_mode[r]);
 		      int k;
 
 		      for (k = 1; k < nr; k++)
-			if (reg_reloaded_contents[spill_reg_order[spill_regs[i] + k]]
-			    != regno)
+			if (reg_reloaded_contents[i + k] != regno
+			    || ! TEST_HARD_REG_BIT (reg_reloaded_valid, i + k))
 			  break;
 
 		      if (k == nr)
@@ -5550,6 +5535,10 @@ choose_reload_regs (insn, avoid_return_reg)
 			      break;
 
 			  if (i1 != n_earlyclobbers
+			      /* Don't use it if we'd clobber a pseudo reg.  */
+			      || (spill_reg_order[i] < 0
+				  && reload_out[r]
+				  && ! TEST_HARD_REG_BIT (reg_reloaded_dead, i))
 			      /* Don't really use the inherited spill reg
 				 if we need it wider than we've got it.  */
 			      || (GET_MODE_SIZE (reload_mode[r])
@@ -5561,7 +5550,7 @@ choose_reload_regs (insn, avoid_return_reg)
 			      /* We can use this as a reload reg.  */
 			      /* Mark the register as in use for this part of
 				 the insn.  */
-			      mark_reload_reg_in_use (spill_regs[i],
+			      mark_reload_reg_in_use (i,
 						      reload_opnum[r],
 						      reload_when_needed[r],
 						      reload_mode[r]);
@@ -5572,7 +5561,7 @@ choose_reload_regs (insn, avoid_return_reg)
 			      reload_spill_index[r] = i;
 			      for (k = 0; k < nr; k++)
 				SET_HARD_REG_BIT (reload_reg_used_for_inherit,
-						  spill_regs[i + k]);
+						  i + k);
 			    }
 			}
 		    }
@@ -5844,7 +5833,7 @@ choose_reload_regs (insn, avoid_return_reg)
 
       i = reload_spill_index[r];
 
-      /* I is nonneg if this reload used one of the spill regs.
+      /* I is nonneg if this reload uses a register.
 	 If reload_reg_rtx[r] is 0, this is an optional reload
 	 that we opted to ignore.  */
       if (reload_out[r] != 0 && GET_CODE (reload_out[r]) == REG
@@ -5861,9 +5850,9 @@ choose_reload_regs (insn, avoid_return_reg)
 
 	  if (i >= 0)
 	    {
-	      nr = HARD_REGNO_NREGS (spill_regs[i], reload_mode[r]);
+	      nr = HARD_REGNO_NREGS (i, reload_mode[r]);
 	      while (--nr >= 0)
-		SET_HARD_REG_BIT (reg_is_output_reload, spill_regs[i] + nr);
+		SET_HARD_REG_BIT (reg_is_output_reload, i + nr);
 	    }
 
 	  if (reload_when_needed[r] != RELOAD_OTHER
@@ -5985,6 +5974,9 @@ emit_reload_insns (insn)
   int special;
   /* Values to be put in spill_reg_store are put here first.  */
   rtx new_spill_reg_store[FIRST_PSEUDO_REGISTER];
+  HARD_REG_SET reg_reloaded_died;
+
+  CLEAR_HARD_REG_SET (reg_reloaded_died);
 
   for (j = 0; j < reload_n_operands; j++)
     input_reload_insns[j] = input_address_reload_insns[j]
@@ -6151,14 +6143,12 @@ emit_reload_insns (insn)
 
 	  if (optimize && GET_CODE (oldequiv) == REG
 	      && REGNO (oldequiv) < FIRST_PSEUDO_REGISTER
-	      && spill_reg_order[REGNO (oldequiv)] >= 0
-	      && spill_reg_store[spill_reg_order[REGNO (oldequiv)]] != 0
-	      && find_reg_note (insn, REG_DEAD, reload_in[j])
+	      && spill_reg_store[REGNO (oldequiv)]
+	      && GET_CODE (old) == REG && dead_or_set_p (insn, old)
 	      /* This is unsafe if operand occurs more than once in current
 		 insn.  Perhaps some occurrences weren't reloaded.  */
-	      && count_occurrences (PATTERN (insn), reload_in[j]) == 1)
-	    delete_output_reload
-	      (insn, j, spill_reg_store[spill_reg_order[REGNO (oldequiv)]]);
+	      && count_occurrences (PATTERN (insn), old) == 1)
+	    delete_output_reload (insn, j, spill_reg_store[REGNO (oldequiv)]);
 
 	  /* Encapsulate both RELOADREG and OLDEQUIV into that mode,
 	     then load RELOADREG from OLDEQUIV.  Note that we cannot use
@@ -6566,7 +6556,7 @@ emit_reload_insns (insn)
 #endif
 	  && spill_reg_store[reload_spill_index[j]] != 0
 	  /* This is unsafe if some other reload uses the same reg first.  */
-	  && reload_reg_free_before_p (spill_regs[reload_spill_index[j]],
+	  && reload_reg_free_before_p (reload_spill_index[j],
 				       reload_opnum[j], reload_when_needed[j])
 	  && dead_or_set_p (insn, reload_in[j])
 	  /* This is unsafe if operand occurs more than once in current
@@ -6769,15 +6759,30 @@ emit_reload_insns (insn)
 	  for (p = get_insns (); p; p = NEXT_INSN (p))
 	    if (GET_RTX_CLASS (GET_CODE (p)) == 'i')
 	      {
+		rtx pat = PATTERN (p);
+
 		/* If this output reload doesn't come from a spill reg,
 		   clear any memory of reloaded copies of the pseudo reg.
 		   If this output reload comes from a spill reg,
 		   reg_has_output_reload will make this do nothing.  */
-		note_stores (PATTERN (p), forget_old_reloads_1);
+		note_stores (pat, forget_old_reloads_1);
 
-		if (reg_mentioned_p (reload_reg_rtx[j], PATTERN (p))
-		    && reload_spill_index[j] >= 0)
-		  new_spill_reg_store[reload_spill_index[j]] = p;
+		if (reg_mentioned_p (reload_reg_rtx[j], pat))
+		  {
+		    if (reload_spill_index[j] < 0
+			&& GET_CODE (pat) == SET
+			&& SET_SRC (pat) == reload_reg_rtx[j])
+		      {
+			int src = REGNO (SET_SRC (pat));
+
+			reload_spill_index[j] = src;
+			SET_HARD_REG_BIT (reg_is_output_reload, src);
+			if (find_regno_note (insn, REG_DEAD, src))
+			  SET_HARD_REG_BIT (reg_reloaded_died, src);
+		      }
+		    if (reload_spill_index[j] >= 0)
+		      new_spill_reg_store[reload_spill_index[j]] = p;
+		  }
 	      }
 
 	  if (reload_when_needed[j] == RELOAD_OTHER)
@@ -6893,14 +6898,14 @@ emit_reload_insns (insn)
       register int r = reload_order[j];
       register int i = reload_spill_index[r];
 
-      /* I is nonneg if this reload used one of the spill regs.
+      /* I is nonneg if this reload used a register.
 	 If reload_reg_rtx[r] is 0, this is an optional reload
 	 that we opted to ignore.  */
 
       if (i >= 0 && reload_reg_rtx[r] != 0)
 	{
 	  int nr
-	    = HARD_REGNO_NREGS (spill_regs[i], GET_MODE (reload_reg_rtx[r]));
+	    = HARD_REGNO_NREGS (i, GET_MODE (reload_reg_rtx[r]));
 	  int k;
 	  int part_reaches_end = 0;
 	  int all_reaches_end = 1;
@@ -6909,7 +6914,7 @@ emit_reload_insns (insn)
 	     of the value lives to the end.  */
 	  for (k = 0; k < nr; k++)
 	    {
-	      if (reload_reg_reaches_end_p (spill_regs[i] + k, reload_opnum[r],
+	      if (reload_reg_reaches_end_p (i + k, reload_opnum[r],
 					    reload_when_needed[r]))
 		part_reaches_end = 1;
 	      else
@@ -6924,10 +6929,7 @@ emit_reload_insns (insn)
 		 If consecutive registers are used, clear them all.  */
 
 	      for (k = 0; k < nr; k++)
-		{
-		  reg_reloaded_contents[spill_reg_order[spill_regs[i] + k]] = -1;
-		  reg_reloaded_insn[spill_reg_order[spill_regs[i] + k]] = 0;
-		}
+		CLEAR_HARD_REG_BIT (reg_reloaded_valid, i + k);
 
 	      /* Maybe the spill reg contains a copy of reload_out.  */
 	      if (reload_out[r] != 0 && GET_CODE (reload_out[r]) == REG)
@@ -6957,11 +6959,13 @@ emit_reload_insns (insn)
 		  /* Now do the inverse operation.  */
 		  for (k = 0; k < nr; k++)
 		    {
-		      reg_reloaded_contents[spill_reg_order[spill_regs[i] + k]]
+		      CLEAR_HARD_REG_BIT (reg_reloaded_dead, i + k);
+		      reg_reloaded_contents[i + k]
 			= (nregno >= FIRST_PSEUDO_REGISTER || nr != nnr
 			   ? nregno
 			   : nregno + k);
-		      reg_reloaded_insn[spill_reg_order[spill_regs[i] + k]] = insn;
+		      reg_reloaded_insn[i + k] = insn;
+		      SET_HARD_REG_BIT (reg_reloaded_valid, i + k);
 		    }
 		}
 
@@ -6970,6 +6974,7 @@ emit_reload_insns (insn)
 		 the register being reloaded.  */
 	      else if (reload_out[r] == 0
 		       && reload_in[r] != 0
+		       && spill_reg_order[i] >= 0
 		       && ((GET_CODE (reload_in[r]) == REG
 			    && ! reg_has_output_reload[REGNO (reload_in[r])])
 			   || (GET_CODE (reload_in_reg[r]) == REG
@@ -7004,12 +7009,13 @@ emit_reload_insns (insn)
 
 		  for (k = 0; k < nr; k++)
 		    {
-		      reg_reloaded_contents[spill_reg_order[spill_regs[i] + k]]
+		      CLEAR_HARD_REG_BIT (reg_reloaded_dead, i + k);
+		      reg_reloaded_contents[i + k]
 			= (nregno >= FIRST_PSEUDO_REGISTER || nr != nnr
 			   ? nregno
 			   : nregno + k);
-		      reg_reloaded_insn[spill_reg_order[spill_regs[i] + k]]
-			= insn;
+		      reg_reloaded_insn[i + k] = insn;
+		      SET_HARD_REG_BIT (reg_reloaded_valid, i + k);
 		    }
 		}
 	    }
@@ -7019,13 +7025,10 @@ emit_reload_insns (insn)
 	  else if (part_reaches_end)
 	    {
 	      for (k = 0; k < nr; k++)
-		if (reload_reg_reaches_end_p (spill_regs[i] + k,
+		if (reload_reg_reaches_end_p (i + k,
 					      reload_opnum[r],
 					      reload_when_needed[r]))
-		  {
-		    reg_reloaded_contents[spill_reg_order[spill_regs[i] + k]] = -1;
-		    reg_reloaded_insn[spill_reg_order[spill_regs[i] + k]] = 0;
-		  }
+		  CLEAR_HARD_REG_BIT (reg_reloaded_valid, i + k);
 	    }
 	}
 
@@ -7051,6 +7054,7 @@ emit_reload_insns (insn)
 	    }
 	}
     }
+  IOR_HARD_REG_SET (reg_reloaded_dead, reg_reloaded_died);
 }
 
 /* Emit code to perform a reload from IN (which may be a reload register) to
