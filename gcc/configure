@@ -5559,7 +5559,7 @@ cd $holddir
 
 # Conditionalize the makefile for this host machine.
 xmake_file=
-for f in .. ${host_xmake_file}
+for f in ${host_xmake_file}
 do
 	if test -f ${srcdir}/config/$f
 	then
@@ -5569,7 +5569,7 @@ done
 
 # Conditionalize the makefile for this target machine.
 tmake_file_=
-for f in .. ${tmake_file}
+for f in ${tmake_file}
 do
 	if test -f ${srcdir}/config/$f
 	then
@@ -7421,11 +7421,9 @@ enable_languages=`echo "${enable_languages}" | sed -e 's/[ 	,][ 	,]*/,/g' -e 's/
 # First scan to see if an enabled language requires some other language.
 # We assume that a given config-lang.in will list all the language
 # front ends it requires, even if some are required indirectly.
-for lang in ${srcdir}/*/config-lang.in ..
+for lang in ${srcdir}/*/config-lang.in
 do
    case $lang in
-    ..)
-       ;;
     # The odd quoting in the next line works around
     # an apparent bug in bash 1.12 on linux.
     ${srcdir}/[*]/config-lang.in)
@@ -7452,10 +7450,9 @@ done
 expected_languages=`echo ,${enable_languages}, | sed -e 's:,: :g' -e 's:  *: :g' -e 's:  *: :g' -e 's:^ ::' -e 's: $::'`
 found_languages=
 subdirs=
-for lang in ${srcdir}/*/config-lang.in ..
+for lang in ${srcdir}/*/config-lang.in
 do
 	case $lang in
-	..) ;;
 	# The odd quoting in the next line works around
 	# an apparent bug in bash 1.12 on linux.
 	${srcdir}/[*]/config-lang.in) ;;
@@ -7564,7 +7561,7 @@ fi
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:7568: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:7565: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"
@@ -7627,10 +7624,8 @@ all_gtfiles_files_files=
 
 language_hooks="Make-hooks"
 
-for s in .. $subdirs
+for s in $subdirs
 do
-	if test $s != ".."
-	then
 		language=
 		boot_language=
 		compilers=
@@ -7656,15 +7651,11 @@ do
 		all_stagestuff="$all_stagestuff $stagestuff"
 		all_outputs="$all_outputs $outputs"
 		all_gtfiles="$all_gtfiles $gtfiles"
-                for f in .. $gtfiles
+                for f in $gtfiles
                 do
-          	     if test $f != ".."
-                     then
                          all_gtfiles_files_langs="$all_gtfiles_files_langs ${s} "
                          all_gtfiles_files_files="$all_gtfiles_files_files ${f} "
-                     fi
                 done
-	fi
 done
 
 # Pick up gtfiles for c
@@ -7672,22 +7663,16 @@ gtfiles=
 s="c"
 . ${srcdir}/c-config-lang.in
 all_gtfiles="$all_gtfiles $gtfiles"
-for f in .. $gtfiles
+for f in $gtfiles
 do
-     if test $f != ".."
-     then
         all_gtfiles_files_langs="$all_gtfiles_files_langs ${s} "
         all_gtfiles_files_files="$all_gtfiles_files_files ${f} "
-     fi
 done
 
 check_languages=
-for language in .. $all_languages
+for language in $all_languages
 do
-	if test $language != ".."
-	then
 		check_languages="$check_languages check-$language"
-	fi
 done
 
 # Since we can't use `::' targets, we link each language in
@@ -7704,11 +7689,9 @@ target_list="all.build all.cross start.encap rest.encap tags \
 for t in $target_list
 do
 	x=
-	for lang in .. $all_languages
+	for lang in $all_languages
 	do
-		if test $lang != ".."; then
 			x="$x $lang.$t"
-		fi
 	done
 	echo "lang.$t: $x" >> Make-hooks
 done
@@ -8401,11 +8384,9 @@ xauto-host.h:config.in)
 echo > cstamp-h ;;
 esac
 # Make sure all the subdirs exist.
-for d in .. $subdirs
+for d in $subdirs
 do
-  if test $d != ..; then
     test -d $d || mkdir $d
-  fi
 done
 # If the host supports symlinks, point stage[1234] at ../stage[1234] so
 # bootstrapping and the installation procedure can still use
@@ -8414,8 +8395,7 @@ done
 # This is virtually a duplicate of what happens in configure.lang; we do
 # an extra check to make sure this only happens if ln -s can be used.
 if test "$symbolic_link" = "ln -s"; then
- for d in .. ${subdirs} fixinc ; do
-   if test $d != ..; then
+ for d in ${subdirs} fixinc ; do
 	STARTDIR=`${PWDCMD-pwd}`
 	cd $d
 	for t in stage1 stage2 stage3 stage4 stageprofile stagefeedback include
@@ -8424,7 +8404,6 @@ if test "$symbolic_link" = "ln -s"; then
 		$symbolic_link ../$t $t 2>/dev/null
 	done
 	cd $STARTDIR
-   fi
  done
 else true ; fi
 
