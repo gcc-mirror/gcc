@@ -1300,7 +1300,7 @@ collect2.o : collect2.c $(CONFIG_H) system.h gansidecl.h gstab.h obstack.h \
 
 tlink.o: tlink.c $(DEMANGLE_H) hash.h $(CONFIG_H) system.h toplev.h
 hash.o: hash.c hash.h system.h toplev.h
-cplus-dem.o: cplus-dem.c $(DEMANGLE_H)
+cplus-dem.o: $(srcdir)/../libiberty/cplus-dem.c $(DEMANGLE_H)
 
 underscore.c: s-under ; @true
 
@@ -1367,7 +1367,8 @@ tree.o : tree.c $(CONFIG_H) system.h $(TREE_H) flags.h function.h toplev.h excep
 print-tree.o : print-tree.c $(CONFIG_H) system.h $(TREE_H)
 stor-layout.o : stor-layout.c $(CONFIG_H) system.h $(TREE_H) flags.h \
    function.h $(EXPR_H) $(RTL_H) toplev.h except.h
-fold-const.o : fold-const.c $(CONFIG_H) system.h $(TREE_H) flags.h toplev.h
+fold-const.o : fold-const.c $(CONFIG_H) system.h $(TREE_H) flags.h toplev.h \
+   $(RTL_H)
 toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) \
    flags.h input.h insn-attr.h xcoffout.h defaults.h output.h \
    insn-codes.h insn-config.h $(RECOG_H) Makefile toplev.h dwarfout.h \

@@ -4021,8 +4021,6 @@ display_help ()
   
   if (NUM_ELEM (documented_lang_options) > 1)
     {
-      int       looking_for_start = 0;
-      
       printf ("\nLanguage specific options:\n");
 
       for (i = 0; i < NUM_ELEM (documented_lang_options); i++)

@@ -12,6 +12,7 @@ Mon Aug 17 10:06:11 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 			  Jeff Law <law@cygnus.com>
 
 	* Makefile.in (cplus-dep.o): Use cplus-dem.c from libiberty.
+	* cplus-dem.c: Delete.
 
 	* Makefile.in (fold-const.o): depend on $(RTL_H).
 

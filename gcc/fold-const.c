@@ -47,6 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #include <setjmp.h>
 #include "flags.h"
 #include "tree.h"
+#include "rtl.h"
 #include "toplev.h"
 
 /* Handle floating overflow for `const_binop'.  */

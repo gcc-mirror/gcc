@@ -6053,7 +6053,7 @@ express_from_1 (a, b, mult)
 
   if (GET_CODE (a) == PLUS)
     {
-      rtx ra, oa, tmp;
+      rtx ra, oa;
 
       ra = XEXP (a, 0), oa = XEXP (a, 1);
       if (rtx_equal_p (oa, b))
@@ -6251,10 +6251,10 @@ combine_givs (bl)
       giv_array[i++] = g1;
 
   stats = (struct combine_givs_stats *) alloca (giv_count * sizeof (*stats));
-  bzero (stats, giv_count * sizeof (*stats));
+  bzero ((char *) stats, giv_count * sizeof (*stats));
 
   can_combine = (rtx *) alloca (giv_count * giv_count * sizeof(rtx));
-  bzero (can_combine, giv_count * giv_count * sizeof(rtx));
+  bzero ((char *) can_combine, giv_count * giv_count * sizeof(rtx));
 
   for (i = 0; i < giv_count; i++)
     {
