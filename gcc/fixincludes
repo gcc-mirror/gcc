@@ -12,6 +12,14 @@ INPUT=${2-${INPUT-/usr/include}}
 # Directory in which to store the results.
 LIB=${1?"fixincludes: output directory not specified"}
 
+# Define what target system we're fixing.
+if test -r ./Makefile; then
+	target_canonical="`sed -n -e 's,^target[ 	]*=[ 	]*\(.*\)$,\1,p' < Makefile`"
+	test -z "${target_canonical}" && target_canonical=unknown
+else
+	target_canonical=unknown
+fi
+
 # Define PWDCMD as a command to use to get the working dir
 # in the form that we want.
 PWDCMD=pwd
@@ -358,6 +366,13 @@ for file in sys/types.h stdlib.h sys/stdtypes.h stddef.h memory.h unistd.h; do
   if [ -r ${LIB}/$file ]; then
     echo Fixing size_t, ptrdiff_t and wchar_t in $file
     sed \
+      -e '/^[ 	]*\*[ 	]*typedef unsigned int size_t;/N'	\
+      -e 's/^\([ 	]*\*[ 	]*typedef unsigned int size_t;\n[ 	]*\*\/\)/\1\
+#ifndef __SIZE_TYPE__\
+#define __SIZE_TYPE__ long unsigned int\
+#endif\
+typedef __SIZE_TYPE__ size_t;\
+/'	\
       -e '/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]size_t/i\
 #ifndef __SIZE_TYPE__\
 #define __SIZE_TYPE__ long unsigned int\
@@ -1982,6 +1997,7 @@ fi
 # Correct the return type for strlen in string.h on Lynx.
 # Correct the argument type for ffs in string.h on Alpha OSF/1 V2.0.
 # Add missing const for strdup on OSF/1 V3.0.
+# On sysV88 layout is slightly different.
 file=string.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
@@ -2000,6 +2016,8 @@ if [ -r ${LIB}/$file ]; then
       -e 's/^\(	strncmp()\),\n\(	strlen(),\)$/\1;\
 extern unsigned int\
 \2/'\
+      -e '/^extern int$/N'\
+      -e 's/^extern int\(\n	strlen(),\)/extern size_t\1/' \
     ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
@@ -2284,6 +2302,45 @@ do
     fi
   fi
 done
+
+# libm.a on m88k-motorola-sysv3 contains a stupid optimization for function
+# hypot(), which returns the second argument without even looking at its value
+# if the other is 0.0
+# Another drawback is that fix-header doesn't fix fabs' prototype, and I have
+#  no idea why.
+file=math.h
+if [ $target_canonical = m88k-motorola-sysv3 ]; then
+  if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+    cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+    chmod +w ${LIB}/$file 2>/dev/null
+    chmod a+r ${LIB}/$file 2>/dev/null
+  fi
+
+  if [ -r ${LIB}/$file ]; then
+    echo Fixing $file, fabs/hypot definition
+    sed \
+      -e 's/extern double floor(), ceil(), fmod(), fabs();/extern double floor(), ceil(), fmod(), fabs _PARAMS((double));/' \
+      -e '/^extern double hypot();$/a\
+\/* Workaround a stupid Motorola optimization if one\
+   of x or y is 0.0 and the other is negative!  *\/\
+#ifdef __STDC__\
+static __inline__ double fake_hypot (double x, double y)\
+#else\
+static __inline__ double fake_hypot (x, y)\
+	double x, y;\
+#endif\
+{\
+	return fabs (hypot (x, y));\
+}\
+#define hypot	fake_hypot
+' \
+      ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+      rm -f ${LIB}/$file
+    fi
+  fi
+fi
 
 # math.h on SunOS 4 puts the declaration of matherr before the definition
 # of struct exception, so the prototype (added by fixproto) causes havoc.
