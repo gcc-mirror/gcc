@@ -5861,6 +5861,12 @@ choose_reload_regs (insn, avoid_return_reg)
 		  reload_reg_rtx[r] = equiv;
 		  reload_inherited[r] = 1;
 
+		  /* If reg_reloaded_valid is not set for this register,
+		     there might be a stale spill_reg_store lying around.
+		     We must clear it, since otherwise emit_reload_insns
+		     might delete the store.  */
+		  if (! TEST_HARD_REG_BIT (reg_reloaded_valid, regno))
+		    spill_reg_store[regno] = NULL_RTX;
 		  /* If any of the hard registers in EQUIV are spill
 		     registers, mark them as in use for this insn.  */
 		  for (k = 0; k < nr; k++)
