@@ -2108,6 +2108,14 @@ nomods_initdcl0:
 		  d = start_decl ($1, current_declspecs, 0);
 		  cplus_decl_attributes (d, $3, prefix_attributes);
 		  cp_finish_decl (d, NULL_TREE, $2, 1, 0); }
+	| constructor_declarator maybeasm maybe_attribute
+		{ tree d;
+		  current_declspecs = NULL_TREE;
+		  prefix_attributes = NULL_TREE;
+		  $$ = suspend_momentary ();
+		  d = start_decl ($1, current_declspecs, 0);
+		  cplus_decl_attributes (d, $3, prefix_attributes);
+		  cp_finish_decl (d, NULL_TREE, $2, 1, 0); }
 	;
 
 /* the * rules are dummies to accept the Apollo extended syntax

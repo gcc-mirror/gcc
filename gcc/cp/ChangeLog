@@ -1,3 +1,7 @@
+Sat Feb  7 15:15:57 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (nomods_initdcl0): Add constructor_declarator case.
+
 Thu Feb  5 19:10:40 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tinfo2.cc: Add tinfo for signed char.
