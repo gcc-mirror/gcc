@@ -188,13 +188,21 @@ struct definition {
   const U_CHAR *argnames;
 };
 
+/* Chained list of answers to an assertion.  */
+struct answer
+{
+  struct answer *next;
+  const unsigned char *answer;
+  size_t len;
+};
+
 /* different kinds of things that can appear in the value field
    of a hash node.  Actually, this may be useless now. */
 union hashval {
   const char *cpval;
   DEFINITION *defn;
+  struct answer *answers;
 };
-
 
 /* The structure of a node in the hash table.  The hash table
    has entries for all tokens defined by #define commands (type T_MACRO),
@@ -243,6 +251,17 @@ struct hashnode {
 };
 
 typedef struct hashnode HASHNODE;
+
+static HASHNODE *parse_assertion PARAMS ((const unsigned char *,
+					  const unsigned char *,
+					  struct answer **, int));
+static struct answer **find_answer PARAMS ((HASHNODE *,
+					    const struct answer *));
+static int parse_answer PARAMS ((const unsigned char *, const unsigned char *,
+				 struct answer **, int));
+static unsigned char *canonicalize_text PARAMS ((const unsigned char *,
+						 const unsigned char *,
+						 const unsigned char **));
 
 /* Some definitions for the hash table.  The hash function MUST be
    computed as shown in hashf () below.  That is because the rescan
@@ -3021,22 +3040,228 @@ do_undef (buf, limit, op)
   }
 }
 
-/* Function body to be provided later.  */
+/* Read the tokens of the answer into the macro pool.  Only commit the
+   memory if we intend it as permanent storage, i.e. the #assert case.
+   Returns 0 on success.  */
+
+static int
+parse_answer (buf, limit, answerp, type)
+     const unsigned char *buf, *limit;
+     struct answer **answerp;
+     int type;
+{
+  const unsigned char *start;
+
+  /* Skip leading whitespace.  */
+  if (buf < limit && *buf == ' ')
+    buf++;
+
+  /* Parentheses are optional here.  */
+  if (buf == limit && (type == T_IF || type == T_UNASSERT))
+    return 0;
+
+  if (buf == limit || *buf++ != '(')
+    {
+      error ("missing '(' after predicate");
+      return 1;
+    }
+
+  /* Drop whitespace at start.  */
+  while (buf < limit && *buf == ' ')
+    buf++;
+
+  start = buf;
+  while (buf < limit && *buf != ')')
+    buf++;
+
+  if (buf == limit)
+    {
+      error ("missing ')' to complete answer");
+      return 1;
+    }
+
+  if (buf == start)
+    {
+      error ("predicate's answer is empty");
+      return 1;
+    }
+
+  if ((type == T_ASSERT || type == T_UNASSERT) && buf + 1 != limit)
+    {
+      error ("extra text at end of directive");
+      return 1;
+    }
+
+  /* Lose trailing whitespace.  */
+  if (buf[-1] == ' ')
+    buf--;
+
+  *answerp = (struct answer *) xmalloc (sizeof (struct answer));
+  (*answerp)->answer = start;
+  (*answerp)->len = buf - start;
+
+  return 0;
+}
+
+/* Parses an assertion, returning a pointer to the hash node of the
+   predicate, or 0 on error.  If an answer was supplied, it is placed
+   in ANSWERP, otherwise it is set to 0.  */
+static HASHNODE *
+parse_assertion (buf, limit, answerp, type)
+     const unsigned char *buf, *limit;
+     struct answer **answerp;
+     int type;
+{
+  HASHNODE *result = 0;
+  const unsigned char *climit;
+  unsigned char *bp, *symname = canonicalize_text (buf, limit, &climit);
+  unsigned int len;
+
+  bp = symname;
+  while (bp < climit && is_idchar[*bp])
+    bp++;
+  len = bp - symname;
+
+  *answerp = 0;
+  if (len == 0)
+    {
+      if (symname == climit)
+	error ("assertion without predicate");
+      else
+	error ("predicate must be an identifier");
+    }
+  else if (parse_answer (bp, climit, answerp, type) == 0)
+    {
+      unsigned char *sym = alloca (len + 1);
+      int hashcode;
+      
+      /* Prefix '#' to get it out of macro namespace.  */
+      sym[0] = '#';
+      memcpy (sym + 1, symname, len);
+
+      hashcode = hashf (sym, len + 1, HASHSIZE);
+      result = lookup (sym, len + 1, hashcode);
+      if (result == 0)
+	result = install (sym, len + 1, T_UNUSED, hashcode);
+    }
+
+  return result;
+}
+
+/* Handle a #assert directive.  */
 static void
 do_assert (buf, limit, op)
-     U_CHAR *buf ATTRIBUTE_UNUSED;
-     U_CHAR *limit ATTRIBUTE_UNUSED;
+     U_CHAR *buf;
+     U_CHAR *limit;
      FILE_BUF *op ATTRIBUTE_UNUSED;
 {
+  struct answer *new_answer;
+  HASHNODE *node;
+  
+  node = parse_assertion (buf, limit, &new_answer, T_ASSERT);
+  if (node)
+    {
+      /* Place the new answer in the answer list.  First check there
+         is not a duplicate.  */
+      new_answer->next = 0;
+      if (node->type == T_ASSERT)
+	{
+	  if (*find_answer (node, new_answer))
+	    {
+	      free (new_answer);
+	      warning ("\"%s\" re-asserted", node->name + 1);
+	      return;
+	    }
+	  new_answer->next = node->value.answers;
+	}
+      node->type = T_ASSERT;
+      node->value.answers = new_answer;
+    }
 }
 
 /* Function body to be provided later.  */
 static void
 do_unassert (buf, limit, op)
-     U_CHAR *buf ATTRIBUTE_UNUSED;
-     U_CHAR *limit ATTRIBUTE_UNUSED;
+     U_CHAR *buf;
+     U_CHAR *limit;
      FILE_BUF *op ATTRIBUTE_UNUSED;
 {
+  HASHNODE *node;
+  struct answer *answer;
+  
+  node = parse_assertion (buf, limit, &answer, T_UNASSERT);
+  /* It isn't an error to #unassert something that isn't asserted.  */
+  if (node)
+    {
+      if (node->type == T_ASSERT)
+	{
+	  if (answer)
+	    {
+	      struct answer **p = find_answer (node, answer), *temp;
+
+	      /* Remove the answer from the list.  */
+	      temp = *p;
+	      if (temp)
+		*p = temp->next;
+
+	      /* Did we free the last answer?  */
+	      if (node->value.answers == 0)
+		delete_macro (node);
+	    }
+	  else
+	    delete_macro (node);
+	}
+
+      free (answer);
+    }
+}
+
+/* Returns a pointer to the pointer to the answer in the answer chain,
+   or a pointer to NULL if the answer is not in the chain.  */
+static struct answer **
+find_answer (node, candidate)
+     HASHNODE *node;
+     const struct answer *candidate;
+{
+  struct answer **result;
+
+  for (result = &node->value.answers; *result; result = &(*result)->next)
+    {
+      struct answer *answer = *result;
+
+      if (answer->len == candidate->len
+	  && !memcmp (answer->answer, candidate->answer, answer->len))
+	break;
+    }
+
+  return result;
+}
+
+/* Return a malloced buffer with leading and trailing whitespace
+   removed, and all instances of internal whitespace reduced to a
+   single space.  */
+static unsigned char *
+canonicalize_text (buf, limit, climit)
+     const unsigned char *buf, *limit, **climit;
+{
+  unsigned int len = limit - buf;
+  unsigned char *result = (unsigned char *) xmalloc (len), *dest;
+
+  for (dest = result; buf < limit;)
+    {
+      if (! is_space[*buf])
+	*dest++ = *buf++;
+      else
+	{
+	  while (++buf < limit && is_space [*buf])
+	    ;
+	  if (dest != result && buf != limit)
+	    *dest++ = ' ';
+	}
+    }
+
+  *climit = dest;
+  return result;
 }
 
 /*
