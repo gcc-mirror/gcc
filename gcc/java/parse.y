@@ -5018,15 +5018,16 @@ read_import_dir (wfl)
 		}
 	      *filename->ptr++ = '/';
 
-	      for (; k < zipf->count;  k++, zipd = ZIPDIR_NEXT (zipd))
+	      for (k = 0; k < zipf->count;  k++, zipd = ZIPDIR_NEXT (zipd))
 		{
 		  char *current_entry = ZIPDIR_FILENAME (zipd);
 		  int current_entry_len = zipd->filename_length;
 
-		  if (strncmp (filename->data, current_entry, 
-			       BUFFER_LENGTH (filename)) != 0)
+		  if (current_entry_len >= BUFFER_LENGTH (filename)
+		      && strncmp (filename->data, current_entry, 
+				  BUFFER_LENGTH (filename)) != 0)
 		    continue;
-		  found += note_possible_classname (current_entry,
+		  found |= note_possible_classname (current_entry,
 						    current_entry_len);
 		}
 	    }
@@ -5059,7 +5060,7 @@ read_import_dir (wfl)
 	      len = strlen (direntp->d_name);
 	      buffer_grow (filename, len+1);
 	      strcpy (filename->ptr, d_name);
-	      found += note_possible_classname (filename->data + entry_length,
+	      found |= note_possible_classname (filename->data + entry_length,
 						package_length+len+1);
 	    }
 	  if (dirp)

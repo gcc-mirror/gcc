@@ -1,3 +1,10 @@
+1999-02-25  Tom Tromey  <tromey@cygnus.com>
+
+	* parse.y (read_import_dir): Use `|=', not `+=', to set `found'.
+	When reading a zip file, only use strncmp if both strings are
+	bigger than the buffer length.  Initialize `k' when looping
+	through zip file.
+
 1999-02-24  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (struct namelet): New structure.
