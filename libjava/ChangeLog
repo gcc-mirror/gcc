@@ -1,3 +1,10 @@
+2004-10-23  Michael Koch  <konqueror@gmx.de>
+
+	* javax/print/DocFlavor.java,
+	javax/print/attribute/standard/JobStateReason.java,
+	javax/print/attribute/standard/MultipleDocumentHandling.java:
+	Added missing constants.
+
 2004-10-22  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/java/net/protocol/http/Connection.java (sendRequest): Fix
