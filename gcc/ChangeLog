@@ -1,3 +1,7 @@
+Sat Feb 16 13:39:09 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (store_constructor): Handle target REG case for ARRAY_TYPE.
+
 2002-02-16  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (pool_stop_uid, other_chunk, far_away, 
