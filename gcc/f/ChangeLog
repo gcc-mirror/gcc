@@ -1,3 +1,7 @@
+1999-02-17  Ulrich Drepper  <drepper@cygnus.com>
+
+	* intdoc.in: Fix typo.
+
 1999-02-17  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.texi, intdoc.in: Document Y2K and some other known
