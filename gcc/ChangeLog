@@ -1,3 +1,7 @@
+1999-04-28 14:40 Bruce Korb <ddsinc09@ix.netcom.com>
+
+	* fixinc/mkfixinc.sh: Makesure the result shell script is writable
+
 Wed Apr 28 10:36:39 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* config/m68k/m68k.md (cmpsi+1): Use cmp.w when comparing a 16 bit

@@ -109,6 +109,7 @@ esac
 if test -z "$fixincludes"
 then
     (echo "#! /bin/sh" ; echo "exit 0" ) > ${target}
+    chmod 755 ${target}
     exit 0
 fi
 
@@ -119,6 +120,7 @@ if test -f ${srcdir}/"${fixincludes}"
 then
     echo copying ${srcdir}/$fixincludes to ${target}
     cp ${srcdir}/$fixincludes ${target}
+    chmod 755 ${target}
     exit 0
 fi
 
@@ -128,7 +130,7 @@ echo $MAKE SHELL=\"$SHELL\" install
 
 #  make and install either the binary or the default script
 #
-$MAKE SHELL="$SHELL" install && exit 0
+$MAKE SHELL="$SHELL" install && chmod 755 ${target} && exit 0
 
 #  Where is our inclhack script?  That is the backup
 #  in case we are unable to make a working binary.
@@ -144,3 +146,4 @@ echo Could not install binary fixincludes.
 echo Installing shell script instead.
 
 cp ${INCLHACK} ${target}
+chmod 755 ${target}
