@@ -31,6 +31,11 @@ S* S::g()
   return this;
 }
 
+S* S::h()
+{
+  return this;
+}
+
 int main()
 {
   S s;
