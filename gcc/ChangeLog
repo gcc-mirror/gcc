@@ -1,3 +1,10 @@
+Mon Apr 26 23:55:50 1999  Robert Lipe  <robertlipe@usa.net>
+
+	* fixinc/inclhack.def (avoid_bool): Enable match if typedefs are 
+	prepended by spaces.
+	(sco5_stat_wrappers): New fix.   Make sys/stat.h C++ safe.
+	* fixinc/fixincl.sh, fixinc/fixincl.x, fixinc/inclhack.sh: Rebuilt.
+
 Mon Apr 26 23:28:54 1999  Mumit Khan  <khan@xraylith.wisc.edu>
                           Donn Terry  <donn@interix.com>
 

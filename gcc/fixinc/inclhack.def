@@ -129,6 +129,12 @@ fix = {
 
     sed = "/^typedef[ \t][ \t]*char[ \t][ \t]*bool[ \t]*;/a\\\n"
                 "#endif\n";
+
+    sed = "/^[ ]*typedef[ \t][ \t]*unsigned char[ \t][ \t]*bool[ \t]*;/i\\\n"
+                "#ifndef __cplusplus\n";
+
+    sed = "/^[ ]*typedef[ \t][ \t]*unsigned char[ \t][ \t]*bool[ \t]*;/a\\\n"
+                "#endif\n";
 };
 
 
@@ -346,6 +352,27 @@ fix = {
     files  = "sunwindow/win_lock.h";
     files  = "sunwindow/win_cursor.h";
     sed    = "s/ecd.cursor/ecd_cursor/";
+};
+
+/*
+ *  On SCO OpenServer 5.0.0 through (at least) 5.0.5 <sys/stat.h> contains
+ *  tiny static wrappers that aren't C++ safe.
+ */
+fix = {
+    hackname = sco5_stat_wrappers;
+    mach     = "i*86-*-sco3.2v5*";
+    files    = "sys/stat.h";
+
+    sed = "/^static int[ \t]*[a-z]*stat(/i\\\n"
+	"#ifdef __cplusplus\\\n"
+	"extern \"C\"\\\n"
+	"{\\\n"
+	"#endif\\\n";
+
+    sed = "/^}$/a\\\n"
+	"#ifdef __cplusplus\\\n"
+	"}\\\n"
+	"#endif \/* __cplusplus *\/\\\n";
 };
 
 
