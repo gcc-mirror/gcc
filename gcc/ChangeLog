@@ -1,3 +1,8 @@
+2004-04-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* builtins.c, cgraph.c, cgraphunit.c, final.c, fold-const.c:
+	Fix comment typos.
+
 2004-04-29  Douglas B Rupp  <rupp@gnat.com>
 
 	* gcc.c (DELETE_IF_ORDINARY): New macro default definition.

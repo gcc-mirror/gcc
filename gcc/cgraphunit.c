@@ -923,7 +923,7 @@ cgraph_remove_unreachable_nodes (void)
      eliminated
      Reachable extern inline functions we sometimes inlined will be turned into
      unanalyzed nodes so they look like for true extern functions to the rest
-     of code.  Body of such functions is relased via remove_node once the
+     of code.  Body of such functions is released via remove_node once the
      inline clones are eliminated.  */
   for (node = cgraph_nodes; node; node = node->next)
     {
@@ -1047,7 +1047,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate)
   else
     e->callee->global.inlined_to = e->caller;
 
-  /* Recursivly clone all bodies.  */
+  /* Recursively clone all bodies.  */
   for (e = e->callee->callees; e; e = e->next_callee)
     if (!e->inline_failed)
       cgraph_clone_inlined_nodes (e, duplicate);
@@ -1110,7 +1110,7 @@ cgraph_mark_inline (struct cgraph_edge *edge)
   struct cgraph_edge *e, *next;
   int times = 0;
 
-  /* Look for all calls, mark them inline and clone recursivly
+  /* Look for all calls, mark them inline and clone recursively
      all inlined functions.  */
   for (e = what->callers; e; e = next)
     {
@@ -1182,7 +1182,7 @@ cgraph_default_inline_p (struct cgraph_node *n)
 
 /* Return true when inlining WHAT would create recursive inlining.
    We call recursive inlining all cases where same function appears more than
-   once in the single recusion nest path in the inline graph.  */
+   once in the single recursion nest path in the inline graph.  */
 
 static bool
 cgraph_recursive_inlining_p (struct cgraph_node *to,
