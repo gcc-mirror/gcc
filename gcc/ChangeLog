@@ -1,3 +1,8 @@
+Mon Apr 20 15:04:14 1998  John Wehle  (john@feith.com)
+
+	* i386.md (movsf_push, movdf_push, movxf_push): Allow memory
+	operands during and after reload.
+
 Mon Apr 20 22:37:50 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* final.c (shorten_branches, init_insn_lengths): Move code
