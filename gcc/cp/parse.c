@@ -7483,7 +7483,7 @@ case 687:
 		  /* If the condition wasn't a declaration, clear out the
 		     block we made for it and start a new one here so the
 		     optimization in expand_end_loop will work.  */
-		  if (TREE_CODE (yyvsp[0].ttype) != VAR_DECL)
+		  if (getdecls () == NULL_TREE)
 		    {
 		      do_poplevel ();
 		      do_pushlevel ();
@@ -7615,7 +7615,7 @@ case 694:
 		  /* If the condition wasn't a declaration, clear out the
 		     block we made for it and start a new one here so the
 		     optimization in expand_end_loop will work.  */
-		  if (yyvsp[-1].ttype == NULL_TREE || TREE_CODE (yyvsp[-1].ttype) != VAR_DECL)
+		  if (getdecls () == NULL_TREE)
 		    {
 		      do_poplevel ();
 		      do_pushlevel ();
