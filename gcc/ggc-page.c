@@ -1509,10 +1509,10 @@ ggc_collect ()
   /* Avoid frequent unnecessary work by skipping collection if the
      total allocations haven't expanded much since the last
      collection.  */
-  size_t allocated_last_gc =
+  float allocated_last_gc =
     MAX (G.allocated_last_gc, (size_t)PARAM_VALUE (GGC_MIN_HEAPSIZE) * 1024);
 
-  size_t min_expand = allocated_last_gc * PARAM_VALUE (GGC_MIN_EXPAND) / 100;
+  float min_expand = allocated_last_gc * PARAM_VALUE (GGC_MIN_EXPAND) / 100;
 
   if (G.allocated < allocated_last_gc + min_expand)
     return;
