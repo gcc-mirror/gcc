@@ -1,5 +1,13 @@
 2005-03-14  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR c++/20280
+	* gimplify.c (gimplify_cond_expr): Add fallback argument.  Use a
+	temporary variable of pointer type if an lvalues is required.
+	(gimplify_modify_expr_rhs): Request an rvalue from it.
+	(gimplify_expr): Pass fallback on.
+
+2005-03-14  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR middle-end/18628
 	* cse.c (fold_rtx_mem): Don't fold a load from a jumptable into a
 	register.
