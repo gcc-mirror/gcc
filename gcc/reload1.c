@@ -282,6 +282,12 @@ extern rtx forced_labels;
    examine.  */
 struct insn_chain *reload_insn_chain;
 
+#ifdef TREE_CODE
+extern tree current_function_decl;
+#else
+extern void *current_function_decl;
+#endif
+
 /* List of all insns needing reloads.  */
 static struct insn_chain *insns_need_reload;
 
