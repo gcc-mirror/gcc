@@ -1123,7 +1123,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 #endif
 
 /* ASM_SPEC is the set of arguments to pass to the assembler.  Note: we
-   pass -mgp32, -mgp64, -march, -mabi=eabi and -meabi=o64 regardless of
+   pass -mgp32, -mgp64, -march, -mabi=eabi and -mabi=o64 regardless of
    whether we're using GAS.  These options can only be used properly
    with GAS, and it is better to get an error from a non-GAS assembler
    than to silently generate bad code.  */
