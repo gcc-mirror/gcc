@@ -111,20 +111,27 @@ static int no_line_numbers;
    All of these except perhaps the floating-point CONST_DOUBLEs
    are unique; no other rtx-object will be equal to any of these.  */
 
-rtx pc_rtx;			/* (PC) */
-rtx cc0_rtx;			/* (CC0) */
-rtx cc1_rtx;			/* (CC1) (not actually used nowadays) */
-rtx const0_rtx;			/* (CONST_INT 0) */
-rtx const1_rtx;			/* (CONST_INT 1) */
-rtx const2_rtx;			/* (CONST_INT 2) */
-rtx constm1_rtx;		/* (CONST_INT -1) */
-rtx const_true_rtx;		/* (CONST_INT STORE_FLAG_VALUE) */
+struct _global_rtl global_rtl =
+{
+  {PC, VOIDmode},			/* pc_rtx */
+  {CC0, VOIDmode},			/* cc0_rtx */
+  {REG},				/* stack_pointer_rtx */
+  {REG},				/* frame_pointer_rtx */
+  {REG},				/* hard_frame_pointer_rtx */
+  {REG},				/* arg_pointer_rtx */
+  {REG},				/* virtual_incoming_args_rtx */
+  {REG},				/* virtual_stack_vars_rtx */
+  {REG},				/* virtual_stack_dynamic_rtx */
+  {REG},				/* virtual_outgoing_args_rtx */
+};
 
 /* We record floating-point CONST_DOUBLEs in each floating-point mode for
    the values of 0, 1, and 2.  For the integer entries and VOIDmode, we
    record a copy of const[012]_rtx.  */
 
 rtx const_tiny_rtx[3][(int) MAX_MACHINE_MODE];
+
+rtx const_true_rtx;
 
 REAL_VALUE_TYPE dconst0;
 REAL_VALUE_TYPE dconst1;
@@ -149,10 +156,6 @@ REAL_VALUE_TYPE dconstm1;
 
    In an inline procedure, the stack and frame pointer rtxs may not be
    used for anything else.  */
-rtx stack_pointer_rtx;		/* (REG:Pmode STACK_POINTER_REGNUM) */
-rtx frame_pointer_rtx;		/* (REG:Pmode FRAME_POINTER_REGNUM) */
-rtx hard_frame_pointer_rtx;	/* (REG:Pmode HARD_FRAME_POINTER_REGNUM) */
-rtx arg_pointer_rtx;		/* (REG:Pmode ARG_POINTER_REGNUM) */
 rtx struct_value_rtx;		/* (REG:Pmode STRUCT_VALUE_REGNUM) */
 rtx struct_value_incoming_rtx;	/* (REG:Pmode STRUCT_VALUE_INCOMING_REGNUM) */
 rtx static_chain_rtx;		/* (REG:Pmode STATIC_CHAIN_REGNUM) */
@@ -163,19 +166,12 @@ rtx pic_offset_table_rtx;	/* (REG:Pmode PIC_OFFSET_TABLE_REGNUM) */
    See for instance the MIPS port.  */
 rtx return_address_pointer_rtx;	/* (REG:Pmode RETURN_ADDRESS_POINTER_REGNUM) */
 
-rtx virtual_incoming_args_rtx;	/* (REG:Pmode VIRTUAL_INCOMING_ARGS_REGNUM) */
-rtx virtual_stack_vars_rtx;	/* (REG:Pmode VIRTUAL_STACK_VARS_REGNUM) */
-rtx virtual_stack_dynamic_rtx;	/* (REG:Pmode VIRTUAL_STACK_DYNAMIC_REGNUM) */
-rtx virtual_outgoing_args_rtx;	/* (REG:Pmode VIRTUAL_OUTGOING_ARGS_REGNUM) */
-
 /* We make one copy of (const_int C) where C is in
    [- MAX_SAVED_CONST_INT, MAX_SAVED_CONST_INT]
    to save space during the compilation and simplify comparisons of
    integers.  */
 
-#define MAX_SAVED_CONST_INT 64
-
-static rtx const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
+struct rtx_def const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
 
 /* The ends of the doubly-linked chain of rtl for the current function.
    Both are reset to null at the start of rtl generation for the function.
@@ -314,10 +310,12 @@ gen_rtx VPROTO((enum rtx_code code, enum machine_mode mode, ...))
       HOST_WIDE_INT arg = va_arg (p, HOST_WIDE_INT);
 
       if (arg >= - MAX_SAVED_CONST_INT && arg <= MAX_SAVED_CONST_INT)
-	return const_int_rtx[arg + MAX_SAVED_CONST_INT];
+	return &const_int_rtx[arg + MAX_SAVED_CONST_INT];
 
+#if STORE_FLAG_VALUE != 1 && STORE_FLAG_VALUE != -1
       if (const_true_rtx && arg == STORE_FLAG_VALUE)
 	return const_true_rtx;
+#endif
 
       rt_val = rtx_alloc (code);
       INTVAL (rt_val) = arg;
@@ -340,16 +338,16 @@ gen_rtx VPROTO((enum rtx_code code, enum machine_mode mode, ...))
 	 Also don't do this when we are making new REGs in reload,
 	 since we don't want to get confused with the real pointers.  */
 
-      if (frame_pointer_rtx && regno == FRAME_POINTER_REGNUM && mode == Pmode
+      if (regno == FRAME_POINTER_REGNUM && mode == Pmode
 	  && ! reload_in_progress)
 	return frame_pointer_rtx;
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-      if (hard_frame_pointer_rtx && regno == HARD_FRAME_POINTER_REGNUM
-	  && mode == Pmode && ! reload_in_progress)
+      if (regno == HARD_FRAME_POINTER_REGNUM && mode == Pmode
+	  && ! reload_in_progress)
 	return hard_frame_pointer_rtx;
 #endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM && HARD_FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-      if (arg_pointer_rtx && regno == ARG_POINTER_REGNUM && mode == Pmode
+      if (regno == ARG_POINTER_REGNUM && mode == Pmode
 	  && ! reload_in_progress)
 	return arg_pointer_rtx;
 #endif
@@ -358,7 +356,7 @@ gen_rtx VPROTO((enum rtx_code code, enum machine_mode mode, ...))
 	  && mode == Pmode && ! reload_in_progress)
 	return return_address_pointer_rtx;
 #endif
-      if (stack_pointer_rtx && regno == STACK_POINTER_REGNUM && mode == Pmode
+      if (regno == STACK_POINTER_REGNUM && mode == Pmode
 	  && ! reload_in_progress)
 	return stack_pointer_rtx;
       else
@@ -3360,26 +3358,18 @@ init_emit_once (line_numbers)
 
   /* Create the unique rtx's for certain rtx codes and operand values.  */
 
-  pc_rtx = gen_rtx (PC, VOIDmode);
-  cc0_rtx = gen_rtx (CC0, VOIDmode);
-
-  /* Don't use gen_rtx here since gen_rtx in this case
-     tries to use these variables.  */
   for (i = - MAX_SAVED_CONST_INT; i <= MAX_SAVED_CONST_INT; i++)
     {
-      const_int_rtx[i + MAX_SAVED_CONST_INT] = rtx_alloc (CONST_INT);
-      PUT_MODE (const_int_rtx[i + MAX_SAVED_CONST_INT], VOIDmode);
-      INTVAL (const_int_rtx[i + MAX_SAVED_CONST_INT]) = i;
+      PUT_CODE (&const_int_rtx[i + MAX_SAVED_CONST_INT], CONST_INT);
+      PUT_MODE (&const_int_rtx[i + MAX_SAVED_CONST_INT], VOIDmode);
+      INTVAL (&const_int_rtx[i + MAX_SAVED_CONST_INT]) = i;
     }
 
-  /* These four calls obtain some of the rtx expressions made above.  */
-  const0_rtx = GEN_INT (0);
-  const1_rtx = GEN_INT (1);
-  const2_rtx = GEN_INT (2);
-  constm1_rtx = GEN_INT (-1);
-
-  /* This will usually be one of the above constants, but may be a new rtx.  */
-  const_true_rtx = GEN_INT (STORE_FLAG_VALUE);
+  if (STORE_FLAG_VALUE >= - MAX_SAVED_CONST_INT
+      && STORE_FLAG_VALUE <= MAX_SAVED_CONST_INT)
+    const_true_rtx = &const_int_rtx[STORE_FLAG_VALUE + MAX_SAVED_CONST_INT];
+  else
+    const_true_rtx = gen_rtx (CONST_INT, VOIDmode, STORE_FLAG_VALUE);
 
   dconst0 = REAL_VALUE_ATOF ("0", DFmode);
   dconst1 = REAL_VALUE_ATOF ("1", DFmode);
@@ -3420,39 +3410,33 @@ init_emit_once (line_numbers)
        mode = GET_MODE_WIDER_MODE (mode))
     const_tiny_rtx[0][(int) mode] = const0_rtx;
 
-  stack_pointer_rtx = gen_rtx (REG, Pmode, STACK_POINTER_REGNUM);
-  frame_pointer_rtx = gen_rtx (REG, Pmode, FRAME_POINTER_REGNUM);
 
-  if (HARD_FRAME_POINTER_REGNUM == FRAME_POINTER_REGNUM)
-    hard_frame_pointer_rtx = frame_pointer_rtx;
-  else
-    hard_frame_pointer_rtx = gen_rtx (REG, Pmode, HARD_FRAME_POINTER_REGNUM);
-  
-  if (FRAME_POINTER_REGNUM == ARG_POINTER_REGNUM)
-    arg_pointer_rtx = frame_pointer_rtx;
-  else if (HARD_FRAME_POINTER_REGNUM == ARG_POINTER_REGNUM)
-    arg_pointer_rtx = hard_frame_pointer_rtx;
-  else if (STACK_POINTER_REGNUM == ARG_POINTER_REGNUM)
-    arg_pointer_rtx = stack_pointer_rtx;
-  else
-    arg_pointer_rtx = gen_rtx (REG, Pmode, ARG_POINTER_REGNUM);
+  /* Assign register numbers to the globally defined register rtx.
+     This must be done at runtime because the register number field
+     is in a union and some compilers can't initialize unions.  */
+
+  REGNO (stack_pointer_rtx) = STACK_POINTER_REGNUM;
+  PUT_MODE (stack_pointer_rtx, Pmode);
+  REGNO (frame_pointer_rtx) = FRAME_POINTER_REGNUM;
+  PUT_MODE (frame_pointer_rtx, Pmode);
+  REGNO (hard_frame_pointer_rtx) = HARD_FRAME_POINTER_REGNUM;
+  PUT_MODE (hard_frame_pointer_rtx, Pmode);
+  REGNO (arg_pointer_rtx) = ARG_POINTER_REGNUM;
+  PUT_MODE (arg_pointer_rtx, Pmode);
+
+  REGNO (virtual_incoming_args_rtx) = VIRTUAL_INCOMING_ARGS_REGNUM;
+  PUT_MODE (virtual_incoming_args_rtx, Pmode);
+  REGNO (virtual_stack_vars_rtx) = VIRTUAL_STACK_VARS_REGNUM;
+  PUT_MODE (virtual_stack_vars_rtx, Pmode);
+  REGNO (virtual_stack_dynamic_rtx) = VIRTUAL_STACK_DYNAMIC_REGNUM;
+  PUT_MODE (virtual_stack_dynamic_rtx, Pmode);
+  REGNO (virtual_outgoing_args_rtx) = VIRTUAL_OUTGOING_ARGS_REGNUM;
+  PUT_MODE (virtual_outgoing_args_rtx, Pmode);
 
 #ifdef RETURN_ADDRESS_POINTER_REGNUM
   return_address_pointer_rtx = gen_rtx (REG, Pmode,
 					RETURN_ADDRESS_POINTER_REGNUM);
 #endif
-
-  /* Create the virtual registers.  Do so here since the following objects
-     might reference them.  */
-
-  virtual_incoming_args_rtx = gen_rtx (REG, Pmode,
-				       VIRTUAL_INCOMING_ARGS_REGNUM);
-  virtual_stack_vars_rtx = gen_rtx (REG, Pmode,
-				    VIRTUAL_STACK_VARS_REGNUM);
-  virtual_stack_dynamic_rtx = gen_rtx (REG, Pmode,
-				       VIRTUAL_STACK_DYNAMIC_REGNUM);
-  virtual_outgoing_args_rtx = gen_rtx (REG, Pmode,
-				       VIRTUAL_OUTGOING_ARGS_REGNUM);
 
 #ifdef STRUCT_VALUE
   struct_value_rtx = STRUCT_VALUE;
