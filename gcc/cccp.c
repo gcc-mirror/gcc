@@ -125,6 +125,20 @@ typedef struct { unsigned :16, :16, :16; } vms_ino_t;
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
+/* Find the largest host integer type and set its size and type.  */
+
+#ifndef HOST_BITS_PER_WIDE_INT
+
+#if HOST_BITS_PER_LONG > HOST_BITS_PER_INT
+#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
+#define HOST_WIDE_INT long
+#else
+#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_INT
+#define HOST_WIDE_INT int
+#endif
+
+#endif
+
 #ifndef S_ISREG
 #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
 #endif
