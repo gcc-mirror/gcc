@@ -1,3 +1,8 @@
+2004-06-14  Bud Davis  <bdavis9659@comcast.net>
+
+	PR gfortran/15292
+	* intrinsics/c99_functions.c: Use fpclassify if it exists.
+
 2004-06-13  Paul Brook  <paul@codesourcery.com>
 
 	* Makefile.am (gfor_helper_src): Add runtime/normalize.f90.
