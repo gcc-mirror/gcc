@@ -1,3 +1,9 @@
+2002-10-25  Phil Edwards  <pme@gcc.gnu.org>
+
+	* Makefile.tpl (bootstrap):  Add bubblestrap, quickstrap, cleanstrap,
+	and restrap targets to this rule.
+	* Makefile.in:  Regenerate.
+
 2002-10-25  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* MAINTAINERS: Add Wolfgang Bangerth and Volker Reichelt under
