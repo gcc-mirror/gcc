@@ -1,3 +1,9 @@
+2004-11-18  Nicolas Pitre <nico@cam.org>
+
+	* config/arm/arm.c (const_double_needs_minipool): New function to
+	determine if a CONST_DOUBLE should be pushed to the minipool.
+	(note_invalid_constants): Use it.
+
 2004-11-18  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (target_float_switch): New variable..
