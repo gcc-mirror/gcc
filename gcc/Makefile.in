@@ -1443,7 +1443,7 @@ toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) \
 
 rtl.o : rtl.c $(CONFIG_H) system.h $(RTL_H) bitmap.h
 
-print-rtl.o : print-rtl.c $(CONFIG_H) system.h $(RTL_H) bitmap.h
+print-rtl.o : print-rtl.c $(CONFIG_H) system.h $(RTL_H) bitmap.h basic-block.h
 rtlanal.o : rtlanal.c $(CONFIG_H) system.h $(RTL_H)
 
 varasm.o : varasm.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h \
@@ -1513,7 +1513,8 @@ loop.o : loop.c $(CONFIG_H) system.h $(RTL_H) flags.h loop.h insn-config.h \
 unroll.o : unroll.c $(CONFIG_H) system.h $(RTL_H) insn-config.h \
    integrate.h $(REGS_H) $(RECOG_H) flags.h $(EXPR_H) loop.h toplev.h varray.h
 flow.o : flow.c $(CONFIG_H) system.h $(RTL_H) flags.h insn-config.h \
-   $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h recog.h
+   $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h recog.h \
+   insn-flags.h
 combine.o : combine.c $(CONFIG_H) system.h $(RTL_H) flags.h  \
    insn-config.h insn-flags.h insn-codes.h insn-attr.h $(REGS_H) $(EXPR_H) \
    $(BASIC_BLOCK_H) $(RECOG_H) real.h hard-reg-set.h toplev.h
@@ -1837,7 +1838,8 @@ $(HOST_PREFIX_1)rtl.o: $(srcdir)/rtl.c $(CONFIG_H) system.h $(RTL_H) bitmap.h
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/rtl.c > $(HOST_PREFIX)rtl.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)rtl.c
 
-$(HOST_PREFIX_1)print-rtl.o: $(srcdir)/print-rtl.c $(CONFIG_H) $(RTL_H)
+$(HOST_PREFIX_1)print-rtl.o: $(srcdir)/print-rtl.c $(CONFIG_H) $(RTL_H) \
+	bitmap.h basic-block.h
 	rm -f $(HOST_PREFIX)print-rtl.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/print-rtl.c > $(HOST_PREFIX)print-rtl.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)print-rtl.c
