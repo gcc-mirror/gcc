@@ -1,3 +1,11 @@
+2003-06-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10796
+	* decl.c (finish_enum): Implement DR377.
+
+	* decl.c (cp_finish_decl): Don't make variables with reference
+	type readonly while they are being initialized.
+
 2003-06-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11332
