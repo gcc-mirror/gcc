@@ -46,11 +46,12 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
  */
     
 
-#include <config.h>
+#include "config.h"
 #include "system.h"
 
-#include <stdio.h>
 #include "jcf.h"
+#include "tree.h"
+#include "java-tree.h"
 
 /* Outout file. */
 FILE *out;
@@ -84,15 +85,16 @@ static void print_constant_ref PROTO ((FILE *, JCF *, int));
 static void disassemble_method PROTO ((JCF*, unsigned char *, int));
 static void print_name PROTO ((FILE*, JCF*, int));
 static void print_signature PROTO ((FILE*, JCF*, int, int));
+static int utf8_equal_string PROTO ((struct JCF*, int, const char *));
+static int usage PROTO ((void));
+static void process_class PROTO ((struct JCF *));
 
 #define PRINT_SIGNATURE_RESULT_ONLY 1
 #define PRINT_SIGNATURE_ARGS_ONLY 2
 
-extern char* open_class();
-
-int
+static int
 DEFUN(utf8_equal_string, (jcf, index, value),
-      JCF *jcf AND int index AND char * value)
+      JCF *jcf AND int index AND const char * value)
 {
   if (CPOOL_INDEX_IN_RANGE (&jcf->cpool, index)
       && JPOOL_TAG (jcf, index) == CONSTANT_Utf8)
@@ -109,8 +111,8 @@ DEFUN(utf8_equal_string, (jcf, index, value),
   this_class_index = 0; \
   if (flag_print_class_info) \
     fprintf (out, \
-             "Magic number: 0x%0x, minor_version: %d, major_version: %d.\n", \
-	     MAGIC, MINOR, MAJOR)
+             "Magic number: 0x%0lx, minor_version: %ld, major_version: %ld.\n",\
+	     (long) MAGIC, (long) MINOR, (long) MAJOR)
 
 #define HANDLE_START_CONSTANT_POOL(COUNT) \
   if (flag_print_constant_pool) \
@@ -238,8 +240,8 @@ DEFUN(utf8_equal_string, (jcf, index, value),
 
 #define HANDLE_CODE_ATTRIBUTE(MAX_STACK, MAX_LOCALS, CODE_LENGTH) \
 { COMMON_HANDLE_ATTRIBUTE(JCF, attribute_name, attribute_length); \
-  fprintf (out, ", max_stack:%d, max_locals:%d, code_length:%d\n", \
-    MAX_STACK, MAX_LOCALS, CODE_LENGTH); \
+  fprintf (out, ", max_stack:%ld, max_locals:%ld, code_length:%ld\n", \
+    (long) MAX_STACK, (long) MAX_LOCALS, (long) CODE_LENGTH); \
   disassemble_method (jcf, jcf->read_ptr, CODE_LENGTH); }
 
 #define HANDLE_EXCEPTION_TABLE(ENTRIES, COUNT) \
@@ -345,7 +347,7 @@ DEFUN(print_name, (stream, jcf, name_index),
 /* If the type of the constant at INDEX matches EXPECTED,
    print it tersely, otherwise more verbosely. */
 
-void
+static void
 DEFUN(print_constant_terse, (out, jcf, index, expected),
       FILE *out AND JCF *jcf AND int index AND int expected)
 {
@@ -656,14 +658,14 @@ DEFUN(print_exception_table, (jcf, entries, count),
 
 #include "jcf-reader.c"
 
-int
+static int
 DEFUN (usage, (), )
 {
   fprintf (stderr, "Usage: jcf-dump [-o outputfile] [-c] classname\n");
   exit(1);
 }
 
-void
+static void
 DEFUN(process_class, (jcf),
       JCF *jcf)
 {
@@ -1021,24 +1023,24 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
 
 #define BRANCH(OPERAND_TYPE, OPERAND_VALUE) \
   saw_index = 0, INT_temp = (OPERAND_VALUE); \
-  fprintf (out, " %d", saw_index ? INT_temp : oldpc + INT_temp)
+  fprintf (out, " %ld", (long) (saw_index ? INT_temp : oldpc + INT_temp))
 
 #define JSR(OPERAND_TYPE, OPERAND_VALUE) \
   saw_index = 0, INT_temp = (OPERAND_VALUE); \
-  fprintf (out, " %d", saw_index ? INT_temp : oldpc + INT_temp)
+  fprintf (out, " %ld", (long) (saw_index ? INT_temp : oldpc + INT_temp))
 
 #undef RET /* Defined by config/i386/i386.h */
 #define RET(OPERAND_TYPE, OPERAND_VALUE) \
   INT_temp = saw_wide ? IMMEDIATE_u2 : (OPERAND_VALUE); \
   saw_wide = 0; \
-  fprintf (out, " %d", INT_temp);
+  fprintf (out, " %ld", (long) INT_temp);
 
 #define SWITCH(OPERAND_TYPE, TABLE_OR_LOOKUP) \
   PC = (PC + 3) / 4 * 4; TABLE_OR_LOOKUP##_SWITCH
 
 #define LOOKUP_SWITCH \
   { jint default_offset = IMMEDIATE_s4;  jint npairs = IMMEDIATE_s4; \
-    fprintf (out, " npairs=%d, default=%d", npairs, default_offset+oldpc); \
+    fprintf (out, " npairs=%ld, default=%ld", (long) npairs, (long) default_offset+oldpc); \
     while (--npairs >= 0) { \
      jint match = IMMEDIATE_s4; jint offset = IMMEDIATE_s4; \
      fprintf (out, "\n%10ld: %ld", (long)match, (long)(offset+oldpc)); } \
@@ -1047,8 +1049,8 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
 #define TABLE_SWITCH \
   { jint default_offset = IMMEDIATE_s4; \
     jint low = IMMEDIATE_s4; jint high = IMMEDIATE_s4; \
-    fprintf (out, " low=%d, high=%d, default=%d", \
-      low, high, default_offset+oldpc); \
+    fprintf (out, " low=%ld, high=%ld, default=%ld", \
+      (long) low, (long) high, (long) default_offset+oldpc); \
     for (; low <= high; low++) { \
      jint offset = IMMEDIATE_s4; \
      fprintf (out, "\n%10ld: %ld", (long)low, (long)(offset+oldpc)); } \
@@ -1085,7 +1087,7 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
 	  else
 	    {
 	      saw_wide = 0;
-	      fprintf (out, " %d", INT_temp);
+	      fprintf (out, " %ld", (long) INT_temp);
 	    }
 	  fputc ('\n', out);
 	  break;

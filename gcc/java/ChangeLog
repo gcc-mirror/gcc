@@ -1,3 +1,112 @@
+Sun Mar 21 08:30:30 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (jcf-dump.o): Depend on $(CONFIG_H)
+	$(srcdir)/../system.h and $(JAVA_TREE_H).
+	(jcf-io.o): Depend on $(JAVA_TREE_H).
+	(mangle.o): Likewise.
+
+	* check-init.c (check_cond_init): Add static prototype.
+
+	* class.c (build_java_method_type, hashUtf8String,
+	make_field_value, get_dispatch_vector, get_dispatch_table,
+	append_gpp_mangled_type, mangle_static_field): Likewise.
+	(strLengthUtf8): Hide unused definition.
+	(hashUtf8String): Const-ify.
+	(make_field_value): Un-ANSI-fy.
+
+	* constants.c: Move inclusion of jcf.h above java-tree.h.
+	(set_constant_entry, find_class_or_string_constant,
+	find_name_and_type_constant, get_tag_node,
+	build_constant_data_ref): Add static prototype.
+
+	* decl.c (push_jvm_slot, builtin_function,
+	lookup_name_current_level): Likewise.
+	(builtin_function): Const-ify.
+
+	* except.c (expand_start_java_handler, expand_end_java_handler):
+	Add static prototype.
+
+	* expr.c (flush_quick_stack, push_value, pop_value,
+	java_stack_swap, java_stack_dup, build_java_athrow,
+	build_java_jsr, build_java_ret, expand_java_multianewarray,
+	expand_java_arraystore, expand_java_arrayload,
+	expand_java_array_length, build_java_monitor, expand_java_pushc,
+	expand_java_return, expand_java_NEW, expand_java_INSTANCEOF,
+	expand_java_CHECKCAST, expand_iinc, expand_java_binop, note_label,
+	expand_compare, expand_test, expand_cond, expand_java_goto,
+	expand_java_call, expand_java_ret, pop_arguments, expand_invoke,
+	expand_java_field_op, java_push_constant_from_pool): Likewise.
+
+	(decode_newarray_type, expand_iinc): Un-ANSI-fy.
+	(build_java_arraynull_check): Mark parameters `node' and `type'
+	with ATTRIBUTE_UNUSED.
+	(note_label): Likewise for parameter `current_pc'.
+	(expand_java_call, expand_java_ret): Hide unused definition.
+
+	* java-tree.h (make_class, build_constants_constructor,
+	java_set_exception_lang_code, pop_labeled_block, emit_handlers,
+	init_outgoing_cpool, register_class, emit_register_classes,
+	java_layout_seen_class_methods): Prototype.
+	(unicode_mangling_length): Const-ify.
+	(append_gpp_mangled_name, append_gpp_mangled_classtype,
+	emit_unicode_mangled_name, format_int, format_uint,
+	jcf_trim_old_input, jcf_print_utf8, jcf_print_char,
+	jcf_print_utf8_replace, open_class): Prototype.
+
+	* jcf-dump.c: Include "config.h", not <config.h>.  Don't include
+	<stdio.h>.  Include tree.h/java-tree.h.
+	(utf8_equal_string usage, process_class): Add static prototype.
+	(open_class): Don't prototype this here.
+	(utf8_equal_string): Match arguments to format specifiers.
+	(HANDLE_CODE_ATTRIBUTE, BRANCH, JSR, RET, LOOKUP_SWITCH,
+	TABLE_SWITCH, disassemble_method): Likewise.
+
+	* jcf-io.c: Include tree.h/java-tree.h.
+	(open_class, find_classfile, jcf_print_utf8,
+	jcf_print_utf8_replace): Const-ify.
+
+	* jcf-parse.c (parse_zip_file_entries, process_zip_dir,
+	parse_class_file): Add static prototype.
+	(find_in_current_zip): Match definition to existing static
+	prototype.
+	
+	* jcf-write.c: Include jcf.h before tree.h/java-tree.h.
+	(alloc_chunk, append_chunk, append_chunk_copy, gen_jcf_label,
+	finish_jcf_block, define_jcf_label, get_jcf_label_here,
+	put_linenumber, localvar_alloc, localvar_free, get_access_flags,
+	write_chunks, adjust_typed_op, generate_bytecode_conditional,
+	generate_bytecode_return, perform_relocations, init_jcf_state,
+	init_jcf_method, release_jcf_state, generate_classfile):
+ 	Add static prototype.
+	(emit_unop): Mark parameter `type' with ATTRIBUTE_UNUSED.
+	(make_class_file_name): Const-ify.
+
+	* jcf.h (find_classfile): Const-ify.
+
+	* jv-scan.c (reset_report): Remove prototype.
+
+	* jvgenmain.c: Include jcf.h/tree.h/java-tree.h.
+	(error): Rewrite to allow varargs.
+
+	* lang.c (lang_f_options): Const-ify.
+
+	* lex.c (java_parse_escape_sequence): Add static prototype.
+  	(java_allocate_new_line): Match definition to existing static
+ 	prototype.
+	
+	* mangle.c Include tree.h/java-tree.h.
+	(unicode_mangling_length, emit_unicode_mangled_name,
+	append_gpp_mangled_name, append_gpp_mangled_classtype): Const-ify.
+
+	* parse.h (jdep_code): Remove trailing comma in enumeration.
+	(java_get_line_col): Move prototype outside of !JC1_LITE test.
+	(reset_report): Add prototype.
+
+	* verify.c (push_pending_label, merge_types): Add static
+	prototypes.
+
+	* zipfile.h (opendir_in_zip, open_in_zip): Prototype.
+	
 1999-03-19  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (find_applicable_accessible_methods_list): Extend the

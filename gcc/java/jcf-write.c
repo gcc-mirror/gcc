@@ -23,9 +23,9 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "config.h"
 #include "system.h"
+#include "jcf.h"
 #include "tree.h"
 #include "java-tree.h"
-#include "jcf.h"
 #include "obstack.h"
 #undef AND
 #include "rtl.h"
@@ -273,6 +273,33 @@ struct jcf_partial
 };
 
 static void generate_bytecode_insns PROTO ((tree, int, struct jcf_partial *));
+static struct chunk * alloc_chunk PROTO ((struct chunk *, unsigned char *,
+					  int, struct obstack *));
+static unsigned char * append_chunk PROTO ((unsigned char *, int,
+					    struct jcf_partial *));
+static void append_chunk_copy PROTO ((unsigned char *, int,
+				      struct jcf_partial *));
+static struct jcf_block * gen_jcf_label PROTO ((struct jcf_partial *));
+static void finish_jcf_block PROTO ((struct jcf_partial *));
+static void define_jcf_label PROTO ((struct jcf_block *,
+				     struct jcf_partial *));
+static struct jcf_block * get_jcf_label_here PROTO ((struct jcf_partial *));
+static void put_linenumber PROTO ((int, struct jcf_partial *));
+static void localvar_alloc PROTO ((tree, struct jcf_partial *));
+static int localvar_free PROTO ((tree, struct jcf_partial *));
+static int get_access_flags PROTO ((tree));
+static void write_chunks PROTO ((FILE *, struct chunk *));
+static int adjust_typed_op PROTO ((tree, int));
+static void generate_bytecode_conditional PROTO ((tree, struct jcf_block *,
+						  struct jcf_block *, int,
+						  struct jcf_partial *));
+static void generate_bytecode_return PROTO ((tree, struct jcf_partial *));
+static void perform_relocations PROTO ((struct jcf_partial *));
+static void init_jcf_state PROTO ((struct jcf_partial *, struct obstack *));
+static void init_jcf_method PROTO ((struct jcf_partial *, tree));
+static void release_jcf_state PROTO ((struct jcf_partial *));
+static struct chunk * generate_classfile PROTO ((tree, struct jcf_partial *));
+
 
 /* Utility macros for appending (big-endian) data to a buffer.
    We assume a local variable 'ptr' points into where we want to
@@ -304,7 +331,7 @@ CHECK_PUT(ptr, state, i)
    Set the data and size fields to DATA and SIZE, respectively.
    However, if DATA is NULL and SIZE>0, allocate a buffer as well. */
 
-struct chunk *
+static struct chunk *
 alloc_chunk (last, data, size, work)
      struct chunk *last;
      unsigned char *data;
@@ -339,7 +366,7 @@ CHECK_OP(struct jcf_partial *state)
 #define CHECK_OP(STATE) ((void)0)
 #endif
 
-unsigned char *
+static unsigned char *
 append_chunk (data, size, state)
      unsigned char *data;
      int size;
@@ -351,7 +378,7 @@ append_chunk (data, size, state)
   return state->chunk->data;
 }
 
-void
+static void
 append_chunk_copy (data, size, state)
      unsigned char *data;
      int size;
@@ -361,7 +388,7 @@ append_chunk_copy (data, size, state)
   memcpy (ptr, data, size);
 }
 
-struct jcf_block *
+static struct jcf_block *
 gen_jcf_label (state)
      struct jcf_partial *state;
 {
@@ -373,7 +400,7 @@ gen_jcf_label (state)
   return block;
 }
 
-void
+static void
 finish_jcf_block (state)
      struct jcf_partial *state;
 {
@@ -400,7 +427,7 @@ finish_jcf_block (state)
   state->code_length = pc;
 }
 
-void
+static void
 define_jcf_label (label, state)
      struct jcf_block *label;
      struct jcf_partial *state;
@@ -417,7 +444,7 @@ define_jcf_label (label, state)
   label->u.relocations = NULL;
 }
 
-struct jcf_block *
+static struct jcf_block *
 get_jcf_label_here (state)
      struct jcf_partial *state;
 {
@@ -433,7 +460,7 @@ get_jcf_label_here (state)
 
 /* Note a line number entry for the current PC and given LINE. */
 
-void
+static void
 put_linenumber (line, state)
      int line;
      struct jcf_partial *state;
@@ -493,7 +520,7 @@ struct localvar_info
 #define localvar_max \
   ((struct localvar_info**) state->localvars.ptr - localvar_buffer)
 
-void
+static void
 localvar_alloc (decl, state)
      tree decl;
      struct jcf_partial *state;
@@ -540,7 +567,7 @@ localvar_alloc (decl, state)
     }
 }
 
-int
+static int
 localvar_free (decl, state)
      tree decl;     
      struct jcf_partial *state;
@@ -571,7 +598,7 @@ localvar_free (decl, state)
 /* Get the access flags of a class (TYPE_DECL), a method (FUNCTION_DECL), or
    a field (FIELD_DECL or VAR_DECL, if static), as encoded in a .class file. */
 
-int
+static int
 get_access_flags (decl)
     tree decl;
 {
@@ -624,7 +651,7 @@ get_access_flags (decl)
 
 /* Write the list of segments starting at CHUNKS to STREAM. */
 
-void
+static void
 write_chunks (stream, chunks)
      FILE* stream;
      struct chunk *chunks;
@@ -786,7 +813,7 @@ field_op (field, opcode, state)
    reference) to 7 (for 'short') which matches the pattern of how JVM
    opcodes typically depend on the operand type. */
 
-int
+static int
 adjust_typed_op (type, max)
      tree type;
      int max;
@@ -940,7 +967,7 @@ emit_store (var, state)
 static void
 emit_unop (opcode, type, state)
      enum java_opcode opcode;
-     tree type;
+     tree type ATTRIBUTE_UNUSED;
      struct jcf_partial *state;
 {
   RESERVE(1);
@@ -1044,7 +1071,7 @@ emit_jsr (target, state)
    TRUE_LABEL may follow right after this. (The idea is that we
    may be able to optimize away GOTO TRUE_LABEL; TRUE_LABEL:) */
 
-void
+static void
 generate_bytecode_conditional (exp, true_label, false_label,
 			       true_branch_first, state)
      tree exp;
@@ -1268,7 +1295,7 @@ call_cleanups (limit, state)
     }
 }
 
-void
+static void
 generate_bytecode_return (exp, state)
      tree exp;
      struct jcf_partial *state;
@@ -2448,7 +2475,7 @@ generate_bytecode_insns (exp, target, state)
     }
 }
 
-void
+static void
 perform_relocations (state)
      struct jcf_partial *state;
 {
@@ -2616,7 +2643,7 @@ perform_relocations (state)
   state->code_length = pc;
 }
 
-void
+static void
 init_jcf_state (state, work)
      struct jcf_partial *state;
      struct obstack *work;
@@ -2628,7 +2655,7 @@ init_jcf_state (state, work)
   BUFFER_INIT (&state->bytecode);
 }
 
-void
+static void
 init_jcf_method (state, method)
      struct jcf_partial *state;
      tree method;
@@ -2651,7 +2678,7 @@ init_jcf_method (state, method)
   state->return_value_decl = NULL_TREE;
 }
 
-void
+static void
 release_jcf_state (state)
      struct jcf_partial *state;
 {
@@ -2663,7 +2690,7 @@ release_jcf_state (state)
    in the .class file representation.  The list can be written to a
    .class file using write_chunks.  Allocate chunks from obstack WORK. */
 
-struct chunk *
+static struct chunk *
 generate_classfile (clas, state)
      tree clas;
      struct jcf_partial *state;
@@ -2943,7 +2970,8 @@ static char *
 make_class_file_name (clas)
      tree clas;
 {
-  char *cname, *dname, *slash, *r;
+  const char *dname, *slash;
+  char *cname, *r;
   struct stat sb;
 
   cname = IDENTIFIER_POINTER (identifier_subst (DECL_NAME (TYPE_NAME (clas)),

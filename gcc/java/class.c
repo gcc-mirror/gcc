@@ -38,6 +38,13 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 static tree mangle_class_field PROTO ((tree class));
 static tree make_method_value PROTO ((tree));
+static tree build_java_method_type PROTO ((tree, tree, int));
+static int32 hashUtf8String PROTO ((const char *, int));
+static tree make_field_value PROTO ((tree));
+static tree get_dispatch_vector PROTO ((tree));
+static tree get_dispatch_table PROTO ((tree, tree));
+static void append_gpp_mangled_type PROTO ((struct obstack *, tree));
+static tree mangle_static_field PROTO ((tree));
 
 static rtx registerClass_libfunc;
 
@@ -382,7 +389,7 @@ find_named_method (list, name)
 }
 #endif
 
-tree
+static tree
 build_java_method_type (fntype, this_class, access_flags)
      tree fntype;
      tree this_class;
@@ -503,6 +510,7 @@ set_constant_value (field, constant)
 
 /* Count the number of Unicode chars encoded in a given Ut8 string. */
 
+#if 0
 int
 strLengthUtf8 (str, len)
      char *str;
@@ -517,19 +525,20 @@ strLengthUtf8 (str, len)
   }
   return str_length;
 }
+#endif
 
 
 /* Calculate a hash value for a string encoded in Utf8 format.
  * This returns the same hash value as specified for java.lang.String.hashCode.
  */
 
-int32
+static int32
 hashUtf8String (str, len)
-     char *str;
+     const char *str;
      int len;
 {
-  register unsigned char* ptr = (unsigned char*) str;
-  register unsigned char *limit = ptr + len;
+  register const unsigned char* ptr = (const unsigned char*) str;
+  register const unsigned char *limit = ptr + len;
   int32 hash = 0;
   for (; ptr < limit;)
     {
@@ -841,8 +850,9 @@ get_access_flags_from_decl (decl)
   abort ();
 }
 
-tree
-make_field_value (tree fdecl)
+static tree
+make_field_value (fdecl)
+  tree fdecl;
 {
   tree finit, info;
   int bsize, flags;
@@ -917,7 +927,7 @@ make_method_value (mdecl)
   return minit;
 }
 
-tree
+static tree
 get_dispatch_vector (type)
      tree type;
 {
@@ -950,7 +960,7 @@ get_dispatch_vector (type)
   return vtable;
 }
 
-tree
+static tree
 get_dispatch_table (type, this_class_addr)
      tree type, this_class_addr;
 {
@@ -1258,7 +1268,7 @@ is_compiled_class (class)
 
 /* Append the mangled name of TYPE onto OBSTACK. */
 
-void
+static void
 append_gpp_mangled_type (obstack, type)
      struct obstack *obstack;
      tree type;
@@ -1333,7 +1343,7 @@ mangle_class_field (class)
 
 /* Build the mangled (assembly-level) name of the static field FIELD. */
 
-tree
+static tree
 mangle_static_field (field)
      tree field;
 {

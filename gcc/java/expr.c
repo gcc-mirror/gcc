@@ -40,6 +40,40 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "toplev.h"
 #include "except.h"
 
+static void flush_quick_stack PROTO ((void));
+static void push_value PROTO ((tree));
+static tree pop_value PROTO ((tree));
+static void java_stack_swap PROTO ((void));
+static void java_stack_dup PROTO ((int, int));
+static tree build_java_athrow PROTO ((tree));
+static void build_java_jsr PROTO ((tree, tree));
+static void build_java_ret PROTO ((tree));
+static void expand_java_multianewarray PROTO ((tree, int));
+static void expand_java_arraystore PROTO ((tree));
+static void expand_java_arrayload PROTO ((tree));
+static void expand_java_array_length PROTO ((void));
+static tree build_java_monitor PROTO ((tree, tree));
+static void expand_java_pushc PROTO ((int, tree));
+static void expand_java_return PROTO ((tree));
+static void expand_java_NEW PROTO ((tree));
+static void expand_java_INSTANCEOF PROTO ((tree));
+static void expand_java_CHECKCAST PROTO ((tree));
+static void expand_iinc PROTO ((unsigned int, int, int));
+static void expand_java_binop PROTO ((tree, enum tree_code));
+static void note_label PROTO ((int, int));
+static void expand_compare PROTO ((enum tree_code, tree, tree, int));
+static void expand_test PROTO ((enum tree_code, tree, int));
+static void expand_cond PROTO ((enum tree_code, tree, int));
+static void expand_java_goto PROTO ((int));
+#if 0
+static void expand_java_call PROTO ((int, int));
+static void expand_java_ret PROTO ((tree)); 
+#endif
+static tree pop_arguments PROTO ((tree)); 
+static void expand_invoke PROTO ((int, int, int)); 
+static void expand_java_field_op PROTO ((int, int, int)); 
+static void java_push_constant_from_pool PROTO ((struct JCF *, int)); 
+ 
 static tree operand_type[59];
 extern struct obstack permanent_obstack;
 
@@ -168,7 +202,7 @@ unhand_expr (expr)
    that the expression for a slot may contain decls for stack slots with
    higher (or the same) index, but not lower. */
 
-void
+static void
 flush_quick_stack ()
 {
   int stack_index = stack_pointer;
@@ -216,7 +250,7 @@ push_type (type)
     stack_type_map[stack_pointer++] = TYPE_SECOND;
 }
 
-void
+static void
 push_value (value)
      tree value;
 {
@@ -353,7 +387,7 @@ can_widen_reference_to (source_type, target_type)
     }
 }
 
-tree
+static tree
 pop_value (type)
      tree type;
 {
@@ -374,7 +408,7 @@ pop_value (type)
 
 /* Pop and discrad the top COUNT stack slots. */
 
-void
+static void
 java_stack_pop (count)
      int count;
 {
@@ -398,7 +432,7 @@ java_stack_pop (count)
 
 /* Implement the 'swap' operator (to swap two top stack slots). */
 
-void
+static void
 java_stack_swap ()
 {
   tree type1, type2;
@@ -422,7 +456,7 @@ java_stack_swap ()
   stack_type_map[stack_pointer - 2] = type1;
 }
 
-void
+static void
 java_stack_dup (size, offset)
      int size, offset;
 {
@@ -467,7 +501,7 @@ java_stack_dup (size, offset)
 
 /* Calls _Jv_Throw.  Discard the contents of the value stack. */
 
-tree
+static tree
 build_java_athrow (node)
     tree node;
 {
@@ -485,7 +519,7 @@ build_java_athrow (node)
 
 /* Implementation for jsr/ret */
 
-void
+static void
 build_java_jsr (where, ret)
     tree where;
     tree ret;
@@ -497,7 +531,7 @@ build_java_jsr (where, ret)
   expand_label (ret);
 }
 
-void
+static void
 build_java_ret (location)
   tree location;
 {
@@ -515,7 +549,8 @@ build_java_ret (location)
               size_int (BITS_PER_UNIT))
 
 tree
-decode_newarray_type  (int atype)
+decode_newarray_type (atype)
+  int atype;
 {
   switch (atype)
     {
@@ -599,9 +634,9 @@ build_java_array_length_access (node)
 
 tree
 build_java_arraynull_check (node, expr, type)
-    tree node;			
-    tree expr;			
-    tree type;			
+    tree node ATTRIBUTE_UNUSED;
+    tree expr;
+    tree type ATTRIBUTE_UNUSED;
 {
 #if 0
   static int java_array_access_throws_null_exception = 0;
@@ -768,7 +803,7 @@ build_new_array (type, length)
    class pointer, a number of dimensions and the matching number of
    dimensions. The argument list is NULL terminated.  */
 
-void
+static void
 expand_java_multianewarray (class_type, ndim)
     tree class_type;
     int  ndim;
@@ -798,7 +833,7 @@ expand_java_multianewarray (class_type, ndim)
     to make sure that the RHS can be assigned to the array element
     type. It is not necessary to generate this code if ARRAY is final.  */
 
-void
+static void
 expand_java_arraystore (rhs_type_node)
      tree rhs_type_node;
 {
@@ -840,7 +875,7 @@ expand_java_arraystore (rhs_type_node)
    BOOLEAN/SHORT, we push a promoted type back to the stack.
 */
 
-void
+static void
 expand_java_arrayload (lhs_type_node )
     tree lhs_type_node;
 {
@@ -864,7 +899,7 @@ expand_java_arrayload (lhs_type_node )
 /* Expands .length. Makes sure that we deal with and array and may expand
    a NULL check on the array object.  */
 
-void
+static void
 expand_java_array_length ()
 {
   tree array  = pop_value (ptr_type_node);
@@ -876,7 +911,7 @@ expand_java_array_length ()
 /* Emit code for the call to _Jv_Monitor{Enter,Exit}. CALL can be
    either soft_monitorenter_node or soft_monitorexit_node.  */
 
-tree
+static tree
 build_java_monitor (call, object)
     tree call;
     tree object;
@@ -890,7 +925,7 @@ build_java_monitor (call, object)
 
 /* Emit code for one of the PUSHC instructions. */
 
-void
+static void
 expand_java_pushc (ival, type)
      int ival;
      tree type;
@@ -918,7 +953,7 @@ expand_java_pushc (ival, type)
   push_value (value);
 }
 
-void
+static void
 expand_java_return (type)
      tree type;
 {
@@ -941,7 +976,7 @@ build_address_of (value)
   return build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (value)), value);
 }
 
-void
+static void
 expand_java_NEW (type)
      tree type;
 {
@@ -956,7 +991,7 @@ expand_java_NEW (type)
 		     NULL_TREE));
 }
 
-void
+static void
 expand_java_INSTANCEOF (type)
      tree type;
 {
@@ -970,7 +1005,7 @@ expand_java_INSTANCEOF (type)
   push_value (value);
 }
 
-void
+static void
 expand_java_CHECKCAST (type)
      tree type;
 {
@@ -983,8 +1018,11 @@ expand_java_CHECKCAST (type)
   push_value (value);
 }
 
-void
-expand_iinc (unsigned int local_var_index, int ival, int pc)
+static void
+expand_iinc (local_var_index, ival, pc)
+     unsigned int local_var_index;
+     int ival;
+     int pc;
 {
     tree local_var, res;
     tree constant_value;
@@ -1070,7 +1108,7 @@ build_java_binop (op, type, arg1, arg2)
   return fold (build (op, type, arg1, arg2));
 }
 
-void
+static void
 expand_java_binop (type, op)
      tree type;  enum tree_code op;
 {
@@ -1205,9 +1243,9 @@ create_label_decl (name)
 /* This maps a bytecode offset (PC) to various flags. */
 char *instruction_bits;
 
-void
+static void
 note_label (current_pc, target_pc)
-     int current_pc, target_pc;
+     int current_pc ATTRIBUTE_UNUSED, target_pc;
 {
   lookup_label (target_pc);
   instruction_bits [target_pc] |= BCODE_JUMP_TARGET;
@@ -1216,7 +1254,7 @@ note_label (current_pc, target_pc)
 /* Emit code to jump to TARGET_PC if VALUE1 CONDITION VALUE2,
    where CONDITION is one of one the compare operators. */
 
-void
+static void
 expand_compare (condition, value1, value2, target_pc)
      enum tree_code condition;
      tree value1, value2;
@@ -1231,7 +1269,7 @@ expand_compare (condition, value1, value2, target_pc)
 
 /* Emit code for a TEST-type opcode. */
 
-void
+static void
 expand_test (condition, type, target_pc)
      enum tree_code condition;
      tree type;
@@ -1246,7 +1284,7 @@ expand_test (condition, type, target_pc)
 
 /* Emit code for a COND-type opcode. */
 
-void
+static void
 expand_cond (condition, type, target_pc)
      enum tree_code condition;
      tree type;
@@ -1261,7 +1299,7 @@ expand_cond (condition, type, target_pc)
   expand_compare (condition, value1, value2, target_pc);
 }
 
-void
+static void
 expand_java_goto (target_pc)
      int target_pc;
 {
@@ -1270,7 +1308,8 @@ expand_java_goto (target_pc)
   expand_goto (target_label);
 }
 
-void
+#if 0
+static void
 expand_java_call (target_pc, return_address)
      int target_pc, return_address;
 {
@@ -1281,9 +1320,9 @@ expand_java_call (target_pc, return_address)
   expand_goto (target_label);
 }
 
-void
+static void
 expand_java_ret (return_address)
-     tree return_address;
+     tree return_address ATTRIBUTE_UNUSED;
 {
   warning ("ret instruction not implemented");
 #if 0
@@ -1292,6 +1331,7 @@ expand_java_ret (return_address)
   expand_goto (target_label);
 #endif
 }
+#endif
 
 /* Recursive helper function to pop argument types during verifiation. */
 
@@ -1310,7 +1350,7 @@ pop_argument_types (arg_types)
   abort ();
 }
 
-tree
+static tree
 pop_arguments (arg_types)
      tree arg_types;
 {
@@ -1492,7 +1532,7 @@ build_invokeinterface (dtable, method_name, method_signature)
    METHOD_REF_INDEX is an index into the constant pool.
    NARGS is the number of arguments, or -1 if not specified. */
 
-void
+static void
 expand_invoke (opcode, method_ref_index, nargs)
      int opcode;
      int method_ref_index;
@@ -1599,7 +1639,7 @@ expand_invoke (opcode, method_ref_index, nargs)
    IS_PUTTING is 1 for putting into a field;  0 for getting from the field.
    FIELD_REF_INDEX is an index into the constant pool.  */
 
-void
+static void
 expand_java_field_op (is_static, is_putting, field_ref_index)
      int is_static;
      int is_putting;
@@ -2131,7 +2171,7 @@ expand_byte_code (jcf, method)
     } /* for */
 }
 
-void
+static void
 java_push_constant_from_pool (jcf, index)
      JCF *jcf;
      int index;

@@ -23,16 +23,22 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "config.h"
 #include "system.h"
+#include "jcf.h"
 #include "tree.h"
 #include "java-tree.h"
-#include "jcf.h"
 #include "toplev.h"
 
 extern struct obstack permanent_obstack;
 
+static void set_constant_entry PROTO ((CPool *, int, int, jword));
+static int find_class_or_string_constant PROTO ((CPool *, int, tree));
+static int find_name_and_type_constant PROTO ((CPool *, tree, tree));
+static tree get_tag_node PROTO ((int));
+static tree build_constant_data_ref PROTO ((void));
+
 /* Set the INDEX'th constant in CPOOL to have the given TAG and VALUE. */
 
-void
+static void
 set_constant_entry (cpool, index, tag, value)
      CPool *cpool;
      int index;
@@ -113,7 +119,7 @@ find_utf8_constant (cpool, name)
   return find_constant1 (cpool, CONSTANT_Utf8, (jword) name);
 }
 
-int
+static int
 find_class_or_string_constant (cpool, tag, name)
      CPool *cpool;
      int tag;
@@ -155,7 +161,7 @@ find_string_constant (cpool, string)
 /* Find (or create) a CONSTANT_NameAndType matching NAME and TYPE.
    Return its index in the constant pool CPOOL. */
 
-int
+static int
 find_name_and_type_constant (cpool, name, type)
      CPool *cpool;
      tree name;
@@ -316,7 +322,7 @@ tree current_constant_pool_data_ref;
 /* A Cache for build_int_2 (CONSTANT_XXX, 0). */
 static tree tag_nodes[13];
 
-tree
+static tree
 get_tag_node (tag)
      int tag;
 {
@@ -378,7 +384,7 @@ alloc_class_constant (clas)
 
 /* Return a reference to the data array of the current constant pool. */
 
-tree
+static tree
 build_constant_data_ref ()
 {
   if (current_constant_pool_data_ref == NULL_TREE)

@@ -224,7 +224,7 @@ typedef struct JCF {
 #define DEFAULT_CLASS_PATH "."
 
 extern char *find_class PROTO ((const char *, int, JCF*, int));
-extern char *find_classfile PROTO ((char *, JCF*, char *));
+extern char *find_classfile PROTO ((char *, JCF*, const char *));
 extern int jcf_filbuf_from_stdio PROTO ((JCF *jcf, int count));
 extern void jcf_out_of_synch PROTO((JCF *));
 extern int jcf_unexpected_eof PROTO ((JCF*, int));

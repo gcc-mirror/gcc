@@ -33,6 +33,11 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "jcf.h"
 #include "toplev.h"
 
+static tree push_jvm_slot PROTO ((int, tree));
+static tree builtin_function PROTO ((const char *, tree,
+				     enum built_in_function, const char *));
+static tree lookup_name_current_level PROTO ((tree));
+
 #ifndef INT_TYPE_SIZE
 #define INT_TYPE_SIZE BITS_PER_WORD
 #endif
@@ -55,7 +60,7 @@ tree pending_local_decls = NULL_TREE;
 /* Push a local variable or stack slot into the decl_map,
    and assign it an rtl. */
 
-tree
+static tree
 push_jvm_slot (index, decl)
      int index;
      tree decl;
@@ -396,12 +401,12 @@ tree integer_negative_one_node;
    If LIBRARY_NAME is nonzero, use that for DECL_ASSEMBLER_NAME,
    the name to be called if we can't opencode the function.  */
 
-tree
+static tree
 builtin_function (name, type, function_code, library_name)
-     char *name;
+     const char *name;
      tree type;
      enum built_in_function function_code;
-     char *library_name;
+     const char *library_name;
 {
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
   DECL_EXTERNAL (decl) = 1;
@@ -811,7 +816,7 @@ lookup_name (name)
 /* Similar to `lookup_name' but look only at current binding level and
    the previous one if its the parameter level.  */
 
-tree
+static tree
 lookup_name_current_level (name)
      tree name;
 {

@@ -61,7 +61,7 @@ static void java_lex_error PROTO ((char *, int));
 static int java_is_eol PROTO ((FILE *, int));
 #endif
 static void java_store_unicode PROTO ((struct java_line *, unicode_t, int));
-static unicode_t java_parse_escape_sequence PROTO (());
+static unicode_t java_parse_escape_sequence PROTO ((void));
 static int java_letter_or_digit_p PROTO ((unicode_t));
 static int java_parse_doc_section PROTO ((unicode_t));
 static void java_parse_end_comment PROTO ((unicode_t));
@@ -155,7 +155,7 @@ java_unget_unicode ()
   ctxp->c_line->char_col -= JAVA_COLUMN_DELTA (0);
 }
 
-void
+static void
 java_allocate_new_line ()
 {
   unicode_t ahead = (ctxp->c_line ? ctxp->c_line->ahead[0] : '\0');

@@ -308,7 +308,7 @@ enum {
   INVOKE_NONVIRTUAL,
   INVOKE_SUPER,
   INVOKE_INTERFACE,
-  INVOKE_VIRTUAL,
+  INVOKE_VIRTUAL
 };
 
 /* We need the resolution stuff only if we compile jc1 */
@@ -357,7 +357,7 @@ enum jdep_code {
   JDEP_TYPE,			/* Patch a random tree node type,
                                    without the need for any specific
                                    actions */
-  JDEP_EXCEPTION,		/* Patch exceptions specified by `throws' */
+  JDEP_EXCEPTION		/* Patch exceptions specified by `throws' */
 };
 
 typedef struct _jdep {
@@ -647,11 +647,12 @@ void java_check_circular_reference PROTO ((void));
 void java_check_final PROTO ((void));
 void java_layout_classes PROTO ((void));
 tree java_method_add_stmt PROTO ((tree, tree));
-char *java_get_line_col PROTO ((char *, int, int));
 void java_expand_switch PROTO ((tree));
 int java_report_errors PROTO (());
 extern tree do_resolve_class PROTO ((tree, tree, tree));
 #endif
+char *java_get_line_col PROTO ((char *, int, int));
+extern void reset_report PROTO ((void));
 
 /* Always in use, no matter what you compile */
 void java_push_parser_context PROTO ((void));

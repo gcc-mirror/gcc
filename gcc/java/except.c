@@ -36,6 +36,9 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "eh-common.h"
 #include "toplev.h"
 
+static void expand_start_java_handler PROTO ((struct eh_range *));
+static void expand_end_java_handler PROTO ((struct eh_range *));
+
 extern struct obstack permanent_obstack;
 
 struct eh_range *current_method_handlers;
@@ -182,7 +185,7 @@ add_handler (start_pc, end_pc, handler, type)
 
 
 /* if there are any handlers for this range, issue start of region */
-void
+static void
 expand_start_java_handler (range)
   struct eh_range *range ATTRIBUTE_UNUSED;
 {
@@ -217,7 +220,7 @@ prepare_eh_table_type (type)
 
 /* if there are any handlers for this range, isssue end of range,
    and then all handler blocks */
-void
+static void
 expand_end_java_handler (range)
      struct eh_range *range;
 {

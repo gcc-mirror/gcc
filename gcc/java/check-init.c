@@ -99,6 +99,7 @@ static tree wfl;
 
 static void check_bool_init PROTO ((tree, words, words, words));
 static void check_init PROTO ((tree, words));
+static void check_cond_init PROTO ((tree, tree, tree, words, words, words));
 
 #if 0
 #define ALLOC_WORDS(NUM) ((word*) xmalloc ((NUM) * sizeof (word)))
@@ -123,7 +124,7 @@ static void check_init PROTO ((tree, words));
    definite assignment.
    BEFORE, WHEN_FALSE, and WHEN_TRUE are as in check_bool_init. */
 
-void
+static void
 check_cond_init (test_exp, then_exp, else_exp,
 		 before, when_false, when_true)
      tree test_exp, then_exp, else_exp;

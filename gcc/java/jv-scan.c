@@ -27,7 +27,6 @@ Boston, MA 02111-1307, USA.  */
 void fatal VPROTO((const char *s, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void warning VPROTO((const char *s, ...)) ATTRIBUTE_PRINTF_1;
 void gcc_obstack_init PROTO ((struct obstack *obstack));
-extern void reset_report PROTO ((void));
 
 #define JC1_LITE
 #include "parse.h"

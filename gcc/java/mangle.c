@@ -28,6 +28,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 #include "jcf.h"
+#include "tree.h"
+#include "java-tree.h"
 #include "obstack.h"
 #include "toplev.h"
 
@@ -37,15 +39,15 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 int
 unicode_mangling_length (name, len)
-     char *name; 
+     const char *name; 
      int len; 
 {
-  unsigned char *ptr;
-  unsigned char *limit = (unsigned char *)name + len;
+  const unsigned char *ptr;
+  const unsigned char *limit = (const unsigned char *)name + len;
   int need_escapes = 0;
   int num_chars = 0;
   int underscores = 0;
-  for (ptr = (unsigned char *) name;  ptr < limit;  )
+  for (ptr = (const unsigned char *) name;  ptr < limit;  )
     {
       int ch = UTF8_GET(ptr, limit);
       if (ch < 0)
@@ -70,12 +72,12 @@ unicode_mangling_length (name, len)
 void
 emit_unicode_mangled_name (obstack, name, len)
      struct obstack *obstack;
-     char *name;
+     const char *name;
      int len;
 {
-  unsigned char *ptr;
-  unsigned char *limit = (unsigned char *)name + len;
-  for (ptr = (unsigned char *) name;  ptr < limit;  )
+  const unsigned char *ptr;
+  const unsigned char *limit = (const unsigned char *)name + len;
+  for (ptr = (const unsigned char *) name;  ptr < limit;  )
     {
       int ch = UTF8_GET(ptr, limit);
       int emit_escape;
@@ -107,7 +109,7 @@ emit_unicode_mangled_name (obstack, name, len)
 void
 append_gpp_mangled_name (obstack, name, len)
      struct obstack *obstack;
-     char *name;
+     const char *name;
      int len;
 {
   int encoded_len = unicode_mangling_length (name, len);
@@ -132,9 +134,9 @@ append_gpp_mangled_name (obstack, name, len)
 void
 append_gpp_mangled_classtype (obstack, class_name)
      struct obstack *obstack;
-     char *class_name;
+     const char *class_name;
 {
-  char *ptr;
+  const char *ptr;
   int qualifications = 0;
 
   for (ptr = class_name; *ptr != '\0'; ptr++)
