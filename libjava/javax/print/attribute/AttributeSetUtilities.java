@@ -1,5 +1,5 @@
 /* AttributeSetUtilities.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -427,7 +427,7 @@ public final class AttributeSetUtilities
    * Verifies that the category of attribute is equals to category.
    *
    * @param category the category the atteribute should be
-   * @param attribtue the attribute to verify
+   * @param attribute the attribute to verify
    *
    * @exception IllegalArgumentException if the categories are not equal
    * @exception NullPointerException if category is null

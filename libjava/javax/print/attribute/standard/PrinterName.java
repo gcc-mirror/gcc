@@ -41,6 +41,10 @@ import java.util.Locale;
 import javax.print.attribute.PrintServiceAttribute;
 import javax.print.attribute.TextSyntax;
 
+
+/**
+ * @author Michael Koch (konqueror@gmx.de)
+ */
 public final class PrinterName extends TextSyntax
   implements PrintServiceAttribute
 {
@@ -50,6 +54,7 @@ public final class PrinterName extends TextSyntax
    * Creates a <code>PrinterName</code> object.
    *
    * @param printerName the printer name
+   * @param locale the locale of the name, null means default locale
    *
    * @exception NullPointerException if printerName is null
    */
@@ -63,7 +68,7 @@ public final class PrinterName extends TextSyntax
    *
    * @param obj the object to test
    *
-   * @returns true if both objects are equal, false otherwise.
+   * @return true if both objects are equal, false otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -78,7 +83,7 @@ public final class PrinterName extends TextSyntax
    *
    * @return the class <code>PrinterName</code> itself
    */
-  public final Class getCategory()
+  public Class getCategory()
   {
     return PrinterName.class;
   }
@@ -88,7 +93,7 @@ public final class PrinterName extends TextSyntax
    *
    * @return the string "printer-name"
    */
-  public final String getName()
+  public String getName()
   {
     return "printer-name";
   }

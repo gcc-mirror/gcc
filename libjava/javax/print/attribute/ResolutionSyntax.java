@@ -1,5 +1,5 @@
 /* ResolutionSyntax.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -86,7 +86,7 @@ public abstract class ResolutionSyntax
    *
    * @param obj the object to test
    *
-   * @returns true if both objects are equal, false otherwise.
+   * @return true if both objects are equal, false otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -111,7 +111,6 @@ public abstract class ResolutionSyntax
     if (units < 1)
       throw new IllegalArgumentException("units may not be less then 1");
 
-    int rount = units / 2;
     return (crossFeedResolution + units) / units;
   }
 
@@ -137,7 +136,6 @@ public abstract class ResolutionSyntax
     if (units < 1)
       throw new IllegalArgumentException("units may not be less then 1");
 
-    int rount = units / 2;
     return (crossFeedResolution + units) / units;
   }
 

@@ -41,6 +41,10 @@ import java.util.Locale;
 import javax.print.attribute.DocAttribute;
 import javax.print.attribute.TextSyntax;
 
+
+/**
+ * @author Michael Koch (konqueror@gmx.de)
+ */
 public final class DocumentName extends TextSyntax
   implements DocAttribute
 {
@@ -63,7 +67,7 @@ public final class DocumentName extends TextSyntax
    *
    * @param obj the object to test
    *
-   * @returns true if both objects are equal, false otherwise.
+   * @return true if both objects are equal, false otherwise.
    */
   public boolean equals(Object obj)
   {

@@ -42,6 +42,9 @@ import javax.print.attribute.DateTimeSyntax;
 import javax.print.attribute.PrintJobAttribute;
 import javax.print.attribute.PrintRequestAttribute;
 
+/**
+ * @author Michael Koch (konqueror@gmx.de)
+ */
 public final class JobHoldUntil extends DateTimeSyntax
   implements PrintJobAttribute, PrintRequestAttribute
 {
@@ -64,7 +67,7 @@ public final class JobHoldUntil extends DateTimeSyntax
    *
    * @param obj the object to test
    *
-   * @returns true if both objects are equal, false otherwise.
+   * @return true if both objects are equal, false otherwise.
    */
   public boolean equals(Object obj)
   {

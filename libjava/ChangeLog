@@ -1,5 +1,198 @@
 2004-05-15  Mark Wielaard  <mark@klomp.org>
 
+	* Makefile.am (ordinary_java_source_files): Add new javax.print
+	classes.
+	* Makefile.in: Regenerated.
+
+2004-05-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/print/attribute/standard/DateTimeAtCompleted.java,
+	javax/print/attribute/standard/DateTimeAtCreation.java,
+	javax/print/attribute/standard/DateTimeAtProcessing.java,
+	javax/print/attribute/standard/DocumentName.java,
+	javax/print/attribute/standard/JobHoldUntil.java,
+	javax/print/attribute/standard/JobImpressionsCompleted.java,
+	javax/print/attribute/standard/JobMessageFromOperator.java,
+	javax/print/attribute/standard/JobName.java,
+	javax/print/attribute/standard/JobOriginatingUserName.java,
+	javax/print/attribute/standard/JobPriority.java,
+	javax/print/attribute/standard/JobPrioritySupported.java,
+	javax/print/attribute/standard/NumberOfInterveningJobs.java,
+	javax/print/attribute/standard/OutputDeviceAssigned.java,
+	javax/print/attribute/standard/PrinterInfo.java,
+	javax/print/attribute/standard/PrinterLocation.java,
+	javax/print/attribute/standard/PrinterMakeAndModel.java,
+	javax/print/attribute/standard/PrinterMessageFromOperator.java,
+	javax/print/attribute/standard/PrinterName.java,
+	javax/print/attribute/standard/QueuedJobCount.java,
+	javax/print/attribute/standard/RequestingUserName.java:
+	Fixed javadocs all over.
+
+2004-05-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/print/DocFlavor.java,
+	javax/print/attribute/standard/ColorSupported.java,
+	javax/print/attribute/standard/Compression.java,
+	javax/print/attribute/standard/CopiesSupported.java,
+	javax/print/attribute/standard/Fidelity.java,
+	javax/print/attribute/standard/Finishings.java,
+	javax/print/attribute/standard/JobImpressionsSupported.java,
+	javax/print/attribute/standard/JobKOctetsSupported.java,
+	javax/print/attribute/standard/JobMediaSheetsSupported.java,
+	javax/print/attribute/standard/JobSheets.java,
+	javax/print/attribute/standard/JobState.java,
+	javax/print/attribute/standard/JobStateReason.java,
+	javax/print/attribute/standard/JobStateReasons.java,
+	javax/print/attribute/standard/Media.java,
+	javax/print/attribute/standard/MediaSizeName.java,
+	javax/print/attribute/standard/MultipleDocumentHandling.java,
+	javax/print/attribute/standard/NumberUpSupported.java,
+	javax/print/attribute/standard/OrientationRequested.java,
+	javax/print/attribute/standard/PDLOverrideSupported.java,
+	javax/print/attribute/standard/PageRanges.java,
+	javax/print/attribute/standard/PresentationDirection.java,
+	javax/print/attribute/standard/PrintQuality.java,
+	javax/print/attribute/standard/PrinterIsAcceptingJobs.java,
+	javax/print/attribute/standard/PrinterMoreInfo.java,
+	javax/print/attribute/standard/PrinterMoreInfoManufacturer.java,
+	javax/print/attribute/standard/PrinterResolution.java,
+	javax/print/attribute/standard/PrinterState.java,
+	javax/print/attribute/standard/PrinterStateReason.java,
+	javax/print/attribute/standard/PrinterStateReasons.java,
+	javax/print/attribute/standard/PrinterURI.java,
+	javax/print/attribute/standard/ReferenceUriSchemesSupported.java,
+	javax/print/attribute/standard/Severity.java,
+	javax/print/attribute/standard/SheetCollate.java,
+	javax/print/attribute/standard/Sides.java:
+	Added serialVersionUID and removed final keyword where it doenst
+	belong.
+
+2004-05-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/print/PrintServiceLookup.java: New file.
+
+2004-05-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/print/DocFlavor.java:
+	Implemented all flavor classes.
+
+2004-05-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/print/attribute/standard/ColorSupported.java,
+	javax/print/attribute/standard/Compression.java,
+	javax/print/attribute/standard/CopiesSupported.java,
+	javax/print/attribute/standard/Fidelity.java,
+	javax/print/attribute/standard/Finishings.java,
+	javax/print/attribute/standard/JobImpressionsSupported.java,
+	javax/print/attribute/standard/JobKOctetsSupported.java,
+	javax/print/attribute/standard/JobMediaSheetsSupported.java,
+	javax/print/attribute/standard/JobSheets.java,
+	javax/print/attribute/standard/JobState.java,
+	javax/print/attribute/standard/JobStateReason.java,
+	javax/print/attribute/standard/JobStateReasons.java,
+	javax/print/attribute/standard/Media.java,
+	javax/print/attribute/standard/MediaSizeName.java,
+	javax/print/attribute/standard/MultipleDocumentHandling.java,
+	javax/print/attribute/standard/NumberUpSupported.java,
+	javax/print/attribute/standard/OrientationRequested.java,
+	javax/print/attribute/standard/PDLOverrideSupported.java,
+	javax/print/attribute/standard/PageRanges.java,
+	javax/print/attribute/standard/PresentationDirection.java,
+	javax/print/attribute/standard/PrintQuality.java,
+	javax/print/attribute/standard/PrinterIsAcceptingJobs.java,
+	javax/print/attribute/standard/PrinterMoreInfo.java,
+	javax/print/attribute/standard/PrinterMoreInfoManufacturer.java,
+	javax/print/attribute/standard/PrinterResolution.java,
+	javax/print/attribute/standard/PrinterState.java,
+	javax/print/attribute/standard/PrinterStateReason.java,
+	javax/print/attribute/standard/PrinterStateReasons.java,
+	javax/print/attribute/standard/PrinterURI.java,
+	javax/print/attribute/standard/ReferenceUriSchemesSupported.java,
+	javax/print/attribute/standard/Severity.java,
+	javax/print/attribute/standard/SheetCollate.java,
+	javax/print/attribute/standard/Sides.java: New files.
+
+2004-05-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/print/Doc.java
+	(getPrintData): Throws IOException.
+	(getReaderForText): Likewise.
+	(getStreamForBytes): Likewise.
+	* javax/print/DocFlavor.java:
+	Fixed filename in copyright.
+	(serialVersionUID): New field.
+	* javax/print/ServiceUIFactory.java:
+	Made all constants final.
+	* javax/print/AttributeException.java
+	javax/print/MultiDoc.java
+	javax/print/MultiDocPrintJob.java
+	javax/print/MultiDocPrintService.java
+	javax/print/StreamPrintService.java
+	javax/print/URIException.java: New files.
+	* javax/print/Makefile.am
+	(EXTRA_DIST): Added all new files.
+
+2004-05-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/print/attribute/standard/Copies.java,
+	javax/print/attribute/standard/DateTimeAtCompleted.java,
+	javax/print/attribute/standard/DateTimeAtCreation.java,
+	javax/print/attribute/standard/DateTimeAtProcessing.java,
+	javax/print/attribute/standard/DocumentName.java,
+	javax/print/attribute/standard/JobHoldUntil.java,
+	javax/print/attribute/standard/JobImpressions.java,
+	javax/print/attribute/standard/JobImpressionsCompleted.java,
+	javax/print/attribute/standard/JobKOctets.java,
+	javax/print/attribute/standard/JobKOctetsProcessed.java,
+	javax/print/attribute/standard/JobMediaSheets.java,
+	javax/print/attribute/standard/JobMediaSheetsCompleted.java,
+	javax/print/attribute/standard/JobMessageFromOperator.java,
+	javax/print/attribute/standard/JobName.java,
+	javax/print/attribute/standard/JobOriginatingUserName.java,
+	javax/print/attribute/standard/JobPriority.java,
+	javax/print/attribute/standard/JobPrioritySupported.java,
+	javax/print/attribute/standard/NumberOfDocuments.java,
+	javax/print/attribute/standard/NumberOfInterveningJobs.java,
+	javax/print/attribute/standard/NumberUp.java,
+	javax/print/attribute/standard/OutputDeviceAssigned.java,
+	javax/print/attribute/standard/PagesPerMinute.java,
+	javax/print/attribute/standard/PagesPerMinuteColor.java:
+	Fixed @return tag all over.
+
+2004-05-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/print/attribute/AttributeSetUtilities.java
+	(verifyCategoryForValue): Fixed typo in javadoc.
+	* javax/print/attribute/HashAttributeSet.java
+	(containsKey): Fixed @return tag.
+	(comtainsValue): Likewise.
+	(equals): Likewise.
+	* javax/print/attribute/IntegerSyntax.java
+	(equals): Likewise.
+	* javax/print/attribute/ResolutionSyntax.java
+	(equals): Likewise.
+	(getCrossFeedResolution): Removed unused code.
+	(getFeedResolution): Likewise.
+	* javax/print/attribute/SetOfIntegerSyntax.java
+	(SetOfIntegerSyntax): Fixed HTML entities in javadoc.
+	(equals): Fixed @return tag.
+	* javax/print/attribute/TextSyntax.java
+	(TextSyntax): Take locale into account.
+	(hashCode): Better implementation.
+
+2004-05-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/print/CancelablePrintJob.java,
+	javax/print/Doc.java,
+	javax/print/DocFlavor.java,
+	javax/print/DocPrintJob.java,
+	javax/print/FlavorException.java,
+	javax/print/PrintException.java,
+	javax/print/PrintService.java,
+	javax/print/ServiceUIFactory.java: New files.
+
+2004-05-15  Mark Wielaard  <mark@klomp.org>
+
 	* gnu/regexp/CharIndexedReader.java: Removed.
 	* gnu/regexp/REFilterReader.java: Likewise.
 	* gnu/regexp/RETokenLookAhead.java: Likewise.

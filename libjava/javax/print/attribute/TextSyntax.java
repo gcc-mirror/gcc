@@ -121,6 +121,6 @@ public abstract class TextSyntax implements Cloneable, Serializable
    */
   public String toString()
   {
-    return value;
+    return getValue();
   }
 }

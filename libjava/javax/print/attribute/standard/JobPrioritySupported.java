@@ -1,5 +1,5 @@
 /* JobPrioritySupported.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,6 +40,10 @@ package javax.print.attribute.standard;
 import javax.print.attribute.IntegerSyntax;
 import javax.print.attribute.SupportedValuesAttribute;
 
+
+/**
+ * @author Michael Koch (konqueror@gmx.de)
+ */
 public final class JobPrioritySupported extends IntegerSyntax
   implements SupportedValuesAttribute
 {
@@ -65,7 +69,7 @@ public final class JobPrioritySupported extends IntegerSyntax
    *
    * @param obj the object to test
    *
-   * @returns true if both objects are equal, false otherwise.
+   * @return true if both objects are equal, false otherwise.
    */
   public boolean equals(Object obj)
   {
