@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Vax.
-   Copyright (C) 1987, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -157,6 +157,7 @@ Boston, MA 02111-1307, USA.  */
 #define current_function_returns_pointer	curfunc_returns_pointer
 #define current_function_uses_const_pool	curfunc_uses_const_pool
 #define current_function_uses_pic_offset_table	curfunc_uses_pic_offset_table
+#define dbxout_resume_previous_source_file	dbxout_resume_previous_src_file
 #define expand_start_loop_continue_elsewhere	expnd_start_loop_cont_elsewhere
 #define flag_schedule_insns_after_reload	flag_sched_insns_after_reload
 #define lookup_name_current_level_global	lookup_name_current_level_gbl
