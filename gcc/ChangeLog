@@ -1,5 +1,17 @@
 2000-08-26  Michael Hayes  <mhayes@cygnus.com>
 
+	* basic-block.h (struct loop): Rename `exits' field to
+	`exit_edges'.  Add `entry_edges' and `num_entries' fields.
+
+	* flow.c (flow_loop_exit_edges_find): Rename from flow_loop_exits_find.
+	(flow_loop_entry_edges_find): Add.
+	(flow_edge_list_print): Rename from flow_exits_print.
+	(flow_loops_find): Call flow_loop_entry_edges_find.
+	(flow_loop_dump): Dump entry_edges list.
+	(flow_loops_free): Free entry_edges.
+	
+2000-08-26  Michael Hayes  <mhayes@cygnus.com>
+	
 	* loop.c (loop_dump_aux, debug_loop): New functions.
 	(LOOP_BLOCK_NUM_1, LOOP_BLOCK_NUM, LOOP_INSN_UID): New macros.
 
