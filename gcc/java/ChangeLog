@@ -1,3 +1,8 @@
+2000-02-22  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (init_decl_processing): `_Jv_IsInstanceOf' returned
+	value type set to `boolean_type_node'.
+
 Mon Jan 18 14:30:09 2000  Joerg Brunsmann  <joerg.brunsmann@fernuni-hagen.de>
 
 	* jcf-dump.c (main): Test for correct condition after
