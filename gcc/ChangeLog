@@ -1,3 +1,10 @@
+2002-04-09  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/larith.asm (__map_data_section): Fix condition
+	and optimize for size.
+	(__do_global_ctors): Fix pointer comparison.
+	(__do_global_dtors): Likewise.
+
 2002-04-09  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.c (sparc_extra_constraint_check): New

@@ -1083,23 +1083,30 @@ A_low_B_low:
 	.sect	.install2,"ax",@progbits
 	.globl	__map_data_section
 	.globl __data_image
+#ifdef mc68hc12
 	.globl __data_section_size
+#endif
 __map_data_section:
-	ldd	#__data_section_size
-	beq	Done
+#ifdef mc68hc12
 	ldx	#__data_image
 	ldy	#__data_section_start
+	ldd	#__data_section_size
+	beq	Done
 Loop:
-#ifdef mc68hc12
 	movb	1,x+,1,y+
 	dbne	d,Loop
 #else
+	ldx	#__data_image
+	ldy	#__data_section_start
+	bra	Start_map
+Loop:
 	ldaa	0,x
 	staa	0,y
 	inx
 	iny
+Start_map:
 	cpx	#__data_image_end
-	blt	Loop
+	blo	Loop
 #endif
 Done:
 
@@ -1139,7 +1146,7 @@ __do_global_ctors:
 	ldx	#__CTOR_END__-2
 ctors_loop:
 	cpx	#__CTOR_LIST__
-	blt	ctors_done
+	blo	ctors_done
 	pshx
 	ldx	0,x
 	jsr	0,x
@@ -1165,7 +1172,7 @@ __do_global_dtors:
 	ldx	#__DTOR_LIST__
 dtors_loop:
 	cpx	#__DTOR_END__
-	bge	dtors_done
+	bhs	dtors_done
 	pshx
 	ldx	0,x
 	jsr	0,x
