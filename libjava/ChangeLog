@@ -1,3 +1,8 @@
+2004-09-14  Richard Henderson  <rth@redhat.com>
+
+	* java/lang/natPosixProcess.cc (waitForSignal): Ignore return
+	value of sigsuspend.
+
 2004-09-12  Tom Tromey  <tromey@redhat.com>
 
 	* javax/naming/CompoundName.java (CompoundName): Don't check for

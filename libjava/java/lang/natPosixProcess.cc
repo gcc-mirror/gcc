@@ -126,26 +126,23 @@ error:
 void
 java::lang::ConcreteProcess$ProcessManager::waitForSignal ()
 {
-  using namespace java::lang;
-
-  sigset_t mask;
   // Wait for SIGCHLD
+  sigset_t mask;
   pthread_sigmask (0, NULL, &mask);
   sigdelset (&mask, SIGCHLD);
+
   // Use sigsuspend() instead of sigwait() as sigwait() doesn't play
   // nicely with the GC's use of signals.
-  int c = sigsuspend (&mask);
+  sigsuspend (&mask);
 
-  if (c != -1)
-    goto error;
-  if (errno != EINTR)
-    goto error;
+  // Do not check sigsuspend return value.  The only legitimate return
+  // is EINTR, but there is a known kernel bug affecting alpha-linux
+  // wrt sigsuspend+handler+sigreturn that can result in a return value
+  // of __NR_sigsuspend and errno unset.  Don't fail unnecessarily on
+  // older kernel versions.
 
   // All OK.
   return;
-
-error:
-  throw new InternalError (JvNewStringUTF (strerror (errno)));
 }
 
 jboolean java::lang::ConcreteProcess$ProcessManager::reap ()
