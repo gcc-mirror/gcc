@@ -1,3 +1,41 @@
+2001-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.in: Check for ld.
+	(HAVE_LD_EH_FRAME_HDR): Define if ld supports --eh-frame-hdr option.
+	* configure, config.in: Rebuilt.
+	* config.gcc: Add crtbeginT.o to extra_parts where needed.
+	* config/t-linux (LIB2ADDEH, LIB2ADDEHDEP): Use unwind-dw2-fde-glibc
+	frame unwinding on Linux.
+	* config/t-linux-gnulibc1 (LIB2ADDEH, LIB2ADDEHDEP): Use unwind-dw2-fde
+	frame unwinding.
+	* config/linux.h (STARTFILE_SPEC): Use crtbeginT.o for -static.
+	(LINK_EH_SPEC): Define.
+	* config/i386/gnu.h (STARTFILE_SPEC): Use crtbeginT.o for -static.
+	* config/ia64/linux.h (STARTFILE_SPEC, LINK_EH_SPEC): Define.
+	* config/ia64/fde-glibc.c (_Unwind_IteratePhdrCallback): Don't
+	iterate further if pc falls into current library, but fde was not
+	found.
+	* config/sparc/linux.h (STARTFILE_SPEC): Use crtbeginT.o for -static
+	if using glibc.
+	(LINK_EH_SPEC): Define.
+	* config/sparc/linux64.h (STARTFILE_SPEC32, STARTFILE_SPEC64):
+	Use crtbeginT.o for -static.
+	(LINK_EH_SPEC): Define.
+	* config/sparc/t-linux64 (EXTRA_MULTILIB_PARTS): Add crtbeginT.o.
+	* Makefile.in (crtbeginT.o): Add rule.
+	* gcc.c (init_gcc_specs): For -static-libgcc, use -lgcc -lgcc_eh.
+	If neither -static-libgcc nor -shared-libgcc is passed and -shared,
+	use -lgcc if LINK_EH_SPEC is defined and -lgcc_s -lgcc if not.
+	If none of the above switches are passed, use -lgcc -lgcc_eh.
+	(init_spec): If LINK_EH_SPEC is defined, prepend it to link_spec.
+	* mklibgcc.in: Don't include LIB2ADDEH objects into libgcc.a if
+	creating libgcc_s.so, put them into separate libgcc_eh.a instead.
+	* unwind-dw2-fde.c: Don't include any headers if this file
+	is included from other .c file.
+	* unwind-dw2-fde-glibc.c: New file.
+	* crtstuff.c (USE_PT_GNU_EH_FRAME, USE_EH_FRAME_REGISTRY): Define.
+	Use it instead of EH_FRAME_SECTION_NAME where appropriate.
+
 2001-12-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_memcmp): Mark parameter with

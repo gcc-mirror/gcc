@@ -44,10 +44,17 @@ Boston, MA 02111-1307, USA.  */
    object constructed before entering `main'.  */
    
 #undef  STARTFILE_SPEC
+#ifdef USE_GNULIBC_1
 #define STARTFILE_SPEC \
   "%{!shared: \
      %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}}\
    crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+#else
+  "%{!shared: \
+     %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}}\
+   crti.o%s %{static:crtbeginT.o%s}\
+   %{!static:%{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}}"
+#endif
 
 /* Provide a ENDFILE_SPEC appropriate for GNU/Linux.  Here we tack on
    the GNU/Linux magical crtend.o file (see crtstuff.c) which
@@ -241,5 +248,9 @@ do {									\
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 128
 #else
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
+#endif
+
+#if !defined(USE_GNULIBC_1) && defined(HAVE_LD_EH_FRAME_HDR)
+#define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
 #endif
 

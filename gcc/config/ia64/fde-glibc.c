@@ -110,7 +110,9 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
       else
         goto found;
     }
-  return 0;
+  /* No need to search for further libraries when we know pc is contained
+     in this library.  */
+  return 1;
 
  found:
   *data->segment_base = seg_base;

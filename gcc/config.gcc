@@ -276,7 +276,7 @@ case $machine in
 	# support are matched above and just set $cpu_type.
 	xm_defines=POSIX
 	tm_file="${cpu_type}/gnu.h"
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
+	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
 	# GNU always uses ELF.
 	elf=yes
 	# GNU tools are the only tools.
@@ -700,7 +700,7 @@ cris-*-elf | cris-*-none)
 cris-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} linux.h cris/linux.h"
 	tmake_file="cris/t-cris t-slibgcc-elf-ver cris/t-linux"
-	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	case x${enable_threads} in
 	x | xyes | xpthreads | xposix)
 		thread_file=posix
@@ -750,7 +750,7 @@ hppa*-*-linux* | parisc*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h pa/pa-linux.h \
 		 pa/pa32-regs.h pa/pa32-linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux pa/t-linux"
-	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	gas=yes gnu_ld=yes
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -981,7 +981,7 @@ i370-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h linux.h i370/linux.h ${tm_file}"
 	tmake_file="t-slibgcc-elf-ver t-linux"
 	# broken_install=yes
-	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	# extra_parts="crtbegin.o crtend.o"
 	gnu_ld=yes
 	gas=yes
@@ -1178,7 +1178,7 @@ i[34567]86-*-linux*)	# Intel 80386's running GNU/Linux
 			# aka GNU/Linux C library 6
 	tm_file="${tm_file} i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux i386/t-crtstuff"
-	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	gnu_ld=yes
 	float_format=i386
 	if test x$enable_threads = xyes; then
@@ -1189,7 +1189,7 @@ x86_64-*-linux*)
 	tm_file="i386/biarch64.h i386/i386.h i386/att.h dbxelf.h elfos.h svr4.h linux.h \
 		 i386/x86-64.h i386/linux64.h"
 	tmake_file="t-slibgcc-elf-ver t-linux i386/t-crtstuff"
-	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	gnu_ld=yes
 	float_format=i386
 	if test x$enable_threads = xyes; then
@@ -2280,7 +2280,7 @@ mips*-*-linux*)				# Linux MIPS, either endian.
                 ;;
 	esac
 	tmake_file="t-slibgcc-elf-ver t-linux"
-	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	gnu_ld=yes
 	gas=yes
 	if test x$enable_threads = xyes; then
@@ -2867,7 +2867,7 @@ rs6000-*-lynxos*)
 s390-*-linux*)
 	tm_file="s390/s390.h dbxelf.h elfos.h svr4.h linux.h s390/linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux s390/t-linux"
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
+	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
@@ -2878,7 +2878,7 @@ s390x-*-linux*)
 	md_file=s390/s390.md
 	out_file=s390/s390.c
 	tmake_file="t-slibgcc-elf-ver t-linux s390/t-linux"
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
+	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
@@ -2982,7 +2982,7 @@ sparc-*-linux*libc1*)	# Sparc's running GNU/Linux, libc5
 sparc-*-linux*)		# Sparc's running GNU/Linux, libc6
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux"
-	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	gnu_ld=yes
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -3177,7 +3177,7 @@ sparc64-*-elf*)
 sparc64-*-linux*)		# 64-bit Sparc's running GNU/Linux
 	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-linux64"
 	tm_file="sparc/sparc_bi.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux64.h"
-	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	gnu_ld=yes
 	if test x$enable_threads = xyes; then
 		thread_file='posix'

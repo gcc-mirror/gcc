@@ -50,12 +50,22 @@ Boston, MA 02111-1307, USA.  */
    object constructed before entering `main'. */
    
 #undef	STARTFILE_SPEC
+#ifdef USE_GNULIBC_1
 #define STARTFILE_SPEC \
   "%{!shared: \
      %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} \
 		       %{!p:%{profile:gcrt1.o%s} \
 			 %{!profile:crt1.o%s}}}} \
    crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+#else
+#define STARTFILE_SPEC \
+  "%{!shared: \
+     %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} \
+		       %{!p:%{profile:gcrt1.o%s} \
+			 %{!profile:crt1.o%s}}}} \
+   crti.o%s %{static:crtbeginT.o%s}\
+   %{!static:%{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}}"
+#endif
 
 /* Provide a ENDFILE_SPEC appropriate for GNU/Linux.  Here we tack on
    the GNU/Linux magical crtend.o file (see crtstuff.c) which
@@ -96,6 +106,10 @@ Boston, MA 02111-1307, USA.  */
   "%{!shared: \
      %{p:-lgmon -lc_p} %{pg:-lgmon -lc_p} \
        %{!p:%{!pg:%{!g*:-lc} %{g*:-lg}}}}"
+#endif
+
+#if !defined(USE_GNULIBC_1) && defined(HAVE_LD_EH_FRAME_HDR)
+#define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
 #endif
 
 /* Define this so we can compile MS code for use with WINE.  */
