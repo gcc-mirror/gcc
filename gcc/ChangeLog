@@ -1,3 +1,7 @@
+2001-12-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* Makefile.in (.po.gmo): Use POSIXLY_CORRECT argument ordering.
+
 Sun Dec  9 21:57:24 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* config/alpha/t-vms (EXTRA_PARTS): Append $(VMS_EXTRA_PARTS)
