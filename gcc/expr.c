@@ -120,6 +120,16 @@ struct move_by_pieces
   int reverse;
 };
 
+/* Used to generate bytecodes: keep track of size of local variables,
+   as well as depth of arithmetic stack. (Notice that variables are
+   stored on the machine's stack, not the arithmetic stack.) */
+
+int local_vars_size;
+extern int stack_depth;
+extern int max_stack_depth;
+struct obstack permanent_obstack;
+
+
 static rtx enqueue_insn		PROTO((rtx, rtx));
 static int queued_subexp_p	PROTO((rtx));
 static void init_queue		PROTO((void));
@@ -5754,11 +5764,17 @@ bc_expand_expr (exp)
       
     case REAL_CST:
       
+#if 0
 #ifdef DEBUG_PRINT_CODE
       fprintf (stderr, " [%g]\n", (double) TREE_INT_CST_LOW (exp));
 #endif
+      /* FIX THIS: find a better way to pass real_cst's. -bson */
       bc_emit_instruction (mode_to_const_map[TYPE_MODE (TREE_TYPE (exp))],
 			   (double) TREE_REAL_CST (exp));
+#else
+      abort ();
+#endif
+
       return;
       
     case CALL_EXPR:
@@ -5875,7 +5891,7 @@ bc_expand_expr (exp)
       
     case MODIFY_EXPR:
       
-      expand_assignment (TREE_TYPE (exp), TREE_OPERAND (exp, 0), TREE_OPERAND (exp, 1));
+      expand_assignment (TREE_OPERAND (exp, 0), TREE_OPERAND (exp, 1), 0, 0);
       return;
       
     case ADDR_EXPR:
@@ -5914,7 +5930,7 @@ bc_expand_expr (exp)
       bc_expand_expr (TREE_OPERAND (exp, 0));
       bc_expand_truth_conversion (TREE_TYPE (TREE_OPERAND (exp, 0)));
       lab = bc_get_bytecode_label ();
-      bc_emit_bytecode (jumpifnot);
+      bc_emit_bytecode (xjumpifnot);
       bc_emit_bytecode_labelref (lab);
       
 #ifdef DEBUG_PRINT_CODE
@@ -5936,12 +5952,12 @@ bc_expand_expr (exp)
       
     case TRUTH_ANDIF_EXPR:
       
-      opcode = jumpifnot;
+      opcode = xjumpifnot;
       goto andorif;
       
     case TRUTH_ORIF_EXPR:
       
-      opcode = jumpif;
+      opcode = xjumpif;
       goto andorif;
       
     case PLUS_EXPR:
@@ -6186,10 +6202,10 @@ bc_expand_expr (exp)
   bc_expand_conversion (TREE_TYPE (TREE_OPERAND (exp, 1)), type);
   
   /* Push the address of the lvalue */
-  expand_expr (build1 (ADDR_EXPR, TYPE_POINTER_TO (type), TREE_OPERAND (exp, 0)));
+  bc_expand_expr (build1 (ADDR_EXPR, TYPE_POINTER_TO (type), TREE_OPERAND (exp, 0)));
   
   /* Perform actual increment */
-  expand_increment (incroptab, type);
+  bc_expand_increment (incroptab, type);
   return;
 }
 
@@ -7634,7 +7650,10 @@ expand_increment (exp, post)
   int single_insn = 0;
 
   if (output_bytecode)
-    return bc_expand_increment (exp, post);
+    {
+      bc_expand_expr (exp);
+      return NULL_RTX;
+    }
 
   /* Stabilize any component ref that might need to be
      evaluated more than once below.  */
@@ -9198,7 +9217,7 @@ bc_expand_component_address (exp)
 	  break;
     }
 
-  expand_expr (tem);
+  bc_expand_expr (tem);
 
 
   /* For bitfields also push their offset and size */
