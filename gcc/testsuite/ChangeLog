@@ -1,3 +1,8 @@
+2000-05-04  Neil Booth  <NeilB@earthling.net>
+
+	* gcc.dg/cpp-opprec.c: New tests for operator precedence in the
+	preprocessor.
+
 2000-05-04  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/20000503-1.c: Fix typo.
