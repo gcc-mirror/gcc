@@ -1,3 +1,7 @@
+Fri Nov 13 06:56:24 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alpha/vms.h (struct avms_arg_info): Use int for num_args.
+
 Mon Nov  2 07:35:26 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* sched.c ({true,anti,output}_dependence): Volatile conflicts with
