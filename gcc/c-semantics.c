@@ -398,42 +398,23 @@ genrtl_case_label (low_value, high_value)
   do_case (low_value, high_value);
 }
 
-/* Generate the RTL for the start of a COMPOUND_STMT. */
+/* Generate the RTL for T, which is a COMPOUND_STMT. */
 
-tree 
-genrtl_begin_compound_stmt (has_no_scope)
-     int has_no_scope;
+void
+genrtl_compound_stmt (t)
+    tree t;
 {
   /* If this is the outermost block of the function, declare the
      variables __FUNCTION__, __PRETTY_FUNCTION__, and so forth.  */
   if (cfun
       && !current_function_name_declared () 
-      && !has_no_scope)
+      && !COMPOUND_STMT_NO_SCOPE (t))
     {
       set_current_function_name_declared (1);
       declare_function_name ();
-    }
+    } 
 
-  return NULL_TREE;
-}
-
-/* Generate the RTL for the end of a COMPOUND_STMT. */
-
-tree genrtl_finish_compound_stmt (has_no_scope)
-     int has_no_scope;
-{
-  return NULL_TREE;
-}
-
-/* Generate the RTL for T, which is a COMPOUND_STMT. */
-
-tree 
-genrtl_compound_stmt (t)
-    tree t;
-{
-  genrtl_begin_compound_stmt (COMPOUND_STMT_NO_SCOPE (t));
   expand_stmt (COMPOUND_BODY (t));
-  return (genrtl_finish_compound_stmt (COMPOUND_STMT_NO_SCOPE (t)));
 }
 
 /* Generate the RTL for an ASM_STMT. */
@@ -481,6 +462,9 @@ genrtl_decl_cleanup (decl, cleanup)
     expand_decl_cleanup (decl, cleanup);
 }
 
+/* Generate the RTL for the statement T, its substatements, and any
+   other statements at its nesting level. */
+
 tree
 expand_stmt (t)
      tree t;
@@ -489,3 +473,4 @@ expand_stmt (t)
   rval = lang_expand_stmt (t);
   return rval;
 }
+

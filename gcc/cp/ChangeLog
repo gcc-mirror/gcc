@@ -1,3 +1,30 @@
+2000-07-02  Benjamin Chelf  <chelf@codesourcery.com>
+
+	* cp-tree.h (genrtl_goto_stmt): Remove declaration.
+	(genrtl_expr_stmt): Likewise.
+	(genrtl_decl_stmt): Likewise.
+	(genrtl_if_stmt): Likewise.
+	(genrtl_while_stmt): Likewise.
+	(genrtl_do_stmt): Likewise.
+	(genrtl_return_stmt): Likewise.
+	(genrtl_for_stmt): Likewise.
+	(genrtl_break_stmt): Likewise.
+	(genrtl_continue_stmt): Likewise.
+	(genrtl_scope_stmt): Likewise.
+	(genrtl_switch_stmt): Likewise.
+	(genrtl_case_label): Likewise.
+	(genrtl_begin_compound_stmt): Likewise.
+	(genrtl_finish_compound_stmt): Likewise.
+	(genrtl_compound_stmt): Likewise.
+	(genrtl_asm_stmt): Likewise.
+
+	* init.c (begin_init_stmts): Remove call to
+	genrtl_begin_compound_stmt.
+	(finish_init_stmts): Remove call to genrtl_finish_compound_stmt.
+
+	* semantics.c (lang_expand_stmt): Changed call to
+	genrtl_compound_stmt to ignore return value.
+	
 2000-07-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* mangle.c (canonicalize_for_substitution): Return the canonical

@@ -435,9 +435,7 @@ extern void genrtl_continue_stmt                PARAMS ((void));
 extern void genrtl_scope_stmt                   PARAMS ((tree));
 extern void genrtl_switch_stmt                  PARAMS ((tree));
 extern void genrtl_case_label                   PARAMS ((tree, tree));
-extern tree genrtl_begin_compound_stmt          PARAMS ((int));
-extern tree genrtl_finish_compound_stmt         PARAMS ((int));
-extern tree genrtl_compound_stmt                PARAMS ((tree));
+extern void genrtl_compound_stmt                PARAMS ((tree));
 extern void genrtl_asm_stmt                     PARAMS ((tree, tree,
 							 tree, tree,
 							 tree));

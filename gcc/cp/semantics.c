@@ -2362,7 +2362,7 @@ lang_expand_stmt (t)
 	  break;
 
 	case COMPOUND_STMT:
-	  rval = genrtl_compound_stmt (t);
+	  genrtl_compound_stmt (t);
 	  break;
 
 	case BREAK_STMT:

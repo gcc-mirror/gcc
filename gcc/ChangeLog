@@ -1,3 +1,15 @@
+2000-07-02  Benjamin Chelf  <chelf@codesourcery.com>
+
+	* c-common.h (genrtl_begin_compound_stmt): Remove declaration.
+	(genrtl_finish_compound_stmt): Likewise.
+	(genrtl_compound_stmt): Change to return void.
+
+	* c-semantics.c (genrtl_begin_compound_stmt): Remove function and 
+	move code from here to ...
+	(genrtl_compound_stmt): ... here.
+	(genrtl_finish_compound_stmt): Remove.
+	(expand_stmt): Add comment.
+
 2000-07-02  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* c-typeck.c (build_indirect_ref): Use COMPLETE_OR_VOID_TYPE_P
