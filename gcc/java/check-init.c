@@ -571,12 +571,12 @@ check_init (exp, before)
     case THROW_EXPR:
       if (TREE_OPERAND (exp, 0))
 	check_init (TREE_OPERAND (exp, 0), before);
-      SET_ALL (before);
-      return;
+      goto never_continues;
 
     case ERROR_MARK:
+    never_continues:
       SET_ALL (before);
-      break;
+      return;
       
     case COND_EXPR:
     case TRUTH_ANDIF_EXPR:
@@ -649,11 +649,16 @@ check_init (exp, before)
     case NEW_CLASS_EXPR:
     case CALL_EXPR:
       {
+	tree func = TREE_OPERAND (exp, 0);
 	tree x = TREE_OPERAND (exp, 1);
-	check_init (TREE_OPERAND (exp, 0), before);
-	
+	if (TREE_CODE (func) == ADDR_EXPR)
+	  func = TREE_OPERAND (func, 0);
+	check_init (func, before);
+
 	for ( ;  x != NULL_TREE;  x = TREE_CHAIN (x))
 	  check_init (TREE_VALUE (x), before);
+	if (func == throw_node)
+	  goto never_continues;
       }
       break;
 
