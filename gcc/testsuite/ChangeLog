@@ -1,3 +1,7 @@
+2001-04-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.other/defarg9.C: New test.
+
 2001-04-26  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* g77.f-torture/compile/20010426.f: New test.
