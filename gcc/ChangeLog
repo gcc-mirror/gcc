@@ -1,5 +1,9 @@
 2004-11-15  Mark Mitchell <mark@codesourcery.com>
 
+	* config/sol2-c.c (cmn_err_char_table): Add "p".
+
+2004-11-15  Mark Mitchell <mark@codesourcery.com>
+
 	* config/sparc/sol2.h (SUPPORTS_INIT_PRIORITY): Remove.
 	* config/sol2.h (SUPPORTS_INIT_PRIORITY): Define here.
 
