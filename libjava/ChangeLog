@@ -1,3 +1,8 @@
+2001-07-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.in (test for eh model): Fixed typo.
+	* configure: Rebuilt.
+	
 20010617 Release Manager
 
         * GCC 3.0 Released.
