@@ -1082,7 +1082,8 @@ static struct tm *timestamp PROTO((void));
 static void special_symbol PROTO((HASHNODE *, FILE_BUF *));
 
 static int redundant_include_p PROTO((char *));
-static is_system_include PROTO((char *));
+static int is_system_include PROTO((char *));
+static char *skip_redundant_dir_prefix PROTO((char *));
 
 static char *read_filename_string PROTO((int, FILE *));
 static struct file_name_map *read_name_map PROTO((char *));
@@ -4260,7 +4261,7 @@ do_include (buf, limit, op, keyword)
   struct file_name_list *search_start = include; /* Chain of dirs to search */
   struct file_name_list dsp[1];	/* First in chain, if #include "..." */
   struct file_name_list *searchptr = 0;
-  int flen;
+  size_t flen;
 
   int f;			/* file number */
 
@@ -4500,9 +4501,9 @@ get_filename:
 	   a standard piece of the list.  */
 	if (searchptr->fname[0] == 0)
 	  continue;
-	strcpy (fname, searchptr->fname);
-	strcat (fname, "/");
-	fname[strlen (fname) + flen] = 0;
+	strcpy (fname, skip_redundant_dir_prefix (searchptr->fname));
+	if (fname[0] && fname[strlen (fname) - 1] != '/')
+	  strcat (fname, "/");
       } else {
 	fname[0] = 0;
       }
@@ -4569,8 +4570,9 @@ get_filename:
 		      continue;
 		    p = (char *) alloca (strlen (searchptr->fname)
 					 + strlen (fname) + 2);
-		    strcpy (p, searchptr->fname);
-		    strcat (p, "/");
+		    strcpy (p, skip_redundant_dir_prefix (searchptr->fname));
+		    if (p[0] && p[strlen (p) - 1] != '/')
+		      strcat (p, "/");
 		    strcat (p, fname);
 		    deps_output (p, ' ');
 		    break;
@@ -4749,6 +4751,21 @@ is_system_include (filename)
   return 0;
 }
 
+/* Skip leading "./" from a directory name.
+   This may yield the empty string, which represents the current directory.  */
+
+static char *
+skip_redundant_dir_prefix (dir)
+     char *dir;
+{
+  while (dir[0] == '.' && dir[1] == '/')
+    for (dir += 2; *dir == '/'; dir++)
+      continue;
+  if (dir[0] == '.' && !dir[1])
+    dir++;
+  return dir;
+}
+
 /* The file_name_map structure holds a mapping of file names for a
    particular directory.  This mapping is read from the file named
    FILE_NAME_MAP_FILE in that directory.  Such a file can be used to
@@ -4816,6 +4833,10 @@ read_name_map (dirname)
   register struct file_name_map_list *map_list_ptr;
   char *name;
   FILE *f;
+  size_t dirlen;
+  int separator_needed;
+
+  dirname = skip_redundant_dir_prefix (dirname);
 
   for (map_list_ptr = map_list; map_list_ptr;
        map_list_ptr = map_list_ptr->map_list_next)
@@ -4827,18 +4848,18 @@ read_name_map (dirname)
   map_list_ptr->map_list_name = savestring (dirname);
   map_list_ptr->map_list_map = NULL;
 
-  name = (char *) alloca (strlen (dirname) + strlen (FILE_NAME_MAP_FILE) + 2);
+  dirlen = strlen (dirname);
+  separator_needed = dirlen != 0 && dirname[dirlen - 1] != '/';
+  name = (char *) alloca (dirlen + strlen (FILE_NAME_MAP_FILE) + 2);
   strcpy (name, dirname);
-  if (*dirname)
-    strcat (name, "/");
-  strcat (name, FILE_NAME_MAP_FILE);
+  name[dirlen] = '/';
+  strcpy (name + dirlen + separator_needed, FILE_NAME_MAP_FILE);
   f = fopen (name, "r");
   if (!f)
     map_list_ptr->map_list_map = NULL;
   else
     {
       int ch;
-      int dirlen = strlen (dirname);
 
       while ((ch = getc (f)) != EOF)
 	{
@@ -4864,7 +4885,7 @@ read_name_map (dirname)
 	      ptr->map_to = xmalloc (dirlen + strlen (to) + 2);
 	      strcpy (ptr->map_to, dirname);
 	      ptr->map_to[dirlen] = '/';
-	      strcpy (ptr->map_to + dirlen + 1, to);
+	      strcpy (ptr->map_to + dirlen + separator_needed, to);
 	      free (to);
 	    }	      
 
