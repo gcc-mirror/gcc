@@ -263,7 +263,6 @@ commonparms (p1, p2)
   tree oldargs = p1, newargs, n;
   int i, len;
   int any_change = 0;
-  char *first_obj = (char *) oballoc (0);
 
   len = list_length (p1);
   newargs = tree_last (p1);
@@ -312,10 +311,7 @@ commonparms (p1, p2)
 	TREE_VALUE (n) = TREE_VALUE (p1);
     }
   if (! any_change)
-    {
-      obfree (first_obj);
-      return oldargs;
-    }
+    return oldargs;
 
   return newargs;
 }

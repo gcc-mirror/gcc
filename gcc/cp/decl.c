@@ -3487,6 +3487,8 @@ duplicate_decls (newdecl, olddecl)
 	  CLASSTYPE_FRIEND_CLASSES (newtype)
 	    = CLASSTYPE_FRIEND_CLASSES (oldtype);
 	}
+
+      DECL_ORIGINAL_TYPE (newdecl) = DECL_ORIGINAL_TYPE (olddecl);
     }
 
   /* Copy all the DECL_... slots specified in the new decl
@@ -8031,7 +8033,6 @@ destroy_local_var (decl)
       && cleanup)
     finish_decl_cleanup (decl, cleanup);
 }
-
 
 
 /* Finish processing of a declaration;
