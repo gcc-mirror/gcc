@@ -109,7 +109,8 @@ namespace std
 	  const __size_type __len = std::min(__opt_len, __max_size);
 	  __string_type __tmp;
 	  __tmp.reserve(__len);
-	  __tmp.assign(_M_string.data(), this->epptr() - this->pbase());
+	  if (this->pbase())
+	    __tmp.assign(this->pbase(), this->epptr() - this->pbase());
 	  _M_string.swap(__tmp);
 	  _M_sync(const_cast<char_type*>(_M_string.data()),
 		  this->gptr() - this->eback(), this->pptr() - this->pbase());
