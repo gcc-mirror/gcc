@@ -51,6 +51,13 @@ typedef unsigned char U_CHAR;
 #define PATH_SEPARATOR ':'
 #endif
 
+/* By default, the suffix for object files is ".o".  */
+#ifdef OBJECT_SUFFIX
+#define HAVE_OBJECT_SUFFIX
+#else
+#define OBJECT_SUFFIX ".o"
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <ctype.h>
@@ -221,8 +228,8 @@ my_bzero (b, length)
 #define fstat(fd,stbuf)		VMS_fstat (fd,stbuf)
 static int VMS_fstat (), VMS_stat ();
 static int VMS_open ();
-static FILE * VMS_fopen ();
-static FILE * VMS_freopen ();
+static FILE *VMS_fopen ();
+static FILE *VMS_freopen ();
 static void hack_vms_include_specification ();
 #define INO_T_EQ(a, b) (!bcmp((char *) &(a), (char *) &(b), sizeof (a)))
 #define INO_T_HASH(a) 0
@@ -2139,11 +2146,7 @@ main (argc, argv)
 	q = p + (len - 4);
 
       /* Supply our own suffix.  */
-#ifndef VMS
-      strcpy (q, ".o");
-#else
-      strcpy (q, ".obj");
-#endif
+      strcpy (q, OBJECT_SUFFIX);
 
       deps_output (p, ':');
       deps_output (in_fname, ' ');
@@ -10238,27 +10241,26 @@ hack_vms_include_specification (fname, vaxc_include)
      "shr=nil"- Disallow file sharing while file is open.  */
 
 static FILE *
-freopen (fname, type, oldfile)
+VMS_freopen (fname, type, oldfile)
      char *fname;
      char *type;
      FILE *oldfile;
 {
-#undef	freopen	/* Get back the REAL fopen routine */
   if (strcmp (type, "w") == 0)
-    return freopen (fname, type, oldfile, "mbc=16", "deq=64", "fop=tef", "shr=nil");
-  return freopen (fname, type, oldfile, "mbc=16");
+    return decc$freopen (fname, type, oldfile,
+			 "mbc=16", "deq=64", "fop=tef", "shr=nil");
+  return decc$freopen (fname, type, oldfile, "mbc=16");
 }
 
 static FILE *
-fopen (fname, type)
+VMS_fopen (fname, type)
      char *fname;
      char *type;
 {
-#undef fopen	/* Get back the REAL fopen routine */
   /* The gcc-vms-1.42 distribution's header files prototype fopen with two
      fixed arguments, which matches ANSI's specification but not VAXCRTL's
      pre-ANSI implementation.  This hack circumvents the mismatch problem.  */
-  FILE *(*vmslib_fopen)() = (FILE *(*)()) fopen;
+  FILE *(*vmslib_fopen)() = (FILE *(*)()) decc$fopen;
 
   if (*type == 'w')
     return (*vmslib_fopen) (fname, type, "mbc=32",
@@ -10268,13 +10270,12 @@ fopen (fname, type)
 }
 
 static int 
-open (fname, flags, prot)
+VMS_open (fname, flags, prot)
      char *fname;
      int flags;
      int prot;
 {
-#undef open	/* Get back the REAL open routine */
-  return open (fname, flags, prot, "mbc=16", "deq=64", "fop=tef");
+  return decc$open (fname, flags, prot, "mbc=16", "deq=64", "fop=tef");
 }
 
 /* more VMS hackery */
@@ -10295,14 +10296,13 @@ extern unsigned long sys$parse(), sys$search();
    bad enough, but then compounding the problem by reporting the reason for
    failure as "normal successful completion."  */
 
-#undef fstat	/* get back to library version */
 
 static int
 VMS_fstat (fd, statbuf)
      int fd;
      struct stat *statbuf;
 {
-  int result = fstat (fd, statbuf);
+  int result = decc$fstat (fd, statbuf);
 
   if (result < 0)
     {
