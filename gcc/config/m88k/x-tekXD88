@@ -6,3 +6,7 @@ gcc.ld: $(srcdir)/config/m88k/tekXD88.ld
 
 # Green Hills C on the Tektronix XD88 does not provide alloca.
 ALLOCA=alloca.o
+
+# rc is cleaner, but the ar program sometimes crashes.
+# This is a workaround.
+AR_FLAGS=qc
