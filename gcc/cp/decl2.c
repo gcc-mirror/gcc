@@ -2285,15 +2285,14 @@ coerce_new_type (type)
 
   if (TREE_CODE (type) == METHOD_TYPE)
     type = build_function_type (TREE_TYPE (type), TREE_CHAIN (TYPE_ARG_TYPES (type)));
-  if (TREE_TYPE (type) != ptr_type_node)
+  if (! same_type_p (TREE_TYPE (type), ptr_type_node))
     e1 = 1, error ("`operator new' must return type `void *'");
 
   /* Technically the type must be `size_t', but we may not know
      what that is.  */
   if (TYPE_ARG_TYPES (type) == NULL_TREE)
     e1 = 1, error ("`operator new' takes type `size_t' parameter");
-  else if (TREE_CODE (TREE_VALUE (TYPE_ARG_TYPES (type))) != INTEGER_TYPE
-	   || TYPE_PRECISION (TREE_VALUE (TYPE_ARG_TYPES (type))) != TYPE_PRECISION (sizetype))
+  else if (! same_type_p (TREE_VALUE (TYPE_ARG_TYPES (type)), sizetype))
     e2 = 1, error ("`operator new' takes type `size_t' as first parameter");
   if (e2)
     type = build_function_type (ptr_type_node, tree_cons (NULL_TREE, sizetype, TREE_CHAIN (TYPE_ARG_TYPES (type))));
@@ -2322,7 +2321,7 @@ coerce_delete_type (type)
     e1 = 1, error ("`operator delete' must return type `void'");
 
   if (arg_types == NULL_TREE
-      || TREE_VALUE (arg_types) != ptr_type_node)
+      || ! same_type_p (TREE_VALUE (arg_types), ptr_type_node))
     e2 = 1, error ("`operator delete' takes type `void *' as first parameter");
 
 #if 0
@@ -2333,8 +2332,7 @@ coerce_delete_type (type)
       /* Again, technically this argument must be `size_t', but again
 	 we may not know what that is.  */
       tree t2 = TREE_VALUE (TREE_CHAIN (arg_types));
-      if (TREE_CODE (t2) != INTEGER_TYPE
-	  || TYPE_PRECISION (t2) != TYPE_PRECISION (sizetype))
+      if (! same_type_p (t2, sizetype))
 	e3 = 1, error ("second argument to `operator delete' must be of type `size_t'");
       else if (TREE_CHAIN (TREE_CHAIN (arg_types)) != void_list_node)
 	{
