@@ -1,3 +1,8 @@
+2001-02-02  Alex Samuel  <samuel@codesourcery.com>
+
+	* Makefile.in (gcc_gxx_target_include_dir): Generate dynamically
+	as for gcc_gxx_include_dir.
+
 2001-02-02  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpp.texi, invoke.texi: Update -Wtraditional documentation.

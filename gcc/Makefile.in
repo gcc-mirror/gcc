@@ -319,7 +319,7 @@ build_tooldir = $(exec_prefix)/$(target_alias)
 # Directory in which the compiler finds target-independent g++ includes.
 gcc_gxx_include_dir = @gcc_gxx_include_dir@
 # Directory in which the compiler finds target-dependent g++ includes.
-gcc_gxx_target_include_dir = $(build_tooldir)/include/@libstdcxx_incdir@
+gcc_gxx_target_include_dir = $(libsubdir)/$(unlibsubdir)/..`echo $(exec_prefix) | sed -e 's|^$(prefix)||' -e 's|/[^/]*|/..|g'`/$(target)/include/@libstdcxx_incdir@
 # Directory to search for site-specific includes.
 includedir = $(local_prefix)/include
 # assertdir is overridden in cross-make.
