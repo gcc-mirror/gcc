@@ -37,7 +37,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
     { "/LocalDeveloper/Headers/bsd", 0},		\
     { "/NextDeveloper/2.0CompatibleHeaders", 0},	\
     { STANDARD_INCLUDE_DIR, 0},				\
-    { "/usr/include/bsd", 0}				\
+    { "/usr/include/bsd", 0},				\
     { 0, 0}						\
   }
 #endif /* CROSS_COMPILE */
