@@ -1,5 +1,11 @@
 Sun Sep 21 17:45:45 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* loop.c (loop_number): Delete function.  Change all references
+	to use uid_loop_num array.
+	* loop.h (loop_number): Delete declaration.
+	* unroll.c (unroll_loop): Change "loop_number" references to
+	use uid_loop_num instead.
+
 	* loop.c (loop_unroll_factor): Move outside #ifdef HAIFA
 	conditional.
 	(loop_unroll_iter): Remove unused variable and all references.

@@ -327,9 +327,6 @@ static void insert_bct ();
 
 /* Auxiliary function that inserts the bct pattern into the loop */
 static void instrument_loop_bct ();
-
-
-int loop_number ();
 #endif  /* HAIFA */
 
 /* Indirect_jump_in_function is computed once per function.  */
@@ -7066,7 +7063,7 @@ void analyze_loop_iterations (loop_start, loop_end)
   enum machine_mode original_mode;
 
   /* find the number of the loop */
-  int loop_num = loop_number (loop_start, loop_end);
+  int loop_num = uid_loop_num [INSN_UID (loop_start)];
 
   /* we change our mind only when we are sure that loop will be instrumented */
   loop_can_insert_bct[loop_num] = 0;
@@ -7257,7 +7254,7 @@ insert_bct (loop_start, loop_end)
      machine has */
   enum machine_mode loop_var_mode = SImode;
 
-  int loop_num = loop_number (loop_start, loop_end);
+  int loop_num = uid_loop_num [INSN_UID (loop_start)];
 
   /* get loop-variables. No need to check that these are valid - already
      checked in analyze_loop_iterations ().  */
@@ -7568,23 +7565,6 @@ instrument_loop_bct (loop_start, loop_end, loop_num_iterations)
     }
 
 #endif /* HAVE_decrement_and_branch_on_count */
-}
-
-/* calculate the uid of the given loop */
-int
-loop_number (loop_start, loop_end)
-     rtx loop_start, loop_end;
-{
-  int loop_num = -1;
-
-  /* assume that this insn contains the LOOP_START
-     note, so it will not be changed by the loop unrolling */
-  loop_num = uid_loop_num[INSN_UID (loop_start)];
-  /* sanity check - should never happen */
-  if (loop_num == -1)
-    abort ();
-
-  return loop_num;
 }
 #endif	/* HAIFA */
 
