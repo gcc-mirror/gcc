@@ -3183,7 +3183,7 @@ block_move_loop (dest_reg, src_reg, bytes, align, orig_dest, orig_src)
   rtx bytes_rtx;
   int leftover;
 
-  if (bytes < 2U * MAX_MOVE_BYTES)
+  if (bytes < (unsigned)2 * MAX_MOVE_BYTES)
     abort ();
 
   leftover = bytes % MAX_MOVE_BYTES;
@@ -3302,11 +3302,11 @@ expand_block_move (operands)
   if (TARGET_MEMCPY)
     block_move_call (dest_reg, src_reg, bytes_rtx);
 
-  else if (constp && bytes <= 2U * MAX_MOVE_BYTES
+  else if (constp && bytes <= (unsigned)2 * MAX_MOVE_BYTES
 	   && align == (unsigned) UNITS_PER_WORD)
     move_by_pieces (orig_dest, orig_src, bytes, align * BITS_PER_WORD);
 	
-  else if (constp && bytes <= 2U * MAX_MOVE_BYTES)
+  else if (constp && bytes <= (unsigned)2 * MAX_MOVE_BYTES)
     emit_insn (gen_movstrsi_internal (change_address (orig_dest, BLKmode,
 						      dest_reg),
 				      change_address (orig_src, BLKmode,
@@ -3786,7 +3786,7 @@ function_arg_advance (cum, mode, type, named)
 	       "function_adv({gp reg found = %d, arg # = %2d, words = %2d}, %4s, ",
 	       cum->gp_reg_found, cum->arg_number, cum->arg_words,
 	       GET_MODE_NAME (mode));
-      fprintf (stderr, HOST_PTR_PRINTF, type);
+      fprintf (stderr, HOST_PTR_PRINTF, (const PTR) type);
       fprintf (stderr, ", %d )\n\n", named);
     }
 
@@ -3869,7 +3869,7 @@ function_arg (cum, mode, type, named)
 	       "function_arg( {gp reg found = %d, arg # = %2d, words = %2d}, %4s, ",
 	       cum->gp_reg_found, cum->arg_number, cum->arg_words,
 	       GET_MODE_NAME (mode));
-      fprintf (stderr, HOST_PTR_PRINTF, type);
+      fprintf (stderr, HOST_PTR_PRINTF, (const PTR) type);
       fprintf (stderr, ", %d ) = ", named);
     }
   
@@ -4130,7 +4130,8 @@ function_arg_partial_nregs (cum, mode, type, named)
       return MAX_ARGS_IN_REGISTERS - cum->arg_words;
     }
 
-  else if (mode == DImode && cum->arg_words == MAX_ARGS_IN_REGISTERS - 1U
+  else if (mode == DImode
+	   && cum->arg_words == MAX_ARGS_IN_REGISTERS - (unsigned)1
 	   && ! TARGET_64BIT && mips_abi != ABI_EABI)
     {
       if (TARGET_DEBUG_E_MODE)
@@ -6418,7 +6419,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		  && GET_MODE (base_reg_rtx) == SImode)
 		{
 		  insn = emit_move_insn (base_reg_rtx,
-					 GEN_INT (gp_offset & 0xffff0000U));
+					 GEN_INT (gp_offset & 0xffff0000));
 		  if (store_p)
 		    RTX_FRAME_RELATED_P (insn) = 1;
 		  insn
@@ -6636,7 +6637,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		  && GET_MODE (base_reg_rtx) == SImode)
 		{
 		  insn = emit_move_insn (base_reg_rtx,
-					 GEN_INT (fp_offset & 0xffff0000U));
+					 GEN_INT (fp_offset & 0xffff0000));
 		  if (store_p)
 		    RTX_FRAME_RELATED_P (insn) = 1;
 		  insn = emit_insn (gen_iorsi3 (base_reg_rtx, base_reg_rtx,
@@ -6840,7 +6841,7 @@ function_prologue (file, size)
 	    continue;
 	  if (GET_MODE_SIZE (GET_MODE (dest)) == (unsigned) UNITS_PER_WORD)
 	    ;
-	  else if (GET_MODE_SIZE (GET_MODE (dest)) == 2U * UNITS_PER_WORD
+	  else if (GET_MODE_SIZE (GET_MODE (dest)) == (unsigned)2 * UNITS_PER_WORD
 		   && REGNO (src) < GP_REG_FIRST + 7)
 	    ;
 	  else
@@ -7179,7 +7180,7 @@ mips_expand_prologue ()
 		  && GET_MODE (tmp_rtx) == SImode)
 		{
 		  insn = emit_move_insn (tmp_rtx,
-					 GEN_INT (tsize & 0xffff0000U));
+					 GEN_INT (tsize & 0xffff0000));
 		  RTX_FRAME_RELATED_P (insn) = 1;
 		  insn = emit_insn (gen_iorsi3 (tmp_rtx, tmp_rtx,
 						GEN_INT (tsize & 0x0000ffff)));
@@ -7298,7 +7299,7 @@ mips_expand_prologue ()
 /* Do any necessary cleanup after a function to restore stack, frame,
    and regs. */
 
-#define RA_MASK ((unsigned long) 0x80000000U)	/* 1 << 31 */
+#define RA_MASK 0x80000000L	/* 1 << 31 */
 #define PIC_OFFSET_TABLE_MASK (1 << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))
 
 void

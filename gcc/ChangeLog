@@ -1,3 +1,12 @@
+2000-08-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mips.c (block_move_loop, expand_block_move,
+	function_arg_partial_nregs, save_restore_insns, function_prologue,
+	mips_expand_prologue, RA_MASK): Avoid using the `U' integer
+	constant suffix.
+	(function_arg_advance, function_arg): Match argument to format
+	specifier `%p'.
+
 2000-08-21  Nix  <nix@esperi.demon.co.uk>
 
 	* gcc.c (do_spec_1): Implement %j spec flag.
