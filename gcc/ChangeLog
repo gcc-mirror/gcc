@@ -1,3 +1,9 @@
+Tue Oct 28 14:36:45 1997  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (reload_inqi): Check for MEM before strict_memory_address_p,
+	since any_memory_operand() allows pseudos during reload.
+	(reload_inhi, reload_outqi, reload_outhi): Likewise.
+
 Tue Oct 28 11:53:14 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* m68k.md (btst patterns): Add 5200 support.
