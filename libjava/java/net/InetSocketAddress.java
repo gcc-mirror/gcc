@@ -73,7 +73,7 @@ public class InetSocketAddress extends SocketAddress
      * 
      * @param port Port if the socket
      *
-     * @exception IllegalArgumentException If the port number is illegel
+     * @exception IllegalArgumentException If the port number is illegal
      */
     public InetSocketAddress(int port)
 	throws IllegalArgumentException
@@ -91,9 +91,11 @@ public class InetSocketAddress extends SocketAddress
 
     /**
      * Constructs an InetSocketAddress instance.
-     * 
+     *
      * @param addr Address of the socket
      * @param port Port if the socket
+     *
+     * @exception IllegalArgumentException If the port number is illegal
      */
     public InetSocketAddress(String hostname, int port)
 	throws IllegalArgumentException
@@ -112,7 +114,7 @@ public class InetSocketAddress extends SocketAddress
      * Test if obj is a InetSocketAddress and
      * has the same address & port
      */
-    public boolean equals(Object obj)
+    public final boolean equals(Object obj)
     {
 	if (obj instanceof InetSocketAddress)
 	    {
@@ -122,17 +124,17 @@ public class InetSocketAddress extends SocketAddress
 	return false;
     }
 
-    public InetAddress getAddress()
+    public final InetAddress getAddress()
     {
 	return addr;
     }
 
-    public String getHostName()
+    public final String getHostName()
     {
 	return addr.getHostName();
     }
 
-    public int getPort()
+    public final int getPort()
     {
 	return port;
     }
@@ -140,7 +142,7 @@ public class InetSocketAddress extends SocketAddress
     /**
      * TODO: see what sun does here.
      */
-    public int hashCode()
+    public final int hashCode()
     {
 	return port + addr.hashCode();
     }
@@ -148,7 +150,7 @@ public class InetSocketAddress extends SocketAddress
     /**
      * TODO: see what sun does here.
      */
-    public boolean isUnresolved()
+    public final boolean isUnresolved()
     {
 	return addr == null;
     }

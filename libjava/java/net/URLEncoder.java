@@ -94,6 +94,9 @@ public class URLEncoder
    *
    * @return The converted String
    *
+   * @exception UnsupportedEncodingException If the named encoding is not
+   * supported
+   *
    * @since 1.4
    */
   public static String encode(String s, String encoding)

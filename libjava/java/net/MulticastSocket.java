@@ -73,6 +73,8 @@ public class MulticastSocket extends DatagramSocket
    * Create a MulticastSocket that this not bound to any address
    *
    * @exception IOException If an error occurs
+   * @exception SecurityException If a security manager exists and its
+   * checkListen method doesn't allow the operation
    */
   public MulticastSocket() throws IOException
   {
@@ -85,12 +87,30 @@ public class MulticastSocket extends DatagramSocket
    * @param port The port to bind to
    *
    * @exception IOException If an error occurs
+   * @exception SecurityException If a security manager exists and its
+   * checkListen method doesn't allow the operation
    */
   public MulticastSocket(int port) throws IOException
   {
     super(port, null);
   }
 
+  /**
+   * Create a multicast socket bound to the specified SocketAddress.
+   *
+   * @param address The SocketAddress the multicast socket will be bound to
+   *
+   * @exception IOException If an error occurs
+   * @exception SecurityException If a security manager exists and its
+   * checkListen method doesn't allow the operation
+   *
+   * @since 1.4
+   */
+  public MulticastSocket(SocketAddress address) throws IOException
+  {
+    super(address);
+  }
+  
   /**
    * Returns the interface being used for multicast packets
    * 
@@ -232,6 +252,7 @@ public class MulticastSocket extends DatagramSocket
    * @param addr The address of the group to join
    * 
    * @exception IOException If an error occurs
+   * @exception SecurityException FIXME
    */
   public void joinGroup(InetAddress mcastaddr) throws IOException
   {
@@ -251,6 +272,7 @@ public class MulticastSocket extends DatagramSocket
    * @param addr The address of the group to leave
    *
    * @exception IOException If an error occurs
+   * @exception SecurityException FIXME
    */
   public void leaveGroup(InetAddress mcastaddr) throws IOException
   {
@@ -265,6 +287,74 @@ public class MulticastSocket extends DatagramSocket
   }
 
   /**
+   * Joins the specified mulitcast group on a specified interface.
+   *
+   * @param mcastaddr The multicast address to join
+   * @param netIf The local network interface to receive the multicast
+   * messages on or null to defer the interface set by #setInterface or
+   * #setNetworkInterface
+   * 
+   * @exception IOException If an error occurs
+   * @exception IllegalArgumentException If address type is not supported
+   * @exception SecurityException FIXME
+   *
+   * @see MulticastSocket:setInterface
+   * @see MulticastSocket:setNetworkInterface
+   *
+   * @since 1.4
+   */
+  public void joinGroup(SocketAddress mcastaddr, NetworkInterface netIf)
+    throws IOException
+  {
+    if (! (mcastaddr instanceof InetSocketAddress))
+      throw new IllegalArgumentException ("SocketAddress type not supported");
+
+    InetSocketAddress tmp = (InetSocketAddress) mcastaddr;
+    
+    if (! tmp.getAddress ().isMulticastAddress ())
+      throw new IOException ("Not a Multicast address");
+
+    // FIXME: check if this check is sufficient. Do we need to check the port ?
+    SecurityManager s = System.getSecurityManager ();
+    if (s != null)
+      s.checkMulticast (tmp.getAddress ());
+
+    impl.joinGroup (mcastaddr, netIf);
+  }
+  
+  /**
+   * Leaves the specified mulitcast group on a specified interface.
+   *
+   * @param mcastaddr The multicast address to leave
+   * @param netIf The local networki interface or null to defer to the
+   * interface set by setInterface or setNetworkInterface 
+   *
+   * @exception IOException If an error occurs
+   * @exception IllegalArgumentException If address type is not supported
+   * @exception SecurityException FIXME
+   *
+   * @see MulticastSocket:setInterface
+   * @see MulticastSocket:setNetworkInterface
+   *
+   * @since 1.4
+   */
+  public void leaveGroup(SocketAddress mcastaddr, NetworkInterface netIf)
+    throws IOException
+  {
+    InetSocketAddress tmp = (InetSocketAddress) mcastaddr;
+    
+    if (! tmp.getAddress ().isMulticastAddress ())
+      throw new IOException ("Not a Multicast address");
+
+    // FIXME: do we need to check the port too, or is this sufficient ?
+    SecurityManager s = System.getSecurityManager ();
+    if (s != null)
+      s.checkMulticast (tmp.getAddress ());
+
+    impl.leaveGroup (mcastaddr, netIf);
+  }
+  
+  /**
    * Sends a packet of data to a multicast address with a TTL that is
    * different from the default TTL on this socket.  The default TTL for
    * the socket is not changed.
@@ -273,6 +363,7 @@ public class MulticastSocket extends DatagramSocket
    * @param ttl The TTL for this packet
    *
    * @exception IOException If an error occurs
+   * @exception SecurityException FIXME
    */
   public synchronized void send(DatagramPacket p, byte ttl) throws IOException
   {

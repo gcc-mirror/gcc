@@ -39,38 +39,45 @@ package java.net;
 
 import java.io.UnsupportedEncodingException;
 
- /**
-  * This utility class contains static methods that converts a 
-  * string encoded in the x-www-form-urlencoded format to the original
-  * text.  The x-www-form-urlencoded format replaces certain disallowed
-  * characters with encoded equivalents.  All upper case and lower case
-  * letters in the US alphabet remain as is, the space character (' ')
-  * is replaced with '+' sign, and all other characters are converted to a
-  * "%XX" format where XX is the hexadecimal representation of that character
-  * in a given character encoding (default is "UTF-8").
-  * <p>
-  * This method is very useful for decoding strings sent to CGI scripts
-  *
-  * Written using on-line Java Platform 1.2/1.4 API Specification.
-  * Status:  Believed complete and correct.
-  *
-  * @since 1.2
-  *
-  * @author Warren Levy <warrenl@cygnus.com>
-  * @author Aaron M. Renn (arenn@urbanophile.com) (documentation comments)
-  * @author Mark Wielaard (mark@klomp.org)
-  */
+/**
+ * This utility class contains static methods that converts a 
+ * string encoded in the x-www-form-urlencoded format to the original
+ * text.  The x-www-form-urlencoded format replaces certain disallowed
+ * characters with encoded equivalents.  All upper case and lower case
+ * letters in the US alphabet remain as is, the space character (' ')
+ * is replaced with '+' sign, and all other characters are converted to a
+ * "%XX" format where XX is the hexadecimal representation of that character
+ * in a given character encoding (default is "UTF-8").
+ * <p>
+ * This method is very useful for decoding strings sent to CGI scripts
+ *
+ * Written using on-line Java Platform 1.2/1.4 API Specification.
+ * Status:  Believed complete and correct.
+ *
+ * @since 1.2
+ *
+ * @author Warren Levy <warrenl@cygnus.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com) (documentation comments)
+ * @author Mark Wielaard (mark@klomp.org)
+ */
 public class URLDecoder
 {
- /**
-  * This method translates the passed in string from x-www-form-urlencoded
-  * format using the default encoding "UTF-8" to decode the hex encoded
-  * unsafe characters.
-  *
-  * @param s the String to convert
-  *
-  * @return the converted String
-  */
+  /**
+   * Constructor for compatibility with Sun's JDK.
+   */
+  public URLDecoder ()
+  {
+  }
+
+  /**
+   * This method translates the passed in string from x-www-form-urlencoded
+   * format using the default encoding "UTF-8" to decode the hex encoded
+   * unsafe characters.
+   *
+   * @param s the String to convert
+   *
+   * @return the converted String
+   */
   public static String decode(String s)
   {
     try
@@ -84,25 +91,28 @@ public class URLDecoder
       }
   }
 
- /**
-  * This method translates the passed in string from x-www-form-urlencoded
-  * format using the given character encoding to decode the hex encoded
-  * unsafe characters.
-  * <p>
-  * This implementation will decode the string even if it contains
-  * unsafe characters (characters that should have been encoded) or if the
-  * two characters following a % do not represent a hex encoded byte.
-  * In those cases the unsafe character or the % character will be added
-  * verbatim to the decoded result.
-  *
-  * @param s the String to convert
-  * @param encoding the character encoding to use the decode the hex encoded
-  *        unsafe characters
-  *
-  * @return the converted String
-  *
-  * @since 1.4
-  */
+  /**
+   * This method translates the passed in string from x-www-form-urlencoded
+   * format using the given character encoding to decode the hex encoded
+   * unsafe characters.
+   *
+   * This implementation will decode the string even if it contains
+   * unsafe characters (characters that should have been encoded) or if the
+   * two characters following a % do not represent a hex encoded byte.
+   * In those cases the unsafe character or the % character will be added
+   * verbatim to the decoded result.
+   *
+   * @param s the String to convert
+   * @param encoding the character encoding to use the decode the hex encoded
+   *        unsafe characters
+   *
+   * @return the converted String
+   *
+   * @exception UnsupportedEncodingException If the named encoding is not
+   * supported
+   *
+   * @since 1.4
+   */
   public static String decode(String s, String encoding)
     throws UnsupportedEncodingException
   {

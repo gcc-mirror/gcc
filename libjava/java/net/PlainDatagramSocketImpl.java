@@ -63,6 +63,9 @@ class PlainDatagramSocketImpl extends DatagramSocketImpl
 
   protected native void bind(int lport, InetAddress laddr)
 	throws SocketException;
+  protected native void connect (InetAddress i, int port)
+	throws SocketException;
+  protected native void disconnect ();
   protected native void create() throws SocketException;
   protected native int peek(InetAddress i) throws IOException;
   protected native int peekData (DatagramPacket dp) throws IOException;

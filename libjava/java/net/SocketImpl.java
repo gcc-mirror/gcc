@@ -95,6 +95,8 @@ public abstract class SocketImpl implements SocketOptions
    * if the stream parameter is false.
    *
    * @param stream true for a stream socket, false for a datagram socket
+   *
+   * @exception IOException If an error occurs
    */
   protected abstract void create(boolean stream) throws IOException;
 
@@ -311,7 +313,7 @@ public abstract class SocketImpl implements SocketOptions
    *
    * @exception IOException if an error occurs
    */
-  public abstract void shutdownInput () throws IOException;
+  protected abstract void shutdownInput () throws IOException;
 
   /**
    * Shut down the output side of this socket.  Subsequent writes will
@@ -319,5 +321,5 @@ public abstract class SocketImpl implements SocketOptions
    *
    * @exception IOException if an error occurs
    */
-  public abstract void shutdownOutput () throws IOException;
+  protected abstract void shutdownOutput () throws IOException;
 }
