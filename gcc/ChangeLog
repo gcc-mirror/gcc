@@ -1,3 +1,7 @@
+2001-02-14  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* gcc.c (do_spec_1): Fix off-by-one error for '%M' case.
+
 2001-02-14  Richard Henderson  <rth@redhat.com>
 
 	* regclass.c (init_reg_sets_1): Revert last change.
