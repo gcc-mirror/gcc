@@ -2454,7 +2454,28 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 	  /* If the giv is an address destination, it could be something other
 	     than a simple register, these have to be treated differently.  */
 	  else if (v->giv_type == DEST_REG)
-	    splittable_regs[REGNO (v->new_reg)] = value;
+	    {
+	      /* If value is not a constant, register, or register plus
+		 constant, then compute its value into a register before
+		 loop start.  This prevents illegal rtx sharing, and should
+		 generate better code.  We can use bl->initial_value here
+		 instead of splittable_regs[bl->regno] because this code
+		 is going before the loop start.  */
+	      if (unroll_type == UNROLL_COMPLETELY
+		  && GET_CODE (value) != CONST_INT
+		  && GET_CODE (value) != REG
+		  && (GET_CODE (value) != PLUS
+		      || GET_CODE (XEXP (value, 0)) != REG
+		      || GET_CODE (XEXP (value, 1)) != CONST_INT))
+		{
+		  rtx tem = gen_reg_rtx (v->mode);
+		  emit_iv_add_mult (bl->initial_value, v->mult_val,
+				    v->add_val, tem, loop_start);
+		  value = tem;
+		}
+		
+	      splittable_regs[REGNO (v->new_reg)] = value;
+	    }
 	  else
 	    {
 	      /* Splitting address givs is useful since it will often allow us

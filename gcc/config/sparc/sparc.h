@@ -528,7 +528,15 @@ extern char leaf_reg_backmap[];
    in class CLASS, return the class of reg to actually use.
    In general this is just CLASS; but on some machines
    in some cases it is preferable to use a more restrictive class.  */
-#define PREFERRED_RELOAD_CLASS(X,CLASS) CLASS
+/* We can't load constants into FP registers.  We can't load any FP constant
+   if an 'E' constraint fails to match it.  */
+#define PREFERRED_RELOAD_CLASS(X,CLASS)			\
+  (CONSTANT_P (X)					\
+   && ((CLASS) == FP_REGS				\
+       || (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT	\
+	   && (HOST_FLOAT_FORMAT != IEEE_FLOAT_FORMAT	\
+	       || HOST_BITS_PER_INT != BITS_PER_WORD)))	\
+   ? NO_REGS : (CLASS))
 
 /* Return the register class of a scratch register needed to load IN into
    a register of class CLASS in MODE.
