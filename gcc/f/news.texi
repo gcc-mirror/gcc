@@ -97,7 +97,9 @@ Note that two variants of @code{g77} are tracked below.
 The @code{egcs} variant is described vis-a-vis
 previous versions of @code{egcs} and/or
 an official FSF version,
-as appropriate.
+as appropriate.  Note that all such variants are now
+obsolete - the information is retained here only for 
+its historical value.
 
 Therefore, @code{egcs} versions sometimes have multiple listings
 to help clarify how they differ from other versions,
@@ -144,7 +146,7 @@ of news about previous @code{g77} versions up-to-date.
 @ifclear USERVISONLY
 An online, ``live'' version of this document
 (derived directly from the mainline, development version
-of @code{g77} within @code{egcs})
+of @code{g77} within @code{gcc})
 is available at
 @uref{http://www.gnu.org/software/gcc/onlinedocs/g77_news.html}.
 @end ifclear

@@ -77,7 +77,7 @@ most consistent with the @code{g77} product in that version.
 
 An online, ``live'' version of this document
 (derived directly from the mainline, development version
-of @code{g77} within @code{egcs})
+of @code{g77} within @code{gcc})
 is available via
 @uref{http://www.gnu.org/software/gcc/onlinedocs/g77_bugs.html}.
 Follow the ``Known Bugs'' link.

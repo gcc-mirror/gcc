@@ -1,3 +1,8 @@
+2000-11-05  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* root.texi, news.texi, g77install.texi, g77.texi, bugs.texi:
+	Remove non-historical references to egcs/EGCS.
+
 2000-11-05  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Make-lang.in: Remove f77.distdir and f/INSTALL.
