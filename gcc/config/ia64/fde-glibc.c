@@ -1,4 +1,4 @@
-/* Copyright (C) 2000 Free Software Foundation, Inc.
+/* Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@cygnus.com>.
 
    This file is part of GNU CC.
@@ -28,57 +28,61 @@
 /* Locate the FDE entry for a given address, using glibc ld.so routines
    to avoid register/deregister calls at DSO load/unload.  */
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+#include "config.h"
+#include <stddef.h>
 #include <stdlib.h>
 #include <link.h>
-#include <bits/libc-lock.h>
 #include "unwind-ia64.h"
 
+#if __GLIBC__ < 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ < 2) \
+    || (__GLIBC__ == 2 && __GLIBC_MINOR__ == 2 && !defined(DT_CONFIG))
+# error You need GLIBC 2.2.4 or later on IA-64 Linux
+#endif
 
-/* Initialized by crtbegin from the main application.  */
-extern Elf64_Ehdr *__ia64_app_header;
-
-/* ??? A redeclaration of the lock in ld.so.  Perhaps this should
-   appear in <link.h> in a new glibc version.  */
-__libc_lock_define (extern, _dl_load_lock)
-
-/* This always exists, even in a static application.  */
-extern struct link_map *_dl_loaded;
-
-static struct unw_table_entry *
-find_fde_for_dso (Elf64_Addr pc, Elf64_Ehdr *ehdr,
-		  unsigned long *pseg_base, unsigned long *pgp)
+struct unw_ia64_callback_data
 {
-  Elf64_Phdr *phdr, *p_unwind, *p_dynamic;
+  Elf64_Addr pc;
+  unsigned long *segment_base;
+  unsigned long *gp;
+  struct unw_table_entry *ret;
+};
+
+static int
+_Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
+{
+  struct unw_ia64_callback_data *data = (struct unw_ia64_callback_data *) ptr;
+  const Elf64_Phdr *phdr, *p_unwind, *p_dynamic;
   long n, match;
   Elf64_Addr load_base, seg_base;
   struct unw_table_entry *f_base, *f;
   size_t lo, hi;
 
-  /* Verify that we are looking at an ELF header.  */
-  if (ehdr->e_ident[0] != 0x7f
-      || ehdr->e_ident[1] != 'E'
-      || ehdr->e_ident[2] != 'L'
-      || ehdr->e_ident[3] != 'F'
-      || ehdr->e_ident[EI_CLASS] != ELFCLASS64
-      || ehdr->e_ident[EI_DATA] != ELFDATA2LSB
-      || ehdr->e_machine != EM_IA_64)
-    abort ();
+  /* Make sure struct dl_phdr_info is at least as big as we need.  */
+  if (size < offsetof (struct dl_phdr_info, dlpi_phnum)
+	     + sizeof (info->dlpi_phnum))
+    return -1;
 
   match = 0;
-  phdr = (Elf64_Phdr *)((char *)ehdr + ehdr->e_phoff);
-  load_base = (ehdr->e_type == ET_DYN ? (Elf64_Addr)ehdr : 0);
+  phdr = info->dlpi_phdr;
+  load_base = info->dlpi_addr;
   p_unwind = NULL;
   p_dynamic = NULL;
+  seg_base = ~(Elf64_Addr) 0;
 
   /* See if PC falls into one of the loaded segments.  Find the unwind
      segment at the same time.  */
-  for (n = ehdr->e_phnum; --n >= 0; phdr++)
+  for (n = info->dlpi_phnum; --n >= 0; phdr++)
     {
       if (phdr->p_type == PT_LOAD)
 	{
 	  Elf64_Addr vaddr = phdr->p_vaddr + load_base;
-	  if (pc >= vaddr && pc < vaddr + phdr->p_memsz)
+	  if (data->pc >= vaddr && data->pc < vaddr + phdr->p_memsz)
 	    match = 1;
+	  if (vaddr < seg_base)
+	    seg_base = vaddr;
 	}
       else if (phdr->p_type == PT_IA_64_UNWIND)
 	p_unwind = phdr;
@@ -86,12 +90,11 @@ find_fde_for_dso (Elf64_Addr pc, Elf64_Ehdr *ehdr,
 	p_dynamic = phdr;
     }
   if (!match || !p_unwind)
-    return NULL;
+    return 0;
 
   /* Search for the FDE within the unwind segment.  */
 
   f_base = (struct unw_table_entry *) (p_unwind->p_vaddr + load_base);
-  seg_base = (Elf64_Addr) ehdr;
   lo = 0;
   hi = p_unwind->p_memsz / sizeof (struct unw_table_entry);
 
@@ -100,18 +103,19 @@ find_fde_for_dso (Elf64_Addr pc, Elf64_Ehdr *ehdr,
       size_t mid = (lo + hi) / 2;
 
       f = f_base + mid;
-      if (pc < f->start_offset + seg_base)
+      if (data->pc < f->start_offset + seg_base)
 	hi = mid;
-      else if (pc >= f->end_offset + seg_base)
+      else if (data->pc >= f->end_offset + seg_base)
 	lo = mid + 1;
       else
         goto found;
     }
-  return NULL;
+  return 0;
 
  found:
-  *pseg_base = seg_base;
-  *pgp = 0;
+  *data->segment_base = seg_base;
+  *data->gp = 0;
+  data->ret = f;
 
   if (p_dynamic)
     {
@@ -121,8 +125,8 @@ find_fde_for_dso (Elf64_Addr pc, Elf64_Ehdr *ehdr,
       for (; dyn->d_tag != DT_NULL ; dyn++)
 	if (dyn->d_tag == DT_PLTGOT)
 	  {
-	    /* ??? Glibc seems to have relocated this already.  */
-	    *pgp = dyn->d_un.d_ptr;
+	    /* On IA-64, _DYNAMIC is writable and GLIBC has relocated it.  */
+	    *data->gp = dyn->d_un.d_ptr;
 	    break;
 	  }
     }
@@ -131,10 +135,10 @@ find_fde_for_dso (Elf64_Addr pc, Elf64_Ehdr *ehdr,
       /* Otherwise this is a static executable with no _DYNAMIC.
 	 The gp is constant program-wide.  */
       register unsigned long gp __asm__("gp");
-      *pgp = gp;
+      *data->gp = gp;
     }
 
-  return f;
+  return 1;
 }
 
 /* Return a pointer to the unwind table entry for the function
@@ -144,34 +148,15 @@ struct unw_table_entry *
 _Unwind_FindTableEntry (void *pc, unsigned long *segment_base,
                         unsigned long *gp)
 {
-  struct unw_table_entry *ret;
-  struct link_map *map;
+  struct unw_ia64_callback_data data;
 
-  /* Check the main application first, hoping that most of the user's
-     code is there instead of in some library.  */
-  ret = find_fde_for_dso ((Elf64_Addr)pc, __ia64_app_header,
-			  segment_base, gp);
-  if (ret)
-    return ret;
+  data.pc = (Elf64_Addr) pc;
+  data.segment_base = segment_base;
+  data.gp = gp;
+  data.ret = NULL;
 
-  /* Glibc is probably unique in that we can (with certain restrictions)
-     dynamicly load libraries into staticly linked applications.  Thus
-     we _always_ check _dl_loaded.  */
+  if (dl_iterate_phdr (_Unwind_IteratePhdrCallback, &data) < 0)
+    return NULL;
 
-  __libc_lock_lock (_dl_load_lock);
-
-  for (map = _dl_loaded; map ; map = map->l_next)
-    {
-      /* Skip the main application's entry.  */
-      if (map->l_name[0] == 0)
-	continue;
-      ret = find_fde_for_dso ((Elf64_Addr)pc, (Elf64_Ehdr *)map->l_addr,
-			      segment_base, gp);
-      if (ret)
-	break;
-    }
-
-  __libc_lock_unlock (_dl_load_lock);
-
-  return ret;
+  return data.ret;
 }

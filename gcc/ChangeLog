@@ -1,3 +1,11 @@
+2001-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/ia64/fde-glibc.c: Require glibc 2.2.4+ headers.
+	(find_fde_for_dso): Remove.
+	(_Unwind_IteratePhdrCallback): New.
+	(_Unwind_FindTableEntry): Use dl_iterate_phdr.
+	* config/ia64/crtbegin.asm (__ia64_app_header): Remove.
+
 2001-08-08  Kelley Cook  <kelley.cook@home.com>
 
 	* Makefile.in: Move many of the *_H definitions eariler in the file,
