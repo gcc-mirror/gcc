@@ -653,40 +653,40 @@ reversed_comparison_code_parts (code, arg0, arg1, insn)
       && REVERSIBLE_CC_MODE (mode))
     {
 #ifdef REVERSE_CONDITION
-	   return REVERSE_CONDITION (code, mode);
+      return REVERSE_CONDITION (code, mode);
 #endif
-	   return reverse_condition (code);
-	}
+      return reverse_condition (code);
+    }
 #endif
 
   /* Try a few special cases based on the comparison code.  */
   switch (code)
     {
-      case GEU:
-      case GTU:
-      case LEU:
-      case LTU:
-      case NE:
-      case EQ:
-        /* It is always safe to reverse EQ and NE, even for the floating
-	   point.  Similary the unsigned comparisons are never used for
-	   floating point so we can reverse them in the default way.  */
-	return reverse_condition (code);
-      case ORDERED:
-      case UNORDERED:
-      case LTGT:
-      case UNEQ:
-	/* In case we already see unordered comparison, we can be sure to
-	   be dealing with floating point so we don't need any more tests.  */
-	return reverse_condition_maybe_unordered (code);
-      case UNLT:
-      case UNLE:
-      case UNGT:
-      case UNGE:
-	/* We don't have safe way to reverse these yet.  */
-	return UNKNOWN;
-      default:
-	break;
+    case GEU:
+    case GTU:
+    case LEU:
+    case LTU:
+    case NE:
+    case EQ:
+      /* It is always safe to reverse EQ and NE, even for the floating
+	 point.  Similary the unsigned comparisons are never used for
+	 floating point so we can reverse them in the default way.  */
+      return reverse_condition (code);
+    case ORDERED:
+    case UNORDERED:
+    case LTGT:
+    case UNEQ:
+      /* In case we already see unordered comparison, we can be sure to
+	 be dealing with floating point so we don't need any more tests.  */
+      return reverse_condition_maybe_unordered (code);
+    case UNLT:
+    case UNLE:
+    case UNGT:
+    case UNGE:
+      /* We don't have safe way to reverse these yet.  */
+      return UNKNOWN;
+    default:
+      break;
     }
 
   /* In case we give up IEEE compatibility, all comparisons are reversible.  */

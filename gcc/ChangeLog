@@ -1,5 +1,9 @@
 2001-08-13  Kazu Hirata  <kazu@hxi.com>
 
+	* jump.c: Fix formatting.
+
+2001-08-13  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/h8300.md (zero_extendqihi2): Correct the insn
 	length.
 
