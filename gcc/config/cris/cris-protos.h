@@ -52,9 +52,7 @@ extern rtx cris_expand_builtin_va_arg PARAMS ((tree, tree));
 # endif
 #endif /* RTX_CODE */
 
-#ifdef GCC_C_PRAGMA_H
-extern void cris_pragma_expand_mul PARAMS ((cpp_reader *));
-#endif
+extern void cris_pragma_expand_mul PARAMS ((struct cpp_reader *));
 
 /* Need one that returns an int; usable in expressions. */
 extern int cris_fatal PARAMS ((char *));
