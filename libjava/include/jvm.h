@@ -34,6 +34,18 @@ struct _Jv_VTable
   void *method[1];
 };
 
+// Number of virtual methods on object.  FIXME: it sucks that we have
+// to keep this up to date by hand.
+#define NUM_OBJECT_METHODS 5
+
+// This structure is the type of an array's vtable.
+struct _Jv_ArrayVTable
+{
+  jclass clas;
+  // `+1' because there is an extra slot for C++ RTTI compatibility.
+  void *method[NUM_OBJECT_METHODS + 1];
+};
+
 union _Jv_word
 {
   jobject o;

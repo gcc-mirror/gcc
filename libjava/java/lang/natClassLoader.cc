@@ -514,7 +514,8 @@ _Jv_NewClass (_Jv_Utf8Const *name, jclass superclass,
 }
 
 jclass
-_Jv_FindArrayClass (jclass element, java::lang::ClassLoader *loader)
+_Jv_FindArrayClass (jclass element, java::lang::ClassLoader *loader,
+		    _Jv_VTable *array_vtable)
 {
   _Jv_Utf8Const *array_name;
   int len;
@@ -561,6 +562,7 @@ _Jv_FindArrayClass (jclass element, java::lang::ClassLoader *loader)
 
       // Note that `vtable_method_count' doesn't include the initial
       // NULL slot.
+      JvAssert (ObjectClass.vtable_method_count == NUM_OBJECT_METHODS);
       int dm_count = ObjectClass.vtable_method_count + 1;
 
       // Create a new vtable by copying Object's vtable (except the
@@ -569,7 +571,11 @@ _Jv_FindArrayClass (jclass element, java::lang::ClassLoader *loader)
       // GC.
       int size = (sizeof (_Jv_VTable) +
 		  ((dm_count - 1) * sizeof (void *)));
-      _Jv_VTable *vtable = (_Jv_VTable *) _Jv_AllocBytes (size);
+      _Jv_VTable *vtable;
+      if (array_vtable)
+	vtable = array_vtable;
+      else
+	vtable = (_Jv_VTable *) _Jv_AllocBytes (size);
       vtable->clas = array_class;
       memcpy (vtable->method, ObjectClass.vtable->method,
 	      dm_count * sizeof (void *));
@@ -607,5 +613,3 @@ _Jv_FindArrayClass (jclass element, java::lang::ClassLoader *loader)
 
   return array_class;
 }
-
-

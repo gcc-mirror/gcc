@@ -251,7 +251,8 @@ private:
   friend jclass _Jv_FindClassInCache (_Jv_Utf8Const *name,
 				      java::lang::ClassLoader *loader);
   friend jclass _Jv_FindArrayClass (jclass element,
-				    java::lang::ClassLoader *loader);
+				    java::lang::ClassLoader *loader,
+				    _Jv_VTable *array_vtable = 0);
   friend jclass _Jv_NewClass (_Jv_Utf8Const *name, jclass superclass,
 			      java::lang::ClassLoader *loader);
 
