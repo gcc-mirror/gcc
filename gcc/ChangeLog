@@ -1,3 +1,8 @@
+Thu Jul 30 19:50:15 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000/x-aix43 (AR_FOR_TARGET_FLAGS): Delete.
+	(AR_FOR_TARGET): Define.
+
 Thu Jul 30 12:29:12 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* dyn-string.h: New file.
