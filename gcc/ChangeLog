@@ -1,3 +1,19 @@
+2003-04-30  Janis Johnson  <janis187@us.ibm.com>
+
+	* config/rs6000/linux64.h (ASM_OUTPUT_LABELREF): Remove.
+	* config/rs6000/rs6000.c (rs6000_elf_strip_name_encoding): Remove.
+	(rs6000_xcoff_encode_section_info): Remove.
+	(current_file_function_operand): Use SYMBOL_REF_FLAGS; fix latent bug.
+	(rs6000_output_mi_thunk): Remove dead code; use SYMBOL_REF_FLAGS.
+	(small_data_operand, rs6000_emit_move, rs6000_elf_in_small_data_p,):
+	Use SYMBOL_REF_FLAGS.
+	(rs6000_elf_encode_section_info): Call default_encode_section_info for
+	generic flags, use SYMBOL_REF_FLAGS; code cleanups.
+	* sysv4.h (TARGET_STRIP_NAME_ENCODING, ASM_OUTPUT_LABELREF): Remove.
+	(SYMBOL_FLAG_SMALL_V4, SYMBOL_REF_SMALL_V4_P): New.
+	* xcoff.h (TARGET_ENCODE_SECTION_INFO): Remove.
+	(ASM_DECLARE_FUNCTION_NAME): Remove setting of SYMBOL_REF_FLAG.
+
 2003-04-30  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* diagnostic.c (output_pointer): Use HOST_PTR_PRINTF.

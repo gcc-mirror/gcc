@@ -231,7 +231,6 @@ static void rs6000_elf_select_rtx_section PARAMS ((enum machine_mode, rtx,
 						   unsigned HOST_WIDE_INT));
 static void rs6000_elf_encode_section_info PARAMS ((tree, rtx, int))
      ATTRIBUTE_UNUSED;
-static const char *rs6000_elf_strip_name_encoding PARAMS ((const char *));
 static bool rs6000_elf_in_small_data_p PARAMS ((tree));
 #endif
 #if TARGET_XCOFF
@@ -244,8 +243,6 @@ static void rs6000_xcoff_select_rtx_section PARAMS ((enum machine_mode, rtx,
 						     unsigned HOST_WIDE_INT));
 static const char * rs6000_xcoff_strip_name_encoding PARAMS ((const char *));
 static unsigned int rs6000_xcoff_section_type_flags PARAMS ((tree, const char *, int));
-static void rs6000_xcoff_encode_section_info PARAMS ((tree, rtx, int))
-     ATTRIBUTE_UNUSED;
 #endif
 #if TARGET_MACHO
 static bool rs6000_binds_local_p PARAMS ((tree));
@@ -2092,17 +2089,24 @@ call_operand (op, mode)
 }
 
 /* Return 1 if the operand is a SYMBOL_REF for a function known to be in
-   this file and the function is not weakly defined.  */
+   this file.  */
 
 int
 current_file_function_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  return (GET_CODE (op) == SYMBOL_REF
-	  && (SYMBOL_REF_FLAG (op)
-	      || (op == XEXP (DECL_RTL (current_function_decl), 0)
-	          && ! DECL_WEAK (current_function_decl))));
+  if (GET_CODE (op) == SYMBOL_REF
+      && (SYMBOL_REF_LOCAL_P (op)
+	  || (op == XEXP (DECL_RTL (current_function_decl), 0))))
+    {
+#ifdef ENABLE_CHECKING
+      if (!SYMBOL_REF_FUNCTION_P (op))
+	abort ();
+#endif
+      return 1;
+    }
+  return 0;
 }
 
 /* Return 1 if this operand is a valid input for a move insn.  */
@@ -2206,11 +2210,7 @@ small_data_operand (op, mode)
       sym_ref = XEXP (sum, 0);
     }
 
-  if (*XSTR (sym_ref, 0) != '@')
-    return 0;
-
-  return 1;
-
+  return SYMBOL_REF_SMALL_V4_P (sym_ref);
 #else
   return 0;
 #endif
@@ -2939,8 +2939,9 @@ rs6000_emit_move (dest, source, mode)
 	      new_ref = gen_rtx_SYMBOL_REF (Pmode, name);
 	      CONSTANT_POOL_ADDRESS_P (new_ref)
 		= CONSTANT_POOL_ADDRESS_P (operands[1]);
-	      SYMBOL_REF_FLAG (new_ref) = SYMBOL_REF_FLAG (operands[1]);
+	      SYMBOL_REF_FLAGS (new_ref) = SYMBOL_REF_FLAGS (operands[1]);
 	      SYMBOL_REF_USED (new_ref) = SYMBOL_REF_USED (operands[1]);
+	      SYMBOL_REF_DECL (new_ref) = SYMBOL_REF_DECL (operands[1]);
 	      operands[1] = new_ref;
 	    }
 
@@ -11749,15 +11750,7 @@ rs6000_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
       TREE_USED (function) = 1;
     }
   funexp = XEXP (DECL_RTL (function), 0);
-
-  SYMBOL_REF_FLAG (funexp) = 0;
-  if (current_file_function_operand (funexp, VOIDmode)
-      && (! lookup_attribute ("longcall",
-			      TYPE_ATTRIBUTES (TREE_TYPE (function)))
-	  || lookup_attribute ("shortcall",
-			       TYPE_ATTRIBUTES (TREE_TYPE (function)))))
-    SYMBOL_REF_FLAG (funexp) = 1;
-
+  SYMBOL_REF_FLAGS (funexp) &= ~SYMBOL_FLAG_LOCAL;
   funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
 
 #if TARGET_MACHO
@@ -12930,13 +12923,16 @@ rs6000_elf_unique_section (decl, reloc)
 			    flag_pic || DEFAULT_ABI == ABI_AIX);
 }
 
-/* If we are referencing a function that is static or is known to be
-   in this file, make the SYMBOL_REF special.  We can use this to indicate
-   that we can branch to this function without emitting a no-op after the
-   call.  For real AIX calling sequences, we also replace the
-   function name with the real name (1 or 2 leading .'s), rather than
-   the function descriptor name.  This saves a lot of overriding code
-   to read the prefixes.  */
+/* For a SYMBOL_REF, set generic flags and then perform some
+   target-specific processing.
+
+   Set SYMBOL_FLAG_SMALL_V4 for an operand in small memory on V.4/eabi;
+   this is different from the generic SYMBOL_FLAG_SMALL.
+
+   When the AIX ABI is requested on a non-AIX system, replace the
+   function name with the real name (with a leading .) rather than the
+   function descriptor name.  This saves a lot of overriding code to
+   read the prefixes.  */
 
 static void
 rs6000_elf_encode_section_info (decl, rtl, first)
@@ -12944,26 +12940,19 @@ rs6000_elf_encode_section_info (decl, rtl, first)
      rtx rtl;
      int first;
 {
-  if (!first)
-    return;
+  default_encode_section_info (decl, rtl, first);
 
-  if (TREE_CODE (decl) == FUNCTION_DECL)
+  if (first
+      && TREE_CODE (decl) == FUNCTION_DECL
+      && !TARGET_AIX
+      && DEFAULT_ABI == ABI_AIX)
     {
       rtx sym_ref = XEXP (rtl, 0);
-      if ((*targetm.binds_local_p) (decl))
-	SYMBOL_REF_FLAG (sym_ref) = 1;
-
-      if (!TARGET_AIX && DEFAULT_ABI == ABI_AIX)
-	{
-	  size_t len1 = (DEFAULT_ABI == ABI_AIX) ? 1 : 2;
-	  size_t len2 = strlen (XSTR (sym_ref, 0));
-	  char *str = alloca (len1 + len2 + 1);
-	  str[0] = '.';
-	  str[1] = '.';
-	  memcpy (str + len1, XSTR (sym_ref, 0), len2 + 1);
-
-	  XSTR (sym_ref, 0) = ggc_alloc_string (str, len1 + len2);
-	}
+      size_t len = strlen (XSTR (sym_ref, 0));
+      char *str = alloca (len + 2);
+      str[0] = '.';
+      memcpy (str + 1, XSTR (sym_ref, 0), len + 1);
+      XSTR (sym_ref, 0) = ggc_alloc_string (str, len + 1);
     }
   else if (rs6000_sdata != SDATA_NONE
 	   && DEFAULT_ABI == ABI_V4
@@ -12973,54 +12962,25 @@ rs6000_elf_encode_section_info (decl, rtl, first)
       int size = int_size_in_bytes (TREE_TYPE (decl));
       tree section_name = DECL_SECTION_NAME (decl);
       const char *name = (char *)0;
-      int len = 0;
-
-      if ((*targetm.binds_local_p) (decl))
-	SYMBOL_REF_FLAG (sym_ref) = 1;
 
       if (section_name)
 	{
 	  if (TREE_CODE (section_name) == STRING_CST)
-	    {
-	      name = TREE_STRING_POINTER (section_name);
-	      len = TREE_STRING_LENGTH (section_name);
-	    }
+	    name = TREE_STRING_POINTER (section_name);
 	  else
 	    abort ();
 	}
 
       if (name
-	  ? ((len == sizeof (".sdata") - 1
-	      && strcmp (name, ".sdata") == 0)
-	     || (len == sizeof (".sdata2") - 1
-		 && strcmp (name, ".sdata2") == 0)
-	     || (len == sizeof (".sbss") - 1
-		 && strcmp (name, ".sbss") == 0)
-	     || (len == sizeof (".sbss2") - 1
-		 && strcmp (name, ".sbss2") == 0)
-	     || (len == sizeof (".PPC.EMB.sdata0") - 1
-		 && strcmp (name, ".PPC.EMB.sdata0") == 0)
-	     || (len == sizeof (".PPC.EMB.sbss0") - 1
-		 && strcmp (name, ".PPC.EMB.sbss0") == 0))
+	  ? (strcmp (name, ".sdata") == 0
+	     || strcmp (name, ".sdata2") == 0
+	     || strcmp (name, ".sbss") == 0
+	     || strcmp (name, ".sbss2") == 0
+	     || strcmp (name, ".PPC.EMB.sdata0") == 0
+	     || strcmp (name, ".PPC.EMB.sbss0") == 0)
 	  : (size > 0 && size <= g_switch_value))
-	{
-	  size_t len = strlen (XSTR (sym_ref, 0));
-	  char *str = alloca (len + 2);
-
-	  str[0] = '@';
-	  memcpy (str + 1, XSTR (sym_ref, 0), len + 1);
-	  XSTR (sym_ref, 0) = ggc_alloc_string (str, len + 1);
-	}
+	SYMBOL_REF_FLAGS (sym_ref) |= SYMBOL_FLAG_SMALL_V4;
     }
-}
-
-static const char *
-rs6000_elf_strip_name_encoding (str)
-     const char *str;
-{
-  while (*str == '*' || *str == '@')
-    str++;
-  return str;
 }
 
 static bool
@@ -13630,17 +13590,6 @@ rs6000_xcoff_section_type_flags (decl, name, reloc)
 		 ? UNITS_PER_FP_WORD : MIN_UNITS_PER_WORD);
 
   return flags | (exact_log2 (align) & SECTION_ENTSIZE);
-}
-
-static void
-rs6000_xcoff_encode_section_info (decl, rtl, first)
-     tree decl;
-     rtx rtl;
-     int first ATTRIBUTE_UNUSED;
-{
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && (*targetm.binds_local_p) (decl))
-    SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
 }
 #endif /* TARGET_XCOFF */
 

@@ -272,23 +272,6 @@
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
-/* This is how to output a reference to a user-level label named NAME.
-   `assemble_name' uses this.  */
-
-/* Override elfos.h definition.  */
-#undef  ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE,NAME)		\
-do {						\
-  const char *_name = NAME;			\
-  if (*_name == '@')				\
-    _name++;					\
- 						\
-  if (*_name == '*')				\
-    fprintf (FILE, "%s", _name + 1);		\
-  else						\
-    asm_fprintf (FILE, "%U%s", _name);		\
-} while (0)
-
 #undef  ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   do									\

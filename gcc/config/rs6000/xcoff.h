@@ -163,7 +163,6 @@ toc_section ()						\
 #define TARGET_ASM_SELECT_SECTION  rs6000_xcoff_select_section
 #define TARGET_ASM_SELECT_RTX_SECTION  rs6000_xcoff_select_rtx_section
 #define TARGET_ASM_UNIQUE_SECTION  rs6000_xcoff_unique_section
-#define TARGET_ENCODE_SECTION_INFO  rs6000_xcoff_encode_section_info
 #define TARGET_STRIP_NAME_ENCODING  rs6000_xcoff_strip_name_encoding
 #define TARGET_SECTION_TYPE_FLAGS  rs6000_xcoff_section_type_flags
 
@@ -255,16 +254,11 @@ toc_section ()						\
    `text_section' call previously done.  We do have to go back to that
    csect, however.
 
-   We also record that the function exists in the current compilation
-   unit, reachable by short branch, by setting SYMBOL_REF_FLAG.
-
    The third and fourth parameters to the .function pseudo-op (16 and 044)
    are placeholders which no longer have any use.  */
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL)		\
 { rtx sym_ref = XEXP (DECL_RTL (DECL), 0);			\
-  if ((*targetm.binds_local_p) (DECL))				\
-    SYMBOL_REF_FLAG (sym_ref) = 1;				\
   if (TREE_PUBLIC (DECL))					\
     {								\
       if (!RS6000_WEAK || !DECL_WEAK (decl))			\
