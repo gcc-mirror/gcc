@@ -1,3 +1,10 @@
+2001-05-18  Andreas Jaeger  <aj@suse.de>
+
+	* libI77/Makefile.in (stamp-h): Only create config.h, touch stamp-h.
+	(${srcdir}/config.h.in): Add true rule.
+
+	* libI77/stamp-h.in: Added.
+
 2001-05-17  Andreas Jaeger  <aj@suse.de>
 
 	* libI77/Makefile.in: Add rules to rebuild config.h.in when
