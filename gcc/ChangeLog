@@ -1,3 +1,7 @@
+Sun Apr 5 18:45:51 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sun Apr  5 16:31:10 1998  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in (alpha-dec-osf*): Match osf1.3 correctly.
