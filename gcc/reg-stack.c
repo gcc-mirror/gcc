@@ -1797,20 +1797,18 @@ subst_stack_regs_pat (insn, regstack, pat)
 		    || (REGNO (*src2) == regstack->reg[regstack->top]
 			&& src2_note))
 		  {
+		    int idx1 = (get_hard_regnum (regstack, *src1)
+				- FIRST_STACK_REG);
+		    int idx2 = (get_hard_regnum (regstack, *src2)
+				- FIRST_STACK_REG);
 
-		    /* We know that both sources "dies", as one dies and other
-		       is overwriten by the destination.  Claim both sources
-		       to be dead, as the code bellow will properly pop the
-		       non-top-of-stack note and replace top-of-stack by the
-		       result by popping source first and then pushing result. */
-		    if (!src1_note)
-		      src1_note = REG_NOTES (insn)
-			= gen_rtx_EXPR_LIST (REG_DEAD, *src1, REG_NOTES (insn));
-		    if (!src2_note)
-		      src2_note = REG_NOTES (insn)
-			= gen_rtx_EXPR_LIST (REG_DEAD, *src2, REG_NOTES (insn));
+		    /* Make reg-stack believe that the operands are already
+		       swapped on the stack */
+		    regstack->reg[regstack->top - idx1] = REGNO (*src2);
+		    regstack->reg[regstack->top - idx2] = REGNO (*src1);
 
-		    /* i386 do have comparison always reversible.  */
+		    /* Reverse condition to compensate the operand swap.
+		       i386 do have comparison always reversible.  */
 		    PUT_CODE (XEXP (pat_src, 0),
 			      reversed_comparison_code (XEXP (pat_src, 0), insn));
 		  }
@@ -1845,11 +1843,9 @@ subst_stack_regs_pat (insn, regstack, pat)
 				       EMIT_AFTER);
 		      }
 		    else
-		      {
-			CLEAR_HARD_REG_BIT (regstack->reg_set, regno);
-			replace_reg (&XEXP (src_note[i], 0), FIRST_STACK_REG);
-			regstack->top--;
-		      }
+		      /* Top of stack never dies, as it is the
+			 destination.  */
+		      abort ();
 		  }
 	    }
 

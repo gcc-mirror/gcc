@@ -1,3 +1,7 @@
+Sat Sep  8 22:00:55 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* reg-stack.c (subst_stack_regs_pat): Fix fcmov reversal code.
+
 2001-09-08  Andreas Jaeger  <aj@suse.de>
 
 	* i386.h (TARGET_SWITCHES): Fix description.
