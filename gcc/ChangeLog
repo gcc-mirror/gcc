@@ -1,3 +1,12 @@
+2000-07-25  Michael Hayes  <mph@paradise.net.nz>
+
+	* basic-block.h (struct loops): New field rc_order.
+	* flow.c (flow_loops_cfg_dump): Dump rc_order if computed.
+	(flow_loops_free): Free rc_order.
+	(flow_depth_first_order_compute): New parameter rc_order.
+	(flow_loops_find): Allocate rc_order and swap usage with
+ 	dfs_order.
+
 2000-07-30 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 	   Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 

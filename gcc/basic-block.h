@@ -246,6 +246,7 @@ extern void tidy_fallthru_edge		PARAMS ((edge, basic_block,
 /* Structure to hold information for each natural loop.  */
 struct loop
 {
+  /* Index into loops array.  */
   int num;
 
   /* Basic block of loop header.  */
@@ -369,6 +370,10 @@ struct loops
 
     /* The ordering of the basic blocks in a depth first search.  */
     int *dfs_order;
+
+    /* The reverse completion ordering of the basic blocks found in a
+       depth first search.  */
+    int *rc_order;
   } cfg;
 
   /* Headers shared by multiple loops that should be merged.  */
