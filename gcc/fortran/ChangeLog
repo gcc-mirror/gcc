@@ -1,3 +1,16 @@
+2004-07-04  Paul Brook  <paul@codesourcery.com>
+
+	* decl.c (gfc_match_implicit_range): Don't use typespec.
+	(gfc_match_implicit): Handle character selectors.
+	* gfortran.h (gfc_set_implicit): Remove prototype.
+	(gfc_add_new_implicit_range, gfc_merge_new_implicit): Update.
+	* parse.c (accept_statement): Don't call gfc_set_implicit.
+	* symbol.c (new_ts): Remove.
+	(gfc_set_implicit_none): Use same loop bounds as other functions.
+	(gfc_set_implicit): Remove.
+	(gfc_clear_new_implicit, gfc_add_new_implicit_range): Only set flags.
+	(gfc_merge_new_implicit): Combine with gfc_set_implicit.
+
 2004-06-30  Richard Henderson  <rth@redhat.com>
 
 	* match.c (var_element): Remove unused variable.

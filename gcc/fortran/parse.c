@@ -1019,7 +1019,6 @@ accept_statement (gfc_statement st)
       break;
 
     case ST_IMPLICIT:
-      gfc_set_implicit ();
       break;
 
     case ST_FUNCTION:
