@@ -1,3 +1,8 @@
+Wed Mar 24 22:36:45 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* configure.in (EXEEXT): Define.
+	(compiler_name): Use.
+
 Thu Mar 11 01:07:55 1999  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
 	* configure.in: Add mh-*pic handling for alpha, arm, powerpc

@@ -2,13 +2,28 @@
 # necessary for a configure script to process the program in
 # this directory.  For more information, look at ../configure.
 
-# If the language specific compiler does not exist, but the "gcc" directory does,
-# we do not build anything. Note, $r is set by the top-level Makefile.
+# find a possible extension of the just-built C++ compiler. Note that this
+# is not the only choice, taking into cross and canadian cross into
+# account, and we need to search for with and without the extension.
+case "${host_alias}" in
+*cygwin* | *mingw32*)
+  EXEEXT=.exe
+  ;;
+*)
+  EXEEXT=
+  ;;
+esac
+
+# If the language specific compiler does not exist, but the "gcc" directory 
+# does, we do not build anything. Note, $r is set by the top-level Makefile.
+# Note that when we look for the compiler, we search both with and without
+# extension to handle cross and canadian cross builds. 
 compiler_name=cc1plus
 rm -f skip-this-dir
 if test -n "$r"; then
   if test -d "$r"/gcc; then
-    if test -f "$r"/gcc/$compiler_name; then
+    if test -f "$r"/gcc/$compiler_name \
+       || test -f "$r"/gcc/$compiler_name$EXEEXT; then
       true
     else
       echo "rm -f multilib.out" > skip-this-dir
