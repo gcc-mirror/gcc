@@ -1,3 +1,14 @@
+2002-03-09  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (state::NO_STACK): New constant.
+	(state::is_unmerged_ret_state): Handle case where stacktop is
+	NO_STACK.
+	(state::merge): Handle NO_STACK merges.
+	(handle_jsr_insn): Invalidate PC, and use special NO_STACK state
+	for instruction following jsr.
+	(stacktop, stackdepth): Removed unused variables.
+	(pop_jump): Ignore case where all remaining states are skipped.
+
 2002-03-09  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/awt/ImageMediaEntry: Removed.
