@@ -933,7 +933,6 @@ char *fake_f_rep(type, val) char *type; Long_double val; {
 char *f_rep(precision, val) int precision; Long_double val; {
 	/* Return the floating representation of val */
 	static char buf[1024];
-	char *f1;
 #ifdef NO_LONG_DOUBLE_IO
 	if (1)
 #else
