@@ -374,11 +374,6 @@ tree_ssa_dominator_optimize (void)
   for (i = 0; i < num_referenced_vars; i++)
     var_ann (referenced_var (i))->current_def = NULL;
 
-  /* Mark loop edges so we avoid threading across loop boundaries.
-     This may result in transforming natural loop into irreducible
-     region.  */
-  mark_dfs_back_edges ();
-
   /* Create our hash tables.  */
   avail_exprs = htab_create (1024, real_avail_expr_hash, avail_expr_eq, free);
   vrp_data = htab_create (ceil_log2 (num_ssa_names), vrp_hash, vrp_eq, free);
