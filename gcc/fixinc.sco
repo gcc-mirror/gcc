@@ -64,7 +64,7 @@ case $LIB in
 /*)
 	;;
 *)
-	cd $LIB; LIB=`${PWDCMD}`
+	cd $LIB; LIB=`${PWDCMD-pwd}`
 	;;
 esac
 
