@@ -562,9 +562,9 @@ char *lang_options[] =
   "-Wall",
 
   /* These are for C++.  */
-  "+e0",
-  "+e1",
-  "+e2",
+  "-+e0",			/* gcc.c tacks the `-' on the front.  */
+  "-+e1",
+  "-+e2",
   "-fsave-memoized",
   "-fno-save-memoized",
   "-fSOS",
