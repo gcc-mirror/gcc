@@ -628,6 +628,9 @@ Return_zero:
 #endif
 
 #ifdef L_divmodhi4
+#ifndef mc68hc12
+/* 68HC12 signed divisions are generated inline (idivs).  */
+
 	.sect .text
 	.globl __divmodhi4
 
@@ -692,6 +695,7 @@ Numerator_neg_denominator_pos:
 	comb
 	addd	#1
 	rts
+#endif /* !mc68hc12 */
 #endif
 
 #ifdef L_mulqi3
@@ -865,11 +869,27 @@ Ret:
 ;
 ;
 
+__mulsi3:
+#ifdef mc68hc12
+	pshd				; Save A.low
+	ldy	4,sp
+	emul				; A.low * B.high
+	ldy	6,sp
+	exg	x,d
+	emul				; A.high * B.low
+	leax	d,x
+	ldy	6,sp
+	puld
+	emul				; A.low * B.low
+	exg	d,y
+	leax	d,x
+	exg	d,y
+	rts
+#else
 B_low	=	8
 B_high	=	6
 A_low	=	0
 A_high	=	2
-__mulsi3:
 	pshx
 	pshb
 	psha
@@ -882,11 +902,7 @@ __mulsi3:
 ;
 ; If A.high is 0, optimize into: (A.low * B.high) << 16 + (A.low * B.low)
 ;
-#ifdef mc68hc12
-	cpx	#0
-#else
 	stx	*_.tmp
-#endif
 	beq	A_high_zero
 	bsr	___mulhi3		; A.high * B.low
 ;
@@ -983,6 +999,7 @@ A_low_B_low:
 	ldd	B_low,y			; A.low is on the stack
 	bsr	__mulhi32
 	bra	Return
+#endif
 #endif
 
 #ifdef L_map_data
