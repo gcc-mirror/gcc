@@ -654,12 +654,11 @@ int flag_schedule_interblock = 1;
 int flag_schedule_speculative = 1;
 int flag_schedule_speculative_load = 0;
 int flag_schedule_speculative_load_dangerous = 0;
+#endif  /* HAIFA */
 
 /* flag_on_branch_count_reg means try to replace add-1,compare,branch tupple
    by a cheaper branch, on a count register. */
 int flag_branch_on_count_reg;
-#endif  /* HAIFA */
-
 
 /* -finhibit-size-directive inhibits output of .size for ELF.
    This is used only for compiling crtstuff.c, 
@@ -806,7 +805,7 @@ lang_independent_options f_options[] =
   {"unroll-loops", &flag_unroll_loops, 1,
    "Perform loop unrolling when interation count is known" },
   {"unroll-all-loops", &flag_unroll_all_loops, 1,
-   "Perofm loop onrolling for all loops" },
+   "Perform loop unrolling for all loops" },
   {"move-all-movables", &flag_move_all_movables, 1,
    "Force all loop invariant computations out of loops" },
   {"reduce-all-givs", &flag_reduce_all_givs, 1,
@@ -862,9 +861,9 @@ lang_independent_options f_options[] =
    "Allow speculative motion of some loads" },
   {"sched-spec-load-dangerous",&flag_schedule_speculative_load_dangerous, 1,
    "Allow speculative motion of more loads" },
+#endif  /* HAIFA */
   {"branch-count-reg",&flag_branch_on_count_reg, 1,
    "Replace add,compare,branch with branch on count reg"},
-#endif  /* HAIFA */
   {"pic", &flag_pic, 1,
    "Generate position independent code, if possible"},
   {"PIC", &flag_pic, 2, ""},

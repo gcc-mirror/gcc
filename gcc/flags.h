@@ -345,11 +345,11 @@ extern int flag_schedule_interblock;
 extern int flag_schedule_speculative;
 extern int flag_schedule_speculative_load;
 extern int flag_schedule_speculative_load_dangerous;
+#endif  /* HAIFA */
 
 /* flag_on_branch_count_reg means try to replace add-1,compare,branch tupple
    by a cheaper branch, on a count register. */
 extern int flag_branch_on_count_reg;
-#endif  /* HAIFA */
 
 
 /* Nonzero means put things in delayed-branch slots if supported. */
