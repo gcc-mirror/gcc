@@ -2568,7 +2568,7 @@ multilib @file{libstdc++.a} installed:
 Extract the shared object from each the GCC 3.1 @file{libstdc++.a}
 archive:
 @example
-   % ar -x libstdc++.so.4 libstdc++.a
+   % ar -x libstdc++.a libstdc++.so.4
 @end example
 
 Enable the @samp{F_LOADONLY} flag so that the shared object will be
@@ -2580,7 +2580,7 @@ available for runtime dynamic loading, but not linking:
 Archive the runtime-only shared object in the GCC 3.2
 @file{libstdc++.a} archive:
 @example
-   % ar -q libstdc++.so.4 libstdc++.a
+   % ar -q libstdc++.a libstdc++.so.4
 @end example
 
 Linking executables and shared libraries may produce warnings of
