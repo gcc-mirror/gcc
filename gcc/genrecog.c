@@ -197,6 +197,7 @@ static struct pred_table
   {"address_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
 		       LABEL_REF, SUBREG, REG, MEM, PLUS, MINUS, MULT}},
   {"register_operand", {SUBREG, REG}},
+  {"pmode_register_operand", {SUBREG, REG}},
   {"scratch_operand", {SCRATCH, REG}},
   {"immediate_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
 			 LABEL_REF}},
@@ -220,11 +221,11 @@ static const char * special_mode_pred_table[] = {
 #ifdef SPECIAL_MODE_PREDICATES
   SPECIAL_MODE_PREDICATES
 #endif
-  NULL
+  "pmode_register_operand"
 };
 
 #define NUM_SPECIAL_MODE_PREDS \
-  (sizeof (special_mode_pred_table) / sizeof (const char *) - 1)
+  (sizeof (special_mode_pred_table) / sizeof (special_mode_pred_table[0]))
 
 static struct decision *new_decision
   PROTO((const char *, struct decision_head *));
@@ -516,15 +517,18 @@ validate_pattern (pattern, insn, set_dest)
 	/* A modeless MATCH_OPERAND can be handy when we can
 	   check for multiple modes in the c_test.  In most other cases,
 	   it is a mistake.  Only DEFINE_INSN is eligible, since SPLIT
-	   and PEEP2 can FAIL within the output pattern.  */
+	   and PEEP2 can FAIL within the output pattern.  Exclude 
+	   address_operand, since its mode is related to the mode of
+	   the memory not the operand.  */
 
 	if (GET_MODE (pattern) == VOIDmode
 	    && code == MATCH_OPERAND
-	    && pred_name[0] != '\0'
+	    && GET_CODE (insn) == DEFINE_INSN
 	    && allows_non_const
 	    && ! special_mode_pred
-	    && strstr (c_test, "operands") == NULL
-	    && GET_CODE (insn) == DEFINE_INSN)
+	    && pred_name[0] != '\0'
+	    && strcmp (pred_name, "address_operand") != 0
+	    && strstr (c_test, "operands") == NULL)
 	  {
 	    message_with_line (pattern_lineno,
 			       "warning: operand %d missing mode?",
