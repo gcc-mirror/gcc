@@ -6573,6 +6573,7 @@ struct dir_info
 
 /* Callback function for file_info comparison.  We sort by looking at
    the directories in the path.  */
+
 static int
 file_info_cmp (p1, p2)
      const void *p1;
@@ -6583,11 +6584,13 @@ file_info_cmp (p1, p2)
   unsigned char *cp1;
   unsigned char *cp2;
 
-  /* Take care of file names without directories.  */
-  if (s1->path == s1->fname)
-    return -1;
-  else if (s2->path == s2->fname)
-    return 1;
+  /* Take care of file names without directories.  We need to make sure that
+     we return consistent values to qsort since some will get confused if
+     we return the same value when identical operands are passed in opposite
+     orders.  So if neither has a directory, return 0 and otherwise return
+     1 or -1 depending on which one has the directory.  */
+  if ((s1->path == s1->fname || s2->path == s2->fname))
+    return (s2->path == s2->fname) - (s1->path == s1->fname);
 
   cp1 = (unsigned char *) s1->path;
   cp2 = (unsigned char *) s2->path;
@@ -6596,17 +6599,14 @@ file_info_cmp (p1, p2)
     {
       ++cp1;
       ++cp2;
-      /* Reached the end of the first path?  */
-      if (cp1 == (unsigned char *) s1->fname)
-	/* It doesn't really matter in which order files from the
-	   same directory are sorted in.  Therefore don't test for
-	   the second path reaching the end.  */
-	return -1;
-      else if (cp2 == (unsigned char *) s2->fname)
-	return 1;
+      /* Reached the end of the first path?  If so, handle like above.  */
+      if ((cp1 == (unsigned char *) s1->fname)
+	  || (cp2 == (unsigned char *) s2->fname))
+	return ((cp2 == (unsigned char *) s2->fname)
+		- (cp1 == (unsigned char *) s1->fname));
 
       /* Character of current path component the same?  */
-      if (*cp1 != *cp2)
+      else if (*cp1 != *cp2)
 	return *cp1 - *cp2;
     }
 }

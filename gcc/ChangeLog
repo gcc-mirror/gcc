@@ -1,3 +1,7 @@
+Wed Oct 24 18:43:42 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* dwarf2out.c (file_info_cmp): Always return consistent results.
+
 2001-10-24  Roger Sayle <roger@eyesopen.com>
  
 	* stmt.c (expand_end_case): Index jumptables from zero for
