@@ -996,6 +996,23 @@ life_analysis (f, nregs)
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	      NOTE_SOURCE_FILE (insn) = 0;
 	    }
+	  /* Delete (in effect) any obvious no-op moves.  */
+	  else if (GET_CODE (PATTERN (insn)) == SET
+	      && GET_CODE (SET_DEST (PATTERN (insn))) == SUBREG
+	      && GET_CODE (SUBREG_REG (SET_DEST (PATTERN (insn)))) == REG
+	      && GET_CODE (SET_SRC (PATTERN (insn))) == SUBREG
+	      && GET_CODE (SUBREG_REG (SET_SRC (PATTERN (insn)))) == REG
+	      && REGNO (SUBREG_REG (SET_DEST (PATTERN (insn)))) ==
+			REGNO (SUBREG_REG (SET_SRC (PATTERN (insn))))
+	      && SUBREG_WORD (SET_DEST (PATTERN (insn))) ==
+			      SUBREG_WORD (SET_SRC (PATTERN (insn)))
+	      /* Insns carrying these notes are useful later on.  */
+	      && ! find_reg_note (insn, REG_EQUAL, NULL_RTX))
+	    {
+	      PUT_CODE (insn, NOTE);
+	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	      NOTE_SOURCE_FILE (insn) = 0;
+	    }
 	  else if (GET_CODE (PATTERN (insn)) == PARALLEL)
 	    {
 	      /* If nothing but SETs of registers to themselves,
