@@ -1,3 +1,20 @@
+1999-03-17  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* parse.y (named_complex_class_head_sans_basetype): 
+	Do not push a scope for error_mark_node.
+	(maybe_base_class_list): Likewise.
+
+	* decl.c (start_decl): Check for error_mark_node as a type.
+	Detected by g++.brendan/array-refs.C.
+	(start_decl_1): Likewise. Detected by g++.bugs/900322_01.C.
+	(maybe_build_cleanup_1): Likewise. Detected by
+	g++.jason/incomplete1.C.
+
+	* tree.c (build_dummy_object): Use void_zero_node instead of the
+	error_mark_node
+	(is_dummy_object): Check for such a node.
+	Detected by g++.bob/inherit1.C
+
 1999-03-16  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* method.c (old_backref_index): Split out...

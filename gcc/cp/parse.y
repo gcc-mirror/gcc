@@ -1,5 +1,5 @@
 /* YACC parser for C++ syntax.
-   Copyright (C) 1988, 89, 93-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1988, 89, 93-98, 1999 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -2243,26 +2243,32 @@ named_class_head:
                     xref_basetypes (current_aggr, $1, $<ttype>2, $3); 
 		}
 	| named_complex_class_head_sans_basetype 
-                { push_scope (CP_DECL_CONTEXT ($1)); }
+                { 
+		  if ($1 != error_mark_node)
+		    push_scope (CP_DECL_CONTEXT ($1)); 
+		}
 	  maybe_base_class_list
 		{ 
-                  pop_scope (CP_DECL_CONTEXT ($1));
-		  $$ = TREE_TYPE ($1);
-		  if (current_aggr == union_type_node
-		      && TREE_CODE ($$) != UNION_TYPE)
-		    cp_pedwarn ("`union' tag used in declaring `%#T'", $$);
-		  else if (TREE_CODE ($$) == UNION_TYPE
-			   && current_aggr != union_type_node)
-		    cp_pedwarn ("non-`union' tag used in declaring `%#T'", $$);
-		  else if (TREE_CODE ($$) == RECORD_TYPE)
-		    /* We might be specializing a template with a different
-		       class-key; deal.  */
-		    CLASSTYPE_DECLARED_CLASS ($$) = (current_aggr
-						     == class_type_node);
-		  if ($3)
+		  if ($1 != error_mark_node)
 		    {
-		      maybe_process_partial_specialization ($$);
-		      xref_basetypes (current_aggr, $1, $$, $3); 
+		      pop_scope (CP_DECL_CONTEXT ($1));
+		      $$ = TREE_TYPE ($1);
+		      if (current_aggr == union_type_node
+			  && TREE_CODE ($$) != UNION_TYPE)
+			cp_pedwarn ("`union' tag used in declaring `%#T'", $$);
+		      else if (TREE_CODE ($$) == UNION_TYPE
+			       && current_aggr != union_type_node)
+			cp_pedwarn ("non-`union' tag used in declaring `%#T'", $$);
+		      else if (TREE_CODE ($$) == RECORD_TYPE)
+			/* We might be specializing a template with a different
+			   class-key; deal.  */
+			CLASSTYPE_DECLARED_CLASS ($$) = (current_aggr
+							 == class_type_node);
+		      if ($3)
+			{
+			  maybe_process_partial_specialization ($$);
+			  xref_basetypes (current_aggr, $1, $$, $3); 
+			}
 		    }
 		}
 	;

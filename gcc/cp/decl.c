@@ -6873,6 +6873,9 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 
   type = TREE_TYPE (decl);
 
+  if (type == error_mark_node)
+    return NULL_TREE;
+
   /* Don't lose if destructors must be executed at file-level.  */
   if (! processing_template_decl && TREE_STATIC (decl)
       && TYPE_NEEDS_DESTRUCTOR (complete_type (type))
@@ -7119,6 +7122,9 @@ start_decl_1 (decl)
   tree type = TREE_TYPE (decl);
   int initialized = (DECL_INITIAL (decl) != NULL_TREE);
 
+  if (type == error_mark_node)
+    return;
+
   /* If this type of object needs a cleanup, and control may
      jump past it, make a new binding level so that it is cleaned
      up only when it is initialized first.  */
@@ -7133,9 +7139,7 @@ start_decl_1 (decl)
     {
       /* Don't allow initializations for incomplete types except for
 	 arrays which might be completed by the initialization.  */
-      if (type == error_mark_node)
-	;			/* Don't complain again.  */
-      else if (TYPE_SIZE (complete_type (type)) != NULL_TREE)
+      if (TYPE_SIZE (complete_type (type)) != NULL_TREE)
 	;			/* A complete type is ok.  */
       else if (TREE_CODE (type) != ARRAY_TYPE)
 	{
@@ -14321,7 +14325,7 @@ maybe_build_cleanup_1 (decl, auto_delete)
      tree decl, auto_delete;
 {
   tree type = TREE_TYPE (decl);
-  if (TYPE_NEEDS_DESTRUCTOR (type))
+  if (type != error_mark_node && TYPE_NEEDS_DESTRUCTOR (type))
     {
       int temp = 0, flags = LOOKUP_NORMAL|LOOKUP_DESTRUCTOR;
       tree rval;
