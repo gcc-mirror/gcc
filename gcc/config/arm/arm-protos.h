@@ -178,8 +178,8 @@ extern void   thumb_reload_in_hi	PARAMS ((rtx *));
 #endif
 
 /* Defined in pe.c.  */
-extern int  arm_dllexport_name_p 	PARAMS ((char *));
-extern int  arm_dllimport_name_p 	PARAMS ((char *));
+extern int  arm_dllexport_name_p 	PARAMS ((const char *));
+extern int  arm_dllimport_name_p 	PARAMS ((const char *));
 
 #ifdef TREE_CODE
 extern int  arm_pe_valid_machine_decl_attribute
