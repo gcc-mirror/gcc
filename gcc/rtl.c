@@ -1285,9 +1285,10 @@ rtl_check_failed_bounds (r, n, file, line, func)
     int line;
     const char *func;
 {
-  error ("RTL check: access of elt %d of `%s' with last elt %d",
-	 n, GET_RTX_NAME (GET_CODE (r)), GET_RTX_LENGTH (GET_CODE (r))-1);
-  fancy_abort (file, line, func);
+  internal_error
+    ("RTL check: access of elt %d of `%s' with last elt %d in %s, at %s:%d",
+     n, GET_RTX_NAME (GET_CODE (r)), GET_RTX_LENGTH (GET_CODE (r)) - 1,
+     func, trim_filename (file), line);
 }
 
 void
@@ -1299,9 +1300,10 @@ rtl_check_failed_type1 (r, n, c1, file, line, func)
     int line;
     const char *func;
 {
-  error ("RTL check: expected elt %d type '%c', have '%c' (rtx %s)",
-	 n, c1, GET_RTX_FORMAT (GET_CODE (r))[n], GET_RTX_NAME (GET_CODE (r)));
-  fancy_abort (file, line, func);
+  internal_error
+    ("RTL check: expected elt %d type '%c', have '%c' (rtx %s) in %s, at %s:%d",
+     n, c1, GET_RTX_FORMAT (GET_CODE (r))[n], GET_RTX_NAME (GET_CODE (r)),
+     func, trim_filename (file), line);
 }
 
 void
@@ -1314,10 +1316,10 @@ rtl_check_failed_type2 (r, n, c1, c2, file, line, func)
     int line;
     const char *func;
 {
-  error ("RTL check: expected elt %d type '%c' or '%c', have '%c' (rtx %s)",
-	 n, c1, c2,
-	 GET_RTX_FORMAT (GET_CODE (r))[n], GET_RTX_NAME (GET_CODE(r)));
-  fancy_abort (file, line, func);
+  internal_error
+    ("RTL check: expected elt %d type '%c' or '%c', have '%c' (rtx %s) in %s, at %s:%d",
+     n, c1, c2, GET_RTX_FORMAT (GET_CODE (r))[n], GET_RTX_NAME (GET_CODE (r)),
+     func, trim_filename (file), line);
 }
 
 void
@@ -1328,9 +1330,9 @@ rtl_check_failed_code1 (r, code, file, line, func)
     int line;
     const char *func;
 {
-  error ("RTL check: expected code `%s', have `%s'",
- 	 GET_RTX_NAME (code), GET_RTX_NAME (GET_CODE (r)));
-  fancy_abort (file, line, func);
+  internal_error ("RTL check: expected code `%s', have `%s' in %s, at %s:%d",
+		  GET_RTX_NAME (code), GET_RTX_NAME (GET_CODE (r)), func,
+		  trim_filename (file), line);
 }
 
 void
@@ -1341,10 +1343,10 @@ rtl_check_failed_code2 (r, code1, code2, file, line, func)
     int line;
     const char *func;
 {
-  error ("RTL check: expected code `%s' or `%s', have `%s'",
- 	 GET_RTX_NAME (code1), GET_RTX_NAME (code2),
-	 GET_RTX_NAME (GET_CODE (r)));
-  fancy_abort (file, line, func);
+  internal_error
+    ("RTL check: expected code `%s' or `%s', have `%s' in %s, at %s:%d",
+     GET_RTX_NAME (code1), GET_RTX_NAME (code2), GET_RTX_NAME (GET_CODE (r)),
+     ffunc, trim_filename (file), line);
 }
 
 /* XXX Maybe print the vector?  */
@@ -1356,8 +1358,8 @@ rtvec_check_failed_bounds (r, n, file, line, func)
     int line;
     const char *func;
 {
-  error ("RTL check: access of elt %d of vector with last elt %d",
-	 n, GET_NUM_ELEM (r)-1);
-  fancy_abort (file, line, func);
+  internal_error
+    ("RTL check: access of elt %d of vector with last elt %d in %s, at %s:%d",
+     n, GET_NUM_ELEM (r) - 1, func, trim_filename (file), line);
 }
 #endif /* ENABLE_RTL_CHECKING */
