@@ -1,3 +1,10 @@
+2000-01-09  Philip Blundell  <philb@gnu.org>
+
+	* config/arm/arm.c (output_return_instruction): Use `ldr' rather
+	than `ldm' with only one register.
+	* config/arm/arm.md (push_multi): Use `str' rather than `stm' with 
+	only one register.
+
 Sun Jan  9 17:50:23 2000  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/ns32k/ns32k.md (load or push effective address): Operand 1
