@@ -1,3 +1,95 @@
+2004-06-28  Robert Dewar  <dewar@gnat.com>
+
+	* mlib-tgt-tru64.adb, mlib-tgt-aix.adb, mlib-tgt-irix.adb,
+	mlib-tgt-irix.adb, mlib-tgt-hpux.adb, mlib-tgt-linux.adb,
+	mlib-tgt-linux.adb, mlib-tgt-solaris.adb, mlib-tgt-solaris.adb,
+	mlib-tgt-vms-alpha.adb, mlib-tgt-vms-alpha.adb, mlib-tgt-vms-ia64.adb,
+	a-strmap.adb, a-strmap.ads, clean.adb: Minor reformatting
+
+	* exp_util.adb (Is_Possibly_Unaligned_Slice): Completely rewritten, to
+	deal with problem of inefficient slices on machines with strict
+	alignment, when the slice is a component of a composite.
+
+	* checks.adb (Apply_Array_Size_Check): Do not special case 64-bit
+	machines, we need the check there as well.
+
+2004-06-28  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_ch5.adb (Expand_Assign_Array): Use correct condition to
+	determine safe copying direction for overlapping slice assignments
+	when component is controlled.
+
+	* sem_ch12.adb (Instantiate_Formal_Package): Implicit operations of a
+	formal derived type in the actual for a formal package are visible in
+	the enclosing instance.
+
+2004-06-28  Ed Schonberg  <schonberg@gnat.com>
+
+	PR ada/15600
+	* sem_util.adb (Trace_Components): Diagnose properly an illegal
+	circularity involving a private type whose completion includes a
+	self-referential component.
+	(Enter_Name): Use Is_Inherited_Operation to distinguish a source
+	renaming or an instantiation from an implicit derived operation.
+
+2004-06-28  Pascal Obry  <obry@gnat.com>
+
+	* mlib-tgt-mingw.adb: (Library_Exists_For): Remove "lib" prefix from
+	DLL.
+	(Library_File_Name_For): Idem.
+
+2004-06-28  Matthew Gingell  <gingell@gnat.com>
+
+	* g-traceb.ads: Add explanatory note on the format of addresses
+	expected by addr2line.
+
+2004-06-28  Jerome Guitton  <guitton@act-europe.fr>
+
+	* Makefile.in: Force debugging information on s-tasdeb.adb,
+	a-except.adb and s-assert.adb needed by the debugger.
+
+2004-06-28  Vincent Celier  <celier@gnat.com>
+
+	* make.adb (Collect_Arguments_And_Compile): Change Flag1 to
+	Need_To_Build_Lib.
+	(Gnatmake): Ditto.
+
+	* mlib-prj.adb (Check_Library): Replace Flag1 with Need_To_Build_Lib
+
+	* prj.adb: Minor reformatting
+	(Project_Empty): Change Flag1 to Need_To_Build_Lib. Remove Flag2.
+
+	* prj.ads: Comment updates
+	Minor reformatting
+	(Project_Data): Change Flag1 to Need_To_Build_Lib.
+	Remove Flag2: not used.
+
+	* prj-dect.adb (Parse_Declarative_Items): Accept "null" as a
+	declaration.
+
+	* gnat_ugn.texi: Put a "null;" declaration in one project file example
+
+	* gnat_rm.texi: Document Empty declarations "null;".
+
+	* makegpr.adb (Compile_Link_With_Gnatmake): Put the global archives in
+	front of the linker options.
+	(Link_Foreign): Put the global archives and the libraries in front of
+	the linker options.
+
+2004-06-28  Javier Miranda  <miranda@gnat.com>
+
+	* rtsfind.adb: (Get_Unit_Name): Fix typo in comment
+	(RTU_Loaded): Code cleanup
+	(Set_RTU_Loaded): New procedure to register as *loaded* explicitly
+	withed predefined units.
+
+	* rtsfind.ads (Set_RTU_Loaded): New procedure to register as *loaded*
+	explicitly withed predefined units.
+	Fix typo in comment
+
+	* sem_ch10.adb (Analyze_Compilation_Unit): Register as *loaded*
+	explicitly withed predefined units.
+
 2004-06-25  Pascal Obry  <obry@gnat.com>
 
 	* makegpr.adb (Build_Library): Remove parameter Lib_Address and

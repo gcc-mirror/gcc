@@ -747,6 +747,10 @@ package body Prj.Dect is
                Set_End_Of_Line (Current_Declaration);
                Set_Previous_Line_Node (Current_Declaration);
 
+            when Tok_Null =>
+
+               Scan; --  past "null"
+
             when Tok_Package =>
 
                --  Package declaration

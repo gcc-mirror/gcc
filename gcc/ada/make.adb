@@ -2231,7 +2231,9 @@ package body Make is
                      The_Data := Projects.Table (Prj);
                   end loop;
 
-                  if The_Data.Library and then not The_Data.Flag1 then
+                  if The_Data.Library
+                    and then not The_Data.Need_To_Build_Lib
+                  then
                      --  Add to the Q all sources of the project that
                      --  have not been marked
 
@@ -2242,7 +2244,7 @@ package body Make is
 
                      --  Now mark the project as processed
 
-                     Projects.Table (Prj).Flag1 := True;
+                     Projects.Table (Prj).Need_To_Build_Lib := True;
                   end if;
                end;
             end if;
@@ -4337,10 +4339,10 @@ package body Make is
          if MLib.Tgt.Support_For_Libraries /= MLib.Tgt.None then
             for Proj in Projects.First .. Projects.Last loop
                if Projects.Table (Proj).Library then
-                  Projects.Table (Proj).Flag1 :=
+                  Projects.Table (Proj).Need_To_Build_Lib :=
                     not MLib.Tgt.Library_Exists_For (Proj);
 
-                  if Projects.Table (Proj).Flag1 then
+                  if Projects.Table (Proj).Need_To_Build_Lib then
                      if Verbose_Mode then
                         Write_Str
                           ("Library file does not exist for project """);
@@ -4722,12 +4724,12 @@ package body Make is
                         end if;
 
                         if Projects.Table (Proj1).Library
-                          and then not Projects.Table (Proj1).Flag1
+                          and then not Projects.Table (Proj1).Need_To_Build_Lib
                         then
                            MLib.Prj.Check_Library (Proj1);
                         end if;
 
-                        if Projects.Table (Proj1).Flag1 then
+                        if Projects.Table (Proj1).Need_To_Build_Lib then
                            Library_Projs.Increment_Last;
                            Current := Library_Projs.Last;
                            Depth := Projects.Table (Proj1).Depth;
@@ -4744,7 +4746,7 @@ package body Make is
                            end loop;
 
                            Library_Projs.Table (Current) := Proj1;
-                           Projects.Table (Proj1).Flag1 := False;
+                           Projects.Table (Proj1).Need_To_Build_Lib := False;
                         end if;
                      end loop;
                   end;

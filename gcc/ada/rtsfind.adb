@@ -70,6 +70,11 @@ package body Rtsfind is
    --  a unit is loaded to contain the defining entity for the unit, the
    --  unit name, and the unit number.
 
+   --  Note that a unit can be loaded either by a call to find an entity
+   --  within the unit (e.g. RTE), or by an explicit with of the unit. In
+   --  the latter case it is critical to make a call to Set_RTU_Loaded to
+   --  ensure that the entry in this table reflects the load.
+
    type RT_Unit_Table_Record is record
       Entity : Entity_Id;
       Uname  : Unit_Name_Type;
@@ -139,7 +144,7 @@ package body Rtsfind is
 
    function Get_Unit_Name (U_Id : RTU_Id) return Unit_Name_Type;
    --  Retrieves the Unit Name given a unit id represented by its
-   --  enumaration value in RTU_Id.
+   --  enumeration value in RTU_Id.
 
    procedure Load_RTU
      (U_Id        : RTU_Id;
@@ -958,7 +963,7 @@ package body Rtsfind is
       --  a WITH if the current unit is part of the extended main code
       --  unit, and if we have not already added the with. The WITH is
       --  added to the appropriate unit (the current one). We do not need
-      --  to generate a WITH for an
+      --  to generate a WITH for an ????
 
    <<Found>>
       if (not U.Withed)
@@ -1052,10 +1057,48 @@ package body Rtsfind is
 
    function RTU_Loaded (U : RTU_Id) return Boolean is
    begin
-      return True or else Present (RT_Unit_Table (U).Entity);
-      --  Temporary kludge until we get proper interaction to ensure that
-      --  an explicit WITH of a unit is properly registered in rtsfind ???
+      return Present (RT_Unit_Table (U).Entity);
    end RTU_Loaded;
+
+   --------------------
+   -- Set_RTU_Loaded --
+   --------------------
+
+   procedure Set_RTU_Loaded (N : Node_Id) is
+      Loc   : constant Source_Ptr       := Sloc (N);
+      Unum  : constant Unit_Number_Type := Get_Source_Unit (Loc);
+      Uname : constant Unit_Name_Type   := Unit_Name (Unum);
+      E     : constant Entity_Id        :=
+                Defining_Entity (Unit (Cunit (Unum)));
+   begin
+      pragma Assert (Is_Predefined_File_Name (Unit_File_Name (Unum)));
+
+      --  Loop through entries in RTU table looking for matching entry
+
+      for U_Id in RTU_Id'Range loop
+
+         --  Here we have a match
+
+         if Get_Unit_Name (U_Id) = Uname then
+            declare
+               U : RT_Unit_Table_Record renames RT_Unit_Table (U_Id);
+               --  The RT_Unit_Table entry that may need updating
+
+            begin
+               --  If entry is not set, set it now
+
+               if not Present (U.Entity) then
+                  U.Entity := E;
+                  U.Uname  := Get_Unit_Name (U_Id);
+                  U.Unum   := Unum;
+                  U.Withed := False;
+               end if;
+
+               return;
+            end;
+         end if;
+      end loop;
+   end Set_RTU_Loaded;
 
    --------------------
    -- Text_IO_Kludge --

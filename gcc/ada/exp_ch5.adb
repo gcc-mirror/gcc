@@ -826,8 +826,8 @@ package body Exp_Ch5 is
                --  the explicit bounds of right- and left-hand side.
 
                declare
-                  Proc     : constant Node_Id :=
-                               TSS (Base_Type (L_Type), TSS_Slice_Assign);
+                  Proc    : constant Node_Id :=
+                              TSS (Base_Type (L_Type), TSS_Slice_Assign);
                   Actuals : List_Id;
 
                begin
@@ -840,7 +840,10 @@ package body Exp_Ch5 is
                     Duplicate_Subexpr (Left_Hi,  Name_Req => True),
                     Duplicate_Subexpr (Right_Lo, Name_Req => True),
                     Duplicate_Subexpr (Right_Hi, Name_Req => True));
-                  Append_To (Actuals, Condition);
+
+                  Append_To (Actuals,
+                     Make_Op_Not (Loc,
+                       Right_Opnd => Condition));
 
                   Rewrite (N,
                     Make_Procedure_Call_Statement (Loc,

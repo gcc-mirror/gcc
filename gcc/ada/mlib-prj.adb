@@ -1556,7 +1556,7 @@ package body MLib.Prj is
       Data : constant Project_Data := Projects.Table (For_Project);
 
    begin
-      if Data.Library and not Data.Flag1 then
+      if Data.Library and not Data.Need_To_Build_Lib then
          declare
             Current  : constant Dir_Name_Str := Get_Current_Dir;
             Lib_Name : constant Name_Id := Library_File_Name_For (For_Project);
@@ -1596,17 +1596,17 @@ package body MLib.Prj is
 
                   Obj_TS := File_Stamp (Name_Find);
 
-                  --  If library file time stamp is earlier, set Flag1 and
-                  --  return. String comparaison is used, otherwise time stamps
-                  --  may be too close and the comparaison would return True,
-                  --  which would trigger an unnecessary rebuild of the
-                  --  library.
+                  --  If library file time stamp is earlier, set
+                  --  Need_To_Build_Lib and return. String comparaison is used,
+                  --  otherwise time stamps may be too close and the
+                  --  comparaison would return True, which would trigger
+                  --  an unnecessary rebuild of the library.
 
                   if String (Lib_TS) < String (Obj_TS) then
 
                      --  Library must be rebuilt
 
-                     Projects.Table (For_Project).Flag1 := True;
+                     Projects.Table (For_Project).Need_To_Build_Lib := True;
                      exit;
                   end if;
                end if;

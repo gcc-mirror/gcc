@@ -13309,6 +13309,7 @@ See the chapter on project files in the GNAT Users guide for examples of use.
 * Reserved Words::
 * Lexical Elements::
 * Declarations::
+* Empty declarations::
 * Typed string declarations::
 * Variables::
 * Expressions::
@@ -13379,8 +13380,20 @@ simple_declarative_item ::=
   variable_declaration |
   typed_variable_declaration |
   attribute_declaration |
-  case_construction
+  case_construction |
+  empty_declaration
 @end smallexample
+
+@node Empty declarations
+@section Empty declarations
+
+@smallexample
+empty_declaration ::=
+  @b{null} ;
+@end smallexample
+
+An empty declaration is allowed anywhere a declaration is allowed.
+It has no effect.
 
 @node Typed string declarations
 @section Typed string declarations
@@ -13683,7 +13696,7 @@ case_construction ::=
 
 case_item ::=
   @b{when} discrete_choice_list =>
-    @{case_construction | attribute_declaration@}
+    @{case_construction | attribute_declaration | empty_declaration@}
 
 discrete_choice_list ::=
   string_literal @{| string_literal@} |

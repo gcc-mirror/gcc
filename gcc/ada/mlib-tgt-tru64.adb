@@ -119,8 +119,8 @@ package body MLib.Tgt is
       pragma Unreferenced (Symbol_Data);
 
       Lib_File : constant String :=
-        Lib_Dir & Directory_Separator & "lib" &
-        Fil.Ext_To (Lib_Filename, DLL_Ext);
+                   Lib_Dir & Directory_Separator & "lib" &
+                   Fil.Ext_To (Lib_Filename, DLL_Ext);
 
       Version_Arg          : String_Access;
       Symbolic_Link_Needed : Boolean := False;

@@ -134,8 +134,8 @@ package body MLib.Tgt is
       pragma Unreferenced (Lib_Version);
 
       Lib_File : constant String :=
-        Lib_Dir & Directory_Separator & "lib" &
-        MLib.Fil.Ext_To (Lib_Filename, DLL_Ext);
+                   Lib_Dir & Directory_Separator & "lib" &
+                   MLib.Fil.Ext_To (Lib_Filename, DLL_Ext);
       --  The file name of the library
 
       Init_Fini : Argument_List_Access := Empty_Argument_List;

@@ -2695,7 +2695,7 @@ package Rtsfind is
    --
    --  If RTE returns, the returned value is the required entity
    --
-   --  If the entity is not available, then an error message is given The
+   --  If the entity is not available, then an error message is given. The
    --  form of the message depends on whether we are in configurable run time
    --  mode or not. In configurable run time mode, a missing entity is not
    --  that surprising and merely says that the particular construct is not
@@ -2731,6 +2731,9 @@ package Rtsfind is
    --  Returns true if indicated unit has already been successfully loaded.
    --  If the unit has not been loaded, returns False. Note that this does
    --  not mean that an attempt to load it subsequently would fail.
+
+   procedure Set_RTU_Loaded (N : Node_Id);
+   --  Register the predefined unit N as already loaded.
 
    procedure Text_IO_Kludge (Nam : Node_Id);
    --  In Ada 83, and hence for compatibility in Ada 9X, package Text_IO has

@@ -140,7 +140,7 @@ package body MLib.Tgt is
 
       Lib_File : constant String :=
                    Lib_Dir & Directory_Separator & "lib" &
-                     Fil.Ext_To (Lib_Filename, DLL_Ext);
+                   Fil.Ext_To (Lib_Filename, DLL_Ext);
 
       Opts      : Argument_List := Options;
       Last_Opt  : Natural       := Opts'Last;
@@ -151,8 +151,8 @@ package body MLib.Tgt is
 
       function Is_Interface (Obj_File : String) return Boolean;
       --  For a Stand-Alone Library, returns True if Obj_File is the object
-      --  file name of an interface of the SAL.
-      --  For other libraries, always return True.
+      --  file name of an interface of the SAL. For other libraries, always
+      --  return True.
 
       function Option_File_Name return String;
       --  Returns Symbol_File, if not empty. Otherwise, returns "symvec.opt"

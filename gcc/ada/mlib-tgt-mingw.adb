@@ -107,8 +107,8 @@ package body MLib.Tgt is
       pragma Unreferenced (Lib_Version);
 
       Lib_File : constant String :=
-        Lib_Dir & Directory_Separator &
-        Files.Ext_To (Lib_Filename, DLL_Ext);
+                   Lib_Dir & Directory_Separator &
+                   Files.Ext_To (Lib_Filename, DLL_Ext);
 
    --  Start of processing for Build_Dynamic_Library
 
@@ -207,7 +207,7 @@ package body MLib.Tgt is
 
             else
                return Is_Regular_File
-                 (Lib_Dir & Directory_Separator & "lib" &
+                 (Lib_Dir & Directory_Separator &
                   MLib.Fil.Ext_To (Lib_Name, DLL_Ext));
             end if;
          end;
@@ -231,13 +231,13 @@ package body MLib.Tgt is
               Get_Name_String (Projects.Table (Project).Library_Name);
 
          begin
-            Name_Len := 3;
-            Name_Buffer (1 .. Name_Len) := "lib";
-
             if Projects.Table (Project).Library_Kind = Static then
+               Name_Len := 3;
+               Name_Buffer (1 .. Name_Len) := "lib";
                Add_Str_To_Name_Buffer (Fil.Ext_To (Lib_Name, Archive_Ext));
 
             else
+               Name_Len := 0;
                Add_Str_To_Name_Buffer (Fil.Ext_To (Lib_Name, DLL_Ext));
             end if;
 

@@ -1892,6 +1892,28 @@ endif
 s-traceb.o  : s-traceb.adb
 	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) \
 	      $(NO_SIBLING_ADAFLAGS) $(ADA_INCLUDES) \
+      $< $(OUTPUT_OPTION)
+
+# force debugging information on s-tasdeb.o so that it is always
+# possible to set conditional breakpoints on tasks.
+
+s-tasdeb.o  : s-tasdeb.adb s-tasdeb.ads
+	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 $(ADA_INCLUDES) \
+	      $< $(OUTPUT_OPTION)
+
+# force debugging information on a-except.o so that it is always
+# possible to set conditional breakpoints on exceptions.
+# use -O1 otherwise gdb isn't able to get a full backtrace on mips targets.
+
+a-except.o  : a-except.adb a-except.ads
+	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O1 -fno-inline \
+	      $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
+
+# force debugging information on s-assert.o so that it is always
+# possible to set breakpoint on assert failures.
+
+s-assert.o  : s-assert.adb s-assert.ads a-except.ads
+	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O2 $(ADA_INCLUDES) \
 	      $< $(OUTPUT_OPTION)
 
 adadecode.o : adadecode.c adadecode.h

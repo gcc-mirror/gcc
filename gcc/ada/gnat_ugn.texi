@@ -10809,6 +10809,8 @@ project Build is
         for ^Default_Switches^Default_Switches^ ("Ada")
             use ("^-g^-g^");
         for Executable ("proc") use "proc1";
+      when others =>
+        null;
     end case;
 
   end Builder;

@@ -831,13 +831,6 @@ package body Checks is
          if Size_Known_At_Compile_Time (Typ) then
             return;
          end if;
-
-         --  No problem on 64-bit machines, we just don't bother with
-         --  the case where the size in bytes overflows 64-bits.
-
-         if System_Address_Size = 64 then
-            return;
-         end if;
       end if;
 
       --  Following code is temporarily deleted, since GCC 3 is returning
