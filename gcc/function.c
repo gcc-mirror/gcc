@@ -5117,6 +5117,8 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
 
   arg_size_ptr->var = 0;
   arg_size_ptr->constant = 0;
+  alignment_pad->var = 0;
+  alignment_pad->constant = 0;
 
 #ifdef ARGS_GROW_DOWNWARD
   if (initial_offset_ptr->var)

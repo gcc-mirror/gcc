@@ -1,3 +1,7 @@
+2000-10-20  Richard Henderson  <rth@cygnus.com>
+
+	* function.c (locate_and_pad_parm): Zero alignment_pad.
+
 Fri Oct 20 13:33:16 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* dwarf2out.c (add_bound_info): Also ignore COND_EXPR.
