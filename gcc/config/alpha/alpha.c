@@ -2537,7 +2537,26 @@ alpha_expand_mov (mode, operands)
   /* Allow legitimize_address to perform some simplifications.  */
   if (mode == Pmode && symbolic_operand (operands[1], mode))
     {
-      rtx tmp = alpha_legitimize_address (operands[1], operands[0], mode);
+      rtx tmp;
+
+      /* With RTL inlining, at -O3, rtl is generated, stored, then actually
+	 compiled at the end of compilation.  In the meantime, someone can
+	 re-encode-section-info on some symbol changing it e.g. from global
+	 to local-not-small.  If this happens, we'd have emitted a plain
+	 load rather than a high+losum load and not recognize the insn.
+
+	 So if rtl inlining is in effect, we delay the global/not-global
+	 decision until rest_of_compilation by wrapping it in an
+	 UNSPEC_SYMBOL.  */
+      if (TARGET_EXPLICIT_RELOCS && flag_inline_functions
+	  && rtx_equal_function_value_matters
+	  && global_symbolic_operand (operands[1], mode))
+	{
+	  emit_insn (gen_movdi_er_maybe_g (operands[0], operands[1]));
+	  return true;
+	}
+
+      tmp = alpha_legitimize_address (operands[1], operands[0], mode);
       if (tmp)
 	{
 	  operands[1] = tmp;

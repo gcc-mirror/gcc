@@ -39,6 +39,7 @@
    (UNSPEC_LITERAL	11)
    (UNSPEC_LITUSE	12)
    (UNSPEC_SIBCALL	13)
+   (UNSPEC_SYMBOL	14)
   ])
 
 ;; UNSPEC_VOLATILE:
@@ -5546,6 +5547,41 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 		    (match_dup 1)
 		    (const_int 0)] UNSPEC_LITERAL))]
   "operands[2] = pic_offset_table_rtx;")
+
+;; With RTL inlining, at -O3, rtl is generated, stored, then actually
+;; compiled at the end of compilation.  In the meantime, someone can
+;; re-encode-section-info on some symbol changing it e.g. from global
+;; to local-not-small.  If this happens, we'd have emitted a plain
+;; load rather than a high+losum load and not recognize the insn.
+;;
+;; So if rtl inlining is in effect, we delay the global/not-global
+;; decision until rest_of_compilation by wrapping it in an UNSPEC_SYMBOL.
+
+(define_insn_and_split "movdi_er_maybe_g"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec:DI [(match_operand:DI 1 "symbolic_operand" "")]
+		   UNSPEC_SYMBOL))]
+  "TARGET_EXPLICIT_RELOCS && flag_inline_functions"
+  "#"
+  ""
+  [(set (match_dup 0) (match_dup 1))]
+{
+  if (local_symbolic_operand (operands[1], Pmode)
+      && !small_symbolic_operand (operands[1], Pmode))
+    {
+      rtx subtarget = no_new_pseudos ? operands[0] : gen_reg_rtx (Pmode);
+      rtx tmp;
+
+      tmp = gen_rtx_HIGH (Pmode, operands[1]);
+      if (reload_completed)
+	tmp = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmp);
+      emit_insn (gen_rtx_SET (VOIDmode, subtarget, tmp));
+
+      tmp = gen_rtx_LO_SUM (Pmode, subtarget, operands[1]);
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0], tmp));
+      DONE;
+    }
+})
 
 (define_insn "*movdi_er_nofix"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m,*f,*f,Q")
