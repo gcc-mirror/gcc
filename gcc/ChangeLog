@@ -1,3 +1,7 @@
+2001-09-18  Catherine Moore  <clm@redhat.com>
+
+        * config/stormy16 (LIB_SPEC): Remove -lnosys.
+
 2001-09-18  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_frame_set): New.

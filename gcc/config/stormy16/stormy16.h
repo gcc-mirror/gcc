@@ -146,7 +146,7 @@ Boston, MA 02111-1307, USA.  */
 
    Defined in svr4.h.  */
 #undef LIB_SPEC
-#define LIB_SPEC "-( -lc %{msim:-lsim}%{!msim:-lnosys} -)"
+#define LIB_SPEC "-( -lc %{msim:-lsim} -)"
 
 /* Another C string constant that tells the GNU CC driver program how and when
    to place a reference to `libgcc.a' into the linker command line.  This
