@@ -1,3 +1,8 @@
+
+2000-12-28  Robert Lipe <robertl@sco.com>
+
+	* jartool.c (MAXPATHLEN): Provide if not defined.
+
 2000-12-15  Tom Tromey  <tromey@redhat.com>
             Kelley Cook <kelleycook@home.com>
 
