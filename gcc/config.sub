@@ -103,6 +103,9 @@ case $os in
 	-lynx)
 		os=-lynxos
 		;;
+	-ptx*)
+		basic_machine=`echo $1 | sed -e 's/86-.*/86-sequent/'`
+		;;
 esac
 
 # Decode aliases for certain CPU-COMPANY combinations.
@@ -403,6 +406,9 @@ case $basic_machine in
 	rtpc | rtpc-*)
 		basic_machine=romp-ibm
 		;;
+	sequent)
+		basic_machine=i386-sequent
+		;;
 	sh)
 		basic_machine=sh-hitachi
 		os=-hms
@@ -559,7 +565,8 @@ case $os in
 	      | -nindy* | -vxworks* | -ebmon* | -hms* | -mvs* | -clix* \
 	      | -riscos* | -linux* | -uniplus* | -iris* | -rtu* | -xenix* \
 	      | -hiux* | -386bsd* | -netbsd* | -freebsd* | -riscix* \
-	      | -lynxos* | -bosx* | -nextstep* | -cxux* | -aout* | -elf*)
+	      | -lynxos* | -bosx* | -nextstep* | -cxux* | -aout* | -elf* \
+	      | -ptx*)
 		;;
 	-sunos5*)
 		os=`echo $os | sed -e 's|sunos5|solaris2|'`
@@ -677,7 +684,7 @@ case $basic_machine in
 		os=-luna
 		;;
 	*-sequent)
-		os=-bsd
+		os=-ptx
 		;;
 	*-crds)
 		os=-unos
@@ -750,6 +757,9 @@ case $basic_machine in
 				;;
 			-mvs*)
 				vendor=ibm
+				;;
+			-ptx*)
+				vendor=sequent
 				;;
 		esac
 		basic_machine=`echo $basic_machine | sed "s/unknown/$vendor/"`
