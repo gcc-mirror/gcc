@@ -4864,17 +4864,20 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 	  if (TREE_PURPOSE (tail) != 0)
 	    {
 	      int win = 0;
+	      tree index = TREE_PURPOSE (tail);
 
-	      if (TREE_CODE (TREE_PURPOSE (tail)) == IDENTIFIER_NODE)
+	      if (index && TREE_CODE (index) == NON_LVALUE_EXPR)
+		index = TREE_OPERAND (index, 0);
+
+	      if (TREE_CODE (index) == IDENTIFIER_NODE)
 		error ("field name used as index in array initializer");
-	      else if (TREE_CODE (TREE_PURPOSE (tail)) != INTEGER_CST)
+	      else if (TREE_CODE (index) != INTEGER_CST)
 		error ("non-constant array index in initializer");
-	      else if (tree_int_cst_lt (TREE_PURPOSE (tail), min_index)
-		       || (max_index && tree_int_cst_lt (max_index,
-							 TREE_PURPOSE (tail))))
+	      else if (tree_int_cst_lt (index, min_index)
+		       || (max_index && tree_int_cst_lt (max_index, index)))
 		error ("array index out of range in initializer");
 	      else
-		current_index = TREE_PURPOSE (tail), win = 1;
+		current_index = index, win = 1;
 
 	      if (!win)
 		TREE_VALUE (tail) = error_mark_node;
