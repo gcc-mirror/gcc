@@ -9,8 +9,8 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 package java.net;
-import java.io.*;
 
+import java.io.IOException;
 
 /**
  * The standard GCJ socket implementation.

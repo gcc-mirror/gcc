@@ -1,3 +1,14 @@
+2002-11-18  Michael Koch <konqueror@gmx.de>
+
+	* java/net/PlainSocketImpl.java: Reworked imports.
+	* java/net/ServerSocket.java
+	(ServerSocket): Create socket.
+	* java/net/SocketAddress.java: Documentation added.
+	* java/net/natPlainSocketImpl.cc: Reindented.
+	* java/nio/ReadOnlyBufferException.java: New file
+	* java/nio/channels/ClosedChannelException.java: Documentation added.
+	* java/nio/channels/ClosedSelectorException.java: New file.
+
 2002-11-17  Mark Wielaard  <mark@klomp.org>
 
 	* java/net/HttpURLConnection.java ((getPermission): Take port

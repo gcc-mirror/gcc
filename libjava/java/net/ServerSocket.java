@@ -60,15 +60,10 @@ import java.nio.channels.ServerSocketChannel;
  */
 public class ServerSocket
 {
-
-  // Class Variables
-
   /**
    * This is the user defined SocketImplFactory, if one is supplied
    */
   private static SocketImplFactory factory;
-
-  // Instance Variables
 
   /**
    * This is the SocketImp object to which most instance methods in this
@@ -95,6 +90,8 @@ public class ServerSocket
       impl = factory.createSocketImpl();
     else
       impl = new PlainSocketImpl();
+
+    impl.create(true);
   }
 
   /**

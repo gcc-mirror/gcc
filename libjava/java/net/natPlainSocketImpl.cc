@@ -259,6 +259,7 @@ void
 java::net::PlainSocketImpl::create (jboolean stream)
 {
   int sock = ::socket (AF_INET, stream ? SOCK_STREAM : SOCK_DGRAM, 0);
+
   if (sock < 0)
     {
       char* strerr = strerror (errno);
@@ -285,10 +286,12 @@ java::net::PlainSocketImpl::bind (java::net::InetAddress *host, jint lport)
   if (len == 4)
     {
       u.address.sin_family = AF_INET;
+
       if (host != NULL)
         memcpy (&u.address.sin_addr, bytes, len);
       else
-	u.address.sin_addr.s_addr = htonl (INADDR_ANY);        
+        u.address.sin_addr.s_addr = htonl (INADDR_ANY);
+
       len = sizeof (struct sockaddr_in);
       u.address.sin_port = htons (lport);
     }
@@ -311,14 +314,17 @@ java::net::PlainSocketImpl::bind (java::net::InetAddress *host, jint lport)
     {
       address = host;
       socklen_t addrlen = sizeof(u);
+
       if (lport != 0)
         localport = lport;
       else if (::getsockname (fnum, (sockaddr*) &u, &addrlen) == 0)
         localport = ntohs (u.address.sin_port);
       else
         goto error;
+
       return;
     }
+
  error:
   char* strerr = strerror (errno);
   throw new java::net::BindException (JvNewStringUTF (strerr));
@@ -326,7 +332,7 @@ java::net::PlainSocketImpl::bind (java::net::InetAddress *host, jint lport)
 
 void
 java::net::PlainSocketImpl::connect (java::net::SocketAddress *addr,
-		                     jint timeout)
+                                     jint timeout)
 {
   java::net::InetSocketAddress *tmp = (java::net::InetSocketAddress*) addr;
   java::net::InetAddress *host = tmp->getAddress();
@@ -376,10 +382,10 @@ java::net::PlainSocketImpl::connect (java::net::SocketAddress *addr,
       int retval;
       
       if ((retval = _Jv_select (fnum + 1, &rset, NULL, NULL, &tv)) < 0)
-	goto error;
+        goto error;
       else if (retval == 0)
-	throw new java::net::SocketTimeoutException ( 
-	         JvNewStringUTF("Connect timed out"));
+        throw new java::net::SocketTimeoutException
+          (JvNewStringUTF ("Connect timed out"));
     }
   else
 #endif
@@ -390,15 +396,18 @@ java::net::PlainSocketImpl::connect (java::net::SocketAddress *addr,
 
   address = host;
   port = rport;
+
   // A bind may not have been done on this socket; if so, set localport now.
   if (localport == 0)
     {
       if (::getsockname (fnum, (sockaddr*) &u, &addrlen) == 0)
-	localport = ntohs (u.address.sin_port);
+        localport = ntohs (u.address.sin_port);
       else
-	goto error;
+        goto error;
     }
+
   return;  
+
  error:
   char* strerr = strerror (errno);
   throw new java::net::ConnectException (JvNewStringUTF (strerr));
@@ -434,14 +443,15 @@ java::net::PlainSocketImpl::accept (java::net::PlainSocketImpl *s)
       tv.tv_usec = (timeout % 1000) * 1000;
       int retval;
       if ((retval = _Jv_select (fnum + 1, &rset, NULL, NULL, &tv)) < 0)
-	goto error;
+        goto error;
       else if (retval == 0)
-	throw new java::io::InterruptedIOException (
-	         JvNewStringUTF("Accept timed out"));
+        throw new java::io::InterruptedIOException (
+	                                  JvNewStringUTF("Accept timed out"));
     }
 #endif /* WIN32 */
 
   new_socket = _Jv_accept (fnum, (sockaddr*) &u, &addrlen);
+
   if (new_socket < 0)
     goto error;
 
@@ -471,6 +481,7 @@ java::net::PlainSocketImpl::accept (java::net::PlainSocketImpl *s)
   s->address = new InetAddress (raddr, NULL);
   s->port = rport;
   return;
+
  error:
   char* strerr = strerror (errno);
   throw new java::io::IOException (JvNewStringUTF (strerr));
@@ -491,7 +502,7 @@ java::net::PlainSocketImpl::close()
       // These three errors are not errors according to tests performed
       // on the reference implementation.
       if (errno != ENOTCONN && errno != ECONNRESET && errno != EBADF)
-	throw new java::io::IOException  (JvNewStringUTF (strerror (errno)));
+        throw new java::io::IOException  (JvNewStringUTF (strerror (errno)));
     }
   // Safe place to reset the file pointer.
   fnum = -1;
@@ -509,20 +520,20 @@ java::net::PlainSocketImpl::write(jint b)
     {
       r = ::write (fnum, &d, 1);
       if (r == -1)
-	{
-	  if (java::lang::Thread::interrupted())
-	    {
-	      java::io::InterruptedIOException *iioe
-		= new java::io::InterruptedIOException 
-		(JvNewStringLatin1 (strerror (errno)));
-	      iioe->bytesTransferred = 0;
-	      throw iioe;
-	    }
-	  // Some errors should not cause exceptions.
-	  if (errno != ENOTCONN && errno != ECONNRESET && errno != EBADF)
-	    throw new java::io::IOException (JvNewStringUTF (strerror (errno)));
-	  break;
-	}
+        {
+          if (java::lang::Thread::interrupted())
+            {
+              java::io::InterruptedIOException *iioe
+                = new java::io::InterruptedIOException 
+                (JvNewStringLatin1 (strerror (errno)));
+              iioe->bytesTransferred = 0;
+              throw iioe;
+            }
+          // Some errors should not cause exceptions.
+          if (errno != ENOTCONN && errno != ECONNRESET && errno != EBADF)
+            throw new java::io::IOException (JvNewStringUTF (strerror (errno)));
+          break;
+        }
     }
 }
 
@@ -537,24 +548,27 @@ java::net::PlainSocketImpl::write(jbyteArray b, jint offset, jint len)
 
   jbyte *bytes = elements (b) + offset;
   int written = 0;
+
   while (len > 0)
     {
       int r = ::write (fnum, bytes, len);
+
       if (r == -1)
         {
-	  if (java::lang::Thread::interrupted())
-	    {
-	      java::io::InterruptedIOException *iioe
-		= new java::io::InterruptedIOException
-		(JvNewStringLatin1 (strerror (errno)));
-	      iioe->bytesTransferred = written;
-	      throw iioe;
-	    }
-	  // Some errors should not cause exceptions.
-	  if (errno != ENOTCONN && errno != ECONNRESET && errno != EBADF)
-	    throw new java::io::IOException (JvNewStringUTF (strerror (errno)));
-	  break;
-	}
+          if (java::lang::Thread::interrupted())
+            {
+              java::io::InterruptedIOException *iioe
+                = new java::io::InterruptedIOException
+                (JvNewStringLatin1 (strerror (errno)));
+              iioe->bytesTransferred = written;
+              throw iioe;
+            }
+          // Some errors should not cause exceptions.
+          if (errno != ENOTCONN && errno != ECONNRESET && errno != EBADF)
+            throw new java::io::IOException (JvNewStringUTF (strerror (errno)));
+          break;
+        }
+
       written += r;
       len -= r;
       bytes += r;
@@ -578,37 +592,38 @@ java::net::PlainSocketImpl::read(void)
 #ifndef WIN32
   // Do timeouts via select.
   if (timeout > 0 && fnum >= 0 && fnum < FD_SETSIZE)
-  {
-    // Create the file descriptor set.
-    fd_set read_fds;
-    FD_ZERO (&read_fds);
-    FD_SET (fnum,&read_fds);
-    // Create the timeout struct based on our internal timeout value.
-    struct timeval timeout_value;
-    timeout_value.tv_sec = timeout / 1000;
-    timeout_value.tv_usec = (timeout % 1000) * 1000;
-    // Select on the fds.
-    int sel_retval =
-	    _Jv_select (fnum + 1, &read_fds, NULL, NULL, &timeout_value);
-    // If select returns 0 we've waited without getting data...
-    // that means we've timed out.
-    if (sel_retval == 0)
-      throw new java::io::InterruptedIOException
-	(JvNewStringUTF ("read timed out") );
-    // If select returns ok we know we either got signalled or read some data...
-    // either way we need to try to read.
-  }
+    {
+      // Create the file descriptor set.
+      fd_set read_fds;
+      FD_ZERO (&read_fds);
+      FD_SET (fnum,&read_fds);
+      // Create the timeout struct based on our internal timeout value.
+      struct timeval timeout_value;
+      timeout_value.tv_sec = timeout / 1000;
+      timeout_value.tv_usec = (timeout % 1000) * 1000;
+      // Select on the fds.
+      int sel_retval =
+        _Jv_select (fnum + 1, &read_fds, NULL, NULL, &timeout_value);
+      // If select returns 0 we've waited without getting data...
+      // that means we've timed out.
+      if (sel_retval == 0)
+        throw new java::io::InterruptedIOException
+          (JvNewStringUTF ("read timed out") );
+      // If select returns ok we know we either got signalled or read some data...
+      // either way we need to try to read.
+    }
 #endif /* WIN32 */
 
   int r = ::read (fnum, &b, 1);
 
   if (r == 0)
     return -1;
+
   if (java::lang::Thread::interrupted())
     {
       java::io::InterruptedIOException *iioe =
-	new java::io::InterruptedIOException
-	(JvNewStringUTF("read interrupted"));
+        new java::io::InterruptedIOException
+        (JvNewStringUTF("read interrupted"));
       iioe->bytesTransferred = r == -1 ? 0 : r;
       throw iioe;
     }
@@ -616,10 +631,12 @@ java::net::PlainSocketImpl::read(void)
     {
       // Some errors cause us to return end of stream...
       if (errno == ENOTCONN)
-	return -1;
+        return -1;
+
       // Other errors need to be signalled.
       throw new java::io::IOException (JvNewStringUTF (strerror (errno)));
     }
+
   return b & 0xFF;
 }
 
@@ -629,50 +646,55 @@ java::net::PlainSocketImpl::read(jbyteArray buffer, jint offset, jint count)
 {
   if (! buffer)
     throw new java::lang::NullPointerException;
+
   jsize bsize = JvGetArrayLength (buffer);
+
   if (offset < 0 || count < 0 || offset + count > bsize)
     throw new java::lang::ArrayIndexOutOfBoundsException;
+
   jbyte *bytes = elements (buffer) + offset;
 
 // FIXME: implement timeout support for Win32
 #ifndef WIN32
   // Do timeouts via select.
   if (timeout > 0 && fnum >= 0 && fnum < FD_SETSIZE)
-  {
-    // Create the file descriptor set.
-    fd_set read_fds;
-    FD_ZERO (&read_fds);
-    FD_SET (fnum, &read_fds);
-    // Create the timeout struct based on our internal timeout value.
-    struct timeval timeout_value;
-    timeout_value.tv_sec = timeout / 1000;
-    timeout_value.tv_usec =(timeout % 1000) * 1000;
-    // Select on the fds.
-    int sel_retval = 
-	    _Jv_select (fnum + 1, &read_fds, NULL, NULL, &timeout_value);
-    // We're only interested in the 0 return.
-    // error returns still require us to try to read 
-    // the socket to see what happened.
-    if (sel_retval == 0)
-      {
-	java::io::InterruptedIOException *iioe =
-	  new java::io::InterruptedIOException
-	  (JvNewStringUTF ("read interrupted"));
-	iioe->bytesTransferred = 0;
-	throw iioe;
-      }
-  }
+    {
+      // Create the file descriptor set.
+      fd_set read_fds;
+      FD_ZERO (&read_fds);
+      FD_SET (fnum, &read_fds);
+      // Create the timeout struct based on our internal timeout value.
+      struct timeval timeout_value;
+      timeout_value.tv_sec = timeout / 1000;
+      timeout_value.tv_usec =(timeout % 1000) * 1000;
+      // Select on the fds.
+      int sel_retval =
+        _Jv_select (fnum + 1, &read_fds, NULL, NULL, &timeout_value);
+      // We're only interested in the 0 return.
+      // error returns still require us to try to read 
+      // the socket to see what happened.
+      if (sel_retval == 0)
+        {
+          java::io::InterruptedIOException *iioe =
+            new java::io::InterruptedIOException
+            (JvNewStringUTF ("read interrupted"));
+          iioe->bytesTransferred = 0;
+          throw iioe;
+        }
+    }
 #endif
 
   // Read the socket.
   int r = ::recv (fnum, (char *) bytes, count, 0);
+
   if (r == 0)
     return -1;
+
   if (java::lang::Thread::interrupted())
     {
       java::io::InterruptedIOException *iioe =
-	new java::io::InterruptedIOException
-	(JvNewStringUTF ("read interrupted"));
+        new java::io::InterruptedIOException
+        (JvNewStringUTF ("read interrupted"));
       iioe->bytesTransferred = r == -1 ? 0 : r;
       throw iioe;
     }
@@ -680,10 +702,12 @@ java::net::PlainSocketImpl::read(jbyteArray buffer, jint offset, jint count)
     {
       // Some errors cause us to return end of stream...
       if (errno == ENOTCONN)
-	return -1;
+        return -1;
+
       // Other errors need to be signalled.
       throw new java::io::IOException (JvNewStringUTF (strerror (errno)));
     }
+
   return r;
 }
 
@@ -698,6 +722,7 @@ java::net::PlainSocketImpl::available(void)
 
 #if defined(FIONREAD)
   r = ::ioctl (fnum, FIONREAD, &num);
+
   if (r == -1 && errno == ENOTTY)
     {
       // If the ioctl doesn't work, we don't care.
@@ -718,34 +743,32 @@ java::net::PlainSocketImpl::available(void)
     {
     posix_error:
       throw new java::io::IOException(JvNewStringUTF(strerror(errno)));
-
     }
 
   // If we didn't get anything we can use select.
 
 #if defined(HAVE_SELECT)
   if (! num_set)
-  if (! num_set && fnum >= 0 && fnum < FD_SETSIZE)
-    {
-      fd_set rd;
-      FD_ZERO (&rd);
-      FD_SET (fnum, &rd);
-      struct timeval tv;
-      tv.tv_sec = 0;
-      tv.tv_usec = 0;
-      r = _Jv_select (fnum + 1, &rd, NULL, NULL, &tv);
-      if(r == -1)
-	goto posix_error;
-      num = r == 0 ? 0 : 1;
-    }
+    if (! num_set && fnum >= 0 && fnum < FD_SETSIZE)
+      {
+        fd_set rd;
+        FD_ZERO (&rd);
+        FD_SET (fnum, &rd);
+        struct timeval tv;
+        tv.tv_sec = 0;
+        tv.tv_usec = 0;
+        r = _Jv_select (fnum + 1, &rd, NULL, NULL, &tv);
+        if(r == -1)
+          goto posix_error;
+        num = r == 0 ? 0 : 1;
+      }
 #endif /* HAVE_SELECT */
 
   return (jint) num;
 #else
   throw new java::io::IOException (JvNewStringUTF ("unimplemented"));
 #endif
- }
-
+}
 
 void
 java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
@@ -764,10 +787,10 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
         val = 1; 
       else 
         {
-	  if (optID == _Jv_SO_LINGER_)
-	    val = -1;
-	  else
-	    val = 0;
+          if (optID == _Jv_SO_LINGER_)
+            val = -1;
+          else
+            val = 0;
         }
     }
   else if (_Jv_IsInstanceOf (value, &java::lang::Integer::class$))
@@ -787,28 +810,28 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
       case _Jv_TCP_NODELAY_ :
 #ifdef TCP_NODELAY
         if (::setsockopt (fnum, IPPROTO_TCP, TCP_NODELAY, (char *) &val,
-	    val_len) != 0)
-	  goto error;
+                          val_len) != 0)
+          goto error;
 #else
-        throw new java::lang::InternalError (
-          JvNewStringUTF ("TCP_NODELAY not supported"));
+        throw new java::lang::InternalError
+          (JvNewStringUTF ("TCP_NODELAY not supported"));
 #endif /* TCP_NODELAY */
         return;
 
       case _Jv_SO_KEEPALIVE_ :
         if (::setsockopt (fnum, SOL_SOCKET, SO_KEEPALIVE, (char *) &val,
-	    val_len) != 0)
-	  goto error;
-	break;
+                          val_len) != 0)
+          goto error;
+        break;
       
       case _Jv_SO_BROADCAST_ :
-        throw new java::net::SocketException (
-          JvNewStringUTF ("SO_BROADCAST not valid for TCP"));
-	break;
+        throw new java::net::SocketException
+          (JvNewStringUTF ("SO_BROADCAST not valid for TCP"));
+        break;
 	
       case _Jv_SO_OOBINLINE_ :
         if (::setsockopt (fnum, SOL_SOCKET, SO_OOBINLINE, (char *) &val,
-            val_len) != 0)
+                          val_len) != 0)
           goto error;
         break;
 
@@ -817,30 +840,34 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
         struct linger l_val;
         l_val.l_onoff = (val != -1);
         l_val.l_linger = val;
+
         if (::setsockopt (fnum, SOL_SOCKET, SO_LINGER, (char *) &l_val,
-	    sizeof(l_val)) != 0)
-	  goto error;    
+                          sizeof(l_val)) != 0)
+          goto error;    
 #else
         throw new java::lang::InternalError (
           JvNewStringUTF ("SO_LINGER not supported"));
 #endif /* SO_LINGER */
         return;
+
       case _Jv_SO_SNDBUF_ :
       case _Jv_SO_RCVBUF_ :
 #if defined(SO_SNDBUF) && defined(SO_RCVBUF)
         int opt;
         optID == _Jv_SO_SNDBUF_ ? opt = SO_SNDBUF : opt = SO_RCVBUF;
         if (::setsockopt (fnum, SOL_SOCKET, opt, (char *) &val, val_len) != 0)
-	  goto error;    
+          goto error;    
 #else
         throw new java::lang::InternalError (
           JvNewStringUTF ("SO_RCVBUF/SO_SNDBUF not supported"));
 #endif 
         return;
+
       case _Jv_SO_BINDADDR_ :
         throw new java::net::SocketException (
           JvNewStringUTF ("SO_BINDADDR: read only option"));
         return;
+
       case _Jv_IP_MULTICAST_IF_ :
         throw new java::net::SocketException (
           JvNewStringUTF ("IP_MULTICAST_IF: not valid for TCP"));
@@ -854,21 +881,23 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
       case _Jv_IP_MULTICAST_LOOP_ :
         throw new java::net::SocketException (
           JvNewStringUTF ("IP_MULTICAST_LOOP: not valid for TCP"));
-	break;
+        break;
 	
       case _Jv_IP_TOS_ :
         if (::setsockopt (fnum, SOL_SOCKET, IP_TOS, (char *) &val,
-	   val_len) != 0)
-	  goto error;    
-	break;
+                          val_len) != 0)
+          goto error;    
+        break;
 	
       case _Jv_SO_REUSEADDR_ :
         throw new java::net::SocketException (
           JvNewStringUTF ("SO_REUSEADDR: not valid for TCP"));
         return;
+
       case _Jv_SO_TIMEOUT_ :
-	timeout = val;
+        timeout = val;
         return;
+
       default :
         errno = ENOPROTOOPT;
     }
@@ -891,123 +920,129 @@ java::net::PlainSocketImpl::getOption (jint optID)
   switch (optID)
     {
 #ifdef TCP_NODELAY
-      case _Jv_TCP_NODELAY_ :
-        if (::getsockopt (fnum, IPPROTO_TCP, TCP_NODELAY, (char *) &val,
-	    &val_len) != 0)
-          goto error;
-        else
-	  return new java::lang::Boolean (val != 0);
+    case _Jv_TCP_NODELAY_ :
+      if (::getsockopt (fnum, IPPROTO_TCP, TCP_NODELAY, (char *) &val,
+                        &val_len) != 0)
+        goto error;
+      else
+        return new java::lang::Boolean (val != 0);
 #else
-        throw new java::lang::InternalError (
-          JvNewStringUTF ("TCP_NODELAY not supported"));
+      throw new java::lang::InternalError
+        (JvNewStringUTF ("TCP_NODELAY not supported"));
 #endif       
-        break;
-
-      case _Jv_SO_LINGER_ :
+      break;
+      
+    case _Jv_SO_LINGER_ :
 #ifdef SO_LINGER
-        if (::getsockopt (fnum, SOL_SOCKET, SO_LINGER, (char *) &l_val,
-	    &l_val_len) != 0)
-	  goto error;    
-        if (l_val.l_onoff)
-          return new java::lang::Integer (l_val.l_linger);
-        else
-	  return new java::lang::Boolean ((jboolean)false);
+      if (::getsockopt (fnum, SOL_SOCKET, SO_LINGER, (char *) &l_val,
+                        &l_val_len) != 0)
+        goto error;    
+ 
+      if (l_val.l_onoff)
+        return new java::lang::Integer (l_val.l_linger);
+      else
+        return new java::lang::Boolean ((jboolean)false);
 #else
-        throw new java::lang::InternalError (
-          JvNewStringUTF ("SO_LINGER not supported"));
+      throw new java::lang::InternalError
+        (JvNewStringUTF ("SO_LINGER not supported"));
 #endif
-        break;    
+      break;    
 
-      case _Jv_SO_KEEPALIVE_ :
-        if (::getsockopt (fnum, SOL_SOCKET, SO_KEEPALIVE, (char *) &val,
-	    &val_len) != 0)
-          goto error;
-        else
-	  return new java::lang::Boolean (val != 0);
+    case _Jv_SO_KEEPALIVE_ :
+      if (::getsockopt (fnum, SOL_SOCKET, SO_KEEPALIVE, (char *) &val,
+                        &val_len) != 0)
+        goto error;
+      else
+        return new java::lang::Boolean (val != 0);
 
-      case _Jv_SO_BROADCAST_ :
-        if (::getsockopt (fnum, SOL_SOCKET, SO_BROADCAST, (char *) &val,
-	   &val_len) != 0)
-	  goto error;    
-        return new java::lang::Boolean ((jboolean)val);
+    case _Jv_SO_BROADCAST_ :
+      if (::getsockopt (fnum, SOL_SOCKET, SO_BROADCAST, (char *) &val,
+                        &val_len) != 0)
+        goto error;    
+      return new java::lang::Boolean ((jboolean)val);
 	
-      case _Jv_SO_OOBINLINE_ :
-        if (::getsockopt (fnum, SOL_SOCKET, SO_OOBINLINE, (char *) &val,
-	    &val_len) != 0)
-	  goto error;    
-        return new java::lang::Boolean ((jboolean)val);
+    case _Jv_SO_OOBINLINE_ :
+      if (::getsockopt (fnum, SOL_SOCKET, SO_OOBINLINE, (char *) &val,
+                        &val_len) != 0)
+        goto error;    
+      return new java::lang::Boolean ((jboolean)val);
 	
-      case _Jv_SO_RCVBUF_ :
-      case _Jv_SO_SNDBUF_ :
+    case _Jv_SO_RCVBUF_ :
+    case _Jv_SO_SNDBUF_ :
 #if defined(SO_SNDBUF) && defined(SO_RCVBUF)
-        int opt;
-        optID == _Jv_SO_SNDBUF_ ? opt = SO_SNDBUF : opt = SO_RCVBUF;
-        if (::getsockopt (fnum, SOL_SOCKET, opt, (char *) &val, &val_len) != 0)
-	  goto error;    
-        else
-	  return new java::lang::Integer (val);
-#else
-        throw new java::lang::InternalError (
-          JvNewStringUTF ("SO_RCVBUF/SO_SNDBUF not supported"));
-#endif    
-	break;
-      case _Jv_SO_BINDADDR_:
-	// cache the local address 
-	if (localAddress == NULL)
-	  {
-	    jbyteArray laddr;
-	    if (::getsockname (fnum, (sockaddr*) &u, &addrlen) != 0)
-	      goto error;
-	    if (u.address.sin_family == AF_INET)
-	      {
-		laddr = JvNewByteArray (4);
-		memcpy (elements (laddr), &u.address.sin_addr, 4);
-	      }
-#ifdef HAVE_INET6
-            else if (u.address.sin_family == AF_INET6)
-	      {
-		laddr = JvNewByteArray (16);
-		memcpy (elements (laddr), &u.address6.sin6_addr, 16);
-	      }
-#endif
-	    else
-	      throw new java::net::SocketException (
-			      JvNewStringUTF ("invalid family"));
-	    localAddress = new java::net::InetAddress (laddr, NULL);
-	  }
-	return localAddress;
-	break;
-      case _Jv_IP_MULTICAST_IF_ :
-	throw new java::net::SocketException (
-	  JvNewStringUTF ("IP_MULTICAST_IF: not valid for TCP"));
-	break;
-	
-      case _Jv_IP_MULTICAST_IF2_ :
-	throw new java::net::SocketException (
-	  JvNewStringUTF ("IP_MULTICAST_IF2: not valid for TCP"));
-	break;
-	
-      case _Jv_IP_MULTICAST_LOOP_ :
-	throw new java::net::SocketException(
-          JvNewStringUTF ("IP_MULTICAST_LOOP: not valid for TCP"));
-	break;
-	
-      case _Jv_IP_TOS_ :
-        if (::getsockopt (fnum, SOL_SOCKET, IP_TOS, (char *) &val,
-           &val_len) != 0)
-          goto error;
+      int opt;
+      optID == _Jv_SO_SNDBUF_ ? opt = SO_SNDBUF : opt = SO_RCVBUF;
+      if (::getsockopt (fnum, SOL_SOCKET, opt, (char *) &val, &val_len) != 0)
+        goto error;    
+      else
         return new java::lang::Integer (val);
-	break;
+#else
+      throw new java::lang::InternalError
+        (JvNewStringUTF ("SO_RCVBUF/SO_SNDBUF not supported"));
+#endif    
+      break;
+    case _Jv_SO_BINDADDR_:
+      // cache the local address 
+      if (localAddress == NULL)
+        {
+          jbyteArray laddr;
+
+          if (::getsockname (fnum, (sockaddr*) &u, &addrlen) != 0)
+            goto error;
+
+          if (u.address.sin_family == AF_INET)
+            {
+              laddr = JvNewByteArray (4);
+              memcpy (elements (laddr), &u.address.sin_addr, 4);
+            }
+#ifdef HAVE_INET6
+          else if (u.address.sin_family == AF_INET6)
+            {
+              laddr = JvNewByteArray (16);
+              memcpy (elements (laddr), &u.address6.sin6_addr, 16);
+            }
+#endif
+          else
+            throw new java::net::SocketException
+              (JvNewStringUTF ("invalid family"));
+          localAddress = new java::net::InetAddress (laddr, NULL);
+        }
+
+      return localAddress;
+      break;
+    case _Jv_IP_MULTICAST_IF_ :
+      throw new java::net::SocketException
+        (JvNewStringUTF ("IP_MULTICAST_IF: not valid for TCP"));
+      break;
 	
-      case _Jv_SO_REUSEADDR_ :
-	throw new java::net::SocketException (
-	  JvNewStringUTF ("SO_REUSEADDR: not valid for TCP"));
-	break;
-      case _Jv_SO_TIMEOUT_ :
-	return new java::lang::Integer (timeout);
-	break;
-      default :
-	errno = ENOPROTOOPT;
+    case _Jv_IP_MULTICAST_IF2_ :
+      throw new java::net::SocketException
+        (JvNewStringUTF ("IP_MULTICAST_IF2: not valid for TCP"));
+      break;
+	
+    case _Jv_IP_MULTICAST_LOOP_ :
+      throw new java::net::SocketException
+        (JvNewStringUTF ("IP_MULTICAST_LOOP: not valid for TCP"));
+      break;
+	
+    case _Jv_IP_TOS_ :
+      if (::getsockopt (fnum, SOL_SOCKET, IP_TOS, (char *) &val,
+                        &val_len) != 0)
+        goto error;
+      return new java::lang::Integer (val);
+      break;
+	
+    case _Jv_SO_REUSEADDR_ :
+      throw new java::net::SocketException
+        (JvNewStringUTF ("SO_REUSEADDR: not valid for TCP"));
+      break;
+
+    case _Jv_SO_TIMEOUT_ :
+      return new java::lang::Integer (timeout);
+      break;
+
+    default :
+      errno = ENOPROTOOPT;
     }
 
  error:

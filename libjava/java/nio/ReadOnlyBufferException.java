@@ -1,4 +1,4 @@
-/* ClosedChannelException.java -- 
+/* ReadOnlyBufferException.java -- 
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,20 +35,18 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-package java.nio.channels;
-
-import java.io.IOException;
+package java.nio;
 
 /**
  * @author Michael Koch
  * @since 1.4
  */
-public class ClosedChannelException extends IOException
+public class ReadOnlyBufferException extends UnsupportedOperationException
 {
   /**
    * Creates the exception
    */
-  public ClosedChannelException()
+  public ReadOnlyBufferException ()
   {
   }
 }
