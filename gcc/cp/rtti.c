@@ -76,31 +76,31 @@ Boston, MA 02111-1307, USA.  */
 /* A varray of all tinfo decls that haven't yet been emitted. */
 varray_type unemitted_tinfo_decls;
 
-static tree build_headof PARAMS((tree));
-static tree ifnonnull PARAMS((tree, tree));
-static tree tinfo_name PARAMS((tree));
-static tree build_dynamic_cast_1 PARAMS((tree, tree));
-static tree throw_bad_cast PARAMS((void));
-static tree throw_bad_typeid PARAMS((void));
-static tree get_tinfo_decl_dynamic PARAMS((tree));
-static tree get_tinfo_ptr PARAMS((tree));
-static bool typeid_ok_p PARAMS((void));
-static int qualifier_flags PARAMS((tree));
+static tree build_headof (tree);
+static tree ifnonnull (tree, tree);
+static tree tinfo_name (tree);
+static tree build_dynamic_cast_1 (tree, tree);
+static tree throw_bad_cast (void);
+static tree throw_bad_typeid (void);
+static tree get_tinfo_decl_dynamic (tree);
+static tree get_tinfo_ptr (tree);
+static bool typeid_ok_p (void);
+static int qualifier_flags (tree);
 static bool target_incomplete_p (tree);
-static tree tinfo_base_init PARAMS((tree, tree));
-static tree generic_initializer PARAMS((tree, tree));
+static tree tinfo_base_init (tree, tree);
+static tree generic_initializer (tree, tree);
 static tree ptr_initializer (tree, tree, bool *);
 static tree ptm_initializer (tree, tree, bool *);
-static tree dfs_class_hint_mark PARAMS ((tree, void *));
-static tree dfs_class_hint_unmark PARAMS ((tree, void *));
-static int class_hint_flags PARAMS((tree));
-static tree class_initializer PARAMS((tree, tree, tree));
-static tree create_pseudo_type_info PARAMS((const char *, int, ...));
-static tree get_pseudo_ti_init PARAMS ((tree, tree, bool *));
-static tree get_pseudo_ti_desc PARAMS((tree));
-static void create_tinfo_types PARAMS((void));
+static tree dfs_class_hint_mark (tree, void *);
+static tree dfs_class_hint_unmark (tree, void *);
+static int class_hint_flags (tree);
+static tree class_initializer (tree, tree, tree);
+static tree create_pseudo_type_info (const char *, int, ...);
+static tree get_pseudo_ti_init (tree, tree, bool *);
+static tree get_pseudo_ti_desc (tree);
+static void create_tinfo_types (void);
 static bool typeinfo_in_lib_p (tree);
-static bool unemitted_tinfo_decl_p PARAMS((tree));
+static bool unemitted_tinfo_decl_p (tree);
 
 static int doing_runtime = 0;
 
