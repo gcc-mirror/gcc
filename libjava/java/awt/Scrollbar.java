@@ -42,7 +42,6 @@ import java.awt.peer.ScrollbarPeer;
 import java.awt.peer.ComponentPeer;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.AdjustmentEvent;
-import java.io.Serializable;
 import javax.accessibility.Accessible;
 
 /**
@@ -52,8 +51,7 @@ import javax.accessibility.Accessible;
   * @author Tom Tromey <tromey@cygnus.com>
   */
 public class Scrollbar extends Component implements Accessible,
-                                                    Adjustable,
-                                                    Serializable
+                                                    Adjustable
 {
 
 // FIXME: Serialization readObject/writeObject

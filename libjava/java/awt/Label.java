@@ -40,7 +40,6 @@ package java.awt;
 
 import java.awt.peer.LabelPeer;
 import java.awt.peer.ComponentPeer;
-import java.io.Serializable;
 import javax.accessibility.Accessible;
 
 /**
@@ -50,7 +49,7 @@ import javax.accessibility.Accessible;
   * @author Aaron M. Renn (arenn@urbanophile.com)
   * @author Tom Tromey <tromey@cygnus.com>
   */
-public class Label extends Component implements Serializable, Accessible
+public class Label extends Component implements Accessible
 {
 
 /*
@@ -225,7 +224,7 @@ setText(String text)
 /*************************************************************************/
 
 /**
-  * Notifies this lable that it has been added to a container, causing
+  * Notifies this label that it has been added to a container, causing
   * the peer to be created.  This method is called internally by the AWT
   * system.
   */

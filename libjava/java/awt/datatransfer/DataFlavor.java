@@ -508,7 +508,7 @@ setHumanPresentableName(String humanPresentableName)
   *
   * @exception NullPointerException If mimeType is null.
   */
-public final boolean
+public boolean
 isMimeTypeEqual(String mimeType)
 {
   // FIXME: Need to handle default attributes and parameters
@@ -660,8 +660,7 @@ isFlavorJavaFileListType()
   * the Cloneable interface. Subclasses that override the clone method can also
   * throw this exception to indicate that an instance cannot be cloned.
   */
-public Object
-clone()
+public Object clone () throws CloneNotSupportedException
 {
   try
     {
@@ -975,10 +974,8 @@ selectBestTextFlavor(DataFlavor[] availableFlavors)
   * @exception UnsupportedEncodingException if the "charset" isn't supported
   * on this platform.
   */
-public Reader
-getReaderForText(Transferable transferable) throws UnsupportedFlavorException,
-                                                   IOException,
-                                                   UnsupportedEncodingException
+public Reader getReaderForText(Transferable transferable)
+  throws UnsupportedFlavorException, IOException
 {
     if (!transferable.isDataFlavorSupported(this))
         throw new UnsupportedFlavorException(this);

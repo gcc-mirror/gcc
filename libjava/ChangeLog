@@ -1,5 +1,31 @@
 2003-02-13  Michael Koch  <konqueror@gmx.de>
  
+	* java/awt/Label.java
+	(Label): Don't implement Serializable directly.
+	(addNotify): Fixed typo in documentation.
+	* java/awt/List.java
+	(List): Don't implement Serializable directly.
+	* java/awt/PopupMenu.java
+	(PopupMenu): Don't implement Serializable directly.
+	* java/awt/ScrollPane.java
+	(ScrollPane): Don't implement Serializable directly.
+	* java/awt/Scrollbar.java
+	(Scrollbar): Don't implement Serializable directly.
+	* java/awt/TextArea.java
+	(preferredSize): Fixed method arguments.
+	* java/awt/TextField.java
+	(TextField): Don't implement Serializable directly.
+	* java/awt/color/ICC_ColorSpace.java
+	(fromCIOXYZ): Documentation added.
+	(getMinValue): Documentation added.
+	(getMaxValue): Documentation added.
+	* java/awt/datatransfer/DataFlavor.java
+	(isMimeTypeEqual): May not be final.
+	(clone): Throws CloneNotSupportedException.
+	(getReaderForText): Don't throws UnsupportedEncodingException.
+
+2003-02-13  Michael Koch  <konqueror@gmx.de>
+ 
 	* gnu/java/awt/peer/gtk/GdkGraphics.java
 	(drawString): New stubbed method.
 	* java/awt/Graphics.java

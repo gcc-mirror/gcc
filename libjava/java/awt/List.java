@@ -54,7 +54,7 @@ import javax.accessibility.Accessible;
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
 public class List extends Component
-  implements ItemSelectable, Serializable, Accessible
+  implements ItemSelectable, Accessible
 {
 
 /*

@@ -143,6 +143,13 @@ public class ICC_ColorSpace extends ColorSpace
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * Transforms a color value assumed to be in the CS_CIEXYZ conversion color
+   * space into this ColorSpace.
+   *
+   * @exception ArrayIndexOutOfBoundsException If array length is not at
+   * least 3.
+   */
   public float[] fromCIEXYZ(float[] colorvalue)
   {
     // FIXME: Not implemented
@@ -150,6 +157,12 @@ public class ICC_ColorSpace extends ColorSpace
   }
 
   /**
+   * Returns the minimum normalized color component value for the specified
+   * component.
+   *
+   * @exception IllegalArgumentException If component is less than 0 or greater
+   * than numComponents - 1.
+   *
    * @since 1.4
    */
   public float getMinValue(int idx)
@@ -162,6 +175,12 @@ public class ICC_ColorSpace extends ColorSpace
   }
 
   /**
+   * Returns the maximum normalized color component value for the specified
+   * component.
+   *
+   * @exception IllegalArgumentException If component is less than 0 or greater
+   * than numComponents - 1.
+   *
    * @since 1.4
    */
   public float getMaxValue(int idx)

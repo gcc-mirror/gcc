@@ -49,7 +49,7 @@ import java.awt.peer.ComponentPeer;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class TextField extends TextComponent implements java.io.Serializable
+public class TextField extends TextComponent
 {
 
 /*
