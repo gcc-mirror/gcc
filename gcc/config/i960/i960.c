@@ -215,6 +215,19 @@ arith_operand (op, mode)
   return (register_operand (op, mode) || literal (op, mode));
 }
 
+/* Return truth value of whether OP can be used as an operands in a three
+   address logic insn, possibly complementing OP, of mode MODE.  */
+
+int
+logic_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (register_operand (op, mode)
+	  || (GET_CODE (op) == CONST_INT
+	      && INTVAL(op) >= -32 && INTVAL(op) < 32));
+}
+
 /* Return true if OP is a register or a valid floating point literal.  */
 
 int
@@ -1638,10 +1651,13 @@ i960_print_operand (file, x, code)
     }
   else if (rtxcode == CONST_INT)
     {
-      if (INTVAL (x) > 9999 || INTVAL (x) < -999)
-	fprintf (file, "0x%x", INTVAL (x));
+      HOST_WIDE_INT val = INTVAL (x);
+      if (code == 'C')
+	val = ~val;
+      if (val > 9999 || val < -999)
+	fprintf (file, "0x%x", val);
       else
-	fprintf (file, "%d", INTVAL (x));
+	fprintf (file, "%d", val);
       return;
     }
   else if (rtxcode == CONST_DOUBLE)
