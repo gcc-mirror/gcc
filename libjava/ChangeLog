@@ -1,10 +1,16 @@
+2001-04-27  Tom Tromey  <tromey@redhat.com>
+
+	* jni.cc (_Jv_JNI_GetPrimitiveArrayRegion): Fixed bounds
+	checking.
+	(_Jv_JNI_SetPrimitiveArrayRegion): Likewise.
+
 2001-04-27  Martin Kahlert  <martin.kahlert@infineon.com>
 
 	* include/jni.h (struct JNINativeInterface): Fixed types in
 	Get/Set*ArrayRegion declarations.
 	(class _Jv_JNIEnv): Likewise.
 
-2001-04-25  Bryce McKinlay  <bryce@albatross.co.nz>
+2001-04-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in: Obtain THREADS with `gcc -v'.
 	* configure: Rebuilt.
