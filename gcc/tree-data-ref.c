@@ -117,8 +117,6 @@ array_base_name_differ_p (struct data_reference *a,
   ta = TREE_TYPE (base_a);
   tb = TREE_TYPE (base_b);
   
-  gcc_assert (!POINTER_TYPE_P (ta) && !POINTER_TYPE_P (tb));
-
   /* Determine if same base.  Example: for the array accesses
      a[i], b[i] or pointer accesses *a, *b, bases are a, b.  */
   if (base_a == base_b)
