@@ -2726,7 +2726,12 @@ cleanup_subreg_operands (insn)
   extract_insn_cached (insn);
   for (i = 0; i < recog_data.n_operands; i++)
     {
-      if (GET_CODE (recog_data.operand[i]) == SUBREG)
+      /* The following test cannot use recog_data.operand when tesing
+	 for a SUBREG: the underlying object might have been changed
+	 already if we are inside a match_operator expression that
+	 matches the else clause.  Instead we test the underlying
+	 expression directly.  */
+      if (GET_CODE (*recog_data.operand_loc[i]) == SUBREG)
 	recog_data.operand[i] = alter_subreg (recog_data.operand_loc[i]);
       else if (GET_CODE (recog_data.operand[i]) == PLUS
 	       || GET_CODE (recog_data.operand[i]) == MULT
