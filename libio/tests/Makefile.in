@@ -1,4 +1,4 @@
-# Copyright (C) 1993 Free Software Foundation
+# Copyright (C) 1993, 1998 Free Software Foundation
 # 
 # This file is part of the GNU IO Library.  This library is free
 # software; you can redistribute it and/or modify it under the
@@ -41,9 +41,7 @@ IOSTDIOLIB = ../libio.a ../../libiberty/libiberty.a
 DEPEND_SOURCES = $(srcdir)/*.C
 
 .PHONY: check check-old check-iostream check-stdio
-check:
-
-check-old: check-iostream check-iostdio
+check: $(CHECK)
 
 
 # These are tests written in C++, that test the iostream facility.

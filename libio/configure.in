@@ -2,7 +2,11 @@
 # necessary for a configure script to process the program in
 # this directory.  For more information, look at ../configure.
 
-configdirs="tests dbz stdio testsuite"
+if [ -d ${srcdir}/../gcc ] ; then
+  configdirs="tests dbz stdio testsuite"
+else
+  configdirs="tests dbz stdio"
+fi
 srctrigger=libioP.h
 srcname="input/output library"
 package_makefile_frag=Make.pack
@@ -98,7 +102,7 @@ MOSTLYCLEAN='*.o pic stamp-picdir core iostream.list'
 DISTCLEAN='config.status Makefile *~ Make.pack target-mkfrag multilib.out'
 CLEAN='_G_config.h *.a'
 INFO_FILES=iostream
-if [ -n "${with_cross_host}" ] ; then
+if [ -n "${with_cross_host}" -a -d ${srcdir}/../gcc ] ; then
     CHECK_SUBDIRS=testsuite
 fi
 (. ${srcdir}/config.shared) >${package_makefile_frag}
