@@ -1,3 +1,15 @@
+1999-04-20  Andrew Haley  <aph@cygnus.com>
+
+	* include/sparc-signal.h: new file.
+	* configure.in: include/sparc-signal.h added.
+	* configure: regenerated.
+	* prims.cc (JvRunMain): signal handling code rewritten to be more
+	portable.
+	(catch_segv): ditto.
+	(catch_fpe): ditto.
+	* include/i386-signal.h: reorganized.
+	* include/default-signal.h: reorganized.
+
 1999-04-19  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/natSystem.cc (init_properties): Only declare pwd_entry

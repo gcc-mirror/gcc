@@ -52,6 +52,26 @@ static java::lang::OutOfMemoryError *no_memory;
 
 
 
+#ifdef HANDLE_SEGV
+static java::lang::NullPointerException *nullp;
+SIGNAL_HANDLER (catch_segv)
+{
+  MAKE_THROW_FRAME;
+  _Jv_Throw (nullp);
+}
+#endif
+
+#ifdef HANDLE_FPE
+static java::lang::ArithmeticException *arithexception;
+SIGNAL_HANDLER (catch_fpe)
+{
+  MAKE_THROW_FRAME;
+  _Jv_Throw (arithexception);
+}
+#endif
+
+
+
 jboolean
 _Jv_equalUtf8Consts (Utf8Const* a, Utf8Const *b)
 {
@@ -426,32 +446,6 @@ _Jv_NewMultiArray (jclass array_type, jint dimensions, ...)
 
 
 
-#ifdef HANDLE_SEGV 
-static java::lang::NullPointerException *nullp;
-
-static void
-catch_segv (int dummy)
-{
-  MAKE_THROW_FRAME(dummy);
-  // Don't run `new' in a signal handler, so we always throw the same
-  // exception.
-  _Jv_Throw (nullp);
-}
-#endif
-
-#ifdef HANDLE_FPE
-static java::lang::ArithmeticException *arithexception;
-
-static void
-catch_fpe (int dummy)
-{
-  MAKE_THROW_FRAME(dummy);
-  // Don't run `new' in a signal handler, so we always throw the same
-  // exception.
-  _Jv_Throw (arithexception);
-}
-#endif
-
 class _Jv_PrimClass : public java::lang::Class
 {
 public:
@@ -572,27 +566,8 @@ static java::lang::Thread *main_thread;
 void
 JvRunMain (jclass klass, int argc, const char **argv)
 {
-#ifdef HANDLE_SEGV 
-  {
-    nullp = new java::lang::NullPointerException ();    
-    struct sigaction act;
-    act.sa_handler = catch_segv;
-    sigemptyset (&act.sa_mask);
-    act.sa_flags = 0;
-    sigaction (SIGSEGV, &act, NULL);
-  }
-#endif
-  
-#ifdef HANDLE_FPE
-  { 
-    arithexception = new java::lang::ArithmeticException ();
-    struct sigaction act;
-    act.sa_handler = catch_fpe;
-    sigemptyset (&act.sa_mask);
-    act.sa_flags = 0;
-    sigaction (SIGFPE, &act, NULL);
-  }
-#endif
+  INIT_SEGV;
+  INIT_FPE;
 
   no_memory = new java::lang::OutOfMemoryError;
 

@@ -14,5 +14,8 @@ details.  */
 #undef HANDLE_SEGV
 #undef HANDLE_FPE
 
+#define INIT_SEGV   do {} while (0)
+#define INIT_FPE   do {} while (0)
+
 #endif /* JAVA_SIGNAL_H */
   
