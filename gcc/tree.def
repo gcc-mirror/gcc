@@ -742,6 +742,16 @@ DEFTREECODE (EXIT_EXPR, "exit_expr", 's', 1)
    The type should be void and the value should be ignored.  */
 DEFTREECODE (LOOP_EXPR, "loop_expr", 's', 1)
 
+/* A labeled block. Operand 0 is the label that will be generated to
+   mark the end of the block.
+   Operand 1 is the labeled block body.  */
+DEFTREECODE (LABELED_BLOCK_EXPR, "labeled_block_expr", 'e', 2)
+
+/* Exit a labeled block, possibly returning a value.  Operand 0 is a
+   LABELED_BLOCK_EXPR to exit.  Operand 1 is the value to return. It
+   may be left null.  */
+DEFTREECODE (EXIT_BLOCK_EXPR, "exit_block_expr", 'e', 2)
+
 /* Annotates a tree node (usually an expression) with source location
    information: a file name (EXPR_WFL_FILENAME);  a line number
    (EXPR_WFL_LINENO); and column number (EXPR_WFL_COLNO).  It is
