@@ -546,6 +546,21 @@ the @code{libgcj} bytecode interpreter to load the class from the standard
 classpath.  This process can be controlled to some degree via the
 @code{gnu.gcj.runtime.VMClassLoader.library_control} property;
 @xref{libgcj Runtime Properties}.
+
+@item
+
+@code{libgcj} includes a special @samp{gcjlib} URL type.  A URL of
+this form is like a @code{jar} URL, and looks like
+@samp{gcjlib:/path/to/shared/library.so!/path/to/resource}.  An access
+to one of these URLs causes the shared library to be @code{dlopen()}d,
+and then the resource is looked for in that library.  These URLs are
+most useful when used in conjunction with @code{java.net.URLClassLoader}.
+Note that, due to implementation limitations, currently any such URL
+can be accessed by only one class loader, and libraries are never
+unloaded.  This means some care must be exercised to make sure that
+a @code{gcjlib} URL is not accessed by more than one class loader at once.
+In a future release this limitation will be lifted, and such
+libraries will be mapped privately.
 @end itemize
 
 @node Invoking gcjh

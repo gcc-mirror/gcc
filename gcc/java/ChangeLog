@@ -1,3 +1,7 @@
+2003-08-28  Tom Tromey  <tromey@redhat.com>
+
+	* gcj.texi (Extensions): Document gcjlib URLs.
+
 2003-08-20  Tom Tromey  <tromey@redhat.com>
 
 	* gcj.texi (Extensions): Added xref.
