@@ -1,6 +1,7 @@
 2001-03-14  Mark Mitchell  <mark@codesourcery.com>
 
-	* class.c (build_static_field_ref): Likewise.
+	* class.c (build_static_field_ref): Use COPY_DECL_RTL,
+	DECL_RTL_SET_P, etc.
 	(make_method_value): Likewise.
 	(get_dispatch_table): Likewise.
 
