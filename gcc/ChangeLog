@@ -1,3 +1,8 @@
+2002-07-31  Graham Stott  <grahams@btinternet.com>
+
+	* config/stormy16/stormy16.h (BSS_SECTION_ASM_OP): Add missing 
+	.section prefix.
+
 2002-07-31  Stan Shebs  <shebs@apple.com>
 
 	* config.gcc (i[34567]86-*-darwin*): New configuration.
