@@ -1,5 +1,12 @@
 2003-01-20  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.c (const_costs): Remove a warning.
+	(output_plussi): Likewise.
+	(compute_plussi_length): Likewise.
+	(compute_plussi_cc): Likewise.
+
+2003-01-20  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md (addsi_h8300): Remove the last
 	alternative.
 
