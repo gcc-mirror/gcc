@@ -44,8 +44,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Global variables for machine-dependent things.  */
 
-/* Says what cpu we're compiling for.  */
-enum cpu_type sparc_cpu_type;
+/* Says what architecture we're compiling for.  */
+enum arch_type sparc_arch_type;
 
 /* Size of frame.  Need to know this to emit return insns from leaf procedures.
    ACTUAL_FSIZE is set by compute_frame_size() which is called during the
@@ -2620,7 +2620,7 @@ sparc_init_modes ()
 {
   int i;
 
-  sparc_cpu_type = TARGET_V9 ? CPU_64BIT : CPU_32BIT;
+  sparc_arch_type = TARGET_V9 ? ARCH_64BIT : ARCH_32BIT;
 
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {
@@ -4624,4 +4624,72 @@ sparc_flat_eligible_for_epilogue_delay (trial, slot)
       && ! reg_mentioned_p (frame_pointer_rtx, PATTERN (trial)))
     return 1;
   return 0;
+}
+
+/* Adjust the cost of a scheduling dependency.  Return the new cost of
+   a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
+
+int
+supersparc_adjust_cost (insn, link, dep_insn, cost)
+     rtx insn;
+     rtx link;
+     rtx dep_insn;
+     int cost;
+{
+  enum attr_type insn_type;
+
+  if (! recog_memoized (insn))
+    return 0;
+
+  insn_type = get_attr_type (insn);
+
+  if (REG_NOTE_KIND (link) == 0)
+    {
+      /* Data dependency; DEP_INSN writes a register that INSN reads some
+	 cycles later.  */
+
+      /* if a load, then the dependence must be on the memory address;
+	 add an extra 'cycle'.  Note that the cost could be two cycles
+	 if the reg was written late in an instruction group; we can't tell
+	 here.  */
+      if (insn_type == TYPE_LOAD || insn_type == TYPE_FPLOAD)
+	return cost + 3;
+
+      /* Get the delay only if the address of the store is the dependence.  */
+      if (insn_type == TYPE_STORE || insn_type == TYPE_FPSTORE)
+	{
+	  rtx pat = PATTERN(insn);
+	  rtx dep_pat = PATTERN (dep_insn);
+
+	  if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET)
+	    return cost;  /* This shouldn't happen!  */
+
+	  /* The dependency between the two instructions was on the data that
+	     is being stored.  Assume that this implies that the address of the
+	     store is not dependent.  */
+	  if (rtx_equal_p (SET_DEST (dep_pat), SET_SRC (pat)))
+	    return cost;
+
+	  return cost + 3;  /* An approximation.  */
+	}
+
+      /* A shift instruction cannot receive its data from an instruction
+	 in the same cycle; add a one cycle penalty.  */
+      if (insn_type == TYPE_SHIFT)
+	return cost + 3;   /* Split before cascade into shift.  */
+    }
+  else
+    {
+      /* Anti- or output- dependency; DEP_INSN reads/writes a register that
+	 INSN writes some cycles later.  */
+
+      /* These are only significant for the fpu unit; writing a fp reg before
+         the fpu has finished with it stalls the processor.  */
+
+      /* Reusing an integer register causes no problems.  */
+      if (insn_type == TYPE_IALU || insn_type == TYPE_SHIFT)
+	return 0;
+    }
+	
+  return cost;
 }
