@@ -2807,7 +2807,7 @@ done
 
 echo $ac_n "checking for working mmap from /dev/zero""... $ac_c" 1>&6
 echo "configure:2810: checking for working mmap from /dev/zero" >&5
-if eval "test \"`echo '$''{'ac_cv_func_mmap_zero'+set}'`\" = set"; then
+if eval "test \"`echo '$''{'ac_cv_func_mmap_anywhere'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   if test "$cross_compiling" = yes; then
@@ -2900,7 +2900,7 @@ fi
 
 fi
 
-echo "$ac_t""$ac_cv_func_mmap_zero" 1>&6
+echo "$ac_t""$ac_cv_func_mmap_anywhere" 1>&6
 if test $ac_cv_func_mmap_anywhere = yes; then
   cat >> confdefs.h <<\EOF
 #define HAVE_MMAP_ANYWHERE 1
