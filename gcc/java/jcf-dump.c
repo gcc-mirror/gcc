@@ -874,7 +874,8 @@ static const struct option options[] =
   { "verbose",       no_argument,       NULL, 'v' },
   { "version",       no_argument,       NULL, OPT_VERSION },
   { "javap",         no_argument,       NULL, OPT_JAVAP },
-  { "print-main",    no_argument,      &flag_print_main, 1 },
+  { "print-main",    no_argument,       &flag_print_main, 1 },
+  { "print-constants", no_argument,     &flag_print_constant_pool, 1 },
   { NULL,            no_argument,       NULL, 0 }
 };
 

@@ -1,5 +1,8 @@
 2004-03-16  Per Bothner  <per@bothner.com>
 
+	* jcf-jump.c (options):  New --print-constants option.
+	* gcj.texi (Invoking jcf-dump):  Document --print-constants.
+
 	* jcf-dump.c (flag_print_constant_pool):  Default to off.
 	(print_constant_terse_with_index):  New helper function.
 	(various places):  Check flag_print_constant_pool where missing.
