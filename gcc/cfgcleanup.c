@@ -187,6 +187,7 @@ try_simplify_condjump (basic_block cbranch_block)
   /* Delete the block with the unconditional jump, and clean up the mess.  */
   delete_basic_block (jump_block);
   tidy_fallthru_edge (cbranch_jump_edge);
+  update_forwarder_flag (cbranch_block);
 
   return true;
 }
