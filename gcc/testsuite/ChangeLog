@@ -1,3 +1,8 @@
+2002-05-12  David S. Miller  <davem@redhat.com>
+
+	* gcc.c-torture/execute/conversion.c (ldnear): Use long double
+	types.
+
 2002-05-10  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.c-torture/execute/20020510-1.c: New test case.

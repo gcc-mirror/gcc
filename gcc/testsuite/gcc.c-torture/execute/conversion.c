@@ -65,9 +65,9 @@ dnear (double x, double y)
 }
 
 int
-ldnear (double x, double y)
+ldnear (long double x, long double y)
 {
-  double t = x - y;
+  long double t = x - y;
   return t == 0 || x / t > 100000000000000000000000000000000.0;
 }
 
