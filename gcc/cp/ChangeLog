@@ -1,3 +1,8 @@
+1999-03-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (OBJS): Don't mention hash.o.
+	(OBJDEPS): Likewise.
+
 1999-03-23  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (finish_file): Set at_eof to 2 after expanding ctors.
@@ -60,6 +65,7 @@
 	* decl.c (start_function): Suppress normal linkage heuristics
 	for #pragma interface under MULTIPLE_SYMBOL_SPACES.
 
+>>>>>>> 1.947
 1999-03-19  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* Make-lang.in: ($(INTL_TARGETS)): depend on cp/parse.c

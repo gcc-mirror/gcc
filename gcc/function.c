@@ -56,6 +56,7 @@ Boston, MA 02111-1307, USA.  */
 #include "basic-block.h"
 #include "obstack.h"
 #include "toplev.h"
+#include "hash.h"
 
 #if !defined PREFERRED_STACK_BOUNDARY && defined STACK_BOUNDARY
 #define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
@@ -451,6 +452,13 @@ struct fixup_replacement
   struct fixup_replacement *next;
 };
    
+struct insns_for_mem_entry {
+  /* The KEY in HE will be a MEM.  */
+  struct hash_entry he;
+  /* These are the INSNS which reference the MEM.  */
+  rtx insns;
+};
+
 /* Forward declarations.  */
 
 static rtx assign_outer_stack_local PROTO ((enum machine_mode, HOST_WIDE_INT,
@@ -460,12 +468,14 @@ static rtx assign_stack_temp_for_type PROTO ((enum machine_mode, HOST_WIDE_INT,
 static struct temp_slot *find_temp_slot_from_address  PROTO((rtx));
 static void put_reg_into_stack	PROTO((struct function *, rtx, tree,
 				       enum machine_mode, enum machine_mode,
-				       int, int, int));
-static void fixup_var_refs	PROTO((rtx, enum machine_mode, int));
+				       int, int, int, 
+				       struct hash_table *));
+static void fixup_var_refs	PROTO((rtx, enum machine_mode, int, 
+				       struct hash_table *));
 static struct fixup_replacement
   *find_fixup_replacement	PROTO((struct fixup_replacement **, rtx));
 static void fixup_var_refs_insns PROTO((rtx, enum machine_mode, int,
-					rtx, int));
+					rtx, int, struct hash_table *));
 static void fixup_var_refs_1	PROTO((rtx, enum machine_mode, rtx *, rtx,
 				       struct fixup_replacement **));
 static rtx fixup_memory_subreg	PROTO((rtx, rtx, int));
@@ -492,8 +502,17 @@ static int all_blocks		PROTO((tree, tree *));
 static int *record_insns	PROTO((rtx));
 static int contains		PROTO((rtx, int *));
 #endif /* HAVE_prologue || HAVE_epilogue */
-static void put_addressof_into_stack PROTO((rtx));
-static void purge_addressof_1	PROTO((rtx *, rtx, int, int));
+static void put_addressof_into_stack PROTO((rtx, struct hash_table *));
+static void purge_addressof_1	PROTO((rtx *, rtx, int, int, 
+				       struct hash_table *));
+static struct hash_entry *insns_for_mem_newfunc PROTO((struct hash_entry *,
+						       struct hash_table *,
+						       hash_table_key));
+static unsigned long insns_for_mem_hash PROTO ((hash_table_key));
+static boolean insns_for_mem_comp PROTO ((hash_table_key, hash_table_key));
+static int insns_for_mem_walk   PROTO ((rtx *, void *));
+static void compute_insns_for_mem PROTO ((rtx, rtx, struct hash_table *));
+
 
 /* Pointer to chain of `struct function' for containing functions.  */
 struct function *outer_function_chain;
@@ -683,7 +702,8 @@ pop_function_context_from (context)
   /* Finish doing put_var_into_stack for any of our variables
      which became addressable during the nested function.  */
   for (queue = p->fixup_var_refs_queue; queue; queue = queue->next)
-    fixup_var_refs (queue->modified, queue->promoted_mode, queue->unsignedp);
+    fixup_var_refs (queue->modified, queue->promoted_mode,
+		    queue->unsignedp, 0);
 
   free (p);
 
@@ -1569,8 +1589,8 @@ put_var_into_stack (decl)
 	put_reg_into_stack (function, reg, TREE_TYPE (decl),
 			    promoted_mode, decl_mode,
 			    TREE_SIDE_EFFECTS (decl), 0,
-			    TREE_USED (decl)
-			    || DECL_INITIAL (decl) != 0);
+			    TREE_USED (decl) || DECL_INITIAL (decl) != 0,
+			    0);
     }
   else if (GET_CODE (reg) == CONCAT)
     {
@@ -1582,17 +1602,21 @@ put_var_into_stack (decl)
       /* Since part 0 should have a lower address, do it second.  */
       put_reg_into_stack (function, XEXP (reg, 1), part_type, part_mode,
 			  part_mode, TREE_SIDE_EFFECTS (decl), 0,
-			  TREE_USED (decl) || DECL_INITIAL (decl) != 0);
+			  TREE_USED (decl) || DECL_INITIAL (decl) != 0,
+			  0);
       put_reg_into_stack (function, XEXP (reg, 0), part_type, part_mode,
 			  part_mode, TREE_SIDE_EFFECTS (decl), 0,
-			  TREE_USED (decl) || DECL_INITIAL (decl) != 0);
+			  TREE_USED (decl) || DECL_INITIAL (decl) != 0,
+			  0);
 #else
       put_reg_into_stack (function, XEXP (reg, 0), part_type, part_mode,
 			  part_mode, TREE_SIDE_EFFECTS (decl), 0,
-			  TREE_USED (decl) || DECL_INITIAL (decl) != 0);
+			  TREE_USED (decl) || DECL_INITIAL (decl) != 0,
+			  0);
       put_reg_into_stack (function, XEXP (reg, 1), part_type, part_mode,
 			  part_mode, TREE_SIDE_EFFECTS (decl), 0,
-			  TREE_USED (decl) || DECL_INITIAL (decl) != 0);
+			  TREE_USED (decl) || DECL_INITIAL (decl) != 0,
+			  0);
 #endif
 
       /* Change the CONCAT into a combined MEM for both parts.  */
@@ -1628,7 +1652,7 @@ put_var_into_stack (decl)
 
 static void
 put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
-		    original_regno, used_p)
+		    original_regno, used_p, ht)
      struct function *function;
      rtx reg;
      tree type;
@@ -1636,6 +1660,7 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
      int volatile_p;
      int original_regno;
      int used_p;
+     struct hash_table *ht;
 {
   rtx new = 0;
   int regno = original_regno;
@@ -1698,14 +1723,15 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
     }
   else if (used_p)
     /* Variable is local; fix it up now.  */
-    fixup_var_refs (reg, promoted_mode, TREE_UNSIGNED (type));
+    fixup_var_refs (reg, promoted_mode, TREE_UNSIGNED (type), ht);
 }
 
 static void
-fixup_var_refs (var, promoted_mode, unsignedp)
+fixup_var_refs (var, promoted_mode, unsignedp, ht)
      rtx var;
      enum machine_mode promoted_mode;
      int unsignedp;
+     struct hash_table *ht;
 {
   tree pending;
   rtx first_insn = get_insns ();
@@ -1713,14 +1739,18 @@ fixup_var_refs (var, promoted_mode, unsignedp)
   tree rtl_exps = rtl_expr_chain;
 
   /* Must scan all insns for stack-refs that exceed the limit.  */
-  fixup_var_refs_insns (var, promoted_mode, unsignedp, first_insn, stack == 0);
+  fixup_var_refs_insns (var, promoted_mode, unsignedp, first_insn, 
+			stack == 0, ht);
+  /* If there's a hash table, it must record all uses of VAR.  */
+  if (ht)
+    return;
 
   /* Scan all pending sequences too.  */
   for (; stack; stack = stack->next)
     {
       push_to_sequence (stack->first);
       fixup_var_refs_insns (var, promoted_mode, unsignedp,
-			    stack->first, stack->next != 0);
+			    stack->first, stack->next != 0, 0);
       /* Update remembered end of sequence
 	 in case we added an insn at the end.  */
       stack->last = get_last_insn ();
@@ -1734,14 +1764,16 @@ fixup_var_refs (var, promoted_mode, unsignedp)
       if (seq != const0_rtx && seq != 0)
 	{
 	  push_to_sequence (seq);
-	  fixup_var_refs_insns (var, promoted_mode, unsignedp, seq, 0);
+	  fixup_var_refs_insns (var, promoted_mode, unsignedp, seq, 0,
+				0);
 	  end_sequence ();
 	}
     }
 
   /* Scan the catch clauses for exception handling too.  */
   push_to_sequence (catch_clauses);
-  fixup_var_refs_insns (var, promoted_mode, unsignedp, catch_clauses, 0);
+  fixup_var_refs_insns (var, promoted_mode, unsignedp, catch_clauses,
+			0, 0);
   end_sequence ();
 }
 
@@ -1777,14 +1809,26 @@ find_fixup_replacement (replacements, x)
    main chain of insns for the current function.  */
 
 static void
-fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
+fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel, ht)
      rtx var;
      enum machine_mode promoted_mode;
      int unsignedp;
      rtx insn;
      int toplevel;
+     struct hash_table *ht;
 {
   rtx call_dest = 0;
+  rtx insn_list;
+
+  /* If we already know which INSNs reference VAR there's no need
+     to walk the entire instruction chain.  */
+  if (ht)
+    {
+      insn_list = ((struct insns_for_mem_entry *) 
+		   hash_lookup (ht, var, /*create=*/0, /*copy=*/0))->insns;
+      insn = insn_list ? XEXP (insn_list, 0) : NULL_RTX;
+      insn_list = XEXP (insn_list, 1);
+    }
 
   while (insn)
     {
@@ -1957,7 +2001,16 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
 	      XEXP (note, 0)
 		= walk_fixup_memory_subreg (XEXP (note, 0), insn, 1);
 	}
-      insn = next;
+
+      if (!ht)
+	insn = next;
+      else if (insn_list)
+	{
+	  insn = XEXP (insn_list, 0);
+	  insn_list = XEXP (insn_list, 1);
+	}
+      else
+	insn = NULL_RTX;
     }
 }
 
@@ -2929,7 +2982,7 @@ gen_mem_addressof (reg, decl)
   MEM_ALIAS_SET (reg) = get_alias_set (decl);
 
   if (TREE_USED (decl) || DECL_INITIAL (decl) != 0)
-    fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type));
+    fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type), 0);
 
   return reg;
 }
@@ -2945,14 +2998,15 @@ flush_addressof (decl)
       && GET_CODE (DECL_RTL (decl)) == MEM
       && GET_CODE (XEXP (DECL_RTL (decl), 0)) == ADDRESSOF
       && GET_CODE (XEXP (XEXP (DECL_RTL (decl), 0), 0)) == REG)
-    put_addressof_into_stack (XEXP (DECL_RTL (decl), 0));
+    put_addressof_into_stack (XEXP (DECL_RTL (decl), 0), 0);
 }
 
 /* Force the register pointed to by R, an ADDRESSOF rtx, into the stack.  */
 
 static void
-put_addressof_into_stack (r)
+put_addressof_into_stack (r, ht)
      rtx r;
+     struct hash_table *ht;
 {
   tree decl = ADDRESSOF_DECL (r);
   rtx reg = XEXP (r, 0);
@@ -2963,7 +3017,7 @@ put_addressof_into_stack (r)
   put_reg_into_stack (0, reg, TREE_TYPE (decl), GET_MODE (reg),
 		      DECL_MODE (decl), TREE_SIDE_EFFECTS (decl),
 		      ADDRESSOF_REGNO (r),
-		      TREE_USED (decl) || DECL_INITIAL (decl) != 0);
+		      TREE_USED (decl) || DECL_INITIAL (decl) != 0, ht);
 }
 
 /* List of replacements made below in purge_addressof_1 when creating
@@ -2975,10 +3029,11 @@ static rtx purge_addressof_replacements;
    the stack.  */
 
 static void
-purge_addressof_1 (loc, insn, force, store)
+purge_addressof_1 (loc, insn, force, store, ht)
      rtx *loc;
      rtx insn;
      int force, store;
+     struct hash_table *ht;
 {
   rtx x;
   RTX_CODE code;
@@ -3032,7 +3087,7 @@ purge_addressof_1 (loc, insn, force, store)
       if (GET_CODE (sub) == REG
 	  && (MEM_VOLATILE_P (x) || GET_MODE (x) == BLKmode))
 	{
-	  put_addressof_into_stack (XEXP (x, 0));
+	  put_addressof_into_stack (XEXP (x, 0), ht);
 	  return;
 	}
       else if (GET_CODE (sub) == REG && GET_MODE (x) != GET_MODE (sub))
@@ -3111,7 +3166,7 @@ purge_addressof_1 (loc, insn, force, store)
 
 	      if (store)
 		{
-		  rtx p;
+		  rtx p = PREV_INSN (insn);
 
 		  start_sequence ();
 		  val = gen_reg_rtx (GET_MODE (x));
@@ -3125,6 +3180,8 @@ purge_addressof_1 (loc, insn, force, store)
 		  seq = gen_sequence ();
 		  end_sequence ();
 		  emit_insn_before (seq, insn);
+		  compute_insns_for_mem (p ? NEXT_INSN (p) : get_insns (), 
+					 insn, ht);
 	      
 		  start_sequence ();
 		  store_bit_field (sub, size_x, 0, GET_MODE (x),
@@ -3143,10 +3200,16 @@ purge_addressof_1 (loc, insn, force, store)
 
 		  seq = gen_sequence ();
 		  end_sequence ();
-		  emit_insn_after (seq, insn);
+		  p = emit_insn_after (seq, insn);
+		  if (NEXT_INSN (insn))
+		    compute_insns_for_mem (NEXT_INSN (insn), 
+					   p ? NEXT_INSN (p) : NULL_RTX,
+					   ht);
 		}
 	      else
 		{
+		  rtx p = PREV_INSN (insn);
+
 		  start_sequence ();
 		  val = extract_bit_field (sub, size_x, 0, 1, NULL_RTX,
 					   GET_MODE (x), GET_MODE (x),
@@ -3164,6 +3227,8 @@ purge_addressof_1 (loc, insn, force, store)
 		  seq = gen_sequence ();
 		  end_sequence ();
 		  emit_insn_before (seq, insn);
+		  compute_insns_for_mem (p ? NEXT_INSN (p) : get_insns (),
+					 insn, ht);
 		}
 
 	      /* Remember the replacement so that the same one can be done
@@ -3192,13 +3257,13 @@ purge_addressof_1 (loc, insn, force, store)
     }
   else if (code == ADDRESSOF)
     {
-      put_addressof_into_stack (x);
+      put_addressof_into_stack (x, ht);
       return;
     }
   else if (code == SET)
     {
-      purge_addressof_1 (&SET_DEST (x), insn, force, 1);
-      purge_addressof_1 (&SET_SRC (x), insn, force, 0);
+      purge_addressof_1 (&SET_DEST (x), insn, force, 1, ht);
+      purge_addressof_1 (&SET_SRC (x), insn, force, 0, ht);
       return;
     }
 
@@ -3207,11 +3272,128 @@ purge_addressof_1 (loc, insn, force, store)
   for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
     {
       if (*fmt == 'e')
-	purge_addressof_1 (&XEXP (x, i), insn, force, 0);
+	purge_addressof_1 (&XEXP (x, i), insn, force, 0, ht);
       else if (*fmt == 'E')
 	for (j = 0; j < XVECLEN (x, i); j++)
-	  purge_addressof_1 (&XVECEXP (x, i, j), insn, force, 0);
+	  purge_addressof_1 (&XVECEXP (x, i, j), insn, force, 0, ht);
     }
+}
+
+/* Return a new hash table entry in HT.  */
+
+static struct hash_entry *
+insns_for_mem_newfunc (he, ht, k)
+     struct hash_entry *he;
+     struct hash_table *ht;
+     hash_table_key k ATTRIBUTE_UNUSED;
+{
+  struct insns_for_mem_entry *ifmhe;
+  if (he)
+    return he;
+
+  ifmhe = ((struct insns_for_mem_entry *)
+	   hash_allocate (ht, sizeof (struct insns_for_mem_entry)));
+  ifmhe->insns = NULL_RTX;
+
+  return &ifmhe->he;
+}
+
+/* Return a hash value for K, a REG.  */
+
+static unsigned long
+insns_for_mem_hash (k)
+     hash_table_key k;
+{
+  /* K is really a RTX.  Just use the address as the hash value.  */
+  return (unsigned long) k;
+}
+
+/* Return non-zero if K1 and K2 (two REGs) are the same.  */
+
+static boolean
+insns_for_mem_comp (k1, k2)
+     hash_table_key k1;
+     hash_table_key k2;
+{
+  return k1 == k2;
+}
+
+struct insns_for_mem_walk_info {
+  /* The hash table that we are using to record which INSNs use which
+     MEMs.  */
+  struct hash_table *ht;
+
+  /* The INSN we are currently proessing.  */
+  rtx insn;
+
+  /* Zero if we are walking to find ADDRESSOFs, one if we are walking
+     to find the insns that use the REGs in the ADDRESSOFs.  */
+  int pass;
+};
+
+/* Called from compute_insns_for_mem via for_each_rtx.  If R is a REG
+   that might be used in an ADDRESSOF expression, record this INSN in
+   the hash table given by DATA (which is really a pointer to an
+   insns_for_mem_walk_info structure).  */
+
+static int
+insns_for_mem_walk (r, data)
+     rtx *r;
+     void *data;
+{
+  struct insns_for_mem_walk_info *ifmwi 
+    = (struct insns_for_mem_walk_info *) data;
+
+  if (ifmwi->pass == 0 && *r && GET_CODE (*r) == ADDRESSOF
+      && GET_CODE (XEXP (*r, 0)) == REG)
+    hash_lookup (ifmwi->ht, XEXP (*r, 0), /*create=*/1, /*copy=*/0);
+  else if (ifmwi->pass == 1 && *r && GET_CODE (*r) == REG)
+    {
+      /* Lookup this MEM in the hashtable, creating it if necessary.  */
+      struct insns_for_mem_entry *ifme 
+	= (struct insns_for_mem_entry *) hash_lookup (ifmwi->ht,
+						      *r,
+						      /*create=*/0,
+						      /*copy=*/0);
+
+      /* If we have not already recorded this INSN, do so now.  Since
+	 we process the INSNs in order, we know that if we have
+	 recorded it it must be at the front of the list.  */
+      if (ifme && (!ifme->insns || XEXP (ifme->insns, 0) != ifmwi->insn))
+	{
+	  /* We do the allocation on the same obstack as is used for
+	     the hash table since this memory will not be used once
+	     the hash table is deallocated.  */
+	  push_obstacks (&ifmwi->ht->memory, &ifmwi->ht->memory);
+	  ifme->insns = gen_rtx_EXPR_LIST (VOIDmode, ifmwi->insn, 
+					   ifme->insns);
+	  pop_obstacks ();
+	}
+    }
+
+  return 0;
+}
+
+/* Walk the INSNS, until we reach LAST_INSN, recording which INSNs use
+   which REGs in HT.  */
+
+static void
+compute_insns_for_mem (insns, last_insn, ht)
+     rtx insns;
+     rtx last_insn;
+     struct hash_table *ht;
+{
+  rtx insn;
+  struct insns_for_mem_walk_info ifmwi;
+  ifmwi.ht = ht;
+
+  for (ifmwi.pass = 0; ifmwi.pass < 2; ++ifmwi.pass)
+    for (insn = insns; insn != last_insn; insn = NEXT_INSN (insn))
+      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	{
+	  ifmwi.insn = insn;
+	  for_each_rtx (&insn, insns_for_mem_walk, &ifmwi);
+	}
 }
 
 /* Eliminate all occurrences of ADDRESSOF from INSNS.  Elide any remaining
@@ -3223,14 +3405,32 @@ purge_addressof (insns)
      rtx insns;
 {
   rtx insn;
+  struct hash_table ht;
+  
+  /* When we actually purge ADDRESSOFs, we turn REGs into MEMs.  That
+     requires a fixup pass over the instruction stream to correct
+     INSNs that depended on the REG being a REG, and not a MEM.  But,
+     these fixup passes are slow.  Furthermore, more MEMs are not
+     mentioned in very many instructions.  So, we speed up the process
+     by pre-calculating which REGs occur in which INSNs; that allows
+     us to perform the fixup passes much more quickly.  */
+  hash_table_init (&ht, 
+		   insns_for_mem_newfunc,
+		   insns_for_mem_hash,
+		   insns_for_mem_comp);
+  compute_insns_for_mem (insns, NULL_RTX, &ht);
+
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN
 	|| GET_CODE (insn) == CALL_INSN)
       {
 	purge_addressof_1 (&PATTERN (insn), insn,
-			   asm_noperands (PATTERN (insn)) > 0, 0);
-	purge_addressof_1 (&REG_NOTES (insn), NULL_RTX, 0, 0);
+			   asm_noperands (PATTERN (insn)) > 0, 0, &ht);
+	purge_addressof_1 (&REG_NOTES (insn), NULL_RTX, 0, 0, &ht);
       }
+
+  /* Clean up.  */
+  hash_table_free (&ht);
   purge_addressof_replacements = 0;
 }
 
