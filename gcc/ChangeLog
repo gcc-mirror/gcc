@@ -567,7 +567,7 @@ Mon Apr 26 00:26:18 1999  Richard Henderson  <rth@cygnus.com>
 Mon Apr 26 01:08:36 1999  Toshiyasu Morita  (tm@netcom.com)
 
 	* fold-const.c (make_range): Always initialize arg0 and arg1.
-	(fold): Simlarly for alt0 and alt1.
+	(fold): Similarly for alt0 and alt1.
 	* function.c (fixup_var_refs_insns): Initialize insn_list.
 	(instantiate_virtual_regs_1): Initialize offset.
 	* optabs.c (expand_binop): Initialize carry_in, carry_out, op0_xhigh
