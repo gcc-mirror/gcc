@@ -1,3 +1,15 @@
+1998-09-30  Ben Elliston  <bje@cygnus.com>
+	    Jeff Law	  <law@cygnus.com>
+
+	* Makefile.in: Rewrite.
+
+	* configure.in: Likewise.
+
+	* configure: Regenerate.
+
+	* All .c files.  Remove "objc" prefix when including objc header
+	files.  Include tconfig.h, not ../tconfig.h.
+
 Mon Sep 21 23:27:10 1998  Ovidiu Predescu <ovidiu@slip.net>
 
 	* encoding.c (TREE_TYPE, ARRAY_TYPE): Define.

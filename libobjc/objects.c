@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
    however invalidate any other reasons why the executable file might be
    covered by the GNU General Public License.  */
 
-#include "../tconfig.h"         /* include defs of bzero for target */
+#include "tconfig.h"         /* include defs of bzero for target */
 #include "objc.h"
 #include "runtime.h"		/* the kitchen sink */
 
