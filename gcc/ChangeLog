@@ -1,3 +1,9 @@
+2003-04-05  Zack Weinberg  <zack@codesourcery.com>
+
+	PR optimization/10024
+	* cfgrtl.c (force_nonfallthru_and_redirect): If e is the edge
+	we want, use it.
+
 2003-04-05  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	PR bootstrap/10267
@@ -10,7 +16,7 @@
 	definition.
 
 2003-04-04  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
-	
+
 	* doc/contrib.texi (Contributors): Add entries for Wolfgang
 	Bangerth, DJ Delorie, Christian Ehrhardt, Christopher Faylor,
 	Nathanael Nerode, Diego Novillo, Hartmut Penner, Volker Reichelt,
@@ -39,16 +45,16 @@
 
 2003-04-02  Richard Henderson  <rth@redhat.com>
 
-        * libgcc-std.ver (_Unwind_GetCFA): New.
-        * unwind-dw2.c (_Unwind_GetCFA): New.
-        * unwind-sjlj.c (_Unwind_GetCFA): New.
-        * unwind.h: Declare it.
+	* libgcc-std.ver (_Unwind_GetCFA): New.
+	* unwind-dw2.c (_Unwind_GetCFA): New.
+	* unwind-sjlj.c (_Unwind_GetCFA): New.
+	* unwind.h: Declare it.
 
 2003-04-02  Mike Stump  <mrs@apple.com>
 
 	* doc/install.texi (Specific): Update pointers to apple.com.
 
-Tue Apr  1 19:09:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-04-01  Jan Hubicka  <jh@suse.cz>
 
 	PR inline-asm/8088
 	* i386.c (ix86_hard_regno_mode_ok):  Return 0 for MMX/SSE registers
@@ -56,8 +62,8 @@ Tue Apr  1 19:09:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-04-02  Richard Henderson  <rth@redhat.com>
 
-        * except.c (sjlj_find_directly_reachable_regions): Recognize when
-        must-not-throw region has been deleted.
+	* except.c (sjlj_find_directly_reachable_regions): Recognize when
+	must-not-throw region has been deleted.
 
 2003-04-02  Richard Henderson  <rth@redhat.com>
 
@@ -66,17 +72,17 @@ Tue Apr  1 19:09:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-04-01  Richard Henderson  <rth@redhat.com>
 
-        * except.c (convert_from_eh_region_ranges_1): Smash REG_EH_REGION
-        notes for nothrow calls if flag_forced_unwind_exceptions.
-        (build_post_landing_pads): Mind flag_forced_unwind_exceptions.
-        (sjlj_find_directly_reachable_regions): Likewise.
-        (reachable_handlers): Likewise.
-        (can_throw_external): Likewise.
-        (collect_one_action_chain): Record cleanups after catch-all and
-        must-not-throw if flag_forced_unwind_exceptions.
-        * flags.h (flag_forced_unwind_exceptions): Declare.
-        * toplev.c (flag_forced_unwind_exceptions): New.
-        (lang_independent_options): Add it.
+	* except.c (convert_from_eh_region_ranges_1): Smash REG_EH_REGION
+	notes for nothrow calls if flag_forced_unwind_exceptions.
+	(build_post_landing_pads): Mind flag_forced_unwind_exceptions.
+	(sjlj_find_directly_reachable_regions): Likewise.
+	(reachable_handlers): Likewise.
+	(can_throw_external): Likewise.
+	(collect_one_action_chain): Record cleanups after catch-all and
+	must-not-throw if flag_forced_unwind_exceptions.
+	* flags.h (flag_forced_unwind_exceptions): Declare.
+	* toplev.c (flag_forced_unwind_exceptions): New.
+	(lang_independent_options): Add it.
 	* doc/invoke.texi: Add it.
 
 2003-04-01  Geoffrey Keating  <geoffk@apple.com>
@@ -87,8 +93,8 @@ Tue Apr  1 19:09:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-04-01  Dale Johannesen  <dalej@apple.com>
 
-        * cse.c (count_reg_usage): Fix handling of REG_EQUAL notes.
-        (Zdenek Dvorak's fix from 3.4 branch)
+	* cse.c (count_reg_usage): Fix handling of REG_EQUAL notes.
+	(Zdenek Dvorak's fix from 3.4 branch)
 
 2003-04-01  Ulrich Weigand  <uweigand@de.ibm.com>
 
@@ -144,17 +150,17 @@ Tue Apr  1 19:09:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-03-30  Richard Henderson  <rth@redhat.com>
 
-        PR c/10083
-        * config/alpha/alpha.md (umuldi3_highpart): Change to expander;
-        don't zero_extend const inputs.
+	PR c/10083
+	* config/alpha/alpha.md (umuldi3_highpart): Change to expander;
+	don't zero_extend const inputs.
 
 2003-03-29  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi: Add Eric Botcazou and Roger Sayle.
-	Uniformly use bugfix instead of bug fix. 
+	Uniformly use bugfix instead of bug fix.
 
 2003-03-29  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
-	
+
 	PR doc/895
 	* ONEWS: Remove those items that already appear in the EGCS
 	release notes on our web pages.
@@ -182,7 +188,7 @@ Tue Apr  1 19:09:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-03-28  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* config/s390/s390.md ("literal_pool_31"): Output pool anchor 
+	* config/s390/s390.md ("literal_pool_31"): Output pool anchor
 	label even if pool empty when generating PIC.
 	("literal_pool_31", "literal_pool_64"): Coding style cleanup.
 
@@ -213,7 +219,7 @@ Tue Apr  1 19:09:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(movdi reg/reg split): Match only on sparc32, and v9 when int regs.
 
 2003-03-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Richard Henderson  <rth@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
 
 	PR target/10114 and PR target/10084
 	* dwarf2out.c (mem_loc_descriptor): Handle LO_SUM.
@@ -257,7 +263,7 @@ Tue Apr  1 19:09:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	PR other/10203
 	* version.c: Reference the GCC web site in the URL.
 
-Tue Mar 25 20:48:05 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-03-25  Jan Hubicka  <jh@suse.cz>
 
 	PR opt/10056
 	* cfglayout.c (fixup_reorder_chain):  Fix dealing with the conditional
@@ -304,7 +310,7 @@ Tue Mar 25 20:48:05 CET 2003  Jan Hubicka  <jh@suse.cz>
 	("*return_32bit"): Likewise.
 	* config/m68hc11/m68hc11.h (ASM_DECLARE_FUNCTION_NAME): Generate .far
 	for 68HC11 too.
-	(DWARF2_ADDR_SIZE): Use 4 so that addresses can 
+	(DWARF2_ADDR_SIZE): Use 4 so that addresses can
 	* config/m68hc11/m68hc11.c (m68hc11_override_options): Accept
 	-mlong-calls for 68HC11.
 	* config/m68hc11/larith.asm (declare_near): New macro.
@@ -403,16 +409,16 @@ Tue Mar 25 20:48:05 CET 2003  Jan Hubicka  <jh@suse.cz>
 	when signedness changes for division or modulus.
 
 2003-03-23  Richard Henderson  <rth@redhat.com>
-     
-        * cfgcleanup.c (try_optimize_cfg): Allow merging of tablejumps
-        before flow2.
-        * cfgrtl.c (try_redirect_by_replacing_jump): Similarly.
+
+	* cfgcleanup.c (try_optimize_cfg): Allow merging of tablejumps
+	before flow2.
+	* cfgrtl.c (try_redirect_by_replacing_jump): Similarly.
 
 2003-03-23  Richard Henderson  <rth@redhat.com>
 
-        PR opt/10116
-        * ifcvt.c (find_if_block): Disallow tablejump insns outgoing
-        from then_bb or else_bb after flow2.
+	PR opt/10116
+	* ifcvt.c (find_if_block): Disallow tablejump insns outgoing
+	from then_bb or else_bb after flow2.
 	* jump.c (tablejump_p): New.
 	* rtl.h: Declare it.
 
@@ -439,18 +445,18 @@ Tue Mar 25 20:48:05 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* config/c4x/t-c4x (MULTILIB_MATCHES): Make gcc recognize a c33 as
 	a c30 instead of a c40 processor.
-	
+
 2003-03-21  Richard Henderson  <rth@redhat.com>
 
 	PR opt/2001
-        * bb-reorder.c (maybe_duplicate_computed_goto_succ): New.
-        (make_reorder_chain_1): Call it.
+	* bb-reorder.c (maybe_duplicate_computed_goto_succ): New.
+	(make_reorder_chain_1): Call it.
 
-        * function.h (struct function): Add computed_goto_common_label,
-        computed_goto_common_reg.
-        * function.c (free_after_compilation): Zap them.
-        * stmt.c (expand_computed_goto): Use them to produce one
-        indirect branch per function.
+	* function.h (struct function): Add computed_goto_common_label,
+	computed_goto_common_reg.
+	* function.c (free_after_compilation): Zap them.
+	* stmt.c (expand_computed_goto): Use them to produce one
+	indirect branch per function.
 
 2003-03-22  Stephane Carrez  <stcarrez@nerim.fr>
 
@@ -478,7 +484,7 @@ Tue Mar 25 20:48:05 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* config/m68hc11/m68hc11-protos.h (m68hc11_is_far_symbol): Declare.
 	(m68hc11_is_trap_symbol): Declare.
 
-Fri Mar 21 23:14:11 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-03-21  Jan Hubicka  <jh@suse.cz>
 
 	PR inline-asm/7916
 
@@ -509,7 +515,7 @@ Fri Mar 21 23:14:11 CET 2003  Jan Hubicka  <jh@suse.cz>
 	information.
 
 2003-03-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Richard Henderson  <rth@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
 
 	PR optimization/8366
 	* config/sparc/sparc.h: (SYMBOLIC_CONST): New macro.
@@ -520,14 +526,14 @@ Fri Mar 21 23:14:11 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-03-20  Richard Henderson  <rth@redhat.com>
 
-        * fold-const.c (extract_muldiv_1): Revert changing order of
-        operands in case MULT_EXPR of 2003-02-16 patch.
+	* fold-const.c (extract_muldiv_1): Revert changing order of
+	operands in case MULT_EXPR of 2003-02-16 patch.
 
 2003-03-20  Richard Henderson  <rth@redhat.com>
 
-        PR c/8602
-        * integrate.c (output_inline_function): Reset input_filename
-        and lineno from the decl before rest_of_compilation.
+	PR c/8602
+	* integrate.c (output_inline_function): Reset input_filename
+	and lineno from the decl before rest_of_compilation.
 
 2003-03-20  Richard Earnshaw  <rearnsha@arm.com>
 
@@ -544,7 +550,7 @@ Fri Mar 21 23:14:11 CET 2003  Jan Hubicka  <jh@suse.cz>
 	not index register.
 	* config/s390/s390.md ("*tsthiCCT_only"): Remove '?' from
 	Q alternative.
-	("*movdi_64", "*movsi", "movhi", "movqi_64", "movqi", 
+	("*movdi_64", "*movsi", "movhi", "movqi_64", "movqi",
 	"*movdf_64", "*movsf"): Add '?' to Q->Q alternatives.
 	("*extractqi", "*extracthi", "*zero_extendhisi2_31",
 	"*zero_extendqisi2_31", "*zero_extendqihi2_31",
@@ -640,17 +646,17 @@ Fri Mar 21 23:14:11 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-03-16  Richard Henderson  <rth@redhat.com>
 
 	PR opt/6798
-        * cfgcleanup.c: Include params.h.
-        (try_crossjump_bb): Use PARAM_MAX_CROSSJUMP_EDGES.  Fix test for
-        too many outgoing edges from a block.
-        * Makefile.in (cfgcleanup.o): Depend on PARAMS_H.
-        * params.def (max-crossjump-edges): New.
-        * doc/invoke.texi: Document it.
+	* cfgcleanup.c: Include params.h.
+	(try_crossjump_bb): Use PARAM_MAX_CROSSJUMP_EDGES.  Fix test for
+	too many outgoing edges from a block.
+	* Makefile.in (cfgcleanup.o): Depend on PARAMS_H.
+	* params.def (max-crossjump-edges): New.
+	* doc/invoke.texi: Document it.
 
 2003-03-16  Richard Henderson  <rth@redhat.com>
 
-        * config/i386/i386.md (movstrictqi, movstrictqi_1): Check
-        optimize_size as well.
+	* config/i386/i386.md (movstrictqi, movstrictqi_1): Check
+	optimize_size as well.
 
 2003-03-16  Stephane Carrez  <stcarrez@nerim.fr>
 
@@ -670,9 +676,9 @@ Fri Mar 21 23:14:11 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-03-16  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
 
-        PR target/9164
-        * tree.c (get_narrower): For extensions with unchanged bit number,
-        return the unsignedness of the outer mode.
+	PR target/9164
+	* tree.c (get_narrower): For extensions with unchanged bit number,
+	return the unsignedness of the outer mode.
 
 2003-03-16  Roger Sayle  <roger@eyesopen.com>
 
@@ -688,13 +694,13 @@ Fri Mar 21 23:14:11 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-03-15  Richard Henderson  <rth@redhat.com>
 
 	2003-01-14  Richard Henderson  <rth@redhat.com>
-        * config/alpha/alpha.c (alpha_expand_mov): Use correct mode
-        for force_const_mem.
+	* config/alpha/alpha.c (alpha_expand_mov): Use correct mode
+	for force_const_mem.
 
 2003-03-15  Richard Henderson  <rth@redhat.com>
 
 	PR target/9700
-	* config/alpha/alpha.c (alpha_va_start): Account for 
+	* config/alpha/alpha.c (alpha_va_start): Account for
 	current_function_pretend_args_size in the AP offset.
 
 2003-03-15  Jason Merrill  <jason@redhat.com>
@@ -741,7 +747,7 @@ Fri Mar 21 23:14:11 CET 2003  Jan Hubicka  <jh@suse.cz>
 	of read-only constant arguments is passed with the right type.
 
 2003-03-14  Andreas Jaeger  <aj@suse.de>
-            Gwenole Beauchesne  <gbeauchesne@mandrakesoft.com>
+	    Gwenole Beauchesne  <gbeauchesne@mandrakesoft.com>
 
 	* linux64.h (TARGET_OS_CPP_BUILTINS): Define _LP64 and __LP64__ in
 	64-bit mode.
@@ -803,15 +809,15 @@ Fri Mar 21 23:14:11 CET 2003  Jan Hubicka  <jh@suse.cz>
 	to detect carry.
 	(subdi3): Reorder emitted instructions.
 
-Wed Mar 12 19:14:34 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-03-12  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_setup_incoming_varargs): Set stack_alignment_needed to 128.
 
 2003-03-12  Daniel Jacobowitz  <drow@mvista.com>
 
-        Fix PR target/9797 and PR c/9853.
-        * stmt.c (expand_decl_init): Call push_temp_slots () and
-        pop_temp_slots ().
+	Fix PR target/9797 and PR c/9853.
+	* stmt.c (expand_decl_init): Call push_temp_slots () and
+	pop_temp_slots ().
 
 2003-03-12  Hans-Peter Nilsson  <hp@bitrange.com>
 
@@ -915,7 +921,7 @@ Wed Mar 12 19:14:34 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-03-10  Devang Patel  <dpatel@apple.com>
 
 	PR c++/9394
-        * gcc.c (DEFAULT_SWITCH_TAKES_ARG): Remove.
+	* gcc.c (DEFAULT_SWITCH_TAKES_ARG): Remove.
 	(DEFAULT_WORD_SWITCH_TAKES_ARG): Remove.
 	* gcc.h (DEFAULT_SWITCH_TAKES_ARG): Add.
 	(DEFAULT_WORD_SWITCH_TAKES_ARG): Add.
@@ -947,9 +953,9 @@ Wed Mar 12 19:14:34 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-03-10  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/spe.h: Merge from mainline.
+	* config/rs6000/spe.h: Merge from mainline.
 
-Mon Mar 10 11:30:56 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-03-10  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation):  Revert the previous patch.
 
@@ -967,7 +973,7 @@ Mon Mar 10 11:30:56 CET 2003  Jan Hubicka  <jh@suse.cz>
 	pointer for a call emitted after virtuals have been instantiated
 	using the stack pointer offset, otherwise abort.
 
-Thu Mar  6 16:35:27 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-03-06  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation):  Defer RTL compilation only when
 	RTL inlining is done.
@@ -996,8 +1002,8 @@ Thu Mar  6 16:35:27 CET 2003  Jan Hubicka  <jh@suse.cz>
 	REG_PARM_STACK_SPACE.
 
 2003-03-06  Kurt Garloff  <garloff@suse.de>
-            Geoffrey Keating  <geoffk@apple.com>
-            Dale Johannesen  <dalej@apple.com>
+	    Geoffrey Keating  <geoffk@apple.com>
+	    Dale Johannesen  <dalej@apple.com>
 	* params.def: Introduce parameter max-inline-insns-rtl for
 	a separate limit for the RTL inliner.
 	* params.h: Likewise.
@@ -1017,7 +1023,7 @@ Thu Mar  6 16:35:27 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* cp/optimize (maybe_clone_body): Copy DID_INLINE_FUNC.
 	* print-tree.c (print_node): Report it.
 	* params.def: Introduce new max-inline-insns-auto limit.
-        * params.h: Likewise.
+	* params.h: Likewise.
 	* tree-inline.c (inlinable_function_p): Apply it to functions
 	with DID_INLINE_FUNC set.
 	* toplev.c (decode_f_option): Initialize it from -finline-limit
@@ -1043,7 +1049,7 @@ Thu Mar  6 16:35:27 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* config/m68hc11/m68hc11.c (m68hc11_va_arg): Remove.
 	* config/m68hc11/m68hc11-protos.h (m68hc11_va_arg): Remove.
 
-Wed Mar  5 15:45:40 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-03-05  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation):  Do duplicate loop headers when
 	optimizing for size.
@@ -1094,7 +1100,7 @@ Wed Mar  5 15:45:40 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* doc/extend.texi: Document these new built-in functions.
 
-Tue Mar  4 11:25:22 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-03-04  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (rtx_for_function_call): Take the address as an argument
 	(expand_call): Do not modify the expression.
@@ -1106,14 +1112,14 @@ Tue Mar  4 11:25:22 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-03-03  Richard Henderson  <rth@redhat.com>
 
-        * configure.in (HAVE_AS_LTOFFX_LDXMOV_RELOCS): New ia64 test.
-        * config.in, configure: Rebuild.
-        * config/ia64/ia64.c (ia64_ld_address_bypass_p): Accept lo_sum.
-        * config/ia64/ia64.md (load_symptr): Use high/lo_sum for the
-        paired ldtoffx and ldxmov annotations.
-        (load_symptr_internal1): Remove.
-        (load_symptr_high, load_symptr_low): New.
-        * config/ia64/ia64.h (HAVE_AS_LTOFFX_LDXMOV_RELOCS): Default to 0.
+	* configure.in (HAVE_AS_LTOFFX_LDXMOV_RELOCS): New ia64 test.
+	* config.in, configure: Rebuild.
+	* config/ia64/ia64.c (ia64_ld_address_bypass_p): Accept lo_sum.
+	* config/ia64/ia64.md (load_symptr): Use high/lo_sum for the
+	paired ldtoffx and ldxmov annotations.
+	(load_symptr_internal1): Remove.
+	(load_symptr_high, load_symptr_low): New.
+	* config/ia64/ia64.h (HAVE_AS_LTOFFX_LDXMOV_RELOCS): Default to 0.
 
 2003-03-03  Jason Merrill  <jason@redhat.com>
 
@@ -1124,11 +1130,11 @@ Tue Mar  4 11:25:22 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* doc/install.texi (Specific): Update entry for powerpc-darwin.
 
-Mon Mar  3 19:09:06 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-03-03  Jan Hubicka  <jh@suse.cz>
 	* toplev.c (rest_of_compilation):  Avoid cfg_cleanup calls when not
 	optimizing.
 
-Fri Feb 28 12:38:46 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-28  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (gen_lowpart_for_combine): Update handling of subregs_of_mode
 	* flow.c (life_analysis, mark_used_regs): Likewise.
@@ -1137,7 +1143,7 @@ Fri Feb 28 12:38:46 CET 2003  Jan Hubicka  <jh@suse.cz>
 	dealing with subregs_of_mode
 	* regs.h (subregs_of_mode): Update prototype.
 
-Fri Feb 28 11:13:57 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-28  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation): Rearrange insn splitting
 	* reg-stack.c (reg_to_stack): Do not split insns.
@@ -1241,7 +1247,7 @@ Fri Feb 28 11:13:57 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* config/rs6000/rs6000.md: Add TI constant splitter.
 
-Wed Feb 26 20:17:56 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-26  Jan Hubicka  <jh@suse.cz>
 
 	* expr.c (emit_group_store):  Fix crash when converting single
 	register into complex register.
@@ -1263,8 +1269,8 @@ Wed Feb 26 20:17:56 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-02-25  Richard Henderson  <rth@redhat.com>
 
-        * config/i386/i386.c (function_arg): Pass variable sized
-        structures correctly on the stack.
+	* config/i386/i386.c (function_arg): Pass variable sized
+	structures correctly on the stack.
 
 2003-02-25  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
@@ -1281,7 +1287,7 @@ Wed Feb 26 20:17:56 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* real.c (real_to_integer2): Force overflow result only for
 	unsigned overflow.
 
-Tue Feb 25 12:39:33 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-25  Jan Hubicka  <jh@suse.cz>
 
 	PR target/8343
 	* m68k.md (umulsidi, mulsidi expanders): Use register operand.
@@ -1345,7 +1351,7 @@ Tue Feb 25 12:39:33 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(ggc_min_expand_heuristic, ggc_min_heapsize_heuristic): Update
 	defaults to account for rlimits.
 
-Sat Feb 22 19:34:29 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-22  Jan Hubicka  <jh@suse.cz>
 
 	* config/linux.h (TARGET_HAS_F_SETLKW): Define.
 	* config/alpha/linux.h (TARGET_HAS_F_SETLKW): Likewise
@@ -1355,7 +1361,7 @@ Sat Feb 22 19:34:29 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* regmove.c (optimize_reg_copy_1): Do not replace a hard register
 	in an asm.
 
-Sat Feb 22 03:24:06 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-22  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (builtin_description): Add __builtin_ia32_paddq and
 	__builtin_ia32_psubq. Fix __builtin_ia32_paddq128
@@ -1418,7 +1424,7 @@ Sat Feb 22 03:24:06 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* toplev.c (print_version):  Output GGC heuristics.
 	(parse_options_and_default_flags): Call init_ggc_heuristics.
 
-Fri Feb 21 22:47:27 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-21  Jan Hubicka  <jh@suse.cz>
 
 	* cfgrtl.c (commit_edge_insertions):  Call
 	find_many_sub_basic_block only when some code has been emitted.
@@ -1434,7 +1440,7 @@ Fri Feb 21 22:47:27 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* cppmacro.c (replace_args): If directive_wants_padding,
 	provide padding tokens.
 
-Fri Feb 21 11:02:29 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-21  Jan Hubicka  <jh@suse.cz>
 
 	* cfgrtl.c (commit_one_edge_insertion): Only mark BB for splitting.
 	(commit_edge_insertions): Call find_many_sub_basic_blocks
@@ -1482,7 +1488,7 @@ Fri Feb 21 11:02:29 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* expr.c (expand_expr): Use gen_int_mode for the argument
 	to gen_rtx_MULT.
 
-Wed Feb 19 14:22:14 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-19  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (cosxf2):  Fix conditional.
 
@@ -1650,7 +1656,7 @@ Wed Feb 19 14:22:14 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* c-lex.c (c_lex): Set the token value to error_mark_node for
 	invalid numeric constants.
 
-Tue Feb 11 23:33:40 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-11  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (ahi?v*3): Set third operand type to TImode.
 	* i386.c (ix86_expand_binop_builtin): Extend operand when needed.
@@ -1668,7 +1674,7 @@ Tue Feb 11 23:33:40 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* config/xtensa/xtensa.c (xtensa_reorg): Search for UNSPECV_SET_FP
 	as a SET pattern.
 
-Tue Feb 11 23:25:34 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-11  Jan Hubicka  <jh@suse.cz>
 
 	* simplify-rtx.c (simplify_subreg): Fix conversion from vector into
 	integer mode.
@@ -1707,7 +1713,7 @@ Tue Feb 11 23:25:34 CET 2003  Jan Hubicka  <jh@suse.cz>
 	PR optimization/9651
 	* rtlanal.c (may_trap_p): Handle FIX.
 
-Tue Feb 11 19:06:24 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-11  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (choose_function_section): Choose sections correctly.
 
@@ -1740,7 +1746,7 @@ Tue Feb 11 19:06:24 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* gcse.c (local_cprop_find_used_regs): New.
 	(local_cprop_pass): Use it.
 
-Fri Feb  7 22:26:51 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-07  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (sse2_nandv2di3):  Fix.
 
@@ -1779,7 +1785,7 @@ Fri Feb  7 22:26:51 CET 2003  Jan Hubicka  <jh@suse.cz>
 	pattern as reload mode for address operands.  Do not generate optional
 	reloads for operands where a mandatory reload was already pushed.
 
-Tue Feb  4 21:49:56 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-04  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (movti_rex64):  Fix constraint.
 
@@ -1815,7 +1821,7 @@ Tue Feb  4 21:49:56 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(SPEC_REG_FIRST, SPEC_REG_LAST, SPEC_REG_NUM, COUNT_REGISTER_REGNUM):
 	Delete unused macros.
 
-Mon Feb  3 21:16:16 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-03  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_expand_store_builtin):  Always force op1 to register.
 	(mov*_internal): Fix predicates; require one of operands to not be memory.
@@ -1823,7 +1829,7 @@ Mon Feb  3 21:16:16 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(SSE/MMX push patterns): Reorganize; fix x86-64 code generation.
 	(movups/movupd/movdqu patterns): Force one of operands to not be memory.
 
-Mon Feb  3 01:18:26 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-03  Jan Hubicka  <jh@suse.cz>
 
 	* regclass.c (cannot_change_mode_set_regs): Correct argument order.
 
@@ -1919,7 +1925,7 @@ Mon Feb  3 01:18:26 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(Binaries): Refer to Microsoft Windows instead of listing all
 	possible variants.
 
-Sat Feb  1 00:49:00 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-01  Jan Hubicka  <jh@suse.cz>
 
 	* loop.c (emit_prefetch_instructions):  Do conversion at right place in
 	RTL chain.
@@ -2209,7 +2215,7 @@ Sat Feb  1 00:49:00 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* df.c (df_uses_record): Handle CC0.
 
-Sat Jan 25 21:04:33 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-01-25  Jan Hubicka  <jh@suse.cz>
 			      Eric Botcazou <ebotcazou@libertysurf.fr>
 	PR opt/8492
 	* gcse.c (one_cprop_pass): Delete unreachable blocks.
@@ -2308,7 +2314,7 @@ Sat Jan 25 21:04:33 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-01-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* doc/passes.texi: Fix typo.
-Sat Feb  1 00:46:13 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-01  Jan Hubicka  <jh@suse.cz>
 
 	* loop.c (emit_prefetch_instructions):  Do conversion at right place in
 	RTL chain.
@@ -2397,7 +2403,7 @@ Sat Feb  1 00:46:13 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* config/s390/s390.md ("*la_cc_64", "*la_cc_31", splitters): Remove.
 	Add peepholes to transform ADD to LOAD ADDRESS.
 
-Mon Jan 20 14:36:23 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-01-20  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (SSE cmov splitter):  Handle memory operand in operand 5.
 
@@ -2587,7 +2593,7 @@ Mon Jan 20 14:36:23 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* expr.c (expand_expr <RDIV_EXPR>): Correct recursive call args.
 
-Sat Jan 11 11:10:19 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-01-11  Jan Hubicka  <jh@suse.cz>
 
 	PR target/9068
 	* i386.c (output_fp_compare): Fix typo
@@ -2599,7 +2605,7 @@ Sat Jan 11 11:10:19 CET 2003  Jan Hubicka  <jh@suse.cz>
 	next_nonnote_insn.
 	(duplicate_loop_exit_test). Likewise.
 
-Wed Jan  8 14:09:30 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-01-08  Jan Hubicka  <jh@suse.cz>
 
 	PR target/8213
 	* i386.c (ix86_expand_int_movcc): Fix RTL sharing problem.
@@ -2669,7 +2675,7 @@ Wed Jan  8 14:09:30 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* config/rs6000/rs6000.c (rs6000_elf_encode_section_info):
 	Set SYMBOL_REF_FLAG on local data sym_ref.
 
-Wed Jan  8 19:53:56 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-01-08  Jan Hubicka  <jh@suse.cz>
 
 	PR target/8322
 	* i386.c (ix86_init_mmx_sse_builtins): Constify arguments of loads.
@@ -2955,7 +2961,7 @@ Wed Jan  8 19:53:56 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* pa.c (output_millicode_call): Correct typo.
 	(output_call): Likewise.
 
-Fri Dec 13 21:07:18 2002  Alexandre Oliva  <aoliva@redhat.com>
+2002-12-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mn10300/mn10300.c (print_operand) <case N>: Check
 	operand's range.  Print value directly, without aid from
@@ -2968,7 +2974,7 @@ Fri Dec 13 21:07:18 2002  Alexandre Oliva  <aoliva@redhat.com>
 	bclr.  Use %U for immediate operands of bset and bclr.
 	(iorqi3): New expand, with insns for AM33 and mn10300.
 
-Fri Dec 13 16:02:27 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-12-13  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (sh_register_operand): New function.
 	(prepare_move_operands): Use it.
@@ -3045,7 +3051,7 @@ Fri Dec 13 16:02:27 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* config/h8300/h8300.md (*addhi_h8300): Add a new alternative.
 	(*addhi_h8300hs): Likewise.
 
-Thu Dec 12 16:24:59 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-12-12  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (reg_class_from_letter): No longer const.  Add 'e' entry.
 	(sh_register_move_cost): Add clause for SImode fp-fp moves.
@@ -3097,12 +3103,12 @@ Thu Dec 12 16:24:59 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* config/ia64/ia64.c (ia64_hpux_asm_file_end): Don't send stripped
 	name to globalize_label or assemble_name.
 
-Wed Dec 11 20:15:19 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-12-11  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (REG_CLASS_HAS_GENERAL_REG): Only true for SIBCALL_REGS
 	if not TARGET_SHMEDIA.
 
-Wed Dec 11 19:05:05 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-12-11  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (REG_CLASS_HAS_FP_REG): New.
 	(REGISTER_MOVE_COST) Use it.  Put body into a function and
@@ -3113,7 +3119,7 @@ Wed Dec 11 19:05:05 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* sh.c (sh_expand_builtin): Abort for unexpected nop values.
 	(sh_adjust_cost): Always return a value.
 
-Wed Dec 11 18:39:52 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-12-11  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (REG_CLASS_HAS_GENERAL_REG): New.
 	(REGISTER_MOVE_COST): Use it.
@@ -3193,7 +3199,7 @@ Wed Dec 11 18:39:52 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(TARGET_CANNOT_FORCE_CONST_MEM): New.
 	(ix86_expand_move): Remove de-const-pooling hack.
 
-Mon Dec  9 21:33:38 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-12-09  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (dump_file): Fix order to match reality.
 
@@ -3231,7 +3237,7 @@ Mon Dec  9 21:33:38 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* config.gcc: Added tic4x-* target as an alias to c4x-*
 
-Sun Dec  8 14:57:39 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-12-08  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_expand_int_movcc): Use force_operand instead of
 	constructing insn directly.
@@ -3259,16 +3265,16 @@ Sun Dec  8 14:57:39 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* gcc/config/sh/sh.md : Add define_expand "push_fpscr", "pop_fpscr".
 	(fpu_switch): Add alternative to push fpscr.  Enable for TARGET_SH3E.
 
-Fri Dec  6 19:36:24 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-12-06  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (dump_table): DImode pool constants need only 32 bit alignment.
 	DFmode alignment depends on TARGET_FMOVD && TARGET_ALIGN_DOUBLE.
 
-Fri Dec  6 19:17:49 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-12-06  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.md (movdi_i): Name.  Remove inappropriate comment.
 
-Fri Dec  6 15:44:46 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-12-06  J"orn Rennecke <joern.rennecke@superh.com>
 	Merged from basic improvements branch (excerpt):
 
 	2002-11-19  Kaz Kojima  <kkojima@gcc.gnu.org>
@@ -3370,7 +3376,7 @@ Fri Dec  6 15:44:46 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* c-semantics (genrtl_scope_stmt): Do not output inlined
 	nested functions that contain no code.
 
-Wed Dec  4 15:20:54 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-12-04  Jan Hubicka  <jh@suse.cz>
 
 	* cfgrtl.c (force_nonfallthru_and_redirect):  Allow abnormal edge
 	to be forced into nonfallthru.
@@ -3426,11 +3432,11 @@ Wed Dec  4 15:20:54 CET 2002  Jan Hubicka  <jh@suse.cz>
 	flex or bison programs not found, instead of invoking "false".
 	* configure: Rebuilt.
 
-Mon Dec  2 20:28:48 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-12-02  Jan Hubicka  <jh@suse.cz>
 
 	* unroll.c (copy_loop_body): Copy CONST_OR_PURE_CALL_P.
 
-Mon Dec  2 19:42:52 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-12-02  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_expand_int_movcc):  Avoid overflow.
 
@@ -3442,7 +3448,7 @@ Mon Dec  2 19:42:52 CET 2002  Jan Hubicka  <jh@suse.cz>
 	(h8300_output_function_prologue): Likewise.
 	(h8300_output_function_epilogue): Likewise.
 
-Mon Dec  2 14:43:22 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-12-02  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* expmed.c (store_bit_field): Use int_mode_for_mode to find
 	corresponding mode of non-integer mode, unless it is VOIDmode.
@@ -3609,7 +3615,7 @@ Mon Dec  2 14:43:22 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(END): Exit if no symbols seen.
 	(output): Fix map syntax error if no globals for the version.
 
-Wed Nov 27 14:45:46 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-11-27  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.def (DEF_C99_BUILTIN): Fix.
 
@@ -3947,7 +3953,7 @@ Wed Nov 27 14:45:46 CET 2002  Jan Hubicka  <jh@suse.cz>
 	(xtensa_emit_move_sequence): Use xtensa_copy_incoming_a7.
 	* config/xtensa/xtensa.md (movdi, movsf, movdf): Ditto.
 
-Thu Nov 21 23:52:04 CET 2002  Jan Hubicka  <jH@suse.cz>
+2002-11-21  Jan Hubicka  <jH@suse.cz>
 
 	* i386-protos.h (x86_64_sign_extended_value): Fix prototype.
 	* i386.c (x86_64_general_operand, x86_64_szext_general_operand,
@@ -4136,7 +4142,7 @@ Thu Nov 21 23:52:04 CET 2002  Jan Hubicka  <jH@suse.cz>
 	(MULTILIB_EXCEPTIONS): Don't turn on -mn on H8/300.
 	* doc/invoke.texi (gccoptlist): Describe the new switch -mn.
 
-Tue Nov 19 23:50:56 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-11-19  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (length_immediate): Do not refer to insn address.
 	(jcc*, jmp patterns):  Compute length explicitly.
@@ -4227,12 +4233,12 @@ Tue Nov 19 23:50:56 CET 2002  Jan Hubicka  <jh@suse.cz>
 	Add a new one in its place, which hopefully works.
 	(skip_rest_of_line): Change test for bottom-of-context-stack.
 
-Mon Nov 18 21:29:03 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-11-18  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (addqi_1_slp): Fix output template.
 	(subqi_1_slp): Fix type.
 
-Sun Nov 17 00:01:28 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-11-17  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (alloca_call_p): New global function.
 	* tree.h (alloca_call_p): New.
@@ -4334,7 +4340,7 @@ Sun Nov 17 00:01:28 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* optabs.c: Fix formatting.
 
-Sat Nov 16 02:06:02 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-11-16  Jan Hubicka  <jh@suse.cz>
 
 	* athlon.md, k6.md, pentium.md, ppro.md: Handle shift1, rotate1
 	* i386.md (attribute type): Add type shift1 and rotate1.
@@ -4359,7 +4365,7 @@ Sat Nov 16 02:06:02 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* config/s390/s390.h (ASM_PREFERRED_EH_DATA_FORMAT): Define.
 
-Fri Nov 15 14:54:19 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-11-15  Jan Hubicka  <jh@suse.cz>
 
 	* i386-protos.h (x86_function_profiler): New function
 	* i386.h (MCOUNT_NAME): New.
@@ -4499,7 +4505,7 @@ Fri Nov 15 14:54:19 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* doc/contrib.texi: Merge in the list from the libstdc++ web pages.
 
-Mon Nov 11 12:06:08 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-11-11  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (construct_container): Fix handling of SSE_CLASS.
 
@@ -4534,7 +4540,7 @@ Mon Nov 11 12:06:08 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* config/mips/netbsd.h (TARGET_OS_CPP_BUILTINS): Define
 	__ABICALLS__ if TARGET_ABICALLS.
 
-Sun Nov 10 18:49:21 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-11-10  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (MIN_UNITS_PER_WORD): Define to 8 for x86-64 libgcc.
 
@@ -4611,7 +4617,7 @@ Sun Nov 10 18:49:21 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* config/h8300/h8300.md (two anonymous test insns): New.
 
-Fri Nov  8 11:20:19 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-11-08  Jan Hubicka  <jh@suse.cz>
 
 	* jump.c (mark_jump_label): Handle subregs of label_refs.
 
@@ -4656,11 +4662,11 @@ Fri Nov  8 11:20:19 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* arm/elf.h (TYPE_OPERAND_FMT): Prefix type with %.
 
-Thu Nov  7 15:50:18 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-11-07  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (DWARF_FRAME_RETURN_COLUMN): Use DWARF_FRAME_REGNUM.
 
-Thu Nov  7 11:18:01 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-11-07  Jan Hubicka  <jh@suse.cz>
 
 	* reg-stack.c (compensate_edge): Fix sanity check.
 
@@ -4938,7 +4944,7 @@ Thu Nov  7 11:18:01 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* arm.c (use_return_insn): Don't use a return insn if there are
 	saved integer regs, but LR is not one of them.
 
-Fri Nov  1 10:33:15 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-11-01  Jan Hubicka  <jh@suse.cz>
 
 	* expr.c (emit_move_insn):  Use SCALAR_FLOAT_MODE_P
 	* machmode.h (SCALAR_FLOAT_MODE_P): New macro.
@@ -4969,7 +4975,7 @@ Thu Oct 31  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000/darwin.h:  Enable -falign-xxx options.
 
-Thu Oct 31 18:08:00 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-31  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (override_options): Set defaults for flag_omit_frame_pointer,
 	flag_asynchronous_unwind_tables, flag_pcc_struct_return.
@@ -4979,11 +4985,11 @@ Thu Oct 31 18:08:00 CET 2002  Jan Hubicka  <jh@suse.cz>
 	(ix86_frame_pointer_required): Frame pointer is always required when
 	profiling.
 
-Thu Oct 31 16:09:44 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-31  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (negdf2_ifs_rex64): Don't allow GPR operand.
 
-Thu Oct 31 12:45:55 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-10-31  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (binary_logical_operator): Declare.
 	* sh.c (binary_logical_operator): New function.
@@ -5084,7 +5090,7 @@ Thu Oct 31 12:45:55 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* Makefile.in (gnucompare*):  Only record bad comparisons
 	if there really was a bad comparison.
 
-Tue Oct 29 19:32:16 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-29  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (CONST_DOUBLE_OK_FOR_LETTER_P): Remove 'H'
 	* i386.md (movsf*, movdf*): Use 'C' instead of 'H'
@@ -5131,7 +5137,7 @@ Tue Oct 29 19:32:16 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* reload1.c (update_eliminables): Unconditionally check if
 	frame_pointer_needed has changed.
 
-Tue Oct 29 15:37:39 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-29  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation): Reorganize way reg_scan is called
 	before final pass.
@@ -5188,7 +5194,7 @@ Tue Oct 29 15:37:39 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* reload1.c (reload): Fix a comment typo.
 
-Sun Oct 27 10:15:24 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-27  Jan Hubicka  <jh@suse.cz>
 
 	* linux64.h (DEFAULT_PCC_STRUCT_RETURN):  Define.
 
@@ -5232,7 +5238,7 @@ Sun Oct 27 10:15:24 CET 2002  Jan Hubicka  <jh@suse.cz>
 	Fixes gcc.dg/warn-1.c.
 	* c-typeck.c (warn_for_assignment): Don't print argument number, if zero.
 
-Sat Oct 26 01:44:46 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-26  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (dump_file_index): Add DFI_ce3.
 	(dump_file_info): Likewise.
@@ -5449,7 +5455,7 @@ Sat Oct 26 01:44:46 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/i386.md (subdi3_1): Add call to ix86_binary_operator_ok.
 
-Wed Oct 23 01:52:36 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-23  Jan Hubicka  <jh@suse.cz>
 
 	PR other/8289
 	* xmmintrin.h: Add const to the argument of loads.
@@ -5509,7 +5515,7 @@ Wed Oct 23 01:52:36 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* config/vax/vax-protos.h: Update.
 	* config/vax/vax.h (ASM_OUTPUT_MI_THUNK): Remove.
 
-Wed Oct 23 00:33:11 CEST 2002  Jan Hubicka  <jh@suse,cz>
+2002-10-23  Jan Hubicka  <jh@suse,cz>
 
 	* i386.c (standard_sse_constant_p): Accept vector and integer zeros too.
 	* i386.h (EXTRA_CONSTRAINT): Recognize 'C'
@@ -5525,7 +5531,7 @@ Wed Oct 23 00:33:11 CEST 2002  Jan Hubicka  <jh@suse,cz>
 	("blockage"): Add length attribute.
 	("lit"): Likewise.
 
-Tue Oct 22 23:51:34 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-22  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md: FIx typo.
 	(sse2_cvtsi2sd, sse2_pslrdq): Fix template.
@@ -5549,7 +5555,7 @@ Tue Oct 22 23:51:34 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* config/s390/t-linux: Remove.
 	* config/s390/s390.h: Include fixdfdi.h when building libgcc2.
 
-Tue Oct 22 19:07:03 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-22  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (builtin_description): Add IX86_BUILTIN_PUNPCKHQDQ128.
 	(ix86_expand_builtin): Fix MASKMOVDQU expasion.
@@ -5600,7 +5606,7 @@ Tue Oct 22 19:07:03 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	using IN_RANGE.
 	(TINY_CONSTANT_ADDRESS_P): Likewise.
 
-Tue Oct 22 00:04:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-22  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (builtin_description): Add punpcklqdq and movdq2q
 	(ix86_init_mmx_sse_builtins): Add v2di_ftype_void, di_ftype_v2di,
@@ -5843,7 +5849,7 @@ Tue Oct 22 00:04:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* real.c (do_add): Fix 0+0 sign corner case.
 	(do_divide): Fix Inf/0 corner case.
 
-Sun Oct 20 00:31:31 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-20  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (classify_argument): Pass MMX arguments in memory
 	(ix86_expand_builtin): Expand proper address mode for cflush.
@@ -5867,7 +5873,7 @@ Sun Oct 20 00:31:31 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* dependence.c : Removed.
 	* Makefile.in : Remove dependence.o.
 
-Sat Oct 19 10:46:52 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-19  Jan Hubicka  <jh@suse.cz>
 
 	* mmintrin.h (__m64): typedef it to v2si.
 	(_mm_cvtsi32_si64, _mm_cvtsi32_si64_mm_sll_pi16,
@@ -6010,7 +6016,7 @@ Sat Oct 19 10:46:52 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	tramp, not addr, to pass the trampoline address to
 	__enable_execute_stack.
 
-Thu Oct 17 18:40:47 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-17  Jan Hubicka  <jh@suse.cz>
 
 	* mmintrin.h: Guard by __MMX__
 	* xmmintrin.h: Guard by __SSE__
@@ -6021,7 +6027,7 @@ Thu Oct 17 18:40:47 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(_mm_set*_?d): New functions.
 	(_mm_store*_?d): New functions.
 
-Wed Oct 16 15:01:29 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-16  Jan Hubicka  <jh@suse.cz>
 
 	Really commit patch announced at Oct 14
 	PR c/7344
@@ -6102,7 +6108,7 @@ Wed Oct 16 15:01:29 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/i386.md (adddi3_1): Add call to ix86_binary_operator_ok.
 
-Tue Oct 15 22:08:35 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-15  Jan Hubicka  <jh@suse.cz>
 
 	* expr.c (do_tablejump): Fix typo in my previous commit.
 
@@ -6153,7 +6159,7 @@ Tue Oct 15 22:08:35 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	s390.h (s390_pool_overflow): Likewise.
 	s390.md ("cjump", "icjump", "doloop_si"): Remove s390_pool_overflow.
 
-Tue Oct 15 16:51:04 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-10-15  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.md (movv8qi_i+2): Don't split if source is -1.
 
@@ -6167,7 +6173,7 @@ Tue Oct 15 16:51:04 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* loop.c (loop_regs_scan): Mark registers used for function
 	argument passing as MAY_NOT_OPTIMIZE.
 
-Mon Oct 14 20:33:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-14  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (movv2di_internal): New pattern.
 	(movv2df_internal, movv8hi_internal, movv16qi_internal): Fix predicate.
@@ -6257,7 +6263,7 @@ Mon Oct 14 20:33:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* stmt.c: Fix typo in comment.
 
-Mon Oct 14 11:35:49 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-10-14  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* c-common.c (c_common_type_for_mode): Add V2HImode case.
 	* tree.c (build_common_tree_nodes_2): Initialize
@@ -6329,7 +6335,7 @@ Mon Oct 14 11:35:49 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* tree.c (tree_size): Revise expressions using TREE_CODE_LENGTH to
 	ensure value is promoted before doing subtraction.
 
-Fri Oct 11 22:22:38 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-11  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (expand_call): Simplify noreturn call.
 
@@ -6342,12 +6348,12 @@ Fri Oct 11 22:22:38 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (insn_match_p): Verify sibcall flag for calls to.
 
-Fri Oct 11 12:34:33 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-10-11  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.md (movv8qi_i+2): For V8QI destinations, generate V4HI
 	register for mperm_w operation.
 
-Fri Oct 11 10:56:17 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-10-11  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* emit-rtl.c (gen_lowpart_common): When asked to make a vector from
 	an integer, use simplify_gen_subreg.
@@ -6397,13 +6403,13 @@ Fri Oct 11 10:56:17 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* config.gcc (rs6000-ibm-aix5.1.*): New entry.
 	(rs6000-ibm-aix[56789].*): Default to AIX 5.2.
 
-Thu Oct 10 19:37:54 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-10  Jan Hubicka  <jh@suse.cz>
 
 	PR target/5610
 	* invoke.texi (-msse-math): Kill
 	(-msse): Add note to mfpmath=sse.
 
-Thu Oct 10 17:08:30 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-10  Jan Hubicka  <jh@suse.cz>
 
 	PR target/7723
 	* i386.c (ix86_expand_vector_move): Do not generate const0->mem moves.
@@ -6462,7 +6468,7 @@ Thu Oct 10 17:08:30 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* config/rs6000/rs6000.c (rs6000_ra_ever_killed): Call
 	prologue_epilogue_contains instead of using REG_MAYBE_DEAD notes.
 
-Wed Oct  9 15:54:49 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-10-09  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.md (ffssi2): Fix emitted code.
 
@@ -6544,7 +6550,7 @@ Wed Oct  9 15:54:49 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* config/s390/s390.md ("*doloop_si_long"): Add missing operand.
 	("*doloop_di_long"): Likewise.
 
-Tue Oct  8 16:50:10 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-08  Jan Hubicka  <jh@suse.cz>
 
 	* print-rtl.c (print_rtx): Increase buffer size for real numbers.
 
@@ -6682,7 +6688,7 @@ Tue Oct  8 16:50:10 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* fixinc/fixincl.x: regenerate
 	* fixinc/tests/base/stdlib.h: accommodate new fix test
 
-Sat Oct  5 19:42:45 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-05  Jan Hubicka  <jh@suse.cz>
 
 	* c-common.c (cb_register_builtins):  Use really_no_inline.
 
@@ -6799,11 +6805,11 @@ Sat Oct  5 19:42:45 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	on gnu-ld and MASK_GNU_LD.
 	(SUBTARGET_SWITCHES): New gnu-ld & hp-ld flags.
 
-Thu Oct  3 23:35:51 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-03  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (athlon_cost): Fix the move costs.
 
-Thu Oct  3 23:20:58 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-03  Jan Hubicka  <jh@suse.cz>
 
 	* final.c (final): Use symbol name as function name for profiling.
 	* profile.c (get_exec_counts): Likewise.
@@ -6869,11 +6875,11 @@ Thu Oct  3 23:20:58 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* config/mips/t-iris6 (MULTILIB_OSDIRNAMES): Set.
 	(SHLIB_SLIBDIR_SUFFIXES): Remove.
 
-Thu Oct  3 21:42:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-03  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (choose_function_section): Avoid choice for linkonce functions.
 
-Thu Oct  3 15:15:00 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-03  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (lea to mul peep2): Fix condition.
 
@@ -6906,7 +6912,7 @@ Thu Oct  3 15:15:00 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* tree.h (enum ptrmemfunc_vbit_where_t): Move definition to
 	here from cp/cp-tree.h.
 
-Wed Oct  2 17:01:36 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-02  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (print_operand_address): Use RIP addressing for offsetted
 	label refs too.
@@ -7079,7 +7085,7 @@ Wed Oct  2 17:01:36 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* pa.h (ASM_OUTPUT_LABELREF): Output user_label_prefix except when
 	there is a '*' prefix in NAME.
 
-Mon Sep 30 21:33:23 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-09-30  Jan Hubicka  <jh@suse.cz>
 
 	* reload.c (push_reload): Handle subregs and secondary memory.
 	* reload1.c (gen_reload): Likewise.
@@ -7094,7 +7100,7 @@ Mon Sep 30 21:33:23 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(layout_type): Pass it.
 	* tree.h (finish_record_layout): Update prototype.
 
-Mon Sep 30 14:57:18 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-09-30  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (TARGET_CPP_CPU_BUILTINS): Define __SSE_MATH__.
 
@@ -7633,11 +7639,11 @@ Mon Sep 30 14:57:18 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* loop.c: Likewise.
 	* loop.h: Likewise.
 
-Tue Aug 27 22:26:35 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-08-27  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (BIGGEST_FIELD_ALIGNMENT): Set proper default for x86_64.
 
-Tue Aug 27 20:07:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-08-27  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (overwrite_options): Set -mpreferred-stack-boundary to 128
 	for -Os/TARGET_64BIT too.
@@ -8137,7 +8143,7 @@ Tue Aug 27 20:07:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* config/ia64/elf.h: Remove CPP_PREDEFINES.
 
-Tue Sep 17 13:58:04 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+2002-09-17  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	Fix PR/7014 and related objc bugs:
 	* c-typeck.c (comp_target_types): Added a reflexive argument.
@@ -8158,7 +8164,7 @@ Tue Sep 17 13:58:04 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	unsigned_V1DI_type_node or V1D1_type_node for V1DImode.
 	* rtl.c (class_narrowest_): Start integer vector nodes with V1DImode.
 
-Tue Sep 17 13:40:13 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+2002-09-17  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* doc/objc.texi (Constant string objects): Extended documentation
 	to make clear that the constant string class ivar layout is
@@ -9214,7 +9220,7 @@ Tue Sep 17 13:40:13 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	of protocol qualifiers.
 	(objc_is_id): New.
 
-Fri Sep  6 13:10:08 2002  Jeffrey A Law  (law@redhat.com)
+2002-09-06  Jeffrey A Law  (law@redhat.com)
 
 	* pentium.md (pentium-firstvboth): Fix typo.
 
@@ -9228,7 +9234,7 @@ Fri Sep  6 13:10:08 2002  Jeffrey A Law  (law@redhat.com)
 	(h8300_init_once): Update shift_alg_{qi,hi,si} to use more
 	space efficient algorithms when optimize for codesize.
 
-Fri Sep  6 16:35:32 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+2002-09-06  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	Fix PR/1727 and long-standing failing testcase
 	objc/formal-protocol-6.m.
@@ -9239,7 +9245,7 @@ Fri Sep  6 16:35:32 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	(get_objc_string_decl): Fixed typo/bug - TREE_VALUE had been used
 	instead of TREE_CHAIN.
 
-Fri Sep  6 16:17:33 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+2002-09-06  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc/objc-act.c (dump_interface): Enlarged the char * buffer to
 	10k.  Fixed category dumping - print out category names with the
@@ -9338,7 +9344,7 @@ Fri Sep  6 16:17:33 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	* config/rs6000/rs6000.c (rs6000_override_options): Make -fpic and
 	-fPIC equivalent on Darwin.
 
-Thu Sep  5 16:27:47 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-09-05  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (sh_expand_builtin): Return early if encountering an
 	error_mark for a type.
@@ -9392,7 +9398,7 @@ Thu Sep  5 16:27:47 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* varasm.c (struct rtx_const, decode_rtx_const):
 	Make veclo and vechi fields not share storage.
 
-Thu Sep  5 00:34:33 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-09-05  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* loop.c (scan_loop): Don't mark separate insns out of a libcall
 	for moving.
@@ -9477,7 +9483,7 @@ Thu Sep  5 00:34:33 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* pa.c (function_arg): Fix handling of modes wider than one word for
 	TARGET_64BIT.
 
-Wed Sep  4 18:48:10 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-09-04  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* combine.c (make_compound_operation): Don't generate zero / sign
 	extensions in floating point modes.
@@ -9547,7 +9553,7 @@ Wed Sep  4 18:48:10 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* doc/install-old.texi: Don't mention enquire.
 	* doc/sourcebuild.texi: Update float.h description.
 
-Wed Sep  4 11:22:14 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-09-04  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.md (mperm_w_little, mperm_w_big): Supply mode for zero_extract.
 
@@ -9683,7 +9689,7 @@ Wed Sep  4 11:22:14 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(print_operand_address): Likewise.
 	(print_operand): Likewise.
 
-Tue Sep  3 11:32:14 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+2002-09-03  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	PR objc/5956:
 	* objc/objc-act.c (build_typed_selector_reference): Fix typo which
@@ -9766,7 +9772,7 @@ Tue Sep  3 11:32:14 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	* diagnostic.c (fancy_abort): Don't repeat "internal error".
 	* toplev.c (crash_signal): Likewise.
 
-Fri Aug 30 00:33:37 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+2002-08-30  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* doc/cpp.texi (__NEXT_RUNTIME__): Extended documentation.
 	* doc/invoke.texi (-fnext-runtime, -Wno-protocol, -Wselector):
@@ -9953,7 +9959,7 @@ Fri Aug 30 00:33:37 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	(-Wctor-dtor-privacy): Mention that it is enabled by default.
 	(-Wnon-virtual-dtor): Mention that it is enabled by -Wall.
 
-Wed Aug 28 15:35:17 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-08-28  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (calc_live_regs): Save FPSCR_REG in an interrupt handler
 	if it is ever live.
@@ -9985,7 +9991,7 @@ Wed Aug 28 15:35:17 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(c_common_decode_option): Handle it.
 	* doc/invoke.texi: Document -Wabi.
 
-Tue Aug 27 23:03:52 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+2002-08-27  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* c-common.c (warn_undeclared_selector): New variable.
 	* c-common.h (warn_undeclared_selector): Idem.
@@ -10009,29 +10015,29 @@ Tue Aug 27 23:03:52 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	* config/v850/v850.md: Add patterns for v850e instructions.
 	* doc/invoke.texi: Document new v850e command line switches.
 
-Tue Aug 27 18:30:47 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-08-27  J"orn Rennecke <joern.rennecke@superh.com>
 			  Aldy Hernandez <aldyh at redhat dot com>
 
 	* doc/tm.texi: Applied numerous fixes to the automaton based
 	scheduler descrition.
 
-Tue Aug 27 19:51:05 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-08-27  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (classify_argument): Handle variable sized objects.
 
-Tue Aug 27 19:18:16 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-08-27  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_expand_int_movcc): Fix RTL sharing problem
 
-Tue Aug 27 18:01:45 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-08-27  Jan Hubicka  <jh@suse.cz>
 
 	* libgcc2.c (__bb_exit_func): Properly write the summarized statistics.
 
-Tue Aug 27 18:00:11 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-08-27  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (classify_argument): Properly compute word size of the analyzed object.
 
-Tue Aug 27 14:39:09 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-08-27  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.md (attribute type): Add types mt_group, fload, pcfload, fpul_gp,
 	mac_gp ftrc_s and cwb.  Add / Adjust definitions in individual insn
@@ -10092,7 +10098,7 @@ Tue Aug 27 14:39:09 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* config/rs6000/linux64.h (ADJUST_FIELD_ALIGN): Undef before define.
 
-Tue Aug 27 13:53:57 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-08-27  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (MAX_FIXED_MODE_SIZE): Define.
 
@@ -10934,7 +10940,7 @@ Tue Aug 27 13:53:57 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* c-opts.c (c_common_init_options): Extra braces needed.
 
-Tue Aug 13 17:40:25 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-08-13  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (sh_init_builtins): Add PARAMS to declaration.
 	(sh_media_init_builtins, sh_expand_builtin): Likewise.
@@ -11014,7 +11020,7 @@ Tue Aug 13 17:40:25 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* config/avr/avr.md: Call CC_STATUS_INIT in all peepnoles
 	which can change CC0.
 
-Tue Aug 13 14:49:20 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-08-13  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcse.c (adjust_libcall_notes): New function.
 	(do_local_cprop): Use it.  Add fourth parameter.  Changed caller.
@@ -11134,7 +11140,7 @@ Tue Aug 13 14:49:20 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	macro controlling use.
 	(TFbignan, TFlittlenan): Guard with INTEL_EXTENDED_IEEE_FORMAT == 0.
 
-Mon Aug 12 12:48:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-08-12  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (tablejump): Sign extend the operand.
 	* i386.c (classify_argument): Fix missed case from previous patch.
@@ -11262,7 +11268,7 @@ Mon Aug 12 12:48:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* cppinit.c (COMMAND_LINE_OPTIONS): Remove OPT_o and OPT_remap.
 	(cpp_handle_option): Similarly.  Don't handle filenames.
 
-Sun Aug 11 14:43:17 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-08-11  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (classify_argument): Fix computing of field's offsets.
 
@@ -11295,7 +11301,7 @@ Sun Aug 11 14:43:17 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	-std=gnu++98.
 	* objc/lang-specs.h: Remove -ansi.
 
-Sat Aug 10 19:59:43 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-08-10  Jan Hubicka  <jh@suse.cz>
 			       Graham Stott
 
 	* cfg.c (redirect_edge_succ_nodup): Avoid overflows due to roundoff
@@ -12269,7 +12275,7 @@ cp:
 
 	* config/mips/mips.h (SUBTARGET_ASM_DEBUGGING_SPEC): Fix typo.
 
-Tue Jul 30 18:31:31 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-30  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.md (cond_delay_slot): New attribute.
 	(cbranch delay): Use it for anulled-true case.
@@ -12278,7 +12284,7 @@ Tue Jul 30 18:31:31 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	delay slot insn.
 	(gen_far_branch): Emit stuff_delay_slot pattern.
 
-Tue Jul 30 11:21:44 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-30  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* unroll.c (copy_loop_body): Don't copy NOTE_INSN_LOOP_CONT.
 
@@ -12651,7 +12657,7 @@ Tue Jul 30 11:21:44 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	vectors are split into two registers.
 	(function_arg): Same.
 
-Thu Jul 26 23:00:13 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-26  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* pa.md (extv): Check predicates before emitting extv_32.
 
@@ -12723,7 +12729,7 @@ Thu Jul 26 23:00:13 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(output_compiler_stub): Remove unused locals.
 	(output_call): Always initialize line number.
 
-Thu Jul 25 20:34:50 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-25  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (LOAD_EXTEND_OP): QImode zero-extends on SHmedia.
 	* sh.md (truncdiqi2, movqi_media): Likewise.
@@ -12739,7 +12745,7 @@ Thu Jul 25 20:34:50 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* gcc.c (TARGET_EXECUTABLE_SUFFIX): Only used if
 	HAVE_TARGET_EXECUTABLE_SUFFIX.
 
-Thu Jul 25 18:57:50 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-25  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* rtl.h (mem_attrs): Spell out more clearly the roles of ALIGN,
 	SIZE, EXPR and OFFSET.
@@ -12801,7 +12807,7 @@ Thu Jul 25 18:57:50 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* config/mips/mips.md (tablejump_mips161): Use gen_rtx_LABEL_REF.
 	(tablejump_mips162): Likewise.
 
-Thu Jul 25 10:23:41 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-25  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* simpify-rtx.c (simplify_subreg): Don't pass MODE_CC mode to
 	int_mode_for_mode.
@@ -13023,12 +13029,12 @@ Thu Jul 25 10:23:41 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* config/mips/elf64.h (STARTFILE_SPEC): Likewise.
 	* config/mips/isa3264.h (STARTFILE_SPEC): Do not redefine.
 
-Wed Jul 24 17:59:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-07-24  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation): Dump loops before clobbering
 	the structure.
 
-Wed Jul 24 17:23:16 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-07-24  Jan Hubicka  <jh@suse.cz>
 
 	* rtlanal.c (keep_with_call_p): Avoid overflow in fixed_regs.
 
@@ -13119,7 +13125,7 @@ Wed Jul 24 17:23:16 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL): Remove.
 	* doc/tm.texi: Remove documentation.
 
-Tue Jul 23 21:49:24 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-23  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* recog.c (asm_operand_ok): Allow float CONST_VECTORs for 'F'.
 	(constrain_operands): Likewise.
@@ -13211,7 +13217,7 @@ Tue Jul 23 21:49:24 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* recog.h (validate_repalce_src_group): New.
 	(num_changes_pending): Likewise.
 
-Tue Jul 23 12:16:58 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-23  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* calls.c (emit_library_call_value_1): If
 	FUNCTION_ARG_PASS_BY_REFERENCE is true, pretend this is neither
@@ -13286,7 +13292,7 @@ Tue Jul 23 12:16:58 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* ra-debug.c (dump_static_insn_cost): Avoid string concatenation.
 
-Mon Jul 22 15:27:25 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-22  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* rtlanal.c (subreg_regno_offset): Return correct offset for
 	big endian paradoxical subregs.
@@ -13393,7 +13399,7 @@ Mon Jul 22 15:27:25 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* c-typeck.c (SAVE_SPELLING_DEPTH): Remove.
 
-Sun Jul 21 21:36:41 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-07-21  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (do_local_cprop): Do not extend lifetimes of registers set by
 	do_local_cprop.
@@ -13448,7 +13454,7 @@ Sun Jul 21 21:36:41 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	IFCVT_INIT_EXTRA_FIELDS, IFCVT_EXTRA_FIELDS): Update documentation for
 	these macros.
 
-Sun Jul 21 00:54:54 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-07-21  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c: Include cselib.h
 	(constptop_register): Break out from ...
@@ -13573,7 +13579,7 @@ Sun Jul 21 00:54:54 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/linux64.h (STARTFILE_PREFIX_SPEC): Define this always.
 
-Thu Jul 18 19:39:18 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-18  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh-protos.h (sh_expand_unop_v2sf): Move inside #ifdef RTX_CODE guard.
 	(sh_expand_binop_v2sf): Likewise.
@@ -13615,7 +13621,7 @@ Thu Jul 18 19:39:18 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* ifcvt.c (noce_get_condition): Make certain that the condition
 	is valid at JUMP.
 
-Thu Jul 18 13:44:51 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-18  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (barrier_align, push): Shut up compiler warnings.
 	(initial_elimination_offset,sh_media_init_builtins): Likewise.
@@ -13628,7 +13634,7 @@ Thu Jul 18 13:44:51 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(STARTFILE_SPEC): Remove hardcoded library paths.
 	(ENDFILE_SPEC): Likewise.
 
-Thu Jul 18 09:38:59 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-07-18  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (hoist_expr_reaches_here_p):  Stop once expr_bb is reached.
 
@@ -13669,7 +13675,7 @@ Thu Jul 18 09:38:59 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	Remove all references to SCCS_DIRECTIVE.
 	* doc/cpp.texi, doc/tm.texi: Update.
 
-Wed Jul 17 19:23:32 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-17  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* regrename.c (maybe_mode_change): New function.
 	(find_oldest_value_reg, copyprop_hardreg_forward_1): Use it.
@@ -13694,7 +13700,7 @@ Wed Jul 17 19:23:32 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* cppmacro.c (parse_params, _cpp_save_parameter): Ditto.
 	* cpptrad.c (recursive_macro): Similarly.
 
-Wed Jul 17 17:08:06 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-17  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* config/sh/lib1funcs.asm (udivsi3_i4): Implement SHcompact version in
 	SHmedia code.
@@ -13848,16 +13854,16 @@ Wed Jul 17 17:08:06 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(machopic_stub_name): Ditto.
 	* config/darwin-protos.h: Ditto for the prototypes.
 
-Wed Jul 17 00:22:39 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-07-17  Jan Hubicka  <jh@suse.cz>
 
 	* m68hc11.c (m68hc11_reorg): Do not rebuild CFG.
 
-Wed Jul 17 00:20:48 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-07-17  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (prefetch): Fix for 64bit mode.
 	(prefetch_sse_rex, prefetch_3dnow_rex): New patterns.
 
-Wed Jul 17 00:19:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-07-17  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (MACHINE_DEPENDENT_REORG): New macro.
 	* i386.c (x86_machine_dependent_reorg): New function.
@@ -13883,7 +13889,7 @@ Wed Jul 17 00:19:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	argument from all implementations of EXPAND_BUILTIN_VA_START
 	and all uses of std_expand_builtin_va_start.
 
-Tue Jul 16 19:32:58 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-16  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* regrename.c (copy_value): Don't record high part copies.
 
@@ -13960,7 +13966,7 @@ Tue Jul 16 19:32:58 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* Makefile.in: Update ra-rewrite.o, ra-build.o dependencies to
 	depend on reload.h, insn-config.h.
 
-Tue Jul 16 11:57:45 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-16  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* expr.c (emit_move_insn_1): Handle arbitrary moves that are
 	the same size as a word.
@@ -13968,7 +13974,7 @@ Tue Jul 16 11:57:45 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* regrename.c (find_oldest_value_reg): Take WORDS_BIG_ENDIAN /
 	BYTES_BIG_ENDIAN into account.
 
-Tue Jul 16 12:22:44 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-07-16  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (prefetch): Fix for 64bit mode.
 	(prefetch_sse_rex, prefetch_3dnow_rex): New patterns.
@@ -14190,14 +14196,14 @@ Tue Jul 16 12:22:44 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* config/avr/avr.c (test_hard_reg_class): Fix TEST_HARD_REG_BIT
 	usage on 64-bit hosts, return value was truncated to 32 bits.
 
-Fri Jul 12 00:49:36 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-12  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* simplify-rtx.c (simplify_subreg): Handle floating point
 	CONST_DOUBLEs.  When an integer subreg of a smaller mode than
 	the element mode is requested, compute a subreg with an
 	integer mode of the same size as the element mode first.
 
-Thu Jul 11 22:02:57 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-11  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* combine.c (try_combine): When converting a paradoxical subreg
 	to an extension, take LOAD_EXTEND_OP into account.
@@ -14249,7 +14255,7 @@ Thu Jul 11 22:02:57 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* c-decl.c (duplicate_decls): Preserve the noreturn attribute on
 	non-ANSI builtin functions.
 
-Thu Jul 11 11:31:12 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-11  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* rtl.h (gen_rtx_CONST_VECTOR): Declare.
 	* gengenrtl.c (special_rtx): Check for CONST_VECTOR.
@@ -14382,12 +14388,12 @@ Thu Jul 11 11:31:12 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* doc/invoke.texi (Debugging Options): Mention that -gdwarf is
 	deprecated.
 
-Wed Jul 10 19:50:03 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-10  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* combine.c (gen_lowpart_for_combine): Handle vector modes.
 	Supply non-VOID mode to simplify_gen_subreg.
 
-Wed Jul 10 18:48:55 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-07-10  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_init_mmx_sse_builtins): Fix thinko.
 
@@ -14399,7 +14405,7 @@ Wed Jul 10 18:48:55 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* mn10200.c (expand_epilogue): Fix test to determine which scratch
 	register to use.
 
-Wed Jul 10 16:06:00 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-10  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* cse.c (cse_insn): Supply proper SUBREG_BYTE to simplify_gen_subreg.
 	Get mode from dest.
@@ -14456,7 +14462,7 @@ Wed Jul 10 16:06:00 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	quoting of <> in #include.
 	* doc/cpp.texi: Update.
 
-Tue Jul  9 22:37:44 2002  Stephen Clarke <stephen.clarke@superh.com>
+2002-07-09  Stephen Clarke <stephen.clarke@superh.com>
 			  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (sh_adjust_cost): Special handling of SHMEDIA code.
@@ -14485,7 +14491,7 @@ Tue Jul  9 22:37:44 2002  Stephen Clarke <stephen.clarke@superh.com>
 	(movsi_media, movsi_media_nofpu, movdi_media): Use new types.
 	(movdi_media_nofpui, movdf_media, movdf_media_nofpu): Likewise.
 
-Tue Jul  9 21:39:50 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-09  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (PREDICATE_CODES): Add general_extend_operand and inqhi_operand.
 	* sh.c (general_extend_operand, inqhi_operand): New functions.
@@ -14583,7 +14589,7 @@ Tue Jul  9 21:39:50 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(toplev_main): ...from here.  Pass flag for back end init
 	suppression.
 
-Sun Jul  7 20:38:38 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-07  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (PRINT_OPERAND_PUNCT_VALID_P): Allow '\''.
 	(PREDICATE_CODES): Add entries for equality_comparison_operator,
@@ -14729,12 +14735,12 @@ Sun Jul  7 20:38:38 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* ggc.h (ggc_add_root): Document as obsolete.
 
-Thu Jul  4 07:58:01 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-04  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.md (mshfhi_b, mshflo_b, mshfhi_l, mshflo_l, mshfhi_w): Add DONE.
 	(mshflo_w): Likewise.
 
-Thu Jul  4 07:36:29 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-04  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* simplify-rtx.c (simplify_subreg): Reduce problem of finding
 	vector mode subregs of constants to finding integer mode
@@ -14798,7 +14804,7 @@ Thu Jul  4 07:36:29 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* config/i386/i386.c (x86_integer_DFmode_moves): Disable for PPro.
 
-Wed Jul  3 10:24:16 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-03  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* optabs.c (expand_vector_binop): Don't store using a SUBREG smaller
 	than UNITS_PER_WORD, unless this is little endian and the first unit
@@ -14869,7 +14875,7 @@ Wed Jul  3 10:24:16 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(lookup_objc_ivar): Test objc_method_context instead of
 	objc_receiver_context.
 
-Tue Jul  2 18:45:45 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-02  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (print_operand, case 'N'): Allow zero vector.
 	(arith_reg_or_0_operand): Likewise.
@@ -14965,7 +14971,7 @@ Tue Jul  2 18:45:45 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* README.Portability (Function prototypes): Document new
 	variable-argument function macros.
 
-Mon Jul  1 19:55:17 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-01  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (langhooks.h): Include.
 	(sh_init_builtins, sh_media_init_builtins): New functions.

@@ -1,3 +1,8 @@
+2003-04-05  Zack Weinberg  <zack@codesourcery.com>
+
+	PR optimization/10024
+	* gcc.c-torture/compile/20030405-1.c: New test.
+
 2003-04-04  Glen Nakamura  <glen@imodulo.com>
 
 	* gcc.dg/20030324-1.c: Add comments and abort if test fails.
@@ -5,7 +10,7 @@
 2003-04-03  Mike Stump  <mrs@apple.com>
 
 	* lib/scanasm.exp (scan-assembler): Add xfail processing for
-        target arg.
+	target arg.
 	(scan-assembler-not): Likewise.
 	(scan-assembler-dem, scan-assembler-dem-not): Likewise.
 
@@ -13,7 +18,7 @@
 
 	PR c/9936
 	* gcc.dg/20030331-2.c: New test.
-	
+
 	PR c++/10278
 	* g++.dg/parse/crash2.C: New test.
 
@@ -143,7 +148,7 @@
 
 2003-03-16  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
 
-        * gcc.c-torture/execute/20030316-1.c: New test case.
+	* gcc.c-torture/execute/20030316-1.c: New test case.
 
 2003-03-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
@@ -207,7 +212,7 @@
 	PR c++/9394
 	* g++.dg/cpp/c++_cmd_1.C: New test.
 	* g++.dg/cpp/c++_cmd_1.h: New file.
-	
+
 2003-03-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9373
@@ -224,7 +229,7 @@
 	PR c++/9912
 	* g++.dg/parse/class1.C: New test.
 	* g++.old-deja/g++.other/decl5.C: Adjust.
-	
+
 2003-03-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/i386-loop-1.c: New test.
@@ -341,7 +346,7 @@
 
 2003-02-21  Richard Henderson  <rth@redhat.com>
 
-        * gcc.dg/attr-invalid.c: Allow __used__ on static data.
+	* gcc.dg/attr-invalid.c: Allow __used__ on static data.
 
 2003-02-21  Mark Mitchell  <mark@codesourcery.com>
 
@@ -360,7 +365,7 @@
 
 	PR c++/8906
 	* g++.dg/template/nested2.C: New test.
-	
+
 	PR c++/8724
 	* g++.dg/expr/dtor1.C: New test.
 
@@ -373,7 +378,7 @@
 	PR c++/9729
 	* g++.dg/abi/conv1.C: New test.
 
-Thu Feb 20 14:39:49 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-20  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/execute/20020720-1.x: XFAIL for x86-64.
 
@@ -395,7 +400,7 @@ Thu Feb 20 14:39:49 CET 2003  Jan Hubicka  <jh@suse.cz>
 	PR c++/9459
 	* g++.dg/ext/typeof4.C: New test.
 
-Wed Feb 12 17:18:27 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-12  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/i386-mmx-3.c: Change -march=k8 to -march=athlon.
 	* gcc.dg/i386-ssetype-1.c: Likewise.
@@ -436,7 +441,7 @@ Wed Feb 12 17:18:27 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* gcc.c-torture/execute/20020227-1.x: Update specific XFAIL
 	conditions for SPARC targets.
 
-Tue Feb  4 21:58:43 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-02-04  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/i386-ssetype-?.c:  Compile using -march=k8; fix for register
 	passing convetions.
@@ -503,7 +508,7 @@ Tue Feb  4 21:58:43 CET 2003  Jan Hubicka  <jh@suse.cz>
 	PR middle-end/7227
 	* gcc.dg/uninit-C.c: New test.
 
-Sat Jan 25 21:06:49 CET 2003  Jan Hubicka  <jh@suse.cz>
+2003-01-25  Jan Hubicka  <jh@suse.cz>
 
 	PR opt/8492
 	* gcc.c-torture/compile/20030125-1.c
@@ -770,7 +775,7 @@ Sat Jan 25 21:06:49 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/bitfld-6.c: New test.
 
-Wed Nov 27 14:37:34 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-11-27  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/execute/20021127.[cx]: New test.
 
@@ -910,7 +915,7 @@ Wed Nov 27 14:37:34 CET 2002  Jan Hubicka  <jh@suse.cz>
 	PR c++/8389
 	* g++.dg/template/access6.C: New test.
 
-Fri Nov  8 10:52:15 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-11-08  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/compile/20021108-1.c: New testcase for x86-64 failure.
 
@@ -1209,7 +1214,7 @@ Fri Nov  8 10:52:15 CET 2002  Jan Hubicka  <jh@suse.cz>
 	PR c++/7584
 	* g++.dg/inherit/using3.C: New test.
 
-Thu Oct 17 19:12:58 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-17  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/20021017-2.c: New test.
 
@@ -1265,11 +1270,11 @@ Thu Oct 17 19:12:58 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/execute/20021015-1.c: New test.
 
-Tue Oct 15 14:22:41 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-10-15  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.dg/weak/typeof-2.c: For SH targets, return before baz3 test.
 
-Mon Oct 14 20:37:51 CEST 2002  Jan Hubicka  <jh@suse.cz>
+2002-10-14  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/i386-ssetype-[1-5].c: New tests.
 
@@ -1310,7 +1315,7 @@ Mon Oct 14 20:37:51 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/cpp/assembler.S: Don't use -ansi.
 
-Fri Oct 11 10:56:49 2002  Richard Shann  <richard.shann@superh.com>
+2002-10-11  Richard Shann  <richard.shann@superh.com>
 
 	* gcc.c-torture/compile/simd-5.c: New test.
 
@@ -1540,7 +1545,7 @@ Fri Oct 11 10:56:49 2002  Richard Shann  <richard.shann@superh.com>
 
 	* g++.old-deja/g++.other/crash32.C: Mark ICE.
 
-Tue Sep 17 13:59:45 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+2002-09-17  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc.dg/comp-types-1.m: New test.
 	* objc.dg/comp-types-2.m: New test.
@@ -1693,7 +1698,7 @@ Tue Sep 17 13:59:45 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* gcc.dg/cpp/_Pragma4.c: Fix typo.
 
-Fri Sep  6 16:39:37 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+2002-09-06  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc/execute/formal_protocol-6.x: Removed.  This testcase is now
 	expected to pass.
@@ -1723,7 +1728,7 @@ Fri Sep  6 16:39:37 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	* gcc.dg/weak-8.c: Ditto.
 	* gcc.dg/weak-9.c: Ditto.
 
-Thu Sep  5 00:34:33 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-09-05  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.c-torture/execute/loop-14.c: New test.
 
@@ -1737,11 +1742,11 @@ Thu Sep  5 00:34:33 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.dg/cpp/_Pragma4.c: New test.
 
-Tue Sep  3 11:04:26 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+2002-09-03  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc/execute/nil_method-1.m: New testcase.
 
-Sun Sep  1 12:47:39 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+2002-09-01  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc/execute/class-tests-1.h (test_class_with_superclass): Call
 	[Object class], not [Object initialize].
@@ -1757,7 +1762,7 @@ Sun Sep  1 12:47:39 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	* testsuite/g++.dg/abi/bitfield5.C: New test.
 	* testsuite/g++.dg/abi/vbase10.C: Likewise.
 
-Tue Aug 27 22:23:22 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+2002-08-27  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc.dg/undeclared-selector.m: New test.
 
@@ -1972,7 +1977,7 @@ Tue Aug 27 22:23:22 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	* gcc.c-torture/execute/va-arg-15.x, va-arg-16.x, va-arg-17.x:
 	Delete.
 
-Tue Jul 23 21:02:43 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-23  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.c-torture/compile/simd-4.c: New test.
 
@@ -2058,7 +2063,7 @@ Tue Jul 23 21:02:43 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.c-torture/compile/20020710-1.c: New test.
 
-Thu Jul 11 15:39:21 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-11  J"orn Rennecke <joern.rennecke@superh.com>
 			  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	gcc.c-torture/compile/simd-2.c: New testcase.
@@ -2121,7 +2126,7 @@ Thu Jul 11 15:39:21 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* g++.dg/debug/debug6.C: New test.
 	* g++.dg/debug/debug7.C: New test.
 
-Thu Jul  4 07:36:48 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-04  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.c-torture/compile/simd-3.c: New test.
 
@@ -2136,7 +2141,7 @@ Thu Jul  4 07:36:48 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* g++.dg/init/array4.C: New test.
 	* g++.dg/init/array5.C: New test.
 
-Wed Jul  3 10:25:41 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-03  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.c-torture/execute/simd-1.c (main): Also test &, |, ^, ~.
 	* gcc.c-torture/execute/simd-2.c (main): Likewise.
@@ -2205,7 +2210,7 @@ Wed Jul  3 10:25:41 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* lib/objc-torture.exp (objc-torture-compile): ...instead of here
 	(objc-torture-execute): or here.
 
-Mon Jul  1 12:51:05 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-07-01  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.c-torture/execute/arith-rand-ll.c: New test.
 
@@ -2227,7 +2232,7 @@ Mon Jul  1 12:51:05 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* gcc.c-torture/execute/string-opt-8.c (strncmp): Fix typo in
 	return type.
 
-Thu Jun 27 15:23:21 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-06-27  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.c-torture/execute/simd-2.c (i, j): Add initializer elements to
 	avoid division by zero.
@@ -2236,7 +2241,7 @@ Thu Jun 27 15:23:21 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.dg/Wunknownprag.c: New tests.
 
-Tue Jun 25 21:50:38 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-06-25  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.c-torture/execute/simd-2.c: New test.
 
@@ -2503,7 +2508,7 @@ Tue Jun 25 21:50:38 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc/testsuite/gcc.dg/weak-8.c: New test.
 
-Thu May 23 11:09:26 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-05-23  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.dg/weak-2.c: Allow optional leading underscore
 	in scan-assembler symbol name.
@@ -2540,11 +2545,11 @@ Thu May 23 11:09:26 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* gcc.dg/tls/tls.exp, gcc.dg/tls/trivial.c, gcc.dg/tls/diag-1.c,
 	gcc.dg/tls/diag-2.c, gcc.dg/tls/init-1.c: New directory and files.
 
-Tue May 21 14:25:32 2002  Brian R. Gaeke  <brg@dgate.ORG>
+2002-05-21  Brian R. Gaeke  <brg@dgate.ORG>
 
 	* g++.dg/other/copy2.C: New test.
 
-Mon May 20 10:51:35 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-05-20  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.c-torture/execute/memcpy-2.c (SEQUENCE_LENGTH): Define.
 	(MAX_COPY): Bump up to 10 times sizeof (long long).
@@ -2780,7 +2785,7 @@ Mon May 20 10:51:35 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	PR c++/6438.
 	* g++.dg/parse/stmtexpr2.C: New test.
 
-Wed Apr 24 21:38:36 2002  J"orn Rennecke <joern.rennecke@superh.com>
+2002-04-24  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.dg/20020312-2.c: Add SH target.
 
@@ -3121,7 +3126,7 @@ Wed Apr 24 21:38:36 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* g++.old-deja/g++.law/bit-fields2.C: Skip on mmix-knuth-mmixware.
 
-Thu Mar 28 16:38:09 2002  Jeffrey A Law  (law@redhat.com)
+2002-03-28  Jeffrey A Law  (law@redhat.com)
 
 	* gcc.c-torture/execute/20020328-1.c: New test.
 
@@ -3352,7 +3357,7 @@ Thu Mar 28 16:38:09 2002  Jeffrey A Law  (law@redhat.com)
 	* gcc.dg/20020122-4.c: Ditto.
 	* gcc.dg/inline-2.c: Ditto.
 
-Thu Mar 14 14:28:38 2002  Jeffrey A Law  (law@cygnus.com)
+2002-03-14  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20020314-1.c: New test.
 
@@ -3433,7 +3438,7 @@ Thu Mar 14 14:28:38 2002  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/va-arg-22.c: New test.
 
-Sat Mar  9 07:47:50 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2002-03-09  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcc.c-torture/compile/20020309-1.c: New test.
 
@@ -3441,7 +3446,7 @@ Sat Mar  9 07:47:50 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcc.c-torture/execute/20020307-2.c: New test.
 
-Thu Mar  7 10:05:31 2002  Jeffrey A Law  (law@redhat.com)
+2002-03-07  Jeffrey A Law  (law@redhat.com)
 
 	* g77.f-torture/compile/20020307-1.f: New test.
 
@@ -4140,7 +4145,7 @@ Thu Mar  7 10:05:31 2002  Jeffrey A Law  (law@redhat.com)
 	* gcc.dg/i386-mmx-1.c, gcc.dg/i386-mmx-2.c: New.
 	* gcc.dg/i386-sse-1.c, gcc.dg/i386-sse-2.c, gcc.dg/i386-sse-1.c: New.
 
-Fri Jan 11 12:13:30 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+2002-01-11  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc.dg/special/unclaimed-category-1.m: Include objc/objc-api.h.
 
@@ -4163,7 +4168,7 @@ Fri Jan 11 12:13:30 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	* gcc.c-torture/execute/20020108-1.c: Rewrite to choose the proper
 	type in which to perform the operation for each size.
 
-Wed Jan  9 16:48:33 2002  Alan Matsuoka  (alanm@redhat.com)
+2002-01-09  Alan Matsuoka  (alanm@redhat.com)
 
 	* gcc.c-torture/compile/20020109-2.c: New test.
 
@@ -4189,7 +4194,7 @@ Wed Jan  9 16:48:33 2002  Alan Matsuoka  (alanm@redhat.com)
 	* gcc.dg/20010822-1.c: New test.
 	* gcc.dg/20011107-1.c: New test.
 
-Wed Jan  9 14:03:20 2002  Jeffrey A Law  (law@redhat.com)
+2002-01-09  Jeffrey A Law  (law@redhat.com)
 
 	* gcc.dg/asm-fs-1.c: Disable warnings when compiling.
 
@@ -4455,11 +4460,11 @@ Wed Jan  9 14:03:20 2002  Jeffrey A Law  (law@redhat.com)
 
 	* g++.dg/other/error1.C: New test.
 
-Mon Dec 17 14:31:42 2001  Jeffrey A Law  (law@redhat.com)
+2001-12-17  Jeffrey A Law  (law@redhat.com)
 
 	* gcc.c-torture/execute/20011217-1.c: New test.
 
-Mon Dec 17 16:54:56 2001  Nicola Pero  <nicola@brainstorm.co.uk>
+2001-12-17  Nicola Pero  <nicola@brainstorm.co.uk>
 
 	* objc.dg/special/: New directory.
 	* objc.dg/special/special.exp: New file.
@@ -4493,7 +4498,7 @@ Mon Dec 17 16:54:56 2001  Nicola Pero  <nicola@brainstorm.co.uk>
 	std::__malloc_alloc_template<0> and
 	std::__default_alloc_template<false, 0>.
 
-Thu Dec 13 10:35:33 2001  Nicola Pero  <n.pero@mi.flashnet.it>
+2001-12-13  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc/execute/bf-21.m: New test.
 	* objc/execute/enumeration-1.m: New test.
@@ -4572,7 +4577,7 @@ Thu Dec 13 10:35:33 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 	* gcc.dg/sparc-ret.c: New file, test return corruption bug for
 	ultrasparc.
 
-Fri Dec  7 06:29:03 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2001-12-07  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* g++-old.deja/g++.robertl/eb101.C: Deleted.
 
@@ -4659,7 +4664,7 @@ Fri Dec  7 06:29:03 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* g++.old-deja/g++.pt/memtemp100.C: Remove non-standard
 	constructs.
 
-Wed Nov 28 15:05:54 2001  Jeffrey A Law  (law@cygnus.com)
+2001-11-28  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20011128-1.c: New test.
 
@@ -4683,7 +4688,7 @@ Wed Nov 28 15:05:54 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20011121-1.c: New test.
 
-Fri Nov 23 15:55:44 2001  Jeffrey A Law  (law@cygnus.com)
+2001-11-23  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/ieee/20011123-1.c: New test.
 
@@ -4880,7 +4885,7 @@ Fri Nov 23 15:55:44 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20011029-1.c: New test.
 
-Mon Oct 29 21:19:53 2001  Nicola Pero  <n.pero@mi.flashnet.it>
+2001-10-29  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc/execute/class_self-1.m: New test.
 	* objc/execute/class_self-2.m: New test.
@@ -5455,7 +5460,7 @@ Mon Oct 29 21:19:53 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 	* g77.f-torture/execute/intrinsic-vax-cd.f: New test
 	* g77.f-torture/execute/intrinsic-f2c-z.f: New test
 
-Mon Jul 23 10:14:17 2001  Jeffrey A Law  (law@cygnus.com)
+2001-07-23  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20010723-1.c: New test.
 
@@ -5519,7 +5524,7 @@ Mon Jul 23 10:14:17 2001  Jeffrey A Law  (law@cygnus.com)
 	* gcc.c-torture/execute/20001229-1.c: Include <sys/proc.h> for
 	UAC_SIGBUS, UAC_NOPRINT definitions.
 
-Mon Jul 16 12:21:56 2001  Nicola Pero  <n.pero@mi.flashnet.it>
+2001-07-16  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc/execute/object_is_class.m: New test.
 	* objc/execute/object_is_meta_class.m: New test.
@@ -5571,7 +5576,7 @@ Mon Jul 16 12:21:56 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 	* gcc.c-torture/compile/20010701-1.c,
 	g++.old-deja/g++.ext/attrib6.C: New tests.
 
-Fri Jul  6 09:31:43 2001  Jeffrey A Law  (law@cygnus.com)
+2001-07-06  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20010706-1.c: New test.
 
@@ -5885,7 +5890,7 @@ Wed May 23 2001  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 	* gcc.dg/complete-port.c: New (revised version of libgcc1-test.c)
 
-Wed May 16 20:33:57 CEST 2001  Jan Hubicka  <jh@suse.cz>
+2001-05-16  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/compile/20010516-1.c: New test.
 
@@ -6032,7 +6037,7 @@ Wed May 16 20:33:57 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* g77.f-torture/compile/20000629-1.x: Remove - error
 	has been fixed.
 
-Thu Apr 26 11:15:12 2001  Jeffrey A Law  (law@cygnus.com)
+2001-04-26  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.dg/special/initp1.C: Moved here from g++.old-deja/g++.ext.
 	Tweak slightly to work with g++.dg framework.
@@ -6240,7 +6245,7 @@ Thu Apr 26 11:15:12 2001  Jeffrey A Law  (law@cygnus.com)
 	* g++.old-deja/g++.brendan/crash15.C (main): Same.
 	* g++.old-deja/g++.brendan/copy9.C: Same.
 
-Fri Apr  6 15:36:15 2001  J"orn Rennecke <amylaar@redhat.com>
+2001-04-06  J"orn Rennecke <amylaar@redhat.com>
 
 	* gcc.c-torture/execute/20001203-2.c (memset):
 	Count argument is of type __SIZE_TYPE__.
@@ -6483,7 +6488,7 @@ Fri Apr  6 15:36:15 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* g++.old-deja/g++.other/inline20.C: New test.
 
-Wed Feb 21 12:38:22 2001  Ovidiu Predescu  <ovidiu@cup.hp.com>
+2001-02-21  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* objc/execute/nested-1.m: Added (contributed by Nicola Pero).
 
@@ -6515,11 +6520,11 @@ Wed Feb 21 12:38:22 2001  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* gcc.c-torture/execute/longlong.c: New test.
 
-Wed Feb 14 21:41:17 2001  J"orn Rennecke <amylaar@redhat.com>
+2001-02-14  J"orn Rennecke <amylaar@redhat.com>
 
 	* g++.old-deja/g++.brendan/new2.C (main): Use sizeof.
 
-Wed Feb 14 21:31:25 2001  J"orn Rennecke <amylaar@redhat.com>
+2001-02-14  J"orn Rennecke <amylaar@redhat.com>
 
 	* gcc.c-torture/execute/920302-1.c (execute):
 	Change argument type to short.
@@ -6609,7 +6614,7 @@ Wed Feb 14 21:31:25 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* g++.dg/stdbool-if.C: New test.
 
-Wed Feb  7 09:54:47 2001  Ovidiu Predescu  <ovidiu@cup.hp.com>
+2001-02-07  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* objc/execute/fdecl.m: Added main().
 
@@ -6621,7 +6626,7 @@ Wed Feb  7 09:54:47 2001  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* gcc.dg/cpp/avoidpaste1.c: Update.
 
-Tue Feb  5 8:53:33 2001  Ovidiu Predescu  <ovidiu@cup.hp.com>
+2001-02-05  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* objc/execute/bycopy-1.m, bycopy-2.m: Added new tests from Nicola
 	Pero <nicola@brainstorm.co.uk>.
@@ -6672,7 +6677,7 @@ Tue Feb  5 8:53:33 2001  Ovidiu Predescu  <ovidiu@cup.hp.com>
 	* gcc.dg/c99-float-1.c: Back out "XFAIL FLT_EVAL_METHOD and
 	DECIMAL_DIG cases for Irix."
 
-Wed Jan 31 12:23:32 2001  J"orn Rennecke <amylaar@redhat.com>
+2001-01-31  J"orn Rennecke <amylaar@redhat.com>
 
 	* gcc.c-torture/execute/920302-1.c: Cast 0 to pointer.
 
@@ -7160,7 +7165,7 @@ Wed Jan 31 12:23:32 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* gcc.c-torture/compile/20001222-1.x: Remove.
 
-Thu Jan  4 13:54:11 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2001-01-04  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcc.c-torture/execute/built-in-setjmp.c: New.
 
@@ -7264,11 +7269,11 @@ Thu Jan  4 13:54:11 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* gcc.c-torture/compile/20001222-1.c: New test.
 	* gcc.c-torture/compile/20001222-1.x: Xfail.
 
-Fri Dec 22 06:45:03 2000  Alexandre Oliva  <aoliva@redhat.com>
+2000-12-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.c-torture/execute/comp-goto-2.c: New test.
 
-Thu Dec 21 22:43:03 2000  J"orn Rennecke <amylaar@redhat.com>
+2000-12-21  J"orn Rennecke <amylaar@redhat.com>
 
 	* gcc.c-torture/execute/comp-goto-1.c (uint32, sint32):
 	Use long types if __INT_MAX__ is 32767.
@@ -7983,7 +7988,7 @@ Thu Dec 21 22:43:03 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* gcc.dg/cpp/include2.c: New tests.
 
-Fri Nov  3 13:32:14 2000  Mark P Mitchell  <mark@codesourcery.com>
+2000-11-03  Mark P Mitchell  <mark@codesourcery.com>
 
 	* lib/g++.exp (g++_set_ld_library_path): New function.
 	Use it to set LD_LIBRARYN32_PATH and LD_LIBRARY64_PATH.
@@ -8362,7 +8367,7 @@ Fri 15-Sep-2000 06:50:11 BST  Neil Booth  <NeilB@earthling.net>
 
 	* gcc.dg/cpp/paste10.c: Testcase for PASTE_LEFT buglet.
 
-Thu Sep 14 16:48:49 2000  Jeffrey A Law  (law@cygnus.com)
+2000-09-14  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20000914-1.c: New test.
 
@@ -8375,7 +8380,7 @@ Thu Sep 14 16:48:49 2000  Jeffrey A Law  (law@cygnus.com)
 	* gcc.c-torture/execute/widechar-2.c: New test for wchar_t
 	constant by Ulrich Drepper <drepper@redhat.com>.
 
-Tue Sep 12 18:32:07 2000  J"orn Rennecke <amylaar@redhat.co.uk>
+2000-09-12  J"orn Rennecke <amylaar@redhat.co.uk>
 
 	* gcc.c-torture/compile/981006-1.x: No -fpic for sh-coff / sh-hms.
 
@@ -8611,7 +8616,7 @@ Tue Sep 12 18:32:07 2000  J"orn Rennecke <amylaar@redhat.co.uk>
 	* gcc.dg/20000724-1.c: New test.
 	* gcc.dg/20000807-1.c: New test.
 
-Sun Aug 20 01:41:35 MSD 2000 Dennis Chernoivanov <cdi@sparc.spb.su>
+2000-08-20 Dennis Chernoivanov <cdi@sparc.spb.su>
 
 	* gcc.dg/cpp/pragma-1.c: New test.
 	* gcc.dg/cpp/pragma-2.c: New test.
@@ -8621,7 +8626,7 @@ Sun Aug 20 01:41:35 MSD 2000 Dennis Chernoivanov <cdi@sparc.spb.su>
 	* gcc.dg/cpp/lexstrng.c: Don't include string.h.
 	* gcc.dg/cpp/paste2.c: Don't include string.h.  Prototype strcmp.
 
-Fri Aug 18 16:57:35 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2000-08-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcc.c-torture/compile/20000818-1.c: New test.
 
@@ -8732,7 +8737,7 @@ Fri Aug 18 16:57:35 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcc.dg/c90-printf-2.c, gcc.dg/c99-printf-2.c: New tests.
 
-Sun Aug  6 11:41:51 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
+2000-08-06  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* lib/objc.exp (objc_target_compile): Set the ld_library_path so
 	that running programs linked against the shared version of libobjc
@@ -8769,7 +8774,7 @@ Sun Aug  6 11:41:51 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 	* gcc.dg/cpp/20000625-2.c: Expect warning on line 8, not 9.
 	* gcc.dg/compare2.c: No longer expected to fail.
 
-Fri Aug  4 23:00:50 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+2000-08-04  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* gcc.c-torture/execute/20000804-1.c: New test.
 
@@ -8781,7 +8786,7 @@ Fri Aug  4 23:00:50 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* gcc.dg/cpp/20000625-2.c: Don't expect a warning on line 4.
 
-Thu Aug  3 01:46:33 2000  Jeffrey A Law  (law@cygnus.com)
+2000-08-03  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20000803-1.c: New test.
 
@@ -8805,7 +8810,7 @@ Thu Aug  3 01:46:33 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/cpp/macsyntx.c: Fix error regexp.
 
-Mon Jul 31 21:14:49 2000  Jeffrey A Law  (law@cygnus.com)
+2000-07-31  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc-c-torture/execute/20000731-2.c: New test.
 
@@ -8843,7 +8848,7 @@ Mon Jul 31 21:14:49 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/c90-impl-int-2.c, gcc.dg/c99-impl-int-2.c: New tests.
 
-Wed Jul 26 19:41:51 2000  Hans-Peter Nilsson  <hp@axis.com>
+2000-07-26  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.c-tortuer/execute/20000726-1.c: New test.
 
@@ -8949,7 +8954,7 @@ Wed Jul 26 19:41:51 2000  Hans-Peter Nilsson  <hp@axis.com>
 	* gcc.dg/cpp/cmdlne-dM.c: New test.
 	* gcc.dg/cpp/cmdlne-dD.c: New test.
 
-Mon Jul 17 03:13:12 2000  Jeffrey A Law  (law@cygnus.com)
+2000-07-17  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20000717-3.c: New test.
 
@@ -8977,7 +8982,7 @@ Mon Jul 17 03:13:12 2000  Jeffrey A Law  (law@cygnus.com)
 	* gcc.dg/c99-impl-int-1.c, gcc.dg/c99-longlong-1.c,
 	* gcc.dg/c99-restrict-1.c, gcc.dg/c99-return-1.c: New tests.
 
-Mon Jul 17 00:41:57 2000   Greg McGary <greg@mcgary.org>
+2000-07-17   Greg McGary <greg@mcgary.org>
 
 	* gcc.c-torture/execute/20000717-1.c: New test.
 	* gcc.c-torture/execute/20000717-1.x: Expected to fail.
@@ -9192,7 +9197,7 @@ Mon Jul 17 00:41:57 2000   Greg McGary <greg@mcgary.org>
 	* gcc.dg/980217-1.c: Declare abort.
 	* gcc.dg/cpp/20000628-1a.h: Use a declaration instead of an asm.
 
-Thu Jun 29 09:42:40 2000  Jeffrey A Law  (law@cygnus.com)
+2000-06-29  Jeffrey A Law  (law@cygnus.com)
 
 	* g77.f-torture/compile/20000629-1.f: New test.
 	* g77.f-torture/compile/20000629-1.x: Expected to fail.
@@ -9461,11 +9466,11 @@ Thu Jun 29 09:42:40 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.old-deja/old-deja.exp: Add -Wno-long-long.
 
-Fri Jun  9 22:46:34 2000  Jeffrey A Law  (law@cygnus.com)
+2000-06-09  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20000609-1.c: New test.
 
-Fri Jun  9 21:54:28 2000  Clinton Popetz  <cpopetz@cygnus.com>
+2000-06-09  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* gcc.dg/20000609-1.c: New test.
 
@@ -9634,7 +9639,7 @@ Fri Jun  9 21:54:28 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	* gcc.c-torture/execute/conversion.c: Ditto.
 	* gcc.c-torture/execute/cvt-1.c: Ditto.
 
-Thu May 18 16:03:29 2000  Jeffrey A Law  (law@cygnus.com)
+2000-05-18  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20000518-1.c: New test.
 
@@ -9642,7 +9647,7 @@ Thu May 18 16:03:29 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* g77.f-torture/compile/200005018.f:  New test.
 
-Wed May 17 18:30:10 2000  Jeffrey A Law  (law@cygnus.com)
+2000-05-17  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20000517-1.c: New test.
 
@@ -9659,7 +9664,7 @@ Wed May 17 18:30:10 2000  Jeffrey A Law  (law@cygnus.com)
 	* gcc.c-torture/execute/990208-1.c (main): Don't pass
 	constants through to doit's conditional.
 
-Thu May 11 19:02:43 2000  Jeffrey A Law  (law@cygnus.com)
+2000-05-11  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20000511-1.c: New test.
 	* g77.f-torture/compile/20000511-1.f: New test.
@@ -9712,7 +9717,7 @@ Thu May 11 19:02:43 2000  Jeffrey A Law  (law@cygnus.com)
 	* gcc.c-torture/compile/20000504-1.c: New test.  Derived from
 	OpenSSL by Jason R Thorpe.
 
-Wed May  3 13:02:10 2000  Jim Wilson  <wilson@cygnus.com>
+2000-05-03  Jim Wilson  <wilson@cygnus.com>
 
 	* gcc.c-torture/execute/20000503-1.c: New test for extract_muldiv bug.
 
@@ -9739,7 +9744,7 @@ Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/execute/va-arg-20.c: New test.
 
-Sun Apr 23 14:41:33 2000  Jeffrey A Law  (law@cygnus.com)
+2000-04-23  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20000422-1.c: New test.
 
@@ -9748,7 +9753,7 @@ Sun Apr 23 14:41:33 2000  Jeffrey A Law  (law@cygnus.com)
 	* gcc.c-torture/compile/20000420-2.c: New test for stack misalignment
 	when optimizing, but without sibling-call optimizations (-O1).
 
-Thu Apr 20 11:57:03 2000  Jeffrey A Law  (law@cygnus.com)
+2000-04-20  Jeffrey A Law  (law@cygnus.com)
 
 	  * gcc.c-torture/compile/20000420-1.c: New test.
 
@@ -9757,7 +9762,7 @@ Thu Apr 20 11:57:03 2000  Jeffrey A Law  (law@cygnus.com)
 	* g++.abi/ptrflags.C: New test.
 	* g++.eh/catchptr1.C: Test incomplete pointer chains.
 
-Wed Apr 19 09:16:32 2000  Catherine Moore  <clm@cygnus.com>
+2000-04-19  Catherine Moore  <clm@cygnus.com>
 
 	* gcc.c-torture/execute/921017-1.c: Check for NO_TRAMPOLINES.
 
@@ -9770,11 +9775,11 @@ Wed Apr 19 09:16:32 2000  Catherine Moore  <clm@cygnus.com>
 
 	* gcc.dg/20000419-1.c: New test.
 
-Wed Apr 12 22:54:02 2000  Hans-Peter Nilsson  <hp@axis.com>
+2000-04-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.c-torture/execute/20000412-6.c: New test.
 
-Wed Apr 12 10:25:08 2000  Jeffrey A Law  (law@cygnus.com)
+2000-04-12  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20000412-5.c: New test.
 	* g77.f-torture/compile/20000412-1.f: New test.
@@ -9835,7 +9840,7 @@ Wed Apr 12 10:25:08 2000  Jeffrey A Law  (law@cygnus.com)
 	cpp-shift.c, cpp-shortcircuit.c, cpp-unary.c:  Add FSF
 	copyright.
 
-Wed Apr  5 22:51:36 2000  Hans-Peter Nilsson  <hp@axis.com>
+2000-04-05  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.c-torture/execute/960327-1.c (f): Add a letter to s[] to
 	avoid stack-frame overwrite.
@@ -9862,12 +9867,12 @@ Wed Apr  5 22:51:36 2000  Hans-Peter Nilsson  <hp@axis.com>
 	* gcc.dg/cpp-redef-2.c, gcc.dg/cpp-tradwarn1.c,
 	gcc.dg/cpp-unc.c: Add -fno-show-column to compiler options.
 
-Mon Apr  3 02:35:34 2000  Jeffrey A Law  (law@cygnus.com)
+2000-04-03  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20000403-2.c: New test.
 	* gcc.c-torture/compile/20000403-1.c: New test.
 
-Mon Apr  3 16:53:52 2000  Hans-Peter Nilsson  <hp@axis.com>
+2000-04-03  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.c-torture/execute/20000403-1.c: New test.
 
@@ -9875,7 +9880,7 @@ Mon Apr  3 16:53:52 2000  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.c-torture/execute/20000402-1.c: New test.
 
-Mon Apr  3 14:10:34 2000  Donald Lindsay  <dlindsay@cygnus.com>
+2000-04-03  Donald Lindsay  <dlindsay@cygnus.com>
 
 	* gcc.c-torture/execute/va-arg-15.c: New test.
 	* gcc.c-torture/execute/va-arg-16.c: New test.
@@ -9903,7 +9908,7 @@ Mon Apr  3 14:10:34 2000  Donald Lindsay  <dlindsay@cygnus.com>
 	* gcc.dg/cpp-shortcircuit.c  New tests.
 	* gcc.dg/cpp-unary.c  New tests.
 
-Wed Mar 29 13:44:23 2000  Jeffrey A Law  (law@cygnus.com)
+2000-03-29  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20000329-1.c: New test.
 
@@ -9937,7 +9942,7 @@ Wed Mar 29 13:44:23 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20000319-1.c: New test.
 
-Tue Mar 14 08:58:37 2000  Jeffrey A Law  (law@cygnus.com)
+2000-03-14  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20000314-3.c: New test.
 	* gcc.c-torture/execute/20000314-2.c: New test.
@@ -9949,7 +9954,7 @@ Tue Mar 14 08:58:37 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.old-deja/g++.warn/inline.C: New test.
 
-Fri Mar 10 01:15:19 2000  Hans-Peter Nilsson  <hp@bitrange.com>
+2000-03-10  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.c-torture/execute/divconst-2.c: Rewrite to check for
 	standards-compliant result rather than specific constants.
@@ -9982,7 +9987,7 @@ Fri Mar 10 01:15:19 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* g++.old-deja/g++.warn/impint2.C: New test.
 
-Sun Mar  5 23:25:12 2000  Hans-Peter Nilsson  <hp@bitrange.com>
+2000-03-05  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.c-torture/execute/20000224-1.c (main): Expected return-value
 	is 1, not zero.
@@ -10011,7 +10016,7 @@ Sun Mar  5 23:25:12 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* g++.old-deja/g++.pt/unify7.C: New test.
 
-Sat Feb 26 19:46:09 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2000-02-26  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* g++.old-deja/g++.ext/attrib5.C: XFAIL on Alpha since no link alias.
 	* g++.old-deja/g++.pt/static3.C: Generalize system name for Alpha.
@@ -10025,7 +10030,7 @@ Sat Feb 26 19:46:09 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* gcc.c-torture/compile/cpp-2.c: New test.
 	* gcc.c-torture/compile/cpp-1.c: New test.
 
-Fri Feb 25 21:44:49 2000  Jeffrey A Law  (law@cygnus.com)
+2000-02-25  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20000225-1.c: New test.
 
@@ -10045,7 +10050,7 @@ Fri Feb 25 21:44:49 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/va-arg-13.c: New test.
 
-Wed Feb 23 14:16:06 2000  Donald Lindsay  <dlindsay@cygnus.com>
+2000-02-23  Donald Lindsay  <dlindsay@cygnus.com>
 
 	* gcc.c-torture/execute/va-arg-12.c: New test.
 
@@ -10070,15 +10075,15 @@ Wed Feb 23 14:16:06 2000  Donald Lindsay  <dlindsay@cygnus.com>
 	* lib/g++.exp (g++_init): Add -fmessage-length=0 to
 	ALWAYS_CXXFLAGS.
 
-Fri Feb 11 12:35:40 2000  Robert Lipe <robertl@sco.com>
+2000-02-11  Robert Lipe <robertl@sco.com>
 
 	* gcc.c-torture/compile/20000211-3.c: New test.
 
-Fri Feb 11 12:35:40 2000  Martin Buchholz <martin@xemacs.org>
+2000-02-11  Martin Buchholz <martin@xemacs.org>
 
 	* gcc.c-torture/compile/20000211-2.c: New test.
 
-Fri Feb 11 12:35:40 2000  Jeffrey A Law  (law@cygnus.com)
+2000-02-11  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20000211-1.c: New test.
 
@@ -10133,16 +10138,16 @@ Fri Feb 11 12:35:40 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/ieee/fp-cmp-4.c: New.
 
-Thu Jan 20 12:34:48 2000  Jeffrey A Law  (law@cygnus.com)
+2000-01-20  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20000120-2.c: New test.
 	* gcc.c-torture/execute/20000120-1.c: New test.
 
-Thu Jan 13 02:29:32 2000  Jeffrey A Law  (law@cygnus.com)
+2000-01-13  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20000113-1.c: New test.
 
-Wed Jan 12 20:26:58 2000  Jeffrey A Law  (law@cygnus.com)
+2000-01-12  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20000112-1.c: New test.
 
@@ -10150,7 +10155,7 @@ Wed Jan 12 20:26:58 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/20000111-1.c: New test.
 
-Mon Jan 10 18:12:49 2000  Jeffrey A Law  (law@cygnus.com)
+2000-01-10  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990628-1.c: Tweak to work on targets
 	with 16 bit integers.
@@ -10167,7 +10172,7 @@ Mon Jan 10 18:12:49 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.old-deja/g++.other/cast4.C: New test.
 
-Wed Jan  5 00:26:20 2000  Jeffrey A Law  (law@cygnus.com)
+2000-01-05  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20000105-2.c: New test.
 	* gcc.c-torture/compile/20000105-1.c: New test.
@@ -10258,13 +10263,13 @@ Wed Jan  5 00:26:20 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/991230-1.c: New test.
 
-Wed Dec 29 23:48:49 1999  Jeffrey A Law  (law@cygnus.com)
+1999-12-29  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/991229-3.c: New test.
 	* gcc.c-torture/compile/991229-2.c: New test.
 	* gcc.c-torture/compile/991229-1.c: New test.
 
-Wed Dec 29 20:54:46 1999  Greg McGary <gkm@eng.ascend.com>
+1999-12-29  Greg McGary <gkm@eng.ascend.com>
 
 	* gcc.c-torture/compile/labels-2.c: New test.
 
@@ -10312,17 +10317,17 @@ Wed Dec 29 20:54:46 1999  Greg McGary <gkm@eng.ascend.com>
 
 	* gcc.dg/991214-1.c: New test.
 
-Mon Dec 13 23:03:09 1999  Jeffrey A Law  (law@cygnus.com)
+1999-12-13  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/991213-3.c: New test.
 	* gcc.c-torture/compile/991213-2.c: New test.
 	* gcc.c-torture/compile/991213-1.c: New test.
 
-Fri Dec 10 00:53:10 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+1999-12-10  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* gcc.dg/991209-1.c: New test.
 
-Wed Dec  8 23:44:08 1999  Nathan Sidwell <nathan@acm.org>
+1999-12-08  Nathan Sidwell <nathan@acm.org>
 
 	* gcc.c-torture/compile/991208-1.c: New test.
 
@@ -10370,7 +10375,7 @@ Wed Dec  8 23:44:08 1999  Nathan Sidwell <nathan@acm.org>
 	* g++.old-deja/g++.ext/pretty3.C: New test.
 	* g++.old-deja/g++.other/debug6.C: New test.
 
-Wed Oct 20 16:18:23 1999  Jim Wilson  <wilson@cygnus.com>
+1999-10-20  Jim Wilson  <wilson@cygnus.com>
 
 	* gcc.c-torture/noncompile/noncompile.exp: For 940510-1.c, change
 	compiler_output to look for one error message instead of two.
@@ -10399,7 +10404,7 @@ Wed Oct 20 16:18:23 1999  Jim Wilson  <wilson@cygnus.com>
 	host is equipped with driver.h and driver.o so it can actually
 	compile and run the tests.
 
-Fri Oct  8 18:46:11 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+1999-10-08  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* gcc.c-torture/compile/991008-1.c: New test.
 
@@ -10437,35 +10442,35 @@ Fri Oct  8 18:46:11 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* gcc.dg/array-1.c: New test.
 
-Sat Oct 30 22:23:46 1999  Stephen L Moshier <moshier@mediaone.net>
+1999-10-30  Stephen L Moshier <moshier@mediaone.net>
 
 	* gcc.c-torture/execute/991030-1.c: New test.
 
-Tue Oct 26 20:25:42 1999  Richard Henderson  <rth@cygnus.com>
+1999-10-26  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/compile/991026-2.c: New test.
 
-Tue Oct 26 00:45:56 1999  Jeffrey A Law  (law@cygnus.com)
+1999-10-26  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/991026-1.c: New test.
 
-Sat Oct 23 23:36:03 1999  Jeffrey A Law  (law@cygnus.com)
+1999-10-23  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/991023-1.c: New test.
 
-Tue Oct 19 02:11:29 1999  Jeffrey A Law  (law@cygnus.com)
+1999-10-19  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/991019-1.c: New test.
 
-Sat Oct 16 00:05:48 1999  Richard Henderson  <rth@cygnus.com>
+1999-10-16  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/991016-1.c: New test.
 
-Thu Oct 14 04:22:47 1999  Stephane Carrez  <stcarrez@worldnet.fr>
+1999-10-14  Stephane Carrez  <stcarrez@worldnet.fr>
 
 	* gcc.c-torture/execute/991014-1.c: New test.
 
-Wed Oct 13 22:01:35 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+1999-10-13  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* g++.old-deja/g++.other/union2.C: New test.
 
@@ -10483,12 +10488,12 @@ Wed Oct 13 22:01:35 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* gcc.c-torture/execute/va-arg-11.c: New test.
 
-Fri Oct  1 00:53:17 1999  Mark P. Mitchell  <mark@codesourcery.com>
+1999-10-01  Mark P. Mitchell  <mark@codesourcery.com>
 
 	* lib/file-format.exp (gcc_target_object_format): Don't
 	crash if objdump is unavailable.
 
-Wed Sep 29 23:48:44 1999  Donn Terry <donn@interix.com>
+1999-09-29  Donn Terry <donn@interix.com>
 
 	* gcc.misc-tests/mg.exp: delete extraneous redirection.
 
@@ -10496,15 +10501,15 @@ Wed Sep 29 23:48:44 1999  Donn Terry <donn@interix.com>
 
 	* gcc.c-torture/compile/990928-1.c: New test.
 
-Tue Sep 28 13:19:15 BST 1999  Nathan Sidwell  <nathan@acm.org>
+1999-09-28  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.other/decl6.C: New test.
 
-Tue Sep 28 01:19:09 1999  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+1999-09-28  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.c-torture/execute/va-arg-10.c: New test.
 
-Mon Sep 27 09:14:24 BST 1999  Nathan Sidwell  <nathan@acm.org>
+1999-09-27  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.pt/memtemp77.C: Adjust expected
 	__PRETTY_FUNCTION__.
@@ -10522,7 +10527,7 @@ Mon Sep 27 09:14:24 BST 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/ecos.exp: Don't supply -finit-priority to cc1plus.
 
-Tue Sep 21 15:38:10 BST 1999  Nathan Sidwell  <nathan@acm.org>
+1999-09-21  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.other/dyncast1.C: New test.
 	* g++.old-deja/g++.other/dyncast2.C: New test.
@@ -10544,25 +10549,25 @@ Tue Sep 21 15:38:10 BST 1999  Nathan Sidwell  <nathan@acm.org>
 	* g++.old-deja/g++.eh/catch9.C: New test.
 	* g++.old-deja/g++.eh/catch9p.C: New test.
 
-Mon Sep 13 14:14:21 BST 1999  Nathan Sidwell  <nathan@acm.org>
+1999-09-13  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.other/sizeof3.C: Remove XFAILS.
 	* g++.old-deja/g++.other/sizeof4.C: Remove XFAILS.
 
-Mon Sep 13 06:28:57 1999  Jeffrey A Law  (law@cygnus.com)
+1999-09-13  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/990913-1.c: New test.
 
-Fri Sep 10 11:21:25 BST 1999  Nathan Sidwell  <nathan@acm.org>
+1999-09-10  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.jason/rfg4.C: Revert erroneous change, add -w.
 	* g++.old-deja/g++.jason/rfg5.C: Likewise.
 
-Thu Sep  9 10:40:36 1999  Richard Henderson  <rth@cygnus.com>
+1999-09-09  Richard Henderson  <rth@cygnus.com>
 
 	* g++.old-deja/g++.other/delete6.C: Use size_t with operator new.
 
-Thu Sep  9 12:32:57 BST 1999  Nathan Sidwell  <nathan@acm.org>
+1999-09-09  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.other/lookup11.C: New test.
 	* g++.old-deja/g++.bugs/900428_01.C: Rework now we understand
@@ -10576,7 +10581,7 @@ Thu Sep  9 12:32:57 BST 1999  Nathan Sidwell  <nathan@acm.org>
 	* gcc.c-torture/noncompile/noncompile.exp: Add poison-1.c.
 	* gcc.c-torture/noncompile/poison-1.c: New file.
 
-Wed Sep  8 09:39:56 BST 1999  Nathan Sidwell  <nathan@acm.org>
+1999-09-08  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.other/sizeof3.C: New test.
 	* g++.old-deja/g++.other/sizeof4.C: New test.
@@ -10600,31 +10605,31 @@ Wed Sep  8 09:39:56 BST 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* g77.f-torture/noncompile/19990826-4.f: Clarify who wrote what.
 
-Fri Sep  3 10:39:38 BST 1999  Richard Earnshaw <rearnsha@arm.com>
+1999-09-03  Richard Earnshaw <rearnsha@arm.com>
 
 	* gcc.c-torture/execute/990827-1.c: Fix typo.
 
-Fri Sep 03 09:31:10 BST 1999  Nathan Sidwell  <nathan@acm.org>
+1999-09-03  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.other/deref1.C: New test.
 
-Thu Sep 02 09:27:34 BST 1999  Nathan Sidwell  <nathan@acm.org>
+1999-09-02  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.other/ambig2.C: New test.
 	* g++.old-deja/g++.other/cond5.C: New test.
 	* g++.old-deja/g++.other/lookup16.C: New test.
 
-Thu Sep  2 01:17:51 1999  Marc Espie <espie@cvs.openbsd.org>
+1999-09-02  Marc Espie <espie@cvs.openbsd.org>
 
 	* gcc.dg/980414-1.c: Fix assembler syntax to work with old
 	assemblers too.
 
-Tue Aug 31 17:57:49 1999  Jeffrey A Law  (law@cygnus.com)
+1999-08-31  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/c-torture.exp: Avoid the "compare executables" optimization
 	when testing native.
 
-Sun Aug 29 14:35:41 1999  Jeffrey A Law  (law@cygnus.com)
+1999-08-29  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990829-1.c: New test.
 	* gcc.c-torture/compile/990829-1.c: New test.
@@ -10643,7 +10648,7 @@ Sun Aug 29 14:35:41 1999  Jeffrey A Law  (law@cygnus.com)
 	* g++.old-deja/g++.pt/memtemp90.C: Renamed from lss-010.C.
 	* g++.old-deja/g++.pt/memtemp91.C: Renamed from lss-011.C.
 
-Fri Aug 27 01:24:16 1999  Jeffrey A Law  (law@cygnus.com)
+1999-08-27  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990827-1.c: New test.
 
@@ -10695,7 +10700,7 @@ Fri Aug 27 01:24:16 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.old-deja/g++.other/local3.C: Removed XFAIL.
 
-Wed Aug  4 01:17:17 1999  Jeffrey A Law  (law@cygnus.com)
+1999-08-04  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/970312-1.c: Delete duplicate test.
 
@@ -10703,7 +10708,7 @@ Wed Aug  4 01:17:17 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.old-deja/g++.eh/spec6.C: Add more tests. Remove XFAILS.
 
-Wed Aug  4 01:17:17 1999  Jeffrey A Law  (law@cygnus.com)
+1999-08-04  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990804-1.c: New test.
 
@@ -10721,13 +10726,13 @@ Wed Aug  4 01:17:17 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.old-deja/g++.other/enum2.C: New test.
 
-Mon Aug  2 13:35:12 1999  Richard Henderson  <rth@cygnus.com>
+1999-08-02  Richard Henderson  <rth@cygnus.com>
 
 	Adapted from tests from Franz Sirl:
 	* gcc.c-torture/execute/va-arg-7.c: New test.
 	* gcc.c-torture/execute/va-arg-8.c: New test.
 
-Sun Aug  1 22:29:34 1999  Jeffrey A Law  (law@cygnus.com)
+1999-08-01  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/990801-2.c: New test.
 
@@ -10745,7 +10750,7 @@ Sun Aug  1 22:29:34 1999  Jeffrey A Law  (law@cygnus.com)
 	from fr1 to unknown_register, since fr1 is a legitimate register
 	on some machines.
 
-Sun Jul 25 21:41:37 1999  Jeffrey A Law  (law@cygnus.com)
+1999-07-25  Jeffrey A Law  (law@cygnus.com)
 
 	* README: More listname related changes.
 
@@ -10777,11 +10782,11 @@ Sun Jul 25 21:41:37 1999  Jeffrey A Law  (law@cygnus.com)
 	* gcc.dg/special/ecos.exp: Remove definition of proc
 	gcc_target_object_format.
 
-Mon Jun 28 08:20:51 1999  Jeffrey A Law  (law@cygnus.com)
+1999-06-28  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990628-1.c: New test.
 
-Fri Jun 25 05:28:40 1999  Jeffrey A Law  (law@cygnus.com)
+1999-06-25  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/990625-2.c: New test.
 
@@ -10794,7 +10799,7 @@ Fri Jun 25 05:28:40 1999  Jeffrey A Law  (law@cygnus.com)
 	* gcc.c-torture/compile/dll.x: Only support the dll.c test on
 	ports that use the COFF/PE file format.
 
-Thu Jun 17 13:48:16 1999  Jeffrey A Law  (law@cygnus.com)
+1999-06-17  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/990617-1.c: New test.
 
@@ -10810,7 +10815,7 @@ Thu Jun 17 13:48:16 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.old-deja/g++.eh/catch1.C: New test.
 
-Mon Jun  7 23:39:16 1999  Jeffrey A Law  (law@cygnus.com)
+1999-06-07  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.old-deja/g++.mike/p6610a.C: Expect failure on freebsd-elf.
 
@@ -10822,19 +10827,19 @@ Mon Jun  7 23:39:16 1999  Jeffrey A Law  (law@cygnus.com)
 	* g77.f-torture/compile/19990502-0.f: Replace with new,
 	shorter, test that still fails after recent changes.
 
-Fri Jun  4 02:25:04 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+1999-06-04  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* gcc.c-torture/execute/990604-1.c: New test.
 
-Mon May 31 00:34:51 1999  Jeffrey A Law  (law@cygnus.com)
+1999-05-31  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990531-1.c: New test.
 
-Thu May 27 02:38:36 1999  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+1999-05-27  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.c-torture/compile/990527-1.c: New test.
 
-Thu May 27 02:18:51 1999  Joern Rennecke <amylaar@cygnus.com>
+1999-05-27  Joern Rennecke <amylaar@cygnus.com>
 
 	* gcc.c-torture/execute/990527-1.c: New test.
 
@@ -10847,7 +10852,7 @@ Thu May 27 02:18:51 1999  Joern Rennecke <amylaar@cygnus.com>
 
 	* g77.f-torture/compile/19990525-0.f: New test.
 
-Tue May 25 01:21:16 1999  Jeffrey A Law  (law@cygnus.com)
+1999-05-25  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990525-2.c: New test.
 
@@ -10862,17 +10867,17 @@ Tue May 25 01:21:16 1999  Jeffrey A Law  (law@cygnus.com)
 	after downgrade to warning (cp/ChangeLog: 1999-05-20 Jason
 	Merrill).
 
-Mon May 24 00:01:52 1999  Jeffrey A Law  (law@cygnus.com)
+1999-05-24  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990524-1.c: New test.
 
 	* gcc.dg/990524-1.c: New test.
 
-Sun May 23 21:18:12 1999  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+1999-05-23  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.c-torture/compile/990523-1.c: New test.
 
-Wed May 19 02:56:18 1999  Raja R Harinath <harinath@cs.umn.edu>
+1999-05-19  Raja R Harinath <harinath@cs.umn.edu>
 
 	* gcc.c-torture/compile/990519-1.c: New test.
 
@@ -10888,7 +10893,7 @@ Wed May 19 02:56:18 1999  Raja R Harinath <harinath@cs.umn.edu>
 
 	* gcc.dg/noreturn-1.c: New test.
 
-Thu May 13 02:02:46 1999  Andreas Schwab <schwab@issan.cs.uni-dortmund.de>
+1999-05-13  Andreas Schwab <schwab@issan.cs.uni-dortmund.de>
 
 	* gcc.c-torture/execute/990513-1.c: New test.
 
@@ -10944,12 +10949,12 @@ Thu May 13 02:02:46 1999  Andreas Schwab <schwab@issan.cs.uni-dortmund.de>
 
 	* g77.f-torture/compile/19990502-0.f: New test.
 
-Sun May  2 01:38:50 1999  Craig Burley  <craig@jcb-sc.com>
+1999-05-02  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/execute/u77-test.f (main): Declare FTELL as
 	intrinsic.
 
-Sun May  2 01:13:37 1999  Craig Burley  <craig@jcb-sc.com>
+1999-05-02  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/execute/u77-test.f (main): List libU77
 	intrinsics not currently tested.
@@ -10958,12 +10963,12 @@ Sun May  2 01:13:37 1999  Craig Burley  <craig@jcb-sc.com>
 	FTELL_subr, MCLOCK, MCLOCK8, and CPU_TIME.
 	Trim blanks off the ends of some printed strings.
 
-Sun May  2 00:06:45 1999  Craig Burley  <craig@jcb-sc.com>
+1999-05-02  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/execute/u77-test.f (main): Just warn about
 	FSTAT gid disagreement, as it's expected on some systems.
 
-Sat May  1 23:57:18 1999  Craig Burley  <craig@jcb-sc.com>
+1999-05-01  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/execute/u77-test.f: Generalize sum-checking to
 	use a new function, which allows for some slop.
@@ -10977,7 +10982,7 @@ Sat May  1 23:57:18 1999  Craig Burley  <craig@jcb-sc.com>
 	libf2c/libU77 version, bringing patches to that version here.
 	Add suitable commentary.
 
-Sun Apr 25 12:28:59 1999  Richard Henderson  <rth@cygnus.com>
+1999-04-25  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.dg/990424-1.c: New test.
 
@@ -10991,16 +10996,16 @@ Sun Apr 25 12:28:59 1999  Richard Henderson  <rth@cygnus.com>
 	* g77.f-torture/compile/19990419-0.f: New test.
 	* g77.f-torture/execute/19990419-1.f: New test.
 
-Sat Apr 17 16:56:48 1999  Richard Henderson  <rth@cygnus.com>
+1999-04-17  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.dg/uninit-9.c (func): Use __builtin_alloca instead of alloca
 	to avoid the need for a prototype to supress a warning.
 
-Wed Apr  7 23:08:59 1999  Jim Wilson  <wilson@cygnus.com>
+1999-04-07  Jim Wilson  <wilson@cygnus.com>
 
 	* gcc.c-torture/execute/920501-7.c (main): Delete __I960__ ifndef.
 
-Sun Apr  4 04:02:53 1999  Jeffrey A Law  (law@cygnus.com)
+1999-04-04  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990404-1.c: New test.
 
@@ -11011,12 +11016,12 @@ Sun Apr  4 04:02:53 1999  Jeffrey A Law  (law@cygnus.com)
 	* gcc.misc-tests/m-un-2.c: Adjust regexps for new format of
 	missing initializer warnings.
 
-Sun Mar 28 00:49:41 1999  Jeffrey A Law  (law@cygnus.com)
+1999-03-28  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/objc-torture.exp: Replace "77" with "Obj-C" in pattern
 	matching strings.
 
-Fri Mar 26 00:50:46 1999  Jeffrey A Law  (law@cygnus.com)
+1999-03-26  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990326-1.c: New test from Charles Hannum.
 
@@ -11025,16 +11030,16 @@ Fri Mar 26 00:50:46 1999  Jeffrey A Law  (law@cygnus.com)
 	* g77.f-torture/execute/19990325-0.f: New test.
 	* g77.f-torture/execute/19990325-1.f: New test.
 
-Wed Mar 24 22:50:50 1999  Jeffrey A Law  (law@cygnus.com)
+1999-03-24  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990324-1.c: New test.
 
-Mon Mar 22 14:55:58 1999  Jim Wilson  <wilson@cygnus.com>
+1999-03-22  Jim Wilson  <wilson@cygnus.com>
 
 	* gcc.c-torture/execute/bf-sign-2.c (main): Replace struct sizeof
 	test with 4.
 
-Wed Mar 17 12:22:39 1999  Richard Henderson  <rth@cygnus.com>
+1999-03-17  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/ieee/980619-1.x: New.  Expected fail on x86.
 
@@ -11048,7 +11053,7 @@ Wed Mar 17 12:22:39 1999  Richard Henderson  <rth@cygnus.com>
 	* g77.f-torture/execute/19990313-0.f: New test.
 	* g77.f-torture/execute/19990313-1.f: New test.
 
-Fri Mar 12 16:17:28 1999  Jim Wilson  <wilson@cygnus.com>
+1999-03-12  Jim Wilson  <wilson@cygnus.com>
 
 	* gcc.c-torture/execute/970312-1.c, execute/980605-1.c (f): Change
 	printf to sprintf.
@@ -11087,7 +11092,7 @@ Fri Mar 12 16:17:28 1999  Jim Wilson  <wilson@cygnus.com>
 	* gcc.c-torture/noncompile/noncompile.exp (951025-1.c): Accept an error
 	message on line 1 or line 2; cccp and cpplib do this differently.
 
-Mon Mar  1 23:29:14 1999  Jeffrey A Law  (law@cygnus.com)
+1999-03-01  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.old-deja/g++.law/weak1.C: New test.
 
@@ -11113,7 +11118,7 @@ Mon Mar  1 23:29:14 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/c-torture.exp: Add -O3 to TORTURE_OPTIONS list.
 
-Mon Feb 22 01:15:08 1999  Jeffrey A Law  (law@cygnus.com)
+1999-02-22  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990222-1.c: New test.
 
@@ -11126,17 +11131,17 @@ Mon Feb 22 01:15:08 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* g77.f-torture/compile/19981216-0.f: New test.
 
-Sun Feb 14 01:26:29 1999  Jeffrey A Law  (law@cygnus.com)
+1999-02-14  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/990214-1.c: New test.
 
-Sat Feb 13 00:43:52 1999  Jeffrey A Law  (law@cygnus.com)
+1999-02-13  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/990213-2.c: New test.
 
 	* gcc.dg/990213-1.c: New test.
 
-Fri Feb 12 11:04:35 1999  Jeffrey A Law  (law@cygnus.com)
+1999-02-12  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/990106-2.c: Update to work on targets with 16bit
 	ints.
@@ -11148,11 +11153,11 @@ Fri Feb 12 11:04:35 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/chill.exp: Fix typo: doesn'timeout -> doesn't
 
-Thu Feb 11 01:12:12 1999  Jeffrey A Law  (law@cygnus.com)
+1999-02-11  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990211-1.c: New test from Nathan SIdwell.
 
-Wed Feb 10 13:08:12 1999  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+1999-02-10  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* gcc.dg/special/ecos.exp: New test driver for new tests with
 	special requirements.
@@ -11169,7 +11174,7 @@ Wed Feb 10 13:08:12 1999  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 	* gcc.dg/special/wkali-2a.c: Accompanying file to wkali-2.c.
 	* gcc.dg/special/wkali-2b.c: Accompanying file to wkali-2.c.
 
-Wed Feb 10 12:15:35 1999  Felix Lee  <flee@cygnus.com>
+1999-02-10  Felix Lee  <flee@cygnus.com>
 
 	  * lib/c-torture.exp (c-torture-compile): Pull out code for
 	  analyzing gcc error messages.
@@ -11177,7 +11182,7 @@ Wed Feb 10 12:15:35 1999  Felix Lee  <flee@cygnus.com>
 	  positives.
 	  * lib/gcc.exp (gcc_check_compile): New function.
 
-Mon Feb  8 21:42:57 1999  Richard Henderson  <rth@cygnus.com>
+1999-02-08  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/990208-1.c: New test.
 
@@ -11198,7 +11203,7 @@ Mon Feb  8 21:42:57 1999  Richard Henderson  <rth@cygnus.com>
 
 	* README: Add comment about g++.dg directory
 
-Sat Feb  6 18:00:38 1999  Jeffrey A Law  (law@cygnus.com)
+1999-02-06  Jeffrey A Law  (law@cygnus.com)
 
 	* README: Update email addresses.
 
@@ -11216,11 +11221,11 @@ Sat Feb  6 18:00:38 1999  Jeffrey A Law  (law@cygnus.com)
 	* gcc.c-torture/execute/memcheck/driver.c (main): Use exit or
 	abort to terminate program execution.
 
-Sat Jan 30 16:22:47 1999  Richard Henderson  <rth@cygnus.com>
+1999-01-30  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/990130-1.c: New test.
 
-Sat Jan 30 11:10:06 1999  Jeffrey A Law  (law@cygnus.com)
+1999-01-30  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/990130-1.c: New test.
 
@@ -11240,7 +11245,7 @@ Sat Jan 30 11:10:06 1999  Jeffrey A Law  (law@cygnus.com)
 	positives.
 	* lib/gcc.exp (gcc_check_compile): new function.
 
-Sun Jan 17 00:02:33 1999  Jeffrey A Law  (law@cygnus.com)
+1999-01-17  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/990117-1.c: New test.
 
@@ -11248,25 +11253,25 @@ Sun Jan 17 00:02:33 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990117-1.c: New test from HJ Lu.
 
-Fri Jan 15 02:52:00 1999  Jeffrey A Law  (law@cygnus.com)
+1999-01-15  Jeffrey A Law  (law@cygnus.com)
 
 	* g77.f-torture/compile/990115-1.f: New test.
 
-Thu Jan  7 23:39:47 1999  Jeffrey A Law  (law@cygnus.com)
+1999-01-07  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/990107-1.c: New test
 
-Wed Jan  6 02:21:59 1999  Jeffrey A Law  (law@cygnus.com)
+1999-01-06  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990106-2.c: New test.
 
 	* gcc.c-torture/execute/990106-1.c: New test.
 
-Wed Dec 30 23:05:28 1998  Zack Weinberg <zack@rabi.columbia.edu>
+1998-12-30  Zack Weinberg <zack@rabi.columbia.edu>
 
 	* gcc.c-torture/compile/981223-1.c: New test.
 
-Tue Dec 29 11:33:25 1998  Richard Henderson  <rth@cygnus.com>
+1998-12-29  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/bcp-1.c (bad10): Rename from opt3.
 	(opt3): Rename from opt4 and disable.
@@ -11283,11 +11288,11 @@ Tue Dec 29 11:33:25 1998  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/920501-4.c (main): Fix typo: replace | with ||.
 
-Fri Dec 11 10:25:57 1998  Jeffrey A Law  (law@cygnus.com)
+1998-12-11  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.old-deja/g++.benjamin/p12475.C: Expect failure on mips64 targets.
 
-Fri Dec 11 01:12:45 1998  Zack Weinberg <zack@rabi.columbia.edu>
+1998-12-11  Zack Weinberg <zack@rabi.columbia.edu>
 
 	* gcc.c-torture/compile/981211-1.c: New test.
 
@@ -11297,7 +11302,7 @@ Fri Dec 11 01:12:45 1998  Zack Weinberg <zack@rabi.columbia.edu>
 
 	* g++.old-deja/g++.pt/instantiate6.C: Linker error, not	crash.
 
-Tue Dec  8 22:50:04 1998  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+1998-12-08  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.special/930510-1.c: Make C9X safe.
 	* gcc.misc-tests/gcov-1.c Similarly.
@@ -11307,7 +11312,7 @@ Tue Dec  8 22:50:04 1998  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.dg/ultrasp1.c: New test.
 
-Sun Dec  6 00:40:12 1998  Richard Henderson  <rth@cygnus.com>
+1998-12-06  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/981206.c: New test.
 
@@ -11381,7 +11386,7 @@ Sun Dec  6 00:40:12 1998  Richard Henderson  <rth@cygnus.com>
 
 	* g77.f-torture/execute/labug1.f: New test.
 
-Sat Nov 21 21:41:05 1998  Jeffrey A Law  (law@cygnus.com)
+1998-11-21  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/980526-1.c: Do nothing if NO_LABEL_VALUES
 	is defined.
@@ -11395,7 +11400,7 @@ Sat Nov 21 21:41:05 1998  Jeffrey A Law  (law@cygnus.com)
 	* g++.old-deja/g++.eh/throw2.C: New test.  CV-qualifiers are not
 	properly discarded.
 
-Sun Oct 11 05:04:28 1998  Ken Raeburn  <raeburn@cygnus.com>
+1998-10-11  Ken Raeburn  <raeburn@cygnus.com>
 
 	* gcc.c-torture/execute/memcheck: New directory of tests for
 	-fcheck-memory-usage.
@@ -11407,11 +11412,11 @@ Sun Oct 11 05:04:28 1998  Ken Raeburn  <raeburn@cygnus.com>
 	* README.g++: Eliminate obsolete information, update and move most
 	relevant stuff to README.
 
-Sat Nov  7 02:55:55 1998  Richard Henderson  <rth@cygnus.com>
+1998-11-07  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/compile/981107-1.c: New test.
 
-Mon Nov  2 11:16:03 1998  Doug Evans  <devans@canuck.cygnus.com>
+1998-11-02  Doug Evans  <devans@canuck.cygnus.com>
 
 	* execute/memcpy-bi.c: New testcase.
 
@@ -11442,15 +11447,15 @@ Mon Nov  2 11:16:03 1998  Doug Evans  <devans@canuck.cygnus.com>
 
 	* lib/old-dejagnu.exp (old-dejagnu): Document `Additional sources'.
 
-Thu Oct 22 16:01:44 1998  Andreas Schwab <schwab@issan.informatik.uni-dortmund.de>
+1998-10-22  Andreas Schwab <schwab@issan.informatik.uni-dortmund.de>
 
 	* compile/981022-1.c, compile/981022-1.x: New test and driver.
 
-Mon Oct 19 14:03:07 1998  Jeffrey A Law  (law@cygnus.com)
+1998-10-19  Jeffrey A Law  (law@cygnus.com)
 
 	* 981019-1.c: New test.
 
-Wed Oct 14 21:11:19 1998  Robert Lipe <robertl@dgii.com>
+1998-10-14  Robert Lipe <robertl@dgii.com>
 
 	* lib/objc-torture.exp (objc-torture-execute): Add -I so we can
 	find objc headers.
@@ -11520,11 +11525,11 @@ Wed Oct 14 21:11:19 1998  Robert Lipe <robertl@dgii.com>
 
 	* g++.old-deja/g++.ns/extern1.C: Fix XFAIL mark.
 
-Fri Oct  9 19:19:19 1998  Jeffrey A Law  (law@cygnus.com)
+1998-10-09  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/special/920521-1.c: Fix bogus test.
 
-Thu Oct  8 19:14:05 1998  Nick Clifton  <nickc@cygnus.com>
+1998-10-08  Nick Clifton  <nickc@cygnus.com>
 
 	* gcc.dg/dll-?.c Add thumb to target list.
 	Fix assembler scan patterns to match current assembler output.
@@ -11544,7 +11549,7 @@ Thu Oct  8 19:14:05 1998  Nick Clifton  <nickc@cygnus.com>
 	* g++.old-deja/g++.other/init7.C: New test.  Retry initialization
 	of static locals if first initialization throws.
 
-Wed Oct  7 12:00:20 1998  Jim Wilson  <wilson@cygnus.com>
+1998-10-07  Jim Wilson  <wilson@cygnus.com>
 
 	* gcc.c-torture/compile/981007-1.c: New test for irix6 -O0 core dump.
 
@@ -11600,16 +11605,16 @@ Wed Oct  7 12:00:20 1998  Jim Wilson  <wilson@cygnus.com>
 	* g++.old-deja/g++.other/typename1.C: New test; template-dependent
 	type name without `typename' should be rejected with -pedantic.
 
-Fri Oct  2 21:55:58 1998  Richard Henderson  <rth@cygnus.com>
+1998-10-02  Richard Henderson  <rth@cygnus.com>
 
 	* g++.old-deja/g++.other/addrof1.C: New test.
 
-Thu Oct  1 17:15:26 1998  Nick Clifton  <nickc@cygnus.com>
+1998-10-01  Nick Clifton  <nickc@cygnus.com>
 
 	* gcc.c-torture/compile/981001-1.c: New test.
 	* gcc.c-torture/execute/981001-1.c: New test.
 
-Thu Oct  1 19:05:20 1998  Jeffrey A Law  (law@cygnus.com)
+1998-10-01  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/981001-2.c: New test.
 	* gcc.c-torture/compile/981001-3.c: New test.
@@ -11692,50 +11697,50 @@ Thu Oct  1 19:05:20 1998  Jeffrey A Law  (law@cygnus.com)
 	(un)signed char are different types for template specialization
 	purposes.
 
-Thu Sep  3 00:40:32 1998  Ovidiu Predescu  <ovidiu@aracnet.com>
+1998-09-03  Ovidiu Predescu  <ovidiu@aracnet.com>
 
 	* lib/{objc.exp,objc-torture.exp}: New files for objc testing harness.
 	* objc: ObjC testsuite.
 
-Mon Aug 31 12:00:00 1998  Catherine Moore  <clm@cygnus.com>
+1998-08-31  Catherine Moore  <clm@cygnus.com>
 
 	* gcc.c-torture/execute/941014-1.x:  New file.
 
-Mon Aug 31 15:19:32 1998  Nick Clifton  <nickc@cygnus.com>
+1998-08-31  Nick Clifton  <nickc@cygnus.com>
 
 	* lib/c-torture.exp: Add support for
 	torture_eval_before_compile and torture_eval_before_execute
 	variables.
 
-Sun Aug 30 17:38:20 1998  Jeffrey A Law  (law@cygnus.com)
+1998-08-30  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/980626-1.c: Delete this test.  We've declared the warning
 	this test triggers valid.
 
-Thu Aug 27 23:59:18 1998  Jeffrey A Law  (law@cygnus.com)
+1998-08-27  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/980827-1.c: New test.
 
-Wed Aug 26 16:10:00 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+1997-08-26  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* gcc.c-torture/execute/loop-4b.c: New test.
 
-Wed Aug 26 16:25:38 1998  Nick Clifton  <nickc@cygnus.com>
+1998-08-26  Nick Clifton  <nickc@cygnus.com>
 
 	* lib/c-torture.exp: Add support for
 	torture_eval_before_compile and torture_eval_before_execute
 	variables.
 
-Tue Aug 25 19:42:13 1998  Jeffrey A Law  (law@cygnus.com)
+1998-08-25  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/980825-1.c: New test.
 
-Mon Aug 24 14:20:32 1998  Nick Clifton  <nickc@cygnus.com>
+1998-08-24  Nick Clifton  <nickc@cygnus.com>
 
 	* gcc.c-torture/execute/bcp-1.c (main): Fix optimize test loop to
 	count number tests in opt_t0 not good_t0.
 
-Mon Aug 24 16:38:52 1998  Jeffrey A Law  (law@cygnus.com)
+1998-08-24  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/930326-1.x: Fix typo.
 
@@ -11744,7 +11749,7 @@ Mon Aug 24 16:38:52 1998  Jeffrey A Law  (law@cygnus.com)
 	* lib/old-dejagnu.exp: Make it possible to XFAIL a test that
 	causes an ICE.
 
-Fri Aug 21 23:59:18 1998  Jeffrey A Law  (law@cygnus.com)
+1998-08-21  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/unsorted/memtst.c: Reduce size of array when
 	STACK_SIZE is defined.
@@ -11752,7 +11757,7 @@ Fri Aug 21 23:59:18 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/980821-1.c: New test.
 
-Fri Aug 21 03:14:04 1998  Jeffrey A Law  (law@cygnus.com)
+1998-08-21  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/980526-2.c: Disable for targets with 16bit ints.
 
@@ -11766,17 +11771,17 @@ Fri Aug 21 03:14:04 1998  Jeffrey A Law  (law@cygnus.com)
 	* lib/old-dejagnu.exp: Revise handling of `Internal compiler
 	error'.
 
-Tue Aug 18 19:19:50 1998  Jeffrey A Law  (law@cygnus.com)
+1998-08-18  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/*.x: Some updates for the h8300 targets.
 
-Sun Aug 16 01:29:19 1998  Jeffrey A Law  (law@cygnus.com)
+1998-08-16  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/980816-1.c: New test.
 
 	* gcc.dg/980816-1.c: New test.
 
-Thu Aug 13 00:13:55 1998  Jeffrey A Law  (law@cygnus.com)
+1998-08-13  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/ieee/ieee.exp: Pass -ffloat-store to
 	compiler for ieee tests.
@@ -11791,11 +11796,11 @@ Thu Aug 13 00:13:55 1998  Jeffrey A Law  (law@cygnus.com)
 	-finstrument-functions.
 	* gcc.c-torture/special/special.exp: Run it.
 
-Wed Jul 29 00:17:18 1998  Jeffrey A Law  (law@cygnus.com)
+1998-07-29  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/980729-1.c: New test.
 
-Mon Jul 27 11:05:07 1998  Nick Clifton  <nickc@cygnus.com>
+1998-07-27  Nick Clifton  <nickc@cygnus.com>
 
 	* gcc.c-torture/execute/ieee/930529-1.c (main): Check to see if
 	__thumb__ is defined, and test for ARM style doubles if so.
@@ -11804,12 +11809,12 @@ Mon Jul 27 11:05:07 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* g77.f-torture/noncompile/980615-0.f: New test.
 
-Sun Jul 26 01:15:56 1998  H.J. Lu  (hjl@gnu.org)
+1998-07-26  H.J. Lu  (hjl@gnu.org)
 
 	* gcc.dg/980312-1.c: Do link instead of compile.
 	* gcc.dg/980313-1.c: Likewise.
 
-Sun Jul 26 01:05:02 1998  Jeffrey A Law  (law@cygnus.com)
+1998-07-26  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/980726-1.c: New test.
 
@@ -11817,26 +11822,26 @@ Sun Jul 26 01:05:02 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* g77.f-torture/execute/io0.f: New test.
 
-Fri Jul 24 11:02:43 1998  Nick Clifton  <nickc@cygnus.com>
+1998-07-24  Nick Clifton  <nickc@cygnus.com>
 
 	* gcc.c-torture/execute/comp-goto-1.c (main): Make main() return
 	an int.
 
-Thu Jun 18 15:12:30 1998  Michael Meissner  <meissner@cygnus.com>
+1998-06-18  Michael Meissner  <meissner@cygnus.com>
 
 	* gcc.c-torture/execute/980618-{1,2}.c: New tests that showed up
 	m32r bugs.
 
-Fri Jul 17 14:19:32 1998  Nick Clifton  <nickc@cygnus.com>
+1998-07-17  Nick Clifton  <nickc@cygnus.com>
 
 	* gcc.dg/980626-1.c: Expect failures for all toolchains until
 	c-decl.c:grokdeclarator can handle mode attributes.
 
-Thu Jul 16 21:42:50 1998  Jeffrey A Law  (law@cygnus.com)
+1998-07-16  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/980716-1.c: New test.
 
-Mon Jul 13 22:26:37 1998  Jeffrey A Law  (law@cygnus.com)
+1998-07-13  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/920715-1.x: No longer expected to fail on
 	the mn10200.
@@ -11856,42 +11861,42 @@ Mon Jul 13 22:26:37 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* g77.f-torture/execute/970816-3.f:  New test from Craig.
 
-Fri Jul 10 23:43:33 1998 Martin von Loewis <martin@mira.isdn.cs.tu-berlin.de>
+1998-07-10 Martin von Loewis <martin@mira.isdn.cs.tu-berlin.de>
 
 	*  g++.other/singleton.C: Return error value instead of taking
 	SIGSEGV.
 
-Fri Jul 10 10:02:03 1998  Klaus-Georg Adams <Klaus-Georg.Adams@chemie.uni-karlsruhe.de>
+1998-07-10  Klaus-Georg Adams <Klaus-Georg.Adams@chemie.uni-karlsruhe.de>
 
 	*  g++.other/singleton.C: New test.   Warning is under dispute.
 	Runtime crash is not.
 
-Thu Jul  9 23:07:45 1998  Martin von Loewis <martin@mira.isdn.cs.tu-berlin.de>
+1998-07-09  Martin von Loewis <martin@mira.isdn.cs.tu-berlin.de>
 
 	* g++.ns/{alias2.C, alias5.C, koenig4.C, lookup3.C ns13.C,
 	ns14.C, ns15.C, template3.C, undef1.C, using4.C, using5.C,
 	using6.C, using7.C}:  New namespace tests.
 
-Thu Jul  9 22:44:49 1998  Alexandre Oliva   <oliva@dcc.unicamp.br>
+1998-07-09  Alexandre Oliva   <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.other/partspec1.C: Test matching of partial
 	specialization with typedef'ed names used as array indexes.
 
-Thu Jul  9 00:38:51 1998  Jeffrey A Law  (law@cygnus.com)
+1998-07-09  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/980709-1.c: New test.
 
 	* gcc.dg/980709-1.c: New test.
 
-Tue Jul  7 13:41:27 1998  Richard Henderson  <rth@cygnus.com>
+1998-07-07  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/bcp-1.c: New test.
 
-Tue Jul  7 11:49:04 1998  Jeffrey A Law  (law@cygnus.com)
+1998-07-07  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/980707-1.c: New test.
 
-Mon Jul  6 18:20:27 1998  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
+1998-07-06  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
 
 	* gcc.c-torture/compile/980706-1.c: New test.
 
@@ -11900,13 +11905,13 @@ Mon Jul  6 18:20:27 1998  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
 	* g77.f-torture/execute/980701-0.f,
 	g77.f-torture/execute/980701-1.f: New test from Craig.
 
-Wed Jul  1 00:52:51 1998  Jeffrey A Law  (law@cygnus.com)
+1998-07-01  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/980701-1.c: New test.
 
 	* gcc.c-torture/execute/980701-1.c: New test.
 
-Tue Jun 30 11:51:42 1998  Klaus-Georg Adams  <Klaus-Georg.Adams@chemie.uni-ka
+1998-06-30  Klaus-Georg Adams  <Klaus-Georg.Adams@chemie.uni-ka
 rlsruhe.de>
 
 	* g++.old-deja/g++.robertl/eb132.C: New test.
@@ -11921,7 +11926,7 @@ rlsruhe.de>
 
 	* g77.f-torture/execute/980628-3.f: Remove mail headers.
 
-Sun Jun 28 12:49:02 1998  Jeffrey A Law  (law@cygnus.com)
+1998-06-28  Jeffrey A Law  (law@cygnus.com)
 
 	* g77.f-torture/execute/980628-4.f: New test from Craig.
 	* g77.f-torture/execute/980628-5.f: Likewise.
@@ -11931,64 +11936,64 @@ Sun Jun 28 12:49:02 1998  Jeffrey A Law  (law@cygnus.com)
 	* g77.f-torture/execute/980628-3.f: Likewise.
 	* g77.f-torture/execute/980628-6.f: Likewise.
 
-Sun Jun 28 00:37:26 1998  Jeffrey A Law  (law@cygnus.com)
+1998-06-28  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/g77.exp (default_g77_version): Tweak to make it work in a build
 	directory when nothing has been installed yet.
 
-Sat Jun 27 23:23:18 1998  Carlo Wood  <carlo@runaway.xs4all.nl>
+1998-06-27  Carlo Wood  <carlo@runaway.xs4all.nl>
 
 	* gcc.c-torture/special/special.exp: Handle newer versions of
 	dejagnu.
 
-Fri Jun 26 17:57:40 1998  Jeffrey A Law  (law@cygnus.com)
+1998-06-26  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/980626-1.c: New test.
 
-Fri Jun 19 23:26:12 1998  Bruno Haible <haible@ilog.fr>
+1998-06-19  Bruno Haible <haible@ilog.fr>
 
 	* gcc.misc-tests/m-un-2.c: New test.
 	* g++.old-deja/g++.other/warn01.c: Likewise.
 
-Fri Jun 19 14:06:36 1998  Robert Lipe  <robertl@dgii.com>
+1998-06-19  Robert Lipe  <robertl@dgii.com>
 
 	* gcc.dg/980414-1.c: Move comments outside of ASM to improve
 	compatibility with assmblers with a different comment character.
 	Eliminate use of GAS-specific extensions.
 
-Fri Jun 19 02:05:14 1998  Jeffrey A Law  (law@cygnus.com)
+1998-06-19  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/ieee/980619-1.c: New test.
 
-Fri Jun 19 00:58:11 1998  Robert Lipe  <robertl@dgii.com>
+1998-06-19  Robert Lipe  <robertl@dgii.com>
 
 	*lib/g77.exp: Replace search for libf2c.a with search for newly
 	renamed libg2c.a
 
-Wed Jun 17 18:53:12 1998  Jeffrey A Law  (law@cygnus.com)
+1998-06-17  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/980617-1.c: New test.
 
-Fri Jun 12 01:08:49 1998  Jeffrey A Law  (law@cygnus.com)
+1998-06-12  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/980612-1.c: New test.
 
-Mon Jun  8 02:13:42 1998  Jeffrey A Law  (law@cygnus.com)
+1998-06-08  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/980523-1.c: Only test on ppc-linux.
 	* gcc.dg/980526-1.c, gcc.dg/switch-1.c: Likewise.
 
 	* gcc.c-torture/execute/980608-1.c: New test.
 
-Fri Jun  5 21:54:26 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+1997-06-05  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* gcc.c-torture/execute/980605-1.c: New test.
 
-Thu Jun  4 01:39:24 1998  Jeffrey A Law  (law@cygnus.com)
+1998-06-04  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/980604-1.c: New test.
 
-Tue Jun  2 20:51:43 1998  Jeffrey A Law  (law@cygnus.com)
+1998-06-02  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/980602-1.c: New test.
 	* gcc.c-torture/execute/980602-2.c: Likewise.
@@ -11997,17 +12002,17 @@ Tue Jun  2 20:51:43 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* 970125-0.f: Fix per JCB.  Add commentary.
 
-Sun May 31 23:23:29 1998  Michael Meissner  <meissner@cygnus.com>
+1998-05-31  Michael Meissner  <meissner@cygnus.com>
 
 	* gcc.c-torture/execute/ieee/mzero2.c: New test to better test
 	IEEE -0 support.
 
-Fri May 29 01:10:12 1998  Peter Leven <leven@lpr.e-technik.tu-muenchen.de>
+1998-05-29  Peter Leven <leven@lpr.e-technik.tu-muenchen.de>
 
 	* gcc.c-torture/execute/ieee/fp-cmp-1.c: Set up signal handler
 	earlier.
 
-Thu May 28 00:17:42 1998  Catherine Moore <clm@cygnus.com>
+1998-05-28  Catherine Moore <clm@cygnus.com>
 
 	* gcc.c-torture/execute/980526-3.c: New test.
 
@@ -12018,12 +12023,12 @@ Thu May 28 00:17:42 1998  Catherine Moore <clm@cygnus.com>
 	* g++.old-deja/g++.jason/thunk3.C: Add m68k-motorola-sysv and
 	m88k-motorola-sysv3 to XFAIL.
 
-Tue May 26 23:58:03 1998  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+1998-05-26  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.dg/980526-1.c: New test.
 	* gcc.c-torture/execute/980526-2.c: New test.
 
-Tue May 26 23:40:40 1998  Jeffrey A Law  (law@cygnus.com)
+1998-05-26  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/980523-1.c: Change "ppc" to "powerpc".
 
@@ -12040,7 +12045,7 @@ Tue May 26 23:40:40 1998  Jeffrey A Law  (law@cygnus.com)
 	* lib/old-dejagnu.exp: All tests fail if we got an internal compiler
 	error for the line.  Don't run multiple tests for the same line.
 
-Sat May 23 23:27:10 1998  Jeffrey A Law  (law@cygnus.com)
+1998-05-23  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/980523-1.c: New test.
 
@@ -12052,15 +12057,15 @@ Sat May 23 23:27:10 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/old-dejagnu.exp: Ignore C++ "instantiated from" mesages.
 
-Thu May 21 23:23:21 1998  Jeffrey A Law  (law@cygnus.com)
+1998-05-21  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/980520-1.c: New test.
 
-Wed May 20 14:37:15 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+1998-05-20  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* gcc.dg/980502-1.c: Fix return type.
 
-Wed May 20 11:29:48 1998  Jeffrey A Law  (law@cygnus.com)
+1998-05-20  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/{980502-1.c, clobbers.c}: New tests.
 	* gcc.c-torture/compile/{980504-1.c, 980506-1.c}: Likewise.
@@ -12088,7 +12093,7 @@ Wed May 20 11:29:48 1998  Jeffrey A Law  (law@cygnus.com)
 	g77.f-torture/execute/claus.f, g77.f-torture/execute/cabs.f: Call
 	abort where appropriate.
 
-Tue May  5 19:20:13 1998  Michael Meissner  <meissner@cygnus.com>
+1998-05-05  Michael Meissner  <meissner@cygnus.com>
 
 	* lib/c-torture.exp (TORTURE_OPTIONS): Add -Os to options.
 	* lib/f-torture.exp (TORTURE_OPTIONS): Ditto.
@@ -12111,34 +12116,34 @@ Tue May  5 19:20:13 1998  Michael Meissner  <meissner@cygnus.com>
 	* g77.f-torture/compile/970125-0.f: New test.
 	* g77.f-torture/compile/980419-1.f: New test.
 
-Wed Apr  8 13:09:15 1998  Jim Wilson  <wilson@cygnus.com>
+1998-04-08  Jim Wilson  <wilson@cygnus.com>
 
 	* gcc.c-torture/execute/980407-1.c: Delete test.  Is duplicate
 	of loop-4.c.
 
-Tue Apr  7 12:01:24 1998  Jim Wilson  <wilson@cygnus.com>
+1998-04-07  Jim Wilson  <wilson@cygnus.com>
 
 	* gcc.c-torture/execute/980407-1.c: New test from Joern Rennecke.
 
-Fri Apr  3 12:27:49 1998  Jim Wilson  <wilson@cygnus.com>
+1998-04-03  Jim Wilson  <wilson@cygnus.com>
 
 	* gcc.c-torture/compile/980329-1.c: New test.
 
-Wed Mar 18 16:22:22 1998  Jim Wilson  <wilson@cygnus.com>
+1998-03-18  Jim Wilson  <wilson@cygnus.com>
 
 	* gcc.dg/980313-1.c: New test for fp conditional move on PPro.
 	* gcc.dg/980312-1.c: Fix typo in -march command.
 
-Mon Mar 16 20:01:30 1998  H.J. Lu  (hjl@gnu.org)
+1998-03-16  H.J. Lu  (hjl@gnu.org)
 
 	* gcc.dg/980312-1.c: New test for fp conditional move on PPro.
 
-Wed Mar 11 13:08:48 1998  Robert Lipe  <robertl@dgii.com>
+1998-03-11  Robert Lipe  <robertl@dgii.com>
 
 	* g77.f-torture/execute/980310-5.f: Deleted.  Craig Burley and
 	Dave Love agree the Fortran source is bogus.
 
-Wed Mar 11 00:03:49 1998  Robert Lipe  <robertl@dgii.com>
+1998-03-11  Robert Lipe  <robertl@dgii.com>
 
 	* g77.f-torture/compile/980310-1.f, g77.f-torture/compile/980310-2.f
 	g77.f-torture/compile/980310-3.f, g77.f-torture/compile/980310-4.f
@@ -12146,7 +12151,7 @@ Wed Mar 11 00:03:49 1998  Robert Lipe  <robertl@dgii.com>
 	g77.f-torture/compile/980310-8.f: New tests from egcs-bugs archives.
 	* g77.f-torture/execute/980310-5.f: New test from egcs-bugs archives.
 
-Tue Mar 10 00:31:51 1998  Alexandre Oliva   <oliva@dcc.unicamp.br>
+1998-03-10  Alexandre Oliva   <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.other/friend1.C: New test.
 
@@ -12155,16 +12160,16 @@ Tue Mar 10 00:31:51 1998  Alexandre Oliva   <oliva@dcc.unicamp.br>
 	* g77.f-torture/execute/dnrm2.f (dnrm2): Avoid uninitialized (and
 	possibly uninitialized) variables and declare dnrm2.
 
-Mon Feb 23 15:16:53 1998  Robert Lipe <robertl@dgii.com>
+1998-02-23  Robert Lipe <robertl@dgii.com>
 
 	From Bruno Haible <haible@ilog.fr>:
 	* gcc.c-torture/execute/980223.c: New test.
 
-Fri Feb 13 00:36:07 1998  Jeffrey A Law  (law@cygnus.com)
+1998-02-13  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/ifelse-1.c: New test.
 
-Mon Feb  9 02:08:47 1998  H.J. Lu  (hjl@gnu.org)
+1998-02-09  H.J. Lu  (hjl@gnu.org)
 
 	* lib/g77.exp (g77_target_compile): Fix multilibs for libf2c.
 
@@ -12174,32 +12179,32 @@ Mon Feb  9 02:08:47 1998  H.J. Lu  (hjl@gnu.org)
 	  handling to be like "excess errors test fails".
 	  * Update various tests accordingly.
 
-Fri Feb  6 14:30:48 1998  Jim Wilson  <wilson@cygnus.com>
+1998-02-06  Jim Wilson  <wilson@cygnus.com>
 
 	* gcc.c-torture/execute/980205.c: New test.
 
-Sun Jan 18 01:33:59 1998  Jeffrey A Law  (law@cygnus.com)
+1998-01-18  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/c-torture.exp: Look for .x files instead of .cexp files.
 	* lib/f-torture.exp: Similarly.
 	* gcc.c-torture: Rename all .cexp files to .x files.
 
-Mon Dec  8 23:55:26 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+1997-12-08  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* gcc.c-torture/noncompile/noncompile.exp (921102-1.c): Fixed comment.
 	(940510-1.c): Removed duplicate.
 	(971104-1.c): New test.
 
-Tue Nov 25 16:18:51 1997  Kate Hedstrom  (kate@ahab.rutgers.edu)
+1997-11-25  Kate Hedstrom  (kate@ahab.rutgers.edu)
 
 	  * lib/f-torture.exp: Improve error and loop detection.
 
-Wed Nov 19 14:27:04 1997  Michael Meissner  <meissner@cygnus.com>
+1997-11-19  Michael Meissner  <meissner@cygnus.com>
 
 	* gcc.c-torture/execute/950221-1.c (filler): If STACK_SIZE is defined,
 	use that to size the filler array.
 
-Fri Sep 26 10:50:53 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-09-26  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/c-torture.exp(c-torture-execute): Fix typo.
 
@@ -12207,57 +12212,57 @@ Fri Sep 26 10:50:53 1997  Bob Manson  <manson@charmed.cygnus.com>
 	testcase as the executable name. Keep the executable around if
 	the test fails.
 
-Fri Sep 19 17:19:53 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-09-19  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/c-torture.exp (TORTURE_OPTIONS): Removed unnecessary
 	changes.  Only test one -g option, and move it to the end of the
 	list of options to test.
 
-Fri Sep 19 17:58:00 1997  Michael Meissner  <meissner@cygnus.com>
+1997-09-19  Michael Meissner  <meissner@cygnus.com>
 
 	* lib/c-torture.exp (TORTURE_OPTIONS): Check for the environment
 	variable GCC_TORTURE_OPTIONS to supply default switches separated
 	by colons.  If no environment variable, run tests with -O0 -g, -O1
 	-g, and -O2 -g as well.
 
-Wed Sep 17 10:12:26 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-09-17  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/plumhall.exp: Don't set PHSRC in this file. Add a few
 	explanatory comments. Fix indentation.
 
-Mon Sep 15 00:36:53 1997  Jeffrey A Law  (law@cygnus.com)
+1997-09-15  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/g++.exp (g++_init): Look for xgcc in $basedir too.
 
-Thu Sep 11 13:54:47 1997  Jeffrey A Law  (law@cygnus.com)
+1997-09-11  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.old-deja/g++.brendan/scope4.C: No longer expected to fail.
 	* g++.old-deja/g++.mike/p7325.C: Likewise.
 	* g++.old-deja/g++.mike/eh51.C: No longer expected to fail on the PA.
 
-Thu Sep 11 10:00:03 1997  Alexandre Oliva  (oliva@dcc.unicamp.br)
+1997-09-11  Alexandre Oliva  (oliva@dcc.unicamp.br)
 
 	* g++.old-deja/g++.brendan/crash20.C: Rework to avoid libg++.
 	* g++.old-deja/g++.brendan/crash30.C: Likewise.
 	* g++.old-deja/g++.brendan/crash39.C: Likewise.
 	* g++.old-deja/g++.law/operators4.C: Likewise.
 
-Thu Sep 11 09:53:40 1997  Joe Buck  (jbuck@synopsys.com)
+1997-09-11  Joe Buck  (jbuck@synopsys.com)
 
 	* g++.old-deja/g++.mike/p658.C: eliminate <bool.h> use.
 	* g++.old-deja/g++.mike/p784.C: Ditto.
 	* g++.old-deja/g++.mike/p785.C: Ditto.
 
-Fri Sep  5 00:21:42 1997  Jeffrey A Law  (law@cygnus.com)
+1997-09-05  Jeffrey A Law  (law@cygnus.com)
 
 	  * gcc.c-torture/execute/cbrt.c: Tweak to work on more targets.
 
-Wed Sep  3 17:29:35 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-09-03  Bob Manson  <manson@charmed.cygnus.com>
 
 	* gcc.c-torture/execute/ieee/ieee.exp: Check for ieee_multilib_flags
 	target feature; pass this to c-torture-execute as needed.
 
-Wed Sep  3 17:15:00 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-09-03  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/c-torture.exp(c-torture-execute): If the previous and the
 	current executables being tested are identical, we don't need to
@@ -12265,15 +12270,15 @@ Wed Sep  3 17:15:00 1997  Bob Manson  <manson@charmed.cygnus.com>
 	unique. Add an optional argument for passing additional compiler
 	flags.
 
-Tue Sep  2 16:34:31 1997  Doug Evans  <dje@canuck.cygnus.com>
+1997-09-02  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/gcc-dg.exp (gcc-dg-test): Fix typos setting compile_type.
 
-Fri Aug 29 12:48:09 1997  Jeffrey A Law  (law@cygnus.com)
+1997-08-29  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/921007-1.c: Make strcmp static.
 
-Thu Jul 31 12:17:24 1997  Jeffrey A Law  (law@cygnus.com)
+1997-07-31  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/920501-9.c: Fix to work on targets with
 	32bit or larger longs.
@@ -12281,44 +12286,44 @@ Thu Jul 31 12:17:24 1997  Jeffrey A Law  (law@cygnus.com)
 	* gcc.c-torture/execute/961017-2.c: Fix to work on targets which
 	have either a 32bit long or 32bit int.
 
-Tue Jul 29 00:40:38 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+1997-07-29  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* gcc.c-torture/execute/conversion.c (test_float_to_integer):
 	Make double precision tests dependent on sizeof (double).
 
-Wed Jul  9 15:15:40 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-07-09  Bob Manson  <manson@charmed.cygnus.com>
 
 	* gcc.prms/5403.c: Allow CRLFs to occur at the start of the output
 	too.
 
-Tue Jun 17 22:11:16 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+1997-06-17  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* gcc.c-torture/compile/961203-1.cexp: New script.
 
-Mon Jun 16 15:27:06 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-06-16  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/g++.exp(g++_init): Use g++_include_flags instead of making
 	up the includes ourselves.
 
-Wed Jun 11 17:33:21 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-06-11  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/plumhall.exp: Remove random include, and add a few
 	verbose messages for debugging.
 
-Fri Jun  6 14:23:24 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-06-06  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/g++.exp: Use g++_link_flags from libgloss.exp, instead
 	of trying to do it ourselves.
 
-Wed Jun  4 03:38:50 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+1997-06-04  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* gcc.c-torture/execute/ieee/ieee.exp: Set -mieee for SH.
 
-Wed Jun  4 18:43:55 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-06-04  Bob Manson  <manson@charmed.cygnus.com>
 
 	* gcc.prms/5403.c: Made regexp a bit less strict.
 
-Tue Jun  3 15:12:39 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-06-03  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/mike-gcc.exp: Don't use global exec_output anymore. Output
 	is returned from remote_load instead.
@@ -12327,30 +12332,30 @@ Tue Jun  3 15:12:39 1997  Bob Manson  <manson@charmed.cygnus.com>
 	* lib/old-dejagnu.exp: Ditto.
 	* lib/c-torture.exp: Ditto.
 
-Fri May 30 23:15:15 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-05-30  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/g++.exp: Use build_wrapper procedure.
 	* lib/gcc.exp: Ditto.
 
-Tue May 20 15:23:27 1997  Jeffrey A Law  (law@cygnus.com)
+1997-05-20  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/*.c: Include stdlib.h instead of using
 	an old-style decl for malloc.  Fixes tests to work when
 	sizeof (int) != sizeof (size_t).
 
-Thu May 15 14:00:04 1997  Mike Meissner  <meissner@cygnus.com>
+1997-05-15  Mike Meissner  <meissner@cygnus.com>
 
 	* gcc.c-torture/execute/va-arg-3.c: If NO_VARARGS is defined, nop test.
 
 	* gcc.c-torture/execute/strct-varg-1.c: If NO_VARARGS is defined,
 	use stdargs.h interface.
 
-Thu May 15 14:10:39 1997  Mike Meissner  <meissner@cygnus.com>
+1997-05-15  Mike Meissner  <meissner@cygnus.com>
 
 	* lib/gcc.exp (gcc_target_compile): If gcc,no_varargs, define
 	NO_VARARGS when compiling.
 
-Thu May  1 14:49:19 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-05-01  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/plumhall.exp(ph_includes): New procedure.
 	(ph_make): Use it.
@@ -12359,17 +12364,17 @@ Thu May  1 14:49:19 1997  Bob Manson  <manson@charmed.cygnus.com>
 	* lib/g++.exp: Rename test-glue.c to testglue.c.
 	* lib/gcc.exp: Ditto.
 
-Thu Apr 10 14:50:26 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-04-10  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/g++.exp(g++init): Don't try to be smart, always run g++_init
 	to completion when it's called.
 
-Fri Mar 21 16:34:52 1997  Michael Meissner  <meissner@cygnus.com>
+1997-03-21  Michael Meissner  <meissner@cygnus.com>
 
 	* gcc.c-torture/execute/920501-7.c (main,x): If NO_LABELS_VALUES
 	is defined, don't do test.
 
-Thu Mar 20 09:50:32 1997  Doug Evans  <dje@canuck.cygnus.com>
+1997-03-20  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/plumhall.exp (ph_make): Comment out errorCode=NONE test
 	for object files.
@@ -12379,7 +12384,7 @@ Thu Mar 20 09:50:32 1997  Doug Evans  <dje@canuck.cygnus.com>
 	errorCode, record errorCode in log file.
 	(*): Replace send_log/verbose with verbose -log.
 
-Wed Mar 19 13:06:26 1997  Michael Meissner  <meissner@cygnus.com>
+1997-03-19  Michael Meissner  <meissner@cygnus.com>
 
 	* gcc.c-torture/execute/ieee/rbug.c (main): Don't do long long to
 	double conversion if double isn't at least 8 bytes.
@@ -12391,7 +12396,7 @@ Wed Mar 19 13:06:26 1997  Michael Meissner  <meissner@cygnus.com>
 	8 bytes, just exit, since 4 byte doubles don't have enough bits of
 	precision for the test to complete.
 
-Fri Mar 14 17:51:02 1997  Michael Meissner  <meissner@cygnus.com>
+1997-03-14  Michael Meissner  <meissner@cygnus.com>
 
 	* gcc.c-torture/execute/920715-1.cexp (d10v-*-*): Expect to fail
 	if d10v is not compiled with the -mdouble64 flag.
@@ -12400,29 +12405,29 @@ Fri Mar 14 17:51:02 1997  Michael Meissner  <meissner@cygnus.com>
 	* gcc.c-torture/execute/cvt-1.cexp (d10v-*-*): Expect to fail if
 	d10v is not compiled with the -mint32 flag.
 
-Thu Mar 13 16:09:28 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-03-13  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/plumhall.exp: Use incr_count.
 
-Wed Mar 12 10:01:33 1997  Jeffrey A Law  (law@cygnus.com)
+1997-03-12  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture: Update to c-torture-1.45.
 
-Sun Feb 23 18:12:04 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-02-23  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/gcc.exp(gcc_init): Add args parameter (which will contain
 	the name of the expect testcase file).
 
 	* lib/g++.exp(g++_init): Ditto.
 
-Thu Feb 20 13:53:05 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-02-20  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/g++.exp(g++_exit): $gluefile lives on the build, not
 	the host.
 
 	* lib/gcc.exp(gcc_exit): New procedure.
 
-Wed Feb 19 15:16:16 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-02-19  Bob Manson  <manson@charmed.cygnus.com>
 
 	* g++.old-deja/g++.rfg/*: Added "Build don't link" and ERROR
 	specs where appropriate.
@@ -12433,7 +12438,7 @@ Wed Feb 19 15:16:16 1997  Bob Manson  <manson@charmed.cygnus.com>
 	* Converted all non-old-style g++ testcases to old-style, and
 	moved into g++.old-deja.
 
-Fri Feb 14 11:46:46 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-02-14  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/old-dejagnu.exp(old-dejagnu): Add various "skip if"
 	options.
@@ -12443,17 +12448,17 @@ Fri Feb 14 11:46:46 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/g++.exp(g++_init): Don't unset gluefile unless it exists.
 
-Thu Feb 13 17:30:46 1997  Michael Meissner  <meissner@cygnus.com>
+1997-02-13  Michael Meissner  <meissner@cygnus.com>
 
 	* lib/gcc.exp (gcc_target_compile): Add support for defining
 	NO_TRAMPOLINES and NO_LABEL_VALUES if the baseboard file indicates
 	the machine doesn't have those features.
 
-Tue Feb 11 12:57:11 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-02-11  Bob Manson  <manson@charmed.cygnus.com>
 
 	* g++.law/operators4.exp: Don't use LIBS.
 
-Sat Feb  8 14:45:55 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-02-08  Bob Manson  <manson@charmed.cygnus.com>
 
 	* g++.law/virtual1.exp: Don't use CXX_FLAGS.
 
@@ -12466,7 +12471,7 @@ Sat Feb  8 14:45:55 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/gcc.exp: Allow use of --tool_exec and --tool_opt.
 
-Fri Feb  7 12:55:45 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-02-07  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/old-dejagnu.exp: Use prune_warnings instead of
 	prune_system_crud.
@@ -12476,13 +12481,13 @@ Fri Feb  7 12:55:45 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/g++.exp: Include both libstdc++ and libstdc++/stl.
 
-Fri Feb  7 10:41:53 1997  Jeffrey A Law  (law@cygnus.com)
+1997-02-07  Jeffrey A Law  (law@cygnus.com)
 
 	  * 941014-2.c: Include stdlib.h
 	  * 960327-1.c: Include stdio.h
 	  * dbra.c, index-1.c: Don't assume ints are 32bits.
 
-Tue Feb  4 12:51:09 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-02-04  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/gcc.exp: Add gcc,stack_size target feature.
 
@@ -12494,12 +12499,12 @@ Tue Feb  4 12:51:09 1997  Bob Manson  <manson@charmed.cygnus.com>
 	the correct include and link paths.
 	* g++.old-deja/old-deja.exp: Ditto.
 
-Mon Feb  3 19:00:07 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-02-03  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/g++.exp(g++_init): target_compile no longer returns the
 	filename of the result.
 
-Sun Feb  2 14:42:34 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-02-02  Bob Manson  <manson@charmed.cygnus.com>
 
 	* gcc.misc-tests/gcov.exp: Add -nocomplain to the
 	call to glob.
@@ -12507,12 +12512,12 @@ Sun Feb  2 14:42:34 1997  Bob Manson  <manson@charmed.cygnus.com>
 	* gcc.c-torture/special/special.exp: Change call to
 	gcc_target_compile to include the object file.
 
-Sun Feb  2 17:11:50 1997  Ian Lance Taylor  <ian@cygnus.com>
+1997-02-02  Ian Lance Taylor  <ian@cygnus.com>
 
 	* gcc.c-torture/special/special.exp: Correct misspelling in last
 	change.
 
-Sat Feb  1 12:34:23 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-02-01  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/plumhall.exp(ph_summary): Log the entire output of the
 	executable. Return -1 if there were any failures, 0 otherwise.
@@ -12520,17 +12525,17 @@ Sat Feb  1 12:34:23 1997  Bob Manson  <manson@charmed.cygnus.com>
 	(ph_make): Clean up objects and executables that were built
 	if the tests succeeded.
 
-Thu Jan 30 13:45:56 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-01-30  Bob Manson  <manson@charmed.cygnus.com>
 
 	* g++.old-deja/old-deja.exp: Add -L and -I flags so we include
 	libraries and includes in the build tree as appropriate.
 
-Wed Jan 29 17:19:34 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-01-29  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/c-torture.exp: Instead of looking for the global variable
 	NO_LONG_LONG, check to see if that's a feature of the target.
 
-Wed Jan 29 00:36:25 1997  Bob Manson  <manson@charmed.cygnus.com>
+1997-01-29  Bob Manson  <manson@charmed.cygnus.com>
 
 	* config/default.exp: Minimize. Delete the remainer of the files in
 	config;	this functionality is now in devo/dejagnu/config.
@@ -12555,36 +12560,36 @@ Wed Jan 29 00:36:25 1997  Bob Manson  <manson@charmed.cygnus.com>
 	lib/old-dejagnu.exp: Ditto.
 	lib/plumhall.exp: Ditto.
 
-Wed Jan  8 14:43:07 1997  Jim Wilson  <wilson@cygnus.com>
+1997-01-08  Jim Wilson  <wilson@cygnus.com>
 
 	* lib/plumhall.exp (ph_make): Use CFLAGS and ANSICFLAGS when linking.
 	(ph_linker): Likewise.
 
-Wed Nov 13 16:04:19 1996  Joern Rennecke <amylaar@cygnus.com>
+1996-11-13  Joern Rennecke <amylaar@cygnus.com>
 
 	  * gcc.c-torture/execute/{loop-2e.c,loop-2f.c}: Only use
 	MAP_ANON / MAP_ANONYMOUS if defined;
 	else try to map from /dev/zero .
 
-Tue Nov 12 23:30:12 1996  Jeffrey A Law  (law@cygnus.com)
+1996-11-12  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/{loop-2e.c,loop-2f.c}:  If MAP_ANON
 	isn't defined, then define it to MAP_ANONYMOUS.
 
-Tue Nov 12 11:57:49 1996  Jeffrey A Law  (law@cygnus.com)
+1996-11-12  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture: Update to c-torture-1.42 release.
 
-Mon Nov 11 12:45:31 1996  Jeffrey A Law  (law@cygnus.com)
+1996-11-11  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture: Update to c-torture-1.41 release.
 
-Sun Oct 27 18:56:18 1996  Jeffrey A Law  (law@cygnus.com)
+1996-10-27  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/enum-1.c: New test.  Will be in next
 	c-torture release.
 
-Thu Aug 15 11:09:36 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1996-08-15  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* lib/gcc.exp (gcc_init): Always append the target_info to CFLAGS
 	and LDFLAGS.  Fix second case to append the target_info ldflags
@@ -12596,31 +12601,31 @@ Thu Aug 15 11:09:36 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
 	* config/proelf.exp: Load remote.exp and do `push_target hppro'.
 	(GDB): Fix relative path to go up another dir for finding gdb.
 
-Thu Aug  8 17:03:27 1996  Rob Savoye  <rob@chinadoll.cygnus.com>
+1996-08-08  Rob Savoye  <rob@chinadoll.cygnus.com>
 
 	* lib/gcc.exp(gcc_init): Set CFLAGS and LDFLAGS to their new
 	versions in the target_info array, if they don't exist.
 
-Fri Aug  2 15:39:03 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1996-08-02  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* config/vx.exp (${tool}_load): Fix syntax of `$shell_id < 0'.
 
-Mon Jul  8 15:45:58 1996  Jim Wilson  <wilson@cygnus.com>
+1996-07-08  Jim Wilson  <wilson@cygnus.com>
 
 	* lib/g++.exp: Change all uses of $base_dir/ to $base_dir/../.
 	* lib/gcc.exp, lib/old-dejagnu.exp: Likewise.
 
-Mon Jul  1 15:53:00 1996  Bob Manson  <manson@charmed.cygnus.com>
+1996-07-01  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/old-dejagnu.exp: Don't remove the output file before we've
 	actually tested it. Don't append pwd to the path of the executable
 	we're testing.
 
-Sun Jun 30 14:37:50 1996  Doug Evans  <dje@canuck.cygnus.com>
+1996-06-30  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/g++.exp (default_g++_start): Don't pass LDFLAGS, LIBS if -c.
 
-Wed Jun 26 14:15:55 1996  Bob Manson  <manson@charmed.cygnus.com>
+1996-06-26  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/old-dejagnu.exp (old-dejagnu): Add $tmpdir to specify a
 	temporary directory for compiler files, and set it to a default
@@ -12636,16 +12641,16 @@ Wed Jun 26 14:15:55 1996  Bob Manson  <manson@charmed.cygnus.com>
 	the compiler writes the final output file as $output. Use $output
 	as the executable to be tested.
 
-Mon Jun 24 17:12:16 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1996-06-24  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* lib/g++.exp: Also add -Wl,-rpath,... for linux.
 
-Sat Jun  8 15:12:24 1996  Jeffrey A Law  (law@cygnus.com)
+1996-06-08  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/pending-1.c: New test.  Still
 	pending in Tege's queue.
 
-Wed Apr 24 18:13:45 1996  Jim Wilson  <wilson@chestnut.cygnus.com>
+1996-04-24  Jim Wilson  <wilson@chestnut.cygnus.com>
 
 	* lib/plumhall.exp (ph_summary): Add arguments name and exec_status.
 	Add variables local_failcnt and local_unresolvedcnt.  Call gcc_fail
@@ -12655,19 +12660,19 @@ Wed Apr 24 18:13:45 1996  Jim Wilson  <wilson@chestnut.cygnus.com>
 	(ph_execute): Add new argument.  Pass additional arguments to
 	ph_summary.  Call gcc_fail is there is no execution output.
 
-Wed Apr 24 13:39:23 1996  Jeffrey A Law  (law@cygnus.com)
+1996-04-24  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/plumhall.exp (proc_summary): Output relavent summary
 	lines into the log so specific failures in plumhall can be
 	investigated.
 
-Wed Apr 10 13:23:45 1996  Jeffrey A Law  (law@cygnus.com)
+1996-04-10  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/c-torture.exp: Provide a default value for $NO_LONG_LONG.
 	(c-torture-execute): Don't try to execute tests which use
 	"long long" types if $NO_LONG_LONG is nonzero.
 
-Mon Apr  8 08:52:29 1996  Doug Evans  <dje@canuck.cygnus.com>
+1996-04-08  Doug Evans  <dje@canuck.cygnus.com>
 
 	* gcc.c-torture/execute/ieee/ieee.exp: Run c-torture-execute,
 	not c-torture.
@@ -12675,31 +12680,31 @@ Mon Apr  8 08:52:29 1996  Doug Evans  <dje@canuck.cygnus.com>
 	* gcc.ieee: Move from here.
 	* gcc.c-torture/execute/ieee: To here.
 
-Tue Mar 26 23:41:18 1996  Jeffrey A Law  (law@cygnus.com)
+1996-03-26  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture: Update to c-torture-1.41 release.
 
-Fri Mar 22 15:49:24 1996  Jeffrey A Law  (law@cygnus.com)
+1996-03-22  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/c-torture.exp (c-torture-execute): Remove "$executable",
 	not "$output".
 
-Thu Mar  7 12:37:08 1996  Doug Evans  <dje@charmed.cygnus.com>
+1996-03-07  Doug Evans  <dje@charmed.cygnus.com>
 
 	* lib/gcc.exp (default_gcc_start): Don't pass $LDFLAGS $LIBS if
 	-c present.
 
-Sat Mar  2 22:36:37 1996  Jeffrey A Law  (law@cygnus.com)
+1996-03-02  Jeffrey A Law  (law@cygnus.com)
 
 	* config/proelf.exp: Handle connecting to a simulator.
 
-Wed Jan 31 00:58:15 1996  Jeffrey A Law  (law@cygnus.com)
+1996-01-31  Jeffrey A Law  (law@cygnus.com)
 
 	* config/proelf.exp: New file.  Enough framework that we can
 	run c-torture tests on the proelf targets (or any other target
 	that gdb can connect to for that matter).
 
-Mon Jan 29 08:57:46 1996  Doug Evans  <dje@canuck.cygnus.com>
+1996-01-29  Doug Evans  <dje@canuck.cygnus.com>
 
 	* gcc.c-torture/special/special.exp: Delete libs arg to dg-runtest.
 	* gcc.ph/testing/limits/limits.exp: Likewise.  Don't pass $CFLAGS.
@@ -12707,7 +12712,7 @@ Mon Jan 29 08:57:46 1996  Doug Evans  <dje@canuck.cygnus.com>
 	* lib/plumhall.exp (ph_execute): Always call ph_summary if
 	exec_output exists.
 
-Sun Jan 28 11:28:43 1996  Doug Evans  <dje@charmed.cygnus.com>
+1996-01-28  Doug Evans  <dje@charmed.cygnus.com>
 
 	* config/sim.exp (SIM_TIME_LIMIT): New user settable variable.
 	(${tool}_load): Use 240 seconds if SIM_TIME_LIMIT not set.
@@ -12719,7 +12724,7 @@ Sun Jan 28 11:28:43 1996  Doug Evans  <dje@charmed.cygnus.com>
 	${tool}_load.
 	* lib/chill.exp (verbose): Delete.
 
-Sat Jan 27 12:28:07 1996  Doug Evans  <dje@charmed.cygnus.com>
+1996-01-27  Doug Evans  <dje@charmed.cygnus.com>
 
 	* lib/gcc.exp (default_gcc_start): Change order of args to
 	$LDFLAGS $CFLAGS $LIBS.
@@ -12735,7 +12740,7 @@ Sat Jan 27 12:28:07 1996  Doug Evans  <dje@charmed.cygnus.com>
 
 	* lib/dg.exp: Deleted, moved to dejagnu/lib.
 
-Wed Jan 24 18:37:00 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1996-01-24  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* g++.old-deja/old-deja.exp: Add passing of $mathlib to old-dejagnu.
 
@@ -12745,28 +12750,28 @@ Wed Jan 24 18:37:00 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
 	* lib/g++.exp (g++_init): Take out use of -rpath for the sun4, not
 	necessary.
 
-Sat Jan 20 17:22:08 1996  Brendan Kehoe  <brendan@cygnus.com>
+1996-01-20  Brendan Kehoe  <brendan@cygnus.com>
 
 	* g++.old-deja/old-deja.exp: Move setting of runshlib out of the
 	global for loop; add use of $mathlib.
 	* lib/old-dejagnu.exp (old-dejagnu-init): Put the runshlib
 	settings here; set mathlib for anything but VxWorks.
 
-Mon Jan 22 16:31:57 1996  Jeffrey A Law  (law@cygnus.com)
+1996-01-22  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture: Update to c-torture-1.40 release.
 
-Wed Jan  3 00:54:33 1996  Jeffrey A Law  (law@cygnus.com)
+1996-01-03  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.ph/testing/limits/limits.exp: Load ${tool}-dg.exp, not
 	dg.exp.
 
-Sun Dec  3 16:17:42 1995  Jeffrey A. Law  <law@sethra.cygnus.com>
+1995-12-03  Jeffrey A. Law  <law@sethra.cygnus.com>
 
 	* lib/c-torture.exp (c-torture-execute): Declare "output" as
 	global.
 
-Fri Nov 17 20:01:19 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-11-17  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/g++.exp (LIBS): Define if not already.
 	* lib/gcc-dg.exp (gcc-dg-test): Set executable file as a.out.
@@ -12775,28 +12780,28 @@ Fri Nov 17 20:01:19 1995  Doug Evans  <dje@canuck.cygnus.com>
 	* gcc.c-torture/special (921210-1.c): Call prune_system_crud and
 	prune_gcc_output.
 
-Thu Nov 16 09:15:40 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-11-16  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/c-torture.exp (c-torture-compile): Fix calls to `unsupported'.
 	(c-torture-execute): Likewise.	Rename `name' to `testcase'.
 
-Wed Nov 15 23:04:36 1995  Jeffrey A Law  (law@cygnus.com)
+1995-11-15  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture: Update to c-torture-1.39 release.
 
-Sat Nov  4 12:52:05 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-11-04  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/c-torture.exp (c-torture-execute): Don't return if one option
 	fails, try others as well.
 
-Thu Nov  2 09:28:35 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-11-02  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/c-torture.exp (c-torture-execute): This proc's result is `void'.
 	If compilation fails, mark execute tests as `untested'.
 	If test is marked as unsupported, don't mark compilation and
 	execute tests as failed.
 
-Wed Oct 25 20:57:55 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1995-10-25  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* lib/g++.exp (g++_init): Don't link in libg++, and look to
 	libstdc++ for whether or not we want to be doing shared
@@ -12804,47 +12809,47 @@ Wed Oct 25 20:57:55 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
 	* lib/mike-g++.exp (postbase): Don't link in libg++.
 	* g++.old-deja/old-deja.exp: Likewise.
 
-Mon Oct 23 13:05:11 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1995-10-23  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* lib/g++.exp (CXX): Default to run `c++' instead of `g++'.
 
-Tue Oct 17 15:24:47 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1995-10-17  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* lib/g++.exp (g++_init): Also check for libg++.sl for the hppa.
 	For that, add `-Wl,-a,shared_archive'.
 	* g++.old-deja/old-deja.exp: Likewise.
 
-Tue Oct 17 13:09:06 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-10-17  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/c-torture.exp (c-torture-execute): Ensure CFLAGS restored.
 
-Mon Oct 16 23:13:32 1995  Brendan Kehoe  <brendan@cygnus.com>
+1995-10-16  Brendan Kehoe  <brendan@cygnus.com>
 
 	* lib/mike-g++.exp (postbase): Pay attention to the status of
 	g++_load.
 
-Mon Oct 16 19:28:32 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1995-10-16  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	  * g++.old-deja/old-deja.exp: Add $LIBS at the end of the args.
 
-Mon Oct 16 13:48:58 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-10-16  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/gcc.exp (default_gcc_start): No longer need to log program
 	being executed or its output, execute_anywhere does that now.
 	* lib/g++.exp (default_g++_version): Call execute_anywhere.
 	(default_g++_start): Likewise.  Delete calls to verbose/send_log.
 
-Thu Oct 12 10:34:58 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1995-10-12  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* g++.old-deja/old-deja.exp: Updated the shared libg++ tests to be
 	the same as those in lib/g++.exp.
 
-Tue Oct 10 13:47:27 1995  Jeff Law  (law@hurl.cygnus.com)
+1995-10-10  Jeff Law  (law@hurl.cygnus.com)
 
 	* gcc.c-torture: Update to c-torture-1.38 release.
 	* gcc.ieee: Related changes.
 
-Fri Oct  6 12:39:17 1995  Rob Savoye  <rob@darkstar.cygnus.com>
+1995-10-06  Rob Savoye  <rob@darkstar.cygnus.com>
 
 	* mike-gcc.exp, mike-g++.exp: Use "execute_anywhere" rather than
 	"exec". Minor reformatting changes.
@@ -12860,41 +12865,41 @@ Fri Oct  6 12:39:17 1995  Rob Savoye  <rob@darkstar.cygnus.com>
 	Use execute_anywhere rather than calling exec directly. Now it
 	works for canadian cross testing.
 
-Thu Oct  5 10:06:45 1995  Brendan Kehoe  <brendan@rtl.cygnus.com>
+1995-10-05  Brendan Kehoe  <brendan@rtl.cygnus.com>
 
 	* lib/g++.exp: Add -nocomplain flag to glob.  Use catch to put the
 	results into a variable, and check that rather than using file exists.
 
-Wed Oct  4 16:31:02 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1995-10-04  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* lib/g++.exp: Use glob to see libg++.so.2.7.0, since sun4 doesn't
 	create a libg++.so.  For sunos4.1.*, also add -ltermcap.
 
-Tue Sep 26 10:15:14 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1995-09-26  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* g++.old-deja/old-deja.exp: Create and pass runshlib and
 	lib_curses if there's a shared libg++ in the build tree.
 
-Fri Sep 22 10:47:24 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-09-22  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/mike-{gcc,g++}.exp (postbase): Restore CFLAGS, CXX_FLAGS, LIBS
 	if not supported target.
 
-Fri Sep 22 09:22:07 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1995-09-22  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* lib/g++.exp (g++_init): Move empty setting of runshlib and
 	link_curses up to always happen, not just for native builds.
 
-Thu Sep 21 10:23:32 1995  Jeff Law  (law@snake.cs.utah.edu)
+1995-09-21  Jeff Law  (law@snake.cs.utah.edu)
 
 	* gcc.c-torture: Update to c-torture-1.36 release.
 	* gcc.failure: Related changes.
 
-Wed Sep 20 10:56:26 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-09-20  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/plumhall.exp (PHSRC, PHDST): Allow config files to override.
 
-Tue Sep 19 17:26:07 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1995-09-19  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* lib/g++.exp (g++_init): Put the shared and math lib stuff in here.
 	* lib/mike-g++.exp (postbase): Not in here.  Still reference
@@ -12904,33 +12909,33 @@ Tue Sep 19 17:26:07 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
 	pass the runtime shared library options for Solaris, OSF/1, and
 	Irix5, and link with -lcurses to avoid unresolved references.
 
-Wed Sep 13 15:28:10 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1995-09-13  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* lib/gcc.exp (gcc_init): Return if gcc_initialized is 1, so we
 	only run once.
 
-Wed Sep 13 10:51:52 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-09-13  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/c-torture.exp (c-torture-compile): Don't alter CFLAGS.
 
-Mon Sep 11 11:02:03 1995  Jeff Law  (law@snake.cs.utah.edu)
+1995-09-11  Jeff Law  (law@snake.cs.utah.edu)
 
 	* gcc.c-torture: Update to c-torture-1.35 release.  Note we
 	do not have a framework for the "compat" tests yet.
 
-Sat Sep  9 16:15:20 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1995-09-09  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* lib/mike-g++.exp (postbase): New local variable `mathlib',
 	set to null if we're testing vxworks5.1.  Use that instead of
 	`-lm' in the setting of LIBS for link and run.
 
-Fri Sep  8 13:53:38 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1995-09-08  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* config/rom68k.exp (${tool}_load): Major changes to make it
 	work.  Verified that it does in fact return the stuff in
 	exec_output properly.  Catch any Emul or any TRAP other than 0.
 
-Thu Sep  7 23:04:06 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1995-09-07  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* lib/mike-g++.exp (prebase): Call g++_init at the end to set
 	LDFLAGS properly for targets that need stuff from libgloss.
@@ -12938,7 +12943,7 @@ Thu Sep  7 23:04:06 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
 	only run once.
 	(gpp_initialized): New variable.
 
-Wed Sep  6 21:56:13 1995  Rob Savoye  <rob@darkstar.cygnus.com>
+1995-09-06  Rob Savoye  <rob@darkstar.cygnus.com>
 
 	* config/rom68k.exp: Load libgloss.exp.
 	* lib/gcc.exp (gcc_init): get proper flags for newlib and libgloss
@@ -12946,7 +12951,7 @@ Wed Sep  6 21:56:13 1995  Rob Savoye  <rob@darkstar.cygnus.com>
 	* lib/g++.exp (g++_init): get proper flags for newlib and libgloss
 	so we can produce a fully linked binary.
 
-Sun Sep  3 13:25:26 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-09-03  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/plumhall.exp (ph_section): Watch for expected failures.
 	Add missing `else'.
@@ -12955,7 +12960,7 @@ Sun Sep  3 13:25:26 1995  Doug Evans  <dje@canuck.cygnus.com>
 	run the testcase.
 	(c-torture): Likewise.
 
-Mon Aug 28 11:23:38 1995  Doug Evans  <dje@cygnus.com>
+1995-08-28  Doug Evans  <dje@cygnus.com>
 
 	* gcc.dg/dg.exp (scan-assembler, scan-assembler-not): New procs.
 
@@ -12971,12 +12976,12 @@ Mon Aug 28 11:23:38 1995  Doug Evans  <dje@cygnus.com>
 	* lib/plumhall.exp (ph_execute): Only call ph_summary if
 	execution "succeeded".
 
-Mon Aug 14 14:03:53 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-08-14  Doug Evans  <dje@canuck.cygnus.com>
 
 	* config/win32.exp: New file.
 	* lib/c-torture.exp (c-torture-execute): Handle $exe_ext.
 
-Fri Aug  4 15:39:54 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-08-04  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/gcc-dg.exp (gcc-dg-prune): Mark testcases that fill ram as
 	unsupported.
@@ -12989,7 +12994,7 @@ Fri Aug  4 15:39:54 1995  Doug Evans  <dje@canuck.cygnus.com>
 	prune_system_crud.
 	* lib/old-dejagnu.exp (old-dejagnu): Likewise.
 
-Tue Aug  1 11:09:33 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-08-01  Doug Evans  <dje@canuck.cygnus.com>
 
 	* gcc.misc-tests/{acker1.c,dhry.c,dhry.h,matrix1.c,optbench.c,
 	sieve.c,sort2.c}: New files.
@@ -13005,73 +13010,73 @@ Tue Aug  1 11:09:33 1995  Doug Evans  <dje@canuck.cygnus.com>
 
 	* config/sh.exp: Deleted (use sim.exp instead).
 
-Fri Jul 28 11:33:46 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1995-07-28  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* config/vx.exp: Declare CHECKTASK as global.
 	* config/vxworks29k.exp: Reduce to only set CHECKTASK, and load vx.exp.
 	* lib/mike-g++.exp: Load [pwd]/a.out, not `./a.out'.
 	* lib/old-dejagnu.exp: Load [pwd]/$executable.
 
-Wed Jul 26 19:45:39 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1995-07-26  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* config/vxworks29k.exp: New file, for the a29k-vxworks5.1
 	target. Like vx.exp, only includes `vx29k.exp' instead of
 	`vxworks.exp'.
 
-Sun Jul 23 17:38:52 1995  Ian Lance Taylor  <ian@cygnus.com>
+1995-07-23  Ian Lance Taylor  <ian@cygnus.com>
 
 	* config/sim.exp: Increase time limit from 120 seconds to 240.
 
-Thu Jul  6 11:07:38 1995  Jeffrey A. Law  <law@rtl.cygnus.com>
+1995-07-06  Jeffrey A. Law  <law@rtl.cygnus.com>
 
 	* gcc.c-torture/execute/950628-1.c: New test.
 
-Sat Jun 10 18:51:41 1995  Jeff Law  (law@snake.cs.utah.edu)
+1995-06-10  Jeff Law  (law@snake.cs.utah.edu)
 
 	* gcc.c-torture: Update with changes/additions from
 	c-torture-1.34.
 
-Mon Jun  5 17:58:07 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-06-05  Doug Evans  <dje@canuck.cygnus.com>
 
 	* gcc.prms/prms.exp: Pass LDFLAGS to dg-test.
 
-Sun Jun  4 05:13:57 1995  Jeff Law  (law@snake.cs.utah.edu)
+1995-06-04  Jeff Law  (law@snake.cs.utah.edu)
 
 	* gcc.c-torture/compile/funcptr-1.c: Test case for 7107.
 
-Thu Jun  1 00:06:19 1995  Jeff Law  (law@snake.cs.utah.edu)
+1995-06-01  Jeff Law  (law@snake.cs.utah.edu)
 
 	* gcc.c-torture/compile/950512-1.c: New test.
 	* gcc.c-torture/execute/strct-pack-4.c, strct-pack-5.c}: Likewise.
 	* gcc.dg/struct-ret-1.c: Likewise.
 
-Wed May 31 14:25:13 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-05-31  Doug Evans  <dje@canuck.cygnus.com>
 
 	* gcc.c-torture/execute/{920410-1.c,921113-1.c,921208-2.c,
 	  930106-1.c,memcpy-1.c}: Use STACK_SIZE if defined.
 
-Tue May 30 11:19:54 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-05-30  Doug Evans  <dje@canuck.cygnus.com>
 
 	* gcc.c-torture/special/920411-1.c: Deleted.
 	* gcc.c-torture/special/special.exp: Delete 920411-1.c.
 
-Mon May 22 16:55:11 1995  Doug Evans  <dje@chestnut.cygnus.com>
+1995-05-22  Doug Evans  <dje@chestnut.cygnus.com>
 
 	* config/sim.exp (${tool}_load): Hack in call to bash to get a
 	cpu limit.
 
-Fri May 12 18:57:54 1995  Torbjorn Granlund  <tege@rtl.cygnus.com>
+1995-05-12  Torbjorn Granlund  <tege@rtl.cygnus.com>
 
 	* gcc.c-torture/execute/{950511-1.c,950512-1.c}: New tests.
 
-Thu May  4 14:23:54 1995  Torbjorn Granlund  <tege@adder.cygnus.com>
+1995-05-04  Torbjorn Granlund  <tege@adder.cygnus.com>
 
 	From kenner;
 	* gcc.c-torture/execute/va-arg-2.c (f[0-9], f1[0-5]): Verify format
 	is the proper length.
 	* va-arg-3.c: Likewise.
 
-Sun Apr 30 16:02:59 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-04-30  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/dg.exp: Moved to dejagnu/lib.  Copy kept here (for awhile).
 	* lib/gcc-dg.exp: New file, gcc interface to dg.exp.
@@ -13079,56 +13084,56 @@ Sun Apr 30 16:02:59 1995  Doug Evans  <dje@canuck.cygnus.com>
 	* lib/gcc.exp (default_gcc_start): Delete old cruft.  Delete result.
 	* lib/g++.exp (default_g++_start): Delete old cruft.
 
-Tue Apr 25 17:20:18 1995  Torbjorn Granlund  <tege@cygnus.com>
+1995-04-25  Torbjorn Granlund  <tege@cygnus.com>
 
 	* gcc.c-torture/execute/memcpy-1.c: Decrease stack requirements from
 	(2 * (1 << 18)) to (2 * (1 << 17)).
 
 	* gcc.c-torture/execute/arith-rand.c: Avoid -0x80000000/-1.
 
-Thu Apr 20 12:21:13 1995  J.T. Conklin  <jtc@rtl.cygnus.com>
+1995-04-20  J.T. Conklin  <jtc@rtl.cygnus.com>
 
 	* config/rom68k.exp: Renamed from config/idp.exp
 
-Tue Apr 18 13:33:26 1995  Torbjorn Granlund  <tege@rtl.cygnus.com>
+1995-04-18  Torbjorn Granlund  <tege@rtl.cygnus.com>
 
 	* c-torture/compile/921109-2.c
 
-Tue Apr 18 10:45:12 1995  Mike Stump  <mrs@cygnus.com>
+1995-04-18  Mike Stump  <mrs@cygnus.com>
 
 	* lib/old-dejagnu.exp: We expect Execution test failure if we expected
 	excess errors.
 
-Sat Apr 15 11:16:58 1995  Doug Evans  <dje@chestnut.cygnus.com>
+1995-04-15  Doug Evans  <dje@chestnut.cygnus.com>
 
 	* lib/gcc.exp (default_gcc_start): Handle leading "-" in compiler
 	output.
 	* lib/g++.exp (default_g++_start): Likewise.
 
-Wed Mar 29 16:34:03 1995  Torbjorn Granlund  <tege@adder.cygnus.com>
+1995-03-29  Torbjorn Granlund  <tege@adder.cygnus.com>
 
 	* gcc.c-torture/compile/950329-1.c: New test.
 
-Tue Mar 28 16:10:33 1995  J.T. Conklin  <jtc@rtl.cygnus.com>
+1995-03-28  J.T. Conklin  <jtc@rtl.cygnus.com>
 
 	  * config/bug.exp (${tool}_load): Updated to use new remote_open
 	  and remote_close procs.
 	* config/idp.exp: New file.
 
-Wed Mar 22 15:01:58 1995  Torbjorn Granlund  <tege@rtl.cygnus.com>
+1995-03-22  Torbjorn Granlund  <tege@rtl.cygnus.com>
 
 	* gcc.c-torture/execute/950322-1.c: New test.
 
-Tue Mar 21 21:24:49 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-03-21  Doug Evans  <dje@canuck.cygnus.com>
 
 	* config/vx.exp (${tool}_load): Clean up testing of return code from
 	vxworks_ld and vxworks_spawn.
 
-Tue Mar 21 17:01:42 1995  Doug Evans  <dje@deneb.cygnus.com>
+1995-03-21  Doug Evans  <dje@deneb.cygnus.com>
 
 	* lib/c-torture.exp (c-torture-execute): Pass same text to pass/fail.
 
-Mon Mar 13 14:49:42 1995  Mike Stump  <mrs@cygnus.com>
+1995-03-13  Mike Stump  <mrs@cygnus.com>
 
 	* lib/old-deja.exp: Add `excess errors test - ' error, now one
 	can mark excess errors on a machine by machine basis.  Note, the
@@ -13138,12 +13143,12 @@ Mon Mar 13 14:49:42 1995  Mike Stump  <mrs@cygnus.com>
 	mips-*-* alpha-*-* m68k-*-* is how to expect excess errors on
 	those 4 machines, but no others.
 
-Fri Mar 10 12:33:04 1995  J.T. Conklin  <jtc@rtl.cygnus.com>
+1995-03-10  J.T. Conklin  <jtc@rtl.cygnus.com>
 
 	* gcc.c-torture/execute/execute.exp (c-torture-execute): from here.
 	* lib/c-torture.exp: to here.
 
-Fri Mar 10 10:38:15 1995  Torbjorn Granlund  <tege@adder.cygnus.com>
+1995-03-10  Torbjorn Granlund  <tege@adder.cygnus.com>
 
 	* gcc.c-torture/execute/950221-1.c: New test.
 	* gcc.c-torture/execute/struct-ret-1.c: New test.
@@ -13151,12 +13156,12 @@ Fri Mar 10 10:38:15 1995  Torbjorn Granlund  <tege@adder.cygnus.com>
 
 	* gcc.c-torture/execute/941101-1.c (f): Fix typo, == was !=.
 
-Fri Mar  3 16:28:35 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-03-03  Doug Evans  <dje@canuck.cygnus.com>
 
 	* gcc.c-torture/execute/arith-1.c (main): Return 0.
 	* gcc.c-torture/execute/arith-rand.c (main): Return 0.
 
-Wed Mar  1 02:08:29 1995  Gerald Baumgartner  (gb@lorenzo.cs.purdue.edu)
+1995-03-01  Gerald Baumgartner  (gb@lorenzo.cs.purdue.edu)
 
 	* g++.gb: New directory of tests, derived from my signature and
 	class scoping tests.
@@ -13189,16 +13194,16 @@ Wed Mar  1 02:08:29 1995  Gerald Baumgartner  (gb@lorenzo.cs.purdue.edu)
 
 	* g++.gb/README: New file, explains what these tests are about.
 
-Tue Feb 28 10:37:52 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-02-28  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/dg.exp (dg-do): Support `preprocess'.
 	(dg-test): Likewise.
 
-Mon Feb 13 15:18:10 1995  J.T. Conklin  <jtc@rtl.cygnus.com>
+1995-02-13  J.T. Conklin  <jtc@rtl.cygnus.com>
 
 	* config/udi.exp: change "continue -expect" to "exp_continue".
 
-Sat Feb 11 00:25:20 1995  Torbjorn Granlund  (tege@tiny.cygnus.com)
+1995-02-11  Torbjorn Granlund  (tege@tiny.cygnus.com)
 
 	* gcc.c-torture/execute/{921025-1.c, 930525-1.c}:
 	Delete redundant tests.
@@ -13233,23 +13238,23 @@ Sat Feb 11 00:25:20 1995  Torbjorn Granlund  (tege@tiny.cygnus.com)
 
 	* gcc.c-torture/compile/920902-1.c: Delete 2:nd parameter.
 
-Wed Feb  8 15:30:17 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+1995-02-08  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 	* lib/mike-g++.exp: Add -lm to LIBS.
 
-Tue Feb  7 17:09:50 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-02-07  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/c-torture.exp (c-torture): Allow relative pathname in $srcdir.
 
-Mon Jan 30 14:33:25 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+1995-01-30  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 	* lib/mike-g++.exp: Add -lstdc++ to LIBS.
 
-Thu Jan 12 16:41:34 1995  Doug Evans  <dje@canuck.cygnus.com>
+1995-01-12  Doug Evans  <dje@canuck.cygnus.com>
 
 	* gcc.misc-tests/dg-test.exp: Only run if $DG_TEST=yes.
 
-Mon Jan  2 11:50:10 1995  Jeff Law  (law@snake.cs.utah.edu)
+1995-01-02  Jeff Law  (law@snake.cs.utah.edu)
 
 	* g++.law/{arg9.C, arg10.C, arg11.C, arm15.C, arm16.C}: New tests.
 	* g++.law/{bad-error3.C, bad-error4.C, bad-error5.C}: Likewise.
@@ -13287,22 +13292,22 @@ Mon Jan  2 11:50:10 1995  Jeff Law  (law@snake.cs.utah.edu)
 	No longer expected to fail.
 	* g++.law/missed-error3.C: Tweak for recent bool changes.
 
-Sun Dec  4 20:54:33 1994  Doug Evans  <dje@canuck.cygnus.com>
+1994-12-04  Doug Evans  <dje@canuck.cygnus.com>
 
 	* config/emb-unix: Deleted.
 	* config/unix.exp (${tool}_load): Use new proc rsh_exec to perform
 	remote execution.  Do final link on remote host if REMOTE_LINK is set.
 
-Thu Dec  1 08:43:05 1994  Doug Evans  <dje@canuck.cygnus.com>
+1994-12-01  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/dg.exp (dg-test): Fix typo in last patch.
 
-Wed Nov 30 13:25:32 1994  Doug Evans  <dje@canuck.cygnus.com>
+1994-11-30  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/dg.exp (dg-test): Fix pattern that searches for expected output
 	(handles multiple occurrences).
 
-Thu Nov 24 19:48:38 1994  Doug Evans  <dje@canuck.cygnus.com>
+1994-11-24  Doug Evans  <dje@canuck.cygnus.com>
 
 	* gcc.c-torture/*/*.exp: Pass full pathname to c-torture.
 	* gcc.c-torture/execute/execute.exp (c-torture-execute): Remove
@@ -13314,16 +13319,16 @@ Thu Nov 24 19:48:38 1994  Doug Evans  <dje@canuck.cygnus.com>
 	(gcc_fail): Likewise.
 	* lib/dg.exp (dg-test): Don't delete $subdir from pathname in messages.
 
-Wed Nov 23 13:56:00 1994  J.T. Conklin  <jtc@rtl.cygnus.com>
+1994-11-23  J.T. Conklin  <jtc@rtl.cygnus.com>
 
 	* lib/netware.exp: Only attach to NetWare i386 systems.
 
-Wed Nov 16 11:27:00 1994  Doug Evans  <dje@canuck.cygnus.com>
+1994-11-16  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/dg.exp (dg-test): Don't print $subdir (or above) in pass/fail
 	messages.  Add test name to "output pattern match" pass/fail message.
 
-Sat Nov 12 22:11:52 1994  Doug Evans  <dje@canuck.cygnus.com>
+1994-11-12  Doug Evans  <dje@canuck.cygnus.com>
 
 	* gcc.dg: New testsuite.
 	* gcc.dg/dg.exp: New file.
@@ -13333,14 +13338,14 @@ Sat Nov 12 22:11:52 1994  Doug Evans  <dje@canuck.cygnus.com>
 
 	* gcc.misc-tests/msgs.exp: New testcase driver.
 
-Wed Nov  9 14:23:09 1994  Doug Evans  <dje@canuck.cygnus.com>
+1994-11-09  Doug Evans  <dje@canuck.cygnus.com>
 
 	* gcc.c-torture/execute/execute.exp (c-torture_execute): New proc.
 	Watch for illegal return values from ${tool}_load.
 	* config/unix.exp (${tool}_load): Fix pass/fail detection for
 	cross targets.  Coerce return value >0 to 1.
 
-Tue Nov  8 14:10:33 1994  Doug Evans  <dje@canuck.cygnus.com>
+1994-11-08  Doug Evans  <dje@canuck.cygnus.com>
 
 	* config/unix.exp (${tool}_load): Call program rsh, not proc.
 
@@ -13354,7 +13359,7 @@ Tue Nov  8 14:10:33 1994  Doug Evans  <dje@canuck.cygnus.com>
 	and without loops.
 	* gcc.c-torture/execute/execute.exp: Likewise.
 
-Wed Nov  2 14:47:58 1994  Doug Evans  <dje@canuck.cygnus.com>
+1994-11-02  Doug Evans  <dje@canuck.cygnus.com>
 
 	* config/*.exp: Clarify return code from ${tool}_load.
 	Call `unresolved' or `untested' instead of `warning' or `perror'
@@ -13397,13 +13402,13 @@ Wed Nov  2 14:47:58 1994  Doug Evans  <dje@canuck.cygnus.com>
 	Get option list from TORTURE_OPTIONS.  Delete -funroll[-all]-loops if
 	no loops.  Update to reflect clarified return codes from ${tool}_load.
 
-Fri Oct 21 23:10:16 1994  Doug Evans  <dje@canuck.cygnus.com>
+1994-10-21  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/old-dejagnu.exp (process-option): Append ".*" to pattern
 	to grep for.
 	(old-dejagnu): Likewise (where necessary).
 
-Fri Oct 14 17:54:58 1994  Doug Evans  <dje@canuck.cygnus.com>
+1994-10-14  Doug Evans  <dje@canuck.cygnus.com>
 
 	* gcc.misc-tests/gcov.exp: New file, for gcov testing.
 
@@ -13421,16 +13426,16 @@ Fri Oct 14 17:54:58 1994  Doug Evans  <dje@canuck.cygnus.com>
 	Don't clobber previous definition of `unknown'.
 	Print tcl errors in `dg-final'.
 
-Wed Oct 12 13:05:37 1994  Doug Evans  <dje@canuck.cygnus.com>
+1994-10-12  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/dg.exp (dg-process-target): Improve syntax error messages.
 	(dg-test): Don't print errorInfo, it contains stack backtrace.
 
-Mon Sep 26 12:18:53 1994  Doug Evans  (dje@canuck.cygnus.com)
+1994-09-26  Doug Evans  (dje@canuck.cygnus.com)
 
 	* lib/g++.exp (runtest_file_p): Define if missing.
 
-Sat Sep 24 15:29:23 1994  Doug Evans  (dje@cygnus.com)
+1994-09-24  Doug Evans  (dje@cygnus.com)
 
 	* lib/mike-g++.exp: Comment out loading of g++.exp.
 	* lib/g++.exp: Update copyright.  Test for existence of $CXX at start.
@@ -13447,7 +13452,7 @@ Sat Sep 24 15:29:23 1994  Doug Evans  (dje@cygnus.com)
 	* g++.old-deja/old-deja.exp: utils.exp is loaded by runtest.exp.
 	* lib/old-dejagnu.exp: ${tool}.exp is loaded by config file.
 
-Thu Sep 22 11:39:17 1994  Doug Evans  (dje@canuck.cygnus.com)
+1994-09-22  Doug Evans  (dje@canuck.cygnus.com)
 
 	* lib/c-torture.exp (c-torture-compile): Rework compiler
 	message processing.
@@ -13455,13 +13460,13 @@ Thu Sep 22 11:39:17 1994  Doug Evans  (dje@canuck.cygnus.com)
 	* gcc.c-torture/compile/initbug1.{c,exp}: Deleted, not part of
 	c-torture.
 
-Wed Sep 21 09:49:43 1994  Doug Evans  (dje@canuck.cygnus.com)
+1994-09-21  Doug Evans  (dje@canuck.cygnus.com)
 
 	* gcc.wendy/wendy.dis: Renamed from wendy.exp to disable the testsuite.
 
 	* lib/dg.exp (dg-process-target): Support { target native }.
 
-Tue Sep 20 17:16:55 1994  Doug Evans  (dje@canuck.cygnus.com)
+1994-09-20  Doug Evans  (dje@canuck.cygnus.com)
 
 	* lib/dg.exp (dg-test): Clean up some comments.  Delete code that
 	looked for "... program xxx got fatal signal".
@@ -13469,12 +13474,12 @@ Tue Sep 20 17:16:55 1994  Doug Evans  (dje@canuck.cygnus.com)
 	Ignore compiler messages "path prefix not used" and "linker input
 	file unused".
 
-Wed Sep 14 11:44:40 1994  Doug Evans  (dje@canuck.cygnus.com)
+1994-09-14  Doug Evans  (dje@canuck.cygnus.com)
 
 	* lib/gcc.exp (runtest_file_p): Define if missing.
 	* gcc.prms/template.c: Example to work from.
 
-Tue Sep 13 10:30:48 1994  Doug Evans  (dje@canuck.cygnus.com)
+1994-09-13  Doug Evans  (dje@canuck.cygnus.com)
 
 	* lib/gcc.exp (gcc_finish): Delete code to update `testcnt'.
 	* lib/dg.exp (dg-test): Call unsupported testcases as such.
@@ -13495,12 +13500,12 @@ Tue Sep 13 10:30:48 1994  Doug Evans  (dje@canuck.cygnus.com)
 	Separate execution pass/fail from output pattern match pass/fail.
 	Delete BUILD/XBUILD support (duplicate of LOSE/XLOSE).
 
-Mon Sep 12 13:47:35 1994  Jim Wilson  (wilson@sphagnum.cygnus.com)
+1994-09-12  Jim Wilson  (wilson@sphagnum.cygnus.com)
 
 	* gcc.c-torture/special/special.exp: Don't expect failure for mips
 	target for 920510-1.c.
 
-Mon Sep 12 12:44:39 1994  Doug Evans  (dje@canuck.cygnus.com)
+1994-09-12  Doug Evans  (dje@canuck.cygnus.com)
 
 	* lib/gcc.exp (gcc_init): Move initialized message to verbose level 3.
 	Clean up comment regarding use of passcnt, etc.
@@ -13518,11 +13523,11 @@ Mon Sep 12 12:44:39 1994  Doug Evans  (dje@canuck.cygnus.com)
 	* g++.old-deja.exp: Likewise.
 	Move "Testing file" message to verbose level 1.
 
-Fri Sep  9 10:21:18 1994  Doug Evans  (dje@canuck.cygnus.com)
+1994-09-09  Doug Evans  (dje@canuck.cygnus.com)
 
 	* gcc.wendy/t.c: Add DEJAGNU_CFLAGS:"-DNOPAUSE".
 
-Thu Sep  8 16:52:43 1994  Doug Evans  (dje@canuck.cygnus.com)
+1994-09-08  Doug Evans  (dje@canuck.cygnus.com)
 
 	* lib/gcc.exp: Ensure CFLAGS, LIBS, and LDFLAGS are set.
 	(default_gcc_start): Accept optional second list element
@@ -13573,7 +13578,7 @@ Thu Sep  8 16:52:43 1994  Doug Evans  (dje@canuck.cygnus.com)
 	* lib/c-torture.exp: Call gcc_pass/gcc_fail instead of
 	gcc_[ce]pass/fail.
 
-Wed Sep  7 11:09:08 1994  Doug Evans  (dje@canuck.cygnus.com)
+1994-09-07  Doug Evans  (dje@canuck.cygnus.com)
 
 	* lib/g++.exp (g++_start): Rename arg to `prog' to avoid varargs
 	confusion.
@@ -13591,7 +13596,7 @@ Wed Sep  7 11:09:08 1994  Doug Evans  (dje@canuck.cygnus.com)
 	Simplify verbose code, and include status and exec_output.
 	(g++_load): Use gcc_load.
 
-Sun Sep  4 13:59:27 1994  Jim Wilson  (wilson@sphagnum.cygnus.com)
+1994-09-04  Jim Wilson  (wilson@sphagnum.cygnus.com)
 
 	* gcc.c-torture/noncompile/920928-1.c: Delete obsolete file.
 	* gcc.c-torture/noncompile/noncompile.exp: Delete support for
@@ -13599,7 +13604,7 @@ Sun Sep  4 13:59:27 1994  Jim Wilson  (wilson@sphagnum.cygnus.com)
 	940714-3.c as these testcases don't exist anymore.  Make
 	va-arg-1.c expected to pass.
 
-Fri Aug 19 12:27:07 1994  Doug Evans  (dje@canuck.cygnus.com)
+1994-08-19  Doug Evans  (dje@canuck.cygnus.com)
 
 	* gcc.misc-tests/misc.exp: Only run specific testcases.
 	* gcc.misc-tests/dg-test.exp: New file.  Tests dg.exp.
@@ -13615,18 +13620,18 @@ Fri Aug 19 12:27:07 1994  Doug Evans  (dje@canuck.cygnus.com)
 	Simplify "initialized" message.
 	(gcc_stat): Clean up comments a little.
 
-Tue Aug 16 11:16:46 1994  Doug Evans  (dje@canuck.cygnus.com)
+1994-08-16  Doug Evans  (dje@canuck.cygnus.com)
 
 	* gcc.prms/prms.exp: New driver for gcc.prms testsuite directory.
 
-Mon Aug 15 21:20:36 1994  Doug Evans  (dje@canuck.cygnus.com)
+1994-08-15  Doug Evans  (dje@canuck.cygnus.com)
 
 	* lib/old-dejagnu.exp (process-option): New proc.
 	(old-dejagnu-init, old-dejagnu-stat): Likewise.
 	(old-dejagnu): Simplify.
 	* g++.old-deja/old-deja.exp: Update to new version of old-dejagnu.
 
-Sun Aug 14 09:23:53 1994  Jeff Law  (law@snake.cs.utah.edu)
+1994-08-14  Jeff Law  (law@snake.cs.utah.edu)
 
 	* lib/c-torture.exp (c-torture): Only call setup_xfail if $xfail
 	exists and is not an empty string.
@@ -13663,7 +13668,7 @@ Sun Aug 14 09:23:53 1994  Jeff Law  (law@snake.cs.utah.edu)
 	940712-1.c, calls.c, combine-hang.c, goto-1.c, init-2.c,
 	labels-1.c, packed-1.c, zero-strct-1.c}: Import from c-torture-1.29.
 
-Tue Jul 12 12:49:44 1994  Jim Kingdon  (kingdon@lioth.cygnus.com)
+1994-07-12  Jim Kingdon  (kingdon@lioth.cygnus.com)
 
 	* gcc.execute/{940712-1.c, 940712-2.c, 940713-1.c, 940714-1.c},
 	gcc.noncompile/{940712-1.h, 940712-1a.h, 940712-1b.h, 940712-1.c,
@@ -13673,12 +13678,12 @@ Tue Jul 12 12:49:44 1994  Jim Kingdon  (kingdon@lioth.cygnus.com)
 	New tests.
 	* gcc.noncompile/noncompile.exp: Change accordingly.
 
-Thu Jul  7 14:20:33 1994  Doug Evans  (dje@canuck.cygnus.com)
+1994-07-07  Doug Evans  (dje@canuck.cygnus.com)
 
 	* config/sim.exp, lib/c-torture.exp, lib/gcc.exp:
 	Undo previous clobberage.
 
-Mon Jul  4 17:00:59 1994  Jeff Law  (law@snake.cs.utah.edu)
+1994-07-04  Jeff Law  (law@snake.cs.utah.edu)
 
 	* gcc.compile/{931102-1.c, 931102-2.c, 931031-1.c}:
 	* gcc.special/{930510-1.c, special.exp}:
@@ -13686,18 +13691,18 @@ Mon Jul  4 17:00:59 1994  Jeff Law  (law@snake.cs.utah.edu)
 	931102-2.c, struct-pack-1.c, divmod-1.c, complex-1.c,
 	struct-varargs-1.c}: New tests from c-torture-1.26.
 
-Tue Jun 28 17:39:42 1994  J.T. Conklin  (jtc@phishhead.cygnus.com)
+1994-06-28  J.T. Conklin  (jtc@phishhead.cygnus.com)
 
 	* gcc.wendy/wendy.exp: add --'s so that -1 isn't parsed as an
 	  argument to switch.
 
-Sat May 21 10:39:38 1994  Bill Cox  (bill@rtl.cygnus.com)
+1994-05-21  Bill Cox  (bill@rtl.cygnus.com)
 
 	* Revert the previous changes.  Please see Rob's directory
 	  (/lisa/test/rob/progressive/gcc/testsuite) for testing
 	  fixes.
 
-Thu May 19 18:00:03 1994  Bill Cox  (bill@rtl.cygnus.com)
+1994-05-19  Bill Cox  (bill@rtl.cygnus.com)
 
 	* config/sim.exp, config/udi.exp, config/unix.exp, config/vx.exp,
 	    g++.brendan/alignof.exp, g++.brendan/arm3.exp, g++.brendan/code-gen5.exp,
@@ -13727,17 +13732,17 @@ Thu May 19 18:00:03 1994  Bill Cox  (bill@rtl.cygnus.com)
 	    lib/chill.exp, lib/g++.exp, lib/gcc.exp, lib/mike-g++.exp, lib/mike-gcc.exp,
 	    lib/old-dejagnu.exp: Checkin Rob's 94Q1 testing changes.
 
-Tue May 17 14:55:09 1994  Bill Cox  (bill@rtl.cygnus.com)
+1994-05-17  Bill Cox  (bill@rtl.cygnus.com)
 
 	* config/udi.exp, gcc.execute/execute.exp, gcc.wendy/wendy.exp,
 	    lib/g++.exp, lib/old-dejagnu.exp: Replace error proc calls
 	  with perror calls.
 
-Mon May  2 17:41:13 1994  Jason Merrill  (jason@deneb.cygnus.com)
+1994-05-02  Jason Merrill  (jason@deneb.cygnus.com)
 
 	* config/unix.exp (g++_load): Fix syntax.
 
-Thu Apr 14 12:22:10 1994  Jim Wilson  (wilson@sphagnum.cygnus.com)
+1994-04-14  Jim Wilson  (wilson@sphagnum.cygnus.com)
 
 	* gcc.compile/initbug1.exp (CFLAGS): Add space at beginning.
 	* gcc.noncompile/921017-1.c: Deleted obsolete test.
@@ -13748,7 +13753,7 @@ Thu Apr 14 12:22:10 1994  Jim Wilson  (wilson@sphagnum.cygnus.com)
 	* gcc.wendy/hbm4.c: Correct typo.
 	* gcc.wendy/tad1.c, tad2.c: Correct expected output.
 
-Mon Mar 28 13:29:37 1994  Doug Evans  (dje@canuck.cygnus.com)
+1994-03-28  Doug Evans  (dje@canuck.cygnus.com)
 
 	* lib/gcc.exp (gcc_[ce]{pass,fail}): Remove output/executable argument.
 	* gcc.wendy/wendy.exp (wendy_try): Remove `output' argument of
@@ -13760,19 +13765,19 @@ Mon Mar 28 13:29:37 1994  Doug Evans  (dje@canuck.cygnus.com)
 	Call gcc_cpass, gcc_cfail.
 	(c-torture): Pass testing option to c-torture-compile.
 
-Mon Mar 21 12:40:33 1994  Doug Evans  (dje@cygnus.com)
+1994-03-21  Doug Evans  (dje@cygnus.com)
 
 	Bring patches over from progressive.
 	* config/default.exp: Exit remote shell cleanly.
 	(g++_exit, g++_start): Add default versions.
 	* config/sim.exp (gcc_load): Use perror, not error.
 
-Sun Mar 20 12:05:32 1994  Doug Evans  (dje@canuck.cygnus.com)
+1994-03-20  Doug Evans  (dje@canuck.cygnus.com)
 
 	* lib/gcc.exp: Don't set CFLAGS if CC not set.  It clobbers the	value
 	set in site.exp.
 
-Mon Mar 14 19:30:28 1994  Doug Evans  (dje@cygnus.com)
+1994-03-14  Doug Evans  (dje@cygnus.com)
 
 	* gcc.wendy/wendy.exp (wendy_first_line): New proc to fetch
 	DEJAGNU_OUTPUT and DEJAGNU_CFLAGS.
@@ -13783,12 +13788,12 @@ Mon Mar 14 19:30:28 1994  Doug Evans  (dje@cygnus.com)
 	* lib/gcc.exp: Minor cleanup work.
 	(gcc_cpass, gcc_cfail, gcc_epass, gcc_efail): New procs.
 
-Wed Mar  9 15:22:54 1994  Doug Evans  (dje@canuck.cygnus.com)
+1994-03-09  Doug Evans  (dje@canuck.cygnus.com)
 
 	* config/sim.exp (gcc_load): Document return codes better.
 	Don't pass -v to simulator.
 
-Thu Feb 24 07:15:18 1994  Jeffrey A. Law  (law@snake.cs.utah.edu)
+1994-02-24  Jeffrey A. Law  (law@snake.cs.utah.edu)
 
 	  * gcc.special/920717-x.c: Fix typo.
 	  * gcc.special/special.exp (920717-x.c): Use $srcdir/$subdir to
@@ -13796,7 +13801,7 @@ Thu Feb 24 07:15:18 1994  Jeffrey A. Law  (law@snake.cs.utah.edu)
 
 	* lib/mike-gcc.exp: Fix typo.
 
-Tue Feb 15 15:41:47 1994  Rob Savoye  (rob@darkstar.cygnus.com)
+1994-02-15  Rob Savoye  (rob@darkstar.cygnus.com)
 
 	* lib/gcc.exp: Minor cleanup work. Find the proper gcc or g++
 	binary to use, transform the name.
@@ -13804,22 +13809,22 @@ Tue Feb 15 15:41:47 1994  Rob Savoye  (rob@darkstar.cygnus.com)
 	it's now a special case of gcc that requires no special support.
 	Add a default.exp for unsupported targets.
 
-Fri Feb 11 12:59:54 1994  Rob Savoye  (rob@poseidon.cygnus.com)
+1994-02-11  Rob Savoye  (rob@poseidon.cygnus.com)
 
 	* g++.jason/report.exp, g++.old-deja/old-deja.exp,
 	lib/old-dejagnu.exp: Fix a few patterns to work with the new
 	version of Tcl.
 
-Wed Feb  9 21:35:47 1994  Rob Savoye  (rob@darkstar.cygnus.com)
+1994-02-09  Rob Savoye  (rob@darkstar.cygnus.com)
 
 	* lib/c-torture.exp: Made "file prefix*never used a pass, rather
 	than a warning.
 
-Sun Feb  6 16:52:13 1994  Jeffrey A. Law  (law@snake.cs.utah.edu)
+1994-02-06  Jeffrey A. Law  (law@snake.cs.utah.edu)
 
 	* lib/mike-gcc.exp: Add in recent changes from mike-g++.exp.
 
-Mon Jan  3 17:28:25 1994  Jim Wilson  (wilson@sphagnum.cygnus.com)
+1994-01-03  Jim Wilson  (wilson@sphagnum.cygnus.com)
 
 	* gcc.execute/execute.exp: Combine opt_list and foption_list into
 	option_list.  Compile every file with only 4/6 option choices
@@ -13830,12 +13835,12 @@ Mon Jan  3 17:28:25 1994  Jim Wilson  (wilson@sphagnum.cygnus.com)
 	* lib/gcc.exp: Set LIBS, CFLAGS, and LDFLAGS to empty strings if
 	not already set.
 
-Thu Dec 30 17:17:07 1993  Mike Stump  (mrs@rtl.cygnus.com)
+1993-12-30  Mike Stump  (mrs@rtl.cygnus.com)
 
 	* lib/old-deja.exp: Add `excess errors test fails' error, now one
 	can put an XFAIL *-*-* on excess errors.
 
-Sun Dec 19 21:45:34 1993  Jeffrey A. Law  (law@snake.cs.utah.edu
+1993-12-19  Jeffrey A. Law  (law@snake.cs.utah.edu
 
 	* g++.law: Add more tests derived from g++-bugs snapshots.
 
@@ -13845,30 +13850,30 @@ Sun Dec 19 21:45:34 1993  Jeffrey A. Law  (law@snake.cs.utah.edu
 	* lib/mike-gcc.exp (postbase): Delete the .o file after we've
 	compiled it, and the a.out file after we've run it.
 
-Fri Dec 17 11:29:56 1993  Brendan Kehoe  (brendan@lisa.cygnus.com)
+1993-12-17  Brendan Kehoe  (brendan@lisa.cygnus.com)
 
 	* lib/mike-g++.exp (postbase): Delete the .o file after we've
 	compiled it, and the a.out file after we've run it.
 
-Fri Dec 17 10:18:16 1993  Jeffrey A. Law  (law@snake.cs.utah.edu)
+1993-12-17  Jeffrey A. Law  (law@snake.cs.utah.edu)
 
 	* g++.law/*.exp: Avoid losing arguments added via "append" commands.
 
-Wed Dec 15 20:36:40 1993  Rob Savoye  (rob@darkstar.cygnus.com)
+1993-12-15  Rob Savoye  (rob@darkstar.cygnus.com)
 
 	* lib/gcc.exp, lib/g++.exp: Use catch rather than exec to get the
 	version number.
 
-Sun Dec 12 21:10:04 1993  Jeffrey A. Law  (law@snake.cs.utah.edu)
+1993-12-12  Jeffrey A. Law  (law@snake.cs.utah.edu)
 
 	* g++.law: New directory of g++ tests derived from the g++-bugs
 	snapshots.
 
-Thu Dec 09 16:50:41 1993  Jeffrey Wheat  (cassidy@cygnus.com)
+1993-12-09  Jeffrey Wheat  (cassidy@cygnus.com)
 
 	* gcc.compile: initbug1.c initbug1.exp testcase added
 
-Mon Dec 06 11:09:52 1993  Jeffrey Wheat  (cassidy@cygnus.com)
+1993-12-06  Jeffrey Wheat  (cassidy@cygnus.com)
 
 	* gcc.dje/sizetype-1.exp, dje.exp: minor clean ups
 	* gcc.execute/execute.exp: minor cleanups. added gcc_stat calls. added
@@ -13877,7 +13882,7 @@ Mon Dec 06 11:09:52 1993  Jeffrey Wheat  (cassidy@cygnus.com)
 	  Jeff Law (law@cs.utah.edu)
 
 
-Tue Nov 30 16:34:07 1993  Mike Stump  (mrs@cygnus.com)
+1993-11-30  Mike Stump  (mrs@cygnus.com)
 
 	* config/unix-g++.exp: Follow the gcc way of doing things.
 	* g++.old-deja/old-deja.exp: Minor updates.
@@ -13885,37 +13890,37 @@ Tue Nov 30 16:34:07 1993  Mike Stump  (mrs@cygnus.com)
 	* lib/old-dejagnu.exp: Minor updates.
 	* lib/mike-g++.exp: Always unset errorInfo.
 
-Sat Nov  6 11:34:51 1993  Mike Stump  (mrs@cygnus.com)
+1993-11-06  Mike Stump  (mrs@cygnus.com)
 
 	* lib/gcc.exp: Fix some errors with the below change, CC and
 	CFLAGS should be global when setting, not local.
 
-Wed Nov  3 11:16:26 1993  Rob Savoye  (rob@darkstar.cygnus.com)
+1993-11-03  Rob Savoye  (rob@darkstar.cygnus.com)
 
 	* lib/gcc.exp: Transform tool name.
 
-Wed Oct 27 23:57:29 1993  Jeffrey Wheat  (cassidy@cygnus.com)
+1993-10-27  Jeffrey Wheat  (cassidy@cygnus.com)
 
 	* gcc.*/*.exp: Fixd some de-stablizing changes. Sorry.
 
-Wed Oct 27 14:45:50 1993  Jeffrey Wheat  (cassidy@cygnus.com)
+1993-10-27  Jeffrey Wheat  (cassidy@cygnus.com)
 
 	* lib/gcc.exp: change gcc_done to gcc_stat
 
-Wed Oct 27 09:57:51 1993  Jeffrey Wheat  (cassidy@cygnus.com)
+1993-10-27  Jeffrey Wheat  (cassidy@cygnus.com)
 
 	* Upgraded gcc testsuite to c-torture version 1.25
 
-Sun Oct 24 10:58:03 1993  Jeffrey Wheat  (cassidy@cygnus.com)
+1993-10-24  Jeffrey Wheat  (cassidy@cygnus.com)
 
 	* lib/gcc.exp: added reporting code. Changed verbose compile message.
 	* lib/c-torture: added hooks for new reporting code.
 
-Thu Oct 21 18:45:32 1993  Jeffrey Wheat  (cassidy@cygnus.com)
+1993-10-21  Jeffrey Wheat  (cassidy@cygnus.com)
 
 	* config/sh-gcc.exp: check if sh-sim exists in the path
 
-Mon Oct 18 11:13:22 1993  Jeffrey Wheat  (cassidy@cygnus.com)
+1993-10-18  Jeffrey Wheat  (cassidy@cygnus.com)
 
 	* gcc.code_quality/code_quality.exp: Initial changes for new logic.
 	* gcc.compile/compile.exp: Initial changes for new logic.
@@ -13928,7 +13933,7 @@ Mon Oct 18 11:13:22 1993  Jeffrey Wheat  (cassidy@cygnus.com)
 	* lib/c-torture.exp: Initial changes for new logic.
 	* lib/gcc.exp: Initial changes for new logic.
 
-Fri Oct 15 00:19:42 1993  Mike Stump  (mrs@cygnus.com)
+1993-10-15  Mike Stump  (mrs@cygnus.com)
 
 	* lib/mike-g++.exp, lib/old-dejagnu.exp: Make the message not
 	depend upon failure or success.  Fully qualify names in failure
@@ -13938,38 +13943,38 @@ Fri Oct 15 00:19:42 1993  Mike Stump  (mrs@cygnus.com)
 	like all others, so that things are uniform.  Other miscellaneous
 	improvements.
 
-Wed Oct 13 15:04:51 1993  Jeffrey Wheat  (cassidy@cygnus.com)
+1993-10-13  Jeffrey Wheat  (cassidy@cygnus.com)
 
 	* gcc.cpp: new directory for cpp tests
 
-Mon Oct  4 09:03:41 1993  Jeffrey Wheat  (cassidy@cygnus.com)
+1993-10-04  Jeffrey Wheat  (cassidy@cygnus.com)
 
 	* lib/chill.exp: Code reformatted, removed unused code.
 	* config/unix-chill.exp: Code reformatted, removed unused code.
 	* chill.execute/execute.exp: Code reformatted, removed unused code.
 	* chill.execute/oe/orient.exp: Code reformatted, removed unused code.
 
-Mon Oct  4 06:19:26 1993  Ian Lance Taylor  (ian@cygnus.com)
+1993-10-04  Ian Lance Taylor  (ian@cygnus.com)
 
 	* config/mips-gcc.exp, config/mips-g++.exp: New files.  Execution
 	routines not written.
 
-Mon Sep 27 21:07:44 1993  Rob Savoye  (rob@darkstar.cygnus.com)
+1993-09-27  Rob Savoye  (rob@darkstar.cygnus.com)
 
 	* config/bug-gcc.exp: Use new procs from bug.exp.
 
-Tue Sep 21 18:21:12 1993  Rob Savoye  (rob@darkstar.cygnus.com)
+1993-09-21  Rob Savoye  (rob@darkstar.cygnus.com)
 
 	* config/vx-gcc.exp: Use new vxworks_ld proc, so files get loaded
 	via ftp, rather than depending on NFS.
 	* config/vx-gcc.exp: Use new vxworks_spawn proc to execute test
 	case.
 
-Thu Sep  9 23:09:15 1993  Rob Savoye  (rob@darkstar.cygnus.com)
+1993-09-09  Rob Savoye  (rob@darkstar.cygnus.com)
 
 	* config/bug-gcc.exp: Use new download proc.
 
-Tue Sep 14 19:23:58 1993  Jeffrey Wheat  (cassidy at deneb.cygnus.com)
+1993-09-14  Jeffrey Wheat  (cassidy at deneb.cygnus.com)
 
 	* chill.execute/execute.exp: cleanups, handles errors better
 	* chill.compile/compile.exp: rewrite, based on execute.exp
@@ -13980,13 +13985,13 @@ Tue Sep 14 19:23:58 1993  Jeffrey Wheat  (cassidy at deneb.cygnus.com)
 	  Added a hack to capture stderr from exec, so noncompile tests
 	  can work.
 
-Sat Sep 11 15:30:10 1993  Jeffrey Wheat  (cassidy@cygnus.com)
+1993-09-11  Jeffrey Wheat  (cassidy@cygnus.com)
 
 	* chill.execute/execute.exp: rewrite of testsuite driver
 	* lib/chill.exp: rewrite of testsuite driver
 	* config/unix-chill.exp: rewrite of testsuite driver
 
-Wed Aug 25 14:11:13 1993  Bill Cox  (bill@rtl.cygnus.com)
+1993-08-25  Bill Cox  (bill@rtl.cygnus.com)
 
     In chill.execute:
 	* iexpr.ch: Standardize uppercase.
@@ -13994,7 +13999,7 @@ Wed Aug 25 14:11:13 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* vary.ch: standardize.  Correct varying string assignments.
 	* vary.dat: Add new output lines.
 
-Tue Aug 24 13:45:49 1993  Bill Cox  (bill@rtl.cygnus.com)
+1993-08-24  Bill Cox  (bill@rtl.cygnus.com)
 
     In chill.execute:
 	* chprintf.ch: Standardize use of uppercase.
@@ -14002,13 +14007,13 @@ Tue Aug 24 13:45:49 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  rather than a SYN.
 	* pinits.ch: Standardize.
 
-Mon Aug 23 17:26:58 1993  Per Bothner  (bothner@kalessin.cygnus.com)
+1993-08-23  Per Bothner  (bothner@kalessin.cygnus.com)
 
 	* rts.c:  Get malloc() from <stdlib.h>, not <malloc.h>.
 	* Makefil: Renamed to Makefile.in.
 	* configure.in: New.
 
-Mon Aug 23 14:24:13 1993  Bill Cox  (bill@rtl.cygnus.com)
+1993-08-23  Bill Cox  (bill@rtl.cygnus.com)
 
     In chill.execute:
 	* .cvsignore: Add result/output files.
@@ -14022,16 +14027,16 @@ Mon Aug 23 14:24:13 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* sets.ch: Tiny cleanup.
 	* vary1.ch: Re-indent.
 
-Tue Aug 17 15:42:07 1993  Bill Cox  (bill@rtl.cygnus.com)
+1993-08-17  Bill Cox  (bill@rtl.cygnus.com)
 
 	  * Add PR-related files to Makefiles, .cvsignore files, etc.
 
-Mon Aug  2 15:46:05 PDT 1993  Jeff Wheat  (cassidy@cygnus.com)
+1993-08-02  Jeff Wheat  (cassidy@cygnus.com)
 
 	* gcc.unsorted: flow.c and loop.c - renamed to avoid conflicts
 	  with compiler objects. New names are test-flow.c and test-loop.c
 
-Tue Jul 27 10:08:08 PDT 1993  Jeff Wheat  (cassidy@cygnus.com)
+1993-07-27  Jeff Wheat  (cassidy@cygnus.com)
 
 	* Upgraded c-torture tests from 1.19 to 1.20
 
@@ -14042,24 +14047,24 @@ Tue Jul 27 10:08:08 PDT 1993  Jeff Wheat  (cassidy@cygnus.com)
 	* gcc.failure: 920411-1.c 920627-2.c
 	* gcc.ieee: 920518-1.c 920810-1.c 930529-1.c
 
-Tue Jul 20 15:19:44 PDT 1993  Jeff Wheat  (cassidy@cygnus.com)
+1993-07-20  Jeff Wheat  (cassidy@cygnus.com)
 
 	* chill.compile/compile.exp chill.execute/execute.exp lib/chill.exp
 	  More changes to get testsuite working properly. Needs more work.
 	  Added some support for POSIX IEEE Std 1003.3-1991 error messages.
 
-Mon Jul 19 18:40:31 PDT 1993  Jeff Wheat  (cassidy@cygnus.com)
+1993-07-19  Jeff Wheat  (cassidy@cygnus.com)
 
 	* chill.compile/compile.exp chill.execute/execute.exp lib/chill.exp
 	  More changes to get testsuite working properly. Needs more work.
 
-Tue Jul 13 18:38:56 PDT 1993 Jeff Wheat  (cassidy@cygnus.com)
+1993-07-13 Jeff Wheat  (cassidy@cygnus.com)
 
 	* chill.compile/compile.exp: Added for Dejagnu support
 	* chill.execute/execute.exp: Added for Dejagnu support
 	* lib/chill.exp config/unix-chill.exp  : Added for Dejagnu support
 
-Sat Jun 19 07:13:05 1993  Bill Cox  (bill@rtl.cygnus.com)
+1993-06-19  Bill Cox  (bill@rtl.cygnus.com)
 
     This should complete moving the CHILL test files.
 	* chill.noncompile(.cvsignore printf.grt
@@ -14073,12 +14078,12 @@ Sat Jun 19 07:13:05 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  test-support files.
 	    (Makefile): More corrections.
 
-Fri Jun 18 23:40:54 1993  Bill Cox  (bill@rtl.cygnus.com)
+1993-06-18  Bill Cox  (bill@rtl.cygnus.com)
 
 	* chill.compile, chill.execute, chill.nocompile: Add CHILL
 	  test cases, ready for DejaGnu.
 
-Thu Jun 17 19:14:40 MDT 1993  Jeffrey Wheat  (cassidy@cygnus.com)
+1993-06-17  Jeffrey Wheat  (cassidy@cygnus.com)
 
 	* Upgraded c-torture tests from 1.18 to 1.19
 
@@ -14091,23 +14096,23 @@ Thu Jun 17 19:14:40 MDT 1993  Jeffrey Wheat  (cassidy@cygnus.com)
 	* gcc.misc-test(s): added tests:
 	  inst-check.c test-consts.c test-ior.c test-switch.c
 
-Wed Jun  9 16:53:26 1993  Brendan Kehoe  (brendan@lisa.cygnus.com)
+1993-06-09  Brendan Kehoe  (brendan@lisa.cygnus.com)
 
 	* lib/mike-g++.exp: Load `./a.out', not `a.out'.
 
-Mon Jun  7 16:18:40 1993  Ian Lance Taylor  (ian@cygnus.com)
+1993-06-07  Ian Lance Taylor  (ian@cygnus.com)
 
 	* g++.old-deja/old-deja.exp: Don't delete all the .o files.
 
-Thu Jun  3 13:13:36 MDT 1993  Jeffrey Wheat  (cassidy@cygnus.com)
+1993-06-03  Jeffrey Wheat  (cassidy@cygnus.com)
 
 	* Upgraded c-torture tests from 1.17 to 1.18
 
-Wed Jun  2 19:02:40 MDT 1993  Jeffrey Wheat  (cassidy@cygnus.com)
+1993-06-02  Jeffrey Wheat  (cassidy@cygnus.com)
 
 	* Upgraded c-torture tests from 1.12 to 1.17
 
-Fri Apr 30 09:38:41 1993  Mike Werner  (mtw@deneb.cygnus.com)
+1993-04-30  Mike Werner  (mtw@deneb.cygnus.com)
 
 	* lib/old-dejagnu.exp:
 	  Fixed handling of XFAIL target triplets to correctly
@@ -14116,7 +14121,7 @@ Fri Apr 30 09:38:41 1993  Mike Werner  (mtw@deneb.cygnus.com)
 	  printed out by the result of the testcases within a
 	  given test file.
 
-Thu Apr 29 19:06:29 1993  Mike Werner  (mtw@deneb.cygnus.com)
+1993-04-29  Mike Werner  (mtw@deneb.cygnus.com)
 
 	* lib/old-dejagnu.exp:
 	  Reworked expected failure handling to trigger off of XFAIL
@@ -14126,7 +14131,7 @@ Thu Apr 29 19:06:29 1993  Mike Werner  (mtw@deneb.cygnus.com)
 	  It has just occured that the handling of wildcards in the
 	  target triplet may not be correct.
 
-Fri Apr 23 13:16:20 1993  Mike Werner  (mtw@deneb.cygnus.com)
+1993-04-23  Mike Werner  (mtw@deneb.cygnus.com)
 
 	* g++.old-deja/tests:
 	  Moved all subdirectories up one level into g++.old-deja .
@@ -14141,11 +14146,11 @@ Fri Apr 23 13:16:20 1993  Mike Werner  (mtw@deneb.cygnus.com)
 	  this corrected a problem with erroneous diff logs.  Added code
 	  to search testcases for expected fail and unexpected pass keywords.
 
-Tue Apr 20 18:27:58 1993  Rob Savoye  (rob at darkstar.cygnus.com)
+1993-04-20  Rob Savoye  (rob at darkstar.cygnus.com)
 
 	* lib/c-torture.exp: Ignore "file path prefix*unused" message.
 
-Thu Apr 15 11:01:59 1993  Mike Werner  (mtw@deneb.cygnus.com)
+1993-04-15  Mike Werner  (mtw@deneb.cygnus.com)
 
 	* g++.old-deja/tests/g++.sun/g++.frag/1045608.C:
 	  Removed extraneous text from end of "Special g++ Options"
@@ -14155,14 +14160,14 @@ Thu Apr 15 11:01:59 1993  Mike Werner  (mtw@deneb.cygnus.com)
 	  keywords, embedded in testcases comments, which will trigger
 	  calls to xpass and xfail.
 
-Wed Apr 14 14:28:01 1993  Mike Werner  (mtw@deneb.cygnus.com)
+1993-04-14  Mike Werner  (mtw@deneb.cygnus.com)
 
 	* lib/old-dejagnu.exp: Cleaned up pattern matching for keyphrase
 	  comments embedded in the testcases, especially the one looking for
 	  special compiler options, as well as the pattern matching for the
 	  compiler output again.
 
-Mon Apr 12 15:15:37 1993  Mike Werner  (mtw@deneb.cygnus.com)
+1993-04-12  Mike Werner  (mtw@deneb.cygnus.com)
 
 	* lib/old-dejagnu.exp: Do a proper check of the return value for
 	  execute tests. Fixed several problems with the pattern matching
@@ -14172,27 +14177,27 @@ Mon Apr 12 15:15:37 1993  Mike Werner  (mtw@deneb.cygnus.com)
 	  executes the tests passed to it and returns a usable return
 	  value.
 
-Sun Apr 11 17:22:37 1993  Rob Savoye  (rob at darkstar.cygnus.com)
+1993-04-11  Rob Savoye  (rob at darkstar.cygnus.com)
 
 	  * lib/gcc.exp: Exits gracefully if $CC is bogus.
 
-Fri Apr  9 09:41:59 1993  Mike Werner  (mtw@deneb.cygnus.com)
+1993-04-09  Mike Werner  (mtw@deneb.cygnus.com)
 
 	* lib/old-dejagnu.exp , g++.old-deja/old-deja.exp:
 	  Modified both files to properly execute the old style
 	  dejagnu tests. The previous versions of these files were
 	  experimental and did not function anything near correctly.
 
-Mon Apr  5 21:08:24 1993  Rob Savoye  (rob@cygnus.com)
+1993-04-05  Rob Savoye  (rob@cygnus.com)
 
 	* Removed all Makefile.in and configure.in files. No configuration
 	needed now.
 
-Fri Apr  2 12:15:17 1993  Mike Werner  (mtw@deneb.cygnus.com)
+1993-04-02  Mike Werner  (mtw@deneb.cygnus.com)
 
 	* lib: relocated old-dejagnu.exp from devo/dejagnu/lib
 
-Sun Mar 28 11:17:48 1993  Ken Raeburn  (raeburn@kr-pc.cygnus.com)
+1993-03-28  Ken Raeburn  (raeburn@kr-pc.cygnus.com)
 
 	* gcc.compile/configure.in, gcc.unsorted/configure.in,
 	gcc.special/configure.in, gcc.noncompile/configure.in,
@@ -14201,18 +14206,18 @@ Sun Mar 28 11:17:48 1993  Ken Raeburn  (raeburn@kr-pc.cygnus.com)
 	g++.niklas/configure.in, g++.mike/configure.in: Remove extra quote
 	in srcname setting.
 
-Thu Mar 25 20:07:55 1993  Rob Savoye  (rob at darkstar.cygnus.com)
+1993-03-25  Rob Savoye  (rob at darkstar.cygnus.com)
 
 	* lib/udi.exp:  Fixed mondfe and mondfe_download.
 	* config/udi-gcc.exp: Fixed misc bugs, works with expect 4.x.
 	* config/abug-gcc.exp: Fixed misc bugs, works with expect 4.x.
 
-Thu Mar 25 13:06:41 1993  Ian Lance Taylor  (ian@cygnus.com)
+1993-03-25  Ian Lance Taylor  (ian@cygnus.com)
 
 	* config/udi-gdb.exp: Check $shell_id after connecting to target.
 	(gdb_exit): Don't remove *_soc files.
 
-Mon Mar 22 14:28:46 1993  Ian Lance Taylor  (ian@cygnus.com)
+1993-03-22  Ian Lance Taylor  (ian@cygnus.com)
 
 	* lib/c-torture.exp: Don't look for main; instead always use -w
 	-c.  This is how the c-torture tests work.  Remove the object
