@@ -52,9 +52,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "optabs.h"
 #include "tree-gimple.h"
 
-/* Machine-specific symbol_ref flags.  */
-#define SYMBOL_FLAG_ALIGN1	(SYMBOL_FLAG_MACH_DEP << 0)
-
 
 static bool s390_assemble_integer (rtx, unsigned int, int);
 static void s390_encode_section_info (tree, rtx, int);
@@ -380,9 +377,7 @@ struct machine_function GTY(())
   (1 << (BITNUM))))
 
 static int s390_match_ccmode_set (rtx, enum machine_mode);
-static int s390_branch_condition_mask (rtx);
 static const char *s390_branch_condition_mnemonic (rtx, int);
-static int check_mode (rtx, enum machine_mode *);
 static int s390_short_displacement (rtx);
 static int s390_decompose_address (rtx, struct s390_address *);
 static rtx get_thread_pointer (void);
@@ -413,10 +408,20 @@ static int s390_function_arg_size (enum machine_mode, tree);
 static bool s390_function_arg_float (enum machine_mode, tree);
 static struct machine_function * s390_init_machine_status (void);
 
-/* Check whether integer displacement is in range.  */
-#define DISP_IN_RANGE(d) \
-  (TARGET_LONG_DISPLACEMENT? ((d) >= -524288 && (d) <= 524287) \
-                           : ((d) >= 0 && (d) <= 4095))
+/* Return true if CODE is a valid address without index.  */
+
+bool
+s390_legitimate_address_without_index_p (rtx op)
+{
+  struct s390_address addr;
+
+  if (!s390_decompose_address (XEXP (op, 0), &addr))
+    return false;
+  if (addr.indx)
+    return false;
+
+  return true;
+}
 
 /* Return true if SET either doesn't set the CC register, or else
    the source and destination have matching CC modes and that
@@ -791,126 +796,10 @@ s390_emit_jump (rtx target, rtx cond)
   emit_jump_insn (insn);
 }
 
-/* Return nonzero if OP is a valid comparison operator
-   for a branch condition in mode MODE.  */
-
-int
-s390_comparison (rtx op, enum machine_mode mode)
-{
-  if (mode != VOIDmode && mode != GET_MODE (op))
-    return 0;
-
-  if (!COMPARISON_P (op))
-    return 0;
-
-  if (GET_CODE (XEXP (op, 0)) != REG
-      || REGNO (XEXP (op, 0)) != CC_REGNUM
-      || XEXP (op, 1) != const0_rtx)
-    return 0;
-
-  return s390_branch_condition_mask (op) >= 0;
-}
-
-/* Return nonzero if OP is a valid comparison operator
-   for an ALC condition in mode MODE.  */
-
-int
-s390_alc_comparison (rtx op, enum machine_mode mode)
-{
-  if (mode != VOIDmode && mode != GET_MODE (op))
-    return 0;
-
-  while (GET_CODE (op) == ZERO_EXTEND || GET_CODE (op) == SIGN_EXTEND)
-    op = XEXP (op, 0);
-
-  if (!COMPARISON_P (op))
-    return 0;
-
-  if (GET_CODE (XEXP (op, 0)) != REG
-      || REGNO (XEXP (op, 0)) != CC_REGNUM
-      || XEXP (op, 1) != const0_rtx)
-    return 0;
-
-  switch (GET_MODE (XEXP (op, 0)))
-    {
-    case CCL1mode:
-      return GET_CODE (op) == LTU;
-
-    case CCL2mode:
-      return GET_CODE (op) == LEU;
-
-    case CCL3mode:
-      return GET_CODE (op) == GEU;
-
-    case CCUmode:
-      return GET_CODE (op) == GTU;
-
-    case CCURmode:
-      return GET_CODE (op) == LTU;
-
-    case CCSmode:
-      return GET_CODE (op) == UNGT;
-
-    case CCSRmode:
-      return GET_CODE (op) == UNLT;
-
-    default:
-      return 0;
-    }
-}
-
-/* Return nonzero if OP is a valid comparison operator
-   for an SLB condition in mode MODE.  */
-
-int
-s390_slb_comparison (rtx op, enum machine_mode mode)
-{
-  if (mode != VOIDmode && mode != GET_MODE (op))
-    return 0;
-
-  while (GET_CODE (op) == ZERO_EXTEND || GET_CODE (op) == SIGN_EXTEND)
-    op = XEXP (op, 0);
-
-  if (!COMPARISON_P (op))
-    return 0;
-
-  if (GET_CODE (XEXP (op, 0)) != REG
-      || REGNO (XEXP (op, 0)) != CC_REGNUM
-      || XEXP (op, 1) != const0_rtx)
-    return 0;
-
-  switch (GET_MODE (XEXP (op, 0)))
-    {
-    case CCL1mode:
-      return GET_CODE (op) == GEU;
-
-    case CCL2mode:
-      return GET_CODE (op) == GTU;
-
-    case CCL3mode:
-      return GET_CODE (op) == LTU;
-
-    case CCUmode:
-      return GET_CODE (op) == LEU;
-
-    case CCURmode:
-      return GET_CODE (op) == GEU;
-
-    case CCSmode:
-      return GET_CODE (op) == LE;
-
-    case CCSRmode:
-      return GET_CODE (op) == GE;
-
-    default:
-      return 0;
-    }
-}
-
 /* Return branch condition mask to implement a branch
    specified by CODE.  Return -1 for invalid comparisons.  */
 
-static int
+int
 s390_branch_condition_mask (rtx code)
 {
   const int CC0 = 1 << 3;
@@ -1508,172 +1397,6 @@ s390_safe_attr_type (rtx insn)
     return TYPE_NONE;
 }
 
-/* Return true if OP a (const_int 0) operand.
-   OP is the current operation.
-   MODE is the current operation mode.  */
-
-int
-const0_operand (register rtx op, enum machine_mode mode)
-{
-  return op == CONST0_RTX (mode);
-}
-
-/* Return true if OP is constant.
-   OP is the current operation.
-   MODE is the current operation mode.  */
-
-int
-consttable_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return CONSTANT_P (op);
-}
-
-/* Return true if the mode of operand OP matches MODE.
-   If MODE is set to VOIDmode, set it to the mode of OP.  */
-
-static int
-check_mode (register rtx op, enum machine_mode *mode)
-{
-  if (*mode == VOIDmode)
-      *mode = GET_MODE (op);
-  else
-  {
-    if (GET_MODE (op) != VOIDmode && GET_MODE (op) != *mode)
-       return 0;
-  }
-  return 1;
-}
-
-/* Return true if OP a valid operand for the LARL instruction.
-   OP is the current operation.
-   MODE is the current operation mode.  */
-
-int
-larl_operand (register rtx op, enum machine_mode mode)
-{
-  if (! check_mode (op, &mode))
-    return 0;
-
-  /* Allow labels and local symbols.  */
-  if (GET_CODE (op) == LABEL_REF)
-    return 1;
-  if (GET_CODE (op) == SYMBOL_REF)
-    return ((SYMBOL_REF_FLAGS (op) & SYMBOL_FLAG_ALIGN1) == 0
-	    && SYMBOL_REF_TLS_MODEL (op) == 0
-	    && (!flag_pic || SYMBOL_REF_LOCAL_P (op)));
-
-  /* Everything else must have a CONST, so strip it.  */
-  if (GET_CODE (op) != CONST)
-    return 0;
-  op = XEXP (op, 0);
-
-  /* Allow adding *even* in-range constants.  */
-  if (GET_CODE (op) == PLUS)
-    {
-      if (GET_CODE (XEXP (op, 1)) != CONST_INT
-          || (INTVAL (XEXP (op, 1)) & 1) != 0)
-        return 0;
-#if HOST_BITS_PER_WIDE_INT > 32
-      if (INTVAL (XEXP (op, 1)) >= (HOST_WIDE_INT)1 << 32
-	  || INTVAL (XEXP (op, 1)) < -((HOST_WIDE_INT)1 << 32))
-        return 0;
-#endif
-      op = XEXP (op, 0);
-    }
-
-  /* Labels and local symbols allowed here as well.  */
-  if (GET_CODE (op) == LABEL_REF)
-    return 1;
-  if (GET_CODE (op) == SYMBOL_REF)
-    return ((SYMBOL_REF_FLAGS (op) & SYMBOL_FLAG_ALIGN1) == 0
-	    && SYMBOL_REF_TLS_MODEL (op) == 0
-	    && (!flag_pic || SYMBOL_REF_LOCAL_P (op)));
-
-  /* Now we must have a @GOTENT offset or @PLT stub
-     or an @INDNTPOFF TLS offset.  */
-  if (GET_CODE (op) == UNSPEC
-      && XINT (op, 1) == UNSPEC_GOTENT)
-    return 1;
-  if (GET_CODE (op) == UNSPEC
-      && XINT (op, 1) == UNSPEC_PLT)
-    return 1;
-  if (GET_CODE (op) == UNSPEC
-      && XINT (op, 1) == UNSPEC_INDNTPOFF)
-    return 1;
-
-  return 0;
-}
-
-/* Return true if OP is a valid S-type operand.
-   OP is the current operation.
-   MODE is the current operation mode.  */
-
-int
-s_operand (rtx op, enum machine_mode mode)
-{
-  struct s390_address addr;
-
-  /* Call general_operand first, so that we don't have to
-     check for many special cases.  */
-  if (!general_operand (op, mode))
-    return 0;
-
-  /* Just like memory_operand, allow (subreg (mem ...))
-     after reload.  */
-  if (reload_completed
-      && GET_CODE (op) == SUBREG
-      && GET_CODE (SUBREG_REG (op)) == MEM)
-    op = SUBREG_REG (op);
-
-  if (GET_CODE (op) != MEM)
-    return 0;
-  if (!s390_decompose_address (XEXP (op, 0), &addr))
-    return 0;
-  if (addr.indx)
-    return 0;
-
-  return 1;
-}
-
-/* Return true if OP a valid shift count operand.
-   OP is the current operation.
-   MODE is the current operation mode.  */
-
-int
-shift_count_operand (rtx op, enum machine_mode mode)
-{
-  HOST_WIDE_INT offset = 0;
-
-  if (! check_mode (op, &mode))
-    return 0;
-
-  /* We can have an integer constant, an address register,
-     or a sum of the two.  Note that reload already checks
-     that any register present is an address register, so
-     we just check for any register here.  */
-  if (GET_CODE (op) == CONST_INT)
-    {
-      offset = INTVAL (op);
-      op = NULL_RTX;
-    }
-  if (op && GET_CODE (op) == PLUS && GET_CODE (XEXP (op, 1)) == CONST_INT)
-    {
-      offset = INTVAL (XEXP (op, 1));
-      op = XEXP (op, 0);
-    }
-  while (op && GET_CODE (op) == SUBREG)
-    op = SUBREG_REG (op);
-  if (op && GET_CODE (op) != REG)
-    return 0;
-
-  /* Unfortunately we have to reject constants that are invalid
-     for an address, or else reload will get confused.  */
-  if (!DISP_IN_RANGE (offset))
-    return 0;
-
-  return 1;
-}
-
 /* Return true if DISP is a valid short displacement.  */
 
 static int
@@ -2112,27 +1835,6 @@ s390_address_cost (rtx addr)
   return ad.indx? COSTS_N_INSNS (1) + 1 : COSTS_N_INSNS (1);
 }
 
-/* Return true if OP is a valid operand for the BRAS instruction.
-   OP is the current operation.
-   MODE is the current operation mode.  */
-
-int
-bras_sym_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  register enum rtx_code code = GET_CODE (op);
-
-  /* Allow SYMBOL_REFs.  */
-  if (code == SYMBOL_REF)
-    return 1;
-
-  /* Allow @PLT stubs.  */
-  if (code == CONST
-      && GET_CODE (XEXP (op, 0)) == UNSPEC
-      && XINT (XEXP (op, 0), 1) == UNSPEC_PLT)
-    return 1;
-  return 0;
-}
-
 /* If OP is a SYMBOL_REF of a thread-local symbol, return its TLS mode,
    otherwise return 0.  */
 
@@ -2144,126 +1846,6 @@ tls_symbolic_operand (register rtx op)
   return SYMBOL_REF_TLS_MODEL (op);
 }
 
-/* Return true if OP is a load multiple operation.  It is known to be a
-   PARALLEL and the first section will be tested.
-   OP is the current operation.
-   MODE is the current operation mode.  */
-
-int
-load_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  enum machine_mode elt_mode;
-  int count = XVECLEN (op, 0);
-  unsigned int dest_regno;
-  rtx src_addr;
-  int i, off;
-
-
-  /* Perform a quick check so we don't blow up below.  */
-  if (count <= 1
-      || GET_CODE (XVECEXP (op, 0, 0)) != SET
-      || GET_CODE (SET_DEST (XVECEXP (op, 0, 0))) != REG
-      || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != MEM)
-    return 0;
-
-  dest_regno = REGNO (SET_DEST (XVECEXP (op, 0, 0)));
-  src_addr = XEXP (SET_SRC (XVECEXP (op, 0, 0)), 0);
-  elt_mode = GET_MODE (SET_DEST (XVECEXP (op, 0, 0)));
-
-  /* Check, is base, or base + displacement.  */
-
-  if (GET_CODE (src_addr) == REG)
-    off = 0;
-  else if (GET_CODE (src_addr) == PLUS
-	   && GET_CODE (XEXP (src_addr, 0)) == REG
-	   && GET_CODE (XEXP (src_addr, 1)) == CONST_INT)
-    {
-      off = INTVAL (XEXP (src_addr, 1));
-      src_addr = XEXP (src_addr, 0);
-    }
-  else
-    return 0;
-
-  for (i = 1; i < count; i++)
-    {
-      rtx elt = XVECEXP (op, 0, i);
-
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_DEST (elt)) != REG
-	  || GET_MODE (SET_DEST (elt)) != elt_mode
-	  || REGNO (SET_DEST (elt)) != dest_regno + i
-	  || GET_CODE (SET_SRC (elt)) != MEM
-	  || GET_MODE (SET_SRC (elt)) != elt_mode
-	  || GET_CODE (XEXP (SET_SRC (elt), 0)) != PLUS
-	  || ! rtx_equal_p (XEXP (XEXP (SET_SRC (elt), 0), 0), src_addr)
-	  || GET_CODE (XEXP (XEXP (SET_SRC (elt), 0), 1)) != CONST_INT
-	  || INTVAL (XEXP (XEXP (SET_SRC (elt), 0), 1))
-	     != off + i * GET_MODE_SIZE (elt_mode))
-	return 0;
-    }
-
-  return 1;
-}
-
-/* Return true if OP is a store multiple operation.  It is known to be a
-   PARALLEL and the first section will be tested.
-   OP is the current operation.
-   MODE is the current operation mode.  */
-
-int
-store_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  enum machine_mode elt_mode;
-  int count = XVECLEN (op, 0);
-  unsigned int src_regno;
-  rtx dest_addr;
-  int i, off;
-
-  /* Perform a quick check so we don't blow up below.  */
-  if (count <= 1
-      || GET_CODE (XVECEXP (op, 0, 0)) != SET
-      || GET_CODE (SET_DEST (XVECEXP (op, 0, 0))) != MEM
-      || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != REG)
-    return 0;
-
-  src_regno = REGNO (SET_SRC (XVECEXP (op, 0, 0)));
-  dest_addr = XEXP (SET_DEST (XVECEXP (op, 0, 0)), 0);
-  elt_mode = GET_MODE (SET_SRC (XVECEXP (op, 0, 0)));
-
-  /* Check, is base, or base + displacement.  */
-
-  if (GET_CODE (dest_addr) == REG)
-    off = 0;
-  else if (GET_CODE (dest_addr) == PLUS
-	   && GET_CODE (XEXP (dest_addr, 0)) == REG
-	   && GET_CODE (XEXP (dest_addr, 1)) == CONST_INT)
-    {
-      off = INTVAL (XEXP (dest_addr, 1));
-      dest_addr = XEXP (dest_addr, 0);
-    }
-  else
-    return 0;
-
-  for (i = 1; i < count; i++)
-    {
-      rtx elt = XVECEXP (op, 0, i);
-
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_SRC (elt)) != REG
-	  || GET_MODE (SET_SRC (elt)) != elt_mode
-	  || REGNO (SET_SRC (elt)) != src_regno + i
-	  || GET_CODE (SET_DEST (elt)) != MEM
-	  || GET_MODE (SET_DEST (elt)) != elt_mode
-	  || GET_CODE (XEXP (SET_DEST (elt), 0)) != PLUS
-	  || ! rtx_equal_p (XEXP (XEXP (SET_DEST (elt), 0), 0), dest_addr)
-	  || GET_CODE (XEXP (XEXP (SET_DEST (elt), 0), 1)) != CONST_INT
-	  || INTVAL (XEXP (XEXP (SET_DEST (elt), 0), 1))
-	     != off + i * GET_MODE_SIZE (elt_mode))
-	return 0;
-    }
-  return 1;
-}
-
 /* Split DImode access register reference REG (on 64-bit) into its constituent
    low and high parts, and store them into LO and HI.  Note that gen_lowpart/
    gen_highpart cannot be used as they assume all registers are word-sized,
@@ -2568,26 +2150,6 @@ s390_secondary_output_reload_class (enum reg_class class,
     return GENERAL_REGS;
 
   return NO_REGS;
-}
-
-/* Return true if OP is a PLUS that is not a legitimate
-   operand for the LA instruction.
-   OP is the current operation.
-   MODE is the current operation mode.  */
-
-int
-s390_plus_operand (register rtx op, enum machine_mode mode)
-{
-  if (!check_mode (op, &mode) || mode != Pmode)
-    return FALSE;
-
-  if (GET_CODE (op) != PLUS)
-    return FALSE;
-
-  if (legitimate_la_operand_p (op))
-    return FALSE;
-
-  return TRUE;
 }
 
 /* Generate code to load SRC, which is PLUS that is not a
