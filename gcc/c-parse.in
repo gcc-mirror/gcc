@@ -59,7 +59,7 @@ end ifobjc
 /* Since parsers are distinct for each language, put the language string
    definition here.  */
 ifobjc
-const char * const language_string = "GNU Obj-C";
+const char * const language_string = "GNU Objective-C";
 end ifobjc
 ifc
 const char * const language_string = "GNU C";
