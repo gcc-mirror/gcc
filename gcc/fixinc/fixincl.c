@@ -269,7 +269,7 @@ main (argc, argv)
       }
     }
 #else
-#error "NON-BOGUS LIMITS NOT SUPPORTED?!?!"
+ /*#*/ error "NON-BOGUS LIMITS NOT SUPPORTED?!?!"
 #endif
 
   /*
