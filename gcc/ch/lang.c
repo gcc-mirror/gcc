@@ -1,5 +1,5 @@
 /* Language-specific hook definitions for CHILL front end.
-   Copyright (C) 1992, 1993, 1994, 1998, 1999, 2000
+   Copyright (C) 1992, 1993, 1994, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -147,18 +147,6 @@ lang_print_xnode (file, node, indent)
      tree node ATTRIBUTE_UNUSED;
      int indent ATTRIBUTE_UNUSED;
 {
-}
-
-void
-GNU_xref_begin ()
-{
-  fatal ("GCC does not yet support XREF");
-}
-
-void
-GNU_xref_end ()
-{
-  fatal ("GCC does not yet support XREF");
 }
 
 /*

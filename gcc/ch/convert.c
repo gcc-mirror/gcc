@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU CHILL.
-   Copyright (C) 1992, 1993, 1994, 1998, 1999, 2000
+   Copyright (C) 1992, 1993, 1994, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -1135,11 +1135,12 @@ convert (type, expr)
 	{
 	  if (TREE_CODE (type) == SET_TYPE)
 	    return digest_powerset_tuple (type, e);
-	  if (TREE_CODE (type) == RECORD_TYPE)
+	  else if (TREE_CODE (type) == RECORD_TYPE)
 	    return digest_structure_tuple (type, e);
-	  if (TREE_CODE (type) == ARRAY_TYPE)
+	  else if (TREE_CODE (type) == ARRAY_TYPE)
 	    return digest_array_tuple (type, e, 0);
-	  fatal ("internal error - bad CONSTRUCTOR passed to convert");
+	  else
+	    abort ();
 	}
       else if (TREE_CODE (e) == COND_EXPR)
 	e = build (COND_EXPR, type,

@@ -1,5 +1,5 @@
 /* Lexical analyzer for GNU CHILL. -*- C -*-
-   Copyright (C) 1992, 1993, 1994, 1998, 1999, 2000
+   Copyright (C) 1992, 1993, 1994, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -212,8 +212,9 @@ init_parse (filename)
     }
   else
     finput = fopen (filename, "r");
+
   if (finput == 0)
-    pfatal_with_name (filename);
+    fatal_io_error ("can't open %s", filename);
 
 #ifdef IO_BUFFER_SIZE
   setvbuf (finput, (char *) xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
@@ -1288,7 +1289,6 @@ convert_bitstring (p)
   
   /* Move p to stack so we can re-use temporary_obstack for result. */
   char *oldp = (char*) alloca (strlen (p) + 1);
-  if (oldp == 0) fatal ("stack space exhausted");
   strcpy (oldp, p);
   obstack_free (&temporary_obstack, p);
   p = oldp;
@@ -1378,16 +1378,16 @@ same_file (filename1, filename2)
   for (i = 0; i < 2; i++)
     {
       stat_status = stat (fn_input[i], &s[i]);
-      if (stat_status < 0 &&
-	  strchr (fn_input[i], '/') == 0)
+      if (stat_status < 0
+	  && strchr (fn_input[i], '/') == 0)
         {
 	  STRING_LIST *plp;
-	  char        *path;
+	  char *path;
 	  
 	  for (plp = seize_path_list; plp != 0; plp = plp->next)
 	    {
-	      path = (char *)xmalloc (strlen (fn_input[i]) +
-				      strlen (plp->str) + 2);
+	      path = (char *) xmalloc (strlen (fn_input[i])
+				       + strlen (plp->str) + 2);
 	      sprintf (path, "%s/%s", plp->str, fn_input[i]);
 	      stat_status = stat (path, &s[i]);
 	      free (path);
@@ -1395,8 +1395,9 @@ same_file (filename1, filename2)
 	        break;
   	    }
         }
+
       if (stat_status < 0)
-        pfatal_with_name (fn_input[i]);
+	fatal_io_error ("can't find %s", fn_input[i]);
   }
   return s[0].st_ino == s[1].st_ino && s[0].st_dev == s[1].st_dev;
 }
@@ -2190,7 +2191,7 @@ yywrap ()
 	}
 
       if (grt_in == NULL)
-	pfatal_with_name (seizefile_name_chars);
+	fatal_io_error ("can't open %s", seizefile_name_chars);
 
       finput = grt_in;
       input_filename = seizefile_name_chars;

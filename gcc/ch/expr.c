@@ -1,6 +1,6 @@
 /* Convert language-specific tree expression to rtl instructions,
    for GNU CHILL compiler.
-   Copyright (C) 1992, 1993, 1994, 1998, 1999, 2000
+   Copyright (C) 1992, 1993, 1994, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -390,19 +390,20 @@ chill_expand_expr (exp, target, tmode, modifier)
 	      {
 		tree type0 = TREE_TYPE (exp0);
 		tree type1 = TREE_TYPE (exp1);
-		int	len0 = int_size_in_bytes (type0);
-		int	len1 = int_size_in_bytes (type1);
+		HOST_WIDE_INT len0 = int_size_in_bytes (type0);
+		HOST_WIDE_INT len1 = int_size_in_bytes (type1);
 
 		if (len0 < 0 && TYPE_ARRAY_MAX_SIZE (type0)
-		    && TREE_CODE (TYPE_ARRAY_MAX_SIZE (type0)) == INTEGER_CST)
-		  len0 = TREE_INT_CST_LOW (TYPE_ARRAY_MAX_SIZE (type0));
+		    && host_integerp (TYPE_ARRAY_MAX_SIZE (type0), 1))
+		  len0 = tree_low_cst (TYPE_ARRAY_MAX_SIZE (type0), 1);
 
 		if (len1 < 0 && TYPE_ARRAY_MAX_SIZE (type1)
-		    && TREE_CODE (TYPE_ARRAY_MAX_SIZE (type1)) == INTEGER_CST)
-		  len1 = TREE_INT_CST_LOW (TYPE_ARRAY_MAX_SIZE (type1));
+		    && host_integerp (TYPE_ARRAY_MAX_SIZE (type1), 1))
+		  len1 = tree_low_cst (TYPE_ARRAY_MAX_SIZE (type1), 1);
 
 		if (len0 < 0 || len1 < 0)
-		  fatal ("internal error - don't know how much space is needed for concatenation");
+		  abort ();
+
 		target = assign_stack_temp (mode, len0 + len1, 0);
 		preserve_temp_slots (target);
 	      }
