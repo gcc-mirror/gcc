@@ -414,7 +414,8 @@ static void clear_reload_reg_in_use	PARAMS ((unsigned int, int,
 						 enum machine_mode));
 static int reload_reg_free_p		PARAMS ((unsigned int, int,
 						 enum reload_type));
-static int reload_reg_free_for_value_p	PARAMS ((int, int, enum reload_type,
+static int reload_reg_free_for_value_p	PARAMS ((int, int, int,
+						 enum reload_type,
 						 rtx, rtx, int, int));
 static int free_for_value_p		PARAMS ((int, enum machine_mode, int,
 						 enum reload_type, rtx, rtx,
@@ -4725,12 +4726,14 @@ rtx reload_override_in[MAX_RELOADS];
    or -1 if we did not need a register for this reload.  */
 int reload_spill_index[MAX_RELOADS];
 
-/* Subroutine of free_for_value_p, used to check a single register.  */
+/* Subroutine of free_for_value_p, used to check a single register.
+   START_REGNO is the starting regno of the full reload register
+   (possibly comprising multiple hard registers) that we are considering.  */
 
 static int
-reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
-			     ignore_address_reloads)
-     int regno;
+reload_reg_free_for_value_p (start_regno, regno, opnum, type, value, out,
+			     reloadnum, ignore_address_reloads)
+     int start_regno, regno;
      int opnum;
      enum reload_type type;
      rtx value, out;
@@ -4823,7 +4826,14 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
 	      <= HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg)) - (unsigned)1)
 	  && i != reloadnum)
 	{
-	  if (! rld[i].in || ! rtx_equal_p (rld[i].in, value)
+	  rtx other_input = rld[i].in;
+
+	  /* If the other reload loads the same input value, that
+	     will not cause a conflict only if it's loading it into
+	     the same register.  */
+	  if (true_regnum (reg) != start_regno)
+	    other_input = NULL_RTX;
+	  if (! other_input || ! rtx_equal_p (other_input, value)
 	      || rld[i].out || out)
 	    {
 	      int time2;
@@ -4904,7 +4914,7 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
 		case RELOAD_OTHER:
 		  /* If there is no conflict in the input part, handle this
 		     like an output reload.  */
-		  if (! rld[i].in || rtx_equal_p (rld[i].in, value))
+		  if (! rld[i].in || rtx_equal_p (other_input, value))
 		    {
 		      time2 = MAX_RECOG_OPERANDS * 4 + 4;
 		      /* Earlyclobbered outputs must conflict with inputs.  */
@@ -4926,7 +4936,7 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
 		}
 	      if ((time1 >= time2
 		   && (! rld[i].in || rld[i].out
-		       || ! rtx_equal_p (rld[i].in, value)))
+		       || ! rtx_equal_p (other_input, value)))
 		  || (out && rld[reloadnum].out_reg
 		      && time2 >= MAX_RECOG_OPERANDS * 4 + 3))
 		return 0;
@@ -4977,8 +4987,9 @@ free_for_value_p (regno, mode, opnum, type, value, out, reloadnum,
 {
   int nregs = HARD_REGNO_NREGS (regno, mode);
   while (nregs-- > 0)
-    if (! reload_reg_free_for_value_p (regno + nregs, opnum, type, value, out,
-				       reloadnum, ignore_address_reloads))
+    if (! reload_reg_free_for_value_p (regno, regno + nregs, opnum, type,
+				       value, out, reloadnum,
+				       ignore_address_reloads))
       return 0;
   return 1;
 }
