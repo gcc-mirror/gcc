@@ -256,7 +256,7 @@ static int n_regs_set;
 
 static HARD_REG_SET eliminable_regset;
 
-static int allocno_compare	PROTO((const GENERIC_PTR, const GENERIC_PTR));
+static int allocno_compare	PROTO((const PTR, const PTR));
 static void global_conflicts	PROTO((void));
 static void expand_preferences	PROTO((void));
 static void prune_preferences	PROTO((void));
@@ -590,8 +590,8 @@ global_alloc (file)
 
 static int
 allocno_compare (v1p, v2p)
-     const GENERIC_PTR v1p;
-     const GENERIC_PTR v2p;
+     const PTR v1p;
+     const PTR v2p;
 {
   int v1 = *(int *)v1p, v2 = *(int *)v2p;
   /* Note that the quotient will never be bigger than

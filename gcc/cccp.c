@@ -5517,7 +5517,7 @@ pcfinclude (buf, name, op)
       cp += 4 - ((size_t) cp & 3);
     
     /* Now get the string.  */
-    str = (STRINGDEF *) (GENERIC_PTR) cp;
+    str = (STRINGDEF *) (PTR) cp;
     string_start = cp += sizeof (STRINGDEF);
     
     for (; *cp; cp++)		/* skip the string */
@@ -5552,7 +5552,7 @@ pcfinclude (buf, name, op)
     else
       /* Otherwise, for each key, */
       for (; nkeys--; free (tmpbuf.buf), cp = endofthiskey + 1) {
-	KEYDEF *kp = (KEYDEF *) (GENERIC_PTR) cp;
+	KEYDEF *kp = (KEYDEF *) (PTR) cp;
 	HASHNODE *hp;
 	U_CHAR *bp;
 	
