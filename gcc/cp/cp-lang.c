@@ -292,9 +292,7 @@ ok_to_generate_alias_set_for_type (tree t)
 static HOST_WIDE_INT
 cxx_get_alias_set (tree t)
 {
-  if (TREE_CODE (t) == RECORD_TYPE
-      && TYPE_CONTEXT (t) && CLASS_TYPE_P (TYPE_CONTEXT (t))
-      && CLASSTYPE_AS_BASE (TYPE_CONTEXT (t)) == t)
+  if (IS_FAKE_BASE_TYPE (t))
     /* The base variant of a type must be in the same alias set as the
        complete type.  */
     return get_alias_set (TYPE_CONTEXT (t));
