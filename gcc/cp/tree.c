@@ -860,7 +860,6 @@ make_binfo (offset, binfo, vtable, virtuals)
   BINFO_OFFSET (new_binfo) = offset;
   BINFO_VTABLE (new_binfo) = vtable;
   BINFO_VIRTUALS (new_binfo) = virtuals;
-  BINFO_VPTR_FIELD (new_binfo) = NULL_TREE;
 
   if (binfo && BINFO_BASETYPES (binfo) != NULL_TREE)
     BINFO_BASETYPES (new_binfo) = copy_node (BINFO_BASETYPES (binfo));      

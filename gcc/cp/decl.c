@@ -8201,15 +8201,7 @@ expand_static_init (decl, init)
       finish_if_stmt ();
     }
   else
-    {
-      /* This code takes into account memory allocation policy of
-	 `start_decl'.  Namely, if TYPE_NEEDS_CONSTRUCTING does not
-	 hold for this object, then we must make permanent the storage
-	 currently in the temporary obstack.  */
-      if (!TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
-	preserve_initializer ();
-      static_aggregates = tree_cons (init, decl, static_aggregates);
-    }
+    static_aggregates = tree_cons (init, decl, static_aggregates);
 }
 
 /* Finish the declaration of a catch-parameter.  */

@@ -1,5 +1,5 @@
 // RTTI support internals for -*- C++ -*-
-// Copyright (C) 1994, 1995, 1996, 1998, 1999 Free Software Foundation
+// Copyright (C) 1994, 1995, 1996, 1998, 1999, 2000 Free Software Foundation
 
 #include "typeinfo"
 
@@ -167,7 +167,11 @@ public:
 
 // type_info for a general class.
 
+#ifdef __GXX_ABI_VERSION
+typedef int USItype __attribute__ ((mode (SI)));
+#else
 typedef unsigned int USItype	__attribute__ ((mode (SI)));
+#endif
 
 struct __class_type_info : public __user_type_info {
   enum access { PUBLIC = 1, PROTECTED = 2, PRIVATE = 3 };

@@ -1,5 +1,5 @@
 /* RunTime Type Identification
-   Copyright (C) 1995, 96-97, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1995, 96-97, 1998, 1999, 2000 Free Software Foundation, Inc.
    Mostly written by Jason Merrill (jason@cygnus.com).
 
 This file is part of GNU CC.
@@ -811,7 +811,8 @@ expand_class_desc (tdecl, type)
 			     (type_info_type_node,
 			      TYPE_QUAL_CONST)));
       fields [1] = build_lang_decl
-	(FIELD_DECL, NULL_TREE, unsigned_intSI_type_node);
+	(FIELD_DECL, NULL_TREE, 
+	 flag_new_abi ? intSI_type_node : unsigned_intSI_type_node);
       DECL_BIT_FIELD (fields[1]) = 1;
       DECL_FIELD_SIZE (fields[1]) = 29;
 
@@ -839,15 +840,26 @@ expand_class_desc (tdecl, type)
 
       if (TREE_VIA_VIRTUAL (binfo))
 	{
-	  tree t = BINFO_TYPE (binfo);
-	  const char *name;
-	  tree field;
+	  if (!vbase_offsets_in_vtable_p ())
+	    {
+	      tree t = BINFO_TYPE (binfo);
+	      const char *name;
+	      tree field;
 
-	  FORMAT_VBASE_NAME (name, t);
-	  field = lookup_field (type, get_identifier (name), 0, 0);
-	  offset = size_binop (FLOOR_DIV_EXPR, 
-		DECL_FIELD_BITPOS (field), size_int (BITS_PER_UNIT));
-	  offset = convert (sizetype, offset);
+	      FORMAT_VBASE_NAME (name, t);
+	      field = lookup_field (type, get_identifier (name), 0, 0);
+	      offset = size_binop (FLOOR_DIV_EXPR, 
+				   DECL_FIELD_BITPOS (field), 
+				   size_int (BITS_PER_UNIT));
+	      offset = convert (sizetype, offset);
+	    }
+	  else
+	    {
+	      /* Under the new ABI, we store the vtable offset at which
+		 the virtual base offset can be found.  */
+	      tree vbase = BINFO_FOR_VBASE (BINFO_TYPE (binfo), type);
+	      offset = convert (sizetype, BINFO_VPTR_FIELD (vbase));
+	    }
 	}
       else
 	offset = BINFO_OFFSET (binfo);

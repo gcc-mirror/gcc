@@ -126,11 +126,6 @@ static tree bfs_walk
 	       void *));
 static tree lookup_field_queue_p PROTO((tree, void *));
 static tree lookup_field_r PROTO((tree, void *));
-static tree dfs_walk_real PROTO ((tree, 
-				  tree (*) (tree, void *),
-				  tree (*) (tree, void *),
-				  tree (*) (tree, void *),
-				  void *));
 static tree get_virtuals_named_this_r PROTO ((tree, void *));
 static tree context_for_name_lookup PROTO ((tree));
 static tree canonical_binfo PROTO ((tree));
@@ -1773,7 +1768,7 @@ bfs_walk (binfo, fn, qfn, data)
    performed, and PREFN is called in preorder, while POSTFN is called
    in postorder.  */
 
-static tree
+tree
 dfs_walk_real (binfo, prefn, postfn, qfn, data)
      tree binfo;
      tree (*prefn) PROTO((tree, void *));
@@ -3200,9 +3195,9 @@ maybe_suppress_debug_info (t)
     TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (t)) = 1;
   else if (CLASSTYPE_INTERFACE_KNOWN (t))
     /* Don't set it.  */;
-  /* If the class has virtual functions, write out the debug info
-     along with the vtable.  */
-  else if (TYPE_POLYMORPHIC_P (t))
+  /* If the class has a vtable, write out the debug info along with
+     the vtable.  */
+  else if (TYPE_CONTAINS_VPTR_P (t))
     TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (t)) = 1;
 
   /* Otherwise, just emit the debug info normally.  */

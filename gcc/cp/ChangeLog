@@ -1,5 +1,57 @@
 2000-01-16  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (flag_new_abi): Move.
+	(flag_use_cxa_atexit): Likewise.
+	(flag_honor_std): Likewise.
+	(flag_rtti): Likewise.
+	(vbase_offsets_in_vtable_p): Define.
+	(vptrs_present_everywhere_p): Likewise.
+	(TYPE_CONTAINS_VPTR_P): Likewise.
+	(dfs_walk_real): Declare.
+	* class.c (build_vbase_pointer_fields): Check
+	vbase_offsets_in_vtable_p.
+	(dfs_build_vbase_offset_vtbl_entries): Record the vbase indices in
+	BINFO_VPTR_FIELD.
+	(build_vbase_offset_vtbl_entries): Simplify.
+	(build_vbase_offset_vtbl_entries): Adjust.
+	(build_vbase_pointer): Add ability to look up vbase offsets in
+	vtable. 
+	(start_vtable): New function.
+	(add_virtual_function): Use it.
+	(determine_primary_base): Use TYPE_CONTAINS_VPTR_P.
+	(num_extra_vtbl_entries): Use vbase_offsets_in_vtable_p.
+	(build_vtbl_initializer): Take the type of the complete object as
+	input.  Use it to correctly calculate vbase offsets.
+	(dfs_finish_vtbls): Pass the complete type to
+	build_vtbl_initializer.
+	(check_bases_and_members): Use TYPE_CONTAINS_VPTR_P.
+	(create_vtable_ptr): Create a vtable even if there are no
+	new virtual functions, under the new ABI.
+	(finish_struct_1): Likewise.
+	(get_vfield_name): Use TYPE_CONTAINS_VPTR_P.
+	* decl.c (exapnd_static_init): Remove call to
+	preserve_initializer.
+	* decl2.c (mark_vtable_entries): Tweak to handle vbase offsets in
+	vtables.
+	* init.c (initialize_vtbl_ptrs): Initialize them in pre-order.
+	(expand_virtual_init): Use vbase_offsets_in_vtable_p.
+	(construct_virtual_bases): Don't initialize virtual base pointers
+	under the new ABI.
+	(build_aggr_init): Clean up comment.
+	(expand_aggr_init_1): Likewise.
+	* rtti.c (expand_class_desc): Store the virtual function table
+	index where the vbase offset lives in the offset field.
+	* search.c (dfs_walk_real): Make it global.
+	(dfs_debug_mark): Use TYPE_CONTAINS_VPTR_P.
+	* tree.c (make_binfo): Don't clear BINFO_VPTR_FIELD.
+	
+	* tinfo.h (USItype): Make it signed under the new ABI.
+	* tinfo.cc (convert_to_base): New function.  Encapsulate base
+	conversion logic here.
+	(__class_type_info::do_upcast): Use it.
+	(__class_type_info::do_dyncast): Likewise.
+	(__class_type_info::do_find_public_subobj): Likewise.
+	
 	* init.c (construct_virtual_bases): Don't look up the addresses of
 	virtual bases at run-time.
 

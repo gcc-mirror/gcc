@@ -1,5 +1,5 @@
 // Methods for type_info for -*- C++ -*- Run Time Type Identification.
-// Copyright (C) 1994, 1996, 1998, 1999 Free Software Foundation
+// Copyright (C) 1994, 1996, 1998, 1999, 2000 Free Software Foundation
 
 // This file is part of GNU CC.
 
@@ -30,6 +30,34 @@
 #include <stddef.h>
 #include "tinfo.h"
 #include "new"			// for placement new
+
+namespace
+{
+// ADDR is a pointer to an object.  Convert it to a pointer to a base,
+// using OFFSET.
+inline void*
+convert_to_base (void *addr, bool is_virtual, USItype offset)
+{
+  if (!addr)
+    return NULL;
+
+  if (!is_virtual)
+    return (char *) addr + offset;
+
+#ifdef __GXX_ABI_VERSION
+  // Under the new ABI, the offset gives us an index into the vtable,
+  // which contains an offset to the virtual base.  The vptr is always
+  // the first thing in the object.
+  std::ptrdiff_t *vtable = *((std::ptrdiff_t **) addr);
+  return ((char *) addr) + vtable[offset];
+#else
+  // Under the old ABI, the offset gives us the address of a pointer
+  // to the virtual base.
+  return *((void **) ((char *) addr + offset));
+#endif
+}
+
+}
 
 // This file contains the minimal working set necessary to link with code
 // that uses virtual functions and -frtti but does not actually use RTTI
@@ -254,14 +282,11 @@ do_upcast (sub_kind access_path,
       upcast_result result2;
       void *p = objptr;
       sub_kind sub_access = access_path;
-      if (p)
-        p = (char *)p + base_list[i].offset;
+      p = convert_to_base (p, 
+			   base_list[i].is_virtual,
+			   base_list[i].offset);
       if (base_list[i].is_virtual)
-        {
-          if (p)
-            p = *(void **)p;
-	  sub_access = sub_kind (sub_access | contained_virtual_mask);
-        }
+	sub_access = sub_kind (sub_access | contained_virtual_mask);
       if (base_list[i].access != PUBLIC)
         sub_access = sub_kind (sub_access & ~contained_public_mask);
       if (base_list[i].base->do_upcast (sub_access, target, p, result2))
@@ -344,13 +369,13 @@ do_dyncast (int boff, sub_kind access_path,
   for (size_t i = n_bases; i--;)
     {
       dyncast_result result2;
-      void *p = (char *)objptr + base_list[i].offset;
+      void *p;
       sub_kind sub_access = access_path;
+      p = convert_to_base (objptr, 
+			   base_list[i].is_virtual,
+			   base_list[i].offset);
       if (base_list[i].is_virtual)
-        {
-	  p = *(void **)p;
-	  sub_access = sub_kind (sub_access | contained_virtual_mask);
-	}
+	sub_access = sub_kind (sub_access | contained_virtual_mask);
       if (base_list[i].access != PUBLIC)
         sub_access = sub_kind (sub_access & ~contained_public_mask);
       
@@ -492,13 +517,15 @@ do_find_public_subobj (int boff, const type_info &subtype, void *objptr, void *s
     {
       if (base_list[i].access != PUBLIC)
         continue; // Not public, can't be here.
-      void *p = (char *)objptr + base_list[i].offset;
-      if (base_list[i].is_virtual)
-        {
-          if (boff == -1)
-            continue; // Not a virtual base, so can't be here.
-          p = *(void **)p;
-        }
+      void *p;
+
+      if (base_list[i].is_virtual && boff == -1)
+	// Not a virtual base, so can't be here.
+	continue;
+      
+      p = convert_to_base (objptr, 
+			   base_list[i].is_virtual,
+			   base_list[i].offset);
 
       sub_kind base_kind = base_list[i].base->do_find_public_subobj
                               (boff, subtype, p, subptr);
