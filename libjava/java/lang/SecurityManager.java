@@ -167,7 +167,7 @@ public class SecurityManager
    */
   protected Class[] getClassContext()
   {
-    return VMSecurityManager.getClassContext();
+    return VMSecurityManager.getClassContext(SecurityManager.class);
   }
 
   /**
@@ -189,7 +189,7 @@ public class SecurityManager
    */
   protected ClassLoader currentClassLoader()
   {
-    return VMSecurityManager.currentClassLoader();
+    return VMSecurityManager.currentClassLoader(SecurityManager.class);
   }
 
   /**

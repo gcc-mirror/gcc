@@ -1,3 +1,25 @@
+2005-03-17  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natVMSecurityManager.cc (getClassContext): Add new
+	arg: klass.
+	Pass klass to _Jv_StackTrace::GetClassContext().
+	* java/lang/ClassLoader.java (getParent): Pass class to
+	VMSecurityManager.getClassContext()
+	(getSystemClassLoader): Likewise.
+	* java/lang/Package.java (getPackage): Likewise.
+	(getPackages): Likewise.
+	* java/lang/SecurityManager.java (getClassContext): Likewise.
+	(currentClassLoader): Likewise.
+	* java/lang/VMSecurityManager.java: (getClassContext): Likewise.
+	(currentClassLoader) Add new arg: caller.
+	Pass caller to VMSecurityManager.getClassContext.
+
+	* stacktrace.cc (GetClassContext): Correct calculation of
+	jframe_count.
+
+	* boehm.cc (_Jv_MarkObj): (_Jv_MarkObj): Mark
+	im->source_file_name.
+
 2005-03-16  Andrew Haley  <aph@redhat.com>
 
 	* boehm.cc (_Jv_MarkObj): Mark the interpreted method line_table.

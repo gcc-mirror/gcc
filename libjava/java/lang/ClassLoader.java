@@ -486,7 +486,7 @@ public abstract class ClassLoader
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       {
-        Class c = VMSecurityManager.getClassContext()[1];
+        Class c = VMSecurityManager.getClassContext(ClassLoader.class)[1];
         ClassLoader cl = c.getClassLoader();
 	if (cl != null && ! cl.isAncestorOf(this))
           sm.checkPermission(new RuntimePermission("getClassLoader"));
@@ -729,7 +729,7 @@ public abstract class ClassLoader
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       {
-	Class c = VMSecurityManager.getClassContext()[1];
+	Class c = VMSecurityManager.getClassContext(ClassLoader.class)[1];
 	ClassLoader cl = c.getClassLoader();
 	if (cl != null && cl != systemClassLoader)
 	  sm.checkPermission(new RuntimePermission("getClassLoader"));

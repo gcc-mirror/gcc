@@ -43,19 +43,19 @@ class VMSecurityManager
    ** @return an array containing all the methods on classes
    **         on the Java execution stack.
    **/
-  static native Class[] getClassContext();
+  static native Class[] getClassContext(Class caller);
 
   /** Get the current ClassLoader--the one nearest to the
    ** top of the stack.
    ** @return the current ClassLoader.
    **/
-  static ClassLoader currentClassLoader()
+  static ClassLoader currentClassLoader(Class caller)
   {
     // The docs above are wrong.  See the online docs.
     // FIXME this implementation is a bit wrong too -- the docs say we
     // must also consider ancestors of the system class loader.
     ClassLoader systemClassLoader = VMClassLoader.getSystemClassLoader();
-    Class[] classStack = getClassContext ();
+    Class[] classStack = getClassContext (caller);
     for (int i = 0; i < classStack.length; i++)
       {
 	ClassLoader loader = classStack[i].getClassLoader();
