@@ -1,3 +1,10 @@
+2004-10-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* search.c (struct lookup_base_data_s): New.
+	(lookup_base_r): Replace with ...
+	(dfs_lookup_base): ... this.
+	(lookup_base): Use dfs_walk_all.
+
 2004-10-12  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* search.c: Fix comment typos.

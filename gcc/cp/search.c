@@ -37,9 +37,9 @@ Boston, MA 02111-1307, USA.  */
 #include "stack.h"
 
 static int is_subobject_of_p (tree, tree);
+static tree dfs_lookup_base (tree, void *);
 static tree dfs_dcast_hint_pre (tree, void *);
 static tree dfs_dcast_hint_post (tree, void *);
-static base_kind lookup_base_r (tree, tree, base_access, bool, tree *);
 static tree dfs_debug_mark (tree, void *);
 static tree dfs_walk_once_r (tree, tree (*pre_fn) (tree, void *),
 			     tree (*post_fn) (tree, void *), void *data);
@@ -78,88 +78,75 @@ static int n_contexts_saved;
 #endif /* GATHER_STATISTICS */
 
 
-/* Worker for lookup_base.  BINFO is the binfo we are searching at,
-   BASE is the RECORD_TYPE we are searching for.  ACCESS is the
-   required access checks.  IS_VIRTUAL indicates if BINFO is morally
-   virtual.
+/* Data for lookup_base and its workers.  */
 
-   If BINFO is of the required type, then *BINFO_PTR is examined to
-   compare with any other instance of BASE we might have already
-   discovered. *BINFO_PTR is initialized and a base_kind return value
-   indicates what kind of base was located.
-
-   Otherwise BINFO's bases are searched.  */
-
-static base_kind
-lookup_base_r (tree binfo, tree base, base_access access,
-	       bool is_virtual,			/* inside a virtual part */
-	       tree *binfo_ptr)
+struct lookup_base_data_s
 {
-  int i;
-  tree base_binfo;
-  base_kind found = bk_not_base;
-  
-  if (SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), base))
+  tree t;		/* type being searched. */
+  tree base;            /* The base type we're looking for.  */
+  tree binfo;           /* Found binfo.  */
+  bool via_virtual;  	/* Found via a virtual path.  */
+  bool ambiguous;	/* Found multiply ambiguous */
+  bool repeated_base;   /* Whether there are repeated bases in the
+			    hierarchy.  */
+  bool want_any;  	/* Whether we want any matching binfo.  */
+};
+
+/* Worker function for lookup_base.  See if we've found the desired
+   base and update DATA_ (a pointer to LOOKIP_BASE_DATA_S).  */
+
+static tree
+dfs_lookup_base (tree binfo, void *data_)
+{
+  struct lookup_base_data_s *data = data_;
+
+  if (SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), data->base))
     {
-      /* We have found a base. Check against what we have found
-         already.  */
-      found = bk_same_type;
-      if (is_virtual)
-	found = bk_via_virtual;
-      
-      if (!*binfo_ptr)
-	*binfo_ptr = binfo;
-      else if (binfo != *binfo_ptr)
+      if (!data->binfo)
 	{
-	  if (access != ba_any)
-	    *binfo_ptr = NULL;
-	  else if (!is_virtual)
-	    /* Prefer a non-virtual base.  */
-	    *binfo_ptr = binfo;
-	  found = bk_ambig;
+	  data->binfo = binfo;
+	  data->via_virtual
+	    = binfo_via_virtual (data->binfo, data->t) != NULL_TREE;
+	  
+	  if (!data->repeated_base)
+	    /* If there are no repeated bases, we can stop now.  */
+	    return binfo;
+	  
+	  if (data->want_any && !data->via_virtual)
+	    /* If this is a non-virtual base, then we can't do
+	       better.  */
+	    return binfo;
+	  
+	  return dfs_skip_bases;
 	}
-      
-      return found;
+      else
+	{
+	  gcc_assert (binfo != data->binfo);
+	  
+	  /* We've found more than one matching binfo.  */
+	  if (!data->want_any)
+	    {
+	      /* This is immediately ambiguous.  */
+	      data->binfo = NULL_TREE;
+	      data->ambiguous = true;
+	      return error_mark_node;
+	    }
+
+	  /* Prefer one via a non-virtual path.  */
+	  if (!binfo_via_virtual (binfo, data->t))
+	    {
+	      data->binfo = binfo;
+	      data->via_virtual = false;
+	      return binfo;
+	    }
+
+	  /* There must be repeated bases, otherwise we'd have stopped
+	     on the first base we found.  */
+	  return dfs_skip_bases;
+	}
     }
   
-  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
-    {
-      base_kind bk;
-
-      bk = lookup_base_r (base_binfo, base,
-		    	  access,
-			  is_virtual || BINFO_VIRTUAL_P (base_binfo),
-			  binfo_ptr);
-
-      switch (bk)
-	{
-	case bk_ambig:
-	  if (access != ba_any)
-	    return bk;
-	  found = bk;
-	  break;
-	  
-	case bk_same_type:
-	  bk = bk_proper_base;
-	  /* Fall through.  */
-	case bk_proper_base:
-	  gcc_assert (found == bk_not_base);
-	  found = bk;
-	  break;
-	  
-	case bk_via_virtual:
-	  if (found != bk_ambig)
-	    found = bk;
-	  break;
-	  
-	case bk_not_base:
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-    }
-  return found;
+  return NULL_TREE;
 }
 
 /* Returns true if type BASE is accessible in T.  (BASE is known to be
@@ -202,8 +189,8 @@ accessible_base_p (tree t, tree base)
 tree
 lookup_base (tree t, tree base, base_access access, base_kind *kind_ptr)
 {
-  tree binfo = NULL_TREE;	/* The binfo we've found so far.  */
-  tree t_binfo = NULL_TREE;
+  tree binfo;
+  tree t_binfo;
   base_kind bk;
   
   if (t == error_mark_node || base == error_mark_node)
@@ -219,7 +206,7 @@ lookup_base (tree t, tree base, base_access access, base_kind *kind_ptr)
       t_binfo = t;
       t = BINFO_TYPE (t);
     }
-  else  
+  else
     {
       t = complete_type (TYPE_MAIN_VARIANT (t));
       t_binfo = TYPE_BINFO (t);
@@ -228,9 +215,33 @@ lookup_base (tree t, tree base, base_access access, base_kind *kind_ptr)
   base = complete_type (TYPE_MAIN_VARIANT (base));
 
   if (t_binfo)
-    bk = lookup_base_r (t_binfo, base, access, 0, &binfo);
+    {
+      struct lookup_base_data_s data;
+
+      data.t = t;
+      data.base = base;
+      data.binfo = NULL_TREE;
+      data.ambiguous = data.via_virtual = false;
+      data.repeated_base = CLASSTYPE_REPEATED_BASE_P (t);
+      data.want_any = access == ba_any;
+
+      dfs_walk_once (t_binfo, dfs_lookup_base, NULL, &data);
+      binfo = data.binfo;
+      
+      if (!binfo)
+	bk = data.ambiguous ? bk_ambig : bk_not_base;
+      else if (binfo == t_binfo)
+	bk = bk_same_type;
+      else if (data.via_virtual)
+	bk = bk_via_virtual;
+      else
+	bk = bk_proper_base;
+    }
   else
-    bk = bk_not_base;
+    {
+      binfo = NULL_TREE;
+      bk = bk_not_base;
+    }
 
   /* Check that the base is unambiguous and accessible.  */
   if (access != ba_any)
@@ -240,7 +251,6 @@ lookup_base (tree t, tree base, base_access access, base_kind *kind_ptr)
 	break;
 
       case bk_ambig:
-	binfo = NULL_TREE;
 	if (!(access & ba_quiet))
 	  {
 	    error ("%qT is an ambiguous base of %qT", base, t);
@@ -2415,6 +2425,10 @@ binfo_from_vbase (tree binfo)
 tree
 binfo_via_virtual (tree binfo, tree limit)
 {
+  if (limit && !CLASSTYPE_VBASECLASSES (limit))
+    /* LIMIT has no virtual bases, so BINFO cannot be via one.  */
+    return NULL_TREE;
+  
   for (; binfo && !SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), limit);
        binfo = BINFO_INHERITANCE_CHAIN (binfo))
     {
