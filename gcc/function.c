@@ -4887,12 +4887,14 @@ expand_function_start (subr, parms_have_cleanups)
 /* Generate RTL for the end of the current function.
    FILENAME and LINE are the current position in the source file.  */
 
-/* It is up to language-specific callers to do cleanups for parameters.  */
+/* It is up to language-specific callers to do cleanups for parameters--
+   or else, supply 1 for END_BINDINGS and we will call expand_end_bindings.  */
 
 void
-expand_function_end (filename, line)
+expand_function_end (filename, line, end_bindings)
      char *filename;
      int line;
+     int end_bindings;
 {
   register int i;
   tree link;
@@ -5021,6 +5023,10 @@ expand_function_end (filename, line)
 
   if (return_label)
     emit_label (return_label);
+
+  /* C++ uses this.  */
+  if (end_bindings)
+    expand_end_bindings (0, 0, 0);
 
   /* If we had calls to alloca, and this machine needs
      an accurate stack pointer to exit the function,
