@@ -3057,11 +3057,6 @@ the @command{pkginfo} command.  To add an optional package, use the
 @command{pkgadd} command.  For further details, see the Solaris
 documentation.
 
-For Solaris 2.0 and 2.1, GCC needs six packages: @samp{SUNWarc},
-@samp{SUNWbtool}, @samp{SUNWesu}, @samp{SUNWhea}, @samp{SUNWlibm}, and
-@samp{SUNWtoo}.
-
-=======
 On some versions of Solaris, trying to use the linker and other tools in
 @file{/usr/ucb} to install GCC has been observed to cause trouble.
 For example, the linker may hang indefinitely.  The fix is to remove
