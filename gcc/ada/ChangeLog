@@ -1,5 +1,15 @@
 2004-11-25  Arnaud Charlet  <charlet@adacore.com>
 
+	* g-socthi-mingw.ads, g-socthi-vms.ads: Remove C_Read and C_Write from
+	internal implementation unit GNAT.Sockets.Thin,
+	as their usage for sockets is non-portable (using the read and write
+	functions from the system runtime library is fine on UNIX but won't
+	work under Windows).
+
+	* mingw32.h: Update copyright notice.
+
+2004-11-25  Arnaud Charlet  <charlet@adacore.com>
+
 	* ada-tree.h: Minor reformatting of previous change to avoid lines
 	longer than 79 characters.
 
