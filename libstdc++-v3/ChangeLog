@@ -1,3 +1,17 @@
+2004-05-07  Matthias Klose  <doko@debian.org>
+
+	* include/backward/iterator.h: Add GPL copyright info,
+	with exception clause.
+	* config/cpu/hppa/atomicity.h: Likewise.
+	* config/io/c_io_libio_codecvt.c: Likewise.
+	* include/bits/boost_concept_check.h: Likewise.
+	* include/backward/iterator.h: Likewise.
+	* libsupc++/tinfo.h: Likewise.
+	* po/string_literals.cc: Likewise.
+	* src/wstring-inst.cc: Likewise.
+	* libio/_G_config.h: Likewise.
+	* libio/iolibio.h: Likewise.
+
 2004-02-22  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/14220
