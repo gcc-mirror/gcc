@@ -108,8 +108,6 @@ extern char *version_string;
 
 extern char *getpwd ();
 
-extern char * my_strerror PROTO ((int));
-
 static void usage PROTO ((void)) ATTRIBUTE_NORETURN;
 static void aux_info_corrupted PROTO ((void)) ATTRIBUTE_NORETURN;
 static void declare_source_confusing PROTO ((const char *)) ATTRIBUTE_NORETURN;
@@ -566,8 +564,8 @@ static char * saved_repl_write_ptr;
 static const char *shortpath ();
 
 char *
-my_strerror(e)
-     int e;
+xstrerror(e)
+  int e;
 {
 
 #ifdef HAVE_STRERROR
@@ -755,7 +753,7 @@ safe_write (desc, ptr, len, out_fname)
 	  continue;
 #endif
 	fprintf (stderr, "%s: error writing file `%s': %s\n",
-		 pname, shortpath (NULL, out_fname), my_strerror (errno_val));
+		 pname, shortpath (NULL, out_fname), xstrerror (errno_val));
 	return;
       }
     ptr += written;
@@ -1449,7 +1447,7 @@ find_file (filename, do_not_stat)
 	      int errno_val = errno;
               fprintf (stderr, "%s: %s: can't get status: %s\n",
 		       pname, shortpath (NULL, filename),
-		       my_strerror (errno_val));
+		       xstrerror (errno_val));
               stat_buf.st_mtime = (time_t) -1;
             }
         }
@@ -2060,14 +2058,14 @@ gen_aux_info_file (base_filename)
 	int errno_val = errno;
 	fprintf (stderr, "%s: ", pname);
 	fprintf (stderr, errmsg_fmt, errmsg_arg);
-	fprintf (stderr, ": %s\n", my_strerror (errno_val));
+	fprintf (stderr, ": %s\n", xstrerror (errno_val));
 	return 0;
       }
 
     pid = pwait (pid, &wait_status, 0);
     if (pid == -1)
       {
-	fprintf (stderr, "%s: wait: %s\n", pname, my_strerror (errno));
+	fprintf (stderr, "%s: wait: %s\n", pname, xstrerror (errno));
 	return 0;
       }
     if (WIFSIGNALED (wait_status))
@@ -2143,7 +2141,7 @@ start_over: ;
 	  int errno_val = errno;
 	  fprintf (stderr, "%s: can't read aux info file `%s': %s\n",
 		   pname, shortpath (NULL, aux_info_filename),
-		   my_strerror (errno_val));
+		   xstrerror (errno_val));
 	  errors++;
 	  return;
 	}
@@ -2172,7 +2170,7 @@ start_over: ;
 	  int errno_val = errno;
 	  fprintf (stderr, "%s: can't read aux info file `%s': %s\n",
 		   pname, shortpath (NULL, aux_info_filename),
-		   my_strerror (errno_val));
+		   xstrerror (errno_val));
 	  errors++;
 	  return;
 	}
@@ -2188,7 +2186,7 @@ start_over: ;
 	int errno_val = errno;
         fprintf (stderr, "%s: can't get status of aux info file `%s': %s\n",
 		 pname, shortpath (NULL, aux_info_filename),
-		 my_strerror (errno_val));
+		 xstrerror (errno_val));
         errors++;
         return;
       }
@@ -2216,7 +2214,7 @@ start_over: ;
 	    int errno_val = errno;
 	    fprintf (stderr, "%s: can't get status of aux info file `%s': %s\n",
 		     pname, shortpath (NULL, base_source_filename),
-		     my_strerror (errno_val));
+		     xstrerror (errno_val));
 	    errors++;
 	    return;
 	  }
@@ -2238,7 +2236,7 @@ start_over: ;
 	int errno_val = errno;
         fprintf (stderr, "%s: can't open aux info file `%s' for reading: %s\n",
 		 pname, shortpath (NULL, aux_info_filename),
-		 my_strerror (errno_val));
+		 xstrerror (errno_val));
         return;
       }
   
@@ -2256,7 +2254,7 @@ start_over: ;
 	int errno_val = errno;
         fprintf (stderr, "%s: error reading aux info file `%s': %s\n",
 		 pname, shortpath (NULL, aux_info_filename),
-		 my_strerror (errno_val));
+		 xstrerror (errno_val));
         free (aux_info_base);
         close (aux_info_file);
         return;
@@ -2269,7 +2267,7 @@ start_over: ;
 	int errno_val = errno;
         fprintf (stderr, "%s: error closing aux info file `%s': %s\n",
 		 pname, shortpath (NULL, aux_info_filename),
-		 my_strerror (errno_val));
+		 xstrerror (errno_val));
         free (aux_info_base);
         close (aux_info_file);
         return;
@@ -2285,7 +2283,7 @@ start_over: ;
 	int errno_val = errno;
 	fprintf (stderr, "%s: can't delete aux info file `%s': %s\n",
 		 pname, shortpath (NULL, aux_info_filename),
-		 my_strerror (errno_val));
+		 xstrerror (errno_val));
       }
 
   /* Save a pointer into the first line of the aux_info file which
@@ -2353,7 +2351,7 @@ start_over: ;
 		    int errno_val = errno;
                     fprintf (stderr, "%s: can't delete file `%s': %s\n",
 			     pname, shortpath (NULL, aux_info_filename),
-			     my_strerror (errno_val));
+			     xstrerror (errno_val));
                     return;
                   }
 		must_create = 1;
@@ -2430,7 +2428,7 @@ rename_c_file (hp)
       int errno_val = errno;
       fprintf (stderr, "%s: warning: can't link file `%s' to `%s': %s\n",
 	       pname, shortpath (NULL, filename),
-	       shortpath (NULL, new_filename), my_strerror (errno_val));
+	       shortpath (NULL, new_filename), xstrerror (errno_val));
       errors++;
       return;
     }
@@ -2439,7 +2437,7 @@ rename_c_file (hp)
     {
       int errno_val = errno;
       fprintf (stderr, "%s: warning: can't delete file `%s': %s\n",
-	       pname, shortpath (NULL, filename), my_strerror (errno_val));
+	       pname, shortpath (NULL, filename), xstrerror (errno_val));
       errors++;
       return;
     }
@@ -4144,7 +4142,7 @@ edit_file (hp)
       int errno_val = errno;
       fprintf (stderr, "%s: can't get status for file `%s': %s\n",
 	       pname, shortpath (NULL, convert_filename),
-	       my_strerror (errno_val));
+	       xstrerror (errno_val));
       return;
     }
   orig_size = stat_buf.st_size;
@@ -4180,7 +4178,7 @@ edit_file (hp)
 	int errno_val = errno;
         fprintf (stderr, "%s: can't open file `%s' for reading: %s\n",
 		 pname, shortpath (NULL, convert_filename),
-		 my_strerror (errno_val));
+		 xstrerror (errno_val));
         return;
       }
 
@@ -4195,7 +4193,7 @@ edit_file (hp)
         close (input_file);
         fprintf (stderr, "\n%s: error reading input file `%s': %s\n",
 		 pname, shortpath (NULL, convert_filename),
-		 my_strerror (errno_val));
+		 xstrerror (errno_val));
         return;
       }
 
@@ -4229,7 +4227,7 @@ edit_file (hp)
 	int errno_val = errno;
         fprintf (stderr, "%s: can't create/open clean file `%s': %s\n",
 		 pname, shortpath (NULL, clean_filename),
-		 my_strerror (errno_val));
+		 xstrerror (errno_val));
         return;
       }
   
@@ -4339,7 +4337,7 @@ edit_file (hp)
 		       pname,
 		       shortpath (NULL, convert_filename),
 		       shortpath (NULL, new_filename),
-		       my_strerror (errno_val));
+		       xstrerror (errno_val));
               return;
             }
         }
@@ -4350,7 +4348,7 @@ edit_file (hp)
       int errno_val = errno;
       fprintf (stderr, "%s: can't delete file `%s': %s\n",
 	       pname, shortpath (NULL, convert_filename),
-	       my_strerror (errno_val));
+	       xstrerror (errno_val));
       return;
     }
 
@@ -4364,7 +4362,7 @@ edit_file (hp)
 	int errno_val = errno;
         fprintf (stderr, "%s: can't create/open output file `%s': %s\n",
 		 pname, shortpath (NULL, convert_filename),
-		 my_strerror (errno_val));
+		 xstrerror (errno_val));
         return;
       }
   
@@ -4393,7 +4391,7 @@ edit_file (hp)
       int errno_val = errno;
       fprintf (stderr, "%s: can't change mode of file `%s': %s\n",
 	       pname, shortpath (NULL, convert_filename),
-	       my_strerror (errno_val));
+	       xstrerror (errno_val));
     }
 
   /* Note:  We would try to change the owner and group of the output file
@@ -4537,7 +4535,7 @@ main (argc, argv)
   if (!cwd_buffer)
     {
       fprintf (stderr, "%s: cannot get working directory: %s\n",
-	       pname, my_strerror(errno));
+	       pname, xstrerror(errno));
       exit (FATAL_EXIT_CODE);
     }
 

@@ -1,3 +1,10 @@
+Sat Jan  9 23:54:09 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c (xstrerror): Renamed from my_strerror.  All callers
+ 	changed.  Remove prototype since we get that from libiberty.h.
+
+	* protoize.c (xstrerror): Likewise.
+
 Sat Jan  9 23:22:04 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c (read_specs): Ensure format specifiers match their arguments.
