@@ -60,7 +60,9 @@ public class DelegateFactory
       }
     try
       {
-	Class dclass = Class.forName(dcname);
+	Class dclass = Class.forName(dcname, 
+				     true,
+				     Thread.currentThread().getContextClassLoader());
 	r = dclass.newInstance();
 	cache.put(type, r);
 	return r;
