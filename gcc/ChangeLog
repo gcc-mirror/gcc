@@ -1,3 +1,52 @@
+Mon Jul  1 19:55:17 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (langhooks.h): Include.
+	(sh_init_builtins, sh_media_init_builtins): New functions.
+	(sh_expand_builtin, arith_reg_dest,and_operand): Likewise.
+	(mextr_bit_offset, extend_reg_operand, zero_vec_operand): Likewise.
+	(sh_rep_vec, sh_1el_vec, sh_const_vec): Likewise.
+	(builtin_description): New struct tag.
+	(signature_args, bdesc): New arrays.
+	(TARGET_INIT_BUILTINS, TARGET_EXPAND_BUILTIN): Undef / define.
+	(print_operand): Add 'N' modifier.
+	* sh.h (VECTOR_MODE_SUPPORTED_P): Add SHmedia vector modes.
+	(EXTRA_CONSTRAINT_U, EXTRA_CONSTRAINT_W): New macros.
+	(EXTRA_CONSTRAINT): Add 'U' and 'W' cases.
+	(CONST_COSTS): Add special case for SHmedia AND.
+	(PREDICATE_CODES): Add and_operand, arith_reg_dest,
+	extend_reg_operand, extend_reg_or_0_operand, mextr_bit_offset,
+	sh_const_vec, sh_1el_vec, sh_rep_vec, zero_vec_operand.
+	target_operand can also be const or unspec.
+	* sh.md (UNSPEC_INIT_TRAMP, UNSPEC_FCOSA UNSPEC_FSRRA): New constants.
+	(UNSPEC_FSINA, UNSPEC_NSB, UNSPEC_ALLOCO): Likewise.
+	(attribute type): Add new types.
+	(anddi3): Add splitter.
+	(movdi_const_16bit+1): Add code to handle vector constants and
+	bitmasks efficiently.
+	(shori_media): Have generator function made.
+	(movv8qi, movv8qi_i, movv8qi_i+1, movv8qi_i+2): New patterns.
+	(movv8qi_i+3, movv2hi, movv2hi_i, movv4hi, movv4hi_i): Likewise.
+	(movv2si, movv2si_i, absv2si2, absv4hi2, addv2si3, addv4hi3): Likewise.
+	(ssaddv2si3, usaddv8qi3, ssaddv4hi3, negcmpeqv8qi): Likewise.
+	(negcmpeqv2si, negcmpeqv4hi, negcmpgtuv8qi, negcmpgtv2si): Likewise.
+	(negcmpgtv4hi, mcmv, mcnvs_lw, mcnvs_wb, mcnvs_wub): Likewise.
+	(mextr_rl, mextr_lr, mextr1, mextr2, mextr3, mextr4, mextr5): Likewise.
+	(mextr6, mextr7, mmacfx_wl, mmacfx_wl_i, mmacnfx_wl): Likewise.
+	(mmacnfx_wl_i, mulv2si3, mulv4hi3, mmulfx_l, mmulfx_w): Likewise.
+	(mmulfxrp_w, mmulhi_wl, mmullo_wl, mmul23_wl, mmul01_wl): Likewise.
+	(mmulsum_wq, mmulsum_wq_i, mperm_w, mperm_w_little): LIkewise.
+	(mperm_w_big, mperm_w0, msad_ubq, msad_ubq_i, mshalds_l): Likewise.
+	(mshalds_w, ashrv2si3, ashrv4hi3, mshards_q, mshfhi_b): Likewise.
+	(mshflo_b,  mshf4_b, mshf0_b, mshfhi_l, mshflo_l, mshf4_l): Likewsie.
+	(mshf0_l, mshfhi_w, mshflo_w, mshf4_w, mshf0_w, mshfhi_l_di): Likewise.
+	(mshfhi_l_di_rev, mshflo_l_di, mshflo_l_di_rev): Likewise.
+	(mshflo_l_di_x, mshflo_l_di_x_rev, ashlv2si3, ashlv4hi3): Likewise.
+	(lshrv2si3, lshrv4hi3, subv2si3, subv4hi3, sssubv2si3): Likewise.
+	(ussubv8qi3, sssubv4hi3, fcosa_s, fsina_s, fipr, fsrra_s): Likewise.
+	(ftrv): Likewise.
+
+	(fpu_switch+1, fpu_switch+2): Remove constraint.
+
 2002-07-01  Aldy Hernandez  <aldyh@redhat.com>
 
         * tree.c (build_function_type_list): Update function comment.
