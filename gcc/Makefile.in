@@ -1801,7 +1801,13 @@ clean: mostlyclean bytecode.clean lang.clean
 # Delete the include directory.
 	-rm -rf stmp-* include objc-headers
 	-rm -f */stmp-*
+# Delete files used by the "multilib" facility (including libgcc subdirs).
 	-rm -f multilib.h tmpmultilib*
+	-if [ "x$(MULTILIB_DIRNAMES)" != x ] ; then \
+	  rm -rf $(MULTILIB_DIRNAMES); \
+	else if [ "x$(MULTILIB_OPTIONS)" != x ] ; then \
+	  rm -rf `echo $(MULTILIB_OPTIONS) | sed -e 's/\// /g'`; \
+	fi ; fi
 
 # Delete all files that users would normally create
 # while building and installing GCC.
