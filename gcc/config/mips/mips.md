@@ -1751,7 +1751,7 @@
    (clobber (match_scratch:DI 3 "=h"))
    (clobber (match_scratch:DI 4 "=l"))
    (clobber (match_scratch:DI 5 "=a"))]
-  "TARGET_64BIT && !TARGET_MIPS16 && (GENERATE_MULT3 || mips_cpu == PROCESSOR_R4000)"
+  "TARGET_64BIT && (GENERATE_MULT3 || mips_cpu == PROCESSOR_R4000 || TARGET_MIPS16)"
   "*
 {
   if (GENERATE_MULT3)

@@ -1,3 +1,7 @@
+Fri Jan 23 00:19:36 1998  Gavin Kock  (gavin@cygnus.com)
+
+	* mips.md (muldi3_internal2): Reverse test for TARGET_MIPS16.
+
 1998-01-22  scott snyder  <snyder@d0sgif.fnal.gov>
 
 	* mips.c (function_prologue): Use HARD_FRAME_POINTER_REGNUM in
