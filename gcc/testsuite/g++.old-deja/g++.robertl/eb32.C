@@ -6,7 +6,7 @@ public:
 
 void A::malloc(unsigned int) {}
 
-int foo() {
+void foo() {
     A a;
     a.malloc(3);    // <-- line 10
 }

@@ -8,7 +8,7 @@ T max(T a, T b)
 }
 
 // Prototypes (enable one or the other)
-double max<>(double, double);
+double max<>(double, double);      // ERROR - bogus code
 // int max(int, int);
 
 int main()
