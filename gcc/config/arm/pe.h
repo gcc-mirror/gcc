@@ -19,6 +19,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* Enable PE specific code.  */
+#define ARM_PE		1
+
 #define ARM_PE_FLAG_CHAR '@'
 
 /* Ensure that @x. will be stripped from the function name.  */
@@ -42,11 +45,9 @@ Boston, MA 02111-1307, USA.  */
    say __declspec__, and passing args to it.  The problem with that approach
    is that args are not accumulated: each new appearance would clobber any
    existing args.  */
-#undef  CPP_PREDEFINES
-#define CPP_PREDEFINES "\
--Darm -D__pe__ -Acpu(arm) -Amachine(arm) \
--D__declspec(x)=__attribute__((x)) \
-"
+#undef  SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC "-D__pe__ -D__declspec(x)=__attribute__((x))"
+
 
 /* Experimental addition for pr 7885.
    Ignore dllimport for functions.  */
@@ -88,13 +89,6 @@ Boston, MA 02111-1307, USA.  */
   1,1,1,1,0,0,0,0,	\
   1,1,1			\
 }
-
-/* This is to better conform to the ARM PCS.
-   Richard Earnshaw hasn't put this into FSF sources yet so it's here.  */
-#undef  RETURN_IN_MEMORY
-#define RETURN_IN_MEMORY(TYPE) 						\
-  ((TYPE_MODE ((TYPE)) == BLKmode && ! TYPE_NO_FORCE_BLK (TYPE))	\
-   || (AGGREGATE_TYPE_P ((TYPE)) && arm_pe_return_in_memory ((TYPE))))
 
 /* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
    is a valid machine specific attribute for DECL.
@@ -121,13 +115,7 @@ Boston, MA 02111-1307, USA.  */
    to handle vtables - the first pass won't do anything because
    DECL_CONTEXT (DECL) will be 0 so arm_dll{ex,im}port_p will return 0.
    It's also used to handle dllimport override semantics.  */
-#if 0
-#define REDO_SECTION_INFO_P(DECL) \
-((DECL_MACHINE_ATTRIBUTES (DECL) != NULL_TREE) \
- || (TREE_CODE (DECL) == VAR_DECL && DECL_VIRTUAL_P (DECL)))
-#else
 #define REDO_SECTION_INFO_P(DECL) 1
-#endif
 
 /* Define this macro if in some cases global symbols from one translation
    unit may not be bound to undefined symbols in another translation unit
@@ -180,24 +168,25 @@ Boston, MA 02111-1307, USA.  */
 /* Output a reference to a label.  */
 #undef  ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(STREAM, NAME)  \
-  fprintf (STREAM, "%s%s", USER_LABEL_PREFIX, arm_strip_name_encoding (NAME))
+  asm_fprintf (STREAM, "%U%s", arm_strip_name_encoding (NAME))
 
 /* Output a function definition label.  */
 #undef  ASM_DECLARE_FUNCTION_NAME
-#define ASM_DECLARE_FUNCTION_NAME(STREAM, NAME, DECL)   \
-  do							\
-    {							\
-      if (arm_dllexport_name_p (NAME))			\
-	{						\
-	  drectve_section ();				\
-	  fprintf (STREAM, "\t.ascii \" -export:%s\"\n",\
-		   arm_strip_name_encoding (NAME));	\
-	  function_section (DECL);			\
-	}						\
-      if (TARGET_POKE_FUNCTION_NAME)			\
-	arm_poke_function_name ((STREAM), (NAME));	\
-      ASM_OUTPUT_LABEL ((STREAM), (NAME));		\
-    }							\
+#define ASM_DECLARE_FUNCTION_NAME(STREAM, NAME, DECL)   	\
+  do								\
+    {								\
+      if (arm_dllexport_name_p (NAME))				\
+	{							\
+	  drectve_section ();					\
+	  fprintf (STREAM, "\t.ascii \" -export:%s\"\n",	\
+		   arm_strip_name_encoding (NAME));		\
+	  function_section (DECL);				\
+	}							\
+      ARM_DECLARE_FUNCTION_NAME (STREAM, NAME, DECL);		\
+      if (TARGET_THUMB)						\
+	fprintf (STREAM, "\t.code 16\n");			\
+      ASM_OUTPUT_LABEL (STREAM, NAME);				\
+    }								\
   while (0)
 
 /* Output a common block.  */

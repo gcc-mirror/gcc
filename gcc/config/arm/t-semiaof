@@ -64,3 +64,4 @@ libgcc1-atest: libgcc1-test.o native $(GCC_PARTS) $(EXTRA_PARTS)
 	@echo "Testing libgcc1.  Ignore linker warning messages."
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) libgcc1-test.o -o libgcc1-test \
 	-v
+

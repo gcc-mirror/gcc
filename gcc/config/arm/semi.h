@@ -23,10 +23,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define LIB_SPEC "-lc"
 
-#define CPP_PREDEFINES \
-    "-Darm -D__semi__ -Acpu(arm) -Amachine(arm)"
-
-#define ASM_SPEC "%{mbig-endian:-EB}"
+#define SUBTARGET_CPP_SPEC "-D__semi__"
 
 #define LINK_SPEC "%{mbig-endian:-EB} -X"
 
@@ -35,7 +32,23 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT ARM_FLAG_APCS_32
+#define TARGET_DEFAULT (ARM_FLAG_APCS_32 | ARM_FLAG_APCS_FRAME)
+#endif
+
+#ifndef SUBTARGET_EXTRA_ASM_SPEC
+#define SUBTARGET_EXTRA_ASM_SPEC
+#endif
+
+#ifndef ASM_SPEC
+#define ASM_SPEC "\
+%{mbig-endian:-EB} \
+%{mcpu=*:-m%*} \
+%{march=*:-m%*} \
+%{mapcs-*:-mapcs-%*} \
+%{mapcs-float:-mfloat} \
+%{msoft-float:-mno-fpu} \
+%{mthumb-interwork:-mthumb-interwork} \
+" SUBTARGET_EXTRA_ASM_SPEC
 #endif
 
 #include "arm/aout.h"

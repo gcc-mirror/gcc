@@ -1,3 +1,400 @@
+2000-04-08  Richard Earnshaw (rearnsha@arm.com)
+
+	Merge changes from merged-arm-thumb-backend-branch onto trunk.
+
+	2000-04-08  Richard Earnshaw (rearnsha@arm.com)
+
+	* Merge trunk code from tag merged-arm-thumb-backend-merge_20000408
+	into branch.
+
+	* arm.md (nop): Use the standard RTL expression.  Don't code as a
+	define_expand.
+	(*arm_nop, *thumb_nop): Delete.
+
+	* arm.c (const_ok_for_arm): Don't use ANSI extensions for defining
+	constants.  Use casts instead.
+	(arm_gen_constant, arm_rtx_costs, arm_reload_in_hi, arm_reload_out_hi,
+	output_multi_immediate, arm_poke_function_name): Likewise.
+	* arm.h (ARM_LEGITIIMIZE_RELOAD_ADDRESS, ARM_SIGN_EXTEND,
+	MASK_RETURN_ADDDR): Likewise.
+
+	2000-03-31  Richard Earnshaw (rearnsha@arm.com)
+
+	* Merge trunk code from tag merged-arm-thumb-backend-merge_20000325 
+	into branch.
+	
+	* arm.md (eh_epilogue): New function.
+	* arm.h (struct machine_function): Move to here ...
+	* arm.c: ... from here.
+	(arm_output_epilogue): Support epilogues for __builtin_eh_return.
+	(thumb_exit): Extra parameter eh_ofs.  All callers changed.
+	Handle epilogues for __builtin_eh_return.  Make bit-fields unsigned.
+
+	2000-03-30  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/semi.h (ASM_SPEC): Restore definition.
+	(SUBTARGET_EXTRA_ASM_SPEC): Define if not already defined.
+
+	* config/arm/elf.h (ASM_SPEC): Restore definition.
+	(SUBTARGET_EXTRA_ASM_SPEC): Define if not already defined.
+
+	* config/arm/arm.h (ASM_SPEC): Remove definition.
+	(SUBTARGET_EXTRA_ASM_SPEC): Remove definition.
+
+	2000-03-26  Bernd Schmidt <bernds@cygnus.co.uk>
+
+	* config/arm/arm.c: Disable -fschedule-insns for Thumb.
+
+	2000-03-24  Nick Clifton  <nickc@cygnus.com>
+
+	Various formating tidyups, elimination of compile time
+	warnings and synchronisation with internal sources:
+	
+	* config/arm/arm-protos.h (assemble_align): Add prototype.
+	(gen_rotated_half_load): Rename to arm_gen_rotated_half_load.
+	(gen_comapre_reg): Rename to arm_gen_compare_reg.
+	(arm_return_addr_rtx): Rename to arm_return_addr.
+
+	* config/arm/arm.c: Include except.h.
+	Define shorter typenames for strict minipool_node and struct
+	minipool_fix.
+	(arm_return_in_memory): For WinCE return all structures <= 32 bits
+	in memory.
+	(gen_rotated_half_load): Rename to arm_gen_rotated_half_load.
+	(gen_comapre_reg): Rename to arm_gen_compare_reg.
+
+	* config/arm/arm.h (SUBTARGET_EXTRA_ASM_SPEC): Define if not
+	already defined.
+	(ASM_SPEC): Define if not already defined.
+	(ASM_OUTPUT_DEF_FROM_DECLS): Define.
+
+	* config/arm/arm.md: Rename references to gen_rotated_half_load to
+	arm_gen_rotated_half_load, and references to gen_comapre_reg to
+	arm_gen_compare_reg.
+	(indirect_jump):  Only accept register operands.
+	(load_indirect_jump): Keep this pattern since combine can generate
+	it.
+
+	* config/arm/coff.h: Include aout.h.
+	(MULTILIB_DEFAULTS): Only define if not already defined.
+
+	* config/arm/elf.h (ASM_OUTPUT_DEF_FROM_DECLS): Move definition
+	into arm.h (so that COFF ports can support thumb based aliases).
+	(ASM_SPEC): Move definition into arm.h
+	
+	* config/arm/linux-elf.h (SUBTARGET_EXTRA_ASM_SPEC): Remove
+	redundant apcs spec.
+	(ASM_SPEC): Move definition to arm.h
+
+	* config/arm/semi.h (ASM_SPEC): Move definition to arm.h
+
+	* config/arm/unknown-elf.h (ASM_OUTPUT_SECTION_NAME): Add support
+	for entries in the .bss section
+
+	2000-03-23  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.h (THUMB_INITIAL_ELIMINATION_OFFSET): Pass 0
+	to thumb_far_jump_used_p.
+
+	* config/arm/arm-protos.h (thumb_far_jump_used_p): Take a
+	single integer parameter.
+
+	* config/arm/arm.c (struct machine_function): Add two new
+	fields, 'far_jump_used' and 'arg_pointer_live'.
+	(thumb_far_jump_used_p): Once the decision has been made that
+	far jumps might be used, always return true.
+	If being called from the initial elimination offset macro then
+	do not bother to perform the test if the arg pointer is not
+	being used.
+	(thumb_unexpand_epilogue): Pass 1 to thumb_far_jump_used_p().
+	(output_thumb_prologue): Pass 1 to thumb_far_jump_used_p().
+
+	2000-03-23  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.c (output_return_instruction): Handle more cases where we can
+	return from a function with an ldr instruction.
+	(arm_output_epilogue): Likewise.
+
+	* arm.c (thumb_expand_prologue): Don't clobber the frame pointer
+	if we need to push a large stack frame and there are no callee-saved
+	registers.
+
+	* arm.c (arm_debugger_arg_offset): An offset of 0 is also valid
+	in ARM code if the frame pointer has been eliminated.
+
+	* arm.md (epilogue, *epilogue_insns, consttable_*, align_4): Renumber
+	unspec_volatile arguments to avoid duplicates.
+	(consttable_1, consttable_2): Fixes for big-endian mode.
+
+	* arm.md (all ARM-mode load insns): Add neg_pool_range attribute
+	as appropriate.
+
+	Re-write constant pool code.
+	* arm.c (minipool_node, minipool_fix): New types.
+	(minifix): Delete type.
+	(arm_add_minipool_constant): Delete.
+	(arm_compute_minipool_offsets, arm_find_barrier, 
+	arm_find_minipool_constant, fixup_compare, sort_fixups): Likewise.
+	(get_jump_table_size): Now returns HOST_WIDE_INT.
+	(move_minipool_fix_forward_ref, add_minipool_forward_ref): New
+	functions.
+	(move_minipool_fix_backward_ref, add_minipool_backward_ref): Likewise.
+	(assign_minipool_offsets, arm_print_value): Likewise.
+	(dump_minipool): Rewrite.
+	(arm_barrier_cost): New function.
+	(create_fix_barrier): New function.
+	(push_minipool_barrier): New function.
+	(push_minipool_fix): Record additional information about the fixup 
+	required.
+	(note_invalid_constants): Remove push for (UNSPEC 3).  Don't
+	check the mode of what needs fixing.
+	(arm_reorg): Rewrite.
+
+	2000-03-08  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.md (indirect_jump): Force constant addresses into
+	a register. 
+
+	2000-03-01  Bernd Schmidt <bernds@cygnus.co.uk>
+
+	* config/arm/arm.md: Add splitter to turn SF moves into SI moves.
+
+	2000-02-24  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.c (thumb_expand_prologue): Make sure that stack
+	adjust is word aligned.
+	(thumb_expand_epilogue): Make sure that stack adjust is word
+	aligned.
+
+	* config/arm/elf.h (ASM_FILE_START): Fix type of version string.
+	
+	2000-02-24  Bernd Schmidt <bernds@cygnus.com>
+
+	* config/arm/arm.h (THUMB_GO_IF_LEGITIMATE_ADDRESS): Allow frame
+	pointer relative addresses.
+
+	2000-02-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (find_barrier): Find the last barrier within the allowed 
+	range.
+
+	2000-02-09  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm-protos.h: Replace PROTO with PARAMS.
+
+	2000-02-09  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/linux-elf.h (FUNCTION_PROFILER): Rename to
+	ARM_FUNCTION_PROFILER. 
+
+	* config/arm/netbsd.h (FUNCTION_PROFILER): Rename to
+	ARM_FUNCTION_PROFILER. 
+
+	* config/arm/linux-oldld.h: Imported from mainline sources.
+
+	2000-02-07  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/lib1funcs.asm: Merge in thumb functions from
+	lib1thumb.asm.
+	
+	* config/arm/lib1thumb.asm: Delete.
+
+	2000-02-04  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.c: Sychronised with current Red hat local
+	sources. 
+	* config/arm/arm.h: Ditto.
+	* config/arm/arm-protos.h: Ditto.
+
+	2000-02-02  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* arm.c (soft_df_operand): Reject SUBREGs containing a constant.
+
+	* arm.c (arm_gen_movstrqi): Generate halfword stores rather than two
+	byte stores.
+
+	2000-02-02  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/thumb.c (thumb_exit): Additional fix for same bug.
+
+	* config/arm/arm.md (epilogue): Fix rtl checking abort because
+	(return) was emited using an emit_insn() call. 
+	
+	2000-01-31  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.c (output_thumb_prologue): Fix bug generating
+	thumb stack frame.
+	(thumb_exit): Move frame pointer back into hard frame pointer
+	register if backtracing is being used.
+
+	2000-01-13  Richard Earnshaw (rearnsha@arm.com)
+
+	* Merge trunk code from tag merged-arm-thumb-backend-merge_20000113 
+	into branch.
+
+	1999-12-15  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* config/arm/arm.md (neg_pool_offset): Provide default for new
+	attribute.
+	(arm_movsi_insn): Add neg_pool_offset attribute.
+	* config/arm/arm.c (arm_find_barrier): Replace arg FIX with an
+	rtx for the insn that starts the scan and an unsigned long for its
+	address.  Add MIN_OFFSET and PINSERTED args.  All callers changed.
+	Change scan to ignore insns before MIN_OFFSET.  Store size of inserted
+	instructions in *PINSERTED.
+	(struct minipool_fixup): Add MIN_ADDRESS elt.
+	(sort_fixups): Compute it.
+	(arm_reorg): Changes to support inserting pools before the insn to be
+	fixed up.
+
+	1999-12-08  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* config/arm/elf.h (MULTILIB_DEFAULTS): Add "marm".
+	* config/arm/linux-elf.h (MULTILIB_DEFAULTS): Add "marm".
+	* config/arm/coff.h (MULTILIB_DEFAULTS): Add "marm".
+
+	Wed Nov  3 10:04:07 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/semi.h (TARGET_VERSION): Do not define if already
+	defined.
+	(TARGET_DEFAULT): Do not define if already defined.
+
+	Tue Nov  2 10:37:25 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.md (anddi3): Allow disjoint source operands.
+	(iordi3): Allow disjoint source operands.
+	(xordi3): Allow disjoint source operands.
+	(negdi2): Permit construction for ARM and Thumb.
+	(arm_negdi2): Renamed version of old negdi2 pattern.
+	(thumb_negdi2): New pattern: Only permit non-overlapping
+	source and destination.
+
+	Fri Oct 29 18:52:38 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.c (thumb_expand_prologue): Emit a USE of the
+	scratch low register so that it will not be deleted.
+
+	Fri Oct 29 15:23:48 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/pe.h (ARM_PE): Define.
+	
+	* config/arm/arm.c (arm_valid_machine_decl_attribute): Allow
+	interfacearm attribute if this is a PE toolchain.
+	(output_return_instruction): Do not emit anything if the function
+	has the naked attribute set.
+	(is_called_in_ARM_mode): If the function has the interfacearm
+	attribute then return true.
+	(thumb_expand_prologue): Do not generate a prologue for naked
+	functions.
+	(thumb_expand_epilogue): Do not generate an epilogie for a naked
+	function.
+	(output_thumb_prologue): Do not bother if the function is naked.
+	Strip PE encoding from function name before emitting.
+
+	Thu Oct 28 11:05:13 1999  Richard Earnshaw <rearnsha@arm.com>
+
+	* arm.md (pic_load_addr): Fix constraints.
+
+	* arm.md (casesi_insn): Fix mis-applied patch.
+
+	* arm.md ("core" function unit): Add rules for single- and
+	multi-cycle insns.
+	(All TARGET_THUMB patterns): Add "type" attribute information
+	where needed.
+	* arm.c (arm_adjust_cost): Reduce the cost of a data dependency if
+	the following insn is a CALL.
+
+	* arm.c (thumb_expand_epilogue): Add a use of the adjusted stack
+	pointer.
+	* arm.h (CONDITIONAL_REGISTER_USAGE): Nail down the 
+	ARM_HARD_FRAME_POINTER_REGNUM when TARGET_APCS_FRAME.
+	(FRAME_POINTER_REQUIRED): Only check TARGET_APCS_FRAME if TARGET_ARM.
+	
+	Wed Oct 27 14:40:48 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/linux-gas.h: oops - this file was missed out when the
+	branch was created...
+
+	Tue Oct 26 17:07:38 1999  Richard Earnshaw <rearnsha@arm.com>
+
+	* thumb.c: Deleted.  Move contents to ...
+	* arm.c: ... here.
+	* t-arm-aout, t-arm-coff, t-arm-elf, t-linux, t-netbsd, t-semi: Remove
+	rule for thumb.o
+	* configure.in (arm*-*-*): Remove thumb.o from extra_objs list.
+	* configure: Regen.
+
+	* arm-protos.h: Use RTX_CODE and tidy up long lines.  Don't
+	declare a prototype for asm_output_align();
+
+	* arm.c (thumb_condition_code): Delete.
+	(arm_print_operand): Always use arm_condition_code array.
+
+	* arm.c (thumb_return_addr_rtx): Delete.
+	(arm_save_machine_status, arm_restore_machine_status): Delete.
+	(arm_init_machine_status, arm_mark_machine_status): New functions.
+	(arm_init_expanders): Update accordingly.
+	(arm_return_addr): Renamed from arm_return_addr_rtx.  Rewrite.
+	(thumb_expand_prologue): Delete code referencing thumb_return_addr_rtx.
+	* arm.h (RETURN_ADDR_RTX): Call arm_return_addr().
+	
+	Tue Oct 26 13:24:16 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* configure.in : Fix arm-*-aout target to use new t-arm-aout
+	script. 
+	* config/arm/t-arm-aout: New file: Makefile script for arm-*-aout
+	targets.
+
+	Tue Oct 26 11:27:12 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/thumb.c (output_thumb_prologue): Fix bug creating
+	stack backtrace structure.
+
+	* config/arm/arm-protos.h: Add prototypes for functions defined in
+	arm/pe.h.
+	
+	* config/arm/arm.c (arm_override_options): Fix selection of 
+	attributes of default processor.
+	
+	* config/arm/coff.h: Delete needless #include.
+	
+	* config/arm/pe.c: Delete unused code.
+	
+	* config/arm/pe.h (CPP_DEFINES): Delete
+	(SUBTARGET_CPP_SPEC): Define.
+	(ASM_DECLARE_FUNCTION_NAME): Use ARM_DECLARE_FUNCTION_NAME.
+	
+	* config/arm/t-pe: Add -DInhibit_libc to allof libgcc.a to build.
+
+	Mon Oct 25 15:42:09 1999  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.h (TARGET_APCS_FRAME): Renamed from TARGET_APCS -- all uses
+	updated.
+	(CAN_DEBUG_WITHOUT_FP): Define.
+	(FIXED_REGISTERS): Make r11 call-saved.
+	(CALL_USED_REGISTERS): Likewise.
+	(CONDITIONAL_REGISTER_USAGE): Fix r11 if TARGET_APCS_FRAME.
+	(FRAME_POINTER_REQUIRED): Correct logic for determining when a 
+	frame-pointer is required.
+	(TARGET_DEFAULT): Make default setting include ARM_FLAG_APCS_FRAME.
+	* arm.c (arm_override_options): Warn about -mno-apcs-frame and -g
+	if the target normally needs a stack frame in non-leaf functions.
+	(use_return_insn): Correct logic for determining when a return
+	instruction can be used.
+	(output_return_instruction): Handle the frame-pointer register as
+	a normal register when not TARGET_APCS_FRAME.
+	(arm_output_prologue): Likewise.
+	(arm_output_epilogue): Likewise.
+	(output_func_epilogue): Likewise.
+	(arm_expand_prologue): Likewise.
+	* netbsd.h semi.h (TARGET_DEFAULT): Add ARM_FLAG_APCS_FRAME.
+
+	* arm.c (use_return_insn): No need to check floating point regs if
+	TARGET_SOFT_FLOAT.
+	(arm_find_minipool_constant): Correct typo; use GET_CODE to get
+	the code of value stored in the minipool array.
+	(arm_add_minipool_constant): Likewise.
+
 2000-04-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* basic-block.h (conflict_graph_enum_fn): K&R fix.

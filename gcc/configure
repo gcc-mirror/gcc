@@ -3452,11 +3452,11 @@ for machine in $build $host $target; do
 		;;
 	arm-*-coff* | armel-*-coff*)
 		tm_file=arm/coff.h
-		tmake_file=arm/t-bare
+		tmake_file=arm/t-arm-coff
 		;;
 	arm-*-vxworks*)
 		tm_file=arm/vxarm.h
-		tmake_file=arm/t-bare
+		tmake_file=arm/t-arm-coff
 		thread_file='vxworks'
 		;;
 	arm-*-riscix1.[01]*)		# Acorn RISC machine (early versions)
@@ -3536,11 +3536,11 @@ for machine in $build $host $target; do
 		;;
 	arm*-*-aout)
 		tm_file=arm/aout.h
-		tmake_file=arm/t-bare
+		tmake_file=arm/t-arm-aout
 		;;
         arm*-*-ecos-elf)
 		tm_file=arm/ecos-elf.h
-		tmake_file=arm/t-elf
+		tmake_file=arm/t-arm-elf
 		;; 
 	arm*-*-elf)
 		tm_file=arm/unknown-elf.h
@@ -6039,56 +6039,13 @@ for machine in $build $host $target; do
 #		;;
 #	tahoe-*-bsd*)			# tahoe running BSD
 #		;;
-	thumb-*-coff* | thumbel-*-coff*)
-		tm_file=arm/tcoff.h
-		out_file=arm/thumb.c
-		xm_file=arm/xm-thumb.h
-		md_file=arm/thumb.md
-		tmake_file=arm/t-thumb
-		tm_p_file=arm/thumb-protos.h
+	thumb*-*-*)
+		{ echo "configure: error: 
+*** The Thumb targets have been depreciated.  The equivalent
+*** ARM based toolchain can now generated Thumb instructions
+*** when the -mthumb switch is given to the compiler." 1>&2; exit 1; }
 		;;
-	thumb-*-elf* | thumbel-*-elf*)
-		tm_file=arm/telf.h
-		out_file=arm/thumb.c
-		xm_file=arm/xm-thumb.h
-		md_file=arm/thumb.md
-		tmake_file=arm/t-thumb-elf
-		tm_p_file=arm/thumb-protos.h
-		;;
-	thumb-*-linux-gnu*)
-		tm_file=arm/linux-telf.h
-		out_file=arm/thumb.c
-		xm_file=arm/xm-thumb.h
-		md_file=arm/thumb.md
-		tmake_file=arm/t-thumb-linux
-		tm_p_file=arm/thumb-protos.h
-		;;
-	thumb-*-uclinux*)
-		tm_file=arm/uclinux-telf.h
-		out_file=arm/thumb.c
-		md_file=arm/thumb.md
-		tmake_file=arm/t-thumb-linux
-		xm_file=arm/xm-thumb.h
-		tm_p_file=arm/thumb-protos.h
-		;;
-	thumb-wrs-vxworks)
-		tm_file=arm/tcoff.h
-		out_file=arm/thumb.c
-		xm_file=arm/xm-thumb.h
-		md_file=arm/thumb.md
-		tmake_file=arm/t-thumb
-		thread_file='vxworks'
-		tm_p_file=arm/thumb-protos.h
-		;;
-	thumb-*-pe)
-		tm_file=arm/tpe.h
-		out_file=arm/thumb.c
-		xm_file=arm/xm-thumb.h
-		md_file=arm/thumb.md
-		tmake_file=arm/t-pe-thumb
-		extra_objs=pe.o
-		tm_p_file=arm/thumb-protos.h
-		;;
+
 # This hasn't been upgraded to GCC 2.
 #	tron-*-*)
 #		cpu_type=gmicro

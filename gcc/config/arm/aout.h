@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM with a.out
-   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1995 - 1999 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@armltd.co.uk).
    
 This file is part of GNU CC.
@@ -25,20 +25,24 @@ Boston, MA 02111-1307, USA.  */
 
 /* The text to go at the start of the assembler file */
 #ifndef ASM_FILE_START
-#define ASM_FILE_START(STREAM)						    \
-{									    \
-  fprintf (STREAM,"%srfp\t.req\t%sr9\n", REGISTER_PREFIX, REGISTER_PREFIX); \
-  fprintf (STREAM,"%ssl\t.req\t%sr10\n", REGISTER_PREFIX, REGISTER_PREFIX); \
-  fprintf (STREAM,"%sfp\t.req\t%sr11\n", REGISTER_PREFIX, REGISTER_PREFIX); \
-  fprintf (STREAM,"%sip\t.req\t%sr12\n", REGISTER_PREFIX, REGISTER_PREFIX); \
-  fprintf (STREAM,"%ssp\t.req\t%sr13\n", REGISTER_PREFIX, REGISTER_PREFIX); \
-  fprintf (STREAM,"%slr\t.req\t%sr14\n", REGISTER_PREFIX, REGISTER_PREFIX); \
-  fprintf (STREAM,"%spc\t.req\t%sr15\n", REGISTER_PREFIX, REGISTER_PREFIX); \
+#define ASM_FILE_START(STREAM)		    \
+{					    \
+  asm_fprintf (STREAM,"%Rrfp\t.req\t%Rr9\n"); \
+  asm_fprintf (STREAM,"%Rsl\t.req\t%Rr10\n"); \
+  asm_fprintf (STREAM,"%Rfp\t.req\t%Rr11\n"); \
+  asm_fprintf (STREAM,"%Rip\t.req\t%Rr12\n"); \
+  asm_fprintf (STREAM,"%Rsp\t.req\t%Rr13\n"); \
+  asm_fprintf (STREAM,"%Rlr\t.req\t%Rr14\n"); \
+  asm_fprintf (STREAM,"%Rpc\t.req\t%Rr15\n"); \
 }
 #endif
 
-#define ASM_APP_ON  		" "
-#define ASM_APP_OFF  		" "
+#ifndef ASM_APP_ON
+#define ASM_APP_ON  		""
+#endif
+#ifndef ASM_APP_OFF
+#define ASM_APP_OFF  		""
+#endif
 
 /* Switch to the text or data segment.  */
 #define TEXT_SECTION_ASM_OP  	".text"
@@ -68,7 +72,7 @@ Boston, MA 02111-1307, USA.  */
   "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7",  \
   "r8", "r9", "sl", "fp", "ip", "sp", "lr", "pc",  \
   "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7",  \
-  "cc", "sfp", "afp"				   \
+  "cc", "sfp", "afp"		   		   \
 }
 #endif
 
@@ -185,16 +189,17 @@ Boston, MA 02111-1307, USA.  */
    the riscix assembler doesn't understand (it also makes cross-assembling
    less likely to fail). */
 
-#define ASM_OUTPUT_LONG_DOUBLE(STREAM, VALUE)					\
-  do										\
-    {										\
-      char dstr[30];								\
-      long l[3];								\
-      REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);				\
-      REAL_VALUE_TO_DECIMAL (VALUE, "%.20g", dstr);				\
-      fprintf (STREAM, "\t.long 0x%lx,0x%lx,0x%lx\t%s long double %s\n",	\
-	       l[0], l[1], l[2], ASM_COMMENT_START, dstr);			\
-    }										\
+#define ASM_OUTPUT_LONG_DOUBLE(STREAM, VALUE)				\
+  do									\
+    {									\
+      char dstr[30];							\
+      long l[3];							\
+      REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
+      REAL_VALUE_TO_DECIMAL (VALUE, "%.20g", dstr);			\
+      asm_fprintf (STREAM,						\
+		   "\t.long 0x%lx,0x%lx,0x%lx\t%@ long double %s\n",	\
+		   l[0], l[1], l[2], dstr);				\
+    }									\
   while (0)
 
 #define ASM_OUTPUT_DOUBLE(STREAM, VALUE)				\
@@ -204,8 +209,8 @@ Boston, MA 02111-1307, USA.  */
       long l[2];							\
       REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);				\
       REAL_VALUE_TO_DECIMAL (VALUE, "%.14g", dstr);			\
-      fprintf (STREAM, "\t.long 0x%lx, 0x%lx\t%s double %s\n", l[0],	\
-	       l[1], ASM_COMMENT_START, dstr);				\
+      asm_fprintf (STREAM, "\t.long 0x%lx, 0x%lx\t%@ double %s\n", l[0],\
+	           l[1], dstr);						\
     }									\
   while (0)
 
@@ -216,8 +221,8 @@ Boston, MA 02111-1307, USA.  */
       long l;							\
       REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);			\
       REAL_VALUE_TO_DECIMAL (VALUE, "%.7g", dstr);		\
-      fprintf (STREAM, "\t.word 0x%lx\t%s float %s\n", l,	\
-	       ASM_COMMENT_START, dstr);			\
+      asm_fprintf (STREAM, "\t.word 0x%lx\t%@ float %s\n", l,	\
+	           dstr);					\
     }								\
   while (0)
 
@@ -280,8 +285,8 @@ Boston, MA 02111-1307, USA.  */
     {							\
       fprintf (STREAM, "\t.comm\t");			\
       assemble_name (STREAM, NAME);			\
-      fprintf (STREAM, ", %d\t%s %d\n", ROUNDED,	\
-	       ASM_COMMENT_START, SIZE);		\
+      asm_fprintf (STREAM, ", %d\t%@ %d\n", 		\
+	           ROUNDED, SIZE);			\
     }							\
   while (0)
 #endif
@@ -314,7 +319,7 @@ Boston, MA 02111-1307, USA.  */
 /* Output a #ident directive.  */
 #ifndef ASM_OUTPUT_IDENT
 #define ASM_OUTPUT_IDENT(STREAM,STRING)  \
-  fprintf (STREAM, "%s - - - ident %s\n", ASM_COMMENT_START, STRING)
+  asm_fprintf (STREAM, "%@ - - - ident %s\n", STRING)
 #endif
      
 /* The assembler's parentheses characters.  */
@@ -328,4 +333,4 @@ Boston, MA 02111-1307, USA.  */
 /* This works for GAS and some other assemblers.  */
 #define SET_ASM_OP		".set"
 
-#include "arm/arm.h"
+#include "arm.h"
