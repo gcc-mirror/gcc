@@ -1633,7 +1633,8 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
     {
       rs6000_sysv_varargs_p = 1;
       if (! no_rtl)
-	save_area = plus_constant (frame_pointer_rtx, RS6000_VARARGS_OFFSET);
+	save_area = plus_constant (virtual_stack_vars_rtx,
+				   - RS6000_VARARGS_OFFSET);
     }
   else
     rs6000_sysv_varargs_p = 0;
@@ -1704,13 +1705,83 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
    
    On the Power/PowerPC return the address of the area on the stack
    used to hold arguments.  Under AIX, this includes the 8 word register
-   save area.  Under V.4 this does not.  */
+   save area. 
+
+   Under V.4, things are more complicated.  We do not have access to
+   all of the virtual registers required for va_start to do its job,
+   so we construct the va_list in its entirity here, and reduce va_start
+   to a block copy.  This is similar to the way we do things on Alpha.  */
 
 struct rtx_def *
 expand_builtin_saveregs (args)
      tree args ATTRIBUTE_UNUSED;
 {
-  return virtual_incoming_args_rtx;
+  rtx block, mem_gpr_fpr, mem_reg_save_area, mem_overflow, tmp;
+  tree fntype;
+  int stdarg_p;
+  HOST_WIDE_INT words, gpr, fpr;
+
+  if (DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS)
+    return virtual_incoming_args_rtx;
+
+  fntype = TREE_TYPE (current_function_decl);
+  stdarg_p = (TYPE_ARG_TYPES (fntype) != 0
+	      && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
+		  != void_type_node));
+
+  /* Allocate the va_list constructor.  */
+  block = assign_stack_local (BLKmode, 3 * UNITS_PER_WORD, BITS_PER_WORD);
+  RTX_UNCHANGING_P (block) = 1;
+  RTX_UNCHANGING_P (XEXP (block, 0)) = 1;
+
+  mem_gpr_fpr = change_address (block, word_mode, XEXP (block, 0));
+  mem_overflow = change_address (block, ptr_mode, 
+			         plus_constant (XEXP (block, 0),
+						UNITS_PER_WORD));
+  mem_reg_save_area = change_address (block, ptr_mode, 
+				      plus_constant (XEXP (block, 0),
+						     2 * UNITS_PER_WORD));
+
+  /* Construct the two characters of `gpr' and `fpr' as a unit.  */
+  words = current_function_args_info.words - !stdarg_p;
+  gpr = (words > 8 ? 8 : words);
+  fpr = current_function_args_info.fregno - 33;
+
+  if (BYTES_BIG_ENDIAN)
+    {
+      HOST_WIDE_INT bits = gpr << 8 | fpr;
+      if (HOST_BITS_PER_WIDE_INT >= BITS_PER_WORD)
+        tmp = GEN_INT (bits << (BITS_PER_WORD - 16));
+      else
+	{
+	  bits <<= BITS_PER_WORD - HOST_BITS_PER_WIDE_INT - 16;
+	  tmp = immed_double_const (0, bits, word_mode);
+	}
+    }
+  else
+    tmp = GEN_INT (fpr << 8 | gpr);
+
+  emit_move_insn (mem_gpr_fpr, tmp);
+
+  /* Find the overflow area.  */
+  if (words <= 8)
+    tmp = virtual_incoming_args_rtx;
+  else
+    tmp = expand_binop (Pmode, add_optab, virtual_incoming_args_rtx,
+		        GEN_INT ((words - 8) * UNITS_PER_WORD),
+		        mem_overflow, 0, OPTAB_WIDEN);
+  if (tmp != mem_overflow)
+    emit_move_insn (mem_overflow, tmp);
+
+  /* Find the register save area.  */
+  tmp = expand_binop (Pmode, add_optab, virtual_stack_vars_rtx,
+		      GEN_INT (-RS6000_VARARGS_SIZE),
+		      mem_reg_save_area, 0, OPTAB_WIDEN);
+  if (tmp != mem_reg_save_area)
+    emit_move_insn (mem_reg_save_area, tmp);
+
+  /* Return the address of the va_list constructor.  */
+  return XEXP (block, 0);
 }
 
 
