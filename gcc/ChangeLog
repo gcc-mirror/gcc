@@ -1,3 +1,8 @@
+1999-12-06  David S. Miller  <davem@redhat.com>
+
+	* combine.c (check_promoted_subreg): Do not conditionalize this	upon
+	PROMOTE_FUNCTION_RETURN.
+
 Mon Dec  6 15:12:14 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* regmove.c (optimize_reg_copy_1): If no REG_DEAD note, check for
