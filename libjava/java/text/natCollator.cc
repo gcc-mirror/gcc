@@ -30,7 +30,7 @@ java::text::Collator::decomposeCharacter (jchar c,
       return;
     }
 
-  struct decomp_entry *base;
+  const struct decomp_entry *base;
   int high;
 
   if (decmp == FULL_DECOMPOSITION)
