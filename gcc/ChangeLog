@@ -1,3 +1,7 @@
+Mon Mar 22 14:35:28 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* tm.texi (MD_SCHED_INIT): Add missing closing parenthesis.
+
 Mon Mar 22 22:24:30 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_as_needed): Set reload_is_output_reload /
