@@ -1522,16 +1522,15 @@ struct lang_decl_flags GTY(())
   unsigned use_template : 2;
   unsigned nonconverting : 1;
   unsigned not_really_extern : 1;
-  unsigned needs_final_overrider : 1;
   unsigned initialized_in_class : 1;
   unsigned assignment_operator_p : 1;
-
   unsigned u1sel : 1;
+ 
   unsigned u2sel : 1;
   unsigned can_be_full : 1;
   unsigned this_thunk_p : 1;
   unsigned repo_available_p : 1;
-  unsigned dummy : 3;
+  unsigned dummy : 4;
 
   union lang_decl_u {
     /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
@@ -1882,11 +1881,6 @@ struct lang_decl GTY(())
    virtual function.  */
 #define DECL_PURE_VIRTUAL_P(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->decl_flags.pure_virtual)
-
-/* Nonzero for FUNCTION_DECL means that this member function
-   must be overridden by derived classes.  */
-#define DECL_NEEDS_FINAL_OVERRIDER_P(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->decl_flags.needs_final_overrider)
 
 /* True (in a FUNCTION_DECL) if NODE is a virtual function that is an
    invalid overrider for a function from a base class.  Once we have

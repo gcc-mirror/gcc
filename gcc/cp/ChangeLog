@@ -1,3 +1,13 @@
+2004-09-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (struct lang_decl_flags): Remove
+	needs_final_overrider.
+	(DECL_NEEDS_FINAL_OVERRIDER_P): Remove.
+	* decl.c (duplicate_decls): Do not copy DECL_NEEDS_FINAL_OVERRIDER_P.
+	* class.c (finish_struct_bits): Correct comment about
+	CLASSTYPE_PURE_VIRTUALS.
+	* search.c (get_pure_virtuals): Remove useless loop.
+
 2004-09-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17324

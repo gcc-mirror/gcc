@@ -1582,7 +1582,6 @@ duplicate_decls (tree newdecl, tree olddecl)
       DECL_STATIC_DESTRUCTOR (newdecl) |= DECL_STATIC_DESTRUCTOR (olddecl);
       DECL_PURE_VIRTUAL_P (newdecl) |= DECL_PURE_VIRTUAL_P (olddecl);
       DECL_VIRTUAL_P (newdecl) |= DECL_VIRTUAL_P (olddecl);
-      DECL_NEEDS_FINAL_OVERRIDER_P (newdecl) |= DECL_NEEDS_FINAL_OVERRIDER_P (olddecl);
       DECL_THIS_STATIC (newdecl) |= DECL_THIS_STATIC (olddecl);
       if (DECL_OVERLOADED_OPERATOR_P (olddecl) != ERROR_MARK)
 	SET_OVERLOADED_OPERATOR_CODE
