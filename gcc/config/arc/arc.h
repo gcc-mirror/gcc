@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Argonaut ARC cpu.
-   Copyright (C) 1994, 1995, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1994, 95, 97, 98, 99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #undef PTRDIFF_TYPE
 #undef WCHAR_TYPE
 #undef WCHAR_TYPE_SIZE
+#undef ASM_OUTPUT_LABELREF
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION fprintf (stderr, " (arc)")
@@ -147,8 +148,8 @@ extern int target_flags;
 	extern char *m88k_short_data;
 	#define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }  */
 
-extern char *arc_cpu_string;
-extern char *arc_text_string,*arc_data_string,*arc_rodata_string;
+extern const char *arc_cpu_string;
+extern const char *arc_text_string,*arc_data_string,*arc_rodata_string;
 
 #define TARGET_OPTIONS \
 {						\
@@ -176,7 +177,6 @@ extern int arc_cpu_type;
    Don't use this macro to turn on various extra optimizations for
    `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
 
-extern void arc_init ();
 
 #define OVERRIDE_OPTIONS \
 do {				\
@@ -688,7 +688,7 @@ extern enum reg_class arc_regno_reg_class[];
 #define ROUND_ADVANCE_CUM(CUM, MODE, TYPE) \
 ((((MODE) == BLKmode ? TYPE_ALIGN (TYPE) : GET_MODE_BITSIZE (MODE)) \
   > BITS_PER_WORD)	\
- ? ((CUM) + 1 & ~1)	\
+ ? (((CUM) + 1) & ~1)	\
  : (CUM))
 
 /* Return boolean indicating arg of type TYPE and mode MODE will be passed in
@@ -1055,7 +1055,6 @@ do { \
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  */
-extern enum machine_mode arc_select_cc_mode ();
 #define SELECT_CC_MODE(OP, X, Y) \
 arc_select_cc_mode (OP, X, Y)
 
@@ -1155,7 +1154,7 @@ arc_select_cc_mode (OP, X, Y)
 #define ARC_DEFAULT_DATA_SECTION	".data"
 #define ARC_DEFAULT_RODATA_SECTION	".rodata"
 
-extern char *arc_text_section,*arc_data_section,*arc_rodata_section;
+extern const char *arc_text_section, *arc_data_section, *arc_rodata_section;
 
 /* initfini.c uses this in an asm.  */
 #if defined (CRT_INIT) || defined (CRT_FINI)
@@ -1257,7 +1256,6 @@ do {							\
 /* Control the assembler format that we output.  */
 
 /* Output at beginning of assembler file.  */
-extern void arc_asm_file_start ();
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE) arc_asm_file_start (FILE)
 
@@ -1365,7 +1363,7 @@ do {				\
 /* On the ARC we want to have libgcc's for multiple cpus in one binary.
    We can't use `assemble_name' here as that will call ASM_OUTPUT_LABELREF
    and we'll get another suffix added on if -mmangle-cpu.  */
-extern char *arc_mangle_cpu;
+extern const char *arc_mangle_cpu;
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, SYMREF) \
 do {							\
   if (TARGET_MANGLE_CPU_LIBGCC)				\
@@ -1384,7 +1382,7 @@ do {							\
 /* We work around a dwarfout.c deficiency by watching for labels from it and
    not adding the '_' prefix nor the cpu suffix.  There is a comment in
    dwarfout.c that says it should be using ASM_OUTPUT_INTERNAL_LABEL.  */
-extern char *arc_mangle_cpu;
+extern const char *arc_mangle_cpu;
 #define ASM_OUTPUT_LABELREF(FILE, NAME) \
 do {							\
   if ((NAME)[0] == '.' && (NAME)[1] == 'L')		\
@@ -1519,8 +1517,12 @@ do { if ((LOG) != 0) fprintf (FILE, "\t.align %d\n", 1 << (LOG)); } while (0)
 /* Debugging information.  */
 
 /* Generate DBX and DWARF debugging information.  */
+#ifndef DBX_DEBUGGING_INFO
 #define DBX_DEBUGGING_INFO
+#endif
+#ifndef DWARF_DEBUGGING_INFO
 #define DWARF_DEBUGGING_INFO
+#endif
 
 /* Prefer STABS (for now).  */
 #undef PREFERRED_DEBUGGING_TYPE
@@ -1593,19 +1595,16 @@ do { if ((LOG) != 0) fprintf (FILE, "\t.align %d\n", 1 << (LOG)); } while (0)
 /* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
    is a valid machine specific attribute for DECL.
    The attributes in ATTRIBUTES have previously been assigned to TYPE.  */
-extern int arc_valid_machine_attribute ();
 #define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
 arc_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 
 /* A C expression that returns zero if the attributes on TYPE1 and TYPE2 are
    incompatible, one if they are compatible, and two if they are
    nearly compatible (which causes a warning to be generated).  */
-extern int arc_comp_type_attributes ();
 #define COMP_TYPE_ATTRIBUTES(TYPE1, TYPE2) \
 arc_comp_type_attributes (TYPE1, TYPE2)
 
 /* Give newly defined TYPE some default attributes.  */
-extern void arc_set_default_type_attributes ();
 #define SET_DEFAULT_TYPE_ATTRIBUTES(TYPE) \
 arc_set_default_type_attributes (TYPE)
 
@@ -1618,12 +1617,6 @@ arc_set_default_type_attributes (TYPE)
    since it hasn't been defined!  */
 extern struct rtx_def *arc_compare_op0, *arc_compare_op1;
 
-/* Define the function that build the compare insn for scc and bcc.  */
-extern struct rtx_def *gen_compare_reg ();
-
-/* Declarations for various fns used in the .md file.  */
-extern char *output_shift ();
-
 /* ARC function types.   */
 enum arc_function_type {
   ARC_FUNCTION_UNKNOWN, ARC_FUNCTION_NORMAL,
@@ -1634,7 +1627,6 @@ enum arc_function_type {
 #define ARC_INTERRUPT_P(TYPE) \
 ((TYPE) == ARC_FUNCTION_ILINK1 || (TYPE) == ARC_FUNCTION_ILINK2)
 /* Compute the type of a function from its DECL.  */
-enum arc_function_type arc_compute_function_type ();
 
 
 /* Implement `va_start' for varargs and stdarg.  */

@@ -1,5 +1,5 @@
 ;; Machine description of the Argonaut ARC cpu for GNU C compiler
-;; Copyright (C) 1994, 1997, 1998, 1999 Free Software Foundation, Inc.
+;; Copyright (C) 1994, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -290,6 +290,8 @@
 	  return \"ld%V1 %0,%1\;ld%V1 %R0,%R1\";
     case 3 :
       return \"st%V0 %1,%0\;st%V0 %R1,%R0\";
+    default:
+      abort();
     }
 }"
   [(set_attr "type" "move,move,load,store")
@@ -393,6 +395,8 @@
 	return \"ld%V1 %0,%1\;ld%V1 %R0,%R1\";
     case 3 :
       return \"st%V0 %1,%0\;st%V0 %R1,%R0\";
+    default:
+      abort();
     }
 }"
   [(set_attr "type" "move,move,load,store")
