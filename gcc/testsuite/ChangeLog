@@ -1,3 +1,10 @@
+2005-03-31  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/19203, DR 214
+	* g++.dg/parse/ambig3.C: Not ambiguous.
+	* g++.dg/template/spec20.C: New.
+	* g++.dg/template/spec21.C: New.
+
 2005-03-31  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/20045
