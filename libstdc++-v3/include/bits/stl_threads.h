@@ -40,10 +40,10 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-// WARNING: This is an internal header file, included by other C++
-// standard library headers.  You should not attempt to use this header
-// file directly.
-// Stl_config.h should be included before this file.
+/** @file stl_threads.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
 
 #ifndef __SGI_STL_INTERNAL_THREADS_H
 #define __SGI_STL_INTERNAL_THREADS_H

@@ -31,9 +31,12 @@
 // ISO C++ 14882: 22.2.1.5 Template class codecvt
 //
 
-// Warning: this file is not meant for user inclusion.  Use <locale>.
-
 // Written by Benjamin Kosnik <bkoz@cygnus.com>
+
+/** @file codecvt.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
 
 #ifndef _CPP_BITS_CODECVT_H
 #define _CPP_BITS_CODECVT_H	1

@@ -53,6 +53,11 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
+/** @file std_map.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _CPP_MAP
 #define _CPP_MAP 1
 

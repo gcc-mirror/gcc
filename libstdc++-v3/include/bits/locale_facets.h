@@ -31,7 +31,10 @@
 // ISO C++ 14882: 22.1  Locales
 //
 
-// Warning: this file is not meant for user inclusion.  Use <locale>.
+/** @file locale_facets.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
 
 #ifndef _CPP_BITS_LOCFACETS_H
 #define _CPP_BITS_LOCFACETS_H	1

@@ -1,3 +1,57 @@
+2001-11-02  Phil Edwards  <pme@gcc.gnu.org>
+
+	* config/io/c_io_stdio.h:  Correct grammar in comments.
+	* docs/doxygen/Intro.3:  Expand "top-level" man page.
+	* docs/doxygen/doxygroups.cc:  New module definitions (comments).
+	* docs/doxygen/mainpage.doxy:  Tweaks.
+	* docs/doxygen/run_doxygen:  Update Doxygen version, massage man pages.
+
+	Add @file hooks so that headers are considered to be documented.
+	* include/bits/basic_ios.h, include/bits/basic_file.h,
+	include/bits/basic_string.h, include/bits/boost_concept_check.h,
+	include/bits/char_traits.h, include/bits/codecvt.h,
+	include/bits/concept_check.h, include/bits/cpp_type_traits.h,
+	include/bits/fpos.h, include/bits/gslice.h, include/bits/gslice_array.h,
+	include/bits/indirect_array.h, include/bits/ios_base.h,
+	include/bits/locale_facets.h, include/bits/localefwd.h,
+	include/bits/mask_array.h, include/bits/pthread_allocimpl.h,
+	include/bits/slice.h, include/bits/slice_array.h,
+	include/bits/std_algorithm.h, include/bits/std_bitset.h,
+	include/bits/std_complex.h, include/bits/std_deque.h,
+	include/bits/std_fstream.h, include/bits/std_functional.h,
+	include/bits/std_iomanip.h, include/bits/std_ios.h,
+	include/bits/std_iosfwd.h, include/bits/std_iostream.h,
+	include/bits/std_istream.h, include/bits/std_iterator.h,
+	include/bits/std_limits.h, include/bits/std_list.h,
+	include/bits/std_locale.h, include/bits/std_map.h,
+	include/bits/std_memory.h, include/bits/std_numeric.h,
+	include/bits/std_ostream.h, include/bits/std_queue.h,
+	include/bits/std_set.h, include/bits/std_sstream.h,
+	include/bits/std_stack.h, include/bits/std_streambuf.h,
+	include/bits/std_string.h, include/bits/std_utility.h,
+	include/bits/std_valarray.h, include/bits/std_vector.h,
+	include/bits/stl_algo.h, include/bits/stl_alloc.h,
+	include/bits/stl_bvector.h, include/bits/stl_construct.h,
+	include/bits/stl_deque.h, include/bits/stl_heap.h,
+	include/bits/stl_iterator.h, include/bits/stl_iterator_base_funcs.h,
+	include/bits/stl_iterator_base_types.h, include/bits/stl_list.h,
+	include/bits/stl_map.h, include/bits/stl_multimap.h,
+	include/bits/stl_multiset.h, include/bits/stl_numeric.h,
+	include/bits/stl_pair.h, include/bits/stl_pthread_alloc.h,
+	include/bits/stl_queue.h, include/bits/stl_raw_storage_iter.h,
+	include/bits/stl_relops.h, include/bits/stl_set.h,
+	include/bits/stl_stack.h, include/bits/stl_tempbuf.h,
+	include/bits/stl_threads.h, include/bits/stl_tree.h,
+	include/bits/stl_uninitialized.h, include/bits/stl_vector.h,
+	include/bits/stream_iterator.h, include/bits/streambuf_iterator.h,
+	include/bits/stringfwd.h, include/bits/type_traits.h,
+	include/bits/valarray_array.h, include/bits/valarray_meta.h:
+	Add hooks, tweak comments only.
+
+	* include/bits/stl_algobase.h (swap, min, iter_swap):  Also
+	document these functions.
+	* include/bits/stl_function.h:  Tweak link comments.
+
 2001-11-01  Paolo Carlini  <pcarlini@unitus.it>
 	    Benjamin Kosnik  <bkoz@redhat.com>
 	

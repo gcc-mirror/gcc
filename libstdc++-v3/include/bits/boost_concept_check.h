@@ -7,6 +7,12 @@
 //
 
 // GCC Note:  based on version 1.12.0 of the Boost library.
+
+/** @file boost_concept_check.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _GLIBCPP_BOOST_CONCEPT_CHECK
 #define _GLIBCPP_BOOST_CONCEPT_CHECK 1
 

@@ -31,6 +31,11 @@
 // ISO C++ 14882: 27.3  Standard iostream objects
 //
 
+/** @file std_iostream.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _CPP_IOSTREAM
 #define _CPP_IOSTREAM	1
 

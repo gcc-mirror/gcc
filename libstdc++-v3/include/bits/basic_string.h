@@ -31,6 +31,11 @@
 // ISO C++ 14882: 21 Strings library
 //
 
+/** @file basic_string.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _CPP_BITS_STRING_H
 #define _CPP_BITS_STRING_H	1
 

@@ -31,6 +31,11 @@
 // ISO C++ 14882: 21 Strings library
 //
 
+/** @file stringfwd.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _CPP_BITS_STRINGFWD_H
 #define _CPP_BITS_STRINGFWD_H	1
 

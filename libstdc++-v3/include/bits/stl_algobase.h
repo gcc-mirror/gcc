@@ -53,10 +53,10 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-/* NOTE: This is an internal header file, included by other STL headers.
- *   You should not attempt to use it directly.
+/** @file stl_algobase.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
  */
-
 
 #ifndef __SGI_STL_INTERNAL_ALGOBASE_H
 #define __SGI_STL_INTERNAL_ALGOBASE_H
@@ -81,6 +81,15 @@ namespace std
 
   // swap and iter_swap
 
+  /**
+   *  @brief Swaps the contents of two iterators.
+   *  @param  a  An iterator.
+   *  @param  b  Another iterator.
+   *  @return   Nothing.
+   *
+   *  This function swaps the values pointed to by two iterators, not the
+   *  iterators themselves.
+  */
   template<typename _ForwardIter1, typename _ForwardIter2>
     inline void
     iter_swap(_ForwardIter1 __a, _ForwardIter2 __b)
@@ -99,6 +108,15 @@ namespace std
       *__b = __tmp;
     }
 
+  /**
+   *  @brief Swaps two values.
+   *  @param  a  A thing of arbitrary type.
+   *  @param  b  Another thing of arbitrary type.
+   *  @return   Nothing.
+   *
+   *  This is the simple classic generic implementation.  It will work on
+   *  any type which has a copy constructor and an assignment operator.
+  */
   template<typename _Tp>
     inline void
     swap(_Tp& __a, _Tp& __b)
@@ -117,6 +135,16 @@ namespace std
   #undef min
   #undef max
 
+  /**
+   *  @brief This does what you think it does.
+   *  @param  a  A thing of arbitrary type.
+   *  @param  b  Another thing of arbitrary type.
+   *  @return   The lesser of the parameters.
+   *
+   *  This is the simple classic generic implementation.  It will work on
+   *  temporary expressions, since they are only evaluated once, unlike a
+   *  preprocessor macro.
+  */
   template<typename _Tp>
     inline const _Tp&
     min(const _Tp& __a, const _Tp& __b)

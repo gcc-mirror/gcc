@@ -40,6 +40,11 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
+/** @file pthread_allocimpl.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _CPP_BITS_PTHREAD_ALLOCIMPL_H
 #define _CPP_BITS_PTHREAD_ALLOCIMPL_H 1
 

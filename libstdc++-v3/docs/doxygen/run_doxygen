@@ -8,7 +8,7 @@
 
 
 # We can check now that the version of doxygen is >= this variable.
-DOXYVER=1.2.6
+DOXYVER=1.2.10
 doxygen=
 
 find_doxygen() {
@@ -126,14 +126,11 @@ chmod u+w $outdir
 # man pages for doxygen modules need to be renamed (or deleted).  And the
 # generated #include lines need to be changed from the internal names to the
 # standard ones (e.g., "#include <stl_tempbuf.h>" -> "#include <memory>").
-#
-# File names with embedded spaces (EVIL!) need to be....?  renamed or removed?
 cd $outdir/man/man3 && {
 echo :: Fixing up the man pages...
 
-# requires GNU tools
-find . -name "* *" -print0 | xargs -0 rm
-rm *.h.3
+# File names with embedded spaces (EVIL!) need to be....?  renamed or removed?
+find . -name "* *" -print0 | xargs -0 rm        # requires GNU tools
 
 # can leave SGIextensions.3 alone, it's an okay name
 mv s20_3_1_base.3           Intro_functors.3
@@ -144,6 +141,11 @@ mv s20_3_5_negators.3       Negation_functors.3
 mv s20_3_6_binder.3         Binder_functors.3
 mv s20_3_7_adaptors.3       Func_ptr_functors.3
 mv s20_3_8_memadaptors.3    Member_ptr_functors.3
+mv std.3                    Namespace_Std.3
+
+# man pages are for functions/types/other entities, not source files directly
+find . -name "[a-z]*" -a ! -name "std_*" -print | xargs rm
+rm -f *.h.3 *config* *.cc.3 *.tcc.3
 
 # Standardize the displayed header names.  If anyone who knows perl cares
 # enough to rewrite all this, feel free.  This only gets run once a century,

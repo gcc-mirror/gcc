@@ -35,6 +35,11 @@
 // 18.2.1
 //
 
+/** @file std_limits.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _CPP_NUMERIC_LIMITS
 #define _CPP_NUMERIC_LIMITS 1
 

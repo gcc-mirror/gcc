@@ -38,7 +38,7 @@
 
 namespace std 
 {
-// from fpos.h
+// for fpos.h
   typedef long  	streamoff;
   typedef ptrdiff_t	streamsize; // Signed integral type
 #if _GLIBCPP_USE_WCHAR_T
@@ -48,11 +48,11 @@ namespace std
 
   typedef __gthread_mutex_t __c_lock;
 
-// from basic_file.h
+// for basic_file.h
 #define _GLIBCPP_BASIC_FILE_ENCAPSULATION 1
   typedef FILE __c_file_type;
 
-// from ios_base.h
+// for ios_base.h
   struct __ios_flags
   {
     typedef short __int_type;
