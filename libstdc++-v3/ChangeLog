@@ -1,3 +1,25 @@
+2004-01-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/performance/ifstream_extract_float.cc: New.
+	* testsuite/performance/ofstream_insert_float.cc: Float generation
+	matches above.
+
+	* 20_util/auto_ptr.cc, auto_ptr_neg.cc: Break into...
+	* 20_util/auto_ptr/1.cc: ...this.
+	* 20_util/auto_ptr/2.cc: Same.
+	* 20_util/auto_ptr/3.cc: Same.
+	* 20_util/auto_ptr/3946.cc: Same.
+	* 20_util/auto_ptr/4.cc: Same.
+	* 20_util/auto_ptr/5.cc: Same.
+	* 20_util/auto_ptr/6.cc: Same.
+	* 20_util/auto_ptr/7.cc: Same.
+	* 20_util/auto_ptr/assign_neg.cc
+	* 20_util/pairs.cc: Break into...
+	* 20_util/pair/1.cc: ...this.
+	* 20_util/pair/2.cc: Same.
+	* 20_util/pair/3.cc: Same.
+	* 20_util/pair/4.cc: Same.
+
 2004-01-13  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (num_get::do_get(void*&)):

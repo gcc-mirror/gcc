@@ -1,0 +1,91 @@
+// Copyright (C) 2000, 2002, 2003, 2004 Free Software Foundation
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+// USA.
+
+// 20.4.5 Template class auto_ptr [lib.auto.ptr]
+
+#include <memory>
+#include <testsuite_hooks.h>
+
+struct A
+{
+  A() { ++ctor_count; }
+  virtual ~A() { ++dtor_count; }
+  static long ctor_count;
+  static long dtor_count;
+};
+long A::ctor_count = 0;
+long A::dtor_count = 0;
+
+struct B : A
+{
+  B() { ++ctor_count; }
+  virtual ~B() { ++dtor_count; }
+  static long ctor_count;
+  static long dtor_count;
+};
+long B::ctor_count = 0;
+long B::dtor_count = 0;
+
+
+struct reset_count_struct
+{
+  ~reset_count_struct()
+  {
+    A::ctor_count = 0;
+    A::dtor_count = 0;
+    B::ctor_count = 0;
+    B::dtor_count = 0;
+  }
+};
+
+// 20.4.5.3 auto_ptr conversions [lib.auto.ptr.conv]
+
+// Parameters and return values
+template <typename T>
+static std::auto_ptr<T> source()
+{
+  return std::auto_ptr<T>(new T);
+}
+
+template <typename T>
+static void drain(std::auto_ptr<T>)
+{}
+
+int
+test07()
+{
+  bool test __attribute__((unused)) = true;
+  reset_count_struct __attribute__((unused)) reset;
+
+  drain(source<A>());
+  // The resolution of core issue 84, now a DR, breaks this call.
+  // drain<A>(source<B>());
+  drain(source<B>());
+  VERIFY( A::ctor_count == 2 );
+  VERIFY( A::dtor_count == 2 );
+  VERIFY( B::ctor_count == 1 );
+  VERIFY( B::dtor_count == 1 );
+  return 0;
+}
+
+int 
+main()
+{
+  test07();
+  return 0;
+}
