@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  MIPS R4000 version with
    GOFAST floating point library.
-   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -39,6 +39,10 @@ Boston, MA 02111-1307, USA.  */
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 #endif
 
+/* US Software GOFAST library support.  */
+#include "gofast.h"
+#define INIT_SUBTARGET_OPTABS INIT_GOFAST_OPTABS
+
 #include "mips/mips.h"
 
 #undef CPP_PREDEFINES
@@ -52,10 +56,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Use memcpy, et. al., rather than bcopy.  */
 #define TARGET_MEM_FUNCTIONS
-
-/* US Software GOFAST library support.  */
-#include "gofast.h"
-#define INIT_TARGET_OPTABS INIT_GOFAST_OPTABS
 
 /* Biggest alignment supported by the object file format of this
    machine.  Use this macro to limit the alignment which can be

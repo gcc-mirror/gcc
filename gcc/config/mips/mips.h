@@ -4053,3 +4053,14 @@ while (0)
    true.  */
 
 #define DONT_ACCESS_GBLS_AFTER_EPILOGUE (TARGET_ABICALLS && mips_abi != ABI_32)
+
+#ifndef INIT_SUBTARGET_OPTABS
+#define INIT_SUBTARGET_OPTABS
+#endif
+
+#define INIT_TARGET_OPTABS						\
+do									\
+  {									\
+    INIT_SUBTARGET_OPTABS;						\
+  }									\
+while (0)
