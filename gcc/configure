@@ -3025,6 +3025,7 @@ build_exeext=
 host_xm_file=
 host_xmake_file=
 host_truncate_target=
+host_exeext=
 
 # Decode the host machine, then the target machine.
 # For the host machine, we save the xm_file variable as host_xm_file;
@@ -5522,6 +5523,7 @@ for machine in $build $host $target; do
 			host_truncate_target=$truncate_target
 			host_extra_gcc_objs=$extra_gcc_objs
 			host_extra_objs=$extra_host_objs
+			host_exeext=$exeext
 			pass2done=yes
 		fi
 	fi
@@ -5775,15 +5777,15 @@ fi
 
 # If we have gas in the build tree, make a link to it.
 if [ -f ../gas/Makefile ]; then
-	rm -f as; $symbolic_link ../gas/as-new as 2>/dev/null
+	rm -f as; $symbolic_link ../gas/as-new$host_exeext as$host_exeext 2>/dev/null
 fi
 
 # If we have ld in the build tree, make a link to it.
 if [ -f ../ld/Makefile ]; then
 #	if [[ x$use_collect2 = x ]]; then
-#		rm -f ld; $symbolic_link ../ld/ld-new ld 2>/dev/null
+#		rm -f ld; $symbolic_link ../ld/ld-new$host_exeext ld$host_exeext 2>/dev/null
 #	else
-		rm -f collect-ld; $symbolic_link ../ld/ld-new collect-ld 2>/dev/null
+		rm -f collect-ld; $symbolic_link ../ld/ld-new$host_exeext collect-ld$host_exeext 2>/dev/null
 #	fi
 fi
 
@@ -5964,6 +5966,7 @@ fi
 ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xmake_file" "$dep_tmake_file"
 
 # Substitute configuration variables
+
 
 
 
@@ -6243,6 +6246,7 @@ s%@gxx_include_dir@%$gxx_include_dir%g
 s%@fixincludes@%$fixincludes%g
 s%@build_install_headers_dir@%$build_install_headers_dir%g
 s%@build_exeext@%$build_exeext%g
+s%@host_exeext@%$host_exeext%g
 s%@float_format@%$float_format%g
 s%@will_use_collect2@%$will_use_collect2%g
 s%@maybe_use_collect2@%$maybe_use_collect2%g
@@ -6487,6 +6491,7 @@ version='${version}'
 local_prefix='${local_prefix}'
 build_install_headers_dir='${build_install_headers_dir}'
 build_exeext='${build_exeext}'
+host_exeext='${host_exeext}'
 out_file='${out_file}'
 gdb_needs_out_file_path='${gdb_needs_out_file_path}'
 SET_MAKE='${SET_MAKE}'

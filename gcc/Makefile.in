@@ -240,7 +240,8 @@ infodir = @infodir@
 # Extension (if any) to put in installed man-page filename.
 manext = .1
 objext = .o
-exeext = @build_exeext@
+exeext = @host_exeext@
+build_exeext = @build_exeext@
 
 # Directory in which to put man pages.
 mandir = @mandir@/man1
@@ -559,6 +560,7 @@ FLAGS_TO_PASS = \
 	"SHELL=$(SHELL)" \
 	"STAGE_PREFIX=@stage_prefix_set_by_configure@" \
 	"exeext=$(exeext)" \
+	"build_exeext=$(build_exeext)" \
 	"objext=$(objext)" \
 	"exec_prefix=$(exec_prefix)" \
 	"prefix=$(prefix)" \
@@ -611,12 +613,13 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  stamp-flags stamp-config stamp-codes stamp-mlib \
  stamp-output stamp-recog stamp-emit stamp-extract stamp-peep \
  stamp-attr stamp-attrtab stamp-opinit stamp-proto stamp-crt stamp-crtS stamp-crt0 \
- genemit$(exeext) genoutput$(exeext) genrecog$(exeext) genextract$(exeext) \
- genflags$(exeext) gencodes$(exeext) genconfig$(exeext) genpeep$(exeext) \
- genattrtab$(exeext) genattr$(exeext) genopinit$(exeext) \
+ genemit$(build_exeext) genoutput$(build_exeext) genrecog$(build_exeext) \
+ genextract$(build_exeext) genflags$(build_exeext) gencodes$(build_exeext) \
+ genconfig$(build_exeext) genpeep$(build_exeext) genattrtab$(build_exeext) \
+ genattr$(build_exeext) genopinit$(build_exeext) \
  $(BC_ALL) \
  stamp-bcarity stamp-bcopcode stamp-bcopname \
- bi-arity$(exeext) bi-opcode$(exeext) bi-opname$(exeext) \
+ bi-arity$(build_exeext) bi-opcode$(build_exeext) bi-opname$(build_exeext) \
  xgcc$(exeext) cc1$(exeext) cpp$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  $(CCCP)$(exeext) cc1obj$(exeext) enquire$(exeext) \
