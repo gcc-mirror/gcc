@@ -1,6 +1,7 @@
+#include "private/gc_priv.h"
+
 #if defined(GC_WIN32_THREADS) 
 
-#include "private/gc_priv.h"
 #include <windows.h>
 
 #ifdef CYGWIN32
