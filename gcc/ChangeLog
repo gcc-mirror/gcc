@@ -1,3 +1,9 @@
+2004-07-01  Roger Sayle  <roger@eyesopen.com>
+
+	* simplify-rtx.c (simplify_binary_operation) <PLUS, MINUS>: Use
+	rtx_cost instead of "had_mult" to determine whether the transformed
+	expression is cheaper than the original.
+
 2004-07-01  Jerry Quinn  <jlquinn@optonline.net>
 
 	* alias.c (get_alias_set, canon_rtx, get_addr,
