@@ -9,6 +9,8 @@
 
 2000-07-31  Kazu Hirata  <kazu@hxi.com>
 
+	* local-alloc.c: Fix formatting.
+
 	* h8300.c (get_shift_alg): Remove the variable alg.
 	(emit_a_shift): Rearrange code to improve readability.
 
