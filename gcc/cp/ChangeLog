@@ -1,3 +1,8 @@
+1999-05-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (build_expr_from_tree): Handle COMPONENT_REFs that
+	indicate a reference to a field that is a qualified name.
+
 1999-05-16  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (finish_objects): Don't use .?tors.* if we don't have
