@@ -752,10 +752,10 @@ struct assertion_hashnode {
 typedef struct assertion_hashnode ASSERTION_HASHNODE;
 
 /* Some definitions for the hash table.  The hash function MUST be
-   computed as shown in hashf () below.  That is because the rescan
+   computed as shown in hashf below.  That is because the rescan
    loop computes the hash value `on the fly' for most tokens,
    in order to avoid the overhead of a lot of procedure calls to
-   the hashf () function.  Hashf () only exists for the sake of
+   the hashf function.  hashf only exists for the sake of
    politeness, for use when speed isn't so important. */
 
 #define ASSERTION_HASHSIZE 37
@@ -2223,6 +2223,7 @@ do { ip = &instack[indepth];		\
 
   obp = op->bufp;
   RECACHE;
+
   beg_of_line = ibp;
 
   /* Our caller must always put a null after the end of
@@ -2270,13 +2271,14 @@ do { ip = &instack[indepth];		\
 	}
       }
 
-      /* If this is expanding a macro definition, don't recognize
-	 preprocessor directives.  */
-      if (ip->macro != 0)
+      /* Recognize preprocessor directives only when reading
+	 directly from a file.  */
+      if (ip->fname == 0)
 	goto randomchar;
       if (ident_length)
 	goto specialchar;
 
+      
       /* # keyword: a # must be first nonblank char on the line */
       if (beg_of_line == 0)
 	goto randomchar;
