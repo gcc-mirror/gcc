@@ -476,7 +476,7 @@ mf_decl_cache_locals (void)
        ! tsi_end_p (tsi);
        tsi_next (&tsi))
     insert_edge_copies (tsi_stmt (tsi), ENTRY_BLOCK_PTR);
-  bsi_commit_edge_inserts (NULL);
+  bsi_commit_edge_inserts ();
 }
 
 

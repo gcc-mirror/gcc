@@ -1109,7 +1109,7 @@ branch_prob (void)
 
       /* Commit changes done by instrumentation.  */
       if (ir_type ())
-	bsi_commit_edge_inserts ((int *)NULL);
+	bsi_commit_edge_inserts ();
       else
 	{
           commit_edge_insertions_watch_calls ();
