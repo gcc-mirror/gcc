@@ -43,6 +43,62 @@ enum dr_alignment_support {
 };
 
 /*-----------------------------------------------------------------*/
+/* Info on vectorized loops.                                       */
+/*-----------------------------------------------------------------*/
+typedef struct _loop_vec_info {
+
+  /* The loop to which this info struct refers to.  */
+  struct loop *loop;
+
+  /* The loop basic blocks.  */
+  basic_block *bbs;
+
+  /* The loop exit_condition.  */
+  tree exit_cond;
+
+  /* Number of iterations.  */
+  tree num_iters;
+
+  /* Is the loop vectorizable? */
+  bool vectorizable;
+
+  /* Unrolling factor  */
+  int vectorization_factor;
+
+  /* Unknown DRs according to which loop was peeled.  */
+  struct data_reference *unaligned_dr;
+
+  /* If true, loop is peeled.
+   unaligned_drs show in this case DRs used for peeling.  */
+  bool do_peeling_for_alignment;
+
+  /* All data references in the loop that are being written to.  */
+  varray_type data_ref_writes;
+
+  /* All data references in the loop that are being read from.  */
+  varray_type data_ref_reads;
+
+} *loop_vec_info;
+
+/* Access Functions.  */
+#define LOOP_VINFO_LOOP(L)           (L)->loop
+#define LOOP_VINFO_BBS(L)            (L)->bbs
+#define LOOP_VINFO_EXIT_COND(L)      (L)->exit_cond
+#define LOOP_VINFO_NITERS(L)         (L)->num_iters
+#define LOOP_VINFO_VECTORIZABLE_P(L) (L)->vectorizable
+#define LOOP_VINFO_VECT_FACTOR(L)    (L)->vectorization_factor
+#define LOOP_VINFO_DATAREF_WRITES(L) (L)->data_ref_writes
+#define LOOP_VINFO_DATAREF_READS(L)  (L)->data_ref_reads
+#define LOOP_VINFO_INT_NITERS(L) (TREE_INT_CST_LOW ((L)->num_iters))
+#define LOOP_DO_PEELING_FOR_ALIGNMENT(L) (L)->do_peeling_for_alignment
+#define LOOP_VINFO_UNALIGNED_DR(L) (L)->unaligned_dr
+
+
+#define LOOP_VINFO_NITERS_KNOWN_P(L)                     \
+(host_integerp ((L)->num_iters,0)                        \
+&& TREE_INT_CST_LOW ((L)->num_iters) > 0)
+
+/*-----------------------------------------------------------------*/
 /* Info on vectorized defs.                                        */
 /*-----------------------------------------------------------------*/
 enum stmt_vec_info_type {
@@ -60,8 +116,8 @@ typedef struct _stmt_vec_info {
   /* The stmt to which this info struct refers to.  */
   tree stmt;
 
-  /* The loop with respect to which STMT is vectorized.  */
-  struct loop *loop;
+  /* The loop_vec_info with respect to which STMT is vectorized.  */
+  loop_vec_info loop_vinfo;
 
   /* Not all stmts in the loop need to be vectorized. e.g, the incrementation
      of the loop induction variable and computation of array indexes. relevant
@@ -114,7 +170,7 @@ typedef struct _stmt_vec_info {
 /* Access Functions.  */
 #define STMT_VINFO_TYPE(S)                (S)->type
 #define STMT_VINFO_STMT(S)                (S)->stmt
-#define STMT_VINFO_LOOP(S)                (S)->loop
+#define STMT_VINFO_LOOP_VINFO(S)          (S)->loop_vinfo
 #define STMT_VINFO_RELEVANT_P(S)          (S)->relevant
 #define STMT_VINFO_VECTYPE(S)             (S)->vectype
 #define STMT_VINFO_VEC_STMT(S)            (S)->vectorized_stmt
@@ -167,61 +223,6 @@ unknown_alignment_for_access_p (struct data_reference *data_ref_info)
 
 
 /*-----------------------------------------------------------------*/
-/* Info on vectorized loops.                                       */
-/*-----------------------------------------------------------------*/
-typedef struct _loop_vec_info {
-
-  /* The loop to which this info struct refers to.  */
-  struct loop *loop;
-
-  /* The loop basic blocks.  */
-  basic_block *bbs;
-
-  /* The loop exit_condition.  */
-  tree exit_cond;
-
-  /* Number of iterations.  */
-  tree num_iters;
-
-  /* Is the loop vectorizable? */
-  bool vectorizable;
-
-  /* Unrolling factor  */
-  int vectorization_factor;
-
-  /* Unknown DRs according to which loop was peeled.  */
-  struct data_reference *unaligned_dr;
-
-  /* If true, loop is peeled.
-   unaligned_drs show in this case DRs used for peeling.  */
-  bool do_peeling_for_alignment;
-
-  /* All data references in the loop that are being written to.  */
-  varray_type data_ref_writes;
-
-  /* All data references in the loop that are being read from.  */
-  varray_type data_ref_reads;
-} *loop_vec_info;
-
-/* Access Functions.  */
-#define LOOP_VINFO_LOOP(L)           (L)->loop
-#define LOOP_VINFO_BBS(L)            (L)->bbs
-#define LOOP_VINFO_EXIT_COND(L)      (L)->exit_cond
-#define LOOP_VINFO_NITERS(L)         (L)->num_iters
-#define LOOP_VINFO_VECTORIZABLE_P(L) (L)->vectorizable
-#define LOOP_VINFO_VECT_FACTOR(L)    (L)->vectorization_factor
-#define LOOP_VINFO_DATAREF_WRITES(L) (L)->data_ref_writes
-#define LOOP_VINFO_DATAREF_READS(L)  (L)->data_ref_reads
-#define LOOP_VINFO_INT_NITERS(L) (TREE_INT_CST_LOW ((L)->num_iters))       
-#define LOOP_DO_PEELING_FOR_ALIGNMENT(L) (L)->do_peeling_for_alignment
-#define LOOP_VINFO_UNALIGNED_DR(L)       (L)->unaligned_dr
-  
-
-#define LOOP_VINFO_NITERS_KNOWN_P(L)                     \
-(host_integerp ((L)->num_iters,0)                        \
-&& TREE_INT_CST_LOW ((L)->num_iters) > 0)      
-
-/*-----------------------------------------------------------------*/
 /* Function prototypes.                                            */
 /*-----------------------------------------------------------------*/
 
@@ -231,6 +232,6 @@ extern void vectorize_loops (struct loops *);
 /* creation and deletion of loop and stmt info structs.  */
 extern loop_vec_info new_loop_vec_info (struct loop *loop);
 extern void destroy_loop_vec_info (loop_vec_info);
-extern stmt_vec_info new_stmt_vec_info (tree stmt, struct loop *loop);
+extern stmt_vec_info new_stmt_vec_info (tree stmt, loop_vec_info);
 
 #endif  /* GCC_TREE_VECTORIZER_H  */
