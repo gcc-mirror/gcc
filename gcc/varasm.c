@@ -375,9 +375,9 @@ bss_section ()
 static void
 asm_output_bss (file, decl, name, size, rounded)
      FILE *file;
-     tree decl;
+     tree decl ATTRIBUTE_UNUSED;
      char *name;
-     int size, rounded;
+     int size ATTRIBUTE_UNUSED, rounded;
 {
   ASM_GLOBALIZE_LABEL (file, name);
   bss_section ();
@@ -1232,7 +1232,7 @@ static void
 asm_emit_uninitialised (decl, name, size, rounded)
      tree decl;
      char * name;
-     int size;
+     int size ATTRIBUTE_UNUSED;
      int rounded ATTRIBUTE_UNUSED;
 {
   enum

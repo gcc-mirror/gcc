@@ -1,3 +1,8 @@
+2000-01-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* varasm.c (asm_output_bss): Mark parameters with ATTRIBUTE_UNUSED.
+	(asm_emit_uninitialised): Likewise.
+
 2000-01-13  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* config/mips/mips.h (ISA_HAS_INT_CONDMOVE): New.
