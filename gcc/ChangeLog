@@ -1,5 +1,6 @@
 2003-09-21  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config/vax/vax-protos.h: Convert to ISO C90.
 	* config/vax/vax.c: Convert to ISO C90.
 
 2003-09-21  Graham Stott  <grahams@btinternet.com>
