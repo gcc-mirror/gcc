@@ -9,3 +9,7 @@
 /* LINK_SPEC is needed only for Sunos 4.  */
 
 #undef LINK_SPEC
+
+/* Don't default to pcc-struct-return, because gcc is the only compiler, and
+   we want to retain compatibility with older gcc versions.  */
+#define DEFAULT_PCC_STRUCT_RETURN 0
