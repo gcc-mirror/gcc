@@ -524,9 +524,23 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 int
 lang_specific_pre_link ()
 {
+  int err;
   if (main_class_name == NULL)
     return 0;
   input_filename = main_class_name;
   input_filename_length = strlen (main_class_name);
-  return do_spec (jvgenmain_spec);
+  err = do_spec (jvgenmain_spec);
+  if (err == 0)
+    {
+      /* Shift the outfiles array so the generated main comes first.
+	 This is important when linking against (non-shared) libraries,
+	 since otherwise we risk (a) nothing getting linked or
+	 (b) 'main' getting picked up from a library. */
+      int i = n_infiles;
+      const char *generated = outfiles[i];
+      while (--i >= 0)
+	outfiles[i + 1] = outfiles[i];
+      outfiles[0] = generated;
+    }
+  return err;
 }
