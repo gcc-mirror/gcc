@@ -57,14 +57,14 @@ if CANADIAN
 if NULL_TARGET
 ## In this case, gcj is found outside the build tree.  However, zip is
 ## found in the build tree.
-ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar$(EXEEXT)
+ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar
 else
 ZIP = jar
 endif
 GCJH = gcjh
 else # CANADIAN
-GCJH = $(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
-ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar$(EXEEXT)
+GCJH = $(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh
+ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar
 endif # CANADIAN
 
 ## The compiler with whatever flags we want for both -c and -C

@@ -1,3 +1,8 @@
+2002-08-30  Jeff Sturm  <jsturm@one-point.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ZIP, GCJH): Remove $(EXEEXT).
+
 2002-08-29  Tom Tromey  <tromey@redhat.com>
 
 	* java/net/JarURLConnection.java (getCertificates): New method
