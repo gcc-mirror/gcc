@@ -24,6 +24,10 @@ allocated, the remaining memory is zeroed.
 #include <sys/types.h> /* For size_t. */
 #ifdef HAVE_STRING_H
 #include <string.h>
+#else
+# ifdef HAVE_STRINGS_H
+#  include <strings.h>
+# endif
 #endif
 
 PTR
@@ -33,6 +37,5 @@ xmemdup (input, copy_size, alloc_size)
   size_t alloc_size;
 {
   PTR output = xcalloc (1, alloc_size);
-  memcpy (output, input, copy_size);
-  return output;
+  return (PTR) memcpy (output, input, copy_size);
 }
