@@ -1,3 +1,8 @@
+2003-10-09  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/lib/libstdc++.exp: Set LD_LIBRARY_PATH_64 for
+	SPARC64.
+
 2003-10-09  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/11844
