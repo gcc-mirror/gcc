@@ -1,3 +1,14 @@
+2003-11-19  Guilhem Lavaux <guilhem@kaffe.org>
+	    Jim Pick  <jim@kaffe.org>
+
+	* java/text/DecimalFormat.java (getCurrency, setCurrency): New
+	methods.
+
+2003-11-19  Guilhem Lavaux  <guilhem@kaffe.org>
+
+	* java/text/DecimalFormatSymbols.java (getCurrency,
+	setCurrency): New methods.
+
 2003-11-19  Sascha Brawer  <brawer@dandelis.ch>
 
 	* java/awt/geom/FlatteningPathIterator.java: Entirely re-written.
