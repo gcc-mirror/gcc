@@ -1,3 +1,12 @@
+2002-02-20  Tom Tromey  <tromey@redhat.com>
+
+	* config/fr30/fr30.h (DWARF_LINE_MIN_INSTR_LENGTH): Removed.
+	* config/sh/sh.h (DWARF_LINE_MIN_INSTR_LENGTH): Removed.
+	* config/pj/pj.h (DWARF_LINE_MIN_INSTR_LENGTH): Removed.
+	* config/cris/cris.h (DWARF_LINE_MIN_INSTR_LENGTH): Removed.
+	* dwarf2out.c (DWARF_LINE_MIN_INSTR_LENGTH): Define
+	unconditionally.
+
 Wed Feb 20 00:03:25 EST 2002 Alan Matsuoka <alanm@redhat.com>
 
 	* config/rs6000/rs6000.h (LEGITIMATE_OFFSET_ADDRESS_P): Look

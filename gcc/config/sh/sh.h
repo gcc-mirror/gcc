@@ -3288,8 +3288,6 @@ extern struct rtx_def *fpscr_rtx;
 #define MD_CAN_REDIRECT_BRANCH(INSN, SEQ) \
   sh_can_redirect_branch ((INSN), (SEQ))
 
-#define DWARF_LINE_MIN_INSTR_LENGTH 2
-
 #if (defined CRT_BEGIN || defined CRT_END) && ! __SHMEDIA__
 /* SH constant pool breaks the devices in crtstuff.c to control section
    in where code resides.  We have to write it as asm code.  */

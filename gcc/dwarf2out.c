@@ -3270,10 +3270,10 @@ extern int flag_traditional;
    purposes only.  Since GCC generates assembly language, we have
    no a priori knowledge of how many instruction bytes are generated
    for each source line, and therefore can use only the  DW_LNE_set_address
-   and DW_LNS_fixed_advance_pc line information commands.  */
-#ifndef DWARF_LINE_MIN_INSTR_LENGTH
-#define DWARF_LINE_MIN_INSTR_LENGTH 4
-#endif
+   and DW_LNS_fixed_advance_pc line information commands.
+   Accordingly, we define this as `1', which is "correct enough" for
+   all architectures, and don't let the target override.  */
+#define DWARF_LINE_MIN_INSTR_LENGTH 1
 
 /* Minimum line offset in a special line info. opcode.
    This value was chosen to give a reasonable range of values.  */

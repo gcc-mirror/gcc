@@ -1748,9 +1748,7 @@ call_ ## FUNC (void)						\
 
 
 /* Node: SDB and DWARF */
-
-#define DWARF_LINE_MIN_INSTR_LENGTH 2
-
+/* (no definitions) */
 
 /* Node: Cross-compilation */
 #define REAL_ARITHMETIC

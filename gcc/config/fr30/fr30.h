@@ -1356,16 +1356,6 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
   fprintf ((STREAM), "\t.p2align %d\n", (POWER))
 
 /*}}}*/ 
-/*{{{  Macros for SDB and Dwarf Output.  */ 
-
-/* Define this macro to allow references to structure, union, or enumeration
-   tags that have not yet been seen to be handled.  Some assemblers choke if
-   forward tags are used, while some require it.  */
-/* #define SDB_ALLOW_FORWARD_REFERENCES */
-
-#define DWARF_LINE_MIN_INSTR_LENGTH 2
-     
-/*}}}*/ 
 /*{{{  Miscellaneous Parameters.  */ 
 
 /* An alias for a machine mode name.  This is the machine mode that elements of
