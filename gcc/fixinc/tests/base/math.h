@@ -105,7 +105,10 @@ extern int class();
 
 
 #if defined( STRICT_ANSI_NOT_CTD_CHECK )
-#if 1||  !defined(__STRICT_ANSI__) /* not std C */
+#if 1 && \
+&& defined(mumbling) |& ( !defined(__STRICT_ANSI__)) \
+(  !defined(__STRICT_ANSI__) && !defined(_XOPEN_SOURCE) \
+||  !defined(__STRICT_ANSI__) ) /* not std C */
 int foo;
 #endif
 #endif  /* STRICT_ANSI_NOT_CTD_CHECK */

@@ -3951,7 +3951,7 @@ tSCC zStrict_Ansi_NotName[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zStrict_Ansi_NotSelect0[] =
-       "^([ \t]*#[ \t]*if.*)(!__STDC__|__STDC__[ \t]*==[ \t]*0|__STDC__[ \t]*!=[ \t]*1|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0)(.*)";
+       "^([ \t]*#[ \t]*if.*)(!__STDC__|__STDC__[ \t]*==[ \t]*0|__STDC__[ \t]*!=[ \t]*1|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0)";
 
 /*
  *  perform the C function call test
@@ -3968,7 +3968,7 @@ static tTestDesc aStrict_Ansi_NotTests[] = {
  */
 static const char* apzStrict_Ansi_NotPatch[] = {
     "format",
-    "%1 !defined(__STRICT_ANSI__)%3",
+    "%1 !defined(__STRICT_ANSI__)",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -3982,7 +3982,7 @@ tSCC zStrict_Ansi_Not_CtdName[] =
  *  File name selection pattern
  */
 tSCC zStrict_Ansi_Not_CtdList[] =
-  "|math.h|limits.h|stdio.h|signal.h|stdlib.h|time.h|";
+  "|math.h|limits.h|stdio.h|signal.h|stdlib.h|sys/signal.h|time.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3992,7 +3992,7 @@ tSCC zStrict_Ansi_Not_CtdList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zStrict_Ansi_Not_CtdSelect0[] =
-       "^([ \t]*[|&][|&][ \t(]*)(__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0)(.*)";
+       "^([ \t]*(\\(|&&|\\|\\|)([ \t(]*!*[ \t]*defined\\([a-zA-Z_0-9]+\\)[ \t]*[|&][|&])*[ \t(]*)(__STDC__[ \t]*(|-[ \t]*0[ \t]*)==[ \t]*0)";
 
 /*
  *  perform the C function call test
@@ -4009,7 +4009,7 @@ static tTestDesc aStrict_Ansi_Not_CtdTests[] = {
  */
 static const char* apzStrict_Ansi_Not_CtdPatch[] = {
     "format",
-    "%1 !defined(__STRICT_ANSI__)%3",
+    "%1 !defined(__STRICT_ANSI__)",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -4032,7 +4032,7 @@ tSCC zStrict_Ansi_OnlyName[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zStrict_Ansi_OnlySelect0[] =
-       "^([ \t]*#[ \t]*if.*)(__STDC__[ \t]*!=[ \t]*0|__STDC__[ \t]*==[ \t]*1|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*1|__STDC__[ \t]*-[ \t]*0[ \t]*!=[ \t]*0)(.*)";
+       "^([ \t]*#[ \t]*if.*)(__STDC__[ \t]*!=[ \t]*0|__STDC__[ \t]*==[ \t]*1|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*1|__STDC__[ \t]*-[ \t]*0[ \t]*!=[ \t]*0)";
 
 /*
  *  perform the C function call test
@@ -4049,7 +4049,7 @@ static tTestDesc aStrict_Ansi_OnlyTests[] = {
  */
 static const char* apzStrict_Ansi_OnlyPatch[] = {
     "format",
-    "%1 defined(__STRICT_ANSI__)%3",
+    "%1 defined(__STRICT_ANSI__)",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *

@@ -14,7 +14,7 @@ echo constructing ${target} for $machine to run on $build
 fixincludes="${machine}"
 
 # Choose one or two-process fix methodology.  Systems that cannot handle
-# bi-directional pipes must use the twoprocess method.
+# bi-directional pipes must use the two process method.
 #
 case $build in
 	i?86-*-msdosdjgpp* | \
@@ -35,55 +35,66 @@ esac
 
 # Check for special fix rules for particular targets
 case $machine in
-	*-*-sysv4* )
-		fixincludes=fixinc.svr4
-		;;
+    i?86-*-sysv4.2uw2* )
+        ;;
 
-	i?86-*-interix* | \
-	alpha-*-interix*)
-		fixincludes=fixinc.interix
-		;;
+    *-*-sysv4* )
+        fixincludes=fixinc.svr4
+        ;;
 
-	i?86-*-openbsd*)
-		fixincludes=fixinc.wrap
-		;;
+    i?86-*-interix* | \
+    alpha-*-interix*)
+        fixincludes=fixinc.interix
+        ;;
 
-	alpha*-*-winnt* | \
-	i?86-*-winnt3*)
-		fixincludes=fixinc.winnt
-		;;
+    i?86-*-openbsd*)
+        fixincludes=fixinc.wrap
+        ;;
 
-	i?86-sequent-ptx* | i?86-sequent-sysv[34]*)
-		fixincludes=fixinc.ptx
-		;;
+    alpha*-*-winnt* | \
+    i?86-*-winnt3*)
+        fixincludes=fixinc.winnt
+        ;;
 
-	alpha*-dec-vms* | \
-	arm-semi-aout | armel-semi-aout | \
-	arm-semi-aof | armel-semi-aof | \
-	c*-convex-* | \
-	hppa1.1-*-osf* | \
-	hppa1.0-*-osf* | \
-	hppa1.1-*-bsd* | \
-	hppa1.0-*-bsd* | \
-	hppa*-*-lites* | \
-	i?86-moss-msdos* | i?86-*-moss* | \
-	i?86-*-osf1* | \
-	i?86-*-win32 | \
-	i?86-*-pe | i?86-*-cygwin* | \
-	i?86-*-mingw32* | \
-	i?86-*-uwin* | \
-	mips-sgi-irix5cross64 | \
-	powerpc-*-eabiaix* | \
-	powerpc-*-eabisim* | \
-	powerpc-*-eabi*    | \
-	powerpc-*-rtems*   | \
-	powerpcle-*-eabisim* | \
-	powerpcle-*-eabi*  | \
-        powerpcle-*-winnt* | \
-	powerpcle-*-pe | powerpcle-*-cygwin* | \
-	thumb-*-coff* | thumbel-*-coff* )
-		fixincludes=
-		;;
+    i?86-sequent-ptx* | i?86-sequent-sysv[34]*)
+        fixincludes=fixinc.ptx
+        ;;
+
+    alpha*-dec-vms* | \
+    arm-semi-aout | \
+    armel-semi-aout | \
+    arm-semi-aof | \
+    armel-semi-aof | \
+    c*-convex-* | \
+    hppa1.1-*-osf* | \
+    hppa1.0-*-osf* | \
+    hppa1.1-*-bsd* | \
+    hppa1.0-*-bsd* | \
+    hppa*-*-lites* | \
+    i?86-moss-msdos* | \
+    i?86-*-moss* | \
+    i?86-*-osf1* | \
+    i?86-*-win32 | \
+    i?86-*-pe | \
+    i?86-*-cygwin* | \
+    i?86-*-mingw32* | \
+    i?86-*-uwin* | \
+    mips-sgi-irix5cross64 | \
+    powerpc-*-eabiaix* | \
+    powerpc-*-eabisim* | \
+    powerpc-*-eabi*    | \
+    powerpc-*-rtems*   | \
+    powerpcle-*-eabisim* | \
+    powerpcle-*-eabi*  | \
+    powerpcle-*-winnt* | \
+    powerpcle-*-pe | \
+    powerpcle-*-cygwin* | \
+    thumb-*-coff* | \
+    thumbel-*-coff* )
+        #  Don't do any fixing.
+        #
+        fixincludes=
+        ;;
 esac
 
 #  IF there is no include fixing,

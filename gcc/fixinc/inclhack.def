@@ -2243,12 +2243,11 @@ fix = {
                "(!__STDC__"
                "|__STDC__[ \t]*==[ \t]*0"
                "|__STDC__[ \t]*!=[ \t]*1"
-               "|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0"
-               ")(.*)";
+               "|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0)";
     c_test   = stdc_0_in_system_headers;
 
     c_fix     = format;
-    c_fix_arg = "%1 !defined(__STRICT_ANSI__)%3";
+    c_fix_arg = "%1 !defined(__STRICT_ANSI__)";
 
     test_text = "#if !__STDC__ \n"
                 "#if __STDC__ == 0\n"
@@ -2264,18 +2263,33 @@ fix = {
  */
 fix = {
     hackname = strict_ansi_not_ctd;
-    files    = math.h, limits.h, stdio.h, signal.h, stdlib.h, time.h;
-    select   = "^([ \t]*[|&][|&][ \t(]*)"
-               "(__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0"
-               ")(.*)";
+    files    = math.h, limits.h, stdio.h, signal.h,
+               stdlib.h, sys/signal.h, time.h;
+    /*
+     * Starting at the beginning of a line, skip white space and
+     * a leading "(" or "&&" or "||".  One of those must be found.
+     * Then, zero, one or more copies of a "defined(_FOO_BAR_) &&"
+     * expression.  If these are nested, then they must accumulate
+     * because we won't match any closing parentheses.  Finally,
+     * after skipping over all that, we must then match our suspect
+     * phrase:  "__STDC__-0==0" with or without white space.
+     */
+    select   = "^([ \t]*" '(\(|&&|\|\|)'
+               "([ \t(]*!*[ \t]*defined\\([a-zA-Z_0-9]+\\)[ \t]*[|&][|&])*"
+               "[ \t(]*)"
+               "(__STDC__[ \t]*(|-[ \t]*0[ \t]*)==[ \t]*0)";
     c_test   = stdc_0_in_system_headers;
 
     c_fix     = format;
-    c_fix_arg = "%1 !defined(__STRICT_ANSI__)%3";
+    c_fix_arg = "%1 !defined(__STRICT_ANSI__)";
 
-    test_text = "#if 1\\\n"
-               "|| __STDC__ - 0 == 0 /* not std C */\nint foo;\n#endif";
+    test_text = "#if 1 && \\\\\n"
+               "&& defined(mumbling) |& (__STDC__ - 0 == 0) \\\\\n"
+               "( __STDC__ == 0 && !defined(_XOPEN_SOURCE) \\\\\n"
+               "|| __STDC__ - 0 == 0 ) /* not std C */\n"
+               "int foo;\n#endif";
 };
+
 
 /*
  *  "__STDC__!=0" or "__STDC__==1" or "__STDC__-0==1"
@@ -2287,12 +2301,11 @@ fix = {
                "(__STDC__[ \t]*!=[ \t]*0"
                "|__STDC__[ \t]*==[ \t]*1"
                "|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*1"
-               "|__STDC__[ \t]*-[ \t]*0[ \t]*!=[ \t]*0"
-               ")(.*)";
+               "|__STDC__[ \t]*-[ \t]*0[ \t]*!=[ \t]*0)";
     c_test   = stdc_0_in_system_headers;
 
     c_fix     = format;
-    c_fix_arg = "%1 defined(__STRICT_ANSI__)%3";
+    c_fix_arg = "%1 defined(__STRICT_ANSI__)";
 
     test_text = "#if __STDC__ == 1 /* is std C\n */\nint foo;\n#endif";
 };

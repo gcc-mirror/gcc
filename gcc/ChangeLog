@@ -1,3 +1,10 @@
+2001-12-12  Bruce Korb  <bkorb@gnu.org>
+	Rodney Brown  <rbrown64@csc.com.au>
+
+	* fixinc/inclhack.def (strict_ansi_not_ctd): Update for UnixWare 2.1.3.
+	* fixinc/mkfixinc.sh: Use C fixincludes for UnixWare 2.1.3.
+	* fixinc/tests/base/math.h: update for new test text for rework
+
 2001-12-13  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_unique_section): Simplify and
