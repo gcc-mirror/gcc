@@ -550,7 +550,7 @@ CCCP=cccp
 STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
  insn-attr.h insn-attrtab.c insn-opinit.c \
- stamp-flags stamp-config stamp-codes \
+ stamp-flags stamp-config stamp-codes stamp-mlib \
  stamp-output stamp-recog stamp-emit stamp-extract stamp-peep \
  stamp-attr stamp-attrtab stamp-opinit stamp-proto stamp-crt stamp-crtS stamp-crt0 \
  genemit$(exeext) genoutput$(exeext) genrecog$(exeext) genextract$(exeext) \
@@ -955,9 +955,16 @@ libgcc.a: $(LIBGCC1) $(LIBGCC2)
 # Use the genmultilib shell script to generate the information the gcc
 # driver program needs to select the library directory based on the
 # switches.
-multilib.h: $(srcdir)/genmultilib Makefile
-	$(SHELL) $(srcdir)/genmultilib "$(MULTILIB_OPTIONS)" \
-	  "$(MULTILIB_DIRNAMES)" "$(MULTILIB_MATCHES)" "$(MULTILIB_EXCEPTIONS)" > multilib.h
+multilib.h: stamp-mlib; @true
+stamp-mlib: $(srcdir)/genmultilib Makefile
+	$(SHELL) $(srcdir)/genmultilib \
+	  "$(MULTILIB_OPTIONS)" \
+	  "$(MULTILIB_DIRNAMES)" \
+	  "$(MULTILIB_MATCHES)" \
+	  "$(MULTILIB_EXCEPTIONS)" \
+	  "$(MULTILIB_EXTRA_OPTS)" > tmp-mlib.h
+	$(srcdir)/move-if-change tmp-mlib.h multilib.h
+	touch stamp-mlib
 
 # Build multiple copies of libgcc.a, one for each target switch.
 stmp-multilib: $(LIBGCC1) libgcc2.c libgcc2.ready $(CONFIG_H) \

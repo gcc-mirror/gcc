@@ -491,12 +491,21 @@ static char *startfile_spec = STARTFILE_SPEC;
 static char *switches_need_spaces = SWITCHES_NEED_SPACES;
 
 /* Some compilers have limits on line lengths, and the multilib_select
-   string can be very long, so we build it at run time.  */
+   and/or multilib_matches strings can be very long, so we build them at
+   run time.  */
 static struct obstack multilib_obstack;
-static char *multilib_raw[] = {
-#include "multilib.h"
-};
 static char *multilib_select;
+static char *multilib_matches;
+static char *multilib_defaults;
+#include "multilib.h"
+
+/* Check whether a particular argument is a default argument.  */
+
+#ifndef MULTILIB_DEFAULTS
+#define MULTILIB_DEFAULTS { "" }
+#endif
+
+static char *multilib_defaults_raw[] = MULTILIB_DEFAULTS;
 
 #ifdef EXTRA_SPECS
 static struct { char *name, *spec; } extra_specs[] = { EXTRA_SPECS };
@@ -1223,6 +1232,12 @@ set_spec (name, spec)
     cross_compile = atoi (sl->spec);
   else if (! strcmp (name, "multilib"))
     multilib_select = sl->spec;
+  else if (! strcmp (name, "multilib_matches"))
+    multilib_matches = sl->spec;
+  else if (! strcmp (name, "multilib_extra"))
+    multilib_extra = sl->spec;
+  else if (! strcmp (name, "multilib_defaults"))
+    multilib_defaults = sl->spec;
 #ifdef EXTRA_SPECS
   else
     {
@@ -2244,6 +2259,9 @@ process_command (argc, argv)
 	  printf ("*predefines:\n%s\n\n", cpp_predefines);
 	  printf ("*cross_compile:\n%d\n\n", cross_compile);
 	  printf ("*multilib:\n%s\n\n", multilib_select);
+	  printf ("*multilib_defaults:\n%s\n\n", multilib_defaults);
+	  printf ("*multilib_extra:\n%s\n\n", multilib_extra);
+	  printf ("*multilib_matches:\n%s\n\n", multilib_matches);
 
 #ifdef EXTRA_SPECS
 	  {
@@ -4027,10 +4045,11 @@ main (argc, argv)
 
   obstack_init (&obstack);
 
-  /* Build multilib_select from the separate lines that make up each multilib
-     selection.  */
+  /* Build multilib_select, et. al from the separate lines that make up each
+     multilib selection.  */
   {
     char **q = multilib_raw;
+    int need_space;
 
     obstack_init (&multilib_obstack);
     while ((p = *q++) != (char *) 0)
@@ -4038,6 +4057,29 @@ main (argc, argv)
 
     obstack_1grow (&multilib_obstack, 0);
     multilib_select = obstack_finish (&multilib_obstack);
+
+    q = multilib_matches_raw;
+    while ((p = *q++) != (char *) 0)
+      obstack_grow (&multilib_obstack, p, strlen (p));
+
+    obstack_1grow (&multilib_obstack, 0);
+    multilib_matches = obstack_finish (&multilib_obstack);
+
+    need_space = FALSE;
+    for (i = 0;
+	 i < sizeof (multilib_defaults_raw) / sizeof (multilib_defaults_raw[0]);
+	 i++)
+      {
+	if (need_space)
+	  obstack_1grow (&multilib_obstack, ' ');
+	obstack_grow (&multilib_obstack,
+		      multilib_defaults_raw[i],
+		      strlen (multilib_defaults_raw[i]));
+	need_space = TRUE;
+      }
+
+    obstack_1grow (&multilib_obstack, 0);
+    multilib_defaults = obstack_finish (&multilib_obstack);
   }
 
   /* Set up to remember the pathname of gcc and any options
@@ -4825,43 +4867,114 @@ validate_switches (start)
     }
 }
 
-/* Check whether a particular argument was used.  */
+/* Check whether a particular argument was used.  The first time we
+   canonialize the switches to keep only the ones we care about.  */
 
 static int
 used_arg (p, len)
      char *p;
      int len;
 {
-  int i;
+  struct mswitchstr {
+    char *str;
+    char *replace;
+    int len;
+    int rep_len;
+  };
 
-  for (i = 0; i < n_switches; i++)
-    if (! strncmp (switches[i].part1, p, len)
-	&& strlen (switches[i].part1) == len)
+  static struct mswitchstr *mswitches;
+  static int n_mswitches;
+  int i, j;
+
+  if (!mswitches)
+    {
+      struct mswitchstr *matches;
+      char *q;
+      int cnt = (*multilib_matches != '\0');
+
+      /* Break multilib_matches into the component strings of string and replacement
+         string */
+      for (p = multilib_matches; *p != '\0'; p++)
+	if (*p == ';')
+	  cnt++;
+
+      matches = (struct mswitchstr *) alloca ((sizeof (struct mswitchstr)) * cnt);
+      i = 0;
+      q = multilib_matches;
+      while (*q != '\0')
+	{
+	  matches[i].str = q;
+	  while (*q != ' ')
+	    {
+	      if (*q == '\0')
+		abort ();
+	      q++;
+	    }
+	  *q = '\0';
+	  matches[i].len = q - matches[i].str;
+
+	  matches[i].replace = ++q;
+	  while (*q != ';' && *q != '\0')
+	    {
+	      if (*q == ' ')
+		abort ();
+	      q++;
+	    }
+	  matches[i].rep_len = q - matches[i].replace;
+	  i++;
+	  if (*q == ';')
+	    *q++ = '\0';
+	  else
+	    break;
+	}
+
+      /* Now build a list of the replacement string for switches that we care about */
+      mswitches = (struct mswitchstr *) xmalloc ((sizeof (struct mswitchstr)) * n_switches);
+      for (i = 0; i < n_switches; i++)
+	{
+	  int xlen = strlen (switches[i].part1);
+	  for (j = 0; j < cnt; j++)
+	    if (xlen == matches[j].len && ! strcmp (switches[i].part1, matches[j].str))
+	      {
+		mswitches[n_mswitches].str = matches[j].replace;
+		mswitches[n_mswitches].len = matches[j].rep_len;
+		mswitches[n_mswitches].replace = (char *)0;
+		mswitches[n_mswitches].rep_len = 0;
+		n_mswitches++;
+		break;
+	      }
+	}
+    }
+
+  for (i = 0; i < n_mswitches; i++)
+    if (len == mswitches[i].len && ! strncmp (p, mswitches[i].str, len))
       return 1;
+
   return 0;
 }
-
-/* Check whether a particular argument is a default argument.  */
-
-#ifndef MULTILIB_DEFAULTS
-#define MULTILIB_DEFAULTS { NULL }
-#endif
-
-static char *multilib_defaults[] = MULTILIB_DEFAULTS;
 
 static int
 default_arg (p, len)
      char *p;
      int len;
 {
-  int count = sizeof multilib_defaults / sizeof multilib_defaults[0];
+  char *start, *end;
   int i;
 
-  for (i = 0; i < count; i++)
-    if (multilib_defaults[i] != NULL
-	&& strncmp (multilib_defaults[i], p, len) == 0
-	&& multilib_defaults[i][len] == '\0')
-      return 1;
+  for (start = multilib_defaults; *start != '\0'; start = end+1)
+    {
+      while (*start == ' ' || *start == '\t')
+	start++;
+
+      if (*start == '\0')
+	break;
+
+      for (end = start+1; *end != ' ' && *end != '\t' && *end != '\0'; end++)
+	;
+
+      if ((end - start) == len && strncmp (p, start, len) == 0)
+	return 1;
+    }
 
   return 0;
 }
@@ -5089,7 +5202,28 @@ print_multilib_info ()
 	}
 
       if (! skip)
-	putchar ('\n');
+	{
+	  /* If there are extra options, print them now */
+	  if (multilib_extra && *multilib_extra)
+	    {
+	      int print_at = TRUE;
+	      char *q;
+
+	      for (q = multilib_extra; *q != '\0'; q++)
+		{
+		  if (*q == ' ')
+		    print_at = TRUE;
+		  else
+		    {
+		      if (print_at)
+			putchar ('@');
+		      putchar (*q);
+		      print_at = FALSE;
+		    }
+		}
+	    }
+	  putchar ('\n');
+	}
 
       ++p;
     }
